@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "noEmit": true,
+    "composite": true
+  },
+  "include": [],
+  "references": [
+    { "path": "./packages/dsl-spec" },
+    { "path": "./packages/dsl-parser" },
+    { "path": "./packages/dsl-compiler" },
+    { "path": "./packages/ssr-server" },
+    { "path": "./packages/runtime" },
+    { "path": "./packages/demo-site" }
+  ]
+}

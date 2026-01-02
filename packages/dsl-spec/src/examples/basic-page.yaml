@@ -1,0 +1,204 @@
+dslVersion: "1.0"
+
+page:
+  id: home
+  title: "{{ data.siteName }} - Welcome"
+  meta:
+    description: "A demonstration of SPARK.View DSL capabilities"
+    keywords:
+      - vue
+      - ssr
+      - dsl
+      - spark-view
+    author: "SPARK.View Team"
+  
+  layout:
+    type: container
+    props:
+      maxWidth: "1200px"
+      padding: "0 20px"
+      margin: "0 auto"
+    
+    children:
+      # Header Section
+      - type: header
+        id: main-header
+        props:
+          height: "80px"
+          display: flex
+          alignItems: center
+          justifyContent: space-between
+          borderBottom: "1px solid #eee"
+        children:
+          - type: text
+            props:
+              content: "{{ data.siteName }}"
+              fontSize: "28px"
+              fontWeight: bold
+              color: "#333"
+          
+          - type: flex
+            props:
+              gap: "20px"
+            children:
+              - type: link
+                props:
+                  href: "/about"
+                  text: "About"
+                  color: "#666"
+              - type: link
+                props:
+                  href: "/docs"
+                  text: "Docs"
+                  color: "#666"
+      
+      # Hero Section
+      - type: section
+        id: hero
+        props:
+          padding: "60px 0"
+          textAlign: center
+        children:
+          - type: text
+            props:
+              content: "{{ data.heroTitle }}"
+              fontSize: "48px"
+              fontWeight: bold
+              marginBottom: "20px"
+          
+          - type: text
+            props:
+              content: "{{ data.heroSubtitle }}"
+              fontSize: "20px"
+              color: "#666"
+              marginBottom: "40px"
+          
+          - type: button
+            id: cta-button
+            props:
+              text: "Get Started"
+              backgroundColor: "#007bff"
+              color: white
+              padding: "12px 32px"
+              fontSize: "18px"
+              borderRadius: "6px"
+              onClick: "handleGetStarted"
+            hydration:
+              strategy: visible
+              priority: high
+              viewport:
+                threshold: 0.5
+      
+      # Features Section
+      - type: section
+        id: features
+        props:
+          padding: "80px 0"
+        children:
+          - type: text
+            props:
+              content: "Key Features"
+              fontSize: "36px"
+              fontWeight: bold
+              textAlign: center
+              marginBottom: "60px"
+          
+          - type: grid
+            props:
+              columns: 3
+              gap: "40px"
+            children:
+              - type: container
+                loop:
+                  items: "data.features"
+                  itemVar: "feature"
+                  indexVar: "idx"
+                props:
+                  padding: "30px"
+                  borderRadius: "8px"
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                children:
+                  - type: text
+                    props:
+                      content: "{{ feature.icon }}"
+                      fontSize: "48px"
+                      marginBottom: "20px"
+                  
+                  - type: text
+                    props:
+                      content: "{{ feature.title }}"
+                      fontSize: "24px"
+                      fontWeight: bold
+                      marginBottom: "12px"
+                  
+                  - type: text
+                    props:
+                      content: "{{ feature.description }}"
+                      fontSize: "16px"
+                      color: "#666"
+                      lineHeight: "1.6"
+      
+      # Conditional Banner
+      - type: section
+        condition: "data.showBanner"
+        props:
+          backgroundColor: "#fff3cd"
+          padding: "20px"
+          borderRadius: "6px"
+          margin: "40px 0"
+        children:
+          - type: text
+            props:
+              content: "{{ data.bannerMessage }}"
+              fontSize: "16px"
+              color: "#856404"
+        hydration:
+          strategy: never
+      
+      # Footer
+      - type: footer
+        props:
+          borderTop: "1px solid #eee"
+          padding: "40px 0"
+          marginTop: "80px"
+          textAlign: center
+        children:
+          - type: text
+            props:
+              content: "© {{ formatDate(env.BUILD_TIME, 'yyyy') }} {{ data.siteName }}. Built with SPARK.View"
+              color: "#999"
+              fontSize: "14px"
+
+# Page Data
+data:
+  siteName: "SPARK.View"
+  heroTitle: "Build Faster with DSL-Driven SSR"
+  heroSubtitle: "Transform your page definitions into blazing-fast Vue SSR applications"
+  showBanner: true
+  bannerMessage: "🎉 Version 1.0 is now available!"
+  features:
+    - icon: "⚡"
+      title: "Lightning Fast"
+      description: "Optimized SSR with partial hydration for instant page loads"
+    - icon: "🎯"
+      title: "Type Safe"
+      description: "Full TypeScript support with JSON Schema validation"
+    - icon: "🔧"
+      title: "Developer Friendly"
+      description: "Intuitive DSL syntax with hot module replacement"
+
+# Environment Variables
+env:
+  BUILD_TIME: "2026-01-02T00:00:00Z"
+  API_BASE_URL: "https://api.spark-view.dev"
+
+# Theme Configuration
+theme:
+  colors:
+    primary: "#007bff"
+    secondary: "#6c757d"
+    success: "#28a745"
+    danger: "#dc3545"
+  fonts:
+    heading: "'Inter', sans-serif"
+    body: "'Roboto', sans-serif"

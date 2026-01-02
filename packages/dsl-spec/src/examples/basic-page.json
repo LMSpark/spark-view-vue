@@ -1,0 +1,154 @@
+{
+  "dslVersion": "1.0",
+  "page": {
+    "id": "product-list",
+    "title": "Products - {{ data.storeName }}",
+    "meta": {
+      "description": "Browse our collection of products",
+      "keywords": ["products", "shop", "ecommerce"]
+    },
+    "layout": {
+      "type": "container",
+      "props": {
+        "maxWidth": "1400px",
+        "padding": "20px"
+      },
+      "children": [
+        {
+          "type": "header",
+          "props": {
+            "height": "60px",
+            "display": "flex",
+            "alignItems": "center"
+          },
+          "children": [
+            {
+              "type": "text",
+              "props": {
+                "content": "{{ data.storeName }}",
+                "fontSize": "24px",
+                "fontWeight": "bold"
+              }
+            }
+          ]
+        },
+        {
+          "type": "section",
+          "props": {
+            "padding": "40px 0"
+          },
+          "children": [
+            {
+              "type": "text",
+              "props": {
+                "content": "Our Products",
+                "fontSize": "32px",
+                "marginBottom": "30px"
+              }
+            },
+            {
+              "type": "grid",
+              "props": {
+                "columns": 4,
+                "gap": "20px"
+              },
+              "children": [
+                {
+                  "type": "container",
+                  "loop": {
+                    "items": "data.products",
+                    "itemVar": "product",
+                    "indexVar": "i"
+                  },
+                  "props": {
+                    "border": "1px solid #ddd",
+                    "borderRadius": "8px",
+                    "padding": "16px",
+                    "cursor": "pointer"
+                  },
+                  "children": [
+                    {
+                      "type": "image",
+                      "props": {
+                        "src": "{{ product.image }}",
+                        "alt": "{{ product.name }}",
+                        "width": "100%",
+                        "height": "200px",
+                        "objectFit": "cover",
+                        "borderRadius": "6px"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "props": {
+                        "content": "{{ product.name }}",
+                        "fontSize": "18px",
+                        "fontWeight": "600",
+                        "marginTop": "12px"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "props": {
+                        "content": "${{ formatNumber(product.price, 2) }}",
+                        "fontSize": "20px",
+                        "color": "#007bff",
+                        "fontWeight": "bold",
+                        "marginTop": "8px"
+                      }
+                    },
+                    {
+                      "type": "button",
+                      "props": {
+                        "text": "Add to Cart",
+                        "backgroundColor": "#28a745",
+                        "color": "white",
+                        "padding": "8px 16px",
+                        "marginTop": "12px",
+                        "onClick": "addToCart(product.id)"
+                      },
+                      "hydration": {
+                        "strategy": "interaction",
+                        "priority": "normal",
+                        "trigger": "button"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "data": {
+    "storeName": "SPARK Shop",
+    "products": [
+      {
+        "id": "p1",
+        "name": "Wireless Headphones",
+        "price": 99.99,
+        "image": "/images/headphones.jpg"
+      },
+      {
+        "id": "p2",
+        "name": "Smart Watch",
+        "price": 199.99,
+        "image": "/images/watch.jpg"
+      },
+      {
+        "id": "p3",
+        "name": "Laptop Stand",
+        "price": 49.99,
+        "image": "/images/stand.jpg"
+      },
+      {
+        "id": "p4",
+        "name": "USB-C Hub",
+        "price": 39.99,
+        "image": "/images/hub.jpg"
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "@spark-view/ssr-server",
+  "version": "1.0.0",
+  "description": "SSR server for SPARK.View with caching support",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "spark-ssr": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "ssr",
+    "server",
+    "vue",
+    "spark-view"
+  ],
+  "author": "SPARK.View Team",
+  "license": "MIT",
+  "dependencies": {
+    "@spark-view/dsl-compiler": "workspace:*",
+    "@spark-view/dsl-parser": "workspace:*",
+    "express": "^4.18.2",
+    "vue": "^3.4.15"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.5",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  }
+}

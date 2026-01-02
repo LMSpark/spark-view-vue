@@ -1,0 +1,34 @@
+{
+  "name": "@spark-view/dsl-compiler",
+  "version": "1.0.0",
+  "description": "DSL to Vue Render Function compiler for SPARK.View",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "compiler",
+    "dsl",
+    "vue",
+    "ssr",
+    "spark-view"
+  ],
+  "author": "SPARK.View Team",
+  "license": "MIT",
+  "dependencies": {
+    "@spark-view/dsl-parser": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  }
+}

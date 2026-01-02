@@ -1,0 +1,23 @@
+{
+  "name": "@spark-view/dsl-spec",
+  "version": "1.0.0",
+  "description": "SPARK.View DSL JSON Schema and examples",
+  "main": "./src/schema.json",
+  "type": "module",
+  "scripts": {
+    "validate": "ajv validate -s src/schema.json -d \"src/examples/*.json\"",
+    "test": "echo \"No tests for spec package\"",
+    "build": "echo \"No build needed for spec package\""
+  },
+  "keywords": [
+    "dsl",
+    "schema",
+    "json-schema",
+    "spark-view"
+  ],
+  "author": "SPARK.View Team",
+  "license": "MIT",
+  "devDependencies": {
+    "ajv-cli": "^5.0.0"
+  }
+}

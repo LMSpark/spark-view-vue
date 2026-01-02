@@ -1,0 +1,41 @@
+{
+  "name": "spark-view-vue",
+  "version": "1.0.0",
+  "description": "SPARK.View for VUE - DSL-driven Vue SSR Framework with Partial Hydration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r --stream build",
+    "test": "pnpm -r --stream test",
+    "lint": "eslint --ext .ts,.vue \"packages/**/src/**/*.{ts,vue}\"",
+    "format": "prettier --write \"**/*.{ts,vue,json,md}\"",
+    "dev:demo": "pnpm --filter demo-site dev",
+    "dev:ssr": "pnpm --filter @spark-view/ssr-server dev",
+    "validate": "bash scripts/validate.sh",
+    "clean": "pnpm -r --stream clean && rm -rf node_modules"
+  },
+  "keywords": [
+    "vue",
+    "ssr",
+    "dsl",
+    "partial-hydration",
+    "compiler",
+    "monorepo"
+  ],
+  "author": "SPARK.View Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vue": "^9.20.1",
+    "prettier": "^3.2.4",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

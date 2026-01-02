@@ -1,0 +1,33 @@
+{
+  "name": "@spark-view/dsl-parser",
+  "version": "1.0.0",
+  "description": "DSL parser for SPARK.View - converts YAML/JSON to AST",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "parser",
+    "dsl",
+    "ast",
+    "spark-view"
+  ],
+  "author": "SPARK.View Team",
+  "license": "MIT",
+  "dependencies": {
+    "@spark-view/dsl-spec": "workspace:*",
+    "js-yaml": "^4.1.0",
+    "ajv": "^8.12.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.5",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  }
+}

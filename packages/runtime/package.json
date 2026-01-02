@@ -1,0 +1,29 @@
+{
+  "name": "@spark-view/runtime",
+  "version": "1.0.0",
+  "description": "Client-side runtime for SPARK.View with partial hydration",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "runtime",
+    "hydration",
+    "vue",
+    "spark-view"
+  ],
+  "author": "SPARK.View Team",
+  "license": "MIT",
+  "dependencies": {
+    "vue": "^3.4.15"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  }
+}
