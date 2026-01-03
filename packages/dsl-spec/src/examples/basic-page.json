@@ -1,153 +1,208 @@
 {
   "dslVersion": "1.0",
   "page": {
-    "id": "product-list",
-    "title": "Products - {{ data.storeName }}",
-    "meta": {
-      "description": "Browse our collection of products",
-      "keywords": ["products", "shop", "ecommerce"]
-    },
-    "layout": {
-      "type": "container",
-      "props": {
-        "maxWidth": "1400px",
-        "padding": "20px"
-      },
-      "children": [
-        {
-          "type": "header",
-          "props": {
-            "height": "60px",
-            "display": "flex",
-            "alignItems": "center"
-          },
-          "children": [
-            {
-              "type": "text",
-              "props": {
-                "content": "{{ data.storeName }}",
-                "fontSize": "24px",
-                "fontWeight": "bold"
-              }
-            }
-          ]
+    "id": "home",
+    "title": "首页",
+    "rule": [
+      {
+        "type": "fc-container",
+        "props": {
+          "class": "page-wrapper",
+          "style": { "maxWidth": "1200px", "margin": "0 auto", "padding": "20px" }
         },
-        {
-          "type": "section",
-          "props": {
-            "padding": "40px 0"
-          },
-          "children": [
-            {
-              "type": "text",
-              "props": {
-                "content": "Our Products",
-                "fontSize": "32px",
-                "marginBottom": "30px"
+        "children": [
+          {
+            "type": "fc-header",
+            "props": { "class": "site-header", "style": { "marginBottom": "40px" } },
+            "children": [
+              {
+                "type": "fc-row",
+                "props": { "justify": "space-between", "align": "middle" },
+                "children": [
+                  {
+                    "type": "fc-col",
+                    "props": { "span": 12 },
+                    "children": [
+                      {
+                        "type": "h1",
+                        "props": {
+                          "style": { "margin": 0, "fontSize": "28px" },
+                          "innerHTML": "{{ data.siteName }}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "fc-col",
+                    "props": { "span": 12, "style": { "textAlign": "right" } },
+                    "children": [
+                      {
+                        "type": "ElButton",
+                        "props": { "type": "primary", "innerHTML": "登录" }
+                      }
+                    ]
+                  }
+                ]
               }
+            ]
+          },
+          {
+            "type": "fc-hero",
+            "props": {
+              "class": "hero-section",
+              "style": { "padding": "80px 0", "textAlign": "center", "background": "#f5f5f5", "borderRadius": "8px", "marginBottom": "60px" }
             },
-            {
-              "type": "grid",
-              "props": {
-                "columns": 4,
-                "gap": "20px"
-              },
-              "children": [
-                {
-                  "type": "container",
-                  "loop": {
-                    "items": "data.products",
-                    "itemVar": "product",
-                    "indexVar": "i"
-                  },
-                  "props": {
-                    "border": "1px solid #ddd",
-                    "borderRadius": "8px",
-                    "padding": "16px",
-                    "cursor": "pointer"
-                  },
-                  "children": [
-                    {
-                      "type": "image",
-                      "props": {
-                        "src": "{{ product.image }}",
-                        "alt": "{{ product.name }}",
-                        "width": "100%",
-                        "height": "200px",
-                        "objectFit": "cover",
-                        "borderRadius": "6px"
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "props": {
-                        "content": "{{ product.name }}",
-                        "fontSize": "18px",
-                        "fontWeight": "600",
-                        "marginTop": "12px"
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "props": {
-                        "content": "${{ formatNumber(product.price, 2) }}",
-                        "fontSize": "20px",
-                        "color": "#007bff",
-                        "fontWeight": "bold",
-                        "marginTop": "8px"
-                      }
-                    },
-                    {
-                      "type": "button",
-                      "props": {
-                        "text": "Add to Cart",
-                        "backgroundColor": "#28a745",
-                        "color": "white",
-                        "padding": "8px 16px",
-                        "marginTop": "12px",
-                        "onClick": "addToCart(product.id)"
-                      },
-                      "hydration": {
-                        "strategy": "interaction",
-                        "priority": "normal",
-                        "trigger": "button"
-                      }
-                    }
-                  ]
+            "children": [
+              {
+                "type": "h2",
+                "props": {
+                  "style": { "fontSize": "48px", "marginBottom": "20px", "fontWeight": "bold" },
+                  "innerHTML": "{{ data.hero.title }}"
                 }
-              ]
-            }
-          ]
-        }
-      ]
+              },
+              {
+                "type": "p",
+                "props": {
+                  "style": { "fontSize": "20px", "color": "#666", "marginBottom": "40px" },
+                  "innerHTML": "{{ data.hero.subtitle }}"
+                }
+              },
+              {
+                "type": "ElButton",
+                "props": {
+                  "type": "primary",
+                  "size": "large",
+                  "innerHTML": "开始使用"
+                }
+              }
+            ]
+          },
+          {
+            "type": "fc-section",
+            "props": {
+              "class": "features-section",
+              "style": { "padding": "40px 0" }
+            },
+            "children": [
+              {
+                "type": "h3",
+                "props": {
+                  "style": { "textAlign": "center", "marginBottom": "40px", "fontSize": "32px" },
+                  "innerHTML": "核心特性"
+                }
+              },
+              {
+                "type": "fc-row",
+                "props": { "gutter": 24 },
+                "children": [
+                  {
+                    "type": "fc-col",
+                    "props": { "span": 8 },
+                    "children": [
+                      {
+                        "type": "ElCard",
+                        "props": { "shadow": "hover" },
+                        "children": [
+                          {
+                            "type": "h4",
+                            "props": { "innerHTML": "{{ data.features[0].title }}" }
+                          },
+                          {
+                            "type": "p",
+                            "props": { "innerHTML": "{{ data.features[0].description }}" }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "fc-col",
+                    "props": { "span": 8 },
+                    "children": [
+                      {
+                        "type": "ElCard",
+                        "props": { "shadow": "hover" },
+                        "children": [
+                          {
+                            "type": "h4",
+                            "props": { "innerHTML": "{{ data.features[1].title }}" }
+                          },
+                          {
+                            "type": "p",
+                            "props": { "innerHTML": "{{ data.features[1].description }}" }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "fc-col",
+                    "props": { "span": 8 },
+                    "children": [
+                      {
+                        "type": "ElCard",
+                        "props": { "shadow": "hover" },
+                        "children": [
+                          {
+                            "type": "h4",
+                            "props": { "innerHTML": "{{ data.features[2].title }}" }
+                          },
+                          {
+                            "type": "p",
+                            "props": { "innerHTML": "{{ data.features[2].description }}" }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "fc-footer",
+            "props": {
+              "class": "site-footer",
+              "style": { "textAlign": "center", "padding": "40px 0", "marginTop": "60px", "borderTop": "1px solid #eee" }
+            },
+            "children": [
+              {
+                "type": "p",
+                "props": {
+                  "style": { "color": "#999" },
+                  "innerHTML": "© 2026 SPARK.View. All rights reserved."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "option": {
+      "form": {
+        "labelPosition": "top"
+      },
+      "submitBtn": false
     }
   },
   "data": {
-    "storeName": "SPARK Shop",
-    "products": [
+    "siteName": "SPARK.View",
+    "hero": {
+      "title": "构建现代化 Web 应用",
+      "subtitle": "基于 form-create 的低代码开发平台"
+    },
+    "features": [
       {
-        "id": "p1",
-        "name": "Wireless Headphones",
-        "price": 99.99,
-        "image": "/images/headphones.jpg"
+        "title": "可视化设计",
+        "description": "拖拽式页面设计，无需编写代码"
       },
       {
-        "id": "p2",
-        "name": "Smart Watch",
-        "price": 199.99,
-        "image": "/images/watch.jpg"
+        "title": "组件丰富",
+        "description": "集成 Element Plus 全套组件"
       },
       {
-        "id": "p3",
-        "name": "Laptop Stand",
-        "price": 49.99,
-        "image": "/images/stand.jpg"
-      },
-      {
-        "id": "p4",
-        "name": "USB-C Hub",
-        "price": 39.99,
-        "image": "/images/hub.jpg"
+        "title": "SSR 支持",
+        "description": "服务端渲染，SEO 友好"
       }
     ]
   }

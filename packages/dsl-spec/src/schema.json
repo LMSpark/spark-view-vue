@@ -2,18 +2,60 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://spark-view.dev/schemas/dsl/v1.0.json",
   "title": "SPARK.View DSL Schema",
-  "description": "Schema for SPARK.View DSL version 1.0 - defines page structure, components, and hydration strategies",
+  "description": "Schema for SPARK.View DSL version 1.0 - based on form-create rule format",
   "type": "object",
-  "required": ["dslVersion", "page"],
+  "required": ["dslVersion"],
   "properties": {
     "dslVersion": {
       "type": "string",
       "const": "1.0",
       "description": "DSL version identifier"
     },
+    "pages": {
+      "type": "array",
+      "description": "Multiple pages configuration",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "rule"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "description": "Unique page identifier"
+          },
+          "title": {
+            "type": "string",
+            "description": "Page title"
+          },
+          "path": {
+            "type": "string",
+            "description": "Route path for this page"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "keywords": { "type": "array", "items": { "type": "string" } },
+              "author": { "type": "string" }
+            }
+          },
+          "rule": {
+            "type": "array",
+            "description": "form-create rule array for page content",
+            "items": { "$ref": "#/definitions/FormCreateRule" }
+          },
+          "option": {
+            "type": "object",
+            "description": "form-create option configuration",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
     "page": {
       "type": "object",
-      "required": ["id", "title", "layout"],
+      "description": "Single page mode (backward compatible)",
+      "required": ["id", "title", "rule"],
       "properties": {
         "id": {
           "type": "string",
@@ -22,7 +64,7 @@
         },
         "title": {
           "type": "string",
-          "description": "Page title (supports expressions)"
+          "description": "Page title"
         },
         "meta": {
           "type": "object",
@@ -32,8 +74,29 @@
             "author": { "type": "string" }
           }
         },
-        "layout": {
-          "$ref": "#/definitions/Component"
+        "rule": {
+          "type": "array",
+          "description": "form-create rule array for page content",
+          "items": { "$ref": "#/definitions/FormCreateRule" }
+        },
+        "option": {
+          "type": "object",
+          "description": "form-create option configuration",
+          "additionalProperties": true
+        }
+      }
+    },
+    "routes": {
+      "type": "array",
+      "description": "Route configurations for multi-page apps",
+      "items": {
+        "type": "object",
+        "required": ["path", "pageId"],
+        "properties": {
+          "path": { "type": "string" },
+          "name": { "type": "string" },
+          "pageId": { "type": "string" },
+          "meta": { "type": "object", "additionalProperties": true }
         }
       }
     },
@@ -57,114 +120,82 @@
     }
   },
   "definitions": {
-    "Component": {
+    "FormCreateRule": {
       "type": "object",
       "required": ["type"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": [
-            "container",
-            "header",
-            "footer",
-            "section",
-            "text",
-            "button",
-            "image",
-            "link",
-            "list",
-            "grid",
-            "flex",
-            "form",
-            "input",
-            "select"
-          ],
-          "description": "Component type identifier"
+          "description": "Component type (form-create component or custom component)"
         },
-        "id": {
+        "field": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9_-]+$",
-          "description": "Optional component identifier"
+          "description": "Field name for form controls"
+        },
+        "title": {
+          "type": "string",
+          "description": "Field label"
+        },
+        "value": {
+          "description": "Default value"
         },
         "props": {
           "type": "object",
-          "description": "Component properties (supports expressions)",
+          "description": "Component properties (including innerHTML for HTML elements)",
           "additionalProperties": true
         },
         "children": {
-          "type": "array",
-          "items": {
-            "oneOf": [
-              { "$ref": "#/definitions/Component" },
-              { "type": "string", "description": "Text content" }
-            ]
-          },
-          "description": "Child components or text nodes"
-        },
-        "condition": {
-          "type": "string",
-          "description": "Conditional rendering expression (e.g., data.showBanner)"
-        },
-        "loop": {
-          "type": "object",
-          "required": ["items", "itemVar"],
-          "properties": {
-            "items": {
-              "type": "string",
-              "description": "Expression evaluating to array (e.g., data.products)"
+          "oneOf": [
+            {
+              "type": "array",
+              "description": "Child rules for container components",
+              "items": { "$ref": "#/definitions/FormCreateRule" }
             },
-            "itemVar": {
-              "type": "string",
-              "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
-              "description": "Variable name for loop item"
-            },
-            "indexVar": {
-              "type": "string",
-              "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
-              "description": "Variable name for loop index"
+            {
+              "type": "array",
+              "description": "Text content array (for compatibility)",
+              "items": { "type": "string" }
             }
-          },
-          "description": "Loop rendering configuration"
+          ]
         },
-        "hydration": {
-          "$ref": "#/definitions/HydrationStrategy"
-        }
-      }
-    },
-    "HydrationStrategy": {
-      "type": "object",
-      "description": "Client-side hydration configuration",
-      "properties": {
-        "strategy": {
+        "validate": {
+          "type": "array",
+          "description": "Validation rules",
+          "items": { "type": "object" }
+        },
+        "options": {
+          "type": "array",
+          "description": "Options for select/radio/checkbox",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "value": {}
+            }
+          }
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "Hide the field"
+        },
+        "display": {
+          "type": "boolean",
+          "description": "Display the field (affects layout)"
+        },
+        "className": {
           "type": "string",
-          "enum": ["immediate", "idle", "visible", "interaction", "never"],
-          "default": "immediate",
-          "description": "When to hydrate this component"
+          "description": "CSS class name"
         },
-        "priority": {
-          "type": "string",
-          "enum": ["critical", "high", "normal", "low"],
-          "default": "normal",
-          "description": "Hydration priority level"
-        },
-        "trigger": {
-          "type": "string",
-          "description": "Custom trigger selector (for interaction strategy)"
-        },
-        "viewport": {
+        "col": {
           "type": "object",
+          "description": "Grid column configuration",
           "properties": {
-            "rootMargin": { "type": "string", "default": "0px" },
-            "threshold": { "type": "number", "minimum": 0, "maximum": 1, "default": 0 }
-          },
-          "description": "IntersectionObserver options (for visible strategy)"
+            "span": { "type": "number" },
+            "offset": { "type": "number" }
+          }
         }
-      }
-    },
-    "Expression": {
-      "type": "string",
-      "pattern": "^\\{\\{.*\\}\\}$",
-      "description": "Template expression (e.g., {{ data.title }}, {{ formatDate(data.createdAt) }})"
+      },
+      "additionalProperties": true
     }
   }
 }

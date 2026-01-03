@@ -211,6 +211,9 @@ importers:
 
   packages/runtime:
     dependencies:
+      '@form-create/element-ui':
+        specifier: 3.2.20
+        version: 3.2.20(vue@3.5.26(typescript@5.9.3))
       vue:
         specifier: ^3.4.15
         version: 3.5.26(typescript@5.9.3)

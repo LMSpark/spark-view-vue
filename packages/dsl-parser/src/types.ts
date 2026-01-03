@@ -1,7 +1,62 @@
 /**
- * DSL AST 类型定义
+ * DSL AST 类型定义 - 基于 form-create 格式
  */
 
+/**
+ * form-create Rule 类型定义
+ */
+export interface FormCreateRule {
+  type: string;
+  field?: string;
+  title?: string;
+  value?: unknown;
+  props?: Record<string, unknown>;
+  children?: FormCreateRule[];
+  validate?: ValidationRule[];
+  options?: OptionItem[];
+  hidden?: boolean;
+  display?: boolean;
+  className?: string;
+  col?: GridCol;
+  [key: string]: unknown;
+}
+
+export interface ValidationRule {
+  type?: string;
+  required?: boolean;
+  message?: string;
+  trigger?: string | string[];
+  min?: number;
+  max?: number;
+  pattern?: string;
+  validator?: string;
+}
+
+export interface OptionItem {
+  label: string;
+  value: unknown;
+  disabled?: boolean;
+}
+
+export interface GridCol {
+  span?: number;
+  offset?: number;
+  push?: number;
+  pull?: number;
+}
+
+export interface FormCreateOption {
+  form?: Record<string, unknown>;
+  row?: Record<string, unknown>;
+  submitBtn?: boolean | Record<string, unknown>;
+  resetBtn?: boolean | Record<string, unknown>;
+  global?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+/**
+ * DSL 文档结构
+ */
 export interface DSLDocument {
   dslVersion: string;
   page?: PageNode; // 单页面模式（向后兼容）
@@ -17,8 +72,10 @@ export interface DSLDocument {
 export interface PageNode {
   id: string;
   title: string;
+  path?: string;
   meta?: PageMeta;
-  layout: ComponentNode;
+  rule: FormCreateRule[]; // 使用 form-create rule 数组
+  option?: FormCreateOption; // form-create option 配置
 }
 
 export interface PageMeta {
@@ -27,6 +84,9 @@ export interface PageMeta {
   author?: string;
 }
 
+/**
+ * 向后兼容的 ComponentNode (可选)
+ */
 export interface ComponentNode {
   type: string;
   id?: string;

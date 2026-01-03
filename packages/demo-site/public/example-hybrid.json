@@ -1,110 +1,81 @@
 {
-  "dslVersion": "1.0.0",
-  "name": "混合架构示例",
-  "description": "SSR首屏 + SPA导航的演示项目",
-  "data": {
-    "appName": "SPARK VIEW",
-    "version": "1.0.0"
-  },
+  "dslVersion": "1.0",
   "pages": [
     {
       "id": "home",
       "title": "首页",
-      "layout": "default",
-      "components": [
+      "path": "/",
+      "rule": [
         {
-          "type": "container",
-          "props": {
-            "class": "hero"
-          },
+          "type": "fc-container",
+          "props": { "class": "page-home" },
           "children": [
             {
-              "type": "heading",
-              "props": {
-                "level": 1,
-                "text": "欢迎使用 {{ data.appName }}"
-              }
-            },
-            {
-              "type": "paragraph",
-              "props": {
-                "text": "这是一个SSR首屏 + SPA导航的混合架构示例"
-              }
+              "type": "fc-hero",
+              "props": { "style": { "textAlign": "center", "padding": "60px 20px" } },
+              "children": [
+                {
+                  "type": "h1",
+                  "props": { "innerHTML": "欢迎使用 {{ data.appName }}" }
+                },
+                {
+                  "type": "p",
+                  "props": { "innerHTML": "这是一个SSR首屏 + SPA导航的混合架构示例" }
+                },
+                {
+                  "type": "ElButton",
+                  "props": { "type": "primary", "innerHTML": "了解更多", "onClick": "goToAbout" }
+                }
+              ]
             }
           ]
         }
-      ]
+      ],
+      "option": { "submitBtn": false }
     },
     {
       "id": "about",
       "title": "关于",
-      "layout": "default",
-      "components": [
+      "path": "/about",
+      "rule": [
         {
-          "type": "container",
+          "type": "fc-container",
+          "props": { "class": "page-about" },
           "children": [
             {
-              "type": "heading",
-              "props": {
-                "level": 1,
-                "text": "关于 {{ data.appName }}"
-              }
+              "type": "h1",
+              "props": { "innerHTML": "关于 {{ data.appName }}" }
             },
             {
-              "type": "paragraph",
-              "props": {
-                "text": "版本: {{ data.version }}"
-              }
+              "type": "p",
+              "props": { "innerHTML": "版本: {{ data.version }}" }
+            },
+            {
+              "type": "ElButton",
+              "props": { "innerHTML": "返回首页", "onClick": "goToHome" }
             }
           ]
         }
-      ]
-    },
-    {
-      "id": "contact",
-      "title": "联系我们",
-      "layout": "default",
-      "components": [
-        {
-          "type": "container",
-          "children": [
-            {
-              "type": "heading",
-              "props": {
-                "level": 1,
-                "text": "联系我们"
-              }
-            },
-            {
-              "type": "paragraph",
-              "props": {
-                "text": "欢迎联系 {{ data.appName }} 团队"
-              }
-            }
-          ]
-        }
-      ]
+      ],
+      "option": { "submitBtn": false }
     }
   ],
   "routes": [
     {
       "path": "/",
       "name": "home",
-      "pageId": "home"
+      "pageId": "home",
+      "meta": { "title": "首页" }
     },
     {
       "path": "/about",
       "name": "about",
-      "pageId": "about"
-    },
-    {
-      "path": "/contact",
-      "name": "contact",
-      "pageId": "contact"
+      "pageId": "about",
+      "meta": { "title": "关于" }
     }
   ],
-  "router": {
-    "mode": "history",
-    "base": "/"
+  "data": {
+    "appName": "SPARK VIEW",
+    "version": "1.0.0"
   }
 }

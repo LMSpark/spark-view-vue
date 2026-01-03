@@ -176,16 +176,17 @@ export async function initHybridApp(options: HybridBootstrapOptions) {
   return client;
 }
 
-// 自动启动（如果在浏览器环境）
+// 自动启动（如果在浏览器环境且配置了混合模式）
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
-    // 从meta标签或全局变量读取配置
-    const config = (window as { __HYBRID_CONFIG__?: HybridBootstrapOptions }).__HYBRID_CONFIG__ || {
-      apiBaseUrl: 'http://localhost:3000',
-      dslId: 'default',
-      initialPath: window.location.pathname
-    };
-
-    initHybridApp(config).catch(console.error);
+    // 只有在显式配置了 __HYBRID_CONFIG__ 时才启动混合模式
+    const config = (window as { __HYBRID_CONFIG__?: HybridBootstrapOptions }).__HYBRID_CONFIG__;
+    
+    if (config) {
+      console.log('🔄 Hybrid mode detected, initializing...');
+      initHybridApp(config).catch(console.error);
+    } else {
+      console.log('📦 Running in SPA mode (no hybrid config)');
+    }
   });
 }
