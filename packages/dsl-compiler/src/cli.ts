@@ -9,6 +9,19 @@ import { Command } from 'commander';
 import { StaticBuilder } from './static-builder';
 import * as path from 'path';
 
+interface BuildCommandOptions {
+  input: string;
+  output: string;
+  baseUrl: string;
+  publicPath: string;
+  minify: boolean;
+}
+
+interface ServeCommandOptions {
+  dir: string;
+  port: string;
+}
+
 const program = new Command();
 
 program
@@ -24,7 +37,7 @@ program
   .option('-b, --base-url <url>', '基础 URL', '')
   .option('-p, --public-path <path>', '资源路径', '/')
   .option('--minify', '压缩输出', false)
-  .action(async (options) => {
+  .action(async (options: BuildCommandOptions) => {
     console.log('🚀 SPARK VIEW 静态构建开始...\n');
     console.log('📄 输入文件:', options.input);
     console.log('📁 输出目录:', options.output);
@@ -65,13 +78,14 @@ program
   .description('预览构建后的静态站点')
   .option('-d, --dir <dir>', '静态文件目录', 'dist')
   .option('-p, --port <port>', '端口号', '8080')
-  .action(async (options) => {
-    const express = require('express');
+  .action(async (options: ServeCommandOptions) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const express = require('express') as typeof import('express');
     const app = express();
     
     app.use(express.static(path.resolve(options.dir)));
     
-    app.listen(options.port, () => {
+    app.listen(parseInt(options.port, 10), () => {
       console.log(`🌐 静态服务器已启动:`);
       console.log(`   http://localhost:${options.port}`);
       console.log('');

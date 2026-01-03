@@ -115,13 +115,25 @@ importers:
       '@spark-view/dsl-parser':
         specifier: workspace:*
         version: link:../dsl-parser
+      '@spark-view/ssr-server':
+        specifier: workspace:*
+        version: link:../ssr-server
+      commander:
+        specifier: ^11.1.0
+        version: 11.1.0
       vue:
         specifier: ^3.4.0
         version: 3.5.26(typescript@5.9.3)
     devDependencies:
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.25
       '@types/node':
         specifier: ^20.11.5
         version: 20.19.27
+      express:
+        specifier: ^4.18.2
+        version: 4.22.1
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
@@ -1014,6 +1026,10 @@ packages:
 
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
+
+  commander@11.1.0:
+    resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
+    engines: {node: '>=16'}
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
@@ -2728,6 +2744,8 @@ snapshots:
       color-name: 1.1.4
 
   color-name@1.1.4: {}
+
+  commander@11.1.0: {}
 
   concat-map@0.0.1: {}
 

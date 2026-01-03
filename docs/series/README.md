@@ -56,33 +56,85 @@
 # 第十一篇：混合架构 - SSR首屏 + SPA导航
 
 ## 摘要
-深入解析SPARK VIEW的混合架构设计，实现SSR快速首屏和SPA流畅导航的完美结合，同时支持按需编译和页面级缓存。
+深入解析SPARK VIEW的双架构设计：**运行时架构**（SSR + SPA混合）和**编译时架构**（纯SPA静态构建），实现快速首屏和灵活部署的完美平衡。
 
 ## 核心内容
-1. **架构流程**: 首次访问 → Redis缓存 → 按需编译 → Hydration → SPA激活
-2. **核心组件**: API Server + Redis缓存层 + Hybrid Client
-3. **按需编译**: 页面级懒加载，只编译当前访问的页面
-4. **缓存策略**: 页面级缓存（1小时TTL），增量更新
-5. **部署架构**: 单服务器 / 集群部署方案
 
-## 关键特性
+### 1. 双架构模式
+- **运行时架构**: SSR首屏 + SPA导航，动态编译，实时更新
+- **编译时架构**: 纯SPA静态构建，CDN部署，无后端依赖
+- **架构选择**: 根据业务场景选择合适的方案
+
+### 2. 运行时架构特性
 - ⚡ SSR首屏 TTFB < 100ms
 - ⚡ SPA导航切换 < 50ms
-- ⚡ 缓存命中率 > 80%
+- ⚡ Redis缓存命中率 > 80%
+- ⚡ 协商缓存减少 95% 传输量
 - 🔧 页面级增量更新
 - 🔧 支持水平扩展
 
-## API接口
-```bash
-GET  /api/render?dslId=xxx&path=/about  # SSR渲染
-POST /api/dsl                           # 保存DSL
-GET  /api/dsl/:id                       # 获取DSL
-PUT  /api/dsl/:id/pages/:pageId         # 更新单页面
-POST /api/cache/invalidate/:dslId       # 失效缓存
+### 3. 编译时架构特性
+- 📦 单HTML入口（index.html）
+- 📦 所有组件预编译（app.js）
+- 📦 CSS按pageId容器隔离
+- 📦 纯静态文件，CDN友好
+- 🚀 部署简单，无需Node.js/Redis
+
+### 4. 协商缓存机制
+```typescript
+// 时间戳管理
+spark:dsl:{id}:page:{pageId}:ts   // 页面时间戳
+spark:dsl:{id}:router:ts          // 路由时间戳
+
+// 304响应（节省95%传输）
+GET /api/render?path=/about&timestamp=1642394821000
+Response: 304 Not Modified
 ```
 
-## 部署示例
-详见 [11-hybrid-ssr-spa.md](./11-hybrid-ssr-spa.md) 中的 Docker Compose 配置。
+### 5. 样式隔离策略
+```css
+/* pageId容器隔离 */
+.page-home h1 { color: blue; }
+.page-about h1 { color: green; }
+.page-container { padding: 20px; } /* 全局 */
+```
+
+### 6. Mock模式
+- 前端独立开发，无需后端
+- Mock DSL + Mock编译器
+- 支持协商缓存模拟
+
+## API接口
+```bash
+# 运行时架构
+GET  /api/render?dslId=xxx&path=/about&timestamp=xxx  # SSR渲染（协商缓存）
+POST /api/dsl                                         # 保存DSL
+GET  /api/dsl/:id                                     # 获取DSL
+PUT  /api/dsl/:id/pages/:pageId                       # 更新单页面
+POST /api/cache/invalidate/:dslId                     # 失效缓存
+
+# 编译时架构
+npx spark-build build -i dsl.json -o dist             # 构建静态文件
+npx spark-build serve -d dist -p 8080                 # 预览构建结果
+```
+
+## 部署方案
+
+### 运行时架构
+- Nginx + Node.js + Redis
+- Docker Compose 集群部署
+- 支持水平扩展
+
+### 编译时架构
+- Nginx 静态服务器
+- Vercel / Netlify
+- AWS S3 + CloudFront
+- Docker 静态镜像
+
+## 相关文档
+- [协商缓存机制详解](../cache-negotiation.md)
+- [运行时 vs 编译时架构对比](../runtime-vs-buildtime.md)
+- [完整文档](./11-hybrid-ssr-spa.md)
 
 ---
 
@@ -182,3 +234,44 @@ navigation:
 ---
 
 **所有文章完整版本请查看**: `docs/series/` 目录
+---
+
+# 补充技术文档
+
+## 协商缓存机制详解 (`docs/cache-negotiation.md`)
+
+深入解析 HTTP 协商缓存在 SPARK VIEW 中的应用，实现客户端与服务端的高效缓存协商。
+
+### 核心内容
+1. **时间戳管理**: 页面级和路由级时间戳
+2. **304响应**: Not Modified，节省95%传输量
+3. **客户端缓存**: Map存储 + 时间戳验证
+4. **缓存失效**: 自动失效与手动失效
+5. **强刷支持**: Ctrl+F5 强制更新
+
+### 性能提升
+- 减少 95% 数据传输
+- 客户端缓存命中率 > 90%
+- 平均响应时间 < 10ms（304）
+
+---
+
+## 运行时 vs 编译时架构对比 (`docs/runtime-vs-buildtime.md`)
+
+详细对比 SPARK VIEW 的两种架构模式，帮助开发者选择最适合的方案。
+
+### 对比维度
+1. **性能指标**: 首屏时间、导航速度、文件大小
+2. **部署方式**: 服务器要求、CDN支持、运维成本
+3. **更新机制**: 热更新 vs 重构建
+4. **适用场景**: 内容频率、SEO需求、团队能力
+
+### 推荐方案
+| 场景 | 推荐架构 | 原因 |
+|-----|---------|------|
+| 新闻网站 | 运行时 | 内容频繁更新、需SEO |
+| 官网 | 编译时 | 内容稳定、简化部署 |
+| 后台管理 | 运行时 | 实时数据、个性化 |
+| 文档站 | 编译时 | 静态内容、CDN加速 |
+
+---

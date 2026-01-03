@@ -5,10 +5,25 @@
  */
 
 import { Parser } from '@spark-view/dsl-parser';
-import { Compiler } from './compiler';
+import { Compiler, type CompileOutput } from './compiler';
 import { SSRRenderer } from '@spark-view/ssr-server';
 import * as fs from 'fs';
 import * as path from 'path';
+
+interface DSLConfig {
+  name?: string;
+  dslVersion: string;
+  pages?: PageConfig[];
+  data?: Record<string, unknown>;
+  styles?: string;
+}
+
+interface PageConfig {
+  id: string;
+  title: string;
+  path: string;
+  data?: Record<string, unknown>;
+}
 
 export interface BuildOptions {
   dslPath: string;          // DSL 文件路径
@@ -101,7 +116,7 @@ export class StaticBuilder {
   /**
    * 生成入口 HTML（纯 SPA，不预渲染）
    */
-  private generateIndexHtml(dsl: any, options: BuildOptions): string {
+  private generateIndexHtml(dsl: DSLConfig, options: BuildOptions): string {
     const publicPath = options.publicPath || '/';
     const baseUrl = options.baseUrl || '';
 
@@ -141,12 +156,12 @@ export class StaticBuilder {
   /**
    * 生成应用 JS（包含所有组件定义，按 pageId 组织）
    */
-  private generateAppJs(dsl: any, compileResult: any, options: BuildOptions): string {
+  private generateAppJs(dsl: DSLConfig, _compileResult: CompileOutput, _options: BuildOptions): string {
     const components: Record<string, string> = {};
 
     // 为每个页面生成组件定义
     for (const page of dsl.pages || []) {
-      const componentCode = this.generateComponentCode(page, dsl.data);
+      const componentCode = this.generateComponentCode(page, dsl.data || {});
       components[page.id] = componentCode;
     }
 
@@ -190,7 +205,7 @@ console.log('🚀 当前路由:', router.currentRoute.value.path);
   /**
    * 生成单个组件的代码（使用 pageId 作为容器类名）
    */
-  private generateComponentCode(page: any, globalData: any): string {
+  private generateComponentCode(page: PageConfig, _globalData: Record<string, unknown>): string {
     // 使用 pageId 作为容器，实现样式隔离
     return `{
   name: '${page.id}',
@@ -207,7 +222,7 @@ console.log('🚀 当前路由:', router.currentRoute.value.path);
   /**
    * 生成路由配置 JS
    */
-  private generateRouterJs(compileResult: any, options: BuildOptions): string {
+  private generateRouterJs(compileResult: CompileOutput, _options: BuildOptions): string {
     const routerConfig = compileResult.routerConfig || '[]';
     
     return `
@@ -236,7 +251,7 @@ router.beforeEach((to, from, next) => {
   /**
    * 生成样式文件（使用 pageId 容器隔离）
    */
-  private generateCss(dsl: any, options: BuildOptions): string {
+  private generateCss(dsl: DSLConfig, _options: BuildOptions): string {
     // 基础样式 + 按 pageId 隔离的页面样式
     return `
 /* SPARK VIEW - 静态构建样式（SPA 模式） */
@@ -266,7 +281,7 @@ body {
 }
 
 /* 按 pageId 隔离的样式（关键！） */
-${(dsl.pages || []).map((page: any) => `
+${(dsl.pages || []).map((page: PageConfig) => `
 /* 页面: ${page.title} (${page.id}) */
 .page-${page.id} {
   /* 页面特定样式 */

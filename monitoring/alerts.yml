@@ -1,0 +1,87 @@
+groups:
+  - name: spark_view_alerts
+    interval: 30s
+    rules:
+      # API Server 告警
+      - alert: ApiServerDown
+        expr: up{job="api-server"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API Server 实例宕机"
+          description: "API Server {{ $labels.instance }} 已经宕机超过 1 分钟"
+
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds{quantile="0.95"} > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API 响应时间过高"
+          description: "95分位响应时间超过 1 秒，当前值: {{ $value }}s"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "错误率过高"
+          description: "5xx 错误率超过 5%，当前值: {{ $value }}"
+
+      - alert: LowCacheHitRate
+        expr: cache_hit_rate < 0.7
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "缓存命中率过低"
+          description: "缓存命中率低于 70%，当前值: {{ $value }}"
+
+      # Redis 告警
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis 实例宕机"
+          description: "Redis {{ $labels.instance }} 已经宕机超过 1 分钟"
+
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis 内存使用率过高"
+          description: "Redis 内存使用率超过 90%，当前值: {{ $value }}"
+
+      # 系统资源告警
+      - alert: HighCpuUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU 使用率过高"
+          description: "实例 {{ $labels.instance }} CPU 使用率超过 80%，当前值: {{ $value }}%"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "内存使用率过高"
+          description: "实例 {{ $labels.instance }} 内存使用率超过 85%，当前值: {{ $value }}%"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "磁盘空间不足"
+          description: "实例 {{ $labels.instance }} 磁盘剩余空间低于 10%"

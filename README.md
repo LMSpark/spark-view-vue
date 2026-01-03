@@ -49,6 +49,8 @@ spark-view-vue/
 
 - Node.js >= 16.0.0
 - pnpm >= 8.0.0
+- Docker & Docker Compose（生产部署）
+- Redis（运行时架构）
 
 ### 安装依赖
 
@@ -75,7 +77,37 @@ pnpm dev:demo
 
 # 启动 SSR 服务器
 pnpm dev:ssr
+
+# 启动 API Server（运行时架构）
+pnpm dev:api
 ```
+
+### 生产部署
+
+#### 方式1：Docker 一键部署
+
+```bash
+# Linux/Mac
+./scripts/deploy-prod.sh
+
+# Windows
+scripts\deploy-prod.bat
+```
+
+#### 方式2：编译时架构（纯 SPA）
+
+```bash
+# 构建静态文件
+pnpm build:static
+
+# 部署到 Vercel
+pnpm deploy:vercel
+
+# 部署到 Netlify
+pnpm deploy:netlify
+```
+
+📖 **完整部署指南**: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ### 验证完整链路
 
@@ -215,16 +247,11 @@ node scripts/performance-test.js
 - LCP（Largest Contentful Paint）
 - Hydration Cost
 
-## 🔄 CI/CD
+## � 文档
 
-GitHub Actions 自动执行：
+### 系列文章
 
-- **CI Workflow**：Lint → Build → Test（Node 16/18 矩阵）
-- **Deploy Workflow**：自动部署 demo-site 到 GitHub Pages
-
-## 📚 系列文章
-
-在 [docs/series](./docs/series) 目录中提供了 9 篇深度技术文章：
+在 [docs/series](./docs/series) 目录中提供了完整的技术文章：
 
 1. [设计 DSL Schema 与版本策略](./docs/series/01-dsl-schema-design.md)
 2. [DSL 编译链：Lexer → AST → IR](./docs/series/02-compiler-implementation.md)
@@ -235,6 +262,51 @@ GitHub Actions 自动执行：
 7. [边缘部署与缓存回源策略](./docs/series/07-edge-deployment.md)
 8. [智能编译与运行时裁剪](./docs/series/08-intelligent-compilation.md)
 9. [监控、回滚与演进路线](./docs/series/09-monitoring-evolution.md)
+10. [路由系统与 SPA 架构](./docs/series/10-router-spa-architecture.md)
+11. [混合架构 - SSR首屏 + SPA导航](./docs/series/11-hybrid-ssr-spa.md)
+
+### 补充文档
+
+- 📖 [生产环境部署指南](./DEPLOYMENT.md) - Docker、云平台、监控完整方案
+- 🔄 [协商缓存机制详解](./docs/cache-negotiation.md) - 304响应优化
+- 🏗️ [运行时 vs 编译时架构对比](./docs/runtime-vs-buildtime.md) - 架构选择指南
+
+## 🏭 生产环境
+
+### 架构选择
+
+**运行时架构（SSR + SPA）**：
+- ⚡ 首屏 TTFB < 100ms
+- 🔄 实时更新，无需重新构建
+- 📊 适合内容频繁变化的场景
+
+**编译时架构（纯 SPA）**：
+- 📦 纯静态文件，CDN 友好
+- 🚀 部署简单，无需后端
+- 💰 运维成本低
+
+### 部署方案
+
+```bash
+# Docker Compose 一键部署
+docker-compose up -d
+
+# 访问服务
+http://localhost          # Nginx 反向代理
+http://localhost/api      # API Server
+http://localhost:9090     # Prometheus 监控
+http://localhost:3001     # Grafana 可视化
+```
+
+详见：[完整部署指南](./DEPLOYMENT.md)
+
+## 🔄 CI/CD
+
+GitHub Actions 自动执行：
+
+- **CI Workflow**：Lint → Build → Test（Node 16/18 矩阵）
+- **Deploy Workflow**：自动部署 demo-site 到 GitHub Pages
+- **Docker Build**：自动构建并推送 Docker 镜像
 
 ## 🤝 贡献指南
 

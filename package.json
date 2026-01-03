@@ -6,8 +6,12 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r --stream build",
+    "build:prod": "pnpm -r --stream build && pnpm build:static",
     "build:static": "pnpm --filter @spark-view/dsl-compiler exec tsx src/cli.ts build -i",
+    "start:prod": "pnpm --filter @spark-view/api-server start",
+    "start:all": "concurrently \"pnpm start:prod\" \"pnpm --filter demo-site preview\"",
     "test": "pnpm -r --stream test",
+    "test:e2e": "playwright test",
     "typecheck": "pnpm -r --parallel exec tsc --noEmit --strict",
     "lint": "eslint --ext .ts,.vue \"packages/**/src/**/*.{ts,vue}\"",
     "format": "prettier --write \"**/*.{ts,vue,json,md}\"",
@@ -15,7 +19,12 @@
     "dev:ssr": "pnpm --filter @spark-view/ssr-server dev",
     "dev:api": "pnpm --filter @spark-view/api-server dev",
     "validate": "bash scripts/validate.sh",
-    "clean": "pnpm -r --stream clean && rm -rf node_modules"
+    "clean": "pnpm -r --stream clean && rm -rf node_modules",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "deploy:vercel": "vercel --prod",
+    "deploy:netlify": "netlify deploy --prod"
   },
   "keywords": [
     "vue",
