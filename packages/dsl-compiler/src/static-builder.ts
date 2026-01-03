@@ -56,18 +56,13 @@ export class StaticBuilder {
       // 3. 创建输出目录
       this.ensureDir(options.outputDir);
 
-      // 4. 为每个路由生成 HTML 文件
-      for (const route of dsl.routes || []) {
-        const htmlPath = this.getHtmlPath(route.path, options.outputDir);
-        const html = await this.generatePageHtml(dsl, route, compileResult, options);
-        
-        this.ensureDir(path.dirname(htmlPath));
-        fs.writeFileSync(htmlPath, html, 'utf-8');
-        
-        pages.push(htmlPath);
-      }
+      // 4. 生成单个入口 HTML（不预渲染）
+      const htmlPath = path.join(options.outputDir, 'index.html');
+      const html = this.generateIndexHtml(dsl, options);
+      fs.writeFileSync(htmlPath, html, 'utf-8');
+      pages.push(htmlPath);
 
-      // 5. 生成应用入口 JS（包含所有组件）
+      // 5. 生成应用 JS（包含所有组件，按 pageId 组织）
       const appJsPath = path.join(options.outputDir, 'app.js');
       const appJs = this.generateAppJs(dsl, compileResult, options);
       fs.writeFileSync(appJsPath, appJs, 'utf-8');
@@ -79,7 +74,7 @@ export class StaticBuilder {
       fs.writeFileSync(routerJsPath, routerJs, 'utf-8');
       assets.push(routerJsPath);
 
-      // 7. 生成样式文件
+      // 7. 生成样式文件（按 pageId 隔离）
       const cssPath = path.join(options.outputDir, 'app.css');
       const css = this.generateCss(dsl, options);
       fs.writeFileSync(cssPath, css, 'utf-8');
@@ -104,49 +99,39 @@ export class StaticBuilder {
   }
 
   /**
-   * 生成单个页面的完整 HTML
+   * 生成入口 HTML（纯 SPA，不预渲染）
    */
-  private async generatePageHtml(
-    dsl: any,
-    route: any,
-    compileResult: any,
-    options: BuildOptions
-  ): Promise<string> {
-    // SSR 渲染当前页面
-    const renderResult = await this.renderer.render(JSON.stringify(dsl), {
-      routePath: route.path
-    });
-
+  private generateIndexHtml(dsl: any, options: BuildOptions): string {
     const publicPath = options.publicPath || '/';
     const baseUrl = options.baseUrl || '';
 
-    // 生成完整的 HTML 文档
     return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${route.meta?.title || dsl.name || 'SPARK VIEW'}</title>
+  <title>${dsl.name || 'SPARK VIEW'}</title>
   <base href="${baseUrl}/">
   <link rel="stylesheet" href="${publicPath}app.css">
 </head>
 <body>
-  <div id="app">${renderResult.html}</div>
+  <!-- SPA 挂载点，不预渲染 -->
+  <div id="app"></div>
   
-  <!-- 预加载的初始数据 -->
+  <!-- 构建时元数据 -->
   <script>
-    window.__INITIAL_STATE__ = ${JSON.stringify({
-      currentPath: route.path,
-      pageId: route.pageId,
+    window.__BUILD_INFO__ = ${JSON.stringify({
       dslVersion: dsl.dslVersion,
-      buildTime: Date.now()
+      buildTime: Date.now(),
+      buildMode: 'static'
     })};
   </script>
   
   <!-- Vue 运行时 -->
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-router@4/dist/vue-router.global.prod.js"></script>
   
-  <!-- 应用代码（已包含所有组件） -->
+  <!-- 应用代码（所有组件已编译） -->
   <script src="${publicPath}router.js"></script>
   <script src="${publicPath}app.js"></script>
 </body>
@@ -154,7 +139,7 @@ export class StaticBuilder {
   }
 
   /**
-   * 生成应用 JS（包含所有组件定义）
+   * 生成应用 JS（包含所有组件定义，按 pageId 组织）
    */
   private generateAppJs(dsl: any, compileResult: any, options: BuildOptions): string {
     const components: Record<string, string> = {};
@@ -166,18 +151,18 @@ export class StaticBuilder {
     }
 
     return `
-// SPARK VIEW - 静态构建版本
+// SPARK VIEW - 静态构建版本（纯 SPA）
 // 构建时间: ${new Date().toISOString()}
 // DSL 版本: ${dsl.dslVersion}
 
-const { createApp, h } = Vue;
+const { createApp } = Vue;
 
-// 组件注册表（所有组件已编译）
+// 组件注册表（所有组件已编译，按 pageId 组织）
 const components = {
 ${Object.entries(components).map(([id, code]) => `  '${id}': ${code}`).join(',\n')}
 };
 
-// 根组件
+// 根组件（纯 SPA，无预渲染内容）
 const RootComponent = {
   template: '<router-view></router-view>'
 };
@@ -193,23 +178,23 @@ Object.entries(components).forEach(([name, component]) => {
 // 使用路由
 app.use(router);
 
-// Hydration（接管 SSR 内容）
+// 挂载应用（纯客户端渲染）
 app.mount('#app');
 
-console.log('✅ SPARK VIEW 应用已启动');
+console.log('✅ SPARK VIEW 应用已启动（纯 SPA 模式）');
 console.log('📦 预编译组件数:', Object.keys(components).length);
-console.log('🚀 初始路由:', window.__INITIAL_STATE__.currentPath);
+console.log('🚀 当前路由:', router.currentRoute.value.path);
 `;
   }
 
   /**
-   * 生成单个组件的代码
+   * 生成单个组件的代码（使用 pageId 作为容器类名）
    */
   private generateComponentCode(page: any, globalData: any): string {
-    // 简化的组件定义（实际需要从 DSL 的 components 结构生成）
+    // 使用 pageId 作为容器，实现样式隔离
     return `{
   name: '${page.id}',
-  template: \`<div class="page-${page.id}">
+  template: \`<div class="page-container page-${page.id}">
     <h1>${page.title}</h1>
     <!-- 组件内容从 DSL 编译而来 -->
   </div>\`,
@@ -249,14 +234,15 @@ router.beforeEach((to, from, next) => {
   }
 
   /**
-   * 生成样式文件
+   * 生成样式文件（使用 pageId 容器隔离）
    */
   private generateCss(dsl: any, options: BuildOptions): string {
-    // 基础样式 + DSL 定义的样式
+    // 基础样式 + 按 pageId 隔离的页面样式
     return `
-/* SPARK VIEW - 静态构建样式 */
+/* SPARK VIEW - 静态构建样式（SPA 模式） */
 /* 构建时间: ${new Date().toISOString()} */
 
+/* 全局样式 */
 * {
   margin: 0;
   padding: 0;
@@ -273,30 +259,43 @@ body {
   min-height: 100vh;
 }
 
-/* 页面容器 */
-${(dsl.pages || []).map((page: any) => `
-.page-${page.id} {
+/* 页面容器基础样式 */
+.page-container {
   padding: 2rem;
+  min-height: 100vh;
+}
+
+/* 按 pageId 隔离的样式（关键！） */
+${(dsl.pages || []).map((page: any) => `
+/* 页面: ${page.title} (${page.id}) */
+.page-${page.id} {
+  /* 页面特定样式 */
+}
+
+.page-${page.id} h1 {
+  color: #667eea;
+  margin-bottom: 1rem;
+}
+
+.page-${page.id} p {
+  margin-bottom: 0.5rem;
 }
 `).join('\n')}
 
 /* DSL 定义的自定义样式 */
 ${dsl.styles || ''}
-`;
-  }
 
-  /**
-   * 获取页面的 HTML 文件路径
-   */
-  private getHtmlPath(routePath: string, outputDir: string): string {
-    if (routePath === '/') {
-      return path.join(outputDir, 'index.html');
-    }
-    
-    // /about → about.html
-    // /user/profile → user/profile.html
-    const cleanPath = routePath.replace(/^\//, '').replace(/\/$/, '');
-    return path.join(outputDir, `${cleanPath}.html`);
+/* 路由过渡动画 */
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+`;
   }
 
   /**
