@@ -11,7 +11,7 @@ export interface DslStorageOptions {
 export class DslStorage {
   private store: Map<string, { dsl: DSLDocument; updatedAt: Date; version: number }>;
 
-  constructor(options?: DslStorageOptions) {
+  constructor(_options?: DslStorageOptions) {
     this.store = new Map();
   }
 
@@ -40,7 +40,7 @@ export class DslStorage {
   /**
    * 更新单个页面
    */
-  async updatePage(id: string, pageId: string, pageData: any): Promise<boolean> {
+  async updatePage(id: string, pageId: string, pageData: Partial<unknown>): Promise<boolean> {
     const record = this.store.get(id);
     if (!record) {
       return false;

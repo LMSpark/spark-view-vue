@@ -44,7 +44,7 @@ export default router;
   /**
    * 生成单个路由配置
    */
-  private generateRouteCode(route: RouteConfig, indent = ''): string {
+  private generateRouteCode(route: RouteConfig, _indent = ''): string {
     const parts: string[] = [];
 
     parts.push(`path: '${route.path}'`);

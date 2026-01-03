@@ -123,12 +123,12 @@ export class ApiServer {
           return res.status(404).json({ error: 'DSL not found' });
         }
 
+        // 解析DSL用于编译路由配置
+        const ast = this.parser.parse(JSON.stringify(dsl));
+        
         // 编译当前页面（SSR首屏）
         const renderResult = await this.renderer.render(JSON.stringify(dsl), { routePath: path });
         pageHtml = renderResult.html;
-
-        // 解析DSL用于编译路由配置
-        const ast = this.parser.parse(JSON.stringify(dsl));
         
         // 编译路由配置（SPA导航用）
         const compileResult = this.compiler.compile(ast);
@@ -179,7 +179,7 @@ export class ApiServer {
       const { id, dsl } = req.body;
 
       // 验证DSL格式
-      const ast = this.parser.parse(JSON.stringify(dsl));
+      this.parser.parse(JSON.stringify(dsl)); // 验证DSL格式是否正确
       
       // 保存到存储
       await this.storage.save(id, dsl);

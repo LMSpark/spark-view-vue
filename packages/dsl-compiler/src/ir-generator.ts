@@ -8,7 +8,6 @@ import {
   DSLDocument,
   ExpressionNode,
   RouteConfig,
-  NavigationConfig,
 } from '@spark-view/dsl-parser';
 
 export interface IRNode {

@@ -5,7 +5,7 @@
 import { DSLDocument } from '@spark-view/dsl-parser';
 import { IRGenerator, IRNode } from './ir-generator';
 import { VueRenderer, HydrationHint } from './vue-renderer';
-import { RouterGenerator, RouterCodeOutput } from './router-generator';
+import { RouterGenerator } from './router-generator';
 
 export interface CompileOutput {
   ssrBundle: string;

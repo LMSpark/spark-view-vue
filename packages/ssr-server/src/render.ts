@@ -35,7 +35,7 @@ export class SSRRenderer {
     const compileOutput = compile(ast, { extractCSS: true });
 
     // 步骤 3: 如果有路由配置，根据路径选择对应页面
-    let targetPage = this.getTargetPage(ast, context.routePath);
+    const targetPage = this.getTargetPage(ast, context.routePath);
 
     // 步骤 4: 动态执行生成的代码
     const renderModule = this.evalSSRBundle(compileOutput.ssrBundle);
