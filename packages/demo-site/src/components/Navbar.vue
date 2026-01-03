@@ -41,6 +41,7 @@ const route = useRoute();
 const menuItems: MenuItem[] = [
   { label: '首页', path: '/home', icon: '🏠' },
   { label: 'DSL编辑器', path: '/editor', icon: '✏️' },
+  { label: '混合架构', path: '/hybrid', icon: '🚀' },
   { label: '列表页', path: '/list', icon: '📋' },
 ];
 

@@ -49,6 +49,46 @@
 # 第七篇：边缘部署与缓存回源策略
 
 ## 摘要
+探讨如何通过 CDN 边缘节点部署 SSR 服务，实现全球低延迟访问。
+
+---
+
+# 第十一篇：混合架构 - SSR首屏 + SPA导航
+
+## 摘要
+深入解析SPARK VIEW的混合架构设计，实现SSR快速首屏和SPA流畅导航的完美结合，同时支持按需编译和页面级缓存。
+
+## 核心内容
+1. **架构流程**: 首次访问 → Redis缓存 → 按需编译 → Hydration → SPA激活
+2. **核心组件**: API Server + Redis缓存层 + Hybrid Client
+3. **按需编译**: 页面级懒加载，只编译当前访问的页面
+4. **缓存策略**: 页面级缓存（1小时TTL），增量更新
+5. **部署架构**: 单服务器 / 集群部署方案
+
+## 关键特性
+- ⚡ SSR首屏 TTFB < 100ms
+- ⚡ SPA导航切换 < 50ms
+- ⚡ 缓存命中率 > 80%
+- 🔧 页面级增量更新
+- 🔧 支持水平扩展
+
+## API接口
+```bash
+GET  /api/render?dslId=xxx&path=/about  # SSR渲染
+POST /api/dsl                           # 保存DSL
+GET  /api/dsl/:id                       # 获取DSL
+PUT  /api/dsl/:id/pages/:pageId         # 更新单页面
+POST /api/cache/invalidate/:dslId       # 失效缓存
+```
+
+## 部署示例
+详见 [11-hybrid-ssr-spa.md](./11-hybrid-ssr-spa.md) 中的 Docker Compose 配置。
+
+---
+
+# 第七篇：边缘部署与缓存回源策略（待完善）
+
+## 摘要
 探讨如何将 SSR 服务部署到边缘节点（Cloudflare Workers、Vercel Edge），实现全球低延迟访问。
 
 ## 核心内容

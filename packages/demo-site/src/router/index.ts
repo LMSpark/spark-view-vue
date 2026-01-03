@@ -6,6 +6,7 @@ import Home from '../views/Home.vue';
 import List from '../views/List.vue';
 import Detail from '../views/Detail.vue';
 import DslEditor from '../views/DslEditor.vue';
+import HybridDemo from '../views/HybridDemo.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -28,6 +29,15 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: 'DSL 编辑器',
       icon: '✏️',
+    },
+  },
+  {
+    path: '/hybrid',
+    name: 'hybrid',
+    component: HybridDemo,
+    meta: {
+      title: '混合架构演示',
+      icon: '🚀',
     },
   },
   {
