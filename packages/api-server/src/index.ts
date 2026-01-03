@@ -104,20 +104,39 @@ export class ApiServer {
 
   /**
    * SSR渲染 - 返回首屏HTML + 完整路由配置 + 懒加载组件
+   * 支持协商缓存（基于时间戳）
    */
   private async renderPage(req: Request, res: Response) {
     try {
       const { dslId, path } = req.query as { dslId: string; path: string };
+      const clientTimestamp = req.query.timestamp ? parseInt(req.query.timestamp as string, 10) : null;
 
-      // 1. 检查路由配置缓存
-      let routerConfig = await this.cache.getRouterConfig(dslId);
-      
-      // 2. 检查当前页面缓存
       const pageId = this.extractPageIdFromPath(path);
-      let pageHtml = await this.cache.getPage(dslId, pageId);
+
+      // 1. 获取缓存的页面和时间戳
+      const cachedPage = await this.cache.getPageWithTimestamp(dslId, pageId);
+      const cachedRouter = await this.cache.getRouterConfigWithTimestamp(dslId);
+
+      // 2. 检查客户端时间戳，决定是否返回 304
+      if (clientTimestamp && cachedPage && cachedRouter) {
+        const latestTimestamp = Math.max(cachedPage.timestamp, cachedRouter.timestamp);
+        
+        if (clientTimestamp >= latestTimestamp) {
+          // 客户端缓存是最新的，返回 304
+          return res.status(304).json({
+            status: 'not-modified',
+            timestamp: latestTimestamp
+          });
+        }
+      }
+
+      let pageHtml: string;
+      let routerConfig: string;
+      let pageTimestamp: number;
+      let routerTimestamp: number;
 
       // 3. 如果缓存未命中，执行编译
-      if (!routerConfig || !pageHtml) {
+      if (!cachedPage || !cachedRouter) {
         const dsl = await this.storage.get(dslId);
         if (!dsl) {
           return res.status(404).json({ error: 'DSL not found' });
@@ -134,9 +153,15 @@ export class ApiServer {
         const compileResult = this.compiler.compile(ast);
         routerConfig = compileResult.routerConfig || '';
 
-        // 缓存结果
-        await this.cache.setPage(dslId, pageId, pageHtml, this.cacheTtl);
-        await this.cache.setRouterConfig(dslId, routerConfig, this.cacheTtl);
+        // 缓存结果并设置时间戳
+        pageTimestamp = await this.cache.setPageWithTimestamp(dslId, pageId, pageHtml, this.cacheTtl);
+        routerTimestamp = await this.cache.setRouterConfigWithTimestamp(dslId, routerConfig, this.cacheTtl);
+      } else {
+        // 使用缓存
+        pageHtml = cachedPage.content;
+        routerConfig = cachedRouter.config;
+        pageTimestamp = cachedPage.timestamp;
+        routerTimestamp = cachedRouter.timestamp;
       }
 
       // 4. 获取懒加载组件列表
@@ -146,7 +171,9 @@ export class ApiServer {
       }
       const lazyComponents = this.getLazyComponentUrls(dsl, pageId);
 
-      // 5. 返回混合架构响应
+      const latestTimestamp = Math.max(pageTimestamp, routerTimestamp);
+
+      // 5. 返回混合架构响应（带时间戳）
       res.json({
         html: pageHtml,                    // SSR首屏HTML
         routerConfig,                      // 完整路由配置（客户端SPA用）
@@ -157,8 +184,10 @@ export class ApiServer {
           pageId
         },
         meta: {
-          cacheHit: !!pageHtml,
-          timestamp: Date.now()
+          cacheHit: !!(cachedPage && cachedRouter),
+          timestamp: latestTimestamp,      // 最新时间戳
+          pageTimestamp,                   // 页面时间戳
+          routerTimestamp                  // 路由时间戳
         }
       });
 

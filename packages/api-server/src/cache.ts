@@ -31,6 +31,50 @@ export class CacheManager {
   }
 
   /**
+   * 获取页面缓存和时间戳
+   */
+  async getPageWithTimestamp(dslId: string, pageId: string): Promise<{ content: string; timestamp: number } | null> {
+    const contentKey = this.getPageKey(dslId, pageId);
+    const timestampKey = this.getPageTimestampKey(dslId, pageId);
+    
+    const [content, timestamp] = await this.redis.mget(contentKey, timestampKey);
+    
+    if (!content || !timestamp) {
+      return null;
+    }
+    
+    return {
+      content,
+      timestamp: parseInt(timestamp, 10)
+    };
+  }
+
+  /**
+   * 设置页面缓存和时间戳
+   */
+  async setPageWithTimestamp(dslId: string, pageId: string, html: string, ttl: number = 3600): Promise<number> {
+    const timestamp = Date.now();
+    const contentKey = this.getPageKey(dslId, pageId);
+    const timestampKey = this.getPageTimestampKey(dslId, pageId);
+    
+    await Promise.all([
+      this.redis.setex(contentKey, ttl, html),
+      this.redis.setex(timestampKey, ttl, timestamp.toString())
+    ]);
+    
+    return timestamp;
+  }
+
+  /**
+   * 获取页面时间戳
+   */
+  async getPageTimestamp(dslId: string, pageId: string): Promise<number | null> {
+    const key = this.getPageTimestampKey(dslId, pageId);
+    const timestamp = await this.redis.get(key);
+    return timestamp ? parseInt(timestamp, 10) : null;
+  }
+
+  /**
    * 获取路由配置缓存（文档级别）
    */
   async getRouterConfig(dslId: string): Promise<string | null> {
@@ -44,6 +88,41 @@ export class CacheManager {
   async setRouterConfig(dslId: string, config: string, ttl: number = 3600): Promise<void> {
     const key = this.getRouterKey(dslId);
     await this.redis.setex(key, ttl, config);
+  }
+
+  /**
+   * 获取路由配置和时间戳
+   */
+  async getRouterConfigWithTimestamp(dslId: string): Promise<{ config: string; timestamp: number } | null> {
+    const configKey = this.getRouterKey(dslId);
+    const timestampKey = this.getRouterTimestampKey(dslId);
+    
+    const [config, timestamp] = await this.redis.mget(configKey, timestampKey);
+    
+    if (!config || !timestamp) {
+      return null;
+    }
+    
+    return {
+      config,
+      timestamp: parseInt(timestamp, 10)
+    };
+  }
+
+  /**
+   * 设置路由配置和时间戳
+   */
+  async setRouterConfigWithTimestamp(dslId: string, config: string, ttl: number = 3600): Promise<number> {
+    const timestamp = Date.now();
+    const configKey = this.getRouterKey(dslId);
+    const timestampKey = this.getRouterTimestampKey(dslId);
+    
+    await Promise.all([
+      this.redis.setex(configKey, ttl, config),
+      this.redis.setex(timestampKey, ttl, timestamp.toString())
+    ]);
+    
+    return timestamp;
   }
 
   /**
@@ -127,8 +206,16 @@ export class CacheManager {
     return `${this.prefix}dsl:${dslId}:page:${pageId}`;
   }
 
+  private getPageTimestampKey(dslId: string, pageId: string): string {
+    return `${this.prefix}dsl:${dslId}:page:${pageId}:ts`;
+  }
+
   private getRouterKey(dslId: string): string {
     return `${this.prefix}dsl:${dslId}:router`;
+  }
+
+  private getRouterTimestampKey(dslId: string): string {
+    return `${this.prefix}dsl:${dslId}:router:ts`;
   }
 
   private getComponentKey(dslId: string, componentName: string): string {

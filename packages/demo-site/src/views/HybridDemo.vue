@@ -48,6 +48,10 @@
       <button @click="uploadDSL" class="btn-secondary" v-if="!useMock">
         上传示例DSL
       </button>
+
+      <button @click="clearClientCache" class="btn-warning" v-if="!useMock">
+        🗑️ 清除客户端缓存
+      </button>
     </div>
 
     <div v-if="loading" class="loading">
@@ -68,8 +72,19 @@
         <pre>{{ renderData.html.substring(0, 500) }}{{ renderData.html.length > 500 ? '...' : '' }}</pre>
         <div class="stats">
           <span v-if="renderData.meta.mode">模式: {{ renderData.meta.mode }}</span>
-          <span>缓存命中: {{ renderData.meta.cacheHit ? '✅' : '❌' }}</span>
+          <span v-if="renderData.meta.cacheSource">
+            缓存来源: {{ renderData.meta.cacheSource === 'client-304' ? '客户端 (304)' : '服务端' }}
+          </span>
+          <span v-else>
+            缓存命中: {{ renderData.meta.cacheHit ? '✅ 服务端' : '❌ 新编译' }}
+          </span>
           <span>时间戳: {{ new Date(renderData.meta.timestamp).toLocaleTimeString() }}</span>
+          <span v-if="renderData.meta.pageTimestamp">
+            页面时间戳: {{ new Date(renderData.meta.pageTimestamp).toLocaleTimeString() }}
+          </span>
+          <span v-if="renderData.meta.routerTimestamp">
+            路由时间戳: {{ new Date(renderData.meta.routerTimestamp).toLocaleTimeString() }}
+          </span>
         </div>
       </div>
 
@@ -98,6 +113,11 @@
 
     <div class="architecture-diagram">
       <h3>🏗️ 混合架构流程</h3>
+      
+      <div v-if="!useMock && clientCache.size > 0" class="cache-info">
+        💾 客户端缓存: {{ clientCache.size }} 个页面
+      </div>
+
       <div class="diagram">
         <div class="step">
           <div class="step-number">1</div>
@@ -145,6 +165,14 @@ const useMock = ref(true); // 默认使用 Mock 模式
 const loading = ref(false);
 const error = ref('');
 const renderData = ref<any>(null);
+
+// 客户端缓存：存储时间戳和内容
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+
+const clientCache = new Map<string, CacheEntry>();
 
 // Mock DSL 数据
 const mockDSL = {
@@ -303,7 +331,6 @@ function mockCompile(dsl: any, path: string) {
 async function loadSSRContent() {
   loading.value = true;
   error.value = '';
-  renderData.value = null;
 
   try {
     if (useMock.value) {
@@ -311,15 +338,47 @@ async function loadSSRContent() {
       await new Promise(resolve => setTimeout(resolve, 500)); // 模拟网络延迟
       renderData.value = mockCompile(mockDSL, currentPath.value);
     } else {
-      // 真实 API 模式
-      const url = `${apiBaseUrl.value}/api/render?dslId=${dslId.value}&path=${currentPath.value}`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // 真实 API 模式 - 带时间戳协商缓存
+      const cacheKey = `${dslId.value}:${currentPath.value}`;
+      const cached = clientCache.get(cacheKey);
+      
+      // 构建请求 URL，带上客户端时间戳
+      let url = `${apiBaseUrl.value}/api/render?dslId=${dslId.value}&path=${currentPath.value}`;
+      if (cached?.timestamp) {
+        url += `&timestamp=${cached.timestamp}`;
       }
 
-      renderData.value = await response.json();
+      const response = await fetch(url);
+
+      if (response.status === 304) {
+        // 304 Not Modified - 使用客户端缓存
+        console.log('✅ 使用客户端缓存 (304)');
+        if (cached) {
+          renderData.value = {
+            ...cached.data,
+            meta: {
+              ...cached.data.meta,
+              cacheHit: true,
+              cacheSource: 'client-304'
+            }
+          };
+        }
+      } else if (response.ok) {
+        // 200 OK - 服务器返回新内容
+        const data = await response.json();
+        renderData.value = data;
+        
+        // 更新客户端缓存
+        if (data.meta?.timestamp) {
+          clientCache.set(cacheKey, {
+            data,
+            timestamp: data.meta.timestamp
+          });
+          console.log(`📦 缓存已更新，时间戳: ${data.meta.timestamp}`);
+        }
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
     }
   } catch (err: any) {
     error.value = err.message || '加载失败';
@@ -373,6 +432,13 @@ async function uploadDSL() {
   } finally {
     loading.value = false;
   }
+}
+
+function clearClientCache() {
+  const count = clientCache.size;
+  clientCache.clear();
+  alert(`✅ 已清除 ${count} 个客户端缓存项`);
+  console.log('🗑️ 客户端缓存已清空');
 }
 </script>
 
@@ -506,6 +572,15 @@ button {
   opacity: 0.9;
 }
 
+.btn-warning {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-warning:hover {
+  opacity: 0.9;
+}
+
 .loading {
   text-align: center;
   font-size: 1.5rem;
@@ -608,6 +683,16 @@ button {
 .architecture-diagram h3 {
   color: #667eea;
   margin-top: 0;
+}
+
+.cache-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-align: center;
 }
 
 .diagram {
