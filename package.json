@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r --stream build",
+    "build:static": "pnpm --filter @spark-view/dsl-compiler exec tsx src/cli.ts build -i",
     "test": "pnpm -r --stream test",
     "typecheck": "pnpm -r --parallel exec tsc --noEmit --strict",
     "lint": "eslint --ext .ts,.vue \"packages/**/src/**/*.{ts,vue}\"",
