@@ -19,7 +19,8 @@
   "author": "SPARK.View Team",
   "license": "MIT",
   "dependencies": {
-    "vue": "^3.4.15"
+    "vue": "^3.4.15",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",

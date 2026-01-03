@@ -37,7 +37,7 @@ export class Compiler {
   /**
    * 编译 DSL 为 Vue SSR Bundle
    */
-  compile(dsl: DSLDocument): CompileOutput {
+  compile(dsl: DSLDocument, options: CompilerOptions = {}): CompileOutput {
     // 步骤 1: 生成 IR
     const ir = this.irGenerator.generate(dsl);
 
@@ -48,10 +48,12 @@ export class Compiler {
     const clientChunks = this.generateClientChunks(hydrationHints);
 
     // 步骤 4: 提取关键 CSS（可选）
+    const criticalCSS = options.extractCSS ? this.extractCriticalCSS(dsl) : undefined;
+
     // 步骤 5: 生成路由配置代码（如果有路由定义）
-    let routerOutput: RouterCodeOutput | undefined;
+    let routerConfig: string | undefined;
     if (dsl.routes && dsl.routes.length > 0) {
-      routerOutput = this.routerGenerator.generateRouterConfig(dsl.routes, dsl.router);
+      routerConfig = this.routerGenerator.generateRouterConfig(dsl.routes, dsl.router);
     }
 
     // 步骤 6: 生成导航组件（如果有导航配置）
@@ -66,10 +68,8 @@ export class Compiler {
       criticalCSS,
       hydrationHints,
       ir,
-      routerConfig: routerOutput?.routerCode,
-      navigationComponent: routerOutput?.navigationComponent || navigationComponentiticalCSS,
-      hydrationHints,
-      ir,
+      routerConfig,
+      navigationComponent,
     };
   }
 
@@ -97,6 +97,8 @@ export class Compiler {
 
   /**
    * 提取关键 CSS（简化实现）
+  /**
+   * 提取关键 CSS（Critical CSS）
    */
   private extractCriticalCSS(_dsl: DSLDocument): string {
     // 遍历 DSL，提取内联样式
@@ -104,8 +106,7 @@ export class Compiler {
     return `
       /* Critical CSS */
       * { box-sizing: border-box; }
-      body { margin: 0; font-fa
-export * from './router-generator';mily: sans-serif; }
+      body { margin: 0; font-family: sans-serif; }
     `;
   }
 }
@@ -115,8 +116,10 @@ export * from './router-generator';mily: sans-serif; }
  */
 export function compile(dsl: DSLDocument, options?: CompilerOptions): CompileOutput {
   const compiler = new Compiler(options);
-  return compiler.compile(dsl);
+  return compiler.compile(dsl, options);
 }
 
 export * from './ir-generator';
 export * from './vue-renderer';
+export * from './router-generator';
+

@@ -174,7 +174,7 @@ export class IRGenerator {
       path: route.path,
       name: route.name,
       component: route.component || route.pageId || '',
-      meta: route.meta,
+      meta: route.meta as Record<string, unknown>,
       children: route.children?.map((child) => this.transformRoute(child)),
       redirect: route.redirect,
     };

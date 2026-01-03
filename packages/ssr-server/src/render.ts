@@ -19,11 +19,13 @@ export interface RenderOutput {
   criticalCSS?: string;
   routerConfig?: string; // 添加路由配置代码
   navigationComponent?: string; // 添加导航组件代码
+  lazyComponents?: Record<string, string>; // 懒加载组件代码映射
+  allPages?: Array<{ id: string; name: string; path: string }>; // 所有页面信息
 }
 
 export class SSRRenderer {
   /**
-   * 渲染 DSL 为 HTML
+   * 渲染 DSL 为 HTML（支持混合架构）
    */
   async render(dslContent: string, context: RenderContext = {}): Promise<RenderOutput> {
     // 步骤 1: 解析 DSL
@@ -49,12 +51,21 @@ export class SSRRenderer {
     const app = renderModule.createApp(renderContext);
     const html = await renderToString(app);
 
+    // 步骤 6: 收集所有页面信息（用于懒加载）
+    const allPages = this.getAllPages(ast);
+
+    // 步骤 7: 生成懒加载组件代码（除了当前页面）
+    const currentPageId = targetPage?.id;
+    const lazyComponents = this.generateLazyComponents(ast, currentPageId);
+
     return {
       html,
       hydrationHints: compileOutput.hydrationHints,
       criticalCSS: compileOutput.criticalCSS,
       routerConfig: compileOutput.routerConfig,
       navigationComponent: compileOutput.navigationComponent,
+      lazyComponents,
+      allPages,
     };
   }
 
@@ -141,5 +152,77 @@ export class SSRRenderer {
       console.error('Failed to eval SSR bundle:', err);
       throw err;
     }
+  }
+
+  /**
+   * 获取所有页面信息
+   */
+  private getAllPages(ast: DSLDocument): Array<{ id: string; name: string; path: string }> {
+    const pages: Array<{ id: string; name: string; path: string }> = [];
+
+    if (ast.pages && ast.routes) {
+      ast.pages.forEach((page) => {
+        // 查找对应的路由
+        const route = this.findRouteByPageId(ast.routes!, page.id);
+        pages.push({
+          id: page.id,
+          name: route?.name || page.id,
+          path: route?.path || `/${page.id}`,
+        });
+      });
+    } else if (ast.page) {
+      // 单页面模式
+      pages.push({
+        id: ast.page.id || 'main',
+        name: 'Main',
+        path: '/',
+      });
+    }
+
+    return pages;
+  }
+
+  /**
+   * 根据页面ID查找路由
+   */
+  private findRouteByPageId(routes: any[], pageId: string): any {
+    for (const route of routes) {
+      if (route.pageId === pageId || route.component === pageId) {
+        return route;
+      }
+      if (route.children) {
+        const found = this.findRouteByPageId(route.children, pageId);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 生成懒加载组件代码（仅包含其他页面）
+   */
+  private generateLazyComponents(
+    ast: DSLDocument,
+    currentPageId?: string
+  ): Record<string, string> {
+    const lazyComponents: Record<string, string> = {};
+
+    if (ast.pages) {
+      ast.pages.forEach((page) => {
+        if (page.id !== currentPageId) {
+          // 简单的组件代码字符串（实际应编译完整的页面）
+          lazyComponents[page.id] = `
+export default {
+  name: '${page.id}',
+  data() {
+    return {};
+  },
+  template: \`<div>Lazy loaded: ${page.id}</div>\`
+}`;
+        }
+      });
+    }
+
+    return lazyComponents;
   }
 }
