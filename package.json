@@ -7,10 +7,12 @@
   "scripts": {
     "build": "pnpm -r --stream build",
     "test": "pnpm -r --stream test",
+    "typecheck": "pnpm -r --parallel exec tsc --noEmit --strict",
     "lint": "eslint --ext .ts,.vue \"packages/**/src/**/*.{ts,vue}\"",
     "format": "prettier --write \"**/*.{ts,vue,json,md}\"",
     "dev:demo": "pnpm --filter demo-site dev",
     "dev:ssr": "pnpm --filter @spark-view/ssr-server dev",
+    "dev:api": "pnpm --filter @spark-view/api-server dev",
     "validate": "bash scripts/validate.sh",
     "clean": "pnpm -r --stream clean && rm -rf node_modules"
   },
