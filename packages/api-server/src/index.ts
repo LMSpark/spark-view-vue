@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { CacheManager } from './cache';
 import { DslStorage } from './storage';
-import { Parser } from '@spark-view/dsl-parser';
+import { Parser, DSLDocument } from '@spark-view/dsl-parser';
 import { Compiler } from '@spark-view/dsl-compiler';
 import { SSRRenderer } from '@spark-view/ssr-server';
 
@@ -191,11 +191,12 @@ export class ApiServer {
         }
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Render error:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ 
         error: 'Render failed', 
-        message: error.message 
+        message 
       });
     }
   }
@@ -222,10 +223,11 @@ export class ApiServer {
         message: 'DSL saved successfully' 
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(400).json({ 
         error: 'Save failed', 
-        message: error.message 
+        message 
       });
     }
   }
@@ -250,10 +252,11 @@ export class ApiServer {
         id 
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ 
         error: 'Get failed', 
-        message: error.message 
+        message 
       });
     }
   }
@@ -281,10 +284,11 @@ export class ApiServer {
         pageId 
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ 
         error: 'Update failed', 
-        message: error.message 
+        message 
       });
     }
   }
@@ -308,10 +312,11 @@ export class ApiServer {
         message: 'DSL deleted successfully' 
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ 
         error: 'Delete failed', 
-        message: error.message 
+        message 
       });
     }
   }
@@ -323,10 +328,11 @@ export class ApiServer {
     try {
       const list = await this.storage.list();
       res.json({ list });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ 
         error: 'List failed', 
-        message: error.message 
+        message 
       });
     }
   }
@@ -344,10 +350,11 @@ export class ApiServer {
         message: 'Cache invalidated successfully' 
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ 
         error: 'Invalidate failed', 
-        message: error.message 
+        message 
       });
     }
   }
@@ -367,14 +374,16 @@ export class ApiServer {
     return path.split('/').filter(Boolean)[0] || 'home';
   }
 
-  private getLazyComponentUrls(dsl: any, currentPageId: string): Record<string, string> {
+  private getLazyComponentUrls(dsl: DSLDocument & { id?: string }, currentPageId: string): Record<string, string> {
     // 返回其他页面的懒加载URL
     const urls: Record<string, string> = {};
     
     if (dsl?.pages) {
-      dsl.pages.forEach((page: any) => {
+      dsl.pages.forEach((page: { id: string }) => {
         if (page.id !== currentPageId) {
-          urls[page.id] = `/api/component/${dsl.id}/${page.id}`;
+          // 使用 dsl.id 如果存在，否则使用 'default'
+          const dslId = dsl.id || 'default';
+          urls[page.id] = `/api/component/${dslId}/${page.id}`;
         }
       });
     }

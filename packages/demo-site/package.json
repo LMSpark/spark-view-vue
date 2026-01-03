@@ -8,17 +8,25 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "@form-create/designer": "3.2.5",
+    "@form-create/element-ui": "3.2.20",
     "@spark-view/dsl-compiler": "workspace:*",
     "@spark-view/dsl-parser": "workspace:*",
     "@spark-view/runtime": "workspace:*",
+    "@tmagic/editor": "^1.7.4",
+    "@tmagic/form": "^1.7.4",
+    "@tmagic/stage": "^1.7.4",
+    "element-plus": "^2.13.0",
+    "sortablejs": "^1.15.6",
     "vue": "^3.4.15",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.3",
-    "@vue/tsconfig": "^0.5.1",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/tsconfig": "^0.8.1",
     "typescript": "^5.3.3",
-    "vite": "^5.0.11",
-    "vue-tsc": "^2.0.0"
+    "vite": "^7.3.0",
+    "vue-tsc": "^3.2.1"
   }
 }

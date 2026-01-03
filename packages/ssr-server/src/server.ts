@@ -77,7 +77,7 @@ export class SSRServer {
       }
 
       // 读取 DSL 文件
-      const dslPath = path.join(this.dslDir, `${dslId}.yaml`);
+      const dslPath = path.join(this.dslDir, `${dslId}.json`);
       const dslContent = await fs.readFile(dslPath, 'utf-8');
 
       // 渲染

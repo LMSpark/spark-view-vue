@@ -163,7 +163,7 @@ export class CacheManager {
   /**
    * 获取DSL元数据
    */
-  async getDslMeta(dslId: string): Promise<any | null> {
+  async getDslMeta(dslId: string): Promise<Record<string, unknown> | null> {
     const key = this.getMetaKey(dslId);
     const data = await this.redis.get(key);
     return data ? JSON.parse(data) : null;
@@ -172,7 +172,7 @@ export class CacheManager {
   /**
    * 设置DSL元数据
    */
-  async setDslMeta(dslId: string, meta: any, ttl: number = 3600): Promise<void> {
+  async setDslMeta(dslId: string, meta: Record<string, unknown>, ttl: number = 3600): Promise<void> {
     const key = this.getMetaKey(dslId);
     await this.redis.setex(key, ttl, JSON.stringify(meta));
   }

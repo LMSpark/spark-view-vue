@@ -2,7 +2,6 @@
  * DSL 语法解析器
  */
 
-import yaml from 'js-yaml';
 import Ajv from 'ajv';
 import { Lexer, Token, TokenType } from './lexer';
 import { DSLDocument, ParseError, ExpressionNode, RouteConfig } from './types';
@@ -13,20 +12,16 @@ const validateSchema = ajv.compile(dslSchema);
 
 export class Parser {
   /**
-   * 解析 DSL 内容（支持 YAML 和 JSON）
+   * 解析 DSL 内容（JSON 格式）
    */
-  public parse(content: string, format: 'yaml' | 'json' = 'yaml'): DSLDocument {
+  public parse(content: string): DSLDocument {
     let dslObject: unknown;
 
     try {
-      if (format === 'yaml') {
-        dslObject = yaml.load(content);
-      } else {
-        dslObject = JSON.parse(content);
-      }
+      dslObject = JSON.parse(content);
     } catch (err: unknown) {
       const error = err as Error;
-      throw new ParseError(`Failed to parse ${format.toUpperCase()}: ${error.message}`);
+      throw new ParseError(`Failed to parse JSON: ${error.message}`);
     }
 
     // JSON Schema 验证
@@ -210,9 +205,9 @@ export class Parser {
 /**
  * 便捷导出
  */
-export function parse(content: string, format: 'yaml' | 'json' = 'yaml'): DSLDocument {
+export function parse(content: string): DSLDocument {
   const parser = new Parser();
-  return parser.parse(content, format);
+  return parser.parse(content);
 }
 
 export function parseExpression(expr: string): ExpressionNode | null {

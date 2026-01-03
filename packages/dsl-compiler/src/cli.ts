@@ -79,8 +79,7 @@ program
   .option('-d, --dir <dir>', '静态文件目录', 'dist')
   .option('-p, --port <port>', '端口号', '8080')
   .action(async (options: ServeCommandOptions) => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const express = require('express') as typeof import('express');
+    const { default: express } = await import('express');
     const app = express();
     
     app.use(express.static(path.resolve(options.dir)));

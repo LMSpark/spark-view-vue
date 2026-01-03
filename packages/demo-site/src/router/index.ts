@@ -32,6 +32,15 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/designer',
+    name: 'page-designer',
+    component: () => import('../views/PageDesigner.vue'),
+    meta: {
+      title: '页面设计器',
+      icon: '🎨',
+    },
+  },
+  {
     path: '/hybrid',
     name: 'hybrid',
     component: HybridDemo,

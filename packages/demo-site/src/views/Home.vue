@@ -75,6 +75,11 @@ interface Feature {
 
 const features: Feature[] = [
   {
+    icon: '🎨',
+    title: '可视化设计器',
+    description: '集成 form-create-designer，拖拽式表单设计，无需编码',
+  },
+  {
     icon: '⚡',
     title: 'SSR/CSR 双模式',
     description: '支持服务端渲染和客户端渲染，灵活切换，优化首屏性能和SEO',
@@ -95,14 +100,9 @@ const features: Feature[] = [
     description: '内置Vue Router，支持动态路由、嵌套路由和路由守卫',
   },
   {
-    icon: '🎨',
-    title: '主题定制',
-    description: '灵活的主题配置系统，轻松定制应用样式',
-  },
-  {
     icon: '📦',
-    title: 'TypeScript',
-    description: '完整的TypeScript支持，提供类型安全和代码提示',
+    title: '开箱即用',
+    description: '完整的开发工具链，从设计到部署一键搞定',
   },
 ];
 

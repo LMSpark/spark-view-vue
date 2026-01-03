@@ -192,7 +192,7 @@ router.afterEach((to) => {
   /**
    * 生成导航栏组件
    */
-  private generateNavbar(nav: any): string {
+  private generateNavbar(nav: { items?: unknown[] }): string {
     const items = nav.items || [];
     const itemsCode = JSON.stringify(items, null, 2);
 

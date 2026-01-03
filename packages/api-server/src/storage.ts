@@ -1,5 +1,6 @@
 import { DSLDocument } from '@spark-view/dsl-parser';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DslStorageOptions {
   // 可以扩展为数据库配置
 }

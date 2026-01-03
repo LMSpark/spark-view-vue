@@ -158,24 +158,66 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+/**
+ * 混合架构演示组件
+ * 
+ * 演示 SSR 首屏 + SPA 导航的混合架构：
+ * 1. 首次访问：SSR 渲染完整HTML（TTFB < 100ms）
+ * 2. 后续导航：客户端懒加载组件（SPA 体验）
+ * 3. 协商缓存：基于时间戳的缓存验证
+ * 4. 样式隔离：使用 pageId 容器隔离样式
+ */
+
+// 类型定义
+interface MockComponent {
+  type: string;
+  content?: string;
+  props?: { class?: string };
+  children?: MockComponent[];
+}
+
+interface MockPage {
+  id: string;
+  title: string;
+  components: MockComponent[];
+}
+
+interface MockRoute {
+  path: string;
+  name: string;
+  pageId: string;
+}
+
+interface MockDSLType {
+  dslVersion: string;
+  name: string;
+  data: Record<string, string>;
+  pages: MockPage[];
+  routes: MockRoute[];
+  router: {
+    mode: string;
+    base: string;
+  };
+}
+
 const dslId = ref('hybrid-demo');
 const currentPath = ref('/');
 const apiBaseUrl = ref('http://localhost:3000');
 const useMock = ref(true); // 默认使用 Mock 模式
 const loading = ref(false);
 const error = ref('');
-const renderData = ref<any>(null);
+const renderData = ref<Record<string, unknown> | null>(null);
 
 // 客户端缓存：存储时间戳和内容
 interface CacheEntry {
-  data: any;
+  data: Record<string, unknown>;
   timestamp: number;
 }
 
 const clientCache = new Map<string, CacheEntry>();
 
 // Mock DSL 数据
-const mockDSL = {
+const mockDSL: MockDSLType = {
   dslVersion: '1.0.0',
   name: 'SPARK VIEW 混合架构演示',
   data: {
@@ -258,27 +300,27 @@ const mockDSL = {
 };
 
 // Mock 编译器 - 简单的 HTML 生成
-function mockCompile(dsl: any, path: string) {
-  const route = dsl.routes.find((r: any) => r.path === path);
+function mockCompile(dsl: MockDSLType, path: string) {
+  const route = dsl.routes.find((r) => r.path === path);
   if (!route) {
     throw new Error('路由不存在');
   }
 
-  const page = dsl.pages.find((p: any) => p.id === route.pageId);
+  const page = dsl.pages.find((p) => p.id === route.pageId);
   if (!page) {
     throw new Error('页面不存在');
   }
 
   // 简单的模板替换
-  const replaceVars = (text: string, data: any) => {
+  const replaceVars = (text: string, data: Record<string, string>) => {
     return text.replace(/\{\{(\w+)\}\}/g, (_, key) => data[key] || '');
   };
 
   // 递归渲染组件
-  const renderComponent = (comp: any, data: any): string => {
+  const renderComponent = (comp: MockComponent, data: Record<string, string>): string => {
     const content = comp.content ? replaceVars(comp.content, data) : '';
     const children = comp.children 
-      ? comp.children.map((c: any) => renderComponent(c, data)).join('\n')
+      ? comp.children.map((c: MockComponent) => renderComponent(c, data)).join('\n')
       : '';
     
     if (comp.type === 'section') {
@@ -296,7 +338,7 @@ function mockCompile(dsl: any, path: string) {
   };
 
   const html = page.components
-    .map((comp: any) => renderComponent(comp, dsl.data))
+    .map((comp: MockComponent) => renderComponent(comp, dsl.data))
     .join('\n');
 
   // 生成路由配置代码
@@ -304,7 +346,7 @@ function mockCompile(dsl: any, path: string) {
 
   // 生成懒加载组件映射
   const lazyComponents: Record<string, string> = {};
-  dsl.pages.forEach((p: any) => {
+  dsl.pages.forEach((p) => {
     if (p.id !== route.pageId) {
       lazyComponents[p.id] = `/mock/component/${p.id}`;
     }
@@ -380,8 +422,8 @@ async function loadSSRContent() {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     }
-  } catch (err: any) {
-    error.value = err.message || '加载失败';
+  } catch (err: unknown) {
+    error.value = err instanceof Error ? err.message : '加载失败';
   } finally {
     loading.value = false;
   }
@@ -394,7 +436,7 @@ async function uploadDSL() {
   try {
     // 读取示例DSL
     const dslResponse = await fetch('/example-hybrid.yaml');
-    const dslText = await dslResponse.text();
+    await dslResponse.text();
 
     // 简单的YAML解析（实际应使用yaml库）
     const dslData = {
@@ -427,8 +469,8 @@ async function uploadDSL() {
     }
 
     alert('✅ DSL上传成功！现在可以加载SSR内容了');
-  } catch (err: any) {
-    error.value = err.message || '上传失败';
+  } catch (err: unknown) {
+    error.value = err instanceof Error ? err.message : '上传失败';
   } finally {
     loading.value = false;
   }

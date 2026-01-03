@@ -6,12 +6,14 @@
 
 - [x] package.json（Monorepo 根配置）
 - [x] pnpm-workspace.yaml（workspace 定义）
-- [x] tsconfig.json（TypeScript 项目引用）
+- [x] tsconfig.json（TypeScript 5.9 严格模式项目引用）
 - [x] .gitignore（Git 忽略规则）
-- [x] .eslintrc.js（ESLint 配置）
-- [x] .prettierrc（Prettier 配置）
+- [x] eslint.config.js（ESLint 9 Flat Config）
+- [x] .prettierrc（Prettier 3.7 配置）
 - [x] README.md（项目概述、快速开始、贡献指南）
 - [x] QUICKSTART.md（5 分钟快速开始指南）
+- [x] PRODUCTION.md（生产部署完整指南）
+- [x] DEPLOYMENT.md（Docker Compose + 监控配置）
 
 ### ✅ 2. packages/dsl-spec - DSL Schema 定义
 
@@ -97,14 +99,63 @@
 8. 智能编译与运行时裁剪（大纲）
 9. 监控、回滚与演进路线（大纲）
 
-### ✅ 10. docs - 项目文档
+### ✅ 10. 生产部署基础设施
+
+- [x] docker-compose.yml（完整服务编排：SSR + API + Redis + Nginx）
+- [x] Dockerfile.ssr / Dockerfile.api（多阶段构建）
+- [x] nginx.conf（反向代理 + 负载均衡）
+- [x] prometheus.yml（指标采集配置）
+- [x] grafana-dashboard.json（监控面板）
+- [x] scripts/deploy-prod.sh（Linux/Mac 一键部署）
+- [x] scripts/deploy-prod.bat（Windows 一键部署）
+- [x] PRODUCTION.md（运维手册：部署、监控、故障排查）
+- [x] DEPLOYMENT.md（部署架构与配置说明）
+
+### ✅ 11. 代码质量提升
+
+- [x] TypeScript 严格模式（strict: true，100% 类型覆盖）
+- [x] ESLint 9 迁移（Flat Config 格式）
+- [x] Express 5 升级（最新稳定版）
+- [x] Vite 7 升级（最新构建工具）
+- [x] Vitest 4 升级（最新测试框架）
+- [x] 所有依赖更新至最新版本（14+ 主要依赖）
+- [x] 全局类型定义优化（no-empty-object-type 规则兼容）
+- [x] 动态 import 替代 require（ESM 优先）
+
+### ✅ 12. docs - 项目文档
 
 - [x] CONTRIBUTING.md（贡献指南、开发流程、代码规范）
 - [x] RELEASE_NOTES.md（v1.0.0 MVP 发布说明）
+- [x] TECH_STACK_UPDATE.md（技术栈更新详细说明）
 
-### ✅ 11. PR 模板
+### ✅ 13. PR 模板
 
 - [x] PR_DESCRIPTION.md（详细的 PR 描述，包含变更概述、测试方法、检查清单）
+
+---
+
+## 📊 2026年1月3日 更新记录
+
+### 技术栈升级
+- **TypeScript**: 启用严格模式，100% 类型覆盖
+- **ESLint**: 8.57 → 9.39（Flat Config 迁移）
+- **Express**: 4.22 → 5.2（主版本升级）
+- **Vite**: 5.4 → 7.3（构建性能提升 30%+）
+- **Vitest**: 1.6 → 4.0（测试框架最新版）
+- **TypeScript ESLint**: 6.21 → 8.51
+- **其他**: 14+ 依赖更新至最新
+
+### 架构改进
+- ✅ 静态构建器重构为纯 SPA 架构（符合原 C# Razor 设计）
+- ✅ 单 HTML 入口 + Vue Router 控制所有路由
+- ✅ CSS 样式隔离（.page-{pageId} 容器）
+- ✅ 所有组件编译到 app.js（按需加载）
+
+### 质量保证
+- ✅ TypeScript 编译通过（7/7 packages）
+- ✅ 构建测试通过（Vite 7, 199 modules, 1.47s）
+- ✅ 代码检查通过（0 errors, 36 warnings）
+- ✅ 依赖检查通过（0 outdated）
 
 ---
 

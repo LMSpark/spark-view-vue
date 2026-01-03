@@ -1,12 +1,16 @@
-# SPARK.View for VUE
+# SPARK.View - Vue 低代码开发平台
 
 <div align="center">
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9%20strict-blue.svg)
+![Vite](https://img.shields.io/badge/Vite-7.3-646cff.svg)
+![ESLint](https://img.shields.io/badge/ESLint-9.39-4b32c3.svg)
 
-**DSL 驱动的 Vue SSR 框架，支持部分水合与极速首屏**
+**🚀 基于 DSL 的 Vue 低代码开发平台**  
+**可视化编辑 · 实时预览 · 一键部署**
 
 [English](./README.md) | [中文文档](./README_CN.md)
 
@@ -14,18 +18,23 @@
 
 ## 📖 项目简介
 
-SPARK.View for VUE 是一个创新的 DSL（领域特定语言）驱动的 Vue 服务端渲染框架。它通过声明式 DSL 描述页面结构，经过编译器转换为高效的 Vue 组件，并通过智能的部分水合策略实现极速的首屏加载性能。
+SPARK.View 是一个基于 Vue 3 的**低代码开发平台**，让您无需编写代码即可快速构建现代化 Web 应用。通过可视化编辑器和声明式 DSL，您可以：
+
+- 📝 **可视化设计**：拖拽组件、配置属性，实时预览效果
+- ⚡ **快速开发**：10 分钟搭建一个完整应用，无需写代码
+- 🎨 **灵活定制**：支持自定义组件、主题和样式
+- 🚀 **一键部署**：自动生成生产就绪的应用，支持多种部署方式
 
 ### 核心特性
 
-- 🎯 **DSL 驱动**：通过 YAML/JSON DSL 描述页面，零 Vue 组件编写
-- ⚡ **Vue SSR**：基于 @vue/server-renderer 的高性能服务端渲染
-- 💧 **部分水合**：智能的 hydrationHints，按需激活交互组件
+- 🎯 **零代码开发**：通过 DSL 编辑器描述页面，无需编写 Vue 组件
+- 📱 **响应式设计**：自动适配桌面、平板、移动端
+- ⚡ **高性能渲染**：支持 SSR（服务端渲染）和 SPA（单页应用）两种模式
+- 💧 **智能水合**：按需激活交互组件，极速首屏加载
 - 🔧 **类型安全**：完整的 TypeScript 支持与 JSON Schema 验证
-- 🚀 **边缘部署**：支持 Cloudflare Workers / Vercel Edge / Deno Deploy
-- 📦 **按需打包**：基于 Vite 的智能代码分割与懒加载
-- 🎨 **组件生态**：可扩展的组件系统与主题定制
-- 🔒 **安全表达式**：受限的 EL 表达式引擎，禁止 eval/new Function
+- 🚀 **多端部署**：支持 Vercel、Netlify、Docker、传统服务器
+- 📦 **组件市场**：可扩展的组件系统，支持自定义组件库
+- 🔒 **安全可控**：受限的表达式引擎，企业级安全保障
 
 ## 🏗️ Monorepo 结构
 
@@ -47,10 +56,19 @@ spark-view-vue/
 
 ### 前置要求
 
-- Node.js >= 16.0.0
+- Node.js >= 18.0.0
 - pnpm >= 8.0.0
 - Docker & Docker Compose（生产部署）
 - Redis（运行时架构）
+
+### 技术栈
+
+- **前端框架**: Vue 3.5 + Vue Router 4.5
+- **构建工具**: Vite 7.3 + TypeScript 5.9（严格模式）
+- **代码质量**: ESLint 9.39（Flat Config）+ Prettier 3.7
+- **测试框架**: Vitest 4.0 + @vue/test-utils
+- **服务端**: Express 5.2 + @vue/server-renderer
+- **类型安全**: 完整 TypeScript 支持，100% 类型覆盖
 
 ### 安装依赖
 
@@ -69,11 +87,17 @@ pnpm install
 # 构建所有 packages
 pnpm build
 
+# 类型检查（严格模式）
+pnpm typecheck
+
+# 代码检查
+pnpm lint
+
 # 运行测试
 pnpm test
 
-# 启动 Demo 站点
-pnpm dev:demo
+# 启动 Demo 站点（Vite 7 开发服务器）
+pnpm --filter demo-site dev
 
 # 启动 SSR 服务器
 pnpm dev:ssr
@@ -118,36 +142,54 @@ pnpm validate
 
 ## 📝 DSL 示例
 
-**basic-page.yaml**
+**basic-page.json**
 
-```yaml
-dslVersion: "1.0"
-page:
-  id: home
-  title: "Welcome to SPARK.View"
-  layout:
-    type: container
-    props:
-      maxWidth: 1200px
-    children:
-      - type: header
-        props:
-          height: 80px
-        children:
-          - type: text
-            props:
-              content: "{{ data.title }}"
-              fontSize: 32px
-              fontWeight: bold
-      - type: button
-        props:
-          text: "Click Me"
-          onClick: "handleClick"
-        hydration:
-          strategy: idle
-          priority: low
-data:
-  title: "Hello SPARK.View"
+```json
+{
+  "dslVersion": "1.0",
+  "page": {
+    "id": "home",
+    "title": "Welcome to SPARK.View",
+    "layout": {
+      "type": "container",
+      "props": {
+        "maxWidth": "1200px"
+      },
+      "children": [
+        {
+          "type": "header",
+          "props": {
+            "height": "80px"
+          },
+          "children": [
+            {
+              "type": "text",
+              "props": {
+                "content": "{{ data.title }}",
+                "fontSize": "32px",
+                "fontWeight": "bold"
+              }
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "props": {
+            "text": "Click Me",
+            "onClick": "handleClick"
+          },
+          "hydration": {
+            "strategy": "idle",
+            "priority": "low"
+          }
+        }
+      ]
+    }
+  },
+  "data": {
+    "title": "Hello SPARK.View"
+  }
+}
 ```
 
 编译后生成的 Vue Render Function 可在 SSR 服务器中渲染，并根据 hydration hints 在客户端按需激活。
@@ -156,11 +198,11 @@ data:
 
 ### @spark-view/dsl-spec
 
-定义 DSL 的 JSON Schema（dslVersion 1.0），提供 YAML/JSON 示例与类型定义。
+定义 DSL 的 JSON Schema（dslVersion 1.0），提供 JSON 示例与类型定义。
 
 ### @spark-view/dsl-parser
 
-将 YAML/JSON DSL 解析为 AST（抽象语法树）：
+将 JSON DSL 解析为 AST（抽象语法树）：
 
 ```typescript
 import { parse } from '@spark-view/dsl-parser';

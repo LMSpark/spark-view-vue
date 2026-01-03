@@ -1,0 +1,110 @@
+{
+  "dslVersion": "1.0.0",
+  "name": "混合架构示例",
+  "description": "SSR首屏 + SPA导航的演示项目",
+  "data": {
+    "appName": "SPARK VIEW",
+    "version": "1.0.0"
+  },
+  "pages": [
+    {
+      "id": "home",
+      "title": "首页",
+      "layout": "default",
+      "components": [
+        {
+          "type": "container",
+          "props": {
+            "class": "hero"
+          },
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "level": 1,
+                "text": "欢迎使用 {{ data.appName }}"
+              }
+            },
+            {
+              "type": "paragraph",
+              "props": {
+                "text": "这是一个SSR首屏 + SPA导航的混合架构示例"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "about",
+      "title": "关于",
+      "layout": "default",
+      "components": [
+        {
+          "type": "container",
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "level": 1,
+                "text": "关于 {{ data.appName }}"
+              }
+            },
+            {
+              "type": "paragraph",
+              "props": {
+                "text": "版本: {{ data.version }}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "联系我们",
+      "layout": "default",
+      "components": [
+        {
+          "type": "container",
+          "children": [
+            {
+              "type": "heading",
+              "props": {
+                "level": 1,
+                "text": "联系我们"
+              }
+            },
+            {
+              "type": "paragraph",
+              "props": {
+                "text": "欢迎联系 {{ data.appName }} 团队"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "name": "home",
+      "pageId": "home"
+    },
+    {
+      "path": "/about",
+      "name": "about",
+      "pageId": "about"
+    },
+    {
+      "path": "/contact",
+      "name": "contact",
+      "pageId": "contact"
+    }
+  ],
+  "router": {
+    "mode": "history",
+    "base": "/"
+  }
+}

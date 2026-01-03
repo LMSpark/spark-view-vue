@@ -207,7 +207,7 @@ export class IRGenerator {
       return null;
     }
 
-    const transformNavItem = (item: any): NavigationIRNode => {
+    const transformNavItem = (item: { label: string; path?: string; icon?: string; meta?: { external?: boolean; badge?: string }; children?: unknown[] }): NavigationIRNode => {
       return {
         label: item.label,
         path: item.path,

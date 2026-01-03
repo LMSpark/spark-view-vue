@@ -48,22 +48,32 @@ pnpm --filter @spark-view/ssr-server dev
 ```bash
 mkdir -p packages/ssr-server/dsls
 
-cat > packages/ssr-server/dsls/test.yaml <<EOF
-dslVersion: "1.0"
-page:
-  id: test
-  title: "测试页面"
-  layout:
-    type: container
-    props:
-      padding: "20px"
-    children:
-      - type: text
-        props:
-          content: "{{ data.message }}"
-          fontSize: "24px"
-data:
-  message: "Hello SPARK.View!"
+cat > packages/ssr-server/dsls/test.json <<'EOF'
+{
+  "dslVersion": "1.0",
+  "page": {
+    "id": "test",
+    "title": "测试页面",
+    "layout": {
+      "type": "container",
+      "props": {
+        "padding": "20px"
+      },
+      "children": [
+        {
+          "type": "text",
+          "props": {
+            "content": "{{ data.message }}",
+            "fontSize": "24px"
+          }
+        }
+      ]
+    }
+  },
+  "data": {
+    "message": "Hello SPARK.View!"
+  }
+}
 EOF
 ```
 

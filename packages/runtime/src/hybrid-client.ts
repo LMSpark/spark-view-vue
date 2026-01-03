@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, Router } from 'vue-router';
+import type { App, Component } from 'vue';
 
 /**
  * 混合架构客户端入口
@@ -18,9 +19,9 @@ export interface HybridBootstrapOptions {
 export class HybridClient {
   private apiBaseUrl: string;
   private dslId: string;
-  private router: any;
-  private app: any;
-  private lazyComponentsCache: Map<string, any> = new Map();
+  private router: Router | null = null;
+  private app: App | null = null;
+  private lazyComponentsCache: Map<string, Component> = new Map();
 
   constructor(options: HybridBootstrapOptions) {
     this.apiBaseUrl = options.apiBaseUrl;
@@ -83,9 +84,9 @@ export class HybridClient {
     const routes = configFunc(createWebHistory);
 
     // 为每个路由配置懒加载组件
-    const enhancedRoutes = routes.map((route: any) => ({
+    const enhancedRoutes = routes.map((route: { pageId?: string; component?: string; [key: string]: unknown }) => ({
       ...route,
-      component: () => this.loadComponent(route.pageId || route.component)
+      component: () => this.loadComponent(route.pageId || route.component || 'default')
     }));
 
     return createRouter({
@@ -179,7 +180,7 @@ export async function initHybridApp(options: HybridBootstrapOptions) {
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
     // 从meta标签或全局变量读取配置
-    const config = (window as any).__HYBRID_CONFIG__ || {
+    const config = (window as { __HYBRID_CONFIG__?: HybridBootstrapOptions }).__HYBRID_CONFIG__ || {
       apiBaseUrl: 'http://localhost:3000',
       dslId: 'default',
       initialPath: window.location.pathname

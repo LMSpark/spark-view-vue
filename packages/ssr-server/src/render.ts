@@ -5,7 +5,7 @@
 import { App } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { compile } from '@spark-view/dsl-compiler';
-import { parse, DSLDocument } from '@spark-view/dsl-parser';
+import { parse, DSLDocument, PageIRNode } from '@spark-view/dsl-parser';
 
 export interface RenderContext {
   data?: Record<string, unknown>;
@@ -29,7 +29,7 @@ export class SSRRenderer {
    */
   async render(dslContent: string, context: RenderContext = {}): Promise<RenderOutput> {
     // 步骤 1: 解析 DSL
-    const ast = parse(dslContent, 'yaml');
+    const ast = parse(dslContent);
 
     // 步骤 2: 编译为 Vue Render Function
     const compileOutput = compile(ast, { extractCSS: true });
@@ -72,7 +72,7 @@ export class SSRRenderer {
   /**
    * 根据路由路径获取目标页面
    */
-  private getTargetPage(ast: DSLDocument, routePath?: string): any {
+  private getTargetPage(ast: DSLDocument, routePath?: string): PageIRNode | null {
     // 单页面模式
     if (ast.page) {
       return ast.page;
@@ -102,7 +102,7 @@ export class SSRRenderer {
   /**
    * 简单的路由匹配逻辑
    */
-  private matchRoute(routes: any[], path: string): any {
+  private matchRoute(routes: Array<{ path: string; pageId?: string; component?: string; [key: string]: unknown }>, path: string): { path: string; pageId?: string; component?: string } | null {
     for (const route of routes) {
       // 精确匹配
       if (route.path === path) {
@@ -185,7 +185,7 @@ export class SSRRenderer {
   /**
    * 根据页面ID查找路由
    */
-  private findRouteByPageId(routes: any[], pageId: string): any {
+  private findRouteByPageId(routes: Array<{ pageId?: string; component?: string; children?: unknown[]; [key: string]: unknown }>, pageId: string): { pageId?: string; component?: string; [key: string]: unknown } | null {
     for (const route of routes) {
       if (route.pageId === pageId || route.component === pageId) {
         return route;
