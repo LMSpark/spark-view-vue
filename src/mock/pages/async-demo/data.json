@@ -1,0 +1,17 @@
+{
+  "stats": {
+    "url": "/api/dashboard/stats",
+    "method": "GET",
+    "dataPath": "data",
+    "autoLoad": true
+  },
+  "recentOrders": {
+    "url": "/api/orders/recent",
+    "method": "GET",
+    "params": {
+      "limit": 10
+    },
+    "dataPath": "data.orders",
+    "autoLoad": true
+  }
+}
