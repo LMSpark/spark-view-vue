@@ -1,0 +1,39 @@
+[
+  {
+    "type": "div",
+    "children": [
+      {
+        "type": "h2",
+        "children": ["系统设置"]
+      },
+      {
+        "type": "div",
+        "class": "content-section",
+        "style": { "marginTop": "20px" },
+        "children": [
+          {
+            "type": "input",
+            "field": "siteName",
+            "title": "站点名称",
+            "dataKey": "settings.siteName",
+            "value": ""
+          },
+          {
+            "type": "input",
+            "field": "siteUrl",
+            "title": "站点URL",
+            "dataKey": "settings.siteUrl",
+            "value": ""
+          },
+          {
+            "type": "switch",
+            "field": "maintenance",
+            "title": "维护模式",
+            "dataKey": "settings.maintenance",
+            "value": false
+          }
+        ]
+      }
+    ]
+  }
+]

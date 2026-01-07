@@ -1,0 +1,34 @@
+/* 工作台页面专属样式 */
+.home-stats-card {
+  transition: transform 0.2s;
+}
+
+.home-stats-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 内容区域样式 */
+.content-section {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+
+.content-section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 测试按钮样式 */
+.test-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  font-weight: bold;
+}
+
+.test-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}

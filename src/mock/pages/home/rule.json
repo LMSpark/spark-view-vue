@@ -1,0 +1,247 @@
+[
+  {
+    "type": "div",
+    "children": [
+      {
+        "type": "h3",
+        "children": ["数据统计"]
+      },
+      {
+        "type": "div",
+        "style": {
+          "marginBottom": "20px"
+        },
+        "children": [
+          {
+            "type": "el-button",
+            "props": {
+              "type": "primary"
+            },
+            "class": "test-button",
+            "on": {
+              "click": "testButtonClick"
+            },
+            "children": ["🎯 测试 JS 和 CSS"]
+          },
+          {
+            "type": "el-button",
+            "props": {
+              "type": "success"
+            },
+            "style": {
+              "marginLeft": "10px"
+            },
+            "on": {
+              "click": "showAlert"
+            },
+            "children": ["🔔 显示提示"]
+          },
+          {
+            "type": "el-button",
+            "props": {
+              "type": "warning"
+            },
+            "style": {
+              "marginLeft": "10px"
+            },
+            "on": {
+              "click": "highlightButtons"
+            },
+            "children": ["✨ 按钮高亮动画"]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "style": {
+          "display": "grid",
+          "gridTemplateColumns": "repeat(4, 1fr)",
+          "gap": "20px",
+          "marginBottom": "20px"
+        },
+        "children": [
+          {
+            "type": "div",
+            "class": "content-section",
+            "children": [
+              {
+                "type": "div",
+                "style": { "fontSize": "14px", "color": "#999" },
+                "children": ["总用户数"]
+              },
+              {
+                "type": "div",
+                "style": {
+                  "fontSize": "30px",
+                  "fontWeight": "bold",
+                  "marginTop": "10px"
+                },
+                "dataKey": "stats.totalUsers",
+                "children": [""]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "content-section",
+            "children": [
+              {
+                "type": "div",
+                "style": { "fontSize": "14px", "color": "#999" },
+                "children": ["今日订单"]
+              },
+              {
+                "type": "div",
+                "style": {
+                  "fontSize": "30px",
+                  "fontWeight": "bold",
+                  "marginTop": "10px",
+                  "color": "#67c23a"
+                },
+                "dataKey": "stats.todayOrders",
+                "children": [""]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "content-section",
+            "children": [
+              {
+                "type": "div",
+                "style": { "fontSize": "14px", "color": "#999" },
+                "children": ["营业额"]
+              },
+              {
+                "type": "div",
+                "style": {
+                  "fontSize": "30px",
+                  "fontWeight": "bold",
+                  "marginTop": "10px"
+                },
+                "dataKey": "stats.revenue",
+                "children": [""]
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "class": "content-section",
+            "children": [
+              {
+                "type": "div",
+                "style": { "fontSize": "14px", "color": "#999" },
+                "children": ["待处理"]
+              },
+              {
+                "type": "div",
+                "style": {
+                  "fontSize": "30px",
+                  "fontWeight": "bold",
+                  "marginTop": "10px",
+                  "color": "#e6a23c"
+                },
+                "dataKey": "stats.pending",
+                "children": [""]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "content-section",
+        "children": [
+          {
+            "type": "h3",
+            "style": { "marginBottom": "15px" },
+            "children": ["用户列表"]
+          },
+          {
+            "type": "el-table",
+            "dataKey": "tableData",
+            "props": {
+              "data": [],
+              "stripe": true,
+              "border": true
+            },
+            "children": [
+              {
+                "type": "el-table-column",
+                "props": { "prop": "id", "label": "ID", "width": "80" }
+              },
+              {
+                "type": "el-table-column",
+                "props": { "prop": "name", "label": "姓名", "width": "120" }
+              },
+              {
+                "type": "el-table-column",
+                "props": { "prop": "email", "label": "邮箱" }
+              },
+              {
+                "type": "el-table-column",
+                "props": { "prop": "status", "label": "状态", "width": "100" }
+              },
+              {
+                "type": "el-table-column",
+                "props": { "prop": "date", "label": "创建时间", "width": "120" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "content-section",
+        "children": [
+          {
+            "type": "h3",
+            "style": { "marginBottom": "15px" },
+            "children": ["新增用户"]
+          },
+          {
+            "type": "input",
+            "field": "username",
+            "title": "用户名",
+            "value": "",
+            "props": { "placeholder": "请输入用户名" },
+            "validate": [{ "required": true, "message": "请输入用户名" }]
+          },
+          {
+            "type": "input",
+            "field": "email",
+            "title": "邮箱",
+            "value": "",
+            "props": { "placeholder": "请输入邮箱" },
+            "validate": [
+              { "required": true, "message": "请输入邮箱" },
+              { "type": "email", "message": "邮箱格式不正确" }
+            ]
+          },
+          {
+            "type": "select",
+            "field": "status",
+            "title": "状态",
+            "value": "激活",
+            "dataKey": "formOptions.statusOptions",
+            "options": []
+          },
+          {
+            "type": "radio",
+            "field": "gender",
+            "title": "性别",
+            "value": "男",
+            "dataKey": "formOptions.genderOptions",
+            "options": []
+          },
+          {
+            "type": "switch",
+            "field": "vip",
+            "title": "VIP会员",
+            "value": false
+          }
+        ]
+      }
+    ]
+  }
+]

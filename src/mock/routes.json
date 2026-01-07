@@ -1,0 +1,29 @@
+[
+  {
+    "path": "/",
+    "name": "home",
+    "pageId": "home",
+    "meta": {
+      "title": "工作台",
+      "icon": "📊"
+    }
+  },
+  {
+    "path": "/users",
+    "name": "users",
+    "pageId": "users",
+    "meta": {
+      "title": "用户管理",
+      "icon": "👥"
+    }
+  },
+  {
+    "path": "/settings",
+    "name": "settings",
+    "pageId": "settings",
+    "meta": {
+      "title": "系统设置",
+      "icon": "⚙️"
+    }
+  }
+]

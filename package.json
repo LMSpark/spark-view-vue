@@ -1,0 +1,56 @@
+{
+  "name": "form-create-ssr-app",
+  "version": "1.0.0",
+  "description": "Form Create SSR Application with TypeScript and Vue 3",
+  "type": "module",
+  "author": "",
+  "license": "MIT",
+  "keywords": [
+    "form-create",
+    "ssr",
+    "vue3",
+    "typescript",
+    "element-plus",
+    "vite"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "dev:ssr": "tsx server.ts",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:client": "vite build --outDir dist/client",
+    "build:server": "vite build --ssr src/entry-server.ts --outDir dist/server",
+    "build:ssr": "vue-tsc --noEmit && npm run build:client && npm run build:server",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint . --ext .js,.ts,.vue",
+    "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
+    "preview": "vite preview",
+    "preview:ssr": "cross-env NODE_ENV=production tsx server.ts"
+  },
+  "dependencies": {
+    "@form-create/element-ui": "^3.2.0",
+    "element-plus": "^2.5.0",
+    "express": "^4.21.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/express": "^4.17.25",
+    "@types/node": "^20.19.27",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.39.2",
+    "eslint-plugin-vue": "^10.6.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vite-plugin-mock": "^3.0.2",
+    "vue-eslint-parser": "^10.2.0",
+    "vue-tsc": "^3.2.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
