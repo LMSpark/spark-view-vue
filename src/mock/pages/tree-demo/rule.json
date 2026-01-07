@@ -1,0 +1,323 @@
+[
+  {
+    "type": "div",
+    "class": "tree-demo-container",
+    "children": [
+    {
+      "type": "div",
+      "class": "demo-header",
+      "children": [
+        {
+          "type": "h2",
+          "children": ["自引用树演示 (Self-Reference Tree)"]
+        },
+        {
+          "type": "p",
+          "children": ["基于 PageData 1.1 扁平化 + 懒加载 + 层级构建方案"]
+        }
+      ]
+    },
+    
+    {
+      "type": "div",
+      "class": "demo-toolbar",
+      "children": [
+        {
+          "type": "el-input",
+          "props": {
+            "placeholder": "搜索节点...",
+            "clearable": true,
+            "dataKey": "searchKeyword"
+          },
+          "on": {
+            "change": "handleSearch",
+            "clear": "handleClearSearch"
+          },
+          "style": { "width": "300px", "marginRight": "10px" }
+        },
+        {
+          "type": "el-button",
+          "props": { "type": "primary", "icon": "Search" },
+          "on": { "click": "handleSearch" },
+          "children": ["搜索"]
+        },
+        {
+          "type": "el-button",
+          "props": { "icon": "Plus" },
+          "on": { "click": "handleAddNode" },
+          "children": ["添加子节点"]
+        },
+        {
+          "type": "el-button",
+          "props": { "icon": "Delete", "type": "danger" },
+          "on": { "click": "handleDeleteNode" },
+          "children": ["删除节点"]
+        },
+        {
+          "type": "el-button",
+          "props": { "icon": "Download" },
+          "on": { "click": "handleExport" },
+          "children": ["导出数据"]
+        }
+      ]
+    },
+    
+    {
+      "type": "el-row",
+      "props": { "gutter": 20 },
+      "children": [
+        {
+          "type": "el-col",
+          "props": { "span": 12 },
+          "children": [
+            {
+              "type": "el-card",
+              "props": { "header": "组织架构树（扁平模式）" },
+              "children": [
+                {
+                  "type": "div",
+                  "class": "tree-wrapper",
+                  "children": [
+                    {
+                      "type": "el-tree",
+                      "props": {
+                        "data": [],
+                        "dataKey": "treeData.nodes",
+                        "nodeKey": "id",
+                        "defaultExpandAll": false,
+                        "props": {
+                          "label": "name",
+                          "children": "children"
+                        }
+                      },
+                      "on": {
+                        "node-expand": "handleNodeExpand",
+                        "node-collapse": "handleNodeCollapse",
+                        "node-click": "handleNodeClick"
+                      },
+                      "children": [
+                        {
+                          "type": "template",
+                          "props": { "slot": "default", "slotScope": "{ node, data }" },
+                          "children": [
+                            {
+                              "type": "span",
+                              "class": "tree-node-label",
+                              "children": [
+                                {
+                                  "type": "span",
+                                  "class": "node-icon",
+                                  "children": ["📁"]
+                                },
+                                {
+                                  "type": "span",
+                                  "children": ["{{ data.name }}"]
+                                },
+                                {
+                                  "type": "el-tag",
+                                  "props": { "size": "small", "type": "info" },
+                                  "style": { "marginLeft": "8px" },
+                                  "children": ["{{ data.type }}"]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        
+        {
+          "type": "el-col",
+          "props": { "span": 12 },
+          "children": [
+            {
+              "type": "el-card",
+              "props": { "header": "节点信息" },
+              "children": [
+                {
+                  "type": "div",
+                  "class": "node-info",
+                  "children": [
+                    {
+                      "type": "el-descriptions",
+                      "props": { "column": 1, "border": true },
+                      "children": [
+                        {
+                          "type": "el-descriptions-item",
+                          "props": { "label": "节点ID" },
+                          "children": [
+                            {
+                              "type": "span",
+                              "dataKey": "selectedNode.id",
+                              "children": ["-"]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "el-descriptions-item",
+                          "props": { "label": "节点名称" },
+                          "children": [
+                            {
+                              "type": "span",
+                              "dataKey": "selectedNode.name",
+                              "children": ["-"]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "el-descriptions-item",
+                          "props": { "label": "节点类型" },
+                          "children": [
+                            {
+                              "type": "span",
+                              "dataKey": "selectedNode.type",
+                              "children": ["-"]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "el-descriptions-item",
+                          "props": { "label": "层级" },
+                          "children": [
+                            {
+                              "type": "span",
+                              "dataKey": "selectedNode.level",
+                              "children": ["-"]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "el-descriptions-item",
+                          "props": { "label": "父节点ID" },
+                          "children": [
+                            {
+                              "type": "span",
+                              "dataKey": "selectedNode.parentId",
+                              "children": ["-"]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    
+                    {
+                      "type": "div",
+                      "class": "node-path",
+                      "style": { "marginTop": "20px" },
+                      "children": [
+                        {
+                          "type": "h4",
+                          "children": ["节点路径:"]
+                        },
+                        {
+                          "type": "el-breadcrumb",
+                          "props": { "separator": ">" },
+                          "children": [
+                            {
+                              "type": "el-breadcrumb-item",
+                              "dataKey": "selectedPath",
+                              "children": ["{{ item.name }}"]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            
+            {
+              "type": "el-card",
+              "props": { "header": "搜索结果" },
+              "style": { "marginTop": "20px" },
+              "children": [
+                {
+                  "type": "el-table",
+                  "props": {
+                    "data": [],
+                    "dataKey": "searchResults",
+                    "border": true,
+                    "stripe": true,
+                    "maxHeight": "300"
+                  },
+                  "children": [
+                    {
+                      "type": "el-table-column",
+                      "props": { "prop": "name", "label": "节点名称", "width": "150" }
+                    },
+                    {
+                      "type": "el-table-column",
+                      "props": { "prop": "type", "label": "类型", "width": "100" }
+                    },
+                    {
+                      "type": "el-table-column",
+                      "props": { "prop": "pathText", "label": "路径" }
+                    },
+                    {
+                      "type": "el-table-column",
+                      "props": { "label": "操作", "width": "120" },
+                      "children": [
+                        {
+                          "type": "template",
+                          "props": { "slot": "default", "scope": "scope" },
+                          "children": [
+                            {
+                              "type": "el-button",
+                              "props": { "size": "small", "type": "primary" },
+                              "on": { "click": "handleLocateNode" },
+                              "children": ["定位"]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    
+    {
+      "type": "div",
+      "class": "demo-info",
+      "style": { "marginTop": "30px" },
+      "children": [
+        {
+          "type": "el-alert",
+          "props": {
+            "title": "功能说明",
+            "type": "info",
+            "showIcon": true
+          },
+          "children": [
+            {
+              "type": "div",
+              "children": [
+                "1. 扁平化存储：所有节点存储在一维数组中，通过 parentId 建立关系",
+                { "type": "br" },
+                "2. 懒加载：点击节点时动态加载子节点（当前为静态演示）",
+                { "type": "br" },
+                "3. 层级构建：基于缓存动态构建嵌套树结构",
+                { "type": "br" },
+                "4. 搜索定位：支持关键词搜索并展开路径",
+                { "type": "br" },
+                "5. 节点管理：添加、删除节点，导出数据"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+  }
+]

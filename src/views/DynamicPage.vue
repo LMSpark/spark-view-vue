@@ -20,16 +20,17 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, watch} from 'vue'
+import {ref, onMounted, watch, reactive} from 'vue'
 import {useRoute} from 'vue-router'
 import {getPageConfig} from '../api'
-import type {PageRule} from '../types'
+import type {PageRule, ApiConfig} from '../types'
 
 // 使用 Vite 的 glob import 预加载所有页面脚本模块
 const pageModules = import.meta.glob('../pageScripts/*/script.js', { eager: false })
 
 const route = useRoute()
 const pageRules = ref<PageRule[]>([])
+const originalRules = ref<PageRule[]>([]) // 保存原始 rules 配置
 const pageStyle = ref<string>('')
 const pageId = ref<string>('')
 const loading = ref(true)
@@ -37,16 +38,18 @@ const error = ref<string>('')
 const formApi = ref<any>(null) // form-create API 实例
 const pageFunctions = ref<Record<string, Function>>({}) // 页面函数
 const pageContainer = ref<HTMLElement | null>(null) // 页面容器引用
+const pageData = reactive<Record<string, any>>({}) // 响应式页面数据
 
 // 初始化全局上下文（在任何模块加载之前）- 仅在客户端
 if (typeof window !== 'undefined') {
     ;(window as any).__pageContext = {
         $api: null,
         $route: route,
-        $data: {},
+        $data: pageData,
         $el: null,
         $query: (_selector: string) => null,
-        $queryAll: (_selector: string) => null
+        $queryAll: (_selector: string) => null,
+        $refreshData: null  // 刷新数据的方法
     }
 }
 
@@ -108,6 +111,117 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
         return newRule
     })
 }
+
+// 判断是否为 API 配置
+const isApiConfig = (value: any): value is ApiConfig => {
+    return value && typeof value === 'object' && 'url' in value
+}
+
+// 从响应中提取数据
+const extractData = (response: any, dataPath?: string): any => {
+    if (!dataPath) return response
+    
+    const keys = dataPath.split('.')
+    let value = response
+    for (const key of keys) {
+        value = value?.[key]
+    }
+    return value
+}
+
+// 加载 API 数据
+const loadApiData = async (key: string, config: ApiConfig): Promise<void> => {
+    try {
+        const method = config.method || 'GET'
+        const url = config.url
+        
+        let fetchUrl = url
+        let fetchOptions: RequestInit = { method }
+        
+        if (method === 'GET' && config.params) {
+            const params = new URLSearchParams(config.params)
+            fetchUrl = `${url}?${params}`
+        } else if (config.params) {
+            fetchOptions.body = JSON.stringify(config.params)
+            fetchOptions.headers = { 'Content-Type': 'application/json' }
+        }
+        
+        console.log(`📡 加载 API 数据 [${key}]:`, fetchUrl)
+        
+        const response = await fetch(fetchUrl, fetchOptions)
+        const result = await response.json()
+        
+        // 提取数据
+        const data = extractData(result, config.dataPath)
+        
+        // 更新响应式数据
+        pageData[key] = data
+        
+        console.log(`✅ API 数据加载成功 [${key}]:`, data)
+        
+        // 重新绑定数据到 rules
+        pageRules.value = bindDataToRules(pageRules.value, pageData)
+    } catch (err) {
+        console.error(`❌ 加载 API 数据失败 [${key}]:`, err)
+        throw err
+    }
+}
+
+// 刷新指定 key 的数据
+const refreshData = async (key?: string): Promise<void> => {
+    if (!pageDataConfig.value) return
+    
+    if (key) {
+        // 刷新单个数据
+        const config = pageDataConfig.value[key]
+        if (isApiConfig(config) && config.autoLoad !== false) {
+            await loadApiData(key, config)
+        }
+    } else {
+        // 刷新所有 API 数据
+        const apiConfigs = Object.entries(pageDataConfig.value)
+            .filter(([, value]) => isApiConfig(value))
+        
+        for (const [k, config] of apiConfigs) {
+            if ((config as ApiConfig).autoLoad !== false) {
+                await loadApiData(k, config as ApiConfig)
+            }
+        }
+    }
+}
+
+// 强制重新绑定数据到 rules（用于响应式数据更新后）
+const rebindRules = (): void => {
+    if (originalRules.value && originalRules.value.length > 0) {
+        console.log('🔄 重新绑定数据到 rules', pageData)
+        pageRules.value = bindDataToRules(JSON.parse(JSON.stringify(originalRules.value)), pageData)
+    }
+}
+
+// 保存原始数据配置（用于刷新）
+const pageDataConfig = ref<Record<string, any>>({})
+
+// 处理页面数据（支持静态数据和 API 配置）
+const processPageData = async (dataConfig: Record<string, any>): Promise<void> => {
+    // 保存配置用于后续刷新
+    pageDataConfig.value = dataConfig
+    
+    // 清空现有数据
+    Object.keys(pageData).forEach(key => delete pageData[key])
+    
+    // 处理每个数据项
+    for (const [key, value] of Object.entries(dataConfig)) {
+        if (isApiConfig(value)) {
+            // API 配置：如果 autoLoad 不为 false，则自动加载
+            if (value.autoLoad !== false) {
+                await loadApiData(key, value)
+            }
+        } else {
+            // 静态数据：直接赋值
+            pageData[key] = value
+        }
+    }
+}
 // CSS 作用域隔离：自动添加 [data-page="xxx"] 前缀
 const scopeCSS = (css: string, pageId: string): string => {
     if (!css) return ''
@@ -161,10 +275,12 @@ const loadPageConfig = async () => {
             ;(window as any).__pageContext = {
                 $api: formApi.value,
                 $route: route,
-                $data: config.data,
+                $data: pageData,
                 $el: pageContainer.value,
                 $query: (selector: string) => pageContainer.value?.querySelector(selector),
-                $queryAll: (selector: string) => pageContainer.value?.querySelectorAll(selector)
+                $queryAll: (selector: string) => pageContainer.value?.querySelectorAll(selector),
+                $refreshData: refreshData,  // 刷新 API 数据
+                $rebindRules: rebindRules    // 重新绑定数据到 rules
             }
             
             // 使用预加载的模块映射（Vite glob import）
@@ -195,8 +311,14 @@ const loadPageConfig = async () => {
             pageFunctions.value = {}
         }
     
+        // 处理数据（支持静态数据和 API 配置）
+        await processPageData(config.data)
+    
+        // 保存原始 rules 配置
+        originalRules.value = config.rule
+        
         // 绑定数据到 rules
-        pageRules.value = bindDataToRules(config.rule, config.data)
+        pageRules.value = bindDataToRules(config.rule, pageData)
     
         // 加载页面样式（自动添加作用域隔离）
         pageStyle.value = scopeCSS(config.style || '', pageId.value)

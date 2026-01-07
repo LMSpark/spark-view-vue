@@ -62,5 +62,78 @@ export default [
         data: routes
       }
     }
+  },
+  // 模拟用户列表 API
+  {
+    url: '/api/users',
+    method: 'get',
+    response: ({ query }: any) => {
+      const page = parseInt(query.page || '1')
+      const pageSize = parseInt(query.pageSize || '10')
+      
+      // 模拟数据
+      const allUsers = Array.from({ length: 50 }, (_, i) => ({
+        id: i + 1,
+        name: `用户${i + 1}`,
+        email: `user${i + 1}@example.com`,
+        status: i % 3 === 0 ? '禁用' : '激活',
+        date: new Date(2024, 0, (i % 28) + 1).toISOString().split('T')[0]
+      }))
+      
+      const start = (page - 1) * pageSize
+      const end = start + pageSize
+      
+      return {
+        code: 200,
+        message: 'success',
+        data: {
+          list: allUsers.slice(start, end),
+          total: allUsers.length,
+          page,
+          pageSize
+        }
+      }
+    }
+  },
+  // 模拟统计数据 API
+  {
+    url: '/api/dashboard/stats',
+    method: 'get',
+    response: () => {
+      return {
+        code: 200,
+        message: 'success',
+        data: {
+          totalUsers: Math.floor(Math.random() * 10000),
+          todayOrders: Math.floor(Math.random() * 200),
+          revenue: `¥${Math.floor(Math.random() * 100000)}`,
+          pending: Math.floor(Math.random() * 50)
+        }
+      }
+    }
+  },
+  // 模拟最近订单 API
+  {
+    url: '/api/orders/recent',
+    method: 'get',
+    response: ({ query }: any) => {
+      const limit = parseInt(query.limit || '10')
+      
+      const orders = Array.from({ length: limit }, (_, i) => ({
+        orderNo: `ORD${Date.now() + i}`,
+        customer: `客户${i + 1}`,
+        amount: Math.floor(Math.random() * 5000),
+        status: ['待付款', '已付款', '已发货', '已完成'][Math.floor(Math.random() * 4)],
+        date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      }))
+      
+      return {
+        code: 200,
+        message: 'success',
+        data: {
+          orders
+        }
+      }
+    }
   }
 ] as MockMethod[];

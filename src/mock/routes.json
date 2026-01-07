@@ -9,6 +9,42 @@
     }
   },
   {
+    "path": "/async-demo",
+    "name": "async-demo",
+    "pageId": "async-demo",
+    "meta": {
+      "title": "异步数据演示",
+      "icon": "🔄"
+    }
+  },
+  {
+    "path": "/dataset-demo",
+    "name": "dataset-demo",
+    "pageId": "dataset-demo",
+    "meta": {
+      "title": "DataSet 主从表",
+      "icon": "🔗"
+    }
+  },
+  {
+    "path": "/cascade-demo",
+    "name": "cascade-demo",
+    "pageId": "cascade-demo",
+    "meta": {
+      "title": "级联操作演示",
+      "icon": "⚡"
+    }
+  },
+  {
+    "path": "/tree-demo",
+    "name": "tree-demo",
+    "pageId": "tree-demo",
+    "meta": {
+      "title": "树形结构演示",
+      "icon": "🌳"
+    }
+  },
+  {
     "path": "/users",
     "name": "users",
     "pageId": "users",

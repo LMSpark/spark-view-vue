@@ -43,3 +43,16 @@ export const $query = (selector) => getContext().$query?.(selector)
  * @returns {NodeList} DOM 元素列表
  */
 export const $queryAll = (selector) => getContext().$queryAll?.(selector)
+
+/**
+ * 刷新页面数据
+ * @param {string} [key] - 可选，指定要刷新的数据 key，不传则刷新所有 API 数据
+ * @returns {Promise<void>}
+ */
+export const $refreshData = (key) => getContext().$refreshData?.(key)
+
+/**
+ * 重新绑定数据到 rules（用于响应式数据更新后强制视图刷新）
+ * @returns {void}
+ */
+export const $rebindRules = () => getContext().$rebindRules?.()

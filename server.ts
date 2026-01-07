@@ -24,8 +24,8 @@ async function createServer() {
         app.use(express.static(path.resolve(__dirname, 'dist/client'), { index: false }))
     }
 
-    // SSR 请求处理
-    app.use('*', async (req, res) => {
+    // SSR 请求处理 (Express 5 需要使用中间件的 next 参数来处理所有路由)
+    app.use(async (req, res, next) => {
         const url = req.originalUrl
 
         try {
