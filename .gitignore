@@ -28,6 +28,10 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
 
 # OS
 .DS_Store
