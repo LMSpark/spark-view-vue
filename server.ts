@@ -25,7 +25,7 @@ async function createServer() {
     }
 
     // SSR 请求处理
-    app.use('*', async (req, res, next) => {
+    app.use('*', async (req, res) => {
         const url = req.originalUrl
 
         try {
@@ -40,11 +40,12 @@ async function createServer() {
             } else {
                 // 生产模式
                 template = fs.readFileSync(path.resolve(__dirname, 'dist/client/index.html'), 'utf-8')
+                // @ts-ignore - 动态导入构建产物
                 render = (await import('./dist/server/entry-server.js')).render
             }
 
             // 渲染应用
-            const { html: appHtml, title, meta } = await render(url)
+            const { html: appHtml, title } = await render(url)
 
             // 注入渲染结果到模板
             const html = template
