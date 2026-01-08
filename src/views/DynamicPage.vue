@@ -140,30 +140,69 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
             }
             newRule.on = newOn
         }
-    
-        if (newRule.dataKey) {
-            const keys = newRule.dataKey.split('.')
-            let value: any = data
-            for (const key of keys) {
-                value = value?.[key]
+
+    // 自动为 el-table 注入状态同步事件
+    if (newRule.type === 'el-table' && newRule.dataKey) {
+        // 解析 dataKey 获取表名（例如："dataset.tables.Users.rows" → "Users"）
+        const dataKeyParts = newRule.dataKey.split('.')
+        const tablesIndex = dataKeyParts.indexOf('tables')
+        if (tablesIndex !== -1 && dataKeyParts[tablesIndex + 1]) {
+            const tableName = dataKeyParts[tablesIndex + 1]
+            const contextOrder = 0 // TODO: 支持自定义 contextOrder
+            
+            // 确保 on 对象存在
+            if (!newRule.on) {
+                newRule.on = {}
             }
-      
-            if (newRule.type === 'el-table' && newRule.props) {
-                newRule.props.data = value
-            } else if (newRule.children && Array.isArray(newRule.children)) {
-                // 确保值被转换为字符串
-                newRule.children = [String(value)]
-            } else if (newRule.options !== undefined) {
-                newRule.options = value
-            } else if (newRule.value !== undefined) {
-                newRule.value = value
+            
+            // 注入 current-change 事件（单选行变化）
+            const originalCurrentChange = newRule.on['current-change'] || newRule.on['currentChange']
+            newRule.on['current-change'] = (currentRow: any, oldRow: any) => {
+                // 先调用原有的用户处理器
+                if (originalCurrentChange && typeof originalCurrentChange === 'function') {
+                    originalCurrentChange(currentRow, oldRow)
+                }
+                
+                // 自动同步到 DataSetManager
+                const manager = dataSetManager.value
+                if (manager) {
+                    manager.setCurrentRow(tableName, currentRow || undefined, contextOrder)
+                    console.log(`✅ [自动同步] ${tableName}.currentRow =`, currentRow)
+                }
+            }
+            
+            // 注入 selection-change 事件（多选行变化）
+            const originalSelectionChange = newRule.on['selection-change'] || newRule.on['selectionChange']
+            newRule.on['selection-change'] = (selectedRows: any[]) => {
+                // 先调用原有的用户处理器
+                if (originalSelectionChange && typeof originalSelectionChange === 'function') {
+                    originalSelectionChange(selectedRows)
+                }
+                
+                // 自动同步到 DataSetManager
+                const manager = dataSetManager.value
+                if (manager) {
+                    manager.setSelectedRows(tableName, selectedRows, contextOrder)
+                    console.log(`✅ [自动同步] ${tableName}.selectedRows =`, selectedRows)
+                }
             }
         }
-    
-        if (newRule.children && Array.isArray(newRule.children)) {
-            newRule.children = newRule.children.map(child => {
-                if (typeof child === 'string' || typeof child === 'number') {
-                    return String(child)
+    }
+                if (typeof value === 'object') {
+                    newRule.children = [JSON.stringify(value, null, 2)]
+                } else {
+                    newRule.children = [String(value)]
+                }
+            } else {
+                newRule.children = ['']
+            }
+        } else if (newRule.options !== undefined) {
+            newRule.options = value
+        } else if (newRule.value !== undefined) {
+            newRule.value = value
+        } else if (newRule.props) {
+            // 对于其他组件，将 value 设置到 props 中
+            newRule.props = { ...newRule.props, modelValue: value }
                 }
                 return bindDataToRules([child], data)[0]
             })

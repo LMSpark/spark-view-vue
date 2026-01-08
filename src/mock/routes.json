@@ -45,6 +45,15 @@
     }
   },
   {
+    "path": "/master-detail",
+    "name": "master-detail",
+    "pageId": "master-detail",
+    "meta": {
+      "title": "Master-Detail 演示",
+      "icon": "🔗"
+    }
+  },
+  {
     "path": "/tree-demo",
     "name": "tree-demo",
     "pageId": "tree-demo",

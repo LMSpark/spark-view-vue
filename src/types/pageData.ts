@@ -165,6 +165,7 @@ export interface DataRelation {
   filterExpression: FilterExpression // 通用 JSON 过滤表达式
   cascadeUpdate?: boolean         // 是否级联更新
   cascadeDelete?: boolean         // 是否级联删除
+  autoLoad?: boolean              // 是否自动加载子表数据（用于 currentRow/selectedRows 依赖）
   
   // 扩展：关系名称
   relationName?: string           // 关系名称，便于引用

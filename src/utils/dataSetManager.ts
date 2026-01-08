@@ -104,6 +104,9 @@ export class DataSetManager {
       // 触发关系更新
       this.updateRelatedTables(tableName, contextOrder)
       
+      // 通知订阅者（currentRow 改变需要 UI 更新）
+      this.notifySubscribers(tableName)
+      
       // 触发事件
       this.emit('currentRowChanged', { tableName, contextOrder, row })
     }
@@ -119,6 +122,9 @@ export class DataSetManager {
       
       // 触发关系更新
       this.updateRelatedTables(tableName, contextOrder)
+      
+      // 通知订阅者（selectedRows 改变需要 UI 更新）
+      this.notifySubscribers(tableName)
       
       // 触发事件
       this.emit('selectedRowsChanged', { tableName, contextOrder, rows })
@@ -162,10 +168,25 @@ export class DataSetManager {
     if (!parentRows || parentRows.length === 0) {
       // 父数据为空，清空子数据
       childContext.selectedRows = []
+      
+      // 如果是 currentRow 依赖且有 autoLoad 配置，清空子表数据
+      if (relation.dependencyType === 'currentRow' && relation.autoLoad) {
+        childTable.rows = []
+        this.notifySubscribers(relation.childTable)
+      }
       return
     }
 
-    // 应用过滤表达式
+    // 特殊处理 currentRow 依赖：触发自动加载
+    if (relation.dependencyType === 'currentRow' && relation.autoLoad) {
+      // 自动加载子表数据（基于父表的 currentRow）
+      console.log(`🔄 [自动加载] ${relation.childTable} (基于 ${relation.parentTable}.currentRow)`)
+      this.requestTableData(relation.childTable)
+      // 注意：加载完成后会自动通知订阅者，然后应用过滤
+      return
+    }
+
+    // 应用过滤表达式（用于 selectedRows/allRows 等其他依赖类型）
     const filteredRows = this.filterChildRows(
       childTable.rows,
       relation.filterExpression,
