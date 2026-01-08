@@ -102,6 +102,105 @@ export function __init__() {
 8. emit('loadSuccess')         ← 触发事件（显示提示）
 ```
 
+### 8. BindingContext Architecture: Multiple UI Bindings
+
+**Core Design**: BindingContext is both DataTable's **base class** AND represents **slave contexts** (derived views).
+
+**Dual Purpose**:
+```typescript
+DataTable extends BindingContext {
+  // BindingContext properties (inherited):
+  currentRow: DataRow | null      // 当前行（单选）
+  selectedRows: DataRow[]         // 选中行（多选）
+  componentID: string             // UI 组件 ID
+  
+  // DataTable-specific properties:
+  tableName: string
+  rows: DataRow[]                 // 完整数据
+  columns: ColumnDefinition[]
+  contexts?: BindingContext[]     // 额外上下文（多视图绑定）
+}
+```
+
+**Multiple View Bindings**:
+One table can bind to multiple UI components using different contexts:
+```json
+{
+  "tableName": "Products",
+  "rows": [...],
+  "currentRow": null,              // Default context (contextOrder = 0)
+  "selectedRows": [],
+  "contexts": [
+    {
+      "componentID": "Products_detail",  // contextOrder = 1
+      "currentRow": {...},
+      "selectedRows": []
+    },
+    {
+      "componentID": "Products_chart",   // contextOrder = 2
+      "currentRow": null,
+      "selectedRows": [...]
+    }
+  ]
+}
+```
+
+**DataKey Path Support**:
+- `dataset.tables.Users.rows` - Full data (all rows)
+- `dataset.tables.Users.currentRow` - Currently selected single row
+- `dataset.tables.Users.selectedRows` - Multiple selected rows
+- `dataset.tables.Users.pagedRows` - Paginated data (future)
+- `dataset.tables.Users.filteredRows` - Filtered data (future)
+
+**Auto-Sync Mechanism (Zero Code)**:
+Kernel automatically injects event handlers to sync table state:
+```javascript
+// DynamicPage.vue automatically injects these for el-table:
+on: {
+  'current-change': (currentRow) => {
+    manager.setCurrentRow(tableName, currentRow)  // Auto-sync
+    // Triggers: notifySubscribers() → rebindRules() → UI updates
+  },
+  'selection-change': (selectedRows) => {
+    manager.setSelectedRows(tableName, selectedRows)  // Auto-sync
+  }
+}
+```
+
+**User Code**: NONE needed for basic scenarios!
+
+**Master-Detail Pattern (currentRow Dependency)**:
+```json
+{
+  "relations": [
+    {
+      "parentTable": "Users",
+      "childTable": "Orders",
+      "dependencyType": "currentRow",
+      "autoLoad": true,              // Automatically load Orders when row selected
+      "filterExpression": {
+        "type": "condition",
+        "operator": "=",
+        "field": "userId",
+        "parentField": "id"
+      }
+    }
+  ]
+}
+```
+
+**Workflow**:
+1. User clicks table row
+2. Kernel auto-syncs: `Users.currentRow = clickedRow`
+3. Kernel detects relation with `autoLoad: true`
+4. Kernel calls: `requestTableData('Orders')` with `Users.currentRow.id` in context
+5. DataLoader fetches filtered data
+6. Kernel auto-filters: `Orders.rows = rows.filter(r => r.userId === Users.currentRow.id)`
+7. Kernel notifies: `notifySubscribers('Orders')`
+8. UI auto-updates via Vue reactivity
+
+**Zero Business Code**: Entire master-detail flow handled by kernel!
+
 ### 9. Critical Architecture Pattern: Complete Decoupling
 
 **Core Principle**: UI requests and data binding are **completely decoupled** via observer pattern.
@@ -251,44 +350,15 @@ export function handleDeleteUser(user, index) {
 - Script files: `script.js` not `index.js` or other names
 
 ### Data Binding
-- Use `dataKey` in rules to reference nested data: `"dataKey": "stats.totalUsers"`
-- Tables require `"dataKey"` pointing to array + `"type": "el-table"` with column children
+- Use `dataKey` in rules to reference nested data: `"dataKey": "dataset.tables.Users.rows"`
+- Supports multiple BindingContext paths: `.rows`, `.currentRow`, `.selectedRows`, `.pagedRows`, `.filteredRows`
+- Tables require `"type": "el-table"` with column children
 - DO NOT bind data in script.js - all data flows through rule.json
-use `await` when calling `requestTableData()` - breaks decoupling
-8. **DON'T** call `formApi.refresh()` manually - rely on Vue reactivity
-9. **DON'T** register subscribers after `__init__()` - must be before data requests
-10. **DON'T** use array indices for tables - use semantic names: `tables.Users` not `tables[0]`
-11. **DON'T** forget to call `notifySubscribers()` after manual data manipulation
-12. **DON'T** directly assign `table.rows = []` - use `splice()` for Vue reactivity
-- Common styles in `src/style.css`
-Complete Decoupling via Observer Pattern
-```
-UI (button click)
-  ↓ requestTableData() - non-blocking
-Returns immediately
-  ↓
-DataSetManager: async background loading
-  ↓
-Data ready → notifySubscribers()
-  ↓ triggers callback
-rebindRules() → pageRules.value = ...
-  ↓ Vue reactivity
-form-create detects change → auto re-render
-```
 
-**Key Points**:
-- UI never waits for data loading
-- Subscribers registered before any data requests
-- Notifications trigger automatic UI updates
-- No manual refresh needed
-
-### Smart Dependency Loading
-- **Dependency Analysis**: Kernel analyzes table relations and builds dependency tree
-- **Root Detection**: Automatically finds root tables (tables with no parents)
-- **Conditional Loading**: Only loads if dependencies are satisfied or loads roots first
-- **Event-Driven**: Parent load notifies children, they load if subscribed
-- **Example**: Request OrderDetails → Kernel loads Categories → Products → OrderDetailsse kebab-case in rule.json: `"type": "el-button"` not `"type": "ElButton"`
+### Element Plus Integration
+- Use kebab-case in rule.json: `"type": "el-button"` not `"type": "ElButton"`
 - Icons: Import from 'element-plus/icons-vue' if needed
+- Common styles in `src/style.css`
 
 ### Mock API
 - Mock data in `src/mock/` served by vite-plugin-mock in CSR mode
@@ -304,21 +374,30 @@ form-create detects change → auto re-render
 5. **DON'T** import page data directly in scripts - use `$data()` for reactivity
 6. **DON'T** manually initialize DataSetManager - kernel does it automatically
 7. **DON'T** manually call rebindRules after data changes - subscription handles it
-8. **DON'T** use array indices for tables - use semantic names: `tables.Users` not `tables[0]`
-9. **DON'T** forget to call `notifySubscribers()` after manual data manipulation
-10. **DON'T** recursively load child tables - let them decide based on subscriptions
+8. **DON'T** use `await` when calling `requestTableData()` - breaks decoupling
+9. **DON'T** call `formApi.refresh()` manually - rely on Vue reactivity
+10. **DON'T** register subscribers after `__init__()` - must be before data requests
+11. **DON'T** use array indices for tables - use semantic names: `tables.Users` not `tables[0]`
+12. **DON'T** forget to call `notifySubscribers()` after manual data manipulation
+13. **DON'T** directly assign `table.rows = []` for clearing - use `splice()` for Vue reactivity
+14. **DON'T** write event handlers for currentChange/selectionChange - kernel auto-injects them
 
-## Advanced Kernel Features
-Complete Decoupling"**: UI requests don't wait, DataSetManager notifies when ready
-2. **Non-Blocking First**: Never use `await` on `requestTableData()` in UI layer
-3. **Subscribers Before Requests**: Auto-subscribe must happen before `__init__()` 
-4. **Trust Vue Reactivity**: No manual `formApi.refresh()`, let Vue handle updates
-5. **Trust the Kernel**: Don't reinitialize, don't manually bind - kernel does it automatically  
-6. **Use Semantic Names**: `tables.Users` not `tables[0]` for maintainability
-7. **Embrace Full Decoupling**: UI ↔ Subscription ↔ Data, never direct connections
-8. **Cascade Operations**: Use `cascadeUpdate/Delete`, not manual traversal
-9. **Smart Loading**: Use `requestTableData()`, kernel handles dependency chains
-10. **Observer Pattern**: Data changes notify subscribers, UI updates automatically
+## Key Takeaways for AI Agents
+
+1. **Think "Low-Code First"**: Page scripts should have minimal code, kernel handles complexity
+2. **Complete Decoupling**: UI requests don't wait, DataSetManager notifies when ready
+3. **Non-Blocking First**: Never use `await` on `requestTableData()` in UI layer
+4. **Subscribers Before Requests**: Auto-subscribe must happen before `__init__()` 
+5. **Trust Vue Reactivity**: No manual `formApi.refresh()`, let Vue handle updates
+6. **Trust the Kernel**: Don't reinitialize, don't manually bind - kernel does it automatically  
+7. **Use Semantic Names**: `tables.Users` not `tables[0]` for maintainability
+8. **Embrace Full Decoupling**: UI ↔ Subscription ↔ Data, never direct connections
+9. **Cascade Operations**: Use `cascadeUpdate/Delete`, not manual traversal
+10. **Smart Loading**: Use `requestTableData()`, kernel handles dependency chains
+11. **Observer Pattern**: Data changes notify subscribers, UI updates automatically
+12. **Event-Driven**: Parent notifies children, children decide autonomously
+13. **Auto-Sync Magic**: Kernel injects event handlers, zero code for currentRow/selectedRows sync
+14. **Master-Detail Zero Code**: Set `autoLoad: true`, kernel handles entire flow
 11. **Event-Driven**: Parent notifies children, children decide autonomously
 12. **__init__ for Setup**: Use `__init__()` to register dataLoader and event listeners, not for data requests
 ### Observer Pattern Implementation
@@ -355,18 +434,9 @@ Auto-update via rebindRules()
   - Basic page: `src/mock/pages/home/`
   - DataSet with cascade: `src/mock/pages/cascade-demo/`
   - Smart dependency loading: `src/mock/pages/smart-load/`
+  - Master-Detail pattern: `src/mock/pages/master-detail/`
 - Type definitions: `src/types/index.ts`
 - DataSet types: `src/types/pageData.ts`
 - Kernel implementation: `src/utils/dataSetManager.ts`
 - UI kernel: `src/views/DynamicPage.vue`
 
-## Key Takeaways for AI Agents
-
-1. **Think "Low-Code First"**: Page scripts should have minimal code, kernel handles complexity
-2. **Trust the Kernel**: Don't reinitialize, don't manually bind - kernel does it automatically  
-3. **Use Semantic Names**: `tables.Users` not `tables[0]` for maintainability
-4. **Embrace Decoupling**: UI ↔ Subscription ↔ Data, never direct connections
-5. **Cascade Operations**: Use `cascadeUpdate/Delete`, not manual traversal
-6. **Smart Loading**: Use `requestTableData()`, kernel handles dependency chains
-7. **Observer Pattern**: Data changes notify subscribers, UI updates automatically
-8. **Event-Driven**: Parent notifies children, children decide autonomously
