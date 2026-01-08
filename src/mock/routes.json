@@ -36,6 +36,15 @@
     }
   },
   {
+    "path": "/smart-load",
+    "name": "smart-load",
+    "pageId": "smart-load",
+    "meta": {
+      "title": "智能依赖加载",
+      "icon": "🧠"
+    }
+  },
+  {
     "path": "/tree-demo",
     "name": "tree-demo",
     "pageId": "tree-demo",
