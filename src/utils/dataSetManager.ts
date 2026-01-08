@@ -21,9 +21,12 @@ import { FilterExpressionParser } from './filterExpressionParser'
 export class DataSetManager {
   private dataSet: DataSet
   private eventListeners: Map<string, Function[]> = new Map()
+  private tableSubscribers: Map<string, Set<Function>> = new Map() // UI 订阅表数据变化
+  public dataLoader?: (tableName: string) => Promise<DataRow[]> // 数据加载器（公开以便注册）
 
-  constructor(dataSet: DataSet) {
+  constructor(dataSet: DataSet, dataLoader?: (tableName: string) => Promise<DataRow[]>) {
     this.dataSet = dataSet
+    this.dataLoader = dataLoader
     this.initializeContexts()
   }
 
@@ -31,10 +34,15 @@ export class DataSetManager {
    * 初始化所有表的上下文编号
    */
   private initializeContexts(): void {
-    this.dataSet.tables.forEach(table => {
+    // 支持两种格式：数组和对象
+    const tables = (Array.isArray(this.dataSet.tables) 
+      ? this.dataSet.tables 
+      : Object.values(this.dataSet.tables)) as DataTable[];
+    
+    tables.forEach((table: DataTable) => {
       // 为每个表的额外上下文分配编号和 contextOrder
       if (table.contexts && table.contexts.length > 0) {
-        table.contexts.forEach((context, index) => {
+        table.contexts.forEach((context: BindingContext, index: number) => {
           if (!context.componentID) {
             context.componentID = `${table.tableName}_context_${index + 1}`
           }
@@ -61,7 +69,12 @@ export class DataSetManager {
    * 获取表
    */
   getTable(tableName: string): DataTable | undefined {
-    return this.dataSet.tables.find(t => t.tableName === tableName)
+    // 支持两种格式
+    if (Array.isArray(this.dataSet.tables)) {
+      return this.dataSet.tables.find(t => t.tableName === tableName);
+    } else {
+      return this.dataSet.tables[tableName];
+    }
   }
 
   /**
@@ -316,6 +329,12 @@ export class DataSetManager {
         oldValues
       })
     })
+    
+    // 通知订阅者
+    this.notifySubscribers(tableName);
+    if (relations.length > 0) {
+      relations.forEach(rel => this.notifySubscribers(rel.childTable));
+    }
   }
 
   /**
@@ -323,20 +342,34 @@ export class DataSetManager {
    * 当父表行删除时，自动删除子表中所有关联的行
    */
   cascadeDelete(tableName: string, row: DataRow): void {
+    console.log(`🔧 cascadeDelete 被调用: ${tableName}`, row);
+    
     const table = this.getTable(tableName)
-    if (!table) return
+    if (!table) {
+      console.warn(`⚠️ 找不到表: ${tableName}`);
+      return;
+    }
 
     // 查找需要级联删除的关系
     const relations = this.dataSet.relations?.filter(
       rel => rel.parentTable === tableName && rel.cascadeDelete
     ) || []
 
+    console.log(`🔗 找到 ${relations.length} 个级联删除关系`);
+
     relations.forEach(relation => {
+      console.log(`  处理关系: ${relation.parentTable} -> ${relation.childTable}`);
+      
       const childTable = this.getTable(relation.childTable)
-      if (!childTable) return
+      if (!childTable) {
+        console.warn(`⚠️ 找不到子表: ${relation.childTable}`);
+        return;
+      }
 
       // 解析 filterExpression 找到外键字段映射
       const foreignKeyMap = this.extractForeignKeyMap(relation.filterExpression)
+      
+      console.log(`  外键映射:`, foreignKeyMap);
       
       if (foreignKeyMap.length === 0) {
         console.warn(`级联删除: 无法从 filterExpression 提取外键映射: ${tableName} -> ${relation.childTable}`)
@@ -347,23 +380,34 @@ export class DataSetManager {
       const rowsToDelete: DataRow[] = []
       childTable.rows.forEach(childRow => {
         const matches = foreignKeyMap.every(({ childField, parentField }) => {
-          return childRow[childField] === row[parentField]
+          const match = childRow[childField] === row[parentField];
+          console.log(`    检查 ${childRow[childField]} === ${row[parentField]}: ${match}`);
+          return match;
         })
         
         if (matches) {
+          console.log(`    ✓ 匹配到需要删除的行:`, childRow);
           rowsToDelete.push(childRow)
         }
       })
+
+      console.log(`  找到 ${rowsToDelete.length} 行需要删除`);
 
       // 递归级联删除子表的子表
       rowsToDelete.forEach(childRow => {
         this.cascadeDelete(relation.childTable, childRow)
       })
 
-      // 删除子行
+      // 删除子行 - 使用 splice 确保触发 Vue 响应式更新
       if (rowsToDelete.length > 0) {
-        childTable.rows = childTable.rows.filter(row => !rowsToDelete.includes(row))
-        console.log(`级联删除: ${relation.childTable} 删除了 ${rowsToDelete.length} 行`)
+        // 从后向前删除，避免索引变化影响
+        rowsToDelete.forEach(rowToDelete => {
+          const index = childTable.rows.indexOf(rowToDelete);
+          if (index > -1) {
+            childTable.rows.splice(index, 1);
+          }
+        });
+        console.log(`✅ 级联删除: ${relation.childTable} 删除了 ${rowsToDelete.length} 行，剩余 ${childTable.rows.length} 行`)
       }
 
       // 触发子表删除事件
@@ -374,6 +418,12 @@ export class DataSetManager {
         deletedRows: rowsToDelete
       })
     })
+    
+    // 通知订阅者
+    this.notifySubscribers(tableName);
+    if (relations.length > 0) {
+      relations.forEach(rel => this.notifySubscribers(rel.childTable));
+    }
   }
 
   /**
@@ -515,4 +565,267 @@ export class DataSetManager {
     const dataSet = JSON.parse(json) as DataSet
     return new DataSetManager(dataSet)
   }
+
+  /**
+   * 订阅表数据变化
+   * @param tableName 表名
+   * @param callback 回调函数
+   */
+  subscribe(tableName: string, callback: Function): () => void {
+    if (!this.tableSubscribers.has(tableName)) {
+      this.tableSubscribers.set(tableName, new Set());
+    }
+    this.tableSubscribers.get(tableName)!.add(callback);
+    
+    console.log(`📡 UI 订阅表: ${tableName}`);
+    
+    // 返回取消订阅函数
+    return () => {
+      this.tableSubscribers.get(tableName)?.delete(callback);
+    };
+  }
+
+  /**
+   * 通知订阅者数据变化（公开方法）
+   * @param tableName 表名
+   */
+  notifySubscribers(tableName: string): void {
+    const subscribers = this.tableSubscribers.get(tableName);
+    if (subscribers && subscribers.size > 0) {
+      const table = this.getTable(tableName);
+      console.log(`📢 通知 ${subscribers.size} 个订阅者: ${tableName} 数据已更新`);
+      subscribers.forEach(callback => callback(table));
+    }
+  }
+
+  /**
+   * 获取表的所有父依赖（递归）
+   * @param tableName 表名
+   * @returns 父表名称数组（从根到直接父表）
+   */
+  getTableDependencies(tableName: string): string[] {
+    const dependencies: string[] = [];
+    const visited = new Set<string>();
+    
+    const findParents = (currentTable: string) => {
+      if (visited.has(currentTable)) return;
+      visited.add(currentTable);
+      
+      // 找到所有以 currentTable 为子表的关系
+      const parentRelations = this.dataSet.relations?.filter(
+        rel => rel.childTable === currentTable
+      ) || [];
+      
+      parentRelations.forEach(relation => {
+        if (!dependencies.includes(relation.parentTable)) {
+          // 递归查找父表的父表
+          findParents(relation.parentTable);
+          dependencies.push(relation.parentTable);
+        }
+      });
+    };
+    
+    findParents(tableName);
+    return dependencies;
+  }
+
+  /**
+   * 检查表的依赖是否都有数据
+   * @param tableName 表名
+   * @returns 是否所有依赖表都有数据
+   */
+  areDependenciesSatisfied(tableName: string): boolean {
+    const dependencies = this.getTableDependencies(tableName);
+    
+    for (const depTableName of dependencies) {
+      const depTable = this.getTable(depTableName);
+      if (!depTable || !depTable.rows || depTable.rows.length === 0) {
+        console.log(`❌ 依赖表 ${depTableName} 缺少数据`);
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
+   * 获取根依赖表（没有父表的表）
+   * @param tableName 表名
+   * @returns 根表名称数组
+   */
+  getRootDependencies(tableName: string): string[] {
+    const allDependencies = this.getTableDependencies(tableName);
+    
+    // 过滤出没有父表的表（根表）
+    return allDependencies.filter(depTable => {
+      const hasParent = this.dataSet.relations?.some(
+        rel => rel.childTable === depTable
+      );
+      return !hasParent;
+    });
+  }
+
+  /**
+   * 智能请求表数据（自动处理依赖）- 完全解耦：不阻塞，异步加载后通知订阅者
+   * @param tableName 表名
+   */
+  requestTableData(tableName: string): void {
+    console.log(`🔍 UI 请求表数据: ${tableName}`);
+    this.emit('loadStart', { tableName });
+    
+    // 异步处理，不阻塞 UI
+    this._requestTableDataAsync(tableName).catch(error => {
+      console.error(`❌ 加载 ${tableName} 失败:`, error);
+      this.emit('loadError', { tableName, error });
+    });
+  }
+
+  /**
+   * 内部异步请求方法
+   */
+  private async _requestTableDataAsync(tableName: string): Promise<void> {
+    // 检查表是否已有数据
+    const table = this.getTable(tableName);
+    if (table && table.rows && table.rows.length > 0) {
+      console.log(`✅ 表 ${tableName} 已有数据（${table.rows.length} 行），直接使用`);
+      this.notifySubscribers(tableName);
+      this.emit('loadSuccess', { tableName });
+      return;
+    }
+    
+    // 调试：显示当前表状态
+    console.log(`🔍 表 ${tableName} 状态检查:`, {
+      tableExists: !!table,
+      hasRows: !!(table && table.rows),
+      rowsLength: table?.rows?.length || 0,
+      rowsIsArray: Array.isArray(table?.rows)
+    });
+    
+    // 检查依赖是否满足
+    if (this.areDependenciesSatisfied(tableName)) {
+      const dependencies = this.getTableDependencies(tableName);
+      
+      // 如果是根表（无依赖）且无数据，需要加载
+      if (dependencies.length === 0) {
+        console.log(`📦 ${tableName} 是根表且无数据，开始加载`);
+        await this.loadTableData(tableName);
+        this.emit('loadSuccess', { tableName });
+        return;
+      }
+      
+      // 有依赖且依赖满足，应用关系过滤
+      console.log(`✅ 依赖条件具备，根据关系组织数据: ${tableName}`);
+      this.applyRelationsForTable(tableName);
+      this.notifySubscribers(tableName);
+      this.emit('loadSuccess', { tableName });
+      return;
+    }
+    
+    // 依赖不满足，找到根依赖并加载
+    const rootTables = this.getRootDependencies(tableName);
+    
+    if (rootTables.length === 0) {
+      // 当前表本身就是根表，直接加载
+      await this.loadTableData(tableName);
+      this.emit('loadSuccess', { tableName });
+    } else {
+      console.log(`📦 需要先加载根依赖表: ${rootTables.join(', ')}`);
+      
+      // 加载所有根表
+      for (const rootTable of rootTables) {
+        const rootTableData = this.getTable(rootTable);
+        if (!rootTableData || !rootTableData.rows || rootTableData.rows.length === 0) {
+          await this.loadTableData(rootTable);
+        }
+      }
+      
+      // 根表加载完成后，通知子表依赖已更新（不递归加载，让子表自己决定）
+      this.notifyDependencyUpdated(tableName);
+    }
+  }
+
+  /**
+   * 通知依赖已更新（触发事件，不自动加载）
+   * @param tableName 表名
+   */
+  private notifyDependencyUpdated(tableName: string): void {
+    console.log(`📢 通知 ${tableName}: 依赖数据已更新，请根据需要加载`);
+    this.emit('dependencyUpdated', { tableName });
+    
+    // 如果有订阅者关注此表，说明 UI 需要数据，则加载
+    if (this.tableSubscribers.has(tableName) && this.tableSubscribers.get(tableName)!.size > 0) {
+      console.log(`🎯 ${tableName} 有 UI 订阅者，自动加载数据`);
+      this.loadTableData(tableName).catch(err => {
+        console.error(`❌ 自动加载 ${tableName} 失败:`, err);
+      });
+    }
+  }
+
+  /**
+   * 加载表数据（调用外部数据加载器）
+   * @param tableName 表名
+   */
+  private async loadTableData(tableName: string): Promise<void> {
+    if (!this.dataLoader) {
+      console.warn(`⚠️ 未配置数据加载器，无法加载 ${tableName}`);
+      return;
+    }
+    
+    console.log(`🌐 开始加载数据: ${tableName}`);
+    
+    try {
+      const rows = await this.dataLoader(tableName);
+      const table = this.getTable(tableName);
+      
+      if (table) {
+        table.rows = rows;
+        console.log(`✅ 数据加载成功: ${tableName}，共 ${rows.length} 行`);
+        
+        // 数据加载完成，通知UI订阅者
+        this.notifySubscribers(tableName);
+        
+        // 通知子表：父表数据已更新
+        this.notifyChildTables(tableName);
+      }
+    } catch (error) {
+      console.error(`❌ 加载数据失败: ${tableName}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 通知子表：父表数据已更新（让子表自己决定是否加载）
+   * @param parentTableName 父表名
+   */
+  private notifyChildTables(parentTableName: string): void {
+    if (!this.dataSet.relations) return;
+    
+    // 找到所有以此表为父表的子表
+    const childRelations = this.dataSet.relations.filter(
+      rel => rel.parentTable === parentTableName
+    );
+    
+    childRelations.forEach(relation => {
+      console.log(`📢 通知子表 ${relation.childTable}: 父表 ${parentTableName} 数据已更新`);
+      this.notifyDependencyUpdated(relation.childTable);
+    });
+  }
+
+  /**
+   * 应用与指定表相关的所有关系
+   * @param tableName 表名
+   */
+  private applyRelationsForTable(tableName: string): void {
+    if (!this.dataSet.relations) return;
+    
+    // 找到所有以此表为子表的关系
+    const relations = this.dataSet.relations.filter(
+      rel => rel.childTable === tableName
+    );
+    
+    relations.forEach(relation => {
+      this.applyRelation(relation);
+    });
+  }
 }
+

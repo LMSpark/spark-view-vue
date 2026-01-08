@@ -8,8 +8,7 @@ import type {
   FlatTreeNode,
   NestedTreeNode,
   FlatTreeCache,
-  TreePath,
-  TreeSearchResult
+  TreePath
 } from '../types/pageData'
 
 /**
@@ -145,7 +144,7 @@ export class TreeManager {
     let currentId: string | number | null | undefined = nodeId
 
     while (currentId !== null && currentId !== undefined) {
-      const node = this.cache[currentId]
+      const node: FlatTreeNode | undefined = this.cache[currentId]
       if (!node) break
 
       pathIds.unshift(currentId)

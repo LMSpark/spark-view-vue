@@ -24,6 +24,7 @@ import {ref, onMounted, watch, reactive} from 'vue'
 import {useRoute} from 'vue-router'
 import {getPageConfig} from '../api'
 import type {PageRule, ApiConfig} from '../types'
+import { DataSetManager } from '../utils/dataSetManager'
 
 // 使用 Vite 的 glob import 预加载所有页面脚本模块
 const pageModules = import.meta.glob('../pageScripts/*/script.js', { eager: false })
@@ -39,6 +40,7 @@ const formApi = ref<any>(null) // form-create API 实例
 const pageFunctions = ref<Record<string, Function>>({}) // 页面函数
 const pageContainer = ref<HTMLElement | null>(null) // 页面容器引用
 const pageData = reactive<Record<string, any>>({}) // 响应式页面数据
+let dataSetManager: DataSetManager | null = null // DataSet 管理器实例
 
 // 初始化全局上下文（在任何模块加载之前）- 仅在客户端
 if (typeof window !== 'undefined') {
@@ -49,8 +51,67 @@ if (typeof window !== 'undefined') {
         $el: null,
         $query: (_selector: string) => null,
         $queryAll: (_selector: string) => null,
-        $refreshData: null  // 刷新数据的方法
+        $refreshData: null,  // 刷新数据的方法
+        $dataSetManager: null  // DataSet 管理器实例（由 DynamicPage 自动创建）
     }
+}
+
+// 自动初始化 DataSetManager（如果 pageData 包含 dataset）
+const initDataSetManager = () => {
+    if (pageData.dataset && pageData.dataset.tables) {
+        if (!dataSetManager) {
+            // 创建 mock dataLoader（页面脚本可以覆盖）
+            const defaultDataLoader = async (tableName: string) => {
+                console.log(`⚠️ 默认 dataLoader：${tableName} - 页面脚本应该注册自定义 dataLoader`);
+                return [];
+            };
+            
+            // 完全解耦：不传 rebindCallback，通过订阅机制自动触发
+            dataSetManager = new DataSetManager(pageData.dataset, defaultDataLoader);
+            // 更新全局上下文
+            if (typeof window !== 'undefined') {
+                (window as any).__pageContext.$dataSetManager = dataSetManager;
+            }
+            console.log('✅ DataSetManager 自动初始化成功（内核级）');
+            
+            // 注意：autoSubscribeTables() 需要在 originalRules 设置后调用
+            // 已移到 loadPageConfig 的最后
+        }
+    }
+}
+
+// 自动订阅 rules 中引用的所有表（UI 完全解耦）
+const autoSubscribeTables = () => {
+    if (!dataSetManager || !originalRules.value) return;
+    
+    const tableNames = new Set<string>();
+    
+    // 递归提取所有 dataKey 中的表名
+    const extractTableNames = (rules: any[]) => {
+        rules.forEach(rule => {
+            if (rule.dataKey && rule.dataKey.startsWith('dataset.tables.')) {
+                // 提取表名：dataset.tables.Users.rows → Users
+                const match = rule.dataKey.match(/^dataset\.tables\.([^.]+)/);
+                if (match) {
+                    tableNames.add(match[1]);
+                }
+            }
+            if (rule.children && Array.isArray(rule.children)) {
+                extractTableNames(rule.children);
+            }
+        });
+    };
+    
+    extractTableNames(originalRules.value);
+    
+    // 为每个表注册订阅（表变化自动触发 rebindRules）
+    tableNames.forEach(tableName => {
+        dataSetManager!.subscribe(tableName, () => {
+            console.log(`🔄 表 ${tableName} 数据变化，自动重绑 UI`);
+            rebindRules();
+        });
+        console.log(`📡 自动订阅表: ${tableName}`);
+    });
 }
 
 
@@ -269,13 +330,32 @@ const loadPageConfig = async () => {
     
         console.log(`✅ 加载页面配置 [${currentPageId}]:`, config)
     
+        // 先处理数据（支持静态数据和 API 配置）
+        await processPageData(config.data)
+    
+        // 自动初始化 DataSetManager（如果数据包含 dataset）
+        initDataSetManager()
+
+        // 🎯 关键：先保存 rules 并注册订阅者，再加载模块
+        // 这样可以确保 __init__ 触发数据加载时，订阅者已经就绪
+        originalRules.value = config.rule
+        
+        // 绑定数据到 rules
+        pageRules.value = bindDataToRules(config.rule, pageData)
+    
+        // 自动订阅所有表（必须在 __init__ 之前）
+        if (dataSetManager && originalRules.value) {
+            autoSubscribeTables();
+        }
+
         // 直接动态导入页面脚本模块
         try {
-            // 更新全局上下文（在模块加载之前）
+            // 更新全局上下文（在模块加载之前，确保包含 dataSetManager）
             ;(window as any).__pageContext = {
                 $api: formApi.value,
                 $route: route,
                 $data: pageData,
+                $dataSetManager: dataSetManager,  // 确保传递 DataSetManager
                 $el: pageContainer.value,
                 $query: (selector: string) => pageContainer.value?.querySelector(selector),
                 $queryAll: (selector: string) => pageContainer.value?.querySelectorAll(selector),
@@ -294,32 +374,29 @@ const loadPageConfig = async () => {
                 // 调用加载器函数获取模块
                 const scriptModule = await moduleLoader() as Record<string, unknown>
                 
-                // 提取导出的函数
+                // 提取导出的函数（排除 __init__）
                 const functions: Record<string, Function> = {}
                 for (const [key, value] of Object.entries(scriptModule)) {
-                    if (typeof value === 'function') {
+                    if (typeof value === 'function' && key !== '__init__') {
                         functions[key] = value as Function
                     }
                 }
                 
                 pageFunctions.value = functions
                 console.log('✅ 页面模块加载成功，注册函数:', Object.keys(functions))
+                
+                // 如果模块导出了 __init__ 函数，立即调用（此时订阅者已就绪）
+                if (typeof scriptModule.__init__ === 'function') {
+                    console.log('🎯 调用模块初始化函数 __init__')
+                    ;(scriptModule.__init__ as Function)()
+                }
             }
         } catch (err) {
             console.error('❌ 页面模块加载失败:', err)
             console.error('尝试加载:', `../pageScripts/${currentPageId}/script.js`)
             pageFunctions.value = {}
         }
-    
-        // 处理数据（支持静态数据和 API 配置）
-        await processPageData(config.data)
-    
-        // 保存原始 rules 配置
-        originalRules.value = config.rule
-        
-        // 绑定数据到 rules
-        pageRules.value = bindDataToRules(config.rule, pageData)
-    
+
         // 加载页面样式（自动添加作用域隔离）
         pageStyle.value = scopeCSS(config.style || '', pageId.value)
     } catch (err: any) {

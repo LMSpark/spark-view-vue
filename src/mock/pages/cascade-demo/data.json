@@ -2,8 +2,8 @@
   "dataset": {
     "dataSetName": "CascadeDemo",
     "version": 1,
-    "tables": [
-      {
+    "tables": {
+      "Users": {
         "tableName": "Users",
         "columns": [
           { "columnName": "id", "dataType": "number", "isPrimaryKey": true },
@@ -15,7 +15,7 @@
           { "id": 2, "name": "Bob", "email": "bob@example.com" }
         ]
       },
-      {
+      "Orders": {
         "tableName": "Orders",
         "columns": [
           { "columnName": "id", "dataType": "number", "isPrimaryKey": true },
@@ -29,7 +29,7 @@
           { "id": 103, "userId": 2, "orderNo": "ORD-003", "amount": 599.00 }
         ]
       },
-      {
+      "OrderItems": {
         "tableName": "OrderItems",
         "columns": [
           { "columnName": "id", "dataType": "number", "isPrimaryKey": true },
@@ -45,7 +45,7 @@
           { "id": 1004, "orderId": 103, "productName": "显示器", "quantity": 1, "price": 599.00 }
         ]
       }
-    ],
+    },
     "relations": [
       {
         "parentTable": "Users",

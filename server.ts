@@ -25,7 +25,7 @@ async function createServer() {
     }
 
     // SSR 请求处理 (Express 5 需要使用中间件的 next 参数来处理所有路由)
-    app.use(async (req, res, next) => {
+    app.use(async (req, res) => {
         const url = req.originalUrl
 
         try {
