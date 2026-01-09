@@ -201,6 +201,26 @@ on: {
 
 **Zero Business Code**: Entire master-detail flow handled by kernel!
 
+**Original Data Caching (Automatic)**:
+To prevent data loss during repeated filtering, the kernel automatically caches the original full dataset:
+```typescript
+// DataSetManager automatically handles this:
+table._originalRows = [...rows];  // Cached on first load
+
+// Subsequent filtering always uses original data:
+const sourceData = table._originalRows || table.rows;
+const filteredRows = filterChildRows(sourceData, ...);
+```
+
+**Benefits**:
+- ✅ Master-detail can switch between parent rows infinitely without data loss
+- ✅ Each filter operation works on the complete dataset
+- ✅ No manual cache management needed
+
+**Memory Consideration**:
+- Each dependent table stores 2 copies: `rows` (filtered) + `_originalRows` (full)
+- For tables with >1000 rows, consider pagination instead of client-side filtering
+
 ### 9. Critical Architecture Pattern: Complete Decoupling
 
 **Core Principle**: UI requests and data binding are **completely decoupled** via observer pattern.
@@ -381,13 +401,15 @@ export function handleDeleteUser(user, index) {
 12. **DON'T** forget to call `notifySubscribers()` after manual data manipulation
 13. **DON'T** directly assign `table.rows = []` for clearing - use `splice()` for Vue reactivity
 14. **DON'T** write event handlers for currentChange/selectionChange - kernel auto-injects them
+15. **DON'T** modify `table._originalRows` directly - it's managed by DataSetManager automatically
 
 ## Key Takeaways for AI Agents
 
 1. **Think "Low-Code First"**: Page scripts should have minimal code, kernel handles complexity
 2. **Complete Decoupling**: UI requests don't wait, DataSetManager notifies when ready
 3. **Non-Blocking First**: Never use `await` on `requestTableData()` in UI layer
-4. **Subscribers Before Requests**: Auto-subscribe must happen before `__init__()` 
+4. **Subscribers Before Requests**: Auto-subscribe must happen before `__init__()`
+5. **Original Data Cache**: Kernel auto-caches `_originalRows` on first load, filtering always uses full dataset 
 5. **Trust Vue Reactivity**: No manual `formApi.refresh()`, let Vue handle updates
 6. **Trust the Kernel**: Don't reinitialize, don't manually bind - kernel does it automatically  
 7. **Use Semantic Names**: `tables.Users` not `tables[0]` for maintainability

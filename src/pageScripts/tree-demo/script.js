@@ -8,7 +8,7 @@ let treeManager = null
 /**
  * 初始化树管理器
  */
-export function init() {
+export function __init__() {
   const pageData = $data()
   const { config, nodes } = pageData.treeData
   
@@ -18,12 +18,20 @@ export function init() {
   // 富化节点信息（计算 level 和 hasChildren）
   treeManager.enrichNodes()
   
-  // 更新缓存数据
-  pageData.treeData.nodes = Object.values(treeManager.getCache())
+  // 🔑 关键修复：将扁平数据转换为树形结构供 el-tree 使用
+  const treeNodes = buildTreeFromFlat(
+    nodes,
+    config.idField || 'id',
+    config.parentIdField || 'parentId'
+  )
+  
+  // 更新为树形结构
+  pageData.treeData.nodes = treeNodes
   
   console.log('✅ TreeManager 初始化完成')
-  console.log('节点数量:', Object.keys(treeManager.getCache()).length)
-  console.log('根节点:', treeManager.getRoots())
+  console.log('扁平节点数量:', Object.keys(treeManager.getCache()).length)
+  console.log('根节点数量:', treeNodes.length)
+  console.log('树形结构:', treeNodes)
   
   $rebindRules()
 }
@@ -32,23 +40,30 @@ export function init() {
  * 展开节点
  */
 export function handleNodeExpand(node) {
+  const pageData = $data()
   console.log('🔽 展开节点:', node.name)
+  
+  // 记录展开的节点
+  if (!pageData.expandedKeys.includes(node.id)) {
+    pageData.expandedKeys.push(node.id)
+  }
   
   const children = treeManager.getChildren(node.id)
   console.log('子节点数量:', children.length)
-  
-  if (children.length > 0) {
-    ElMessage.success(`${node.name} 有 ${children.length} 个子节点`)
-  } else {
-    ElMessage.info(`${node.name} 没有子节点`)
-  }
 }
 
 /**
  * 收起节点
  */
 export function handleNodeCollapse(node) {
+  const pageData = $data()
   console.log('🔼 收起节点:', node.name)
+  
+  // 移除折叠的节点
+  const index = pageData.expandedKeys.indexOf(node.id)
+  if (index > -1) {
+    pageData.expandedKeys.splice(index, 1)
+  }
 }
 
 /**
@@ -66,20 +81,40 @@ export function handleNodeClick(node) {
   // 更新选中状态
   pageData.selectedNode = node
   pageData.selectedPath = path.pathNodes
+  pageData.selectedPathText = pathNames
+  pageData.currentNodeKey = node.id  // 更新当前选中节点 key
   
+  // 🔑 关键：只重新绑定节点信息部分，避免树重新渲染
   $rebindRules()
   
   ElMessage.success(`已选中: ${pathNames}`)
 }
 
 /**
+ * 处理搜索输入变化
+ */
+export function handleSearchInput(value) {
+  const pageData = $data()
+  pageData.searchKeyword = value
+  console.log('📝 搜索输入变化:', value)
+  // ⚠️ 不调用 $rebindRules()，避免输入框被重置
+}
+
+/**
  * 搜索节点
  */
 export function handleSearch() {
+  console.log('🎯 handleSearch 被调用！')
   const pageData = $data()
-  const keyword = pageData.searchKeyword
+  
+  // 🔑 从 form API 获取输入值
+  const formApi = window.__formApi__
+  const keyword = formApi?.getValue('searchKeyword') || ''
+  
+  console.log('📝 当前 searchKeyword:', keyword)
   
   if (!keyword || keyword.trim() === '') {
+    console.log('⚠️ 关键词为空，清空搜索结果')
     pageData.searchResults = []
     $rebindRules()
     return
@@ -112,6 +147,18 @@ export function handleSearch() {
 }
 
 /**
+ * 处理搜索框键盘事件
+ */
+export function handleSearchKeyup(event) {
+  console.log('⌨️ handleSearchKeyup 被调用！', event)
+  // 回车键触发搜索
+  if (event.key === 'Enter' || event.keyCode === 13) {
+    console.log('✅ 检测到回车键，触发搜索')
+    handleSearch()
+  }
+}
+
+/**
  * 清空搜索
  */
 export function handleClearSearch() {
@@ -124,11 +171,37 @@ export function handleClearSearch() {
 /**
  * 定位到搜索结果
  */
-export function handleLocateNode(node) {
+export function handleLocateNode(row, column, event) {
+  const pageData = $data()
+  
+  console.log('🎯 定位到节点 - row:', row)
+  console.log('🎯 定位到节点 - column:', column)
+  console.log('🎯 定位到节点 - event:', event)
+  
+  // row 就是节点数据
+  const node = row
+  
+  if (!node || !node.id) {
+    ElMessage.error('无效的节点数据')
+    return
+  }
+  
+  // 获取节点路径
+  const path = treeManager.getNodePath(node.id)
+  const pathIds = path.pathIds
+  
+  console.log('📍 节点路径 IDs:', pathIds)
+  
+  // 展开所有父节点（除了当前节点自己）
+  const parentIds = pathIds.slice(0, -1)
+  pageData.expandedKeys = [...new Set([...pageData.expandedKeys, ...parentIds])]
+  
+  console.log('🔓 展开的节点 IDs:', pageData.expandedKeys)
+  
+  // 选中当前节点
   handleNodeClick(node)
   
-  // 滚动到节点位置（需要UI组件支持）
-  ElMessage.info(`定位到: ${node.name}`)
+  ElMessage.success(`已定位到: ${path.pathNodes.map(n => n.name).join(' > ')}`)
 }
 
 /**
@@ -184,7 +257,10 @@ export async function handleAddNode() {
   }
   
   const parentNode = pageData.selectedNode
-  const newId = Math.max(...pageData.treeData.nodes.map(n => n.id)) + 1
+  
+  // 从 treeManager 缓存获取所有节点
+  const allNodes = Object.values(treeManager.getCache())
+  const newId = Math.max(...allNodes.map(n => n.id)) + 1
   
   const newNode = {
     id: newId,
@@ -197,8 +273,16 @@ export async function handleAddNode() {
   // 添加到缓存
   treeManager.addNodesToCache([newNode])
   
-  // 更新数据
-  pageData.treeData.nodes = Object.values(treeManager.getCache())
+  // 🔑 关键：重新构建树形结构
+  const flatNodes = Object.values(treeManager.getCache())
+  const treeNodes = buildTreeFromFlat(
+    flatNodes,
+    'id',
+    'parentId'
+  )
+  
+  // 更新树形数据
+  pageData.treeData.nodes = treeNodes
   
   // 更新父节点的 hasChildren
   treeManager.markHasChildren(parentNode.id)
@@ -233,8 +317,16 @@ export async function handleDeleteNode() {
   const cache = treeManager.getCache()
   delete cache[node.id]
   
-  // 更新数据
-  pageData.treeData.nodes = Object.values(cache)
+  // 🔑 关键：重新构建树形结构
+  const flatNodes = Object.values(cache)
+  const treeNodes = buildTreeFromFlat(
+    flatNodes,
+    'id',
+    'parentId'
+  )
+  
+  // 更新树形数据
+  pageData.treeData.nodes = treeNodes
   pageData.selectedNode = null
   pageData.selectedPath = []
   

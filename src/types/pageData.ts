@@ -81,6 +81,7 @@ export interface DataTable extends BindingContext {
   api?: CrudApi               // 可选 CRUD 接口组
   rows: DataRow[]             // 数据行集合
   contexts?: BindingContext[] // 额外上下文集合（多视图绑定）
+  _originalRows?: DataRow[]   // 🔒 缓存原始完整数据，用于过滤操作
   
   // 扩展：与现有架构兼容
   loading?: boolean           // 加载状态

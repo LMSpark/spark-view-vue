@@ -22,6 +22,7 @@ export class DataSetManager {
   private dataSet: DataSet
   private eventListeners: Map<string, Function[]> = new Map()
   private tableSubscribers: Map<string, Set<Function>> = new Map() // UI 订阅表数据变化
+  private loadingTables: Set<string> = new Set() // 正在加载的表名（防重复请求）
   public dataLoader?: (tableName: string) => Promise<DataRow[]> // 数据加载器（公开以便注册）
 
   constructor(dataSet: DataSet, dataLoader?: (tableName: string) => Promise<DataRow[]>) {
@@ -95,17 +96,38 @@ export class DataSetManager {
 
   /**
    * 设置当前行
+   * @param skipNotify 跳过通知订阅者（UI 事件触发时不需要重新绑定）
    */
-  setCurrentRow(tableName: string, row: DataRow | undefined, contextOrder?: number): void {
+  setCurrentRow(tableName: string, row: DataRow | undefined, contextOrder?: number, skipNotify: boolean = false): void {
     const context = this.getContext(tableName, contextOrder)
     if (context) {
+      // 防重复检查：值未变化时直接返回，避免触发不必要的更新链
+      const existingRow = context.currentRow
+      const isSameRow = (
+        existingRow === row || 
+        (existingRow === null && row === null) ||
+        (existingRow === undefined && row === undefined) ||
+        (existingRow && row && (existingRow as any).id === (row as any).id)
+      )
+      
+      if (isSameRow) {
+        console.log(`⏭️ [DataSetManager] ${tableName}.currentRow 未变化，跳过更新`)
+        return // 跳过后续所有操作
+      }
+      
+      console.log(`🔄 [DataSetManager] ${tableName}.currentRow 更新`, { from: existingRow, to: row, skipNotify })
       context.currentRow = row
       
       // 触发关系更新
       this.updateRelatedTables(tableName, contextOrder)
       
-      // 通知订阅者（currentRow 改变需要 UI 更新）
-      this.notifySubscribers(tableName)
+      // 通知订阅者（仅当 skipNotify=false 时）
+      // UI 事件触发的同步不需要通知，因为 UI 已经是最新的
+      if (!skipNotify) {
+        this.notifySubscribers(tableName)
+      } else {
+        console.log(`⏭️ [DataSetManager] 跳过 notifySubscribers (UI 已是最新)`)
+      }
       
       // 触发事件
       this.emit('currentRowChanged', { tableName, contextOrder, row })
@@ -162,6 +184,12 @@ export class DataSetManager {
       return
     }
 
+    console.log(`🔗 [applyRelation] ${relation.parentTable} -> ${relation.childTable}`, {
+      dependencyType: relation.dependencyType,
+      autoLoad: relation.autoLoad,
+      parentCurrentRow: parentContext.currentRow
+    })
+
     // 根据 dependencyType 获取父数据范围
     const parentRows = this.getParentRows(parentContext, relation.dependencyType)
 
@@ -171,18 +199,23 @@ export class DataSetManager {
       
       // 如果是 currentRow 依赖且有 autoLoad 配置，清空子表数据
       if (relation.dependencyType === 'currentRow' && relation.autoLoad) {
-        childTable.rows = []
+        childTable.rows.splice(0, childTable.rows.length) // 使用 splice 保持响应式
         this.notifySubscribers(relation.childTable)
       }
       return
     }
 
-    // 特殊处理 currentRow 依赖：触发自动加载
+    // 特殊处理 currentRow 依赖 + autoLoad：触发加载，数据由 _requestTableDataAsync 统一处理
     if (relation.dependencyType === 'currentRow' && relation.autoLoad) {
-      // 自动加载子表数据（基于父表的 currentRow）
-      console.log(`🔄 [自动加载] ${relation.childTable} (基于 ${relation.parentTable}.currentRow)`)
+      // 子表无数据，触发加载（不在这里过滤，统一在 _requestTableDataAsync 中处理）
+      if (!childTable.rows || childTable.rows.length === 0) {
+        console.log(`🔄 [自动加载] ${relation.childTable} (基于 ${relation.parentTable}.currentRow)`)
+        this.requestTableData(relation.childTable)
+        return
+      }
+      // 如果已有数据，不在这里处理，让 requestTableData 检测后重新过滤
+      console.log(`🔄 [重新请求] ${relation.childTable} (已有数据，需重新过滤)`)
       this.requestTableData(relation.childTable)
-      // 注意：加载完成后会自动通知订阅者，然后应用过滤
       return
     }
 
@@ -691,27 +724,99 @@ export class DataSetManager {
    * @param tableName 表名
    */
   requestTableData(tableName: string): void {
+    // 防重入检查：如果表正在加载中，跳过
+    if (this.loadingTables.has(tableName)) {
+      console.log(`⏭️ [DataSetManager] 表 ${tableName} 正在加载中，跳过重复请求`)
+      return
+    }
+    
     console.log(`🔍 UI 请求表数据: ${tableName}`);
     this.emit('loadStart', { tableName });
     
+    // 标记为正在加载
+    this.loadingTables.add(tableName)
+    
     // 异步处理，不阻塞 UI
-    this._requestTableDataAsync(tableName).catch(error => {
-      console.error(`❌ 加载 ${tableName} 失败:`, error);
-      this.emit('loadError', { tableName, error });
-    });
+    this._requestTableDataAsync(tableName)
+      .then(() => {
+        // 加载完成，移除标记
+        this.loadingTables.delete(tableName)
+      })
+      .catch(error => {
+        console.error(`❌ 加载 ${tableName} 失败:`, error);
+        this.emit('loadError', { tableName, error });
+        // 失败也要移除标记，否则永远不能重试
+        this.loadingTables.delete(tableName)
+      });
   }
 
   /**
    * 内部异步请求方法
    */
   private async _requestTableDataAsync(tableName: string): Promise<void> {
-    // 检查表是否已有数据
     const table = this.getTable(tableName);
-    if (table && table.rows && table.rows.length > 0) {
-      console.log(`✅ 表 ${tableName} 已有数据（${table.rows.length} 行），直接使用`);
+    
+    // 检查是否为依赖表
+    const dependencies = this.getTableDependencies(tableName);
+    const isDependentTable = dependencies.length > 0;
+    
+    // 仅对根表（无依赖）：如果已有数据，直接使用
+    if (!isDependentTable && table && table.rows && table.rows.length > 0) {
+      console.log(`✅ 根表 ${tableName} 已有数据（${table.rows.length} 行），直接使用`);
       this.notifySubscribers(tableName);
       this.emit('loadSuccess', { tableName });
       return;
+    }
+    
+    // 依赖表即使有数据，也要重新过滤（因为父表 currentRow 可能变化）
+    if (isDependentTable && table && table.rows && table.rows.length > 0) {
+      console.log(`🔄 依赖表 ${tableName} 已有数据，重新应用过滤`);
+      if (this.areDependenciesSatisfied(tableName)) {
+        // 直接在这里过滤，不调用 applyRelationsForTable（避免递归调用 requestTableData）
+        const relation = this.dataSet.relations?.find(
+          rel => rel.childTable === tableName && rel.autoLoad
+        );
+        
+        if (relation) {
+          const parentContext = this.getContext(relation.parentTable, relation.parentContextOrder);
+          
+          if (!parentContext) {
+            console.warn(`⚠️ 父表 ${relation.parentTable} 的 context 不存在`);
+            return;
+          }
+          
+          const parentRows = this.getParentRows(parentContext, relation.dependencyType);
+          
+          if (parentRows && parentRows.length > 0) {
+            // 🔑 关键修复：从原始完整数据中过滤，而不是从已过滤的 rows 中过滤
+            const sourceData = table._originalRows && table._originalRows.length > 0 
+              ? table._originalRows 
+              : table.rows;
+            
+            console.log(`🔍 从${sourceData === table._originalRows ? '原始数据' : '当前数据'}过滤: ${tableName} (${sourceData.length} 条)`);
+            
+            const allRows = [...sourceData]; // 从完整数据集复制
+            const filteredRows = this.filterChildRows(
+              allRows,
+              relation.filterExpression,
+              parentRows,
+              parentContext
+            );
+            
+            // 更新 table.rows 为过滤后的数据
+            table.rows.splice(0, table.rows.length, ...filteredRows);
+            console.log(`✅ 重新过滤完成: ${filteredRows.length}/${sourceData.length} 条记录`);
+          } else {
+            // 父行为空，清空子表
+            table.rows.splice(0, table.rows.length);
+            console.log(`🧹 父行为空，清空 ${tableName}`);
+          }
+        }
+        
+        this.notifySubscribers(tableName);
+        this.emit('loadSuccess', { tableName });
+        return;
+      }
     }
     
     // 调试：显示当前表状态
@@ -719,7 +824,8 @@ export class DataSetManager {
       tableExists: !!table,
       hasRows: !!(table && table.rows),
       rowsLength: table?.rows?.length || 0,
-      rowsIsArray: Array.isArray(table?.rows)
+      rowsIsArray: Array.isArray(table?.rows),
+      isDependentTable
     });
     
     // 检查依赖是否满足
@@ -734,9 +840,58 @@ export class DataSetManager {
         return;
       }
       
-      // 有依赖且依赖满足，应用关系过滤
-      console.log(`✅ 依赖条件具备，根据关系组织数据: ${tableName}`);
-      this.applyRelationsForTable(tableName);
+      // 有依赖且依赖满足，检查是否需要加载数据
+      console.log(`✅ 依赖条件具备，检查 ${tableName} 是否需要加载数据`);
+      
+      // 检查是否有 autoLoad 配置且表为空
+      const hasAutoLoadRelation = this.dataSet.relations?.some(
+        rel => rel.childTable === tableName && rel.autoLoad
+      );
+      
+      if (hasAutoLoadRelation) {
+        // 如果表为空，先加载数据
+        if (!table || !table.rows || table.rows.length === 0) {
+          console.log(`📦 ${tableName} 配置了 autoLoad 且无数据，开始加载`);
+          await this.loadTableData(tableName);
+        }
+        
+        // 加载完成后，应用过滤（基于父表的 currentRow）
+        console.log(`🔗 应用关系过滤: ${tableName}`);
+        const relation = this.dataSet.relations?.find(
+          rel => rel.childTable === tableName && rel.autoLoad
+        );
+        
+        if (relation) {
+          const parentContext = this.getContext(relation.parentTable, relation.parentContextOrder);
+          
+          if (!parentContext) {
+            console.warn(`⚠️ 父表 ${relation.parentTable} 的 context 不存在`);
+            return;
+          }
+          
+          const parentRows = this.getParentRows(parentContext, relation.dependencyType);
+          
+          if (parentRows && parentRows.length > 0 && table) {
+            // 过滤数据
+            const allRows = [...table.rows]; // 保存全部数据的副本
+            const filteredRows = this.filterChildRows(
+              allRows,
+              relation.filterExpression,
+              parentRows,
+              parentContext
+            );
+            
+            // 更新 table.rows 为过滤后的数据
+            table.rows.splice(0, table.rows.length, ...filteredRows);
+            console.log(`✅ 过滤完成: ${filteredRows.length}/${allRows.length} 条记录`);
+          }
+        }
+      } else {
+        // 没有 autoLoad，只应用关系
+        console.log(`🔗 应用关系过滤: ${tableName}`);
+        this.applyRelationsForTable(tableName);
+      }
+      
       this.notifySubscribers(tableName);
       this.emit('loadSuccess', { tableName });
       return;
@@ -801,6 +956,12 @@ export class DataSetManager {
       if (table) {
         table.rows = rows;
         console.log(`✅ 数据加载成功: ${tableName}，共 ${rows.length} 行`);
+        
+        // 📦 缓存原始完整数据（用于后续过滤）
+        if (!table._originalRows || table._originalRows.length === 0) {
+          table._originalRows = [...rows];
+          console.log(`💾 缓存原始数据: ${tableName} (${table._originalRows.length} 条)`);
+        }
         
         // 数据加载完成，通知UI订阅者
         this.notifySubscribers(tableName);

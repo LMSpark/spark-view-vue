@@ -45,5 +45,8 @@
   "searchKeyword": "",
   "searchResults": [],
   "selectedNode": null,
-  "selectedPath": []
+  "selectedPath": [],
+  "selectedPathText": "",
+  "expandedKeys": [],
+  "currentNodeKey": null
 }

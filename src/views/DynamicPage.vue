@@ -114,6 +114,8 @@ const autoSubscribeTables = () => {
     });
 }
 
+// 防重入锁：防止事件处理过程中再次触发同步
+let isProcessingEvent = false;
 
 // 递归替换 rule 中的数据占位符和事件处理器
 const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule[] => {
@@ -129,6 +131,7 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                     newOn[eventName] = (...args: any[]) => {
                         const fn = pageFunctions.value[handler]
                         if (typeof fn === 'function') {
+                            console.log(`🎯 [事件触发] ${eventName} -> ${handler}`, args)
                             fn(...args)  // 传递所有参数
                         } else {
                             console.warn(`函数 ${handler} 未定义`)
@@ -150,29 +153,70 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                 const tableName = dataKeyParts[tablesIndex + 1]
                 const contextOrder = 0 // TODO: 支持自定义 contextOrder
                 
+                console.log(`🔧 [自动注入] 为表 ${tableName} 注入事件处理器`)
+                
                 // 确保 on 对象存在
                 if (!newRule.on) {
                     newRule.on = {}
                 }
                 
-                // 注入 current-change 事件（单选行变化）
-                const originalCurrentChange = newRule.on['current-change'] || newRule.on['currentChange']
-                newRule.on['current-change'] = (currentRow: any, oldRow: any) => {
-                    // 先调用原有的用户处理器
-                    if (originalCurrentChange && typeof originalCurrentChange === 'function') {
-                        originalCurrentChange(currentRow, oldRow)
+                // 注入 currentChange 事件（单选行变化）
+                // 注意：form-create 使用驼峰命名，Element Plus 模板中的 @current-change 会被转换为 onCurrentChange
+                const originalCurrentChange = newRule.on['currentChange']
+                newRule.on['currentChange'] = (currentRow: any, oldRow: any) => {
+                    console.log(`🎯 [事件触发] currentChange`, { tableName, currentRow, oldRow, isProcessingEvent })
+                    
+                    // 重入检查：如果正在处理事件，跳过以防止死循环
+                    if (isProcessingEvent) {
+                        console.log(`🚫 [防重入] 跳过重复的 currentChange 事件`)
+                        return
                     }
                     
-                    // 自动同步到 DataSetManager
-                    if (dataSetManager) {
-                        dataSetManager.setCurrentRow(tableName, currentRow || undefined, contextOrder)
-                        console.log(`✅ [自动同步] ${tableName}.currentRow =`, currentRow)
+                    try {
+                        isProcessingEvent = true
+                        
+                        // 先调用原有的用户处理器
+                        if (originalCurrentChange && typeof originalCurrentChange === 'function') {
+                            originalCurrentChange(currentRow, oldRow)
+                        }
+                        
+                        // 自动同步到 DataSetManager
+                        // 关键：传递 skipNotify=true，因为 UI 已经是最新的，不需要触发 rebindRules
+                        if (dataSetManager) {
+                            const table = dataSetManager.getTable(tableName)
+                            const existingRow = table?.currentRow
+                            
+                            // 严格比较：对象引用相同或都为空时跳过
+                            const isSameRow = (
+                                existingRow === currentRow || 
+                                (existingRow === null && currentRow === null) ||
+                                (existingRow === undefined && currentRow === undefined) ||
+                                (existingRow && currentRow && existingRow.id === currentRow.id)
+                            )
+                            
+                            if (!isSameRow) {
+                                console.log(`✅ [自动同步] ${tableName}.currentRow 变化`, { from: existingRow, to: currentRow })
+                                // skipNotify=true: UI 事件触发的同步不通知订阅者，避免 rebindRules 死循环
+                                dataSetManager.setCurrentRow(tableName, currentRow || undefined, contextOrder, true)
+                            } else {
+                                console.log(`⏭️ [跳过同步] ${tableName}.currentRow 未变化`)
+                            }
+                        } else {
+                            console.warn(`⚠️ dataSetManager 为 null，无法同步 ${tableName}.currentRow`)
+                        }
+                    } finally {
+                        // 延迟释放锁，确保 rebindRules 完成后再允许下次事件
+                        setTimeout(() => {
+                            isProcessingEvent = false
+                        }, 0)
                     }
                 }
                 
-                // 注入 selection-change 事件（多选行变化）
-                const originalSelectionChange = newRule.on['selection-change'] || newRule.on['selectionChange']
-                newRule.on['selection-change'] = (selectedRows: any[]) => {
+                // 注入 selectionChange 事件（多选行变化）
+                const originalSelectionChange = newRule.on['selectionChange']
+                newRule.on['selectionChange'] = (selectedRows: any[]) => {
+                    console.log(`🎯 [事件触发] selectionChange`, { tableName, selectedRows })
+                    
                     // 先调用原有的用户处理器
                     if (originalSelectionChange && typeof originalSelectionChange === 'function') {
                         originalSelectionChange(selectedRows)
@@ -194,9 +238,28 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                 value = value?.[key]
             }
       
-            if (newRule.type === 'el-table' && newRule.props) {
+            if ((newRule.type === 'el-table' || newRule.type === 'el-tree')) {
+                // 🔑 el-table 和 el-tree 都使用 data 属性
+                if (!newRule.props) {
+                    newRule.props = {}
+                }
                 newRule.props.data = value
-            } else if (newRule.children && Array.isArray(newRule.children)) {
+                console.log(`📊 [数据绑定] ${newRule.type} dataKey="${newRule.dataKey}" 绑定数据:`, value)
+                
+                // 🌲 el-tree 特殊处理：绑定 expandedKeys 和 currentNodeKey
+                if (newRule.type === 'el-tree') {
+                    if (data.expandedKeys) {
+                        newRule.props.defaultExpandedKeys = data.expandedKeys
+                    }
+                    if (data.currentNodeKey !== undefined) {
+                        newRule.props.currentNodeKey = data.currentNodeKey
+                    }
+                }
+            } else if (newRule.type === 'el-input' && newRule.props) {
+                // 🔤 el-input 绑定 modelValue
+                newRule.props.modelValue = value
+            } else if (newRule.type === 'pre' || newRule.type === 'code' || (newRule.children !== undefined)) {
+                // 文本显示类组件（pre, code）或有 children 的组件
                 // 根据不同的 dataKey 路径处理显示格式
                 if (newRule.dataKey.includes('.currentRow') || newRule.dataKey.includes('.selectedRows')) {
                     // BindingContext 路径：格式化对象/数组
@@ -207,10 +270,10 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                         // currentRow: 显示 JSON
                         newRule.children = [JSON.stringify(value, null, 2)]
                     } else {
-                        newRule.children = [String(value || '')]
+                        newRule.children = [String(value || 'null')]
                     }
-                } else {
-                    // 普通路径：直接转字符串
+                } else if (newRule.children && Array.isArray(newRule.children)) {
+                    // 普通路径：直接转字符串（仅当 children 已存在时才覆盖）
                     newRule.children = [String(value)]
                 }
             } else if (newRule.options !== undefined) {
@@ -473,6 +536,10 @@ const loadPageConfig = async () => {
 // 表单挂载回调
 const onFormMounted = (api: any) => {
     formApi.value = api
+    // 🔑 暴露 formApi 供 pageScripts 使用
+    if (typeof window !== 'undefined') {
+        (window as any).__formApi__ = api
+    }
     console.log('📋 表单实例已挂载:', api)
 }
 
