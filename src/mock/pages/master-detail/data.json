@@ -39,10 +39,9 @@
         "dependencyType": "currentRow",
         "autoLoad": true,
         "filterExpression": {
-          "type": "condition",
-          "operator": "=",
           "field": "userId",
-          "parentField": "id"
+          "op": "==",
+          "value": "$.parentRow.id"
         },
         "cascadeDelete": true
       }

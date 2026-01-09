@@ -254,6 +254,31 @@ export class FilterExpressionParser {
    * 解析值（支持从父表或变量引用）
    */
   private static resolveValue(value: any, context?: FilterContext): any {
+    // 支持 $ 语法：$.parentRow.id, $.variables.userName
+    if (typeof value === 'string' && value.startsWith('$.')) {
+      const path = value.substring(2) // 移除 '$.'
+      const parts = path.split('.')
+      
+      // $.parentRow.xxx
+      if (parts[0] === 'parentRow' && context?.parentRow) {
+        let result: any = context.parentRow
+        for (let i = 1; i < parts.length; i++) {
+          result = result?.[parts[i]]
+        }
+        return result
+      }
+      
+      // $.variables.xxx
+      if (parts[0] === 'variables' && context?.variables) {
+        let result: any = context.variables
+        for (let i = 1; i < parts.length; i++) {
+          result = result?.[parts[i]]
+        }
+        return result
+      }
+    }
+    
+    // 支持函数对象格式
     if (typeof value === 'object' && value !== null && 'func' in value) {
       // 函数调用，如 { func: 'FIELD', args: ['id'] }
       const func = value.func

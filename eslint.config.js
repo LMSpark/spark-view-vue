@@ -91,8 +91,6 @@ export default [
             parser: vueParser,
             parserOptions: {
                 parser: tsParser,
-                project: './tsconfig.json',
-                tsconfigRootDir: import.meta.dirname,
                 extraFileExtensions: ['.vue'],
             }
         },
