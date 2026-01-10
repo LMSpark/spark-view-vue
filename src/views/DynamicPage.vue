@@ -151,10 +151,14 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
             const tablesIndex = dataKeyParts.indexOf('tables')
             if (tablesIndex !== -1 && dataKeyParts[tablesIndex + 1]) {
                 const tableName = dataKeyParts[tablesIndex + 1]
-                // 支持自定义 contextOrder (从 rule.contextOrder 或 props.contextOrder 获取)
-                const contextOrder = (newRule as any).contextOrder || (newRule.props && (newRule.props as any).contextOrder) || 0
                 
-                console.log(`🔧 [自动注入] 为表 ${tableName} 注入事件处理器 (contextOrder=${contextOrder})`)
+                // 核心修复：支持 contextId (string) 或 contextOrder (number)
+                // 优先级：contextId > contextOrder > 0
+                const contextId = (newRule as any).contextId || (newRule.props && (newRule.props as any).contextId);
+                const contextOrder = (newRule as any).contextOrder || (newRule.props && (newRule.props as any).contextOrder) || 0;
+                const contextDescriptor = contextId || contextOrder;
+                
+                console.log(`🔧 [自动注入] 为表 ${tableName} 注入事件处理器 (context=${contextDescriptor})`)
                 
                 // 确保 on 对象存在
                 if (!newRule.on) {
@@ -184,24 +188,8 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                         // 自动同步到 DataSetManager
                         // 关键：传递 skipNotify=true，因为 UI 已经是最新的，不需要触发 rebindRules
                         if (dataSetManager) {
-                            const table = dataSetManager.getTable(tableName)
-                            const existingRow = table?.currentRow
-                            
-                            // 严格比较：对象引用相同或都为空时跳过
-                            const isSameRow = (
-                                existingRow === currentRow || 
-                                (existingRow === null && currentRow === null) ||
-                                (existingRow === undefined && currentRow === undefined) ||
-                                (existingRow && currentRow && existingRow.id === currentRow.id)
-                            )
-                            
-                            if (!isSameRow) {
-                                console.log(`✅ [自动同步] ${tableName}.currentRow 变化`, { from: existingRow, to: currentRow })
-                                // skipNotify=true: UI 事件触发的同步不通知订阅者，避免 rebindRules 死循环
-                                dataSetManager.setCurrentRow(tableName, currentRow || undefined, contextOrder, true)
-                            } else {
-                                console.log(`⏭️ [跳过同步] ${tableName}.currentRow 未变化`)
-                            }
+                            // 🔑 传递 contextDescriptor (可能是 string 或 number)
+                            dataSetManager.setCurrentRow(tableName, currentRow || undefined, contextDescriptor, true)
                         } else {
                             console.warn(`⚠️ dataSetManager 为 null，无法同步 ${tableName}.currentRow`)
                         }
@@ -225,7 +213,8 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                     
                     // 自动同步到 DataSetManager
                     if (dataSetManager) {
-                        dataSetManager.setSelectedRows(tableName, selectedRows, contextOrder)
+                        // 🔑 传递 contextDescriptor
+                        dataSetManager.setSelectedRows(tableName, selectedRows, contextDescriptor)
                         console.log(`✅ [自动同步] ${tableName}.selectedRows =`, selectedRows)
                     }
                 }
