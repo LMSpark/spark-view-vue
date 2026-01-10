@@ -1,19 +1,65 @@
-import { $data, $rebindRules } from '@/utils/page-helpers/common.js'
-import { DataSetManager } from '@/utils/dataSetManager'
+import { $data, $dataSetManager, $rebindRules } from '@/utils/page-helpers/common.js'
 import { FilterExpressionParser } from '@/utils/filterExpressionParser'
 import { ElMessage } from 'element-plus'
 
-// DataSet 管理器实例
-let dataSetManager = null
+// Mock 数据加载器（模拟 API 请求）
+const mockDataLoader = async (tableName) => {
+  console.log(`🔄 [按需加载] 开始加载表: ${tableName}`)
+  
+  // 模拟网络延迟
+  await new Promise(resolve => setTimeout(resolve, 500))
+  
+  // 从 database 加载数据
+  const mockData = {
+    Users: [
+      { id: 1, name: '张三', email: 'zhangsan@example.com', status: '激活' },
+      { id: 2, name: '李四', email: 'lisi@example.com', status: '激活' },
+      { id: 3, name: '王五', email: 'wangwu@example.com', status: '禁用' }
+    ],
+    Orders: [
+      { id: 101, userId: 1, orderNo: 'ORD001', amount: 1200, status: '已完成', date: '2024-01-15' },
+      { id: 102, userId: 1, orderNo: 'ORD002', amount: 800, status: '进行中', date: '2024-01-20' },
+      { id: 103, userId: 2, orderNo: 'ORD003', amount: 1500, status: '已完成', date: '2024-01-18' },
+      { id: 104, userId: 2, orderNo: 'ORD004', amount: 600, status: '待付款', date: '2024-01-22' },
+      { id: 105, userId: 3, orderNo: 'ORD005', amount: 2000, status: '已完成', date: '2024-01-25' }
+    ],
+    OrderItems: [
+      { id: 1, orderId: 101, productName: '商品A', quantity: 2, price: 400 },
+      { id: 2, orderId: 101, productName: '商品B', quantity: 1, price: 400 },
+      { id: 3, orderId: 102, productName: '商品C', quantity: 4, price: 200 },
+      { id: 4, orderId: 103, productName: '商品A', quantity: 3, price: 500 },
+      { id: 5, orderId: 104, productName: '商品D', quantity: 2, price: 300 },
+      { id: 6, orderId: 105, productName: '商品E', quantity: 5, price: 400 }
+    ]
+  }
+  
+  console.log(`✅ [按需加载] 表 ${tableName} 加载完成: ${mockData[tableName]?.length || 0} 行`)
+  return mockData[tableName] || []
+}
 
 /**
- * 初始化 DataSet
+ * 初始化 DataSet - __init__ 生命周期
  */
-export function initDataSet() {
-  const pageData = $data()
-  if (pageData.dataset) {
-    dataSetManager = new DataSetManager(pageData.dataset)
-    console.log('✅ DataSet 初始化完成', dataSetManager.getDataSet())
+export function __init__() {
+  const manager = $dataSetManager()
+  if (manager) {
+    // 注册数据加载器
+    manager.dataLoader = mockDataLoader
+    console.log('✅ DataSet 已注册 dataLoader')
+    
+    // 监听加载事件
+    manager.on('loadSuccess', ({ tableName }) => {
+      ElMessage.success(`✅ ${tableName} 数据加载完成！`)
+    })
+    
+    manager.on('loadError', ({ tableName, error }) => {
+      ElMessage.error(`❌ ${tableName} 加载失败: ${error.message}`)
+    })
+    
+    // 🚀 页面启动时自动加载主表（Users）
+    // 从表（Orders、OrderItems）只在依赖条件满足时才加载
+    console.log('🚀 [自动加载] 启动时加载主表: Users')
+    manager.requestTableData('Users')
   }
 }
 
@@ -21,89 +67,75 @@ export function initDataSet() {
  * 用户选中事件
  */
 export function handleUserSelect(row) {
-  if (!dataSetManager || !row) return
+  const manager = $dataSetManager();
+  if (!manager || !row) return
   
   console.log('👤 选中用户:', row)
   
-  // 设置当前行
-  dataSetManager.setCurrentRow('Users', row)
+  // 🔑 关键修复：检查默认上下文的 _originalRows 判断数据是否已加载
+  // _originalRows 是缓存的全量数据，只在首次加载时触发请求
+  const table = manager.getTable('Users')
   
-  // 获取 Users 表的 currentRow
-  const usersTable = dataSetManager.getTable('Users')
-  const ordersTable = dataSetManager.getTable('Orders')
+  // ✅ 使用 OOP 方式设置当前行（内核会自动触发关系过滤）
+  table.setCurrentRow(row)
   
-  if (!usersTable || !ordersTable) return
+  // 检查子表数据是否已加载
+  const ordersTable = manager.getTable('Orders')
+  const itemsTable = manager.getTable('OrderItems')
   
-  // 应用关系过滤
-  const relation = dataSetManager.getDataSet().relations?.find(
-    r => r.parentTable === 'Users' && r.childTable === 'Orders'
-  )
-  
-  if (relation) {
-    dataSetManager.applyRelation(relation)
-    
-    // 更新页面数据
-    const ordersContext = dataSetManager.getContext('Orders')
-    const pageData = $data()
-    pageData.filteredOrders = ordersContext?.selectedRows || []
-    pageData.currentUser = {
-      label: row.name,
-      orderCount: pageData.filteredOrders.length
-    }
-    
-    // 清空订单明细
-    pageData.filteredOrderItems = []
-    pageData.selectedOrdersCount = 0
-    
-    console.log(`📋 用户 ${row.name} 的订单:`, pageData.filteredOrders)
-    
-    // 重新绑定数据到视图
-    $rebindRules()
+  // 如果原始数据未加载（_originalRows 为 undefined），先加载（按需加载）
+  if (!ordersTable._originalRows) {
+    console.log('🔄 检测到 Orders 原始数据未加载，触发加载...')
+    manager.requestTableData('Orders')
   }
+  
+  if (!itemsTable._originalRows) {
+    console.log('🔄 检测到 OrderItems 原始数据未加载，触发加载...')
+    manager.requestTableData('OrderItems')
+  }
+  
+  // 更新 UI 统计信息
+  const pageData = $data();
+  pageData.currentUser = {
+    label: row.name,
+    orderCount: ordersTable?.rows?.length || 0
+  }
+  
+  // 清空级联状态
+  pageData.selectedOrdersCount = 0
+  
+  // 更新 UI
+  $rebindRules()
+  
+  console.log(`📋 用户 ${row.name} 的订单数:`, ordersTable?.rows?.length)
 }
 
 /**
  * 订单选中事件
  */
-export function handleOrderSelect(rows) {
-  if (!dataSetManager) return
+export function handleOrderSelect(selection) {
+  console.log('📦 选中订单:', selection)
   
-  console.log('📦 选中订单:', rows)
+  // ✅ 不需要手动设置 selectedRows - 自动注入的事件处理器已经完成了同步
+  // ✅ 不需要调用 $rebindRules - 关联更新会自动通知子表（OrderItems）刷新
+  // 这里只更新 UI 统计信息（不触发重绑）
+  const pageData = $data();
+  pageData.selectedOrdersCount = selection.length
   
-  // 设置选中行
-  dataSetManager.setSelectedRows('Orders', rows)
-  
-  // 应用关系过滤
-  const relation = dataSetManager.getDataSet().relations?.find(
-    r => r.parentTable === 'Orders' && r.childTable === 'OrderItems'
-  )
-  
-  if (relation) {
-    dataSetManager.applyRelation(relation)
-    
-    // 更新页面数据
-    const orderItemsContext = dataSetManager.getContext('OrderItems')
-    const pageData = $data()
-    pageData.filteredOrderItems = orderItemsContext?.selectedRows || []
-    
-    // 刷新视图
-    $rebindRules()
-    pageData.selectedOrdersCount = rows.length
-    
-    console.log('🛒 订单明细:', pageData.filteredOrderItems)
-  }
+  // ❌ 移除 $rebindRules() - 会导致 el-table 重新渲染，复选框状态丢失
 }
 
 /**
  * 显示 SQL 查询
  */
 export function showSQLQuery() {
-  if (!dataSetManager) {
+  const manager = $dataSetManager();
+  if (!manager) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
   
-  const relations = dataSetManager.getDataSet().relations || []
+  const relations = manager.getDataSet().relations || []
   
   if (relations.length === 0) {
     ElMessage.info('没有关系配置')
@@ -136,12 +168,13 @@ export function showSQLQuery() {
  * 显示 MongoDB 查询
  */
 export function showMongoQuery() {
-  if (!dataSetManager) {
+  const manager = $dataSetManager();
+  if (!manager) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
   
-  const relations = dataSetManager.getDataSet().relations || []
+  const relations = manager.getDataSet().relations || []
   
   if (relations.length === 0) {
     ElMessage.info('没有关系配置')
@@ -174,12 +207,13 @@ export function showMongoQuery() {
  * 导出 DataSet
  */
 export function exportDataSet() {
-  if (!dataSetManager) {
+  const manager = $dataSetManager();
+  if (!manager) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
   
-  const json = dataSetManager.toJSON()
+  const json = manager.toJSON()
   console.log('📦 导出 DataSet:', json)
   
   // 下载为文件
@@ -193,8 +227,3 @@ export function exportDataSet() {
   
   ElMessage.success('DataSet 已导出')
 }
-
-// 页面加载时初始化
-setTimeout(() => {
-  initDataSet()
-}, 100)

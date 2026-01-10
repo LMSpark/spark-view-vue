@@ -21,7 +21,8 @@
   - contexts 数组支持多视图绑定
 - ✅ **DependencyType**: 依赖类型枚举
   - `currentRow`, `selectedRows`, `allRows`
-  - ✅ **新增**: `pagedRows`, `filteredRows`（文章建议的扩展）
+  - ✅ **新增**: `pagedRows`
+  - 🔄 **变更**: `filteredRows` 已废弃，请使用子 Context 的 `rows` + `allRows` 依赖代替
 - ✅ **FilterOperator**: 15+ 过滤操作符
 - ✅ **FilterExpression**: 通用 JSON 过滤表达式
   - 单一条件节点
@@ -108,9 +109,8 @@ startsWith, endsWith, contains
 switch (dependencyType) {
   case 'currentRow':      // 单行依赖
   case 'selectedRows':    // 多行依赖
-  case 'allRows':         // 全表依赖
+  case 'allRows':         // 全表或上下文中所有行（含过滤结果）
   case 'pagedRows':       // ✅ 分页行依赖（基于 pagination）
-  case 'filteredRows':    // ✅ 过滤行依赖（基于 selectedRows）
 }
 ```
 
@@ -194,7 +194,7 @@ manager.on('cascadeDelete', ({ parentTable, childTable, parentRow, deletedRows }
 | 功能 | 文章要求 | 实现状态 | 位置 |
 |------|---------|---------|------|
 | 默认上下文 | DataTable 继承 BindingContext | ✅ 完整实现 | `src/types/pageData.ts` |
-| 依赖类型 | currentRow/selectedRows/allRows | ✅ 完整实现 + 扩展 | 新增 pagedRows/filteredRows |
+| 依赖类型 | currentRow/selectedRows/allRows | ✅ 完整实现 + 扩展 | 新增 pagedRows |
 | JSON 过滤表达式 | 节点树结构 | ✅ 完整实现 | 15+ 操作符，3 种输出 |
 | 零编号配置 | 系统自动分配 | ✅ 完整实现 | `initializeContexts()` |
 | cascadeUpdate | 级联更新 | ✅ 完整实现 | `dataSetManager.ts` |
@@ -338,7 +338,8 @@ deleteRow(
 - [x] DataSetManager（含级联操作）
 - [x] CRUD 辅助函数（含级联支持）
 - [x] 自动编号机制
-- [x] pagedRows/filteredRows 依赖类型
+- [x] pagedRows 依赖类型
+- [x] Context 过滤与 rows 属性升级
 - [x] cascadeUpdate 实现
 - [x] cascadeDelete 实现（递归）
 - [x] extractForeignKeyMap 辅助方法
@@ -352,8 +353,9 @@ deleteRow(
 
 本实现**100% 覆盖** CSDN 文章《〖领码方案〗前端 PageData 完整解决方案 第四版》的核心规范，并在以下方面进行了扩展：
 
-1. ✅ 新增 `pagedRows` 和 `filteredRows` 依赖类型（文章建议）
-2. ✅ 完整实现 `cascadeUpdate` 和 `cascadeDelete` 运行时逻辑（文章仅定义接口）
+1. ✅ 新增 `pagedRows` 依赖类型
+2. ✅ 完整实现 Context 过滤机制（filteredRows -> rows）
+3. ✅ 完整实现 `cascadeUpdate` 和 `cascadeDelete` 运行时逻辑（文章仅定义接口）
 3. ✅ 提供完整的演示页面和使用文档
 4. ✅ 100% TypeScript 类型安全
 5. ✅ 事件驱动架构，松耦合设计

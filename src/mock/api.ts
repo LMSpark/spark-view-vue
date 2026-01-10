@@ -25,22 +25,8 @@ const loadPageConfig = (pageId: string, type: 'rule' | 'data' | 'style') => {
       const fileName = type === 'data' ? 'pagedata' : type
       const config = require(`../pages-config/${pageId}/${fileName}.json`)
       
-      // 如果是 data.json 且包含 dataset，尝试自动填充数据
-      if (type === 'data' && config.dataset && config.dataset.tables) {
-        Object.values(config.dataset.tables).forEach((table: any) => {
-          // 如果 rows 为空，尝试从 mock/database 加载
-          if (!table.rows || table.rows.length === 0) {
-            const tableName = table.tableName
-            if (tableName) {
-              const rows = loadMockData(tableName)
-              if (rows.length > 0) {
-                console.log(`📥 [Mock] 自动填充表数据: ${tableName} (${rows.length}行)`)
-                table.rows = rows
-              }
-            }
-          }
-        })
-      }
+      // ✅ 按需加载：不再自动填充数据，由页面脚本的 dataLoader 负责
+      // 页面初始化时只返回空的数据结构，用户交互时才加载数据
 
       return config
     }

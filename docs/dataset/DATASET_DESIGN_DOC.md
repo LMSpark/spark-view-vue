@@ -328,9 +328,11 @@ export interface CrudApi {
 ```typescript
 export interface DataRelation {
   parentTable: string             // 父表名
-  parentContextOrder?: number     // 父上下文序号（默认 0）
+  parentContextId?: string        // 父上下文 ID (推荐)
+  parentContextOrder?: number     // 父上下文序号（兼容旧）
   childTable: string              // 子表名
-  childContextOrder?: number      // 子上下文序号（默认 0）
+  childContextId?: string         // 子上下文 ID (推荐)
+  childContextOrder?: number      // 子上下文序号（兼容旧）
   dependencyType: DependencyType  // 依赖类型
   filterExpression: FilterExpression // 过滤表达式
   cascadeUpdate?: boolean         // 是否级联更新
@@ -346,12 +348,7 @@ export interface DataRelation {
 export type DependencyType =
   | 'currentRow'    // 依赖父表的当前选中行（单选）
   | 'selectedRows'  // 依赖父表的批量选中行（多选）
-  | 'allRows'       // 依赖父表的所有行
-  | 'pagedRows'     // 依赖父表的当前页数据
-  | 'filteredRows'  // 依赖父表的过滤后数据
-  | string          // 自定义扩展
-```
-
+    | 'allRows'       // 依赖父上下文的数据视图 (Context.rows)
 #### 4.2.1 currentRow - 主从表模式
 
 **典型场景：** 点击用户时显示该用户的订单列表
@@ -675,21 +672,21 @@ const results = await db.collection('orders').find(mongoQuery).toArray();
 ```typescript
 export interface BindingContext {
   componentID?: string      // 绑定组件的唯一标识
-  currentRow?: DataRow      // 当前选中行（单选）
-  selectedRows?: DataRow[]  // 批量选中行（多选）
-}
-```
+    currentRow?: DataRow | null // 当前选中行（单选）
+    selectedRows?: DataRow[]  // 批量选中行（多选）
+    rows?: DataRow[]          // 上下文的数据视图 (主表默认上下文也可能被过滤)
+  ```
 
-### 6.2 继承关系
+  ### 6.2 继承关系
 
-```
-BindingContext (基类)
-    ↓
-DataTable (extends BindingContext)
-    ↓
-    • 默认上下文（contextOrder = 0）
-    • 额外上下文（contexts: BindingContext[]）
-```
+  ```
+  BindingContext (基类)
+      ↓
+  DataTable (extends BindingContext)
+      ↓
+      • 默认上下文（contextOrder = 0 或 'default'）
+      • 额外上下文（contexts: Record<string, BindingContext>）
+  ```
 
 ### 6.3 上下文管理
 
@@ -836,8 +833,10 @@ applyRelation(relation: DataRelation): void {
     parentContext
   );
   
-  // 5. 更新子上下文
-  childContext.selectedRows = filteredRows;
+  // 5. 更新子上下文 (使用 rows)
+  if (childContext) {
+      childContext.rows = filteredRows;
+  }
   
   // 6. 递归更新子表的子表
   this.updateRelatedTables(relation.childTable, relation.childContextOrder);
