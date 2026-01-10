@@ -39,6 +39,12 @@ export class DataSetManager {
     const tables = Object.values(this.dataSet.tables);
     
     tables.forEach((table: DataTable) => {
+      // 1. 初始化 _originalRows 缓存（修复静态数据丢失问题）
+      if (table.rows && table.rows.length > 0 && (!table._originalRows || table._originalRows.length === 0)) {
+        table._originalRows = [...table.rows];
+        console.log(`💾 [Init] 初始化原始数据缓存: ${table.tableName} (${table._originalRows.length} 行)`);
+      }
+
       // 为每个表的额外上下文分配编号和 contextOrder
       if (table.contexts && table.contexts.length > 0) {
         table.contexts.forEach((context: BindingContext, index: number) => {
@@ -89,10 +95,59 @@ export class DataSetManager {
   }
 
   /**
+   * 确保上下文存在（如果不存在则创建）
+   */
+  private ensureContext(tableName: string, contextOrder: number): BindingContext | undefined {
+    const table = this.tables[tableName];
+    if (!table) return undefined;
+    
+    // 0 = 主上下文（表本身）
+    if (contextOrder === 0) return table;
+    
+    // 初始化 contexts 数组
+    if (!table.contexts) table.contexts = [];
+    
+    // 确保指定位置的 context 存在
+    // 注意：用数组索引虽然不是最好的方式，但兼容 current implementation
+    if (!table.contexts[contextOrder - 1]) {
+       // 自动填充之前的空位（如果跳跃性创建）
+       for(let i = 0; i < contextOrder; i++) {
+           if (!table.contexts[i]) {
+               table.contexts[i] = {
+                   currentRow: null,
+                   selectedRows: [],
+                   componentID: `${tableName}_ctx_${i+1}`
+               };
+           }
+       }
+    }
+    
+    return table.contexts[contextOrder - 1];
+  }
+
+  /**
    * 设置当前行
    * @param skipNotify 跳过通知订阅者（UI 事件触发时不需要重新绑定）
    */
-  setCurrentRow(tableName: string, row: DataRow | undefined, contextOrder?: number, skipNotify: boolean = false): void {
+  setCurrentRow(tableName: string, row: DataRow | undefined, contextOrder: number = 0, skipNotify: boolean = false): void {
+    // 1. 确保上下文存在（自动创建）
+    // 注意：ensureContext 对 contextOrder>0 会自动创建，此处需适配
+    const table = this.getTable(tableName);
+    if (!table) return;
+
+    if (contextOrder > 0) {
+        if (!table.contexts) table.contexts = [];
+        // 映射：contextOrder 1 -> index 0
+        const index = contextOrder - 1;
+        if (!table.contexts[index]) {
+             table.contexts[index] = {
+                 currentRow: null,
+                 selectedRows: [],
+                 componentID: `${tableName}_auto_ctx_${contextOrder}`
+             };
+        }
+    }
+    
     const context = this.getContext(tableName, contextOrder)
     if (context) {
       // 防重复检查：值未变化时直接返回，避免触发不必要的更新链
@@ -131,7 +186,21 @@ export class DataSetManager {
   /**
    * 设置选中行
    */
-  setSelectedRows(tableName: string, rows: DataRow[], contextOrder?: number): void {
+  setSelectedRows(tableName: string, rows: DataRow[], contextOrder: number = 0): void {
+     // 1. 自动初始化上下文逻辑（同 setCurrentRow）
+     const table = this.getTable(tableName);
+     if (table && contextOrder > 0) {
+        if (!table.contexts) table.contexts = [];
+        const index = contextOrder - 1;
+        if (!table.contexts[index]) {
+             table.contexts[index] = {
+                 currentRow: null,
+                 selectedRows: [],
+                 componentID: `${tableName}_auto_ctx_${contextOrder}`
+             };
+        }
+     }
+
     const context = this.getContext(tableName, contextOrder)
     if (context) {
       context.selectedRows = rows
@@ -365,6 +434,11 @@ export class DataSetManager {
             if (childRow[childField] !== newValue) {
               childRow[childField] = newValue
               console.log(`级联更新: ${relation.childTable}.${childField} = ${newValue}`)
+              
+              // 关键修复：同步更新原始缓存中的数据（如果是引用相同，其实已经更新了，但为了保险起见检查一下）
+              // 如果 _originalRows 存储的是不同的对象引用，则需要手动查找并更新
+              // 在当前架构中，_originalRows 即使是浅拷贝，对象引用也是共享的，所以 rows 修改会自动反映。
+              // 除非重新赋值了对象。childRow[field] = val 是安全的。
             }
           })
         }
@@ -452,9 +526,28 @@ export class DataSetManager {
       if (rowsToDelete.length > 0) {
         // 从后向前删除，避免索引变化影响
         rowsToDelete.forEach(rowToDelete => {
+          // 1. 从当前显示数据中删除
           const index = childTable.rows.indexOf(rowToDelete);
           if (index > -1) {
             childTable.rows.splice(index, 1);
+          }
+          
+          // 2. 关键修复：同步从原始缓存中删除（防止过滤时僵尸数据复活）
+          if (childTable._originalRows) {
+            // 注意：_originalRows 中的对象引用可能与 rowsToDelete 中的不同（如果经过了深拷贝）
+            // 但在这里通常是引用相同的。为了安全，使用 ID 或对象比较。
+            const cacheIndex = childTable._originalRows.indexOf(rowToDelete);
+            if (cacheIndex > -1) {
+               childTable._originalRows.splice(cacheIndex, 1);
+            } else {
+               // 尝试通过 ID 查找（如果引用不同）
+               const idField = childTable.columns.find(c => c.isPrimaryKey)?.name || 'id';
+               const id = rowToDelete[idField];
+               const cacheIdIndex = childTable._originalRows.findIndex(r => r[idField] == id);
+               if (cacheIdIndex > -1) {
+                 childTable._originalRows.splice(cacheIdIndex, 1);
+               }
+            }
           }
         });
         console.log(`✅ 级联删除: ${relation.childTable} 删除了 ${rowsToDelete.length} 行，剩余 ${childTable.rows.length} 行`)
@@ -494,6 +587,10 @@ export class DataSetManager {
     const table = this.getTable(tableName)
     if (table) {
       table.rows.push(row)
+      // 同步缓存
+      if (table._originalRows) {
+        table._originalRows.push(row)
+      }
       this.emit('rowAdded', { tableName, row })
     }
   }
@@ -504,10 +601,12 @@ export class DataSetManager {
   updateRow(tableName: string, rowIndex: number, row: DataRow): void {
     const table = this.getTable(tableName)
     if (table && rowIndex >= 0 && rowIndex < table.rows.length) {
-      table.rows[rowIndex] = row
+      // 保持对象引用，使用 assign 更新属性（这样 _originalRows 也会自动更新）
+      // table.rows[rowIndex] = row // ❌ 这会破坏引用
+      Object.assign(table.rows[rowIndex], row);
       
       // 级联更新
-      this.cascadeUpdate(tableName, row)
+      this.cascadeUpdate(tableName, table.rows[rowIndex])
       
       this.emit('rowUpdated', { tableName, rowIndex, row })
     }
@@ -525,6 +624,15 @@ export class DataSetManager {
       this.cascadeDelete(tableName, row)
       
       table.rows.splice(rowIndex, 1)
+      
+      // 同步缓存
+      if (table._originalRows) {
+        const cacheIndex = table._originalRows.indexOf(row);
+        if (cacheIndex > -1) {
+          table._originalRows.splice(cacheIndex, 1);
+        }
+      }
+      
       this.emit('rowDeleted', { tableName, rowIndex, row })
     }
   }
