@@ -151,10 +151,30 @@ docker run -d -p 3000:3000 form-create-ssr
 
 ### 添加新页面
 
-1. 在 `src/mock/pages/` 创建页面配置 JSON
-2. 在 `src/mock/routes.json` 添加路由配置
+1. 在 `src/pages-config/` 创建页面配置 JSON (`rule.json`, `pagedata.json`)
+2. 在 `src/pages-config/routes.json` 添加路由配置
 3. 自动通过 DynamicPage.vue 渲染
 
-## 📄 License
+## � 文档索引
+
+### 🏗️ 架构设计
+- [架构总览 (Architecture)](docs/architecture/README_ARCHITECTURE.md)
+- [SSR 服务端渲染](docs/architecture/README_SSR.md)
+- [SPA 客户端模式](docs/architecture/README_SPA.md)
+
+### 📊 数据集 (DataSet)
+- [核心设计文档 (Design Doc)](docs/dataset/DATASET_DESIGN_DOC.md)
+- [完整实现细节 (Implementation)](docs/dataset/PAGEDATA_COMPLETE_IMPLEMENTATION.md)
+- [CRUD 操作指南](docs/dataset/DATASET_CRUD_GUIDE.md)
+- [树形结构管理 (TreeManager)](docs/dataset/README_TREE.md)
+- [过滤表达式测试](docs/dataset/FILTER_EXPRESSION_TESTS.md)
+
+### 📘 开发指南
+- [SSR 快速开始](docs/guides/QUICKSTART_SSR.md)
+- [异步数据加载](docs/guides/ASYNC_DATA_LOADING.md)
+- [智能加载演示](docs/guides/SMART_LOAD_DEMO.md)
+- [速查手册](docs/guides/ASYNC_DATA_QUICK_REF.md)
+
+## �📄 License
 
 MIT

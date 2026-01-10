@@ -21,8 +21,8 @@
     "build:server": "vite build --ssr src/entry-server.ts --outDir dist/server",
     "build:ssr": "vue-tsc --noEmit && npm run build:client && npm run build:server",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint . --ext .js,.ts,.vue",
-    "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "preview:ssr": "cross-env NODE_ENV=production tsx server.ts"
   },
