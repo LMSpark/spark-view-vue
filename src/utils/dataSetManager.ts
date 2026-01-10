@@ -82,73 +82,85 @@ export class DataSetManager {
    * 获取表的指定上下文
    */
   getContext(tableName: string, contextOrder?: number): BindingContext | undefined {
-    const table = this.getTable(tableName)
-    if (!table) return undefined
-
-    // contextOrder 未指定时返回默认上下文（表本身）
-    if (contextOrder === undefined || contextOrder === 0) {
-      return table
-    }
-
-    // 返回额外上下文
-    return table.contexts?.[contextOrder - 1]
+    // 兼容旧签名
+    return this.ensureContext(tableName, contextOrder || 0);
   }
 
   /**
    * 确保上下文存在（如果不存在则创建）
    */
-  private ensureContext(tableName: string, contextOrder: number): BindingContext | undefined {
-    const table = this.tables[tableName];
+  /**
+   * 查找或创建上下文（支持 ID 或 Order）
+   */
+  private ensureContext(tableName: string, descriptor: number | string): BindingContext | undefined {
+    const table = this.getTable(tableName);
     if (!table) return undefined;
     
-    // 0 = 主上下文（表本身）
-    if (contextOrder === 0) return table;
+    // 默认主上下文
+    if (descriptor === 0 || descriptor === 'default') return table;
     
-    // 初始化 contexts 数组
+    // 初始化数组
     if (!table.contexts) table.contexts = [];
     
-    // 确保指定位置的 context 存在
-    // 注意：用数组索引虽然不是最好的方式，但兼容 current implementation
-    if (!table.contexts[contextOrder - 1]) {
-       // 自动填充之前的空位（如果跳跃性创建）
-       for(let i = 0; i < contextOrder; i++) {
-           if (!table.contexts[i]) {
-               table.contexts[i] = {
-                   currentRow: null,
-                   selectedRows: [],
-                   componentID: `${tableName}_ctx_${i+1}`
-               };
+    // 方式 A: 按索引 (number) 查找/创建
+    if (typeof descriptor === 'number') {
+        const order = descriptor;
+        if (!table.contexts[order - 1]) {
+           // 自动填充空位
+           for(let i = 0; i < order; i++) {
+               if (!table.contexts[i]) {
+                   table.contexts[i] = {
+                       currentRow: null,
+                       selectedRows: [],
+                       componentID: `${tableName}_ctx_${i+1}`
+                   };
+               }
            }
-       }
+        }
+        return table.contexts[order - 1];
     }
     
-    return table.contexts[contextOrder - 1];
+    // 方式 B: 按 ID (string) 查找/创建
+    if (typeof descriptor === 'string') {
+        let context = table.contexts.find(c => c.componentID === descriptor);
+        
+        if (!context) {
+            context = {
+                currentRow: null,
+                selectedRows: [],
+                componentID: descriptor // 显式使用 ID
+            };
+            table.contexts.push(context);
+            console.log(`✨ [Auto-Create] 创建命名上下文: ${descriptor}`);
+        }
+        
+        return context;
+    }
+    
+    return undefined;
   }
 
   /**
-   * 设置当前行
-   * @param skipNotify 跳过通知订阅者（UI 事件触发时不需要重新绑定）
+   * 获取表
    */
-  setCurrentRow(tableName: string, row: DataRow | undefined, contextOrder: number = 0, skipNotify: boolean = false): void {
-    // 1. 确保上下文存在（自动创建）
-    // 注意：ensureContext 对 contextOrder>0 会自动创建，此处需适配
-    const table = this.getTable(tableName);
-    if (!table) return;
+  getTable(tableName: string): DataTable | undefined {
+    return this.dataSet.tables[tableName];
+  }
 
-    if (contextOrder > 0) {
-        if (!table.contexts) table.contexts = [];
-        // 映射：contextOrder 1 -> index 0
-        const index = contextOrder - 1;
-        if (!table.contexts[index]) {
-             table.contexts[index] = {
-                 currentRow: null,
-                 selectedRows: [],
-                 componentID: `${tableName}_auto_ctx_${contextOrder}`
-             };
-        }
-    }
+  /**
+   * 获取表的指定上下文
+   */
+  getContext(tableName: string, descriptor: number | string = 0): BindingContext | undefined {
+    return this.ensureContext(tableName, descriptor);
+  }
+
+  /**
+   * 设置当前行（兼容 number | string）
+   * @param descriptor contextOrder(number) 或 contextId(string)
+   */
+  setCurrentRow(tableName: string, row: DataRow | undefined, descriptor: number | string = 0, skipNotify: boolean = false): void {
+    const context = this.getContext(tableName, descriptor)
     
-    const context = this.getContext(tableName, contextOrder)
     if (context) {
       // 防重复检查：值未变化时直接返回，避免触发不必要的更新链
       const existingRow = context.currentRow
@@ -167,52 +179,39 @@ export class DataSetManager {
       console.log(`🔄 [DataSetManager] ${tableName}.currentRow 更新`, { from: existingRow, to: row, skipNotify })
       context.currentRow = row
       
-      // 触发关系更新
-      this.updateRelatedTables(tableName, contextOrder)
-      
-      // 通知订阅者（仅当 skipNotify=false 时）
-      // UI 事件触发的同步不需要通知，因为 UI 已经是最新的
-      if (!skipNotify) {
-        this.notifySubscribers(tableName)
-      } else {
-        console.log(`⏭️ [DataSetManager] 跳过 notifySubscribers (UI 已是最新)`)
+      // 触发关系更新 (如果是主上下文或显式配置的)
+      // 目前简化逻辑：只有主上下文 (Order 0 / 'default') 触发级联
+      const isMainContext = descriptor === 0 || descriptor === 'default';
+      if (isMainContext) {
+         this.updateRelatedTables(tableName, 0)
       }
       
-      // 触发事件
-      this.emit('currentRowChanged', { tableName, contextOrder, row })
+      // 通知订阅者
+      if (!skipNotify) {
+        this.notifySubscribers(tableName)
+      }
+      
+      this.emit('currentRowChanged', { tableName, context: descriptor, row })
     }
   }
 
   /**
-   * 设置选中行
+   * 设置选中行（兼容 number | string）
    */
-  setSelectedRows(tableName: string, rows: DataRow[], contextOrder: number = 0): void {
-     // 1. 自动初始化上下文逻辑（同 setCurrentRow）
-     const table = this.getTable(tableName);
-     if (table && contextOrder > 0) {
-        if (!table.contexts) table.contexts = [];
-        const index = contextOrder - 1;
-        if (!table.contexts[index]) {
-             table.contexts[index] = {
-                 currentRow: null,
-                 selectedRows: [],
-                 componentID: `${tableName}_auto_ctx_${contextOrder}`
-             };
-        }
-     }
-
-    const context = this.getContext(tableName, contextOrder)
+  setSelectedRows(tableName: string, rows: DataRow[], descriptor: number | string = 0): void {
+    const context = this.getContext(tableName, descriptor)
+    
     if (context) {
       context.selectedRows = rows
       
-      // 触发关系更新
-      this.updateRelatedTables(tableName, contextOrder)
+      // 触发关系更新 (同上)
+      const isMainContext = descriptor === 0 || descriptor === 'default';
+      if (isMainContext) {
+         this.updateRelatedTables(tableName, 0)
+      }
       
-      // 通知订阅者（selectedRows 改变需要 UI 更新）
       this.notifySubscribers(tableName)
-      
-      // 触发事件
-      this.emit('selectedRowsChanged', { tableName, contextOrder, rows })
+      this.emit('selectedRowsChanged', { tableName, context: descriptor, rows })
     }
   }
 
