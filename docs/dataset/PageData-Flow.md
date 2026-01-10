@@ -218,8 +218,8 @@ flowchart TB
         A --> F[selectedRows: 选中行<br/>contextOrder = 0]
         A --> G[contexts?: BindingContext<br/>额外视图绑定]
         
-        G --> H[context1<br/>componentID: Products_detail<br/>contextOrder = 1]
-        G --> I[context2<br/>componentID: Products_chart<br/>contextOrder = 2]
+        G --> H[context1<br/>componentID: Products_detail<br/>contextOrder = 1<br/>rows: 过滤后数据]
+        G --> I[context2<br/>componentID: Products_chart<br/>contextOrder = 2<br/>rows: 过滤后数据]
     end
     
     subgraph dataKey路径
@@ -303,7 +303,7 @@ flowchart TB
     
     H --> I[根据 parentCurrentRow<br/>过滤数据]
     
-    I --> J[更新 table.rows<br/>为过滤后结果]
+    I --> J[更新上下文 rows<br/>(context.rows = result)]
     
     J --> K[_originalRows 保持不变<br/>始终是完整数据]
     

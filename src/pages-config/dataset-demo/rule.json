@@ -15,7 +15,7 @@
           "showIcon": true
         },
         "children": [
-          "点击用户表的任意行，下方订单表将自动显示该用户的订单。选中订单后，订单明细表将显示对应商品。"
+          "按需加载演示：页面启动时自动加载用户表。点击用户行后，订单数据按需加载并自动过滤（内存级联）。"
         ]
       },
       {
@@ -24,7 +24,7 @@
         "children": [
           {
             "type": "h2",
-            "children": ["用户列表（父表）"]
+            "children": ["用户列表（父表 - 自动加载）"]
           },
           {
             "type": "el-table",
@@ -105,7 +105,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "filteredOrders",
+            "dataKey": "dataset.tables.Orders.rows",
             "props": {
               "border": true,
               "stripe": true
@@ -183,7 +183,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "filteredOrderItems",
+            "dataKey": "dataset.tables.OrderItems.rows",
             "props": {
               "border": true,
               "stripe": true

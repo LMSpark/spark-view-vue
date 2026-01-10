@@ -40,6 +40,88 @@ Each page requires exactly these files in `src/pages-config/{pageId}/`:
   - `$query(selector)` / `$queryAll(selector)` - DOM query within page
   - `$rebindRules()` - manually trigger UI rebind (rarely needed)
 
+### 5. DataKey Path System (BindingContext Architecture)
+
+**Core Concept**: Everything is a view (BindingContext). DataTable IS a BindingContext (default context).
+
+**Supported Paths**:
+- **Default Context** (most common):
+  - `dataset.tables.Users.rows` - View data (filtered/paginated)
+  - `dataset.tables.Users.currentRow` - Currently selected row
+  - `dataset.tables.Users.selectedRows` - Multiple selected rows
+  
+- **Custom Contexts** (multi-view binding):
+  - `dataset.tables.Users.contexts.detail.rows` - Custom context view
+  - `dataset.tables.Users.contexts.detail.currentRow` - Custom context selection
+  
+- **Table Metadata**:
+  - `dataset.tables.Users.loading` - Loading state
+  - `dataset.tables.Users.error` - Error message
+
+**Examples**:
+```json
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Users.rows"
+}
+{
+  "type": "pre",
+  "dataKey": "dataset.tables.Users.currentRow"
+}
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Products.contexts.detail.rows",
+  "contextId": "detail"
+}
+```
+
+**Important Notes**:
+- ❌ DON'T bind `_originalRows` to UI - it's internal cache
+- ✅ DO use semantic paths like `.currentRow` instead of array indices
+- ✅ DO leverage auto-sync: Kernel injects event handlers automatically
+- 📖 Full guide: `docs/dataset/DataKey-Paths.md`
+
+### 6. Context Identifier (contextId)
+
+**Purpose**: When binding multiple UI components to the same table with independent selections.
+
+**Default Context**: DataTable itself is the default context (contextId = 'default')
+```json
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Users.rows"
+  // No contextId needed - uses default context
+}
+```
+
+**Custom Context**: For independent views of same data
+```json
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Users.contexts.detail.rows",
+  "contextId": "detail"  // Syncs with this context's currentRow/selectedRows
+}
+```
+
+**Relation Configuration**: Link contexts in pagedata.json
+```json
+{
+  "relations": [
+    {
+      "parentTable": "Users",
+      "parentContextId": "default",  // ← Use 'default' for DataTable's own context
+      "childTable": "Orders",
+      "childContextId": "default"    // ← Target context for filtered results
+    }
+  ]
+}
+```
+
+**Key Points**:
+- ✅ Always use `parentContextId` / `childContextId` (NOT `parentContextOrder`)
+- ✅ Default value is `'default'` if omitted
+- ✅ Custom contextId must match: `dataKey` path, `relation` config, and `contextId` attribute
+
 ### 7. Low-Code Pattern for DataSet Operations
 
 **完全解耦：UI 请求不等待，数据加载完成后自动通知**

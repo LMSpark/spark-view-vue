@@ -32,15 +32,15 @@ export async function handleAddUser() {
       inputErrorMessage: '请输入有效的邮箱地址'
     });
 
-    const pageData = $data();
-    const userTable = pageData.dataset.tables.Users;
+    const manager = $dataSetManager();
+    const userTable = manager.getTable('Users');
     
     const maxId = Math.max(...userTable.rows.map(r => r.id), 0);
     const newUser = { id: maxId + 1, name, email };
 
     // 低代码：直接操作，内核通知订阅者，UI自动更新
     userTable.rows.push(newUser);
-    $dataSetManager().notifySubscribers('Users'); // 手动触发通知
+    manager.notifySubscribers('Users'); // 手动触发通知
     
     ElMessage.success(`✅ 用户添加成功: ${name}`);
   } catch (error) {
@@ -67,9 +67,8 @@ export async function handleUpdateUserIdBatch() {
       }
     );
 
-    const pageData = $data();
     const manager = $dataSetManager();
-    const userTable = pageData.dataset.tables.Users;
+    const userTable = manager.getTable('Users');
     const offsetNum = parseInt(offset);
     
     // 低代码：遍历更新，内核自动级联
@@ -98,9 +97,10 @@ export async function handleDeleteSelectedUser() {
   }
 
   try {
-    const pageData = $data();
     const manager = $dataSetManager();
-    const { Users, Orders, OrderItems } = pageData.dataset.tables;
+    const Users = manager.getTable('Users');
+    const Orders = manager.getTable('Orders');
+    const OrderItems = manager.getTable('OrderItems');
     
     // 统计关联数据（仅用于提示）
     const relatedOrders = Orders.rows.filter(o => o.userId === selectedUser.id);

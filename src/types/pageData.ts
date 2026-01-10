@@ -11,12 +11,29 @@
 export type DataRow<T = any> = Record<string, T>
 
 /**
- * 绑定上下文：包含组件绑定和选中状态
+ * 绑定上下文接口（纯数据结构，用于序列化）
  */
-export interface BindingContext {
-  componentID?: string      // 绑定组件的唯一标识
-  currentRow?: DataRow      // 当前选中行
-  selectedRows?: DataRow[]  // 批量选中行集合
+export interface IBindingContext {
+  currentRow?: DataRow | null
+  selectedRows?: DataRow[]
+  rows?: DataRow[]
+  _originalRows?: DataRow[]
+  
+  // 宿主信息
+  _hostTable?: string
+  _contextId?: string
+  
+  // 初始配置
+  filterExpression?: FilterExpression
+  sortExpression?: SortExpression
+  
+  // 分页状态
+  pagination?: {
+    pageIndex?: number
+    pageSize?: number
+    total?: number
+    totalPages?: number
+  }
 }
 
 /**
@@ -73,27 +90,18 @@ export interface CrudApi {
 // ==================== DataTable 定义 ====================
 
 /**
- * DataTable：继承 BindingContext，表自带默认上下文
+ * DataTable 接口（纯数据结构，用于序列化）
  */
-export interface DataTable extends BindingContext {
-  tableName: string           // 表名
-  columns: DataColumn[]       // 字段定义列表
-  api?: CrudApi               // 可选 CRUD 接口组
-  rows: DataRow[]             // 数据行集合
-  contexts?: BindingContext[] // 额外上下文集合（多视图绑定）
-  _originalRows?: DataRow[]   // 🔒 缓存原始完整数据，用于过滤操作
+export interface IDataTable extends IBindingContext {
+  tableName: string
+  columns: DataColumn[]
+  api?: CrudApi
+  rows: DataRow[]
+  contexts?: Record<string, IBindingContext>
   
-  // 扩展：与现有架构兼容
-  loading?: boolean           // 加载状态
-  error?: string              // 错误信息
-  
-  // 分页状态
-  pagination?: {
-    pageIndex?: number        // 当前页码（从1开始）
-    pageSize?: number         // 每页大小
-    total?: number            // 总记录数
-    totalPages?: number       // 总页数
-  }
+  // 扩展属性
+  loading?: boolean
+  error?: string
 }
 
 // ==================== 依赖类型和过滤表达式 ====================
@@ -104,10 +112,31 @@ export interface DataTable extends BindingContext {
 export type DependencyType =
   | 'currentRow'   // 依赖父上下文的 currentRow
   | 'selectedRows' // 依赖父上下文的 selectedRows
-  | 'allRows'      // 依赖父上下文的全部行
+  | 'allRows'      // 依赖父上下文的全部行 (对于子Context，即为过滤后的行)
   | 'pagedRows'    // 依赖父上下文的分页行
-  | 'filteredRows' // 依赖父上下文的过滤后行
   | string         // 预留自定义类型
+
+/**
+ * 排序方向
+ */
+export type SortDirection = 'asc' | 'desc' | 'ASC' | 'DESC'
+
+/**
+ * 排序表达式：单个字段或多个字段组合排序
+ */
+export type SortExpression =
+  // 单字段排序
+  | {
+      field: string           // 字段名
+      direction: SortDirection // 排序方向
+    }
+  // 多字段排序
+  | {
+      fields: Array<{
+        field: string
+        direction: SortDirection
+      }>
+    }
 
 /**
  * 过滤操作符
@@ -159,9 +188,11 @@ export type FilterExpression =
  */
 export interface DataRelation {
   parentTable: string             // 父表名
-  parentContextOrder?: number     // 父上下文序号，缺省表示默认上下文
+  parentContextId?: string        // 父上下文 ID（可选，内核初始化时会自动设置为 'default'）
+  
   childTable: string              // 子表名
-  childContextOrder?: number      // 子上下文序号，缺省表示默认上下文
+  childContextId?: string         // 子上下文 ID（可选，内核初始化时会自动设置为 'default'）
+  
   dependencyType: DependencyType  // 依赖类型
   filterExpression: FilterExpression // 通用 JSON 过滤表达式
   cascadeUpdate?: boolean         // 是否级联更新
@@ -175,28 +206,18 @@ export interface DataRelation {
 // ==================== DataSet 定义 ====================
 
 /**
- * DataSet：整体数据集管理
+ * DataSet 接口（纯数据结构，用于序列化）
  */
-export interface DataSet {
-  dataSetName: string                // 数据集名称
-  tables: Record<string, DataTable>  // 所有表定义（对象结构，Key为表名）
-  relations?: DataRelation[]         // 可选关系配置
-  version?: number                   // 版本号，用于热加载或迁移
-  
-  // 扩展：页面级配置
-  pageId?: string           // 关联的页面ID
-  autoLoadRelations?: boolean // 是否自动加载关系数据
+export interface IDataSet {
+  dataSetName: string
+  tables: Record<string, IDataTable>
+  relations?: DataRelation[]
+  version?: number
+  pageId?: string
+  autoLoadRelations?: boolean
 }
 
 // ==================== 辅助类型 ====================
-
-/**
- * 表查找结果
- */
-export interface TableLookupResult {
-  table: DataTable
-  context: BindingContext
-}
 
 /**
  * 过滤结果
@@ -256,9 +277,9 @@ export interface NestedTreeNode extends FlatTreeNode {
 export type FlatTreeCache = Record<string | number, FlatTreeNode>
 
 /**
- * 自引用表（扩展 DataTable）
+ * 自引用表（扩展 IDataTable）
  */
-export interface SelfReferenceTable extends DataTable {
+export interface SelfReferenceTable extends IDataTable {
   treeConfig: TreeConfig     // 树配置
   flatTreeCache?: FlatTreeCache // 扁平树缓存（懒加载模式）
   

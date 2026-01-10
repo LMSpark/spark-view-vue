@@ -90,22 +90,21 @@ export function handleRequestCategories() {
  * 清空所有数据
  */
 export function handleClearAll() {
-  const pageData = $data();
-  const tables = pageData.dataset.tables;
   const manager = $dataSetManager();
   
   console.log('='.repeat(60));
   console.log('🗑️ 清空所有表数据');
   console.log('='.repeat(60));
   
+  // ✅ 使用 DataSetManager API 获取所有表
+  const tables = manager.dataSet.tables;
+  
   Object.keys(tables).forEach(tableName => {
     const table = tables[tableName];
     table.rows.splice(0, table.rows.length); // 使用 splice 保持响应式
     
     // 通知订阅者数据已更新
-    if (manager) {
-      manager.notifySubscribers(tableName);
-    }
+    manager.notifySubscribers(tableName);
   });
   
   ElMessage.success('🗑️ 所有数据已清空');
