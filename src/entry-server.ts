@@ -4,7 +4,7 @@ import {createMemoryHistory, createRouter, type Router} from 'vue-router'
 import DynamicPage from './views/DynamicPage.vue'
 import type {RouteConfig} from './types'
 // 在 SSR 模式下直接导入 Mock 数据
-import mockRoutes from './mock/routes.json'
+import mockRoutes from './pages-config/routes.json'
 
 /**
  * 创建服务端路由实例

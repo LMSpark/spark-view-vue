@@ -16,24 +16,24 @@ This is a **configuration-driven Vue 3 SSR application** with **strong kernel + 
 ### 2. Single Component Architecture
 - **Only one view component**: `src/views/DynamicPage.vue`
 - All routes map to this component via `meta.pageId`
-- Pages differentiated by loading different JSON configs from `src/mock/pages/{pageId}/`
+- Pages differentiated by loading different JSON configs from `src/pages-config/{pageId}/`
 
 ### 3. Page Configuration Structure
-Each page requires exactly these files in `src/mock/pages/{pageId}/`:
+Each page requires exactly these files in `src/pages-config/{pageId}/`:
 - **`rule.json`** (required): UI structure with Element Plus components, event handlers, data bindings
-- **`data.json`** (required): Page-specific data accessible via `dataKey` in rules
-- **`script.js`** (optional): ES6 module in `src/pageScripts/{pageId}/script.js` exporting event handlers
+- **`pagedata.json`** (required): Page-specific data accessible via `dataKey` in rules
+- **`script.js`** (optional): ES6 module in `src/pages-config/{pageId}/script.js` exporting event handlers
 - **`style.css`** (optional): Scoped CSS auto-prefixed with `[data-page="{pageId}"]`
 
 ### 4. Rule.json Schema
 - Event handlers in `rule.json` reference function names as strings: `"on": { "click": "handleSubmit" }`
-- Functions must be exported from `src/pageScripts/{pageId}/script.js`:
+- Functions must be exported from `src/pages-config/{pageId}/script.js`:
   ```javascript
   export function handleSubmit() { /* logic */ }
   ```
-- Access runtime context via imports from `../common.js`:
+- Access runtime context via imports from `@/utils/page-helpers/common.js`:
   - `$api()` - form-create API instance
-  - `$data()` - page data from data.json
+  - `$data()` - page data from pagedata.json
   - `$dataSetManager()` - DataSetManager instance (auto-created by kernel)
   - `$route()` - current Vue route
   - `$el()` - page container element
@@ -266,24 +266,24 @@ const filteredRows = filterChildRows(sourceData, ...);
   - Client: `src/entry-client.ts` - hydration
   - Server: `src/entry-server.ts` - render to string
 - **App factory**: `src/app.ts` - creates SSR app with plugins
-- **Routes**: Loaded from `src/mock/routes.json` at runtime
+- **Routes**: Loaded from `src/pages-config/routes.json` at runtime
 
 ## Critical Workflows
 
 ### Adding a New Page
-1. Add route to `src/mock/routes.json`:
+1. Add route to `src/pages-config/routes.json`:
    ```json
    { "path": "/newpage", "name": "newpage", "pageId": "newpage", "meta": { "title": "New Page" } }
    ```
-2. Create `src/mock/pages/newpage/rule.json` and `data.json`
-3. (Optional) Create `src/pageScripts/newpage/script.js` with:
+2. Create `src/pages-config/newpage/rule.json` and `pagedata.json`
+3. (Optional) Create `src/pages-config/newpage/script.js` with:
    - Exported event handler functions
    - `__init__()` function for data loader registration
 4. No Vue component creation needed - uses existing DynamicPage
 5. **If using dataset**: Kernel auto-initializes DataSetManager, auto-subscribes tables
 
 ### Adding DataSet to a Page
-1. Structure data.json with dataset format (see section 5)
+1. Structure pagedata.json with dataset format (see section 5)
 2. Use `"dataKey": "dataset.tables.TableName.rows"` in rules
 3. Kernel automatically:
    - Creates DataSetManager instance
@@ -293,7 +293,7 @@ const filteredRows = filterChildRows(sourceData, ...);
 
 ### Working with DataSet in Page Scripts
 ```javascript
-import { $data, $dataSetManager } from '../common.js';
+import { $data, $dataSetManager } from '@/utils/page-helpers/common.js';
 import { ElMessage } from 'element-plus';
 
 // Mock data loader
@@ -360,7 +360,7 @@ export function handleDeleteUser(user, index) {
 ### Debugging SSR Issues
 - Check terminal output - server errors appear in `dev:ssr` console
 - Common issue: Component not SSR-compatible (Element Plus/form-create already configured in vite.config.ts)
-- Hydration mismatches: Ensure no client-only code in pageScripts during SSR
+- Hydration mismatches: Ensure no client-only code in page scripts during SSR
 
 ## Project-Specific Conventions
 
@@ -388,8 +388,8 @@ export function handleDeleteUser(user, index) {
 ## Common Mistakes to Avoid
 
 1. **DON'T** create new Vue components in `src/views/` - extend DynamicPage.vue instead
-2. **DON'T** use `window` object in pageScripts without checking `typeof window !== 'undefined'`
-3. **DON'T** modify `src/app.ts` for page-specific logic - use pageScripts
+2. **DON'T** use `window` object in page scripts without checking `typeof window !== 'undefined'`
+3. **DON'T** modify `src/app.ts` for page-specific logic - use page scripts
 4. **DON'T** use `.vue` files for pages - everything is JSON-driven
 5. **DON'T** import page data directly in scripts - use `$data()` for reactivity
 6. **DON'T** manually initialize DataSetManager - kernel does it automatically
@@ -450,13 +450,13 @@ Auto-update via rebindRules()
 
 ## Quick References
 
-- Architecture deep-dive: `README_ARCHITECTURE.md`
-- SSR documentation: `README_SSR.md`
+- Architecture deep-dive: `docs/architecture/README_ARCHITECTURE.md`
+- SSR documentation: `docs/architecture/README_SSR.md`
 - Example configs: 
-  - Basic page: `src/mock/pages/home/`
-  - DataSet with cascade: `src/mock/pages/cascade-demo/`
-  - Smart dependency loading: `src/mock/pages/smart-load/`
-  - Master-Detail pattern: `src/mock/pages/master-detail/`
+  - Basic page: `src/pages-config/home/`
+  - DataSet with cascade: `src/pages-config/cascade-demo/`
+  - Smart dependency loading: `src/pages-config/smart-load/`
+  - Master-Detail pattern: `src/pages-config/master-detail/`
 - Type definitions: `src/types/index.ts`
 - DataSet types: `src/types/pageData.ts`
 - Kernel implementation: `src/utils/dataSetManager.ts`

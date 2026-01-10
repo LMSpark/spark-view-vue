@@ -27,7 +27,7 @@ import type {PageRule, ApiConfig} from '../types'
 import { DataSetManager } from '../utils/dataSetManager'
 
 // 使用 Vite 的 glob import 预加载所有页面脚本模块
-const pageModules = import.meta.glob('../pageScripts/*/script.js', { eager: false })
+const pageModules = import.meta.glob('../pages-config/*/script.js', { eager: false })
 
 const route = useRoute()
 const pageRules = ref<PageRule[]>([])
@@ -151,9 +151,10 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
             const tablesIndex = dataKeyParts.indexOf('tables')
             if (tablesIndex !== -1 && dataKeyParts[tablesIndex + 1]) {
                 const tableName = dataKeyParts[tablesIndex + 1]
-                const contextOrder = 0 // TODO: 支持自定义 contextOrder
+                // 支持自定义 contextOrder (从 rule.contextOrder 或 props.contextOrder 获取)
+                const contextOrder = (newRule as any).contextOrder || (newRule.props && (newRule.props as any).contextOrder) || 0
                 
-                console.log(`🔧 [自动注入] 为表 ${tableName} 注入事件处理器`)
+                console.log(`🔧 [自动注入] 为表 ${tableName} 注入事件处理器 (contextOrder=${contextOrder})`)
                 
                 // 确保 on 对象存在
                 if (!newRule.on) {
@@ -378,11 +379,16 @@ const refreshData = async (key?: string): Promise<void> => {
 }
 
 // 强制重新绑定数据到 rules（用于响应式数据更新后）
+// 使用 debounce 防止批量更新时多次重绘
+let rebindTimer: any = null
 const rebindRules = (): void => {
-    if (originalRules.value && originalRules.value.length > 0) {
-        console.log('🔄 重新绑定数据到 rules', pageData)
-        pageRules.value = bindDataToRules(JSON.parse(JSON.stringify(originalRules.value)), pageData)
-    }
+    if (rebindTimer) clearTimeout(rebindTimer)
+    rebindTimer = setTimeout(() => {
+        if (originalRules.value && originalRules.value.length > 0) {
+            console.log('🔄 [Debounce] 重新绑定数据到 rules')
+            pageRules.value = bindDataToRules(JSON.parse(JSON.stringify(originalRules.value)), pageData)
+        }
+    }, 20) // 20ms 延迟，合并同步更新
 }
 
 // 保存原始数据配置（用于刷新）
@@ -490,7 +496,7 @@ const loadPageConfig = async () => {
             }
             
             // 使用预加载的模块映射（Vite glob import）
-            const modulePath = `../pageScripts/${currentPageId}/script.js`
+            const modulePath = `../pages-config/${currentPageId}/script.js`
             const moduleLoader = pageModules[modulePath]
             
             if (!moduleLoader) {
@@ -519,7 +525,7 @@ const loadPageConfig = async () => {
             }
         } catch (err) {
             console.error('❌ 页面模块加载失败:', err)
-            console.error('尝试加载:', `../pageScripts/${currentPageId}/script.js`)
+            console.error('尝试加载:', `../pages-config/${currentPageId}/script.js`)
             pageFunctions.value = {}
         }
 

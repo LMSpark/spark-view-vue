@@ -23,13 +23,13 @@ export interface BindingContext {
  * 列定义：描述表中每个字段的元数据
  */
 export interface DataColumn {
-  columnName: string        // 字段名称，必须唯一
-  dataType: string          // 数据类型，如 'string'、'number'、'date'
+  name: string              // 字段名称，必须唯一（原 columnName）
+  type: string              // 数据类型，如 'string'、'number'（原 dataType）
+  label?: string            // 显示名称（原 caption）
   allowDBNull?: boolean     // 是否允许空值
   defaultValue?: any        // 默认值
   isPrimaryKey?: boolean    // 是否主键
   autoIncrement?: boolean   // 是否自增
-  caption?: string          // 显示名称
 }
 
 // ==================== HTTP API 配置 ====================
@@ -178,10 +178,10 @@ export interface DataRelation {
  * DataSet：整体数据集管理
  */
 export interface DataSet {
-  dataSetName: string       // 数据集名称
-  tables: DataTable[]       // 所有表定义
-  relations?: DataRelation[] // 可选关系配置
-  version?: number          // 版本号，用于热加载或迁移
+  dataSetName: string                // 数据集名称
+  tables: Record<string, DataTable>  // 所有表定义（对象结构，Key为表名）
+  relations?: DataRelation[]         // 可选关系配置
+  version?: number                   // 版本号，用于热加载或迁移
   
   // 扩展：页面级配置
   pageId?: string           // 关联的页面ID

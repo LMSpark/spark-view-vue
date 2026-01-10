@@ -1,0 +1,5 @@
+[
+  { "id": 1, "name": "张三", "email": "zhangsan@example.com", "status": "激活" },
+  { "id": 2, "name": "李四", "email": "lisi@example.com", "status": "激活" },
+  { "id": 3, "name": "王五", "email": "wangwu@example.com", "status": "禁用" }
+]

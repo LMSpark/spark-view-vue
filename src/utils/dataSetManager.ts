@@ -35,10 +35,8 @@ export class DataSetManager {
    * 初始化所有表的上下文编号
    */
   private initializeContexts(): void {
-    // 支持两种格式：数组和对象
-    const tables = (Array.isArray(this.dataSet.tables) 
-      ? this.dataSet.tables 
-      : Object.values(this.dataSet.tables)) as DataTable[];
+    // 强制使用对象值数组
+    const tables = Object.values(this.dataSet.tables);
     
     tables.forEach((table: DataTable) => {
       // 为每个表的额外上下文分配编号和 contextOrder
@@ -70,12 +68,8 @@ export class DataSetManager {
    * 获取表
    */
   getTable(tableName: string): DataTable | undefined {
-    // 支持两种格式
-    if (Array.isArray(this.dataSet.tables)) {
-      return this.dataSet.tables.find(t => t.tableName === tableName);
-    } else {
-      return this.dataSet.tables[tableName];
-    }
+    // 直接通过对象属性访问
+    return this.dataSet.tables[tableName];
   }
 
   /**
@@ -354,12 +348,13 @@ export class DataSetManager {
         // 检查是否匹配旧值（如果提供）
         if (oldValues) {
           shouldUpdate = foreignKeyMap.every(({ childField, parentField }) => {
-            return childRow[childField] === oldValues[parentField]
+             // 宽松相等
+            return childRow[childField] == oldValues[parentField]
           })
         } else {
           // 没有旧值，检查是否匹配当前值
           shouldUpdate = foreignKeyMap.every(({ childField, parentField }) => {
-            return childRow[childField] === row[parentField]
+            return childRow[childField] == row[parentField]
           })
         }
 
@@ -434,13 +429,14 @@ export class DataSetManager {
       const rowsToDelete: DataRow[] = []
       childTable.rows.forEach(childRow => {
         const matches = foreignKeyMap.every(({ childField, parentField }) => {
-          const match = childRow[childField] === row[parentField];
-          console.log(`    检查 ${childRow[childField]} === ${row[parentField]}: ${match}`);
-          return match;
+          // 使用宽松相等 (==) 以支持 string/number 混合场景
+          const childVal = childRow[childField];
+          const parentVal = row[parentField];
+          return childVal == parentVal;
         })
         
         if (matches) {
-          console.log(`    ✓ 匹配到需要删除的行:`, childRow);
+          console.log(`    ✓ [级联删除] 匹配到子行:`, childRow);
           rowsToDelete.push(childRow)
         }
       })
