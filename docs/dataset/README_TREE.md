@@ -1,6 +1,7 @@
 ﻿# 自引用树架构文档 (Self-Reference Tree)
 
 > 基于 PageData 1.1 的扁平化 + 懒加载 + 层级构建方案
+> **设计理念**：TreeManager 关联到 BindingContext（视图层），而非 DataTable（结构层）
 
 ## 📋 目录
 
@@ -20,9 +21,14 @@
 自引用树采用**扁平化存储 + 按需构建**的架构：
 
 ```
-存储层 (Flat)     →  缓存层 (TreeManager)  →  展示层 (Nested)
-[{id, parentId}]  →  智能缓存 + 懒加载      →  嵌套树结构
+存储层 (Flat)     →  视图层 (BindingContext + TreeManager)  →  展示层 (Nested)
+[{id, parentId}]  →  智能缓存 + 懒加载 + 视图管理            →  嵌套树结构
 ```
+
+**关键设计决策**：
+- ✅ **TreeManager 关联 BindingContext**（视图层）- 树形数据是数据的一种展示形式
+- ❌ **不关联 DataTable**（结构层）- DataTable 只定义表结构，不涉及特定展示逻辑
+- 💡 **双向绑定**：BindingContext ↔ TreeManager，方便相互引用
 
 ### 核心特性
 
@@ -42,7 +48,9 @@
 
 ```typescript
 import { TreeManager } from '@/utils/treeManager'
+import type { BindingContext } from '@/models/BindingContext'
 
+// 方式1: 独立创建（不关联 BindingContext）
 const treeManager = new TreeManager({
   mode: 'flat',           // 'flat' | 'nested'
   lazy: false,            // 是否懒加载
@@ -51,6 +59,19 @@ const treeManager = new TreeManager({
   childrenField: 'children',  // 子节点字段名（nested 模式）
   rootValue: null         // 根节点的 parentId 值
 })
+
+// 方式2: 关联到 BindingContext（推荐）
+const context: BindingContext = dataSet.getTable('Departments')
+const treeManager = new TreeManager(
+  { idField: 'id', parentIdField: 'parentId' },
+  initialNodes,
+  context  // 传入 BindingContext
+)
+
+// 方式3: 通过 BindingContext 设置（双向绑定）
+context.setTreeManager(treeManager)
+// 此时 context.getTreeManager() === treeManager
+// 且 treeManager.getBindingContext() === context
 ```
 
 ### 核心方法
@@ -238,43 +259,54 @@ const total = countNodes(tree, { childrenField: 'children' })
 }
 ```
 
-### 2. 在 script.js 中初始化
+### 2. 在 script.js 中初始化（关联 BindingContext）
 
 ```javascript
 import { TreeManager } from '@/utils/treeManager'
-import { $data } from '@/utils/page-helpers/common.js'
+import { $data, $dataSet } from '@/utils/page-helpers/common.js'
 
 let treeManager = null
 
 export function init() {
   const data = $data()
+  const dataSet = $dataSet()
   
-  // 创建 TreeManager 实例
-  treeManager = new TreeManager(data.treeConfig)
+  // 获取树数据对应的 BindingContext
+  const treeContext = dataSet.getTable('Departments')  // 假设表名是 Departments
   
-  // 添加节点到缓存
-  treeManager.addNodesToCache(data.treeNodes)
+  // 创建 TreeManager 实例并关联 BindingContext
+  treeManager = new TreeManager(
+    data.treeConfig, 
+    data.treeNodes,
+    treeContext  // 关联到 BindingContext
+  )
+  
+  // 或者通过 BindingContext 设置（双向绑定）
+  treeContext.setTreeManager(treeManager)
   
   // 富化节点（计算 level、hasChildren）
-  const enrichedNodes = treeManager.enrichNodes(data.treeNodes)
+  treeManager.enrichNodes()
   
   // 构建嵌套树（用于 el-tree）
-  const nestedTree = treeManager.buildNestedTree(enrichedNodes)
+  const nestedTree = treeManager.buildNestedTree()
   
-  // 更新到响应式数据
-  data.displayTree = nestedTree
+  // 更新到 BindingContext 的 rows
+  treeContext.rows = nestedTree
   
-  console.log('✅ TreeManager 初始化完成')
+  // 通知 UI 更新
+  dataSet.notifySubscribers('Departments')
+  
+  console.log('✅ TreeManager 初始化完成，已关联 BindingContext')
 }
 ```
 
-### 3. 在 rule.json 中绑定 el-tree
+### 3. 在 rule.json 中绑定 el-tree（使用 DataKey）
 
 ```json
 {
   "type": "el-tree",
+  "dataKey": "dataset.tables.Departments.rows",
   "props": {
-    "data": "dataKey:displayTree",
     "nodeKey": "id",
     "defaultExpandAll": false,
     "highlightCurrent": true

@@ -1,6 +1,7 @@
 /**
  * 树管理器
  * 负责自引用树的懒加载、差量补齐和层级构建
+ * 关联到 BindingContext（视图层）而非 DataTable（结构层）
  */
 
 import type {
@@ -10,16 +11,19 @@ import type {
   FlatTreeCache,
   TreePath
 } from '../types/pageData'
+import type { BindingContext } from '../models/BindingContext'
 
 /**
  * 树管理器类
+ * 管理 BindingContext 中的树形数据视图
  */
 export class TreeManager {
   private config: TreeConfig
   private cache: FlatTreeCache = {}
   private eventListeners: Map<string, Function[]> = new Map()
+  private bindingContext?: BindingContext  // 关联的 BindingContext
 
-  constructor(config: TreeConfig, initialNodes?: FlatTreeNode[]) {
+  constructor(config: TreeConfig, initialNodes?: FlatTreeNode[], bindingContext?: BindingContext) {
     this.config = {
       idField: 'id',
       parentIdField: 'parentId',
@@ -27,10 +31,24 @@ export class TreeManager {
       lazy: true,
       ...config
     }
-    
-    if (initialNodes) {
+        this.bindingContext = bindingContext
+        if (initialNodes) {
       this.addNodesToCache(initialNodes)
     }
+  }
+
+  /**
+   * 设置关联的 BindingContext
+   */
+  setBindingContext(bindingContext: BindingContext): void {
+    this.bindingContext = bindingContext
+  }
+
+  /**
+   * 获取关联的 BindingContext
+   */
+  getBindingContext(): BindingContext | undefined {
+    return this.bindingContext
   }
 
   /**
@@ -282,9 +300,9 @@ export class TreeManager {
   /**
    * 从 JSON 加载
    */
-  static fromJSON(json: string): TreeManager {
+  static fromJSON(json: string, bindingContext?: BindingContext): TreeManager {
     const data = JSON.parse(json)
-    const manager = new TreeManager(data.config)
+    const manager = new TreeManager(data.config, undefined, bindingContext)
     manager.cache = data.cache
     return manager
   }
