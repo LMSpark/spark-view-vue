@@ -24,7 +24,8 @@ import {ref, onMounted, watch, reactive} from 'vue'
 import {useRoute} from 'vue-router'
 import {getPageConfig} from '../api'
 import type {PageRule, ApiConfig} from '../types'
-import { DataSetManager } from '../utils/dataSetManager'
+import { DataSetManager } from '../models/dataSetManager'
+import type { DataSet } from '../models/dataSet'
 
 // 使用 Vite 的 glob import 预加载所有页面脚本模块
 const pageModules = import.meta.glob('../pages-config/*/script.js', { eager: false })
@@ -40,7 +41,7 @@ const formApi = ref<any>(null) // form-create API 实例
 const pageFunctions = ref<Record<string, Function>>({}) // 页面函数
 const pageContainer = ref<HTMLElement | null>(null) // 页面容器引用
 const pageData = reactive<Record<string, any>>({}) // 响应式页面数据
-let dataSetManager: DataSetManager | null = null // DataSet 管理器实例
+let dataSet: DataSet | null = null // DataSet 实例
 
 // 初始化全局上下文（在任何模块加载之前）- 仅在客户端
 if (typeof window !== 'undefined') {
@@ -52,17 +53,17 @@ if (typeof window !== 'undefined') {
         $query: (_selector: string) => null,
         $queryAll: (_selector: string) => null,
         $refreshData: null,  // 刷新数据的方法
-        $dataSetManager: null  // DataSet 管理器实例（由 DynamicPage 自动创建）
+        $dataSet: null  // DataSet 实例（由 DynamicPage 自动创建）
     }
 }
 
-// 自动初始化 DataSetManager（如果 pageData 包含 dataset）
-const initDataSetManager = () => {
+// 自动初始化 DataSet（如果 pageData 包含 dataset）
+const initDataSet = () => {
     if (pageData.dataset && pageData.dataset.tables) {
-        // 🔄 每次页面切换时重新创建 DataSetManager（不同页面有不同的表结构）
-        if (dataSetManager) {
-            // 清理旧的 DataSetManager
-            dataSetManager = null;
+        // 🔄 每次页面切换时重新创建 DataSet（不同页面有不同的表结构）
+        if (dataSet) {
+            // 清理旧的 DataSet
+            dataSet = null;
         }
         
         // 创建 mock dataLoader（页面脚本可以覆盖）
@@ -71,18 +72,18 @@ const initDataSetManager = () => {
             return [];
         };
         
-        // 完全解耦：不传 rebindCallback，通过订阅机制自动触发
-        dataSetManager = new DataSetManager(pageData.dataset, defaultDataLoader);
+        // 使用工厂方法创建 DataSet
+        dataSet = DataSetManager.create(pageData.dataset, defaultDataLoader);
         
-        // 🔑 移除 pageData.dataset.tables 引用，强制使用 DataSetManager API
-        // 用户脚本必须通过 $dataSetManager().getTable() 或 $dataSetManager().dataSet.tables 访问
+        // 🔑 移除 pageData.dataset.tables 引用，强制使用 DataSet API
+        // 用户脚本必须通过 $dataSet().getTable() 或 $dataSet().tables 访问
         delete pageData.dataset.tables;
         
         // 更新全局上下文
         if (typeof window !== 'undefined') {
-            (window as any).__pageContext.$dataSetManager = dataSetManager;
+            (window as any).__pageContext.$dataSet = dataSet;
         }
-        console.log('✅ DataSetManager 自动初始化成功（内核级）');
+        console.log('✅ DataSet 自动初始化成功（内核级）');
         
         // 注意：autoSubscribeTables() 需要在 originalRules 设置后调用
         // 已移到 loadPageConfig 的最后
@@ -91,7 +92,7 @@ const initDataSetManager = () => {
 
 // 自动订阅 rules 中引用的所有表（UI 完全解耦）
 const autoSubscribeTables = () => {
-    if (!dataSetManager || !originalRules.value) return;
+    if (!dataSet || !originalRules.value) return;
     
     // 收集所有 (tableName, contextId) 组合
     const contexts = new Set<string>();
@@ -124,7 +125,7 @@ const autoSubscribeTables = () => {
     // 只有在明确需要重新解析 rules 时才手动调用 rebindRules
     contexts.forEach(key => {
         const [tableName, contextId] = key.split('.');
-        dataSetManager!.subscribe(tableName, contextId, () => {
+        dataSet!.subscribe(tableName, contextId, () => {
             console.log(`🔄 上下文 ${key} 数据变化（Vue 响应式自动更新）`);
             // ❌ 移除自动 rebindRules，避免不必要的 UI 重绑
             // rebindRules();
@@ -133,11 +134,11 @@ const autoSubscribeTables = () => {
     });
     
     // 🎯 监听 currentRow/selectedRows 变化事件，需要 rebindRules 更新显示
-    dataSetManager!.on('currentRowChanged', () => {
+    dataSet!.on('currentRowChanged', () => {
         console.log('🎯 [Event] currentRow 变化，触发 rebindRules');
         rebindRules();
     });
-    dataSetManager!.on('selectedRowsChanged', () => {
+    dataSet!.on('selectedRowsChanged', () => {
         console.log('🎯 [Event] selectedRows 变化，触发 rebindRules');
         rebindRules();
     });
@@ -211,11 +212,11 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                             originalCurrentChange(currentRow, oldRow)
                         }
                         
-                        // 自动同步到 DataSetManager
+                        // 自动同步到 dataSet
                         // 对于 currentChange：需要触发关系更新（主从表联动）
-                        if (dataSetManager) {
+                        if (dataSet) {
                             // ✨ 使用面向对象方式：直接操作上下文
-                            const context = dataSetManager.getContext(tableName, contextId || 'default')
+                            const context = dataSet.getContext(tableName, contextId || 'default')
                             if (context && context.setCurrentRow) {
                                 // ⚠️ 不使用 skipNotify，因为需要触发子表过滤
                                 context.setCurrentRow(currentRow || null, false)
@@ -223,7 +224,7 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                                 console.warn(`⚠️ 上下文 ${tableName}.${contextId || 'default'} 不存在或未注入方法`)
                             }
                         } else {
-                            console.warn(`⚠️ dataSetManager 为 null，无法同步 ${tableName}.currentRow`)
+                            console.warn(`⚠️ dataSet 为 null，无法同步 ${tableName}.currentRow`)
                         }
                     } finally {
                         // 延迟释放锁，确保 rebindRules 完成后再允许下次事件
@@ -243,11 +244,11 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                         originalSelectionChange(selectedRows)
                     }
                     
-                    // 自动同步到 DataSetManager
+                    // 自动同步到 dataSet
                     // 关键：传递 skipNotify=true，因为 UI 已经是最新的，不需要触发 rebindRules
-                    if (dataSetManager) {
+                    if (dataSet) {
                         // ✨ 使用面向对象方式：直接操作上下文
-                        const context = dataSetManager.getContext(tableName, contextId || 'default')
+                        const context = dataSet.getContext(tableName, contextId || 'default')
                         if (context && context.setSelectedRows) {
                             context.setSelectedRows(selectedRows, true)
                         } else {
@@ -263,13 +264,13 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
             const keys = newRule.dataKey.split('.')
             let value: any = data
             
-            // 🔑 特殊处理：dataset.tables.* 路径从 DataSetManager 获取实时数据
-            if (keys[0] === 'dataset' && keys[1] === 'tables' && dataSetManager) {
+            // 🔑 特殊处理：dataset.tables.* 路径从 dataSet 获取实时数据
+            if (keys[0] === 'dataset' && keys[1] === 'tables' && dataSet) {
                 const tableName = keys[2];
                 const contextId = keys[4] === 'contexts' ? keys[5] : 'default';
                 
-                // 从 DataSetManager 获取上下文（DataTable 或 BindingContext 实例）
-                const context = dataSetManager.getContext(tableName, contextId);
+                // 从 dataSet 获取上下文（DataTable 或 BindingContext 实例）
+                const context = dataSet.getContext(tableName, contextId);
                 
                 if (context) {
                     // 确定访问的属性：rows, currentRow, selectedRows 等
@@ -517,8 +518,8 @@ const loadPageConfig = async () => {
         // 先处理数据（支持静态数据和 API 配置）
         await processPageData(config.data)
     
-        // 自动初始化 DataSetManager（如果数据包含 dataset）
-        initDataSetManager()
+        // 自动初始化 dataSet（如果数据包含 dataset）
+        initDataSet()
 
         // 🎯 关键：先保存 rules 并注册订阅者，再加载模块
         // 这样可以确保 __init__ 触发数据加载时，订阅者已经就绪
@@ -528,18 +529,18 @@ const loadPageConfig = async () => {
         pageRules.value = bindDataToRules(config.rule, pageData)
     
         // 自动订阅所有表（必须在 __init__ 之前）
-        if (dataSetManager && originalRules.value) {
+        if (dataSet && originalRules.value) {
             autoSubscribeTables();
         }
 
         // 直接动态导入页面脚本模块
         try {
-            // 更新全局上下文（在模块加载之前，确保包含 dataSetManager）
+            // 更新全局上下文（在模块加载之前，确保包含 dataSet）
             ;(window as any).__pageContext = {
                 $api: formApi.value,
                 $route: route,
                 $data: pageData,
-                $dataSetManager: dataSetManager,  // 确保传递 DataSetManager
+                $dataSet: dataSet,  // 确保传递 dataSet
                 $el: pageContainer.value,
                 $query: (selector: string) => pageContainer.value?.querySelector(selector),
                 $queryAll: (selector: string) => pageContainer.value?.querySelectorAll(selector),
@@ -634,3 +635,4 @@ onMounted(() => {
   margin-bottom: 10px;
 }
 </style>
+

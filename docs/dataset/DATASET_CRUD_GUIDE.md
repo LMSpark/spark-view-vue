@@ -1,4 +1,4 @@
-# DataSet 完整 CRUD 操作指南
+﻿# DataSet 完整 CRUD 操作指南
 
 ## 架构概览
 
@@ -785,7 +785,7 @@ export async function handleUpdateUserId(oldUserId, newUserId) {
   const pageData = $data()
   
   // 创建 DataSetManager 实例
-  const manager = new DataSetManager(pageData.dataset)
+  const dataSet = new DataSetManager(pageData.dataset)
   
   // 更新用户 ID（传入 manager 触发级联）
   const count = updateRow(
@@ -861,7 +861,7 @@ export async function handleDeleteUser(userId) {
   const pageData = $data()
   
   // 创建 DataSetManager 实例
-  const manager = new DataSetManager(pageData.dataset)
+  const dataSet = new DataSetManager(pageData.dataset)
   
   // 删除用户（传入 manager 触发级联）
   const count = deleteRow(
@@ -880,7 +880,7 @@ export async function handleDeleteUser(userId) {
     // 同步到服务器
     await deleteRowFromServer(`/api/users/${userId}`)
     $rebindRules()
-    ElMessage.success(`用户及其 ${manager.deletedCount} 个关联记录已删除`)
+    ElMessage.success(`用户及其 ${dataSet.deletedCount} 个关联记录已删除`)
   }
 }
 ```
@@ -900,10 +900,10 @@ import { DataSetManager } from '../utils/dataSetManager'
 
 export function initDataSet() {
   const pageData = $data()
-  const manager = new DataSetManager(pageData.dataset)
+  const dataSet = new DataSetManager(pageData.dataset)
   
   // 监听级联更新事件
-  manager.on('cascadeUpdate', ({ parentTable, childTable, parentRow, oldValues }) => {
+  dataSet.on('cascadeUpdate', ({ parentTable, childTable, parentRow, oldValues }) => {
     console.log(`级联更新: ${parentTable} -> ${childTable}`)
     console.log('父行新值:', parentRow)
     console.log('父行旧值:', oldValues)
@@ -913,7 +913,7 @@ export function initDataSet() {
   })
   
   // 监听级联删除事件
-  manager.on('cascadeDelete', ({ parentTable, childTable, parentRow, deletedRows }) => {
+  dataSet.on('cascadeDelete', ({ parentTable, childTable, parentRow, deletedRows }) => {
     console.log(`级联删除: ${parentTable} -> ${childTable}`)
     console.log('删除的父行:', parentRow)
     console.log('删除的子行数量:', deletedRows.length)
@@ -1020,3 +1020,4 @@ export async function handleDeleteUserWithConfirm(userId) {
 ✅ **事务支持**：多操作原子执行  
 ✅ **级联更新**：自动同步子表外键字段  
 ✅ **级联删除**：递归删除所有子孙数据
+

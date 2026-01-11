@@ -1,4 +1,4 @@
-# 自引用树架构文档 (Self-Reference Tree)
+﻿# 自引用树架构文档 (Self-Reference Tree)
 
 > 基于 PageData 1.1 的扁平化 + 懒加载 + 层级构建方案
 
@@ -646,3 +646,4 @@ export function customRenderNode(h, { node, data }) {
 ---
 
 **🌳 自引用树架构 - 让树形数据管理更简单、更高效！**
+

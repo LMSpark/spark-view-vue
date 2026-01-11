@@ -1,4 +1,4 @@
-# 智能依赖加载演示
+﻿# 智能依赖加载演示
 
 ## 访问地址
 http://localhost:3000/smart-load
@@ -106,7 +106,7 @@ Categories (分类表) - 根表
 
 ### 1. 完全解耦
 - **UI 层**：通过 `dataKey` 绑定表，自动订阅数据变化
-- **业务层**：只需调用 `manager.requestTableData(tableName)`
+- **业务层**：只需调用 `dataSet.requestTableData(tableName)`
 - **数据层**：DataSetManager 自动分析依赖、加载数据、通知更新
 
 ### 2. 零递归加载
@@ -123,8 +123,8 @@ Categories (分类表) - 根表
 页面脚本仅需：
 ```javascript
 export async function handleRequestOrderDetails() {
-  const manager = $dataSetManager();
-  await manager.requestTableData('OrderDetails'); // 一行代码！
+  const dataSet = $dataSet();
+  await dataSet.requestTableData('OrderDetails'); // 一行代码！
 }
 ```
 
@@ -172,7 +172,7 @@ const mockDataLoader = async (tableName) => {
 };
 
 // 在 script.js 中注册
-manager.dataLoader = mockDataLoader;
+dataSet.dataLoader = mockDataLoader;
 ```
 
 ### 依赖配置（pagedata.json）
@@ -209,3 +209,4 @@ DynamicPage.vue 自动扫描 rule.json 中的 `dataKey`：
 ✅ UI 自动刷新（无需手动调用 rebindRules）  
 ✅ 控制台日志清晰展示加载流程  
 ✅ 缓存机制生效（重复请求秒出）  
+

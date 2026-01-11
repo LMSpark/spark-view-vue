@@ -1,4 +1,4 @@
-# DataSet 排序功能使用指南
+﻿# DataSet 排序功能使用指南
 
 ## 概述
 
@@ -157,11 +157,11 @@ type SortExpression =
 ### 方法 1：更新上下文配置（推荐）
 
 ```javascript
-import { $dataSetManager } from '@/utils/page-helpers/common.js';
+import { $dataSet } from '@/utils/page-helpers/common.js';
 
 export function handleSortByPrice() {
-  const manager = $dataSetManager();
-  const table = manager.getTable('Products');
+  const dataSet = $dataSet();
+  const table = dataSet.getTable('Products');
   
   // 更新默认上下文的排序
   table.sortExpression = {
@@ -170,12 +170,12 @@ export function handleSortByPrice() {
   };
   
   // 重新处理数据（过滤 + 排序）
-  manager.refreshContext('Products', 'default');
+  dataSet.refreshContext('Products', 'default');
 }
 
 export function handleSortByMultipleFields() {
-  const manager = $dataSetManager();
-  const context = manager.getContext('Products', 'priceView');
+  const dataSet = $dataSet();
+  const context = dataSet.getContext('Products', 'priceView');
   
   // 更新自定义上下文的排序
   context.sortExpression = {
@@ -185,7 +185,7 @@ export function handleSortByMultipleFields() {
     ]
   };
   
-  manager.refreshContext('Products', 'priceView');
+  dataSet.refreshContext('Products', 'priceView');
 }
 ```
 
@@ -193,8 +193,8 @@ export function handleSortByMultipleFields() {
 
 ```javascript
 export function handleQuickSort() {
-  const manager = $dataSetManager();
-  const table = manager.getTable('Products');
+  const dataSet = $dataSet();
+  const table = dataSet.getTable('Products');
   
   // 直接对 rows 排序（不修改 sortExpression）
   table.rows.sort((a, b) => b.price - a.price);
@@ -245,8 +245,8 @@ export function handleQuickSort() {
 ```javascript
 // script.js
 export function handleTableSort({ prop, order }) {
-  const manager = $dataSetManager();
-  const table = manager.getTable('Products');
+  const dataSet = $dataSet();
+  const table = dataSet.getTable('Products');
   
   if (!order) {
     // 取消排序
@@ -259,7 +259,7 @@ export function handleTableSort({ prop, order }) {
     };
   }
   
-  manager.refreshContext('Products', 'default');
+  dataSet.refreshContext('Products', 'default');
 }
 ```
 
@@ -297,3 +297,4 @@ export function handleTableSort({ prop, order }) {
 - [DataKey 路径系统](./DataKey-Paths.md)
 - [过滤表达式指南](./Filter-Expression-Guide.md)
 - [分页功能说明](./Pagination-Guide.md)
+

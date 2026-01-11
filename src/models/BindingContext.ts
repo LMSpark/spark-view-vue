@@ -1,10 +1,14 @@
 /**
  * BindingContext 类 - 上下文绑定
  * 负责：选中状态管理、数据视图、通知机制
+ * 相当于 .NET 的 DataView - 视图层
  */
 
 import type { DataRow, IBindingContext, FilterExpression, SortExpression } from '../types/pageData'
-import type { DataSetManager } from '../utils/dataSetManager'
+import { FilterExpressionParser } from '../utils/filterExpressionParser'
+
+// 前向声明，避免循环依赖
+type DataSet = any
 
 /**
  * 绑定上下文类（实现 IBindingContext 接口 + 方法逻辑）
@@ -31,31 +35,33 @@ export class BindingContext implements IBindingContext {
     totalPages?: number
   }
   
-  // Manager 引用（用于触发通知）
-  protected manager?: DataSetManager
+  // DataSet 引用（用于触发通知）
+  protected dataSet?: DataSet
 
   constructor(
     hostTable: string,
     contextId: string = 'default',
-    manager?: DataSetManager
+    dataSet?: DataSet
   ) {
     this._hostTable = hostTable
     this._contextId = contextId
-    this.manager = manager
+    this.dataSet = dataSet
+  }
+  
+  /**
+   * 设置 DataSet 引用
+   */
+  setDataSet(dataSet: DataSet): void {
+    this.dataSet = dataSet
   }
 
   /**
    * 设置当前选中行
    */
   setCurrentRow(row: DataRow | null, skipNotify: boolean = false): void {
-    // 防重复检查
+    // 防重复检查 - 只比较引用
     const existingRow = this.currentRow
-    const isSameRow = (
-      existingRow === row || 
-      (existingRow === null && row === null) ||
-      (existingRow === undefined && row === undefined) ||
-      (existingRow && row && (existingRow as any).id === (row as any).id)
-    )
+    const isSameRow = existingRow === row
     
     if (isSameRow) {
       console.log(`⏭️ [Context] ${this._hostTable}.${this._contextId}.currentRow 未变化`)
@@ -65,15 +71,15 @@ export class BindingContext implements IBindingContext {
     console.log(`🔄 [Context] ${this._hostTable}.${this._contextId}.currentRow 更新`, { from: existingRow, to: row })
     this.currentRow = row
     
-    if (!skipNotify && this.manager) {
+    if (!skipNotify && this.dataSet) {
       // 触发关系更新
-      this.manager.updateRelatedTables(this._hostTable, this._contextId)
+      this.dataSet.updateRelatedTables(this._hostTable, this._contextId)
       
       // 通知订阅者
-      this.manager.notifySubscribers(this._hostTable, this._contextId)
+      this.dataSet.notifySubscribers(this._hostTable, this._contextId)
       
       // 触发事件
-      this.manager.emit('currentRowChanged', { 
+      this.dataSet.emit('currentRowChanged', { 
         tableName: this._hostTable, 
         contextId: this._contextId, 
         row 
@@ -87,20 +93,35 @@ export class BindingContext implements IBindingContext {
    * @param skipNotify 是否跳过通知当前表的 UI 更新（但仍会触发关联更新）
    */
   setSelectedRows(rows: DataRow[], skipNotify: boolean = false): void {
-    console.log(`🔄 [Context] ${this._hostTable}.${this._contextId}.selectedRows 更新`, rows)
+    // 防重复检查：只比较引用
+    const existingRows = this.selectedRows || []
+    const isSameSelection = (
+      existingRows.length === rows.length &&
+      existingRows.every((existingRow, index) => existingRow === rows[index])
+    )
+    
+    if (isSameSelection) {
+      console.log(`⏭️ [Context] ${this._hostTable}.${this._contextId}.selectedRows 未变化`)
+      return
+    }
+    
+    console.log(`🔄 [Context] ${this._hostTable}.${this._contextId}.selectedRows 更新`, { 
+      from: existingRows.length, 
+      to: rows.length 
+    })
     this.selectedRows = rows
     
-    if (this.manager) {
+    if (this.dataSet) {
       // ✅ 始终触发关系更新（过滤子表）
-      this.manager.updateRelatedTables(this._hostTable, this._contextId)
+      this.dataSet.updateRelatedTables(this._hostTable, this._contextId)
       
       // ❓ 根据 skipNotify 决定是否通知当前表的订阅者
       if (!skipNotify) {
-        this.manager.notifySubscribers(this._hostTable, this._contextId)
+        this.dataSet.notifySubscribers(this._hostTable, this._contextId)
       }
       
       // 触发事件
-      this.manager.emit('selectedRowsChanged', { 
+      this.dataSet.emit('selectedRowsChanged', { 
         tableName: this._hostTable, 
         contextId: this._contextId, 
         rows 
@@ -112,16 +133,172 @@ export class BindingContext implements IBindingContext {
    * 手动触发通知
    */
   notifyChange(): void {
-    if (this.manager) {
-      this.manager.notifySubscribers(this._hostTable, this._contextId)
+    if (this.dataSet) {
+      this.dataSet.notifySubscribers(this._hostTable, this._contextId)
     }
   }
 
   /**
-   * 设置 Manager 引用（用于延迟绑定）
+   * 应用排序表达式
    */
-  setManager(manager: DataSetManager): void {
-    this.manager = manager
+  private applySorting(rows: DataRow[], sortExpression: SortExpression): DataRow[] {
+    // 创建副本以避免修改原数组
+    const sorted = [...rows];
+    
+    // 判断是单字段还是多字段排序
+    if ('field' in sortExpression) {
+      // 单字段排序
+      const { field, direction } = sortExpression;
+      return this.sortByField(sorted, field, direction);
+    } else if ('fields' in sortExpression) {
+      // 多字段排序
+      return this.sortByFields(sorted, sortExpression.fields);
+    }
+    
+    return sorted;
+  }
+
+  /**
+   * 单字段排序
+   */
+  private sortByField(rows: DataRow[], field: string, direction: string): DataRow[] {
+    const isAsc = direction.toLowerCase() === 'asc';
+    
+    return rows.sort((a, b) => {
+      const aVal = a[field];
+      const bVal = b[field];
+      
+      // 处理 null/undefined
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return isAsc ? 1 : -1;
+      if (bVal == null) return isAsc ? -1 : 1;
+      
+      // 数值比较
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return isAsc ? aVal - bVal : bVal - aVal;
+      }
+      
+      // 字符串比较
+      const aStr = String(aVal);
+      const bStr = String(bVal);
+      const compareResult = aStr.localeCompare(bStr, 'zh-CN');
+      
+      return isAsc ? compareResult : -compareResult;
+    });
+  }
+
+  /**
+   * 多字段排序
+   */
+  private sortByFields(rows: DataRow[], fields: Array<{ field: string; direction: string }>): DataRow[] {
+    return rows.sort((a, b) => {
+      for (const { field, direction } of fields) {
+        const isAsc = direction.toLowerCase() === 'asc';
+        const aVal = a[field];
+        const bVal = b[field];
+        
+        // 处理 null/undefined
+        if (aVal == null && bVal == null) continue;
+        if (aVal == null) return isAsc ? 1 : -1;
+        if (bVal == null) return isAsc ? -1 : 1;
+        
+        // 数值比较
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          const diff = aVal - bVal;
+          if (diff !== 0) return isAsc ? diff : -diff;
+          continue;
+        }
+        
+        // 字符串比较
+        const aStr = String(aVal);
+        const bStr = String(bVal);
+        const compareResult = aStr.localeCompare(bStr, 'zh-CN');
+        
+        if (compareResult !== 0) {
+          return isAsc ? compareResult : -compareResult;
+        }
+      }
+      
+      return 0; // 所有字段都相等
+    });
+  }
+
+  /**
+   * 更新上下文的 rows（应用过滤和排序）
+   * @param sourceData 完整数据源（通常是 table._originalRows 或 table.rows）
+   */
+  updateRows(sourceData: DataRow[]): void {
+    let result = [...sourceData];
+    
+    // 1. 执行过滤
+    if (this.filterExpression) {
+      try {
+        const filterFn = FilterExpressionParser.toMemoryFilter(this.filterExpression);
+        result = result.filter(filterFn);
+      } catch (e) {
+        console.error(`❌ [Context] ${this._hostTable}.${this._contextId} 过滤失败:`, e);
+        result = [];
+      }
+    }
+    
+    // 2. 执行排序
+    if (this.sortExpression) {
+      try {
+        result = this.applySorting(result, this.sortExpression);
+      } catch (e) {
+        console.error(`❌ [Context] ${this._hostTable}.${this._contextId} 排序失败:`, e);
+      }
+    }
+    
+    this.rows = result;
+  }
+
+  /**
+   * 刷新上下文（重新应用过滤和排序）
+   * @param sourceData 完整数据源
+   */
+  refresh(sourceData: DataRow[]): void {
+    this.updateRows(sourceData);
+    console.log(`✅ [Refresh] 上下文 ${this._contextId} 已刷新，当前 ${this.rows.length} 行`);
+  }
+
+  /**
+   * 清理无效的选中状态
+   * 检查 currentRow 和 selectedRows 是否还在当前上下文的 rows 中
+   * @returns 是否发生了清理操作
+   */
+  cleanupInvalidSelections(): boolean {
+    const contextRows = this.rows || [];
+    let needsCleanup = false;
+    
+    // 检查 currentRow
+    if (this.currentRow) {
+      const currentRowExists = contextRows.some(row => 
+        JSON.stringify(row) === JSON.stringify(this.currentRow)
+      );
+      
+      if (!currentRowExists) {
+        console.log(`🧹 [Cleanup] ${this._hostTable}.${this._contextId}.currentRow 不在上下文数据中，清空`);
+        this.currentRow = null;
+        needsCleanup = true;
+      }
+    }
+    
+    // 检查 selectedRows
+    if (this.selectedRows && this.selectedRows.length > 0) {
+      const validSelectedRows = this.selectedRows.filter(selectedRow => {
+        const selectedRowStr = JSON.stringify(selectedRow)
+        return contextRows.some(row => JSON.stringify(row) === selectedRowStr)
+      });
+      
+      if (validSelectedRows.length !== this.selectedRows.length) {
+        console.log(`🧹 [Cleanup] ${this._hostTable}.${this._contextId}.selectedRows 清理: ${this.selectedRows.length} -> ${validSelectedRows.length}`);
+        this.selectedRows = validSelectedRows;
+        needsCleanup = true;
+      }
+    }
+    
+    return needsCleanup;
   }
 
   /**
@@ -144,8 +321,8 @@ export class BindingContext implements IBindingContext {
   /**
    * 从普通对象创建实例
    */
-  static fromJSON(data: any, hostTable: string, contextId: string, manager?: DataSetManager): BindingContext {
-    const context = new BindingContext(hostTable, contextId, manager)
+  static fromJSON(data: any, hostTable: string, contextId: string, dataSet?: DataSet): BindingContext {
+    const context = new BindingContext(hostTable, contextId, dataSet)
     
     context.currentRow = data.currentRow || null
     context.selectedRows = data.selectedRows || []

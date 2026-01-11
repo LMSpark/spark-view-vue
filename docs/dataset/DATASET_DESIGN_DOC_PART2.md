@@ -1,4 +1,4 @@
-# DataSet 架构设计文档（第二部分：自引用树架构）
+﻿# DataSet 架构设计文档（第二部分：自引用树架构）
 
 > **PageData 1.1 完整解决方案** - 自引用树（Self-Reference Tree）设计
 > 
@@ -553,8 +553,8 @@ export async function handleNodeExpand(data, node) {
       const children = await getChildren(data.id);
       
       // 添加到缓存
-      const manager = $dataSetManager();
-      manager.addNodesToCache(children);
+      const dataSet = $dataSet();
+      dataSet.addNodesToCache(children);
       
       // 挂载子节点
       data.children = children;
@@ -1036,8 +1036,8 @@ export async function handleSearch() {
     return;
   }
   
-  const manager = $dataSetManager();
-  const result = manager.searchWithPath(keyword, ['name', 'code', 'email']);
+  const dataSet = $dataSet();
+  const result = dataSet.searchWithPath(keyword, ['name', 'code', 'email']);
   
   // 格式化搜索结果（带路径）
   pageData.searchResults = result.matchedNodes.map(node => {
@@ -1257,7 +1257,7 @@ export interface SelfReferenceTable extends DataTable {
 
 ```typescript
 import { TreeManager } from '@/utils/treeManager';
-import { $data, $dataSetManager } from '@/utils/page-helpers/common.js';
+import { $data, $dataSet } from '@/utils/page-helpers/common.js';
 import { buildTreeFromFlat } from '@/utils/page-helpers/treeHelper.js';
 
 let treeManager = null;
@@ -1612,3 +1612,4 @@ function decompressNodes(response) {
 **📅 更新日期：2026-01-09**  
 **👨‍💻 基于：PageData 1.1 CSDN 系列文章**  
 **🔗 配套文档：** [第一部分 - 核心数据层](DATASET_DESIGN_DOC.md)
+

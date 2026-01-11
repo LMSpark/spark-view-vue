@@ -1,4 +1,4 @@
-# DataSet 架构重构：从接口到领域模型
+﻿# DataSet 架构重构：从接口到领域模型
 
 ## 重构目标
 
@@ -190,11 +190,11 @@ test('cascadeDelete should remove related rows', () => {
 **DataSetManager 集成测试**（Mock 事件）：
 ```typescript
 test('cascadeDelete should emit events', () => {
-  const manager = new DataSetManager(dataSetConfig)
+  const dataSet = new DataSetManager(dataSetConfig)
   const mockCallback = jest.fn()
   
-  manager.on('cascadeDelete', mockCallback)
-  manager.cascadeDelete('Users', { id: 1 })
+  dataSet.on('cascadeDelete', mockCallback)
+  dataSet.cascadeDelete('Users', { id: 1 })
   
   expect(mockCallback).toHaveBeenCalledWith({
     parentTable: 'Users',
@@ -232,7 +232,7 @@ DataSet 可在多个场景使用：
 ```typescript
 import { DataSetManager } from '@/utils/dataSetManager'
 
-const manager = new DataSetManager(pageData.dataset, mockDataLoader)
+const dataSet = new DataSetManager(pageData.dataset, mockDataLoader)
 ```
 
 **重构后**：
@@ -240,7 +240,7 @@ const manager = new DataSetManager(pageData.dataset, mockDataLoader)
 import { DataSetManager } from '@/utils/dataSetManager'
 
 // DataSetManager 内部自动创建 DataSet 实例
-const manager = new DataSetManager(pageData.dataset, mockDataLoader)
+const dataSet = new DataSetManager(pageData.dataset, mockDataLoader)
 // API 保持兼容，无需修改现有代码！
 ```
 
@@ -349,3 +349,4 @@ console.log('Affected:', affectedTables)
 ✅ **向后兼容**：API 保持不变，平滑过渡  
 
 重构遵循了 SOLID 原则，特别是**单一职责原则**和**依赖倒置原则**，为项目的长期维护打下了坚实的基础。
+

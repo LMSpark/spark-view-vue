@@ -1,4 +1,4 @@
-# 全配置化表单系统架构说明
+﻿# 全配置化表单系统架构说明
 
 ## 📋 核心理念
 
@@ -197,3 +197,4 @@ http://localhost:3000
 - [form-create 官方文档](https://www.form-create.com/)
 - [Element Plus 组件](https://element-plus.org/)
 - [Vue Router 文档](https://router.vuejs.org/)
+

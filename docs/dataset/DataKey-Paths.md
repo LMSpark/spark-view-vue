@@ -1,4 +1,4 @@
-# DataKey 路径完整指南
+﻿# DataKey 路径完整指南
 
 > 📌 **核心理念**：一切皆视图（BindingContext）  
 > DataTable 本身就是一个 BindingContext（默认上下文），同时可以包含多个自定义上下文。
@@ -326,3 +326,4 @@ table.rows = loadedData                // 初始视图数据
 - [BindingContext 设计](./PageData-Flow.md)
 - [类型定义](../../src/types/pageData.ts)
 - [DynamicPage 实现](../../src/views/DynamicPage.vue)
+

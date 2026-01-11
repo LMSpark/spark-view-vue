@@ -1,4 +1,4 @@
-# DataSet 架构设计文档（第一部分：核心数据层）
+﻿# DataSet 架构设计文档（第一部分：核心数据层）
 
 > **PageData 1.1 完整解决方案** - 企业级数据管理架构
 > 
@@ -112,10 +112,10 @@ Root Table → Child Table → Grandchild Table
   Load → Notify → Apply Filter
 
 // 4. 命令模式（CRUD 操作）
-manager.addRow(tableName, row);
-manager.updateRow(tableName, index, row);
-manager.deleteRow(tableName, index);
-manager.cascadeDelete(tableName, row);
+dataSet.addRow(tableName, row);
+dataSet.updateRow(tableName, index, row);
+dataSet.deleteRow(tableName, index);
+dataSet.cascadeDelete(tableName, row);
 ```
 
 ---
@@ -692,19 +692,19 @@ export interface BindingContext {
 
 ```typescript
 // 获取默认上下文（表本身）
-const context = manager.getContext('Users');  // contextOrder = 0
+const context = dataSet.getContext('Users');  // contextOrder = 0
 
 // 获取额外上下文
-const detailContext = manager.getContext('Users', 1);
-const chartContext = manager.getContext('Users', 2);
+const detailContext = dataSet.getContext('Users', 1);
+const chartContext = dataSet.getContext('Users', 2);
 
 // 设置当前行
-manager.setCurrentRow('Users', userRow);        // 默认上下文
-manager.setCurrentRow('Users', userRow, 1);     // 详情上下文
+dataSet.setCurrentRow('Users', userRow);        // 默认上下文
+dataSet.setCurrentRow('Users', userRow, 1);     // 详情上下文
 
 // 设置选中行
-manager.setSelectedRows('Users', [row1, row2]); // 默认上下文
-manager.setSelectedRows('Users', [row3], 2);    // 图表上下文
+dataSet.setSelectedRows('Users', [row1, row2]); // 默认上下文
+dataSet.setSelectedRows('Users', [row3], 2);    // 图表上下文
 ```
 
 ### 6.4 自动同步机制
@@ -718,11 +718,11 @@ manager.setSelectedRows('Users', [row3], 2);    // 图表上下文
   "on": {
     // 内核自动注入（用户无需编写）
     "current-change": (currentRow) => {
-      manager.setCurrentRow(tableName, currentRow);  // 自动同步
+      dataSet.setCurrentRow(tableName, currentRow);  // 自动同步
       // 触发：notifySubscribers() → rebindRules() → UI 更新
     },
     "selection-change": (selectedRows) => {
-      manager.setSelectedRows(tableName, selectedRows);  // 自动同步
+      dataSet.setSelectedRows(tableName, selectedRows);  // 自动同步
     }
   }
 }
@@ -784,22 +784,22 @@ export class DataSetManager {
 
 ```typescript
 // 1. 创建管理器实例
-const manager = new DataSetManager(dataSet, dataLoader);
+const dataSet = new DataSetManager(dataSet, dataLoader);
 
 // 2. 自动初始化上下文
-manager.initializeContexts();
+dataSet.initializeContexts();
 // - 为额外上下文分配 componentID
 // - 为关系分配默认 contextOrder
 
 // 3. 自动订阅表（DynamicPage.vue）
-manager.subscribe('Users', () => rebindRules());
-manager.subscribe('Orders', () => rebindRules());
+dataSet.subscribe('Users', () => rebindRules());
+dataSet.subscribe('Orders', () => rebindRules());
 
 // 4. 注册数据加载器（script.js）
-manager.dataLoader = mockDataLoader;
+dataSet.dataLoader = mockDataLoader;
 
 // 5. 监听事件（可选）
-manager.on('loadSuccess', ({ tableName }) => {
+dataSet.on('loadSuccess', ({ tableName }) => {
   console.log(`${tableName} 加载完成`);
 });
 ```
@@ -900,7 +900,7 @@ cascadeUpdate(tableName: string, row: DataRow, oldValues?: DataRow): void {
 const company = { id: 1, name: 'Old Company' };
 const newCompany = { id: 1, name: 'New Company' };
 
-manager.cascadeUpdate('Companies', newCompany, company);
+dataSet.cascadeUpdate('Companies', newCompany, company);
 
 // 自动级联：
 // Companies (id=1) → Departments (companyId=1) → Teams (departmentId=x)
@@ -1152,17 +1152,17 @@ private async _requestTableDataAsync(tableName: string): Promise<void> {
 
 ```typescript
 // 场景 1：直接加载根表
-manager.requestTableData('Users');
+dataSet.requestTableData('Users');
 // → 立即加载 Users 数据
 
 // 场景 2：加载有依赖的子表
-manager.requestTableData('Orders');
+dataSet.requestTableData('Orders');
 // → 检查 Users 是否有数据
 // → 如果没有，先加载 Users
 // → 然后根据 Users.currentRow 过滤 Orders
 
 // 场景 3：加载深层嵌套表
-manager.requestTableData('OrderItems');
+dataSet.requestTableData('OrderItems');
 // → 检查依赖链：OrderItems → Orders → Users
 // → 加载根表 Users
 // → 通知 Orders: 依赖已更新
@@ -1215,35 +1215,35 @@ notifySubscribers(tableName: string): void {
 
 ```typescript
 // DataSetManager 支持的事件
-manager.on('loadStart', ({ tableName }) => {
+dataSet.on('loadStart', ({ tableName }) => {
   console.log(`开始加载: ${tableName}`);
 });
 
-manager.on('loadSuccess', ({ tableName }) => {
+dataSet.on('loadSuccess', ({ tableName }) => {
   console.log(`加载成功: ${tableName}`);
 });
 
-manager.on('loadError', ({ tableName, error }) => {
+dataSet.on('loadError', ({ tableName, error }) => {
   console.error(`加载失败: ${tableName}`, error);
 });
 
-manager.on('currentRowChanged', ({ tableName, contextOrder, row }) => {
+dataSet.on('currentRowChanged', ({ tableName, contextOrder, row }) => {
   console.log(`当前行改变: ${tableName}`, row);
 });
 
-manager.on('selectedRowsChanged', ({ tableName, contextOrder, rows }) => {
+dataSet.on('selectedRowsChanged', ({ tableName, contextOrder, rows }) => {
   console.log(`选中行改变: ${tableName}`, rows);
 });
 
-manager.on('cascadeUpdate', ({ parentTable, childTable, updatedRows }) => {
+dataSet.on('cascadeUpdate', ({ parentTable, childTable, updatedRows }) => {
   console.log(`级联更新: ${parentTable} → ${childTable}`);
 });
 
-manager.on('cascadeDelete', ({ parentTable, childTable, deletedRows }) => {
+dataSet.on('cascadeDelete', ({ parentTable, childTable, deletedRows }) => {
   console.log(`级联删除: ${parentTable} → ${childTable}`, deletedRows);
 });
 
-manager.on('dependencyUpdated', ({ tableName }) => {
+dataSet.on('dependencyUpdated', ({ tableName }) => {
   console.log(`依赖更新通知: ${tableName}`);
 });
 ```
@@ -1305,3 +1305,4 @@ autoSubscribeTables() {
 **📄 文档版本：1.0**  
 **📅 更新日期：2026-01-09**  
 **👨‍💻 基于：PageData 1.1 CSDN 系列文章**
+

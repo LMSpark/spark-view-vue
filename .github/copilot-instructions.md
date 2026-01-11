@@ -1,4 +1,4 @@
-# Form Create SSR Application - AI Coding Agent Instructions
+﻿# Form Create SSR Application - AI Coding Agent Instructions
 
 > 注意：本文件中的路径引用使用代码格式，以便 AI 助手准确理解项目结构。
 
@@ -34,7 +34,7 @@ Each page requires exactly these files in `src/pages-config/{pageId}/`:
 - Access runtime context via imports from `@/utils/page-helpers/common.js`:
   - `$api()` - form-create API instance
   - `$data()` - page data from pagedata.json
-  - `$dataSetManager()` - DataSetManager instance (auto-created by kernel)
+  - `$dataSet()` - DataSet instance (auto-created by kernel)
   - `$route()` - current Vue route
   - `$el()` - page container element
   - `$query(selector)` / `$queryAll(selector)` - DOM query within page
@@ -129,8 +129,8 @@ Each page requires exactly these files in `src/pages-config/{pageId}/`:
 **UI 发起请求（非阻塞）**：
 ```javascript
 export function handleRequestOrderDetails() {
-  const manager = $dataSetManager();
-  manager.requestTableData('OrderDetails'); // 不使用 await！
+  const dataSet = $dataSet();
+  dataSet.requestTableData('OrderDetails'); // 不使用 await！
   // 函数立即返回，数据加载在后台进行
 }
 ```
@@ -160,13 +160,13 @@ autoSubscribeTables() {
 **事件监听（可选，用于显示提示）**：
 ```javascript
 export function __init__() {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   
   // 注册数据加载器
-  manager.dataLoader = mockDataLoader;
+  dataSet.dataLoader = mockDataLoader;
   
   // 监听加载成功事件
-  manager.on('loadSuccess', ({ tableName }) => {
+  dataSet.on('loadSuccess', ({ tableName }) => {
     ElMessage.success(`✅ ${tableName} 数据加载完成！`);
   });
 }
@@ -240,11 +240,11 @@ Kernel automatically injects event handlers to sync table state:
 // DynamicPage.vue automatically injects these for el-table:
 on: {
   'current-change': (currentRow) => {
-    manager.setCurrentRow(tableName, currentRow)  // Auto-sync
+    dataSet.setCurrentRow(tableName, currentRow)  // Auto-sync
     // Triggers: notifySubscribers() → rebindRules() → UI updates
   },
   'selection-change': (selectedRows) => {
-    manager.setSelectedRows(tableName, selectedRows)  // Auto-sync
+    dataSet.setSelectedRows(tableName, selectedRows)  // Auto-sync
   }
 }
 ```
@@ -308,7 +308,7 @@ const filteredRows = filterChildRows(sourceData, ...);
 **Core Principle**: UI requests and data binding are **completely decoupled** via observer pattern.
 
 **UI Layer (script.js)**:
-- Request data: `manager.requestTableData(tableName)` - **NO await**
+- Request data: `dataSet.requestTableData(tableName)` - **NO await**
 - Function returns immediately (non-blocking)
 - Never directly manipulate data or wait for loading
 
@@ -339,7 +339,7 @@ const filteredRows = filterChildRows(sourceData, ...);
 ```
 
 **DO NOT**:
-- ❌ Use `await manager.requestTableData()` - breaks decoupling
+- ❌ Use `await dataSet.requestTableData()` - breaks decoupling
 - ❌ Call `formApi.refresh()` manually - use Vue reactivity
 - ❌ Register subscribers after `__init__()` - they won't receive notifications
 - ❌ Directly assign `table.rows = []` for clearing - use `splice()` for reactivity
@@ -368,14 +368,14 @@ const filteredRows = filterChildRows(sourceData, ...);
 1. Structure pagedata.json with dataset format (see section 5)
 2. Use `"dataKey": "dataset.tables.TableName.rows"` in rules
 3. Kernel automatically:
-   - Creates DataSetManager instance
+   - Creates DataSet instance
    - Subscribes to all tables referenced in rules (scans dataKey)
    - Sets up cascade relationships
    - Handles data loading with dependency analysis
 
 ### Working with DataSet in Page Scripts
 ```javascript
-import { $data, $dataSetManager } from '@/utils/page-helpers/common.js';
+import { $data, $dataSet } from '@/utils/page-helpers/common.js';
 import { ElMessage } from 'element-plus';
 
 // Mock data loader
@@ -387,21 +387,21 @@ const mockDataLoader = async (tableName) => {
 
 // Initialize: register data loader
 export function __init__() {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   
   // Register data loader (required for requestTableData)
-  manager.dataLoader = mockDataLoader;
+  dataSet.dataLoader = mockDataLoader;
   
   // Optional: listen to events for UI feedback
-  manager.on('loadSuccess', ({ tableName }) => {
+  dataSet.on('loadSuccess', ({ tableName }) => {
     ElMessage.success(`✅ ${tableName} loaded!`);
   });
 }
 
 // Event handlers: non-blocking requests
 export function handleLoadData() {
-  const manager = $dataSetManager();
-  manager.requestTableData('OrderDetails'); // NO await
+  const dataSet = $dataSet();
+  dataSet.requestTableData('OrderDetails'); // NO await
   // Function returns immediately
 }
 
@@ -411,23 +411,23 @@ export function handleAddUser() {
   const newUser = { id: Date.now(), name: 'New User' };
   
   pageData.dataset.tables.Users.rows.push(newUser);
-  manager.notifySubscribers('Users'); // Trigger UI update
+  dataSet.notifySubscribers('Users'); // Trigger UI update
 }
 
 // Cascade operations
 export function handleUpdateUser(user, newName) {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   const oldValues = { ...user };
   
   user.name = newName;
-  manager.cascadeUpdate('Users', user, oldValues); // Auto-notifies
+  dataSet.cascadeUpdate('Users', user, oldValues); // Auto-notifies
 }
 
 export function handleDeleteUser(user, index) {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   const users = $data().dataset.tables.Users.rows;
   
-  manager.cascadeDelete('Users', user); // Auto-cascades to children
+  dataSet.cascadeDelete('Users', user); // Auto-cascades to children
   users.splice(index, 1); // Use splice for reactivity
 }
 ```
@@ -543,4 +543,5 @@ Auto-update via rebindRules()
 - DataSet types: `src/types/pageData.ts`
 - Kernel implementation: `src/utils/dataSetManager.ts`
 - UI kernel: `src/views/DynamicPage.vue`
+
 

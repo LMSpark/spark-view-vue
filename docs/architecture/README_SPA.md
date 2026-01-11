@@ -1,4 +1,4 @@
-# Form Create TypeScript Demo with SPA Router
+﻿# Form Create TypeScript Demo with SPA Router
 
 完整的 TypeScript + Vite + Vue Router + Mock 示例项目。
 
@@ -45,3 +45,4 @@ npx vite
 1. Vite SSR（手动配置）
 2. Nuxt 3（开箱即用）
 3. VitePress（文档类）
+

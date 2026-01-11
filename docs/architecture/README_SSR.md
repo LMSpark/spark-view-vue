@@ -1,4 +1,4 @@
-# Form Create TypeScript SSR Demo
+﻿# Form Create TypeScript SSR Demo
 
 完全使用 TypeScript + Vite SSR + Mock 的 form-create 动态页面配置系统。
 
@@ -201,3 +201,4 @@ npm run build
 ## 📄 License
 
 MIT
+

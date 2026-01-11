@@ -1,4 +1,4 @@
-# PageData 架构完整实现总结
+﻿# PageData 架构完整实现总结
 
 ## 🎯 实现的核心功能
 
@@ -136,10 +136,10 @@ switch (dependencyType) {
 #### 事件系统
 
 ```javascript
-manager.on('currentRowChanged', ({ tableName, contextOrder, row }) => {})
-manager.on('selectedRowsChanged', ({ tableName, contextOrder, rows }) => {})
-manager.on('cascadeUpdate', ({ parentTable, childTable, parentRow, oldValues }) => {})
-manager.on('cascadeDelete', ({ parentTable, childTable, parentRow, deletedRows }) => {})
+dataSet.on('currentRowChanged', ({ tableName, contextOrder, row }) => {})
+dataSet.on('selectedRowsChanged', ({ tableName, contextOrder, rows }) => {})
+dataSet.on('cascadeUpdate', ({ parentTable, childTable, parentRow, oldValues }) => {})
+dataSet.on('cascadeDelete', ({ parentTable, childTable, parentRow, deletedRows }) => {})
 ```
 
 ---
@@ -292,7 +292,7 @@ http://localhost:3000/dataset-demo    # 主从表演示
 import { updateRow } from '@/utils/page-helpers/datasetHelper.js'
 import { DataSetManager } from '@/utils/dataSetManager'
 
-const manager = new DataSetManager(pageData.dataset)
+const dataSet = new DataSetManager(pageData.dataset)
 
 // 更新用户 ID，自动级联更新订单表
 updateRow(
@@ -310,7 +310,7 @@ updateRow(
 import { deleteRow } from '@/utils/page-helpers/datasetHelper.js'
 import { DataSetManager } from '@/utils/dataSetManager'
 
-const manager = new DataSetManager(pageData.dataset)
+const dataSet = new DataSetManager(pageData.dataset)
 
 // 删除用户，递归删除所有订单和订单明细
 deleteRow(
@@ -361,3 +361,4 @@ deleteRow(
 5. ✅ 事件驱动架构，松耦合设计
 
 这套实现已经**生产就绪**，可直接用于复杂的主从表数据管理场景。
+
