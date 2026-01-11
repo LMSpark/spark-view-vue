@@ -8,7 +8,7 @@ import type {
   FilterOperator,
   DataRow,
   FilterContext
-} from '../../types/pageData'
+} from '../../types/dataset'
 
 /**
  * 过滤表达式解析器
@@ -33,8 +33,8 @@ export class FilterExpressionParser {
     expression: FilterExpression,
     context?: FilterContext,
     parameterized = true
-  ): { sql: string; params: any[] } {
-    const params: any[] = []
+  ): { sql: string; params: (string | number | boolean | null)[] } {
+    const params: (string | number | boolean | null)[] = []
 
     const buildSQL = (expr: FilterExpression): string => {
       // 单一条件
@@ -93,8 +93,8 @@ export class FilterExpressionParser {
   static toMongoDB(
     expression: FilterExpression,
     context?: FilterContext
-  ): Record<string, any> {
-    const buildMongo = (expr: FilterExpression): any => {
+  ): Record<string, unknown> {
+    const buildMongo = (expr: FilterExpression): Record<string, unknown> => {
       // 单一条件
       if ('field' in expr && 'op' in expr && !('type' in expr)) {
         const field = expr.field
@@ -131,7 +131,7 @@ export class FilterExpressionParser {
 
       // 函数调用
       if ('func' in expr) {
-        return this.buildMongoFunction(expr.func, expr.args, context)
+        return this.buildMongoFunction(expr.func, expr.args, context) as Record<string, unknown>
       }
 
       throw new Error('Invalid filter expression')
@@ -202,9 +202,9 @@ export class FilterExpressionParser {
    * 执行条件判断
    */
   private static evaluateCondition(
-    fieldValue: any,
+    fieldValue: unknown,
     operator: FilterOperator,
-    compareValue: any
+    compareValue: unknown
   ): boolean {
     switch (operator) {
       case '==':
@@ -212,13 +212,13 @@ export class FilterExpressionParser {
       case '!=':
         return fieldValue != compareValue
       case '>':
-        return fieldValue > compareValue
+        return (fieldValue as number) > (compareValue as number)
       case '>=':
-        return fieldValue >= compareValue
+        return (fieldValue as number) >= (compareValue as number)
       case '<':
-        return fieldValue < compareValue
+        return (fieldValue as number) < (compareValue as number)
       case '<=':
-        return fieldValue <= compareValue
+        return (fieldValue as number) <= (compareValue as number)
       case 'in':
         return Array.isArray(compareValue) && compareValue.includes(fieldValue)
       case 'not in':
@@ -233,12 +233,12 @@ export class FilterExpressionParser {
         return fieldValue !== null && fieldValue !== undefined
       case 'between':
         return Array.isArray(compareValue) &&
-          fieldValue >= compareValue[0] &&
-          fieldValue <= compareValue[1]
+          (fieldValue as number) >= (compareValue[0] as number) &&
+          (fieldValue as number) <= (compareValue[1] as number)
       case 'not between':
         return !(Array.isArray(compareValue) &&
-          fieldValue >= compareValue[0] &&
-          fieldValue <= compareValue[1])
+          (fieldValue as number) >= (compareValue[0] as number) &&
+          (fieldValue as number) <= (compareValue[1] as number))
       case 'startsWith':
         return String(fieldValue).startsWith(String(compareValue))
       case 'endsWith':
@@ -253,7 +253,7 @@ export class FilterExpressionParser {
   /**
    * 解析值（支持从父表或变量引用）
    */
-  private static resolveValue(value: any, context?: FilterContext): any {
+  private static resolveValue(value: unknown, context?: FilterContext): unknown {
     // 支持 $ 语法：$.parentRow.id, $.variables.userName
     if (typeof value === 'string' && value.startsWith('$.')) {
       const path = value.substring(2) // 移除 '$.'
@@ -282,7 +282,7 @@ export class FilterExpressionParser {
     if (typeof value === 'object' && value !== null && 'func' in value) {
       // 函数调用，如 { func: 'FIELD', args: ['id'] }
       const func = value.func
-      const args = value.args || []
+      const args = (value as any).args || []
 
       if (func === 'FIELD' && context?.parentRow) {
         return context.parentRow[args[0]]
@@ -310,8 +310,8 @@ export class FilterExpressionParser {
   private static buildSQLCondition(
     field: string,
     operator: FilterOperator,
-    value: any,
-    params: any[],
+    value: unknown,
+    params: unknown[],
     _paramIndex: number,
     parameterized: boolean
   ): string {
@@ -372,8 +372,8 @@ export class FilterExpressionParser {
   private static buildMongoCondition(
     field: string,
     operator: FilterOperator,
-    value: any
-  ): Record<string, any> {
+    value: unknown
+  ): Record<string, unknown> {
     switch (operator) {
       case '==':
         return { [field]: value }
@@ -412,7 +412,7 @@ export class FilterExpressionParser {
   /**
    * 格式化 SQL 值
    */
-  private static formatSQLValue(value: any): string {
+  private static formatSQLValue(value: unknown): string {
     if (value === null || value === undefined) {
       return 'NULL'
     }
@@ -433,12 +433,12 @@ export class FilterExpressionParser {
    */
   private static buildSQLFunction(
     func: string,
-    args: any[],
+    args: unknown[],
     _context?: FilterContext
   ): string {
     switch (func.toUpperCase()) {
       case 'FIELD':
-        return args[0]
+        return String(args[0])
       case 'CURRENT_DATE':
         return 'CURRENT_DATE'
       case 'CURRENT_TIMESTAMP':
@@ -459,9 +459,9 @@ export class FilterExpressionParser {
    */
   private static buildMongoFunction(
     func: string,
-    args: any[],
+    args: unknown[],
     _context?: FilterContext
-  ): any {
+  ): unknown {
     switch (func.toUpperCase()) {
       case 'FIELD':
         return `$${args[0]}`

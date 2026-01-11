@@ -4,11 +4,17 @@
  * 相当于 .NET 的 DataView - 视图层
  */
 
-import type { DataRow, IBindingContext, FilterExpression, SortExpression } from '../types/pageData'
+import type { DataRow, IBindingContext, FilterExpression, SortExpression, ITreeManager } from '../types/dataset'
 import { FilterExpressionParser } from '../utils/parsers/filterExpressionParser'
 
-// 前向声明，避免循环依赖
-type DataSet = any
+/**
+ * DataSet 接口（前向声明，避免循环依赖）
+ */
+interface IDataSet {
+  updateRelatedTables(tableName: string, contextId: string): void
+  notifySubscribers(tableName: string, contextId: string): void
+  emit(event: string, data: unknown): void
+}
 
 /**
  * 绑定上下文类（实现 IBindingContext 接口 + 方法逻辑）
@@ -26,6 +32,8 @@ export class BindingContext implements IBindingContext {
   // 初始配置
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
+  autoSelectFirst?: boolean  // 自动选中第一行
+  autoDeselectOnEmpty?: boolean  // 数据清空时自动取消选中
   
   // 分页状态
   pagination?: {
@@ -36,15 +44,15 @@ export class BindingContext implements IBindingContext {
   }
   
   // DataSet 引用（用于触发通知）
-  protected dataSet?: DataSet
+  protected dataSet?: IDataSet
   
   // TreeManager 引用（用于树形数据管理）
-  treeManager?: any  // 避免循环依赖，使用 any
+  treeManager?: ITreeManager
 
   constructor(
     hostTable: string,
     contextId: string = 'default',
-    dataSet?: DataSet
+    dataSet?: IDataSet
   ) {
     this._hostTable = hostTable
     this._contextId = contextId
@@ -54,14 +62,14 @@ export class BindingContext implements IBindingContext {
   /**
    * 设置 DataSet 引用
    */
-  setDataSet(dataSet: DataSet): void {
+  setDataSet(dataSet: IDataSet): void {
     this.dataSet = dataSet
   }
   
   /**
    * 设置 TreeManager 引用
    */
-  setTreeManager(treeManager: any): void {
+  setTreeManager(treeManager: ITreeManager): void {
     this.treeManager = treeManager
     // 双向绑定
     if (treeManager && typeof treeManager.setBindingContext === 'function') {
@@ -72,7 +80,7 @@ export class BindingContext implements IBindingContext {
   /**
    * 获取 TreeManager 引用
    */
-  getTreeManager(): any {
+  getTreeManager(): ITreeManager | undefined {
     return this.treeManager
   }
 
@@ -139,14 +147,14 @@ export class BindingContext implements IBindingContext {
       // ❓ 根据 skipNotify 决定是否通知当前表的订阅者
       if (!skipNotify) {
         this.dataSet.notifySubscribers(this._hostTable, this._contextId)
+        
+        // 🔔 仅在非 skipNotify 时触发事件（避免 UI→数据→UI 循环）
+        this.dataSet.emit('selectedRowsChanged', { 
+          tableName: this._hostTable, 
+          contextId: this._contextId, 
+          rows 
+        })
       }
-      
-      // 触发事件
-      this.dataSet.emit('selectedRowsChanged', { 
-        tableName: this._hostTable, 
-        contextId: this._contextId, 
-        rows 
-      })
     }
   }
 
@@ -156,6 +164,29 @@ export class BindingContext implements IBindingContext {
   notifyChange(): void {
     if (this.dataSet) {
       this.dataSet.notifySubscribers(this._hostTable, this._contextId)
+    }
+  }
+
+  /**
+   * 清空所有状态（用于条件不满足时递归清空）
+   */
+  clearAll(skipNotify: boolean = false): void {
+    const hadData = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0;
+    
+    // ✅ 使用 splice 保持 Vue 响应式引用
+    this.rows.splice(0, this.rows.length);
+    this.currentRow = null;
+    this.selectedRows.splice(0, this.selectedRows.length);
+    // 注意：不清空 _originalRows，保留缓存数据
+    
+    if (hadData) {
+      console.log(`🧹 [Context] ${this._hostTable}.${this._contextId} 已清空所有状态`);
+    }
+    
+    if (!skipNotify && hadData && this.dataSet) {
+      this.dataSet.notifySubscribers(this._hostTable, this._contextId);
+      // 触发清空事件
+      this.dataSet.emit('contextCleared', { tableName: this._hostTable, contextId: this._contextId });
     }
   }
 
@@ -342,7 +373,7 @@ export class BindingContext implements IBindingContext {
   /**
    * 从普通对象创建实例
    */
-  static fromJSON(data: any, hostTable: string, contextId: string, dataSet?: DataSet): BindingContext {
+  static fromJSON(data: Partial<IBindingContext>, hostTable: string, contextId: string, dataSet?: IDataSet): BindingContext {
     const context = new BindingContext(hostTable, contextId, dataSet)
     
     context.currentRow = data.currentRow || null

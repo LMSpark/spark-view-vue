@@ -13,7 +13,8 @@
         ],
         "rows": [],
         "currentRow": null,
-        "selectedRows": []
+        "selectedRows": [],
+        "autoSelectFirst": false
       },
       "Orders": {
         "tableName": "Orders",
@@ -61,9 +62,10 @@
         "parentTable": "Orders",
         "childTable": "OrderItems",
         "dependencyType": "selectedRows",
+        "autoLoad": true,
         "filterExpression": {
           "field": "orderId",
-          "op": "==",
+          "op": "in",
           "value": {
             "func": "FIELD",
             "args": ["id"]

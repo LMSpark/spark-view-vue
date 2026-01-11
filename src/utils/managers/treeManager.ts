@@ -10,7 +10,7 @@ import type {
   NestedTreeNode,
   FlatTreeCache,
   TreePath
-} from '../../types/pageData'
+} from '../../types/dataset'
 import type { BindingContext } from '../../models/bindingContext'
 
 /**
@@ -181,8 +181,8 @@ export class TreeManager {
     const roots: NestedTreeNode[] = []
 
     // 获取根节点
-    const rootNodes = rootId !== undefined 
-      ? (this.cache[rootId as any] ? [this.cache[rootId as any]] : [])
+    const rootNodes = rootId !== undefined && rootId !== null
+      ? (this.cache[rootId] ? [this.cache[rootId]] : [])
       : this.getRoots()
 
     rootNodes.forEach(rootNode => {
@@ -272,7 +272,7 @@ export class TreeManager {
   /**
    * 触发事件
    */
-  private emit(event: string, data: any): void {
+  private emit(event: string, data: unknown): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
       listeners.forEach(callback => callback(data))

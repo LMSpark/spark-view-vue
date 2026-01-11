@@ -26,6 +26,8 @@ export interface IBindingContext {
   // 初始配置
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
+  autoSelectFirst?: boolean        // 自动选中第一行
+  autoDeselectOnEmpty?: boolean    // 数据清空时自动取消选中
   
   // 分页状态
   pagination?: {
@@ -88,6 +90,24 @@ export interface CrudApi {
 }
 
 // ==================== DataTable 定义 ====================
+
+/**
+ * TreeManager 接口（树形数据管理器）
+ */
+export interface ITreeManager {
+  setBindingContext(context: unknown): void
+  getBindingContext(): unknown
+  getConfig(): TreeConfig
+  getCache(): FlatTreeCache
+  addNodesToCache(nodes: FlatTreeNode[]): void
+  getNode(id: string | number): FlatTreeNode | undefined
+  getChildren(parentId: string | number | null): FlatTreeNode[]
+  getRoots(): FlatTreeNode[]
+  buildNestedTree(rootId?: string | number | null): NestedTreeNode[]
+  enrichNodes(): void
+  on(event: string, callback: Function): void
+  off(event: string, callback: Function): void
+}
 
 /**
  * DataTable 接口（纯数据结构，用于序列化）
@@ -215,6 +235,11 @@ export interface IDataSet {
   version?: number
   pageId?: string
   autoLoadRelations?: boolean
+  
+  // 必需方法
+  updateRelatedTables(tableName: string): void
+  notifySubscribers(tableName: string, contextId?: string): void
+  emit(event: string, data: unknown): void
 }
 
 // ==================== 辅助类型 ====================

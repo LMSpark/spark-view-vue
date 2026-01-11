@@ -42,7 +42,7 @@ const mockDataLoader = async (tableName) => {
  */
 export function __init__() {
   const dataSet = $dataSet()
-  if (manager) {
+  if (dataSet) {
     // 注册数据加载器
     dataSet.dataLoader = mockDataLoader
     console.log('✅ DataSet 已注册 dataLoader')
@@ -68,7 +68,7 @@ export function __init__() {
  */
 export function handleUserSelect(row) {
   const dataSet = $dataSet();
-  if (!manager || !row) return
+  if (!dataSet || !row) return
   
   console.log('👤 选中用户:', row)
   
@@ -104,8 +104,8 @@ export function handleUserSelect(row) {
   // 清空级联状态
   pageData.selectedOrdersCount = 0
   
-  // 更新 UI
-  $rebindRules()
+  // ❌ 移除 $rebindRules() - 内核会自动通知订阅者更新 UI
+  // 调用 $rebindRules() 会导致 el-table 重新渲染，复选框状态丢失
   
   console.log(`📋 用户 ${row.name} 的订单数:`, ordersTable?.rows?.length)
 }
@@ -130,7 +130,7 @@ export function handleOrderSelect(selection) {
  */
 export function showSQLQuery() {
   const dataSet = $dataSet();
-  if (!manager) {
+  if (!dataSet) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
@@ -169,7 +169,7 @@ export function showSQLQuery() {
  */
 export function showMongoQuery() {
   const dataSet = $dataSet();
-  if (!manager) {
+  if (!dataSet) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
@@ -208,7 +208,7 @@ export function showMongoQuery() {
  */
 export function exportDataSet() {
   const dataSet = $dataSet();
-  if (!manager) {
+  if (!dataSet) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
