@@ -1,4 +1,4 @@
-import { $data, $dataSetManager } from '@/utils/page-helpers/common.js';
+﻿import { $data, $dataSet } from '@/utils/page-helpers/common.js';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 let selectedUser = null;
@@ -32,15 +32,15 @@ export async function handleAddUser() {
       inputErrorMessage: '请输入有效的邮箱地址'
     });
 
-    const manager = $dataSetManager();
-    const userTable = manager.getTable('Users');
+    const dataSet = $dataSet();
+    const userTable = dataSet.getTable('Users');
     
     const maxId = Math.max(...userTable.rows.map(r => r.id), 0);
     const newUser = { id: maxId + 1, name, email };
 
     // 低代码：直接操作，内核通知订阅者，UI自动更新
     userTable.rows.push(newUser);
-    manager.notifySubscribers('Users'); // 手动触发通知
+    dataSet.notifySubscribers('Users'); // 手动触发通知
     
     ElMessage.success(`✅ 用户添加成功: ${name}`);
   } catch (error) {
@@ -67,15 +67,15 @@ export async function handleUpdateUserIdBatch() {
       }
     );
 
-    const manager = $dataSetManager();
-    const userTable = manager.getTable('Users');
+    const dataSet = $dataSet();
+    const userTable = dataSet.getTable('Users');
     const offsetNum = parseInt(offset);
     
     // 低代码：遍历更新，内核自动级联
     userTable.rows.forEach(user => {
       const oldValues = { ...user };
       user.id += offsetNum;
-      manager.cascadeUpdate('Users', user, oldValues);
+      dataSet.cascadeUpdate('Users', user, oldValues);
     });
     
     ElMessage.success(`✅ 已批量更新 ${userTable.rows.length} 个用户ID，订单已自动级联更新`);
@@ -97,10 +97,10 @@ export async function handleDeleteSelectedUser() {
   }
 
   try {
-    const manager = $dataSetManager();
-    const Users = manager.getTable('Users');
-    const Orders = manager.getTable('Orders');
-    const OrderItems = manager.getTable('OrderItems');
+    const dataSet = $dataSet();
+    const Users = dataSet.getTable('Users');
+    const Orders = dataSet.getTable('Orders');
+    const OrderItems = dataSet.getTable('OrderItems');
     
     // 统计关联数据（仅用于提示）
     const relatedOrders = Orders.rows.filter(o => o.userId === selectedUser.id);
@@ -129,7 +129,7 @@ export async function handleDeleteSelectedUser() {
       
       // 2. 再调用级联删除（内核处理子表删除并通知订阅者）
       // 注意：必须先修改数据再通知，否则 UI 绑定时数据还是旧的
-      manager.cascadeDelete('Users', selectedUser);
+      dataSet.cascadeDelete('Users', selectedUser);
       
       ElMessage.success(
         `✅ 用户删除成功！\n级联删除了 ${relatedOrders.length} 个订单和 ${relatedOrderItems.length} 个明细`
@@ -146,3 +146,6 @@ export async function handleDeleteSelectedUser() {
 
 // 页面脚本加载完成
 console.log('📦 cascade-demo 脚本已加载（低代码模式）');
+
+
+

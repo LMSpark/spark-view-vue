@@ -1,4 +1,4 @@
-import { $dataSetManager } from '@/utils/page-helpers/common.js'
+﻿import { $dataSet } from '@/utils/page-helpers/common.js'
 import { ElMessage } from 'element-plus'
 
 // Mock 数据加载器
@@ -31,24 +31,27 @@ async function mockDataLoader(tableName) {
 
 // 初始化函数
 export function __init__() {
-  const manager = $dataSetManager()
+  const dataSet = $dataSet()
   
   // 注册数据加载器
-  manager.dataLoader = mockDataLoader
+  dataSet.dataLoader = mockDataLoader
   
   // 监听加载成功事件
-  manager.on('loadSuccess', ({ tableName }) => {
+  dataSet.on('loadSuccess', ({ tableName }) => {
     if (tableName === 'Orders') {
-      const ordersTable = manager.getTable('Orders')
+      const ordersTable = dataSet.getTable('Orders')
       const count = ordersTable?.rows?.length || 0
       ElMessage.success(`✅ 订单数据加载完成！共 ${count} 条记录`)
     }
   })
   
   // 监听加载错误事件
-  manager.on('loadError', ({ tableName, error }) => {
+  dataSet.on('loadError', ({ tableName, error }) => {
     ElMessage.error(`❌ ${tableName} 加载失败: ${error.message}`)
   })
   
   console.log('✅ [Master-Detail] 初始化完成')
 }
+
+
+

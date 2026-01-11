@@ -1,4 +1,4 @@
-# 🚀 SSR 快速开始指南
+﻿# 🚀 SSR 快速开始指南
 
 ## 第一步：安装依赖
 
@@ -112,3 +112,4 @@ A: 已在 vite.config.ts 中配置 `ssr.noExternal: ['element-plus']`
 ## 下一步
 
 查看完整文档：[README_SSR.md](../architecture/README_SSR.md)
+

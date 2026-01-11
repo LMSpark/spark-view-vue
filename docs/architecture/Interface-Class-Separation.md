@@ -1,4 +1,4 @@
-# 完全重构：接口与类分离
+﻿# 完全重构：接口与类分离
 
 ## 重构目标
 
@@ -141,7 +141,7 @@ export class BindingContext implements IBindingContext {
   setCurrentRow(row: DataRow | null): void {
     this.currentRow = row
     if (this.manager) {
-      this.manager.notifySubscribers(...)
+      this.dataSet.notifySubscribers(...)
     }
   }
 }
@@ -242,11 +242,11 @@ dataSet.cascadeDelete('Users', row)
 
 ```typescript
 // 接受接口类型配置
-const manager = new DataSetManager(pageData.dataset)
+const dataSet = new DataSetManager(pageData.dataset)
 
 // 内部自动转换为类实例
-// manager.dataSet.tables['Users'] 是 DataTable 类实例，有方法
-manager.getTable('Users')?.getOrCreateContext('detail')
+// dataSet.dataSet.tables['Users'] 是 DataTable 类实例，有方法
+dataSet.getTable('Users')?.getOrCreateContext('detail')
 ```
 
 ## 重构收益
@@ -322,4 +322,5 @@ table.setManager(this)  // ✅ 1行代码
 4. **更好的封装**：数据+行为封装在类中
 
 这是一个符合 OOP 原则的清晰架构！
+
 

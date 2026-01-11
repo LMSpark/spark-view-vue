@@ -1,11 +1,14 @@
 /**
  * DataTable 类 - 数据表
  * 继承 BindingContext，实现 IDataTable 接口
+ * 相当于 .NET 的 DataTable - 结构层
  */
 
 import { BindingContext } from './BindingContext'
-import type { DataSetManager } from '../utils/dataSetManager'
 import type { IDataTable, IBindingContext, DataColumn, CrudApi } from '../types/pageData'
+
+// 前向声明，避免循环依赖
+type DataSet = any
 
 /**
  * 数据表类（实现 IDataTable 接口 + 方法逻辑）
@@ -23,9 +26,9 @@ export class DataTable extends BindingContext implements IDataTable {
   constructor(
     tableName: string,
     columns: DataColumn[] = [],
-    manager?: DataSetManager
+    dataSet?: DataSet
   ) {
-    super(tableName, 'default', manager)
+    super(tableName, 'default', dataSet)
     this.tableName = tableName
     this.columns = columns
   }
@@ -42,12 +45,27 @@ export class DataTable extends BindingContext implements IDataTable {
       this.contexts[contextId] = new BindingContext(
         this.tableName,
         contextId,
-        this.manager
+        this.dataSet
       )
       console.log(`✨ [DataTable] 自动创建上下文: ${this.tableName}.${contextId}`)
     }
     
     return this.contexts[contextId]
+  }
+
+  /**
+   * 刷新所有上下文（重新应用过滤和排序）
+   */
+  refreshAllContexts(): void {
+    const sourceData = this._originalRows || this.rows || [];
+    
+    // 刷新所有自定义上下文
+    Object.values(this.contexts).forEach(context => {
+      if (context.filterExpression || context.sortExpression) {
+        context.updateRows(sourceData);
+        console.log(`🔄 [DataTable] 刷新上下文: ${this.tableName}.${context._contextId}`);
+      }
+    });
   }
 
   /**
@@ -97,8 +115,8 @@ export class DataTable extends BindingContext implements IDataTable {
   /**
    * 从普通对象创建实例
    */
-  static fromPlainObject(data: IDataTable, manager?: DataSetManager): DataTable {
-    const table = new DataTable(data.tableName, data.columns || [], manager)
+  static fromPlainObject(data: IDataTable, dataSet?: DataSet): DataTable {
+    const table = new DataTable(data.tableName, data.columns || [], dataSet)
     
     // 基本属性
     table.api = data.api
@@ -123,7 +141,7 @@ export class DataTable extends BindingContext implements IDataTable {
             ctx,
             table.tableName,
             contextId,
-            manager
+            dataSet
           )
         })
       } else {
@@ -133,7 +151,7 @@ export class DataTable extends BindingContext implements IDataTable {
             ctxData,
             table.tableName,
             contextId,
-            manager
+            dataSet
           )
         })
       }

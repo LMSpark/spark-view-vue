@@ -58,7 +58,7 @@ export const $refreshData = (key) => getContext().$refreshData?.(key)
 export const $rebindRules = () => getContext().$rebindRules?.()
 
 /**
- * 获取 DataSetManager 实例（由 DynamicPage 自动创建）
- * @returns {Object} DataSetManager 实例
+ * 获取 DataSet 实例（由 DynamicPage 自动创建）
+ * @returns {Object} DataSet 实例
  */
-export const $dataSetManager = () => getContext().$dataSetManager
+export const $dataSet = () => getContext().$dataSet

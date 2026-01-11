@@ -1,4 +1,4 @@
-import { $data, $dataSetManager, $rebindRules } from '@/utils/page-helpers/common.js'
+﻿import { $data, $dataSet, $rebindRules } from '@/utils/page-helpers/common.js'
 import { FilterExpressionParser } from '@/utils/filterExpressionParser'
 import { ElMessage } from 'element-plus'
 
@@ -41,25 +41,25 @@ const mockDataLoader = async (tableName) => {
  * 初始化 DataSet - __init__ 生命周期
  */
 export function __init__() {
-  const manager = $dataSetManager()
+  const dataSet = $dataSet()
   if (manager) {
     // 注册数据加载器
-    manager.dataLoader = mockDataLoader
+    dataSet.dataLoader = mockDataLoader
     console.log('✅ DataSet 已注册 dataLoader')
     
     // 监听加载事件
-    manager.on('loadSuccess', ({ tableName }) => {
+    dataSet.on('loadSuccess', ({ tableName }) => {
       ElMessage.success(`✅ ${tableName} 数据加载完成！`)
     })
     
-    manager.on('loadError', ({ tableName, error }) => {
+    dataSet.on('loadError', ({ tableName, error }) => {
       ElMessage.error(`❌ ${tableName} 加载失败: ${error.message}`)
     })
     
     // 🚀 页面启动时自动加载主表（Users）
     // 从表（Orders、OrderItems）只在依赖条件满足时才加载
     console.log('🚀 [自动加载] 启动时加载主表: Users')
-    manager.requestTableData('Users')
+    dataSet.requestTableData('Users')
   }
 }
 
@@ -67,31 +67,31 @@ export function __init__() {
  * 用户选中事件
  */
 export function handleUserSelect(row) {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   if (!manager || !row) return
   
   console.log('👤 选中用户:', row)
   
   // 🔑 关键修复：检查默认上下文的 _originalRows 判断数据是否已加载
   // _originalRows 是缓存的全量数据，只在首次加载时触发请求
-  const table = manager.getTable('Users')
+  const table = dataSet.getTable('Users')
   
   // ✅ 使用 OOP 方式设置当前行（内核会自动触发关系过滤）
   table.setCurrentRow(row)
   
   // 检查子表数据是否已加载
-  const ordersTable = manager.getTable('Orders')
-  const itemsTable = manager.getTable('OrderItems')
+  const ordersTable = dataSet.getTable('Orders')
+  const itemsTable = dataSet.getTable('OrderItems')
   
   // 如果原始数据未加载（_originalRows 为 undefined），先加载（按需加载）
   if (!ordersTable._originalRows) {
     console.log('🔄 检测到 Orders 原始数据未加载，触发加载...')
-    manager.requestTableData('Orders')
+    dataSet.requestTableData('Orders')
   }
   
   if (!itemsTable._originalRows) {
     console.log('🔄 检测到 OrderItems 原始数据未加载，触发加载...')
-    manager.requestTableData('OrderItems')
+    dataSet.requestTableData('OrderItems')
   }
   
   // 更新 UI 统计信息
@@ -129,13 +129,13 @@ export function handleOrderSelect(selection) {
  * 显示 SQL 查询
  */
 export function showSQLQuery() {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   if (!manager) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
   
-  const relations = manager.getDataSet().relations || []
+  const relations = dataSet.getDataSet().relations || []
   
   if (relations.length === 0) {
     ElMessage.info('没有关系配置')
@@ -168,13 +168,13 @@ export function showSQLQuery() {
  * 显示 MongoDB 查询
  */
 export function showMongoQuery() {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   if (!manager) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
   
-  const relations = manager.getDataSet().relations || []
+  const relations = dataSet.getDataSet().relations || []
   
   if (relations.length === 0) {
     ElMessage.info('没有关系配置')
@@ -207,13 +207,13 @@ export function showMongoQuery() {
  * 导出 DataSet
  */
 export function exportDataSet() {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   if (!manager) {
     ElMessage.warning('DataSet 未初始化')
     return
   }
   
-  const json = manager.toJSON()
+  const json = dataSet.toJSON()
   console.log('📦 导出 DataSet:', json)
   
   // 下载为文件
@@ -227,3 +227,6 @@ export function exportDataSet() {
   
   ElMessage.success('DataSet 已导出')
 }
+
+
+

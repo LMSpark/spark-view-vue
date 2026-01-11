@@ -1,4 +1,4 @@
-# PageData 处理流程
+﻿# PageData 处理流程
 
 ## 完整流程图
 
@@ -25,7 +25,7 @@ flowchart TB
     CheckDataset -->|否| SaveRules
     
     InitDSM --> CreateDSM[new DataSetManager<br/>传入 defaultDataLoader]
-    CreateDSM --> UpdateContext[更新全局上下文<br/>window.__pageContext<br/>.$dataSetManager]
+    CreateDSM --> UpdateContext[更新全局上下文<br/>window.__pageContext<br/>.$dataSet]
     UpdateContext --> SaveRules[保存原始 rules<br/>originalRules.value]
     
     SaveRules --> BindData[bindDataToRules<br/>数据绑定到 UI]
@@ -167,7 +167,7 @@ flowchart LR
 flowchart TB
     subgraph UI层
         A[用户点击按钮] --> B[pageFunctions.handleClick]
-        B --> C[manager.requestTableData<br/>无 await, 立即返回]
+        B --> C[dataSet.requestTableData<br/>无 await, 立即返回]
     end
     
     subgraph DataSet层
@@ -399,3 +399,4 @@ sequenceDiagram
 - 父表变化通知子表
 - 子表自主决定是否加载（`autoLoad`）
 - 解除父子表的直接耦合
+
