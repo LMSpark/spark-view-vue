@@ -5,7 +5,7 @@
  */
 
 import type { DataRow, IBindingContext, FilterExpression, SortExpression } from '../types/pageData'
-import { FilterExpressionParser } from '../utils/filterExpressionParser'
+import { FilterExpressionParser } from '../utils/parsers/filterExpressionParser'
 
 // 前向声明，避免循环依赖
 type DataSet = any

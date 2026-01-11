@@ -273,8 +273,8 @@ DynamicPage.vue 自动打印绑定日志：
 使用 TypeScript 类型定义：
 ```typescript
 import type { IDataTable, IBindingContext } from '@/types/pageData'
-import { DataTable } from '@/models/DataTable'
-import { BindingContext } from '@/models/BindingContext'
+import { DataTable } from '@/models/dataTable'
+import { BindingContext } from '@/models/bindingContext'
 
 // 类型安全的路径访问
 const table: DataTable = $data().dataset.tables.Users

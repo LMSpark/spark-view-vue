@@ -47,8 +47,8 @@
 ### 初始化
 
 ```typescript
-import { TreeManager } from '@/utils/treeManager'
-import type { BindingContext } from '@/models/BindingContext'
+import { TreeManager } from '@/utils/managers/treeManager'
+import type { BindingContext } from '@/models/bindingContext'
 
 // 方式1: 独立创建（不关联 BindingContext）
 const treeManager = new TreeManager({
@@ -262,7 +262,7 @@ const total = countNodes(tree, { childrenField: 'children' })
 ### 2. 在 script.js 中初始化（关联 BindingContext）
 
 ```javascript
-import { TreeManager } from '@/utils/treeManager'
+import { TreeManager } from '@/utils/managers/treeManager'
 import { $data, $dataSet } from '@/utils/page-helpers/common.js'
 
 let treeManager = null
