@@ -37,7 +37,7 @@ const mockDataLoader = async (tableName) => {
 export function handleRequestOrderDetails() {
   const dataSet = $dataSet();
   
-  if (!manager) {
+  if (!dataSet) {
     ElMessage.warning('DataSetManager 未初始化');
     return;
   }
@@ -118,7 +118,7 @@ export function __init__() {
   console.log('📦 smart-load 脚本开始初始化...');
   
   const dataSet = $dataSet();
-  if (manager) {
+  if (dataSet) {
     // 注册数据加载器
     dataSet.dataLoader = mockDataLoader;
     console.log('✅ 数据加载器已注册到 DataSetManager');

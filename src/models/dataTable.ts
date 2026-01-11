@@ -5,10 +5,7 @@
  */
 
 import { BindingContext } from './bindingContext'
-import type { IDataTable, IBindingContext, DataColumn, CrudApi } from '../types/pageData'
-
-// 前向声明，避免循环依赖
-type DataSet = any
+import type { IDataTable, IBindingContext, DataColumn, CrudApi, IDataSet } from '../types/dataset'
 
 /**
  * 数据表类（实现 IDataTable 接口 + 方法逻辑）
@@ -26,7 +23,7 @@ export class DataTable extends BindingContext implements IDataTable {
   constructor(
     tableName: string,
     columns: DataColumn[] = [],
-    dataSet?: DataSet
+    dataSet?: IDataSet
   ) {
     super(tableName, 'default', dataSet)
     this.tableName = tableName
@@ -115,7 +112,7 @@ export class DataTable extends BindingContext implements IDataTable {
   /**
    * 从普通对象创建实例
    */
-  static fromPlainObject(data: IDataTable, dataSet?: DataSet): DataTable {
+  static fromPlainObject(data: IDataTable, dataSet?: IDataSet): DataTable {
     const table = new DataTable(data.tableName, data.columns || [], dataSet)
     
     // 基本属性
@@ -135,7 +132,7 @@ export class DataTable extends BindingContext implements IDataTable {
       if (Array.isArray(data.contexts)) {
         // 兼容旧格式：数组
         console.log(`🔄 [DataTable] 转换 ${table.tableName}.contexts 为 Record 格式`)
-        data.contexts.forEach((ctx: any, index: number) => {
+        data.contexts.forEach((ctx: Partial<IBindingContext>, index: number) => {
           const contextId = `ctx_${index + 1}`
           table.contexts[contextId] = BindingContext.fromJSON(
             ctx,
@@ -148,7 +145,7 @@ export class DataTable extends BindingContext implements IDataTable {
         // 新格式：Record
         Object.entries(data.contexts).forEach(([contextId, ctxData]) => {
           table.contexts[contextId] = BindingContext.fromJSON(
-            ctxData,
+            ctxData as Partial<IBindingContext>,
             table.tableName,
             contextId,
             dataSet

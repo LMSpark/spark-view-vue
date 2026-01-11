@@ -55,7 +55,7 @@ export default [
   {
     url: '/api/getPageConfig',
     method: 'get',
-    response: ({ query }: any) => {
+    response: ({ query }: { query: Record<string, string> }) => {
       const pageId = query.pageId || 'home'
       
       console.log('📄 加载页面配置:', pageId)
@@ -87,12 +87,12 @@ export default [
   {
     url: '/api/data/list',
     method: 'get',
-    response: ({ query }: any) => {
+    response: ({ query }: { query: Record<string, string | number> }) => {
       const { tableName, page = 1, pageSize = 20, ...filters } = query
       
       console.log(`🔎 [Mock API] 查询表: ${tableName}`, { page, pageSize, filters })
       
-      if (!tableName) {
+      if (!tableName || typeof tableName !== 'string') {
         return { code: 400, message: 'Missing tableName', data: [] }
       }
 
@@ -101,7 +101,7 @@ export default [
       // 简单过滤逻辑 (模拟后端查询)
       Object.keys(filters).forEach(key => {
         if (key !== 'page' && key !== 'pageSize' && filters[key]) {
-          rows = rows.filter((row: any) => String(row[key]) == String(filters[key]))
+          rows = rows.filter((row: Record<string, unknown>) => String(row[key]) == String(filters[key]))
         }
       })
       

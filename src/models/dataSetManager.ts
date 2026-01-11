@@ -9,7 +9,7 @@
  * .NET Factory    → DataSetManager (本文件)   - 工厂层
  */
 
-import type { IDataSet, DataRow } from '../types/pageData'
+import type { IDataSet, DataRow } from '../types/dataset'
 import { DataSet } from './dataSet'
 
 /**

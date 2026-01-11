@@ -20,46 +20,80 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, watch, reactive} from 'vue'
+import {ref, onMounted, watch, reactive, nextTick} from 'vue'
 import {useRoute} from 'vue-router'
 import {getPageConfig} from '../api'
-import type {PageRule, ApiConfig} from '../types'
+import type {PageRule, ApiConfig, DataRow} from '../types'
 import { DataSetManager } from '../models/dataSetManager'
 import type { DataSet } from '../models/dataSet'
+
+// 定义 Rule 类型(扩展 PageRule)
+interface Rule extends Omit<PageRule, 'children'> {
+  contextId?: string
+  children?: (Rule | string)[]  // 允许字符串类型
+  on?: Record<string, Function>
+}
+
+// 定义 FormCreateAPI 类型
+interface FormCreateAPI {
+  rule: Rule[]
+  [key: string]: unknown
+}
+
+// 定义页面上下文类型
+interface PageContext {
+  $api: FormCreateAPI | null
+  $route: ReturnType<typeof useRoute>
+  $data: Record<string, unknown>
+  $el: HTMLElement | null
+  $query: (selector: string) => HTMLElement | null
+  $queryAll: (selector: string) => NodeListOf<Element>
+  $rebindRules: () => void
+  $refreshData: (key?: string) => Promise<void>
+  $dataSet?: DataSet | null
+}
+
+declare global {
+  interface Window {
+    __pageContext: PageContext
+    __formApi__?: FormCreateAPI
+  }
+}
 
 // 使用 Vite 的 glob import 预加载所有页面脚本模块
 const pageModules = import.meta.glob('../pages-config/*/script.js', { eager: false })
 
 const route = useRoute()
-const pageRules = ref<PageRule[]>([])
-const originalRules = ref<PageRule[]>([]) // 保存原始 rules 配置
+const pageRules = ref<Rule[]>([])
+const originalRules = ref<Rule[]>([]) // 保存原始 rules 配置
 const pageStyle = ref<string>('')
 const pageId = ref<string>('')
 const loading = ref(true)
 const error = ref<string>('')
-const formApi = ref<any>(null) // form-create API 实例
+const formApi = ref<FormCreateAPI | null>(null) // form-create API 实例
 const pageFunctions = ref<Record<string, Function>>({}) // 页面函数
 const pageContainer = ref<HTMLElement | null>(null) // 页面容器引用
-const pageData = reactive<Record<string, any>>({}) // 响应式页面数据
+const pageData = reactive<Record<string, unknown>>({}) // 响应式页面数据
 let dataSet: DataSet | null = null // DataSet 实例
 
 // 初始化全局上下文（在任何模块加载之前）- 仅在客户端
 if (typeof window !== 'undefined') {
-    ;(window as any).__pageContext = {
+    window.__pageContext = {
         $api: null,
         $route: route,
         $data: pageData,
         $el: null,
-        $query: (_selector: string) => null,
-        $queryAll: (_selector: string) => null,
-        $refreshData: null,  // 刷新数据的方法
+        $query: () => null,
+        $queryAll: () => document.querySelectorAll(''),  // 返回空集合
+        $rebindRules: () => {},  // 初始化空函数
+        $refreshData: () => Promise.resolve(),  // 初始化空函数
         $dataSet: null  // DataSet 实例（由 DynamicPage 自动创建）
     }
 }
 
 // 自动初始化 DataSet（如果 pageData 包含 dataset）
 const initDataSet = () => {
-    if (pageData.dataset && pageData.dataset.tables) {
+    if (pageData.dataset && typeof pageData.dataset === 'object' && 'tables' in pageData.dataset) {
         // 🔄 每次页面切换时重新创建 DataSet（不同页面有不同的表结构）
         if (dataSet) {
             // 清理旧的 DataSet
@@ -73,15 +107,17 @@ const initDataSet = () => {
         };
         
         // 使用工厂方法创建 DataSet
-        dataSet = DataSetManager.create(pageData.dataset, defaultDataLoader);
+        dataSet = DataSetManager.create(pageData.dataset as any, defaultDataLoader);
         
         // 🔑 移除 pageData.dataset.tables 引用，强制使用 DataSet API
         // 用户脚本必须通过 $dataSet().getTable() 或 $dataSet().tables 访问
-        delete pageData.dataset.tables;
+        if ('tables' in pageData.dataset) {
+            delete (pageData.dataset as any).tables;
+        }
         
         // 更新全局上下文
         if (typeof window !== 'undefined') {
-            (window as any).__pageContext.$dataSet = dataSet;
+            window.__pageContext.$dataSet = dataSet;
         }
         console.log('✅ DataSet 自动初始化成功（内核级）');
         
@@ -89,6 +125,19 @@ const initDataSet = () => {
         // 已移到 loadPageConfig 的最后
     }
 }
+// 辅助函数：递归查找具有特定 dataKey 的 rule
+const findRuleByDataKey = (rules: Rule[], dataKey: string): Rule | null => {
+    for (const rule of rules) {
+        if (rule.dataKey === dataKey) {
+            return rule;
+        }
+        if (rule.children && Array.isArray(rule.children)) {
+            const found = findRuleByDataKey(rule.children, dataKey);
+            if (found) return found;
+        }
+    }
+    return null;
+};
 
 // 自动订阅 rules 中引用的所有表（UI 完全解耦）
 const autoSubscribeTables = () => {
@@ -98,7 +147,7 @@ const autoSubscribeTables = () => {
     const contexts = new Set<string>();
     
     // 递归提取所有 dataKey 中的表名和上下文ID
-    const extractContexts = (rules: any[]) => {
+    const extractContexts = (rules: Rule[]) => {
         rules.forEach(rule => {
             if (rule.dataKey && rule.dataKey.startsWith('dataset.tables.')) {
                 // 提取表名和上下文路径
@@ -113,7 +162,8 @@ const autoSubscribeTables = () => {
                 }
             }
             if (rule.children && Array.isArray(rule.children)) {
-                extractContexts(rule.children);
+                const childRules = rule.children.filter((child): child is Rule => typeof child !== 'string');
+                extractContexts(childRules);
             }
         });
     };
@@ -133,22 +183,54 @@ const autoSubscribeTables = () => {
         console.log(`📡 自动订阅上下文: ${key}`);
     });
     
-    // 🎯 监听 currentRow/selectedRows 变化事件，需要 rebindRules 更新显示
+    // 🎯 监听 currentRow/selectedRows 变化事件
+    // ⚠️ 一般不需要 rebindRules：Vue 响应式会自动更新组件
+    // 只在 rules 结构本身需要变化时才调用 rebindRules
     dataSet!.on('currentRowChanged', () => {
-        console.log('🎯 [Event] currentRow 变化，触发 rebindRules');
-        rebindRules();
+        console.log('🎯 [Event] currentRow 变化（Vue 响应式自动更新）');
+        // ❌ 不调用 rebindRules() - 数据是响应式的，组件会自动更新
     });
-    dataSet!.on('selectedRowsChanged', () => {
-        console.log('🎯 [Event] selectedRows 变化，触发 rebindRules');
-        rebindRules();
+    
+    dataSet!.on('selectedRowsChanged', ({ tableName, contextId, rows }: { tableName: string, contextId: string, rows: DataRow[] }) => {
+        console.log(`🎯 [数据→UI] ${tableName}.${contextId}.selectedRows 变化，同步到 el-table`);
+        
+        // 使用 nextTick 确保 DOM 已更新
+        nextTick(() => {
+            if (formApi.value) {
+                // 🔑 直接构造 name（与自动注入时的规则一致）
+                const componentName = `table_${tableName}_${contextId}`;
+                const tableComponent = formApi.value.el(componentName);
+                
+                if (tableComponent) {
+                    // 🔄 同步选中状态到 el-table
+                    if (rows.length === 0 && typeof tableComponent.clearSelection === 'function') {
+                        // 清空选中
+                        tableComponent.clearSelection();
+                        console.log(`✅ [UI同步] 已清空 ${tableName} 表格复选框`);
+                    } else if (typeof tableComponent.toggleRowSelection === 'function') {
+                        // 设置选中（先清空，再逐个选中）
+                        tableComponent.clearSelection?.();
+                        rows.forEach(row => {
+                            tableComponent.toggleRowSelection(row, true);
+                        });
+                        console.log(`✅ [UI同步] 已设置 ${tableName} 表格选中 ${rows.length} 行`);
+                    }
+                } else {
+                    console.warn(`⚠️ [UI同步] 未找到表格组件: ${componentName}`);
+                }
+            }
+        });
     });
+    
+    // 移除旧的事件监听
+    // dataSet!.on('selectionCleared', ...) 不再需要
 }
 
 // 防重入锁：防止事件处理过程中再次触发同步
 let isProcessingEvent = false;
 
 // 递归替换 rule 中的数据占位符和事件处理器
-const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule[] => {
+const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] => {
     return rules.map(rule => {
         const newRule = {...rule}
     
@@ -158,7 +240,7 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
             for (const [eventName, handler] of Object.entries(newRule.on)) {
                 if (typeof handler === 'string') {
                     // 从页面函数对象获取函数
-                    newOn[eventName] = (...args: any[]) => {
+                    newOn[eventName] = (...args: unknown[]) => {
                         const fn = pageFunctions.value[handler]
                         if (typeof fn === 'function') {
                             console.log(`🎯 [事件触发] ${eventName} -> ${handler}`, args)
@@ -183,7 +265,12 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                 const tableName = dataKeyParts[tablesIndex + 1]
                 
                 // 获取 contextId（优先使用 contextId 属性）
-                const contextId = (newRule as any).contextId || (newRule.props && (newRule.props as any).contextId) || 'default';
+                const contextId = (newRule as any).contextId || newRule.props?.contextId || 'default';
+                
+                // 🔧 添加唯一的 name 属性，用于后续获取组件实例
+                if (!newRule.name) {
+                    newRule.name = `table_${tableName}_${contextId}`;
+                }
                 
                 console.log(`🔧 [自动注入] 为表 ${tableName} 注入事件处理器 (contextId=${contextId})`)
                 
@@ -195,7 +282,7 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                 // 注入 currentChange 事件（单选行变化）
                 // 注意：form-create 使用驼峰命名，Element Plus 模板中的 @current-change 会被转换为 onCurrentChange
                 const originalCurrentChange = newRule.on['currentChange']
-                newRule.on['currentChange'] = (currentRow: any, oldRow: any) => {
+                newRule.on['currentChange'] = (currentRow: DataRow | null, oldRow: DataRow | null) => {
                     console.log(`🎯 [事件触发] currentChange`, { tableName, currentRow, oldRow, isProcessingEvent })
                     
                     // 重入检查：如果正在处理事件，跳过以防止死循环
@@ -236,7 +323,7 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                 
                 // 注入 selectionChange 事件（多选行变化）
                 const originalSelectionChange = newRule.on['selectionChange']
-                newRule.on['selectionChange'] = (selectedRows: any[]) => {
+                newRule.on['selectionChange'] = (selectedRows: DataRow[]) => {
                     console.log(`🎯 [事件触发] selectionChange`, { tableName, selectedRows })
                     
                     // 先调用原有的用户处理器
@@ -262,7 +349,7 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
     
         if (newRule.dataKey) {
             const keys = newRule.dataKey.split('.')
-            let value: any = data
+            let value: unknown = data
             
             // 🔑 特殊处理：dataset.tables.* 路径从 dataSet 获取实时数据
             if (keys[0] === 'dataset' && keys[1] === 'tables' && dataSet) {
@@ -283,7 +370,7 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
             } else {
                 // 普通路径：按原逻辑解析
                 for (const key of keys) {
-                    value = value?.[key]
+                    value = (value as any)?.[key]
                 }
             }
             
@@ -331,7 +418,7 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
                     newRule.children = [String(value)]
                 }
             } else if (newRule.options !== undefined) {
-                newRule.options = value
+                newRule.options = value as Array<{ label: string; value: any }> | undefined
             } else if (newRule.value !== undefined) {
                 newRule.value = value
             } else if (newRule.props) {
@@ -354,16 +441,16 @@ const bindDataToRules = (rules: PageRule[], data: Record<string, any>): PageRule
 }
 
 // 判断是否为 API 配置
-const isApiConfig = (value: any): value is ApiConfig => {
-    return value && typeof value === 'object' && 'url' in value
+const isApiConfig = (value: unknown): value is ApiConfig => {
+    return value !== null && typeof value === 'object' && 'url' in value
 }
 
 // 从响应中提取数据
-const extractData = (response: any, dataPath?: string): any => {
+const extractData = (response: unknown, dataPath?: string): unknown => {
     if (!dataPath) return response
     
     const keys = dataPath.split('.')
-    let value = response
+    let value: any = response
     for (const key of keys) {
         value = value?.[key]
     }
@@ -380,7 +467,7 @@ const loadApiData = async (key: string, config: ApiConfig): Promise<void> => {
         let fetchOptions: RequestInit = { method }
         
         if (method === 'GET' && config.params) {
-            const params = new URLSearchParams(config.params)
+            const params = new URLSearchParams(config.params as Record<string, string>)
             fetchUrl = `${url}?${params}`
         } else if (config.params) {
             fetchOptions.body = JSON.stringify(config.params)
@@ -408,32 +495,22 @@ const loadApiData = async (key: string, config: ApiConfig): Promise<void> => {
     }
 }
 
-// 刷新指定 key 的数据
-const refreshData = async (key?: string): Promise<void> => {
-    if (!pageDataConfig.value) return
-    
-    if (key) {
-        // 刷新单个数据
-        const config = pageDataConfig.value[key]
-        if (isApiConfig(config) && config.autoLoad !== false) {
-            await loadApiData(key, config)
-        }
-    } else {
-        // 刷新所有 API 数据
-        const apiConfigs = Object.entries(pageDataConfig.value)
-            .filter(([, value]) => isApiConfig(value))
-        
-        for (const [k, config] of apiConfigs) {
-            if ((config as ApiConfig).autoLoad !== false) {
-                await loadApiData(k, config as ApiConfig)
-            }
-        }
-    }
-}
-
-// 强制重新绑定数据到 rules（用于响应式数据更新后）
-// 使用 debounce 防止批量更新时多次重绘
-let rebindTimer: any = null
+// ⚠️ 强制重新绑定数据到 rules（谨慎使用！）
+// 
+// 使用场景：
+// ✅ rules 结构本身需要动态变化（如条件显示/隐藏组件）
+// ✅ dataKey 表达式需要重新计算（极少情况）
+// 
+// 不应使用的场景：
+// ❌ 数据变化 - Vue 响应式会自动更新组件
+// ❌ currentRow/selectedRows 变化 - 会导致组件状态丢失
+// ❌ DataSet 数据变化 - 订阅者会自动通知，Vue 响应式处理
+// 
+// 副作用：
+// - 重新创建整个组件树（性能开销大）
+// - 丢失组件状态（选中、输入焦点、滚动位置等）
+// - 可能导致闪烁
+let rebindTimer: ReturnType<typeof setTimeout> | null = null
 const rebindRules = (): void => {
     if (rebindTimer) clearTimeout(rebindTimer)
     rebindTimer = setTimeout(() => {
@@ -445,10 +522,28 @@ const rebindRules = (): void => {
 }
 
 // 保存原始数据配置（用于刷新）
-const pageDataConfig = ref<Record<string, any>>({})
+const pageDataConfig = ref<Record<string, unknown>>({})
+
+// 刷新API数据（零代码实现）
+const refreshData = async (key?: string): Promise<void> => {
+    if (key) {
+        // 刷新指定的API数据
+        const config = pageDataConfig.value[key]
+        if (config && typeof config === 'object' && 'url' in config) {
+            await loadApiData(key, config as ApiConfig)
+        }
+    } else {
+        // 刷新所有API数据
+        for (const [dataKey, config] of Object.entries(pageDataConfig.value)) {
+            if (config && typeof config === 'object' && 'url' in config) {
+                await loadApiData(dataKey, config as ApiConfig)
+            }
+        }
+    }
+}
 
 // 处理页面数据（支持静态数据和 API 配置）
-const processPageData = async (dataConfig: Record<string, any>): Promise<void> => {
+const processPageData = async (dataConfig: Record<string, unknown>): Promise<void> => {
     // 保存配置用于后续刷新
     pageDataConfig.value = dataConfig
     
@@ -523,10 +618,10 @@ const loadPageConfig = async () => {
 
         // 🎯 关键：先保存 rules 并注册订阅者，再加载模块
         // 这样可以确保 __init__ 触发数据加载时，订阅者已经就绪
-        originalRules.value = config.rule
+        originalRules.value = config.rule as Rule[]
         
         // 绑定数据到 rules
-        pageRules.value = bindDataToRules(config.rule, pageData)
+        pageRules.value = bindDataToRules(config.rule as Rule[], pageData)
     
         // 自动订阅所有表（必须在 __init__ 之前）
         if (dataSet && originalRules.value) {
@@ -536,16 +631,16 @@ const loadPageConfig = async () => {
         // 直接动态导入页面脚本模块
         try {
             // 更新全局上下文（在模块加载之前，确保包含 dataSet）
-            ;(window as any).__pageContext = {
+            window.__pageContext = {
                 $api: formApi.value,
                 $route: route,
                 $data: pageData,
-                $dataSet: dataSet,  // 确保传递 dataSet
+                $dataSet: dataSet || undefined,  // 确保传递 dataSet
                 $el: pageContainer.value,
-                $query: (selector: string) => pageContainer.value?.querySelector(selector),
-                $queryAll: (selector: string) => pageContainer.value?.querySelectorAll(selector),
-                $refreshData: refreshData,  // 刷新 API 数据
-                $rebindRules: rebindRules    // 重新绑定数据到 rules
+                $query: (selector: string) => pageContainer.value?.querySelector(selector) || null,
+                $queryAll: (selector: string) => pageContainer.value?.querySelectorAll(selector) || document.querySelectorAll(''),
+                $rebindRules: rebindRules,    // 重新绑定数据到 rules
+                $refreshData: refreshData     // 刷新API数据（零代码）
             }
             
             // 使用预加载的模块映射（Vite glob import）
@@ -584,8 +679,9 @@ const loadPageConfig = async () => {
 
         // 加载页面样式（自动添加作用域隔离）
         pageStyle.value = scopeCSS(config.style || '', pageId.value)
-    } catch (err: any) {
-        error.value = err.message || '加载页面配置失败'
+    } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : '加载页面配置失败'
+        error.value = errorMessage
         console.error('❌ 获取页面配置失败:', err)
     } finally {
         loading.value = false
@@ -593,11 +689,11 @@ const loadPageConfig = async () => {
 }
 
 // 表单挂载回调
-const onFormMounted = (api: any) => {
+const onFormMounted = (api: FormCreateAPI) => {
     formApi.value = api
     // 🔑 暴露 formApi 供 pageScripts 使用
     if (typeof window !== 'undefined') {
-        (window as any).__formApi__ = api
+        window.__formApi__ = api
     }
     console.log('📋 表单实例已挂载:', api)
 }
