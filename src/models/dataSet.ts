@@ -409,15 +409,21 @@ export class DataSet implements IDataSet {
   ): DataRow[] {
     // 特殊处理：如果是 'in' 操作符且有多个 parentRows
     // 需要一次性提取所有 parentRows 的字段值，而不是逐个过滤
-    if (filterExpression.op === 'in' && parentRows.length > 0) {
+    if ('op' in filterExpression && filterExpression.op === 'in' && parentRows.length > 0) {
       // 提取所有 parentRows 的字段值
-      const fieldName = filterExpression.value?.func === 'FIELD' 
-        ? filterExpression.value.args?.[0] 
+      const fieldName = 'value' in filterExpression && 
+                        typeof filterExpression.value === 'object' && 
+                        filterExpression.value !== null && 
+                        'func' in filterExpression.value && 
+                        filterExpression.value.func === 'FIELD' && 
+                        'args' in filterExpression.value && 
+                        Array.isArray(filterExpression.value.args)
+        ? filterExpression.value.args[0] 
         : null;
       
-      if (fieldName) {
+      if (fieldName && 'field' in filterExpression) {
         // 收集所有 parentRows 的 fieldName 值
-        const parentValues = parentRows.map(row => row[fieldName]).filter(v => v !== undefined);
+        const parentValues = parentRows.map(row => row[fieldName as string]).filter(v => v !== undefined);
         
         // 直接过滤子表：childRow[field] in parentValues
         const childFieldName = filterExpression.field;
@@ -1251,7 +1257,7 @@ export class DataSet implements IDataSet {
       const childContext = this.getContext(relation.childTable, relation.childContextId || 'default');
       
       // ✅ 检查是否需要自动加载子表数据
-      if (relation.autoLoad && (!childContext._originalRows || childContext._originalRows.length === 0)) {
+      if (childContext && relation.autoLoad && (!childContext._originalRows || childContext._originalRows.length === 0)) {
         console.log(`🚀 [AutoLoad] ${relation.childTable} 数据未加载，触发自动加载`);
         this.requestTableData(relation.childTable);
         // 跳过本次 applyRelation，等待 loadTableData 完成后自动应用
