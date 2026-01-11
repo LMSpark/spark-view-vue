@@ -126,13 +126,16 @@ const initDataSet = () => {
     }
 }
 // 辅助函数：递归查找具有特定 dataKey 的 rule
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const findRuleByDataKey = (rules: Rule[], dataKey: string): Rule | null => {
     for (const rule of rules) {
         if (rule.dataKey === dataKey) {
             return rule;
         }
         if (rule.children && Array.isArray(rule.children)) {
-            const found = findRuleByDataKey(rule.children, dataKey);
+            // 过滤掉字符串类型的子元素
+            const childRules = rule.children.filter((child): child is Rule => typeof child !== 'string');
+            const found = findRuleByDataKey(childRules, dataKey);
             if (found) return found;
         }
     }
@@ -196,10 +199,10 @@ const autoSubscribeTables = () => {
         
         // 使用 nextTick 确保 DOM 已更新
         nextTick(() => {
-            if (formApi.value) {
+            if (formApi.value && typeof formApi.value.el === 'function') {
                 // 🔑 直接构造 name（与自动注入时的规则一致）
                 const componentName = `table_${tableName}_${contextId}`;
-                const tableComponent = formApi.value.el(componentName);
+                const tableComponent = formApi.value.el(componentName) as any;
                 
                 if (tableComponent) {
                     // 🔄 同步选中状态到 el-table
