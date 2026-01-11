@@ -75,19 +75,30 @@ npm run lint:fix
 ```
 form-create-ssr-app/
 ├── src/
+│   ├── models/          # 领域模型 (camelCase)
+│   │   ├── bindingContext.ts  # 视图层
+│   │   ├── dataTable.ts       # 结构层
+│   │   ├── dataSet.ts         # 领域层
+│   │   └── dataSetManager.ts  # 工厂层
+│   ├── utils/           # 工具函数和辅助类
+│   │   ├── parsers/     # 解析器模块
+│   │   ├── managers/    # 管理器模块
+│   │   └── page-helpers/ # 页面辅助函数
 │   ├── api/             # API 接口
-│   ├── components/      # Vue 组件
 │   ├── mock/            # Mock 数据
-│   │   ├── routes.json  # 路由配置
-│   │   └── pages/       # 页面配置
 │   ├── router/          # 路由配置
 │   ├── types/           # TypeScript 类型
 │   ├── views/           # 页面视图
 │   │   └── DynamicPage.vue  # 动态表单页面
+│   ├── pages-config/    # 页面配置（低代码）
 │   ├── app.ts           # 应用工厂函数
 │   ├── entry-client.ts  # 客户端入口
 │   ├── entry-server.ts  # 服务端入口
 │   └── main.ts          # CSR 入口
+├── docs/               # 项目文档
+│   ├── architecture/   # 架构设计文档
+│   ├── dataset/        # DataSet 相关文档
+│   └── guides/         # 开发指南
 ├── server.ts            # SSR 服务器
 ├── vite.config.ts       # Vite 配置
 ├── tsconfig.json        # TypeScript 配置
@@ -158,22 +169,26 @@ docker run -d -p 3000:3000 form-create-ssr
 ## � 文档索引
 
 ### 🏗️ 架构设计
-- [架构总览 (Architecture)](docs/architecture/README_ARCHITECTURE.md)
-- [SSR 服务端渲染](docs/architecture/README_SSR.md)
-- [SPA 客户端模式](docs/architecture/README_SPA.md)
+- [架构总览](docs/architecture/README_ARCHITECTURE.md) - 完整架构设计说明
+- [项目结构规范](docs/architecture/PROJECT_STRUCTURE.md) - 文件组织和命名规范
+- [SSR 服务端渲染](docs/architecture/README_SSR.md) - SSR 实现细节
+- [SPA 客户端模式](docs/architecture/README_SPA.md) - CSR 模式说明
+- [数据隔离机制](docs/architecture/Data-Isolation.md) - BindingContext 数据隔离
+- [数据加载流程](docs/architecture/Data-Loading-Flow.md) - 完整加载流程图
 
 ### 📊 数据集 (DataSet)
-- [核心设计文档 (Design Doc)](docs/dataset/DATASET_DESIGN_DOC.md)
-- [完整实现细节 (Implementation)](docs/dataset/PAGEDATA_COMPLETE_IMPLEMENTATION.md)
-- [CRUD 操作指南](docs/dataset/DATASET_CRUD_GUIDE.md)
-- [树形结构管理 (TreeManager)](docs/dataset/README_TREE.md)
-- [过滤表达式测试](docs/dataset/FILTER_EXPRESSION_TESTS.md)
+- [CRUD 操作指南](docs/dataset/DATASET_CRUD_GUIDE.md) - 增删改查操作
+- [DataKey 路径系统](docs/dataset/DataKey-Paths.md) - 数据绑定路径
+- [过滤表达式](docs/dataset/FILTER_EXPRESSION_TESTS.md) - 过滤语法测试
+- [排序指南](docs/dataset/Sorting-Guide.md) - 排序功能说明
+- [树形结构管理](docs/dataset/README_TREE.md) - TreeManager 使用
+- [数据流程](docs/dataset/PageData-Flow.md) - PageData 流程图
 
 ### 📘 开发指南
-- [SSR 快速开始](docs/guides/QUICKSTART_SSR.md)
-- [异步数据加载](docs/guides/ASYNC_DATA_LOADING.md)
-- [智能加载演示](docs/guides/SMART_LOAD_DEMO.md)
-- [速查手册](docs/guides/ASYNC_DATA_QUICK_REF.md)
+- [SSR 快速开始](docs/guides/QUICKSTART_SSR.md) - 5 分钟上手
+- [异步数据加载](docs/guides/ASYNC_DATA_LOADING.md) - 异步数据处理
+- [智能加载演示](docs/guides/SMART_LOAD_DEMO.md) - 智能依赖加载
+- [速查手册](docs/guides/ASYNC_DATA_QUICK_REF.md) - API 快速参考
 
 ## �📄 License
 
