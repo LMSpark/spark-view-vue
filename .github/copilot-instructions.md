@@ -533,8 +533,11 @@ Auto-update via rebindRules()
 ## Quick References
 
 - Architecture deep-dive: `docs/architecture/README_ARCHITECTURE.md`
+- Project structure: `docs/architecture/PROJECT_STRUCTURE.md`
+- Best practices: `docs/BEST_PRACTICES.md`
 - SSR documentation: `docs/architecture/README_SSR.md`
 - Tree architecture: `docs/dataset/README_TREE.md`
+- Data isolation: `docs/architecture/Data-Isolation.md`
 - Example configs: 
   - Basic page: `src/pages-config/home/`
   - DataSet with cascade: `src/pages-config/cascade-demo/`
@@ -545,7 +548,8 @@ Auto-update via rebindRules()
 - DataSet types: `src/types/pageData.ts`
 - Kernel implementation: `src/models/dataSetManager.ts`
 - UI kernel: `src/views/DynamicPage.vue`
-- Tree manager: `src/utils/treeManager.ts`
+- Tree manager: `src/utils/managers/treeManager.ts`
+- Filter parser: `src/utils/parsers/filterExpressionParser.ts`
 
 ### Tree Architecture
 - **TreeManager associates with BindingContext** (view layer), not DataTable (structure layer)
