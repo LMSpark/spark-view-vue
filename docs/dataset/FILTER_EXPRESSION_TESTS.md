@@ -7,7 +7,7 @@
 ### 1. 简单相等条件
 
 ```typescript
-import { FilterExpressionParser } from '@/utils/filterExpressionParser'
+import { FilterExpressionParser } from '@/utils/parsers/filterExpressionParser'
 
 const expression = {
   field: 'status',

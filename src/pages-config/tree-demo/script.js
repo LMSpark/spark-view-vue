@@ -1,5 +1,5 @@
 import { $data, $rebindRules } from '@/utils/page-helpers/common.js'
-import { TreeManager } from '@/utils/treeManager'
+import { TreeManager } from '@/utils/managers/treeManager'
 import { buildTreeFromFlat, getNodePath as getNodePathHelper } from '@/utils/page-helpers/treeHelper.js'
 import { ElMessage } from 'element-plus'
 

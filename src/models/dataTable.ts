@@ -4,7 +4,7 @@
  * 相当于 .NET 的 DataTable - 结构层
  */
 
-import { BindingContext } from './BindingContext'
+import { BindingContext } from './bindingContext'
 import type { IDataTable, IBindingContext, DataColumn, CrudApi } from '../types/pageData'
 
 // 前向声明，避免循环依赖

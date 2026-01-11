@@ -3,7 +3,7 @@
  * 用于在 pageScripts 中操作树形数据
  */
 
-import { TreeManager } from '@/utils/treeManager'
+import { TreeManager } from '@/utils/managers/treeManager'
 
 /**
  * 模拟 API：获取节点路径

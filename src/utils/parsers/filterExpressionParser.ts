@@ -8,7 +8,7 @@ import type {
   FilterOperator,
   DataRow,
   FilterContext
-} from '../types/pageData'
+} from '../../types/pageData'
 
 /**
  * 过滤表达式解析器
