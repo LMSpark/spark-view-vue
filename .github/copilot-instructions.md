@@ -534,14 +534,24 @@ Auto-update via rebindRules()
 
 - Architecture deep-dive: `docs/architecture/README_ARCHITECTURE.md`
 - SSR documentation: `docs/architecture/README_SSR.md`
+- Tree architecture: `docs/dataset/README_TREE.md`
 - Example configs: 
   - Basic page: `src/pages-config/home/`
   - DataSet with cascade: `src/pages-config/cascade-demo/`
   - Smart dependency loading: `src/pages-config/smart-load/`
   - Master-Detail pattern: `src/pages-config/master-detail/`
+  - Tree view: `src/pages-config/tree-demo/`
 - Type definitions: `src/types/index.ts`
 - DataSet types: `src/types/pageData.ts`
-- Kernel implementation: `src/utils/dataSetManager.ts`
+- Kernel implementation: `src/models/dataSetManager.ts`
 - UI kernel: `src/views/DynamicPage.vue`
+- Tree manager: `src/utils/treeManager.ts`
+
+### Tree Architecture
+- **TreeManager associates with BindingContext** (view layer), not DataTable (structure layer)
+- Tree data is a view representation managed by BindingContext
+- Use `context.setTreeManager(treeManager)` for bidirectional binding
+- TreeManager handles lazy loading, differential patching, and nested tree building
+- Bind to UI: `"dataKey": "dataset.tables.Departments.rows"` for el-tree
 
 

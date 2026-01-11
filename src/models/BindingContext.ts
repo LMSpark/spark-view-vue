@@ -37,6 +37,9 @@ export class BindingContext implements IBindingContext {
   
   // DataSet 引用（用于触发通知）
   protected dataSet?: DataSet
+  
+  // TreeManager 引用（用于树形数据管理）
+  treeManager?: any  // 避免循环依赖，使用 any
 
   constructor(
     hostTable: string,
@@ -53,6 +56,24 @@ export class BindingContext implements IBindingContext {
    */
   setDataSet(dataSet: DataSet): void {
     this.dataSet = dataSet
+  }
+  
+  /**
+   * 设置 TreeManager 引用
+   */
+  setTreeManager(treeManager: any): void {
+    this.treeManager = treeManager
+    // 双向绑定
+    if (treeManager && typeof treeManager.setBindingContext === 'function') {
+      treeManager.setBindingContext(this)
+    }
+  }
+  
+  /**
+   * 获取 TreeManager 引用
+   */
+  getTreeManager(): any {
+    return this.treeManager
   }
 
   /**
