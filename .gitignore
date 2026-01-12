@@ -48,6 +48,10 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
+# Auto-generated files (unplugin-auto-import & unplugin-vue-components)
+src/auto-imports.d.ts
+src/components.d.ts
+
 # Testing
 coverage/
 .nyc_output/

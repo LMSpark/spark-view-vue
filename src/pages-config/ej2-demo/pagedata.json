@@ -1,0 +1,26 @@
+{
+  "users": [
+    { "id": 1, "name": "张三", "age": 28, "department": "技术部", "salary": 15000, "joinDate": "2022-03-15" },
+    { "id": 2, "name": "李四", "age": 32, "department": "产品部", "salary": 18000, "joinDate": "2021-08-20" },
+    { "id": 3, "name": "王五", "age": 25, "department": "技术部", "salary": 12000, "joinDate": "2023-01-10" },
+    { "id": 4, "name": "赵六", "age": 35, "department": "销售部", "salary": 20000, "joinDate": "2020-05-18" },
+    { "id": 5, "name": "钱七", "age": 29, "department": "产品部", "salary": 16000, "joinDate": "2022-09-25" },
+    { "id": 6, "name": "孙八", "age": 27, "department": "技术部", "salary": 14000, "joinDate": "2023-02-12" },
+    { "id": 7, "name": "周九", "age": 31, "department": "销售部", "salary": 19000, "joinDate": "2021-11-08" },
+    { "id": 8, "name": "吴十", "age": 26, "department": "产品部", "salary": 13000, "joinDate": "2023-04-20" },
+    { "id": 9, "name": "郑十一", "age": 33, "department": "技术部", "salary": 17000, "joinDate": "2021-06-15" },
+    { "id": 10, "name": "陈十二", "age": 30, "department": "销售部", "salary": 21000, "joinDate": "2020-12-03" }
+  ],
+  "orders": [
+    { "orderId": 1001, "customerName": "客户A", "amount": 5800, "orderDate": "2024-01-15", "status": "已完成" },
+    { "orderId": 1002, "customerName": "客户B", "amount": 12500, "orderDate": "2024-01-16", "status": "处理中" },
+    { "orderId": 1003, "customerName": "客户C", "amount": 8900, "orderDate": "2024-01-17", "status": "已完成" },
+    { "orderId": 1004, "customerName": "客户D", "amount": 15600, "orderDate": "2024-01-18", "status": "已发货" },
+    { "orderId": 1005, "customerName": "客户E", "amount": 7200, "orderDate": "2024-01-19", "status": "已完成" },
+    { "orderId": 1006, "customerName": "客户F", "amount": 9800, "orderDate": "2024-01-20", "status": "处理中" },
+    { "orderId": 1007, "customerName": "客户G", "amount": 11200, "orderDate": "2024-01-21", "status": "已发货" },
+    { "orderId": 1008, "customerName": "客户H", "amount": 6500, "orderDate": "2024-01-22", "status": "已完成" },
+    { "orderId": 1009, "customerName": "客户I", "amount": 13800, "orderDate": "2024-01-23", "status": "处理中" },
+    { "orderId": 1010, "customerName": "客户J", "amount": 10500, "orderDate": "2024-01-24", "status": "已发货" }
+  ]
+}
