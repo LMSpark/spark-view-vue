@@ -76,9 +76,18 @@
                     ]
                   },
                   {
-                    "type": "pre",
-                    "dataKey": "dataset.tables.Users.currentRow",
-                    "style": { "background": "#f5f5f5", "padding": "10px", "borderRadius": "4px" }
+                    "type": "el-input",
+                    "props": {
+                      "type": "textarea",
+                      "readonly": true,
+                      "rows": 12,
+                      "placeholder": "请点击用户行查看详情",
+                      "style": {
+                        "fontFamily": "monospace",
+                        "fontSize": "14px"
+                      }
+                    },
+                    "dataKey": "currentRowJson"
                   }
                 ]
               }

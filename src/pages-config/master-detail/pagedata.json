@@ -1,5 +1,6 @@
 {
   "pageTitle": "Master-Detail 演示",
+  "currentRowJson": "",
   "dataset": {
     "tables": {
       "Users": {

@@ -3,13 +3,21 @@
  * 用于在 pageScripts 中操作树形数据
  */
 
-import { TreeManager } from '@/utils/managers/treeManager'
+/**
+ * 节点路径响应
+ */
+export interface NodePathResponse {
+  pathIds: number[]
+}
 
 /**
  * 模拟 API：获取节点路径
  * 实际项目中应调用后端 GET /tree/path
  */
-export async function getNodePathIds(targetId, api = null) {
+export async function getNodePathIds(
+  targetId: number,
+  api: string | null = null
+): Promise<NodePathResponse> {
   if (api) {
     const response = await fetch(`${api}?id=${targetId}`)
     const data = await response.json()
@@ -26,7 +34,11 @@ export async function getNodePathIds(targetId, api = null) {
  * 模拟 API：获取子树区间
  * 实际项目中应调用后端 GET /tree/subtree
  */
-export async function getSubTreeByRange(fromId, toId, api = null) {
+export async function getSubTreeByRange(
+  fromId: number,
+  toId: number,
+  api: string | null = null
+): Promise<any[]> {
   if (api) {
     const response = await fetch(`${api}?fromId=${fromId}&toId=${toId}`)
     const data = await response.json()
@@ -41,7 +53,10 @@ export async function getSubTreeByRange(fromId, toId, api = null) {
  * 模拟 API：获取子节点列表
  * 实际项目中应调用后端 GET /tree/children
  */
-export async function getChildren(parentId, api = null) {
+export async function getChildren(
+  parentId: number,
+  api: string | null = null
+): Promise<any[]> {
   if (api) {
     const response = await fetch(`${api}?parentId=${parentId}`)
     const data = await response.json()
@@ -56,7 +71,10 @@ export async function getChildren(parentId, api = null) {
  * 模拟 API：搜索节点
  * 实际项目中应调用后端 GET /tree/search
  */
-export async function searchNodes(keyword, api = null) {
+export async function searchNodes(
+  keyword: string,
+  api: string | null = null
+): Promise<any[]> {
   if (api) {
     const response = await fetch(`${api}?keyword=${encodeURIComponent(keyword)}`)
     const data = await response.json()
@@ -68,15 +86,23 @@ export async function searchNodes(keyword, api = null) {
 }
 
 /**
- * 从扁平数据构建树形结构
- * @param {Array} flatNodes - 扁平节点数组
- * @param {string} idField - ID 字段名
- * @param {string} parentIdField - 父 ID 字段名
- * @returns {Array} 树形结构数组
+ * 树节点接口
  */
-export function buildTreeFromFlat(flatNodes, idField = 'id', parentIdField = 'parentId') {
-  const map = new Map()
-  const roots = []
+export interface TreeNode {
+  [key: string]: any
+  children?: TreeNode[]
+}
+
+/**
+ * 从扁平数据构建树形结构
+ */
+export function buildTreeFromFlat(
+  flatNodes: any[],
+  idField: string = 'id',
+  parentIdField: string = 'parentId'
+): TreeNode[] {
+  const map = new Map<any, TreeNode>()
+  const roots: TreeNode[] = []
 
   // 第一遍：创建映射
   flatNodes.forEach(node => {
@@ -87,7 +113,9 @@ export function buildTreeFromFlat(flatNodes, idField = 'id', parentIdField = 'pa
   map.forEach(node => {
     const parentId = node[parentIdField]
     if (parentId && map.has(parentId)) {
-      map.get(parentId).children.push(node)
+      const parent = map.get(parentId)!
+      if (!parent.children) parent.children = []
+      parent.children.push(node)
     } else {
       roots.push(node)
     }
@@ -98,13 +126,11 @@ export function buildTreeFromFlat(flatNodes, idField = 'id', parentIdField = 'pa
 
 /**
  * 将树形结构展平
- * @param {Array} treeNodes - 树形结构数组
- * @returns {Array} 扁平节点数组
  */
-export function flattenTree(treeNodes) {
-  const result = []
+export function flattenTree(treeNodes: TreeNode[]): any[] {
+  const result: any[] = []
 
-  function traverse(nodes, level = 0) {
+  function traverse(nodes: TreeNode[], level: number = 0): void {
     nodes.forEach(node => {
       const { children, ...rest } = node
       result.push({ ...rest, level })
@@ -121,11 +147,11 @@ export function flattenTree(treeNodes) {
 
 /**
  * 查找节点
- * @param {Array} treeNodes - 树形结构数组
- * @param {Function} predicate - 查找条件
- * @returns {Object|null} 找到的节点
  */
-export function findNode(treeNodes, predicate) {
+export function findNode(
+  treeNodes: TreeNode[],
+  predicate: (node: TreeNode) => boolean
+): TreeNode | null {
   for (const node of treeNodes) {
     if (predicate(node)) {
       return node
@@ -142,14 +168,14 @@ export function findNode(treeNodes, predicate) {
 
 /**
  * 获取节点路径
- * @param {Array} treeNodes - 树形结构数组
- * @param {Function} predicate - 查找条件
- * @returns {Array} 路径数组
  */
-export function getNodePath(treeNodes, predicate) {
-  const path = []
+export function getNodePath(
+  treeNodes: TreeNode[],
+  predicate: (node: TreeNode) => boolean
+): TreeNode[] {
+  const path: TreeNode[] = []
 
-  function traverse(nodes) {
+  function traverse(nodes: TreeNode[]): boolean {
     for (const node of nodes) {
       path.push(node)
       
@@ -174,11 +200,12 @@ export function getNodePath(treeNodes, predicate) {
 
 /**
  * 遍历树
- * @param {Array} treeNodes - 树形结构数组
- * @param {Function} callback - 回调函数
  */
-export function traverseTree(treeNodes, callback) {
-  function traverse(nodes, level = 0, parent = null) {
+export function traverseTree(
+  treeNodes: TreeNode[],
+  callback: (node: TreeNode, level: number, parent: TreeNode | null, index: number) => void
+): void {
+  function traverse(nodes: TreeNode[], level: number = 0, parent: TreeNode | null = null): void {
     nodes.forEach((node, index) => {
       callback(node, level, parent, index)
       
@@ -193,13 +220,13 @@ export function traverseTree(treeNodes, callback) {
 
 /**
  * 过滤树（保留匹配节点及其祖先）
- * @param {Array} treeNodes - 树形结构数组
- * @param {Function} predicate - 过滤条件
- * @returns {Array} 过滤后的树
  */
-export function filterTree(treeNodes, predicate) {
-  function filter(nodes) {
-    const result = []
+export function filterTree(
+  treeNodes: TreeNode[],
+  predicate: (node: TreeNode) => boolean
+): TreeNode[] {
+  function filter(nodes: TreeNode[]): TreeNode[] {
+    const result: TreeNode[] = []
     
     nodes.forEach(node => {
       const match = predicate(node)
@@ -221,11 +248,11 @@ export function filterTree(treeNodes, predicate) {
 
 /**
  * 树排序
- * @param {Array} treeNodes - 树形结构数组
- * @param {Function} compareFn - 比较函数
- * @returns {Array} 排序后的树
  */
-export function sortTree(treeNodes, compareFn) {
+export function sortTree(
+  treeNodes: TreeNode[],
+  compareFn: (a: TreeNode, b: TreeNode) => number
+): TreeNode[] {
   const sorted = [...treeNodes].sort(compareFn)
   
   return sorted.map(node => ({
@@ -236,13 +263,11 @@ export function sortTree(treeNodes, compareFn) {
 
 /**
  * 计算树的最大深度
- * @param {Array} treeNodes - 树形结构数组
- * @returns {number} 最大深度
  */
-export function getMaxDepth(treeNodes) {
+export function getMaxDepth(treeNodes: TreeNode[]): number {
   let maxDepth = 0
 
-  function traverse(nodes, depth) {
+  function traverse(nodes: TreeNode[], depth: number): void {
     maxDepth = Math.max(maxDepth, depth)
     
     nodes.forEach(node => {
@@ -258,10 +283,8 @@ export function getMaxDepth(treeNodes) {
 
 /**
  * 统计节点数量
- * @param {Array} treeNodes - 树形结构数组
- * @returns {number} 节点总数
  */
-export function countNodes(treeNodes) {
+export function countNodes(treeNodes: TreeNode[]): number {
   let count = 0
 
   traverseTree(treeNodes, () => {

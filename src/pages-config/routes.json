@@ -72,6 +72,15 @@
     }
   },
   {
+    "path": "/permission-render",
+    "name": "permission-render",
+    "pageId": "permission-render",
+    "meta": {
+      "title": "数据驱动 UI 渲染",
+      "icon": "🎨"
+    }
+  },
+  {
     "path": "/settings",
     "name": "settings",
     "pageId": "settings",

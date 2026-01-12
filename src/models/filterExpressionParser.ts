@@ -8,7 +8,7 @@ import type {
   FilterOperator,
   DataRow,
   FilterContext
-} from '../../types/dataset'
+} from '../types/dataset'
 
 /**
  * 过滤表达式解析器

@@ -12,7 +12,7 @@
     <div ref="pageContainer" :data-page="pageId">
       <form-create
         :rule="pageRules"
-        :option="{ form: false, submitBtn: false, resetBtn: false }"
+        :option="formCreateOption"
         @mounted="onFormMounted"
       />
     </div>
@@ -75,6 +75,14 @@ const pageFunctions = ref<Record<string, Function>>({}) // 页面函数
 const pageContainer = ref<HTMLElement | null>(null) // 页面容器引用
 const pageData = reactive<Record<string, unknown>>({}) // 响应式页面数据
 let dataSet: DataSet | null = null // DataSet 实例
+
+// FormCreate 配置（动态注册自定义组件）
+const formCreateOption = ref({
+  form: false,
+  submitBtn: false,
+  resetBtn: false,
+  global: {} as Record<string, any>
+})
 
 // 初始化全局上下文（在任何模块加载之前）- 仅在客户端
 if (typeof window !== 'undefined') {
@@ -236,6 +244,20 @@ let isProcessingEvent = false;
 const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] => {
     return rules.map(rule => {
         const newRule = {...rule}
+    
+        // 🎯 处理自定义渲染函数（以 Render 开头的 type）
+        if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
+            const renderFn = pageFunctions.value[newRule.type]
+            if (typeof renderFn === 'function') {
+                // 将自定义组件转换为 render 函数
+                return {
+                    type: 'div',
+                    render: renderFn
+                } as Rule
+            } else {
+                console.warn(`⚠️ 渲染函数 ${newRule.type} 未找到`)
+            }
+        }
     
         // 处理事件处理器：将字符串转换为函数
         if (newRule.on && typeof newRule.on === 'object') {
@@ -668,11 +690,33 @@ const loadPageConfig = async () => {
                 pageFunctions.value = functions
                 console.log('✅ 页面模块加载成功，注册函数:', Object.keys(functions))
                 
+                // 注册自定义渲染函数为 form-create 组件（使用 kebab-case 和 PascalCase 两种格式）
+                const customComponents: Record<string, any> = {}
+                for (const [key, value] of Object.entries(scriptModule)) {
+                    // 识别渲染函数（以 Render 开头）
+                    if (typeof value === 'function' && key.startsWith('Render')) {
+                        // 注册 PascalCase 和 kebab-case 两种格式
+                        customComponents[key] = value
+                        // 转换为 kebab-case
+                        const kebabName = key.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
+                        customComponents[kebabName] = value
+                    }
+                }
+                
+                if (Object.keys(customComponents).length > 0) {
+                    formCreateOption.value.global = customComponents
+                    console.log('✅ 注册自定义组件:', Object.keys(customComponents))
+                }
+                
                 // 如果模块导出了 __init__ 函数，立即调用（此时订阅者已就绪）
                 if (typeof scriptModule.__init__ === 'function') {
                     console.log('🎯 调用模块初始化函数 __init__')
                     ;(scriptModule.__init__ as Function)()
                 }
+                
+                // ✅ 模块加载完成后，重新绑定规则以解析渲染函数
+                rebindRules()
+                console.log('✅ 模块加载后重新绑定规则完成')
             }
         } catch (err) {
             console.error('❌ 页面模块加载失败:', err)

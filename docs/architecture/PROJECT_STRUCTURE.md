@@ -97,10 +97,8 @@ src/
 // 模型
 import { BindingContext } from '@/models/bindingContext'
 import { DataSet } from '@/models/dataSet'
-
-// 工具
-import { FilterExpressionParser } from '@/utils/parsers/filterExpressionParser'
-import { TreeManager } from '@/utils/managers/treeManager'
+import { FilterExpressionParser } from '@/models/filterExpressionParser'
+import { TreeManager } from '@/models/treeManager'
 
 // 类型
 import type { DataRow, IDataTable } from '@/types/pageData'
@@ -166,8 +164,8 @@ import { TreeManager } from '@/utils/treeManager'
 // ✅ 新路径
 import { BindingContext } from '@/models/bindingContext'
 import { DataTable } from '@/models/dataTable'
-import { FilterExpressionParser } from '@/utils/parsers/filterExpressionParser'
-import { TreeManager } from '@/utils/managers/treeManager'
+import { FilterExpressionParser } from '@/models/filterExpressionParser'
+import { TreeManager } from '@/models/treeManager'
 ```
 
 ### 批量替换命令（PowerShell）
