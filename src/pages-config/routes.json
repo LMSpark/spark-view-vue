@@ -81,6 +81,15 @@
     }
   },
   {
+    "path": "/formcreate-api",
+    "name": "formcreate-api",
+    "pageId": "formcreate-api",
+    "meta": {
+      "title": "Form-Create API",
+      "icon": "🔧"
+    }
+  },
+  {
     "path": "/settings",
     "name": "settings",
     "pageId": "settings",
