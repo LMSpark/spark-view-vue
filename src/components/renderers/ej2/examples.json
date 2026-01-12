@@ -1,0 +1,196 @@
+{
+  "basic": {
+    "description": "基础 EJ2 Grid 示例",
+    "config": {
+      "type": "ej2-table",
+      "dataSource": "users",
+      "allowPaging": true,
+      "allowSorting": true,
+      "children": [
+        {
+          "type": "text",
+          "name": "姓名",
+          "value": "name",
+          "width": 150
+        },
+        {
+          "type": "number",
+          "name": "年龄",
+          "value": "age",
+          "width": 100
+        },
+        {
+          "type": "date",
+          "name": "注册时间",
+          "value": "createdAt",
+          "width": 180
+        }
+      ]
+    }
+  },
+  "advanced": {
+    "description": "高级功能：虚拟滚动 + Excel 导出 + 分组",
+    "config": {
+      "type": "ej2-grid",
+      "dataSource": "dataset.tables.Orders.rows",
+      "enableVirtualization": true,
+      "allowExcelExport": true,
+      "allowPdfExport": true,
+      "allowGrouping": true,
+      "allowFiltering": true,
+      "showColumnChooser": true,
+      "toolbar": [
+        "ExcelExport",
+        "PdfExport",
+        "Search",
+        "ColumnChooser",
+        "Add",
+        "Edit",
+        "Delete",
+        "Update",
+        "Cancel"
+      ],
+      "editSettings": {
+        "allowEditing": true,
+        "allowAdding": true,
+        "allowDeleting": true,
+        "mode": "Normal"
+      },
+      "pageSettings": {
+        "pageSize": 20,
+        "pageSizes": [10, 20, 50, 100]
+      },
+      "filterSettings": {
+        "type": "Excel"
+      },
+      "selectionSettings": {
+        "mode": "Row",
+        "type": "Multiple"
+      },
+      "children": [
+        {
+          "type": "number",
+          "name": "订单ID",
+          "value": "orderId",
+          "width": 120
+        },
+        {
+          "type": "text",
+          "name": "客户名称",
+          "value": "customerName",
+          "width": 180
+        },
+        {
+          "type": "number",
+          "name": "金额",
+          "value": "amount",
+          "width": 120,
+          "format": "C2"
+        },
+        {
+          "type": "date",
+          "name": "下单时间",
+          "value": "orderDate",
+          "width": 150,
+          "format": "yyyy-MM-dd"
+        }
+      ]
+    }
+  },
+  "editable": {
+    "description": "可编辑表格示例",
+    "config": {
+      "type": "ej2-table",
+      "dataSource": "products",
+      "allowPaging": true,
+      "editSettings": {
+        "allowEditing": true,
+        "allowAdding": true,
+        "allowDeleting": true,
+        "mode": "Normal",
+        "showConfirmDialog": true
+      },
+      "toolbar": ["Add", "Edit", "Delete", "Update", "Cancel"],
+      "children": [
+        {
+          "type": "number",
+          "name": "产品ID",
+          "value": "productId",
+          "width": 100
+        },
+        {
+          "type": "text",
+          "name": "产品名称",
+          "value": "productName",
+          "width": 200
+        },
+        {
+          "type": "number",
+          "name": "价格",
+          "value": "price",
+          "width": 120,
+          "format": "C2"
+        },
+        {
+          "type": "number",
+          "name": "库存",
+          "value": "stock",
+          "width": 100
+        }
+      ]
+    }
+  },
+  "grouped": {
+    "description": "分组聚合示例",
+    "config": {
+      "type": "ej2-grid",
+      "dataSource": "sales",
+      "allowPaging": true,
+      "allowGrouping": true,
+      "allowSorting": true,
+      "groupSettings": {
+        "columns": ["category"],
+        "showDropArea": true,
+        "showGroupedColumn": true
+      },
+      "aggregates": [
+        {
+          "columns": [
+            {
+              "field": "amount",
+              "type": "Sum",
+              "footerTemplate": "总计: ${Sum}"
+            }
+          ]
+        }
+      ],
+      "children": [
+        {
+          "type": "text",
+          "name": "类别",
+          "value": "category",
+          "width": 150
+        },
+        {
+          "type": "text",
+          "name": "产品",
+          "value": "product",
+          "width": 200
+        },
+        {
+          "type": "number",
+          "name": "金额",
+          "value": "amount",
+          "width": 120,
+          "format": "C2"
+        },
+        {
+          "type": "date",
+          "name": "日期",
+          "value": "date",
+          "width": 150
+        }
+      ]
+    }
+  }
+}

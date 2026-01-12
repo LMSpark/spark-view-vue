@@ -2,6 +2,7 @@ import {createRouter, createWebHistory, RouteRecordRaw} from 'vue-router'
 import {getRoutes} from '../api'
 import type {RouteConfig} from '../types'
 import DynamicPage from '../views/DynamicPage.vue'
+import RendererDemoPage from '../views/RendererDemoPage.vue'
 
 // 创建路由实例
 const router = createRouter({
@@ -15,15 +16,28 @@ export const setupRouter = async () => {
         const routeConfigs = await getRoutes()
         
         // 将配置转换为路由记录 - 所有路由都使用 DynamicPage 组件
-        const routes: RouteRecordRaw[] = routeConfigs.map((config: RouteConfig) => ({
-            path: config.path,
-            name: config.name,
-            component: DynamicPage,
-            meta: {
-                ...config.meta,
-                pageId: config.pageId || config.name // 通过 meta 传递页面ID
+        const routes: RouteRecordRaw[] = routeConfigs.map((config: RouteConfig) => {
+            // renderer-demo 使用独立组件
+            if (config.pageId === 'renderer-demo') {
+                return {
+                    path: config.path,
+                    name: config.name,
+                    component: RendererDemoPage,
+                    meta: config.meta
+                }
             }
-        }))
+            
+            // 其他页面使用 DynamicPage
+            return {
+                path: config.path,
+                name: config.name,
+                component: DynamicPage,
+                meta: {
+                    ...config.meta,
+                    pageId: config.pageId || config.name // 通过 meta 传递页面ID
+                }
+            }
+        })
         
         // 动态添加路由
         routes.forEach(route => {

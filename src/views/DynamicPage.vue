@@ -26,6 +26,10 @@ import {getPageConfig} from '../api'
 import type {PageRule, ApiConfig, DataRow} from '../types'
 import { DataSetManager } from '../models/dataSetManager'
 import type { DataSet } from '../models/dataSet'
+import EJ2TableRenderer from '../components/renderers/ej2/TableRenderer.vue'
+
+// 注意：Element Plus 组件已由 @form-create/element-ui 内部注册
+// app.use(formCreate) 时会自动注册所有组件，无需手动导入
 
 // 定义 Rule 类型(扩展 PageRule)
 interface Rule extends Omit<PageRule, 'children'> {
@@ -81,7 +85,23 @@ const formCreateOption = ref({
   form: false,
   submitBtn: false,
   resetBtn: false,
-  global: {} as Record<string, any>
+  global: {
+    // 注册 EJ2 Grid（多种命名格式）
+    'ejs-grid': EJ2TableRenderer,
+    'ejsGrid': EJ2TableRenderer,
+    'EjsGrid': EJ2TableRenderer,
+    'ej2-grid': EJ2TableRenderer,
+    'ej2Grid': EJ2TableRenderer,
+    'EJ2Grid': EJ2TableRenderer,
+    'ej2-table': EJ2TableRenderer,
+    'ej2Table': EJ2TableRenderer,
+    'EJ2Table': EJ2TableRenderer,
+    // 注册占位符组件（避免 e-columns/e-column 解析错误）
+    'e-columns': { render: () => null },
+    'eColumns': { render: () => null },
+    'e-column': { render: () => null },
+    'eColumn': { render: () => null }
+  } as Record<string, any>
 })
 
 // 初始化全局上下文（在任何模块加载之前）- 仅在客户端
@@ -404,13 +424,22 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                 console.log(`🔍 [Debug] dataKey="${newRule.dataKey}" 解析结果:`, value, typeof value)
             }
       
-            if ((newRule.type === 'el-table' || newRule.type === 'el-tree')) {
-                // 🔑 el-table 和 el-tree 都使用 data 属性
+            if ((newRule.type === 'el-table' || newRule.type === 'el-tree' || newRule.type === 'ejs-grid' || newRule.type === 'ej2-grid' || newRule.type === 'ej2-table')) {
+                // 🔑 el-table、el-tree 和 EJ2 Grid 都使用 data 属性（但 EJ2 用 config 传递配置）
                 if (!newRule.props) {
                     newRule.props = {}
                 }
-                newRule.props.data = value
-                console.log(`📊 [数据绑定] ${newRule.type} dataKey="${newRule.dataKey}" 绑定数据:`, value)
+                
+                // 🎯 EJ2 Grid: 传递完整配置和数据
+                if (newRule.type === 'ejs-grid' || newRule.type === 'ej2-grid' || newRule.type === 'ej2-table') {
+                    newRule.props.config = newRule  // 传递完整 rule 配置
+                    newRule.props.data = data       // 传递页面数据
+                    console.log(`📊 [EJ2 Grid 数据绑定] dataKey="${newRule.dataKey}"`, { config: newRule, data })
+                } else {
+                    // Element Plus 组件
+                    newRule.props.data = value
+                    console.log(`📊 [数据绑定] ${newRule.type} dataKey="${newRule.dataKey}" 绑定数据:`, value)
+                }
                 
                 // 🌲 el-tree 特殊处理：绑定 expandedKeys 和 currentNodeKey
                 if (newRule.type === 'el-tree') {
@@ -536,14 +565,23 @@ const loadApiData = async (key: string, config: ApiConfig): Promise<void> => {
 // - 丢失组件状态（选中、输入焦点、滚动位置等）
 // - 可能导致闪烁
 let rebindTimer: ReturnType<typeof setTimeout> | null = null
-const rebindRules = (): void => {
+const rebindRules = (immediate = false): void => {
     if (rebindTimer) clearTimeout(rebindTimer)
-    rebindTimer = setTimeout(() => {
+    
+    const doRebind = () => {
         if (originalRules.value && originalRules.value.length > 0) {
-            console.log('🔄 [Debounce] 重新绑定数据到 rules')
+            console.log(`🔄 [${immediate ? 'Immediate' : 'Debounce'}] 重新绑定数据到 rules`)
             pageRules.value = bindDataToRules(JSON.parse(JSON.stringify(originalRules.value)), pageData)
         }
-    }, 20) // 20ms 延迟，合并同步更新
+    }
+    
+    if (immediate) {
+        // 立即执行，用于首次加载和路由切换
+        doRebind()
+    } else {
+        // 防抖延迟，用于数据变化
+        rebindTimer = setTimeout(doRebind, 20)
+    }
 }
 
 // 保存原始数据配置（用于刷新）
@@ -645,8 +683,8 @@ const loadPageConfig = async () => {
         // 这样可以确保 __init__ 触发数据加载时，订阅者已经就绪
         originalRules.value = config.rule as Rule[]
         
-        // 绑定数据到 rules
-        pageRules.value = bindDataToRules(config.rule as Rule[], pageData)
+        // ⚠️ 延迟 bindDataToRules，等模块加载后再绑定（避免渲染函数未找到）
+        // pageRules.value = bindDataToRules(config.rule as Rule[], pageData)
     
         // 自动订阅所有表（必须在 __init__ 之前）
         if (dataSet && originalRules.value) {
@@ -714,14 +752,16 @@ const loadPageConfig = async () => {
                     ;(scriptModule.__init__ as Function)()
                 }
                 
-                // ✅ 模块加载完成后，重新绑定规则以解析渲染函数
-                rebindRules()
+                // ✅ 模块加载完成后，立即绑定规则以解析渲染函数（避免防抖延迟）
+                rebindRules(true)
                 console.log('✅ 模块加载后重新绑定规则完成')
             }
         } catch (err) {
             console.error('❌ 页面模块加载失败:', err)
             console.error('尝试加载:', `../pages-config/${currentPageId}/script.js`)
             pageFunctions.value = {}
+            // ⚠️ 即使模块加载失败，也要立即绑定数据
+            rebindRules(true)
         }
 
         // 加载页面样式（自动添加作用域隔离）
@@ -738,6 +778,19 @@ const loadPageConfig = async () => {
 // 表单挂载回调
 const onFormMounted = (api: FormCreateAPI) => {
     formApi.value = api
+    
+    // 🔑 注册 EJ2 自定义组件到 form-create
+    api.component('ejs-grid', EJ2TableRenderer)
+    api.component('ej2-grid', EJ2TableRenderer)
+    api.component('ej2-table', EJ2TableRenderer)
+    
+    // 注册占位符组件（e-columns/e-column 不需要实际渲染）
+    const PlaceholderComponent = { render: () => null }
+    api.component('e-columns', PlaceholderComponent)
+    api.component('e-column', PlaceholderComponent)
+    
+    console.log('✅ EJ2 组件已注册到 form-create')
+    
     // 🔑 暴露 formApi 供 pageScripts 使用
     if (typeof window !== 'undefined') {
         window.__formApi__ = api
