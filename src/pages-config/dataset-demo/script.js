@@ -1,5 +1,5 @@
 ﻿import { $data, $dataSet, $rebindRules } from '@/utils/page-helpers/common.js'
-import { FilterExpressionParser } from '@/utils/parsers/filterExpressionParser'
+import { FilterExpressionParser } from '@/models/filterExpressionParser'
 import { ElMessage } from 'element-plus'
 
 // Mock 数据加载器（模拟 API 请求）

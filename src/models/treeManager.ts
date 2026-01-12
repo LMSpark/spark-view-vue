@@ -10,8 +10,8 @@ import type {
   NestedTreeNode,
   FlatTreeCache,
   TreePath
-} from '../../types/dataset'
-import type { BindingContext } from '../../models/bindingContext'
+} from '../types/dataset'
+import type { BindingContext } from './bindingContext'
 
 /**
  * 树管理器类

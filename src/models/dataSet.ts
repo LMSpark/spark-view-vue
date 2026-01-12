@@ -15,7 +15,7 @@ import type {
 } from '../types/dataset'
 import { DataTable } from './dataTable'
 import { BindingContext } from './bindingContext'
-import { FilterExpressionParser } from '../utils/parsers/filterExpressionParser'
+import { FilterExpressionParser } from './filterExpressionParser'
 
 /**
  * DataSet 类（实现 IDataSet 接口 + 方法逻辑）

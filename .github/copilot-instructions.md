@@ -8,10 +8,11 @@ This is a **configuration-driven Vue 3 SSR application** with **strong kernel + 
 ## Core Architecture Principles
 
 ### 1. Strong Kernel + Low-Code Philosophy
-- **Powerful Kernel**: DynamicPage.vue + DataSetManager handle all complex logic
+- **Powerful Kernel**: DynamicPage.vue + DataSet handle all complex logic
 - **Low-Code Pages**: Page scripts focus on business logic only
-- **Complete Decoupling**: UI ↔ DataSetManager ↔ Data via observer pattern
+- **Complete Decoupling**: UI ↔ DataSet ↔ Data via observer pattern
 - **Zero Initialization**: Kernel auto-detects and initializes everything
+- **DataSet Architecture**: DataSet (domain logic) contains DataTable (structure) which extends BindingContext (view)
 
 ### 2. Single Component Architecture
 - **Only one view component**: `src/views/DynamicPage.vue`
@@ -312,7 +313,7 @@ const filteredRows = filterChildRows(sourceData, ...);
 - Function returns immediately (non-blocking)
 - Never directly manipulate data or wait for loading
 
-**DataSet Layer (DataSetManager)**:
+**DataSet Layer (DataSet class)**:
 - Async processing: `_requestTableDataAsync()` 
 - Smart dependency analysis: root table detection, dependency chain
 - Notify subscribers when data ready: `notifySubscribers(tableName)`
@@ -327,13 +328,13 @@ const filteredRows = filterChildRows(sourceData, ...);
 **Timing Sequence (CRITICAL)**:
 ```
 1. processPageData()           - Initialize data (empty arrays)
-2. initDataSetManager()        - Create manager instance
+2. initDataSet()               - Create DataSet instance
 3. originalRules.value = ...   - Save rules config
 4. autoSubscribeTables()       - Register subscribers (MUST be before __init__)
 5. Load module
 6. __init__()                  - Register dataLoader + event listeners
 7. User clicks button          - Trigger requestTableData()
-8. Async loading              - Manager loads data in background
+8. Async loading              - DataSet loads data in background
 9. notifySubscribers()        - Trigger callbacks
 10. rebindRules()             - UI auto-updates via Vue reactivity
 ```
@@ -504,7 +505,7 @@ export function handleDeleteUser(user, index) {
 3. **DON'T** modify `src/app.ts` for page-specific logic - use page scripts
 4. **DON'T** use `.vue` files for pages - everything is JSON-driven
 5. **DON'T** import page data directly in scripts - use `$data()` for reactivity
-6. **DON'T** manually initialize DataSetManager - kernel does it automatically
+6. **DON'T** manually initialize DataSet - kernel does it automatically
 7. **DON'T** manually call rebindRules after data changes - subscription handles it
 8. **DON'T** use `await` when calling `requestTableData()` - breaks decoupling
 9. **DON'T** call `formApi.refresh()` manually - rely on Vue reactivity
@@ -513,12 +514,13 @@ export function handleDeleteUser(user, index) {
 12. **DON'T** forget to call `notifySubscribers()` after manual data manipulation
 13. **DON'T** directly assign `table.rows = []` for clearing - use `splice()` for Vue reactivity
 14. **DON'T** write event handlers for currentChange/selectionChange - kernel auto-injects them
-15. **DON'T** modify `table._originalRows` directly - it's managed by DataSetManager automatically
+15. **DON'T** modify `table._originalRows` directly - it's managed by DataSet automatically
+16. **DON'T** hardcode business rules (permissions, states) in frontend - read from backend response data
 
 ## Key Takeaways for AI Agents
 
 1. **Think "Low-Code First"**: Page scripts should have minimal code, kernel handles complexity
-2. **Complete Decoupling**: UI requests don't wait, DataSetManager notifies when ready
+2. **Complete Decoupling**: UI requests don't wait, DataSet notifies when ready
 3. **Non-Blocking First**: Never use `await` on `requestTableData()` in UI layer
 4. **Subscribers Before Requests**: Auto-subscribe must happen before `__init__()`
 5. **Original Data Cache**: Kernel auto-caches `_originalRows` on first load, filtering always uses full dataset 
@@ -533,15 +535,27 @@ export function handleDeleteUser(user, index) {
 13. **Auto-Sync Magic**: Kernel injects event handlers, zero code for currentRow/selectedRows sync
 14. **Master-Detail Zero Code**: Set `autoLoad: true`, kernel handles entire flow
 11. **Event-Driven**: Parent notifies children, children decide autonomously
-12. **__init__ for Setup**: Use `__init__()` to register dataLoader and event listeners, not for data requests
+13. **Data-Driven UI**: All business rules (permissions, states, etc.) computed by backend and returned in data, frontend only renders
 ### Observer Pattern Implementation
 ```
 UI (Rules with dataKey) 
   ↓ auto-scanned by kernel
 Subscribe to Tables
   ↓ data changes
-DataSetManager.notifySubscribers()
+DataSet.notifySubscribers()
   ↓ triggers callbacks
+rebindRules() → UI updates
+```
+
+### Data-Driven UI Pattern (including permissions)
+```javascript
+// Backend returns: { id: 1, name: 'xxx', _perm: { canDelete: true } }
+
+// ✅ Frontend reads and renders
+if (row._perm?.canDelete) showDeleteButton()
+
+// ❌ DON'T hardcode rules
+if (user.role === 'admin') showDeleteButton()
 rebindRules() → UI updates
 ```
 
@@ -562,21 +576,25 @@ Auto-update via rebindRules()
 
 ## Quick References
 
+### Core Documentation
 - Architecture deep-dive: `docs/architecture/README_ARCHITECTURE.md`
 - Project structure: `docs/architecture/PROJECT_STRUCTURE.md`
 - Best practices: `docs/BEST_PRACTICES.md`
 - SSR documentation: `docs/architecture/README_SSR.md`
 - Tree architecture: `docs/dataset/README_TREE.md`
 - Data isolation: `docs/architecture/Data-Isolation.md`
-- Example configs: 
-  - Basic page: `src/pages-config/home/`
-  - DataSet with cascade: `src/pages-config/cascade-demo/`
-  - Smart dependency loading: `src/pages-config/smart-load/`
-  - Master-Detail pattern: `src/pages-config/master-detail/`
-  - Tree view: `src/pages-config/tree-demo/`
+
+### Example Configurations
+- Basic page: `src/pages-config/home/`
+- DataSet with cascade: `src/pages-config/cascade-demo/`
+- Smart dependency loading: `src/pages-config/smart-load/`
+- Master-Detail pattern: `src/pages-config/master-detail/`
+- Tree view: `src/pages-config/tree-demo/`
+
+### Type Definitions & Core Implementations
 - Type definitions: `src/types/index.ts`
-- DataSet types: `src/types/pageData.ts`
-- Kernel implementation: `src/models/dataSetManager.ts`
+- DataSet types: `src/types/dataset.ts`
+- Kernel implementation: `src/models/dataSet.ts`
 - UI kernel: `src/views/DynamicPage.vue`
 - Tree manager: `src/utils/managers/treeManager.ts`
 - Filter parser: `src/utils/parsers/filterExpressionParser.ts`

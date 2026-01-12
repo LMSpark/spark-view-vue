@@ -1,4 +1,4 @@
-﻿import { $dataSet } from '@/utils/page-helpers/common.js'
+﻿import { $dataSet, $data, $rebindRules } from '@/utils/page-helpers/common.js'
 import { ElMessage } from 'element-plus'
 
 // Mock 数据加载器
@@ -50,8 +50,37 @@ export function __init__() {
     ElMessage.error(`❌ ${tableName} 加载失败: ${error.message}`)
   })
   
+  // 监听 Users 表的 currentRow 变化，自动更新 JSON 显示
+  dataSet.on('currentRowChanged', ({ tableName, row }) => {
+    if (tableName === 'Users') {
+      const pageData = $data()
+      const jsonText = row ? JSON.stringify(row, null, 2) : '未选择行'
+      pageData.currentRowJson = jsonText
+      console.log('📝 [CurrentRow] JSON 已更新:', jsonText.substring(0, 50) + '...')
+      
+      // 手动触发 UI 更新
+      $rebindRules()
+    }
+  })
+  
   console.log('✅ [Master-Detail] 初始化完成')
 }
 
-
+/**
+ * 自定义渲染函数：显示 currentRow
+ */
+export function RenderCurrentRow() {
+  const { h } = window.Vue
+  const dataSet = $dataSet()
+  const currentRow = dataSet?.getTable('Users')?.currentRow
+  
+  return h('pre', {
+    style: {
+      background: '#f5f5f5',
+      padding: '10px',
+      borderRadius: '4px',
+      margin: 0
+    }
+  }, currentRow ? JSON.stringify(currentRow, null, 2) : 'null')
+}
 

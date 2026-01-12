@@ -5,7 +5,7 @@
  */
 
 import type { DataRow, IBindingContext, FilterExpression, SortExpression, ITreeManager } from '../types/dataset'
-import { FilterExpressionParser } from '../utils/parsers/filterExpressionParser'
+import { FilterExpressionParser } from './filterExpressionParser'
 
 /**
  * DataSet 接口（前向声明，避免循环依赖）

@@ -167,7 +167,9 @@ docker run -d -p 3000:3000 form-create-ssr
 3. 自动通过 DynamicPage.vue 渲染
 
 ## � 文档索引
-
+### 🚀 快速开始
+- **[项目概览](docs/PROJECT_OVERVIEW.md)** - 5 分钟了解整个项目 ⭐
+- [SSR 快速开始](docs/guides/QUICKSTART_SSR.md) - SSR 开发入门
 ### 🏗️ 架构设计
 - [架构总览](docs/architecture/README_ARCHITECTURE.md) - 完整架构设计说明
 - [项目结构规范](docs/architecture/PROJECT_STRUCTURE.md) - 文件组织和命名规范
@@ -189,6 +191,14 @@ docker run -d -p 3000:3000 form-create-ssr
 - [异步数据加载](docs/guides/ASYNC_DATA_LOADING.md) - 异步数据处理
 - [智能加载演示](docs/guides/SMART_LOAD_DEMO.md) - 智能依赖加载
 - [速查手册](docs/guides/ASYNC_DATA_QUICK_REF.md) - API 快速参考
+
+### 🎯 演示页面
+- `/` - 首页演示
+- `/dataset-demo` - DataSet 基础演示
+- `/cascade-demo` - 级联操作演示
+- `/smart-load` - 智能加载演示
+- `/master-detail` - 主从表演示
+- `/tree-demo` - 树形结构演示
 
 ## �📄 License
 
