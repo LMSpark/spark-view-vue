@@ -29,6 +29,8 @@ interface Props {
   allowPdfExport?: any  // boolean or object from form-create
   enableVirtualization?: any  // boolean or object from form-create
   showColumnChooser?: any  // boolean or object from form-create
+  height?: any  // number, string or object from form-create
+  width?: any  // number, string or object from form-create
   toolbar?: any  // can be array or object from form-create
   pageSettings?: {
     pageSize?: number
@@ -126,6 +128,8 @@ const handleRowSelected = (args: any) => {
   <div class="ej2-grid-wrapper">
     <ejs-grid
       :data-source="gridData"
+      :height="height"
+      :width="width"
       :allow-paging="allowPaging"
       :allow-sorting="allowSorting"
       :allow-filtering="allowFiltering"
