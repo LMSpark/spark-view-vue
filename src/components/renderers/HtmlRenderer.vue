@@ -1,8 +1,20 @@
+<template>
+  <component
+    :is="config.type"
+    :class="config.class"
+    :style="config.style"
+    v-bind="htmlAttrs"
+  >
+    <!-- 默认插槽：渲染子节点 -->
+    <slot />
+  </component>
+</template>
+
 <script lang="ts">
-import { defineComponent, h } from 'vue'
+import { defineComponent, computed } from 'vue'
 
 /**
- * HtmlRenderer - 通用 HTML 元素渲染器 (Vue 3 渲染函数版本)
+ * HtmlRenderer - 通用 HTML 元素渲染器 (Vue 3 模板版本)
  * 用于渲染 div, h1, h2, p, span 等普通 HTML 元素
  */
 export default defineComponent({
@@ -21,24 +33,16 @@ export default defineComponent({
       default: () => ({})
     }
   },
-  render() {
-    const { config } = this
-    const { type, children: _children, ...attrs } = config
-    
-    // 提取 HTML 属性（class, style 等）
-    const htmlAttrs: any = {}
-    if (attrs.class) htmlAttrs.class = attrs.class
-    if (attrs.style) htmlAttrs.style = attrs.style
-    
-    // 处理其他属性
-    Object.keys(attrs).forEach(key => {
-      if (key !== 'class' && key !== 'style') {
-        htmlAttrs[key] = attrs[key]
-      }
+  setup(props) {
+    // 提取 HTML 属性（排除 type, children, class, style）
+    const htmlAttrs = computed(() => {
+      const { type: _type, children: _children, class: _, style: __, ...attrs } = props.config
+      return attrs
     })
     
-    // 渲染元素和子节点（子节点已由 DynamicRenderer 处理）
-    return h(type, htmlAttrs, this.$slots.default?.())
+    return {
+      htmlAttrs
+    }
   }
 })
 </script>

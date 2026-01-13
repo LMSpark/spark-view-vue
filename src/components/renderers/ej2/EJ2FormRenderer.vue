@@ -1,5 +1,17 @@
+<template>
+  <div class="e-form-container">
+    <div class="e-form-header">
+      {{ config.title || '表单' }}
+    </div>
+    <div class="e-form-body">
+      <!-- 默认插槽：表单内容 -->
+      <slot />
+    </div>
+  </div>
+</template>
+
 <script lang="ts">
-import { defineComponent, h } from 'vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'EJ2FormRenderer',
@@ -10,20 +22,6 @@ export default defineComponent({
     },
     parentType: String,
     data: Object
-  },
-  setup(props, { slots }) {
-    return () => {
-      return h('div', {
-        class: 'e-form-container'
-      }, [
-        h('div', {
-          class: 'e-form-header'
-        }, props.config.title || '表单'),
-        h('div', {
-          class: 'e-form-body'
-        }, slots.default?.())
-      ])
-    }
   }
 })
 </script>

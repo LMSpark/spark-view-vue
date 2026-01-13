@@ -30,6 +30,7 @@
             "type": "ejs-grid",
             "dataKey": "users",
             "props": {
+              "height": 350,
               "allowPaging": true,
               "allowSorting": true,
               "allowFiltering": false,
@@ -117,6 +118,7 @@
             "type": "ejs-grid",
             "dataKey": "orders",
             "props": {
+              "height": 400,
               "allowPaging": true,
               "allowSorting": true,
               "allowFiltering": true,
