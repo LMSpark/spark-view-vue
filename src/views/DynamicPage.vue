@@ -26,7 +26,7 @@ import {getPageConfig} from '../api'
 import type {PageRule, ApiConfig, DataRow} from '../types'
 import { DataSetManager } from '../models/dataSetManager'
 import type { DataSet } from '../models/dataSet'
-import EJ2TableRenderer from '../components/renderers/ej2/TableRenderer.vue'
+import EJ2TableRenderer from '../components/renderers/ej2/EJ2TableRenderer.vue'
 
 // 注意：Element Plus 组件已由 @form-create/element-ui 内部注册
 // app.use(formCreate) 时会自动注册所有组件，无需手动导入
@@ -292,6 +292,8 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                             fn(...args)  // 传递所有参数
                         } else {
                             console.warn(`函数 ${handler} 未定义`)
+                            console.log('当前可用函数:', Object.keys(pageFunctions.value))
+                            console.log('pageFunctions.value:', pageFunctions.value)
                         }
                     }
                 } else {
@@ -424,22 +426,14 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                 console.log(`🔍 [Debug] dataKey="${newRule.dataKey}" 解析结果:`, value, typeof value)
             }
       
-            if ((newRule.type === 'el-table' || newRule.type === 'el-tree' || newRule.type === 'ejs-grid' || newRule.type === 'ej2-grid' || newRule.type === 'ej2-table')) {
-                // 🔑 el-table、el-tree 和 EJ2 Grid 都使用 data 属性（但 EJ2 用 config 传递配置）
+            if ((newRule.type === 'el-table' || newRule.type === 'el-tree')) {
+                // 🔑 el-table、el-tree 使用 data 属性
                 if (!newRule.props) {
                     newRule.props = {}
                 }
                 
-                // 🎯 EJ2 Grid: 传递完整配置和数据
-                if (newRule.type === 'ejs-grid' || newRule.type === 'ej2-grid' || newRule.type === 'ej2-table') {
-                    newRule.props.config = newRule  // 传递完整 rule 配置
-                    newRule.props.data = data       // 传递页面数据
-                    console.log(`📊 [EJ2 Grid 数据绑定] dataKey="${newRule.dataKey}"`, { config: newRule, data })
-                } else {
-                    // Element Plus 组件
-                    newRule.props.data = value
-                    console.log(`📊 [数据绑定] ${newRule.type} dataKey="${newRule.dataKey}" 绑定数据:`, value)
-                }
+                newRule.props.data = value
+                console.log(`📊 [数据绑定] ${newRule.type} dataKey="${newRule.dataKey}" 绑定数据:`, value)
                 
                 // 🌲 el-tree 特殊处理：绑定 expandedKeys 和 currentNodeKey
                 if (newRule.type === 'el-tree') {
@@ -450,6 +444,13 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                         newRule.props.currentNodeKey = data.currentNodeKey
                     }
                 }
+            } else if (newRule.type === 'ejs-grid' || newRule.type === 'ej2-grid' || newRule.type === 'ej2-table') {
+                // 🎯 EJ2 Grid: 递归渲染方式，直接设置 dataSource
+                if (!newRule.props) {
+                    newRule.props = {}
+                }
+                newRule.props.dataSource = value
+                console.log(`📊 [EJ2 Grid 递归渲染] type="${newRule.type}" dataKey="${newRule.dataKey}"`, { dataSource: Array.isArray(value) ? value.slice(0, 2) : value })
             } else if (newRule.type === 'el-input' && newRule.props) {
                 // 🔤 el-input 绑定 modelValue
                 newRule.props.modelValue = value
@@ -713,6 +714,8 @@ const loadPageConfig = async () => {
             if (!moduleLoader) {
                 console.warn(`⚠️ 页面模块不存在: ${modulePath}，跳过脚本加载`)
                 pageFunctions.value = {}
+                // ⚠️ 即使没有模块，也要立即绑定数据
+                rebindRules(true)
             } else {
                 // 调用加载器函数获取模块
                 const scriptModule = await moduleLoader() as Record<string, unknown>
@@ -780,14 +783,21 @@ const onFormMounted = (api: FormCreateAPI) => {
     formApi.value = api
     
     // 🔑 注册 EJ2 自定义组件到 form-create
-    api.component('ejs-grid', EJ2TableRenderer)
-    api.component('ej2-grid', EJ2TableRenderer)
-    api.component('ej2-table', EJ2TableRenderer)
+     
+    const apiAny = api as any
+    // eslint-disable-next-line vue/component-definition-name-casing
+    apiAny.component('ejs-grid', EJ2TableRenderer)
+    // eslint-disable-next-line vue/component-definition-name-casing
+    apiAny.component('ej2-grid', EJ2TableRenderer)
+    // eslint-disable-next-line vue/component-definition-name-casing
+    apiAny.component('ej2-table', EJ2TableRenderer)
     
     // 注册占位符组件（e-columns/e-column 不需要实际渲染）
     const PlaceholderComponent = { render: () => null }
-    api.component('e-columns', PlaceholderComponent)
-    api.component('e-column', PlaceholderComponent)
+    // eslint-disable-next-line vue/component-definition-name-casing
+    apiAny.component('e-columns', PlaceholderComponent)
+    // eslint-disable-next-line vue/component-definition-name-casing
+    apiAny.component('e-column', PlaceholderComponent)
     
     console.log('✅ EJ2 组件已注册到 form-create')
     

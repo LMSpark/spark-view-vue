@@ -6,10 +6,14 @@ import App from './App.vue'
 import './style.css'
 import type { Router } from 'vue-router'
 
-// ✅ EJ2 插件（SSR 支持，Grid 通过 DynamicPage 注册）
+// ✅ EJ2 注册码
+import { registerLicense } from '@syncfusion/ej2-base'
+registerLicense('Ngo9BigBOggjHTQxAR8/V1JGaF5cXGpCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdlWX5eeXRRQ2hdVUZzWURWYEs=')
+
+// ✅ EJ2 插件（SSR 支持，Grid 使用递归渲染）
 import { TextBoxPlugin, NumericTextBoxPlugin } from '@syncfusion/ej2-vue-inputs'
 import { DatePickerPlugin } from '@syncfusion/ej2-vue-calendars'
-import EJ2TableRenderer from './components/renderers/ej2/TableRenderer.vue'
+import { GridPlugin } from '@syncfusion/ej2-vue-grids'
 
 /**
  * 创建 Vue 应用实例（客户端和服务端共用）
@@ -20,16 +24,12 @@ export function createApp() {
     // 必须先注册 Element Plus，form-create 才能使用这些组件
     app.use(ElementPlus)
     
-    // ✅ 在 formCreate 之前全局注册 EJ2 组件到 Vue
-    app.component('ejs-grid', EJ2TableRenderer)
-    app.component('ej2-grid', EJ2TableRenderer)
-    app.component('ej2-table', EJ2TableRenderer)
-    app.component('e-columns', { render: () => null })
-    app.component('e-column', { render: () => null })
+    // ✅ 使用 EJ2 GridPlugin（递归渲染方式）
+    app.use(GridPlugin)
     
     app.use(formCreate)
     
-    // ✅ 注册 EJ2 插件（不注册 GridPlugin，避免冲突）
+    // ✅ 注册其他 EJ2 插件
     app.use(TextBoxPlugin)
     app.use(NumericTextBoxPlugin)
     app.use(DatePickerPlugin)
