@@ -8,6 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const isProduction = process.env.NODE_ENV === 'production'
 const port = process.env.PORT || 3000
 
+// 生产环境性能优化
+if (isProduction) {
+    process.env.NODE_ENV = 'production'
+}
+
 async function createServer() {
     const app = express()
 
@@ -66,6 +71,11 @@ async function createServer() {
     app.listen(port, () => {
         console.log(`🚀 Server running at http://localhost:${port}`)
         console.log(`📦 Mode: ${isProduction ? 'production' : 'development'}`)
+        
+        if (isProduction) {
+            console.log('✅ 生产环境就绪!')
+            console.log('📊 性能提示: 建议使用 PM2 或 Docker 进行进程管理')
+        }
     })
 }
 
