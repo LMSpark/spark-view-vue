@@ -6,10 +6,14 @@ import router, {setupRouter} from './router'
 import App from './App.vue'
 import './style.css'
 
+// ✅ EJ2 注册码
+import { registerLicense } from '@syncfusion/ej2-base'
+registerLicense('Ngo9BigBOggjHTQxAR8/V1JGaF5cXGpCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdlWX5eeXRRQ2hdVUZzWURWYEs=')
+
 // ✅ EJ2 插件（Grid 通过 DynamicPage 的 formCreateOption.global 注册）
 import { TextBoxPlugin, NumericTextBoxPlugin } from '@syncfusion/ej2-vue-inputs'
 import { DatePickerPlugin } from '@syncfusion/ej2-vue-calendars'
-import EJ2TableRenderer from './components/renderers/ej2/TableRenderer.vue'
+import EJ2TableRenderer from './components/renderers/ej2/EJ2TableRenderer.vue'
 
 const app = createApp(App)
 
@@ -17,11 +21,13 @@ const app = createApp(App)
 app.use(ElementPlus)
 
 // ✅ 在 formCreate 之前全局注册 EJ2 组件到 Vue
+/* eslint-disable vue/component-definition-name-casing, vue/one-component-per-file */
 app.component('ejs-grid', EJ2TableRenderer)
 app.component('ej2-grid', EJ2TableRenderer)
 app.component('ej2-table', EJ2TableRenderer)
 app.component('e-columns', { render: () => null })
 app.component('e-column', { render: () => null })
+/* eslint-enable vue/component-definition-name-casing, vue/one-component-per-file */
 
 app.use(formCreate)
 

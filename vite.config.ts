@@ -24,6 +24,8 @@ export default defineConfig({
         Components({
             resolvers: [ElementPlusResolver()],
             dts: 'src/components.d.ts',
+            dirs: ['src/components'],
+            exclude: [/src\/components\/renderers\/ej2\/.*/],
         }),
         viteMockServe({
             mockPath: 'src/mock',

@@ -3,11 +3,11 @@
  * 将 type 映射到对应的 EJ2 Vue 组件
  */
 import type { Component } from 'vue'
-import TextRenderer from './TextRenderer.vue'
-import NumberRenderer from './NumberRenderer.vue'
-import DateRenderer from './DateRenderer.vue'
-import TableRenderer from './TableRenderer.vue'
-import FormRenderer from './FormRenderer.vue'
+import EJ2DateRenderer from './EJ2DateRenderer.vue'
+import EJ2NumberRenderer from './EJ2NumberRenderer.vue'
+import EJ2TableRenderer from './EJ2TableRenderer.vue'
+import EJ2FormRenderer from './EJ2FormRenderer.vue'
+import EJ2TextRenderer from './EJ2TextRenderer.vue'
 
 export interface EJ2RendererMap {
   [key: string]: Component
@@ -18,15 +18,15 @@ export interface EJ2RendererMap {
  */
 export const EJ2_RENDERER_MAP: EJ2RendererMap = {
   // 基础字段类型
-  text: TextRenderer as Component,
-  number: NumberRenderer as Component,
-  date: DateRenderer as Component,
-  datetime: DateRenderer as Component,
+  text: EJ2TextRenderer as Component,
+  number: EJ2NumberRenderer as Component,
+  date: EJ2DateRenderer as Component,
+  datetime: EJ2DateRenderer as Component,
   
   // 容器类型
-  'ej2-table': TableRenderer,
-  'ej2-grid': TableRenderer, // 别名
-  form: FormRenderer,
+  'ej2-table': EJ2TableRenderer,
+  'ej2-grid': EJ2TableRenderer, // 别名
+  form: EJ2FormRenderer,
 }
 
 /**
@@ -35,7 +35,7 @@ export const EJ2_RENDERER_MAP: EJ2RendererMap = {
  * @returns 对应的 Vue 组件，如果未找到则返回 TextRenderer
  */
 export function getEJ2Renderer(type: string): Component {
-  return EJ2_RENDERER_MAP[type] || TextRenderer
+  return EJ2_RENDERER_MAP[type] || EJ2TextRenderer
 }
 
 /**

@@ -42,9 +42,11 @@ export const setupRouter = async () => {
         // 动态添加路由
         routes.forEach(route => {
             router.addRoute(route)
+            console.log('➕ 注册路由:', route.path, '→', route.name)
         })
         
         console.log('✅ 动态路由加载成功:', routes.length, '个路由')
+        console.log('📋 所有路由:', router.getRoutes().map(r => r.path))
     } catch (error) {
         console.error('❌ 加载路由配置失败:', error)
         // 添加默认路由作为降级方案

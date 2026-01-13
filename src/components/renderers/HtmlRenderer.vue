@@ -23,7 +23,7 @@ export default defineComponent({
   },
   render() {
     const { config } = this
-    const { type, ...attrs } = config
+    const { type, children: _children, ...attrs } = config
     
     // 提取 HTML 属性（class, style 等）
     const htmlAttrs: any = {}

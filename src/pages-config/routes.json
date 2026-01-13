@@ -9,6 +9,15 @@
     }
   },
   {
+    "path": "/ej2-test",
+    "name": "ej2-test",
+    "pageId": "ej2-test",
+    "meta": {
+      "title": "EJ2 官方测试",
+      "icon": "🧪"
+    }
+  },
+  {
     "path": "/async-demo",
     "name": "async-demo",
     "pageId": "async-demo",

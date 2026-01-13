@@ -9,7 +9,7 @@
         "children": [
           {
             "type": "h1",
-            "children": ["EJ2 Grid 企业级表格演示"]
+            "children": ["⚡ EJ2 Grid 演示 - 企业级功能"]
           },
           {
             "type": "p",
@@ -28,8 +28,8 @@
           },
           {
             "type": "ejs-grid",
+            "dataKey": "users",
             "props": {
-              "dataSource": { "dataKey": "users" },
               "allowPaging": true,
               "allowSorting": true,
               "allowFiltering": false,
@@ -115,8 +115,8 @@
           },
           {
             "type": "ejs-grid",
+            "dataKey": "orders",
             "props": {
-              "dataSource": { "dataKey": "orders" },
               "allowPaging": true,
               "allowSorting": true,
               "allowFiltering": true,

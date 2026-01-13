@@ -1,8 +1,8 @@
 <script lang="ts">
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, type Component } from 'vue'
 import { getEJ2Renderer } from './renderer-map'
 
-export default defineComponent({
+const EJ2DynamicRenderer: Component = defineComponent({
   name: 'EJ2DynamicRenderer',
   props: {
     rule: {
@@ -39,4 +39,6 @@ export default defineComponent({
     }
   }
 })
+
+export default EJ2DynamicRenderer
 </script>
