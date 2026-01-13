@@ -16,7 +16,10 @@
   "scripts": {
     "dev": "vite",
     "dev:ssr": "tsx server.ts",
+    "start": "cross-env NODE_ENV=production node --loader tsx/esm server.ts",
+    "start:spa": "vite preview --port 3000",
     "build": "vue-tsc --noEmit && vite build",
+    "build:spa": "vue-tsc --noEmit && vite build",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.ts --outDir dist/server",
     "build:ssr": "vue-tsc --noEmit && npm run build:client && npm run build:server",

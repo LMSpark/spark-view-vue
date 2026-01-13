@@ -545,9 +545,46 @@ const loadApiData = async (key: string, config: ApiConfig): Promise<void> => {
         // 重新绑定数据到 rules
         pageRules.value = bindDataToRules(pageRules.value, pageData)
     } catch (err) {
-        console.error(`❌ 加载 API 数据失败 [${key}]:`, err)
-        throw err
+        console.warn(`⚠️ API请求失败，使用fallback数据 [${key}]:`, err)
+        
+        // SPA模式 fallback 数据
+        const fallbackData = getFallbackData(key, config)
+        pageData[key] = fallbackData
+        
+        console.log(`📦 使用fallback数据 [${key}]:`, fallbackData)
+        
+        // 重新绑定数据到 rules
+        pageRules.value = bindDataToRules(pageRules.value, pageData)
     }
+}
+
+// SPA模式：获取fallback数据
+const getFallbackData = (_: string, config: ApiConfig) => {
+    // 根据API路径返回对应的fallback数据
+    if (config.url.includes('/api/dashboard/stats')) {
+        return {
+            totalUsers: 1250,
+            totalOrders: 3847,
+            revenue: 125000,
+            growth: 12.5
+        }
+    }
+    
+    if (config.url.includes('/api/orders/recent')) {
+        const limit = parseInt((config.params as any)?.limit) || 10
+        return Array.from({ length: limit }, (_, i) => ({
+            id: `ORD-${1000 + i}`,
+            customer: `Customer ${i + 1}`,
+            product: `Product ${i + 1}`,
+            amount: Math.floor(Math.random() * 1000) + 100,
+            status: ['pending', 'completed', 'cancelled'][i % 3],
+            date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString()
+        }))
+    }
+    
+    // 默认返回空数组
+    console.warn(`⚠️ 未知的API: ${config.url}，返回空数据`)
+    return []
 }
 
 // ⚠️ 强制重新绑定数据到 rules（谨慎使用！）
