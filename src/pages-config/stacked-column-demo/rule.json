@@ -25,6 +25,11 @@
       "pageSettings": { "pageSize": 5 },
       "allowSorting": true,
       "allowFiltering": true,
+      "on": {
+        "dataBound": "dataBound",
+        "queryCellInfo": "queryCellInfo",
+        "recordDoubleClick": "handleRowDoubleClick"
+      },
       "children": [
         {
           "field": "OrderID",
@@ -89,6 +94,10 @@
       "allowPaging": true,
       "pageSettings": { "pageSize": 5 },
       "allowSorting": true,
+      "on": {
+        "dataBound": "dataBound",
+        "queryCellInfo": "queryCellInfo"
+      },
       "children": [
         {
           "field": "OrderID",
@@ -189,6 +198,13 @@
       "allowResizing": true,
       "allowSorting": true,
       "toolbar": ["ExcelExport", "PdfExport"],
+      "allowExcelExport": true,
+      "allowPdfExport": true,
+      "on": {
+        "dataBound": "dataBound",
+        "queryCellInfo": "queryCellInfo",
+        "toolbarClick": "handleToolbarClick"
+      },
       "children": [
         {
           "field": "OrderID",

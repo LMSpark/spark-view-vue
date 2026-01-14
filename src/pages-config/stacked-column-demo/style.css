@@ -51,26 +51,32 @@
   background-color: #f0f7ff !important;
 }
 
-/* 状态列样式 */
-.stacked-column-demo-page .e-grid .e-rowcell:has(> div:contains("Delivered")) {
+/* 状态列样式 - Delivered */
+.stacked-column-demo-page .e-grid .status-delivered {
   color: #67c23a;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.stacked-column-demo-page .e-grid .e-rowcell:has(> div:contains("Shipped")) {
+/* 状态列样式 - Shipped */
+.stacked-column-demo-page .e-grid .status-shipped {
   color: #409eff;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.stacked-column-demo-page .e-grid .e-rowcell:has(> div:contains("Processing")) {
+/* 状态列样式 - Processing */
+.stacked-column-demo-page .e-grid .status-processing {
   color: #e6a23c;
+  font-weight: 600;
+}
+
+/* 付款状态 - Paid */
+.stacked-column-demo-page .e-grid .payment-paid {
+  color: #67c23a;
   font-weight: 500;
 }
 
-.stacked-column-demo-page .e-grid .e-rowcell:has(> div:contains("Paid")) {
-  color: #67c23a;
-}
-
-.stacked-column-demo-page .e-grid .e-rowcell:has(> div:contains("Pending")) {
+/* 付款状态 - Pending */
+.stacked-column-demo-page .e-grid .payment-pending {
   color: #f56c6c;
+  font-weight: 500;
 }
