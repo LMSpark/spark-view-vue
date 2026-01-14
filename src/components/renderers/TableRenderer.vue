@@ -64,7 +64,7 @@ export default defineComponent({
     // 提取其他表格属性
     const tableAttrs = computed(() => {
       // Intentionally unused extracted props (prefixed with _)
-       
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { dataSource: _dataSource, border: _border, stripe: _stripe, highlightCurrentRow: _highlightCurrentRow, rowKey: _rowKey, maxHeight: _maxHeight, size: _size, children: _children, ...attrs } = props.config
       return attrs
     })

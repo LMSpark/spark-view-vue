@@ -1,0 +1,204 @@
+{
+  "type": "div",
+  "class": "column-chooser-page",
+  "children": [
+    {
+      "type": "h2",
+      "children": ["EJ2 Grid 列选择器演示"]
+    },
+    {
+      "type": "p",
+      "style": { "marginBottom": "16px" },
+      "children": ["演示 EJ2 Grid 的列选择器功能，支持通过 TreeView 管理层级列结构"]
+    },
+    {
+      "type": "ej2-table",
+      "id": "gridInstance",
+      "dataKey": "gridData",
+      "allowPaging": true,
+      "enableHover": false,
+      "clipMode": "EllipsisWithTooltip",
+      "allowResizing": true,
+      "allowSorting": true,
+      "allowMultiSorting": true,
+      "allowFiltering": true,
+      "filterSettings": { "type": "Excel" },
+      "showColumnChooser": true,
+      "columnChooserSettings": {
+        "enableSearching": true,
+        "template": "chooserTemplate",
+        "headerTemplate": "headerTemplate",
+        "footerTemplate": "footerTemplate"
+      },
+      "editSettings": {
+        "allowEditing": true,
+        "allowAdding": true,
+        "allowDeleting": true
+      },
+      "toolbar": ["Add", "Edit", "Delete", "Update", "Cancel", "ColumnChooser"],
+      "children": [
+        {
+          "field": "CustomerID",
+          "headerText": "Customer ID",
+          "width": 160,
+          "minWidth": 115,
+          "textAlign": "Right",
+          "showInColumnChooser": false,
+          "isPrimaryKey": true,
+          "validationRules": { "required": true, "number": true }
+        },
+        {
+          "field": "CustomerName",
+          "headerText": "Name",
+          "width": 150,
+          "minWidth": 120
+        },
+        {
+          "headerText": "Order Details",
+          "textAlign": "Center",
+          "children": [
+            {
+              "field": "OrderID",
+              "headerText": "ID",
+              "textAlign": "Right",
+              "width": 90,
+              "minWidth": 90
+            },
+            {
+              "field": "OrderDate",
+              "headerText": "Date",
+              "textAlign": "Right",
+              "width": 110,
+              "minWidth": 105,
+              "format": "yMd",
+              "editType": "datepickeredit"
+            }
+          ]
+        },
+        {
+          "headerText": "Shipping Details",
+          "textAlign": "Center",
+          "children": [
+            {
+              "field": "ShipCountry",
+              "headerText": "Country",
+              "textAlign": "Left",
+              "width": 150,
+              "minWidth": 120,
+              "editType": "dropdownedit",
+              "template": "locationTemplate",
+              "validationRules": { "required": true }
+            },
+            {
+              "field": "Freight",
+              "headerText": "Charges",
+              "textAlign": "Right",
+              "width": 130,
+              "minWidth": 115,
+              "format": "C2",
+              "editType": "numericedit",
+              "validationRules": { "required": true, "number": true }
+            }
+          ]
+        },
+        {
+          "headerText": "Delivery Status",
+          "textAlign": "Center",
+          "children": [
+            {
+              "field": "Status",
+              "headerText": "Status",
+              "textAlign": "Center",
+              "width": 150,
+              "minWidth": 120,
+              "editType": "dropdownedit",
+              "validationRules": { "required": true }
+            },
+            {
+              "field": "Feedback",
+              "headerText": "Feedback",
+              "allowResizing": false,
+              "textAlign": "Center",
+              "width": 130,
+              "minWidth": 115,
+              "template": "feedbackTemplate",
+              "editType": "numericedit",
+              "validationRules": { "required": true, "min": 0, "max": 5 }
+            }
+          ]
+        }
+      ],
+      "slots": {
+        "chooserTemplate": {
+          "type": "div",
+          "children": [
+            {
+              "type": "ej2-treeview-conditional"
+            }
+          ]
+        },
+        "headerTemplate": {
+          "type": "div",
+          "children": [
+            {
+              "type": "span",
+              "class": "e-icons e-columns",
+              "id": "column-chooser-icon"
+            },
+            {
+              "type": "span",
+              "id": "column-chooser-text",
+              "children": ["Column Options"]
+            }
+          ]
+        },
+        "footerTemplate": {
+          "type": "div",
+          "children": [
+            {
+              "type": "ej2-button",
+              "on": {
+                "click": "columnChooserSubmit"
+              },
+              "children": ["Apply"]
+            },
+            {
+              "type": "ej2-button",
+              "style": { "marginLeft": "8px" },
+              "on": {
+                "click": "columnChooserClose"
+              },
+              "children": ["Close"]
+            }
+          ]
+        },
+        "locationTemplate": {
+          "type": "div",
+          "children": [
+            {
+              "type": "span",
+              "children": ["🗺️ "]
+            },
+            {
+              "type": "span",
+              "children": ["{{data.ShipCountry}}"]
+            }
+          ]
+        },
+        "feedbackTemplate": {
+          "type": "div",
+          "id": "status",
+          "class": "rating",
+          "children": [
+            {
+              "type": "ej2-rating",
+              "readOnly": true,
+              "value": "{{data.Feedback}}",
+              "cssClass": "custom-rating"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
