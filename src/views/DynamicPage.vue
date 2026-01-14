@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import {ref, onMounted, watch, reactive, nextTick} from 'vue'
-import {useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import {getPageConfig} from '../api'
 import type {PageRule, ApiConfig, DataRow} from '../types'
 import { DataSetManager } from '../models/dataSetManager'
@@ -798,6 +798,15 @@ const loadPageConfig = async () => {
         const errorMessage = err instanceof Error ? err.message : '加载页面配置失败'
         error.value = errorMessage
         console.error('❌ 获取页面配置失败:', err)
+        // 页面不存在时自动回退到首页，避免客户端反复请求已删除页面
+        if (typeof window !== 'undefined' && errorMessage.includes('页面配置不存在')) {
+            const router = useRouter()
+            try {
+                router.replace({ path: '/' })
+            } catch (e) {
+                console.warn('无法跳转到首页:', e)
+            }
+        }
     } finally {
         loading.value = false
     }

@@ -27,15 +27,6 @@
     }
   },
   {
-    "path": "/ej2-demo",
-    "name": "ej2-demo",
-    "pageId": "ej2-demo",
-    "meta": {
-      "title": "EJ2 Grid 演示",
-      "icon": "⚡"
-    }
-  },
-  {
     "path": "/renderer-demo",
     "name": "renderer-demo",
     "pageId": "renderer-demo",
