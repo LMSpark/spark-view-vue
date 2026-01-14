@@ -13,6 +13,7 @@
  */
 import { computed } from 'vue'
 import EJ2ColumnWrapper from './EJ2ColumnWrapper.vue'
+import EJ2StackedColumnRenderer from './EJ2StackedColumnRenderer.vue'
 
 interface ColumnConfig {
   field?: string
@@ -30,6 +31,7 @@ interface ColumnConfig {
   template?: string
   isPrimaryKey?: boolean
   readonly?: boolean
+  children?: ColumnConfig[]  // 支持嵌套列（堆叠列）
   [key: string]: any
 }
 
@@ -49,15 +51,30 @@ const normalizedColumns = computed(() => {
     headerText: col.headerText || col.name
   }))
 })
+
+// 判断是否为堆叠列
+const isStackedColumn = (col: ColumnConfig) => {
+  return col.type === 'ej2-stacked-column' || 
+         col.type === 'ej2-column-group' ||
+         (col.children && col.children.length > 0 && !col.field)
+}
 </script>
 
 <template>
   <e-columns>
     <!-- 层级 1：列表级 SLOT - 自定义所有列的渲染逻辑 -->
     <slot :columns="normalizedColumns">
-      <!-- 层级 2：列级 SLOT - 使用包装组件提供更细粒度控制 -->
+      <!-- 层级 2：列级 SLOT - 区分堆叠列和普通列 -->
       <template v-for="(col, index) in normalizedColumns" :key="col.field || index">
-        <slot name="column" :column="col" :index="index">
+        <!-- 🎯 堆叠列：使用 EJ2StackedColumnRenderer -->
+        <EJ2StackedColumnRenderer
+          v-if="isStackedColumn(col)"
+          :config="col"
+          :index="index"
+        />
+        
+        <!-- 普通列：使用 EJ2ColumnWrapper -->
+        <slot v-else name="column" :column="col" :index="index">
           <!-- 层级 3：属性级 SLOT - 使用 ColumnWrapper 包装单列 -->
           <EJ2ColumnWrapper :column="col" :index="index">
             <!-- 层级 4：内容级 SLOT - 自定义单元格渲染 -->
