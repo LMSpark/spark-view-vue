@@ -1,0 +1,18 @@
+/* Form-Create API 演示页面样式 */
+
+[data-page="formcreate-api"] .button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+[data-page="formcreate-api"] .el-card {
+  margin-bottom: 20px;
+}
+
+[data-page="formcreate-api"] .api-log {
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}

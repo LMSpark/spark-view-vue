@@ -1,21 +1,40 @@
 import { MockMethod } from 'vite-plugin-mock'
-import routes from './routes.json'
+import routes from '../pages-config/routes.json'
 import fs from 'fs'
 import path from 'path'
+
+// 从 mock/database 加载模拟数据
+const loadMockData = (tableName: string) => {
+  try {
+    const dbPath = path.join(__dirname, `database/${tableName}.json`)
+    if (fs.existsSync(dbPath)) {
+      const content = fs.readFileSync(dbPath, 'utf-8')
+      return JSON.parse(content)
+    }
+  } catch (e) {
+    console.warn(`⚠️ 加载 Mock 数据失败: database/${tableName}.json`, e)
+  }
+  return []
+}
 
 // 动态导入页面配置
 const loadPageConfig = (pageId: string, type: 'rule' | 'data' | 'style') => {
   try {
     // JSON 文件使用 require
     if (type === 'rule' || type === 'data') {
-      const config = require(`./pages/${pageId}/${type}.json`)
+      const fileName = type === 'data' ? 'pagedata' : type
+      const config = require(`../pages-config/${pageId}/${fileName}.json`)
+      
+      // ✅ 按需加载：不再自动填充数据，由页面脚本的 dataLoader 负责
+      // 页面初始化时只返回空的数据结构，用户交互时才加载数据
+
       return config
     }
     
     // style 从 style.css 文件读取
     if (type === 'style') {
       try {
-        const stylePath = path.join(__dirname, `pages/${pageId}/style.css`)
+        const stylePath = path.join(__dirname, `../pages-config/${pageId}/style.css`)
         if (fs.existsSync(stylePath)) {
           return fs.readFileSync(stylePath, 'utf-8')
         }
@@ -27,7 +46,7 @@ const loadPageConfig = (pageId: string, type: 'rule' | 'data' | 'style') => {
     
     return null
   } catch {
-    console.warn(`⚠️ 未找到页面配置: pages/${pageId}/${type}`)
+    console.warn(`⚠️ 未找到页面配置: pages-config/${pageId}/${type}`)
     return type === 'rule' ? [] : type === 'data' ? {} : null
   }
 }
@@ -36,7 +55,7 @@ export default [
   {
     url: '/api/getPageConfig',
     method: 'get',
-    response: ({ query }: any) => {
+    response: ({ query }: { query: Record<string, string> }) => {
       const pageId = query.pageId || 'home'
       
       console.log('📄 加载页面配置:', pageId)
@@ -64,6 +83,45 @@ export default [
     }
   },
   // 模拟用户列表 API
+  // 模拟通用数据查询 API
+  {
+    url: '/api/data/list',
+    method: 'get',
+    response: ({ query }: { query: Record<string, string | number> }) => {
+      const { tableName, page = 1, pageSize = 20, ...filters } = query
+      
+      console.log(`🔎 [Mock API] 查询表: ${tableName}`, { page, pageSize, filters })
+      
+      if (!tableName || typeof tableName !== 'string') {
+        return { code: 400, message: 'Missing tableName', data: [] }
+      }
+
+      let rows = loadMockData(tableName)
+      
+      // 简单过滤逻辑 (模拟后端查询)
+      Object.keys(filters).forEach(key => {
+        if (key !== 'page' && key !== 'pageSize' && filters[key]) {
+          rows = rows.filter((row: Record<string, unknown>) => String(row[key]) == String(filters[key]))
+        }
+      })
+      
+      const total = rows.length
+      const start = (Number(page) - 1) * Number(pageSize)
+      const end = start + Number(pageSize)
+      const list = rows.slice(start, end)
+      
+      return {
+        code: 200,
+        message: 'success',
+        data: {
+          list,
+          total,
+          page: Number(page),
+          pageSize: Number(pageSize)
+        }
+      }
+    }
+  },
   {
     url: '/api/users',
     method: 'get',

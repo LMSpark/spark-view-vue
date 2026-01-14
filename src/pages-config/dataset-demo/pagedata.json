@@ -1,0 +1,84 @@
+﻿{
+  "dataset": {
+    "dataSetName": "UserOrderDataSet",
+    "version": 1,
+    "tables": {
+      "Users": {
+        "tableName": "Users",
+        "columns": [
+          { "name": "id", "type": "number", "isPrimaryKey": true, "label": "用户ID" },
+          { "name": "name", "type": "string", "label": "姓名" },
+          { "name": "email", "type": "string", "label": "邮箱" },
+          { "name": "status", "type": "string", "label": "状态" }
+        ],
+        "rows": [],
+        "currentRow": null,
+        "selectedRows": [],
+        "autoSelectFirst": false
+      },
+      "Orders": {
+        "tableName": "Orders",
+        "columns": [
+          { "name": "id", "type": "number", "isPrimaryKey": true, "label": "订单ID" },
+          { "name": "userId", "type": "number", "label": "用户ID" },
+          { "name": "orderNo", "type": "string", "label": "订单号" },
+          { "name": "amount", "type": "number", "label": "金额" },
+          { "name": "status", "type": "string", "label": "状态" },
+          { "name": "date", "type": "string", "label": "日期" }
+        ],
+        "rows": [],
+        "selectedRows": []
+      },
+      "OrderItems": {
+        "tableName": "OrderItems",
+        "columns": [
+          { "name": "id", "type": "number", "isPrimaryKey": true, "label": "商品ID" },
+          { "name": "orderId", "type": "number", "label": "订单ID" },
+          { "name": "productName", "type": "string", "label": "商品名称" },
+          { "name": "quantity", "type": "number", "label": "数量" },
+          { "name": "price", "type": "number", "label": "单价" }
+        ],
+        "rows": [],
+        "selectedRows": []
+      }
+    },
+    "relations": [
+      {
+        "relationName": "UserOrders",
+        "parentTable": "Users",
+        "childTable": "Orders",
+        "dependencyType": "currentRow",
+        "filterExpression": {
+          "field": "userId",
+          "op": "==",
+          "value": {
+            "func": "FIELD",
+            "args": ["id"]
+          }
+        }
+      },
+      {
+        "relationName": "OrderItems",
+        "parentTable": "Orders",
+        "childTable": "OrderItems",
+        "dependencyType": "selectedRows",
+        "autoLoad": true,
+        "filterExpression": {
+          "field": "orderId",
+          "op": "in",
+          "value": {
+            "func": "FIELD",
+            "args": ["id"]
+          }
+        }
+      }
+    ]
+  },
+  "filteredOrders": [],
+  "filteredOrderItems": [],
+  "currentUser": {
+    "label": "未选择",
+    "orderCount": 0
+  },
+  "selectedOrdersCount": 0
+}

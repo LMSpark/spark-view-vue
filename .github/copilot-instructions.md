@@ -1,4 +1,4 @@
-# Form Create SSR Application - AI Coding Agent Instructions
+﻿# Form Create SSR Application - AI Coding Agent Instructions
 
 > 注意：本文件中的路径引用使用代码格式，以便 AI 助手准确理解项目结构。
 
@@ -8,37 +8,120 @@ This is a **configuration-driven Vue 3 SSR application** with **strong kernel + 
 ## Core Architecture Principles
 
 ### 1. Strong Kernel + Low-Code Philosophy
-- **Powerful Kernel**: DynamicPage.vue + DataSetManager handle all complex logic
+- **Powerful Kernel**: DynamicPage.vue + DataSet handle all complex logic
 - **Low-Code Pages**: Page scripts focus on business logic only
-- **Complete Decoupling**: UI ↔ DataSetManager ↔ Data via observer pattern
+- **Complete Decoupling**: UI ↔ DataSet ↔ Data via observer pattern
 - **Zero Initialization**: Kernel auto-detects and initializes everything
+- **DataSet Architecture**: DataSet (domain logic) contains DataTable (structure) which extends BindingContext (view)
 
 ### 2. Single Component Architecture
 - **Only one view component**: `src/views/DynamicPage.vue`
 - All routes map to this component via `meta.pageId`
-- Pages differentiated by loading different JSON configs from `src/mock/pages/{pageId}/`
+- Pages differentiated by loading different JSON configs from `src/pages-config/{pageId}/`
 
 ### 3. Page Configuration Structure
-Each page requires exactly these files in `src/mock/pages/{pageId}/`:
+Each page requires exactly these files in `src/pages-config/{pageId}/`:
 - **`rule.json`** (required): UI structure with Element Plus components, event handlers, data bindings
-- **`data.json`** (required): Page-specific data accessible via `dataKey` in rules
-- **`script.js`** (optional): ES6 module in `src/pageScripts/{pageId}/script.js` exporting event handlers
+- **`pagedata.json`** (required): Page-specific data accessible via `dataKey` in rules
+- **`script.js`** (optional): ES6 module in `src/pages-config/{pageId}/script.js` exporting event handlers
 - **`style.css`** (optional): Scoped CSS auto-prefixed with `[data-page="{pageId}"]`
 
 ### 4. Rule.json Schema
 - Event handlers in `rule.json` reference function names as strings: `"on": { "click": "handleSubmit" }`
-- Functions must be exported from `src/pageScripts/{pageId}/script.js`:
+- Functions must be exported from `src/pages-config/{pageId}/script.js`:
   ```javascript
   export function handleSubmit() { /* logic */ }
   ```
-- Access runtime context via imports from `../common.js`:
+- Access runtime context via imports from `@/utils/page-helpers/common.js`:
   - `$api()` - form-create API instance
-  - `$data()` - page data from data.json
-  - `$dataSetManager()` - DataSetManager instance (auto-created by kernel)
+  - `$data()` - page data from pagedata.json
+  - `$dataSet()` - DataSet instance (auto-created by kernel)
   - `$route()` - current Vue route
   - `$el()` - page container element
   - `$query(selector)` / `$queryAll(selector)` - DOM query within page
   - `$rebindRules()` - manually trigger UI rebind (rarely needed)
+
+### 5. DataKey Path System (BindingContext Architecture)
+
+**Core Concept**: Everything is a view (BindingContext). DataTable IS a BindingContext (default context).
+
+**Supported Paths**:
+- **Default Context** (most common):
+  - `dataset.tables.Users.rows` - View data (filtered/paginated)
+  - `dataset.tables.Users.currentRow` - Currently selected row
+  - `dataset.tables.Users.selectedRows` - Multiple selected rows
+  
+- **Custom Contexts** (multi-view binding):
+  - `dataset.tables.Users.contexts.detail.rows` - Custom context view
+  - `dataset.tables.Users.contexts.detail.currentRow` - Custom context selection
+  
+- **Table Metadata**:
+  - `dataset.tables.Users.loading` - Loading state
+  - `dataset.tables.Users.error` - Error message
+
+**Examples**:
+```json
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Users.rows"
+}
+{
+  "type": "pre",
+  "dataKey": "dataset.tables.Users.currentRow"
+}
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Products.contexts.detail.rows",
+  "contextId": "detail"
+}
+```
+
+**Important Notes**:
+- ❌ DON'T bind `_originalRows` to UI - it's internal cache
+- ✅ DO use semantic paths like `.currentRow` instead of array indices
+- ✅ DO leverage auto-sync: Kernel injects event handlers automatically
+- 📖 Full guide: `docs/dataset/DataKey-Paths.md`
+
+### 6. Context Identifier (contextId)
+
+**Purpose**: When binding multiple UI components to the same table with independent selections.
+
+**Default Context**: DataTable itself is the default context (contextId = 'default')
+```json
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Users.rows"
+  // No contextId needed - uses default context
+}
+```
+
+**Custom Context**: For independent views of same data
+```json
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Users.contexts.detail.rows",
+  "contextId": "detail"  // Syncs with this context's currentRow/selectedRows
+}
+```
+
+**Relation Configuration**: Link contexts in pagedata.json
+```json
+{
+  "relations": [
+    {
+      "parentTable": "Users",
+      "parentContextId": "default",  // ← Use 'default' for DataTable's own context
+      "childTable": "Orders",
+      "childContextId": "default"    // ← Target context for filtered results
+    }
+  ]
+}
+```
+
+**Key Points**:
+- ✅ Always use `parentContextId` / `childContextId` (NOT `parentContextOrder`)
+- ✅ Default value is `'default'` if omitted
+- ✅ Custom contextId must match: `dataKey` path, `relation` config, and `contextId` attribute
 
 ### 7. Low-Code Pattern for DataSet Operations
 
@@ -47,8 +130,8 @@ Each page requires exactly these files in `src/mock/pages/{pageId}/`:
 **UI 发起请求（非阻塞）**：
 ```javascript
 export function handleRequestOrderDetails() {
-  const manager = $dataSetManager();
-  manager.requestTableData('OrderDetails'); // 不使用 await！
+  const dataSet = $dataSet();
+  dataSet.requestTableData('OrderDetails'); // 不使用 await！
   // 函数立即返回，数据加载在后台进行
 }
 ```
@@ -78,13 +161,13 @@ autoSubscribeTables() {
 **事件监听（可选，用于显示提示）**：
 ```javascript
 export function __init__() {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   
   // 注册数据加载器
-  manager.dataLoader = mockDataLoader;
+  dataSet.dataLoader = mockDataLoader;
   
   // 监听加载成功事件
-  manager.on('loadSuccess', ({ tableName }) => {
+  dataSet.on('loadSuccess', ({ tableName }) => {
     ElMessage.success(`✅ ${tableName} 数据加载完成！`);
   });
 }
@@ -158,11 +241,11 @@ Kernel automatically injects event handlers to sync table state:
 // DynamicPage.vue automatically injects these for el-table:
 on: {
   'current-change': (currentRow) => {
-    manager.setCurrentRow(tableName, currentRow)  // Auto-sync
+    dataSet.setCurrentRow(tableName, currentRow)  // Auto-sync
     // Triggers: notifySubscribers() → rebindRules() → UI updates
   },
   'selection-change': (selectedRows) => {
-    manager.setSelectedRows(tableName, selectedRows)  // Auto-sync
+    dataSet.setSelectedRows(tableName, selectedRows)  // Auto-sync
   }
 }
 ```
@@ -226,11 +309,11 @@ const filteredRows = filterChildRows(sourceData, ...);
 **Core Principle**: UI requests and data binding are **completely decoupled** via observer pattern.
 
 **UI Layer (script.js)**:
-- Request data: `manager.requestTableData(tableName)` - **NO await**
+- Request data: `dataSet.requestTableData(tableName)` - **NO await**
 - Function returns immediately (non-blocking)
 - Never directly manipulate data or wait for loading
 
-**DataSet Layer (DataSetManager)**:
+**DataSet Layer (DataSet class)**:
 - Async processing: `_requestTableDataAsync()` 
 - Smart dependency analysis: root table detection, dependency chain
 - Notify subscribers when data ready: `notifySubscribers(tableName)`
@@ -245,55 +328,71 @@ const filteredRows = filterChildRows(sourceData, ...);
 **Timing Sequence (CRITICAL)**:
 ```
 1. processPageData()           - Initialize data (empty arrays)
-2. initDataSetManager()        - Create manager instance
+2. initDataSet()               - Create DataSet instance
 3. originalRules.value = ...   - Save rules config
 4. autoSubscribeTables()       - Register subscribers (MUST be before __init__)
 5. Load module
 6. __init__()                  - Register dataLoader + event listeners
 7. User clicks button          - Trigger requestTableData()
-8. Async loading              - Manager loads data in background
+8. Async loading              - DataSet loads data in background
 9. notifySubscribers()        - Trigger callbacks
 10. rebindRules()             - UI auto-updates via Vue reactivity
 ```
 
 **DO NOT**:
-- ❌ Use `await manager.requestTableData()` - breaks decoupling
+- ❌ Use `await dataSet.requestTableData()` - breaks decoupling
 - ❌ Call `formApi.refresh()` manually - use Vue reactivity
 - ❌ Register subscribers after `__init__()` - they won't receive notifications
 - ❌ Directly assign `table.rows = []` for clearing - use `splice()` for reactivity
-- **Server**: `server.ts` - Express + Vite SSR middleware
+
+### 10. SSR Architecture
+
+**Server Setup**:
+- **Server**: `server.ts` - Express + Vite SSR middleware (port 3000)
 - **Entry points**: 
-  - Client: `src/entry-client.ts` - hydration
-  - Server: `src/entry-server.ts` - render to string
-- **App factory**: `src/app.ts` - creates SSR app with plugins
-- **Routes**: Loaded from `src/mock/routes.json` at runtime
+  - Client: `src/entry-client.ts` - hydration only, no rendering
+  - Server: `src/entry-server.ts` - renderToString for initial HTML
+- **App factory**: `src/app.ts` - creates Vue app with router, plugins (SSR-safe)
+- **Routes**: Loaded from `src/pages-config/routes.json` at runtime
+
+**Critical SSR Rules**:
+- Page scripts execute on both server and client
+- No `window`, `document` access without `typeof window !== 'undefined'` check
+- Use `import.meta.glob()` for dynamic imports (Vite-specific, works in SSR)
+- Element Plus components are pre-configured for SSR in `vite.config.ts`
+- Mock data loader must be pure functions (no browser APIs)
+
+**Development Modes**:
+- `npm run dev` → CSR only (port 5173) - faster iteration, no SSR
+- `npm run dev:ssr` → Full SSR (port 3000) - production-like, slower HMR
+- Use CSR for rapid UI development, SSR for final testing
 
 ## Critical Workflows
 
 ### Adding a New Page
-1. Add route to `src/mock/routes.json`:
+1. Add route to `src/pages-config/routes.json`:
    ```json
    { "path": "/newpage", "name": "newpage", "pageId": "newpage", "meta": { "title": "New Page" } }
    ```
-2. Create `src/mock/pages/newpage/rule.json` and `data.json`
-3. (Optional) Create `src/pageScripts/newpage/script.js` with:
+2. Create `src/pages-config/newpage/rule.json` and `pagedata.json`
+3. (Optional) Create `src/pages-config/newpage/script.js` with:
    - Exported event handler functions
    - `__init__()` function for data loader registration
 4. No Vue component creation needed - uses existing DynamicPage
 5. **If using dataset**: Kernel auto-initializes DataSetManager, auto-subscribes tables
 
 ### Adding DataSet to a Page
-1. Structure data.json with dataset format (see section 5)
+1. Structure pagedata.json with dataset format (see section 5)
 2. Use `"dataKey": "dataset.tables.TableName.rows"` in rules
 3. Kernel automatically:
-   - Creates DataSetManager instance
+   - Creates DataSet instance
    - Subscribes to all tables referenced in rules (scans dataKey)
    - Sets up cascade relationships
    - Handles data loading with dependency analysis
 
 ### Working with DataSet in Page Scripts
 ```javascript
-import { $data, $dataSetManager } from '../common.js';
+import { $data, $dataSet } from '@/utils/page-helpers/common.js';
 import { ElMessage } from 'element-plus';
 
 // Mock data loader
@@ -305,21 +404,21 @@ const mockDataLoader = async (tableName) => {
 
 // Initialize: register data loader
 export function __init__() {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   
   // Register data loader (required for requestTableData)
-  manager.dataLoader = mockDataLoader;
+  dataSet.dataLoader = mockDataLoader;
   
   // Optional: listen to events for UI feedback
-  manager.on('loadSuccess', ({ tableName }) => {
+  dataSet.on('loadSuccess', ({ tableName }) => {
     ElMessage.success(`✅ ${tableName} loaded!`);
   });
 }
 
 // Event handlers: non-blocking requests
 export function handleLoadData() {
-  const manager = $dataSetManager();
-  manager.requestTableData('OrderDetails'); // NO await
+  const dataSet = $dataSet();
+  dataSet.requestTableData('OrderDetails'); // NO await
   // Function returns immediately
 }
 
@@ -329,23 +428,23 @@ export function handleAddUser() {
   const newUser = { id: Date.now(), name: 'New User' };
   
   pageData.dataset.tables.Users.rows.push(newUser);
-  manager.notifySubscribers('Users'); // Trigger UI update
+  dataSet.notifySubscribers('Users'); // Trigger UI update
 }
 
 // Cascade operations
 export function handleUpdateUser(user, newName) {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   const oldValues = { ...user };
   
   user.name = newName;
-  manager.cascadeUpdate('Users', user, oldValues); // Auto-notifies
+  dataSet.cascadeUpdate('Users', user, oldValues); // Auto-notifies
 }
 
 export function handleDeleteUser(user, index) {
-  const manager = $dataSetManager();
+  const dataSet = $dataSet();
   const users = $data().dataset.tables.Users.rows;
   
-  manager.cascadeDelete('Users', user); // Auto-cascades to children
+  dataSet.cascadeDelete('Users', user); // Auto-cascades to children
   users.splice(index, 1); // Use splice for reactivity
 }
 ```
@@ -356,43 +455,57 @@ export function handleDeleteUser(user, index) {
 - **Build**: `npm run build:ssr` (creates dist/client + dist/server)
 - **Type check**: `npm run typecheck` (strict mode - zero errors required)
 - **Lint**: `npm run lint:fix` (ESLint with Vue + TypeScript rules)
+- **Preview**: `npm run preview:ssr` (test production build locally)
+
+**Quick Tips**:
+- Use CSR mode (`npm run dev`) for rapid page development
+- Switch to SSR mode (`npm run dev:ssr`) for testing SSR compatibility
+- Always run `npm run typecheck` before committing (CI will reject type errors)
+- Hot reload works in both modes but faster in CSR
+- Port 3000 for both dev:ssr and production preview (configured in vite.config.ts)
 
 ### Debugging SSR Issues
 - Check terminal output - server errors appear in `dev:ssr` console
 - Common issue: Component not SSR-compatible (Element Plus/form-create already configured in vite.config.ts)
-- Hydration mismatches: Ensure no client-only code in pageScripts during SSR
+- Hydration mismatches: Ensure no client-only code in page scripts during SSR
+- Use VS Code debugger: Press F5 to start with breakpoints (see `.vscode/DEBUG_GUIDE.md`)
 
 ## Project-Specific Conventions
 
 ### File Naming
-- Route configs: lowercase with hyphens (not camelCase)
-- PageIds: match route names exactly
+- Route configs: lowercase with hyphens (e.g., `async-demo`, not `asyncDemo`)
+- PageIds: match route names exactly (route name = pageId = folder name)
 - Script files: `script.js` not `index.js` or other names
+- All page config files are JSON except `script.js` (ES6 module)
 
 ### Data Binding
 - Use `dataKey` in rules to reference nested data: `"dataKey": "dataset.tables.Users.rows"`
 - Supports multiple BindingContext paths: `.rows`, `.currentRow`, `.selectedRows`, `.pagedRows`, `.filteredRows`
 - Tables require `"type": "el-table"` with column children
 - DO NOT bind data in script.js - all data flows through rule.json
+- DataKey paths are case-sensitive and must match pagedata.json structure exactly
 
 ### Element Plus Integration
 - Use kebab-case in rule.json: `"type": "el-button"` not `"type": "ElButton"`
-- Icons: Import from 'element-plus/icons-vue' if needed
+- All Element Plus components are auto-imported (no manual imports in rules)
+- Icons: Import from 'element-plus/icons-vue' if needed in scripts
 - Common styles in `src/style.css`
+- Element Plus is configured for SSR in `vite.config.ts` (don't modify)
 
 ### Mock API
-- Mock data in `src/mock/` served by vite-plugin-mock in CSR mode
-- SSR directly imports JSON files (see `src/entry-server.ts`)
+- Mock data in `src/mock/` served by vite-plugin-mock in CSR mode only
+- SSR directly imports JSON files (no mock server in SSR)
 - API interface: `src/api/index.ts`
+- Use mock data in development, real API in production
 
 ## Common Mistakes to Avoid
 
 1. **DON'T** create new Vue components in `src/views/` - extend DynamicPage.vue instead
-2. **DON'T** use `window` object in pageScripts without checking `typeof window !== 'undefined'`
-3. **DON'T** modify `src/app.ts` for page-specific logic - use pageScripts
+2. **DON'T** use `window` object in page scripts without checking `typeof window !== 'undefined'`
+3. **DON'T** modify `src/app.ts` for page-specific logic - use page scripts
 4. **DON'T** use `.vue` files for pages - everything is JSON-driven
 5. **DON'T** import page data directly in scripts - use `$data()` for reactivity
-6. **DON'T** manually initialize DataSetManager - kernel does it automatically
+6. **DON'T** manually initialize DataSet - kernel does it automatically
 7. **DON'T** manually call rebindRules after data changes - subscription handles it
 8. **DON'T** use `await` when calling `requestTableData()` - breaks decoupling
 9. **DON'T** call `formApi.refresh()` manually - rely on Vue reactivity
@@ -401,12 +514,13 @@ export function handleDeleteUser(user, index) {
 12. **DON'T** forget to call `notifySubscribers()` after manual data manipulation
 13. **DON'T** directly assign `table.rows = []` for clearing - use `splice()` for Vue reactivity
 14. **DON'T** write event handlers for currentChange/selectionChange - kernel auto-injects them
-15. **DON'T** modify `table._originalRows` directly - it's managed by DataSetManager automatically
+15. **DON'T** modify `table._originalRows` directly - it's managed by DataSet automatically
+16. **DON'T** hardcode business rules (permissions, states) in frontend - read from backend response data
 
 ## Key Takeaways for AI Agents
 
 1. **Think "Low-Code First"**: Page scripts should have minimal code, kernel handles complexity
-2. **Complete Decoupling**: UI requests don't wait, DataSetManager notifies when ready
+2. **Complete Decoupling**: UI requests don't wait, DataSet notifies when ready
 3. **Non-Blocking First**: Never use `await` on `requestTableData()` in UI layer
 4. **Subscribers Before Requests**: Auto-subscribe must happen before `__init__()`
 5. **Original Data Cache**: Kernel auto-caches `_originalRows` on first load, filtering always uses full dataset 
@@ -421,15 +535,27 @@ export function handleDeleteUser(user, index) {
 13. **Auto-Sync Magic**: Kernel injects event handlers, zero code for currentRow/selectedRows sync
 14. **Master-Detail Zero Code**: Set `autoLoad: true`, kernel handles entire flow
 11. **Event-Driven**: Parent notifies children, children decide autonomously
-12. **__init__ for Setup**: Use `__init__()` to register dataLoader and event listeners, not for data requests
+13. **Data-Driven UI**: All business rules (permissions, states, etc.) computed by backend and returned in data, frontend only renders
 ### Observer Pattern Implementation
 ```
 UI (Rules with dataKey) 
   ↓ auto-scanned by kernel
 Subscribe to Tables
   ↓ data changes
-DataSetManager.notifySubscribers()
+DataSet.notifySubscribers()
   ↓ triggers callbacks
+rebindRules() → UI updates
+```
+
+### Data-Driven UI Pattern (including permissions)
+```javascript
+// Backend returns: { id: 1, name: 'xxx', _perm: { canDelete: true } }
+
+// ✅ Frontend reads and renders
+if (row._perm?.canDelete) showDeleteButton()
+
+// ❌ DON'T hardcode rules
+if (user.role === 'admin') showDeleteButton()
 rebindRules() → UI updates
 ```
 
@@ -450,15 +576,34 @@ Auto-update via rebindRules()
 
 ## Quick References
 
-- Architecture deep-dive: `README_ARCHITECTURE.md`
-- SSR documentation: `README_SSR.md`
-- Example configs: 
-  - Basic page: `src/mock/pages/home/`
-  - DataSet with cascade: `src/mock/pages/cascade-demo/`
-  - Smart dependency loading: `src/mock/pages/smart-load/`
-  - Master-Detail pattern: `src/mock/pages/master-detail/`
+### Core Documentation
+- Architecture deep-dive: `docs/architecture/README_ARCHITECTURE.md`
+- Project structure: `docs/architecture/PROJECT_STRUCTURE.md`
+- Best practices: `docs/BEST_PRACTICES.md`
+- SSR documentation: `docs/architecture/README_SSR.md`
+- Tree architecture: `docs/dataset/README_TREE.md`
+- Data isolation: `docs/architecture/Data-Isolation.md`
+
+### Example Configurations
+- Basic page: `src/pages-config/home/`
+- DataSet with cascade: `src/pages-config/cascade-demo/`
+- Smart dependency loading: `src/pages-config/smart-load/`
+- Master-Detail pattern: `src/pages-config/master-detail/`
+- Tree view: `src/pages-config/tree-demo/`
+
+### Type Definitions & Core Implementations
 - Type definitions: `src/types/index.ts`
-- DataSet types: `src/types/pageData.ts`
-- Kernel implementation: `src/utils/dataSetManager.ts`
+- DataSet types: `src/types/dataset.ts`
+- Kernel implementation: `src/models/dataSet.ts`
 - UI kernel: `src/views/DynamicPage.vue`
+- Tree manager: `src/utils/managers/treeManager.ts`
+- Filter parser: `src/utils/parsers/filterExpressionParser.ts`
+
+### Tree Architecture
+- **TreeManager associates with BindingContext** (view layer), not DataTable (structure layer)
+- Tree data is a view representation managed by BindingContext
+- Use `context.setTreeManager(treeManager)` for bidirectional binding
+- TreeManager handles lazy loading, differential patching, and nested tree building
+- Bind to UI: `"dataKey": "dataset.tables.Departments.rows"` for el-tree
+
 
