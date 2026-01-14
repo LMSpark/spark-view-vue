@@ -65,7 +65,7 @@ export default defineComponent({
     const tableAttrs = computed(() => {
       // Intentionally unused extracted props (prefixed with _)
        
-      const { dataSource: _dataSource, border: _border, stripe: _stripe, highlightCurrentRow: _highlightCurrentRow, rowKey: _rowKey, maxHeight: _maxHeight, size: _size, ...attrs } = props.config
+      const { dataSource: _dataSource, border: _border, stripe: _stripe, highlightCurrentRow: _highlightCurrentRow, rowKey: _rowKey, maxHeight: _maxHeight, size: _size, children: _children, ...attrs } = props.config
       return attrs
     })
     
