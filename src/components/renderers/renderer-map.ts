@@ -81,5 +81,16 @@ export function registerRenderers(renderers: RendererMap): void {
  * @param type 类型名称
  */
 export function isContainerType(type: string): boolean {
-  return ['table', 'form', 'div', 'section', 'container', 'el-card', 'el-row', 'el-col'].includes(type)
+  return [
+    'table', 
+    'form', 
+    'div', 
+    'section', 
+    'container', 
+    'el-card', 
+    'el-row', 
+    'el-col',
+    'ej2-table',
+    'ej2-grid'
+  ].includes(type)
 }
