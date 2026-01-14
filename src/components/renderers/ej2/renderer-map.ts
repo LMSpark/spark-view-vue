@@ -8,7 +8,6 @@ import EJ2NumberRenderer from './EJ2NumberRenderer.vue'
 import EJ2TableRenderer from './EJ2TableRenderer.vue'
 import EJ2FormRenderer from './EJ2FormRenderer.vue'
 import EJ2TextRenderer from './EJ2TextRenderer.vue'
-import EJ2StackedColumnRenderer from './EJ2StackedColumnRenderer.vue'
 
 export interface EJ2RendererMap {
   [key: string]: Component
@@ -29,9 +28,8 @@ export const EJ2_RENDERER_MAP: EJ2RendererMap = {
   'ej2-grid': EJ2TableRenderer, // 别名
   form: EJ2FormRenderer,
   
-  // 特殊列类型
-  'ej2-stacked-column': EJ2StackedColumnRenderer,
-  'ej2-column-group': EJ2StackedColumnRenderer, // 别名
+  // 注意：ej2-stacked-column 由 EJ2ColumnsWrapper 直接处理，不在此注册
+  // 避免循环依赖：EJ2TableRenderer → EJ2ColumnsWrapper → EJ2StackedColumnRenderer → EJ2DynamicRenderer → renderer-map
 }
 
 /**

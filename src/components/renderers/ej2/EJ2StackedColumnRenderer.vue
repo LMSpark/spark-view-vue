@@ -6,7 +6,6 @@
  * 支持嵌套子列（可以是标签列或普通列）
  */
 import { computed } from 'vue'
-import EJ2DynamicRenderer from './EJ2DynamicRenderer.vue'
 
 interface ColumnConfig {
   headerText?: string
@@ -14,6 +13,10 @@ interface ColumnConfig {
   width?: number | string
   visible?: boolean
   customAttributes?: Record<string, any>
+  field?: string
+  template?: string
+  format?: string
+  type?: string
   columns?: ColumnConfig[]
   children?: ColumnConfig[]
   [key: string]: any
@@ -45,6 +48,20 @@ const normalizedConfig = computed(() => {
 const hasChildren = computed(() => 
   normalizedConfig.value.children && normalizedConfig.value.children.length > 0
 )
+
+// 检查子列是否为堆叠列
+const isStackedColumn = (col: ColumnConfig) => {
+  return !col.field && (col.children?.length || col.columns?.length)
+}
+
+// 调试日志
+if (import.meta.env.DEV) {
+  console.log('🔧 EJ2StackedColumnRenderer:', {
+    headerText: normalizedConfig.value.headerText,
+    childrenCount: normalizedConfig.value.children.length,
+    children: normalizedConfig.value.children
+  })
+}
 </script>
 
 <template>
@@ -61,17 +78,28 @@ const hasChildren = computed(() =>
       <slot name="children" :columns="normalizedConfig.children">
         <template v-if="hasChildren">
           <template v-for="(childColumn, childIndex) in normalizedConfig.children" :key="childIndex">
-            <!-- 递归处理：子列可能也是堆叠列 -->
+            <!-- 递归处理：子列也是堆叠列 -->
             <EJ2StackedColumnRenderer
-              v-if="childColumn.children || childColumn.columns"
+              v-if="isStackedColumn(childColumn)"
               :config="childColumn"
               :index="childIndex"
             />
             
-            <!-- 普通列：使用 DynamicRenderer -->
-            <EJ2DynamicRenderer
+            <!-- 普通列：直接使用 e-column 指令 -->
+            <e-column
               v-else
-              :config="childColumn"
+              :field="childColumn.field"
+              :header-text="childColumn.headerText"
+              :text-align="childColumn.textAlign || 'Left'"
+              :width="childColumn.width"
+              :type="childColumn.type"
+              :format="childColumn.format"
+              :template="childColumn.template"
+              :visible="childColumn.visible !== false"
+              :allow-editing="childColumn.allowEditing"
+              :allow-filtering="childColumn.allowFiltering"
+              :allow-sorting="childColumn.allowSorting"
+              :is-primary-key="childColumn.isPrimaryKey"
             />
           </template>
         </template>
