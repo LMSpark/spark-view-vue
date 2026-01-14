@@ -1,0 +1,112 @@
+[
+  {
+    "type": "div",
+    "class": "renderer-demo-page",
+    "children": [
+      {
+        "type": "h1",
+        "children": ["Renderer 架构演示"]
+      },
+      {
+        "type": "div",
+        "class": "demo-section",
+        "children": [
+          {
+            "type": "h2",
+            "children": ["表格渲染示例"]
+          },
+          {
+            "type": "table",
+            "dataSource": "users",
+            "border": true,
+            "stripe": true,
+            "children": [
+              {
+                "type": "text",
+                "name": "姓名",
+                "value": "name",
+                "width": 150
+              },
+              {
+                "type": "number",
+                "name": "年龄",
+                "value": "age",
+                "width": 100
+              },
+              {
+                "type": "date",
+                "name": "创建时间",
+                "value": "createTime",
+                "width": 150
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "demo-section",
+        "children": [
+          {
+            "type": "h2",
+            "children": ["表单渲染示例"]
+          },
+          {
+            "type": "form",
+            "labelWidth": "100px",
+            "children": [
+              {
+                "type": "text",
+                "name": "姓名",
+                "value": "name"
+              },
+              {
+                "type": "number",
+                "name": "年龄",
+                "value": "age",
+                "min": 0,
+                "max": 150
+              },
+              {
+                "type": "date",
+                "name": "创建时间",
+                "value": "createTime"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "demo-section",
+        "children": [
+          {
+            "type": "h2",
+            "children": ["详情展示示例"]
+          },
+          {
+            "type": "div",
+            "class": "detail-container",
+            "children": [
+              {
+                "type": "text",
+                "name": "姓名",
+                "value": "name"
+              },
+              {
+                "type": "number",
+                "name": "年龄",
+                "value": "age"
+              },
+              {
+                "type": "date",
+                "name": "创建时间",
+                "value": "createTime"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

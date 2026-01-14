@@ -6,9 +6,18 @@ import router, {setupRouter} from './router'
 import App from './App.vue'
 import './style.css'
 
+// ✅ VXE Table
+import VXETable from 'vxe-table'
+import 'vxe-table/lib/style.css'
+
 const app = createApp(App)
 
+// 必须先注册 Element Plus，form-create 才能使用这些组件
 app.use(ElementPlus)
+
+// ✅ VXE Table 全局注册
+app.use(VXETable)
+
 app.use(formCreate)
 
 // 先动态加载路由，再注册 router 并挂载应用
