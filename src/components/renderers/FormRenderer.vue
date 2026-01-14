@@ -52,7 +52,6 @@ export default defineComponent({
     // 提取其他表单属性
     const formAttrs = computed(() => {
       // Intentionally unused extracted props (prefixed with _)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { labelWidth: _labelWidth, labelPosition: _labelPosition, rules: _rules, inline: _inline, size: _size, disabled: _disabled, children: _children, ...attrs } = props.config
       return attrs
     })

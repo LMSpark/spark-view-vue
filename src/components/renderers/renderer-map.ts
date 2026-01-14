@@ -10,6 +10,8 @@ import DateRenderer from './DateRenderer.vue'
 import TableRenderer from './TableRenderer.vue'
 import FormRenderer from './FormRenderer.vue'
 import HtmlRenderer from './HtmlRenderer.vue'
+// EJ2 组件
+import EJ2StackedColumnRenderer from './ej2/EJ2StackedColumnRenderer.vue'
 
 export interface RendererMap {
   [key: string]: Component
@@ -29,6 +31,10 @@ export const RENDERER_MAP: RendererMap = {
   // 容器类型
   table: TableRenderer,
   form: FormRenderer,
+  
+  // EJ2 特殊组件
+  'ej2-stacked-column': EJ2StackedColumnRenderer,
+  'ej2-column-group': EJ2StackedColumnRenderer,
   
   // HTML 元素（通用渲染器）
   div: HtmlRenderer,
