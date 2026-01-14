@@ -53,7 +53,7 @@ export default defineComponent({
     const formAttrs = computed(() => {
       // Intentionally unused extracted props (prefixed with _)
        
-      const { labelWidth: _labelWidth, labelPosition: _labelPosition, rules: _rules, inline: _inline, size: _size, disabled: _disabled, ...attrs } = props.config
+      const { labelWidth: _labelWidth, labelPosition: _labelPosition, rules: _rules, inline: _inline, size: _size, disabled: _disabled, children: _children, ...attrs } = props.config
       return attrs
     })
     
