@@ -178,8 +178,11 @@ const autoSubscribeTables = () => {
     const contexts = new Set<string>();
     
     // 递归提取所有 dataKey 中的表名和上下文ID
-    const extractContexts = (rules: Rule[]) => {
-        rules.forEach(rule => {
+    const extractContexts = (rules: Rule[] | Rule) => {
+        // 兼容处理：支持单个对象或数组
+        const ruleArray = Array.isArray(rules) ? rules : [rules];
+        
+        ruleArray.forEach(rule => {
             if (rule.dataKey && rule.dataKey.startsWith('dataset.tables.')) {
                 // 提取表名和上下文路径
                 // dataset.tables.Users.rows → Users, default
