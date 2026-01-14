@@ -722,7 +722,9 @@ const loadPageConfig = async () => {
 
         // 🎯 关键：先保存 rules 并注册订阅者，再加载模块
         // 这样可以确保 __init__ 触发数据加载时，订阅者已经就绪
-        originalRules.value = config.rule as Rule[]
+        // ⚠️ 兼容处理：如果 rule 是对象，包装成数组
+        const ruleConfig = config.rule as Rule[] | Rule
+        originalRules.value = Array.isArray(ruleConfig) ? ruleConfig : [ruleConfig]
         
         // ⚠️ 延迟 bindDataToRules，等模块加载后再绑定（避免渲染函数未找到）
         // pageRules.value = bindDataToRules(config.rule as Rule[], pageData)
