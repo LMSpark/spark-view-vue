@@ -26,7 +26,7 @@ import {getPageConfig} from '../api'
 import type {PageRule, ApiConfig, DataRow} from '../types'
 import { DataSetManager } from '../models/dataSetManager'
 import type { DataSet } from '../models/dataSet'
-import EJ2TableRenderer from '../components/renderers/ej2/EJ2TableRenderer.vue'
+import VxeTableRenderer from '../components/renderers/vxe/VxeTableRenderer.vue'
 
 // 注意：Element Plus 组件已由 @form-create/element-ui 内部注册
 // app.use(formCreate) 时会自动注册所有组件，无需手动导入
@@ -86,16 +86,6 @@ const formCreateOption = ref({
   submitBtn: false,
   resetBtn: false,
   global: {
-    // 注册 EJ2 Grid（多种命名格式）
-    'ejs-grid': EJ2TableRenderer,
-    'ejsGrid': EJ2TableRenderer,
-    'EjsGrid': EJ2TableRenderer,
-    'ej2-grid': EJ2TableRenderer,
-    'ej2Grid': EJ2TableRenderer,
-    'EJ2Grid': EJ2TableRenderer,
-    'ej2-table': EJ2TableRenderer,
-    'ej2Table': EJ2TableRenderer,
-    'EJ2Table': EJ2TableRenderer,
     // 注册占位符组件（避免 e-columns/e-column 解析错误）
     'e-columns': { render: () => null },
     'eColumns': { render: () => null },
@@ -447,13 +437,6 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                         newRule.props.currentNodeKey = data.currentNodeKey
                     }
                 }
-            } else if (newRule.type === 'ejs-grid' || newRule.type === 'ej2-grid' || newRule.type === 'ej2-table') {
-                // 🎯 EJ2 Grid: 递归渲染方式，直接设置 dataSource
-                if (!newRule.props) {
-                    newRule.props = {}
-                }
-                newRule.props.dataSource = value
-                console.log(`📊 [EJ2 Grid 递归渲染] type="${newRule.type}" dataKey="${newRule.dataKey}"`, { dataSource: Array.isArray(value) ? value.slice(0, 2) : value })
             } else if (newRule.type === 'el-input' && newRule.props) {
                 // 🔤 el-input 绑定 modelValue
                 newRule.props.modelValue = value
@@ -824,15 +807,10 @@ const loadPageConfig = async () => {
 const onFormMounted = (api: FormCreateAPI) => {
     formApi.value = api
     
-    // 🔑 注册 EJ2 自定义组件到 form-create
-     
+    // 🔑 注册 VXE Table 自定义组件到 form-create
     const apiAny = api as any
-    // eslint-disable-next-line vue/component-definition-name-casing
-    apiAny.component('ejs-grid', EJ2TableRenderer)
-    // eslint-disable-next-line vue/component-definition-name-casing
-    apiAny.component('ej2-grid', EJ2TableRenderer)
-    // eslint-disable-next-line vue/component-definition-name-casing
-    apiAny.component('ej2-table', EJ2TableRenderer)
+    apiAny.component('VxeTable', VxeTableRenderer)
+    apiAny.component('VxeGrid', VxeTableRenderer)
     
     // 注册占位符组件（e-columns/e-column 不需要实际渲染）
     const PlaceholderComponent = { render: () => null }
@@ -841,7 +819,7 @@ const onFormMounted = (api: FormCreateAPI) => {
     // eslint-disable-next-line vue/component-definition-name-casing
     apiAny.component('e-column', PlaceholderComponent)
     
-    console.log('✅ EJ2 组件已注册到 form-create')
+    console.log('✅ VXE 表格组件已注册到 form-create')
     
     // 🔑 暴露 formApi 供 pageScripts 使用
     if (typeof window !== 'undefined') {

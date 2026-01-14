@@ -25,7 +25,6 @@ export default defineConfig({
             resolvers: [ElementPlusResolver()],
             dts: 'src/components.d.ts',
             dirs: ['src/components'],
-            exclude: [/src\/components\/renderers\/ej2\/.*/],
         }),
         viteMockServe({
             mockPath: 'src/mock',
@@ -70,13 +69,10 @@ export default defineConfig({
                     if (id.includes('@form-create/element-ui')) {
                         return 'form-create'
                     }
-                    if (id.includes('@syncfusion/')) {
-                        return 'syncfusion-all'
-                    }
                     if (id.includes('node_modules') && id.includes('element-plus')) {
                         return 'element-plus-vendor'
                     }
-                    if (id.includes('node_modules') && !id.includes('@syncfusion')) {
+                    if (id.includes('node_modules')) {
                         return 'vendor'
                     }
                 }

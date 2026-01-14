@@ -9,48 +9,12 @@
     }
   },
   {
-    "path": "/ej2-slot-test",
-    "name": "ej2-slot-test",
-    "pageId": "ej2-slot-test",
+    "path": "/vxe-demo",
+    "name": "vxe-demo",
+    "pageId": "vxe-demo",
     "meta": {
-      "title": "EJ2 SLOT 测试",
-      "icon": "🎯"
-    }
-  },
-  {
-    "path": "/ej2-slot-demo",
-    "name": "ej2-slot-demo",
-    "pageId": "ej2-slot-demo",
-    "meta": {
-      "title": "EJ2 多层 SLOT 演示",
-      "icon": "🎨"
-    }
-  },
-  {
-    "path": "/ej2-full-slot",
-    "name": "ej2-full-slot",
-    "pageId": "ej2-full-slot",
-    "meta": {
-      "title": "EJ2 全 SLOT 架构",
-      "icon": "🚀"
-    }
-  },
-  {
-    "path": "/stacked-column-demo",
-    "name": "stacked-column-demo",
-    "pageId": "stacked-column-demo",
-    "meta": {
-      "title": "EJ2 堆叠列演示",
-      "icon": "📊"
-    }
-  },
-  {
-    "path": "/ej2-test",
-    "name": "ej2-test",
-    "pageId": "ej2-test",
-    "meta": {
-      "title": "EJ2 官方测试",
-      "icon": "🧪"
+      "title": "VXE 表格演示",
+      "icon": "📈"
     }
   },
   {
