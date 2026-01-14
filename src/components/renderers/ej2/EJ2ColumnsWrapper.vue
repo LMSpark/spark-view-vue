@@ -54,9 +54,21 @@ const normalizedColumns = computed(() => {
 
 // 判断是否为堆叠列
 const isStackedColumn = (col: ColumnConfig) => {
-  return col.type === 'ej2-stacked-column' || 
+  const result = col.type === 'ej2-stacked-column' || 
          col.type === 'ej2-column-group' ||
          (col.children && col.children.length > 0 && !col.field)
+  
+  if (import.meta.env.DEV && result) {
+    console.log('🔍 EJ2ColumnsWrapper 检测到堆叠列:', {
+      type: col.type,
+      headerText: col.headerText,
+      hasChildren: !!col.children,
+      childrenCount: col.children?.length,
+      hasField: !!col.field
+    })
+  }
+  
+  return result
 }
 </script>
 

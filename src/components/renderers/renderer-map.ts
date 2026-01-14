@@ -11,7 +11,8 @@ import TableRenderer from './TableRenderer.vue'
 import FormRenderer from './FormRenderer.vue'
 import HtmlRenderer from './HtmlRenderer.vue'
 // EJ2 组件
-import EJ2StackedColumnRenderer from './ej2/EJ2StackedColumnRenderer.vue'
+import EJ2TableRenderer from './ej2/EJ2TableRenderer.vue'
+import EJ2ColumnRenderer from './ej2/EJ2ColumnRenderer.vue'
 
 export interface RendererMap {
   [key: string]: Component
@@ -32,9 +33,12 @@ export const RENDERER_MAP: RendererMap = {
   table: TableRenderer,
   form: FormRenderer,
   
-  // EJ2 特殊组件
-  'ej2-stacked-column': EJ2StackedColumnRenderer,
-  'ej2-column-group': EJ2StackedColumnRenderer,
+  // EJ2 组件
+  'ej2-table': EJ2TableRenderer,
+  'ej2-grid': EJ2TableRenderer,
+  'ej2-column': EJ2ColumnRenderer,
+  'ej2-stacked-column': EJ2ColumnRenderer,  // 使用同一个渲染器，内部判断
+  'ej2-column-group': EJ2ColumnRenderer,
   
   // HTML 元素（通用渲染器）
   div: HtmlRenderer,

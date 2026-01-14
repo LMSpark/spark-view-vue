@@ -12,7 +12,6 @@ import {
   ColumnChooser,
   VirtualScroll
 } from '@syncfusion/ej2-vue-grids'
-import EJ2ColumnsWrapper from './EJ2ColumnsWrapper.vue'
 
 // Form-create passes rule properties directly as props
 // Use 'any' for internal rule props to avoid type warnings
@@ -94,13 +93,14 @@ const toolbarItems = computed(() => {
   return undefined
 })
 
-// Normalize children prop (can be array or object from form-create)
-const columns = computed(() => {
-  if (Array.isArray(props.children)) {
-    return props.children
-  }
-  return []
-})
+if (import.meta.env.DEV) {
+  console.log('🔧 EJ2TableRenderer mounted:', {
+    hasChildren: !!props.children,
+    childrenType: typeof props.children,
+    childrenIsArray: Array.isArray(props.children),
+    childrenLength: Array.isArray(props.children) ? props.children.length : 'N/A'
+  })
+}
 
 // 处理编辑完成事件
 const handleActionComplete = (args: any) => {
@@ -145,25 +145,11 @@ const handleRowSelected = (args: any) => {
       @action-complete="handleActionComplete"
       @row-selected="handleRowSelected"
     >
-      <!-- 使用包装组件支持多层 SLOT -->
-      <EJ2ColumnsWrapper :columns="columns">
-        <!-- 
-          三种 SLOT 使用方式（按需选择）：
-          
-          方式1：列表级 SLOT - 完全自定义所有列
-          <template #default="{ columns: cols }">
-            <e-column v-for="col in cols" :key="col.field" v-bind="col" />
-          </template>
-          
-          方式2：列级 SLOT - 自定义单个列
-          <template #column="{ column: col, index }">
-            <e-column :field="col.field" :header-text="col.headerText + '✨'" />
-          </template>
-          
-          方式3：字段级 SLOT - 使用默认渲染
-          不传 slot，使用内置的字段渲染逻辑
-        -->
-      </EJ2ColumnsWrapper>
+      <!-- 🎯 关键：提供 SLOT 给 DynamicRenderer 递归渲染 children -->
+      <!-- DynamicRenderer 会根据 parentType='ej2-table' 渲染子节点为列 -->
+      <e-columns>
+        <slot :data="gridData" :parent-type="'ej2-table'" />
+      </e-columns>
     </ejs-grid>
   </div>
 </template>
