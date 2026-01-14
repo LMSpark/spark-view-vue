@@ -10,11 +10,11 @@
 - 💪 **TypeScript**: 完整类型支持，严格模式编译
 - 🎨 **Element Plus**: 企业级 UI 组件库
 - 📝 **Form Create**: 强大的动态表单生成器
-- 🔥 **热更新**: Vite HMR 开发体验
+- � **VXE Table**: 集成高级表格能力（可选）
+- �🔥 **热更新**: Vite HMR 开发体验
 - ✅ **代码质量**: ESLint + TypeScript 严格检查
 - 🎯 **SLOT 递归架构**: 所有渲染器支持 Vue 3 作用域插槽
 - 📊 **DataSet 架构**: 强大的数据管理和级联操作
-- 🏢 **EJ2 支持**: Syncfusion 企业级组件集成
 
 ## 📦 技术栈
 

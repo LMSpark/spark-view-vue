@@ -15,13 +15,6 @@
 - ✅ **NumberRenderer.vue** - 新增 slot 支持（table/form/detail 三种场景）
 - ✅ **DateRenderer.vue** - 新增 slot 支持（table/form/detail 三种场景）
 
-### EJ2 渲染器
-- ✅ **EJ2DynamicRenderer.vue** - 递归渲染（简化版）
-- ⚠️ **EJ2TableRenderer.vue** - Grid 不支持 Vue slot（EJ2 限制）
-- ✅ **EJ2FormRenderer.vue** - 支持 header/footer slot
-- ⚠️ **EJ2TextRenderer.vue** - Grid 列不支持 slot，表单/详情支持
-- ⚠️ **EJ2NumberRenderer.vue** - Grid 列不支持 slot，表单/详情支持
-- ⚠️ **EJ2DateRenderer.vue** - Grid 列不支持 slot，表单/详情支持
 
 ### 文档更新
 - ✅ **src/components/renderers/README.md** - 完整重写，新增 SLOT 使用指南
@@ -66,13 +59,7 @@ EJ2 列渲染器现在支持 Grid 的 template slot：
 </e-column>
 ```
 
-**⚠️ 重要限制**: Syncfusion EJ2 Grid 使用自己的指令系统（`<e-columns>`），与 Vue 的标准 slot 机制不兼容。因此：
-- ❌ **EJ2TableRenderer** 不支持 slot 自定义列
-- ❌ **EJ2 字段渲染器** (Text/Number/Date) 作为 Grid 列时不支持 slot
-- ✅ **EJ2FormRenderer** 支持 header/footer slot
-- ✅ **EJ2 字段渲染器** 作为表单字段或详情显示时支持 slot
-
-如需自定义 EJ2 Grid 列内容，请使用 EJ2 自己的 template 机制，参考 [Syncfusion 文档](https://ej2.syncfusion.com/vue/documentation/grid/columns/column-template/)。
+**⚠️ 注意**: 项目已移除对 Syncfusion EJ2 的内置渲染器支持，建议使用 `Element Plus` 或 `VXE Table` 的渲染器，或在需要时通过外部插件单独集成 EJ2。
 
 ## 📖 使用示例
 
@@ -168,10 +155,8 @@ expose({
 ## 🔗 参考文档
 
 - [Element Plus Renderer README](src/components/renderers/README.md) - 完整使用指南
-- [EJ2 Renderer README](src/components/renderers/ej2/README.md) - EJ2 专用指南
 - [Vue 3 Slots 官方文档](https://vuejs.org/guide/components/slots.html)
 - [Element Plus Table](https://element-plus.org/zh-CN/component/table.html)
-- [Syncfusion EJ2 Grid](https://ej2.syncfusion.com/vue/documentation/grid/getting-started/)
 
 ## 🎉 架构优势
 

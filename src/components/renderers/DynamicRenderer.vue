@@ -64,26 +64,26 @@ const DynamicRenderer = defineComponent({
       }
       
       // 🔑 关键逻辑：根据 parentType 推断子节点类型
-      if (props.parentType === 'ej2-table' || props.parentType === 'ej2-grid') {
-        // EJ2 Grid 的子节点都是列
-        return 'ej2-column'
+      if (props.parentType === 'vxe-table' || props.parentType === 'vxe-grid') {
+        // VXE Table 的子节点都是列
+        return 'vxe-column'
       }
-      
-      if (props.parentType === 'ej2-stacked-column') {
+
+      if (props.parentType === 'vxe-stacked-column') {
         // 堆叠列的子节点也是列
-        return 'ej2-column'
+        return 'vxe-column'
       }
-      
+
       if (props.parentType === 'table') {
         // Element Plus Table 的子节点
         if (props.rule.field || props.rule.prop) {
           return 'text'  // 普通列
         }
       }
-      
-      // 默认：根据属性推断
+
+      // 默认：如果有 field 或 headerText，作为普通列处理
       if (props.rule.field || props.rule.headerText) {
-        return 'ej2-column'
+        return 'text'
       }
       
       return props.rule.type || 'text'
