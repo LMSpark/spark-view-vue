@@ -48,21 +48,25 @@ const handleChange = (args: { value: number | null }) => {
   <!-- 作为表单字段 -->
   <div v-else-if="parentType === 'form'" class="e-field-wrapper">
     <label class="e-field-label">{{ config.name }}</label>
-    <ejs-numerictextbox
-      :value="currentValue"
-      :min="config.min"
-      :max="config.max"
-      :step="config.step || 1"
-      :decimals="config.decimals ?? 0"
-      :format="config.format || 'n0'"
-      @change="handleChange"
-    />
+    <slot :value="currentValue" :update="handleChange" :config="config">
+      <ejs-numerictextbox
+        :value="currentValue"
+        :min="config.min"
+        :max="config.max"
+        :step="config.step || 1"
+        :decimals="config.decimals ?? 0"
+        :format="config.format || 'n0'"
+        @change="handleChange"
+      />
+    </slot>
   </div>
   
   <!-- 作为详情展示 -->
   <div v-else class="field-display">
-    <span class="field-label">{{ config.name }}:</span>
-    <span class="field-value">{{ currentValue ?? 0 }}</span>
+    <slot :value="currentValue" :label="config.name">
+      <span class="field-label">{{ config.name }}:</span>
+      <span class="field-value">{{ currentValue ?? 0 }}</span>
+    </slot>
   </div>
 </template>
 

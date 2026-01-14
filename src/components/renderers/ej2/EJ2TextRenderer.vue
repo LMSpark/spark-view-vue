@@ -44,19 +44,23 @@ const handleChange = (args: { value: unknown }) => {
   <!-- 作为表单字段 -->
   <div v-else-if="parentType === 'form'" class="e-field-wrapper">
     <label class="e-field-label">{{ config.name }}</label>
-    <ejs-textbox
-      :value="currentValue"
-      :placeholder="config.placeholder"
-      :readonly="config.readonly"
-      :multiline="config.multiline"
-      @change="handleChange"
-    />
+    <slot :value="currentValue" :update="handleChange" :config="config">
+      <ejs-textbox
+        :value="currentValue"
+        :placeholder="config.placeholder"
+        :readonly="config.readonly"
+        :multiline="config.multiline"
+        @change="handleChange"
+      />
+    </slot>
   </div>
   
   <!-- 作为详情展示 -->
   <div v-else class="field-display">
-    <span class="field-label">{{ config.name }}:</span>
-    <span class="field-value">{{ currentValue || '-' }}</span>
+    <slot :value="currentValue" :label="config.name">
+      <span class="field-label">{{ config.name }}:</span>
+      <span class="field-value">{{ currentValue || '-' }}</span>
+    </slot>
   </div>
 </template>
 

@@ -52,26 +52,37 @@ function handleUpdate(value: any) {
     :label="config.name"
     :prop="config.value"
     :width="config.width"
-  />
+  >
+    <!-- 支持自定义列内容 -->
+    <template #default="scope">
+      <slot :row="scope.row" :column="scope.column" :index="scope.$index">
+        {{ scope.row[config.value] }}
+      </slot>
+    </template>
+  </el-table-column>
   
   <!-- 作为表单字段 -->
   <el-form-item 
     v-else-if="parentType === 'form'"
     :label="config.name"
   >
-    <el-input-number 
-      :model-value="currentValue"
-      :min="config.min"
-      :max="config.max"
-      :precision="config.precision"
-      @update:model-value="handleUpdate"
-    />
+    <slot :value="currentValue" :update="handleUpdate" :min="config.min" :max="config.max">
+      <el-input-number 
+        :model-value="currentValue"
+        :min="config.min"
+        :max="config.max"
+        :precision="config.precision"
+        @update:model-value="handleUpdate"
+      />
+    </slot>
   </el-form-item>
   
   <!-- 作为详情展示 -->
   <div v-else class="number-renderer">
-    <span class="label">{{ config.name }}:</span>
-    <span class="value">{{ currentValue }}</span>
+    <slot :value="currentValue" :label="config.name">
+      <span class="label">{{ config.name }}:</span>
+      <span class="value">{{ currentValue }}</span>
+    </slot>
   </div>
 </template>
 

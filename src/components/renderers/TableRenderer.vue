@@ -3,10 +3,15 @@
     :data="tableData"
     :border="config.border"
     :stripe="config.stripe"
+    :highlight-current-row="config.highlightCurrentRow"
+    :row-key="config.rowKey"
+    :max-height="config.maxHeight"
+    :size="config.size"
     class="table-renderer"
+    v-bind="tableAttrs"
   >
-    <!-- 默认插槽：表格列内容 -->
-    <slot />
+    <!-- 默认插槽：表格列内容（递归渲染子节点） -->
+    <slot :data="tableData" />
     
     <!-- 具名插槽：自定义表格内容 -->
     <template #append>
@@ -18,6 +23,11 @@
       <slot name="empty">
         <div class="empty-data">暂无数据</div>
       </slot>
+    </template>
+    
+    <!-- 具名插槽：展开行内容 -->
+    <template #expand="scope">
+      <slot name="expand" :row="scope.row" :index="scope.$index" />
     </template>
   </el-table>
 </template>
@@ -51,8 +61,17 @@ export default defineComponent({
       return Array.isArray(result) ? result : []
     })
     
+    // 提取其他表格属性
+    const tableAttrs = computed(() => {
+      // Intentionally unused extracted props (prefixed with _)
+       
+      const { dataSource: _dataSource, border: _border, stripe: _stripe, highlightCurrentRow: _highlightCurrentRow, rowKey: _rowKey, maxHeight: _maxHeight, size: _size, ...attrs } = props.config
+      return attrs
+    })
+    
     return {
-      tableData
+      tableData,
+      tableAttrs
     }
   }
 })

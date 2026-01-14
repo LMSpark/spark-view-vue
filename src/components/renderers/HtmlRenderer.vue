@@ -5,8 +5,8 @@
     :style="config.style"
     v-bind="htmlAttrs"
   >
-    <!-- 默认插槽：渲染子节点 -->
-    <slot />
+    <!-- 默认插槽：递归渲染子节点，提供配置和数据作用域 -->
+    <slot :config="config" :data="data" :parent-type="parentType" />
   </component>
 </template>
 

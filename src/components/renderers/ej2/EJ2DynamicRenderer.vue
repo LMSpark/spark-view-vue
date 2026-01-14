@@ -6,7 +6,7 @@
     :parent-type="parentType"
     @update="handleUpdate"
   >
-    <!-- 递归渲染子规则 -->
+    <!-- 递归渲染子规则（EJ2 组件需要直接子节点，不使用 slot）-->
     <template v-if="rule.children && rule.children.length > 0">
       <EJ2DynamicRenderer
         v-for="(childRule, index) in rule.children"

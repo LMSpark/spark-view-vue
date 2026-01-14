@@ -1,0 +1,215 @@
+[
+  {
+    "type": "div",
+    "style": {
+      "padding": "20px"
+    },
+    "children": [
+      {
+        "type": "h1",
+        "children": ["EJ2 全 SLOT 架构演示"]
+      },
+      {
+        "type": "p",
+        "style": {
+          "fontSize": "16px",
+          "color": "#666",
+          "marginBottom": "20px"
+        },
+        "children": ["通过多层包装组件实现每个属性都可以 SLOT 自定义"]
+      },
+      
+      {
+        "type": "h2",
+        "children": ["层级 1：默认渲染（零代码）"]
+      },
+      {
+        "type": "p",
+        "children": ["不传任何 slot，使用内置的多层包装逻辑"]
+      },
+      {
+        "type": "ej2-table",
+        "dataKey": "users",
+        "height": "250",
+        "allowPaging": true,
+        "allowSorting": true,
+        "pageSettings": {
+          "pageSize": 5
+        },
+        "children": [
+          {
+            "value": "id",
+            "name": "ID",
+            "width": 80,
+            "isPrimaryKey": true
+          },
+          {
+            "value": "name",
+            "name": "姓名",
+            "width": 150
+          },
+          {
+            "value": "email",
+            "name": "邮箱",
+            "width": 200
+          },
+          {
+            "value": "age",
+            "name": "年龄",
+            "width": 100
+          }
+        ]
+      },
+      
+      {
+        "type": "div",
+        "style": {
+          "marginTop": "40px"
+        },
+        "children": [
+          {
+            "type": "h2",
+            "children": ["层级 2：列级 SLOT"]
+          },
+          {
+            "type": "p",
+            "children": ["通过 #column slot 完全控制单个列的渲染"]
+          },
+          {
+            "type": "div",
+            "style": {
+              "padding": "15px",
+              "backgroundColor": "#f5f5f5",
+              "borderRadius": "4px",
+              "marginTop": "10px"
+            },
+            "children": [
+              {
+                "type": "pre",
+                "style": {
+                  "margin": "0",
+                  "fontSize": "14px"
+                },
+                "children": ["<template #column=\"{ column, index }\">\n  <e-column\n    :field=\"column.field\"\n    :header-text=\"column.headerText + ' ✨'\"\n    :width=\"column.width\"\n  />\n</template>"]
+              }
+            ]
+          }
+        ]
+      },
+      
+      {
+        "type": "div",
+        "style": {
+          "marginTop": "40px"
+        },
+        "children": [
+          {
+            "type": "h2",
+            "children": ["层级 3：属性级包装"]
+          },
+          {
+            "type": "p",
+            "children": ["EJ2ColumnWrapper 组件为每个属性提供计算能力"]
+          },
+          {
+            "type": "div",
+            "style": {
+              "padding": "15px",
+              "backgroundColor": "#f5f5f5",
+              "borderRadius": "4px",
+              "marginTop": "10px"
+            },
+            "children": [
+              {
+                "type": "pre",
+                "style": {
+                  "margin": "0",
+                  "fontSize": "14px"
+                },
+                "children": ["<EJ2ColumnWrapper :column=\"col\">\n  <!-- 属性通过 computed 计算 -->\n  <!-- field, headerText, width 等 -->\n</EJ2ColumnWrapper>"]
+              }
+            ]
+          }
+        ]
+      },
+      
+      {
+        "type": "div",
+        "style": {
+          "marginTop": "40px"
+        },
+        "children": [
+          {
+            "type": "h2",
+            "children": ["层级 4：单元格内容 SLOT"]
+          },
+          {
+            "type": "p",
+            "children": ["通过 #cell-{fieldName} 自定义单元格渲染（需配合 EJ2 template）"]
+          },
+          {
+            "type": "div",
+            "style": {
+              "padding": "15px",
+              "backgroundColor": "#f5f5f5",
+              "borderRadius": "4px",
+              "marginTop": "10px"
+            },
+            "children": [
+              {
+                "type": "pre",
+                "style": {
+                  "margin": "0",
+                  "fontSize": "14px"
+                },
+                "children": ["<template #cell-status=\"{ column }\">\n  <span :class=\"getStatusClass()\">\n    {{ data.status }}\n  </span>\n</template>"]
+              }
+            ]
+          }
+        ]
+      },
+      
+      {
+        "type": "div",
+        "style": {
+          "marginTop": "40px",
+          "padding": "20px",
+          "backgroundColor": "#e7f3ff",
+          "borderLeft": "4px solid #1890ff",
+          "borderRadius": "4px"
+        },
+        "children": [
+          {
+            "type": "h3",
+            "children": ["🎯 架构亮点"]
+          },
+          {
+            "type": "ul",
+            "children": [
+              {
+                "type": "li",
+                "children": ["✅ 四层 SLOT 嵌套：列表 → 列 → 属性 → 内容"]
+              },
+              {
+                "type": "li",
+                "children": ["✅ 渐进增强：每层独立，按需使用"]
+              },
+              {
+                "type": "li",
+                "children": ["✅ 零侵入：不修改 EJ2 核心代码"]
+              },
+              {
+                "type": "li",
+                "children": ["✅ 完全兼容：生成直接 VNode 满足 EJ2 要求"]
+              },
+              {
+                "type": "li",
+                "children": ["✅ 数据标准化：自动转换 form-create 格式"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
