@@ -13,7 +13,7 @@ export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
             return result.data
         }
         throw new Error(result.message)
-    } catch (error) {
+    } catch {
         // API失败时使用静态导入（SPA模式）
         console.log(`📦 SPA模式：直接加载页面配置 ${pageId}`)
         
@@ -43,7 +43,7 @@ export const getRoutes = async (): Promise<RouteConfig[]> => {
             return result.data
         }
         throw new Error(result.message)
-    } catch (error) {
+    } catch {
         // API失败时使用静态导入（SPA模式）
         console.log('📦 SPA模式：直接加载路由配置')
         return routesData

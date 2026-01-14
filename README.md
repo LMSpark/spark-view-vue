@@ -1,25 +1,28 @@
-# Form Create SSR Application
+# Form Create Application
 
-基于 Vue 3 + TypeScript + Element Plus 的服务端渲染表单应用。
+基于 Vue 3 + TypeScript + Element Plus 的现代化 Web 应用。
+
+> **⚠️ 重要更新**: 项目已从 SSR 模式迁移为 CSR (Client-Side Rendering) 模式。详见 [CSR_MIGRATION.md](CSR_MIGRATION.md)
 
 ## ✨ 特性
 
-- 🚀 **SSR (服务端渲染)**: LCP 0.04s，首屏极速加载
+- 🚀 **CSR 模式**: 简单部署，快速开发，静态托管
 - 💪 **TypeScript**: 完整类型支持，严格模式编译
 - 🎨 **Element Plus**: 企业级 UI 组件库
 - 📝 **Form Create**: 强大的动态表单生成器
 - 🔥 **热更新**: Vite HMR 开发体验
 - ✅ **代码质量**: ESLint + TypeScript 严格检查
-- 🐛 **调试支持**: VS Code 断点调试配置
+- 🎯 **SLOT 递归架构**: 所有渲染器支持 Vue 3 作用域插槽
+- 📊 **DataSet 架构**: 强大的数据管理和级联操作
+- 🏢 **EJ2 支持**: Syncfusion 企业级组件集成
 
 ## 📦 技术栈
 
 - **前端框架**: Vue 3.4
-- **构建工具**: Vite 5.4
-- **UI 组件**: Element Plus 2.5
+- **构建工具**: Vite 7.3
+- **UI 组件**: Element Plus 2.5 + Syncfusion EJ2
 - **表单引擎**: @form-create/element-ui 3.2
 - **路由**: Vue Router 4.6
-- **服务器**: Express 4.21
 - **TypeScript**: 5.9 (严格模式)
 - **运行时**: Node.js 20+
 
@@ -29,21 +32,12 @@
 
 ```bash
 npm install
-# 或
-pnpm install
 ```
 
 ### 开发模式
 
-#### CSR 模式（客户端渲染）
 ```bash
 npm run dev
-```
-访问: http://localhost:5173
-
-#### SSR 模式（服务端渲染）
-```bash
-npm run dev:ssr
 ```
 访问: http://localhost:3000
 

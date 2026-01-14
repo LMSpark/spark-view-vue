@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed, provide } from 'vue'
 import { 
-  GridComponent as EjsGrid, 
-  ColumnsDirective as EColumns, 
-  ColumnDirective as EColumn,
+  GridComponent as EjsGrid,
   Page,
   Sort,
   Filter,
@@ -14,6 +12,7 @@ import {
   ColumnChooser,
   VirtualScroll
 } from '@syncfusion/ej2-vue-grids'
+import EJ2ColumnsWrapper from './EJ2ColumnsWrapper.vue'
 
 // Form-create passes rule properties directly as props
 // Use 'any' for internal rule props to avoid type warnings
@@ -146,18 +145,25 @@ const handleRowSelected = (args: any) => {
       @action-complete="handleActionComplete"
       @row-selected="handleRowSelected"
     >
-      <e-columns>
-        <e-column
-          v-for="(col, index) in columns"
-          :key="index"
-          :field="col.value"
-          :header-text="col.name"
-          :width="col.width"
-          :format="col.format"
-          :is-primary-key="col.isPrimaryKey"
-          :allow-editing="!col.readonly"
-        />
-      </e-columns>
+      <!-- 使用包装组件支持多层 SLOT -->
+      <EJ2ColumnsWrapper :columns="columns">
+        <!-- 
+          三种 SLOT 使用方式（按需选择）：
+          
+          方式1：列表级 SLOT - 完全自定义所有列
+          <template #default="{ columns: cols }">
+            <e-column v-for="col in cols" :key="col.field" v-bind="col" />
+          </template>
+          
+          方式2：列级 SLOT - 自定义单个列
+          <template #column="{ column: col, index }">
+            <e-column :field="col.field" :header-text="col.headerText + '✨'" />
+          </template>
+          
+          方式3：字段级 SLOT - 使用默认渲染
+          不传 slot，使用内置的字段渲染逻辑
+        -->
+      </EJ2ColumnsWrapper>
     </ejs-grid>
   </div>
 </template>

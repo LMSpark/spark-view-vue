@@ -1,48 +1,137 @@
-# EJ2 Renderer 架构
+# EJ2 Renderer 架构 (Vue 3 + SLOT 递归)
 
 ## 概述
 
-这是基于 **Syncfusion EJ2** 组件库的渲染器实现，与 Element Plus 版本保持相同的配置格式，但使用 EJ2 组件渲染。
+基于 **Syncfusion EJ2 + Vue 3 SLOT 递归架构**的企业级渲染器实现。
+
+### 核心特性
+- ✅ **Vue 3 SLOT 架构**：所有组件支持作用域 slot 定制
+- ✅ **递归渲染**：EJ2DynamicRenderer 自动处理嵌套结构
+- ✅ **企业级功能**：虚拟滚动、Excel/PDF 导出、高级过滤
+- ✅ **统一配置**：与 Element Plus 版本配置格式兼容
+- ✅ **高性能**：百万行数据流畅渲染
 
 ## 目录结构
 
 ```
 src/components/renderers/ej2/
-├── TextRenderer.vue          # 文本类型（EJS-TextBox）
-├── NumberRenderer.vue        # 数字类型（EJS-NumericTextBox）
-├── DateRenderer.vue          # 日期类型（EJS-DatePicker）
-├── TableRenderer.vue         # 表格容器（EJS-Grid）⭐
-├── FormRenderer.vue          # 表单容器
-├── DynamicRenderer.vue       # 动态渲染器（核心）
+├── EJ2DynamicRenderer.vue    # 动态渲染器（核心递归组件）
+├── EJ2TableRenderer.vue      # EJ2 Grid 表格渲染器 ⭐
+├── EJ2FormRenderer.vue       # 表单容器渲染器
+├── EJ2TextRenderer.vue       # 文本字段渲染器（EJS-TextBox）
+├── EJ2NumberRenderer.vue     # 数字字段渲染器（EJS-NumericTextBox）
+├── EJ2DateRenderer.vue       # 日期字段渲染器（EJS-DatePicker）
 ├── renderer-map.ts           # 类型到组件的映射表
 └── README.md                 # 本文档
 ```
 
-## 核心优势
+## 🚀 核心优势
 
-### 为什么使用 EJ2？
-
-相比 Element Plus，EJ2 提供企业级功能：
+### EJ2 vs Element Plus
 
 | 功能 | Element Plus | EJ2 |
 |------|--------------|-----|
-| **虚拟滚动** | ❌ 需第三方 | ✅ 内置 |
-| **Excel 导出** | ❌ 需 xlsx.js | ✅ 原生支持 |
-| **PDF 导出** | ❌ 无 | ✅ 原生支持 |
-| **分组聚合** | ❌ 手动实现 | ✅ 内置 |
-| **行内编辑** | ⚠️ 基础 | ✅ 强大 |
-| **列冻结** | ⚠️ 左右冻结 | ✅ 任意列 |
-| **过滤器** | ⚠️ 简单 | ✅ Excel 级别 |
+| **虚拟滚动** | ❌ 需第三方 | ✅ 内置 `enableVirtualization` |
+| **Excel 导出** | ❌ 需 xlsx.js | ✅ 原生 `allowExcelExport` |
+| **PDF 导出** | ❌ 无 | ✅ 原生 `allowPdfExport` |
+| **分组聚合** | ❌ 手动实现 | ✅ 内置 `allowGrouping` |
+| **行内编辑** | ⚠️ 基础 | ✅ 强大 `editSettings` |
+| **列冻结** | ⚠️ 左右冻结 | ✅ 任意列 `frozenColumns` |
+| **高级过滤** | ⚠️ 简单 | ✅ Excel 级别 `filterSettings` |
 | **大数据性能** | ⚠️ 1000 行卡顿 | ✅ 百万行流畅 |
+| **SLOT 支持** | ✅ 完整 | ✅ 三层 SLOT（通过包装层）|
 
-## 使用示例
+## 🎯 EJ2 Grid 三层 SLOT 架构
 
-### 1. 基础表格
+**突破性方案**: 通过 `EJ2ColumnsWrapper` 组件实现了完整的 SLOT 支持！
+
+### 架构设计
+```
+EJ2TableRenderer (外层)
+  ↓ 传递 columns
+EJ2ColumnsWrapper (包装层)
+  ↓ 三层 SLOT 接口
+<e-columns> (EJ2 指令)
+```
+
+### 三层 SLOT 使用
+
+#### 层级 1：字段级 SLOT（默认，零代码）
+```vue
+<EJ2ColumnsWrapper :columns="columns">
+  <!-- 不传 slot，自动渲染 -->
+</EJ2ColumnsWrapper>
+```
+
+#### 层级 2：列级 SLOT（中等灵活）
+```vue
+<EJ2ColumnsWrapper :columns="columns">
+  <template #column="{ column: col, index }">
+    <e-column
+      :field="col.field"
+      :header-text="col.headerText + (col.required ? ' *' : '')"
+    />
+  </template>
+</EJ2ColumnsWrapper>
+```
+
+#### 层级 3：列表级 SLOT（最灵活）
+```vue
+<EJ2ColumnsWrapper :columns="columns">
+  <template #default="{ columns: cols }">
+    <e-column
+      v-for="col in cols.filter(c => c.visible)"
+      :key="col.field"
+      v-bind="col"
+    />
+  </template>
+</EJ2ColumnsWrapper>
+```
+
+### 详细文档
+📖 查看完整指南：[EJ2 多层 SLOT 文档](../../../docs/guides/EJ2_MULTI_SLOT.md)
+
+---
+
+## ⚠️ 旧版限制说明（已通过包装层解决）
+
+<details>
+<summary>点击展开旧版限制（仅供参考）</summary>
+
+**旧版问题**: Syncfusion EJ2 Grid 使用自己的指令系统（`<e-columns>`/`<e-column>`），与 Vue 标准 slot 机制不兼容。
+
+### 旧版支持的场景
+- ✅ **EJ2FormRenderer**: 支持 header/footer slot
+- ✅ **字段渲染器作为表单字段**: Text/Number/Date 支持 slot
+- ✅ **字段渲染器作为详情显示**: 支持 slot
+
+### 不支持的场景
+- ❌ **EJ2TableRenderer 列定义**: 不能使用 Vue slot 自定义
+- ❌ **字段渲染器作为 Grid 列**: template slot 不可用
+
+### 解决方案
+如需自定义 EJ2 Grid 列内容，使用 EJ2 原生 template 机制：
+```vue
+<e-column field="status" headerText="Status">
+  <template #template="{ data }">
+    <span :class="getStatusClass(data.status)">{{ data.status }}</span>
+  </template>
+</e-column>
+```
+参考: [EJ2 Column Templates](https://ej2.syncfusion.com/vue/documentation/grid/columns/column-template/)
+
+</details>
+
+---
+
+## 🎯 使用示例
+
+### 1. 基础表格（使用默认 SLOT）
 
 ```json
 {
   "type": "ej2-table",
-  "dataSource": "users",
+  "dataKey": "users",
   "allowPaging": true,
   "allowSorting": true,
   "allowFiltering": true,
@@ -73,11 +162,38 @@ src/components/renderers/ej2/
 }
 ```
 
-### 2. 高级表格（虚拟滚动 + Excel 导出）
+### 2. 使用 SLOT 自定义列内容
+
+```vue
+<template>
+  <EJ2DynamicRenderer :rule="tableRule" :data="pageData">
+    <!-- 自定义单元格内容 -->
+    <template #default="{ data, value }">
+      <el-tag :type="data.status === 'active' ? 'success' : 'danger'">
+        {{ data.name }}
+      </el-tag>
+    </template>
+  </EJ2DynamicRenderer>
+</template>
+
+<script setup>
+import EJ2DynamicRenderer from '@/components/renderers/ej2/EJ2DynamicRenderer.vue'
+
+const tableRule = {
+  type: 'ej2-table',
+  dataSource: 'users',
+  children: [
+    { type: 'text', name: '姓名', value: 'name' }
+  ]
+}
+</script>
+```
+
+### 3. 高级表格（虚拟滚动 + Excel 导出）
 
 ```json
 {
-  "type": "ej2-grid",
+  "type": "ej2-table",
   "dataSource": "dataset.tables.Orders.rows",
   "enableVirtualization": true,
   "allowExcelExport": true,
@@ -123,37 +239,21 @@ src/components/renderers/ej2/
 }
 ```
 
-### 3. 在 Vue 组件中使用
+### 4. 表单自定义字段
 
 ```vue
-<script setup>
-import EJ2DynamicRenderer from '@/components/renderers/ej2/DynamicRenderer.vue'
-
-const rules = ref([{
-  type: 'ej2-table',
-  dataSource: 'users',
-  allowPaging: true,
-  children: [
-    { type: 'text', name: '姓名', value: 'name' },
-    { type: 'number', name: '年龄', value: 'age' }
-  ]
-}])
-
-const pageData = reactive({
-  users: [
-    { name: '张三', age: 25 },
-    { name: '李四', age: 30 }
-  ]
-})
-</script>
-
 <template>
-  <EJ2DynamicRenderer
-    v-for="(rule, index) in rules"
-    :key="index"
-    :rule="rule"
-    :data="pageData"
-  />
+  <EJ2DynamicRenderer :rule="formRule" :data="formData">
+    <!-- 自定义输入框 -->
+    <template #default="{ value, update, config }">
+      <ejs-textbox
+        :value="value"
+        :placeholder="config.placeholder"
+        prefix-icon="e-icons e-search"
+        @change="update"
+      />
+    </template>
+  </EJ2DynamicRenderer>
 </template>
 ```
 
