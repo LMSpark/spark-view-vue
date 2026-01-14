@@ -36,6 +36,15 @@
     }
   },
   {
+    "path": "/stacked-column-demo",
+    "name": "stacked-column-demo",
+    "pageId": "stacked-column-demo",
+    "meta": {
+      "title": "EJ2 堆叠列演示",
+      "icon": "📊"
+    }
+  },
+  {
     "path": "/ej2-test",
     "name": "ej2-test",
     "pageId": "ej2-test",
