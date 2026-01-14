@@ -62,9 +62,6 @@ const isStackedColumn = computed(() => {
   return !normalizedConfig.value.field && normalizedConfig.value.children.length > 0
 })
 
-// 是否有子列
-const hasChildren = computed(() => normalizedConfig.value.children.length > 0)
-
 if (import.meta.env.DEV) {
   console.log('🔧 EJ2ColumnRenderer:', {
     type: props.config.type,
@@ -80,25 +77,15 @@ if (import.meta.env.DEV) {
 <template>
   <!-- 只在 EJ2 Grid 上下文中渲染 -->
   <template v-if="parentType === 'ej2-table' || parentType === 'ej2-grid' || parentType === 'ej2-stacked-column'">
-    <!-- 🎯 堆叠列：不绑定字段，只作为分组标签 -->
+    <!-- 🎯 堆叠列：使用 :columns 属性绑定子列数组（官方方式） -->
     <e-column
       v-if="isStackedColumn"
       :header-text="normalizedConfig.headerText"
       :text-align="normalizedConfig.textAlign"
       :width="normalizedConfig.width"
       :visible="normalizedConfig.visible"
-    >
-      <!-- 递归渲染子列 -->
-      <template v-if="hasChildren">
-        <EJ2ColumnRenderer
-          v-for="(child, index) in normalizedConfig.children"
-          :key="index"
-          :config="child"
-          :parent-type="'ej2-stacked-column'"
-          :data="data"
-        />
-      </template>
-    </e-column>
+      :columns="normalizedConfig.children"
+    />
     
     <!-- 普通列：绑定字段 -->
     <e-column

@@ -56,9 +56,42 @@ const DynamicRenderer = defineComponent({
   },
   emits: ['update'],
   setup(props, { emit }) {
-    const rendererComponent = computed(() => getRenderer(props.rule.type))
+    // 🎯 根据 parentType 和 rule 属性推断实际类型
+    const actualType = computed(() => {
+      // 如果明确指定了 type，使用它
+      if (props.rule.type) {
+        return props.rule.type
+      }
+      
+      // 🔑 关键逻辑：根据 parentType 推断子节点类型
+      if (props.parentType === 'ej2-table' || props.parentType === 'ej2-grid') {
+        // EJ2 Grid 的子节点都是列
+        return 'ej2-column'
+      }
+      
+      if (props.parentType === 'ej2-stacked-column') {
+        // 堆叠列的子节点也是列
+        return 'ej2-column'
+      }
+      
+      if (props.parentType === 'table') {
+        // Element Plus Table 的子节点
+        if (props.rule.field || props.rule.prop) {
+          return 'text'  // 普通列
+        }
+      }
+      
+      // 默认：根据属性推断
+      if (props.rule.field || props.rule.headerText) {
+        return 'ej2-column'
+      }
+      
+      return props.rule.type || 'text'
+    })
     
-    const isContainer = computed(() => isContainerType(props.rule.type))
+    const rendererComponent = computed(() => getRenderer(actualType.value))
+    
+    const isContainer = computed(() => isContainerType(actualType.value))
     
     const stringChildren = computed(() => {
       if (!props.rule.children || !Array.isArray(props.rule.children)) {
@@ -69,6 +102,18 @@ const DynamicRenderer = defineComponent({
     
     const handleUpdate = (field: string, value: any) => {
       emit('update', field, value)
+    }
+    
+    if (import.meta.env.DEV && (actualType.value.startsWith('ej2-') || props.parentType?.startsWith('ej2-'))) {
+      console.log('🎨 DynamicRenderer:', {
+        originalType: props.rule.type,
+        actualType: actualType.value,
+        isContainer: isContainer.value,
+        parentType: props.parentType,
+        hasChildren: !!props.rule.children,
+        childrenCount: props.rule.children?.length || 0,
+        ruleKeys: Object.keys(props.rule)
+      })
     }
     
     return {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, provide } from 'vue'
+import { computed, provide, defineAsyncComponent } from 'vue'
 import { 
   GridComponent as EjsGrid,
   Page,
@@ -13,9 +13,13 @@ import {
   VirtualScroll
 } from '@syncfusion/ej2-vue-grids'
 
+// 🎯 使用异步组件打破循环依赖
+const DynamicRenderer = defineAsyncComponent(() => import('../DynamicRenderer.vue'))
+
 // Form-create passes rule properties directly as props
 // Use 'any' for internal rule props to avoid type warnings
 interface Props {
+  config?: any  // form-create passes the entire rule as config
   type?: any  // form-create internal
   dataSource?: any[]  // form-create sets this via props.dataSource
   dataKey?: any  // form-create internal
@@ -93,12 +97,23 @@ const toolbarItems = computed(() => {
   return undefined
 })
 
+// Normalize children prop (can be array or object from form-create)
+const columnsArray = computed(() => {
+  // 优先从 config 获取 children（form-create 传递方式）
+  const childrenSource = props.config?.children || props.children
+  
+  if (Array.isArray(childrenSource)) {
+    return childrenSource
+  }
+  return []
+})
+
 if (import.meta.env.DEV) {
   console.log('🔧 EJ2TableRenderer mounted:', {
-    hasChildren: !!props.children,
-    childrenType: typeof props.children,
-    childrenIsArray: Array.isArray(props.children),
-    childrenLength: Array.isArray(props.children) ? props.children.length : 'N/A'
+    hasConfig: !!props.config,
+    configChildren: props.config?.children,
+    propsChildren: props.children,
+    columnsCount: columnsArray.value.length
   })
 }
 
@@ -145,10 +160,15 @@ const handleRowSelected = (args: any) => {
       @action-complete="handleActionComplete"
       @row-selected="handleRowSelected"
     >
-      <!-- 🎯 关键：提供 SLOT 给 DynamicRenderer 递归渲染 children -->
-      <!-- DynamicRenderer 会根据 parentType='ej2-table' 渲染子节点为列 -->
+      <!-- 🎯 主动使用 DynamicRenderer 递归渲染 children -->
       <e-columns>
-        <slot :data="gridData" :parent-type="'ej2-table'" />
+        <DynamicRenderer
+          v-for="(columnRule, index) in columnsArray"
+          :key="index"
+          :rule="columnRule"
+          :parent-type="'ej2-table'"
+          :data="gridData"
+        />
       </e-columns>
     </ejs-grid>
   </div>
