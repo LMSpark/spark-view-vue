@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { Spark } from '../features/spark'
+import { Spark } from '@spark-view/spark-core'
 import { registerGlobalProvider, getGlobalProvider } from '@spark-view/spark-core'
 
 describe('logger capability', () => {
