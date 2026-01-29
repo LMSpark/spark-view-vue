@@ -1,7 +1,7 @@
 // shared/utils/configManager.ts
 // 统一配置管理工具
 
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '../../features/spark'
 
 export interface ConfigValidationRule {
   type: 'string' | 'number' | 'boolean' | 'object' | 'array'

@@ -109,7 +109,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '../features/spark'
 
 const router = useRouter()
 
