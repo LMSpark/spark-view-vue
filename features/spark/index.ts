@@ -23,45 +23,20 @@ import { initializeAppSparkComponents } from './initialize'
 import SparkEJ2Grid from './components/ej2/SparkEJ2Grid.vue'
 import SparkEJ2Column from './components/ej2/SparkEJ2Column.vue'
 
-// Spark命名空间 - 统一组件API
+// 使用 core 的 Spark 命名导出作为基础，并扩展应用特定初始化函数
+import { Spark as CoreSpark } from '@spark-view/spark-core'
+import { initializeAppSparkComponents } from './initialize'
+
 export const Spark = {
-  // 核心功能
-  useComponent: useSparkComponent,
-  initialize: initializeSparkComponents,
-  isInitialized: isSparkComponentsInitialized,
-  initializeApp: initializeAppSparkComponents,
-
-  // 组件注册
-  register: registerSparkComponent,
-  registerMultiple: registerSparkComponents,
-  get: getSparkComponent,
-  registry: globalComponentRegistry,
-
-  // 管理器（安全访问）
-  manager: () => {
-    const m = (typeof getGlobalSparkComponentManager === 'function') ? getGlobalSparkComponentManager() : undefined
-    if (!m) {
-      throw new Error('Spark.manager() is unavailable; ensure "@spark-view/spark-core" is initialized.')
-    }
-    return m
-  },
-  capabilities: () => {
-    const c = (typeof getGlobalCapabilityManager === 'function') ? getGlobalCapabilityManager() : undefined
-    if (!c) {
-      throw new Error('Spark.capabilities() is unavailable; ensure "@spark-view/spark-core" is initialized.')
-    }
-    return c
-  },
-
-  // 工具函数（通过 Spark 命名空间暴露，保持向后兼容）
-  logger: (...args: any[]) => getLogger(...args),
-
-  // 预注册组件
-  components: {
-    EJ2Grid: SparkEJ2Grid,
-    EJ2Column: SparkEJ2Column
-  }
+  ...CoreSpark,
+  // 应用初始化（在 app 范围内注册应用特有的组件）
+  initializeApp: initializeAppSparkComponents
 }
+
+export default Spark
+
+// 导出应用预注册组件（保持向后兼容）
+export { SparkEJ2Grid, SparkEJ2Column }
 
 // 导出类型
 export type {
