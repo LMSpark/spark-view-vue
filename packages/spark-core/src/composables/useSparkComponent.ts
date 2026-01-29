@@ -1,8 +1,8 @@
 import { reactive, computed, inject, provide, onMounted, onUnmounted } from 'vue'
-import { getGlobalSparkComponentManager } from '../utils/SparkComponentManager.js'
+import { globalSparkComponentManager } from '../utils/SparkComponentManager.js'
 import { Logger } from '../utils/logger.js'
 import { getOrCreateNoopProvider, getGlobalProvider } from '../utils/GlobalProviderRegistry.js'
-import { connectCapability, disconnectCapability } from '../utils/SparkCapabilitySystem.js'
+import { globalCapabilityManager } from '../utils/SparkCapabilitySystem.js'
 import type { SparkComponentConfig, SparkComponentContext, SparkCapabilityProvider, SparkCapabilityConsumer } from '../types/spark-component.js'
 
 export function useSparkComponent(props: { config: SparkComponentConfig, parentContext?: SparkComponentContext }) {
@@ -19,7 +19,7 @@ export function useSparkComponent(props: { config: SparkComponentConfig, parentC
 
   const context = reactive(ctxRaw)
   const logger = Logger(context)
-  const manager = getGlobalSparkComponentManager()
+  const manager = globalSparkComponentManager
 
   const isVisible = computed(() => props.config.visible !== false)
   const isDisabled = computed(() => props.config.disabled === true)
@@ -50,7 +50,7 @@ export function useSparkComponent(props: { config: SparkComponentConfig, parentC
     const provider = getProvider(name) || getGlobalProvider(name) || getOrCreateNoopProvider(name)
     if (provider) {
       consumer.implementation = (provider as any).implementation || provider
-      try { connectCapability(provider, consumer, context) } catch (e) { logger.warn('autoConnectCapabilities failed', String(e)) }
+      try { globalCapabilityManager.connectCapability(provider, consumer, context) } catch (e) { logger.warn('autoConnectCapabilities failed', String(e)) }
       logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
       return consumer.implementation
     }
@@ -73,7 +73,7 @@ export function useSparkComponent(props: { config: SparkComponentConfig, parentC
   onMounted(() => {
     initialize()
     const mgr = manager
-    if (!mgr) throw new Error('sparkManager not found. Ensure `app.provide("sparkManager", getGlobalSparkComponentManager())` is called in application entry.')
+    if (!mgr) throw new Error('sparkManager not found. Ensure `app.provide("sparkManager", Spark.manager())` is called in application entry.')
     mgr.registerContext(context)
     logger.info(`📝 Registered context to manager: ${context.id}`)
   })
@@ -106,12 +106,12 @@ export function useSparkComponent(props: { config: SparkComponentConfig, parentC
     initialize,
     destroy,
     logger,
-    getSparkComponent: (type: string) => undefined,
-    isComponentRegistered: (type: string) => false,
+    getSparkComponent: (type: string) => globalComponentRegistry.get(type)?.component,
+    isComponentRegistered: (type: string) => globalComponentRegistry.has(type),
     getOrCreateNoopProvider: (name: string) => getOrCreateNoopProvider(name),
     registerGlobalProvider: (name: string, provider: SparkCapabilityProvider) => { /* delegate */ },
     getGlobalProvider: (name: string) => getGlobalProvider(name),
-    connectCapability: (provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, ctx: SparkComponentContext) => connectCapability(provider, consumer, ctx),
-    disconnectCapability: (provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, ctx: SparkComponentContext) => disconnectCapability(provider, consumer, ctx)
+    connectCapability: (provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, ctx: SparkComponentContext) => globalCapabilityManager.connectCapability(provider, consumer, ctx),
+    disconnectCapability: (provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, ctx: SparkComponentContext) => globalCapabilityManager.disconnectCapability(provider, consumer, ctx)
   }
 }

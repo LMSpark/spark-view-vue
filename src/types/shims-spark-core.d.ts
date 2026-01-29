@@ -2,11 +2,9 @@ declare module '@spark-view/spark-core' {
   export const Spark: any
   export function useSparkComponent(...args: any[]): any
   export function initializeSparkComponents(...args: any[]): any
-  export function registerSparkComponents(...args: any[]): any
-  export function registerSparkComponent(...args: any[]): any
   export function Logger(...args: any[]): any
-  export function getGlobalSparkComponentManager(...args: any[]): any
-  export function getGlobalCapabilityManager(...args: any[]): any
+  // Use `Spark.manager()` / `Spark.capabilities()` to retrieve the global managers
+  // Prefer using the `Spark` namespace for registration & manager access.
   export type SparkComponentConfig = any
   export type SparkComponentContext = any
   export type SparkCapabilityProvider = any

@@ -13,12 +13,12 @@ Purpose: help an AI coding agent be productive quickly in this mono-repo: two ap
 - Concepts & guides: `docs/SPARK_ARCHITECTURE.md`, `docs/COMPONENT_DEV_GUIDE.md` (detailed workflows and examples)
 - Component registry: `shared/utils/componentRegistry.ts`
 - Example implementations: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
-- Core exports: `packages/spark-core` (or `@spark-view/spark-core`) — `registerSparkComponent`, `getGlobalSparkComponentManager`, `useSparkComponent`
+- Core exports: `packages/spark-core` (or `@spark-view/spark-core`) — use the `Spark` namespace (e.g., `Spark.registerSparkComponent`, `Spark.manager()`), or import specific globals from the package when needed (e.g., `globalSparkComponentManager`).
 - Tests: `tests/` (see `capability-late-binding.test.ts`, `provider-listener.test.ts`)
 
 ## Key conventions & idioms 📌
-- Component `type` values use `kebab-case` (e.g., `spark-ej2-grid`) and are registered via `registerSparkComponent()`.
-- Provide the manager in app entry: `app.provide('sparkManager', getGlobalSparkComponentManager())`.
+- Component `type` values use `kebab-case` (e.g., `spark-ej2-grid`) and are registered via `Spark.registerSparkComponent()`.
+- Provide the manager in app entry: `app.provide('sparkManager', Spark.manager())`.
 - Prefer DI over globals; tests rely on `global` injection fallback (`global: { provide: { sparkManager: getGlobalSparkComponentManager() } }`).
 - Use `useSparkComponent({ config })` inside components to get `{ context, registerProvider, consumeCapability, whenProviderAvailable, getOrCreateNoopProvider, logger }`.
 
@@ -30,7 +30,7 @@ Purpose: help an AI coding agent be productive quickly in this mono-repo: two ap
 
 ## Testing & common pitfalls 🧪
 - Test stack: Vitest + @vue/test-utils + jsdom. Mock EJ2 libs (Syncfusion) when asserting rendering behavior.
-- Provide `sparkManager` to mount options: `mount(Component, { global: { provide: { sparkManager: getGlobalSparkComponentManager() } } })`.
+- Provide `sparkManager` to mount options: `mount(Component, { global: { provide: { sparkManager: Spark.manager() } } })`.
 - Watch for provider/consumer timing — prefer registering providers in `setup()` or delay consumption until `onMounted` / `whenProviderAvailable`.
 
 ## Integration points

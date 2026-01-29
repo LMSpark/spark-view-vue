@@ -14,13 +14,13 @@ What moved here
 Usage example (preferred):
 
 ```ts
-import { Spark, registerSparkComponent, Logger, asyncUtils } from '@spark-view/spark-core'
+import { Spark, Logger, asyncUtils } from '@spark-view/spark-core'
 
 // get global manager
 const manager = Spark.manager()
 
 // register components
-registerSparkComponent({ type: 'my-component', name: 'MyComponent', version: '1.0.0', component: MyVueComponent })
+Spark.registerSparkComponent({ type: 'my-component', name: 'MyComponent', version: '1.0.0', component: MyVueComponent })
 
 // read global logger
 const logger = Spark.Logger()

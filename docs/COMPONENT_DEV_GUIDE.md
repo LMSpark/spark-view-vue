@@ -44,7 +44,7 @@ SPARK 使用基于配置和能力系统的插件化组件架构：
 命名规范与风格：
 
 - 组件类型使用 `kebab-case`，例如 `spark-ej2-grid`。
-- 组件定义导出为 `SparkComponentDefinition` 并通过 `registerSparkComponent()` 注册。
+- 组件定义导出为 `SparkComponentDefinition` 并通过 `Spark.registerSparkComponent()` 注册。
 - **必须**在应用入口注入 manager：在 `main.ts` 使用 `app.provide('sparkManager', globalSparkComponentManager)`，并在组件中通过 `useSparkComponent()` 自动 `inject('sparkManager')` 使用。该项目不再支持 `globalThis` 回退，统一采用单一依赖注入风格。
 
 ### Late-binding（能力延迟绑定）

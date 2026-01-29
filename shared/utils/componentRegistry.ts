@@ -1,2 +1,2 @@
-// Re-export component registry functions from the new package
-export { registerSparkComponent, getSparkComponent, getRegisteredComponentTypes, isComponentRegistered, registerSparkComponents } from '@spark-view/spark-core'
+// Re-export the canonical Spark namespace and registry
+export { Spark, globalComponentRegistry } from '@spark-view/spark-core'
