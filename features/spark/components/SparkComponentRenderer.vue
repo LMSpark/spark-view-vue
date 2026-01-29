@@ -42,8 +42,9 @@
  * 完全解耦：只依赖公共逻辑，不依赖其他自定义组件
  */
 import { computed } from 'vue'
-import { Spark } from '../'
-import type { SparkComponentConfig, SparkComponentContext } from '../'
+import { Spark } from '@spark-view/spark-core'
+import type { SparkComponentConfig, SparkComponentContext } from '@spark-view/spark-core'
+import type { RendererDebugProvider } from '../types'
 
 // ==================== Props ====================
 
@@ -89,7 +90,7 @@ registerProvider('rendererDebug', {
   isRegistered: computed(() => isComponentRegistered(props.config.type)),
   resolvedComponent: resolvedComponent.value,
   childCount: computed(() => props.config.children?.length || 0)
-})
+} as RendererDebugProvider)
 </script>
 
 <style scoped>

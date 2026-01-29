@@ -3,6 +3,7 @@
 
 import { Spark as CoreSpark, type SparkComponentConfig, type SparkComponentContext, type SparkCapabilityProvider, type SparkCapabilityConsumer } from '@spark-view/spark-core'
 import { initializeAppSparkComponents } from './initialize'
+import type { RendererDebugProvider } from './types'
 import SparkEJ2Grid from './components/ej2/SparkEJ2Grid.vue'
 import SparkEJ2Column from './components/ej2/SparkEJ2Column.vue'
 
@@ -19,7 +20,9 @@ export type {
   SparkComponentConfig,
   SparkComponentContext,
   SparkCapabilityProvider,
-  SparkCapabilityConsumer
+  SparkCapabilityConsumer,
+  // Feature-local types (consider moving to @spark-view/spark-core)
+  RendererDebugProvider
 }
 
 // 导出应用预注册组件（保持向后兼容）

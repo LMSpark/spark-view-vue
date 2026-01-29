@@ -4,7 +4,7 @@
  * 暂时简化以支持重构
  */
 import { computed } from 'vue'
-import type { ComponentConfig } from '@spark-view/spark-core'
+import type { SparkComponentConfig as ComponentConfig } from '@spark-view/spark-core'
 import GridComponent from './GridComponent.vue'
 import ColumnComponent from './ColumnComponent.vue'
 

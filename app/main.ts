@@ -34,7 +34,7 @@ try {
   globalManager = Spark.manager()
 } catch (e) {
   // 更明确的错误提示，便于调试
-  // eslint-disable-next-line no-console
+   
   console.error('[app] Failed to get Spark manager:', e)
   throw e
 }
