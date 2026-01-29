@@ -1,0 +1,1 @@
+const n="// 传统沙箱脚本 - 使用 registerFunction 注册函数\r\n// 上下文变量：$api, $route, $data, $el, $query, $queryAll, $rebindRules, $refreshData, $dataSet, $call 都已注入\r\n\r\n// 页面初始化\r\nconsole.log('🎨 渲染器演示页面已加载 (传统沙箱执行)');\r\nconsole.log('📦 页面数据:', $data);\r\n\r\n// 注册页面函数\r\nregisterFunction('__init__', function() {\r\n  console.log('✅ Renderer Demo 初始化完成')\r\n});\r\n";export{n as default};

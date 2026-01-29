@@ -1,0 +1,1 @@
+const e=[{id:1,name:"张三",age:28,createTime:"2024-01-15"},{id:2,name:"李四",age:32,createTime:"2024-02-20"},{id:3,name:"王五",age:25,createTime:"2024-03-10"}],a={name:"测试用户",age:30,createTime:"2024-01-01"},m={users:e,formData:a};export{m as default,a as formData,e as users};

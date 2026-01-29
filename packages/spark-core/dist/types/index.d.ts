@@ -1,0 +1,13 @@
+export { useSparkComponent } from './composables/useSparkComponent';
+export { registerSparkComponents, registerSparkComponent, getSparkComponent, globalComponentRegistry } from './utils/SparkComponentRegistry';
+export declare function initializeSparkComponents(): Promise<void>;
+export { isSparkComponentsInitialized } from './utils/SparkComponentRegistry';
+export { getLogger, createFileTransport, createHttpTransport } from './utils/logger';
+export { getGlobalSparkComponentManager, SparkComponentManagerImpl } from './utils/SparkComponentManager';
+export { globalComponentRenderer, SparkComponentRendererImpl } from './utils/SparkComponentRenderer';
+export { getGlobalCapabilityManager } from './utils/SparkCapabilitySystem';
+export { registerGlobalProvider, getGlobalProvider, getOrCreateNoopProvider } from './utils/GlobalProviderRegistry';
+export { SparkPluginManager, SparkDebugPlugin, SparkPerformancePlugin, SparkErrorHandlingPlugin, globalPluginManager, installSparkPlugin, uninstallSparkPlugin, getSparkPlugin } from './plugins/SparkPluginSystem';
+export type { SparkPlugin, SparkPluginHooks } from './plugins/SparkPluginSystem';
+export type * from './types/spark-component';
+export type * from './types/renderer';

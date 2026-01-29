@@ -1,0 +1,1 @@
+const e=[{type:"div",style:{padding:"20px"},children:[{type:"h1",children:["Toolbar Inject Demo"]},{type:"p",children:["演示：子组件注册动作到父组件的工具栏（无额外 DOM 包裹）"]},{type:"RenderTableWithToolbar"},{type:"RenderChildButton"}]}];export{e as default};

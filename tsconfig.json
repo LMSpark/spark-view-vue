@@ -1,28 +1,40 @@
 {
+  "extends": "../../../form-create-ssr-app/shared-config/tsconfig.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "preserve",
-    "sourceMap": true,
-    "inlineSourceMap": false,
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@root/*": ["../../../form-create-ssr-app/src/*"],
+      "@spark-view/spark-core": ["../../../form-create-ssr-app/packages/spark-core/src/spark-namespace.ts"],
+      "@spark-view/spark-core/*": ["../../../form-create-ssr-app/packages/spark-core/src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts", "server.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src/**/*.ts", 
+    "src/**/*.tsx", 
+    "src/**/*.vue", 
+    "src/**/*.d.ts", 
+    "tests/**/*.ts", 
+    "features/**/*.ts",
+    "features/**/*.tsx",
+    "features/**/*.vue",
+    "features/**/*.d.ts",
+    "shared/**/*.ts",
+    "shared/**/*.tsx", 
+    "shared/**/*.vue",
+    "shared/**/*.d.ts",
+    "plugins/**/*.ts",
+    "plugins/**/*.tsx",
+    "plugins/**/*.vue", 
+    "plugins/**/*.d.ts",
+    "pages/**/*.ts",
+    "pages/**/*.tsx",
+    "pages/**/*.vue",
+    "pages/**/*.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "app/**/*.vue",
+    "app/**/*.d.ts",
+    "../../packages/spark-core/src/**/*.ts"
+  ]
 }
