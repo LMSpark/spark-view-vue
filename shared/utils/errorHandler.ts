@@ -1,7 +1,7 @@
 // shared/utils/errorHandler.ts
 // 统一错误处理工具
 
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '../../features/spark'
 
 export interface RetryOptions {
   maxAttempts: number

@@ -42,8 +42,8 @@
  * 完全解耦：只依赖公共逻辑，不依赖其他自定义组件
  */
 import { computed } from 'vue'
-import { Spark } from '@spark-view/spark-core'
-import type { SparkComponentConfig, SparkComponentContext } from '@spark-view/spark-core'
+import { Spark } from '../'
+import type { SparkComponentConfig, SparkComponentContext } from '../'
 
 // ==================== Props ====================
 
