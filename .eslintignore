@@ -1,0 +1,6 @@
+# Ignore Vue SFCs for now (to be enabled with proper SFC parser config)
+**/*.vue
+
+# Ignore generated/type declaration files
+src/**/*.d.ts
+packages/**/*.d.ts

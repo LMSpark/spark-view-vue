@@ -79,7 +79,7 @@ const isTopLevelColumn = computed(() =>
 // 非顶级列把自己注册到父列
 if (!isTopLevelColumn.value) {
   // 直接使用类型化的 helper 获取父列实现（使用通用 GetProvider），简洁且无需 inline cast
-  const parentColumnConfig = GetProvider<{ addChildColumn?: (childConfig: ColumnModel) => void }>('columnConfig')
+  const parentColumnConfig = GetProvider('columnConfig') as { addChildColumn?: (childConfig: ColumnModel) => void } | undefined
   if (parentColumnConfig?.addChildColumn) {
     // 把当前列配置转换为 ColumnModel
     const currentColumnModel: ColumnModel = {
