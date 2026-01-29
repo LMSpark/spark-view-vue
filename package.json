@@ -1,0 +1,64 @@
+{
+    "name": "spark-view-architecture-prototype",
+    "version": "0.1.0",
+    "description": "SPARK 架构原型 - 能力分层 × 职责解耦 × 上下文契约",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "start": "vite preview --port 5173",
+        "build": "vue-tsc --noEmit && vite build",
+        "typecheck": "vue-tsc --noEmit -p tsconfig.typecheck.json",
+        "typecheck:ci": "vue-tsc --noEmit -p tsconfig.typecheck.json",
+        "lint": "eslint .",
+        "lint:ci": "eslint \"**/*.{ts,vue,js}\" --max-warnings=0",
+        "lint:fix": "eslint . --fix",
+        "preview": "vite preview --port 5173",
+        "test": "vitest",
+        "test:contract": "vitest run tests/contract",
+        "docs:dev": "vitepress dev docs",
+        "docs:build": "vitepress build docs",
+        "docs:serve": "vitepress serve docs",
+        "bench:create-tree": "node tools/bench/create-tree-benchmark.js"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "npm run lint && npm run typecheck"
+        }
+    },
+    "lint-staged": {
+        "**/*.{ts,vue,js}": [
+            "eslint --fix",
+            "git add"
+        ]
+    },
+    "prepare": "husky install",
+    "dependencies": {
+        "@syncfusion/ej2-base": "^32.1.22",
+        "@syncfusion/ej2-grids": "^32.1.24",
+        "@syncfusion/ej2-vue-calendars": "^32.1.22",
+        "@syncfusion/ej2-vue-grids": "^32.1.22",
+        "@syncfusion/ej2-vue-inputs": "^32.1.22",
+        "element-plus": "^2.5.0",
+        "pinia": "^2.1.0",
+        "vue": "^3.4.0",
+        "vue-router": "^4.6.4"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@types/node": "^25.0.3",
+        "@typescript-eslint/eslint-plugin": "^8.52.0",
+        "@typescript-eslint/parser": "^8.52.0",
+        "@vitejs/plugin-vue": "^6.0.3",
+        "@vue/test-utils": "^2.4.0",
+        "eslint": "^9.39.2",
+        "eslint-plugin-vue": "^10.7.0",
+        "husky": "^8.0.0",
+        "jsdom": "^23.0.0",
+        "lint-staged": "^14.0.0",
+        "terser": "^5.46.0",
+        "typescript": "~5.3.0",
+        "vite": "^7.3.1",
+        "vitest": "^1.0.0",
+        "vue-tsc": "^3.2.2"
+    }
+}
