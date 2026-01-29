@@ -5,7 +5,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { asyncUtils, RaceController } from '../utils/asyncUtils'
 import { ErrorHandler } from '../utils/errorHandler'
 import { ConfigManager } from '../utils/configManager'
-import { Spark } from '../../features/spark'
+import { Spark } from '@spark-view/spark-core'
 import type { AsyncState } from '../types'
 
 /**

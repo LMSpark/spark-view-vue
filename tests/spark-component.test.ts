@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
 import SparkEJ2Column from '../features/spark/components/ej2/SparkEJ2Column.vue'
 import { initializeSparkComponents } from '../features/spark'
-import { Spark } from '../features/spark'
+import { Spark } from '@spark-view/spark-core'
 import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
 
 // Mock EJ2 components
