@@ -1,0 +1,1 @@
+const s=[{id:1,name:"admin",role:"管理员",status:"在线"},{id:2,name:"user1",role:"普通用户",status:"离线"},{id:3,name:"user2",role:"普通用户",status:"在线"}],e={users:s};export{e as default,s as users};

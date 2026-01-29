@@ -1,0 +1,1 @@
+export { SparkPluginManager, SparkDebugPlugin, SparkPerformancePlugin, SparkErrorHandlingPlugin, globalPluginManager, installSparkPlugin, uninstallSparkPlugin, getSparkPlugin, type SparkPlugin, type SparkPluginHooks } from './SparkPluginSystem';

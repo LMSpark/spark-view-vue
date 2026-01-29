@@ -1,0 +1,1 @@
+const e="Form-Create API 实战演示",a="personal",r=!1,o={username:"",email:"",phone:"",userType:"personal",companyName:"",taxNumber:"",personalId:"",province:"",city:"",district:"",description:""},p=[],s={pageTitle:e,userType:a,showAdvanced:r,formData:o,apiLog:p};export{p as apiLog,s as default,o as formData,e as pageTitle,r as showAdvanced,a as userType};
