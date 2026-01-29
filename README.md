@@ -72,7 +72,7 @@ import { Spark } from '@spark-view/spark-core'
 const manager = Spark.manager()
 
 // 使用 logger
-const logger = Spark.getLogger()
+const logger = Spark.Logger()
 ```
 
 ## Important: Shared utils migrated into `@spark-view/spark-core`

@@ -33,7 +33,7 @@ export function useAsyncState<T>(
       state.value.data = result as any
     } catch (error) {
       state.value.error = error instanceof Error ? error : new Error(String(error))
-      Spark.getLogger().error('Async operation failed', { error: state.value.error })
+      Spark.Logger().error('Async operation failed', { error: state.value.error })
     } finally {
       state.value.loading = false
     }
@@ -75,7 +75,7 @@ export function useRaceSafe<T>(): {
       return await asyncUtils.raceSafe<T>(operation, controller.value!)
     } catch (error) {
       if (error instanceof Error && error.message === 'Operation was cancelled') {
-        Spark.getLogger().debug('Race-safe operation was cancelled')
+        Spark.Logger().debug('Race-safe operation was cancelled')
         return undefined
       }
       throw error
@@ -158,7 +158,7 @@ export function useLocalStorage<T>(
       const item = localStorage.getItem(key)
       return item ? JSON.parse(item) : defaultValue
     } catch (error) {
-      Spark.getLogger().warn('Failed to read from localStorage', { key, error })
+      Spark.Logger().warn('Failed to read from localStorage', { key, error })
       return defaultValue
     }
   }
@@ -170,7 +170,7 @@ export function useLocalStorage<T>(
       localStorage.setItem(key, JSON.stringify(newValue))
       value.value = newValue
     } catch (error) {
-      Spark.getLogger().error('Failed to write to localStorage', { key, error })
+      Spark.Logger().error('Failed to write to localStorage', { key, error })
     }
   }
 
@@ -179,7 +179,7 @@ export function useLocalStorage<T>(
       localStorage.removeItem(key)
       value.value = defaultValue
     } catch (error) {
-      Spark.getLogger().error('Failed to remove from localStorage', { key, error })
+      Spark.Logger().error('Failed to remove from localStorage', { key, error })
     }
   }
 

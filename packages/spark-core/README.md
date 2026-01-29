@@ -23,7 +23,7 @@ const manager = Spark.manager()
 registerSparkComponent({ type: 'my-component', name: 'MyComponent', version: '1.0.0', component: MyVueComponent })
 
 // read global logger
-const logger = Spark.getLogger()
+const logger = Spark.Logger()
 logger.info('hello')
 
 // async helper
