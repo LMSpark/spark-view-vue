@@ -31,7 +31,9 @@ export const Spark = {
   registerGlobalProvider: (name: string, provider: any) => registerGlobalProvider(name, provider),
   getGlobalProvider: (name: string) => getGlobalProvider(name),
   getOrCreateNoopProvider: (name: string, iface?: any) => getOrCreateNoopProvider(name, iface),
-  // logger
+  // logger (preferred: use Spark.Logger(context); getLogger kept for backward compatibility)
+  Logger: (context?: any) => getLogger(context),
+  logger: (context?: any) => getLogger(context),
   getLogger: (context?: any) => getLogger(context),
   // plugins
   installSparkPlugin: (plugin: any) => installSparkPlugin(plugin),
