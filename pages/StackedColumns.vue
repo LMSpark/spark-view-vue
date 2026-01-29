@@ -268,7 +268,7 @@ const refreshData = () => {
   // 模拟数据刷新
   employeeData.value = [...employeeData.value]
   resetPagination()
-  const logger = Spark.logger()
+  const logger = Spark.Logger()
   logger.info('数据已刷新')
 }
 

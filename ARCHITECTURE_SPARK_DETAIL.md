@@ -521,9 +521,9 @@ const gridConfig = {
 SPARK 集成了完整的日志系统：
 
 ```typescript
-import { getLogger } from '@/features/spark/utils/logger'
+import { Logger } from '@/features/spark/utils/logger'
 
-const logger = getLogger()
+const logger = Logger()
 logger.info('组件初始化完成')
 logger.warn('能力连接失败')
 logger.error('组件渲染错误')

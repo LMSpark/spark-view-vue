@@ -5,7 +5,6 @@ declare module '@spark-view/spark-core' {
   export function registerSparkComponents(...args: any[]): any
   export function registerSparkComponent(...args: any[]): any
   export function Logger(...args: any[]): any
-  export function getLogger(...args: any[]): any
   export function getGlobalSparkComponentManager(...args: any[]): any
   export function getGlobalCapabilityManager(...args: any[]): any
   export type SparkComponentConfig = any

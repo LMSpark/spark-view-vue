@@ -1,4 +1,4 @@
-import { getLogger } from './logger.js'
+import { Logger } from './logger.js'
 
 export interface RetryOptions {
   maxAttempts: number
@@ -41,7 +41,7 @@ export class AppError extends Error {
 }
 
 export class ErrorHandler {
-  private static logger = getLogger('ErrorHandler')
+  private static logger = Logger('ErrorHandler')
 
   static handle(error: unknown, context?: ErrorContext): never {
     const appError = this.normalizeError(error, context)
