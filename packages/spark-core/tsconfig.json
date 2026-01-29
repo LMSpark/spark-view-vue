@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": false,
+    "target": "ES2017",
+    "downlevelIteration": true,
+    "module": "NodeNext",
+    "moduleResolution": "nodenext"
+  },
+  "include": ["src/**/*"]
+}

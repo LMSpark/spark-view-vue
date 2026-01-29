@@ -1,24 +1,5 @@
-// shared/utils/asyncUtils.ts
-// 异步操作工具集
-
-import { ErrorHandler, RetryOptions } from './errorHandler'
-
-/**
- * 超时选项
- */
-export interface TimeoutOptions {
-  timeout: number
-  timeoutMessage?: string
-}
-
-/**
- * 防抖选项
- */
-export interface DebounceOptions {
-  leading?: boolean
-  trailing?: boolean
-}
-
+// Re-export async utilities from the canonical package to avoid duplication
+export { asyncUtils, RaceController, TimeoutOptions, DebounceOptions, ThrottleOptions } from '@spark-view/spark-core'
 /**
  * 节流选项
  */

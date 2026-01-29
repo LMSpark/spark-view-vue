@@ -1,0 +1,31 @@
+name: CI - spark-core
+
+on:
+  push:
+    paths:
+      - 'packages/spark-core/**'
+  pull_request:
+    paths:
+      - 'packages/spark-core/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck package
+        run: pnpm -C packages/spark-core run typecheck
+      - name: Run package tests
+        run: pnpm -C packages/spark-core run test:run
+        env:
+          CI: true
