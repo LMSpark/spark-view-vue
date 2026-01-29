@@ -1,36 +1,5 @@
-// shared/utils/configManager.ts
-// 统一配置管理工具
-
-import { Spark } from '@spark-view/spark-core'
-
-export interface ConfigValidationRule {
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array'
-  required?: boolean
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  default?: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  enum?: any[]
-  min?: number
-  max?: number
-  pattern?: RegExp
-}
-
-export interface ConfigSchema {
-  [key: string]: ConfigValidationRule
-}
-
-/**
- * 配置管理器类
- */
-export class ConfigManager {
-  private static instance: ConfigManager | null = null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static config: Record<string, any> = {}
-  private static schema: ConfigSchema = {}
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static watchers: Map<string, Set<(value: any) => void>> = new Map()
-  private static logger = Spark.logger()
-
+// Re-export configuration utilities from the canonical package to avoid duplication
+export { setConfig, getConfig, clearConfig, ConfigManager } from '@spark-view/spark-core'
   /**
    * 获取单例实例
    */

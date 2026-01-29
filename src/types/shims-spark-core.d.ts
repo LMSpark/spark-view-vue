@@ -13,5 +13,12 @@ declare module '@spark-view/spark-core' {
   export type SparkCapabilityConsumer = any
   export type SparkEJ2GridConfig = any
   export type ComponentConfig = any
+  /** Renderer debug provider (mimics best-practice placement in core) */
+  export interface RendererDebugProvider {
+    componentType: string
+    isRegistered: any
+    resolvedComponent: any
+    childCount: any
+  }
   export default Spark
 }

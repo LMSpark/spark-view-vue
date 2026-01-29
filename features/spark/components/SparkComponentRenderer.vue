@@ -43,8 +43,7 @@
  */
 import { computed } from 'vue'
 import { Spark } from '@spark-view/spark-core'
-import type { SparkComponentConfig, SparkComponentContext } from '@spark-view/spark-core'
-import type { RendererDebugProvider } from '../types'
+import type { SparkComponentConfig, SparkComponentContext, RendererDebugProvider } from '@spark-view/spark-core'
 
 // ==================== Props ====================
 

@@ -37,6 +37,8 @@ SPARK 使用基于配置和能力系统的插件化组件架构：
 - `src/composables/` - 组合式工具（`useSparkComponent`）
 - `src/utils/spark/` - 管理器、注册器与能力系统（`SparkComponentManager.ts`、`SparkCapabilitySystem.ts`）
 - `src/types/` - 核心类型（`spark-component.ts`）
+
+> 已迁移：通用工具已移入 `@spark-view/spark-core`。请从包中导入工具与类型（例如 `import { getLogger, asyncUtils } from '@spark-view/spark-core'`），不要直接导入或修改 `shared/utils`。
 - `tests/` - 单元与集成测试目录
 
 命名规范与风格：
