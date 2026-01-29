@@ -20,7 +20,7 @@ describe('logger level filtering', () => {
     const old = getGlobalProvider('logger')
     registerGlobalProvider('logger', provider as any)
 
-    const logger = Spark.logger()
+    const logger = Spark.Logger()
     // info is not implemented, so calling it should be a no-op (no exception)
     logger.info('should be noop')
     logger.warn('should call warn')

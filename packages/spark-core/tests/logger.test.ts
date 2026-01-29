@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getLogger, createMemoryTransport, createHttpTransport, createConsoleTransport } from '../src/utils/logger.js'
+import { Logger, createMemoryTransport, createHttpTransport, createConsoleTransport } from '../src/utils/logger.js'
 
 describe('logger', () => {
-  it('getLogger returns logging methods', () => {
-    const logger = getLogger()
+  it('Logger returns logging methods', () => {
+    const logger = Logger()
     expect(typeof logger.debug).toBe('function')
     expect(typeof logger.info).toBe('function')
     expect(typeof logger.warn).toBe('function')

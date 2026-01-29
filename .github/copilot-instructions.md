@@ -45,7 +45,7 @@ Purpose: help an AI coding agent be productive quickly in this mono-repo: two ap
 - Component type not found: Check `features/spark/components/index.ts` and `shared/utils/componentRegistry.ts` — ensure the component is passed to `registerSparkComponents()` and the `type` matches the config.
 - Tests failing with manager missing: In tests, provide `sparkManager` explicitly: `mount(MyComp, { global: { provide: { sparkManager: getGlobalSparkComponentManager() } } })` or use `Spark.manager()` helper in tests.
 - Capability timing issues: If consumers see "Capability not found", either register provider early in parent `setup()` or use `await whenProviderAvailable('capabilityName')` in consumer code.
-- Debugging logs: Use `getLogger(context)` or register a global logger via `registerGlobalProvider('logger', provider)` to capture runtime events.
+- Debugging logs: Use `Logger(context)` or `Spark.Logger()` (context optional), or register a global logger via `registerGlobalProvider('logger', provider)` to capture runtime events.
 
 ## SSR & build notes (form-create-ssr-app) 🌐
 - SSR compatibility: `vite.config.ts` uses `ssr.noExternal` for `element-plus` and other packages — check `vite.config.ts` when debugging SSR-only failures.

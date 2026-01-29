@@ -1,6 +1,6 @@
 import { reactive, computed, inject, provide, onMounted, onUnmounted } from 'vue'
 import { getGlobalSparkComponentManager } from '../utils/SparkComponentManager.js'
-import { getLogger } from '../utils/logger.js'
+import { Logger } from '../utils/logger.js'
 import { getOrCreateNoopProvider, getGlobalProvider } from '../utils/GlobalProviderRegistry.js'
 import { connectCapability, disconnectCapability } from '../utils/SparkCapabilitySystem.js'
 import type { SparkComponentConfig, SparkComponentContext, SparkCapabilityProvider, SparkCapabilityConsumer } from '../types/spark-component.js'
@@ -18,7 +18,7 @@ export function useSparkComponent(props: { config: SparkComponentConfig, parentC
   }
 
   const context = reactive(ctxRaw)
-  const logger = getLogger(context)
+  const logger = Logger(context)
   const manager = getGlobalSparkComponentManager()
 
   const isVisible = computed(() => props.config.visible !== false)

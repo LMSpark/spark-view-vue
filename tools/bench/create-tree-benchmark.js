@@ -2,10 +2,10 @@
   简单基准脚本：测量 createComponentTree 对不同深度与宽度配置的构建时间
   结果会打印到控制台，供快速回归和优化参考
 */
-import { getLogger } from '@/utils/spark/logger'
+import { Logger } from '@/utils/spark/logger'
 import { createSparkComponentTree } from '@/utils/spark/SparkComponentManager'
 
-const logger = getLogger()
+const logger = Logger()
 
 function generateConfig(depth, breadth) {
   const makeNode = (level) => {

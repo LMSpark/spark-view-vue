@@ -1,9 +1,9 @@
 import type { SparkComponentDefinition, SparkComponentRegistry } from '../types/spark-component.js'
-import { getLogger } from './logger.js'
+import { Logger } from './logger.js'
 
 class SparkComponentRegistryImpl implements SparkComponentRegistry {
   private components = new Map<string, SparkComponentDefinition>()
-  private logger = getLogger()
+  private logger = Logger()
 
   register(type: string, definition: SparkComponentDefinition): void {
     if (this.components.has(type)) {

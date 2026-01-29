@@ -8,13 +8,13 @@ What moved here
   - Async utilities: `asyncUtils`, `RaceController`
   - Configuration: `ConfigManager`, `getConfig`, `setConfig`, `clearConfig`
   - Error handling: `ErrorHandler` helpers (`handleError`, `withRetry`, `AppError`, `ErrorType`)
-  - Logger helpers: `getLogger`, `createConsoleTransport`, `createHttpTransport`, `createMemoryTransport`
+  - Logger helpers: `Logger`, `createConsoleTransport`, `createHttpTransport`, `createMemoryTransport`
   - Global provider registry: `registerGlobalProvider`, `getGlobalProvider`, `getOrCreateNoopProvider`
 
 Usage example (preferred):
 
 ```ts
-import { Spark, registerSparkComponent, getLogger, asyncUtils } from '@spark-view/spark-core'
+import { Spark, registerSparkComponent, Logger, asyncUtils } from '@spark-view/spark-core'
 
 // get global manager
 const manager = Spark.manager()

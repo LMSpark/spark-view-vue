@@ -1,5 +1,5 @@
 import type { SparkCapabilityProvider, SparkCapabilityConsumer, SparkComponentContext } from '../types/spark-component.js'
-import { getLogger } from './logger.js'
+import { Logger } from './logger.js'
 
 export interface SparkCapabilityConnector {
   connect(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean
@@ -17,7 +17,7 @@ class DataFlowConnector implements SparkCapabilityConnector {
         return true
       }
     } catch (e) {
-      getLogger().error('Failed to connect data flow:', e)
+      Logger().error('Failed to connect data flow:', e)
     }
     return false
   }
@@ -30,7 +30,7 @@ class DataFlowConnector implements SparkCapabilityConnector {
         return true
       }
     } catch (e) {
-      getLogger().error('Failed to disconnect data flow:', e)
+      Logger().error('Failed to disconnect data flow:', e)
     }
     return false
   }
@@ -47,7 +47,7 @@ class EventConnector implements SparkCapabilityConnector {
         return true
       }
     } catch (e) {
-      getLogger().error('Failed to connect event:', e)
+      Logger().error('Failed to connect event:', e)
     }
     return false
   }
@@ -60,7 +60,7 @@ class EventConnector implements SparkCapabilityConnector {
         return true
       }
     } catch (e) {
-      getLogger().error('Failed to disconnect event:', e)
+      Logger().error('Failed to disconnect event:', e)
     }
     return false
   }
@@ -77,7 +77,7 @@ class MethodConnector implements SparkCapabilityConnector {
       })
       return true
     } catch (e) {
-      getLogger().error('Failed to connect method:', e)
+      Logger().error('Failed to connect method:', e)
       return false
     }
   }
@@ -89,7 +89,7 @@ class MethodConnector implements SparkCapabilityConnector {
       })
       return true
     } catch (e) {
-      getLogger().error('Failed to disconnect method:', e)
+      Logger().error('Failed to disconnect method:', e)
       return false
     }
   }
@@ -101,7 +101,7 @@ class MethodConnector implements SparkCapabilityConnector {
 class SparkCapabilityManager {
   private connectors = new Map<string, SparkCapabilityConnector>()
   private connections = new Map<string, Set<string>>()
-  private logger = getLogger()
+  private logger = Logger()
 
   registerConnector(name: string, connector: SparkCapabilityConnector) {
     this.connectors.set(name, connector)

@@ -6,7 +6,7 @@ import type { SparkComponentConfig, SparkComponentContext } from '@spark-view/sp
 
 // Mock logger
 vi.mock('../features/spark/utils/logger', () => ({
-  getLogger: () => ({
+  Logger: () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn()

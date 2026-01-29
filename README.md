@@ -82,7 +82,7 @@ Common utilities previously located under `shared/utils` have been consolidated 
 Recommended imports:
 
 ```ts
-import { getLogger, asyncUtils, ConfigManager, handleError } from '@spark-view/spark-core'
+import { Logger, asyncUtils, ConfigManager, handleError } from '@spark-view/spark-core'
 ```
 
 Please avoid importing directly from `shared/utils/*` — use the package exports instead. For compatibility, `shared/utils` files now re-export the canonical package implementations.

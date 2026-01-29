@@ -38,7 +38,7 @@ SPARK 使用基于配置和能力系统的插件化组件架构：
 - `src/utils/spark/` - 管理器、注册器与能力系统（`SparkComponentManager.ts`、`SparkCapabilitySystem.ts`）
 - `src/types/` - 核心类型（`spark-component.ts`）
 
-> 已迁移：通用工具已移入 `@spark-view/spark-core`。请从包中导入工具与类型（例如 `import { getLogger, asyncUtils } from '@spark-view/spark-core'`），不要直接导入或修改 `shared/utils`。
+> 已迁移：通用工具已移入 `@spark-view/spark-core`。请从包中导入工具与类型（例如 `import { Logger, asyncUtils } from '@spark-view/spark-core'`），不要直接导入或修改 `shared/utils`。
 - `tests/` - 单元与集成测试目录
 
 命名规范与风格：
@@ -178,7 +178,7 @@ expect(globalSparkComponentManager.getContext(ctxId)).toBeTruthy()
 ```ts
 // 非组件场景（页面脚本、工具、测试）
 import { Spark } from '@spark-view/spark-core'
-const logger = Spark.logger() // context 可选，Spark.logger(context)
+const logger = Spark.Logger() // context 可选，Spark.Logger(context)
 
 // 组件内部（推荐）：
 import { useSparkComponent } from '@/composables/useSparkComponent'
@@ -196,7 +196,7 @@ logger.warn('warning')
 logger.error('error')
 ```
 
-> ⚠️ 注意：库/核心工具（例如 `SparkComponentManager`、`SparkCapabilitySystem` 等）应直接导入 `getLogger()` 并避免在模块顶层调用 `useSpark()` 或其他组合式函数。（在模块初始化时调用组合式 API 可能导致运行时或测试环境中的时序/依赖问题。）
+> ⚠️ 注意：库/核心工具（例如 `SparkComponentManager`、`SparkCapabilitySystem` 等）应使用 `Logger()` 或在运行期通过 `Spark.Logger()` 获取日志实例，避免在模块顶层调用 `useSpark()` 或其他组合式函数。（在模块初始化时调用组合式 API 可能导致运行时或测试环境中的时序/依赖问题。）
 
 
 - `logger` 默认会回退到安全的 `console` 实现（SSR 安全：会检查 `console` 是否存在），也可以通过 `registerGlobalProvider('logger', provider)` 注册自定义实现。

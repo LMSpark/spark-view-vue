@@ -4,7 +4,7 @@ import { getGlobalSparkComponentManager } from './utils/SparkComponentManager.js
 import { getGlobalCapabilityManager } from './utils/SparkCapabilitySystem.js'
 import { registerSparkComponent, registerSparkComponents, getSparkComponent } from './utils/componentRegistry.js'
 import { registerGlobalProvider, getGlobalProvider, getOrCreateNoopProvider } from './utils/GlobalProviderRegistry.js'
-import { getLogger } from './utils/logger.js'
+import { Logger as createLogger } from './utils/logger.js'
 import { getSparkPlugin, installSparkPlugin } from './plugins/SparkPluginSystem.js'
 import { useSparkComponent } from './composables/useSparkComponent.js'
 
@@ -31,10 +31,8 @@ export const Spark = {
   registerGlobalProvider: (name: string, provider: any) => registerGlobalProvider(name, provider),
   getGlobalProvider: (name: string) => getGlobalProvider(name),
   getOrCreateNoopProvider: (name: string, iface?: any) => getOrCreateNoopProvider(name, iface),
-  // logger (preferred: use Spark.Logger(context); getLogger kept for backward compatibility)
-  Logger: (context?: any) => getLogger(context),
-  logger: (context?: any) => getLogger(context),
-  getLogger: (context?: any) => getLogger(context),
+  // logger (single unified API)
+  Logger: createLogger,
   // plugins
   installSparkPlugin: (plugin: any) => installSparkPlugin(plugin),
   getSparkPlugin: (name: string) => getSparkPlugin(name),

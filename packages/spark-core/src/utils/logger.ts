@@ -6,8 +6,19 @@ function formatMsg(level: LogLevel, args: unknown[]) {
   return [`[${new Date().toISOString()}]`, `[${level.toUpperCase()}]`, ...args]
 }
 
-export function getLogger(context?: any) {
-  // If context has provider 'logger', use it. For simplicity, fallback to console
+export interface LoggerApi {
+  debug: (...args: unknown[]) => void
+  info: (...args: unknown[]) => void
+  warn: (...args: unknown[]) => void
+  error: (...args: unknown[]) => void
+}
+
+/**
+ * Create a logger instance. Prefer this API over any legacy helpers.
+ * Signature: Logger(context?: any): LoggerApi
+ */
+export function Logger(context?: any): LoggerApi {
+  // For now, context is unused — future enhancements can bind providers to context
   return {
     debug: (...args: unknown[]) => console.debug(...formatMsg('debug', args)),
     info: (...args: unknown[]) => console.info(...formatMsg('info', args)),
@@ -16,19 +27,6 @@ export function getLogger(context?: any) {
   }
 }
 
-export function createFileTransport(filePath: string, minLevel: LogLevel = 'debug'): SparkCapabilityProvider {
-  return {
-    name: 'logger',
-    version: '1.0.0',
-    interface: { debug: true, info: true, warn: true, error: true },
-    implementation: {
-      debug: (...args: unknown[]) => {},
-      info: (...args: unknown[]) => {},
-      warn: (...args: unknown[]) => {},
-      error: (...args: unknown[]) => {}
-    }
-  }
-}
 
 export function createConsoleTransport(level: LogLevel = 'info') {
   return {

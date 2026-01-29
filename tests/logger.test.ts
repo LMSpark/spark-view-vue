@@ -19,7 +19,7 @@ describe('logger capability', () => {
 
     registerGlobalProvider('logger', provider as any)
 
-    const logger = Spark.logger()
+    const logger = Spark.Logger()
     logger.info('test')
 
     expect(called).toBe(true)
@@ -51,7 +51,7 @@ describe('logger capability', () => {
       consumers: new Map()
     }
 
-    const logger = Spark.logger(ctx)
+    const logger = Spark.Logger(ctx)
     logger.info('hello')
     expect(calledLocal).toBe(true)
   })

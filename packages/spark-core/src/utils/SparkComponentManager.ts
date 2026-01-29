@@ -1,12 +1,12 @@
 import { globalComponentRegistry } from './SparkComponentRegistry.js'
-import { getLogger } from './logger.js'
+import { Logger } from './logger.js'
 import { autoConnectCapabilities, disconnectAllCapabilities } from './SparkCapabilitySystem.js'
 import type { SparkComponentConfig, SparkComponentContext, SparkComponentDefinition, SparkCapabilityProvider } from '../types/spark-component.js'
 
 class SparkComponentManagerImpl {
   private contexts = new Map<string, SparkComponentContext>()
   private renderer: any
-  private logger = getLogger()
+  private logger = Logger()
 
   constructor(renderer?: any) {
     this.renderer = renderer
