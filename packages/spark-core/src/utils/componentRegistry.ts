@@ -61,4 +61,5 @@ export const globalComponentRegistry = {
   findCompatibleProviders
 }
 
-export { registerSparkComponentImpl as registerSparkComponent, getSparkComponentImpl as getSparkComponent, getRegisteredComponentTypesImpl as getRegisteredComponentTypes, isComponentRegisteredImpl as isComponentRegistered, registerSparkComponentsImpl as registerSparkComponents }
+// NOTE: convenience named exports removed to avoid duplicating the public namespace API.
+// Prefer `globalComponentRegistry` or `Spark.registerSparkComponent(...)`.

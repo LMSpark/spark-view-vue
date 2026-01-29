@@ -57,19 +57,5 @@ class SparkComponentRegistryImpl implements SparkComponentRegistry {
 }
 
 export const globalComponentRegistry = new SparkComponentRegistryImpl()
-export function registerSparkComponent(def: SparkComponentDefinition): void {
-  globalComponentRegistry.register(def.type, def)
-}
-export function getSparkComponent(type: string): any {
-  return globalComponentRegistry.get(type)?.component
-}
-export function registerSparkComponents(defs: SparkComponentDefinition[]): void {
-  defs.forEach(d => registerSparkComponent(d))
-}
-export function isSparkComponentsInitialized(): boolean {
-  return globalComponentRegistry.getAllTypes().length > 0
-}
-export function initializeSparkComponents(): Promise<void> {
-  // noop for now; application can call to perform app-specific initialization
-  return Promise.resolve()
-}
+// NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
+// Use `Spark.registerSparkComponent(...)` or `globalComponentRegistry.register(...)` instead.

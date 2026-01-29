@@ -193,21 +193,5 @@ class SparkCapabilityManager {
 }
 
 export const globalCapabilityManager = new SparkCapabilityManager()
-
-export function connectCapability(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, context: SparkComponentContext) {
-  return globalCapabilityManager.connectCapability(provider, consumer, context)
-}
-export function disconnectCapability(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, context: SparkComponentContext) {
-  return globalCapabilityManager.disconnectCapability(provider, consumer, context)
-}
-export function autoConnectCapabilities(context: SparkComponentContext) {
-  return globalCapabilityManager.autoConnectCapabilities(context)
-}
-
-export function disconnectAllCapabilities(context: SparkComponentContext) {
-  return globalCapabilityManager.disconnectAllCapabilities(context)
-}
-
-export function getGlobalCapabilityManager() {
-  return globalCapabilityManager
-}
+// NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
+// Use `Spark.capabilities()` or `globalCapabilityManager` directly.

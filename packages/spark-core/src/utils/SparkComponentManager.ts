@@ -1,6 +1,6 @@
 import { globalComponentRegistry } from './SparkComponentRegistry.js'
 import { Logger } from './logger.js'
-import { autoConnectCapabilities, disconnectAllCapabilities } from './SparkCapabilitySystem.js'
+import { globalCapabilityManager } from './SparkCapabilitySystem.js'
 import type { SparkComponentConfig, SparkComponentContext, SparkComponentDefinition, SparkCapabilityProvider } from '../types/spark-component.js'
 
 class SparkComponentManagerImpl {
@@ -46,7 +46,7 @@ class SparkComponentManagerImpl {
     const ctx = this.contexts.get(id)
     if (!ctx) return false
     try {
-      disconnectAllCapabilities(ctx)
+      globalCapabilityManager.disconnectAllCapabilities(ctx)
       if (ctx.parent) ctx.parent.children = ctx.parent.children.filter(c => c.id !== id)
       const walk = (c: SparkComponentContext) => {
         c.children.forEach(x => walk(x))
@@ -63,7 +63,7 @@ class SparkComponentManagerImpl {
 
   registerProvider(context: SparkComponentContext, provider: SparkCapabilityProvider): void {
     context.providers.add(provider)
-    try { autoConnectCapabilities(context) } catch {}
+    try { globalCapabilityManager.autoConnectCapabilities(context) } catch {}
   }
 
   registerContext(context: SparkComponentContext): void {
@@ -139,12 +139,5 @@ class SparkComponentManagerImpl {
 }
 
 export const globalSparkComponentManager = new SparkComponentManagerImpl()
-export function getGlobalSparkComponentManager() { return globalSparkComponentManager }
-export function registerSparkComponent(def: any) { globalSparkComponentManager.registerComponent(def) }
-export function renderSparkComponent(cfg: SparkComponentConfig, parent?: SparkComponentContext) {
-  return globalSparkComponentManager.render(cfg, parent)
-}
-export function getSparkComponentDefinition(type: string) { return globalSparkComponentManager.getComponentDefinition(type) }
-export function createSparkComponentTree(cfg: SparkComponentConfig) { return globalSparkComponentManager.createComponentTree(cfg) }
-export function validateSparkComponentConfig(cfg: SparkComponentConfig) { return globalSparkComponentManager.validateComponentConfig(cfg) }
-export function registerSparkComponents(defs: any[]) { globalSparkComponentManager.registerComponents(defs) }
+// NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
+// Use `Spark.manager()` or `globalSparkComponentManager` directly.

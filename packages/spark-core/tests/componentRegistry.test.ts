@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { registerSparkComponent, getSparkComponent, getRegisteredComponentTypes } from '../src/utils/componentRegistry'
+import { globalComponentRegistry } from '../src/utils/componentRegistry'
 
 describe('componentRegistry', () => {
   beforeEach(() => {
@@ -8,9 +8,9 @@ describe('componentRegistry', () => {
 
   it('registers and retrieves a component', () => {
     const fake = {} as any
-    registerSparkComponent('test-type-1', fake)
-    expect(getSparkComponent('test-type-1')).toBe(fake)
-    const types = getRegisteredComponentTypes()
+    globalComponentRegistry.register('test-type-1', fake as any)
+    expect(globalComponentRegistry.get('test-type-1')?.component).toBe(fake)
+    const types = globalComponentRegistry.getAllTypes()
     expect(types).toContain('test-type-1')
   })
 })
