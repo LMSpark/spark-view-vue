@@ -1,0 +1,40 @@
+{
+  "extends": "../../../form-create-ssr-app/shared-config/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@root/*": ["../../../form-create-ssr-app/src/*"],
+      "@spark-view/spark-core": ["../../../form-create-ssr-app/packages/spark-core/src/spark-namespace.ts"],
+      "@spark-view/spark-core/*": ["../../../form-create-ssr-app/packages/spark-core/src/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts", 
+    "src/**/*.tsx", 
+    "src/**/*.vue", 
+    "src/**/*.d.ts", 
+    "tests/**/*.ts", 
+    "features/**/*.ts",
+    "features/**/*.tsx",
+    "features/**/*.vue",
+    "features/**/*.d.ts",
+    "shared/**/*.ts",
+    "shared/**/*.tsx", 
+    "shared/**/*.vue",
+    "shared/**/*.d.ts",
+    "plugins/**/*.ts",
+    "plugins/**/*.tsx",
+    "plugins/**/*.vue", 
+    "plugins/**/*.d.ts",
+    "pages/**/*.ts",
+    "pages/**/*.tsx",
+    "pages/**/*.vue",
+    "pages/**/*.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "app/**/*.vue",
+    "app/**/*.d.ts",
+    "../../packages/spark-core/src/**/*.ts"
+  ]
+}
