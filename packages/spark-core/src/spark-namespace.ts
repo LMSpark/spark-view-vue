@@ -3,12 +3,13 @@
 import { componentManager } from './utils/SparkComponentManager.js'
 import { capabilityManager } from './utils/SparkCapabilitySystem.js'
 import { componentRegistry } from './utils/SparkComponentRegistry.js'
-import { registerGlobalProvider, getGlobalProvider, getOrCreateNoopProvider } from './utils/GlobalProviderRegistry.js'
+
 import { Logger as createLogger } from './utils/logger.js'
 import { getSparkPlugin, installSparkPlugin } from './plugins/SparkPluginSystem.js'
-import { useComponent } from './composables/useSparkComponent.js'
+import { createVueSparkPlugin } from './plugins/VueSparkPlugin.js'
+import { useSparkComponent } from './composables/useSparkComponent.js'
 import type { App } from 'vue'
-import type { ComponentDefinition, CapabilityProvider, ComponentConfig, ComponentContext, Plugin } from './types/spark-component.js'
+import type { ComponentDefinition, CapabilityProvider, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js'
 import type { CapabilityInterface } from './types/common.js'
 
 export const Spark = {
@@ -27,23 +28,35 @@ export const Spark = {
     if (!Array.isArray(defs)) throw new Error('registerSparkComponents expects an array of component definitions')
     return defs.forEach((d: ComponentDefinition) => componentManager.registerComponent(d))
   },
+  // Register a component by inspecting its attached spark meta. Minimal requirement: component.spark.type
+  registerSparkComponentFromComponent: (component: any) => {
+    if (!component) throw new Error('component is required')
+    const meta = (component as any).spark
+    if (!meta || typeof meta.type !== 'string' || meta.type.trim() === '') throw new Error('component must expose spark meta with a non-empty "type" property')
+    const def: ComponentDefinition = { type: meta.type, name: meta.name || meta.type, version: meta.version || '0.0.0', component, providers: meta.providers, validator: meta.validator }
+    // Use the current Spark.manager() to allow test-time override of the manager in test fixtures
+    const mgr = (Spark as any).manager ? (Spark as any).manager() : componentManager
+    return (mgr as ComponentManager).registerComponent(def)
+  },
   getSparkComponent: (type: string) => componentRegistry.get(type)?.component,
-  // global providers
-  registerGlobalProvider: (name: string, provider: CapabilityProvider) => registerGlobalProvider(name, provider),
-  getGlobalProvider: (name: string) => getGlobalProvider(name),
-  getOrCreateNoopProvider: (name: string, iface?: CapabilityInterface) => getOrCreateNoopProvider(name, iface),
+
   // logger (single unified API)
   Logger: createLogger,
   // plugins
   installSparkPlugin: (plugin: Plugin) => installSparkPlugin(plugin),
   getSparkPlugin: (name: string) => getSparkPlugin(name),
   // composables / helpers
-  useComponent: (config: ComponentConfig, parent?: ComponentContext) => useComponent(config, parent),
+  useComponent: (config: ComponentConfig, parent?: ComponentContext) => useSparkComponent(config, { parentContext: parent }),
+  useSparkComponent: (config: ComponentConfig, opts?: { manager?: any, registry?: any, parentContext?: ComponentContext }) => useSparkComponent(config, opts),
   // initialization hook (no-op by default; features may extend this with `initializeApp`)
   initialize: async () => { return Promise.resolve() },
-  // Vue plugin install
-  install(app: App) {
-    app.provide('sparkManager', componentManager)
+  // Vue plugin helpers
+  // Use `Spark.createVuePlugin({ manager })` to get a plugin, or call `Spark.install(app, { manager })` to install directly.
+  createVuePlugin: (opts: { manager: ComponentManager, registry?: ComponentRegistry }) => createVueSparkPlugin(opts),
+  install(app: App, opts?: { manager?: ComponentManager, registry?: ComponentRegistry }) {
+    if (!opts || !opts.manager) throw new Error('Spark.install(app, { manager }) requires an explicit manager. Create one via createComponentManager(registry) and pass it here.')
+    const plugin = createVueSparkPlugin({ manager: opts.manager, registry: opts.registry })
+    app.use(plugin as any)
   }
 }
 

@@ -1,9 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { Spark } from '@spark-view/spark-core'
-import { registerGlobalProvider, getGlobalProvider } from '@spark-view/spark-core'
 
 describe('logger capability', () => {
-  it('uses registered global logger provider', () => {
+  it('uses context-level logger provider', () => {
     let called = false
     const provider = {
       name: 'logger',
@@ -14,23 +13,23 @@ describe('logger capability', () => {
       }
     }
 
-    // Keep old provider to restore later
-    const old = getGlobalProvider('logger')
+    const ctx: any = {
+      id: 'ctx-logger',
+      type: 'test',
+      children: [],
+      config: {},
+      state: {},
+      providers: new Set([ provider ]),
+      consumers: new Map()
+    }
 
-    registerGlobalProvider('logger', provider as any)
-
-    const logger = Spark.Logger()
+    const logger = Spark.Logger(ctx)
     logger.info('test')
 
     expect(called).toBe(true)
-
-    // restore
-    if (old) {
-      registerGlobalProvider('logger', old)
-    }
   })
 
-  it('prefers context-level logger provider over global', () => {
+  it('prefers context-level logger provider over missing global', () => {
     let calledLocal = false
     const localProvider = {
       name: 'logger',

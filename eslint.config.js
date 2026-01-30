@@ -38,7 +38,7 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: ['./tsconfig.json', './packages/spark-core/tsconfig.json'],
         ecmaVersion: 2020,
         sourceType: 'module'
       },

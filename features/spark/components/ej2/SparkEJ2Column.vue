@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 // import { computed } from 'vue'
-import { useComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-core'
 // getColumnConfig now provided by useSparkComponent; helper import removed
 import type { SparkComponentConfig, SparkComponentContext } from '@spark-view/spark-core'
 // Removed EJ2 imports to avoid runtime errors in tests
@@ -44,9 +44,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { context, provide, getComponent } = useComponent(
+const { context, provide, getComponent } = useSparkComponent(
   props.config as SparkComponentConfig,
-  props.parentContext
+  { parentContext: props.parentContext }
 )
 
 // Detect test environment (kept for future use if needed) - removed unused variable

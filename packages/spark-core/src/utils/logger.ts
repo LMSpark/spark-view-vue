@@ -10,14 +10,12 @@ function formatMsg(level: LogLevel, args: unknown[]) {
  * Create a logger instance. Prefer this API over any legacy helpers.
  * Signature: Logger(context?: unknown): LoggerApi
  */
-import { getGlobalProvider } from './GlobalProviderRegistry.js'
 
 export function Logger(context?: unknown): LoggerApi {
-  // Prefer context-level provider, then global provider, then fallback to console
+  // Prefer context-level provider, then fallback to console
   const providersSet = (typeof context === 'object' && context && (context as { providers?: Set<Record<string, unknown>> }).providers) ? (context as { providers?: Set<Record<string, unknown>> }).providers : undefined
   const ctxProvider = providersSet ? Array.from(providersSet).find((p) => typeof (p as Record<string, unknown>).name === 'string' && (p as Record<string, unknown>).name === 'logger') : undefined
-  const globalProv = getGlobalProvider('logger')
-  const provider = ctxProvider || globalProv
+  const provider = ctxProvider
 
   const impl = provider ? (((provider as unknown as { implementation?: Record<string, unknown> }).implementation) ?? provider) : null
 

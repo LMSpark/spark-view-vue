@@ -4,6 +4,7 @@ import { asyncUtils, RaceController } from '../utils/asyncUtils.js'
 import { handleError, withRetry, type RetryOptions, type ErrorContext } from '../utils/errorHandler.js'
 import { ConfigManager } from '../utils/configManager.js'
 import { Spark } from '../spark-namespace.js'
+import { storageAvailable, readLocalStorage, writeLocalStorage, removeLocalStorage, getWindow, safeAddEventListener, safeRemoveEventListener, getDocument } from '../utils/env.js'
 type LocalAsyncState<T> = { data?: T; loading: boolean; error?: Error }
 
 export function useAsyncState<T>(
@@ -153,9 +154,10 @@ export function useLocalStorage<T>(
   setValue: (newValue: T) => void
   remove: () => void
 } {
+
   const getStoredValue = (): T | undefined => {
     try {
-      const item = localStorage.getItem(key)
+      const item = storageAvailable() ? readLocalStorage(key) : null
       return item ? JSON.parse(item) : defaultValue
     } catch (error) {
       Spark.Logger().warn('Failed to read from localStorage', { key, error })
@@ -167,7 +169,7 @@ export function useLocalStorage<T>(
 
   const setValue = (newValue: T): void => {
     try {
-      localStorage.setItem(key, JSON.stringify(newValue))
+      if (storageAvailable()) writeLocalStorage(key, JSON.stringify(newValue))
       value.value = newValue
     } catch (error) {
       Spark.Logger().error('Failed to write to localStorage', { key, error })
@@ -176,7 +178,7 @@ export function useLocalStorage<T>(
 
   const remove = (): void => {
     try {
-      localStorage.removeItem(key)
+      if (storageAvailable()) removeLocalStorage(key)
       value.value = defaultValue
     } catch (error) {
       Spark.Logger().error('Failed to remove from localStorage', { key, error })
@@ -190,11 +192,13 @@ export function useLocalStorage<T>(
   }
 
   onMounted(() => {
-    window.addEventListener('storage', handleStorageChange)
+    const w = getWindow()
+    if (w) safeAddEventListener(w, 'storage', handleStorageChange)
   })
 
   onUnmounted(() => {
-    window.removeEventListener('storage', handleStorageChange)
+    const w = getWindow()
+    if (w) safeRemoveEventListener(w, 'storage', handleStorageChange as any)
   })
 
   return {
@@ -215,7 +219,8 @@ export function useTheme(): {
 
   const setTheme = (newTheme: string): void => {
     setThemeValue(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
+    const doc = getDocument()
+    if (doc && doc.documentElement) doc.documentElement.setAttribute('data-theme', newTheme)
   }
 
   const toggleTheme = (): void => {
@@ -224,8 +229,9 @@ export function useTheme(): {
   }
 
   onMounted(() => {
-    if (theme.value) {
-      document.documentElement.setAttribute('data-theme', theme.value)
+    const doc = getDocument()
+    if (doc && theme.value) {
+      doc.documentElement.setAttribute('data-theme', theme.value)
     }
   })
 
@@ -289,6 +295,8 @@ export function useLifecycle(): {
   }
 }
 
+import { safeAddEventListener, safeRemoveEventListener, getWindow } from '../utils/env.js'
+
 export function useEventListener(
   event: string,
   handler: (event: Event) => void,
@@ -298,11 +306,13 @@ export function useEventListener(
   remove: () => void
 } {
   const add = (): void => {
-    window.addEventListener(event, handler, options)
+    const target = getWindow()
+    safeAddEventListener(target, event, handler as any, options)
   }
 
   const remove = (): void => {
-    window.removeEventListener(event, handler, options)
+    const target = getWindow()
+    safeRemoveEventListener(target, event, handler as any, options as any)
   }
 
   onMounted(() => {
@@ -320,15 +330,19 @@ export function useWindowSize(): {
   width: ComputedRef<number>
   height: ComputedRef<number>
 } {
-  const width = ref(window.innerWidth)
-  const height = ref(window.innerHeight)
+  const w = getWindow()
+  const width = ref(w ? w.innerWidth : 0)
+  const height = ref(w ? w.innerHeight : 0)
 
   const updateSize = (): void => {
-    width.value = window.innerWidth
-    height.value = window.innerHeight
+    const t = getWindow()
+    if (!t) return
+    width.value = t.innerWidth
+    height.value = t.innerHeight
   }
 
-  useEventListener('resize', updateSize)
+  // only attach listener when window available
+  if (w) useEventListener('resize', updateSize)
 
   return {
     width: computed(() => width.value),

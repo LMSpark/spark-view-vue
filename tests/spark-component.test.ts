@@ -5,8 +5,13 @@ import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
 import SparkEJ2Column from '../features/spark/components/ej2/SparkEJ2Column.vue'
 import { initializeSparkComponents } from '../features/spark'
-import { Spark, defaultComponentRegistry } from '@spark-view/spark-core'
+import { Spark, createComponentManager, createComponentRegistry, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '@spark-view/spark-core'
+import { initializeAppSparkComponents } from '../features/spark/initialize'
 import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
+
+const registry = createComponentRegistry()
+const manager = createComponentManager(undefined, registry)
+await initializeAppSparkComponents(manager)
 
 // Mock EJ2 components
 vi.mock('@syncfusion/ej2-vue-grids', () => ({
@@ -43,7 +48,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Grid, {
         props: { config },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -73,7 +78,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Grid, {
         props: { config },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -98,7 +103,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Grid, {
         props: { config },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -118,7 +123,7 @@ describe('SPARK EJ2 Components', () => {
             width: '120'
           }
         },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -138,7 +143,7 @@ describe('SPARK EJ2 Components', () => {
             ]
           }
         },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -158,7 +163,7 @@ describe('SPARK EJ2 Components', () => {
             visible: true
           }
         },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -178,7 +183,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Grid, {
         props: { config: gridConfig },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -209,7 +214,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Column, {
         props: { config: deepNestedConfig },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       expect(wrapper.exists()).toBe(true)

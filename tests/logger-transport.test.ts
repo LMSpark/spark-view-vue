@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
-import { Spark, registerGlobalProvider } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-core'
 
 describe('file transport (replaced by custom provider test)', () => {
-  it('uses registered global logger provider', () => {
+  it('uses context-level logger provider', () => {
     let written = ''
     const provider = {
       name: 'logger',
@@ -13,15 +13,19 @@ describe('file transport (replaced by custom provider test)', () => {
       }
     }
 
-    const old = (global as any).__oldLoggerProvider
-    registerGlobalProvider('logger', provider as any)
+    const ctx: any = {
+      id: 'ctx-transport',
+      type: 'test',
+      children: [],
+      config: {},
+      state: {},
+      providers: new Set([ provider ]),
+      consumers: new Map()
+    }
 
-    const logger = Spark.Logger()
+    const logger = Spark.Logger(ctx)
     logger.info('hello', { a: 1 })
 
     expect(written).toContain('hello')
-
-    // restore - best effort
-    if (old) registerGlobalProvider('logger', old)
   })
 })

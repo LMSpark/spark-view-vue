@@ -1,12 +1,21 @@
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject } from 'vue'
 import { Logger } from '../utils/logger.js'
-import { getOrCreateNoopProvider, getGlobalProvider } from '../utils/GlobalProviderRegistry.js'
 import { capabilityManager } from '../utils/SparkCapabilitySystem.js'
-import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
+import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../utils/diKeys.js'
+import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import type { Implementation } from '../types/common.js'
-import { defaultComponentManager, defaultComponentRegistry } from '../factories.js'
 
-export function useComponent(config: ComponentConfig, parentContext?: ComponentContext) {
+// Local helper to create a noop provider when a capability is missing. This avoids any global registry side-effects.
+function createNoopProvider(name: string): CapabilityProvider {
+  return { name, version: '0.0.0', interface: {}, implementation: {} }
+}
+
+export function useSparkComponent(
+  config: ComponentConfig,
+  opts?: { manager?: ComponentManager; registry?: ComponentRegistry; parentContext?: ComponentContext }
+) {
+  const parentContext = opts?.parentContext as ComponentContext | undefined
+
   const ctxRaw: ComponentContext = {
     id: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
     type: config.type,
@@ -20,18 +29,21 @@ export function useComponent(config: ComponentConfig, parentContext?: ComponentC
 
   const context = reactive(ctxRaw)
   const logger = Logger(context)
-  const injectedManager = inject('sparkManager') as unknown
-  const manager = (injectedManager as any) ?? defaultComponentManager
 
-  const isVisible = computed(() => config.visible !== false)
-  const isDisabled = computed(() => config.disabled === true)
+  // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
+  const resolvedManager = opts?.manager ?? (inject(SPARK_MANAGER_KEY as any) as ComponentManager | undefined) ?? (inject('sparkManager' as any) as ComponentManager | undefined)
+  if (!resolvedManager) throw new Error('Component manager not found. Provide via options.manager or install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager })).')
+  const manager = resolvedManager as ComponentManager
+
+  const isVisible = computed(() => (config as any).visible !== false)
+  const isDisabled = computed(() => (config as any).disabled === true)
 
   const initialize = () => logger.info(`🚀 Initializing SPARK component: ${context.type} (${context.id})`)
   const destroy = () => {
     logger.info(`🗑️ Destroying SPARK component: ${context.type} (${context.id})`)
     context.providers.clear()
     context.consumers.clear()
-    try { manager && typeof manager.destroyContext === 'function' && manager.destroyContext(context.id) } catch (e: unknown) { logger.warn('Failed to destroy context via manager', String(e)) }
+    try { manager && typeof (manager as any).destroyContext === 'function' && (manager as any).destroyContext(context.id) } catch (e: unknown) { logger.warn('Failed to destroy context via manager', String(e)) }
   }
 
   function getProvider(name: string): CapabilityProvider | undefined {
@@ -42,7 +54,7 @@ export function useComponent(config: ComponentConfig, parentContext?: ComponentC
   // Provide a capability on this context
   function provide(name: string, implementation?: Implementation) {
     const p: CapabilityProvider = { name, version: '1.0.0', interface: {}, implementation }
-    if (manager && typeof manager.registerProvider === 'function') manager.registerProvider(context, p)
+    if (manager && typeof (manager as any).registerProvider === 'function') (manager as any).registerProvider(context, p)
     else context.providers.add(p)
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
@@ -50,7 +62,7 @@ export function useComponent(config: ComponentConfig, parentContext?: ComponentC
   function consume(name: string) {
     const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
     context.consumers.set(name, consumer)
-    const provider = getProvider(name) || getGlobalProvider(name) || getOrCreateNoopProvider(name)
+    const provider = getProvider(name) || createNoopProvider(name)
     if (provider) {
       consumer.implementation = ((provider as CapabilityProvider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
       try { capabilityManager.connectCapability(provider as CapabilityProvider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
@@ -76,16 +88,17 @@ export function useComponent(config: ComponentConfig, parentContext?: ComponentC
   onMounted(() => {
     initialize()
     const mgr = manager
-    if (!mgr) throw new Error('sparkManager not found. Ensure `app.provide("sparkManager", Spark.manager())` is called in application entry.')
+    if (!mgr) throw new Error('Component manager not found during mount. Ensure Spark plugin was installed or a manager passed via options.')
     mgr.registerContext(context)
     logger.info(`📝 Registered context to manager: ${context.id}`)
   })
 
   onUnmounted(() => {
-    if (!manager) { logger.error('sparkManager not found during unmount. Ensure application provides sparkManager.'); return }
+    if (!manager) { logger.error('Component manager not found during unmount.'); return }
     try { manager.destroyContext(context.id); logger.info(`🗑️ Destroyed context via manager: ${context.id}`) } catch (e) { logger.error('Failed to destroy context via manager', String(e)); destroy() }
   })
 
+  // register default capability exposing the runtime context to consumers
   provide('sparkContext', context)
 
   return {
@@ -109,13 +122,23 @@ export function useComponent(config: ComponentConfig, parentContext?: ComponentC
     destroy,
     logger,
     getComponent: (type: string) => {
-      const registry = (inject('sparkRegistry') as any) ?? defaultComponentRegistry
-    const comp = registry.get(type)?.component
-      return comp ? markRaw(comp) : undefined
+      // Prefer manager-backed registry
+      try {
+        const def = (manager as any).getComponentDefinition(type)
+        const comp = def?.component
+        return comp ? markRaw(comp) : undefined
+      } catch (e) {
+        // fallback to injected registry if present
+        const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY as any) as ComponentRegistry | undefined)
+        if (!registry) return undefined
+        const comp = registry.get(type)?.component
+        return comp ? markRaw(comp) : undefined
+      }
     },
-    isComponentRegistered: (type: string) => registry.has(type),
-    getOrCreateNoopProvider: (name: string) => getOrCreateNoopProvider(name),
-    getProviderFromGlobal: (name: string) => getGlobalProvider(name),
+    isComponentRegistered: (type: string) => {
+      try { return (manager as any).isComponentRegistered(type) } catch { const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY as any) as ComponentRegistry | undefined); return registry ? registry.has(type) : false }
+    },
+    getOrCreateNoopProvider: (name: string) => createNoopProvider(name),
     connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider, consumer, ctx),
     disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.disconnectCapability(provider, consumer, ctx)
   }

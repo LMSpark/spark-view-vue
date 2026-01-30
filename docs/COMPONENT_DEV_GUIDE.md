@@ -45,7 +45,7 @@ SPARK 使用基于配置和能力系统的插件化组件架构：
 
 - 组件类型使用 `kebab-case`，例如 `spark-ej2-grid`。
 - 组件定义导出为 `SparkComponentDefinition` 并通过 `Spark.registerSparkComponent()` 注册。
-- **必须**在应用入口注入 manager：在 `main.ts` 使用 `app.provide('sparkManager', Spark.manager())`，并在组件中通过 `useComponent()` 自动 `inject('sparkManager')` 使用。该项目不再支持 `globalThis` 回退，统一采用单一依赖注入风格。
+- **必须**在应用入口注入 manager：在 `main.ts` 通过 `app.use(Spark.createVuePlugin({ manager, registry }))` 安装 Spark Vue 插件；组件使用 `useSparkComponent()` 获取上下文和能力（DI-first）。
 
 ### Late-binding（能力延迟绑定）
 - `consumeCapability(name)` 现在会**始终注册一个 consumer**（即便 provider 尚不存在），这支持子组件在父组件 provider 注册之前就消费能力。Kernel 会在 provider 注册时自动连接（`autoConnectCapabilities`）。
@@ -61,7 +61,7 @@ if (!impl) {
 ```
 
 ### Default no-op provider
-- 项目提供 `getOrCreateNoopProvider(name)`（在 `SparkCapabilitySystem` 中导出），用于为某些能力创建默认的 no-op provider，避免空值错误。
+- 推荐在本地构造一个 noop provider（例如 `const p = { name, implementation: {} }`）或使用 `getOrCreateNoopProvider()`（由 `useSparkComponent` 提供）以避免空值错误；全局注册已被移除。
 
 
 ## 创建一个新组件（步骤）
@@ -73,7 +73,7 @@ if (!impl) {
    示例（简化）：
    ```ts
    <script setup lang="ts">
-   import { useComponent } from '@/composables/useSparkComponent'
+   import { useSparkComponent } from '@/composables/useSparkComponent'
    const props = defineProps<{ config: any }>()
 const { context, provide, consume } = useComponent(props.config)
    // 注册能力示例
@@ -187,8 +187,8 @@ const { logger } = useSparkComponent({ config: props.config })
 // 组件组合式函数还提供了其它 helper，建议从组合式函数解构获取：
 // const { getSparkComponent, isComponentRegistered, getRegisteredComponentTypes, getOrCreateNoopProvider } = useSparkComponent({ config: props.config })
 // - `getRegisteredComponentTypes()`：返回已注册组件类型列表，便于调试
-// - `getOrCreateNoopProvider(name)`：确保存在一个全局 no-op provider（避免空能力错误）
-// - `getGlobalProvider(name)` / `registerGlobalProvider(name, provider)`：访问或注册全局 provider（例如 `logger`）
+// - `getOrCreateNoopProvider(name)`：本地 helper（由 `useSparkComponent` 提供）以避免空能力错误
+// - 请勿使用 `getGlobalProvider(name)` / `registerGlobalProvider(name, provider)`；改为把 provider 附加到组件 `context` 或通过 `componentManager.registerProvider` 注册。
 
 
 logger.info('message')
@@ -199,7 +199,7 @@ logger.error('error')
 > ⚠️ 注意：库/核心工具（例如 `SparkComponentManager`、`SparkCapabilitySystem` 等）应使用 `Logger()` 或在运行期通过 `Spark.Logger()` 获取日志实例，避免在模块顶层调用 `useSpark()` 或其他组合式函数。（在模块初始化时调用组合式 API 可能导致运行时或测试环境中的时序/依赖问题。）
 
 
-- `logger` 默认会回退到安全的 `console` 实现（SSR 安全：会检查 `console` 是否存在），也可以通过 `registerGlobalProvider('logger', provider)` 注册自定义实现。
+- `logger` 默认会回退到安全的 `console` 实现（SSR 安全：会检查 `console` 是否存在）。如需自定义实现，请将 provider 附加到组件 context 或在测试中传入 context。
 
 
 ## 常见问题（FAQ）
