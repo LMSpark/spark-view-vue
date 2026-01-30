@@ -45,13 +45,35 @@ import { componentManager, componentRegistry, useComponent, Logger, capabilityMa
 
 - `componentRegistry` — 注册/查询组件定义
 - `componentManager` — 创建/销毁组件上下文、渲染占位实例、注册组件定义
-- `useComponent(config)` — 组合式 hook，用于组件 setup() 内的上下文、能力提供/消费、生命周期管理
+- `useSparkComponent(config, opts?)` — 组合式 hook，用于组件 setup() 内的上下文、能力提供/消费、生命周期管理；严格依赖传入或通过 Spark 插件注入的 `manager`（DI-first）
 - `capabilityManager` — 连接/断开 provider 与 consumer
 - `registerGlobalProvider`, `getGlobalProvider`, `getOrCreateNoopProvider` — 全局能力辅助
 - `Logger(context?)` — 统一日志 API
 - `withRetry` / `handleError` — 错误处理与重试工具
 - `asyncUtils` — debounce / throttle / timeout / race controller
 - 插件系统：`installSparkPlugin`、`globalPluginManager`
+- Vue 插件：`createVuePlugin({ manager, registry? })` 与 `Spark.install(app, { manager })`（**严格**要求显式提供 manager；不再隐式使用单例）
+
+
+**Vue 安装（严格 DI）示例：**
+
+```ts
+import { createComponentManager, createComponentRegistry, Spark } from '@spark-view/spark-core'
+import { createApp } from 'vue'
+
+const registry = createComponentRegistry()
+const manager = createComponentManager(undefined, registry)
+const app = createApp(App)
+
+// 方式 1：使用 plugin 工厂并安装
+const plugin = Spark.createVuePlugin({ manager, registry })
+app.use(plugin)
+
+// 或者方式 2：直接调用 install 并传入 manager
+Spark.install(app, { manager })
+```
+
+**迁移说明（破坏性）**：`Spark.install(app)` 在本版本将**不再**隐式使用内置单例 `componentManager`。必须显式传入 `manager`（例如 `createComponentManager(registry)`）；该策略保证应用级生命周期与测试隔离更明确。 
 
 快速例子：注册组件 + 渲染
 
@@ -68,14 +90,14 @@ componentManager.registerComponent({
 const instance = componentManager.render({ type: 'my-button', id: 'btn-1', props: { text: 'OK' } })
 ```
 
-组件内部使用 `useComponent`:
+组件内部使用 `useSparkComponent`:
 
 ```ts
-import { useComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-core'
 
 export default {
   setup(props) {
-    const { context, provide, consume, whenAvailable, logger } = useComponent({ type: 'my-button' })
+    const { context, provide, consume, whenAvailable, logger } = useSparkComponent({ type: 'my-button' })
 
     provide('button-api', { click() { ... } })
     const api = consume('grid-api') // 如果可用则返回实现，否则为 null（或延迟绑定）
@@ -125,7 +147,7 @@ const def = componentRegistry.get('spark-grid')
 
 ```ts
 // app setup
-app.provide('sparkManager', componentManager)
+// Prefer: install Spark Vue plugin with manager: `app.use(Spark.createVuePlugin({ manager, registry }))` (Symbol-based DI)
 ```
 
 ---
@@ -293,6 +315,27 @@ await asyncUtils.timeout(promise, { timeout: 2000 })
     // 或者传入你创建的实例
     await Spark.initializeApp(createComponentManager())
     ```
+
+- Q: `getSparkMetaFromComponent` 被删除了，我如何迁移使用？
+  - A: `getSparkMetaFromComponent` 已被永久移除以简化公共 API。迁移方式如下：
+
+    ```ts
+    // 旧：
+    import { getSparkMetaFromComponent } from '@spark-view/spark-core'
+    const meta = getSparkMetaFromComponent(MyComponent)
+    // 手动注册...
+
+    // 新（推荐）：
+    import { Spark } from '@spark-view/spark-core'
+    // 将 Vue 组件对象作为整体注册：
+    Spark.registerSparkComponentFromComponent(MyComponent)
+
+    // 或者手动构造定义并注册：
+    const meta = MyComponent.spark
+    Spark.registerSparkComponent({ ...meta, component: MyComponent })
+    ```
+
+  - 说明：推荐使用 `Spark.registerSparkComponentFromComponent(component)`，它会验证组件上的 `spark` 元数据并生成注册定义；如果需要更细粒度控制，也可以手动构造并调用 `Spark.registerSparkComponent(def)`。
 
 - Q: `packages/spark-core` 是否可以包含具体的组件实现或示例？
   - A: 不可以。`packages/spark-core` 仅应包含抽象的核心运行时与工具；具体组件（例如基于特定 UI 库的实现）应放在 `features/*` 或示例/插件包中。文档示例应使用通用占位符（例如 `spark-grid` 或 `ExampleGridComponent`）。
