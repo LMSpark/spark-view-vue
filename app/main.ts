@@ -32,6 +32,10 @@ app.use(ElementPlus)
 await Spark.initialize()
 await Spark.initializeApp(globalManager)
 
+// 注册自定义组件
+import { registerCustomComponents } from './components'
+registerCustomComponents()
+
 // 使用 Spark 的严格 Vue 插件安装（需显式传入 manager 与 registry）
 Spark.install(app, { manager: globalManager, registry: globalRegistry })
 
