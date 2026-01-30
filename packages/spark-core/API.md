@@ -320,15 +320,13 @@ await asyncUtils.timeout(promise, { timeout: 2000 })
   - A: `getSparkMetaFromComponent` 已被永久移除以简化公共 API。迁移方式如下：
 
     ```ts
-    // 旧：
-    import { getSparkMetaFromComponent } from '@spark-view/spark-core'
-    const meta = getSparkMetaFromComponent(MyComponent)
-    // 手动注册...
-
-    // 新（推荐）：
+    // 推荐迁移：将 Vue 组件对象直接注册
     import { Spark } from '@spark-view/spark-core'
-    // 将 Vue 组件对象作为整体注册：
     Spark.registerSparkComponentFromComponent(MyComponent)
+
+    // 或者手动提取并注册：
+    // const meta = (MyComponent as any).spark
+    // Spark.registerSparkComponent({ ...meta, component: MyComponent })
 
     // 或者手动构造定义并注册：
     const meta = MyComponent.spark
