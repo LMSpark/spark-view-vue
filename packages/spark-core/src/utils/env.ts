@@ -8,15 +8,15 @@ export function getDocument(): Document | undefined {
   return typeof document !== 'undefined' ? document : undefined
 }
 
-export function safeAddEventListener(target: any, event: string, handler: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) {
+export function safeAddEventListener(target: EventTarget | undefined, event: string, handler: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) {
   if (!target || !isBrowser) return
-  try { target.addEventListener(event, handler as any, options) } catch { /* noop */ }
+  try { (target as EventTarget).addEventListener(event, handler as EventListenerOrEventListenerObject, options) } catch { /* noop */ }
 }
 
-export function safeRemoveEventListener(target: any, event: string, handler: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions) {
+export function safeRemoveEventListener(target: EventTarget | undefined, event: string, handler: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions) {
   if (!target || !isBrowser) return
-  try { target.removeEventListener(event, handler as any, options) } catch { /* noop */ }
-}
+  try { (target as EventTarget).removeEventListener(event, handler as EventListenerOrEventListenerObject, options) } catch { /* noop */ }
+} 
 
 export function storageAvailable(): boolean {
   if (typeof window === 'undefined') return false
