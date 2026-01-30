@@ -1,42 +1,49 @@
 // Package-level SPARK namespace to simplify application imports
 // Import runtime entry points from source implementations to avoid built dist dependency
-import { globalSparkComponentManager } from './utils/SparkComponentManager.js'
-import { globalCapabilityManager } from './utils/SparkCapabilitySystem.js'
-import { globalComponentRegistry } from './utils/SparkComponentRegistry.js'
+import { componentManager } from './utils/SparkComponentManager.js'
+import { capabilityManager } from './utils/SparkCapabilitySystem.js'
+import { componentRegistry } from './utils/SparkComponentRegistry.js'
 import { registerGlobalProvider, getGlobalProvider, getOrCreateNoopProvider } from './utils/GlobalProviderRegistry.js'
 import { Logger as createLogger } from './utils/logger.js'
 import { getSparkPlugin, installSparkPlugin } from './plugins/SparkPluginSystem.js'
-import { useSparkComponent } from './composables/useSparkComponent.js'
+import { useComponent } from './composables/useSparkComponent.js'
+import type { App } from 'vue'
+import type { ComponentDefinition, CapabilityProvider, ComponentConfig, ComponentContext, Plugin } from './types/spark-component.js'
+import type { CapabilityInterface } from './types/common.js'
 
 export const Spark = {
   // manager getter used across tests and app entry
-  manager: (): typeof globalSparkComponentManager => globalSparkComponentManager,
+  manager: (): typeof componentManager => componentManager,
   // capability manager getter
-  capabilities: (): typeof globalCapabilityManager => globalCapabilityManager,
-  // registry helpers - delegated to global instances
-  registerSparkComponent: (def: any) => {
-    if (typeof def === 'string') throw new Error('registerSparkComponent signature changed: pass a SparkComponentDefinition object')
-    return globalSparkComponentManager.registerComponent(def)
+  capabilities: (): typeof capabilityManager => capabilityManager,
+  // registry accessor
+  registry: (): typeof componentRegistry => componentRegistry,
+  // registry helpers - delegate to manager
+  registerSparkComponent: (def: ComponentDefinition) => {
+    if (typeof def === 'string') throw new Error('registerSparkComponent signature changed: pass a ComponentDefinition object')
+    return componentManager.registerComponent(def)
   },
-  registerSparkComponents: (defs: any) => {
+  registerSparkComponents: (defs: ComponentDefinition[]) => {
     if (!Array.isArray(defs)) throw new Error('registerSparkComponents expects an array of component definitions')
-    return defs.forEach((d: any) => globalSparkComponentManager.registerComponent(d))
+    return defs.forEach((d: ComponentDefinition) => componentManager.registerComponent(d))
   },
-  getSparkComponent: (type: string) => globalComponentRegistry.get(type)?.component,
+  getSparkComponent: (type: string) => componentRegistry.get(type)?.component,
   // global providers
-  registerGlobalProvider: (name: string, provider: any) => registerGlobalProvider(name, provider),
+  registerGlobalProvider: (name: string, provider: CapabilityProvider) => registerGlobalProvider(name, provider),
   getGlobalProvider: (name: string) => getGlobalProvider(name),
-  getOrCreateNoopProvider: (name: string, iface?: any) => getOrCreateNoopProvider(name, iface),
+  getOrCreateNoopProvider: (name: string, iface?: CapabilityInterface) => getOrCreateNoopProvider(name, iface),
   // logger (single unified API)
   Logger: createLogger,
   // plugins
-  installSparkPlugin: (plugin: any) => installSparkPlugin(plugin),
+  installSparkPlugin: (plugin: Plugin) => installSparkPlugin(plugin),
   getSparkPlugin: (name: string) => getSparkPlugin(name),
   // composables / helpers
-  useSparkComponent: (props: any) => useSparkComponent(props),
+  useComponent: (config: ComponentConfig, parent?: ComponentContext) => useComponent(config, parent),
+  // initialization hook (no-op by default; features may extend this with `initializeApp`)
+  initialize: async () => { return Promise.resolve() },
   // Vue plugin install
-  install(app: any) {
-    app.provide('sparkManager', globalSparkComponentManager)
+  install(app: App) {
+    app.provide('sparkManager', componentManager)
   }
 }
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
-import { Spark } from '@spark-view/spark-core'
+import { Spark, defaultComponentRegistry } from '@spark-view/spark-core'
 
 // Initialize SPARK components (registers spark-ej2-grid / spark-ej2-column)
 await Spark.initialize()
@@ -39,7 +39,7 @@ describe('Column manager connector', () => {
 
     const wrapper = mount(SparkEJ2Grid, {
       props: { config },
-      global: { provide: { sparkManager: Spark.manager() } }
+      global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
     })
 
     expect(wrapper.exists()).toBe(true)

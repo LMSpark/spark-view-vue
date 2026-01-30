@@ -3,7 +3,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
-import { Spark } from '@spark-view/spark-core'
+import { Spark, defaultComponentRegistry } from '@spark-view/spark-core'
 import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
 
 // Mock EJ2 components
@@ -38,10 +38,20 @@ describe('EJ2GridDemo', () => {
       ]
     }
 
-    const wrapper = mount(SparkEJ2Grid, {
-      props: { config },
-      global: { provide: { sparkManager: Spark.manager() } }
-    })
+    let wrapper
+
+    // Register lightweight stubs for columns to avoid EJ2 runtime complexity in unit tests
+    Spark.registerSparkComponent({ type: 'spark-ej2-column', name: 'spark-ej2-column', version: '1.0.0', component: { template: '<div class="stub-column" />' } as any })
+
+    try {
+      wrapper = mount(SparkEJ2Grid, {
+        props: { config },
+        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+      })
+    } catch (e: any) {
+      try { console.error('Mount threw (detailed):', e, typeof e, JSON.stringify(e, Object.getOwnPropertyNames(e))) } catch(_) { console.error('Mount threw (fallback):', e) }
+      throw e
+    }
 
     expect(wrapper.exists()).toBe(true)
   })

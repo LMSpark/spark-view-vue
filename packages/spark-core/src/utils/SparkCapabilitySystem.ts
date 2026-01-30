@@ -1,109 +1,119 @@
-import type { SparkCapabilityProvider, SparkCapabilityConsumer, SparkComponentContext } from '../types/spark-component.js'
+import type { CapabilityProvider, CapabilityConsumer, ComponentContext } from '../types/spark-component.js'
+import type { Implementation, AnyFunction } from '../types/common.js'
 import { Logger } from './logger.js'
 
-export interface SparkCapabilityConnector {
-  connect(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean
-  disconnect(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean
-  isConnected(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean
+export interface CapabilityConnector {
+  connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
+  disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
+  isConnected(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
 }
 
-class DataFlowConnector implements SparkCapabilityConnector {
-  connect(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean {
+class DataFlowConnector implements CapabilityConnector {
+  connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl: any = provider.implementation
-      const cImpl: any = consumer.implementation
-      if (typeof pImpl.addListener === 'function' && typeof cImpl.onData === 'function') {
-        pImpl.addListener(cImpl.onData)
+      const pImpl = provider.implementation as Implementation | undefined
+      const cImpl = consumer.implementation as Implementation | undefined
+      const addListener = pImpl && (pImpl['addListener'] as AnyFunction | undefined)
+      const onData = cImpl && (cImpl['onData'] as AnyFunction | undefined)
+      if (addListener && typeof addListener === 'function' && onData && typeof onData === 'function') {
+        addListener(onData)
         return true
       }
-    } catch (e) {
-      Logger().error('Failed to connect data flow:', e)
+    } catch (e: unknown) {
+      Logger().error('Failed to connect data flow:', String(e))
     }
     return false
   }
-  disconnect(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean {
+  disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl: any = provider.implementation
-      const cImpl: any = consumer.implementation
-      if (typeof pImpl.removeListener === 'function') {
-        pImpl.removeListener(cImpl.onData)
+      const pImpl = provider.implementation as Implementation | undefined
+      const cImpl = consumer.implementation as Implementation | undefined
+      const removeListener = pImpl && (pImpl['removeListener'] as AnyFunction | undefined)
+      const onData = cImpl && (cImpl['onData'] as AnyFunction | undefined)
+      if (removeListener && typeof removeListener === 'function' && onData && typeof onData === 'function') {
+        removeListener(onData)
         return true
       }
-    } catch (e) {
-      Logger().error('Failed to disconnect data flow:', e)
+    } catch (e: unknown) {
+      Logger().error('Failed to disconnect data flow:', String(e))
     }
     return false
   }
-  isConnected(_provider: SparkCapabilityProvider, _consumer: SparkCapabilityConsumer): boolean { return false }
+  isConnected(_provider: CapabilityProvider, _consumer: CapabilityConsumer): boolean { return false }
 }
 
-class EventConnector implements SparkCapabilityConnector {
-  connect(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean {
+export class EventConnector implements CapabilityConnector {
+  connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl: any = provider.implementation
-      const cImpl: any = consumer.implementation
-      if (typeof pImpl.addEventListener === 'function' && typeof cImpl.onEvent === 'function') {
-        pImpl.addEventListener(cImpl.onEvent)
+      const pImpl = provider.implementation as Implementation | undefined
+      const cImpl = consumer.implementation as Implementation | undefined
+      const addEvent = pImpl && (pImpl['addEventListener'] as AnyFunction | undefined)
+      const onEvent = cImpl && (cImpl['onEvent'] as AnyFunction | undefined)
+      if (addEvent && typeof addEvent === 'function' && onEvent && typeof onEvent === 'function') {
+        addEvent(onEvent)
         return true
       }
-    } catch (e) {
-      Logger().error('Failed to connect event:', e)
+    } catch (e: unknown) {
+      Logger().error('Failed to connect event:', String(e))
     }
     return false
   }
-  disconnect(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean {
+  disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl: any = provider.implementation
-      const cImpl: any = consumer.implementation
-      if (typeof pImpl.removeEventListener === 'function') {
-        pImpl.removeEventListener(cImpl.onEvent)
+      const pImpl = provider.implementation as Implementation | undefined
+      const cImpl = consumer.implementation as Implementation | undefined
+      const removeEvent = pImpl && (pImpl['removeEventListener'] as AnyFunction | undefined)
+      const onEvent = cImpl && (cImpl['onEvent'] as AnyFunction | undefined)
+      if (removeEvent && typeof removeEvent === 'function' && onEvent && typeof onEvent === 'function') {
+        removeEvent(onEvent)
         return true
       }
-    } catch (e) {
-      Logger().error('Failed to disconnect event:', e)
+    } catch (e: unknown) {
+      Logger().error('Failed to disconnect event:', String(e))
     }
     return false
   }
-  isConnected(_provider: SparkCapabilityProvider, _consumer: SparkCapabilityConsumer): boolean { return false }
+  isConnected(_provider: CapabilityProvider, _consumer: CapabilityConsumer): boolean { return false }
 }
 
-class MethodConnector implements SparkCapabilityConnector {
-  connect(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean {
+export class MethodConnector implements CapabilityConnector {
+  connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl: any = provider.implementation || {}
-      const cImpl: any = consumer.implementation || {}
+      const pImpl = (provider.implementation || {}) as Implementation
+      const cImpl = (consumer.implementation || {}) as Implementation
       Object.keys(consumer.interface || {}).forEach(k => {
-        if (typeof pImpl[k] === 'function') cImpl[k] = pImpl[k].bind(pImpl)
+        const fn = pImpl[k] as AnyFunction | undefined
+        if (typeof fn === 'function') (cImpl as Record<string, unknown>)[k] = fn.bind(pImpl as unknown as object) as unknown
       })
       return true
-    } catch (e) {
-      Logger().error('Failed to connect method:', e)
+    } catch (e: unknown) {
+      Logger().error('Failed to connect method:', String(e))
       return false
     }
   }
-  disconnect(_provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean {
+  disconnect(_provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
       Object.keys(consumer.interface || {}).forEach(k => {
-        const cImpl: any = consumer.implementation
-        if (cImpl && cImpl[k]) delete cImpl[k]
+        const cImpl = consumer.implementation as Implementation | undefined
+        if (cImpl && (cImpl as Record<string, unknown>)[k]) delete (cImpl as Record<string, unknown>)[k]
       })
       return true
-    } catch (e) {
-      Logger().error('Failed to disconnect method:', e)
+    } catch (e: unknown) {
+      Logger().error('Failed to disconnect method:', String(e))
       return false
     }
   }
-  isConnected(_provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer): boolean {
-    return Object.keys(consumer.interface || {}).some(k => typeof (consumer.implementation as any)?.[k] === 'function')
+  isConnected(_provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
+    return Object.keys(consumer.interface || {}).some(k => typeof ((consumer.implementation as Implementation | undefined) as Record<string, unknown>)?.[k] === 'function')
   }
 }
 
 class SparkCapabilityManager {
-  private connectors = new Map<string, SparkCapabilityConnector>()
+  private connectors = new Map<string, CapabilityConnector>()
   private connections = new Map<string, Set<string>>()
   private logger = Logger()
 
-  registerConnector(name: string, connector: SparkCapabilityConnector) {
+  registerConnector(name: string, connector: CapabilityConnector) {
     this.connectors.set(name, connector)
   }
 
@@ -111,16 +121,16 @@ class SparkCapabilityManager {
     return this.connectors.delete(name)
   }
 
-  connectCapability(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, context: SparkComponentContext): boolean {
+  connectCapability(provider: CapabilityProvider, consumer: CapabilityConsumer, context: ComponentContext): boolean {
     let connector = this.connectors.get(provider.name)
     if (!connector) {
       // auto-detect
-      connector = new DataFlowConnector() as any
-      this.connectors.set(provider.name, connector!)
+      connector = new DataFlowConnector()
+      this.connectors.set(provider.name, connector)
       this.logger.info(`⚙️ Auto-registered connector for capability '${provider.name}'`)
     }
     try {
-      const ok = connector.connect(provider, consumer)
+      const ok = connector!.connect(provider, consumer)
       if (ok) {
         const key = `${context.id}:${provider.name}`
         const key2 = `${context.id}:${consumer.capabilityName}`
@@ -135,7 +145,7 @@ class SparkCapabilityManager {
     }
   }
 
-  disconnectCapability(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, context: SparkComponentContext): boolean {
+  disconnectCapability(provider: CapabilityProvider, consumer: CapabilityConsumer, context: ComponentContext): boolean {
     const connector = this.connectors.get(provider.name)
     if (!connector) return false
     try {
@@ -155,12 +165,12 @@ class SparkCapabilityManager {
     }
   }
 
-  isCapabilityConnected(provider: SparkCapabilityProvider, consumer: SparkCapabilityConsumer, context: SparkComponentContext): boolean {
+  isCapabilityConnected(provider: CapabilityProvider, consumer: CapabilityConsumer, _context: ComponentContext): boolean {
     const connector = this.connectors.get(provider.name)
     return !!connector && connector.isConnected(provider, consumer)
   }
 
-  autoConnectCapabilities(context: SparkComponentContext) {
+  autoConnectCapabilities(context: ComponentContext) {
     for (const consumer of context.consumers.values()) {
       const provider = this.findProviderInContext(context, consumer.capabilityName)
       if (provider) this.connectCapability(provider, consumer, context)
@@ -168,13 +178,13 @@ class SparkCapabilityManager {
     context.children.forEach(c => this.autoConnectCapabilities(c))
   }
 
-  private findProviderInContext(context: SparkComponentContext, name: string): SparkCapabilityProvider | undefined {
-    for (const p of Array.from(context.providers)) if (p.name === name) return p
+  private findProviderInContext(context: ComponentContext, name: string): CapabilityProvider | undefined {
+    for (const p of Array.from(context.providers) as CapabilityProvider[]) if (p.name === name) return p
     if (context.parent) return this.findProviderInContext(context.parent, name)
     return undefined
   }
 
-  disconnectAllCapabilities(context: SparkComponentContext) {
+  disconnectAllCapabilities(context: ComponentContext) {
     for (const [key, set] of Array.from(this.connections.entries())) {
       if (key.startsWith(`${context.id}:`)) {
         const [, capability] = key.split(':')
@@ -182,6 +192,7 @@ class SparkCapabilityManager {
         if (provider) {
           for (const kv of set) {
             const [, consumerName] = kv.split(':')
+            if (!consumerName) continue
             const consumer = context.consumers.get(consumerName)
             if (consumer) this.disconnectCapability(provider, consumer, context)
           }
@@ -190,8 +201,9 @@ class SparkCapabilityManager {
     }
     context.children.forEach(c => this.disconnectAllCapabilities(c))
   }
+
 }
 
-export const globalCapabilityManager = new SparkCapabilityManager()
+export const capabilityManager = new SparkCapabilityManager()
 // NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
-// Use `Spark.capabilities()` or `globalCapabilityManager` directly.
+// Use `Spark.capabilities()` or `capabilityManager` directly.

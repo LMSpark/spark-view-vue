@@ -281,6 +281,18 @@ await asyncUtils.timeout(promise, { timeout: 2000 })
 
 - Q: 外部消费者受 shim 移除 影响吗？
   - A: 会是 breaking change。已在仓库中添加 `packages/spark-core/DEPRECATION.md`，请在发布说明中强调此变更并提供迁移示例。
+  
+  - 迁移示例（常见）：如果你的应用或测试曾经在启动时调用 `initializeApp()`，请改为显式传入 manager：
+
+    ```ts
+    // 旧：
+    await Spark.initializeApp()
+
+    // 新：
+    await Spark.initializeApp(Spark.manager())
+    // 或者传入你创建的实例
+    await Spark.initializeApp(createComponentManager())
+    ```
 
 - Q: `packages/spark-core` 是否可以包含具体的组件实现或示例？
   - A: 不可以。`packages/spark-core` 仅应包含抽象的核心运行时与工具；具体组件（例如基于特定 UI 库的实现）应放在 `features/*` 或示例/插件包中。文档示例应使用通用占位符（例如 `spark-grid` 或 `ExampleGridComponent`）。

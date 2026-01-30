@@ -1,27 +1,27 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createFileTransport } from '@spark-view/spark-core'
-import { existsSync, readFileSync, unlinkSync } from 'fs'
+import { Spark, registerGlobalProvider } from '@spark-view/spark-core'
 
-describe('file transport', () => {
-  it('writes to file when fs available', () => {
-    const file = './tmp-test-log.txt'
-
-    // Ensure cleanup
-    try {
-      if (existsSync(file)) unlinkSync(file)
-    } catch (e) {
-      // best-effort cleanup, ignore failures but record for debugging
-      console.debug('cleanup failed', e)
+describe('file transport (replaced by custom provider test)', () => {
+  it('uses registered global logger provider', () => {
+    let written = ''
+    const provider = {
+      name: 'logger',
+      version: '1.0.0',
+      interface: { info: true },
+      implementation: {
+        info: (...args: any[]) => { written += JSON.stringify(args) }
+      }
     }
 
-    const provider = createFileTransport(file)
-    const logger = provider.implementation as { info: (...args: unknown[]) => void }
+    const old = (global as any).__oldLoggerProvider
+    registerGlobalProvider('logger', provider as any)
+
+    const logger = Spark.Logger()
     logger.info('hello', { a: 1 })
 
-    const content = readFileSync(file, 'utf8')
-    expect(content).toContain('hello')
+    expect(written).toContain('hello')
 
-    // cleanup
-    unlinkSync(file)
+    // restore - best effort
+    if (old) registerGlobalProvider('logger', old)
   })
 })

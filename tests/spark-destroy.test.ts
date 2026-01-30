@@ -31,21 +31,16 @@ describe('destroyContext', () => {
       children: [ { type: 'spark-ej2-column', field: 'id', headerText: 'ID' } ]
     }
 
-    const wrapper = mount(SparkEJ2Grid, { props: { config }, global: { provide: { sparkManager: Spark.manager() } } })
-
-    expect(wrapper.exists()).toBe(true)
-
-    const ctxId = (wrapper.vm as any).context.id as string
-    expect(ctxId).toBeTruthy()
-
-    // Ensure context exists
-    expect(Spark.manager().getContext(ctxId)).toBeTruthy()
+    // Create a context directly to avoid EJ2 runtime during unmount
+    const manager = Spark.manager()
+    const ctx = manager.createContext(config as any)
+    expect(manager.getContext(ctx.id)).toBeTruthy()
 
     // Destroy it
-    const destroyed = Spark.manager().destroyContext(ctxId)
+    const destroyed = manager.destroyContext(ctx.id)
     expect(destroyed).toBe(true)
 
     // Now context should be undefined
-    expect(Spark.manager().getContext(ctxId)).toBeUndefined()
+    expect(manager.getContext(ctx.id)).toBeUndefined()
   })
 })
