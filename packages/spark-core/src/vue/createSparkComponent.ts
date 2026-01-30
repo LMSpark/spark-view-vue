@@ -33,7 +33,7 @@ function renderSafeHTML(html: string): VNode {
   })
 }
 
-export type SparkComponent<TConfig = ComponentConfig> = ReturnType<typeof defineSparkComponent>
+export type SparkComponent<_TConfig = ComponentConfig> = ReturnType<typeof defineSparkComponent>
 
 // Local helper to create a noop provider when a capability is missing
 function createNoopProvider(name: string): CapabilityProvider {
@@ -127,29 +127,29 @@ export interface SparkComponentHelpers {
  * })
  * ```
  */
-export function defineSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(definition: {
+export function defineSparkComponent<_TConfig extends ComponentConfig = ComponentConfig>(definition: {
   // Component metadata
   type: string
   name?: string
   version?: string
   providers?: CapabilityProvider[]
-  validator?: (config: TConfig) => boolean
+  validator?: (config: _TConfig) => boolean
 
   // Auto-registration option (default: false for explicit control)
   autoRegister?: boolean
 
   // Component logic - choose one:
   // Option 1: Setup function (recommended for complex logic)
-  setup?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => VNode | any | (() => VNode | any)
+  setup?: (props: { config: _TConfig }, helpers: SparkComponentHelpers) => VNode | any | (() => VNode | any)
 
   // Option 2: Simple render function (for direct JSX/VNode return)
-  render?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => VNode | any
+  render?: (props: { config: _TConfig }, helpers: SparkComponentHelpers) => VNode | any
 
   // Option 3: Template function (for string-based templates with interpolation)
-  template?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => string
+  template?: (props: { config: _TConfig }, helpers: SparkComponentHelpers) => string
 
   // Option 4: Template literal function (for tagged template literals)
-  templateLiteral?: (strings: TemplateStringsArray, ...values: any[]) => (props: { config: TConfig }, helpers: SparkComponentHelpers) => string
+  templateLiteral?: (strings: TemplateStringsArray, ...values: any[]) => (props: { config: _TConfig }, helpers: SparkComponentHelpers) => string
 }) {
   if (!definition?.type) {
     throw new Error('defineSparkComponent requires a type property')
@@ -164,11 +164,11 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
         validator: (value: any) => {
           if (!value || typeof value !== 'object') return false
           if (!value.type || typeof value.type !== 'string') return false
-          return !definition.validator || definition.validator(value)
+          return !definition.validator || definition.validator(value as _TConfig)
         }
       }
     },
-    setup(props: { config: TConfig }, ctx: any) {
+    setup(props: { config: _TConfig }, _ctx: any) {
       // Create component context
       const ctxRaw: ComponentContext = {
         id: props.config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
@@ -328,9 +328,6 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
         const templateData = {
           config: props.config,
           helpers,
-          context,
-          isVisible: helpers.isVisible,
-          isDisabled: helpers.isDisabled,
           ...props.config.props, // Allow direct access to props
           ...helpers // Allow access to helper functions
         }
@@ -393,7 +390,7 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
  * @deprecated Use defineSparkComponent instead
  * Legacy factory for backward compatibility
  */
-export function createSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(options: {
+export function createSparkComponent<_TConfig extends ComponentConfig = ComponentConfig>(options: {
   meta: { type: string; name?: string; version?: string; providers?: CapabilityProvider[]; validator?: (config: TConfig) => boolean }
   setup?: (props: { config: TConfig }, ctx: any, helpers: any) => any
 }): SparkComponent<TConfig> {
