@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { resolveRendererForConfig, getChildrenForConfig, createResolverFromRegistry, isTypeRegistered } from '../src/utils/renderLogic.js'
+import { SparkComponentRendererImpl } from '../src/utils/SparkComponentRenderer.js'
 import { SparkComponentRegistryImpl } from '../src/utils/SparkComponentRegistry.js'
 
 const mockResolver = (type: string) => {
@@ -10,29 +10,29 @@ const mockResolver = (type: string) => {
 describe('renderLogic', () => {
   it('resolves renderer when resolver returns implementation', () => {
     const cfg = { type: 'known' }
-    const r = resolveRendererForConfig(cfg as any, mockResolver)
+    const r = SparkComponentRendererImpl.resolveRendererForConfig(cfg as any, mockResolver)
     expect(r).toEqual({ name: 'Known' })
   })
 
   it('returns null when resolver returns null', () => {
     const cfg = { type: 'unknown' }
-    const r = resolveRendererForConfig(cfg as any, mockResolver)
+    const r = SparkComponentRendererImpl.resolveRendererForConfig(cfg as any, mockResolver)
     expect(r).toBeNull()
   })
 
   it('returns children or empty array', () => {
     const c1 = { type: 'a' }
     const c2 = { type: 'b' }
-    expect(getChildrenForConfig({ type: 'x' } as any)).toEqual([])
-    expect(getChildrenForConfig({ type: 'x', children: [c1, c2] } as any)).toEqual([c1, c2])
+    expect(SparkComponentRendererImpl.getChildrenForConfig({ type: 'x' } as any)).toEqual([])
+    expect(SparkComponentRendererImpl.getChildrenForConfig({ type: 'x', children: [c1, c2] } as any)).toEqual([c1, c2])
   })
 
   it('can resolve using a registry resolver and detect registration', () => {
     const reg = new SparkComponentRegistryImpl()
     reg.register('my-type', { type: 'my-type', name: 'My', version: '1.0.0', component: { name: 'MyComp' } } as any)
-    const resolver = createResolverFromRegistry(reg)
-    expect(isTypeRegistered(reg, 'my-type')).toBe(true)
-    expect(resolveRendererForConfig({ type: 'my-type' } as any, resolver)).toEqual({ name: 'MyComp' })
-    expect(isTypeRegistered(reg, 'unknown')).toBe(false)
+    const resolver = SparkComponentRendererImpl.createResolverFromRegistry(reg)
+    expect(SparkComponentRendererImpl.isTypeRegistered(reg, 'my-type')).toBe(true)
+    expect(SparkComponentRendererImpl.resolveRendererForConfig({ type: 'my-type' } as any, resolver)).toEqual({ name: 'MyComp' })
+    expect(SparkComponentRendererImpl.isTypeRegistered(reg, 'unknown')).toBe(false)
   })
 })

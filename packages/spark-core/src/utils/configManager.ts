@@ -13,8 +13,6 @@ export function getConfig<T = unknown>(key?: string, defaultValue?: T): unknown 
 export function clearConfig() { config = {}; Logger().info('Config cleared'); watchers.clear() }
 
 export class ConfigManager {
-  private static instance: ConfigManager | null = null
-  static getInstance(): ConfigManager { if (!this.instance) this.instance = new ConfigManager(); return this.instance }
   get<T = unknown>(key: string, defaultValue?: T): T | undefined { return getConfig<T>(key, defaultValue) }
   set<T = unknown>(key: string, value: T): void { const old = config[key]; config[key] = value; Logger().info(`Config updated: ${key}`); if (old !== value) { watchers.get(key)?.forEach(cb => cb(value)) } }
   delete(key: string): void { const had = config[key] !== undefined; delete config[key]; if (had) { watchers.get(key)?.forEach(cb => cb(undefined)) } }

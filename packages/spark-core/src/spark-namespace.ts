@@ -8,6 +8,8 @@ import { Logger as createLogger } from './utils/logger.js'
 import { getSparkPlugin, installSparkPlugin } from './plugins/SparkPluginSystem.js'
 import { createVueSparkPlugin } from './plugins/VueSparkPlugin.js'
 import { useSparkComponent } from './composables/useSparkComponent.js'
+import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
+import { createComponentManager } from './utils/SparkComponentManager.js'
 import type { App } from 'vue'
 import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry, CapabilityProvider } from './types/spark-component.js' 
 
@@ -48,6 +50,9 @@ export const Spark = {
   // composables / helpers
   useComponent: (config: ComponentConfig, parent?: ComponentContext) => useSparkComponent(config, { parentContext: parent }),
   useSparkComponent: (config: ComponentConfig, opts?: { manager?: any, registry?: any, parentContext?: ComponentContext }) => useSparkComponent(config, opts),
+  // factories for creating instances
+  createComponentRegistry,
+  createComponentManager,
   // initialization hook (no-op by default; features may extend this with `initializeApp`)
   initialize: async () => { return Promise.resolve() },
   // Vue plugin helpers

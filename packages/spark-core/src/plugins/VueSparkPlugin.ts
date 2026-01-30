@@ -1,6 +1,6 @@
 import type { App } from 'vue'
 import type { ComponentManager, ComponentRegistry } from '../types/spark-component.js'
-import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../utils/diKeys.js'
+import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 
 export interface VueSparkPluginOptions {
   manager: ComponentManager

@@ -7,15 +7,6 @@ describe('ConfigManager', () => {
     expect(getConfig('foo')).toBe('bar')
   })
 
-  it('ConfigManager.getInstance works and watch triggers', () => {
-    const mgr = ConfigManager.getInstance()
-    let seen: any
-    const un = mgr.watch('k', (v: any) => { seen = v })
-    mgr.set('k', 123)
-    expect(seen).toBe(123)
-    un()
-  })
-
   it('clearConfig and reset', () => {
     setConfig({ a: 1 })
     expect(getConfig('a')).toBe(1)
