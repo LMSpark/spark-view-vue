@@ -1,44 +1,47 @@
-import { globalComponentRegistry } from './SparkComponentRegistry.js'
+import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.js'
 import { Logger } from './logger.js'
-import { globalCapabilityManager } from './SparkCapabilitySystem.js'
-import type { SparkComponentConfig, SparkComponentContext, SparkComponentDefinition, SparkCapabilityProvider } from '../types/spark-component.js'
+import { capabilityManager } from './SparkCapabilitySystem.js'
+import type { ComponentConfig, ComponentContext, ComponentDefinition, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
+import type { ComponentRegistry } from '../types/spark-component.js'
 
-class SparkComponentManagerImpl {
-  private contexts = new Map<string, SparkComponentContext>()
-  private renderer: any
+export class SparkComponentManagerImpl {
+  private contexts = new Map<string, ComponentContext>()
+  private renderer: unknown
+  private registry: ComponentRegistry
   private logger = Logger()
 
-  constructor(renderer?: any) {
+  constructor(renderer?: unknown, registry?: ComponentRegistry) {
     this.renderer = renderer
+    this.registry = registry || defaultRegistry
   }
 
-  createContext(config: SparkComponentConfig, parent?: SparkComponentContext): SparkComponentContext {
-    const ctx: SparkComponentContext = {
+  createContext(config: ComponentConfig, parent?: ComponentContext): ComponentContext {
+    const ctx: ComponentContext = {
       id: config.id || this.generateId(),
       type: config.type,
       parent,
       children: [],
       config,
       state: {},
-      providers: new Set<SparkCapabilityProvider>(),
-      consumers: new Map<string, any>()
+      providers: new Set<CapabilityProvider>(),
+      consumers: new Map<string, CapabilityConsumer>()
     }
     if (parent) parent.children.push(ctx)
     this.contexts.set(ctx.id, ctx)
     return ctx
   }
 
-  render(config: SparkComponentConfig, parentContext?: SparkComponentContext): unknown {
+  render(config: ComponentConfig, parentContext?: ComponentContext): unknown {
     const ctx = this.createContext(config, parentContext)
     // For now renderer delegates to component registry to build an instance placeholder
-    const def = globalComponentRegistry.get(config.type)
+    const def = this.registry.get(config.type)
     if (!def) throw new Error(`Component type '${config.type}' is not registered`)
     const instance = { type: 'vue-component', component: def.component, props: { config, context: ctx } }
     this.logger.info(`Rendered component: ${config.type} (${ctx.id})`)
     return instance
   }
 
-  getContext(id: string): SparkComponentContext | undefined {
+  getContext(id: string): ComponentContext | undefined {
     return this.contexts.get(id)
   }
 
@@ -46,9 +49,9 @@ class SparkComponentManagerImpl {
     const ctx = this.contexts.get(id)
     if (!ctx) return false
     try {
-      globalCapabilityManager.disconnectAllCapabilities(ctx)
+      capabilityManager.disconnectAllCapabilities(ctx)
       if (ctx.parent) ctx.parent.children = ctx.parent.children.filter(c => c.id !== id)
-      const walk = (c: SparkComponentContext) => {
+      const walk = (c: ComponentContext) => {
         c.children.forEach(x => walk(x))
         this.contexts.delete(c.id)
       }
@@ -61,58 +64,67 @@ class SparkComponentManagerImpl {
     }
   }
 
-  registerProvider(context: SparkComponentContext, provider: SparkCapabilityProvider): void {
+  registerProvider(context: ComponentContext, provider: CapabilityProvider): void {
     context.providers.add(provider)
-    try { globalCapabilityManager.autoConnectCapabilities(context) } catch {}
+    try { capabilityManager.autoConnectCapabilities(context) } catch {}
+
+    // notify any listeners waiting for a provider
+    if (context.providerListeners && context.providerListeners.has(provider.name)) {
+      const set = context.providerListeners.get(provider.name) as Set<(prov: CapabilityProvider) => void>
+      set.forEach(cb => {
+        try { cb(provider) } catch (e: unknown) { this.logger.warn('provider listener threw', String(e)) }
+      })
+      set.clear()
+    }
   }
 
-  registerContext(context: SparkComponentContext): void {
+  registerContext(context: ComponentContext): void {
     if (!this.contexts.has(context.id)) this.contexts.set(context.id, context)
   }
 
-  getAllContexts(): SparkComponentContext[] {
+  getAllContexts(): ComponentContext[] {
     return Array.from(this.contexts.values())
   }
 
-  getProvider(context: SparkComponentContext, capabilityName: string) {
+  getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined {
     const provider = Array.from(context.providers).find(p => p.name === capabilityName)
     if (provider) return provider
     if (context.parent) return this.getProvider(context.parent, capabilityName)
     return undefined
   }
 
-  registerComponent(def: SparkComponentDefinition) {
-    globalComponentRegistry.register(def.type, def)
+  registerComponent(def: ComponentDefinition) {
+    this.registry.register(def.type, def)
   }
 
-  registerComponents(defs: SparkComponentDefinition[]) {
+  registerComponents(defs: ComponentDefinition[]) {
     defs.forEach(d => this.registerComponent(d))
   }
 
   getComponentDefinition(type: string) {
-    return globalComponentRegistry.get(type)
+    return this.registry.get(type)
   }
 
   isComponentRegistered(type: string) {
-    return globalComponentRegistry.has(type)
+    return this.registry.has(type)
   }
 
   getRegisteredComponentTypes(): string[] {
-    return globalComponentRegistry.getAllTypes()
+    return this.registry.getAllTypes()
   }
 
   unregisterComponent(type: string) {
-    return globalComponentRegistry.unregister(type)
+    return this.registry.unregister(type)
   }
 
-  createComponentTree(cfg: SparkComponentConfig) {
-    const copy = { ...cfg }
-    if (copy.children) copy.children = copy.children.map(c => this.createComponentTree(c))
+  createComponentTree(cfg: ComponentConfig) {
+    const copy = { ...cfg } as ComponentConfig & { children?: ComponentConfig[] }
+    if (copy.children) copy.children = copy.children.map((c: ComponentConfig) => this.createComponentTree(c))
     return copy
   }
 
-  validateComponentConfig(cfg: SparkComponentConfig): boolean {
-    const def = globalComponentRegistry.get(cfg.type)
+  validateComponentConfig(cfg: ComponentConfig): boolean {
+    const def = this.registry.get(cfg.type)
     if (!def) return false
     if (def.validator) return def.validator(cfg)
     return true
@@ -120,12 +132,13 @@ class SparkComponentManagerImpl {
 
   getComponentCompatibility(): Record<string, string[]> {
     const map: Record<string, string[]> = {}
-    globalComponentRegistry.getAllDefinitions().forEach(def => {
+    this.registry.getAllDefinitions().forEach(def => {
       if (def.consumers) {
         def.consumers.forEach(cons => {
-          map[cons.capabilityName] = map[cons.capabilityName] || []
-          const providers = (globalComponentRegistry as any).findCompatibleProviders ? (globalComponentRegistry as any).findCompatibleProviders(cons.capabilityName, cons.minVersion) : []
-          map[cons.capabilityName].push(...providers.map(p => (p as any).type))
+          const arr = map[cons.capabilityName] = map[cons.capabilityName] || []
+          let providers: string[] = []
+          if (typeof this.registry.findCompatibleProviders === 'function') providers = this.registry.findCompatibleProviders(cons.capabilityName, cons.minVersion)
+          arr.push(...providers)
         })
       }
     })
@@ -138,6 +151,6 @@ class SparkComponentManagerImpl {
   }
 }
 
-export const globalSparkComponentManager = new SparkComponentManagerImpl()
+export const componentManager = new SparkComponentManagerImpl()
 // NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
-// Use `Spark.manager()` or `globalSparkComponentManager` directly.
+// Use `Spark.manager()` or `componentManager` directly.
