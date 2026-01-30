@@ -39,9 +39,10 @@ export interface SparkComponentHelpers {
  *
  * @example
  * ```typescript
- * // Using JSX (recommended)
+ * // Using JSX with auto-registration (recommended)
  * const Button = defineSparkComponent({
  *   type: 'my-button',
+ *   autoRegister: true, // Automatically register to global registry
  *   render: ({ config }, { isDisabled }) => (
  *     <button disabled={isDisabled}>
  *       {config.props?.label || 'Click me'}
@@ -49,9 +50,17 @@ export interface SparkComponentHelpers {
  *   )
  * })
  *
+ * // Manual registration (for explicit control)
+ * const ManualButton = defineSparkComponent({
+ *   type: 'manual-button',
+ *   render: ({ config }) => <button>{config.props?.label}</button>
+ * })
+ * // Later: Spark.registerSparkComponentFromComponent(ManualButton)
+ *
  * // Using setup function with JSX
  * const SmartButton = defineSparkComponent({
  *   type: 'smart-button',
+ *   autoRegister: true,
  *   setup: ({ config }, { consume, provide }) => {
  *     const theme = consume('theme') || { primaryColor: 'blue' }
  *     provide('click-handler', { onClick: () => console.log('clicked') })
@@ -78,6 +87,9 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
   version?: string
   providers?: CapabilityProvider[]
   validator?: (config: TConfig) => boolean
+
+  // Auto-registration option (default: false for explicit control)
+  autoRegister?: boolean
 
   // Component logic - choose one:
   // Option 1: Setup function (recommended for complex logic)
@@ -279,6 +291,25 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
     version: definition.version || '0.0.0',
     providers: definition.providers,
     validator: definition.validator
+  }
+
+  // Auto-register if requested
+  if (definition.autoRegister) {
+    try {
+      // Try to get manager from global Spark namespace
+      // Use dynamic import to avoid circular dependencies and bundling issues
+      const sparkNamespace = (globalThis as any).Spark
+      if (sparkNamespace && typeof sparkNamespace.registerSparkComponentFromComponent === 'function') {
+        sparkNamespace.registerSparkComponentFromComponent(component)
+        console.log(`🔧 Auto-registered SPARK component: ${definition.type}`)
+      } else {
+        console.warn(`⚠️ Failed to auto-register component ${definition.type}: Spark namespace not available globally`)
+        console.warn('💡 Make sure to call Spark.registerSparkComponentFromComponent() manually or ensure Spark namespace is available')
+      }
+    } catch (error) {
+      console.warn(`⚠️ Failed to auto-register component ${definition.type}:`, error)
+      console.warn('💡 Make sure to call Spark.registerSparkComponentFromComponent() manually or ensure Spark namespace is available')
+    }
   }
 
   return component as any

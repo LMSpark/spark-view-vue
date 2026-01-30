@@ -29,6 +29,72 @@ describe('Spark Component Creation APIs', () => {
       const inst = manager.render({ type: 'unified-type' })
       expect((inst as { component?: unknown }).component).toBe(Comp)
     })
+
+    it('auto-registers component when autoRegister is true', () => {
+      const registry = createComponentRegistry()
+      const manager = createComponentManager(undefined, registry)
+
+      // Mock the global Spark namespace
+      const originalSpark = globalThis.Spark
+      globalThis.Spark = Spark as any
+
+      const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
+      try {
+        ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
+
+        const Comp = defineSparkComponent({
+          type: 'auto-register-type',
+          name: 'auto-register',
+          version: '1.0.0',
+          autoRegister: true,
+          setup(_props, _helpers) {
+            return () => null
+          }
+        })
+
+        // Component should be auto-registered
+        expect(registry.has('auto-register-type')).toBe(true)
+        const inst = manager.render({ type: 'auto-register-type' })
+        expect((inst as { component?: unknown }).component).toBe(Comp)
+      } finally {
+        ;(Spark as unknown as { manager?: () => unknown }).manager = prevManager
+        globalThis.Spark = originalSpark
+      }
+    })
+
+    it('does not auto-register when autoRegister is false or undefined', () => {
+      const registry = createComponentRegistry()
+      const manager = createComponentManager(undefined, registry)
+
+      // Mock the global Spark namespace
+      const originalSpark = globalThis.Spark
+      globalThis.Spark = Spark as any
+
+      const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
+      try {
+        ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
+
+        const Comp = defineSparkComponent({
+          type: 'manual-register-type',
+          name: 'manual-register',
+          version: '1.0.0',
+          // autoRegister: false (default)
+          setup(_props, _helpers) {
+            return () => null
+          }
+        })
+
+        // Component should NOT be auto-registered
+        expect(registry.has('manual-register-type')).toBe(false)
+
+        // Manual registration should work
+        Spark.registerSparkComponentFromComponent(Comp as unknown as unknown)
+        expect(registry.has('manual-register-type')).toBe(true)
+      } finally {
+        ;(Spark as unknown as { manager?: () => unknown }).manager = prevManager
+        globalThis.Spark = originalSpark
+      }
+    })
   })
 
   describe('createSparkComponent (legacy API)', () => {
