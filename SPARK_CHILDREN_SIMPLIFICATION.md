@@ -240,7 +240,7 @@ const {
  * 从注册表解析组件
  */
 const resolvedComponent = computed(() => {
-  const component = getSparkComponent(props.config.type)
+  const component = getComponent(props.config.type)
   if (!component) {
     console.warn(`⚠️ SPARK Component not registered: ${props.config.type}`)
   }

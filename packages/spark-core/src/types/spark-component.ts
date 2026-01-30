@@ -1,79 +1,90 @@
-export interface SparkComponentConfig {
-  type: string
-  id?: string
-  name?: string
-  [key: string]: any
+import type { CapabilityProvider, CapabilityConsumer, LoggerApi } from './common.js'
+
+export namespace Spark {
+  export interface ComponentConfig {
+    type: string
+    id?: string
+    name?: string
+    props?: Record<string, unknown>
+    children?: ComponentConfig[]
+    [key: string]: unknown
+  }
+
+  export interface ComponentContext {
+    id: string
+    type: string
+    config?: ComponentConfig
+    parent?: ComponentContext | null
+    children: ComponentContext[]
+    state: Record<string, unknown>
+    providers: Set<CapabilityProvider>
+    consumers: Map<string, CapabilityConsumer>
+    providerListeners?: Map<string, Set<(prov: CapabilityProvider) => void>>
+    logger?: LoggerApi
+  }
+
+  export interface ComponentDefinition {
+    type: string
+    component: unknown
+    name?: string
+    version?: string
+    validator?: (cfg: ComponentConfig) => boolean
+    consumers?: CapabilityConsumer[]
+    providers?: CapabilityProvider[]
+  }
+
+  export interface ComponentRegistry {
+    register(type: string, def: ComponentDefinition): void
+    get(type: string): ComponentDefinition | undefined
+    getAllDefinitions(): ComponentDefinition[]
+    getAllTypes(): string[]
+    has(type: string): boolean
+    unregister(type: string): boolean
+    findCompatibleProviders?: (capabilityName: string, minVersion?: string) => string[]
+  }
+
+  export interface ComponentManager {
+    registerProvider(context: ComponentContext, provider: CapabilityProvider): void
+    registerContext(context: ComponentContext): void
+    destroyContext(id: string): boolean
+    getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined
+    getContext(id: string): ComponentContext | undefined
+    getAllContexts(): ComponentContext[]
+    registerComponent(def: ComponentDefinition): void
+    registerComponents(defs: ComponentDefinition[]): void
+    getComponentDefinition(type: string): ComponentDefinition | undefined
+    isComponentRegistered(type: string): boolean
+    getRegisteredComponentTypes(): string[]
+    unregisterComponent(type: string): boolean
+    createComponentTree(cfg: ComponentConfig): ComponentConfig
+    validateComponentConfig(cfg: ComponentConfig): boolean
+    getComponentCompatibility(): Record<string, string[]>
+  }
+
+  export type PluginHooks = {
+    afterComponentCreate?: (config: ComponentConfig, ctx: ComponentContext) => void | Promise<void>
+    beforeComponentDestroy?: (ctx: ComponentContext) => void | Promise<void>
+  }
+
+  export interface Plugin {
+    name: string
+    version?: string
+    description?: string
+    install?: (manager: ComponentManager) => void
+    uninstall?: (manager: ComponentManager) => void
+    hooks?: Partial<PluginHooks>
+  }
 }
 
-export interface SparkProviderInterface {
-  [method: string]: boolean
-}
+// Top-level aliases for simplified imports
+export type ComponentConfig = Spark.ComponentConfig
+export type ComponentContext = Spark.ComponentContext
+export type ComponentDefinition = Spark.ComponentDefinition
+export type ComponentRegistry = Spark.ComponentRegistry
+export type ComponentManager = Spark.ComponentManager
+export type PluginHooks = Spark.PluginHooks
+export type Plugin = Spark.Plugin
 
-export interface SparkCapabilityProvider {
-  name: string
-  version?: string
-  interface?: SparkProviderInterface
-  implementation?: Record<string, any>
-}
+// Re-export capability types from common
+export type { CapabilityProvider, CapabilityConsumer } from './common.js'
 
-export type SparkCapabilityConsumer = {
-  capabilityName: string
-  interface?: Record<string, any>
-  implementation?: any
-  minVersion?: string
-  onProvide?: (prov: SparkCapabilityProvider) => void
-}
-
-export interface SparkComponentContext {
-  id: string
-  type?: string
-  config?: SparkComponentConfig
-  parent?: SparkComponentContext | null
-  children: SparkComponentContext[]
-  state?: Record<string, any>
-  providers: Set<SparkCapabilityProvider>
-  consumers: Map<string, SparkCapabilityConsumer>
-  providerListeners?: Map<string, Set<(prov: SparkCapabilityProvider) => void>>
-  logger?: any
-}
-
-export interface SparkComponentManager {
-  registerProvider(context: SparkComponentContext, provider: SparkCapabilityProvider): void
-  registerContext(context: SparkComponentContext): void
-  destroyContext(id: string): void
-  getProvider(context: SparkComponentContext, name: string): SparkCapabilityProvider | undefined
-}
-
-export type SparkPluginHooks = {
-  afterComponentCreate?: (config: SparkComponentConfig, ctx: SparkComponentContext) => void | Promise<void>
-  beforeComponentDestroy?: (ctx: SparkComponentContext) => void | Promise<void>
-}
-
-export interface SparkPlugin {
-  name: string
-  version?: string
-  description?: string
-  install?: (manager: any) => void
-  uninstall?: (manager: any) => void
-  hooks?: Partial<SparkPluginHooks>
-}
-
-export interface SparkComponentDefinition {
-  type: string
-  component: any
-  name?: string
-  version?: string
-  validator?: (cfg: SparkComponentConfig) => boolean
-  consumers?: SparkCapabilityConsumer[]
-  providers?: SparkCapabilityProvider[]
-}
-
-export interface SparkComponentRegistry {
-  register(type: string, def: SparkComponentDefinition): void
-  get(type: string): SparkComponentDefinition | undefined
-  getAllDefinitions(): SparkComponentDefinition[]
-  getAllTypes(): string[]
-  has(type: string): boolean
-  unregister(type: string): boolean
-  findCompatibleProviders?: (capabilityName: string, minVersion?: string) => string[]
-}

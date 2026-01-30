@@ -1,19 +1,20 @@
-import type { SparkPlugin, SparkPluginHooks, SparkComponentContext } from '../types/spark-component.js'
+import type { Plugin, PluginHooks, ComponentContext } from '../types/spark-component.js'
 
 class SparkPluginManager {
-  private plugins = new Map<string, SparkPlugin>()
-  private hooks: Partial<Record<keyof SparkPluginHooks, Function>> = {}
+  private plugins = new Map<string, Plugin>()
+  private hooks: Partial<Record<keyof PluginHooks, Function>> = {}
 
-  install(plugin: SparkPlugin) {
+  install(plugin: Plugin) {
     if (this.plugins.has(plugin.name)) this.uninstall(plugin.name)
-    plugin.install(this)
+    // Cast to ComponentManager for plugin authors; this manager is intentionally minimal in plugin context
+    plugin.install?.(this as unknown as import('../types/spark-component.js').ComponentManager)
     this.plugins.set(plugin.name, plugin)
     console.log(`✅ Installed SPARK plugin: ${plugin.name} (${plugin.version})`)
   }
   uninstall(name: string) {
     const p = this.plugins.get(name)
     if (!p) return false
-    p.uninstall && p.uninstall(this)
+    p.uninstall?.(this as unknown as import('../types/spark-component.js').ComponentManager)
     this.plugins.delete(name)
     console.log(`🗑️ Uninstalled SPARK plugin: ${name}`)
     return true
@@ -21,18 +22,18 @@ class SparkPluginManager {
   get(name: string) { return this.plugins.get(name) }
   has(name: string) { return this.plugins.has(name) }
   getAll() { return Array.from(this.plugins.values()) }
-  registerHook<K extends keyof SparkPluginHooks>(hookName: K, hook: NonNullable<SparkPluginHooks[K]>) {
-    const prev = this.hooks[hookName]
+  registerHook<K extends keyof PluginHooks>(hookName: K, hook: NonNullable<PluginHooks[K]>) {
+    const prev = this.hooks[hookName] as Function | undefined
     if (prev) {
-      const prevFn = prev as Function
-      const hookFn = hook as Function
-      this.hooks[hookName] = (...args: any[]) => { prevFn(...(args as any)); hookFn(...(args as any)) }
-    } else this.hooks[hookName] = hook as Function
+      const prevFn = prev as (...args: unknown[]) => unknown
+      const hookFn = hook as (...args: unknown[]) => unknown
+      this.hooks[hookName] = (...args: unknown[]) => { prevFn(...args); hookFn(...args) }
+    } else this.hooks[hookName] = hook as (...args: unknown[]) => unknown
   }
-  async executeHook<K extends keyof SparkPluginHooks>(hookName: K, ...args: Parameters<NonNullable<SparkPluginHooks[K]>>) {
-    const fn = this.hooks[hookName]
+  async executeHook<K extends keyof PluginHooks>(hookName: K, ...args: Parameters<NonNullable<PluginHooks[K]>>) {
+    const fn = this.hooks[hookName] as Function | undefined
     if (!fn) return
-    try { await (fn as any)(...args) } catch (e) { console.error(`Plugin hook '${String(hookName)}' execution failed:`, e) }
+    try { await (fn as (...args: unknown[]) => Promise<unknown>)(...args) } catch (e: unknown) { console.error(`Plugin hook '${String(hookName)}' execution failed:`, String(e)) }
   }
   clear() { Array.from(this.plugins.keys()).forEach(k => this.uninstall(k)) }
 }
@@ -42,7 +43,7 @@ export class SparkDebugPlugin {
   version = '1.0.0'
   description = 'Component debugging and inspection plugin'
   install(m: SparkPluginManager) {
-    m.registerHook('afterComponentCreate', (_cfg, ctx: SparkComponentContext) => {
+    m.registerHook('afterComponentCreate', (_cfg: import('../types/spark-component.js').ComponentConfig, ctx: ComponentContext) => {
       console.log(`🐛 [DEBUG] Component created: ${ctx.type} (${ctx.id})`)
     })
   }
@@ -52,8 +53,8 @@ export class SparkPerformancePlugin {
   name = 'performance'
   version = '1.0.0'
   description = 'Component performance monitoring plugin'
-  private metrics = new Map<string, any>()
-  install(m: SparkPluginManager) {
+  private metrics = new Map<string, unknown>()
+  install(_m: SparkPluginManager) {
     // minimal implementation
   }
   getMetrics(id: string) { return this.metrics.get(id) }
@@ -64,17 +65,17 @@ export class SparkErrorHandlingPlugin {
   name = 'error-handling'
   version = '1.0.0'
   description = 'Unified error handling for components'
-  private errorHandlers: any[] = []
-  install(m: SparkPluginManager) {
+  private errorHandlers: unknown[] = []
+  install(_m: SparkPluginManager) {
     // register hooks as needed
   }
-  addErrorHandler(h: any) { this.errorHandlers.push(h) }
-  removeErrorHandler(h: any) { const i = this.errorHandlers.indexOf(h); if (i>-1) this.errorHandlers.splice(i,1) }
+  addErrorHandler(h: unknown) { this.errorHandlers.push(h) }
+  removeErrorHandler(h: unknown) { const i = this.errorHandlers.indexOf(h); if (i>-1) this.errorHandlers.splice(i,1) }
 }
 
 export const globalPluginManager = new SparkPluginManager()
-export function installSparkPlugin(p: SparkPlugin) { globalPluginManager.install(p) }
+export function installSparkPlugin(p: Plugin) { globalPluginManager.install(p) }
 export function uninstallSparkPlugin(name: string) { return globalPluginManager.uninstall(name) }
 export function getSparkPlugin(name: string) { return globalPluginManager.get(name) }
 
-export type { SparkPlugin, SparkPluginHooks } from '../types/spark-component.js'
+export type { Plugin, PluginHooks } from '../types/spark-component.js'

@@ -13,14 +13,14 @@ Purpose: help an AI coding agent be productive quickly in this mono-repo: two ap
 - Concepts & guides: `docs/SPARK_ARCHITECTURE.md`, `docs/COMPONENT_DEV_GUIDE.md` (detailed workflows and examples)
 - Component registry: `shared/utils/componentRegistry.ts`
 - Example implementations: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
-- Core exports: `packages/spark-core` (or `@spark-view/spark-core`) — use the `Spark` namespace (e.g., `Spark.registerSparkComponent`, `Spark.manager()`), or import specific globals from the package when needed (e.g., `globalSparkComponentManager`).
+- Core exports: `packages/spark-core` (or `@spark-view/spark-core`) — use the `Spark` namespace (e.g., `Spark.registerSparkComponent`, `Spark.manager()`), or import specific canonical instances from the package when needed (e.g., `componentManager`).
 - Tests: `tests/` (see `capability-late-binding.test.ts`, `provider-listener.test.ts`)
 
 ## Key conventions & idioms 📌
 - Component `type` values use `kebab-case` (e.g., `spark-ej2-grid`) and are registered via `Spark.registerSparkComponent()`.
 - Provide the manager in app entry: `app.provide('sparkManager', Spark.manager())`.
-- Prefer DI over globals; tests rely on `global` injection fallback (`global: { provide: { sparkManager: getGlobalSparkComponentManager() } }`).
-- Use `useSparkComponent({ config })` inside components to get `{ context, registerProvider, consumeCapability, whenProviderAvailable, getOrCreateNoopProvider, logger }`.
+- Prefer DI over globals; tests should provide the manager via `global: { provide: { sparkManager: Spark.manager() } }`.
+- Use `useComponent(config)` inside components to get `{ context, provide, consume, whenAvailable, getOrCreateNoopProvider, logger }`.
 
 ## Capability system specifics 🎯
 - Late-binding: `consumeCapability(name)` will register a consumer even when provider isn't present (see `useSparkComponent` implementation).
@@ -38,12 +38,12 @@ Purpose: help an AI coding agent be productive quickly in this mono-repo: two ap
 - Element Plus is globally registered; use existing UI components rather than re-registering.
 
 ## Quick examples (where to copy patterns) ✂️
-- Provider registration: `features/spark/components/ej2/SparkEJ2Grid.vue` → `registerProvider('columnManager', { implementation: { addColumn() { ... } } })`
+- Provider registration: `features/spark/components/ej2/SparkEJ2Grid.vue` → `provide('columnManager', { implementation: { addColumn() { ... } } })`
 - Consumer + late-binding test: `tests/capability-late-binding.test.ts`
 
 ## Troubleshooting & recipes ⚠️
 - Component type not found: Check `features/spark/components/index.ts` and `shared/utils/componentRegistry.ts` — ensure the component is passed to `registerSparkComponents()` and the `type` matches the config.
-- Tests failing with manager missing: In tests, provide `sparkManager` explicitly: `mount(MyComp, { global: { provide: { sparkManager: getGlobalSparkComponentManager() } } })` or use `Spark.manager()` helper in tests.
+- Tests failing with manager missing: In tests, provide `sparkManager` explicitly: `mount(MyComp, { global: { provide: { sparkManager: Spark.manager() } } })`.
 - Capability timing issues: If consumers see "Capability not found", either register provider early in parent `setup()` or use `await whenProviderAvailable('capabilityName')` in consumer code.
 - Debugging logs: Use `Logger(context)` or `Spark.Logger()` (context optional), or register a global logger via `registerGlobalProvider('logger', provider)` to capture runtime events.
 

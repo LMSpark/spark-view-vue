@@ -11,7 +11,7 @@ export interface ErrorContext {
   operation?: string
   component?: string
   userId?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export enum ErrorType {
@@ -77,8 +77,9 @@ export class ErrorHandler {
     return ErrorType.UNKNOWN
   }
 
-  static async withRetry<T>(operation: () => Promise<T>, options: RetryOptions, context?: ErrorContext): Promise<T> {
-    const { maxAttempts, delay, backoff, retryCondition } = options
+  static async withRetry<T>(operation: () => Promise<T>, options?: RetryOptions, context?: ErrorContext): Promise<T> {
+    const opts: RetryOptions = options ?? { maxAttempts: 3, delay: 1000, backoff: 'fixed' }
+    const { maxAttempts, delay, backoff, retryCondition } = opts
     let lastError: unknown
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -124,7 +125,7 @@ export class ErrorHandler {
 
   private static reportToMonitoring(error: AppError): void {
     // keep simple: console for now
-    try { console.error('Error reported to monitoring:', error) } catch (_) { /* ignore */ }
+    try { console.error('Error reported to monitoring:', error) } catch { /* ignore */ }
   }
 }
 

@@ -58,15 +58,12 @@ const props = defineProps<Props>()
 
 const {
   context,
-  registerProvider,
+  provide,
   componentClass,
   componentStyle,
-  getSparkComponent,
+  getComponent,
   isComponentRegistered
-} = Spark.useComponent({
-  config: props.config,
-  parentContext: props.parentContext as SparkComponentContext | undefined
-})
+} = Spark.useComponent(props.config, props.parentContext as SparkComponentContext | undefined)
 
 // ==================== 组件解析 ====================
 
@@ -74,7 +71,7 @@ const {
  * 从注册表解析组件
  */
 const resolvedComponent = computed(() => {
-  const component = getSparkComponent(props.config.type)
+  const component = getComponent(props.config.type)
   if (!component) {
     console.warn(`⚠️ SPARK Component not registered: ${props.config.type}`)
   }
@@ -84,7 +81,7 @@ const resolvedComponent = computed(() => {
 // ==================== 调试信息 ====================
 
 // 注册调试能力
-registerProvider('rendererDebug', {
+provide('rendererDebug', {
   componentType: props.config.type,
   isRegistered: computed(() => isComponentRegistered(props.config.type)),
   resolvedComponent: resolvedComponent.value,

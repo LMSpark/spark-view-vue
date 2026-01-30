@@ -15,7 +15,7 @@ vi.mock('../features/spark/utils/logger', () => ({
 
 // Mock component registry
 vi.mock('../features/spark/utils/SparkComponentRegistry', () => ({
-  globalComponentRegistry: {
+  componentRegistry: {
     get: vi.fn((type: string) => ({
       name: type,
       version: '1.0.0',

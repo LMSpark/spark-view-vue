@@ -1,15 +1,15 @@
 // Composables moved into package - original source copied and adjusted imports
-import { ref, computed, onMounted, onUnmounted, type ComputedRef } from 'vue'
+import { ref, computed, onMounted, onUnmounted, type ComputedRef, type UnwrapRef } from 'vue'
 import { asyncUtils, RaceController } from '../utils/asyncUtils.js'
-import { handleError, withRetry } from '../utils/errorHandler.js'
+import { handleError, withRetry, type RetryOptions, type ErrorContext } from '../utils/errorHandler.js'
 import { ConfigManager } from '../utils/configManager.js'
 import { Spark } from '../spark-namespace.js'
-import type { AsyncState } from '../types/index.js'
+type LocalAsyncState<T> = { data?: T; loading: boolean; error?: Error }
 
 export function useAsyncState<T>(
   initialData?: T
 ): {
-  state: ComputedRef<any>
+  state: ComputedRef<LocalAsyncState<T>>
   execute: (operation: () => Promise<T>) => Promise<void>
   reset: () => void
   isLoading: ComputedRef<boolean>
@@ -18,8 +18,8 @@ export function useAsyncState<T>(
   data: ComputedRef<T | undefined>
   error: ComputedRef<Error | undefined>
 } {
-  const state = ref<any>({
-    data: initialData as any,
+  const state = ref<LocalAsyncState<T>>({
+    data: initialData as unknown as T,
     loading: false,
     error: undefined
   })
@@ -30,7 +30,7 @@ export function useAsyncState<T>(
 
     try {
       const result = await operation()
-      state.value.data = result as any
+      state.value.data = result as unknown as UnwrapRef<T>
     } catch (error) {
       state.value.error = error instanceof Error ? error : new Error(String(error))
       Spark.Logger().error('Async operation failed', { error: state.value.error })
@@ -48,13 +48,13 @@ export function useAsyncState<T>(
   }
 
   return {
-    state: computed(() => state.value),
+    state: computed(() => state.value) as ComputedRef<LocalAsyncState<T>>,
     execute,
     reset,
     isLoading: computed(() => state.value.loading),
     isSuccess: computed(() => !state.value.loading && !state.value.error),
     isError: computed(() => !!state.value.error),
-    data: computed(() => state.value.data),
+    data: computed(() => state.value.data) as ComputedRef<T | undefined>,
     error: computed(() => state.value.error)
   }
 }
@@ -94,7 +94,7 @@ export function useRaceSafe<T>(): {
 }
 
 // Debounce / throttle
-export function useDebounce<T extends (...args: any[]) => any>(
+export function useDebounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
   options?: { leading?: boolean; trailing?: boolean }
@@ -102,7 +102,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
   return asyncUtils.debounce(func, wait, options)
 }
 
-export function useThrottle<T extends (...args: any[]) => any>(
+export function useThrottle<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number,
   options?: { leading?: boolean; trailing?: boolean }
@@ -239,21 +239,21 @@ export function useTheme(): {
 }
 
 export function useErrorHandler(): {
-  handleError: (error: unknown, context?: string) => void
+  handleError: (error: unknown, context?: ErrorContext) => void
   withRetry: <T>(
     operation: () => Promise<T>,
-    options?: { maxAttempts?: number; delay?: number }
+    options?: RetryOptions
   ) => Promise<T>
 } {
-  const handleErr = (error: unknown, context?: string): void => {
+  const handleErr = (error: unknown, context?: ErrorContext): void => {
     handleError(error, context)
   }
 
   const retry = async <T>(
     operation: () => Promise<T>,
-    options?: { maxAttempts?: number; delay?: number }
+    options?: RetryOptions
   ): Promise<T> => {
-    return withRetry(operation, options as any)
+    return withRetry(operation, options)
   }
 
   return {

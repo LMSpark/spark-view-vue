@@ -1,6 +1,6 @@
 declare module '@spark-view/spark-core' {
   export const Spark: any
-  export function useSparkComponent(...args: any[]): any
+  export function useComponent(...args: any[]): any
   export function initializeSparkComponents(...args: any[]): any
   export function Logger(...args: any[]): any
   // Use `Spark.manager()` / `Spark.capabilities()` to retrieve the global managers

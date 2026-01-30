@@ -3,27 +3,68 @@ import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
 import SparkEJ2Column from '../features/spark/components/ej2/SparkEJ2Column.vue'
 import { Spark } from '../features/spark'
+import { defaultComponentRegistry } from '@spark-view/spark-core'
 
 // Mock EJ2 components to avoid DOM-dependent behavior
 import { vi } from 'vitest'
-vi.mock('@syncfusion/ej2-vue-grids', () => ({
-  GridComponent: {
-    name: 'GridComponent',
-    template: '<div class="ej2-grid"><slot /></div>',
-    props: ['dataSource', 'allowPaging', 'pageSettings', 'height']
-  },
-  ColumnsDirective: {
-    name: 'ColumnsDirective',
-    template: '<div class="ej2-columns"><slot /></div>'
-  },
-  ColumnDirective: {
-    name: 'ColumnDirective',
-    template: '<div class="ej2-column"><slot /></div>',
-    props: ['field', 'headerText', 'width', 'columns']
-  }
-}))
+// Temporarily remove mock to see if we get different errors
+// vi.mock('@syncfusion/ej2-vue-grids', () => ({
+//   GridComponent: {
+//     name: 'GridComponent',
+//     template: '<div class="ej2-grid"><slot /></div>',
+//     props: ['dataSource', 'allowPaging', 'pageSettings', 'height']
+//   },
+//   ColumnsDirective: {
+//     name: 'ColumnsDirective',
+//     template: '<div class="ej2-columns"><slot /></div>'
+//   },
+//   ColumnDirective: {
+//     name: 'ColumnDirective',
+//     template: '<div class="ej2-column"><slot /></div>',
+//     props: ['field', 'headerText', 'width', 'columns', 'textAlign', 'format', 'template', 'visible', 'allowSorting', 'allowFiltering']
+//   }
+// }))
 
-await Spark.initializeApp()
+await Spark.initializeApp(Spark.manager())
+
+// Mock global EJ2 components for test environment
+const mockEColumn = {
+  name: 'e-column',
+  template: '<div class="e-column"><slot /></div>',
+  props: ['field', 'headerText', 'width', 'columns', 'textAlign', 'format', 'template', 'visible', 'allowSorting', 'allowFiltering']
+}
+
+const mockEColumns = {
+  name: 'e-columns',
+  template: '<div class="e-columns"><slot /></div>'
+}
+
+const mockEjsGrid = {
+  name: 'ejs-grid',
+  template: '<div class="ejs-grid"><slot /></div>',
+  props: ['dataSource', 'allowPaging', 'pageSettings', 'height']
+}
+
+// Register global mocks
+if (typeof window !== 'undefined') {
+  ;(window as any).Vue = { component: vi.fn() }
+}
+
+// Capture global errors and rejections to help find stack traces during test failures
+const __capturedErrors: any[] = []
+process.on('uncaughtException', (err: any) => { try { console.error('uncaughtException', err.stack || err) } catch(_){}; __capturedErrors.push(err) })
+process.on('unhandledRejection', (reason: any) => { try { console.error('process.unhandledRejection', reason?.stack || reason) } catch(_){}; __capturedErrors.push(reason) })
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (ev) => { try { console.error('window.error', ev.error?.stack || ev.message) } catch(_){}; __capturedErrors.push(ev) })
+  window.addEventListener('unhandledrejection', (ev) => { try { console.error('window.unhandledrejection', ev.reason?.stack || ev.reason) } catch(_){}; __capturedErrors.push(ev) })
+}
+
+// Also capture console errors
+const originalConsoleError = console.error
+console.error = (...args: any[]) => {
+  __capturedErrors.push(args)
+  originalConsoleError.apply(console, args)
+}
 
 describe('ColumnManager provider location', () => {
   it('parent column should provide columnManager; grid should not', async () => {
@@ -42,14 +83,24 @@ describe('ColumnManager provider location', () => {
       ]
     }
 
-    const wrapper = mount(SparkEJ2Grid, {
-      props: { config },
-      global: { provide: { sparkManager: Spark.manager() } }
-    })
+    let wrapper
+    try {
+      wrapper = mount(SparkEJ2Grid, {
+        props: { config },
+        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+      })
 
-    // Wait for component to mount and render
-    await wrapper.vm.$nextTick()
-    await new Promise(resolve => setTimeout(resolve, 500)) // Additional wait for async operations
+      // Wait for component to mount and render
+      await wrapper.vm.$nextTick()
+
+      if (__capturedErrors.length > 0) {
+        console.error('Captured async errors during mount:', __capturedErrors)
+        throw __capturedErrors[0]
+      }
+    } catch (err: any) {
+      console.error('Mount or async processing threw:', err, err && err.stack)
+      throw err
+    }
 
     // Verify that a column component was created and registered in the manager
     const manager = Spark.manager()
