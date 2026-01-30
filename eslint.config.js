@@ -25,6 +25,13 @@ export default [
       'vue/html-self-closing': 'off'
     }
   },
+  // Core package restriction: prevent importing concrete UI components into core
+  {
+    files: ['packages/spark-core/**'],
+    rules: {
+      'no-restricted-imports': ['error', { 'patterns': ['**/*.vue', '**/features/**'] }]
+    }
+  },
   // TypeScript files
   {
     files: ['**/*.ts', '**/*.tsx'],
