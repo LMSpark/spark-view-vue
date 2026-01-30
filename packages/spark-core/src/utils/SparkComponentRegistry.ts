@@ -1,12 +1,12 @@
 import { valid as semverValid, satisfies as semverSatisfies, gte as semverGte } from 'semver'
-import type { SparkComponentDefinition, SparkComponentRegistry } from '../types/spark-component.js'
+import type { ComponentDefinition, ComponentRegistry } from '../types/spark-component.js'
 import { Logger } from './logger.js'
 
-class SparkComponentRegistryImpl implements SparkComponentRegistry {
-  private components = new Map<string, SparkComponentDefinition>()
+export class SparkComponentRegistryImpl implements ComponentRegistry {
+  private components = new Map<string, ComponentDefinition>()
   private logger = Logger()
 
-  register(type: string, definition: SparkComponentDefinition): void {
+  register(type: string, definition: ComponentDefinition): void {
     if (this.components.has(type)) {
       this.logger.warn(`Component type '${type}' is already registered. Overwriting...`)
     }
@@ -17,7 +17,7 @@ class SparkComponentRegistryImpl implements SparkComponentRegistry {
     this.logger.info(`✅ Registered SPARK component: ${type} (${definition.version})`)
   }
 
-  get(type: string): SparkComponentDefinition | undefined {
+  get(type: string): ComponentDefinition | undefined {
     return this.components.get(type)
   }
 
@@ -29,7 +29,7 @@ class SparkComponentRegistryImpl implements SparkComponentRegistry {
     return Array.from(this.components.keys())
   }
 
-  getAllDefinitions(): SparkComponentDefinition[] {
+  getAllDefinitions(): ComponentDefinition[] {
     return Array.from(this.components.values())
   }
 
@@ -44,7 +44,7 @@ class SparkComponentRegistryImpl implements SparkComponentRegistry {
     this.logger.info('🧹 Cleared all SPARK component registrations')
   }
 
-  private validateDefinition(def: SparkComponentDefinition): boolean {
+  private validateDefinition(def: ComponentDefinition): boolean {
     if (!def.type) return false
     if (!def.name) return false
     if (!def.version) return false
@@ -78,6 +78,7 @@ class SparkComponentRegistryImpl implements SparkComponentRegistry {
               }
             } catch (e) {
               // on unexpected parse issues, fallback to exact match
+              this.logger.warn('semver parse failed for provider version', v, 'minVersion', minVersion, e)
               if (v === minVersion) { matches.push(type); break }
             }
           }
