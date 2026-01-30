@@ -9,7 +9,7 @@ describe('register component from Vue component with spark meta', () => {
     const manager = createComponentManager(undefined, registry)
     const comp = { render() { return null }, spark: { type: 'meta-type', name: 'meta', version: '1.2.3', providers: [{ name: 'cap', version: '1.0.0' }] } }
     // install into global manager for convenience in this test
-    const prevManager = Spark.manager()
+    const prevManager = Spark.manager
     try {
       // hijack singleton manager for test to reuse Spark namespace
       ;(Spark as any).manager = () => manager as any
