@@ -15,14 +15,14 @@ describe('createSparkComponent (unified factory)', () => {
       }
     })
 
-    const prevManager = (Spark as any).manager
+    const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
     try {
-      ;(Spark as any).manager = () => manager as any
-      Spark.registerSparkComponentFromComponent(Comp as any)
-    } finally { (Spark as any).manager = prevManager }
+      ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
+      Spark.registerSparkComponentFromComponent(Comp as unknown as unknown)
+    } finally { (Spark as unknown as { manager?: () => unknown }).manager = prevManager }
 
     expect(registry.has('unified-type')).toBe(true)
-    const inst = manager.render({ type: 'unified-type' } as any)
-    expect((inst as any).component).toBe(Comp)
+    const inst = manager.render({ type: 'unified-type' })
+    expect((inst as { component?: unknown }).component).toBe(Comp)
   })
 })

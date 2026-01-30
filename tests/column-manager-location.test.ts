@@ -53,23 +53,24 @@ const _mockEjsGrid = {
 
 // Register global mocks
 if (typeof window !== 'undefined') {
-  ;(window as any).Vue = { component: vi.fn() }
+  const win = window as unknown as { Vue?: { component: (...args: unknown[]) => void } }
+  win.Vue = { component: vi.fn() }
 }
 
 // Capture global errors and rejections to help find stack traces during test failures
-const __capturedErrors: any[] = []
-process.on('uncaughtException', (err: any) => { try { console.error('uncaughtException', err.stack || err) } catch { } ; __capturedErrors.push(err) })
-process.on('unhandledRejection', (reason: any) => { try { console.error('process.unhandledRejection', reason?.stack || reason) } catch { } ; __capturedErrors.push(reason) })
+const __capturedErrors: unknown[] = []
+process.on('uncaughtException', (err: unknown) => { try { console.error('uncaughtException', (err as any)?.stack || err) } catch { } ; __capturedErrors.push(err) })
+process.on('unhandledRejection', (reason: unknown) => { try { console.error('process.unhandledRejection', (reason as any)?.stack || reason) } catch { } ; __capturedErrors.push(reason) })
 if (typeof window !== 'undefined') {
-  window.addEventListener('error', (ev) => { try { console.error('window.error', ev.error?.stack || ev.message) } catch { } ; __capturedErrors.push(ev) })
-  window.addEventListener('unhandledrejection', (ev) => { try { console.error('window.unhandledrejection', ev.reason?.stack || ev.reason) } catch { } ; __capturedErrors.push(ev) })
-} 
+  window.addEventListener('error', (ev: any) => { try { console.error('window.error', ev.error?.stack || ev.message) } catch { } ; __capturedErrors.push(ev) })
+  window.addEventListener('unhandledrejection', (ev: any) => { try { console.error('window.unhandledrejection', ev.reason?.stack || ev.reason) } catch { } ; __capturedErrors.push(ev) })
+}
 
 // Also capture console errors
 const originalConsoleError = console.error
-console.error = (...args: any[]) => {
+console.error = (...args: unknown[]) => {
   __capturedErrors.push(args)
-  originalConsoleError.apply(console, args)
+  originalConsoleError.apply(console, args as any)
 }
 
 describe('ColumnManager provider location', () => {
@@ -103,8 +104,8 @@ describe('ColumnManager provider location', () => {
         console.error('Captured async errors during mount:', __capturedErrors)
         throw __capturedErrors[0]
       }
-    } catch (err: any) {
-      console.error('Mount or async processing threw:', err, err && err.stack)
+    } catch (err: unknown) {
+      console.error('Mount or async processing threw:', err, err && (err as any).stack)
       throw err
     }
 

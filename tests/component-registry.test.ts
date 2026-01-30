@@ -8,10 +8,10 @@ test('spark-ej2-grid is registered and component is a Vue component', async () =
   console.log('[test] registry entry:', def)
   expect(def).toBeDefined()
   // If full definition exists it should have a .component property
-  if ((def as any).component) {
-    expect((def as any).component).toBeTruthy()
-  } else {
+  if (def && 'component' in def && def.component) {
+    expect(def.component).toBeTruthy()
+  } else if (def) {
     // otherwise the registry returned a raw component
-    expect((def as any).type).toBe('spark-ej2-grid')
+    expect(def.type).toBe('spark-ej2-grid')
   }
 })

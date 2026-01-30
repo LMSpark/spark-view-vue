@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-core'
+import type { ComponentContext } from '@spark-view/spark-core'
 
 describe('logger level filtering', () => {
   it('does not call info when provider only implements warn/error', () => {
@@ -10,12 +11,12 @@ describe('logger level filtering', () => {
       version: '1.0.0',
       interface: { warn: true, error: true },
       implementation: {
-        warn: (..._args: any[]) => { calledWarn = true },
-        error: (..._args: any[]) => {}
+        warn: (..._args: unknown[]) => { calledWarn = true },
+        error: (..._args: unknown[]) => {}
       }
     }
 
-    const ctx: any = {
+    const ctx: ComponentContext = {
       id: 'ctx-level',
       type: 'test',
       children: [],

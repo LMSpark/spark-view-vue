@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-core' 
+import { Spark } from '@spark-view/spark-core'
+import type { ComponentContext } from '@spark-view/spark-core'
 
 describe('file transport (replaced by custom provider test)', () => {
   it('uses context-level logger provider', () => {
@@ -9,11 +10,11 @@ describe('file transport (replaced by custom provider test)', () => {
       version: '1.0.0',
       interface: { info: true },
       implementation: {
-        info: (...args: any[]) => { written += JSON.stringify(args) }
+        info: (..._args: unknown[]) => { written += JSON.stringify(_args) }
       }
     }
 
-    const ctx: any = {
+    const ctx: ComponentContext = {
       id: 'ctx-transport',
       type: 'test',
       children: [],

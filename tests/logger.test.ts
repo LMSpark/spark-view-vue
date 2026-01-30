@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-core' 
+import { Spark } from '@spark-view/spark-core'
+import type { ComponentContext } from '@spark-view/spark-core'
 
 describe('logger capability', () => {
   it('uses context-level logger provider', () => {
@@ -9,11 +10,11 @@ describe('logger capability', () => {
       version: '1.0.0',
       interface: { info: true },
       implementation: {
-        info: (..._args: any[]) => { called = true }
+        info: (..._args: unknown[]) => { called = true }
       }
     }
 
-    const ctx: any = {
+    const ctx: ComponentContext = {
       id: 'ctx-logger',
       type: 'test',
       children: [],
@@ -36,11 +37,11 @@ describe('logger capability', () => {
       version: '1.0.0',
       interface: { info: true },
       implementation: {
-        info: (..._args: any[]) => { calledLocal = true }
+        info: (..._args: unknown[]) => { calledLocal = true }
       }
     }
 
-    const ctx: any = {
+    const ctx: ComponentContext = {
       id: 'ctx-1',
       type: 'test',
       children: [],
