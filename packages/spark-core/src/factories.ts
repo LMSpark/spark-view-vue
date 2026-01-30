@@ -13,8 +13,8 @@ export function createComponentRegistry(): IComponentRegistry {
 /**
  * Create a new component manager instance. Optionally pass a renderer (e.g., test renderer) implementation.
  */
-export function createComponentManager(renderer?: unknown): IComponentManager {
-  return new SparkComponentManagerImpl(renderer)
+export function createComponentManager(renderer?: unknown, registry?: IComponentRegistry): IComponentManager {
+  return new SparkComponentManagerImpl(renderer, registry as any)
 }
 
 /**
