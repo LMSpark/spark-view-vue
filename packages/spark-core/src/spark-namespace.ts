@@ -10,6 +10,7 @@ import { createVueSparkPlugin } from './plugins/VueSparkPlugin.js'
 import { useSparkComponent } from './composables/useSparkComponent.js'
 import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 import { createComponentManager } from './utils/SparkComponentManager.js'
+import { defineSparkComponent } from './vue/createSparkComponent.js'
 import type { App } from 'vue'
 import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry, CapabilityProvider } from './types/spark-component.js'
 import type { SparkComponentMeta } from './vue/SparkComponentBase.js' 
@@ -81,6 +82,8 @@ export const Spark = {
   // composables / helpers
   useComponent: (config: ComponentConfig, parent?: ComponentContext) => useSparkComponent(config, { parentContext: parent }),
   useSparkComponent: (config: ComponentConfig, opts?: { manager?: any, registry?: any, parentContext?: ComponentContext }) => useSparkComponent(config, opts),
+  // unified component creation API
+  defineComponent: defineSparkComponent,
   // factories for creating instances
   createComponentRegistry,
   createComponentManager,
