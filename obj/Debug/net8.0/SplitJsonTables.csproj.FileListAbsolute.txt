@@ -1,0 +1,4 @@
+E:\spark-view\obj\Debug\net8.0\SplitJsonTables.GeneratedMSBuildEditorConfig.editorconfig
+E:\spark-view\obj\Debug\net8.0\SplitJsonTables.AssemblyInfoInputs.cache
+E:\spark-view\obj\Debug\net8.0\SplitJsonTables.AssemblyInfo.cs
+E:\spark-view\obj\Debug\net8.0\SplitJsonTables.csproj.CoreCompileInputs.cache
