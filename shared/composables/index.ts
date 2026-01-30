@@ -12,9 +12,12 @@ export function useTheme(): {
 } {
   const { value: theme, setValue: setThemeValue } = useLocalStorage('spark:theme', 'light')
 
+  import { getDocument } from '@spark-view/spark-core/utils/env'
+
   const setTheme = (newTheme: string): void => {
     setThemeValue(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
+    const doc = getDocument()
+    if (doc && doc.documentElement) doc.documentElement.setAttribute('data-theme', newTheme)
   }
 
   const toggleTheme = (): void => {
@@ -24,8 +27,9 @@ export function useTheme(): {
 
   // 初始化主题
   onMounted(() => {
-    if (theme.value) {
-      document.documentElement.setAttribute('data-theme', theme.value)
+    const doc = getDocument()
+    if (doc && theme.value) {
+      doc.documentElement.setAttribute('data-theme', theme.value)
     }
   })
 

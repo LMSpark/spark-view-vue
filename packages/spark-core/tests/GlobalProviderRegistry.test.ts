@@ -1,17 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { registerGlobalProvider, getGlobalProvider, getOrCreateNoopProvider } from '../src/utils/GlobalProviderRegistry.js'
+import { Spark } from '../src/spark-namespace.js'
 
-describe('GlobalProviderRegistry', () => {
-  it('register and get provider', () => {
-    const p = { name: 'test', implementation: {} }
-    registerGlobalProvider('test', p as any)
-    const got = getGlobalProvider('test')
-    expect(got).toBe(p)
-  })
-
-  it('getOrCreateNoopProvider creates provider', () => {
-    const p = getOrCreateNoopProvider('noop')
-    expect(p.name).toBe('noop')
-    expect(p.implementation).toBeDefined()
+describe('GlobalProviderRegistry removal', () => {
+  it('should not expose global provider helpers on Spark namespace', () => {
+    expect((Spark as any).registerGlobalProvider).toBeUndefined()
+    expect((Spark as any).getGlobalProvider).toBeUndefined()
+    expect((Spark as any).getOrCreateNoopProvider).toBeUndefined()
   })
 })

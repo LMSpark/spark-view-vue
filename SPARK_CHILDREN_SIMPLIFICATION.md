@@ -279,7 +279,10 @@ registerProvider('rendererDebug', {
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { GridComponent as EjsGrid, ColumnsDirective as EColumns } from '@syncfusion/ej2-vue-grids'
+// 推荐：在应用或示例中使用 `RendererComponent` + 注册名来渲染网格（避免直接依赖具体实现）
+import RendererComponent from '../features/ej2/components/RendererComponent.vue'
+
+// 以下为 EJ2 feature 实现示例（如果你正在实现 feature）：
 import SparkComponentRenderer from '../SparkComponentRenderer.vue'
 import { useSparkComponent } from '@/composables/useSparkComponent'
 import type { SparkEJ2GridConfig } from '@root/types/spark-component'

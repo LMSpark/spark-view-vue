@@ -4,13 +4,26 @@
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/types/index.d.ts",
-    "private": true,
+    "private": false,
+    "files": [
+        "dist",
+        "src",
+        "API.md",
+        "README.md"
+    ],
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/types/index.d.ts"
+        }
+    },
     "scripts": {
         "build": "tsc -p tsconfig.json",
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "test": "vitest",
         "test:run": "vitest run",
-        "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0"
+        "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
+        "prepare": "npm run build"
     },
     "devDependencies": {
         "@types/node": "^18.19.130",

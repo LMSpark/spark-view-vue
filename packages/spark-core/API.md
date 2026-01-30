@@ -35,7 +35,7 @@
 在本仓库中直接使用：
 
 ```ts
-import { componentManager, componentRegistry, useComponent, Logger, capabilityManager, registerGlobalProvider, asyncUtils, withRetry, installSparkPlugin } from '@spark-view/spark-core'
+import { componentManager, componentRegistry, useComponent, Logger, capabilityManager, asyncUtils, withRetry, installSparkPlugin } from '@spark-view/spark-core'
 // 或者直接相对路径引用： 'packages/spark-core/src'
 ```
 
@@ -47,7 +47,7 @@ import { componentManager, componentRegistry, useComponent, Logger, capabilityMa
 - `componentManager` — 创建/销毁组件上下文、渲染占位实例、注册组件定义
 - `useSparkComponent(config, opts?)` — 组合式 hook，用于组件 setup() 内的上下文、能力提供/消费、生命周期管理；严格依赖传入或通过 Spark 插件注入的 `manager`（DI-first）
 - `capabilityManager` — 连接/断开 provider 与 consumer
-- `registerGlobalProvider`, `getGlobalProvider`, `getOrCreateNoopProvider` — 全局能力辅助
+
 - `Logger(context?)` — 统一日志 API
 - `withRetry` / `handleError` — 错误处理与重试工具
 - `asyncUtils` — debounce / throttle / timeout / race controller
@@ -189,17 +189,7 @@ await whenAvailable('columnManager') // 等待 provider
 
 ---
 
-### 4.5 GlobalProviderRegistry
-
-- `registerGlobalProvider(name, provider)`
-- `getGlobalProvider(name)`
-- `getOrCreateNoopProvider(name, interfaceSpec = {})`
-
-示例：
-
-```ts
-registerGlobalProvider('logger', { name: 'logger', implementation: { info: (...a)=>console.log(...a), error: (...a)=>console.error(...a) } })
-```
+<!-- Global provider helpers removed. Use context-level providers attached to component contexts via `useSparkComponent` or `componentManager.registerProvider` -->
 
 ---
 
@@ -212,7 +202,7 @@ registerGlobalProvider('logger', { name: 'logger', implementation: { info: (...a
 注册为全局 logger：
 
 ```ts
-registerGlobalProvider('logger', { name: 'logger', implementation: LoggerImplementation })
+// Global provider helpers were removed; attach providers to component contexts or register via manager instead.
 ```
 
 ---

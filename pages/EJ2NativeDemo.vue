@@ -10,7 +10,7 @@
       <div class="demo-section">
         <h2>基础网格演示</h2>
         <div class="grid-container">
-          <GridComponent :config="basicGridConfig" />
+          <RendererComponent :config="{ type: 'spark-ej2-grid', ...basicGridConfig }" />
         </div>
       </div>
 
@@ -18,7 +18,7 @@
       <div class="demo-section">
         <h2>嵌套列演示</h2>
         <div class="grid-container">
-          <GridComponent :config="nestedColumnsConfig" />
+          <RendererComponent :config="{ type: 'spark-ej2-grid', ...nestedColumnsConfig }" />
         </div>
       </div>
 
@@ -26,7 +26,7 @@
       <div class="demo-section">
         <h2>分页网格演示</h2>
         <div class="grid-container">
-          <GridComponent :config="pagingGridConfig" />
+          <RendererComponent :config="{ type: 'spark-ej2-grid', ...pagingGridConfig }" />
         </div>
       </div>
 
@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import GridComponent from '../features/ej2/components/GridComponent.vue'
+import RendererComponent from '../features/ej2/components/RendererComponent.vue'
 
 // 基础网格配置
 const basicGridConfig = {
@@ -69,10 +69,10 @@ const basicGridConfig = {
   allowPaging: false,
   height: '300px',
   children: [
-    { type: 'ColumnComponent', field: 'id', headerText: 'ID', width: '80' },
-    { type: 'ColumnComponent', field: 'name', headerText: '姓名', width: '120' },
-    { type: 'ColumnComponent', field: 'age', headerText: '年龄', width: '100' },
-    { type: 'ColumnComponent', field: 'city', headerText: '城市', width: '120' }
+    { type: 'spark-ej2-column', field: 'id', headerText: 'ID', width: '80' },
+    { type: 'spark-ej2-column', field: 'name', headerText: '姓名', width: '120' },
+    { type: 'spark-ej2-column', field: 'age', headerText: '年龄', width: '100' },
+    { type: 'spark-ej2-column', field: 'city', headerText: '城市', width: '120' }
   ]
 }
 
@@ -88,22 +88,22 @@ const nestedColumnsConfig = {
   allowPaging: false,
   height: '350px',
   children: [
-    { type: 'ColumnComponent', field: 'id', headerText: 'ID', width: '80' },
-    { type: 'ColumnComponent', field: 'name', headerText: '姓名', width: '120' },
+    { type: 'spark-ej2-column', field: 'id', headerText: 'ID', width: '80' },
+    { type: 'spark-ej2-column', field: 'name', headerText: '姓名', width: '120' },
     {
-      type: 'ColumnComponent',
+      type: 'spark-ej2-column',
       headerText: '个人信息',
       children: [
-        { type: 'ColumnComponent', field: 'age', headerText: '年龄', width: '100' },
-        { type: 'ColumnComponent', field: 'city', headerText: '城市', width: '120' }
+        { type: 'spark-ej2-column', field: 'age', headerText: '年龄', width: '100' },
+        { type: 'spark-ej2-column', field: 'city', headerText: '城市', width: '120' }
       ]
     },
     {
-      type: 'ColumnComponent',
+      type: 'spark-ej2-column',
       headerText: '工作信息',
       children: [
-        { type: 'ColumnComponent', field: 'department', headerText: '部门', width: '120' },
-        { type: 'ColumnComponent', field: 'position', headerText: '职位', width: '120' }
+        { type: 'spark-ej2-column', field: 'department', headerText: '部门', width: '120' },
+        { type: 'spark-ej2-column', field: 'position', headerText: '职位', width: '120' }
       ]
     }
   ]
@@ -132,11 +132,11 @@ const pagingGridConfig = {
   pageSettings: { pageSize: 5, pageSizes: [5, 10, 20] },
   height: '400px',
   children: [
-    { type: 'ColumnComponent', field: 'id', headerText: 'ID', width: '80' },
-    { type: 'ColumnComponent', field: 'name', headerText: '姓名', width: '120' },
-    { type: 'ColumnComponent', field: 'age', headerText: '年龄', width: '100' },
-    { type: 'ColumnComponent', field: 'city', headerText: '城市', width: '120' },
-    { type: 'ColumnComponent', field: 'email', headerText: '邮箱', width: '200' }
+    { type: 'spark-ej2-column', field: 'id', headerText: 'ID', width: '80' },
+    { type: 'spark-ej2-column', field: 'name', headerText: '姓名', width: '120' },
+    { type: 'spark-ej2-column', field: 'age', headerText: '年龄', width: '100' },
+    { type: 'spark-ej2-column', field: 'city', headerText: '城市', width: '120' },
+    { type: 'spark-ej2-column', field: 'email', headerText: '邮箱', width: '200' }
   ]
 }
 

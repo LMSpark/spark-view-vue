@@ -11,23 +11,23 @@ await Spark.initializeApp(manager)
 
 // Mock EJ2 components to avoid DOM-dependent behavior
 import { vi } from 'vitest'
-// Temporarily remove mock to see if we get different errors
-// vi.mock('@syncfusion/ej2-vue-grids', () => ({
-//   GridComponent: {
-//     name: 'GridComponent',
-//     template: '<div class="ej2-grid"><slot /></div>',
-//     props: ['dataSource', 'allowPaging', 'pageSettings', 'height']
-//   },
-//   ColumnsDirective: {
-//     name: 'ColumnsDirective',
-//     template: '<div class="ej2-columns"><slot /></div>'
-//   },
-//   ColumnDirective: {
-//     name: 'ColumnDirective',
-//     template: '<div class="ej2-column"><slot /></div>',
-//     props: ['field', 'headerText', 'width', 'columns', 'textAlign', 'format', 'template', 'visible', 'allowSorting', 'allowFiltering']
-//   }
-// }))
+// Keep EJ2 Vue Grid mocked to avoid running heavy DOM/`location` dependent code in unit tests
+vi.mock('@syncfusion/ej2-vue-grids', () => ({
+  GridComponent: {
+    name: 'GridComponent',
+    template: '<div class="ej2-grid"><slot /></div>',
+    props: ['dataSource', 'allowPaging', 'pageSettings', 'height']
+  },
+  ColumnsDirective: {
+    name: 'ColumnsDirective',
+    template: '<div class="ej2-columns"><slot /></div>'
+  },
+  ColumnDirective: {
+    name: 'ColumnDirective',
+    template: '<div class="ej2-column"><slot /></div>',
+    props: ['field', 'headerText', 'width', 'columns', 'textAlign', 'format', 'template', 'visible', 'allowSorting', 'allowFiltering']
+  }
+}))
 
 
 

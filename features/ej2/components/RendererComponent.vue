@@ -1,12 +1,13 @@
 <script setup lang="ts">
 /**
- * 统一递归组件渲染器 - 简化版本
- * 暂时简化以支持重构
+ * 统一递归组件渲染器 - 使用核心 registry 获取已注册组件以保持去耦
  */
 import { computed } from 'vue'
-import type { SparkComponentConfig as ComponentConfig } from '@spark-view/spark-core'
-import GridComponent from './GridComponent.vue'
-import ColumnComponent from './ColumnComponent.vue'
+import { useSparkComponent } from '@spark-view/spark-core'
+import type { SparkComponentConfig as ComponentConfig } from '@spark-view/spark-core' 
+
+// 设置组件名以支持递归引用
+defineOptions({ name: 'RendererComponent' })
 
 // 主组件 Props
 interface Props {
@@ -15,46 +16,32 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 简化的渲染逻辑
-const componentType = computed(() => {
-  // 使用本地组件而不是直接映射到ejs-*
-  if (props.config.type === 'GridComponent') {
-    return GridComponent
-  }
-  if (props.config.type === 'ColumnComponent') {
-    return ColumnComponent
-  }
-  return null
-})
+const { getComponent, isComponentRegistered, logger } = useSparkComponent(props.config)
 
-const componentProps = computed(() => {
-  // 对于GridComponent和ColumnComponent，传递整个config对象
-  // 因为这些组件期望config属性
-  return { config: props.config }
-})
+import { resolveRendererForConfig, getChildrenForConfig } from '@spark-view/spark-core'
 
-const childResults = computed(() => {
-  return props.config.children || []
-})
+const isRegistered = computed(() => isComponentRegistered(props.config.type))
 
-// 调试信息
-console.log('🎯 渲染组件:', {
-  type: props.config.type,
-  config: props.config,
-  hasRenderer: !!componentType.value,
-  childrenCount: props.config.children?.length || 0
-})
+const componentType = computed(() => resolveRendererForConfig(props.config, getComponent))
+
+const componentProps = computed(() => ({ config: props.config }))
+
+const childResults = computed(() => getChildrenForConfig(props.config))
+
+if (logger && typeof logger.info === 'function') {
+  logger.info('🎯 渲染组件:', { type: props.config.type, childrenCount: childResults.value.length, isRegistered: isRegistered.value })
+}
 </script>
 
 <template>
   <!-- 动态组件渲染 -->
   <component
     :is="componentType"
-    v-if="componentType"
+    v-if="isRegistered"
     v-bind="componentProps"
   />
 
-  <!-- 逻辑组件 (如 ColumnComponent) - 只渲染子组件 -->
+  <!-- 逻辑组件：没有注册渲染器但有子组件时，递归渲染子节点 -->
   <template v-else-if="childResults.length > 0">
     <RendererComponent
       v-for="(childConfig, index) in childResults"
@@ -63,14 +50,9 @@ console.log('🎯 渲染组件:', {
     />
   </template>
 
-  <!-- 逻辑组件无子组件时不渲染 (ColumnComponent) -->
-  <template v-else-if="config.type === 'ColumnComponent'">
-    <!-- ColumnComponent 已注册到父组件，不需要渲染 -->
-  </template>
-
-  <!-- 未知组件类型 -->
+  <!-- 未注册的组件类型（显示错误信息，便于排查） -->
   <div v-else class="error-component">
-    ❌ 未知组件类型: {{ config.type }}
+    ❌ 未注册或未知组件类型: {{ config.type }}
   </div>
 </template>
 

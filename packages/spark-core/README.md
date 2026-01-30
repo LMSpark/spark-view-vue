@@ -9,7 +9,7 @@ What moved here
   - Configuration: `ConfigManager`, `getConfig`, `setConfig`, `clearConfig`
   - Error handling: `ErrorHandler` helpers (`handleError`, `withRetry`, `AppError`, `ErrorType`)
   - Logger helpers: `Logger`, `createConsoleTransport`, `createHttpTransport`, `createMemoryTransport`
-  - Global provider registry: `registerGlobalProvider`, `getGlobalProvider`, `getOrCreateNoopProvider`
+  - Provider guidance: Attach providers to component contexts via `useSparkComponent` or `componentManager.registerProvider` (DI-first approach) // global registry removed
 
 Usage example (preferred):
 

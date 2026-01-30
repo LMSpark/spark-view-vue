@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { computed, ref, defineComponent, onMounted, h } from 'vue'
-import { useComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-core'
 import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
 
 // 组件 Props
@@ -31,7 +31,7 @@ const {
   componentStyle: _componentStyle,
   logger,
   getComponent
-} = useComponent(props.config)
+} = useSparkComponent(props.config)
 
 // 网格配置（移除children属性，保留EJ2原生属性）
 const gridProps = computed(() => {
