@@ -104,8 +104,8 @@ export default {
 示例：
 
 ```ts
-componentRegistry.register('spark-ej2-grid', { type: 'spark-ej2-grid', component: SparkEJ2Grid, version: '1.0.0' })
-const def = componentRegistry.get('spark-ej2-grid')
+componentRegistry.register('spark-grid', { type: 'spark-grid', component: ExampleGridComponent, version: '1.0.0' })
+const def = componentRegistry.get('spark-grid')
 ```
 
 ---
@@ -147,7 +147,7 @@ app.provide('sparkManager', componentManager)
 示例：
 
 ```ts
-const { provide, consume, whenAvailable } = useComponent({ type: 'spark-ej2-grid' })
+const { provide, consume, whenAvailable } = useComponent({ type: 'spark-grid' })
 provide('gridInstance', { addRow() { ... } })
 const columns = consume('columnManager')
 await whenAvailable('columnManager') // 等待 provider
@@ -281,6 +281,9 @@ await asyncUtils.timeout(promise, { timeout: 2000 })
 
 - Q: 外部消费者受 shim 移除 影响吗？
   - A: 会是 breaking change。已在仓库中添加 `packages/spark-core/DEPRECATION.md`，请在发布说明中强调此变更并提供迁移示例。
+
+- Q: `packages/spark-core` 是否可以包含具体的组件实现或示例？
+  - A: 不可以。`packages/spark-core` 仅应包含抽象的核心运行时与工具；具体组件（例如基于特定 UI 库的实现）应放在 `features/*` 或示例/插件包中。文档示例应使用通用占位符（例如 `spark-grid` 或 `ExampleGridComponent`）。
 
 ---
 
