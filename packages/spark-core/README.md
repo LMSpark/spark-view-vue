@@ -37,3 +37,7 @@ Quick commands (run from repo root or package dir):
 - pnpm -C packages/spark-core run build      # build package (tsc)
 
 This package is currently built from compiled artifacts copied from the form-create-ssr-app source. We are migrating source files into `packages/spark-core/src` and adding CI to validate the package independently.
+
+## API Documentation
+
+A more detailed, human-friendly API reference (usage examples, types, and recommended improvement steps) is available in [`API.md`](./API.md).
