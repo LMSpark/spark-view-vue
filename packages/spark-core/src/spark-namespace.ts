@@ -9,7 +9,7 @@ import { getSparkPlugin, installSparkPlugin } from './plugins/SparkPluginSystem.
 import { createVueSparkPlugin } from './plugins/VueSparkPlugin.js'
 import { useSparkComponent } from './composables/useSparkComponent.js'
 import type { App } from 'vue'
-import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js' 
+import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry, CapabilityProvider } from './types/spark-component.js' 
 
 export const Spark = {
   // manager getter used across tests and app entry
@@ -28,11 +28,12 @@ export const Spark = {
     return defs.forEach((d: ComponentDefinition) => componentManager.registerComponent(d))
   },
   // Register a component by inspecting its attached spark meta. Minimal requirement: component.spark.type
-  registerSparkComponentFromComponent: (component: any) => {
+  registerSparkComponentFromComponent: (component: unknown) => {
     if (!component) throw new Error('component is required')
-    const meta = (component as any).spark
+    const comp = component as { spark?: { type?: string; name?: string; version?: string; providers?: unknown; validator?: (cfg: ComponentConfig) => boolean } }
+    const meta = comp.spark
     if (!meta || typeof meta.type !== 'string' || meta.type.trim() === '') throw new Error('component must expose spark meta with a non-empty "type" property')
-    const def: ComponentDefinition = { type: meta.type, name: meta.name || meta.type, version: meta.version || '0.0.0', component, providers: meta.providers, validator: meta.validator }
+    const def: ComponentDefinition = { type: meta.type, name: meta.name || meta.type, version: meta.version || '0.0.0', component, providers: (meta.providers as unknown as CapabilityProvider[]), validator: (meta.validator as unknown as ((cfg: ComponentConfig) => boolean) | undefined) }
     // Use the current Spark.manager() to allow test-time override of the manager in test fixtures
     const mgr = (Spark as any).manager ? (Spark as any).manager() : componentManager
     return (mgr as ComponentManager).registerComponent(def)

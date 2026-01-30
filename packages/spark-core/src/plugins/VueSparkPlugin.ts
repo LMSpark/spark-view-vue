@@ -14,8 +14,8 @@ export function createVueSparkPlugin(options: VueSparkPluginOptions) {
     name: 'spark-vue-plugin',
     install(app: App) {
       // Provide strict DI into Vue app using Symbols (no magic strings)
-      app.provide(SPARK_MANAGER_KEY as any, manager)
-      if (registry) app.provide(SPARK_REGISTRY_KEY as any, registry)
+      app.provide(SPARK_MANAGER_KEY, manager)
+      if (registry) app.provide(SPARK_REGISTRY_KEY, registry)
     }
-  }
+  } 
 }

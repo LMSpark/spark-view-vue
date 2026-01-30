@@ -18,8 +18,8 @@ export interface IComponentContext {
   id: string
   type: string
   parentId?: string
-  providers: Record<string, any>
-  consumers: Record<string, any>
+  providers: Record<string, unknown>
+  consumers: Record<string, unknown>
 }
 
 export interface IComponentManager {

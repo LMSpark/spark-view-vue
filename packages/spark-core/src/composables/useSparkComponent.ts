@@ -7,7 +7,7 @@ import type { Implementation } from '../types/common.js'
 
 // Local helper to create a noop provider when a capability is missing. This avoids any global registry side-effects.
 function createNoopProvider(name: string): CapabilityProvider {
-  return { name, version: '0.0.0', interface: {}, implementation: {} }
+  return { name, version: '0.0.0', interface: {} as CapabilityInterface, implementation: {} }
 }
 
 export function useSparkComponent(
@@ -31,19 +31,19 @@ export function useSparkComponent(
   const logger = Logger(context)
 
   // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
-  const resolvedManager = opts?.manager ?? (inject(SPARK_MANAGER_KEY as any) as ComponentManager | undefined) ?? (inject('sparkManager' as any) as ComponentManager | undefined)
+  const resolvedManager = opts?.manager ?? (inject(SPARK_MANAGER_KEY) as ComponentManager | undefined) ?? (inject('sparkManager') as ComponentManager | undefined)
   if (!resolvedManager) throw new Error('Component manager not found. Provide via options.manager or install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager })).')
   const manager = resolvedManager as ComponentManager
 
-  const isVisible = computed(() => (config as any).visible !== false)
-  const isDisabled = computed(() => (config as any).disabled === true)
+  const isVisible = computed(() => ((config as ComponentConfig) as { visible?: boolean }).visible !== false)
+  const isDisabled = computed(() => ((config as ComponentConfig) as { disabled?: boolean }).disabled === true)
 
   const initialize = () => logger.info(`🚀 Initializing SPARK component: ${context.type} (${context.id})`)
   const destroy = () => {
     logger.info(`🗑️ Destroying SPARK component: ${context.type} (${context.id})`)
     context.providers.clear()
     context.consumers.clear()
-    try { manager && typeof (manager as any).destroyContext === 'function' && (manager as any).destroyContext(context.id) } catch (e: unknown) { logger.warn('Failed to destroy context via manager', String(e)) }
+    try { manager && typeof (manager as ComponentManager).destroyContext === 'function' && (manager as ComponentManager).destroyContext(context.id) } catch (e: unknown) { logger.warn('Failed to destroy context via manager', String(e)) }
   }
 
   function getProvider(name: string): CapabilityProvider | undefined {
@@ -53,8 +53,8 @@ export function useSparkComponent(
 
   // Provide a capability on this context
   function provide(name: string, implementation?: Implementation) {
-    const p: CapabilityProvider = { name, version: '1.0.0', interface: {}, implementation }
-    if (manager && typeof (manager as any).registerProvider === 'function') (manager as any).registerProvider(context, p)
+    const p: CapabilityProvider = { name, version: '1.0.0', interface: {} as CapabilityInterface, implementation }
+    if (manager && typeof (manager as ComponentManager).registerProvider === 'function') (manager as ComponentManager).registerProvider(context, p)
     else context.providers.add(p)
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
