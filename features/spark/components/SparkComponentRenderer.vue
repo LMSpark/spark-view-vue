@@ -83,9 +83,9 @@ const resolvedComponent = computed(() => {
 // 注册调试能力
 provide('rendererDebug', {
   componentType: props.config.type,
-  isRegistered: computed(() => isComponentRegistered(props.config.type)),
+  isRegistered: isComponentRegistered(props.config.type),
   resolvedComponent: resolvedComponent.value,
-  childCount: computed(() => props.config.children?.length || 0)
+  childCount: props.config.children?.length || 0
 } as RendererDebugProvider)
 </script>
 

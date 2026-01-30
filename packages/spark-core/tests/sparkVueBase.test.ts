@@ -22,7 +22,7 @@ describe('Spark Vue Base component (integration)', () => {
     const prevManager = (Spark as any).manager
     try {
       ;(Spark as any).manager = () => manager as any
-      Spark.registerSparkComponentFromComponent(Comp as any)
+      Spark.register(Comp as any)
     } finally {
       ;(Spark as any).manager = prevManager
     }

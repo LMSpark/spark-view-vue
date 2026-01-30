@@ -6,7 +6,7 @@ import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
 import SparkEJ2Column from '../features/spark/components/ej2/SparkEJ2Column.vue'
 import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
 import { initializeAppSparkComponents } from '../features/spark/initialize'
-import type { SparkEJ2GridConfig } from '@spark-view/spark-core' 
+import type { SparkEJ2GridConfig } from '@/types/ej2-components' 
 
 const registry = createComponentRegistry()
 const manager = createComponentManager(undefined, registry)

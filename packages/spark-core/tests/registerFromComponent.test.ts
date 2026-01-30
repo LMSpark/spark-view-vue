@@ -3,7 +3,7 @@ import { Spark } from '../src/spark-namespace.js'
 import { createComponentRegistry } from '../src/utils/SparkComponentRegistry.js'
 import { createComponentManager } from '../src/utils/SparkComponentManager.js'
 
-describe('registerSparkComponentFromComponent', () => {
+describe('register component from Vue component with spark meta', () => {
   it('registers component when spark meta has type', () => {
     const registry = createComponentRegistry()
     const manager = createComponentManager(undefined, registry)
@@ -13,7 +13,7 @@ describe('registerSparkComponentFromComponent', () => {
     try {
       // hijack singleton manager for test to reuse Spark namespace
       ;(Spark as any).manager = () => manager as any
-      Spark.registerSparkComponentFromComponent(comp as any)
+      Spark.register(comp as any)
       expect(registry.has('meta-type')).toBe(true)
       const def = registry.get('meta-type')!
       expect(def.component).toBe(comp)
@@ -26,7 +26,7 @@ describe('registerSparkComponentFromComponent', () => {
   it('throws when component has no meta.type', () => {
     const comp = { render() { return null }, spark: { name: 'x' } }
     try {
-      Spark.registerSparkComponentFromComponent(comp as any)
+      Spark.register(comp as any)
       throw new Error('should have thrown')
     } catch (e: any) {
       expect(String(e)).toContain('Component spark meta must have a non-empty type property')

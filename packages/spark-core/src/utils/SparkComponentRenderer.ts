@@ -61,22 +61,46 @@ export class SparkComponentRendererImpl {
    */
   renderComponentTree(config: ComponentConfig): RenderResult {
     const component = this.resolver(config.type)
-    if (!component) {
-      throw new Error(`Component type '${config.type}' is not registered`)
-    }
-
+    
     const children = this.getChildrenForConfig(config)
     const renderedChildren = children.map(child => this.renderComponentTree(child))
 
-    return {
-      type: 'vue-component',
-      component,
-      props: {
-        config,
-        key: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
-      },
-      children: renderedChildren.length > 0 ? renderedChildren : undefined
+    // If component is registered, render it normally
+    if (component) {
+      const result: RenderResult = {
+        type: 'vue-component',
+        component,
+        props: {
+          config,
+          key: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
+        }
+      }
+
+      if (renderedChildren.length > 0) {
+        result.children = renderedChildren
+      }
+
+      return result
     }
+    
+    // If no component registered but has children, create a fragment/logical component
+    if (renderedChildren.length > 0) {
+      return {
+        type: 'fragment',
+        children: renderedChildren
+      }
+    }
+    
+    // If component is null (logical component) but type is registered, create empty fragment
+    if (this.registry.has(config.type)) {
+      return {
+        type: 'fragment',
+        children: []
+      }
+    }
+    
+    // If no component and no children, this is an error case
+    throw new Error(`Component type '${config.type}' is not registered and has no children to render`)
   }
 
   /**

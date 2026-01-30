@@ -14,7 +14,7 @@ import '../src/style.css'
 
 // 初始化SPARK组件系统
 import { Spark } from '../features/spark'
-import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
+import { createComponentManager, createComponentRegistry } from '../packages/spark-core/src'
 
 // 创建并提供显式 manager 与 registry（强制 DI）
 const globalRegistry = createComponentRegistry()

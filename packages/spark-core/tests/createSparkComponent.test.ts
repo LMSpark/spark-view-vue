@@ -22,7 +22,7 @@ describe('Spark Component Creation APIs', () => {
       const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
       try {
         ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
-        Spark.registerSparkComponentFromComponent(Comp as unknown as unknown)
+        Spark.register(Comp as unknown as unknown)
       } finally { (Spark as unknown as { manager?: () => unknown }).manager = prevManager }
 
       expect(registry.has('unified-type')).toBe(true)
@@ -88,7 +88,7 @@ describe('Spark Component Creation APIs', () => {
         expect(registry.has('manual-register-type')).toBe(false)
 
         // Manual registration should work
-        Spark.registerSparkComponentFromComponent(Comp as unknown as unknown)
+        Spark.register(Comp as unknown as unknown)
         expect(registry.has('manual-register-type')).toBe(true)
       } finally {
         ;(Spark as unknown as { manager?: () => unknown }).manager = prevManager
@@ -111,7 +111,7 @@ describe('Spark Component Creation APIs', () => {
       const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
       try {
         ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
-        Spark.registerSparkComponentFromComponent(Comp as unknown as unknown)
+        Spark.register(Comp as unknown as unknown)
       } finally { (Spark as unknown as { manager?: () => unknown }).manager = prevManager }
 
       expect(registry.has('template-type')).toBe(true)
@@ -143,7 +143,7 @@ describe('Spark Component Creation APIs', () => {
       const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
       try {
         ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
-        Spark.registerSparkComponentFromComponent(Comp as unknown as unknown)
+        Spark.register(Comp as unknown as unknown)
       } finally { (Spark as unknown as { manager?: () => unknown }).manager = prevManager }
 
       expect(registry.has('legacy-type')).toBe(true)

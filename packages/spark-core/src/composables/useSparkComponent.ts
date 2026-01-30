@@ -66,7 +66,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   function consume(name: string) {
     const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
     context.consumers.set(name, consumer)
-    const provider = getProvider(name) || createNoopProvider(name)
+    const provider = manager.getProvider(context, name) || createNoopProvider(name)
     if (provider) {
       consumer.implementation = ((provider as CapabilityProvider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
       try { capabilityManager.connectCapability(provider as CapabilityProvider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }

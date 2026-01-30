@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
+import type { SparkEJ2GridConfig } from '@/types/ej2-components'
 import SparkComponentRenderer from '../features/spark/components/SparkComponentRenderer.vue'
 
 // 网格配置
