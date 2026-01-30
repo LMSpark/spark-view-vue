@@ -14,11 +14,10 @@ import '../src/style.css'
 
 // 初始化SPARK组件系统
 import { Spark } from '../features/spark'
-import { createComponentManager, createComponentRegistry } from '../packages/spark-core/src'
 
 // 创建并提供显式 manager 与 registry（强制 DI）
-const globalRegistry = createComponentRegistry()
-const globalManager = createComponentManager(undefined, globalRegistry)
+const globalRegistry = Spark.createRegistry()
+const globalManager = Spark.createManager(undefined, globalRegistry)
 
 // EJ2 注册码
 import { registerLicense } from '@syncfusion/ej2-base'
@@ -32,9 +31,8 @@ app.use(ElementPlus)
 await Spark.initialize()
 await Spark.initializeApp(globalManager)
 
-// 注册自定义组件
-import { registerCustomComponents } from './components'
-registerCustomComponents()
+// 注册自定义组件 - 传入已创建的管理器
+registerCustomComponents(globalManager)
 
 // 使用 Spark 的严格 Vue 插件安装（需显式传入 manager 与 registry）
 Spark.install(app, { manager: globalManager, registry: globalRegistry })

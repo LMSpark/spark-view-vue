@@ -22,7 +22,10 @@ export const Spark = {
   // registry accessor
   registry: (): typeof componentRegistry => componentRegistry,
   // unified registration API - handles multiple input types intelligently
-  register: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) => {
+  register: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }, manager?: ComponentManager) => {
+    // Get or create manager dynamically
+    const activeManager = manager || Spark.manager()
+
     // Handle array of components
     if (Array.isArray(input)) {
       if (!Array.isArray(input)) {
@@ -36,7 +39,7 @@ export const Spark = {
           throw new Error('Each ComponentConfig must have a non-empty type string')
         }
       })
-      return input.forEach(def => componentManager.registerComponent(def))
+      return input.forEach(def => activeManager.registerComponent(def))
     }
 
     // Handle Vue component with spark meta
@@ -62,9 +65,8 @@ export const Spark = {
         validator: meta.validator
       }
 
-      // Use the current Spark.manager() to allow test-time override of the manager in test fixtures
-      const manager = Spark.manager()
-      return manager.registerComponent(definition)
+      // Use the provided manager or get current active manager
+      return activeManager.registerComponent(definition)
     }
 
     // Handle single ComponentConfig
@@ -76,7 +78,7 @@ export const Spark = {
       if (typeof definition.type !== 'string' || definition.type.trim() === '') {
         throw new Error('ComponentConfig must have a non-empty type string')
       }
-      return componentManager.registerComponent(definition)
+      return activeManager.registerComponent(definition)
     }
 
     throw new Error('Invalid input for Spark.register(). Expected ComponentConfig, ComponentConfig[], or Vue component with spark meta.')
@@ -116,9 +118,21 @@ export const Spark = {
   useSparkComponent: (config: ComponentConfig, opts?: { manager?: any, registry?: any, parentContext?: ComponentContext }) => useSparkComponent(config, opts),
   // unified component creation API
   defineComponent: defineSparkComponent,
-  // factories for creating instances
+  // factories for creating instances (full names)
   createComponentRegistry,
   createComponentManager,
+  // short aliases for convenience
+  createRegistry: createComponentRegistry,
+  createManager: createComponentManager,
+  // component registration shortcuts
+  registerComponent: (def: ComponentConfig, manager?: ComponentManager) => {
+    const activeManager = manager || Spark.manager()
+    return activeManager.registerComponent(def)
+  },
+  registerComponents: (defs: ComponentConfig[], manager?: ComponentManager) => {
+    const activeManager = manager || Spark.manager()
+    return activeManager.registerComponents(defs)
+  },
   // unified rendering API
   render: (config: ComponentConfig) => componentManager.render(config),
   // initialization hook (no-op by default; features may extend this with `initializeApp`)
