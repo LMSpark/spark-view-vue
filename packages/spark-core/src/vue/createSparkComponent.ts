@@ -49,6 +49,7 @@ export interface SparkComponentHelpers {
   // Capability system
   provide: (name: string, implementation?: Implementation) => void
   consume: (name: string) => Implementation | null
+  use: (name: string) => Implementation | null // Alias for consume - more intuitive naming
   whenAvailable: (name: string) => Promise<CapabilityProvider>
   getProvider: (name: string) => CapabilityProvider | undefined
   getInheritedProvider: <T = unknown>(name: string) => T | undefined
@@ -270,6 +271,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         isDisabled: isDisabled.value,
         provide,
         consume,
+        use: consume, // Alias for consume - more intuitive naming
         whenAvailable,
         getProvider,
         getInheritedProvider,

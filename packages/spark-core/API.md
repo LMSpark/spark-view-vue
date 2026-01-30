@@ -93,8 +93,10 @@ import { useSparkComponent } from '@spark-view/spark-core'
 
 export default {
   setup() {
-    const { provide, consume } = useSparkComponent({ type: 'my-button' })
-    // 使用能力系统
+    const { provide, consume, use } = useSparkComponent({ type: 'my-button' })
+    // 使用能力系统 - consume 和 use 是相同的功能
+    const capability1 = consume('some-capability')
+    const capability2 = use('some-capability') // 更直观的别名
   }
 }
 ```
@@ -276,6 +278,7 @@ function useSparkComponent(
   context: ComponentContext
   provide: (name: string, implementation: any) => void
   consume: (name: string) => any
+  use: (name: string) => any // Alias for consume - more intuitive naming
   whenAvailable: (name: string) => Promise<any>
   logger: LoggerApi
   // ... 其他工具方法
@@ -372,7 +375,7 @@ Spark.register(MyComponent)
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-core'
 
-const { provide, consume, whenAvailable } = useSparkComponent({
+const { provide, consume, use, whenAvailable } = useSparkComponent({
   type: 'spark-button'
 })
 
@@ -381,8 +384,9 @@ provide('button-api', {
   click: () => console.log('Button clicked')
 })
 
-// 消费能力
-const gridApi = consume('grid-api')
+// 消费能力 (两种方式都可以)
+const gridApi1 = consume('grid-api') // 传统方式
+const gridApi2 = use('grid-api')     // 更直观的别名
 
 // 等待能力可用
 await whenAvailable('grid-api')
@@ -398,9 +402,10 @@ provide('data-service', {
   fetchData: async () => { /* ... */ }
 })
 
-// 消费者组件
-const { consume } = useSparkComponent({ type: 'data-consumer' })
-const dataService = consume('data-service')
+// 消费者组件 (两种方式都可以)
+const { consume, use } = useSparkComponent({ type: 'data-consumer' })
+const dataService1 = consume('data-service') // 传统方式
+const dataService2 = use('data-service')     // 更直观的别名
 // 如果提供者还未注册，dataService 为 null
 // 系统会自动连接当提供者注册时
 ```

@@ -121,6 +121,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       return undefined
     },
     consume,
+    use: consume, // Alias for consume - more intuitive naming
     whenAvailable,
     initialize,
     destroy,
