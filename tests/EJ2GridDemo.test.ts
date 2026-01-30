@@ -3,7 +3,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
-import { Spark, createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
+import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
 import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
 
 const registry = createComponentRegistry()
@@ -54,7 +54,7 @@ describe('EJ2GridDemo', () => {
         global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
     } catch (e: any) {
-      try { console.error('Mount threw (detailed):', e, typeof e, JSON.stringify(e, Object.getOwnPropertyNames(e))) } catch(_) { console.error('Mount threw (fallback):', e) }
+      try { console.error('Mount threw (detailed):', e, typeof e, JSON.stringify(e, Object.getOwnPropertyNames(e))) } catch { console.error('Mount threw (fallback):', e) }
       throw e
     }
 

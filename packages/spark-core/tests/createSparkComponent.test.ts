@@ -10,7 +10,7 @@ describe('createSparkComponent (unified factory)', () => {
 
     const Comp = createSparkComponent({
       meta: { type: 'unified-type', name: 'unified', version: '0.1.0' },
-      setup(props) {
+      setup(_props) {
         return () => null
       }
     })

@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkComponentRenderer from '../features/spark/components/SparkComponentRenderer.vue'
-import { Spark, createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
+import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core' 
 import { initializeAppSparkComponents } from '../features/spark/initialize'
 
 const registry = createComponentRegistry()

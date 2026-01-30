@@ -2,7 +2,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { SparkComponentRendererImpl } from '@spark-view/spark-core'
-import type { SparkComponentConfig, SparkComponentContext } from '@spark-view/spark-core'
+import type { SparkComponentConfig } from '@spark-view/spark-core' 
 
 // Mock logger
 vi.mock('../features/spark/utils/logger', () => ({

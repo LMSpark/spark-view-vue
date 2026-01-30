@@ -1,9 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
-import { initializeSparkComponents } from '../features/spark'
+import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-core'
-import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
+import type { SparkEJ2GridConfig } from '@spark-view/spark-core' 
 
 // Mock EJ2 Grid components
 vi.mock('@syncfusion/ej2-vue-grids', () => ({

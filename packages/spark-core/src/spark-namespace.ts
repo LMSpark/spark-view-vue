@@ -9,8 +9,7 @@ import { getSparkPlugin, installSparkPlugin } from './plugins/SparkPluginSystem.
 import { createVueSparkPlugin } from './plugins/VueSparkPlugin.js'
 import { useSparkComponent } from './composables/useSparkComponent.js'
 import type { App } from 'vue'
-import type { ComponentDefinition, CapabilityProvider, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js'
-import type { CapabilityInterface } from './types/common.js'
+import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js' 
 
 export const Spark = {
   // manager getter used across tests and app entry

@@ -18,7 +18,7 @@ const props = defineProps<Props>()
 
 const { getComponent, isComponentRegistered, logger } = useSparkComponent(props.config)
 
-import { resolveRendererForConfig, getChildrenForConfig } from '@spark-view/spark-core'
+import { resolveRendererForConfig, getChildrenForConfig } from '../../../packages/spark-core/src/utils/renderLogic'
 
 const isRegistered = computed(() => isComponentRegistered(props.config.type))
 
