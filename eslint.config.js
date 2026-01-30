@@ -48,6 +48,12 @@ export default [
     },
     plugins: { '@typescript-eslint': tsPlugin },
     rules: {
+      // Disallow direct use of core singletons in consumer code; prefer DI/factories
+      'no-restricted-imports': ['error', {
+        'paths': [
+          { name: '@spark-view/spark-core', importNames: ['componentManager', 'componentRegistry'], message: 'Use createComponentManager/createComponentRegistry or inject the manager via app.provide("sparkManager") instead of importing singletons.' }
+        ]
+      }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn'
     }
