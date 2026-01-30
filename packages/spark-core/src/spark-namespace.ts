@@ -12,7 +12,7 @@ import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 import { createComponentManager } from './utils/SparkComponentManager.js'
 import { defineSparkComponent } from './vue/createSparkComponent.js'
 import type { App } from 'vue'
-import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry, CapabilityProvider } from './types/spark-component.js'
+import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js'
 import type { SparkComponentMeta } from './vue/SparkComponentBase.js' 
 
 export const Spark = {

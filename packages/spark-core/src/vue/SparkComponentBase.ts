@@ -17,7 +17,7 @@ export type SparkVueSetupHelpers = {
  * @deprecated Use defineSparkComponent from createSparkComponent.ts instead
  * This file is kept for backward compatibility only.
  */
-export function createSparkVueComponent(options: {
+export function createSparkVueComponent(_options: {
   meta: SparkComponentMeta & { type: string }
   setup?: (props: any, ctx: any, helpers: SparkVueSetupHelpers) => any
 }) {
