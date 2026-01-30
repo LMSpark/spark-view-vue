@@ -1,3 +1,4 @@
+import { valid as semverValid, satisfies as semverSatisfies, gte as semverGte } from 'semver'
 import type { SparkComponentDefinition, SparkComponentRegistry } from '../types/spark-component.js'
 import { Logger } from './logger.js'
 
@@ -51,11 +52,42 @@ class SparkComponentRegistryImpl implements SparkComponentRegistry {
     return true
   }
 
+
   private isValidVersion(v: string): boolean {
-    return /^\d+\.\d+\.\d+(-[\w.-]+)?(\+[\w.-]+)?$/.test(v)
+    return !!semverValid(v)
+  }
+
+  findCompatibleProviders(capabilityName: string, minVersion?: string): string[] {
+    const matches: string[] = []
+    this.components.forEach((def, type) => {
+      if (def.providers && Array.isArray(def.providers)) {
+        for (const p of def.providers) {
+          if (p.name === capabilityName) {
+            if (!minVersion) { matches.push(type); break }
+            const v = p.version || '0.0.0'
+            try {
+              // If both are strict versions (e.g., '1.2.3'), use gte for minimal version semantics.
+              if (semverValid(v) && semverValid(minVersion)) {
+                if (semverGte(v, minVersion)) { matches.push(type); break }
+              } else if (semverValid(v) && semverSatisfies(v, minVersion)) {
+                // minVersion may be a range like '^1.2.0' or '>=1.2.0 <2.0.0'
+                matches.push(type); break
+              } else if (v === minVersion) {
+                // fallback for non-semver tokens
+                matches.push(type); break
+              }
+            } catch (e) {
+              // on unexpected parse issues, fallback to exact match
+              if (v === minVersion) { matches.push(type); break }
+            }
+          }
+        }
+      }
+    })
+    return matches
   }
 }
 
-export const globalComponentRegistry = new SparkComponentRegistryImpl()
+export const componentRegistry = new SparkComponentRegistryImpl()
 // NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
-// Use `Spark.registerSparkComponent(...)` or `globalComponentRegistry.register(...)` instead.
+// Use `Spark.registerSparkComponent(...)` or `componentRegistry.register(...)` instead.
