@@ -95,6 +95,37 @@ describe('Spark Component Creation APIs', () => {
         globalThis.Spark = originalSpark
       }
     })
+
+    it('supports template rendering with interpolation', () => {
+      const registry = createComponentRegistry()
+      const manager = createComponentManager(undefined, registry)
+
+      const Comp = defineSparkComponent({
+        type: 'template-type',
+        name: 'template',
+        version: '1.0.0',
+        template: ({ config }, { isDisabled }) =>
+          `<button disabled="${isDisabled}" class="btn-${config.props?.variant || 'primary'}">${config.props?.label || 'Default'}</button>`
+      })
+
+      const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
+      try {
+        ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
+        Spark.registerSparkComponentFromComponent(Comp as unknown as unknown)
+      } finally { (Spark as unknown as { manager?: () => unknown }).manager = prevManager }
+
+      expect(registry.has('template-type')).toBe(true)
+
+      // Test rendering with different configs
+      const config1 = { type: 'template-type', props: { label: 'Click Me', variant: 'success' } }
+      const config2 = { type: 'template-type', props: { label: 'Submit' } }
+
+      const inst1 = manager.render(config1)
+      const inst2 = manager.render(config2)
+
+      expect((inst1 as { component?: unknown }).component).toBe(Comp)
+      expect((inst2 as { component?: unknown }).component).toBe(Comp)
+    })
   })
 
   describe('createSparkComponent (legacy API)', () => {

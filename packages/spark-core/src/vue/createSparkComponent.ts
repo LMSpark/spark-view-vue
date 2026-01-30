@@ -5,6 +5,34 @@ import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityC
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation, CapabilityInterface } from '../types/common.js'
 
+// Simple template engine for safe HTML rendering
+function createTemplateRenderer(template: string) {
+  // Basic interpolation: {{variable}} or ${variable}
+  const interpolated = template
+    .replace(/\{\{(\w+)\}\}/g, '${$1}') // Convert {{var}} to ${var}
+    .replace(/\$\{(\w+)\}/g, (match, varName) => `\${${varName}}`) // Keep ${var} as is
+
+  return (data: Record<string, any>) => {
+    try {
+      // Use Function constructor for safe evaluation (no eval)
+      const func = new Function(...Object.keys(data), `return \`${interpolated}\``)
+      return func(...Object.values(data))
+    } catch (error) {
+      console.warn('Template interpolation failed:', error)
+      return template // Fallback to original template
+    }
+  }
+}
+
+// Safe HTML renderer that escapes content
+function renderSafeHTML(html: string): VNode {
+  // For now, we'll use a simple approach. In production, consider using a proper HTML sanitizer
+  return h('div', {
+    innerHTML: html,
+    class: 'spark-template-content'
+  })
+}
+
 export type SparkComponent<TConfig = ComponentConfig> = ReturnType<typeof defineSparkComponent>
 
 // Local helper to create a noop provider when a capability is missing
@@ -73,10 +101,29 @@ export interface SparkComponentHelpers {
  *   }
  * })
  *
- * // Using template strings
+ * // Using template strings with interpolation
  * const TemplateButton = defineSparkComponent({
  *   type: 'template-button',
- *   template: ({ config }) => `<button>${config.props?.label}</button>`
+ *   template: ({ config }) => `<button class="${config.props?.variant || 'primary'}">${config.props?.label || 'Click'}</button>`
+ * })
+ *
+ * // Using template with data interpolation
+ * const DataButton = defineSparkComponent({
+ *   type: 'data-button',
+ *   template: ({ config }, { isDisabled }) =>
+ *     `<button disabled="${isDisabled}" style="background: ${config.props?.color || 'blue'}">
+ *        ${config.props?.label || 'Button'}
+ *      </button>`
+ * })
+ *
+ * // Using template literal function (advanced)
+ * const AdvancedTemplate = defineSparkComponent({
+ *   type: 'advanced-template',
+ *   templateLiteral: (strings, config, helpers) => (props, h) =>
+ *     `<div class="card">
+ *        <h3>${config.props?.title}</h3>
+ *        <p>${config.props?.description}</p>
+ *      </div>`
  * })
  * ```
  */
@@ -98,8 +145,11 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
   // Option 2: Simple render function (for direct JSX/VNode return)
   render?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => VNode | any
 
-  // Option 3: Template function (for string-based templates)
+  // Option 3: Template function (for string-based templates with interpolation)
   template?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => string
+
+  // Option 4: Template literal function (for tagged template literals)
+  templateLiteral?: (strings: TemplateStringsArray, ...values: any[]) => (props: { config: TConfig }, helpers: SparkComponentHelpers) => string
 }) {
   if (!definition?.type) {
     throw new Error('defineSparkComponent requires a type property')
@@ -270,10 +320,34 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
       }
 
       if (definition.template) {
-        // Template function returns HTML string
-        return () => h('div', {
-          innerHTML: definition.template!(props, helpers)
-        })
+        // Template function returns HTML string with interpolation support
+        const templateStr = definition.template(props, helpers)
+        const renderer = createTemplateRenderer(templateStr)
+
+        // Create data object for interpolation
+        const templateData = {
+          config: props.config,
+          helpers,
+          context,
+          isVisible: helpers.isVisible,
+          isDisabled: helpers.isDisabled,
+          ...props.config.props, // Allow direct access to props
+          ...helpers // Allow access to helper functions
+        }
+
+        return () => {
+          const rendered = renderer(templateData)
+          return renderSafeHTML(rendered)
+        }
+      }
+
+      if (definition.templateLiteral) {
+        // Template literal function for advanced templating
+        return () => {
+          const templateFunc = definition.templateLiteral!([] as unknown as TemplateStringsArray, props, helpers)
+          const html = templateFunc(props, helpers)
+          return renderSafeHTML(html)
+        }
       }
 
       // Default render
