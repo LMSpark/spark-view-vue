@@ -1,4 +1,4 @@
-export * from './utils/componentRegistry.js'
+export * from './utils/SparkComponentRegistry.js'
 export * from './utils/asyncUtils.js'
 export * from './utils/errorHandler.js'
 export * from './utils/configManager.js'
@@ -7,7 +7,10 @@ export * from './utils/GlobalProviderRegistry.js'
 export * from './utils/SparkCapabilitySystem.js'
 export * from './utils/SparkComponentManager.js'
 export * from './composables/index.js'
+export * from './composables/useSparkComponent.js'
+export * from './utils/SparkComponentRenderer.js'
 export * from './types/index.js'
+export * from './factories.js'
 export { Spark } from './spark-namespace.js'
 
-// NOTE: removed dist-first re-export; package now prefers source-first exports
+// NOTE: prefer factories (createComponentManager/createComponentRegistry) for explicit instances; singletons are still available via existing exports.
