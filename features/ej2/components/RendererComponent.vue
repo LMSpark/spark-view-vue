@@ -18,15 +18,15 @@ const props = defineProps<Props>()
 
 const { getComponent, isComponentRegistered, logger } = useSparkComponent(props.config)
 
-import { resolveRendererForConfig, getChildrenForConfig } from '../../../packages/spark-core/src/utils/renderLogic'
+import { SparkComponentRenderer } from '../../../packages/spark-core/src/utils/SparkComponentRenderer'
 
 const isRegistered = computed(() => isComponentRegistered(props.config.type))
 
-const componentType = computed(() => resolveRendererForConfig(props.config, getComponent))
+const componentType = computed(() => SparkComponentRenderer.resolveRendererForConfig(props.config, getComponent))
 
 const componentProps = computed(() => ({ config: props.config }))
 
-const childResults = computed(() => getChildrenForConfig(props.config))
+const childResults = computed(() => SparkComponentRenderer.getChildrenForConfig(props.config))
 
 if (logger && typeof logger.info === 'function') {
   logger.info('🎯 渲染组件:', { type: props.config.type, childrenCount: childResults.value.length, isRegistered: isRegistered.value })

@@ -1,12 +1,13 @@
 import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.js';
 import { Logger } from './logger.js';
 import { capabilityManager } from './SparkCapabilitySystem.js';
+import { SparkComponentRendererImpl } from './SparkComponentRenderer.js';
 export class SparkComponentManagerImpl {
     constructor(renderer, registry) {
         this.contexts = new Map();
         this.logger = Logger();
-        this.renderer = renderer;
         this.registry = registry || defaultRegistry;
+        this.renderer = renderer || new SparkComponentRendererImpl(this.registry);
     }
     createContext(config, parent) {
         const ctx = {
@@ -26,13 +27,15 @@ export class SparkComponentManagerImpl {
     }
     render(config, parentContext) {
         const ctx = this.createContext(config, parentContext);
-        // For now renderer delegates to component registry to build an instance placeholder
-        const def = this.registry.get(config.type);
-        if (!def)
-            throw new Error(`Component type '${config.type}' is not registered`);
-        const instance = { type: 'vue-component', component: def.component, props: { config, context: ctx } };
-        this.logger.info(`Rendered component: ${config.type} (${ctx.id})`);
-        return instance;
+        // Use the unified renderer for component tree rendering
+        const renderResult = this.renderer.renderComponentTree(config);
+        this.logger.info(`Rendered component tree: ${config.type} (${ctx.id})`);
+        return renderResult;
+    }
+    renderSingle(config) {
+        const renderResult = this.renderer.renderComponent(config);
+        this.logger.info(`Rendered single component: ${config.type}`);
+        return renderResult;
     }
     getContext(id) {
         return this.contexts.get(id);
@@ -147,7 +150,8 @@ export class SparkComponentManagerImpl {
 }
 export const componentManager = new SparkComponentManagerImpl();
 /**
- * Create a new component manager instance. Optionally pass a renderer (e.g., test renderer) implementation.
+ * Create a new component manager instance with unified recursive rendering.
+ * Optionally pass a custom renderer or registry implementation.
  */
 export function createComponentManager(renderer, registry) {
     return new SparkComponentManagerImpl(renderer, registry);

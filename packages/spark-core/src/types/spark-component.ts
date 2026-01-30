@@ -7,6 +7,12 @@ export namespace Spark {
     name?: string
     props?: Record<string, unknown>
     children?: ComponentConfig[]
+    // Component registration fields
+    component?: unknown // Vue component or null for logical components
+    version?: string
+    validator?: (cfg: ComponentConfig) => boolean
+    consumers?: CapabilityConsumer[]
+    providers?: CapabilityProvider[]
     [key: string]: unknown
   }
 
@@ -23,20 +29,10 @@ export namespace Spark {
     logger?: LoggerApi
   }
 
-  export interface ComponentDefinition {
-    type: string
-    component: unknown
-    name?: string
-    version?: string
-    validator?: (cfg: ComponentConfig) => boolean
-    consumers?: CapabilityConsumer[]
-    providers?: CapabilityProvider[]
-  }
-
   export interface ComponentRegistry {
-    register(type: string, def: ComponentDefinition): void
-    get(type: string): ComponentDefinition | undefined
-    getAllDefinitions(): ComponentDefinition[]
+    register(type: string, def: ComponentConfig): void
+    get(type: string): ComponentConfig | undefined
+    getAllDefinitions(): ComponentConfig[]
     getAllTypes(): string[]
     has(type: string): boolean
     unregister(type: string): boolean
@@ -50,9 +46,9 @@ export namespace Spark {
     getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined
     getContext(id: string): ComponentContext | undefined
     getAllContexts(): ComponentContext[]
-    registerComponent(def: ComponentDefinition): void
-    registerComponents(defs: ComponentDefinition[]): void
-    getComponentDefinition(type: string): ComponentDefinition | undefined
+    registerComponent(def: ComponentConfig): void
+    registerComponents(defs: ComponentConfig[]): void
+    getComponentDefinition(type: string): ComponentConfig | undefined
     isComponentRegistered(type: string): boolean
     getRegisteredComponentTypes(): string[]
     unregisterComponent(type: string): boolean
@@ -79,7 +75,6 @@ export namespace Spark {
 // Top-level aliases for simplified imports
 export type ComponentConfig = Spark.ComponentConfig
 export type ComponentContext = Spark.ComponentContext
-export type ComponentDefinition = Spark.ComponentDefinition
 export type ComponentRegistry = Spark.ComponentRegistry
 export type ComponentManager = Spark.ComponentManager
 export type PluginHooks = Spark.PluginHooks

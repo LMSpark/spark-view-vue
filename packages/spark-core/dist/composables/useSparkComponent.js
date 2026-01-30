@@ -6,9 +6,9 @@ import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.
 function createNoopProvider(name) {
     return { name, version: '0.0.0', interface: {}, implementation: {} };
 }
-export function useSparkComponent(config, opts) {
+export function useSparkComponent(config, options) {
     var _a, _b;
-    const parentContext = opts === null || opts === void 0 ? void 0 : opts.parentContext;
+    const parentContext = options === null || options === void 0 ? void 0 : options.parentContext;
     const ctxRaw = {
         id: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: config.type,
@@ -22,7 +22,7 @@ export function useSparkComponent(config, opts) {
     const context = reactive(ctxRaw);
     const logger = Logger(context);
     // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
-    const resolvedManager = (_b = (_a = opts === null || opts === void 0 ? void 0 : opts.manager) !== null && _a !== void 0 ? _a : inject(SPARK_MANAGER_KEY)) !== null && _b !== void 0 ? _b : inject('sparkManager');
+    const resolvedManager = (_b = (_a = options === null || options === void 0 ? void 0 : options.manager) !== null && _a !== void 0 ? _a : inject(SPARK_MANAGER_KEY)) !== null && _b !== void 0 ? _b : inject('sparkManager');
     if (!resolvedManager)
         throw new Error('Component manager not found. Provide via options.manager or install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager })).');
     const manager = resolvedManager;
@@ -59,7 +59,7 @@ export function useSparkComponent(config, opts) {
         var _a;
         const consumer = { capabilityName: name, interface: {}, implementation: undefined };
         context.consumers.set(name, consumer);
-        const provider = getProvider(name) || createNoopProvider(name);
+        const provider = manager.getProvider(context, name) || createNoopProvider(name);
         if (provider) {
             consumer.implementation = ((_a = provider.implementation) !== null && _a !== void 0 ? _a : provider);
             try {
@@ -143,7 +143,7 @@ export function useSparkComponent(config, opts) {
             }
             catch (_c) {
                 // fallback to injected registry if present
-                const registry = (_a = opts === null || opts === void 0 ? void 0 : opts.registry) !== null && _a !== void 0 ? _a : inject(SPARK_REGISTRY_KEY);
+                const registry = (_a = options === null || options === void 0 ? void 0 : options.registry) !== null && _a !== void 0 ? _a : inject(SPARK_REGISTRY_KEY);
                 if (!registry)
                     return undefined;
                 const comp = (_b = registry.get(type)) === null || _b === void 0 ? void 0 : _b.component;
@@ -156,7 +156,7 @@ export function useSparkComponent(config, opts) {
                 return manager.isComponentRegistered(type);
             }
             catch (_b) {
-                const registry = (_a = opts === null || opts === void 0 ? void 0 : opts.registry) !== null && _a !== void 0 ? _a : inject(SPARK_REGISTRY_KEY);
+                const registry = (_a = options === null || options === void 0 ? void 0 : options.registry) !== null && _a !== void 0 ? _a : inject(SPARK_REGISTRY_KEY);
                 return registry ? registry.has(type) : false;
             }
         },

@@ -42,10 +42,7 @@ export class SparkComponentRegistryImpl {
             return false;
         if (!def.name)
             return false;
-        if (!def.version)
-            return false;
-        if (!def.component)
-            return false;
+        // component and version are optional for logical components
         return true;
     }
     isValidVersion(v) {

@@ -83,7 +83,7 @@ export interface SparkComponentHelpers {
  *   type: 'manual-button',
  *   render: ({ config }) => <button>{config.props?.label}</button>
  * })
- * // Later: Spark.registerSparkComponentFromComponent(ManualButton)
+ * // Later: Spark.register(ManualButton)
  *
  * // Using setup function with JSX
  * const SmartButton = defineSparkComponent({
@@ -370,16 +370,16 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
       // Try to get manager from global Spark namespace
       // Use dynamic import to avoid circular dependencies and bundling issues
       const sparkNamespace = (globalThis as any).Spark
-      if (sparkNamespace && typeof sparkNamespace.registerSparkComponentFromComponent === 'function') {
-        sparkNamespace.registerSparkComponentFromComponent(component)
+      if (sparkNamespace && typeof sparkNamespace.register === 'function') {
+        sparkNamespace.register(component)
         console.log(`🔧 Auto-registered SPARK component: ${definition.type}`)
       } else {
         console.warn(`⚠️ Failed to auto-register component ${definition.type}: Spark namespace not available globally`)
-        console.warn('💡 Make sure to call Spark.registerSparkComponentFromComponent() manually or ensure Spark namespace is available')
+        console.warn('💡 Make sure to call Spark.register() manually or ensure Spark namespace is available')
       }
     } catch (error) {
       console.warn(`⚠️ Failed to auto-register component ${definition.type}:`, error)
-      console.warn('💡 Make sure to call Spark.registerSparkComponentFromComponent() manually or ensure Spark namespace is available')
+        console.warn('💡 Make sure to call Spark.register() manually or ensure Spark namespace is available')
     }
   }
 
@@ -390,7 +390,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
  * @deprecated Use defineSparkComponent instead
  * Legacy factory for backward compatibility
  */
-export function createSparkComponent<_TConfig extends ComponentConfig = ComponentConfig>(options: {
+export function createSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(options: {
   meta: { type: string; name?: string; version?: string; providers?: CapabilityProvider[]; validator?: (config: TConfig) => boolean }
   setup?: (props: { config: TConfig }, ctx: any, helpers: any) => any
 }): SparkComponent<TConfig> {

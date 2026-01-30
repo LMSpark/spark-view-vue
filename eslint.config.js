@@ -4,6 +4,16 @@ import tsParser from '@typescript-eslint/parser'
 import vueParser from 'vue-eslint-parser'
 
 export default [
+  // Global ignores (replaces .eslintignore)
+  {
+    ignores: [
+      '**/*.vue',
+      'src/**/*.d.ts',
+      'packages/**/*.d.ts',
+      'API_SIMPLIFICATION_EXAMPLE.ts',
+      'packages/spark-core/tests/**'
+    ]
+  },
   // Vue SFC files
   {
     files: ['**/*.vue'],

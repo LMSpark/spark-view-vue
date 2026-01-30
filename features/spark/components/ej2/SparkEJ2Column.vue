@@ -16,36 +16,22 @@
 </template>
 
 <script setup lang="ts">
-// import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-core'
 // getColumnConfig now provided by useSparkComponent; helper import removed
-import type { SparkComponentConfig, SparkComponentContext } from '@spark-view/spark-core'
+import type { ComponentConfig, ComponentContext } from '@spark-view/spark-core'
+import type { SparkEJ2ColumnConfig } from '@/types/ej2-components'
 // Removed EJ2 imports to avoid runtime errors in tests
 // import type { ColumnModel } from '@syncfusion/ej2-vue-grids'
 
-interface SparkEJ2ColumnConfig extends SparkComponentConfig {
-  type: 'spark-ej2-column'
-  field?: string
-  headerText?: string
-  width?: string | number
-  textAlign?: string
-  format?: string
-  template?: any
-  visible?: boolean
-  allowSorting?: boolean
-  allowFiltering?: boolean
-  children?: SparkEJ2ColumnConfig[]
-}
-
 interface Props {
   config: SparkEJ2ColumnConfig
-  parentContext?: SparkComponentContext
+  parentContext?: ComponentContext
 }
 
 const props = defineProps<Props>()
 
 const { context, provide, getComponent } = useSparkComponent(
-  props.config as SparkComponentConfig,
+  props.config as ComponentConfig,
   { parentContext: props.parentContext }
 )
 

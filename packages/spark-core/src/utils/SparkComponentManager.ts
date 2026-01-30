@@ -2,7 +2,7 @@ import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.j
 import { Logger } from './logger.js'
 import { capabilityManager } from './SparkCapabilitySystem.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
-import type { ComponentConfig, ComponentContext, ComponentDefinition, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
+import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
 
 export class SparkComponentManagerImpl {
   private contexts = new Map<string, ComponentContext>()
@@ -97,11 +97,11 @@ export class SparkComponentManagerImpl {
     return undefined
   }
 
-  registerComponent(def: ComponentDefinition) {
+  registerComponent(def: ComponentConfig) {
     this.registry.register(def.type, def)
   }
 
-  registerComponents(defs: ComponentDefinition[]) {
+  registerComponents(defs: ComponentConfig[]) {
     defs.forEach(d => this.registerComponent(d))
   }
 

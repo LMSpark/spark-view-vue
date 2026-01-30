@@ -1,12 +1,12 @@
 import { valid as semverValid, satisfies as semverSatisfies, gte as semverGte } from 'semver'
-import type { ComponentDefinition, ComponentRegistry } from '../types/spark-component.js'
+import type { ComponentConfig, ComponentRegistry } from '../types/spark-component.js'
 import { Logger } from './logger.js'
 
 export class SparkComponentRegistryImpl implements ComponentRegistry {
-  private components = new Map<string, ComponentDefinition>()
+  private components = new Map<string, ComponentConfig>()
   private logger = Logger()
 
-  register(type: string, definition: ComponentDefinition): void {
+  register(type: string, definition: ComponentConfig): void {
     if (this.components.has(type)) {
       this.logger.warn(`Component type '${type}' is already registered. Overwriting...`)
     }
@@ -17,7 +17,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     this.logger.info(`✅ Registered SPARK component: ${type} (${definition.version})`)
   }
 
-  get(type: string): ComponentDefinition | undefined {
+  get(type: string): ComponentConfig | undefined {
     return this.components.get(type)
   }
 
@@ -29,7 +29,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     return Array.from(this.components.keys())
   }
 
-  getAllDefinitions(): ComponentDefinition[] {
+  getAllDefinitions(): ComponentConfig[] {
     return Array.from(this.components.values())
   }
 
@@ -44,11 +44,10 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     this.logger.info('🧹 Cleared all SPARK component registrations')
   }
 
-  private validateDefinition(def: ComponentDefinition): boolean {
+  private validateDefinition(def: ComponentConfig): boolean {
     if (!def.type) return false
     if (!def.name) return false
-    if (!def.version) return false
-    if (!def.component) return false
+    // component and version are optional for logical components
     return true
   }
 

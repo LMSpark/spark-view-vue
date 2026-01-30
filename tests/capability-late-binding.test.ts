@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { SparkComponentManagerImpl } from '@spark-view/spark-core'
+import type { ComponentConfig, ComponentContext, CapabilityProvider } from '@spark-view/spark-core'
 
 const createSparkComponentManager = () => new SparkComponentManagerImpl()
 
@@ -7,7 +8,6 @@ describe('Capability late-binding', () => {
   it('consumer registered before provider should be auto-connected after provider registration', () => {
     const manager = createSparkComponentManager()
 
-    import type { ComponentConfig, ComponentContext, CapabilityProvider } from '@spark-view/spark-core'
     // Create a parent context and a child
     const parentConfig: ComponentConfig = { type: 'parent', id: 'parent-1' }
     const childConfig: ComponentConfig = { type: 'child', id: 'child-1' }

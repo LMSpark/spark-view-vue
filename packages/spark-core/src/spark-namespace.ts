@@ -12,8 +12,7 @@ import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 import { createComponentManager } from './utils/SparkComponentManager.js'
 import { defineSparkComponent } from './vue/createSparkComponent.js'
 import type { App } from 'vue'
-import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js'
-import type { SparkComponentMeta } from './vue/SparkComponentBase.js' 
+import type { ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js' 
 
 export const Spark = {
   // manager getter used across tests and app entry
@@ -22,50 +21,83 @@ export const Spark = {
   capabilities: (): typeof capabilityManager => capabilityManager,
   // registry accessor
   registry: (): typeof componentRegistry => componentRegistry,
-  // registry helpers - delegate to manager
-  registerSparkComponent: (definition: ComponentDefinition) => {
-    if (!definition || typeof definition !== 'object') {
-      throw new Error('registerSparkComponent requires a ComponentDefinition object')
-    }
-    if (typeof definition.type !== 'string' || definition.type.trim() === '') {
-      throw new Error('ComponentDefinition must have a non-empty type string')
-    }
-    return componentManager.registerComponent(definition)
-  },
-  registerSparkComponents: (definitions: ComponentDefinition[]) => {
-    if (!Array.isArray(definitions)) {
-      throw new Error('registerSparkComponents expects an array of ComponentDefinition objects')
-    }
-    definitions.forEach(def => {
-      if (!def || typeof def !== 'object') {
-        throw new Error('Each definition must be a ComponentDefinition object')
+  // unified registration API - handles multiple input types intelligently
+  register: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) => {
+    // Handle array of components
+    if (Array.isArray(input)) {
+      if (!Array.isArray(input)) {
+        throw new Error('register expects an array of ComponentConfig objects')
       }
-      if (typeof def.type !== 'string' || def.type.trim() === '') {
-        throw new Error('Each ComponentDefinition must have a non-empty type string')
-      }
-    })
-    return definitions.forEach(def => componentManager.registerComponent(def))
-  },
-  // Register a component by inspecting its attached spark meta. Minimal requirement: component.spark.type
-  registerSparkComponentFromComponent: (component: { spark?: SparkComponentMeta }) => {
-    if (!component) {
-      throw new Error('Component is required')
-    }
-    const meta = component.spark
-    if (!meta) {
-      throw new Error('Component must have spark meta attached')
-    }
-    if (!meta.type || typeof meta.type !== 'string' || meta.type.trim() === '') {
-      throw new Error('Component spark meta must have a non-empty type property')
+      input.forEach(def => {
+        if (!def || typeof def !== 'object') {
+          throw new Error('Each definition must be a ComponentConfig object')
+        }
+        if (typeof def.type !== 'string' || def.type.trim() === '') {
+          throw new Error('Each ComponentConfig must have a non-empty type string')
+        }
+      })
+      return input.forEach(def => componentManager.registerComponent(def))
     }
 
-    const definition: ComponentDefinition = {
-      type: meta.type,
-      name: meta.name || meta.type,
-      version: meta.version || '0.0.0',
-      component,
-      providers: meta.providers,
-      validator: meta.validator
+    // Handle Vue component with spark meta
+    if (input && typeof input === 'object' && 'spark' in input) {
+      const component = input as { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }
+      if (!component) {
+        throw new Error('Component is required')
+      }
+      const meta = component.spark
+      if (!meta) {
+        throw new Error('Component must have spark meta attached')
+      }
+      if (!meta.type || typeof meta.type !== 'string' || meta.type.trim() === '') {
+        throw new Error('Component spark meta must have a non-empty type property')
+      }
+
+      const definition: ComponentConfig = {
+        type: meta.type,
+        name: meta.name || meta.type,
+        version: meta.version || '0.0.0',
+        component,
+        providers: meta.providers,
+        validator: meta.validator
+      }
+
+      // Use the current Spark.manager() to allow test-time override of the manager in test fixtures
+      const manager = Spark.manager()
+      return manager.registerComponent(definition)
+    }
+
+    // Handle single ComponentConfig
+    if (input && typeof input === 'object' && 'type' in input) {
+      const definition = input as ComponentConfig
+      if (!definition || typeof definition !== 'object') {
+        throw new Error('register requires a ComponentConfig object')
+      }
+      if (typeof definition.type !== 'string' || definition.type.trim() === '') {
+        throw new Error('ComponentConfig must have a non-empty type string')
+      }
+      return componentManager.registerComponent(definition)
+    }
+
+    throw new Error('Invalid input for Spark.register(). Expected ComponentConfig, ComponentConfig[], or Vue component with spark meta.')
+  },
+
+  // Register logical component from config (creates a component that can render children)
+  registerLogical: (config: ComponentConfig) => {
+    if (!config) {
+      throw new Error('ComponentConfig is required')
+    }
+    if (!config.type || typeof config.type !== 'string' || config.type.trim() === '') {
+      throw new Error('ComponentConfig must have a non-empty type property')
+    }
+
+    // Create a logical component definition that can render children recursively
+    const definition: ComponentConfig = {
+      type: config.type,
+      name: config.name || config.type,
+      version: config.version || '1.0.0',
+      component: null, // Logical component - no actual Vue component
+      validator: (cfg: ComponentConfig) => cfg.type === config.type // Basic type validation
     }
 
     // Use the current Spark.manager() to allow test-time override of the manager in test fixtures
@@ -89,7 +121,6 @@ export const Spark = {
   createComponentManager,
   // unified rendering API
   render: (config: ComponentConfig) => componentManager.render(config),
-  renderTree: (config: ComponentConfig) => componentManager.render(config),
   // initialization hook (no-op by default; features may extend this with `initializeApp`)
   initialize: async () => { return Promise.resolve() },
   // Vue plugin helpers

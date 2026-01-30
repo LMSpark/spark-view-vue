@@ -6,12 +6,14 @@ declare module '@spark-view/spark-core' {
   export function Logger(...args: unknown[]): ReturnType<typeof import('@spark-view/spark-core').Logger>
   // Use `Spark.manager()` / `Spark.capabilities()` to retrieve the global managers
   // Prefer using the `Spark` namespace for registration & manager access.
+  export type ComponentConfig = import('@spark-view/spark-core').ComponentConfig
+  export type ComponentContext = import('@spark-view/spark-core').ComponentContext
+  export type CapabilityProvider = import('@spark-view/spark-core').CapabilityProvider
+  export type CapabilityConsumer = import('@spark-view/spark-core').CapabilityConsumer
   export type SparkComponentConfig = import('@spark-view/spark-core').ComponentConfig
   export type SparkComponentContext = import('@spark-view/spark-core').ComponentContext
   export type SparkCapabilityProvider = import('@spark-view/spark-core').CapabilityProvider
   export type SparkCapabilityConsumer = import('@spark-view/spark-core').CapabilityConsumer
-  export type SparkEJ2GridConfig = import('@spark-view/spark-core').ComponentConfig
-  export type ComponentConfig = import('@spark-view/spark-core').ComponentConfig
   /** Renderer debug provider (mimics best-practice placement in core) */
   export interface RendererDebugProvider {
     componentType: string
