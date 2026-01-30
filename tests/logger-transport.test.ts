@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { Spark } from '@spark-view/spark-core'
+import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-core' 
 
 describe('file transport (replaced by custom provider test)', () => {
   it('uses context-level logger provider', () => {

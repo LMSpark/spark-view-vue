@@ -252,7 +252,7 @@ const submitForm = async () => {
 
     ElMessage.success('用户创建成功！' as any)
     resetForm()
-  } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     ElMessage.error('表单验证失败' as any)
   }
 }
@@ -300,7 +300,7 @@ const fetchUsers = async () => {
 
     apiResult.value = response
     ElMessage.success('获取用户列表成功' as any)
-  } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     apiResult.value = { error: '获取失败' }
     ElMessage.error('获取用户列表失败' as any)
   } finally {
@@ -332,7 +332,7 @@ const createUser = async () => {
     apiResult.value = response
     userList.value.push(newUser)
     ElMessage.success('创建用户成功' as any)
-  } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     apiResult.value = { error: '创建失败' }
     ElMessage.error('创建用户失败' as any)
   } finally {
@@ -359,7 +359,7 @@ const updateUser = async () => {
 
     apiResult.value = response
     ElMessage.success('更新用户成功' as any)
-  } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     apiResult.value = { error: '更新失败' }
     ElMessage.error('更新用户失败' as any)
   } finally {

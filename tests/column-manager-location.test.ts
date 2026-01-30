@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
-import SparkEJ2Column from '../features/spark/components/ej2/SparkEJ2Column.vue'
 import { Spark } from '../features/spark'
 import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
+
+// Note: local EJ2 component used by tests is imported directly where needed
+
 
 const registry = createComponentRegistry()
 const manager = createComponentManager(undefined, registry)
@@ -32,22 +34,22 @@ vi.mock('@syncfusion/ej2-vue-grids', () => ({
 
 
 // Mock global EJ2 components for test environment
-const mockEColumn = {
+const _mockEColumn = {
   name: 'e-column',
   template: '<div class="e-column"><slot /></div>',
   props: ['field', 'headerText', 'width', 'columns', 'textAlign', 'format', 'template', 'visible', 'allowSorting', 'allowFiltering']
 }
 
-const mockEColumns = {
+const _mockEColumns = {
   name: 'e-columns',
   template: '<div class="e-columns"><slot /></div>'
 }
 
-const mockEjsGrid = {
+const _mockEjsGrid = {
   name: 'ejs-grid',
   template: '<div class="ejs-grid"><slot /></div>',
   props: ['dataSource', 'allowPaging', 'pageSettings', 'height']
-}
+} 
 
 // Register global mocks
 if (typeof window !== 'undefined') {
@@ -56,12 +58,12 @@ if (typeof window !== 'undefined') {
 
 // Capture global errors and rejections to help find stack traces during test failures
 const __capturedErrors: any[] = []
-process.on('uncaughtException', (err: any) => { try { console.error('uncaughtException', err.stack || err) } catch(_){}; __capturedErrors.push(err) })
-process.on('unhandledRejection', (reason: any) => { try { console.error('process.unhandledRejection', reason?.stack || reason) } catch(_){}; __capturedErrors.push(reason) })
+process.on('uncaughtException', (err: any) => { try { console.error('uncaughtException', err.stack || err) } catch { } ; __capturedErrors.push(err) })
+process.on('unhandledRejection', (reason: any) => { try { console.error('process.unhandledRejection', reason?.stack || reason) } catch { } ; __capturedErrors.push(reason) })
 if (typeof window !== 'undefined') {
-  window.addEventListener('error', (ev) => { try { console.error('window.error', ev.error?.stack || ev.message) } catch(_){}; __capturedErrors.push(ev) })
-  window.addEventListener('unhandledrejection', (ev) => { try { console.error('window.unhandledrejection', ev.reason?.stack || ev.reason) } catch(_){}; __capturedErrors.push(ev) })
-}
+  window.addEventListener('error', (ev) => { try { console.error('window.error', ev.error?.stack || ev.message) } catch { } ; __capturedErrors.push(ev) })
+  window.addEventListener('unhandledrejection', (ev) => { try { console.error('window.unhandledrejection', ev.reason?.stack || ev.reason) } catch { } ; __capturedErrors.push(ev) })
+} 
 
 // Also capture console errors
 const originalConsoleError = console.error

@@ -127,7 +127,7 @@ export function useSparkComponent(
         const def = (manager as any).getComponentDefinition(type)
         const comp = def?.component
         return comp ? markRaw(comp) : undefined
-      } catch (e) {
+      } catch {
         // fallback to injected registry if present
         const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY as any) as ComponentRegistry | undefined)
         if (!registry) return undefined

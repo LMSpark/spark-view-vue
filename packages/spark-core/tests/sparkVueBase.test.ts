@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { createSparkVueComponent } from '../src/vue/SparkComponentBase.js'
 import { Spark } from '../src/spark-namespace.js'
 import { createComponentRegistry, createComponentManager } from '../src/factories.js'
@@ -10,7 +9,7 @@ describe('Spark Vue Base component (integration)', () => {
 
     const Comp = createSparkVueComponent({
       meta: { type: 'base-type', name: 'base', version: '1.0.0' },
-      setup(props, ctx) {
+      setup(_props, _ctx) {
         return () => null
       }
     })

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { Spark } from '@spark-view/spark-core'
+import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-core' 
 
 describe('logger capability', () => {
   it('uses context-level logger provider', () => {
@@ -9,7 +9,7 @@ describe('logger capability', () => {
       version: '1.0.0',
       interface: { info: true },
       implementation: {
-        info: (...args: any[]) => { called = true }
+        info: (..._args: any[]) => { called = true }
       }
     }
 
@@ -36,7 +36,7 @@ describe('logger capability', () => {
       version: '1.0.0',
       interface: { info: true },
       implementation: {
-        info: (...args: any[]) => { calledLocal = true }
+        info: (..._args: any[]) => { calledLocal = true }
       }
     }
 
