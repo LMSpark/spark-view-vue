@@ -1,4 +1,4 @@
-import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject } from 'vue'
+import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode } from 'vue'
 import { Logger } from '../utils/logger.js'
 import { capabilityManager } from '../utils/SparkCapabilitySystem.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
@@ -35,7 +35,41 @@ export interface SparkComponentHelpers {
 
 /**
  * Unified API for creating Spark-compatible Vue components.
- * This single function handles component definition, setup, context management, and capability system integration.
+ * Supports both render functions and JSX.
+ *
+ * @example
+ * ```typescript
+ * // Using JSX (recommended)
+ * const Button = defineSparkComponent({
+ *   type: 'my-button',
+ *   render: ({ config }, { isDisabled }) => (
+ *     <button disabled={isDisabled}>
+ *       {config.props?.label || 'Click me'}
+ *     </button>
+ *   )
+ * })
+ *
+ * // Using setup function with JSX
+ * const SmartButton = defineSparkComponent({
+ *   type: 'smart-button',
+ *   setup: ({ config }, { consume, provide }) => {
+ *     const theme = consume('theme') || { primaryColor: 'blue' }
+ *     provide('click-handler', { onClick: () => console.log('clicked') })
+ *
+ *     return () => (
+ *       <button style={{ backgroundColor: theme.primaryColor }}>
+ *         {config.props?.label}
+ *       </button>
+ *     )
+ *   }
+ * })
+ *
+ * // Using template strings
+ * const TemplateButton = defineSparkComponent({
+ *   type: 'template-button',
+ *   template: ({ config }) => `<button>${config.props?.label}</button>`
+ * })
+ * ```
  */
 export function defineSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(definition: {
   // Component metadata
@@ -45,9 +79,15 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
   providers?: CapabilityProvider[]
   validator?: (config: TConfig) => boolean
 
-  // Component logic - either setup function or render function
-  setup?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => any
-  render?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => any
+  // Component logic - choose one:
+  // Option 1: Setup function (recommended for complex logic)
+  setup?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => VNode | any | (() => VNode | any)
+
+  // Option 2: Simple render function (for direct JSX/VNode return)
+  render?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => VNode | any
+
+  // Option 3: Template function (for string-based templates)
+  template?: (props: { config: TConfig }, helpers: SparkComponentHelpers) => string
 }) {
   if (!definition?.type) {
     throw new Error('defineSparkComponent requires a type property')
@@ -199,13 +239,29 @@ export function defineSparkComponent<TConfig extends ComponentConfig = Component
       // Register default capability exposing the runtime context to consumers
       provide('sparkContext', context)
 
-      // Execute user setup or render
+      // Execute user setup or render - support JSX and various return types
       if (definition.setup) {
-        return definition.setup(props, helpers)
+        const setupResult = definition.setup(props, helpers)
+
+        // If setup returns a function, call it (for lazy evaluation)
+        if (typeof setupResult === 'function') {
+          return setupResult
+        }
+
+        // If setup returns JSX/VNode directly, return it
+        return () => setupResult
       }
 
       if (definition.render) {
+        // Render function returns JSX/VNode directly
         return () => definition.render!(props, helpers)
+      }
+
+      if (definition.template) {
+        // Template function returns HTML string
+        return () => h('div', {
+          innerHTML: definition.template!(props, helpers)
+        })
       }
 
       // Default render
