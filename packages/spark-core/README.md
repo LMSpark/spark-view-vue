@@ -14,20 +14,27 @@ What moved here
 Usage example (preferred):
 
 ```ts
-import { Spark, Logger, asyncUtils } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-core'
 
-// get global manager
-const manager = Spark.manager()
+// Create manager instances
+const manager = Spark.createComponentManager()
+const registry = Spark.createComponentRegistry()
 
-// register components
-Spark.registerSparkComponent({ type: 'my-component', name: 'MyComponent', version: '1.0.0', component: MyVueComponent })
+// Register components with unified API
+Spark.register({
+  type: 'my-component',
+  name: 'My Component',
+  version: '1.0.0',
+  component: MyVueComponent
+})
 
-// read global logger
-const logger = Spark.Logger()
-logger.info('hello')
+// Install in Vue app with explicit DI
+const app = createApp(App)
+Spark.install(app, { manager, registry })
 
-// async helper
-const debounced = asyncUtils.debounce(() => console.log('tick'), 100)
+// Use in components
+import { useSparkComponent } from '@spark-view/spark-core'
+const { provide, consume } = useSparkComponent({ type: 'my-component' })
 ```
 
 Quick commands (run from repo root or package dir):
@@ -40,4 +47,4 @@ This package is currently built from compiled artifacts copied from the form-cre
 
 ## API Documentation
 
-A more detailed, human-friendly API reference (usage examples, types, and recommended improvement steps) is available in [`API.md`](./API.md).
+A detailed API reference with usage examples, types, and migration guides is available in [`API.md`](./API.md).
