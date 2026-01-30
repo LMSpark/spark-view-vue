@@ -103,19 +103,19 @@ export class ErrorHandler {
   static getUserFriendlyMessage(error: AppError): string {
     switch (error.type) {
       case ErrorType.NETWORK:
-        return '网络连接出现问题，请检查网络后重试'
+        return 'Network error occurred, please check your connection and try again'
       case ErrorType.VALIDATION:
-        return '输入信息不符合要求，请检查后重新输入'
+        return 'Input validation failed, please check your data'
       case ErrorType.AUTHENTICATION:
-        return '登录已过期，请重新登录'
+        return 'Authentication failed, please log in again'
       case ErrorType.AUTHORIZATION:
-        return '没有权限执行此操作'
+        return 'Access denied, insufficient permissions'
       case ErrorType.BUSINESS_LOGIC:
-        return error.message || '操作失败，请稍后重试'
+        return error.message || 'Operation failed, please try again later'
       case ErrorType.SYSTEM:
-        return '系统出现异常，请稍后重试或联系管理员'
+        return 'System error occurred, please try again or contact support'
       default:
-        return '发生未知错误，请稍后重试'
+        return 'An unknown error occurred, please try again'
     }
   }
 

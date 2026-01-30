@@ -1,8 +1,7 @@
 import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.js'
 import { Logger } from './logger.js'
 import { capabilityManager } from './SparkCapabilitySystem.js'
-import type { ComponentConfig, ComponentContext, ComponentDefinition, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
-import type { ComponentRegistry } from '../types/spark-component.js'
+import type { ComponentConfig, ComponentContext, ComponentDefinition, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
 
 export class SparkComponentManagerImpl {
   private contexts = new Map<string, ComponentContext>()
@@ -152,5 +151,13 @@ export class SparkComponentManagerImpl {
 }
 
 export const componentManager = new SparkComponentManagerImpl()
+
+/**
+ * Create a new component manager instance. Optionally pass a renderer (e.g., test renderer) implementation.
+ */
+export function createComponentManager(renderer?: unknown, registry?: ComponentRegistry): ComponentManager {
+  return new SparkComponentManagerImpl(renderer, registry)
+}
+
 // NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
 // Use `Spark.manager()` or `componentManager` directly.

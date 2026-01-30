@@ -1,9 +1,9 @@
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject } from 'vue'
 import { Logger } from '../utils/logger.js'
 import { capabilityManager } from '../utils/SparkCapabilitySystem.js'
-import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../utils/diKeys.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
-import type { Implementation } from '../types/common.js'
+import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
+import type { Implementation, CapabilityInterface } from '../types/common.js'
 
 // Local helper to create a noop provider when a capability is missing. This avoids any global registry side-effects.
 function createNoopProvider(name: string): CapabilityProvider {

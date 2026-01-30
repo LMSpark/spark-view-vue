@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { Spark } from '../src/spark-namespace.js'
-import { createComponentRegistry, createComponentManager } from '../src/factories.js'
+import { createComponentRegistry } from '../src/utils/SparkComponentRegistry.js'
+import { createComponentManager } from '../src/utils/SparkComponentManager.js'
 
 describe('registerSparkComponentFromComponent', () => {
   it('registers component when spark meta has type', () => {

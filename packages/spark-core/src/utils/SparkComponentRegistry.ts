@@ -90,5 +90,14 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
 }
 
 export const componentRegistry = new SparkComponentRegistryImpl()
+
+/**
+ * Create a new, isolated component registry instance.
+ * Prefer creating a dedicated registry when you want isolated test fixtures or alternative lifecycles.
+ */
+export function createComponentRegistry(): ComponentRegistry {
+  return new SparkComponentRegistryImpl()
+}
+
 // NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
 // Use `Spark.registerSparkComponent(...)` or `componentRegistry.register(...)` instead.

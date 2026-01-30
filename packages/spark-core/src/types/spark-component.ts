@@ -88,3 +88,8 @@ export type Plugin = Spark.Plugin
 // Re-export capability types from common
 export type { CapabilityProvider, CapabilityConsumer } from './common.js'
 
+// DI keys for Vue injection
+import type { InjectionKey } from 'vue'
+export const SPARK_MANAGER_KEY: InjectionKey<ComponentManager> = Symbol('sparkManager') as unknown as InjectionKey<ComponentManager> 
+export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('sparkRegistry') as unknown as InjectionKey<ComponentRegistry>
+

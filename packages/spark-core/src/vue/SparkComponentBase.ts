@@ -11,8 +11,10 @@ export interface SparkComponentMeta {
   validator?: (cfg: any) => boolean
 }
 
+import type { Implementation } from '../types/common.js'
+
 export type SparkVueSetupHelpers = {
-  provide: (name: string, impl?: unknown) => void
+  provide: (name: string, impl?: Implementation) => void
   getProvider?: (name: string) => unknown
 }
 

@@ -24,7 +24,7 @@ describe('ErrorHandler', () => {
   it('getUserFriendlyMessage maps network error', () => {
     const e = new AppError('net', ErrorType.NETWORK)
     const msg = getUserFriendlyMessage(e)
-    expect(msg).toContain('网络连接')
+    expect(msg).toContain('Network error')
   })
 
   it('handleError throws AppError', () => {

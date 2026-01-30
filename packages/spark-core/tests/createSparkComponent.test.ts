@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { createSparkComponent } from '../src/vue/createSparkComponent.js'
 import { Spark } from '../src/spark-namespace.js'
-import { createComponentRegistry, createComponentManager } from '../src/factories.js'
+import { createComponentRegistry } from '../src/utils/SparkComponentRegistry.js'
+import { createComponentManager } from '../src/utils/SparkComponentManager.js'
 
 describe('createSparkComponent (unified factory)', () => {
   it('creates a component with spark meta that can be registered and rendered by manager', () => {

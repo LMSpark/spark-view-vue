@@ -2,8 +2,6 @@
 import { withRetry } from './errorHandler.js'
 
 export interface TimeoutOptions { timeout: number; timeoutMessage?: string }
-export interface DebounceOptions { leading?: boolean; trailing?: boolean }
-export interface ThrottleOptions { leading?: boolean; trailing?: boolean }
 
 export class RaceController {
   private abortController: AbortController | null = null
@@ -29,50 +27,6 @@ export const asyncUtils = {
     })
   },
   async retry<T>(operation: () => Promise<T>, options: Parameters<typeof withRetry>[1]) { return withRetry(operation, options) },
-  debounce<T extends (...args: unknown[]) => unknown>(func: T, wait: number, options: DebounceOptions = {}) {
-    const { leading = false, trailing = true } = options
-    let timeoutId: NodeJS.Timeout | null = null
-    let lastArgs: Parameters<T> | null = null
-    let lastThis: unknown = null
-    let result: ReturnType<T> | undefined
-    let lastCallTime: number | undefined
-    let lastInvokeTime = 0
-    function invokeFunc(time: number): ReturnType<T> | undefined { const args = lastArgs!; const thisArg = lastThis; lastArgs = null; lastThis = null; lastInvokeTime = time; result = func.apply(thisArg, args) as ReturnType<T>; return result }
-    function leadingEdge(time: number): ReturnType<T> | undefined { lastInvokeTime = time; timeoutId = setTimeout(timerExpired, wait); return leading ? invokeFunc(time) : result }
-    function remainingWait(time: number): number { const timeSinceLastCall = time - (lastCallTime || 0); const timeWaiting = wait - timeSinceLastCall; return timeWaiting }
-    function shouldInvoke(time: number): boolean { const timeSinceLastCall = time - (lastCallTime || 0); const timeSinceLastInvoke = time - lastInvokeTime; return (lastCallTime === undefined || timeSinceLastCall >= wait || timeSinceLastCall < 0 || (leading && timeSinceLastInvoke >= wait)) }
-    function timerExpired(): void { const time = Date.now(); if (shouldInvoke(time)) trailingEdge(time); else timeoutId = setTimeout(timerExpired, remainingWait(time)) }
-    function trailingEdge(time: number): ReturnType<T> | undefined { timeoutId = null; if (trailing && lastArgs) return invokeFunc(time); lastArgs = null; lastThis = null; return result }
-    function cancel(): void { if (timeoutId !== null) clearTimeout(timeoutId); lastInvokeTime = 0; lastArgs = null; lastCallTime = undefined; lastThis = null; timeoutId = null }
-    function flush(): ReturnType<T> | undefined { return timeoutId === null ? result : trailingEdge(Date.now()) }
-    function debounced(this: unknown, ...args: Parameters<T>): ReturnType<T> | undefined { const time = Date.now(); const isInvoking = shouldInvoke(time); lastArgs = args; lastThis = this; lastCallTime = time; if (isInvoking) { if (timeoutId === null) return leadingEdge(lastCallTime); if (leading) { timeoutId = setTimeout(timerExpired, wait); return invokeFunc(lastCallTime) } } if (timeoutId === null) timeoutId = setTimeout(timerExpired, wait); return result }
-    const deb = debounced as unknown as T & { cancel(): void; flush(): ReturnType<T> | undefined }
-    deb.cancel = cancel
-    deb.flush = flush
-    return deb
-  },
-  throttle<T extends (...args: unknown[]) => unknown>(func: T, wait: number, options: ThrottleOptions = {}) {
-    const { leading = true, trailing = true } = options
-    let timeoutId: NodeJS.Timeout | null = null
-    let lastArgs: Parameters<T> | null = null
-    let lastThis: unknown = null
-    let result: ReturnType<T> | undefined
-    let lastCallTime: number | undefined
-    let lastInvokeTime = 0
-    function invokeFunc(time: number): ReturnType<T> | undefined { const args = lastArgs!; const thisArg = lastThis; lastArgs = null; lastThis = null; lastInvokeTime = time; result = func.apply(thisArg, args) as ReturnType<T>; return result }
-    function leadingEdge(time: number): ReturnType<T> | undefined { lastInvokeTime = time; timeoutId = setTimeout(timerExpired, wait); return leading ? invokeFunc(time) : result }
-    function remainingWait(time: number): number { const timeSinceLastCall = time - (lastCallTime || 0); const timeWaiting = wait - timeSinceLastCall; return timeWaiting }
-    function shouldInvoke(time: number): boolean { const timeSinceLastCall = time - (lastCallTime || 0); const timeSinceLastInvoke = time - lastInvokeTime; return (lastCallTime === undefined || timeSinceLastCall >= wait || timeSinceLastCall < 0 || (leading && timeSinceLastInvoke >= wait)) }
-    function timerExpired(): void { const time = Date.now(); if (shouldInvoke(time)) trailingEdge(time); else timeoutId = setTimeout(timerExpired, remainingWait(time)) }
-    function trailingEdge(time: number): ReturnType<T> | undefined { timeoutId = null; if (trailing && lastArgs) return invokeFunc(time); lastArgs = null; lastThis = null; return result }
-    function cancel(): void { if (timeoutId !== null) clearTimeout(timeoutId); lastInvokeTime = 0; lastArgs = null; lastCallTime = undefined; lastThis = null; timeoutId = null }
-    function flush(): ReturnType<T> | undefined { return timeoutId === null ? result : trailingEdge(Date.now()) }
-    function throttled(this: unknown, ...args: Parameters<T>): ReturnType<T> | undefined { const time = Date.now(); if (shouldInvoke(time)) return leadingEdge(time); lastArgs = args; lastThis = this; lastCallTime = time; if (timeoutId === null) timeoutId = setTimeout(timerExpired, wait); return result }
-    const th = throttled as unknown as T & { cancel(): void; flush(): ReturnType<T> | undefined }
-    th.cancel = cancel
-    th.flush = flush
-    return th as T & { cancel(): void; flush(): ReturnType<T> | undefined }
-  },
   createRaceController(): RaceController { return RaceController.create() },
   delay(ms: number) { return new Promise(resolve => setTimeout(resolve, ms)) },
   async raceSafe<T>(operation: () => Promise<T>, controller: { execute: (op: (signal: AbortSignal) => Promise<T>) => Promise<T> }) { return controller.execute(async (signal) => { if (signal.aborted) throw new Error('Operation was cancelled'); const result = await operation(); if (signal.aborted) throw new Error('Operation was cancelled'); return result }) }
