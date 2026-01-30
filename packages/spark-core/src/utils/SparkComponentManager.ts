@@ -1,17 +1,18 @@
 import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.js'
 import { Logger } from './logger.js'
 import { capabilityManager } from './SparkCapabilitySystem.js'
+import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
 import type { ComponentConfig, ComponentContext, ComponentDefinition, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
 
 export class SparkComponentManagerImpl {
   private contexts = new Map<string, ComponentContext>()
-  private renderer: unknown
+  private renderer: SparkComponentRendererImpl
   private registry: ComponentRegistry
   private logger = Logger()
 
-  constructor(renderer?: unknown, registry?: ComponentRegistry) {
-    this.renderer = renderer
+  constructor(renderer?: SparkComponentRendererImpl, registry?: ComponentRegistry) {
     this.registry = registry || defaultRegistry
+    this.renderer = renderer || new SparkComponentRendererImpl(this.registry)
   }
 
   createContext(config: ComponentConfig, parent?: ComponentContext): ComponentContext {
@@ -32,12 +33,16 @@ export class SparkComponentManagerImpl {
 
   render(config: ComponentConfig, parentContext?: ComponentContext): unknown {
     const ctx = this.createContext(config, parentContext)
-    // For now renderer delegates to component registry to build an instance placeholder
-    const def = this.registry.get(config.type)
-    if (!def) throw new Error(`Component type '${config.type}' is not registered`)
-    const instance = { type: 'vue-component', component: def.component, props: { config, context: ctx } }
-    this.logger.info(`Rendered component: ${config.type} (${ctx.id})`)
-    return instance
+    // Use the unified renderer for component tree rendering
+    const renderResult = this.renderer.renderComponentTree(config)
+    this.logger.info(`Rendered component tree: ${config.type} (${ctx.id})`)
+    return renderResult
+  }
+
+  renderSingle(config: ComponentConfig): unknown {
+    const renderResult = this.renderer.renderComponent(config)
+    this.logger.info(`Rendered single component: ${config.type}`)
+    return renderResult
   }
 
   getContext(id: string): ComponentContext | undefined {
@@ -153,9 +158,10 @@ export class SparkComponentManagerImpl {
 export const componentManager = new SparkComponentManagerImpl()
 
 /**
- * Create a new component manager instance. Optionally pass a renderer (e.g., test renderer) implementation.
+ * Create a new component manager instance with unified recursive rendering.
+ * Optionally pass a custom renderer or registry implementation.
  */
-export function createComponentManager(renderer?: unknown, registry?: ComponentRegistry): ComponentManager {
+export function createComponentManager(renderer?: SparkComponentRendererImpl, registry?: ComponentRegistry): ComponentManager {
   return new SparkComponentManagerImpl(renderer, registry)
 }
 

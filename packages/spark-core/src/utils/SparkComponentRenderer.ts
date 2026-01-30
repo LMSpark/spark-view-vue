@@ -2,45 +2,152 @@ import type { ComponentConfig, ComponentRegistry } from '../types/spark-componen
 
 export type ComponentResolver = (type: string) => unknown | null
 
-// Minimal renderer helper used in tests
+export type RenderResult = {
+  type: 'vue-component' | 'native-element' | 'text' | 'fragment'
+  component?: any
+  props?: Record<string, unknown>
+  children?: RenderResult[]
+  text?: string
+}
+
+/**
+ * Unified recursive renderer for Spark components.
+ * Handles component tree rendering with proper recursion and optimization.
+ */
 export class SparkComponentRendererImpl {
+  private registry: ComponentRegistry
+  private resolver: ComponentResolver
+
+  constructor(registry: ComponentRegistry) {
+    this.registry = registry
+    this.resolver = (type: string) => {
+      const def = this.registry.get(type)
+      return def?.component ?? null
+    }
+  }
+
+  /**
+   * Check if component should update based on config changes
+   */
   shouldUpdateComponent(oldCfg: ComponentConfig | null | undefined, newCfg: ComponentConfig | null | undefined): boolean {
     if (oldCfg === newCfg) return false
     if (!oldCfg || !newCfg) return true
     if (oldCfg.type !== newCfg.type) return true
-    // shallow props comparison
-    const oldProps = (oldCfg as Record<string, unknown>)['props'] || {}
-    const newProps = (newCfg as Record<string, unknown>)['props'] || {}
+
+    // Shallow props comparison
+    const oldProps = oldCfg.props || {}
+    const newProps = newCfg.props || {}
     if (Object.keys(oldProps).length !== Object.keys(newProps).length) return true
-    for (const k of Object.keys(oldProps)) if ((oldProps as Record<string, unknown>)[k] !== (newProps as Record<string, unknown>)[k]) return true
+    for (const k of Object.keys(oldProps)) {
+      if (oldProps[k] !== newProps[k]) return true
+    }
+
     return false
   }
 
-  haveChildrenChanged(oldChildren: Array<ComponentConfig>, newChildren: Array<ComponentConfig>) {
+  /**
+   * Check if children have changed
+   */
+  haveChildrenChanged(oldChildren: ComponentConfig[], newChildren: ComponentConfig[]): boolean {
     if (oldChildren.length !== newChildren.length) return true
     for (let i = 0; i < oldChildren.length; i++) {
-      const a = oldChildren[i]!
-      const b = newChildren[i]!
-      if (a.type !== b.type) return true
-      const pa = (a as Record<string, unknown>)['props'] || {}
-      const pb = (b as Record<string, unknown>)['props'] || {}
-      if (Object.keys(pa).length !== Object.keys(pb).length) return true
-      for (const k of Object.keys(pa)) if ((pa as Record<string, unknown>)[k] !== (pb as Record<string, unknown>)[k]) return true
+      if (this.shouldUpdateComponent(oldChildren[i], newChildren[i])) return true
     }
     return false
   }
 
   /**
-   * Resolve a renderer implementation for the given config using the provided resolver.
-   * Returns the resolved renderer or null when no renderer is available.
+   * Recursively render a component config into a render result tree
    */
-  static resolveRendererForConfig(cfg: ComponentConfig, resolver: ComponentResolver) {
-    if (!cfg || !cfg.type) return null
-    return resolver(cfg.type) ?? null
+  renderComponentTree(config: ComponentConfig): RenderResult {
+    const component = this.resolver(config.type)
+    if (!component) {
+      throw new Error(`Component type '${config.type}' is not registered`)
+    }
+
+    const children = this.getChildrenForConfig(config)
+    const renderedChildren = children.map(child => this.renderComponentTree(child))
+
+    return {
+      type: 'vue-component',
+      component,
+      props: {
+        config,
+        key: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
+      },
+      children: renderedChildren.length > 0 ? renderedChildren : undefined
+    }
   }
 
   /**
-   * Create a resolver function that queries a ComponentRegistry instance.
+   * Render a single component (non-recursive)
+   */
+  renderComponent(config: ComponentConfig): RenderResult {
+    const component = this.resolver(config.type)
+    if (!component) {
+      throw new Error(`Component type '${config.type}' is not registered`)
+    }
+
+    return {
+      type: 'vue-component',
+      component,
+      props: {
+        config,
+        key: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
+      }
+    }
+  }
+
+  /**
+   * Get children configs for a component config
+   */
+  getChildrenForConfig(config: ComponentConfig): ComponentConfig[] {
+    return Array.isArray(config.children) ? config.children : []
+  }
+
+  /**
+   * Check if a component type is registered
+   */
+  isComponentRegistered(type: string): boolean {
+    return this.registry.has(type)
+  }
+
+  /**
+   * Get all registered component types
+   */
+  getRegisteredTypes(): string[] {
+    return this.registry.getAllTypes()
+  }
+}
+
+// Static utility methods for backward compatibility
+export class SparkComponentRenderer {
+  /**
+   * Check if component should update
+   */
+  static shouldUpdateComponent(oldCfg: ComponentConfig | null | undefined, newCfg: ComponentConfig | null | undefined): boolean {
+    const renderer = new SparkComponentRendererImpl({} as ComponentRegistry)
+    return renderer.shouldUpdateComponent(oldCfg, newCfg)
+  }
+
+  /**
+   * Check if children have changed
+   */
+  static haveChildrenChanged(oldChildren: ComponentConfig[], newChildren: ComponentConfig[]): boolean {
+    const renderer = new SparkComponentRendererImpl({} as ComponentRegistry)
+    return renderer.haveChildrenChanged(oldChildren, newChildren)
+  }
+
+  /**
+   * Resolve a renderer for config
+   */
+  static resolveRendererForConfig(config: ComponentConfig, resolver: ComponentResolver): unknown | null {
+    if (!config || !config.type) return null
+    return resolver(config.type) ?? null
+  }
+
+  /**
+   * Create resolver from registry
    */
   static createResolverFromRegistry(registry: ComponentRegistry): ComponentResolver {
     return (type: string) => {
@@ -50,16 +157,16 @@ export class SparkComponentRendererImpl {
   }
 
   /**
-   * Check whether a type is registered in the registry.
+   * Check if type is registered
    */
   static isTypeRegistered(registry: ComponentRegistry, type: string): boolean {
     return registry.has(type)
   }
 
   /**
-   * Return the children array for a config (empty array when none).
+   * Get children for config
    */
-  static getChildrenForConfig(cfg: ComponentConfig): Array<ComponentConfig> {
-    return Array.isArray(cfg.children) ? cfg.children : []
+  static getChildrenForConfig(config: ComponentConfig): ComponentConfig[] {
+    return Array.isArray(config.children) ? config.children : []
   }
 }

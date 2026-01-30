@@ -29,7 +29,7 @@ describe('registerSparkComponentFromComponent', () => {
       Spark.registerSparkComponentFromComponent(comp as any)
       throw new Error('should have thrown')
     } catch (e: any) {
-      expect(String(e)).toContain('component must expose spark meta')
+      expect(String(e)).toContain('Component spark meta must have a non-empty type property')
     }
   })
 })

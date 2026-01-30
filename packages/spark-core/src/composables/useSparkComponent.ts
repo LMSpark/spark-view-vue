@@ -10,11 +10,15 @@ function createNoopProvider(name: string): CapabilityProvider {
   return { name, version: '0.0.0', interface: {} as CapabilityInterface, implementation: {} }
 }
 
-export function useSparkComponent(
-  config: ComponentConfig,
-  opts?: { manager?: ComponentManager; registry?: ComponentRegistry; parentContext?: ComponentContext }
+export function useSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(
+  config: TConfig,
+  options?: {
+    manager?: ComponentManager
+    registry?: ComponentRegistry
+    parentContext?: ComponentContext
+  }
 ) {
-  const parentContext = opts?.parentContext as ComponentContext | undefined
+  const parentContext = options?.parentContext as ComponentContext | undefined
 
   const ctxRaw: ComponentContext = {
     id: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
@@ -31,7 +35,7 @@ export function useSparkComponent(
   const logger = Logger(context)
 
   // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
-  const resolvedManager = opts?.manager ?? (inject(SPARK_MANAGER_KEY) as ComponentManager | undefined) ?? (inject('sparkManager') as ComponentManager | undefined)
+  const resolvedManager = options?.manager ?? (inject(SPARK_MANAGER_KEY) as ComponentManager | undefined) ?? (inject('sparkManager') as ComponentManager | undefined)
   if (!resolvedManager) throw new Error('Component manager not found. Provide via options.manager or install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager })).')
   const manager = resolvedManager as ComponentManager
 
@@ -129,14 +133,14 @@ export function useSparkComponent(
         return comp ? markRaw(comp) : undefined
       } catch {
         // fallback to injected registry if present
-        const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined)
+        const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined)
         if (!registry) return undefined
         const comp = registry.get(type)?.component
         return comp ? markRaw(comp) : undefined
       }
     },
     isComponentRegistered: (type: string) => {
-      try { return (manager as ComponentManager).isComponentRegistered(type) } catch { const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined); return registry ? registry.has(type) : false }
+      try { return (manager as ComponentManager).isComponentRegistered(type) } catch { const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined); return registry ? registry.has(type) : false }
     },
     getOrCreateNoopProvider: (name: string) => createNoopProvider(name),
     connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider, consumer, ctx),
