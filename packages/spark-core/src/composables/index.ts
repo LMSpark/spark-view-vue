@@ -198,7 +198,7 @@ export function useLocalStorage<T>(
 
   onUnmounted(() => {
     const w = getWindow()
-    if (w) safeRemoveEventListener(w, 'storage', handleStorageChange as any)
+    if (w) safeRemoveEventListener(w, 'storage', handleStorageChange)
   })
 
   return {
@@ -307,12 +307,12 @@ export function useEventListener(
 } {
   const add = (): void => {
     const target = getWindow()
-    safeAddEventListener(target, event, handler as any, options)
+    safeAddEventListener(target, event, handler as EventListenerOrEventListenerObject, options)
   }
 
   const remove = (): void => {
     const target = getWindow()
-    safeRemoveEventListener(target, event, handler as any, options as any)
+    safeRemoveEventListener(target, event, handler as EventListenerOrEventListenerObject, options as EventListenerOptions | boolean | undefined)
   }
 
   onMounted(() => {

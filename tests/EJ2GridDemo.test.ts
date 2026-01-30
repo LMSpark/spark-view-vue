@@ -46,15 +46,15 @@ describe('EJ2GridDemo', () => {
     let wrapper
 
     // Register lightweight stubs for columns to avoid EJ2 runtime complexity in unit tests
-    manager.registerComponent({ type: 'spark-ej2-column', name: 'spark-ej2-column', version: '1.0.0', component: { template: '<div class="stub-column" />' } as any })
+    manager.registerComponent({ type: 'spark-ej2-column', name: 'spark-ej2-column', version: '1.0.0', component: { template: '<div class="stub-column" />' } })
 
     try {
       wrapper = mount(SparkEJ2Grid, {
         props: { config },
         global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
-    } catch (e: any) {
-      try { console.error('Mount threw (detailed):', e, typeof e, JSON.stringify(e, Object.getOwnPropertyNames(e))) } catch { console.error('Mount threw (fallback):', e) }
+    } catch (e: unknown) {
+      try { console.error('Mount threw (detailed):', e, typeof e, JSON.stringify(e, Object.getOwnPropertyNames(e as any))) } catch { console.error('Mount threw (fallback):', e) }
       throw e
     }
 

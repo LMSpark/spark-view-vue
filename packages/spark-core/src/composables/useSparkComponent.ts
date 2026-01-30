@@ -124,19 +124,19 @@ export function useSparkComponent(
     getComponent: (type: string) => {
       // Prefer manager-backed registry
       try {
-        const def = (manager as any).getComponentDefinition(type)
+        const def = (manager as ComponentManager).getComponentDefinition(type)
         const comp = def?.component
         return comp ? markRaw(comp) : undefined
       } catch {
         // fallback to injected registry if present
-        const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY as any) as ComponentRegistry | undefined)
+        const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined)
         if (!registry) return undefined
         const comp = registry.get(type)?.component
         return comp ? markRaw(comp) : undefined
       }
     },
     isComponentRegistered: (type: string) => {
-      try { return (manager as any).isComponentRegistered(type) } catch { const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY as any) as ComponentRegistry | undefined); return registry ? registry.has(type) : false }
+      try { return (manager as ComponentManager).isComponentRegistered(type) } catch { const registry = opts?.registry ?? (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined); return registry ? registry.has(type) : false }
     },
     getOrCreateNoopProvider: (name: string) => createNoopProvider(name),
     connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider, consumer, ctx),

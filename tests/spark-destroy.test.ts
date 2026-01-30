@@ -30,7 +30,7 @@ describe('destroyContext', () => {
 
     // Create a context directly to avoid EJ2 runtime during unmount
     const manager = Spark.manager()
-    const ctx = manager.createContext(config as any)
+    const ctx = manager.createContext({ type: config.type })
     expect(manager.getContext(ctx.id)).toBeTruthy()
 
     // Destroy it
