@@ -13,4 +13,7 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
+// Primary unified API for creating Spark components
+export { defineSparkComponent } from './vue/createSparkComponent.js'
+
 // NOTE: prefer factories (createComponentManager/createComponentRegistry) for explicit instances; singletons are still available via existing exports.
