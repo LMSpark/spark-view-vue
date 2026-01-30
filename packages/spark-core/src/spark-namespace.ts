@@ -11,7 +11,8 @@ import { useSparkComponent } from './composables/useSparkComponent.js'
 import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 import { createComponentManager } from './utils/SparkComponentManager.js'
 import type { App } from 'vue'
-import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry, CapabilityProvider } from './types/spark-component.js' 
+import type { ComponentDefinition, ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry, CapabilityProvider } from './types/spark-component.js'
+import type { SparkComponentMeta } from './vue/SparkComponentBase.js' 
 
 export const Spark = {
   // manager getter used across tests and app entry
@@ -21,24 +22,54 @@ export const Spark = {
   // registry accessor
   registry: (): typeof componentRegistry => componentRegistry,
   // registry helpers - delegate to manager
-  registerSparkComponent: (def: ComponentDefinition) => {
-    if (typeof def === 'string') throw new Error('registerSparkComponent signature changed: pass a ComponentDefinition object')
-    return componentManager.registerComponent(def)
+  registerSparkComponent: (definition: ComponentDefinition) => {
+    if (!definition || typeof definition !== 'object') {
+      throw new Error('registerSparkComponent requires a ComponentDefinition object')
+    }
+    if (typeof definition.type !== 'string' || definition.type.trim() === '') {
+      throw new Error('ComponentDefinition must have a non-empty type string')
+    }
+    return componentManager.registerComponent(definition)
   },
-  registerSparkComponents: (defs: ComponentDefinition[]) => {
-    if (!Array.isArray(defs)) throw new Error('registerSparkComponents expects an array of component definitions')
-    return defs.forEach((d: ComponentDefinition) => componentManager.registerComponent(d))
+  registerSparkComponents: (definitions: ComponentDefinition[]) => {
+    if (!Array.isArray(definitions)) {
+      throw new Error('registerSparkComponents expects an array of ComponentDefinition objects')
+    }
+    definitions.forEach(def => {
+      if (!def || typeof def !== 'object') {
+        throw new Error('Each definition must be a ComponentDefinition object')
+      }
+      if (typeof def.type !== 'string' || def.type.trim() === '') {
+        throw new Error('Each ComponentDefinition must have a non-empty type string')
+      }
+    })
+    return definitions.forEach(def => componentManager.registerComponent(def))
   },
   // Register a component by inspecting its attached spark meta. Minimal requirement: component.spark.type
-  registerSparkComponentFromComponent: (component: unknown) => {
-    if (!component) throw new Error('component is required')
-    const comp = component as { spark?: { type?: string; name?: string; version?: string; providers?: unknown; validator?: (cfg: ComponentConfig) => boolean } }
-    const meta = comp.spark
-    if (!meta || typeof meta.type !== 'string' || meta.type.trim() === '') throw new Error('component must expose spark meta with a non-empty "type" property')
-    const def: ComponentDefinition = { type: meta.type, name: meta.name || meta.type, version: meta.version || '0.0.0', component, providers: (meta.providers as unknown as CapabilityProvider[]), validator: (meta.validator as unknown as ((cfg: ComponentConfig) => boolean) | undefined) }
+  registerSparkComponentFromComponent: (component: { spark?: SparkComponentMeta }) => {
+    if (!component) {
+      throw new Error('Component is required')
+    }
+    const meta = component.spark
+    if (!meta) {
+      throw new Error('Component must have spark meta attached')
+    }
+    if (!meta.type || typeof meta.type !== 'string' || meta.type.trim() === '') {
+      throw new Error('Component spark meta must have a non-empty type property')
+    }
+
+    const definition: ComponentDefinition = {
+      type: meta.type,
+      name: meta.name || meta.type,
+      version: meta.version || '0.0.0',
+      component,
+      providers: meta.providers,
+      validator: meta.validator
+    }
+
     // Use the current Spark.manager() to allow test-time override of the manager in test fixtures
-    const mgr = (Spark as any).manager ? (Spark as any).manager() : componentManager
-    return (mgr as ComponentManager).registerComponent(def)
+    const manager = Spark.manager()
+    return manager.registerComponent(definition)
   },
   getSparkComponent: (type: string) => componentRegistry.get(type)?.component,
 
@@ -53,6 +84,9 @@ export const Spark = {
   // factories for creating instances
   createComponentRegistry,
   createComponentManager,
+  // unified rendering API
+  render: (config: ComponentConfig) => componentManager.render(config),
+  renderTree: (config: ComponentConfig) => componentManager.render(config),
   // initialization hook (no-op by default; features may extend this with `initializeApp`)
   initialize: async () => { return Promise.resolve() },
   // Vue plugin helpers

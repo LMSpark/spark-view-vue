@@ -46,12 +46,15 @@ export class ErrorHandler {
   static handle(error: unknown, context?: ErrorContext): never {
     const appError = this.normalizeError(error, context)
 
+    // Log with structured context
     this.logger.error(`[${appError.type}] ${appError.message}`, {
       code: appError.code,
       context: appError.context,
-      stack: appError.stack
+      stack: appError.stack,
+      timestamp: appError.timestamp
     })
 
+    // Report to monitoring in production
     this.reportToMonitoring(appError)
 
     throw appError
@@ -59,12 +62,26 @@ export class ErrorHandler {
 
   static normalizeError(error: unknown, context?: ErrorContext): AppError {
     if (error instanceof AppError) return error
+
     if (error instanceof Error) {
       const type = this.classifyError(error)
-      return new AppError(error.message, type, undefined, context)
+      const code = this.extractErrorCode(error)
+      return new AppError(error.message, type, code, context)
     }
-    const message = typeof error === 'string' ? error : 'Unknown error occurred'
+
+    const message = typeof error === 'string' ? error : 'An unknown error occurred'
     return new AppError(message, ErrorType.UNKNOWN, undefined, context)
+  }
+
+  private static extractErrorCode(error: Error): string | undefined {
+    // Extract error codes from common patterns
+    const message = error.message.toLowerCase()
+    if (message.includes('network')) return 'NETWORK_ERROR'
+    if (message.includes('timeout')) return 'TIMEOUT_ERROR'
+    if (message.includes('validation')) return 'VALIDATION_ERROR'
+    if (message.includes('unauthorized')) return 'AUTH_ERROR'
+    if (message.includes('forbidden')) return 'PERMISSION_ERROR'
+    return undefined
   }
 
   private static classifyError(error: Error): ErrorType {
