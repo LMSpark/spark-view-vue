@@ -3,7 +3,11 @@ import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
 import SparkEJ2Column from '../features/spark/components/ej2/SparkEJ2Column.vue'
 import { Spark } from '../features/spark'
-import { defaultComponentRegistry } from '@spark-view/spark-core'
+import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
+
+const registry = createComponentRegistry()
+const manager = createComponentManager(undefined, registry)
+await Spark.initializeApp(manager)
 
 // Mock EJ2 components to avoid DOM-dependent behavior
 import { vi } from 'vitest'
@@ -25,7 +29,7 @@ import { vi } from 'vitest'
 //   }
 // }))
 
-await Spark.initializeApp(Spark.manager())
+
 
 // Mock global EJ2 components for test environment
 const mockEColumn = {
@@ -87,7 +91,7 @@ describe('ColumnManager provider location', () => {
     try {
       wrapper = mount(SparkEJ2Grid, {
         props: { config },
-        global: { provide: { sparkManager: Spark.manager(), sparkRegistry: defaultComponentRegistry } }
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
 
       // Wait for component to mount and render
@@ -103,8 +107,8 @@ describe('ColumnManager provider location', () => {
     }
 
     // Verify that a column component was created and registered in the manager
-    const manager = Spark.manager()
-    const contexts = manager.getAllContexts()
+    const mgr = manager
+    const contexts = mgr.getAllContexts()
     const columnContexts = contexts.filter(ctx => ctx.type === 'spark-ej2-column')
 
     // Should have at least one column context
