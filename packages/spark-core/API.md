@@ -264,26 +264,193 @@ interface CapabilityManager {
 
 ### 组合式函数
 
-在 Vue 组件 setup 中使用的 hook：
+#### useSparkComponent
+
+SPARK组件的核心组合式函数，用于在Vue组件中集成SPARK能力系统、上下文管理和生命周期。
 
 ```ts
-function useSparkComponent(
-  config: ComponentConfig,
+function useSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(
+  config: TConfig,
   options?: {
     manager?: ComponentManager
     registry?: ComponentRegistry
     parentContext?: ComponentContext
   }
-): {
-  context: ComponentContext
-  provide: (name: string, implementation: any) => void
-  consume: (name: string) => any
-  use: (name: string) => any // Alias for consume - more intuitive naming
-  whenAvailable: (name: string) => Promise<any>
+): SparkComponentHelpers
+```
+
+##### 参数
+
+- **config** (`ComponentConfig`): 组件配置对象
+  - `type` (string, required): 组件类型标识符，使用kebab-case命名
+  - `id` (string, optional): 组件实例唯一ID，自动生成如果未提供
+  - `name` (string, optional): 组件显示名称
+  - `version` (string, optional): 组件版本，默认为'1.0.0'
+  - `children` (ComponentConfig[], optional): 子组件配置
+  - `props` (Record<string, any>, optional): 组件属性
+
+- **options** (object, optional): 配置选项
+  - `manager` (ComponentManager, optional): 指定组件管理器，默认通过DI注入获取
+  - `registry` (ComponentRegistry, optional): 指定组件注册表，默认通过DI注入获取
+  - `parentContext` (ComponentContext, optional): 父组件上下文，用于建立组件树关系
+
+##### 返回值 (SparkComponentHelpers)
+
+```ts
+interface SparkComponentHelpers {
+  // 上下文和状态
+  context: ComponentContext          // 当前组件上下文对象
+  isVisible: boolean                 // 组件可见性状态
+  isDisabled: boolean                // 组件禁用状态
+
+  // 能力系统
+  provide: (name: string, implementation?: any) => void
+  consume: (name: string) => any | null
+  use: (name: string) => any | null     // consume的别名，更直观的命名
+  whenAvailable: (name: string) => Promise<CapabilityProvider>
+  getProvider: (name: string) => CapabilityProvider | undefined
+  getInheritedProvider: <T = unknown>(name: string) => T | undefined
+
+  // 组件系统
+  getComponent: (type: string) => any
+  isComponentRegistered: (type: string) => boolean
+
+  // 工具方法
   logger: LoggerApi
-  // ... 其他工具方法
+  getOrCreateNoopProvider: (name: string) => CapabilityProvider
+  connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => void
+  disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => void
 }
 ```
+
+##### 方法详细说明
+
+###### 上下文和状态
+
+- **context**: 当前组件的完整上下文对象，包含组件树关系、能力提供者和消费者等信息
+- **isVisible**: 基于配置的`visible`属性计算的响应式可见性状态
+- **isDisabled**: 基于配置的`disabled`属性计算的响应式禁用状态
+
+###### 能力系统方法
+
+- **provide(name, implementation?)**: 提供一个能力给子组件或兄弟组件使用
+  - `name`: 能力名称
+  - `implementation`: 能力实现对象，可选
+
+- **consume(name)**: 消费（使用）一个能力，如果能力不可用返回null
+  - `name`: 要消费的能力名称
+  - 返回: 能力实现对象或null
+
+- **use(name)**: `consume`方法的别名，提供更直观的API命名
+  - 功能与`consume`完全相同，只是命名更友好
+
+- **whenAvailable(name)**: 返回一个Promise，当指定能力变为可用时resolve
+  - `name`: 要等待的能力名称
+  - 返回: Promise<CapabilityProvider>
+
+- **getProvider(name)**: 获取当前上下文中指定能力的提供者
+- **getInheritedProvider<T>(name)**: 从组件树中向上查找指定能力的提供者
+
+###### 组件系统方法
+
+- **getComponent(type)**: 从注册表获取指定类型的组件定义
+- **isComponentRegistered(type)**: 检查指定类型的组件是否已注册
+
+###### 工具方法
+
+- **logger**: 结构化日志API，包含debug、info、warn、error方法
+- **getOrCreateNoopProvider(name)**: 为测试或可选能力创建空实现提供者
+
+##### 使用示例
+
+###### 基本用法
+
+```ts
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-core'
+
+const props = defineProps<{
+  config: { type: string; label?: string }
+}>()
+
+// 使用组合式函数
+const {
+  context,
+  provide,
+  use,           // 使用更直观的use方法
+  whenAvailable,
+  logger
+} = useSparkComponent(props.config)
+
+// 提供能力
+provide('button-api', {
+  click: () => logger.info('Button clicked'),
+  getLabel: () => props.config.label || 'Button'
+})
+
+// 消费能力
+const theme = use('theme') || { primaryColor: 'blue' }
+
+// 等待能力可用
+const gridApi = await whenAvailable('grid-api')
+</script>
+```
+
+###### 父子组件通信
+
+```ts
+<!-- 父组件 -->
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-core'
+
+const { provide } = useSparkComponent({
+  type: 'data-grid',
+  children: [{ type: 'data-column', field: 'name' }]
+})
+
+// 提供数据能力给子组件
+provide('grid-data', {
+  rows: [{ name: 'John', age: 30 }],
+  sort: (field: string) => { /* ... */ }
+})
+</script>
+```
+
+```ts
+<!-- 子组件 -->
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-core'
+
+const { use, context } = useSparkComponent({
+  type: 'data-column',
+  field: 'name'
+}, {
+  parentContext: /* 从props传入的父上下文 */
+})
+
+// 使用父组件提供的数据能力
+const gridData = use('grid-data')
+</script>
+```
+
+##### 生命周期
+
+`useSparkComponent` 会在组件的 `onMounted` 阶段自动：
+1. 初始化组件上下文
+2. 注册到组件管理器
+3. 建立能力连接
+
+在 `onUnmounted` 阶段自动：
+1. 清理上下文
+2. 断开能力连接
+3. 从管理器注销
+
+##### 注意事项
+
+- 确保在应用入口安装了Spark Vue插件：`app.use(Spark.createVuePlugin({ manager, registry }))`
+- 如果不提供manager选项，函数会尝试通过Vue的provide/inject系统获取
+- 能力消费是延迟绑定的，如果提供者在消费之后注册，系统会自动建立连接
+- 使用`whenAvailable`处理异步能力加载场景
 
 ---
 
