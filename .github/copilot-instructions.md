@@ -14,13 +14,15 @@ Purpose: help an AI coding agent be productive quickly in this mono-repo: two ap
 - Component registry: `shared/utils/componentRegistry.ts`
 - Example implementations: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
 - Core exports: `packages/spark-core` (or `@spark-view/spark-core`) — use the `Spark` namespace (e.g., `Spark.registerSparkComponent`, `Spark.manager()`), or import specific canonical instances from the package when needed (e.g., `componentManager`).
+- API reference & component helper docs: `packages/spark-core/API.md` (detailed `useSparkComponent` docs), and implementation: `packages/spark-core/src/composables/useSparkComponent.ts`.
 - Tests: `tests/` (see `capability-late-binding.test.ts`, `provider-listener.test.ts`)
 
 ## Key conventions & idioms 📌
 - Component `type` values use `kebab-case` (e.g., `spark-ej2-grid`) and are registered via `Spark.registerSparkComponent()`.
 - Provide the manager in app entry: install the Spark Vue plugin: `app.use(Spark.createVuePlugin({ manager, registry }))` (Symbol-based DI).
 - Prefer DI over globals; tests should provide the manager via `global: { provide: { sparkManager: Spark.manager() } }`.
-- Use `useComponent(config)` inside components to get `{ context, provide, consume, whenAvailable, logger }`.
+- Use `useComponent(config)` inside components to get `{ context, provide, consume, use, whenAvailable, logger }` (note: `use` is an alias for `consume`, added for clarity).
+- Short API aliases available on `Spark`: `Spark.createRegistry()` / `Spark.createManager()` (aliases for `createComponentRegistry` / `createComponentManager`) and `Spark.registerComponent()` / `Spark.registerComponents()` (convenience wrappers).
 
 ## Capability system specifics 🎯
 - Late-binding: `consumeCapability(name)` will register a consumer even when provider isn't present (see `useSparkComponent` implementation).
@@ -46,6 +48,16 @@ Purpose: help an AI coding agent be productive quickly in this mono-repo: two ap
 - Tests failing with manager missing: In tests, provide `sparkManager` explicitly: `mount(MyComp, { global: { provide: { sparkManager: Spark.manager() } } })`.
 - Capability timing issues: If consumers see "Capability not found", either register provider early in parent `setup()` or use `await whenProviderAvailable('capabilityName')` in consumer code.
 - Debugging logs: Use `Logger(context)` or `Spark.Logger()` (context optional). To capture runtime events with a custom logger, attach a `logger` provider to contexts used by the code under test.
+
+- Common runtime issue: `Uncaught ReferenceError: registerCustomComponents is not defined` — means `app/main.ts` calls `registerCustomComponents(...)` but did not import it. Fix by importing from `./components` near other app imports:
+
+  ```ts
+  import { registerCustomComponents } from './components'
+  // ... later
+  registerCustomComponents(globalManager)
+  ```
+
+- EJ2 CDN fallback: the app references Syncfusion CSS via CDN (`index.html` uses `https://cdn.syncfusion.com/ej2/.../material.css`) — network failures (ERR_CONNECTION_CLOSED) can break styling. For offline/test environments prefer locally vendored styles or guard failed loads in docs/tests.
 
 ## SSR & build notes (form-create-ssr-app) 🌐
 - SSR compatibility: `vite.config.ts` uses `ssr.noExternal` for `element-plus` and other packages — check `vite.config.ts` when debugging SSR-only failures.
