@@ -1,6 +1,7 @@
 import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode } from 'vue'
 import { Logger } from '../utils/logger.js'
 import { capabilityManager } from '../utils/SparkCapabilitySystem.js'
+import { createSafeTemplateRenderer } from '../utils/sandbox.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation, CapabilityInterface } from '../types/common.js'
