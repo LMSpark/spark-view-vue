@@ -1,8 +1,7 @@
-import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode } from 'vue'
+import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
 import { Logger } from '../utils/logger.js'
 import { capabilityManager } from '../utils/SparkCapabilitySystem.js'
-import { createSafeTemplateRenderer } from '../utils/sandbox.js'
-import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
+import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation, CapabilityInterface } from '../types/common.js'
 
@@ -13,7 +12,7 @@ function createTemplateRenderer(template: string) {
     .replace(/\{\{(\w+)\}\}/g, '${$1}') // Convert {{var}} to ${var}
     .replace(/\$\{(\w+)\}/g, (match, varName) => `\${${varName}}`) // Keep ${var} as is
 
-  return (data: Record<string, any>) => {
+  return (data: Record<string, unknown>) => {
     try {
       // Use Function constructor for safe evaluation (no eval)
       const func = new Function(...Object.keys(data), `return \`${interpolated}\``)
@@ -56,7 +55,7 @@ export interface SparkComponentHelpers {
   getInheritedProvider: <T = unknown>(name: string) => T | undefined
 
   // Component system
-  getComponent: (type: string) => any
+  getComponent: (type: string) => Component | null
   isComponentRegistered: (type: string) => boolean
 
   // Utilities
@@ -142,38 +141,39 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
 
   // Component logic - choose one:
   // Option 1: Setup function (recommended for complex logic)
-  setup?: (props: { config: _TConfig }, helpers: SparkComponentHelpers) => VNode | any | (() => VNode | any)
+  setup?: (props: { config: _TConfig }, helpers: SparkComponentHelpers) => VNode | unknown | (() => VNode | unknown)
 
   // Option 2: Simple render function (for direct JSX/VNode return)
-  render?: (props: { config: _TConfig }, helpers: SparkComponentHelpers) => VNode | any
+  render?: (props: { config: _TConfig }, helpers: SparkComponentHelpers) => VNode | unknown
 
   // Option 3: Template function (for string-based templates with interpolation)
   template?: (props: { config: _TConfig }, helpers: SparkComponentHelpers) => string
 
   // Option 4: Template literal function (for tagged template literals)
-  templateLiteral?: (strings: TemplateStringsArray, ...values: any[]) => (props: { config: _TConfig }, helpers: SparkComponentHelpers) => string
+  templateLiteral?: (strings: TemplateStringsArray, ...values: unknown[]) => (props: { config: _TConfig }, helpers: SparkComponentHelpers) => string
 }) {
   if (!definition?.type) {
     throw new Error('defineSparkComponent requires a type property')
   }
 
   const component = defineComponent({
-    name: definition.name || definition.type,
+    name: definition.name ?? definition.type,
     props: {
       config: {
-        type: Object as any,
+        type: Object as PropType<_TConfig>,
         required: true,
-        validator: (value: any) => {
+        validator: (value: unknown) => {
           if (!value || typeof value !== 'object') return false
-          if (!value.type || typeof value.type !== 'string') return false
+          const obj = value as Record<string, unknown>
+          if (!obj.type || typeof obj.type !== 'string') return false
           return !definition.validator || definition.validator(value as _TConfig)
         }
       }
     },
-    setup(props: { config: _TConfig }, _ctx: any) {
+    setup(props: { config: _TConfig }, _ctx: unknown) {
       // Create component context
       const ctxRaw: ComponentContext = {
-        id: props.config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
+        id: props.config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
         type: props.config.type,
         parent: undefined, // Will be set by parent component
         children: [],
@@ -187,21 +187,21 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
       const logger = Logger(context)
 
       // Resolve manager via DI
-      const resolvedManager = (inject(SPARK_MANAGER_KEY) as ComponentManager | undefined) ?? (inject('sparkManager') as ComponentManager | undefined)
+      const resolvedManager = (inject(SPARK_MANAGER_KEY)) ?? (inject('sparkManager'))
       if (!resolvedManager) {
         throw new Error('Component manager not found. Install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager }))')
       }
-      const manager = resolvedManager as ComponentManager
+      const manager = resolvedManager
 
       // Computed properties
-      const isVisible = computed(() => (props.config as any).visible !== false)
-      const isDisabled = computed(() => (props.config as any).disabled === true)
+      const isVisible = computed(() => (props.config as Record<string, unknown>).visible !== false)
+      const isDisabled = computed(() => (props.config as Record<string, unknown>).disabled === true)
 
       // Capability system functions
       function provide(name: string, implementation?: Implementation) {
         const p: CapabilityProvider = { name, version: '1.0.0', interface: {} as CapabilityInterface, implementation }
-        if (manager && typeof (manager as ComponentManager).registerProvider === 'function') {
-          (manager as ComponentManager).registerProvider(context, p)
+        if (manager && typeof (manager).registerProvider === 'function') {
+          (manager).registerProvider(context, p)
         } else {
           context.providers.add(p)
         }
@@ -211,12 +211,12 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
       function consume(name: string): Implementation | null {
         const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
         context.consumers.set(name, consumer)
-        const provider = Array.from(context.providers).find(p => p.name === name) || createNoopProvider(name)
+        const provider = Array.from(context.providers).find(p => p.name === name) ?? createNoopProvider(name)
         if (provider) {
-          consumer.implementation = ((provider as CapabilityProvider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
-          try { capabilityManager.connectCapability(provider as CapabilityProvider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
+          consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
+          try { capabilityManager.connectCapability(provider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
           logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
-          return consumer.implementation || null
+          return consumer.implementation ?? null
         }
         logger.warn(`⚠️ Capability not found (registered consumer for late-binding): ${name} for ${context.type} (${context.id})`)
         return null
@@ -226,9 +226,9 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         const p = Array.from(context.providers).find(pr => pr.name === name)
         if (p) return Promise.resolve(p)
         return new Promise(resolve => {
-          context.providerListeners = context.providerListeners || new Map()
+          context.providerListeners = context.providerListeners ?? new Map()
           if (!context.providerListeners.has(name)) context.providerListeners.set(name, new Set())
-          const set = context.providerListeners.get(name)!
+          const set = context.providerListeners.get(name) ?? new Set()
           const cb = (prov: CapabilityProvider) => { set.delete(cb); resolve(prov) }
           set.add(cb)
         })
@@ -242,25 +242,25 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         let current: ComponentContext | undefined = context
         while (current) {
           const p = Array.from(current.providers).find(pr => pr.name === name)
-          if (p && p.implementation !== undefined) return p.implementation as unknown as T
+          if (p?.implementation !== undefined) return p.implementation as unknown as T
           current = current.parent ?? undefined
         }
         return undefined
       }
 
-      function getComponent(type: string) {
+      function getComponent(type: string): Component | null {
         try {
-          const def = (manager as ComponentManager).getComponentDefinition(type)
-          return def?.component
+          const def = (manager).getComponentDefinition(type)
+          return def?.component as Component ?? null
         } catch {
-          const registry = (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined)
-          return registry?.get(type)?.component
+          const registry = (inject(SPARK_REGISTRY_KEY))
+          return registry?.get(type)?.component as Component ?? null
         }
       }
 
       function isComponentRegistered(type: string) {
-        try { return (manager as ComponentManager).isComponentRegistered(type) } catch {
-          const registry = (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined)
+        try { return (manager).isComponentRegistered(type) } catch {
+          const registry = (inject(SPARK_REGISTRY_KEY))
           return registry ? registry.has(type) : false
         }
       }
@@ -319,7 +319,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
 
       if (definition.render) {
         // Render function returns JSX/VNode directly
-        return () => definition.render!(props, helpers)
+        return () => definition.render?.(props, helpers)
       }
 
       if (definition.template) {
@@ -344,8 +344,8 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
       if (definition.templateLiteral) {
         // Template literal function for advanced templating
         return () => {
-          const templateFunc = definition.templateLiteral!([] as unknown as TemplateStringsArray, props, helpers)
-          const html = templateFunc(props, helpers)
+          const templateFunc = definition.templateLiteral?.([] as unknown as TemplateStringsArray, props, helpers)
+          const html = templateFunc?.(props, helpers) ?? ''
           return renderSafeHTML(html)
         }
       }
@@ -359,10 +359,10 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
   })
 
   // Attach meta for automatic registration
-  ;(component as any).spark = {
+  ;(component as Component & { spark?: Record<string, unknown> }).spark = {
     type: definition.type,
     name: definition.name,
-    version: definition.version || '0.0.0',
+    version: definition.version ?? '0.0.0',
     providers: definition.providers,
     validator: definition.validator
   }
@@ -372,13 +372,13 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
     try {
       // Try to get manager from global Spark namespace
       // Use dynamic import to avoid circular dependencies and bundling issues
-      const sparkNamespace = (globalThis as any).Spark
+      const sparkNamespace = (globalThis as Record<string, unknown>).Spark as { register?: (component: Component) => void } | undefined
       if (sparkNamespace && typeof sparkNamespace.register === 'function') {
         sparkNamespace.register(component)
-        console.log(`🔧 Auto-registered SPARK component: ${definition.type}`)
+        Logger().info(`🔧 Auto-registered SPARK component: ${definition.type}`)
       } else {
-        console.warn(`⚠️ Failed to auto-register component ${definition.type}: Spark namespace not available globally`)
-        console.warn('💡 Make sure to call Spark.register() manually or ensure Spark namespace is available')
+        Logger().warn(`⚠️ Failed to auto-register component ${definition.type}: Spark namespace not available globally`)
+        Logger().warn('💡 Make sure to call Spark.register() manually or ensure Spark namespace is available')
       }
     } catch (error) {
       console.warn(`⚠️ Failed to auto-register component ${definition.type}:`, error)
@@ -386,7 +386,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
     }
   }
 
-  return component as any
+  return component as Component
 }
 
 /**
@@ -395,7 +395,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
  */
 export function createSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(options: {
   meta: { type: string; name?: string; version?: string; providers?: CapabilityProvider[]; validator?: (config: TConfig) => boolean }
-  setup?: (props: { config: TConfig }, ctx: any, helpers: any) => any
+  setup?: (props: { config: TConfig }, ctx: unknown, helpers: unknown) => unknown
 }): SparkComponent<TConfig> {
   return defineSparkComponent({
     type: options.meta.type,
@@ -403,6 +403,6 @@ export function createSparkComponent<TConfig extends ComponentConfig = Component
     version: options.meta.version,
     providers: options.meta.providers,
     validator: options.meta.validator,
-    setup: options.setup ? (props, helpers) => options.setup!(props, {} as any, helpers) : undefined
+    setup: options.setup ? (props, helpers) => options.setup?.(props, {} as unknown, helpers) : undefined
   })
 } 

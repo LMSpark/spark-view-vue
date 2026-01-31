@@ -8,7 +8,7 @@ export interface VueSparkPluginOptions {
 }
 
 export function createVueSparkPlugin(options: VueSparkPluginOptions) {
-  if (!options || !options.manager) throw new Error('VueSparkPlugin requires { manager } option. Provide a manager created by createComponentManager(registry)')
+  if (!options?.manager) throw new Error('VueSparkPlugin requires { manager } option. Provide a manager created by createComponentManager(registry)')
   const { manager, registry } = options
   return {
     name: 'spark-vue-plugin',

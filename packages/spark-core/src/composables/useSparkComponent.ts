@@ -18,10 +18,10 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     parentContext?: ComponentContext
   }
 ) {
-  const parentContext = options?.parentContext as ComponentContext | undefined
+  const parentContext = options?.parentContext
 
   const ctxRaw: ComponentContext = {
-    id: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
+    id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
     type: config.type,
     parent: parentContext,
     children: [],
@@ -35,9 +35,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   const logger = Logger(context)
 
   // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
-  const resolvedManager = options?.manager ?? (inject(SPARK_MANAGER_KEY) as ComponentManager | undefined) ?? (inject('sparkManager') as ComponentManager | undefined)
+  const resolvedManager = options?.manager ?? (inject(SPARK_MANAGER_KEY)) ?? (inject('sparkManager'))
   if (!resolvedManager) throw new Error('Component manager not found. Provide via options.manager or install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager })).')
-  const manager = resolvedManager as ComponentManager
+  const manager = resolvedManager
 
   const isVisible = computed(() => ((config as ComponentConfig) as { visible?: boolean }).visible !== false)
   const isDisabled = computed(() => ((config as ComponentConfig) as { disabled?: boolean }).disabled === true)
@@ -47,7 +47,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     logger.info(`🗑️ Destroying SPARK component: ${context.type} (${context.id})`)
     context.providers.clear()
     context.consumers.clear()
-    try { manager && typeof (manager as ComponentManager).destroyContext === 'function' && (manager as ComponentManager).destroyContext(context.id) } catch (e: unknown) { logger.warn('Failed to destroy context via manager', String(e)) }
+    try { manager && typeof (manager).destroyContext === 'function' && (manager).destroyContext(context.id) } catch (e: unknown) { logger.warn('Failed to destroy context via manager', String(e)) }
   }
 
   function getProvider(name: string): CapabilityProvider | undefined {
@@ -58,7 +58,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   // Provide a capability on this context
   function provide(name: string, implementation?: Implementation) {
     const p: CapabilityProvider = { name, version: '1.0.0', interface: {} as CapabilityInterface, implementation }
-    if (manager && typeof (manager as ComponentManager).registerProvider === 'function') (manager as ComponentManager).registerProvider(context, p)
+    if (manager && typeof (manager).registerProvider === 'function') (manager).registerProvider(context, p)
     else context.providers.add(p)
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
@@ -66,10 +66,10 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   function consume(name: string) {
     const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
     context.consumers.set(name, consumer)
-    const provider = manager.getProvider(context, name) || createNoopProvider(name)
+    const provider = manager.getProvider(context, name) ?? createNoopProvider(name)
     if (provider) {
-      consumer.implementation = ((provider as CapabilityProvider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
-      try { capabilityManager.connectCapability(provider as CapabilityProvider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
+      consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
+      try { capabilityManager.connectCapability(provider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
       logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
       return consumer.implementation
     }
@@ -81,9 +81,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     const p = getProvider(name)
     if (p) return Promise.resolve(p)
     return new Promise(resolve => {
-      context.providerListeners = context.providerListeners || new Map()
+      context.providerListeners = context.providerListeners ?? new Map()
       if (!context.providerListeners.has(name)) context.providerListeners.set(name, new Set())
-      const set = context.providerListeners.get(name)!
+      const set = context.providerListeners.get(name) ?? new Set()
       const cb = (prov: CapabilityProvider) => { set.delete(cb); resolve(prov) }
       set.add(cb)
     })
@@ -115,7 +115,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       let t: ComponentContext | undefined = ctx ?? context
       while (t) {
         const p = Array.from(t.providers).find(pr => pr.name === name)
-        if (p && p.implementation !== undefined) return p.implementation as unknown as T
+        if (p?.implementation !== undefined) return p.implementation as unknown as T
         t = t.parent ?? undefined
       }
       return undefined
@@ -129,19 +129,19 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     getComponent: (type: string) => {
       // Prefer manager-backed registry
       try {
-        const def = (manager as ComponentManager).getComponentDefinition(type)
+        const def = (manager).getComponentDefinition(type)
         const comp = def?.component
         return comp ? markRaw(comp) : undefined
       } catch {
         // fallback to injected registry if present
-        const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined)
+        const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY))
         if (!registry) return undefined
         const comp = registry.get(type)?.component
         return comp ? markRaw(comp) : undefined
       }
     },
     isComponentRegistered: (type: string) => {
-      try { return (manager as ComponentManager).isComponentRegistered(type) } catch { const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY) as ComponentRegistry | undefined); return registry ? registry.has(type) : false }
+      try { return (manager).isComponentRegistered(type) } catch { const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY)); return registry ? registry.has(type) : false }
     },
     getOrCreateNoopProvider: (name: string) => createNoopProvider(name),
     connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider, consumer, ctx),
