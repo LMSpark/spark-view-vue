@@ -1,10 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
-import { Spark } from '@spark-view/spark-core'
+import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
 
-// Initialize SPARK components (registers spark-ej2-grid / spark-ej2-column)
-await Spark.initialize()
+const registry = createComponentRegistry()
+const manager = createComponentManager(undefined, registry)
+// Initialize SPARK components (registers spark-ej2-grid / spark-ej2-column) for this manager
+import { initializeAppSparkComponents } from '../features/spark/initialize'
+await initializeAppSparkComponents(manager)
 
 // Mock EJ2 components so we can mount without real EJ2 runtime
 vi.mock('@syncfusion/ej2-vue-grids', () => ({
@@ -39,7 +42,7 @@ describe('Column manager connector', () => {
 
     const wrapper = mount(SparkEJ2Grid, {
       props: { config },
-      global: { provide: { sparkManager: Spark.manager() } }
+      global: { provide: { sparkManager: manager, sparkRegistry: registry } }
     })
 
     expect(wrapper.exists()).toBe(true)

@@ -1,248 +1,23 @@
-// shared/composables/index.ts
-// 共享的 Vue 组合式函数
-
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { asyncUtils, RaceController } from '../utils/asyncUtils'
-import { ErrorHandler } from '../utils/errorHandler'
-import { ConfigManager } from '../utils/configManager'
-import { Spark } from '@spark-view/spark-core'
-import type { AsyncState } from '../types'
-
-/**
- * 异步状态管理组合式函数
- */
-export function useAsyncState<T>(
-  initialData?: T
-): {
-  state: AsyncState<T>
-  execute: (operation: () => Promise<T>) => Promise<void>
-  reset: () => void
-  isLoading: boolean
-  isSuccess: boolean
-  isError: boolean
-  data: T | undefined
-  error: Error | undefined
-} {
-  const state = ref<AsyncState<T>>({
-    data: initialData,
-    loading: false,
-    error: undefined
-  })
-
-  const execute = async (operation: () => Promise<T>): Promise<void> => {
-    state.value.loading = true
-    state.value.error = undefined
-
-    try {
-      const result = await operation()
-      state.value.data = result
-    } catch (error) {
-      state.value.error = error instanceof Error ? error : new Error(String(error))
-      Spark.logger().error('Async operation failed', { error: state.value.error })
-    } finally {
-      state.value.loading = false
-    }
-  }
-
-  const reset = (): void => {
-    state.value = {
-      data: initialData,
-      loading: false,
-      error: undefined
-    }
-  }
-
-  return {
-    state: computed(() => state.value),
-    execute,
-    reset,
-    isLoading: computed(() => state.value.loading),
-    isSuccess: computed(() => !state.value.loading && !state.value.error),
-    isError: computed(() => !!state.value.error),
-    data: computed(() => state.value.data),
-    error: computed(() => state.value.error)
-  }
-}
-
-/**
- * 竞态安全的异步操作组合式函数
- */
-export function useRaceSafe<T>(): {
-  execute: (operation: () => Promise<T>) => Promise<T | undefined>
-  abort: () => void
-  aborted: boolean
-} {
-  const controller = ref<RaceController | null>(null)
-
-  const execute = async (operation: () => Promise<T>): Promise<T | undefined> => {
-    if (!controller.value) {
-      controller.value = asyncUtils.createRaceController()
-    }
-
-    try {
-      return await asyncUtils.raceSafe(operation, controller.value)
-    } catch (error) {
-      if (error instanceof Error && error.message === 'Operation was cancelled') {
-        Spark.logger().debug('Race-safe operation was cancelled')
-        return undefined
-      }
-      throw error
-    }
-  }
-
-  const abort = (): void => {
-    controller.value?.abort()
-  }
-
-  return {
-    execute,
-    abort,
-    aborted: computed(() => controller.value?.aborted ?? false)
-  }
-}
-
-/**
- * 防抖组合式函数
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useDebounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number,
-  options?: { leading?: boolean; trailing?: boolean }
-): T & { cancel(): void; flush(): ReturnType<T> | undefined } {
-  return asyncUtils.debounce(func, wait, options)
-}
-
-/**
- * 节流组合式函数
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useThrottle<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number,
-  options?: { leading?: boolean; trailing?: boolean }
-): T & { cancel(): void; flush(): ReturnType<T> | undefined } {
-  return asyncUtils.throttle(func, wait, options)
-}
-
-/**
- * 配置监听组合式函数
- */
-export function useConfig<T>(
-  key: string,
-  defaultValue?: T
-): {
-  value: T | undefined
-  setValue: (newValue: T) => void
-  reset: () => void
-} {
-  const configManager = ConfigManager.getInstance()
-  const value = ref<T | undefined>(configManager.get(key, defaultValue))
-
-  // 监听配置变化
-  const unwatch = configManager.watch(key, (newValue) => {
-    value.value = newValue
-  })
-
-  // 清理监听器
-  onUnmounted(() => {
-    unwatch()
-  })
-
-  const setValue = (newValue: T): void => {
-    configManager.set(key, newValue)
-  }
-
-  const reset = (): void => {
-    configManager.delete(key)
-    value.value = defaultValue
-  }
-
-  return {
-    value: computed(() => value.value),
-    setValue,
-    reset
-  }
-}
-
-/**
- * 本地存储组合式函数
- */
-export function useLocalStorage<T>(
-  key: string,
-  defaultValue?: T
-): {
-  value: T | undefined
-  setValue: (newValue: T) => void
-  remove: () => void
-} {
-  const getStoredValue = (): T | undefined => {
-    try {
-      const item = localStorage.getItem(key)
-      return item ? JSON.parse(item) : defaultValue
-    } catch (error) {
-      Spark.logger().warn('Failed to read from localStorage', { key, error })
-      return defaultValue
-    }
-  }
-
-  const value = ref<T | undefined>(getStoredValue())
-
-  const setValue = (newValue: T): void => {
-    try {
-      localStorage.setItem(key, JSON.stringify(newValue))
-      value.value = newValue
-    } catch (error) {
-      Spark.logger().error('Failed to write to localStorage', { key, error })
-    }
-  }
-
-  const remove = (): void => {
-    try {
-      localStorage.removeItem(key)
-      value.value = defaultValue
-    } catch (error) {
-      logger.error('Failed to remove from localStorage', { key, error })
-    }
-  }
-
-  // 监听存储变化 (跨标签页)
-  const handleStorageChange = (event: StorageEvent): void => {
-    if (event.key === key) {
-      value.value = event.newValue ? JSON.parse(event.newValue) : defaultValue
-    }
-  }
-
-  onMounted(() => {
-    window.addEventListener('storage', handleStorageChange)
-  })
-
-  onUnmounted(() => {
-    window.removeEventListener('storage', handleStorageChange)
-  })
-
-  return {
-    value: computed(() => value.value),
-    setValue,
-    remove
-  }
-}
-
+// Re-exported from new package to keep compatibility while package migrates
+export * from '@spark-view/spark-core/composables'
+import { getWindow, getDocument, isBrowser } from '@spark-view/spark-core/utils/env'
 /**
  * 主题管理组合式函数
+ * SSR 兼容：主题设置在客户端挂载时执行
  */
 export function useTheme(): {
-  theme: string
+  theme: Ref<string>
   setTheme: (theme: string) => void
   toggleTheme: () => void
-  isDark: boolean
-  isLight: boolean
+  isDark: Ref<boolean>
+  isLight: Ref<boolean>
 } {
   const { value: theme, setValue: setThemeValue } = useLocalStorage('spark:theme', 'light')
 
   const setTheme = (newTheme: string): void => {
     setThemeValue(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
+    const doc = getDocument()
+    if (doc && doc.documentElement) doc.documentElement.setAttribute('data-theme', newTheme)
   }
 
   const toggleTheme = (): void => {
@@ -252,8 +27,9 @@ export function useTheme(): {
 
   // 初始化主题
   onMounted(() => {
-    if (theme.value) {
-      document.documentElement.setAttribute('data-theme', theme.value)
+    const doc = getDocument()
+    if (doc && theme.value) {
+      doc.documentElement.setAttribute('data-theme', theme.value)
     }
   })
 
@@ -325,6 +101,7 @@ export function useLifecycle(): {
 
 /**
  * 事件监听组合式函数
+ * SSR 兼容：在服务器端安全跳过事件监听
  */
 export function useEventListener(
   event: string,
@@ -335,11 +112,17 @@ export function useEventListener(
   remove: () => void
 } {
   const add = (): void => {
-    window.addEventListener(event, handler, options)
+    const win = getWindow()
+    if (win) {
+      win.addEventListener(event, handler, options)
+    }
   }
 
   const remove = (): void => {
-    window.removeEventListener(event, handler, options)
+    const win = getWindow()
+    if (win) {
+      win.removeEventListener(event, handler, options)
+    }
   }
 
   onMounted(() => {
@@ -355,17 +138,21 @@ export function useEventListener(
 
 /**
  * 窗口大小监听组合式函数
+ * SSR 兼容：在服务器端返回默认值 (0, 0)
  */
 export function useWindowSize(): {
-  width: number
-  height: number
+  width: Ref<number>
+  height: Ref<number>
 } {
-  const width = ref(window.innerWidth)
-  const height = ref(window.innerHeight)
+  const width = ref(isBrowser() ? window.innerWidth : 0)
+  const height = ref(isBrowser() ? window.innerHeight : 0)
 
   const updateSize = (): void => {
-    width.value = window.innerWidth
-    height.value = window.innerHeight
+    const win = getWindow()
+    if (win) {
+      width.value = win.innerWidth
+      height.value = win.innerHeight
+    }
   }
 
   useEventListener('resize', updateSize)
@@ -378,15 +165,19 @@ export function useWindowSize(): {
 
 /**
  * 可见性监听组合式函数
+ * SSR 兼容：在服务器端默认为可见状态
  */
 export function useVisibility(): {
-  visible: boolean
-  hidden: boolean
+  visible: Ref<boolean>
+  hidden: Ref<boolean>
 } {
-  const visible = ref(!document.hidden)
+  const visible = ref(isBrowser() ? !document.hidden : true)
 
   const handleVisibilityChange = (): void => {
-    visible.value = !document.hidden
+    const doc = getDocument()
+    if (doc) {
+      visible.value = !doc.hidden
+    }
   }
 
   useEventListener('visibilitychange', handleVisibilityChange)

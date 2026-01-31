@@ -1,12 +1,11 @@
 {
-  "extends": "../../../form-create-ssr-app/shared-config/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@root/*": ["../../../form-create-ssr-app/src/*"],
-      "@spark-view/spark-core": ["../../../form-create-ssr-app/packages/spark-core/src/spark-namespace.ts"],
-      "@spark-view/spark-core/*": ["../../../form-create-ssr-app/packages/spark-core/src/*"]
+      "@spark-view/spark-core": ["./packages/spark-core/src/index.ts"],
+      "@spark-view/spark-core/*": ["./packages/spark-core/src/*"]
     }
   },
   "include": [
@@ -35,6 +34,10 @@
     "app/**/*.tsx",
     "app/**/*.vue",
     "app/**/*.d.ts",
-    "../../packages/spark-core/src/**/*.ts"
+    "./packages/spark-core/src/**/*.ts",
+    ".vitepress/**/*.ts",
+    "tools/**/*.ts",
+    "vite.config.ts",
+    "packages/spark-core/vitest.config.ts"
   ]
 }

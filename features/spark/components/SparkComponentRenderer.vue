@@ -42,8 +42,8 @@
  * 完全解耦：只依赖公共逻辑，不依赖其他自定义组件
  */
 import { computed } from 'vue'
-import { Spark } from '../'
-import type { SparkComponentConfig, SparkComponentContext } from '../'
+import { Spark } from '@spark-view/spark-core'
+import type { SparkComponentConfig, SparkComponentContext, RendererDebugProvider } from '@spark-view/spark-core'
 
 // ==================== Props ====================
 
@@ -58,15 +58,12 @@ const props = defineProps<Props>()
 
 const {
   context,
-  registerProvider,
+  provide,
   componentClass,
   componentStyle,
-  getSparkComponent,
+  getComponent,
   isComponentRegistered
-} = Spark.useComponent({
-  config: props.config,
-  parentContext: props.parentContext as SparkComponentContext | undefined
-})
+} = Spark.useComponent(props.config, props.parentContext as SparkComponentContext | undefined)
 
 // ==================== 组件解析 ====================
 
@@ -74,7 +71,7 @@ const {
  * 从注册表解析组件
  */
 const resolvedComponent = computed(() => {
-  const component = getSparkComponent(props.config.type)
+  const component = getComponent(props.config.type)
   if (!component) {
     console.warn(`⚠️ SPARK Component not registered: ${props.config.type}`)
   }
@@ -84,12 +81,12 @@ const resolvedComponent = computed(() => {
 // ==================== 调试信息 ====================
 
 // 注册调试能力
-registerProvider('rendererDebug', {
+provide('rendererDebug', {
   componentType: props.config.type,
-  isRegistered: computed(() => isComponentRegistered(props.config.type)),
+  isRegistered: isComponentRegistered(props.config.type),
   resolvedComponent: resolvedComponent.value,
-  childCount: computed(() => props.config.children?.length || 0)
-})
+  childCount: props.config.children?.length || 0
+} as RendererDebugProvider)
 </script>
 
 <style scoped>

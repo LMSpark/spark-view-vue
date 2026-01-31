@@ -136,7 +136,24 @@ EJ2 集成层 (features/ej2/)
 
 ### 组件封装模式
 
-#### GridComponent.vue
+#### GridComponent.vue (示例与建议)
+
+**建议（消费者/演示用法）**：不要在应用或文档示例中直接依赖具体实现。消费者应使用 `RendererComponent` 并通过注册名（例如 `spark-ej2-grid` / `spark-ej2-column`）来配置和渲染网格：
+
+```vue
+<template>
+  <!-- 推荐：在页面中使用 RendererComponent，并在 config 中声明注册类型 -->
+  <RendererComponent :config="{ type: 'spark-ej2-grid', ...gridConfig }" />
+</template>
+
+<script setup lang="ts">
+import RendererComponent from './RendererComponent.vue'
+const props = defineProps({ config: Object })
+const gridConfig = props.config
+</script>
+```
+
+**若你在 `features/ej2/` 实现 EJ2 的 Grid（feature 实现）**，可以如下封装（保留为实现示例）：
 
 ```vue
 <script setup lang="ts">
@@ -496,7 +513,8 @@ const gridConfig = {
 
 ```vue
 <template>
-  <GridComponent :config="gridConfig" />
+  <!-- 推荐：通过 RendererComponent 使用注册组件（spark-ej2-grid）来渲染 -->
+  <RendererComponent :config="{ type: 'spark-ej2-grid', ...gridConfig }" />
 </template>
 ```
 
@@ -521,9 +539,9 @@ const gridConfig = {
 SPARK 集成了完整的日志系统：
 
 ```typescript
-import { getLogger } from '@/features/spark/utils/logger'
+import { Logger } from '@/features/spark/utils/logger'
 
-const logger = getLogger()
+const logger = Logger()
 logger.info('组件初始化完成')
 logger.warn('能力连接失败')
 logger.error('组件渲染错误')

@@ -1,27 +1,32 @@
-import { describe, it, expect, vi } from 'vitest'
-import { createFileTransport } from '@spark-view/spark-core'
-import { existsSync, readFileSync, unlinkSync } from 'fs'
+import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-core'
+import type { ComponentContext } from '@spark-view/spark-core'
 
-describe('file transport', () => {
-  it('writes to file when fs available', () => {
-    const file = './tmp-test-log.txt'
-
-    // Ensure cleanup
-    try {
-      if (existsSync(file)) unlinkSync(file)
-    } catch (e) {
-      // best-effort cleanup, ignore failures but record for debugging
-      console.debug('cleanup failed', e)
+describe('file transport (replaced by custom provider test)', () => {
+  it('uses context-level logger provider', () => {
+    let written = ''
+    const provider = {
+      name: 'logger',
+      version: '1.0.0',
+      interface: { info: true },
+      implementation: {
+        info: (..._args: unknown[]) => { written += JSON.stringify(_args) }
+      }
     }
 
-    const provider = createFileTransport(file)
-    const logger = provider.implementation as { info: (...args: unknown[]) => void }
+    const ctx: ComponentContext = {
+      id: 'ctx-transport',
+      type: 'test',
+      children: [],
+      config: {},
+      state: {},
+      providers: new Set([ provider ]),
+      consumers: new Map()
+    }
+
+    const logger = Spark.Logger(ctx)
     logger.info('hello', { a: 1 })
 
-    const content = readFileSync(file, 'utf8')
-    expect(content).toContain('hello')
-
-    // cleanup
-    unlinkSync(file)
+    expect(written).toContain('hello')
   })
 })

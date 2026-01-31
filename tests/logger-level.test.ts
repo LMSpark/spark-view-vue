@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-core'
-import { registerGlobalProvider, getGlobalProvider } from '@spark-view/spark-core'
+import type { ComponentContext } from '@spark-view/spark-core'
 
 describe('logger level filtering', () => {
   it('does not call info when provider only implements warn/error', () => {
-    let calledInfo = false
     let calledWarn = false
 
     const provider = {
@@ -12,21 +11,26 @@ describe('logger level filtering', () => {
       version: '1.0.0',
       interface: { warn: true, error: true },
       implementation: {
-        warn: (...args: any[]) => { calledWarn = true },
-        error: (...args: any[]) => {}
+        warn: (..._args: unknown[]) => { calledWarn = true },
+        error: (..._args: unknown[]) => {}
       }
     }
 
-    const old = getGlobalProvider('logger')
-    registerGlobalProvider('logger', provider as any)
+    const ctx: ComponentContext = {
+      id: 'ctx-level',
+      type: 'test',
+      children: [],
+      config: {},
+      state: {},
+      providers: new Set([ provider ]),
+      consumers: new Map()
+    }
 
-    const logger = Spark.logger()
+    const logger = Spark.Logger(ctx)
     // info is not implemented, so calling it should be a no-op (no exception)
     logger.info('should be noop')
     logger.warn('should call warn')
 
     expect(calledWarn).toBe(true)
-
-    if (old) registerGlobalProvider('logger', old)
   })
 })

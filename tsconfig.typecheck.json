@@ -1,5 +1,4 @@
 {
-  "extends": "../../../form-create-ssr-app/shared-config/tsconfig.json",
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts", "features/**/*.ts", "features/**/*.tsx", "features/**/*.vue", "features/**/*.d.ts", "tests/**/*.ts", "../../src/**/*.ts", "../../src/**/*.d.ts"],
   "compilerOptions": {
     "baseUrl": ".",
@@ -11,6 +10,7 @@
     },
     "types": ["vite/client", "node", "vue"],
     "module": "es2020",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "strict": true,
     "noImplicitAny": true,

@@ -11,7 +11,7 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, 'shared'),
       '@plugins': path.resolve(__dirname, 'plugins'),
       '@root': path.resolve(__dirname, '..', '..', 'src'),
-      '@spark-view/spark-core': path.resolve(__dirname, '..', '..', '..', 'form-create-ssr-app', 'packages', 'spark-core', 'src')
+      '@spark-view/spark-core': path.resolve(__dirname, 'packages', 'spark-core', 'src')
     }
   },
   server: {
@@ -40,7 +40,7 @@ export default defineConfig({
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          const ext = assetInfo.name!.split('.').pop()
+
           if (/\.(png|jpe?g|gif|svg|ico)$/i.test(assetInfo.name!)) {
             return 'images/[name]-[hash].[ext]'
           }

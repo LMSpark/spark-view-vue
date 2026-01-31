@@ -3,10 +3,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
-import SparkEJ2Column from '../features/spark/components/ej2/SparkEJ2Column.vue'
-import { initializeSparkComponents } from '../features/spark'
-import { Spark } from '@spark-view/spark-core'
-import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
+import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
+import type { SparkEJ2GridConfig } from '@/types/ej2-components'
+
+const registry = createComponentRegistry()
+const manager = createComponentManager(undefined, registry)
+import { initializeAppSparkComponents } from '../features/spark/initialize'
+await initializeAppSparkComponents(manager)
 
 // Mock EJ2 components
 vi.mock('@syncfusion/ej2-vue-grids', () => ({
@@ -40,10 +43,20 @@ describe('EJ2GridDemo', () => {
       ]
     }
 
-    const wrapper = mount(SparkEJ2Grid, {
-      props: { config },
-      global: { provide: { sparkManager: Spark.manager() } }
-    })
+    let wrapper
+
+    // Register lightweight stubs for columns to avoid EJ2 runtime complexity in unit tests
+    manager.registerComponent({ type: 'spark-ej2-column', name: 'spark-ej2-column', version: '1.0.0', component: { template: '<div class="stub-column" />' } })
+
+    try {
+      wrapper = mount(SparkEJ2Grid, {
+        props: { config },
+        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+      })
+    } catch (e: unknown) {
+      try { console.error('Mount threw (detailed):', e, typeof e, JSON.stringify(e, Object.getOwnPropertyNames(e as any))) } catch { console.error('Mount threw (fallback):', e) }
+      throw e
+    }
 
     expect(wrapper.exists()).toBe(true)
   })

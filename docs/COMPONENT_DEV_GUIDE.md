@@ -34,16 +34,18 @@ SPARK 使用基于配置和能力系统的插件化组件架构：
 
 - `src/components/spark/` - SPARK 组件实现（`SparkEJ2Grid.vue`、`SparkEJ2Column.vue` 等）
 - `src/components/renderers/` - 渲染器与通用渲染工具
-- `src/composables/` - 组合式工具（`useSparkComponent`）
+- `src/composables/` - 组合式工具（`useComponent`）
 - `src/utils/spark/` - 管理器、注册器与能力系统（`SparkComponentManager.ts`、`SparkCapabilitySystem.ts`）
 - `src/types/` - 核心类型（`spark-component.ts`）
+
+> 已迁移：通用工具已移入 `@spark-view/spark-core`。请从包中导入工具与类型（例如 `import { Logger, asyncUtils } from '@spark-view/spark-core'`），不要直接导入或修改 `shared/utils`。
 - `tests/` - 单元与集成测试目录
 
 命名规范与风格：
 
 - 组件类型使用 `kebab-case`，例如 `spark-ej2-grid`。
-- 组件定义导出为 `SparkComponentDefinition` 并通过 `registerSparkComponent()` 注册。
-- **必须**在应用入口注入 manager：在 `main.ts` 使用 `app.provide('sparkManager', globalSparkComponentManager)`，并在组件中通过 `useSparkComponent()` 自动 `inject('sparkManager')` 使用。该项目不再支持 `globalThis` 回退，统一采用单一依赖注入风格。
+- 组件定义导出为 `SparkComponentDefinition` 并通过 `Spark.registerSparkComponent()` 注册。
+- **必须**在应用入口注入 manager：在 `main.ts` 通过 `app.use(Spark.createVuePlugin({ manager, registry }))` 安装 Spark Vue 插件；组件使用 `useSparkComponent()` 获取上下文和能力（DI-first）。
 
 ### Late-binding（能力延迟绑定）
 - `consumeCapability(name)` 现在会**始终注册一个 consumer**（即便 provider 尚不存在），这支持子组件在父组件 provider 注册之前就消费能力。Kernel 会在 provider 注册时自动连接（`autoConnectCapabilities`）。
@@ -59,7 +61,7 @@ if (!impl) {
 ```
 
 ### Default no-op provider
-- 项目提供 `getOrCreateNoopProvider(name)`（在 `SparkCapabilitySystem` 中导出），用于为某些能力创建默认的 no-op provider，避免空值错误。
+- 推荐在本地构造一个 noop provider（例如 `const p = { name, implementation: {} }`）或使用 `getOrCreateNoopProvider()`（由 `useSparkComponent` 提供）以避免空值错误；全局注册已被移除。
 
 
 ## 创建一个新组件（步骤）
@@ -73,9 +75,9 @@ if (!impl) {
    <script setup lang="ts">
    import { useSparkComponent } from '@/composables/useSparkComponent'
    const props = defineProps<{ config: any }>()
-const { context, registerProvider, consumeCapability } = useSparkComponent({ config: props.config })
+const { context, provide, consume } = useComponent(props.config)
    // 注册能力示例
-   registerProvider('my-feature', { /* implementation */ })
+   provide('my-feature', { /* implementation */ })
 
    // 消费能力示例
    const columnManager = consumeCapability('columnManager')
@@ -100,14 +102,14 @@ const { context, registerProvider, consumeCapability } = useSparkComponent({ con
 
 能力系统是 SPARK 的核心扩展点：
 
-- 提供者（Provider）注册到上下文：`context.providers.set(name, provider)` 或通过 `registerProvider(name, impl)`。
+- 提供者（Provider）注册到上下文：`context.providers.set(name, provider)` 或通过 `provide(name, impl)`。
 - 消费者（Consumer）通过 `consumeCapability(name)` 请求能力，框架会查找最近的提供者并调用连接器（connector）来建立绑定。
-- 内置连接器：`data-flow`、`event`、`method`。你也可以注册自定义连接器到 `globalCapabilityManager`。
+- 内置连接器：`data-flow`、`event`、`method`。你也可以注册自定义连接器到 `capabilityManager`（或通过 `Spark.capabilities()` 访问）。
 
 示例：注册列管理能力（父列提供）
 ```ts
 // 在父列组件中（SparkEJ2Column.vue）提供 columnManager，供子列注册自身
-registerProvider('columnManager', {
+provide('columnManager', {
   name: 'columnManager',
   version: '1.0.0',
   implementation: {
@@ -132,9 +134,9 @@ if (columnManager && typeof columnManager.addColumn === 'function') {
 
 - `createContext(config, parent?)` → 会生成 `SparkComponentContext` 并自动插入到父 `children`。
 - `destroyContext(id)` → 断开能力、从父移除并递归删除子上下文。
-- 组合式 `useSparkComponent` 会在 `onMounted` 时注册上下文（可通过 `globalThis` 可见的 manager 注册），在 `onUnmounted` 时销毁或清理本地状态。
+- 组合式 `useComponent` 会在 `onMounted` 时注册上下文（首选通过注入 `sparkManager` 来获得 manager），在 `onUnmounted` 时销毁或清理本地状态。
 
-注意循环依赖：`useSparkComponent` 不应直接 require manager 模块（在测试环境模块解析可能失败），优先使用 `globalThis.__globalSparkComponentManager`。
+注意循环依赖：`useComponent` 不应直接 require manager 模块（在测试环境模块解析可能失败），优先使用 `Spark.manager()` 或通过 `app.provide('sparkManager', Spark.manager())` 注入。
 
 
 ## 注册与渲染（Registry / Renderer）
@@ -149,14 +151,14 @@ if (columnManager && typeof columnManager.addColumn === 'function') {
 - 使用 `vitest` + `@vue/test-utils`。
 - 测试要点：
   - 上下文 id 是否生成及注册（`getContext(id)`）
-  - 能力是否被正确注册（`registerProvider`）及消费（`consumeCapability`）
+  - 能力是否被正确注册（`provide`）及消费（`consume`）
   - `destroyContext()` 是否能正确断开连接并删除上下文
   - 对于 EJ2 等外部组件，mock 外部库以便断言渲染行为
 
 示例测试片段：
 ```ts
 const wrapper = mount(MyGrid, { props: { config } })
-expect(globalSparkComponentManager.getContext(ctxId)).toBeTruthy()
+expect(Spark.manager().getContext(ctxId)).toBeTruthy()
 ```
 
 
@@ -176,7 +178,7 @@ expect(globalSparkComponentManager.getContext(ctxId)).toBeTruthy()
 ```ts
 // 非组件场景（页面脚本、工具、测试）
 import { Spark } from '@spark-view/spark-core'
-const logger = Spark.logger() // context 可选，Spark.logger(context)
+const logger = Spark.Logger() // context 可选，Spark.Logger(context)
 
 // 组件内部（推荐）：
 import { useSparkComponent } from '@/composables/useSparkComponent'
@@ -185,8 +187,8 @@ const { logger } = useSparkComponent({ config: props.config })
 // 组件组合式函数还提供了其它 helper，建议从组合式函数解构获取：
 // const { getSparkComponent, isComponentRegistered, getRegisteredComponentTypes, getOrCreateNoopProvider } = useSparkComponent({ config: props.config })
 // - `getRegisteredComponentTypes()`：返回已注册组件类型列表，便于调试
-// - `getOrCreateNoopProvider(name)`：确保存在一个全局 no-op provider（避免空能力错误）
-// - `getGlobalProvider(name)` / `registerGlobalProvider(name, provider)`：访问或注册全局 provider（例如 `logger`）
+// - `getOrCreateNoopProvider(name)`：本地 helper（由 `useSparkComponent` 提供）以避免空能力错误
+// - 请勿使用 `getGlobalProvider(name)` / `registerGlobalProvider(name, provider)`；改为把 provider 附加到组件 `context` 或通过 `componentManager.registerProvider` 注册。
 
 
 logger.info('message')
@@ -194,19 +196,19 @@ logger.warn('warning')
 logger.error('error')
 ```
 
-> ⚠️ 注意：库/核心工具（例如 `SparkComponentManager`、`SparkCapabilitySystem` 等）应直接导入 `getLogger()` 并避免在模块顶层调用 `useSpark()` 或其他组合式函数。（在模块初始化时调用组合式 API 可能导致运行时或测试环境中的时序/依赖问题。）
+> ⚠️ 注意：库/核心工具（例如 `SparkComponentManager`、`SparkCapabilitySystem` 等）应使用 `Logger()` 或在运行期通过 `Spark.Logger()` 获取日志实例，避免在模块顶层调用 `useSpark()` 或其他组合式函数。（在模块初始化时调用组合式 API 可能导致运行时或测试环境中的时序/依赖问题。）
 
 
-- `logger` 默认会回退到安全的 `console` 实现（SSR 安全：会检查 `console` 是否存在），也可以通过 `registerGlobalProvider('logger', provider)` 注册自定义实现。
+- `logger` 默认会回退到安全的 `console` 实现（SSR 安全：会检查 `console` 是否存在）。如需自定义实现，请将 provider 附加到组件 context 或在测试中传入 context。
 
 
 ## 常见问题（FAQ）
 
 Q: 为什么在测试中找不到 manager？
-A: 测试中可能触发了循环依赖或 alias 解析问题，已采用在 manager 中暴露 `globalThis.__globalSparkComponentManager` 的方式兼容测试环境。
+A: 测试中可能触发了循环依赖或 alias 解析问题，已采用在 manager 中暴露 `globalThis.__sparkComponentManager` 的方式兼容测试环境（首选使用 `Spark.manager()` 或 DI 注入）。
 
 Q: 出现 “Capability not found” 警告怎么办？
-A: 检查父组件是否在子组件消费之前完成 `registerProvider`。最好把重要 provider 在 setup 开头就注册，或把消费放到 `onMounted`。
+A: 检查父组件是否在子组件消费之前完成 `provide`。最好把重要 provider 在 setup 开头就注册，或把消费放到 `onMounted`。
 
 
 ---

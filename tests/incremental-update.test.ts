@@ -2,11 +2,11 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { SparkComponentRendererImpl } from '@spark-view/spark-core'
-import type { SparkComponentConfig, SparkComponentContext } from '@spark-view/spark-core'
+import type { SparkComponentConfig } from '@spark-view/spark-core' 
 
 // Mock logger
 vi.mock('../features/spark/utils/logger', () => ({
-  getLogger: () => ({
+  Logger: () => ({
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn()
@@ -15,7 +15,7 @@ vi.mock('../features/spark/utils/logger', () => ({
 
 // Mock component registry
 vi.mock('../features/spark/utils/SparkComponentRegistry', () => ({
-  globalComponentRegistry: {
+  componentRegistry: {
     get: vi.fn((type: string) => ({
       name: type,
       version: '1.0.0',
