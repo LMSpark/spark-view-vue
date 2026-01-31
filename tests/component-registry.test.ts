@@ -5,7 +5,7 @@ import { initializeAppSparkComponents } from '../features/spark/initialize'
 test('spark-ej2-grid is registered and component is a Vue component', async () => {
   await initializeAppSparkComponents(Spark.manager())
   const def = Spark.registry().get('spark-ej2-grid')
-  console.log('[test] registry entry:', def)
+  console.info('[test] registry entry:', def)
   expect(def).toBeDefined()
   // If full definition exists it should have a .component property
   if (def && 'component' in def && def.component) {

@@ -1,1 +1,0 @@
-const a="Slot 分析 Toolbar 测试",e="测试通过 slot 分析实现 toolbar 注入的功能",t={tables:{Users:{rows:[{id:1,name:"张三",email:"zhangsan@example.com",status:"活跃"},{id:2,name:"李四",email:"lisi@example.com",status:"离线"},{id:3,name:"王五",email:"wangwu@example.com",status:"活跃"}]}}},s={title:a,description:e,dataset:t};export{t as dataset,s as default,e as description,a as title};

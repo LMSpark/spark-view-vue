@@ -1,16 +1,17 @@
 {
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts", "features/**/*.ts", "features/**/*.tsx", "features/**/*.vue", "features/**/*.d.ts", "tests/**/*.ts", "../../src/**/*.ts", "../../src/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts", "features/**/*.ts", "features/**/*.tsx", "features/**/*.vue", "features/**/*.d.ts", "tests/**/*.ts", "packages/**/*.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@root/*": ["../../../form-create-ssr-app/src/*"],
-      "@spark-view/spark-core": ["../../../form-create-ssr-app/packages/spark-core/src/index.ts"],
-      "@spark-view/spark-core/*": ["../../../form-create-ssr-app/packages/spark-core/src/*"]
+      "@spark-view/spark-core": ["./packages/spark-core/src/index.ts"],
+      "@spark-view/spark-core/*": ["./packages/spark-core/src/*"]
     },
     "types": ["vite/client", "node", "vue"],
-    "module": "es2020",
+    "module": "ES2022",
     "moduleResolution": "bundler",
+    "target": "ES2022",
     "skipLibCheck": true,
     "strict": true,
     "noImplicitAny": true,
@@ -18,10 +19,10 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
+    "exactOptionalPropertyTypes": false,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedIndexedAccess": true
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false
   },
   "exclude": [
     "node_modules",

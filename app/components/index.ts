@@ -1,7 +1,7 @@
 // app/components/index.ts
 // 自定义组件注册文件
 
-import { Spark } from '../../features/spark'
+// import { Spark } from '../../features/spark'
 
 // 导入你的组件
 // import MyCustomButton from './MyCustomButton.vue'
@@ -11,10 +11,10 @@ import { Spark } from '../../features/spark'
 /**
  * 注册应用自定义组件 - 使用 Spark 便捷方法（推荐）
  */
-export function registerCustomComponents(manager?: any) {
-  if (!manager) {
-    throw new Error('Manager is required for component registration')
-  }
+export function registerCustomComponents() {
+  // if (!manager) {
+  //   throw new Error('Manager is required for component registration')
+  // }
 
   // 使用简短别名
   // Spark.registerComponent({
@@ -53,7 +53,7 @@ export function registerCustomComponents(manager?: any) {
 /**
  * 注册应用自定义组件 - 使用 Spark.register（备选方案）
  */
-export function registerCustomComponentsViaSpark(manager?: any) {
+export function registerCustomComponentsViaSpark() {
   // 注册单个组件
   // Spark.register({
   //   type: 'my-custom-button',

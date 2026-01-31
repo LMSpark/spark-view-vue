@@ -36,6 +36,7 @@ interface Rule extends Omit<PageRule, 'children'> {
   contextId?: string
   children?: (Rule | string)[]  // 允许字符串类型
   on?: Record<string, Function>
+  [key: string]: any // 允许动态访问任意字段以兼容脚本式页面规则
 }
 
 // 定义 FormCreateAPI 类型

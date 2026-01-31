@@ -1,1 +1,0 @@
-const t=[{type:"h1",children:"原生 Vue 3 Toolbar 注入演示"},{type:"p",children:"这个演示展示了如何使用 provide/inject 在父组件的 toolbar 中注入子组件内容，而不添加额外的 DOM 包装。"},{type:"table-with-toolbar",children:[{type:"child-button",slot:"toolbar",props:{buttonText:"添加用户"}},{type:"child-button",slot:"toolbar",props:{buttonText:"导出数据"}}]}];export{t as default};

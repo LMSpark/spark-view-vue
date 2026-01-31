@@ -10,7 +10,7 @@ function createTemplateRenderer(template: string) {
   // Basic interpolation: {{variable}} or ${variable}
   const interpolated = template
     .replace(/\{\{(\w+)\}\}/g, '${$1}') // Convert {{var}} to ${var}
-    .replace(/\$\{(\w+)\}/g, (match, varName) => `\${${varName}}`) // Keep ${var} as is
+    .replace(/\$\{(\w+)\}/g, (_, varName) => `\${${varName}}`) // Keep ${var} as is
 
   return (data: Record<string, unknown>) => {
     try {

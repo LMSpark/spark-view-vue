@@ -8,7 +8,7 @@
 /**
  * 数据行：键值对结构
  */
-export type DataRow<T = any> = Record<string, T>
+export type DataRow<T = unknown> = Record<string, T>
 
 /**
  * 绑定上下文接口（纯数据结构，用于序列化）
@@ -46,7 +46,7 @@ export interface DataColumn {
   type: string              // 数据类型，如 'string'、'number'（原 dataType）
   label?: string            // 显示名称（原 caption）
   allowDBNull?: boolean     // 是否允许空值
-  defaultValue?: any        // 默认值
+  defaultValue?: unknown    // 默认值
   isPrimaryKey?: boolean    // 是否主键
   autoIncrement?: boolean   // 是否自增
 }
@@ -176,7 +176,7 @@ export type FilterExpression =
   | { 
       field: string
       op: FilterOperator
-      value: any
+      value: unknown
     }
   // 与 / 或 逻辑组合
   | { 
@@ -188,7 +188,7 @@ export type FilterExpression =
       type: '!condition'
       field: string
       op: FilterOperator
-      value: any
+      value: unknown
     }
   // 逻辑取反组合
   | { 
@@ -198,7 +198,7 @@ export type FilterExpression =
   // 函数调用节点
   | { 
       func: string
-      args: any[]
+      args: unknown[]
     }
 
 // ==================== DataRelation 定义 ====================
@@ -258,7 +258,7 @@ export interface FilterResult {
 export interface FilterContext {
   parentRow?: DataRow
   parentRows?: DataRow[]
-  variables?: Record<string, any>
+  variables?: Record<string, unknown>
 }
 
 // ==================== 自引用树（Self-Reference Tree）====================
@@ -286,7 +286,7 @@ export interface FlatTreeNode {
   level?: number             // 层级（0 表示根节点）
   hasChildren?: boolean      // 是否有子节点
   isLoaded?: boolean         // 子节点是否已加载
-  [key: string]: any         // 其他业务字段
+  [key: string]: unknown     // 其他业务字段
 }
 
 /**

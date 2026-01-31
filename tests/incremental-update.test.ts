@@ -75,7 +75,7 @@ describe('Incremental Update', () => {
     }
 
     // Should detect that children changed
-    expect(renderer['haveChildrenChanged'](oldConfig.children || [], newConfig.children || [])).toBe(true)
+    expect(renderer['haveChildrenChanged'](oldConfig.children ?? [], newConfig.children ?? [])).toBe(true)
   })
 
   it('should handle empty children arrays', () => {

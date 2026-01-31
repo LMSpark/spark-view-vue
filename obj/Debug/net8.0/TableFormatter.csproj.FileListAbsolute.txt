@@ -1,4 +1,0 @@
-E:\spark-view\obj\Debug\net8.0\TableFormatter.GeneratedMSBuildEditorConfig.editorconfig
-E:\spark-view\obj\Debug\net8.0\TableFormatter.AssemblyInfoInputs.cache
-E:\spark-view\obj\Debug\net8.0\TableFormatter.AssemblyInfo.cs
-E:\spark-view\obj\Debug\net8.0\TableFormatter.csproj.CoreCompileInputs.cache

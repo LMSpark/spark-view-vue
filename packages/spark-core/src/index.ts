@@ -7,7 +7,7 @@ export * from './utils/env.js'
 export * from './utils/SparkCapabilitySystem.js'
 export * from './utils/SparkComponentManager.js'
 export * from './utils/sandbox.js'
-export * from './composables/index.js'
+// export * from './composables/index.js' // Empty file, commented out
 export * from './composables/useSparkComponent.js'
 export * from './utils/SparkComponentRenderer.js'
 export * from './vue/createSparkComponent.js'

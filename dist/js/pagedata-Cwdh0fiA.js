@@ -1,1 +1,0 @@
-const e=[{id:1,name:"张三",email:"zhang@example.com",age:28},{id:2,name:"李四",email:"li@example.com",age:32},{id:3,name:"王五",email:"wang@example.com",age:25},{id:4,name:"赵六",email:"zhao@example.com",age:35},{id:5,name:"钱七",email:"qian@example.com",age:29}],a={users:e};export{a as default,e as users};

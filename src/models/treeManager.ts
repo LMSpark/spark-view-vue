@@ -117,7 +117,7 @@ export class TreeManager {
     const missing = pathIds.filter(id => !this.cache[id])
 
     if (missing.length === 0) {
-      console.log(`路径已完整缓存，无需补齐`)
+      console.info(`路径已完整缓存，无需补齐`)
       return
     }
 
@@ -126,7 +126,7 @@ export class TreeManager {
     const fromId = firstMissingIndex > 0 ? pathIds[firstMissingIndex - 1] : null
 
     // 4. 一次性拉取缺失区间
-    console.log(`差量补齐: 从 ${fromId} 到 ${targetId}`)
+    console.info(`差量补齐: 从 ${fromId} 到 ${targetId}`)
     const nodes = await loadSubTreeFn(fromId, targetId)
 
     // 5. 更新缓存
@@ -142,12 +142,12 @@ export class TreeManager {
    */
   searchNodes(keyword: string, matchFn?: (node: FlatTreeNode, keyword: string) => boolean): FlatTreeNode[] {
     const defaultMatchFn = (node: FlatTreeNode, kw: string) => {
-      const textField = this.config.textField || 'name'
+      const textField = this.config.textField ?? 'name'
       const text = node[textField]
       return typeof text === 'string' && text.toLowerCase().includes(kw.toLowerCase())
     }
 
-    const matcher = matchFn || defaultMatchFn
+    const matcher = matchFn ?? defaultMatchFn
 
     return Object.values(this.cache).filter(node => matcher(node, keyword))
   }
@@ -253,7 +253,10 @@ export class TreeManager {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, [])
     }
-    this.eventListeners.get(event)!.push(callback)
+    const listeners = this.eventListeners.get(event)
+    if (listeners) {
+      listeners.push(callback)
+    }
   }
 
   /**

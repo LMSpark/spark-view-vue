@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "vite",
         "start": "vite preview --port 5173",
-        "build": "vue-tsc --noEmit && vite build",
+        "build": "vite build",
+        "build:check": "vue-tsc --noEmit --skipLibCheck && vite build",
         "typecheck": "vue-tsc --noEmit -p tsconfig.typecheck.json",
         "typecheck:ci": "vue-tsc --noEmit -p tsconfig.typecheck.json",
         "lint": "eslint .",

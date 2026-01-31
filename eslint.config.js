@@ -11,7 +11,10 @@ export default [
       'src/**/*.d.ts',
       'packages/**/*.d.ts',
       'API_SIMPLIFICATION_EXAMPLE.ts',
-      'packages/spark-core/tests/**'
+      'packages/spark-core/tests/**',
+      'dist/**',
+      'node_modules/**',
+      'vitest.config.ts'
     ]
   },
   // Vue SFC files

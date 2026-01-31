@@ -15,7 +15,7 @@ export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
         throw new Error(result.message)
     } catch {
         // API失败时使用静态导入（SPA模式）
-        console.log(`📦 SPA模式：直接加载页面配置 ${pageId}`)
+        console.info(`📦 SPA模式：直接加载页面配置 ${pageId}`)
         
         try {
             // 动态导入页面配置文件
@@ -23,8 +23,8 @@ export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
             const dataModule = await import(`../pages-config/${pageId}/pagedata.json`)
             
             return {
-                rule: ruleModule.default || ruleModule,
-                data: dataModule.default || dataModule
+                rule: ruleModule.default ?? ruleModule,
+                data: dataModule.default ?? dataModule
             }
         } catch (importError) {
             console.error(`❌ 无法加载页面配置: ${pageId}`, importError)
@@ -45,7 +45,7 @@ export const getRoutes = async (): Promise<RouteConfig[]> => {
         throw new Error(result.message)
     } catch {
         // API失败时使用静态导入（SPA模式）
-        console.log('📦 SPA模式：直接加载路由配置')
+        console.info('📦 SPA模式：直接加载路由配置')
         return routesData
     }
 }
