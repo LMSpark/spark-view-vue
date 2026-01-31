@@ -51,11 +51,6 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     return true
   }
 
-
-  private isValidVersion(v: string): boolean {
-    return !!semverValid(v)
-  }
-
   findCompatibleProviders(capabilityName: string, minVersion?: string): string[] {
     const matches: string[] = []
     this.components.forEach((def, type) => {

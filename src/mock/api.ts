@@ -23,6 +23,7 @@ const loadPageConfig = (pageId: string, type: 'rule' | 'data' | 'style') => {
     // JSON 文件使用 require
     if (type === 'rule' || type === 'data') {
       const fileName = type === 'data' ? 'pagedata' : type
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const config = require(`../pages-config/${pageId}/${fileName}.json`)
       
       // ✅ 按需加载：不再自动填充数据，由页面脚本的 dataLoader 负责
@@ -58,7 +59,7 @@ export default [
     response: ({ query }: { query: Record<string, string> }) => {
       const pageId = query.pageId || 'home'
       
-      console.log('📄 加载页面配置:', pageId)
+      console.info('📄 加载页面配置:', pageId)
       
       return {
         code: 200,
@@ -90,7 +91,7 @@ export default [
     response: ({ query }: { query: Record<string, string | number> }) => {
       const { tableName, page = 1, pageSize = 20, ...filters } = query
       
-      console.log(`🔎 [Mock API] 查询表: ${tableName}`, { page, pageSize, filters })
+      console.info(`🔎 [Mock API] 查询表: ${tableName}`, { page, pageSize, filters })
       
       if (!tableName || typeof tableName !== 'string') {
         return { code: 400, message: 'Missing tableName', data: [] }
@@ -125,9 +126,9 @@ export default [
   {
     url: '/api/users',
     method: 'get',
-    response: ({ query }: any) => {
-      const page = parseInt(query.page || '1')
-      const pageSize = parseInt(query.pageSize || '10')
+    response: ({ query }: { query: Record<string, string | number> }) => {
+      const page = parseInt(String(query.page || '1'))
+      const pageSize = parseInt(String(query.pageSize || '10'))
       
       // 模拟数据
       const allUsers = Array.from({ length: 50 }, (_, i) => ({
@@ -174,8 +175,8 @@ export default [
   {
     url: '/api/orders/recent',
     method: 'get',
-    response: ({ query }: any) => {
-      const limit = parseInt(query.limit || '10')
+    response: ({ query }: { query: Record<string, string | number> }) => {
+      const limit = parseInt(String(query.limit || '10'))
       
       const orders = Array.from({ length: limit }, (_, i) => ({
         orderNo: `ORD${Date.now() + i}`,

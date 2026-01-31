@@ -1,4 +1,0 @@
-E:\spark-view\obj\Debug\net8.0\PdfToJsonSanzi.GeneratedMSBuildEditorConfig.editorconfig
-E:\spark-view\obj\Debug\net8.0\PdfToJsonSanzi.AssemblyInfoInputs.cache
-E:\spark-view\obj\Debug\net8.0\PdfToJsonSanzi.AssemblyInfo.cs
-E:\spark-view\obj\Debug\net8.0\PdfToJsonSanzi.csproj.CoreCompileInputs.cache

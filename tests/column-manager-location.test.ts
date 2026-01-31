@@ -59,18 +59,18 @@ if (typeof window !== 'undefined') {
 
 // Capture global errors and rejections to help find stack traces during test failures
 const __capturedErrors: unknown[] = []
-process.on('uncaughtException', (err: unknown) => { try { console.error('uncaughtException', (err as any)?.stack || err) } catch { } ; __capturedErrors.push(err) })
-process.on('unhandledRejection', (reason: unknown) => { try { console.error('process.unhandledRejection', (reason as any)?.stack || reason) } catch { } ; __capturedErrors.push(reason) })
+process.on('uncaughtException', (err: unknown) => { try { console.error('uncaughtException', (err as Error)?.stack ?? err) } catch { } ; __capturedErrors.push(err) })
+process.on('unhandledRejection', (reason: unknown) => { try { console.error('process.unhandledRejection', (reason as Error)?.stack ?? reason) } catch { } ; __capturedErrors.push(reason) })
 if (typeof window !== 'undefined') {
-  window.addEventListener('error', (ev: any) => { try { console.error('window.error', ev.error?.stack || ev.message) } catch { } ; __capturedErrors.push(ev) })
-  window.addEventListener('unhandledrejection', (ev: any) => { try { console.error('window.unhandledrejection', ev.reason?.stack || ev.reason) } catch { } ; __capturedErrors.push(ev) })
+  window.addEventListener('error', (ev: ErrorEvent) => { try { console.error('window.error', ev.error?.stack ?? ev.message) } catch { } ; __capturedErrors.push(ev) })
+  window.addEventListener('unhandledrejection', (ev: PromiseRejectionEvent) => { try { console.error('window.unhandledrejection', ev.reason?.stack ?? ev.reason) } catch { } ; __capturedErrors.push(ev) })
 }
 
 // Also capture console errors
 const originalConsoleError = console.error
 console.error = (...args: unknown[]) => {
   __capturedErrors.push(args)
-  originalConsoleError.apply(console, args as any)
+  originalConsoleError.apply(console, args)
 }
 
 describe('ColumnManager provider location', () => {
@@ -105,7 +105,7 @@ describe('ColumnManager provider location', () => {
         throw __capturedErrors[0]
       }
     } catch (err: unknown) {
-      console.error('Mount or async processing threw:', err, err && (err as any).stack)
+      console.error('Mount or async processing threw:', err, err && (err as Error).stack)
       throw err
     }
 
@@ -122,7 +122,9 @@ describe('ColumnManager provider location', () => {
     expect(parentColumnCtx).toBeDefined()
 
     // The parent column context should have columnConfig provider
-    expect(Array.from(parentColumnCtx!.providers).some(p => p.name === 'columnConfig')).toBe(true)
+    if (parentColumnCtx) {
+      expect(Array.from(parentColumnCtx.providers).some(p => p.name === 'columnConfig')).toBe(true)
+    }
 
     // Verify the parent column has the expected configuration
     expect(parentColumnCtx).toBeDefined()

@@ -44,7 +44,7 @@ export class DataTable extends BindingContext implements IDataTable {
         contextId,
         this.dataSet
       )
-      console.log(`✨ [DataTable] 自动创建上下文: ${this.tableName}.${contextId}`)
+      console.info(`✨ [DataTable] 自动创建上下文: ${this.tableName}.${contextId}`)
     }
     
     return this.contexts[contextId]
@@ -54,13 +54,13 @@ export class DataTable extends BindingContext implements IDataTable {
    * 刷新所有上下文（重新应用过滤和排序）
    */
   refreshAllContexts(): void {
-    const sourceData = this._originalRows || this.rows || [];
+    const sourceData = this._originalRows ?? this.rows ?? [];
     
     // 刷新所有自定义上下文
     Object.values(this.contexts).forEach(context => {
       if (context.filterExpression || context.sortExpression) {
         context.updateRows(sourceData);
-        console.log(`🔄 [DataTable] 刷新上下文: ${this.tableName}.${context._contextId}`);
+        console.info(`🔄 [DataTable] 刷新上下文: ${this.tableName}.${context._contextId}`);
       }
     });
   }
@@ -113,13 +113,13 @@ export class DataTable extends BindingContext implements IDataTable {
    * 从普通对象创建实例
    */
   static fromPlainObject(data: IDataTable, dataSet?: IDataSet): DataTable {
-    const table = new DataTable(data.tableName, data.columns || [], dataSet)
+    const table = new DataTable(data.tableName, data.columns ?? [], dataSet)
     
     // 基本属性
     table.api = data.api
-    table.currentRow = data.currentRow || null
-    table.selectedRows = data.selectedRows || []
-    table.rows = data.rows || []
+    table.currentRow = data.currentRow ?? null
+    table.selectedRows = data.selectedRows ?? []
+    table.rows = data.rows ?? []
     table._originalRows = data._originalRows
     table.filterExpression = data.filterExpression
     table.sortExpression = data.sortExpression
@@ -131,7 +131,7 @@ export class DataTable extends BindingContext implements IDataTable {
     if (data.contexts) {
       if (Array.isArray(data.contexts)) {
         // 兼容旧格式：数组
-        console.log(`🔄 [DataTable] 转换 ${table.tableName}.contexts 为 Record 格式`)
+        console.info(`🔄 [DataTable] 转换 ${table.tableName}.contexts 为 Record 格式`)
         data.contexts.forEach((ctx: Partial<IBindingContext>, index: number) => {
           const contextId = `ctx_${index + 1}`
           table.contexts[contextId] = BindingContext.fromJSON(

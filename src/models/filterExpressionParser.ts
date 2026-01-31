@@ -41,7 +41,7 @@ export class FilterExpressionParser {
       if ('field' in expr && 'op' in expr && !('type' in expr)) {
         const field = expr.field
         const op = expr.op
-        let value = this.resolveValue(expr.value, context)
+        const value = this.resolveValue(expr.value, context)
 
         return this.buildSQLCondition(field, op, value, params, 0, parameterized)
       }
@@ -261,18 +261,18 @@ export class FilterExpressionParser {
       
       // $.parentRow.xxx
       if (parts[0] === 'parentRow' && context?.parentRow) {
-        let result: any = context.parentRow
+        let result: unknown = context.parentRow
         for (let i = 1; i < parts.length; i++) {
-          result = result?.[parts[i]]
+          result = (result as Record<string, unknown>)?.[parts[i]]
         }
         return result
       }
       
       // $.variables.xxx
       if (parts[0] === 'variables' && context?.variables) {
-        let result: any = context.variables
+        let result: unknown = context.variables
         for (let i = 1; i < parts.length; i++) {
-          result = result?.[parts[i]]
+          result = (result as Record<string, unknown>)?.[parts[i]]
         }
         return result
       }
@@ -282,14 +282,14 @@ export class FilterExpressionParser {
     if (typeof value === 'object' && value !== null && 'func' in value) {
       // 函数调用，如 { func: 'FIELD', args: ['id'] }
       const func = value.func
-      const args = (value as any).args || []
+      const args = (value as Record<string, unknown>).args as unknown[]
 
       if (func === 'FIELD' && context?.parentRow) {
-        return context.parentRow[args[0]]
+        return (context.parentRow as Record<string, unknown>)[args[0] as string]
       }
 
       if (func === 'VAR' && context?.variables) {
-        return context.variables[args[0]]
+        return context.variables[args[0] as string]
       }
 
       if (func === 'CURRENT_DATE') {
@@ -477,7 +477,7 @@ export class FilterExpressionParser {
    */
   private static evaluateFunction(
     func: string,
-    _args: any[],
+    _args: unknown[],
     _row: DataRow,
     _context?: FilterContext
   ): boolean {

@@ -3,7 +3,7 @@
  * RendererDemoPage - 独立演示页面
  * 展示如何使用 Renderer 架构渲染不同类型的组件
  */
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import DynamicRenderer from '@/components/renderers/DynamicRenderer.vue'
 
 // 页面数据

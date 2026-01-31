@@ -54,7 +54,7 @@ describe('EJ2GridDemo', () => {
         global: { provide: { sparkManager: manager, sparkRegistry: registry } }
       })
     } catch (e: unknown) {
-      try { console.error('Mount threw (detailed):', e, typeof e, JSON.stringify(e, Object.getOwnPropertyNames(e as any))) } catch { console.error('Mount threw (fallback):', e) }
+      try { console.error('Mount threw (detailed):', e, typeof e, JSON.stringify(e, Object.getOwnPropertyNames(e as object))) } catch { console.error('Mount threw (fallback):', e) }
       throw e
     }
 

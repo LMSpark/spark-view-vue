@@ -1,1 +1,0 @@
-const a={url:"/api/dashboard/stats",method:"GET",dataPath:"data",autoLoad:!0},t={url:"/api/orders/recent",method:"GET",params:{limit:10},dataPath:"data.orders",autoLoad:!0},d={stats:a,recentOrders:t};export{d as default,t as recentOrders,a as stats};

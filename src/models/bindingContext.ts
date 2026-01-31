@@ -93,11 +93,11 @@ export class BindingContext implements IBindingContext {
     const isSameRow = existingRow === row
     
     if (isSameRow) {
-      console.log(`⏭️ [Context] ${this._hostTable}.${this._contextId}.currentRow 未变化`)
+      console.info(`⏭️ [Context] ${this._hostTable}.${this._contextId}.currentRow 未变化`)
       return
     }
     
-    console.log(`🔄 [Context] ${this._hostTable}.${this._contextId}.currentRow 更新`, { from: existingRow, to: row })
+    console.info(`🔄 [Context] ${this._hostTable}.${this._contextId}.currentRow 更新`, { from: existingRow, to: row })
     this.currentRow = row
     
     if (!skipNotify && this.dataSet) {
@@ -130,11 +130,11 @@ export class BindingContext implements IBindingContext {
     )
     
     if (isSameSelection) {
-      console.log(`⏭️ [Context] ${this._hostTable}.${this._contextId}.selectedRows 未变化`)
+      console.info(`⏭️ [Context] ${this._hostTable}.${this._contextId}.selectedRows 未变化`)
       return
     }
     
-    console.log(`🔄 [Context] ${this._hostTable}.${this._contextId}.selectedRows 更新`, { 
+    console.info(`🔄 [Context] ${this._hostTable}.${this._contextId}.selectedRows 更新`, { 
       from: existingRows.length, 
       to: rows.length 
     })
@@ -180,7 +180,7 @@ export class BindingContext implements IBindingContext {
     // 注意：不清空 _originalRows，保留缓存数据
     
     if (hadData) {
-      console.log(`🧹 [Context] ${this._hostTable}.${this._contextId} 已清空所有状态`);
+      console.info(`🧹 [Context] ${this._hostTable}.${this._contextId} 已清空所有状态`);
     }
     
     if (!skipNotify && hadData && this.dataSet) {
@@ -311,7 +311,7 @@ export class BindingContext implements IBindingContext {
    */
   refresh(sourceData: DataRow[]): void {
     this.updateRows(sourceData);
-    console.log(`✅ [Refresh] 上下文 ${this._contextId} 已刷新，当前 ${this.rows.length} 行`);
+    console.info(`✅ [Refresh] 上下文 ${this._contextId} 已刷新，当前 ${this.rows.length} 行`);
   }
 
   /**
@@ -330,7 +330,7 @@ export class BindingContext implements IBindingContext {
       );
       
       if (!currentRowExists) {
-        console.log(`🧹 [Cleanup] ${this._hostTable}.${this._contextId}.currentRow 不在上下文数据中，清空`);
+        console.info(`🧹 [Cleanup] ${this._hostTable}.${this._contextId}.currentRow 不在上下文数据中，清空`);
         this.currentRow = null;
         needsCleanup = true;
       }
@@ -344,7 +344,7 @@ export class BindingContext implements IBindingContext {
       });
       
       if (validSelectedRows.length !== this.selectedRows.length) {
-        console.log(`🧹 [Cleanup] ${this._hostTable}.${this._contextId}.selectedRows 清理: ${this.selectedRows.length} -> ${validSelectedRows.length}`);
+        console.info(`🧹 [Cleanup] ${this._hostTable}.${this._contextId}.selectedRows 清理: ${this.selectedRows.length} -> ${validSelectedRows.length}`);
         this.selectedRows = validSelectedRows;
         needsCleanup = true;
       }
@@ -376,9 +376,9 @@ export class BindingContext implements IBindingContext {
   static fromJSON(data: Partial<IBindingContext>, hostTable: string, contextId: string, dataSet?: IDataSet): BindingContext {
     const context = new BindingContext(hostTable, contextId, dataSet)
     
-    context.currentRow = data.currentRow || null
-    context.selectedRows = data.selectedRows || []
-    context.rows = data.rows || []
+    context.currentRow = data.currentRow ?? null
+    context.selectedRows = data.selectedRows ?? []
+    context.rows = data.rows ?? []
     context._originalRows = data._originalRows
     context.filterExpression = data.filterExpression
     context.sortExpression = data.sortExpression

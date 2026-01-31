@@ -38,7 +38,7 @@ export async function getSubTreeByRange(
   fromId: number,
   toId: number,
   api: string | null = null
-): Promise<any[]> {
+): Promise<unknown[]> {
   if (api) {
     const response = await fetch(`${api}?fromId=${fromId}&toId=${toId}`)
     const data = await response.json()
@@ -56,7 +56,7 @@ export async function getSubTreeByRange(
 export async function getChildren(
   parentId: number,
   api: string | null = null
-): Promise<any[]> {
+): Promise<unknown[]> {
   if (api) {
     const response = await fetch(`${api}?parentId=${parentId}`)
     const data = await response.json()
@@ -74,7 +74,7 @@ export async function getChildren(
 export async function searchNodes(
   keyword: string,
   api: string | null = null
-): Promise<any[]> {
+): Promise<unknown[]> {
   if (api) {
     const response = await fetch(`${api}?keyword=${encodeURIComponent(keyword)}`)
     const data = await response.json()
@@ -89,7 +89,7 @@ export async function searchNodes(
  * 树节点接口
  */
 export interface TreeNode {
-  [key: string]: any
+  [key: string]: unknown
   children?: TreeNode[]
 }
 
@@ -97,11 +97,11 @@ export interface TreeNode {
  * 从扁平数据构建树形结构
  */
 export function buildTreeFromFlat(
-  flatNodes: any[],
+  flatNodes: Record<string, unknown>[],
   idField: string = 'id',
   parentIdField: string = 'parentId'
 ): TreeNode[] {
-  const map = new Map<any, TreeNode>()
+  const map = new Map<unknown, TreeNode>()
   const roots: TreeNode[] = []
 
   // 第一遍：创建映射
@@ -113,9 +113,11 @@ export function buildTreeFromFlat(
   map.forEach(node => {
     const parentId = node[parentIdField]
     if (parentId && map.has(parentId)) {
-      const parent = map.get(parentId)!
-      if (!parent.children) parent.children = []
-      parent.children.push(node)
+      const parent = map.get(parentId)
+      if (parent) {
+        parent.children ??= []
+        parent.children.push(node)
+      }
     } else {
       roots.push(node)
     }
@@ -127,8 +129,8 @@ export function buildTreeFromFlat(
 /**
  * 将树形结构展平
  */
-export function flattenTree(treeNodes: TreeNode[]): any[] {
-  const result: any[] = []
+export function flattenTree(treeNodes: TreeNode[]): unknown[] {
+  const result: unknown[] = []
 
   function traverse(nodes: TreeNode[], level: number = 0): void {
     nodes.forEach(node => {

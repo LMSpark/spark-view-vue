@@ -30,24 +30,22 @@ export default defineConfig({
       }
     })
   ],
-  test: {
-    environment: 'jsdom',
-    globals: true
-  },
   build: {
     rollupOptions: {
       output: {
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
+          const name = assetInfo.name
+          if (!name) return 'assets/[name]-[hash].[ext]'
 
-          if (/\.(png|jpe?g|gif|svg|ico)$/i.test(assetInfo.name!)) {
+          if (/\.(png|jpe?g|gif|svg|ico)$/i.test(name)) {
             return 'images/[name]-[hash].[ext]'
           }
-          if (/\.css$/i.test(assetInfo.name!)) {
+          if (/\.css$/i.test(name)) {
             return 'css/[name]-[hash].[ext]'
           }
-          if (/\.(woff2?|ttf|eot)$/i.test(assetInfo.name!)) {
+          if (/\.(woff2?|ttf|eot)$/i.test(name)) {
             return 'fonts/[name]-[hash].[ext]'
           }
           return 'assets/[name]-[hash].[ext]'

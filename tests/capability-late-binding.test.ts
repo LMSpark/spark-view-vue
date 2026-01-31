@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { SparkComponentManagerImpl } from '@spark-view/spark-core'
+import { createComponentManager } from '@spark-view/spark-core'
 import type { ComponentConfig, ComponentContext, CapabilityProvider } from '@spark-view/spark-core'
 
-const createSparkComponentManager = () => new SparkComponentManagerImpl()
+const createSparkComponentManager = () => createComponentManager()
 
 describe('Capability late-binding', () => {
   it('consumer registered before provider should be auto-connected after provider registration', () => {
@@ -22,7 +22,7 @@ describe('Capability late-binding', () => {
       interface: {}
     }
 
-    childCtx.consumers.set('test-cap', consumer as any)
+    childCtx.consumers.set('test-cap', consumer as CapabilityConsumer)
 
     // Ensure no provider exists yet
     expect(manager.getProvider(childCtx, 'test-cap')).toBeUndefined()

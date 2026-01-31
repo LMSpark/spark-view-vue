@@ -2,7 +2,7 @@ import {createApp} from 'vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import formCreate from '@form-create/element-ui'
-import router, {setupRouter} from './router'
+import router from './router'
 import App from './App.vue'
 import './style.css'
 
@@ -20,8 +20,6 @@ app.use(VXETable)
 
 app.use(formCreate)
 
-// 先动态加载路由，再注册 router 并挂载应用
-setupRouter().then(() => {
-    app.use(router)
-    app.mount('#app')
-})
+// 直接注册 router 并挂载应用（setupRouter 不存在，使用同步注册以降低启动复杂度）
+app.use(router)
+app.mount('#app')
