@@ -3,14 +3,14 @@
  * EJ2 Grid Component - Vue 3 原生实现
  * 对应 ejs-grid 层级，处理顶级网格配置
  */
-import { computed, provide } from 'vue'
+import { computed } from 'vue'
 import { GridComponent as EjsGrid } from '@syncfusion/ej2-vue-grids'
 import { Grid, Page } from '@syncfusion/ej2-grids'
 import type { GridModel } from '@syncfusion/ej2-vue-grids'
 import ColumnComponent from './ColumnComponent.vue'
 
-// 注入 EJ2 Grid 模块
-provide('ej2-grids', [Grid, Page])
+// 注入 EJ2 Grid 模块 - 这是正确的注入方式
+Grid.Inject(Page)
 
 // 用户的统一组件结构
 interface ComponentConfig {

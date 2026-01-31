@@ -1,109 +1,84 @@
 # SPARK Component System - AI Coding Agent Instructions
 
-## Architecture Overview
+Purpose: help an AI coding agent be productive quickly in this mono-repo: two apps share the same SPARK component architecture (`apps/spark-view` and `apps/form-create-ssr-app`).
 
-This is a Vue 3 + TypeScript project implementing the SPARK (Scalable Plugin Architecture for Reactive Components) system - a capability-driven, plugin-based component architecture following SOLID principles. Components are defined by configuration objects and rendered recursively through a capability system.
+## Quick facts ✅
+- Dev server: `npm run dev` (Vite, preview on port 5173)
+- Build: `npm run build` (runs `vue-tsc` then `vite build`)
+- Typecheck: `npm run typecheck` (uses `tsconfig.typecheck.json`)
+- Tests: `npm run test` (Vitest, runs `jsdom` + `@vue/test-utils`); `npm run test:contract` for contract tests
+- Lint & hooks: `npm run lint`, Husky pre-commit runs `lint` + `typecheck`
 
-**Key architectural layers:**
-- **Application Layer**: Component configurations (`SparkComponentConfig`)
-- **Manager Layer**: Registry, Renderer, Capability Manager
-- **Base Layer**: `SparkComponentBase.vue` with lifecycle/context management
-- **Capability Layer**: Providers/Consumers with late-binding connections
-- **Plugin Layer**: Extensible hooks and built-in plugins
+## Where to look (high value files) 🔎
+- Concepts & guides: `docs/SPARK_ARCHITECTURE.md`, `docs/COMPONENT_DEV_GUIDE.md` (detailed workflows and examples)
+- Component registry: `shared/utils/componentRegistry.ts`
+- Example implementations: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
+- Core exports: `packages/spark-core` (or `@spark-view/spark-core`) — use the `Spark` namespace (e.g., `Spark.registerSparkComponent`, `Spark.manager()`), or import specific canonical instances from the package when needed (e.g., `componentManager`).
+- API reference & component helper docs: `packages/spark-core/API.md` (detailed `useSparkComponent` docs), and implementation: `packages/spark-core/src/composables/useSparkComponent.ts`.
+- Tests: `tests/` (see `capability-late-binding.test.ts`, `provider-listener.test.ts`)
 
-## Essential Developer Workflows
+## Key conventions & idioms 📌
+- Component `type` values use `kebab-case` (e.g., `spark-ej2-grid`) and are registered via `Spark.registerSparkComponent()`.
+- Provide the manager in app entry: install the Spark Vue plugin: `app.use(Spark.createVuePlugin({ manager, registry }))` (Symbol-based DI).
+- Prefer DI over globals; tests should provide the manager via `global: { provide: { sparkManager: Spark.manager() } }`.
+- Use `useComponent(config)` inside components to get `{ context, provide, consume, use, whenAvailable, logger }` (note: `use` is an alias for `consume`, added for clarity).
+- Short API aliases available on `Spark`: `Spark.createRegistry()` / `Spark.createManager()` (aliases for `createComponentRegistry` / `createComponentManager`) and `Spark.registerComponent()` / `Spark.registerComponents()` (convenience wrappers).
 
-### Component Development
-1. Create component in `features/spark/components/` (e.g., `SparkMyFeature.vue`)
-2. Use `useSparkComponent(props)` composable for context/capability management
-3. Register component via `registerSparkComponent()` in component registry
-4. Implement capabilities as providers/consumers with defined interfaces
+## Capability system specifics 🎯
+- Late-binding: `consumeCapability(name)` will register a consumer even when provider isn't present (see `useSparkComponent` implementation).
+- To wait for a provider: `await whenProviderAvailable('columnManager')`.
+- For safe defaults in tests or optional capabilities, construct a local noop provider or use the `getOrCreateNoopProvider()` helper returned from `useSparkComponent` when available.
+- Register providers early in parent `setup()` where possible (see `SparkEJ2Grid.vue` which registers `columnManager`, `dataSource`, `gridInstance`).
 
-### Capability System Patterns
-- **Late-binding**: `consumeCapability(name)` registers consumer even if provider doesn't exist yet
-- **No-op providers**: Use `getOrCreateNoopProvider(name)` to avoid null capability errors
-- **Global providers**: Register via `registerGlobalProvider(name, provider)` for app-wide capabilities like logger
-- **Async consumption**: Use `whenProviderAvailable(name)` to wait for providers that may register later
+## Testing & common pitfalls 🧪
+- Test stack: Vitest + @vue/test-utils + jsdom. Mock EJ2 libs (Syncfusion) when asserting rendering behavior.
+- Provide `sparkManager` to mount options: `mount(Component, { global: { provide: { sparkManager: Spark.manager() } } })`.
+- Watch for provider/consumer timing — prefer registering providers in `setup()` or delay consumption until `onMounted` / `whenProviderAvailable`.
 
-### Build & Test Commands
-```bash
-npm run dev              # Start dev server (port 5173)
-npm run build           # Type-check + build with Vite
-npm run typecheck       # TypeScript check only
-npm run lint            # ESLint with auto-fix
-npm run test            # Vitest tests
-npm run test:contract   # Contract-specific tests
-npm run docs:dev        # VitePress docs server
-npm run docs:build      # Build docs
-npm run docs:serve      # Serve built docs
-npm run bench:create-tree # Run tree creation benchmark
-```
+## Integration points
+- Syncfusion EJ2 components (custom elements `e-*`): Vite config recognizes `e-*` tags; tests should mock these external libs.
+- Element Plus is globally registered; use existing UI components rather than re-registering.
 
-### Testing Patterns
-- Mock EJ2 components in tests (they're external Syncfusion libraries)
-- Provide `sparkManager` in test globals: `global: { provide: { sparkManager: getGlobalSparkComponentManager() } }`
-- Test capability registration/consumption and context lifecycle
-- Use `vitest` + `@vue/test-utils` + `jsdom` environment
-- Mock external dependencies like EJ2 grids/inputs
+## Quick examples (where to copy patterns) ✂️
+- Provider registration: `features/spark/components/ej2/SparkEJ2Grid.vue` → `provide('columnManager', { implementation: { addColumn() { ... } } })`
+- Consumer + late-binding test: `tests/capability-late-binding.test.ts`
 
-## Project-Specific Conventions
+## Troubleshooting & recipes ⚠️
+- Component type not found: Check `features/spark/components/index.ts` and `shared/utils/componentRegistry.ts` — ensure the component is passed to `registerSparkComponents()` and the `type` matches the config.
+- Tests failing with manager missing: In tests, provide `sparkManager` explicitly: `mount(MyComp, { global: { provide: { sparkManager: Spark.manager() } } })`.
+- Capability timing issues: If consumers see "Capability not found", either register provider early in parent `setup()` or use `await whenProviderAvailable('capabilityName')` in consumer code.
+- Debugging logs: Use `Logger(context)` or `Spark.Logger()` (context optional). To capture runtime events with a custom logger, attach a `logger` provider to contexts used by the code under test.
 
-### Directory Structure
-```
-features/spark/           # SPARK components & core system
-  components/            # Vue components (SparkEJ2Grid.vue, etc.)
-  utils/                 # Managers, registry, capabilities
-pages/                   # Demo pages
-shared/                  # Shared utilities/types
-  composables/          # Shared Vue composables
-  types/                # TypeScript interfaces
-  utils/                # Utility functions
-plugins/                 # Plugin system
-tests/                   # Unit/integration tests
-docs/                   # VitePress documentation
-```
+- Common runtime issue: `Uncaught ReferenceError: registerCustomComponents is not defined` — means `app/main.ts` calls `registerCustomComponents(...)` but did not import it. Fix by importing from `./components` near other app imports:
 
-### Naming & Patterns
-- Component types: `kebab-case` (e.g., `spark-ej2-grid`)
-- Import aliases: `@` (current dir), `@features`, `@pages`, `@shared`, `@plugins`, `@root` (parent src)
-- Dependency injection: Manager provided as `sparkManager` in `main.ts`
-- Logger: Use `getLogger(context)` from composables in components, direct import in utils
-- Husky pre-commit hooks: lint and typecheck automatically
+  ```ts
+  import { registerCustomComponents } from './components'
+  // ... later
+  registerCustomComponents(globalManager)
+  ```
 
-### Component Implementation Template
-```vue
-<script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-core'
+- EJ2 CDN fallback: the app references Syncfusion CSS via CDN (`index.html` uses `https://cdn.syncfusion.com/ej2/.../material.css`) — network failures (ERR_CONNECTION_CLOSED) can break styling. For offline/test environments prefer locally vendored styles or guard failed loads in docs/tests.
 
-const props = defineProps<{ config: SparkComponentConfig }>()
-const { context, registerProvider, consumeCapability, logger } = useSparkComponent({ config: props.config })
+## SSR & build notes (form-create-ssr-app) 🌐
+- SSR compatibility: `vite.config.ts` uses `ssr.noExternal` for `element-plus` and other packages — check `vite.config.ts` when debugging SSR-only failures.
+- Custom elements (`e-*`): EJ2 custom elements are recognized by Vite; in SSR or tests stub/mask them if the external package isn't available.
 
-// Register capabilities early in setup
-registerProvider('myCapability', { /* implementation */ })
+## Testing tips 🧪
+- Run a single test: `npm run test -- -t "capability-late-binding"`.
+- Mock external EJ2 in tests by stubbing the tags or importing small no-op mocks — examples exist in `tests/` where `SparkEJ2Grid` is mounted with a test `config`.
+- Use `getOrCreateNoopProvider(name)` in tests to avoid missing provider errors.
 
-// Consume with late-binding
-const dependency = consumeCapability('otherCapability')
+---
 
-// Or wait for async provider
-const asyncDep = await whenProviderAvailable('otherCapability')
-</script>
-```
+## Repository re-org notice 🔁
+We are simplifying `e:\spark-view` by moving shared/core logic into `packages/spark-core`.
+- What moved so far: `shared/utils/componentRegistry.ts` has been re-exported from `@spark-view/spark-core`, and a new package scaffold was created at `packages/spark-core/src`.
+- Local TS paths updated to resolve `@spark-view/spark-core` to `./packages/spark-core/src` (see `tsconfig.json`).
 
-### Key Files to Reference
-- `docs/SPARK_ARCHITECTURE.md`: System design and interfaces
-- `docs/COMPONENT_DEV_GUIDE.md`: Development workflows and best practices
-- `features/spark/index.ts`: Spark namespace API
-- `features/spark/initialize.ts`: App-specific component initialization
-- `shared/composables/index.ts`: Shared Vue composables
-- `tests/spark-component.test.ts`: Testing patterns
-- `vite.config.ts`: Build config with EJ2 custom elements
+Next steps I can do for you (pick one):
+1. Move `shared/composables` into `packages/spark-core` and replace with re-exports (recommended next step).
+2. Move manager/capability system (`useSparkComponent`, `SparkComponentManager`) into the package and update feature imports.
+3. Add build & typecheck steps for the package, CI integration, and tests for package code.
 
-### Integration Points
-- **EJ2 Components**: Syncfusion grids/inputs - mock in tests, import on-demand, custom elements with `e-` prefix
-- **Element Plus**: UI library, globally registered
-- **Vite Config**: Custom element recognition for EJ2 (`e-*` tags), path aliases
-- **ESLint**: Shared config from parent directory
-- **Husky**: Pre-commit hooks for linting and typechecking
-
-Focus on capability interfaces over direct component coupling. Always register providers before consuming capabilities. Use the logger composable for consistent logging across components and utils.</content>
+Reply with 1, 2, or 3 to continue.</content>
 <parameter name="filePath">e:\form-create-ssr-app\apps\spark-view\.github\copilot-instructions.md

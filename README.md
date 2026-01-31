@@ -72,5 +72,17 @@ import { Spark } from '@spark-view/spark-core'
 const manager = Spark.manager()
 
 // 使用 logger
-const logger = Spark.logger()
+const logger = Spark.Logger()
 ```
+
+## Important: Shared utils migrated into `@spark-view/spark-core`
+
+Common utilities previously located under `shared/utils` have been consolidated into the `packages/spark-core` package to provide a single source of truth and simplify imports.
+
+Recommended imports:
+
+```ts
+import { Logger, asyncUtils, ConfigManager, handleError } from '@spark-view/spark-core'
+```
+
+Please avoid importing directly from `shared/utils/*` — use the package exports instead. For compatibility, `shared/utils` files now re-export the canonical package implementations.

@@ -2,7 +2,7 @@
   <div class="ej2-grid-demo">
     <div class="page-header">
       <h1>🎯 EJ2 Grid 组件演示</h1>
-      <p>GridComponent + ColumnComponent 架构测试</p>
+      <p>Renderer + 注册组件 (spark-ej2-grid / spark-ej2-column) 架构测试</p>
     </div>
 
     <div class="demo-sections">
@@ -59,7 +59,7 @@ import RendererComponent from '../features/ej2/components/RendererComponent.vue'
 
 // 基础网格配置
 const basicGridConfig = {
-  type: 'GridComponent',
+  type: 'spark-ej2-grid',
   dataSource: [
     { id: 1, name: '张三', age: 25, department: '技术部', salary: 8000 },
     { id: 2, name: '李四', age: 30, department: '销售部', salary: 7500 },
@@ -70,17 +70,17 @@ const basicGridConfig = {
   allowPaging: false,
   height: '300px',
   children: [
-    { type: 'ColumnComponent', field: 'id', headerText: 'ID', width: '80', textAlign: 'Center' },
-    { type: 'ColumnComponent', field: 'name', headerText: '姓名', width: '120' },
-    { type: 'ColumnComponent', field: 'age', headerText: '年龄', width: '80', textAlign: 'Center' },
-    { type: 'ColumnComponent', field: 'department', headerText: '部门', width: '120' },
-    { type: 'ColumnComponent', field: 'salary', headerText: '薪资', width: '100', textAlign: 'Right', format: 'C2' }
+    { type: 'spark-ej2-column', field: 'id', headerText: 'ID', width: '80', textAlign: 'Center' },
+    { type: 'spark-ej2-column', field: 'name', headerText: '姓名', width: '120' },
+    { type: 'spark-ej2-column', field: 'age', headerText: '年龄', width: '80', textAlign: 'Center' },
+    { type: 'spark-ej2-column', field: 'department', headerText: '部门', width: '120' },
+    { type: 'spark-ej2-column', field: 'salary', headerText: '薪资', width: '100', textAlign: 'Right', format: 'C2' }
   ]
 }
 
 // 嵌套列配置
 const nestedColumnsConfig = {
-  type: 'GridComponent',
+  type: 'spark-ej2-grid',
   dataSource: [
     { id: 1, name: '张三', personal: { age: 25, gender: '男' }, work: { department: '技术部', position: '工程师' }, salary: 8000 },
     { id: 2, name: '李四', personal: { age: 30, gender: '女' }, work: { department: '销售部', position: '经理' }, salary: 7500 },
@@ -91,35 +91,35 @@ const nestedColumnsConfig = {
   allowPaging: false,
   height: '350px',
   children: [
-    { type: 'ColumnComponent', field: 'id', headerText: 'ID', width: '80', textAlign: 'Center' },
-    { type: 'ColumnComponent', field: 'name', headerText: '姓名', width: '120' },
+    { type: 'spark-ej2-column', field: 'id', headerText: 'ID', width: '80', textAlign: 'Center' },
+    { type: 'spark-ej2-column', field: 'name', headerText: '姓名', width: '120' },
     // 个人信息组
     {
-      type: 'ColumnComponent',
+      type: 'spark-ej2-column',
       headerText: '个人信息',
       textAlign: 'Center',
       children: [
-        { type: 'ColumnComponent', field: 'personal.age', headerText: '年龄', width: '80', textAlign: 'Center' },
-        { type: 'ColumnComponent', field: 'personal.gender', headerText: '性别', width: '80', textAlign: 'Center' }
+        { type: 'spark-ej2-column', field: 'personal.age', headerText: '年龄', width: '80', textAlign: 'Center' },
+        { type: 'spark-ej2-column', field: 'personal.gender', headerText: '性别', width: '80', textAlign: 'Center' }
       ]
     },
     // 工作信息组
     {
-      type: 'ColumnComponent',
+      type: 'spark-ej2-column',
       headerText: '工作信息',
       textAlign: 'Center',
       children: [
-        { type: 'ColumnComponent', field: 'work.department', headerText: '部门', width: '120' },
-        { type: 'ColumnComponent', field: 'work.position', headerText: '职位', width: '100' }
+        { type: 'spark-ej2-column', field: 'work.department', headerText: '部门', width: '120' },
+        { type: 'spark-ej2-column', field: 'work.position', headerText: '职位', width: '100' }
       ]
     },
-    { type: 'ColumnComponent', field: 'salary', headerText: '薪资', width: '100', textAlign: 'Right', format: 'C2' }
+    { type: 'spark-ej2-column', field: 'salary', headerText: '薪资', width: '100', textAlign: 'Right', format: 'C2' }
   ]
-}
+} 
 
 // 分页网格配置
 const pagingGridConfig = {
-  type: 'GridComponent',
+  type: 'spark-ej2-grid',
   dataSource: Array.from({ length: 50 }, (_, i) => ({
     id: i + 1,
     name: `员工${i + 1}`,
@@ -132,12 +132,12 @@ const pagingGridConfig = {
   pageSettings: { pageSize: 10, pageSizes: [5, 10, 20, 50] },
   height: '400px',
   children: [
-    { type: 'ColumnComponent', field: 'id', headerText: 'ID', width: '80', textAlign: 'Center' },
-    { type: 'ColumnComponent', field: 'name', headerText: '姓名', width: '120' },
-    { type: 'ColumnComponent', field: 'age', headerText: '年龄', width: '80', textAlign: 'Center' },
-    { type: 'ColumnComponent', field: 'department', headerText: '部门', width: '120' },
-    { type: 'ColumnComponent', field: 'salary', headerText: '薪资', width: '100', textAlign: 'Right', format: 'C2' },
-    { type: 'ColumnComponent', field: 'status', headerText: '状态', width: '80', textAlign: 'Center' }
+    { type: 'spark-ej2-column', field: 'id', headerText: 'ID', width: '80', textAlign: 'Center' },
+    { type: 'spark-ej2-column', field: 'name', headerText: '姓名', width: '120' },
+    { type: 'spark-ej2-column', field: 'age', headerText: '年龄', width: '80', textAlign: 'Center' },
+    { type: 'spark-ej2-column', field: 'department', headerText: '部门', width: '120' },
+    { type: 'spark-ej2-column', field: 'salary', headerText: '薪资', width: '100', textAlign: 'Right', format: 'C2' },
+    { type: 'spark-ej2-column', field: 'status', headerText: '状态', width: '80', textAlign: 'Center' }
   ]
 }
 

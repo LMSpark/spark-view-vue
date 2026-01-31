@@ -29,12 +29,12 @@
 - Dynamic: 项目以『配置驱动+组件注册器』为核心，组件由配置对象（`SparkComponentConfig`）描述。
 - 注册与渲染流程：
   1. 组件通过 `initializeSparkComponents()` 注册到本地注册表（`src/components/spark/index.ts`）。
-  2. 渲染器 `SparkComponentRenderer.vue` 读取 `config.type` 并使用 `getSparkComponent(type)` 动态渲染实际 Vue 组件。
-  3. 每个组件使用 `useSparkComponent()` 创建并提供运行时上下文（`SparkComponentContext`），并能注册/消费能力（capabilities）。
+  2. 渲染器 `SparkComponentRenderer.vue` 读取 `config.type` 并使用 `getComponent(type)` 动态渲染实际 Vue 组件。
+  3. 每个组件使用 `useComponent()` 创建并提供运行时上下文（`SparkComponentContext`），并能注册/消费能力（capabilities）。
 - 能力系统：由 `SparkCapabilitySystem.ts` 管理连接器（`data-flow` / `event` / `method`），通过上下文查找和自动连接实现能力注入。
 
 架构图（简述）：
-- App -> initializeSparkComponents -> componentRegistry -> renderers -> useSparkComponent(context/provide/capability)
+- App -> initializeSparkComponents -> componentRegistry -> renderers -> useComponent(context/provide/capability)
 
 ---
 
@@ -45,9 +45,9 @@
 - `SparkCapabilityProvider` / `SparkCapabilityConsumer`：能力声明与实现占位
 
 ### 3.2 注册器与管理器
-- 注册器：`src/utils/spark/SparkComponentRegistry.ts`（`globalComponentRegistry`）
+- 注册器：`src/utils/spark/SparkComponentRegistry.ts`（`componentRegistry`）
   - 支持注册、查询、版本兼容（简单 semver 验证）与查找兼容提供者
-- 管理器：`src/utils/spark/SparkComponentManager.ts`（`globalSparkComponentManager`）
+- 管理器：`src/utils/spark/SparkComponentManager.ts`（`componentManager`）
   - 提供创建上下文、渲染、能力注册、组件树构造等功能
 
 ### 3.3 能力连接与内置连接器
@@ -55,7 +55,7 @@
 - 自动连接：当上下文中存在 consumers 时，`autoConnectCapabilities(context)` 会尝试在上下文链中找到 provider 并建立连接
 
 ### 3.4 组合式 API：`useSparkComponent()`
-- 负责上下文创建、`provide`/`inject` 继承能力、registerProvider、consumeCapability、computed 属性（visibility/class/style）以及生命周期钩子
+- 负责上下文创建、`provide`/`inject` 继承能力、`provide`、`consume`、`whenAvailable`、computed 属性（visibility/class/style）以及生命周期钩子
 - 使用样例：见 `SparkEJ2Grid.vue` （grid 注册 `gridInstance`, `dataSource` 能力；列（父列）提供 `columnManager` 用于管理子列）
 
 ---

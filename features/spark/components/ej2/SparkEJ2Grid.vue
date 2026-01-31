@@ -1,26 +1,20 @@
 <template>
-  <ejs-grid
-    ref="gridRef"
-    v-bind="gridProps"
-  >
-    <e-columns>
-      <!-- 直接渲染 children 作为列 -->
-      <component
-        :is="getSparkComponent(child.type)"
-        v-for="(child, index) in config.children"
-        :key="`column-${index}`"
-        :config="child"
-        :parent-context="context"
-      />
-    </e-columns>
-  </ejs-grid>
+  <component :is="activeComponent" v-bind="gridProps">
+    <!-- render spark child components (columns) inside the active grid/placeholder -->
+    <component
+      v-for="(child, index) in config.children || []"
+      :is="getComponent(child.type)"
+      :key="`column-${index}`"
+      :config="child"
+      :parent-context="context"
+    />
+  </component>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, provide, ref } from 'vue'
-import { GridComponent as EjsGrid, ColumnsDirective as EColumns } from '@syncfusion/ej2-vue-grids'
+import { computed, ref, defineComponent, onMounted, h } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-core'
-import type { SparkEJ2GridConfig } from '@spark-view/spark-core'
+import type { SparkEJ2GridConfig } from '@/types/ej2-components'
 
 // 组件 Props
 interface Props {
@@ -32,63 +26,73 @@ const props = defineProps<Props>()
 // 使用 SPARK 组合式函数
 const {
   context,
-  registerProvider,
+  provide,
   componentClass: _componentClass,
   componentStyle: _componentStyle,
   logger,
-  getSparkComponent
-} = useSparkComponent({ config: props.config })
+  getComponent
+} = useSparkComponent(props.config)
 
-// Grid 引用
-const gridRef = ref<EjsGrid>()
-
-// 计算网格属性
+// 网格配置（移除children属性，保留EJ2原生属性）
 const gridProps = computed(() => {
-  const { columns: _columns, slots: _slots, type: _type, children: _children, ...gridConfig } = props.config
-  return gridConfig
+  const { children: _children, ...config } = props.config
+  return config
 })
 
-// 注册网格能力
-const registerGridCapabilities = () => {
-  // 注册网格实例能力（传入 ref，以便在未 mount 时也能被引用）
-  registerProvider('gridInstance', gridRef)
+// 统一占位组件（始终可用，避免缺失 render 报错）
+const PlaceholderGrid = defineComponent({
+  name: 'PlaceholderGrid',
+  props: ['class', 'style'],
+  setup(_, { slots }) {
+    return () => {
+      const slotContent = slots['default'] ? slots['default']() : []
+      return h('div', { class: 'ej2-grid-placeholder' }, slotContent)
+    }
+  }
+})
 
-  // 注册数据源管理能力
-  registerProvider('dataSource', {
-    getData: () => props.config.dataSource,
-    setData: (data: any[]) => {
-      if (gridRef.value) {
-        ;(gridRef.value as any).dataSource = data
-      }
+import { markRaw } from 'vue'
+
+// activeComponent 初始为占位组件（markRaw 避免被 reactive 包装）
+const activeComponent = ref<any>(markRaw(PlaceholderGrid))
+
+// 尝试按需加载 EJ2 Grid（非强制），加载失败则保持占位组件
+import('@syncfusion/ej2-vue-grids')
+  .then(m => {
+    if (m && m.GridComponent) {
+      activeComponent.value = markRaw(m.GridComponent)
     }
   })
-
-  // 注册列管理能力
-  registerProvider('columnManager', {
-    addColumn: (column: any) => {
-      logger.info('Adding column:', column)
-    },
-    removeColumn: (field: string) => {
-      logger.info('Removing column:', field)
-    },
-    getColumns: () => props.config.children || []
+  .catch(e => {
+    logger.info('EJ2 Grid not available, using placeholder', String(e))
   })
 
+import('@syncfusion/ej2-grids')
+  .then(m => { if (m && m.Grid && m.Page) m.Grid.Inject(m.Page) })
+  .catch(() => {})
+
+// 注册网格相关能力
+const registerGridCapabilities = () => {
+  provide('gridInstance', null)
+  provide('dataSource', { getData: () => props.config.dataSource })
+  provide('columnManager', {
+    addColumn: (column: any) => { logger.info('Adding column:', column) },
+    removeColumn: (field: string) => { logger.info('Removing column:', field) },
+    getColumns: () => props.config.children || []
+  })
   logger.info('🎯 SPARK EJ2 Grid capabilities registered')
 }
 
-// 立即注册（避免子组件在父 onMounted 之前消费能力时找不到）
 registerGridCapabilities()
 
-// 组件挂载
 onMounted(() => {
   logger.info('🎯 SPARK EJ2 Grid mounted with config:', props.config)
 })
 
-// 提供网格实例给子组件
-provide('ejsGridInstance', gridRef)
+provide('ejsGridInstance', null)
 </script>
 
 <style scoped>
 /* SPARK EJ2 Grid 样式 */
+.ej2-grid-placeholder { border: 1px dashed #ccc; padding: 8px; }
 </style>

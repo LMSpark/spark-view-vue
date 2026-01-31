@@ -117,8 +117,6 @@ const router = useRouter()
 const currentPage = ref(1)
 const pageSize = ref(5)
 
-const logger = Spark.logger()
-
 // 员工数据
 const employeeData = ref([
   {
@@ -270,7 +268,7 @@ const refreshData = () => {
   // 模拟数据刷新
   employeeData.value = [...employeeData.value]
   resetPagination()
-  const logger = getLogger()
+  const logger = Spark.Logger()
   logger.info('数据已刷新')
 }
 
