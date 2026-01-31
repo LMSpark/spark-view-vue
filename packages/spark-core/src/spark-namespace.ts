@@ -11,7 +11,8 @@ import { useSparkComponent } from './composables/useSparkComponent.js'
 import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 import { createComponentManager } from './utils/SparkComponentManager.js'
 import { defineSparkComponent } from './vue/createSparkComponent.js'
-import type { App } from 'vue'
+import { createSandbox, run, runAsync, render, renderAsync, validate } from './utils/sandbox.js'
+import type { App, Plugin as VuePlugin } from 'vue'
 import type { ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js' 
 
 export const Spark = {
@@ -24,7 +25,7 @@ export const Spark = {
   // unified registration API - handles multiple input types intelligently
   register: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }, manager?: ComponentManager) => {
     // Get or create manager dynamically
-    const activeManager = manager || Spark.manager()
+    const activeManager = manager ?? Spark.manager()
 
     // Handle array of components
     if (Array.isArray(input)) {
@@ -58,8 +59,8 @@ export const Spark = {
 
       const definition: ComponentConfig = {
         type: meta.type,
-        name: meta.name || meta.type,
-        version: meta.version || '0.0.0',
+        name: meta.name ?? meta.type,
+        version: meta.version ?? '0.0.0',
         component,
         providers: meta.providers,
         validator: meta.validator
@@ -71,7 +72,7 @@ export const Spark = {
 
     // Handle single ComponentConfig
     if (input && typeof input === 'object' && 'type' in input) {
-      const definition = input as ComponentConfig
+      const definition = input
       if (!definition || typeof definition !== 'object') {
         throw new Error('register requires a ComponentConfig object')
       }
@@ -96,8 +97,8 @@ export const Spark = {
     // Create a logical component definition that can render children recursively
     const definition: ComponentConfig = {
       type: config.type,
-      name: config.name || config.type,
-      version: config.version || '1.0.0',
+      name: config.name ?? config.type,
+      version: config.version ?? '1.0.0',
       component: null, // Logical component - no actual Vue component
       validator: (cfg: ComponentConfig) => cfg.type === config.type // Basic type validation
     }
@@ -110,12 +111,19 @@ export const Spark = {
 
   // logger (single unified API)
   Logger: createLogger,
+  // sandbox JS execution utilities
+  sandbox: createSandbox,
+  run,
+  runAsync,
+  renderTemplate: render,
+  renderTemplateAsync: renderAsync,
+  validate,
   // plugins
   installSparkPlugin: (plugin: Plugin) => installSparkPlugin(plugin),
   getSparkPlugin: (name: string) => getSparkPlugin(name),
   // composables / helpers
   useComponent: (config: ComponentConfig, parent?: ComponentContext) => useSparkComponent(config, { parentContext: parent }),
-  useSparkComponent: (config: ComponentConfig, opts?: { manager?: any, registry?: any, parentContext?: ComponentContext }) => useSparkComponent(config, opts),
+  useSparkComponent: (config: ComponentConfig, opts?: { manager?: ComponentManager, registry?: ComponentRegistry, parentContext?: ComponentContext }) => useSparkComponent(config, opts),
   // unified component creation API
   defineComponent: defineSparkComponent,
   // factories for creating instances (full names)
@@ -126,11 +134,11 @@ export const Spark = {
   createManager: createComponentManager,
   // component registration shortcuts
   registerComponent: (def: ComponentConfig, manager?: ComponentManager) => {
-    const activeManager = manager || Spark.manager()
+    const activeManager = manager ?? Spark.manager()
     return activeManager.registerComponent(def)
   },
   registerComponents: (defs: ComponentConfig[], manager?: ComponentManager) => {
-    const activeManager = manager || Spark.manager()
+    const activeManager = manager ?? Spark.manager()
     return activeManager.registerComponents(defs)
   },
   // unified rendering API
@@ -141,9 +149,9 @@ export const Spark = {
   // Use `Spark.createVuePlugin({ manager })` to get a plugin, or call `Spark.install(app, { manager })` to install directly.
   createVuePlugin: (opts: { manager: ComponentManager, registry?: ComponentRegistry }) => createVueSparkPlugin(opts),
   install(app: App, opts?: { manager?: ComponentManager, registry?: ComponentRegistry }) {
-    if (!opts || !opts.manager) throw new Error('Spark.install(app, { manager }) requires an explicit manager. Create one via createComponentManager(registry) and pass it here.')
+    if (!opts?.manager) throw new Error('Spark.install(app, { manager }) requires an explicit manager. Create one via createComponentManager(registry) and pass it here.')
     const plugin = createVueSparkPlugin({ manager: opts.manager, registry: opts.registry })
-    app.use(plugin as any)
+    app.use(plugin as VuePlugin)
   }
 }
 

@@ -1,10 +1,11 @@
 import type { ComponentConfig, ComponentRegistry } from '../types/spark-component.js'
+import type { Component } from 'vue'
 
 export type ComponentResolver = (type: string) => unknown | null
 
 export type RenderResult = {
   type: 'vue-component' | 'native-element' | 'text' | 'fragment'
-  component?: any
+  component?: Component
   props?: Record<string, unknown>
   children?: RenderResult[]
   text?: string
@@ -35,8 +36,8 @@ export class SparkComponentRendererImpl {
     if (oldCfg.type !== newCfg.type) return true
 
     // Shallow props comparison
-    const oldProps = oldCfg.props || {}
-    const newProps = newCfg.props || {}
+    const oldProps = oldCfg.props ?? {}
+    const newProps = newCfg.props ?? {}
     if (Object.keys(oldProps).length !== Object.keys(newProps).length) return true
     for (const k of Object.keys(oldProps)) {
       if (oldProps[k] !== newProps[k]) return true
@@ -72,7 +73,7 @@ export class SparkComponentRendererImpl {
         component,
         props: {
           config,
-          key: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
+          key: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
         }
       }
 
@@ -117,7 +118,7 @@ export class SparkComponentRendererImpl {
       component,
       props: {
         config,
-        key: config.id || `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
+        key: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
       }
     }
   }
@@ -166,7 +167,7 @@ export class SparkComponentRenderer {
    * Resolve a renderer for config
    */
   static resolveRendererForConfig(config: ComponentConfig, resolver: ComponentResolver): unknown | null {
-    if (!config || !config.type) return null
+    if (!config?.type) return null
     return resolver(config.type) ?? null
   }
 

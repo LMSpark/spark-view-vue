@@ -63,7 +63,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
         for (const p of def.providers) {
           if (p.name === capabilityName) {
             if (!minVersion) { matches.push(type); break }
-            const v = p.version || '0.0.0'
+            const v = p.version ?? '0.0.0'
             try {
               // If both are strict versions (e.g., '1.2.3'), use gte for minimal version semantics.
               if (semverValid(v) && semverValid(minVersion)) {

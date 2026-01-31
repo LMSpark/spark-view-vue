@@ -225,6 +225,7 @@ export function defineSparkComponent(definition) {
                 isDisabled: isDisabled.value,
                 provide,
                 consume,
+                use: consume, // Alias for consume - more intuitive naming
                 whenAvailable,
                 getProvider,
                 getInheritedProvider,

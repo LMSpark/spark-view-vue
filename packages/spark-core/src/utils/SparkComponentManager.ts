@@ -11,13 +11,13 @@ export class SparkComponentManagerImpl {
   private logger = Logger()
 
   constructor(renderer?: SparkComponentRendererImpl, registry?: ComponentRegistry) {
-    this.registry = registry || defaultRegistry
-    this.renderer = renderer || new SparkComponentRendererImpl(this.registry)
+    this.registry = registry ?? defaultRegistry
+    this.renderer = renderer ?? new SparkComponentRendererImpl(this.registry)
   }
 
   createContext(config: ComponentConfig, parent?: ComponentContext): ComponentContext {
     const ctx: ComponentContext = {
-      id: config.id || this.generateId(),
+      id: config.id ?? this.generateId(),
       type: config.type,
       parent,
       children: [],
@@ -73,7 +73,7 @@ export class SparkComponentManagerImpl {
     try { capabilityManager.autoConnectCapabilities(context) } catch {}
 
     // notify any listeners waiting for a provider
-    if (context.providerListeners && context.providerListeners.has(provider.name)) {
+    if (context.providerListeners?.has(provider.name)) {
       const set = context.providerListeners.get(provider.name) as Set<(prov: CapabilityProvider) => void>
       set.forEach(cb => {
         try { cb(provider) } catch (e: unknown) { this.logger.warn('provider listener threw', String(e)) }
@@ -139,7 +139,7 @@ export class SparkComponentManagerImpl {
     this.registry.getAllDefinitions().forEach(def => {
       if (def.consumers) {
         def.consumers.forEach(cons => {
-          const arr = map[cons.capabilityName] = map[cons.capabilityName] || []
+          const arr = map[cons.capabilityName] = map[cons.capabilityName] ?? []
           let providers: string[] = []
           if (typeof this.registry.findCompatibleProviders === 'function') providers = this.registry.findCompatibleProviders(cons.capabilityName, cons.minVersion)
           arr.push(...providers)

@@ -106,7 +106,7 @@ export class ErrorHandler {
         lastError = error
         const shouldRetry = !retryCondition || retryCondition(error)
         if (!shouldRetry || attempt === maxAttempts) {
-          this.handle(lastError, { ...context, operation: `${context?.operation || 'unknown'} (attempt ${attempt}/${maxAttempts})` })
+          this.handle(lastError, { ...context, operation: `${context?.operation ?? 'unknown'} (attempt ${attempt}/${maxAttempts})` })
         }
         const delayTime = backoff === 'exponential' ? delay * Math.pow(2, attempt - 1) : delay
         this.logger.warn(`Operation failed, retrying in ${delayTime}ms (attempt ${attempt}/${maxAttempts})`)

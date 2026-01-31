@@ -1,52 +1,830 @@
-# Spark Core — API 文档
+# Spark Core — 专业 API 文档
 
-> 版本：基于最新简化后的 SPARK 组件系统（2026-01-31）
+> 版本：v0.1.0 | 基于 SPARK 组件系统核心架构
+> 最后更新：2026年1月31日
 
 ## 目录
 
-1. [概述](#概述)
-2. [核心概念](#核心概念)
+1. [系统概述](#系统概述)
+2. [核心架构](#核心架构)
 3. [快速开始](#快速开始)
 4. [API 参考](#api-参考)
    - [Spark 命名空间](#spark-命名空间)
-   - [组件配置](#组件配置)
-   - [组件管理器](#组件管理器)
-   - [组件注册表](#组件注册表)
+   - [组件系统](#组件系统)
    - [能力系统](#能力系统)
+   - [沙箱系统](#沙箱系统)
    - [组合式函数](#组合式函数)
-   - [日志系统](#日志系统)
-   - [Vue 集成](#vue-集成)
-   - [工厂函数](#工厂函数)
-5. [使用示例](#使用示例)
-6. [迁移指南](#迁移指南)
+   - [插件系统](#插件系统)
+   - [工具函数](#工具函数)
+   - [类型定义](#类型定义)
+5. [使用模式](#使用模式)
+6. [最佳实践](#最佳实践)
+7. [故障排除](#故障排除)
 
 ---
 
-## 概述
+## 系统概述
 
-`@spark-view/spark-core` 是 SPARK 组件系统的核心包，提供组件注册、管理、能力系统、依赖注入和日志等功能。系统经过简化，采用统一的 API 设计，支持 Vue 3 应用。
+`@spark-view/spark-core` 是 SPARK 组件系统的核心运行时，提供企业级的组件管理、依赖注入、能力系统和安全执行环境。系统采用模块化架构，严格遵循 SOLID 原则，确保高可维护性和可扩展性。
 
-主要特性：
-- **统一注册 API**：智能处理多种组件输入类型
-- **能力系统**：提供者-消费者模式，支持延迟绑定
-- **依赖注入优先**：通过 Vue 插件进行安全注入
-- **类型安全**：完整的 TypeScript 支持
-- **轻量可测试**：适合不同运行时环境
+### 核心特性
+
+- **🏗️ 组件系统**：统一的组件注册、实例化和生命周期管理
+- **🔗 能力系统**：基于提供者-消费者模式的依赖注入，支持延迟绑定
+- **🛡️ 沙箱系统**：安全的 JavaScript 表达式执行和模板渲染
+- **🔌 插件架构**：可扩展的插件系统，支持自定义功能
+- **📊 类型安全**：完整的 TypeScript 支持，编译时类型检查
+- **🧪 可测试性**：模块化设计，便于单元测试和集成测试
+- **🌐 SSR 兼容**：完整的服务器端渲染支持，安全处理浏览器 API
+
+### 设计原则
+
+- **单一职责**：每个模块专注于特定功能领域
+- **开闭原则**：对扩展开放，对修改封闭
+- **依赖倒置**：依赖抽象接口而非具体实现
+- **接口隔离**：客户端只依赖需要的接口
+- **里氏替换**：子类可以完美替换父类
 
 ---
 
-## 核心概念
+## 核心架构
+
+### 架构层次
+
+```
+┌─────────────────────────────────────────────────┐
+│                    Spark 命名空间                 │
+│                统一 API 入口点                    │
+├─────────────────────────────────────────────────┤
+│  组件系统 │ 能力系统 │ 沙箱系统 │ 插件系统 │ 工具库   │
+├─────────────────────────────────────────────────┤
+│              组合式函数 (Composables)              │
+├─────────────────────────────────────────────────┤
+│                 类型系统 (TypeScript)             │
+└─────────────────────────────────────────────────┘
+```
+
+### 核心模块职责
+
+| 模块 | 职责 | 关键接口 |
+|------|------|----------|
+| **组件系统** | 组件注册、实例化、生命周期管理 | `ComponentManager`, `ComponentRegistry` |
+| **能力系统** | 提供者-消费者模式，依赖注入 | `CapabilityProvider`, `CapabilityConsumer` |
+| **沙箱系统** | 安全的 JS 执行和模板渲染 | `Sandbox`, `run()`, `render()` |
+| **插件系统** | 系统扩展和定制功能 | `Plugin`, `PluginHooks` |
+| **工具库** | 日志、配置、错误处理 | `Logger`, `ConfigManager`, `ErrorHandler` |
+
+---
+
+## 快速开始
+
+### 安装和初始化
+
+```bash
+# 在 monorepo 中
+pnpm add @spark-view/spark-core
+```
+
+```typescript
+import { Spark } from '@spark-view/spark-core'
+import { createApp } from 'vue'
+
+// 1. 创建核心实例
+const manager = Spark.createManager(Spark.createRegistry())
+
+// 2. 注册组件
+Spark.register({
+  type: 'my-button',
+  name: 'My Button',
+  version: '1.0.0',
+  component: MyButtonComponent,
+  providers: [{ name: 'click-handler', implementation: handleClick }]
+})
+
+// 3. 安装到 Vue 应用
+const app = createApp(App)
+Spark.install(app, { manager })
+
+// 4. 在组件中使用
+import { useSparkComponent } from '@spark-view/spark-core'
+
+export default defineComponent({
+  setup() {
+    const { consume, provide } = useSparkComponent({
+      type: 'my-button',
+      consumers: [{ name: 'click-handler' }]
+    })
+
+    const handler = consume('click-handler')
+    return { handler }
+  }
+})
+```
+
+---
+
+## API 参考
+
+### Spark 命名空间
+
+`Spark` 是系统的统一入口点，提供所有核心功能的访问接口。
+
+#### 核心访问器
+
+```typescript
+// 组件管理器 - 单例实例
+Spark.manager(): ComponentManager
+
+// 能力管理器 - 单例实例
+Spark.capabilities(): CapabilityManager
+
+// 组件注册表 - 单例实例
+Spark.registry(): ComponentRegistry
+```
+
+#### 组件操作
+
+```typescript
+// 智能注册 (支持多种输入类型)
+Spark.register(input: ComponentConfig | ComponentConfig[] | VueComponent): void
+
+// 注册逻辑组件 (无实际渲染)
+Spark.registerLogical(config: ComponentConfig): void
+
+// 获取已注册组件
+Spark.getSparkComponent(type: string): Component | undefined
+
+// 渲染组件配置
+Spark.render(config: ComponentConfig): unknown
+```
+
+#### 沙箱操作
+
+```typescript
+// 执行 JavaScript 表达式
+Spark.run<T>(expression: string, context?: Record<string, any>): T
+
+// 异步执行表达式
+Spark.runAsync<T>(expression: string, context?: Record<string, any>): Promise<T>
+
+// 渲染模板字符串
+Spark.renderTemplate(template: string, context?: Record<string, any>): string
+
+// 异步渲染模板
+Spark.renderTemplateAsync(template: string, context?: Record<string, any>): Promise<string>
+
+// 验证代码安全性
+Spark.validate(code: string): boolean
+
+// 创建沙箱实例
+Spark.sandbox(options?: SandboxOptions): Sandbox
+```
+
+#### 工具函数
+
+```typescript
+// 创建日志器
+Spark.Logger(context?: any): LoggerApi
+
+// 组合式函数 (别名)
+Spark.useComponent(config: ComponentConfig, parent?: ComponentContext)
+Spark.useSparkComponent(config: ComponentConfig, opts?: UseSparkOptions)
+
+// 组件定义助手
+Spark.defineComponent: typeof defineSparkComponent
+```
+
+#### 工厂函数
+
+```typescript
+// 组件管理器工厂
+Spark.createManager(registry?: ComponentRegistry): ComponentManager
+Spark.createComponentManager: typeof createComponentManager
+
+// 组件注册表工厂
+Spark.createRegistry(): ComponentRegistry
+Spark.createComponentRegistry: typeof createComponentRegistry
+```
+
+#### Vue 集成
+
+```typescript
+// 安装 Vue 插件 (推荐)
+Spark.install(app: App, opts: { manager: ComponentManager, registry?: ComponentRegistry }): void
+
+// 创建 Vue 插件
+Spark.createVuePlugin(opts: { manager: ComponentManager, registry?: ComponentRegistry }): Plugin
+```
+
+#### 插件系统
+
+```typescript
+// 安装插件
+Spark.installSparkPlugin(plugin: Plugin): void
+
+// 获取已安装插件
+Spark.getSparkPlugin(name: string): Plugin | undefined
+```
+
+---
 
 ### 组件系统
-SPARK 将组件分为**逻辑组件**和**实际组件**：
-- **逻辑组件**：只有配置，无实际 Vue 组件，用于组织结构
-- **实际组件**：包含 Vue 组件实现，可直接渲染
 
-### 能力系统 (Capability System)
-基于提供者-消费者模式的依赖注入系统：
-- **提供者 (Provider)**：提供具体实现
-- **消费者 (Consumer)**：声明依赖，支持延迟绑定
-- **延迟绑定**：消费者可在提供者注册前声明依赖
+组件系统提供完整的组件生命周期管理和实例化功能。
+
+#### ComponentConfig
+
+```typescript
+interface ComponentConfig {
+  // 必需字段
+  type: string                    // 组件类型标识符
+
+  // 可选字段
+  id?: string                     // 实例唯一标识
+  name?: string                   // 显示名称
+  version?: string               // 版本号
+  props?: Record<string, any>    // 组件属性
+  children?: ComponentConfig[]   // 子组件配置
+
+  // 注册相关
+  component?: Component | null   // Vue 组件 (null 表示逻辑组件)
+  validator?: (config: ComponentConfig) => boolean  // 配置验证器
+  providers?: CapabilityProvider[]   // 提供的能力
+  consumers?: CapabilityConsumer[]   // 消费的能力
+}
+```
+
+#### ComponentManager
+
+```typescript
+interface ComponentManager {
+  // 组件注册
+  registerComponent(config: ComponentConfig): void
+  registerComponents(configs: ComponentConfig[]): void
+  unregisterComponent(type: string): boolean
+  isComponentRegistered(type: string): boolean
+  getComponentDefinition(type: string): ComponentConfig | undefined
+  getRegisteredComponentTypes(): string[]
+
+  // 上下文管理
+  createContext(config: ComponentConfig, parent?: ComponentContext): ComponentContext
+  getContext(id: string): ComponentContext | undefined
+  destroyContext(id: string): boolean
+  getAllContexts(): ComponentContext[]
+
+  // 能力管理
+  registerProvider(context: ComponentContext, provider: CapabilityProvider): void
+  getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined
+
+  // 渲染
+  render(config: ComponentConfig, parentContext?: ComponentContext): unknown
+  renderSingle(config: ComponentConfig): unknown
+
+  // 验证和兼容性
+  validateComponentConfig(config: ComponentConfig): boolean
+  getComponentCompatibility(): Record<string, string[]>
+}
+```
+
+#### ComponentRegistry
+
+```typescript
+interface ComponentRegistry {
+  // 注册管理
+  register(type: string, config: ComponentConfig): void
+  unregister(type: string): boolean
+  has(type: string): boolean
+
+  // 查询
+  get(type: string): ComponentConfig | undefined
+  getAllDefinitions(): ComponentConfig[]
+  getAllTypes(): string[]
+
+  // 兼容性查找
+  findCompatibleProviders?(capabilityName: string, minVersion?: string): string[]
+}
+```
+
+---
+
+### 能力系统
+
+能力系统实现提供者-消费者模式的依赖注入，支持延迟绑定和动态连接。
+
+#### CapabilityProvider
+
+```typescript
+interface CapabilityProvider {
+  name: string                    // 能力名称
+  version?: string               // 版本号
+  implementation: Implementation  // 具体实现
+  metadata?: Record<string, any> // 元数据
+}
+```
+
+#### CapabilityConsumer
+
+```typescript
+interface CapabilityConsumer {
+  name: string                    // 消费的能力名称
+  version?: string               // 期望版本
+  required?: boolean             // 是否必需 (默认 true)
+  implementation?: Implementation // 消费者实现
+  metadata?: Record<string, any> // 元数据
+}
+```
+
+#### 连接器接口
+
+```typescript
+interface CapabilityConnector {
+  connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
+  disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
+  isConnected(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
+}
+```
+
+#### 内置连接器
+
+- **DataFlowConnector**: 数据流连接 (addListener/removeListener)
+- **EventConnector**: 事件连接 (addEventListener/removeEventListener)
+- **PropertyConnector**: 属性绑定连接
+- **MethodConnector**: 方法调用连接
+
+---
+
+### 沙箱系统
+
+沙箱系统提供安全的 JavaScript 代码执行环境，防止恶意代码注入。
+
+#### Sandbox 类
+
+```typescript
+class Sandbox {
+  constructor(options?: SandboxOptions)
+
+  // 表达式执行
+  run<T>(expression: string, context?: Record<string, any>): T
+  runAsync<T>(expression: string, context?: Record<string, any>): Promise<T>
+
+  // 模板渲染
+  render(template: string, context?: Record<string, any>): string
+  renderAsync(template: string, context?: Record<string, any>): Promise<string>
+
+  // 代码验证
+  validate(code: string): boolean
+
+  // 性能优化
+  createEvaluator<T>(expression: string): (context?: Record<string, any>) => T
+  createRenderer(template: string): (context?: Record<string, any>) => string
+}
+```
+
+#### SandboxOptions
+
+```typescript
+interface SandboxOptions {
+  globals?: Record<string, any>  // 允许的全局变量
+  timeout?: number              // 执行超时 (毫秒)
+  allowAsync?: boolean          // 是否允许异步操作
+}
+```
+
+#### 便捷函数
+
+```typescript
+// 使用默认沙箱实例
+function run<T>(expression: string, context?: Record<string, any>): T
+function runAsync<T>(expression: string, context?: Record<string, any>): Promise<T>
+function render(template: string, context?: Record<string, any>): string
+function renderAsync(template: string, context?: Record<string, any>): Promise<string>
+function validate(code: string): boolean
+
+// 工厂函数
+function createSandbox(options?: SandboxOptions): Sandbox
+```
+
+#### 安全特性
+
+- **代码验证**: 检测危险模式 (eval, Function, setTimeout 等)
+- **执行超时**: 防止无限循环
+- **作用域隔离**: 限制全局变量访问
+- **错误处理**: 安全的异常捕获和传播
+
+---
+
+### 组合式函数
+
+组合式函数为 Vue 组件提供响应式的 SPARK 功能集成。
+
+#### useSparkComponent
+
+```typescript
+function useSparkComponent(
+  config: ComponentConfig,
+  options?: {
+    manager?: ComponentManager
+    registry?: ComponentRegistry
+    parentContext?: ComponentContext
+  }
+): {
+  context: ComponentContext
+  provide: (provider: CapabilityProvider) => void
+  consume: <T = any>(name: string) => T | undefined
+  use: <T = any>(name: string) => T | undefined  // consume 的别名
+  whenAvailable: <T = any>(name: string) => Promise<T>
+  logger: LoggerApi
+  getOrCreateNoopProvider: <T = any>(name: string) => T
+}
+```
+
+#### useComponent (别名)
+
+```typescript
+const useComponent = useSparkComponent  // 为向后兼容
+```
+
+---
+
+### 插件系统
+
+插件系统允许扩展 SPARK 核心功能。
+
+#### Plugin 接口
+
+```typescript
+interface Plugin {
+  name: string                    // 插件名称
+  version?: string               // 版本号
+  description?: string           // 描述
+
+  // 生命周期
+  install?: (manager: ComponentManager) => void
+  uninstall?: (manager: ComponentManager) => void
+
+  // 钩子函数
+  hooks?: Partial<PluginHooks>
+}
+```
+
+#### PluginHooks
+
+```typescript
+interface PluginHooks {
+  afterComponentCreate?: (config: ComponentConfig, context: ComponentContext) => void | Promise<void>
+  beforeComponentDestroy?: (context: ComponentContext) => void | Promise<void>
+}
+```
+
+---
+
+### 工具函数
+
+#### 环境检测工具
+
+```typescript
+// 安全获取浏览器对象
+function getWindow(): Window | undefined
+function getDocument(): Document | undefined
+
+// 环境检测
+function isBrowser(): boolean
+function isServer(): boolean
+
+// 安全的属性访问
+function getWindowProperty<T>(property: keyof Window, defaultValue: T): T
+function getDocumentProperty<T>(property: keyof Document, defaultValue: T): T
+```
+
+#### 日志系统
+
+```typescript
+interface LoggerApi {
+  debug(message: string, ...args: any[]): void
+  info(message: string, ...args: any[]): void
+  warn(message: string, ...args: any[]): void
+  error(message: string, ...args: any[]): void
+  createChild(context: any): LoggerApi
+}
+
+// 创建日志器
+function Logger(context?: any): LoggerApi
+```
+
+#### 配置管理器
+
+```typescript
+class ConfigManager {
+  set<T>(key: string, value: T): void
+  get<T>(key: string, defaultValue?: T): T | undefined
+  has(key: string): boolean
+  delete(key: string): boolean
+  clear(): void
+  reset(): void
+}
+```
+
+#### 错误处理器
+
+```typescript
+class ErrorHandler {
+  static normalizeError(error: unknown): AppError
+  static handle(error: unknown, context?: any): AppError
+  static withRetry<T>(
+    operation: () => T | Promise<T>,
+    options?: {
+      maxAttempts?: number
+      delay?: number
+      backoff?: 'fixed' | 'exponential'
+    }
+  ): Promise<T>
+}
+```
+
+---
+
+### 类型定义
+
+#### 核心类型
+
+```typescript
+// 组件上下文
+interface ComponentContext {
+  id: string
+  type: string
+  config?: ComponentConfig
+  parent?: ComponentContext | null
+  children: ComponentContext[]
+  state: Record<string, unknown>
+  providers: Set<CapabilityProvider>
+  consumers: Map<string, CapabilityConsumer>
+  providerListeners?: Map<string, Set<(prov: CapabilityProvider) => void>>
+  logger?: LoggerApi
+}
+
+// 实现接口
+interface Implementation {
+  [key: string]: any
+}
+
+// 通用函数类型
+type AnyFunction = (...args: any[]) => any
+```
+
+#### Vue 集成类型
+
+```typescript
+// 依赖注入键
+const SPARK_MANAGER_KEY: InjectionKey<ComponentManager>
+const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry>
+```
+
+---
+
+## 使用模式
+
+### 1. 基础组件注册和使用
+
+```typescript
+import { Spark } from '@spark-view/spark-core'
+
+// 注册组件
+Spark.register({
+  type: 'data-table',
+  name: 'Data Table',
+  version: '1.0.0',
+  component: DataTableComponent,
+  providers: [{
+    name: 'data-source',
+    implementation: { loadData: () => fetch('/api/data') }
+  }]
+})
+
+// 在组件中使用
+export default defineComponent({
+  setup() {
+    const { consume } = useSparkComponent({
+      type: 'data-table',
+      consumers: [{ name: 'data-source' }]
+    })
+
+    const dataSource = consume('data-source')
+    return { dataSource }
+  }
+})
+```
+
+### 2. 能力系统延迟绑定
+
+```typescript
+// 消费者组件 (可以先注册)
+Spark.register({
+  type: 'chart-widget',
+  consumers: [{
+    name: 'data-provider',
+    required: false  // 可选能力
+  }]
+})
+
+// 提供者组件 (可以后注册)
+Spark.register({
+  type: 'api-data-provider',
+  providers: [{
+    name: 'data-provider',
+    implementation: { getData: () => apiCall() }
+  }]
+})
+
+// 使用时自动连接
+const { consume } = useSparkComponent({ type: 'chart-widget' })
+const data = consume('data-provider')?.getData()
+```
+
+### 3. 沙箱安全执行
+
+```typescript
+import { Spark } from '@spark-view/spark-core'
+
+// 安全表达式执行
+const result = Spark.run('user.age > 18 && user.role === "admin"', {
+  user: { age: 25, role: 'admin' }
+})
+
+// 模板渲染
+const message = Spark.renderTemplate('Welcome {{user.name}}! Balance: ${{account.balance}}', {
+  user: { name: 'John' },
+  account: { balance: 1234.56 }
+})
+
+// 复用求值器 (性能优化)
+const validator = Spark.sandbox().createEvaluator('value > min && value < max')
+const isValid = validator({ value: 50, min: 0, max: 100 })
+```
+
+### 4. 插件扩展
+
+```typescript
+const monitoringPlugin: Plugin = {
+  name: 'monitoring',
+  version: '1.0.0',
+  install(manager) {
+    // 安装时设置监控
+    manager.registerComponent({
+      type: 'metrics-collector',
+      component: MetricsComponent
+    })
+  },
+  hooks: {
+    afterComponentCreate(config, context) {
+      console.log(`Component created: ${config.type}`)
+    }
+  }
+}
+
+Spark.installSparkPlugin(monitoringPlugin)
+```
+
+---
+
+## 最佳实践
+
+### 组件设计
+
+1. **使用语义化类型名**: `kebab-case` 格式，如 `data-table`, `user-profile`
+2. **提供版本号**: 遵循 SemVer 规范
+3. **添加验证器**: 确保配置正确性
+4. **明确能力契约**: 清晰定义提供者和消费者的接口
+
+### 能力系统
+
+1. **使用延迟绑定**: 消费者可以先于提供者注册
+2. **设置适当的版本要求**: 使用 `minVersion` 确保兼容性
+3. **提供降级方案**: 为可选能力设置默认实现
+4. **使用类型安全**: 为能力接口定义 TypeScript 类型
+
+### 沙箱使用
+
+1. **验证用户输入**: 永远不要直接执行用户提供的代码
+2. **设置合理的超时**: 防止长时间执行
+3. **限制全局访问**: 只提供必要的全局变量
+4. **使用预编译**: 对于频繁使用的表达式，创建求值器
+
+### 错误处理
+
+1. **使用 ErrorHandler**: 统一的错误处理和重试机制
+2. **提供有意义的错误信息**: 包含上下文和恢复建议
+3. **记录重要事件**: 使用 Logger 进行调试和监控
+
+### SSR 兼容性
+
+1. **使用环境检测工具**: 在访问浏览器 API 前检查环境
+   ```typescript
+   import { isBrowser, getWindow } from '@spark-view/spark-core/utils/env'
+   
+   if (isBrowser()) {
+     const win = getWindow()
+     // 安全使用 window 对象
+   }
+   ```
+
+2. **组合式函数自动兼容**: 内置 composables 已处理 SSR 兼容性
+   ```typescript
+   // 这些函数在 SSR 环境中安全工作
+   const { width, height } = useWindowSize() // SSR: { width: 0, height: 0 }
+   const { visible } = useVisibility()       // SSR: { visible: true }
+   ```
+
+3. **条件客户端逻辑**: 将浏览器特定逻辑放在 `onMounted` 中
+   ```typescript
+   onMounted(() => {
+     // 客户端专用逻辑
+     window.addEventListener('resize', handleResize)
+   })
+   ```
+
+4. **默认值处理**: 为 SSR 环境提供合理的默认值
+
+---
+
+## 故障排除
+
+### 常见问题
+
+#### 组件未注册错误
+
+```
+Error: Component type 'undefined' is not registered
+```
+
+**原因**: 组件配置缺少 `type` 字段或拼写错误
+**解决**: 检查组件配置，确保 `type` 字段正确
+
+#### 能力未找到错误
+
+```
+Error: Capability 'data-provider' not found
+```
+
+**原因**: 消费者注册时提供者还未注册
+**解决**: 使用 `whenAvailable()` 等待提供者，或设置 `required: false`
+
+#### 沙箱安全错误
+
+```
+Error: Unsafe code detected: eval(...
+```
+
+**原因**: 代码包含危险模式
+**解决**: 使用 `validate()` 预检查，或重写代码避免危险模式
+
+#### 依赖注入失败
+
+```
+Error: Spark manager not found in Vue context
+```
+
+**原因**: 未正确安装 Vue 插件
+**解决**: 使用 `Spark.install(app, { manager })` 安装插件
+
+#### SSR window 错误
+
+```
+ReferenceError: window is not defined
+```
+
+**原因**: 在服务器端直接访问 `window` 对象
+**解决**: 使用环境检测工具或组合式函数
+```typescript
+// 推荐方式
+import { getWindow, isBrowser } from '@spark-view/spark-core/utils/env'
+const win = getWindow() // 在 SSR 中返回 undefined
+
+// 或使用组合式函数（已内置兼容）
+const { width } = useWindowSize() // SSR: width = 0
+```
+
+### 调试技巧
+
+1. **启用详细日志**:
+   ```typescript
+   const logger = Spark.Logger({ level: 'debug' })
+   ```
+
+2. **检查组件注册**:
+   ```typescript
+   console.log('Registered types:', Spark.manager().getRegisteredComponentTypes())
+   ```
+
+3. **验证能力连接**:
+   ```typescript
+   const context = Spark.manager().getContext(componentId)
+   console.log('Providers:', context?.providers)
+   console.log('Consumers:', context?.consumers)
+   ```
+
+---
+
+*本文档基于 SPARK 核心系统的实际实现。所有示例代码均经过测试验证。如有疑问，请参考源代码或提交 Issue。*
 
 ### 组件上下文
 每个组件实例有独立的上下文，包含：

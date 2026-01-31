@@ -129,6 +129,7 @@ export function useSparkComponent(config, options) {
             return undefined;
         },
         consume,
+        use: consume, // Alias for consume - more intuitive naming
         whenAvailable,
         initialize,
         destroy,

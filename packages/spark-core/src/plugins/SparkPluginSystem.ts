@@ -1,4 +1,5 @@
 import type { Plugin, PluginHooks, ComponentContext } from '../types/spark-component.js'
+import { Logger } from '../utils/logger.js'
 
 class SparkPluginManager {
   private plugins = new Map<string, Plugin>()
@@ -9,21 +10,21 @@ class SparkPluginManager {
     // Cast to ComponentManager for plugin authors; this manager is intentionally minimal in plugin context
     plugin.install?.(this as unknown as import('../types/spark-component.js').ComponentManager)
     this.plugins.set(plugin.name, plugin)
-    console.log(`✅ Installed SPARK plugin: ${plugin.name} (${plugin.version})`)
+    Logger().info(`✅ Installed SPARK plugin: ${plugin.name} (${plugin.version})`)
   }
   uninstall(name: string) {
     const p = this.plugins.get(name)
     if (!p) return false
     p.uninstall?.(this as unknown as import('../types/spark-component.js').ComponentManager)
     this.plugins.delete(name)
-    console.log(`🗑️ Uninstalled SPARK plugin: ${name}`)
+    Logger().info(`🗑️ Uninstalled SPARK plugin: ${name}`)
     return true
   }
   get(name: string) { return this.plugins.get(name) }
   has(name: string) { return this.plugins.has(name) }
   getAll() { return Array.from(this.plugins.values()) }
   registerHook<K extends keyof PluginHooks>(hookName: K, hook: NonNullable<PluginHooks[K]>) {
-    const prev = this.hooks[hookName] as Function | undefined
+    const prev = this.hooks[hookName]
     if (prev) {
       const prevFn = prev as (...args: unknown[]) => unknown
       const hookFn = hook as (...args: unknown[]) => unknown
@@ -31,7 +32,7 @@ class SparkPluginManager {
     } else this.hooks[hookName] = hook as (...args: unknown[]) => unknown
   }
   async executeHook<K extends keyof PluginHooks>(hookName: K, ...args: Parameters<NonNullable<PluginHooks[K]>>) {
-    const fn = this.hooks[hookName] as Function | undefined
+    const fn = this.hooks[hookName]
     if (!fn) return
     try { await (fn as (...args: unknown[]) => Promise<unknown>)(...args) } catch (e: unknown) { console.error(`Plugin hook '${String(hookName)}' execution failed:`, String(e)) }
   }
@@ -44,7 +45,7 @@ export class SparkDebugPlugin {
   description = 'Component debugging and inspection plugin'
   install(m: SparkPluginManager) {
     m.registerHook('afterComponentCreate', (_cfg: import('../types/spark-component.js').ComponentConfig, ctx: ComponentContext) => {
-      console.log(`🐛 [DEBUG] Component created: ${ctx.type} (${ctx.id})`)
+      Logger().info(`🐛 [DEBUG] Component created: ${ctx.type} (${ctx.id})`)
     })
   }
 }

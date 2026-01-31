@@ -1,18 +1,18 @@
 // Re-exported from new package to keep compatibility while package migrates
 export * from '@spark-view/spark-core/composables'
+import { getWindow, getDocument, isBrowser } from '@spark-view/spark-core/utils/env'
 /**
  * 主题管理组合式函数
+ * SSR 兼容：主题设置在客户端挂载时执行
  */
 export function useTheme(): {
-  theme: string
+  theme: Ref<string>
   setTheme: (theme: string) => void
   toggleTheme: () => void
-  isDark: boolean
-  isLight: boolean
+  isDark: Ref<boolean>
+  isLight: Ref<boolean>
 } {
   const { value: theme, setValue: setThemeValue } = useLocalStorage('spark:theme', 'light')
-
-  import { getDocument } from '@spark-view/spark-core/utils/env'
 
   const setTheme = (newTheme: string): void => {
     setThemeValue(newTheme)
@@ -101,6 +101,7 @@ export function useLifecycle(): {
 
 /**
  * 事件监听组合式函数
+ * SSR 兼容：在服务器端安全跳过事件监听
  */
 export function useEventListener(
   event: string,
@@ -111,11 +112,17 @@ export function useEventListener(
   remove: () => void
 } {
   const add = (): void => {
-    window.addEventListener(event, handler, options)
+    const win = getWindow()
+    if (win) {
+      win.addEventListener(event, handler, options)
+    }
   }
 
   const remove = (): void => {
-    window.removeEventListener(event, handler, options)
+    const win = getWindow()
+    if (win) {
+      win.removeEventListener(event, handler, options)
+    }
   }
 
   onMounted(() => {
@@ -131,17 +138,21 @@ export function useEventListener(
 
 /**
  * 窗口大小监听组合式函数
+ * SSR 兼容：在服务器端返回默认值 (0, 0)
  */
 export function useWindowSize(): {
-  width: number
-  height: number
+  width: Ref<number>
+  height: Ref<number>
 } {
-  const width = ref(window.innerWidth)
-  const height = ref(window.innerHeight)
+  const width = ref(isBrowser() ? window.innerWidth : 0)
+  const height = ref(isBrowser() ? window.innerHeight : 0)
 
   const updateSize = (): void => {
-    width.value = window.innerWidth
-    height.value = window.innerHeight
+    const win = getWindow()
+    if (win) {
+      width.value = win.innerWidth
+      height.value = win.innerHeight
+    }
   }
 
   useEventListener('resize', updateSize)
@@ -154,15 +165,19 @@ export function useWindowSize(): {
 
 /**
  * 可见性监听组合式函数
+ * SSR 兼容：在服务器端默认为可见状态
  */
 export function useVisibility(): {
-  visible: boolean
-  hidden: boolean
+  visible: Ref<boolean>
+  hidden: Ref<boolean>
 } {
-  const visible = ref(!document.hidden)
+  const visible = ref(isBrowser() ? !document.hidden : true)
 
   const handleVisibilityChange = (): void => {
-    visible.value = !document.hidden
+    const doc = getDocument()
+    if (doc) {
+      visible.value = !doc.hidden
+    }
   }
 
   useEventListener('visibilitychange', handleVisibilityChange)

@@ -10,6 +10,7 @@ import { useSparkComponent } from './composables/useSparkComponent.js';
 import { createComponentRegistry } from './utils/SparkComponentRegistry.js';
 import { createComponentManager } from './utils/SparkComponentManager.js';
 import { defineSparkComponent } from './vue/createSparkComponent.js';
+import { createSandbox, run, runAsync, render, renderAsync, validate } from './utils/sandbox.js';
 export const Spark = {
     // manager getter used across tests and app entry
     manager: () => componentManager,
@@ -18,7 +19,9 @@ export const Spark = {
     // registry accessor
     registry: () => componentRegistry,
     // unified registration API - handles multiple input types intelligently
-    register: (input) => {
+    register: (input, manager) => {
+        // Get or create manager dynamically
+        const activeManager = manager || Spark.manager();
         // Handle array of components
         if (Array.isArray(input)) {
             if (!Array.isArray(input)) {
@@ -32,7 +35,7 @@ export const Spark = {
                     throw new Error('Each ComponentConfig must have a non-empty type string');
                 }
             });
-            return input.forEach(def => componentManager.registerComponent(def));
+            return input.forEach(def => activeManager.registerComponent(def));
         }
         // Handle Vue component with spark meta
         if (input && typeof input === 'object' && 'spark' in input) {
@@ -55,9 +58,8 @@ export const Spark = {
                 providers: meta.providers,
                 validator: meta.validator
             };
-            // Use the current Spark.manager() to allow test-time override of the manager in test fixtures
-            const manager = Spark.manager();
-            return manager.registerComponent(definition);
+            // Use the provided manager or get current active manager
+            return activeManager.registerComponent(definition);
         }
         // Handle single ComponentConfig
         if (input && typeof input === 'object' && 'type' in input) {
@@ -68,7 +70,7 @@ export const Spark = {
             if (typeof definition.type !== 'string' || definition.type.trim() === '') {
                 throw new Error('ComponentConfig must have a non-empty type string');
             }
-            return componentManager.registerComponent(definition);
+            return activeManager.registerComponent(definition);
         }
         throw new Error('Invalid input for Spark.register(). Expected ComponentConfig, ComponentConfig[], or Vue component with spark meta.');
     },
@@ -95,6 +97,13 @@ export const Spark = {
     getSparkComponent: (type) => { var _a; return (_a = componentRegistry.get(type)) === null || _a === void 0 ? void 0 : _a.component; },
     // logger (single unified API)
     Logger: createLogger,
+    // sandbox JS execution utilities
+    sandbox: createSandbox,
+    run,
+    runAsync,
+    renderTemplate: render,
+    renderTemplateAsync: renderAsync,
+    validate,
     // plugins
     installSparkPlugin: (plugin) => installSparkPlugin(plugin),
     getSparkPlugin: (name) => getSparkPlugin(name),
@@ -103,9 +112,21 @@ export const Spark = {
     useSparkComponent: (config, opts) => useSparkComponent(config, opts),
     // unified component creation API
     defineComponent: defineSparkComponent,
-    // factories for creating instances
+    // factories for creating instances (full names)
     createComponentRegistry,
     createComponentManager,
+    // short aliases for convenience
+    createRegistry: createComponentRegistry,
+    createManager: createComponentManager,
+    // component registration shortcuts
+    registerComponent: (def, manager) => {
+        const activeManager = manager || Spark.manager();
+        return activeManager.registerComponent(def);
+    },
+    registerComponents: (defs, manager) => {
+        const activeManager = manager || Spark.manager();
+        return activeManager.registerComponents(defs);
+    },
     // unified rendering API
     render: (config) => componentManager.render(config),
     // initialization hook (no-op by default; features may extend this with `initializeApp`)
