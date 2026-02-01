@@ -58,7 +58,7 @@ const activeComponent = ref<any>(markRaw(PlaceholderGrid))
 
 // 尝试按需加载 EJ2 Grid（非强制），加载失败则保持占位组件
 import('@syncfusion/ej2-vue-grids')
-  .then(m => {
+  .then((m: any) => {
     if (m && m.GridComponent) {
       activeComponent.value = markRaw(m.GridComponent)
     }
