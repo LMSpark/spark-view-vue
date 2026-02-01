@@ -11,8 +11,9 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 
 ## Where to look (high value files) 🔎
 - Architecture docs: `docs/SPARK_ARCHITECTURE.md` (big-picture + rationale)
-- Core package: `packages/spark-core/` — API docs: `packages/spark-core/API.md`
-- Component registry & helpers: `shared/utils/componentRegistry.ts`
+- **Packages**:
+  - `packages/spark-core/` — 组件系统（API docs: `packages/spark-core/API.md`）
+  - `packages/spark-data/` — 数据空间（DataSet, TreeManager, BindingContext）
 - Example components: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
 - Key composable: `packages/spark-core/src/composables/useSparkComponent.ts`
 - Tests: `tests/` (look for `capability-late-binding.test.ts`, `provider-listener.test.ts`)
@@ -32,12 +33,53 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 
 ## Integration & build notes 🔧
 - Vite recognizes `e-*` custom elements; SSR uses `ssr.noExternal` for `element-plus` (check `vite.config.ts` for SSR quirks).
-- TypeScript path alias maps `@spark-view/spark-core` to `./packages/spark-core/src` (see `tsconfig.json`).
+- TypeScript path aliases:
+  - `@spark-view/spark-core` → `./packages/spark-core/src`
+  - `@spark-view/spark-data` → `./packages/spark-data/src`
 
-## Quick examples (copy patterns) ✂️
-- Provider registration (see `SparkEJ2Grid.vue`):
+## Package structure 📦
+```
+packages/
+├── spark-core/          # 组件系统（Spark namespace, 能力系统, 插件）
+│   ├── src/
+│   │   ├── spark-namespace.ts
+│   │   ├── composables/
+│   │   ├── utils/
+│   │   └── vue/
+│   └── API.md
+└── spark-data/          # 数据空间（DataSet, TreeManager, BindingContext）
+    ├── src/
+   Package usage examples 📚
 
-  ```ts
+### Using spark-core (组件系统)
+```ts
+import { Spark, useSparkComponent } from '@spark-view/spark-core'
+
+// Create manager and registry
+const manager = Spark.createComponentManager()
+const registry = Spark.createComponentRegistry()
+
+// Install plugin
+app.use(Spark.createVuePlugin({ manager, registry }))
+```
+
+### Using spark-data (数据空间)
+```ts
+import { DataSet, DataSetManager, TreeManager } from '@spark-view/spark-data'
+import type { IDataSet, DataRow } from '@spark-view/spark-data'
+
+// Create DataSet
+const dataSet = DataSetManager.create({
+  dataSetName: 'MyData',
+  tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
+})
+
+// Use TreeManager
+const treeManager = new TreeManager({
+  idField: 'id',
+  parentIdField: 'parentId'
+})
+```
   provide('columnManager', { implementation: { addColumn() { ... } } })
   ```
 
