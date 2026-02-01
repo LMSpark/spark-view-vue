@@ -9,6 +9,3 @@ export interface AsyncState<T = unknown> {
 export * from './spark-component.js'
 export * from './common.js'
 export * from './interfaces.js'
-
-// Re-export commonly used types for convenience
-export type { RendererDebugProvider } from './common.js'

@@ -37,19 +37,3 @@ export interface Transport {
   level?: LogLevel
   log: (level: LogLevel, message: string, meta?: unknown) => void | Promise<void>
 }
-
-// ===================== Vue-specific types ======================
-import type { UnwrapRef, ComputedRef, Component } from 'vue'
-
-export interface AsyncState<T = unknown> {
-  data?: UnwrapRef<Awaited<T>>
-  loading: boolean
-  error?: Error
-}
-
-export interface RendererDebugProvider {
-  componentType: string
-  isRegistered: ComputedRef<boolean> | boolean
-  resolvedComponent: Component | null
-  childCount: ComputedRef<number> | number
-}
