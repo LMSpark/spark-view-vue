@@ -1,7 +1,7 @@
 import type {PageConfig, RouteConfig, ApiResponse} from '../types'
 
 // SPA模式：直接导入静态配置，避免API请求问题
-import routesData from '../../pages-config/routes.json'
+import routesData from '/pages-config/routes.json'
 
 export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
     try {
@@ -19,8 +19,8 @@ export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
         
         try {
             // 动态导入页面配置文件
-            const ruleModule = await import(`../../pages-config/${pageId}/rule.json`)
-            const dataModule = await import(`../../pages-config/${pageId}/pagedata.json`)
+            const ruleModule = await import(`/pages-config/${pageId}/rule.json`)
+            const dataModule = await import(`/pages-config/${pageId}/pagedata.json`)
             
             return {
                 rule: ruleModule.default ?? ruleModule,

@@ -65,7 +65,7 @@ declare global {
 }
 
 // 使用 Vite 的 glob import 预加载所有页面脚本模块
-const pageModules = import.meta.glob('../../pages-config/*/script.js', { eager: false })
+const pageModules = import.meta.glob('/pages-config/*/script.js', { eager: false })
 
 const route = useRoute()
 const pageRules = ref<Rule[]>([])
@@ -733,7 +733,7 @@ const loadPageConfig = async () => {
             }
             
             // 使用预加载的模块映射（Vite glob import）
-            const modulePath = `../pages-config/${currentPageId}/script.js`
+            const modulePath = `/pages-config/${currentPageId}/script.js`
             const moduleLoader = pageModules[modulePath]
             
             if (!moduleLoader) {
@@ -786,7 +786,7 @@ const loadPageConfig = async () => {
             }
         } catch (err) {
             console.error('❌ 页面模块加载失败:', err)
-            console.error('尝试加载:', `../pages-config/${currentPageId}/script.js`)
+            console.error('尝试加载:', `/pages-config/${currentPageId}/script.js`)
             pageFunctions.value = {}
             // ⚠️ 即使模块加载失败，也要立即绑定数据
             rebindRules(true)

@@ -12,7 +12,8 @@ export default defineConfig({
       '@plugins': path.resolve(__dirname, 'plugins'),
       '@root': path.resolve(__dirname, '..', '..', 'src'),
       '@spark-view/spark-core': path.resolve(__dirname, 'packages', 'spark-core', 'src'),
-      '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'src')
+      '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'src'),
+      '/pages-config': path.resolve(__dirname, 'public', 'pages-config')
     }
   },
   optimizeDeps: {
