@@ -1,5 +1,5 @@
 ﻿import { $data, $dataSet, $rebindRules } from '@/utils/page-helpers/common.js'
-import { FilterExpressionParser } from '@/models/filterExpressionParser'
+import { SparkData } from '@spark-view/spark-data'
 import { ElMessage } from 'element-plus'
 
 // Mock 数据加载器（模拟 API 请求）
@@ -143,7 +143,7 @@ export function showSQLQuery() {
   }
   
   const sqlQueries = relations.map(relation => {
-    const result = FilterExpressionParser.toSQL(relation.filterExpression)
+    const result = SparkData.FilterParser.toSQL(relation.filterExpression)
     return {
       relation: `${relation.parentTable} -> ${relation.childTable}`,
       sql: `SELECT * FROM ${relation.childTable} WHERE ${result.sql}`,
@@ -182,7 +182,7 @@ export function showMongoQuery() {
   }
   
   const mongoQueries = relations.map(relation => {
-    const query = FilterExpressionParser.toMongoDB(relation.filterExpression)
+    const query = SparkData.FilterParser.toMongoDB(relation.filterExpression)
     return {
       relation: `${relation.parentTable} -> ${relation.childTable}`,
       collection: relation.childTable,
