@@ -9,7 +9,6 @@ export default defineConfig({
       '@features': path.resolve(__dirname, 'features'),
       '@pages': path.resolve(__dirname, 'pages'),
       '@shared': path.resolve(__dirname, 'shared'),
-      '@plugins': path.resolve(__dirname, 'plugins'),
       '@root': path.resolve(__dirname, '..', '..', 'src'),
       '@spark-view/spark-core': path.resolve(__dirname, 'packages', 'spark-core', 'src'),
       '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'src'),
