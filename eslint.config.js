@@ -14,7 +14,8 @@ export default [
       'packages/spark-core/tests/**',
       'dist/**',
       'node_modules/**',
-      'vitest.config.ts'
+      'vitest.config.ts',
+      'mocks/**'  // Mock 数据不参与 lint 检查
     ]
   },
   // Vue SFC files
