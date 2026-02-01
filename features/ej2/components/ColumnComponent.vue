@@ -4,7 +4,7 @@
  * 对应 e-column 层级，自动支持堆叠列（通过 children 属性）
  */
 import { computed, inject, onMounted, provide, ref } from 'vue'
-import type { ColumnModel } from '@syncfusion/ej2-vue-grids'
+import type { ColumnModel } from '@syncfusion/ej2-grids'
 
 // 用户的统一组件结构
 interface ComponentConfig {

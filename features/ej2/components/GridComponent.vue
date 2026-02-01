@@ -4,9 +4,8 @@
  * 对应 ejs-grid 层级，处理顶级网格配置
  */
 import { computed } from 'vue'
-import { GridComponent as EjsGrid } from '@syncfusion/ej2-vue-grids'
 import { Grid, Page } from '@syncfusion/ej2-grids'
-import type { GridModel } from '@syncfusion/ej2-vue-grids'
+import type { GridModel } from '@syncfusion/ej2-grids'
 import ColumnComponent from './ColumnComponent.vue'
 
 // 注入 EJ2 Grid 模块 - 这是正确的注入方式
