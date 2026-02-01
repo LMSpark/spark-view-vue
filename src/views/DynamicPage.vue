@@ -65,7 +65,7 @@ declare global {
 }
 
 // 使用 Vite 的 glob import 预加载所有页面脚本模块
-const pageModules = import.meta.glob('../pages-config/*/script.js', { eager: false })
+const pageModules = import.meta.glob('../../pages-config/*/script.js', { eager: false })
 
 const route = useRoute()
 const pageRules = ref<Rule[]>([])

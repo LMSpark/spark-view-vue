@@ -1,5 +1,5 @@
 import { MockMethod } from 'vite-plugin-mock'
-import routes from '../pages-config/routes.json'
+import routes from '../../pages-config/routes.json'
 import fs from 'fs'
 import path from 'path'
 
@@ -24,7 +24,7 @@ const loadPageConfig = (pageId: string, type: 'rule' | 'data' | 'style') => {
     if (type === 'rule' || type === 'data') {
       const fileName = type === 'data' ? 'pagedata' : type
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const config = require(`../pages-config/${pageId}/${fileName}.json`)
+      const config = require(`../../pages-config/${pageId}/${fileName}.json`)
       
       // ✅ 按需加载：不再自动填充数据，由页面脚本的 dataLoader 负责
       // 页面初始化时只返回空的数据结构，用户交互时才加载数据
@@ -35,7 +35,7 @@ const loadPageConfig = (pageId: string, type: 'rule' | 'data' | 'style') => {
     // style 从 style.css 文件读取
     if (type === 'style') {
       try {
-        const stylePath = path.join(__dirname, `../pages-config/${pageId}/style.css`)
+        const stylePath = path.join(__dirname, `../../pages-config/${pageId}/style.css`)
         if (fs.existsSync(stylePath)) {
           return fs.readFileSync(stylePath, 'utf-8')
         }
