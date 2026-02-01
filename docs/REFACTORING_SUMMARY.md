@@ -51,7 +51,25 @@ const sql = SparkData.FilterParser.toSQL(expression)
 const query = SparkData.FilterParser.toMongoDB(expression)
 ```
 
-### 4. **目录结构优化**
+### 4. **删除 page-helpers 冗余辅助函数** (614 行)
+
+#### 删除的文件：
+- ❌ `src/utils/page-helpers/datasetHelper.ts` (316 行)
+- ❌ `src/utils/page-helpers/treeHelper.ts` (298 行)
+
+**原因**：
+- ✅ `datasetHelper` 的所有 CRUD 操作已在 `@spark-view/spark-data` 包中实现
+- ✅ `treeHelper.buildTreeFromFlat()` 被 `TreeManager.buildNestedTree()` 原生方法替代
+- ✅ 这些辅助函数在主项目 `src/` 中未被使用，只在 `pages-config/` 脚本中使用
+- ✅ 沙箱环境应该直接注入包 API，而不是通过中间层
+
+#### 修改的文件：
+- ✅ `pages-config/tree-demo/script.js`
+  - 从：`import { buildTreeFromFlat } from '@/utils/page-helpers/treeHelper'`
+  - 到：使用 `treeManager.buildNestedTree()` 原生方法
+
+**保留的文件**：
+- ✅ `src/utils/page-helpers/common.js` - 页面上下文访问器（用于沙箱注入）
 
 #### 之前（存在重复）：
 ```
@@ -83,7 +101,7 @@ packages/
 └── spark-data/          ✅ 唯一的数据层实现
     ├── src/
     │   ├── dataset-impl.ts
-    │   ├── bindingContext.ts
+  # 5. **目录结构优化**─ bindingContext.ts
     │   ├── treeManager.ts
     │   └── spark-data-namespace.ts
     └── API.md
@@ -93,8 +111,10 @@ packages/
 
 | 指标 | 数值 |
 |------|------|
-| **删除重复代码** | 3050 行 |
-| **删除文件数量** | 7 个 |
+| **第一阶段：删除重复数据层代码** | 3050 行 |
+| **第二阶段：删除 page-helpers 冗余代码** | 614 行 |
+| **累计删除代码** | **3664 行** |
+| **删除文件数量** | 9 个 |
 | **测试通过率** | ✅ 38/38 (100%) |
 | **类型检查** | ✅ 通过 |
 | **Dev 服务器** | ✅ 正常运行 |
