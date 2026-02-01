@@ -4,7 +4,7 @@
  */
 import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-core'
-import type { SparkComponentConfig as ComponentConfig } from '@spark-view/spark-core' 
+import type { ComponentConfig } from '@spark-view/spark-core' 
 
 // 设置组件名以支持递归引用
 defineOptions({ name: 'RendererComponent' })

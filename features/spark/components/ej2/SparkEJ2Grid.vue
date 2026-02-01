@@ -27,8 +27,6 @@ const props = defineProps<Props>()
 const {
   context,
   provide,
-  componentClass: _componentClass,
-  componentStyle: _componentStyle,
   logger,
   getComponent
 } = useSparkComponent(props.config)
@@ -73,7 +71,7 @@ import('@syncfusion/ej2-grids')
 
 // 注册网格相关能力
 const registerGridCapabilities = () => {
-  provide('gridInstance', null)
+  provide('gridInstance', { instance: null })
   provide('dataSource', { getData: () => props.config.dataSource })
   provide('columnManager', {
     addColumn: (column: any) => { logger.info('Adding column:', column) },
@@ -89,7 +87,7 @@ onMounted(() => {
   logger.info('🎯 SPARK EJ2 Grid mounted with config:', props.config)
 })
 
-provide('ejsGridInstance', null)
+provide('ejsGridInstance', { instance: null })
 </script>
 
 <style scoped>

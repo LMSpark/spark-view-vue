@@ -19,8 +19,6 @@
   <div
     v-else
     class="spark-component-renderer spark-component-unregistered"
-    :class="componentClass"
-    :style="componentStyle"
   >
     <div class="unregistered-warning">
       <strong>⚠️ 未注册的组件类型:</strong> {{ config.type }}
@@ -43,13 +41,13 @@
  */
 import { computed } from 'vue'
 import { Spark } from '@spark-view/spark-core'
-import type { SparkComponentConfig, SparkComponentContext, RendererDebugProvider } from '@spark-view/spark-core'
+import type { ComponentConfig, ComponentContext } from '@spark-view/spark-core'
 
 // ==================== Props ====================
 
 interface Props {
-  config: SparkComponentConfig
-  parentContext?: SparkComponentContext
+  config: ComponentConfig
+  parentContext?: ComponentContext
 }
 
 const props = defineProps<Props>()
@@ -59,11 +57,9 @@ const props = defineProps<Props>()
 const {
   context,
   provide,
-  componentClass,
-  componentStyle,
   getComponent,
   isComponentRegistered
-} = Spark.useComponent(props.config, props.parentContext as SparkComponentContext | undefined)
+} = Spark.useComponent(props.config, props.parentContext)
 
 // ==================== 组件解析 ====================
 
@@ -86,7 +82,7 @@ provide('rendererDebug', {
   isRegistered: isComponentRegistered(props.config.type),
   resolvedComponent: resolvedComponent.value,
   childCount: props.config.children?.length || 0
-} as RendererDebugProvider)
+})
 </script>
 
 <style scoped>
