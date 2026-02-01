@@ -199,12 +199,12 @@ export class DataSet implements IDataSet {
         // 检查是否匹配旧值（如果提供）
         if (oldValues) {
           shouldUpdate = foreignKeyMap.every(({ childField, parentField }) => {
-            return childRow[childField] == oldValues[parentField]
+            return childRow[childField] === oldValues[parentField]
           })
         } else {
           // 没有旧值，检查是否匹配当前值
           shouldUpdate = foreignKeyMap.every(({ childField, parentField }) => {
-            return childRow[childField] == row[parentField]
+            return childRow[childField] === row[parentField]
           })
         }
 
@@ -276,7 +276,7 @@ export class DataSet implements IDataSet {
         const matches = foreignKeyMap.every(({ childField, parentField }) => {
           const childVal = childRow[childField]
           const parentVal = row[parentField]
-          return childVal == parentVal
+          return childVal === parentVal
         })
         
         if (matches) {
@@ -315,7 +315,7 @@ export class DataSet implements IDataSet {
               // 尝试通过 ID 查找（如果引用不同）
               const idField = childTable.columns.find(c => c.isPrimaryKey)?.name ?? 'id'
               const id = rowToDelete[idField]
-              const cacheIdIndex = childTable._originalRows.findIndex(r => r[idField] == id)
+              const cacheIdIndex = childTable._originalRows.findIndex(r => r[idField] === id)
               if (cacheIdIndex > -1) {
                 childTable._originalRows.splice(cacheIdIndex, 1)
               }

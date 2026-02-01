@@ -221,9 +221,9 @@ export class BindingContext implements IBindingContext {
       const bVal = b[field];
       
       // 处理 null/undefined
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return isAsc ? 1 : -1;
-      if (bVal == null) return isAsc ? -1 : 1;
+      if (aVal === null && bVal === null) return 0;
+      if (aVal === null) return isAsc ? 1 : -1;
+      if (bVal === null) return isAsc ? -1 : 1;
       
       // 数值比较
       if (typeof aVal === 'number' && typeof bVal === 'number') {
@@ -250,9 +250,9 @@ export class BindingContext implements IBindingContext {
         const bVal = b[field];
         
         // 处理 null/undefined
-        if (aVal == null && bVal == null) continue;
-        if (aVal == null) return isAsc ? 1 : -1;
-        if (bVal == null) return isAsc ? -1 : 1;
+        if (aVal === null && bVal === null) continue;
+        if (aVal === null) return isAsc ? 1 : -1;
+        if (bVal === null) return isAsc ? -1 : 1;
         
         // 数值比较
         if (typeof aVal === 'number' && typeof bVal === 'number') {
