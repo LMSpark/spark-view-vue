@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
+import { SparkEJ2Grid } from '../features/spark-ej2'
 import { Spark } from '../features/spark'
 import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
 
