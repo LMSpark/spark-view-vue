@@ -1,8 +1,8 @@
 // features/spark-ej2/initialize.ts
 // SPARK-EJ2 组件初始化
 
-import SparkEJ2Grid from './components/spark/SparkEJ2Grid.vue'
-import SparkEJ2Column from './components/spark/SparkEJ2Column.vue'
+import SparkEJ2Grid from './components/SparkEJ2Grid.vue'
+import SparkEJ2Column from './components/SparkEJ2Column.vue'
 import type { ComponentManager as ISparkComponentManager } from '@spark-view/spark-core'
 
 /**

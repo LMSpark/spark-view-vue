@@ -2,11 +2,11 @@
 // ⚠️ DEPRECATED: 使用 features/spark-ej2 代替
 // EJ2组件系统入口文件
 
-// ⚠️ DEPRECATED: 从 features/spark-ej2 导入
+// ⚠️ DEPRECATED: 从 features/spark-ej2 导入 SPARK 集成组件
 // 迁移指南：
 // 旧代码: import { GridComponent } from './features/ej2'
-// 新代码: import { GridComponent } from './features/spark-ej2'
-export { GridComponent, ColumnComponent } from '../spark-ej2'
+// 新代码: import { SparkEJ2Grid } from './features/spark-ej2'
+export { SparkEJ2Grid, SparkEJ2Column } from '../spark-ej2'
 
 /**
  * 向后兼容说明：
