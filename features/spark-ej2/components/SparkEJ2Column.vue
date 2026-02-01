@@ -19,7 +19,7 @@
 import { useSparkComponent } from '@spark-view/spark-core'
 // getColumnConfig now provided by useSparkComponent; helper import removed
 import type { ComponentConfig, ComponentContext } from '@spark-view/spark-core'
-import type { SparkEJ2ColumnConfig } from '../../types'
+import type { SparkEJ2ColumnConfig } from '@/types/ej2-components'
 // Removed EJ2 imports to avoid runtime errors in tests
 // import type { ColumnModel } from '@syncfusion/ej2-vue-grids'
 

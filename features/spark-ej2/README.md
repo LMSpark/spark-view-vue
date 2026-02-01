@@ -6,13 +6,9 @@
 
 ```
 features/spark-ej2/
-├── components/
-│   ├── spark/              # SPARK 集成组件（推荐）
-│   │   ├── SparkEJ2Grid.vue
-│   │   └── SparkEJ2Column.vue
-│   └── basic/              # 基础 EJ2 包装组件
-│       ├── GridComponent.vue
-│       └── ColumnComponent.vue
+├── components/             # DataGrid 组件（SPARK 集成）
+│   ├── SparkEJ2Grid.vue
+│   └── SparkEJ2Column.vue
 ├── types.ts                # 类型定义
 ├── initialize.ts           # 组件初始化
 ├── index.ts                # 统一导出
@@ -21,27 +17,24 @@ features/spark-ej2/
 
 ## 组件说明
 
-### SPARK 集成组件（推荐）
+### DataGrid 组件（SPARK 集成）
 
-#### SparkEJ2Grid
-集成 SPARK 能力系统的 Grid 组件，支持：
+所有组件都集成了 SPARK 能力系统，支持：
 - 能力系统（provide/consume）
 - 组件注册表
 - 递归渲染子组件
 
+#### SparkEJ2Grid
+Grid 数据表格组件，支持：
+- 能力系统提供（column-manager, gridInstance 等）
+- 递归渲染 Column 子组件
+- 测试友好（自动降级为占位符）
+
 #### SparkEJ2Column
-集成 SPARK 能力系统的 Column 组件，支持：
-- 消费父组件能力
+Column 列组件，支持：
+- 消费父组件能力（column-manager）
 - 嵌套列（children）
-- 测试友好（轻量级占位符）
-
-### 基础 EJ2 包装组件
-
-#### GridComponent
-基础 EJ2 Grid 包装，直接使用 `<ejs-grid>` 标签。
-
-#### ColumnComponent
-基础 EJ2 Column 包装，直接使用 `<e-column>` 标签。
+- 堆叠列支持
 
 ## 使用方式
 
@@ -57,7 +50,7 @@ const manager = Spark.createComponentManager()
 await initializeSparkEJ2Components(manager)
 ```
 
-### 使用 SPARK 集成组件
+### 使用组件
 
 ```vue
 <script setup lang="ts">
@@ -77,31 +70,6 @@ const gridConfig: SparkEJ2GridConfig = {
 
 <template>
   <SparkComponentRenderer :config="gridConfig" />
-</template>
-```
-
-### 使用基础包装组件
-
-```vue
-<script setup lang="ts">
-import { GridComponent, ColumnComponent } from '@/features/spark-ej2'
-
-const gridConfig = {
-  type: 'ejs-grid',
-  dataSource: [...],
-  allowPaging: true,
-  children: [
-    { field: 'id', headerText: 'ID' },
-    { field: 'name', headerText: 'Name' }
-  ]
-}
-</script>
-
-<template>
-  <GridComponent :config="gridConfig">
-    <ColumnComponent :config="gridConfig.children[0]" parent-type="ejs-grid" />
-    <ColumnComponent :config="gridConfig.children[1]" parent-type="ejs-grid" />
-  </GridComponent>
 </template>
 ```
 
@@ -144,3 +112,8 @@ export interface SparkEJ2ColumnConfig extends ComponentConfig {
 2. **清晰分层**: SPARK 集成 vs 基础包装分离
 3. **可扩展**: 未来可轻松提取为独立包 `@spark-view/spark-ej2`
 4. **向后兼容**: 保留基础包装组件供过渡使用
+DataGrid 代码集中在 `features/spark-ej2/`
+2. **简化结构**: 无需区分 basic vs spark，统一使用 SPARK 集成版本
+3. **类型安全**: TypeScript 严格类型定义
+4. **可扩展**: 未来可轻松提取为独立包 `@spark-view/spark-ej2`
+5. **测试友好**: 自动降级为轻量级占位符，无需 EJ2 运行时
