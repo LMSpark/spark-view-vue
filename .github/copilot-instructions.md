@@ -14,6 +14,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **Packages**:
   - `packages/spark-core/` — 组件系统（API docs: `packages/spark-core/API.md`）
   - `packages/spark-data/` — 数据空间（DataSet, TreeManager, BindingContext）
+- **Pages config**: `pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
 - Example components: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
 - Key composable: `packages/spark-core/src/composables/useSparkComponent.ts`
 - Tests: `tests/` (look for `capability-late-binding.test.ts`, `provider-listener.test.ts`)

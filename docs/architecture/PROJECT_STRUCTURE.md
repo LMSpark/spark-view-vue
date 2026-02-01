@@ -7,18 +7,34 @@
 ## 目录结构
 
 ```
-src/
-├── models/                    # 领域模型（camelCase 命名）
-│   ├── bindingContext.ts      # 视图层（BindingContext 类）
-│   ├── dataTable.ts           # 结构层（DataTable 类）
-│   ├── dataSet.ts             # 领域层（DataSet 类）
-│   └── dataSetManager.ts      # 工厂层（DataSetManager 类）
+├── packages/                  # 📦 核心包（可复用）
+│   ├── spark-core/           # SPARK 组件系统
+│   └── spark-data/           # SPARK 数据空间
 │
-├── utils/                     # 工具函数和辅助类
-│   ├── parsers/               # 🆕 解析器模块
-│   │   └── filterExpressionParser.ts  # 过滤表达式解析
-│   ├── managers/              # 🆕 管理器模块
-│   │   └── treeManager.ts     # 树形数据管理
+├── pages-config/             # 📄 页面配置（与 src 平级）
+│   ├── routes.json           # 路由配置
+│   ├── tree-demo/
+│   │   ├── rule.json         # 页面规则
+│   │   ├── pagedata.json     # 页面数据
+│   │   ├── script.js         # 页面脚本
+│   │   └── style.css         # 页面样式
+│   └── ...
+│
+├── src/
+│   ├── models/               # 领域模型（camelCase 命名）
+│   ├── utils/                # 工具函数和辅助类
+│   ├── views/                # 页面视图
+│   ├── api/                  # API 接口
+│   └── components/           # 通用组件
+│
+├── features/                 # 功能特性模块
+│   ├── spark/                # SPARK 组件
+│   └── ej2/                  # EJ2 集成
+│
+├── tests/                    # 单元测试
+├── docs/                     # 文档
+└── tools/                    # 开发工具
+```
 │   └── page-helpers/          # 页面辅助函数（ES6 模块）
 │       ├── common.js          # 通用上下文访问
 │       ├── datasetHelper.js   # DataSet 辅助函数
