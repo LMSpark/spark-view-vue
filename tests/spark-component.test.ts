@@ -2,15 +2,14 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import SparkEJ2Grid from '../features/spark/components/ej2/SparkEJ2Grid.vue'
-import SparkEJ2Column from '../features/spark/components/ej2/SparkEJ2Column.vue'
+import { SparkEJ2Grid, SparkEJ2Column } from '../features/spark-ej2'
 import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
-import { initializeAppSparkComponents } from '../features/spark/initialize'
-import type { SparkEJ2GridConfig } from '@/types/ej2-components' 
+import { initializeSparkEJ2Components } from '../features/spark-ej2'
+import type { SparkEJ2GridConfig } from '@/features/spark-ej2'
 
 const registry = createComponentRegistry()
 const manager = createComponentManager(undefined, registry)
-await initializeAppSparkComponents(manager)
+await initializeSparkEJ2Components(manager)
 
 // Mock EJ2 components
 vi.mock('@syncfusion/ej2-vue-grids', () => ({

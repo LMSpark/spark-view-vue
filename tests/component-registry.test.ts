@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 import { Spark } from '@spark-view/spark-core'
-import { initializeAppSparkComponents } from '../features/spark/initialize'
+import { initializeSparkEJ2Components } from '../features/spark-ej2'
 
 test('spark-ej2-grid is registered and component is a Vue component', async () => {
-  await initializeAppSparkComponents(Spark.manager())
+  await initializeSparkEJ2Components(Spark.manager())
   const def = Spark.registry().get('spark-ej2-grid')
   console.info('[test] registry entry:', def)
   expect(def).toBeDefined()

@@ -1,45 +1,27 @@
 // features/spark/initialize.ts
-// 应用层组件初始化
+// ⚠️ DEPRECATED: 使用 features/spark-ej2/initialize.ts 代替
+// 此文件保留仅供向后兼容
 
-import SparkEJ2Grid from './components/ej2/SparkEJ2Grid.vue'
-import SparkEJ2Column from './components/ej2/SparkEJ2Column.vue'
+import { initializeSparkEJ2Components } from '../spark-ej2'
+import type { ComponentManager as ISparkComponentManager } from '@spark-view/spark-core'
 
 /**
+ * @deprecated 使用 initializeSparkEJ2Components 代替
+ * 
  * 初始化应用特定的SPARK组件
+ * 
+ * 迁移指南：
+ * ```ts
+ * // 旧代码：
+ * import { initializeAppSparkComponents } from './features/spark/initialize'
+ * await initializeAppSparkComponents(manager)
+ * 
+ * // 新代码：
+ * import { initializeSparkEJ2Components } from './features/spark-ej2'
+ * await initializeSparkEJ2Components(manager)
+ * ```
  */
-import type { ComponentManager as ISparkComponentManager } from '../../packages/spark-core/src/types/spark-component'
-
 export async function initializeAppSparkComponents(manager: ISparkComponentManager): Promise<void> {
-  const m = manager
-
-  // 注册应用级组件到传入的 manager（显式注入为必需）
-  m.registerComponent({
-    type: 'spark-ej2-grid',
-    name: 'Spark EJ2 Grid',
-    version: '1.0.0',
-    component: SparkEJ2Grid,
-    providers: [
-      {
-        name: 'column-manager',
-        version: '1.0.0',
-        interface: {},
-        implementation: {}
-      }
-    ]
-  })
-
-  m.registerComponent({
-    type: 'spark-ej2-column',
-    name: 'Spark EJ2 Column',
-    version: '1.0.0',
-    component: SparkEJ2Column,
-    consumers: [
-      {
-        capabilityName: 'column-manager',
-        minVersion: '1.0.0',
-        interface: {},
-        implementation: {}
-      }
-    ]
-  })
+  console.warn('⚠️ initializeAppSparkComponents is deprecated. Use initializeSparkEJ2Components from features/spark-ej2 instead.')
+  return initializeSparkEJ2Components(manager)
 }
