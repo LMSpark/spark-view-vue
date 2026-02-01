@@ -2,8 +2,7 @@
  * DataSet 辅助函数 - 支持动态结构和数据的 CRUD 操作
  */
 
-import type { DataSetManager } from '@/models/dataSetManager'
-import type { IDataTable, DataRow, DataColumn } from '@/types/dataset'
+import type { DataSetManager, IDataTable, DataRow, DataColumn } from '@spark-view/spark-data'
 
 /**
  * DataSet 结构数据

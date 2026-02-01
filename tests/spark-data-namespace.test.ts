@@ -54,11 +54,11 @@ describe('SparkData Namespace', () => {
     expect(context['_contextId']).toBe('default')
   })
 
-  it('应该提供 createFilterParser 工厂方法', () => {
-    const parser = SparkData.createFilterParser()
-
-    expect(parser).toBeDefined()
-    expect(typeof parser.evaluate).toBe('function')
+  it('应该提供 FilterParser 静态工具类', () => {
+    expect(SparkData.FilterParser).toBeDefined()
+    expect(typeof SparkData.FilterParser.toMemoryFilter).toBe('function')
+    expect(typeof SparkData.FilterParser.toSQL).toBe('function')
+    expect(typeof SparkData.FilterParser.toMongoDB).toBe('function')
   })
 
   it('应该提供 fromJSON 工厂方法', () => {

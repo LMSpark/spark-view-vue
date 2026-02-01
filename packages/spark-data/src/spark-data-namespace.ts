@@ -92,14 +92,12 @@ export const SparkData = {
   // ==================== 工具方法 ====================
   
   /**
-   * 解析过滤表达式
+   * 过滤表达式解析器（静态工具类）
    * @example
-   * const parser = SparkData.createFilterParser()
-   * const result = parser.evaluate(rows, expression)
+   * const filterFn = SparkData.FilterParser.toMemoryFilter(expression)
+   * const sql = SparkData.FilterParser.toSQL(expression)
    */
-  createFilterParser: (): FilterExpressionParser => {
-    return new FilterExpressionParser()
-  },
+  FilterParser: FilterExpressionParser,
 
   // ==================== 直接类访问（高级用户） ====================
   
