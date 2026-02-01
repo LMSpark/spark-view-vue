@@ -12,7 +12,7 @@ export default defineConfig({
       '@plugins': path.resolve(__dirname, 'plugins'),
       '@root': path.resolve(__dirname, '..', '..', 'src'),
       '@spark-view/spark-core': path.resolve(__dirname, 'packages', 'spark-core', 'src'),
-      '@spark-view/dataset-core': path.resolve(__dirname, 'packages', 'dataset-core', 'src')
+      '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'src')
     }
   },
   optimizeDeps: {

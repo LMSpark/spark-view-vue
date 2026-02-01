@@ -1,6 +1,6 @@
-# @spark-view/dataset-core
+# @spark-view/spark-data
 
-数据集核心包 - 提供类似 .NET DataSet 的数据管理能力
+SPARK 数据空间包 - 提供类似 .NET DataSet 的数据管理能力
 
 ## 功能
 
@@ -13,14 +13,14 @@
 ## 安装
 
 ```bash
-pnpm add @spark-view/dataset-core
+pnpm add @spark-view/spark-data
 ```
 
 ## 使用
 
 ```typescript
-import { DataSet, DataSetManager, TreeManager } from '@spark-view/dataset-core'
-import type { IDataSet, DataRow } from '@spark-view/dataset-core'
+import { DataSet, DataSetManager, TreeManager } from '@spark-view/spark-data'
+import type { IDataSet, DataRow } from '@spark-view/spark-data'
 
 // 创建 DataSet
 const dataSet = DataSetManager.create({

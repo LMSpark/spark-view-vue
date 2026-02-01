@@ -21,7 +21,7 @@
       "@/*": ["src/*"],
       "@spark-view/spark-core": ["./packages/spark-core/src/index.ts"],
       "@spark-view/spark-core/*": ["./packages/spark-core/src/*"],
-      "@spark-view/dataset-core": ["./packages/dataset-core/src/index.ts"]
+      "@spark-view/spark-data": ["./packages/spark-data/src/index.ts"]
     },
     "types": ["vite/client", "vitest/globals"]
   },
