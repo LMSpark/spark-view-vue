@@ -6,7 +6,9 @@
       "@/*": ["src/*"],
       "@root/*": ["../../../form-create-ssr-app/src/*"],
       "@spark-view/spark-core": ["./packages/spark-core/src/index.ts"],
-      "@spark-view/spark-core/*": ["./packages/spark-core/src/*"]
+      "@spark-view/spark-core/*": ["./packages/spark-core/src/*"],
+      "@spark-view/dataset-core": ["./packages/dataset-core/src/index.ts"],
+      "@spark-view/dataset-core/*": ["./packages/dataset-core/src/*"]
     },
     "types": ["vite/client", "node", "vue"],
     "module": "ES2022",
