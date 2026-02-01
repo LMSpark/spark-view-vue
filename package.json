@@ -28,8 +28,7 @@
     },
     "lint-staged": {
         "**/*.{ts,vue,js}": [
-            "eslint --fix",
-            "git add"
+            "eslint --fix"
         ]
     },
     "prepare": "husky install",
