@@ -24,7 +24,7 @@ import {ref, onMounted, watch, reactive, nextTick} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {getPageConfig} from '../api'
 import type {PageRule, ApiConfig, DataRow} from '../types'
-import { DataSetManager, DataSet } from '@spark-view/dataset-core'
+import { DataSetManager, DataSet } from '@spark-view/spark-data'
 import VxeTableRenderer from '../components/renderers/vxe/VxeTableRenderer.vue'
 
 // 注意：Element Plus 组件已由 @form-create/element-ui 内部注册

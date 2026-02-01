@@ -1,6 +1,6 @@
 /**
- * @spark-view/dataset-core
- * 数据集核心包 - 提供类似 .NET DataSet 的数据管理能力
+ * @spark-view/spark-data
+ * SPARK 数据空间包 - 提供类似 .NET DataSet 的数据管理能力
  */
 
 // 导出所有类型
