@@ -38,7 +38,7 @@
 │   └── page-helpers/          # 页面辅助函数（ES6 模块）
 │       ├── common.js          # 通用上下文访问
 │       ├── datasetHelper.js   # DataSet 辅助函数
-│       └── treeHelper.js      # 树形工具函数
+│       └── common.js          # 页面上下文访问器（沙箱注入）
 │
 ├── types/                     # 类型定义
 │   ├── index.ts               # 通用类型
@@ -111,10 +111,11 @@
 
 ```typescript
 // 模型
-import { BindingContext } from '@/models/bindingContext'
-import { DataSet } from '@/models/dataSet'
-import { FilterExpressionParser } from '@/models/filterExpressionParser'
-import { TreeManager } from '@/models/treeManager'
+import { SparkData } from '@spark-view/spark-data'
+// 或者
+import { BindingContext, DataSet, TreeManager } from '@spark-view/spark-data'
+// FilterExpressionParser 是静态工具类
+const sql = SparkData.FilterParser.toSQL(expression)
 
 // 类型
 import type { DataRow, IDataTable } from '@/types/pageData'
@@ -172,16 +173,15 @@ import type { TreeConfig } from '../../types/pageData'
 
 ```typescript
 // ❌ 旧路径
-import { BindingContext } from '@/models/BindingContext'
-import { DataTable } from '@/models/DataTable'
+import { BindingContext, DataTable } from '@spark-view/spark-data'
 import { FilterExpressionParser } from '@/utils/filterExpressionParser'
 import { TreeManager } from '@/utils/treeManager'
 
 // ✅ 新路径
-import { BindingContext } from '@/models/bindingContext'
-import { DataTable } from '@/models/dataTable'
-import { FilterExpressionParser } from '@/models/filterExpressionParser'
-import { TreeManager } from '@/models/treeManager'
+import { BindingContext, DataTable, TreeManager } from '@spark-view/spark-data'
+// FilterExpressionParser 使用静态方法
+import { SparkData } from '@spark-view/spark-data'
+const sql = SparkData.FilterParser.toSQL(expression)
 ```
 
 ### 批量替换命令（PowerShell）

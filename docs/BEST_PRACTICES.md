@@ -125,7 +125,7 @@ function processTable(data: unknown) {
 ```typescript
 // composables/useDataSet.ts
 import { ref, computed, onMounted } from 'vue'
-import type { DataSet } from '@/models/dataSet'
+import type { DataSet } from '@spark-view/spark-data'
 
 export function useDataSet(dataSet: DataSet, tableName: string) {
   const loading = ref(false)
@@ -417,7 +417,8 @@ async function fetchData(url: string, timeout = 5000) {
 ```typescript
 // tests/models/dataSet.test.ts
 import { describe, it, expect, beforeEach } from 'vitest'
-import { DataSet } from '@/models/dataSet'
+import { DataSet } from '@spark-view/spark-data'
+// 或使用命名空间 API: const ds = SparkData.createDataSet(...)
 
 describe('DataSet', () => {
   let dataSet: DataSet

@@ -7,7 +7,11 @@
 
 - [核心概念](#核心概念)
 - [TreeManager API](#treemanager-api)
-- [TreeHelper 工具函数](#treehelper-工具函数)
+- [TreeManager API 参考](#treemanager-api)
+  - [基础配置](#基础配置)
+  - [节点管理](#节点管理)
+  - [树结构操作](#树结构操作)
+  - [懒加载支持](#懒加载支持)
 - [使用指南](#使用指南)
 - [完整示例](#完整示例)
 - [最佳实践](#最佳实践)
@@ -47,8 +51,12 @@
 ### 初始化
 
 ```typescript
-import { TreeManager } from '@/models/treeManager'
-import type { BindingContext } from '@/models/bindingContext'
+import { SparkData } from '@spark-view/spark-data'
+// 推荐使用命名空间 API
+const treeManager = SparkData.createTreeManager(config, nodes)
+
+// 或者直接导入类（向后兼容）
+import { TreeManager, BindingContext } from '@spark-view/spark-data'
 
 // 方式1: 独立创建（不关联 BindingContext）
 const treeManager = new TreeManager({
@@ -226,7 +234,15 @@ const sorted = sortTree(tree, (a, b) => {
 ### 树统计
 
 ```javascript
-import { getMaxDepth, countNodes } from '@/utils/page-helpers/treeHelper.js'
+// 富化节点信息（计算 level 和 hasChildren）
+treeManager.enrichNodes()
+
+// 获取节点层级
+const level = treeManager.calculateLevel(nodeId)
+
+// 获取所有缓存节点
+const cache = treeManager.getCache()
+const nodeCount = Object.keys(cache).length
 
 // 获取最大深度
 const depth = getMaxDepth(tree, { childrenField: 'children' })
@@ -499,7 +515,9 @@ export async function handleNodeOperation(nodeId) {
 
 ### 5. 懒加载实现
 
-**API 模拟（treeHelper.js）**
+**TreeManager API**
+
+TreeManager 提供了完整的树形数据管理功能，所有操作都通过实例方法完成。
 
 ```javascript
 export async function getChildren(parentId) {
