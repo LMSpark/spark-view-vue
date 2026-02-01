@@ -5,7 +5,3 @@
 export { default as GridComponent } from './components/GridComponent.vue'
 export { default as ColumnComponent } from './components/ColumnComponent.vue'
 export { default as RendererComponent } from './components/RendererComponent.vue'
-
-// 导出工具函数
-// TODO: Create gridHelpers.ts when needed
-// export { createGrid, createColumn } from './utils/gridHelpers'
