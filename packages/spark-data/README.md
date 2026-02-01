@@ -18,12 +18,14 @@ pnpm add @spark-view/spark-data
 
 ## 使用
 
+### 方式 1：命名空间 API（推荐）
+
 ```typescript
-import { DataSet, DataSetManager, TreeManager } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
 import type { IDataSet, DataRow } from '@spark-view/spark-data'
 
 // 创建 DataSet
-const dataSet = DataSetManager.create({
+const dataSet = SparkData.createDataSet({
   dataSetName: 'MyDataSet',
   tables: {
     Users: {
@@ -37,11 +39,33 @@ const dataSet = DataSetManager.create({
   }
 })
 
-// 使用 TreeManager
-const treeManager = new TreeManager({
+// 创建 TreeManager
+const treeManager = SparkData.createTreeManager({
   idField: 'id',
   parentIdField: 'parentId',
   lazy: true
+})
+
+// 创建 BindingContext
+const context = SparkData.createContext('Users', 'default', dataSet)
+```
+
+### 方式 2：直接导入类（向后兼容）
+
+```typescript
+import { DataSet, DataSetManager, TreeManager } from '@spark-view/spark-data'
+import type { IDataSet, DataRow } from '@spark-view/spark-data'
+
+// 使用工厂类创建
+const dataSet = DataSetManager.create({
+  dataSetName: 'MyDataSet',
+  tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
+})
+
+// 使用构造器创建
+const treeManager = new TreeManager({
+  idField: 'id',
+  parentIdField: 'parentId'
 })
 ```
 

@@ -65,20 +65,24 @@ app.use(Spark.createVuePlugin({ manager, registry }))
 
 ### Using spark-data (数据空间)
 ```ts
-import { DataSet, DataSetManager, TreeManager } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
 import type { IDataSet, DataRow } from '@spark-view/spark-data'
 
-// Create DataSet
-const dataSet = DataSetManager.create({
+// 推荐：使用命名空间 API
+const dataSet = SparkData.createDataSet({
   dataSetName: 'MyData',
   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
 })
 
-// Use TreeManager
-const treeManager = new TreeManager({
+const treeManager = SparkData.createTreeManager({
   idField: 'id',
   parentIdField: 'parentId'
 })
+
+// 向后兼容：直接导入类
+import { DataSetManager, TreeManager } from '@spark-view/spark-data'
+const ds = DataSetManager.create({ ... })
+const tree = new TreeManager({ ... })
 ```
   provide('columnManager', { implementation: { addColumn() { ... } } })
   ```
