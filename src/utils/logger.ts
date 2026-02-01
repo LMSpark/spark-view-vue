@@ -71,10 +71,10 @@ class AppLogger {
 
   constructor(config: LogConfig = {}) {
     this.config = {
-      level: config.level || (import.meta.env.DEV ? 'debug' : 'info'),
+      level: config.level ?? (import.meta.env.DEV ? 'debug' : 'info'),
       enableColors: config.enableColors ?? true,
       showTimestamp: config.showTimestamp ?? false,
-      prefix: config.prefix || ''
+      prefix: config.prefix ?? ''
     }
 
     // 使用 Spark 核心 Logger
