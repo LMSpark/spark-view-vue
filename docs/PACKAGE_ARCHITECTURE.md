@@ -3,37 +3,27 @@
 ## 📦 包结构概览
 
 ```
-packages/
-├── spark-core/          # SPARK 组件系统
-│   ├── src/
-│   │   ├── spark-namespace.ts       # Spark 命名空间
-│   │   ├── composables/
-│   │   │   └── useSparkComponent.ts
-│   │   ├── utils/
-│   │   │   ├── SparkComponentManager.ts
-│   │   │   ├── SparkCapabilitySystem.ts
-│   │   │   └── SparkComponentRegistry.ts
-│   │   ├── vue/
-│   │   │   └── createSparkComponent.ts
-│   │   ├── plugins/
-│   │   │   └── VueSparkPlugin.ts
-│   │   └── types/
-│   │       └── spark-component.ts
-│   ├── API.md
-│   └── package.json (@spark-view/spark-core)
+├── packages/                  # 📦 核心包（可复用）
+│   ├── spark-core/           # SPARK 组件系统
+│   └── spark-data/           # SPARK 数据空间
 │
-└── spark-data/          # SPARK 数据空间
-    ├── src/
-    │   ├── spark-data-namespace.ts  # SparkData 命名空间 ⭐
-    │   ├── dataset-impl.ts          # DataSet 实现
-    │   ├── treeManager.ts           # 树形数据管理
-    │   ├── bindingContext.ts        # 数据绑定上下文
-    │   ├── dataSetManager.ts        # DataSet 工厂
-    │   ├── dataTable.ts             # DataTable 类
-    │   ├── filterExpressionParser.ts # 过滤表达式解析
-    │   └── types.ts                 # 类型定义
-    ├── API.md
-    └── package.json (@spark-view/spark-data)
+├── pages-config/             # 📄 页面配置（与 src 平级）
+│   ├── routes.json           # 路由配置
+│   └── {pageId}/             # 各页面配置
+│       ├── rule.json         # UI 规则
+│       ├── pagedata.json     # 数据配置
+│       ├── script.js         # 业务逻辑
+│       └── style.css         # 样式
+│
+├── src/                      # 源代码
+│   ├── views/                # 页面视图
+│   ├── api/                  # API 接口
+│   ├── utils/                # 工具函数
+│   └── components/           # 通用组件
+│
+├── features/                 # 功能特性模块
+├── tests/                    # 单元测试
+└── docs/                     # 文档
 ```
 
 ---
