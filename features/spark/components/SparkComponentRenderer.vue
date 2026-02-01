@@ -40,8 +40,7 @@
  * 完全解耦：只依赖公共逻辑，不依赖其他自定义组件
  */
 import { computed } from 'vue'
-import { Spark } from '@spark-view/spark-core'
-import type { ComponentConfig, ComponentContext } from '@spark-view/spark-core'
+import { Spark, type ComponentConfig, type ComponentContext, type RendererDebugProvider } from '@spark-view/spark-core'
 
 // ==================== Props ====================
 
@@ -77,12 +76,13 @@ const resolvedComponent = computed(() => {
 // ==================== 调试信息 ====================
 
 // 注册调试能力
-provide('rendererDebug', {
+const debugInfo: RendererDebugProvider = {
   componentType: props.config.type,
   isRegistered: isComponentRegistered(props.config.type),
-  resolvedComponent: resolvedComponent.value,
+  resolvedComponent: resolvedComponent.value || null,
   childCount: props.config.children?.length || 0
-})
+}
+provide('rendererDebug', debugInfo as unknown as Record<string, unknown>)
 </script>
 
 <style scoped>

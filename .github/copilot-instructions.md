@@ -92,18 +92,5 @@ const tree = new TreeManager({ ... })
 
   ```ts
   mount(Component, { global: { provide: { sparkManager: Spark.manager() } } })
-  ```
-
----
-## Repository re-org notice 🔁
-We are simplifying `e:\spark-view` by moving shared/core logic into `packages/spark-core`.
-- What moved so far: `shared/utils/componentRegistry.ts` has been re-exported from `@spark-view/spark-core`, and a new package scaffold was created at `packages/spark-core/src`.
-- Local TS paths updated to resolve `@spark-view/spark-core` to `./packages/spark-core/src` (see `tsconfig.json`).
-
-Next steps I can do for you (pick one):
-1. Move `shared/composables` into `packages/spark-core` and replace with re-exports (recommended next step).
-2. Move manager/capability system (`useSparkComponent`, `SparkComponentManager`) into the package and update feature imports.
-3. Add build & typecheck steps for the package, CI integration, and tests for package code.
-
-Reply with 1, 2, or 3 to continue.</content>
+  ```</content>
 <parameter name="filePath">e:\form-create-ssr-app\apps\spark-view\.github\copilot-instructions.md

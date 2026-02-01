@@ -1,7 +1,7 @@
 // features/spark/index.ts
 // SPARK组件系统入口文件 - Spark命名空间API
 
-import { Spark as CoreSpark, type ComponentConfig, type ComponentContext, type CapabilityProvider, type CapabilityConsumer } from '@spark-view/spark-core'
+import { Spark as CoreSpark } from '@spark-view/spark-core'
 import { initializeAppSparkComponents } from './initialize'
 import SparkEJ2Grid from './components/ej2/SparkEJ2Grid.vue'
 import SparkEJ2Column from './components/ej2/SparkEJ2Column.vue'
@@ -20,10 +20,10 @@ export type {
   ComponentConfig,
   ComponentContext,
   CapabilityProvider,
-  CapabilityConsumer,
-  // Feature-local types (consider moving to @spark-view/spark-core)
-  // RendererDebugProvider  // moved to core shims; consider moving into real core package
-}
+  CapabilityConsumer
+} from '@spark-view/spark-core'
+
+export type { RendererDebugProvider } from '@spark-view/spark-core'
 
 // 导出应用预注册组件（保持向后兼容）
 export { SparkEJ2Grid, SparkEJ2Column }
