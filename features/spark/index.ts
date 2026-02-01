@@ -23,7 +23,5 @@ export type {
   CapabilityConsumer
 } from '@spark-view/spark-core'
 
-export type { RendererDebugProvider } from '@spark-view/spark-core'
-
 // 导出应用预注册组件（保持向后兼容）
 export { SparkEJ2Grid, SparkEJ2Column }

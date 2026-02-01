@@ -14,9 +14,6 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
-// Re-export commonly used types for convenience
-export type { RendererDebugProvider } from './types/common.js'
-
 // Primary unified API for creating Spark components
 export { defineSparkComponent } from './vue/createSparkComponent.js'
 
