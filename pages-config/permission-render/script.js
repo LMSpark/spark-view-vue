@@ -3,7 +3,7 @@
  * 展示如何根据后端返回的权限字段控制 UI
  */
 
-import { $api, $data } from '@/utils/page-helpers/common.js';
+// 沙箱注入的全局变量: $api, $data, $dataSet
 import { ElMessage } from 'element-plus';
 import { h } from 'vue';
 

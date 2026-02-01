@@ -157,7 +157,7 @@ type SortExpression =
 ### 方法 1：更新上下文配置（推荐）
 
 ```javascript
-import { $dataSet } from '@/utils/page-helpers/common.js';
+// 沙箱注入的全局变量: $dataSet, $data, $rebindRules
 
 export function handleSortByPrice() {
   const dataSet = $dataSet();

@@ -278,8 +278,8 @@ const total = countNodes(tree, { childrenField: 'children' })
 ### 2. 在 script.js 中初始化（关联 BindingContext）
 
 ```javascript
-import { TreeManager } from '@/models/treeManager'
-import { $data, $dataSet } from '@/utils/page-helpers/common.js'
+// 沙箱注入的全局变量: $data, $dataSet, $rebindRules
+import { TreeManager } from '@spark-view/spark-data'
 
 let treeManager = null
 

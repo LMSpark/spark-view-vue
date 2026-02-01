@@ -140,7 +140,7 @@
 ## 2. Script.js 完整实现
 
 ```javascript
-import { $data, $rebindRules, $refreshData } from '@/utils/page-helpers/common.js'
+// 沙箱注入的全局变量: $data, $rebindRules, $refreshData, $dataSet
 import { DataSetManager } from '@/utils/dataSetManager'
 import { 
   loadDataSetStructure, 

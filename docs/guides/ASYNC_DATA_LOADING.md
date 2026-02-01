@@ -84,7 +84,7 @@ Form Create SSR App 现在支持在页面配置中定义异步数据加载，无
 在页面脚本（`script.js`）中，可以使用 `$refreshData()` 方法刷新数据：
 
 ```javascript
-import { $refreshData, $data } from '@/utils/page-helpers/common.js'
+// 沙箱注入的全局变量: $refreshData, $data, $dataSet
 
 // 刷新所有 API 数据
 export async function refreshAll() {
@@ -215,7 +215,7 @@ export async function handleRefresh() {
 
 ### script.js
 ```javascript
-import { $refreshData } from '@/utils/page-helpers/common.js'
+// 沙箱注入的全局变量: $refreshData
 
 export async function handleRefresh() {
   // 刷新最近订单数据

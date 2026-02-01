@@ -1,5 +1,5 @@
 // ES6 模块 - 页面脚本
-import {$api, $route, $data, $el, $query, $queryAll} from '@/utils/page-helpers/common.js'
+// 沙箱注入的全局变量: $api, $route, $data, $el, $query, $queryAll
 
 // 页面初始化（使用函数调用获取实时值）
 console.log('🚀 工作台页面已加载 (ES6 模块)');

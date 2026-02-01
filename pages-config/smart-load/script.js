@@ -1,4 +1,4 @@
-﻿import { $data, $dataSet } from '@/utils/page-helpers/common.js';
+﻿// 沙箱注入的全局变量: $data, $dataSet, $api, $route, $rebindRules, $refreshData
 import { ElMessage } from 'element-plus';
 
 // 模拟数据加载器（实际项目中应该是 API 请求）

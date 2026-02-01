@@ -1,4 +1,4 @@
-﻿import { $dataSet, $data, $rebindRules } from '@/utils/page-helpers/common.js'
+﻿// 沙箱注入的全局变量: $dataSet, $data, $rebindRules
 import { ElMessage } from 'element-plus'
 
 // Mock 数据加载器

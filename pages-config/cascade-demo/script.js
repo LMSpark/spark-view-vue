@@ -1,4 +1,4 @@
-﻿import { $data, $dataSet } from '@/utils/page-helpers/common.js';
+﻿// 沙箱注入的全局变量: $data, $dataSet, $rebindRules
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 let selectedUser = null;
