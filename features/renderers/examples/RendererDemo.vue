@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * RendererDemoPage - 独立演示页面
+ * RendererDemo - 渲染器演示示例
  * 展示如何使用 Renderer 架构渲染不同类型的组件
  */
 import { ref, reactive } from 'vue'
-import DynamicRenderer from '@/components/renderers/DynamicRenderer.vue'
+import DynamicRenderer from '../components/DynamicRenderer.vue'
 
 // 页面数据
 const pageData = reactive({

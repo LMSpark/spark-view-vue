@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import DynamicPage from '../views/DynamicPage.vue'
-import RendererDemoPage from '../views/RendererDemoPage.vue'
+import RendererDemo from '../../features/renderers/examples/RendererDemo.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -11,7 +11,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/renderer-demo',
     name: 'RendererDemo',
-    component: RendererDemoPage
+    component: RendererDemo
   }
 ]
 
