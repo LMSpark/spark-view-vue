@@ -67,7 +67,7 @@ watch(allChildrenReady, (ready) => {
   if (ready) {
     logger.info('🎉 所有子组件就绪，父组件开始渲染')
     // 这里可以执行父组件的初始化逻辑
-    provide('parentInitialized', true)
+    provide('parentInitialized', { initialized: true })
   }
 })
 </script>

@@ -41,8 +41,8 @@ const initializeChild = async () => {
 
   // 通知父组件
   const parentStatus = consume('parentStatus')
-  if (parentStatus?.reportReady) {
-    parentStatus.reportReady(context.id)
+  if (parentStatus && typeof parentStatus === 'object' && 'reportReady' in parentStatus) {
+    (parentStatus as any).reportReady(context.id)
   }
 
   logger.info(`子组件 ${props.config.name} 初始化完成`)
