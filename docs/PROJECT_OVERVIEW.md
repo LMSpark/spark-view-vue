@@ -15,10 +15,9 @@
 | 文件/目录 | 作用 | 重要性 |
 |-----------|------|--------|
 | `src/views/DynamicPage.vue` | **唯一视图组件**，所有页面通过它渲染 | ⭐⭐⭐⭐⭐ |
-| `src/models/dataSetManager.ts` | DataSet 管理器，数据加载、订阅、级联 | ⭐⭐⭐⭐⭐ |
+| `packages/spark-data/` | 数据空间（DataSet, TreeManager） | ⭐⭐⭐⭐⭐ |
+| `packages/spark-core/` | 组件系统（沙箱、能力、插件） | ⭐⭐⭐⭐⭐ |
 | `src/pages-config/{pageId}/` | 页面配置目录（rule.json + pagedata.json） | ⭐⭐⭐⭐⭐ |
-| `src/utils/page-helpers/common.js` | 页面脚本上下文访问器 | ⭐⭐⭐⭐ |
-| `src/types/dataset.ts` | DataSet 完整类型定义 | ⭐⭐⭐⭐ |
 | `server.ts` | SSR 服务器入口 | ⭐⭐⭐ |
 
 ## 🏗️ 架构层次
@@ -114,8 +113,7 @@ if (user.role === 'admin') { showButton(); }
 
 ### 使用 DataSet
 ```javascript
-// script.js
-import { $data, $dataSet } from '@/utils/page-helpers/common.js';
+// script.js - 沙箱会注入全局变量: $data, $dataSet, $api, $route, $rebindRules
 
 export function __init__() {
   const dataSet = $dataSet();

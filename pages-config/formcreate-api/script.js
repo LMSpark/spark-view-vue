@@ -3,7 +3,7 @@
  * 展示 form-create 的各种 API 用法
  */
 
-import { $api, $data, $rebindRules } from '@/utils/page-helpers/common.js'
+// 沙箱注入的全局变量: $api, $data, $rebindRules, $dataSet
 import { ElMessage } from 'element-plus'
 import { h } from 'vue'
 

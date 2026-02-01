@@ -1,4 +1,4 @@
-import { $refreshData, $data } from '@/utils/page-helpers/common.js'
+// 沙箱注入的全局变量: $refreshData, $data, $dataSet
 import { ElMessage } from 'element-plus'
 
 /**

@@ -1,4 +1,4 @@
-import { $data, $rebindRules } from '@/utils/page-helpers/common.js'
+// 沙箱注入的全局变量: $data, $rebindRules, $dataSet
 import { TreeManager } from '@spark-view/spark-data'
 import { ElMessage } from 'element-plus'
 

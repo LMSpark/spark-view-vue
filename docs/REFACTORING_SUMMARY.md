@@ -69,7 +69,7 @@ const query = SparkData.FilterParser.toMongoDB(expression)
   - 到：使用 `treeManager.buildNestedTree()` 原生方法
 
 **保留的文件**：
-- ✅ `src/utils/page-helpers/common.js` - 页面上下文访问器（用于沙箱注入）
+- ✅ `packages/spark-core/src/utils/sandbox.ts` - 沙箱系统，提供 $data、$api 等全局变量注入
 
 #### 之前（存在重复）：
 ```
