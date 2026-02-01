@@ -5,7 +5,7 @@ import path from 'path'
 export default defineConfig({
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, '.'),
+      '@': path.resolve(__dirname, 'src'),
       '@features': path.resolve(__dirname, 'features'),
       '@pages': path.resolve(__dirname, 'pages'),
       '@shared': path.resolve(__dirname, 'shared'),
@@ -13,6 +13,9 @@ export default defineConfig({
       '@root': path.resolve(__dirname, '..', '..', 'src'),
       '@spark-view/spark-core': path.resolve(__dirname, 'packages', 'spark-core', 'src')
     }
+  },
+  optimizeDeps: {
+    include: ['@form-create/element-ui', 'vxe-table']
   },
   server: {
     port: 5173,

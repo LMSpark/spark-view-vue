@@ -170,7 +170,8 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         }
       }
     },
-    setup(props: { config: _TConfig }, _ctx: unknown) {
+    // @ts-expect-error Vue 3.4 type inference issue with generic props
+    setup(props: { config: _TConfig }) {
       // Create component context
       const ctxRaw: ComponentContext = {
         id: props.config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
@@ -344,8 +345,8 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
       if (definition.templateLiteral) {
         // Template literal function for advanced templating
         return () => {
-          const templateFunc = definition.templateLiteral?.([] as unknown as TemplateStringsArray, props, helpers)
-          const html = templateFunc?.(props, helpers) ?? ''
+          const templateFunc = definition.templateLiteral?.([] as unknown as TemplateStringsArray, props.config, helpers)
+          const html = templateFunc?.({ config: props.config }, helpers) ?? ''
           return renderSafeHTML(html)
         }
       }
