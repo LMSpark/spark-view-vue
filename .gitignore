@@ -8,6 +8,7 @@ node_modules
 *.pdb
 *.deps.json
 *.runtimeconfig.json
+dist/
 
 # VS and IDE
 .vs/
