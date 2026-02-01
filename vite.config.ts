@@ -11,7 +11,8 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, 'shared'),
       '@plugins': path.resolve(__dirname, 'plugins'),
       '@root': path.resolve(__dirname, '..', '..', 'src'),
-      '@spark-view/spark-core': path.resolve(__dirname, 'packages', 'spark-core', 'src')
+      '@spark-view/spark-core': path.resolve(__dirname, 'packages', 'spark-core', 'src'),
+      '@spark-view/dataset-core': path.resolve(__dirname, 'packages', 'dataset-core', 'src')
     }
   },
   optimizeDeps: {

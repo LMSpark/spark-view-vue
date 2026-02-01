@@ -1,5 +1,5 @@
 import { $data, $rebindRules } from '@/utils/page-helpers/common.js'
-import { TreeManager } from '@/models/treeManager'
+import { TreeManager } from '@spark-view/dataset-core'
 import { buildTreeFromFlat, getNodePath as getNodePathHelper } from '@/utils/page-helpers/treeHelper'
 import { ElMessage } from 'element-plus'
 

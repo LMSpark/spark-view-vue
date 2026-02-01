@@ -3,6 +3,7 @@
  */
 
 // ==================== DataSet 核心类型 ====================
+// Re-export from dataset-core package
 export type {
   DataRow,
   IBindingContext,
@@ -27,7 +28,7 @@ export type {
   SelfReferenceTable,
   TreePath,
   TreeSearchResult
-} from './dataset'
+} from '@spark-view/dataset-core'
 
 // ==================== 页面配置类型 ====================
 export type {
