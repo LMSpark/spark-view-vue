@@ -102,7 +102,7 @@ export default [
       // 简单过滤逻辑 (模拟后端查询)
       Object.keys(filters).forEach(key => {
         if (key !== 'page' && key !== 'pageSize' && filters[key]) {
-          rows = rows.filter((row: Record<string, unknown>) => String(row[key]) == String(filters[key]))
+          rows = rows.filter((row: Record<string, unknown>) => String(row[key]) === String(filters[key]))
         }
       })
       

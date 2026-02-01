@@ -68,16 +68,22 @@ export default [
         ]
       }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn', // Warn about any types but allow in core library
+      '@typescript-eslint/no-explicit-any': 'warn', // 警告 any，但允许（核心库需要）
       '@typescript-eslint/no-var-requires': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'warn', // 警告非空断言
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
       '@typescript-eslint/prefer-optional-chain': 'warn',
       '@typescript-eslint/prefer-nullish-coalescing': 'warn',
-      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+      '@typescript-eslint/explicit-function-return-type': 'off', // 关闭，TypeScript 推断足够
+      '@typescript-eslint/explicit-module-boundary-types': 'off', // 关闭，TypeScript 推断足够
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
       'no-debugger': 'error',
-      'prefer-const': 'warn',
-      'no-var': 'error'
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'eqeqeq': ['error', 'always'],
+      'no-throw-literal': 'error'
     }
   },
   // JS files

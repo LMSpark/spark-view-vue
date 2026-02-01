@@ -208,9 +208,9 @@ export class FilterExpressionParser {
   ): boolean {
     switch (operator) {
       case '==':
-        return fieldValue == compareValue
+        return fieldValue === compareValue
       case '!=':
-        return fieldValue != compareValue
+        return fieldValue !== compareValue
       case '>':
         return (fieldValue as number) > (compareValue as number)
       case '>=':
@@ -325,7 +325,7 @@ export class FilterExpressionParser {
       case '==':
         return `${field} = ${valueStr}`
       case '!=':
-        return `${field} != ${valueStr}`
+        return `${field} !== ${valueStr}`
       case '>':
         return `${field} > ${valueStr}`
       case '>=':

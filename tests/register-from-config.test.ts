@@ -23,7 +23,7 @@ describe('registerLogical', () => {
     expect(registered?.version).toBe('1.0.0') // default version
   })
 
-  it('should render logical component as fragment with children', async () => {
+  it('should render logical component as fragment with children', () => {
     const config = {
       type: 'logical-container',
       children: [
@@ -36,7 +36,7 @@ describe('registerLogical', () => {
 
     // Test rendering
     const renderer = Spark.manager().renderer
-    const result = await renderer.renderComponentTree(config)
+    const result = renderer.renderComponentTree(config)
 
     expect(result.type).toBe('fragment')
     expect(result.children).toHaveLength(1)
