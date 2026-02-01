@@ -1,6 +1,5 @@
 import { $data, $rebindRules } from '@/utils/page-helpers/common.js'
 import { TreeManager } from '@spark-view/spark-data'
-import { buildTreeFromFlat, getNodePath as getNodePathHelper } from '@/utils/page-helpers/treeHelper'
 import { ElMessage } from 'element-plus'
 
 let treeManager = null
@@ -18,12 +17,8 @@ export function __init__() {
   // 富化节点信息（计算 level 和 hasChildren）
   treeManager.enrichNodes()
   
-  // 🔑 关键修复：将扁平数据转换为树形结构供 el-tree 使用
-  const treeNodes = buildTreeFromFlat(
-    nodes,
-    config.idField || 'id',
-    config.parentIdField || 'parentId'
-  )
+  // 🔑 使用 TreeManager 原生方法构建树形结构
+  const treeNodes = treeManager.buildNestedTree()
   
   // 更新为树形结构
   pageData.treeData.nodes = treeNodes
