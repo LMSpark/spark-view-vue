@@ -22,7 +22,7 @@
 <script setup lang="ts">
 import {ref, onMounted, watch, reactive, nextTick} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {getPageConfig} from '../api'
+import {getPageConfig} from '../services/page-config'
 import type {PageRule, ApiConfig, DataRow} from '../types'
 import { DataSetManager, DataSet } from '@spark-view/spark-data'
 import VxeTableRenderer from '../../features/renderers/components/vxe/VxeTableRenderer.vue'
