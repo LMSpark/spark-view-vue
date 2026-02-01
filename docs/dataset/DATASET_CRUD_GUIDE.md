@@ -778,7 +778,10 @@ export async function handleTransferOrder(orderId, fromUserId, toUserId) {
 #### 使用方法
 
 ```javascript
-import { updateRow } from '@/utils/page-helpers/datasetHelper.js'
+// 直接使用 DataSet API
+const dataSet = SparkData.createDataSet({ ... })
+const table = dataSet.getTable('Users')
+table.updateRow(rowIndex, updatedData)
 import { DataSetManager } from '../utils/dataSetManager'
 
 export async function handleUpdateUserId(oldUserId, newUserId) {
@@ -854,7 +857,10 @@ export async function handleUpdateUserId(oldUserId, newUserId) {
 #### 使用方法
 
 ```javascript
-import { deleteRow } from '@/utils/page-helpers/datasetHelper.js'
+// 直接使用 DataSet API
+const dataSet = SparkData.createDataSet({ ... })
+const table = dataSet.getTable('Users')
+table.deleteRow(rowIndex)
 import { DataSetManager } from '../utils/dataSetManager'
 
 export async function handleDeleteUser(userId) {
@@ -949,7 +955,12 @@ export function initDataSet() {
 
 ```javascript
 // script.js
-import { updateRow, deleteRow } from '@/utils/page-helpers/datasetHelper.js'
+// 直接使用 DataSet/DataTable API
+import { SparkData } from '@spark-view/spark-data'
+const dataSet = SparkData.createDataSet({ ... })
+const table = dataSet.getTable('Users')
+table.updateRow(rowIndex, updatedData)
+table.deleteRow(rowIndex)
 import { DataSetManager } from '../utils/dataSetManager'
 import { ElMessage, ElMessageBox } from 'element-plus'
 

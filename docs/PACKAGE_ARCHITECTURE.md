@@ -255,8 +255,9 @@ const treeManager = SparkData.createTreeManager({
 
 **Before (旧方式):**
 ```typescript
-import { DataSetManager, TreeManager } from '@/models/dataSet'
-import { BindingContext } from '@/models/bindingContext'
+import { SparkData } from '@spark-view/spark-data'
+// 或者直接导入类（向后兼容）
+import { DataSetManager, TreeManager, BindingContext } from '@spark-view/spark-data'
 
 const dataSet = DataSetManager.create({ ... })
 const tree = new TreeManager({ ... })

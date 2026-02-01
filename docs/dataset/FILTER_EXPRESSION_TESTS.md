@@ -7,7 +7,10 @@
 ### 1. 简单相等条件
 
 ```typescript
-import { FilterExpressionParser } from '@/models/filterExpressionParser'
+import { SparkData } from '@spark-view/spark-data'
+// FilterExpressionParser 是静态工具类，使用命名空间访问
+const sql = SparkData.FilterParser.toSQL(expression)
+const query = SparkData.FilterParser.toMongoDB(expression)
 
 const expression = {
   field: 'status',
