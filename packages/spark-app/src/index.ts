@@ -65,3 +65,34 @@ export { setupErrorHandler, createErrorBoundary } from './error/handler'
 
 // Config
 export { loadConfig, isFeatureEnabled } from './config'
+
+// Environment Adapter (SSR/SPA兼容层)
+export {
+  envAdapter,
+  getEnvironment,
+  getBrowser,
+  onClient,
+  onServer,
+  onBoth,
+  EnvironmentType
+} from './environment'
+
+export type {
+  IEnvironmentInfo,
+  IBrowserAdapter,
+  IEnvironmentDetector
+} from './environment'
+
+// Dependency Injection (依赖注入容器)
+export {
+  container,
+  DependencyContainer,
+  ServiceLifetime,
+  ServiceIdentifiers
+} from './di/container'
+
+export type {
+  IDependencyContainer,
+  ServiceProvider,
+  ServiceDescriptor
+} from './di/container'

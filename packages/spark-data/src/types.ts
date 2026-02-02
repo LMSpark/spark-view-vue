@@ -226,7 +226,7 @@ export interface DataRelation {
 // ==================== DataSet 定义 ====================
 
 /**
- * DataSet 接口（纯数据结构，用于序列化）
+ * DataSet 接口 (ISP: 接口隔离原则 - 分离数据访问和事件订阅)
  */
 export interface IDataSet {
   dataSetName: string
@@ -240,6 +240,11 @@ export interface IDataSet {
   updateRelatedTables(tableName: string): void
   notifySubscribers(tableName: string, contextId?: string): void
   emit(event: string, data: unknown): void
+  
+  // 事件订阅方法 (新增)
+  subscribe(tableName: string, contextId: string, callback: () => void): void
+  on(event: string, handler: Function): void
+  off(event: string, handler: Function): void
 }
 
 // ==================== 辅助类型 ====================

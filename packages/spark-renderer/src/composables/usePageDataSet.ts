@@ -4,11 +4,14 @@
 
 import { ref, Ref, onUnmounted } from 'vue'
 import { pageLogger } from '@spark-view/spark-app'
-import { DataSetManager, DataSet } from '@spark-view/spark-data'
+import { DataSetManager } from '@spark-view/spark-data'
+import type { IDataSet, DataRow } from '@spark-view/spark-data'
 import type { PageContext, Rule } from '../types'
-import type { DataRow } from '@spark-view/spark-data'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
 
+/**
+ * DataSet管理选项接口 (ISP: 接口隔离原则)
+ */
 export interface UsePageDataSetOptions {
   pageData: Record<string, unknown>
   context: PageContext
@@ -18,8 +21,11 @@ export interface UsePageDataSetOptions {
   dataLoader?: (tableName: string) => Promise<any[]>
 }
 
+/**
+ * DataSet管理返回值接口 (ISP: 接口隔离原则)
+ */
 export interface UsePageDataSetReturn {
-  dataSet: Ref<DataSet | null>
+  dataSet: Ref<IDataSet | null>
   initDataSet: () => void
   autoSubscribeTables: () => void
   clearDataSet: () => void
@@ -50,8 +56,11 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     dataLoader
   } = options
   
-  const dataSet = ref<DataSet | null>(null)
+  const dataSet = ref<IDataSet | null>(null)
   
+  /**
+   * 初始化DataSet (SRP: 单一职责 - 只负责初始化)
+   */
   const initDataSet = () => {
     if (!enableDataSet) return
     
@@ -61,13 +70,13 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
         dataSet.value = null
       }
       
-      // 创建默认 dataLoader
+      // 创建默认 dataLoader (DIP: 依赖注入)
       const defaultDataLoader = dataLoader || (async (tableName: string) => {
         pageLogger.warn('使用默认 dataLoader，页面脚本应该注册自定义 dataLoader', { tableName })
         return []
       })
       
-      // 创建 DataSet
+      // 创建 DataSet (使用工厂模式)
       dataSet.value = DataSetManager.create(pageData.dataset as any, defaultDataLoader)
       
       // 移除 pageData.dataset.tables 引用
@@ -84,6 +93,9 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     }
   }
   
+  /**
+   * 自动订阅表数据变化 (SRP: 单一职责 - 只负责订阅管理)
+   */
   const autoSubscribeTables = () => {
     if (!dataSet.value || !originalRules?.value) return
     
@@ -115,10 +127,13 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     // 为每个上下文注册订阅
     contexts.forEach(key => {
       const [tableName, contextId] = key.split('.')
-      dataSet.value!.subscribe(tableName, contextId, () => {
-        pageLogger.debug('上下文数据变化', { contextKey: key })
-      })
-      pageLogger.debug('自动订阅上下文', { contextKey: key })
+      // 类型安全：确保contextId存在且是有效字符串
+      if (tableName && contextId && contextId !== 'undefined') {
+        dataSet.value!.subscribe(tableName, contextId, () => {
+          pageLogger.debug('上下文数据变化', { contextKey: key })
+        })
+        pageLogger.debug('自动订阅上下文', { contextKey: key })
+      }
     })
     
     // 监听 currentRow 和 selectedRows 变化
@@ -140,6 +155,9 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     })
   }
   
+  /**
+   * 清理DataSet (SRP: 单一职责 - 只负责清理)
+   */
   const clearDataSet = () => {
     if (dataSet.value) {
       dataSet.value = null

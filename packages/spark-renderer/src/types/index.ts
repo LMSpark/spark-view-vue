@@ -1,8 +1,8 @@
 /**
- * 渲染器类型定义
+ * 渲染器类型定义 (SOLID原则应用)
  */
 
-import type { DataSet } from '@spark-view/spark-data'
+import type { IDataSet } from '@spark-view/spark-data'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
@@ -36,7 +36,7 @@ export interface FormCreateAPI {
 }
 
 /**
- * 页面上下文
+ * 页面上下文接口 (DIP: 依赖倒置 - 依赖接口而非具体类型)
  */
 export interface PageContext {
   $api: FormCreateAPI | null
@@ -47,7 +47,7 @@ export interface PageContext {
   $queryAll: (selector: string) => NodeListOf<Element>
   $rebindRules: () => void
   $refreshData: (key?: string) => Promise<void>
-  $dataSet: DataSet | null
+  $dataSet: IDataSet | null  // 使用接口而非具体类
 }
 
 /**
@@ -156,6 +156,6 @@ export interface RuleBindingOptions {
   rules: Rule[]
   pageData: Record<string, unknown>
   pageFunctions: Record<string, Function>
-  dataSet: DataSet | null
+  dataSet: IDataSet | null  // 使用接口而非具体类
   formApi: FormCreateAPI | null
 }
