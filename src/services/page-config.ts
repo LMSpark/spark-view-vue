@@ -1,4 +1,5 @@
 import type {PageConfig, RouteConfig, ApiResponse} from '../types'
+import { logger } from '@/utils/logger'
 
 // SPA模式：直接导入静态配置，避免API请求问题
 import routesData from '/pages-config/routes.json'
@@ -15,7 +16,7 @@ export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
         throw new Error(result.message)
     } catch {
         // API失败时使用静态导入（SPA模式）
-        console.info(`📦 SPA模式：直接加载页面配置 ${pageId}`)
+        logger.info('SPA模式：直接加载页面配置', { pageId });
         
         try {
             // 动态导入页面配置文件
@@ -27,7 +28,7 @@ export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
                 data: dataModule.default ?? dataModule
             }
         } catch (importError) {
-            console.error(`❌ 无法加载页面配置: ${pageId}`, importError)
+            logger.error('无法加载页面配置', { pageId, error: importError });
             throw new Error(`页面配置不存在: ${pageId}`)
         }
     }
