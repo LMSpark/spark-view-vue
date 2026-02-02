@@ -28,14 +28,29 @@
 </template>
 
 <script setup lang="ts">
-import {computed} from 'vue'
+import {computed, ref, onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 
 const router = useRouter()
+const isRoutesLoaded = ref(false)
+
+// 等待路由加载完成
+onMounted(() => {
+    // 给路由一点时间异步加载
+    setTimeout(() => {
+        isRoutesLoaded.value = true
+    }, 100)
+})
 
 // 从路由中获取菜单列表
 const menuRoutes = computed(() => {
-    return router.getRoutes().filter(route => route.meta?.title)
+    if (!isRoutesLoaded.value) return []
+    return router.getRoutes()
+        .filter(route => route.meta?.title && route.path !== '/')
+        .sort((a, b) => {
+            // 按路径排序，保持菜单顺序一致
+            return a.path.localeCompare(b.path)
+        })
 })
 </script>
 

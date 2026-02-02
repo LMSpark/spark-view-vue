@@ -1,8 +1,18 @@
 import type {PageConfig, RouteConfig, ApiResponse} from '../types'
 import { logger } from '@/utils/logger'
 
-// SPA模式：直接导入静态配置，避免API请求问题
-import routesData from '/pages-config/routes.json'
+// SPA模式：使用 fetch 加载静态配置
+let routesDataCache: RouteConfig[] | null = null
+
+const loadRoutesData = async (): Promise<RouteConfig[]> => {
+    if (routesDataCache !== null) {
+        return routesDataCache
+    }
+    const response = await fetch('/pages-config/routes.json')
+    const data: RouteConfig[] = await response.json()
+    routesDataCache = data
+    return data
+}
 
 export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
     try {
@@ -19,14 +29,16 @@ export const getPageConfig = async (pageId: string): Promise<PageConfig> => {
         logger.info('SPA模式：直接加载页面配置', { pageId });
         
         try {
-            // 动态导入页面配置文件
-            const ruleModule = await import(`/pages-config/${pageId}/rule.json`)
-            const dataModule = await import(`/pages-config/${pageId}/pagedata.json`)
+            // 使用 fetch 加载 public 目录下的 JSON 文件
+            const [ruleResponse, dataResponse] = await Promise.all([
+                fetch(`/pages-config/${pageId}/rule.json`),
+                fetch(`/pages-config/${pageId}/pagedata.json`)
+            ])
             
-            return {
-                rule: ruleModule.default ?? ruleModule,
-                data: dataModule.default ?? dataModule
-            }
+            const rule = await ruleResponse.json()
+            const data = await dataResponse.json()
+            
+            return { rule, data }
         } catch (importError) {
             logger.error('无法加载页面配置', { pageId, error: importError });
             throw new Error(`页面配置不存在: ${pageId}`)
@@ -46,7 +58,7 @@ export const getRoutes = async (): Promise<RouteConfig[]> => {
         throw new Error(result.message)
     } catch {
         // API失败时使用静态导入（SPA模式）
-        console.info('📦 SPA模式：直接加载路由配置')
-        return routesData
+        logger.info('SPA模式：直接加载路由配置');
+        return await loadRoutesData()
     }
 }
