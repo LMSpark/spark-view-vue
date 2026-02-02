@@ -26,6 +26,7 @@ import {getPageConfig} from '../services/page-config'
 import type {PageRule, ApiConfig, DataRow} from '../types'
 import { DataSetManager, DataSet } from '@spark-view/spark-data'
 import VxeTableRenderer from '../../features/renderers/components/vxe/VxeTableRenderer.vue'
+import { pageLogger } from '@/utils/logger'
 
 // 注意：Element Plus 组件已由 @form-create/element-ui 内部注册
 // app.use(formCreate) 时会自动注册所有组件，无需手动导入
@@ -120,7 +121,7 @@ const initDataSet = () => {
         
         // 创建 mock dataLoader（页面脚本可以覆盖）
         const defaultDataLoader = async (tableName: string) => {
-            console.log(`⚠️ 默认 dataLoader：${tableName} - 页面脚本应该注册自定义 dataLoader`);
+            pageLogger.warn('默认 dataLoader，页面脚本应该注册自定义 dataLoader', { tableName });
             return [];
         };
         
@@ -137,7 +138,7 @@ const initDataSet = () => {
         if (typeof window !== 'undefined') {
             window.__pageContext.$dataSet = dataSet;
         }
-        console.log('✅ DataSet 自动初始化成功（内核级）');
+        pageLogger.success('DataSet 自动初始化成功（内核级）');
         
         // 注意：autoSubscribeTables() 需要在 originalRules 设置后调用
         // 已移到 loadPageConfig 的最后
@@ -200,23 +201,23 @@ const autoSubscribeTables = () => {
     contexts.forEach(key => {
         const [tableName, contextId] = key.split('.');
         dataSet!.subscribe(tableName, contextId, () => {
-            console.log(`🔄 上下文 ${key} 数据变化（Vue 响应式自动更新）`);
+            pageLogger.sync('上下文数据变化（Vue 响应式自动更新）', { contextKey: key });
             // ❌ 移除自动 rebindRules，避免不必要的 UI 重绑
             // rebindRules();
         });
-        console.log(`📡 自动订阅上下文: ${key}`);
+        pageLogger.info('自动订阅上下文', { contextKey: key });
     });
     
     // 🎯 监听 currentRow/selectedRows 变化事件
     // ⚠️ 一般不需要 rebindRules：Vue 响应式会自动更新组件
     // 只在 rules 结构本身需要变化时才调用 rebindRules
     dataSet!.on('currentRowChanged', () => {
-        console.log('🎯 [Event] currentRow 变化（Vue 响应式自动更新）');
+        pageLogger.event('currentRow 变化（Vue 响应式自动更新）');
         // ❌ 不调用 rebindRules() - 数据是响应式的，组件会自动更新
     });
     
     dataSet!.on('selectedRowsChanged', ({ tableName, contextId, rows }: { tableName: string, contextId: string, rows: DataRow[] }) => {
-        console.log(`🎯 [数据→UI] ${tableName}.${contextId}.selectedRows 变化，同步到 el-table`);
+        pageLogger.sync('selectedRows 变化，同步到 el-table', { tableName, contextId, rowCount: rows.length });
         
         // 使用 nextTick 确保 DOM 已更新
         nextTick(() => {
@@ -230,17 +231,17 @@ const autoSubscribeTables = () => {
                     if (rows.length === 0 && typeof tableComponent.clearSelection === 'function') {
                         // 清空选中
                         tableComponent.clearSelection();
-                        console.log(`✅ [UI同步] 已清空 ${tableName} 表格复选框`);
+                        pageLogger.sync('已清空表格复选框', { tableName });
                     } else if (typeof tableComponent.toggleRowSelection === 'function') {
                         // 设置选中（先清空，再逐个选中）
                         tableComponent.clearSelection?.();
                         rows.forEach(row => {
                             tableComponent.toggleRowSelection(row, true);
                         });
-                        console.log(`✅ [UI同步] 已设置 ${tableName} 表格选中 ${rows.length} 行`);
+                        pageLogger.sync('已设置表格选中行', { tableName, rowCount: rows.length });
                     }
                 } else {
-                    console.warn(`⚠️ [UI同步] 未找到表格组件: ${componentName}`);
+                    pageLogger.warn('未找到表格组件', { componentName });
                 }
             }
         });
@@ -268,7 +269,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                     render: renderFn
                 } as Rule
             } else {
-                console.warn(`⚠️ 渲染函数 ${newRule.type} 未找到`)
+                pageLogger.warn('渲染函数未找到', { type: newRule.type })
             }
         }
     
@@ -278,15 +279,14 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
             for (const [eventName, handler] of Object.entries(newRule.on)) {
                 if (typeof handler === 'string') {
                     // 从页面函数对象获取函数
+                    const handlerName = handler
                     newOn[eventName] = (...args: unknown[]) => {
-                        const fn = pageFunctions.value[handler]
+                        const fn = pageFunctions.value[handlerName]
                         if (typeof fn === 'function') {
-                            console.log(`🎯 [事件触发] ${eventName} -> ${handler}`, args)
+                            pageLogger.event('事件触发', { eventName, handler: handlerName, args })
                             fn(...args)  // 传递所有参数
                         } else {
-                            console.warn(`函数 ${handler} 未定义`)
-                            console.log('当前可用函数:', Object.keys(pageFunctions.value))
-                            console.log('pageFunctions.value:', pageFunctions.value)
+                            pageLogger.warn('函数未定义', { handler: handlerName, availableFunctions: Object.keys(pageFunctions.value) });
                         }
                     }
                 } else {
@@ -312,7 +312,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                     newRule.name = `table_${tableName}_${contextId}`;
                 }
                 
-                console.log(`🔧 [自动注入] 为表 ${tableName} 注入事件处理器 (contextId=${contextId})`)
+                pageLogger.inject('为表注入事件处理器', { tableName, contextId });
                 
                 // 确保 on 对象存在
                 if (!newRule.on) {
@@ -323,11 +323,11 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                 // 注意：form-create 使用驼峰命名，Element Plus 模板中的 @current-change 会被转换为 onCurrentChange
                 const originalCurrentChange = newRule.on['currentChange']
                 newRule.on['currentChange'] = (currentRow: DataRow | null, oldRow: DataRow | null) => {
-                    console.log(`🎯 [事件触发] currentChange`, { tableName, currentRow, oldRow, isProcessingEvent })
+                    pageLogger.event('currentChange 事件', { tableName, hasCurrentRow: !!currentRow, isProcessingEvent });
                     
                     // 重入检查：如果正在处理事件，跳过以防止死循环
                     if (isProcessingEvent) {
-                        console.log(`🚫 [防重入] 跳过重复的 currentChange 事件`)
+                        pageLogger.debug('防重入：跳过重复的 currentChange 事件');
                         return
                     }
                     
@@ -348,10 +348,10 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                                 // ⚠️ 不使用 skipNotify，因为需要触发子表过滤
                                 context.setCurrentRow(currentRow || null, false)
                             } else {
-                                console.warn(`⚠️ 上下文 ${tableName}.${contextId || 'default'} 不存在或未注入方法`)
+                                pageLogger.warn('上下文不存在或未注入方法', { tableName, contextId });
                             }
                         } else {
-                            console.warn(`⚠️ dataSet 为 null，无法同步 ${tableName}.currentRow`)
+                            pageLogger.warn('dataSet 为 null，无法同步', { tableName, property: 'currentRow' })
                         }
                     } finally {
                         // 延迟释放锁，确保 rebindRules 完成后再允许下次事件
@@ -364,7 +364,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                 // 注入 selectionChange 事件（多选行变化）
                 const originalSelectionChange = newRule.on['selectionChange']
                 newRule.on['selectionChange'] = (selectedRows: DataRow[]) => {
-                    console.log(`🎯 [事件触发] selectionChange`, { tableName, selectedRows })
+                    pageLogger.event('selectionChange 事件', { tableName, selectedCount: selectedRows.length });
                     
                     // 先调用原有的用户处理器
                     if (originalSelectionChange && typeof originalSelectionChange === 'function') {
@@ -379,9 +379,9 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                         if (context && context.setSelectedRows) {
                             context.setSelectedRows(selectedRows, true)
                         } else {
-                            console.warn(`⚠️ 上下文 ${tableName}.${contextId || 'default'} 不存在或未注入方法`)
+                            pageLogger.warn('上下文不存在或未注入方法', { tableName, contextId });
                         }
-                        console.log(`✅ [自动同步] ${tableName}.${contextId || 'default'}.selectedRows =`, selectedRows)
+                        pageLogger.sync('自动同步 selectedRows', { tableName, contextId, rowCount: selectedRows.length });
                     }
                 }
             }
@@ -404,7 +404,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                     const propertyName = keys[keys.length - 1];
                     value = context[propertyName as keyof typeof context];
                 } else {
-                    console.warn(`⚠️ 上下文不存在: ${tableName}.${contextId}`);
+                    pageLogger.warn('上下文不存在', { tableName, contextId });
                     value = null;
                 }
             } else {
@@ -416,7 +416,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
             
             // 🔍 Debug: 查看 currentRow 的实际值
             if (newRule.dataKey?.includes('currentRow')) {
-                console.log(`🔍 [Debug] dataKey="${newRule.dataKey}" 解析结果:`, value, typeof value)
+                pageLogger.debug('dataKey 解析结果', { dataKey: newRule.dataKey, value, valueType: typeof value });
             }
       
             if ((newRule.type === 'el-table' || newRule.type === 'el-tree')) {
@@ -426,7 +426,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                 }
                 
                 newRule.props.data = value
-                console.log(`📊 [数据绑定] ${newRule.type} dataKey="${newRule.dataKey}" 绑定数据:`, value)
+                pageLogger.data('数据绑定', { ruleType: newRule.type, dataKey: newRule.dataKey, dataLength: Array.isArray(value) ? value.length : undefined });
                 
                 // 🌲 el-tree 特殊处理：绑定 expandedKeys 和 currentNodeKey
                 if (newRule.type === 'el-tree') {
@@ -515,7 +515,7 @@ const loadApiData = async (key: string, config: ApiConfig): Promise<void> => {
             fetchOptions.headers = { 'Content-Type': 'application/json' }
         }
         
-        console.log(`📡 加载 API 数据 [${key}]:`, fetchUrl)
+        pageLogger.api('加载 API 数据', { key, url: fetchUrl });
         
         const response = await fetch(fetchUrl, fetchOptions)
         const result = await response.json()
@@ -526,18 +526,18 @@ const loadApiData = async (key: string, config: ApiConfig): Promise<void> => {
         // 更新响应式数据
         pageData[key] = data
         
-        console.log(`✅ API 数据加载成功 [${key}]:`, data)
+        pageLogger.success('API 数据加载成功', { key, dataLength: Array.isArray(data) ? data.length : undefined });
         
         // 重新绑定数据到 rules
         pageRules.value = bindDataToRules(pageRules.value, pageData)
     } catch (err) {
-        console.warn(`⚠️ API请求失败，使用fallback数据 [${key}]:`, err)
+        pageLogger.warn('API请求失败，使用fallback数据', { key, error: err });
         
         // SPA模式 fallback 数据
         const fallbackData = getFallbackData(key, config)
         pageData[key] = fallbackData
         
-        console.log(`📦 使用fallback数据 [${key}]:`, fallbackData)
+        pageLogger.info('使用fallback数据', { key, dataLength: Array.isArray(fallbackData) ? fallbackData.length : undefined });
         
         // 重新绑定数据到 rules
         pageRules.value = bindDataToRules(pageRules.value, pageData)
@@ -569,7 +569,7 @@ const getFallbackData = (_: string, config: ApiConfig) => {
     }
     
     // 默认返回空数组
-    console.warn(`⚠️ 未知的API: ${config.url}，返回空数据`)
+    pageLogger.warn('未知的API，返回空数据', { url: config.url });
     return []
 }
 
@@ -594,7 +594,7 @@ const rebindRules = (immediate = false): void => {
     
     const doRebind = () => {
         if (originalRules.value && originalRules.value.length > 0) {
-            console.log(`🔄 [${immediate ? 'Immediate' : 'Debounce'}] 重新绑定数据到 rules`)
+            pageLogger.sync('重新绑定数据到 rules', { mode: immediate ? 'Immediate' : 'Debounce' })
             pageRules.value = bindDataToRules(JSON.parse(JSON.stringify(originalRules.value)), pageData)
         }
     }
@@ -695,9 +695,7 @@ const loadPageConfig = async () => {
         pageId.value = currentPageId
         const config = await getPageConfig(currentPageId)
     
-        console.log(`✅ 加载页面配置 [${currentPageId}]:`, config)
-    
-        // 先处理数据（支持静态数据和 API 配置）
+        pageLogger.success('加载页面配置', { pageId: currentPageId });
         await processPageData(config.data)
     
         // 自动初始化 dataSet（如果数据包含 dataset）
@@ -737,7 +735,7 @@ const loadPageConfig = async () => {
             const moduleLoader = pageModules[modulePath]
             
             if (!moduleLoader) {
-                console.warn(`⚠️ 页面模块不存在: ${modulePath}，跳过脚本加载`)
+                pageLogger.warn('页面模块不存在，跳过脚本加载', { modulePath })
                 pageFunctions.value = {}
                 // ⚠️ 即使没有模块，也要立即绑定数据
                 rebindRules(true)
@@ -754,7 +752,7 @@ const loadPageConfig = async () => {
                 }
                 
                 pageFunctions.value = functions
-                console.log('✅ 页面模块加载成功，注册函数:', Object.keys(functions))
+                pageLogger.success('页面模块加载成功，注册函数', { functions: Object.keys(functions) })
                 
                 // 注册自定义渲染函数为 form-create 组件（使用 kebab-case 和 PascalCase 两种格式）
                 const customComponents: Record<string, any> = {}
@@ -771,22 +769,21 @@ const loadPageConfig = async () => {
                 
                 if (Object.keys(customComponents).length > 0) {
                     formCreateOption.value.global = customComponents
-                    console.log('✅ 注册自定义组件:', Object.keys(customComponents))
+                    pageLogger.success('注册自定义组件', { components: Object.keys(customComponents) })
                 }
                 
                 // 如果模块导出了 __init__ 函数，立即调用（此时订阅者已就绪）
                 if (typeof scriptModule.__init__ === 'function') {
-                    console.log('🎯 调用模块初始化函数 __init__')
+                    pageLogger.info('调用模块初始化函数 __init__')
                     ;(scriptModule.__init__ as Function)()
                 }
                 
                 // ✅ 模块加载完成后，立即绑定规则以解析渲染函数（避免防抖延迟）
                 rebindRules(true)
-                console.log('✅ 模块加载后重新绑定规则完成')
+                pageLogger.success('模块加载后重新绑定规则完成')
             }
         } catch (err) {
-            console.error('❌ 页面模块加载失败:', err)
-            console.error('尝试加载:', `/pages-config/${currentPageId}/script.js`)
+            pageLogger.error('页面模块加载失败', { error: err, modulePath: `/pages-config/${currentPageId}/script.js` })
             pageFunctions.value = {}
             // ⚠️ 即使模块加载失败，也要立即绑定数据
             rebindRules(true)
@@ -797,14 +794,14 @@ const loadPageConfig = async () => {
     } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : '加载页面配置失败'
         error.value = errorMessage
-        console.error('❌ 获取页面配置失败:', err)
+        pageLogger.error('获取页面配置失败', { error: err })
         // 页面不存在时自动回退到首页，避免客户端反复请求已删除页面
         if (typeof window !== 'undefined' && errorMessage.includes('页面配置不存在')) {
             const router = useRouter()
             try {
                 router.replace({ path: '/' })
             } catch (e) {
-                console.warn('无法跳转到首页:', e)
+                pageLogger.warn('无法跳转到首页', { error: e })
             }
         }
     } finally {
@@ -828,13 +825,13 @@ const onFormMounted = (api: FormCreateAPI) => {
     // eslint-disable-next-line vue/component-definition-name-casing
     apiAny.component('e-column', PlaceholderComponent)
     
-    console.log('✅ VXE 表格组件已注册到 form-create')
+    pageLogger.success('VXE 表格组件已注册到 form-create')
     
     // 🔑 暴露 formApi 供 pageScripts 使用
     if (typeof window !== 'undefined') {
         window.__formApi__ = api
     }
-    console.log('📋 表单实例已挂载:', api)
+    pageLogger.info('表单实例已挂载', { api })
 }
 
 // 监听路由变化，重新加载配置
