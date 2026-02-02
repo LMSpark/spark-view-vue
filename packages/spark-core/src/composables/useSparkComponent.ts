@@ -17,7 +17,25 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     registry?: ComponentRegistry
     parentContext?: ComponentContext
   }
-) {
+): {
+  context: ComponentContext
+  isVisible: unknown
+  isDisabled: unknown
+  provide: (name: string, implementation?: Implementation) => void
+  getProvider: (name: string) => CapabilityProvider | undefined
+  getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => T | undefined
+  consume: (name: string) => Implementation | null
+  use: (name: string) => Implementation | null
+  whenAvailable: (name: string) => Promise<CapabilityProvider>
+  initialize: () => void
+  destroy: () => void
+  logger: ReturnType<typeof Logger>
+  getComponent: (type: string) => unknown
+  isComponentRegistered: (type: string) => boolean
+  getOrCreateNoopProvider: (name: string) => CapabilityProvider
+  connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => void
+  disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => void
+} {
   const parentContext = options?.parentContext
 
   const ctxRaw: ComponentContext = {
@@ -63,7 +81,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
 
-  function consume(name: string) {
+  function consume(name: string): Implementation | null {
     const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
     context.consumers.set(name, consumer)
     const provider = manager.getProvider(context, name) ?? createNoopProvider(name)
@@ -71,7 +89,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
       try { capabilityManager.connectCapability(provider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
       logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
-      return consumer.implementation
+      return consumer.implementation ?? null
     }
     logger.warn(`⚠️ Capability not found (registered consumer for late-binding): ${name} for ${context.type} (${context.id})`)
     return null

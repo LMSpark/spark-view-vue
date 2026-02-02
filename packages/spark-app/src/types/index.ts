@@ -1,0 +1,172 @@
+/**
+ * SPARK Application Layer Types
+ * 应用层类型定义
+ */
+
+/**
+ * 日志级别
+ */
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+/**
+ * 应用环境
+ */
+export type AppEnvironment = 'development' | 'production' | 'test'
+
+/**
+ * 用户信息
+ */
+export interface UserInfo {
+  userId: string
+  username: string
+  displayName?: string
+  email?: string
+  avatar?: string
+  roles: string[]        // ['admin', 'sales', 'manager']
+  permissions: string[]  // ['order:create', 'user:read', 'report:export']
+}
+
+/**
+ * 租户信息
+ */
+export interface TenantInfo {
+  tenantId: string
+  tenantName: string
+  tenantCode?: string
+  config?: Record<string, unknown>
+  features?: string[]  // 租户启用的功能特性
+}
+
+/**
+ * 环境信息
+ */
+export interface EnvironmentInfo {
+  mode: AppEnvironment
+  apiBaseUrl: string
+  version: string
+  buildTime?: string
+}
+
+/**
+ * 应用上下文
+ */
+export interface AppContext {
+  /** 用户信息 */
+  user: UserInfo
+  /** 租户信息 */
+  tenant: TenantInfo
+  /** 环境信息 */
+  env: EnvironmentInfo
+  /** 全局配置 */
+  config: Record<string, unknown>
+  /** 初始化时间 */
+  initializedAt: string
+}
+
+/**
+ * 应用配置
+ */
+export interface AppConfig {
+  /** API 基础地址 */
+  apiBaseUrl: string
+  /** 日志级别 */
+  logLevel?: LogLevel
+  /** 是否启用 Mock */
+  enableMock?: boolean
+  /** 应用版本 */
+  version?: string
+  /** 功能开关 */
+  features?: {
+    enableAI?: boolean
+    enableExport?: boolean
+    enableOffline?: boolean
+  }
+}
+
+/**
+ * 初始化选项
+ */
+export interface BootstrapOptions {
+  /** Vue 应用实例 */
+  app: import('vue').App
+  /** Vue Router 实例 */
+  router: import('vue-router').Router
+  /** 应用配置 */
+  config: AppConfig
+  /** 挂载前钩子 */
+  beforeMount?: (context: AppContext) => void | Promise<void>
+  /** 挂载后钩子 */
+  afterMount?: (context: AppContext) => void | Promise<void>
+  /** 鉴权函数（返回 AppContext 或 null） */
+  authenticate?: () => Promise<AppContext | null>
+}
+
+/**
+ * 路由守卫选项
+ */
+export interface RouterGuardOptions {
+  /** 登录页路径 */
+  loginPath?: string
+  /** 无权限页路径 */
+  forbiddenPath?: string
+  /** 是否启用模型预加载 */
+  enablePreload?: boolean
+  /** 自定义权限检查 */
+  checkPermission?: (permissions: string[], required: string[]) => boolean
+}
+
+/**
+ * 错误处理选项
+ */
+export interface ErrorHandlerOptions {
+  /** 错误回调 */
+  onError?: (error: Error, context: ErrorContext) => void
+  /** 是否启用降级页面 */
+  enableFallback?: boolean
+  /** 自定义错误分类 */
+  errorClassifier?: (error: Error) => ErrorType
+}
+
+/**
+ * 错误上下文
+ */
+export interface ErrorContext {
+  /** 错误来源（组件名） */
+  source?: string
+  /** 错误信息 */
+  info: string
+  /** 时间戳 */
+  timestamp: number
+}
+
+/**
+ * 错误类型
+ */
+export enum ErrorType {
+  Auth = 'AUTH',
+  Permission = 'PERMISSION',
+  Network = 'NETWORK',
+  Validation = 'VALIDATION',
+  Unknown = 'UNKNOWN'
+}
+
+/**
+ * 初始化阶段
+ */
+export enum BootstrapPhase {
+  Config = 'CONFIG',
+  Auth = 'AUTH',
+  Services = 'SERVICES',
+  Router = 'ROUTER',
+  Mount = 'MOUNT',
+  Complete = 'COMPLETE'
+}
+
+/**
+ * 初始化事件
+ */
+export interface BootstrapEvent {
+  phase: BootstrapPhase
+  timestamp: number
+  data?: Record<string, unknown>
+}

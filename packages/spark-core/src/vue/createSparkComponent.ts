@@ -170,7 +170,6 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         }
       }
     },
-    // @ts-expect-error Vue 3.4 type inference issue with generic props
     setup(props: { config: _TConfig }) {
       // Create component context
       const ctxRaw: ComponentContext = {
