@@ -1,5 +1,8 @@
+/* eslint-disable no-console */
 /**
  * 使用示例 - SPA 模式
+ * 
+ * @fileoverview Examples are allowed to use console for demonstration
  */
 
 import { createApp } from 'vue'

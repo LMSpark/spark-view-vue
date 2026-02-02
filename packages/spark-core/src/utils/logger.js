@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 function formatMsg(level, args) {
     return [`[${new Date().toISOString()}]`, `[${level.toUpperCase()}]`, ...args];
 }

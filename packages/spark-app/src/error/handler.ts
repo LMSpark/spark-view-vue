@@ -5,6 +5,9 @@
 
 import type { App } from 'vue'
 import type { ErrorHandlerOptions, ErrorType, ErrorContext } from '../types'
+import { createLogger } from '../logger'
+
+const errorLogger = createLogger('error')
 
 /**
  * 设置全局错误处理
@@ -23,7 +26,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
       timestamp: Date.now()
     }
 
-    console.error('❌ [Global Error]', {
+    errorLogger.error('[Global Error]', {
       type: errorType,
       message: error.message,
       context,
@@ -42,7 +45,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
   // Promise 未捕获错误
   if (typeof window !== 'undefined') {
     window.addEventListener('unhandledrejection', (event) => {
-      console.error('❌ [Unhandled Promise]', event.reason)
+      errorLogger.error('[Unhandled Promise]', event.reason)
       event.preventDefault()
       
       if (onError) {
@@ -54,7 +57,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
     })
   }
 
-  console.log('✅ 全局错误处理已设置')
+  errorLogger.info('全局错误处理已设置')
 }
 
 /**
@@ -119,8 +122,8 @@ function handleErrorByType(type: ErrorType, error: Error, enableFallback: boolea
  */
 function showErrorMessage(message: string): void {
   if (typeof window !== 'undefined') {
-    // 简单的 alert（实际应该使用 Element Plus 等 UI 库）
-    console.error(message)
+    // 使用errorLogger记录错误消息
+    errorLogger.error(message)
     
     // 如果有 Element Plus，使用 ElMessage
     if ((window as any).ElMessage) {
@@ -143,7 +146,7 @@ export function createErrorBoundary(fallbackRender?: (error: Error) => any) {
     errorCaptured(err: Error) {
       const self = this as unknown as { error: Error | null }
       self.error = err
-      console.error('❌ [Error Boundary]', err)
+      errorLogger.error('[Error Boundary]', err)
       return false // 阻止错误继续传播
     },
     render(): unknown {

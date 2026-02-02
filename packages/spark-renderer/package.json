@@ -30,7 +30,7 @@
         "lint": "eslint src --ext .ts,.vue"
     },
     "peerDependencies": {
-        "vue": "^3.4.0",
+        "vue": "^3.5.0",
         "vue-router": "^4.0.0"
     },
     "dependencies": {
@@ -40,9 +40,9 @@
         "@spark-view/spark-app": "workspace:*"
     },
     "devDependencies": {
-        "@types/node": "^20.10.0",
+        "@types/node": "^18.19.130",
         "@vue/test-utils": "^2.4.6",
-        "typescript": "^5.3.3",
+        "typescript": "~5.3.3",
         "vitest": "^2.1.8",
         "jsdom": "^25.0.1"
     }

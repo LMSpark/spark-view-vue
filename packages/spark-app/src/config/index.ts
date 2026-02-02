@@ -4,6 +4,9 @@
  */
 
 import type { AppConfig } from '../types'
+import { createLogger } from '../logger'
+
+const configLogger = createLogger('config')
 
 /**
  * 默认配置
@@ -34,9 +37,9 @@ export async function loadConfig(envConfig?: Partial<AppConfig>): Promise<AppCon
   try {
     const remoteConfig = await fetchRemoteConfig()
     Object.assign(config, remoteConfig)
-    console.log('✅ 远程配置已加载', remoteConfig)
+    configLogger.info('远程配置已加载', remoteConfig)
   } catch (error) {
-    console.warn('⚠️ 远程配置加载失败，使用本地配置', error)
+    configLogger.warn('远程配置加载失败，使用本地配置', { error: String(error) })
   }
 
   return config

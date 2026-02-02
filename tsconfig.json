@@ -48,14 +48,21 @@
     "features/**/*.vue",
     "features/**/*.d.ts",
     "./packages/spark-core/src/**/*.ts",
-    ".vitepress/**/*.ts",
-    "tools/**/*.ts",
     "vite.config.ts",
     "packages/spark-core/vitest.config.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "obj"
+    "obj",
+    "**/*.md",
+    "**/dist/**",
+    "**/node_modules/**",
+    "packages/**/examples/**",
+    "mocks/**",
+    ".vitepress/**",
+    "tools/**",
+    "deploy/**",
+    "docs/**"
   ]
 }

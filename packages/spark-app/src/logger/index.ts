@@ -148,6 +148,7 @@ class AppLogger {
       try {
         transport.send(level, message, meta)
       } catch (error) {
+        // Fallback to console when logger transport fails
         console.error('日志传输失败', error)
       }
     })
@@ -238,6 +239,11 @@ export function createScopedLogger(scope: string, config?: AppLoggerConfig): App
     prefix: scope
   })
 }
+
+/**
+ * 创建作用域 Logger (便捷别名)
+ */
+export const createLogger = createScopedLogger
 
 /**
  * 默认 Logger 实例

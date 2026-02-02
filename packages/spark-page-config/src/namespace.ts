@@ -12,7 +12,7 @@ import {
   validateRules
 } from './validator'
 
-import type { ConfigLoader } from './types'
+// ConfigLoader type is defined but exported via createConfigLoader function
 
 /**
  * SparkPageConfig 命名空间
@@ -22,11 +22,13 @@ export const SparkPageConfig = {
    * 配置加载器
    */
   createLoader: createConfigLoader,
+  createConfigLoader, // 别名，便于使用
   
   /**
    * 动态路由
    */
   createRouter: createDynamicRouter,
+  createDynamicRouter, // 别名，便于使用
   setupRoutes: setupDynamicRoutes,
   
   /**

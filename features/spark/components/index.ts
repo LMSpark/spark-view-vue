@@ -32,7 +32,7 @@ const sparkComponentDefinitions = Object.entries(sparkComponents).map(([type, co
  * 在应用启动时调用此函数注册所有组件
  */
 export function initializeSparkComponents(): void {
-  const logger = Spark.Logger()
+  const logger = Spark.Logger() as { info: (msg: string) => void }
   logger.info('🚀 Initializing SPARK Component System...')
 
   // 注册所有组件
