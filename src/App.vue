@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <!-- 左侧边栏 -->
-    <div class="sidebar">
-      <h2 style="color: #fff; margin-bottom: 20px;">管理后台</h2>
+    <aside class="sidebar">
+      <h2 class="sidebar-title">SPARK 管理后台</h2>
       <el-menu
         :default-active="$route.path"
         background-color="#001529"
@@ -15,42 +15,45 @@
           :key="route.path"
           :index="route.path"
         >
-          <span>{{ route.meta?.icon }} {{ route.meta?.title }}</span>
+          <template #default>
+            <span>{{ route.meta?.icon }} {{ route.meta?.title }}</span>
+          </template>
         </el-menu-item>
       </el-menu>
-    </div>
+    </aside>
 
     <!-- 主内容区 -->
-    <div class="main-content">
-      <router-view />
-    </div>
+    <main class="main-content">
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, ref, onMounted} from 'vue'
-import {useRouter} from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const isRoutesLoaded = ref(false)
 
 // 等待路由加载完成
 onMounted(() => {
-    // 给路由一点时间异步加载
-    setTimeout(() => {
-        isRoutesLoaded.value = true
-    }, 100)
+  setTimeout(() => {
+    isRoutesLoaded.value = true
+  }, 100)
 })
 
 // 从路由中获取菜单列表
 const menuRoutes = computed(() => {
-    if (!isRoutesLoaded.value) return []
-    return router.getRoutes()
-        .filter(route => route.meta?.title && route.path !== '/')
-        .sort((a, b) => {
-            // 按路径排序，保持菜单顺序一致
-            return a.path.localeCompare(b.path)
-        })
+  if (!isRoutesLoaded.value) return []
+  
+  return router.getRoutes()
+    .filter(route => route.meta?.title && route.path !== '/')
+    .sort((a, b) => a.path.localeCompare(b.path))
 })
 </script>
 
@@ -61,15 +64,38 @@ const menuRoutes = computed(() => {
 }
 
 .sidebar {
-  width: 200px;
+  width: 240px;
   background: #001529;
   color: #fff;
   padding: 20px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .main-content {
   flex: 1;
-  padding: 20px;
+  padding: 24px;
   background: #f0f2f5;
+  overflow: auto;
+}
+
+/* 页面切换动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
+

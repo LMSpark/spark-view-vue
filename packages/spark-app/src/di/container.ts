@@ -192,7 +192,7 @@ export class DependencyContainer implements IDependencyContainer {
    * 解析单例服务
    */
   private resolveSingleton<T>(
-    identifier: string | symbol,
+    _identifier: string | symbol,
     descriptor: ServiceDescriptor
   ): T {
     if (!descriptor.instance) {

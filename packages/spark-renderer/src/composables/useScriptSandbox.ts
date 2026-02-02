@@ -4,12 +4,11 @@
 
 import { ref, Ref } from 'vue'
 import { pageLogger } from '@spark-view/spark-app'
-import type { PageContext, PageScriptModule } from '../types'
+import type { PageContext } from '../types'
 import { 
   createSandboxContext, 
   loadScriptModule,
-  initGlobalPageContext,
-  cleanupGlobalPageContext
+  initGlobalPageContext
 } from '../utils/createSandbox'
 
 export interface UseScriptSandboxOptions {

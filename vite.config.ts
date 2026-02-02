@@ -83,10 +83,6 @@ export default defineConfig({
           if (id.includes('@form-create')) {
             return 'form-create'
           }
-          // VXE Table
-          if (id.includes('vxe-table') || id.includes('xe-utils')) {
-            return 'vxe-table'
-          }
           // SPARK packages
           if (id.includes('packages/spark-core')) {
             return 'spark-core'

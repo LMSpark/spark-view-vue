@@ -1,15 +1,23 @@
 ﻿<template>
-  <div v-if="loading" class="loading">加载中...</div>
-  <div v-else-if="error" class="error">
-    <h3>❌ 页面加载失败</h3>
-    <p>{{ error }}</p>
+  <div v-if="loading" class="loading-container">
+    <el-icon class="loading-icon is-loading">
+      <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M512 64a32 32 0 0 1 32 32v192a32 32 0 0 1-64 0V96a32 32 0 0 1 32-32zm0 640a32 32 0 0 1 32 32v192a32 32 0 1 1-64 0V736a32 32 0 0 1 32-32zm448-192a32 32 0 0 1-32 32H736a32 32 0 1 1 0-64h192a32 32 0 0 1 32 32zm-640 0a32 32 0 0 1-32 32H96a32 32 0 0 1 0-64h192a32 32 0 0 1 32 32zM195.2 195.2a32 32 0 0 1 45.248 0L376.32 331.008a32 32 0 0 1-45.248 45.248L195.2 240.448a32 32 0 0 1 0-45.248zm452.544 452.544a32 32 0 0 1 45.248 0L828.8 783.552a32 32 0 0 1-45.248 45.248L647.744 692.992a32 32 0 0 1 0-45.248zM828.8 195.264a32 32 0 0 1 0 45.184L692.992 376.32a32 32 0 0 1-45.248-45.248l135.808-135.808a32 32 0 0 1 45.248 0zm-452.544 452.48a32 32 0 0 1 0 45.248L240.448 828.8a32 32 0 0 1-45.248-45.248l135.808-135.808a32 32 0 0 1 45.248 0z"></path></svg>
+    </el-icon>
+    <p>加载中...</p>
   </div>
-  <div v-else>
-    <!-- 动态注入页面样式（自动添加作用域） -->
+  <div v-else-if="error" class="error-container">
+    <el-result icon="error" title="页面加载失败" :sub-title="error">
+      <template #extra>
+        <el-button type="primary" @click="retryLoad">重试</el-button>
+      </template>
+    </el-result>
+  </div>
+  <div v-else class="page-wrapper">
+    <!-- 动态注入页面样式 -->
     <component :is="'style'" v-if="pageStyle">{{ pageStyle }}</component>
     
     <!-- 渲染页面内容 -->
-    <div ref="pageContainer" :data-page="pageId">
+    <div ref="pageContainer" :data-page="pageId" class="page-content">
       <form-create
         :rule="pageRules"
         :option="formCreateOption"
@@ -20,24 +28,37 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, watch, reactive, nextTick} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
+import { ref, onMounted, watch, reactive, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { DataSetManager, DataSet } from '@spark-view/spark-data'
 import type { DataRow } from '@spark-view/spark-data'
 import { SparkPageConfig } from '@spark-view/spark-page-config'
-import { pageLogger } from '@spark-view/spark-app'
+import { pageLogger, createEnvironmentDetector } from '@spark-view/spark-app'
 import type { RuleConfig } from '@spark-view/spark-page-config'
 import VxeTableRenderer from '../../features/renderers/components/vxe/VxeTableRenderer.vue'
 
-// 注意：Element Plus 组件已由 @form-create/element-ui 内部注册
-// app.use(formCreate) 时会自动注册所有组件，无需手动导入
+// 环境适配器
+const envDetector = createEnvironmentDetector()
+const browserAdapter = envDetector.getBrowserAdapter()
 
-// 定义 Rule 类型(扩展 RuleConfig)
+// Rule 类型定义
 interface Rule extends Omit<RuleConfig, 'children'> {
   contextId?: string
-  children?: (Rule | string)[]  // 允许字符串类型
+  dataKey?: string
+  children?: (Rule | string)[]
   on?: Record<string, Function>
-  [key: string]: unknown // 允许动态访问任意字段以兼容脚本式页面规则
+  props?: any
+  [key: string]: unknown
+}
+
+// API 配置类型
+interface ApiConfig {
+  url: string
+  method?: string
+  params?: Record<string, any>
+  mockData?: any
+  dataPath?: string
+  autoLoad?: boolean
 }
 
 // 定义 FormCreateAPI 类型
@@ -59,12 +80,23 @@ interface PageContext {
   $dataSet?: DataSet | null
 }
 
+// 全局类型声明
 declare global {
   interface Window {
-    __pageContext: PageContext
+    __pageContext?: PageContext
     __formApi__?: FormCreateAPI
+    $api?: () => any
+    $route?: () => any
+    $data?: () => any
+    $el?: () => HTMLElement | null
+    $query?: (selector: string) => Element | null
+    $queryAll?: (selector: string) => NodeListOf<Element>
+    $dataSet?: () => DataSet | null
   }
 }
+
+// 注意：Element Plus 组件已由 @form-create/element-ui 内部注册
+// app.use(formCreate) 时会自动注册所有组件，无需手动导入
 
 // 使用 Vite 的 glob import 预加载所有页面脚本模块
 const pageModules = import.meta.glob('/pages-config/*/script.js', { eager: false })
@@ -96,15 +128,16 @@ const formCreateOption = ref({
   } as Record<string, any>
 })
 
-// 初始化全局上下文（在任何模块加载之前）- 仅在客户端
-if (typeof window !== 'undefined') {
-    window.__pageContext = {
+// 初始化全局上下文（在任何模块加载之前）- 使用环境适配器
+if (browserAdapter.window) {
+    const win = browserAdapter.window as any
+    win.__pageContext = {
         $api: null,
         $route: route,
         $data: pageData,
         $el: null,
         $query: () => null,
-        $queryAll: () => typeof document !== 'undefined' ? document.querySelectorAll('') : [] as unknown as NodeListOf<Element>,  // 返回空集合
+        $queryAll: () => browserAdapter.document?.querySelectorAll('') || [] as unknown as NodeListOf<Element>,
         $rebindRules: () => {},  // 初始化空函数
         $refreshData: () => Promise.resolve(),  // 初始化空函数
         $dataSet: null  // DataSet 实例（由 DynamicPage 自动创建）
@@ -137,7 +170,7 @@ const initDataSet = () => {
         
         // 更新全局上下文
         if (typeof window !== 'undefined') {
-            window.__pageContext.$dataSet = dataSet;
+            window.__pageContext!.$dataSet = dataSet;
         }
         pageLogger.success('DataSet 自动初始化成功（内核级）');
         
@@ -146,8 +179,7 @@ const initDataSet = () => {
     }
 }
 // 辅助函数：递归查找具有特定 dataKey 的 rule
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const findRuleByDataKey = (rules: Rule[], dataKey: string): Rule | null => {
+const _findRuleByDataKey = (rules: Rule[], dataKey: string): Rule | null => {
     for (const rule of rules) {
         if (rule.dataKey === dataKey) {
             return rule;
@@ -155,7 +187,7 @@ const findRuleByDataKey = (rules: Rule[], dataKey: string): Rule | null => {
         if (rule.children && Array.isArray(rule.children)) {
             // 过滤掉字符串类型的子元素
             const childRules = rule.children.filter((child): child is Rule => typeof child !== 'string');
-            const found = findRuleByDataKey(childRules, dataKey);
+            const found = _findRuleByDataKey(childRules, dataKey);
             if (found) return found;
         }
     }
@@ -202,7 +234,7 @@ const autoSubscribeTables = () => {
     contexts.forEach(key => {
         const [tableName, contextId] = key.split('.');
         dataSet!.subscribe(tableName, contextId, () => {
-            pageLogger.sync('上下文数据变化（Vue 响应式自动更新）', { contextKey: key });
+            // 上下文数据变化（Vue 响应式自动更新）
             // ❌ 移除自动 rebindRules，避免不必要的 UI 重绑
             // rebindRules();
         });
@@ -213,12 +245,12 @@ const autoSubscribeTables = () => {
     // ⚠️ 一般不需要 rebindRules：Vue 响应式会自动更新组件
     // 只在 rules 结构本身需要变化时才调用 rebindRules
     dataSet!.on('currentRowChanged', () => {
-        pageLogger.event('currentRow 变化（Vue 响应式自动更新）');
+        pageLogger.debug('currentRow 变化（Vue 响应式自动更新）');
         // ❌ 不调用 rebindRules() - 数据是响应式的，组件会自动更新
     });
     
     dataSet!.on('selectedRowsChanged', ({ tableName, contextId, rows }: { tableName: string, contextId: string, rows: DataRow[] }) => {
-        pageLogger.sync('selectedRows 变化，同步到 el-table', { tableName, contextId, rowCount: rows.length });
+        // selectedRows 变化，同步到 el-table
         
         // 使用 nextTick 确保 DOM 已更新
         nextTick(() => {
@@ -232,14 +264,14 @@ const autoSubscribeTables = () => {
                     if (rows.length === 0 && typeof tableComponent.clearSelection === 'function') {
                         // 清空选中
                         tableComponent.clearSelection();
-                        pageLogger.sync('已清空表格复选框', { tableName });
+                        // 已清空表格复选框
                     } else if (typeof tableComponent.toggleRowSelection === 'function') {
                         // 设置选中（先清空，再逐个选中）
                         tableComponent.clearSelection?.();
                         rows.forEach(row => {
                             tableComponent.toggleRowSelection(row, true);
                         });
-                        pageLogger.sync('已设置表格选中行', { tableName, rowCount: rows.length });
+                        // 已设置表格选中行
                     }
                 } else {
                     pageLogger.warn('未找到表格组件', { componentName });
@@ -284,7 +316,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                     newOn[eventName] = (...args: unknown[]) => {
                         const fn = pageFunctions.value[handlerName]
                         if (typeof fn === 'function') {
-                            pageLogger.event('事件触发', { eventName, handler: handlerName, args })
+                            pageLogger.debug('事件触发', { eventName, handler: handlerName, args })
                             fn(...args)  // 传递所有参数
                         } else {
                             pageLogger.warn('函数未定义', { handler: handlerName, availableFunctions: Object.keys(pageFunctions.value) });
@@ -313,7 +345,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                     newRule.name = `table_${tableName}_${contextId}`;
                 }
                 
-                pageLogger.inject('为表注入事件处理器', { tableName, contextId });
+                pageLogger.debug('为表注入事件处理器', { tableName, contextId });
                 
                 // 确保 on 对象存在
                 if (!newRule.on) {
@@ -324,7 +356,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                 // 注意：form-create 使用驼峰命名，Element Plus 模板中的 @current-change 会被转换为 onCurrentChange
                 const originalCurrentChange = newRule.on['currentChange']
                 newRule.on['currentChange'] = (currentRow: DataRow | null, oldRow: DataRow | null) => {
-                    pageLogger.event('currentChange 事件', { tableName, hasCurrentRow: !!currentRow, isProcessingEvent });
+                    pageLogger.debug('currentChange 事件', { tableName, hasCurrentRow: !!currentRow, isProcessingEvent });
                     
                     // 重入检查：如果正在处理事件，跳过以防止死循环
                     if (isProcessingEvent) {
@@ -365,7 +397,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                 // 注入 selectionChange 事件（多选行变化）
                 const originalSelectionChange = newRule.on['selectionChange']
                 newRule.on['selectionChange'] = (selectedRows: DataRow[]) => {
-                    pageLogger.event('selectionChange 事件', { tableName, selectedCount: selectedRows.length });
+                    pageLogger.debug('selectionChange 事件', { tableName, selectedCount: selectedRows.length });
                     
                     // 先调用原有的用户处理器
                     if (originalSelectionChange && typeof originalSelectionChange === 'function') {
@@ -382,7 +414,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                         } else {
                             pageLogger.warn('上下文不存在或未注入方法', { tableName, contextId });
                         }
-                        pageLogger.sync('自动同步 selectedRows', { tableName, contextId, rowCount: selectedRows.length });
+                        // 自动同步 selectedRows
                     }
                 }
             }
@@ -427,7 +459,7 @@ const bindDataToRules = (rules: Rule[], data: Record<string, unknown>): Rule[] =
                 }
                 
                 newRule.props.data = value
-                pageLogger.data('数据绑定', { ruleType: newRule.type, dataKey: newRule.dataKey, dataLength: Array.isArray(value) ? value.length : undefined });
+                pageLogger.debug('数据绑定', { ruleType: newRule.type, dataKey: newRule.dataKey, dataLength: Array.isArray(value) ? value.length : undefined });
                 
                 // 🌲 el-tree 特殊处理：绑定 expandedKeys 和 currentNodeKey
                 if (newRule.type === 'el-tree') {
@@ -516,7 +548,7 @@ const loadApiData = async (key: string, config: ApiConfig): Promise<void> => {
             fetchOptions.headers = { 'Content-Type': 'application/json' }
         }
         
-        pageLogger.api('加载 API 数据', { key, url: fetchUrl });
+        pageLogger.debug('加载 API 数据', { key, url: fetchUrl });
         
         const response = await fetch(fetchUrl, fetchOptions)
         const result = await response.json()
@@ -595,7 +627,7 @@ const rebindRules = (immediate = false): void => {
     
     const doRebind = () => {
         if (originalRules.value && originalRules.value.length > 0) {
-            pageLogger.sync('重新绑定数据到 rules', { mode: immediate ? 'Immediate' : 'Debounce' })
+            // 重新绑定数据到 rules
             pageRules.value = bindDataToRules(JSON.parse(JSON.stringify(originalRules.value)), pageData)
         }
     }
@@ -697,13 +729,13 @@ const loadPageConfig = async () => {
         
         // 使用 L2 ConfigLoader 加载页面配置
         const configLoader = SparkPageConfig.createConfigLoader({
-            basePath: '/pages-config',
+            localPrefix: '/pages-config',
             enableCache: true
         })
         const config = await configLoader.loadPageConfig(currentPageId)
     
         pageLogger.success('加载页面配置', { pageId: currentPageId });
-        await processPageData(config.data)
+        await processPageData((config as any).data)
     
         // 自动初始化 dataSet（如果数据包含 dataset）
         initDataSet()
@@ -711,7 +743,7 @@ const loadPageConfig = async () => {
         // 🎯 关键：先保存 rules 并注册订阅者，再加载模块
         // 这样可以确保 __init__ 触发数据加载时，订阅者已经就绪
         // ⚠️ 兼容处理：如果 rule 是对象，包装成数组
-        const ruleConfig = config.rule as Rule[] | Rule
+        const ruleConfig = (config as any).rule as Rule[] | Rule
         originalRules.value = Array.isArray(ruleConfig) ? ruleConfig : [ruleConfig]
         
         // ⚠️ 延迟 bindDataToRules，等模块加载后再绑定（避免渲染函数未找到）
@@ -725,7 +757,8 @@ const loadPageConfig = async () => {
         // 直接动态导入页面脚本模块
         try {
             // 更新全局上下文（在模块加载之前，确保包含 dataSet）
-            window.__pageContext = {
+            if (browserAdapter.window) {
+                (browserAdapter.window as any).__pageContext = {
                 $api: formApi.value,
                 $route: route,
                 $data: pageData,
@@ -743,6 +776,20 @@ const loadPageConfig = async () => {
                 },
                 $rebindRules: rebindRules,    // 重新绑定数据到 rules
                 $refreshData: refreshData     // 刷新API数据（零代码）
+                }
+                
+                // 🔧 将沙箱上下文注入到全局（供 ES6 模块使用）
+                const win = browserAdapter.window as any
+                const ctx = win.__pageContext
+                if (ctx) {
+                    win.$api = () => ctx.$api
+                    win.$route = () => ctx.$route
+                    win.$data = () => ctx.$data
+                    win.$el = () => ctx.$el
+                    win.$query = ctx.$query
+                    win.$queryAll = ctx.$queryAll
+                    win.$dataSet = () => ctx.$dataSet
+                }
             }
             
             // 使用预加载的模块映射（Vite glob import）
@@ -805,7 +852,7 @@ const loadPageConfig = async () => {
         }
 
         // 加载页面样式（自动添加作用域隔离）
-        pageStyle.value = scopeCSS(config.style || '', pageId.value)
+        pageStyle.value = scopeCSS((config as any).style || '', pageId.value)
     } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : '加载页面配置失败'
         error.value = errorMessage
@@ -826,60 +873,69 @@ const loadPageConfig = async () => {
 
 // 表单挂载回调
 const onFormMounted = (api: FormCreateAPI) => {
-    formApi.value = api
-    
-    // 🔑 注册 VXE Table 自定义组件到 form-create
-    const apiAny = api as any
-    apiAny.component('VxeTable', VxeTableRenderer)
-    apiAny.component('VxeGrid', VxeTableRenderer)
-    
-    // 注册占位符组件（e-columns/e-column 不需要实际渲染）
-    const PlaceholderComponent = { render: () => null }
-    // eslint-disable-next-line vue/component-definition-name-casing
-    apiAny.component('e-columns', PlaceholderComponent)
-    // eslint-disable-next-line vue/component-definition-name-casing
-    apiAny.component('e-column', PlaceholderComponent)
-    
-    pageLogger.success('VXE 表格组件已注册到 form-create')
-    
-    // 🔑 暴露 formApi 供 pageScripts 使用
-    if (typeof window !== 'undefined') {
-        window.__formApi__ = api
-    }
-    pageLogger.info('表单实例已挂载', { api })
+  formApi.value = api
+  
+  // 注册 VXE Table 自定义组件到 form-create
+  const apiAny = api as any
+  apiAny.component('VxeTable', VxeTableRenderer)
+  apiAny.component('VxeGrid', VxeTableRenderer)
+  
+  // 注册占位符组件（e-columns/e-column 不需要实际渲染）
+  const PlaceholderComponent = { render: () => null }
+  apiAny.component('e-columns', PlaceholderComponent)
+  apiAny.component('e-column', PlaceholderComponent)
+  
+  pageLogger.success('VXE 表格组件已注册到 form-create')
+  
+  // 暴露 formApi 供 pageScripts 使用
+  if (typeof window !== 'undefined') {
+    window.__formApi__ = api
+  }
+  pageLogger.info('表单实例已挂载')
+}
+
+// 重试加载
+const retryLoad = () => {
+  error.value = null
+  loadPageConfig()
 }
 
 // 监听路由变化，重新加载配置
 watch(() => route.path, () => {
-    loadPageConfig()
+  loadPageConfig()
 })
 
 onMounted(() => {
-    loadPageConfig()
+  loadPageConfig()
 })
 </script>
 
 <style scoped>
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 20px;
-  color: #409eff;
-}
-
-.error {
+.loading-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  color: #f56c6c;
+  min-height: 400px;
+  color: #409eff;
 }
 
-.error h3 {
-  margin-bottom: 10px;
+.loading-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.error-container {
+  padding: 40px 20px;
+}
+
+.page-wrapper {
+  min-height: 100%;
+}
+
+.page-content {
+  padding: 0;
 }
 </style>
+
 

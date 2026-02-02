@@ -47,6 +47,28 @@ export interface IEnvironmentDetector {
 }
 
 /**
+ * 默认环境检测器实例
+ */
+let defaultDetector: DefaultEnvironmentDetector | null = null
+
+/**
+ * 创建环境检测器
+ */
+export function createEnvironmentDetector(): IEnvironmentDetector {
+  if (!defaultDetector) {
+    defaultDetector = new DefaultEnvironmentDetector()
+  }
+  return defaultDetector
+}
+
+/**
+ * 创建浏览器适配器
+ */
+export function createBrowserAdapter(): IBrowserAdapter {
+  return createEnvironmentDetector().getBrowserAdapter()
+}
+
+/**
  * 默认环境检测器实现
  */
 export class DefaultEnvironmentDetector implements IEnvironmentDetector {

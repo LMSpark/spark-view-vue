@@ -1,14 +1,22 @@
 /**
- * 主应用入口 - 使用 SPARK 6层架构
+ * SPARK 主应用入口
  * 
- * L1: @spark-view/spark-app - 基础设施层
- * L2: @spark-view/spark-page-config - 业务编排层
- * L3: @spark-view/spark-renderer - 模型层
- * L4-L6: @spark-view/spark-core - 组件核心
+ * 🎯 设计理念：
+ * - 100% 声明式配置，0 实现逻辑
+ * - 配置即文档，所有配置都有类型约束
+ * - SparkApp.start() 自动处理所有初始化流程
+ * 
+ * 🔧 技术栈：
+ * - Vue 3.5 + TypeScript
+ * - Element Plus + VXE Table + form-create
+ * - SPARK 组件系统 + 动态路由系统
+ * 
+ * 📦 架构层次（由 SparkApp.start 自动完成）：
+ * - L1: @spark-view/spark-app - 应用基础设施层
+ * - L2: @spark-view/spark-page-config - 页面配置编排层
+ * - L4-L6: @spark-view/spark-core - 组件核心层
  */
 
-import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import formCreate from '@form-create/element-ui'
@@ -16,98 +24,95 @@ import VXETable from 'vxe-table'
 import 'vxe-table/lib/style.css'
 
 // SPARK 架构包
-import { SparkApp } from '@spark-view/spark-app'
-import { SparkPageConfig } from '@spark-view/spark-page-config'
-import { Spark } from '@spark-view/spark-core'
+import { SparkApp, createLogger } from '@spark-view/spark-app'
+
+// 创建应用日志
+const logger = createLogger('main')
 
 // 主应用组件
 import App from './App.vue'
 import DynamicPage from './views/DynamicPage.vue'
 import './style.css'
 
-/**
- * 应用配置
- */
-const appConfig = {
-  apiBaseUrl: '/api',
-  logLevel: 'debug' as const,
-  enableMock: import.meta.env.DEV,
-  version: '1.0.0',
-  features: {
-    enableAI: false,
-    enableDataAnalysis: true
-  }
-}
+// ============================================================================
+// 应用配置（纯声明式，0 逻辑）
+// ============================================================================
 
 /**
- * 初始化应用
+ * 启动 SPARK 应用
+ * 
+ * SparkApp.start() 自动完成：
+ * 1. 创建 Vue 应用实例
+ * 2. 创建 Vue Router 实例
+ * 3. 安装 UI 插件（Element Plus, VXE Table, form-create）
+ * 4. 初始化 SPARK 组件系统（Manager + Registry）
+ * 5. 创建页面配置加载器
+ * 6. 注册动态路由
+ * 7. 执行 Bootstrap 流程
+ * 8. 挂载应用到 DOM
  */
-async function initApp() {
-  // 1. 创建 Vue 应用实例
-  const app = createApp(App)
+SparkApp.start({
+  // === 应用根组件 ===
+  rootComponent: App,
   
-  // 2. 创建路由实例
-  const router = createRouter({
-    history: createWebHistory(),
-    routes: []
-  })
+  // === 路由配置 ===
+  routerMode: 'history',              // 使用 HTML5 History 模式
+  mountTarget: '#app',                // 挂载点
   
-  // 3. 注册第三方库
-  app.use(ElementPlus)
-  app.use(VXETable)
-  app.use(formCreate)
+  // === UI 插件 ===
+  plugins: [
+    ElementPlus,                      // Element Plus UI 组件库
+    VXETable,                         // 高性能表格组件
+    formCreate                        // 动态表单生成器
+  ],
   
-  // 4. 初始化 SPARK 核心
-  const sparkManager = Spark.createComponentManager()
-  const sparkRegistry = Spark.createComponentRegistry()
-  app.use(Spark.createVuePlugin({ manager: sparkManager, registry: sparkRegistry }))
+  // === SPARK 组件系统配置（L4-L6）===
+  spark: {
+    enabled: true                     // 启用 SPARK 组件系统
+  },
   
-  // 5. 创建 L2 配置加载器
-  const configLoader = SparkPageConfig.createConfigLoader({
-    basePath: '/pages-config',
-    enableCache: true
-  })
+  // === 页面配置系统（L2）===
+  pageConfig: {
+    source: 'local',                  // 使用本地配置（SPA 模式）
+    apiBaseUrl: '/api',               // API 基础路径
+    localPrefix: '/pages-config',     // 本地配置文件路径前缀
+    enableCache: true,                // 启用配置缓存
+    pageComponent: DynamicPage,       // 动态页面渲染组件
+    homePath: '/home'                 // 首页路径
+  },
   
-  // 6. 创建 L2 动态路由管理器
-  const dynamicRouter = SparkPageConfig.createDynamicRouter({
-    router,
-    configLoader,
-    pageComponent: DynamicPage
-  })
+  // === 应用基础配置 ===
+  config: {
+    apiBaseUrl: '/api',               // API 基础路径
+    logLevel: 'debug' as const,       // 日志级别
+    enableMock: import.meta.env.DEV,  // Mock 开关（开发环境启用）
+    version: '1.0.0',                 // 应用版本
+    features: {
+      enableAI: false,                // AI 功能（未启用）
+      enableExport: true,             // 导出功能（已启用）
+      enableOffline: false            // 离线模式（未启用）
+    }
+  },
   
-  // 7. 注册动态路由
-  await dynamicRouter.registerRoutes()
+  // === 生命周期钩子 ===
   
-  // 8. 添加根路径重定向
-  router.addRoute({
-    path: '/',
-    redirect: '/home'
-  })
+  // 启动前钩子
+  onBeforeStart: async () => {
+    logger.info('🚀 SPARK 应用启动中...')
+  },
   
-  // 9. 使用 L1 Bootstrap 初始化应用
-  try {
-    await SparkApp.bootstrap({
-      app,
-      router,
-      config: appConfig,
-      beforeMount: async (context) => {
-        console.log('🚀 [SPARK] 应用启动中...', context)
-      },
-      afterMount: async (context) => {
-        console.log('✅ [SPARK] 应用启动完成', context)
-      }
-    })
-    
-    console.log('✅ [SPARK] 系统初始化完成')
-  } catch (error) {
-    console.error('❌ [SPARK] 系统初始化失败', error)
-    // 即使失败也挂载应用（降级处理）
-    app.use(router)
-    app.mount('#app')
+  // 挂载前钩子
+  beforeMount: async (context) => {
+    logger.info('✅ 应用准备挂载', { context })
+  },
+  
+  // 挂载后钩子
+  afterMount: async (context) => {
+    logger.info('✅ 应用启动完成', { context })
+  },
+  
+  // 错误处理
+  onStartError: async (error) => {
+    logger.error('❌ 应用启动失败', error instanceof Error ? error : { error })
   }
-}
-
-// 启动应用
-initApp().catch(error => {
-  console.error('❌ [SPARK] 应用启动失败', error)
 })

@@ -93,11 +93,13 @@ export interface BootstrapOptions {
   router: import('vue-router').Router
   /** 应用配置 */
   config: AppConfig
+  /** 认证配置（可选，不提供则使用 authenticate 函数） */
+  auth?: import('../auth').AuthConfig
   /** 挂载前钩子 */
   beforeMount?: (context: AppContext) => void | Promise<void>
   /** 挂载后钩子 */
   afterMount?: (context: AppContext) => void | Promise<void>
-  /** 鉴权函数（返回 AppContext 或 null） */
+  /** 鉴权函数（返回 AppContext 或 null）- 向后兼容，推荐使用 auth 配置 */
   authenticate?: () => Promise<AppContext | null>
 }
 

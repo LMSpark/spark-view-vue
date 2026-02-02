@@ -6,6 +6,9 @@
 import type { Router } from 'vue-router'
 import type { RouterGuardOptions } from '../types'
 import { useAppContextOptional, hasAnyPermission } from '../context/AppContext'
+import { createLogger } from '../logger'
+
+const routerLogger = createLogger('router')
 
 /**
  * 设置路由守卫
@@ -33,7 +36,7 @@ export function setupRouterGuards(
 
     // 未登录 - 重定向到登录页
     if (!appContext) {
-      console.warn('🔒 未登录，重定向到登录页', { path: to.path })
+      routerLogger.warn('未登录，重定向到登录页', { path: to.path })
       return next({ path: loginPath, query: { redirect: to.fullPath } })
     }
 
@@ -46,7 +49,7 @@ export function setupRouterGuards(
         : hasAnyPermission(appContext, requiredPermissions)
 
       if (!hasPermission) {
-        console.warn('🚫 无权限访问', {
+        routerLogger.warn('无权限访问', {
           path: to.path,
           required: requiredPermissions,
           userPermissions: appContext.user.permissions
@@ -59,11 +62,11 @@ export function setupRouterGuards(
     if (enablePreload && to.meta.preloadModels) {
       try {
         const models = to.meta.preloadModels as string[]
-        console.log('📦 预加载模型', models)
+        routerLogger.info('预加载模型', { models })
         // TODO: 调用 ModelRegistry 预加载
         // await modelRegistry.preload(models)
       } catch (error) {
-        console.error('模型预加载失败', error)
+        routerLogger.error('模型预加载失败', error as Error)
         // 不阻塞路由跳转
       }
     }
@@ -81,10 +84,10 @@ export function setupRouterGuards(
 
   // 路由错误处理
   router.onError((error) => {
-    console.error('❌ 路由错误', error)
+    routerLogger.error('路由错误', error)
   })
 
-  console.log('✅ 路由守卫已设置', options)
+  routerLogger.info('路由守卫已设置', options as Record<string, unknown>)
 }
 
 /**

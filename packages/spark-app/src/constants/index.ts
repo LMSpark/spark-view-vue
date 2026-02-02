@@ -6,12 +6,19 @@
  */
 
 import type { InjectionKey } from 'vue'
-import type { AppContext } from '../types'
 import type { Router } from 'vue-router'
+import type { AppContext } from '../types'
+import type { IAuthService } from '../auth/types'
+
+// 外部类型（延迟导入）
+type Logger = ReturnType<typeof import('../logger').createLogger>
+type SparkManager = import('@spark-view/spark-core').ComponentManager
+type SparkRegistry = import('@spark-view/spark-core').ComponentRegistry
+type ConfigLoader = import('@spark-view/spark-page-config').PageConfigLoader
 
 /**
  * ============================================
- * 依赖注入 Symbol Keys
+ * 依赖注入 Symbol Keys（Injection Keys）
  * ============================================
  */
 
@@ -26,19 +33,29 @@ export const APP_CONTEXT_KEY: InjectionKey<AppContext> = Symbol('AppContext')
 export const ROUTER_KEY: InjectionKey<Router> = Symbol('Router')
 
 /**
- * SparkManager 注入键
+ * Logger 注入键
  */
-export const SPARK_MANAGER_KEY: InjectionKey<any> = Symbol('SparkManager')
+export const LOGGER_KEY: InjectionKey<Logger> = Symbol('Logger')
 
 /**
  * ConfigLoader 注入键
  */
-export const CONFIG_LOADER_KEY: InjectionKey<any> = Symbol('ConfigLoader')
+export const CONFIG_LOADER_KEY: InjectionKey<ConfigLoader> = Symbol('ConfigLoader')
 
 /**
- * Logger 注入键
+ * SparkManager 注入键
  */
-export const LOGGER_KEY: InjectionKey<any> = Symbol('Logger')
+export const SPARK_MANAGER_KEY: InjectionKey<SparkManager> = Symbol('SparkManager')
+
+/**
+ * SparkRegistry 注入键
+ */
+export const SPARK_REGISTRY_KEY: InjectionKey<SparkRegistry> = Symbol('SparkRegistry')
+
+/**
+ * AuthService 注入键
+ */
+export const AUTH_SERVICE_KEY: InjectionKey<IAuthService> = Symbol('AuthService')
 
 /**
  * ============================================
@@ -404,6 +421,7 @@ export function setStorageItem(key: StorageKey, value: any): void {
     const strValue = typeof value === 'string' ? value : JSON.stringify(value)
     localStorage.setItem(key, strValue)
   } catch (error) {
+    // Fallback to console when storage fails (SSR safe)
     console.error('存储失败:', error)
   }
 }
@@ -417,6 +435,7 @@ export function removeStorageItem(key: StorageKey): void {
   try {
     localStorage.removeItem(key)
   } catch (error) {
+    // Fallback to console when storage fails (SSR safe)
     console.error('移除失败:', error)
   }
 }
