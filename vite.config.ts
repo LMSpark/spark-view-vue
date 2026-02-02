@@ -55,17 +55,62 @@ export default defineConfig({
           return 'assets/[name]-[hash].[ext]'
         },
         manualChunks(id) {
+          // Vue核心库
           if (id.includes('vue/dist') || id.includes('vue/index') || id === 'vue') {
             return 'vue-core'
           }
+          // Vue Router
           if (id.includes('vue-router')) {
             return 'vue-router'
           }
+          // Element Plus UI库
+          if (id.includes('element-plus')) {
+            return 'element-plus'
+          }
+          // Syncfusion组件
+          if (id.includes('@syncfusion/ej2-base') || 
+              id.includes('@syncfusion/ej2-data') ||
+              id.includes('@syncfusion/ej2-calendars')) {
+            return 'syncfusion-base'
+          }
+          if (id.includes('@syncfusion/ej2-grids')) {
+            return 'syncfusion-grids'
+          }
           if (id.includes('@syncfusion/')) {
-            return 'syncfusion-all'
+            return 'syncfusion-other'
+          }
+          // FormCreate
+          if (id.includes('@form-create')) {
+            return 'form-create'
+          }
+          // VXE Table
+          if (id.includes('vxe-table') || id.includes('xe-utils')) {
+            return 'vxe-table'
+          }
+          // SPARK packages
+          if (id.includes('packages/spark-core')) {
+            return 'spark-core'
+          }
+          if (id.includes('packages/spark-data')) {
+            return 'spark-data'
+          }
+          if (id.includes('packages/spark-app')) {
+            return 'spark-app'
+          }
+          if (id.includes('packages/spark-page-config')) {
+            return 'spark-config'
+          }
+          if (id.includes('packages/spark-renderer')) {
+            return 'spark-renderer'
+          }
+          // Node modules通用处理
+          if (id.includes('node_modules')) {
+            return 'vendor'
           }
         }
       }
-    }
+    },
+    // 提高chunk大小警告阈值
+    chunkSizeWarningLimit: 800
   }
 })
