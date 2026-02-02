@@ -22,21 +22,21 @@
 <script setup lang="ts">
 import {ref, onMounted, watch, reactive, nextTick} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {getPageConfig} from '../services/page-config'
-import type {PageRule, ApiConfig, DataRow} from '../types'
 import { DataSetManager, DataSet } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
+import { SparkPageConfig, pageLogger } from '@spark-view/spark-page-config'
+import type { RuleConfig } from '@spark-view/spark-page-config'
 import VxeTableRenderer from '../../features/renderers/components/vxe/VxeTableRenderer.vue'
-import { pageLogger } from '@/utils/logger'
 
 // 注意：Element Plus 组件已由 @form-create/element-ui 内部注册
 // app.use(formCreate) 时会自动注册所有组件，无需手动导入
 
-// 定义 Rule 类型(扩展 PageRule)
-interface Rule extends Omit<PageRule, 'children'> {
+// 定义 Rule 类型(扩展 RuleConfig)
+interface Rule extends Omit<RuleConfig, 'children'> {
   contextId?: string
   children?: (Rule | string)[]  // 允许字符串类型
   on?: Record<string, Function>
-  [key: string]: any // 允许动态访问任意字段以兼容脚本式页面规则
+  [key: string]: unknown // 允许动态访问任意字段以兼容脚本式页面规则
 }
 
 // 定义 FormCreateAPI 类型
@@ -103,7 +103,7 @@ if (typeof window !== 'undefined') {
         $data: pageData,
         $el: null,
         $query: () => null,
-        $queryAll: () => document.querySelectorAll(''),  // 返回空集合
+        $queryAll: () => typeof document !== 'undefined' ? document.querySelectorAll('') : [] as unknown as NodeListOf<Element>,  // 返回空集合
         $rebindRules: () => {},  // 初始化空函数
         $refreshData: () => Promise.resolve(),  // 初始化空函数
         $dataSet: null  // DataSet 实例（由 DynamicPage 自动创建）
@@ -693,7 +693,13 @@ const loadPageConfig = async () => {
         }
         
         pageId.value = currentPageId
-        const config = await getPageConfig(currentPageId)
+        
+        // 使用 L2 ConfigLoader 加载页面配置
+        const configLoader = SparkPageConfig.createConfigLoader({
+            basePath: '/pages-config',
+            enableCache: true
+        })
+        const config = await configLoader.loadPageConfig(currentPageId)
     
         pageLogger.success('加载页面配置', { pageId: currentPageId });
         await processPageData(config.data)
@@ -725,7 +731,15 @@ const loadPageConfig = async () => {
                 $dataSet: dataSet || undefined,  // 确保传递 dataSet
                 $el: pageContainer.value,
                 $query: (selector: string) => pageContainer.value?.querySelector(selector) || null,
-                $queryAll: (selector: string) => pageContainer.value?.querySelectorAll(selector) || document.querySelectorAll(''),
+                $queryAll: (selector: string) => {
+                    if (pageContainer.value?.querySelectorAll) {
+                        return pageContainer.value.querySelectorAll(selector)
+                    }
+                    if (typeof document !== 'undefined') {
+                        return document.querySelectorAll(selector)
+                    }
+                    return [] as unknown as NodeListOf<Element>
+                },
                 $rebindRules: rebindRules,    // 重新绑定数据到 rules
                 $refreshData: refreshData     // 刷新API数据（零代码）
             }

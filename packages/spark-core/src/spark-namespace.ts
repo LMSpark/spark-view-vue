@@ -13,9 +13,24 @@ import { createComponentManager } from './utils/SparkComponentManager.js'
 import { defineSparkComponent } from './vue/createSparkComponent.js'
 import { createSandbox, run, runAsync, render, renderAsync, validate } from './utils/sandbox.js'
 import type { App, Plugin as VuePlugin } from 'vue'
-import type { ComponentConfig, ComponentContext, Plugin, ComponentManager, ComponentRegistry } from './types/spark-component.js' 
+import type { ComponentConfig, ComponentManager, ComponentRegistry } from './types/spark-component.js' 
 
-export const Spark = {
+export const Spark: {
+  manager: () => typeof componentManager
+  capabilities: () => typeof capabilityManager
+  registry: () => typeof componentRegistry
+  register: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }, manager?: ComponentManager) => void
+  registerSparkComponent: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }, manager?: ComponentManager) => void
+  createComponentManager: typeof createComponentManager
+  createComponentRegistry: typeof createComponentRegistry
+  createVuePlugin: typeof createVueSparkPlugin
+  createLogger: typeof createLogger
+  sandbox: { create: typeof createSandbox; run: typeof run; runAsync: typeof runAsync; render: typeof render; renderAsync: typeof renderAsync; validate: typeof validate }
+  defineComponent: typeof defineSparkComponent
+  useComponent: typeof useSparkComponent
+  plugin: { install: typeof installSparkPlugin; get: typeof getSparkPlugin }
+  [key: string]: unknown
+} = {
   // manager getter used across tests and app entry
   manager: (): typeof componentManager => componentManager,
   // capability manager getter
@@ -112,23 +127,29 @@ export const Spark = {
   // logger (single unified API)
   Logger: createLogger,
   // sandbox JS execution utilities
-  sandbox: createSandbox,
-  run,
-  runAsync,
-  renderTemplate: render,
-  renderTemplateAsync: renderAsync,
-  validate,
+  sandbox: {
+    create: createSandbox,
+    run,
+    runAsync,
+    render,
+    renderAsync,
+    validate
+  },
   // plugins
-  installSparkPlugin: (plugin: Plugin) => installSparkPlugin(plugin),
-  getSparkPlugin: (name: string) => getSparkPlugin(name),
+  plugin: {
+    install: installSparkPlugin,
+    get: getSparkPlugin
+  },
   // composables / helpers
-  useComponent: (config: ComponentConfig, parent?: ComponentContext) => useSparkComponent(config, { parentContext: parent }),
-  useSparkComponent: (config: ComponentConfig, opts?: { manager?: ComponentManager, registry?: ComponentRegistry, parentContext?: ComponentContext }) => useSparkComponent(config, opts),
+  useComponent: useSparkComponent,
+  useSparkComponent,
   // unified component creation API
   defineComponent: defineSparkComponent,
   // factories for creating instances (full names)
+  registerSparkComponent: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }, manager?: ComponentManager) => Spark.register(input, manager),
   createComponentRegistry,
   createComponentManager,
+  createLogger,
   // short aliases for convenience
   createRegistry: createComponentRegistry,
   createManager: createComponentManager,
@@ -147,7 +168,7 @@ export const Spark = {
   initialize: async () => { return Promise.resolve() },
   // Vue plugin helpers
   // Use `Spark.createVuePlugin({ manager })` to get a plugin, or call `Spark.install(app, { manager })` to install directly.
-  createVuePlugin: (opts: { manager: ComponentManager, registry?: ComponentRegistry }) => createVueSparkPlugin(opts),
+  createVuePlugin: createVueSparkPlugin,
   install(app: App, opts?: { manager?: ComponentManager, registry?: ComponentRegistry }) {
     if (!opts?.manager) throw new Error('Spark.install(app, { manager }) requires an explicit manager. Create one via createComponentManager(registry) and pass it here.')
     const plugin = createVueSparkPlugin({ manager: opts.manager, registry: opts.registry })

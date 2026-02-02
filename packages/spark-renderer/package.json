@@ -1,0 +1,49 @@
+{
+    "name": "@spark-view/spark-renderer",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "SPARK 页面渲染引擎 - 支持配置化页面渲染、DataSet 集成、CSS 隔离、脚本沙箱",
+    "keywords": [
+        "spark",
+        "renderer",
+        "page-renderer",
+        "dynamic-page",
+        "dataset",
+        "sandbox"
+    ],
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest",
+        "lint": "eslint src --ext .ts,.vue"
+    },
+    "peerDependencies": {
+        "vue": "^3.4.0",
+        "vue-router": "^4.0.0"
+    },
+    "dependencies": {
+        "@spark-view/spark-core": "workspace:*",
+        "@spark-view/spark-data": "workspace:*",
+        "@spark-view/spark-page-config": "workspace:*",
+        "@spark-view/spark-app": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.0",
+        "@vue/test-utils": "^2.4.6",
+        "typescript": "^5.3.3",
+        "vitest": "^2.1.8",
+        "jsdom": "^25.0.1"
+    }
+}

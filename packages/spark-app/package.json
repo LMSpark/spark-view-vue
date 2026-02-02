@@ -1,0 +1,45 @@
+{
+    "name": "@spark-view/spark-app",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/types/index.d.ts",
+    "private": false,
+    "description": "SPARK Application Layer - 应用层基础设施（AppContext、Router Guards、Error Boundary、Bootstrap）",
+    "keywords": [
+        "spark",
+        "application",
+        "context",
+        "router",
+        "bootstrap"
+    ],
+    "files": [
+        "dist",
+        "src",
+        "README.md"
+    ],
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/types/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "test": "vitest",
+        "test:run": "vitest run",
+        "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
+        "prepare": "npm run build"
+    },
+    "peerDependencies": {
+        "vue": "^3.4.0",
+        "vue-router": "^4.0.0"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@types/node": "^18.19.130",
+        "typescript": "~5.3.3",
+        "vitest": "^1.6.0"
+    }
+}
