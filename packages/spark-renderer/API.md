@@ -261,23 +261,48 @@ watch(pageData, () => {
 
 ### Rule
 
-页面规则配置。
+FormCreate 官方 Rule 类型（运行时）。
 
 ```typescript
-interface Rule {
+// 直接导入 FormCreate 官方类型
+import type { Rule as FormCreateRule } from '@form-create/element-ui'
+export type Rule = FormCreateRule
+
+// 包含完整的 FormCreate 类型系统（泛型支持）
+```
+
+**说明**：
+- 这是 FormCreate 的官方类型，提供完整的类型安全
+- 用于运行时（PageRenderer 渲染时）
+- 不用于配置文件（配置文件使用简化的 `RuleConfig`）
+
+### RuleConfig
+
+配置层 Rule 类型（配置文件）。
+
+```typescript
+interface RuleConfig {
   type: string                              // 组件类型
-  name?: string                             // 组件名称
+  field?: string                            // 字段名
+  title?: string                            // 标题
   props?: Record<string, unknown>           // 组件属性
-  children?: (Rule | string)[]              // 子元素
-  style?: Record<string, string | number>   // 样式
-  class?: string | string[]                 // CSS 类
-  on?: Record<string, Function | string>    // 事件处理器
-  slots?: Record<string, Rule[]>            // 插槽
+  children?: RuleConfig[]                   // 子元素
+  on?: Record<string, string | Function>    // 事件（支持字符串引用）
   dataKey?: string                          // 数据绑定键
   contextId?: string                        // 上下文 ID
-  render?: Function                         // 自定义渲染函数
   [key: string]: unknown                    // 其他属性
 }
+```
+
+**说明**：
+- 用于配置文件（rule.json、pagedata.json）
+- 简化的类型，支持字符串函数引用（`"click": "handleClick"`）
+- 在 PageRenderer 加载时会转换为 `Rule` 类型
+
+**类型转换**：
+```typescript
+// 配置层 → 运行时
+const rules = (config.rule || []) as unknown as Rule[]
 ```
 
 ### FormCreateAPI
@@ -320,12 +345,17 @@ interface PageContext {
 ```typescript
 interface PageConfig {
   pageId: string                            // 页面 ID
-  rule: Rule[]                              // 规则数组
+  rule: RuleConfig[]                        // 规则数组（配置层类型）
   data: Record<string, unknown>             // 页面数据
-  style?: string                            // 页面样式
-  script?: Record<string, Function>         // 页面脚本
+  style?: string                            // 页面样式（CSS 文本）
+  script?: string                           // 页面脚本（JS 文本）
 }
 ```
+
+**重要说明**：
+- `rule` 使用 `RuleConfig[]` 类型（配置层）
+- `script` 是字符串类型（纯 JS 代码文本），不是函数对象
+- 脚本编译由 `compileFunctions` 处理
 
 ### PageRendererOptions
 
@@ -348,6 +378,61 @@ interface PageRendererOptions {
 ---
 
 ## 工具函数
+
+### extractFunctionNames
+
+从 rules 中提取需要的函数名（内部使用）。
+
+```typescript
+function extractFunctionNames(rules: unknown): string[]
+```
+
+**功能**：扫描 rules 树，提取所有事件处理器函数名和 `Render*` 组件类型。
+
+**提取规则**：
+1. 扫描 `on` 对象中值为字符串的属性（`"click": "handleClick"`）
+2. 检测 `type` 以 `Render` 开头的组件（`RenderButton`、`RenderCustom`）
+3. 递归扫描 `children` 数组
+
+**返回**：去重后的函数名数组
+
+**示例**：
+```typescript
+const rules = [
+  {
+    type: 'el-button',
+    on: { click: 'handleClick' },
+    children: [
+      {
+        type: 'RenderCustom',  // 提取组件类型
+        on: { submit: 'handleSubmit' }
+      }
+    ]
+  }
+]
+
+extractFunctionNames(rules)
+// → ['handleClick', 'RenderCustom', 'handleSubmit']
+```
+
+### getRequiredFunctionNames
+
+获取完整的需要函数名列表（内部使用）。
+
+```typescript
+function getRequiredFunctionNames(
+  rules: unknown,
+  additionalNames: string[] = ['__init__']
+): string[]
+```
+
+**功能**：在 `extractFunctionNames` 基础上添加额外函数（如 `__init__`）。
+
+**参数**：
+- `rules` - 规则树
+- `additionalNames` - 额外函数名（默认包含 `__init__`）
+
+**返回**：完整函数名数组
 
 ### scopeCSS
 
@@ -375,6 +460,39 @@ function compileFunctions(
   context: PageContext,
   functionNames: string[]
 ): Record<string, Function>
+```
+
+**功能**：使用 Function 构造器编译脚本，按需返回指定函数。
+
+**编译策略**：
+```typescript
+// 1. 构建返回语句
+const returnStatement = `\nreturn { ${functionNames.join(', ')} }`
+
+// 2. 拼接完整脚本
+const fullScript = scriptText + returnStatement
+
+// 3. 创建函数并执行
+const func = new Function('$api', '$route', '$data', ..., fullScript)
+return func(context.$api, context.$route, context.$data, ...)
+```
+
+**参数**：
+- `scriptText` - 原始脚本文本（纯函数定义，无 export）
+- `context` - 页面上下文（提供 $api、$route 等变量）
+- `functionNames` - 需要返回的函数名列表
+
+**返回**：函数对象（`{ handleClick: fn, __init__: fn, ... }`）
+
+**脚本格式要求**：
+```javascript
+// ✅ 正确：普通函数定义
+function handleClick() { ... }
+function __init__() { ... }
+
+// ❌ 错误：不支持 export
+export function handleClick() { ... }
+export default { ... }
 ```
 
 ---

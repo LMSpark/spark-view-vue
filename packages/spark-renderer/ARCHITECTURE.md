@@ -165,6 +165,44 @@ const rebindRules = () => {
 
 ## 🛠️ Utils 层（utils/）
 
+### extractFunctionNames.ts
+
+**核心函数**：`extractFunctionNames`、`getRequiredFunctionNames`
+
+**职责**：从 rules 树中提取需要的函数名
+
+**签名**：
+```typescript
+function extractFunctionNames(rules: unknown): string[]
+function getRequiredFunctionNames(
+  rules: unknown,
+  additionalNames?: string[]
+): string[]
+```
+
+**提取规则**：
+1. 扫描 `on` 对象中值为字符串的属性（`"click": "handleClick"`）
+2. 检测 `type` 以 `Render` 开头的组件（`RenderButton`、`RenderCustom`）
+3. 递归扫描 `children` 数组
+4. 去重并返回
+
+**示例**：
+```typescript
+const rules = [
+  {
+    type: 'el-button',
+    on: { click: 'handleClick' },
+    children: [{ type: 'RenderCustom', on: { submit: 'handleSubmit' } }]
+  }
+]
+
+extractFunctionNames(rules)
+// → ['handleClick', 'RenderCustom', 'handleSubmit']
+
+getRequiredFunctionNames(rules)
+// → ['handleClick', 'RenderCustom', 'handleSubmit', '__init__']
+```
+
 ### createSandbox.ts
 
 **核心函数**：`compileFunctions`
@@ -178,6 +216,39 @@ function compileFunctions(
   context: PageContext,
   functionNames: string[]
 ): Record<string, Function>
+```
+
+**编译策略**（"统一编译，按需返回"）：
+```typescript
+// 1. 构建返回语句
+const returnStatement = `\nreturn { ${functionNames.join(', ')} }`
+
+// 2. 拼接完整脚本
+const fullScript = scriptText + returnStatement
+
+// 3. 创建函数并执行
+const func = new Function('$api', '$route', '$data', ..., fullScript)
+return func(context.$api, context.$route, context.$data, ...)
+```
+
+**上下文变量**：
+- `$api` - FormCreate API
+- `$route` - Vue Router
+- `$data` - 页面数据
+- `$el` - 容器元素
+- `$query` / `$queryAll` - DOM 查询
+- `$dataSet` - DataSet 实例
+- `$rebindRules` - 重新绑定方法
+- `$refreshData` - 刷新数据方法
+
+**脚本格式要求**：
+```javascript
+// ✅ 正确：普通函数定义
+function handleClick() { ... }
+function __init__() { ... }
+
+// ❌ 错误：不支持 export
+export function handleClick() { ... }
 ```
 
 **实现原理**：
@@ -251,23 +322,147 @@ return css.replace(
 
 ### 核心类型
 
-#### Rule
-页面规则配置，描述组件的渲染方式。
+#### Rule（运行时类型）
+
+FormCreate 官方 Rule 类型，用于运行时渲染。
+
+```typescript
+import type { Rule as FormCreateRule } from '@form-create/element-ui'
+export type Rule = FormCreateRule
+```
+
+**特点**：
+- 直接使用 FormCreate 官方类型
+- 完整的泛型支持和类型安全
+- 用于 PageRenderer 渲染和 bindRules
+
+#### RuleConfig（配置层类型）
+
+简化的配置层类型，用于 JSON 配置文件。
+
+```typescript
+interface RuleConfig {
+  type: string
+  field?: string
+  props?: Record<string, unknown>
+  children?: RuleConfig[]
+  on?: Record<string, string | Function>  // 支持字符串引用
+  dataKey?: string
+  contextId?: string
+  [key: string]: unknown
+}
+```
+
+**特点**：
+- 简化的结构，易于编写配置
+- 支持字符串函数引用（`"click": "handleClick"`）
+- 用于 `PageConfig.rule` 类型声明
+
+#### 类型转换边界
+
+```typescript
+// PageRenderer.vue 中的转换
+interface PageConfig {
+  rule: RuleConfig[]  // 配置层
+  // ...
+}
+
+// 使用时转换为运行时类型
+const rules = (config.rule || []) as unknown as Rule[]
+```
+
+**转换时机**：PageRenderer 加载配置后，绑定数据前。
 
 #### FormCreateAPI
 FormCreate 提供的表单 API 接口。
 
+```typescript
+interface FormCreateAPI {
+  formData(): Record<string, unknown>
+  setValue(field: string, value: unknown): void
+  getValue(field: string): unknown
+  // ...更多方法
+}
+```
+
 #### PageContext
 页面脚本运行时上下文，包含沙箱注入的所有变量。
 
+```typescript
+interface PageContext {
+  $api: FormCreateAPI | null
+  $route: RouteLocationNormalizedLoaded
+  $data: Record<string, unknown>
+  $el: () => HTMLElement | null
+  $dataSet: IDataSet | null
+  $rebindRules: () => void
+  // ...
+}
+```
+
 #### PageConfig
 页面配置，包含 rule、data、style、script。
+
+```typescript
+interface PageConfig {
+  pageId: string
+  rule: RuleConfig[]        // 配置层类型
+  data: Record<string, unknown>
+  style?: string            // CSS 文本
+  script?: string           // JS 文本（注意：是字符串，不是对象）
+}
+```
+
+**重要**：`script` 类型是 `string`（JS 代码文本），由 `compileFunctions` 编译。
 
 #### PageRendererOptions
 PageRenderer 组件的 Props 类型。
 
 #### RuleBindingOptions
 bindDataToRules 的参数类型。
+
+## 🎯 核心架构概念
+
+### 类型系统双层设计
+
+```
+配置文件（JSON）
+  ↓ RuleConfig[]
+PageConfig.rule
+  ↓ as unknown as Rule[]
+PageRenderer 运行时
+  ↓ Rule[]（FormCreate 官方类型）
+bindRules / FormCreate
+```
+
+**设计原因**：
+1. 配置层需要简单、易写（支持字符串函数引用）
+2. 运行时需要类型安全（使用 FormCreate 官方类型）
+3. 类型转换在边界明确进行（PageRenderer 加载后）
+
+### 脚本编译策略
+
+**"统一编译，按需返回"**：
+
+```
+1. 提取需要的函数名
+   extractFunctionNames(rules) → ['handleClick', 'handleSubmit']
+   
+2. 编译整个脚本
+   scriptText + `\nreturn { handleClick, handleSubmit, __init__ }`
+   
+3. 使用 Function 构造器
+   new Function('$api', ..., fullScript)(context.$api, ...)
+   
+4. 返回函数对象
+   { handleClick: fn, handleSubmit: fn, __init__: fn }
+```
+
+**优势**：
+- 统一编译避免重复解析
+- 按需返回减少内存占用
+- 函数间可以互相调用（在同一作用域）
+- 支持 `__init__` 生命周期钩子
 
 ## 🔄 数据流
 
