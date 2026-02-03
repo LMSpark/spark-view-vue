@@ -74,7 +74,7 @@ export async function start(options: SparkAppOptions): Promise<void> {
   
   // 3. 初始化 SPARK 组件系统 (L4-L6)
   if (options.spark?.enabled) {
-    const { Spark } = await import('@spark-view/spark-core')
+    const { Spark } = await import('@spark-view/spark-component')
     const manager = Spark.createComponentManager()
     app.use(Spark.createVuePlugin({ manager }))
   }

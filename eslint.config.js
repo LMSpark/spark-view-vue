@@ -66,7 +66,7 @@ export default [
       // Disallow direct use of core singletons in consumer code; prefer DI/factories
       'no-restricted-imports': ['error', {
         'paths': [
-          { name: '@spark-view/spark-core', importNames: ['componentManager', 'componentRegistry'], message: 'Use createComponentManager/createComponentRegistry or inject the manager via app.provide("sparkManager") instead of importing singletons.' }
+          { name: '@spark-view/spark-component', importNames: ['componentManager', 'componentRegistry'], message: 'Use createComponentManager/createComponentRegistry or inject the manager via app.provide("sparkManager") instead of importing singletons.' }
         ]
       }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],

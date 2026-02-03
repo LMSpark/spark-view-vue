@@ -2,7 +2,8 @@
  * 简化的事件发射器（页面层独立实现）
  */
 
-type EventHandler = (...args: unknown[]) => void
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EventHandler = (...args: any[]) => void
 
 export class EventEmitter<EventMap extends Record<string, EventHandler> = Record<string, EventHandler>> {
   private listeners = new Map<keyof EventMap, Set<EventHandler>>()

@@ -711,6 +711,6 @@ function __init__() {
 - [README.md](./README.md) - 项目概览和快速开始
 - [INTEGRATION.md](./INTEGRATION.md) - L1/L2 集成说明
 - [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - 实现总结
-- [@spark-view/spark-core](../spark-core/API.md) - 组件系统 API
+- [@spark-view/spark-component](../spark-component/API.md) - 组件系统 API
 - [@spark-view/spark-data](../spark-data/API.md) - 数据空间 API
 - [@spark-view/spark-page-config](../spark-page-config/API.md) - 配置层 API

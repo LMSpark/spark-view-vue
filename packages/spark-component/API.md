@@ -25,7 +25,7 @@
 
 ## 系统概述
 
-`@spark-view/spark-core` 是 SPARK 组件系统的核心运行时，提供企业级的组件管理、依赖注入、能力系统和安全执行环境。系统采用模块化架构，严格遵循 SOLID 原则，确保高可维护性和可扩展性。
+`@spark-view/spark-component` 是 SPARK 组件系统的核心运行时，提供企业级的组件管理、依赖注入、能力系统和安全执行环境。系统采用模块化架构，严格遵循 SOLID 原则，确保高可维护性和可扩展性。
 
 ### 核心特性
 
@@ -82,11 +82,11 @@
 
 ```bash
 # 在 monorepo 中
-pnpm add @spark-view/spark-core
+pnpm add @spark-view/spark-component
 ```
 
 ```typescript
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-component'
 import { createApp } from 'vue'
 
 // 1. 创建核心实例
@@ -106,7 +106,7 @@ const app = createApp(App)
 Spark.install(app, { manager })
 
 // 4. 在组件中使用
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 
 export default defineComponent({
   setup() {
@@ -586,7 +586,7 @@ const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry>
 ### 1. 基础组件注册和使用
 
 ```typescript
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-component'
 
 // 注册组件
 Spark.register({
@@ -643,7 +643,7 @@ const data = consume('data-provider')?.getData()
 ### 3. 沙箱安全执行
 
 ```typescript
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-component'
 
 // 安全表达式执行
 const result = Spark.run('user.age > 18 && user.role === "admin"', {
@@ -719,7 +719,7 @@ Spark.installSparkPlugin(monitoringPlugin)
 
 1. **使用环境检测工具**: 在访问浏览器 API 前检查环境
    ```typescript
-   import { isBrowser, getWindow } from '@spark-view/spark-core/utils/env'
+   import { isBrowser, getWindow } from '@spark-view/spark-component/utils/env'
    
    if (isBrowser()) {
      const win = getWindow()
@@ -796,7 +796,7 @@ ReferenceError: window is not defined
 **解决**: 使用环境检测工具或组合式函数
 ```typescript
 // 推荐方式
-import { getWindow, isBrowser } from '@spark-view/spark-core/utils/env'
+import { getWindow, isBrowser } from '@spark-view/spark-component/utils/env'
 const win = getWindow() // 在 SSR 中返回 undefined
 
 // 或使用组合式函数（已内置兼容）
@@ -841,13 +841,13 @@ const { width } = useWindowSize() // SSR: width = 0
 
 ```bash
 # 在仓库内
-pnpm add @spark-view/spark-core
+pnpm add @spark-view/spark-component
 ```
 
 ### 基本使用
 
 ```ts
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-component'
 import { createApp } from 'vue'
 
 // 1. 创建管理器实例
@@ -867,7 +867,7 @@ const app = createApp(App)
 Spark.install(app, { manager })
 
 // 4. 在组件中使用
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 
 export default {
   setup() {
@@ -1145,7 +1145,7 @@ interface SparkComponentHelpers {
 
 ```ts
 <script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 
 const props = defineProps<{
   config: { type: string; label?: string }
@@ -1179,7 +1179,7 @@ const gridApi = await whenAvailable('grid-api')
 ```ts
 <!-- 父组件 -->
 <script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 
 const { provide } = useSparkComponent({
   type: 'data-grid',
@@ -1197,7 +1197,7 @@ provide('grid-data', {
 ```ts
 <!-- 子组件 -->
 <script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 
 const { use, context } = useSparkComponent({
   type: 'data-column',
@@ -1318,7 +1318,7 @@ Spark.register(MyComponent)
 </template>
 
 <script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 
 const { provide, consume, use, whenAvailable } = useSparkComponent({
   type: 'spark-button'
@@ -1388,7 +1388,7 @@ const dataService2 = use('data-service')     // 更直观的别名
 4. **工厂函数**
    ```ts
    // 旧：直接导入单例
-   import { componentManager } from '@spark-view/spark-core'
+   import { componentManager } from '@spark-view/spark-component'
 
    // 新：使用工厂或 Spark 访问器
    const manager = Spark.createComponentManager()

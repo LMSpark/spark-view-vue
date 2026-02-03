@@ -16,7 +16,7 @@
 ### 2. 核心包构建成功
 | 包名 | 状态 | 说明 |
 |------|------|------|
-| @spark-view/spark-core | ✅ 成功 | 修复了 98 个 TypeScript 错误 |
+| @spark-view/spark-component | ✅ 成功 | 修复了 98 个 TypeScript 错误 |
 | @spark-view/spark-app | ✅ 成功 | 添加了 path 映射避免源文件冲突 |
 | @spark-view/spark-data | ✅ 成功 | 无错误 |
 | @spark-view/spark-page-config | ✅ 成功 | 修复了 noEmit 继承问题 |
@@ -33,7 +33,7 @@
 {
   "compilerOptions": {
     "paths": {
-      "@spark-view/spark-core": ["../spark-core/dist/index.d.ts"]
+      "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"]
     }
   },
   "exclude": ["../spark-core/src"]
