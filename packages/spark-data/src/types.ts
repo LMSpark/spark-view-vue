@@ -11,7 +11,30 @@
 export type DataRow<T = unknown> = Record<string, T>
 
 /**
- * 绑定上下文接口（纯数据结构，用于序列化）
+ * 数据绑定上下文接口（纯数据结构，可序列化）
+ * 
+ * 作用域：单个数据表（DataTable）的某个绑定实例
+ * 生命周期：与宿主表格/列表组件一致
+ * 
+ * 用途：
+ * - 管理表格/列表组件的数据状态（当前行、选中行、可见行）
+ * - 支持过滤、排序、分页等数据操作
+ * - 实现数据与 UI 的双向绑定
+ * 
+ * 架构说明：
+ * - 一个 DataTable 可以有多个 BindingContext（不同的 contextId）
+ * - 通过 contextId 区分不同的绑定实例（如主表 vs 详情表）
+ * - 支持主从表级联（主表 currentRow 变化 → 从表过滤）
+ * 
+ * 注意：
+ * - 这是接口定义，实现类是 BindingContext
+ * - 所有属性可选，支持增量更新
+ * - _开头的字段是内部状态，不应直接修改
+ * 
+ * 典型使用场景：
+ * - el-table 的 dataKey 绑定
+ * - 主从表联动（通过 filterExpression）
+ * - 表格行选中状态管理
  */
 export interface IBindingContext {
   currentRow?: DataRow | null
@@ -258,7 +281,20 @@ export interface FilterResult {
 }
 
 /**
- * 过滤上下文（用于解析时传递父表数据）
+ * 过滤上下文接口（用于主从表关联过滤）
+ * 
+ * 作用域：单次主从表过滤操作的临时上下文
+ * 生命周期：过滤表达式解析时创建，过滤完成后销毁
+ * 
+ * 用途：
+ * - 为从表过滤提供主表的当前行/选中行数据
+ * - 支持主从表级联过滤（如订单明细 ↔ 订单主表）
+ * - 提供全局变量访问（variables）
+ * 
+ * 典型使用场景：
+ * - filterExpression: "parentRow.id" → 主表单行关联
+ * - filterExpression: "IN(parentRows, 'id')" → 主表多行关联
+ * - 通过 variables 传递额外的过滤参数
  */
 export interface FilterContext {
   parentRow?: DataRow
