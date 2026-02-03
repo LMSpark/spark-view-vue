@@ -142,9 +142,9 @@ const onFormMounted = (api: FormCreateAPI) => {
   
   // 更新全局上下文
   if (typeof window !== 'undefined') {
-    window.__formApi__ = api
-    if (window.__pageContext) {
-      window.__pageContext.$api = api
+    ;(window as any).__formApi__ = api
+    if ((window as any).__pageContext) {
+      ;(window as any).__pageContext.$api = api
     }
   }
   
@@ -208,9 +208,9 @@ const loadPageConfig = async () => {
     originalRules.value = config.rule || []
     
     // 设置样式
-    if (config.style) {
+    if (pageData.style && typeof pageData.style === 'string') {
       pageLogger.debug('设置页面样式', { pageId, hasStyle: true })
-      setScopedCss(config.style)
+      setScopedCss(pageData.style as string)
     }
     
     // 初始化 DataSet

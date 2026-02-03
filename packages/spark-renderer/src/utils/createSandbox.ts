@@ -3,7 +3,7 @@
  */
 
 import { pageLogger } from '@spark-view/spark-app'
-import type { PageContext, PageScriptModule, ScriptSandboxOptions, FormCreateAPI } from '../types'
+import type { PageContext, PageScriptModule, ScriptSandboxOptions } from '../types'
 
 /**
  * 创建页面脚本沙箱上下文
@@ -100,7 +100,7 @@ export async function loadScriptModule(
  */
 export function initGlobalPageContext(context: PageContext): void {
   if (typeof window !== 'undefined') {
-    window.__pageContext = context
+    ;(window as any).__pageContext = context
   }
 }
 
@@ -109,15 +109,9 @@ export function initGlobalPageContext(context: PageContext): void {
  */
 export function cleanupGlobalPageContext(): void {
   if (typeof window !== 'undefined') {
-    delete window.__pageContext
-    delete window.__formApi__
+    delete (window as any).__pageContext
+    delete (window as any).__formApi__
   }
 }
 
-// 全局类型声明
-declare global {
-  interface Window {
-    __pageContext?: PageContext
-    __formApi__?: FormCreateAPI | null
-  }
-}
+// 移除全局类型声明，避免与 DynamicPage.vue 冲突
