@@ -1,4 +1,5 @@
-﻿import { describe, it, expect } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, it, expect } from 'vitest'
 import { getWindow, getDocument, isBrowser, isServer, getWindowProperty, getDocumentProperty } from '../src/utils/env'
 
 describe('Environment Utils', () => {

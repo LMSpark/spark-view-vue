@@ -1,4 +1,5 @@
-﻿import { describe, it, expect } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, it, expect } from 'vitest'
 import { Spark } from '../src/spark-namespace.js'
 
 describe('GlobalProviderRegistry removal', () => {

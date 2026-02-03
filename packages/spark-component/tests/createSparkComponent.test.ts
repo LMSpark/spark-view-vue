@@ -1,4 +1,5 @@
-﻿import { describe, it, expect } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, it, expect } from 'vitest'
 import { defineSparkComponent, createSparkComponent } from '../src/vue/createSparkComponent.js'
 import { Spark } from '../src/spark-namespace.js'
 import { createComponentRegistry } from '../src/utils/SparkComponentRegistry.js'

@@ -3,7 +3,7 @@
  * 每个包内独立实现，避免跨包依赖问题
  */
 
-type EventHandler = (...args: any[]) => void
+type EventHandler = (...args: unknown[]) => void
 
 /**
  * 通用事件发射器
@@ -19,7 +19,10 @@ export class EventEmitter<EventMap extends Record<string, EventHandler> = Record
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
-    this.listeners.get(event)!.add(handler as EventHandler)
+    const handlers = this.listeners.get(event)
+    if (handlers) {
+      handlers.add(handler as EventHandler)
+    }
 
     return () => this.off(event, handler)
   }
@@ -29,7 +32,7 @@ export class EventEmitter<EventMap extends Record<string, EventHandler> = Record
    * @returns 取消监听的函数
    */
   once<K extends keyof EventMap>(event: K, handler: EventMap[K]): () => void {
-    const wrapper = ((...args: any[]) => {
+    const wrapper = ((...args: unknown[]) => {
       this.off(event, wrapper as EventMap[K])
       ;(handler as EventHandler)(...args)
     }) as EventMap[K]

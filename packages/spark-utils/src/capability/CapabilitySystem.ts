@@ -14,7 +14,25 @@ import type {
 
 const logger = Logger('Capability')
 
-type AnyFunction = (...args: any[]) => any
+type AnyFunction = (...args: unknown[]) => unknown
+
+interface DataFlowProvider {
+  addListener?: AnyFunction
+  removeListener?: AnyFunction
+}
+
+interface DataFlowConsumer {
+  onData?: AnyFunction
+}
+
+interface EventProvider {
+  addEventListener?: AnyFunction
+  removeEventListener?: AnyFunction
+}
+
+interface EventConsumer {
+  onEvent?: AnyFunction
+}
 
 /**
  * 数据流连接器
@@ -23,10 +41,10 @@ type AnyFunction = (...args: any[]) => any
 export class DataFlowConnector implements CapabilityConnector {
   connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = provider.implementation as any
-      const cImpl = consumer.implementation as any
-      const addListener = pImpl?.addListener as AnyFunction | undefined
-      const onData = cImpl?.onData as AnyFunction | undefined
+      const pImpl = provider.implementation as DataFlowProvider
+      const cImpl = consumer.implementation as DataFlowConsumer
+      const addListener = pImpl?.addListener
+      const onData = cImpl?.onData
       
       if (typeof addListener === 'function' && typeof onData === 'function') {
         addListener(onData)
@@ -40,10 +58,10 @@ export class DataFlowConnector implements CapabilityConnector {
 
   disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = provider.implementation as any
-      const cImpl = consumer.implementation as any
-      const removeListener = pImpl?.removeListener as AnyFunction | undefined
-      const onData = cImpl?.onData as AnyFunction | undefined
+      const pImpl = provider.implementation as DataFlowProvider
+      const cImpl = consumer.implementation as DataFlowConsumer
+      const removeListener = pImpl?.removeListener
+      const onData = cImpl?.onData
       
       if (typeof removeListener === 'function' && typeof onData === 'function') {
         removeListener(onData)
@@ -67,10 +85,10 @@ export class DataFlowConnector implements CapabilityConnector {
 export class EventConnector implements CapabilityConnector {
   connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = provider.implementation as any
-      const cImpl = consumer.implementation as any
-      const addEventListener = pImpl?.addEventListener as AnyFunction | undefined
-      const onEvent = cImpl?.onEvent as AnyFunction | undefined
+      const pImpl = provider.implementation as EventProvider
+      const cImpl = consumer.implementation as EventConsumer
+      const addEventListener = pImpl?.addEventListener
+      const onEvent = cImpl?.onEvent
       
       if (typeof addEventListener === 'function' && typeof onEvent === 'function') {
         addEventListener(onEvent)
@@ -84,10 +102,10 @@ export class EventConnector implements CapabilityConnector {
 
   disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = provider.implementation as any
-      const cImpl = consumer.implementation as any
-      const removeEventListener = pImpl?.removeEventListener as AnyFunction | undefined
-      const onEvent = cImpl?.onEvent as AnyFunction | undefined
+      const pImpl = provider.implementation as EventProvider
+      const cImpl = consumer.implementation as EventConsumer
+      const removeEventListener = pImpl?.removeEventListener
+      const onEvent = cImpl?.onEvent
       
       if (typeof removeEventListener === 'function' && typeof onEvent === 'function') {
         removeEventListener(onEvent)

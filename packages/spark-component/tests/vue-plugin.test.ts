@@ -1,4 +1,5 @@
-﻿import { describe, it, expect } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, it, expect } from 'vitest'
 import { createComponentManager, createComponentRegistry, Spark, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../src/index'
 
 // Minimal fake Vue app object

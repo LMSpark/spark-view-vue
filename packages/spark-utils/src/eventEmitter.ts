@@ -19,7 +19,10 @@ export class EventEmitter<Events extends EventMap = EventMap> {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set())
     }
-    this.listeners.get(event)!.add(handler as AnyFunction)
+    const listeners = this.listeners.get(event)
+    if (listeners) {
+      listeners.add(handler as AnyFunction)
+    }
 
     // 返回取消监听函数
     return () => this.off(event, handler)
