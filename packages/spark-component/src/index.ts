@@ -8,6 +8,31 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
+// Event System
+export {
+  createComponentEventEmitter,
+  createComponentEventConsumer,
+  ComponentEvents
+} from './events/ComponentEventEmitter.js'
+
+export type {
+  ComponentEventProvider,
+  ComponentEventConsumer,
+  ComponentEventType
+} from './events/ComponentEventEmitter.js'
+
+// Event Capability Integration
+export {
+  EventCapabilityConnector,
+  createEventCapabilityProvider,
+  createEventCapabilityConsumer
+} from './capabilities/EventCapability.js'
+
+export type {
+  EventCapabilityProvider,
+  EventCapabilityConsumer
+} from './capabilities/EventCapability.js'
+
 // Primary unified API for creating Spark components
 export { defineSparkComponent } from './vue/createSparkComponent.js'
 

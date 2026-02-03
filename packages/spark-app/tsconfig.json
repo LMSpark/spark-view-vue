@@ -25,6 +25,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {
+      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
       "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"]
     }
   },
