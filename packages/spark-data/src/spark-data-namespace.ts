@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SPARK Data Namespace
  * 提供统一的数据空间 API，简化消费层使用
  */

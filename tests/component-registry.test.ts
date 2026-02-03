@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest'
-import { Spark } from '@spark-view/spark-core'
+﻿import { expect, test } from 'vitest'
+import { Spark } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
 
 test('spark-ej2-grid is registered and component is a Vue component', async () => {

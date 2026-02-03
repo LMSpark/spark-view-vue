@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-core'
+﻿import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-component'
 import type { SparkEJ2GridConfig } from '@/features/spark-ej2' 
 
 // Mock EJ2 Grid components

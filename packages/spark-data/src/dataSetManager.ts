@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DataSetManager 工厂类
  * 相当于 .NET 的 DataSet 工厂 - 提供静态方法创建和管理 DataSet 实例
  * 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Rule 数据绑定工具
  */
 
@@ -21,6 +21,9 @@ interface ElTableComponent extends HTMLElement {
 export function bindDataToRules(options: RuleBindingOptions): Rule[] {
   const { rules, pageData, pageFunctions, dataSet, formApi } = options
   
+  // 创建统一的函数调用包装器
+  const callFunc = createFunctionCaller(pageFunctions)
+  
   return rules.map(rule => {
     const newRule = { ...rule }
     
@@ -35,19 +38,13 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       }
     }
     
-    // 处理事件处理器：将字符串转换为函数引用
+    // 处理事件处理器：通过 callFunc 包装
     if (newRule.on && typeof newRule.on === 'object') {
       const newOn: Record<string, Function | Function[]> = {}
       for (const [eventName, handler] of Object.entries(newRule.on)) {
         if (typeof handler === 'string') {
-          // 直接从 code 对象中获取函数引用
-          const fn = pageFunctions[handler]
-          if (typeof fn === 'function') {
-            newOn[eventName] = fn  // 直接绑定函数引用
-          } else {
-            pageLogger.warn('函数未定义', { handler })
-            newOn[eventName] = () => {}  // 空函数避免报错
-          }
+          // 使用 callFunc 包装，提供运行时检查和扩展能力
+          newOn[eventName] = (...args: unknown[]) => callFunc(handler, ...args)
         } else {
           newOn[eventName] = handler as Function | Function[]
         }
@@ -78,6 +75,50 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     
     return newRule
   })
+}
+
+/**
+ * 创建统一的函数调用器
+ * 
+ * 优势：
+ * 1. 运行时检查函数是否存在
+ * 2. 统一的错误处理和日志
+ * 3. 可扩展：bind、拦截、性能监控等
+ * 4. 调试友好：清晰的调用栈
+ */
+function createFunctionCaller(
+  pageFunctions: Record<string, Function>
+): (functionName: string, ...args: unknown[]) => unknown {
+  return function callFunc(functionName: string, ...args: unknown[]): unknown {
+    try {
+      // 检查函数是否存在
+      const func = pageFunctions[functionName]
+      
+      if (typeof func !== 'function') {
+        pageLogger.warn('函数未定义或不可调用', { 
+          functionName,
+          type: typeof func,
+          available: Object.keys(pageFunctions)
+        })
+        return undefined
+      }
+      
+      // 调用函数（可在此处添加：bind、拦截、性能监控等）
+      const result = func(...args)
+      
+      // 可选：添加调试日志
+      // pageLogger.debug('函数调用', { functionName, args, result })
+      
+      return result
+    } catch (error) {
+      pageLogger.error('函数执行错误', { 
+        functionName, 
+        args, 
+        error 
+      })
+      throw error
+    }
+  }
 }
 
 /**

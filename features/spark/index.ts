@@ -1,7 +1,7 @@
 // features/spark/index.ts
 // SPARK组件系统入口文件 - Spark命名空间API
 
-import { Spark as CoreSpark } from '@spark-view/spark-core'
+import { Spark as CoreSpark } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../spark-ej2'
 
 export const Spark = {
@@ -20,7 +20,7 @@ export type {
   ComponentContext,
   CapabilityProvider,
   CapabilityConsumer
-} from '@spark-view/spark-core'
+} from '@spark-view/spark-component'
 
 // ⚠️ DEPRECATED: 从 features/spark-ej2 导入
 // import { SparkEJ2Grid, SparkEJ2Column } from '../spark-ej2'

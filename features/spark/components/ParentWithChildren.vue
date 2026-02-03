@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 
 interface Props {
   config: {

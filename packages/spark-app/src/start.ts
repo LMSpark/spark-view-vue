@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SparkApp.start() - 最高层级 API
  * 
  * 完全声明式启动应用，无需手动创建 app/router
@@ -36,8 +36,8 @@ export interface PageConfigOptions {
   cacheExpiry?: number
   /** 请求超时时间 */
   timeout?: number
-  /** 页面组件 */
-  pageComponent: Component
+  /** 页面组件（默认使用 PageRenderer） */
+  pageComponent?: Component
   /** 首页路径 */
   homePath: string
   /** 注册前钩子（可以转换路由） */
@@ -144,7 +144,7 @@ export async function start(options: StartOptions): Promise<void> {
     // 4. 安装 SPARK 组件系统
     if (spark?.enabled !== false) {
       startLogger.debug('安装 SPARK 组件系统...')
-      const { Spark } = await import('@spark-view/spark-core')
+      const { Spark } = await import('@spark-view/spark-component')
       const manager = Spark.createComponentManager()
       const registry = Spark.createComponentRegistry()
       app.use(Spark.createVuePlugin({ manager, registry }))
@@ -164,10 +164,17 @@ export async function start(options: StartOptions): Promise<void> {
         timeout: pageConfig.timeout
       })
       
+      // 默认使用 PageRenderer 组件
+      let pageComponent = pageConfig.pageComponent
+      if (!pageComponent) {
+        const { PageRenderer } = await import('@spark-view/spark-renderer')
+        pageComponent = PageRenderer
+      }
+      
       const dynamicRouter = SparkPageConfig.createDynamicRouter({
         router,
         configLoader,
-        pageComponent: pageConfig.pageComponent,
+        pageComponent,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         beforeRegister: pageConfig.beforeRegister as any,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

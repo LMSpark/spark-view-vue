@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 动态路由注册器 - 支持 SPA 动态路由
  */
 
@@ -74,6 +74,9 @@ export class DynamicRouter {
       path: config.path,
       name: config.name,
       component: this.pageComponent,
+      props: {
+        configLoader: this.configLoader
+      },
       meta: {
         ...config.meta,
         pageId: config.pageId

@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
+﻿import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkComponentRenderer from '../features/spark/components/SparkComponentRenderer.vue'
-import { createComponentRegistry, createComponentManager, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '@spark-view/spark-core'
+import { createComponentRegistry, createComponentManager, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 import { h } from 'vue'
 import type { DefineComponent } from 'vue'
 

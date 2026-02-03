@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "@spark-view/spark-data",
     "version": "0.1.0",
     "type": "module",
@@ -22,6 +22,9 @@
         "test": "vitest",
         "test:run": "vitest run",
         "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0"
+    },
+    "dependencies": {
+        "@spark-view/spark-utils": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^18.19.130",

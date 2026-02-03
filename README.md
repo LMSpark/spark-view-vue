@@ -1,46 +1,44 @@
-# SPARK 6层架构 - 企业级低代码平台
+# SPARK 包架构系统 - 企业级低代码平台
 
-> 基于 Vue 3 + TypeScript 的分层架构系统
+> 基于 Vue 3 + TypeScript 的模块化包架构系统
 
 ## 🏗️ 架构概览
 
-SPARK 采用 6 层架构设计，职责清晰、松耦合、易扩展：
+SPARK 采用模块化包设计，独立底层包 + 集成包，职责清晰、松耦合、易扩展：
 
 ```
-┌─────────────────────────────────────────────┐
-│  L1: @spark-view/spark-app                 │  基础设施层
-│  → Logger, ErrorHandler, Bootstrap         │
-├─────────────────────────────────────────────┤
-│  L2: @spark-view/spark-page-config         │  业务编排层
-│  → ConfigLoader, DynamicRouter             │
-├─────────────────────────────────────────────┤
-│  L3: @spark-view/spark-renderer            │  模型层
-│  → PageRenderer, DataBinding, Sandbox      │
-├─────────────────────────────────────────────┤
-│  L4: Operation Layer                       │  组件操作层
-│  → ComponentManager                         │
-├─────────────────────────────────────────────┤
-│  L5: Capability Layer                      │  能力层
-│  → CapabilitySystem, Provider/Consumer     │
-├─────────────────────────────────────────────┤
-│  L6: Component Layer                       │  组件层
-│  → ComponentRegistry, Renderer             │
-└─────────────────────────────────────────────┘
-         ↑ L4-L6 统一打包为 @spark-view/spark-core
+独立的底层包（互不依赖）：
+  ├─ @spark-view/spark-app       (基础设施：Logger、AppContext、Bootstrap)
+  ├─ @spark-view/spark-core      (组件核心：ComponentManager、能力系统、插件)
+  ├─ @spark-view/spark-data      (数据管理：DataSet、TreeManager、BindingContext)
+  └─ @spark-view/spark-page-config (配置加载：ConfigLoader、Router)
+
+集成包（轻量级依赖）：
+  └─ @spark-view/spark-renderer  (页面渲染引擎)
+     ├─ spark-data (数据集成)
+     ├─ spark-page-config (配置加载)
+     └─ spark-app (基础设施)
+     ❌ 不依赖 spark-core（保持轻量级、解耦）
 ```
+
+**设计理念**：
+- ✅ 底层包完全独立，可单独使用
+- ✅ spark-renderer 作为轻量级集成包，只依赖必要功能
+- ✅ spark-core 可独立使用，构建复杂组件系统
+- ✅ 灵活组合，按需集成
 
 ## 📦 包结构
 
 ### 核心包
-- `@spark-view/spark-app` - L1 基础设施（日志、错误、启动）
-- `@spark-view/spark-page-config` - L2 业务编排（配置、路由）
-- `@spark-view/spark-renderer` - L3 模型渲染（页面、数据）
-- `@spark-view/spark-core` - L4-L6 组件核心（能力系统）
+- `@spark-view/spark-app` - 基础设施（日志、错误、启动）
+- `@spark-view/spark-core` - 组件核心（能力系统、插件）
 - `@spark-view/spark-data` - 数据管理（DataSet、Tree）
+- `@spark-view/spark-page-config` - 业务编排（配置、路由）
+- `@spark-view/spark-renderer` - 模型渲染（页面、沙箱、CSS隔离）
 
 ### 主应用
 - `src/` - 主应用入口（使用包系统）
-- `features/` - 业务特性模块
+- `features/` - 业务特性模块（仅用于测试）
 - `public/pages-config/` - 页面配置
 
 ## 🚀 快速开始
@@ -67,32 +65,48 @@ pnpm run typecheck
 
 ## 📖 核心概念
 
-### 1. 依赖倒置原则
+### 1. 包独立性原则
 
-**上游只提供能力和事件，不直接操作下游**
+**底层包互不依赖，完全独立**
 
 ```typescript
-// ✅ 正确：L1 通过回调与 L2/L3 通信
-SparkApp.bootstrap({
-  beforeMount: async (context) => {
-    // L1 发射事件，L2 处理
-  }
-})
+// ✅ 正确：每个包独立使用
+import { Spark } from '@spark-view/spark-core'
+import { SparkData } from '@spark-view/spark-data'
+import { SparkApp } from '@spark-view/spark-app'
 
-// ❌ 错误：L1 直接实例化 L2
-import { ConfigLoader } from '@spark-view/spark-page-config'
-const loader = new ConfigLoader()  // 违反依赖倒置！
+// ✅ 正确：spark-app 有独立的 Logger，不依赖 spark-core
+import { createAppLogger } from '@spark-view/spark-app'
+const logger = createAppLogger({ scope: 'MyModule' })
+
+// ❌ 错误：跨包直接依赖
+// spark-app 不应该导入 spark-core 的任何内容
 ```
 
-### 2. 单一职责
+### 2. 集成包原则
 
-每层职责明确：
-- **L1**: 基础设施（不关心业务）
-- **L2**: 业务编排（不关心渲染）
-- **L3**: 模型渲染（不关心路由）
-- **L4-L6**: 组件核心（完全独立）
+**spark-renderer 作为集成包，只依赖必要功能**
 
-### 3. 开闭原则
+```typescript
+// ✅ spark-renderer 依赖：
+import { SparkData } from '@spark-view/spark-data'        // 数据管理
+import { ConfigLoader } from '@spark-view/spark-page-config' // 配置加载
+import { useAppContext } from '@spark-view/spark-app'     // 基础设施
+
+// ❌ spark-renderer 不依赖：
+// import { Spark } from '@spark-view/spark-core'  // 保持轻量级
+```
+
+### 3. 单一职责
+
+每个包职责明确：
+- **spark-app**: 基础设施（不关心业务）
+- **spark-core**: 组件系统（完全独立）
+- **spark-data**: 数据管理（不关心渲染）
+- **spark-page-config**: 配置加载（不关心渲染）
+- **spark-renderer**: 页面渲染（整合必要功能）
+
+### 4. 开闭原则
 
 通过接口和事件扩展，不修改源码：
 
@@ -136,11 +150,10 @@ async function initApp() {
     enableCache: true
   })
   
-  // 创建动态路由
+  // 创建动态路由（pageComponent 可选，默认使用 PageRenderer）
   const dynamicRouter = SparkPageConfig.createDynamicRouter({
     router,
-    configLoader,
-    pageComponent: DynamicPage
+    configLoader
   })
   
   await dynamicRouter.registerRoutes()

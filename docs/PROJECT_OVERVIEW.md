@@ -16,8 +16,8 @@
 |-----------|------|--------|
 | `packages/spark-renderer/` | **页面渲染引擎**，负责配置渲染和数据绑定 | ⭐⭐⭐⭐⭐ |
 | `packages/spark-data/` | 数据空间（DataSet, TreeManager） | ⭐⭐⭐⭐⭐ |
-| `packages/spark-core/` | 组件系统（能力、插件、管理器） | ⭐⭐⭐⭐⭐ |
-| `public/pages-config/{pageId}/` | 页面配置目录（rule.json + pagedata.json + script.js） | ⭐⭐⭐⭐⭐ |
+| `packages/spark-core/` | 组件系统（能力、插件、管理器） | ⭐⭐⭐⭐⭐ || `packages/spark-app/` | 应用基础设施（Logger、AppContext、Bootstrap） | ⭐⭐⭐⭐⭐ |
+| `packages/spark-page-config/` | 页面配置加载（ConfigLoader、Router） | ⭐⭐⭐⭐ || `public/pages-config/{pageId}/` | 页面配置目录（rule.json + pagedata.json + script.js） | ⭐⭐⭐⭐⭐ |
 | `src/App.vue` | 应用入口 | ⭐⭐⭐ |
 
 ## 🏗️ 架构层次
@@ -31,21 +31,39 @@
 └─────────────────────────────────────────────────┘
                       ↓
 ┌─────────────────────────────────────────────────┐
-│  渲染引擎层 (PageRenderer)                       │
-│  - 配置加载与解析                                 │
-│  - Rule 数据绑定                                  │
-│  - 脚本沙箱执行                                   │
-│  - CSS 作用域隔离                                 │
+│  渲染引擎层 (@spark-view/spark-renderer)        │
+│  - 配置加载与解析 (ConfigLoader)                  │
+│  - Rule 数据绑定 (useRuleBinding)                 │
+│  - 脚本沙箱执行 (Sandbox)                         │
+│  - CSS 作用域隔离 (useCssScope)                   │
 └─────────────────────────────────────────────────┘
                       ↓
 ┌─────────────────────────────────────────────────┐
-│  数据管理层 (DataSet Architecture)               │
+│  数据管理层 (@spark-view/spark-data)             │
 │  - DataSet (领域逻辑)                            │
 │  - DataTable (结构定义)                          │
 │  - DataRow (数据行)                              │
 │  - BindingContext (视图绑定)                     │
 └─────────────────────────────────────────────────┘
+                      ↓
+┌─────────────────────────────────────────────────┐
+│  基础设施层 (@spark-view/spark-app)              │
+│  - Logger (日志系统)                             │
+│  - AppContext (应用上下文)                       │
+│  - Bootstrap (初始化流程)                        │
+└─────────────────────────────────────────────────┘
+
+独立的组件系统（可选）：
+┌─────────────────────────────────────────────────┐
+│  组件系统层 (@spark-view/spark-core)            │
+│  - ComponentManager (组件管理)                   │
+│  - Capability System (能力系统)                  │
+│  - Plugin System (插件系统)                      │
+└─────────────────────────────────────────────────┘
 ```
+
+**注：** spark-renderer 不依赖 spark-core，保持轻量级；
+spark-core 可以独立使用，构建复杂的组件系统。
 
 ## 🔑 关键特性
 

@@ -4,8 +4,11 @@
 
 ```
 ├── packages/                  # 📦 核心包（可复用）
-│   ├── spark-core/           # SPARK 组件系统
-│   └── spark-data/           # SPARK 数据空间
+│   ├── spark-app/            # 应用基础设施（Logger、AppContext、Bootstrap）
+│   ├── spark-core/           # 组件系统（ComponentManager、能力系统、插件）
+│   ├── spark-data/           # 数据空间（DataSet、TreeManager、BindingContext）
+│   ├── spark-page-config/    # 页面配置（ConfigLoader、Router）
+│   └── spark-renderer/       # 页面渲染引擎（PageRenderer、沙箱、CSS隔离）
 │
 ├── pages-config/             # 📄 页面配置（与 src 平级）
 │   ├── routes.json           # 路由配置
@@ -56,10 +59,36 @@ const context = SparkData.createContext('Users')
 
 | 包 | 职责 | 核心概念 |
 |----|------|---------|
+| **spark-app** | 应用基础设施、日志、上下文 | Logger, AppContext, Bootstrap |
 | **spark-core** | 组件生命周期、能力系统、插件 | Manager, Registry, Capability, Plugin |
 | **spark-data** | 数据管理、树结构、绑定上下文 | DataSet, TreeManager, BindingContext |
+| **spark-page-config** | 配置加载、路由注册 | ConfigLoader, RouterManager |
+| **spark-renderer** | 页面渲染、沙箱、CSS隔离 | PageRenderer, Sandbox, CSS Scope |
 
-### 3. 向后兼容
+### 3. 包依赖关系
+
+```
+独立的底层包（互不依赖）：
+  - spark-app      (基础设施：Logger、AppContext、Bootstrap)
+  - spark-core     (组件核心：ComponentManager、能力系统、插件)
+  - spark-data     (数据管理：DataSet、TreeManager、BindingContext)
+  - spark-page-config (配置加载：ConfigLoader、Router)
+
+集成包（轻量级依赖）：
+  - spark-renderer (页面渲染引擎)
+    ├─ spark-data (数据集成)
+    ├─ spark-page-config (配置加载)
+    └─ spark-app (基础设施)
+    ❌ 不依赖 spark-core（保持解耦）
+```
+
+**设计理念**：
+- ✅ 底层包完全独立，可单独使用
+- ✅ spark-renderer 作为轻量级集成包，只依赖必要功能
+- ✅ spark-core 可独立使用，不被渲染器绑定
+- ✅ 灵活组合，按需集成
+
+### 4. 向后兼容
 
 两个包都保留直接导入类的方式：
 
@@ -123,6 +152,36 @@ SparkData.createFilterParser()
 // 高级访问
 SparkData.classes.DataSet
 SparkData.classes.TreeManager
+```
+
+### spark-app API
+
+```typescript
+import { SparkApp } from '@spark-view/spark-app'
+
+// 应用初始化
+SparkApp.bootstrap({ app, router, config, beforeMount? })
+
+// 日志系统（独立实现，不依赖 spark-core）
+import { createAppLogger, pageLogger, apiLogger } from '@spark-view/spark-app'
+const logger = createAppLogger({ scope: 'MyModule', level: 'info' })
+logger.info('消息', metadata)
+
+// 应用上下文
+import { useAppContext } from '@spark-view/spark-app'
+const context = useAppContext()
+```
+
+### spark-renderer API
+
+```typescript
+import { SparkRenderer, PageRenderer } from '@spark-view/spark-renderer'
+
+// 渲染页面
+<PageRenderer :config-loader="configLoader" />
+
+// Composables
+import { useCssScope, usePageDataSet, useRuleBinding } from '@spark-view/spark-renderer'
 ```
 
 ---

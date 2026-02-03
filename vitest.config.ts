@@ -12,8 +12,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@spark-view/spark-core': resolve(__dirname, './packages/spark-core/src/index.ts'),
-      '@spark-view/spark-core/*': resolve(__dirname, './packages/spark-core/src/*')
+      '@spark-view/spark-component': resolve(__dirname, './packages/spark-component/src/index.ts'),
+      '@spark-view/spark-component/*': resolve(__dirname, './packages/spark-component/src/*')
     }
   }
 })

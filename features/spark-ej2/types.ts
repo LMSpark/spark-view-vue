@@ -1,7 +1,7 @@
 // EJ2-specific component configuration types
 // Unified location for all Spark-EJ2 type definitions
 
-import type { ComponentConfig } from '@spark-view/spark-core'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
 export interface SparkEJ2GridConfig extends ComponentConfig {
   type: 'spark-ej2-grid'

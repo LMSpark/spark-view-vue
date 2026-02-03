@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
+﻿import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid } from '../features/spark-ej2'
-import { createComponentManager, createComponentRegistry } from '@spark-view/spark-core'
+import { createComponentManager, createComponentRegistry } from '@spark-view/spark-component'
 
 const registry = createComponentRegistry()
 const manager = createComponentManager(undefined, registry)

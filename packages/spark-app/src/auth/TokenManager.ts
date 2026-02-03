@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Token 管理器
  * 支持多种存储方式：localStorage, sessionStorage, cookie, memory
  */

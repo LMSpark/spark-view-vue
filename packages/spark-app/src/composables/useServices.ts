@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 服务访问 Composables
  * 
  * Vue 3 风格的服务访问接口，替代直接使用 DI 容器
@@ -27,8 +27,8 @@ import {
 type Logger = ReturnType<typeof import('../logger').createLogger>
 
 // 外部类型（从相应包导入）
-type SparkManager = import('@spark-view/spark-core').ComponentManager
-type SparkRegistry = import('@spark-view/spark-core').ComponentRegistry
+type SparkManager = import('@spark-view/spark-component').ComponentManager
+type SparkRegistry = import('@spark-view/spark-component').ComponentRegistry
 type ConfigLoader = import('@spark-view/spark-page-config').PageConfigLoader
 
 // 导出 Injection Keys（向后兼容，推荐从 constants 导入）

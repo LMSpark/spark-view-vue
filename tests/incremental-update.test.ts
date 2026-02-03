@@ -1,8 +1,8 @@
-// tests/incremental-update.test.ts
+﻿// tests/incremental-update.test.ts
 
 import { describe, it, expect, vi } from 'vitest'
-import { SparkComponentRendererImpl } from '@spark-view/spark-core'
-import type { SparkComponentConfig } from '@spark-view/spark-core' 
+import { SparkComponentRendererImpl } from '@spark-view/spark-component'
+import type { SparkComponentConfig } from '@spark-view/spark-component' 
 
 // Mock logger
 vi.mock('../features/spark/utils/logger', () => ({

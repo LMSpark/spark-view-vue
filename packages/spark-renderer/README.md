@@ -16,22 +16,32 @@
 ## 🏗️ 架构定位
 
 ```
-L1 Application Layer (@spark-view/spark-app)
-  ↓ Logger, ErrorCodes, Constants
-L2 Business Orchestration (@spark-view/spark-page-config)
-  ↓ ConfigLoader
-L3 Model Layer (@spark-view/spark-renderer)  ← 本包
-  ↓ PageRenderer + DataSet + CSS隔离 + 脚本沙箱
-L4-L6 Components (@spark-view/spark-core)
-  DataSpace (@spark-view/spark-data)
+独立的底层包：
+  - spark-app (基础设施：Logger、AppContext、Bootstrap)
+  - spark-core (组件核心：ComponentManager、能力系统、插件)
+  - spark-data (数据管理：DataSet、TreeManager、BindingContext)
+  - spark-page-config (配置加载：ConfigLoader、Router)
+
+集成包（轻量级）：
+  - spark-renderer (页面渲染引擎)  ← 本包
+    ├─ spark-data (数据集成)
+    ├─ spark-page-config (配置加载)
+    └─ spark-app (基础设施)
+    ❌ 不依赖 spark-core（保持轻量级、解耦）
 ```
 
-**L3 职责**：
+**本包职责**：
 - 渲染引擎 - 配置 → Vue 组件
 - DataSet 管理 - 页面级数据隔离
 - CSS 隔离 - 样式作用域
 - 脚本沙箱 - 脚本执行隔离
 - Rule 绑定 - 数据和事件绑定
+
+**设计理念**：
+- ✅ 不依赖组件系统，保持轻量级
+- ✅ 只整合必要的功能（数据、配置、基础设施）
+- ✅ spark-core 可以独立使用，构建复杂组件系统
+- ✅ 灵活组合，按需集成
 
 ## 🚀 快速开始
 

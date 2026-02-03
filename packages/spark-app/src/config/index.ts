@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Configuration Manager
  * 配置管理（环境变量 + 远程配置）
  */

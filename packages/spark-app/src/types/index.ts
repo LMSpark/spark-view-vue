@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SPARK Application Layer Types
  * 应用层类型定义
  */

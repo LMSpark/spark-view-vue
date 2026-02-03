@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 
 interface Props {
   config: {

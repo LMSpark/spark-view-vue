@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "@spark-view/spark-app",
     "version": "0.1.0",
     "type": "module",
@@ -23,6 +23,9 @@
             "import": "./dist/index.js",
             "types": "./dist/types/index.d.ts"
         }
+    },
+    "dependencies": {
+        "@spark-view/spark-utils": "workspace:*"
     },
     "scripts": {
         "build": "tsc -p tsconfig.json",

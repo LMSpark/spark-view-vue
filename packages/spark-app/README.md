@@ -13,6 +13,10 @@ SPARK 应用层基础设施包 - 提供应用级上下文、路由守卫、错�
 - **Error Boundary** - 全局错误处理与降级
 - **Config Manager** - 配置管理（环境变量 + 远程配置）
 - **Logger** - 应用层日志系统（级别、上报、作用域）
+  - ✅ **完全独立实现**，不依赖 spark-core
+  - ✅ 支持多级别（debug、info、warn、error）
+  - ✅ 支持多传输器（console、远程上报）
+  - ✅ 支持作用域隔离（page、api、custom）
 
 ## 安装
 
