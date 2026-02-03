@@ -3,7 +3,8 @@
  * 每个包内独立实现，避免跨包依赖问题
  */
 
-type EventHandler = (...args: unknown[]) => void
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EventHandler = (...args: any[]) => void
 
 /**
  * 通用事件发射器

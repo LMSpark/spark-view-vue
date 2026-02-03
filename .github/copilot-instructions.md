@@ -35,7 +35,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 ## Integration & build notes 🔧
 - Vite recognizes `e-*` custom elements; SSR uses `ssr.noExternal` for `element-plus` (check `vite.config.ts` for SSR quirks).
 - TypeScript path aliases:
-  - `@spark-view/spark-core` → `./packages/spark-core/src`
+  - `@spark-view/spark-component` → `./packages/spark-component/src`
   - `@spark-view/spark-data` → `./packages/spark-data/src`
 
 ## Package structure 📦

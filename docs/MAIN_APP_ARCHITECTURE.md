@@ -37,7 +37,7 @@ src/
 - ✅ 脚本沙箱
 - ✅ 样式作用域
 
-### L4-L6 - 组件核心 (@spark-view/spark-core)
+### L4-L6 - 组件核心 (@spark-view/spark-component)
 - ✅ 组件管理
 - ✅ 能力系统
 - ✅ 插件机制

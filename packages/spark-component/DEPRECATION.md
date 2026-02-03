@@ -28,7 +28,7 @@ Migration
 - Replace usages with one of the following patterns:
 
   ```ts
-  import { Spark } from '@spark-view/spark-core'
+  import { Spark } from '@spark-view/spark-component'
   // Recommended: register component by passing the Vue component directly
   Spark.registerSparkComponentFromComponent(MyComponent)
 

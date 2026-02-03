@@ -1,4 +1,4 @@
-# @spark-view/spark-core (local)
+# @spark-view/spark-component (local)
 
 This package contains the core runtime and utilities used by the SPARK projects.
 
@@ -14,7 +14,7 @@ What moved here
 Usage example (preferred):
 
 ```ts
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-component'
 
 // Create manager instances
 const manager = Spark.createComponentManager()
@@ -33,7 +33,7 @@ const app = createApp(App)
 Spark.install(app, { manager, registry })
 
 // Use in components
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 const { provide, consume } = useSparkComponent({ type: 'my-component' })
 ```
 

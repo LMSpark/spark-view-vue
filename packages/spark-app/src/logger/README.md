@@ -2,7 +2,7 @@
 
 ## 📊 分层设计
 
-### **Core 层 Logger**（`@spark-view/spark-core`）
+### **Core 层 Logger**（`@spark-view/spark-component`）
 
 **职责**：
 - 提供底层日志接口（`LoggerApi`）
@@ -13,7 +13,7 @@
 **使用场景**：
 ```typescript
 // 组件内部使用
-import { Logger } from '@spark-view/spark-core'
+import { Logger } from '@spark-view/spark-component'
 
 const logger = Logger(context)
 logger.debug('组件初始化')
@@ -131,7 +131,7 @@ pageLogger.success('保存成功')
 
 ```typescript
 // SparkComponent.vue
-import { Logger } from '@spark-view/spark-core'
+import { Logger } from '@spark-view/spark-component'
 
 const logger = Logger(context)
 logger.debug('组件挂载', { id: context.id })
@@ -166,6 +166,6 @@ logger.addTransport(sentryTransport)
 - **依赖方向**：App → Core（单向依赖）
 
 **迁移指南**：
-- 组件内部继续使用 `@spark-view/spark-core` 的 `Logger()`
+- 组件内部继续使用 `@spark-view/spark-component` 的 `Logger()`
 - 应用层、页面、业务代码使用 `@spark-view/spark-app` 的 `pageLogger` 等
 - 保持现有代码兼容，逐步迁移

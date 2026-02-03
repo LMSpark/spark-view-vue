@@ -302,7 +302,7 @@ function __init__() {
 ```json
 {
   "dependencies": {
-    "@spark-view/spark-core": "workspace:*",
+    "@spark-view/spark-component": "workspace:*",
     "@spark-view/spark-data": "workspace:*",
     "@spark-view/spark-page-config": "workspace:*",
     "@spark-view/spark-app": "workspace:*"
@@ -319,7 +319,7 @@ function __init__() {
 - [API.md](./API.md) - 完整 API 文档
 - [INTEGRATION.md](./INTEGRATION.md) - L1/L2 集成说明
 - [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - 实现总结
-- [@spark-view/spark-core](../spark-core/README.md) - 组件系统
+- [@spark-view/spark-component](../spark-component/README.md) - 组件系统
 - [@spark-view/spark-data](../spark-data/README.md) - 数据空间
 - [@spark-view/spark-page-config](../spark-page-config/README.md) - 配置层
 - [@spark-view/spark-app](../spark-app/README.md) - 应用层

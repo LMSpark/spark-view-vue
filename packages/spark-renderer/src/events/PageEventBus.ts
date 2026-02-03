@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * 页面层事件总线
  * 每个页面有独立的事件总线实例，实现页面级隔离（双向事件）
@@ -10,10 +8,8 @@ import { EventEmitter } from './EventEmitter'
 
 /**
  * 页面级事件接口（双向事件）
- * @ts-ignore 忽略与 EventEmitter 泛型约束的类型冲突
  */
-export interface PageEvents extends Record<string, (...args: any[]) => void> {
-  // === 向下广播（Broadcast Down）- 页面状态变化通知组件 ===
+export interface PageEvents {
   // === 向下广播（Broadcast Down）- 页面状态变化通知组件 ===
   
   /**
@@ -110,8 +106,9 @@ export interface PageEvents extends Record<string, (...args: any[]) => void> {
    */
   'grid:sorted': (field: string, order: string) => void
   
-  // Index signature to match EventEmitter constraint
-  [eventName: string]: (...args: unknown[]) => void
+  // 兼容索引签名：允许动态事件
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [eventName: string]: (...args: any[]) => void
 }
 
 /**
