@@ -3,7 +3,7 @@
  */
 
 import { pageLogger } from '@spark-view/spark-app'
-import type { PageContext, PageScriptModule, ScriptSandboxOptions } from '../types'
+import type { PageContext, PageScriptModule, ScriptSandboxOptions, FormCreateAPI } from '../types'
 
 /**
  * 创建页面脚本沙箱上下文
@@ -118,6 +118,6 @@ export function cleanupGlobalPageContext(): void {
 declare global {
   interface Window {
     __pageContext?: PageContext
-    __formApi__?: any
+    __formApi__?: FormCreateAPI | null
   }
 }

@@ -6,7 +6,7 @@ import { ref, Ref, onUnmounted } from 'vue'
 import { pageLogger } from '@spark-view/spark-app'
 import { DataSetManager } from '@spark-view/spark-data'
 import type { IDataSet, DataRow } from '@spark-view/spark-data'
-import type { PageContext, Rule } from '../types'
+import type { PageContext, Rule, FormCreateAPI } from '../types'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
 
 /**
@@ -16,9 +16,9 @@ export interface UsePageDataSetOptions {
   pageData: Record<string, unknown>
   context: PageContext
   originalRules?: Ref<Rule[]>
-  formApi?: Ref<any>
+  formApi?: Ref<FormCreateAPI | null>
   enableDataSet?: boolean
-  dataLoader?: (tableName: string) => Promise<any[]>
+  dataLoader?: (tableName: string) => Promise<DataRow[]>
 }
 
 /**
@@ -77,11 +77,11 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       })
       
       // 创建 DataSet (使用工厂模式)
-      dataSet.value = DataSetManager.create(pageData.dataset as any, defaultDataLoader)
+      dataSet.value = DataSetManager.create(pageData.dataset as IDataSet, defaultDataLoader)
       
       // 移除 pageData.dataset.tables 引用
-      if ('tables' in pageData.dataset) {
-        delete (pageData.dataset as any).tables
+      if (pageData.dataset && typeof pageData.dataset === 'object' && 'tables' in pageData.dataset) {
+        delete (pageData.dataset as Record<string, unknown>).tables
       }
       
       // 更新上下文
@@ -128,8 +128,8 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     contexts.forEach(key => {
       const [tableName, contextId] = key.split('.')
       // 类型安全：确保contextId存在且是有效字符串
-      if (tableName && contextId && contextId !== 'undefined') {
-        dataSet.value!.subscribe(tableName, contextId, () => {
+      if (tableName && contextId && contextId !== 'undefined' && dataSet.value) {
+        dataSet.value.subscribe(tableName, contextId, () => {
           pageLogger.debug('上下文数据变化', { contextKey: key })
         })
         pageLogger.debug('自动订阅上下文', { contextKey: key })

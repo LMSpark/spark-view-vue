@@ -71,8 +71,11 @@ export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
   /** 启动前钩子 */
   onBeforeStart?: () => void | Promise<void>
   
-  /** 启动失败钩子 */
+  /** 启动失败钩子（如果提供，将完全接管错误处理） */
   onStartError?: (error: Error) => void | Promise<void>
+  
+  /** 错误降级组件（用于默认错误处理） */
+  fallbackComponent?: Component
 }
 
 /**
@@ -110,6 +113,7 @@ export async function start(options: StartOptions): Promise<void> {
     plugins,
     onBeforeStart,
     onStartError,
+    fallbackComponent,
     ...bootstrapOptions
   } = options
 
@@ -190,45 +194,15 @@ export async function start(options: StartOptions): Promise<void> {
     // 启动失败钩子
     if (onStartError) {
       await onStartError(err)
-    } else {
-      // 默认降级：显示错误页面
-      startLogger.warn('使用默认降级处理...')
-      const fallbackApp = createApp({
-        template: `
-          <div style="
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-family: system-ui, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-          ">
-            <div style="text-align: center; max-width: 500px; padding: 2rem;">
-              <h1 style="font-size: 3rem; margin-bottom: 1rem;">⚠️</h1>
-              <h2 style="margin-bottom: 1rem;">应用启动失败</h2>
-              <p style="opacity: 0.9; margin-bottom: 2rem;">${err.message}</p>
-              <button 
-                onclick="location.reload()"
-                style="
-                  padding: 0.75rem 2rem;
-                  background: white;
-                  color: #667eea;
-                  border: none;
-                  border-radius: 0.5rem;
-                  font-size: 1rem;
-                  cursor: pointer;
-                  font-weight: 600;
-                "
-              >
-                重新加载
-              </button>
-            </div>
-          </div>
-        `
-      })
+    } else if (fallbackComponent) {
+      // 使用用户提供的降级组件
+      startLogger.warn('使用自定义降级组件...')
+      const fallbackApp = createApp(fallbackComponent, { error: err })
       fallbackApp.mount(mountTarget)
     }
+    // 注意：如果既不提供 onStartError 也不提供 fallbackComponent
+    // 则应用启动失败后会抛出错误，不会有任何 UI 提示
+    // 建议：至少提供 fallbackComponent
 
     throw error
   }

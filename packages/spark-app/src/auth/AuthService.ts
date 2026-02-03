@@ -4,6 +4,7 @@
  */
 
 import type { AuthConfig, LoginCredentials, AuthResult, IAuthService } from './types'
+import type { AppEnvironment } from '../types'
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
 import { envAdapter } from '../environment'
@@ -307,7 +308,7 @@ export class AuthService implements IAuthService {
         config: {}
       },
       env: {
-        mode: (env.isClient ? 'development' : 'production') as any,
+        mode: (env.isClient ? 'development' : 'production') as AppEnvironment,
         apiBaseUrl: this.config.apiBaseUrl || '',
         version: '1.0.0'
       },
@@ -335,7 +336,7 @@ export class AuthService implements IAuthService {
         config: {}
       },
       env: {
-        mode: (env.isClient ? 'development' : 'production') as any,
+        mode: (env.isClient ? 'development' : 'production') as AppEnvironment,
         apiBaseUrl: this.config.apiBaseUrl || '',
         version: '1.0.0'
       }

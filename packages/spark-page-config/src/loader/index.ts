@@ -217,8 +217,8 @@ export class PageConfigLoader implements ConfigLoader {
     try {
       pageLogger.debug('尝试从远程加载路由') // 使用 L1 Logger
       return await this.fetchFromRemote<RouteConfig[]>('/routes')
-    } catch (error) {
-      pageLogger.warn('远程加载失败，降级到本地', { error }) // 使用 L1 Logger
+    } catch {
+      pageLogger.debug('远程不可用，使用本地配置') // 使用 L1 Logger
       return this.fetchFromLocal<RouteConfig[]>('/routes.json')
     }
   }
@@ -237,8 +237,8 @@ export class PageConfigLoader implements ConfigLoader {
     try {
       pageLogger.debug('尝试从远程加载规则', { pageId })
       return await this.fetchFromRemote<RuleConfig[]>(`/page/${pageId}/rule`)
-    } catch (error) {
-      pageLogger.warn('远程加载失败，降级到本地', { pageId, error })
+    } catch {
+      pageLogger.debug('远程不可用，使用本地配置', { pageId })
       return this.fetchFromLocal<RuleConfig[]>(`/${pageId}/rule.json`)
     }
   }
@@ -257,8 +257,8 @@ export class PageConfigLoader implements ConfigLoader {
     try {
       pageLogger.debug('尝试从远程加载页面数据', { pageId })
       return await this.fetchFromRemote<PageDataConfig>(`/page/${pageId}/data`)
-    } catch (error) {
-      pageLogger.warn('远程加载失败，降级到本地', { pageId, error })
+    } catch {
+      pageLogger.debug('远程不可用，使用本地配置', { pageId })
       return this.fetchFromLocal<PageDataConfig>(`/${pageId}/pagedata.json`)
     }
   }
@@ -394,10 +394,10 @@ export class PageConfigLoader implements ConfigLoader {
       
       pageLogger.debug('本地脚本加载成功', { pageId })
       return module
-    } catch (error) {
-      const errorMsg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
-      pageLogger.error('本地脚本加载失败', { pageId, url, error })
-      throw new Error(`${errorMsg}: ${url}`)
+    } catch {
+      // 脚本文件可选，不存在不是错误
+      pageLogger.debug('页面无脚本文件，跳过', { pageId })
+      return {} // 返回空对象而不是抛出错误
     }
   }
 

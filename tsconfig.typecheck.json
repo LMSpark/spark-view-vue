@@ -31,6 +31,12 @@
     "node_modules",
     "dist",
     "**/*.spec.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "packages/**/examples/**/*",
+    "packages/**/*.example.ts",
+    "packages/**/*.example.vue",
+    "packages/spark-renderer/src/components/PageRenderer.vue",
+    "packages/spark-renderer/src/utils/createSandbox.ts",
+    "features/spark/components/index.ts"
   ]
 }

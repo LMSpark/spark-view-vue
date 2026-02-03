@@ -114,42 +114,42 @@ export class TokenManager {
   private getFromLocalStorage(): string | null {
     const env = envAdapter.getEnvironment()
     if (env.isServer) return null
-    const adapter = envAdapter as any
+    const adapter = envAdapter as { localStorage?: Storage }
     return adapter.localStorage?.getItem(this.tokenKey) || null
   }
 
   private setToLocalStorage(token: string): void {
     const env = envAdapter.getEnvironment()
     if (env.isServer) return
-    const adapter = envAdapter as any
+    const adapter = envAdapter as { localStorage?: Storage }
     adapter.localStorage?.setItem(this.tokenKey, token)
   }
 
   private clearFromLocalStorage(): void {
     const env = envAdapter.getEnvironment()
     if (env.isServer) return
-    const adapter = envAdapter as any
+    const adapter = envAdapter as { localStorage?: Storage }
     adapter.localStorage?.removeItem(this.tokenKey)
   }
 
   private getFromSessionStorage(): string | null {
     const env = envAdapter.getEnvironment()
     if (env.isServer) return null
-    const adapter = envAdapter as any
+    const adapter = envAdapter as { sessionStorage?: Storage }
     return adapter.sessionStorage?.getItem(this.tokenKey) || null
   }
 
   private setToSessionStorage(token: string): void {
     const env = envAdapter.getEnvironment()
     if (env.isServer) return
-    const adapter = envAdapter as any
+    const adapter = envAdapter as { sessionStorage?: Storage }
     adapter.sessionStorage?.setItem(this.tokenKey, token)
   }
 
   private clearFromSessionStorage(): void {
     const env = envAdapter.getEnvironment()
     if (env.isServer) return
-    const adapter = envAdapter as any
+    const adapter = envAdapter as { sessionStorage?: Storage }
     adapter.sessionStorage?.removeItem(this.tokenKey)
   }
 

@@ -414,7 +414,7 @@ export function getStorageItem<T = string>(key: StorageKey): T | null {
 /**
  * 存储值到本地存储
  */
-export function setStorageItem(key: StorageKey, value: any): void {
+export function setStorageItem(key: StorageKey, value: unknown): void {
   if (typeof localStorage === 'undefined') return
   
   try {

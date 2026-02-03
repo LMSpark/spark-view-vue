@@ -3,9 +3,17 @@
  */
 
 import { pageLogger } from '@spark-view/spark-app'
-import type { Rule, RuleBindingOptions } from '../types'
-import type { DataRow } from '@spark-view/spark-data'
+import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
+import type { DataRow, IDataSet, BindingContext } from '@spark-view/spark-data'
 import { nextTick } from 'vue'
+
+/**
+ * ElementPlus Table 组件接口
+ */
+interface ElTableComponent extends HTMLElement {
+  clearSelection?: () => void
+  toggleRowSelection?: (row: DataRow, selected: boolean) => void
+}
 
 /**
  * 递归替换 rule 中的数据占位符和事件处理器
@@ -81,17 +89,18 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
  */
 function injectTableEvents(
   rule: Rule,
-  dataSet: any,
-  formApi: any,
+  dataSet: IDataSet,
+  _formApi: FormCreateAPI | null,
   isProcessingEvent: boolean
 ): void {
   // 解析 dataKey 获取表名
-  const dataKeyParts = rule.dataKey!.split('.')
+  if (!rule.dataKey) return
+  const dataKeyParts = rule.dataKey.split('.')
   const tablesIndex = dataKeyParts.indexOf('tables')
   if (tablesIndex === -1 || !dataKeyParts[tablesIndex + 1]) return
   
   const tableName = dataKeyParts[tablesIndex + 1]
-  const contextId = (rule as any).contextId || rule.props?.contextId || 'default'
+  const contextId = (rule as Rule & { contextId?: string }).contextId || rule.props?.contextId || 'default'
   
   // 添加唯一的 name 属性
   if (!rule.name) {
@@ -117,8 +126,9 @@ function injectTableEvents(
       }
       
       // 同步到 DataSet
-      if (dataSet) {
-        const context = dataSet.getContext(tableName, contextId)
+      if (dataSet && dataSet.tables && tableName && contextId) {
+        const table = dataSet.tables[tableName]
+        const context = table?.contexts?.[String(contextId)] as BindingContext | undefined
         if (context?.setCurrentRow) {
           context.setCurrentRow(currentRow || null, false)
         }
@@ -142,8 +152,9 @@ function injectTableEvents(
       }
       
       // 同步到 DataSet
-      if (dataSet) {
-        const context = dataSet.getContext(tableName, contextId)
+      if (dataSet && dataSet.tables && tableName && contextId) {
+        const table = dataSet.tables[tableName]
+        const context = table?.contexts?.[String(contextId)] as BindingContext | undefined
         if (context?.setSelectedRows) {
           context.setSelectedRows(selection, true)
         }
@@ -180,12 +191,12 @@ export function syncSelectedRowsToTable(
   tableName: string,
   contextId: string,
   rows: DataRow[],
-  formApi: any
+  formApi: FormCreateAPI | null
 ): void {
   nextTick(() => {
     if (formApi && typeof formApi.el === 'function') {
       const componentName = `table_${tableName}_${contextId}`
-      const tableComponent = formApi.el(componentName)
+      const tableComponent = formApi.el(componentName) as ElTableComponent | null
       
       if (tableComponent) {
         if (rows.length === 0 && typeof tableComponent.clearSelection === 'function') {
@@ -193,7 +204,7 @@ export function syncSelectedRowsToTable(
         } else if (typeof tableComponent.toggleRowSelection === 'function') {
           tableComponent.clearSelection?.()
           rows.forEach(row => {
-            tableComponent.toggleRowSelection(row, true)
+            tableComponent.toggleRowSelection?.(row, true)
           })
         }
       }

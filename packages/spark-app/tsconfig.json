@@ -29,5 +29,5 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "../spark-core/src"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.example.ts", "**/*.example.vue", "../spark-core/src"]
 }

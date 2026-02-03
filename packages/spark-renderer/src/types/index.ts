@@ -90,7 +90,7 @@ export interface PageRendererOptions {
   /**
    * FormCreate 选项
    */
-  formCreateOptions?: Record<string, any>
+  formCreateOptions?: Record<string, unknown>
   
   /**
    * 是否启用 CSS 隔离
@@ -137,8 +137,10 @@ export interface CssScopeOptions {
 export interface ScriptSandboxOptions {
   pageId: string
   context: PageContext
-  modules?: Record<string, any>
+  modules?: Record<string, unknown>
 }
+
+import type { DataRow } from '@spark-view/spark-data'
 
 /**
  * DataSet 初始化选项
@@ -146,7 +148,7 @@ export interface ScriptSandboxOptions {
 export interface DataSetInitOptions {
   pageData: Record<string, unknown>
   context: PageContext
-  dataLoader?: (tableName: string) => Promise<any[]>
+  dataLoader?: (tableName: string) => Promise<DataRow[]>
 }
 
 /**

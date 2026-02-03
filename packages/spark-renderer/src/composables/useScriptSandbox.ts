@@ -21,7 +21,7 @@ export interface UseScriptSandboxOptions {
 export interface UseScriptSandboxReturn {
   pageFunctions: Ref<Record<string, Function>>
   loadScript: () => Promise<void>
-  executeFunction: (name: string, ...args: any[]) => any
+  executeFunction: (name: string, ...args: unknown[]) => unknown
   hasFunction: (name: string) => boolean
 }
 
@@ -64,7 +64,7 @@ export function useScriptSandbox(options: UseScriptSandboxOptions): UseScriptSan
     }
   }
   
-  const executeFunction = (name: string, ...args: any[]) => {
+  const executeFunction = (name: string, ...args: unknown[]) => {
     const fn = pageFunctions.value[name]
     if (typeof fn === 'function') {
       return fn(...args)
