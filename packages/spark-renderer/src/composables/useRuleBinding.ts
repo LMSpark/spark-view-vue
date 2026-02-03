@@ -5,14 +5,14 @@
 import { ref, Ref } from 'vue'
 import { pageLogger } from '@spark-view/spark-app'
 import type { Rule, FormCreateAPI } from '../types'
-import type { DataSet } from '@spark-view/spark-data'
+import type { IDataSet } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
 
 export interface UseRuleBindingOptions {
   originalRules: Ref<Rule[]>
   pageData: Record<string, unknown>
   pageFunctions: Ref<Record<string, Function>>
-  dataSet: Ref<DataSet | null>
+  dataSet: Ref<IDataSet | null>
   formApi: Ref<FormCreateAPI | null>
 }
 

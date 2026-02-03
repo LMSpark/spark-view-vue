@@ -84,7 +84,7 @@ interface PageContext {
 declare global {
   interface Window {
     __pageContext?: PageContext
-    __formApi__?: FormCreateAPI
+    __formApi__?: FormCreateAPI | null
     $api?: () => any
     $route?: () => any
     $data?: () => any
