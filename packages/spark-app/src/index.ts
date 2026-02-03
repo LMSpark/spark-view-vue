@@ -19,6 +19,17 @@ export type {
 // 符号常量表
 export * from './constants'
 
+// 事件系统
+export {
+  appEventBus,
+  emitAppEvent,
+  onAppEvent,
+  onceAppEvent,
+  offAppEvent
+} from './events/AppEventBus'
+
+export type { AppEvents } from './events/AppEventBus'
+
 // 核心命名空间
 export { SparkApp } from './namespace'
 

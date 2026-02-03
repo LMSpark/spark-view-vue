@@ -1,6 +1,7 @@
 ﻿import { Logger } from '@spark-view/spark-utils'
 import type { CapabilityProvider, CapabilityConsumer, ComponentContext } from '../types/spark-component.js'
 import type { AnyFunction } from '../types/common.js'
+import { EventCapabilityConnector } from '../capabilities/EventCapability.js'
 
 const logger = Logger('Spark:Capability')
 
@@ -114,6 +115,12 @@ class SparkCapabilityManager {
   private connectors = new Map<string, CapabilityConnector>()
   private connections = new Map<string, Set<string>>()
   private logger = Logger('Spark:CapabilityMgr')
+
+  constructor() {
+    // 注册内置事件能力连接器
+    this.registerConnector('events', new EventCapabilityConnector())
+    this.logger.info('✅ Event capability connector registered')
+  }
 
   registerConnector(name: string, connector: CapabilityConnector) {
     this.connectors.set(name, connector)

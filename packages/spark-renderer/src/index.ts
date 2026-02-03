@@ -13,6 +13,15 @@ export { useCssScope } from './composables/useCssScope'
 export { usePageDataSet } from './composables/usePageDataSet'
 export { useRuleBinding } from './composables/useRuleBinding'
 
+// 事件系统
+export {
+  createPageEventBus,
+  pageEventBusManager,
+  PageEventBus
+} from './events/PageEventBus'
+
+export type { PageEvents } from './events/PageEventBus'
+
 // 类型导出
 export type {
   Rule,

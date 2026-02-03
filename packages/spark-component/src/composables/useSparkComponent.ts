@@ -1,6 +1,8 @@
 ﻿import { reactive, computed, onMounted, onUnmounted, markRaw, inject } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../utils/SparkCapabilitySystem.js'
+import { createEventCapabilityProvider, createEventCapabilityConsumer } from '../capabilities/EventCapability.js'
+import type { EventCapabilityProvider } from '../capabilities/EventCapability.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation, CapabilityInterface } from '../types/common.js'
@@ -22,9 +24,11 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   isVisible: unknown
   isDisabled: unknown
   provide: (name: string, implementation?: Implementation) => void
+  provideEvents: (name?: string) => EventCapabilityProvider
   getProvider: (name: string) => CapabilityProvider | undefined
   getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => T | undefined
   consume: (name: string) => Implementation | null
+  consumeEvents: (name: string, handlers: Record<string, (...args: any[]) => void>) => EventCapabilityProvider | null
   use: (name: string) => Implementation | null
   whenAvailable: (name: string) => Promise<CapabilityProvider>
   initialize: () => void
@@ -81,6 +85,18 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
 
+  // Provide event capability - convenient wrapper
+  function provideEvents(name = 'events'): EventCapabilityProvider {
+    const { provider, emitter } = createEventCapabilityProvider(name)
+    if (manager && typeof (manager).registerProvider === 'function') {
+      (manager).registerProvider(context, provider)
+    } else {
+      context.providers.add(provider)
+    }
+    logger.info(`🎉 Provided event capability: ${name} for ${context.type} (${context.id})`)
+    return emitter
+  }
+
   function consume(name: string): Implementation | null {
     const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
     context.consumers.set(name, consumer)
@@ -92,6 +108,30 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       return consumer.implementation ?? null
     }
     logger.warn(`⚠️ Capability not found (registered consumer for late-binding): ${name} for ${context.type} (${context.id})`)
+    return null
+  }
+
+  // Consume event capability - convenient wrapper
+  function consumeEvents(
+    name: string,
+    handlers: Record<string, (...args: any[]) => void>
+  ): EventCapabilityProvider | null {
+    const consumer = createEventCapabilityConsumer(name, handlers)
+    context.consumers.set(name, consumer)
+    
+    const provider = manager.getProvider(context, name)
+    if (provider) {
+      consumer.implementation = provider.implementation
+      try {
+        capabilityManager.connectCapability(provider, consumer, context)
+        logger.info(`🎉 Consumed event capability: ${name} for ${context.type} (${context.id})`)
+        return provider.implementation as unknown as EventCapabilityProvider
+      } catch (e: unknown) {
+        logger.warn('Failed to connect event capability', String(e))
+      }
+    }
+    
+    logger.warn(`⚠️ Event capability not found: ${name} for ${context.type} (${context.id})`)
     return null
   }
 
@@ -128,6 +168,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     isVisible,
     isDisabled,
     provide,
+    provideEvents,
     getProvider,
     getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => {
       let t: ComponentContext | undefined = ctx ?? context
@@ -139,6 +180,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       return undefined
     },
     consume,
+    consumeEvents,
     use: consume, // Alias for consume - more intuitive naming
     whenAvailable,
     initialize,

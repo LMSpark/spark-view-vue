@@ -44,3 +44,12 @@ export {
   getWindowProperty,
   getDocumentProperty,
 } from './env'
+
+// Event Emitter
+export {
+  EventEmitter,
+} from './eventEmitter'
+export type { EventMap } from './eventEmitter'
+
+// Capability System (通用能力系统)
+export * from './capability/index.js'
