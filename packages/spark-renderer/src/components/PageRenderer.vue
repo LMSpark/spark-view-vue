@@ -48,6 +48,13 @@ import { getRequiredFunctionNames } from '../utils/extractFunctionNames'
  * 5. Rule 绑定（数据和事件绑定）
  */
 
+// 定义插槽类型
+defineSlots<{
+  loading?: () => unknown
+  error?: (props: { error: string }) => unknown
+  content?: (props: { rules: Rule[], pageData: Record<string, unknown> }) => unknown
+}>()
+
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,
   enableDataSet: true

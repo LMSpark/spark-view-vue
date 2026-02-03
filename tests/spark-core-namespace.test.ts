@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-core'
+﻿import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-component'
 
 describe('spark-core namespace', () => {
   it('exports Spark namespace with manager getter', () => {

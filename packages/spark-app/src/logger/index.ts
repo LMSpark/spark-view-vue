@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Application Logger
- * 应用层日志系统（增强版）
+ * 应用层日志系统（独立实现）
  * 
  * 职责：
  * 1. 应用级日志配置（级别、格式、颜色）
@@ -8,17 +8,25 @@
  * 3. 日志聚合与格式化
  * 4. 作用域日志（page、api、router 等）
  * 
- * 依赖：
- * - 使用 @spark-view/spark-core 的 Logger 作为底层
+ * 注意：
+ * - 这是独立的 Logger 实现，不依赖 spark-component
+ * - spark-component 有自己的轻量级 Logger
  */
-
-import { Logger as CoreLogger } from '@spark-view/spark-core'
-import type { LoggerApi } from '@spark-view/spark-core'
 
 /**
  * 日志级别
  */
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+/**
+ * Logger API 接口
+ */
+export interface LoggerApi {
+  debug(...args: unknown[]): void
+  info(...args: unknown[]): void
+  warn(...args: unknown[]): void
+  error(...args: unknown[]): void
+}
 
 /**
  * 日志配置
@@ -71,7 +79,6 @@ const EMOJI_ICONS: Record<string, string> = {
  * 应用层 Logger 实现
  */
 class AppLogger {
-  private coreLogger: LoggerApi
   private config: Required<AppLoggerConfig>
   private transports: LogTransport[] = []
 
@@ -84,9 +91,6 @@ class AppLogger {
       enableRemote: config.enableRemote ?? false,
       remoteEndpoint: config.remoteEndpoint ?? '/api/logs'
     }
-
-    // 使用 Core Logger 作为底层
-    this.coreLogger = CoreLogger()
 
     // 生产环境启用远程传输
     if (this.config.enableRemote) {
@@ -140,8 +144,18 @@ class AppLogger {
     const emoji = EMOJI_ICONS[level]
     const formattedMessage = this.formatMessage(message, emoji)
 
-    // 使用 Core Logger 输出到控制台
-    this.coreLogger[level](formattedMessage, meta)
+    // 直接输出到控制台
+    // eslint-disable-next-line no-console
+    const consoleFn = level === 'debug' ? console.debug :
+                     level === 'info' ? console.info :
+                     level === 'warn' ? console.warn :
+                     console.error
+    
+    if (meta) {
+      consoleFn(formattedMessage, meta)
+    } else {
+      consoleFn(formattedMessage)
+    }
 
     // 触发所有传输器
     this.transports.forEach(transport => {
@@ -190,7 +204,8 @@ class AppLogger {
    */
   success(message: string, meta?: Record<string, unknown>): void {
     const formattedMessage = this.formatMessage(message, EMOJI_ICONS.success)
-    this.coreLogger.info(formattedMessage, meta)
+    const args = meta ? [formattedMessage, meta] : [formattedMessage]
+    console.info(...args)
     this.transports.forEach(t => t.send('info', message, meta))
   }
 }

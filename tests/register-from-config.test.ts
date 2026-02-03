@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-core'
+﻿import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-component'
 
 describe('registerLogical', () => {
   it('should register a logical component from ComponentConfig', () => {

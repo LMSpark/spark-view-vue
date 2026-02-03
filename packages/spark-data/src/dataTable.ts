@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DataTable 类 - 数据表
  * 继承 BindingContext，实现 IDataTable 接口
  * 相当于 .NET 的 DataTable - 结构层

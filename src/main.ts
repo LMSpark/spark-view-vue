@@ -32,7 +32,6 @@ const logger = createLogger('main')
 // 主应用组件
 import { createApp } from 'vue'
 import App from './App.vue'
-import DynamicPage from './views/DynamicPage.vue'
 import ErrorFallback from './components/ErrorFallback.vue'
 import './style.css'
 
@@ -79,7 +78,6 @@ SparkApp.start({
     apiBaseUrl: '/api',               // API 基础路径
     localPrefix: '/pages-config',     // 本地配置文件路径前缀
     enableCache: true,                // 启用配置缓存
-    pageComponent: DynamicPage,       // 动态页面渲染组件
     homePath: '/home'                 // 首页路径
   },
   

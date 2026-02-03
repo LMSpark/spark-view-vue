@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { createComponentManager } from '@spark-view/spark-core'
-import type { ComponentConfig, ComponentContext, CapabilityProvider } from '@spark-view/spark-core'
+﻿import { describe, it, expect } from 'vitest'
+import { createComponentManager } from '@spark-view/spark-component'
+import type { ComponentConfig, ComponentContext, CapabilityProvider } from '@spark-view/spark-component'
 
 const createSparkComponentManager = () => createComponentManager()
 

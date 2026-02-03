@@ -1,0 +1,30 @@
+{
+    "name": "@spark-view/spark-utils",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "SPARK 工具层 - 常量、符号、Logger 等基础设施",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "spark",
+        "utils",
+        "logger",
+        "constants"
+    ],
+    "author": "",
+    "license": "MIT"
+}

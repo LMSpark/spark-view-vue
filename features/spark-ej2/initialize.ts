@@ -3,7 +3,7 @@
 
 import SparkEJ2Grid from './components/SparkEJ2Grid.vue'
 import SparkEJ2Column from './components/SparkEJ2Column.vue'
-import type { ComponentManager as ISparkComponentManager } from '@spark-view/spark-core'
+import type { ComponentManager as ISparkComponentManager } from '@spark-view/spark-component'
 
 /**
  * 初始化 SPARK-EJ2 组件

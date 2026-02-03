@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 应用层符号常量表
  * L1 Application Layer Constants
  * 
@@ -12,8 +12,8 @@ import type { IAuthService } from '../auth/types'
 
 // 外部类型（延迟导入）
 type Logger = ReturnType<typeof import('../logger').createLogger>
-type SparkManager = import('@spark-view/spark-core').ComponentManager
-type SparkRegistry = import('@spark-view/spark-core').ComponentRegistry
+type SparkManager = import('@spark-view/spark-component').ComponentManager
+type SparkRegistry = import('@spark-view/spark-component').ComponentRegistry
 type ConfigLoader = import('@spark-view/spark-page-config').PageConfigLoader
 
 /**

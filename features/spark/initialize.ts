@@ -3,7 +3,7 @@
 // 此文件保留仅供向后兼容
 
 import { initializeSparkEJ2Components } from '../spark-ej2'
-import type { ComponentManager as ISparkComponentManager } from '@spark-view/spark-core'
+import type { ComponentManager as ISparkComponentManager } from '@spark-view/spark-component'
 
 /**
  * @deprecated 使用 initializeSparkEJ2Components 代替

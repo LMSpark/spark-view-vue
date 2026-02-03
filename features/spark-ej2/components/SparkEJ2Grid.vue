@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { computed, ref, defineComponent, onMounted, h } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-core'
+import { useSparkComponent } from '@spark-view/spark-component'
 import type { SparkEJ2GridConfig } from '@/types/ej2-components'
 
 // 组件 Props

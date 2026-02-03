@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SparkApp Namespace
  * L1 应用基础设施层 - 统一命名空间
  * 
@@ -30,7 +30,7 @@ import { createAppContext, useAppContext } from './context/AppContext'
  * // main.ts - 显式导入各层
  * import { SparkApp } from '@spark-view/spark-app'        // L1
  * import { SparkPageConfig } from '@spark-view/spark-page-config' // L2
- * import { Spark } from '@spark-view/spark-core'          // L4-L6
+ * import { Spark } from '@spark-view/spark-component'          // L4-L6
  * 
  * // 使用 L1 功能
  * await SparkApp.bootstrap({ app, router, config })

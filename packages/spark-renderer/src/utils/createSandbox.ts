@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 脚本沙箱工具
  */
 
@@ -44,9 +44,11 @@ export function compileFunctions(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> {
   try {
-    // 构造 return 语句 - 只返回需要的函数
+    // 构造 return 语句 - 只返回存在的函数（使用 typeof 检查）
     const returnStatement = functionNames.length > 0
-      ? `\nreturn { ${functionNames.join(', ')} }`
+      ? `\nreturn { ${functionNames.map(name => 
+          `'${name}': (typeof ${name} !== 'undefined' ? ${name} : undefined)`
+        ).join(', ')} }`
       : '\nreturn {}'
     
     // 完整脚本 = 原脚本（定义所有函数）+ return 语句（只返回需要的）
@@ -79,11 +81,19 @@ export function compileFunctions(
       context.$refreshData
     )
     
-    return result || {}
+    // 过滤掉 undefined 的函数
+    const filteredResult: Record<string, Function> = {}
+    if (result) {
+      for (const key of Object.keys(result)) {
+        if (result[key] !== undefined) {
+          filteredResult[key] = result[key]
+        }
+      }
+    }
+    
+    return filteredResult
   } catch (error) {
     pageLogger.error('脚本执行错误', { error })
     throw error
   }
 }
-
-// 移除全局类型声明，避免与 DynamicPage.vue 冲突

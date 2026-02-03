@@ -1,4 +1,4 @@
-{
+﻿{
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
@@ -25,9 +25,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {
-      "@spark-view/spark-core": ["../spark-core/dist/index.d.ts"]
+      "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.example.ts", "**/*.example.vue", "../spark-core/src"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.example.ts", "**/*.example.vue", "../spark-component/src"]
 }

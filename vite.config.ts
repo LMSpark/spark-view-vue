@@ -10,8 +10,11 @@ export default defineConfig({
       '@pages': path.resolve(__dirname, 'pages'),
       '@shared': path.resolve(__dirname, 'shared'),
       '@root': path.resolve(__dirname, '..', '..', 'src'),
-      '@spark-view/spark-core': path.resolve(__dirname, 'packages', 'spark-core', 'src'),
+      '@spark-view/spark-component': path.resolve(__dirname, 'packages', 'spark-component', 'src'),
       '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'src'),
+      '@spark-view/spark-renderer': path.resolve(__dirname, 'packages', 'spark-renderer', 'src'),
+      '@spark-view/spark-page-config': path.resolve(__dirname, 'packages', 'spark-page-config', 'src'),
+      '@spark-view/spark-app': path.resolve(__dirname, 'packages', 'spark-app', 'src'),
       '/pages-config': path.resolve(__dirname, 'public', 'pages-config')
     }
   },

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Application Bootstrap
  * 应用初始化流水线
  */
@@ -6,7 +6,6 @@
 import type { App as _App } from 'vue'
 import type { Router as _Router } from 'vue-router'
 import type { BootstrapOptions, AppContext, AppConfig } from '../types'
-import type { ComponentManager } from '@spark-view/spark-core'
 import { setupRouterGuards } from '../router/guards'
 import { setupErrorHandler } from '../error/handler'
 import { createLogger } from '../logger'
@@ -95,10 +94,11 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // 注意：sparkManager 可能已经在 start() 中创建并安装了
     // 这里检查是否已存在，避免重复创建
     const appInternal = app as unknown as { _context?: { provides?: Record<symbol, unknown> } }
-    let sparkManager = appInternal._context?.provides?.[SPARK_MANAGER_KEY] as ComponentManager | undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let sparkManager = appInternal._context?.provides?.[SPARK_MANAGER_KEY] as any
     if (!sparkManager) {
       // 如果不存在，创建新的（向后兼容直接调用 bootstrap 的场景）
-      const { Spark } = await import('@spark-view/spark-core')
+      const { Spark } = await import('@spark-view/spark-component')
       sparkManager = Spark.createComponentManager()
       app.provide(SPARK_MANAGER_KEY, sparkManager)
       app.provide('sparkManager', sparkManager)  // 向后兼容

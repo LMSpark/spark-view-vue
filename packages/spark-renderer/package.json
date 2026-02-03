@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "@spark-view/spark-renderer",
     "version": "0.1.0",
     "type": "module",
@@ -34,7 +34,6 @@
         "vue-router": "^4.0.0"
     },
     "dependencies": {
-        "@spark-view/spark-core": "workspace:*",
         "@spark-view/spark-data": "workspace:*",
         "@spark-view/spark-page-config": "workspace:*",
         "@spark-view/spark-app": "workspace:*"

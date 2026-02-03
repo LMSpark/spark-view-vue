@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-core'
-import type { ComponentContext } from '@spark-view/spark-core'
+﻿import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 
 describe('file transport (replaced by custom provider test)', () => {
   it('uses context-level logger provider', () => {
