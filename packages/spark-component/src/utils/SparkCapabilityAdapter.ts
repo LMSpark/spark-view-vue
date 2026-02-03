@@ -25,9 +25,9 @@ function adaptComponentContext(context: ComponentContext): CapabilityContext {
     type: context.type,
     parent: context.parent ? adaptComponentContext(context.parent) : undefined,
     children: context.children.map(adaptComponentContext),
-    providers: context.providers,
-    consumers: context.consumers,
-    providerListeners: context.providerListeners
+    providers: context.providers as Set<CapabilityProvider>,
+    consumers: context.consumers as Map<string, CapabilityConsumer>,
+    providerListeners: context.providerListeners as Map<string, Set<(provider: CapabilityProvider) => void>> | undefined
   }
 }
 
@@ -36,14 +36,13 @@ function adaptComponentContext(context: ComponentContext): CapabilityContext {
  * 扩展通用能力管理器，添加 Spark 特定功能
  */
 export class SparkCapabilityManager extends CapabilityManager {
-  private logger = Logger('Spark:CapabilityMgr')
-
   constructor() {
     super()
     
     // 注册内置事件能力连接器
     this.registerConnector('events', new EventCapabilityConnector())
-    this.logger.info('✅ Event capability connector registered')
+    const logger = Logger('Spark:CapabilityMgr')
+    logger.info('✅ Event capability connector registered')
   }
 
   /**
@@ -85,7 +84,7 @@ export class SparkCapabilityManager extends CapabilityManager {
   /**
    * 兼容旧API - connectCapability
    */
-  connectCapability(
+  override connectCapability(
     provider: CapabilityProvider,
     consumer: CapabilityConsumer,
     context: ComponentContext | CapabilityContext
@@ -95,14 +94,14 @@ export class SparkCapabilityManager extends CapabilityManager {
       return this.connectCapabilityForComponent(provider, consumer, context as ComponentContext)
     } else {
       // CapabilityContext
-      return super.connectCapability(provider, consumer, context)
+      return super.connectCapability(provider, consumer, context as CapabilityContext)
     }
   }
 
   /**
    * 兼容旧API - disconnectCapability
    */
-  disconnectCapability(
+  override disconnectCapability(
     provider: CapabilityProvider,
     consumer: CapabilityConsumer,
     context: ComponentContext | CapabilityContext
@@ -112,33 +111,33 @@ export class SparkCapabilityManager extends CapabilityManager {
       return this.disconnectCapabilityForComponent(provider, consumer, context as ComponentContext)
     } else {
       // CapabilityContext
-      return super.disconnectCapability(provider, consumer, context)
+      return super.disconnectCapability(provider, consumer, context as CapabilityContext)
     }
   }
 
   /**
    * 兼容旧API - autoConnectCapabilities
    */
-  autoConnectCapabilities(context: ComponentContext | CapabilityContext): void {
+  override autoConnectCapabilities(context: ComponentContext | CapabilityContext): void {
     if ('config' in context) {
       // ComponentContext
       this.autoConnectCapabilitiesForComponent(context as ComponentContext)
     } else {
       // CapabilityContext
-      super.autoConnectCapabilities(context)
+      super.autoConnectCapabilities(context as CapabilityContext)
     }
   }
 
   /**
    * 兼容旧API - disconnectAllCapabilities
    */
-  disconnectAllCapabilities(context: ComponentContext | CapabilityContext): void {
+  override disconnectAllCapabilities(context: ComponentContext | CapabilityContext): void {
     if ('config' in context) {
       // ComponentContext
       this.disconnectAllCapabilitiesForComponent(context as ComponentContext)
     } else {
       // CapabilityContext
-      super.disconnectAllCapabilities(context)
+      super.disconnectAllCapabilities(context as CapabilityContext)
     }
   }
 }

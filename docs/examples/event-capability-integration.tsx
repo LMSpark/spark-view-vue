@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * 事件能力系统集成示例
  * 展示如何使用事件能力系统进行组件间通信
@@ -286,7 +287,10 @@ export const OldWayComponent = defineComponent({
     const events = createComponentEventEmitter('OldWay')
     
     events.addEventListener('test', (data) => {
-      console.log(data)
+      // Process event data
+      if (data) {
+        // Handle data
+      }
     })
     
     events.emit('test', 'data')
