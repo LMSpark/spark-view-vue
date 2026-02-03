@@ -114,10 +114,85 @@ const getData = () => pageRef.value?.pageContext.$data
 
 #### 类型
 
-- `Rule` - 页面规则配置
+- `Rule` - FormCreate 官方 Rule 类型（运行时）
+- `RuleConfig` - 简化的配置层 Rule（配置文件）
 - `PageContext` - 页面脚本上下文
 - `PageConfig` - 页面配置
 - `FormCreateAPI` - FormCreate API
+
+### 🎯 核心概念
+
+#### 类型系统
+
+**双层类型设计**：
+
+```typescript
+// 配置层（config.rule）- 简化的类型
+type RuleConfig = {
+  type: string
+  field?: string
+  children?: RuleConfig[]
+  on?: Record<string, string | Function>  // 支持字符串引用
+  // ...其他属性
+}
+
+// 运行时层（FormCreate）- 官方完整类型
+import type { Rule as FormCreateRule } from '@form-create/element-ui'
+export type Rule = FormCreateRule
+
+// 类型转换发生在边界
+const rules = (config.rule || []) as unknown as Rule[]
+```
+
+**设计原因**：
+- `RuleConfig`：配置文件友好，支持字符串函数引用（`"handleClick"`）
+- `Rule`：FormCreate 官方类型，运行时类型安全
+- 转换时机：PageRenderer 加载配置后，绑定前
+
+#### 脚本编译策略
+
+**"统一编译，按需返回"**：
+
+```typescript
+// 1. 提取需要的函数名
+const functionNames = extractFunctionNames(rules)
+// → ['handleClick', 'handleSubmit', '__init__']
+
+// 2. 编译整个脚本，只返回需要的
+const functions = compileFunctions(scriptText, context, functionNames)
+// → { handleClick: fn, handleSubmit: fn, __init__: fn }
+
+// 实现原理（createSandbox.ts）
+const returnStatement = `\nreturn { ${functionNames.join(', ')} }`
+const fullScript = scriptText + returnStatement
+const func = new Function('$api', '$route', ..., fullScript)
+return func(context.$api, context.$route, ...)
+```
+
+**脚本格式要求**：
+```javascript
+// ✅ 正确：普通函数定义
+function handleClick() {
+  console.log('点击')
+}
+
+function __init__() {
+  console.log('初始化')
+}
+
+// ❌ 错误：不要使用 export
+export function handleClick() { ... }  // ❌
+export default { ... }                 // ❌
+```
+
+**函数提取机制**：
+- 扫描 rules 中的 `on` 事件处理器（`"click": "handleClick"`）
+- 检测 `Render*` 组件类型（`RenderButton`、`RenderCustom`）
+- 始终包含 `__init__` 函数（生命周期钩子）
+
+查看完整文档：
+- [脚本迁移指南](../../public/pages-config/SCRIPT_MIGRATION_GUIDE.md)
+- [架构说明](./ARCHITECTURE.md)
 
 ## 🔌 Props
 
@@ -163,7 +238,7 @@ interface PageRendererExpose {
 
 | 变量 | 类型 | 说明 |
 |------|------|------|
-| `$api` | FormCreateAPI \| null | FormCreate API |
+| `$api` | FormCreateAPI \| null | FormCreate API（通过 v-model:api 绑定） |
 | `$route` | RouteLocationNormalizedLoaded | Vue Router 路由 |
 | `$data` | reactive<Record> | 页面数据（响应式） |
 | `$el` | () => HTMLElement \| null | 页面容器元素 |
@@ -176,7 +251,7 @@ interface PageRendererExpose {
 ### 脚本示例
 
 ```javascript
-// script.js
+// script.js - 普通函数定义（无 export）
 function handleClick() {
   // 访问页面数据
   const pageData = $data
@@ -203,6 +278,13 @@ function __init__() {
     }
   }
 }
+```
+
+**重要提示**：
+- 脚本格式：普通函数定义，不使用 `export` 或 `module.exports`
+- 函数引用：在 rules 中使用字符串引用（`"on": { "click": "handleClick" }`）
+- 生命周期：`__init__` 函数在页面加载后自动执行
+- 编译方式：通过 `Function` 构造器编译，按需返回函数
 ```
 
 ## 🌲 依赖关系

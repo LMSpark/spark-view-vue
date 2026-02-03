@@ -2,7 +2,23 @@
 
 ## 核心原则
 
-页面脚本通过 Function 构造器执行，**不支持 ES6 模块系统**。
+**脚本格式**：普通函数定义，通过 Function 构造器编译执行。
+
+**编译策略**："统一编译，按需返回"
+- 整个脚本统一编译（避免重复解析）
+- 只返回 rules 中引用的函数（减少内存）
+- 支持函数间互相调用（同一作用域）
+
+**不支持特性**：
+- ❌ ES6 模块系统（`import`/`export`）
+- ❌ CommonJS 模块（`require`/`module.exports`）
+- ❌ 顶层 `await`
+
+**支持特性**：
+- ✅ 普通函数定义
+- ✅ 沙箱上下文变量（`$api`、`$data` 等）
+- ✅ 函数间互相调用
+- ✅ `__init__` 生命周期钩子
 
 ## 必须修改的内容
 
@@ -38,19 +54,27 @@ const pageData = $data()
 const pageData = $data
 ```
 
-### 3. window.__formApi__ → $api
+### 3. FormCreate API 访问方式
 
-直接使用沙箱注入的 $api。
+直接使用沙箱注入的 $api（通过 v-model:api 绑定）。
 
 ❌ **错误**：
 ```javascript
-const api = window.__formApi__
+const api = window.__formApi__  // 旧方式，已废弃
 ```
 
 ✅ **正确**：
 ```javascript
-const api = $api
+const api = $api  // 直接使用沙箱变量
+if (api) {
+  api.setValue('username', 'admin')
+}
 ```
+
+**说明**：
+- PageRenderer 使用 `v-model:api="formApi"` 绑定（官方推荐方式）
+- 通过 PageContext 的 getter 动态获取最新 API 实例
+- 不再使用 `window.__formApi__` 全局变量
 
 ### 4. $dataSet() → $dataSet
 

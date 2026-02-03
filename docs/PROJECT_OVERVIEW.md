@@ -5,7 +5,7 @@
 ## 🎯 项目定位
 
 **强内核 + 低代码页面** 架构：
-- **强大内核**: DynamicPage.vue + DataSet 处理所有复杂逻辑
+- **强大内核**: PageRenderer + DataSet 处理所有复杂逻辑
 - **低代码页面**: 页面配置专注业务逻辑，零初始化
 - **完全解耦**: UI ↔ DataSet ↔ Data 通过观察者模式
 - **数据驱动**: 所有 UI 行为由数据和配置驱动
@@ -14,11 +14,11 @@
 
 | 文件/目录 | 作用 | 重要性 |
 |-----------|------|--------|
-| `src/views/DynamicPage.vue` | **唯一视图组件**，所有页面通过它渲染 | ⭐⭐⭐⭐⭐ |
+| `packages/spark-renderer/` | **页面渲染引擎**，负责配置渲染和数据绑定 | ⭐⭐⭐⭐⭐ |
 | `packages/spark-data/` | 数据空间（DataSet, TreeManager） | ⭐⭐⭐⭐⭐ |
-| `packages/spark-core/` | 组件系统（沙箱、能力、插件） | ⭐⭐⭐⭐⭐ |
-| `src/pages-config/{pageId}/` | 页面配置目录（rule.json + pagedata.json） | ⭐⭐⭐⭐⭐ |
-| `server.ts` | SSR 服务器入口 | ⭐⭐⭐ |
+| `packages/spark-core/` | 组件系统（能力、插件、管理器） | ⭐⭐⭐⭐⭐ |
+| `public/pages-config/{pageId}/` | 页面配置目录（rule.json + pagedata.json + script.js） | ⭐⭐⭐⭐⭐ |
+| `src/App.vue` | 应用入口 | ⭐⭐⭐ |
 
 ## 🏗️ 架构层次
 
@@ -31,17 +31,19 @@
 └─────────────────────────────────────────────────┘
                       ↓
 ┌─────────────────────────────────────────────────┐
-│  内核层 (Strong Kernel)                          │
-│  - DynamicPage.vue (UI 渲染内核)                │
-│  - DataSetManager (数据管理内核)                 │
-│  - BindingContext (视图绑定)                     │
+│  渲染引擎层 (PageRenderer)                       │
+│  - 配置加载与解析                                 │
+│  - Rule 数据绑定                                  │
+│  - 脚本沙箱执行                                   │
+│  - CSS 作用域隔离                                 │
 └─────────────────────────────────────────────────┘
                       ↓
 ┌─────────────────────────────────────────────────┐
-│  数据层 (DataSet Architecture)                   │
+│  数据管理层 (DataSet Architecture)               │
 │  - DataSet (领域逻辑)                            │
 │  - DataTable (结构定义)                          │
 │  - DataRow (数据行)                              │
+│  - BindingContext (视图绑定)                     │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -105,24 +107,33 @@ if (user.role === 'admin') { showButton(); }
 ## 🔄 关键工作流
 
 ### 添加新页面（3 步）
-1. 在 `src/pages-config/routes.json` 添加路由
-2. 创建 `src/pages-config/{pageId}/rule.json` 和 `pagedata.json`
-3. （可选）创建 `script.js` 导出事件处理函数
+1. 在 `public/pages-config/routes.json` 添加路由
+2. 创建 `public/pages-config/{pageId}/rule.json` 和 `pagedata.json`
+3. （可选）创建 `script.js` 定义事件处理函数（普通函数，无 export）
 
-**不需要创建 .vue 文件！** 使用现有的 DynamicPage.vue
+**PageRenderer 自动渲染！** 无需创建 .vue 文件
 
 ### 使用 DataSet
 ```javascript
-// script.js - 沙箱会注入全局变量: $data, $dataSet, $api, $route, $rebindRules
+// script.js - 沙箱自动注入全局变量: $data, $dataSet, $api, $route, $rebindRules
 
-export function __init__() {
-  const dataSet = $dataSet();
-  dataSet.dataLoader = mockDataLoader;  // 注册数据加载器
+function __init__() {
+  // 注意：沙箱变量是对象，不是函数
+  const dataSet = $dataSet
+  if (dataSet) {
+    dataSet.dataLoader = mockDataLoader  // 注册数据加载器
+  }
 }
 
-export function handleLoadData() {
-  $dataSet().requestTableData('Users');  // 非阻塞请求
+function handleLoadData() {
+  const dataSet = $dataSet
+  if (dataSet) {
+    dataSet.requestTableData('Users')  // 非阻塞请求
+  }
 }
+
+// 注意：普通函数定义，不使用 export
+```
 ```
 
 ## 🚀 开发模式
