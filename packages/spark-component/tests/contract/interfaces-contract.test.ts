@@ -1,4 +1,5 @@
-﻿import { describe, it, expect } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, it, expect } from 'vitest'
 import type { IComponentRegistry, IComponentManager, ICapabilityManager } from '../../src/types/interfaces'
 
 // Contract tests that assert the public interfaces exist and basic shapes

@@ -1,4 +1,5 @@
-﻿import { describe, it, expect, beforeEach } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, it, expect, beforeEach } from 'vitest'
 import { componentRegistry } from '../src/utils/SparkComponentRegistry'
 
 describe('componentRegistry', () => {

@@ -1,4 +1,5 @@
-﻿import { describe, it, expect } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
+import { describe, it, expect } from 'vitest'
 import { Spark } from '../src/spark-namespace.js'
 import { createComponentRegistry } from '../src/utils/SparkComponentRegistry.js'
 import { createComponentManager } from '../src/utils/SparkComponentManager.js'

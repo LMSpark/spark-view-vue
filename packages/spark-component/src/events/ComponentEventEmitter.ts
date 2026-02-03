@@ -52,7 +52,10 @@ export function createComponentEventEmitter(componentType?: string): ComponentEv
       if (!listeners.has(event)) {
         listeners.set(event, new Set())
       }
-      listeners.get(event)!.add(handler)
+      const handlers = listeners.get(event)
+      if (handlers) {
+        handlers.add(handler)
+      }
       logger.debug(`${prefix} Event listener added:`, event)
     },
 

@@ -28,7 +28,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   getProvider: (name: string) => CapabilityProvider | undefined
   getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => T | undefined
   consume: (name: string) => Implementation | null
-  consumeEvents: (name: string, handlers: Record<string, (...args: any[]) => void>) => EventCapabilityProvider | null
+  consumeEvents: (name: string, handlers: Record<string, (...args: unknown[]) => void>) => EventCapabilityProvider | null
   use: (name: string) => Implementation | null
   whenAvailable: (name: string) => Promise<CapabilityProvider>
   initialize: () => void
@@ -114,7 +114,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   // Consume event capability - convenient wrapper
   function consumeEvents(
     name: string,
-    handlers: Record<string, (...args: any[]) => void>
+    handlers: Record<string, (...args: unknown[]) => void>
   ): EventCapabilityProvider | null {
     const consumer = createEventCapabilityConsumer(name, handlers)
     context.consumers.set(name, consumer)

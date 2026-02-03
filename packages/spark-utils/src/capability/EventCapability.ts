@@ -17,10 +17,10 @@ const logger = Logger('EventCapability')
  * 组件通过能力系统提供事件
  */
 export interface EventCapabilityProvider {
-  on: (event: string, handler: (...args: any[]) => void) => void
-  off: (event: string, handler: (...args: any[]) => void) => void
-  emit: (event: string, ...args: any[]) => void
-  once?: (event: string, handler: (...args: any[]) => void) => void
+  on: (event: string, handler: (...args: unknown[]) => void) => void
+  off: (event: string, handler: (...args: unknown[]) => void) => void
+  emit: (event: string, ...args: unknown[]) => void
+  once?: (event: string, handler: (...args: unknown[]) => void) => void
 }
 
 /**
@@ -28,7 +28,7 @@ export interface EventCapabilityProvider {
  * 子组件通过能力系统消费父组件事件
  */
 export interface EventCapabilityConsumer {
-  handlers: Map<string, (...args: any[]) => void>
+  handlers: Map<string, (...args: unknown[]) => void>
 }
 
 /**
@@ -84,7 +84,7 @@ export class EventCapabilityConnector implements CapabilityConnector {
 
       // 断开所有处理器
       for (const [eventName, handler] of handlerMap.entries()) {
-        eventProvider.off(eventName, handler as (...args: any[]) => void)
+        eventProvider.off(eventName, handler as (...args: unknown[]) => void)
         logger.debug(`Disconnected event handler: ${eventName}`)
       }
 
@@ -115,17 +115,20 @@ export function createEventCapabilityProvider(name: string): {
   provider: CapabilityProvider
   emitter: EventCapabilityProvider
 } {
-  const listeners = new Map<string, Set<(...args: any[]) => void>>()
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
 
   const emitter: EventCapabilityProvider = {
-    on(event: string, handler: (...args: any[]) => void) {
+    on(event: string, handler: (...args: unknown[]) => void) {
       if (!listeners.has(event)) {
         listeners.set(event, new Set())
       }
-      listeners.get(event)!.add(handler)
+      const handlers = listeners.get(event)
+      if (handlers) {
+        handlers.add(handler)
+      }
     },
 
-    off(event: string, handler: (...args: any[]) => void) {
+    off(event: string, handler: (...args: unknown[]) => void) {
       const handlers = listeners.get(event)
       if (handlers) {
         handlers.delete(handler)
@@ -135,7 +138,7 @@ export function createEventCapabilityProvider(name: string): {
       }
     },
 
-    emit(event: string, ...args: any[]) {
+    emit(event: string, ...args: unknown[]) {
       const handlers = listeners.get(event)
       if (handlers) {
         handlers.forEach(handler => {
@@ -148,8 +151,8 @@ export function createEventCapabilityProvider(name: string): {
       }
     },
 
-    once(event: string, handler: (...args: any[]) => void) {
-      const onceHandler = (...args: any[]) => {
+    once(event: string, handler: (...args: unknown[]) => void) {
+      const onceHandler = (...args: unknown[]) => {
         handler(...args)
         this.off(event, onceHandler)
       }
@@ -166,7 +169,7 @@ export function createEventCapabilityProvider(name: string): {
       emit: 'function',
       once: 'function'
     },
-    implementation: emitter as unknown as any
+    implementation: emitter as unknown as Record<string, unknown>
   }
 
   return { provider, emitter }
@@ -178,7 +181,7 @@ export function createEventCapabilityProvider(name: string): {
  */
 export function createEventCapabilityConsumer(
   capabilityName: string,
-  handlers: Record<string, (...args: any[]) => void>
+  handlers: Record<string, (...args: unknown[]) => void>
 ): CapabilityConsumer {
   const handlerMap = new Map(Object.entries(handlers))
 
