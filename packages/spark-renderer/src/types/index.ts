@@ -36,7 +36,24 @@ export interface FormCreateAPI {
 }
 
 /**
- * 页面上下文接口 (DIP: 依赖倒置 - 依赖接口而非具体类型)
+ * 页面脚本运行时上下文接口
+ * 
+ * 作用域：单个动态视图（页面配置）的脚本执行环境
+ * 生命周期：页面加载时创建，卸载时销毁
+ * 
+ * 用途：
+ * - 为页面脚本（script.js）提供框架能力访问接口
+ * - 支持脚本访问 FormCreate API、路由、数据集等
+ * - 提供 DOM 查询、数据刷新等常用操作
+ * 
+ * 注意：
+ * - 此 Context 是"页面配置"级别，非"应用页面"级别
+ * - 在 SPA 架构中，多个 PageContext 可能同时存在（如 KeepAlive 场景）
+ * - 遵循 DIP 原则：依赖接口（IDataSet）而非具体类型（DataSet）
+ * 
+ * 典型使用场景：
+ * - 页面脚本中通过 window.__pageContext 访问
+ * - 事件处理函数中访问当前页面的数据和 API
  */
 export interface PageContext {
   $api: FormCreateAPI | null
