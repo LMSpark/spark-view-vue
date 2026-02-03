@@ -100,6 +100,7 @@ export async function loadScriptModule(
  */
 export function initGlobalPageContext(context: PageContext): void {
   if (typeof window !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(window as any).__pageContext = context
   }
 }
@@ -109,7 +110,9 @@ export function initGlobalPageContext(context: PageContext): void {
  */
 export function cleanupGlobalPageContext(): void {
   if (typeof window !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).__pageContext
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (window as any).__formApi__
   }
 }
