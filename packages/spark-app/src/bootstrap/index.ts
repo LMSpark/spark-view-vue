@@ -137,7 +137,13 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
 
     // 阶段 6: 挂载前钩子
     if (beforeMount) {
-      await beforeMount(appContext)
+      // 创建扩展的 Bootstrap Context
+      const bootstrapContext = {
+        ...appContext,
+        app,
+        router
+      }
+      await beforeMount(bootstrapContext)
     }
 
     // 阶段 7: 挂载应用
@@ -149,7 +155,13 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // 阶段 8: 挂载后钩子
     logPhase('COMPLETE', '应用启动完成')
     if (afterMount) {
-      await afterMount(appContext)
+      // 创建扩展的 Bootstrap Context
+      const bootstrapContext = {
+        ...appContext,
+        app,
+        router
+      }
+      await afterMount(bootstrapContext)
     }
 
     bootstrapLogger.info('SPARK 应用启动成功', {

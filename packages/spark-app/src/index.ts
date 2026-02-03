@@ -80,6 +80,7 @@ export type {
   UserInfo,
   TenantInfo,
   EnvironmentInfo,
+  BootstrapContext,  // 新增：Bootstrap 扩展 Context
   // BootstrapOptions,  // 已在上面导出
   RouterGuardOptions,
   ErrorHandlerOptions,

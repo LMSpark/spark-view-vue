@@ -104,11 +104,70 @@ SparkApp.start({
   // 挂载前钩子
   beforeMount: async (context) => {
     logger.info('✅ 应用准备挂载', { context })
+    
+    // 注册静态 Vue 组件路由（非配置页面）
+    const { router } = context
+    
+    // 导入 Vue 组件页面
+    const Dashboard = (await import('./views/Dashboard.vue')).default
+    const About = (await import('./views/About.vue')).default
+    const Settings = (await import('./views/Settings.vue')).default
+    
+    // 注册静态路由
+    router.addRoute({
+      path: '/dashboard',
+      name: 'dashboard',
+      component: Dashboard,
+      meta: {
+        title: '管理仪表板',
+        icon: '🏠',
+        type: 'vue-component'
+      }
+    })
+    
+    router.addRoute({
+      path: '/about', 
+      name: 'about',
+      component: About,
+      meta: {
+        title: '关于系统',
+        icon: 'ℹ️',
+        type: 'vue-component'
+      }
+    })
+    
+    router.addRoute({
+      path: '/settings',
+      name: 'settings', 
+      component: Settings,
+      meta: {
+        title: '系统设置',
+        icon: '⚙️',
+        type: 'vue-component'
+      }
+    })
+    
+    logger.info('✅ 静态 Vue 组件路由注册完成')
   },
   
   // 挂载后钩子
   afterMount: async (context) => {
     logger.info('✅ 应用启动完成', { context })
+    
+    // 统计路由信息
+    const allRoutes = context.router.getRoutes()
+    const vueRoutes = allRoutes.filter(r => r.meta?.type === 'vue-component')
+    const configRoutes = allRoutes.filter(r => r.meta?.type !== 'vue-component')
+    
+    logger.info('📊 路由统计', {
+      总路由数: allRoutes.length,
+      Vue组件页面: vueRoutes.length, 
+      配置页面: configRoutes.length
+    })
+    
+    logger.info('🎉 混合渲染系统启动完成!')
+    logger.info('📄 Vue 组件页面:', { paths: vueRoutes.map(r => r.path) })
+    logger.info('⚙️ 配置页面:', { paths: configRoutes.map(r => r.path) })
   },
   
   // === 错误处理 ===
