@@ -1,37 +1,63 @@
 /**
  * 渲染器类型定义 (SOLID原则应用)
+ * 
+ * 类型层次说明：
+ * - RuleConfig: 配置文件中的规则格式（来自 @spark-view/spark-page-config）
+ * - Rule: 运行时的规则格式（FormCreate 官方类型）
+ * 
+ * 转换流程：
+ * 1. 配置加载器读取 rule.json → RuleConfig[]
+ * 2. PageRenderer 接收 RuleConfig[] → 转换为 Rule[]
+ * 3. 绑定和渲染使用 Rule[]（FormCreate 标准格式）
  */
 
 import type { IDataSet } from '@spark-view/spark-data'
-import type { ConfigLoader } from '@spark-view/spark-page-config'
+import type { ConfigLoader, RuleConfig } from '@spark-view/spark-page-config'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
+// 导入 FormCreate 官方类型
+import type { Rule as FormCreateRule } from '@form-create/element-ui'
+
 /**
- * 页面规则配置
+ * 页面规则类型（使用 FormCreate 官方类型）
+ * 用于运行时的规则绑定和渲染
+ * 
+ * 注意：虽然配置文件使用 RuleConfig，但由于结构兼容，
+ * FormCreate 能够正确识别和处理我们的配置格式。
  */
-export interface Rule {
-  type: string
-  name?: string
-  props?: Record<string, unknown>
-  children?: (Rule | string)[]
-  style?: Record<string, string | number>
-  class?: string | string[]
-  on?: Record<string, Function | string>
-  slots?: Record<string, Rule[]>
-  dataKey?: string
-  contextId?: string
-  render?: Function
-  [key: string]: unknown
-}
+export type Rule = FormCreateRule
 
 /**
  * FormCreate API 接口
+ * 
+ * 注意：由于 @form-create/element-ui 的 Api 类型导出存在问题，
+ * 这里参考官方文档定义核心 API 方法
+ * 
+ * 官方文档：https://www.form-create.com/v3/instance/
  */
 export interface FormCreateAPI {
+  // 表单规则
   rule: Rule[]
+  
+  // 表单数据相关
   formData(): Record<string, unknown>
   setValue(field: string, value: unknown): void
+  getValue(field: string): unknown
+  
+  // DOM 元素操作
   el(name: string): HTMLElement | null
+  
+  // 表单操作
+  validate(callback?: (valid: boolean) => void): Promise<boolean>
+  validateField(field: string): Promise<void>
+  submit(): Promise<void>
+  resetFields(): void
+  
+  // 规则操作
+  updateRule(name: string, rule: Partial<Rule>): void
+  updateRules(rules: Record<string, Partial<Rule>>): void
+  
+  // 其他方法
   [key: string]: unknown
 }
 
@@ -59,7 +85,7 @@ export interface PageContext {
   $api: FormCreateAPI | null
   $route: RouteLocationNormalizedLoaded
   $data: Record<string, unknown>
-  $el: HTMLElement | null
+  $el: () => HTMLElement | null
   $query: (selector: string) => HTMLElement | null
   $queryAll: (selector: string) => NodeListOf<Element>
   $rebindRules: () => void
@@ -68,21 +94,14 @@ export interface PageContext {
 }
 
 /**
- * 页面脚本模块
- */
-export interface PageScriptModule {
-  [functionName: string]: Function
-}
-
-/**
- * 页面配置
+ * 页面配置（从配置文件加载的原始配置）
  */
 export interface PageConfig {
   pageId: string
-  rule: Rule[]
+  rule: RuleConfig[]  // 使用配置层的 RuleConfig，而非 FormCreate 的 Rule
   data: Record<string, unknown>
   style?: string
-  script?: PageScriptModule
+  script?: string  // 脚本文本
 }
 
 /**
@@ -115,11 +134,6 @@ export interface PageRendererOptions {
   enableCssScope?: boolean
   
   /**
-   * 是否启用脚本沙箱
-   */
-  enableScriptSandbox?: boolean
-  
-  /**
    * 是否启用 DataSet 自动初始化
    */
   enableDataSet?: boolean
@@ -138,34 +152,6 @@ export interface PageRendererOptions {
    * 错误处理
    */
   onError?: (error: Error) => void
-}
-
-/**
- * CSS 作用域选项
- */
-export interface CssScopeOptions {
-  pageId: string
-  css: string
-}
-
-/**
- * 脚本沙箱选项
- */
-export interface ScriptSandboxOptions {
-  pageId: string
-  context: PageContext
-  modules?: Record<string, unknown>
-}
-
-import type { DataRow } from '@spark-view/spark-data'
-
-/**
- * DataSet 初始化选项
- */
-export interface DataSetInitOptions {
-  pageData: Record<string, unknown>
-  context: PageContext
-  dataLoader?: (tableName: string) => Promise<DataRow[]>
 }
 
 /**

@@ -17,9 +17,9 @@
       <slot name="content" :rules="boundRules" :page-data="pageData">
         <form-create
           v-if="boundRules.length > 0"
+          v-model:api="formApi"
           :rule="boundRules"
           :option="formCreateOptions"
-          @mounted="onFormMounted"
         />
       </slot>
     </div>
@@ -32,9 +32,10 @@ import { useRoute } from 'vue-router'
 import { pageLogger, ErrorCodes, getErrorMessage } from '@spark-view/spark-app'
 import type { PageRendererOptions, PageContext, FormCreateAPI, Rule } from '../types'
 import { useCssScope } from '../composables/useCssScope'
-import { useScriptSandbox } from '../composables/useScriptSandbox'
+import { compileFunctions } from '../utils/createSandbox'
 import { usePageDataSet } from '../composables/usePageDataSet'
 import { useRuleBinding } from '../composables/useRuleBinding'
+import { getRequiredFunctionNames } from '../utils/extractFunctionNames'
 
 /**
  * PageRenderer - SPARK 页面渲染引擎
@@ -49,7 +50,6 @@ import { useRuleBinding } from '../composables/useRuleBinding'
 
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,
-  enableScriptSandbox: true,
   enableDataSet: true
 })
 
@@ -59,6 +59,7 @@ const error = ref<string>('')
 const currentPageId = ref<string>('')
 const pageContainer = ref<HTMLElement | null>(null)
 const formApi = ref<FormCreateAPI | null>(null)
+// 存储转换为 FormCreate 标准格式的规则
 const originalRules = ref<Rule[]>([])
 const pageData = reactive<Record<string, unknown>>({})
 
@@ -82,10 +83,12 @@ const formCreateOptions = ref({
 
 // 初始化页面上下文
 const pageContext: PageContext = {
-  $api: null,
+  get $api() {
+    return formApi.value
+  },
   $route: route,
   $data: pageData,
-  $el: null,
+  $el: () => pageContainer.value,
   $query: (selector: string) => pageContainer.value?.querySelector(selector) || null,
   $queryAll: (selector: string) => {
     if (pageContainer.value?.querySelectorAll) {
@@ -98,7 +101,9 @@ const pageContext: PageContext = {
   },
   $rebindRules: () => {},
   $refreshData: async () => {},
-  $dataSet: null
+  get $dataSet() {
+    return dataSet.value
+  }
 }
 
 // CSS 作用域
@@ -107,12 +112,8 @@ const { scopedCss, setScopedCss } = useCssScope({
   enableScope: props.enableCssScope
 })
 
-// 脚本沙箱
-const { pageFunctions, loadScript } = useScriptSandbox({
-  pageId: currentPageId.value,
-  context: pageContext,
-  enableSandbox: props.enableScriptSandbox
-})
+// 页面脚本函数
+const pageFunctions = ref<Record<string, Function>>({})
 
 // DataSet 管理
 const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
@@ -123,7 +124,7 @@ const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
   enableDataSet: props.enableDataSet
 })
 
-// Rule 绑定
+// Rule 绑定（注意：此时 pageFunctions 还是空对象，需要等脚本执行后再绑定）
 const { boundRules, rebindRules } = useRuleBinding({
   originalRules,
   pageData,
@@ -134,22 +135,6 @@ const { boundRules, rebindRules } = useRuleBinding({
 
 // 更新上下文的 rebindRules 方法
 pageContext.$rebindRules = rebindRules
-
-// FormCreate 挂载回调
-const onFormMounted = (api: FormCreateAPI) => {
-  formApi.value = api
-  pageContext.$api = api
-  
-  // 更新全局上下文
-  if (typeof window !== 'undefined') {
-    ;(window as any).__formApi__ = api
-    if ((window as any).__pageContext) {
-      ;(window as any).__pageContext.$api = api
-    }
-  }
-  
-  pageLogger.debug('FormCreate 挂载完成', { pageId: currentPageId.value })
-}
 
 // 加载页面配置
 const loadPageConfig = async () => {
@@ -204,8 +189,9 @@ const loadPageConfig = async () => {
     // 处理页面数据
     Object.assign(pageData, config.data)
     
-    // 保存原始 rules
-    originalRules.value = config.rule || []
+    // 将配置层的 RuleConfig 转换为 FormCreate 的 Rule
+    // 注意：虽然类型不同，但运行时结构兼容，FormCreate 能识别我们的配置格式
+    originalRules.value = (config.rule || []) as unknown as Rule[]
     
     // 设置样式
     if (pageData.style && typeof pageData.style === 'string') {
@@ -217,19 +203,65 @@ const loadPageConfig = async () => {
     pageLogger.debug('初始化 DataSet', { pageId })
     initDataSet()
     
-    // 加载脚本
-    if (props.enableScriptSandbox) {
-      pageLogger.debug('加载页面脚本', { pageId })
-      await loadScript()
+    // ========================================
+    // 执行页面脚本
+    // ========================================
+    
+    const scriptText = config.script || ''
+    
+    if (scriptText) {
+      try {
+        // 从 rules 中提取需要返回的函数名
+        const requiredFunctionNames = getRequiredFunctionNames(
+          originalRules.value,
+          ['__init__']
+        )
+        
+        pageLogger.debug('分析脚本需求', { 
+          pageId, 
+          scriptSize: scriptText.length,
+          requiredFunctions: requiredFunctionNames.length,
+          required: requiredFunctionNames
+        })
+        
+        // 统一编译所有函数，按需返回
+        // - scriptText 中所有函数都会被定义（可以相互调用）
+        // - 但只返回 requiredFunctionNames 中的函数
+        pageFunctions.value = compileFunctions(
+          scriptText,
+          pageContext,
+          requiredFunctionNames
+        )
+        
+        pageLogger.success('页面脚本执行成功', { 
+          pageId, 
+          returnedCount: Object.keys(pageFunctions.value).length,
+          returned: Object.keys(pageFunctions.value)
+        })
+      } catch (error) {
+        pageLogger.error('页面脚本执行失败', { pageId, error })
+        pageFunctions.value = {}
+      }
+    } else {
+      // 没有脚本时，确保 pageFunctions 为空对象
+      pageFunctions.value = {}
     }
+    
+    // ========================================
+    // 数据订阅和规则绑定
+    // ========================================
     
     // 自动订阅表
     await nextTick()
     pageLogger.debug('自动订阅表', { pageId })
     autoSubscribeTables()
     
-    // 绑定 rules
-    pageLogger.debug('绑定 rules', { pageId, rulesCount: originalRules.value.length })
+    // 绑定 rules（必须在脚本执行之后，确保 pageFunctions 已就绪）
+    pageLogger.debug('绑定 rules', { 
+      pageId, 
+      rulesCount: originalRules.value.length,
+      functionCount: Object.keys(pageFunctions.value).length
+    })
     rebindRules()
     
     // 执行 afterLoad 钩子
@@ -255,13 +287,9 @@ const loadPageConfig = async () => {
   }
 }
 
-// 更新容器引用
-watch(pageContainer, (el) => {
-  pageContext.$el = el
-  if (typeof window !== 'undefined' && window.__pageContext) {
-    window.__pageContext.$el = el
-  }
-})
+// ========================================
+// 生命周期和监听
+// ========================================
 
 // 监听路由变化，重新加载页面
 watch(() => route.fullPath, () => {
@@ -273,7 +301,23 @@ onMounted(() => {
   loadPageConfig()
 })
 
-// 暴露方法给父组件
+// ========================================
+// 组件暴露 API
+// ========================================
+
+/**
+ * 暴露方法给父组件（通过 ref 访问）
+ * 
+ * 使用方式：
+ *   const pageRef = ref()
+ * 
+ * 可用方法：
+ *   pageRef.value?.reload()        - 重新加载页面
+ *   pageRef.value?.rebindRules()   - 重新绑定规则
+ *   pageRef.value?.pageContext     - 访问页面上下文
+ *   pageRef.value?.formApi         - 访问表单 API
+ *   pageRef.value?.dataSet         - 访问数据集
+ */
 defineExpose({
   reload: loadPageConfig,
   rebindRules,

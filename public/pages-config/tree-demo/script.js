@@ -1,14 +1,34 @@
-// 沙箱注入的全局变量: $data, $rebindRules, $dataSet
-import { TreeManager } from '@spark-view/spark-data'
-import { ElMessage } from 'element-plus'
+// ========================================
+// 页面脚本 - 树形数据演示
+// ========================================
+// 
+// 沙箱注入的全局变量:
+//   $api - FormCreate API
+//   $data - 页面数据（reactive）
+//   $dataSet - DataSet 实例
+//   $rebindRules - 重新绑定规则
+//   $el - 页面容器元素
+//   $query / $queryAll - DOM 查询
+//
+// 注意：
+// 1. 不支持 ES6 import，所有依赖通过沙箱注入
+// 2. TreeManager 和 ElMessage 需要在页面配置的 data 中提供
+// ========================================
 
 let treeManager = null
 
 /**
  * 初始化树管理器
  */
-export function __init__() {
-  const pageData = $data()
+function __init__() {
+  const pageData = $data
+  const { TreeManager } = pageData._imports || {}
+  
+  if (!TreeManager) {
+    console.error('❌ TreeManager 未导入')
+    return
+  }
+  
   const { config, nodes } = pageData.treeData
   
   // 创建树管理器
@@ -34,8 +54,8 @@ export function __init__() {
 /**
  * 展开节点
  */
-export function handleNodeExpand(node) {
-  const pageData = $data()
+function handleNodeExpand(node) {
+  const pageData = $data
   console.log('🔽 展开节点:', node.name)
   
   // 记录展开的节点
@@ -50,8 +70,8 @@ export function handleNodeExpand(node) {
 /**
  * 收起节点
  */
-export function handleNodeCollapse(node) {
-  const pageData = $data()
+function handleNodeCollapse(node) {
+  const pageData = $data
   console.log('🔼 收起节点:', node.name)
   
   // 移除折叠的节点
@@ -64,8 +84,9 @@ export function handleNodeCollapse(node) {
 /**
  * 点击节点
  */
-export function handleNodeClick(node) {
-  const pageData = $data()
+function handleNodeClick(node) {
+  const pageData = $data
+  const { ElMessage } = pageData._imports || {}
   
   console.log('📍 点击节点:', node.name)
   
@@ -82,14 +103,14 @@ export function handleNodeClick(node) {
   // 🔑 关键：只重新绑定节点信息部分，避免树重新渲染
   $rebindRules()
   
-  ElMessage.success(`已选中: ${pathNames}`)
+  ElMessage?.success(`已选中: ${pathNames}`)
 }
 
 /**
  * 处理搜索输入变化
  */
-export function handleSearchInput(value) {
-  const pageData = $data()
+function handleSearchInput(value) {
+  const pageData = $data
   pageData.searchKeyword = value
   console.log('📝 搜索输入变化:', value)
   // ⚠️ 不调用 $rebindRules()，避免输入框被重置
@@ -98,13 +119,12 @@ export function handleSearchInput(value) {
 /**
  * 搜索节点
  */
-export function handleSearch() {
+function handleSearch() {
   console.log('🎯 handleSearch 被调用！')
-  const pageData = $data()
+  const pageData = $data
   
-  // 🔑 从 form API 获取输入值
-  const formApi = window.__formApi__
-  const keyword = formApi?.getValue('searchKeyword') || ''
+  // 🔑 从沙箱上下文获取 formApi
+  const keyword = $api?.getValue('searchKeyword') || ''
   
   console.log('📝 当前 searchKeyword:', keyword)
   
@@ -134,17 +154,18 @@ export function handleSearch() {
   pageData.searchResults = resultsWithPath
   $rebindRules()
   
+  const { ElMessage } = pageData._imports || {}
   if (results.length > 0) {
-    ElMessage.success(`找到 ${results.length} 个匹配节点`)
+    ElMessage?.success(`找到 ${results.length} 个匹配节点`)
   } else {
-    ElMessage.warning('未找到匹配节点')
+    ElMessage?.warning('未找到匹配节点')
   }
 }
 
 /**
  * 处理搜索框键盘事件
  */
-export function handleSearchKeyup(event) {
+function handleSearchKeyup(event) {
   console.log('⌨️ handleSearchKeyup 被调用！', event)
   // 回车键触发搜索
   if (event.key === 'Enter' || event.keyCode === 13) {
@@ -156,8 +177,8 @@ export function handleSearchKeyup(event) {
 /**
  * 清空搜索
  */
-export function handleClearSearch() {
-  const pageData = $data()
+function handleClearSearch() {
+  const pageData = $data
   pageData.searchKeyword = ''
   pageData.searchResults = []
   $rebindRules()
@@ -166,8 +187,9 @@ export function handleClearSearch() {
 /**
  * 定位到搜索结果
  */
-export function handleLocateNode(row, column, event) {
-  const pageData = $data()
+function handleLocateNode(row, column, event) {
+  const pageData = $data
+  const { ElMessage } = pageData._imports || {}
   
   console.log('🎯 定位到节点 - row:', row)
   console.log('🎯 定位到节点 - column:', column)
@@ -177,7 +199,7 @@ export function handleLocateNode(row, column, event) {
   const node = row
   
   if (!node || !node.id) {
-    ElMessage.error('无效的节点数据')
+    ElMessage?.error('无效的节点数据')
     return
   }
   
@@ -196,14 +218,15 @@ export function handleLocateNode(row, column, event) {
   // 选中当前节点
   handleNodeClick(node)
   
-  ElMessage.success(`已定位到: ${path.pathNodes.map(n => n.name).join(' > ')}`)
+  ElMessage?.success(`已定位到: ${path.pathNodes.map(n => n.name).join(' > ')}`)
 }
 
 /**
  * 切换树模式
  */
-export function handleToggleMode() {
-  const pageData = $data()
+function handleToggleMode() {
+  const pageData = $data
+  const { ElMessage } = pageData._imports || {}
   const currentMode = pageData.treeData.config.mode
   const newMode = currentMode === 'flat' ? 'nested' : 'flat'
   
@@ -216,9 +239,9 @@ export function handleToggleMode() {
     const nestedTree = treeManager.buildNestedTree()
     pageData.nestedTreeData = nestedTree
     console.log('嵌套树结构:', nestedTree)
-    ElMessage.success('已切换到嵌套模式')
+    ElMessage?.success('已切换到嵌套模式')
   } else {
-    ElMessage.success('已切换到扁平模式')
+    ElMessage?.success('已切换到扁平模式')
   }
   
   $rebindRules()
@@ -227,27 +250,32 @@ export function handleToggleMode() {
 /**
  * 展开全部
  */
-export function handleExpandAll() {
+function handleExpandAll() {
+  const pageData = $data
+  const { ElMessage } = pageData._imports || {}
   console.log('🔽 展开全部节点')
-  ElMessage.success('展开全部功能需要 UI 组件支持')
+  ElMessage?.success('展开全部功能需要 UI 组件支持')
 }
 
 /**
  * 收起全部
  */
-export function handleCollapseAll() {
+function handleCollapseAll() {
+  const pageData = $data
+  const { ElMessage } = pageData._imports || {}
   console.log('🔼 收起全部节点')
-  ElMessage.success('收起全部功能需要 UI 组件支持')
+  ElMessage?.success('收起全部功能需要 UI 组件支持')
 }
 
 /**
  * 添加节点
  */
-export async function handleAddNode() {
-  const pageData = $data()
+async function handleAddNode() {
+  const pageData = $data
+  const { ElMessage, buildTreeFromFlat } = pageData._imports || {}
   
   if (!pageData.selectedNode) {
-    ElMessage.warning('请先选择父节点')
+    ElMessage?.warning('请先选择父节点')
     return
   }
   
@@ -284,18 +312,19 @@ export async function handleAddNode() {
   
   $rebindRules()
   
-  ElMessage.success(`已添加子节点: ${newNode.name}`)
+  ElMessage?.success(`已添加子节点: ${newNode.name}`)
   console.log('✅ 添加节点:', newNode)
 }
 
 /**
  * 删除节点
  */
-export async function handleDeleteNode() {
-  const pageData = $data()
+async function handleDeleteNode() {
+  const pageData = $data
+  const { ElMessage, buildTreeFromFlat } = pageData._imports || {}
   
   if (!pageData.selectedNode) {
-    ElMessage.warning('请先选择要删除的节点')
+    ElMessage?.warning('请先选择要删除的节点')
     return
   }
   
@@ -304,7 +333,7 @@ export async function handleDeleteNode() {
   // 检查是否有子节点
   const children = treeManager.getChildren(node.id)
   if (children.length > 0) {
-    ElMessage.error(`${node.name} 有子节点，无法删除`)
+    ElMessage?.error(`${node.name} 有子节点，无法删除`)
     return
   }
   
@@ -327,14 +356,16 @@ export async function handleDeleteNode() {
   
   $rebindRules()
   
-  ElMessage.success(`已删除节点: ${node.name}`)
+  ElMessage?.success(`已删除节点: ${node.name}`)
   console.log('🗑️ 删除节点:', node)
 }
 
 /**
  * 导出树数据
  */
-export function handleExport() {
+function handleExport() {
+  const pageData = $data
+  const { ElMessage } = pageData._imports || {}
   const json = treeManager.toJSON()
   
   // 创建下载链接
@@ -346,14 +377,16 @@ export function handleExport() {
   a.click()
   URL.revokeObjectURL(url)
   
-  ElMessage.success('已导出树数据')
+  ElMessage?.success('已导出树数据')
   console.log('📤 导出数据:', json)
 }
 
 /**
  * 查看节点详情
  */
-export function handleViewDetails(node) {
+function handleViewDetails(node) {
+  const pageData = $data
+  const { ElMessage } = pageData._imports || {}
   const path = treeManager.getNodePath(node.id)
   const children = treeManager.getChildren(node.id)
   
@@ -366,5 +399,5 @@ export function handleViewDetails(node) {
   console.log('  子节点数:', children.length)
   console.log('  完整数据:', node)
   
-  ElMessage.info(`查看节点详情: ${node.name}`)
+  ElMessage?.info(`查看节点详情: ${node.name}`)
 }

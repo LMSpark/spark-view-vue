@@ -21,9 +21,6 @@ interface ElTableComponent extends HTMLElement {
 export function bindDataToRules(options: RuleBindingOptions): Rule[] {
   const { rules, pageData, pageFunctions, dataSet, formApi } = options
   
-  // 防重入锁
-  const isProcessingEvent = false
-  
   return rules.map(rule => {
     const newRule = { ...rule }
     
@@ -38,22 +35,21 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       }
     }
     
-    // 处理事件处理器：将字符串转换为函数
+    // 处理事件处理器：将字符串转换为函数引用
     if (newRule.on && typeof newRule.on === 'object') {
-      const newOn: Record<string, Function> = {}
+      const newOn: Record<string, Function | Function[]> = {}
       for (const [eventName, handler] of Object.entries(newRule.on)) {
         if (typeof handler === 'string') {
-          const handlerName = handler
-          newOn[eventName] = (...args: unknown[]) => {
-            const fn = pageFunctions[handlerName]
-            if (typeof fn === 'function') {
-              fn(...args)
-            } else {
-              pageLogger.warn('函数未定义', { handlerName })
-            }
+          // 直接从 code 对象中获取函数引用
+          const fn = pageFunctions[handler]
+          if (typeof fn === 'function') {
+            newOn[eventName] = fn  // 直接绑定函数引用
+          } else {
+            pageLogger.warn('函数未定义', { handler })
+            newOn[eventName] = () => {}  // 空函数避免报错
           }
         } else {
-          newOn[eventName] = handler
+          newOn[eventName] = handler as Function | Function[]
         }
       }
       newRule.on = newOn
@@ -61,13 +57,13 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     
     // 自动为 el-table 注入状态同步事件
     if (newRule.type === 'el-table' && newRule.dataKey && dataSet) {
-      injectTableEvents(newRule, dataSet, formApi, isProcessingEvent)
+      injectTableEvents(newRule, dataSet, formApi)
     }
     
     // 递归处理子元素
     if (newRule.children && Array.isArray(newRule.children)) {
       const childRules = newRule.children.filter(
-        (child): child is Rule => typeof child !== 'string'
+        (child: unknown): child is Rule => typeof child !== 'string'
       )
       if (childRules.length > 0) {
         newRule.children = bindDataToRules({
@@ -90,9 +86,10 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
 function injectTableEvents(
   rule: Rule,
   dataSet: IDataSet,
-  _formApi: FormCreateAPI | null,
-  isProcessingEvent: boolean
+  _formApi: FormCreateAPI | null
 ): void {
+  // 使用局部防重入标志
+  let isProcessingEvent = false
   // 解析 dataKey 获取表名
   if (!rule.dataKey) return
   const dataKeyParts = rule.dataKey.split('.')
@@ -175,7 +172,7 @@ export function findRuleByDataKey(rules: Rule[], dataKey: string): Rule | null {
     }
     if (rule.children && Array.isArray(rule.children)) {
       const childRules = rule.children.filter(
-        (child): child is Rule => typeof child !== 'string'
+        (child: unknown): child is Rule => typeof child !== 'string'
       )
       const found = findRuleByDataKey(childRules, dataKey)
       if (found) return found

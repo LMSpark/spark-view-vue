@@ -370,10 +370,9 @@ export class PageConfigLoader implements ConfigLoader {
       }
 
       const scriptText = await response.text()
-      const result = this.evaluateScript(scriptText)
       
-      pageLogger.debug('远程脚本加载成功', { pageId })
-      return result
+      pageLogger.debug('远程脚本加载成功', { pageId, size: scriptText.length })
+      return scriptText
     } catch (error) {
       pageLogger.error('远程脚本加载异常', { pageId, url, error })
       throw error
@@ -384,35 +383,25 @@ export class PageConfigLoader implements ConfigLoader {
    * 从本地加载脚本
    */
   private async fetchScriptFromLocal(pageId: string): Promise<PageScriptConfig> {
-    const url = `${this.options.localPrefix}/${pageId}/script.js`
+    const url = `${this.options.localPrefix}/${pageId}/script.js?t=${Date.now()}`
     
     try {
       pageLogger.debug('加载本地脚本', { pageId, url })
       
-      // 动态导入 ES6 模块
-      const module = await import(/* @vite-ignore */ url)
+      // 使用 fetch 获取文本内容（不使用 import，因为脚本不是 ES6 模块）
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
       
-      pageLogger.debug('本地脚本加载成功', { pageId })
-      return module
+      const scriptText = await response.text()
+      pageLogger.debug('本地脚本加载成功', { pageId, size: scriptText.length })
+      return scriptText
     } catch {
       // 脚本文件可选，不存在不是错误
       pageLogger.debug('页面无脚本文件，跳过', { pageId })
-      return {} // 返回空对象而不是抛出错误
+      return '' // 返回空字符串
     }
-  }
-
-  /**
-   * 执行脚本文本
-   */
-  private evaluateScript(scriptText: string): PageScriptConfig {
-    const exports: PageScriptConfig = {}
-    
-    // 简单的模块导出解析（支持 export function）
-    // 生产环境应该在服务器端处理脚本转换
-    const func = new Function('exports', scriptText)
-    func(exports)
-    
-    return exports
   }
 }
 

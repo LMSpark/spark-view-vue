@@ -116,7 +116,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
           }
         }
         if (rule.children && Array.isArray(rule.children)) {
-          const childRules = rule.children.filter((child): child is Rule => typeof child !== 'string')
+          const childRules = rule.children.filter((child: unknown): child is Rule => typeof child !== 'string')
           extractContexts(childRules)
         }
       })

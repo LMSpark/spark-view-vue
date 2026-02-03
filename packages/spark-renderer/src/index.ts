@@ -10,35 +10,16 @@ export { default as PageRenderer } from './components/PageRenderer.vue'
 
 // Composables
 export { useCssScope } from './composables/useCssScope'
-export { useScriptSandbox } from './composables/useScriptSandbox'
 export { usePageDataSet } from './composables/usePageDataSet'
 export { useRuleBinding } from './composables/useRuleBinding'
-
-// 工具函数
-export { scopeCSS, createScopedStyleElement, removeScopedStyle } from './utils/scopeCSS'
-export { 
-  createSandboxContext, 
-  loadScriptModule,
-  initGlobalPageContext,
-  cleanupGlobalPageContext
-} from './utils/createSandbox'
-export { 
-  bindDataToRules, 
-  findRuleByDataKey,
-  syncSelectedRowsToTable
-} from './utils/bindRules'
 
 // 类型导出
 export type {
   Rule,
   FormCreateAPI,
   PageContext,
-  PageScriptModule,
   PageConfig,
   PageRendererOptions,
-  CssScopeOptions,
-  ScriptSandboxOptions,
-  DataSetInitOptions,
   RuleBindingOptions
 } from './types'
 

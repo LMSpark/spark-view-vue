@@ -2,7 +2,13 @@
  * CSS 作用域隔离工具
  */
 
-import type { CssScopeOptions } from '../types'
+/**
+ * CSS 作用域选项
+ */
+export interface CssScopeOptions {
+  pageId: string
+  css: string
+}
 
 /**
  * 为 CSS 添加作用域前缀

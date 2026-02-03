@@ -1,5 +1,4 @@
 ﻿// 沙箱注入的全局变量: $data, $dataSet, $api, $route, $rebindRules, $refreshData
-import { ElMessage } from 'element-plus';
 
 // 模拟数据加载器（实际项目中应该是 API 请求）
 const mockDataLoader = async (tableName) => {
@@ -34,15 +33,17 @@ const mockDataLoader = async (tableName) => {
 /**
  * 请求订单明细数据 - 完全解耦：发起请求不等待，数据加载完成后自动更新 UI
  */
-export function handleRequestOrderDetails() {
-  const dataSet = $dataSet();
+function handleRequestOrderDetails() {
+  const pageData = $data;
+  const { ElMessage } = pageData._imports || {};
+  const dataSet = $dataSet;
   
   if (!dataSet) {
-    ElMessage.warning('DataSetManager 未初始化');
+    ElMessage?.warning('DataSetManager 未初始化');
     return;
   }
   
-  ElMessage.info({
+  ElMessage?.info({
     message: '🔍 开始智能加载 OrderDetails...',
     duration: 2000
   });
@@ -61,8 +62,8 @@ export function handleRequestOrderDetails() {
 /**
  * 请求产品数据
  */
-export function handleRequestProducts() {
-  const dataSet = $dataSet();
+function handleRequestProducts() {
+  const dataSet = $dataSet;
   
   console.log('='.repeat(60));
   console.log('🚀 用户请求: Products 数据（非阻塞）');
@@ -75,8 +76,8 @@ export function handleRequestProducts() {
 /**
  * 请求分类数据
  */
-export function handleRequestCategories() {
-  const dataSet = $dataSet();
+function handleRequestCategories() {
+  const dataSet = $dataSet;
   
   console.log('='.repeat(60));
   console.log('🚀 用户请求: Categories 数据（非阻塞）');
@@ -89,8 +90,10 @@ export function handleRequestCategories() {
 /**
  * 清空所有数据
  */
-export function handleClearAll() {
-  const dataSet = $dataSet();
+function handleClearAll() {
+  const pageData = $data;
+  const { ElMessage } = pageData._imports || {};
+  const dataSet = $dataSet;
   
   console.log('='.repeat(60));
   console.log('🗑️ 清空所有表数据');
@@ -107,17 +110,20 @@ export function handleClearAll() {
     dataSet.notifySubscribers(tableName);
   });
   
-  ElMessage.success('🗑️ 所有数据已清空');
+  ElMessage?.success('🗑️ 所有数据已清空');
 }
 
 /**
  * 页面初始化函数（由 DynamicPage 自动调用）
  * 用于注册数据加载器等初始化操作
  */
-export function __init__() {
+function __init__() {
   console.log('📦 smart-load 脚本开始初始化...');
   
-  const dataSet = $dataSet();
+  const pageData = $data;
+  const { ElMessage } = pageData._imports || {};
+  const dataSet = $dataSet;
+  
   if (dataSet) {
     // 注册数据加载器
     dataSet.dataLoader = mockDataLoader;
@@ -130,13 +136,13 @@ export function __init__() {
       console.log('='.repeat(60));
       console.log(`✅ ${tableName} 加载完成！数据已自动更新到 UI`);
       console.log('='.repeat(60));
-      ElMessage.success(`✅ ${tableName} 数据加载完成！`);
+      ElMessage?.success(`✅ ${tableName} 数据加载完成！`);
     });
     
     // 监听加载失败事件
     dataSet.on('loadError', ({ tableName, error }) => {
       console.error(`❌ ${tableName} 加载失败:`, error);
-      ElMessage.error(`❌ ${tableName} 数据加载失败`);
+      ElMessage?.error(`❌ ${tableName} 数据加载失败`);
     });
   } else {
     console.warn('⚠️ DataSetManager 未初始化');
