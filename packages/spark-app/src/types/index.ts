@@ -102,6 +102,16 @@ export interface AppConfig {
 }
 
 /**
+ * Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由
+ */
+export interface BootstrapContext extends AppContext {
+  /** Vue 应用实例 */
+  app: import('vue').App
+  /** Vue Router 实例 */
+  router: import('vue-router').Router
+}
+
+/**
  * 初始化选项
  */
 export interface BootstrapOptions {
@@ -114,9 +124,9 @@ export interface BootstrapOptions {
   /** 认证配置（可选，不提供则使用 authenticate 函数） */
   auth?: import('../auth').AuthConfig
   /** 挂载前钩子 */
-  beforeMount?: (context: AppContext) => void | Promise<void>
+  beforeMount?: (context: BootstrapContext) => void | Promise<void>
   /** 挂载后钩子 */
-  afterMount?: (context: AppContext) => void | Promise<void>
+  afterMount?: (context: BootstrapContext) => void | Promise<void>
   /** 鉴权函数（返回 AppContext 或 null）- 向后兼容，推荐使用 auth 配置 */
   authenticate?: () => Promise<AppContext | null>
 }
