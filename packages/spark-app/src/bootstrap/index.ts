@@ -6,11 +6,10 @@
 import type { App as _App } from 'vue'
 import type { Router as _Router } from 'vue-router'
 import type { BootstrapOptions, AppContext, AppConfig } from '../types'
-import { provideAppContext } from '../context/AppContext'
+import type { ComponentManager } from '@spark-view/spark-core'
 import { setupRouterGuards } from '../router/guards'
 import { setupErrorHandler } from '../error/handler'
 import { createLogger } from '../logger'
-import { Spark } from '@spark-view/spark-core'
 import { container } from '../di/container'
 import { authService } from '../auth'
 
@@ -42,7 +41,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
         router.addRoute({
           path: loginPath,
           name: 'login',
-          component: auth.loginComponent as any,
+          component: auth.loginComponent,
           meta: { public: true, title: '登录' }
         })
         bootstrapLogger.debug('登录路由已注册', { path: loginPath })
@@ -93,11 +92,21 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     } = await import('../constants')
     
     // 提供核心服务
-    const sparkManager = Spark.createComponentManager()
+    // 注意：sparkManager 可能已经在 start() 中创建并安装了
+    // 这里检查是否已存在，避免重复创建
+    const appInternal = app as unknown as { _context?: { provides?: Record<symbol, unknown> } }
+    let sparkManager = appInternal._context?.provides?.[SPARK_MANAGER_KEY] as ComponentManager | undefined
+    if (!sparkManager) {
+      // 如果不存在，创建新的（向后兼容直接调用 bootstrap 的场景）
+      const { Spark } = await import('@spark-view/spark-core')
+      sparkManager = Spark.createComponentManager()
+      app.provide(SPARK_MANAGER_KEY, sparkManager)
+      app.provide('sparkManager', sparkManager)  // 向后兼容
+    }
+    
     app.provide(APP_CONTEXT_KEY, appContext)
     app.provide(ROUTER_KEY, router)
     app.provide(LOGGER_KEY, createLogger('app'))
-    app.provide(SPARK_MANAGER_KEY, sparkManager)
     
     // 提供可选服务
     if (container.has('ConfigLoader')) {
@@ -108,14 +117,10 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     }
     if (auth) {
       app.provide(AUTH_SERVICE_KEY, authService)
+      app.provide('authService', authService)  // 向后兼容
     }
     
-    // 向后兼容：保留旧的字符串 key
-    app.provide('sparkManager', sparkManager)
-    provideAppContext(app, appContext)
-    if (auth) {
-      app.provide('authService', authService)
-    }
+    // 注意：sparkManager 的字符串 key 已在上面处理，不需要重复提供
 
     // 阶段 5: 设置路由守卫
     logPhase('ROUTER', '配置路由守卫')
@@ -137,7 +142,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
 
     // 阶段 7: 挂载应用
     logPhase('MOUNT', '挂载应用')
-    app.use(router as any)
+    app.use(router)
     await router.isReady()
     app.mount('#app')
 
@@ -154,7 +159,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     })
   } catch (error) {
     bootstrapLogger.error('应用启动失败', error as Error)
-    showBootstrapError(error as Error)
+    // 不在框架层处理错误展示，由调用方（start.ts 或 main.ts）决定如何处理
     throw error
   }
 }
@@ -223,52 +228,4 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
  */
 function logPhase(phase: string, message: string): void {
   bootstrapLogger.info(`[${phase}] ${message}`)
-}
-
-/**
- * 显示启动错误
- */
-function showBootstrapError(error: Error): void {
-  if (typeof document === 'undefined') return
-  
-  const appElement = document.getElementById('app')
-  if (appElement) {
-    appElement.innerHTML = `
-      <div style="
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 20px;
-        text-align: center;
-        background: #f5f5f5;
-      ">
-        <div style="
-          max-width: 500px;
-          padding: 40px;
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        ">
-          <h1 style="color: #cc0000; margin-bottom: 20px;">应用启动失败</h1>
-          <p style="color: #666; margin-bottom: 20px;">${error.message}</p>
-          <button 
-            onclick="location.reload()" 
-            style="
-              padding: 10px 20px;
-              background: #1890ff;
-              color: white;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-              font-size: 14px;
-            "
-          >
-            重新加载
-          </button>
-        </div>
-      </div>
-    `
-  }
 }

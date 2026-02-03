@@ -127,6 +127,8 @@ export interface ErrorHandlerOptions {
   enableFallback?: boolean
   /** 自定义错误分类 */
   errorClassifier?: (error: Error) => ErrorType
+  /** 错误类型处理回调（消费层实现 UI 交互） */
+  onErrorByType?: (type: ErrorType, error: Error) => void
 }
 
 /**

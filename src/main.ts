@@ -30,8 +30,10 @@ import { SparkApp, createLogger } from '@spark-view/spark-app'
 const logger = createLogger('main')
 
 // 主应用组件
+import { createApp } from 'vue'
 import App from './App.vue'
 import DynamicPage from './views/DynamicPage.vue'
+import ErrorFallback from './components/ErrorFallback.vue'
 import './style.css'
 
 // ============================================================================
@@ -111,8 +113,17 @@ SparkApp.start({
     logger.info('✅ 应用启动完成', { context })
   },
   
-  // 错误处理
+  // === 错误处理 ===
   onStartError: async (error) => {
     logger.error('❌ 应用启动失败', error instanceof Error ? error : { error })
+    
+    // TODO: 错误上报到监控系统
+    // await reportError(error)
+    
+    // 显示错误降级页面
+    const errorApp = createApp(ErrorFallback, { 
+      error: error instanceof Error ? error : new Error(String(error))
+    })
+    errorApp.mount('#app')
   }
 })

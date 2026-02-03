@@ -797,7 +797,7 @@ const loadPageConfig = async () => {
             const moduleLoader = pageModules[modulePath]
             
             if (!moduleLoader) {
-                pageLogger.warn('页面模块不存在，跳过脚本加载', { modulePath })
+                pageLogger.debug('页面无脚本，跳过加载', { pageId: currentPageId })
                 pageFunctions.value = {}
                 // ⚠️ 即使没有模块，也要立即绑定数据
                 rebindRules(true)
@@ -896,7 +896,7 @@ const onFormMounted = (api: FormCreateAPI) => {
 
 // 重试加载
 const retryLoad = () => {
-  error.value = null
+  error.value = ''
   loadPageConfig()
 }
 

@@ -109,7 +109,7 @@ export interface ConfigLoaderOptions {
 /**
  * 配置缓存项
  */
-export interface ConfigCacheItem<T = any> {
+export interface ConfigCacheItem<T = unknown> {
   data: T
   timestamp: number
   version?: string
@@ -121,13 +121,13 @@ export interface ConfigCacheItem<T = any> {
 export interface ValidationError {
   field: string
   message: string
-  value?: any
+  value?: unknown
 }
 
 /**
  * 配置加载结果
  */
-export interface ConfigLoadResult<T = any> {
+export interface ConfigLoadResult<T = unknown> {
   success: boolean
   data?: T
   error?: string

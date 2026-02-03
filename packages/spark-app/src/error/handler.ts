@@ -13,7 +13,7 @@ const errorLogger = createLogger('error')
  * 设置全局错误处理
  */
 export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): void {
-  const { onError, enableFallback = true, errorClassifier } = options
+  const { onError, errorClassifier, onErrorByType } = options
 
   // Vue 错误处理
   app.config.errorHandler = (err: unknown, instance, info) => {
@@ -38,8 +38,10 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
       onError(error, context)
     }
 
-    // 根据错误类型显示不同提示
-    handleErrorByType(errorType, error, enableFallback)
+    // 根据错误类型处理（如果提供了回调）
+    if (onErrorByType) {
+      onErrorByType(errorType, error)
+    }
   }
 
   // Promise 未捕获错误
@@ -83,59 +85,35 @@ function classifyError(error: Error): ErrorType {
 }
 
 /**
- * 根据错误类型处理
+ * 错误类型处理建议（供消费层参考）
+ * 
+ * @example
+ * ```ts
+ * setupErrorHandler(app, {
+ *   onErrorByType: (type, error) => {
+ *     switch (type) {
+ *       case 'AUTH':
+ *         // 重定向到登录页
+ *         router.push('/login')
+ *         break
+ *       case 'PERMISSION':
+ *         ElMessage.error('权限不足')
+ *         break
+ *       case 'NETWORK':
+ *         ElMessage.error('网络错误')
+ *         break
+ *       default:
+ *         ElMessage.error(error.message)
+ *     }
+ *   }
+ * })
+ * ```
  */
-function handleErrorByType(type: ErrorType, error: Error, enableFallback: boolean): void {
-  switch (type) {
-    case 'AUTH':
-      // 重定向到登录页
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login'
-      }
-      break
-      
-    case 'PERMISSION':
-      // 显示权限不足提示
-      showErrorMessage('权限不足，无法执行此操作')
-      break
-      
-    case 'NETWORK':
-      // 显示网络错误提示
-      showErrorMessage('网络错误，请检查网络连接后重试')
-      break
-      
-    case 'VALIDATION':
-      // 显示验证错误提示
-      showErrorMessage(error.message || '数据验证失败')
-      break
-      
-    default:
-      // 显示通用错误提示
-      if (enableFallback) {
-        showErrorMessage('系统错误，请稍后重试')
-      }
-  }
-}
-
-/**
- * 显示错误消息（简单实现，实际应该使用 UI 库）
- */
-function showErrorMessage(message: string): void {
-  if (typeof window !== 'undefined') {
-    // 使用errorLogger记录错误消息
-    errorLogger.error(message)
-    
-    // 如果有 Element Plus，使用 ElMessage
-    if ((window as any).ElMessage) {
-      (window as any).ElMessage.error(message)
-    }
-  }
-}
 
 /**
  * 创建错误边界组件（Vue 3）
  */
-export function createErrorBoundary(fallbackRender?: (error: Error) => any) {
+export function createErrorBoundary(fallbackRender?: (error: Error) => unknown) {
   return {
     name: 'ErrorBoundary',
     data() {

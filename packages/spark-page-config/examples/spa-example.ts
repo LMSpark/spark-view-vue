@@ -80,8 +80,8 @@ await SparkPageConfig.setupRoutes(router, configLoader, DynamicPage)
 
 if (import.meta.env.DEV) {
   const result = await configLoader.loadRoutes()
-  if (result.success) {
-    const errorMap = SparkPageConfig.validate.routes(result.data!)
+  if (result.success && result.data) {
+    const errorMap = SparkPageConfig.validate.routes(result.data)
     if (errorMap.size > 0) {
       console.error('路由配置验证失败:')
       errorMap.forEach((errors, path) => {

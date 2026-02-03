@@ -24,12 +24,12 @@ export enum ServiceLifetime {
 /**
  * 服务提供者类型
  */
-export type ServiceProvider<T = any> = () => T | Promise<T>
+export type ServiceProvider<T = unknown> = () => T | Promise<T>
 
 /**
  * 服务描述符
  */
-export interface ServiceDescriptor<T = any> {
+export interface ServiceDescriptor<T = unknown> {
   lifetime: ServiceLifetime
   provider: ServiceProvider<T>
   instance?: T
@@ -79,7 +79,7 @@ export interface IDependencyContainer {
  */
 export class DependencyContainer implements IDependencyContainer {
   private services = new Map<string | symbol, ServiceDescriptor>()
-  private scopedInstances = new Map<string | symbol, any>()
+  private scopedInstances = new Map<string | symbol, unknown>()
   private parent?: DependencyContainer
   
   constructor(parent?: DependencyContainer) {
@@ -198,7 +198,7 @@ export class DependencyContainer implements IDependencyContainer {
     if (!descriptor.instance) {
       descriptor.instance = descriptor.provider()
     }
-    return descriptor.instance
+    return descriptor.instance as T
   }
   
   /**
@@ -211,14 +211,14 @@ export class DependencyContainer implements IDependencyContainer {
     if (!this.scopedInstances.has(identifier)) {
       this.scopedInstances.set(identifier, descriptor.provider())
     }
-    return this.scopedInstances.get(identifier)
+    return this.scopedInstances.get(identifier) as T
   }
   
   /**
    * 解析瞬态服务
    */
   private resolveTransient<T>(descriptor: ServiceDescriptor): T {
-    return descriptor.provider()
+    return descriptor.provider() as T
   }
   
   /**
