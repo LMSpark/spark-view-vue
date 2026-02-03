@@ -1,21 +1,20 @@
-// ES6 模块 - 页面脚本
+// 页面脚本
 // 沙箱注入的全局变量: $api, $route, $data, $el, $query, $queryAll
 
-// 页面初始化（使用函数调用获取实时值）
-console.log('🚀 工作台页面已加载 (ES6 模块)');
-console.log('📦 页面数据:', $data());
-console.log('🛣️ 当前路由:', $route()?.path);
+// 页面初始化（直接使用沙箱变量）
+console.log('🚀 工作台页面已加载');
+console.log('📦 页面数据:', $data);
+console.log('🛣️ 当前路由:', $route?.path);
 console.log('📄 页面容器:', $el());
 
-// 使用 export 导出函数
-export function testButtonClick() {
+// 定义函数（不使用 export）
+function testButtonClick() {
     alert('✅ JavaScript 执行成功！\n按钮变色说明 CSS 也生效了！');
     console.log('🎯 测试按钮被点击');
     
     // 访问表单 API
-    const api = $api()
-    if (api) {
-        console.log('📋 表单值:', api.formData());
+    if ($api) {
+        console.log('📋 表单值:', $api.formData());
     }
     
     // 访问 DOM 元素
@@ -30,15 +29,14 @@ export function testButtonClick() {
     console.log('🔘 页面中有', buttons?.length, '个按钮');
 }
 
-export function showAlert() {
+function showAlert() {
     const now = new Date().toLocaleTimeString();
     alert('🔔 当前时间: ' + now);
 }
 
-export function getFormData() {
-    const api = $api()
-    if (api) {
-        const data = api.formData();
+function getFormData() {
+    if ($api) {
+        const data = $api.formData();
         console.log('📋 表单数据:', data);
         alert('表单数据: ' + JSON.stringify(data, null, 2));
         return data;
@@ -47,22 +45,21 @@ export function getFormData() {
     return null;
 }
 
-export function handleInputChange(value) {
+function handleInputChange(value) {
     console.log('📝 输入值变化:', value);
-    const api = $api()
-    if (api) {
-        console.log('当前表单数据:', api.formData());
+    if ($api) {
+        console.log('当前表单数据:', $api.formData());
     }
 }
 
-export function handleRowClick(row, column, event) {
+function handleRowClick(row, column, event) {
     console.log('📊 点击行:', row);
     console.log('📊 点击列:', column);
     alert('点击了行: ' + JSON.stringify(row));
 }
 
 // 示例：操作 DOM 元素
-export function highlightButtons() {
+function highlightButtons() {
     const buttons = $queryAll('button');
     if (buttons) {
         buttons.forEach((btn, index) => {
@@ -82,8 +79,8 @@ function formatDate(date) {
     return date.toLocaleDateString('zh-CN');
 }
 
-// 导出配置对象
-export const config = {
+// 配置对象
+const config = {
     pageName: '工作台',
     version: '1.0.0',
     initTime: new Date().toISOString()

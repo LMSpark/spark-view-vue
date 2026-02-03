@@ -46,12 +46,13 @@ export type PageDataConfig = Record<string, unknown>
 
 /**
  * 页面脚本配置（script.js）
- * 页面交互逻辑
+ * 页面交互逻辑 - 纯文本形式
+ * 
+ * 注意：
+ * - 脚本是纯函数定义，不使用 ES6 export 或 CommonJS exports
+ * - 由 PageRenderer 使用 Function 构造器编译和执行
  */
-export interface PageScriptConfig {
-  // 脚本模块导出的内容
-  [functionName: string]: Function
-}
+export type PageScriptConfig = string
 
 /**
  * 完整页面配置
@@ -60,7 +61,7 @@ export interface PageConfig {
   pageId: string
   rule: RuleConfig[]
   data: PageDataConfig
-  script?: PageScriptConfig
+  script?: PageScriptConfig  // 脚本文本
 }
 
 /**

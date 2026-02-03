@@ -16,11 +16,6 @@ export interface UseRuleBindingOptions {
   formApi: Ref<FormCreateAPI | null>
 }
 
-export interface UseRuleBindingReturn {
-  boundRules: Ref<Rule[]>
-  rebindRules: () => void
-}
-
 /**
  * Rule 数据绑定 Hook
  * 
@@ -40,9 +35,9 @@ export interface UseRuleBindingReturn {
  * })
  * ```
  */
-export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingReturn {
+export function useRuleBinding(options: UseRuleBindingOptions) {
   const { originalRules, pageData, pageFunctions, dataSet, formApi } = options
-  const boundRules = ref<Rule[]>([])
+  const boundRules = ref<Rule[]>([]) as Ref<Rule[]>
   
   const rebindRules = () => {
     if (!originalRules.value || originalRules.value.length === 0) {

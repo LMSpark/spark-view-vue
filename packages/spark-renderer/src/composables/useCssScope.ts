@@ -2,18 +2,12 @@
  * CSS 作用域 Composable
  */
 
-import { ref, onUnmounted, Ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { scopeCSS, removeScopedStyle } from '../utils/scopeCSS'
 
 export interface UseCssScopeOptions {
   pageId: string
   enableScope?: boolean
-}
-
-export interface UseCssScopeReturn {
-  scopedCss: Ref<string>
-  setScopedCss: (css: string) => void
-  clearScopedCss: () => void
 }
 
 /**
@@ -34,7 +28,7 @@ export interface UseCssScopeReturn {
  * </template>
  * ```
  */
-export function useCssScope(options: UseCssScopeOptions): UseCssScopeReturn {
+export function useCssScope(options: UseCssScopeOptions) {
   const { pageId, enableScope = true } = options
   const scopedCss = ref<string>('')
   
@@ -49,10 +43,6 @@ export function useCssScope(options: UseCssScopeOptions): UseCssScopeReturn {
       : css
   }
   
-  const clearScopedCss = () => {
-    scopedCss.value = ''
-  }
-  
   // 组件卸载时清理样式
   onUnmounted(() => {
     removeScopedStyle(pageId)
@@ -60,7 +50,6 @@ export function useCssScope(options: UseCssScopeOptions): UseCssScopeReturn {
   
   return {
     scopedCss,
-    setScopedCss,
-    clearScopedCss
+    setScopedCss
   }
 }

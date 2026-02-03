@@ -3,43 +3,56 @@
  */
 
 import { pageLogger } from '@spark-view/spark-app'
-import type { PageContext, PageScriptModule, ScriptSandboxOptions } from '../types'
+import type { PageContext } from '../types'
 
 /**
- * 创建页面脚本沙箱上下文
- */
-export function createSandboxContext(options: ScriptSandboxOptions): PageContext {
-  const { context } = options
-  
-  // 创建沙箱全局对象
-  const sandbox: PageContext = {
-    $api: context.$api,
-    $route: context.$route,
-    $data: context.$data,
-    $el: context.$el,
-    $query: context.$query,
-    $queryAll: context.$queryAll,
-    $rebindRules: context.$rebindRules,
-    $refreshData: context.$refreshData,
-    $dataSet: context.$dataSet
-  }
-  
-  return sandbox
-}
-
-/**
- * 在沙箱中执行脚本
+ * 编译业务脚本为可执行的函数对象
  * 
- * @deprecated 不建议使用 eval，优先使用 ES6 模块导入
+ * 策略：统一编译所有函数（支持函数间相互调用），但只返回需要的函数
+ * 
+ * @param scriptText - 业务脚本文本（纯函数定义）
+ * @param context - 页面上下文
+ * @param functionNames - 需要返回的函数名称数组
+ * @returns 编译后的函数对象（只包含需要的函数）
+ * 
+ * @example
+ * ```javascript
+ * // 脚本内容：
+ * function handleClick(event) {
+ *   helper() // 调用辅助函数
+ * }
+ * 
+ * function helper() {
+ *   console.log('helper')
+ * }
+ * 
+ * async function loadData() {
+ *   const items = await fetch('/api')
+ *   $data.items = items
+ * }
+ * 
+ * // 调用：
+ * const code = compileFunctions(script, context, ['handleClick', 'loadData'])
+ * // 返回: { handleClick: Function, loadData: Function }
+ * // helper 不返回，但在 handleClick 内部可以调用
+ * ```
  */
-export function executeInSandbox(
+export function compileFunctions(
   scriptText: string,
-  context: PageContext
-): PageScriptModule {
-  const exports: PageScriptModule = {}
-  
+  context: PageContext,
+  functionNames: string[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Record<string, any> {
   try {
-    // 使用 Function 构造器创建沙箱
+    // 构造 return 语句 - 只返回需要的函数
+    const returnStatement = functionNames.length > 0
+      ? `\nreturn { ${functionNames.join(', ')} }`
+      : '\nreturn {}'
+    
+    // 完整脚本 = 原脚本（定义所有函数）+ return 语句（只返回需要的）
+    const fullScript = scriptText + returnStatement
+    
+    // 使用 Function 构造器创建沙箱函数
     const func = new Function(
       '$api',
       '$route',
@@ -48,72 +61,28 @@ export function executeInSandbox(
       '$query',
       '$queryAll',
       '$dataSet',
-      'exports',
-      scriptText
+      '$rebindRules',
+      '$refreshData',
+      fullScript
     )
     
-    func(
-      () => context.$api,
-      () => context.$route,
-      () => context.$data,
-      () => context.$el,
+    // 执行函数，传入上下文参数，返回函数对象
+    const result = func(
+      context.$api,
+      context.$route,
+      context.$data,
+      context.$el,
       context.$query,
       context.$queryAll,
-      () => context.$dataSet,
-      exports
+      context.$dataSet,
+      context.$rebindRules,
+      context.$refreshData
     )
+    
+    return result || {}
   } catch (error) {
     pageLogger.error('脚本执行错误', { error })
     throw error
-  }
-  
-  return exports
-}
-
-/**
- * 动态导入页面脚本模块（ES6 模块）
- * 
- * @example
- * ```typescript
- * const module = await loadScriptModule('home', '/pages-config')
- * const { handleClick } = module
- * ```
- */
-export async function loadScriptModule(
-  pageId: string,
-  baseUrl = '/pages-config'
-): Promise<PageScriptModule> {
-  const url = `${baseUrl}/${pageId}/script.js`
-  
-  try {
-    // 使用动态 import 加载 ES6 模块
-    const module = await import(/* @vite-ignore */ url)
-    return module
-  } catch (error) {
-    pageLogger.warn('无法加载页面脚本', { url, error })
-    return {}
-  }
-}
-
-/**
- * 初始化全局页面上下文（浏览器环境）
- */
-export function initGlobalPageContext(context: PageContext): void {
-  if (typeof window !== 'undefined') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(window as any).__pageContext = context
-  }
-}
-
-/**
- * 清理全局页面上下文
- */
-export function cleanupGlobalPageContext(): void {
-  if (typeof window !== 'undefined') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (window as any).__pageContext
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (window as any).__formApi__
   }
 }
 
