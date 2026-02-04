@@ -37,6 +37,7 @@ const users = $data().users
 
 ## 📊 Rule 绑定
 
+### el-table 数据绑定
 ```json
 {
   "type": "el-table",
@@ -44,6 +45,20 @@ const users = $data().users
   "props": { "border": true }
 }
 ```
+
+### 文本内容绑定
+```json
+{
+  "type": "div",
+  "dataKey": "stats.totalUsers",
+  "children": [""]
+}
+```
+
+**注意**：
+- 文本绑定的元素必须设置 `"children": [""]`
+- 支持嵌套路径：`"stats.revenue"`, `"user.profile.name"`
+- 数据自动转换为字符串显示
 
 ## 🔑 关键点
 
