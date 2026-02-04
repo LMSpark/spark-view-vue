@@ -93,10 +93,10 @@ export interface PageContext {
   $dataSet: IDataSet | null  // 使用接口而非具体类
   
   // 沙箱全局变量
-  ElMessage: any  // Element Plus 消息提示
-  ElMessageBox: any  // Element Plus 消息框
-  SparkData: any  // SPARK 数据空间命名空间
-  h: any  // Vue h 函数
+  ElMessage: typeof import('element-plus')['ElMessage']  // Element Plus 消息提示
+  ElMessageBox: typeof import('element-plus')['ElMessageBox']  // Element Plus 消息框
+  SparkData: typeof import('@spark-view/spark-data')['SparkData']  // SPARK 数据空间命名空间
+  h: typeof import('vue')['h']  // Vue h 函数
 }
 
 /**
