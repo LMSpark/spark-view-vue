@@ -48,8 +48,9 @@ export {
   TokenManager
 } from './auth'
 
-// HTTP 客户端已移至 @spark-view/spark-data
-// 请从 @spark-view/spark-data 导入 createHttpClient 和 HttpClient
+// HTTP 客户端已移至 @spark-view/spark-utils
+// 请从 @spark-view/spark-utils 导入 createHttpClient 和 HttpClient
+// IApiContext 也在 @spark-view/spark-utils 中
 
 export type {
   AuthConfig,

@@ -11,10 +11,10 @@
  */
 
 import type { 
-  IApiContext,
   HttpEndpoint
 } from './types'
-import { HttpClient } from './http/HttpClient'
+import type { IApiContext } from '@spark-view/spark-utils'
+import { HttpClient } from '@spark-view/spark-utils'
 
 /**
  * API 适配器实现类

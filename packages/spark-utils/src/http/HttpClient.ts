@@ -14,7 +14,7 @@
  * @packageDocumentation
  */
 
-import type { IApiContext } from '../types'
+import type { IApiContext } from '../types/http'
 
 /**
  * 标准 API 响应格式
