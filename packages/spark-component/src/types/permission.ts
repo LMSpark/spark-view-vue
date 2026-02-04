@@ -68,25 +68,33 @@ export interface IFieldRenderConfig {
  * 字段渲染状态（运行时计算结果）
  * 
  * 结合字段配置和数据权限计算得出的最终渲染状态
+ * 
+ * 6种组合状态（读3种 × 写2种）：
+ * 1. Visible + Editable：完全可见、可编辑（正常编辑）
+ * 2. Visible + ReadOnly：完全可见、只读（只读显示）
+ * 3. Masked + Editable：脱敏可见、可编辑（部分修改，如修改手机号）
+ * 4. Masked + ReadOnly：脱敏可见、只读（脱敏显示）
+ * 5. Hidden + Editable：不可见、可编辑（隐藏提交，如密码修改）
+ * 6. Hidden + ReadOnly：不可见、只读（完全隐藏）
  */
 export interface IFieldRenderState {
   /** 字段名 */
   field: string
   
-  /** 是否可见（false 时不渲染） */
-  visible: boolean
-  
-  /** 是否可编辑 */
-  editable: boolean
-  
-  /** 可见性状态 */
+  /** 读权限：字段可见性状态 */
   visibility: FieldVisibility
   
-  /** 显示值（应用脱敏后的值） */
+  /** 写权限：字段是否可编辑 */
+  editable: boolean
+  
+  /** 显示值（应用脱敏后的值，Hidden 时为 undefined） */
   displayValue?: string
   
   /** 原始值 */
   rawValue?: unknown
+  
+  /** 是否渲染（Hidden 时为 false，其他为 true） */
+  shouldRender: boolean
 }
 
 // ==================== 实例级权限 ====================

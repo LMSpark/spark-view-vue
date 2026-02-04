@@ -29,28 +29,33 @@ export class FieldRenderHelper implements IFieldRenderHelper {
     const { field } = config
     const rawValue = row[field]
     
-    // 1. 计算可见性（权限优先）
+    // 1. 计算读权限：可见性（3种状态）
     const visibility = checker.getFieldVisibility(field, row)
-    const visible = visibility !== FieldVisibility.Hidden && (config.visible !== false)
     
-    // 2. 计算可编辑性（权限优先）
+    // 2. 计算写权限：可编辑性（2种状态）
     const editable = checker.isFieldEditable(field, row) && (config.editable !== false)
     
-    // 3. 计算显示值（应用脱敏）
+    // 3. 计算显示值（根据可见性）
     let displayValue: string | undefined
-    if (visible && visibility === FieldVisibility.Masked) {
-      displayValue = checker.maskFieldValue(field, rawValue, row)
-    } else if (visible) {
-      displayValue = String(rawValue ?? '')
+    const shouldRender = visibility !== FieldVisibility.Hidden && (config.visible !== false)
+    
+    if (shouldRender) {
+      if (visibility === FieldVisibility.Masked) {
+        // 脱敏显示
+        displayValue = checker.maskFieldValue(field, rawValue, row)
+      } else {
+        // 完全可见
+        displayValue = String(rawValue ?? '')
+      }
     }
     
     return {
       field,
-      visible,
-      editable,
-      visibility,
+      visibility,      // 读权限（3种）
+      editable,        // 写权限（2种）
       displayValue,
-      rawValue
+      rawValue,
+      shouldRender
     }
   }
   
@@ -77,7 +82,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
   ): IFieldRenderConfig[] {
     return configs.filter(config => {
       const state = this.computeFieldState(config, row, checker)
-      return state.visible
+      return state.shouldRender
     })
   }
 }
