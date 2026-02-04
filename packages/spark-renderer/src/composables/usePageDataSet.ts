@@ -3,11 +3,13 @@
  */
 
 import { ref, Ref, onUnmounted } from 'vue'
-import { pageLogger } from '@spark-view/spark-app'
+import { Logger } from '@spark-view/spark-utils'
 import { DataSetManager } from '@spark-view/spark-data'
 import type { IDataSet, DataRow } from '@spark-view/spark-data'
 import type { PageContext, Rule, FormCreateAPI } from '../types'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
+
+const pageLogger = Logger('PageRenderer')
 
 /**
  * DataSet管理选项接口 (ISP: 接口隔离原则)

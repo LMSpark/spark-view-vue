@@ -31,8 +31,9 @@ export { TreeManager } from './treeManager'
 export { DataSetManager } from './dataSetManager'
 export { FilterExpressionParser } from './filterExpressionParser'
 
-// 导出 API 适配器
+// 导出 API 适配器和 HTTP 客户端
 export { ApiAdapter } from './apiAdapter'
+export { createHttpClient, HttpClient } from './http/HttpClient'
 
 // 导出能力管理器
 export { 
