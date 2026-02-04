@@ -13,9 +13,11 @@
 import type { 
   IApiClient, 
   IApiContext,
-  IModelPermission,
-  IPermissionDataRow
+  IModelPermission
 } from '@spark-view/spark-data'
+
+// 导入权限类型用于内部使用
+import type { IInstancePermission } from '@spark-view/spark-data'
 
 /**
  * 标准 API 响应格式
@@ -27,13 +29,13 @@ interface StandardApiResponse<T = unknown> {
 }
 
 /**
- * 带权限的响应数据（复用 spark-data 的基础权限类型）
+ * 带权限的响应数据（使用约定字段名）
  */
 interface PermissionAwareData {
   /** 模型级权限（表级） */
   _modelPerm?: IModelPermission
-  /** 数据行 */
-  rows?: IPermissionDataRow[]
+  /** 数据行（任意类型的数组，可能包含 _perm 字段） */
+  rows?: Array<Record<string, unknown> & { _perm?: IInstancePermission }>
   [key: string]: unknown
 }
 

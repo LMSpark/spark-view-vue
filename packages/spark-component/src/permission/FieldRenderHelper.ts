@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 字段渲染助手实现
  * 
  * 用于计算字段的最终渲染状态（结合配置和权限）
@@ -8,7 +8,7 @@ import type {
   IFieldRenderHelper,
   IFieldRenderConfig,
   IFieldRenderState,
-  IPermissionDataRow,
+  DataRow,
   IPermissionChecker
 } from '../types/permission'
 
@@ -23,7 +23,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   computeFieldState(
     config: IFieldRenderConfig,
-    row: IPermissionDataRow,
+    row: DataRow,
     checker: IPermissionChecker
   ): IFieldRenderState {
     const { field } = config
@@ -59,7 +59,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   computeFieldStates(
     configs: IFieldRenderConfig[],
-    row: IPermissionDataRow,
+    row: DataRow,
     checker: IPermissionChecker
   ): IFieldRenderState[] {
     return configs.map(config => 
@@ -72,7 +72,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   filterVisibleFields(
     configs: IFieldRenderConfig[],
-    row: IPermissionDataRow,
+    row: DataRow,
     checker: IPermissionChecker
   ): IFieldRenderConfig[] {
     return configs.filter(config => {
@@ -99,7 +99,7 @@ export function createFieldRenderHelper(): IFieldRenderHelper {
  */
 export const computeFieldState = (
   config: IFieldRenderConfig,
-  row: IPermissionDataRow,
+  row: DataRow,
   checker: IPermissionChecker
 ): IFieldRenderState => {
   return createFieldRenderHelper().computeFieldState(config, row, checker)
@@ -110,7 +110,7 @@ export const computeFieldState = (
  */
 export const computeFieldStates = (
   configs: IFieldRenderConfig[],
-  row: IPermissionDataRow,
+  row: DataRow,
   checker: IPermissionChecker
 ): IFieldRenderState[] => {
   return createFieldRenderHelper().computeFieldStates(configs, row, checker)
@@ -121,7 +121,7 @@ export const computeFieldStates = (
  */
 export const filterVisibleFields = (
   configs: IFieldRenderConfig[],
-  row: IPermissionDataRow,
+  row: DataRow,
   checker: IPermissionChecker
 ): IFieldRenderConfig[] => {
   return createFieldRenderHelper().filterVisibleFields(configs, row, checker)

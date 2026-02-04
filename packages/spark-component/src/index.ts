@@ -13,8 +13,10 @@ export { Spark } from './spark-namespace.js'
 export type {
   IModelPermission,
   IInstancePermission,
-  IPermissionDataRow,
-  IPermissionDataSet,
+  WithInstancePermission,
+  WithModelPermission,
+  DataRow,
+  DataSet,
   IPermissionChecker,
   IPermissionFilter,
   FieldVisibility,

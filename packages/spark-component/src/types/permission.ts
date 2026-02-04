@@ -30,16 +30,42 @@
 import type {
   IInstancePermission,
   IModelPermission,
-  IPermissionDataRow,
-  IPermissionDataSet
+  WithInstancePermission,
+  WithModelPermission
 } from '@spark-view/spark-data'
+
+import { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
 
 // 重新导出供其他模块使用
 export type {
   IInstancePermission,
   IModelPermission,
-  IPermissionDataRow,
-  IPermissionDataSet
+  WithInstancePermission,
+  WithModelPermission
+}
+
+export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD }
+
+// ==================== 组件层类型别名 ====================
+
+/**
+ * 数据行类型（带可选的权限字段）
+ * 
+ * 这是一个灵活的类型，任何对象都可以包含 _perm 字段
+ * 组件层使用此类型来表示带权限的数据行
+ */
+export type DataRow = WithInstancePermission<Record<string, unknown>>
+
+/**
+ * 数据集类型（带可选的权限字段）
+ * 
+ * 包含 rows 数组和可选的 _modelPerm 字段
+ */
+export interface DataSet<T = DataRow> {
+  rows: T[]
+  _modelPerm?: IModelPermission
+  total?: number
+  [key: string]: unknown
 }
 
 // ==================== 字段级权限 ====================
@@ -270,16 +296,16 @@ export interface IPermissionChecker {
   canExport(modelPermission?: IModelPermission): boolean
   
   /** 检查是否有实例操作权限 */
-  canDelete(row: IPermissionDataRow): boolean
-  canEdit(row: IPermissionDataRow): boolean
+  canDelete(row: DataRow): boolean
+  canEdit(row: DataRow): boolean
   
   /** 检查字段权限 */
-  isFieldVisible(field: string, row: IPermissionDataRow): boolean
-  isFieldEditable(field: string, row: IPermissionDataRow): boolean
-  getFieldVisibility(field: string, row: IPermissionDataRow): FieldVisibility
+  isFieldVisible(field: string, row: DataRow): boolean
+  isFieldEditable(field: string, row: DataRow): boolean
+  getFieldVisibility(field: string, row: DataRow): FieldVisibility
   
   /** 应用脱敏规则 */
-  maskFieldValue(field: string, value: unknown, row: IPermissionDataRow): string
+  maskFieldValue(field: string, value: unknown, row: DataRow): string
 }
 
 /**
@@ -298,7 +324,7 @@ export interface IFieldRenderHelper {
    */
   computeFieldState(
     config: IFieldRenderConfig,
-    row: IPermissionDataRow,
+    row: DataRow,
     checker: IPermissionChecker
   ): IFieldRenderState
   
@@ -312,7 +338,7 @@ export interface IFieldRenderHelper {
    */
   computeFieldStates(
     configs: IFieldRenderConfig[],
-    row: IPermissionDataRow,
+    row: DataRow,
     checker: IPermissionChecker
   ): IFieldRenderState[]
   
@@ -326,7 +352,7 @@ export interface IFieldRenderHelper {
    */
   filterVisibleFields(
     configs: IFieldRenderConfig[],
-    row: IPermissionDataRow,
+    row: DataRow,
     checker: IPermissionChecker
   ): IFieldRenderConfig[]
 }
@@ -336,19 +362,19 @@ export interface IFieldRenderHelper {
  */
 export interface IPermissionFilter {
   /** 过滤出可删除的行 */
-  filterDeletableRows(rows: IPermissionDataRow[]): IPermissionDataRow[]
+  filterDeletableRows(rows: DataRow[]): DataRow[]
   
   /** 过滤出可编辑的行 */
-  filterEditableRows(rows: IPermissionDataRow[]): IPermissionDataRow[]
+  filterEditableRows(rows: DataRow[]): DataRow[]
   
   /** 过滤字段（移除隐藏字段） */
-  filterFields(row: IPermissionDataRow): Record<string, unknown>
+  filterFields(row: DataRow): Record<string, unknown>
   
   /** 应用字段脱敏 */
-  applyFieldMasking(row: IPermissionDataRow): IPermissionDataRow
+  applyFieldMasking(row: DataRow): DataRow
   
   /** 批量应用脱敏（处理整个数据集） */
-  applyMaskingToDataSet(rows: IPermissionDataRow[]): IPermissionDataRow[]
+  applyMaskingToDataSet(rows: DataRow[]): DataRow[]
 }
 
 // ==================== 能力接口 ====================
