@@ -1,6 +1,7 @@
 {
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts", "features/**/*.ts", "features/**/*.tsx", "features/**/*.vue", "features/**/*.d.ts", "tests/**/*.ts", "packages/**/*.ts"],
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],

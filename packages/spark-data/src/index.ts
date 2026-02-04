@@ -10,8 +10,19 @@
 // 导出命名空间（推荐使用）
 export { SparkData, SparkData as default } from './spark-data-namespace'
 
-// 导出所有基础数据类型
-export type * from './types'
+// 导出所有基础数据类型（显式导出以确保类型可用）
+export type {
+  DataRow,
+  IDataTable,
+  IDataSet,
+  ITreeManager,
+  IBindingContext,
+  FilterExpression,
+  SortExpression,
+  TreeConfig,
+  FlatTreeNode,
+  IApiContext
+} from './types'
 
 // 导出权限类型（基础层，可被其他包共享）
 export type {

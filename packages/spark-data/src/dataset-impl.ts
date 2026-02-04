@@ -471,7 +471,7 @@ export class DataSet implements IDataSet {
         // 直接过滤子表：childRow[field] in parentValues
         const childFieldName = filterExpression.field;
         const filtered = childRows.filter(childRow => 
-          parentValues.includes(childRow[childFieldName])
+          parentValues.includes(childRow[childFieldName] as {} | null)
         );
         
         return filtered;
