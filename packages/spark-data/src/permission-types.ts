@@ -9,6 +9,13 @@
  * 设计原则：
  * - 权限字段是可选的附加信息，不强制所有数据行/集都有权限
  * - 使用约定字段名：_perm (实例级), _modelPerm (模型级)
+ * 
+ * 核心安全原则：
+ * - **没有权限信息 = 可见只读**（安全默认）
+ * - 服务端只返回用户有权查看的数据
+ * - 数据到达客户端 = 用户有权查看
+ * - 没有 editableFields = 只读（包括普通只读和脱敏只读）
+ * - 从客户端角度：可见只读 ≈ 脱敏只读（都是只读，只是显示内容不同）
  */
 
 // ==================== 实例级权限（行级） ====================
@@ -22,28 +29,39 @@
  * - hiddenFields: 控制字段显示/隐藏
  * - maskedFields: 控制字段脱敏显示
  * 
+ * 默认行为（当 _perm 不存在或字段未设置时）：
+ * - 没有 _perm 字段 → 所有字段可见只读，不可删除
+ * - _perm 存在但 editableFields 为空 → 所有字段只读
+ * - _perm 存在但 allowDelete 未设置 → 不可删除
+ * 
+ * 客户端渲染状态统一：
+ * - 可见只读：显示原始值，禁用编辑
+ * - 脱敏只读：显示脱敏值，禁用编辑
+ * - 本质都是只读，仅显示内容不同
+ * 
  * 字段优先级规则：
  * 1. hiddenFields 优先级最高：不可见字段一定不显示
  * 2. maskedFields 次之：脱敏字段显示脱敏值
  * 3. editableFields 最低：可编辑字段可交互
  * 
  * 典型场景：
- * 1. 仅在 editableFields：可见可编辑
- * 2. 不在任何列表：可见只读
- * 3. 仅在 hiddenFields：不可见、不可编辑
- * 4. 仅在 maskedFields：脱敏可见、只读
- * 5. hiddenFields + editableFields：不可见但可提交（如密码修改）
- * 6. maskedFields + editableFields：脱敏可见、可编辑（如部分修改手机号）
+ * 1. 无 _perm 字段：所有字段可见只读（默认安全）
+ * 2. 仅在 editableFields：可见可编辑
+ * 3. 不在任何列表：可见只读
+ * 4. 仅在 hiddenFields：不可见、不可编辑
+ * 5. 仅在 maskedFields：脱敏可见、只读
+ * 6. hiddenFields + editableFields：不可见但可提交（如密码修改）
+ * 7. maskedFields + editableFields：脱敏可见、可编辑（如部分修改手机号）
  */
 export interface IInstancePermission {
-  /** 是否允许删除此实例 */
+  /** 是否允许删除此实例（未设置时默认 false） */
   allowDelete?: boolean
   
-  /** 可编辑字段列表（可写入数据） */
+  /** 可编辑字段列表（可写入数据，未设置或为空时所有字段只读） */
   editableFields?: string[]
   /** 不可见字段列表（不显示在 UI） */
   hiddenFields?: string[]
-  /** 脱敏字段列表（显示脱敏后的值） */
+  /** 脱敏字段列表（显示脱敏后的值，仍然只读除非在 editableFields 中） */
   maskedFields?: string[]
 }
 
