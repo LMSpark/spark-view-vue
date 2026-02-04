@@ -12,6 +12,5 @@ export { PermissionFilter, createPermissionFilter, filterByPermission } from './
 // 常量导出
 export {
   DEFAULT_PERMISSION,
-  DEFAULT_FIELD_PERMISSION,
   DEFAULT_INSTANCE_PERMISSION
 } from '../types/permission'

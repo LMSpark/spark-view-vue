@@ -25,38 +25,30 @@ export enum FieldVisibility {
   Hidden = 'hidden'
 }
 
-/**
- * 字段编辑权限
- * 
- * 从数据角度只有两种状态：
- * - Editable: 可写（允许修改数据）
- * - ReadOnly: 只读（不允许修改数据）
- */
-export enum FieldEditMode {
-  /** 可编辑（可写） */
-  Editable = 'editable',
-  /** 只读（不可写） */
-  ReadOnly = 'readonly'
-}
-
-/**
- * 字段权限配置
- */
-export interface IFieldPermission {
-  /** 字段名 */
-  field: string
-  /** 可见性 */
-  visibility?: FieldVisibility
-  /** 编辑权限 */
-  editMode?: FieldEditMode
-  /** 自定义脱敏规则（当 visibility 为 Masked 时使用） */
-  maskRule?: (value: unknown) => string
-}
-
 // ==================== 实例级权限 ====================
 
 /**
  * 数据行/实例权限
+ * 
+ * 字段权限通过标志集合控制：
+ * - editableFields: 可编辑字段列表
+ * - hiddenFields: 不可见字段列表
+ * - maskedFields: 脱敏字段列表
+ * 
+ * 字段权限组合逻辑：
+ * 1. 未在任何列表中的字段：完全可见、只读
+ * 2. 仅在 editableFields：可见、可编辑
+ * 3. 仅在 hiddenFields：不可见、不可编辑
+ * 4. 仅在 maskedFields：脱敏可见、只读
+ * 5. hiddenFields + editableFields：不可见但可提交（如密码修改）
+ * 6. maskedFields + editableFields：脱敏可见、可编辑（如部分修改手机号）
+ * 
+ * 示例：
+ * {
+ *   editableFields: ['name', 'password'],     // name 可编辑，password 不可见但可提交
+ *   hiddenFields: ['password'],               // password 不显示
+ *   maskedFields: ['phone']                   // phone 脱敏显示，只读
+ * }
  */
 export interface IInstancePermission {
   /** 是否允许删除此实例 */
@@ -65,13 +57,14 @@ export interface IInstancePermission {
   allowEdit?: boolean
   /** 是否允许查看详情 */
   allowView?: boolean
-  /** 可编辑的字段列表（优先级高于字段级权限） */
+  
+  // ========== 字段级权限标志集合 ==========
+  
+  /** 可编辑字段列表（可写入数据） */
   editableFields?: string[]
-  /** 只读字段列表 */
-  readonlyFields?: string[]
-  /** 隐藏字段列表 */
+  /** 不可见字段列表（不显示在 UI） */
   hiddenFields?: string[]
-  /** 脱敏字段列表 */
+  /** 脱敏字段列表（显示脱敏后的值） */
   maskedFields?: string[]
   /** 自定义权限扩展 */
   custom?: Record<string, unknown>
@@ -91,8 +84,6 @@ export interface IModelPermission {
   allowExport?: boolean
   /** 是否允许导入 */
   allowImport?: boolean
-  /** 默认字段权限（影响所有实例） */
-  defaultFieldPermissions?: IFieldPermission[]
   /** 自定义权限扩展 */
   custom?: Record<string, unknown>
 }
@@ -113,10 +104,8 @@ export interface IComponentPermission {
   readonly?: boolean
   /** 模型级权限（如 Grid 的新增权限） */
   modelPermission?: IModelPermission
-  /** 实例级权限映射（key 为数据行标识） */
+  /** 实例级权限映射（key 为数据行标识，每个实例通过标志集合控制字段权限） */
   instancePermissions?: Map<string | number, IInstancePermission>
-  /** 字段级权限配置 */
-  fieldPermissions?: IFieldPermission[]
 }
 
 // ==================== 组件操作接口 ====================
@@ -157,7 +146,9 @@ export interface IDataComponent {
 /**
  * 带权限的数据行
  * 
- * 后端返回的数据格式建议：
+ * 后端返回的数据格式示例：
+ * 
+ * 示例 1：常规编辑（name 可编辑，phone 脱敏只读）
  * {
  *   id: 1,
  *   name: "张三",
@@ -165,8 +156,30 @@ export interface IDataComponent {
  *   _perm: {
  *     allowDelete: false,
  *     allowEdit: true,
- *     readonlyFields: ["phone"],
- *     maskedFields: []
+ *     editableFields: ["name"],
+ *     maskedFields: ["phone"]
+ *   }
+ * }
+ * 
+ * 示例 2：密码修改（password 不可见但可提交）
+ * {
+ *   id: 1,
+ *   username: "zhangsan",
+ *   _perm: {
+ *     allowEdit: true,
+ *     editableFields: ["password"],    // 密码可提交
+ *     hiddenFields: ["password"]        // 密码不显示
+ *   }
+ * }
+ * 
+ * 示例 3：薪资查看（salary 脱敏显示但可编辑）
+ * {
+ *   id: 1,
+ *   name: "李四",
+ *   salary: 8000,
+ *   _perm: {
+ *     editableFields: ["name", "salary"],
+ *     maskedFields: ["salary"]          // 显示脱敏值但可编辑
  *   }
  * }
  */
@@ -285,23 +298,18 @@ export const DEFAULT_PERMISSION: IComponentPermission = {
 }
 
 /**
- * 默认字段权限
- */
-export const DEFAULT_FIELD_PERMISSION: IFieldPermission = {
-  field: '*',
-  visibility: FieldVisibility.Visible,
-  editMode: FieldEditMode.Editable
-}
-
-/**
  * 默认实例权限
+ * 
+ * 默认情况下：
+ * - 所有操作允许
+ * - 所有字段完全可见、只读
+ * - 如需字段可编辑，添加到 editableFields
  */
 export const DEFAULT_INSTANCE_PERMISSION: IInstancePermission = {
   allowDelete: true,
   allowEdit: true,
   allowView: true,
   editableFields: [],
-  readonlyFields: [],
   hiddenFields: [],
   maskedFields: []
 }
