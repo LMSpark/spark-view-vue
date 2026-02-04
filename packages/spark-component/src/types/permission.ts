@@ -25,6 +25,70 @@ export enum FieldVisibility {
   Hidden = 'hidden'
 }
 
+// ==================== 字段渲染配置 ====================
+
+/**
+ * 字段渲染配置
+ * 
+ * 用于字段级渲染与数据权限的匹配：
+ * - field: 字段名，用于匹配权限中的 editableFields/hiddenFields/maskedFields
+ * - visible: 字段是否可见（优先级低于权限）
+ * - editable: 字段是否可编辑（优先级低于权限）
+ * - maskRule: 自定义脱敏规则
+ * 
+ * 权限优先级：
+ * 1. hiddenFields > visible（权限隐藏优先）
+ * 2. editableFields > editable（权限可编辑优先）
+ * 3. maskedFields > maskRule（权限脱敏优先）
+ */
+export interface IFieldRenderConfig {
+  /** 字段名（与数据字段对应） */
+  field: string
+  
+  /** 字段标题 */
+  title?: string
+  
+  /** 字段是否可见（默认 true，权限中的 hiddenFields 优先） */
+  visible?: boolean
+  
+  /** 字段是否可编辑（默认 false，权限中的 editableFields 优先） */
+  editable?: boolean
+  
+  /** 自定义脱敏规则（权限中的 maskedFields 优先） */
+  maskRule?: (value: unknown) => string
+  
+  /** 字段渲染类型（可选，用于 UI 组件选择） */
+  type?: 'text' | 'number' | 'date' | 'select' | 'custom'
+  
+  /** 其他渲染选项 */
+  [key: string]: unknown
+}
+
+/**
+ * 字段渲染状态（运行时计算结果）
+ * 
+ * 结合字段配置和数据权限计算得出的最终渲染状态
+ */
+export interface IFieldRenderState {
+  /** 字段名 */
+  field: string
+  
+  /** 是否可见（false 时不渲染） */
+  visible: boolean
+  
+  /** 是否可编辑 */
+  editable: boolean
+  
+  /** 可见性状态 */
+  visibility: FieldVisibility
+  
+  /** 显示值（应用脱敏后的值） */
+  displayValue?: string
+  
+  /** 原始值 */
+  rawValue?: unknown
+}
+
 // ==================== 实例级权限 ====================
 
 /**
@@ -237,6 +301,55 @@ export interface IPermissionChecker {
   
   /** 应用脱敏规则 */
   maskFieldValue(field: string, value: unknown, row: IPermissionDataRow): string
+}
+
+/**
+ * 字段渲染助手接口
+ * 
+ * 用于计算字段的最终渲染状态（结合配置和权限）
+ */
+export interface IFieldRenderHelper {
+  /**
+   * 计算字段渲染状态
+   * 
+   * @param config 字段配置
+   * @param row 数据行（包含权限）
+   * @param checker 权限检查器
+   * @returns 字段渲染状态
+   */
+  computeFieldState(
+    config: IFieldRenderConfig,
+    row: IPermissionDataRow,
+    checker: IPermissionChecker
+  ): IFieldRenderState
+  
+  /**
+   * 批量计算字段渲染状态
+   * 
+   * @param configs 字段配置列表
+   * @param row 数据行（包含权限）
+   * @param checker 权限检查器
+   * @returns 字段渲染状态列表
+   */
+  computeFieldStates(
+    configs: IFieldRenderConfig[],
+    row: IPermissionDataRow,
+    checker: IPermissionChecker
+  ): IFieldRenderState[]
+  
+  /**
+   * 过滤出可见字段配置
+   * 
+   * @param configs 字段配置列表
+   * @param row 数据行（包含权限）
+   * @param checker 权限检查器
+   * @returns 可见字段配置
+   */
+  filterVisibleFields(
+    configs: IFieldRenderConfig[],
+    row: IPermissionDataRow,
+    checker: IPermissionChecker
+  ): IFieldRenderConfig[]
 }
 
 /**

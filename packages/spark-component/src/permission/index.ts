@@ -8,6 +8,13 @@ export type * from '../types/permission'
 // 工具类导出
 export { PermissionChecker, createPermissionChecker, checkPermission } from './PermissionChecker'
 export { PermissionFilter, createPermissionFilter, filterByPermission } from './PermissionFilter'
+export { 
+  FieldRenderHelper, 
+  createFieldRenderHelper, 
+  computeFieldState,
+  computeFieldStates,
+  filterVisibleFields
+} from './FieldRenderHelper'
 
 // 常量导出
 export {
