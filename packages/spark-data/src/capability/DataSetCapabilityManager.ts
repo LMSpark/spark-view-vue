@@ -155,7 +155,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider as unknown as CapabilityProvider<Record<string, unknown>, unknown>)
+    this.dataSetContext.providers.add(provider)
   }
 
   /**
@@ -177,7 +177,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider as unknown as CapabilityProvider<Record<string, unknown>, unknown>)
+    this.dataSetContext.providers.add(provider)
   }
 
   /**
@@ -205,7 +205,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider as unknown as CapabilityProvider<Record<string, unknown>, unknown>)
+    this.dataSetContext.providers.add(provider)
   }
 
   /**
@@ -233,7 +233,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider as unknown as CapabilityProvider<Record<string, unknown>, unknown>)
+    this.dataSetContext.providers.add(provider)
   }
 
   /**
