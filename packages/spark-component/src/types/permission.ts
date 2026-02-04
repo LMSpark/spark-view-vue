@@ -31,8 +31,12 @@ export enum FieldVisibility {
  * 数据行/实例权限
  * 
  * 概念区分：
- * - “权”：允许与否（allowDelete, allowView）
+ * - “权”：允许与否（allowDelete）
  * - “限”：能搞到什么程度（editableFields, hiddenFields, maskedFields）
+ * 
+ * 说明：
+ * - 查看权限：后端返回的数据即表示可见，无需 allowView 字段
+ * - 导出权限：根据后端返回的数据范围确定
  * 
  * 字段权限通过标志集合控制：
  * - editableFields: 可编辑字段列表
@@ -57,8 +61,6 @@ export enum FieldVisibility {
 export interface IInstancePermission {
   /** 是否允许删除此实例 */
   allowDelete?: boolean
-  /** 是否允许查看详情 */
-  allowView?: boolean
   
   // ========== 字段级权限标志集合 ==========
   // 注意：无需 allowEdit 字段，editableFields 有值即表示可编辑
@@ -81,9 +83,9 @@ export interface IInstancePermission {
  * - “限”：能搞到什么程度（字段列表等）
  * 
  * 权限裁决逻辑：
- * - allowCreate: 控制是否可新增，由后端根据新增权限装决
+ * - allowCreate: 控制是否可新增，由后端根据新增权限裁决
  * - allowImport: 控制是否可导入，由后端按新增/编辑权限裁决
- * - allowExport: 控制是否可导出，由后端按查看范围（allowView）裁决
+ * - allowExport: 控制是否可导出，由后端按返回的数据范围裁决
  * - 批量删除: 根据返回的实例中有多少个 allowDelete=true 确定
  */
 export interface IModelPermission {
@@ -227,7 +229,6 @@ export interface IPermissionChecker {
   /** 检查是否有实例操作权限 */
   canDelete(row: IPermissionDataRow): boolean
   canEdit(row: IPermissionDataRow): boolean
-  canView(row: IPermissionDataRow): boolean
   
   /** 检查字段权限 */
   isFieldVisible(field: string, row: IPermissionDataRow): boolean
@@ -305,13 +306,12 @@ export const DEFAULT_PERMISSION: IComponentPermission = {
  * 默认实例权限
  * 
  * 默认情况下：
- * - 所有操作允许
+ * - 允许删除
  * - 所有字段完全可见、只读（editableFields 为空）
  * - 如需字段可编辑，添加到 editableFields
  */
 export const DEFAULT_INSTANCE_PERMISSION: IInstancePermission = {
   allowDelete: true,
-  allowView: true,
   editableFields: [],
   hiddenFields: [],
   maskedFields: []

@@ -56,14 +56,6 @@ export class PermissionChecker implements IPermissionChecker {
   }
 
   /**
-   * 检查是否允许查看指定行详情
-   */
-  canView(row: IPermissionDataRow): boolean {
-    const perm = row._perm
-    return perm?.allowView !== false
-  }
-
-  /**
    * 检查字段是否可见
    */
   isFieldVisible(field: string, row: IPermissionDataRow): boolean {
