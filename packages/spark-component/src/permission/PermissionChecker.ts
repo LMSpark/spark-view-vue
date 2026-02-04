@@ -74,20 +74,10 @@ export class PermissionChecker implements IPermissionChecker {
    */
   isFieldEditable(field: string, row: IPermissionDataRow): boolean {
     const perm = row._perm
-    if (!perm) return true
+    if (!perm) return false // 默认只读
 
-    // 检查只读字段列表
-    if (perm.readonlyFields?.includes(field)) {
-      return false
-    }
-
-    // 检查可编辑字段列表（如果定义了，则只有列表中的字段可编辑）
-    if (perm.editableFields && perm.editableFields.length > 0) {
-      return perm.editableFields.includes(field)
-    }
-
-    // 检查整体编辑权限
-    return perm.allowEdit !== false
+    // 只有在 editableFields 中才可编辑
+    return perm.editableFields?.includes(field) ?? false
   }
 
   /**
