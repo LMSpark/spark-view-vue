@@ -18,6 +18,5 @@ export {
 
 // 常量导出
 export {
-  DEFAULT_PERMISSION,
-  DEFAULT_INSTANCE_PERMISSION
+  DEFAULT_PERMISSION
 } from '../types/permission'

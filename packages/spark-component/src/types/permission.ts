@@ -1,8 +1,13 @@
 ﻿/**
  * 权限系统接口定义
  * 
+ * ⚠️ 重要：数据权限类型只使用不定义
+ * - IInstancePermission, IModelPermission 等数据权限类型从 spark-data 导入
+ * - 本文件只定义组件层特有的类型（FieldVisibility, IComponentPermission 等）
+ * - 不允许重新定义或创建数据权限类型的实例
+ * 
  * 架构分层：
- * - 基础层（@spark-view/spark-data）：定义基础权限类型
+ * - 基础层（@spark-view/spark-data）：定义基础权限类型（唯一来源）
  * - 组件层（本文件）：扩展UI组件友好的接口和工具
  * 
  * 类型复用：
@@ -419,7 +424,9 @@ export interface IPermissionCapability {
 // ==================== 默认值常量 ====================
 
 /**
- * 默认权限配置
+ * 默认组件权限配置
+ * 
+ * 组件层配置，非数据权限
  */
 export const DEFAULT_PERMISSION: IComponentPermission = {
   visible: true,
@@ -430,19 +437,4 @@ export const DEFAULT_PERMISSION: IComponentPermission = {
     allowImport: true,
     allowExport: true
   }
-}
-
-/**
- * 默认实例权限
- * 
- * 默认情况下：
- * - 允许删除
- * - 所有字段完全可见、只读（editableFields 为空）
- * - 如需字段可编辑，添加到 editableFields
- */
-export const DEFAULT_INSTANCE_PERMISSION: IInstancePermission = {
-  allowDelete: true,
-  editableFields: [],
-  hiddenFields: [],
-  maskedFields: []
 }
