@@ -1,4 +1,12 @@
-﻿import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
+﻿/**
+ * createSparkComponent - 动态组件创建工厂
+ * 
+ * 注意：使用类型断言桥接 ComponentContext 和基础能力系统
+ */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
