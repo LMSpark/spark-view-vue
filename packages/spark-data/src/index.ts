@@ -16,3 +16,10 @@ export { BindingContext } from './bindingContext'
 export { TreeManager } from './treeManager'
 export { DataSetManager } from './dataSetManager'
 export { FilterExpressionParser } from './filterExpressionParser'
+
+// 导出能力管理器
+export { 
+  DataSetCapabilityManager, 
+  createDataSetCapabilityManager,
+  type DataSetCapabilityConfig 
+} from './capability/DataSetCapabilityManager'

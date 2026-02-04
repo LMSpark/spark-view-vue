@@ -9,6 +9,11 @@ import { BindingContext } from './bindingContext.js'
 import { TreeManager } from './treeManager.js'
 import { DataSetManager } from './dataSetManager.js'
 import { FilterExpressionParser } from './filterExpressionParser.js'
+import { 
+  DataSetCapabilityManager, 
+  createDataSetCapabilityManager,
+  type DataSetCapabilityConfig 
+} from './capability/DataSetCapabilityManager.js'
 import type { IDataSet, DataRow, TreeConfig, FlatTreeNode } from './types.js'
 
 /**
@@ -98,6 +103,23 @@ export const SparkData = {
    * const sql = SparkData.FilterParser.toSQL(expression)
    */
   FilterParser: FilterExpressionParser,
+
+  // ==================== 能力管理器 ====================
+  
+  /**
+   * 创建 DataSet 能力管理器
+   * @example
+   * const capManager = SparkData.createCapabilityManager('page1', {
+   *   dataSet: myDataSet,
+   *   globalData: { getUserInfo: () => ({...}) }
+   * })
+   */
+  createCapabilityManager: (
+    pageId: string,
+    config: DataSetCapabilityConfig
+  ): DataSetCapabilityManager => {
+    return createDataSetCapabilityManager(pageId, config)
+  },
 
   // ==================== 直接类访问（高级用户） ====================
   
