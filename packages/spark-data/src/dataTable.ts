@@ -102,14 +102,20 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   private updateRowInBoth(predicate: (row: DataRow) => boolean, updater: (row: DataRow) => void): void {
     const index = this.rows.findIndex(predicate)
     if (index > -1) {
-      updater(this.rows[index])
+      const row = this.rows[index]
+      if (row) {
+        updater(row)
+      }
     }
     
     const originalRows = this['__originalRows']
     if (originalRows) {
       const cacheIndex = originalRows.findIndex(predicate)
       if (cacheIndex > -1) {
-        updater(originalRows[cacheIndex])
+        const cachedRow = originalRows[cacheIndex]
+        if (cachedRow) {
+          updater(cachedRow)
+        }
       }
     }
   }
@@ -301,7 +307,11 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       console.info(`✨ [DataTable] 自动创建上下文: ${this.tableName}.${contextId}`)
     }
     
-    return this.contexts[contextId]
+    const context = this.contexts[contextId]
+    if (!context) {
+      throw new Error(`Failed to create context: ${contextId}`)
+    }
+    return context
   }
 
   /**

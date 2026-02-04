@@ -72,7 +72,7 @@ export class HttpClient implements IApiClient {
     } = config
 
     // 构建完整 URL
-    let fullUrl = this.buildUrl(url, params)
+    const fullUrl = this.buildUrl(url, params)
 
     // 构建请求头
     const requestHeaders: HeadersInit = {

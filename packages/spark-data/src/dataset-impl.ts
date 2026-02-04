@@ -171,7 +171,10 @@ export class DataSet implements IDataSet {
     }
     
     // 保持对象引用，使用 assign 更新属性（这样 _originalRows 也会自动更新）
-    Object.assign(table.rows[rowIndex], row)
+    const existingRow = table.rows[rowIndex]
+    if (existingRow) {
+      Object.assign(existingRow, row)
+    }
     
     return true
   }
@@ -186,6 +189,10 @@ export class DataSet implements IDataSet {
     }
     
     const row = table.rows[rowIndex]
+    if (!row) {
+      return false
+    }
+    
     table.rows.splice(rowIndex, 1)
     
     // 同步默认上下文的缓存
@@ -610,7 +617,7 @@ export class DataSet implements IDataSet {
     if (childContext.currentRow && !validCurrentRow) {
       if (childContext.autoSelectFirst && filteredRows.length > 0) {
         console.info(`🎯 [自动选择] ${relation.childTable}.${relation.childContextId ?? 'default'} 自动选中第0行`);
-        childContext.currentRow = filteredRows[0];
+        childContext.currentRow = filteredRows[0] ?? null;
       } else {
         console.info(`🧹 [清理] ${relation.childTable}.${relation.childContextId ?? 'default'} currentRow 置空`);
         childContext.currentRow = null;
@@ -619,7 +626,7 @@ export class DataSet implements IDataSet {
     } else if (!childContext.currentRow && childContext.autoSelectFirst && filteredRows.length > 0) {
       // 如果之前没有 currentRow，且配置了自动选择，则选中第0行
       console.info(`🎯 [自动选择] ${relation.childTable}.${relation.childContextId ?? 'default'} 自动选中第0行`);
-      childContext.currentRow = filteredRows[0];
+      childContext.currentRow = filteredRows[0] ?? null;
       selectionChanged = true;
     }
     
@@ -1102,7 +1109,7 @@ export class DataSet implements IDataSet {
         // ✨ 自动选中第一行（如果配置了 autoSelectFirst）
         if (table.autoSelectFirst && rows.length > 0 && !table.currentRow) {
           console.info(`🎯 自动选中第一行: ${tableName}`);
-          table.setCurrentRow(rows[0], false);  // 不跳过通知，触发级联
+          table.setCurrentRow(rows[0] ?? null, false);  // 不跳过通知，触发级联
         }
         
         // 检查并清理所有上下文的无效选中状态

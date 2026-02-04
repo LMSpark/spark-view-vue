@@ -263,7 +263,10 @@ export class FilterExpressionParser {
       if (parts[0] === 'parentRow' && context?.parentRow) {
         let result: unknown = context.parentRow
         for (let i = 1; i < parts.length; i++) {
-          result = (result as Record<string, unknown>)?.[parts[i]]
+          const key = parts[i]
+          if (key !== undefined) {
+            result = (result as Record<string, unknown>)?.[key]
+          }
         }
         return result
       }
@@ -272,7 +275,10 @@ export class FilterExpressionParser {
       if (parts[0] === 'variables' && context?.variables) {
         let result: unknown = context.variables
         for (let i = 1; i < parts.length; i++) {
-          result = (result as Record<string, unknown>)?.[parts[i]]
+          const key = parts[i]
+          if (key !== undefined) {
+            result = (result as Record<string, unknown>)?.[key]
+          }
         }
         return result
       }

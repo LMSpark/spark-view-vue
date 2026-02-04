@@ -122,8 +122,12 @@ export class TreeManager {
     }
 
     // 3. 找到第一个缺失节点的父节点
-    const firstMissingIndex = pathIds.indexOf(missing[0])
-    const fromId = firstMissingIndex > 0 ? pathIds[firstMissingIndex - 1] : null
+    const firstMissing = missing[0]
+    if (firstMissing === undefined) {
+      return
+    }
+    const firstMissingIndex = pathIds.indexOf(firstMissing)
+    const fromId = firstMissingIndex > 0 ? pathIds[firstMissingIndex - 1] ?? null : null
 
     // 4. 一次性拉取缺失区间
     console.info(`差量补齐: 从 ${fromId} 到 ${targetId}`)
@@ -186,9 +190,11 @@ export class TreeManager {
       : this.getRoots()
 
     rootNodes.forEach(rootNode => {
-      const nestedRoot = this.buildSubTree(rootNode.id)
-      if (nestedRoot) {
-        roots.push(nestedRoot)
+      if (rootNode) {
+        const nestedRoot = this.buildSubTree(rootNode.id)
+        if (nestedRoot) {
+          roots.push(nestedRoot)
+        }
       }
     })
 
@@ -232,7 +238,9 @@ export class TreeManager {
     if (!node) return
 
     const children = this.getChildren(nodeId)
-    node.hasChildren = children.length > 0
+    if (node) {
+      node.hasChildren = children.length > 0
+    }
   }
 
   /**
@@ -241,8 +249,10 @@ export class TreeManager {
   enrichNodes(): void {
     Object.keys(this.cache).forEach(id => {
       const node = this.cache[id]
-      node.level = this.calculateLevel(node.id)
-      this.markHasChildren(node.id)
+      if (node) {
+        node.level = this.calculateLevel(node.id)
+        this.markHasChildren(node.id)
+      }
     })
   }
 
