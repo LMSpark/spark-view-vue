@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 
 export default defineConfig({
@@ -35,7 +36,13 @@ export default defineConfig({
           isCustomElement: (tag) => tag.startsWith('e-')
         }
       }
-    })
+    }),
+    ...(process.env.ANALYZE ? [visualizer({
+      open: true,
+      filename: 'dist/stats.html',
+      gzipSize: true,
+      brotliSize: true
+    })] : [])
   ],
   build: {
     rollupOptions: {
