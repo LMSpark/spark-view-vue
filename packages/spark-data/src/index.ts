@@ -17,6 +17,9 @@ export { TreeManager } from './treeManager'
 export { DataSetManager } from './dataSetManager'
 export { FilterExpressionParser } from './filterExpressionParser'
 
+// 导出 API 适配器
+export { ApiAdapter } from './apiAdapter'
+
 // 导出能力管理器
 export { 
   DataSetCapabilityManager, 
