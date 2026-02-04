@@ -53,12 +53,11 @@ export enum FieldVisibility {
 export interface IInstancePermission {
   /** 是否允许删除此实例 */
   allowDelete?: boolean
-  /** 是否允许编辑此实例 */
-  allowEdit?: boolean
   /** 是否允许查看详情 */
   allowView?: boolean
   
   // ========== 字段级权限标志集合 ==========
+  // 注意：无需 allowEdit 字段，editableFields 有值即表示可编辑
   
   /** 可编辑字段列表（可写入数据） */
   editableFields?: string[]
@@ -155,8 +154,7 @@ export interface IDataComponent {
  *   phone: "13800138000",
  *   _perm: {
  *     allowDelete: false,
- *     allowEdit: true,
- *     editableFields: ["name"],
+ *     editableFields: ["name"],        // 有可编辑字段即表示可编辑
  *     maskedFields: ["phone"]
  *   }
  * }
@@ -166,7 +164,6 @@ export interface IDataComponent {
  *   id: 1,
  *   username: "zhangsan",
  *   _perm: {
- *     allowEdit: true,
  *     editableFields: ["password"],    // 密码可提交
  *     hiddenFields: ["password"]        // 密码不显示
  *   }
@@ -302,12 +299,11 @@ export const DEFAULT_PERMISSION: IComponentPermission = {
  * 
  * 默认情况下：
  * - 所有操作允许
- * - 所有字段完全可见、只读
+ * - 所有字段完全可见、只读（editableFields 为空）
  * - 如需字段可编辑，添加到 editableFields
  */
 export const DEFAULT_INSTANCE_PERMISSION: IInstancePermission = {
   allowDelete: true,
-  allowEdit: true,
   allowView: true,
   editableFields: [],
   hiddenFields: [],
