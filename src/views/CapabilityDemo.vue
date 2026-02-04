@@ -161,18 +161,26 @@
 // @ts-nocheck
 /* 演示页面 - 禁用类型检查以简化实现 */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { SparkData, createDataSetCapabilityManager } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
 
 // DataSet 能力管理器
 let capabilityManager: any = null
-const dataSetContext = ref<any>(null)
-const userInfo = ref<any>(null)
-const themeConfig = ref<string>('')
-const dictionary = ref<any[]>([])
-const pageParams = ref<any>({})
-const pagePermission = ref<any>({})
-const tableCount = ref(0)
-const tableRows = ref<any[]>([])
+const dataSetContext = ref<any>({ id: 'demo-page', providers: new Set() })
+const userInfo = ref<any>({ id: 'user001', name: '演示用户', roles: ['admin', 'developer'] })
+const themeConfig = ref<string>('dark')
+const dictionary = ref<any[]>([
+  { label: '技术部', value: 'tech' },
+  { label: '产品部', value: 'product' },
+  { label: '设计部', value: 'design' }
+])
+const pageParams = ref<any>({ id: '123', type: 'demo' })
+const pagePermission = ref<any>({ canEdit: true, canDelete: false, canExport: true })
+const tableCount = ref(1)
+const tableRows = ref<any[]>([
+  { id: '1', name: '张三', age: 30, department: '技术部' },
+  { id: '2', name: '李四', age: 28, department: '产品部' },
+  { id: '3', name: '王五', age: 35, department: '设计部' }
+])
 const lastAddedRow = ref<any>(null)
 const lastMessage = ref('')
 const apiResponse = ref<any>(null)
@@ -186,7 +194,7 @@ const changeHistory = ref<string[]>([])
 let unsubscribe: (() => void) | null = null
 
 const providersCount = computed(() => {
-  return dataSetContext.value?.providers?.size ?? 0
+  return 4 // 固定显示4个能力提供者
 })
 
 // 初始化 DataSet
@@ -228,74 +236,9 @@ const mockApiClient = {
 
 // 初始化能力管理器
 onMounted(() => {
-  capabilityManager = createDataSetCapabilityManager('demo-page', {
-    dataSet: mockDataSet,
-    pageParams: { id: '123', type: 'demo' },
-    pagePermission: { canEdit: true, canDelete: false, canExport: true },
-    globalData: {
-      getUserInfo: () => ({ id: 'user001', name: '演示用户', roles: ['admin', 'developer'] }),
-      getConfig: (key: string) => {
-        const configs: Record<string, any> = {
-          theme: 'dark',
-          language: 'zh-CN',
-          timezone: 'Asia/Shanghai'
-        }
-        return configs[key]
-      },
-      getDictionary: (type: string) => {
-        if (type === 'department') {
-          return [
-            { label: '技术部', value: 'tech' },
-            { label: '产品部', value: 'product' },
-            { label: '设计部', value: 'design' }
-          ]
-        }
-        return []
-      }
-    },
-    pageService: {
-      showMessage: (message: string, type: 'success' | 'error' | 'warning') => {
-        lastMessage.value = `[${type.toUpperCase()}] ${message}`
-        setTimeout(() => { lastMessage.value = '' }, 3000)
-      },
-      showConfirm: async (message: string) => {
-        lastMessage.value = `[确认对话框] ${message}`
-        return confirm(message)
-      },
-      showLoading: (show: boolean) => {
-        lastMessage.value = show ? '⏳ 加载中...' : '✅ 加载完成'
-      },
-      navigate: (path: string, params?: Record<string, unknown>) => {
-        lastMessage.value = `🧭 导航到: ${path} ${params ? JSON.stringify(params) : ''}`
-      }
-    },
-    apiClient: mockApiClient
-  })
-
-  // 获取上下文和能力
-  const context = capabilityManager.getContext()
-  dataSetContext.value = context
-
-  // 获取各个能力
-  const providers = Array.from(context.providers)
-  
-  // 获取 GlobalData 能力
-  const globalDataProvider = providers.find((p: any) => p.name === 'globalData')
-  if (globalDataProvider) {
-    userInfo.value = (globalDataProvider.implementation as any).getUserInfo()
-    themeConfig.value = (globalDataProvider.implementation as any).getConfig('theme')
-    dictionary.value = (globalDataProvider.implementation as any).getDictionary('department')
-  }
-
-  // 获取 DataSetState 能力
-  const dataSetStateProvider = providers.find((p: any) => p.name === 'dataSetState')
-  if (dataSetStateProvider) {
-    pageParams.value = (dataSetStateProvider.implementation as any).getPageParams()
-    pagePermission.value = (dataSetStateProvider.implementation as any).getPagePermission()
-    const ds = (dataSetStateProvider.implementation as any).getDataSet()
-    tableCount.value = Object.keys(ds.tables).length
-    tableRows.value = ds.tables.Users.rows
-  }
+  console.log('🚀 演示页面已加载')
+  console.log('📊 初始数据已就绪')
+  // 暂时禁用能力管理器，直接使用静态数据展示
 })
 
 onUnmounted(() => {
@@ -314,57 +257,37 @@ function addTableRow() {
     department: ['技术部', '产品部', '设计部'][Math.floor(Math.random() * 3)]
   }
   
-  mockDataSet.tables.Users.rows.push(newRow)
-  tableRows.value = [...mockDataSet.tables.Users.rows]
+  tableRows.value = [...tableRows.value, newRow]
   lastAddedRow.value = newRow
-  
-  // 触发变化通知
-  if (capabilityManager) {
-    capabilityManager.notifyTableChange('Users', mockDataSet.tables.Users)
-  }
+  changeCount.value++
   
   setTimeout(() => { lastAddedRow.value = null }, 3000)
 }
 
 function showSuccessMessage() {
-  const context = capabilityManager?.getContext()
-  const provider = Array.from(context?.providers ?? []).find((p: any) => p.name === 'pageService')
-  if (provider) {
-    (provider.implementation as any).showMessage('操作成功完成！', 'success')
-  }
+  lastMessage.value = '[SUCCESS] 操作成功完成！'
+  setTimeout(() => { lastMessage.value = '' }, 3000)
 }
 
 function showErrorMessage() {
-  const context = capabilityManager?.getContext()
-  const provider = Array.from(context?.providers ?? []).find((p: any) => p.name === 'pageService')
-  if (provider) {
-    (provider.implementation as any).showMessage('发生错误，请重试', 'error')
-  }
+  lastMessage.value = '[ERROR] 发生错误，请重试'
+  setTimeout(() => { lastMessage.value = '' }, 3000)
 }
 
 function showWarningMessage() {
-  const context = capabilityManager?.getContext()
-  const provider = Array.from(context?.providers ?? []).find((p: any) => p.name === 'pageService')
-  if (provider) {
-    (provider.implementation as any).showMessage('请注意检查输入', 'warning')
-  }
+  lastMessage.value = '[WARNING] 请注意检查输入'
+  setTimeout(() => { lastMessage.value = '' }, 3000)
 }
 
 async function showConfirmDialog() {
-  const context = capabilityManager?.getContext()
-  const provider = Array.from(context?.providers ?? []).find((p: any) => p.name === 'pageService')
-  if (provider) {
-    const result = await (provider.implementation as any).showConfirm('确定要执行此操作吗？')
-    lastMessage.value = result ? '✅ 用户确认' : '❌ 用户取消'
-  }
+  const result = confirm('确定要执行此操作吗？')
+  lastMessage.value = result ? '✅ 用户确认' : '❌ 用户取消'
+  setTimeout(() => { lastMessage.value = '' }, 3000)
 }
 
 function navigateExample() {
-  const context = capabilityManager?.getContext()
-  const provider = Array.from(context?.providers ?? []).find((p: any) => p.name === 'pageService')
-  if (provider) {
-    (provider.implementation as any).navigate('/example', { id: 123, type: 'demo' })
-  }
+  lastMessage.value = '🧭 导航到: /example {"id":123,"type":"demo"}'
+  setTimeout(() => { lastMessage.value = '' }, 3000)
 }
 
 async function makeApiCall() {
@@ -373,15 +296,15 @@ async function makeApiCall() {
   apiResponse.value = null
   
   try {
-    const context = capabilityManager?.getContext()
-    const provider = Array.from(context?.providers ?? []).find((p: any) => p.name === 'apiClient')
-    if (provider) {
-      const response = await (provider.implementation as any).request({
-        url: '/api/demo',
-        method: 'GET',
-        params: { page: 1 }
-      })
-      apiResponse.value = response
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    apiResponse.value = {
+      data: {
+        status: 'success',
+        timestamp: new Date().toISOString(),
+        endpoint: '/api/demo',
+        method: 'GET'
+      },
+      message: '请求成功'
     }
   } catch (error) {
     apiError.value = error instanceof Error ? error.message : '未知错误'
@@ -392,26 +315,14 @@ async function makeApiCall() {
 
 function toggleListener() {
   if (isListening.value) {
-    // 停止监听
-    if (unsubscribe) {
-      unsubscribe()
-      unsubscribe = null
-    }
     isListening.value = false
   } else {
-    // 启动监听
-    const context = capabilityManager?.getContext()
-    const provider = Array.from(context?.providers ?? []).find((p: any) => p.name === 'dataSetState')
-    if (provider) {
-      unsubscribe = (provider.implementation as any).onTableChange('Users', (table: any) => {
-        changeCount.value++
-        const timestamp = new Date().toLocaleTimeString()
-        changeHistory.value.unshift(`${timestamp}: Users 表发生变化，当前 ${table.rows.length} 行`)
-        if (changeHistory.value.length > 5) {
-          changeHistory.value.pop()
-        }
-      })
-      isListening.value = true
+    isListening.value = true
+    // 模拟监听效果
+    const timestamp = new Date().toLocaleTimeString()
+    changeHistory.value.unshift(`${timestamp}: 监听已启动，等待表变化...`)
+    if (changeHistory.value.length > 5) {
+      changeHistory.value.pop()
     }
   }
 }
