@@ -45,6 +45,9 @@ import type {
   WithModelPermission
 } from '@spark-view/spark-data'
 
+// 导入基础数据类型
+import type { DataRow as BaseDataRow } from '@spark-view/spark-data'
+
 import { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
 
 // 重新导出供其他模块使用
@@ -57,23 +60,23 @@ export type {
 
 export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD }
 
-// ==================== 组件层类型别名 ====================
+// ==================== 组件层数据类型（基于 spark-data）====================
 
 /**
- * 数据行类型（带可选的权限字段）
+ * 组件层数据行类型（带可选权限）
  * 
- * 这是一个灵活的类型，任何对象都可以包含 _perm 字段
- * 组件层使用此类型来表示带权限的数据行
+ * 基于 spark-data 的 DataRow，添加权限支持
+ * 用于组件接口定义，简化类型标注
  */
-export type DataRow = WithInstancePermission<Record<string, unknown>>
+export type DataRow = WithInstancePermission<BaseDataRow>
 
 /**
- * 数据集类型（带可选的权限字段）
+ * 组件层数据集类型（带可选权限）
  * 
- * 包含 rows 数组和可选的 _modelPerm 字段
+ * 用于表格、列表等组件的数据源
  */
-export interface DataSet<T = DataRow> {
-  rows: T[]
+export interface DataSet {
+  rows: DataRow[]
   _modelPerm?: IModelPermission
   total?: number
   [key: string]: unknown
