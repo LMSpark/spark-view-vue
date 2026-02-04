@@ -1,12 +1,13 @@
-﻿// 沙箱注入的全局变量: $data, $dataSet, $rebindRules
-import { ElMessage, ElMessageBox } from 'element-plus';
+﻿// 沙箱注入的全局变量: 
+// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - ElMessage, ElMessageBox, SparkData, h
 
 let selectedUser = null;
 
 /**
  * 处理用户行选择
  */
-export function handleUserRowChange(currentRow) {
+function handleUserRowChange(currentRow) {
   selectedUser = currentRow;
   if (currentRow) {
     console.log('✅ 选中用户:', currentRow);
@@ -16,7 +17,7 @@ export function handleUserRowChange(currentRow) {
 /**
  * 添加新用户 - 低代码：直接操作数组，UI自动更新
  */
-export async function handleAddUser() {
+async function handleAddUser() {
   try {
     const { value: name } = await ElMessageBox.prompt('请输入用户名', '添加用户', {
       confirmButtonText: '确定',
@@ -32,7 +33,7 @@ export async function handleAddUser() {
       inputErrorMessage: '请输入有效的邮箱地址'
     });
 
-    const dataSet = $dataSet();
+    const dataSet = $dataSet;
     const userTable = dataSet.getTable('Users');
     
     const maxId = Math.max(...userTable.rows.map(r => r.id), 0);
@@ -54,7 +55,7 @@ export async function handleAddUser() {
 /**
  * 批量修改用户ID - 低代码：内核自动处理级联更新
  */
-export async function handleUpdateUserIdBatch() {
+async function handleUpdateUserIdBatch() {
   try {
     const { value: offset } = await ElMessageBox.prompt(
       '输入要增加的ID偏移量（例如：100），订单的userId会自动级联更新',
@@ -67,7 +68,7 @@ export async function handleUpdateUserIdBatch() {
       }
     );
 
-    const dataSet = $dataSet();
+    const dataSet = $dataSet;
     const userTable = dataSet.getTable('Users');
     const offsetNum = parseInt(offset);
     
@@ -90,14 +91,14 @@ export async function handleUpdateUserIdBatch() {
 /**
  * 删除选中用户 - 低代码：内核自动处理级联删除
  */
-export async function handleDeleteSelectedUser() {
+async function handleDeleteSelectedUser() {
   if (!selectedUser) {
     ElMessage.warning('请先点击表格中的一行选择用户');
     return;
   }
 
   try {
-    const dataSet = $dataSet();
+    const dataSet = $dataSet;
     const Users = dataSet.getTable('Users');
     const Orders = dataSet.getTable('Orders');
     const OrderItems = dataSet.getTable('OrderItems');

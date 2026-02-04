@@ -27,9 +27,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, nextTick } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick, h } from 'vue'
 import { useRoute } from 'vue-router'
 import { pageLogger, ErrorCodes, getErrorMessage } from '@spark-view/spark-app'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { SparkData } from '@spark-view/spark-data'
 import type { PageRendererOptions, PageContext, FormCreateAPI, Rule } from '../types'
 import { useCssScope } from '../composables/useCssScope'
 import { compileFunctions } from '../utils/createSandbox'
@@ -110,7 +112,13 @@ const pageContext: PageContext = {
   $refreshData: async () => {},
   get $dataSet() {
     return dataSet.value
-  }
+  },
+  
+  // 沙箱全局变量（从外部导入）
+  ElMessage,
+  ElMessageBox,
+  SparkData,
+  h
 }
 
 // CSS 作用域

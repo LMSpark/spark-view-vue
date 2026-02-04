@@ -642,12 +642,12 @@ const handleError = (error: Error) => {
 
 ## 常见问题
 
-### Q: PageRenderer 和 DynamicPage 有什么区别？
+### Q: PageRenderer 的职责是什么？
 
 A: 
-- `PageRenderer` 是纯渲染组件，不包含路由逻辑
-- `DynamicPage` 是应用层组件，包含路由参数解析和导航
-- 推荐在路由视图中使用 `PageRenderer`，在独立场景中使用 `PageRenderer`
+- `PageRenderer` 是纯渲染组件，专注于将页面配置渲染为 Vue 组件
+- 不包含路由参数解析和导航逻辑，这些应该在应用层实现
+- 推荐在路由视图中直接使用 `PageRenderer`
 
 ### Q: 如何禁用 CSS 隔离？
 

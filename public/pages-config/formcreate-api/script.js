@@ -3,13 +3,13 @@
  * 展示 form-create 的各种 API 用法
  */
 
-// 沙箱注入的全局变量: $api, $data, $rebindRules, $dataSet
-import { ElMessage } from 'element-plus'
-import { h } from 'vue'
+// 沙箱注入的全局变量: 
+// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - ElMessage, ElMessageBox, SparkData, h
 
 // 添加日志
 function addLog(message, type = 'info') {
-  const pageData = $data()
+  const pageData = $data
   const timestamp = new Date().toLocaleTimeString()
   
   pageData.apiLog.unshift({
@@ -29,8 +29,8 @@ function addLog(message, type = 'info') {
 /**
  * 获取所有表单值
  */
-export function handleGetAllValues() {
-  const api = $api()
+function handleGetAllValues() {
+  const api = $api
   if (!api) {
     ElMessage.error('API 未初始化')
     return
@@ -45,8 +45,8 @@ export function handleGetAllValues() {
 /**
  * 批量设置值
  */
-export function handleSetValues() {
-  const api = $api()
+function handleSetValues() {
+  const api = $api
   if (!api) return
   
   api.setValue({
@@ -63,8 +63,8 @@ export function handleSetValues() {
 /**
  * 验证表单
  */
-export function handleValidate() {
-  const api = $api()
+function handleValidate() {
+  const api = $api
   if (!api) return
   
   addLog('🔍 开始验证表单...', 'info')
@@ -83,8 +83,8 @@ export function handleValidate() {
 /**
  * 重置表单
  */
-export function handleReset() {
-  const api = $api()
+function handleReset() {
+  const api = $api
   if (!api) return
   
   api.resetFields()
@@ -95,8 +95,8 @@ export function handleReset() {
 /**
  * 清除验证状态
  */
-export function handleClearValidate() {
-  const api = $api()
+function handleClearValidate() {
+  const api = $api
   if (!api) return
   
   api.clearValidateState()
@@ -107,8 +107,8 @@ export function handleClearValidate() {
 /**
  * 切换高级选项
  */
-export function handleToggleAdvanced() {
-  const pageData = $data()
+function handleToggleAdvanced() {
+  const pageData = $data
   pageData.showAdvanced = !pageData.showAdvanced
   
   addLog(`🔧 高级选项: ${pageData.showAdvanced ? '显示' : '隐藏'}`, 'info')
@@ -119,8 +119,8 @@ export function handleToggleAdvanced() {
  * 禁用/启用邮箱字段
  */
 let emailDisabled = false
-export function handleDisableEmail() {
-  const api = $api()
+function handleDisableEmail() {
+  const api = $api
   if (!api) return
   
   emailDisabled = !emailDisabled
@@ -141,8 +141,8 @@ export function handleDisableEmail() {
  * 隐藏/显示电话字段
  */
 let phoneHidden = false
-export function handleHidePhone() {
-  const api = $api()
+function handleHidePhone() {
+  const api = $api
   if (!api) return
   
   phoneHidden = !phoneHidden
@@ -155,8 +155,8 @@ export function handleHidePhone() {
 /**
  * 更新占位符文本
  */
-export function handleUpdatePlaceholder() {
-  const api = $api()
+function handleUpdatePlaceholder() {
+  const api = $api
   if (!api) return
   
   const timestamp = new Date().toLocaleTimeString()
@@ -174,8 +174,8 @@ export function handleUpdatePlaceholder() {
 /**
  * 用户类型变化（动态显示/隐藏字段）
  */
-export function handleUserTypeChange(userType) {
-  const api = $api()
+function handleUserTypeChange(userType) {
+  const api = $api
   if (!api) return
   
   addLog(`🔄 用户类型切换: ${userType}`, 'info')
@@ -198,8 +198,8 @@ export function handleUserTypeChange(userType) {
 /**
  * 自定义渲染：API 调用日志
  */
-export function RenderApiLog() {
-  const pageData = $data()
+function RenderApiLog() {
+  const pageData = $data
   const logs = pageData.apiLog || []
   
   if (logs.length === 0) {
@@ -232,11 +232,11 @@ export function RenderApiLog() {
 /**
  * 初始化
  */
-export function __init__() {
+function __init__() {
   addLog('🚀 页面初始化完成', 'success')
   addLog('💡 点击上方按钮测试 API', 'info')
   
-  const api = $api()
+  const api = $api
   if (api) {
     // 监听字段值变化
     api.on('change', (field, value) => {

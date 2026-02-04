@@ -91,6 +91,12 @@ export interface PageContext {
   $rebindRules: () => void
   $refreshData: (key?: string) => Promise<void>
   $dataSet: IDataSet | null  // 使用接口而非具体类
+  
+  // 沙箱全局变量
+  ElMessage: any  // Element Plus 消息提示
+  ElMessageBox: any  // Element Plus 消息框
+  SparkData: any  // SPARK 数据空间命名空间
+  h: any  // Vue h 函数
 }
 
 /**

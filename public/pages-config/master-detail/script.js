@@ -1,5 +1,6 @@
-﻿// 沙箱注入的全局变量: $dataSet, $data, $rebindRules
-import { ElMessage } from 'element-plus'
+﻿// 沙箱注入的全局变量: 
+// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - ElMessage, ElMessageBox, SparkData, h
 
 // Mock 数据加载器
 const mockOrders = [
@@ -30,8 +31,8 @@ async function mockDataLoader(tableName) {
 }
 
 // 初始化函数
-export function __init__() {
-  const dataSet = $dataSet()
+function __init__() {
+  const dataSet = $dataSet
   
   // 注册数据加载器
   dataSet.dataLoader = mockDataLoader
@@ -53,7 +54,7 @@ export function __init__() {
   // 监听 Users 表的 currentRow 变化，自动更新 JSON 显示
   dataSet.on('currentRowChanged', ({ tableName, row }) => {
     if (tableName === 'Users') {
-      const pageData = $data()
+      const pageData = $data
       const jsonText = row ? JSON.stringify(row, null, 2) : '未选择行'
       pageData.currentRowJson = jsonText
       console.log('📝 [CurrentRow] JSON 已更新:', jsonText.substring(0, 50) + '...')
@@ -69,9 +70,9 @@ export function __init__() {
 /**
  * 自定义渲染函数：显示 currentRow
  */
-export function RenderCurrentRow() {
+function RenderCurrentRow() {
   const { h } = window.Vue
-  const dataSet = $dataSet()
+  const dataSet = $dataSet
   const currentRow = dataSet?.getTable('Users')?.currentRow
   
   return h('pre', {
