@@ -1,8 +1,9 @@
 ﻿{
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
     "outDir": "./dist",
-    "rootDir": "./src",
     "moduleResolution": "bundler",
     "declaration": true,
     "declarationMap": true,
@@ -21,10 +22,7 @@
     "strictNullChecks": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "forceConsistentCasingInFileNames": true,
-    "paths": {
-      "@spark-view/spark-app": ["../spark-app/dist/index.d.ts"]
-    }
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
