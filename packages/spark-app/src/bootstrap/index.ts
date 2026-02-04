@@ -91,17 +91,18 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     } = await import('../constants')
     
     // 提供核心服务
-    // 注意：sparkManager 可能已经在 start() 中创建并安装了
-    // 这里检查是否已存在，避免重复创建
+    // SPARK Manager 应该在 start() 中已创建，这里仅做验证
+    // 注意：直接调用 bootstrap() 的旧方式已不推荐，请使用 SparkApp.start()
     const appInternal = app as unknown as { _context?: { provides?: Record<symbol, unknown> } }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let sparkManager = appInternal._context?.provides?.[SPARK_MANAGER_KEY] as any
+    const sparkManager = appInternal._context?.provides?.[SPARK_MANAGER_KEY] as any
     if (!sparkManager) {
-      // 如果不存在，创建新的（向后兼容直接调用 bootstrap 的场景）
+      bootstrapLogger.warn('⚠️ SPARK Manager 未初始化，推荐使用 SparkApp.start() 启动应用')
+      // 向后兼容：为旧代码创建默认 Manager
       const { Spark } = await import('@spark-view/spark-component')
-      sparkManager = Spark.createComponentManager()
-      app.provide(SPARK_MANAGER_KEY, sparkManager)
-      app.provide('sparkManager', sparkManager)  // 向后兼容
+      const fallbackManager = Spark.createComponentManager()
+      app.provide(SPARK_MANAGER_KEY, fallbackManager)
+      app.provide('sparkManager', fallbackManager)  // 向后兼容字符串 key
     }
     
     app.provide(APP_CONTEXT_KEY, appContext)

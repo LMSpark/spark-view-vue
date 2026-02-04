@@ -158,11 +158,13 @@ export async function start(options: StartOptions): Promise<void> {
     const router = createRouter({ history, routes: [] })
 
     // 4. 安装 SPARK 组件系统
+    // Manager: 管理组件实例的生命周期（创建、销毁、渲染）
+    // Registry: 存储组件类型定义（注册、查找、版本匹配）
     if (spark?.enabled !== false) {
       startLogger.debug('安装 SPARK 组件系统...')
       const { Spark } = await import('@spark-view/spark-component')
-      const manager = Spark.createComponentManager()
-      const registry = Spark.createComponentRegistry()
+      const manager = Spark.createComponentManager()    // 实例生命周期管理器
+      const registry = Spark.createComponentRegistry()  // 类型定义注册中心
       app.use(Spark.createVuePlugin({ manager, registry }))
     }
 
