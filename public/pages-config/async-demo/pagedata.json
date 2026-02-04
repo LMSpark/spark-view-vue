@@ -1,17 +1,44 @@
 {
   "stats": {
-    "url": "/api/dashboard/stats",
-    "method": "GET",
-    "dataPath": "data",
-    "autoLoad": true
+    "totalUsers": 8523,
+    "todayOrders": 145,
+    "revenue": "¥89,234"
   },
-  "recentOrders": {
-    "url": "/api/orders/recent",
-    "method": "GET",
-    "params": {
-      "limit": 10
+  "recentOrders": [
+    {
+      "orderNo": "ORD1738653421001",
+      "customer": "张三",
+      "amount": 2580,
+      "status": "已完成",
+      "date": "2026-02-04"
     },
-    "dataPath": "data.orders",
-    "autoLoad": true
-  }
+    {
+      "orderNo": "ORD1738653421002",
+      "customer": "李四",
+      "amount": 1299,
+      "status": "已发货",
+      "date": "2026-02-03"
+    },
+    {
+      "orderNo": "ORD1738653421003",
+      "customer": "王五",
+      "amount": 4560,
+      "status": "已付款",
+      "date": "2026-02-03"
+    },
+    {
+      "orderNo": "ORD1738653421004",
+      "customer": "赵六",
+      "amount": 899,
+      "status": "待付款",
+      "date": "2026-02-02"
+    },
+    {
+      "orderNo": "ORD1738653421005",
+      "customer": "钱七",
+      "amount": 3200,
+      "status": "已完成",
+      "date": "2026-02-01"
+    }
+  ]
 }

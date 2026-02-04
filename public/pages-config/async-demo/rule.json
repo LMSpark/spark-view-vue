@@ -9,7 +9,9 @@
         "children": [
           {
             "type": "h1",
-            "children": ["异步数据加载演示"]
+            "children": [
+              "异步数据加载演示"
+            ]
           },
           {
             "type": "el-button",
@@ -20,7 +22,9 @@
             "on": {
               "click": "refreshAllData"
             },
-            "children": ["刷新所有数据"]
+            "children": [
+              "刷新所有数据"
+            ]
           }
         ]
       },
@@ -41,12 +45,17 @@
                   {
                     "type": "div",
                     "class": "stat-label",
-                    "children": ["总用户数"]
+                    "children": [
+                      "总用户数"
+                    ]
                   },
                   {
                     "type": "div",
                     "class": "stat-value",
-                    "dataKey": "stats.totalUsers"
+                    "dataKey": "stats.totalUsers",
+                    "children": [
+                      ""
+                    ]
                   }
                 ]
               }
@@ -65,12 +74,17 @@
                   {
                     "type": "div",
                     "class": "stat-label",
-                    "children": ["今日订单"]
+                    "children": [
+                      "今日订单"
+                    ]
                   },
                   {
                     "type": "div",
                     "class": "stat-value",
-                    "dataKey": "stats.todayOrders"
+                    "dataKey": "stats.todayOrders",
+                    "children": [
+                      ""
+                    ]
                   }
                 ]
               }
@@ -89,12 +103,17 @@
                   {
                     "type": "div",
                     "class": "stat-label",
-                    "children": ["总收入"]
+                    "children": [
+                      "总收入"
+                    ]
                   },
                   {
                     "type": "div",
                     "class": "stat-value",
-                    "dataKey": "stats.revenue"
+                    "dataKey": "stats.revenue",
+                    "children": [
+                      ""
+                    ]
                   }
                 ]
               }
@@ -112,7 +131,9 @@
             "children": [
               {
                 "type": "h2",
-                "children": ["最近订单（异步加载）"]
+                "children": [
+                  "最近订单（异步加载）"
+                ]
               },
               {
                 "type": "el-button",
@@ -123,7 +144,9 @@
                 "on": {
                   "click": "refreshOrders"
                 },
-                "children": ["刷新"]
+                "children": [
+                  "刷新"
+                ]
               }
             ]
           },
