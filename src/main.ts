@@ -23,6 +23,10 @@ import formCreate from '@form-create/element-ui'
 import VXETable from 'vxe-table'
 import 'vxe-table/lib/style.css'
 
+// Syncfusion 样式（使用本地 npm 包）
+import '@syncfusion/ej2-base/styles/material.css'
+import '@syncfusion/ej2-vue-grids/styles/material.css'
+
 // SPARK 架构包
 import { SparkApp, createLogger } from '@spark-view/spark-app'
 

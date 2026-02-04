@@ -77,6 +77,8 @@ const defaultFormCreateOptions = {
   form: false,
   submitBtn: false,
   resetBtn: false,
+  // 避免插槽在渲染函数外调用的警告
+  injectEvent: false, // 禁用事件注入优化，使用标准响应式
   global: {
     'e-columns': { render: () => null },
     'eColumns': { render: () => null },
