@@ -6,12 +6,13 @@
 
 ```typescript
 // 模型级权限（表级）
-// 说明：导出和批量删除通过实例级权限计算，无需在模型级定义
+// 说明：导入/导出成对，后端根据实际权限裁决
 const response = {
   rows: [...],
   permission: {
     allowCreate: true,      // 允许新增
-    allowImport: false      // 不允许导入
+    allowImport: true,      // 允许导入（后端按新增/编辑权限裁决）
+    allowExport: true       // 允许导出（后端按查看范围裁决）
   }
 }
 
