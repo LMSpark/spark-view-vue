@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 权限系统接口定义
  * 
  * 架构分层：
@@ -6,8 +6,8 @@
  * - 组件层（本文件）：扩展UI组件友好的接口和工具
  * 
  * 类型复用：
- * - IPermissionDataRow, IPermissionDataSet 从 spark-data 导入
- * - 本文件定义 IInstancePermission, IModelPermission 以及组件层特定功能
+ * - 所有基础权限类型从 spark-data 导入
+ * - 本文件定义组件层特定功能（FieldVisibility, ComponentLevel等）
  * 
  * 架构说明：
  * - 模型级权限（Model-level）：控制整个数据集的操作（如新增）
@@ -25,12 +25,22 @@
  * - Visible 字段：后端返回完整值到浏览器
  */
 
-// ==================== 从 spark-data 导入基础数据类型 ====================
+// ==================== 从 spark-data 导入基础权限类型 ====================
 
-import type { IPermissionDataRow, IPermissionDataSet } from '@spark-view/spark-data'
+import type {
+  IInstancePermission,
+  IModelPermission,
+  IPermissionDataRow,
+  IPermissionDataSet
+} from '@spark-view/spark-data'
 
 // 重新导出供其他模块使用
-export type { IPermissionDataRow, IPermissionDataSet }
+export type {
+  IInstancePermission,
+  IModelPermission,
+  IPermissionDataRow,
+  IPermissionDataSet
+}
 
 // ==================== 字段级权限 ====================
 
@@ -127,79 +137,6 @@ export interface IFieldRenderState {
   
   /** 是否渲染（Hidden 时为 false，其他为 true） */
   shouldRender: boolean
-}
-
-// ==================== 实例级权限 ====================
-
-/**
- * 数据行/实例权限
- * 
- * 概念区分：
- * - “权”：允许与否（allowDelete）
- * - “限”：能搞到什么程度（editableFields, hiddenFields, maskedFields）
- * 
- * 说明：
- * - 查看权限：后端只返回用户有权查看的数据，无需 allowView 字段
- * - 导出权限：后端返回的数据即为可导出范围
- * - 编辑权限：后端通过 editableFields 指定可编辑字段，前端根据此控制 UI
- * 
- * 字段权限通过标志集合控制：
- * - editableFields: 可编辑字段列表
- * - hiddenFields: 不可见字段列表
- * - maskedFields: 脱敏字段列表
- * 
- * 字段权限组合逻辑：
- * 1. 未在任何列表中的字段：完全可见、只读
- * 2. 仅在 editableFields：可见、可编辑
- * 3. 仅在 hiddenFields：不可见、不可编辑
- * 4. 仅在 maskedFields：脱敏可见、只读
- * 5. hiddenFields + editableFields：不可见但可提交（如密码修改）
- * 6. maskedFields + editableFields：脱敏可见、可编辑（如部分修改手机号）
- * 
- * 示例：
- * {
- *   editableFields: ['name', 'password'],     // name 可编辑，password 不可见但可提交
- *   hiddenFields: ['password'],               // password 不显示
- *   maskedFields: ['phone']                   // phone 脱敏显示，只读
- * }
- */
-export interface IInstancePermission {
-  /** 是否允许删除此实例 */
-  allowDelete?: boolean
-  
-  // ========== 字段级权限标志集合 ==========
-  // 注意：无需 allowEdit 字段，editableFields 有值即表示可编辑
-  
-  /** 可编辑字段列表（可写入数据） */
-  editableFields?: string[]
-  /** 不可见字段列表（不显示在 UI） */
-  hiddenFields?: string[]
-  /** 脱敏字段列表（显示脱敏后的值） */
-  maskedFields?: string[]
-}
-
-// ==================== 模型级权限 ====================
-
-/**
- * 数据模型/表级权限
- * 
- * 概念区分：
- * - “权”：允许与否（allow*）
- * - “限”：能搞到什么程度（字段列表等）
- * 
- * 后端裁决，前端渲染：
- * - allowCreate: 后端根据用户新增权限裁决，前端根据此值显示/隐藏新增按钮
- * - allowImport: 后端按新增/编辑权限裁决，前端根据此值显示/隐藏导入按钮
- * - allowExport: 后端按返回的数据范围裁决，前端根据此值显示/隐藏导出按钮
- * - 批量删除: 后端返回可删除的实例，前端统计数量决定是否显示批删按钮
- */
-export interface IModelPermission {
-  /** 是否允许新增 */
-  allowCreate?: boolean
-  /** 是否允许导入（后端按新增/编辑权限裁决） */
-  allowImport?: boolean
-  /** 是否允许导出（后端按查看范围裁决） */
-  allowExport?: boolean
 }
 
 // ==================== 组件级别 ====================
