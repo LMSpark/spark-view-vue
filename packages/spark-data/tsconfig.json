@@ -17,7 +17,13 @@
     "allowJs": true,
     "checkJs": false,
     "noEmit": false,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "noImplicitOverride": true
   },
   "include": [
     "src/**/*"
