@@ -14,7 +14,7 @@
  * @packageDocumentation
  */
 
-import type { IApiClient, IApiContext } from '../types'
+import type { IApiContext } from '../types'
 
 /**
  * 标准 API 响应格式
@@ -46,7 +46,7 @@ interface StandardApiResponse<T = unknown> {
  * const newUser = await httpClient.post<User>('/users', { name: 'John' })
  * ```
  */
-export class HttpClient implements IApiClient {
+export class HttpClient {
   private context: IApiContext
 
   constructor(context: IApiContext) {
@@ -75,7 +75,7 @@ export class HttpClient implements IApiClient {
     const fullUrl = this.buildUrl(url, params)
 
     // 构建请求头
-    const requestHeaders: HeadersInit = {
+    const requestHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
       ...this.context.headers,
       ...headers
@@ -249,6 +249,6 @@ export class HttpClient implements IApiClient {
  * const users = await client.get<User[]>('/users')
  * ```
  */
-export function createHttpClient(context: IApiContext): IApiClient {
+export function createHttpClient(context: IApiContext): HttpClient {
   return new HttpClient(context)
 }

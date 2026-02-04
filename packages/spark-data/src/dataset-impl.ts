@@ -11,12 +11,12 @@ import type {
   DataRow,
   FilterContext,
   DependencyType,
-  FilterExpression,
-  IApiAdapter
+  FilterExpression
 } from './types'
 import { DataTable } from './dataTable'
 import { BindingContext } from './bindingContext'
 import { FilterExpressionParser } from './filterExpressionParser'
+import type { ApiAdapter } from './apiAdapter'
 
 /**
  * DataSet 类（实现 IDataSet 接口 + 方法逻辑）
@@ -39,12 +39,12 @@ export class DataSet implements IDataSet {
   // 正在加载的表
   private loadingTables: Set<string> = new Set()
   // API 适配器（通过 setApiAdapter 设置，用于表级 API 注入）
-  private apiAdapter?: IApiAdapter
+  private apiAdapter?: ApiAdapter
 
   constructor(
     config: IDataSet, 
     dataLoader?: (tableName: string) => Promise<DataRow[]>,
-    apiAdapter?: IApiAdapter
+    apiAdapter?: ApiAdapter
   ) {
     this.dataLoader = dataLoader
     this.apiAdapter = apiAdapter
@@ -133,7 +133,7 @@ export class DataSet implements IDataSet {
    * dataSet.setApiAdapter(apiAdapter)
    * ```
    */
-  setApiAdapter(adapter: IApiAdapter): void {
+  setApiAdapter(adapter: ApiAdapter): void {
     this.apiAdapter = adapter
     
     // 为所有表注入 API 适配器

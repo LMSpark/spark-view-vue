@@ -11,11 +11,10 @@
  */
 
 import type { 
-  IApiAdapter, 
-  IApiClient, 
-  IApiContext, 
-  HttpEndpoint 
+  IApiContext,
+  HttpEndpoint
 } from './types'
+import { HttpClient } from './http/HttpClient'
 
 /**
  * API 适配器实现类
@@ -36,9 +35,9 @@ import type {
  * )
  * ```
  */
-export class ApiAdapter implements IApiAdapter {
+export class ApiAdapter {
   constructor(
-    private client: IApiClient,
+    private client: HttpClient,
     private context: IApiContext
   ) {}
   
