@@ -37,6 +37,17 @@
 ### 3. 渲染状态（IFieldRenderState）
 运行时计算的最终状态，**权限优先于配置**
 
+**6种组合状态（读3种 × 写2种）：**
+
+| 编号 | 读权限（visibility） | 写权限（editable） | 说明 | 应用场景 |
+|------|---------------------|-------------------|------|----------|
+| 1 | Visible | true | 完全可见、可编辑 | 正常编辑字段 |
+| 2 | Visible | false | 完全可见、只读 | 只读显示字段 |
+| 3 | Masked | true | 脱敏可见、可编辑 | 部分修改手机号 |
+| 4 | Masked | false | 脱敏可见、只读 | 脱敏显示敏感信息 |
+| 5 | Hidden | true | 不可见、可编辑 | 密码修改（不显示但可提交） |
+| 6 | Hidden | false | 不可见、只读 | 完全隐藏字段 |
+
 ## 权限优先级规则
 
 ```
@@ -97,6 +108,12 @@ const getFieldState = (row: IPermissionDataRow, field: string): IFieldRenderStat
   const states = computeRowFieldStates(row)
   return states.find(s => s.field === field)
 }
+
+// 检查字段是否应该渲染
+const shouldRenderField = (row: IPermissionDataRow, field: string): boolean => {
+  const state = getFieldState(row, field)
+  return state?.shouldRender ?? false
+}
 </script>
 
 <template>
@@ -113,17 +130,27 @@ const getFieldState = (row: IPermissionDataRow, field: string): IFieldRenderStat
       <tbody>
         <tr v-for="row in data" :key="row.id">
           <td v-for="config in fieldConfigs" :key="config.field">
-            <template v-if="getFieldState(row, config.field)?.visible">
-              <!-- 可编辑字段 -->
-              <input
-                v-if="getFieldState(row, config.field)?.editable"
-                :value="getFieldState(row, config.field)?.displayValue"
-              />
-              <!-- 只读字段 -->
-              <span v-else>
-                {{ getFieldState(row, config.field)?.displayValue }}
-              </span>
+            <!-- 6种状态的渲染 -->
+            <template v-if="shouldRenderField(row, config.field)">
+              <template v-if="getFieldState(row, config.field)?.editable">
+                <!-- 状态1/3/5：可编辑 -->
+                <input
+                  :value="getFieldState(row, config.field)?.displayValue"
+                  :type="getFieldState(row, config.field)?.visibility === 'hidden' ? 'password' : 'text'"
+                />
+              </template>
+              <template v-else>
+                <!-- 状态2/4：只读显示 -->
+                <span 
+                  :class="{ 
+                    'masked': getFieldState(row, config.field)?.visibility === 'masked' 
+                  }"
+                >
+                  {{ getFieldState(row, config.field)?.displayValue }}
+                </span>
+              </template>
             </template>
+            <!-- 状态6：完全隐藏，不渲染任何内容 -->
           </td>
         </tr>
       </tbody>
@@ -191,7 +218,96 @@ const fieldStates = computed(() =>
 </template>
 ```
 
-## 示例 3：动态列配置
+## 示例 3：6种状态完整演示
+
+```typescript
+import { 
+  computeFieldStates,
+  createPermissionChecker,
+  type IFieldRenderConfig,
+  type IPermissionDataRow
+} from '@spark-view/spark-component'
+
+const fieldConfigs: IFieldRenderConfig[] = [
+  { field: 'name', title: '姓名' },
+  { field: 'email', title: '邮箱' },
+  { field: 'phone', title: '手机号' },
+  { field: 'salary', title: '薪资' },
+  { field: 'password', title: '密码' },
+  { field: 'idCard', title: '身份证' }
+]
+
+const row: IPermissionDataRow = {
+  name: "张三",
+  email: "zhangsan@example.com",
+  phone: "13800138000",
+  salary: 8000,
+  password: "",
+  idCard: "330106199001011234",
+  _perm: {
+    // 状态1：name - 完全可见、可编辑
+    // 状态2：email - 完全可见、只读
+    // 状态3：phone - 脱敏可见、可编辑
+    // 状态4：salary - 脱敏可见、只读
+    // 状态5：password - 不可见、可编辑（密码修改）
+    // 状态6：idCard - 不可见、只读（完全隐藏）
+    editableFields: ["name", "phone", "password"],
+    hiddenFields: ["password", "idCard"],
+    maskedFields: ["phone", "salary"]
+  }
+}
+
+const checker = createPermissionChecker()
+const states = computeFieldStates(fieldConfigs, row, checker)
+
+states.forEach(state => {
+  console.log(`${state.field}:`)
+  console.log(`  visibility: ${state.visibility}`)
+  console.log(`  editable: ${state.editable}`)
+  console.log(`  shouldRender: ${state.shouldRender}`)
+  console.log(`  displayValue: ${state.displayValue}`)
+})
+
+/* 输出：
+name:
+  visibility: visible
+  editable: true
+  shouldRender: true
+  displayValue: 张三
+  
+email:
+  visibility: visible
+  editable: false
+  shouldRender: true
+  displayValue: zhangsan@example.com
+  
+phone:
+  visibility: masked
+  editable: true
+  shouldRender: true
+  displayValue: 138****8000
+  
+salary:
+  visibility: masked
+  editable: false
+  shouldRender: true
+  displayValue: 8***
+  
+password:
+  visibility: hidden
+  editable: true
+  shouldRender: false
+  displayValue: undefined
+  
+idCard:
+  visibility: hidden
+  editable: false
+  shouldRender: false
+  displayValue: undefined
+*/
+```
+
+## 示例 4：动态列配置
 
 ```typescript
 import { 
