@@ -35,7 +35,7 @@ export type {
 export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from './permission-types'
 
 // 导出核心类（向后兼容）
-export { DataSet } from './datasetl'
+export { DataSet } from './dataset'
 export { DataTable } from './dataTable'
 export { BindingContext } from './bindingContext'
 export { TreeManager } from './treeManager'

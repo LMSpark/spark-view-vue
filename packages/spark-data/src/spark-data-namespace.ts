@@ -3,7 +3,7 @@
  * 提供统一的数据空间 API，简化消费层使用
  */
 
-import { DataSet } from './datasetl.js'
+import { DataSet } from './dataset.js'
 import { DataTable } from './dataTable.js'
 import { BindingContext } from './bindingContext.js'
 import { TreeManager } from './treeManager.js'
