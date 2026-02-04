@@ -40,15 +40,15 @@ export class EventCapabilityConnector implements CapabilityConnector {
 
   connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const eventProvider = provider.implementation as unknown as EventCapabilityProvider
-      const eventConsumer = consumer.implementation as unknown as EventCapabilityConsumer
+      const eventProvider = provider.implementation
+      const eventConsumer = consumer.implementation
 
-      if (!eventProvider || !eventProvider.on || !eventProvider.off) {
+      if (!this.isEventProvider(eventProvider)) {
         logger.warn('Provider does not implement EventCapabilityProvider interface')
         return false
       }
 
-      if (!eventConsumer || !eventConsumer.handlers) {
+      if (!this.isEventConsumer(eventConsumer)) {
         logger.warn('Consumer does not implement EventCapabilityConsumer interface')
         return false
       }
@@ -74,7 +74,11 @@ export class EventCapabilityConnector implements CapabilityConnector {
 
   disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const eventProvider = provider.implementation as unknown as EventCapabilityProvider
+      const eventProvider = provider.implementation
+      if (!this.isEventProvider(eventProvider)) {
+        return false
+      }
+      
       const connectionKey = this.getConnectionKey(provider, consumer)
       const handlerMap = this.connections.get(connectionKey)
 
@@ -104,6 +108,15 @@ export class EventCapabilityConnector implements CapabilityConnector {
 
   private getConnectionKey(provider: CapabilityProvider, consumer: CapabilityConsumer): string {
     return `${provider.name}:${consumer.capabilityName}`
+  }
+
+  private isEventProvider(impl: unknown): impl is EventCapabilityProvider {
+    return impl !== null && typeof impl === 'object' && 
+      'on' in impl && 'off' in impl && 'emit' in impl
+  }
+
+  private isEventConsumer(impl: unknown): impl is EventCapabilityConsumer {
+    return impl !== null && typeof impl === 'object' && 'handlers' in impl
   }
 }
 
@@ -160,7 +173,10 @@ export function createEventCapabilityProvider(name: string): {
     }
   }
 
-  const provider: CapabilityProvider = {
+  const provider: CapabilityProvider<
+    Record<string, string>,
+    EventCapabilityProvider
+  > = {
     name,
     version: '1.0.0',
     interface: {
@@ -169,7 +185,7 @@ export function createEventCapabilityProvider(name: string): {
       emit: 'function',
       once: 'function'
     },
-    implementation: emitter as unknown as Record<string, unknown>
+    implementation: emitter
   }
 
   return { provider, emitter }

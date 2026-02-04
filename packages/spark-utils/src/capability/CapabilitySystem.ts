@@ -41,10 +41,14 @@ interface EventConsumer {
 export class DataFlowConnector implements CapabilityConnector {
   connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = provider.implementation as DataFlowProvider
-      const cImpl = consumer.implementation as DataFlowConsumer
-      const addListener = pImpl?.addListener
-      const onData = cImpl?.onData
+      const pImpl = provider.implementation
+      const cImpl = consumer.implementation
+      if (!this.isDataFlowProvider(pImpl) || !this.isDataFlowConsumer(cImpl)) {
+        return false
+      }
+      
+      const addListener = pImpl.addListener
+      const onData = cImpl.onData
       
       if (typeof addListener === 'function' && typeof onData === 'function') {
         addListener(onData)
@@ -58,10 +62,14 @@ export class DataFlowConnector implements CapabilityConnector {
 
   disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = provider.implementation as DataFlowProvider
-      const cImpl = consumer.implementation as DataFlowConsumer
-      const removeListener = pImpl?.removeListener
-      const onData = cImpl?.onData
+      const pImpl = provider.implementation
+      const cImpl = consumer.implementation
+      if (!this.isDataFlowProvider(pImpl) || !this.isDataFlowConsumer(cImpl)) {
+        return false
+      }
+      
+      const removeListener = pImpl.removeListener
+      const onData = cImpl.onData
       
       if (typeof removeListener === 'function' && typeof onData === 'function') {
         removeListener(onData)
@@ -76,6 +84,15 @@ export class DataFlowConnector implements CapabilityConnector {
   isConnected(_provider: CapabilityProvider, _consumer: CapabilityConsumer): boolean {
     return false
   }
+
+  private isDataFlowProvider(impl: unknown): impl is DataFlowProvider {
+    return impl !== null && typeof impl === 'object' && 
+      ('addListener' in impl || 'removeListener' in impl)
+  }
+
+  private isDataFlowConsumer(impl: unknown): impl is DataFlowConsumer {
+    return impl !== null && typeof impl === 'object' && 'onData' in impl
+  }
 }
 
 /**
@@ -85,10 +102,14 @@ export class DataFlowConnector implements CapabilityConnector {
 export class EventConnector implements CapabilityConnector {
   connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = provider.implementation as EventProvider
-      const cImpl = consumer.implementation as EventConsumer
-      const addEventListener = pImpl?.addEventListener
-      const onEvent = cImpl?.onEvent
+      const pImpl = provider.implementation
+      const cImpl = consumer.implementation
+      if (!this.isEventProvider(pImpl) || !this.isEventConsumer(cImpl)) {
+        return false
+      }
+      
+      const addEventListener = pImpl.addEventListener
+      const onEvent = cImpl.onEvent
       
       if (typeof addEventListener === 'function' && typeof onEvent === 'function') {
         addEventListener(onEvent)
@@ -102,10 +123,14 @@ export class EventConnector implements CapabilityConnector {
 
   disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = provider.implementation as EventProvider
-      const cImpl = consumer.implementation as EventConsumer
-      const removeEventListener = pImpl?.removeEventListener
-      const onEvent = cImpl?.onEvent
+      const pImpl = provider.implementation
+      const cImpl = consumer.implementation
+      if (!this.isEventProvider(pImpl) || !this.isEventConsumer(cImpl)) {
+        return false
+      }
+      
+      const removeEventListener = pImpl.removeEventListener
+      const onEvent = cImpl.onEvent
       
       if (typeof removeEventListener === 'function' && typeof onEvent === 'function') {
         removeEventListener(onEvent)
@@ -120,6 +145,15 @@ export class EventConnector implements CapabilityConnector {
   isConnected(_provider: CapabilityProvider, _consumer: CapabilityConsumer): boolean {
     return false
   }
+
+  private isEventProvider(impl: unknown): impl is EventProvider {
+    return impl !== null && typeof impl === 'object' && 
+      ('addEventListener' in impl || 'removeEventListener' in impl)
+  }
+
+  private isEventConsumer(impl: unknown): impl is EventConsumer {
+    return impl !== null && typeof impl === 'object' && 'onEvent' in impl
+  }
 }
 
 /**
@@ -129,13 +163,17 @@ export class EventConnector implements CapabilityConnector {
 export class MethodConnector implements CapabilityConnector {
   connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const pImpl = (provider.implementation ?? {}) as Record<string, unknown>
-      const cImpl = (consumer.implementation ?? {}) as Record<string, unknown>
+      const pImpl = provider.implementation ?? {}
+      const cImpl = consumer.implementation ?? {}
+      
+      if (!this.isRecord(pImpl) || !this.isRecord(cImpl)) {
+        return false
+      }
       
       Object.keys(consumer.interface ?? {}).forEach(key => {
         const fn = pImpl[key]
         if (typeof fn === 'function') {
-          cImpl[key] = (fn as Function).bind(pImpl)
+          cImpl[key] = fn.bind(pImpl)
         }
       })
       
@@ -148,9 +186,9 @@ export class MethodConnector implements CapabilityConnector {
 
   disconnect(_provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
     try {
-      const cImpl = consumer.implementation as Record<string, unknown> | undefined
+      const cImpl = consumer.implementation
       
-      if (cImpl) {
+      if (cImpl && this.isRecord(cImpl)) {
         Object.keys(consumer.interface ?? {}).forEach(key => {
           if (cImpl[key]) {
             delete cImpl[key]
@@ -166,12 +204,16 @@ export class MethodConnector implements CapabilityConnector {
   }
 
   isConnected(_provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
-    const cImpl = consumer.implementation as Record<string, unknown> | undefined
-    if (!cImpl) return false
+    const cImpl = consumer.implementation
+    if (!cImpl || !this.isRecord(cImpl)) return false
     
     return Object.keys(consumer.interface ?? {}).some(key => 
       typeof cImpl[key] === 'function'
     )
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return value !== null && typeof value === 'object' && !Array.isArray(value)
   }
 }
 

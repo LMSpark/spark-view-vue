@@ -14,15 +14,27 @@ function formatMsg(level: LogLevel, args: unknown[]) {
 
 export function Logger(context?: unknown): LoggerApi {
   // Prefer context-level provider, then fallback to console
-  const providersSet = (typeof context === 'object' && context && (context as { providers?: Set<Record<string, unknown>> }).providers) ? (context as { providers?: Set<Record<string, unknown>> }).providers : undefined
-  const ctxProvider = providersSet ? Array.from(providersSet).find((p) => typeof (p).name === 'string' && (p).name === 'logger') : undefined
+  const providersSet = typeof context === 'object' && context && 'providers' in context
+    ? (context.providers as Set<Record<string, unknown>> | undefined)
+    : undefined
+    
+  const ctxProvider = providersSet
+    ? Array.from(providersSet).find((p) => typeof p.name === 'string' && p.name === 'logger')
+    : undefined
+    
   const provider = ctxProvider
-
-  const impl = provider ? (((provider as unknown as { implementation?: Record<string, unknown> }).implementation) ?? provider) : null
+  const impl = provider
+    ? ('implementation' in provider ? provider.implementation : provider)
+    : null
 
   const call = (fnName: 'debug' | 'info' | 'warn' | 'error', args: unknown[]) => {
-    const fn = impl?.[fnName]
-    if (typeof fn === 'function') return (fn as AnyFunction)(...args)
+    if (impl && typeof impl === 'object' && fnName in impl) {
+      const fn = (impl as Record<string, unknown>)[fnName]
+      if (typeof fn === 'function') {
+        return (fn as AnyFunction)(...args)
+      }
+    }
+    
     // fallback to console
     if (fnName === 'debug') return console.debug(...formatMsg('debug', args))
     if (fnName === 'info') return console.info(...formatMsg('info', args))
