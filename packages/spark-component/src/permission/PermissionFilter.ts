@@ -26,6 +26,13 @@ export class PermissionFilter implements IPermissionFilter {
   }
 
   /**
+   * 过滤出可编辑的行
+   */
+  filterEditableRows(rows: IPermissionDataRow[]): IPermissionDataRow[] {
+    return rows.filter(row => this.checker.canEdit(row))
+  }
+
+  /**
    * 过滤字段（移除隐藏字段）
    */
   filterFields(row: IPermissionDataRow): Record<string, unknown> {
@@ -113,6 +120,9 @@ export function createPermissionFilter(): IPermissionFilter {
 export const filterByPermission = {
   deletableRows: (rows: IPermissionDataRow[]) => 
     createPermissionFilter().filterDeletableRows(rows),
+  
+  editableRows: (rows: IPermissionDataRow[]) => 
+    createPermissionFilter().filterEditableRows(rows),
   
   applyMasking: (row: IPermissionDataRow) => 
     createPermissionFilter().applyFieldMasking(row),
