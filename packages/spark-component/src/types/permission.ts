@@ -27,14 +27,16 @@ export enum FieldVisibility {
 
 /**
  * 字段编辑权限
+ * 
+ * 从数据角度只有两种状态：
+ * - Editable: 可写（允许修改数据）
+ * - ReadOnly: 只读（不允许修改数据）
  */
 export enum FieldEditMode {
-  /** 可编辑 */
+  /** 可编辑（可写） */
   Editable = 'editable',
-  /** 只读 */
-  ReadOnly = 'readonly',
-  /** 禁用（显示但不可交互） */
-  Disabled = 'disabled'
+  /** 只读（不可写） */
+  ReadOnly = 'readonly'
 }
 
 /**
