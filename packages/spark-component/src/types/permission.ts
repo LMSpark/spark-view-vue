@@ -74,17 +74,19 @@ export interface IInstancePermission {
 /**
  * 数据模型/表级权限
  * 
- * 说明：
- * - allowCreate: 控制是否可新增数据
- * - allowImport: 控制是否可导入数据
- * - 导出权限：根据后端返回的查看范围（allowView）确定
- * - 批量删除权限：根据返回的实例中有多少个 allowDelete=true 确定
+ * 权限裁决逻辑：
+ * - allowCreate: 控制是否可新增，由后端根据新增权限裁决
+ * - allowImport: 控制是否可导入，由后端按新增/编辑权限裁决
+ * - allowExport: 控制是否可导出，由后端按查看范围（allowView）裁决
+ * - 批量删除: 根据返回的实例中有多少个 allowDelete=true 确定
  */
 export interface IModelPermission {
   /** 是否允许新增 */
   allowCreate?: boolean
-  /** 是否允许导入 */
+  /** 是否允许导入（后端按新增/编辑权限裁决） */
   allowImport?: boolean
+  /** 是否允许导出（后端按查看范围裁决） */
+  allowExport?: boolean
   /** 自定义权限扩展 */
   custom?: Record<string, unknown>
 }
@@ -216,6 +218,7 @@ export interface IPermissionChecker {
   /** 检查是否有模型操作权限 */
   canCreate(modelPermission?: IModelPermission): boolean
   canImport(modelPermission?: IModelPermission): boolean
+  canExport(modelPermission?: IModelPermission): boolean
   
   /** 检查是否有实例操作权限 */
   canDelete(row: IPermissionDataRow): boolean
@@ -289,7 +292,8 @@ export const DEFAULT_PERMISSION: IComponentPermission = {
   readonly: false,
   modelPermission: {
     allowCreate: true,
-    allowImport: true
+    allowImport: true,
+    allowExport: true
   }
 }
 

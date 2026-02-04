@@ -31,6 +31,13 @@ export class PermissionChecker implements IPermissionChecker {
   }
 
   /**
+   * 检查是否允许导出
+   */
+  canExport(modelPermission?: IModelPermission): boolean {
+    return modelPermission?.allowExport !== false
+  }
+
+  /**
    * 检查是否允许删除指定行
    */
   canDelete(row: IPermissionDataRow): boolean {
