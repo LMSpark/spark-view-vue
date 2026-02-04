@@ -43,53 +43,20 @@ export class ApiAdapter implements IApiAdapter {
   ) {}
   
   /**
-   * 构建请求配置
-   * 
-   * @param endpoint - HTTP 端点配置
-   * @param params - 请求参数（路径参数、查询参数或请求体数据）
-   * @returns 完整的请求配置对象
-   * 
-   * 处理逻辑：
-   * 1. 路径参数替换：/users/{id} → /users/123
-   * 2. 拼接 baseURL：/users → http://api.example.com/users
-   * 3. 合并请求头：注入 token、tenantId
-   * 4. 处理查询参数（GET/DELETE）或请求体（POST/PUT/PATCH）
-   * 
-   * @example
-   * ```typescript
-   * // 示例 1: 路径参数替换
-   * const config = adapter.buildRequest(
-   *   { url: '/users/{id}', method: 'GET', pathParams: ['id'] },
-   *   { id: 123, status: 'active' }
-   * )
-   * // 结果: { url: 'http://api.example.com/users/123?status=active', method: 'GET', ... }
-   * 
-   * // 示例 2: POST 请求体
-   * const config = adapter.buildRequest(
-   *   { url: '/users', method: 'POST' },
-   *   { name: 'John', email: 'john@example.com' }
-   * )
-   * // 结果: { url: 'http://api.example.com/users', method: 'POST', data: { name: 'John', ... } }
-   * ```
+   * 构建完整 URL（处理路径参数和查询参数）
+   * @private
    */
-  buildRequest(
+  private buildFullUrl(
     endpoint: HttpEndpoint,
-    params?: Record<string, unknown>
-  ): {
-    url: string
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-    data?: unknown
-    headers?: Record<string, string>
-  } {
-    // 1. 处理路径参数替换
+    params: Record<string, unknown>,
+    remainingParams: Record<string, unknown>
+  ): string {
+    // 1. 路径参数替换
     let url = endpoint.url
-    const remainingParams: Record<string, unknown> = { ...params }
-    
-    if (endpoint.pathParams && params) {
+    if (endpoint.pathParams) {
       endpoint.pathParams.forEach(param => {
         if (params[param] !== undefined) {
           url = url.replace(`{${param}}`, String(params[param]))
-          delete remainingParams[param] // 从参数中移除已使用的路径参数
         }
       })
     }
@@ -97,7 +64,25 @@ export class ApiAdapter implements IApiAdapter {
     // 2. 拼接 baseURL
     const fullUrl = this.context.baseURL + url
     
-    // 3. 合并请求头
+    // 3. 拼接查询参数（GET/DELETE 方法）
+    const method = endpoint.method || 'GET'
+    if ((method === 'GET' || method === 'DELETE') && Object.keys(remainingParams).length > 0) {
+      const query = new URLSearchParams(
+        Object.entries({ ...endpoint.queryParams, ...remainingParams })
+          .filter(([, v]) => v !== undefined && v !== null)
+          .map(([k, v]) => [k, String(v)])
+      ).toString()
+      return `${fullUrl}?${query}`
+    }
+    
+    return fullUrl
+  }
+  
+  /**
+   * 构建请求头（合并默认头、上下文头、端点头）
+   * @private
+   */
+  private buildHeaders(endpoint: HttpEndpoint): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...this.context.headers,
@@ -116,33 +101,40 @@ export class ApiAdapter implements IApiAdapter {
       headers['X-Tenant-Id'] = this.context.tenantId
     }
     
-    // 4. 处理查询参数和请求体
+    return headers
+  }
+  
+  /**
+   * 构建请求配置
+   */
+  buildRequest(
+    endpoint: HttpEndpoint,
+    params?: Record<string, unknown>
+  ): {
+    url: string
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+    data?: unknown
+    headers?: Record<string, string>
+  } {
+    const actualParams = params || {}
     const method = (endpoint.method || 'GET') as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-    let data: unknown = undefined
-    let queryParams: Record<string, unknown> = { ...endpoint.queryParams }
     
-    if (remainingParams && Object.keys(remainingParams).length > 0) {
-      // GET/DELETE 使用查询参数
-      if (method === 'GET' || method === 'DELETE') {
-        queryParams = { ...queryParams, ...remainingParams }
-      } else {
-        // POST/PUT/PATCH 使用请求体
-        data = remainingParams
-      }
-    }
+    // 移除路径参数后的剩余参数
+    const remainingParams: Record<string, unknown> = { ...actualParams }
+    endpoint.pathParams?.forEach(param => delete remainingParams[param])
     
-    // 5. 拼接查询参数到 URL
-    let finalUrl = fullUrl
-    if (Object.keys(queryParams).length > 0) {
-      const query = new URLSearchParams(
-        Object.entries(queryParams)
-          .filter(([, v]) => v !== undefined && v !== null)
-          .map(([k, v]) => [k, String(v)])
-      ).toString()
-      finalUrl = `${fullUrl}?${query}`
-    }
+    // 构建 URL
+    const url = this.buildFullUrl(endpoint, actualParams, remainingParams)
     
-    return { url: finalUrl, method, data, headers }
+    // 构建请求头
+    const headers = this.buildHeaders(endpoint)
+    
+    // 请求体（仅 POST/PUT/PATCH 使用）
+    const data = (method !== 'GET' && method !== 'DELETE' && Object.keys(remainingParams).length > 0)
+      ? remainingParams
+      : undefined
+    
+    return { url, method, data, headers }
   }
   
   /**

@@ -22,6 +22,33 @@ interface StandardApiResponse<T = unknown> {
 }
 
 /**
+ * 带权限的响应数据
+ */
+interface PermissionAwareData {
+  /** 模型级权限（表级） */
+  _modelPerm?: {
+    canAdd?: boolean
+    allowCreate?: boolean
+    allowImport?: boolean
+    allowExport?: boolean
+  }
+  /** 数据行 */
+  rows?: Array<{
+    [key: string]: unknown
+    /** 实例级权限（行级） */
+    _perm?: {
+      canEdit?: boolean
+      canDelete?: boolean
+      allowDelete?: boolean
+      editableFields?: string[]
+      hiddenFields?: string[]
+      maskedFields?: string[]
+    }
+  }>
+  [key: string]: unknown
+}
+
+/**
  * HTTP 客户端实现类
  * 
  * 特性：
@@ -50,16 +77,79 @@ export class HttpClient implements IApiClient {
   }
   
   /**
+   * 判断是否为标准 API 响应格式
+   * @private
+   */
+  private isStandardResponse(result: unknown): result is StandardApiResponse {
+    return (
+      typeof result === 'object' &&
+      result !== null &&
+      'code' in result &&
+      typeof (result as StandardApiResponse).code === 'number'
+    )
+  }
+  
+  /**
+   * 判断响应码是否为成功状态
+   * @private
+   */
+  private isSuccessCode(code: number): boolean {
+    return code === 200 || code === 0
+  }
+  
+  /**
+   * 处理响应数据（支持标准格式和直接返回）
+   * @private
+   */
+  private handleResponse<T>(result: unknown): T {
+    if (this.isStandardResponse(result)) {
+      if (this.isSuccessCode(result.code)) {
+        const data = result.data as T
+        this.logPermissionInfo(data)
+        return data
+      }
+      throw new Error(result.message || `API 错误 (code: ${result.code})`)
+    }
+    this.logPermissionInfo(result)
+    return result as T
+  }
+  
+  /**
+   * 记录权限信息（用于调试和审计）
+   * @private
+   */
+  private logPermissionInfo(data: unknown): void {
+    if (!this.context.enablePermissionLog) return
+    
+    const permData = data as PermissionAwareData
+    
+    // 记录模型级权限
+    if (permData?._modelPerm) {
+      console.info('[HttpClient] 模型级权限:', {
+        user: this.context.user?.username,
+        permissions: permData._modelPerm
+      })
+    }
+    
+    // 记录实例级权限统计
+    if (Array.isArray(permData?.rows) && permData.rows.length > 0) {
+      const permStats = {
+        total: permData.rows.length,
+        editable: permData.rows.filter(r => r._perm?.canEdit || r._perm?.editableFields?.length).length,
+        deletable: permData.rows.filter(r => r._perm?.canDelete || r._perm?.allowDelete).length,
+        masked: permData.rows.filter(r => r._perm?.maskedFields?.length).length,
+        hidden: permData.rows.filter(r => r._perm?.hiddenFields?.length).length
+      }
+      
+      console.info('[HttpClient] 实例级权限统计:', {
+        user: this.context.user?.username,
+        stats: permStats
+      })
+    }
+  }
+  
+  /**
    * 通用请求方法
-   * 
-   * @param config - 请求配置
-   * @returns 响应数据
-   * 
-   * @throws {Error} 请求失败时抛出错误
-   * 
-   * 支持的响应格式：
-   * 1. 标准格式：{ code: 200, data: {...} } → 返回 data
-   * 2. 直接返回：{ users: [...] } → 返回完整对象
    */
   async request<T = unknown>(config: {
     url: string
@@ -69,54 +159,37 @@ export class HttpClient implements IApiClient {
     headers?: Record<string, string>
   }): Promise<T> {
     const { url, method, data, headers } = config
+    const timeout = this.context.timeout || 10000
     
     // 创建超时控制器
     const controller = new AbortController()
-    const timeout = this.context.timeout || 10000
     const timeoutId = setTimeout(() => controller.abort(), timeout)
     
     try {
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers
-        },
+        headers: { 'Content-Type': 'application/json', ...headers },
         body: data ? JSON.stringify(data) : undefined,
         signal: controller.signal
       })
       
       clearTimeout(timeoutId)
       
-      // 处理 HTTP 错误状态码
       if (!response.ok) {
         const errorText = await response.text()
         throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}`)
       }
       
-      // 解析 JSON 响应
       const result = await response.json()
-      
-      // 处理标准 API 响应格式
-      if (this.isStandardResponse(result)) {
-        if (this.isSuccessCode(result.code)) {
-          return result.data as T
-        }
-        throw new Error(result.message || `API 错误 (code: ${result.code})`)
-      }
-      
-      // 直接返回响应数据
-      return result as T
+      return this.handleResponse<T>(result)
       
     } catch (error) {
       clearTimeout(timeoutId)
       
-      // 超时错误
       if (error instanceof Error && error.name === 'AbortError') {
         throw new Error(`请求超时（${timeout}ms）`)
       }
       
-      // 重新抛出错误
       throw error
     }
   }
@@ -236,25 +309,6 @@ export class HttpClient implements IApiClient {
     }
     
     return this.request<T>({ url: fullUrl, method: 'DELETE' })
-  }
-  
-  /**
-   * 判断是否为标准 API 响应格式
-   */
-  private isStandardResponse(result: unknown): result is StandardApiResponse {
-    return (
-      typeof result === 'object' &&
-      result !== null &&
-      'code' in result &&
-      typeof (result as StandardApiResponse).code === 'number'
-    )
-  }
-  
-  /**
-   * 判断响应码是否为成功状态
-   */
-  private isSuccessCode(code: number): boolean {
-    return code === 200 || code === 0
   }
 }
 

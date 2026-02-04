@@ -119,6 +119,7 @@ export interface CrudApi {
  * 
  * 职责：
  * - 提供运行时环境配置（baseURL、token、租户 ID）
+ * - 提供用户权限信息（用于前端权限判断）
  * - 在 DataSet 初始化时注入到 ApiAdapter
  * - 支持动态更新（如 token 刷新）
  * 
@@ -128,6 +129,12 @@ export interface CrudApi {
  *   baseURL: import.meta.env.VITE_API_BASE_URL,
  *   token: userStore.token,
  *   tenantId: userStore.tenantId,
+ *   user: {
+ *     userId: userStore.userId,
+ *     username: userStore.username,
+ *     roles: userStore.roles,
+ *     permissions: userStore.permissions
+ *   },
  *   timeout: 10000
  * }
  * const apiAdapter = new ApiAdapter(httpClient, apiContext)
@@ -143,11 +150,22 @@ export interface IApiContext {
   /** 租户 ID（多租户场景，用于 X-Tenant-Id header） */
   tenantId?: string
   
+  /** 用户信息（用于前端权限判断和日志） */
+  user?: {
+    userId: string
+    username?: string
+    roles?: string[]
+    permissions?: string[]
+  }
+  
   /** 自定义请求头（会与 HttpEndpoint.headers 合并） */
   headers?: Record<string, string>
   
   /** 请求超时时间（毫秒，默认 10000） */
   timeout?: number
+  
+  /** 是否启用权限日志（默认 false） */
+  enablePermissionLog?: boolean
 }
 
 /**

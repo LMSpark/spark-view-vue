@@ -54,291 +54,213 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   // ==================== CRUD 方法 ====================
   
   /**
-   * 列表查询
+   * 执行 API 请求的通用包装器（消除重复的错误处理和 loading 逻辑）
+   * @private
    */
-  async list(params?: Record<string, unknown>): Promise<DataRow[]> {
-    if (!this.api?.list) {
-      throw new Error(`表 ${this.tableName} 未配置 list API`)
-    }
-    
-    if (!this.apiAdapter) {
-      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
-    }
-    
+  private async executeApi<T>(
+    apiEndpoint: string,
+    execute: () => Promise<T>
+  ): Promise<T> {
     this.loading = true
     this.error = undefined
     
     try {
-      const data = await this.apiAdapter.execute<DataRow[]>(this.api.list, params)
-      
-      // 自动更新表数据
-      this.rows.splice(0, this.rows.length, ...data)
-      this['__originalRows'] = [...data]  // 使用私有字段访问器
-      
-      console.info(`✅ [DataTable] ${this.tableName}.list() 成功，共 ${data.length} 行`)
-      
-      return data
+      const result = await execute()
+      console.info(`✅ [DataTable] ${this.tableName}.${apiEndpoint}() 成功`)
+      return result
     } catch (error) {
       this.error = (error as Error).message
-      console.error(`❌ [DataTable] ${this.tableName}.list() 失败`, error)
+      console.error(`❌ [DataTable] ${this.tableName}.${apiEndpoint}() 失败`, error)
       throw error
     } finally {
       this.loading = false
     }
+  }
+  
+  /**
+   * 验证 API 配置和适配器
+   * @private
+   */
+  private validateApi(endpoint: string, apiPath: unknown): void {
+    if (!apiPath) {
+      throw new Error(`表 ${this.tableName} 未配置 ${endpoint} API`)
+    }
+    if (!this.apiAdapter) {
+      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
+    }
+  }
+  
+  /**
+   * 更新行记录（同时更新 rows 和 __originalRows）
+   * @private
+   */
+  private updateRowInBoth(predicate: (row: DataRow) => boolean, updater: (row: DataRow) => void): void {
+    const index = this.rows.findIndex(predicate)
+    if (index > -1) {
+      updater(this.rows[index])
+    }
+    
+    const originalRows = this['__originalRows']
+    if (originalRows) {
+      const cacheIndex = originalRows.findIndex(predicate)
+      if (cacheIndex > -1) {
+        updater(originalRows[cacheIndex])
+      }
+    }
+  }
+  
+  /**
+   * 从两个数组中删除行
+   * @private
+   */
+  private removeRowFromBoth(predicate: (row: DataRow) => boolean): void {
+    const index = this.rows.findIndex(predicate)
+    if (index > -1) {
+      this.rows.splice(index, 1)
+    }
+    
+    const originalRows = this['__originalRows']
+    if (originalRows) {
+      const cacheIndex = originalRows.findIndex(predicate)
+      if (cacheIndex > -1) {
+        originalRows.splice(cacheIndex, 1)
+      }
+    }
+  }
+  
+  /**
+   * 列表查询
+   */
+  async list(params?: Record<string, unknown>): Promise<DataRow[]> {
+    this.validateApi('list', this.api?.list)
+    
+    return this.executeApi('list', async () => {
+      const data = await this.apiAdapter!.execute<DataRow[]>(this.api!.list!, params)
+      
+      // 替换全部数据
+      this.rows.splice(0, this.rows.length, ...data)
+      this['__originalRows'] = [...data]
+      
+      console.info(`📊 加载 ${data.length} 行数据`)
+      return data
+    })
   }
   
   /**
    * 创建记录
    */
   async create(data: DataRow): Promise<DataRow> {
-    if (!this.api?.create) {
-      throw new Error(`表 ${this.tableName} 未配置 create API`)
-    }
+    this.validateApi('create', this.api?.create)
     
-    if (!this.apiAdapter) {
-      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
-    }
-    
-    this.loading = true
-    this.error = undefined
-    
-    try {
-      const result = await this.apiAdapter.execute<DataRow>(this.api.create, data)
+    return this.executeApi('create', async () => {
+      const result = await this.apiAdapter!.execute<DataRow>(this.api!.create!, data)
       
-      // 自动添加到表
+      // 追加到两个数组
       this.rows.push(result)
       const originalRows = this['__originalRows']
       if (originalRows) {
         originalRows.push(result)
       }
       
-      console.info(`✅ [DataTable] ${this.tableName}.create() 成功`)
-      
       return result
-    } catch (error) {
-      this.error = (error as Error).message
-      console.error(`❌ [DataTable] ${this.tableName}.create() 失败`, error)
-      throw error
-    } finally {
-      this.loading = false
-    }
+    })
   }
   
   /**
    * 更新记录
    */
   async update(id: string | number, data: Partial<DataRow>): Promise<DataRow> {
-    if (!this.api?.update) {
-      throw new Error(`表 ${this.tableName} 未配置 update API`)
-    }
+    this.validateApi('update', this.api?.update)
     
-    if (!this.apiAdapter) {
-      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
-    }
-    
-    this.loading = true
-    this.error = undefined
-    
-    try {
-      const result = await this.apiAdapter.execute<DataRow>(this.api.update, { id, ...data })
+    return this.executeApi('update', async () => {
+      const result = await this.apiAdapter!.execute<DataRow>(this.api!.update!, { id, ...data })
       
-      // 自动更新表中的记录
-      const index = this.rows.findIndex(r => r.id === id)
-      if (index > -1) {
-        Object.assign(this.rows[index], result)
-      }
-      
-      const originalRows = this['__originalRows']
-      if (originalRows) {
-        const cacheIndex = originalRows.findIndex(r => r.id === id)
-        if (cacheIndex > -1) {
-          Object.assign(originalRows[cacheIndex], result)
-        }
-      }
-      
-      console.info(`✅ [DataTable] ${this.tableName}.update() 成功`)
+      // 更新两个数组中的记录
+      this.updateRowInBoth(
+        r => r.id === id,
+        row => Object.assign(row, result)
+      )
       
       return result
-    } catch (error) {
-      this.error = (error as Error).message
-      console.error(`❌ [DataTable] ${this.tableName}.update() 失败`, error)
-      throw error
-    } finally {
-      this.loading = false
-    }
+    })
   }
   
   /**
    * 删除记录
    */
   async delete(id: string | number): Promise<boolean> {
-    if (!this.api?.delete) {
-      throw new Error(`表 ${this.tableName} 未配置 delete API`)
-    }
+    this.validateApi('delete', this.api?.delete)
     
-    if (!this.apiAdapter) {
-      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
-    }
-    
-    this.loading = true
-    this.error = undefined
-    
-    try {
-      await this.apiAdapter.execute(this.api.delete, { id })
+    return this.executeApi('delete', async () => {
+      await this.apiAdapter!.execute(this.api!.delete!, { id })
       
-      // 自动从表中删除
-      const index = this.rows.findIndex(r => r.id === id)
-      if (index > -1) {
-        this.rows.splice(index, 1)
-      }
-      
-      const originalRows = this['__originalRows']
-      if (originalRows) {
-        const cacheIndex = originalRows.findIndex(r => r.id === id)
-        if (cacheIndex > -1) {
-          originalRows.splice(cacheIndex, 1)
-        }
-      }
-      
-      console.info(`✅ [DataTable] ${this.tableName}.delete() 成功`)
+      // 从两个数组中删除
+      this.removeRowFromBoth(r => r.id === id)
       
       return true
-    } catch (error) {
-      this.error = (error as Error).message
-      console.error(`❌ [DataTable] ${this.tableName}.delete() 失败`, error)
-      throw error
-    } finally {
-      this.loading = false
-    }
+    })
   }
   
   /**
    * 批量创建
    */
   async batchCreate(data: DataRow[]): Promise<DataRow[]> {
-    if (!this.api?.batch?.create) {
-      throw new Error(`表 ${this.tableName} 未配置 batch.create API`)
-    }
+    this.validateApi('batch.create', this.api?.batch?.create)
     
-    if (!this.apiAdapter) {
-      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
-    }
-    
-    this.loading = true
-    this.error = undefined
-    
-    try {
-      const result = await this.apiAdapter.execute<DataRow[]>(this.api.batch.create, { items: data })
+    return this.executeApi('batchCreate', async () => {
+      const result = await this.apiAdapter!.execute<DataRow[]>(this.api!.batch!.create!, { items: data })
       
-      // 自动添加到表
+      // 批量追加
       this.rows.push(...result)
       const originalRows = this['__originalRows']
       if (originalRows) {
         originalRows.push(...result)
       }
       
-      console.info(`✅ [DataTable] ${this.tableName}.batchCreate() 成功，共 ${result.length} 条`)
-      
+      console.info(`📊 批量创建 ${result.length} 条`)
       return result
-    } catch (error) {
-      this.error = (error as Error).message
-      console.error(`❌ [DataTable] ${this.tableName}.batchCreate() 失败`, error)
-      throw error
-    } finally {
-      this.loading = false
-    }
+    })
   }
   
   /**
    * 批量更新
    */
   async batchUpdate(updates: Array<{ id: string | number; data: Partial<DataRow> }>): Promise<DataRow[]> {
-    if (!this.api?.batch?.update) {
-      throw new Error(`表 ${this.tableName} 未配置 batch.update API`)
-    }
+    this.validateApi('batch.update', this.api?.batch?.update)
     
-    if (!this.apiAdapter) {
-      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
-    }
-    
-    this.loading = true
-    this.error = undefined
-    
-    try {
-      const result = await this.apiAdapter.execute<DataRow[]>(this.api.batch.update, { items: updates })
+    return this.executeApi('batchUpdate', async () => {
+      const result = await this.apiAdapter!.execute<DataRow[]>(this.api!.batch!.update!, { items: updates })
       
-      // 自动更新表中的记录
+      // 批量更新
       result.forEach(updated => {
-        const index = this.rows.findIndex(r => r.id === updated.id)
-        if (index > -1) {
-          Object.assign(this.rows[index], updated)
-        }
-        
-        const originalRows = this['__originalRows']
-        if (originalRows) {
-          const cacheIndex = originalRows.findIndex(r => r.id === updated.id)
-          if (cacheIndex > -1) {
-            Object.assign(originalRows[cacheIndex], updated)
-          }
-        }
+        this.updateRowInBoth(
+          r => r.id === updated.id,
+          row => Object.assign(row, updated)
+        )
       })
       
-      console.info(`✅ [DataTable] ${this.tableName}.batchUpdate() 成功，共 ${result.length} 条`)
-      
+      console.info(`📊 批量更新 ${result.length} 条`)
       return result
-    } catch (error) {
-      this.error = (error as Error).message
-      console.error(`❌ [DataTable] ${this.tableName}.batchUpdate() 失败`, error)
-      throw error
-    } finally {
-      this.loading = false
-    }
+    })
   }
   
   /**
    * 批量删除
    */
   async batchDelete(ids: Array<string | number>): Promise<boolean> {
-    if (!this.api?.batch?.delete) {
-      throw new Error(`表 ${this.tableName} 未配置 batch.delete API`)
-    }
+    this.validateApi('batch.delete', this.api?.batch?.delete)
     
-    if (!this.apiAdapter) {
-      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
-    }
-    
-    this.loading = true
-    this.error = undefined
-    
-    try {
-      await this.apiAdapter.execute(this.api.batch.delete, { ids })
+    return this.executeApi('batchDelete', async () => {
+      await this.apiAdapter!.execute(this.api!.batch!.delete!, { ids })
       
-      // 自动从表中删除
+      // 批量删除
       ids.forEach(id => {
-        const index = this.rows.findIndex(r => r.id === id)
-        if (index > -1) {
-          this.rows.splice(index, 1)
-        }
-        
-        const originalRows = this['__originalRows']
-        if (originalRows) {
-          const cacheIndex = originalRows.findIndex(r => r.id === id)
-          if (cacheIndex > -1) {
-            originalRows.splice(cacheIndex, 1)
-          }
-        }
+        this.removeRowFromBoth(r => r.id === id)
       })
       
-      console.info(`✅ [DataTable] ${this.tableName}.batchDelete() 成功，共 ${ids.length} 条`)
-      
+      console.info(`📊 批量删除 ${ids.length} 条`)
       return true
-    } catch (error) {
-      this.error = (error as Error).message
-      console.error(`❌ [DataTable] ${this.tableName}.batchDelete() 失败`, error)
-      throw error
-    } finally {
-      this.loading = false
-    }
+    })
   }
   
   // ==================== 原有方法 ====================
