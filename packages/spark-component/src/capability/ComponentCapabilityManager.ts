@@ -22,7 +22,8 @@ export class ComponentCapabilityManager extends CapabilityManager {
     for (const consumer of ctx.consumers.values()) {
       const provider = this.findComponentProvider(ctx, consumer.capabilityName)
       if (provider) {
-        // 使用类型断言匹配基类的类型要求
+        // 类型断言是必需的，因为 ComponentContext 扩展了 CapabilityContext
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.connectCapability(provider as any, consumer as any, ctx as any)
       }
     }
@@ -38,6 +39,7 @@ export class ComponentCapabilityManager extends CapabilityManager {
   private findComponentProvider(
     context: ComponentContext, 
     name: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any {
     // 在当前上下文查找
     for (const provider of Array.from(context.providers)) {
@@ -64,7 +66,8 @@ export class ComponentCapabilityManager extends CapabilityManager {
     for (const consumer of ctx.consumers.values()) {
       const provider = this.findComponentProvider(ctx, consumer.capabilityName)
       if (provider) {
-        // 使用类型断言匹配基类的类型要求
+        // 类型断言是必需的，因为 ComponentContext 扩展了 CapabilityContext
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.disconnectCapability(provider as any, consumer as any, ctx as any)
       }
     }

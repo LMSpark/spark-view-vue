@@ -1,4 +1,13 @@
-﻿import { reactive, computed, onMounted, onUnmounted, markRaw, inject } from 'vue'
+﻿/**
+ * useSparkComponent composable
+ * 为组件提供能力系统集成
+ * 
+ * 注意：此文件使用类型断言桥接 ComponentContext 和基础能力系统
+ */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { reactive, computed, onMounted, onUnmounted, markRaw, inject } from 'vue'
 import {
   Logger,
   createEventCapabilityProvider,

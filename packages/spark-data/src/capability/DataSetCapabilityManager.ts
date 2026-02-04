@@ -136,7 +136,10 @@ export class DataSetCapabilityManager extends CapabilityManager {
           if (!this.tableListeners.has(tableName)) {
             this.tableListeners.set(tableName, new Set())
           }
-          this.tableListeners.get(tableName)!.add(callback)
+          const listeners = this.tableListeners.get(tableName)
+          if (listeners) {
+            listeners.add(callback)
+          }
           
           // 返回取消订阅函数
           return () => {
@@ -152,7 +155,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider as any)
+    this.dataSetContext.providers.add(provider as unknown as CapabilityProvider<Record<string, unknown>, unknown>)
   }
 
   /**
@@ -168,13 +171,13 @@ export class DataSetCapabilityManager extends CapabilityManager {
         getDictionary: 'function'
       },
       implementation: {
-        getUserInfo: () => this.config.globalData!.getUserInfo(),
-        getConfig: (key: string) => this.config.globalData!.getConfig(key),
-        getDictionary: (type: string) => this.config.globalData!.getDictionary(type)
+        getUserInfo: () => this.config.globalData?.getUserInfo() ?? { id: '', name: '', roles: [] },
+        getConfig: (key: string) => this.config.globalData?.getConfig(key),
+        getDictionary: (type: string) => this.config.globalData?.getDictionary(type) ?? []
       }
     }
     
-    this.dataSetContext.providers.add(provider as any)
+    this.dataSetContext.providers.add(provider as unknown as CapabilityProvider<Record<string, unknown>, unknown>)
   }
 
   /**
@@ -192,17 +195,17 @@ export class DataSetCapabilityManager extends CapabilityManager {
       },
       implementation: {
         showMessage: (message: string, type: 'success' | 'error' | 'warning') => 
-          this.config.pageService!.showMessage(message, type),
+          this.config.pageService?.showMessage(message, type),
         showConfirm: (message: string) => 
-          this.config.pageService!.showConfirm(message),
+          this.config.pageService?.showConfirm(message) ?? Promise.resolve(false),
         showLoading: (show: boolean) => 
-          this.config.pageService!.showLoading(show),
+          this.config.pageService?.showLoading(show),
         navigate: (path: string, params?: Record<string, unknown>) => 
-          this.config.pageService!.navigate(path, params)
+          this.config.pageService?.navigate(path, params)
       }
     }
     
-    this.dataSetContext.providers.add(provider as any)
+    this.dataSetContext.providers.add(provider as unknown as CapabilityProvider<Record<string, unknown>, unknown>)
   }
 
   /**
@@ -222,12 +225,15 @@ export class DataSetCapabilityManager extends CapabilityManager {
           params?: Record<string, unknown>
           data?: unknown
         }): Promise<T> => {
-          return this.config.apiClient!.request<T>(config)
+          if (!this.config.apiClient) {
+            return Promise.reject(new Error('API client not configured'))
+          }
+          return this.config.apiClient.request<T>(config)
         }
       }
     }
     
-    this.dataSetContext.providers.add(provider as any)
+    this.dataSetContext.providers.add(provider as unknown as CapabilityProvider<Record<string, unknown>, unknown>)
   }
 
   /**

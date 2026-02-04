@@ -2,13 +2,15 @@
  * DataSetCapabilityManager 测试
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createDataSetCapabilityManager } from '../packages/spark-data/src/capability/DataSetCapabilityManager'
 import { SparkData } from '../packages/spark-data/src/spark-data-namespace'
 
 describe('DataSetCapabilityManager', () => {
   let manager: ReturnType<typeof createDataSetCapabilityManager>
-  let mockDataSet: any
+  let mockDataSet: ReturnType<typeof SparkData.createDataSet>
 
   beforeEach(() => {
     // 创建模拟 DataSet
