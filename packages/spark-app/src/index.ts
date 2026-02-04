@@ -48,6 +48,9 @@ export {
   TokenManager
 } from './auth'
 
+// HTTP 客户端
+export { HttpClient, createHttpClient } from './http'
+
 export type {
   AuthConfig,
   LoginCredentials,

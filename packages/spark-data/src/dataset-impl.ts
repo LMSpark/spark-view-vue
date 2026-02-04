@@ -11,7 +11,8 @@ import type {
   DataRow,
   FilterContext,
   DependencyType,
-  FilterExpression
+  FilterExpression,
+  IApiAdapter
 } from './types'
 import { DataTable } from './dataTable'
 import { BindingContext } from './bindingContext'
@@ -37,9 +38,16 @@ export class DataSet implements IDataSet {
   public dataLoader?: (tableName: string) => Promise<DataRow[]>
   // 正在加载的表
   private loadingTables: Set<string> = new Set()
+  // API 适配器
+  private apiAdapter?: IApiAdapter
 
-  constructor(config: IDataSet, dataLoader?: (tableName: string) => Promise<DataRow[]>) {
+  constructor(
+    config: IDataSet, 
+    dataLoader?: (tableName: string) => Promise<DataRow[]>,
+    apiAdapter?: IApiAdapter
+  ) {
     this.dataLoader = dataLoader
+    this.apiAdapter = apiAdapter
     this.dataSetName = config.dataSetName
     
     // 转换表为类实例
@@ -52,6 +60,11 @@ export class DataSet implements IDataSet {
       
       // 🔧 设置表（默认上下文）的 DataSet 引用
       table.setDataSet(this)
+      
+      // 🔧 注入 API 适配器
+      if (apiAdapter) {
+        table.setApiAdapter(apiAdapter)
+      }
       
       // 处理自定义上下文
       Object.entries(table.contexts || {}).forEach(([contextId, context]) => {
@@ -107,6 +120,28 @@ export class DataSet implements IDataSet {
    */
   getTable(tableName: string): DataTable | undefined {
     return this.tables[tableName]
+  }
+  
+  /**
+   * 设置 API 适配器（运行时注入）
+   * 
+   * @param adapter - API 适配器实例
+   * 
+   * @example
+   * ```typescript
+   * const apiAdapter = new ApiAdapter(httpClient, apiContext)
+   * dataSet.setApiAdapter(apiAdapter)
+   * ```
+   */
+  setApiAdapter(adapter: IApiAdapter): void {
+    this.apiAdapter = adapter
+    
+    // 为所有表注入 API 适配器
+    Object.values(this.tables).forEach(table => {
+      table.setApiAdapter(adapter)
+    })
+    
+    console.info(`✅ [DataSet] ${this.dataSetName} 已注入 ApiAdapter`)
   }
 
   /**

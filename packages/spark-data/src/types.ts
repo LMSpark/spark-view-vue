@@ -112,6 +112,149 @@ export interface CrudApi {
   export?: HttpEndpoint                       // 导出接口
 }
 
+// ==================== API 运行时上下文 ====================
+
+/**
+ * API 上下文接口（从应用层注入）
+ * 
+ * 职责：
+ * - 提供运行时环境配置（baseURL、token、租户 ID）
+ * - 在 DataSet 初始化时注入到 ApiAdapter
+ * - 支持动态更新（如 token 刷新）
+ * 
+ * 典型用法：
+ * ```typescript
+ * const apiContext: IApiContext = {
+ *   baseURL: import.meta.env.VITE_API_BASE_URL,
+ *   token: userStore.token,
+ *   tenantId: userStore.tenantId,
+ *   timeout: 10000
+ * }
+ * const apiAdapter = new ApiAdapter(httpClient, apiContext)
+ * ```
+ */
+export interface IApiContext {
+  /** API 基础地址（如 '/api' 或 'https://api.example.com'） */
+  baseURL: string
+  
+  /** 认证 Token（用于 Authorization header） */
+  token?: string
+  
+  /** 租户 ID（多租户场景，用于 X-Tenant-Id header） */
+  tenantId?: string
+  
+  /** 自定义请求头（会与 HttpEndpoint.headers 合并） */
+  headers?: Record<string, string>
+  
+  /** 请求超时时间（毫秒，默认 10000） */
+  timeout?: number
+}
+
+/**
+ * API 客户端接口
+ * 
+ * 职责：
+ * - 封装底层 HTTP 请求（fetch/axios/etc）
+ * - 处理请求/响应拦截
+ * - 统一错误处理
+ * 
+ * 实现：
+ * - HttpClient (基于 fetch)
+ * - MockHttpClient (用于测试)
+ * 
+ * 典型用法：
+ * ```typescript
+ * const client = createHttpClient(apiContext)
+ * const users = await client.get<User[]>('/users')
+ * const newUser = await client.post<User>('/users', { name: 'John' })
+ * ```
+ */
+export interface IApiClient {
+  /**
+   * 通用请求方法
+   */
+  request<T = unknown>(config: {
+    url: string
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+    params?: Record<string, unknown>
+    data?: unknown
+    headers?: Record<string, string>
+  }): Promise<T>
+  
+  /** GET 请求（查询参数会自动拼接到 URL） */
+  get<T = unknown>(url: string, params?: Record<string, unknown>): Promise<T>
+  
+  /** POST 请求（数据作为请求体发送） */
+  post<T = unknown>(url: string, data?: unknown): Promise<T>
+  
+  /** PUT 请求（完整更新） */
+  put<T = unknown>(url: string, data?: unknown): Promise<T>
+  
+  /** PATCH 请求（部分更新） */
+  patch<T = unknown>(url: string, data?: unknown): Promise<T>
+  
+  /** DELETE 请求（查询参数会自动拼接到 URL） */
+  delete<T = unknown>(url: string, params?: Record<string, unknown>): Promise<T>
+}
+
+/**
+ * API 适配器接口
+ * 
+ * 职责：
+ * - 将静态的 HttpEndpoint 配置转换为可执行的 HTTP 请求
+ * - 自动拼接 baseURL 和相对路径
+ * - 注入 token、tenantId 到请求头
+ * - 处理路径参数替换（/users/{id} → /users/123）
+ * - 处理查询参数拼接
+ * 
+ * 典型用法：
+ * ```typescript
+ * const endpoint: HttpEndpoint = { url: '/users/{id}', method: 'PUT' }
+ * const data = await apiAdapter.execute<User>(endpoint, { id: 123, name: 'John' })
+ * ```
+ */
+export interface IApiAdapter {
+  /**
+   * 构建请求配置
+   * 
+   * @param endpoint - HTTP 端点配置
+   * @param params - 请求参数（路径参数、查询参数或请求体数据）
+   * @returns 完整的请求配置对象
+   * 
+   * @example
+   * ```typescript
+   * const config = adapter.buildRequest(
+   *   { url: '/users/{id}', method: 'GET', pathParams: ['id'] },
+   *   { id: 123, status: 'active' }
+   * )
+   * // 结果: { url: 'http://api.example.com/users/123?status=active', method: 'GET', ... }
+   * ```
+   */
+  buildRequest(endpoint: HttpEndpoint, params?: Record<string, unknown>): {
+    url: string
+    method: string
+    data?: unknown
+    headers?: Record<string, string>
+  }
+  
+  /**
+   * 执行 HTTP 请求
+   * 
+   * @param endpoint - HTTP 端点配置
+   * @param params - 请求参数
+   * @returns 响应数据
+   * 
+   * @example
+   * ```typescript
+   * const users = await adapter.execute<User[]>(
+   *   { url: '/users', method: 'GET' },
+   *   { page: 1, pageSize: 20 }
+   * )
+   * ```
+   */
+  execute<T = unknown>(endpoint: HttpEndpoint, params?: Record<string, unknown>): Promise<T>
+}
+
 // ==================== DataTable 定义 ====================
 
 /**
@@ -145,6 +288,171 @@ export interface IDataTable extends IBindingContext {
   // 扩展属性
   loading?: boolean
   error?: string
+}
+
+/**
+ * DataTable 增强接口（带 API 方法）
+ * 
+ * 扩展：在基础 IDataTable 上增加 CRUD 运行时方法
+ * 
+ * 前置条件：
+ * - 必须注入 ApiAdapter（通过 setApiAdapter 方法）
+ * - api 配置中必须定义对应的端点（如 api.list）
+ * 
+ * 自动行为：
+ * - API 调用成功后自动更新 DataTable.rows
+ * - 自动设置 loading 状态
+ * - 错误时设置 error 属性
+ * 
+ * 典型用法：
+ * ```typescript
+ * const usersTable = dataSet.getTable('Users') as IDataTableWithApi
+ * 
+ * // 列表查询
+ * await usersTable.list({ status: 'active' })
+ * 
+ * // 创建记录
+ * const newUser = await usersTable.create({ name: 'John', email: 'john@example.com' })
+ * 
+ * // 更新记录
+ * await usersTable.update(123, { name: 'John Doe' })
+ * 
+ * // 删除记录
+ * await usersTable.delete(123)
+ * ```
+ */
+export interface IDataTableWithApi extends IDataTable {
+  /**
+   * 设置 API 适配器（由 DataSet 或应用层注入）
+   */
+  setApiAdapter(adapter: IApiAdapter): void
+  
+  /**
+   * 列表查询
+   * 
+   * @param params - 查询参数（会作为 queryParams 或 pathParams）
+   * @returns 数据行数组
+   * 
+   * 前置条件：api.list 必须存在
+   * 副作用：成功后会替换 this.rows
+   * 
+   * @example
+   * ```typescript
+   * // 分页查询
+   * await table.list({ page: 1, pageSize: 20 })
+   * 
+   * // 条件过滤
+   * await table.list({ status: 'active', role: 'admin' })
+   * ```
+   */
+  list(params?: Record<string, unknown>): Promise<DataRow[]>
+  
+  /**
+   * 创建记录
+   * 
+   * @param data - 新记录数据
+   * @returns 创建后的记录（通常包含服务器生成的 id）
+   * 
+   * 前置条件：api.create 必须存在
+   * 副作用：成功后会将新记录追加到 this.rows
+   * 
+   * @example
+   * ```typescript
+   * const newUser = await table.create({
+   *   name: 'John Doe',
+   *   email: 'john@example.com'
+   * })
+   * console.log(newUser.id) // 123
+   * ```
+   */
+  create(data: DataRow): Promise<DataRow>
+  
+  /**
+   * 更新记录
+   * 
+   * @param id - 记录 ID
+   * @param data - 更新的字段（部分更新）
+   * @returns 更新后的完整记录
+   * 
+   * 前置条件：api.update 必须存在
+   * 副作用：成功后会更新 this.rows 中的对应记录
+   * 
+   * @example
+   * ```typescript
+   * await table.update(123, { name: 'Jane Doe' })
+   * ```
+   */
+  update(id: string | number, data: Partial<DataRow>): Promise<DataRow>
+  
+  /**
+   * 删除记录
+   * 
+   * @param id - 记录 ID
+   * @returns 是否删除成功
+   * 
+   * 前置条件：api.delete 必须存在
+   * 副作用：成功后会从 this.rows 中移除对应记录
+   * 
+   * @example
+   * ```typescript
+   * await table.delete(123)
+   * ```
+   */
+  delete(id: string | number): Promise<boolean>
+  
+  /**
+   * 批量创建
+   * 
+   * @param data - 新记录数组
+   * @returns 创建后的记录数组
+   * 
+   * 前置条件：api.batch.create 必须存在
+   * 副作用：成功后会将新记录追加到 this.rows
+   * 
+   * @example
+   * ```typescript
+   * const newUsers = await table.batchCreate([
+   *   { name: 'User 1', email: 'user1@example.com' },
+   *   { name: 'User 2', email: 'user2@example.com' }
+   * ])
+   * ```
+   */
+  batchCreate(data: DataRow[]): Promise<DataRow[]>
+  
+  /**
+   * 批量更新
+   * 
+   * @param updates - 更新配置数组
+   * @returns 更新后的记录数组
+   * 
+   * 前置条件：api.batch.update 必须存在
+   * 副作用：成功后会更新 this.rows 中的对应记录
+   * 
+   * @example
+   * ```typescript
+   * await table.batchUpdate([
+   *   { id: 123, data: { status: 'active' } },
+   *   { id: 124, data: { status: 'inactive' } }
+   * ])
+   * ```
+   */
+  batchUpdate(updates: Array<{ id: string | number; data: Partial<DataRow> }>): Promise<DataRow[]>
+  
+  /**
+   * 批量删除
+   * 
+   * @param ids - 记录 ID 数组
+   * @returns 是否删除成功
+   * 
+   * 前置条件：api.batch.delete 必须存在
+   * 副作用：成功后会从 this.rows 中移除对应记录
+   * 
+   * @example
+   * ```typescript
+   * await table.batchDelete([123, 124, 125])
+   * ```
+   */
+  batchDelete(ids: Array<string | number>): Promise<boolean>
 }
 
 // ==================== 依赖类型和过滤表达式 ====================
