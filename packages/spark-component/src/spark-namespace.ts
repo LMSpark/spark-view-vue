@@ -1,7 +1,7 @@
 ﻿// Package-level SPARK namespace to simplify application imports
 // Import runtime entry points from source implementations to avoid built dist dependency
 import { componentManager } from './utils/SparkComponentManager.js'
-import { capabilityManager } from './utils/SparkCapabilitySystem.js'
+import { capabilityManager } from './capability/ComponentCapabilityManager.js'
 import { componentRegistry } from './utils/SparkComponentRegistry.js'
 import { Logger } from '@spark-view/spark-utils'
 

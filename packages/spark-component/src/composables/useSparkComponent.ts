@@ -1,8 +1,11 @@
 ﻿import { reactive, computed, onMounted, onUnmounted, markRaw, inject } from 'vue'
-import { Logger } from '@spark-view/spark-utils'
-import { capabilityManager } from '../utils/SparkCapabilitySystem.js'
-import { createEventCapabilityProvider, createEventCapabilityConsumer } from '../capabilities/EventCapability.js'
-import type { EventCapabilityProvider } from '../capabilities/EventCapability.js'
+import {
+  Logger,
+  createEventCapabilityProvider,
+  createEventCapabilityConsumer,
+  type EventCapabilityProvider
+} from '@spark-view/spark-utils'
+import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation, CapabilityInterface } from '../types/common.js'
@@ -80,8 +83,8 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   // Provide a capability on this context
   function provide(name: string, implementation?: Implementation) {
     const p: CapabilityProvider = { name, version: '1.0.0', interface: {} as CapabilityInterface, implementation }
-    if (manager && typeof (manager).registerProvider === 'function') (manager).registerProvider(context, p)
-    else context.providers.add(p)
+    if (manager && typeof (manager).registerProvider === 'function') (manager).registerProvider(context, p as any)
+    else context.providers.add(p as any)
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
 
@@ -89,9 +92,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   function provideEvents(name = 'events'): EventCapabilityProvider {
     const { provider, emitter } = createEventCapabilityProvider(name)
     if (manager && typeof (manager).registerProvider === 'function') {
-      (manager).registerProvider(context, provider)
+      (manager).registerProvider(context, provider as any)
     } else {
-      context.providers.add(provider)
+      context.providers.add(provider as any)
     }
     logger.info(`🎉 Provided event capability: ${name} for ${context.type} (${context.id})`)
     return emitter
@@ -99,11 +102,11 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   function consume(name: string): Implementation | null {
     const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
-    context.consumers.set(name, consumer)
+    context.consumers.set(name, consumer as any)
     const provider = manager.getProvider(context, name) ?? createNoopProvider(name)
     if (provider) {
       consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
-      try { capabilityManager.connectCapability(provider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
+      try { capabilityManager.connectCapability(provider as any, consumer as any, context as any) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
       logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
       return consumer.implementation ?? null
     }
@@ -117,13 +120,13 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     handlers: Record<string, (...args: unknown[]) => void>
   ): EventCapabilityProvider | null {
     const consumer = createEventCapabilityConsumer(name, handlers)
-    context.consumers.set(name, consumer)
+    context.consumers.set(name, consumer as any)
     
     const provider = manager.getProvider(context, name)
     if (provider) {
       consumer.implementation = provider.implementation
       try {
-        capabilityManager.connectCapability(provider, consumer, context)
+        capabilityManager.connectCapability(provider as any, consumer as any, context as any)
         logger.info(`🎉 Consumed event capability: ${name} for ${context.type} (${context.id})`)
         return provider.implementation as unknown as EventCapabilityProvider
       } catch (e: unknown) {
@@ -204,8 +207,8 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       try { return (manager).isComponentRegistered(type) } catch { const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY)); return registry ? registry.has(type) : false }
     },
     getOrCreateNoopProvider: (name: string) => createNoopProvider(name),
-    connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider, consumer, ctx),
-    disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.disconnectCapability(provider, consumer, ctx)
+    connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider as any, consumer as any, ctx as any),
+    disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.disconnectCapability(provider as any, consumer as any, ctx as any)
   }
 }
 

@@ -61,18 +61,9 @@ export interface IComponentManager {
   getAllContexts(): IComponentContext[]
 }
 
-export interface ICapabilityProvider {
-  name: string
-  version?: string
-  interface?: unknown
-  implementation?: unknown
-}
-
-export interface ICapabilityManager {
-  registerConnector(name: string, impl: unknown): void
-  connect(provider: ICapabilityProvider, consumer: unknown): boolean
-  disconnect(providerName: string, consumer: unknown): void
-}
+// 能力相关接口已移至 common.ts，从 spark-utils 统一导入
+// export interface ICapabilityProvider - 使用 common.ts 中的 CapabilityProvider
+// export interface ICapabilityManager - 使用 common.ts 中从 spark-utils 导入的 ICapabilityManager
 
 export interface ILogger {
   debug(...args: unknown[]): void
