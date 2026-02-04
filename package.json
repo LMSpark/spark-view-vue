@@ -37,10 +37,10 @@
     "dependencies": {
         "@form-create/element-ui": "^3.2.37",
         "@spark-view/spark-app": "workspace:*",
-        "@spark-view/spark-page-config": "workspace:*",
-        "@spark-view/spark-renderer": "workspace:*",
         "@spark-view/spark-component": "workspace:*",
         "@spark-view/spark-data": "workspace:*",
+        "@spark-view/spark-page-config": "workspace:*",
+        "@spark-view/spark-renderer": "workspace:*",
         "@syncfusion/ej2-base": "^32.1.22",
         "@syncfusion/ej2-grids": "^32.1.24",
         "@syncfusion/ej2-vue-calendars": "^32.1.22",
@@ -54,6 +54,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",
+        "@rollup/rollup-win32-x64-msvc": "^4.57.1",
         "@types/node": "^18.19.130",
         "@types/semver": "^7.7.1",
         "@typescript-eslint/eslint-plugin": "^8.52.0",

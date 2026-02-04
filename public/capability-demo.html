@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>能力管理系统演示 - SPARK View</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 3rem;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 1rem;
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #7f8c8d;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    h2 {
+      color: #34495e;
+      margin: 2.5rem 0 1.5rem;
+      font-size: 1.8rem;
+      border-left: 5px solid #3498db;
+      padding-left: 1rem;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      border: 2px solid #667eea30;
+    }
+
+    .info-box p {
+      margin: 0.5rem 0;
+      font-size: 1.05rem;
+      color: #2c3e50;
+    }
+
+    .info-box strong {
+      color: #667eea;
+    }
+
+    .capability-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .capability-card {
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .capability-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(102, 126, 234, 0.2);
+      border-color: #667eea;
+    }
+
+    .capability-card h3 {
+      margin: 0 0 1.5rem;
+      color: #2c3e50;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .icon {
+      font-size: 1.8rem;
+    }
+
+    .capability-content {
+      font-size: 0.95rem;
+      color: #34495e;
+    }
+
+    pre {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin: 0.5rem 0;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin: 1rem 0;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+
+    .btn-error {
+      background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+      color: white;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #757f9a 0%, #d7dde8 100%);
+      color: #2c3e50;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .success-msg {
+      color: #27ae60;
+      font-weight: 600;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #27ae6015;
+      border-radius: 6px;
+      border-left: 4px solid #27ae60;
+    }
+
+    .error-msg {
+      color: #e74c3c;
+      font-weight: 600;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #e74c3c15;
+      border-radius: 6px;
+      border-left: 4px solid #e74c3c;
+    }
+
+    .message-log {
+      background: #ecf0f1;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      font-family: 'Courier New', monospace;
+      border: 2px solid #bdc3c7;
+    }
+
+    .api-response {
+      margin-top: 1rem;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-top: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    th {
+      padding: 1.2rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid #ecf0f1;
+    }
+
+    tbody tr {
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+      background: #f8f9fa;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+      transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: scale(1.05);
+    }
+
+    .stat-value {
+      font-size: 3rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      opacity: 0.95;
+    }
+
+    .change-history {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      border: 2px solid #e0e0e0;
+    }
+
+    .change-history h4 {
+      margin-bottom: 1rem;
+      color: #2c3e50;
+    }
+
+    .change-history ul {
+      list-style: none;
+    }
+
+    .change-history li {
+      padding: 0.75rem;
+      border-bottom: 1px solid #ecf0f1;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      animation: slideIn 0.3s;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    ul {
+      padding-left: 1.5rem;
+    }
+
+    ul li {
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 能力管理系统演示</h1>
+    <p class="subtitle">展示 SPARK View 的 DataSet 能力管理器和组件能力系统</p>
+
+    <div class="info-box">
+      <p><strong>系统状态:</strong> <span id="system-status">✅ 已初始化</span></p>
+      <p><strong>DataSet 上下文:</strong> <span id="context-id">dataset:demo-page</span></p>
+      <p><strong>注册能力数:</strong> <span id="providers-count">0</span></p>
+    </div>
+
+    <h2>📊 DataSet 能力管理器</h2>
+    <div class="capability-grid">
+      <!-- DataSet State -->
+      <div class="capability-card">
+        <h3><span class="icon">🗄️</span> DataSet State</h3>
+        <div class="capability-content">
+          <p><strong>表数量:</strong> <span id="table-count">0</span></p>
+          <p><strong>页面参数:</strong></p>
+          <pre id="page-params">{}</pre>
+          <p><strong>页面权限:</strong></p>
+          <pre id="page-permission">{}</pre>
+          <button class="btn-primary" onclick="addTableRow()">
+            添加数据行
+          </button>
+          <div id="last-added" class="hidden success-msg"></div>
+        </div>
+      </div>
+
+      <!-- Global Data -->
+      <div class="capability-card">
+        <h3><span class="icon">🌐</span> Global Data</h3>
+        <div class="capability-content">
+          <p><strong>用户信息:</strong></p>
+          <pre id="user-info">{}</pre>
+          <p><strong>主题配置:</strong> <span id="theme-config">-</span></p>
+          <p><strong>字典选项:</strong></p>
+          <ul id="dictionary-list"></ul>
+        </div>
+      </div>
+
+      <!-- Page Service -->
+      <div class="capability-card">
+        <h3><span class="icon">🔔</span> Page Service</h3>
+        <div class="capability-content">
+          <div class="button-group">
+            <button class="btn-success" onclick="showSuccessMessage()">
+              成功消息
+            </button>
+            <button class="btn-error" onclick="showErrorMessage()">
+              错误消息
+            </button>
+            <button class="btn-warning" onclick="showWarningMessage()">
+              警告消息
+            </button>
+            <button class="btn-primary" onclick="showConfirmDialog()">
+              确认对话框
+            </button>
+            <button class="btn-secondary" onclick="navigateExample()">
+              导航示例
+            </button>
+          </div>
+          <div id="message-log" class="hidden message-log"></div>
+        </div>
+      </div>
+
+      <!-- API Client -->
+      <div class="capability-card">
+        <h3><span class="icon">🌐</span> API Client</h3>
+        <div class="capability-content">
+          <button id="api-button" class="btn-primary" onclick="makeApiCall()">
+            发起 API 请求
+          </button>
+          <div id="api-response" class="hidden api-response"></div>
+          <div id="api-error" class="hidden error-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <h2>🧩 表变化监听</h2>
+    <div class="info-box">
+      <p><strong>监听状态:</strong> <span id="listening-status">⏸️ 已停止</span></p>
+      <p><strong>变化次数:</strong> <span id="change-count">0</span></p>
+      <button id="toggle-listener" class="btn-primary" onclick="toggleListener()">
+        启动监听
+      </button>
+    </div>
+    <div id="change-history-container" class="hidden change-history">
+      <h4>变化历史:</h4>
+      <ul id="change-history"></ul>
+    </div>
+
+    <h2>📋 数据表内容</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>姓名</th>
+            <th>年龄</th>
+            <th>部门</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+        </tbody>
+      </table>
+    </div>
+
+    <h2>📊 统计信息</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-providers">0</div>
+        <div class="stat-label">注册能力</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-tables">0</div>
+        <div class="stat-label">数据表</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-rows">0</div>
+        <div class="stat-label">数据行</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-changes">0</div>
+        <div class="stat-label">变化次数</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟数据和状态
+    let isListening = false
+    let changeCount = 0
+    let tableRows = [
+      { id: '1', name: '张三', age: 30, department: '技术部' },
+      { id: '2', name: '李四', age: 28, department: '产品部' },
+      { id: '3', name: '王五', age: 35, department: '设计部' }
+    ]
+    let changeHistory = []
+
+    // 初始化演示
+    function initDemo() {
+      // 更新统计
+      document.getElementById('providers-count').textContent = '4'
+      document.getElementById('stat-providers').textContent = '4'
+      document.getElementById('table-count').textContent = '1'
+      document.getElementById('stat-tables').textContent = '1'
+      
+      // 页面参数
+      document.getElementById('page-params').textContent = JSON.stringify({
+        id: '123',
+        type: 'demo'
+      }, null, 2)
+      
+      // 页面权限
+      document.getElementById('page-permission').textContent = JSON.stringify({
+        canEdit: true,
+        canDelete: false,
+        canExport: true
+      }, null, 2)
+      
+      // 用户信息
+      document.getElementById('user-info').textContent = JSON.stringify({
+        id: 'user001',
+        name: '演示用户',
+        roles: ['admin', 'developer']
+      }, null, 2)
+      
+      // 主题配置
+      document.getElementById('theme-config').textContent = 'dark'
+      
+      // 字典列表
+      const dictionaryList = document.getElementById('dictionary-list')
+      const dictionary = [
+        { label: '技术部', value: 'tech' },
+        { label: '产品部', value: 'product' },
+        { label: '设计部', value: 'design' }
+      ]
+      dictionaryList.innerHTML = dictionary.map(item => 
+        `<li>${item.label} (${item.value})</li>`
+      ).join('')
+      
+      // 渲染表格
+      renderTable()
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('table-body')
+      tbody.innerHTML = tableRows.map(row => `
+        <tr>
+          <td>${row.id}</td>
+          <td>${row.name}</td>
+          <td>${row.age}</td>
+          <td>${row.department}</td>
+        </tr>
+      `).join('')
+      
+      document.getElementById('stat-rows').textContent = tableRows.length
+    }
+
+    function addTableRow() {
+      const newRow = {
+        id: `${Date.now()}`,
+        name: `新用户${tableRows.length + 1}`,
+        age: Math.floor(Math.random() * 30) + 20,
+        department: ['技术部', '产品部', '设计部'][Math.floor(Math.random() * 3)]
+      }
+      
+      tableRows.push(newRow)
+      renderTable()
+      
+      const lastAdded = document.getElementById('last-added')
+      lastAdded.textContent = `✅ 已添加: ${newRow.name}`
+      lastAdded.classList.remove('hidden')
+      
+      // 触发变化通知
+      if (isListening) {
+        notifyTableChange()
+      }
+      
+      setTimeout(() => {
+        lastAdded.classList.add('hidden')
+      }, 3000)
+    }
+
+    function showMessage(message, type) {
+      const messageLog = document.getElementById('message-log')
+      messageLog.textContent = `[${type.toUpperCase()}] ${message}`
+      messageLog.classList.remove('hidden')
+      
+      setTimeout(() => {
+        messageLog.classList.add('hidden')
+      }, 3000)
+    }
+
+    function showSuccessMessage() {
+      showMessage('操作成功完成！', 'success')
+    }
+
+    function showErrorMessage() {
+      showMessage('发生错误，请重试', 'error')
+    }
+
+    function showWarningMessage() {
+      showMessage('请注意检查输入', 'warning')
+    }
+
+    function showConfirmDialog() {
+      const result = confirm('确定要执行此操作吗？')
+      const messageLog = document.getElementById('message-log')
+      messageLog.textContent = result ? '✅ 用户确认' : '❌ 用户取消'
+      messageLog.classList.remove('hidden')
+      
+      setTimeout(() => {
+        messageLog.classList.add('hidden')
+      }, 3000)
+    }
+
+    function navigateExample() {
+      showMessage('🧭 导航到: /example {"id":123,"type":"demo"}', 'info')
+    }
+
+    async function makeApiCall() {
+      const button = document.getElementById('api-button')
+      const responseDiv = document.getElementById('api-response')
+      const errorDiv = document.getElementById('api-error')
+      
+      button.disabled = true
+      button.innerHTML = '<span class="loading"></span> 请求中...'
+      responseDiv.classList.add('hidden')
+      errorDiv.classList.add('hidden')
+      
+      // 模拟 API 请求
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const response = {
+        data: {
+          status: 'success',
+          timestamp: new Date().toISOString(),
+          endpoint: '/api/demo',
+          method: 'GET'
+        },
+        message: '请求成功'
+      }
+      
+      responseDiv.innerHTML = `
+        <p><strong>响应:</strong></p>
+        <pre>${JSON.stringify(response, null, 2)}</pre>
+      `
+      responseDiv.classList.remove('hidden')
+      
+      button.disabled = false
+      button.textContent = '发起 API 请求'
+    }
+
+    function toggleListener() {
+      isListening = !isListening
+      const button = document.getElementById('toggle-listener')
+      const status = document.getElementById('listening-status')
+      
+      if (isListening) {
+        button.textContent = '停止监听'
+        button.classList.remove('btn-primary')
+        button.classList.add('btn-warning')
+        status.textContent = '✅ 已启动'
+      } else {
+        button.textContent = '启动监听'
+        button.classList.remove('btn-warning')
+        button.classList.add('btn-primary')
+        status.textContent = '⏸️ 已停止'
+      }
+    }
+
+    function notifyTableChange() {
+      changeCount++
+      document.getElementById('change-count').textContent = changeCount
+      document.getElementById('stat-changes').textContent = changeCount
+      
+      const timestamp = new Date().toLocaleTimeString()
+      const message = `${timestamp}: Users 表发生变化，当前 ${tableRows.length} 行`
+      
+      changeHistory.unshift(message)
+      if (changeHistory.length > 5) {
+        changeHistory.pop()
+      }
+      
+      const historyContainer = document.getElementById('change-history-container')
+      const historyList = document.getElementById('change-history')
+      
+      historyList.innerHTML = changeHistory.map(item => `<li>${item}</li>`).join('')
+      historyContainer.classList.remove('hidden')
+    }
+
+    // 初始化
+    initDemo()
+  </script>
+</body>
+</html>
