@@ -70,9 +70,9 @@ export default [
         ]
       }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn', // 警告 any，但允许（核心库需要）
+      '@typescript-eslint/no-explicit-any': 'error', // 禁止使用 any
       '@typescript-eslint/no-var-requires': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'warn', // 警告非空断言
+      '@typescript-eslint/no-non-null-assertion': 'error', // 禁止非空断言
       // 以下规则需要type information，在project: false时不可用
       // '@typescript-eslint/no-unnecessary-type-assertion': 'error',
       // '@typescript-eslint/prefer-optional-chain': 'warn',
