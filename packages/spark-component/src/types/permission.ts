@@ -48,8 +48,6 @@ import type {
 // 导入基础数据类型
 import type { DataRow as BaseDataRow } from '@spark-view/spark-data'
 
-import { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
-
 // 重新导出供其他模块使用
 export type {
   IInstancePermission,
@@ -58,7 +56,9 @@ export type {
   WithModelPermission
 }
 
-export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD }
+// 权限字段常量（本地定义，避免构建时循环依赖）
+export const INSTANCE_PERMISSION_FIELD = '_perm' as const
+export const MODEL_PERMISSION_FIELD = '_modelPerm' as const
 
 // ==================== 组件层数据类型（基于 spark-data）====================
 

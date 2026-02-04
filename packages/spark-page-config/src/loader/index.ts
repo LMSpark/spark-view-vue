@@ -317,7 +317,7 @@ export class PageConfigLoader implements ConfigLoader {
       return result
     } catch (error) {
       clearTimeout(timeoutId)
-      if ((error as Error).name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         const errorMsg = getErrorMessage(ErrorCodes.NETWORK_TIMEOUT)
         pageLogger.error('请求超时', { url, timeout: this.options.timeout })
         throw new Error(`${errorMsg}: ${url}`)
