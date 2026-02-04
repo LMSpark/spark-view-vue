@@ -60,7 +60,7 @@ export class DataTable extends BindingContext implements IDataTable {
     Object.values(this.contexts).forEach(context => {
       if (context.filterExpression || context.sortExpression) {
         context.updateRows(sourceData);
-        console.info(`🔄 [DataTable] 刷新上下文: ${this.tableName}.${context._contextId}`);
+        console.info(`🔄 [DataTable] 刷新上下文: ${this.tableName}.${context.contextId}`);
       }
     });
   }
@@ -120,7 +120,7 @@ export class DataTable extends BindingContext implements IDataTable {
     table.currentRow = data.currentRow ?? null
     table.selectedRows = data.selectedRows ?? []
     table.rows = data.rows ?? []
-    table._originalRows = data._originalRows
+    table['__originalRows'] = data._originalRows  // 直接访问私有字段
     table.filterExpression = data.filterExpression
     table.sortExpression = data.sortExpression
     table.pagination = data.pagination

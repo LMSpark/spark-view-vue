@@ -16,6 +16,29 @@ interface ElTableComponent extends HTMLElement {
 }
 
 /**
+ * 类型安全的嵌套值获取函数
+ * @param obj - 源对象
+ * @param path - 路径数组（如 ['dataset', 'tables', 'Users', 'rows']）
+ * @returns 获取的值，如果路径无效则返回 undefined
+ */
+function getNestedValue<T = unknown>(
+  obj: Record<string, unknown>,
+  path: string[]
+): T | undefined {
+  let current: unknown = obj
+  
+  for (const key of path) {
+    if (current && typeof current === 'object' && key in current) {
+      current = (current as Record<string, unknown>)[key]
+    } else {
+      return undefined
+    }
+  }
+  
+  return current as T
+}
+
+/**
  * 递归替换 rule 中的数据占位符和事件处理器
  */
 export function bindDataToRules(options: RuleBindingOptions): Rule[] {
@@ -56,10 +79,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     if (newRule.type === 'el-table' && newRule.dataKey) {
       // 解析 dataKey 路径，获取数据
       const keys = newRule.dataKey.split('.')
-      let value: any = pageData
-      for (const key of keys) {
-        value = value?.[key]
-      }
+      const value = getNestedValue<unknown[]>(pageData, keys)
       
       // 绑定数据到 props.data
       if (value !== undefined) {
@@ -77,10 +97,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     if (newRule.dataKey && newRule.type !== 'el-table') {
       // 解析 dataKey 路径，获取数据值
       const keys = newRule.dataKey.split('.')
-      let value: any = pageData
-      for (const key of keys) {
-        value = value?.[key]
-      }
+      const value = getNestedValue<string | number>(pageData, keys)
       
       // 如果有值，替换 children 内容
       if (value !== undefined && value !== null) {
