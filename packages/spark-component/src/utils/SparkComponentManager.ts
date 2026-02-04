@@ -1,6 +1,6 @@
 ﻿import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.js'
 import { Logger } from '@spark-view/spark-utils'
-import { capabilityManager } from './SparkCapabilitySystem.js'
+import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
 

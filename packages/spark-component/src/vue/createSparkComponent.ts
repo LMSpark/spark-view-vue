@@ -1,6 +1,6 @@
 ﻿import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import { capabilityManager } from '../utils/SparkCapabilitySystem.js'
+import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation, CapabilityInterface } from '../types/common.js'
@@ -216,7 +216,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         const provider = Array.from(context.providers).find(p => p.name === name) ?? createNoopProvider(name)
         if (provider) {
           consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
-          try { capabilityManager.connectCapability(provider, consumer, context) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
+          try { capabilityManager.connectCapability(provider as any, consumer as any, context as any) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
           logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
           return consumer.implementation ?? null
         }

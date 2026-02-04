@@ -1,5 +1,6 @@
 ﻿export * from './utils/SparkComponentRegistry.js'
-export * from './utils/SparkCapabilitySystem.js'
+// SparkCapabilitySystem 将被移除，统一使用 @spark-view/spark-utils
+// export * from './utils/SparkCapabilitySystem.js'
 export * from './utils/SparkComponentManager.js'
 // export * from './composables/index.js' // Empty file, commented out
 export * from './composables/useSparkComponent.js'
@@ -22,19 +23,17 @@ export type {
 } from './events/ComponentEventEmitter.js'
 
 // Event Capability Integration
+// 现在从 @spark-view/spark-utils 导出
 export {
   EventCapabilityConnector,
   createEventCapabilityProvider,
-  createEventCapabilityConsumer
-} from './capabilities/EventCapability.js'
+  createEventCapabilityConsumer,
+  type EventCapabilityProvider,
+  type EventCapabilityConsumer
+} from '@spark-view/spark-utils'
 
 // Permission System
 export * from './permission/index.js'
-
-export type {
-  EventCapabilityProvider,
-  EventCapabilityConsumer
-} from './capabilities/EventCapability.js'
 
 // Primary unified API for creating Spark components
 export { defineSparkComponent } from './vue/createSparkComponent.js'
