@@ -46,16 +46,6 @@ export class PermissionChecker implements IPermissionChecker {
   }
 
   /**
-   * 检查是否允许编辑指定行
-   * 
-   * 判断逻辑：editableFields 有值即表示可编辑
-   */
-  canEdit(row: IPermissionDataRow): boolean {
-    const perm = row._perm
-    return (perm?.editableFields?.length ?? 0) > 0
-  }
-
-  /**
    * 检查字段是否可见
    */
   isFieldVisible(field: string, row: IPermissionDataRow): boolean {
@@ -175,9 +165,6 @@ export const checkPermission = {
   
   canDelete: (row: IPermissionDataRow) => 
     createPermissionChecker().canDelete(row),
-  
-  canEdit: (row: IPermissionDataRow) => 
-    createPermissionChecker().canEdit(row),
   
   isFieldVisible: (field: string, row: IPermissionDataRow) => 
     createPermissionChecker().isFieldVisible(field, row),
