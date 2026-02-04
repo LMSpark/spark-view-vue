@@ -1,0 +1,203 @@
+/**
+ * 权限检查器实现
+ * 
+ * 提供统一的权限检查逻辑
+ */
+
+import type {
+  IPermissionChecker,
+  IModelPermission,
+  IPermissionDataRow
+} from '../types/permission'
+
+import { FieldVisibility } from '../types/permission'
+
+/**
+ * 默认权限检查器实现
+ */
+export class PermissionChecker implements IPermissionChecker {
+  /**
+   * 检查是否允许新增
+   */
+  canCreate(modelPermission?: IModelPermission): boolean {
+    return modelPermission?.allowCreate !== false
+  }
+
+  /**
+   * 检查是否允许批量删除
+   */
+  canBatchDelete(modelPermission?: IModelPermission): boolean {
+    return modelPermission?.allowBatchDelete !== false
+  }
+
+  /**
+   * 检查是否允许导出
+   */
+  canExport(modelPermission?: IModelPermission): boolean {
+    return modelPermission?.allowExport !== false
+  }
+
+  /**
+   * 检查是否允许删除指定行
+   */
+  canDelete(row: IPermissionDataRow): boolean {
+    const perm = row._perm
+    return perm?.allowDelete !== false
+  }
+
+  /**
+   * 检查是否允许编辑指定行
+   */
+  canEdit(row: IPermissionDataRow): boolean {
+    const perm = row._perm
+    return perm?.allowEdit !== false
+  }
+
+  /**
+   * 检查是否允许查看指定行详情
+   */
+  canView(row: IPermissionDataRow): boolean {
+    const perm = row._perm
+    return perm?.allowView !== false
+  }
+
+  /**
+   * 检查字段是否可见
+   */
+  isFieldVisible(field: string, row: IPermissionDataRow): boolean {
+    const visibility = this.getFieldVisibility(field, row)
+    return visibility !== FieldVisibility.Hidden
+  }
+
+  /**
+   * 检查字段是否可编辑
+   */
+  isFieldEditable(field: string, row: IPermissionDataRow): boolean {
+    const perm = row._perm
+    if (!perm) return true
+
+    // 检查只读字段列表
+    if (perm.readonlyFields?.includes(field)) {
+      return false
+    }
+
+    // 检查可编辑字段列表（如果定义了，则只有列表中的字段可编辑）
+    if (perm.editableFields && perm.editableFields.length > 0) {
+      return perm.editableFields.includes(field)
+    }
+
+    // 检查整体编辑权限
+    return perm.allowEdit !== false
+  }
+
+  /**
+   * 获取字段可见性
+   */
+  getFieldVisibility(field: string, row: IPermissionDataRow): FieldVisibility {
+    const perm = row._perm
+    if (!perm) return FieldVisibility.Visible
+
+    // 检查隐藏字段列表
+    if (perm.hiddenFields?.includes(field)) {
+      return FieldVisibility.Hidden
+    }
+
+    // 检查脱敏字段列表
+    if (perm.maskedFields?.includes(field)) {
+      return FieldVisibility.Masked
+    }
+
+    return FieldVisibility.Visible
+  }
+
+  /**
+   * 应用字段脱敏规则
+   */
+  maskFieldValue(field: string, value: unknown, row: IPermissionDataRow): string {
+    const visibility = this.getFieldVisibility(field, row)
+    
+    if (visibility !== FieldVisibility.Masked) {
+      return String(value ?? '')
+    }
+
+    // 默认脱敏规则
+    return this.defaultMaskRule(field, value)
+  }
+
+  /**
+   * 默认脱敏规则
+   */
+  private defaultMaskRule(field: string, value: unknown): string {
+    if (value === null || value === undefined) return ''
+    
+    const str = String(value)
+    
+    // 手机号脱敏：138****1234
+    if (field.toLowerCase().includes('phone') || field.toLowerCase().includes('mobile')) {
+      if (str.length === 11) {
+        return str.substring(0, 3) + '****' + str.substring(7)
+      }
+    }
+    
+    // 身份证脱敏：330***********1234
+    if (field.toLowerCase().includes('idcard') || field.toLowerCase().includes('idno')) {
+      if (str.length === 18) {
+        return str.substring(0, 3) + '***********' + str.substring(14)
+      }
+    }
+    
+    // 邮箱脱敏：abc***@example.com
+    if (field.toLowerCase().includes('email')) {
+      const atIndex = str.indexOf('@')
+      if (atIndex > 3) {
+        return str.substring(0, 3) + '***' + str.substring(atIndex)
+      }
+    }
+    
+    // 银行卡脱敏：6222 **** **** 1234
+    if (field.toLowerCase().includes('bank') || field.toLowerCase().includes('card')) {
+      if (str.length >= 16) {
+        return str.substring(0, 4) + ' **** **** ' + str.substring(str.length - 4)
+      }
+    }
+    
+    // 默认脱敏：只显示前后各2个字符
+    if (str.length > 4) {
+      return str.substring(0, 2) + '***' + str.substring(str.length - 2)
+    }
+    
+    return '***'
+  }
+}
+
+/**
+ * 创建权限检查器实例（单例）
+ */
+let checkerInstance: PermissionChecker | null = null
+
+export function createPermissionChecker(): IPermissionChecker {
+  if (!checkerInstance) {
+    checkerInstance = new PermissionChecker()
+  }
+  return checkerInstance
+}
+
+/**
+ * 快捷方法：检查权限
+ */
+export const checkPermission = {
+  canCreate: (modelPermission?: IModelPermission) => 
+    createPermissionChecker().canCreate(modelPermission),
+  
+  canDelete: (row: IPermissionDataRow) => 
+    createPermissionChecker().canDelete(row),
+  
+  canEdit: (row: IPermissionDataRow) => 
+    createPermissionChecker().canEdit(row),
+  
+  isFieldVisible: (field: string, row: IPermissionDataRow) => 
+    createPermissionChecker().isFieldVisible(field, row),
+  
+  isFieldEditable: (field: string, row: IPermissionDataRow) => 
+    createPermissionChecker().isFieldEditable(field, row)
+}
