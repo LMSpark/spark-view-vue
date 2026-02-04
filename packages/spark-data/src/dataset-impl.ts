@@ -93,7 +93,7 @@ export class DataSet implements IDataSet {
         const filterFn = FilterExpressionParser.toMemoryFilter(context.filterExpression);
         sourceData = sourceData.filter(filterFn);
       } catch (e) {
-        console.error(`❌ [Context] 上下文 ${context._hostTable}.${context._contextId} 过滤失败:`, e);
+        console.error(`❌ [Context] 上下文 ${context.hostTable}.${context.contextId} 过滤失败:`, e);
         sourceData = [];
       }
     }

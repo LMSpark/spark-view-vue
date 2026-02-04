@@ -23,11 +23,11 @@ export class BindingContext implements IBindingContext {
   currentRow: DataRow | null = null
   selectedRows: DataRow[] = []
   rows: DataRow[] = []
-  _originalRows?: DataRow[]
+  private __originalRows?: DataRow[]
   
   // 宿主信息
-  _hostTable: string
-  _contextId: string
+  private __hostTable: string
+  private __contextId: string
   
   // 初始配置
   filterExpression?: FilterExpression
@@ -54,9 +54,37 @@ export class BindingContext implements IBindingContext {
     contextId: string = 'default',
     dataSet?: IDataSet
   ) {
-    this._hostTable = hostTable
-    this._contextId = contextId
+    this.__hostTable = hostTable
+    this.__contextId = contextId
     this.dataSet = dataSet
+  }
+  
+  // ==================== 访问器（保持向后兼容）====================
+  
+  /** @deprecated 使用 hostTable getter 访问 */
+  get _hostTable(): string { return this.__hostTable }
+  
+  /** @deprecated 使用 contextId getter 访问 */
+  get _contextId(): string { return this.__contextId }
+  
+  /** @deprecated 内部使用，不推荐外部访问 */
+  get _originalRows(): DataRow[] | undefined { return this.__originalRows }
+  
+  /** @deprecated 内部使用，不推荐外部访问 */
+  set _originalRows(value: DataRow[] | undefined) { this.__originalRows = value }
+  
+  /**
+   * 获取宿主表名
+   */
+  get hostTable(): string {
+    return this.__hostTable
+  }
+  
+  /**
+   * 获取上下文 ID
+   */
+  get contextId(): string {
+    return this.__contextId
   }
   
   /**
@@ -86,6 +114,30 @@ export class BindingContext implements IBindingContext {
 
   /**
    * 设置当前选中行
+   * 
+   * @param row - 要选中的行数据，传入 null 则取消选中
+   * @param skipNotify - 是否跳过当前表的 UI 更新通知（默认 false）
+   *   - `true`: 不更新当前表格 UI，但仍会触发关联表更新
+   *   - `false`: 触发完整的更新流程（关联表 + 订阅者 + 事件）
+   * 
+   * @remarks
+   * - 自动防重：如果新行与现有行相同（引用比较），则跳过更新
+   * - 级联更新：会自动触发依赖此上下文的子表过滤
+   * - 事件触发：会触发 `currentRowChanged` 事件（除非 skipNotify=true）
+   * 
+   * @example
+   * ```typescript
+   * // 选中第一行并触发级联
+   * context.setCurrentRow(rows[0])
+   * 
+   * // 取消选中
+   * context.setCurrentRow(null)
+   * 
+   * // 内部同步（不触发 UI 更新）
+   * context.setCurrentRow(row, true)
+   * ```
+   * 
+   * @fires DataSet#currentRowChanged - 当 skipNotify=false 时触发
    */
   setCurrentRow(row: DataRow | null, skipNotify: boolean = false): void {
     // 防重复检查 - 只比较引用
@@ -118,8 +170,31 @@ export class BindingContext implements IBindingContext {
 
   /**
    * 设置选中行集合
-   * @param rows 选中的行数据
-   * @param skipNotify 是否跳过通知当前表的 UI 更新（但仍会触发关联更新）
+   * 
+   * @param rows - 选中的行数据数组
+   * @param skipNotify - 是否跳过当前表的 UI 更新通知（默认 false）
+   *   - `true`: 不通知当前表的订阅者，但仍会触发关联表更新
+   *   - `false`: 触发完整的更新流程
+   * 
+   * @remarks
+   * - 自动防重：比较数组长度和元素引用，相同则跳过
+   * - 级联更新：始终触发 updateRelatedTables（过滤依赖此上下文的子表）
+   * - 订阅通知：根据 skipNotify 决定是否通知当前表的订阅者
+   * - 事件触发：仅在 skipNotify=false 时触发，避免 UI→数据→UI 循环
+   * 
+   * @example
+   * ```typescript
+   * // 选中多行
+   * context.setSelectedRows([row1, row2, row3])
+   * 
+   * // 清空选中
+   * context.setSelectedRows([])
+   * 
+   * // 内部同步（避免循环通知）
+   * context.setSelectedRows(rows, true)
+   * ```
+   * 
+   * @fires DataSet#selectedRowsChanged - 当 skipNotify=false 时触发
    */
   setSelectedRows(rows: DataRow[], skipNotify: boolean = false): void {
     // 防重复检查：只比较引用
@@ -160,6 +235,19 @@ export class BindingContext implements IBindingContext {
 
   /**
    * 手动触发通知
+   * 
+   * @remarks
+   * 用于手动触发订阅者更新，通常在以下场景使用：
+   * - 批量修改数据后一次性通知
+   * - 手动刷新 UI
+   * - 强制重新计算依赖关系
+   * 
+   * @example
+   * ```typescript
+   * // 批量修改后通知
+   * context.rows.push(newRow1, newRow2, newRow3)
+   * context.notifyChange()  // 一次性通知所有订阅者
+   * ```
    */
   notifyChange(): void {
     if (this.dataSet) {
@@ -169,6 +257,24 @@ export class BindingContext implements IBindingContext {
 
   /**
    * 清空所有状态（用于条件不满足时递归清空）
+   * 
+   * @param skipNotify - 是否跳过通知（默认 false）
+   * 
+   * @remarks
+   * - 清空 rows, currentRow, selectedRows
+   * - **不**清空 _originalRows（保留缓存数据）
+   * - 使用 splice 保持 Vue 响应式引用
+   * - 仅在数据发生变化时触发通知
+   * 
+   * @example
+   * ```typescript
+   * // 主表选中为空，清空子表
+   * if (!parentContext.currentRow) {
+   *   childContext.clearAll()
+   * }
+   * ```
+   * 
+   * @fires DataSet#contextCleared - 当数据发生变化且 skipNotify=false 时触发
    */
   clearAll(skipNotify: boolean = false): void {
     const hadData = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0;
@@ -277,7 +383,29 @@ export class BindingContext implements IBindingContext {
 
   /**
    * 更新上下文的 rows（应用过滤和排序）
-   * @param sourceData 完整数据源（通常是 table._originalRows 或 table.rows）
+   * 
+   * @param sourceData - 完整数据源（通常是 table._originalRows 或 table.rows）
+   * 
+   * @remarks
+   * 此方法会按顺序执行：
+   * 1. **过滤**：根据 filterExpression 过滤数据
+   * 2. **排序**：根据 sortExpression 排序数据
+   * 3. **更新**：将结果赋值给 this.rows
+   * 
+   * 注意事项：
+   * - 不会触发通知，需要调用方手动触发
+   * - 过滤/排序失败会记录错误日志，不会抛出异常
+   * - 创建数据副本，不会修改源数据
+   * 
+   * @example
+   * ```typescript
+   * // 重新应用过滤和排序
+   * context.updateRows(table._originalRows)
+   * 
+   * // 主从表场景：子表基于父表选中行过滤
+   * const filtered = parentTable._originalRows.filter(r => r.parentId === parentRow.id)
+   * childContext.updateRows(filtered)
+   * ```
    */
   updateRows(sourceData: DataRow[]): void {
     let result = [...sourceData];
@@ -361,9 +489,9 @@ export class BindingContext implements IBindingContext {
       currentRow: this.currentRow,
       selectedRows: this.selectedRows,
       rows: this.rows,
-      _originalRows: this._originalRows,
-      _hostTable: this._hostTable,
-      _contextId: this._contextId,
+      _originalRows: this.__originalRows,
+      _hostTable: this.__hostTable,
+      _contextId: this.__contextId,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
       pagination: this.pagination
@@ -379,7 +507,7 @@ export class BindingContext implements IBindingContext {
     context.currentRow = data.currentRow ?? null
     context.selectedRows = data.selectedRows ?? []
     context.rows = data.rows ?? []
-    context._originalRows = data._originalRows
+    context['__originalRows'] = data._originalRows  // 直接访问私有字段
     context.filterExpression = data.filterExpression
     context.sortExpression = data.sortExpression
     context.pagination = data.pagination
