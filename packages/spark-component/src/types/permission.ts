@@ -30,6 +30,10 @@ export enum FieldVisibility {
 /**
  * 数据行/实例权限
  * 
+ * 概念区分：
+ * - “权”：允许与否（allowDelete, allowView）
+ * - “限”：能搞到什么程度（editableFields, hiddenFields, maskedFields）
+ * 
  * 字段权限通过标志集合控制：
  * - editableFields: 可编辑字段列表
  * - hiddenFields: 不可见字段列表
@@ -65,8 +69,6 @@ export interface IInstancePermission {
   hiddenFields?: string[]
   /** 脱敏字段列表（显示脱敏后的值） */
   maskedFields?: string[]
-  /** 自定义权限扩展 */
-  custom?: Record<string, unknown>
 }
 
 // ==================== 模型级权限 ====================
@@ -74,8 +76,12 @@ export interface IInstancePermission {
 /**
  * 数据模型/表级权限
  * 
+ * 概念区分：
+ * - “权”：允许与否（allow*）
+ * - “限”：能搞到什么程度（字段列表等）
+ * 
  * 权限裁决逻辑：
- * - allowCreate: 控制是否可新增，由后端根据新增权限裁决
+ * - allowCreate: 控制是否可新增，由后端根据新增权限装决
  * - allowImport: 控制是否可导入，由后端按新增/编辑权限裁决
  * - allowExport: 控制是否可导出，由后端按查看范围（allowView）裁决
  * - 批量删除: 根据返回的实例中有多少个 allowDelete=true 确定
@@ -87,8 +93,6 @@ export interface IModelPermission {
   allowImport?: boolean
   /** 是否允许导出（后端按查看范围裁决） */
   allowExport?: boolean
-  /** 自定义权限扩展 */
-  custom?: Record<string, unknown>
 }
 
 // ==================== 组件权限接口 ====================
