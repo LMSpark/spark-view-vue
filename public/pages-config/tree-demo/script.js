@@ -3,16 +3,23 @@
 // ========================================
 // 
 // 沙箱注入的全局变量:
-//   $api - FormCreate API
-//   $data - 页面数据（reactive）
-//   $dataSet - DataSet 实例
-//   $rebindRules - 重新绑定规则
-//   $el - 页面容器元素
-//   $query / $queryAll - DOM 查询
+//   - $api: FormCreate API
+//   - $route: Vue Router 路由
+//   - $data: 页面数据（reactive）
+//   - $el: 页面容器元素 (() => HTMLElement)
+//   - $query: DOM 查询单个元素
+//   - $queryAll: DOM 查询所有元素
+//   - $dataSet: DataSet 实例
+//   - $rebindRules: 重新绑定规则
+//   - $refreshData: 刷新数据
+//   - ElMessage: Element Plus 消息提示
+//   - ElMessageBox: Element Plus 消息框
+//   - SparkData: SPARK 数据空间命名空间
+//   - h: Vue h 函数
 //
 // 注意：
 // 1. 不支持 ES6 import，所有依赖通过沙箱注入
-// 2. TreeManager 和 ElMessage 需要在页面配置的 data 中提供
+// 2. TreeManager 可以通过 SparkData.createTreeManager() 创建
 // ========================================
 
 let treeManager = null

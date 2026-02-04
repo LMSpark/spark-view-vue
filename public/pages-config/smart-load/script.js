@@ -1,4 +1,6 @@
-﻿// 沙箱注入的全局变量: $data, $dataSet, $api, $route, $rebindRules, $refreshData
+﻿// 沙箱注入的全局变量: 
+// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - ElMessage, ElMessageBox, SparkData, h
 
 // 模拟数据加载器（实际项目中应该是 API 请求）
 const mockDataLoader = async (tableName) => {
@@ -114,7 +116,7 @@ function handleClearAll() {
 }
 
 /**
- * 页面初始化函数（由 DynamicPage 自动调用）
+ * 页面初始化函数（由 PageRenderer 自动调用）
  * 用于注册数据加载器等初始化操作
  */
 function __init__() {

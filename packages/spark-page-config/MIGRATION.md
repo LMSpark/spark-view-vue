@@ -1,5 +1,7 @@
 # 迁移到 @spark-view/spark-page-config
 
+> ⚠️ **重要提示**：此文档已部分过时。文档中提到的 `DynamicPage` 组件已废弃，请使用 `@spark-view/spark-renderer` 包的 `PageRenderer` 组件替代。
+
 本指南帮助你将现有的页面配置系统迁移到新的 `@spark-view/spark-page-config` 包。
 
 ## 📋 当前架构

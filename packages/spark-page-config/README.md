@@ -1,5 +1,7 @@
 # @spark-view/spark-page-config
 
+> ⚠️ **注意**：文档中提到的 `DynamicPage` 组件已废弃，请使用 `@spark-view/spark-renderer` 包的 `PageRenderer` 组件替代。
+
 SPARK 页面配置层（L2 业务编排层）- 支持本地/远程配置加载、动态路由注册、配置缓存和验证。
 
 ## 📦 功能特性

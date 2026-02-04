@@ -65,6 +65,10 @@ export function compileFunctions(
       '$dataSet',
       '$rebindRules',
       '$refreshData',
+      'ElMessage',
+      'ElMessageBox',
+      'SparkData',
+      'h',
       fullScript
     )
     
@@ -78,7 +82,11 @@ export function compileFunctions(
       context.$queryAll,
       context.$dataSet,
       context.$rebindRules,
-      context.$refreshData
+      context.$refreshData,
+      context.ElMessage,
+      context.ElMessageBox,
+      context.SparkData,
+      context.h
     )
     
     // 过滤掉 undefined 的函数

@@ -1,5 +1,7 @@
 // 用户管理页面脚本
-// 沙箱注入的全局变量: $api, $route, $data, $el, $query, $queryAll
+// 沙箱注入的全局变量: 
+// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - ElMessage, ElMessageBox, SparkData, h
 
 // 页面初始化
 console.log('👥 用户管理页面已加载');

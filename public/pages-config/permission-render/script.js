@@ -3,9 +3,9 @@
  * 展示如何根据后端返回的权限字段控制 UI
  */
 
-// 沙箱注入的全局变量: $api, $data, $dataSet
-import { ElMessage } from 'element-plus';
-import { h } from 'vue';
+// 沙箱注入的全局变量: 
+// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - ElMessage, ElMessageBox, SparkData, h
 
 // 模拟后端返回的数据（已包含权限字段）
 const mockBackendData = {
@@ -92,8 +92,8 @@ const mockBackendData = {
 /**
  * 切换用户
  */
-export function handleSwitchUser(userId) {
-  const pageData = $data();
+function handleSwitchUser(userId) {
+  const pageData = $data;
   pageData.currentUser = userId;
   pageData.tableData = [];
   pageData.responseData = null;
@@ -104,8 +104,8 @@ export function handleSwitchUser(userId) {
 /**
  * 加载数据（模拟后端返回）
  */
-export function handleLoadData() {
-  const pageData = $data();
+function handleLoadData() {
+  const pageData = $data;
   const currentUser = pageData.currentUser || 'user1';
   
   // 模拟网络延迟
@@ -123,7 +123,7 @@ export function handleLoadData() {
 /**
  * 渲染权限信息
  */
-export function renderPermInfo(row) {
+function renderPermInfo(row) {
   if (!row._perm) return '无权限信息';
   
   return h('div', { style: 'font-size: 12px; color: #666;' }, [
@@ -138,7 +138,7 @@ export function renderPermInfo(row) {
 /**
  * 渲染操作按钮
  */
-export function renderActions(row) {
+function renderActions(row) {
   const buttons = [];
   
   if (row._perm?.canEdit) {
@@ -181,8 +181,8 @@ export function renderActions(row) {
 /**
  * 新增
  */
-export function handleAdd() {
-  const pageData = $data();
+function handleAdd() {
+  const pageData = $data;
   if (!pageData.responseData?._modelPerm?.canAdd) {
     ElMessage.warning('无新增权限');
     return;
@@ -195,7 +195,7 @@ export function handleAdd() {
 /**
  * 编辑
  */
-export function handleEdit(row) {
+function handleEdit(row) {
   if (!row._perm?.canEdit) {
     ElMessage.warning('无编辑权限');
     return;
@@ -208,7 +208,7 @@ export function handleEdit(row) {
 /**
  * 删除
  */
-export function handleDelete(row) {
+function handleDelete(row) {
   if (!row._perm?.canDelete) {
     ElMessage.warning('无删除权限');
     return;
@@ -221,8 +221,8 @@ export function handleDelete(row) {
 /**
  * 自定义组件：渲染新增按钮
  */
-export function RenderAddButton() {
-  const pageData = $data();
+function RenderAddButton() {
+  const pageData = $data;
   const canAdd = pageData.responseData?._modelPerm?.canAdd ?? false;
   
   return h('el-card', null, [
@@ -239,8 +239,8 @@ export function RenderAddButton() {
 /**
  * 自定义组件：渲染数据表格
  */
-export function RenderTable() {
-  const pageData = $data();
+function RenderTable() {
+  const pageData = $data;
   const tableData = pageData.tableData || [];
   
   return h('el-card', { style: 'margin-top: 20px' }, [

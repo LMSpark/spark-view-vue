@@ -1,6 +1,9 @@
 ﻿/* eslint-disable no-console */
 /**
- * 使用示例 - SSR/API 模式
+ * ⚠️ DEPRECATED: 此示例已废弃
+ * 
+ * 请使用 @spark-view/spark-renderer 的 PageRenderer 组件替代 DynamicPage
+ * 参考：packages/spark-renderer/API.md
  * 
  * @fileoverview Examples are allowed to use console for demonstration
  */
@@ -9,8 +12,10 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { SparkPageConfig } from '@spark-view/spark-page-config'
 import { SparkApp } from '@spark-view/spark-app'
+// import { PageRenderer } from '@spark-view/spark-renderer'  // 应该使用这个
 import App from './App.vue'
-import DynamicPage from './views/DynamicPage.vue'
+// DynamicPage 已被 PageRenderer 替代
+// import DynamicPage from './views/DynamicPage.vue'
 
 // 创建 Vue 应用
 const app = createApp(App)

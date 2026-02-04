@@ -1,6 +1,6 @@
-﻿// 沙箱注入的全局变量: $data, $dataSet, $rebindRules
-import { SparkData } from '@spark-view/spark-data'
-import { ElMessage } from 'element-plus'
+﻿// 沙箱注入的全局变量: 
+// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - ElMessage, ElMessageBox, SparkData, h
 
 // Mock 数据加载器（模拟 API 请求）
 const mockDataLoader = async (tableName) => {
@@ -40,8 +40,8 @@ const mockDataLoader = async (tableName) => {
 /**
  * 初始化 DataSet - __init__ 生命周期
  */
-export function __init__() {
-  const dataSet = $dataSet()
+function __init__() {
+  const dataSet = $dataSet
   if (dataSet) {
     // 注册数据加载器
     dataSet.dataLoader = mockDataLoader
@@ -66,8 +66,8 @@ export function __init__() {
 /**
  * 用户选中事件
  */
-export function handleUserSelect(row) {
-  const dataSet = $dataSet();
+function handleUserSelect(row) {
+  const dataSet = $dataSet;
   if (!dataSet || !row) return
   
   console.log('👤 选中用户:', row)
@@ -95,7 +95,7 @@ export function handleUserSelect(row) {
   }
   
   // 更新 UI 统计信息
-  const pageData = $data();
+  const pageData = $data;
   pageData.currentUser = {
     label: row.name,
     orderCount: ordersTable?.rows?.length || 0
@@ -113,13 +113,13 @@ export function handleUserSelect(row) {
 /**
  * 订单选中事件
  */
-export function handleOrderSelect(selection) {
+function handleOrderSelect(selection) {
   console.log('📦 选中订单:', selection)
   
   // ✅ 不需要手动设置 selectedRows - 自动注入的事件处理器已经完成了同步
   // ✅ 不需要调用 $rebindRules - 关联更新会自动通知子表（OrderItems）刷新
   // 这里只更新 UI 统计信息（不触发重绑）
-  const pageData = $data();
+  const pageData = $data;
   pageData.selectedOrdersCount = selection.length
   
   // ❌ 移除 $rebindRules() - 会导致 el-table 重新渲染，复选框状态丢失
@@ -128,8 +128,8 @@ export function handleOrderSelect(selection) {
 /**
  * 显示 SQL 查询
  */
-export function showSQLQuery() {
-  const dataSet = $dataSet();
+function showSQLQuery() {
+  const dataSet = $dataSet;
   if (!dataSet) {
     ElMessage.warning('DataSet 未初始化')
     return
@@ -167,8 +167,8 @@ export function showSQLQuery() {
 /**
  * 显示 MongoDB 查询
  */
-export function showMongoQuery() {
-  const dataSet = $dataSet();
+function showMongoQuery() {
+  const dataSet = $dataSet;
   if (!dataSet) {
     ElMessage.warning('DataSet 未初始化')
     return
@@ -206,8 +206,8 @@ export function showMongoQuery() {
 /**
  * 导出 DataSet
  */
-export function exportDataSet() {
-  const dataSet = $dataSet();
+function exportDataSet() {
+  const dataSet = $dataSet;
   if (!dataSet) {
     ElMessage.warning('DataSet 未初始化')
     return
