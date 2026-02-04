@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "重启 TypeScript 服务器",
+      "type": "shell",
+      "command": "echo '请在 VS Code 中按 F1 或 Ctrl+Shift+P，输入: TypeScript: Restart TS Server'",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    }
+  ]
+}

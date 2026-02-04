@@ -112,6 +112,7 @@ SparkApp.start({
     const Dashboard = (await import('./views/Dashboard.vue')).default
     const About = (await import('./views/About.vue')).default
     const Settings = (await import('./views/Settings.vue')).default
+    const CapabilityDemo = (await import('./views/CapabilityDemo.vue')).default
     
     // 注册静态路由
     router.addRoute({
@@ -121,6 +122,17 @@ SparkApp.start({
       meta: {
         title: '管理仪表板',
         icon: '🏠',
+        type: 'vue-component'
+      }
+    })
+    
+    router.addRoute({
+      path: '/capability-demo',
+      name: 'capability-demo',
+      component: CapabilityDemo,
+      meta: {
+        title: '能力管理演示',
+        icon: '🎯',
         type: 'vue-component'
       }
     })
