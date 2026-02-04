@@ -90,7 +90,7 @@ export interface PageContext {
   $queryAll: (selector: string) => NodeListOf<Element>
   $rebindRules: () => void
   $refreshData: (key?: string) => Promise<void>
-  $dataSet: IDataSet | null  // 使用接口而非具体类
+  $dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
   
   // 沙箱全局变量
   ElMessage: typeof import('element-plus')['ElMessage']  // Element Plus 消息提示
@@ -167,6 +167,6 @@ export interface RuleBindingOptions {
   rules: Rule[]
   pageData: Record<string, unknown>
   pageFunctions: Record<string, Function>
-  dataSet: IDataSet | null  // 使用接口而非具体类
+  dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
   formApi: FormCreateAPI | null
 }

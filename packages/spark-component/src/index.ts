@@ -28,6 +28,9 @@ export {
   createEventCapabilityConsumer
 } from './capabilities/EventCapability.js'
 
+// Permission System
+export * from './permission/index.js'
+
 export type {
   EventCapabilityProvider,
   EventCapabilityConsumer
