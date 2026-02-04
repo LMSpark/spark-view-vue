@@ -90,7 +90,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       context.$dataSet = dataSet.value
       
       pageLogger.debug('DataSet 初始化成功', { 
-        tables: Object.keys(dataSet.value.tables || {}) 
+        tables: dataSet.value ? Object.keys(dataSet.value.tables || {}) : []
       })
     }
   }
