@@ -9,6 +9,18 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
+// 权限系统类型（明确导出以便在其他包中使用）
+export type {
+  IModelPermission,
+  IInstancePermission,
+  IPermissionDataRow,
+  IPermissionDataSet,
+  IPermissionChecker,
+  IPermissionFilter,
+  FieldVisibility,
+  ComponentLevel
+} from './types/permission.js'
+
 // Event System
 export {
   createComponentEventEmitter,
