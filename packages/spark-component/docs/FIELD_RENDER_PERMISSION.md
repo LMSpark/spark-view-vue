@@ -285,25 +285,25 @@ phone:
   visibility: masked
   editable: true
   shouldRender: true
-  displayValue: 138****8000
+  displayValue: 138****8000    （后端返回脱敏值）
   
 salary:
   visibility: masked
   editable: false
   shouldRender: true
-  displayValue: 8***
+  displayValue: 8***    （后端返回脱敏值）
   
 password:
   visibility: hidden
   editable: true
   shouldRender: false
-  displayValue: undefined
+  displayValue: undefined    （后端不返回）
   
 idCard:
   visibility: hidden
   editable: false
   shouldRender: false
-  displayValue: undefined
+  displayValue: undefined    （后端不返回）
 */
 ```
 
