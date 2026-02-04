@@ -22,9 +22,9 @@
               </el-form-item>
               <el-form-item label="主题模式">
                 <el-radio-group v-model="settings.theme">
-                  <el-radio label="light">浅色主题</el-radio>
-                  <el-radio label="dark">深色主题</el-radio>
-                  <el-radio label="auto">跟随系统</el-radio>
+                  <el-radio value="light">浅色主题</el-radio>
+                  <el-radio value="dark">深色主题</el-radio>
+                  <el-radio value="auto">跟随系统</el-radio>
                 </el-radio-group>
               </el-form-item>
 
@@ -32,9 +32,9 @@
               <el-divider content-position="left">渲染设置</el-divider>
               <el-form-item label="页面渲染模式">
                 <el-checkbox-group v-model="settings.renderModes">
-                  <el-checkbox label="vue-component">Vue 组件页面</el-checkbox>
-                  <el-checkbox label="config-page">配置页面</el-checkbox>
-                  <el-checkbox label="spark-component">SPARK 组件</el-checkbox>
+                  <el-checkbox value="vue-component">Vue 组件页面</el-checkbox>
+                  <el-checkbox value="config-page">配置页面</el-checkbox>
+                  <el-checkbox value="spark-component">SPARK 组件</el-checkbox>
                 </el-checkbox-group>
               </el-form-item>
               <el-form-item label="动态路由">
@@ -141,7 +141,6 @@
                 v-for="log in operationLogs"
                 :key="log.id"
                 :timestamp="log.time"
-                size="small"
               >
                 {{ log.action }}
               </el-timeline-item>

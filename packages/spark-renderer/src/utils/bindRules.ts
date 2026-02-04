@@ -52,9 +52,41 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       newRule.on = newOn
     }
     
-    // 自动为 el-table 注入状态同步事件
-    if (newRule.type === 'el-table' && newRule.dataKey && dataSet) {
-      injectTableEvents(newRule, dataSet, formApi)
+    // 🎯 处理 el-table 的 dataKey 绑定
+    if (newRule.type === 'el-table' && newRule.dataKey) {
+      // 解析 dataKey 路径，获取数据
+      const keys = newRule.dataKey.split('.')
+      let value: any = pageData
+      for (const key of keys) {
+        value = value?.[key]
+      }
+      
+      // 绑定数据到 props.data
+      if (value !== undefined) {
+        if (!newRule.props) newRule.props = {}
+        newRule.props.data = value
+      }
+      
+      // 如果有 dataSet，注入同步事件
+      if (dataSet) {
+        injectTableEvents(newRule, dataSet, formApi)
+      }
+    }
+    
+    // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定）
+    if (newRule.dataKey && newRule.type !== 'el-table') {
+      // 解析 dataKey 路径，获取数据值
+      const keys = newRule.dataKey.split('.')
+      let value: any = pageData
+      for (const key of keys) {
+        value = value?.[key]
+      }
+      
+      // 如果有值，替换 children 内容
+      if (value !== undefined && value !== null) {
+        // 将值转换为字符串并设置为 children
+        newRule.children = [String(value)]
+      }
     }
     
     // 递归处理子元素
