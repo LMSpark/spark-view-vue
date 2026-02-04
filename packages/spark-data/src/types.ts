@@ -168,9 +168,6 @@ export interface IApiContext {
   
   /** 请求超时时间（毫秒，默认 10000） */
   timeout?: number
-  
-  /** 是否启用权限日志（默认 false） */
-  enablePermissionLog?: boolean
 }
 
 /**

@@ -7,17 +7,17 @@
  * - 统一响应格式处理
  * - 错误处理和日志记录
  * 
+ * 注意：
+ * - 不处理业务数据权限（_perm, _modelPerm），那是上层业务逻辑
+ * - 仅处理 HTTP 层面的请求/响应
+ * 
  * @packageDocumentation
  */
 
 import type { 
   IApiClient, 
-  IApiContext,
-  IModelPermission
+  IApiContext
 } from '@spark-view/spark-data'
-
-// 导入权限类型用于内部使用
-import type { IInstancePermission } from '@spark-view/spark-data'
 
 /**
  * 标准 API 响应格式
@@ -26,26 +26,6 @@ interface StandardApiResponse<T = unknown> {
   code: number
   message?: string
   data?: T
-}
-
-/**
- * 带权限的响应数据（使用约定字段名）
- */
-interface PermissionAwareData {
-  /** 模型级权限（表级） */
-  _modelPerm?: IModelPermission
-  /** 数据行（任意类型的数组，可能包含 _perm 字段） */
-  rows?: Array<Record<string, unknown> & { _perm?: IInstancePermission }>
-  [key: string]: unknown
-}
-
-/**
- * 类型守卫：检查是否包含权限数据
- */
-function isPermissionAwareData(data: unknown): data is PermissionAwareData {
-  if (typeof data !== 'object' || data === null) return false
-  const obj = data as Record<string, unknown>
-  return '_modelPerm' in obj || ('rows' in obj && Array.isArray(obj.rows))
 }
 
 /**
@@ -102,48 +82,12 @@ export class HttpClient implements IApiClient {
     if (this.isStandardResponse<T>(result)) {
       if (this.isSuccessCode(result.code)) {
         // 类型守卫已确保 result.data 的类型安全
-        const data = result.data ?? ({} as T)
-        this.logPermissionInfo(data)
-        return data
+        return result.data ?? ({} as T)
       }
       throw new Error(result.message || `API 错误 (code: ${result.code})`)
     }
     // 直接返回数据（非标准格式）
-    this.logPermissionInfo(result)
     return result as T // 这里的 as 是必要的，因为我们信任后端返回的数据类型
-  }
-  
-  /**
-   * 记录权限信息（用于调试和审计）
-   * @private
-   */
-  private logPermissionInfo(data: unknown): void {
-    if (!this.context.enablePermissionLog) return
-    if (!isPermissionAwareData(data)) return
-    
-    // 记录模型级权限
-    if (data._modelPerm) {
-      console.info('[HttpClient] 模型级权限:', {
-        user: this.context.user?.username,
-        permissions: data._modelPerm
-      })
-    }
-    
-    // 记录实例级权限统计
-    if (Array.isArray(data.rows) && data.rows.length > 0) {
-      const permStats = {
-        total: data.rows.length,
-        editable: data.rows.filter(r => r._perm?.editableFields && r._perm.editableFields.length > 0).length,
-        deletable: data.rows.filter(r => r._perm?.allowDelete).length,
-        masked: data.rows.filter(r => r._perm?.maskedFields && r._perm.maskedFields.length > 0).length,
-        hidden: data.rows.filter(r => r._perm?.hiddenFields && r._perm.hiddenFields.length > 0).length
-      }
-      
-      console.info('[HttpClient] 实例级权限统计:', {
-        user: this.context.user?.username,
-        stats: permStats
-      })
-    }
   }
   
   /**
