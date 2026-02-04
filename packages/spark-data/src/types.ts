@@ -1,12 +1,21 @@
 ﻿/**
- * PageData 完整解决方案 - TypeScript 类型定义
+ * SPARK 数据空间类型定义
+ * 
+ * ⚠️ 重要：这是所有数据类型的唯一定义源
+ * - DataRow, DataTable, DataSet, BindingContext 等基础数据类型在此定义
+ * - 其他包（spark-app, spark-component）只能导入使用，不能重新定义
+ * - 保持数据类型系统的一致性和可维护性
+ * 
  * 参考：https://ligh60.blog.csdn.net/article/details/150585411
  */
 
 // ==================== 基础类型 ====================
 
 /**
- * 数据行：键值对结构
+ * 数据行：键值对结构（纯数据，无权限）
+ * 
+ * 这是最基础的数据行定义，不包含权限信息
+ * 如需权限支持，使用 WithInstancePermission<DataRow>
  */
 export type DataRow<T = unknown> = Record<string, T>
 

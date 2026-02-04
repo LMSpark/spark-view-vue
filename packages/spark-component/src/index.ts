@@ -9,18 +9,21 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
-// 权限系统类型（明确导出以便在其他包中使用）
+// 权限系统类型（转发导出，实际定义在 spark-data）
 export type {
-  IModelPermission,
-  IInstancePermission,
-  WithInstancePermission,
-  WithModelPermission,
-  DataRow,
-  DataSet,
-  IPermissionChecker,
-  IPermissionFilter,
-  FieldVisibility,
-  ComponentLevel
+  // 以下类型来自 spark-data（数据类型唯一来源）
+  IModelPermission,          // 模型级权限
+  IInstancePermission,       // 实例级权限
+  WithInstancePermission,    // 权限工具类型
+  WithModelPermission,       // 权限工具类型
+  DataRow,                   // 组件层数据行（基于 spark-data.DataRow + 权限）
+  DataSet,                   // 组件层数据集（便捷接口）
+  
+  // 以下类型为组件层特有
+  IPermissionChecker,        // 权限检查器
+  IPermissionFilter,         // 权限过滤器
+  FieldVisibility,           // 字段可见性枚举
+  ComponentLevel             // 组件级别枚举
 } from './types/permission.js'
 
 // Event System
