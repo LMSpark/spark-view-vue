@@ -27,7 +27,6 @@ export class FieldRenderHelper implements IFieldRenderHelper {
     checker: IPermissionChecker
   ): IFieldRenderState {
     const { field } = config
-    const rawValue = row[field]
     
     // 1. 计算读权限：可见性（3种状态）
     const visibility = checker.getFieldVisibility(field, row)
@@ -40,21 +39,17 @@ export class FieldRenderHelper implements IFieldRenderHelper {
     const shouldRender = visibility !== FieldVisibility.Hidden && (config.visible !== false)
     
     if (shouldRender) {
-      if (visibility === FieldVisibility.Masked) {
-        // 脱敏显示
-        displayValue = checker.maskFieldValue(field, rawValue, row)
-      } else {
-        // 完全可见
-        displayValue = String(rawValue ?? '')
-      }
+      // 后端返回的值已经是处理后的（Visible 或 Masked）
+      const value = row[field]
+      displayValue = value !== undefined && value !== null ? String(value) : ''
     }
+    // Hidden 时不设置 displayValue，保持 undefined
     
     return {
       field,
       visibility,      // 读权限（3种）
       editable,        // 写权限（2种）
-      displayValue,
-      rawValue,
+      displayValue,    // 后端返回的值
       shouldRender
     }
   }

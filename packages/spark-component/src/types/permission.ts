@@ -87,11 +87,13 @@ export interface IFieldRenderState {
   /** 写权限：字段是否可编辑 */
   editable: boolean
   
-  /** 显示值（应用脱敏后的值，Hidden 时为 undefined） */
+  /** 
+   * 显示值（后端返回的值）
+   * - Visible: 完整值
+   * - Masked: 脱敏后的值
+   * - Hidden: undefined（不返回）
+   */
   displayValue?: string
-  
-  /** 原始值 */
-  rawValue?: unknown
   
   /** 是否渲染（Hidden 时为 false，其他为 true） */
   shouldRender: boolean
