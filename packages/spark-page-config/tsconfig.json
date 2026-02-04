@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "rootDir": "src",
     "outDir": "./dist",
+    "declarationDir": "./dist/types",
     "moduleResolution": "bundler",
     "declaration": true,
     "declarationMap": true,
