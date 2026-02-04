@@ -24,17 +24,10 @@ export class PermissionChecker implements IPermissionChecker {
   }
 
   /**
-   * 检查是否允许批量删除
+   * 检查是否允许导入
    */
-  canBatchDelete(modelPermission?: IModelPermission): boolean {
-    return modelPermission?.allowBatchDelete !== false
-  }
-
-  /**
-   * 检查是否允许导出
-   */
-  canExport(modelPermission?: IModelPermission): boolean {
-    return modelPermission?.allowExport !== false
+  canImport(modelPermission?: IModelPermission): boolean {
+    return modelPermission?.allowImport !== false
   }
 
   /**

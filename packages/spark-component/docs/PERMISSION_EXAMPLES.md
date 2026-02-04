@@ -6,13 +6,12 @@
 
 ```typescript
 // 模型级权限（表级）
+// 说明：导出和批量删除通过实例级权限计算，无需在模型级定义
 const response = {
   rows: [...],
   permission: {
     allowCreate: true,      // 允许新增
-    allowBatchDelete: false, // 不允许批量删除
-    allowExport: true,
-    allowImport: false
+    allowImport: false      // 不允许导入
   }
 }
 
@@ -27,11 +26,10 @@ const user = {
   
   // 权限字段
   _perm: {
-    allowDelete: false,           // 不允许删除
-    allowEdit: true,              // 允许编辑
-    readonlyFields: ["salary"],   // 薪资只读
-    maskedFields: ["phone", "idCard"], // 手机号和身份证脱敏
-    hiddenFields: []              // 无隐藏字段
+    allowDelete: false,                     // 不允许删除
+    editableFields: ["name", "email"],      // name 和 email 可编辑，其他字段只读
+    maskedFields: ["phone", "idCard"],      // 手机号和身份证脱敏
+    hiddenFields: []                        // 无隐藏字段
   }
 }
 ```
@@ -254,17 +252,12 @@ function __init__() {
 
 // 处理编辑按钮点击
 function handleEdit(row) {
-  // 检查实例权限
-  if (row._perm?.allowEdit === false) {
+  // 检查实例权限（editableFields 有值即可编辑）
+  const editableFields = row._perm?.editableFields || []
+  if (editableFields.length === 0) {
     ElMessage.warning('此用户不允许编辑')
     return
   }
-  
-  // 检查字段权限
-  const readonlyFields = row._perm?.readonlyFields || []
-  const editableFields = Object.keys(row).filter(
-    field => !field.startsWith('_') && !readonlyFields.includes(field)
-  )
   
   console.log('可编辑字段:', editableFields)
   
@@ -272,7 +265,7 @@ function handleEdit(row) {
   $data.editDialog = {
     visible: true,
     data: row,
-    readonlyFields
+    editableFields
   }
 }
 
@@ -476,7 +469,7 @@ provide('dataComponent', {
        │
        ├─→ 隐藏新增按钮（allowCreate: false）
        ├─→ 禁用删除按钮（allowDelete: false）
-       ├─→ 字段只读（readonlyFields）
+       ├─→ 字段可编辑（editableFields）
        └─→ 字段脱敏（maskedFields）
 ```
 
