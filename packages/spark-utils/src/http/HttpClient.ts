@@ -16,6 +16,10 @@
 
 import type { IApiContext } from '../types/http'
 
+// ============================================================================
+// 类型定义
+// ============================================================================
+
 /**
  * 标准 API 响应格式
  */
@@ -24,6 +28,10 @@ interface StandardApiResponse<T = unknown> {
   message?: string
   data?: T
 }
+
+// ============================================================================
+// HTTP 客户端类
+// ============================================================================
 
 /**
  * HTTP 客户端实现类
@@ -53,6 +61,10 @@ export class HttpClient {
     this.context = context
   }
 
+  // --------------------------------------------------------------------------
+  // 核心请求方法
+  // --------------------------------------------------------------------------
+
   /**
    * 通用请求方法
    */
@@ -63,38 +75,15 @@ export class HttpClient {
     data?: unknown
     headers?: Record<string, string>
   }): Promise<T> {
-    const {
-      url,
-      method,
-      params,
-      data,
-      headers = {}
-    } = config
+    const { url, method, params, data, headers = {} } = config
 
     // 构建完整 URL
     const fullUrl = this.buildUrl(url, params)
 
-    // 构建请求头
-    const requestHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...this.context.headers,
-      ...headers
-    }
-
-    // 添加认证信息
-    if (this.context.token) {
-      requestHeaders['Authorization'] = `Bearer ${this.context.token}`
-    }
-
-    // 添加租户 ID
-    if (this.context.tenantId) {
-      requestHeaders['X-Tenant-Id'] = this.context.tenantId
-    }
-
     // 准备请求选项
     const options: RequestInit = {
       method,
-      headers: requestHeaders
+      headers: this.buildHeaders(headers)
     }
 
     // GET/DELETE 请求不发送 body
@@ -102,96 +91,74 @@ export class HttpClient {
       options.body = JSON.stringify(data)
     }
 
-    // 处理超时
-    const controller = new AbortController()
-    const timeout = this.context.timeout ?? 10000
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
-    options.signal = controller.signal
-
-    try {
-      const response = await fetch(fullUrl, options)
-      clearTimeout(timeoutId)
-
-      // 处理 HTTP 错误状态
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      // 解析 JSON 响应
-      const result = await response.json() as StandardApiResponse<T> | T
-
-      // 处理标准 API 响应格式 { code, message, data }
-      if (this.isStandardResponse(result)) {
-        if (result.code === 0 || result.code === 200) {
-          return result.data as T
-        }
-        throw new Error(result.message || 'API request failed')
-      }
-
-      // 直接返回原始数据
-      return result as T
-    } catch (error) {
-      clearTimeout(timeoutId)
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error(`Request timeout: ${url}`)
-      }
-      throw error
-    }
+    // 执行请求（带超时控制）
+    return this.executeRequest<T>(fullUrl, options)
   }
+
+  // --------------------------------------------------------------------------
+  // RESTful 快捷方法
+  // --------------------------------------------------------------------------
 
   /**
    * GET 请求
    */
   async get<T = unknown>(url: string, params?: Record<string, unknown>): Promise<T> {
-    return this.request<T>({
-      url,
-      method: 'GET',
-      params
-    })
+    return this.request<T>({ url, method: 'GET', params })
   }
 
   /**
    * POST 请求
    */
   async post<T = unknown>(url: string, data?: unknown): Promise<T> {
-    return this.request<T>({
-      url,
-      method: 'POST',
-      data
-    })
+    return this.request<T>({ url, method: 'POST', data })
   }
 
   /**
    * PUT 请求
    */
   async put<T = unknown>(url: string, data?: unknown): Promise<T> {
-    return this.request<T>({
-      url,
-      method: 'PUT',
-      data
-    })
+    return this.request<T>({ url, method: 'PUT', data })
   }
 
   /**
    * PATCH 请求
    */
   async patch<T = unknown>(url: string, data?: unknown): Promise<T> {
-    return this.request<T>({
-      url,
-      method: 'PATCH',
-      data
-    })
+    return this.request<T>({ url, method: 'PATCH', data })
   }
 
   /**
    * DELETE 请求
    */
   async delete<T = unknown>(url: string, params?: Record<string, unknown>): Promise<T> {
-    return this.request<T>({
-      url,
-      method: 'DELETE',
-      params
-    })
+    return this.request<T>({ url, method: 'DELETE', params })
+  }
+
+  // --------------------------------------------------------------------------
+  // 私有辅助方法
+  // --------------------------------------------------------------------------
+
+  /**
+   * 构建请求头
+   */
+  private buildHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...this.context.headers,
+      ...customHeaders
+    }
+
+    // 添加认证信息
+    if (this.context.token) {
+      headers['Authorization'] = `Bearer ${this.context.token}`
+    }
+
+    // 添加租户 ID
+    if (this.context.tenantId) {
+      headers['X-Tenant-Id'] = this.context.tenantId
+    }
+
+    return headers
   }
 
   /**
@@ -220,6 +187,53 @@ export class HttpClient {
   }
 
   /**
+   * 执行 HTTP 请求（带超时控制）
+   */
+  private async executeRequest<T>(url: string, options: RequestInit): Promise<T> {
+    const controller = new AbortController()
+    const timeout = this.context.timeout ?? 10000
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+    options.signal = controller.signal
+
+    try {
+      const response = await fetch(url, options)
+      clearTimeout(timeoutId)
+
+      return await this.handleResponse<T>(response, url)
+    } catch (error) {
+      clearTimeout(timeoutId)
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Request timeout: ${url}`)
+      }
+      throw error
+    }
+  }
+
+  /**
+   * 处理 HTTP 响应
+   */
+  private async handleResponse<T>(response: Response, _url: string): Promise<T> {
+    // 处理 HTTP 错误状态
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    // 解析 JSON 响应
+    const result = await response.json() as StandardApiResponse<T> | T
+
+    // 处理标准 API 响应格式 { code, message, data }
+    if (this.isStandardResponse(result)) {
+      if (result.code === 0 || result.code === 200) {
+        return result.data as T
+      }
+      throw new Error(result.message || 'API request failed')
+    }
+
+    // 直接返回原始数据
+    return result as T
+  }
+
+  /**
    * 检查是否是标准 API 响应格式
    */
   private isStandardResponse<T>(result: unknown): result is StandardApiResponse<T> {
@@ -231,6 +245,10 @@ export class HttpClient {
     )
   }
 }
+
+// ============================================================================
+// 工厂函数
+// ============================================================================
 
 /**
  * 创建 HTTP 客户端实例
