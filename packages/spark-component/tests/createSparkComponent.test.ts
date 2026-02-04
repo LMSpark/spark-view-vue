@@ -1,6 +1,6 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest'
-import { defineSparkComponent, createSparkComponent } from '../src/vue/createSparkComponent.js'
+import { defineSparkComponent } from '../src/vue/createSparkComponent.js'
 import { Spark } from '../src/spark-namespace.js'
 import { createComponentRegistry } from '../src/utils/SparkComponentRegistry.js'
 import { createComponentManager } from '../src/utils/SparkComponentManager.js'
@@ -126,30 +126,6 @@ describe('Spark Component Creation APIs', () => {
 
       expect((inst1 as { component?: unknown }).component).toBe(Comp)
       expect((inst2 as { component?: unknown }).component).toBe(Comp)
-    })
-  })
-
-  describe('createSparkComponent (legacy API)', () => {
-    it('still works for backward compatibility', () => {
-      const registry = createComponentRegistry()
-      const manager = createComponentManager(undefined, registry)
-
-      const Comp = createSparkComponent({
-        meta: { type: 'legacy-type', name: 'legacy', version: '0.1.0' },
-        setup(_props) {
-          return () => null
-        }
-      })
-
-      const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
-      try {
-        ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
-        Spark.register(Comp as unknown as unknown)
-      } finally { (Spark as unknown as { manager?: () => unknown }).manager = prevManager }
-
-      expect(registry.has('legacy-type')).toBe(true)
-      const inst = manager.render({ type: 'legacy-type' })
-      expect((inst as { component?: unknown }).component).toBe(Comp)
     })
   })
 })

@@ -399,20 +399,3 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
   return component as Component
 }
 
-/**
- * @deprecated Use defineSparkComponent instead
- * Legacy factory for backward compatibility
- */
-export function createSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(options: {
-  meta: { type: string; name?: string; version?: string; providers?: CapabilityProvider[]; validator?: (config: TConfig) => boolean }
-  setup?: (props: { config: TConfig }, ctx: unknown, helpers: unknown) => unknown
-}): SparkComponent<TConfig> {
-  return defineSparkComponent({
-    type: options.meta.type,
-    name: options.meta.name,
-    version: options.meta.version,
-    providers: options.meta.providers,
-    validator: options.meta.validator,
-    setup: options.setup ? (props, helpers) => options.setup?.(props, {} as unknown, helpers) : undefined
-  })
-} 
