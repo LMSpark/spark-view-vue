@@ -38,7 +38,7 @@ export class DataSet implements IDataSet {
   public dataLoader?: (tableName: string) => Promise<DataRow[]>
   // 正在加载的表
   private loadingTables: Set<string> = new Set()
-  // API 适配器
+  // API 适配器（通过 setApiAdapter 设置，用于表级 API 注入）
   private apiAdapter?: IApiAdapter
 
   constructor(

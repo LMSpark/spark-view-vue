@@ -22,30 +22,49 @@ interface StandardApiResponse<T = unknown> {
 }
 
 /**
+ * 模型级权限
+ */
+interface ModelPermission {
+  canAdd?: boolean
+  allowCreate?: boolean
+  allowImport?: boolean
+  allowExport?: boolean
+}
+
+/**
+ * 实例级权限
+ */
+interface InstancePermission {
+  canEdit?: boolean
+  canDelete?: boolean
+  allowDelete?: boolean
+  editableFields?: string[]
+  hiddenFields?: string[]
+  maskedFields?: string[]
+}
+
+/**
  * 带权限的响应数据
  */
 interface PermissionAwareData {
   /** 模型级权限（表级） */
-  _modelPerm?: {
-    canAdd?: boolean
-    allowCreate?: boolean
-    allowImport?: boolean
-    allowExport?: boolean
-  }
+  _modelPerm?: ModelPermission
   /** 数据行 */
   rows?: Array<{
     [key: string]: unknown
     /** 实例级权限（行级） */
-    _perm?: {
-      canEdit?: boolean
-      canDelete?: boolean
-      allowDelete?: boolean
-      editableFields?: string[]
-      hiddenFields?: string[]
-      maskedFields?: string[]
-    }
+    _perm?: InstancePermission
   }>
   [key: string]: unknown
+}
+
+/**
+ * 类型守卫：检查是否包含权限数据
+ */
+function isPermissionAwareData(data: unknown): data is PermissionAwareData {
+  if (typeof data !== 'object' || data === null) return false
+  const obj = data as Record<string, unknown>
+  return '_modelPerm' in obj || ('rows' in obj && Array.isArray(obj.rows))
 }
 
 /**
@@ -80,13 +99,10 @@ export class HttpClient implements IApiClient {
    * 判断是否为标准 API 响应格式
    * @private
    */
-  private isStandardResponse(result: unknown): result is StandardApiResponse {
-    return (
-      typeof result === 'object' &&
-      result !== null &&
-      'code' in result &&
-      typeof (result as StandardApiResponse).code === 'number'
-    )
+  private isStandardResponse<T = unknown>(result: unknown): result is StandardApiResponse<T> {
+    if (typeof result !== 'object' || result === null) return false
+    const obj = result as Record<string, unknown>
+    return 'code' in obj && typeof obj.code === 'number'
   }
   
   /**
@@ -102,16 +118,18 @@ export class HttpClient implements IApiClient {
    * @private
    */
   private handleResponse<T>(result: unknown): T {
-    if (this.isStandardResponse(result)) {
+    if (this.isStandardResponse<T>(result)) {
       if (this.isSuccessCode(result.code)) {
-        const data = result.data as T
+        // 类型守卫已确保 result.data 的类型安全
+        const data = result.data ?? ({} as T)
         this.logPermissionInfo(data)
         return data
       }
       throw new Error(result.message || `API 错误 (code: ${result.code})`)
     }
+    // 直接返回数据（非标准格式）
     this.logPermissionInfo(result)
-    return result as T
+    return result as T // 这里的 as 是必要的，因为我们信任后端返回的数据类型
   }
   
   /**
@@ -120,25 +138,24 @@ export class HttpClient implements IApiClient {
    */
   private logPermissionInfo(data: unknown): void {
     if (!this.context.enablePermissionLog) return
-    
-    const permData = data as PermissionAwareData
+    if (!isPermissionAwareData(data)) return
     
     // 记录模型级权限
-    if (permData?._modelPerm) {
+    if (data._modelPerm) {
       console.info('[HttpClient] 模型级权限:', {
         user: this.context.user?.username,
-        permissions: permData._modelPerm
+        permissions: data._modelPerm
       })
     }
     
     // 记录实例级权限统计
-    if (Array.isArray(permData?.rows) && permData.rows.length > 0) {
+    if (Array.isArray(data.rows) && data.rows.length > 0) {
       const permStats = {
-        total: permData.rows.length,
-        editable: permData.rows.filter(r => r._perm?.canEdit || r._perm?.editableFields?.length).length,
-        deletable: permData.rows.filter(r => r._perm?.canDelete || r._perm?.allowDelete).length,
-        masked: permData.rows.filter(r => r._perm?.maskedFields?.length).length,
-        hidden: permData.rows.filter(r => r._perm?.hiddenFields?.length).length
+        total: data.rows.length,
+        editable: data.rows.filter(r => r._perm?.canEdit || r._perm?.editableFields?.length).length,
+        deletable: data.rows.filter(r => r._perm?.canDelete || r._perm?.allowDelete).length,
+        masked: data.rows.filter(r => r._perm?.maskedFields?.length).length,
+        hidden: data.rows.filter(r => r._perm?.hiddenFields?.length).length
       }
       
       console.info('[HttpClient] 实例级权限统计:', {
