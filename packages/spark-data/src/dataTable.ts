@@ -69,7 +69,12 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       console.info(`✅ [DataTable] ${this.tableName}.${apiEndpoint}() 成功`)
       return result
     } catch (error) {
-      this.error = (error as Error).message
+      // 优雅的错误处理：支持 Error 对象和字符串
+      this.error = error instanceof Error 
+        ? error.message 
+        : typeof error === 'string' 
+        ? error 
+        : '未知错误'
       console.error(`❌ [DataTable] ${this.tableName}.${apiEndpoint}() 失败`, error)
       throw error
     } finally {
@@ -135,6 +140,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     this.validateApi('list', this.api?.list)
     
     return this.executeApi('list', async () => {
+      // validateApi 已确保 apiAdapter 和 api.list 存在
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const data = await this.apiAdapter!.execute<DataRow[]>(this.api!.list!, params)
       
       // 替换全部数据
@@ -153,6 +160,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     this.validateApi('create', this.api?.create)
     
     return this.executeApi('create', async () => {
+      // validateApi 已确保 apiAdapter 和 api.create 存在
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = await this.apiAdapter!.execute<DataRow>(this.api!.create!, data)
       
       // 追加到两个数组
@@ -173,6 +182,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     this.validateApi('update', this.api?.update)
     
     return this.executeApi('update', async () => {
+      // validateApi 已确保 apiAdapter 和 api.update 存在
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = await this.apiAdapter!.execute<DataRow>(this.api!.update!, { id, ...data })
       
       // 更新两个数组中的记录
@@ -192,6 +203,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     this.validateApi('delete', this.api?.delete)
     
     return this.executeApi('delete', async () => {
+      // validateApi 已确保 apiAdapter 和 api.delete 存在
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await this.apiAdapter!.execute(this.api!.delete!, { id })
       
       // 从两个数组中删除
@@ -208,6 +221,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     this.validateApi('batch.create', this.api?.batch?.create)
     
     return this.executeApi('batchCreate', async () => {
+      // validateApi 已确保 apiAdapter 和 api.batch.create 存在
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = await this.apiAdapter!.execute<DataRow[]>(this.api!.batch!.create!, { items: data })
       
       // 批量追加
@@ -229,6 +244,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     this.validateApi('batch.update', this.api?.batch?.update)
     
     return this.executeApi('batchUpdate', async () => {
+      // validateApi 已确保 apiAdapter 和 api.batch.update 存在
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = await this.apiAdapter!.execute<DataRow[]>(this.api!.batch!.update!, { items: updates })
       
       // 批量更新
@@ -251,6 +268,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     this.validateApi('batch.delete', this.api?.batch?.delete)
     
     return this.executeApi('batchDelete', async () => {
+      // validateApi 已确保 apiAdapter 和 api.batch.delete 存在
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await this.apiAdapter!.execute(this.api!.batch!.delete!, { ids })
       
       // 批量删除

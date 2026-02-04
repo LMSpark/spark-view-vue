@@ -115,6 +115,16 @@ export interface CrudApi {
 // ==================== API 运行时上下文 ====================
 
 /**
+ * 用户信息
+ */
+export interface UserInfo {
+  userId: string
+  username?: string
+  roles?: readonly string[]
+  permissions?: readonly string[]
+}
+
+/**
  * API 上下文接口（从应用层注入）
  * 
  * 职责：
@@ -151,12 +161,7 @@ export interface IApiContext {
   tenantId?: string
   
   /** 用户信息（用于前端权限判断和日志） */
-  user?: {
-    userId: string
-    username?: string
-    roles?: string[]
-    permissions?: string[]
-  }
+  user?: UserInfo
   
   /** 自定义请求头（会与 HttpEndpoint.headers 合并） */
   headers?: Record<string, string>
