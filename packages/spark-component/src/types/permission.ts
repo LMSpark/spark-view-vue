@@ -187,6 +187,45 @@ export interface IModelPermission {
   allowExport?: boolean
 }
 
+// ==================== 组件分类 ====================
+
+/**
+ * 组件级别
+ * 
+ * 按操作粒度分为3类，与权限系统3个级别对应：
+ * - Model: 模型级组件（管理整个数据表，如 Grid 表格、CardList 卡片视图）
+ * - Instance: 实例级组件（操作单条数据，如 Grid 行、单个 Card、Form 表单）
+ * - Field: 字段级组件（操作单个字段，如 Input、Text 显示组件）
+ */
+export enum ComponentLevel {
+  /** 模型级组件：管理整个数据表（Grid 表格、CardList 视图） */
+  Model = 'model',
+  /** 实例级组件：操作单条数据（Grid 行、单个 Card、Form 表单） */
+  Instance = 'instance',
+  /** 字段级组件：操作单个字段（Input、Text 等） */
+  Field = 'field'
+}
+
+/**
+ * 组件权限配置（按级别）
+ */
+export interface IComponentPermissionConfig {
+  /** 组件级别 */
+  level: ComponentLevel
+  
+  /** 模型级权限（level=Model 时使用） */
+  modelPermission?: IModelPermission
+  
+  /** 实例级权限（level=Instance 时使用） */
+  instancePermission?: IInstancePermission
+  
+  /** 字段级权限（level=Field 时使用） */
+  fieldPermission?: {
+    field: string
+    permission: IInstancePermission
+  }
+}
+
 // ==================== 组件权限接口 ====================
 
 /**
