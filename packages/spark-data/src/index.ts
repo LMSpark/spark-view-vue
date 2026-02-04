@@ -20,8 +20,7 @@ export type {
   FilterExpression,
   SortExpression,
   TreeConfig,
-  FlatTreeNode,
-  IApiContext
+  FlatTreeNode
 } from './types'
 
 // 导出权限类型（基础层，可被其他包共享）
@@ -42,9 +41,11 @@ export { TreeManager } from './treeManager'
 export { DataSetManager } from './dataSetManager'
 export { FilterExpressionParser } from './filterExpressionParser'
 
-// 导出 API 适配器和 HTTP 客户端
+// 导出 API 适配器
 export { ApiAdapter } from './apiAdapter'
-export { createHttpClient, HttpClient } from './http/HttpClient'
+
+// 重新导出 HTTP 客户端和 IApiContext（来自 spark-utils）
+export { createHttpClient, HttpClient, type IApiContext } from '@spark-view/spark-utils'
 
 // 导出能力管理器
 export { 

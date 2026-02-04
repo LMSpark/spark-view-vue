@@ -51,5 +51,12 @@ export {
 } from './eventEmitter'
 export type { EventMap } from './eventEmitter'
 
+// HTTP Client
+export {
+  HttpClient,
+  createHttpClient,
+} from './http/HttpClient'
+export type { IApiContext } from './types/http'
+
 // Capability System (通用能力系统)
 export * from './capability/index.js'
