@@ -10,7 +10,7 @@
  */
 
 import type { IDataSet, DataRow } from './types'
-import { DataSet } from './dataset-impl'
+import { DataSet } from './datasetl'
 
 /**
  * DataSetManager 工厂类（纯静态方法）
