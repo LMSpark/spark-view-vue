@@ -20,7 +20,7 @@ describe('DataSetCapabilityManager', () => {
         Users: {
           tableName: 'Users',
           columns: [
-            { name: 'id', type: 'string', primaryKey: true },
+            { name: 'id', type: 'string', isPrimaryKey: true },
             { name: 'name', type: 'string' },
             { name: 'age', type: 'number' }
           ],
@@ -139,7 +139,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should register apiClient capability when provided', () => {
     const context = manager.getContext()
-    const provider = Array.from(context.providers).find(p => p.name === 'apiClient')
+    const provider = Array.from(context.providers).find((p: any) => p.name === 'apiClient')
     
     expect(provider).toBeDefined()
     expect(provider?.implementation).toHaveProperty('request')
@@ -147,7 +147,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should handle table change listeners', () => {
     const context = manager.getContext()
-    const provider = Array.from(context.providers).find(p => p.name === 'dataSetState')
+    const provider = Array.from(context.providers).find((p: any) => p.name === 'dataSetState')
     
     let notified = false
     const unsubscribe = (provider?.implementation as any).onTableChange('Users', (_table: unknown) => {
@@ -157,7 +157,10 @@ describe('DataSetCapabilityManager', () => {
     expect(typeof unsubscribe).toBe('function')
     
     // 触发变化
-    manager.notifyTableChange('Users', mockDataSet.tables.Users)
+    const table = mockDataSet.tables.Users
+    if (table) {
+      manager.notifyTableChange('Users', table)
+    }
     expect(notified).toBe(true)
     
     // 取消订阅
