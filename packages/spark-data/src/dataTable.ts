@@ -12,9 +12,9 @@ import type {
   DataColumn, 
   CrudApi, 
   IDataSet,
-  IApiAdapter,
   DataRow
 } from './types'
+import type { ApiAdapter } from './apiAdapter'
 
 /**
  * 数据表类（实现 IDataTableWithApi 接口 + 方法逻辑）
@@ -30,13 +30,13 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   error?: string
   
   // API 适配器（注入）
-  private apiAdapter?: IApiAdapter
+  private apiAdapter?: ApiAdapter
 
   constructor(
     tableName: string,
     columns: DataColumn[] = [],
     dataSet?: IDataSet,
-    apiAdapter?: IApiAdapter
+    apiAdapter?: ApiAdapter
   ) {
     super(tableName, 'default', dataSet)
     this.tableName = tableName
@@ -47,7 +47,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   /**
    * 设置 API 适配器（由 DataSet 或应用层注入）
    */
-  setApiAdapter(adapter: IApiAdapter): void {
+  setApiAdapter(adapter: ApiAdapter): void {
     this.apiAdapter = adapter
   }
   

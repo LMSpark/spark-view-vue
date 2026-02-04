@@ -159,9 +159,30 @@ export interface UserInfo {
  * const apiAdapter = new ApiAdapter(httpClient, apiContext)
  * ```
  */
+
+// ==================== HTTP/API 定义 ====================
+
+/**
+ * API 上下文配置（运行时环境信息）
+ * 
+ * 说明：
+ * - 包含 baseURL、token、tenantId 等全局配置
+ * - 由 HttpClient 和 ApiAdapter 使用
+ * - 通常由应用层初始化并注入到数据层
+ * 
+ * @example
+ * ```typescript
+ * const apiContext: IApiContext = {
+ *   baseURL: 'http://api.example.com',
+ *   token: 'Bearer eyJhbGc...',
+ *   tenantId: 'org-123',
+ *   timeout: 10000
+ * }
+ * ```
+ */
 export interface IApiContext {
   /** API 基础地址（如 '/api' 或 'https://api.example.com'） */
-  baseURL: string
+  baseURL?: string
   
   /** 认证 Token（用于 Authorization header） */
   token?: string
@@ -169,119 +190,11 @@ export interface IApiContext {
   /** 租户 ID（多租户场景，用于 X-Tenant-Id header） */
   tenantId?: string
   
-  /** 用户信息（用于前端权限判断和日志） */
-  user?: UserInfo
-  
   /** 自定义请求头（会与 HttpEndpoint.headers 合并） */
   headers?: Record<string, string>
   
   /** 请求超时时间（毫秒，默认 10000） */
   timeout?: number
-}
-
-/**
- * API 客户端接口
- * 
- * 职责：
- * - 封装底层 HTTP 请求（fetch/axios/etc）
- * - 处理请求/响应拦截
- * - 统一错误处理
- * 
- * 实现：
- * - HttpClient (基于 fetch)
- * - MockHttpClient (用于测试)
- * 
- * 典型用法：
- * ```typescript
- * const client = createHttpClient(apiContext)
- * const users = await client.get<User[]>('/users')
- * const newUser = await client.post<User>('/users', { name: 'John' })
- * ```
- */
-export interface IApiClient {
-  /**
-   * 通用请求方法
-   */
-  request<T = unknown>(config: {
-    url: string
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-    params?: Record<string, unknown>
-    data?: unknown
-    headers?: Record<string, string>
-  }): Promise<T>
-  
-  /** GET 请求（查询参数会自动拼接到 URL） */
-  get<T = unknown>(url: string, params?: Record<string, unknown>): Promise<T>
-  
-  /** POST 请求（数据作为请求体发送） */
-  post<T = unknown>(url: string, data?: unknown): Promise<T>
-  
-  /** PUT 请求（完整更新） */
-  put<T = unknown>(url: string, data?: unknown): Promise<T>
-  
-  /** PATCH 请求（部分更新） */
-  patch<T = unknown>(url: string, data?: unknown): Promise<T>
-  
-  /** DELETE 请求（查询参数会自动拼接到 URL） */
-  delete<T = unknown>(url: string, params?: Record<string, unknown>): Promise<T>
-}
-
-/**
- * API 适配器接口
- * 
- * 职责：
- * - 将静态的 HttpEndpoint 配置转换为可执行的 HTTP 请求
- * - 自动拼接 baseURL 和相对路径
- * - 注入 token、tenantId 到请求头
- * - 处理路径参数替换（/users/{id} → /users/123）
- * - 处理查询参数拼接
- * 
- * 典型用法：
- * ```typescript
- * const endpoint: HttpEndpoint = { url: '/users/{id}', method: 'PUT' }
- * const data = await apiAdapter.execute<User>(endpoint, { id: 123, name: 'John' })
- * ```
- */
-export interface IApiAdapter {
-  /**
-   * 构建请求配置
-   * 
-   * @param endpoint - HTTP 端点配置
-   * @param params - 请求参数（路径参数、查询参数或请求体数据）
-   * @returns 完整的请求配置对象
-   * 
-   * @example
-   * ```typescript
-   * const config = adapter.buildRequest(
-   *   { url: '/users/{id}', method: 'GET', pathParams: ['id'] },
-   *   { id: 123, status: 'active' }
-   * )
-   * // 结果: { url: 'http://api.example.com/users/123?status=active', method: 'GET', ... }
-   * ```
-   */
-  buildRequest(endpoint: HttpEndpoint, params?: Record<string, unknown>): {
-    url: string
-    method: string
-    data?: unknown
-    headers?: Record<string, string>
-  }
-  
-  /**
-   * 执行 HTTP 请求
-   * 
-   * @param endpoint - HTTP 端点配置
-   * @param params - 请求参数
-   * @returns 响应数据
-   * 
-   * @example
-   * ```typescript
-   * const users = await adapter.execute<User[]>(
-   *   { url: '/users', method: 'GET' },
-   *   { page: 1, pageSize: 20 }
-   * )
-   * ```
-   */
-  execute<T = unknown>(endpoint: HttpEndpoint, params?: Record<string, unknown>): Promise<T>
 }
 
 // ==================== DataTable 定义 ====================
@@ -353,8 +266,9 @@ export interface IDataTable extends IBindingContext {
 export interface IDataTableWithApi extends IDataTable {
   /**
    * 设置 API 适配器（由 DataSet 或应用层注入）
+   * @param adapter - ApiAdapter 实例（来自 ./apiAdapter）
    */
-  setApiAdapter(adapter: IApiAdapter): void
+  setApiAdapter(adapter: unknown): void
   
   /**
    * 列表查询
