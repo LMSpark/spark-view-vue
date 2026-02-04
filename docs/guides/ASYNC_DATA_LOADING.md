@@ -113,6 +113,10 @@ export async function handleRefresh() {
 
 数据加载后，可以通过 `dataKey` 绑定到 UI 组件：
 
+### 支持的绑定方式
+
+#### 1. 表格数据绑定（el-table）
+
 ```json
 {
   "type": "el-table",
@@ -130,6 +134,66 @@ export async function handleRefresh() {
     }
   ]
 }
+```
+
+**说明**：
+- `dataKey` 路径从 `pageData` 根对象开始解析
+- 支持嵌套路径，如 `"stats.totalUsers"`
+- 不需要 DataSet，直接绑定简单数据即可
+
+#### 2. 文本内容绑定（div、span 等）
+
+```json
+{
+  "type": "div",
+  "class": "stat-value",
+  "dataKey": "stats.totalUsers",
+  "children": [""]
+}
+```
+
+**说明**：
+- `children` 必须设置为 `[""]`（空字符串数组）
+- 绑定的值会自动转换为字符串并替换 children
+- 支持任意嵌套路径
+
+#### 3. DataSet 绑定（高级场景）
+
+```json
+{
+  "type": "el-table",
+  "dataKey": "dataset.tables.Users.rows",
+  "props": {
+    "border": true
+  }
+}
+```
+
+**说明**：
+- 用于需要主从表联动、过滤、排序等高级功能的场景
+- 需要在 pagedata.json 中定义 DataSet 结构
+- 自动同步表格选中状态到 DataSet
+
+### 数据路径解析规则
+
+`dataKey` 支持点号分隔的路径表达式：
+
+```javascript
+// pageData 结构
+{
+  "stats": {
+    "totalUsers": 8523,
+    "revenue": "¥89,234"
+  },
+  "orders": [
+    { "id": 1, "customer": "张三" }
+  ]
+}
+
+// 有效的 dataKey 示例
+"stats.totalUsers"     // → 8523
+"stats.revenue"        // → "¥89,234"
+"orders"               // → [{ id: 1, customer: "张三" }]
 ```
 
 ## 完整示例
