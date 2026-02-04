@@ -1,6 +1,14 @@
 /**
  * 权限系统接口定义
  * 
+ * 架构分层：
+ * - 基础层（@spark-view/spark-data）：定义基础权限类型
+ * - 组件层（本文件）：扩展UI组件友好的接口和工具
+ * 
+ * 类型复用：
+ * - IPermissionDataRow, IPermissionDataSet 从 spark-data 导入
+ * - 本文件定义 IInstancePermission, IModelPermission 以及组件层特定功能
+ * 
  * 架构说明：
  * - 模型级权限（Model-level）：控制整个数据集的操作（如新增）
  * - 实例级权限（Instance-level）：控制单条数据的操作（如删除、编辑）
@@ -16,6 +24,13 @@
  * - Masked 字段：后端返回脱敏值到浏览器
  * - Visible 字段：后端返回完整值到浏览器
  */
+
+// ==================== 从 spark-data 导入基础数据类型 ====================
+
+import type { IPermissionDataRow, IPermissionDataSet } from '@spark-view/spark-data'
+
+// 重新导出供其他模块使用
+export type { IPermissionDataRow, IPermissionDataSet }
 
 // ==================== 字段级权限 ====================
 
@@ -187,7 +202,7 @@ export interface IModelPermission {
   allowExport?: boolean
 }
 
-// ==================== 组件分类 ====================
+// ==================== 组件级别 ====================
 
 /**
  * 组件级别
@@ -306,44 +321,6 @@ export interface IDataComponent {
  *     editableFields: ["password"],    // 密码可提交
  *     hiddenFields: ["password"]        // 密码不显示
  *   }
- * }
- * 
- * 示例 3：薪资查看（salary 脱敏显示但可编辑）
- * {
- *   id: 1,
- *   name: "李四",
- *   salary: 8000,
- *   _perm: {
- *     editableFields: ["name", "salary"],
- *     maskedFields: ["salary"]          // 显示脱敏值但可编辑
- *   }
- * }
- */
-export interface IPermissionDataRow {
-  /** 数据字段 */
-  [key: string]: unknown
-  
-  /** 实例级权限（约定字段名） */
-  _perm?: IInstancePermission
-}
-
-/**
- * 带权限的数据集
- */
-export interface IPermissionDataSet<T = IPermissionDataRow> {
-  /** 数据行列表 */
-  rows: T[]
-  
-  /** 模型级权限 */
-  permission?: IModelPermission
-  
-  /** 总记录数 */
-  total?: number
-  
-  /** 其他元数据 */
-  [key: string]: unknown
-}
-
 // ==================== 权限工具函数接口 ====================
 
 /**

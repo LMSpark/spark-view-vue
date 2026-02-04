@@ -62,8 +62,8 @@ export class DataSet implements IDataSet {
       table.setDataSet(this)
       
       // 🔧 注入 API 适配器
-      if (apiAdapter) {
-        table.setApiAdapter(apiAdapter)
+      if (this.apiAdapter) {
+        table.setApiAdapter(this.apiAdapter)
       }
       
       // 处理自定义上下文

@@ -9,6 +9,14 @@ export { SparkData, SparkData as default } from './spark-data-namespace'
 // 导出所有类型
 export type * from './types'
 
+// 导出权限类型（基础层，可被其他包共享）
+export type {
+  IInstancePermission,
+  IModelPermission,
+  IPermissionDataRow,
+  IPermissionDataSet
+} from './permission-types'
+
 // 导出核心类（向后兼容）
 export { DataSet } from './dataset-impl'
 export { DataTable } from './dataTable'

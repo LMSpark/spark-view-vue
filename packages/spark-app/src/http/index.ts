@@ -10,7 +10,12 @@
  * @packageDocumentation
  */
 
-import type { IApiClient, IApiContext } from '@spark-view/spark-data'
+import type { 
+  IApiClient, 
+  IApiContext,
+  IModelPermission,
+  IPermissionDataRow
+} from '@spark-view/spark-data'
 
 /**
  * 标准 API 响应格式
@@ -22,39 +27,13 @@ interface StandardApiResponse<T = unknown> {
 }
 
 /**
- * 模型级权限
- */
-interface ModelPermission {
-  canAdd?: boolean
-  allowCreate?: boolean
-  allowImport?: boolean
-  allowExport?: boolean
-}
-
-/**
- * 实例级权限
- */
-interface InstancePermission {
-  canEdit?: boolean
-  canDelete?: boolean
-  allowDelete?: boolean
-  editableFields?: string[]
-  hiddenFields?: string[]
-  maskedFields?: string[]
-}
-
-/**
- * 带权限的响应数据
+ * 带权限的响应数据（复用 spark-data 的基础权限类型）
  */
 interface PermissionAwareData {
   /** 模型级权限（表级） */
-  _modelPerm?: ModelPermission
+  _modelPerm?: IModelPermission
   /** 数据行 */
-  rows?: Array<{
-    [key: string]: unknown
-    /** 实例级权限（行级） */
-    _perm?: InstancePermission
-  }>
+  rows?: IPermissionDataRow[]
   [key: string]: unknown
 }
 
@@ -152,10 +131,10 @@ export class HttpClient implements IApiClient {
     if (Array.isArray(data.rows) && data.rows.length > 0) {
       const permStats = {
         total: data.rows.length,
-        editable: data.rows.filter(r => r._perm?.canEdit || r._perm?.editableFields?.length).length,
-        deletable: data.rows.filter(r => r._perm?.canDelete || r._perm?.allowDelete).length,
-        masked: data.rows.filter(r => r._perm?.maskedFields?.length).length,
-        hidden: data.rows.filter(r => r._perm?.hiddenFields?.length).length
+        editable: data.rows.filter(r => r._perm?.editableFields && r._perm.editableFields.length > 0).length,
+        deletable: data.rows.filter(r => r._perm?.allowDelete).length,
+        masked: data.rows.filter(r => r._perm?.maskedFields && r._perm.maskedFields.length > 0).length,
+        hidden: data.rows.filter(r => r._perm?.hiddenFields && r._perm.hiddenFields.length > 0).length
       }
       
       console.info('[HttpClient] 实例级权限统计:', {
