@@ -4,17 +4,53 @@ import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
 
+/**
+ * SPARK 组件管理器实现
+ * 
+ * 核心职责：管理组件实例的生命周期
+ * - 创建和销毁组件上下文（ComponentContext）
+ * - 渲染组件树
+ * - 管理组件间的能力系统（Capability）
+ * - 维护组件实例注册表
+ * 
+ * 设计模式：单例 + 工厂
+ * - 默认实例：componentManager（全局共享）
+ * - 工厂函数：createComponentManager（按需创建）
+ */
 export class SparkComponentManagerImpl {
+  /** 组件上下文实例缓存（key: contextId, value: ComponentContext） */
   private contexts = new Map<string, ComponentContext>()
+  /** 组件渲染器（负责将配置转换为 VNode） */
   private renderer: SparkComponentRendererImpl
+  /** 组件类型注册表（存储组件定义） */
   private registry: ComponentRegistry
+  /** 日志记录器 */
   private logger = Logger('Spark:Manager')
 
+  /**
+   * 构造函数
+   * @param renderer - 可选的自定义渲染器
+   * @param registry - 可选的自定义注册表
+   */
   constructor(renderer?: SparkComponentRendererImpl, registry?: ComponentRegistry) {
     this.registry = registry ?? defaultRegistry
     this.renderer = renderer ?? new SparkComponentRendererImpl(this.registry)
   }
 
+  /**
+   * 创建组件上下文
+   * 
+   * 组件上下文是组件实例的运行时表示，包含：
+   * - 唯一 ID
+   * - 组件类型和配置
+   * - 父子关系
+   * - 状态数据
+   * - 能力提供者/消费者
+   * 
+   * @param config - 组件配置
+   * @param parent - 父组件上下文（可选）
+   * @returns 新创建的组件上下文
+   */
   createContext(config: ComponentConfig, parent?: ComponentContext): ComponentContext {
     const ctx: ComponentContext = {
       id: config.id ?? this.generateId(),
@@ -31,6 +67,15 @@ export class SparkComponentManagerImpl {
     return ctx
   }
 
+  /**
+   * 渲染组件树
+   * 
+   * 创建组件上下文并递归渲染整个组件树
+   * 
+   * @param config - 组件配置（可能包含子组件）
+   * @param parentContext - 父组件上下文（可选）
+   * @returns 渲染结果（VNode）
+   */
   render(config: ComponentConfig, parentContext?: ComponentContext): unknown {
     const ctx = this.createContext(config, parentContext)
     // Use the unified renderer for component tree rendering
@@ -39,16 +84,40 @@ export class SparkComponentManagerImpl {
     return renderResult
   }
 
+  /**
+   * 渲染单个组件（不递归子组件）
+   * 
+   * @param config - 组件配置
+   * @returns 渲染结果（VNode）
+   */
   renderSingle(config: ComponentConfig): unknown {
     const renderResult = this.renderer.renderComponent(config)
     this.logger.info(`Rendered single component: ${config.type}`)
     return renderResult
   }
 
+  /**
+   * 获取组件上下文
+   * 
+   * @param id - 组件上下文 ID
+   * @returns 组件上下文或 undefined
+   */
   getContext(id: string): ComponentContext | undefined {
     return this.contexts.get(id)
   }
 
+  /**
+   * 销毁组件上下文
+   * 
+   * 递归销毁组件及其所有子组件：
+   * 1. 断开所有能力连接
+   * 2. 从父组件移除
+   * 3. 递归销毁子组件
+   * 4. 从缓存中删除
+   * 
+   * @param id - 组件上下文 ID
+   * @returns 是否销毁成功
+   */
   destroyContext(id: string): boolean {
     const ctx = this.contexts.get(id)
     if (!ctx) return false
@@ -68,6 +137,14 @@ export class SparkComponentManagerImpl {
     }
   }
 
+  /**
+   * 注册能力提供者到组件上下文
+   * 
+   * 注册后会自动尝试连接消费者，并通知等待的监听器
+   * 
+   * @param context - 组件上下文
+   * @param provider - 能力提供者
+   */
   registerProvider(context: ComponentContext, provider: CapabilityProvider): void {
     context.providers.add(provider)
     try { capabilityManager.autoConnectCapabilities(context) } catch {}
@@ -82,14 +159,33 @@ export class SparkComponentManagerImpl {
     }
   }
 
+  /**
+   * 注册组件上下文到管理器
+   * 
+   * @param context - 组件上下文
+   */
   registerContext(context: ComponentContext): void {
     if (!this.contexts.has(context.id)) this.contexts.set(context.id, context)
   }
 
+  /**
+   * 获取所有组件上下文
+   * 
+   * @returns 所有组件上下文数组
+   */
   getAllContexts(): ComponentContext[] {
     return Array.from(this.contexts.values())
   }
 
+  /**
+   * 查找能力提供者
+   * 
+   * 从当前上下文开始向上查找，直到找到或到达根节点
+   * 
+   * @param context - 起始组件上下文
+   * @param capabilityName - 能力名称
+   * @returns 能力提供者或 undefined
+   */
   getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined {
     const provider = Array.from(context.providers).find(p => p.name === capabilityName)
     if (provider) return provider
@@ -97,36 +193,91 @@ export class SparkComponentManagerImpl {
     return undefined
   }
 
+  // ========================================
+  // 组件类型注册相关方法（委托给 Registry）
+  // ========================================
+
+  /**
+   * 注册单个组件类型定义
+   * 
+   * 注意：这是便捷方法，实际委托给 Registry
+   * 
+   * @param def - 组件配置定义
+   */
   registerComponent(def: ComponentConfig) {
     this.registry.register(def.type, def)
   }
 
+  /**
+   * 批量注册组件类型定义
+   * 
+   * @param defs - 组件配置定义数组
+   */
   registerComponents(defs: ComponentConfig[]) {
     defs.forEach(d => this.registerComponent(d))
   }
 
+  /**
+   * 获取组件类型定义
+   * 
+   * @param type - 组件类型名称（如 'spark-button'）
+   * @returns 组件定义或 undefined
+   */
   getComponentDefinition(type: string) {
     return this.registry.get(type)
   }
 
+  /**
+   * 检查组件类型是否已注册
+   * 
+   * @param type - 组件类型名称
+   * @returns 是否已注册
+   */
   isComponentRegistered(type: string) {
     return this.registry.has(type)
   }
 
+  /**
+   * 获取所有已注册的组件类型名称
+   * 
+   * @returns 组件类型名称数组
+   */
   getRegisteredComponentTypes(): string[] {
     return this.registry.getAllTypes()
   }
 
+  /**
+   * 注销组件类型
+   * 
+   * @param type - 组件类型名称
+   * @returns 是否注销成功
+   */
   unregisterComponent(type: string) {
     return this.registry.unregister(type)
   }
 
+  // ========================================
+  // 工具方法
+  // ========================================
+
+  /**
+   * 创建组件树的深拷贝
+   * 
+   * @param cfg - 组件配置
+   * @returns 深拷贝后的组件配置
+   */
   createComponentTree(cfg: ComponentConfig) {
     const copy = { ...cfg } as ComponentConfig & { children?: ComponentConfig[] }
     if (copy.children) copy.children = copy.children.map((c: ComponentConfig) => this.createComponentTree(c))
     return copy
   }
 
+  /**
+   * 验证组件配置是否有效
+   * 
+   * @param cfg - 组件配置
+   * @returns 是否有效
+   */
   validateComponentConfig(cfg: ComponentConfig): boolean {
     const def = this.registry.get(cfg.type)
     if (!def) return false
@@ -134,6 +285,13 @@ export class SparkComponentManagerImpl {
     return true
   }
 
+  /**
+   * 获取组件兼容性映射
+   * 
+   * 返回每个能力所有兼容的提供者组件
+   * 
+   * @returns 能力名称到提供者组件类型的映射
+   */
   getComponentCompatibility(): Record<string, string[]> {
     const map: Record<string, string[]> = {}
     this.registry.getAllDefinitions().forEach(def => {
@@ -150,16 +308,47 @@ export class SparkComponentManagerImpl {
     return map
   }
 
+  /**
+   * 生成唯一的组件 ID
+   * 
+   * 格式：spark-{timestamp}-{random}
+   * 
+   * @returns 唯一 ID
+   */
   private generateId(): string {
     return `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
   }
 }
 
+/**
+ * 默认的全局组件管理器实例
+ * 
+ * 使用场景：
+ * - 简单应用，全局共享一个管理器
+ * - 避免重复创建管理器实例
+ */
 export const componentManager = new SparkComponentManagerImpl()
 
 /**
- * Create a new component manager instance with unified recursive rendering.
- * Optionally pass a custom renderer or registry implementation.
+ * 创建新的组件管理器实例
+ * 
+ * 使用场景：
+ * - 需要隔离的组件系统（如测试、多租户）
+ * - 自定义渲染器或注册表
+ * 
+ * @param renderer - 可选的自定义渲染器
+ * @param registry - 可选的自定义注册表
+ * @returns 新的组件管理器实例
+ * 
+ * @example
+ * ```typescript
+ * // 创建独立的测试管理器
+ * const testManager = createComponentManager()
+ * 
+ * // 使用自定义注册表
+ * const customRegistry = new SparkComponentRegistryImpl()
+ * const manager = createComponentManager(undefined, customRegistry)
+ * ```
  */
 export function createComponentManager(renderer?: SparkComponentRendererImpl, registry?: ComponentRegistry): ComponentManager {
   return new SparkComponentManagerImpl(renderer, registry)
