@@ -3,10 +3,12 @@
  */
 
 import { ref, Ref } from 'vue'
-import { pageLogger } from '@spark-view/spark-app'
+import { Logger } from '@spark-view/spark-utils'
 import type { Rule, FormCreateAPI } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
+
+const pageLogger = Logger('PageRenderer')
 
 export interface UseRuleBindingOptions {
   originalRules: Ref<Rule[]>

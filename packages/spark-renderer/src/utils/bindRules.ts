@@ -2,9 +2,11 @@
  * Rule 数据绑定工具
  */
 
-import { pageLogger } from '@spark-view/spark-app'
+import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
 import type { DataRow, IDataSet, BindingContext } from '@spark-view/spark-data'
+
+const pageLogger = Logger('PageRenderer')
 import { nextTick } from 'vue'
 
 /**

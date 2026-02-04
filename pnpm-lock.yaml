@@ -139,6 +139,9 @@ importers:
 
   packages/spark-component:
     dependencies:
+      '@spark-view/spark-data':
+        specifier: workspace:*
+        version: link:../spark-data
       '@spark-view/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
@@ -202,15 +205,15 @@ importers:
 
   packages/spark-renderer:
     dependencies:
-      '@spark-view/spark-app':
-        specifier: workspace:*
-        version: link:../spark-app
       '@spark-view/spark-data':
         specifier: workspace:*
         version: link:../spark-data
       '@spark-view/spark-page-config':
         specifier: workspace:*
         version: link:../spark-page-config
+      '@spark-view/spark-utils':
+        specifier: workspace:*
+        version: link:../spark-utils
       vue:
         specifier: ^3.5.0
         version: 3.5.27(typescript@5.3.3)

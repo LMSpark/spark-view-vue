@@ -36,7 +36,7 @@
     "dependencies": {
         "@spark-view/spark-data": "workspace:*",
         "@spark-view/spark-page-config": "workspace:*",
-        "@spark-view/spark-app": "workspace:*"
+        "@spark-view/spark-utils": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^18.19.130",

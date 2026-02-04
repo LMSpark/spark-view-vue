@@ -48,8 +48,8 @@ export {
   TokenManager
 } from './auth'
 
-// HTTP 客户端
-export { HttpClient, createHttpClient } from './http'
+// HTTP 客户端已移至 @spark-view/spark-data
+// 请从 @spark-view/spark-data 导入 createHttpClient 和 HttpClient
 
 export type {
   AuthConfig,

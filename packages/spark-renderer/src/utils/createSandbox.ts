@@ -2,7 +2,9 @@
  * 脚本沙箱工具
  */
 
-import { pageLogger } from '@spark-view/spark-app'
+import { Logger } from '@spark-view/spark-utils'
+
+const pageLogger = Logger('PageRenderer')
 import type { PageContext } from '../types'
 
 /**
