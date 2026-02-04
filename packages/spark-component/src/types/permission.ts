@@ -228,6 +228,7 @@ export interface IPermissionChecker {
   
   /** 检查是否有实例操作权限 */
   canDelete(row: IPermissionDataRow): boolean
+  canEdit(row: IPermissionDataRow): boolean
   
   /** 检查字段权限 */
   isFieldVisible(field: string, row: IPermissionDataRow): boolean
@@ -244,6 +245,9 @@ export interface IPermissionChecker {
 export interface IPermissionFilter {
   /** 过滤出可删除的行 */
   filterDeletableRows(rows: IPermissionDataRow[]): IPermissionDataRow[]
+  
+  /** 过滤出可编辑的行 */
+  filterEditableRows(rows: IPermissionDataRow[]): IPermissionDataRow[]
   
   /** 过滤字段（移除隐藏字段） */
   filterFields(row: IPermissionDataRow): Record<string, unknown>
