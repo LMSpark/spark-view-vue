@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 按组件级别分类的能力接口定义
  * 
  * 架构说明（从上到下）：
@@ -16,7 +16,7 @@
  *            沙箱（访问能力 + 控制组件）
  */
 
-import type { IModelPermission, IInstancePermission, IPermissionDataRow, FieldVisibility } from './permission'
+import type { IModelPermission, IInstancePermission, DataRow, FieldVisibility } from './permission'
 
 // ==================== 沙箱能力接口 ====================
 
@@ -216,7 +216,7 @@ export interface IDataSourceCapability {
   name: 'dataSource'
   implementation: {
     /** 获取完整数据表 */
-    getData(): IPermissionDataRow[]
+    getData(): DataRow[]
     
     /** 获取模型级权限 */
     getModelPermission(): IModelPermission
@@ -225,7 +225,7 @@ export interface IDataSourceCapability {
     refresh(): Promise<void>
     
     /** 监听数据变化 */
-    onDataChange(callback: (data: IPermissionDataRow[]) => void): () => void
+    onDataChange(callback: (data: DataRow[]) => void): () => void
   }
 }
 
@@ -238,13 +238,13 @@ export interface ISelectionManagerCapability {
   name: 'selectionManager'
   implementation: {
     /** 获取选中的行 */
-    getSelectedRows(): IPermissionDataRow[]
+    getSelectedRows(): DataRow[]
     
     /** 设置选中的行 */
-    setSelectedRows(rows: IPermissionDataRow[]): void
+    setSelectedRows(rows: DataRow[]): void
     
     /** 监听选中变化 */
-    onSelectionChange(callback: (rows: IPermissionDataRow[]) => void): () => void
+    onSelectionChange(callback: (rows: DataRow[]) => void): () => void
     
     /** 清除选中 */
     clearSelection(): void
@@ -282,13 +282,13 @@ export interface IBatchOperatorCapability {
   name: 'batchOperator'
   implementation: {
     /** 批量删除 */
-    batchDelete(rows: IPermissionDataRow[]): Promise<void>
+    batchDelete(rows: DataRow[]): Promise<void>
     
     /** 批量更新 */
-    batchUpdate(updates: Array<{ row: IPermissionDataRow; data: Record<string, unknown> }>): Promise<void>
+    batchUpdate(updates: Array<{ row: DataRow; data: Record<string, unknown> }>): Promise<void>
     
     /** 批量导出 */
-    batchExport(rows: IPermissionDataRow[]): Promise<void>
+    batchExport(rows: DataRow[]): Promise<void>
   }
 }
 
@@ -303,7 +303,7 @@ export interface IDataBindingCapability {
   name: 'dataBinding'
   implementation: {
     /** 获取当前行数据 */
-    getRowData(): IPermissionDataRow
+    getRowData(): DataRow
     
     /** 获取字段值 */
     getFieldValue(field: string): unknown
@@ -315,7 +315,7 @@ export interface IDataBindingCapability {
     onFieldChange(field: string, callback: (value: unknown) => void): () => void
     
     /** 监听整行数据变化 */
-    onRowChange(callback: (row: IPermissionDataRow) => void): () => void
+    onRowChange(callback: (row: DataRow) => void): () => void
   }
 }
 

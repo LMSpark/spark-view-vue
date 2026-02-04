@@ -5,6 +5,10 @@
  * - 这些是最基础的权限数据结构，由后端返回
  * - 位于 spark-data 层，可被 spark-app 和 spark-component 共享
  * - spark-component 中的权限类型应扩展这些基础类型
+ * 
+ * 设计原则：
+ * - 权限字段是可选的附加信息，不强制所有数据行/集都有权限
+ * - 使用约定字段名：_perm (实例级), _modelPerm (模型级)
  */
 
 // ==================== 实例级权限（行级） ====================
@@ -64,34 +68,63 @@ export interface IModelPermission {
   allowExport?: boolean
 }
 
-// ==================== 权限数据行 ====================
+// ==================== 权限字段约定 ====================
 
 /**
- * 带权限的数据行（后端返回的标准格式）
+ * 数据行权限字段名约定
+ * 
+ * 任何数据行都可以有 _perm 字段来携带实例级权限
+ * 示例：
+ * ```typescript
+ * const user = {
+ *   id: 1,
+ *   name: 'Alice',
+ *   _perm: { allowDelete: true, editableFields: ['name'] }
+ * }
+ * ```
  */
-export interface IPermissionDataRow {
-  /** 数据字段 */
-  [key: string]: unknown
-  
-  /** 实例级权限（约定字段名 _perm） */
+export const INSTANCE_PERMISSION_FIELD = '_perm' as const
+
+/**
+ * 数据集权限字段名约定
+ * 
+ * 任何数据集都可以有 _modelPerm 字段来携带模型级权限
+ * 示例：
+ * ```typescript
+ * const dataset = {
+ *   rows: [...],
+ *   _modelPerm: { allowCreate: true, allowExport: false }
+ * }
+ * ```
+ */
+export const MODEL_PERMISSION_FIELD = '_modelPerm' as const
+
+// ==================== 类型工具 ====================
+
+/**
+ * 为任意类型添加实例级权限字段
+ * 
+ * 使用示例：
+ * ```typescript
+ * interface User { id: number; name: string }
+ * type UserWithPerm = WithInstancePermission<User>
+ * // 结果: User & { _perm?: IInstancePermission }
+ * ```
+ */
+export type WithInstancePermission<T = Record<string, unknown>> = T & {
   _perm?: IInstancePermission
 }
 
-// ==================== 权限数据集 ====================
-
 /**
- * 带权限的数据集（后端返回的标准格式）
+ * 为任意数据集类型添加模型级权限字段
+ * 
+ * 使用示例：
+ * ```typescript
+ * interface UserList { rows: User[]; total: number }
+ * type UserListWithPerm = WithModelPermission<UserList>
+ * // 结果: UserList & { _modelPerm?: IModelPermission }
+ * ```
  */
-export interface IPermissionDataSet<T = IPermissionDataRow> {
-  /** 数据行列表 */
-  rows: T[]
-  
-  /** 模型级权限（约定字段名 _modelPerm） */
+export type WithModelPermission<T = Record<string, unknown>> = T & {
   _modelPerm?: IModelPermission
-  
-  /** 总记录数 */
-  total?: number
-  
-  /** 其他元数据 */
-  [key: string]: unknown
 }

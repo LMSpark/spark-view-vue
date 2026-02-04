@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 权限检查器实现
  * 
  * 提供统一的权限检查逻辑
@@ -7,7 +7,7 @@
 import type {
   IPermissionChecker,
   IModelPermission,
-  IPermissionDataRow
+  DataRow
 } from '../types/permission'
 
 import { FieldVisibility } from '../types/permission'
@@ -40,7 +40,7 @@ export class PermissionChecker implements IPermissionChecker {
   /**
    * 检查是否允许删除指定行
    */
-  canDelete(row: IPermissionDataRow): boolean {
+  canDelete(row: DataRow): boolean {
     const perm = row._perm
     return perm?.allowDelete !== false
   }
@@ -50,7 +50,7 @@ export class PermissionChecker implements IPermissionChecker {
    * 
    * 判断逻辑：editableFields 有值即表示可编辑
    */
-  canEdit(row: IPermissionDataRow): boolean {
+  canEdit(row: DataRow): boolean {
     const perm = row._perm
     return (perm?.editableFields?.length ?? 0) > 0
   }
@@ -58,7 +58,7 @@ export class PermissionChecker implements IPermissionChecker {
   /**
    * 检查字段是否可见
    */
-  isFieldVisible(field: string, row: IPermissionDataRow): boolean {
+  isFieldVisible(field: string, row: DataRow): boolean {
     const visibility = this.getFieldVisibility(field, row)
     return visibility !== FieldVisibility.Hidden
   }
@@ -66,7 +66,7 @@ export class PermissionChecker implements IPermissionChecker {
   /**
    * 检查字段是否可编辑
    */
-  isFieldEditable(field: string, row: IPermissionDataRow): boolean {
+  isFieldEditable(field: string, row: DataRow): boolean {
     const perm = row._perm
     if (!perm) return false // 默认只读
 
@@ -77,7 +77,7 @@ export class PermissionChecker implements IPermissionChecker {
   /**
    * 获取字段可见性
    */
-  getFieldVisibility(field: string, row: IPermissionDataRow): FieldVisibility {
+  getFieldVisibility(field: string, row: DataRow): FieldVisibility {
     const perm = row._perm
     if (!perm) return FieldVisibility.Visible
 
@@ -97,7 +97,7 @@ export class PermissionChecker implements IPermissionChecker {
   /**
    * 应用字段脱敏规则
    */
-  maskFieldValue(field: string, value: unknown, row: IPermissionDataRow): string {
+  maskFieldValue(field: string, value: unknown, row: DataRow): string {
     const visibility = this.getFieldVisibility(field, row)
     
     if (visibility !== FieldVisibility.Masked) {
@@ -173,15 +173,15 @@ export const checkPermission = {
   canCreate: (modelPermission?: IModelPermission) => 
     createPermissionChecker().canCreate(modelPermission),
   
-  canDelete: (row: IPermissionDataRow) => 
+  canDelete: (row: DataRow) => 
     createPermissionChecker().canDelete(row),
   
-  canEdit: (row: IPermissionDataRow) => 
+  canEdit: (row: DataRow) => 
     createPermissionChecker().canEdit(row),
   
-  isFieldVisible: (field: string, row: IPermissionDataRow) => 
+  isFieldVisible: (field: string, row: DataRow) => 
     createPermissionChecker().isFieldVisible(field, row),
   
-  isFieldEditable: (field: string, row: IPermissionDataRow) => 
+  isFieldEditable: (field: string, row: DataRow) => 
     createPermissionChecker().isFieldEditable(field, row)
 }

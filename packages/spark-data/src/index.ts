@@ -13,9 +13,11 @@ export type * from './types'
 export type {
   IInstancePermission,
   IModelPermission,
-  IPermissionDataRow,
-  IPermissionDataSet
+  WithInstancePermission,
+  WithModelPermission
 } from './permission-types'
+
+export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from './permission-types'
 
 // 导出核心类（向后兼容）
 export { DataSet } from './dataset-impl'
