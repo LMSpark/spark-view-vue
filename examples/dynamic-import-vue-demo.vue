@@ -43,14 +43,6 @@ Spark.easy.register({
   lazy: true
 })
 
-// 📝 对比旧 API：
-// Spark.registerSparkComponent({
-//   type: 'demo-heavy-component',  // 手动指定 kebab-case
-//   name: '重量级组件',              // 手动指定名称
-//   version: '1.0.0',               // 手动指定版本
-//   loader: () => import('../features/spark/components/demo/HeavyComponent.vue')
-// })
-
 // ============================================
 // 2. 组件状态跟踪
 // ============================================
