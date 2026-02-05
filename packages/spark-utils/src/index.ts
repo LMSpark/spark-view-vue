@@ -7,33 +7,16 @@ export {
 } from './logger'
 
 // Types from common
-export type { LogLevel, LoggerApi, AnyFunction } from './types/common'
+export type { LogLevel, LoggerApi, AnyFunction, Transport } from './types/common'
 
-// Error handling utilities
+// Error handling utilities (内部使用)
+// 注意：ErrorHandler 仅在 spark-utils 内部使用（asyncUtils.ts）
 export {
-  ErrorHandler,
   AppError,
   ErrorType,
   type RetryOptions,
   type ErrorContext,
-  handleError,
-  withRetry,
-  getUserFriendlyMessage,
 } from './errorHandler'
-
-// Configuration management
-export {
-  ConfigManager,
-  setConfig,
-  getConfig,
-  clearConfig,
-} from './configManager'
-
-// Async utilities
-export {
-  RaceController,
-  asyncUtils,
-} from './asyncUtils'
 
 // Environment utilities
 export {
@@ -58,5 +41,6 @@ export {
 } from './http/HttpClient'
 export type { IApiContext } from './types/http'
 
-// Capability System (通用能力系统)
+// 能力系统 (Capability System)
+export { Capability } from './capability/index.js'
 export * from './capability/index.js'

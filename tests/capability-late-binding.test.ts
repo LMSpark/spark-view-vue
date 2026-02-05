@@ -18,8 +18,7 @@ describe('Capability late-binding', () => {
     // Simulate consumer created first
     const consumer = {
       capabilityName: 'test-cap',
-      implementation: {},
-      interface: {}
+      implementation: {}
     }
 
     childCtx.consumers.set('test-cap', consumer as CapabilityConsumer)
@@ -28,7 +27,7 @@ describe('Capability late-binding', () => {
     expect(manager.getProvider(childCtx, 'test-cap')).toBeUndefined()
 
     // Now register provider on parent via manager
-    const provider: CapabilityProvider = { name: 'test-cap', version: '1.0.0', interface: {}, implementation: { foo: () => 'bar' } }
+    const provider: CapabilityProvider = { name: 'test-cap', version: '1.0.0', implementation: { foo: () => 'bar' } }
     manager.registerProvider(parentCtx, provider)
 
     // After register, autoConnect should have connected: check connections via manager.getProvider

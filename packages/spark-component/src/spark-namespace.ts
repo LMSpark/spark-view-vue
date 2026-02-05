@@ -23,17 +23,21 @@ import type { ComponentConfig } from './types/spark-component.js'
 
 export const Spark: {
   // ========================================
-  // 业务开发者 API（推荐使用）
+  // 业务开发者 API（核心功能）
   // ========================================
   
   /** 安装 SPARK 插件到 Vue 应用 */
   install: (app: App) => void
   
-  /** 注册组件（支持简化配置和完整配置） */
+  /** 注册组件 - 支持简化配置和完整配置 */
   register: (input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) => void
   
   /** 批量注册组件 */
   registerAll: (configs: (ComponentConfig | SimpleComponentConfig)[]) => void
+  
+  // ========================================
+  // 辅助工具
+  // ========================================
   
   /** 预设配置生成器 */
   presets: typeof registerPresets
@@ -45,9 +49,6 @@ export const Spark: {
   // 组件开发 API（能力系统）
   // ========================================
   
-  /** 在组件中使用 SPARK 功能（能力系统、上下文、日志等） */
-  useSpark: typeof useSparkComponent
-  
   /** 获取能力管理器（用于注册能力连接器等高级用法） */
   capabilities: () => typeof capabilityManager
   
@@ -55,13 +56,11 @@ export const Spark: {
   defineComponent: typeof defineSparkComponent
   
   // ========================================
-  // 向后兼容别名
+  // 组合式 API
   // ========================================
   
-  /** @deprecated 使用 useSpark 代替，语义更清晰 */
-  useComponent: typeof useSparkComponent
-  /** @deprecated 使用 useSpark 代替 */
-  useSparkComponent: typeof useSparkComponent
+  /** 在组件中使用 SPARK 功能（能力系统、上下文、日志等） */
+  useSpark: typeof useSparkComponent
   
   // ========================================
   // 内部 API（高级用法，不推荐直接使用）
@@ -73,9 +72,6 @@ export const Spark: {
   /** @internal 获取组件注册器（仅用于内部或高级场景） */
   _registry: () => typeof componentRegistry
   
-  /** @deprecated 使用 register() 代替 */
-  registerSparkComponent: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) => void
-  
   /** @advanced 创建独立的 Vue 插件实例（仅用于特殊场景） */
   createVuePlugin: typeof createVueSparkPlugin
   
@@ -85,11 +81,8 @@ export const Spark: {
   /** @advanced 创建独立的组件注册器（仅用于特殊场景） */
   createComponentRegistry: typeof createComponentRegistry
   
-  // Legacy aliases
-  createRegistry: typeof createComponentRegistry
-  createManager: typeof createComponentManager
+  // 工具方法
   Logger: typeof Logger
-  createLogger: typeof Logger
   plugin: { install: typeof installSparkPlugin; get: typeof getSparkPlugin }
   
   [key: string]: unknown
@@ -173,21 +166,12 @@ export const Spark: {
   // 向后兼容别名
   // ========================================
   
-  useComponent: useSparkComponent,
-  useSparkComponent,
-  
   // ========================================
   // 内部 API
   // ========================================
   
   _manager: () => componentManager,
   _registry: () => componentRegistry,
-  
-  registerSparkComponent(input) {
-    const logger = Logger()
-    logger.warn('⚠️ registerSparkComponent is deprecated. Please use Spark.register() instead.')
-    return Spark.register(input)
-  },
   
   // ========================================
   // 高级 API
@@ -196,54 +180,15 @@ export const Spark: {
   createVuePlugin: createVueSparkPlugin,
   createComponentManager,
   createComponentRegistry,
-  createRegistry: createComponentRegistry,
-  createManager: createComponentManager,
   
   // ========================================
-  // Legacy APIs (for backward compatibility)
+  // 工具方法
   // ========================================
   
   Logger,
-  createLogger: Logger,
   
   plugin: {
     install: installSparkPlugin,
     get: getSparkPlugin
-  },
-  
-  // Legacy methods (deprecated)
-  registerLogical: (config: ComponentConfig) => {
-    const logger = Logger()
-    logger.warn('⚠️ registerLogical is deprecated. Use Spark.register() instead.')
-    return componentManager.registerComponent(config)
-  },
-  
-  getSparkComponent: (type: string) => {
-    const logger = Logger()
-    logger.warn('⚠️ getSparkComponent is deprecated. Use Spark._registry().get() instead.')
-    return componentRegistry.get(type)
-  },
-  
-  registerComponent: (def: ComponentConfig) => {
-    const logger = Logger()
-    logger.warn('⚠️ registerComponent is deprecated. Use Spark.register() instead.')
-    return componentManager.registerComponent(def)
-  },
-  
-  registerComponents: (defs: ComponentConfig[]) => {
-    const logger = Logger()
-    logger.warn('⚠️ registerComponents is deprecated. Use Spark.registerAll() instead.')
-    return defs.forEach(def => componentManager.registerComponent(def))
-  },
-  
-  render: (config: ComponentConfig) => {
-    const logger = Logger()
-    logger.warn('⚠️ Spark.render is deprecated. Use <SparkComponentRenderer> instead.')
-    return config
-  },
-  
-  initialize: async () => {
-    const logger = Logger()
-    logger.warn('⚠️ Spark.initialize is deprecated and does nothing.')
   }
 }

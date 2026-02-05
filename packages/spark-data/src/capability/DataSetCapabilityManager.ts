@@ -9,8 +9,8 @@
  * - apiClient: 统一的 API 请求接口
  */
 
-import { CapabilityManager } from '@spark-view/spark-utils'
-import type { CapabilityContext, CapabilityProvider } from '@spark-view/spark-utils'
+import { CapabilityManager } from '@spark-view/spark-utils/capability/internal'
+import type { Provider as CapabilityProvider } from '@spark-view/spark-utils'
 import type { IDataSet } from '../types'
 
 /**
@@ -57,7 +57,13 @@ export interface DataSetCapabilityConfig {
  * 管理页面级数据和服务能力
  */
 export class DataSetCapabilityManager extends CapabilityManager {
-  private dataSetContext: CapabilityContext
+  private dataSetContext: {
+    id: string
+    type: string
+    parent?: unknown
+    providers: Set<CapabilityProvider>
+    consumers: Map<string, unknown>
+  }
   private config: DataSetCapabilityConfig
   private tableListeners = new Map<string, Set<(table: unknown) => void>>()
 
@@ -70,10 +76,8 @@ export class DataSetCapabilityManager extends CapabilityManager {
       id: `dataset:${pageId}`,
       type: 'dataset',
       parent: undefined,
-      children: [],
       providers: new Set(),
-      consumers: new Map(),
-      providerListeners: new Map()
+      consumers: new Map()
     }
     
     // 注册所有 DataSet 层能力
@@ -110,13 +114,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
     const provider: CapabilityProvider = {
       name: 'dataSetState',
       version: '1.0.0',
-      interface: {
-        getDataSet: 'function',
-        getTable: 'function',
-        getPageParams: 'function',
-        getPagePermission: 'function',
-        onTableChange: 'function'
-      },
       implementation: {
         getDataSet: () => this.config.dataSet,
         
@@ -165,11 +162,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
     const provider: CapabilityProvider = {
       name: 'globalData',
       version: '1.0.0',
-      interface: {
-        getUserInfo: 'function',
-        getConfig: 'function',
-        getDictionary: 'function'
-      },
       implementation: {
         getUserInfo: () => this.config.globalData?.getUserInfo() ?? { id: '', name: '', roles: [] },
         getConfig: (key: string) => this.config.globalData?.getConfig(key),
@@ -187,12 +179,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
     const provider: CapabilityProvider = {
       name: 'pageService',
       version: '1.0.0',
-      interface: {
-        showMessage: 'function',
-        showConfirm: 'function',
-        showLoading: 'function',
-        navigate: 'function'
-      },
       implementation: {
         showMessage: (message: string, type: 'success' | 'error' | 'warning') => 
           this.config.pageService?.showMessage(message, type),
@@ -215,9 +201,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
     const provider: CapabilityProvider = {
       name: 'apiClient',
       version: '1.0.0',
-      interface: {
-        request: 'function'
-      },
       implementation: {
         request: <T = unknown>(config: {
           url: string
@@ -240,7 +223,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
    * 获取 DataSet 上下文
    * 组件可以通过此上下文访问 DataSet 层的所有能力
    */
-  getContext(): CapabilityContext {
+  getContext() {
     return this.dataSetContext
   }
 

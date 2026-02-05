@@ -22,7 +22,6 @@ export async function initializeSparkEJ2Components(manager: ISparkComponentManag
       {
         name: 'column-manager',
         version: '1.0.0',
-        interface: {},
         implementation: {}
       }
     ]
@@ -37,8 +36,6 @@ export async function initializeSparkEJ2Components(manager: ISparkComponentManag
     consumers: [
       {
         capabilityName: 'column-manager',
-        minVersion: '1.0.0',
-        interface: {},
         implementation: {}
       }
     ]

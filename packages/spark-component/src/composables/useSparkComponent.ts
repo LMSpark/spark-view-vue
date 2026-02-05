@@ -7,21 +7,20 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { reactive, computed, onMounted, onUnmounted, markRaw, inject } from 'vue'
+import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
 import {
   Logger,
-  createEventCapabilityProvider,
-  createEventCapabilityConsumer,
-  type EventCapabilityProvider
+  Capability
 } from '@spark-view/spark-utils'
+import type { EventProvider } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
-import type { Implementation, CapabilityInterface } from '../types/common.js'
+import type { Implementation } from '../types/common.js'
 
 // Local helper to create a noop provider when a capability is missing. This avoids any global registry side-effects.
 function createNoopProvider(name: string): CapabilityProvider {
-  return { name, version: '0.0.0', interface: {} as CapabilityInterface, implementation: {} }
+  return { name, version: '0.0.0', implementation: {} }
 }
 
 export function useSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(
@@ -36,11 +35,11 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   isVisible: unknown
   isDisabled: unknown
   provide: (name: string, implementation?: Implementation) => void
-  provideEvents: (name?: string) => EventCapabilityProvider
+  provideEvents: (name?: string) => EventProvider
   getProvider: (name: string) => CapabilityProvider | undefined
   getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => T | undefined
   consume: (name: string) => Implementation | null
-  consumeEvents: (name: string, handlers: Record<string, (...args: unknown[]) => void>) => EventCapabilityProvider | null
+  consumeEvents: (name: string, handlers: Record<string, (...args: unknown[]) => void>) => EventProvider | null
   use: (name: string) => Implementation | null
   whenAvailable: (name: string) => Promise<CapabilityProvider>
   initialize: () => void
@@ -51,8 +50,13 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   getOrCreateNoopProvider: (name: string) => CapabilityProvider
   connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => void
   disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => void
+  
+  // 能力树管理
+  getContextChain: () => ComponentContext[]
+  printCapabilityTree: () => void
 } {
-  const parentContext = options?.parentContext
+  // 优先使用 options.parentContext，否则从 inject 获取（页面级根上下文作为 fallback）
+  const parentContext = options?.parentContext ?? inject<ComponentContext | undefined>('sparkParentContext', undefined)
 
   const ctxRaw: ComponentContext = {
     id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
@@ -66,6 +70,15 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   }
 
   const context = reactive(ctxRaw)
+  
+  // 维护能力树：自动将自己注册到父上下文
+  if (parentContext && parentContext.children) {
+    parentContext.children.push(context)
+  }
+  
+  // 通过 Vue provide 自动传递 context 给子组件（递归渲染友好）
+  vueProvide('sparkParentContext', context)
+  
   const logger = Logger(`Spark:${config.type}`)
 
   // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
@@ -79,6 +92,15 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   const initialize = () => logger.info(`🚀 Initializing SPARK component: ${context.type} (${context.id})`)
   const destroy = () => {
     logger.info(`🗑️ Destroying SPARK component: ${context.type} (${context.id})`)
+    
+    // 从父上下文的 children 中移除自己
+    if (parentContext && parentContext.children) {
+      const index = parentContext.children.indexOf(context)
+      if (index !== -1) {
+        parentContext.children.splice(index, 1)
+      }
+    }
+    
     context.providers.clear()
     context.consumers.clear()
     try { manager && typeof (manager).destroyContext === 'function' && (manager).destroyContext(context.id) } catch (e: unknown) { logger.warn('Failed to destroy context via manager', String(e)) }
@@ -91,15 +113,15 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   // Provide a capability on this context
   function provide(name: string, implementation?: Implementation) {
-    const p: CapabilityProvider = { name, version: '1.0.0', interface: {} as CapabilityInterface, implementation }
+    const p: CapabilityProvider = { name, version: '1.0.0', implementation }
     if (manager && typeof (manager).registerProvider === 'function') (manager).registerProvider(context, p as any)
     else context.providers.add(p as any)
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
 
   // Provide event capability - convenient wrapper
-  function provideEvents(name = 'events'): EventCapabilityProvider {
-    const { provider, emitter } = createEventCapabilityProvider(name)
+  function provideEvents(name = 'events'): EventProvider {
+    const { provider, emitter } = Capability.Events.createProvider(name)
     if (manager && typeof (manager).registerProvider === 'function') {
       (manager).registerProvider(context, provider as any)
     } else {
@@ -110,14 +132,14 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   }
 
   function consume(name: string): Implementation | null {
-    const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
+    const consumer: CapabilityConsumer = { capabilityName: name, implementation: undefined }
     context.consumers.set(name, consumer as any)
     const provider = manager.getProvider(context, name) ?? createNoopProvider(name)
     if (provider) {
       consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
       try { capabilityManager.connectCapability(provider as any, consumer as any, context as any) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
       logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
-      return consumer.implementation ?? null
+      return (consumer.implementation ?? null) as Implementation | null
     }
     logger.warn(`⚠️ Capability not found (registered consumer for late-binding): ${name} for ${context.type} (${context.id})`)
     return null
@@ -127,8 +149,8 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   function consumeEvents(
     name: string,
     handlers: Record<string, (...args: unknown[]) => void>
-  ): EventCapabilityProvider | null {
-    const consumer = createEventCapabilityConsumer(name, handlers)
+  ): EventProvider | null {
+    const consumer = Capability.Events.createConsumer(name, handlers)
     context.consumers.set(name, consumer as any)
     
     const provider = manager.getProvider(context, name)
@@ -137,7 +159,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       try {
         capabilityManager.connectCapability(provider as any, consumer as any, context as any)
         logger.info(`🎉 Consumed event capability: ${name} for ${context.type} (${context.id})`)
-        return provider.implementation as unknown as EventCapabilityProvider
+        return provider.implementation as unknown as EventProvider
       } catch (e: unknown) {
         logger.warn('Failed to connect event capability', String(e))
       }
@@ -215,6 +237,38 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     isComponentRegistered: (type: string) => {
       try { return (manager).isComponentRegistered(type) } catch { const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY)); return registry ? registry.has(type) : false }
     },
+    
+    // 获取从当前节点到根的上下文链路
+    getContextChain: () => {
+      const chain: ComponentContext[] = []
+      let current: ComponentContext | undefined = context
+      while (current) {
+        chain.push(current)
+        current = current.parent ?? undefined
+      }
+      return chain
+    },
+    
+    // 打印完整能力树结构
+    printCapabilityTree: () => {
+      const printTree = (ctx: ComponentContext, indent = 0) => {
+        const prefix = '  '.repeat(indent)
+        const providers = Array.from(ctx.providers).map(p => p.name).join(', ')
+        logger.info(`${prefix}├─ ${ctx.type} (${ctx.id})`)
+        if (providers) {
+          logger.info(`${prefix}   Provides: [${providers}]`)
+        }
+        ctx.children.forEach(child => printTree(child, indent + 1))
+      }
+      
+      // 找到根节点
+      let root: ComponentContext = context
+      while (root.parent) root = root.parent
+      
+      logger.info('🌲 Capability Tree:')
+      printTree(root)
+    },
+    
     getOrCreateNoopProvider: (name: string) => createNoopProvider(name),
     connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider as any, consumer as any, ctx as any),
     disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.disconnectCapability(provider as any, consumer as any, ctx as any)

@@ -49,14 +49,8 @@ export type {
 } from './events/ComponentEventEmitter.js'
 
 // Event Capability Integration
-// 现在从 @spark-view/spark-utils 导出
-export {
-  EventCapabilityConnector,
-  createEventCapabilityProvider,
-  createEventCapabilityConsumer,
-  type EventCapabilityProvider,
-  type EventCapabilityConsumer
-} from '@spark-view/spark-utils'
+// 请使用 @spark-view/spark-utils 中的 Capability 命名空间 API
+// Capability.Events.createProvider(), Capability.Events.createConsumer()
 
 // Permission System
 export * from './permission/index.js'

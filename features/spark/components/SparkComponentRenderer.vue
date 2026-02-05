@@ -56,7 +56,7 @@ const props = defineProps<Props>()
 const {
   context,
   getComponent
-} = Spark.useComponent(props.config, props.parentContext as any)
+} = Spark.useSpark(props.config, props.parentContext as any)
 
 // ==================== 组件解析 ====================
 
