@@ -1,27 +1,98 @@
-{
-  "type": "grid",
-  "id": "custom-fields-grid",
-  "class": "demo-grid custom-fields",
-  "props": {
-    "title": "自定义字段"
-  },
-  "children": [
-    {
-      "type": "container",
-      "class": "grid-header",
-      "children": [
-        {
-          "type": "container",
-          "props": {
-            "text": "🎨 自定义字段配置"
+[
+  {
+    "type": "div",
+    "class": "demo-grid custom-fields",
+    "children": [
+      {
+        "type": "div",
+        "class": "grid-header",
+        "children": [
+          {
+            "type": "h3",
+            "children": ["🎨 自定义字段配置"]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "grid-body",
+        "dataKey": "users",
+        "_loop": {
+          "item": "user",
+          "template": {
+            "type": "div",
+            "class": "user-row",
+            "children": [
+              {
+                "type": "div",
+                "class": "user-field",
+                "children": [
+                  {
+                    "type": "span",
+                    "class": "field-icon",
+                    "children": ["🔢"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-label",
+                    "children": ["ID:"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-value",
+                    "dataKey": "user.id"
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "user-field",
+                "children": [
+                  {
+                    "type": "span",
+                    "class": "field-icon",
+                    "children": ["👤"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-label",
+                    "children": ["用户名:"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-value",
+                    "dataKey": "user.name"
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "user-field",
+                "children": [
+                  {
+                    "type": "span",
+                    "class": "field-icon",
+                    "dataKey": "user.status",
+                    "_transform": "statusIcon",
+                    "children": []
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-label",
+                    "children": ["状态:"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-value",
+                    "dataKey": "user.status",
+                    "_transform": "statusText"
+                  }
+                ]
+              }
+            ]
           }
         }
-      ]
-    },
-    {
-      "type": "container",
-      "class": "grid-body",
-      "_dynamicChildren": "generateCustomRows"
-    }
-  ]
-}
+      }
+    ]
+  }
+]
