@@ -9,6 +9,7 @@ export namespace Spark {
     children?: ComponentConfig[]
     // Component registration fields
     component?: unknown // Vue component or null for logical components
+    loader?: () => Promise<{ default: unknown }> // 动态导入函数（懒加载）
     version?: string
     validator?: (cfg: ComponentConfig) => boolean
     consumers?: CapabilityConsumer[]
@@ -32,11 +33,13 @@ export namespace Spark {
   export interface ComponentRegistry {
     register(type: string, def: ComponentConfig): void
     get(type: string): ComponentConfig | undefined
+    getAsync(type: string): Promise<ComponentConfig | undefined> // 异步获取（自动加载）
     getAllDefinitions(): ComponentConfig[]
     getAllTypes(): string[]
     has(type: string): boolean
     unregister(type: string): boolean
     findCompatibleProviders?: (capabilityName: string, minVersion?: string) => string[]
+    preload?(types: string[]): Promise<void> // 预加载组件
   }
 
   export interface ComponentManager {
