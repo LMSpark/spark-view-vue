@@ -42,7 +42,7 @@ Column 列组件，支持：
 
 ```typescript
 import { initializeSparkEJ2Components } from '@/features/spark-ej2'
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-component'
 
 const manager = Spark.createComponentManager()
 

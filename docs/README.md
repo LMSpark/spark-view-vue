@@ -20,24 +20,16 @@
 
 - [**API 参考手册**](guides/API_REFERENCE.md) - 完整 API 速查
 
-##  架构文档
-
-设计与规划文档位于 docs/ 根目录：
-
-- [能力系统简化方案](CAPABILITY_SIMPLIFICATION.md)
-- [DataSet 设计分析](DATASET_DESIGN_ANALYSIS.md)
-- [类型安全改进](TYPE_SAFETY_IMPROVEMENTS.md)
-
 ##  包文档
 
-每个包都有独立的 README：
+每个包都有独立的 README 和 API 文档：
 
-- [spark-component](../packages/spark-component/README.md) - 组件核心
+- [spark-component](../packages/spark-component/README.md) - 组件核心系统
 - [spark-data](../packages/spark-data/README.md) - 数据管理
-- [spark-app](../packages/spark-app/README.md) - 应用基础
-- [spark-utils](../packages/spark-utils/README.md) - 工具函数
-- [spark-renderer](../packages/spark-renderer/README.md) - 页面渲染
-- [spark-page-config](../packages/spark-page-config/README.md) - 配置层
+- [spark-app](../packages/spark-app/README.md) - 应用基础设施
+- [spark-utils](../packages/spark-utils/README.md) - 工具函数库
+- [spark-renderer](../packages/spark-renderer/README.md) - 页面渲染引擎
+- [spark-page-config](../packages/spark-page-config/README.md) - 配置加载器
 
 ##  按场景查找
 

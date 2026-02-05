@@ -13,21 +13,21 @@
 
 ```
 features/
-├── spark/              # SPARK 命名空间和初始化逻辑
-│   ├── index.ts        # Spark 命名空间导出
-│   └── initialize.ts   # 组件初始化工具
-└── spark-ej2/          # EJ2 组件的 SPARK 包装（测试示例）
-    ├── components/
-    │   ├── SparkEJ2Grid.vue    # 网格组件包装
-    │   └── SparkEJ2Column.vue  # 列组件包装
+├── spark/              # SPARK 组件注册
+│   └── components/     # 组件定义和注册
+│       ├── index.ts    # 组件注册入口
+│       └── ej2/        # EJ2 组件包装
+└── spark-ej2/          # EJ2 组件初始化
+    ├── components/     # Syncfusion EJ2 组件
+    ├── initialize.ts   # 初始化逻辑
     └── index.ts
 ```
 
 ## 🎯 用途
 
-### 1. 单元测试
+### 1. 组件注册
 
-`features/spark-ej2/` 中的组件被以下测试使用：
+`features/spark/` 中的组件用于：
 
 - `tests/spark-component.test.ts` - SPARK 组件核心功能测试
 - `tests/spark-destroy.test.ts` - 组件销毁测试
@@ -51,7 +51,7 @@ features/
 L1: @spark-view/spark-app           - 应用基础设施
 L2: @spark-view/spark-page-config   - 页面配置系统
 L3: @spark-view/spark-renderer      - 页面渲染引擎 ⭐ 核心
-L4: @spark-view/spark-core          - 组件核心
+L4: @spark-view/spark-component     - 组件核心系统
 L5: @spark-view/spark-data          - 数据管理
 ```
 
