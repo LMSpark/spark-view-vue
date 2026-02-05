@@ -160,7 +160,7 @@ class AppLogger {
     // 触发所有传输器
     this.transports.forEach(transport => {
       try {
-        transport.send(level, message, meta)
+        transport.send(level, message, meta || {})
       } catch (error) {
         // Fallback to console when logger transport fails
         console.error('日志传输失败', error)

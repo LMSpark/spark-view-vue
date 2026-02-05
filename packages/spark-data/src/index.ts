@@ -51,5 +51,6 @@ export { createHttpClient, HttpClient, type IApiContext } from '@spark-view/spar
 export { 
   DataSetCapabilityManager, 
   createDataSetCapabilityManager,
-  type DataSetCapabilityConfig 
+  type DataSetCapabilityConfig,
+  type AppServices
 } from './capability/DataSetCapabilityManager'

@@ -85,25 +85,17 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       ROUTER_KEY,
       LOGGER_KEY,
       CONFIG_LOADER_KEY,
-      SPARK_MANAGER_KEY,
       SPARK_REGISTRY_KEY,
       AUTH_SERVICE_KEY
     } = await import('../constants')
     
     // 提供核心服务
-    // SPARK Manager 应该在 start() 中已创建，这里仅做验证
-    // 注意：直接调用 bootstrap() 的旧方式已不推荐，请使用 SparkApp.start()
-    const appInternal = app as unknown as { _context?: { provides?: Record<symbol, unknown> } }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sparkManager = appInternal._context?.provides?.[SPARK_MANAGER_KEY] as any
-    if (!sparkManager) {
-      bootstrapLogger.warn('⚠️ SPARK Manager 未初始化，推荐使用 SparkApp.start() 启动应用')
-      // 向后兼容：为旧代码创建默认 Manager
-      const { Spark } = await import('@spark-view/spark-component')
-      const fallbackManager = Spark.createComponentManager()
-      app.provide(SPARK_MANAGER_KEY, fallbackManager)
-      app.provide('sparkManager', fallbackManager)  // 向后兼容字符串 key
-    }
+    // SPARK Manager 应该在 start() 中已创建
+    // 注意：通过 SparkApp.start() 启动时，插件已在 bootstrap() 之前安装
+    // 这里不再检查 Manager 是否存在，因为：
+    // 1. SparkApp.start() 会在调用 bootstrap() 前安装插件
+    // 2. 直接调用 bootstrap() 的旧方式会在组件使用时通过 inject 获取
+    // 3. 检查 app._context.provides 依赖 Vue 内部实现，不够可靠
     
     app.provide(APP_CONTEXT_KEY, appContext)
     app.provide(ROUTER_KEY, router)
