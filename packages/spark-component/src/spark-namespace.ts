@@ -11,6 +11,13 @@ import { useSparkComponent } from './composables/useSparkComponent.js'
 import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 import { createComponentManager } from './utils/SparkComponentManager.js'
 import { defineSparkComponent } from './vue/createSparkComponent.js'
+import { 
+  createSimpleRegistration, 
+  batchCreateSimpleRegistrations,
+  presets as registerPresets,
+  nameToType
+} from './helpers/registerHelper.js'
+import type { SimpleComponentConfig } from './helpers/registerHelper.js'
 
 import type { App, Plugin as VuePlugin } from 'vue'
 import type { ComponentConfig, ComponentManager, ComponentRegistry } from './types/spark-component.js' 
@@ -172,6 +179,68 @@ export const Spark: {
     if (!opts?.manager) throw new Error('Spark.install(app, { manager }) requires an explicit manager. Create one via createComponentManager(registry) and pass it here.')
     const plugin = createVueSparkPlugin({ manager: opts.manager, registry: opts.registry })
     app.use(plugin as VuePlugin)
+  },
+  
+  // ========================================
+  // 简化注册 API ⚡
+  // ========================================
+  
+  /**
+   * 简化的组件注册（推荐使用）
+   * 
+   * 自动处理类型转换、loader 包装、默认值
+   * 
+   * @example
+   * ```typescript
+   * // 同步注册
+   * Spark.easy.register({
+   *   name: 'MyButton',
+   *   component: MyButtonComponent
+   * })
+   * 
+   * // 异步注册（推荐）
+   * Spark.easy.register({
+   *   name: 'HeavyGrid',
+   *   path: './components/HeavyGrid.vue',
+   *   lazy: true,
+   *   onLoad: (comp) => console.log('Loaded!')
+   * })
+   * 
+   * // 批量注册
+   * Spark.easy.registerAll([
+   *   { name: 'Chart', path: './Chart.vue', lazy: true },
+   *   { name: 'Calendar', path: './Calendar.vue', lazy: true }
+   * ])
+   * ```
+   */
+  easy: {
+    /**
+     * 注册单个组件（简化版）
+     */
+    register(config: SimpleComponentConfig, manager?: ComponentManager) {
+      const standardConfig = createSimpleRegistration(config)
+      const activeManager = manager ?? Spark.manager()
+      activeManager.registerComponent(standardConfig)
+    },
+    
+    /**
+     * 批量注册组件（简化版）
+     */
+    registerAll(configs: SimpleComponentConfig[], manager?: ComponentManager) {
+      const standardConfigs = batchCreateSimpleRegistrations(configs)
+      const activeManager = manager ?? Spark.manager()
+      activeManager.registerComponents(standardConfigs)
+    },
+    
+    /**
+     * 预设配置
+     */
+    presets: registerPresets,
+    
+    /**
+     * 名称转类型工具
+     */
+    nameToType
   }
 }
 
