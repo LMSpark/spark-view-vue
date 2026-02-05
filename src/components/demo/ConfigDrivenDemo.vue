@@ -9,15 +9,28 @@
     </div>
 
     <div class="config-selector">
-      <button 
-        v-for="preset in presets" 
-        :key="preset.name"
-        @click="currentPreset = preset.name"
-        :class="{ active: currentPreset === preset.name }"
-        class="preset-btn"
-      >
-        {{ preset.label }}
-      </button>
+      <div class="mode-switch">
+        <label>
+          <input type="radio" value="typescript" v-model="configMode" />
+          📝 TypeScript 配置
+        </label>
+        <label>
+          <input type="radio" value="json" v-model="configMode" />
+          📄 JSON 配置
+        </label>
+      </div>
+      
+      <div class="preset-buttons">
+        <button 
+          v-for="preset in presets" 
+          :key="preset.name"
+          @click="currentPreset = preset.name"
+          :class="{ active: currentPreset === preset.name }"
+          class="preset-btn"
+        >
+          {{ preset.label }}
+        </button>
+      </div>
     </div>
 
     <!-- 配置驱动递归渲染 -->
@@ -31,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLogger } from '@spark-view/spark-app'
 import { SparkData } from '@spark-view/spark-data'
@@ -43,6 +56,10 @@ import {
   createReadOnlyConfig,
   type FieldConfig
 } from './demo-config'
+import { 
+  loadAndHydrateConfig, 
+  createDefaultInjectors
+} from './json-config-loader'
 import type { User } from './types'
 
 // 🎯 使用 SPARK 组件系统
@@ -135,6 +152,7 @@ const users = ref<User[]>([
 ])
 
 // ============ 配置预设 ============
+const configMode = ref<'typescript' | 'json'>('typescript')
 const currentPreset = ref('simple')
 
 const presets = [
@@ -150,8 +168,15 @@ const customFields: FieldConfig[] = [
   { field: 'status', label: '在线状态', icon: '🟢', highlight: (v) => v === 'active' }
 ]
 
-// 当前渲染配置
-const renderConfig = computed(() => {
+// JSON 配置 URL 映射
+const jsonConfigUrls: Record<string, string> = {
+  simple: '/demo-configs/simple-grid.json',
+  custom: '/demo-configs/custom-fields-grid.json',
+  readonly: '/demo-configs/readonly-grid.json'
+}
+
+// 当前渲染配置（TypeScript）
+const tsRenderConfig = computed(() => {
   switch (currentPreset.value) {
     case 'simple':
       return createSimpleConfig(users.value)
@@ -162,6 +187,61 @@ const renderConfig = computed(() => {
     default:
       return createSimpleConfig(users.value)
   }
+})
+
+// JSON 渲染配置
+const jsonRenderConfig = ref(null)
+
+// 加载 JSON 配置
+async function loadJsonConfig() {
+  try {
+    const url = jsonConfigUrls[currentPreset.value]
+    if (!url) {
+      logger.warn('⚠️ 未找到配置 URL:', { preset: currentPreset.value })
+      return
+    }
+    const injectors = createDefaultInjectors(users.value)
+    
+    // 为自定义字段模式添加额外上下文
+    if (currentPreset.value === 'custom') {
+      injectors.childrenGenerators = {
+        ...injectors.childrenGenerators,
+        generateCustomRows: (context) => {
+          const fields = customFields
+          return context.users.map(user => ({
+            type: 'row',
+            id: `row-${user.id}`,
+            props: { user },
+            children: fields.map(fieldConfig => ({
+              type: 'field',
+              id: `field-${fieldConfig.field}-${user.id}`,
+              props: {
+                value: (user as unknown as Record<string, unknown>)[fieldConfig.field],
+                label: fieldConfig.label,
+                icon: fieldConfig.icon,
+                highlight: fieldConfig.highlight ? fieldConfig.highlight((user as unknown as Record<string, unknown>)[fieldConfig.field]) : false
+              }
+            }))
+          }))
+        }
+      }
+    }
+    
+    const config = await loadAndHydrateConfig(url, injectors)
+    jsonRenderConfig.value = config as any
+    logger.info('📄 JSON 配置加载成功:', { preset: currentPreset.value, url })
+  } catch (error) {
+    logger.error('❌ JSON 配置加载失败:', { error: error instanceof Error ? error.message : String(error) })
+    jsonRenderConfig.value = null
+  }
+}
+
+// 当前使用的渲染配置
+const renderConfig = computed(() => {
+  if (configMode.value === 'json') {
+    return jsonRenderConfig.value
+  }
+  return tsRenderConfig.value
 })
 
 // 渲染上下文（传递给渲染器）
@@ -175,11 +255,32 @@ const renderContext = computed(() => ({
   }
 }))
 
+// 监听配置模式切换
+watch(configMode, (newMode) => {
+  logger.info('🔄 配置模式切换:', { mode: newMode })
+  if (newMode === 'json') {
+    loadJsonConfig()
+  }
+})
+
+// 监听预设切换（仅 JSON 模式）
+watch(currentPreset, () => {
+  if (configMode.value === 'json') {
+    loadJsonConfig()
+  }
+})
+
 onMounted(() => {
   logger.info('🚀 ConfigDrivenDemo mounted', {
     usersCount: users.value.length,
-    preset: currentPreset.value
+    preset: currentPreset.value,
+    mode: configMode.value
   })
+  
+  // 如果是 JSON 模式，加载配置
+  if (configMode.value === 'json') {
+    loadJsonConfig()
+  }
 })
 </script>
 
@@ -209,12 +310,53 @@ onMounted(() => {
 }
 
 .config-selector {
-  display: flex;
-  gap: 12px;
   margin: 20px 0;
   padding: 16px;
   background: #f5f5f5;
   border-radius: 8px;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #ddd;
+}
+
+.mode-switch label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.mode-switch label:hover {
+  border-color: #2196f3;
+  background: #f0f7ff;
+}
+
+.mode-switch input[type="radio"] {
+  cursor: pointer;
+}
+
+.mode-switch input[type="radio"]:checked + span,
+.mode-switch label:has(input:checked) {
+  border-color: #2196f3;
+  background: #e3f2fd;
+  font-weight: 600;
+}
+
+.preset-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .preset-btn {

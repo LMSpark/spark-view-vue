@@ -3,9 +3,17 @@
     <h1>🎯 SPARK 能力系统完整演示</h1>
     <p class="subtitle">三层级组件：模型级 → 实例级 → 字段级</p>
 
-    <!-- 模型级组件：UserGrid -->
+    <!-- 配置驱动递归渲染演示 -->
+    <div class="config-driven-section">
+      <h2>⚡ 配置驱动递归渲染演示（新）</h2>
+      <p class="section-desc">完全配置驱动，无需硬编码组件关系，支持动态子节点生成和条件渲染</p>
+      <ConfigDrivenDemo />
+    </div>
+
+    <!-- 传统硬编码组件演示 -->
     <div class="model-level">
-      <h2>📊 模型级组件 (UserGrid)</h2>
+      <h2>📊 传统硬编码组件 (UserGrid)</h2>
+      <p class="section-desc">传统方式：组件关系硬编码在模板中</p>
       <UserGrid :config="gridConfig" />
     </div>
 
@@ -35,6 +43,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import UserGrid from '../components/demo/UserGrid.vue'
+import ConfigDrivenDemo from '../components/demo/ConfigDrivenDemo.vue'
 import type { ComponentConfig } from '@spark-view/spark-component'
 
 // 模拟用户数据
@@ -124,6 +133,28 @@ h1 {
   margin-bottom: 30px;
 }
 
+.config-driven-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.config-driven-section h2 {
+  margin-top: 0;
+  color: white;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.section-desc {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
 .model-level {
   background: #f8f9fa;
   border-radius: 8px;
@@ -136,7 +167,12 @@ h1 {
   margin-top: 0;
   color: #495057;
   font-size: 18px;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
+}
+
+.model-level .section-desc {
+  color: #6c757d;
+  margin-bottom: 16px;
 }
 
 .debug-panel {
