@@ -12,7 +12,6 @@ export { SparkData, SparkData as default } from './spark-data-namespace'
 
 // 导出所有基础数据类型（显式导出以确保类型可用）
 export type {
-  DataRow,
   IDataTable,
   IDataSet,
   ITreeManager,
@@ -23,15 +22,17 @@ export type {
   FlatTreeNode
 } from './types'
 
-// 导出权限类型（基础层，可被其他包共享）
+// 导出权限类型（从 spark-utils 重新导出以保持兼容性）
 export type {
+  DataRow,                  // 基础数据行
+  ComponentDataRow,         // 带权限的数据行（组件层常用）
   IInstancePermission,      // 实例级权限
   IModelPermission,         // 模型级权限
   WithInstancePermission,   // 权限工具类型
   WithModelPermission       // 权限工具类型
-} from './permission-types'
+} from '@spark-view/spark-utils'
 
-export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from './permission-types'
+export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-utils'
 
 // 导出核心类（向后兼容）
 export { DataSet } from './dataset'

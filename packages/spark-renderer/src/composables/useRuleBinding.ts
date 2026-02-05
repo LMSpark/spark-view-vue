@@ -18,6 +18,12 @@ export interface UseRuleBindingOptions {
   formApi: Ref<FormCreateAPI | null>
 }
 
+export interface UseRuleBindingReturn {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  boundRules: Ref<any[]>
+  rebindRules: () => void
+}
+
 /**
  * Rule 数据绑定 Hook
  * 
@@ -37,7 +43,7 @@ export interface UseRuleBindingOptions {
  * })
  * ```
  */
-export function useRuleBinding(options: UseRuleBindingOptions) {
+export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingReturn {
   const { originalRules, pageData, pageFunctions, dataSet, formApi } = options
   const boundRules = ref<Rule[]>([])
   

@@ -1,18 +1,64 @@
-﻿/**
+/**
  * 字段渲染助手实现
  * 
  * 用于计算字段的最终渲染状态（结合配置和权限）
  */
 
 import type {
-  IFieldRenderHelper,
-  IFieldRenderConfig,
-  IFieldRenderState,
-  DataRow,
+  ComponentDataRow,
   IPermissionChecker
-} from '../types/permission'
+} from '../data-types'
 
-import { FieldVisibility } from '../types/permission'
+import { FieldVisibility } from '../data-types'
+
+// 字段渲染配置接口
+export interface IFieldRenderConfig {
+  /** 字段名（用于权限匹配） */
+  field: string
+  /** 字段是否可见（可被权限覆盖） */
+  visible?: boolean
+  /** 字段是否可编辑（可被权限覆盖） */
+  editable?: boolean
+  /** 自定义脱敏规则（可选） */
+  maskRule?: (value: unknown) => string
+  /** 字段标签 */
+  label?: string
+  /** 字段宽度（表格列宽） */
+  width?: number | string
+}
+
+export interface IFieldRenderState {
+  /** 字段名 */
+  field: string
+  /** 可见性状态 */
+  visibility: FieldVisibility
+  /** 是否可编辑 */  
+  editable: boolean
+  /** 显示值（可能是脱敏值） */
+  displayValue?: string
+  /** 是否应该渲染此字段 */
+  shouldRender: boolean
+}
+
+export interface IFieldRenderHelper {
+  computeFieldState(
+    config: IFieldRenderConfig,
+    row: ComponentDataRow,
+    checker: IPermissionChecker
+  ): IFieldRenderState
+  
+  computeFieldStates(
+    configs: IFieldRenderConfig[],
+    row: ComponentDataRow,
+    checker: IPermissionChecker
+  ): IFieldRenderState[]
+  
+  filterVisibleFields(
+    configs: IFieldRenderConfig[],
+    row: ComponentDataRow,
+    checker: IPermissionChecker
+  ): IFieldRenderConfig[]
+}
 
 /**
  * 字段渲染助手默认实现
@@ -23,7 +69,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   computeFieldState(
     config: IFieldRenderConfig,
-    row: DataRow,
+    row: ComponentDataRow,
     checker: IPermissionChecker
   ): IFieldRenderState {
     const { field } = config
@@ -40,7 +86,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
     
     if (shouldRender) {
       // 后端返回的值已经是处理后的（Visible 或 Masked）
-      const value = row[field]
+      const value = row[field] 
       displayValue = value !== undefined && value !== null ? String(value) : ''
     }
     // Hidden 时不设置 displayValue，保持 undefined
@@ -59,7 +105,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   computeFieldStates(
     configs: IFieldRenderConfig[],
-    row: DataRow,
+    row: ComponentDataRow,
     checker: IPermissionChecker
   ): IFieldRenderState[] {
     return configs.map(config => 
@@ -72,7 +118,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   filterVisibleFields(
     configs: IFieldRenderConfig[],
-    row: DataRow,
+    row: ComponentDataRow,
     checker: IPermissionChecker
   ): IFieldRenderConfig[] {
     return configs.filter(config => {
@@ -97,7 +143,7 @@ export function createFieldRenderHelper(): IFieldRenderHelper {
  */
 export const computeFieldState = (
   config: IFieldRenderConfig,
-  row: DataRow,
+  row: ComponentDataRow,
   checker: IPermissionChecker
 ): IFieldRenderState => {
   return createFieldRenderHelper().computeFieldState(config, row, checker)
@@ -108,7 +154,7 @@ export const computeFieldState = (
  */
 export const computeFieldStates = (
   configs: IFieldRenderConfig[],
-  row: DataRow,
+  row: ComponentDataRow,
   checker: IPermissionChecker
 ): IFieldRenderState[] => {
   return createFieldRenderHelper().computeFieldStates(configs, row, checker)
@@ -119,7 +165,7 @@ export const computeFieldStates = (
  */
 export const filterVisibleFields = (
   configs: IFieldRenderConfig[],
-  row: DataRow,
+  row: ComponentDataRow,
   checker: IPermissionChecker
 ): IFieldRenderConfig[] => {
   return createFieldRenderHelper().filterVisibleFields(configs, row, checker)

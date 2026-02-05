@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "@spark-view/spark-page-config",
     "version": "0.1.0",
     "type": "module",
@@ -11,18 +11,19 @@
     ],
     "exports": {
         ".": {
-            "types": "./dist/types/index.d.ts",
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.js"
         }
     },
     "main": "./dist/index.js",
-    "types": "./dist/types/index.d.ts",
+    "types": "./dist/index.d.ts",
     "files": [
         "dist",
         "README.md"
     ],
     "scripts": {
-        "build": "tsc",
+        "clean": "rimraf dist",
+        "build": "npm run clean && tsc",
         "typecheck": "tsc --noEmit",
         "test": "vitest",
         "lint": "eslint src --ext .ts"
@@ -36,6 +37,7 @@
     },
     "devDependencies": {
         "@types/node": "^18.19.130",
+        "rimraf": "^6.1.2",
         "typescript": "~5.3.3",
         "vitest": "^2.1.8"
     }

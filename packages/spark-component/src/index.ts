@@ -18,15 +18,17 @@ export {
 } from './helpers/registerHelper.js'
 export type { SimpleComponentConfig } from './helpers/registerHelper.js'
 
-// 权限系统类型（转发导出，实际定义在 spark-data）
+// 权限系统类型（转发导出，实际定义在 spark-utils）
 export type {
-  // 以下类型来自 spark-data（数据类型唯一来源）
+  // 以下类型来自 spark-utils（数据类型唯一来源）
+  ComponentDataRow,          // 带权限的数据行（组件层推荐）
   IModelPermission,          // 模型级权限
   IInstancePermission,       // 实例级权限
   WithInstancePermission,    // 权限工具类型
   WithModelPermission,       // 权限工具类型
-  DataRow,                   // 组件层数据行（基于 spark-data.DataRow + 权限）
-  DataSet,                   // 组件层数据集（便捷接口）
+  DataRow,                   // 组件层数据行（重新导出 ComponentDataRow，向后兼容）
+  ComponentDataSource,       // 组件层数据源（推荐新名称）
+  DataSet,                   // 组件层数据源（向后兼容，建议使用 ComponentDataSource）
   
   // 以下类型为组件层特有
   IPermissionChecker,        // 权限检查器
@@ -52,8 +54,26 @@ export type {
 // 请使用 @spark-view/spark-utils 中的 Capability 命名空间 API
 // Capability.Events.createProvider(), Capability.Events.createConsumer()
 
-// Permission System
-export * from './permission/index.js'
+// Permission System（从 spark-utils 重新导出）
+export {
+  PermissionChecker,
+  createPermissionChecker, 
+  checkPermission,
+  PermissionFilter,
+  createPermissionFilter,
+  filterByPermission,
+  FieldRenderHelper,
+  createFieldRenderHelper,
+  computeFieldState,
+  computeFieldStates,
+  filterVisibleFields
+} from '@spark-view/spark-utils'
+
+export type {
+  IFieldRenderConfig,
+  IFieldRenderState,
+  IFieldRenderHelper
+} from '@spark-view/spark-utils'
 
 // Primary unified API for creating Spark components
 export { defineSparkComponent } from './vue/createSparkComponent.js'

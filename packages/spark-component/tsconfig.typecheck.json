@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.typecheck.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests/**/*"
+  ]
+}
