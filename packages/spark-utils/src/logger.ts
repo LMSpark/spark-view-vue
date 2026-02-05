@@ -1,7 +1,29 @@
-﻿
-/* eslint-disable no-console */
+﻿/* eslint-disable no-console */
 
-import type { LogLevel, AnyFunction, LoggerApi } from './types/common.js'
+import type { AnyFunction } from './types.js'
+
+/**
+ * 日志级别
+ */
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+/**
+ * Logger API 接口
+ */
+export interface LoggerApi {
+  debug: (...args: unknown[]) => void
+  info: (...args: unknown[]) => void
+  warn: (...args: unknown[]) => void
+  error: (...args: unknown[]) => void
+}
+
+/**
+ * 日志传输器接口
+ */
+export interface Transport {
+  level?: LogLevel
+  log: (level: LogLevel, message: string, meta?: unknown) => void | Promise<void>
+}
 
 function formatMsg(level: LogLevel, args: unknown[]) {
   return [`[${new Date().toISOString()}]`, `[${level.toUpperCase()}]`, ...args]

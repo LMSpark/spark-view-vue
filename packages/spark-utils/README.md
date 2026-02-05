@@ -1,28 +1,28 @@
 # @spark-view/spark-utils
 
-> SPARK 核心工具库 - 提供能力系统、日志、错误处理和异步工具
+> SPARK 核心工具库 - 提供能力系统、日志、权限和 HTTP 客户端
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 
 ## 特性
 
--  **能力系统** - 供需解耦的组件通信机制
--  **日志系统** - 多传输器、多级别日志
--  **错误处理** - 统一错误处理和重试机制
--  **异步工具** - Promise 工具和竞态控制
--  **配置管理** - 配置存储和访问
+- 🔌 **能力系统** - 供需解耦的组件通信机制
+- 📝 **日志系统** - 多传输器、多级别日志
+- 🔐 **权限系统** - 统一的权限检查和过滤
+- 🌐 **HTTP 客户端** - 类型安全的 HTTP 请求
+- 📡 **事件系统** - 类型安全的事件发布订阅
 
 ## 安装
 
-\\\ash
+```bash
 pnpm add @spark-view/spark-utils
-\\\
+```
 
 ## 快速开始
 
 ### 1. 能力系统
 
-\\\	ypescript
+```typescript
 import { Capability } from '@spark-view/spark-utils'
 
 // 创建管理器
@@ -42,17 +42,17 @@ context.providers.add(provider)
 const consumer = { capabilityName: 'userService' }
 manager.connectCapability(provider, consumer, context)
 console.log(consumer.implementation.getUser('123'))
-\\\
+```
 
 **特性**:
--  能力树：通过 parent 链构建层级
--  就近查找：沿 parent 链向上查找
--  解耦设计：供需互不依赖
--  类型安全：完整 TypeScript 支持
+- ✅ 能力树：通过 parent 链构建层级
+- ✅ 就近查找：沿 parent 链向上查找
+- ✅ 解耦设计：供需互不依赖
+- ✅ 类型安全：完整 TypeScript 支持
 
 ### 2. 日志系统
 
-\\\	ypescript
+```typescript
 import { Logger } from '@spark-view/spark-utils'
 
 const logger = Logger.create({
@@ -66,48 +66,64 @@ const logger = Logger.create({
 
 logger.info('应用启动')
 logger.error('错误', { code: 500 })
-\\\
+```
 
 **特性**:
--  多级别：debug、info、warn、error
--  多传输器：console、HTTP、memory
--  命名空间：日志作用域隔离
+- ✅ 多级别：debug、info、warn、error
+- ✅ 多传输器：console、HTTP、memory
+- ✅ 命名空间：日志作用域隔离
 
-### 3. 错误处理
+### 3. 权限系统
 
-\\\	ypescript
-import { handleError, withRetry, AppError } from '@spark-view/spark-utils'
+```typescript
+import { 
+  PermissionChecker, 
+  PermissionFilter,
+  FieldRenderHelper
+} from '@spark-view/spark-utils'
 
-// 创建应用错误
-throw new AppError('NETWORK_ERROR', '网络错误', { url })
+// 权限检查
+const checker = PermissionChecker.create()
+const canDelete = checker.canDelete(row)
+const canEdit = checker.canEdit(row)
 
-// 错误处理
-handleError(error, {
-  context: 'api',
-  onError: (err) => console.error(err)
+// 权限过滤
+const filter = PermissionFilter.create()
+const deletableRows = filter.filterDeletableRows(rows)
+
+// 字段渲染
+const helper = FieldRenderHelper.create(checker)
+const states = helper.computeFieldStates(fields, row)
+```
+
+### 4. HTTP 客户端
+
+```typescript
+import { createHttpClient } from '@spark-view/spark-utils'
+
+const client = createHttpClient({
+  baseURL: 'https://api.example.com',
+  headers: { 'Authorization': 'Bearer token' }
 })
 
-// 自动重试
-await withRetry(() => fetchData(), {
-  maxRetries: 3,
-  delay: 1000
-})
-\\\
+const users = await client.get<User[]>('/users')
+const newUser = await client.post<User>('/users', { name: 'John' })
+```
 
-### 4. 异步工具
+### 5. 事件系统
 
-\\\	ypescript
-import { RaceController, timeout } from '@spark-view/spark-utils'
+```typescript
+import { EventEmitter } from '@spark-view/spark-utils'
 
-// 竞态控制
-const race = new RaceController<User>()
-race.run(async () => {
-  return await fetchUser(id)
-})
+interface MyEvents {
+  'user:login': (user: User) => void
+  'user:logout': () => void
+}
 
-// 超时控制
-await timeout(fetchData(), 5000)
-\\\
+const emitter = new EventEmitter<MyEvents>()
+emitter.on('user:login', (user) => console.log(user))
+emitter.emit('user:login', { id: 1, name: 'Alice' })
+```
 
 ## 核心模块
 
@@ -115,14 +131,35 @@ await timeout(fetchData(), 5000)
 |------|------|
 | **Capability** | 能力系统（Provider/Consumer） |
 | **Logger** | 日志系统（多级别、多传输器） |
-| **ErrorHandler** | 错误处理（AppError、重试） |
-| **AsyncUtils** | 异步工具（竞态控制、超时） |
-| **ConfigManager** | 配置管理（get/set/clear） |
-| **EventEmitter** | 事件发射器 |
+| **Permission** | 权限系统（检查器、过滤器、渲染助手） |
+| **HttpClient** | HTTP 客户端（类型安全） |
+| **EventEmitter** | 事件发射器（类型安全） |
+| **Data Types** | 基础数据类型和权限接口 |
 
-## API 文档
+## 数据类型
 
-完整 API 文档请查看 [API.md](./API.md)
+```typescript
+// 基础数据行
+type DataRow<T = unknown> = Record<string, T>
+
+// 组件数据行（带权限）
+type ComponentDataRow<T = unknown> = WithInstancePermission<DataRow<T>>
+
+// 实例级权限
+interface IInstancePermission {
+  allowDelete?: boolean
+  editableFields?: string[]
+  hiddenFields?: string[]
+  maskedFields?: string[]
+}
+
+// 模型级权限
+interface IModelPermission {
+  allowCreate?: boolean
+  allowImport?: boolean
+  allowExport?: boolean
+}
+```
 
 ## 依赖
 
@@ -130,11 +167,10 @@ await timeout(fetchData(), 5000)
 
 ## 开发命令
 
-\\\ash
+```bash
 pnpm run typecheck   # 类型检查
-pnpm run test        # 运行测试
 pnpm run build       # 构建包
-\\\
+```
 
 ## License
 
