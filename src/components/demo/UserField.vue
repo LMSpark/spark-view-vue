@@ -13,6 +13,7 @@
 import { computed, onMounted } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
+import type { RowDataCapability, RowEventsCapability } from './types'
 
 interface Props {
   config: ComponentConfig
@@ -42,10 +43,10 @@ const rowData = consume('rowData')
 // 2. 消费父组件的行事件能力
 const rowEvents = consume('rowEvents')
 
-const events = rowEvents?.value
+const events = rowEvents?.value as RowEventsCapability | null
 if (events) {
   // 监听行事件
-  (events as any).on('row:click', (user: unknown) => {
+  events.on('row:click', (user: unknown) => {
     logger.debug('🔔 Field received row click event:', user)
   })
 }
@@ -53,10 +54,10 @@ if (events) {
 // 计算显示值
 const displayValue = computed(() => {
   // 优先使用能力系统获取数据
-  const data = rowData?.value
+  const data = rowData?.value as RowDataCapability | null
   if (data) {
     const field = props.config.props?.field as string
-    const value = (data as any).getField(field)
+    const value = data.getField(field)
     
     // 格式化显示
     if (field === 'status') {
@@ -72,8 +73,8 @@ const displayValue = computed(() => {
 
 // 是否选中
 const isRowSelected = computed(() => {
-  const data = rowData?.value
-  return data ? ((data as any)?.isSelected() || false) : false
+  const data = rowData?.value as RowDataCapability | null
+  return data?.isSelected() || false
 })
 
 onMounted(() => {

@@ -23,7 +23,11 @@ import UserGrid from './UserGrid.vue'
 // ============ 获取 APP 层服务 ============
 const router = useRouter()
 const logger = useLogger()
-const configLoader = inject('configLoader') as any
+const configLoader = inject<{
+  loadPageConfig(pageId: string): unknown
+  loadRoutes(): unknown
+  clearCache(): void
+} | null>('configLoader', null)
 
 // ============ 创建 DataSet ============
 const dataSet = SparkData.classes.DataSetManager.create({
@@ -72,10 +76,10 @@ const capabilityManager = SparkData.createCapabilityManager('app-services-demo',
   // 🎯 关键：在页面层注入 APP 服务
   appServices: {
     router: {
-      push: (to: any) => router.push(to) as any,
-      replace: (to: any) => router.replace(to) as any,
+      push: (to) => router.push(to as string),
+      replace: (to) => router.replace(to as string),
       back: () => router.back(),
-      currentRoute: router.currentRoute as any
+      currentRoute: router.currentRoute
     },
     // Logger 类型完全匹配，直接传递（bind 保持 this 上下文）
     logger: {
@@ -85,8 +89,8 @@ const capabilityManager = SparkData.createCapabilityManager('app-services-demo',
       error: logger.error.bind(logger)
     },
     configLoader: configLoader ? {
-      loadPageConfig: (pageId: string) => configLoader.loadPageConfig(pageId),
-      loadRoutes: () => configLoader.loadRoutes(),
+      loadPageConfig: (pageId: string) => Promise.resolve(configLoader.loadPageConfig(pageId)),
+      loadRoutes: () => Promise.resolve(configLoader.loadRoutes()),
       clearCache: () => configLoader.clearCache()
     } : undefined
   }

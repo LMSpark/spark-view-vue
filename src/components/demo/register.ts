@@ -3,6 +3,18 @@
  */
 import { Spark } from '@spark-view/spark-component'
 
+// 导出类型定义供组件使用
+export type {
+  User,
+  SelectionCapability,
+  GridEventsCapability,
+  RowDataCapability,
+  RowEventsCapability,
+  AppServicesCapability,
+  AppRouterCapability,
+  AppLoggerCapability
+} from './types'
+
 // 注册三个级别的演示组件
 
 // 1. 模型级组件：UserGrid
