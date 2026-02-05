@@ -12,10 +12,6 @@ declare module 'vxe-table' {
   export default VXETable
 }
 
-declare module 'vite-plugin-mock' {
-  export type MockMethod = any
-}
-
 declare module 'vitepress' {
   const vitepress: any
   export default vitepress
