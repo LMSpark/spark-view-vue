@@ -9,7 +9,12 @@
  */
 
 import { CapabilityManager, EventConnector } from '@spark-view/spark-utils/capability/internal'
-import type { Context as CapabilityContext } from '@spark-view/spark-utils'
+import type { 
+  Context as CapabilityContext,
+  Provider,
+  Consumer,
+  Context
+} from '@spark-view/spark-utils'
 import type { ComponentContext } from '../types/spark-component.js'
 
 /**
@@ -30,9 +35,16 @@ export class ComponentCapabilityManager extends CapabilityManager {
       // 按名称在能力树中查找提供者（就近原则）
       const provider = this.findProviderByName(ctx, consumer.capabilityName)
       if (provider) {
-        // 类型断言是必需的，因为 ComponentContext 扩展了 CapabilityContext
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.connectCapability(provider as any, consumer as any, ctx as any)
+        /**
+         * 类型断言说明：
+         * ComponentContext 扩展了 CapabilityContext<CapabilityProvider>，
+         * 但 CapabilityManager.connectCapability 期望泛型参数 Context<Provider>。
+         * TypeScript 无法自动推断泛型兼容性，需要显式断言。
+         * 
+         * 这是类型系统的技术限制，不是设计缺陷。
+         * CapabilityProvider 是 Provider 的类型别名，运行时完全兼容。
+         */
+        this.connectCapability(provider as unknown as Provider, consumer as unknown as Consumer, ctx as unknown as Context)
       }
     }
     
@@ -79,9 +91,11 @@ export class ComponentCapabilityManager extends CapabilityManager {
     for (const consumer of ctx.consumers.values()) {
       const provider = this.findProviderByName(ctx, consumer.capabilityName)
       if (provider) {
-        // 类型断言是必需的，因为 ComponentContext 扩展了 CapabilityContext
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.disconnectCapability(provider as any, consumer as any, ctx as any)
+        /**
+         * 类型断言说明：同 autoConnectCapabilities
+         * CapabilityManager 使用泛型基础类型，需要类型断言以兼容 Component 层扩展类型
+         */
+        this.disconnectCapability(provider as unknown as Provider, consumer as unknown as Consumer, ctx as unknown as Context)
       }
     }
     

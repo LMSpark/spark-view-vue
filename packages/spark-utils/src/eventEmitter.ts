@@ -21,6 +21,12 @@ export class EventEmitter<Events extends EventMap = EventMap> {
     }
     const listeners = this.listeners.get(event)
     if (listeners) {
+      /**
+       * 类型断言说明：
+       * 需要在 Set<AnyFunction> 中存储不同签名的事件处理函数。
+       * Events[K] 是泛型类型，运行时需要统一存储为 AnyFunction。
+       * 这是 EventEmitter 设计的必要技术选择。
+       */
       listeners.add(handler as AnyFunction)
     }
 
@@ -34,6 +40,10 @@ export class EventEmitter<Events extends EventMap = EventMap> {
   once<K extends keyof Events>(event: K, handler: Events[K]): () => void {
     const wrapper = ((...args: unknown[]) => {
       this.off(event, wrapper as Events[K])
+      /**
+       * 类型断言说明：
+       * handler 是泛型函数 Events[K]，调用时需要作为 AnyFunction 处理可变参数。
+       */
       ;(handler as AnyFunction)(...args)
     }) as Events[K]
 
@@ -52,6 +62,10 @@ export class EventEmitter<Events extends EventMap = EventMap> {
 
     const handlers = this.listeners.get(event)
     if (handlers) {
+      /**
+       * 类型断言说明：
+       * Set 中存储的是 AnyFunction，需要断言以从chandle 删除。
+       */
       handlers.delete(handler as AnyFunction)
       if (handlers.size === 0) {
         this.listeners.delete(event)
