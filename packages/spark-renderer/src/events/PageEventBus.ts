@@ -4,7 +4,7 @@
  */
 
 import type { DataRow } from '@spark-view/spark-data'
-import { EventEmitter } from './EventEmitter'
+import { EventEmitter } from '@spark-view/spark-utils'
 
 /**
  * 页面级事件接口（双向事件）

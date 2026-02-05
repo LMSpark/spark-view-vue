@@ -1,83 +1,62 @@
 /**
- * 能力系统 - 通用类型定义
- * 独立于具体实现（组件、页面、应用）
+ * 能力系统类型定义
+ * 
+ * 核心理念：
+ * - 能力本质是上下文的接口，通过名称解耦
+ * - 3种能力类型：字面量、方法、事件
+ * - Provider/Consumer/Context 是内部实现
  */
 
 /**
- * 能力提供者
- * 提供某种能力给其他上下文使用
+ * 提供者 - 提供能力的一方
+ * @template T - 能力实现的类型（可以是任何值、方法集合、或事件发射器）
  */
-export interface CapabilityProvider<
-  TInterface = Record<string, unknown>,
-  TImpl = unknown
-> {
+export interface Provider<T = unknown> {
+  /** 能力名称（唯一标识） */
   name: string
+  /** 版本号 */
   version: string
-  interface: TInterface
-  implementation?: TImpl
-  description?: string
+  /** 能力实现（字面量/方法/事件） */
+  implementation?: T
 }
 
 /**
- * 能力消费者
- * 消费其他上下文提供的能力
+ * 消费者 - 使用能力的一方
  */
-export interface CapabilityConsumer<
-  TInterface = Record<string, unknown>,
-  TImpl = unknown
-> {
+export interface Consumer {
+  /** 需要的能力名称 */
   capabilityName: string
-  minVersion?: string
-  interface: TInterface
-  implementation?: TImpl
+  /** 连接后会被赋值为 Provider.implementation */
+  implementation?: unknown
 }
 
 /**
- * 通用上下文接口
- * 任何使用能力系统的上下文都应实现此接口
+ * 上下文 - 能力树的节点
+ * 维护 parent 链实现能力查找
  */
-export interface CapabilityContext {
-  id: string
-  type: string
-  parent?: CapabilityContext
-  children: CapabilityContext[]
-  providers: Set<CapabilityProvider>
-  consumers: Map<string, CapabilityConsumer>
-  providerListeners?: Map<string, Set<(provider: CapabilityProvider) => void>>
+export interface Context<T = Provider> {
+  /** 父上下文（用于向上查找能力） */
+  parent?: Context<T> | null
+  /** 当前上下文提供的能力 */
+  providers: Set<T>
 }
 
 /**
- * 能力连接器接口
- * 定义如何连接提供者和消费者
+ * 连接器 - 负责连接 Provider 和 Consumer
+ * （内部实现，外部用户不需要关心）
  */
-export interface CapabilityConnector {
-  connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
-  disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
-  isConnected(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean
+export interface Connector {
+  connect(provider: Provider, consumer: Consumer): boolean
+  disconnect(provider: Provider, consumer: Consumer): boolean
+  isConnected(provider: Provider, consumer: Consumer): boolean
 }
 
 /**
- * 能力管理器接口
- * 管理能力的注册、连接、断开
+ * 管理器 - 管理能力的连接
+ * （内部实现，外部用户不需要关心）
  */
-export interface ICapabilityManager {
-  registerConnector(name: string, connector: CapabilityConnector): void
-  unregisterConnector(name: string): boolean
-  connectCapability(
-    provider: CapabilityProvider,
-    consumer: CapabilityConsumer,
-    context: CapabilityContext
-  ): boolean
-  disconnectCapability(
-    provider: CapabilityProvider,
-    consumer: CapabilityConsumer,
-    context: CapabilityContext
-  ): boolean
-  isCapabilityConnected(
-    provider: CapabilityProvider,
-    consumer: CapabilityConsumer,
-    context: CapabilityContext
-  ): boolean
-  autoConnectCapabilities(context: CapabilityContext): void
-  disconnectAllCapabilities(context: CapabilityContext): void
+export interface Manager {
+  registerConnector(name: string, connector: Connector): void
+  connectCapability(provider: Provider, consumer: Consumer, context: Context): boolean
+  disconnectCapability(provider: Provider, consumer: Consumer, context: Context): boolean
 }

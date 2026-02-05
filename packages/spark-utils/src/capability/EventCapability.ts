@@ -1,213 +1,136 @@
 /**
- * 事件能力集成
- * 将事件系统整合到能力系统中
+ * 事件能力 - 能力系统的3种类型之一
+ * 提供 on/off/emit 模式的事件系统
  */
 
 import { Logger } from '../logger.js'
-import type {
-  CapabilityProvider,
-  CapabilityConsumer,
-  CapabilityConnector
-} from './types.js'
+import type { Provider, Consumer, Connector } from './types.js'
 
 const logger = Logger('EventCapability')
 
 /**
- * 事件能力提供者接口
- * 组件通过能力系统提供事件
+ * 事件提供者接口
  */
-export interface EventCapabilityProvider {
+export interface EventProvider {
   on: (event: string, handler: (...args: unknown[]) => void) => void
   off: (event: string, handler: (...args: unknown[]) => void) => void
   emit: (event: string, ...args: unknown[]) => void
-  once?: (event: string, handler: (...args: unknown[]) => void) => void
 }
 
 /**
- * 事件能力消费者接口
- * 子组件通过能力系统消费父组件事件
+ * 事件消费者接口
  */
-export interface EventCapabilityConsumer {
+export interface EventConsumer {
   handlers: Map<string, (...args: unknown[]) => void>
 }
 
 /**
- * 事件能力连接器
- * 自动连接提供者的事件系统和消费者的处理器
+ * 事件专用连接器
+ * 负责将 consumer.handlers 中的处理器注册到 provider
  */
-export class EventCapabilityConnector implements CapabilityConnector {
+export class EventConnector implements Connector {
   private connections = new Map<string, Map<string, Function>>()
 
-  connect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
+  connect(provider: Provider, consumer: Consumer): boolean {
     try {
-      const eventProvider = provider.implementation
-      const eventConsumer = consumer.implementation
+      const p = provider.implementation as EventProvider
+      const c = consumer.implementation as EventConsumer
+      
+      if (!p?.on || !c?.handlers) return false
 
-      if (!this.isEventProvider(eventProvider)) {
-        logger.warn('Provider does not implement EventCapabilityProvider interface')
-        return false
-      }
-
-      if (!this.isEventConsumer(eventConsumer)) {
-        logger.warn('Consumer does not implement EventCapabilityConsumer interface')
-        return false
-      }
-
-      const connectionKey = this.getConnectionKey(provider, consumer)
+      const key = `${provider.name}:${consumer.capabilityName}`
       const handlerMap = new Map<string, Function>()
 
-      // 连接所有处理器
-      for (const [eventName, handler] of eventConsumer.handlers.entries()) {
-        eventProvider.on(eventName, handler)
-        handlerMap.set(eventName, handler)
-        logger.debug(`Connected event handler: ${eventName}`)
+      // 将 consumer 的所有 handlers 注册到 provider
+      for (const [event, handler] of c.handlers.entries()) {
+        p.on(event, handler)
+        handlerMap.set(event, handler)
       }
 
-      this.connections.set(connectionKey, handlerMap)
-      logger.info(`✅ Event capability connected: ${provider.name}`)
+      this.connections.set(key, handlerMap)
+      logger.debug(`✅ 事件已连接: ${provider.name}`)
       return true
     } catch (e: unknown) {
-      logger.error('Failed to connect event capability:', String(e))
+      logger.error('连接事件失败:', String(e))
       return false
     }
   }
 
-  disconnect(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
+  disconnect(provider: Provider, consumer: Consumer): boolean {
     try {
-      const eventProvider = provider.implementation
-      if (!this.isEventProvider(eventProvider)) {
-        return false
-      }
+      const p = provider.implementation as EventProvider
+      const key = `${provider.name}:${consumer.capabilityName}`
+      const handlerMap = this.connections.get(key)
       
-      const connectionKey = this.getConnectionKey(provider, consumer)
-      const handlerMap = this.connections.get(connectionKey)
+      if (!p?.off || !handlerMap) return false
 
-      if (!handlerMap) {
-        return false
+      // 注销所有 handlers
+      for (const [event, handler] of handlerMap.entries()) {
+        p.off(event, handler as (...args: unknown[]) => void)
       }
 
-      // 断开所有处理器
-      for (const [eventName, handler] of handlerMap.entries()) {
-        eventProvider.off(eventName, handler as (...args: unknown[]) => void)
-        logger.debug(`Disconnected event handler: ${eventName}`)
-      }
-
-      this.connections.delete(connectionKey)
-      logger.info(`❌ Event capability disconnected: ${provider.name}`)
+      this.connections.delete(key)
+      logger.debug(`❌ 事件已断开: ${provider.name}`)
       return true
     } catch (e: unknown) {
-      logger.error('Failed to disconnect event capability:', String(e))
+      logger.error('断开事件失败:', String(e))
       return false
     }
   }
 
-  isConnected(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
-    const connectionKey = this.getConnectionKey(provider, consumer)
-    return this.connections.has(connectionKey)
-  }
-
-  private getConnectionKey(provider: CapabilityProvider, consumer: CapabilityConsumer): string {
-    return `${provider.name}:${consumer.capabilityName}`
-  }
-
-  private isEventProvider(impl: unknown): impl is EventCapabilityProvider {
-    return impl !== null && typeof impl === 'object' && 
-      'on' in impl && 'off' in impl && 'emit' in impl
-  }
-
-  private isEventConsumer(impl: unknown): impl is EventCapabilityConsumer {
-    return impl !== null && typeof impl === 'object' && 'handlers' in impl
+  isConnected(provider: Provider, consumer: Consumer): boolean {
+    return this.connections.has(`${provider.name}:${consumer.capabilityName}`)
   }
 }
 
 /**
- * 创建事件能力提供者
- * 便捷工厂函数
+ * 创建事件提供者
+ * 返回 Provider 和 EventEmitter，调用者可以用 emitter.emit() 发送事件
  */
-export function createEventCapabilityProvider(name: string): {
-  provider: CapabilityProvider
-  emitter: EventCapabilityProvider
-} {
+export function createProvider(name: string): { provider: Provider; emitter: EventProvider } {
   const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
 
-  const emitter: EventCapabilityProvider = {
+  const emitter: EventProvider = {
     on(event: string, handler: (...args: unknown[]) => void) {
-      if (!listeners.has(event)) {
-        listeners.set(event, new Set())
-      }
-      const handlers = listeners.get(event)
-      if (handlers) {
-        handlers.add(handler)
-      }
+      if (!listeners.has(event)) listeners.set(event, new Set())
+      listeners.get(event)?.add(handler)
     },
 
     off(event: string, handler: (...args: unknown[]) => void) {
       const handlers = listeners.get(event)
       if (handlers) {
         handlers.delete(handler)
-        if (handlers.size === 0) {
-          listeners.delete(event)
-        }
+        if (handlers.size === 0) listeners.delete(event)
       }
     },
 
     emit(event: string, ...args: unknown[]) {
-      const handlers = listeners.get(event)
-      if (handlers) {
-        handlers.forEach(handler => {
-          try {
-            handler(...args)
-          } catch (e) {
-            logger.error(`Error in event handler for '${event}':`, e)
-          }
-        })
-      }
-    },
-
-    once(event: string, handler: (...args: unknown[]) => void) {
-      const onceHandler = (...args: unknown[]) => {
-        handler(...args)
-        this.off(event, onceHandler)
-      }
-      this.on(event, onceHandler)
+      listeners.get(event)?.forEach(handler => {
+        try {
+          handler(...args)
+        } catch (e) {
+          logger.error(`事件错误 '${event}':`, e)
+        }
+      })
     }
   }
 
-  const provider: CapabilityProvider<
-    Record<string, string>,
-    EventCapabilityProvider
-  > = {
-    name,
-    version: '1.0.0',
-    interface: {
-      on: 'function',
-      off: 'function',
-      emit: 'function',
-      once: 'function'
-    },
-    implementation: emitter
+  return {
+    provider: { name, version: '1.0.0', implementation: emitter },
+    emitter
   }
-
-  return { provider, emitter }
 }
 
 /**
- * 创建事件能力消费者
- * 便捷工厂函数
+ * 创建事件消费者
+ * 将 handlers 对象转换为 Consumer，会在连接时自动注册
  */
-export function createEventCapabilityConsumer(
-  capabilityName: string,
+export function createConsumer(
+  name: string,
   handlers: Record<string, (...args: unknown[]) => void>
-): CapabilityConsumer {
-  const handlerMap = new Map(Object.entries(handlers))
-
+): Consumer {
   return {
-    capabilityName,
-    interface: {
-      handlers: 'Map<string, Function>'
-    },
-    implementation: {
-      handlers: handlerMap
-    }
+    capabilityName: name,
+    implementation: { handlers: new Map(Object.entries(handlers)) }
   }
 }

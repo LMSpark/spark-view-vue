@@ -1,4 +1,5 @@
 ﻿import type { CapabilityProvider, CapabilityConsumer, LoggerApi } from './common.js'
+import type { Context as CapabilityContext } from '@spark-view/spark-utils'
 
 export namespace Spark {
   export interface ComponentConfig {
@@ -17,14 +18,27 @@ export namespace Spark {
     [key: string]: unknown
   }
 
-  export interface ComponentContext {
+  /**
+   * 组件上下文
+   * 
+   * 继承能力系统的最小接口 CapabilityContext（parent + providers）
+   * 添加组件特定属性：id, type, children, consumers, state, config 等
+   * 
+   * 能力系统核心理念：
+   * - 供方：context.providers.add(provider) - 不关心谁使用
+   * - 需方：context.consumers.set(name, consumer) - 不关心谁提供
+   * - 查找：按 capabilityName 沿 parent 链向上查找（就近原则）
+   */
+  export interface ComponentContext extends CapabilityContext<CapabilityProvider> {
     id: string
     type: string
     config?: ComponentConfig
+    // parent 继承自 CapabilityContext
     parent?: ComponentContext | null
+    // providers 覆盖基类定义，使用具体类型
+    providers: Set<CapabilityProvider>
     children: ComponentContext[]
     state: Record<string, unknown>
-    providers: Set<CapabilityProvider>
     consumers: Map<string, CapabilityConsumer>
     providerListeners?: Map<string, Set<(prov: CapabilityProvider) => void>>
     logger?: LoggerApi
@@ -54,10 +68,6 @@ export namespace Spark {
     getComponentDefinition(type: string): ComponentConfig | undefined
     isComponentRegistered(type: string): boolean
     getRegisteredComponentTypes(): string[]
-    unregisterComponent(type: string): boolean
-    createComponentTree(cfg: ComponentConfig): ComponentConfig
-    validateComponentConfig(cfg: ComponentConfig): boolean
-    getComponentCompatibility(): Record<string, string[]>
   }
 
   export type PluginHooks = {

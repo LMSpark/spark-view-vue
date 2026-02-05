@@ -51,8 +51,14 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     if (!this.validateDefinition(definition)) {
       throw new Error(`Invalid component definition for type '${type}'`)
     }
-    this.components.set(type, definition)
-    this.logger.info(`✅ Registered SPARK component: ${type} (${definition.version})`)
+    // 为逻辑组件提供默认值
+    const normalizedDef: ComponentConfig = {
+      version: '1.0.0',
+      ...definition,
+      type: definition.type || type
+    }
+    this.components.set(type, normalizedDef)
+    this.logger.info(`✅ Registered SPARK component: ${type} (${normalizedDef.version})`)
   }
 
   /**

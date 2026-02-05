@@ -11,7 +11,7 @@ import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
-import type { Implementation, CapabilityInterface } from '../types/common.js'
+import type { Implementation } from '../types/common.js'
 
 const logger = Logger('Spark:Component')
 
@@ -47,7 +47,7 @@ export type SparkComponent<_TConfig = ComponentConfig> = ReturnType<typeof defin
 
 // Local helper to create a noop provider when a capability is missing
 function createNoopProvider(name: string): CapabilityProvider {
-  return { name, version: '0.0.0', interface: {} as CapabilityInterface, implementation: {} }
+  return { name, version: '0.0.0', implementation: {} }
 }
 
 export interface SparkComponentHelpers {
@@ -209,7 +209,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
 
       // Capability system functions
       function provide(name: string, implementation?: Implementation) {
-        const p: CapabilityProvider = { name, version: '1.0.0', interface: {} as CapabilityInterface, implementation }
+        const p: CapabilityProvider = { name, version: '1.0.0', implementation }
         if (manager && typeof (manager).registerProvider === 'function') {
           (manager).registerProvider(context, p)
         } else {
@@ -219,14 +219,14 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
       }
 
       function consume(name: string): Implementation | null {
-        const consumer: CapabilityConsumer = { capabilityName: name, interface: {}, implementation: undefined }
+        const consumer: CapabilityConsumer = { capabilityName: name, implementation: undefined }
         context.consumers.set(name, consumer)
         const provider = Array.from(context.providers).find(p => p.name === name) ?? createNoopProvider(name)
         if (provider) {
           consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
           try { capabilityManager.connectCapability(provider as any, consumer as any, context as any) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
           logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
-          return consumer.implementation ?? null
+          return (consumer.implementation ?? null) as Implementation | null
         }
         logger.warn(`⚠️ Capability not found (registered consumer for late-binding): ${name} for ${context.type} (${context.id})`)
         return null

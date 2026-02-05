@@ -53,52 +53,8 @@ export interface LoggerApi {
   error: (...args: unknown[]) => void
 }
 
-/**
- * 能力提供者
- * 
- * @template TInterface - 接口类型
- * @template TImpl - 实现类型
- */
-export interface CapabilityProvider<TInterface = CapabilityInterface, TImpl = Implementation> {
-  /** 能力名称 */
-  name: string
-  
-  /** 版本号 */
-  version?: string
-  
-  /** 接口定义 */
-  interface?: TInterface
-  
-  /** 实现细节 */
-  implementation?: TImpl
-}
-
-/**
- * 能力消费者
- * 
- * @template TInterface - 接口类型
- * @template TImpl - 实现类型
- */
-export interface CapabilityConsumer<TInterface = CapabilityInterface, TImpl = Implementation> {
-  /** 能力名称 */
-  capabilityName: string
-  
-  /** 接口定义 */
-  interface?: TInterface
-  
-  /** 实现细节 */
-  implementation?: TImpl | undefined
-  
-  /** 最小版本要求 */
-  minVersion?: string
-  
-  /**
-   * 提供者就绪回调
-   * 
-   * @param prov - 能力提供者实例
-   */
-  onProvide?: (prov: CapabilityProvider<TInterface, TImpl>) => void
-}
+// 能力类型已移至 @spark-view/spark-utils/capability
+// 请从 @spark-view/spark-utils 导入 Provider, Consumer 类型
 
 /**
  * 日志传输器接口

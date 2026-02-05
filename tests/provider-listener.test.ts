@@ -21,7 +21,7 @@ describe('Provider listeners', () => {
       listeners.add((prov: CapabilityProvider) => { called = true; expect(prov.name).toBe('foo') })
     }
 
-    const provider: CapabilityProvider = { name: 'foo', version: '1.0.0', interface: {}, implementation: {} }
+    const provider: CapabilityProvider = { name: 'foo', version: '1.0.0', implementation: {} }
     manager.registerProvider(parentCtx, provider)
 
     expect(called).toBe(true)

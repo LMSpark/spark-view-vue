@@ -10,6 +10,10 @@
         ".": {
             "import": "./dist/index.js",
             "types": "./dist/index.d.ts"
+        },
+        "./capability/internal": {
+            "import": "./dist/capability/internal.js",
+            "types": "./dist/capability/internal.d.ts"
         }
     },
     "files": [

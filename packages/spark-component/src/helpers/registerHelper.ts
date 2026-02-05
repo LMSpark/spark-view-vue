@@ -20,24 +20,17 @@ export interface SimpleComponentConfig {
   /** 组件名称（如 'HeavyGrid'），自动转换为 kebab-case type */
   name: string
   
-  /** 组件路径或组件本身 */
+  /** 组件路径（有 path 自动懒加载） */
   path?: string
-  component?: unknown
   
-  /** 是否懒加载（默认 false） */
-  lazy?: boolean
+  /** 组件本身（已导入的组件） */
+  component?: unknown
   
   /** 版本号（默认 '1.0.0'） */
   version?: string
   
   /** 加载完成回调 */
   onLoad?: (component: unknown) => void
-  
-  /** 能力提供者 */
-  provides?: string[]
-  
-  /** 能力消费者 */
-  requires?: string[]
 }
 
 /**
@@ -70,18 +63,17 @@ export function nameToType(name: string): string {
  *   component: MyButtonComponent
  * })
  * 
- * // 异步注册（推荐）
+ * // 异步注册（推荐）- 有 path 自动懒加载
  * registerComponent({
  *   name: 'HeavyGrid',
  *   path: './components/HeavyGrid.vue',
- *   lazy: true,
  *   onLoad: (comp) => console.log('Grid loaded!')
  * })
  * 
  * // 批量注册
  * registerComponents([
- *   { name: 'Chart', path: './Chart.vue', lazy: true },
- *   { name: 'Calendar', path: './Calendar.vue', lazy: true }
+ *   { name: 'Chart', path: './Chart.vue' },
+ *   { name: 'Calendar', path: './Calendar.vue' }
  * ])
  * ```
  */
@@ -89,20 +81,17 @@ export function createSimpleRegistration(config: SimpleComponentConfig): Compone
   // 1. 自动生成 type
   const type = nameToType(config.name)
   
-  // 2. 处理同步/异步
+  // 2. 智能判断：有 path 自动懒加载，有 component 直接使用
   const component: unknown = config.component
   let loader: (() => Promise<{ default: unknown }>) | undefined
   
-  if (config.lazy && config.path) {
-    // 懒加载模式
+  if (config.path) {
+    // 有 path → 创建懒加载 loader
+    const componentPath = config.path // 缓存 path 避免 ! 断言
     loader = async () => {
       try {
         logger.info(`⏳ Loading component: ${config.name}`)
-        const pathValue = config.path
-        if (!pathValue) {
-          throw new Error(`Component ${config.name} has lazy=true but no path`)
-        }
-        const module = await import(/* @vite-ignore */ pathValue)
+        const module = await import(/* @vite-ignore */ componentPath)
         const loadedComponent = module.default || module
         
         // 触发加载完成回调
@@ -121,9 +110,9 @@ export function createSimpleRegistration(config: SimpleComponentConfig): Compone
         throw error
       }
     }
-  } else if (config.path && !config.component) {
-    // 提示：path 需要配合 lazy: true 使用
-    logger.warn(`Component "${config.name}" has path but lazy=false. Use lazy:true or provide component directly.`)
+  } else if (!config.component) {
+    // 既没有 path 也没有 component
+    logger.warn(`Component "${config.name}" has neither path nor component. Nothing to register.`)
   }
   
   // 3. 构建标准配置
@@ -135,22 +124,6 @@ export function createSimpleRegistration(config: SimpleComponentConfig): Compone
     loader
   }
   
-  // 4. 能力系统
-  if (config.provides) {
-    standardConfig.providers = config.provides.map(name => ({
-      name,
-      version: config.version || '1.0.0',
-      implementation: {} // 需要在组件内部提供实现
-    }))
-  }
-  
-  if (config.requires) {
-    standardConfig.consumers = config.requires.map(name => ({
-      capabilityName: name,
-      minVersion: '1.0.0'
-    }))
-  }
-  
   return standardConfig
 }
 
@@ -160,9 +133,9 @@ export function createSimpleRegistration(config: SimpleComponentConfig): Compone
  * @example
  * ```typescript
  * const configs = batchCreateSimpleRegistrations([
- *   { name: 'Chart', path: './Chart.vue', lazy: true },
- *   { name: 'Calendar', path: './Calendar.vue', lazy: true },
- *   { name: 'Grid', path: './Grid.vue', lazy: true }
+ *   { name: 'Chart', path: './Chart.vue' },
+ *   { name: 'Calendar', path: './Calendar.vue' },
+ *   { name: 'Grid', path: './Grid.vue' }
  * ])
  * ```
  */
@@ -177,44 +150,24 @@ export function batchCreateSimpleRegistrations(
  */
 export const presets = {
   /**
-   * 懒加载预设
+   * 懒加载预设（后向兼容，建议直接传 path）
    */
   lazy(name: string, path: string, options?: Partial<SimpleComponentConfig>): SimpleComponentConfig {
     return {
       name,
       path,
-      lazy: true,
       ...options
     }
   },
   
   /**
-   * 同步加载预设
+   * 同步加载预设（传入已导入的组件）
    */
   sync(name: string, component: unknown, options?: Partial<SimpleComponentConfig>): SimpleComponentConfig {
     return {
       name,
       component,
-      lazy: false,
       ...options
-    }
-  },
-  
-  /**
-   * 带能力的组件
-   */
-  withCapabilities(
-    name: string, 
-    pathOrComponent: string | unknown,
-    provides: string[],
-    requires: string[] = []
-  ): SimpleComponentConfig {
-    const isPath = typeof pathOrComponent === 'string'
-    return {
-      name,
-      ...(isPath ? { path: pathOrComponent as string, lazy: true } : { component: pathOrComponent }),
-      provides,
-      requires
     }
   }
 }

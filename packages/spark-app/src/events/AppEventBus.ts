@@ -5,7 +5,7 @@
 
 import type { RouteLocationNormalized } from 'vue-router'
 import type { UserInfo } from '../types'
-import { EventEmitter } from './EventEmitter'
+import { EventEmitter } from '@spark-view/spark-utils'
 
 /**
  * 应用级事件接口（双向事件）

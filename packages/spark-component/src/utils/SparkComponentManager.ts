@@ -85,18 +85,6 @@ export class SparkComponentManagerImpl {
   }
 
   /**
-   * 渲染单个组件（不递归子组件）
-   * 
-   * @param config - 组件配置
-   * @returns 渲染结果（VNode）
-   */
-  renderSingle(config: ComponentConfig): unknown {
-    const renderResult = this.renderer.renderComponent(config)
-    this.logger.info(`Rendered single component: ${config.type}`)
-    return renderResult
-  }
-
-  /**
    * 获取组件上下文
    * 
    * @param id - 组件上下文 ID
@@ -244,68 +232,6 @@ export class SparkComponentManagerImpl {
    */
   getRegisteredComponentTypes(): string[] {
     return this.registry.getAllTypes()
-  }
-
-  /**
-   * 注销组件类型
-   * 
-   * @param type - 组件类型名称
-   * @returns 是否注销成功
-   */
-  unregisterComponent(type: string) {
-    return this.registry.unregister(type)
-  }
-
-  // ========================================
-  // 工具方法
-  // ========================================
-
-  /**
-   * 创建组件树的深拷贝
-   * 
-   * @param cfg - 组件配置
-   * @returns 深拷贝后的组件配置
-   */
-  createComponentTree(cfg: ComponentConfig) {
-    const copy = { ...cfg } as ComponentConfig & { children?: ComponentConfig[] }
-    if (copy.children) copy.children = copy.children.map((c: ComponentConfig) => this.createComponentTree(c))
-    return copy
-  }
-
-  /**
-   * 验证组件配置是否有效
-   * 
-   * @param cfg - 组件配置
-   * @returns 是否有效
-   */
-  validateComponentConfig(cfg: ComponentConfig): boolean {
-    const def = this.registry.get(cfg.type)
-    if (!def) return false
-    if (def.validator) return def.validator(cfg)
-    return true
-  }
-
-  /**
-   * 获取组件兼容性映射
-   * 
-   * 返回每个能力所有兼容的提供者组件
-   * 
-   * @returns 能力名称到提供者组件类型的映射
-   */
-  getComponentCompatibility(): Record<string, string[]> {
-    const map: Record<string, string[]> = {}
-    this.registry.getAllDefinitions().forEach(def => {
-      if (def.consumers) {
-        def.consumers.forEach(cons => {
-          const arr = map[cons.capabilityName] = map[cons.capabilityName] ?? []
-          let providers: string[] = []
-          if (typeof this.registry.findCompatibleProviders === 'function') providers = this.registry.findCompatibleProviders(cons.capabilityName, cons.minVersion)
-          arr.push(...providers)
-        })
-      }
-    })
-    Object.keys(map).forEach(k => map[k] = Array.from(new Set(map[k])))
-    return map
   }
 
   /**

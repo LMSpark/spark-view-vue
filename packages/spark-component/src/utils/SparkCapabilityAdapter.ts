@@ -1,33 +1,37 @@
 /**
  * Spark Component 能力系统适配器
  * 将通用能力系统适配到组件上下文
+ * 
+ * 设计说明：
+ * - ComponentContext 继承 CapabilityContext（parent + providers）
+ * - 适配器只需提取最小接口所需的属性
+ * - 能力查找自动沿 parent 链进行（能力树）
  */
 
 import {
-  CapabilityManager,
-  EventCapabilityConnector,
-  type CapabilityContext,
-  type CapabilityProvider,
-  type CapabilityConsumer
+  CapabilityManager
+} from '@spark-view/spark-utils/capability/internal'
+import type {
+  Context as CapabilityContext,
+  Provider as CapabilityProvider,
+  Consumer as CapabilityConsumer
 } from '@spark-view/spark-utils'
 import { Logger } from '@spark-view/spark-utils'
+import { EventConnector } from '@spark-view/spark-utils/capability/internal'
 import type { ComponentContext } from '../types/spark-component.js'
 
 // const logger = Logger('Spark:Capability')  // Reserved for future use
 
 /**
  * 组件上下文适配器
- * 将 ComponentContext 适配为 CapabilityContext
+ * 
+ * 将 ComponentContext 适配为最小 CapabilityContext 接口
+ * ComponentContext 已经包含了 parent + providers，所以适配很简单
  */
 function adaptComponentContext(context: ComponentContext): CapabilityContext {
   return {
-    id: context.id,
-    type: context.type,
     parent: context.parent ? adaptComponentContext(context.parent) : undefined,
-    children: context.children.map(adaptComponentContext),
-    providers: context.providers as Set<CapabilityProvider>,
-    consumers: context.consumers as Map<string, CapabilityConsumer>,
-    providerListeners: context.providerListeners as Map<string, Set<(provider: CapabilityProvider) => void>> | undefined
+    providers: context.providers as Set<CapabilityProvider>
   }
 }
 
@@ -40,7 +44,7 @@ export class SparkCapabilityManager extends CapabilityManager {
     super()
     
     // 注册内置事件能力连接器
-    this.registerConnector('events', new EventCapabilityConnector())
+    this.registerConnector('events', new EventConnector())
     const logger = Logger('Spark:CapabilityMgr')
     logger.info('✅ Event capability connector registered')
   }
@@ -66,80 +70,6 @@ export class SparkCapabilityManager extends CapabilityManager {
   ): boolean {
     return super.disconnectCapability(provider, consumer, adaptComponentContext(context))
   }
-
-  /**
-   * 自动连接能力（组件上下文版本）
-   */
-  autoConnectCapabilitiesForComponent(context: ComponentContext): void {
-    super.autoConnectCapabilities(adaptComponentContext(context))
-  }
-
-  /**
-   * 断开所有能力（组件上下文版本）
-   */
-  disconnectAllCapabilitiesForComponent(context: ComponentContext): void {
-    super.disconnectAllCapabilities(adaptComponentContext(context))
-  }
-
-  /**
-   * 兼容旧API - connectCapability
-   */
-  override connectCapability(
-    provider: CapabilityProvider,
-    consumer: CapabilityConsumer,
-    context: ComponentContext | CapabilityContext
-  ): boolean {
-    if ('config' in context) {
-      // ComponentContext
-      return this.connectCapabilityForComponent(provider, consumer, context as ComponentContext)
-    } else {
-      // CapabilityContext
-      return super.connectCapability(provider, consumer, context as CapabilityContext)
-    }
-  }
-
-  /**
-   * 兼容旧API - disconnectCapability
-   */
-  override disconnectCapability(
-    provider: CapabilityProvider,
-    consumer: CapabilityConsumer,
-    context: ComponentContext | CapabilityContext
-  ): boolean {
-    if ('config' in context) {
-      // ComponentContext
-      return this.disconnectCapabilityForComponent(provider, consumer, context as ComponentContext)
-    } else {
-      // CapabilityContext
-      return super.disconnectCapability(provider, consumer, context as CapabilityContext)
-    }
-  }
-
-  /**
-   * 兼容旧API - autoConnectCapabilities
-   */
-  override autoConnectCapabilities(context: ComponentContext | CapabilityContext): void {
-    if ('config' in context) {
-      // ComponentContext
-      this.autoConnectCapabilitiesForComponent(context as ComponentContext)
-    } else {
-      // CapabilityContext
-      super.autoConnectCapabilities(context as CapabilityContext)
-    }
-  }
-
-  /**
-   * 兼容旧API - disconnectAllCapabilities
-   */
-  override disconnectAllCapabilities(context: ComponentContext | CapabilityContext): void {
-    if ('config' in context) {
-      // ComponentContext
-      this.disconnectAllCapabilitiesForComponent(context as ComponentContext)
-    } else {
-      // CapabilityContext
-      super.disconnectAllCapabilities(context as CapabilityContext)
-    }
-  }
 }
 
 /**
@@ -147,18 +77,4 @@ export class SparkCapabilityManager extends CapabilityManager {
  */
 export const capabilityManager = new SparkCapabilityManager()
 
-// 重新导出通用能力系统类型和工具
-export {
-  DataFlowConnector,
-  EventConnector,
-  MethodConnector,
-  EventCapabilityConnector,
-  createEventCapabilityProvider,
-  createEventCapabilityConsumer
-} from '@spark-view/spark-utils'
 
-export type {
-  CapabilityConnector,
-  EventCapabilityProvider,
-  EventCapabilityConsumer
-} from '@spark-view/spark-utils'
