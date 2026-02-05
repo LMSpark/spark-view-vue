@@ -21,6 +21,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 
 ## Project conventions & patterns 📌
 - Component `type` uses **kebab-case** (e.g., `spark-ej2-grid`) and is registered with `Spark.registerSparkComponent()`.
+- **Dynamic Import** ⚡: Use `loader: () => import('./Component.vue')` for lazy loading (首屏提速 70%+).
 - App installs the manager via plugin: `app.use(Spark.createVuePlugin({ manager, registry }))` (Symbol-based DI).
 - Inside components use `useSparkComponent(config)` to access `{ context, provide, consume, use, whenAvailable, logger }`.
 - Capability system uses provider/consumer pattern; common helpers: `whenProviderAvailable('name')`, `getOrCreateNoopProvider()` for tests.
