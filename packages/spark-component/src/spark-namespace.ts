@@ -102,7 +102,7 @@ export const Spark: {
   register(input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) {
     // Check if it's a SimpleComponentConfig (has 'name' but not 'type')
     if (input && typeof input === 'object' && 'name' in input && !('type' in input) && !Array.isArray(input)) {
-      const simpleConfig = input as SimpleComponentConfig
+      const simpleConfig = input
       const standardConfig = createSimpleRegistration(simpleConfig)
       return componentManager.registerComponent(standardConfig)
     }
@@ -144,11 +144,11 @@ export const Spark: {
     configs.forEach(config => {
       if ('name' in config && !('type' in config)) {
         // SimpleComponentConfig
-        const standardConfig = createSimpleRegistration(config as SimpleComponentConfig)
+        const standardConfig = createSimpleRegistration(config)
         componentManager.registerComponent(standardConfig)
       } else {
         // ComponentConfig
-        componentManager.registerComponent(config as ComponentConfig)
+        componentManager.registerComponent(config)
       }
     })
   },

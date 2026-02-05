@@ -98,7 +98,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
   async getAsync(type: string): Promise<ComponentConfig | undefined> {
     // 1. 已加载，直接返回
     const existing = this.components.get(type)
-    if (existing && existing.component) {
+    if (existing?.component) {
       return existing
     }
 
@@ -109,7 +109,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     }
 
     // 3. 有 loader，开始加载
-    if (existing && existing.loader) {
+    if (existing?.loader) {
       const loadPromise = this._loadComponent(type, existing)
       this.loading.set(type, loadPromise)
       try {
@@ -134,7 +134,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
         return definition
       }
       const module = await loader()
-      const component = module.default || module
+      const component = module.default ?? module
       
       // 更新定义，填充 component 字段
       const loaded: ComponentConfig = {

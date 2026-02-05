@@ -92,7 +92,7 @@ export function createSimpleRegistration(config: SimpleComponentConfig): Compone
       try {
         logger.info(`⏳ Loading component: ${config.name}`)
         const module = await import(/* @vite-ignore */ componentPath)
-        const loadedComponent = module.default || module
+        const loadedComponent = module.default ?? module
         
         // 触发加载完成回调
         if (config.onLoad) {
@@ -119,7 +119,7 @@ export function createSimpleRegistration(config: SimpleComponentConfig): Compone
   const standardConfig: ComponentConfig = {
     type,
     name: config.name,
-    version: config.version || '1.0.0',
+    version: config.version ?? '1.0.0',
     component,
     loader
   }

@@ -72,7 +72,7 @@ export const defaultFields: FieldConfig[] = [
  * 创建渲染配置
  */
 export function createDemoConfig(users: User[], config?: Partial<GridConfig>): RenderNode {
-  const fields = config?.fields || defaultFields
+  const fields = config?.fields ?? defaultFields
   const showCheckbox = config?.showCheckbox !== false
   const showActions = config?.showActions !== false
 

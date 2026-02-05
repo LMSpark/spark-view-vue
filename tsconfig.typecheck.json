@@ -1,5 +1,16 @@
 {
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts", "features/**/*.ts", "features/**/*.tsx", "features/**/*.vue", "features/**/*.d.ts", "tests/**/*.ts", "packages/**/*.ts"],
+  "include": [
+    "src/**/*.ts", 
+    "src/**/*.tsx", 
+    "src/**/*.vue", 
+    "src/**/*.d.ts", 
+    "features/**/*.ts", 
+    "features/**/*.tsx", 
+    "features/**/*.vue", 
+    "features/**/*.d.ts", 
+    "packages/**/*.ts",
+    "packages/**/*.tsx"
+  ],
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
@@ -19,6 +30,7 @@
     "moduleResolution": "bundler",
     "target": "ES2022",
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "strict": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -33,12 +45,13 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.spec.ts",
-    "**/*.test.ts",
     "src/**/*.old.vue",
     "packages/**/examples/**/*",
     "packages/**/*.example.ts",
     "packages/**/*.example.vue",
-    "features/spark/components/index.ts"
+    "packages/**/tests/**/*",
+    "tests/**/*",
+    "tools/**/*",
+    "examples/**/*"
   ]
 }

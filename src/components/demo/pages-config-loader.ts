@@ -121,7 +121,7 @@ function transformNode(
         return child
       }
       return transformNode(child as PagesConfigNode, pagedata, scriptContext, loopContext)
-    }).flat().filter(c => c !== null) as (string | unknown)[]
+    }).flat().filter(c => c !== null)
   }
 
   // 处理事件
@@ -203,7 +203,7 @@ export function createDefaultScriptContext(
     // 条件函数
     isActive: (data: Record<string, unknown>, loop?: Record<string, unknown>) => {
       const loopUser = loop?.user as Record<string, unknown> | undefined
-      const status = loopUser?.status || data?.status
+      const status = loopUser?.status ?? data?.status
       return status === 'active'
     },
     notReadonly: (data: Record<string, unknown>) => !data.readonly,

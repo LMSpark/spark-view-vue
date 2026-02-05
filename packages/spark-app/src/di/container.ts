@@ -195,9 +195,7 @@ export class DependencyContainer implements IDependencyContainer {
     _identifier: string | symbol,
     descriptor: ServiceDescriptor
   ): T {
-    if (!descriptor.instance) {
-      descriptor.instance = descriptor.provider()
-    }
+    descriptor.instance ??= descriptor.provider()
     return descriptor.instance as T
   }
   

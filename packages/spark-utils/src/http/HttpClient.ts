@@ -165,7 +165,7 @@ export class HttpClient {
    * 构建完整 URL（拼接查询参数）
    */
   private buildUrl(url: string, params?: Record<string, unknown>): string {
-    const baseURL = this.context.baseURL || ''
+    const baseURL = this.context.baseURL ?? ''
     const fullPath = url.startsWith('/') ? url : `/${url}`
     let fullUrl = `${baseURL}${fullPath}`
 
@@ -226,11 +226,11 @@ export class HttpClient {
       if (result.code === 0 || result.code === 200) {
         return result.data as T
       }
-      throw new Error(result.message || 'API request failed')
+      throw new Error(result.message ?? 'API request failed')
     }
 
     // 直接返回原始数据
-    return result as T
+    return result
   }
 
   /**

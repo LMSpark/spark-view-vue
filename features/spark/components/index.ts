@@ -5,7 +5,7 @@
  * 所有组件都在这里注册，实现完全解耦
  */
 
-import { Spark } from '@spark-view/spark-core'
+import { Spark } from '@spark-view/spark-component'
 
 // 导入所有SPARK组件
 import SparkEJ2Grid from './ej2/SparkEJ2Grid.vue'
@@ -32,7 +32,7 @@ const sparkComponentDefinitions = Object.entries(sparkComponents).map(([type, co
  * 在应用启动时调用此函数注册所有组件
  */
 export function initializeSparkComponents(): void {
-  const logger = Spark.Logger() as { info: (msg: string) => void }
+  const logger = Spark.Logger()
   logger.info('🚀 Initializing SPARK Component System...')
 
   // 注册所有组件

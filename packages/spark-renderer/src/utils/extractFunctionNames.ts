@@ -52,7 +52,7 @@ export function extractFunctionNames(rules: Rule[]): Set<string> {
     }
     
     // 4. 递归扫描嵌套的规则数组（某些组件可能用 rules 属性）
-    const ruleWithNested = rule as Rule & { rules?: Rule[] }
+    const ruleWithNested = rule
     if (ruleWithNested.rules && Array.isArray(ruleWithNested.rules)) {
       ruleWithNested.rules.forEach((r: Rule) => scanRule(r))
     }

@@ -18,7 +18,7 @@ describe('register component from Vue component with spark meta', () => {
       expect(registry.has('meta-type')).toBe(true)
       const def = registry.get('meta-type')!
       expect(def.component).toBe(comp)
-      expect(def.providers && def.providers.length).toBe(1)
+      expect(def.providers?.length).toBe(1)
     } finally {
       ;(Spark as any).manager = prevManager
     }

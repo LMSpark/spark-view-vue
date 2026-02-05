@@ -56,7 +56,7 @@ import './style.css'
  * 7. 执行 Bootstrap 流程
  * 8. 挂载应用到 DOM
  */
-SparkApp.start({
+void SparkApp.start({
   // === 应用根组件 ===
   rootComponent: App,
   

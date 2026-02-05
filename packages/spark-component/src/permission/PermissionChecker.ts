@@ -160,9 +160,7 @@ export class PermissionChecker implements IPermissionChecker {
 let checkerInstance: PermissionChecker | null = null
 
 export function createPermissionChecker(): IPermissionChecker {
-  if (!checkerInstance) {
-    checkerInstance = new PermissionChecker()
-  }
+  checkerInstance ??= new PermissionChecker()
   return checkerInstance
 }
 

@@ -380,7 +380,7 @@ export function getErrorMessage(code: ErrorCode): string {
     [ErrorCodes.UNKNOWN_ERROR]: '未知错误'
   }
   
-  return messages[code] || '未知错误'
+  return messages[code] ?? '未知错误'
 }
 
 /**

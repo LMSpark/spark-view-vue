@@ -9,7 +9,7 @@
 import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
-import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
+import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation } from '../types/common.js'
 
@@ -201,7 +201,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
       if (!resolvedManager) {
         throw new Error('Component manager not found. Install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager }))')
       }
-      const manager = resolvedManager as ComponentManager
+      const manager = resolvedManager
 
       // Computed properties
       const isVisible = computed(() => (props.config as Record<string, unknown>).visible !== false)
@@ -263,14 +263,14 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
           const def = (manager).getComponentDefinition(type)
           return def?.component as Component ?? null
         } catch {
-          const fallbackRegistry = (inject(SPARK_REGISTRY_KEY)) as ComponentRegistry | undefined
+          const fallbackRegistry = (inject(SPARK_REGISTRY_KEY))
           return fallbackRegistry?.get(type)?.component as Component ?? null
         }
       }
 
       function isComponentRegistered(type: string) {
         try { return (manager).isComponentRegistered(type) } catch {
-          const fallbackRegistry = (inject(SPARK_REGISTRY_KEY)) as ComponentRegistry | undefined
+          const fallbackRegistry = (inject(SPARK_REGISTRY_KEY))
           return fallbackRegistry ? fallbackRegistry.has(type) : false
         }
       }
