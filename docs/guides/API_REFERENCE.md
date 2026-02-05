@@ -1,560 +1,268 @@
-# API 文档
+# API 参考手册
 
-> 各模块公共 API 参考
+> SPARK 核心 API 速查
 
-## spark-app
+## Spark 命名空间
 
-应用程序启动和配置管理。
+### 组件管理
 
-### SparkApp.start()
-
-```typescript
-interface SparkAppConfig {
-  el: string                        // 挂载元素选择器
-  authService: IAuthService         // 认证服务
-  apiService: IApiService           // API 服务
-  requestInterceptor?: (config: any) => any  // 请求拦截器
-  router?: Router                   // Vue Router 实例
-  pinia?: Pinia                     // Pinia 实例
-}
-
-// 启动应用
-const app = await SparkApp.start(config)
-```
-
-**示例：**
-
-```typescript
-import { SparkApp } from '@spark-view/spark-app'
-import { AuthService } from './services/auth'
-import { ApiService } from './services/api'
-
-await SparkApp.start({
-  el: '#app',
-  authService: new AuthService(),
-  apiService: new ApiService(),
-  requestInterceptor: (config) => {
-    config.headers['X-Token'] = localStorage.getItem('token')
-    return config
-  }
-})
-```
-
----
-
-## spark-component
-
-组件注册与能力系统。
-
-### SparkComponent.registerSparkComponent()
-
-```typescript
-interface ComponentRegistration {
-  type: string                      // 组件类型（kebab-case）
-  component?: Component             // Vue 组件（可选，与 loader 二选一）
-  loader?: () => Promise<{ default: Component }>  // 动态导入函数（懒加载）
-  capabilities?: string[]           // 提供的能力列表
-  dependencies?: string[]           // 依赖的能力列表
-  version?: string                  // 组件版本
-}
-
-// 注册组件
-SparkComponent.registerSparkComponent(config)
-```
-
-**示例 1：同步注册（立即加载）**
-
-```typescript
-import { SparkComponent } from '@spark-view/spark-component'
-import SparkEJ2Grid from './SparkEJ2Grid.vue'
-
-SparkComponent.registerSparkComponent({
-  type: 'spark-ej2-grid',
-  component: SparkEJ2Grid,
-  capabilities: ['dataSource', 'columnManager'],
-  dependencies: []
-})
-```
-
-**示例 2：异步注册（懒加载）⚡**
-
-```typescript
+\\\	ypescript
 import { Spark } from '@spark-view/spark-component'
 
-// 注册懒加载组件
-Spark.registerSparkComponent({
-  type: 'spark-heavy-grid',
-  name: '重量级表格',
-  version: '1.0.0',
-  loader: () => import('./components/HeavyGrid.vue')  // 用到才加载
+// 创建管理器
+const manager = Spark.createComponentManager()
+const registry = Spark.createComponentRegistry()
+
+// 注册组件
+Spark.register({
+  type: 'my-component',
+  name: 'My Component',
+  component: MyComponent,           // 静态注册
+  loader: () => import('./MyComp')  // 懒加载
 })
 
-// 首次渲染时自动加载，后续使用缓存
-```
+// Vue 插件
+app.use(Spark.createVuePlugin({ manager, registry }))
+\\\
 
-### Registry.getAsync() ⚡
+### 组件 Composable
 
-```typescript
-// 异步获取组件定义（支持自动加载）
-const definition = await registry.getAsync('spark-heavy-grid')
-// 如果有 loader，自动调用并缓存结果
-```
+\\\	ypescript
+import { useSparkComponent } from '@spark-view/spark-component'
 
-### Registry.preload() ⚡
-
-```typescript
-// 批量预加载组件
-await registry.preload(['spark-chart', 'spark-calendar', 'spark-gantt'])
-
-// 应用场景：
-// 1. 路由切换前预加载
-router.beforeEach(async (to) => {
-  if (to.meta.components) {
-    await registry.preload(to.meta.components)
-  }
-})
-
-// 2. 空闲时预加载
-requestIdleCallback(() => {
-  registry.preload(['spark-chart'])
-})
-```
-
-### useSparkComponent()
-
-```typescript
-interface SparkComponentConfig {
-  id: string                        // 组件唯一 ID
-  type: string                      // 组件类型
-  config?: Record<string, any>      // 组件配置
-}
-
-interface SparkComponentAPI {
-  context: ComponentContext         // 组件上下文
-  provide: (name: string, provider: Provider) => void
-  consume: (name: string, callback: (impl: any) => void) => () => void
-  use: (name: string) => any
-  whenAvailable: (name: string, callback: (impl: any) => void) => void
-  logger: Logger
-}
-
-// 使用组件系统
-const api = useSparkComponent(config)
-```
-
-**示例：**
-
-```typescript
-const { provide, whenAvailable, logger } = useSparkComponent({
-  id: 'myGrid',
-  type: 'spark-ej2-grid'
+const { provide, consume, whenAvailable, logger } = useSparkComponent({
+  type: 'my-component'
 })
 
 // 提供能力
-provide('columnManager', {
-  implementation: {
-    addColumn(config) { /* ... */ }
-  }
-})
+provide('dataSource', { getData: () => [...] })
 
 // 消费能力
-whenAvailable('dataSource', (ds) => {
-  logger.info('Data source ready')
+const logger = consume('logger')
+
+// 等待能力
+whenAvailable('columnManager', (mgr) => {
+  mgr.addColumn({ id: '1', name: 'Name' })
 })
-```
+\\\
 
----
+## SparkData 命名空间
 
-## spark-data
+### DataSet
 
-数据集与树形数据管理。
-
-### SparkData.createDataSet()
-
-```typescript
-interface DataSetConfig {
-  dataSetName: string
-  tables: Record<string, TableConfig>
-  relations?: RelationConfig[]
-}
-
-interface TableConfig {
-  tableName: string
-  columns: ColumnDef[]
-  rows: DataRow[]
-}
-
-interface RelationConfig {
-  parentTable: string
-  childTable: string
-  type: 'one-to-many' | 'many-to-one'
-  filterExpression: string
-}
-
-// 创建 DataSet
-const dataSet = SparkData.createDataSet(config)
-```
-
-**示例：**
-
-```typescript
+\\\	ypescript
 import { SparkData } from '@spark-view/spark-data'
 
+// 创建 DataSet
 const dataSet = SparkData.createDataSet({
-  dataSetName: 'MyApp',
+  dataSetName: 'MyData',
   tables: {
     Users: {
       tableName: 'Users',
       columns: [
-        { name: 'id', type: 'number', primaryKey: true },
+        { name: 'id', type: 'number' },
         { name: 'name', type: 'string' }
       ],
       rows: []
     }
   }
 })
-```
-
-### DataSet API
-
-```typescript
-interface DataSet {
-  // 表操作
-  getTable(name: string): Table
-  
-  // 数据加载
-  dataLoader?: (tableName: string) => Promise<any[]>
-  requestTableData(tableName: string): Promise<void>
-  
-  // 级联操作
-  cascadeUpdate(tableName: string, newValues: any, oldValues: any): void
-  cascadeDelete(tableName: string, row: any): void
-  
-  // 事件系统
-  on(event: string, handler: Function): void
-  off(event: string, handler: Function): void
-  
-  // 订阅者模式
-  notifySubscribers(tableName: string): void
-}
-```
-
-### Table API
-
-```typescript
-interface Table {
-  tableName: string
-  columns: ColumnDef[]
-  rows: DataRow[]
-  currentRow: DataRow | null
-  
-  // 行操作
-  addRow(row: DataRow): void
-  updateRow(oldRow: DataRow, newRow: DataRow): void
-  deleteRow(row: DataRow): void
-  getRow(index: number): DataRow
-  
-  // 当前行
-  setCurrentRow(row: DataRow): void
-  
-  // 原始数据（未过滤）
-  _originalRows?: DataRow[]
-}
-```
-
-### SparkData.createTreeManager()
-
-```typescript
-interface TreeManagerConfig {
-  idField: string
-  parentIdField: string
-  childrenField?: string            // 默认 'children'
-}
-
-// 创建 TreeManager
-const treeManager = SparkData.createTreeManager(config)
-```
-
-**示例：**
-
-```typescript
-const treeManager = SparkData.createTreeManager({
-  idField: 'id',
-  parentIdField: 'parentId'
-})
-
-treeManager.loadData([
-  { id: 1, name: 'Root', parentId: null },
-  { id: 2, name: 'Child', parentId: 1 }
-])
-
-const tree = treeManager.buildNestedTree()
-```
-
-### TreeManager API
-
-```typescript
-interface TreeManager {
-  // 数据加载
-  loadData(data: any[]): void
-  
-  // 树操作
-  enrichNodes(): void
-  buildNestedTree(): any[]
-  getChildren(parentId: any): any[]
-  getNodeById(id: any): any | null
-  getNodePath(id: any): { pathNodes: any[], pathIds: any[] }
-}
-```
-
-### FilterParser
-
-```typescript
-interface SQLResult {
-  sql: string
-  params: any[]
-}
-
-// 解析为 SQL
-const result = SparkData.FilterParser.toSQL(expression)
-
-// 解析为 MongoDB
-const query = SparkData.FilterParser.toMongoDB(expression)
-```
-
-**示例：**
-
-```typescript
-const expression = 'age > 18 && name == "张三"'
-
-// SQL
-const sql = SparkData.FilterParser.toSQL(expression)
-console.log(sql.sql)      // "age > ? AND name = ?"
-console.log(sql.params)   // [18, "张三"]
-
-// MongoDB
-const mongo = SparkData.FilterParser.toMongoDB(expression)
-console.log(mongo)        // { age: { $gt: 18 }, name: "张三" }
-```
-
----
-
-## spark-page-config
-
-页面配置加载与解析。
-
-### PageConfig.load()
-
-```typescript
-interface PageMetadata {
-  title?: string
-  description?: string
-  keywords?: string
-  [key: string]: any
-}
-
-// 加载页面配置
-const config = await PageConfig.load(pageName)
-```
-
-**返回值：**
-
-```typescript
-interface LoadedPageConfig {
-  rule: RuleConfig              // 渲染规则
-  pageData: PageData            // 页面数据
-  script?: PageScript           // 页面脚本
-  metadata?: PageMetadata       // 页面元信息
-}
-```
-
----
-
-## spark-renderer
-
-页面渲染引擎。
-
-### PageRenderer 组件
-
-```vue
-<template>
-  <PageRenderer :config="config" />
-</template>
-
-<script setup>
-import { PageRenderer } from '@spark-view/spark-renderer'
-
-defineProps<{
-  config: LoadedPageConfig
-}>()
-</script>
-```
-
-### 页面脚本 API
-
-在 `script.js` 中可用的全局变量：
-
-```typescript
-// 数据访问
-$data: Record<string, any>         // 响应式数据对象
-$dataSet: DataSet                  // DataSet 实例
-
-// 网络请求
-$api: IApiService                  // API 服务
-
-// 路由
-$route: RouteLocationNormalizedLoaded
-
-// DOM 操作
-$el: (id: string) => ComponentContext | undefined
-$query: (selector: string) => Element | null
-$queryAll: (selector: string) => Element[]
 
 // 数据操作
-$rebindRules: (newData: any) => void
-$refreshData: () => Promise<void>
+dataSet.tables.Users.addRow({ id: 1, name: 'Alice' })
+dataSet.tables.Users.updateRow(0, { name: 'Bob' })
+dataSet.tables.Users.deleteRow(0)
 
-// UI 库（Element Plus）
-ElMessage: typeof ElMessage
-ElMessageBox: typeof ElMessageBox
+// 订阅变化
+dataSet.subscribe('Users', (event) => {
+  console.log('数据变化:', event)
+})
+\\\
 
-// 工具函数
-SparkData: typeof SparkData       // DataSet, TreeManager, FilterParser
-h: typeof h                        // Vue h 函数
-```
+### TreeManager
 
-**页面脚本生命周期：**
-
-```javascript
-// 页面初始化
-function __init__() {
-  console.log('页面加载完成')
-  console.log('数据:', $data)
-}
-
-// 数据加载成功
-function __loadSuccess__() {
-  console.log('数据加载成功')
-}
-
-// 数据加载失败
-function __loadError__(error) {
-  console.error('数据加载失败:', error)
-  ElMessage.error('加载失败: ' + error.message)
-}
-
-// 自定义事件处理函数
-async function handleSubmit() {
-  const result = await $api.post('/submit', $data.form)
-  ElMessage.success('提交成功')
-}
-```
-
----
-
-## spark-utils
-
-通用工具函数。
-
-### PathResolver
-
-```typescript
-// 解析路径
-SparkUtils.PathResolver.resolve(obj, 'user.profile.name')
-
-// 设置值
-SparkUtils.PathResolver.set(obj, 'user.profile.name', '张三')
-```
-
-### Logger
-
-```typescript
-// 创建 Logger
-const logger = SparkUtils.createLogger('MyModule')
-
-logger.debug('Debug message')
-logger.info('Info message')
-logger.warn('Warning message')
-logger.error('Error message', new Error())
-```
-
----
-
-## 事件系统
-
-### DataSet 事件
-
-```typescript
-dataSet.on('loadSuccess', ({ tableName }) => {
-  console.log(`${tableName} 加载成功`)
+\\\	ypescript
+// 创建树管理器
+const treeManager = SparkData.createTreeManager({
+  idField: 'id',
+  parentIdField: 'parentId',
+  lazy: true
 })
 
-dataSet.on('loadError', ({ tableName, error }) => {
-  console.error(`${tableName} 加载失败:`, error)
+// 扁平转树形
+const tree = treeManager.buildTree(flatData)
+
+// 懒加载
+await treeManager.loadChildren(parentId, async (pid) => {
+  return await fetchChildren(pid)
+})
+\\\
+
+### BindingContext
+
+\\\	ypescript
+// 创建绑定上下文
+const context = SparkData.createContext('Users', 'default', dataSet)
+
+// 导航
+const current = context.getCurrentRow()
+context.moveNext()
+context.movePrevious()
+context.moveFirst()
+context.moveLast()
+
+// 查询
+const allRows = context.getRows()
+const filtered = context.filter(row => row.age > 18)
+\\\
+
+## Capability 能力系统
+
+\\\	ypescript
+import { Capability } from '@spark-view/spark-utils'
+
+// 创建管理器
+const manager = Capability.create()
+
+// 注册连接器
+manager.registerConnector('data', new Capability.DataFlow())
+
+// 提供能力
+context.providers.add({
+  name: 'userService',
+  version: '1.0.0',
+  implementation: {
+    getUser: (id) => ({ id, name: 'User' })
+  }
 })
 
-dataSet.on('currentRowChanged', ({ tableName, row }) => {
-  console.log(`${tableName} 当前行变化:`, row)
+// 消费能力
+const consumer = { capabilityName: 'userService' }
+manager.connectCapability(provider, consumer, context)
+\\\
+
+## Logger 日志系统
+
+\\\	ypescript
+import { Logger } from '@spark-view/spark-utils'
+
+// 创建日志器
+const logger = Logger.create({
+  level: 'info',
+  namespace: 'app',
+  transports: [
+    Logger.consoleTransport(),
+    Logger.httpTransport({ url: '/api/logs' })
+  ]
 })
 
-dataSet.on('data:changed', ({ tableName, row, operation }) => {
-  console.log(`${tableName} 数据变化:`, operation)
-})
-```
+// 记录日志
+logger.debug('调试信息', { data })
+logger.info('信息日志')
+logger.warn('警告信息')
+logger.error('错误信息', { error })
+\\\
 
----
+## ErrorHandler 错误处理
+
+\\\	ypescript
+import { handleError, withRetry, AppError } from '@spark-view/spark-utils'
+
+// 创建错误
+throw new AppError('NETWORK_ERROR', '网络错误', { url })
+
+// 处理错误
+handleError(error, {
+  context: 'api',
+  onError: (err) => console.error(err)
+})
+
+// 自动重试
+await withRetry(() => fetchData(), {
+  maxRetries: 3,
+  delay: 1000,
+  backoff: 2
+})
+\\\
+
+## PageRenderer 页面渲染
+
+\\\ue
+<template>
+  <PageRenderer
+    :config=&quot;pageConfig&quot;
+    @load=&quot;handleLoad&quot;
+    @error=&quot;handleError&quot;
+  >
+    <template #loading>加载中...</template>
+    <template #error=&quot;{ error }&quot;>错误: {{ error.message }}</template>
+  </PageRenderer>
+</template>
+
+<script setup lang=&quot;ts&quot;>
+import { PageRenderer } from '@spark-view/spark-renderer'
+
+const pageConfig = {
+  pageId: 'home',
+  layout: {
+    type: 'container',
+    children: [...]
+  },
+  dataSet: { ... }
+}
+</script>
+\\\
+
+## ConfigLoader 配置加载
+
+\\\	ypescript
+import { ConfigLoader } from '@spark-view/spark-page-config'
+
+const loader = new ConfigLoader({
+  mode: 'local',
+  basePath: '/pages-config',
+  cache: true
+})
+
+// 加载配置
+const routes = await loader.loadRoutes()
+const pageConfig = await loader.loadPageConfig('home')
+
+// 缓存管理
+loader.clearCache()
+loader.refreshConfig('home')
+\\\
 
 ## 类型定义
 
-### DataRow
+所有核心类型都可以从对应包导入：
 
-```typescript
-type DataRow = Record<string, any>
-```
+\\\	ypescript
+// 组件系统
+import type {
+  ComponentConfig,
+  CapabilityProvider,
+  CapabilityConsumer
+} from '@spark-view/spark-component'
 
-### ColumnDef
+// 数据管理
+import type {
+  IDataSet,
+  DataRow,
+  DataColumn,
+  TreeNode
+} from '@spark-view/spark-data'
 
-```typescript
-interface ColumnDef {
-  name: string
-  type: 'string' | 'number' | 'boolean' | 'date'
-  primaryKey?: boolean
-  nullable?: boolean
-  defaultValue?: any
-}
-```
+// 工具
+import type {
+  LogLevel,
+  Transport,
+  AppError
+} from '@spark-view/spark-utils'
+\\\
 
-### ComponentContext
+## 更多信息
 
-```typescript
-interface ComponentContext {
-  id: string
-  type: string
-  props: Record<string, any>
-  capabilities: Record<string, Provider>
-  
-  // 能力管理
-  provideCapability(name: string, provider: Provider): void
-  getCapability(name: string): any
-  consumeCapability(name: string, callback: Function): () => void
-}
-```
-
-### Provider
-
-```typescript
-interface Provider {
-  implementation: any
-}
-```
-
----
-
-## 版本兼容性
-
-所有包均使用 `workspace:*` 依赖版本，确保：
-- 统一的 API 接口
-- 协同的功能升级
-- 一致的类型定义
-
-建议使用最新版本以获得最佳体验。
+- [组件开发指南](COMPONENT_DEVELOPMENT.md)
+- [数据管理指南](DATA_MANAGEMENT.md)
+- [能力系统指南](CAPABILITY_PROVISION.md)

@@ -1,386 +1,316 @@
 # 数据管理指南
 
-> 使用 `@spark-view/spark-data` 包的 DataSet 和 TreeManager
+> 使用 DataSet 和 TreeManager 管理应用数据
 
-## DataSet 核心概念
+## DataSet 数据集
 
-DataSet 是一个内存中的关系型数据容器，支持：
-- 多表管理（Tables）
-- 表间关系（Relations）
-- 级联操作（Cascade Update/Delete）
-- 事件通知（Event System）
+类似 .NET DataSet 的数据管理能力。
 
-## 快速开始
+### 创建 DataSet
 
-### 1. 创建 DataSet
-
-```javascript
+\\\	ypescript
 import { SparkData } from '@spark-view/spark-data'
 
-// 使用命名空间 API（推荐）
 const dataSet = SparkData.createDataSet({
-  dataSetName: 'MyApp',
+  dataSetName: 'MyData',
   tables: {
     Users: {
       tableName: 'Users',
       columns: [
-        { name: 'id', type: 'number', primaryKey: true },
+        { name: 'id', type: 'number' },
         { name: 'name', type: 'string' },
+        { name: 'age', type: 'number' },
         { name: 'email', type: 'string' }
       ],
-      rows: []
+      rows: [
+        { id: 1, name: 'Alice', age: 25, email: 'alice@example.com' },
+        { id: 2, name: 'Bob', age: 30, email: 'bob@example.com' }
+      ]
     },
     Orders: {
       tableName: 'Orders',
       columns: [
-        { name: 'id', type: 'number', primaryKey: true },
+        { name: 'id', type: 'number' },
         { name: 'userId', type: 'number' },
         { name: 'amount', type: 'number' }
       ],
       rows: []
     }
+  }
+})
+\\\
+
+### 数据操作
+
+\\\	ypescript
+// 添加行
+dataSet.tables.Users.addRow({
+  id: 3,
+  name: 'Charlie',
+  age: 28,
+  email: 'charlie@example.com'
+})
+
+// 更新行
+dataSet.tables.Users.updateRow(0, { age: 26 })
+
+// 删除行
+dataSet.tables.Users.deleteRow(2)
+
+// 查询行
+const users = dataSet.tables.Users.rows.filter(r => r.age > 25)
+
+// 清空表
+dataSet.tables.Users.clear()
+\\\
+
+### 订阅变化
+
+\\\	ypescript
+// 订阅表变化
+dataSet.subscribe('Users', (event) => {
+  console.log('事件类型:', event.type)  // 'add' | 'update' | 'delete'
+  console.log('行索引:', event.rowIndex)
+  console.log('数据:', event.row)
+})
+
+// 取消订阅
+const unsubscribe = dataSet.subscribe('Users', handler)
+unsubscribe()
+\\\
+
+### 主从表关联
+
+\\\	ypescript
+// 创建带关联的 DataSet
+const dataSet = SparkData.createDataSet({
+  dataSetName: 'OrderData',
+  tables: {
+    Users: { ... },
+    Orders: { ... }
   },
   relations: [
     {
+      name: 'UserOrders',
       parentTable: 'Users',
       childTable: 'Orders',
-      type: 'one-to-many',
-      filterExpression: 'userId == @parent.id'
+      parentColumn: 'id',
+      childColumn: 'userId'
     }
   ]
 })
-```
 
-### 2. 表操作
+// 查询关联数据
+const userId = 1
+const userOrders = dataSet.tables.Orders.rows.filter(
+  order => order.userId === userId
+)
+\\\
 
-```javascript
-const users = dataSet.getTable('Users')
+## TreeManager 树形数据
 
-// 添加行
-users.addRow({ id: 1, name: '张三', email: 'zhang@example.com' })
-
-// 更新行
-const row = users.getRow(0)
-users.updateRow(row, { name: '李四' })
-
-// 删除行
-users.deleteRow(row)
-
-// 查询
-const activeUsers = users.rows.filter(r => r.status === 'active')
-```
-
-### 3. 关系过滤
-
-```javascript
-// 设置当前行（自动触发子表过滤）
-const users = dataSet.getTable('Users')
-users.setCurrentRow({ id: 1, name: '张三' })
-
-// 子表自动过滤
-const orders = dataSet.getTable('Orders')
-console.log(orders.rows)  // 只显示 userId === 1 的订单
-```
-
-### 4. 级联操作
-
-```javascript
-// 级联更新
-const oldValues = { id: 1, name: '张三' }
-const newValues = { id: 100, name: '张三' }
-dataSet.cascadeUpdate('Users', newValues, oldValues)
-// Orders 表中 userId === 1 的记录自动更新为 userId === 100
-
-// 级联删除
-dataSet.cascadeDelete('Users', { id: 1 })
-// Orders 表中 userId === 1 的记录自动删除
-```
-
-## 事件系统
-
-### 监听事件
-
-```javascript
-// 数据加载成功
-dataSet.on('loadSuccess', ({ tableName }) => {
-  console.log(`${tableName} 加载完成`)
-})
-
-// 数据加载失败
-dataSet.on('loadError', ({ tableName, error }) => {
-  console.error(`${tableName} 加载失败:`, error)
-})
-
-// 当前行变化
-dataSet.on('currentRowChanged', ({ tableName, row }) => {
-  console.log(`${tableName} 当前行:`, row)
-})
-
-// 数据变化（通用）
-dataSet.on('data:changed', ({ tableName, row, operation }) => {
-  console.log(`${tableName} 数据变化:`, operation, row)
-})
-```
-
-### 取消监听
-
-```javascript
-const handler = ({ tableName }) => {
-  console.log('加载成功:', tableName)
-}
-
-dataSet.on('loadSuccess', handler)
-dataSet.off('loadSuccess', handler)
-```
-
-## 按需加载
-
-### 注册数据加载器
-
-```javascript
-// 在页面脚本中
-function __init__() {
-  const dataSet = $dataSet
-  
-  // 注册加载器
-  dataSet.dataLoader = async (tableName) => {
-    const response = await fetch(`/api/${tableName}`)
-    return response.json()
-  }
-  
-  // 页面启动时加载主表
-  dataSet.requestTableData('Users')
-}
-```
-
-### 懒加载子表
-
-```javascript
-function handleUserSelect(row) {
-  const dataSet = $dataSet
-  const users = dataSet.getTable('Users')
-  const orders = dataSet.getTable('Orders')
-  
-  // 设置当前行
-  users.setCurrentRow(row)
-  
-  // 检查子表是否已加载
-  if (!orders._originalRows) {
-    console.log('子表未加载，触发加载...')
-    dataSet.requestTableData('Orders')
-  }
-}
-```
-
-## TreeManager
-
-用于管理树形数据结构。
+管理树形数据的扁平化和嵌套转换。
 
 ### 创建 TreeManager
 
-```javascript
+\\\	ypescript
 import { SparkData } from '@spark-view/spark-data'
 
 const treeManager = SparkData.createTreeManager({
   idField: 'id',
   parentIdField: 'parentId',
-  childrenField: 'children'  // 可选，默认 'children'
+  childrenField: 'children',
+  lazy: false  // 是否懒加载
 })
+\\\
 
-// 加载扁平数据
+### 扁平转树形
+
+\\\	ypescript
 const flatData = [
   { id: 1, name: '根节点', parentId: null },
   { id: 2, name: '子节点1', parentId: 1 },
-  { id: 3, name: '子节点2', parentId: 1 }
+  { id: 3, name: '子节点2', parentId: 1 },
+  { id: 4, name: '孙节点', parentId: 2 }
 ]
 
-treeManager.loadData(flatData)
-```
+const tree = treeManager.buildTree(flatData)
+// [
+//   {
+//     id: 1,
+//     name: '根节点',
+//     children: [
+//       {
+//         id: 2,
+//         name: '子节点1',
+//         children: [
+//           { id: 4, name: '孙节点', children: [] }
+//         ]
+//       },
+//       { id: 3, name: '子节点2', children: [] }
+//     ]
+//   }
+// ]
+\\\
 
-### 树操作
+### 树形转扁平
 
-```javascript
-// 富化节点（计算 level 和 hasChildren）
-treeManager.enrichNodes()
+\\\	ypescript
+const treeData = [{ id: 1, children: [...] }]
+const flatData = treeManager.flatten(treeData)
+\\\
 
-// 构建嵌套树
-const tree = treeManager.buildNestedTree()
+### 懒加载
 
-// 获取子节点
-const children = treeManager.getChildren(1)
+\\\	ypescript
+// 创建支持懒加载的 TreeManager
+const lazyTree = SparkData.createTreeManager({
+  idField: 'id',
+  parentIdField: 'parentId',
+  lazy: true
+})
 
-// 获取路径
-const path = treeManager.getNodePath(3)
-console.log(path.pathNodes)  // [根节点, 子节点2]
+// 加载子节点
+await lazyTree.loadChildren(1, async (parentId) => {
+  const response = await fetch(\/api/nodes?parentId=\\)
+  return await response.json()
+})
 
-// 查找节点
-const node = treeManager.getNodeById(2)
-```
+// 检查是否有子节点
+const hasChildren = lazyTree.hasChildren(nodeId)
 
-## FilterParser
+// 获取已加载的子节点
+const children = lazyTree.getChildren(nodeId)
+\\\
 
-解析过滤表达式为 SQL 或 MongoDB 查询。
+## BindingContext 数据绑定
 
-### SQL 转换
+提供数据导航和绑定功能。
 
-```javascript
+### 创建绑定上下文
+
+\\\	ypescript
 import { SparkData } from '@spark-view/spark-data'
 
-const expression = 'userId == @parent.id && status == "active"'
-const result = SparkData.FilterParser.toSQL(expression)
+const context = SparkData.createContext('Users', 'default', dataSet)
+\\\
 
-console.log(result.sql)     // userId = ? AND status = ?
-console.log(result.params)  // [@parent.id, "active"]
-```
+### 数据导航
 
-### MongoDB 转换
+\\\	ypescript
+// 当前行
+const currentRow = context.getCurrentRow()
 
-```javascript
-const expression = 'age > 18 && status == "active"'
-const query = SparkData.FilterParser.toMongoDB(expression)
+// 移动指针
+context.moveNext()       // 下一行
+context.movePrevious()   // 上一行
+context.moveFirst()      // 第一行
+context.moveLast()       // 最后一行
+context.moveTo(5)        // 移到指定索引
 
-console.log(query)  // { age: { $gt: 18 }, status: "active" }
-```
+// 检查位置
+const isFirst = context.isFirst()
+const isLast = context.isLast()
+const currentIndex = context.getCurrentIndex()
+\\\
 
-## 实战示例
+### 数据查询
 
-### 主从表联动
+\\\	ypescript
+// 获取所有行
+const allRows = context.getRows()
 
-```javascript
-// pagedata.json
-{
-  "dataSet": {
-    "tables": {
-      "Users": { "rows": [...] },
-      "Orders": { "rows": [...] }
-    },
-    "relations": [{
-      "parentTable": "Users",
-      "childTable": "Orders",
-      "filterExpression": "userId == @parent.id"
-    }]
-  }
+// 过滤数据
+const filtered = context.filter(row => row.age > 25)
+
+// 排序数据
+const sorted = context.sort((a, b) => a.age - b.age)
+
+// 分页
+const page = context.page(1, 10)  // 第1页，每页10条
+\\\
+
+## 在组件中使用
+
+### 提供 DataSet 能力
+
+\\\ue
+<script setup lang=&quot;ts&quot;>
+import { SparkData } from '@spark-view/spark-data'
+import { useSparkComponent } from '@spark-view/spark-component'
+
+const dataSet = SparkData.createDataSet({ ... })
+
+const { provide } = useSparkComponent({ type: 'page-container' })
+
+// 提供 DataSet 给子组件
+provide('dataSet', dataSet)
+</script>
+\\\
+
+### 消费 DataSet 能力
+
+\\\ue
+<script setup lang=&quot;ts&quot;>
+import { computed } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+
+const { consume } = useSparkComponent({ type: 'data-grid' })
+
+const dataSet = consume('dataSet')
+
+const rows = computed(() => {
+  return dataSet?.tables.Users?.rows || []
+})
+
+// 订阅变化
+dataSet?.subscribe('Users', (event) => {
+  console.log('数据变化:', event)
+})
+</script>
+\\\
+
+## 最佳实践
+
+### 1. 数据验证
+
+\\\	ypescript
+function validateUser(row: any): boolean {
+  return row.name && row.email && row.age > 0
 }
 
-// script.js
-function handleUserRowChange(row) {
-  const users = $dataSet.getTable('Users')
-  users.setCurrentRow(row)  // Orders 自动过滤
+if (validateUser(newUser)) {
+  dataSet.tables.Users.addRow(newUser)
 }
-```
+\\\
 
-### 级联删除
+### 2. 批量操作
 
-```javascript
-async function handleDeleteUser() {
-  const dataSet = $dataSet
-  const users = dataSet.getTable('Users')
-  const selectedUser = $data.selectedUser
-  
-  // 确认删除
-  await ElMessageBox.confirm(
-    `确定删除用户 "${selectedUser.name}" 及其所有订单吗？`,
-    '危险操作'
-  )
-  
-  // 1. 删除数据
-  const index = users.rows.findIndex(u => u.id === selectedUser.id)
-  users.rows.splice(index, 1)
-  
-  // 2. 级联删除子表
-  dataSet.cascadeDelete('Users', selectedUser)
-  
-  ElMessage.success('删除成功')
+\\\	ypescript
+// 暂停订阅通知
+dataSet.pauseNotifications()
+
+users.forEach(user => {
+  dataSet.tables.Users.addRow(user)
+})
+
+// 恢复订阅通知
+dataSet.resumeNotifications()
+\\\
+
+### 3. 错误处理
+
+\\\	ypescript
+try {
+  dataSet.tables.Users.updateRow(index, newData)
+} catch (error) {
+  console.error('更新失败:', error)
+  // 回滚操作
 }
-```
+\\\
 
-### 数据导出
+## 更多信息
 
-```javascript
-function exportDataSet() {
-  const dataSet = $dataSet
-  const json = dataSet.toJSON()
-  
-  // 下载为文件
-  const blob = new Blob([json], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'dataset-export.json'
-  a.click()
-  URL.revokeObjectURL(url)
-}
-```
-
-## 性能优化
-
-### 1. 批量操作
-
-```javascript
-// ❌ 逐条添加并通知
-for (let i = 0; i < 1000; i++) {
-  users.addRow({ id: i, name: `User ${i}` })
-  dataSet.notifySubscribers('Users')  // 每次都通知！
-}
-
-// ✅ 批量添加后通知一次
-for (let i = 0; i < 1000; i++) {
-  users.rows.push({ id: i, name: `User ${i}` })
-}
-dataSet.notifySubscribers('Users')  // 只通知一次
-```
-
-### 2. 条件加载
-
-```javascript
-// 只在需要时加载子表
-function handleUserSelect(row) {
-  const orders = $dataSet.getTable('Orders')
-  
-  // 检查是否已有数据
-  if (!orders._originalRows) {
-    $dataSet.requestTableData('Orders')
-  }
-}
-```
-
-### 3. 取消订阅
-
-```javascript
-// 组件销毁时取消订阅
-function cleanup() {
-  const dataSet = $dataSet
-  dataSet.off('loadSuccess', handler)
-  dataSet.off('data:changed', handler)
-}
-```
-
-## 调试技巧
-
-```javascript
-function debugDataSet() {
-  const dataSet = $dataSet
-  
-  // 查看所有表
-  console.log('Tables:', Object.keys(dataSet.dataSet.tables))
-  
-  // 查看关系配置
-  console.log('Relations:', dataSet.dataSet.relations)
-  
-  // 查看表数据
-  const users = dataSet.getTable('Users')
-  console.log('Users rows:', users.rows)
-  console.log('Users currentRow:', users.currentRow)
-  
-  // 查看原始数据（未过滤）
-  console.log('Original rows:', users._originalRows)
-}
-```
-
-## 参考示例
-
-查看以下页面配置：
-- `dataset-demo` - 主从表联动、SQL/MongoDB 查询
-- `cascade-demo` - 级联更新、级联删除
-- `master-detail` - 主从表事件监听
-- `smart-load` - 按需加载、懒加载
+- [组件开发指南](COMPONENT_DEVELOPMENT.md)
+- [能力系统指南](CAPABILITY_PROVISION.md)
+- [API 参考手册](API_REFERENCE.md)
