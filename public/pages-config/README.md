@@ -177,13 +177,6 @@ public/                 # 静态资源（直接复制）
 - `public/pages-config/` 存储配置数据
 - 职责清晰，便于维护
 
-### 与 mocks/ 的关系
-
-- **mocks/** - 开发工具（提供 Mock API）
-- **public/pages-config/** - 应用数据（运行时加载）
-- 开发环境：mocks/api.ts 拦截请求并从 public/pages-config/ 读取
-- 生产环境：直接从 public/pages-config/ 或真实 API 加载
-
 ## 最佳实践
 
 ### 文件组织

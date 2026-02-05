@@ -1,7 +1,0 @@
-[
-  { "id": 101, "userId": 1, "orderNo": "ORD001", "amount": 1200, "status": "已完成", "date": "2024-01-15" },
-  { "id": 102, "userId": 1, "orderNo": "ORD002", "amount": 800, "status": "进行中", "date": "2024-01-20" },
-  { "id": 103, "userId": 2, "orderNo": "ORD003", "amount": 1500, "status": "已完成", "date": "2024-01-18" },
-  { "id": 104, "userId": 2, "orderNo": "ORD004", "amount": 600, "status": "待付款", "date": "2024-01-22" },
-  { "id": 105, "userId": 3, "orderNo": "ORD005", "amount": 2000, "status": "已完成", "date": "2024-01-25" }
-]
