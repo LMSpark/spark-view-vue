@@ -22,6 +22,8 @@ import type { ComponentConfig, ComponentRegistry } from '../types/spark-componen
 export class SparkComponentRegistryImpl implements ComponentRegistry {
   /** 组件类型定义存储（key: 组件类型名, value: 组件配置定义） */
   private components = new Map<string, ComponentConfig>()
+  /** 加载中的组件（防止重复加载） */
+  private loading = new Map<string, Promise<ComponentConfig | undefined>>()
   /** 日志记录器 */
   private logger = Logger('Spark:Registry')
 
@@ -61,6 +63,117 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
    */
   get(type: string): ComponentConfig | undefined {
     return this.components.get(type)
+  }
+
+  /**
+   * 异步获取组件类型定义（支持动态导入）
+   * 
+   * 如果组件已加载，直接返回
+   * 如果组件有 loader，自动调用 loader 加载
+   * 如果正在加载，等待加载完成
+   * 
+   * @param type - 组件类型名称
+   * @returns 组件定义或 undefined
+   * 
+   * @example
+   * ```typescript
+   * // 注册懒加载组件
+   * registry.register('spark-heavy-grid', {
+   *   type: 'spark-heavy-grid',
+   *   name: '重量级表格',
+   *   loader: () => import('./components/HeavyGrid.vue')
+   * })
+   * 
+   * // 使用时自动加载
+   * const def = await registry.getAsync('spark-heavy-grid')
+   * // 首次调用会触发 import()，后续直接返回缓存
+   * ```
+   */
+  async getAsync(type: string): Promise<ComponentConfig | undefined> {
+    // 1. 已加载，直接返回
+    const existing = this.components.get(type)
+    if (existing && existing.component) {
+      return existing
+    }
+
+    // 2. 正在加载，等待完成
+    const loadingPromise = this.loading.get(type)
+    if (loadingPromise) {
+      return loadingPromise
+    }
+
+    // 3. 有 loader，开始加载
+    if (existing && existing.loader) {
+      const loadPromise = this._loadComponent(type, existing)
+      this.loading.set(type, loadPromise)
+      try {
+        return await loadPromise
+      } finally {
+        this.loading.delete(type)
+      }
+    }
+
+    // 4. 没有 loader，返回原始定义（可能是逻辑组件）
+    return existing
+  }
+
+  /**
+   * 内部方法：执行组件加载
+   */
+  private async _loadComponent(type: string, definition: ComponentConfig): Promise<ComponentConfig | undefined> {
+    try {
+      this.logger.info(`⏳ Loading component: ${type}`)
+      const loader = definition.loader
+      if (!loader) {
+        return definition
+      }
+      const module = await loader()
+      const component = module.default || module
+      
+      // 更新定义，填充 component 字段
+      const loaded: ComponentConfig = {
+        ...definition,
+        component,
+        loader: undefined // 加载后清除 loader，避免重复加载
+      }
+      this.components.set(type, loaded)
+      this.logger.info(`✅ Loaded component: ${type}`)
+      return loaded
+    } catch (error) {
+      this.logger.error(`❌ Failed to load component: ${type}`, error)
+      return undefined
+    }
+  }
+
+  /**
+   * 预加载多个组件
+   * 
+   * 批量加载组件，适用于：
+   * - 路由切换前预加载
+   * - 空闲时预加载常用组件
+   * - 优化首屏加载（并行加载）
+   * 
+   * @param types - 组件类型名称数组
+   * 
+   * @example
+   * ```typescript
+   * // 路由切换前预加载
+   * router.beforeEach(async (to) => {
+   *   if (to.meta.components) {
+   *     await registry.preload(to.meta.components as string[])
+   *   }
+   * })
+   * 
+   * // 空闲时预加载
+   * requestIdleCallback(() => {
+   *   registry.preload(['spark-chart', 'spark-calendar'])
+   * })
+   * ```
+   */
+  async preload(types: string[]): Promise<void> {
+    this.logger.info(`🚀 Preloading ${types.length} components: ${types.join(', ')}`)
+    await Promise.all(types.map(type => this.getAsync(type)))
+    this.logger.info(`✅ Preloaded ${types.length} components`)
   }
 
   /**
