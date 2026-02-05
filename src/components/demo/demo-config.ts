@@ -124,10 +124,10 @@ export function createDemoConfig(users: User[], config?: Partial<GridConfig>): R
                 type: 'field',
                 id: `field-${fieldConfig.field}-${user.id}`,
                 props: {
-                  value: (user as Record<string, unknown>)[fieldConfig.field],
+                  value: (user as unknown as Record<string, unknown>)[fieldConfig.field],
                   label: fieldConfig.label,
                   icon: fieldConfig.icon,
-                  highlight: fieldConfig.highlight ? fieldConfig.highlight((user as Record<string, unknown>)[fieldConfig.field]) : false
+                  highlight: fieldConfig.highlight ? fieldConfig.highlight((user as unknown as Record<string, unknown>)[fieldConfig.field]) : false
                 }
               }))
             ]

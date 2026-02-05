@@ -22,11 +22,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
+import { computed, inject, type Component } from 'vue'
 import type { RenderNode, RenderContext } from './demo-config'
-import UserGrid from './UserGrid.vue'
-import UserRow from './UserRow.vue'
-import UserField from './UserField.vue'
+import { SPARK_MANAGER_KEY } from '@spark-view/spark-component'
+import type { ComponentManager } from '@spark-view/spark-component'
 
 interface Props {
   node: RenderNode
@@ -35,17 +34,25 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 组件映射
-const componentMap: Record<string, Component | string> = {
-  grid: UserGrid,
-  row: UserRow,
-  field: UserField,
+// 🎯 使用 SPARK 组件系统动态解析组件
+const sparkManager = inject<ComponentManager>(SPARK_MANAGER_KEY)
+
+// 组件类型映射（type → 注册的组件类型）
+const componentTypeMap: Record<string, string> = {
+  grid: 'user-grid',
+  row: 'user-row',
+  field: 'user-field',
   container: 'div'
 }
 
 // 获取组件类型
 const componentType = computed<Component | string>(() => {
-  return componentMap[props.node.type] || 'div'
+  const mappedType = componentTypeMap[props.node.type]
+  if (!mappedType || mappedType === 'div') return 'div'
+  
+  // 通过 SPARK 组件系统动态解析组件
+  const definition = sparkManager?.getComponentDefinition(mappedType)
+  return definition?.component || 'div'
 })
 
 // 是否渲染（条件渲染）

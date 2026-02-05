@@ -21,8 +21,9 @@
     </div>
 
     <!-- 配置驱动递归渲染 -->
-    <DemoRenderer 
-      v-if="renderConfig"
+    <component
+      :is="DemoRenderer"
+      v-if="renderConfig && DemoRenderer"
       :node="renderConfig" 
       :context="renderContext"
     />
@@ -34,7 +35,8 @@ import { ref, computed, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLogger } from '@spark-view/spark-app'
 import { SparkData } from '@spark-view/spark-data'
-import DemoRenderer from './DemoRenderer.vue'
+import { SPARK_MANAGER_KEY } from '@spark-view/spark-component'
+import type { ComponentManager } from '@spark-view/spark-component'
 import { 
   createSimpleConfig, 
   createCustomFieldsConfig,
@@ -42,6 +44,13 @@ import {
   type FieldConfig
 } from './demo-config'
 import type { User } from './types'
+
+// 🎯 使用 SPARK 组件系统
+const sparkManager = inject<ComponentManager>(SPARK_MANAGER_KEY)
+const DemoRenderer = computed(() => {
+  const def = sparkManager?.getComponentDefinition('demo-renderer')
+  return def?.component
+})
 
 // ============ 获取 APP 层服务 ============
 const router = useRouter()
