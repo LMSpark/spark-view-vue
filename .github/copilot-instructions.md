@@ -54,9 +54,9 @@ packages/
     ├── src/
    Package usage examples 📚
 
-### Using spark-core (组件系统)
+### Using spark-component (组件系统)
 ```ts
-import { Spark, useSparkComponent } from '@spark-view/spark-core'
+import { Spark, useSparkComponent } from '@spark-view/spark-component'
 
 // Create manager and registry
 const manager = Spark.createComponentManager()
