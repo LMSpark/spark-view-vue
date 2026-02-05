@@ -126,6 +126,9 @@ importers:
 
   packages/spark-app:
     dependencies:
+      '@spark-view/spark-utils':
+        specifier: workspace:*
+        version: link:../spark-utils
       vue:
         specifier: ^3.5.0
         version: 3.5.27(typescript@5.3.3)

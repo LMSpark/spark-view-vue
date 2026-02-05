@@ -26,6 +26,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - Inside components use `useSparkComponent(config)` to access `{ context, provide, consume, use, whenAvailable, logger }`.
 - Capability system uses provider/consumer pattern; common helpers: `whenProviderAvailable('name')`, `getOrCreateNoopProvider()` for tests.
 - `GetProvider(name, ctx?)` behavior: if `ctx` provided, search only that scope; otherwise walk parent chain (documented in `docs/SPARK_ARCHITECTURE.md`).
+- **APP Services**: Use `consume<AppServices>('appServices')` to access router/logger in components. Page layer provides via `DataSetCapabilityManager` (see `docs/guides/APP_SERVICES_CAPABILITY.md`).
 
 ## Testing & common pitfalls 🧪
 - Tests run with Vitest + jsdom; external EJ2 (custom tags `e-*`) should be stubbed/mocked in unit tests.

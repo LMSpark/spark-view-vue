@@ -14,11 +14,50 @@ import type { Provider as CapabilityProvider } from '@spark-view/spark-utils'
 import type { IDataSet } from '../types'
 
 /**
+ * APP 服务接口（从 APP 层注入）
+ */
+export interface AppServices {
+  /** Vue Router 实例 */
+  router?: {
+    push(to: string | { path: string; query?: Record<string, unknown> }): Promise<void>
+    replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<void>
+    back(): void
+    currentRoute: { value: { path: string; query: Record<string, unknown> } }
+  }
+  
+  /** APP Logger - 匹配 LoggerApi 接口 */
+  logger?: {
+    debug(...args: unknown[]): void
+    info(...args: unknown[]): void
+    warn(...args: unknown[]): void
+    error(...args: unknown[]): void
+  }
+  
+  /** 配置加载器 */
+  configLoader?: {
+    loadPageConfig(pageId: string): Promise<unknown>
+    loadRoutes(): Promise<unknown>
+    clearCache(): void
+  }
+  
+  /** 认证服务 */
+  authService?: {
+    getUser(): { id: string; name: string; roles: string[] } | null
+    login(credentials: { username: string; password: string }): Promise<boolean>
+    logout(): Promise<void>
+    checkAuth(): Promise<boolean>
+  }
+}
+
+/**
  * DataSet 能力提供者配置
  */
 export interface DataSetCapabilityConfig {
   /** DataSet 实例 */
   dataSet: IDataSet
+  
+  /** APP 层服务（可选） - 统一提供给子组件 */
+  appServices?: AppServices
   
   /** 全局数据提供者（可选） */
   globalData?: {
@@ -88,6 +127,11 @@ export class DataSetCapabilityManager extends CapabilityManager {
    * 注册 DataSet 层的所有能力
    */
   private registerDataSetCapabilities() {
+    // 0. APP 服务能力（如果提供）- 优先注册，让所有子组件可用
+    if (this.config.appServices) {
+      this.registerAppServicesCapability()
+    }
+    
     // 1. DataSet 状态能力
     this.registerDataSetStateCapability()
     
@@ -105,6 +149,45 @@ export class DataSetCapabilityManager extends CapabilityManager {
     if (this.config.apiClient) {
       this.registerApiClientCapability()
     }
+  }
+
+  /**
+   * 注册 APP 服务能力
+   * 统一提供 router, logger, configLoader, authService 等 APP 层服务
+   */
+  private registerAppServicesCapability() {
+    const provider: CapabilityProvider = {
+      name: 'appServices',
+      version: '1.0.0',
+      implementation: {
+        // Router 服务
+        router: this.config.appServices?.router,
+        
+        // Logger 服务
+        logger: this.config.appServices?.logger,
+        
+        // ConfigLoader 服务
+        configLoader: this.config.appServices?.configLoader,
+        
+        // AuthService 服务
+        authService: this.config.appServices?.authService,
+        
+        // 便捷方法：导航
+        navigate: (to: string | { path: string; query?: Record<string, unknown> }) => {
+          return this.config.appServices?.router?.push(to)
+        },
+        
+        // 便捷方法：日志（类型安全，无需 any）
+        log: {
+          debug: (...args: unknown[]) => this.config.appServices?.logger?.debug(...args),
+          info: (...args: unknown[]) => this.config.appServices?.logger?.info(...args),
+          warn: (...args: unknown[]) => this.config.appServices?.logger?.warn(...args),
+          error: (...args: unknown[]) => this.config.appServices?.logger?.error(...args)
+        }
+      }
+    }
+    
+    this.dataSetContext.providers.add(provider)
   }
 
   /**
