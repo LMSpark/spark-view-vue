@@ -21,7 +21,7 @@ import { SparkComponentRenderer } from '@spark-view/spark-component'
 // ============================================
 
 // ✨ 新 API：只需要组件名称和路径，其他自动处理
-Spark.easy.register({
+Spark.register({
   name: 'DemoHeavyComponent',  // 自动转为 type: 'demo-heavy-component'
   path: '../features/spark/components/demo/HeavyComponent.vue',
   lazy: true,  // 懒加载
@@ -30,14 +30,14 @@ Spark.easy.register({
   }
 })
 
-Spark.easy.register({
+Spark.register({
   name: 'DemoChart',
   path: '../features/spark/components/demo/ChartComponent.vue',
   lazy: true,
   onLoad: () => console.log('✅ ChartComponent 加载完成')
 })
 
-Spark.easy.register({
+Spark.register({
   name: 'DemoCalendar',
   path: '../features/spark/components/demo/CalendarComponent.vue',
   lazy: true

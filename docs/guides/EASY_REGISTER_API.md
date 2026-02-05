@@ -20,7 +20,7 @@ Spark.registerSparkComponent({
 新 API - 自动处理一切：
 ```typescript
 ✅ 新 API - 只需要必要信息
-Spark.easy.register({
+Spark.register({
   name: 'HeavyGrid',                 // 自动转 type: 'heavy-grid'
   path: './HeavyGrid.vue',
   lazy: true,                        // 是否懒加载
@@ -32,9 +32,9 @@ Spark.easy.register({
 
 ## API 参考
 
-### Spark.easy.register()
+### Spark.register()
 
-注册单个组件（简化版）
+统一注册 API，自动识别配置类型
 
 ```typescript
 interface SimpleComponentConfig {
@@ -48,28 +48,28 @@ interface SimpleComponentConfig {
   requires?: string[]       // 依赖的能力
 }
 
-Spark.easy.register(config)
+Spark.register(config)
 ```
 
-### Spark.easy.registerAll()
+### Spark.registerAll()
 
 批量注册组件
 
 ```typescript
-Spark.easy.registerAll([
+Spark.registerAll([
   { name: 'Chart', path: './Chart.vue', lazy: true },
   { name: 'Calendar', path: './Calendar.vue', lazy: true },
   { name: 'Grid', path: './Grid.vue', lazy: true }
 ])
 ```
 
-### Spark.easy.presets
+### Spark.presets
 
 预设配置生成器
 
 ```typescript
 // 懒加载预设
-const config = Spark.easy.presets.lazy(
+const config = Spark.presets.lazy(
   'HeavyGrid', 
   './HeavyGrid.vue'
 )
@@ -81,7 +81,7 @@ const config = Spark.easy.presets.sync(
 )
 
 // 带能力的组件
-const config = Spark.easy.presets.withCapabilities(
+const config = Spark.presets.withCapabilities(
   'Grid',
   './Grid.vue',
   ['data-source', 'column-manager'],  // provides
