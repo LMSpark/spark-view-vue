@@ -13,34 +13,12 @@
       />
     </div>
     
-    <!-- 字段级组件：UserField -->
-    <UserField
-      :config="createFieldConfig('name')"
-      :value="user.name"
-      :label="'姓名'"
-      icon="👤"
-    />
-    
-    <UserField
-      :config="createFieldConfig('age')"
-      :value="user.age"
-      :label="'年龄'"
-      icon="🎂"
-    />
-    
-    <UserField
-      :config="createFieldConfig('email')"
-      :value="user.email"
-      :label="'邮箱'"
-      icon="📧"
-    />
-    
-    <UserField
-      :config="createFieldConfig('status')"
-      :value="user.status"
-      :label="'状态'"
-      icon="🔔"
-      :highlight="user.status === 'active'"
+    <!-- 递归渲染子组件 -->
+    <component
+      v-for="childConfig in childConfigs"
+      :key="childConfig.id"
+      :is="defineAsyncComponent(Spark.resolveComponent(childConfig.type) as any)"
+      :config="childConfig"
     />
 
     <div class="row-level-badge">实例级</div>
@@ -48,23 +26,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import UserField from './UserField.vue'
 import type { 
   User, 
   SelectionCapability, 
-  GridEventsCapability,
-  RowDataCapability
+  GridEventsCapability
 } from './types'
 
 interface Props {
   config: ComponentConfig
-  user: User
 }
 
 const props = defineProps<Props>()
+
+// 从 config.props 获取 user 数据
+const user = computed(() => props.config.props?.user as User)
+
+const childConfigs = computed(() =>
+  (props.config.children ?? []).filter(
+    (c): c is ComponentConfig & { type: string } => typeof (c as any).type === 'string' && (c as any).type.length > 0
+  )
+)
 const emit = defineEmits<{
   'row-click': [user: User]
 }>()
@@ -79,13 +63,6 @@ const {
 
 const isSelected = ref(false)
 
-// 创建字段配置
-const createFieldConfig = (field: string): ComponentConfig => ({
-  type: 'user-field',
-  id: `field-${field}-${props.user.id}`,
-  props: { field }
-})
-
 // ============ 能力消费 ============
 
 // 1. 消费父组件的选择能力
@@ -94,8 +71,8 @@ const selection = consume('selection')
 // 更新选中状态
 const updateSelectionState = () => {
   const sel = selection?.value as SelectionCapability | null
-  if (sel) {
-    isSelected.value = sel.isSelected(props.user.id)
+  if (sel && user.value) {
+    isSelected.value = sel.isSelected(user.value.id)
   }
 }
 
@@ -107,18 +84,19 @@ if (events) {
   // 监听选择变化事件
   events.on('selection:changed', () => {
     updateSelectionState()
-    logger.debug('🔄 Selection updated for row:', props.user.id)
+    logger.debug('🔄 Selection updated for row:', user.value?.id)
   })
 }
 
 // ============ 能力提供（给字段组件） ============
 
-// 提供行数据能力（类型安全）
-const rowDataCapability: RowDataCapability = {
-  getData: () => props.user,
-  getField: (field: string) => props.user[field as keyof User],
+// 提供行数据能力（响应式 - 每次访问时动态获取最新 user）
+const rowDataCapability = {
+  getData: () => user.value!,
+  getField: (field: string) => user.value?.[field as keyof User],
   isSelected: () => isSelected.value
 }
+
 provideCapability('rowData', rowDataCapability as unknown as Record<string, unknown>)
 
 // 提供行事件能力
@@ -135,27 +113,29 @@ provideCapability('rowEvents', rowEmitter)
 // ============ 事件处理 ============
 
 const handleClick = () => {
-  emit('row-click', props.user)
+  if (!user.value) return
+  
+  emit('row-click', user.value)
   if (rowEmitter) {
-    rowEmitter.emit('row:click', props.user)
+    rowEmitter.emit('row:click', user.value)
   }
   const events = gridEvents?.value as GridEventsCapability | null
   if (events) {
-    events.emit('row:clicked', props.user)
+    events.emit('row:clicked', user.value)
   }
-  logger.info('👆 Row clicked:', props.user.name)
+  logger.info('👆 Row clicked:', user.value.name)
 }
 
 const handleCheckboxChange = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked
   const sel = selection?.value as SelectionCapability | null
-  if (sel) {
+  if (sel && user.value) {
     if (checked) {
-      sel.select(props.user.id)
-      logger.info('✅ Row selected:', props.user.id)
+      sel.select(user.value.id)
+      logger.info('✅ Row selected:', user.value.id)
     } else {
-      sel.deselect(props.user.id)
-      logger.info('❌ Row deselected:', props.user.id)
+      sel.deselect(user.value.id)
+      logger.info('❌ Row deselected:', user.value.id)
     }
     updateSelectionState()
   }
@@ -165,7 +145,17 @@ onMounted(() => {
   updateSelectionState()
   logger.info('🚀 UserRow mounted (Instance Level)', {
     contextId: context.id,
-    userId: props.user.id,
+    userId: user.value?.id,
+    userName: user.value?.name,
+    userFullData: user.value,
+    rowData: rowDataCapability.getData(),
+    rowDataFields: user.value ? {
+      id: rowDataCapability.getField('id'),
+      name: rowDataCapability.getField('name'),
+      age: rowDataCapability.getField('age'),
+      email: rowDataCapability.getField('email'),
+      role: rowDataCapability.getField('role')
+    } : null,
     consumedCapabilities: ['selection', 'gridEvents'],
     providedCapabilities: ['rowData', 'rowEvents']
   })

@@ -1,98 +1,99 @@
-[
-  {
-    "type": "div",
-    "class": "demo-grid custom-fields",
-    "children": [
+{
+  "type": "user-grid",
+  "id": "custom-fields-grid",
+  "props": {
+    "fieldMetadata": {
+      "id": {
+        "label": "ID",
+        "icon": "🔢",
+        "type": "number"
+      },
+      "name": {
+        "label": "姓名",
+        "icon": "👤",
+        "type": "string"
+      },
+      "age": {
+        "label": "年龄",
+        "icon": "🎂",
+        "type": "number"
+      },
+      "email": {
+        "label": "邮箱",
+        "icon": "📧",
+        "type": "string"
+      },
+      "role": {
+        "label": "角色",
+        "icon": "💼",
+        "type": "string"
+      }
+    },
+    "users": [
       {
-        "type": "div",
-        "class": "grid-header",
-        "children": [
-          {
-            "type": "h3",
-            "children": ["🎨 自定义字段配置"]
-          }
-        ]
+        "id": 1,
+        "name": "张三",
+        "age": 25,
+        "email": "zhangsan@example.com",
+        "role": "开发者"
       },
       {
-        "type": "div",
-        "class": "grid-body",
-        "dataKey": "users",
-        "_loop": {
-          "item": "user",
-          "template": {
-            "type": "div",
-            "class": "user-row",
-            "children": [
-              {
-                "type": "div",
-                "class": "user-field",
-                "children": [
-                  {
-                    "type": "span",
-                    "class": "field-icon",
-                    "children": ["🔢"]
-                  },
-                  {
-                    "type": "span",
-                    "class": "field-label",
-                    "children": ["ID:"]
-                  },
-                  {
-                    "type": "span",
-                    "class": "field-value",
-                    "dataKey": "user.id"
-                  }
-                ]
-              },
-              {
-                "type": "div",
-                "class": "user-field",
-                "children": [
-                  {
-                    "type": "span",
-                    "class": "field-icon",
-                    "children": ["👤"]
-                  },
-                  {
-                    "type": "span",
-                    "class": "field-label",
-                    "children": ["用户名:"]
-                  },
-                  {
-                    "type": "span",
-                    "class": "field-value",
-                    "dataKey": "user.name"
-                  }
-                ]
-              },
-              {
-                "type": "div",
-                "class": "user-field",
-                "children": [
-                  {
-                    "type": "span",
-                    "class": "field-icon",
-                    "dataKey": "user.status",
-                    "_transform": "statusIcon",
-                    "children": []
-                  },
-                  {
-                    "type": "span",
-                    "class": "field-label",
-                    "children": ["状态:"]
-                  },
-                  {
-                    "type": "span",
-                    "class": "field-value",
-                    "dataKey": "user.status",
-                    "_transform": "statusText"
-                  }
-                ]
-              }
-            ]
-          }
-        }
+        "id": 2,
+        "name": "李四",
+        "age": 30,
+        "email": "lisi@example.com",
+        "role": "设计师"
+      },
+      {
+        "id": 3,
+        "name": "王五",
+        "age": 28,
+        "email": "wangwu@example.com",
+        "role": "产品经理"
       }
     ]
-  }
-]
+  },
+  "children": [
+    {
+      "type": "user-row",
+      "id": "row-template",
+      "children": [
+        {
+          "type": "user-field",
+          "id": "field-id",
+          "props": {
+            "field": "id"
+          }
+        },
+        {
+          "type": "user-field",
+          "id": "field-name",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "user-field",
+          "id": "field-age",
+          "props": {
+            "field": "age"
+          }
+        },
+        {
+          "type": "user-field",
+          "id": "field-email",
+          "props": {
+            "field": "email"
+          }
+        },
+        {
+          "type": "user-field",
+          "id": "field-role",
+          "props": {
+            "field": "role"
+          }
+        }
+      ]
+    }
+  ]
+}

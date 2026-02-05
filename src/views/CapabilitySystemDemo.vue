@@ -1,118 +1,19 @@
 <template>
   <div class="capability-demo">
-    <h1>🎯 SPARK 能力系统完整演示</h1>
-    <p class="subtitle">三层级组件：模型级 → 实例级 → 字段级</p>
+    <h1>🎯 SPARK 组件系统演示</h1>
+    <p class="subtitle">JSON 配置 + SparkComponentRenderer 递归渲染</p>
 
-    <!-- 配置驱动递归渲染演示 -->
-    <div class="config-driven-section">
-      <h2>⚡ 配置驱动递归渲染演示（新）</h2>
-      <p class="section-desc">完全配置驱动，无需硬编码组件关系，支持动态子节点生成和条件渲染</p>
-      <ConfigDrivenDemo />
-    </div>
-
-    <!-- 传统硬编码组件演示 -->
-    <div class="model-level">
-      <h2>📊 传统硬编码组件 (UserGrid)</h2>
-      <p class="section-desc">传统方式：组件关系硬编码在模板中</p>
-      <UserGrid :config="gridConfig" />
-    </div>
-
-    <!-- 调试信息 -->
-    <div class="debug-panel">
-      <h3>🔍 能力系统调试信息</h3>
-      <div class="debug-content">
-        <div class="debug-section">
-          <h4>能力树结构：</h4>
-          <pre>{{ capabilityTreeInfo }}</pre>
-        </div>
-        <div class="debug-section">
-          <h4>事件日志：</h4>
-          <div class="event-log">
-            <div v-for="(log, index) in eventLogs" :key="index" class="log-item">
-              <span class="log-time">{{ log.time }}</span>
-              <span class="log-event">{{ log.event }}</span>
-              <span class="log-data">{{ log.data }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- SparkComponentRenderer 演示 -->
+    <div class="spark-renderer-section">
+      <h2>🎯 SparkComponentRenderer 递归渲染</h2>
+      <p class="section-desc">使用 JSON 配置 + <code>@spark-view/spark-component</code> 的通用递归渲染器</p>
+      <JsonRendererDemo />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import UserGrid from '../components/demo/UserGrid.vue'
-import ConfigDrivenDemo from '../components/demo/ConfigDrivenDemo.vue'
-import type { ComponentConfig } from '@spark-view/spark-component'
-
-// 模拟用户数据
-const users = [
-  { id: 1, name: '张三', age: 28, email: 'zhangsan@example.com', status: 'active' },
-  { id: 2, name: '李四', age: 32, email: 'lisi@example.com', status: 'inactive' },
-  { id: 3, name: '王五', age: 25, email: 'wangwu@example.com', status: 'active' },
-]
-
-// Grid 配置
-const gridConfig = reactive<ComponentConfig>({
-  type: 'user-grid',
-  id: 'demo-user-grid',
-  props: {
-    users: users,
-    columns: [
-      { field: 'name', label: '姓名', width: 120 },
-      { field: 'age', label: '年龄', width: 80 },
-      { field: 'email', label: '邮箱', width: 200 },
-      { field: 'status', label: '状态', width: 100 }
-    ]
-  }
-})
-
-// 事件日志
-const eventLogs = ref<Array<{ time: string, event: string, data: string }>>([])
-
-// 能力树信息
-const capabilityTreeInfo = ref('')
-
-// 添加事件日志
-const addLog = (event: string, data: unknown) => {
-  const time = new Date().toLocaleTimeString()
-  eventLogs.value.unshift({
-    time,
-    event,
-    data: JSON.stringify(data)
-  })
-  if (eventLogs.value.length > 10) {
-    eventLogs.value.pop()
-  }
-}
-
-onMounted(() => {
-  // 模拟能力树信息
-  capabilityTreeInfo.value = `
-APP Context (app-root-context)
-  └─ Page Context (page-root-context)
-      └─ UserGrid (demo-user-grid) [模型级]
-          ├─ Providers: 
-          │   ├─ selection (选择能力)
-          │   ├─ gridEvents (Grid事件)
-          │   └─ dataSource (数据源能力)
-          └─ Children:
-              ├─ UserRow (row-1) [实例级]
-              │   ├─ Consumers: selection, gridEvents
-              │   └─ Children:
-              │       ├─ NameField (field-name-1) [字段级]
-              │       │   └─ Consumers: rowData
-              │       ├─ AgeField (field-age-1) [字段级]
-              │       │   └─ Consumers: rowData
-              │       └─ EmailField (field-email-1) [字段级]
-              │           └─ Consumers: rowData
-              ├─ UserRow (row-2) [实例级]
-              └─ UserRow (row-3) [实例级]
-  `
-  
-  addLog('demo:mounted', { message: 'Capability system demo initialized' })
-})
+import JsonRendererDemo from '../components/demo/JsonRendererDemo.vue'
 </script>
 
 <style scoped>
@@ -131,6 +32,34 @@ h1 {
   color: #7f8c8d;
   font-size: 14px;
   margin-bottom: 30px;
+}
+
+.spark-renderer-section {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.spark-renderer-section h2 {
+  margin-top: 0;
+  color: white;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.spark-renderer-section .section-desc {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.spark-renderer-section code {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Consolas', monospace;
 }
 
 .config-driven-section {

@@ -216,6 +216,19 @@ export class SparkComponentManagerImpl {
   }
 
   /**
+   * 解析组件（处理 loader/component）
+   * 🎯 供 Vue 组件使用，自动处理懒加载
+   * 
+   * @param type - 组件类型名称
+   * @returns loader 函数或 component
+   */
+  resolveComponent(type: string) {
+    const def = this.registry.get(type)
+    if (!def) return null
+    return def.loader || def.component || null
+  }
+
+  /**
    * 检查组件类型是否已注册
    * 
    * @param type - 组件类型名称

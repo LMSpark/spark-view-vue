@@ -11,28 +11,26 @@
     </div>
     
     <div class="grid-info">
-      <span>已选中: {{ selectedCount }} / {{ users.length }}</span>
-      <span>提供能力: selection, gridEvents, dataSource</span>
+      <span>已选中: {{ selectedCount }} / {{ usersFromConfig.length }}</span>
+      <span>提供能力: fieldMetadata, selection, gridEvents, dataSource</span>
     </div>
 
     <div class="grid-body">
-      <!-- 实例级组件：UserRow -->
-      <UserRow
-        v-for="user in users"
-        :key="user.id"
-        :config="createRowConfig(user)"
-        :user="user"
-        @row-click="handleRowClick"
+      <!-- 渲染为每个user生成的配置 -->
+      <component
+        v-for="childConfig in childConfigs"
+        :key="childConfig.id"
+        :is="defineAsyncComponent(Spark.resolveComponent(childConfig.type) as any)"
+        :config="childConfig"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import UserRow from './UserRow.vue'
 import type { 
   User, 
   AppServicesCapability,
@@ -46,13 +44,39 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// 从 config.props 获取 users
+const usersFromConfig = computed(() => (props.config.props?.users as User[]) || [])
+
+// 🎯 生成子组件配置（为每个 user 创建一个 row）
+const childConfigs = computed(() => {
+  const children = props.config.children ?? []
+  const users = usersFromConfig.value
+  
+  if (children.length === 0 || users.length === 0) {
+    return []
+  }
+  
+  // 使用第一个 child 作为模板，为每个 user 生成配置
+  const template = children[0]
+  if (!template?.type) return []
+  
+  return users.map(user => ({
+    ...template,
+    id: `row-${user.id}`,
+    type: template.type, // ensure it's always a string for downstream resolution
+    props: {
+      ...template.props,
+      user // 传递 user 数据
+    }
+  }))
+})
+
 // ============ 组件能力系统 (SPARK Capability) ============
-// 组件级能力：selection, dataSource, events 等
 const { 
   context, 
   provide: provideCapability,
   consume,
-  logger: sparkLogger  // SPARK 组件 logger
+  logger: sparkLogger
 } = Spark.useSpark(props.config)
 
 // ============ 消费 APP 服务能力（从页面层提供）============
@@ -72,17 +96,19 @@ const appLogger = computed<AppLoggerCapability | null>(() => {
 // 选中的行
 const selectedIds = ref<Set<number>>(new Set())
 
-const users = computed(() => (props.config.props?.users as User[]) || [])
 const selectedCount = computed(() => selectedIds.value.size)
 
-// 创建行配置
-const createRowConfig = (user: User): ComponentConfig => ({
-  type: 'user-row',
-  id: `row-${user.id}`,
-  props: { user }
+// ============ 字段元数据定义 ============
+
+// 从配置中获取字段元数据
+const fieldMetadata = computed(() => {
+  return (props.config.props?.fieldMetadata as Record<string, { label: string; icon: string; type: string }>) || {}
 })
 
 // ============ 能力提供 ============
+
+// 0. 提供字段元数据能力（供 UserField 消费）
+provideCapability('fieldMetadata', fieldMetadata.value)
 
 // 1. 提供选择能力（数据流）
 provideCapability('selection', {
@@ -98,7 +124,7 @@ provideCapability('selection', {
     sparkLogger.info('❌ Deselected row:', id)
   },
   selectAll: () => {
-    users.value.forEach(u => selectedIds.value.add(u.id))
+    usersFromConfig.value.forEach(u => selectedIds.value.add(u.id))
     emitter.emit('selection:changed', Array.from(selectedIds.value))
     sparkLogger.info('☑️ Selected all rows')
   },
@@ -123,19 +149,14 @@ provideCapability('gridEvents', emitter)
 
 // 3. 提供数据源能力
 provideCapability('dataSource', {
-  getData: () => users.value,
+  getData: () => usersFromConfig.value,
   refresh: () => {
     sparkLogger.info('🔄 Data refreshed')
-    emitter.emit('data:refreshed', users.value)
+    emitter.emit('data:refreshed', usersFromConfig.value)
   }
 })
 
 // ============ 事件处理 ============
-
-const handleRowClick = (user: User) => {
-  sparkLogger.info('🎯 Grid received row click:', user.name)
-  emitter.emit('row:click', user)
-}
 
 const handleRefresh = () => {
   // 使用 APP 服务能力
@@ -146,7 +167,7 @@ const handleRefresh = () => {
 
 const handleSelectAll = () => {
   selectedIds.value.clear()
-  users.value.forEach(u => selectedIds.value.add(u.id))
+  usersFromConfig.value.forEach(u => selectedIds.value.add(u.id))
   emitter.emit('selection:changed', Array.from(selectedIds.value))
   sparkLogger.info('☑️ All rows selected')
 }
@@ -168,7 +189,9 @@ onMounted(() => {
   appLogger.value?.info('🚀 [APP Service] UserGrid component mounted')
   sparkLogger.info('🚀 UserGrid mounted (Model Level)', {
     contextId: context.id,
-    providedCapabilities: ['selection', 'gridEvents', 'dataSource'],
+    providedCapabilities: ['fieldMetadata', 'selection', 'gridEvents', 'dataSource'],
+    fieldMetadata: Object.keys(fieldMetadata.value),
+    fieldMetadataSource: 'JSON配置',
     hasAppServices: !!(appServices?.value)
   })
 })
