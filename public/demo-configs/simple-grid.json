@@ -1,0 +1,40 @@
+{
+  "type": "grid",
+  "id": "simple-demo-grid",
+  "class": "demo-grid",
+  "props": {
+    "title": "用户列表"
+  },
+  "children": [
+    {
+      "type": "container",
+      "class": "grid-header",
+      "children": [
+        {
+          "type": "container",
+          "props": {
+            "text": "📋 标准配置 - JSON 驱动"
+          }
+        },
+        {
+          "type": "container",
+          "class": "actions",
+          "children": [
+            {
+              "type": "container",
+              "props": {
+                "text": "🔄 刷新",
+                "action": "refresh"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "container",
+      "class": "grid-body",
+      "_dynamicChildren": "generateRows"
+    }
+  ]
+}
