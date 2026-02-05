@@ -45,19 +45,23 @@ export const Spark: {
   // 组件开发 API（能力系统）
   // ========================================
   
-  /** 获取能力管理器（用于组件开发时注册能力提供者/消费者） */
+  /** 在组件中使用 SPARK 功能（能力系统、上下文、日志等） */
+  useSpark: typeof useSparkComponent
+  
+  /** 获取能力管理器（用于注册能力连接器等高级用法） */
   capabilities: () => typeof capabilityManager
-  
-  // ========================================
-  // Composables & Components
-  // ========================================
-  
-  /** 在组件中使用 SPARK 功能 */
-  useComponent: typeof useSparkComponent
-  useSparkComponent: typeof useSparkComponent
   
   /** 定义 SPARK 组件 */
   defineComponent: typeof defineSparkComponent
+  
+  // ========================================
+  // 向后兼容别名
+  // ========================================
+  
+  /** @deprecated 使用 useSpark 代替，语义更清晰 */
+  useComponent: typeof useSparkComponent
+  /** @deprecated 使用 useSpark 代替 */
+  useSparkComponent: typeof useSparkComponent
   
   // ========================================
   // 内部 API（高级用法，不推荐直接使用）
@@ -161,15 +165,16 @@ export const Spark: {
   // 组件开发 API
   // ========================================
   
+  useSpark: useSparkComponent,
   capabilities: () => capabilityManager,
+  defineComponent: defineSparkComponent,
   
   // ========================================
-  // Composables & Components
+  // 向后兼容别名
   // ========================================
   
   useComponent: useSparkComponent,
   useSparkComponent,
-  defineComponent: defineSparkComponent,
   
   // ========================================
   // 内部 API

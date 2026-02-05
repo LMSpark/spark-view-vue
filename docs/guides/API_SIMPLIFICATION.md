@@ -41,7 +41,7 @@ Spark.registerAll([
 <SparkComponentRenderer :config="{ type: 'my-button' }" />
 
 // ✅ 在组件中使用 SPARK 功能
-const { context, provide, consume } = Spark.useComponent(config)
+const { context, provide, consume } = Spark.useSpark(config)
 ```
 
 ### 2. 组件开发者 API（能力系统）
@@ -51,8 +51,8 @@ const { context, provide, consume } = Spark.useComponent(config)
 ```typescript
 import { Spark } from '@spark-view/spark-component'
 
-// ✅ 在组件中提供能力
-const { provide, provideEvents } = Spark.useComponent(config)
+// ✅ 在组件中使用 SPARK（提供能力）
+const { provide, provideEvents } = Spark.useSpark(config)
 
 // 提供数据能力
 provide('dataSource', {
@@ -67,7 +67,7 @@ eventProvider.on('dataChanged', (data) => {
 })
 
 // ✅ 在组件中消费能力
-const { consume, consumeEvents } = Spark.useComponent(config)
+const { consume, consumeEvents } = Spark.useSpark(config)
 
 // 消费数据能力
 const dataSource = consume('dataSource')
@@ -266,8 +266,8 @@ const customManager = Spark.createComponentManager()
 
 ## 总结
 
-- ✅ **业务 API**：`install`、`register`、`registerAll`、`useComponent`
-- ✅ **组件开发 API**：`capabilities()` - 用于组件开发时注册能力
+- ✅ **业务 API**：`install`、`register`、`registerAll`
+- ✅ **组件开发 API**：`useSpark`、`capabilities`、`defineComponent`
 - ⚠️ **内部 API**：`_manager`、`_registry`（带 `_` 前缀）
 - 🎯 **设计目标**：
   - 让业务开发者专注于业务逻辑
