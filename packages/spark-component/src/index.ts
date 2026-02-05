@@ -9,6 +9,15 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
+// 简化注册助手
+export { 
+  createSimpleRegistration,
+  batchCreateSimpleRegistrations,
+  presets as registerPresets,
+  nameToType
+} from './helpers/registerHelper.js'
+export type { SimpleComponentConfig } from './helpers/registerHelper.js'
+
 // 权限系统类型（转发导出，实际定义在 spark-data）
 export type {
   // 以下类型来自 spark-data（数据类型唯一来源）

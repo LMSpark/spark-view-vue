@@ -17,28 +17,39 @@ import { Spark } from '@spark-view/spark-component'
 import { SparkComponentRenderer } from '@spark-view/spark-component'
 
 // ============================================
-// 1. 注册懒加载组件
+// 1. 注册懒加载组件（使用简化 API ⚡）
 // ============================================
 
-// 注册：用到才加载（首屏不加载）
-Spark.registerSparkComponent({
-  type: 'demo-heavy-component',
-  name: '重量级组件',
-  version: '1.0.0',
-  loader: () => import('../features/spark/components/demo/HeavyComponent.vue')
+// ✨ 新 API：只需要组件名称和路径，其他自动处理
+Spark.easy.register({
+  name: 'DemoHeavyComponent',  // 自动转为 type: 'demo-heavy-component'
+  path: '../features/spark/components/demo/HeavyComponent.vue',
+  lazy: true,  // 懒加载
+  onLoad: (component) => {
+    console.log('✅ HeavyComponent 加载完成', component)
+  }
 })
 
-Spark.registerSparkComponent({
-  type: 'demo-chart',
-  name: '图表组件',
-  loader: () => import('../features/spark/components/demo/ChartComponent.vue')
+Spark.easy.register({
+  name: 'DemoChart',
+  path: '../features/spark/components/demo/ChartComponent.vue',
+  lazy: true,
+  onLoad: () => console.log('✅ ChartComponent 加载完成')
 })
 
-Spark.registerSparkComponent({
-  type: 'demo-calendar',
-  name: '日历组件',
-  loader: () => import('../features/spark/components/demo/CalendarComponent.vue')
+Spark.easy.register({
+  name: 'DemoCalendar',
+  path: '../features/spark/components/demo/CalendarComponent.vue',
+  lazy: true
 })
+
+// 📝 对比旧 API：
+// Spark.registerSparkComponent({
+//   type: 'demo-heavy-component',  // 手动指定 kebab-case
+//   name: '重量级组件',              // 手动指定名称
+//   version: '1.0.0',               // 手动指定版本
+//   loader: () => import('../features/spark/components/demo/HeavyComponent.vue')
+// })
 
 // ============================================
 // 2. 组件状态跟踪
