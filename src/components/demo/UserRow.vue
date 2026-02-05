@@ -52,14 +52,12 @@ import { ref, onMounted } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import UserField from './UserField.vue'
-
-interface User {
-  id: number
-  name: string
-  age: number
-  email: string
-  status: string
-}
+import type { 
+  User, 
+  SelectionCapability, 
+  GridEventsCapability,
+  RowDataCapability
+} from './types'
 
 interface Props {
   config: ComponentConfig
@@ -95,19 +93,19 @@ const selection = consume('selection')
 
 // 更新选中状态
 const updateSelectionState = () => {
-  const sel = selection?.value
+  const sel = selection?.value as SelectionCapability | null
   if (sel) {
-    isSelected.value = (sel as any).isSelected(props.user.id)
+    isSelected.value = sel.isSelected(props.user.id)
   }
 }
 
 // 2. 消费父组件的事件能力
 const gridEvents = consume('gridEvents')
 
-const events = gridEvents?.value
+const events = gridEvents?.value as GridEventsCapability | null
 if (events) {
   // 监听选择变化事件
-  (events as any).on('selection:changed', () => {
+  events.on('selection:changed', () => {
     updateSelectionState()
     logger.debug('🔄 Selection updated for row:', props.user.id)
   })
@@ -115,12 +113,13 @@ if (events) {
 
 // ============ 能力提供（给字段组件） ============
 
-// 提供行数据能力
-provideCapability('rowData', {
+// 提供行数据能力（类型安全）
+const rowDataCapability: RowDataCapability = {
   getData: () => props.user,
   getField: (field: string) => props.user[field as keyof User],
   isSelected: () => isSelected.value
-})
+}
+provideCapability('rowData', rowDataCapability as unknown as Record<string, unknown>)
 
 // 提供行事件能力
 const rowEmitter = {
@@ -140,22 +139,22 @@ const handleClick = () => {
   if (rowEmitter) {
     rowEmitter.emit('row:click', props.user)
   }
-  const events = gridEvents?.value
+  const events = gridEvents?.value as GridEventsCapability | null
   if (events) {
-    (events as any).emit('row:clicked', props.user)
+    events.emit('row:clicked', props.user)
   }
   logger.info('👆 Row clicked:', props.user.name)
 }
 
 const handleCheckboxChange = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked
-  const sel = selection?.value
+  const sel = selection?.value as SelectionCapability | null
   if (sel) {
     if (checked) {
-      (sel as any).select(props.user.id)
+      sel.select(props.user.id)
       logger.info('✅ Row selected:', props.user.id)
     } else {
-      (sel as any).deselect(props.user.id)
+      sel.deselect(props.user.id)
       logger.info('❌ Row deselected:', props.user.id)
     }
     updateSelectionState()

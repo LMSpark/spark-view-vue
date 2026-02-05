@@ -19,8 +19,8 @@ import type { IDataSet } from '../types'
 export interface AppServices {
   /** Vue Router 实例 */
   router?: {
-    push(to: string | { path: string; query?: Record<string, unknown> }): Promise<void>
-    replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<void>
+    push(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
+    replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
     back(): void
     currentRoute: { value: { path: string; query: Record<string, unknown> } }
   }

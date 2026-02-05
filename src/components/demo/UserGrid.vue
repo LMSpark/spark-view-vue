@@ -33,14 +33,12 @@ import { ref, computed, onMounted } from 'vue'
 import { Spark } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import UserRow from './UserRow.vue'
-
-interface User {
-  id: number
-  name: string
-  age: number
-  email: string
-  status: string
-}
+import type { 
+  User, 
+  AppServicesCapability,
+  AppRouterCapability,
+  AppLoggerCapability
+} from './types'
 
 interface Props {
   config: ComponentConfig
@@ -62,15 +60,13 @@ const {
 const appServices = consume('appServices')
 
 // 便捷访问（类型守卫）
-const appRouter = computed(() => {
-  const services = appServices?.value
-  if (!services) return null
-  return (services as any).router
+const appRouter = computed<AppRouterCapability | null>(() => {
+  const services = appServices?.value as AppServicesCapability | null
+  return services?.router ?? null
 })
-const appLogger = computed(() => {
-  const services = appServices?.value
-  if (!services) return null
-  return (services as any).logger
+const appLogger = computed<AppLoggerCapability | null>(() => {
+  const services = appServices?.value as AppServicesCapability | null
+  return services?.logger ?? null
 })
 
 // 选中的行
