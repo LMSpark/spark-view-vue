@@ -1,27 +1,74 @@
-{
-  "type": "grid",
-  "id": "readonly-grid",
-  "class": "demo-grid readonly",
-  "props": {
-    "title": "只读模式"
-  },
-  "children": [
-    {
-      "type": "container",
-      "class": "grid-header",
-      "children": [
-        {
-          "type": "container",
-          "props": {
-            "text": "👁️ 只读视图 - 无操作按钮"
+[
+  {
+    "type": "div",
+    "class": "demo-grid readonly",
+    "children": [
+      {
+        "type": "div",
+        "class": "grid-header",
+        "children": [
+          {
+            "type": "h3",
+            "children": ["👁️ 只读视图 - 无操作按钮"]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "grid-body",
+        "dataKey": "users",
+        "_loop": {
+          "item": "user",
+          "template": {
+            "type": "div",
+            "class": "user-row",
+            "children": [
+              {
+                "type": "div",
+                "class": "user-field",
+                "children": [
+                  {
+                    "type": "span",
+                    "class": "field-icon",
+                    "children": ["👤"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-label",
+                    "children": ["姓名:"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-value",
+                    "dataKey": "user.name"
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "user-field",
+                "children": [
+                  {
+                    "type": "span",
+                    "class": "field-icon",
+                    "children": ["📧"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-label",
+                    "children": ["邮箱:"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-value",
+                    "dataKey": "user.email"
+                  }
+                ]
+              }
+            ]
           }
         }
-      ]
-    },
-    {
-      "type": "container",
-      "class": "grid-body",
-      "_dynamicChildren": "generateRows"
-    }
-  ]
-}
+      }
+    ]
+  }
+]

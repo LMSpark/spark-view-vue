@@ -1,0 +1,32 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Alice",
+      "age": 28,
+      "email": "alice@example.com",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "name": "Bob",
+      "age": 32,
+      "email": "bob@example.com",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "name": "Charlie",
+      "age": 25,
+      "email": "charlie@example.com",
+      "status": "inactive"
+    },
+    {
+      "id": 4,
+      "name": "Diana",
+      "age": 29,
+      "email": "diana@example.com",
+      "status": "active"
+    }
+  ]
+}

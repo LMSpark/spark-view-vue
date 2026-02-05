@@ -1,40 +1,154 @@
-{
-  "type": "grid",
-  "id": "simple-demo-grid",
-  "class": "demo-grid",
-  "props": {
-    "title": "用户列表"
-  },
-  "children": [
-    {
-      "type": "container",
-      "class": "grid-header",
-      "children": [
-        {
-          "type": "container",
-          "props": {
-            "text": "📋 标准配置 - JSON 驱动"
-          }
-        },
-        {
-          "type": "container",
-          "class": "actions",
-          "children": [
-            {
-              "type": "container",
-              "props": {
-                "text": "🔄 刷新",
-                "action": "refresh"
+[
+  {
+    "type": "div",
+    "class": "demo-grid",
+    "children": [
+      {
+        "type": "div",
+        "class": "grid-header",
+        "children": [
+          {
+            "type": "h3",
+            "children": ["📋 标准配置 - JSON 驱动"]
+          },
+          {
+            "type": "div",
+            "class": "actions",
+            "children": [
+              {
+                "type": "el-button",
+                "props": {
+                  "type": "primary",
+                  "size": "small"
+                },
+                "on": {
+                  "click": "handleRefresh"
+                },
+                "children": ["🔄 刷新"]
+              },
+              {
+                "type": "el-button",
+                "props": {
+                  "type": "success",
+                  "size": "small"
+                },
+                "style": {
+                  "marginLeft": "8px"
+                },
+                "on": {
+                  "click": "handleSelectAll"
+                },
+                "children": ["☑️ 全选"]
               }
-            }
-          ]
+            ]
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "class": "grid-body",
+        "dataKey": "users",
+        "_loop": {
+          "item": "user",
+          "template": {
+            "type": "div",
+            "class": "user-row",
+            "children": [
+              {
+                "type": "div",
+                "class": "user-field",
+                "children": [
+                  {
+                    "type": "span",
+                    "class": "field-icon",
+                    "children": ["👤"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-label",
+                    "children": ["姓名:"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-value",
+                    "dataKey": "user.name"
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "user-field",
+                "children": [
+                  {
+                    "type": "span",
+                    "class": "field-icon",
+                    "children": ["🎂"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-label",
+                    "children": ["年龄:"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-value",
+                    "dataKey": "user.age"
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "user-field",
+                "children": [
+                  {
+                    "type": "span",
+                    "class": "field-icon",
+                    "children": ["📧"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-label",
+                    "children": ["邮箱:"]
+                  },
+                  {
+                    "type": "span",
+                    "class": "field-value",
+                    "dataKey": "user.email"
+                  }
+                ]
+              },
+              {
+                "type": "div",
+                "class": "user-actions",
+                "children": [
+                  {
+                    "type": "el-button",
+                    "props": {
+                      "type": "text",
+                      "size": "small"
+                    },
+                    "on": {
+                      "click": "handleEdit"
+                    },
+                    "children": ["✏️ 编辑"]
+                  },
+                  {
+                    "type": "el-button",
+                    "props": {
+                      "type": "text",
+                      "size": "small"
+                    },
+                    "on": {
+                      "click": "handleDelete"
+                    },
+                    "children": ["🗑️ 删除"]
+                  }
+                ]
+              }
+            ]
+          }
         }
-      ]
-    },
-    {
-      "type": "container",
-      "class": "grid-body",
-      "_dynamicChildren": "generateRows"
-    }
-  ]
-}
+      }
+    ]
+  }
+]

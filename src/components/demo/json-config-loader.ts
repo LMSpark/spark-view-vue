@@ -184,11 +184,11 @@ export function createDefaultInjectors(_users: User[]): FunctionInjectors {
     },
 
     events: {
-      refresh: () => console.log('🔄 刷新'),
-      selectAll: () => console.log('☑️ 全选'),
-      clear: () => console.log('❌ 清空'),
-      editUser: (data) => console.log('✏️ 编辑:', data),
-      deleteUser: (data) => console.log('🗑️ 删除:', data)
+      refresh: () => console.info('🔄 刷新'),
+      selectAll: () => console.info('☑️ 全选'),
+      clear: () => console.info('❌ 清空'),
+      editUser: (data) => console.info('✏️ 编辑:', data),
+      deleteUser: (data) => console.info('🗑️ 删除:', data)
     },
 
     highlights: {
