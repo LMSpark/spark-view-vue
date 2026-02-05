@@ -1,34 +1,29 @@
 # @spark-view/spark-app
 
-SPARK 应用层基础设施包 - 提供应用级上下文、路由守卫、错误处理、初始化流水线、日志系统等公共能力。
+> SPARK 应用层基础设施 - 提供应用上下文、路由守卫、错误处理和日志系统
 
-## 功能模块
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Vue](https://img.shields.io/badge/Vue-3.4-green.svg)](https://vuejs.org/)
 
-### 📦 核心模块
+## 特性
 
-- **Constants** - 符号常量表（错误码、环境、权限等）
-- **AppContext** - 应用级上下文（用户、租户、环境）
-- **Bootstrap** - 应用初始化流水线
-- **Router Guards** - 路由守卫（鉴权、权限检查、预加载）
-- **Error Boundary** - 全局错误处理与降级
-- **Config Manager** - 配置管理（环境变量 + 远程配置）
-- **Logger** - 应用层日志系统（级别、上报、作用域）
-  - ✅ **完全独立实现**，不依赖 spark-core
-  - ✅ 支持多级别（debug、info、warn、error）
-  - ✅ 支持多传输器（console、远程上报）
-  - ✅ 支持作用域隔离（page、api、custom）
+-  **Bootstrap** - 应用初始化流水线
+-  **Router Guards** - 鉴权和权限检查
+-  **Error Boundary** - 全局错误处理
+-  **Config Manager** - 环境变量和远程配置
+-  **Logger** - 多级别、多传输器日志系统
 
 ## 安装
 
-```bash
+\\\ash
 pnpm add @spark-view/spark-app
-```
+\\\
 
 ## 快速开始
 
 ### 1. 初始化应用
 
-```typescript
+\\\	ypescript
 import { createApp } from 'vue'
 import { SparkApp } from '@spark-view/spark-app'
 import App from './App.vue'
@@ -49,151 +44,118 @@ SparkApp.bootstrap({
     console.log('应用即将挂载', context)
   }
 })
-```
+\\\
 
-### 2. 使用 AppContext
+### 2. 使用日志系统
 
-```typescript
-import { useAppContext } from '@spark-view/spark-app'
+\\\	ypescript
+import { Logger } from '@spark-view/spark-app'
 
-// 在组件中使用
-const appContext = useAppContext()
+const logger = Logger.create({
+  level: 'info',
+  transports: [
+    Logger.consoleTransport(),
+    Logger.httpTransport({ url: '/api/logs' })
+  ]
+})
 
-console.log('当前用户:', appContext.user.username)
-console.log('用户权限:', appContext.user.permissions)
-console.log('租户信息:', appContext.tenant.tenantName)
-```
+logger.info('应用启动')
+logger.error('错误信息', { code: 500 })
+\\\
 
-### 3. 路由守卫
+### 3. 配置管理
 
-```typescript
-import { setupRouterGuards } from '@spark-view/spark-app'
+\\\	ypescript
+import { ConfigManager } from '@spark-view/spark-app'
 
-// 自动设置路由守卫（鉴权、权限、预加载）
-setupRouterGuards(router, {
+// 设置配置
+ConfigManager.set('apiUrl', 'https://api.example.com')
+
+// 获取配置
+const apiUrl = ConfigManager.get('apiUrl')
+
+// 批量设置
+ConfigManager.merge({
+  apiUrl: 'https://api.example.com',
+  timeout: 5000
+})
+\\\
+
+### 4. 路由守卫
+
+\\\	ypescript
+import { createAuthGuard } from '@spark-view/spark-app'
+
+// 添加鉴权守卫
+router.beforeEach(createAuthGuard({
   loginPath: '/login',
-  forbiddenPath: '/forbidden',
-  enablePreload: true
+  isAuthenticated: () => !!localStorage.getItem('token')
+}))
+\\\
+
+## 核心模块
+
+### AppContext
+
+应用级上下文（用户、租户、环境）
+
+\\\	ypescript
+import { AppContext } from '@spark-view/spark-app'
+
+const context = AppContext.create({
+  user: { id: 1, name: 'Alice' },
+  tenant: { id: 'tenant-1' },
+  env: 'production'
 })
-```
+\\\
 
-### 4. 错误处理
+### Error Boundary
 
-```typescript
-import { setupErrorHandler } from '@spark-view/spark-app'
+全局错误处理与降级
 
-// 设置全局错误处理
-setupErrorHandler(app, {
-  onError: (error, context) => {
-    console.error('应用错误', error, context)
-  },
-  enableFallback: true
-})
-```
+\\\ue
+<template>
+  <ErrorBoundary @error=&quot;handleError&quot;>
+    <YourComponent />
+  </ErrorBoundary>
+</template>
 
-### 5. 日志系统
+<script setup>
+import { ErrorBoundary } from '@spark-view/spark-app'
 
-```typescript
-import { pageLogger, apiLogger, createAppLogger } from '@spark-view/spark-app'
-
-// 使用预定义的作用域 Logger
-pageLogger.info('页面加载', { pageId: 'home' })
-apiLogger.error('API 请求失败', { url: '/api/users' })
-
-// 创建自定义 Logger
-const customLogger = createAppLogger({
-  level: 'debug',
-  prefix: 'Custom',
-  enableRemote: true
-})
-
-customLogger.success('操作成功')
-```
-
-### 6. 使用符号常量
-
-```typescript
-import {
-  ErrorCodes,
-  getErrorMessage,
-  StorageKeys,
-  getStorageItem,
-  setStorageItem,
-  DefaultConfig,
-  Patterns
-} from '@spark-view/spark-app'
-
-// 错误码
-if (!isAuthenticated) {
-  throw new Error(getErrorMessage(ErrorCodes.AUTH_REQUIRED))
+function handleError(error) {
+  console.error('组件错误:', error)
 }
+</script>
+\\\
 
-// 本地存储
-setStorageItem(StorageKeys.AUTH_TOKEN, 'xxx')
-const token = getStorageItem(StorageKeys.AUTH_TOKEN)
+### Logger 特性
 
-// 默认配置
-const timeout = DefaultConfig.REQUEST_TIMEOUT
+-  完全独立实现（不依赖 spark-core）
+-  多级别：debug、info、warn、error
+-  多传输器：console、HTTP、memory
+-  作用域隔离：page、api、custom
 
-// 正则验证
-if (Patterns.EMAIL.test(email)) {
-  console.log('邮箱格式正确')
+## API 文档
+
+完整 API 文档请查看 [API.md](./API.md)
+
+## 依赖
+
+\\\json
+{
+  &quot;vue&quot;: &quot;^3.4.0&quot;,
+  &quot;vue-router&quot;: &quot;^4.2.0&quot;
 }
-```
+\\\
 
-详见：[符号常量表文档](./src/constants/README.md)
+## 开发命令
 
-## 日志系统架构
-
-### 分层设计
-
-```
-App Logger (spark-app)           ← 应用层：配置、上报、作用域
-    ↓ 使用
-Core Logger (spark-core)         ← 核心层：基础能力、组件内部
-```
-
-### 职责划分
-
-| 特性 | Core Logger | App Logger |
-|-----|------------|------------|
-| 基础日志 | ✅ | ✅ 增强 |
-| 日志级别 | ❌ | ✅ 可配置 |
-| 格式化 | ⚠️ 简单 | ✅ 完整 |
-| 远程上报 | ❌ | ✅ HTTP 传输器 |
-| 作用域 | ❌ | ✅ page/api/router |
-
-详见：[Logger 架构说明](./src/logger/README.md)
-
-详见 [API.md](./API.md)
-
-## 架构设计
-
-### 应用层职责
-
-应用层（L1）是 SPARK 架构的最外层，负责：
-
-1. **应用级上下文管理** - 用户、租户、环境等全局信息
-2. **路由生命周期** - 鉴权、权限检查、预加载
-3. **错误边界** - 统一错误处理与降级策略
-4. **初始化流水线** - 依赖顺序管理、阶段化加载
-5. **全局服务注入** - SparkManager、ModelRegistry 等单例
-
-### 与其他层的关系
-
-```
-L1 Application Layer (spark-app)     ← 本包
-  ↓ 提供 AppContext、Router Guards
-L2 Business Orchestration            ← 业务编排层（页面配置）
-  ↓ 使用 AppContext 进行权限过滤
-L3 Business Model                    ← 模型层
-  ↓
-L4 Data Operation                    ← 操作层
-  ↓
-L5 Interaction Capability            ← 能力层
-  ↓
-L6 Foundation Components             ← 组件层
-```
+\\\ash
+pnpm run typecheck   # 类型检查
+pnpm run test        # 运行测试
+pnpm run build       # 构建包
+\\\
 
 ## License
 

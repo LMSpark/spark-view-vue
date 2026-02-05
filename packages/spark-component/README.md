@@ -1,50 +1,143 @@
-# @spark-view/spark-component (local)
+# @spark-view/spark-component
 
-This package contains the core runtime and utilities used by the SPARK projects.
+> SPARK 组件系统核心 - 提供组件管理、能力系统和生命周期控制
 
-What moved here
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Vue](https://img.shields.io/badge/Vue-3.4-green.svg)](https://vuejs.org/)
 
-- Shared utilities (previously under `shared/utils`) have been migrated into this package to provide a single source-of-truth for core helpers:
-  - Async utilities: `asyncUtils`, `RaceController`
-  - Configuration: `ConfigManager`, `getConfig`, `setConfig`, `clearConfig`
-  - Error handling: `ErrorHandler` helpers (`handleError`, `withRetry`, `AppError`, `ErrorType`)
-  - Logger helpers: `Logger`, `createConsoleTransport`, `createHttpTransport`, `createMemoryTransport`
-  - Provider guidance: Attach providers to component contexts via `useSparkComponent` or `componentManager.registerProvider` (DI-first approach) // global registry removed
+## 特性
 
-Usage example (preferred):
+-  **组件注册** - 统一的组件注册和管理机制
+-  **能力系统** - Provider/Consumer 模式的依赖注入
+-  **懒加载** - 支持动态导入和按需加载
+-  **生命周期** - 完整的组件生命周期管理
+-  **命名空间 API** - 统一的 \Spark\ 命名空间
 
-```ts
+## 安装
+
+\\\ash
+pnpm add @spark-view/spark-component
+\\\
+
+## 快速开始
+
+### 1. 创建管理器
+
+\\\	ypescript
 import { Spark } from '@spark-view/spark-component'
 
-// Create manager instances
+// 创建管理器实例
 const manager = Spark.createComponentManager()
 const registry = Spark.createComponentRegistry()
+\\\
 
-// Register components with unified API
+### 2. 注册组件
+
+\\\	ypescript
+// 静态注册
 Spark.register({
-  type: 'my-component',
-  name: 'My Component',
-  version: '1.0.0',
-  component: MyVueComponent
+  type: 'my-grid',
+  name: 'My Grid',
+  component: MyGridComponent
 })
 
-// Install in Vue app with explicit DI
+// 懒加载注册
+Spark.register({
+  type: 'my-chart',
+  name: 'My Chart',
+  loader: () => import('./MyChartComponent.vue')
+})
+\\\
+
+### 3. 安装插件
+
+\\\	ypescript
+import { createApp } from 'vue'
+
 const app = createApp(App)
-Spark.install(app, { manager, registry })
+app.use(Spark.createVuePlugin({ manager, registry }))
+\\\
 
-// Use in components
+### 4. 使用组件
+
+\\\ue
+<script setup lang=&quot;ts&quot;>
 import { useSparkComponent } from '@spark-view/spark-component'
-const { provide, consume } = useSparkComponent({ type: 'my-component' })
-```
 
-Quick commands (run from repo root or package dir):
+const { provide, consume, whenAvailable } = useSparkComponent({
+  type: 'my-grid'
+})
 
-- pnpm -C packages/spark-core run typecheck  # run TypeScript typecheck
-- pnpm -C packages/spark-core run test       # run unit tests (Vitest)
-- pnpm -C packages/spark-core run build      # build package (tsc)
+// 提供能力
+provide('dataSource', {
+  getData: () => fetchData()
+})
 
-This package is currently built from compiled artifacts copied from the form-create-ssr-app source. We are migrating source files into `packages/spark-core/src` and adding CI to validate the package independently.
+// 消费能力
+const logger = consume('logger')
+\\\
 
-## API Documentation
+## 核心概念
 
-A detailed API reference with usage examples, types, and migration guides is available in [`API.md`](./API.md).
+### 能力系统
+
+组件间通过能力系统通信，避免紧耦合：
+
+\\\	ypescript
+// Provider 提供能力
+provide('columnManager', {
+  addColumn: (col) => columns.value.push(col),
+  removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id)
+})
+
+// Consumer 消费能力
+const columnManager = consume('columnManager')
+whenAvailable('columnManager', (mgr) => {
+  mgr.addColumn({ id: '1', name: 'Name' })
+})
+\\\
+
+### 命名空间 API
+
+所有 API 通过 \Spark\ 命名空间统一访问：
+
+\\\	ypescript
+import { Spark } from '@spark-view/spark-component'
+
+// 组件管理
+Spark.createComponentManager()
+Spark.createComponentRegistry()
+Spark.register({ ... })
+
+// Vue 插件
+Spark.createVuePlugin({ ... })
+Spark.install(app, { ... })
+
+// 类型
+import type { ComponentConfig, CapabilityProvider } from '@spark-view/spark-component'
+\\\
+
+## API 文档
+
+完整 API 文档请查看 [API.md](./API.md)
+
+## 依赖
+
+\\\json
+{
+  &quot;@spark-view/spark-utils&quot;: &quot;workspace:*&quot;,
+  &quot;vue&quot;: &quot;^3.4.0&quot;
+}
+\\\
+
+## 开发命令
+
+\\\ash
+pnpm run typecheck   # 类型检查
+pnpm run test        # 运行测试
+pnpm run build       # 构建包
+\\\
+
+## License
+
+MIT
