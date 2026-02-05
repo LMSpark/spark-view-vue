@@ -15,6 +15,18 @@ export type {
   AppLoggerCapability
 } from './types'
 
+// 导出配置工具
+export {
+  createSimpleConfig,
+  createCustomFieldsConfig,
+  createReadOnlyConfig,
+  createDemoConfig,
+  defaultFields,
+  type RenderNode,
+  type FieldConfig,
+  type GridConfig
+} from './demo-config'
+
 // 注册三个级别的演示组件
 
 // 1. 模型级组件：UserGrid
@@ -70,4 +82,34 @@ console.log('✅ Capability demo components registered:', {
   'user-grid': 'Model Level (模型级)',
   'user-row': 'Instance Level (实例级)',
   'user-field': 'Field Level (字段级)'
+})
+
+// 4. 配置驱动递归渲染器
+Spark.register({
+  type: 'demo-renderer',
+  name: 'DemoRenderer',
+  version: '1.0.0',
+  loader: () => import('./DemoRenderer.vue'),
+  metadata: {
+    description: '递归渲染器 - 根据配置动态渲染组件树',
+    capabilities: {
+      provides: [],
+      consumes: []
+    }
+  }
+})
+
+// 5. 配置驱动演示组件
+Spark.register({
+  type: 'config-driven-demo',
+  name: 'ConfigDrivenDemo',
+  version: '1.0.0',
+  loader: () => import('./ConfigDrivenDemo.vue'),
+  metadata: {
+    description: '配置驱动演示 - 完全由配置文件驱动的组件渲染',
+    capabilities: {
+      provides: ['appServices'],
+      consumes: []
+    }
+  }
 })
