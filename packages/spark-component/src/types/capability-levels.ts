@@ -16,7 +16,7 @@
  *            沙箱（访问能力 + 控制组件）
  */
 
-import type { IModelPermission, IInstancePermission, DataRow, FieldVisibility } from './permission'
+import type { IModelPermission, IInstancePermission, DataRow, FieldVisibility } from '@spark-view/spark-utils'
 
 // ==================== 沙箱能力接口 ====================
 

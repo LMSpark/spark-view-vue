@@ -27,8 +27,7 @@
         "prepare": "npm run build"
     },
     "dependencies": {
-        "@spark-view/spark-utils": "workspace:*",
-        "@spark-view/spark-data": "workspace:*"
+        "@spark-view/spark-utils": "workspace:*"
     },
     "devDependencies": {
         "@types/node": "^18.19.130",

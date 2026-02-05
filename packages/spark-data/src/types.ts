@@ -2,22 +2,21 @@
  * SPARK 数据空间类型定义
  * 
  * ⚠️ 重要：这是所有数据类型的唯一定义源
- * - DataRow, DataTable, DataSet, BindingContext 等基础数据类型在此定义
+ * - DataTable, DataSet, BindingContext 等高级数据类型在此定义
+ * - DataRow 等基础类型从 spark-utils 导入
  * - 其他包（spark-app, spark-component）只能导入使用，不能重新定义
  * - 保持数据类型系统的一致性和可维护性
  * 
  * 参考：https://ligh60.blog.csdn.net/article/details/150585411
  */
 
-// ==================== 基础类型 ====================
+// 导入基础类型
+import type { DataRow } from '@spark-view/spark-utils'
 
-/**
- * 数据行：键值对结构（纯数据，无权限）
- * 
- * 这是最基础的数据行定义，不包含权限信息
- * 如需权限支持，使用 WithInstancePermission<DataRow>
- */
-export type DataRow<T = unknown> = Record<string, T>
+// 重新导出以保持兼容性
+export type { DataRow } from '@spark-view/spark-utils'
+
+// ==================== 基础类型 ====================
 
 /**
  * 数据绑定上下文接口（纯数据结构，可序列化）

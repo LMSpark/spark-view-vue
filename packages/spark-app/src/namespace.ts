@@ -28,18 +28,17 @@ import { createAppContext, useAppContext } from './context/AppContext'
  * @example
  * ```ts
  * // main.ts - 显式导入各层
- * import { SparkApp } from '@spark-view/spark-app'        // L1
- * import { SparkPageConfig } from '@spark-view/spark-page-config' // L2
- * import { Spark } from '@spark-view/spark-component'          // L4-L6
+ * import { SparkApp } from '@spark-view/spark-app'        // L1 应用层
+ * import { SparkPageConfig } from '@spark-view/spark-page-config' // L2 配置层
+ * // 其他层级包按需在主应用中导入
  * 
- * // 使用 L1 功能
+ * // 使用应用层功能
  * await SparkApp.bootstrap({ app, router, config })
  * 
- * // 使用 L2 功能
+ * // 使用配置层功能
  * const loader = SparkPageConfig.createConfigLoader()
  * 
- * // 使用 L4-L6 功能
- * const manager = Spark.createComponentManager()
+ * // 其他功能在主应用中按需组合使用
  * ```
  */
 export const SparkApp = {
