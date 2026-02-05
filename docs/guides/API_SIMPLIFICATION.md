@@ -44,7 +44,50 @@ Spark.registerAll([
 const { context, provide, consume } = Spark.useComponent(config)
 ```
 
-### 2. 内部 API（不推荐直接使用）
+### 2. 组件开发者 API（能力系统）
+
+用于开发组件时注册能力提供者和消费者：
+
+```typescript
+import { Spark } from '@spark-view/spark-component'
+
+// ✅ 在组件中提供能力
+const { provide, provideEvents } = Spark.useComponent(config)
+
+// 提供数据能力
+provide('dataSource', {
+  getData: () => fetchData(),
+  updateData: (data) => updateData(data)
+})
+
+// 提供事件能力
+const eventProvider = provideEvents('myEvents')
+eventProvider.on('dataChanged', (data) => {
+  console.log('数据变化:', data)
+})
+
+// ✅ 在组件中消费能力
+const { consume, consumeEvents } = Spark.useComponent(config)
+
+// 消费数据能力
+const dataSource = consume('dataSource')
+if (dataSource) {
+  const data = dataSource.getData()
+}
+
+// 消费事件能力
+const eventProvider = consumeEvents('myEvents', {
+  dataChanged: (data) => {
+    console.log('收到事件:', data)
+  }
+})
+
+// ✅ 访问能力管理器（高级用法）
+const capabilityManager = Spark.capabilities()
+capabilityManager.registerConnector('myConnector', new MyConnector())
+```
+
+### 3. 内部 API（不推荐直接使用）
 
 仅用于高级场景或内部实现：
 
@@ -52,7 +95,6 @@ const { context, provide, consume } = Spark.useComponent(config)
 // ⚠️ 高级用法 - 访问内部管理器
 const manager = Spark._manager()
 const registry = Spark._registry()
-const capabilities = Spark._capabilities()
 
 // ⚠️ 高级用法 - 创建独立实例
 const customManager = Spark.createComponentManager()
@@ -224,6 +266,10 @@ const customManager = Spark.createComponentManager()
 
 ## 总结
 
-- ✅ 业务 API：`install`、`register`、`registerAll`、`useComponent`
-- ⚠️ 内部 API：`_manager`、`_registry`、`_capabilities`（带 `_` 前缀）
-- 🎯 设计目标：让业务开发者专注于业务逻辑，而不是框架内部实现
+- ✅ **业务 API**：`install`、`register`、`registerAll`、`useComponent`
+- ✅ **组件开发 API**：`capabilities()` - 用于组件开发时注册能力
+- ⚠️ **内部 API**：`_manager`、`_registry`（带 `_` 前缀）
+- 🎯 **设计目标**：
+  - 让业务开发者专注于业务逻辑
+  - 让组件开发者方便地使用能力系统
+  - 隐藏框架内部实现细节

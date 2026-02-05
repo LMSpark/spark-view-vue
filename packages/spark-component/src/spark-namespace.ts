@@ -42,6 +42,13 @@ export const Spark: {
   nameToType: typeof nameToType
   
   // ========================================
+  // 组件开发 API（能力系统）
+  // ========================================
+  
+  /** 获取能力管理器（用于组件开发时注册能力提供者/消费者） */
+  capabilities: () => typeof capabilityManager
+  
+  // ========================================
   // Composables & Components
   // ========================================
   
@@ -58,9 +65,6 @@ export const Spark: {
   
   /** @internal 获取组件管理器（仅用于内部或高级场景） */
   _manager: () => typeof componentManager
-  
-  /** @internal 获取能力管理器（仅用于内部或高级场景） */
-  _capabilities: () => typeof capabilityManager
   
   /** @internal 获取组件注册器（仅用于内部或高级场景） */
   _registry: () => typeof componentRegistry
@@ -154,6 +158,12 @@ export const Spark: {
   nameToType,
   
   // ========================================
+  // 组件开发 API
+  // ========================================
+  
+  capabilities: () => capabilityManager,
+  
+  // ========================================
   // Composables & Components
   // ========================================
   
@@ -166,7 +176,6 @@ export const Spark: {
   // ========================================
   
   _manager: () => componentManager,
-  _capabilities: () => capabilityManager,
   _registry: () => componentRegistry,
   
   registerSparkComponent(input) {
