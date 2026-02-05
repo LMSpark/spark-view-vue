@@ -1,425 +1,179 @@
 # @spark-view/spark-page-config
 
-> ⚠️ **注意**：文档中提到的 `DynamicPage` 组件已废弃，请使用 `@spark-view/spark-renderer` 包的 `PageRenderer` 组件替代。
+> SPARK 页面配置层 - 支持本地/远程配置加载、动态路由和配置验证
 
-SPARK 页面配置层（L2 业务编排层）- 支持本地/远程配置加载、动态路由注册、配置缓存和验证。
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Vue](https://img.shields.io/badge/Vue-3.4-green.svg)](https://vuejs.org/)
 
-## 📦 功能特性
+## 特性
 
-- ✅ **多源加载** - 支持本地（SPA）/远程（API）/混合模式
-- ✅ **动态路由** - 运行时注册路由，支持懒加载
-- ✅ **配置缓存** - 内存缓存，可配置过期时间
-- ✅ **配置验证** - Schema 验证，确保配置正确性
-- ✅ **脚本沙箱** - 安全执行页面脚本
-- ✅ **热更新** - 支持配置刷新
-- ✅ **L1 集成** - 完整对接应用层 Logger、Constants、ErrorCodes
+-  **多源加载** - 本地（SPA）/远程（API）/混合模式
+-  **动态路由** - 运行时注册路由，支持懒加载
+-  **配置缓存** - 内存缓存，可配置过期时间
+-  **配置验证** - Schema 验证，确保配置正确
+-  **脚本沙箱** - 安全执行页面脚本
+-  **热更新** - 支持配置刷新
 
-## 🔗 与 L1 的集成
+## 安装
 
-L2 (spark-page-config) 依赖 L1 (spark-app) 提供的基础设施：
+\\\ash
+pnpm add @spark-view/spark-page-config
+\\\
 
-- **Logger 系统** - 使用 `pageLogger` 和 `routerLogger` 记录日志
-- **符号常量** - 使用 `DefaultConfig`、`ErrorCodes`、`StorageKeys`
-- **错误处理** - 统一的错误码和错误消息
-- **权限过滤** - 通过 `beforeRegister` 钩子集成 L1 的权限系统
+## 快速开始
 
-详细集成说明请参阅 [INTEGRATION.md](./INTEGRATION.md)。
+### 1. 配置文件结构
 
-## 📁 配置文件结构
-
-```
+\\\
 public/pages-config/
-├── routes.json           # 路由配置
-└── <pageId>/
-    ├── rule.json         # 页面规则（组件树）
-    ├── pagedata.json     # 页面数据
-    └── script.js         # 页面脚本（可选）
-```
+ routes.json           # 路由配置
+ <pageId>/
+     rule.json         # 页面规则（组件树）
+     pagedata.json     # 页面数据
+     script.js         # 页面脚本（可选）
+\\\
 
-### routes.json
-```json
+### 2. 路由配置 (routes.json)
+
+\\\json
 [
   {
-    "path": "/home",
-    "name": "home",
-    "pageId": "home",
-    "meta": {
-      "title": "首页",
-      "icon": "🏠",
-      "requiresAuth": true,
-      "permissions": ["home:view"]
+    &quot;path&quot;: &quot;/home&quot;,
+    &quot;name&quot;: &quot;home&quot;,
+    &quot;pageId&quot;: &quot;home&quot;,
+    &quot;meta&quot;: {
+      &quot;title&quot;: &quot;首页&quot;,
+      &quot;icon&quot;: &quot;&quot;,
+      &quot;requiresAuth&quot;: true
     }
   }
 ]
-```
+\\\
 
-### rule.json
-```json
-[
-  {
-    "type": "div",
-    "class": "page-container",
-    "children": [
-      {
-        "type": "el-button",
-        "props": {
-          "type": "primary"
-        },
-        "on": {
-          "click": "handleClick"
-        },
-        "children": ["点击我"]
-      }
-    ]
-  }
-]
-```
+### 3. 页面规则 (rule.json)
 
-### pagedata.json
-```json
+\\\json
 {
-  "title": "欢迎",
-  "users": [
-    { "id": 1, "name": "张三" }
+  &quot;type&quot;: &quot;container&quot;,
+  &quot;id&quot;: &quot;root&quot;,
+  &quot;children&quot;: [
+    {
+      &quot;type&quot;: &quot;spark-ej2-grid&quot;,
+      &quot;id&quot;: &quot;userGrid&quot;,
+      &quot;props&quot;: {
+        &quot;dataSource&quot;: &quot;@{dataSet.Users}&quot;
+      }
+    }
   ]
 }
-```
+\\\
 
-### script.js
-```javascript
-// ES6 模块导出
-export function handleClick() {
-  alert('按钮被点击')
-}
+### 4. 使用配置加载器
 
-export function onMounted() {
-  console.log('页面加载完成')
-}
-```
+\\\	ypescript
+import { ConfigLoader } from '@spark-view/spark-page-config'
 
-## 🚀 快速开始
-
-### 1. 安装
-
-```bash
-pnpm add @spark-view/spark-page-config
-```
-
-### 2. SPA 模式（本地配置）
-
-```typescript
-import { createRouter, createWebHistory } from 'vue-router'
-import { SparkPageConfig } from '@spark-view/spark-page-config'
-import DynamicPage from './DynamicPage.vue'
-
-// 创建配置加载器
-const configLoader = SparkPageConfig.createLoader({
-  source: 'local',            // 本地模式
-  localPrefix: '/pages-config'
+// 创建加载器
+const loader = new ConfigLoader({
+  mode: 'local',  // 'local' | 'remote' | 'hybrid'
+  basePath: '/pages-config',
+  cache: true
 })
 
-// 创建路由
-const router = createRouter({
-  history: createWebHistory(),
-  routes: []
+// 加载路由配置
+const routes = await loader.loadRoutes()
+
+// 加载页面配置
+const pageConfig = await loader.loadPageConfig('home')
+\\\
+
+### 5. 动态路由注册
+
+\\\	ypescript
+import { registerDynamicRoutes } from '@spark-view/spark-page-config'
+import { createRouter } from 'vue-router'
+
+const router = createRouter({ ... })
+
+// 注册动态路由
+await registerDynamicRoutes(router, {
+  loader,
+  beforeRegister: (route) => {
+    // 过滤或修改路由
+    return checkPermission(route)
+  }
 })
+\\\
 
-// 设置动态路由
-await SparkPageConfig.setupRoutes(
-  router,
-  configLoader,
-  DynamicPage  // 动态页面组件
-)
-
-app.use(router)
-```
-
-### 3. SSR/API 模式（远程配置）
-
-```typescript
-const configLoader = SparkPageConfig.createLoader({
-  source: 'remote',              // 远程模式
-  apiBaseUrl: '/api',
-  enableCache: true,
-  cacheExpiry: 5 * 60 * 1000     // 5分钟
-})
-
-await SparkPageConfig.setupRoutes(router, configLoader, DynamicPage)
-```
-
-### 4. 混合模式（优先远程，降级本地）
-
-```typescript
-const configLoader = SparkPageConfig.createLoader({
-  source: 'hybrid',              // 混合模式
-  apiBaseUrl: '/api',
-  localPrefix: '/pages-config',
-  timeout: 3000                  // 3秒超时
-})
-```
-
-## 📖 API 文档
+## 核心 API
 
 ### ConfigLoader
 
-#### 创建加载器
+配置加载器
 
-```typescript
-const loader = SparkPageConfig.createLoader({
-  source: 'local' | 'remote' | 'hybrid',
-  apiBaseUrl: '/api',
-  localPrefix: '/pages-config',
-  enableCache: true,
-  cacheExpiry: 300000,
-  enableValidation: false,
-  timeout: 10000
-})
-```
-
-#### 加载配置
-
-```typescript
-// 加载路由配置
-const result = await loader.loadRoutes()
-if (result.success) {
-  console.log(result.data)  // RouteConfig[]
-}
-
-// 加载页面配置（包含 rule + data + script）
-const pageResult = await loader.loadPageConfig('home')
-if (pageResult.success) {
-  const { rule, data, script } = pageResult.data
-}
-
-// 加载单独配置
-await loader.loadRule('home')
-await loader.loadPageData('home')
-await loader.loadScript('home')
-```
-
-#### 缓存管理
-
-```typescript
-// 清除所有缓存
-loader.clearCache()
-
-// 清除特定缓存
-loader.clearCache('routes')
-loader.clearCache('page:home')
-
-// 获取缓存统计
-const stats = loader.getCacheStats()
-console.log(stats.size, stats.keys)
-```
-
-### DynamicRouter
-
-#### 创建路由管理器
-
-```typescript
-const dynamicRouter = SparkPageConfig.createRouter({
-  router,           // Vue Router 实例
-  configLoader,     // ConfigLoader 实例
-  pageComponent     // 动态页面组件
-})
-```
-
-#### 路由操作
-
-```typescript
-// 注册所有路由
-await dynamicRouter.registerRoutes()
-
-// 注册单个路由
-await dynamicRouter.registerRoute({
-  path: '/new-page',
-  name: 'new-page',
-  pageId: 'new-page'
+\\\	ypescript
+const loader = new ConfigLoader({
+  mode: 'local',           // 加载模式
+  basePath: '/config',     // 基础路径
+  cache: true,             // 启用缓存
+  cacheTTL: 60000          // 缓存过期时间（毫秒）
 })
 
-// 移除路由
-dynamicRouter.removeRoute('new-page')
+// 加载方法
+await loader.loadRoutes()                    // 加载路由
+await loader.loadPageConfig(pageId)          // 加载页面配置
+await loader.loadPageRule(pageId)            // 加载页面规则
+await loader.loadPageData(pageId)            // 加载页面数据
+await loader.loadPageScript(pageId)          // 加载页面脚本
 
-// 刷新路由（重新加载配置）
-await dynamicRouter.refreshRoutes()
-
-// 获取已注册路由
-const routes = dynamicRouter.getRegisteredRoutes()
-```
+// 缓存管理
+loader.clearCache()                          // 清空缓存
+loader.refreshConfig(pageId)                 // 刷新指定配置
+\\\
 
 ### 配置验证
 
-```typescript
-import { SparkPageConfig } from '@spark-view/spark-page-config'
+\\\	ypescript
+import { validatePageConfig } from '@spark-view/spark-page-config'
 
-// 验证单个路由
-const errors = SparkPageConfig.validate.route(routeConfig)
-if (errors.length > 0) {
-  console.error('路由配置错误:', errors)
+const result = validatePageConfig(config)
+if (!result.valid) {
+  console.error('配置无效:', result.errors)
 }
+\\\
 
-// 验证所有路由
-const errorMap = SparkPageConfig.validate.routes(routes)
-errorMap.forEach((errors, path) => {
-  console.error(`${path}: `, errors)
-})
+## 与 L1 (spark-app) 集成
 
-// 验证规则配置
-const ruleErrors = SparkPageConfig.validate.rule(ruleConfig)
+本包依赖 [spark-app](../spark-app/README.md) 提供的基础设施：
 
-// 验证页面数据
-const dataErrors = SparkPageConfig.validate.pageData(pageData)
-```
+- **Logger** - 使用 \pageLogger\ 和 \outerLogger\
+- **符号常量** - 使用 \DefaultConfig\、\ErrorCodes\
+- **错误处理** - 统一错误码和消息
+- **权限过滤** - 通过 \eforeRegister\ 钩子集成
 
-## 🔧 高级用法
+详细集成说明请查阅 [INTEGRATION.md](./INTEGRATION.md)。
 
-### 自定义配置转换
+## API 文档
 
-```typescript
-const dynamicRouter = SparkPageConfig.createRouter({
-  router,
-  configLoader,
-  pageComponent,
-  
-  // 路由注册前转换
-  beforeRegister: async (routes) => {
-    // 过滤没有权限的路由
-    return routes.filter(route => 
-      hasPermission(route.meta?.permissions)
-    )
-  },
-  
-  // 路由注册后回调
-  afterRegister: (routes) => {
-    console.log('已注册路由:', routes.length)
-  }
-})
-```
+完整 API 文档请查看 [API.md](./API.md)
 
-### 配置热更新
+## 依赖
 
-```typescript
-// 监听配置更新事件（WebSocket）
-socket.on('config-update', async () => {
-  // 清除缓存并刷新路由
-  await dynamicRouter.refreshRoutes()
-  console.log('路由配置已更新')
-})
-```
-
-### 自定义加载器
-
-```typescript
-class CustomConfigLoader implements ConfigLoader {
-  async loadRoutes() {
-    // 自定义加载逻辑
-    const data = await myCustomFetch('/routes')
-    return { success: true, data }
-  }
-  
-  // ... 实现其他方法
-}
-```
-
-## 🌐 服务端 API 规范
-
-### 路由配置接口
-
-```
-GET /api/routes
-Response: RouteConfig[]
-```
-
-### 页面配置接口
-
-```
-GET /api/page/:pageId/rule
-Response: RuleConfig[]
-
-GET /api/page/:pageId/data
-Response: PageDataConfig
-
-GET /api/page/:pageId/script
-Response: string (JavaScript code)
-```
-
-### 标准响应格式
-
-```json
+\\\json
 {
-  "code": 200,
-  "data": { ... },
-  "message": "success"
+  &quot;@spark-view/spark-app&quot;: &quot;workspace:*&quot;,
+  &quot;vue-router&quot;: &quot;^4.2.0&quot;
 }
-```
+\\\
 
-## 📝 类型定义
+## 开发命令
 
-```typescript
-interface RouteConfig {
-  path: string
-  name: string
-  pageId: string
-  meta?: {
-    title?: string
-    icon?: string
-    requiresAuth?: boolean
-    permissions?: string[]
-    [key: string]: any
-  }
-}
+\\\ash
+pnpm run typecheck   # 类型检查
+pnpm run test        # 运行测试
+pnpm run build       # 构建包
+\\\
 
-interface RuleConfig {
-  type: string
-  props?: Record<string, any>
-  children?: (RuleConfig | string)[]
-  style?: Record<string, any>
-  class?: string | string[]
-  on?: Record<string, string>
-  slots?: Record<string, RuleConfig[]>
-}
-
-interface PageConfig {
-  pageId: string
-  rule: RuleConfig[]
-  data: PageDataConfig
-  script?: PageScriptConfig
-}
-```
-
-## 🏗️ 架构说明
-
-### L2 业务编排层职责
-
-1. **配置加载** - 从本地/远程加载页面配置
-2. **配置解析** - 将配置转换为运行时数据
-3. **路由注册** - 动态注册页面路由
-4. **配置缓存** - 提高加载性能
-5. **配置验证** - 确保配置正确性
-
-### 与其他层的关系
-
-```
-L1 Application Layer (spark-app)
-  ↓ 提供 Router、AppContext
-L2 Business Orchestration (spark-page-config)  ← 本包
-  ↓ 提供 PageConfig、DynamicRouter
-L3 Model Layer
-  ↓ 使用 PageConfig 渲染页面
-L4-L6 Operation/Capability/Component Layers
-```
-
-## 📚 示例项目
-
-查看 [examples/](../../examples/) 目录获取完整示例：
-- SPA 单页应用示例
-- SSR 服务端渲染示例
-- 混合模式示例
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 📄 License
+## License
 
 MIT
