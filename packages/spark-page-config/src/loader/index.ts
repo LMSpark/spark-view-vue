@@ -310,7 +310,7 @@ export class PageConfigLoader implements ConfigLoader {
           return result.data
         }
         pageLogger.error('API返回错误', { url, code: result.code, message: result.message })
-        throw new Error(result.message || getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED))
+        throw new Error(result.message ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED))
       }
 
       pageLogger.debug('远程加载成功', { url })

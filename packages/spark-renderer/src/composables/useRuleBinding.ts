@@ -39,7 +39,7 @@ export interface UseRuleBindingOptions {
  */
 export function useRuleBinding(options: UseRuleBindingOptions) {
   const { originalRules, pageData, pageFunctions, dataSet, formApi } = options
-  const boundRules = ref<Rule[]>([]) as Ref<Rule[]>
+  const boundRules = ref<Rule[]>([])
   
   const rebindRules = () => {
     if (!originalRules.value || originalRules.value.length === 0) {

@@ -12,8 +12,13 @@ export default [
       'packages/**/dist/**',  // 排除所有dist目录
       'API_SIMPLIFICATION_EXAMPLE.ts',
       'packages/spark-core/tests/**',
+      'packages/**/tests/**',  // 排除所有包的测试文件
+      'tests/**',  // 排除根目录测试文件
+      'tools/**',  // 排除工具文件
+      'examples/**',  // 排除示例文件
       'dist/**',
       'node_modules/**',
+      'vite.config.ts',
       'vitest.config.ts',
       'mocks/**',  // Mock 数据不参与 lint 检查
       '.vitepress/**'  // VitePress配置不参与lint
@@ -53,7 +58,7 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: false,  // 禁用project以避免解析错误
+        project: './tsconfig.typecheck.json',
         ecmaVersion: 2020,
         sourceType: 'module'
       },
@@ -70,17 +75,16 @@ export default [
         ]
       }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'error', // 禁止使用 any
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-var-requires': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'error', // 禁止非空断言
-      // 以下规则需要type information，在project: false时不可用
-      // '@typescript-eslint/no-unnecessary-type-assertion': 'error',
-      // '@typescript-eslint/prefer-optional-chain': 'warn',
-      // '@typescript-eslint/prefer-nullish-coalescing': 'warn',
-      // '@typescript-eslint/no-floating-promises': 'error',
-      // '@typescript-eslint/await-thenable': 'error',
-      '@typescript-eslint/explicit-function-return-type': 'off', // 关闭，TypeScript 推断足够
-      '@typescript-eslint/explicit-module-boundary-types': 'off', // 关闭，TypeScript 推断足够
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      '@typescript-eslint/prefer-optional-chain': 'warn',
+      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
       'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
       'no-debugger': 'error',
       'prefer-const': 'error',

@@ -104,9 +104,7 @@ class AppEventBus extends EventEmitter<AppEvents> {
    * 获取单例实例
    */
   static getInstance(): AppEventBus {
-    if (!AppEventBus.instance) {
-      AppEventBus.instance = new AppEventBus()
-    }
+    AppEventBus.instance ??= new AppEventBus()
     return AppEventBus.instance
   }
 

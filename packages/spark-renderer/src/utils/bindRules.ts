@@ -85,7 +85,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       
       // 绑定数据到 props.data
       if (value !== undefined) {
-        if (!newRule.props) newRule.props = {}
+        newRule.props ??= {}
         newRule.props.data = value
       }
       
@@ -189,17 +189,13 @@ function injectTableEvents(
   if (tablesIndex === -1 || !dataKeyParts[tablesIndex + 1]) return
   
   const tableName = dataKeyParts[tablesIndex + 1]
-  const contextId = (rule as Rule & { contextId?: string }).contextId || rule.props?.contextId || 'default'
+  const contextId = (rule).contextId ?? rule.props?.contextId ?? 'default'
   
   // 添加唯一的 name 属性
-  if (!rule.name) {
-    rule.name = `table_${tableName}_${contextId}`
-  }
+  rule.name ??= `table_${tableName}_${contextId}`
   
   // 确保 on 对象存在
-  if (!rule.on) {
-    rule.on = {}
-  }
+  rule.on ??= {}
   
   // 注入 currentChange 事件（单选行变化）
   const originalCurrentChange = rule.on['currentChange']
@@ -210,16 +206,16 @@ function injectTableEvents(
       isProcessingEvent = true
       
       // 先调用用户处理器
-      if (originalCurrentChange && typeof originalCurrentChange === 'function') {
+      if (typeof originalCurrentChange === 'function') {
         originalCurrentChange(currentRow, oldRow)
       }
       
       // 同步到 DataSet
-      if (dataSet && dataSet.tables && tableName && contextId) {
+      if (dataSet?.tables?.[tableName] && contextId) {
         const table = dataSet.tables[tableName]
         const context = table?.contexts?.[String(contextId)] as BindingContext | undefined
         if (context?.setCurrentRow) {
-          context.setCurrentRow(currentRow || null, false)
+          context.setCurrentRow(currentRow ?? null, false)
         }
       }
     } finally {
@@ -236,12 +232,12 @@ function injectTableEvents(
       isProcessingEvent = true
       
       // 先调用用户处理器
-      if (originalSelectionChange && typeof originalSelectionChange === 'function') {
+      if (typeof originalSelectionChange === 'function') {
         originalSelectionChange(selection)
       }
       
       // 同步到 DataSet
-      if (dataSet && dataSet.tables && tableName && contextId) {
+      if (dataSet?.tables?.[tableName] && contextId) {
         const table = dataSet.tables[tableName]
         const context = table?.contexts?.[String(contextId)] as BindingContext | undefined
         if (context?.setSelectedRows) {
@@ -282,7 +278,7 @@ export function syncSelectedRowsToTable(
   rows: DataRow[],
   formApi: FormCreateAPI | null
 ): void {
-  nextTick(() => {
+  void nextTick(() => {
     if (formApi && typeof formApi.el === 'function') {
       const componentName = `table_${tableName}_${contextId}`
       const tableComponent = formApi.el(componentName) as ElTableComponent | null

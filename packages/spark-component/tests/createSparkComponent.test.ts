@@ -23,7 +23,7 @@ describe('Spark Component Creation APIs', () => {
       const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
       try {
         ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
-        Spark.register(Comp as unknown as unknown)
+        Spark.register(Comp as unknown)
       } finally { (Spark as unknown as { manager?: () => unknown }).manager = prevManager }
 
       expect(registry.has('unified-type')).toBe(true)
@@ -89,7 +89,7 @@ describe('Spark Component Creation APIs', () => {
         expect(registry.has('manual-register-type')).toBe(false)
 
         // Manual registration should work
-        Spark.register(Comp as unknown as unknown)
+        Spark.register(Comp as unknown)
         expect(registry.has('manual-register-type')).toBe(true)
       } finally {
         ;(Spark as unknown as { manager?: () => unknown }).manager = prevManager
@@ -106,13 +106,13 @@ describe('Spark Component Creation APIs', () => {
         name: 'template',
         version: '1.0.0',
         template: ({ config }, { isDisabled }) =>
-          `<button disabled="${isDisabled}" class="btn-${config.props?.variant || 'primary'}">${config.props?.label || 'Default'}</button>`
+          `<button disabled="${isDisabled}" class="btn-${config.props?.variant ?? 'primary'}">${config.props?.label ?? 'Default'}</button>`
       })
 
       const prevManager = (Spark as unknown as { manager?: () => unknown }).manager
       try {
         ;(Spark as unknown as { manager?: () => unknown }).manager = () => manager
-        Spark.register(Comp as unknown as unknown)
+        Spark.register(Comp as unknown)
       } finally { (Spark as unknown as { manager?: () => unknown }).manager = prevManager }
 
       expect(registry.has('template-type')).toBe(true)

@@ -30,13 +30,13 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       logPhase('AUTH-INIT', '初始化认证服务')
       authService.initialize({
         ...auth,
-        apiBaseUrl: auth.apiBaseUrl || appConfig.apiBaseUrl,
+        apiBaseUrl: auth.apiBaseUrl ?? appConfig.apiBaseUrl,
         enableMock: auth.enableMock ?? appConfig.enableMock
       })
       
       // 注册登录路由（如果提供了 loginComponent）
       if (auth.loginComponent) {
-        const loginPath = auth.loginPath || '/login'
+        const loginPath = auth.loginPath ?? '/login'
         router.addRoute({
           path: loginPath,
           name: 'login',
@@ -118,7 +118,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // 阶段 5: 设置路由守卫
     logPhase('ROUTER', '配置路由守卫')
     setupRouterGuards(router, {
-      loginPath: auth?.loginPath || '/login',
+      loginPath: auth?.loginPath ?? '/login',
       forbiddenPath: '/forbidden',
       enablePreload: true
     })
@@ -208,7 +208,7 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
       env: {
         mode: 'development',
         apiBaseUrl: config.apiBaseUrl,
-        version: config.version || '0.1.0'
+        version: config.version ?? '0.1.0'
       },
       config: {},
       initializedAt: new Date().toISOString()

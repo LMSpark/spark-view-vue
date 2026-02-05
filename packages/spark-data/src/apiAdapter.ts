@@ -64,7 +64,7 @@ export class ApiAdapter {
     const fullUrl = this.context.baseURL + url
     
     // 3. 拼接查询参数（GET/DELETE 方法）
-    const method = endpoint.method || 'GET'
+    const method = endpoint.method ?? 'GET'
     if ((method === 'GET' || method === 'DELETE') && Object.keys(remainingParams).length > 0) {
       const query = new URLSearchParams(
         Object.entries({ ...endpoint.queryParams, ...remainingParams })
@@ -115,8 +115,8 @@ export class ApiAdapter {
     data?: unknown
     headers?: Record<string, string>
   } {
-    const actualParams = params || {}
-    const method = (endpoint.method || 'GET') as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+    const actualParams = params ?? {}
+    const method = (endpoint.method ?? 'GET')
     
     // 移除路径参数后的剩余参数
     const remainingParams: Record<string, unknown> = { ...actualParams }

@@ -73,7 +73,7 @@ export class AuthService implements IAuthService {
           body: JSON.stringify(credentials),
           credentials: 'include'
         },
-        this.config.timeout || 10000
+        this.config.timeout ?? 10000
       )
 
       if (!response.ok) {
@@ -118,7 +118,7 @@ export class AuthService implements IAuthService {
             headers: this.getAuthHeaders(),
             credentials: 'include'
           },
-          this.config.timeout || 10000
+          this.config.timeout ?? 10000
         )
       }
 
@@ -163,7 +163,7 @@ export class AuthService implements IAuthService {
           headers: this.getAuthHeaders(),
           credentials: 'include'
         },
-        this.config.timeout || 10000
+        this.config.timeout ?? 10000
       )
 
       if (!response.ok) {
@@ -228,7 +228,7 @@ export class AuthService implements IAuthService {
           headers: this.getAuthHeaders(),
           credentials: 'include'
         },
-        this.config.timeout || 10000
+        this.config.timeout ?? 10000
       )
 
       if (!response.ok) {
@@ -294,7 +294,7 @@ export class AuthService implements IAuthService {
     const env = envAdapter.getEnvironment()
 
     return {
-      user: this.config.mockUser || {
+      user: this.config.mockUser ?? {
         userId: 'mock-user-001',
         username: credentials.username,
         displayName: '模拟用户',
@@ -302,14 +302,14 @@ export class AuthService implements IAuthService {
         roles: ['user', 'admin'],
         permissions: ['read', 'write', 'delete', 'home:view']
       },
-      tenant: this.config.mockTenant || {
+      tenant: this.config.mockTenant ?? {
         tenantId: 'mock-tenant-001',
         tenantName: '模拟租户',
         config: {}
       },
       env: {
         mode: (env.isClient ? 'development' : 'production') as AppEnvironment,
-        apiBaseUrl: this.config.apiBaseUrl || '',
+        apiBaseUrl: this.config.apiBaseUrl ?? '',
         version: '1.0.0'
       },
       token: 'mock-token-' + Date.now()
@@ -322,7 +322,7 @@ export class AuthService implements IAuthService {
     const env = envAdapter.getEnvironment()
 
     return {
-      user: this.config.mockUser || {
+      user: this.config.mockUser ?? {
         userId: 'mock-user-001',
         username: 'admin',
         displayName: '管理员',
@@ -330,14 +330,14 @@ export class AuthService implements IAuthService {
         roles: ['user', 'admin'],
         permissions: ['read', 'write', 'delete', 'home:view']
       },
-      tenant: this.config.mockTenant || {
+      tenant: this.config.mockTenant ?? {
         tenantId: 'mock-tenant-001',
         tenantName: '默认租户',
         config: {}
       },
       env: {
         mode: (env.isClient ? 'development' : 'production') as AppEnvironment,
-        apiBaseUrl: this.config.apiBaseUrl || '',
+        apiBaseUrl: this.config.apiBaseUrl ?? '',
         version: '1.0.0'
       }
     }

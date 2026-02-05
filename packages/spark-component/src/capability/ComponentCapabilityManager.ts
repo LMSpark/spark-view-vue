@@ -49,7 +49,7 @@ export class ComponentCapabilityManager extends CapabilityManager {
     }
     
     // 递归处理子组件（建立完整能力树）
-    ctx.children.forEach(child => this.autoConnectCapabilities(child as ComponentContext))
+    ctx.children.forEach(child => this.autoConnectCapabilities(child))
   }
 
   /**
@@ -100,7 +100,7 @@ export class ComponentCapabilityManager extends CapabilityManager {
     }
     
     // 递归处理子组件
-    ctx.children.forEach(child => this.disconnectAllCapabilities(child as ComponentContext))
+    ctx.children.forEach(child => this.disconnectAllCapabilities(child))
   }
 }
 

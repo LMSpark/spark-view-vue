@@ -21,7 +21,7 @@ export function createAppContext(options: {
     user: options.user,
     tenant: options.tenant,
     env: options.env,
-    config: options.config || {},
+    config: options.config ?? {},
     initializedAt: new Date().toISOString()
   })
 }

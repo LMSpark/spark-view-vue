@@ -30,7 +30,7 @@ describe('forbidden singletons imports', () => {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
       if (importPattern.test(line)) {
-        const found = (line.match(importPattern) || [line])[0]
+        const found = (line.match(importPattern) ?? [line])[0]
         violations.push({ file: path.relative(root, file), line: i + 1, match: found })
       }
     }

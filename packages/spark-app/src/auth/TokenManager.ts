@@ -27,7 +27,7 @@ export class TokenManager {
 
     // 服务端或测试环境使用内存存储
     if (env.isServer || env.isTest) {
-      return this.memoryStore.get(this.tokenKey) || null
+      return this.memoryStore.get(this.tokenKey) ?? null
     }
 
     switch (this.storage) {
@@ -41,7 +41,7 @@ export class TokenManager {
         return this.getFromCookie()
       
       case 'memory':
-        return this.memoryStore.get(this.tokenKey) || null
+        return this.memoryStore.get(this.tokenKey) ?? null
       
       default:
         return null
@@ -115,7 +115,7 @@ export class TokenManager {
     const env = envAdapter.getEnvironment()
     if (env.isServer) return null
     const adapter = envAdapter as { localStorage?: Storage }
-    return adapter.localStorage?.getItem(this.tokenKey) || null
+    return adapter.localStorage?.getItem(this.tokenKey) ?? null
   }
 
   private setToLocalStorage(token: string): void {
@@ -136,7 +136,7 @@ export class TokenManager {
     const env = envAdapter.getEnvironment()
     if (env.isServer) return null
     const adapter = envAdapter as { sessionStorage?: Storage }
-    return adapter.sessionStorage?.getItem(this.tokenKey) || null
+    return adapter.sessionStorage?.getItem(this.tokenKey) ?? null
   }
 
   private setToSessionStorage(token: string): void {

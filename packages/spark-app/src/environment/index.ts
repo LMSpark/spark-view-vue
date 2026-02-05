@@ -55,9 +55,7 @@ let defaultDetector: DefaultEnvironmentDetector | null = null
  * 创建环境检测器
  */
 export function createEnvironmentDetector(): IEnvironmentDetector {
-  if (!defaultDetector) {
-    defaultDetector = new DefaultEnvironmentDetector()
-  }
+  defaultDetector ??= new DefaultEnvironmentDetector()
   return defaultDetector
 }
 
@@ -181,7 +179,7 @@ class EnvironmentAdapter {
   private detector: IEnvironmentDetector
   
   private constructor(detector?: IEnvironmentDetector) {
-    this.detector = detector || new DefaultEnvironmentDetector()
+    this.detector = detector ?? new DefaultEnvironmentDetector()
   }
   
   static getInstance(detector?: IEnvironmentDetector): EnvironmentAdapter {

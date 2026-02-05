@@ -88,9 +88,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
 let helperInstance: IFieldRenderHelper | null = null
 
 export function createFieldRenderHelper(): IFieldRenderHelper {
-  if (!helperInstance) {
-    helperInstance = new FieldRenderHelper()
-  }
+  helperInstance ??= new FieldRenderHelper()
   return helperInstance
 }
 

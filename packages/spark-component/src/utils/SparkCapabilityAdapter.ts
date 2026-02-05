@@ -31,7 +31,7 @@ import type { ComponentContext } from '../types/spark-component.js'
 function adaptComponentContext(context: ComponentContext): CapabilityContext {
   return {
     parent: context.parent ? adaptComponentContext(context.parent) : undefined,
-    providers: context.providers as Set<CapabilityProvider>
+    providers: context.providers
   }
 }
 

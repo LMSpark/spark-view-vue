@@ -73,7 +73,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       }
       
       // 创建默认 dataLoader (DIP: 依赖注入)
-      const defaultDataLoader = dataLoader || (async (tableName: string) => {
+      const defaultDataLoader = dataLoader ?? (async (tableName: string) => {
         pageLogger.warn('使用默认 dataLoader，页面脚本应该注册自定义 dataLoader', { tableName })
         return []
       })
@@ -112,7 +112,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
           const match = rule.dataKey.match(/^dataset\.tables\.([^.]+)(?:\.contexts\.([^.]+))?/)
           if (match) {
             const tableName = match[1]
-            const contextId = match[2] || rule.contextId || 'default'
+            const contextId = match[2] ?? rule.contextId ?? 'default'
             const key = `${tableName}.${contextId}`
             contexts.add(key)
           }

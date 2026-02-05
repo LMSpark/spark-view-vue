@@ -225,7 +225,7 @@ export class SparkComponentManagerImpl {
   resolveComponent(type: string) {
     const def = this.registry.get(type)
     if (!def) return null
-    return def.loader || def.component || null
+    return def.loader ?? def.component ?? null
   }
 
   /**

@@ -39,7 +39,7 @@ export class EventEmitter<Events extends EventMap = EventMap> {
    */
   once<K extends keyof Events>(event: K, handler: Events[K]): () => void {
     const wrapper = ((...args: unknown[]) => {
-      this.off(event, wrapper as Events[K])
+      this.off(event, wrapper)
       /**
        * 类型断言说明：
        * handler 是泛型函数 Events[K]，调用时需要作为 AnyFunction 处理可变参数。

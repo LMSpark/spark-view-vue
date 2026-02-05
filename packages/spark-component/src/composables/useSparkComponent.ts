@@ -72,7 +72,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   const context = reactive(ctxRaw)
   
   // 维护能力树：自动将自己注册到父上下文
-  if (parentContext && parentContext.children) {
+  if (parentContext?.children) {
     parentContext.children.push(context)
   }
   
@@ -94,7 +94,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     logger.info(`🗑️ Destroying SPARK component: ${context.type} (${context.id})`)
     
     // 从父上下文的 children 中移除自己
-    if (parentContext && parentContext.children) {
+    if (parentContext?.children) {
       const index = parentContext.children.indexOf(context)
       if (index !== -1) {
         parentContext.children.splice(index, 1)
@@ -159,7 +159,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       try {
         capabilityManager.connectCapability(provider as any, consumer as any, context as any)
         logger.info(`🎉 Consumed event capability: ${name} for ${context.type} (${context.id})`)
-        return provider.implementation as unknown as EventProvider
+        return provider.implementation as EventProvider
       } catch (e: unknown) {
         logger.warn('Failed to connect event capability', String(e))
       }

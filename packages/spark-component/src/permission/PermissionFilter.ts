@@ -108,9 +108,7 @@ export class PermissionFilter implements IPermissionFilter {
 let filterInstance: PermissionFilter | null = null
 
 export function createPermissionFilter(): IPermissionFilter {
-  if (!filterInstance) {
-    filterInstance = new PermissionFilter()
-  }
+  filterInstance ??= new PermissionFilter()
   return filterInstance
 }
 
