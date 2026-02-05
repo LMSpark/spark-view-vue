@@ -6,27 +6,9 @@ export {
   createMemoryTransport,
 } from './logger'
 
-// Types from common
-export type { LogLevel, LoggerApi, AnyFunction, Transport } from './types/common'
-
-// Error handling utilities (内部使用)
-// 注意：ErrorHandler 仅在 spark-utils 内部使用（asyncUtils.ts）
-export {
-  AppError,
-  ErrorType,
-  type RetryOptions,
-  type ErrorContext,
-} from './errorHandler'
-
-// Environment utilities
-export {
-  getWindow,
-  getDocument,
-  isBrowser,
-  isServer,
-  getWindowProperty,
-  getDocumentProperty,
-} from './env'
+// Types
+export type { AnyFunction } from './types'
+export type { LogLevel, LoggerApi, Transport } from './logger'
 
 // Event Emitter
 export {
@@ -39,7 +21,7 @@ export {
   HttpClient,
   createHttpClient,
 } from './http/HttpClient'
-export type { IApiContext } from './types/http'
+export type { IApiContext } from './http/HttpClient'
 
 // 能力系统 (Capability System)
 export { Capability } from './capability/index.js'

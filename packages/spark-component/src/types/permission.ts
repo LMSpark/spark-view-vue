@@ -18,8 +18,5 @@ import type { ComponentDataSource } from '@spark-view/spark-utils'
 // 向后兼容的类型别名
 export type { ComponentDataRow as DataRow } from '@spark-view/spark-utils'
 
-// 向后兼容的类型别名
-/**
- * @deprecated 请使用 ComponentDataSource，避免与 spark-data.DataSet 类冲突
- */
+// 向后兼容的类型别名（保留以避免破坏性变更）
 export type DataSet = ComponentDataSource

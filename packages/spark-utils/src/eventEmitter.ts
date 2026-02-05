@@ -3,7 +3,7 @@
  * 提供类型安全的事件发布/订阅机制
  */
 
-import type { AnyFunction } from './types/common'
+import type { AnyFunction } from './types.js'
 
 export interface EventMap {
   [event: string]: AnyFunction
