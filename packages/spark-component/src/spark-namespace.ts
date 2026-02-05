@@ -12,8 +12,7 @@ import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 import { createComponentManager } from './utils/SparkComponentManager.js'
 import { defineSparkComponent } from './vue/createSparkComponent.js'
 import { 
-  createSimpleRegistration, 
-  batchCreateSimpleRegistrations,
+  createSimpleRegistration,
   presets as registerPresets,
   nameToType
 } from './helpers/registerHelper.js'
@@ -55,9 +54,16 @@ export const Spark: {
   // registry accessor
   registry: (): typeof componentRegistry => componentRegistry,
   // unified registration API - handles multiple input types intelligently
-  register: (input: ComponentConfig | ComponentConfig[] | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }, manager?: ComponentManager) => {
+  register: (input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }, manager?: ComponentManager) => {
     // Get or create manager dynamically
     const activeManager = manager ?? Spark.manager()
+    
+    // Check if it's a SimpleComponentConfig (has 'name' but not 'type')
+    if (input && typeof input === 'object' && 'name' in input && !('type' in input) && !Array.isArray(input)) {
+      const simpleConfig = input as SimpleComponentConfig
+      const standardConfig = createSimpleRegistration(simpleConfig)
+      return activeManager.registerComponent(standardConfig)
+    }
 
     // Handle array of components
     if (Array.isArray(input)) {
@@ -181,67 +187,26 @@ export const Spark: {
     app.use(plugin as VuePlugin)
   },
   
-  // ========================================
-  // 简化注册 API ⚡
-  // ========================================
+  // Batch registration with simplified config
+  registerAll: (configs: (ComponentConfig | SimpleComponentConfig)[], manager?: ComponentManager) => {
+    const activeManager = manager ?? Spark.manager()
+    configs.forEach(config => {
+      if ('name' in config && !('type' in config)) {
+        // SimpleComponentConfig
+        const standardConfig = createSimpleRegistration(config as SimpleComponentConfig)
+        activeManager.registerComponent(standardConfig)
+      } else {
+        // ComponentConfig
+        activeManager.registerComponent(config as ComponentConfig)
+      }
+    })
+  },
   
-  /**
-   * 简化的组件注册（推荐使用）
-   * 
-   * 自动处理类型转换、loader 包装、默认值
-   * 
-   * @example
-   * ```typescript
-   * // 同步注册
-   * Spark.easy.register({
-   *   name: 'MyButton',
-   *   component: MyButtonComponent
-   * })
-   * 
-   * // 异步注册（推荐）
-   * Spark.easy.register({
-   *   name: 'HeavyGrid',
-   *   path: './components/HeavyGrid.vue',
-   *   lazy: true,
-   *   onLoad: (comp) => console.log('Loaded!')
-   * })
-   * 
-   * // 批量注册
-   * Spark.easy.registerAll([
-   *   { name: 'Chart', path: './Chart.vue', lazy: true },
-   *   { name: 'Calendar', path: './Calendar.vue', lazy: true }
-   * ])
-   * ```
-   */
-  easy: {
-    /**
-     * 注册单个组件（简化版）
-     */
-    register(config: SimpleComponentConfig, manager?: ComponentManager) {
-      const standardConfig = createSimpleRegistration(config)
-      const activeManager = manager ?? Spark.manager()
-      activeManager.registerComponent(standardConfig)
-    },
-    
-    /**
-     * 批量注册组件（简化版）
-     */
-    registerAll(configs: SimpleComponentConfig[], manager?: ComponentManager) {
-      const standardConfigs = batchCreateSimpleRegistrations(configs)
-      const activeManager = manager ?? Spark.manager()
-      activeManager.registerComponents(standardConfigs)
-    },
-    
-    /**
-     * 预设配置
-     */
-    presets: registerPresets,
-    
-    /**
-     * 名称转类型工具
-     */
-    nameToType
-  }
+  // Preset helpers for simplified registration
+  presets: registerPresets,
+  
+  // Utility: convert name to type
+  nameToType
 }
 
 export default Spark
