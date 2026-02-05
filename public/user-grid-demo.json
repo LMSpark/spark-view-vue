@@ -1,0 +1,53 @@
+{
+  "type": "user-grid",
+  "id": "json-renderer-demo",
+  "props": {
+    "users": [
+      {
+        "id": 1,
+        "name": "张三",
+        "age": 28,
+        "email": "zhangsan@example.com",
+        "status": "active"
+      },
+      {
+        "id": 2,
+        "name": "李四",
+        "age": 32,
+        "email": "lisi@example.com",
+        "status": "inactive"
+      }
+    ],
+    "enableSelection": true,
+    "showActions": true
+  },
+  "children": [
+    {
+      "type": "user-row",
+      "id": "row-template",
+      "children": [
+        {
+          "type": "user-field",
+          "id": "field-name",
+          "props": {
+            "field": "name"
+          }
+        },
+        {
+          "type": "user-field",
+          "id": "field-age",
+          "props": {
+            "field": "age"
+          }
+        },
+        {
+          "type": "user-field",
+          "id": "field-email",
+          "props": {
+            "field": "email"
+          }
+        }
+      ]
+    }
+  ]
+}

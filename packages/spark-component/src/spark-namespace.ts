@@ -55,6 +55,9 @@ export const Spark: {
   /** 定义 SPARK 组件 */
   defineComponent: typeof defineSparkComponent
   
+  /** 解析组件（处理 loader 和 component） */
+  resolveComponent: (type: string) => unknown
+
   // ========================================
   // 组合式 API
   // ========================================
@@ -162,6 +165,8 @@ export const Spark: {
   capabilities: () => capabilityManager,
   defineComponent: defineSparkComponent,
   
+  resolveComponent: (type: string) => componentManager.resolveComponent(type),
+
   // ========================================
   // 向后兼容别名
   // ========================================

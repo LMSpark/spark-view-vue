@@ -1,8 +1,8 @@
 <template>
   <div class="user-field" :class="{ highlight }">
-    <span class="field-icon">{{ icon }}</span>
+    <span class="field-icon">{{ fieldIcon }}</span>
     <div class="field-content">
-      <span class="field-label">{{ label }}</span>
+      <span class="field-label">{{ fieldLabel }}</span>
       <span class="field-value">{{ displayValue }}</span>
     </div>
     <div class="field-level-badge">字段级</div>
@@ -17,8 +17,8 @@ import type { RowDataCapability, RowEventsCapability } from './types'
 
 interface Props {
   config: ComponentConfig
-  value: string | number
-  label: string
+  value?: string | number
+  label?: string
   icon?: string
   highlight?: boolean
 }
@@ -43,6 +43,9 @@ const rowData = consume('rowData')
 // 2. 消费父组件的行事件能力
 const rowEvents = consume('rowEvents')
 
+// 3. 消费 Grid 层的字段元数据能力
+const fieldMetadata = consume('fieldMetadata')
+
 const events = rowEvents?.value as RowEventsCapability | null
 if (events) {
   // 监听行事件
@@ -51,38 +54,78 @@ if (events) {
   })
 }
 
+// 获取当前字段名
+const currentField = computed(() => props.config.props?.field as string)
+
+// 获取字段元数据
+const metadata = computed(() => {
+  const field = currentField.value
+  const meta = fieldMetadata as unknown as Record<string, { label: string; icon: string; type: string }> | null
+  return field && meta ? meta[field] : null
+})
+
+// 计算图标（优先级：元数据 > config.props > props）
+const fieldIcon = computed(() => {
+  return metadata.value?.icon || (props.config.props?.icon as string) || props.icon || '📝'
+})
+
+// 计算标签（优先级：元数据 > config.props > props）
+const fieldLabel = computed(() => {
+  return metadata.value?.label || (props.config.props?.label as string) || props.label || ''
+})
+
 // 计算显示值
 const displayValue = computed(() => {
-  // 优先使用能力系统获取数据
-  const data = rowData?.value as RowDataCapability | null
-  if (data) {
-    const field = props.config.props?.field as string
-    const value = data.getField(field)
-    
-    // 格式化显示
-    if (field === 'status') {
-      return value === 'active' ? '✅ 活跃' : '⭕ 非活跃'
+  // 直接使用能力对象（不需要 .value）
+  const data = rowData as unknown as RowDataCapability | null
+  const field = props.config.props?.field as string
+  
+  if (data && typeof data.getField === 'function') {
+    if (field) {
+      const value = data.getField(field)
+      
+      // 格式化显示
+      if (field === 'status') {
+        return value === 'active' ? '✅ 活跃' : '⭕ 非活跃'
+      }
+      
+      return value
     }
-    
-    return value
   }
   
-  // 回退到 props
+  // 回退到 config.props.value
+  const configValue = props.config.props?.value
+  if (configValue !== undefined) {
+    return configValue
+  }
+  
+  // 最后回退到 props.value
   return props.value
 })
 
 // 是否选中
 const isRowSelected = computed(() => {
-  const data = rowData?.value as RowDataCapability | null
+  const data = rowData as unknown as RowDataCapability | null
   return data?.isSelected() || false
 })
 
 onMounted(() => {
+  const data = rowData as unknown as RowDataCapability | null
+  const field = props.config.props?.field as string
+  
   logger.info('🚀 UserField mounted (Field Level)', {
     contextId: context.id,
-    field: props.label,
-    consumedCapabilities: ['rowData', 'rowEvents'],
+    field: field,
+    label: fieldLabel.value,
+    icon: fieldIcon.value,
+    metadataSource: metadata.value ? 'Grid元数据' : 'config.props',
+    metadata: metadata.value,
+    displayValue: displayValue.value,
+    rawRowData: data?.getData(),
+    fieldValueFromRowData: data ? data.getField(field) : null,
+    consumedCapabilities: ['rowData', 'rowEvents', 'fieldMetadata'],
     hasRowData: !!rowData,
+    hasMetadata: !!fieldMetadata,
     isSelected: isRowSelected.value
   })
 })

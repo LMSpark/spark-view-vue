@@ -73,7 +73,7 @@ export function transformPagesConfig(
   nodes: PagesConfigNode[],
   pagedata: Record<string, unknown>,
   scriptContext: Record<string, Function>
-): any[] {
+): unknown[] {
   return nodes.map(node => transformNode(node, pagedata, scriptContext))
 }
 
@@ -85,7 +85,7 @@ function transformNode(
   pagedata: Record<string, unknown>,
   scriptContext: Record<string, Function>,
   loopContext?: Record<string, unknown>
-): any {
+): unknown {
   // 条件渲染
   if (node._condition) {
     const conditionFn = scriptContext[node._condition]
@@ -103,8 +103,10 @@ function transformNode(
   // 处理循环渲染
   if (node._loop && Array.isArray(dataValue)) {
     return dataValue.map((item) => {
-      const itemContext = { [node._loop!.item]: item }
-      return transformNode(node._loop!.template, pagedata, scriptContext, {
+      const loopConfig = node._loop
+      if (!loopConfig) return null
+      const itemContext = { [loopConfig.item]: item }
+      return transformNode(loopConfig.template, pagedata, scriptContext, {
         ...loopContext,
         ...itemContext
       })
@@ -112,14 +114,14 @@ function transformNode(
   }
 
   // 转换子节点
-  let children = node.children
+  let children: (string | unknown)[] | undefined = node.children
   if (children) {
     children = children.map(child => {
       if (typeof child === 'string') {
         return child
       }
-      return transformNode(child, pagedata, scriptContext, loopContext)
-    }).flat().filter(c => c !== null)
+      return transformNode(child as PagesConfigNode, pagedata, scriptContext, loopContext)
+    }).flat().filter(c => c !== null) as (string | unknown)[]
   }
 
   // 处理事件
@@ -134,7 +136,7 @@ function transformNode(
   }
 
   // 构建节点对象
-  const result: any = {
+  const result: Record<string, unknown> = {
     type: node.type,
     props: {
       ...node.props,
@@ -173,15 +175,19 @@ function resolveDataPath(
   path: string,
   pagedata: Record<string, unknown>,
   loopContext?: Record<string, unknown>
-): any {
+): unknown {
   const parts = path.split('.')
-  let current: any = { ...pagedata, ...loopContext }
+  let current: unknown = { ...pagedata, ...loopContext }
 
   for (const part of parts) {
     if (current === null || current === undefined) {
       return undefined
     }
-    current = current[part]
+    if (typeof current === 'object' && current !== null) {
+      current = (current as Record<string, unknown>)[part]
+    } else {
+      return undefined
+    }
   }
 
   return current
@@ -195,12 +201,16 @@ export function createDefaultScriptContext(
 ): Record<string, Function> {
   return {
     // 条件函数
-    isActive: (data: any, loop: any) => {
-      const status = loop?.user?.status || data?.status
+    isActive: (data: Record<string, unknown>, loop?: Record<string, unknown>) => {
+      const loopUser = loop?.user as Record<string, unknown> | undefined
+      const status = loopUser?.status || data?.status
       return status === 'active'
     },
-    notReadonly: (data: any) => !data.readonly,
-    hasUsers: (data: any) => data.users && data.users.length > 0,
+    notReadonly: (data: Record<string, unknown>) => !data.readonly,
+    hasUsers: (data: Record<string, unknown>) => {
+      const users = data.users as unknown[] | undefined
+      return users && users.length > 0
+    },
 
     // 转换函数
     statusText: (value: string) => value === 'active' ? '在线' : '离线',
@@ -209,7 +219,7 @@ export function createDefaultScriptContext(
     // 事件处理器（这些会被组件的实际处理器覆盖）
     handleRefresh: () => console.info('🔄 刷新'),
     handleSelectAll: () => console.info('☑️ 全选'),
-    handleEdit: (e: any) => console.info('✏️ 编辑:', e),
-    handleDelete: (e: any) => console.info('🗑️ 删除:', e)
+    handleEdit: (e: unknown) => console.info('✏️ 编辑:', e),
+    handleDelete: (e: unknown) => console.info('🗑️ 删除:', e)
   }
 }
