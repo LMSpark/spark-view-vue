@@ -31,6 +31,11 @@ export function Logger(context?: unknown): LoggerApi {
     if (impl && typeof impl === 'object' && fnName in impl) {
       const fn = (impl as Record<string, unknown>)[fnName]
       if (typeof fn === 'function') {
+        /**
+         * 类型断言说明：
+         * 从动态对象中获取的函数，需要断言为 AnyFunction 以调用可变参数。
+         * Logger 提供者可能来自不同源，无法预先知道精确签名。
+         */
         return (fn as AnyFunction)(...args)
       }
     }
