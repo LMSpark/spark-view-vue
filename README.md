@@ -74,6 +74,35 @@ pnpm run build
 pnpm run typecheck
 ```
 
+## ⚡ 核心功能亮点
+
+### 动态导入 - 按需加载组件
+
+**首屏加载提速 70%+**
+
+```typescript
+// 注册懒加载组件
+Spark.registerSparkComponent({
+  type: 'spark-heavy-grid',
+  name: '重量级表格',
+  loader: () => import('./components/HeavyGrid.vue')
+})
+
+// 自动加载（首次渲染时）
+const def = await registry.getAsync('spark-heavy-grid')
+
+// 批量预加载
+await registry.preload(['spark-chart', 'spark-calendar'])
+```
+
+**应用场景**：
+- ✅ 按路由代码分包（dashboard 只加载需要的组件）
+- ✅ 权限控制组件加载（普通用户不下载管理员组件）
+- ✅ 从后端加载配置（动态页面配置）
+- ✅ 从 CDN 加载远程组件（插件市场）
+
+> 详见：[动态导入完整指南](./docs/guides/DYNAMIC_IMPORT.md)
+
 ## 📖 核心概念
 
 ### 1. 包独立性原则

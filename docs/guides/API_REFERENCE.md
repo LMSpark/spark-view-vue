@@ -51,25 +51,72 @@ await SparkApp.start({
 ```typescript
 interface ComponentRegistration {
   type: string                      // 组件类型（kebab-case）
-  component: Component              // Vue 组件
+  component?: Component             // Vue 组件（可选，与 loader 二选一）
+  loader?: () => Promise<{ default: Component }>  // 动态导入函数（懒加载）
   capabilities?: string[]           // 提供的能力列表
   dependencies?: string[]           // 依赖的能力列表
+  version?: string                  // 组件版本
 }
 
 // 注册组件
 SparkComponent.registerSparkComponent(config)
 ```
 
-**示例：**
+**示例 1：同步注册（立即加载）**
 
 ```typescript
 import { SparkComponent } from '@spark-view/spark-component'
+import SparkEJ2Grid from './SparkEJ2Grid.vue'
 
 SparkComponent.registerSparkComponent({
   type: 'spark-ej2-grid',
   component: SparkEJ2Grid,
   capabilities: ['dataSource', 'columnManager'],
   dependencies: []
+})
+```
+
+**示例 2：异步注册（懒加载）⚡**
+
+```typescript
+import { Spark } from '@spark-view/spark-component'
+
+// 注册懒加载组件
+Spark.registerSparkComponent({
+  type: 'spark-heavy-grid',
+  name: '重量级表格',
+  version: '1.0.0',
+  loader: () => import('./components/HeavyGrid.vue')  // 用到才加载
+})
+
+// 首次渲染时自动加载，后续使用缓存
+```
+
+### Registry.getAsync() ⚡
+
+```typescript
+// 异步获取组件定义（支持自动加载）
+const definition = await registry.getAsync('spark-heavy-grid')
+// 如果有 loader，自动调用并缓存结果
+```
+
+### Registry.preload() ⚡
+
+```typescript
+// 批量预加载组件
+await registry.preload(['spark-chart', 'spark-calendar', 'spark-gantt'])
+
+// 应用场景：
+// 1. 路由切换前预加载
+router.beforeEach(async (to) => {
+  if (to.meta.components) {
+    await registry.preload(to.meta.components)
+  }
+})
+
+// 2. 空闲时预加载
+requestIdleCallback(() => {
+  registry.preload(['spark-chart'])
 })
 ```
 
