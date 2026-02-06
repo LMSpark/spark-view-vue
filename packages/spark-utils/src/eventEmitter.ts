@@ -3,14 +3,14 @@
  * 提供类型安全的事件发布/订阅机制
  */
 
-import type { AnyFunction } from './types.js'
+export type EventHandler<T extends unknown[] = unknown[]> = (...args: T) => void
 
 export interface EventMap {
-  [event: string]: AnyFunction
+  [event: string]: EventHandler
 }
 
 export class EventEmitter<Events extends EventMap = EventMap> {
-  private listeners = new Map<keyof Events, Set<AnyFunction>>()
+  private listeners = new Map<keyof Events, Set<Events[keyof Events]>>()
 
   /**
    * 监听事件
@@ -21,13 +21,8 @@ export class EventEmitter<Events extends EventMap = EventMap> {
     }
     const listeners = this.listeners.get(event)
     if (listeners) {
-      /**
-       * 类型断言说明：
-       * 需要在 Set<AnyFunction> 中存储不同签名的事件处理函数。
-       * Events[K] 是泛型类型，运行时需要统一存储为 AnyFunction。
-       * 这是 EventEmitter 设计的必要技术选择。
-       */
-      listeners.add(handler as AnyFunction)
+      // 类型安全：Set 直接存储正确的事件处理器类型
+      listeners.add(handler)
     }
 
     // 返回取消监听函数
@@ -38,13 +33,9 @@ export class EventEmitter<Events extends EventMap = EventMap> {
    * 一次性监听
    */
   once<K extends keyof Events>(event: K, handler: Events[K]): () => void {
-    const wrapper = ((...args: unknown[]) => {
+    const wrapper: Events[K] = ((...args: Parameters<Events[K]>) => {
       this.off(event, wrapper)
-      /**
-       * 类型断言说明：
-       * handler 是泛型函数 Events[K]，调用时需要作为 AnyFunction 处理可变参数。
-       */
-      ;(handler as AnyFunction)(...args)
+      handler(...args)
     }) as Events[K]
 
     return this.on(event, wrapper)
@@ -62,11 +53,10 @@ export class EventEmitter<Events extends EventMap = EventMap> {
 
     const handlers = this.listeners.get(event)
     if (handlers) {
-      /**
-       * 类型断言说明：
-       * Set 中存储的是 AnyFunction，需要断言以从chandle 删除。
-       */
-      handlers.delete(handler as AnyFunction)
+      // 类型断言说明：
+      // Events[K] 必须可赋值给 Events[keyof Events]，
+      // 但 TypeScript 无法自动推导这一点。
+      handlers.delete(handler as Events[keyof Events])
       if (handlers.size === 0) {
         this.listeners.delete(event)
       }
