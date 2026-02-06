@@ -83,7 +83,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
 
   // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
   const resolvedManager = options?.manager ?? (inject(SPARK_MANAGER_KEY)) ?? (inject('sparkManager'))
-  if (!resolvedManager) throw new Error('Component manager not found. Provide via options.manager or install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager })).')
+  if (!resolvedManager) throw new Error('Component manager not found. Either provide via options.manager or install Spark Vue plugin: app.use(Spark.createVuePlugin())')
   const manager = resolvedManager
 
   const isVisible = computed(() => {
