@@ -216,7 +216,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
       let t: ComponentContext | undefined = ctx ?? context
       while (t) {
         const p = t.providers.get(name)
-        if (p?.implementation !== undefined) return p.implementation as unknown as T
+        if (p?.implementation !== undefined) return p.implementation as T
         t = t.parent ?? undefined
       }
       return undefined
