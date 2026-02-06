@@ -235,13 +235,31 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
   /**
    * 验证组件定义是否有效
    * 
+   * 验证规则：
+   * 1. 必须有 type（非空字符串）
+   * 2. 必须有 component 或 loader（除非是逻辑组件）
+   * 3. version 如果提供，必须是有效的 semver
+   * 
    * @param def - 组件定义
    * @returns 是否有效
    */
   private validateDefinition(def: ComponentConfig): boolean {
-    if (!def.type) return false
-    if (!def.name) return false
-    // component and version are optional for logical components
+    // 必须有 type
+    if (!def.type || typeof def.type !== 'string' || def.type.trim() === '') {
+      this.logger.error('Invalid definition: type is required and must be a non-empty string')
+      return false
+    }
+
+    // 必须有 component 或 loader（逻辑组件可以都没有）
+    if (!def.component && !def.loader) {
+      this.logger.warn(`Component '${def.type}' has neither component nor loader (logical component)`)
+    }
+
+    // 验证 version（如果提供）
+    if (def.version && !semverValid(def.version)) {
+      this.logger.warn(`Component '${def.type}' has invalid semver version: ${def.version}`)
+    }
+
     return true
   }
 

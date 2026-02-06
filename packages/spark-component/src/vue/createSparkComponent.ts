@@ -28,7 +28,7 @@ function createTemplateRenderer(template: string) {
       const func = new Function(...Object.keys(data), `return \`${interpolated}\``)
       return func(...Object.values(data))
     } catch (error) {
-      console.warn('Template interpolation failed:', error)
+      logger.warn('Template interpolation failed:', String(error))
       return template // Fallback to original template
     }
   }
@@ -387,8 +387,8 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         logger.warn('💡 Make sure to call Spark.register() manually or ensure Spark namespace is available')
       }
     } catch (error) {
-      console.warn(`⚠️ Failed to auto-register component ${definition.type}:`, error)
-        console.warn('💡 Make sure to call Spark.register() manually or ensure Spark namespace is available')
+      logger.warn(`⚠️ Failed to auto-register component ${definition.type}:`, String(error))
+      logger.warn('💡 Make sure to call Spark.register() manually or ensure Spark namespace is available')
     }
   }
 

@@ -264,7 +264,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
         if (providers) {
           logger.info(`${prefix}   Provides: [${providers}]`)
         }
-        ctx.children.forEach(child => printTree(child, indent + 1))
+        ctx.children?.forEach(child => printTree(child, indent + 1))
       }
       
       // 找到根节点

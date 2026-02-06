@@ -39,57 +39,28 @@ export namespace Spark {
   }
 
   /**
-   * 组件实例配置 - JSON 驱动渲染
+   * @deprecated 使用 ComponentDefinition （注册）或 ComponentContext（实例+运行时）
+   * 为了向后兼容保留，将在下个主版本移除
    * 
-   * **作用域**：页面配置，实例化已注册的组件
-   * **使用场景**：Renderer.render(), pages-config/pagedata.json
-   * 
-   * @example
-   * ```typescript
-   * const gridInstance: ComponentInstance = {
-   *   type: 'spark-ej2-grid',  // 引用已注册的组件
-   *   id: 'grid-1',
-   *   props: { dataSource: [...] },
-   *   children: [
-   *     { type: 'spark-ej2-column', props: { field: 'name' } }
-   *   ]
-   * }
-   * ```
+   * children 使用灵活类型以兼容特定子类型的扩展（如 SparkEJ2GridConfig.children: SparkEJ2ColumnConfig[]）
    */
-  export interface ComponentInstance {
-    /** 组件类型（引用已注册的组件） */
-    type: string
-    
-    /** 实例 ID（唯一标识，可选） */
-    id?: string
-    
-    /** 组件属性 */
-    props?: Record<string, unknown>
-    
-    /** 子组件实例配置 */
-    children?: ComponentInstance[]
-    
-    /** 扩展字段（如 visible, disabled 等） */
-    [key: string]: unknown
+  export type ComponentConfig = ComponentDefinition & Pick<ComponentContext, 'id' | 'props'> & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    children?: any[]
   }
 
   /**
-   * @deprecated 使用 ComponentDefinition （注册）或 ComponentInstance（渲染）
-   * 为了向后兼容保留，将在下个主版本移除
-   */
-  export type ComponentConfig = ComponentDefinition & ComponentInstance
-
-  /**
-   * 组件上下文 - 组件实例的运行时表示
+   * 组件上下文 - 组件实例 + 运行时管理的统一表示
    * 
    * 继承能力系统的最小接口 CapabilityContext（parent + providers）
-   * 添加组件特定属性：id, type, children, consumers, state 等
    * 
-   * **核心职责**：
-   * - 组件实例的唯一运行时表示（不再需要持有配置对象）
-   * - 管理父子组件关系
-   * - 能力系统的集成点
-   * - 组件生命周期状态存储
+   * **双重职责**：
+   * 1. 组件实例配置（JSON 驱动渲染）- type, props, children
+   * 2. 运行时状态管理 - id, state, providers, consumers
+   * 
+   * **使用场景**：
+   * - JSON 配置：{ type, props, children } → 直接创建Context
+   * - 运行时：父子关系、能力系统、生命周期管理
    * 
    * **能力系统核心理念**：
    * - 供方：context.providers.add(provider) - 不关心谁使用
@@ -97,11 +68,29 @@ export namespace Spark {
    * - 查找：按 capabilityName 沿 parent 链向上查找（就近原则）
    */
   export interface ComponentContext extends CapabilityContext<CapabilityProvider> {
+    // --------------------------------------------------------------------------
+    // 实例标识（必需）
+    // --------------------------------------------------------------------------
+    
     /** 组件实例 ID（唯一标识） */
     id: string
     
     /** 组件类型（引用已注册的 ComponentDefinition.type） */
     type: string
+    
+    // --------------------------------------------------------------------------
+    // 实例配置（JSON 驱动）
+    // --------------------------------------------------------------------------
+    
+    /** 组件属性（从 JSON 配置传入） */
+    props?: Record<string, unknown>
+    
+    /** 子组件上下文列表（递归结构，可选） */
+    children?: ComponentContext[]
+    
+    // --------------------------------------------------------------------------
+    // 运行时管理
+    // --------------------------------------------------------------------------
     
     /** 父组件上下文（继承自 CapabilityContext，可为 null） */
     parent?: ComponentContext | null
@@ -109,10 +98,7 @@ export namespace Spark {
     /** 能力提供者集合（覆盖基类定义，使用具体类型） */
     providers: Set<CapabilityProvider>
     
-    /** 子组件上下文列表 */
-    children: ComponentContext[]
-    
-    /** 组件运行时状态（用于存储任意运行时数据，如原始 props、内部状态等） */
+    /** 组件运行时状态（用于存储任意运行时数据，如内部状态、缓存等） */
     state: Record<string, unknown>
     
     /** 能力消费者映射 */
@@ -123,6 +109,12 @@ export namespace Spark {
     
     /** 日志记录器 */
     logger?: LoggerApi
+    
+    // --------------------------------------------------------------------------
+    // 扩展字段（支持 visible, disabled 等）
+    // --------------------------------------------------------------------------
+    
+    [key: string]: unknown
   }
 
   export interface ComponentRegistry {
@@ -144,15 +136,20 @@ export namespace Spark {
     getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined
     getContext(id: string): ComponentContext | undefined
     getAllContexts(): ComponentContext[]
+    /** 创建组件上下文（从 JSON 配置或部分配置） */
+    createContext(config: Partial<ComponentContext>, parent?: ComponentContext): ComponentContext
+    /** 注册单个组件定义 */
     registerComponent(def: ComponentDefinition): void
+    /** 批量注册组件定义 */
     registerComponents(defs: ComponentDefinition[]): void
+    /** 获取组件定义 */
     getComponentDefinition(type: string): ComponentDefinition | undefined
     isComponentRegistered(type: string): boolean
     getRegisteredComponentTypes(): string[]
   }
 
   export type PluginHooks = {
-    afterComponentCreate?: (instance: ComponentInstance, ctx: ComponentContext) => void | Promise<void>
+    afterComponentCreate?: (ctx: ComponentContext) => void | Promise<void>
     beforeComponentDestroy?: (ctx: ComponentContext) => void | Promise<void>
   }
 
@@ -176,8 +173,7 @@ export const SPARK_REGISTRY_KEY: InjectionKey<Spark.ComponentRegistry> = Symbol(
 
 // Top-level aliases for simplified imports
 export type ComponentDefinition = Spark.ComponentDefinition
-export type ComponentInstance = Spark.ComponentInstance
-export type ComponentConfig = Spark.ComponentConfig  // @deprecated 使用 ComponentDefinition 或 ComponentInstance
+export type ComponentConfig = Spark.ComponentConfig  // @deprecated 使用 ComponentDefinition 或 ComponentContext
 export type ComponentContext = Spark.ComponentContext
 export type ComponentRegistry = Spark.ComponentRegistry
 export type ComponentManager = Spark.ComponentManager

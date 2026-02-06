@@ -35,6 +35,7 @@ export function createVueSparkPlugin(options: VueSparkPluginOptions) {
   }
   
   // 建立 APP → 页面的父子关系
+  appContext.children ??= []
   appContext.children.push(pageContext)
   
   return {

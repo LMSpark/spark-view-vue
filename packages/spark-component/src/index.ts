@@ -1,8 +1,5 @@
 export * from './utils/SparkComponentRegistry.js'
-// SparkCapabilitySystem 将被移除，统一使用 @spark-view/spark-utils
-// export * from './utils/SparkCapabilitySystem.js'
 export * from './utils/SparkComponentManager.js'
-// export * from './composables/index.js' // Empty file, commented out
 export * from './composables/useSparkComponent.js'
 export * from './utils/SparkComponentRenderer.js'
 export * from './vue/createSparkComponent.js'
@@ -17,25 +14,7 @@ export {
   nameToType
 } from './helpers/registerHelper.js'
 
-// 权限系统类型（转发导出，实际定义在 spark-utils）
-export type {
-  // 以下类型来自 spark-utils（数据类型唯一来源）
-  IDataRow,                  // 基础数据行接口
-  IDataRowWithPermission,    // 带权限的数据行（支持泛型）
-  IModelPermission,          // 模型级权限
-  IInstancePermission,       // 实例级权限
-  WithInstancePermission,    // 权限工具类型
-  WithModelPermission,       // 权限工具类型
-  IDataSource,               // 数据源（带权限和分页，支持泛型）
-  
-  // 以下类型为组件层特有
-  IPermissionChecker,        // 权限检查器
-  IPermissionFilter,         // 权限过滤器
-  FieldVisibility,           // 字段可见性枚举
-  ComponentLevel             // 组件级别枚举
-} from './types/permission.js'
-
-// Event System
+// 事件系统
 export {
   createComponentEventEmitter,
   createComponentEventConsumer,
@@ -48,11 +27,7 @@ export type {
   ComponentEventType
 } from './events/ComponentEventEmitter.js'
 
-// Event Capability Integration
-// 请使用 @spark-view/spark-utils 中的 Capability 命名空间 API
-// Capability.Events.createProvider(), Capability.Events.createConsumer()
-
-// Permission System（从 spark-utils 重新导出）
+// 权限系统（从 spark-utils 转发）
 export {
   PermissionChecker,
   createPermissionChecker, 
@@ -67,27 +42,17 @@ export {
   filterVisibleFields
 } from '@spark-view/spark-utils'
 
-export type {
-  IFieldRenderConfig,
-  IFieldRenderState,
-  IFieldRenderHelper
-} from '@spark-view/spark-utils'
-
-// Primary unified API for creating Spark components
-export { defineSparkComponent } from './vue/createSparkComponent.js'
-
-// Factory functions for creating instances
+// 工厂函数（推荐使用）
 export { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 export { createComponentManager } from './utils/SparkComponentManager.js'
+export { defineSparkComponent } from './vue/createSparkComponent.js'
 
-// Implementation classes for testing/advanced usage
+// 实现类（用于测试和高级用法）
 export { SparkComponentManagerImpl } from './utils/SparkComponentManager.js'
 export { SparkComponentRendererImpl } from './utils/SparkComponentRenderer.js'
 
-// Plugin system exports
+// 插件系统类型
 export type { Plugin as SparkPlugin, PluginHooks as SparkPluginHooks } from './types/spark-component.js'
 
-// DI keys for Vue injection
+// Vue 依赖注入 Key
 export { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from './types/spark-component.js'
-
-// NOTE: prefer factories (createComponentManager/createComponentRegistry) for explicit instances; singletons are still available via existing exports.

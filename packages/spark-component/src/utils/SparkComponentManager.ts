@@ -2,7 +2,7 @@ import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.j
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
-import type { ComponentDefinition, ComponentInstance, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
+import type { ComponentDefinition, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
 
 /**
  * SPARK 组件管理器实现
@@ -40,30 +40,45 @@ export class SparkComponentManagerImpl {
   /**
    * 创建组件上下文
    * 
-   * 组件上下文是组件实例的运行时表示，包含：
-   * - 唯一 ID
-   * - 组件类型（引用已注册的 ComponentDefinition）
-   * - 父子关系
-   * - 状态数据（包含原始 props）
-   * - 能力提供者/消费者
+   * ComponentContext 现在同时包含实例配置和运行时管理：
+   * - 实例配置：type, props, children
+   * - 运行时：id, state, providers, consumers
    * 
-   * @param instance - 组件实例配置（渲染配置）
+   * @param config - 组件配置（可以是 JSON 配置或部分配置）
    * @param parent - 父组件上下文（可选）
    * @returns 新创建的组件上下文
+   * @throws 如果 type 为空或配置无效
    */
-  createContext(instance: ComponentInstance, parent?: ComponentContext): ComponentContext {
+  createContext(config: Partial<ComponentContext>, parent?: ComponentContext): ComponentContext {
+    // 验证必需字段
+    if (!config.type || typeof config.type !== 'string') {
+      throw new Error('createContext requires a valid type (non-empty string)')
+    }
+
+    // 验证 type 是否已注册（警告而非错误，允许动态注册）
+    if (!this.registry.has(config.type)) {
+      this.logger.warn(`Component type '${config.type}' is not registered. Ensure it's registered before rendering.`)
+    }
+
     const ctx: ComponentContext = {
-      id: instance.id ?? this.generateId(),
-      type: instance.type,
+      // 实例标识
+      id: config.id ?? this.generateId(),
+      type: config.type,
+      // 实例配置
+      props: config.props,
+      children: config.children ?? [],
+      // 运行时管理
       parent,
-      children: [],
-      // 将 props 和其他实例数据存入 state
-      state: { ...instance },
+      state: config.state ?? {},
       providers: new Set<CapabilityProvider>(),
       consumers: new Map<string, CapabilityConsumer>()
     }
-    if (parent) parent.children.push(ctx)
+    if (parent) {
+      parent.children ??= []
+      parent.children.push(ctx)
+    }
     this.contexts.set(ctx.id, ctx)
+    this.logger.debug(`Created context: ${ctx.type} (${ctx.id})`)
     return ctx
   }
 
@@ -72,15 +87,15 @@ export class SparkComponentManagerImpl {
    * 
    * 创建组件上下文并递归渲染整个组件树
    * 
-   * @param instance - 组件实例配置（可能包含子组件）
+   * @param config - 组件配置（可能包含子组件）
    * @param parentContext - 父组件上下文（可选）
    * @returns 渲染结果（VNode）
    */
-  render(instance: ComponentInstance, parentContext?: ComponentContext): unknown {
-    const ctx = this.createContext(instance, parentContext)
+  render(config: Partial<ComponentContext>, parentContext?: ComponentContext): unknown {
+    const ctx = this.createContext(config, parentContext)
     // Use the unified renderer for component tree rendering
-    const renderResult = this.renderer.renderComponentTree(instance)
-    this.logger.info(`Rendered component tree: ${instance.type} (${ctx.id})`)
+    const renderResult = this.renderer.renderComponentTree(ctx)
+    this.logger.info(`Rendered component tree: ${ctx.type} (${ctx.id})`)
     return renderResult
   }
 
@@ -111,9 +126,9 @@ export class SparkComponentManagerImpl {
     if (!ctx) return false
     try {
       capabilityManager.disconnectAllCapabilities(ctx)
-      if (ctx.parent) ctx.parent.children = ctx.parent.children.filter(c => c.id !== id)
+      ctx.parent?.children && (ctx.parent.children = ctx.parent.children.filter(c => c.id !== id))
       const walk = (c: ComponentContext) => {
-        c.children.forEach(x => walk(x))
+        c.children?.forEach(x => walk(x))
         this.contexts.delete(c.id)
       }
       walk(ctx)
@@ -132,19 +147,37 @@ export class SparkComponentManagerImpl {
    * 
    * @param context - 组件上下文
    * @param provider - 能力提供者
+   * @throws 如果 provider 无效
    */
   registerProvider(context: ComponentContext, provider: CapabilityProvider): void {
-    context.providers.add(provider)
-    try { capabilityManager.autoConnectCapabilities(context) } catch {}
+    // 验证 provider
+    if (!provider?.name || typeof provider.name !== 'string') {
+      throw new Error('Invalid provider: must have a non-empty name')
+    }
 
-    // notify any listeners waiting for a provider
+    context.providers.add(provider)
+    
+    // 自动连接能力（安全处理错误）
+    try { 
+      capabilityManager.autoConnectCapabilities(context) 
+    } catch (e: unknown) {
+      this.logger.warn(`Failed to auto-connect capabilities for ${context.type}:`, String(e))
+    }
+
+    // 通知等待的监听器
     if (context.providerListeners?.has(provider.name)) {
       const set = context.providerListeners.get(provider.name) as Set<(prov: CapabilityProvider) => void>
       set.forEach(cb => {
-        try { cb(provider) } catch (e: unknown) { this.logger.warn('provider listener threw', String(e)) }
+        try { 
+          cb(provider) 
+        } catch (e: unknown) { 
+          this.logger.warn(`Provider listener for '${provider.name}' threw error:`, String(e)) 
+        }
       })
       set.clear()
     }
+
+    this.logger.debug(`Registered provider '${provider.name}' for ${context.type} (${context.id})`)
   }
 
   /**

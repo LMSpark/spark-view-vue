@@ -1,4 +1,4 @@
-import type { ComponentInstance, ComponentRegistry } from '../types/spark-component.js'
+import type { ComponentContext, ComponentRegistry } from '../types/spark-component.js'
 import type { Component } from 'vue'
 
 /**
@@ -36,7 +36,7 @@ export type RenderResult = {
 /**
  * SPARK 组件渲染器实现
  * 
- * 核心职责：将组件实例配置转换为可渲染的 VNode 结构
+ * 核心职责：将组件上下文转换为可渲染的 VNode 结构
  * - 解析组件类型到 Vue 组件（查 Registry）
  * - 递归渲染组件树
  * - 优化渲染性能（shouldUpdate 检测）
@@ -56,6 +56,10 @@ export class SparkComponentRendererImpl {
   private registry: ComponentRegistry
   /** 组件解析器（将类型名解析为 Vue 组件） */
   private resolver: ComponentResolver
+  /** 渲染缓存（优化重复渲染，key: contextId, value: RenderResult） */
+  private renderCache = new Map<string, { result: RenderResult; timestamp: number }>()
+  /** 缓存过期时间（毫秒，默认 5 分钟） */
+  private readonly CACHE_TTL = 5 * 60 * 1000
 
   /**
    * 构造函数
@@ -71,29 +75,54 @@ export class SparkComponentRendererImpl {
   }
 
   /**
+   * 清除渲染缓存
+   * 
+   * @param contextId - 可选，仅清除指定上下文的缓存；不传则清除所有
+   */
+  clearCache(contextId?: string): void {
+    if (contextId) {
+      this.renderCache.delete(contextId)
+    } else {
+      this.renderCache.clear()
+    }
+  }
+
+  /**
+   * 清除过期缓存（内部维护方法）
+   */
+  private pruneExpiredCache(): void {
+    const now = Date.now()
+    for (const [id, cached] of this.renderCache.entries()) {
+      if (now - cached.timestamp > this.CACHE_TTL) {
+        this.renderCache.delete(id)
+      }
+    }
+  }
+
+  /**
    * 检查组件是否应该更新
    * 
-   * 通过浅比较判断组件实例配置是否发生变化，用于优化渲染性能
+   * 通过浅比较判断组件上下文配置是否发生变化，用于优化渲染性能
    * 
    * 比较规则：
    * 1. 引用相同 → 不更新
    * 2. 有一个为空 → 更新
    * 3. 类型不同 → 更新
-   * 4. 属性数量不同 → 更新
-   * 5. 属性值不同（浅比较）→ 更新
+   * 4. props 数量不同 → 更新
+   * 5. props 值不同（浅比较）→ 更新
    * 
-   * @param oldCfg - 旧实例配置
-   * @param newCfg - 新实例配置
+   * @param oldCtx - 旧上下文
+   * @param newCtx - 新上下文
    * @returns 是否应该更新
    */
-  shouldUpdateComponent(oldCfg: ComponentInstance | null | undefined, newCfg: ComponentInstance | null | undefined): boolean {
-    if (oldCfg === newCfg) return false
-    if (!oldCfg || !newCfg) return true
-    if (oldCfg.type !== newCfg.type) return true
+  shouldUpdateComponent(oldCtx: ComponentContext | null | undefined, newCtx: ComponentContext | null | undefined): boolean {
+    if (oldCtx === newCtx) return false
+    if (!oldCtx || !newCtx) return true
+    if (oldCtx.type !== newCtx.type) return true
 
     // Shallow props comparison
-    const oldProps = oldCfg.props ?? {}
-    const newProps = newCfg.props ?? {}
+    const oldProps = oldCtx.props ?? {}
+    const newProps = newCtx.props ?? {}
     if (Object.keys(oldProps).length !== Object.keys(newProps).length) return true
     for (const k of Object.keys(oldProps)) {
       if (oldProps[k] !== newProps[k]) return true
@@ -109,7 +138,7 @@ export class SparkComponentRendererImpl {
    * @param newChildren - 新子组件数组
    * @returns 是否发生变化
    */
-  haveChildrenChanged(oldChildren: ComponentInstance[], newChildren: ComponentInstance[]): boolean {
+  haveChildrenChanged(oldChildren: ComponentContext[], newChildren: ComponentContext[]): boolean {
     if (oldChildren.length !== newChildren.length) return true
     for (let i = 0; i < oldChildren.length; i++) {
       if (this.shouldUpdateComponent(oldChildren[i], newChildren[i])) return true
@@ -120,12 +149,12 @@ export class SparkComponentRendererImpl {
   /**
    * 递归渲染组件树
    * 
-   * 将组件实例配置树转换为渲染结果树，支持：
+   * 将组件上下文树转换为渲染结果树，支持：
    * - 标准组件（有 Vue 组件定义）
    * - 逻辑组件（仅有子组件，无 Vue 组件）
    * - 空片段（已注册但无内容）
    * 
-   * @param instance - 组件实例配置
+   * @param ctx - 组件上下文
    * @returns 渲染结果树
    * @throws 如果组件类型未注册且无子组件
    * 
@@ -135,15 +164,20 @@ export class SparkComponentRendererImpl {
    *   type: 'spark-grid',
    *   props: { dataSource: [] },
    *   children: [
-   *     { type: 'spark-column', props: { field: 'name' } }
+   *     { type: 'spark-column', props: { field: 'name' }, children: [] }
    *   ]
    * })
    * ```
    */
-  renderComponentTree(instance: ComponentInstance): RenderResult {
-    const component = this.resolver(instance.type)
+  renderComponentTree(ctx: ComponentContext): RenderResult {
+    // 定期清理过期缓存（每次渲染时有 1% 的机会触发）
+    if (Math.random() < 0.01) {
+      this.pruneExpiredCache()
+    }
+
+    const component = this.resolver(ctx.type)
     
-    const children = this.getChildrenForConfig(instance)
+    const children = ctx.children ?? []
     const renderedChildren = children.map(child => this.renderComponentTree(child))
 
     // If component is registered, render it normally
@@ -152,8 +186,8 @@ export class SparkComponentRendererImpl {
         type: 'vue-component',
         component,
         props: {
-          instance,
-          key: instance.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
+          context: ctx,
+          key: ctx.id
         }
       }
 
@@ -173,7 +207,7 @@ export class SparkComponentRendererImpl {
     }
     
     // If component is null (logical component) but type is registered, create empty fragment
-    if (this.registry.has(instance.type)) {
+    if (this.registry.has(ctx.type)) {
       return {
         type: 'fragment',
         children: []
@@ -181,7 +215,7 @@ export class SparkComponentRendererImpl {
     }
     
     // If no component and no children, this is an error case
-    throw new Error(`Component type '${instance.type}' is not registered and has no children to render`)
+    throw new Error(`Component type '${ctx.type}' is not registered and has no children to render`)
   }
 
   /**
@@ -189,34 +223,34 @@ export class SparkComponentRendererImpl {
    * 
    * 仅渲染指定组件本身，不处理子组件
    * 
-   * @param instance - 组件实例配置
+   * @param ctx - 组件上下文
    * @returns 渲染结果
    * @throws 如果组件类型未注册
    */
-  renderComponent(instance: ComponentInstance): RenderResult {
-    const component = this.resolver(instance.type)
+  renderComponent(ctx: ComponentContext): RenderResult {
+    const component = this.resolver(ctx.type)
     if (!component) {
-      throw new Error(`Component type '${instance.type}' is not registered`)
+      throw new Error(`Component type '${ctx.type}' is not registered`)
     }
 
     return {
       type: 'vue-component',
       component,
       props: {
-        instance,
-        key: instance.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`
+        context: ctx,
+        key: ctx.id
       }
     }
   }
 
   /**
-   * 获取组件实例的子组件列表
+   * 获取组件上下文的子组件列表
    * 
-   * @param instance - 组件实例配置
-   * @returns 子组件实例数组（空数组如果无子组件）
+   * @param ctx - 组件上下文
+   * @returns 子组件数组（空数组如果无子组件）
    */
-  getChildrenForConfig(instance: ComponentInstance): ComponentInstance[] {
-    return Array.isArray(instance.children) ? instance.children : []
+  getChildrenForConfig(ctx: ComponentContext): ComponentContext[] {
+    return ctx.children ?? []
   }
 
   /**
@@ -250,13 +284,13 @@ export class SparkComponentRenderer {
   /**
    *  检查组件是否应该更新（静态方法）
    * 
-   * @param oldCfg - 旧实例配置
-   * @param newCfg - 新实例配置
+   * @param oldCtx - 旧上下文
+   * @param newCtx - 新上下文
    * @returns 是否应该更新
    */
-  static shouldUpdateComponent(oldCfg: ComponentInstance | null | undefined, newCfg: ComponentInstance | null | undefined): boolean {
+  static shouldUpdateComponent(oldCtx: ComponentContext | null | undefined, newCtx: ComponentContext | null | undefined): boolean {
     const renderer = new SparkComponentRendererImpl({} as ComponentRegistry)
-    return renderer.shouldUpdateComponent(oldCfg, newCfg)
+    return renderer.shouldUpdateComponent(oldCtx, newCtx)
   }
 
   /**
@@ -266,21 +300,21 @@ export class SparkComponentRenderer {
    * @param newChildren - 新子组件数组
    * @returns 是否发生变化
    */
-  static haveChildrenChanged(oldChildren: ComponentInstance[], newChildren: ComponentInstance[]): boolean {
+  static haveChildrenChanged(oldChildren: ComponentContext[], newChildren: ComponentContext[]): boolean {
     const renderer = new SparkComponentRendererImpl({} as ComponentRegistry)
     return renderer.haveChildrenChanged(oldChildren, newChildren)
   }
 
   /**
-   * 解析组件实例对应的渲染器
+   * 解析组件上下文对应的渲染器
    * 
-   * @param instance - 组件实例配置
+   * @param ctx - 组件上下文
    * @param resolver - 组件解析器
    * @returns 解析的组件或 null
    */
-  static resolveRendererForConfig(instance: ComponentInstance, resolver: ComponentResolver): unknown | null {
-    if (!instance?.type) return null
-    return resolver(instance.type) ?? null
+  static resolveRendererForConfig(ctx: ComponentContext, resolver: ComponentResolver): unknown | null {
+    if (!ctx?.type) return null
+    return resolver(ctx.type) ?? null
   }
 
   /**
@@ -314,12 +348,12 @@ export class SparkComponentRenderer {
   }
 
   /**
-   * 获取实例的子组件（静态方法）
+   * 获取上下文的子组件（静态方法）
    * 
-   * @param instance - 组件实例配置
-   * @returns 子组件实例数组
+   * @param ctx - 组件上下文
+   * @returns 子组件数组
    */
-  static getChildrenForConfig(instance: ComponentInstance): ComponentInstance[] {
-    return Array.isArray(instance.children) ? instance.children : []
+  static getChildrenForConfig(ctx: ComponentContext): ComponentContext[] {
+    return Array.isArray(ctx.children) ? ctx.children : []
   }
 }
