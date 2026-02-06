@@ -252,7 +252,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
         let current: ComponentContext | undefined = context
         while (current) {
           const p = current.providers.get(name)
-          if (p?.implementation !== undefined) return p.implementation as unknown as T
+          if (p?.implementation !== undefined) return p.implementation as T
           current = current.parent ?? undefined
         }
         return undefined

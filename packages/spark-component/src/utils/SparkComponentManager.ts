@@ -187,15 +187,17 @@ export class SparkComponentManagerImpl {
 
     // 通知等待的监听器
     if (context.providerListeners?.has(provider.name)) {
-      const set = context.providerListeners.get(provider.name) as Set<(prov: CapabilityProvider) => void>
-      set.forEach(cb => {
-        try { 
-          cb(provider) 
-        } catch (e: unknown) { 
-          this.logger.warn(`Provider listener for '${provider.name}' threw error:`, String(e)) 
-        }
-      })
-      set.clear()
+      const set = context.providerListeners.get(provider.name)
+      if (set) {
+        set.forEach(cb => {
+          try { 
+            cb(provider) 
+          } catch (e: unknown) { 
+            this.logger.warn(`Provider listener for '${provider.name}' threw error:`, String(e)) 
+          }
+        })
+        set.clear()
+      }
     }
 
     this.logger.debug(`Registered provider '${provider.name}' for ${context.type} (${context.id})`)

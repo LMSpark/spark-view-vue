@@ -152,8 +152,8 @@ export type { CapabilityProvider, CapabilityConsumer } from './common.js'
 
 // DI keys for Vue injection
 import type { InjectionKey } from 'vue'
-export const SPARK_MANAGER_KEY: InjectionKey<Spark.ComponentManager> = Symbol('sparkManager') as unknown as InjectionKey<Spark.ComponentManager>
-export const SPARK_REGISTRY_KEY: InjectionKey<Spark.ComponentRegistry> = Symbol('sparkRegistry') as unknown as InjectionKey<Spark.ComponentRegistry>
+export const SPARK_MANAGER_KEY: InjectionKey<Spark.ComponentManager> = Symbol('sparkManager') as InjectionKey<Spark.ComponentManager>
+export const SPARK_REGISTRY_KEY: InjectionKey<Spark.ComponentRegistry> = Symbol('sparkRegistry') as InjectionKey<Spark.ComponentRegistry>
 
 // Top-level aliases for simplified imports
 export type ComponentDefinition = Spark.ComponentDefinition
@@ -162,4 +162,42 @@ export type ComponentRegistry = Spark.ComponentRegistry
 export type ComponentManager = Spark.ComponentManager
 export type PluginHooks = Spark.PluginHooks
 export type Plugin = Spark.Plugin
+
+/**
+ * 实用类型别名：强类型 state 支持
+ * 
+ * 用于在组件中明确 state 的类型结构
+ * 
+ * @example
+ * ```typescript
+ * interface MyState { count: number; name: string }
+ * const context = getContext() as TypedContext<MyState>
+ * context.state.count  // ✅ 类型安全访问
+ * ```
+ */
+export type TypedContext<TState = Record<string, unknown>> = Omit<ComponentContext, 'state'> & {
+  state: TState
+}
+
+/**
+ * 实用类型别名：强类型 state + props 支持
+ * 
+ * 用于在组件中同时明确 state 和 props 的类型结构
+ * 
+ * @example
+ * ```typescript
+ * interface MyState { count: number }
+ * interface MyProps { title: string }
+ * const context = getContext() as StrictContext<MyState, MyProps>
+ * context.state.count  // ✅ 类型安全
+ * context.props.title  // ✅ 类型安全
+ * ```
+ */
+export type StrictContext<TState = Record<string, unknown>, TProps = Record<string, unknown>> = Omit<
+  ComponentContext,
+  'state' | 'props'
+> & {
+  state: TState
+  props: TProps
+}
 
