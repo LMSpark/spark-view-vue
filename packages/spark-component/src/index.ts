@@ -6,11 +6,6 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
-// 组件定义注册助手（简化语法）
-export { 
-  createSimpleRegistration
-} from './helpers/registerHelper.js'
-
 // 事件系统
 export {
   createComponentEventEmitter

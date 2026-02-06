@@ -1,4 +1,3 @@
-import { valid as semverValid, satisfies as semverSatisfies, gte as semverGte } from 'semver'
 import { Logger } from '@spark-view/spark-utils'
 import type { ComponentConfig, ComponentRegistry } from '../types/spark-component.js'
 
@@ -201,15 +200,6 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
   }
 
   /**
-   * 获取所有组件定义
-   * 
-   * @returns 组件定义数组
-   */
-  getAllDefinitions(): ComponentConfig[] {
-    return Array.from(this.components.values())
-  }
-
-  /**
    * 注销组件类型
    * 
    * @param type - 组件类型名称
@@ -255,66 +245,6 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     }
 
     return true
-  }
-
-  /**
-   * 查找能力的兼容提供者组件
-   * 
-   * 根据能力名称和最小版本要求，查找所有兼容的提供者组件类型
-   * 
-   * 版本匹配规则：
-   * 1. 如果都是严格版本号（如 '1.2.3'），使用 gte 比较
-   * 2. 如果 minVersion 是范围（如 '^1.2.0'），使用 semver satisfies
-   * 3. 如果都不是标准 semver，使用字符串精确匹配
-   * 
-   * @param capabilityName - 能力名称（如 'data-source', 'row-selection'）
-   * @param minVersion - 最小版本要求（可选，支持 semver 范围）
-   * @returns 兼容的组件类型名称数组
-   * 
-   * @example
-   * ```typescript
-   * // 查找所有提供 'data-source' 能力的组件
-   * registry.findCompatibleProviders('data-source')
-   * // => ['spark-grid', 'spark-table']
-   * 
-   * // 查找版本 >= 2.0.0 的提供者
-   * registry.findCompatibleProviders('data-source', '2.0.0')
-   * // => ['spark-grid']
-   * 
-   * // 使用 semver 范围
-   * registry.findCompatibleProviders('data-source', '^1.2.0')
-   * // => ['spark-grid', 'spark-table']
-   * ```
-   */
-  findCompatibleProviders(capabilityName: string, minVersion?: string): string[] {
-    const matches: string[] = []
-    this.components.forEach((def, type) => {
-      if (def.providers && Array.isArray(def.providers)) {
-        for (const p of def.providers) {
-          if (p.name === capabilityName) {
-            if (!minVersion) { matches.push(type); break }
-            const v = p.version ?? '0.0.0'
-            try {
-              // If both are strict versions (e.g., '1.2.3'), use gte for minimal version semantics.
-              if (semverValid(v) && semverValid(minVersion)) {
-                if (semverGte(v, minVersion)) { matches.push(type); break }
-              } else if (semverValid(v) && semverSatisfies(v, minVersion)) {
-                // minVersion may be a range like '^1.2.0' or '>=1.2.0 <2.0.0'
-                matches.push(type); break
-              } else if (v === minVersion) {
-                // fallback for non-semver tokens
-                matches.push(type); break
-              }
-            } catch (e) {
-              // on unexpected parse issues, fallback to exact match
-              this.logger.warn(`semver parse failed for provider version ${v} minVersion ${minVersion}: ${String(e)}`)
-              if (v === minVersion) { matches.push(type); break }
-            }
-          }
-        }
-      }
-    })
-    return matches
   }
 }
 
