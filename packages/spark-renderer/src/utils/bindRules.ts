@@ -1,10 +1,10 @@
-﻿/**
+/**
  * Rule 数据绑定工具
  */
 
 import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
-import type { DataRow, IDataSet, BindingContext } from '@spark-view/spark-data'
+import type { IDataRow, IDataSet, BindingContext } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
 import { nextTick } from 'vue'
@@ -14,7 +14,7 @@ import { nextTick } from 'vue'
  */
 interface ElTableComponent extends HTMLElement {
   clearSelection?: () => void
-  toggleRowSelection?: (row: DataRow, selected: boolean) => void
+  toggleRowSelection?: (row: IDataRow, selected: boolean) => void
 }
 
 /**
@@ -199,7 +199,7 @@ function injectTableEvents(
   
   // 注入 currentChange 事件（单选行变化）
   const originalCurrentChange = rule.on['currentChange']
-  rule.on['currentChange'] = (currentRow: DataRow | null, oldRow: DataRow | null) => {
+  rule.on['currentChange'] = (currentRow: IDataRow | null, oldRow: IDataRow | null) => {
     if (isProcessingEvent) return
     
     try {
@@ -225,7 +225,7 @@ function injectTableEvents(
   
   // 注入 selectionChange 事件（多选变化）
   const originalSelectionChange = rule.on['selectionChange']
-  rule.on['selectionChange'] = (selection: DataRow[]) => {
+  rule.on['selectionChange'] = (selection: IDataRow[]) => {
     if (isProcessingEvent) return
     
     try {
@@ -275,7 +275,7 @@ export function findRuleByDataKey(rules: Rule[], dataKey: string): Rule | null {
 export function syncSelectedRowsToTable(
   tableName: string,
   contextId: string,
-  rows: DataRow[],
+  rows: IDataRow[],
   formApi: FormCreateAPI | null
 ): void {
   void nextTick(() => {

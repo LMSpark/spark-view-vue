@@ -1,4 +1,4 @@
-﻿import type { ComponentConfig, ComponentRegistry } from '../types/spark-component.js'
+import type { ComponentConfig, ComponentRegistry } from '../types/spark-component.js'
 import type { Component } from 'vue'
 
 /**

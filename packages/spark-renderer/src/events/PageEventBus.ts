@@ -3,7 +3,7 @@
  * 每个页面有独立的事件总线实例，实现页面级隔离（双向事件）
  */
 
-import type { DataRow } from '@spark-view/spark-data'
+import type { IDataRow } from '@spark-view/spark-data'
 import { EventEmitter } from '@spark-view/spark-utils'
 
 /**
@@ -30,7 +30,7 @@ export interface PageEvents {
   /**
    * 数据加载完成 → 通知组件刷新
    */
-  'data:loaded': (tableName: string, rows: DataRow[]) => void
+  'data:loaded': (tableName: string, rows: IDataRow[]) => void
 
   /**
    * 数据刷新 → 强制组件重新渲染
@@ -49,12 +49,12 @@ export interface PageEvents {
   /**
    * 数据变化 → 页面同步状态
    */
-  'data:changed': (tableName: string, row: DataRow) => void
+  'data:changed': (tableName: string, row: IDataRow) => void
 
   /**
    * 数据保存成功 → 页面显示提示
    */
-  'data:saved': (tableName: string, row?: DataRow) => void
+  'data:saved': (tableName: string, row?: IDataRow) => void
 
   /**
    * 数据删除 → 页面更新列表
@@ -94,12 +94,12 @@ export interface PageEvents {
   /**
    * Grid 行点击 → 页面更新选择状态
    */
-  'grid:rowClick': (row: DataRow) => void
+  'grid:rowClick': (row: IDataRow) => void
 
   /**
    * Grid 选择变化 → 页面更新按钮状态
    */
-  'grid:selection': (rows: DataRow[]) => void
+  'grid:selection': (rows: IDataRow[]) => void
 
   /**
    * Grid 排序 → 页面保存偏好

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * DataTable 类 - 数据表
  * 继承 BindingContext，实现 IDataTable 接口
  * 相当于 .NET 的 DataTable - 结构层
@@ -12,7 +12,7 @@ import type {
   DataColumn, 
   CrudApi, 
   IDataSet,
-  DataRow
+  IDataRow
 } from './types'
 import type { ApiAdapter } from './apiAdapter'
 
@@ -99,7 +99,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
    * 更新行记录（同时更新 rows 和 __originalRows）
    * @private
    */
-  private updateRowInBoth(predicate: (row: DataRow) => boolean, updater: (row: DataRow) => void): void {
+  private updateRowInBoth(predicate: (row: IDataRow) => boolean, updater: (row: IDataRow) => void): void {
     const index = this.rows.findIndex(predicate)
     if (index > -1) {
       const row = this.rows[index]
@@ -124,7 +124,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
    * 从两个数组中删除行
    * @private
    */
-  private removeRowFromBoth(predicate: (row: DataRow) => boolean): void {
+  private removeRowFromBoth(predicate: (row: IDataRow) => boolean): void {
     const index = this.rows.findIndex(predicate)
     if (index > -1) {
       this.rows.splice(index, 1)
@@ -142,13 +142,13 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   /**
    * 列表查询
    */
-  async list(params?: Record<string, unknown>): Promise<DataRow[]> {
+  async list(params?: Record<string, unknown>): Promise<IDataRow[]> {
     this.validateApi('list', this.api?.list)
     
     return this.executeApi('list', async () => {
       // validateApi 已确保 apiAdapter 和 api.list 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const data = await this.apiAdapter!.execute<DataRow[]>(this.api!.list!, params)
+      const data = await this.apiAdapter!.execute<IDataRow[]>(this.api!.list!, params)
       
       // 替换全部数据
       this.rows.splice(0, this.rows.length, ...data)
@@ -162,13 +162,13 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   /**
    * 创建记录
    */
-  async create(data: DataRow): Promise<DataRow> {
+  async create(data: IDataRow): Promise<IDataRow> {
     this.validateApi('create', this.api?.create)
     
     return this.executeApi('create', async () => {
       // validateApi 已确保 apiAdapter 和 api.create 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = await this.apiAdapter!.execute<DataRow>(this.api!.create!, data)
+      const result = await this.apiAdapter!.execute<IDataRow>(this.api!.create!, data)
       
       // 追加到两个数组
       this.rows.push(result)
@@ -184,13 +184,13 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   /**
    * 更新记录
    */
-  async update(id: string | number, data: Partial<DataRow>): Promise<DataRow> {
+  async update(id: string | number, data: Partial<IDataRow>): Promise<IDataRow> {
     this.validateApi('update', this.api?.update)
     
     return this.executeApi('update', async () => {
       // validateApi 已确保 apiAdapter 和 api.update 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = await this.apiAdapter!.execute<DataRow>(this.api!.update!, { id, ...data })
+      const result = await this.apiAdapter!.execute<IDataRow>(this.api!.update!, { id, ...data })
       
       // 更新两个数组中的记录
       this.updateRowInBoth(
@@ -223,13 +223,13 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   /**
    * 批量创建
    */
-  async batchCreate(data: DataRow[]): Promise<DataRow[]> {
+  async batchCreate(data: IDataRow[]): Promise<IDataRow[]> {
     this.validateApi('batch.create', this.api?.batch?.create)
     
     return this.executeApi('batchCreate', async () => {
       // validateApi 已确保 apiAdapter 和 api.batch.create 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = await this.apiAdapter!.execute<DataRow[]>(this.api!.batch!.create!, { items: data })
+      const result = await this.apiAdapter!.execute<IDataRow[]>(this.api!.batch!.create!, { items: data })
       
       // 批量追加
       this.rows.push(...result)
@@ -246,13 +246,13 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   /**
    * 批量更新
    */
-  async batchUpdate(updates: Array<{ id: string | number; data: Partial<DataRow> }>): Promise<DataRow[]> {
+  async batchUpdate(updates: Array<{ id: string | number; data: Partial<IDataRow> }>): Promise<IDataRow[]> {
     this.validateApi('batch.update', this.api?.batch?.update)
     
     return this.executeApi('batchUpdate', async () => {
       // validateApi 已确保 apiAdapter 和 api.batch.update 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = await this.apiAdapter!.execute<DataRow[]>(this.api!.batch!.update!, { items: updates })
+      const result = await this.apiAdapter!.execute<IDataRow[]>(this.api!.batch!.update!, { items: updates })
       
       // 批量更新
       result.forEach(updated => {

@@ -1,4 +1,4 @@
-﻿import { Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
 import type { Plugin, PluginHooks, ComponentContext } from '../types/spark-component.js'
 
 const logger = Logger('Spark:Plugin')

@@ -1,4 +1,4 @@
-﻿import { valid as semverValid, satisfies as semverSatisfies, gte as semverGte } from 'semver'
+import { valid as semverValid, satisfies as semverSatisfies, gte as semverGte } from 'semver'
 import { Logger } from '@spark-view/spark-utils'
 import type { ComponentConfig, ComponentRegistry } from '../types/spark-component.js'
 
