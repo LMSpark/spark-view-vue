@@ -14,21 +14,18 @@ import type { ComponentConfig } from '../types/spark-component.js'
 const logger = Logger('Spark:RegisterHelper')
 
 /**
- * 简化的组件注册配置
+ * 简化配置类型（内联定义，不再导出独立接口）
+ * 用于 createSimpleRegistration 函数参数
  */
-export interface SimpleComponentConfig {
+type SimpleConfig = {
   /** 组件名称（如 'HeavyGrid'），自动转换为 kebab-case type */
   name: string
-  
   /** 组件路径（有 path 自动懒加载） */
   path?: string
-  
   /** 组件本身（已导入的组件） */
   component?: unknown
-  
   /** 版本号（默认 '1.0.0'） */
   version?: string
-  
   /** 加载完成回调 */
   onLoad?: (component: unknown) => void
 }
@@ -77,7 +74,7 @@ export function nameToType(name: string): string {
  * ])
  * ```
  */
-export function createSimpleRegistration(config: SimpleComponentConfig): ComponentConfig {
+export function createSimpleRegistration(config: SimpleConfig): ComponentConfig {
   // 1. 自动生成 type
   const type = nameToType(config.name)
   
@@ -140,7 +137,7 @@ export function createSimpleRegistration(config: SimpleComponentConfig): Compone
  * ```
  */
 export function batchCreateSimpleRegistrations(
-  configs: SimpleComponentConfig[]
+  configs: SimpleConfig[]
 ): ComponentConfig[] {
   return configs.map(config => createSimpleRegistration(config))
 }
@@ -152,7 +149,7 @@ export const presets = {
   /**
    * 懒加载预设（后向兼容，建议直接传 path）
    */
-  lazy(name: string, path: string, options?: Partial<SimpleComponentConfig>): SimpleComponentConfig {
+  lazy(name: string, path: string, options?: Partial<SimpleConfig>): SimpleConfig {
     return {
       name,
       path,
@@ -163,7 +160,7 @@ export const presets = {
   /**
    * 同步加载预设（传入已导入的组件）
    */
-  sync(name: string, component: unknown, options?: Partial<SimpleComponentConfig>): SimpleComponentConfig {
+  sync(name: string, component: unknown, options?: Partial<SimpleConfig>): SimpleConfig {
     return {
       name,
       component,
