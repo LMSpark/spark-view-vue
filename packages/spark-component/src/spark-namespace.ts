@@ -46,13 +46,13 @@ export const Spark: {
    * 注册组件 - 支持多种配置格式
    * - ComponentDefinition: 标准组件定义对象
    * - ComponentDefinition[]: 批量注册
-   * - 简化配置: { name, component } 自动转换（component 可以是字符串路径或组件本身）
+   * - 简化配置: { name, path } 或 { name, component } （两者互斥）
    * - { spark?: {...} }: Vue 组件附带 spark 元数据
    */
-  register: (input: ComponentDefinition | ComponentDefinition[] | { name: string; component: string | unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name'> }) => void
+  register: (input: ComponentDefinition | ComponentDefinition[] | { name: string; path: string } | { name: string; component: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name'> }) => void
   
   /** 批量注册组件 */
-  registerAll: (configs: (ComponentDefinition | { name: string; component: string | unknown })[]) => void
+  registerAll: (configs: (ComponentDefinition | { name: string; path: string } | { name: string; component: unknown })[]) => void
   
   // --------------------------------------------------------------------------
   // 组件开发 API - 创建和定义组件
@@ -121,11 +121,11 @@ export const Spark: {
     app.use(plugin as VuePlugin)
   },
   
-  register(input: ComponentDefinition | ComponentDefinition[] | { name: string; component: string | unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name'> }) {
+  register(input: ComponentDefinition | ComponentDefinition[] | { name: string; path: string } | { name: string; component: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name'> }) {
     // 简化配置：检查是否有 'name' 但没有 'type'（简化格式）
     if (input && typeof input === 'object' && 'name' in input && !('type' in input) && !Array.isArray(input)) {
-      const config = input as { name: string; component: string | unknown }
-      const standardConfig = createSimpleRegistration(config.name, config.component)
+      const config = input as { name: string; path: string } | { name: string; component: unknown }
+      const standardConfig = createSimpleRegistration(config)
       return componentManager.registerComponent(standardConfig)
     }
 
@@ -159,12 +159,12 @@ export const Spark: {
     throw new Error('❌ Invalid registration input. Expected ComponentDefinition, ComponentDefinition[], or object with spark property.')
   },
   
-  registerAll(configs: (ComponentDefinition | { name: string; component: string | unknown })[]) {
+  registerAll(configs: (ComponentDefinition | { name: string; path: string } | { name: string; component: unknown })[]) {
     configs.forEach(config => {
       if ('name' in config && !('type' in config)) {
         // 简化配置 - 自动转换
-        const simpleConfig = config as { name: string; component: string | unknown }
-        const standardConfig = createSimpleRegistration(simpleConfig.name, simpleConfig.component)
+        const simpleConfig = config as { name: string; path: string } | { name: string; component: unknown }
+        const standardConfig = createSimpleRegistration(simpleConfig)
         componentManager.registerComponent(standardConfig)
       } else {
         // 标准配置 - 直接注册

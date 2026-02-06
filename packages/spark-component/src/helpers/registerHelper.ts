@@ -33,63 +33,60 @@ function nameToType(name: string): string {
  * 简化的组件注册方法
  * 
  * 自动处理类型转换、loader 包装
- * component 参数可以是：
- * - string：作为路径懒加载
- * - 其他：作为已导入的组件
  * 
- * @param name - 组件名称（自动转换为 kebab-case type）
- * @param component - 字符串路径或组件本身
+ * @param config - 组件配置（path 和 component 互斥）
+ *   - { name, path }: 异步加载，path 为字符串路径
+ *   - { name, component }: 同步加载，component 为已导入的组件
  * 
  * @example
  * ```typescript
- * // 同步注册 - component 是组件本身
+ * // 同步注册
  * Spark.register({ name: 'MyButton', component: MyButtonComponent })
  * 
- * // 异步注册（推荐）- component 是字符串路径
- * Spark.register({ name: 'HeavyGrid', component: './components/HeavyGrid.vue' })
+ * // 异步注册（推荐）
+ * Spark.register({ name: 'HeavyGrid', path: './components/HeavyGrid.vue' })
  * 
  * // 批量注册
  * Spark.registerAll([
- *   { name: 'Chart', component: './Chart.vue' },
- *   { name: 'Calendar', component: './Calendar.vue' }
+ *   { name: 'Chart', path: './Chart.vue' },
+ *   { name: 'Calendar', component: CalendarComponent }
  * ])
  * ```
  */
 export function createSimpleRegistration(
-  name: string,
-  component: string | unknown
+  config: { name: string; path: string } | { name: string; component: unknown }
 ): ComponentDefinition {
   // 1. 自动生成 type
-  const type = nameToType(name)
+  const type = nameToType(config.name)
   
-  // 2. 根据 component 类型智能判断
+  // 2. 根据配置类型判断
   let actualComponent: unknown
   let loader: (() => Promise<{ default: unknown }>) | undefined
   
-  if (typeof component === 'string') {
-    // 字符串 → 作为路径懒加载
-    const componentPath = component
+  if ('path' in config) {
+    // 有 path → 创建懒加载 loader
+    const componentPath = config.path
     loader = async () => {
       try {
-        logger.info(`⏳ Loading component: ${name}`)
+        logger.info(`⏳ Loading component: ${config.name}`)
         const module = await import(/* @vite-ignore */ componentPath)
         const loadedComponent = module.default ?? module
-        logger.info(`✅ Loaded component: ${name}`)
+        logger.info(`✅ Loaded component: ${config.name}`)
         return { default: loadedComponent }
       } catch (error) {
-        logger.error(`❌ Failed to load component: ${name}`, error)
+        logger.error(`❌ Failed to load component: ${config.name}`, error)
         throw error
       }
     }
   } else {
-    // 非字符串 → 作为已导入的组件
-    actualComponent = component
+    // 有 component → 作为已导入的组件
+    actualComponent = config.component
   }
   
   // 3. 构建标准配置
   const standardConfig: ComponentDefinition = {
     type,
-    name,
+    name: config.name,
     component: actualComponent,
     loader
   }
