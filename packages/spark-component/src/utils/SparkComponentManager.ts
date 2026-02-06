@@ -1,8 +1,9 @@
 import { componentRegistry as defaultRegistry, createComponentRegistry } from './SparkComponentRegistry.js'
 import { Logger } from '@spark-view/spark-utils'
-import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
+import { capabilityManager as defaultCapabilityManager, createComponentCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
 import type { ComponentDefinition, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
+import type { ComponentCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 
 /**
  * SPARK 组件管理器实现
@@ -13,9 +14,9 @@ import type { ComponentDefinition, ComponentContext, CapabilityProvider, Capabil
  * - 管理组件间的能力系统（Capability）
  * - 维护组件实例注册表
  * 
- * 设计模式：单例 + 工厂
- * - 默认实例：componentManager（全局共享）
- * - 工厂函数：createComponentManager（按需创建）
+ * 设计模式：依赖注入 + 工厂
+ * - 默认实例：componentManager（全局共享，用于向后兼容）
+ * - 工厂函数：createComponentManager（按需创建，支持依赖注入）
  */
 export class SparkComponentManagerImpl {
   /** 组件上下文实例缓存（key: contextId, value: ComponentContext） */
@@ -24,6 +25,8 @@ export class SparkComponentManagerImpl {
   private renderer: SparkComponentRendererImpl
   /** 组件类型注册表（存储组件定义） */
   private registry: ComponentRegistry
+  /** 能力管理器（负责组件间能力的连接与断开） */
+  private capabilityManager: ComponentCapabilityManager
   /** 日志记录器 */
   private logger = Logger('Spark:Manager')
 
@@ -31,9 +34,15 @@ export class SparkComponentManagerImpl {
    * 构造函数
    * @param renderer - 可选的自定义渲染器
    * @param registry - 可选的自定义注册表
+   * @param capabilityManager - 可选的自定义能力管理器
    */
-  constructor(renderer?: SparkComponentRendererImpl, registry?: ComponentRegistry) {
+  constructor(
+    renderer?: SparkComponentRendererImpl, 
+    registry?: ComponentRegistry,
+    capabilityManager?: ComponentCapabilityManager
+  ) {
     this.registry = registry ?? defaultRegistry
+    this.capabilityManager = capabilityManager ?? defaultCapabilityManager
     this.renderer = renderer ?? new SparkComponentRendererImpl(this.registry)
   }
 
@@ -125,7 +134,7 @@ export class SparkComponentManagerImpl {
     const ctx = this.contexts.get(id)
     if (!ctx) return false
     try {
-      capabilityManager.disconnectAllCapabilities(ctx)
+      this.capabilityManager.disconnectAllCapabilities(ctx)
       ctx.parent?.children && (ctx.parent.children = ctx.parent.children.filter(c => c.id !== id))
       const walk = (c: ComponentContext) => {
         c.children?.forEach(x => walk(x))
@@ -159,7 +168,7 @@ export class SparkComponentManagerImpl {
     
     // 自动连接能力（安全处理错误）
     try { 
-      capabilityManager.autoConnectCapabilities(context) 
+      this.capabilityManager.autoConnectCapabilities(context) 
     } catch (e: unknown) {
       this.logger.warn(`Failed to auto-connect capabilities for ${context.type}:`, String(e))
     }
@@ -297,7 +306,9 @@ export class SparkComponentManagerImpl {
  * 
  * 使用场景：
  * - 简单应用，全局共享一个管理器
- * - 避免重复创建管理器实例
+ * - 向后兼容（与全局 capabilityManager 配合使用）
+ * 
+ * ⚠️ 不推荐在测试中使用。测试应使用 createComponentManager() 创建隔离实例
  */
 export const componentManager = new SparkComponentManagerImpl()
 
@@ -306,49 +317,63 @@ export const componentManager = new SparkComponentManagerImpl()
  * 
  * 使用场景：
  * - 需要隔离的组件系统（如测试、多租户）
- * - 自定义渲染器或注册表
+ * - 自定义渲染器、注册表或能力管理器
  * 
  * @param renderer - 可选的自定义渲染器
  * @param registry - 可选的自定义注册表
+ * @param capabilityManager - 可选的自定义能力管理器
  * @returns 新的组件管理器实例
  * 
  * @example
  * ```typescript
- * // 创建独立的测试管理器
- * const testManager = createComponentManager()
+ * // 创建独立的测试管理器（完全隔离）
+ * const testManager = createComponentManager(
+ *   undefined, 
+ *   createComponentRegistry(),
+ *   createComponentCapabilityManager()
+ * )
  * 
- * // 使用自定义注册表
- * const customRegistry = new SparkComponentRegistryImpl()
- * const manager = createComponentManager(undefined, customRegistry)
+ * // 使用默认能力管理器（与全局共享）
+ * const manager = createComponentManager(undefined, createComponentRegistry())
  * ```
  */
-export function createComponentManager(renderer?: SparkComponentRendererImpl, registry?: ComponentRegistry): ComponentManager {
-  return new SparkComponentManagerImpl(renderer, registry)
+export function createComponentManager(
+  renderer?: SparkComponentRendererImpl, 
+  registry?: ComponentRegistry,
+  capabilityManager?: ComponentCapabilityManager
+): ComponentManager {
+  return new SparkComponentManagerImpl(renderer, registry, capabilityManager)
 }
 
 /**
- * 创建隔离的组件系统（Manager + Registry 配套）
+ * 创建完全隔离的组件系统（Manager + Registry + CapabilityManager 配套）
  * 
  * 使用场景：
- * - 测试环境（每个测试用例独立的组件系统）
- * - 多租户应用（每个租户独立的组件库）
- * - 沙箱环境（隔离的组件定义和实例）
+ * - 测试环境（每个测试用例独立的组件系统，状态完全隔离）
+ * - 多租户应用（每个租户独立的组件库和能力系统）
+ * - 沙箱环境（隔离的组件定义、实例和能力连接）
  * 
- * @returns 配套的 Manager 和 Registry
+ * @returns 配套的 Manager、Registry 和 CapabilityManager
  * 
  * @example
  * ```typescript
- * // 测试场景
- * const { manager, registry } = Spark.createComponentSystem()
+ * // ✅ 推荐：测试场景（完全隔离）
+ * const { manager, registry, capabilities } = Spark.createComponentSystem()
  * registry.register('test-component', definition)
  * 
  * // 多租户场景
- * const tenant1System = Spark.createComponentSystem()
- * const tenant2System = Spark.createComponentSystem()
+ * const tenant1 = Spark.createComponentSystem()
+ * const tenant2 = Spark.createComponentSystem()
+ * // tenant1 和 tenant2 的状态完全独立
  * ```
  */
-export function createComponentSystem(): { manager: ComponentManager; registry: ComponentRegistry } {
+export function createComponentSystem(): { 
+  manager: ComponentManager
+  registry: ComponentRegistry
+  capabilities: ComponentCapabilityManager 
+} {
   const registry = createComponentRegistry()
-  const manager = createComponentManager(undefined, registry)
-  return { manager, registry }
+  const capabilities = createComponentCapabilityManager()
+  const manager = createComponentManager(undefined, registry, capabilities)
+  return { manager, registry, capabilities }
 }
