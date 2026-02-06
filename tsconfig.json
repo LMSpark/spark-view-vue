@@ -61,10 +61,6 @@
     "**/dist/**",
     "**/node_modules/**",
     "packages/**/examples/**",
-    "mocks/**",
-    ".vitepress/**",
-    "tools/**",
-    "deploy/**",
-    "docs/**"
+    "tools/**"
   ]
 }

@@ -19,9 +19,7 @@ export default [
       'dist/**',
       'node_modules/**',
       'vite.config.ts',
-      'vitest.config.ts',
-      'mocks/**',  // Mock 数据不参与 lint 检查
-      '.vitepress/**'  // VitePress配置不参与lint
+      'vitest.config.ts'
     ]
   },
   // Vue SFC files
