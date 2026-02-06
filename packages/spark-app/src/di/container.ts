@@ -1,6 +1,15 @@
 ﻿/**
  * 依赖注入容器 - 实现依赖倒置原则(DIP)
  * 
+ * @deprecated 推荐使用 Composables API (useAppContext, useLogger 等)
+ * 
+ * 从 v2.0 开始，项目全面转向 Composables 模式：
+ * - 更简洁的 API：useLogger() vs container.resolve('Logger')
+ * - 更好的类型安全：自动类型推断
+ * - 更符合 Vue 3 生态习惯
+ * 
+ * 本模块仅为向后兼容保留，不建议在新代码中使用。
+ * 
  * SOLID原则应用：
  * - SRP: 单一职责 - 只负责依赖管理和注入
  * - OCP: 对扩展开放 - 支持注册任意服务
