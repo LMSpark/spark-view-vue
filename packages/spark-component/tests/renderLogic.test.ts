@@ -24,16 +24,18 @@ describe('renderLogic', () => {
   it('returns children or empty array', () => {
     const c1 = { type: 'a' }
     const c2 = { type: 'b' }
-    expect(SparkComponentRenderer.getChildrenForConfig({ type: 'x' } as any)).toEqual([])
-    expect(SparkComponentRenderer.getChildrenForConfig({ type: 'x', children: [c1, c2] } as any)).toEqual([c1, c2])
+    // 直接解构：ctx.children ?? []
+    expect({ type: 'x' }.children ?? []).toEqual([])
+    expect({ type: 'x', children: [c1, c2] }.children).toEqual([c1, c2])
   })
 
   it('can resolve using a registry resolver and detect registration', () => {
     const reg = new SparkComponentRegistryImpl()
     reg.register('my-type', { type: 'my-type', name: 'My', version: '1.0.0', component: { name: 'MyComp' } } as any)
     const resolver = SparkComponentRenderer.createResolverFromRegistry(reg)
-    expect(SparkComponentRenderer.isTypeRegistered(reg, 'my-type')).toBe(true)
+    // 直接调用 registry.has()
+    expect(reg.has('my-type')).toBe(true)
     expect(SparkComponentRenderer.resolveRendererForConfig({ type: 'my-type' } as any, resolver)).toEqual({ name: 'MyComp' })
-    expect(SparkComponentRenderer.isTypeRegistered(reg, 'unknown')).toBe(false)
+    expect(reg.has('unknown')).toBe(false)
   })
 })

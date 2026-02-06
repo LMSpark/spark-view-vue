@@ -278,33 +278,9 @@ export class SparkComponentRendererImpl {
  * 
  * 提供向后兼容的静态方法，无需创建 Renderer 实例
  * 
- * 注意：这些方法主要用于向后兼容，新代码应优先使用 SparkComponentRendererImpl 实例
+ * 注意：这些方法主要用于测试和向后兼容，新代码应优先使用 SparkComponentRendererImpl 实例
  */
 export class SparkComponentRenderer {
-  /**
-   *  检查组件是否应该更新（静态方法）
-   * 
-   * @param oldCtx - 旧上下文
-   * @param newCtx - 新上下文
-   * @returns 是否应该更新
-   */
-  static shouldUpdateComponent(oldCtx: ComponentContext | null | undefined, newCtx: ComponentContext | null | undefined): boolean {
-    const renderer = new SparkComponentRendererImpl({} as ComponentRegistry)
-    return renderer.shouldUpdateComponent(oldCtx, newCtx)
-  }
-
-  /**
-   * 检查子组件是否发生变化（静态方法）
-   * 
-   * @param oldChildren - 旧子组件数组
-   * @param newChildren - 新子组件数组
-   * @returns 是否发生变化
-   */
-  static haveChildrenChanged(oldChildren: ComponentContext[], newChildren: ComponentContext[]): boolean {
-    const renderer = new SparkComponentRendererImpl({} as ComponentRegistry)
-    return renderer.haveChildrenChanged(oldChildren, newChildren)
-  }
-
   /**
    * 解析组件上下文对应的渲染器
    * 
@@ -336,24 +312,4 @@ export class SparkComponentRenderer {
     }
   }
 
-  /**
-   * 检查类型是否已注册（静态方法）
-   * 
-   * @param registry - 组件注册表
-   * @param type - 组件类型名称
-   * @returns 是否已注册
-   */
-  static isTypeRegistered(registry: ComponentRegistry, type: string): boolean {
-    return registry.has(type)
-  }
-
-  /**
-   * 获取上下文的子组件（静态方法）
-   * 
-   * @param ctx - 组件上下文
-   * @returns 子组件数组
-   */
-  static getChildrenForConfig(ctx: ComponentContext): ComponentContext[] {
-    return Array.isArray(ctx.children) ? ctx.children : []
-  }
 }
