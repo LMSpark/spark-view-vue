@@ -60,12 +60,23 @@
 - 明确区分公共 API 和内部实现
 - 减少开发者接触到的 API 表面积
 
+**第六轮优化（文档完善）：**
+- 重写 `packages/spark-app/README.md`
+  * 移除已废弃的 API 示例（ConfigManager, createAuthGuard 等）
+  * 更新为实际可用的 API（SparkApp.start, authService, Composables）
+  * 添加完整的 Composables 使用示例
+  * 新增 API 概览表格和类型定义参考
+  * 新增最佳实践和迁移指南
+- 确保文档与代码完全同步
+- 所有示例代码可直接复制使用
+
 **清理成果：**
 - 删除代码：~1584 行
 - 删除模块：6 个
 - 简化 API：移除 21+ 个导出（第三轮 15 个 + 第四轮 6 个）
 - 标记内部 API：14 个（7 个函数 + 7 个常量组）
 - 类型优化：1 个接口提取
+- 文档重写：1 个 README（+156 行净增）
 - 减少认知负担，统一使用 Composables 模式
 
 ### Documentation
