@@ -12,11 +12,6 @@ declare module 'vxe-table' {
   export default VXETable
 }
 
-declare module 'vitepress' {
-  const vitepress: any
-  export default vitepress
-}
-
 declare module '@vitejs/plugin-vue' {
   const pluginVue: any
   export default pluginVue

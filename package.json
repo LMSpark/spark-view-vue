@@ -18,10 +18,7 @@
         "test": "vitest",
         "test:contract": "vitest run tests/contract",
         "verify:arch": "node tools/verify-architecture.mjs",
-        "verify": "pnpm run typecheck && pnpm run lint && pnpm run verify:arch",
-        "docs:dev": "vitepress dev docs",
-        "docs:build": "vitepress build docs",
-        "docs:serve": "vitepress serve docs"
+        "verify": "pnpm run typecheck && pnpm run lint && pnpm run verify:arch"
     },
     "husky": {
         "hooks": {
