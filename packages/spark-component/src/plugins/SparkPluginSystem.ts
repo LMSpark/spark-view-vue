@@ -49,5 +49,3 @@ const globalPluginManager = new SparkPluginManager()
 export function installSparkPlugin(p: Plugin) { globalPluginManager.install(p) }
 export function uninstallSparkPlugin(name: string) { return globalPluginManager.uninstall(name) }
 export function getSparkPlugin(name: string) { return globalPluginManager.get(name) }
-
-export type { Plugin, PluginHooks } from '../types/spark-component.js'
