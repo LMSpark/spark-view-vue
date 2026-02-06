@@ -50,11 +50,22 @@
 - 推荐使用 `usePermissions()` composable 替代旧的工具函数
 - 更清晰的 API 边界，引导最佳实践
 
+**第五轮优化（类型和文档）：**
+- 优化 `simpleEnv.ts` 类型定义
+  * 新增 `EnvironmentInfo` 接口替代内联类型
+  * 添加详细 JSDoc 注释，提升 IDE 体验
+- 为 7 个内部使用常量添加 `@internal` 标记
+  * `BootstrapPhases`, `LogLevels`, `PermissionActions`
+  * `ResourceTypes`, `StorageKeys`, `AppEvents`, `ConfigSources`
+- 明确区分公共 API 和内部实现
+- 减少开发者接触到的 API 表面积
+
 **清理成果：**
 - 删除代码：~1584 行
 - 删除模块：6 个
 - 简化 API：移除 21+ 个导出（第三轮 15 个 + 第四轮 6 个）
-- 标记内部 API：7 个函数添加 @internal/@deprecated
+- 标记内部 API：14 个（7 个函数 + 7 个常量组）
+- 类型优化：1 个接口提取
 - 减少认知负担，统一使用 Composables 模式
 
 ### Documentation
