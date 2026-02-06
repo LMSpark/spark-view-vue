@@ -16,6 +16,7 @@ import type {
 import { DataTable } from './dataTable'
 import { BindingContext } from './bindingContext'
 import { FilterExpressionParser } from './filterExpressionParser'
+import { Logger } from '@spark-view/spark-utils'
 import type { ApiAdapter } from './apiAdapter'
 
 /**
@@ -38,6 +39,9 @@ export class DataSet implements IDataSet {
   public dataLoader?: (tableName: string) => Promise<IDataRow[]>
   // 正在加载的表
   private loadingTables: Set<string> = new Set()
+  
+  // 日志系统
+  private logger = Logger()
   // API 适配器（通过 setApiAdapter 设置，用于表级 API 注入）
   private apiAdapter?: ApiAdapter
 
@@ -74,7 +78,7 @@ export class DataSet implements IDataSet {
         // 如果有初始过滤配置，应用过滤
         if (context.filterExpression) {
           this.updateContextRows(context, table)
-          console.info(`🌪️ [Init] ${tableName}.${contextId} 应用初始过滤: ${context.rows?.length} 行`)
+          this.logger.info(`🌪️ [Init] ${tableName}.${contextId} 应用初始过滤: ${context.rows?.length} 行`)
         }
       })
       
@@ -106,7 +110,7 @@ export class DataSet implements IDataSet {
         const filterFn = FilterExpressionParser.toMemoryFilter(context.filterExpression);
         sourceData = sourceData.filter(filterFn);
       } catch (e) {
-        console.error(`❌ [Context] 上下文 ${context.hostTable}.${context.contextId} 过滤失败:`, e);
+        this.logger.error(`❌ [Context] 上下文 ${context.hostTable}.${context.contextId} 过滤失败:`, e);
         sourceData = [];
       }
     }
@@ -141,7 +145,7 @@ export class DataSet implements IDataSet {
       table.setApiAdapter(adapter)
     })
     
-    console.info(`✅ [DataSet] ${this.dataSetName} 已注入 ApiAdapter`)
+    this.logger.info(`✅ [DataSet] ${this.dataSetName} 已注入 ApiAdapter`)
   }
 
   /**
@@ -229,7 +233,7 @@ export class DataSet implements IDataSet {
       const foreignKeyMap = this.extractForeignKeyMap(relation.filterExpression)
       
       if (foreignKeyMap.length === 0) {
-        console.warn(`级联更新: 无法从 filterExpression 提取外键映射: ${tableName} -> ${relation.childTable}`)
+        this.logger.warn(`级联更新: 无法从 filterExpression 提取外键映射: ${tableName} -> ${relation.childTable}`)
         return
       }
 
@@ -257,7 +261,7 @@ export class DataSet implements IDataSet {
             if (childRow[childField] !== newValue) {
               childRow[childField] = newValue
               hasUpdates = true
-              console.info(`级联更新: ${relation.childTable}.${childField} = ${newValue}`)
+              this.logger.info(`级联更新: ${relation.childTable}.${childField} = ${newValue}`)
             }
           })
         }
@@ -276,11 +280,11 @@ export class DataSet implements IDataSet {
    * 当父表行删除时，自动删除子表中所有关联的行
    */
   cascadeDelete(tableName: string, row: IDataRow): string[] {
-    console.info(`🔧 cascadeDelete 被调用: ${tableName}`, row)
+    this.logger.info(`🔧 cascadeDelete 被调用: ${tableName}`, row)
     
     const table = this.getTable(tableName)
     if (!table) {
-      console.warn(`⚠️ 找不到表: ${tableName}`)
+      this.logger.warn(`⚠️ 找不到表: ${tableName}`)
       return []
     }
 
@@ -289,26 +293,26 @@ export class DataSet implements IDataSet {
       rel => rel.parentTable === tableName && rel.cascadeDelete
     ) ?? []
 
-    console.info(`🔗 找到 ${relations.length} 个级联删除关系`)
+    this.logger.info(`🔗 找到 ${relations.length} 个级联删除关系`)
 
     const affectedTables: string[] = []
 
     relations.forEach(relation => {
-      console.info(`  处理关系: ${relation.parentTable} -> ${relation.childTable}`)
+      this.logger.info(`  处理关系: ${relation.parentTable} -> ${relation.childTable}`)
       
       const childTable = this.getTable(relation.childTable)
       if (!childTable) {
-        console.warn(`⚠️ 找不到子表: ${relation.childTable}`)
+        this.logger.warn(`⚠️ 找不到子表: ${relation.childTable}`)
         return
       }
 
       // 解析 filterExpression 找到外键字段映射
       const foreignKeyMap = this.extractForeignKeyMap(relation.filterExpression)
       
-      console.info(`  外键映射:`, foreignKeyMap)
+      this.logger.info(`  外键映射:`, foreignKeyMap)
       
       if (foreignKeyMap.length === 0) {
-        console.warn(`级联删除: 无法从 filterExpression 提取外键映射: ${tableName} -> ${relation.childTable}`)
+        this.logger.warn(`级联删除: 无法从 filterExpression 提取外键映射: ${tableName} -> ${relation.childTable}`)
         return
       }
 

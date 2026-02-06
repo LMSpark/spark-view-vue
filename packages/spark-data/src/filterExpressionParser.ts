@@ -9,6 +9,7 @@ import type {
   IDataRow,
   FilterContext
 } from './types'
+import { Logger } from '@spark-view/spark-utils'
 
 /**
  * 过滤表达式解析器
@@ -500,7 +501,7 @@ export class FilterExpressionParser {
     _context?: FilterContext
   ): boolean {
     // 这里可以扩展自定义函数
-    console.warn(`Function ${func} not implemented in memory filter`)
+    Logger().warn(`Function ${func} not implemented in memory filter`)
     return true
   }
 }

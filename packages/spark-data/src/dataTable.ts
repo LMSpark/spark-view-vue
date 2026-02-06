@@ -5,6 +5,7 @@
  */
 
 import { BindingContext } from './bindingContext'
+import { Logger } from '@spark-view/spark-utils'
 import type { 
   IDataTable, 
   IDataTableWithApi,
@@ -28,6 +29,9 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   // 扩展属性
   loading?: boolean
   error?: string
+  
+  // 日志系统
+  private logger = Logger()
   
   // API 适配器（注入）
   private apiAdapter?: ApiAdapter
@@ -66,7 +70,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     
     try {
       const result = await execute()
-      console.info(`✅ [DataTable] ${this.tableName}.${apiEndpoint}() 成功`)
+      this.logger.info(`✅ [DataTable] ${this.tableName}.${apiEndpoint}() 成功`)
       return result
     } catch (error) {
       // 优雅的错误处理：支持 Error 对象和字符串
@@ -75,7 +79,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
         : typeof error === 'string' 
         ? error 
         : '未知错误'
-      console.error(`❌ [DataTable] ${this.tableName}.${apiEndpoint}() 失败`, error)
+      this.logger.error(`❌ [DataTable] ${this.tableName}.${apiEndpoint}() 失败`, error)
       throw error
     } finally {
       this.loading = false
@@ -154,7 +158,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       this.rows.splice(0, this.rows.length, ...data)
       this['__originalRows'] = [...data]
       
-      console.info(`📊 加载 ${data.length} 行数据`)
+      this.logger.info(`📊 加载 ${data.length} 行数据`)
       return data
     })
   }
@@ -238,7 +242,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
         originalRows.push(...result)
       }
       
-      console.info(`📊 批量创建 ${result.length} 条`)
+      this.logger.info(`📊 批量创建 ${result.length} 条`)
       return result
     })
   }
@@ -262,7 +266,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
         )
       })
       
-      console.info(`📊 批量更新 ${result.length} 条`)
+      this.logger.info(`📊 批量更新 ${result.length} 条`)
       return result
     })
   }
@@ -283,7 +287,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
         this.removeRowFromBoth(r => r.id === id)
       })
       
-      console.info(`📊 批量删除 ${ids.length} 条`)
+      this.logger.info(`📊 批量删除 ${ids.length} 条`)
       return true
     })
   }
@@ -304,7 +308,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
         contextId,
         this.dataSet
       )
-      console.info(`✨ [DataTable] 自动创建上下文: ${this.tableName}.${contextId}`)
+      this.logger.info(`✨ [DataTable] 自动创建上下文: ${this.tableName}.${contextId}`)
     }
     
     const context = this.contexts[contextId]
@@ -324,7 +328,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     Object.values(this.contexts).forEach(context => {
       if (context.filterExpression || context.sortExpression) {
         context.updateRows(sourceData);
-        console.info(`🔄 [DataTable] 刷新上下文: ${this.tableName}.${context.contextId}`);
+        this.logger.info(`🔄 [DataTable] 刷新上下文: ${this.tableName}.${context.contextId}`);
       }
     });
   }
@@ -395,7 +399,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     if (data.contexts) {
       if (Array.isArray(data.contexts)) {
         // 兼容旧格式：数组
-        console.info(`🔄 [DataTable] 转换 ${table.tableName}.contexts 为 Record 格式`)
+        Logger().info(`🔄 [DataTable] 转换 ${table.tableName}.contexts 为 Record 格式`)
         data.contexts.forEach((ctx: Partial<IBindingContext>, index: number) => {
           const contextId = `ctx_${index + 1}`
           table.contexts[contextId] = BindingContext.fromJSON(
