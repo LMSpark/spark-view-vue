@@ -70,13 +70,25 @@
 - 确保文档与代码完全同步
 - 所有示例代码可直接复制使用
 
+**第七轮优化（API 示例修复）：**
+- 修复 `packages/spark-utils/README.md`
+  * Logger.create() → Logger(context)
+  * Logger.consoleTransport() → createConsoleTransport()
+  * Capability.create() → 使用正确的类型导入
+  * PermissionChecker/Filter/FieldRenderHelper.create() → create* 函数
+- 修复 `packages/spark-page-config/README.md`
+  * new ConfigLoader() → createConfigLoader()
+  * registerDynamicRoutes → setupDynamicRoutes
+  * validatePageConfig → validateRouteConfig/validateRuleConfig
+- 确保所有示例代码与实际导出 API 完全匹配
+
 **清理成果：**
 - 删除代码：~1584 行
 - 删除模块：6 个
 - 简化 API：移除 21+ 个导出（第三轮 15 个 + 第四轮 6 个）
 - 标记内部 API：14 个（7 个函数 + 7 个常量组）
 - 类型优化：1 个接口提取
-- 文档重写：1 个 README（+156 行净增）
+- 文档重写/修复：3 个 README（spark-app、spark-utils、spark-page-config）
 - 减少认知负担，统一使用 Composables 模式
 
 ### Documentation
