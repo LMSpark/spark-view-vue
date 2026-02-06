@@ -186,7 +186,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
         parent: undefined, // Will be set by parent component
         children: [],
         state: { ...props.config },  // \u5c06\u539f\u59cb config \u5b58\u5165 state
-        providers: new Set<CapabilityProvider>(),
+        providers: new Map<string, CapabilityProvider>(),
         consumers: new Map<string, CapabilityConsumer>()
       }
 
@@ -215,7 +215,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
         if (manager && typeof (manager).registerProvider === 'function') {
           (manager).registerProvider(context, p)
         } else {
-          context.providers.add(p)
+          context.providers.set(name, p)
         }
         logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
       }
@@ -223,7 +223,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
       function consume(name: string): Implementation | null {
         const consumer: CapabilityConsumer = { capabilityName: name, implementation: undefined }
         context.consumers.set(name, consumer)
-        const provider = Array.from(context.providers).find(p => p.name === name) ?? createNoopProvider(name)
+        const provider = context.providers.get(name) ?? createNoopProvider(name)
         if (provider) {
           consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
           try { capabilityManager.connectCapability(provider as any, consumer as any, context as any) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
@@ -235,7 +235,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
       }
 
       function whenAvailable(name: string): Promise<CapabilityProvider> {
-        const p = Array.from(context.providers).find(pr => pr.name === name)
+        const p = context.providers.get(name)
         if (p) return Promise.resolve(p)
         return new Promise(resolve => {
           context.providerListeners = context.providerListeners ?? new Map()
@@ -247,13 +247,13 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
       }
 
       function getProvider(name: string): CapabilityProvider | undefined {
-        return Array.from(context.providers).find(p => p.name === name)
+        return context.providers.get(name)
       }
 
       function getInheritedProvider<T = unknown>(name: string): T | undefined {
         let current: ComponentContext | undefined = context
         while (current) {
-          const p = Array.from(current.providers).find(pr => pr.name === name)
+          const p = current.providers.get(name)
           if (p?.implementation !== undefined) return p.implementation as unknown as T
           current = current.parent ?? undefined
         }

@@ -49,7 +49,7 @@ export namespace Spark {
    * - 运行时：父子关系、能力系统、生命周期管理
    * 
    * **能力系统核心理念**：
-   * - 供方：context.providers.add(provider) - 不关心谁使用
+   * - 供方：context.providers.set(provider.name, provider) - 不关心谁使用
    * - 需方：context.consumers.set(name, consumer) - 不关心谁提供
    * - 查找：按 capabilityName 沿 parent 链向上查找（就近原则）
    */
@@ -81,8 +81,8 @@ export namespace Spark {
     /** 父组件上下文（继承自 CapabilityContext，可为 null） */
     parent?: ComponentContext | null
     
-    /** 能力提供者集合（覆盖基类定义，使用具体类型） */
-    providers: Set<CapabilityProvider>
+    /** 能力提供者映射（key: capabilityName, value: provider）- 优化为 Map 实现 O(1) 查询 */
+    providers: Map<string, CapabilityProvider>
     
     /** 组件运行时状态（用于存储任意运行时数据，如内部状态、缓存等） */
     state: Record<string, unknown>

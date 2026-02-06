@@ -34,13 +34,11 @@ function formatMsg(level: LogLevel, args: unknown[]) {
 
 export function Logger(context?: unknown): LoggerApi {
   // Prefer context-level provider, then fallback to console
-  const providersSet = typeof context === 'object' && context && 'providers' in context
-    ? (context.providers as Set<Record<string, unknown>> | undefined)
+  const providersMap = typeof context === 'object' && context && 'providers' in context
+    ? (context.providers as Map<string, Record<string, unknown>> | undefined)
     : undefined
     
-  const ctxProvider = providersSet
-    ? Array.from(providersSet).find((p) => typeof p.name === 'string' && p.name === 'logger')
-    : undefined
+  const ctxProvider = providersMap?.get('logger')
     
   const provider = ctxProvider
   const impl = provider

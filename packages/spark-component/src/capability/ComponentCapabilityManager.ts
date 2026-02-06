@@ -66,11 +66,10 @@ export class ComponentCapabilityManager extends CapabilityManager {
     name: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any {
-    // 在当前上下文的 providers 中查找
-    for (const provider of Array.from(context.providers)) {
-      if (provider.name === name) {
-        return provider
-      }
+    // 在当前上下文的 providers 中查找（O(1) Map 查询）
+    const provider = context.providers.get(name)
+    if (provider) {
+      return provider
     }
     
     // 沿 parent 链向上递归查找（能力树查找）

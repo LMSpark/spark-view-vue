@@ -65,7 +65,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     children: [],
     // 将原始配置存入 state
     state: { ...config },
-    providers: new Set<CapabilityProvider>(),
+    providers: new Map<string, CapabilityProvider>(),
     consumers: new Map<string, CapabilityConsumer>()
   }
 
@@ -118,15 +118,14 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
   }
 
   function getProvider(name: string): CapabilityProvider | undefined {
-    for (const p of Array.from(context.providers)) if (p.name === name) return p
-    return undefined
+    return context.providers.get(name)
   }
 
   // Provide a capability on this context
   function provide(name: string, implementation?: Implementation) {
     const p: CapabilityProvider = { name, version: '1.0.0', implementation }
     if (manager && typeof (manager).registerProvider === 'function') (manager).registerProvider(context, p as any)
-    else context.providers.add(p as any)
+    else context.providers.set(name, p as any)
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
 
@@ -136,7 +135,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     if (manager && typeof (manager).registerProvider === 'function') {
       (manager).registerProvider(context, provider as any)
     } else {
-      context.providers.add(provider as any)
+      context.providers.set(provider.name, provider as any)
     }
     logger.info(`🎉 Provided event capability: ${name} for ${context.type} (${context.id})`)
     return emitter
@@ -218,7 +217,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => {
       let t: ComponentContext | undefined = ctx ?? context
       while (t) {
-        const p = Array.from(t.providers).find(pr => pr.name === name)
+        const p = t.providers.get(name)
         if (p?.implementation !== undefined) return p.implementation as unknown as T
         t = t.parent ?? undefined
       }
@@ -264,7 +263,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     printCapabilityTree: () => {
       const printTree = (ctx: ComponentContext, indent = 0) => {
         const prefix = '  '.repeat(indent)
-        const providers = Array.from(ctx.providers).map(p => p.name).join(', ')
+        const providers = Array.from(ctx.providers.keys()).join(', ')
         logger.info(`${prefix}├─ ${ctx.type} (${ctx.id})`)
         if (providers) {
           logger.info(`${prefix}   Provides: [${providers}]`)
