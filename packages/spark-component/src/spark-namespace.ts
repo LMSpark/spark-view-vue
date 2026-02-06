@@ -23,9 +23,7 @@ import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
 import { createComponentManager } from './utils/SparkComponentManager.js'
 import { defineSparkComponent } from './vue/createSparkComponent.js'
 import { 
-  createSimpleRegistration,
-  presets as registerPresets,
-  nameToType
+  createSimpleRegistration
 } from './helpers/registerHelper.js'
 
 // 类型定义
@@ -55,16 +53,6 @@ export const Spark: {
   
   /** 批量注册组件 */
   registerAll: (configs: (ComponentDefinition | { name: string; path?: string; component?: unknown })[]) => void
-  
-  // --------------------------------------------------------------------------
-  // 辅助工具
-  // --------------------------------------------------------------------------
-  
-  /** 预设配置生成器 - 快速生成常见组件配置 */
-  presets: typeof registerPresets
-  
-  /** 名称转类型工具 - 将 kebab-case 转换为 type */
-  nameToType: typeof nameToType
   
   // --------------------------------------------------------------------------
   // 组件开发 API - 创建和定义组件
@@ -184,13 +172,6 @@ export const Spark: {
       }
     })
   },
-  
-  // --------------------------------------------------------------------------
-  // 辅助工具实现
-  // --------------------------------------------------------------------------
-  
-  presets: registerPresets,
-  nameToType,
   
   // --------------------------------------------------------------------------
   // 组件开发 API 实现

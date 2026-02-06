@@ -34,12 +34,13 @@ type SimpleConfig = {
 /**
  * 将组件名称转换为 kebab-case 类型
  * 
+ * @internal
  * @example
  * 'HeavyGrid' → 'heavy-grid'
  * 'SparkEJ2Grid' → 'spark-ej2-grid'
  * 'MyButton' → 'my-button'
  */
-export function nameToType(name: string): string {
+function nameToType(name: string): string {
   return name
     // 在大写字母前插入连字符（但不在开头）
     .replace(/([A-Z])/g, (match, _p1, offset) => 
@@ -123,49 +124,4 @@ export function createSimpleRegistration(config: SimpleConfig): ComponentDefinit
   }
   
   return standardConfig
-}
-
-/**
- * 批量注册组件（简化版）
- * 
- * @example
- * ```typescript
- * const configs = batchCreateSimpleRegistrations([
- *   { name: 'Chart', path: './Chart.vue' },
- *   { name: 'Calendar', path: './Calendar.vue' },
- *   { name: 'Grid', path: './Grid.vue' }
- * ])
- * ```
- */
-export function batchCreateSimpleRegistrations(
-  configs: SimpleConfig[]
-): ComponentDefinition[] {
-  return configs.map(config => createSimpleRegistration(config))
-}
-
-/**
- * 预设配置生成器
- */
-export const presets = {
-  /**
-   * 懒加载预设（后向兼容，建议直接传 path）
-   */
-  lazy(name: string, path: string, options?: Partial<SimpleConfig>): SimpleConfig {
-    return {
-      name,
-      path,
-      ...options
-    }
-  },
-  
-  /**
-   * 同步加载预设（传入已导入的组件）
-   */
-  sync(name: string, component: unknown, options?: Partial<SimpleConfig>): SimpleConfig {
-    return {
-      name,
-      component,
-      ...options
-    }
-  }
 }
