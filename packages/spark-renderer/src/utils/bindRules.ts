@@ -37,6 +37,7 @@ function getNestedValue<T = unknown>(
     }
   }
   
+  // 最终结果无法静态验证类型，需要运行时断言
   return current as T
 }
 

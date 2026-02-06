@@ -199,6 +199,18 @@ export class FilterExpressionParser {
   }
 
   /**
+   * 类型守卫：将值转换为数字
+   */
+  private static toNumber(value: unknown): number {
+    if (typeof value === 'number') return value
+    if (typeof value === 'string') {
+      const num = Number(value)
+      return isNaN(num) ? 0 : num
+    }
+    return 0
+  }
+
+  /**
    * 执行条件判断
    */
   private static evaluateCondition(
@@ -212,13 +224,13 @@ export class FilterExpressionParser {
       case '!=':
         return fieldValue !== compareValue
       case '>':
-        return (fieldValue as number) > (compareValue as number)
+        return this.toNumber(fieldValue) > this.toNumber(compareValue)
       case '>=':
-        return (fieldValue as number) >= (compareValue as number)
+        return this.toNumber(fieldValue) >= this.toNumber(compareValue)
       case '<':
-        return (fieldValue as number) < (compareValue as number)
+        return this.toNumber(fieldValue) < this.toNumber(compareValue)
       case '<=':
-        return (fieldValue as number) <= (compareValue as number)
+        return this.toNumber(fieldValue) <= this.toNumber(compareValue)
       case 'in':
         return Array.isArray(compareValue) && compareValue.includes(fieldValue)
       case 'not in':
@@ -233,12 +245,12 @@ export class FilterExpressionParser {
         return fieldValue !== null && fieldValue !== undefined
       case 'between':
         return Array.isArray(compareValue) &&
-          (fieldValue as number) >= (compareValue[0] as number) &&
-          (fieldValue as number) <= (compareValue[1] as number)
+          this.toNumber(fieldValue) >= this.toNumber(compareValue[0]) &&
+          this.toNumber(fieldValue) <= this.toNumber(compareValue[1])
       case 'not between':
         return !(Array.isArray(compareValue) &&
-          (fieldValue as number) >= (compareValue[0] as number) &&
-          (fieldValue as number) <= (compareValue[1] as number))
+          this.toNumber(fieldValue) >= this.toNumber(compareValue[0]) &&
+          this.toNumber(fieldValue) <= this.toNumber(compareValue[1]))
       case 'startsWith':
         return String(fieldValue).startsWith(String(compareValue))
       case 'endsWith':
