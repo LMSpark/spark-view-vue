@@ -42,10 +42,19 @@
 - 从 `index.ts` 移除 15+ 个废弃的导出
 - 项目全面采用 Vue 3 Composables 模式
 
+**第四轮优化（API 清理）：**
+- 从公共 API 移除 6 个内部使用的函数导出
+  * `useAppContextOptional`, `hasPermission`, `hasAnyPermission`
+  * `hasAllPermissions`, `hasRole`, `hasAnyRole`
+- 为所有内部函数添加 `@internal` 和 `@deprecated` JSDoc 标记
+- 推荐使用 `usePermissions()` composable 替代旧的工具函数
+- 更清晰的 API 边界，引导最佳实践
+
 **清理成果：**
 - 删除代码：~1584 行
 - 删除模块：6 个
-- 简化 API：移除 15+ 个导出
+- 简化 API：移除 21+ 个导出（第三轮 15 个 + 第四轮 6 个）
+- 标记内部 API：7 个函数添加 @internal/@deprecated
 - 减少认知负担，统一使用 Composables 模式
 
 ### Documentation
