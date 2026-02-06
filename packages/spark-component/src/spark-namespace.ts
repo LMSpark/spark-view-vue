@@ -52,7 +52,7 @@ export const Spark: {
    * - SimpleComponentConfig: 简化配置（自动转换 name -> type）
    * - { spark?: {...} }: Vue 组件附带 spark 元数据
    */
-  register: (input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) => void
+  register: (input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version'> }) => void
   
   /** 批量注册组件 */
   registerAll: (configs: (ComponentConfig | SimpleComponentConfig)[]) => void
@@ -134,7 +134,7 @@ export const Spark: {
     app.use(plugin as VuePlugin)
   },
   
-  register(input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) {
+  register(input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version'> }) {
     // 简化配置：检查是否是 SimpleComponentConfig（有 'name' 但没有 'type'）
     if (input && typeof input === 'object' && 'name' in input && !('type' in input) && !Array.isArray(input)) {
       const simpleConfig = input
@@ -150,7 +150,7 @@ export const Spark: {
 
     // Vue 组件附带 spark 元数据
     if (input && typeof input === 'object' && 'spark' in input) {
-      const component = input as { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }
+      const component = input as { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version'> }
       if (!component.spark) {
         throw new Error('Component must have spark meta attached')
       }
@@ -160,9 +160,7 @@ export const Spark: {
         type: meta.type,
         name: meta.name ?? meta.type,
         version: meta.version ?? '1.0.0',
-        component: component,
-        providers: meta.providers ?? [],
-        validator: meta.validator
+        component: component
       }
       return componentManager.registerComponent(definition)
     }
