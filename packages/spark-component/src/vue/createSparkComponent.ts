@@ -4,8 +4,6 @@
  * 注意：使用类型断言桥接 ComponentContext 和基础能力系统
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager as defaultCapabilityManager } from '../capability/ComponentCapabilityManager.js'

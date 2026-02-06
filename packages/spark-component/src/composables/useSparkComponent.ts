@@ -5,8 +5,6 @@
  * 注意：此文件使用类型断言桥接 ComponentContext 和基础能力系统
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
 import {
   Logger,
