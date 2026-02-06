@@ -186,8 +186,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         type: props.config.type,
         parent: undefined, // Will be set by parent component
         children: [],
-        config: props.config,
-        state: {},
+        state: { ...props.config },  // \u5c06\u539f\u59cb config \u5b58\u5165 state
         providers: new Set<CapabilityProvider>(),
         consumers: new Map<string, CapabilityConsumer>()
       }

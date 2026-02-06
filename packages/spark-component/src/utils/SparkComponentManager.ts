@@ -2,7 +2,7 @@ import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.j
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
-import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
+import type { ComponentDefinition, ComponentInstance, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
 
 /**
  * SPARK 组件管理器实现
@@ -42,23 +42,23 @@ export class SparkComponentManagerImpl {
    * 
    * 组件上下文是组件实例的运行时表示，包含：
    * - 唯一 ID
-   * - 组件类型和配置
+   * - 组件类型（引用已注册的 ComponentDefinition）
    * - 父子关系
-   * - 状态数据
+   * - 状态数据（包含原始 props）
    * - 能力提供者/消费者
    * 
-   * @param config - 组件配置
+   * @param instance - 组件实例配置（渲染配置）
    * @param parent - 父组件上下文（可选）
    * @returns 新创建的组件上下文
    */
-  createContext(config: ComponentConfig, parent?: ComponentContext): ComponentContext {
+  createContext(instance: ComponentInstance, parent?: ComponentContext): ComponentContext {
     const ctx: ComponentContext = {
-      id: config.id ?? this.generateId(),
-      type: config.type,
+      id: instance.id ?? this.generateId(),
+      type: instance.type,
       parent,
       children: [],
-      config,
-      state: {},
+      // 将 props 和其他实例数据存入 state
+      state: { ...instance },
       providers: new Set<CapabilityProvider>(),
       consumers: new Map<string, CapabilityConsumer>()
     }
@@ -72,15 +72,15 @@ export class SparkComponentManagerImpl {
    * 
    * 创建组件上下文并递归渲染整个组件树
    * 
-   * @param config - 组件配置（可能包含子组件）
+   * @param instance - 组件实例配置（可能包含子组件）
    * @param parentContext - 父组件上下文（可选）
    * @returns 渲染结果（VNode）
    */
-  render(config: ComponentConfig, parentContext?: ComponentContext): unknown {
-    const ctx = this.createContext(config, parentContext)
+  render(instance: ComponentInstance, parentContext?: ComponentContext): unknown {
+    const ctx = this.createContext(instance, parentContext)
     // Use the unified renderer for component tree rendering
-    const renderResult = this.renderer.renderComponentTree(config)
-    this.logger.info(`Rendered component tree: ${config.type} (${ctx.id})`)
+    const renderResult = this.renderer.renderComponentTree(instance)
+    this.logger.info(`Rendered component tree: ${instance.type} (${ctx.id})`)
     return renderResult
   }
 
@@ -190,18 +190,18 @@ export class SparkComponentManagerImpl {
    * 
    * 注意：这是便捷方法，实际委托给 Registry
    * 
-   * @param def - 组件配置定义
+   * @param def - 组件定义（ComponentDefinition）
    */
-  registerComponent(def: ComponentConfig) {
+  registerComponent(def: ComponentDefinition) {
     this.registry.register(def.type, def)
   }
 
   /**
    * 批量注册组件类型定义
    * 
-   * @param defs - 组件配置定义数组
+   * @param defs - 组件定义数组
    */
-  registerComponents(defs: ComponentConfig[]) {
+  registerComponents(defs: ComponentDefinition[]) {
     defs.forEach(d => this.registerComponent(d))
   }
 

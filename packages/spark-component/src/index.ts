@@ -9,7 +9,7 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
-// 简化注册助手（不再导出 SimpleComponentConfig 类型）
+// 组件定义注册助手（简化语法）
 export { 
   createSimpleRegistration,
   batchCreateSimpleRegistrations,
