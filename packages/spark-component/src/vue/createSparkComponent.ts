@@ -8,7 +8,7 @@
 
 import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
+import { capabilityManager as defaultCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation } from '../types/common.js'
@@ -199,6 +199,11 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
         throw new Error('Component manager not found. Install Spark Vue plugin: app.use(Spark.createVuePlugin())')
       }
       const manager = resolvedManager
+      
+      // Get capabilityManager from manager if available, fallback to global singleton
+      const capabilityManager = (typeof (manager as { getCapabilityManager?: () => unknown }).getCapabilityManager === 'function')
+        ? (manager as { getCapabilityManager: () => unknown }).getCapabilityManager() as typeof defaultCapabilityManager
+        : defaultCapabilityManager
 
       // Computed properties
       const isVisible = computed(() => (props.config as Record<string, unknown>).visible !== false)

@@ -119,6 +119,18 @@ export class SparkComponentManagerImpl {
   }
 
   /**
+   * 获取能力管理器
+   * 
+   * 用于组件内部需要直接操作能力系统时（如 useSparkComponent, createSparkComponent）
+   * 支持依赖注入架构，避免直接使用全局单例
+   * 
+   * @returns 当前管理器关联的能力管理器实例
+   */
+  getCapabilityManager(): ComponentCapabilityManager {
+    return this.capabilityManager
+  }
+
+  /**
    * 销毁组件上下文
    * 
    * 递归销毁组件及其所有子组件：

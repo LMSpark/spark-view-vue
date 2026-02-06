@@ -129,6 +129,8 @@ export namespace Spark {
     getComponentDefinition(type: string): ComponentDefinition | undefined
     isComponentRegistered(type: string): boolean
     getRegisteredComponentTypes(): string[]
+    /** 获取能力管理器（用于依赖注入架构） */
+    getCapabilityManager?: () => unknown
   }
 
   export type PluginHooks = {
