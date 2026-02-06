@@ -16,6 +16,7 @@
 -  **配置驱动** - JSON 配置即可搭建页面
 -  **权限控制** - 内置权限系统，支持字段级权限
 -  **数据管理** - 完整的 DataSet 和 TreeManager
+-  **依赖注入** - 支持测试隔离，遵循 SOLID 原则
 
 ##  包结构
 
@@ -92,16 +93,16 @@ Spark.register({
 
 - [能力系统指南](docs/guides/CAPABILITY_PROVISION.md)
 - [组件开发指南](docs/guides/COMPONENT_DEVELOPMENT.md)
-- [数据管理指南](docs/guides/DATA_MANAGEMENT.md)
-- [API 参考](docs/guides/API_REFERENCE.md)
+- [数据管理指南](docs/guides/DATA_MANAGEMENT.md)- [测试最佳实践](docs/guides/TESTING_BEST_PRACTICES.md) 🆕- [API 参考](docs/guides/API_REFERENCE.md)
 - [完整文档索引](docs/README.md)
 
 ##  质量保证
 
 -  **Lint**: 0 errors, 0 warnings
 -  **TypeCheck**: 0 errors
--  **Tests**: 38/38 passed
+-  **Tests**: 45/45 passed
 -  **Type Safety**: 完整的类型定义
+-  **Recent Update**: 依赖注入架构，支持测试隔离（详见[测试指南](docs/guides/TESTING_BEST_PRACTICES.md)）
 
 ##  技术栈
 
