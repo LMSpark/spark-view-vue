@@ -2,19 +2,59 @@ import type { CapabilityProvider, CapabilityConsumer, LoggerApi } from './common
 import type { Context as CapabilityContext } from '@spark-view/spark-utils'
 
 export namespace Spark {
+  /**
+   * 组件配置 - 同时支持组件定义和实例配置
+   * 
+   * **组件定义**（注册时使用）：
+   * - type, name, version, component, loader
+   * 
+   * **实例配置**（JSON 驱动渲染时使用）：
+   * - type, id, props, children
+   * 
+   * **能力系统**：
+   * - 通过 ComponentContext.providers/consumers 管理，不在配置中
+   */
   export interface ComponentConfig {
+    // --------------------------------------------------------------------------
+    // 核心标识
+    // --------------------------------------------------------------------------
+    
+    /** 组件类型（kebab-case，如 'spark-ej2-grid'） */
     type: string
-    id?: string
+    
+    /** 显示名称（如 'SPARK EJ2 Grid'） */
     name?: string
-    props?: Record<string, unknown>
-    children?: ComponentConfig[]
-    // Component registration fields
-    component?: unknown // Vue component or null for logical components
-    loader?: () => Promise<{ default: unknown }> // 动态导入函数（懒加载）
+    
+    /** 实例 ID（实例化时分配） */
+    id?: string
+    
+    // --------------------------------------------------------------------------
+    // 组件定义（注册时使用）
+    // --------------------------------------------------------------------------
+    
+    /** Vue 组件实例 */
+    component?: unknown
+    
+    /** 懒加载函数（动态导入） */
+    loader?: () => Promise<{ default: unknown }>
+    
+    /** 版本号（语义化版本） */
     version?: string
-    validator?: (cfg: ComponentConfig) => boolean
-    consumers?: CapabilityConsumer[]
-    providers?: CapabilityProvider[]
+    
+    // --------------------------------------------------------------------------
+    // 实例配置（JSON 驱动时使用）
+    // --------------------------------------------------------------------------
+    
+    /** 组件属性 */
+    props?: Record<string, unknown>
+    
+    /** 子组件配置 */
+    children?: ComponentConfig[]
+    
+    // --------------------------------------------------------------------------
+    // 扩展字段
+    // --------------------------------------------------------------------------
+    
     [key: string]: unknown
   }
 

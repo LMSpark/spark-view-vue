@@ -143,8 +143,6 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
   type: string
   name?: string
   version?: string
-  providers?: CapabilityProvider[]
-  validator?: (config: _TConfig) => boolean
 
   // Auto-registration option (default: false for explicit control)
   autoRegister?: boolean
@@ -175,8 +173,9 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
         validator: (value: unknown) => {
           if (!value || typeof value !== 'object') return false
           const obj = value as Record<string, unknown>
+          // 基本类型检查：必须有 type 字段
           if (!obj.type || typeof obj.type !== 'string') return false
-          return !definition.validator || definition.validator(value as _TConfig)
+          return true
         }
       }
     },
@@ -372,9 +371,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
   ;(component as Component & { spark?: Record<string, unknown> }).spark = {
     type: definition.type,
     name: definition.name,
-    version: definition.version ?? '0.0.0',
-    providers: definition.providers,
-    validator: definition.validator
+    version: definition.version ?? '0.0.0'
   }
 
   // Auto-register if requested
