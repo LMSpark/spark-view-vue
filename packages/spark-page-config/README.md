@@ -71,10 +71,10 @@ public/pages-config/
 ### 4. 使用配置加载器
 
 \\\	ypescript
-import { ConfigLoader } from '@spark-view/spark-page-config'
+import { createConfigLoader } from '@spark-view/spark-page-config'
 
 // 创建加载器
-const loader = new ConfigLoader({
+const loader = createConfigLoader({
   mode: 'local',  // 'local' | 'remote' | 'hybrid'
   basePath: '/pages-config',
   cache: true
@@ -90,13 +90,13 @@ const pageConfig = await loader.loadPageConfig('home')
 ### 5. 动态路由注册
 
 \\\	ypescript
-import { registerDynamicRoutes } from '@spark-view/spark-page-config'
+import { setupDynamicRoutes } from '@spark-view/spark-page-config'
 import { createRouter } from 'vue-router'
 
 const router = createRouter({ ... })
 
 // 注册动态路由
-await registerDynamicRoutes(router, {
+await setupDynamicRoutes(router, {
   loader,
   beforeRegister: (route) => {
     // 过滤或修改路由
@@ -112,7 +112,7 @@ await registerDynamicRoutes(router, {
 配置加载器
 
 \\\	ypescript
-const loader = new ConfigLoader({
+const loader = createConfigLoader({
   mode: 'local',           // 加载模式
   basePath: '/config',     // 基础路径
   cache: true,             // 启用缓存
@@ -134,11 +134,18 @@ loader.refreshConfig(pageId)                 // 刷新指定配置
 ### 配置验证
 
 \\\	ypescript
-import { validatePageConfig } from '@spark-view/spark-page-config'
+import { validateRouteConfig, validateRuleConfig } from '@spark-view/spark-page-config'
 
-const result = validatePageConfig(config)
-if (!result.valid) {
-  console.error('配置无效:', result.errors)
+// 验证路由配置
+const routeResult = validateRouteConfig(routeConfig)
+if (!routeResult.valid) {
+  console.error('路由配置无效:', routeResult.errors)
+}
+
+// 验证页面规则
+const ruleResult = validateRuleConfig(ruleConfig)
+if (!ruleResult.valid) {
+  console.error('规则配置无效:', ruleResult.errors)
 }
 \\\
 
@@ -146,7 +153,8 @@ if (!result.valid) {
 
 本包依赖 [spark-app](../spark-app/README.md) 提供的基础设施：
 
-- **Logger** - 使用 \pageLogger\ 和 \outerLogger\
+- **Logger** - 使用 \pageLogger\ 和 \
+outerLogger\
 - **符号常量** - 使用 \DefaultConfig\、\ErrorCodes\
 - **错误处理** - 统一错误码和消息
 - **权限过滤** - 通过 \eforeRegister\ 钩子集成
