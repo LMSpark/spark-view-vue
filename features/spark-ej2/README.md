@@ -44,10 +44,8 @@ Column 列组件，支持：
 import { initializeSparkEJ2Components } from '@/features/spark-ej2'
 import { Spark } from '@spark-view/spark-component'
 
-const manager = Spark.createComponentManager()
-
-// 初始化 SPARK-EJ2 组件
-await initializeSparkEJ2Components(manager)
+// 初始化 SPARK-EJ2 组件（使用全局管理器）
+await initializeSparkEJ2Components(Spark._manager())
 ```
 
 ### 使用组件

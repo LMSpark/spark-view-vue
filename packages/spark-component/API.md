@@ -90,10 +90,7 @@ pnpm add @spark-view/spark-component
 import { Spark } from '@spark-view/spark-component'
 import { createApp } from 'vue'
 
-// 1. 创建核心实例
-const manager = Spark.createManager(Spark.createRegistry())
-
-// 2. 注册组件
+// 1. 注册组件
 Spark.register({
   type: 'my-button',
   name: 'My Button',
@@ -102,11 +99,11 @@ Spark.register({
   providers: [{ name: 'click-handler', implementation: handleClick }]
 })
 
-// 3. 安装到 Vue 应用
+// 2. 安装到 Vue 应用
 const app = createApp(App)
-Spark.install(app, { manager })
+app.use(Spark.createVuePlugin())
 
-// 4. 在组件中使用
+// 3. 在组件中使用
 import { useSparkComponent } from '@spark-view/spark-component'
 
 export default defineComponent({
@@ -198,23 +195,24 @@ Spark.defineComponent: typeof defineSparkComponent
 #### 工厂函数
 
 ```typescript
-// 组件管理器工厂
-Spark.createManager(registry?: ComponentRegistry): ComponentManager
-Spark.createComponentManager: typeof createComponentManager
-
 // 组件注册表工厂
-Spark.createRegistry(): ComponentRegistry
-Spark.createComponentRegistry: typeof createComponentRegistry
+Spark.createComponentRegistry(): ComponentRegistry
+
+// 组件管理器工厂（高级用法）
+Spark.createComponentManager(renderer?, registry?): ComponentManager
+
+// 组件系统工厂（测试/隔离场景）
+Spark.createComponentSystem(): { manager: ComponentManager; registry: ComponentRegistry }
 ```
 
 #### Vue 集成
 
 ```typescript
-// 安装 Vue 插件 (推荐)
-Spark.install(app: App, opts: { manager: ComponentManager, registry?: ComponentRegistry }): void
+// 创建 Vue 插件（使用全局单例）
+Spark.createVuePlugin(opts?: { registry?: ComponentRegistry }): Plugin
 
-// 创建 Vue 插件
-Spark.createVuePlugin(opts: { manager: ComponentManager, registry?: ComponentRegistry }): Plugin
+// 直接安装（已废弃，请使用 createVuePlugin）
+Spark.install(app: App): void
 ```
 
 #### 插件系统
@@ -785,7 +783,7 @@ Error: Spark manager not found in Vue context
 ```
 
 **原因**: 未正确安装 Vue 插件
-**解决**: 使用 `Spark.install(app, { manager })` 安装插件
+**解决**: 使用 `app.use(Spark.createVuePlugin())` 安装插件
 
 #### SSR window 错误
 
@@ -863,11 +861,11 @@ Spark.register({
   component: MyButtonComponent
 })
 
-// 3. 在 Vue 应用中安装
+// 2. 在 Vue 应用中安装
 const app = createApp(App)
-Spark.install(app, { manager })
+app.use(Spark.createVuePlugin())
 
-// 4. 在组件中使用
+// 3. 在组件中使用
 import { useSparkComponent } from '@spark-view/spark-component'
 
 export default {
@@ -930,8 +928,8 @@ Spark.defineComponent: typeof defineSparkComponent
 #### Vue 集成
 
 ```ts
-Spark.createVuePlugin(opts: { manager: ComponentManager, registry?: ComponentRegistry }): Plugin
-Spark.install(app: App, opts: { manager?: ComponentManager, registry?: ComponentRegistry }): void
+// 创建 Vue 插件
+Spark.createVuePlugin(opts?: { registry?: ComponentRegistry }): Plugin
 ```
 
 #### 插件系统
@@ -944,8 +942,14 @@ Spark.getSparkPlugin(name: string): Plugin | undefined
 #### 工厂函数
 
 ```ts
+// 注册表工厂
 Spark.createComponentRegistry(): ComponentRegistry
-Spark.createComponentManager(registry?: ComponentRegistry): ComponentManager
+
+// 管理器工厂（高级）
+Spark.createComponentManager(renderer?, registry?): ComponentManager
+
+// 组件系统工厂（测试/隔离）
+Spark.createComponentSystem(): { manager: ComponentManager; registry: ComponentRegistry }
 ```
 
 ---
@@ -1256,9 +1260,6 @@ interface LoggerApi {
 // 创建插件
 const plugin = Spark.createVuePlugin()
 app.use(plugin)
-
-// 或直接安装
-Spark.install(app, { manager })
 ```
 
 ---
@@ -1377,13 +1378,14 @@ const dataService2 = use('data-service')     // 更直观的别名
    - `renderTree` → 使用 `render`
    - `SparkComponentMeta` → 内联到 `ComponentConfig`
 
-3. **依赖注入强化**
+3. **简化 Vue 集成**
    ```ts
-   // 旧：可能使用全局单例
-   Spark.install(app)
-
-   // 新：必须显式提供管理器
+   // 旧：需要手动创建 manager
+   const manager = Spark.createComponentManager()
    Spark.install(app, { manager })
+
+   // 新：manager 由框架自动管理
+   app.use(Spark.createVuePlugin())
    ```
 
 4. **工厂函数**
@@ -1391,15 +1393,13 @@ const dataService2 = use('data-service')     // 更直观的别名
    // 旧：直接导入单例
    import { componentManager } from '@spark-view/spark-component'
 
-   // 新：使用工厂或 Spark 访问器
-   const manager = Spark.createComponentManager()
-   // 或
-   const manager = Spark.manager()
+   // 新：使用 Spark 访问器（内部 API）
+   const manager = Spark._manager()
    ```
 
 ### 最佳实践
 
-- 总是通过 `Spark.install()` 提供管理器实例
+- 总是使用 `Spark.createVuePlugin()` 安装插件
 - 使用 `useSparkComponent` 在组件中访问上下文
 - 优先使用能力系统而非直接导入
 - 为组件定义提供验证器确保配置正确
