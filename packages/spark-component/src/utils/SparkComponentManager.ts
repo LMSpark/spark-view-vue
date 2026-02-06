@@ -79,7 +79,7 @@ export class SparkComponentManagerImpl {
       // 运行时管理
       parent,
       state: config.state ?? {},
-      providers: new Set<CapabilityProvider>(),
+      providers: new Map<string, CapabilityProvider>(),
       consumers: new Map<string, CapabilityConsumer>()
     }
     if (parent) {
@@ -176,7 +176,7 @@ export class SparkComponentManagerImpl {
       throw new Error('Invalid provider: must have a non-empty name')
     }
 
-    context.providers.add(provider)
+    context.providers.set(provider.name, provider)
     
     // 自动连接能力（安全处理错误）
     try { 
@@ -229,7 +229,7 @@ export class SparkComponentManagerImpl {
    * @returns 能力提供者或 undefined
    */
   getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined {
-    const provider = Array.from(context.providers).find(p => p.name === capabilityName)
+    const provider = context.providers.get(capabilityName)
     if (provider) return provider
     if (context.parent) return this.getProvider(context.parent, capabilityName)
     return undefined

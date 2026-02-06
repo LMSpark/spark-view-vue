@@ -122,7 +122,7 @@ describe('ColumnManager provider location', () => {
 
     // The parent column context should have columnConfig provider
     if (parentColumnCtx) {
-      expect(Array.from(parentColumnCtx.providers).some(p => p.name === 'columnConfig')).toBe(true)
+      expect(parentColumnCtx.providers.has('columnConfig')).toBe(true)
     }
 
     // Verify the parent column has the expected configuration

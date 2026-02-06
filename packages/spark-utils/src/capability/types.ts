@@ -37,8 +37,8 @@ export interface Consumer {
 export interface Context<T = Provider> {
   /** 父上下文（用于向上查找能力） */
   parent?: Context<T> | null
-  /** 当前上下文提供的能力 */
-  providers: Set<T>
+  /** 当前上下文提供的能力（Map 实现 O(1) 查询） */
+  providers: Map<string, T>
 }
 
 /**
