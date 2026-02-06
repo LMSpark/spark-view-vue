@@ -144,7 +144,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     context.consumers.set(name, consumer)
     const provider = manager.getProvider(context, name) ?? createNoopProvider(name)
     if (provider) {
-      consumer.implementation = ((provider).implementation ?? (provider as unknown as Implementation)) as Implementation | undefined
+      consumer.implementation = provider.implementation as Implementation | undefined
       try { capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').CapabilityContext<CapabilityProvider>) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
       logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
       return (consumer.implementation ?? null) as Implementation | null
