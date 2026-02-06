@@ -235,7 +235,7 @@ const page = context.page(1, 10)  // 第1页，每页10条
 ### 提供 DataSet 能力
 
 \\\ue
-<script setup lang=&quot;ts&quot;>
+<script setup lang="ts">
 import { SparkData } from '@spark-view/spark-data'
 import { useSparkComponent } from '@spark-view/spark-component'
 
@@ -251,7 +251,7 @@ provide('dataSet', dataSet)
 ### 消费 DataSet 能力
 
 \\\ue
-<script setup lang=&quot;ts&quot;>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 

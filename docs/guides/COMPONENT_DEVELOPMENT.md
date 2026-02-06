@@ -6,14 +6,14 @@
 
 ### 1. 创建组件
 
-\\\ue
+```vue
 <template>
-  <div class=&quot;my-grid&quot;>
+  <div class="my-grid">
     <slot />
   </div>
 </template>
 
-<script setup lang=&quot;ts&quot;>
+<script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 
 const props = defineProps<{
@@ -32,11 +32,11 @@ provide('columnManager', {
   removeColumn: (id) => console.log('Remove column:', id)
 })
 </script>
-\\\
+```
 
 ### 2. 注册组件
 
-\\\	ypescript
+```typescript
 import { Spark } from '@spark-view/spark-component'
 import MyGrid from './MyGrid.vue'
 
@@ -53,18 +53,18 @@ Spark.register({
   name: 'My Chart',
   loader: () => import('./MyChart.vue')
 })
-\\\
+```
 
 ### 3. 使用组件
 
-\\\ue
+```vue
 <template>
-  <my-grid id=&quot;grid1&quot; :dataSource=&quot;users&quot;>
-    <my-column field=&quot;name&quot; title=&quot;姓名&quot; />
-    <my-column field=&quot;age&quot; title=&quot;年龄&quot; />
+  <my-grid id="grid1" :dataSource="users">
+    <my-column field="name" title="姓名" />
+    <my-column field="age" title="年龄" />
   </my-grid>
 </template>
-\\\
+```
 
 ## 能力系统
 
@@ -72,7 +72,7 @@ Spark.register({
 
 ### 提供能力
 
-\\\	ypescript
+```typescript
 const { provide } = useSparkComponent({ type: 'my-grid' })
 
 provide('columnManager', {
@@ -80,11 +80,11 @@ provide('columnManager', {
   removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id),
   getColumns: () => columns.value
 })
-\\\
+```
 
 ### 消费能力
 
-\\\	ypescript
+```typescript
 const { consume, whenAvailable } = useSparkComponent({ type: 'my-column' })
 
 // 立即消费（可能为 undefined）
@@ -98,12 +98,12 @@ whenAvailable('columnManager', (mgr) => {
     title: props.title
   })
 })
-\\\
+```
 
 ## 组件生命周期
 
-\\\ue
-<script setup lang=&quot;ts&quot;>
+```vue
+<script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 
@@ -119,14 +119,14 @@ onUnmounted(() => {
   // 清理逻辑
 })
 </script>
-\\\
+```
 
 ## 数据绑定
 
 ### 绑定 DataSet
 
-\\\ue
-<script setup lang=&quot;ts&quot;>
+```vue
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 
@@ -145,12 +145,12 @@ dataSet?.subscribe('Users', (event) => {
   console.log('数据变化:', event)
 })
 </script>
-\\\
+```
 
 ## 事件处理
 
-\\\ue
-<script setup lang=&quot;ts&quot;>
+```vue
+<script setup lang="ts">
 const emit = defineEmits<{
   rowClick: [row: any]
   rowSelect: [rows: any[]]
@@ -164,11 +164,11 @@ function handleRowSelect(rows: any[]) {
   emit('rowSelect', rows)
 }
 </script>
-\\\
+```
 
 ## 样式隔离
 
-\\\ue
+```vue
 <style scoped>
 .my-grid {
   border: 1px solid #ddd;
@@ -180,11 +180,11 @@ function handleRowSelect(rows: any[]) {
   padding: 8px;
 }
 </style>
-\\\
+```
 
 ## 类型定义
 
-\\\	ypescript
+```typescript
 export interface MyGridProps {
   id: string
   dataSource?: any[]
@@ -204,7 +204,7 @@ export interface ColumnManager {
   removeColumn: (id: string) => void
   getColumns: () => ColumnConfig[]
 }
-\\\
+```
 
 ## 完整示例
 

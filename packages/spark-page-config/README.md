@@ -7,70 +7,70 @@
 
 ## 特性
 
--  **多源加载** - 本地（SPA）/远程（API）/混合模式
--  **动态路由** - 运行时注册路由，支持懒加载
--  **配置缓存** - 内存缓存，可配置过期时间
--  **配置验证** - Schema 验证，确保配置正确
--  **脚本沙箱** - 安全执行页面脚本
--  **热更新** - 支持配置刷新
+- **多源加载** - 本地（SPA）/远程（API）/混合模式
+- **动态路由** - 运行时注册路由，支持懒加载
+- **配置缓存** - 内存缓存，可配置过期时间
+- **配置验证** - Schema 验证，确保配置正确
+- **脚本沙箱** - 安全执行页面脚本
+- **热更新** - 支持配置刷新
 
 ## 安装
 
-\\\ash
+```bash
 pnpm add @spark-view/spark-page-config
-\\\
+```
 
 ## 快速开始
 
 ### 1. 配置文件结构
 
-\\\
+```
 public/pages-config/
- routes.json           # 路由配置
- <pageId>/
-     rule.json         # 页面规则（组件树）
-     pagedata.json     # 页面数据
-     script.js         # 页面脚本（可选）
-\\\
+  routes.json           # 路由配置
+  <pageId>/
+      rule.json         # 页面规则（组件树）
+      pagedata.json     # 页面数据
+      script.js         # 页面脚本（可选）
+```
 
 ### 2. 路由配置 (routes.json)
 
-\\\json
+```json
 [
   {
-    &quot;path&quot;: &quot;/home&quot;,
-    &quot;name&quot;: &quot;home&quot;,
-    &quot;pageId&quot;: &quot;home&quot;,
-    &quot;meta&quot;: {
-      &quot;title&quot;: &quot;首页&quot;,
-      &quot;icon&quot;: &quot;&quot;,
-      &quot;requiresAuth&quot;: true
+    "path": "/home",
+    "name": "home",
+    "pageId": "home",
+    "meta": {
+      "title": "首页",
+      "icon": "",
+      "requiresAuth": true
     }
   }
 ]
-\\\
+```
 
 ### 3. 页面规则 (rule.json)
 
-\\\json
+```json
 {
-  &quot;type&quot;: &quot;container&quot;,
-  &quot;id&quot;: &quot;root&quot;,
-  &quot;children&quot;: [
+  "type": "container",
+  "id": "root",
+  "children": [
     {
-      &quot;type&quot;: &quot;spark-ej2-grid&quot;,
-      &quot;id&quot;: &quot;userGrid&quot;,
-      &quot;props&quot;: {
-        &quot;dataSource&quot;: &quot;@{dataSet.Users}&quot;
+      "type": "spark-ej2-grid",
+      "id": "userGrid",
+      "props": {
+        "dataSource": "@{dataSet.Users}"
       }
     }
   ]
 }
-\\\
+```
 
 ### 4. 使用配置加载器
 
-\\\	ypescript
+```typescript
 import { createConfigLoader } from '@spark-view/spark-page-config'
 
 // 创建加载器
@@ -85,11 +85,11 @@ const routes = await loader.loadRoutes()
 
 // 加载页面配置
 const pageConfig = await loader.loadPageConfig('home')
-\\\
+```
 
 ### 5. 动态路由注册
 
-\\\	ypescript
+```typescript
 import { setupDynamicRoutes } from '@spark-view/spark-page-config'
 import { createRouter } from 'vue-router'
 
@@ -103,7 +103,7 @@ await setupDynamicRoutes(router, {
     return checkPermission(route)
   }
 })
-\\\
+```
 
 ## 核心 API
 
@@ -111,7 +111,7 @@ await setupDynamicRoutes(router, {
 
 配置加载器
 
-\\\	ypescript
+```typescript
 const loader = createConfigLoader({
   mode: 'local',           // 加载模式
   basePath: '/config',     // 基础路径
@@ -129,11 +129,11 @@ await loader.loadPageScript(pageId)          // 加载页面脚本
 // 缓存管理
 loader.clearCache()                          // 清空缓存
 loader.refreshConfig(pageId)                 // 刷新指定配置
-\\\
+```
 
 ### 配置验证
 
-\\\	ypescript
+```typescript
 import { validateRouteConfig, validateRuleConfig } from '@spark-view/spark-page-config'
 
 // 验证路由配置
@@ -147,17 +147,16 @@ const ruleResult = validateRuleConfig(ruleConfig)
 if (!ruleResult.valid) {
   console.error('规则配置无效:', ruleResult.errors)
 }
-\\\
+```
 
 ## 与 L1 (spark-app) 集成
 
 本包依赖 [spark-app](../spark-app/README.md) 提供的基础设施：
 
-- **Logger** - 使用 \pageLogger\ 和 \
-outerLogger\
-- **符号常量** - 使用 \DefaultConfig\、\ErrorCodes\
+- **Logger** - 使用 `pageLogger` 和 `routerLogger`
+- **符号常量** - 使用 `DefaultConfig`、`ErrorCodes`
 - **错误处理** - 统一错误码和消息
-- **权限过滤** - 通过 \eforeRegister\ 钩子集成
+- **权限过滤** - 通过 `beforeRegister` 钩子集成
 
 详细集成说明请查阅 [INTEGRATION.md](./INTEGRATION.md)。
 
@@ -167,20 +166,20 @@ outerLogger\
 
 ## 依赖
 
-\\\json
+```json
 {
-  &quot;@spark-view/spark-app&quot;: &quot;workspace:*&quot;,
-  &quot;vue-router&quot;: &quot;^4.2.0&quot;
+  "@spark-view/spark-app": "workspace:*",
+  "vue-router": "^4.2.0"
 }
-\\\
+```
 
 ## 开发命令
 
-\\\ash
+```bash
 pnpm run typecheck   # 类型检查
 pnpm run test        # 运行测试
 pnpm run build       # 构建包
-\\\
+```
 
 ## License
 
