@@ -1,9 +1,9 @@
 // EJ2-specific component configuration types
 // Unified location for all Spark-EJ2 type definitions
 
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 
-export interface SparkEJ2GridConfig extends ComponentConfig {
+export interface SparkEJ2GridConfig extends ComponentContext {
   type: 'spark-ej2-grid'
   dataSource?: unknown[]
   allowSorting?: boolean
@@ -22,7 +22,7 @@ export interface SparkEJ2GridConfig extends ComponentConfig {
   [key: string]: unknown
 }
 
-export interface SparkEJ2ColumnConfig extends ComponentConfig {
+export interface SparkEJ2ColumnConfig extends ComponentContext {
   type: 'spark-ej2-column'
   field?: string
   headerText?: string

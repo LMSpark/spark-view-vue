@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 // getColumnConfig now provided by useSparkComponent; helper import removed
-import type { ComponentConfig, ComponentContext } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 import type { SparkEJ2ColumnConfig } from '../types'
 // Removed EJ2 imports to avoid runtime errors in tests
 // import type { ColumnModel } from '@syncfusion/ej2-vue-grids'
@@ -31,7 +31,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { context, provide, getComponent } = useSparkComponent(
-  props.config as ComponentConfig,
+  props.config,
   { parentContext: props.parentContext }
 )
 

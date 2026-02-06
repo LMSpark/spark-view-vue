@@ -14,7 +14,6 @@ export default Spark
 
 // 导出类型
 export type {
-  ComponentConfig,
   ComponentContext,
   CapabilityProvider,
   CapabilityConsumer

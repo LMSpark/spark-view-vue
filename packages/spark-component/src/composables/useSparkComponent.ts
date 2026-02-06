@@ -14,7 +14,7 @@ import {
 } from '@spark-view/spark-utils'
 import type { EventProvider } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
-import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
+import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation } from '../types/common.js'
 
@@ -23,7 +23,7 @@ function createNoopProvider(name: string): CapabilityProvider {
   return { name, version: '0.0.0', implementation: {} }
 }
 
-export function useSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(
+export function useSparkComponent<TConfig extends ComponentContext = ComponentContext>(
   config: TConfig,
   options?: {
     manager?: ComponentManager

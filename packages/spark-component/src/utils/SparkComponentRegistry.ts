@@ -1,5 +1,5 @@
 import { Logger } from '@spark-view/spark-utils'
-import type { ComponentConfig, ComponentRegistry } from '../types/spark-component.js'
+import type { ComponentDefinition, ComponentRegistry } from '../types/spark-component.js'
 
 /**
  * SPARK 组件注册表实现
@@ -20,9 +20,9 @@ import type { ComponentConfig, ComponentRegistry } from '../types/spark-componen
  */
 export class SparkComponentRegistryImpl implements ComponentRegistry {
   /** 组件类型定义存储（key: 组件类型名, value: 组件配置定义） */
-  private components = new Map<string, ComponentConfig>()
+  private components = new Map<string, ComponentDefinition>()
   /** 加载中的组件（防止重复加载） */
-  private loading = new Map<string, Promise<ComponentConfig | undefined>>()
+  private loading = new Map<string, Promise<ComponentDefinition | undefined>>()
   /** 日志记录器 */
   private logger = Logger('Spark:Registry')
 
@@ -43,7 +43,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
    * })
    * ```
    */
-  register(type: string, definition: ComponentConfig): void {
+  register(type: string, definition: ComponentDefinition): void {
     if (this.components.has(type)) {
       this.logger.warn(`Component type '${type}' is already registered. Overwriting...`)
     }
@@ -51,7 +51,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
       throw new Error(`Invalid component definition for type '${type}'`)
     }
     // 为逻辑组件提供默认值
-    const normalizedDef: ComponentConfig = {
+    const normalizedDef: ComponentDefinition = {
       ...definition,
       type: definition.type || type
     }
@@ -65,7 +65,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
    * @param type - 组件类型名称
    * @returns 组件定义或 undefined（如果未注册）
    */
-  get(type: string): ComponentConfig | undefined {
+  get(type: string): ComponentDefinition | undefined {
     return this.components.get(type)
   }
 
@@ -93,7 +93,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
    * // 首次调用会触发 import()，后续直接返回缓存
    * ```
    */
-  async getAsync(type: string): Promise<ComponentConfig | undefined> {
+  async getAsync(type: string): Promise<ComponentDefinition | undefined> {
     // 1. 已加载，直接返回
     const existing = this.components.get(type)
     if (existing?.component) {
@@ -124,7 +124,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
   /**
    * 内部方法：执行组件加载
    */
-  private async _loadComponent(type: string, definition: ComponentConfig): Promise<ComponentConfig | undefined> {
+  private async _loadComponent(type: string, definition: ComponentDefinition): Promise<ComponentDefinition | undefined> {
     try {
       this.logger.info(`⏳ Loading component: ${type}`)
       const loader = definition.loader
@@ -135,7 +135,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
       const component = module.default ?? module
       
       // 更新定义，填充 component 字段
-      const loaded: ComponentConfig = {
+      const loaded: ComponentDefinition = {
         ...definition,
         component,
         loader: undefined // 加载后清除 loader，避免重复加载
@@ -232,7 +232,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
    * @param def - 组件定义
    * @returns 是否有效
    */
-  private validateDefinition(def: ComponentConfig): boolean {
+  private validateDefinition(def: ComponentDefinition): boolean {
     // 必须有 type
     if (!def.type || typeof def.type !== 'string' || def.type.trim() === '') {
       this.logger.error('Invalid definition: type is required and must be a non-empty string')
