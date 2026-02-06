@@ -14,5 +14,4 @@ export type {
   Manager as CapabilityManager
 } from '@spark-view/spark-utils/capability/internal'
 
-export type AnyFunction = (...args: unknown[]) => unknown
 export type Implementation = Record<string, unknown>

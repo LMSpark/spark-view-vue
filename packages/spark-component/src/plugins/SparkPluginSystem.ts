@@ -1,5 +1,5 @@
 import { Logger } from '@spark-view/spark-utils'
-import type { Plugin, PluginHooks, ComponentContext } from '../types/spark-component.js'
+import type { Plugin, PluginHooks } from '../types/spark-component.js'
 
 const logger = Logger('Spark:Plugin')
 
@@ -45,42 +45,7 @@ class SparkPluginManager {
   clear() { Array.from(this.plugins.keys()).forEach(k => this.uninstall(k)) }
 }
 
-export class SparkDebugPlugin {
-  name = 'debug'
-  version = '1.0.0'
-  description = 'Component debugging and inspection plugin'
-  install(m: SparkPluginManager) {
-    m.registerHook('afterComponentCreate', (ctx: ComponentContext) => {
-      logger.info(`🐛 [DEBUG] Component created: ${ctx.type} (${ctx.id})`)
-    })
-  }
-}
-
-export class SparkPerformancePlugin {
-  name = 'performance'
-  version = '1.0.0'
-  description = 'Component performance monitoring plugin'
-  private metrics = new Map<string, unknown>()
-  install(_m: SparkPluginManager) {
-    // minimal implementation
-  }
-  getMetrics(id: string) { return this.metrics.get(id) }
-  getAllMetrics() { return new Map(this.metrics) }
-}
-
-export class SparkErrorHandlingPlugin {
-  name = 'error-handling'
-  version = '1.0.0'
-  description = 'Unified error handling for components'
-  private errorHandlers: unknown[] = []
-  install(_m: SparkPluginManager) {
-    // register hooks as needed
-  }
-  addErrorHandler(h: unknown) { this.errorHandlers.push(h) }
-  removeErrorHandler(h: unknown) { const i = this.errorHandlers.indexOf(h); if (i>-1) this.errorHandlers.splice(i,1) }
-}
-
-export const globalPluginManager = new SparkPluginManager()
+const globalPluginManager = new SparkPluginManager()
 export function installSparkPlugin(p: Plugin) { globalPluginManager.install(p) }
 export function uninstallSparkPlugin(name: string) { return globalPluginManager.uninstall(name) }
 export function getSparkPlugin(name: string) { return globalPluginManager.get(name) }

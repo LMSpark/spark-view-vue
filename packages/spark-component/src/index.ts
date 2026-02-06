@@ -16,15 +16,11 @@ export {
 
 // 事件系统
 export {
-  createComponentEventEmitter,
-  createComponentEventConsumer,
-  ComponentEvents
+  createComponentEventEmitter
 } from './events/ComponentEventEmitter.js'
 
 export type {
-  ComponentEventProvider,
-  ComponentEventConsumer,
-  ComponentEventType
+  ComponentEventProvider
 } from './events/ComponentEventEmitter.js'
 
 // 权限系统（从 spark-utils 转发）

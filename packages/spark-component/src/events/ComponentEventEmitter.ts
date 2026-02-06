@@ -29,17 +29,6 @@ export interface ComponentEventProvider {
 }
 
 /**
- * 组件事件消费者接口
- * 子组件通过能力系统消费父组件的事件
- */
-export interface ComponentEventConsumer {
-  /**
-   * 事件处理函数
-   */
-  onEvent: (event: string, ...args: unknown[]) => void
-}
-
-/**
  * 创建组件事件发射器
  * 用于父组件提供事件能力
  */
@@ -88,59 +77,4 @@ export function createComponentEventEmitter(componentType?: string): ComponentEv
   }
 }
 
-/**
- * 创建组件事件消费者
- * 用于子组件消费父组件的事件
- */
-export function createComponentEventConsumer(
-  handlers: Record<string, Function>
-): ComponentEventConsumer {
-  return {
-    onEvent(event: string, ...args: unknown[]) {
-      const handler = handlers[event]
-      if (handler && typeof handler === 'function') {
-        try {
-          handler(...args)
-        } catch (error) {
-          logger.error(`Error handling component event "${event}":`, error)
-        }
-      }
-    }
-  }
-}
 
-/**
- * 常用组件事件名称
- */
-export const ComponentEvents = {
-  // Grid 相关事件
-  GRID_ROW_CLICK: 'rowClick',
-  GRID_ROW_DOUBLE_CLICK: 'rowDoubleClick',
-  GRID_SELECTION_CHANGED: 'selectionChanged',
-  GRID_DATA_LOADED: 'dataLoaded',
-  GRID_DATA_ERROR: 'dataError',
-
-  // Column 相关事件
-  COLUMN_ADDED: 'columnAdded',
-  COLUMN_REMOVED: 'columnRemoved',
-  COLUMN_UPDATED: 'columnUpdated',
-
-  // Form 相关事件
-  FORM_SUBMIT: 'formSubmit',
-  FORM_RESET: 'formReset',
-  FORM_CHANGE: 'formChange',
-  FORM_VALIDATE_ERROR: 'formValidateError',
-
-  // 通用组件事件
-  COMPONENT_MOUNTED: 'componentMounted',
-  COMPONENT_DESTROYED: 'componentDestroyed',
-  VALUE_CHANGED: 'valueChanged',
-  FOCUS: 'focus',
-  BLUR: 'blur',
-  CLICK: 'click'
-} as const
-
-/**
- * 组件事件类型
- */
-export type ComponentEventType = typeof ComponentEvents[keyof typeof ComponentEvents]
