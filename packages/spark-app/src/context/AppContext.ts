@@ -4,7 +4,6 @@
  */
 
 import { inject, reactive } from 'vue'
-import type { App } from 'vue'
 import type { AppContext, UserInfo, TenantInfo, EnvironmentInfo } from '../types'
 import { APP_CONTEXT_KEY } from '../constants'
 
@@ -24,14 +23,6 @@ export function createAppContext(options: {
     config: options.config ?? {},
     initializedAt: new Date().toISOString()
   })
-}
-
-/**
- * 提供应用上下文（在应用初始化时调用）
- */
-export function provideAppContext(app: App, context: AppContext): void {
-  // 不使用 readonly，因为会导致类型不兼容
-  app.provide(APP_CONTEXT_KEY, context)
 }
 
 /**
