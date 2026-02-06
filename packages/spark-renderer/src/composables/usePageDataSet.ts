@@ -1,11 +1,11 @@
-﻿/**
+/**
  * DataSet 管理 Composable
  */
 
 import { ref, Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { DataSetManager } from '@spark-view/spark-data'
-import type { IDataSet, DataRow } from '@spark-view/spark-data'
+import type { IDataSet, IDataRow } from '@spark-view/spark-data'
 import type { PageContext, Rule, FormCreateAPI } from '../types'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
 
@@ -20,7 +20,7 @@ export interface UsePageDataSetOptions {
   originalRules?: Ref<Rule[]>
   formApi?: Ref<FormCreateAPI | null>
   enableDataSet?: boolean
-  dataLoader?: (tableName: string) => Promise<DataRow[]>
+  dataLoader?: (tableName: string) => Promise<IDataRow[]>
 }
 
 /**
@@ -146,7 +146,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     dataSet.value.on('selectedRowsChanged', ({ tableName, contextId, rows }: { 
       tableName: string
       contextId: string
-      rows: DataRow[] 
+      rows: IDataRow[] 
     }) => {
       pageLogger.debug('selectedRows 变化', { tableName, contextId, rowCount: rows.length })
       

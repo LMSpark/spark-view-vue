@@ -1,4 +1,4 @@
-﻿/**
+/**
  * DataSetManager 工厂类
  * 相当于 .NET 的 DataSet 工厂 - 提供静态方法创建和管理 DataSet 实例
  * 
@@ -9,7 +9,7 @@
  * .NET Factory    → DataSetManager (本文件)   - 工厂层
  */
 
-import type { IDataSet, DataRow } from './types'
+import type { IDataSet, IDataRow } from './types'
 import { DataSet } from './dataset'
 
 /**
@@ -24,7 +24,7 @@ export class DataSetManager {
    */
   static create(
     config: IDataSet,
-    dataLoader?: (tableName: string) => Promise<DataRow[]>
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): DataSet {
     return new DataSet(config, dataLoader)
   }
@@ -37,7 +37,7 @@ export class DataSetManager {
    */
   static fromJSON(
     json: string,
-    dataLoader?: (tableName: string) => Promise<DataRow[]>
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): DataSet {
     return DataSet.fromJSON(json, dataLoader)
   }
@@ -50,7 +50,7 @@ export class DataSetManager {
    */
   static async fromConfig(
     _pageId: string,
-    _dataLoader?: (tableName: string) => Promise<DataRow[]>
+    _dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): Promise<DataSet> {
     // 这里可以添加从配置文件加载的逻辑
     // 例如：从 src/pages-config/{pageId}/pagedata.json 加载

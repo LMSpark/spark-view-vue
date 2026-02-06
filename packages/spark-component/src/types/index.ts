@@ -1,4 +1,4 @@
-﻿import type { UnwrapRef } from 'vue'
+import type { UnwrapRef } from 'vue'
 
 export interface AsyncState<T = unknown> {
   data?: UnwrapRef<Awaited<T>>
@@ -12,10 +12,9 @@ export * from './interfaces.js'
 
 // 权限类型（从 spark-utils 选择性导出，避免冲突）
 export type {
-  DataRow, 
-  ComponentDataSource,
-  DataSet, // 向后兼容别名
-  ComponentDataRow,
+  IDataRow,
+  IDataRowWithPermission,
+  IDataSource,
   IPermissionChecker,
   IPermissionFilter
 } from './permission.js'

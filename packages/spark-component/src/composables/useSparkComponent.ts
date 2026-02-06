@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useSparkComponent composable
  * 为组件提供能力系统集成
  * 
