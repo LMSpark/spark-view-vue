@@ -16,7 +16,7 @@ import type { ConfigLoader, RuleConfig } from '@spark-view/spark-page-config'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 // 导入 FormCreate 官方类型
-import type { Rule as FormCreateRule } from '@form-create/element-ui'
+import type { Rule as FormCreateRule, Api as FormCreateApi } from '@form-create/element-ui'
 
 /**
  * 页面规则类型（使用 FormCreate 官方类型）
@@ -28,38 +28,12 @@ import type { Rule as FormCreateRule } from '@form-create/element-ui'
 export type Rule = FormCreateRule
 
 /**
- * FormCreate API 接口
+ * FormCreate API 接口（使用官方 Api 类型）
  * 
- * 注意：由于 @form-create/element-ui 的 Api 类型导出存在问题，
- * 这里参考官方文档定义核心 API 方法
- * 
+ * 说明：直接使用 @form-create/element-ui 的 Api 类型
  * 官方文档：https://www.form-create.com/v3/instance/
  */
-export interface FormCreateAPI {
-  // 表单规则
-  rule: Rule[]
-  
-  // 表单数据相关
-  formData(): Record<string, unknown>
-  setValue(field: string, value: unknown): void
-  getValue(field: string): unknown
-  
-  // DOM 元素操作
-  el(name: string): HTMLElement | null
-  
-  // 表单操作
-  validate(callback?: (valid: boolean) => void): Promise<boolean>
-  validateField(field: string): Promise<void>
-  submit(): Promise<void>
-  resetFields(): void
-  
-  // 规则操作
-  updateRule(name: string, rule: Partial<Rule>): void
-  updateRules(rules: Record<string, Partial<Rule>>): void
-  
-  // 其他方法
-  [key: string]: unknown
-}
+export type FormCreateAPI = FormCreateApi
 
 /**
  * 页面脚本运行时上下文接口
