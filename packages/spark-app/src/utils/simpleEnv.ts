@@ -3,18 +3,34 @@
  * 替代原 environment 模块中的复杂SSR兼容层
  */
 
-// 简单的环境类型
+/**
+ * 简单的环境类型
+ */
 export type SimpleEnvironment = 'client' | 'server'
 
 /**
- *  简单环境适配器（仅客户端）
+ * 环境信息接口
+ */
+export interface EnvironmentInfo {
+  /** 环境类型 */
+  type: SimpleEnvironment
+  /** 是否为服务端 */
+  isServer: boolean
+  /** 是否为客户端 */
+  isClient: boolean
+  /** 是否为测试环境 */
+  isTest: boolean
+}
+
+/**
+ * 简单环境适配器（仅客户端）
  * 用于替代原 envAdapter
  */
 export const simpleEnvAdapter = {
   /**
    * 获取环境信息（总是返回客户端）
    */
-  getEnvironment(): { type: SimpleEnvironment; isServer: boolean; isClient: boolean; isTest: boolean } {
+  getEnvironment(): EnvironmentInfo {
     return {
       type: 'client',
       isServer: false,
@@ -36,7 +52,7 @@ export const simpleEnvAdapter = {
   get sessionStorage(): Storage | undefined {
     return typeof window !== 'undefined' ? window.sessionStorage : undefined
   }
-}
+} as const
 
 /**
  * 在客户端执行回调
