@@ -3,32 +3,8 @@
  * SPARK Application Layer - 应用层基础设施
  */
 
-// 环境适配器
-export {
-  createEnvironmentDetector,
-  createBrowserAdapter,
-  EnvironmentType
-} from './environment'
-
-export type {
-  IEnvironmentInfo,
-  IBrowserAdapter,
-  IEnvironmentDetector
-} from './environment'
-
 // 符号常量表
 export * from './constants'
-
-// 事件系统
-export {
-  appEventBus,
-  emitAppEvent,
-  onAppEvent,
-  onceAppEvent,
-  offAppEvent
-} from './events/AppEventBus'
-
-export type { AppEvents } from './events/AppEventBus'
 
 // 核心命名空间
 export { SparkApp } from './namespace'
@@ -83,7 +59,6 @@ export type {
   AppConfig,
   UserInfo,
   TenantInfo,
-  EnvironmentInfo,
   BootstrapContext,  // 新增：Bootstrap 扩展 Context
   // BootstrapOptions,  // 已在上面导出
   RouterGuardOptions,
@@ -115,16 +90,6 @@ export { setupErrorHandler, createErrorBoundary } from './error/handler'
 // Config
 export { loadConfig, isFeatureEnabled } from './config'
 
-// Environment Adapter (SSR/SPA兼容层) - 已在上面导出
-export {
-  envAdapter,
-  getEnvironment,
-  getBrowser,
-  onClient,
-  onServer,
-  onBoth
-} from './environment'
-
 // Dependency Injection (依赖注入容器 - 保留向后兼容，推荐使用 composables)
 export {
   container,
@@ -152,7 +117,6 @@ export {
   tryUseAuth,
   useCurrentUser,
   useCurrentTenant,
-  useEnvironment,
   usePermissions,
   // Injection Keys
   AppContextKey,
