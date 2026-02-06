@@ -36,17 +36,6 @@ export namespace Spark {
   }
 
   /**
-   * @deprecated 使用 ComponentDefinition （注册）或 ComponentContext（实例+运行时）
-   * 为了向后兼容保留，将在下个主版本移除
-   * 
-   * children 使用灵活类型以兼容特定子类型的扩展（如 SparkEJ2GridConfig.children: SparkEJ2ColumnConfig[]）
-   */
-  export type ComponentConfig = ComponentDefinition & Pick<ComponentContext, 'id' | 'props'> & {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    children?: any[]
-  }
-
-  /**
    * 组件上下文 - 组件实例 + 运行时管理的统一表示
    * 
    * 继承能力系统的最小接口 CapabilityContext（parent + providers）
@@ -166,7 +155,6 @@ export const SPARK_REGISTRY_KEY: InjectionKey<Spark.ComponentRegistry> = Symbol(
 
 // Top-level aliases for simplified imports
 export type ComponentDefinition = Spark.ComponentDefinition
-export type ComponentConfig = Spark.ComponentConfig  // @deprecated 使用 ComponentDefinition 或 ComponentContext
 export type ComponentContext = Spark.ComponentContext
 export type ComponentRegistry = Spark.ComponentRegistry
 export type ComponentManager = Spark.ComponentManager

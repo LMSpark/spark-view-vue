@@ -17,7 +17,7 @@ import { ref, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLogger } from '@spark-view/spark-app'
 import { SparkData } from '@spark-view/spark-data'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 import UserGrid from './UserGrid.vue'
 
 // ============ 获取 APP 层服务 ============
@@ -97,7 +97,7 @@ const capabilityManager = SparkData.createCapabilityManager('app-services-demo',
 })
 
 // ============ 网格配置 ============
-const gridConfig = ref<ComponentConfig>({
+const gridConfig = ref<Partial<ComponentContext>>({
   type: 'user-grid',
   id: 'demo-grid',
   props: {

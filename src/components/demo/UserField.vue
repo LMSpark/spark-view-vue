@@ -12,11 +12,11 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { Spark } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 import type { RowDataCapability, RowEventsCapability } from './types'
 
 interface Props {
-  config: ComponentConfig
+  config: Partial<ComponentContext>
   value?: string | number
   label?: string
   icon?: string
@@ -33,7 +33,7 @@ const {
   context,
   consume,
   logger 
-} = Spark.useSpark(props.config)
+} = Spark.useSpark(props.config as ComponentContext)
 
 // ============ 能力消费 ============
 

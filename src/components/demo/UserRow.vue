@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { Spark } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 import type { 
   User, 
   SelectionCapability, 
@@ -36,7 +36,7 @@ import type {
 } from './types'
 
 interface Props {
-  config: ComponentConfig
+  config: Partial<ComponentContext>
 }
 
 const props = defineProps<Props>()
@@ -46,7 +46,7 @@ const user = computed(() => props.config.props?.user as User)
 
 const childConfigs = computed(() =>
   (props.config.children ?? []).filter(
-    (c): c is any => typeof (c as any).type === 'string' && (c as any).type.length > 0
+    (c: any): c is ComponentContext => typeof (c as any).type === 'string' && (c as any).type.length > 0
   )
 )
 const emit = defineEmits<{
@@ -59,7 +59,7 @@ const {
   consume,
   provide: provideCapability,
   logger 
-} = Spark.useSpark(props.config)
+} = Spark.useSpark(props.config as ComponentContext)
 
 const isSelected = ref(false)
 

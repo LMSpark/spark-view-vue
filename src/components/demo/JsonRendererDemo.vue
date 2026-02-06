@@ -23,12 +23,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 import UserGrid from './UserGrid.vue'
 
 const loading = ref(true)
 const error = ref('')
-const config = ref<ComponentConfig | null>(null)
+const config = ref<Partial<ComponentContext> | null>(null)
 
 onMounted(async () => {
   try {

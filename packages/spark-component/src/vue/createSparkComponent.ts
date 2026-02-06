@@ -9,7 +9,7 @@
 import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
-import type { ComponentConfig, ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
+import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation } from '../types/common.js'
 
@@ -43,7 +43,7 @@ function renderSafeHTML(html: string): VNode {
   })
 }
 
-export type SparkComponent<_TConfig = ComponentConfig> = ReturnType<typeof defineSparkComponent>
+export type SparkComponent<_TConfig = ComponentContext> = ReturnType<typeof defineSparkComponent>
 
 // Local helper to create a noop provider when a capability is missing
 function createNoopProvider(name: string): CapabilityProvider {
@@ -138,7 +138,7 @@ export interface SparkComponentHelpers {
  * })
  * ```
  */
-export function defineSparkComponent<_TConfig extends ComponentConfig = ComponentConfig>(definition: {
+export function defineSparkComponent<_TConfig extends ComponentContext = ComponentContext>(definition: {
   // Component metadata
   type: string
   name?: string
