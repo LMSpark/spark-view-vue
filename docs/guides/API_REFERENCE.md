@@ -21,8 +21,8 @@ Spark.register({
   loader: () => import('./MyComp')  // 懒加载
 })
 
-// Vue 插件
-app.use(Spark.createVuePlugin({ manager, registry }))
+// Vue 插件（使用全局单例）
+app.use(Spark.createVuePlugin())
 ```
 
 ### 组件 Composable

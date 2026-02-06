@@ -2,13 +2,12 @@
 import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid } from '../features/spark-ej2'
 import { Spark } from '../features/spark'
-import { createComponentManager, createComponentRegistry } from '@spark-view/spark-component'
+import { createComponentSystem } from '@spark-view/spark-component'
 
 // Note: local EJ2 component used by tests is imported directly where needed
 
 
-const registry = createComponentRegistry()
-const manager = createComponentManager(undefined, registry)
+const { manager, registry } = createComponentSystem()
 await Spark.initializeApp(manager)
 
 // Mock EJ2 components to avoid DOM-dependent behavior
@@ -118,7 +117,7 @@ describe('ColumnManager provider location', () => {
     expect(columnContexts.length).toBeGreaterThan(0)
 
     // Find the parent column (field: 'parent')
-    const parentColumnCtx = columnContexts.find(ctx => ctx.config.field === 'parent')
+    const parentColumnCtx = columnContexts.find(ctx => ctx.state.field === 'parent')
     expect(parentColumnCtx).toBeDefined()
 
     // The parent column context should have columnConfig provider
@@ -129,9 +128,9 @@ describe('ColumnManager provider location', () => {
     // Verify the parent column has the expected configuration
     expect(parentColumnCtx).toBeDefined()
     if (parentColumnCtx) {
-      expect(parentColumnCtx.config.field).toBe('parent')
-      expect(parentColumnCtx.config.children).toHaveLength(1)
-      expect(parentColumnCtx.config.children?.[0]?.field).toBe('child1')
+      expect(parentColumnCtx.state.field).toBe('parent')
+      expect(parentColumnCtx.state.children).toHaveLength(1)
+      expect(parentColumnCtx.state.children?.[0]?.field).toBe('child1')
     }
   })
 })

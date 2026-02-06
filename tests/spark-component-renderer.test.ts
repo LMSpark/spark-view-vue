@@ -1,12 +1,11 @@
 ﻿import { expect, test } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkComponentRenderer from '../features/spark/components/SparkComponentRenderer.vue'
-import { createComponentManager, createComponentRegistry } from '@spark-view/spark-component'
+import { createComponentSystem } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
 import type { DefineComponent } from 'vue'
 
-const registry = createComponentRegistry()
-const manager = createComponentManager(undefined, registry)
+const { manager, registry } = createComponentSystem()
 
 test('SparkComponentRenderer mounts spark-ej2-grid without missing render', async () => {
   // Explicitly pass manager to avoid implicit singletons

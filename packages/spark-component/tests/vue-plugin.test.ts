@@ -1,6 +1,6 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest'
-import { createComponentManager, createComponentRegistry, Spark, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../src/index'
+import { createComponentRegistry, Spark, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../src/index'
 
 // Minimal fake Vue app object
 function createFakeApp() {
@@ -13,19 +13,24 @@ function createFakeApp() {
 }
 
 describe('Vue plugin integration', () => {
-  it('Spark.install without manager should throw a helpful error', () => {
+  it('createVuePlugin with default options uses global singleton', () => {
     const app = createFakeApp()
-    // @ts-ignore intentionally calling without options
-    expect(() => Spark.install(app)).toThrow(/requires an explicit manager/)
+    const plugin = Spark.createVuePlugin()
+    plugin.install(app)
+    
+    // Should provide manager and registry
+    expect((app._provided)[SPARK_MANAGER_KEY]).toBeDefined()
+    expect((app._provided)[SPARK_REGISTRY_KEY]).toBeDefined()
   })
 
-  it('createVuePlugin installs by providing manager and registry', () => {
+  it('createVuePlugin with custom registry creates matching manager', () => {
     const registry = createComponentRegistry()
-    const manager = createComponentManager(undefined, registry)
-    const plugin = Spark.createVuePlugin({ manager, registry })
+    const plugin = Spark.createVuePlugin({ registry })
     const app = createFakeApp()
     plugin.install(app)
-    expect((app._provided)[SPARK_MANAGER_KEY]).toBe(manager)
+    
+    // Should provide manager and the custom registry
+    expect((app._provided)[SPARK_MANAGER_KEY]).toBeDefined()
     expect((app._provided)[SPARK_REGISTRY_KEY]).toBe(registry)
   })
 })

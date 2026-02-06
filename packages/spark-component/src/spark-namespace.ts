@@ -20,7 +20,7 @@ import { getSparkPlugin, installSparkPlugin } from './plugins/SparkPluginSystem.
 import { createVueSparkPlugin } from './plugins/VueSparkPlugin.js'
 import { useSparkComponent } from './composables/useSparkComponent.js'
 import { createComponentRegistry } from './utils/SparkComponentRegistry.js'
-import { createComponentManager } from './utils/SparkComponentManager.js'
+import { createComponentManager, createComponentSystem } from './utils/SparkComponentManager.js'
 import { defineSparkComponent } from './vue/createSparkComponent.js'
 import { 
   createSimpleRegistration
@@ -96,6 +96,9 @@ export const Spark: {
   
   /** @advanced 创建独立的组件注册器实例 */
   createComponentRegistry: typeof createComponentRegistry
+  
+  /** @advanced 创建隔离的组件系统（Manager + Registry 配套） */
+  createComponentSystem: typeof createComponentSystem
   
   // --------------------------------------------------------------------------
   // 工具方法
@@ -201,6 +204,7 @@ export const Spark: {
   createVuePlugin: createVueSparkPlugin,
   createComponentManager,
   createComponentRegistry,
+  createComponentSystem,
   
   // --------------------------------------------------------------------------
   // 工具方法实现

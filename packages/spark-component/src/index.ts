@@ -32,7 +32,7 @@ export {
 
 // 工厂函数（推荐使用）
 export { createComponentRegistry } from './utils/SparkComponentRegistry.js'
-export { createComponentManager } from './utils/SparkComponentManager.js'
+export { createComponentManager, createComponentSystem } from './utils/SparkComponentManager.js'
 export { defineSparkComponent } from './vue/createSparkComponent.js'
 
 // 实现类（用于测试和高级用法）
