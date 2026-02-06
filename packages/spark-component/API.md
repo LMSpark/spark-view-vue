@@ -199,10 +199,15 @@ Spark.defineComponent: typeof defineSparkComponent
 Spark.createComponentRegistry(): ComponentRegistry
 
 // 组件管理器工厂（高级用法）
-Spark.createComponentManager(renderer?, registry?): ComponentManager
+Spark.createComponentManager(renderer?, registry?, capabilityManager?): ComponentManager
 
 // 组件系统工厂（测试/隔离场景）
-Spark.createComponentSystem(): { manager: ComponentManager; registry: ComponentRegistry }
+// 🔥 新增：返回完全隔离的组件系统（包含独立的 capabilityManager）
+Spark.createComponentSystem(): { 
+  manager: ComponentManager; 
+  registry: ComponentRegistry;
+  capabilities: ComponentCapabilityManager 
+}
 ```
 
 #### Vue 集成
@@ -701,6 +706,62 @@ Spark.installSparkPlugin(monitoringPlugin)
 3. **提供降级方案**: 为可选能力设置默认实现
 4. **使用类型安全**: 为能力接口定义 TypeScript 类型
 
+### 依赖注入与测试隔离
+
+1. **使用 `createComponentSystem` 创建隔离测试环境**:
+   ```typescript
+   import { Spark } from '@spark-view/spark-component'
+   
+   // 测试用例中创建完全独立的组件系统
+   const { manager, registry, capabilities } = Spark.createComponentSystem()
+   
+   // 注册测试专用组件
+   registry.register('test-component', { /* ... */ })
+   
+   // 多个测试用例互不干扰
+   ```
+
+2. **组件内部使用 `manager.getCapabilityManager()`**:
+   ```typescript
+   // ✅ 推荐：从 manager 获取（支持 DI）
+   const capMgr = manager.getCapabilityManager()
+   capMgr.connectCapability(provider, consumer, context)
+   
+   // ❌ 避免：直接使用全局单例（测试污染风险）
+   import { capabilityManager } from './global-singleton'
+   ```
+
+3. **测试最佳实践：每个测试用例独立系统**:
+   ```typescript
+   describe('MyComponent', () => {
+     let system: ReturnType<typeof Spark.createComponentSystem>
+     
+     beforeEach(() => {
+       // 每个测试创建新系统
+       system = Spark.createComponentSystem()
+     })
+     
+     it('should work independently', () => {
+       const wrapper = mount(MyComponent, {
+         global: {
+           provide: {
+             sparkManager: system.manager
+           }
+         }
+       })
+       // 测试逻辑...
+     })
+   })
+   ```
+
+4. **向后兼容：默认使用全局单例**:
+   ```typescript
+   // 现有代码无需修改，继续使用全局单例
+   import { Spark } from '@spark-view/spark-component'
+   
+   app.use(Spark.createVuePlugin()) // 自动使用全局 componentManager
+   ```
+
 ### 沙箱使用
 
 1. **验证用户输入**: 永远不要直接执行用户提供的代码
@@ -945,11 +1006,19 @@ Spark.getSparkPlugin(name: string): Plugin | undefined
 // 注册表工厂
 Spark.createComponentRegistry(): ComponentRegistry
 
-// 管理器工厂（高级）
-Spark.createComponentManager(renderer?, registry?): ComponentManager
+// 管理器工厂（高级）- 支持依赖注入
+Spark.createComponentManager(
+  renderer?: SparkComponentRenderer, 
+  registry?: ComponentRegistry,
+  capabilityManager?: ComponentCapabilityManager
+): ComponentManager
 
-// 组件系统工厂（测试/隔离）
-Spark.createComponentSystem(): { manager: ComponentManager; registry: ComponentRegistry }
+// 组件系统工厂（测试/隔离）- 🔥 依赖注入最佳实践
+Spark.createComponentSystem(): { 
+  manager: ComponentManager; 
+  registry: ComponentRegistry;
+  capabilities: ComponentCapabilityManager 
+}
 ```
 
 ---
@@ -985,6 +1054,9 @@ interface ComponentManager {
   getContext(id: string): ComponentContext | undefined
   registerProvider(context: ComponentContext, provider: CapabilityProvider): void
   getProvider(context: ComponentContext, name: string): any
+  
+  // 🔥 新增：获取能力管理器（支持依赖注入架构）
+  getCapabilityManager?(): ComponentCapabilityManager
 }
 ```
 
