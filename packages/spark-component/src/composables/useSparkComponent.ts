@@ -13,7 +13,7 @@ import {
   Capability
 } from '@spark-view/spark-utils'
 import type { EventProvider } from '@spark-view/spark-utils'
-import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
+import { capabilityManager as defaultCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { Implementation } from '../types/common.js'
@@ -85,6 +85,11 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
   const resolvedManager = options?.manager ?? (inject(SPARK_MANAGER_KEY)) ?? (inject('sparkManager'))
   if (!resolvedManager) throw new Error('Component manager not found. Either provide via options.manager or install Spark Vue plugin: app.use(Spark.createVuePlugin())')
   const manager = resolvedManager
+  
+  // Get capabilityManager from manager if available, fallback to global singleton
+  const capabilityManager = (typeof (manager as { getCapabilityManager?: () => unknown }).getCapabilityManager === 'function')
+    ? (manager as { getCapabilityManager: () => unknown }).getCapabilityManager() as typeof defaultCapabilityManager
+    : defaultCapabilityManager
 
   const isVisible = computed(() => {
     const visibleProp = (context.state as { visible?: boolean }).visible
