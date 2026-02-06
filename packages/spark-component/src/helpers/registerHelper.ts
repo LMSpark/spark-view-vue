@@ -3,9 +3,7 @@
  * 
  * 提供更友好的组件注册 API，自动处理：
  * - 组件类型名称转换（name → kebab-case type）
- * - 默认版本号
  * - 懒加载 loader 包装
- * - 加载完成回调
  */
 
 import { Logger } from '@spark-view/spark-utils'
@@ -25,10 +23,6 @@ type SimpleConfig = {
   path?: string
   /** 组件本身（已导入的组件） */
   component?: unknown
-  /** 版本号（默认 '1.0.0'） */
-  version?: string
-  /** 加载完成回调 */
-  onLoad?: (component: unknown) => void
 }
 
 /**
@@ -65,8 +59,7 @@ function nameToType(name: string): string {
  * // 异步注册（推荐）- 有 path 自动懒加载
  * registerComponent({
  *   name: 'HeavyGrid',
- *   path: './components/HeavyGrid.vue',
- *   onLoad: (comp) => console.log('Grid loaded!')
+ *   path: './components/HeavyGrid.vue'
  * })
  * 
  * // 批量注册
@@ -92,16 +85,6 @@ export function createSimpleRegistration(config: SimpleConfig): ComponentDefinit
         logger.info(`⏳ Loading component: ${config.name}`)
         const module = await import(/* @vite-ignore */ componentPath)
         const loadedComponent = module.default ?? module
-        
-        // 触发加载完成回调
-        if (config.onLoad) {
-          try {
-            config.onLoad(loadedComponent)
-          } catch (error) {
-            logger.warn(`onLoad callback failed for ${config.name}:`, error)
-          }
-        }
-        
         logger.info(`✅ Loaded component: ${config.name}`)
         return { default: loadedComponent }
       } catch (error) {
