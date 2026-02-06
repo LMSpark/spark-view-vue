@@ -19,10 +19,10 @@ const logger = Logger('Capability')
  * 通用连接器
  * 能力本质就是数据/方法，直接赋值即可
  */
-class UniversalConnector implements Connector {
-  connect(provider: Provider, consumer: Consumer): boolean {
+class UniversalConnector<P extends Provider = Provider, C extends Consumer = Consumer> implements Connector<P, C> {
+  connect(provider: P, consumer: C): boolean {
     try {
-      consumer.implementation = provider.implementation
+      consumer.implementation = provider.implementation as C['implementation']
       return true
     } catch (e: unknown) {
       logger.error('连接能力失败:', String(e))
@@ -30,7 +30,7 @@ class UniversalConnector implements Connector {
     }
   }
 
-  disconnect(_provider: Provider, consumer: Consumer): boolean {
+  disconnect(_provider: P, consumer: C): boolean {
     try {
       consumer.implementation = undefined
       return true
@@ -40,7 +40,7 @@ class UniversalConnector implements Connector {
     }
   }
 
-  isConnected(_provider: Provider, consumer: Consumer): boolean {
+  isConnected(_provider: P, consumer: C): boolean {
     return consumer.implementation !== undefined
   }
 }
@@ -49,15 +49,15 @@ class UniversalConnector implements Connector {
  * 能力管理器
  * 职责：连接 Provider 和 Consumer
  */
-export class CapabilityManager implements Manager {
-  private connector = new UniversalConnector()
+export class CapabilityManager<P extends Provider = Provider, C extends Consumer = Consumer> implements Manager<P, C> {
+  private connector: Connector<P, C> = new UniversalConnector<P, C>()
   private logger = Logger('CapabilityMgr')
 
-  registerConnector(_name: string, _connector: Connector): void {
+  registerConnector(_name: string, _connector: Connector<P, C>): void {
     // 已废弃，保留接口兼容
   }
 
-  connectCapability(provider: Provider, consumer: Consumer, _context: Context): boolean {
+  connectCapability(provider: P, consumer: C, _context: Context<P>): boolean {
     try {
       const ok = this.connector.connect(provider, consumer)
       if (ok) {
@@ -70,7 +70,7 @@ export class CapabilityManager implements Manager {
     }
   }
 
-  disconnectCapability(provider: Provider, consumer: Consumer, _context: Context): boolean {
+  disconnectCapability(provider: P, consumer: C, _context: Context<P>): boolean {
     try {
       const ok = this.connector.disconnect(provider, consumer)
       if (ok) {

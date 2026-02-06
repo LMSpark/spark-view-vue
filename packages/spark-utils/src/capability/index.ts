@@ -20,7 +20,7 @@ export type { EventProvider, EventConsumer } from './EventCapability.js'
 
 // 向后兼容别名
 export type CapabilityProvider<T = unknown> = Provider<T>
-export type CapabilityConsumer = Consumer
+export type CapabilityConsumer<T = unknown> = Consumer<T>
 export type CapabilityContext<T = Provider> = Context<T>
 
 /**
@@ -29,7 +29,7 @@ export type CapabilityContext<T = Provider> = Context<T>
 export namespace Capability {
   // 核心类型
   export type ProviderType<T = unknown> = Provider<T>
-  export type ConsumerType = Consumer
+  export type ConsumerType<T = unknown> = Consumer<T>
   export type ContextType<T = Provider> = Context<T>
 
   // 事件能力（仅暴露创建函数）
