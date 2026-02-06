@@ -21,17 +21,7 @@ pnpm add @spark-view/spark-component
 
 ## 快速开始
 
-### 1. 创建管理器
-
-```typescript
-import { Spark } from '@spark-view/spark-component'
-
-// 创建管理器实例
-const manager = Spark.createComponentManager()
-const registry = Spark.createComponentRegistry()
-```
-
-### 2. 注册组件
+### 1. 注册组件
 
 ```typescript
 // 静态注册
@@ -49,7 +39,7 @@ Spark.register({
 })
 ```
 
-### 3. 安装插件
+### 2. 安装插件
 
 ```typescript
 import { createApp } from 'vue'
@@ -59,7 +49,7 @@ const app = createApp(App)
 app.use(Spark.createVuePlugin())
 ```
 
-### 4. 使用组件
+### 3. 使用组件
 
 ```vue
 <script setup lang="ts">
@@ -106,17 +96,14 @@ whenAvailable('columnManager', (mgr) => {
 ```typescript
 import { Spark } from '@spark-view/spark-component'
 
-// 组件管理
-Spark.createComponentManager()
-Spark.createComponentRegistry()
-Spark.register({ ... })
+// 注册组件
+Spark.register({ type: 'my-component', name: 'My Component', component: MyComponent })
 
-// Vue 插件
-Spark.createVuePlugin({ ... })
-Spark.install(app, { ... })
+// 安装 Vue 插件（使用全局单例）
+app.use(Spark.createVuePlugin())
 
-// 类型
-import type { ComponentConfig, CapabilityProvider } from '@spark-view/spark-component'
+// 类型定义
+import type { ComponentContext, CapabilityProvider } from '@spark-view/spark-component'
 ```
 
 ## API 文档

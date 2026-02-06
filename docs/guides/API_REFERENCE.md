@@ -9,10 +9,6 @@
 ```typescript
 import { Spark } from '@spark-view/spark-component'
 
-// 创建管理器
-const manager = Spark.createComponentManager()
-const registry = Spark.createComponentRegistry()
-
 // 注册组件
 Spark.register({
   type: 'my-component',
