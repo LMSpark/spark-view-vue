@@ -142,7 +142,6 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
   // Component metadata
   type: string
   name?: string
-  version?: string
 
   // Auto-registration option (default: false for explicit control)
   autoRegister?: boolean
@@ -369,8 +368,7 @@ export function defineSparkComponent<_TConfig extends ComponentConfig = Componen
   // Attach meta for automatic registration
   ;(component as Component & { spark?: Record<string, unknown> }).spark = {
     type: definition.type,
-    name: definition.name,
-    version: definition.version ?? '0.0.0'
+    name: definition.name
   }
 
   // Auto-register if requested

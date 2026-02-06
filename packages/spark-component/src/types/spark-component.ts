@@ -25,9 +25,6 @@ export namespace Spark {
     /** 显示名称（如 'SPARK EJ2 Grid'） */
     name?: string
     
-    /** 版本号（语义化版本，默认 '1.0.0'） */
-    version?: string
-    
     /** Vue 组件（同步加载） */
     component?: unknown
     
@@ -152,7 +149,6 @@ export namespace Spark {
 
   export interface Plugin {
     name: string
-    version?: string
     description?: string
     install?: (manager: ComponentManager) => void
     uninstall?: (manager: ComponentManager) => void

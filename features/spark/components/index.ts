@@ -23,7 +23,6 @@ const sparkComponents = {
 const sparkComponentDefinitions = Object.entries(sparkComponents).map(([type, component]) => ({
   type,
   name: type,
-  version: '1.0.0',
   component
 }))
 

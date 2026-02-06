@@ -118,7 +118,6 @@ export function createSimpleRegistration(config: SimpleConfig): ComponentDefinit
   const standardConfig: ComponentDefinition = {
     type,
     name: config.name,
-    version: config.version ?? '1.0.0',
     component,
     loader
   }

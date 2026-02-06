@@ -49,7 +49,7 @@ export const Spark: {
    * - 简化配置: { name, path?, component? } 自动转换 name -> type
    * - { spark?: {...} }: Vue 组件附带 spark 元数据
    */
-  register: (input: ComponentDefinition | ComponentDefinition[] | { name: string; path?: string; component?: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name' | 'version'> }) => void
+  register: (input: ComponentDefinition | ComponentDefinition[] | { name: string; path?: string; component?: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name'> }) => void
   
   /** 批量注册组件 */
   registerAll: (configs: (ComponentDefinition | { name: string; path?: string; component?: unknown })[]) => void
@@ -121,7 +121,7 @@ export const Spark: {
     app.use(plugin as VuePlugin)
   },
   
-  register(input: ComponentDefinition | ComponentDefinition[] | { name: string; path?: string; component?: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name' | 'version'> }) {
+  register(input: ComponentDefinition | ComponentDefinition[] | { name: string; path?: string; component?: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name'> }) {
     // 简化配置：检查是否有 'name' 但没有 'type'（简化格式）
     if (input && typeof input === 'object' && 'name' in input && !('type' in input) && !Array.isArray(input)) {
       const simpleConfig = input as { name: string; path?: string; component?: unknown }
@@ -137,7 +137,7 @@ export const Spark: {
 
     // Vue 组件附带 spark 元数据
     if (input && typeof input === 'object' && 'spark' in input) {
-      const component = input as { spark?: Pick<ComponentDefinition, 'type' | 'name' | 'version'> }
+      const component = input as { spark?: Pick<ComponentDefinition, 'type' | 'name'> }
       if (!component.spark) {
         throw new Error('Component must have spark meta attached')
       }
@@ -146,7 +146,6 @@ export const Spark: {
       const definition: ComponentDefinition = {
         type: meta.type,
         name: meta.name ?? meta.type,
-        version: meta.version ?? '1.0.0',
         component: component
       }
       return componentManager.registerComponent(definition)

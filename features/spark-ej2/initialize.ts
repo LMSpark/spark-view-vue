@@ -16,7 +16,6 @@ export async function initializeSparkEJ2Components(manager: ISparkComponentManag
   m.registerComponent({
     type: 'spark-ej2-grid',
     name: 'Spark EJ2 Grid',
-    version: '1.0.0',
     component: SparkEJ2Grid,
     providers: [
       {
@@ -31,7 +30,6 @@ export async function initializeSparkEJ2Components(manager: ISparkComponentManag
   m.registerComponent({
     type: 'spark-ej2-column',
     name: 'Spark EJ2 Column',
-    version: '1.0.0',
     component: SparkEJ2Column,
     consumers: [
       {
