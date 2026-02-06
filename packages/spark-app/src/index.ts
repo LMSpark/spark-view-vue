@@ -70,7 +70,6 @@ export type {
 // AppContext (旧版 composables - 向后兼容)
 export {
   createAppContext,
-  provideAppContext,
   useAppContextOptional,
   hasPermission,
   hasAnyPermission,
@@ -89,20 +88,6 @@ export { setupErrorHandler, createErrorBoundary } from './error/handler'
 
 // Config
 export { loadConfig, isFeatureEnabled } from './config'
-
-// Dependency Injection (依赖注入容器 - 保留向后兼容，推荐使用 composables)
-export {
-  container,
-  DependencyContainer,
-  ServiceLifetime,
-  ServiceIdentifiers
-} from './di/container'
-
-export type {
-  IDependencyContainer,
-  ServiceProvider,
-  ServiceDescriptor
-} from './di/container'
 
 // Composables (推荐使用)
 export {
