@@ -12,7 +12,7 @@ class SparkPluginManager {
     // Cast to ComponentManager for plugin authors; this manager is intentionally minimal in plugin context
     plugin.install?.(this as unknown as import('../types/spark-component.js').ComponentManager)
     this.plugins.set(plugin.name, plugin)
-    logger.info(`✅ Installed SPARK plugin: ${plugin.name} (${plugin.version})`)
+    logger.info(`✅ Installed SPARK plugin: ${plugin.name}`)
   }
   uninstall(name: string) {
     const p = this.plugins.get(name)

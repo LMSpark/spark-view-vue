@@ -39,7 +39,7 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
    * registry.register('spark-button', {
    *   type: 'spark-button',
    *   name: '按钮组件',
-   *   version: '1.0.0',
+
    *   component: ButtonComponent
    * })
    * ```
@@ -53,12 +53,11 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     }
     // 为逻辑组件提供默认值
     const normalizedDef: ComponentConfig = {
-      version: '1.0.0',
       ...definition,
       type: definition.type || type
     }
     this.components.set(type, normalizedDef)
-    this.logger.info(`✅ Registered SPARK component: ${type} (${normalizedDef.version})`)
+    this.logger.info(`✅ Registered SPARK component: ${type}`)
   }
 
   /**
@@ -253,11 +252,6 @@ export class SparkComponentRegistryImpl implements ComponentRegistry {
     // 必须有 component 或 loader（逻辑组件可以都没有）
     if (!def.component && !def.loader) {
       this.logger.warn(`Component '${def.type}' has neither component nor loader (logical component)`)
-    }
-
-    // 验证 version（如果提供）
-    if (def.version && !semverValid(def.version)) {
-      this.logger.warn(`Component '${def.type}' has invalid semver version: ${def.version}`)
     }
 
     return true

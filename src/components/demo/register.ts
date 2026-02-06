@@ -49,7 +49,6 @@ Spark.register({
 Spark.register({
   type: 'user-row',
   name: 'UserRow',
-  version: '1.0.0',
   loader: () => import('./UserRow.vue'),
   metadata: {
     level: 'instance',
@@ -65,7 +64,6 @@ Spark.register({
 Spark.register({
   type: 'user-field',
   name: 'UserField',
-  version: '1.0.0',
   loader: () => import('./UserField.vue'),
   metadata: {
     level: 'field',
@@ -88,7 +86,6 @@ console.log('✅ Capability demo components registered:', {
 Spark.register({
   type: 'demo-renderer',
   name: 'DemoRenderer',
-  version: '1.0.0',
   loader: () => import('./DemoRenderer.vue'),
   metadata: {
     description: '递归渲染器 - 根据配置动态渲染组件树',
@@ -103,7 +100,6 @@ Spark.register({
 Spark.register({
   type: 'config-driven-demo',
   name: 'ConfigDrivenDemo',
-  version: '1.0.0',
   loader: () => import('./ConfigDrivenDemo.vue'),
   metadata: {
     description: '配置驱动演示 - 完全由配置文件驱动的组件渲染',
