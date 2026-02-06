@@ -19,7 +19,7 @@
 
 ##  包结构
 
-\\\
+```
 packages/
  spark-app/          # 应用基础设施
  spark-component/    # 组件核心系统
@@ -27,11 +27,11 @@ packages/
  spark-page-config/  # 页面配置
  spark-renderer/     # 页面渲染器
  spark-utils/        # 工具函数
-\\\
+```
 
 ##  快速开始
 
-\\\ash
+```ash
 # 安装依赖
 pnpm install
 
@@ -49,13 +49,13 @@ pnpm run lint
 
 # 运行测试
 pnpm run test
-\\\
+```
 
 ##  核心概念
 
 ### 能力系统
 
-\\\	ypescript
+```	ypescript
 // 提供能力
 provide('selection', {
   select: (id) => { /* ... */ },
@@ -65,28 +65,28 @@ provide('selection', {
 // 消费能力
 const selection = consume('selection')
 selection?.select(123)
-\\\
+```
 
 ### 数据管理
 
-\\\	ypescript
+```	ypescript
 import { SparkData } from '@spark-view/spark-data'
 
 const dataSet = SparkData.createDataSet({
   dataSetName: 'users',
   tables: { /* ... */ }
 })
-\\\
+```
 
 ### 组件注册
 
-\\\	ypescript
+```	ypescript
 Spark.register({
   type: 'my-component',
   name: 'MyComponent',
   loader: () => import('./MyComponent.vue')
 })
-\\\
+```
 
 ##  文档
 

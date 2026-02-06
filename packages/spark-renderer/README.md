@@ -7,30 +7,30 @@
 
 ## 特性
 
--  **配置化渲染** - 将 PageConfig 渲染为 Vue 组件
--  **DataSet 集成** - 页面级数据管理和主从表联动
--  **CSS 隔离** - 自动添加作用域前缀
--  **脚本沙箱** - 安全执行页面脚本
--  **双向绑定** - 自动绑定数据和事件
--  **插槽支持** - 自定义 loading、error、content 插槽
+- **配置化渲染** - 将 PageConfig 渲染为 Vue 组件
+- **DataSet 集成** - 页面级数据管理和主从表联动
+- **CSS 隔离** - 自动添加作用域前缀
+- **脚本沙箱** - 安全执行页面脚本
+- **双向绑定** - 自动绑定数据和事件
+- **插槽支持** - 自定义 loading、error、content 插槽
 
 ## 架构定位
 
-\\\
+```
 独立底层包:
   - spark-app (基础设施)
   - spark-data (数据管理)
   - spark-page-config (配置加载)
 
 集成包:
-  - spark-renderer (页面渲染)  本包
-     spark-data
-     spark-page-config
-     spark-app
-\\\
+  - spark-renderer (页面渲染) ← 本包
+     ↓ spark-data
+     ↓ spark-page-config
+     ↓ spark-app
+```
 
 **职责**:
-- 渲染引擎：配置  Vue 组件
+- 渲染引擎：配置 → Vue 组件
 - DataSet 管理：页面级数据隔离
 - CSS 隔离：样式作用域
 - 脚本沙箱：安全执行脚本
@@ -38,20 +38,20 @@
 
 ## 安装
 
-\\\ash
+```bash
 pnpm add @spark-view/spark-renderer
-\\\
+```
 
 ## 快速开始
 
 ### 1. 渲染页面
 
-\\\ue
+```vue
 <template>
-  <PageRenderer :config=&quot;pageConfig&quot; />
+  <PageRenderer :config="pageConfig" />
 </template>
 
-<script setup lang=&quot;ts&quot;>
+<script setup lang="ts">
 import { PageRenderer } from '@spark-view/spark-renderer'
 
 const pageConfig = {
@@ -69,11 +69,11 @@ const pageConfig = {
   }
 }
 </script>
-\\\
+```
 
 ### 2. DataSet 集成
 
-\\\	ypescript
+```typescript
 import { SparkData } from '@spark-view/spark-data'
 
 // 创建 DataSet
@@ -96,11 +96,11 @@ const pageConfig = {
   dataSet,
   layout: { ... }
 }
-\\\
+```
 
 ### 3. CSS 隔离
 
-\\\	ypescript
+```typescript
 // 配置中的样式自动添加作用域
 const pageConfig = {
   pageId: 'home',
@@ -113,11 +113,11 @@ const pageConfig = {
 // 渲染后自动添加前缀
 // .page-home .title { color: blue; }
 // .page-home .button { font-size: 14px; }
-\\\
+```
 
 ### 4. 脚本沙箱
 
-\\\	ypescript
+```typescript
 const pageConfig = {
   pageId: 'home',
   script: {
@@ -127,7 +127,7 @@ const pageConfig = {
     }
   }
 }
-\\\
+```
 
 ## 核心组件
 
@@ -135,33 +135,33 @@ const pageConfig = {
 
 主渲染组件
 
-\\\ue
+```vue
 <PageRenderer
-  :config=&quot;config&quot;
-  @error=&quot;handleError&quot;
-  @load=&quot;handleLoad&quot;
+  :config="config"
+  @error="handleError"
+  @load="handleLoad"
 >
   <template #loading>
     <div>加载中...</div>
   </template>
-  <template #error=&quot;{ error }&quot;>
+  <template #error="{ error }">
     <div>错误: {{ error.message }}</div>
   </template>
 </PageRenderer>
-\\\
+```
 
 **Props**:
-- \config\: 页面配置对象
-- \dataSet\: 可选的外部 DataSet
+- `config`: 页面配置对象
+- `dataSet`: 可选的外部 DataSet
 
 **Events**:
-- \@load\: 页面加载完成
-- \@error\: 渲染错误
+- `@load`: 页面加载完成
+- `@error`: 渲染错误
 
 **Slots**:
-- \loading\: 加载插槽
-- \error\: 错误插槽
-- \content\: 内容插槽
+- `loading`: 加载插槽
+- `error`: 错误插槽
+- `content`: 内容插槽
 
 ## API 文档
 
@@ -169,22 +169,22 @@ const pageConfig = {
 
 ## 依赖
 
-\\\json
+```json
 {
-  &quot;@spark-view/spark-app&quot;: &quot;workspace:*&quot;,
-  &quot;@spark-view/spark-data&quot;: &quot;workspace:*&quot;,
-  &quot;@spark-view/spark-page-config&quot;: &quot;workspace:*&quot;,
-  &quot;vue&quot;: &quot;^3.4.0&quot;
+  "@spark-view/spark-app": "workspace:*",
+  "@spark-view/spark-data": "workspace:*",
+  "@spark-view/spark-page-config": "workspace:*",
+  "vue": "^3.4.0"
 }
-\\\
+```
 
 ## 开发命令
 
-\\\ash
+```bash
 pnpm run typecheck   # 类型检查
 pnpm run test        # 运行测试
 pnpm run build       # 构建包
-\\\
+```
 
 ## License
 

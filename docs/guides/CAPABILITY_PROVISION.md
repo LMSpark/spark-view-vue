@@ -224,7 +224,7 @@ onUnmounted(() => {
 ### Grid 组件（提供能力）
 
 \\\ue
-<script setup lang=&quot;ts&quot;>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 
@@ -243,7 +243,7 @@ provide('columnManager', {
 ### Column 组件（消费能力）
 
 \\\ue
-<script setup lang=&quot;ts&quot;>
+<script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 
 const props = defineProps<{ id: string, field: string }>()

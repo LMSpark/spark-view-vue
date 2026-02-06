@@ -7,33 +7,33 @@
 
 ## 特性
 
--  **组件注册** - 统一的组件注册和管理机制
--  **能力系统** - Provider/Consumer 模式的依赖注入
--  **懒加载** - 支持动态导入和按需加载
--  **生命周期** - 完整的组件生命周期管理
--  **命名空间 API** - 统一的 \Spark\ 命名空间
+- **组件注册** - 统一的组件注册和管理机制
+- **能力系统** - Provider/Consumer 模式的依赖注入
+- **懒加载** - 支持动态导入和按需加载
+- **生命周期** - 完整的组件生命周期管理
+- **命名空间 API** - 统一的 `Spark` 命名空间
 
 ## 安装
 
-\\\ash
+```bash
 pnpm add @spark-view/spark-component
-\\\
+```
 
 ## 快速开始
 
 ### 1. 创建管理器
 
-\\\	ypescript
+```typescript
 import { Spark } from '@spark-view/spark-component'
 
 // 创建管理器实例
 const manager = Spark.createComponentManager()
 const registry = Spark.createComponentRegistry()
-\\\
+```
 
 ### 2. 注册组件
 
-\\\	ypescript
+```typescript
 // 静态注册
 Spark.register({
   type: 'my-grid',
@@ -47,21 +47,21 @@ Spark.register({
   name: 'My Chart',
   loader: () => import('./MyChartComponent.vue')
 })
-\\\
+```
 
 ### 3. 安装插件
 
-\\\	ypescript
+```typescript
 import { createApp } from 'vue'
 
 const app = createApp(App)
 app.use(Spark.createVuePlugin({ manager, registry }))
-\\\
+```
 
 ### 4. 使用组件
 
-\\\ue
-<script setup lang=&quot;ts&quot;>
+```vue
+<script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 
 const { provide, consume, whenAvailable } = useSparkComponent({
@@ -75,7 +75,8 @@ provide('dataSource', {
 
 // 消费能力
 const logger = consume('logger')
-\\\
+</script>
+```
 
 ## 核心概念
 
@@ -83,7 +84,7 @@ const logger = consume('logger')
 
 组件间通过能力系统通信，避免紧耦合：
 
-\\\	ypescript
+```typescript
 // Provider 提供能力
 provide('columnManager', {
   addColumn: (col) => columns.value.push(col),
@@ -95,13 +96,13 @@ const columnManager = consume('columnManager')
 whenAvailable('columnManager', (mgr) => {
   mgr.addColumn({ id: '1', name: 'Name' })
 })
-\\\
+```
 
 ### 命名空间 API
 
-所有 API 通过 \Spark\ 命名空间统一访问：
+所有 API 通过 `Spark` 命名空间统一访问：
 
-\\\	ypescript
+```typescript
 import { Spark } from '@spark-view/spark-component'
 
 // 组件管理
@@ -115,7 +116,7 @@ Spark.install(app, { ... })
 
 // 类型
 import type { ComponentConfig, CapabilityProvider } from '@spark-view/spark-component'
-\\\
+```
 
 ## API 文档
 
@@ -123,20 +124,20 @@ import type { ComponentConfig, CapabilityProvider } from '@spark-view/spark-comp
 
 ## 依赖
 
-\\\json
+```json
 {
-  &quot;@spark-view/spark-utils&quot;: &quot;workspace:*&quot;,
-  &quot;vue&quot;: &quot;^3.4.0&quot;
+  "@spark-view/spark-utils": "workspace:*",
+  "vue": "^3.4.0"
 }
-\\\
+```
 
 ## 开发命令
 
-\\\ash
+```bash
 pnpm run typecheck   # 类型检查
 pnpm run test        # 运行测试
 pnpm run build       # 构建包
-\\\
+```
 
 ## License
 

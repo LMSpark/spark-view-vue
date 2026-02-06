@@ -14,15 +14,15 @@
 
 ## 安装
 
-\\\ash
+```ash
 pnpm add @spark-view/spark-data
-\\\
+```
 
 ## 快速开始
 
 ### 命名空间 API（推荐）
 
-\\\	ypescript
+```	ypescript
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataSet, DataRow } from '@spark-view/spark-data'
 
@@ -48,11 +48,11 @@ dataSet.tables.Users.addRow({ id: 1, name: 'Alice' })
 dataSet.subscribe('Users', (event) => {
   console.log('数据变化:', event)
 })
-\\\
+```
 
 ### 树形数据管理
 
-\\\	ypescript
+```	ypescript
 // 创建 TreeManager
 const treeManager = SparkData.createTreeManager({
   idField: 'id',
@@ -71,11 +71,11 @@ const tree = treeManager.buildTree(flatData)
 treeManager.loadChildren(1, async (parentId) => {
   return fetchChildrenFromAPI(parentId)
 })
-\\\
+```
 
 ### 数据绑定
 
-\\\	ypescript
+```	ypescript
 // 创建绑定上下文
 const context = SparkData.createContext('Users', 'default', dataSet)
 
@@ -88,13 +88,13 @@ context.movePrevious()
 
 // 获取所有行
 const allRows = context.getRows()
-\\\
+```
 
 ## 核心概念
 
 ### DataSet 结构
 
-\\\	ypescript
+```	ypescript
 {
   dataSetName: 'MyData',
   tables: {
@@ -106,11 +106,11 @@ const allRows = context.getRows()
     Orders: { ... }
   }
 }
-\\\
+```
 
 ### 数据操作
 
-\\\	ypescript
+```	ypescript
 // 添加
 dataSet.tables.Users.addRow({ id: 1, name: 'Bob' })
 
@@ -122,17 +122,17 @@ dataSet.tables.Users.deleteRow(0)
 
 // 查询
 const users = dataSet.tables.Users.rows.filter(r => r.age > 18)
-\\\
+```
 
 ### 向后兼容
 
-\\\	ypescript
+```	ypescript
 // 直接导入类（旧方式）
 import { DataSetManager, TreeManager } from '@spark-view/spark-data'
 
 const ds = DataSetManager.create({ ... })
 const tree = new TreeManager({ ... })
-\\\
+```
 
 ## API 文档
 
@@ -144,11 +144,11 @@ const tree = new TreeManager({ ... })
 
 ## 开发命令
 
-\\\ash
+```ash
 pnpm run typecheck   # 类型检查
 pnpm run test        # 运行测试
 pnpm run build       # 构建包
-\\\
+```
 
 ## License
 
