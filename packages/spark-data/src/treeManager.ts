@@ -11,6 +11,7 @@ import type {
   FlatTreeCache,
   TreePath
 } from './types'
+import { Logger } from '@spark-view/spark-utils'
 import type { BindingContext } from './bindingContext'
 
 /**
@@ -22,6 +23,7 @@ export class TreeManager {
   private cache: FlatTreeCache = {}
   private eventListeners: Map<string, Function[]> = new Map()
   private bindingContext?: BindingContext  // 关联的 BindingContext
+  private logger = Logger()
 
   constructor(config: TreeConfig, initialNodes?: FlatTreeNode[], bindingContext?: BindingContext) {
     this.config = {
@@ -117,7 +119,7 @@ export class TreeManager {
     const missing = pathIds.filter(id => !this.cache[id])
 
     if (missing.length === 0) {
-      console.info(`路径已完整缓存，无需补齐`)
+      this.logger.info(`路径已完整缓存，无需补齐`)
       return
     }
 
@@ -130,7 +132,7 @@ export class TreeManager {
     const fromId = firstMissingIndex > 0 ? pathIds[firstMissingIndex - 1] ?? null : null
 
     // 4. 一次性拉取缺失区间
-    console.info(`差量补齐: 从 ${fromId} 到 ${targetId}`)
+    this.logger.info(`差量补齐: 从 ${fromId} 到 ${targetId}`)
     const nodes = await loadSubTreeFn(fromId, targetId)
 
     // 5. 更新缓存
