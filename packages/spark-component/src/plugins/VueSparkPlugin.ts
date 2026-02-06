@@ -2,15 +2,35 @@ import type { App } from 'vue'
 import type { ComponentManager, ComponentRegistry, ComponentContext } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
 import type { CapabilityProvider, CapabilityConsumer } from '@spark-view/spark-utils'
+import { componentManager as defaultManager } from '../utils/SparkComponentManager.js'
+import { componentRegistry as defaultRegistry } from '../utils/SparkComponentRegistry.js'
 
 export interface VueSparkPluginOptions {
-  manager: ComponentManager
+  manager?: ComponentManager
   registry?: ComponentRegistry
 }
 
-export function createVueSparkPlugin(options: VueSparkPluginOptions) {
-  if (!options?.manager) throw new Error('VueSparkPlugin requires { manager } option. Provide a manager created by createComponentManager(registry)')
-  const { manager, registry } = options
+/**
+ * 创建 SPARK Vue 插件
+ * 
+ * @param options - 插件配置，可选
+ *   - manager: 组件管理器，默认使用全局单例
+ *   - registry: 组件注册表，默认使用全局单例
+ * 
+ * @example
+ * ```typescript
+ * // 使用默认全局单例（推荐）
+ * app.use(Spark.createVuePlugin())
+ * 
+ * // 使用自定义实例（测试、多租户等场景）
+ * const manager = Spark.createComponentManager()
+ * app.use(Spark.createVuePlugin({ manager }))
+ * ```
+ */
+export function createVueSparkPlugin(options?: VueSparkPluginOptions) {
+  const manager = options?.manager ?? defaultManager
+  const registry = options?.registry ?? defaultRegistry
+  if (!manager) throw new Error('VueSparkPlugin: manager is required')
   
   // 创建 APP 级根上下文（最顶层上下文）
   const appContext: ComponentContext = {

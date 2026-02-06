@@ -117,7 +117,7 @@ export const Spark: {
   // --------------------------------------------------------------------------
   
   install(app: App) {
-    const plugin = createVueSparkPlugin({ manager: componentManager, registry: componentRegistry })
+    const plugin = createVueSparkPlugin()
     app.use(plugin as VuePlugin)
   },
   

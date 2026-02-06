@@ -196,7 +196,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
       // Resolve manager via DI
       const resolvedManager = (inject(SPARK_MANAGER_KEY)) ?? (inject('sparkManager'))
       if (!resolvedManager) {
-        throw new Error('Component manager not found. Install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager }))')
+        throw new Error('Component manager not found. Install Spark Vue plugin: app.use(Spark.createVuePlugin())')
       }
       const manager = resolvedManager
 
