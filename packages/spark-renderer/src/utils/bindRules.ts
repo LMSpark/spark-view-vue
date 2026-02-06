@@ -71,7 +71,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
           // 使用 callFunc 包装，提供运行时检查和扩展能力
           newOn[eventName] = (...args: unknown[]) => callFunc(handler, ...args)
         } else {
-          newOn[eventName] = handler as Function | Function[]
+          newOn[eventName] = handler
         }
       }
       newRule.on = newOn
