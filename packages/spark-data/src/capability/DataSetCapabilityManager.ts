@@ -100,7 +100,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
     id: string
     type: string
     parent?: unknown
-    providers: Set<CapabilityProvider>
+    providers: Map<string, CapabilityProvider>
     consumers: Map<string, unknown>
   }
   private config: DataSetCapabilityConfig
@@ -115,7 +115,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       id: `dataset:${pageId}`,
       type: 'dataset',
       parent: undefined,
-      providers: new Set(),
+      providers: new Map(),
       consumers: new Map()
     }
     
@@ -187,7 +187,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider)
+    this.dataSetContext.providers.set(provider.name, provider)
   }
 
   /**
@@ -235,7 +235,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider)
+    this.dataSetContext.providers.set(provider.name, provider)
   }
 
   /**
@@ -252,7 +252,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider)
+    this.dataSetContext.providers.set(provider.name, provider)
   }
 
   /**
@@ -274,7 +274,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider)
+    this.dataSetContext.providers.set(provider.name, provider)
   }
 
   /**
@@ -299,7 +299,7 @@ export class DataSetCapabilityManager extends CapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.add(provider)
+    this.dataSetContext.providers.set(provider.name, provider)
   }
 
   /**
