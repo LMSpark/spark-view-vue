@@ -10,18 +10,15 @@
 
 import { CapabilityManager, EventConnector } from '@spark-view/spark-utils/capability/internal'
 import type { 
-  Context as CapabilityContext,
-  Provider,
-  Consumer,
-  Context
+  Context as CapabilityContext
 } from '@spark-view/spark-utils'
-import type { ComponentContext } from '../types/spark-component.js'
+import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
 
 /**
  * 组件能力管理器
  * 扩展通用能力管理器，添加组件专用的递归连接功能
  */
-export class ComponentCapabilityManager extends CapabilityManager {
+export class ComponentCapabilityManager extends CapabilityManager<CapabilityProvider, CapabilityConsumer> {
   
   /**
    * 自动连接组件上下文中的所有能力
@@ -35,16 +32,8 @@ export class ComponentCapabilityManager extends CapabilityManager {
       // 按名称在能力树中查找提供者（就近原则）
       const provider = this.findProviderByName(ctx, consumer.capabilityName)
       if (provider) {
-        /**
-         * 类型断言说明：
-         * ComponentContext 扩展了 CapabilityContext<CapabilityProvider>，
-         * 但 CapabilityManager.connectCapability 期望泛型参数 Context<Provider>。
-         * TypeScript 无法自动推断泛型兼容性，需要显式断言。
-         * 
-         * 这是类型系统的技术限制，不是设计缺陷。
-         * CapabilityProvider 是 Provider 的类型别名，运行时完全兼容。
-         */
-        this.connectCapability(provider as unknown as Provider, consumer as unknown as Consumer, ctx as unknown as Context)
+        // ✅ 类型安全：基类已泛型化，直接传递 CapabilityProvider 和 CapabilityConsumer
+        this.connectCapability(provider, consumer, ctx as CapabilityContext<CapabilityProvider>)
       }
     }
     
@@ -64,8 +53,7 @@ export class ComponentCapabilityManager extends CapabilityManager {
   private findProviderByName(
     context: ComponentContext, 
     name: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any {
+  ): CapabilityProvider | undefined {
     // 在当前上下文的 providers 中查找（O(1) Map 查询）
     const provider = context.providers.get(name)
     if (provider) {
@@ -90,11 +78,8 @@ export class ComponentCapabilityManager extends CapabilityManager {
     for (const consumer of ctx.consumers.values()) {
       const provider = this.findProviderByName(ctx, consumer.capabilityName)
       if (provider) {
-        /**
-         * 类型断言说明：同 autoConnectCapabilities
-         * CapabilityManager 使用泛型基础类型，需要类型断言以兼容 Component 层扩展类型
-         */
-        this.disconnectCapability(provider as unknown as Provider, consumer as unknown as Consumer, ctx as unknown as Context)
+        // ✅ 类型安全：直接传递 CapabilityProvider 和 CapabilityConsumer
+        this.disconnectCapability(provider, consumer, ctx as CapabilityContext<CapabilityProvider>)
       }
     }
     

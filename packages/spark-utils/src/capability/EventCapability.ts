@@ -28,7 +28,7 @@ export interface EventConsumer {
  * 事件专用连接器
  * 负责将 consumer.handlers 中的处理器注册到 provider
  */
-export class EventConnector implements Connector {
+export class EventConnector implements Connector<Provider, Consumer> {
   private connections = new Map<string, Map<string, Function>>()
 
   connect(provider: Provider, consumer: Consumer): boolean {
