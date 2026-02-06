@@ -6,7 +6,7 @@
 
 ### 组件管理
 
-\\\	ypescript
+```typescript
 import { Spark } from '@spark-view/spark-component'
 
 // 创建管理器
@@ -23,11 +23,11 @@ Spark.register({
 
 // Vue 插件
 app.use(Spark.createVuePlugin({ manager, registry }))
-\\\
+```
 
 ### 组件 Composable
 
-\\\	ypescript
+```typescript
 import { useSparkComponent } from '@spark-view/spark-component'
 
 const { provide, consume, whenAvailable, logger } = useSparkComponent({
@@ -44,13 +44,13 @@ const logger = consume('logger')
 whenAvailable('columnManager', (mgr) => {
   mgr.addColumn({ id: '1', name: 'Name' })
 })
-\\\
+```
 
 ## SparkData 命名空间
 
 ### DataSet
 
-\\\	ypescript
+```typescript
 import { SparkData } from '@spark-view/spark-data'
 
 // 创建 DataSet
@@ -77,11 +77,11 @@ dataSet.tables.Users.deleteRow(0)
 dataSet.subscribe('Users', (event) => {
   console.log('数据变化:', event)
 })
-\\\
+```
 
 ### TreeManager
 
-\\\	ypescript
+```typescript
 // 创建树管理器
 const treeManager = SparkData.createTreeManager({
   idField: 'id',
@@ -96,11 +96,11 @@ const tree = treeManager.buildTree(flatData)
 await treeManager.loadChildren(parentId, async (pid) => {
   return await fetchChildren(pid)
 })
-\\\
+```
 
 ### BindingContext
 
-\\\	ypescript
+```typescript
 // 创建绑定上下文
 const context = SparkData.createContext('Users', 'default', dataSet)
 
@@ -114,11 +114,11 @@ context.moveLast()
 // 查询
 const allRows = context.getRows()
 const filtered = context.filter(row => row.age > 18)
-\\\
+```
 
 ## Capability 能力系统
 
-\\\	ypescript
+```typescript
 import { Capability } from '@spark-view/spark-utils'
 
 // 创建管理器
@@ -139,11 +139,11 @@ context.providers.add({
 // 消费能力
 const consumer = { capabilityName: 'userService' }
 manager.connectCapability(provider, consumer, context)
-\\\
+```
 
 ## Logger 日志系统
 
-\\\	ypescript
+```typescript
 import { Logger } from '@spark-view/spark-utils'
 
 // 创建日志器
@@ -161,11 +161,11 @@ logger.debug('调试信息', { data })
 logger.info('信息日志')
 logger.warn('警告信息')
 logger.error('错误信息', { error })
-\\\
+```
 
 ## ErrorHandler 错误处理
 
-\\\	ypescript
+```typescript
 import { handleError, withRetry, AppError } from '@spark-view/spark-utils'
 
 // 创建错误
@@ -183,23 +183,23 @@ await withRetry(() => fetchData(), {
   delay: 1000,
   backoff: 2
 })
-\\\
+```
 
 ## PageRenderer 页面渲染
 
-\\\ue
+```vue
 <template>
   <PageRenderer
-    :config=&quot;pageConfig&quot;
-    @load=&quot;handleLoad&quot;
-    @error=&quot;handleError&quot;
+    :config="pageConfig"
+    @load="handleLoad"
+    @error="handleError"
   >
     <template #loading>加载中...</template>
-    <template #error=&quot;{ error }&quot;>错误: {{ error.message }}</template>
+    <template #error="{ error }">错误: {{ error.message }}</template>
   </PageRenderer>
 </template>
 
-<script setup lang=&quot;ts&quot;>
+<script setup lang="ts">
 import { PageRenderer } from '@spark-view/spark-renderer'
 
 const pageConfig = {
@@ -211,11 +211,11 @@ const pageConfig = {
   dataSet: { ... }
 }
 </script>
-\\\
+```
 
 ## ConfigLoader 配置加载
 
-\\\	ypescript
+```typescript
 import { ConfigLoader } from '@spark-view/spark-page-config'
 
 const loader = new ConfigLoader({
@@ -231,13 +231,13 @@ const pageConfig = await loader.loadPageConfig('home')
 // 缓存管理
 loader.clearCache()
 loader.refreshConfig('home')
-\\\
+```
 
 ## 类型定义
 
 所有核心类型都可以从对应包导入：
 
-\\\	ypescript
+```typescript
 // 组件系统
 import type {
   ComponentConfig,
@@ -259,7 +259,7 @@ import type {
   Transport,
   AppError
 } from '@spark-view/spark-utils'
-\\\
+```
 
 ## 更多信息
 
