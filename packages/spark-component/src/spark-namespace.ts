@@ -1,10 +1,21 @@
-// Package-level SPARK namespace - 面向业务开发者的简化 API
-// Import runtime entry points from source implementations to avoid built dist dependency
+/**
+ * SPARK 命名空间 - 统一的组件系统 API
+ * 
+ * 提供面向业务开发者的简化 API，隐藏内部实现细节
+ * 所有组件系统功能通过 Spark 命名空间统一访问
+ */
+
+// ============================================================================
+// 依赖导入
+// ============================================================================
+
+// 核心管理器（单例）
 import { componentManager } from './utils/SparkComponentManager.js'
 import { capabilityManager } from './capability/ComponentCapabilityManager.js'
 import { componentRegistry } from './utils/SparkComponentRegistry.js'
-import { Logger } from '@spark-view/spark-utils'
 
+// 工具函数
+import { Logger } from '@spark-view/spark-utils'
 import { getSparkPlugin, installSparkPlugin } from './plugins/SparkPluginSystem.js'
 import { createVueSparkPlugin } from './plugins/VueSparkPlugin.js'
 import { useSparkComponent } from './composables/useSparkComponent.js'
@@ -16,83 +27,107 @@ import {
   presets as registerPresets,
   nameToType
 } from './helpers/registerHelper.js'
-import type { SimpleComponentConfig } from './helpers/registerHelper.js'
 
+// 类型定义
+import type { SimpleComponentConfig } from './helpers/registerHelper.js'
 import type { App, Plugin as VuePlugin } from 'vue'
-import type { ComponentConfig } from './types/spark-component.js' 
+import type { ComponentConfig } from './types/spark-component.js'
+
+// ============================================================================
+// SPARK 命名空间类型定义
+// ============================================================================
 
 export const Spark: {
-  // ========================================
-  // 业务开发者 API（核心功能）
-  // ========================================
+  // --------------------------------------------------------------------------
+  // 核心 API - 业务开发者日常使用
+  // --------------------------------------------------------------------------
   
   /** 安装 SPARK 插件到 Vue 应用 */
   install: (app: App) => void
   
-  /** 注册组件 - 支持简化配置和完整配置 */
+  /** 
+   * 注册组件 - 支持多种配置格式
+   * - ComponentConfig: 标准配置对象
+   * - ComponentConfig[]: 批量注册
+   * - SimpleComponentConfig: 简化配置（自动转换 name -> type）
+   * - { spark?: {...} }: Vue 组件附带 spark 元数据
+   */
   register: (input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) => void
   
   /** 批量注册组件 */
   registerAll: (configs: (ComponentConfig | SimpleComponentConfig)[]) => void
   
-  // ========================================
+  // --------------------------------------------------------------------------
   // 辅助工具
-  // ========================================
+  // --------------------------------------------------------------------------
   
-  /** 预设配置生成器 */
+  /** 预设配置生成器 - 快速生成常见组件配置 */
   presets: typeof registerPresets
   
-  /** 名称转类型工具 */
+  /** 名称转类型工具 - 将 kebab-case 转换为 type */
   nameToType: typeof nameToType
   
-  // ========================================
-  // 组件开发 API（能力系统）
-  // ========================================
-  
-  /** 获取能力管理器（用于注册能力连接器等高级用法） */
-  capabilities: () => typeof capabilityManager
-  
-  /** 定义 SPARK 组件 */
-  defineComponent: typeof defineSparkComponent
-  
-  /** 解析组件（处理 loader 和 component） */
-  resolveComponent: (type: string) => unknown
-
-  // ========================================
-  // 组合式 API
-  // ========================================
+  // --------------------------------------------------------------------------
+  // 组件开发 API - 创建和定义组件
+  // --------------------------------------------------------------------------
   
   /** 在组件中使用 SPARK 功能（能力系统、上下文、日志等） */
   useSpark: typeof useSparkComponent
   
-  // ========================================
-  // 内部 API（高级用法，不推荐直接使用）
-  // ========================================
+  /** 定义 SPARK 组件 - 创建带能力系统的 Vue 组件 */
+  defineComponent: typeof defineSparkComponent
   
-  /** @internal 获取组件管理器（仅用于内部或高级场景） */
+  /** 解析组件 - 处理 loader 和 component，返回实际组件 */
+  resolveComponent: (type: string) => unknown
+  
+  // --------------------------------------------------------------------------
+  // 高级 API - 能力系统管理
+  // --------------------------------------------------------------------------
+  
+  /** 获取能力管理器 - 用于注册能力连接器等高级用法 */
+  capabilities: () => typeof capabilityManager
+  
+  // --------------------------------------------------------------------------
+  // 内部 API - 仅用于内部或特殊场景
+  // --------------------------------------------------------------------------
+  
+  /** @internal 获取组件管理器单例 */
   _manager: () => typeof componentManager
   
-  /** @internal 获取组件注册器（仅用于内部或高级场景） */
+  /** @internal 获取组件注册器单例 */
   _registry: () => typeof componentRegistry
   
-  /** @advanced 创建独立的 Vue 插件实例（仅用于特殊场景） */
+  // --------------------------------------------------------------------------
+  // 工厂方法 - 创建独立实例（用于隔离或测试）
+  // --------------------------------------------------------------------------
+  
+  /** @advanced 创建独立的 Vue 插件实例 */
   createVuePlugin: typeof createVueSparkPlugin
   
-  /** @advanced 创建独立的组件管理器（仅用于特殊场景） */
+  /** @advanced 创建独立的组件管理器实例 */
   createComponentManager: typeof createComponentManager
   
-  /** @advanced 创建独立的组件注册器（仅用于特殊场景） */
+  /** @advanced 创建独立的组件注册器实例 */
   createComponentRegistry: typeof createComponentRegistry
   
+  // --------------------------------------------------------------------------
   // 工具方法
+  // --------------------------------------------------------------------------
+  
+  /** 日志工具 */
   Logger: typeof Logger
-  plugin: { install: typeof installSparkPlugin; get: typeof getSparkPlugin }
+  
+  /** 插件系统工具 */
+  plugin: { 
+    install: typeof installSparkPlugin
+    get: typeof getSparkPlugin 
+  }
   
   [key: string]: unknown
 } = {
-  // ========================================
-  // 业务开发者 API
-  // ========================================
+  // --------------------------------------------------------------------------
+  // 核心 API 实现
+  // --------------------------------------------------------------------------
   
   install(app: App) {
     const plugin = createVueSparkPlugin({ manager: componentManager, registry: componentRegistry })
@@ -100,20 +135,20 @@ export const Spark: {
   },
   
   register(input: ComponentConfig | ComponentConfig[] | SimpleComponentConfig | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }) {
-    // Check if it's a SimpleComponentConfig (has 'name' but not 'type')
+    // 简化配置：检查是否是 SimpleComponentConfig（有 'name' 但没有 'type'）
     if (input && typeof input === 'object' && 'name' in input && !('type' in input) && !Array.isArray(input)) {
       const simpleConfig = input
       const standardConfig = createSimpleRegistration(simpleConfig)
       return componentManager.registerComponent(standardConfig)
     }
 
-    // Handle array of components
+    // 批量注册：处理组件数组
     if (Array.isArray(input)) {
       input.forEach(def => componentManager.registerComponent(def))
       return
     }
 
-    // Handle Vue component with spark meta
+    // Vue 组件附带 spark 元数据
     if (input && typeof input === 'object' && 'spark' in input) {
       const component = input as { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version' | 'providers' | 'validator'> }
       if (!component.spark) {
@@ -132,7 +167,7 @@ export const Spark: {
       return componentManager.registerComponent(definition)
     }
 
-    // Handle single ComponentConfig
+    // 标准配置：直接注册 ComponentConfig
     if (input && typeof input === 'object') {
       return componentManager.registerComponent(input as ComponentConfig)
     }
@@ -143,52 +178,55 @@ export const Spark: {
   registerAll(configs: (ComponentConfig | SimpleComponentConfig)[]) {
     configs.forEach(config => {
       if ('name' in config && !('type' in config)) {
-        // SimpleComponentConfig
+        // SimpleComponentConfig - 自动转换
         const standardConfig = createSimpleRegistration(config)
         componentManager.registerComponent(standardConfig)
       } else {
-        // ComponentConfig
+        // ComponentConfig - 直接注册
         componentManager.registerComponent(config)
       }
     })
   },
   
-  presets: registerPresets,
+  // --------------------------------------------------------------------------
+  // 辅助工具实现
+  // --------------------------------------------------------------------------
   
+  presets: registerPresets,
   nameToType,
   
-  // ========================================
-  // 组件开发 API
-  // ========================================
+  // --------------------------------------------------------------------------
+  // 组件开发 API 实现
+  // --------------------------------------------------------------------------
   
   useSpark: useSparkComponent,
-  capabilities: () => capabilityManager,
   defineComponent: defineSparkComponent,
-  
   resolveComponent: (type: string) => componentManager.resolveComponent(type),
-
-  // ========================================
-  // 向后兼容别名
-  // ========================================
   
-  // ========================================
-  // 内部 API
-  // ========================================
+  // --------------------------------------------------------------------------
+  // 高级 API 实现
+  // --------------------------------------------------------------------------
+  
+  capabilities: () => capabilityManager,
+  
+  // --------------------------------------------------------------------------
+  // 内部 API 实现
+  // --------------------------------------------------------------------------
   
   _manager: () => componentManager,
   _registry: () => componentRegistry,
   
-  // ========================================
-  // 高级 API
-  // ========================================
+  // --------------------------------------------------------------------------
+  // 工厂方法实现
+  // --------------------------------------------------------------------------
   
   createVuePlugin: createVueSparkPlugin,
   createComponentManager,
   createComponentRegistry,
   
-  // ========================================
-  // 工具方法
-  // ========================================
+  // --------------------------------------------------------------------------
+  // 工具方法实现
+  // --------------------------------------------------------------------------
   
   Logger,
   
