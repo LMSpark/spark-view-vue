@@ -1,14 +1,6 @@
-import type { UnwrapRef } from 'vue'
-
-export interface AsyncState<T = unknown> {
-  data?: UnwrapRef<Awaited<T>>
-  loading: boolean
-  error?: Error
-}
-
+// 核心类型导出
 export * from './spark-component.js'
 export * from './common.js'
-export * from './interfaces.js'
 
 // 权限类型（从 spark-utils 选择性导出，避免冲突）
 export type {
