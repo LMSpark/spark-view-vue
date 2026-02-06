@@ -9,14 +9,13 @@ export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
 
-// 简化注册助手
+// 简化注册助手（不再导出 SimpleComponentConfig 类型）
 export { 
   createSimpleRegistration,
   batchCreateSimpleRegistrations,
   presets as registerPresets,
   nameToType
 } from './helpers/registerHelper.js'
-export type { SimpleComponentConfig } from './helpers/registerHelper.js'
 
 // 权限系统类型（转发导出，实际定义在 spark-utils）
 export type {
