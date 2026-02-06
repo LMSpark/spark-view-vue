@@ -1,4 +1,4 @@
-﻿export * from './utils/SparkComponentRegistry.js'
+export * from './utils/SparkComponentRegistry.js'
 // SparkCapabilitySystem 将被移除，统一使用 @spark-view/spark-utils
 // export * from './utils/SparkCapabilitySystem.js'
 export * from './utils/SparkComponentManager.js'
@@ -21,14 +21,13 @@ export type { SimpleComponentConfig } from './helpers/registerHelper.js'
 // 权限系统类型（转发导出，实际定义在 spark-utils）
 export type {
   // 以下类型来自 spark-utils（数据类型唯一来源）
-  ComponentDataRow,          // 带权限的数据行（组件层推荐）
+  IDataRow,                  // 基础数据行接口
+  IDataRowWithPermission,    // 带权限的数据行（支持泛型）
   IModelPermission,          // 模型级权限
   IInstancePermission,       // 实例级权限
   WithInstancePermission,    // 权限工具类型
   WithModelPermission,       // 权限工具类型
-  DataRow,                   // 组件层数据行（重新导出 ComponentDataRow，向后兼容）
-  ComponentDataSource,       // 组件层数据源（推荐新名称）
-  DataSet,                   // 组件层数据源（向后兼容，建议使用 ComponentDataSource）
+  IDataSource,               // 数据源（带权限和分页，支持泛型）
   
   // 以下类型为组件层特有
   IPermissionChecker,        // 权限检查器

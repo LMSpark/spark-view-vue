@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FilterExpression 解析器
  * 支持：内存过滤、SQL WHERE 生成、MongoDB 查询对象生成
  */
@@ -6,7 +6,7 @@
 import type {
   FilterExpression,
   FilterOperator,
-  DataRow,
+  IDataRow,
   FilterContext
 } from './types'
 
@@ -20,8 +20,8 @@ export class FilterExpressionParser {
   static toMemoryFilter(
     expression: FilterExpression,
     context?: FilterContext
-  ): (row: DataRow) => boolean {
-    return (row: DataRow) => {
+  ): (row: IDataRow) => boolean {
+    return (row: IDataRow) => {
       return this.evaluateExpression(expression, row, context)
     }
   }
@@ -147,7 +147,7 @@ export class FilterExpressionParser {
    */
   private static evaluateExpression(
     expression: FilterExpression,
-    row: DataRow,
+    row: IDataRow,
     context?: FilterContext
   ): boolean {
     // 单一条件
@@ -291,7 +291,7 @@ export class FilterExpressionParser {
       const args = (value as Record<string, unknown>).args as unknown[]
 
       if (func === 'FIELD' && context?.parentRow) {
-        return (context.parentRow as Record<string, unknown>)[args[0] as string]
+        return context.parentRow[args[0] as string]
       }
 
       if (func === 'VAR' && context?.variables) {
@@ -484,7 +484,7 @@ export class FilterExpressionParser {
   private static evaluateFunction(
     func: string,
     _args: unknown[],
-    _row: DataRow,
+    _row: IDataRow,
     _context?: FilterContext
   ): boolean {
     // 这里可以扩展自定义函数

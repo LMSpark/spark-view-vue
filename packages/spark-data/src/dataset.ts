@@ -1,4 +1,4 @@
-﻿/**
+/**
  * DataSet 类 - 领域逻辑
  * 负责：数据表、关系、CRUD 操作、级联更新/删除
  */
@@ -8,7 +8,7 @@ import type {
   IDataTable,
   IBindingContext,
   DataRelation,
-  DataRow,
+  IDataRow,
   FilterContext,
   DependencyType,
   FilterExpression
@@ -35,7 +35,7 @@ export class DataSet implements IDataSet {
   // 上下文级别的订阅管理：key = "tableName.contextId"
   private contextSubscribers: Map<string, Set<Function>> = new Map()
   // 数据加载器
-  public dataLoader?: (tableName: string) => Promise<DataRow[]>
+  public dataLoader?: (tableName: string) => Promise<IDataRow[]>
   // 正在加载的表
   private loadingTables: Set<string> = new Set()
   // API 适配器（通过 setApiAdapter 设置，用于表级 API 注入）
@@ -43,7 +43,7 @@ export class DataSet implements IDataSet {
 
   constructor(
     config: IDataSet, 
-    dataLoader?: (tableName: string) => Promise<DataRow[]>,
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>,
     apiAdapter?: ApiAdapter
   ) {
     this.dataLoader = dataLoader
@@ -147,7 +147,7 @@ export class DataSet implements IDataSet {
   /**
    * 添加数据行
    */
-  addRow(tableName: string, row: DataRow): boolean {
+  addRow(tableName: string, row: IDataRow): boolean {
     const table = this.getTable(tableName)
     if (!table) return false
     
@@ -164,7 +164,7 @@ export class DataSet implements IDataSet {
   /**
    * 更新数据行
    */
-  updateRow(tableName: string, rowIndex: number, row: DataRow): boolean {
+  updateRow(tableName: string, rowIndex: number, row: IDataRow): boolean {
     const table = this.getTable(tableName)
     if (!table || rowIndex < 0 || rowIndex >= table.rows.length) {
       return false
@@ -210,7 +210,7 @@ export class DataSet implements IDataSet {
    * 级联更新
    * 当父表行更新时，同步更新子表中匹配行的外键字段
    */
-  cascadeUpdate(tableName: string, row: DataRow, oldValues?: DataRow): string[] {
+  cascadeUpdate(tableName: string, row: IDataRow, oldValues?: IDataRow): string[] {
     const table = this.getTable(tableName)
     if (!table) return []
 
@@ -275,7 +275,7 @@ export class DataSet implements IDataSet {
    * 级联删除
    * 当父表行删除时，自动删除子表中所有关联的行
    */
-  cascadeDelete(tableName: string, row: DataRow): string[] {
+  cascadeDelete(tableName: string, row: IDataRow): string[] {
     console.info(`🔧 cascadeDelete 被调用: ${tableName}`, row)
     
     const table = this.getTable(tableName)
@@ -313,7 +313,7 @@ export class DataSet implements IDataSet {
       }
 
       // 找到所有需要删除的子行
-      const rowsToDelete = new Set<DataRow>()
+      const rowsToDelete = new Set<IDataRow>()
       childTable.rows.forEach(childRow => {
         const matches = foreignKeyMap.every(({ childField, parentField }) => {
           const childVal = childRow[childField]
@@ -415,7 +415,7 @@ export class DataSet implements IDataSet {
   getParentRows(
     parentContext: BindingContext | IBindingContext,
     dependencyType: DependencyType
-  ): DataRow[] | undefined {
+  ): IDataRow[] | undefined {
     switch (dependencyType) {
       case 'currentRow':
         return parentContext.currentRow ? [parentContext.currentRow] : []
@@ -445,11 +445,11 @@ export class DataSet implements IDataSet {
    * 过滤子表数据
    */
   filterChildRows(
-    childRows: DataRow[],
+    childRows: IDataRow[],
     filterExpression: FilterExpression,
-    parentRows: DataRow[],
+    parentRows: IDataRow[],
     _parentContext: BindingContext | IBindingContext
-  ): DataRow[] {
+  ): IDataRow[] {
     // 特殊处理：如果是 'in' 操作符且有多个 parentRows
     // 需要一次性提取所有 parentRows 的字段值，而不是逐个过滤
     if ('op' in filterExpression && filterExpression.op === 'in' && parentRows.length > 0) {
@@ -479,7 +479,7 @@ export class DataSet implements IDataSet {
     }
     
     // 默认逻辑：逐个 parentRow 过滤（适用于 ==, >, < 等操作符）
-    const results: DataRow[] = []
+    const results: IDataRow[] = []
 
     // 对每个父行进行过滤
     parentRows.forEach(parentRow => {
@@ -504,7 +504,7 @@ export class DataSet implements IDataSet {
   /**
    * 数组去重
    */
-  private uniqueRows(rows: DataRow[]): DataRow[] {
+  private uniqueRows(rows: IDataRow[]): IDataRow[] {
     const seen = new Set<string>()
     return rows.filter(row => {
       const key = JSON.stringify(row)
@@ -602,7 +602,7 @@ export class DataSet implements IDataSet {
     let selectionChanged = false;
     
     // 辅助函数：通过主键判断两行是否相同
-    const isSameRow = (row1: DataRow | null, row2: DataRow | null): boolean => {
+    const isSameRow = (row1: IDataRow | null, row2: IDataRow | null): boolean => {
       if (!row1 || !row2) return row1 === row2;
       // 尝试通过 id 比较（约定主键字段名为 id）
       if ('id' in row1 && 'id' in row2) {
@@ -660,7 +660,7 @@ export class DataSet implements IDataSet {
   /**
    * 比较两个数据集是否相等（静态工具方法）
    */
-  static areRowsEqual(rows1: DataRow[], rows2: DataRow[]): boolean {
+  static areRowsEqual(rows1: IDataRow[], rows2: IDataRow[]): boolean {
     if (rows1.length !== rows2.length) return false;
     
     return rows1.every((row1, index) => {
@@ -687,7 +687,7 @@ export class DataSet implements IDataSet {
   /**
    * 比较两个数据集是否相等（实例方法）
    */
-  private areRowsEqual(rows1: DataRow[], rows2: DataRow[]): boolean {
+  private areRowsEqual(rows1: IDataRow[], rows2: IDataRow[]): boolean {
     return DataSet.areRowsEqual(rows1, rows2);
   }
 
@@ -814,7 +814,7 @@ export class DataSet implements IDataSet {
   /**
    * 从 JSON 加载
    */
-  static fromJSON(json: string, dataLoader?: (tableName: string) => Promise<DataRow[]>): DataSet {
+  static fromJSON(json: string, dataLoader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
     const config = JSON.parse(json)
     return new DataSet(config, dataLoader)
   }

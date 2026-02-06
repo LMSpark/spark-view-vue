@@ -1,4 +1,4 @@
-﻿import type { CapabilityProvider, CapabilityConsumer, LoggerApi } from './common.js'
+import type { CapabilityProvider, CapabilityConsumer, LoggerApi } from './common.js'
 import type { Context as CapabilityContext } from '@spark-view/spark-utils'
 
 export namespace Spark {

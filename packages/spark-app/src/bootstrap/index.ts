@@ -9,7 +9,6 @@ import type { BootstrapOptions, AppContext, AppConfig } from '../types'
 import { setupRouterGuards } from '../router/guards'
 import { setupErrorHandler } from '../error/handler'
 import { createLogger } from '../logger'
-import { container } from '../di/container'
 import { authService } from '../auth'
 
 const bootstrapLogger = createLogger('bootstrap')
@@ -84,8 +83,6 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       APP_CONTEXT_KEY,
       ROUTER_KEY,
       LOGGER_KEY,
-      CONFIG_LOADER_KEY,
-      SPARK_REGISTRY_KEY,
       AUTH_SERVICE_KEY
     } = await import('../constants')
     
@@ -101,13 +98,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     app.provide(ROUTER_KEY, router)
     app.provide(LOGGER_KEY, createLogger('app'))
     
-    // 提供可选服务
-    if (container.has('ConfigLoader')) {
-      app.provide(CONFIG_LOADER_KEY, container.resolve('ConfigLoader'))
-    }
-    if (container.has('SparkRegistry')) {
-      app.provide(SPARK_REGISTRY_KEY, container.resolve('SparkRegistry'))
-    }
+    // 提供认证服务（如果启用）
     if (auth) {
       app.provide(AUTH_SERVICE_KEY, authService)
       app.provide('authService', authService)  // 向后兼容

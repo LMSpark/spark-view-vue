@@ -4,7 +4,7 @@
  */
 
 import type { TokenStorage } from './types'
-import { envAdapter } from '../environment'
+import { simpleEnvAdapter as envAdapter } from '../utils/simpleEnv'
 
 /**
  * Token 管理器

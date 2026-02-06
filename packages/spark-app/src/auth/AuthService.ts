@@ -7,7 +7,7 @@ import type { AuthConfig, LoginCredentials, AuthResult, IAuthService } from './t
 import type { AppEnvironment } from '../types'
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
-import { envAdapter } from '../environment'
+import { simpleEnvAdapter as envAdapter } from '../utils/simpleEnv'
 
 const authLogger = createLogger('auth')
 

@@ -3,32 +3,8 @@
  * SPARK Application Layer - 应用层基础设施
  */
 
-// 环境适配器
-export {
-  createEnvironmentDetector,
-  createBrowserAdapter,
-  EnvironmentType
-} from './environment'
-
-export type {
-  IEnvironmentInfo,
-  IBrowserAdapter,
-  IEnvironmentDetector
-} from './environment'
-
 // 符号常量表
 export * from './constants'
-
-// 事件系统
-export {
-  appEventBus,
-  emitAppEvent,
-  onAppEvent,
-  onceAppEvent,
-  offAppEvent
-} from './events/AppEventBus'
-
-export type { AppEvents } from './events/AppEventBus'
 
 // 核心命名空间
 export { SparkApp } from './namespace'
@@ -83,7 +59,6 @@ export type {
   AppConfig,
   UserInfo,
   TenantInfo,
-  EnvironmentInfo,
   BootstrapContext,  // 新增：Bootstrap 扩展 Context
   // BootstrapOptions,  // 已在上面导出
   RouterGuardOptions,
@@ -92,16 +67,11 @@ export type {
   AppEnvironment
 } from './types'
 
-// AppContext (旧版 composables - 向后兼容)
+// AppContext (向后兼容 - 内部使用)
+// 注意：以下 API 主要供内部使用，推荐使用 Composables API
+// - 推荐：useAppContext(), usePermissions() from './composables/useServices'
 export {
-  createAppContext,
-  provideAppContext,
-  useAppContextOptional,
-  hasPermission,
-  hasAnyPermission,
-  hasAllPermissions,
-  hasRole,
-  hasAnyRole
+  createAppContext  // SparkApp 命名空间需要
 } from './context/AppContext'
 
 export { APP_CONTEXT_KEY } from './constants'
@@ -114,30 +84,6 @@ export { setupErrorHandler, createErrorBoundary } from './error/handler'
 
 // Config
 export { loadConfig, isFeatureEnabled } from './config'
-
-// Environment Adapter (SSR/SPA兼容层) - 已在上面导出
-export {
-  envAdapter,
-  getEnvironment,
-  getBrowser,
-  onClient,
-  onServer,
-  onBoth
-} from './environment'
-
-// Dependency Injection (依赖注入容器 - 保留向后兼容，推荐使用 composables)
-export {
-  container,
-  DependencyContainer,
-  ServiceLifetime,
-  ServiceIdentifiers
-} from './di/container'
-
-export type {
-  IDependencyContainer,
-  ServiceProvider,
-  ServiceDescriptor
-} from './di/container'
 
 // Composables (推荐使用)
 export {
@@ -152,7 +98,6 @@ export {
   tryUseAuth,
   useCurrentUser,
   useCurrentTenant,
-  useEnvironment,
   usePermissions,
   // Injection Keys
   AppContextKey,

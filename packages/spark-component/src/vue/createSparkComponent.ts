@@ -1,4 +1,4 @@
-﻿/**
+/**
  * createSparkComponent - 动态组件创建工厂
  * 
  * 注意：使用类型断言桥接 ComponentContext 和基础能力系统
