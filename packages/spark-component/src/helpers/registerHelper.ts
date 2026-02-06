@@ -3,27 +3,13 @@
  * 
  * 提供更友好的组件注册 API，自动处理：
  * - 组件类型名称转换（name → kebab-case type）
- * - 懒加载 loader 包装
+ * - 懒加载 loader 包装（根据 component 类型自动判断）
  */
 
 import { Logger } from '@spark-view/spark-utils'
 import type { ComponentDefinition } from '../types/spark-component.js'
 
 const logger = Logger('Spark:RegisterHelper')
-
-/**
- * 简化配置类型（内联定义，不再导出独立接口）
- * 用于 createSimpleRegistration 函数参数
- * 自动转换为 ComponentDefinition
- */
-type SimpleConfig = {
-  /** 组件名称（如 'HeavyGrid'），自动转换为 kebab-case type */
-  name: string
-  /** 组件路径（有 path 自动懒加载） */
-  path?: string
-  /** 组件本身（已导入的组件） */
-  component?: unknown
-}
 
 /**
  * 将组件名称转换为 kebab-case 类型
@@ -46,62 +32,65 @@ function nameToType(name: string): string {
 /**
  * 简化的组件注册方法
  * 
- * 自动处理类型转换、loader 包装、默认值等
+ * 自动处理类型转换、loader 包装
+ * component 参数可以是：
+ * - string：作为路径懒加载
+ * - 其他：作为已导入的组件
+ * 
+ * @param name - 组件名称（自动转换为 kebab-case type）
+ * @param component - 字符串路径或组件本身
  * 
  * @example
  * ```typescript
- * // 同步注册
- * registerComponent({
- *   name: 'MyButton',
- *   component: MyButtonComponent
- * })
+ * // 同步注册 - component 是组件本身
+ * Spark.register({ name: 'MyButton', component: MyButtonComponent })
  * 
- * // 异步注册（推荐）- 有 path 自动懒加载
- * registerComponent({
- *   name: 'HeavyGrid',
- *   path: './components/HeavyGrid.vue'
- * })
+ * // 异步注册（推荐）- component 是字符串路径
+ * Spark.register({ name: 'HeavyGrid', component: './components/HeavyGrid.vue' })
  * 
  * // 批量注册
- * registerComponents([
- *   { name: 'Chart', path: './Chart.vue' },
- *   { name: 'Calendar', path: './Calendar.vue' }
+ * Spark.registerAll([
+ *   { name: 'Chart', component: './Chart.vue' },
+ *   { name: 'Calendar', component: './Calendar.vue' }
  * ])
  * ```
  */
-export function createSimpleRegistration(config: SimpleConfig): ComponentDefinition {
+export function createSimpleRegistration(
+  name: string,
+  component: string | unknown
+): ComponentDefinition {
   // 1. 自动生成 type
-  const type = nameToType(config.name)
+  const type = nameToType(name)
   
-  // 2. 智能判断：有 path 自动懒加载，有 component 直接使用
-  const component: unknown = config.component
+  // 2. 根据 component 类型智能判断
+  let actualComponent: unknown
   let loader: (() => Promise<{ default: unknown }>) | undefined
   
-  if (config.path) {
-    // 有 path → 创建懒加载 loader
-    const componentPath = config.path // 缓存 path 避免 ! 断言
+  if (typeof component === 'string') {
+    // 字符串 → 作为路径懒加载
+    const componentPath = component
     loader = async () => {
       try {
-        logger.info(`⏳ Loading component: ${config.name}`)
+        logger.info(`⏳ Loading component: ${name}`)
         const module = await import(/* @vite-ignore */ componentPath)
         const loadedComponent = module.default ?? module
-        logger.info(`✅ Loaded component: ${config.name}`)
+        logger.info(`✅ Loaded component: ${name}`)
         return { default: loadedComponent }
       } catch (error) {
-        logger.error(`❌ Failed to load component: ${config.name}`, error)
+        logger.error(`❌ Failed to load component: ${name}`, error)
         throw error
       }
     }
-  } else if (!config.component) {
-    // 既没有 path 也没有 component
-    logger.warn(`Component "${config.name}" has neither path nor component. Nothing to register.`)
+  } else {
+    // 非字符串 → 作为已导入的组件
+    actualComponent = component
   }
   
   // 3. 构建标准配置
   const standardConfig: ComponentDefinition = {
     type,
-    name: config.name,
-    component,
+    name,
+    component: actualComponent,
     loader
   }
   
