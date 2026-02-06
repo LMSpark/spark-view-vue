@@ -121,12 +121,9 @@ export namespace Spark {
     register(type: string, def: ComponentDefinition): void
     get(type: string): ComponentDefinition | undefined
     getAsync(type: string): Promise<ComponentDefinition | undefined> // 异步获取（自动加载）
-    getAllDefinitions(): ComponentDefinition[]
     getAllTypes(): string[]
     has(type: string): boolean
     unregister(type: string): boolean
-    findCompatibleProviders?: (capabilityName: string, minVersion?: string) => string[]
-    preload?(types: string[]): Promise<void> // 预加载组件
   }
 
   export interface ComponentManager {

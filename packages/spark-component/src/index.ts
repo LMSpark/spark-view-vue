@@ -8,10 +8,7 @@ export { Spark } from './spark-namespace.js'
 
 // 组件定义注册助手（简化语法）
 export { 
-  createSimpleRegistration,
-  batchCreateSimpleRegistrations,
-  presets as registerPresets,
-  nameToType
+  createSimpleRegistration
 } from './helpers/registerHelper.js'
 
 // 事件系统
