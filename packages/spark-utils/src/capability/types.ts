@@ -34,10 +34,12 @@ export interface Consumer<T = unknown> {
 /**
  * 上下文 - 能力树的节点
  * 维护 parent 链实现能力查找
+ * 
+ * 使用 this 类型让子类型自动获得正确的 parent 类型
  */
 export interface Context<T = Provider> {
-  /** 父上下文（用于向上查找能力） */
-  parent?: Context<T> | null
+  /** 父上下文（使用 this 类型支持子类型继承） */
+  parent?: this | Context<T> | null
   /** 当前上下文提供的能力（Map 实现 O(1) 查询） */
   providers: Map<string, T>
 }

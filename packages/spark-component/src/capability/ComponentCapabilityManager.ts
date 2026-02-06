@@ -49,9 +49,11 @@ export class ComponentCapabilityManager extends CapabilityManager<CapabilityProv
    * 2. 未找到则沿 parent 链向上递归查找
    * 
    * 这是能力系统的核心：供方不关心谁用，需方不关心谁提供
+   * 
+   * 支持多层级结构：APP => page => component
    */
   private findProviderByName(
-    context: ComponentContext, 
+    context: ComponentContext | CapabilityContext, 
     name: string
   ): CapabilityProvider | undefined {
     // 在当前上下文的 providers 中查找（O(1) Map 查询）

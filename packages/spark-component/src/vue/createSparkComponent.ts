@@ -5,7 +5,7 @@
  */
 
 import { defineComponent, h, reactive, computed, onMounted, onUnmounted, inject, type VNode, type Component, type PropType } from 'vue'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, type Context as CapabilityContext } from '@spark-view/spark-utils'
 import { capabilityManager as defaultCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
@@ -224,7 +224,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
         const provider = context.providers.get(name) ?? createNoopProvider(name)
         if (provider) {
           consumer.implementation = provider.implementation as Implementation | undefined
-          try { capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').CapabilityContext<CapabilityProvider>) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
+          try { capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').Context<CapabilityProvider>) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
           logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
           return (consumer.implementation ?? null) as Implementation | null
         }
@@ -249,11 +249,11 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
       }
 
       function getInheritedProvider<T = unknown>(name: string): T | undefined {
-        let current: ComponentContext | undefined = context
+        let current: ComponentContext | CapabilityContext | undefined = context
         while (current) {
           const p = current.providers.get(name)
           if (p?.implementation !== undefined) return p.implementation as T
-          current = current.parent ?? undefined
+          current = (current.parent as ComponentContext | CapabilityContext | undefined) ?? undefined
         }
         return undefined
       }

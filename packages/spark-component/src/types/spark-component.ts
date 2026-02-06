@@ -1,5 +1,4 @@
-import type { CapabilityProvider, CapabilityConsumer, LoggerApi } from './common.js'
-import type { Context as CapabilityContext } from '@spark-view/spark-utils'
+import type { CapabilityProvider, CapabilityConsumer, LoggerApi, CapabilityContext } from './common.js'
 
 export namespace Spark {
   /**
@@ -75,14 +74,10 @@ export namespace Spark {
     children?: ComponentContext[]
     
     // --------------------------------------------------------------------------
-    // 运行时管理
+    // 运行时管理（继承自 CapabilityContext）
     // --------------------------------------------------------------------------
     
-    /** 父组件上下文（继承自 CapabilityContext，可为 null） */
-    parent?: ComponentContext | null
-    
-    /** 能力提供者映射（key: capabilityName, value: provider）- 优化为 Map 实现 O(1) 查询 */
-    providers: Map<string, CapabilityProvider>
+    /** parent 和 providers 继承自 CapabilityContext，使用 this 类型自动推导为 ComponentContext */
     
     /** 组件运行时状态（用于存储任意运行时数据，如内部状态、缓存等） */
     state: Record<string, unknown>
