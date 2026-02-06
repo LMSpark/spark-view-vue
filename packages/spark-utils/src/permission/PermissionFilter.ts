@@ -6,7 +6,7 @@
 
 import type {
   IPermissionFilter,
-  ComponentDataRow
+  IDataRowWithPermission
 } from '../data-types'
 
 import { FieldVisibility } from '../data-types'
@@ -21,21 +21,21 @@ export class PermissionFilter implements IPermissionFilter {
   /**
    * 过滤出可删除的行
    */
-  filterDeletableRows(rows: ComponentDataRow[]): ComponentDataRow[] {
+  filterDeletableRows(rows: IDataRowWithPermission[]): IDataRowWithPermission[] {
     return rows.filter(row => this.checker.canDelete(row))
   }
 
   /**
    * 过滤出可编辑的行
    */
-  filterEditableRows(rows: ComponentDataRow[]): ComponentDataRow[] {
+  filterEditableRows(rows: IDataRowWithPermission[]): IDataRowWithPermission[] {
     return rows.filter(row => this.checker.canEdit(row))
   }
 
   /**
    * 过滤字段（移除隐藏字段）
    */
-  filterFields(row: ComponentDataRow): Record<string, unknown> {
+  filterFields(row: IDataRowWithPermission): Record<string, unknown> {
     const filtered: Record<string, unknown> = {}
     
     for (const [field, value] of Object.entries(row)) {
@@ -56,8 +56,8 @@ export class PermissionFilter implements IPermissionFilter {
   /**
    * 应用字段脱敏
    */
-  applyFieldMasking(row: ComponentDataRow): ComponentDataRow {
-    const masked: ComponentDataRow = { ...row }
+  applyFieldMasking(row: IDataRowWithPermission): IDataRowWithPermission {
+    const masked: IDataRowWithPermission = { ...row }
     
     for (const [field, value] of Object.entries(row)) {
       // 跳过内部字段
@@ -83,21 +83,21 @@ export class PermissionFilter implements IPermissionFilter {
   /**
    * 批量应用脱敏（处理整个数据集）
    */
-  applyMaskingToDataSet(rows: ComponentDataRow[]): ComponentDataRow[] {
+  applyMaskingToDataSet(rows: IDataRowWithPermission[]): IDataRowWithPermission[] {
     return rows.map(row => this.applyFieldMasking(row))
   }
 
   /**
    * 获取可编辑字段列表
    */
-  getEditableFields(row: ComponentDataRow, allFields: string[]): string[] {
+  getEditableFields(row: IDataRowWithPermission, allFields: string[]): string[] {
     return allFields.filter(field => this.checker.isFieldEditable(field, row))
   }
 
   /**
    * 获取可见字段列表
    */
-  getVisibleFields(row: ComponentDataRow, allFields: string[]): string[] {
+  getVisibleFields(row: IDataRowWithPermission, allFields: string[]): string[] {
     return allFields.filter(field => this.checker.isFieldVisible(field, row))
   }
 }
@@ -116,15 +116,15 @@ export function createPermissionFilter(): IPermissionFilter {
  * 快捷方法：过滤数据
  */
 export const filterByPermission = {
-  deletableRows: (rows: ComponentDataRow[]) => 
+  deletableRows: (rows: IDataRowWithPermission[]) => 
     createPermissionFilter().filterDeletableRows(rows),
   
-  editableRows: (rows: ComponentDataRow[]) => 
+  editableRows: (rows: IDataRowWithPermission[]) => 
     createPermissionFilter().filterEditableRows(rows),
   
-  applyMasking: (row: ComponentDataRow) => 
+  applyMasking: (row: IDataRowWithPermission) => 
     createPermissionFilter().applyFieldMasking(row),
   
-  applyMaskingToAll: (rows: ComponentDataRow[]) => 
+  applyMaskingToAll: (rows: IDataRowWithPermission[]) => 
     createPermissionFilter().applyMaskingToDataSet(rows)
 }

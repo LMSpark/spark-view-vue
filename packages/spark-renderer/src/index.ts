@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @spark-view/spark-renderer
  * 
  * SPARK 页面渲染引擎 - L3 Model Layer

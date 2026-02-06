@@ -29,9 +29,9 @@ export * from './capability/index.js'
 
 // 基础数据类型和权限系统
 export type {
-  DataRow,
-  ComponentDataRow,
-  ComponentDataSource,  
+  IDataRow,
+  IDataRowWithPermission,
+  IDataSource,
   IInstancePermission,
   IModelPermission,
   WithInstancePermission,

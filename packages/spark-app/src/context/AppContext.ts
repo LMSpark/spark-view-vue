@@ -4,7 +4,6 @@
  */
 
 import { inject, reactive } from 'vue'
-import type { App } from 'vue'
 import type { AppContext, UserInfo, TenantInfo, EnvironmentInfo } from '../types'
 import { APP_CONTEXT_KEY } from '../constants'
 
@@ -27,15 +26,10 @@ export function createAppContext(options: {
 }
 
 /**
- * 提供应用上下文（在应用初始化时调用）
- */
-export function provideAppContext(app: App, context: AppContext): void {
-  // 不使用 readonly，因为会导致类型不兼容
-  app.provide(APP_CONTEXT_KEY, context)
-}
-
-/**
  * 使用应用上下文（在组件中调用）
+ * 
+ * @deprecated 推荐使用 useAppContext from '@spark-view/spark-app/composables'
+ * @internal 主要供 SparkApp 命名空间使用
  */
 export function useAppContext(): AppContext {
   const context = inject(APP_CONTEXT_KEY)
@@ -51,6 +45,9 @@ export function useAppContext(): AppContext {
 
 /**
  * 可选的应用上下文（不抛出错误）
+ * 
+ * @internal 仅供内部使用（如 router/guards.ts）
+ * @deprecated 推荐使用 tryUseAppContext from '@spark-view/spark-app/composables'
  */
 export function useAppContextOptional(): AppContext | undefined {
   return inject(APP_CONTEXT_KEY)
@@ -58,6 +55,9 @@ export function useAppContextOptional(): AppContext | undefined {
 
 /**
  * 检查用户是否有指定权限
+ * 
+ * @internal 仅供内部使用
+ * @deprecated 推荐使用 usePermissions() composable
  */
 export function hasPermission(context: AppContext, permission: string): boolean {
   return context.user.permissions.includes(permission)
@@ -65,6 +65,9 @@ export function hasPermission(context: AppContext, permission: string): boolean 
 
 /**
  * 检查用户是否有任一权限
+ * 
+ * @internal 仅供内部使用（如 router/guards.ts）
+ * @deprecated 推荐使用 usePermissions() composable
  */
 export function hasAnyPermission(context: AppContext, permissions: string[]): boolean {
   return permissions.some(perm => context.user.permissions.includes(perm))
@@ -72,6 +75,9 @@ export function hasAnyPermission(context: AppContext, permissions: string[]): bo
 
 /**
  * 检查用户是否有所有权限
+ * 
+ * @internal 仅供内部使用
+ * @deprecated 推荐使用 usePermissions() composable
  */
 export function hasAllPermissions(context: AppContext, permissions: string[]): boolean {
   return permissions.every(perm => context.user.permissions.includes(perm))
@@ -79,6 +85,9 @@ export function hasAllPermissions(context: AppContext, permissions: string[]): b
 
 /**
  * 检查用户是否有指定角色
+ * 
+ * @internal 仅供内部使用
+ * @deprecated 推荐使用 usePermissions() composable
  */
 export function hasRole(context: AppContext, role: string): boolean {
   return context.user.roles.includes(role)
@@ -86,6 +95,9 @@ export function hasRole(context: AppContext, role: string): boolean {
 
 /**
  * 检查用户是否有任一角色
+ * 
+ * @internal 仅供内部使用
+ * @deprecated 推荐使用 usePermissions() composable
  */
 export function hasAnyRole(context: AppContext, roles: string[]): boolean {
   return roles.some(role => context.user.roles.includes(role))

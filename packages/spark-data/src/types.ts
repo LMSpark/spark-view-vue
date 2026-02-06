@@ -1,9 +1,9 @@
-﻿/**
+/**
  * SPARK 数据空间类型定义
  * 
  * ⚠️ 重要：这是所有数据类型的唯一定义源
  * - DataTable, DataSet, BindingContext 等高级数据类型在此定义
- * - DataRow 等基础类型从 spark-utils 导入
+ * - IDataRow 等基础类型从 spark-utils 导入
  * - 其他包（spark-app, spark-component）只能导入使用，不能重新定义
  * - 保持数据类型系统的一致性和可维护性
  * 
@@ -11,10 +11,10 @@
  */
 
 // 导入基础类型
-import type { DataRow } from '@spark-view/spark-utils'
+import type { IDataRow } from '@spark-view/spark-utils'
 
 // 重新导出以保持兼容性
-export type { DataRow } from '@spark-view/spark-utils'
+export type { IDataRow } from '@spark-view/spark-utils'
 
 // ==================== 基础类型 ====================
 
@@ -45,10 +45,10 @@ export type { DataRow } from '@spark-view/spark-utils'
  * - 表格行选中状态管理
  */
 export interface IBindingContext {
-  currentRow?: DataRow | null
-  selectedRows?: DataRow[]
-  rows?: DataRow[]
-  _originalRows?: DataRow[]
+  currentRow?: IDataRow | null
+  selectedRows?: IDataRow[]
+  rows?: IDataRow[]
+  _originalRows?: IDataRow[]
   
   // 宿主信息
   _hostTable?: string
@@ -147,7 +147,7 @@ export interface IDataTable extends IBindingContext {
   tableName: string
   columns: DataColumn[]
   api?: CrudApi
-  rows: DataRow[]
+  rows: IDataRow[]
   contexts?: Record<string, IBindingContext>
   
   // 扩展属性
@@ -211,7 +211,7 @@ export interface IDataTableWithApi extends IDataTable {
    * await table.list({ status: 'active', role: 'admin' })
    * ```
    */
-  list(params?: Record<string, unknown>): Promise<DataRow[]>
+  list(params?: Record<string, unknown>): Promise<IDataRow[]>
   
   /**
    * 创建记录
@@ -231,7 +231,7 @@ export interface IDataTableWithApi extends IDataTable {
    * console.log(newUser.id) // 123
    * ```
    */
-  create(data: DataRow): Promise<DataRow>
+  create(data: IDataRow): Promise<IDataRow>
   
   /**
    * 更新记录
@@ -248,7 +248,7 @@ export interface IDataTableWithApi extends IDataTable {
    * await table.update(123, { name: 'Jane Doe' })
    * ```
    */
-  update(id: string | number, data: Partial<DataRow>): Promise<DataRow>
+  update(id: string | number, data: Partial<IDataRow>): Promise<IDataRow>
   
   /**
    * 删除记录
@@ -283,7 +283,7 @@ export interface IDataTableWithApi extends IDataTable {
    * ])
    * ```
    */
-  batchCreate(data: DataRow[]): Promise<DataRow[]>
+  batchCreate(data: IDataRow[]): Promise<IDataRow[]>
   
   /**
    * 批量更新
@@ -302,7 +302,7 @@ export interface IDataTableWithApi extends IDataTable {
    * ])
    * ```
    */
-  batchUpdate(updates: Array<{ id: string | number; data: Partial<DataRow> }>): Promise<DataRow[]>
+  batchUpdate(updates: Array<{ id: string | number; data: Partial<IDataRow> }>): Promise<IDataRow[]>
   
   /**
    * 批量删除
@@ -450,7 +450,7 @@ export interface IDataSet {
  * 过滤结果
  */
 export interface FilterResult {
-  rows: DataRow[]
+  rows: IDataRow[]
   count: number
 }
 
@@ -471,8 +471,8 @@ export interface FilterResult {
  * - 通过 variables 传递额外的过滤参数
  */
 export interface FilterContext {
-  parentRow?: DataRow
-  parentRows?: DataRow[]
+  parentRow?: IDataRow
+  parentRows?: IDataRow[]
   variables?: Record<string, unknown>
 }
 

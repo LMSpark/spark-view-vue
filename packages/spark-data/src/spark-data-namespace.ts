@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SPARK Data Namespace
  * 提供统一的数据空间 API，简化消费层使用
  */
@@ -14,7 +14,7 @@ import {
   createDataSetCapabilityManager,
   type DataSetCapabilityConfig 
 } from './capability/DataSetCapabilityManager.js'
-import type { IDataSet, DataRow, TreeConfig, FlatTreeNode } from './types.js'
+import type { IDataSet, IDataRow, TreeConfig, FlatTreeNode } from './types.js'
 
 /**
  * SparkData 命名空间
@@ -33,7 +33,7 @@ export const SparkData = {
    */
   createDataSet: (
     config: IDataSet,
-    dataLoader?: (tableName: string) => Promise<DataRow[]>
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): DataSet => {
     return DataSetManager.create(config, dataLoader)
   },
@@ -45,7 +45,7 @@ export const SparkData = {
    */
   fromJSON: (
     json: string,
-    dataLoader?: (tableName: string) => Promise<DataRow[]>
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): DataSet => {
     return DataSetManager.fromJSON(json, dataLoader)
   },

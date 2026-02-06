@@ -1,4 +1,4 @@
-﻿import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.js'
+import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.js'
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'

@@ -1,4 +1,4 @@
-﻿// Core public interfaces for packages/spark-component
+// Core public interfaces for packages/spark-component
 
 export interface IComponentDefinition {
   type: string

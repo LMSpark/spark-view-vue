@@ -5,7 +5,7 @@
  */
 
 import type {
-  ComponentDataRow,
+  IDataRowWithPermission,
   IPermissionChecker
 } from '../data-types'
 
@@ -43,19 +43,19 @@ export interface IFieldRenderState {
 export interface IFieldRenderHelper {
   computeFieldState(
     config: IFieldRenderConfig,
-    row: ComponentDataRow,
+    row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderState
   
   computeFieldStates(
     configs: IFieldRenderConfig[],
-    row: ComponentDataRow,
+    row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderState[]
   
   filterVisibleFields(
     configs: IFieldRenderConfig[],
-    row: ComponentDataRow,
+    row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderConfig[]
 }
@@ -69,7 +69,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   computeFieldState(
     config: IFieldRenderConfig,
-    row: ComponentDataRow,
+    row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderState {
     const { field } = config
@@ -105,7 +105,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   computeFieldStates(
     configs: IFieldRenderConfig[],
-    row: ComponentDataRow,
+    row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderState[] {
     return configs.map(config => 
@@ -118,7 +118,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
    */
   filterVisibleFields(
     configs: IFieldRenderConfig[],
-    row: ComponentDataRow,
+    row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderConfig[] {
     return configs.filter(config => {
@@ -143,7 +143,7 @@ export function createFieldRenderHelper(): IFieldRenderHelper {
  */
 export const computeFieldState = (
   config: IFieldRenderConfig,
-  row: ComponentDataRow,
+  row: IDataRowWithPermission,
   checker: IPermissionChecker
 ): IFieldRenderState => {
   return createFieldRenderHelper().computeFieldState(config, row, checker)
@@ -154,7 +154,7 @@ export const computeFieldState = (
  */
 export const computeFieldStates = (
   configs: IFieldRenderConfig[],
-  row: ComponentDataRow,
+  row: IDataRowWithPermission,
   checker: IPermissionChecker
 ): IFieldRenderState[] => {
   return createFieldRenderHelper().computeFieldStates(configs, row, checker)
@@ -165,7 +165,7 @@ export const computeFieldStates = (
  */
 export const filterVisibleFields = (
   configs: IFieldRenderConfig[],
-  row: ComponentDataRow,
+  row: IDataRowWithPermission,
   checker: IPermissionChecker
 ): IFieldRenderConfig[] => {
   return createFieldRenderHelper().filterVisibleFields(configs, row, checker)

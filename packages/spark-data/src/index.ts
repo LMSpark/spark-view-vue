@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @spark-view/spark-data
  * SPARK 数据空间包 - 提供类似 .NET DataSet 的数据管理能力
  * 
@@ -24,8 +24,9 @@ export type {
 
 // 导出权限类型（从 spark-utils 重新导出以保持兼容性）
 export type {
-  DataRow,                  // 基础数据行
-  ComponentDataRow,         // 带权限的数据行（组件层常用）
+  IDataRow,                 // 基础数据行接口
+  IDataRowWithPermission,   // 带权限的数据行（支持泛型）
+  IDataSource,              // 数据源（带权限和分页，支持泛型）
   IInstancePermission,      // 实例级权限
   IModelPermission,         // 模型级权限
   WithInstancePermission,   // 权限工具类型

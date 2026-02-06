@@ -105,6 +105,7 @@ export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
 /**
  * ============================================
  * Bootstrap 阶段常量
+ * @internal 仅供内部 bootstrap 流程使用
  * ============================================
  */
 
@@ -137,6 +138,8 @@ export type Environment = typeof Environments[keyof typeof Environments]
 /**
  * ============================================
  * 日志级别常量
+ * @internal 主要供日志系统内部使用
+ * @deprecated 推荐直接使用字符串字面量类型
  * ============================================
  */
 
@@ -153,6 +156,7 @@ export type LogLevel = typeof LogLevels[keyof typeof LogLevels]
 /**
  * ============================================
  * 权限操作常量
+ * @internal 预留未来权限系统使用
  * ============================================
  */
 
@@ -172,6 +176,7 @@ export type PermissionAction = typeof PermissionActions[keyof typeof PermissionA
 /**
  * ============================================
  * 资源类型常量
+ * @internal 预留未来权限系统使用
  * ============================================
  */
 
@@ -210,6 +215,7 @@ export type HttpStatusCode = typeof HttpStatus[keyof typeof HttpStatus]
 /**
  * ============================================
  * 本地存储键名常量
+ * @internal 主要供内部模块使用（AuthService, TokenManager 等）
  * ============================================
  */
 
@@ -238,6 +244,8 @@ export type StorageKey = typeof StorageKeys[keyof typeof StorageKeys]
 /**
  * ============================================
  * 事件名称常量
+ * @internal 预留未来事件系统使用
+ * @deprecated AppEventBus 已移除，暂无事件系统
  * ============================================
  */
 
@@ -271,6 +279,7 @@ export type AppEvent = typeof AppEvents[keyof typeof AppEvents]
 /**
  * ============================================
  * 配置源类型常量
+ * @internal 主要供配置加载器内部使用
  * ============================================
  */
 

@@ -1,10 +1,10 @@
-﻿/**
+/**
  * BindingContext 类 - 上下文绑定
  * 负责：选中状态管理、数据视图、通知机制
  * 相当于 .NET 的 DataView - 视图层
  */
 
-import type { DataRow, IBindingContext, FilterExpression, SortExpression, ITreeManager } from './types'
+import type { IDataRow, IBindingContext, FilterExpression, SortExpression, ITreeManager } from './types'
 import { FilterExpressionParser } from './filterExpressionParser'
 
 /**
@@ -20,10 +20,10 @@ interface IDataSet {
  * 绑定上下文类（实现 IBindingContext 接口 + 方法逻辑）
  */
 export class BindingContext implements IBindingContext {
-  currentRow: DataRow | null = null
-  selectedRows: DataRow[] = []
-  rows: DataRow[] = []
-  private __originalRows?: DataRow[]
+  currentRow: IDataRow | null = null
+  selectedRows: IDataRow[] = []
+  rows: IDataRow[] = []
+  private __originalRows?: IDataRow[]
   
   // 宿主信息
   private __hostTable: string
@@ -68,10 +68,10 @@ export class BindingContext implements IBindingContext {
   get _contextId(): string { return this.__contextId }
   
   /** @deprecated 内部使用，不推荐外部访问 */
-  get _originalRows(): DataRow[] | undefined { return this.__originalRows }
+  get _originalRows(): IDataRow[] | undefined { return this.__originalRows }
   
   /** @deprecated 内部使用，不推荐外部访问 */
-  set _originalRows(value: DataRow[] | undefined) { this.__originalRows = value }
+  set _originalRows(value: IDataRow[] | undefined) { this.__originalRows = value }
   
   /**
    * 获取宿主表名
@@ -139,7 +139,7 @@ export class BindingContext implements IBindingContext {
    * 
    * @fires DataSet#currentRowChanged - 当 skipNotify=false 时触发
    */
-  setCurrentRow(row: DataRow | null, skipNotify: boolean = false): void {
+  setCurrentRow(row: IDataRow | null, skipNotify: boolean = false): void {
     // 防重复检查 - 只比较引用
     const existingRow = this.currentRow
     const isSameRow = existingRow === row
@@ -196,7 +196,7 @@ export class BindingContext implements IBindingContext {
    * 
    * @fires DataSet#selectedRowsChanged - 当 skipNotify=false 时触发
    */
-  setSelectedRows(rows: DataRow[], skipNotify: boolean = false): void {
+  setSelectedRows(rows: IDataRow[], skipNotify: boolean = false): void {
     // 防重复检查：只比较引用
     const existingRows = this.selectedRows || []
     const isSameSelection = (
@@ -299,7 +299,7 @@ export class BindingContext implements IBindingContext {
   /**
    * 应用排序表达式
    */
-  private applySorting(rows: DataRow[], sortExpression: SortExpression): DataRow[] {
+  private applySorting(rows: IDataRow[], sortExpression: SortExpression): IDataRow[] {
     // 创建副本以避免修改原数组
     const sorted = [...rows];
     
@@ -319,7 +319,7 @@ export class BindingContext implements IBindingContext {
   /**
    * 单字段排序
    */
-  private sortByField(rows: DataRow[], field: string, direction: string): DataRow[] {
+  private sortByField(rows: IDataRow[], field: string, direction: string): IDataRow[] {
     const isAsc = direction.toLowerCase() === 'asc';
     
     return rows.sort((a, b) => {
@@ -348,7 +348,7 @@ export class BindingContext implements IBindingContext {
   /**
    * 多字段排序
    */
-  private sortByFields(rows: DataRow[], fields: Array<{ field: string; direction: string }>): DataRow[] {
+  private sortByFields(rows: IDataRow[], fields: Array<{ field: string; direction: string }>): IDataRow[] {
     return rows.sort((a, b) => {
       for (const { field, direction } of fields) {
         const isAsc = direction.toLowerCase() === 'asc';
@@ -407,7 +407,7 @@ export class BindingContext implements IBindingContext {
    * childContext.updateRows(filtered)
    * ```
    */
-  updateRows(sourceData: DataRow[]): void {
+  updateRows(sourceData: IDataRow[]): void {
     let result = [...sourceData];
     
     // 1. 执行过滤
@@ -437,7 +437,7 @@ export class BindingContext implements IBindingContext {
    * 刷新上下文（重新应用过滤和排序）
    * @param sourceData 完整数据源
    */
-  refresh(sourceData: DataRow[]): void {
+  refresh(sourceData: IDataRow[]): void {
     this.updateRows(sourceData);
     console.info(`✅ [Refresh] 上下文 ${this._contextId} 已刷新，当前 ${this.rows.length} 行`);
   }
