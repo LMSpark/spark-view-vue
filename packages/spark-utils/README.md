@@ -23,25 +23,25 @@ pnpm add @spark-view/spark-utils
 ### 1. 能力系统
 
 ```typescript
-import { Capability } from '@spark-view/spark-utils'
+import type { Provider, Consumer, Context } from '@spark-view/spark-utils'
 
-// 创建管理器
-const manager = Capability.create()
-
-// 提供能力
-const provider = {
+// 定义能力提供者
+const provider: Provider = {
   name: 'userService',
   version: '1.0.0',
   implementation: {
-    getUser: (id) => ({ id, name: 'User' })
+    getUser: (id: string) => ({ id, name: 'User' })
   }
 }
+
+// 添加到上下文
 context.providers.add(provider)
 
-// 消费能力
-const consumer = { capabilityName: 'userService' }
-manager.connectCapability(provider, consumer, context)
-console.log(consumer.implementation.getUser('123'))
+// 组件中消费能力
+const consumer: Consumer = {
+  capabilityName: 'userService',
+  implementation: null // 由连接器注入
+}
 ```
 
 **特性**:
@@ -53,16 +53,14 @@ console.log(consumer.implementation.getUser('123'))
 ### 2. 日志系统
 
 ```typescript
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, createConsoleTransport, createHttpTransport } from '@spark-view/spark-utils'
 
-const logger = Logger.create({
-  level: 'info',
-  namespace: 'app',
-  transports: [
-    Logger.consoleTransport(),
-    Logger.httpTransport({ url: '/api/logs' })
-  ]
-})
+// 创建 logger（优先从 context 获取 provider）
+const logger = Logger(context)
+
+// 或创建独立传输器
+const consoleTransport = createConsoleTransport('info')
+const httpTransport = createHttpTransport('/api/logs', 'error')
 
 logger.info('应用启动')
 logger.error('错误', { code: 500 })
@@ -77,22 +75,22 @@ logger.error('错误', { code: 500 })
 
 ```typescript
 import { 
-  PermissionChecker, 
-  PermissionFilter,
-  FieldRenderHelper
+  createPermissionChecker, 
+  createPermissionFilter,
+  createFieldRenderHelper
 } from '@spark-view/spark-utils'
 
 // 权限检查
-const checker = PermissionChecker.create()
+const checker = createPermissionChecker()
 const canDelete = checker.canDelete(row)
 const canEdit = checker.canEdit(row)
 
 // 权限过滤
-const filter = PermissionFilter.create()
+const filter = createPermissionFilter()
 const deletableRows = filter.filterDeletableRows(rows)
 
 // 字段渲染
-const helper = FieldRenderHelper.create(checker)
+const helper = createFieldRenderHelper()
 const states = helper.computeFieldStates(fields, row)
 ```
 
