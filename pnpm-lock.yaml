@@ -32,21 +32,12 @@ importers:
       '@syncfusion/ej2-grids':
         specifier: ^32.1.24
         version: 32.1.25
-      '@syncfusion/ej2-vue-calendars':
-        specifier: ^32.1.24
-        version: 32.1.25
       '@syncfusion/ej2-vue-grids':
         specifier: ^32.1.24
         version: 32.1.25
-      '@syncfusion/ej2-vue-inputs':
-        specifier: ^32.1.24
-        version: 32.1.24
       element-plus:
         specifier: ^2.5.0
         version: 2.13.2(vue@3.5.27(typescript@5.3.3))
-      pinia:
-        specifier: ^2.1.0
-        version: 2.3.1(typescript@5.3.3)(vue@3.5.27(typescript@5.3.3))
       vue:
         specifier: ^3.5.27
         version: 3.5.27(typescript@5.3.3)
@@ -938,14 +929,8 @@ packages:
   '@syncfusion/ej2-vue-base@32.1.24':
     resolution: {integrity: sha512-SpbBkLB4xDCuSdbHg+Bsce2uq2Vxkk4vxgW9eTYrdPDcZa/TxqproEf1pPfvJ/UUkFoK2PjogfC0pvq9FX5xqg==}
 
-  '@syncfusion/ej2-vue-calendars@32.1.25':
-    resolution: {integrity: sha512-+ysBBG7pzlBbDqszv6EtY/mrnJv0tw/YqhmlV8UCoZRGhtg9SUGOgzwzKbFb5766DlVVC0odJ4xaxVOqG4jo/g==}
-
   '@syncfusion/ej2-vue-grids@32.1.25':
     resolution: {integrity: sha512-VBG13G3t1ugqO1/UqQCRenX0ru5lej70rsz5F0/Dc4Hk5+KfAAS2eUv/a/6IZlgYNV/tn2BU8cMS7ZiSq69+gg==}
-
-  '@syncfusion/ej2-vue-inputs@32.1.24':
-    resolution: {integrity: sha512-IZSwXi7Hp+EJXxYFpXpxAKw/CGrLfu5vEQmvRo7uozIgZZOBOxuZFEeEzXLfLpSJjdJQKlaqednrOW12+auUGg==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -1927,15 +1912,6 @@ packages:
     resolution: {integrity: sha512-eG2dWTVw5bzqGRztnHExczNxt5VGsE6OwTeCG3fdUf9KBsZzO3R5OIIIzWR+iZA0NtZ+RDVdaoE2dK1cn6jH4g==}
     engines: {node: '>=0.10'}
     hasBin: true
-
-  pinia@2.3.1:
-    resolution: {integrity: sha512-khUlZSwt9xXCaTbbxFYBKDc/bWAGWJjOgvxETwkTN7KRm66EeT1ZdZj6i2ceh9sP2Pzqsbc704r2yngBrxBVug==}
-    peerDependencies:
-      typescript: '>=4.4.4'
-      vue: ^2.7.0 || ^3.5.11
-    peerDependenciesMeta:
-      typescript:
-        optional: true
 
   postcss-selector-parser@7.1.1:
     resolution: {integrity: sha512-orRsuYpJVw8LdAwqqLykBj9ecS5/cRHlI5+nvTo8LcCKmzDmqVORXtOIYEEQuL9D4BxtA1lm5isAqzQZCoQ6Eg==}
@@ -2946,22 +2922,10 @@ snapshots:
     dependencies:
       '@syncfusion/ej2-base': 32.1.24
 
-  '@syncfusion/ej2-vue-calendars@32.1.25':
-    dependencies:
-      '@syncfusion/ej2-base': 32.1.24
-      '@syncfusion/ej2-calendars': 32.1.25
-      '@syncfusion/ej2-vue-base': 32.1.24
-
   '@syncfusion/ej2-vue-grids@32.1.25':
     dependencies:
       '@syncfusion/ej2-base': 32.1.24
       '@syncfusion/ej2-grids': 32.1.25
-      '@syncfusion/ej2-vue-base': 32.1.24
-
-  '@syncfusion/ej2-vue-inputs@32.1.24':
-    dependencies:
-      '@syncfusion/ej2-base': 32.1.24
-      '@syncfusion/ej2-inputs': 32.1.24
       '@syncfusion/ej2-vue-base': 32.1.24
 
   '@types/estree@1.0.8': {}
@@ -4047,16 +4011,6 @@ snapshots:
   picomatch@4.0.3: {}
 
   pidtree@0.6.0: {}
-
-  pinia@2.3.1(typescript@5.3.3)(vue@3.5.27(typescript@5.3.3)):
-    dependencies:
-      '@vue/devtools-api': 6.6.4
-      vue: 3.5.27(typescript@5.3.3)
-      vue-demi: 0.14.10(vue@3.5.27(typescript@5.3.3))
-    optionalDependencies:
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@vue/composition-api'
 
   postcss-selector-parser@7.1.1:
     dependencies:
