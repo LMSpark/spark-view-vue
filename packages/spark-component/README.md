@@ -55,7 +55,8 @@ Spark.register({
 import { createApp } from 'vue'
 
 const app = createApp(App)
-app.use(Spark.createVuePlugin({ manager, registry }))
+// 使用全局单例（推荐）
+app.use(Spark.createVuePlugin())
 ```
 
 ### 4. 使用组件

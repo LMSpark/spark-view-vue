@@ -1226,7 +1226,7 @@ const gridData = use('grid-data')
 
 ##### 注意事项
 
-- 确保在应用入口安装了Spark Vue插件：`app.use(Spark.createVuePlugin({ manager, registry }))`
+- 确保在应用入口安装了Spark Vue插件：`app.use(Spark.createVuePlugin())`
 - 如果不提供manager选项，函数会尝试通过Vue的provide/inject系统获取
 - 能力消费是延迟绑定的，如果提供者在消费之后注册，系统会自动建立连接
 - 使用`whenAvailable`处理异步能力加载场景
@@ -1254,7 +1254,7 @@ interface LoggerApi {
 
 ```ts
 // 创建插件
-const plugin = Spark.createVuePlugin({ manager, registry })
+const plugin = Spark.createVuePlugin()
 app.use(plugin)
 
 // 或直接安装

@@ -1,4 +1,4 @@
-import { componentRegistry as defaultRegistry } from './SparkComponentRegistry.js'
+import { componentRegistry as defaultRegistry, createComponentRegistry } from './SparkComponentRegistry.js'
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager } from '../capability/ComponentCapabilityManager.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
@@ -326,5 +326,29 @@ export function createComponentManager(renderer?: SparkComponentRendererImpl, re
   return new SparkComponentManagerImpl(renderer, registry)
 }
 
-// NOTE: convenience helpers were removed to avoid duplicating the public namespace API.
-// Use `Spark.manager()` or `componentManager` directly.
+/**
+ * 创建隔离的组件系统（Manager + Registry 配套）
+ * 
+ * 使用场景：
+ * - 测试环境（每个测试用例独立的组件系统）
+ * - 多租户应用（每个租户独立的组件库）
+ * - 沙箱环境（隔离的组件定义和实例）
+ * 
+ * @returns 配套的 Manager 和 Registry
+ * 
+ * @example
+ * ```typescript
+ * // 测试场景
+ * const { manager, registry } = Spark.createComponentSystem()
+ * registry.register('test-component', definition)
+ * 
+ * // 多租户场景
+ * const tenant1System = Spark.createComponentSystem()
+ * const tenant2System = Spark.createComponentSystem()
+ * ```
+ */
+export function createComponentSystem(): { manager: ComponentManager; registry: ComponentRegistry } {
+  const registry = createComponentRegistry()
+  const manager = createComponentManager(undefined, registry)
+  return { manager, registry }
+}
