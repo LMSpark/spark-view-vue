@@ -18,11 +18,6 @@ export type {
 } from './types.js'
 export type { EventProvider, EventConsumer } from './EventCapability.js'
 
-// 向后兼容别名
-export type CapabilityProvider<T = unknown> = Provider<T>
-export type CapabilityConsumer<T = unknown> = Consumer<T>
-export type CapabilityContext<T = Provider> = Context<T>
-
 /**
  * 能力系统命名空间
  */

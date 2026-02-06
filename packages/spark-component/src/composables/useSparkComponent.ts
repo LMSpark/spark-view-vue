@@ -10,7 +10,7 @@ import {
   Logger,
   Capability
 } from '@spark-view/spark-utils'
-import type { EventProvider } from '@spark-view/spark-utils'
+import type { EventProvider, Context as CapabilityContext } from '@spark-view/spark-utils'
 import { capabilityManager as defaultCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
@@ -145,7 +145,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     const provider = manager.getProvider(context, name) ?? createNoopProvider(name)
     if (provider) {
       consumer.implementation = provider.implementation as Implementation | undefined
-      try { capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').CapabilityContext<CapabilityProvider>) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
+      try { capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').Context<CapabilityProvider>) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
       logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
       return (consumer.implementation ?? null) as Implementation | null
     }
@@ -165,7 +165,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     if (provider) {
       consumer.implementation = provider.implementation
       try {
-        capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').CapabilityContext<CapabilityProvider>)
+        capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').Context<CapabilityProvider>)
         logger.info(`🎉 Consumed event capability: ${name} for ${context.type} (${context.id})`)
         return provider.implementation as EventProvider
       } catch (e: unknown) {
@@ -213,11 +213,11 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     provideEvents,
     getProvider,
     getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => {
-      let t: ComponentContext | undefined = ctx ?? context
+      let t: ComponentContext | CapabilityContext | undefined = ctx ?? context
       while (t) {
         const p = t.providers.get(name)
         if (p?.implementation !== undefined) return p.implementation as T
-        t = t.parent ?? undefined
+        t = (t.parent as ComponentContext | CapabilityContext | undefined) ?? undefined
       }
       return undefined
     },
@@ -246,13 +246,16 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
       try { return (manager).isComponentRegistered(type) } catch { const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY)); return registry ? registry.has(type) : false }
     },
     
-    // 获取从当前节点到根的上下文链路
+    // 获取从当前节点到根的上下文链路（仅包含 ComponentContext）
     getContextChain: () => {
       const chain: ComponentContext[] = []
-      let current: ComponentContext | undefined = context
+      let current: ComponentContext | CapabilityContext | undefined = context
       while (current) {
-        chain.push(current)
-        current = current.parent ?? undefined
+        // 仅添加完整的 ComponentContext（包含 id 和 type）
+        if ('id' in current && 'type' in current) {
+          chain.push(current)
+        }
+        current = (current.parent as ComponentContext | CapabilityContext | undefined) ?? undefined
       }
       return chain
     },
@@ -270,16 +273,18 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
       }
       
       // 找到根节点
-      let root: ComponentContext = context
+      let root: ComponentContext | CapabilityContext = context
       while (root.parent) root = root.parent
       
       logger.info('🌲 Capability Tree:')
-      printTree(root)
+      if ('type' in root && 'id' in root) {
+        printTree(root)
+      }
     },
     
     getOrCreateNoopProvider: (name: string) => createNoopProvider(name),
-    connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider, consumer, ctx as import('@spark-view/spark-utils').CapabilityContext<CapabilityProvider>),
-    disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.disconnectCapability(provider, consumer, ctx as import('@spark-view/spark-utils').CapabilityContext<CapabilityProvider>)
+    connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider, consumer, ctx as import('@spark-view/spark-utils').Context<CapabilityProvider>),
+    disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.disconnectCapability(provider, consumer, ctx as import('@spark-view/spark-utils').Context<CapabilityProvider>)
   }
 }
 

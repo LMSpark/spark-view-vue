@@ -78,14 +78,12 @@ async function getGlobalPluginManager(): Promise<SparkPluginManager> {
   if (globalPluginManager) return globalPluginManager
   
   // Ensure we only initialize once even if called multiple times
-  if (!initPromise) {
-    initPromise = (async () => {
-      // Lazy import to avoid circular dependency
-      const { componentManager } = await import('../utils/SparkComponentManager.js')
-      globalPluginManager = new SparkPluginManager(componentManager)
-      return globalPluginManager
-    })()
-  }
+  initPromise ??= (async () => {
+    // Lazy import to avoid circular dependency
+    const { componentManager } = await import('../utils/SparkComponentManager.js')
+    globalPluginManager = new SparkPluginManager(componentManager)
+    return globalPluginManager
+  })()
   
   return initPromise
 }

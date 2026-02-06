@@ -147,7 +147,10 @@ export class SparkComponentManagerImpl {
     if (!ctx) return false
     try {
       this.capabilityManager.disconnectAllCapabilities(ctx)
-      ctx.parent?.children && (ctx.parent.children = ctx.parent.children.filter(c => c.id !== id))
+      // 从父上下文的 children 中移除（仅当父级是 ComponentContext 时）
+      if (ctx.parent && 'children' in ctx.parent && Array.isArray(ctx.parent.children)) {
+        ctx.parent.children = ctx.parent.children.filter((c: ComponentContext) => c.id !== id)
+      }
       const walk = (c: ComponentContext) => {
         c.children?.forEach(x => walk(x))
         this.contexts.delete(c.id)
@@ -233,7 +236,10 @@ export class SparkComponentManagerImpl {
   getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined {
     const provider = context.providers.get(capabilityName)
     if (provider) return provider
-    if (context.parent) return this.getProvider(context.parent, capabilityName)
+    if (context.parent) {
+      // 支持多层级上下文查找：APP => page => component
+      return this.getProvider(context.parent as ComponentContext, capabilityName)
+    }
     return undefined
   }
 

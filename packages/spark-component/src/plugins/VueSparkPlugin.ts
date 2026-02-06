@@ -1,7 +1,7 @@
 import type { App } from 'vue'
 import type { ComponentRegistry, ComponentContext } from '../types/spark-component.js'
 import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
-import type { CapabilityProvider, CapabilityConsumer } from '@spark-view/spark-utils'
+import type { Provider, Consumer } from '@spark-view/spark-utils'
 import { createComponentManager, componentManager as defaultManager } from '../utils/SparkComponentManager.js'
 import { componentRegistry as defaultRegistry } from '../utils/SparkComponentRegistry.js'
 
@@ -45,8 +45,8 @@ export function createVueSparkPlugin(options?: VueSparkPluginOptions) {
     parent: undefined,
     children: [],
     state: { type: 'spark-app', id: 'app-root-context' },
-    providers: new Map<string, CapabilityProvider>(),
-    consumers: new Map<string, CapabilityConsumer>()
+    providers: new Map<string, Provider>(),
+    consumers: new Map<string, Consumer>()
   }
   
   // 创建页面级上下文（APP 的子上下文）
@@ -56,8 +56,8 @@ export function createVueSparkPlugin(options?: VueSparkPluginOptions) {
     parent: appContext,
     children: [],
     state: { type: 'spark-page', id: 'page-root-context' },
-    providers: new Map<string, CapabilityProvider>(),
-    consumers: new Map<string, CapabilityConsumer>()
+    providers: new Map<string, Provider>(),
+    consumers: new Map<string, Consumer>()
   }
   
   // 建立 APP → 页面的父子关系
