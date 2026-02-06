@@ -20,10 +20,3 @@ dist/
 
 # Temporary files
 *.cache
-
-# Generated sanzi data
-沙市区二轮延包基础数据/*.json
-沙市区二轮延包基础数据/*.csv
-沙市区二轮延包基础数据/sanzi_json_tables/
-沙市区二轮延包基础数据/json_tables/
-

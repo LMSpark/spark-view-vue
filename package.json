@@ -21,8 +21,7 @@
         "verify": "pnpm run typecheck && pnpm run lint && pnpm run verify:arch",
         "docs:dev": "vitepress dev docs",
         "docs:build": "vitepress build docs",
-        "docs:serve": "vitepress serve docs",
-        "bench:create-tree": "node tools/bench/create-tree-benchmark.js"
+        "docs:serve": "vitepress serve docs"
     },
     "husky": {
         "hooks": {
