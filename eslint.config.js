@@ -57,6 +57,7 @@ export default [
       parser: tsParser,
       parserOptions: {
         project: './tsconfig.typecheck.json',
+        tsconfigRootDir: import.meta.dirname,
         ecmaVersion: 2020,
         sourceType: 'module'
       },

@@ -23,6 +23,12 @@
       "@spark-view/spark-component/*": ["./packages/spark-component/src/*"],
       "@spark-view/spark-data": ["./packages/spark-data/src/index.ts"],
       "@spark-view/spark-data/*": ["./packages/spark-data/src/*"],
+      "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"],
+      "@spark-view/spark-page-config/*": ["./packages/spark-page-config/src/*"],
+      "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
+      "@spark-view/spark-app/*": ["./packages/spark-app/src/*"],
+      "@spark-view/spark-renderer": ["./packages/spark-renderer/src/index.ts"],
+      "@spark-view/spark-renderer/*": ["./packages/spark-renderer/src/*"],
       "/pages-config/*": ["./public/pages-config/*"]
     },
     "types": ["vite/client", "node", "vue"],
@@ -44,7 +50,7 @@
   },
   "exclude": [
     "node_modules",
-    "dist",
+    "**/dist",
     "src/**/*.old.vue",
     "packages/**/examples/**/*",
     "packages/**/*.example.ts",
