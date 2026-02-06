@@ -18,8 +18,7 @@ export function createVueSparkPlugin(options: VueSparkPluginOptions) {
     type: 'spark-app',
     parent: undefined,
     children: [],
-    config: { type: 'spark-app', id: 'app-root-context' },
-    state: {},
+    state: { type: 'spark-app', id: 'app-root-context' },
     providers: new Set<CapabilityProvider>(),
     consumers: new Map<string, CapabilityConsumer>()
   }
@@ -30,8 +29,7 @@ export function createVueSparkPlugin(options: VueSparkPluginOptions) {
     type: 'spark-page',
     parent: appContext,
     children: [],
-    config: { type: 'spark-page', id: 'page-root-context' },
-    state: {},
+    state: { type: 'spark-page', id: 'page-root-context' },
     providers: new Set<CapabilityProvider>(),
     consumers: new Map<string, CapabilityConsumer>()
   }

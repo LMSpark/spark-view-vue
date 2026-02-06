@@ -9,13 +9,14 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { ComponentConfig } from '../types/spark-component.js'
+import type { ComponentDefinition } from '../types/spark-component.js'
 
 const logger = Logger('Spark:RegisterHelper')
 
 /**
  * 简化配置类型（内联定义，不再导出独立接口）
  * 用于 createSimpleRegistration 函数参数
+ * 自动转换为 ComponentDefinition
  */
 type SimpleConfig = {
   /** 组件名称（如 'HeavyGrid'），自动转换为 kebab-case type */
@@ -74,7 +75,7 @@ export function nameToType(name: string): string {
  * ])
  * ```
  */
-export function createSimpleRegistration(config: SimpleConfig): ComponentConfig {
+export function createSimpleRegistration(config: SimpleConfig): ComponentDefinition {
   // 1. 自动生成 type
   const type = nameToType(config.name)
   
@@ -113,7 +114,7 @@ export function createSimpleRegistration(config: SimpleConfig): ComponentConfig 
   }
   
   // 3. 构建标准配置
-  const standardConfig: ComponentConfig = {
+  const standardConfig: ComponentDefinition = {
     type,
     name: config.name,
     version: config.version ?? '1.0.0',
@@ -138,7 +139,7 @@ export function createSimpleRegistration(config: SimpleConfig): ComponentConfig 
  */
 export function batchCreateSimpleRegistrations(
   configs: SimpleConfig[]
-): ComponentConfig[] {
+): ComponentDefinition[] {
   return configs.map(config => createSimpleRegistration(config))
 }
 

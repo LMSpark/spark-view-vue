@@ -63,8 +63,8 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     type: config.type,
     parent: parentContext,
     children: [],
-    config: config,
-    state: {},
+    // 将原始配置存入 state
+    state: { ...config },
     providers: new Set<CapabilityProvider>(),
     consumers: new Map<string, CapabilityConsumer>()
   }
@@ -86,8 +86,14 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   if (!resolvedManager) throw new Error('Component manager not found. Provide via options.manager or install Spark Vue plugin with a manager (Spark.createVuePlugin({ manager })).')
   const manager = resolvedManager
 
-  const isVisible = computed(() => ((config as ComponentConfig) as { visible?: boolean }).visible !== false)
-  const isDisabled = computed(() => ((config as ComponentConfig) as { disabled?: boolean }).disabled === true)
+  const isVisible = computed(() => {
+    const visibleProp = (context.state as { visible?: boolean }).visible
+    return visibleProp !== false
+  })
+  const isDisabled = computed(() => {
+    const disabledProp = (context.state as { disabled?: boolean }).disabled
+    return disabledProp === true
+  })
 
   const initialize = () => logger.info(`🚀 Initializing SPARK component: ${context.type} (${context.id})`)
   const destroy = () => {

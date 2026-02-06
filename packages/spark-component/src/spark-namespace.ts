@@ -30,7 +30,7 @@ import {
 
 // 类型定义
 import type { App, Plugin as VuePlugin } from 'vue'
-import type { ComponentConfig } from './types/spark-component.js'
+import type { ComponentDefinition } from './types/spark-component.js'
 
 // ============================================================================
 // SPARK 命名空间类型定义
@@ -46,15 +46,15 @@ export const Spark: {
   
   /** 
    * 注册组件 - 支持多种配置格式
-   * - ComponentConfig: 标准配置对象
-   * - ComponentConfig[]: 批量注册
+   * - ComponentDefinition: 标准组件定义对象
+   * - ComponentDefinition[]: 批量注册
    * - 简化配置: { name, path?, component? } 自动转换 name -> type
    * - { spark?: {...} }: Vue 组件附带 spark 元数据
    */
-  register: (input: ComponentConfig | ComponentConfig[] | { name: string; path?: string; component?: unknown } | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version'> }) => void
+  register: (input: ComponentDefinition | ComponentDefinition[] | { name: string; path?: string; component?: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name' | 'version'> }) => void
   
   /** 批量注册组件 */
-  registerAll: (configs: (ComponentConfig | { name: string; path?: string; component?: unknown })[]) => void
+  registerAll: (configs: (ComponentDefinition | { name: string; path?: string; component?: unknown })[]) => void
   
   // --------------------------------------------------------------------------
   // 辅助工具
@@ -133,7 +133,7 @@ export const Spark: {
     app.use(plugin as VuePlugin)
   },
   
-  register(input: ComponentConfig | ComponentConfig[] | { name: string; path?: string; component?: unknown } | { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version'> }) {
+  register(input: ComponentDefinition | ComponentDefinition[] | { name: string; path?: string; component?: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name' | 'version'> }) {
     // 简化配置：检查是否有 'name' 但没有 'type'（简化格式）
     if (input && typeof input === 'object' && 'name' in input && !('type' in input) && !Array.isArray(input)) {
       const simpleConfig = input as { name: string; path?: string; component?: unknown }
@@ -149,13 +149,13 @@ export const Spark: {
 
     // Vue 组件附带 spark 元数据
     if (input && typeof input === 'object' && 'spark' in input) {
-      const component = input as { spark?: Pick<ComponentConfig, 'type' | 'name' | 'version'> }
+      const component = input as { spark?: Pick<ComponentDefinition, 'type' | 'name' | 'version'> }
       if (!component.spark) {
         throw new Error('Component must have spark meta attached')
       }
       const meta = component.spark
       
-      const definition: ComponentConfig = {
+      const definition: ComponentDefinition = {
         type: meta.type,
         name: meta.name ?? meta.type,
         version: meta.version ?? '1.0.0',
@@ -164,15 +164,15 @@ export const Spark: {
       return componentManager.registerComponent(definition)
     }
 
-    // 标准配置：直接注册 ComponentConfig
+    // 标准配置：直接注册 ComponentDefinition
     if (input && typeof input === 'object') {
-      return componentManager.registerComponent(input as ComponentConfig)
+      return componentManager.registerComponent(input as ComponentDefinition)
     }
 
-    throw new Error('❌ Invalid registration input. Expected ComponentConfig, ComponentConfig[], or object with spark property.')
+    throw new Error('❌ Invalid registration input. Expected ComponentDefinition, ComponentDefinition[], or object with spark property.')
   },
   
-  registerAll(configs: (ComponentConfig | { name: string; path?: string; component?: unknown })[]) {
+  registerAll(configs: (ComponentDefinition | { name: string; path?: string; component?: unknown })[]) {
     configs.forEach(config => {
       if ('name' in config && !('type' in config)) {
         // 简化配置 - 自动转换
