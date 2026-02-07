@@ -5,9 +5,9 @@
  */
 
 // 核心管理器（单例）
-import { componentManager } from './utils/SparkComponentManager.js'
-import { capabilityManager } from './capability/ComponentCapabilityManager.js'
-import { componentRegistry } from './utils/SparkComponentRegistry.js'
+import { componentManager, createComponentManager, createComponentSystem } from './utils/SparkComponentManager.js'
+import { capabilityManager, createComponentCapabilityManager } from './capability/ComponentCapabilityManager.js'
+import { componentRegistry, createComponentRegistry } from './utils/SparkComponentRegistry.js'
 
 // 工具函数
 import { Logger } from '@spark-view/spark-utils'
@@ -45,6 +45,18 @@ export const Spark: {
 
   /** @internal 获取组件注册器单例 */
   _registry: () => typeof componentRegistry
+
+  /** 创建组件管理器（测试/隔离场景）*/
+  createManager: typeof createComponentManager
+
+  /** 创建完整组件系统（Manager + Registry + Capabilities）*/
+  createSystem: typeof createComponentSystem
+
+  /** 创建组件注册表 */
+  createRegistry: typeof createComponentRegistry
+
+  /** 创建能力管理器 */
+  createCapabilityManager: typeof createComponentCapabilityManager
 
   /** 日志工具 */
   Logger: typeof Logger
@@ -99,6 +111,14 @@ export const Spark: {
   _manager: () => componentManager,
 
   _registry: () => componentRegistry,
+
+  createManager: createComponentManager,
+
+  createSystem: createComponentSystem,
+
+  createRegistry: createComponentRegistry,
+
+  createCapabilityManager: createComponentCapabilityManager,
 
   Logger,
 

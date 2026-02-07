@@ -43,12 +43,12 @@ function nameToType(name: string): string {
  * // 同步注册
  * Spark.register({ name: 'MyButton', component: MyButtonComponent })
  * 
- * // 异步注册（推荐）
- * Spark.register({ name: 'HeavyGrid', path: './components/HeavyGrid.vue' })
+ * // 异步注册（推荐，使用 /src/ 绝对路径）
+ * Spark.register({ name: 'HeavyGrid', path: '/src/components/HeavyGrid.vue' })
  * 
  * // 批量注册
  * Spark.registerAll([
- *   { name: 'Chart', path: './Chart.vue' },
+ *   { name: 'Chart', path: '/src/components/Chart.vue' },
  *   { name: 'Calendar', component: CalendarComponent }
  * ])
  * ```
@@ -69,10 +69,10 @@ export function createSimpleRegistration(
     loader = async () => {
       try {
         logger.info(`⏳ Loading component: ${config.name}`)
+        // Vue SFC 动态导入已返回 { default: Component }，直接返回即可
         const module = await import(/* @vite-ignore */ componentPath)
-        const loadedComponent = module.default ?? module
         logger.info(`✅ Loaded component: ${config.name}`)
-        return { default: loadedComponent }
+        return module
       } catch (error) {
         logger.error(`❌ Failed to load component: ${config.name}`, error)
         throw error

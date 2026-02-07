@@ -1,10 +1,12 @@
 export * from './utils/SparkComponentRegistry.js'
-export * from './utils/SparkComponentManager.js'
 export * from './composables/useSparkComponent.js'
 export * from './utils/SparkComponentRenderer.js'
 export * from './vue/createSparkComponent.js'
 export * from './types/index.js'
 export { Spark } from './spark-namespace.js'
+
+// Manager & System: 只导出类型，实现通过 Spark 命名空间访问
+export type { ComponentManager } from './types/spark-component.js'
 
 // Vue 插件
 export { createVueSparkPlugin, type VueSparkPluginOptions } from './plugins/VueSparkPlugin.js'

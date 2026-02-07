@@ -2,13 +2,10 @@
 import { describe, it, expect } from 'vitest'
 import { defineSparkComponent } from '../src/vue/createSparkComponent.js'
 import { Spark } from '../src/spark-namespace.js'
-import { createComponentRegistry } from '../src/utils/SparkComponentRegistry.js'
-import { createComponentManager } from '../src/utils/SparkComponentManager.js'
 
 describe('Spark Vue Base component (integration)', () => {
   it('component created with defineSparkComponent registers and renders via manager.render', async () => {
-    const registry = createComponentRegistry()
-    const manager = createComponentManager(undefined, registry)
+    const { manager, registry } = Spark.createSystem()
 
     const Comp = defineSparkComponent({
       type: 'base-type',

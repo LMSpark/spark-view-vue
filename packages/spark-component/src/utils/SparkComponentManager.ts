@@ -18,9 +18,14 @@ import type { ComponentCapabilityManager } from '../capability/ComponentCapabili
 
 /**
  * 🎯 组件实例管理器（负责实例的"生老病死"）
+ * 
+ * 采用树形结构存储 Context（通过 parent/children 关系）
+ * rootContexts 存储所有根节点，用于遍历整棵树
+ * 
+ * @internal 不应直接导入，通过 Spark 命名空间访问
  */
-export class SparkComponentManagerImpl {
-  private readonly contexts = new Map<string, ComponentContext>()
+class SparkComponentManagerImpl {
+  private readonly rootContexts: ComponentContext[] = []
   private readonly renderer: SparkComponentRendererImpl
   private readonly registry: ComponentRegistry
   private readonly capabilityManager: ComponentCapabilityManager
@@ -66,52 +71,67 @@ export class SparkComponentManagerImpl {
     if (parent) {
       parent.children ??= []
       parent.children.push(ctx)
+    } else {
+      // 根节点：加入根节点列表
+      this.rootContexts.push(ctx)
     }
 
-    // 缓存上下文
-    this.contexts.set(ctx.id, ctx)
-    this.logger.debug(`Context created: ${ctx.type} (${ctx.id})`)
+    this.logger.debug(`Context created: ${ctx.type} (${ctx.id})${parent ? ` [parent: ${parent.id}]` : ' [root]'}`)
     return ctx
   }
 
-  /** 查询上下文 */
+  /** 查询上下文（遍历树查找）*/
   getContext(id: string): ComponentContext | undefined {
-    return this.contexts.get(id)
+    for (const root of this.rootContexts) {
+      const found = this.findInTree(root, id)
+      if (found) return found
+    }
+    return undefined
   }
 
-  /** 获取所有上下文 */
+  /** 获取所有上下文（遍历树收集）*/
   getAllContexts(): ComponentContext[] {
-    return Array.from(this.contexts.values())
+    const result: ComponentContext[] = []
+    for (const root of this.rootContexts) {
+      this.walkTree(root, ctx => result.push(ctx))
+    }
+    return result
   }
 
-  /** 注册上下文到管理器 */
+  /** 注册上下文到管理器（如果是根节点，添加到 rootContexts）*/
   registerContext(context: ComponentContext): void {
-    if (!this.contexts.has(context.id)) {
-      this.contexts.set(context.id, context)
+    // 如果没有父节点，说明是根节点，需要添加到 rootContexts
+    if (!context.parent) {
+      // 检查是否已经在列表中
+      if (!this.rootContexts.find(c => c.id === context.id)) {
+        this.rootContexts.push(context)
+        this.logger.debug(`Root context registered: ${context.type} (${context.id})`)
+      }
+    } else {
+      // 有父节点的 context 已经通过 parent.children 连接到树中
+      this.logger.debug(`Context already in tree: ${context.type} (${context.id})`)
     }
   }
 
-  /** 销毁上下文（递归：断开能力 → 移除父子关系 → 清理子组件 → 删除缓存） */
+  /** 销毁上下文（从树中移除，GC 自动清理）*/
   destroyContext(id: string): boolean {
-    const ctx = this.contexts.get(id)
+    const ctx = this.getContext(id)
     if (!ctx) return false
 
     try {
-      // 1. 断开所有能力连接
-      this.capabilityManager.disconnectAllCapabilities(ctx)
-
-      // 2. 从父组件移除
-      if (ctx.parent && 'children' in ctx.parent && Array.isArray(ctx.parent.children)) {
-        ctx.parent.children = ctx.parent.children.filter((c: ComponentContext) => c.id !== id)
+      // 从父组件或根节点列表移除
+      const parent = ctx.parent as ComponentContext | undefined
+      if (parent?.children) {
+        parent.children = parent.children.filter(c => c.id !== id)
+      } else {
+        // 根节点：从 rootContexts 移除
+        const index = this.rootContexts.findIndex(c => c.id === id)
+        if (index !== -1) {
+          this.rootContexts.splice(index, 1)
+        }
       }
-
-      // 3. 递归销毁子组件
-      const walk = (c: ComponentContext) => {
-        c.children?.forEach(x => walk(x))
-        this.contexts.delete(c.id)
-      }
-      walk(ctx)
       
+      // 移除后，整个子树会被 GC 回收（如果没有外部引用）
       this.logger.debug(`Context destroyed: ${ctx.type} (${id})`)
       return true
     } catch (e) {
@@ -133,85 +153,12 @@ export class SparkComponentManagerImpl {
   }
 
   // ============================================================================
-  // 🔗 便捷方法（避免组件直接操作 Context 和 CapabilityManager）
+  // 🔗 能力管理器访问
   // ============================================================================
-  //
-  // 为什么需要这些方法？
-  // - 封装完整流程：存储 → 自动连接 → 通知监听器
-  // - 避免使用者遗漏步骤（如忘记调用 autoConnect）
-  // - 统一错误处理和日志记录
-  //
-  // 职责说明：
-  // - registerProvider: 便捷方法，封装"注册 Provider"的完整流程
-  // - getProvider: 便捷方法，向上查找 Provider（避免组件手动遍历父级链）
-  //
-  // 真正的能力管理由 CapabilityManager 完成，这里只是"胶水代码"
 
-  /** 获取能力管理器（组件可直接使用以获得更多控制） */
+  /** 获取能力管理器（所有能力相关操作都通过它完成） */
   getCapabilityManager(): ComponentCapabilityManager {
     return this.capabilityManager
-  }
-
-  /** 
-   * 便捷方法：注册 Provider（封装完整流程）
-   * 
-   * 完整流程：
-   * 1. 验证 provider
-   * 2. 存储到 context.providers
-   * 3. 自动连接（调用 capabilityManager.autoConnectCapabilities）
-   * 4. 通知等待的监听器
-   * 
-   * 如需更多控制，可直接使用：
-   * - context.providers.set(name, provider)
-   * - manager.getCapabilityManager().autoConnectCapabilities(context)
-   */
-  registerProvider(context: ComponentContext, provider: CapabilityProvider): void {
-    // 验证
-    if (!provider?.name || typeof provider.name !== 'string') {
-      throw new Error('Invalid provider: must have a non-empty name')
-    }
-
-    // 存储
-    context.providers.set(provider.name, provider)
-    
-    // 自动连接能力
-    try { 
-      this.capabilityManager.autoConnectCapabilities(context) 
-    } catch (e: unknown) {
-      this.logger.warn(`Auto-connect failed for ${context.type}:`, String(e))
-    }
-
-    // 通知等待的监听器
-    if (context.providerListeners?.has(provider.name)) {
-      const set = context.providerListeners.get(provider.name)
-      if (set) {
-        set.forEach(cb => {
-          try { cb(provider) } 
-          catch (e: unknown) { 
-            this.logger.warn(`Listener for '${provider.name}' threw:`, String(e)) 
-          }
-        })
-        set.clear()
-      }
-    }
-
-    this.logger.debug(`Provider registered: '${provider.name}' in ${context.type} (${context.id})`)
-  }
-
-  /** 
-   * 便捷方法：查找 Provider（向上查找父级链）
-   * 
-   * 如需更细粒度控制，可直接操作：
-   * - context.providers.get(name)
-   * - 手动遍历 context.parent
-   */
-  getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined {
-    const provider = context.providers.get(capabilityName)
-    if (provider) return provider
-    if (context.parent) {
-      return this.getProvider(context.parent as ComponentContext, capabilityName)
-    }
-    return undefined
   }
 
   // ============================================================================
@@ -231,28 +178,43 @@ export class SparkComponentManagerImpl {
   private generateId(): string {
     return `spark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
+
+  /** 在树中查找 Context */
+  private findInTree(node: ComponentContext, id: string): ComponentContext | undefined {
+    if (node.id === id) return node
+    if (node.children) {
+      for (const child of node.children) {
+        const found = this.findInTree(child, id)
+        if (found) return found
+      }
+    }
+    return undefined
+  }
+
+  /** 遍历树（深度优先）*/
+  private walkTree(node: ComponentContext, callback: (ctx: ComponentContext) => void): void {
+    callback(node)
+    node.children?.forEach(child => this.walkTree(child, callback))
+  }
 }
 
 // ============================================================================
-// 🏭 工厂函数：创建 Manager 实例
+// 🏭 单例和工厂函数（通过 Spark 命名空间访问）
 // ============================================================================
 
 /**
- * 默认全局实例（单应用场景）
+ * 默认全局实例
  * 
- * ⚠️ 测试请用 createComponentManager() 创建隔离实例
+ * ⚠️ 使用 Spark._manager() 访问
+ * @internal
  */
 export const componentManager = new SparkComponentManagerImpl()
 
 /**
- * 创建 Manager 实例（测试/自定义场景）
+ * 创建 Manager 实例
  * 
- * @example
- * const testManager = createComponentManager(
- *   undefined, 
- *   createComponentRegistry(),
- *   createComponentCapabilityManager()
- * )
+ * ⚠️ 使用 Spark.createManager() 访问
+ * @internal
  */
 export function createComponentManager(
   renderer?: SparkComponentRendererImpl, 
@@ -263,13 +225,10 @@ export function createComponentManager(
 }
 
 /**
- * 创建完整组件系统（Manager + Registry + Capabilities 配套）
+ * 创建完整组件系统
  * 
- * 场景：测试隔离 / 多租户 / 沙箱
- * 
- * @example
- * const { manager, registry, capabilities } = createComponentSystem()
- * registry.register('my-component', definition)
+ * ⚠️ 使用 Spark.createSystem() 访问
+ * @internal
  */
 export function createComponentSystem(): { 
   manager: ComponentManager

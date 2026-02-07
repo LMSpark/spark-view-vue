@@ -107,6 +107,13 @@ export namespace Spark {
     unregister(type: string): boolean
   }
 
+  export interface CapabilityManagerInterface {
+    registerProvider(context: ComponentContext, provider: CapabilityProvider): void
+    getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined
+    autoConnectCapabilities(context: ComponentContext): void
+    disconnectAllCapabilities(context: ComponentContext): void
+  }
+
   export interface ComponentManager {
     // 上下文生命周期
     createContext(config: Partial<ComponentContext>, parent?: ComponentContext): ComponentContext
@@ -115,13 +122,9 @@ export namespace Spark {
     registerContext(context: ComponentContext): void
     destroyContext(id: string): boolean
     
-    // 能力系统集成
-    registerProvider(context: ComponentContext, provider: CapabilityProvider): void
-    getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined
-    getCapabilityManager?: () => unknown
-    
     // 依赖访问器（SOLID：依赖注入，不代理方法）
     getRegistry(): ComponentRegistry
+    getCapabilityManager(): CapabilityManagerInterface
   }
 
   export type PluginHooks = {
@@ -151,6 +154,7 @@ export type ComponentDefinition = Spark.ComponentDefinition
 export type ComponentContext = Spark.ComponentContext
 export type ComponentRegistry = Spark.ComponentRegistry
 export type ComponentManager = Spark.ComponentManager
+export type CapabilityManagerInterface = Spark.CapabilityManagerInterface
 export type PluginHooks = Spark.PluginHooks
 export type Plugin = Spark.Plugin
 

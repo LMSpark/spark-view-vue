@@ -1,8 +1,8 @@
 ﻿import { describe, it, expect } from 'vitest'
-import { createComponentManager } from '@spark-view/spark-component'
+import { Spark } from '@spark-view/spark-component'
 import type { ComponentConfig, ComponentContext, CapabilityProvider } from '@spark-view/spark-component'
 
-const createSparkComponentManager = () => createComponentManager()
+const createSparkComponentManager = () => Spark.createManager()
 
 describe('Provider listeners', () => {
   it('listener is invoked when provider is registered', () => {
@@ -22,7 +22,7 @@ describe('Provider listeners', () => {
     }
 
     const provider: CapabilityProvider = { name: 'foo', version: '1.0.0', implementation: {} }
-    manager.registerProvider(parentCtx, provider)
+    manager.getCapabilityManager().registerProvider(parentCtx, provider)
 
     expect(called).toBe(true)
   })

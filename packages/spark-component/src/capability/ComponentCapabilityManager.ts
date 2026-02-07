@@ -14,14 +14,14 @@ import { getProviderInherited } from '@spark-view/spark-utils'
 import type {
   Context as CapabilityContext
 } from '@spark-view/spark-utils'
-import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../types/spark-component.js'
+import type { ComponentContext, CapabilityProvider, CapabilityConsumer, CapabilityManagerInterface } from '../types/spark-component.js'
 
 /**
  * 组件能力管理器
  *
  * 扩展通用能力管理器，提供组件树的递归连接功能
  */
-export class ComponentCapabilityManager extends CapabilityManager<CapabilityProvider, CapabilityConsumer> {
+export class ComponentCapabilityManager extends CapabilityManager<CapabilityProvider, CapabilityConsumer> implements CapabilityManagerInterface {
 
   /**
    * 自动连接组件上下文中的所有能力
@@ -64,6 +64,54 @@ export class ComponentCapabilityManager extends CapabilityManager<CapabilityProv
 
     // 递归处理子组件
     ctx.children?.forEach(child => this.disconnectAllCapabilities(child))
+  }
+
+  /**
+   * 注册 Provider（封装完整流程）
+   * 
+   * 完整流程：
+   * 1. 验证 provider
+   * 2. 存储到 context.providers
+   * 3. 自动连接 consumer
+   * 4. 通知等待的监听器
+   */
+  registerProvider(context: ComponentContext, provider: CapabilityProvider): void {
+    // 验证
+    if (!provider?.name || typeof provider.name !== 'string') {
+      throw new Error('Invalid provider: must have a non-empty name')
+    }
+
+    // 存储
+    context.providers.set(provider.name, provider)
+    
+    // 自动连接能力
+    this.autoConnectCapabilities(context)
+
+    // 通知等待的监听器
+    if (context.providerListeners?.has(provider.name)) {
+      const set = context.providerListeners.get(provider.name)
+      if (set) {
+        set.forEach(cb => {
+          try { cb(provider) } 
+          catch {
+            // 忽略监听器错误
+          }
+        })
+        set.clear()
+      }
+    }
+  }
+
+  /**
+   * 查找 Provider（向上查找父级链）
+   */
+  getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined {
+    const provider = context.providers.get(capabilityName)
+    if (provider) return provider
+    if (context.parent) {
+      return this.getProvider(context.parent as ComponentContext, capabilityName)
+    }
+    return undefined
   }
 }
 
