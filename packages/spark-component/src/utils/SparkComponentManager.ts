@@ -2,17 +2,20 @@ import { componentRegistry as defaultRegistry, createComponentRegistry } from '.
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager as defaultCapabilityManager, createComponentCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 import { SparkComponentRendererImpl } from './SparkComponentRenderer.js'
-import type { ComponentDefinition, ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
+import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, ComponentManager } from '../types/spark-component.js'
 import type { ComponentCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 
 /**
  * SPARK 组件管理器
  * 
- * 核心职责：组件实例的生命周期管理
+ * 🎯 单一职责：组件实例的生命周期管理
  * - 上下文（Context）创建、销毁、查询
- * - 组件树渲染
  * - 能力系统集成
- * - 组件注册表代理
+ * - 组件树渲染（组合 Context + Renderer）
+ * 
+ * ⚠️ 不再代理 Registry 方法（SOLID 原则）
+ * - 通过 getRegistry() 访问注册表
+ * - 让使用者直接调用 registry.register() 等方法
  * 
  * 设计模式：默认实例 + 工厂函数
  * - 默认全局实例：componentManager（单应用场景）
@@ -220,51 +223,17 @@ export class SparkComponentManagerImpl {
   }
 
   // ============================================================================
-  // 组件注册表代理（委托给 Registry）
+  // 依赖访问器（SOLID：提供访问而非代理）
   // ============================================================================
 
   /**
-   * 注册组件类型定义
+   * 获取组件注册表
+   * 
+   * 符合 SOLID 原则：Manager 不代理 Registry 的方法
+   * 使用者直接调用：manager.getRegistry().register()
    */
-  registerComponent(def: ComponentDefinition): void {
-    this.registry.register(def.type, def)
-  }
-
-  /**
-   * 批量注册组件类型定义
-   */
-  registerComponents(defs: ComponentDefinition[]): void {
-    defs.forEach(d => this.registerComponent(d))
-  }
-
-  /**
-   * 获取组件类型定义
-   */
-  getComponentDefinition(type: string): ComponentDefinition | undefined {
-    return this.registry.get(type)
-  }
-
-  /**
-   * 解析组件（处理 loader/component，供 Vue 使用）
-   */
-  resolveComponent(type: string): unknown {
-    const def = this.registry.get(type)
-    if (!def) return null
-    return def.loader ?? def.component ?? null
-  }
-
-  /**
-   * 检查组件类型是否已注册
-   */
-  isComponentRegistered(type: string): boolean {
-    return this.registry.has(type)
-  }
-
-  /**
-   * 获取所有已注册的组件类型
-   */
-  getRegisteredComponentTypes(): string[] {
-    return this.registry.getAllTypes()
+  getRegistry(): ComponentRegistry {
+    return this.registry
   }
 
   // ============================================================================

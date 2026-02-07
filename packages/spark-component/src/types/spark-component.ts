@@ -108,24 +108,20 @@ export namespace Spark {
   }
 
   export interface ComponentManager {
-    registerProvider(context: ComponentContext, provider: CapabilityProvider): void
-    registerContext(context: ComponentContext): void
-    destroyContext(id: string): boolean
-    getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined
+    // 上下文生命周期
+    createContext(config: Partial<ComponentContext>, parent?: ComponentContext): ComponentContext
     getContext(id: string): ComponentContext | undefined
     getAllContexts(): ComponentContext[]
-    /** 创建组件上下文（从 JSON 配置或部分配置） */
-    createContext(config: Partial<ComponentContext>, parent?: ComponentContext): ComponentContext
-    /** 注册单个组件定义 */
-    registerComponent(def: ComponentDefinition): void
-    /** 批量注册组件定义 */
-    registerComponents(defs: ComponentDefinition[]): void
-    /** 获取组件定义 */
-    getComponentDefinition(type: string): ComponentDefinition | undefined
-    isComponentRegistered(type: string): boolean
-    getRegisteredComponentTypes(): string[]
-    /** 获取能力管理器（用于依赖注入架构） */
+    registerContext(context: ComponentContext): void
+    destroyContext(id: string): boolean
+    
+    // 能力系统集成
+    registerProvider(context: ComponentContext, provider: CapabilityProvider): void
+    getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined
     getCapabilityManager?: () => unknown
+    
+    // 依赖访问器（SOLID：依赖注入，不代理方法）
+    getRegistry(): ComponentRegistry
   }
 
   export type PluginHooks = {

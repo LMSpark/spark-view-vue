@@ -3,39 +3,30 @@
 
 import SparkEJ2Grid from './components/SparkEJ2Grid.vue'
 import SparkEJ2Column from './components/SparkEJ2Column.vue'
-import type { ComponentManager as ISparkComponentManager } from '@spark-view/spark-component'
+import { Spark } from '@spark-view/spark-component'
 
 /**
  * 初始化 SPARK-EJ2 组件
  * 将 EJ2 Grid 和 Column 组件注册到 SPARK 系统
  */
-export async function initializeSparkEJ2Components(manager: ISparkComponentManager): Promise<void> {
-  const m = manager
+export function initializeSparkEJ2Components() {
+  const registry = Spark._registry()
+  const logger = Spark.Logger()
+  logger.info('🚀 Registering SPARK-EJ2 components...')
 
-  // 注册 SPARK EJ2 Grid 组件
-  m.registerComponent({
+  // 注册 SparkEJ2Grid
+  registry.register('spark-ej2-grid', {
     type: 'spark-ej2-grid',
-    name: 'Spark EJ2 Grid',
-    component: SparkEJ2Grid,
-    providers: [
-      {
-        name: 'column-manager',
-        version: '1.0.0',
-        implementation: {}
-      }
-    ]
+    name: 'SPARK EJ2 Grid',
+    component: SparkEJ2Grid
   })
 
-  // 注册 SPARK EJ2 Column 组件
-  m.registerComponent({
+  // 注册 SparkEJ2Column
+  registry.register('spark-ej2-column', {
     type: 'spark-ej2-column',
-    name: 'Spark EJ2 Column',
-    component: SparkEJ2Column,
-    consumers: [
-      {
-        capabilityName: 'column-manager',
-        implementation: {}
-      }
-    ]
+    name: 'SPARK EJ2 Column',
+    component: SparkEJ2Column
   })
+
+  logger.info('✅ SPARK-EJ2 components registered')
 }

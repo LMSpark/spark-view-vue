@@ -9,7 +9,7 @@ const { manager, registry } = createComponentSystem()
 
 test('SparkComponentRenderer mounts spark-ej2-grid without missing render', async () => {
   // Explicitly pass manager to avoid implicit singletons
-  await initializeSparkEJ2Components(manager)
+  initializeSparkEJ2Components()
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
     props: { config: { type: 'spark-ej2-grid', children: [] } },
     global: { provide: { sparkManager: manager, sparkRegistry: registry } }

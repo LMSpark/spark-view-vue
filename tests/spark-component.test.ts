@@ -8,7 +8,7 @@ import { initializeSparkEJ2Components } from '../features/spark-ej2'
 import type { SparkEJ2GridConfig } from '@/features/spark-ej2'
 
 const { manager, registry } = createComponentSystem()
-await initializeSparkEJ2Components(manager)
+initializeSparkEJ2Components()
 
 // Mock EJ2 components
 vi.mock('@syncfusion/ej2-vue-grids', () => ({
