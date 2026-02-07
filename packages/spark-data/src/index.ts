@@ -24,6 +24,8 @@ export type {
   FlatTreeNode
 } from './types'
 
+export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-utils'
+
 // 导出核心类（被外部包直接导入使用）
 export { DataSetManager } from './dataSetManager'
 
