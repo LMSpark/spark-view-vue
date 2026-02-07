@@ -48,11 +48,11 @@ export interface IBindingContext {
   currentRow?: IDataRow | null
   selectedRows?: IDataRow[]
   rows?: IDataRow[]
-  _originalRows?: IDataRow[]
+  originalRows?: IDataRow[]
   
   // 宿主信息
-  _hostTable?: string
-  _contextId?: string
+  hostTable?: string
+  contextId?: string
   
   // 初始配置
   filterExpression?: FilterExpression

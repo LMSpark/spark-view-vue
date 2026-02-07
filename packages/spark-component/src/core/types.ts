@@ -119,13 +119,3 @@ export type ComponentConfig = Partial<ComponentContext> & { type: string }
 
 // 日志类型（从 spark-utils 透传）
 export type { LogLevel, LoggerApi, Transport } from '@spark-view/spark-utils'
-
-// 权限类型
-export type {
-  IDataRow,
-  IDataRowWithPermission,
-  IDataSource,
-  IPermissionChecker
-} from '@spark-view/spark-utils'
-
-export { createPermissionChecker } from '@spark-view/spark-utils'

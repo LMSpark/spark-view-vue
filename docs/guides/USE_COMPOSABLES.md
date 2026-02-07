@@ -39,7 +39,6 @@ const { user, tenant, env, config } = useAppContext()
 // 快捷访问
 const user = useCurrentUser()
 const tenant = useCurrentTenant()
-const env = useEnvironment()
 ```
 
 ### 权限检查

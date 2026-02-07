@@ -102,7 +102,7 @@ export class DataSet implements IDataSet {
    */
   private updateContextRows(context: BindingContext, table: DataTable): void {
     // 始终基于完整数据源
-    let sourceData = table._originalRows ?? table.rows ?? [];
+    let sourceData = table.originalRows ?? table.rows ?? [];
     
     // 1. 执行过滤（需要 FilterExpressionParser）
     if (context.filterExpression) {
@@ -158,8 +158,8 @@ export class DataSet implements IDataSet {
     table.rows.push(row)
     
     // 同步默认上下文的缓存
-    if (table._originalRows) {
-      table._originalRows.push(row)
+    if (table.originalRows) {
+      table.originalRows.push(row)
     }
     
     return true
@@ -200,10 +200,10 @@ export class DataSet implements IDataSet {
     table.rows.splice(rowIndex, 1)
     
     // 同步默认上下文的缓存
-    if (table._originalRows) {
-      const cacheIndex = table._originalRows.indexOf(row)
+    if (table.originalRows) {
+      const cacheIndex = table.originalRows.indexOf(row)
       if (cacheIndex > -1) {
-        table._originalRows.splice(cacheIndex, 1)
+        table.originalRows.splice(cacheIndex, 1)
       }
     }
     
@@ -353,17 +353,17 @@ export class DataSet implements IDataSet {
           }
           
           // 2. 关键修复：同步从上下文原始缓存中删除
-          if (childTable._originalRows) {
-            const cacheIndex = childTable._originalRows.indexOf(rowToDelete)
+          if (childTable.originalRows) {
+            const cacheIndex = childTable.originalRows.indexOf(rowToDelete)
             if (cacheIndex > -1) {
-              childTable._originalRows.splice(cacheIndex, 1)
+              childTable.originalRows.splice(cacheIndex, 1)
             } else {
               // 尝试通过 ID 查找（如果引用不同）
               const idField = childTable.columns.find(c => c.isPrimaryKey)?.name ?? 'id'
               const id = rowToDelete[idField]
-              const cacheIdIndex = childTable._originalRows.findIndex(r => r[idField] === id)
+              const cacheIdIndex = childTable.originalRows.findIndex(r => r[idField] === id)
               if (cacheIdIndex > -1) {
-                childTable._originalRows.splice(cacheIdIndex, 1)
+                childTable.originalRows.splice(cacheIdIndex, 1)
               }
             }
           }
@@ -573,17 +573,17 @@ export class DataSet implements IDataSet {
     }
     
     // 如果是 autoLoad，且数据未加载，返回等待加载
-    if (relation.autoLoad && (!childContext._originalRows || childContext._originalRows.length === 0)) {
+    if (relation.autoLoad && (!childContext.originalRows || childContext.originalRows.length === 0)) {
       return { changed: false, message: `autoLoad 等待数据加载: ${relation.childTable}` };
     }
     
     // 非 autoLoad，且数据未加载，跳过
-    if (!relation.autoLoad && (!childContext._originalRows || childContext._originalRows.length === 0)) {
+    if (!relation.autoLoad && (!childContext.originalRows || childContext.originalRows.length === 0)) {
       return { changed: false, message: `非 autoLoad 且数据未加载: ${relation.childTable}` };
     }
     
     // 应用过滤：从子上下文的原始数据中过滤
-    const sourceRows = childContext._originalRows ?? [];
+    const sourceRows = childContext.originalRows ?? [];
     const filteredRows = this.filterChildRows(
       sourceRows,
       relation.filterExpression,
@@ -780,12 +780,12 @@ export class DataSet implements IDataSet {
       // 检查依赖类型的具体条件
       if (relation.dependencyType === 'currentRow') {
         if (!parentContext.currentRow) {
-          // console.info(`❌ [DataSet] 依赖条件不满足: ${relation.parentTable}.${parentContext._contextId}.currentRow 为空`);
+          // console.info(`❌ [DataSet] 依赖条件不满足: ${relation.parentTable}.${parentContext.contextId}.currentRow 为空`);
           return false;
         }
       } else if (relation.dependencyType === 'selectedRows') {
         if (!parentContext.selectedRows || parentContext.selectedRows.length === 0) {
-          // console.info(`❌ [DataSet] 依赖条件不满足: ${relation.parentTable}.${parentContext._contextId}.selectedRows 为空`);
+          // console.info(`❌ [DataSet] 依赖条件不满足: ${relation.parentTable}.${parentContext.contextId}.selectedRows 为空`);
           return false;
         }
       }
@@ -1036,7 +1036,7 @@ export class DataSet implements IDataSet {
       console.info(`✅ 依赖条件具备，检查 ${tableName} 是否需要加载数据`);
       
       // 使用 _originalRows 判断数据是否已加载
-      const needsLoading = table && !table._originalRows;
+      const needsLoading = table && !table.originalRows;
       
       if (needsLoading) {
         console.info(`📦 ${tableName} 数据未加载（_originalRows 为空），开始加载`);
@@ -1105,9 +1105,9 @@ export class DataSet implements IDataSet {
         console.info(`✅ 数据加载成功: ${tableName}，共 ${rows.length} 行`);
         
         // 缓存原始完整数据
-        if (!table._originalRows) {
-          table._originalRows = [...rows];
-          console.info(`💾 [默认上下文] 缓存原始数据: ${tableName} (${table._originalRows.length} 条)`);
+        if (!table.originalRows) {
+          table.originalRows = [...rows];
+          console.info(`💾 [默认上下文] 缓存原始数据: ${tableName} (${table.originalRows.length} 条)`);
         }
         
         // ✨ 自动选中第一行（如果配置了 autoSelectFirst）
@@ -1150,7 +1150,7 @@ export class DataSet implements IDataSet {
    * 清理表的所有上下文的无效选中状态
    */
   private cleanupInvalidSelections(table: DataTable): void {
-    const tableName = table._hostTable;
+    const tableName = table.hostTable;
     let needsNotify = false;
     
     // 清理默认上下文（table 本身）
@@ -1308,7 +1308,7 @@ export class DataSet implements IDataSet {
       const childContext = this.getContext(relation.childTable, relation.childContextId ?? 'default');
       
       // ✅ 检查是否需要自动加载子表数据
-      if (childContext && relation.autoLoad && (!childContext._originalRows || childContext._originalRows.length === 0)) {
+      if (childContext && relation.autoLoad && (!childContext.originalRows || childContext.originalRows.length === 0)) {
         console.info(`🚀 [AutoLoad] ${relation.childTable} 数据未加载，触发自动加载`);
         this.requestTableData(relation.childTable);
         // 跳过本次 applyRelation，等待 loadTableData 完成后自动应用

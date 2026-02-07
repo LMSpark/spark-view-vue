@@ -322,7 +322,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
    * 刷新所有上下文（重新应用过滤和排序）
    */
   refreshAllContexts(): void {
-    const sourceData = this._originalRows ?? this.rows ?? [];
+    const sourceData = this.originalRows ?? this.rows ?? [];
     
     // 刷新所有自定义上下文
     Object.values(this.contexts).forEach(context => {
@@ -344,9 +344,9 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       currentRow: this.currentRow,
       selectedRows: this.selectedRows,
       rows: this.rows,
-      _originalRows: this._originalRows,
-      _hostTable: this._hostTable,
-      _contextId: this._contextId,
+      originalRows: this.originalRows,
+      hostTable: this.hostTable,
+      contextId: this.contextId,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
       pagination: this.pagination,
@@ -366,9 +366,9 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
         currentRow: context.currentRow,
         selectedRows: context.selectedRows,
         rows: context.rows,
-        _originalRows: context._originalRows,
-        _hostTable: context._hostTable,
-        _contextId: context._contextId,
+        originalRows: context.originalRows,
+        hostTable: context.hostTable,
+        contextId: context.contextId,
         filterExpression: context.filterExpression,
         sortExpression: context.sortExpression,
         pagination: context.pagination
@@ -388,7 +388,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     table.currentRow = data.currentRow ?? null
     table.selectedRows = data.selectedRows ?? []
     table.rows = data.rows ?? []
-    table['__originalRows'] = data._originalRows  // 直接访问私有字段
+    table['__originalRows'] = data.originalRows  // 直接访问私有字段
     table.filterExpression = data.filterExpression
     table.sortExpression = data.sortExpression
     table.pagination = data.pagination

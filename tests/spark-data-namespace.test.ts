@@ -50,8 +50,8 @@ describe('SparkData Namespace', () => {
     const context = SparkData.createContext('Users', 'default')
 
     expect(context).toBeDefined()
-    expect(context['_hostTable']).toBe('Users')
-    expect(context['_contextId']).toBe('default')
+    expect(context['hostTable']).toBe('Users')
+    expect(context['contextId']).toBe('default')
   })
 
   it('应该提供 FilterParser 静态工具类', () => {

@@ -41,6 +41,3 @@ export type {
 
 // === DI Key ===
 export { SPARK_REGISTRY_KEY } from './core/types.js'
-
-// === 向后兼容别名 ===
-export { createSparkPlugin as createVueSparkPlugin } from './plugins/SparkPlugin.js'

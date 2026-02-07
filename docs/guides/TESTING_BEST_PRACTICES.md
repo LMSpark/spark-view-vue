@@ -99,18 +99,15 @@ describe('MyComponent', () => {
 })
 ```
 
-### 2. 通过 DI 注入 Manager
+### 2. 通过 DI 注入
 
 ```typescript
 import { mount } from '@vue/test-utils'
+import { Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 
 const wrapper = mount(MyComponent, {
   global: {
-    provide: {
-      [SPARK_MANAGER_KEY]: system.manager,
-      // 或使用字符串 key
-      sparkManager: system.manager
-    }
+    plugins: [Spark.createPlugin()]
   }
 })
 ```

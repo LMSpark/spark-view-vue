@@ -1,6 +1,6 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest'
-import { createComponentRegistry, createVueSparkPlugin, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../src/index'
+import { createComponentRegistry, createSparkPlugin, SPARK_REGISTRY_KEY } from '../src/index'
 
 // Minimal fake Vue app object
 function createFakeApp() {
@@ -8,29 +8,30 @@ function createFakeApp() {
   return {
     provide(key: any, value: unknown) { provided[key] = value },
     use(_p: any) {},
+    config: { globalProperties: {} as any },
     _provided: provided
   } as any
 }
 
 describe('Vue plugin integration', () => {
-  it('createVuePlugin with default options uses global singleton', () => {
+  it('createSparkPlugin with default options uses global singleton', () => {
     const app = createFakeApp()
-    const plugin = createVueSparkPlugin()
+    const plugin = createSparkPlugin()
     plugin.install(app)
     
-    // Should provide manager and registry
-    expect((app._provided)[SPARK_MANAGER_KEY]).toBeDefined()
+    // Should provide registry and root context
     expect((app._provided)[SPARK_REGISTRY_KEY]).toBeDefined()
+    expect((app._provided)['sparkParentContext']).toBeDefined()
   })
 
-  it('createVuePlugin with custom registry creates matching manager', () => {
+  it('createSparkPlugin with custom registry uses provided registry', () => {
     const registry = createComponentRegistry()
-    const plugin = createVueSparkPlugin({ registry })
+    const plugin = createSparkPlugin({ registry })
     const app = createFakeApp()
     plugin.install(app)
     
-    // Should provide manager and the custom registry
-    expect((app._provided)[SPARK_MANAGER_KEY]).toBeDefined()
+    // Should provide the custom registry
     expect((app._provided)[SPARK_REGISTRY_KEY]).toBe(registry)
+    expect((app._provided)['sparkParentContext']).toBeDefined()
   })
 })

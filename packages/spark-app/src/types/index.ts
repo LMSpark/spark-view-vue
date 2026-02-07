@@ -127,8 +127,6 @@ export interface BootstrapOptions {
   beforeMount?: (context: BootstrapContext) => void | Promise<void>
   /** 挂载后钩子 */
   afterMount?: (context: BootstrapContext) => void | Promise<void>
-  /** 鉴权函数（返回 AppContext 或 null）- 向后兼容，推荐使用 auth 配置 */
-  authenticate?: () => Promise<AppContext | null>
 }
 
 /**
@@ -193,23 +191,3 @@ export enum ErrorType {
   Unknown = 'UNKNOWN'
 }
 
-/**
- * 初始化阶段
- */
-export enum BootstrapPhase {
-  Config = 'CONFIG',
-  Auth = 'AUTH',
-  Services = 'SERVICES',
-  Router = 'ROUTER',
-  Mount = 'MOUNT',
-  Complete = 'COMPLETE'
-}
-
-/**
- * 初始化事件
- */
-export interface BootstrapEvent {
-  phase: BootstrapPhase
-  timestamp: number
-  data?: Record<string, unknown>
-}
