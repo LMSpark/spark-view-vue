@@ -1,208 +1,268 @@
 /**
- * useSparkComponent composable
- * 为组件提供能力系统集成
- * 
- * 注意：此文件使用类型断言桥接 ComponentContext 和基础能力系统
+ * useSparkComponent - 核心 Composable
+ *
+ * 唯一的组件开发 API，整合：
+ * - 上下文创建与生命周期管理
+ * - 能力提供与消费
+ * - 事件系统
+ * - 注册表访问
+ *
+ * 设计原则：
+ * - 无 Manager 中间层（直接操作 context）
+ * - 无全局单例依赖（通过 Vue DI 获取 registry）
+ * - parent/children 关系通过 Vue provide/inject 自动建立
  */
 
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
-import {
-  Logger,
-  createEventProvider
-} from '@spark-view/spark-utils'
-import type { EventProvider, Context as CapabilityContext } from '@spark-view/spark-utils'
-import { capabilityManager as defaultCapabilityManager } from '../capability/ComponentCapabilityManager.js'
-import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentManager, ComponentRegistry } from '../types/spark-component.js'
-import { SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../types/spark-component.js'
-import type { Implementation } from '../types/common.js'
+import { Logger, createEventProvider } from '@spark-view/spark-utils'
+import type { EventProvider } from '@spark-view/spark-utils'
+import { createCapabilityManager } from '../capability/CapabilityManager.js'
+import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry } from '../core/types.js'
+import { SPARK_REGISTRY_KEY } from '../core/types.js'
 
-// Local helper to create a noop provider when a capability is missing. This avoids any global registry side-effects.
-function createNoopProvider(name: string): CapabilityProvider {
-  return { name, implementation: {} }
+// 能力管理器（每个 composable 调用共享一个实例即可，无状态）
+const capabilityManager = createCapabilityManager()
+
+type Implementation = Record<string, unknown>
+
+export interface UseSparkComponentReturn {
+  /** 响应式组件上下文 */
+  context: ComponentContext
+  /** 可见性 */
+  isVisible: { readonly value: boolean }
+  /** 禁用状态 */
+  isDisabled: { readonly value: boolean }
+  /** 提供能力 */
+  provide: (name: string | symbol, implementation?: Implementation) => void
+  /** 提供事件能力 */
+  provideEvents: (name?: string | symbol) => EventProvider
+  /** 获取本地 provider */
+  getProvider: (name: string | symbol) => CapabilityProvider | undefined
+  /** 沿 parent 链查找 provider 实现 */
+  getInheritedProvider: <T = unknown>(name: string | symbol, ctx?: ComponentContext) => T | undefined
+  /** 消费能力 */
+  consume: (name: string | symbol) => Implementation | null
+  /** 消费事件能力 */
+  consumeEvents: (name: string | symbol, handlers: Record<string, (...args: unknown[]) => void>) => EventProvider | null
+  /** consume 别名 */
+  use: (name: string | symbol) => Implementation | null
+  /** 等待能力注册 */
+  whenAvailable: (name: string | symbol) => Promise<CapabilityProvider>
+  /** 生命周期 */
+  initialize: () => void
+  destroy: () => void
+  /** 日志器 */
+  logger: ReturnType<typeof Logger>
+  /** 从注册表获取组件 */
+  getComponent: (type: string) => unknown
+  /** 检查组件是否注册 */
+  isComponentRegistered: (type: string) => boolean
+  /** 创建空 provider */
+  getOrCreateNoopProvider: (name: string) => CapabilityProvider
+  /** 上下文链 */
+  getContextChain: () => ComponentContext[]
+  /** 打印能力树 */
+  printCapabilityTree: () => void
 }
 
-export function useSparkComponent<TConfig extends ComponentContext = ComponentContext>(
+export function useSparkComponent<TConfig extends Partial<ComponentContext> & { type: string } = ComponentContext>(
   config: TConfig,
   options?: {
-    manager?: ComponentManager
     registry?: ComponentRegistry
     parentContext?: ComponentContext
   }
-): {
-  context: ComponentContext
-  isVisible: unknown
-  isDisabled: unknown
-  provide: (name: string, implementation?: Implementation) => void
-  provideEvents: (name?: string) => EventProvider
-  getProvider: (name: string) => CapabilityProvider | undefined
-  getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => T | undefined
-  consume: (name: string) => Implementation | null
-  consumeEvents: (name: string, handlers: Record<string, (...args: unknown[]) => void>) => EventProvider | null
-  use: (name: string) => Implementation | null
-  whenAvailable: (name: string) => Promise<CapabilityProvider>
-  initialize: () => void
-  destroy: () => void
-  logger: ReturnType<typeof Logger>
-  getComponent: (type: string) => unknown
-  isComponentRegistered: (type: string) => boolean
-  getOrCreateNoopProvider: (name: string) => CapabilityProvider
-  connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => void
-  disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => void
-  
-  // 能力树管理
-  getContextChain: () => ComponentContext[]
-  printCapabilityTree: () => void
-} {
-  // 优先使用 options.parentContext，否则从 inject 获取（页面级根上下文作为 fallback）
+): UseSparkComponentReturn {
+  // 从 Vue DI 获取 parent context（由父组件 provide）
   const parentContext = options?.parentContext ?? inject<ComponentContext | undefined>('sparkParentContext', undefined)
 
+  // 从 DI 获取注册表
+  const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
+
+  // 创建上下文
   const ctxRaw: ComponentContext = {
-    id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2,9)}`,
+    id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     type: config.type,
     parent: parentContext,
     children: [],
-    // 将原始配置存入 state
-    state: { ...config },
+    props: config.props,
+    state: {},
     providers: new Map<string, CapabilityProvider>(),
     consumers: new Map<string, CapabilityConsumer>()
   }
 
   const context = reactive(ctxRaw)
-  
-  // 维护能力树：自动将自己注册到父上下文
+
+  // 建立父子关系
   if (parentContext?.children) {
     parentContext.children.push(context)
   }
-  
-  // 通过 Vue provide 自动传递 context 给子组件（递归渲染友好）
+
+  // 向下传递，子组件可通过 inject 获取
   vueProvide('sparkParentContext', context)
-  
+
   const logger = Logger(`Spark:${config.type}`)
 
-  // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
-  const resolvedManager = options?.manager ?? (inject(SPARK_MANAGER_KEY)) ?? (inject('sparkManager'))
-  if (!resolvedManager) throw new Error('Component manager not found. Either provide via options.manager or install Spark Vue plugin: app.use(createVueSparkPlugin())')
-  const manager = resolvedManager
-  
-  // Get capabilityManager from manager if available, fallback to global singleton
-  const capabilityManager = (typeof (manager as { getCapabilityManager?: () => unknown }).getCapabilityManager === 'function')
-    ? (manager as { getCapabilityManager: () => unknown }).getCapabilityManager() as typeof defaultCapabilityManager
-    : defaultCapabilityManager
+  // ========== 可见性/禁用状态 ==========
 
-  const isVisible = computed(() => {
-    const visibleProp = (context.state as { visible?: boolean }).visible
-    return visibleProp !== false
-  })
-  const isDisabled = computed(() => {
-    const disabledProp = (context.state as { disabled?: boolean }).disabled
-    return disabledProp === true
-  })
+  const isVisible = computed(() => (config as Record<string, unknown>).visible !== false)
+  const isDisabled = computed(() => (config as Record<string, unknown>).disabled === true)
 
-  const initialize = () => logger.info(`🚀 Initializing SPARK component: ${context.type} (${context.id})`)
-  const destroy = () => {
-    logger.info(`🗑️ Destroying SPARK component: ${context.type} (${context.id})`)
-    
-    // 从父上下文的 children 中移除自己
-    if (parentContext?.children) {
-      const index = parentContext.children.indexOf(context)
-      if (index !== -1) {
-        parentContext.children.splice(index, 1)
-      }
-    }
-    
-    context.providers.clear()
-    context.consumers.clear()
-    try { manager && typeof (manager).destroyContext === 'function' && (manager).destroyContext(context.id) } catch (e: unknown) { logger.warn('Failed to destroy context via manager', String(e)) }
+  // ========== 能力提供 ==========
+
+  function provide(name: string | symbol, implementation?: Implementation): void {
+    const nameKey = typeof name === 'symbol' ? name.toString() : name
+    const provider: CapabilityProvider = { name: nameKey, implementation }
+    capabilityManager.registerProvider(context, provider)
+    logger.info(`🔌 Provided: ${nameKey}`)
   }
 
-  function getProvider(name: string): CapabilityProvider | undefined {
-    return context.providers.get(name)
-  }
-
-  // Provide a capability on this context
-  function provide(name: string, implementation?: Implementation) {
-    const p: CapabilityProvider = { name, implementation }
-    if (manager && typeof manager.getCapabilityManager === 'function') {
-      manager.getCapabilityManager().registerProvider(context, p)
-    } else {
-      context.providers.set(name, p)
-    }
-    logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
-  }
-
-  // Provide event capability - convenient wrapper
-  function provideEvents(name = 'events'): EventProvider {
-    const { provider, emitter } = createEventProvider(name)
-    if (manager && typeof manager.getCapabilityManager === 'function') {
-      manager.getCapabilityManager().registerProvider(context, provider)
-    } else {
-      context.providers.set(provider.name, provider)
-    }
-    logger.info(`🎉 Provided event capability: ${name} for ${context.type} (${context.id})`)
+  function provideEvents(name: string | symbol = 'events'): EventProvider {
+    const nameKey = typeof name === 'symbol' ? name.toString() : name
+    const { provider, emitter } = createEventProvider(nameKey)
+    capabilityManager.registerProvider(context, provider)
+    logger.info(`🎉 Provided events: ${nameKey}`)
     return emitter
   }
 
-  function consume(name: string): Implementation | null {
-    const consumer: CapabilityConsumer = { capabilityName: name, implementation: undefined }
-    context.consumers.set(name, consumer)
-    const provider = manager.getCapabilityManager().getProvider(context, name) ?? createNoopProvider(name)
+  // ========== 能力消费 ==========
+
+  function consume(name: string | symbol): Implementation | null {
+    const nameKey = typeof name === 'symbol' ? name.toString() : name
+    const consumer: CapabilityConsumer = { capabilityName: nameKey, implementation: undefined }
+    capabilityManager.registerConsumer(context, consumer)
+
+    const provider = capabilityManager.getProvider(context, nameKey)
     if (provider) {
-      consumer.implementation = provider.implementation as Implementation | undefined
-      try { capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').Context<CapabilityProvider>) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
-      logger.info(`🔌 Consumed capability: ${name} for ${context.type} (${context.id})`)
-      return (consumer.implementation ?? null) as Implementation | null
+      consumer.implementation = provider.implementation
+      logger.info(`🔌 Consumed: ${nameKey}`)
+      return (provider.implementation ?? null) as Implementation | null
     }
-    logger.warn(`⚠️ Capability not found (registered consumer for late-binding): ${name} for ${context.type} (${context.id})`)
+
+    logger.warn(`⚠️ Capability not found (late-binding): ${nameKey}`)
     return null
   }
 
-  // Consume event capability - convenient wrapper
   function consumeEvents(
-    name: string,
+    name: string | symbol,
     handlers: Record<string, (...args: unknown[]) => void>
   ): EventProvider | null {
-    const provider = manager.getCapabilityManager().getProvider(context, name)
+    const nameKey = typeof name === 'symbol' ? name.toString() : name
+    const provider = capabilityManager.getProvider(context, nameKey)
     if (provider) {
-      const eventProvider = provider.implementation as EventProvider
-      // 直接注册事件处理器
+      const emitter = provider.implementation as EventProvider
       Object.entries(handlers).forEach(([event, handler]) => {
-        eventProvider.on(event, handler)
+        emitter.on(event, handler)
       })
-      logger.info(`🎉 Consumed event capability: ${name} for ${context.type} (${context.id})`)
-      return eventProvider
+      logger.info(`🎉 Consumed events: ${nameKey}`)
+      return emitter
     }
-    
-    logger.warn(`⚠️ Event capability not found: ${name} for ${context.type} (${context.id})`)
+    logger.warn(`⚠️ Event capability not found: ${nameKey}`)
     return null
   }
 
-  function whenAvailable(name: string): Promise<CapabilityProvider> {
-    const p = getProvider(name)
-    if (p) return Promise.resolve(p)
-    return new Promise(resolve => {
+  // ========== 能力查找 ==========
+
+  function getProvider(name: string | symbol): CapabilityProvider | undefined {
+    const nameKey = typeof name === 'symbol' ? name.toString() : name
+    return context.providers.get(nameKey)
+  }
+
+  function getInheritedProvider<T = unknown>(name: string | symbol, ctx?: ComponentContext): T | undefined {
+    const nameKey = typeof name === 'symbol' ? name.toString() : name
+    let current: ComponentContext | undefined = ctx ?? context
+    while (current) {
+      const p = current.providers.get(nameKey)
+      if (p?.implementation !== undefined) return p.implementation as T
+      current = current.parent
+    }
+    return undefined
+  }
+
+  function whenAvailable(name: string | symbol): Promise<CapabilityProvider> {
+    const nameKey = typeof name === 'symbol' ? name.toString() : name
+    const existing = capabilityManager.getProvider(context, nameKey)
+    if (existing) return Promise.resolve(existing)
+
+    return new Promise((resolve, reject) => {
       context.providerListeners = context.providerListeners ?? new Map()
-      if (!context.providerListeners.has(name)) context.providerListeners.set(name, new Set())
-      const set = context.providerListeners.get(name) ?? new Set()
-      const cb = (prov: CapabilityProvider) => { set.delete(cb); resolve(prov) }
-      set.add(cb)
+      if (!context.providerListeners.has(nameKey)) context.providerListeners.set(nameKey, new Set())
+      const listeners = context.providerListeners.get(nameKey)
+      if (!listeners) {
+        reject(new Error(`Failed to create listeners for capability: ${nameKey}`))
+        return
+      }
+      const cb = (prov: CapabilityProvider) => {
+        listeners.delete(cb)
+        resolve(prov)
+      }
+      listeners.add(cb)
     })
+  }
+
+  // ========== 注册表访问 ==========
+
+  function getComponent(type: string): unknown {
+    if (!registry) return undefined
+    const def = registry.get(type)
+    return def?.component ? markRaw(def.component) : undefined
+  }
+
+  function isComponentRegistered(type: string): boolean {
+    return registry?.has(type) ?? false
+  }
+
+  // ========== 生命周期 ==========
+
+  const initialize = () => logger.info(`🚀 Init: ${context.type} (${context.id})`)
+
+  const destroy = () => {
+    // 从父 children 中移除
+    if (parentContext?.children) {
+      const idx = parentContext.children.indexOf(context)
+      if (idx !== -1) parentContext.children.splice(idx, 1)
+    }
+    context.providers.clear()
+    context.consumers.clear()
+    logger.info(`🗑️ Destroyed: ${context.type} (${context.id})`)
   }
 
   onMounted(() => {
     initialize()
-    const mgr = manager
-    if (!mgr) throw new Error('Component manager not found during mount. Ensure Spark plugin was installed or a manager passed via options.')
-    mgr.registerContext(context)
-    logger.info(`📝 Registered context to manager: ${context.id}`)
   })
 
   onUnmounted(() => {
-    if (!manager) { logger.error('Component manager not found during unmount.'); return }
-    try { manager.destroyContext(context.id); logger.info(`🗑️ Destroyed context via manager: ${context.id}`) } catch (e) { logger.error('Failed to destroy context via manager', String(e)); destroy() }
+    destroy()
   })
 
-  // register default capability exposing the runtime context to consumers
-  provide('sparkContext', context)
+  // 默认提供 sparkContext 能力
+  provide('sparkContext', context as unknown as Implementation)
+
+  // ========== 调试工具 ==========
+
+  function getContextChain(): ComponentContext[] {
+    const chain: ComponentContext[] = []
+    let current: ComponentContext | undefined = context
+    while (current) {
+      chain.push(current)
+      current = current.parent
+    }
+    return chain
+  }
+
+  function printCapabilityTree(): void {
+    const print = (ctx: ComponentContext, indent = 0) => {
+      const prefix = '  '.repeat(indent)
+      const providers = Array.from(ctx.providers.keys()).join(', ')
+      logger.info(`${prefix}├─ ${ctx.type} (${ctx.id})`)
+      if (providers) logger.info(`${prefix}   Provides: [${providers}]`)
+      ctx.children?.forEach(child => print(child, indent + 1))
+    }
+
+    let root: ComponentContext = context
+    while (root.parent) root = root.parent
+    logger.info('🌲 Capability Tree:')
+    print(root)
+  }
 
   return {
     context,
@@ -211,86 +271,18 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     provide,
     provideEvents,
     getProvider,
-    getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext): T | undefined => {
-      let t: ComponentContext | CapabilityContext | undefined = ctx ?? context
-      while (t) {
-        const p = t.providers.get(name)
-        if (p?.implementation !== undefined) return p.implementation as T
-        t = t.parent ?? undefined
-      }
-      return undefined
-    },
+    getInheritedProvider,
     consume,
     consumeEvents,
-    use: consume, // Alias for consume - more intuitive naming
+    use: consume,
     whenAvailable,
     initialize,
     destroy,
     logger,
-    getComponent: (type: string) => {
-      // Prefer manager-backed registry
-      try {
-        const registry = manager.getRegistry()
-        const def = registry.get(type)
-        const comp = def?.component
-        return comp ? markRaw(comp) : undefined
-      } catch {
-        // fallback to injected registry if present
-        const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY))
-        if (!registry) return undefined
-        const comp = registry.get(type)?.component
-        return comp ? markRaw(comp) : undefined
-      }
-    },
-    isComponentRegistered: (type: string) => {
-      try {
-        const registry = manager.getRegistry()
-        return registry.has(type)
-      } catch {
-        const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY))
-        return registry ? registry.has(type) : false
-      }
-    },
-    
-    // 获取从当前节点到根的上下文链路（仅包含 ComponentContext）
-    getContextChain: () => {
-      const chain: ComponentContext[] = []
-      let current: ComponentContext | CapabilityContext | undefined = context
-      while (current) {
-        // 仅添加完整的 ComponentContext（包含 id 和 type）
-        if ('id' in current && 'type' in current) {
-          chain.push(current)
-        }
-        current = current.parent ?? undefined
-      }
-      return chain
-    },
-    
-    // 打印完整能力树结构
-    printCapabilityTree: () => {
-      const printTree = (ctx: ComponentContext, indent = 0) => {
-        const prefix = '  '.repeat(indent)
-        const providers = Array.from(ctx.providers.keys()).join(', ')
-        logger.info(`${prefix}├─ ${ctx.type} (${ctx.id})`)
-        if (providers) {
-          logger.info(`${prefix}   Provides: [${providers}]`)
-        }
-        ctx.children?.forEach(child => printTree(child, indent + 1))
-      }
-      
-      // 找到根节点
-      let root: ComponentContext | CapabilityContext = context
-      while (root.parent) root = root.parent
-      
-      logger.info('🌲 Capability Tree:')
-      if ('type' in root && 'id' in root) {
-        printTree(root)
-      }
-    },
-    
-    getOrCreateNoopProvider: (name: string) => createNoopProvider(name),
-    connectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.connectCapability(provider, consumer, ctx as import('@spark-view/spark-utils').Context<CapabilityProvider>),
-    disconnectCapability: (provider: CapabilityProvider, consumer: CapabilityConsumer, ctx: ComponentContext) => capabilityManager.disconnectCapability(provider, consumer, ctx as import('@spark-view/spark-utils').Context<CapabilityProvider>)
+    getComponent,
+    isComponentRegistered,
+    getOrCreateNoopProvider: (name: string) => ({ name, implementation: {} }),
+    getContextChain,
+    printCapabilityTree
   }
 }
-

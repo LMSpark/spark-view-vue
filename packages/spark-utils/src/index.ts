@@ -26,6 +26,9 @@ export type { IApiContext } from './http/HttpClient'
 // 能力系统
 export * from './capability/index.js'
 
+// 能力符号（Symbol-based capability names）
+export * from './capability-symbols.js'
+
 // 基础数据类型和权限系统
 export type {
   IDataRow,

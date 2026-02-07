@@ -14,14 +14,14 @@ import { getProviderInherited } from '@spark-view/spark-utils'
 import type {
   Context as CapabilityContext
 } from '@spark-view/spark-utils'
-import type { ComponentContext, CapabilityProvider, CapabilityConsumer, CapabilityManagerInterface } from '../types/spark-component.js'
+import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../core/types.js'
 
 /**
  * 组件能力管理器
  *
  * 扩展通用能力管理器，提供组件树的递归连接功能
  */
-export class ComponentCapabilityManager extends CapabilityManager<CapabilityProvider, CapabilityConsumer> implements CapabilityManagerInterface {
+export class ComponentCapabilityManager extends CapabilityManager<CapabilityProvider, CapabilityConsumer> {
 
   /**
    * 自动连接组件上下文中的所有能力
@@ -109,7 +109,7 @@ export class ComponentCapabilityManager extends CapabilityManager<CapabilityProv
     const provider = context.providers.get(capabilityName)
     if (provider) return provider
     if (context.parent) {
-      return this.getProvider(context.parent as ComponentContext, capabilityName)
+      return this.getProvider(context.parent, capabilityName)
     }
     return undefined
   }

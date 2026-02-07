@@ -13,7 +13,13 @@ export type {
   AppLoggerCapability
 } from './types'
 
-// 注册三个级别的演示组件（使用 /src/ 绝对路径确保动态导入正确）
-Spark.register({ name: 'UserGrid', path: '/src/components/demo/UserGrid.vue' })
-Spark.register({ name: 'UserRow', path: '/src/components/demo/UserRow.vue' })
-Spark.register({ name: 'UserField', path: '/src/components/demo/UserField.vue' })
+// 创建注册器（绑定 glob 模块）
+const modules = import.meta.glob('./*.vue')
+const register = Spark.createRegister(modules as Record<string, () => Promise<{ default: unknown }>>)
+
+// 直接用路径字符串批量注册（无需重复写 glob）
+register.registerAll({
+  'user-grid': './UserGrid.vue',
+  'user-row': './UserRow.vue',
+  'user-field': './UserField.vue'
+})

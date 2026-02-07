@@ -1,36 +1,34 @@
-﻿import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-component'
-import type { ComponentConfig, ComponentContext, CapabilityProvider } from '@spark-view/spark-component'
-
-const createSparkComponentManager = () => Spark.createManager()
+import type { CapabilityProvider, CapabilityConsumer } from '@spark-view/spark-component'
 
 describe('Capability late-binding', () => {
   it('consumer registered before provider should be auto-connected after provider registration', () => {
-    const manager = createSparkComponentManager()
+    const { capabilities, createContext, rootContext } = Spark.createSystem()
 
     // Create a parent context and a child
-    const parentConfig: ComponentConfig = { type: 'parent', id: 'parent-1' }
-    const childConfig: ComponentConfig = { type: 'child', id: 'child-1' }
-
-    const parentCtx: ComponentContext = manager.createContext(parentConfig)
-    const childCtx: ComponentContext = manager.createContext(childConfig, parentCtx)
+    const parentCtx = createContext({ type: 'parent', id: 'parent-1' }, rootContext)
+    const childCtx = createContext({ type: 'child', id: 'child-1' }, parentCtx)
 
     // Simulate consumer created first
-    const consumer = {
+    const consumer: CapabilityConsumer = {
       capabilityName: 'test-cap',
-      implementation: {}
+      implementation: undefined
     }
+    capabilities.registerConsumer(childCtx, consumer)
 
-    childCtx.consumers.set('test-cap', consumer as CapabilityConsumer)
+    // Ensure no provider exists yet on the child's scope
+    expect(capabilities.getProvider(childCtx, 'test-cap')).toBeUndefined()
 
-    // Ensure no provider exists yet
-    expect(manager.getCapabilityManager().getProvider(childCtx, 'test-cap')).toBeUndefined()
+    // Now register provider on parent
+    const provider: CapabilityProvider = {
+      name: 'test-cap',
+      implementation: { foo: () => 'bar' }
+    }
+    capabilities.registerProvider(parentCtx, provider)
 
-    // Now register provider on parent via manager
-    const provider: CapabilityProvider = { name: 'test-cap', version: '1.0.0', implementation: { foo: () => 'bar' } }
-    manager.getCapabilityManager().registerProvider(parentCtx, provider)
-
-    // After register, autoConnect should have connected: check connections via manager.getProvider
-    expect(manager.getCapabilityManager().getProvider(childCtx, 'test-cap')).toBeTruthy()
+    // After registration, the provider should be discoverable by walking the parent chain
+    expect(capabilities.getProvider(childCtx, 'test-cap')).toBeTruthy()
+    expect(capabilities.getProvider(childCtx, 'test-cap')?.name).toBe('test-cap')
   })
 })

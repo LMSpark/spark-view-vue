@@ -1,19 +1,29 @@
-﻿import { expect, test } from 'vitest'
+import { expect, test } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SparkComponentRenderer from '../features/spark/components/SparkComponentRenderer.vue'
-import { Spark } from '@spark-view/spark-component'
+import { Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
 import type { DefineComponent } from 'vue'
 
-const { manager, registry } = Spark.createSystem()
+const { registry, rootContext } = Spark.createSystem()
 
 test('SparkComponentRenderer mounts spark-ej2-grid without missing render', async () => {
-  // Explicitly pass manager to avoid implicit singletons
+  // Register EJ2 components into the isolated registry
   initializeSparkEJ2Components(registry)
+
   const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
-    props: { config: { type: 'spark-ej2-grid', children: [] } },
-    global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+    props: {
+      config: { type: 'spark-ej2-grid', children: [] },
+      parentContext: rootContext
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+        sparkParentContext: rootContext
+      }
+    }
   })
+
   // Ensure component is resolved and not the unregistered fallback
   expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
 })

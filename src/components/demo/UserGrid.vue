@@ -20,7 +20,7 @@
       <component
         v-for="childConfig in childConfigs"
         :key="childConfig.id"
-        :is="defineAsyncComponent(Spark.resolveComponent(childConfig.type) as any)"
+        :is="getComponent(childConfig.type)"
         :config="childConfig"
       />
     </div>
@@ -28,8 +28,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
-import { Spark, useSparkComponent } from '@spark-view/spark-component'
+import { ref, computed, onMounted } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import {
+  APP_SERVICES,
+  FIELD_METADATA,
+  SELECTION,
+  GRID_EVENTS,
+  DATA_SOURCE
+} from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 import type { 
   User, 
@@ -75,16 +82,17 @@ const {
   provide: provideCapability,
   provideEvents,
   consume,
+  getComponent,
   logger: sparkLogger
 } = useSparkComponent(props.config as ComponentContext)
 
 // ============ 消费 APP 服务能力（从页面层提供）============
 // 🎯 关键：通过能力系统消费，不需要直接导入
-const appServices = consume('appServices')
+const appServices = consume(APP_SERVICES)
 
 // 便捷访问
 const appRouter = computed(() => {
-  const services = appServices?.value as AppServicesCapability | null
+  const services = appServices as AppServicesCapability | null
   return services?.router
 })
 
@@ -103,10 +111,10 @@ const fieldMetadata = computed(() => {
 // ============ 能力提供 ============
 
 // 0. 提供字段元数据能力（供 UserField 消费）
-provideCapability('fieldMetadata', fieldMetadata.value)
+provideCapability(FIELD_METADATA, fieldMetadata.value)
 
 // 1. 提供选择能力（数据流）
-provideCapability('selection', {
+provideCapability(SELECTION, {
   isSelected: (id: number) => selectedIds.value.has(id),
   select: (id: number) => {
     selectedIds.value.add(id)
@@ -132,10 +140,10 @@ provideCapability('selection', {
 })
 
 // 2. 提供事件能力（使用真正的事件系统）
-const gridEventsEmitter = provideEvents('gridEvents')
+const gridEventsEmitter = provideEvents(GRID_EVENTS)
 
 // 3. 提供数据源能力
-provideCapability('dataSource', {
+provideCapability(DATA_SOURCE, {
   getData: () => usersFromConfig.value,
   refresh: () => {
     sparkLogger.info('🔄 Data refreshed')
