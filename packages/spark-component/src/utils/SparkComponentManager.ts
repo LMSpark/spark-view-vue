@@ -1,3 +1,14 @@
+/**
+ * 📦 组件实例生命周期管理器
+ * 
+ * 管理每个组件实例从"出生"到"死亡"：
+ * - 创建上下文（Context）→ 组件运行环境
+ * - 渲染组件树 → VNode
+ * - 连接能力系统 → Provider/Consumer
+ * - 销毁上下文 → 清理资源
+ * 
+ * 不管组件注册（Registry）- 通过 getRegistry() 访问
+ */
 import { componentRegistry as defaultRegistry, createComponentRegistry } from './SparkComponentRegistry.js'
 import { Logger } from '@spark-view/spark-utils'
 import { capabilityManager as defaultCapabilityManager, createComponentCapabilityManager } from '../capability/ComponentCapabilityManager.js'
@@ -6,20 +17,7 @@ import type { ComponentContext, CapabilityProvider, CapabilityConsumer, Componen
 import type { ComponentCapabilityManager } from '../capability/ComponentCapabilityManager.js'
 
 /**
- * SPARK 组件管理器
- * 
- * 🎯 单一职责：组件实例的生命周期管理
- * - 上下文（Context）创建、销毁、查询
- * - 能力系统集成
- * - 组件树渲染（组合 Context + Renderer）
- * 
- * ⚠️ 不再代理 Registry 方法（SOLID 原则）
- * - 通过 getRegistry() 访问注册表
- * - 让使用者直接调用 registry.register() 等方法
- * 
- * 设计模式：默认实例 + 工厂函数
- * - 默认全局实例：componentManager（单应用场景）
- * - 工厂函数：createComponentManager / createComponentSystem（测试、多租户）
+ * 🎯 组件实例管理器（负责实例的"生老病死"）
  */
 export class SparkComponentManagerImpl {
   private readonly contexts = new Map<string, ComponentContext>()
@@ -39,25 +37,20 @@ export class SparkComponentManagerImpl {
   }
 
   // ============================================================================
-  // 上下文生命周期管理
+  // 📦 Context 生命周期：创建 → 查询 → 销毁
   // ============================================================================
 
-  /**
-   * 创建组件上下文
-   * 
-   * @param config - 组件配置（必需 type 字段）
-   * @param parent - 父组件上下文
-   * @throws 如果 type 无效
-   */
+  /** 创建组件上下文（组件实例的运行环境） */
   createContext(config: Partial<ComponentContext>, parent?: ComponentContext): ComponentContext {
+    // 验证必需字段
     if (!config.type || typeof config.type !== 'string') {
       throw new Error('createContext requires a valid type (non-empty string)')
     }
-
     if (!this.registry.has(config.type)) {
       this.logger.warn(`Component type '${config.type}' not registered. Register it before rendering.`)
     }
 
+    // 创建上下文
     const ctx: ComponentContext = {
       id: config.id ?? this.generateId(),
       type: config.type,
@@ -69,59 +62,50 @@ export class SparkComponentManagerImpl {
       consumers: new Map<string, CapabilityConsumer>()
     }
 
+    // 建立父子关系
     if (parent) {
       parent.children ??= []
       parent.children.push(ctx)
     }
 
+    // 缓存上下文
     this.contexts.set(ctx.id, ctx)
     this.logger.debug(`Context created: ${ctx.type} (${ctx.id})`)
     return ctx
   }
 
-  /**
-   * 获取组件上下文
-   */
+  /** 查询上下文 */
   getContext(id: string): ComponentContext | undefined {
     return this.contexts.get(id)
   }
 
-  /**
-   * 获取所有组件上下文
-   */
+  /** 获取所有上下文 */
   getAllContexts(): ComponentContext[] {
     return Array.from(this.contexts.values())
   }
 
-  /**
-   * 注册组件上下文（供已创建的上下文加入管理）
-   */
+  /** 注册上下文到管理器 */
   registerContext(context: ComponentContext): void {
     if (!this.contexts.has(context.id)) {
       this.contexts.set(context.id, context)
     }
   }
 
-  /**
-   * 销毁组件上下文
-   * 
-   * 递归销毁流程：
-   * 1. 断开所有能力连接
-   * 2. 从父组件移除
-   * 3. 递归销毁子组件
-   * 4. 从缓存中删除
-   */
+  /** 销毁上下文（递归：断开能力 → 移除父子关系 → 清理子组件 → 删除缓存） */
   destroyContext(id: string): boolean {
     const ctx = this.contexts.get(id)
     if (!ctx) return false
 
     try {
+      // 1. 断开所有能力连接
       this.capabilityManager.disconnectAllCapabilities(ctx)
 
+      // 2. 从父组件移除
       if (ctx.parent && 'children' in ctx.parent && Array.isArray(ctx.parent.children)) {
         ctx.parent.children = ctx.parent.children.filter((c: ComponentContext) => c.id !== id)
       }
 
+      // 3. 递归销毁子组件
       const walk = (c: ComponentContext) => {
         c.children?.forEach(x => walk(x))
         this.contexts.delete(c.id)
@@ -137,16 +121,10 @@ export class SparkComponentManagerImpl {
   }
 
   // ============================================================================
-  // 组件渲染
+  // 🎨 组件渲染：配置 → VNode
   // ============================================================================
 
-  /**
-   * 渲染组件树
-   * 
-   * @param config - 组件配置
-   * @param parentContext - 父组件上下文
-   * @returns VNode 渲染结果
-   */
+  /** 渲染组件树 */
   render(config: Partial<ComponentContext>, parentContext?: ComponentContext): unknown {
     const ctx = this.createContext(config, parentContext)
     const renderResult = this.renderer.renderComponentTree(ctx)
@@ -155,30 +133,22 @@ export class SparkComponentManagerImpl {
   }
 
   // ============================================================================
-  // 能力系统集成
+  // 🔌 能力系统：Provider ⇄ Consumer 连接
   // ============================================================================
 
-  /**
-   * 获取能力管理器
-   */
+  /** 获取能力管理器 */
   getCapabilityManager(): ComponentCapabilityManager {
     return this.capabilityManager
   }
 
-  /**
-   * 注册能力提供者
-   * 
-   * 自动执行：
-   * - 能力连接（autoConnect）
-   * - 通知等待的监听器
-   * 
-   * @throws 如果 provider 无效
-   */
+  /** 注册能力提供者（自动连接 Consumer + 通知监听器） */
   registerProvider(context: ComponentContext, provider: CapabilityProvider): void {
+    // 验证
     if (!provider?.name || typeof provider.name !== 'string') {
       throw new Error('Invalid provider: must have a non-empty name')
     }
 
+    // 存储
     context.providers.set(provider.name, provider)
     
     // 自动连接能力
@@ -193,9 +163,8 @@ export class SparkComponentManagerImpl {
       const set = context.providerListeners.get(provider.name)
       if (set) {
         set.forEach(cb => {
-          try { 
-            cb(provider) 
-          } catch (e: unknown) { 
+          try { cb(provider) } 
+          catch (e: unknown) { 
             this.logger.warn(`Listener for '${provider.name}' threw:`, String(e)) 
           }
         })
@@ -206,13 +175,7 @@ export class SparkComponentManagerImpl {
     this.logger.debug(`Provider registered: '${provider.name}' in ${context.type} (${context.id})`)
   }
 
-  /**
-   * 查找能力提供者（向上查找父级链）
-   * 
-   * @param context - 起始组件上下文
-   * @param capabilityName - 能力名称
-   * @returns 能力提供者或 undefined
-   */
+  /** 查找能力提供者（向上查找父级链直到找到） */
   getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined {
     const provider = context.providers.get(capabilityName)
     if (provider) return provider
@@ -223,62 +186,44 @@ export class SparkComponentManagerImpl {
   }
 
   // ============================================================================
-  // 依赖访问器（SOLID：提供访问而非代理）
+  // 🔗 依赖访问器（不代理，只提供访问）
   // ============================================================================
 
-  /**
-   * 获取组件注册表
-   * 
-   * 符合 SOLID 原则：Manager 不代理 Registry 的方法
-   * 使用者直接调用：manager.getRegistry().register()
-   */
+  /** 获取组件注册表（使用：manager.getRegistry().register()） */
   getRegistry(): ComponentRegistry {
     return this.registry
   }
 
   // ============================================================================
-  // 私有工具方法
+  // 🛠️ 内部工具
   // ============================================================================
 
-  /**
-   * 生成唯一组件 ID
-   */
+  /** 生成唯一 ID */
   private generateId(): string {
     return `spark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
 }
 
 // ============================================================================
-// 默认实例 + 工厂函数（避免单例模式，支持一应用一实例）
+// 🏭 工厂函数：创建 Manager 实例
 // ============================================================================
 
 /**
- * 默认的全局组件管理器
+ * 默认全局实例（单应用场景）
  * 
- * 使用场景：
- * - 单一应用系统（一应用一实例）
- * - 向后兼容
- * 
- * ⚠️ 测试请使用 createComponentManager() 创建隔离实例
+ * ⚠️ 测试请用 createComponentManager() 创建隔离实例
  */
 export const componentManager = new SparkComponentManagerImpl()
 
 /**
- * 创建组件管理器实例
- * 
- * 使用场景：
- * - 测试隔离
- * - 自定义渲染器/注册表/能力管理器
+ * 创建 Manager 实例（测试/自定义场景）
  * 
  * @example
- * ```ts
- * // 测试用独立实例
  * const testManager = createComponentManager(
  *   undefined, 
  *   createComponentRegistry(),
  *   createComponentCapabilityManager()
  * )
- * ```
  */
 export function createComponentManager(
   renderer?: SparkComponentRendererImpl, 
@@ -289,23 +234,13 @@ export function createComponentManager(
 }
 
 /**
- * 创建完全隔离的组件系统（Manager + Registry + CapabilityManager 配套）
+ * 创建完整组件系统（Manager + Registry + Capabilities 配套）
  * 
- * 使用场景：
- * - 测试环境（状态完全隔离）
- * - 多租户应用（每租户独立组件库）
- * - 沙箱环境
+ * 场景：测试隔离 / 多租户 / 沙箱
  * 
  * @example
- * ```ts
- * // 测试场景
  * const { manager, registry, capabilities } = createComponentSystem()
- * registry.register('test-component', definition)
- * 
- * // 多租户场景
- * const tenant1 = createComponentSystem()
- * const tenant2 = createComponentSystem()
- * ```
+ * registry.register('my-component', definition)
  */
 export function createComponentSystem(): { 
   manager: ComponentManager
