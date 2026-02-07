@@ -212,10 +212,7 @@ Spark.createSystem(): {
 
 ```typescript
 // 创建 Vue 插件（使用全局单例）
-Spark.createVuePlugin(opts?: { registry?: ComponentRegistry }): Plugin
-
-// 直接安装（已废弃，请使用 createVuePlugin）
-Spark.install(app: App): void
+Spark.createPlugin(opts?: { registry?: ComponentRegistry }): Plugin
 ```
 
 #### 插件系统

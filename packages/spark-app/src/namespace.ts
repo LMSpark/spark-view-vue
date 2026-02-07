@@ -17,7 +17,7 @@ import { start } from './start'
 import { setupRouterGuards } from './router/guards'
 import { setupErrorHandler } from './error/handler'
 import { loadConfig } from './config'
-import { createAppContext, useAppContext } from './context/AppContext'
+import { createAppContext } from './context/AppContext'
 
 /**
  * SparkApp 命名空间
@@ -107,19 +107,10 @@ export const SparkApp = {
    * - 租户信息
    * - 权限管理
    * - 环境信息
-   */
-  createAppContext,
-
-  /**
-   * 使用应用上下文（组合式 API）
    * 
-   * 用于组件内访问：
-   * - context.user
-   * - context.tenant
-   * - context.hasPermission()
-   * - context.hasRole()
+   * @see useAppContext from '@spark-view/spark-app/composables' - 组件中使用
    */
-  useAppContext
+  createAppContext
 }
 
 export default SparkApp
