@@ -27,13 +27,10 @@ export type { CapabilityManager } from './capability/CapabilityManager.js'
 // === 核心类型 ===
 export type {
   ComponentContext,
-  ComponentConfig,
   ComponentDefinition,
   ComponentRegistry,
   CapabilityProvider,
   CapabilityConsumer,
-  TypedContext,
-  StrictContext,
   LogLevel,
   LoggerApi,
   Transport

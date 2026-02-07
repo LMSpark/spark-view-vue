@@ -4,7 +4,7 @@
 
 import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
-import type { IDataRow, IDataSet, BindingContext } from '@spark-view/spark-data'
+import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
 import { nextTick } from 'vue'
@@ -214,7 +214,7 @@ function injectTableEvents(
       // 同步到 DataSet
       if (dataSet?.tables?.[tableName] && contextId) {
         const table = dataSet.tables[tableName]
-        const context = table?.contexts?.[String(contextId)] as BindingContext | undefined
+        const context = table?.contexts?.[String(contextId)]
         if (context?.setCurrentRow) {
           context.setCurrentRow(currentRow ?? null, false)
         }
@@ -240,7 +240,7 @@ function injectTableEvents(
       // 同步到 DataSet
       if (dataSet?.tables?.[tableName] && contextId) {
         const table = dataSet.tables[tableName]
-        const context = table?.contexts?.[String(contextId)] as BindingContext | undefined
+        const context = table?.contexts?.[String(contextId)]
         if (context?.setSelectedRows) {
           context.setSelectedRows(selection, true)
         }

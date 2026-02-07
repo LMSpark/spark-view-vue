@@ -57,9 +57,6 @@ importers:
       '@types/node':
         specifier: ^18.19.130
         version: 18.19.130
-      '@types/semver':
-        specifier: ^7.7.1
-        version: 7.7.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.52.0
         version: 8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.3.3))(eslint@9.39.2)(typescript@5.3.3)
@@ -93,9 +90,6 @@ importers:
       rollup-plugin-visualizer:
         specifier: ^6.0.5
         version: 6.0.5(rollup@4.57.1)
-      semver:
-        specifier: ^7.7.3
-        version: 7.7.3
       terser:
         specifier: ^5.46.0
         version: 5.46.0
@@ -946,9 +940,6 @@ packages:
 
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
-
-  '@types/semver@7.7.1':
-    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@types/web-bluetooth@0.0.20':
     resolution: {integrity: sha512-g9gZnnXVq7gM7v3tJCWV/qw7w+KeOlSHAhgF9RytFyifW6AF61hdT2ucrYhPq9hLs5JIryeupHV3qGk95dH9ow==}
@@ -2941,8 +2932,6 @@ snapshots:
   '@types/node@18.19.130':
     dependencies:
       undici-types: 5.26.5
-
-  '@types/semver@7.7.1': {}
 
   '@types/web-bluetooth@0.0.20': {}
 

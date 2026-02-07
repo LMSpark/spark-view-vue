@@ -773,19 +773,16 @@ export class DataSet implements IDataSet {
       
       // 检查父表是否有数据
       if (!parentTableObj.rows || parentTableObj.rows.length === 0) {
-        // console.info(`❌ [DataSet] 父表 ${relation.parentTable} 缺少数据`);
         return false;
       }
       
       // 检查依赖类型的具体条件
       if (relation.dependencyType === 'currentRow') {
         if (!parentContext.currentRow) {
-          // console.info(`❌ [DataSet] 依赖条件不满足: ${relation.parentTable}.${parentContext.contextId}.currentRow 为空`);
           return false;
         }
       } else if (relation.dependencyType === 'selectedRows') {
         if (!parentContext.selectedRows || parentContext.selectedRows.length === 0) {
-          // console.info(`❌ [DataSet] 依赖条件不满足: ${relation.parentTable}.${parentContext.contextId}.selectedRows 为空`);
           return false;
         }
       }

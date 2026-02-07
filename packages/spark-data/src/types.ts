@@ -54,6 +54,10 @@ export interface IBindingContext {
   hostTable?: string
   contextId?: string
   
+  // 方法
+  setCurrentRow?(row: IDataRow | null, skipNotify?: boolean): void
+  setSelectedRows?(rows: IDataRow[], skipNotify?: boolean): void
+  
   // 初始配置
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
