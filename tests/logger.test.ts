@@ -7,7 +7,6 @@ describe('logger capability', () => {
     let called = false
     const provider = {
       name: 'logger',
-      version: '1.0.0',
       interface: { info: true },
       implementation: {
         info: (..._args: unknown[]) => { called = true }
@@ -20,7 +19,7 @@ describe('logger capability', () => {
       children: [],
       config: {},
       state: {},
-      providers: new Set([ provider ]),
+      providers: new Map([['logger', provider]]),
       consumers: new Map()
     }
 
@@ -34,7 +33,6 @@ describe('logger capability', () => {
     let calledLocal = false
     const localProvider = {
       name: 'logger',
-      version: '1.0.0',
       interface: { info: true },
       implementation: {
         info: (..._args: unknown[]) => { calledLocal = true }
@@ -47,7 +45,7 @@ describe('logger capability', () => {
       children: [],
       config: {},
       state: {},
-      providers: new Set([ localProvider ]),
+      providers: new Map([['logger', localProvider]]),
       consumers: new Map()
     }
 

@@ -1,82 +1,58 @@
 /**
  * 能力系统核心
  * 
- * 对外接口：provide(name, impl) / consume(name)
- * 内部实现：上下文管理 + 能力连接
+ * @deprecated 此文件将在未来版本中移除，请使用 provide/consume/consumeInherited 函数
  * 
- * 能力3种类型：
- * - 字面量：直接值
- * - 方法：函数集合
- * - 事件：on/off/emit（EventCapability）
+ * 保留此文件仅为兼容旧代码，新代码请使用：
+ * - provide(context, name, implementation)
+ * - consume(context, name)
+ * - consumeInherited(context, name)
  */
 
 import { Logger } from '../logger.js'
-import type { Provider, Consumer, Context, Connector, Manager } from './types.js'
-
-const logger = Logger('Capability')
+import type { Provider, Consumer, Context } from './types.js'
 
 /**
- * 通用连接器
- * 能力本质就是数据/方法，直接赋值即可
+ * 能力管理器（已废弃）
+ * 
+ * @deprecated 请使用 provide/consume 函数
+ * 
+ * 保留此类仅为兼容旧代码
  */
-class UniversalConnector<P extends Provider = Provider, C extends Consumer = Consumer> implements Connector<P, C> {
-  connect(provider: P, consumer: C): boolean {
-    try {
-      consumer.implementation = provider.implementation as C['implementation']
-      return true
-    } catch (e: unknown) {
-      logger.error('连接能力失败:', String(e))
-      return false
-    }
-  }
-
-  disconnect(_provider: P, consumer: C): boolean {
-    try {
-      consumer.implementation = undefined
-      return true
-    } catch (e: unknown) {
-      logger.error('断开能力失败:', String(e))
-      return false
-    }
-  }
-
-  isConnected(_provider: P, consumer: C): boolean {
-    return consumer.implementation !== undefined
-  }
-}
-
-/**
- * 能力管理器
- * 职责：连接 Provider 和 Consumer
- */
-export class CapabilityManager<P extends Provider = Provider, C extends Consumer = Consumer> implements Manager<P, C> {
-  private connector: Connector<P, C> = new UniversalConnector<P, C>()
+export class CapabilityManager<P extends Provider = Provider, C extends Consumer = Consumer> {
   private logger = Logger('CapabilityMgr')
 
-  registerConnector(_name: string, _connector: Connector<P, C>): void {
-    // 已废弃，保留接口兼容
+  /**
+   * @deprecated 无操作，保留接口兼容
+   */
+  registerConnector(_name: string, _connector: unknown): void {
+    // 无操作
   }
 
+  /**
+   * 连接能力
+   * @deprecated 请使用 provide() 函数
+   */
   connectCapability(provider: P, consumer: C, _context: Context<P>): boolean {
     try {
-      const ok = this.connector.connect(provider, consumer)
-      if (ok) {
-        this.logger.debug(`🔗 ${provider.name}`)
-      }
-      return ok
+      consumer.implementation = provider.implementation as C['implementation']
+      this.logger.debug(`🔗 ${provider.name}`)
+      return true
     } catch (e) {
       this.logger.error(`连接失败 '${provider.name}':`, e)
       return false
     }
   }
 
+  /**
+   * 断开能力
+   * @deprecated 直接设置 consumer.implementation = undefined
+   */
   disconnectCapability(provider: P, consumer: C, _context: Context<P>): boolean {
     try {
-      const ok = this.connector.disconnect(provider, consumer)
-      if (ok) {
-        this.logger.debug(`🔌 ${provider.name}`)
-      }
-      return ok
+      consumer.implementation = undefined
+      this.logger.debug(`🔌 ${provider.name}`)
+      return true
     } catch (e) {
       this.logger.error(`断开失败 '${provider.name}':`, e)
       return false
@@ -84,7 +60,10 @@ export class CapabilityManager<P extends Provider = Provider, C extends Consumer
   }
 }
 
-/** 创建管理器实例 */
+/**
+ * 创建管理器实例
+ * @deprecated 请使用 provide/consume 函数
+ */
 export function createManager(): CapabilityManager {
   return new CapabilityManager()
 }

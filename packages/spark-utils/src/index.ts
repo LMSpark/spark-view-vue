@@ -23,8 +23,7 @@ export {
 } from './http/HttpClient'
 export type { IApiContext } from './http/HttpClient'
 
-// 能力系统 (Capability System)
-export { Capability } from './capability/index.js'
+// 能力系统
 export * from './capability/index.js'
 
 // 基础数据类型和权限系统

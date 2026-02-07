@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
-import { Spark } from '@spark-view/spark-component'
+import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
 import type { 
   User, 
@@ -77,7 +77,7 @@ const {
   provide: provideCapability,
   consume,
   logger: sparkLogger
-} = Spark.useSpark(props.config as ComponentContext)
+} = useSparkComponent(props.config as ComponentContext)
 
 // ============ 消费 APP 服务能力（从页面层提供）============
 // 🎯 关键：通过能力系统消费，不需要直接导入

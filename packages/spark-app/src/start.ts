@@ -161,9 +161,9 @@ export async function start(options: StartOptions): Promise<void> {
     // 使用全局单例管理器，确保整个应用共享同一个组件实例集合
     if (spark?.enabled !== false) {
       startLogger.debug('安装 SPARK 组件系统...')
-      const { Spark } = await import('@spark-view/spark-component')
+      const { createVueSparkPlugin } = await import('@spark-view/spark-component')
       // 使用默认全局单例（不传参数）
-      app.use(Spark.createVuePlugin())
+      app.use(createVueSparkPlugin())
     }
 
     // 5. 配置动态路由系统

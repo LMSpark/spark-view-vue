@@ -3,11 +3,10 @@
  * 外部用户只需要 provide/consume，不需要关心这些
  * 
  * @internal
+ * @deprecated 这些内部 API 将在未来版本中移除，请使用 provide/consume/consumeInherited
  */
 
-export type { Connector, Manager } from './types.js'
 export {
   CapabilityManager,
   createManager
 } from './CapabilitySystem.js'
-export { EventConnector } from './EventCapability.js'

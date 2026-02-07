@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
-import { Spark } from '@spark-view/spark-component'
+import { useSparkComponent, Spark } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
 import type { 
   User, 
@@ -59,7 +59,7 @@ const {
   consume,
   provide: provideCapability,
   logger 
-} = Spark.useSpark(props.config as ComponentContext)
+} = useSparkComponent(props.config as ComponentContext)
 
 const isSelected = ref(false)
 

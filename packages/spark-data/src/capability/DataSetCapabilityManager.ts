@@ -158,7 +158,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
   private registerAppServicesCapability() {
     const provider: CapabilityProvider = {
       name: 'appServices',
-      version: '1.0.0',
       implementation: {
         // Router 服务
         router: this.config.appServices?.router,
@@ -196,7 +195,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
   private registerDataSetStateCapability() {
     const provider: CapabilityProvider = {
       name: 'dataSetState',
-      version: '1.0.0',
       implementation: {
         getDataSet: () => this.config.dataSet,
         
@@ -244,7 +242,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
   private registerGlobalDataCapability() {
     const provider: CapabilityProvider = {
       name: 'globalData',
-      version: '1.0.0',
       implementation: {
         getUserInfo: () => this.config.globalData?.getUserInfo() ?? { id: '', name: '', roles: [] },
         getConfig: (key: string) => this.config.globalData?.getConfig(key),
@@ -261,7 +258,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
   private registerPageServiceCapability() {
     const provider: CapabilityProvider = {
       name: 'pageService',
-      version: '1.0.0',
       implementation: {
         showMessage: (message: string, type: 'success' | 'error' | 'warning') => 
           this.config.pageService?.showMessage(message, type),
@@ -283,7 +279,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
   private registerApiClientCapability() {
     const provider: CapabilityProvider = {
       name: 'apiClient',
-      version: '1.0.0',
       implementation: {
         request: <T = unknown>(config: {
           url: string

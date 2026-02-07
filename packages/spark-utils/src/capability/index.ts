@@ -1,38 +1,27 @@
 /**
- * 能力系统 - 命名空间 API
+ * 能力系统
  */
 
-import type { Provider, Consumer, Context } from './types.js'
-import {
-  createProvider as createEventProvider,
-  createConsumer as createEventConsumer,
-  type EventProvider,
-  type EventConsumer
+export {
+  createProvider as createEventProvider
 } from './EventCapability.js'
 
-// 导出基础类型供直接导入使用
+// 导出基础类型
 export type {
   Provider,
   Consumer,
   Context
 } from './types.js'
-export type { EventProvider, EventConsumer } from './EventCapability.js'
 
-/**
- * 能力系统命名空间
- */
-export namespace Capability {
-  // 核心类型
-  export type ProviderType<T = unknown> = Provider<T>
-  export type ConsumerType<T = unknown> = Consumer<T>
-  export type ContextType<T = Provider> = Context<T>
+// 导出辅助函数
+export {
+  provide,
+  consume,
+  consumeInherited,
+  getProvider,
+  getProviderInherited
+} from './types.js'
 
-  // 事件能力（仅暴露创建函数）
-  export namespace Events {
-    export type ProviderType = EventProvider
-    export type ConsumerType = EventConsumer
-    export const createProvider = createEventProvider
-    export const createConsumer = createEventConsumer
-  }
-}
+// 导出事件能力
+export type { EventProvider } from './EventCapability.js'
 

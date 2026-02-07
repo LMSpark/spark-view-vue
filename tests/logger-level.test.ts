@@ -8,7 +8,6 @@ describe('logger level filtering', () => {
 
     const provider = {
       name: 'logger',
-      version: '1.0.0',
       interface: { warn: true, error: true },
       implementation: {
         warn: (..._args: unknown[]) => { calledWarn = true },
@@ -22,7 +21,7 @@ describe('logger level filtering', () => {
       children: [],
       config: {},
       state: {},
-      providers: new Set([ provider ]),
+      providers: new Map([['logger', provider]]),
       consumers: new Map()
     }
 

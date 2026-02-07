@@ -8,7 +8,7 @@
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
 import {
   Logger,
-  Capability
+  createEventProvider
 } from '@spark-view/spark-utils'
 import type { EventProvider, Context as CapabilityContext } from '@spark-view/spark-utils'
 import { capabilityManager as defaultCapabilityManager } from '../capability/ComponentCapabilityManager.js'
@@ -18,7 +18,7 @@ import type { Implementation } from '../types/common.js'
 
 // Local helper to create a noop provider when a capability is missing. This avoids any global registry side-effects.
 function createNoopProvider(name: string): CapabilityProvider {
-  return { name, version: '0.0.0', implementation: {} }
+  return { name, implementation: {} }
 }
 
 export function useSparkComponent<TConfig extends ComponentContext = ComponentContext>(
@@ -81,7 +81,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
 
   // Resolve manager via explicit option or DI (Symbol-based); fail fast to enforce DI-first design
   const resolvedManager = options?.manager ?? (inject(SPARK_MANAGER_KEY)) ?? (inject('sparkManager'))
-  if (!resolvedManager) throw new Error('Component manager not found. Either provide via options.manager or install Spark Vue plugin: app.use(Spark.createVuePlugin())')
+  if (!resolvedManager) throw new Error('Component manager not found. Either provide via options.manager or install Spark Vue plugin: app.use(createVueSparkPlugin())')
   const manager = resolvedManager
   
   // Get capabilityManager from manager if available, fallback to global singleton
@@ -121,7 +121,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
 
   // Provide a capability on this context
   function provide(name: string, implementation?: Implementation) {
-    const p: CapabilityProvider = { name, version: '1.0.0', implementation }
+    const p: CapabilityProvider = { name, implementation }
     if (manager && typeof (manager).registerProvider === 'function') (manager).registerProvider(context, p)
     else context.providers.set(name, p)
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
@@ -129,7 +129,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
 
   // Provide event capability - convenient wrapper
   function provideEvents(name = 'events'): EventProvider {
-    const { provider, emitter } = Capability.Events.createProvider(name)
+    const { provider, emitter } = createEventProvider(name)
     if (manager && typeof (manager).registerProvider === 'function') {
       (manager).registerProvider(context, provider)
     } else {
@@ -158,19 +158,15 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     name: string,
     handlers: Record<string, (...args: unknown[]) => void>
   ): EventProvider | null {
-    const consumer = Capability.Events.createConsumer(name, handlers)
-    context.consumers.set(name, consumer)
-    
     const provider = manager.getProvider(context, name)
     if (provider) {
-      consumer.implementation = provider.implementation
-      try {
-        capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').Context<CapabilityProvider>)
-        logger.info(`🎉 Consumed event capability: ${name} for ${context.type} (${context.id})`)
-        return provider.implementation as EventProvider
-      } catch (e: unknown) {
-        logger.warn('Failed to connect event capability', String(e))
-      }
+      const eventProvider = provider.implementation as EventProvider
+      // 直接注册事件处理器
+      Object.entries(handlers).forEach(([event, handler]) => {
+        eventProvider.on(event, handler)
+      })
+      logger.info(`🎉 Consumed event capability: ${name} for ${context.type} (${context.id})`)
+      return eventProvider
     }
     
     logger.warn(`⚠️ Event capability not found: ${name} for ${context.type} (${context.id})`)
@@ -212,12 +208,12 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     provide,
     provideEvents,
     getProvider,
-    getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext) => {
+    getInheritedProvider: <T = unknown>(name: string, ctx?: ComponentContext): T | undefined => {
       let t: ComponentContext | CapabilityContext | undefined = ctx ?? context
       while (t) {
         const p = t.providers.get(name)
         if (p?.implementation !== undefined) return p.implementation as T
-        t = (t.parent as ComponentContext | CapabilityContext | undefined) ?? undefined
+        t = t.parent ?? undefined
       }
       return undefined
     },
@@ -255,7 +251,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
         if ('id' in current && 'type' in current) {
           chain.push(current)
         }
-        current = (current.parent as ComponentContext | CapabilityContext | undefined) ?? undefined
+        current = current.parent ?? undefined
       }
       return chain
     },

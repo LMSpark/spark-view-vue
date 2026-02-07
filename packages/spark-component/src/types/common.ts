@@ -8,10 +8,4 @@ export type {
   Context as CapabilityContext
 } from '@spark-view/spark-utils'
 
-// 内部类型（仅供 spark 包系统使用）
-export type {
-  Connector as CapabilityConnector,
-  Manager as CapabilityManager
-} from '@spark-view/spark-utils/capability/internal'
-
 export type Implementation = Record<string, unknown>
