@@ -12,26 +12,27 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 ## Where to look (high value files) 🔎
 - Architecture docs: `docs/SPARK_ARCHITECTURE.md` (big-picture + rationale)
 - **Packages**:
-  - `packages/spark-core/` — 组件系统（API docs: `packages/spark-core/API.md`）
+  - `packages/spark-component/` — 组件系统（API docs: `packages/spark-component/API.md`）
   - `packages/spark-data/` — 数据空间（DataSet, TreeManager, BindingContext）
 - **Pages config**: `pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
 - Example components: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
-- Key composable: `packages/spark-core/src/composables/useSparkComponent.ts`
+- Key composable: `packages/spark-component/src/composables/useSparkComponent.ts`
 - Tests: `tests/` (look for `capability-late-binding.test.ts`, `provider-listener.test.ts`)
 
 ## Project conventions & patterns 📌
-- Component `type` uses **kebab-case** (e.g., `spark-ej2-grid`) and is registered with `Spark.registerSparkComponent()`.
+- Component `type` uses **kebab-case** (e.g., `spark-ej2-grid`) and is registered with `Spark.register()`.
 - **Dynamic Import** ⚡: Use `loader: () => import('./Component.vue')` for lazy loading (首屏提速 70%+).
-- App installs the plugin: `app.use(Spark.createVuePlugin())` (Symbol-based DI, manager auto-created).
+- **Registration API**: Use `Spark.createRegister(import.meta.glob('./*.vue'))` for path-based registration.
+- App installs the plugin: `app.use(Spark.createPlugin())` (Symbol-based DI, manager auto-created).
 - Inside components use `useSparkComponent(config)` to access `{ context, provide, consume, use, whenAvailable, logger }`.
-- Capability system uses provider/consumer pattern; common helpers: `whenProviderAvailable('name')`, `getOrCreateNoopProvider()` for tests.
-- `GetProvider(name, ctx?)` behavior: if `ctx` provided, search only that scope; otherwise walk parent chain (documented in `docs/SPARK_ARCHITECTURE.md`).
-- **APP Services**: Use `consume<AppServices>('appServices')` to access router/logger in components. Page layer provides via `DataSetCapabilityManager` (see `docs/guides/APP_SERVICES_CAPABILITY.md`).
+- Capability system uses provider/consumer pattern with Symbol-based capability names.
+- `GetProvider(name, ctx?)` behavior: if `ctx` provided, search only that scope; otherwise walk parent chain.
+- **APP Services**: Use `consume<AppServices>('appServices')` to access router/logger in components. Page layer provides via `DataSetCapabilityManager`.
 
 ## Testing & common pitfalls 🧪
 - Tests run with Vitest + jsdom; external EJ2 (custom tags `e-*`) should be stubbed/mocked in unit tests.
-- Provide `sparkManager` in test mounts: `mount(MyComp, { global: { provide: { sparkManager: Spark.manager() } } })`.
-- Common runtime error: `registerCustomComponents is not defined` → ensure `import { registerCustomComponents } from './components'` is present in `app/main.ts`.
+- Provide `sparkManager` in test mounts using `Spark.createPlugin()`.
+- Common runtime error: Component not found → ensure component is registered before use.
 - Network-dependent CSS (Syncfusion CDN) can break styling in offline tests; mock or vendor styles locally for tests.
 
 ## Integration & build notes 🔧
@@ -43,27 +44,42 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 ## Package structure 📦
 ```
 packages/
-├── spark-core/          # 组件系统（Spark namespace, 能力系统, 插件）
+├── spark-component/     # 组件系统（Spark namespace, 能力系统, 插件）
 │   ├── src/
-│   │   ├── spark-namespace.ts
+│   │   ├── spark.ts
+│   │   ├── registry/
+│   │   ├── capability/
 │   │   ├── composables/
-│   │   ├── utils/
-│   │   └── vue/
+│   │   ├── plugins/
+│   │   └── core/
 │   └── API.md
-└── spark-data/          # 数据空间（DataSet, TreeManager, BindingContext）
+├── spark-data/          # 数据空间（DataSet, TreeManager, BindingContext）
+│   ├── src/
+│   └── API.md
+└── spark-utils/         # 共享工具（Logger, Capability Symbols）
     ├── src/
-   Package usage examples 📚
+    └── API.md
+```
+
+## Package usage examples 📚
 
 ### Using spark-component (组件系统)
 ```ts
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 
 // Install plugin (uses global singleton by default)
-app.use(Spark.createVuePlugin())
+app.use(Spark.createPlugin())
+
+// Register components with glob patterns
+const register = Spark.createRegister(import.meta.glob('./*.vue'))
+register.registerAll({
+  'user-grid': './UserGrid.vue',
+  'user-row': './UserRow.vue'
+})
 
 // Or with custom registry for advanced scenarios
-const registry = Spark.createComponentRegistry()
-app.use(Spark.createVuePlugin({ registry }))
+const registry = Spark.createRegistry()
+app.use(Spark.createPlugin({ registry }))
 ```
 
 ### Using spark-data (数据空间)
@@ -87,12 +103,17 @@ import { DataSetManager, TreeManager } from '@spark-view/spark-data'
 const ds = DataSetManager.create({ ... })
 const tree = new TreeManager({ ... })
 ```
-  provide('columnManager', { implementation: { addColumn() { ... } } })
-  ```
 
-- Test mount with manager:
+### Using spark-utils (工具集)
+```ts
+import { Logger, APP_SERVICES, FIELD_METADATA } from '@spark-view/spark-utils'
 
-  ```ts
-  mount(Component, { global: { provide: { sparkManager: Spark.manager() } } })
-  ```</content>
+// 创建 Logger
+const logger = Logger('MyComponent')
+logger.info('Component initialized')
+
+// 使用 Symbol-based capability names
+provide(APP_SERVICES, { router, logger })
+const appServices = consume(APP_SERVICES)
+```</content>
 <parameter name="filePath">e:\form-create-ssr-app\apps\spark-view\.github\copilot-instructions.md

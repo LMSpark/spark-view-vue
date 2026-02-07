@@ -9,7 +9,6 @@
  * - apiClient: 统一的 API 请求接口
  */
 
-import { CapabilityManager } from '@spark-view/spark-utils/capability/internal'
 import type { Provider as CapabilityProvider } from '@spark-view/spark-utils'
 import type { IDataSet } from '../types'
 
@@ -95,7 +94,7 @@ export interface DataSetCapabilityConfig {
  * DataSet 能力管理器
  * 管理页面级数据和服务能力
  */
-export class DataSetCapabilityManager extends CapabilityManager {
+export class DataSetCapabilityManager {
   private dataSetContext: {
     id: string
     type: string
@@ -107,7 +106,6 @@ export class DataSetCapabilityManager extends CapabilityManager {
   private tableListeners = new Map<string, Set<(table: unknown) => void>>()
 
   constructor(pageId: string, config: DataSetCapabilityConfig) {
-    super()
     this.config = config
     
     // 创建 DataSet 层上下文
