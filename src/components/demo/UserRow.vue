@@ -45,7 +45,7 @@ const user = computed(() => props.config.props?.user as User)
 
 const childConfigs = computed(() =>
   (props.config.children ?? []).filter(
-    (c: any): c is ComponentContext => typeof (c as any).type === 'string' && (c as any).type.length > 0
+    (c): c is ComponentContext => typeof c.type === 'string' && c.type.length > 0
   )
 )
 const emit = defineEmits<{

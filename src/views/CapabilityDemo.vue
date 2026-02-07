@@ -164,26 +164,26 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { SparkData } from '@spark-view/spark-data'
 
 // DataSet 能力管理器
-let capabilityManager: any = null
-const dataSetContext = ref<any>({ id: 'demo-page', providers: new Set() })
-const userInfo = ref<any>({ id: 'user001', name: '演示用户', roles: ['admin', 'developer'] })
+let capabilityManager: Record<string, unknown> | null = null
+const dataSetContext = ref<Record<string, unknown>>({ id: 'demo-page', providers: new Set() })
+const userInfo = ref<Record<string, unknown>>({ id: 'user001', name: '演示用户', roles: ['admin', 'developer'] })
 const themeConfig = ref<string>('dark')
-const dictionary = ref<any[]>([
+const dictionary = ref<Array<Record<string, unknown>>>([
   { label: '技术部', value: 'tech' },
   { label: '产品部', value: 'product' },
   { label: '设计部', value: 'design' }
 ])
-const pageParams = ref<any>({ id: '123', type: 'demo' })
-const pagePermission = ref<any>({ canEdit: true, canDelete: false, canExport: true })
+const pageParams = ref<Record<string, unknown>>({ id: '123', type: 'demo' })
+const pagePermission = ref<Record<string, unknown>>({ canEdit: true, canDelete: false, canExport: true })
 const tableCount = ref(1)
-const tableRows = ref<any[]>([
+const tableRows = ref<Array<Record<string, unknown>>>([
   { id: '1', name: '张三', age: 30, department: '技术部' },
   { id: '2', name: '李四', age: 28, department: '产品部' },
   { id: '3', name: '王五', age: 35, department: '设计部' }
 ])
-const lastAddedRow = ref<any>(null)
+const lastAddedRow = ref<Record<string, unknown> | null>(null)
 const lastMessage = ref('')
-const apiResponse = ref<any>(null)
+const apiResponse = ref<Record<string, unknown> | null>(null)
 const apiError = ref('')
 const apiLoading = ref(false)
 
@@ -198,7 +198,7 @@ const providersCount = computed(() => {
 })
 
 // 初始化 DataSet
-const mockDataSet = SparkData.createDataSet({
+const _mockDataSet = SparkData.createDataSet({
   dataSetName: 'DemoData',
   tables: {
     Users: {
@@ -219,8 +219,8 @@ const mockDataSet = SparkData.createDataSet({
 })
 
 // 模拟 API 客户端
-const mockApiClient = {
-  async request<T>(config: any): Promise<T> {
+const _mockApiClient = {
+  async request<T>(config: Record<string, unknown>): Promise<T> {
     await new Promise(resolve => setTimeout(resolve, 1000))
     return {
       data: {

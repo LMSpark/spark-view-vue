@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, defineComponent, onMounted, h } from 'vue'
+import { computed, ref, defineComponent, onMounted, h, type Component } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { SparkEJ2GridConfig } from '../types'
 
@@ -52,13 +52,13 @@ const PlaceholderGrid = defineComponent({
 import { markRaw } from 'vue'
 
 // activeComponent 初始为占位组件（markRaw 避免被 reactive 包装）
-const activeComponent = ref<any>(markRaw(PlaceholderGrid))
+const activeComponent = ref<Component>(markRaw(PlaceholderGrid))
 
 // 尝试按需加载 EJ2 Grid（非强制），加载失败则保持占位组件
 import('@syncfusion/ej2-vue-grids')
-  .then((m: any) => {
+  .then((m: Record<string, unknown>) => {
     if (m && m.GridComponent) {
-      activeComponent.value = markRaw(m.GridComponent)
+      activeComponent.value = markRaw(m.GridComponent as Component)
     }
   })
   .catch(e => {
@@ -74,7 +74,7 @@ const registerGridCapabilities = () => {
   provide('gridInstance', { instance: null })
   provide('dataSource', { getData: () => props.config.dataSource })
   provide('columnManager', {
-    addColumn: (column: any) => { logger.info('Adding column:', column) },
+    addColumn: (column: Record<string, unknown>) => { logger.info('Adding column:', column) },
     removeColumn: (field: string) => { logger.info('Removing column:', field) },
     getColumns: () => props.config.children || []
   })
