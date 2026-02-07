@@ -139,8 +139,6 @@ export interface RouterGuardOptions {
   loginPath?: string
   /** 无权限页路径 */
   forbiddenPath?: string
-  /** 是否启用模型预加载 */
-  enablePreload?: boolean
   /** 自定义权限检查 */
   checkPermission?: (permissions: string[], required: string[]) => boolean
 }

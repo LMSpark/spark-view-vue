@@ -4,11 +4,19 @@
  */
 
 import type { Router } from 'vue-router'
-import type { RouterGuardOptions } from '../types'
-import { useAppContextOptional, hasAnyPermission } from '../context/AppContext'
+import type { RouterGuardOptions, AppContext } from '../types'
 import { createLogger } from '../logger'
+import { inject } from 'vue'
+import { APP_CONTEXT_KEY } from '../constants'
 
 const routerLogger = createLogger('router')
+
+/**
+ * 检查用户是否拥有任一权限（内部辅助函数）
+ */
+function hasAnyPermission(context: AppContext, permissions: string[]): boolean {
+  return permissions.some(perm => context.user.permissions.includes(perm))
+}
 
 /**
  * 设置路由守卫
@@ -20,14 +28,13 @@ export function setupRouterGuards(
   const {
     loginPath = '/login',
     forbiddenPath = '/forbidden',
-    enablePreload = false,
     checkPermission
   } = options
 
   // 全局前置守卫
   router.beforeEach(async (to, _from, next) => {
     // 1. 检查 AppContext 是否已初始化
-    const appContext = useAppContextOptional()
+    const appContext = inject<AppContext | undefined>(APP_CONTEXT_KEY, undefined)
     
     // 登录页和公开页面跳过检查
     if (to.path === loginPath || to.meta.public === true) {
@@ -55,19 +62,6 @@ export function setupRouterGuards(
           userPermissions: appContext.user.permissions
         })
         return next({ path: forbiddenPath })
-      }
-    }
-
-    // 3. 模型预加载（可选）
-    if (enablePreload && to.meta.preloadModels) {
-      try {
-        const models = to.meta.preloadModels as string[]
-        routerLogger.info('预加载模型', { models })
-        // TODO: 调用 ModelRegistry 预加载
-        // await modelRegistry.preload(models)
-      } catch (error) {
-        routerLogger.error('模型预加载失败', error as Error)
-        // 不阻塞路由跳转
       }
     }
 

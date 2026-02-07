@@ -110,8 +110,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     logPhase('ROUTER', '配置路由守卫')
     setupRouterGuards(router, {
       loginPath: auth?.loginPath ?? '/login',
-      forbiddenPath: '/forbidden',
-      enablePreload: true
+      forbiddenPath: '/forbidden'
     })
 
     // 设置错误处理

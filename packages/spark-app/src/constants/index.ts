@@ -131,24 +131,6 @@ export type Environment = typeof Environments[keyof typeof Environments]
 
 /**
  * ============================================
- * 日志级别常量
- * @internal 主要供日志系统内部使用
- * @deprecated 推荐直接使用字符串字面量类型
- * ============================================
- */
-
-export const LogLevels = {
-  DEBUG: 'debug',
-  INFO: 'info',
-  WARN: 'warn',
-  ERROR: 'error',
-  SUCCESS: 'success'
-} as const
-
-export type LogLevel = typeof LogLevels[keyof typeof LogLevels]
-
-/**
- * ============================================
  * 权限操作常量
  * @internal 预留未来权限系统使用
  * ============================================
@@ -234,41 +216,6 @@ export const StorageKeys = {
 } as const
 
 export type StorageKey = typeof StorageKeys[keyof typeof StorageKeys]
-
-/**
- * ============================================
- * 事件名称常量
- * @internal 预留未来事件系统使用
- * @deprecated AppEventBus 已移除，暂无事件系统
- * ============================================
- */
-
-export const AppEvents = {
-  // 应用生命周期
-  APP_INIT: 'app:init',
-  APP_READY: 'app:ready',
-  APP_ERROR: 'app:error',
-  
-  // 用户相关
-  USER_LOGIN: 'user:login',
-  USER_LOGOUT: 'user:logout',
-  USER_UPDATED: 'user:updated',
-  
-  // 路由相关
-  ROUTE_BEFORE_CHANGE: 'route:beforeChange',
-  ROUTE_AFTER_CHANGE: 'route:afterChange',
-  ROUTE_ERROR: 'route:error',
-  
-  // 配置相关
-  CONFIG_LOADED: 'config:loaded',
-  CONFIG_UPDATED: 'config:updated',
-  
-  // 主题相关
-  THEME_CHANGED: 'theme:changed',
-  LANG_CHANGED: 'lang:changed'
-} as const
-
-export type AppEvent = typeof AppEvents[keyof typeof AppEvents]
 
 /**
  * ============================================
