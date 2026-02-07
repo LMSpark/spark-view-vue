@@ -67,7 +67,7 @@ export const Spark: {
     if ('name' in input && 'path' in input) {
       const config = input as { name: string; path: string }
       const standardConfig = createSimpleRegistration(config)
-      return componentManager.registerComponent(standardConfig)
+      return componentRegistry.register(standardConfig.type, standardConfig)
     }
 
     // 方式 2: 同步注册 - type + component
@@ -78,7 +78,7 @@ export const Spark: {
         name: config.type,
         component: config.component
       }
-      return componentManager.registerComponent(definition)
+      return componentRegistry.register(definition.type, definition)
     }
 
     throw new Error('❌ Invalid registration. Use: { name, path } or { type, component }')
@@ -88,7 +88,11 @@ export const Spark: {
     configs.forEach(config => this.register(config))
   },
 
-  resolveComponent: (type: string) => componentManager.resolveComponent(type),
+  resolveComponent: (type: string) => {
+    const def = componentRegistry.get(type)
+    if (!def) return null
+    return def.loader ?? def.component ?? null
+  },
 
   capabilities: () => capabilityManager,
 

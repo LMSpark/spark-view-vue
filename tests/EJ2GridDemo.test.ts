@@ -8,7 +8,7 @@ import type { SparkEJ2GridConfig } from '@/features/spark-ej2'
 
 const { manager, registry } = createComponentSystem()
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
-await initializeSparkEJ2Components(manager)
+initializeSparkEJ2Components()
 
 // Mock EJ2 components
 vi.mock('@syncfusion/ej2-vue-grids', () => ({
@@ -45,7 +45,7 @@ describe('EJ2GridDemo', () => {
     let wrapper
 
     // Register lightweight stubs for columns to avoid EJ2 runtime complexity in unit tests
-    manager.registerComponent({ type: 'spark-ej2-column', name: 'spark-ej2-column', version: '1.0.0', component: { template: '<div class="stub-column" />' } })
+    manager.getRegistry().register('spark-ej2-column', { type: 'spark-ej2-column', name: 'spark-ej2-column', version: '1.0.0', component: { template: '<div class="stub-column" />' } })
 
     try {
       wrapper = mount(SparkEJ2Grid, {

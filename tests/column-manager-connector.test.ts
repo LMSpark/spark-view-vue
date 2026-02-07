@@ -6,7 +6,7 @@ import { createComponentSystem } from '@spark-view/spark-component'
 const { manager, registry } = createComponentSystem()
 // Initialize SPARK components (registers spark-ej2-grid / spark-ej2-column) for this manager
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
-await initializeSparkEJ2Components(manager)
+initializeSparkEJ2Components()
 
 // Mock EJ2 components so we can mount without real EJ2 runtime
 vi.mock('@syncfusion/ej2-vue-grids', () => ({

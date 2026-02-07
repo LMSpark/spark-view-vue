@@ -260,7 +260,12 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
 
       function getComponent(type: string): Component | null {
         try {
-          const def = (manager).getComponentDefinition(type)
+          const registry = 'getRegistry' in manager ? manager.getRegistry() : null
+          if (!registry) {
+            const fallbackRegistry = (inject(SPARK_REGISTRY_KEY))
+            return fallbackRegistry?.get(type)?.component as Component ?? null
+          }
+          const def = registry.get(type)
           return def?.component as Component ?? null
         } catch {
           const fallbackRegistry = (inject(SPARK_REGISTRY_KEY))
@@ -269,7 +274,10 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
       }
 
       function isComponentRegistered(type: string) {
-        try { return (manager).isComponentRegistered(type) } catch {
+        try {
+          const registry = 'getRegistry' in manager ? manager.getRegistry() : null
+          return registry ? registry.has(type) : false
+        } catch {
           const fallbackRegistry = (inject(SPARK_REGISTRY_KEY))
           return fallbackRegistry ? fallbackRegistry.has(type) : false
         }

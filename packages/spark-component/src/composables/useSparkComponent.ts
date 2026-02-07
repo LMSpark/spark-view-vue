@@ -227,7 +227,8 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     getComponent: (type: string) => {
       // Prefer manager-backed registry
       try {
-        const def = (manager).getComponentDefinition(type)
+        const registry = manager.getRegistry()
+        const def = registry.get(type)
         const comp = def?.component
         return comp ? markRaw(comp) : undefined
       } catch {
@@ -239,7 +240,13 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
       }
     },
     isComponentRegistered: (type: string) => {
-      try { return (manager).isComponentRegistered(type) } catch { const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY)); return registry ? registry.has(type) : false }
+      try {
+        const registry = manager.getRegistry()
+        return registry.has(type)
+      } catch {
+        const registry = options?.registry ?? (inject(SPARK_REGISTRY_KEY))
+        return registry ? registry.has(type) : false
+      }
     },
     
     // 获取从当前节点到根的上下文链路（仅包含 ComponentContext）
