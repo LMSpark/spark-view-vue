@@ -35,7 +35,7 @@ export function initializeSparkComponents(): void {
   logger.info('🚀 Initializing SPARK Component System...')
 
   // 注册所有组件
-  Spark.register(sparkComponentDefinitions)
+  Spark.registerAll(sparkComponentDefinitions)
 
   logger.info('✅ SPARK Component System initialized with components:', Object.keys(sparkComponents))
 }
