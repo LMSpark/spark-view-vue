@@ -210,8 +210,8 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
       // Capability system functions
       function provide(name: string, implementation?: Implementation) {
         const p: CapabilityProvider = { name, implementation }
-        if (manager && typeof (manager).registerProvider === 'function') {
-          (manager).registerProvider(context, p)
+        if (manager && typeof manager.getCapabilityManager === 'function') {
+          manager.getCapabilityManager().registerProvider(context, p)
         } else {
           context.providers.set(name, p)
         }

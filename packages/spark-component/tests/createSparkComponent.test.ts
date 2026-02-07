@@ -2,14 +2,11 @@
 import { describe, it, expect } from 'vitest'
 import { defineSparkComponent } from '../src/vue/createSparkComponent.js'
 import { Spark } from '../src/spark-namespace.js'
-import { createComponentRegistry } from '../src/utils/SparkComponentRegistry.js'
-import { createComponentManager } from '../src/utils/SparkComponentManager.js'
 
 describe('Spark Component Creation APIs', () => {
   describe('defineSparkComponent (unified API)', () => {
     it('creates a component with spark meta that can be registered and rendered by manager', () => {
-      const registry = createComponentRegistry()
-      const manager = createComponentManager(undefined, registry)
+      const { manager, registry } = Spark.createSystem()
 
       const Comp = defineSparkComponent({
         type: 'unified-type',

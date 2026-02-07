@@ -3,11 +3,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid, SparkEJ2Column } from '../features/spark-ej2'
-import { createComponentSystem } from '@spark-view/spark-component'
+import { Spark } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
 import type { SparkEJ2GridConfig } from '@/features/spark-ej2'
 
-const { manager, registry } = createComponentSystem()
+const { manager, registry } = Spark.createSystem()
 initializeSparkEJ2Components()
 
 // Mock EJ2 components

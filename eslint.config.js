@@ -38,9 +38,14 @@ export default [
         document: 'readonly'
       }
     },
-    plugins: { vue: vuePlugin },
+    plugins: { 
+      vue: vuePlugin,
+      '@typescript-eslint': tsPlugin
+    },
     rules: {
-      'vue/html-self-closing': 'off'
+      'vue/html-self-closing': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
     }
   },
   // Core package restriction: prevent importing concrete UI components into core

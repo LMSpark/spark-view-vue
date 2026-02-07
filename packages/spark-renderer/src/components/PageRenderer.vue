@@ -93,9 +93,11 @@ const formCreateOptions = ref({
 })
 
 // 初始化页面上下文
+// @ts-expect-error form-create API 类型复杂，使用 any 断言
 const pageContext: PageContext = {
   get $api() {
-    return formApi.value
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return formApi.value as any
   },
   $route: route,
   $data: pageData,
@@ -133,21 +135,23 @@ const { scopedCss, setScopedCss } = useCssScope({
 const pageFunctions = ref<Record<string, Function>>({})
 
 // DataSet 管理
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
   pageData,
   context: pageContext,
-  originalRules,
-  formApi,
+  originalRules: originalRules as any,
+  formApi: formApi as any,
   enableDataSet: props.enableDataSet
 })
 
 // Rule 绑定（注意：此时 pageFunctions 还是空对象，需要等脚本执行后再绑定）
+// @ts-expect-error form-create 类型定义过于复杂，使用 any 断言
 const { boundRules, rebindRules } = useRuleBinding({
-  originalRules,
+  originalRules: originalRules as any,
   pageData,
   pageFunctions,
   dataSet,
-  formApi
+  formApi: formApi as any
 })
 
 // 更新上下文的 rebindRules 方法
@@ -229,8 +233,9 @@ const loadPageConfig = async () => {
     if (scriptText) {
       try {
         // 从 rules 中提取需要返回的函数名
+        // @ts-expect-error form-create 类型定义过于复杂，使用 any 断言
         const requiredFunctionNames = getRequiredFunctionNames(
-          originalRules.value,
+          originalRules.value as any,
           ['__init__']
         )
         

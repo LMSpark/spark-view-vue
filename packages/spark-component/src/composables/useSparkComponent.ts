@@ -122,16 +122,19 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
   // Provide a capability on this context
   function provide(name: string, implementation?: Implementation) {
     const p: CapabilityProvider = { name, implementation }
-    if (manager && typeof (manager).registerProvider === 'function') (manager).registerProvider(context, p)
-    else context.providers.set(name, p)
+    if (manager && typeof manager.getCapabilityManager === 'function') {
+      manager.getCapabilityManager().registerProvider(context, p)
+    } else {
+      context.providers.set(name, p)
+    }
     logger.info(`🔌 Provided capability: ${name} for ${context.type} (${context.id})`)
   }
 
   // Provide event capability - convenient wrapper
   function provideEvents(name = 'events'): EventProvider {
     const { provider, emitter } = createEventProvider(name)
-    if (manager && typeof (manager).registerProvider === 'function') {
-      (manager).registerProvider(context, provider)
+    if (manager && typeof manager.getCapabilityManager === 'function') {
+      manager.getCapabilityManager().registerProvider(context, provider)
     } else {
       context.providers.set(provider.name, provider)
     }
@@ -142,7 +145,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
   function consume(name: string): Implementation | null {
     const consumer: CapabilityConsumer = { capabilityName: name, implementation: undefined }
     context.consumers.set(name, consumer)
-    const provider = manager.getProvider(context, name) ?? createNoopProvider(name)
+    const provider = manager.getCapabilityManager().getProvider(context, name) ?? createNoopProvider(name)
     if (provider) {
       consumer.implementation = provider.implementation as Implementation | undefined
       try { capabilityManager.connectCapability(provider, consumer, context as import('@spark-view/spark-utils').Context<CapabilityProvider>) } catch (e: unknown) { logger.warn('autoConnectCapabilities failed', String(e)) }
@@ -158,7 +161,7 @@ export function useSparkComponent<TConfig extends ComponentContext = ComponentCo
     name: string,
     handlers: Record<string, (...args: unknown[]) => void>
   ): EventProvider | null {
-    const provider = manager.getProvider(context, name)
+    const provider = manager.getCapabilityManager().getProvider(context, name)
     if (provider) {
       const eventProvider = provider.implementation as EventProvider
       // 直接注册事件处理器

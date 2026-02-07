@@ -2,13 +2,15 @@
 import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid } from '../features/spark-ej2'
 import { Spark } from '../features/spark'
-import { createComponentSystem } from '@spark-view/spark-component'
+import { Spark as SparkCore } from '@spark-view/spark-component'
+import { initializeSparkEJ2Components } from '../features/spark-ej2'
 
 // Note: local EJ2 component used by tests is imported directly where needed
 
 
-const { manager, registry } = createComponentSystem()
-await Spark.initializeApp(manager)
+const { manager, registry } = SparkCore.createSystem()
+// 注册组件到测试用的 registry
+initializeSparkEJ2Components(registry)
 
 // Mock EJ2 components to avoid DOM-dependent behavior
 import { vi } from 'vitest'
