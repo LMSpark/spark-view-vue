@@ -1,7 +1,7 @@
 /**
  * 组件能力管理器
  *
- * 基于 spark-utils 能力系统，为组件层提供专用的能力管理功能
+ * 基于 SPARK 能力系统，为组件层提供专用的能力管理功能
  *
  * 核心职责：
  * - 建立组件能力树（通过 ComponentContext.parent 链）
@@ -9,19 +9,56 @@
  * - 支持延迟绑定（先声明需求，能力提供后自动连接）
  */
 
-import { CapabilityManager } from '@spark-view/spark-utils/capability/internal'
 import { getProviderInherited } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
 import type {
   Context as CapabilityContext
 } from '@spark-view/spark-utils'
 import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../core/types.js'
 
+const logger = Logger('Spark:ComponentCapability')
+
 /**
  * 组件能力管理器
  *
- * 扩展通用能力管理器，提供组件树的递归连接功能
+ * 提供组件树的递归连接功能
  */
-export class ComponentCapabilityManager extends CapabilityManager<CapabilityProvider, CapabilityConsumer> {
+export class ComponentCapabilityManager {
+
+  /**
+   * 连接能力（内部方法）
+   *
+   * @param provider 能力提供者
+   * @param consumer 能力消费者
+   * @returns 是否连接成功
+   */
+  private connectCapability(provider: CapabilityProvider, consumer: CapabilityConsumer): boolean {
+    try {
+      consumer.implementation = provider.implementation
+      logger.debug(`🔗 连接能力：${provider.name}`)
+      return true
+    } catch (e) {
+      logger.error(`连接失败 '${provider.name}':`, String(e))
+      return false
+    }
+  }
+
+  /**
+   * 断开能力（内部方法）
+   *
+   * @param consumer 能力消费者
+   * @returns 是否断开成功
+   */
+  private disconnectCapability(consumer: CapabilityConsumer): boolean {
+    try {
+      consumer.implementation = undefined
+      logger.debug(`🔌 断开能力：${consumer.capabilityName}`)
+      return true
+    } catch (e) {
+      logger.error(`断开失败 '${consumer.capabilityName}':`, String(e))
+      return false
+    }
+  }
 
   /**
    * 自动连接组件上下文中的所有能力
@@ -37,12 +74,12 @@ export class ComponentCapabilityManager extends CapabilityManager<CapabilityProv
       // 沿 parent 链向上查找提供者
       const provider = getProviderInherited(ctx as CapabilityContext, consumer.capabilityName)
       if (provider) {
-        this.connectCapability(provider, consumer, ctx as CapabilityContext<CapabilityProvider>)
+        this.connectCapability(provider as CapabilityProvider, consumer)
       }
     }
 
     // 递归处理子组件
-    ctx.children?.forEach(child => this.autoConnectCapabilities(child))
+    ctx.children?.forEach((child: ComponentContext) => this.autoConnectCapabilities(child))
   }
 
   /**
@@ -56,14 +93,11 @@ export class ComponentCapabilityManager extends CapabilityManager<CapabilityProv
     const ctx = context as ComponentContext
     // 断开当前上下文的所有连接
     for (const consumer of ctx.consumers.values()) {
-      const provider = getProviderInherited(ctx as CapabilityContext, consumer.capabilityName)
-      if (provider) {
-        this.disconnectCapability(provider, consumer, ctx as CapabilityContext<CapabilityProvider>)
-      }
+      this.disconnectCapability(consumer)
     }
 
     // 递归处理子组件
-    ctx.children?.forEach(child => this.disconnectAllCapabilities(child))
+    ctx.children?.forEach((child: ComponentContext) => this.disconnectAllCapabilities(child))
   }
 
   /**
@@ -91,7 +125,7 @@ export class ComponentCapabilityManager extends CapabilityManager<CapabilityProv
     if (context.providerListeners?.has(provider.name)) {
       const set = context.providerListeners.get(provider.name)
       if (set) {
-        set.forEach(cb => {
+        set.forEach((cb: (provider: CapabilityProvider) => void) => {
           try { cb(provider) } 
           catch {
             // 忽略监听器错误
