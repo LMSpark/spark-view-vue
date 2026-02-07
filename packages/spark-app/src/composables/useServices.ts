@@ -18,7 +18,6 @@ import {
   ROUTER_KEY,
   LOGGER_KEY,
   CONFIG_LOADER_KEY,
-  SPARK_MANAGER_KEY,
   SPARK_REGISTRY_KEY,
   AUTH_SERVICE_KEY
 } from '../constants'
@@ -27,7 +26,6 @@ import {
 type Logger = ReturnType<typeof import('../logger').createLogger>
 
 // 外部类型（从相应包导入）
-type SparkManager = import('@spark-view/spark-component').ComponentManager
 type SparkRegistry = import('@spark-view/spark-component').ComponentRegistry
 type ConfigLoader = import('@spark-view/spark-page-config').PageConfigLoader
 
@@ -37,7 +35,6 @@ export {
   ROUTER_KEY as RouterKey,
   LOGGER_KEY as LoggerKey,
   CONFIG_LOADER_KEY as ConfigLoaderKey,
-  SPARK_MANAGER_KEY as SparkManagerKey,
   SPARK_REGISTRY_KEY as SparkRegistryKey,
   AUTH_SERVICE_KEY as AuthServiceKey
 }
@@ -112,23 +109,6 @@ export function useConfigLoader(): ConfigLoader {
     throw new Error('ConfigLoader not provided.')
   }
   return loader
-}
-
-/**
- * 使用 SPARK 管理器
- * 
- * @example
- * ```ts
- * const manager = useSparkManager()
- * const component = manager.getComponent('spark-grid')
- * ```
- */
-export function useSparkManager(): SparkManager {
-  const manager = inject(SPARK_MANAGER_KEY)
-  if (!manager) {
-    throw new Error('SparkManager not provided.')
-  }
-  return manager
 }
 
 /**

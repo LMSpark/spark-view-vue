@@ -1,20 +1,15 @@
-﻿import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid } from '../features/spark-ej2'
-import { Spark } from '../features/spark'
-import { Spark as SparkCore } from '@spark-view/spark-component'
+import { Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
 
-// Note: local EJ2 component used by tests is imported directly where needed
-
-
-const { manager, registry } = SparkCore.createSystem()
-// 注册组件到测试用的 registry
+const { registry, rootContext } = Spark.createSystem()
+// Register components into the test registry
 initializeSparkEJ2Components(registry)
 
 // Mock EJ2 components to avoid DOM-dependent behavior
-import { vi } from 'vitest'
-// Keep EJ2 Vue Grid mocked to avoid running heavy DOM/`location` dependent code in unit tests
 vi.mock('@syncfusion/ej2-vue-grids', () => ({
   GridComponent: {
     name: 'GridComponent',
@@ -32,50 +27,31 @@ vi.mock('@syncfusion/ej2-vue-grids', () => ({
   }
 }))
 
-
-
-// Mock global EJ2 components for test environment
-const _mockEColumn = {
-  name: 'e-column',
-  template: '<div class="e-column"><slot /></div>',
-  props: ['field', 'headerText', 'width', 'columns', 'textAlign', 'format', 'template', 'visible', 'allowSorting', 'allowFiltering']
-}
-
-const _mockEColumns = {
-  name: 'e-columns',
-  template: '<div class="e-columns"><slot /></div>'
-}
-
-const _mockEjsGrid = {
-  name: 'ejs-grid',
-  template: '<div class="ejs-grid"><slot /></div>',
-  props: ['dataSource', 'allowPaging', 'pageSettings', 'height']
-} 
-
 // Register global mocks
 if (typeof window !== 'undefined') {
   const win = window as unknown as { Vue?: { component: (...args: unknown[]) => void } }
   win.Vue = { component: vi.fn() }
 }
 
-// Capture global errors and rejections to help find stack traces during test failures
-const __capturedErrors: unknown[] = []
-process.on('uncaughtException', (err: unknown) => { try { console.error('uncaughtException', (err as Error)?.stack ?? err) } catch { } ; __capturedErrors.push(err) })
-process.on('unhandledRejection', (reason: unknown) => { try { console.error('process.unhandledRejection', (reason as Error)?.stack ?? reason) } catch { } ; __capturedErrors.push(reason) })
-if (typeof window !== 'undefined') {
-  window.addEventListener('error', (ev: ErrorEvent) => { try { console.error('window.error', ev.error?.stack ?? ev.message) } catch { } ; __capturedErrors.push(ev) })
-  window.addEventListener('unhandledrejection', (ev: PromiseRejectionEvent) => { try { console.error('window.unhandledrejection', ev.reason?.stack ?? ev.reason) } catch { } ; __capturedErrors.push(ev) })
-}
-
-// Also capture console errors
-const originalConsoleError = console.error
-console.error = (...args: unknown[]) => {
-  __capturedErrors.push(args)
-  originalConsoleError.apply(console, args)
+/**
+ * Walk the context tree recursively and collect all matching contexts
+ */
+function collectContexts(root: ComponentContext, predicate: (ctx: ComponentContext) => boolean): ComponentContext[] {
+  const results: ComponentContext[] = []
+  function walk(ctx: ComponentContext) {
+    if (predicate(ctx)) results.push(ctx)
+    if (ctx.children) {
+      for (const child of ctx.children) {
+        walk(child)
+      }
+    }
+  }
+  walk(root)
+  return results
 }
 
 describe('ColumnManager provider location', () => {
-  it('parent column should provide columnManager; grid should not', async () => {
+  it('parent column should provide columnConfig; grid should not', async () => {
     const config = {
       type: 'spark-ej2-grid' as const,
       dataSource: [{ id: 1 }],
@@ -91,48 +67,42 @@ describe('ColumnManager provider location', () => {
       ]
     }
 
-    let wrapper
-    try {
-      wrapper = mount(SparkEJ2Grid, {
-        props: { config },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
-      })
-
-      // Wait for component to mount and render
-      await wrapper.vm.$nextTick()
-
-      if (__capturedErrors.length > 0) {
-        console.error('Captured async errors during mount:', __capturedErrors)
-        throw __capturedErrors[0]
+    const wrapper = mount(SparkEJ2Grid, {
+      props: { config },
+      global: {
+        provide: {
+          [SPARK_REGISTRY_KEY as symbol]: registry,
+          sparkParentContext: rootContext
+        }
       }
-    } catch (err: unknown) {
-      console.error('Mount or async processing threw:', err, err && (err as Error).stack)
-      throw err
-    }
+    })
 
-    // Verify that a column component was created and registered in the manager
-    const mgr = manager
-    const contexts = mgr.getAllContexts()
-    const columnContexts = contexts.filter(ctx => ctx.type === 'spark-ej2-column')
+    // Wait for component to mount and render
+    await wrapper.vm.$nextTick()
+
+    // Walk the rootContext tree to find column contexts
+    const columnContexts = collectContexts(rootContext, ctx => ctx.type === 'spark-ej2-column')
 
     // Should have at least one column context
     expect(columnContexts.length).toBeGreaterThan(0)
 
-    // Find the parent column (field: 'parent')
-    const parentColumnCtx = columnContexts.find(ctx => ctx.state.field === 'parent')
-    expect(parentColumnCtx).toBeDefined()
-
-    // The parent column context should have columnConfig provider
-    if (parentColumnCtx) {
-      expect(parentColumnCtx.providers.has('columnConfig')).toBe(true)
+    // Every column context should have columnConfig provider
+    for (const colCtx of columnContexts) {
+      expect(colCtx.providers.has('columnConfig')).toBe(true)
     }
 
-    // Verify the parent column has the expected configuration
+    // Find the grid context
+    const gridContexts = collectContexts(rootContext, ctx => ctx.type === 'spark-ej2-grid')
+    expect(gridContexts.length).toBeGreaterThan(0)
+
+    // The grid context should NOT have columnConfig provider (it provides other things)
+    const gridCtx = gridContexts[0]
+    expect(gridCtx.providers.has('columnConfig')).toBe(false)
+
+    // Verify there is a parent column that has child column context(s)
+    const parentColumnCtx = columnContexts.find(ctx =>
+      ctx.children && ctx.children.some(c => c.type === 'spark-ej2-column')
+    )
     expect(parentColumnCtx).toBeDefined()
-    if (parentColumnCtx) {
-      expect(parentColumnCtx.state.field).toBe('parent')
-      expect(parentColumnCtx.state.children).toHaveLength(1)
-      expect(parentColumnCtx.state.children?.[0]?.field).toBe('child1')
-    }
   })
 })

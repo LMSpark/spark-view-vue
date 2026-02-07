@@ -1,29 +1,49 @@
-﻿import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-component'
-import type { ComponentConfig, ComponentContext, CapabilityProvider } from '@spark-view/spark-component'
-
-const createSparkComponentManager = () => Spark.createManager()
+import type { CapabilityProvider } from '@spark-view/spark-component'
 
 describe('Provider listeners', () => {
   it('listener is invoked when provider is registered', () => {
-    const manager = createSparkComponentManager()
+    const { capabilities, createContext, rootContext } = Spark.createSystem()
 
-    const parentConfig: ComponentConfig = { type: 'parent', id: 'parent-listen' }
-    const parentCtx: ComponentContext = manager.createContext(parentConfig)
+    const parentCtx = createContext({ type: 'parent', id: 'parent-listen' }, rootContext)
 
-    // attach listener
-    parentCtx.providerListeners ??= new Map()
+    // Attach listener before provider registration
+    parentCtx.providerListeners = new Map()
     parentCtx.providerListeners.set('foo', new Set())
 
     let called = false
-    const listeners = parentCtx.providerListeners.get('foo')
-    if (listeners) {
-      listeners.add((prov: CapabilityProvider) => { called = true; expect(prov.name).toBe('foo') })
-    }
+    const listeners = parentCtx.providerListeners.get('foo')!
+    listeners.add((prov: CapabilityProvider) => {
+      called = true
+      expect(prov.name).toBe('foo')
+    })
 
-    const provider: CapabilityProvider = { name: 'foo', version: '1.0.0', implementation: {} }
-    manager.getCapabilityManager().registerProvider(parentCtx, provider)
+    const provider: CapabilityProvider = { name: 'foo', implementation: {} }
+    capabilities.registerProvider(parentCtx, provider)
 
     expect(called).toBe(true)
+  })
+
+  it('listener on child is invoked when provider is registered on parent', () => {
+    const { capabilities, createContext, rootContext } = Spark.createSystem()
+
+    const parentCtx = createContext({ type: 'parent', id: 'parent-2' }, rootContext)
+    const childCtx = createContext({ type: 'child', id: 'child-2' }, parentCtx)
+
+    // Attach listener on child
+    childCtx.providerListeners = new Map()
+    childCtx.providerListeners.set('bar', new Set())
+
+    let receivedProvider: CapabilityProvider | null = null
+    childCtx.providerListeners.get('bar')!.add((prov: CapabilityProvider) => {
+      receivedProvider = prov
+    })
+
+    const provider: CapabilityProvider = { name: 'bar', implementation: { value: 42 } }
+    capabilities.registerProvider(parentCtx, provider)
+
+    expect(receivedProvider).not.toBeNull()
+    expect(receivedProvider!.name).toBe('bar')
   })
 })

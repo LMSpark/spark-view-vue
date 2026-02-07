@@ -19,13 +19,6 @@ const sparkComponents = {
   'spark-component-renderer': SparkComponentRenderer,
 }
 
-// 转换为组件定义数组
-const sparkComponentDefinitions = Object.entries(sparkComponents).map(([type, component]) => ({
-  type,
-  name: type,
-  component
-}))
-
 /**
  * 初始化SPARK组件系统
  * 在应用启动时调用此函数注册所有组件
@@ -34,8 +27,8 @@ export function initializeSparkComponents(): void {
   const logger = Spark.Logger()
   logger.info('🚀 Initializing SPARK Component System...')
 
-  // 注册所有组件
-  Spark.registerAll(sparkComponentDefinitions)
+  // 批量注册所有组件
+  Spark.registerAll(sparkComponents)
 
   logger.info('✅ SPARK Component System initialized with components:', Object.keys(sparkComponents))
 }

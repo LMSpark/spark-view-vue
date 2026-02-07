@@ -17,7 +17,7 @@
     <component
       v-for="childConfig in childConfigs"
       :key="childConfig.id"
-      :is="defineAsyncComponent(Spark.resolveComponent(childConfig.type) as any)"
+      :is="getComponent(childConfig.type)"
       :config="childConfig"
     />
 
@@ -26,8 +26,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
-import { useSparkComponent, Spark } from '@spark-view/spark-component'
+import { ref, computed, onMounted } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 import type { 
   User, 
@@ -59,6 +60,7 @@ const {
   provide: provideCapability,
   provideEvents,
   consumeEvents,
+  getComponent,
   logger 
 } = useSparkComponent(props.config as ComponentContext)
 
@@ -67,22 +69,27 @@ const isSelected = ref(false)
 // ============ 能力消费 ============
 
 // 1. 消费父组件的选择能力
-const selection = consume('selection')
+const selection = consume(SELECTION)
 
 // 更新选中状态
 const updateSelectionState = () => {
-  const sel = selection?.value as SelectionCapability | null
+  const sel = selection as SelectionCapability | null
   if (sel && user.value) {
     isSelected.value = sel.isSelected(user.value.id)
   }
 }
 
 // 2. 消费父组件的事件能力（使用 consumeEvents 自动注册监听器）
-consumeEvents('gridEvents', {
+consumeEvents(GRID_EVENTS, {
   'selection:changed': () => {
     updateSelectionState()
-    logger.debug('🔄 Selection updated for row:', user.value?.id)
-  }
+    logger.debug('🔄 Selection updated for row:', user.value?.id)  },
+  'grid:refresh': () => {
+    logger.info('📡 Row received grid refresh event')
+    // 可以在这里添加刷新逻辑，比如重新获取数据
+  },
+  'data:refreshed': (data: unknown) => {
+    logger.info('📡 Row received data refreshed event:', data)  }
 })
 
 // ============ 能力提供（给字段组件） ============
@@ -94,10 +101,10 @@ const rowDataCapability = {
   isSelected: () => isSelected.value
 }
 
-provideCapability('rowData', rowDataCapability as unknown as Record<string, unknown>)
+provideCapability(ROW_DATA, rowDataCapability as unknown as Record<string, unknown>)
 
 // 提供行事件能力（使用真正的事件系统）
-const rowEventsEmitter = provideEvents('rowEvents')
+const rowEventsEmitter = provideEvents(ROW_EVENTS)
 
 // ============ 事件处理 ============
 
@@ -110,7 +117,7 @@ const handleClick = () => {
 
 const handleCheckboxChange = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked
-  const sel = selection?.value as SelectionCapability | null
+  const sel = selection as SelectionCapability | null
   if (sel && user.value) {
     checked ? sel.select(user.value.id) : sel.deselect(user.value.id)
     updateSelectionState()

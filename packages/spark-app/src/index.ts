@@ -91,7 +91,6 @@ export {
   useAppRouter,
   useLogger,
   useConfigLoader,
-  useSparkManager,
   useSparkRegistry,
   useAuth,
   tryUseAppContext,
@@ -104,7 +103,6 @@ export {
   RouterKey,
   LoggerKey,
   ConfigLoaderKey,
-  SparkManagerKey,
   SparkRegistryKey,
   AuthServiceKey
 } from './composables/useServices'
