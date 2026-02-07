@@ -133,15 +133,38 @@ export class SparkComponentManagerImpl {
   }
 
   // ============================================================================
-  // 🔌 能力系统：Provider ⇄ Consumer 连接
+  // 🔗 便捷方法（避免组件直接操作 Context 和 CapabilityManager）
   // ============================================================================
+  //
+  // 为什么需要这些方法？
+  // - 封装完整流程：存储 → 自动连接 → 通知监听器
+  // - 避免使用者遗漏步骤（如忘记调用 autoConnect）
+  // - 统一错误处理和日志记录
+  //
+  // 职责说明：
+  // - registerProvider: 便捷方法，封装"注册 Provider"的完整流程
+  // - getProvider: 便捷方法，向上查找 Provider（避免组件手动遍历父级链）
+  //
+  // 真正的能力管理由 CapabilityManager 完成，这里只是"胶水代码"
 
-  /** 获取能力管理器 */
+  /** 获取能力管理器（组件可直接使用以获得更多控制） */
   getCapabilityManager(): ComponentCapabilityManager {
     return this.capabilityManager
   }
 
-  /** 注册能力提供者（自动连接 Consumer + 通知监听器） */
+  /** 
+   * 便捷方法：注册 Provider（封装完整流程）
+   * 
+   * 完整流程：
+   * 1. 验证 provider
+   * 2. 存储到 context.providers
+   * 3. 自动连接（调用 capabilityManager.autoConnectCapabilities）
+   * 4. 通知等待的监听器
+   * 
+   * 如需更多控制，可直接使用：
+   * - context.providers.set(name, provider)
+   * - manager.getCapabilityManager().autoConnectCapabilities(context)
+   */
   registerProvider(context: ComponentContext, provider: CapabilityProvider): void {
     // 验证
     if (!provider?.name || typeof provider.name !== 'string') {
@@ -175,7 +198,13 @@ export class SparkComponentManagerImpl {
     this.logger.debug(`Provider registered: '${provider.name}' in ${context.type} (${context.id})`)
   }
 
-  /** 查找能力提供者（向上查找父级链直到找到） */
+  /** 
+   * 便捷方法：查找 Provider（向上查找父级链）
+   * 
+   * 如需更细粒度控制，可直接操作：
+   * - context.providers.get(name)
+   * - 手动遍历 context.parent
+   */
   getProvider(context: ComponentContext, capabilityName: string): CapabilityProvider | undefined {
     const provider = context.providers.get(capabilityName)
     if (provider) return provider
