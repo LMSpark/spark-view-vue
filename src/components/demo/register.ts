@@ -19,43 +19,19 @@ export type {
 Spark.register({
   type: 'user-grid',
   name: 'UserGrid',
-  loader: () => import('./UserGrid.vue'),
-  metadata: {
-    level: 'model',
-    description: '用户列表 - 模型级组件，管理整体数据和选择',
-    capabilities: {
-      provides: ['selection', 'gridEvents', 'dataSource'],
-      consumes: []
-    }
-  }
+  loader: () => import('./UserGrid.vue')
 })
 
 // 2. 实例级组件：UserRow
 Spark.register({
   type: 'user-row',
   name: 'UserRow',
-  loader: () => import('./UserRow.vue'),
-  metadata: {
-    level: 'instance',
-    description: '用户行 - 实例级组件，管理单条数据',
-    capabilities: {
-      provides: ['rowData', 'rowEvents'],
-      consumes: ['selection', 'gridEvents']
-    }
-  }
+  loader: () => import('./UserRow.vue')
 })
 
 // 3. 字段级组件：UserField
 Spark.register({
   type: 'user-field',
   name: 'UserField',
-  loader: () => import('./UserField.vue'),
-  metadata: {
-    level: 'field',
-    description: '用户字段 - 字段级组件，显示单个字段',
-    capabilities: {
-      provides: [],
-      consumes: ['rowData', 'rowEvents']
-    }
-  }
+  loader: () => import('./UserField.vue')
 })
