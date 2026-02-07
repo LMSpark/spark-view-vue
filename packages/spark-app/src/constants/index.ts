@@ -98,24 +98,6 @@ export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
 
 /**
  * ============================================
- * Bootstrap 阶段常量
- * @internal 仅供内部 bootstrap 流程使用
- * ============================================
- */
-
-export const BootstrapPhases = {
-  CONFIG: 'config',
-  AUTH: 'auth',
-  SERVICES: 'services',
-  ROUTER: 'router',
-  MOUNT: 'mount',
-  COMPLETE: 'complete'
-} as const
-
-export type BootstrapPhase = typeof BootstrapPhases[keyof typeof BootstrapPhases]
-
-/**
- * ============================================
  * 环境常量
  * ============================================
  */
@@ -128,109 +110,6 @@ export const Environments = {
 } as const
 
 export type Environment = typeof Environments[keyof typeof Environments]
-
-/**
- * ============================================
- * 权限操作常量
- * @internal 预留未来权限系统使用
- * ============================================
- */
-
-export const PermissionActions = {
-  VIEW: 'view',
-  CREATE: 'create',
-  UPDATE: 'update',
-  DELETE: 'delete',
-  EXPORT: 'export',
-  IMPORT: 'import',
-  APPROVE: 'approve',
-  REJECT: 'reject'
-} as const
-
-export type PermissionAction = typeof PermissionActions[keyof typeof PermissionActions]
-
-/**
- * ============================================
- * 资源类型常量
- * @internal 预留未来权限系统使用
- * ============================================
- */
-
-export const ResourceTypes = {
-  PAGE: 'page',
-  MENU: 'menu',
-  BUTTON: 'button',
-  API: 'api',
-  DATA: 'data'
-} as const
-
-export type ResourceType = typeof ResourceTypes[keyof typeof ResourceTypes]
-
-/**
- * ============================================
- * HTTP 状态码常量
- * ============================================
- */
-
-export const HttpStatus = {
-  OK: 200,
-  CREATED: 201,
-  NO_CONTENT: 204,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  TIMEOUT: 408,
-  CONFLICT: 409,
-  INTERNAL_ERROR: 500,
-  SERVICE_UNAVAILABLE: 503
-} as const
-
-export type HttpStatusCode = typeof HttpStatus[keyof typeof HttpStatus]
-
-/**
- * ============================================
- * 本地存储键名常量
- * @internal 主要供内部模块使用（AuthService, TokenManager 等）
- * ============================================
- */
-
-export const StorageKeys = {
-  // 认证相关
-  AUTH_TOKEN: 'spark_auth_token',
-  REFRESH_TOKEN: 'spark_refresh_token',
-  USER_INFO: 'spark_user_info',
-  
-  // 应用配置
-  APP_CONFIG: 'spark_app_config',
-  APP_THEME: 'spark_app_theme',
-  APP_LANG: 'spark_app_lang',
-  
-  // 页面状态
-  PAGE_CACHE: 'spark_page_cache',
-  ROUTE_HISTORY: 'spark_route_history',
-  
-  // 用户偏好
-  USER_PREFERENCES: 'spark_user_preferences',
-  TABLE_SETTINGS: 'spark_table_settings'
-} as const
-
-export type StorageKey = typeof StorageKeys[keyof typeof StorageKeys]
-
-/**
- * ============================================
- * 配置源类型常量
- * @internal 主要供配置加载器内部使用
- * ============================================
- */
-
-export const ConfigSources = {
-  LOCAL: 'local',
-  REMOTE: 'remote',
-  HYBRID: 'hybrid'
-} as const
-
-export type ConfigSource = typeof ConfigSources[keyof typeof ConfigSources]
 
 /**
  * ============================================
@@ -264,38 +143,9 @@ export const DefaultConfig = {
 
 /**
  * ============================================
- * 正则表达式常量
- * ============================================
- */
-
-export const Patterns = {
-  EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  PHONE: /^1[3-9]\d{9}$/,
-  ID_CARD: /^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$/,
-  PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
-  URL: /^https?:\/\/.+/,
-  PERMISSION: /^[a-z]+:[a-z]+$/  // 格式: resource:action
-} as const
-
-/**
- * ============================================
  * 工具函数
  * ============================================
  */
-
-/**
- * 判断是否为生产环境
- */
-export function isProduction(): boolean {
-  return import.meta.env.MODE === Environments.PRODUCTION
-}
-
-/**
- * 判断是否为开发环境
- */
-export function isDevelopment(): boolean {
-  return import.meta.env.MODE === Environments.DEVELOPMENT
-}
 
 /**
  * 获取错误消息
@@ -331,61 +181,4 @@ export function getErrorMessage(code: ErrorCode): string {
   }
   
   return messages[code] ?? '未知错误'
-}
-
-/**
- * 验证权限格式
- */
-export function isValidPermission(permission: string): boolean {
-  return Patterns.PERMISSION.test(permission)
-}
-
-/**
- * 从本地存储获取值
- */
-export function getStorageItem<T = string>(key: StorageKey): T | null {
-  if (typeof localStorage === 'undefined') return null
-  
-  try {
-    const value = localStorage.getItem(key)
-    if (!value) return null
-    
-    // 尝试解析 JSON
-    try {
-      return JSON.parse(value) as T
-    } catch {
-      return value as T
-    }
-  } catch {
-    return null
-  }
-}
-
-/**
- * 存储值到本地存储
- */
-export function setStorageItem(key: StorageKey, value: unknown): void {
-  if (typeof localStorage === 'undefined') return
-  
-  try {
-    const strValue = typeof value === 'string' ? value : JSON.stringify(value)
-    localStorage.setItem(key, strValue)
-  } catch (error) {
-    // Fallback to console when storage fails (SSR safe)
-    console.error('存储失败:', error)
-  }
-}
-
-/**
- * 从本地存储移除值
- */
-export function removeStorageItem(key: StorageKey): void {
-  if (typeof localStorage === 'undefined') return
-  
-  try {
-    localStorage.removeItem(key)
-  } catch (error) {
-    // Fallback to console when storage fails (SSR safe)
-    console.error('移除失败:', error)
-  }
 }

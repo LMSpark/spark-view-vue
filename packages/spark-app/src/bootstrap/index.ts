@@ -17,7 +17,7 @@ const bootstrapLogger = createLogger('bootstrap')
  * 应用初始化流水线
  */
 export async function bootstrap(options: BootstrapOptions): Promise<void> {
-  const { app, router, config, beforeMount, afterMount, authenticate, auth } = options
+  const { app, router, config, beforeMount, afterMount, auth } = options
 
   try {
     // 阶段 1: 配置加载
@@ -64,9 +64,6 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       } else {
         appContext = null
       }
-    } else if (authenticate) {
-      // 向后兼容：使用旧的 authenticate 函数
-      appContext = await authenticate()
     } else {
       // 默认认证
       appContext = await defaultAuthenticate(appConfig)
@@ -101,7 +98,6 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // 提供认证服务（如果启用）
     if (auth) {
       app.provide(AUTH_SERVICE_KEY, authService)
-      app.provide('authService', authService)  // 向后兼容
     }
     
     // 注意：sparkManager 的字符串 key 已在上面处理，不需要重复提供

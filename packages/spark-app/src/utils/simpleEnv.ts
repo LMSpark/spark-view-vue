@@ -53,17 +53,3 @@ export const simpleEnvAdapter = {
     return typeof window !== 'undefined' ? window.sessionStorage : undefined
   }
 } as const
-
-/**
- * 在客户端执行回调
- */
-export function onClient<T>(callback: () => T): T | null {
-  return typeof window !== 'undefined' ? callback() : null
-}
-
-/**
- * 检测是否为客户端环境
- */
-export function isClient(): boolean {
-  return typeof window !== 'undefined'
-}

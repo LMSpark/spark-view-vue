@@ -29,16 +29,6 @@ type Logger = ReturnType<typeof import('../logger').createLogger>
 type SparkRegistry = import('@spark-view/spark-component').ComponentRegistry
 type ConfigLoader = import('@spark-view/spark-page-config').PageConfigLoader
 
-// 导出 Injection Keys（向后兼容，推荐从 constants 导入）
-export {
-  APP_CONTEXT_KEY as AppContextKey,
-  ROUTER_KEY as RouterKey,
-  LOGGER_KEY as LoggerKey,
-  CONFIG_LOADER_KEY as ConfigLoaderKey,
-  SPARK_REGISTRY_KEY as SparkRegistryKey,
-  AUTH_SERVICE_KEY as AuthServiceKey
-}
-
 // ============================================================================
 // Composables（组合式函数）
 // ============================================================================
@@ -200,22 +190,6 @@ export function useCurrentUser() {
 export function useCurrentTenant() {
   const context = useAppContext()
   return context.tenant
-}
-
-/**
- * 使用环境信息
- * 
- * @example
- * ```ts
- * const env = useEnvironment()
- * if (env.isDevelopment) {
- *   console.log('Dev mode')
- * }
- * ```
- */
-export function useEnvironment() {
-  const context = useAppContext()
-  return context.env
 }
 
 /**

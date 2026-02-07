@@ -1,4 +1,4 @@
-﻿// 沙箱注入的全局变量: 
+// 沙箱注入的全局变量: 
 // - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
 
@@ -84,12 +84,12 @@ function handleUserSelect(row) {
   const itemsTable = dataSet.getTable('OrderItems')
   
   // 如果原始数据未加载（_originalRows 为 undefined），先加载（按需加载）
-  if (!ordersTable._originalRows) {
+  if (!ordersTable.originalRows) {
     console.log('🔄 检测到 Orders 原始数据未加载，触发加载...')
     dataSet.requestTableData('Orders')
   }
   
-  if (!itemsTable._originalRows) {
+  if (!itemsTable.originalRows) {
     console.log('🔄 检测到 OrderItems 原始数据未加载，触发加载...')
     dataSet.requestTableData('OrderItems')
   }

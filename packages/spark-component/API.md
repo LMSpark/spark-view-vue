@@ -574,7 +574,6 @@ type AnyFunction = (...args: any[]) => any
 
 ```typescript
 // 依赖注入键
-const SPARK_MANAGER_KEY: InjectionKey<ComponentManager>
 const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry>
 ```
 

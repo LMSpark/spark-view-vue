@@ -97,12 +97,5 @@ export {
   tryUseAuth,
   useCurrentUser,
   useCurrentTenant,
-  usePermissions,
-  // Injection Keys
-  AppContextKey,
-  RouterKey,
-  LoggerKey,
-  ConfigLoaderKey,
-  SparkRegistryKey,
-  AuthServiceKey
+  usePermissions
 } from './composables/useServices'

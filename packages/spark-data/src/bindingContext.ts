@@ -59,33 +59,19 @@ export class BindingContext implements IBindingContext {
     this.dataSet = dataSet
   }
   
-  // ==================== 访问器（保持向后兼容）====================
+  // ==================== 公共访问器 ====================
   
-  /** @deprecated 使用 hostTable getter 访问 */
-  get _hostTable(): string { return this.__hostTable }
+  /** 获取宿主表名 */
+  get hostTable(): string { return this.__hostTable }
   
-  /** @deprecated 使用 contextId getter 访问 */
-  get _contextId(): string { return this.__contextId }
+  /** 获取上下文 ID */
+  get contextId(): string { return this.__contextId }
   
-  /** @deprecated 内部使用，不推荐外部访问 */
-  get _originalRows(): IDataRow[] | undefined { return this.__originalRows }
+  /** 获取原始数据行（过滤/排序前的完整数据） */
+  get originalRows(): IDataRow[] | undefined { return this.__originalRows }
   
-  /** @deprecated 内部使用，不推荐外部访问 */
-  set _originalRows(value: IDataRow[] | undefined) { this.__originalRows = value }
-  
-  /**
-   * 获取宿主表名
-   */
-  get hostTable(): string {
-    return this.__hostTable
-  }
-  
-  /**
-   * 获取上下文 ID
-   */
-  get contextId(): string {
-    return this.__contextId
-  }
+  /** 设置原始数据行 */
+  set originalRows(value: IDataRow[] | undefined) { this.__originalRows = value }
   
   /**
    * 设置 DataSet 引用
@@ -145,24 +131,24 @@ export class BindingContext implements IBindingContext {
     const isSameRow = existingRow === row
     
     if (isSameRow) {
-      console.info(`⏭️ [Context] ${this._hostTable}.${this._contextId}.currentRow 未变化`)
+      console.info(`⏭️ [Context] ${this.hostTable}.${this.contextId}.currentRow 未变化`)
       return
     }
     
-    console.info(`🔄 [Context] ${this._hostTable}.${this._contextId}.currentRow 更新`, { from: existingRow, to: row })
+    console.info(`🔄 [Context] ${this.hostTable}.${this.contextId}.currentRow 更新`, { from: existingRow, to: row })
     this.currentRow = row
     
     if (!skipNotify && this.dataSet) {
       // 触发关系更新
-      this.dataSet.updateRelatedTables(this._hostTable, this._contextId)
+      this.dataSet.updateRelatedTables(this.hostTable, this.contextId)
       
       // 通知订阅者
-      this.dataSet.notifySubscribers(this._hostTable, this._contextId)
+      this.dataSet.notifySubscribers(this.hostTable, this.contextId)
       
       // 触发事件
       this.dataSet.emit('currentRowChanged', { 
-        tableName: this._hostTable, 
-        contextId: this._contextId, 
+        tableName: this.hostTable, 
+        contextId: this.contextId, 
         row 
       })
     }
@@ -205,11 +191,11 @@ export class BindingContext implements IBindingContext {
     )
     
     if (isSameSelection) {
-      console.info(`⏭️ [Context] ${this._hostTable}.${this._contextId}.selectedRows 未变化`)
+      console.info(`⏭️ [Context] ${this.hostTable}.${this.contextId}.selectedRows 未变化`)
       return
     }
     
-    console.info(`🔄 [Context] ${this._hostTable}.${this._contextId}.selectedRows 更新`, { 
+    console.info(`🔄 [Context] ${this.hostTable}.${this.contextId}.selectedRows 更新`, { 
       from: existingRows.length, 
       to: rows.length 
     })
@@ -217,16 +203,16 @@ export class BindingContext implements IBindingContext {
     
     if (this.dataSet) {
       // ✅ 始终触发关系更新（过滤子表）
-      this.dataSet.updateRelatedTables(this._hostTable, this._contextId)
+      this.dataSet.updateRelatedTables(this.hostTable, this.contextId)
       
       // ❓ 根据 skipNotify 决定是否通知当前表的订阅者
       if (!skipNotify) {
-        this.dataSet.notifySubscribers(this._hostTable, this._contextId)
+        this.dataSet.notifySubscribers(this.hostTable, this.contextId)
         
         // 🔔 仅在非 skipNotify 时触发事件（避免 UI→数据→UI 循环）
         this.dataSet.emit('selectedRowsChanged', { 
-          tableName: this._hostTable, 
-          contextId: this._contextId, 
+          tableName: this.hostTable, 
+          contextId: this.contextId, 
           rows 
         })
       }
@@ -251,7 +237,7 @@ export class BindingContext implements IBindingContext {
    */
   notifyChange(): void {
     if (this.dataSet) {
-      this.dataSet.notifySubscribers(this._hostTable, this._contextId)
+      this.dataSet.notifySubscribers(this.hostTable, this.contextId)
     }
   }
 
@@ -286,13 +272,13 @@ export class BindingContext implements IBindingContext {
     // 注意：不清空 _originalRows，保留缓存数据
     
     if (hadData) {
-      console.info(`🧹 [Context] ${this._hostTable}.${this._contextId} 已清空所有状态`);
+      console.info(`🧹 [Context] ${this.hostTable}.${this.contextId} 已清空所有状态`);
     }
     
     if (!skipNotify && hadData && this.dataSet) {
-      this.dataSet.notifySubscribers(this._hostTable, this._contextId);
+      this.dataSet.notifySubscribers(this.hostTable, this.contextId);
       // 触发清空事件
-      this.dataSet.emit('contextCleared', { tableName: this._hostTable, contextId: this._contextId });
+      this.dataSet.emit('contextCleared', { tableName: this.hostTable, contextId: this.contextId });
     }
   }
 
@@ -384,7 +370,7 @@ export class BindingContext implements IBindingContext {
   /**
    * 更新上下文的 rows（应用过滤和排序）
    * 
-   * @param sourceData - 完整数据源（通常是 table._originalRows 或 table.rows）
+   * @param sourceData - 完整数据源（通常是 table.originalRows 或 table.rows）
    * 
    * @remarks
    * 此方法会按顺序执行：
@@ -400,10 +386,10 @@ export class BindingContext implements IBindingContext {
    * @example
    * ```typescript
    * // 重新应用过滤和排序
-   * context.updateRows(table._originalRows)
+   * context.updateRows(table.originalRows)
    * 
    * // 主从表场景：子表基于父表选中行过滤
-   * const filtered = parentTable._originalRows.filter(r => r.parentId === parentRow.id)
+   * const filtered = parentTable.originalRows.filter(r => r.parentId === parentRow.id)
    * childContext.updateRows(filtered)
    * ```
    */
@@ -416,7 +402,7 @@ export class BindingContext implements IBindingContext {
         const filterFn = FilterExpressionParser.toMemoryFilter(this.filterExpression);
         result = result.filter(filterFn);
       } catch (e) {
-        console.error(`❌ [Context] ${this._hostTable}.${this._contextId} 过滤失败:`, e);
+        console.error(`❌ [Context] ${this.hostTable}.${this.contextId} 过滤失败:`, e);
         result = [];
       }
     }
@@ -426,7 +412,7 @@ export class BindingContext implements IBindingContext {
       try {
         result = this.applySorting(result, this.sortExpression);
       } catch (e) {
-        console.error(`❌ [Context] ${this._hostTable}.${this._contextId} 排序失败:`, e);
+        console.error(`❌ [Context] ${this.hostTable}.${this.contextId} 排序失败:`, e);
       }
     }
     
@@ -439,7 +425,7 @@ export class BindingContext implements IBindingContext {
    */
   refresh(sourceData: IDataRow[]): void {
     this.updateRows(sourceData);
-    console.info(`✅ [Refresh] 上下文 ${this._contextId} 已刷新，当前 ${this.rows.length} 行`);
+    console.info(`✅ [Refresh] 上下文 ${this.contextId} 已刷新，当前 ${this.rows.length} 行`);
   }
 
   /**
@@ -458,7 +444,7 @@ export class BindingContext implements IBindingContext {
       );
       
       if (!currentRowExists) {
-        console.info(`🧹 [Cleanup] ${this._hostTable}.${this._contextId}.currentRow 不在上下文数据中，清空`);
+        console.info(`🧹 [Cleanup] ${this.hostTable}.${this.contextId}.currentRow 不在上下文数据中，清空`);
         this.currentRow = null;
         needsCleanup = true;
       }
@@ -472,7 +458,7 @@ export class BindingContext implements IBindingContext {
       });
       
       if (validSelectedRows.length !== this.selectedRows.length) {
-        console.info(`🧹 [Cleanup] ${this._hostTable}.${this._contextId}.selectedRows 清理: ${this.selectedRows.length} -> ${validSelectedRows.length}`);
+        console.info(`🧹 [Cleanup] ${this.hostTable}.${this.contextId}.selectedRows 清理: ${this.selectedRows.length} -> ${validSelectedRows.length}`);
         this.selectedRows = validSelectedRows;
         needsCleanup = true;
       }
@@ -489,9 +475,9 @@ export class BindingContext implements IBindingContext {
       currentRow: this.currentRow,
       selectedRows: this.selectedRows,
       rows: this.rows,
-      _originalRows: this.__originalRows,
-      _hostTable: this.__hostTable,
-      _contextId: this.__contextId,
+      originalRows: this.__originalRows,
+      hostTable: this.__hostTable,
+      contextId: this.__contextId,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
       pagination: this.pagination
@@ -507,7 +493,7 @@ export class BindingContext implements IBindingContext {
     context.currentRow = data.currentRow ?? null
     context.selectedRows = data.selectedRows ?? []
     context.rows = data.rows ?? []
-    context['__originalRows'] = data._originalRows  // 直接访问私有字段
+    context['__originalRows'] = data.originalRows  // 直接访问私有字段
     context.filterExpression = data.filterExpression
     context.sortExpression = data.sortExpression
     context.pagination = data.pagination
