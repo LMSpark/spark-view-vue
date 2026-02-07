@@ -196,17 +196,15 @@ Spark.defineComponent: typeof defineSparkComponent
 
 ```typescript
 // 组件注册表工厂
-Spark.createComponentRegistry(): ComponentRegistry
-
-// 组件管理器工厂（高级用法）
-Spark.createComponentManager(renderer?, registry?, capabilityManager?): ComponentManager
+Spark.createRegistry(): ComponentRegistry
 
 // 组件系统工厂（测试/隔离场景）
-// 🔥 新增：返回完全隔离的组件系统（包含独立的 capabilityManager）
-Spark.createComponentSystem(): { 
-  manager: ComponentManager; 
+// 返回完全隔离的测试系统（包含注册表、能力管理器和根上下文）
+Spark.createSystem(): { 
   registry: ComponentRegistry;
-  capabilities: ComponentCapabilityManager 
+  capabilities: CapabilityManager;
+  rootContext: ComponentContext;
+  createContext(config, parent?): ComponentContext
 }
 ```
 
@@ -706,49 +704,52 @@ Spark.installSparkPlugin(monitoringPlugin)
 3. **提供降级方案**: 为可选能力设置默认实现
 4. **使用类型安全**: 为能力接口定义 TypeScript 类型
 
-### 依赖注入与测试隔离
+### 测试隔离最佳实践
 
-1. **使用 `createComponentSystem` 创建隔离测试环境**:
+1. **使用 `createSystem()` 创建隔离测试环境**:
    ```typescript
    import { Spark } from '@spark-view/spark-component'
    
-   // 测试用例中创建完全独立的组件系统
-   const { manager, registry, capabilities } = Spark.createComponentSystem()
+   // 测试用例中创建完全独立的测试系统
+   const { registry, capabilities, rootContext, createContext } = Spark.createSystem()
    
    // 注册测试专用组件
-   registry.register('test-component', { /* ... */ })
+   registry.register('test-component', TestComponent)
+   
+   // 创建测试上下文
+   const ctx = createContext({ type: 'test-component' })
    
    // 多个测试用例互不干扰
    ```
 
-2. **组件内部使用 `manager.getCapabilityManager()`**:
+2. **使用隔离插件进行集成测试**:
    ```typescript
-   // ✅ 推荐：从 manager 获取（支持 DI）
-   const capMgr = manager.getCapabilityManager()
-   capMgr.connectCapability(provider, consumer, context)
+   // 创建隔离注册表
+   const registry = Spark.createRegistry()
+   registry.register('test-comp', TestComponent)
    
-   // ❌ 避免：直接使用全局单例（测试污染风险）
-   import { capabilityManager } from './global-singleton'
+   // 使用隔离注册表的插件
+   const plugin = Spark.createPlugin({ registry })
+   mount(MyComponent, {
+     global: { plugins: [plugin] }
+   })
    ```
 
 3. **测试最佳实践：每个测试用例独立系统**:
    ```typescript
    describe('MyComponent', () => {
-     let system: ReturnType<typeof Spark.createComponentSystem>
+     let system: ReturnType<typeof Spark.createSystem>
      
      beforeEach(() => {
        // 每个测试创建新系统
-       system = Spark.createComponentSystem()
+       system = Spark.createSystem()
      })
      
      it('should work independently', () => {
-       const wrapper = mount(MyComponent, {
-         global: {
-           provide: {
-             sparkManager: system.manager
-           }
-         }
-       })
+       system.registry.register('my-comp', MyComp)
+       
+       const ctx = system.createContext({ type: 'my-comp' })
+       
        // 测试逻辑...
      })
    })
@@ -1004,20 +1005,14 @@ Spark.getSparkPlugin(name: string): Plugin | undefined
 
 ```ts
 // 注册表工厂
-Spark.createComponentRegistry(): ComponentRegistry
+Spark.createRegistry(): ComponentRegistry
 
-// 管理器工厂（高级）- 支持依赖注入
-Spark.createComponentManager(
-  renderer?: SparkComponentRenderer, 
-  registry?: ComponentRegistry,
-  capabilityManager?: ComponentCapabilityManager
-): ComponentManager
-
-// 组件系统工厂（测试/隔离）- 🔥 依赖注入最佳实践
-Spark.createComponentSystem(): { 
-  manager: ComponentManager; 
+// 测试系统工厂（测试/隔离）- 提供完整的隔离环境
+Spark.createSystem(): { 
   registry: ComponentRegistry;
-  capabilities: ComponentCapabilityManager 
+  capabilities: CapabilityManager;
+  rootContext: ComponentContext;
+  createContext(config, parent?): ComponentContext
 }
 ```
 
@@ -1054,9 +1049,6 @@ interface ComponentManager {
   getContext(id: string): ComponentContext | undefined
   registerProvider(context: ComponentContext, provider: CapabilityProvider): void
   getProvider(context: ComponentContext, name: string): any
-  
-  // 🔥 新增：获取能力管理器（支持依赖注入架构）
-  getCapabilityManager?(): ComponentCapabilityManager
 }
 ```
 
@@ -1341,8 +1333,8 @@ app.use(plugin)
 创建实例的工厂函数：
 
 ```ts
-function createComponentRegistry(): ComponentRegistry
-function createComponentManager(registry?: ComponentRegistry): ComponentManager
+Spark.createRegistry(): ComponentRegistry
+Spark.createSystem(): { registry, capabilities, rootContext, createContext }
 ```
 
 ---
