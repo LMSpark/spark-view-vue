@@ -7,9 +7,7 @@ import { Spark } from '@spark-view/spark-component'
 export type {
   User,
   SelectionCapability,
-  GridEventsCapability,
   RowDataCapability,
-  RowEventsCapability,
   AppServicesCapability,
   AppRouterCapability,
   AppLoggerCapability
@@ -21,7 +19,6 @@ export type {
 Spark.register({
   type: 'user-grid',
   name: 'UserGrid',
-  version: '1.0.0',
   loader: () => import('./UserGrid.vue'),
   metadata: {
     level: 'model',
@@ -61,11 +58,4 @@ Spark.register({
       consumes: ['rowData', 'rowEvents']
     }
   }
-})
-
-// eslint-disable-next-line no-console
-console.log('✅ Capability demo components registered:', {
-  'user-grid': 'Model Level (模型级)',
-  'user-row': 'Instance Level (实例级)',
-  'user-field': 'Field Level (字段级)'
 })

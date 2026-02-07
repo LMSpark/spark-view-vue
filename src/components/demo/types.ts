@@ -34,18 +34,6 @@ export interface SelectionCapability {
 }
 
 /**
- * Grid Events 能力接口
- */
-export interface GridEventsCapability {
-  /** 监听事件 */
-  on(event: string, handler: (...args: unknown[]) => void): void
-  /** 取消监听 */
-  off(event: string, handler: (...args: unknown[]) => void): void
-  /** 触发事件 */
-  emit(event: string, ...args: unknown[]): void
-}
-
-/**
  * Row Data 能力接口
  */
 export interface RowDataCapability {
@@ -55,18 +43,6 @@ export interface RowDataCapability {
   getField(field: string): unknown
   /** 检查是否选中 */
   isSelected(): boolean
-}
-
-/**
- * Row Events 能力接口
- */
-export interface RowEventsCapability {
-  /** 监听事件 */
-  on(event: string, handler: (data: unknown) => void): void
-  /** 取消监听 */
-  off(event: string, handler: (data: unknown) => void): void
-  /** 触发事件 */
-  emit(event: string, data: unknown): void
 }
 
 /**
@@ -101,34 +77,4 @@ export interface AppServicesCapability {
   logger?: AppLoggerCapability
   configLoader?: unknown
   authService?: unknown
-}
-
-/**
- * 类型安全的 consume 辅助函数
- */
-export interface TypedConsume {
-  <T = unknown>(name: string): { value: T | null } | null
-}
-
-/**
- * 能力名称到类型的映射
- */
-export interface CapabilityTypeMap {
-  selection: SelectionCapability
-  gridEvents: GridEventsCapability
-  rowData: RowDataCapability
-  rowEvents: RowEventsCapability
-  appServices: AppServicesCapability
-  dataSource: User[]
-}
-
-/**
- * 类型安全的 consume 重载
- */
-export function consumeTyped<K extends keyof CapabilityTypeMap>(
-  name: K,
-  consume: (name: string) => { value: unknown } | null
-): { value: CapabilityTypeMap[K] | null } | null {
-  const result = consume(name)
-  return result as { value: CapabilityTypeMap[K] | null } | null
 }
