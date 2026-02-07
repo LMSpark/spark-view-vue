@@ -8,10 +8,12 @@
  */
 
 // 导出命名空间（推荐使用）
-export { SparkData, SparkData as default } from './spark-data-namespace'
+export { SparkData } from './spark-data-namespace'
+export { default } from './spark-data-namespace'
 
 // 导出所有基础数据类型（显式导出以确保类型可用）
 export type {
+  IDataRow,
   IDataTable,
   IDataSet,
   ITreeManager,
@@ -21,17 +23,6 @@ export type {
   TreeConfig,
   FlatTreeNode
 } from './types'
-
-// 导出权限类型（从 spark-utils 重新导出以保持兼容性）
-export type {
-  IDataRow,                 // 基础数据行接口
-  IDataRowWithPermission,   // 带权限的数据行（支持泛型）
-  IDataSource,              // 数据源（带权限和分页，支持泛型）
-  IInstancePermission,      // 实例级权限
-  IModelPermission,         // 模型级权限
-  WithInstancePermission,   // 权限工具类型
-  WithModelPermission       // 权限工具类型
-} from '@spark-view/spark-utils'
 
 export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-utils'
 
@@ -45,9 +36,6 @@ export { FilterExpressionParser } from './filterExpressionParser'
 
 // 导出 API 适配器
 export { ApiAdapter } from './apiAdapter'
-
-// 重新导出 HTTP 客户端和 IApiContext（来自 spark-utils）
-export { createHttpClient, HttpClient, type IApiContext } from '@spark-view/spark-utils'
 
 // 导出能力管理器
 export { 

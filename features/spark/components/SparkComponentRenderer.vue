@@ -40,7 +40,7 @@
  * 完全解耦：只依赖公共逻辑，不依赖其他自定义组件
  */
 import { computed } from 'vue'
-import { Spark, type ComponentContext } from '@spark-view/spark-component'
+import { useSparkComponent, type ComponentContext } from '@spark-view/spark-component'
 
 // ==================== Props ====================
 
@@ -56,7 +56,7 @@ const props = defineProps<Props>()
 const {
   context,
   getComponent
-} = Spark.useSpark(props.config, props.parentContext as any)
+} = useSparkComponent(props.config, props.parentContext as any)
 
 // ==================== 组件解析 ====================
 

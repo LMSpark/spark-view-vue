@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { Spark } from '@spark-view/spark-component'
+import { useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
 import type { RowDataCapability, RowEventsCapability } from './types'
 
@@ -33,11 +33,7 @@ const {
   context,
   consume,
   logger 
-} = Spark.useSpark(props.config as ComponentContext)
-
-// ============ 能力消费 ============
-
-// 1. 消费父组件（UserRow）的行数据能力
+} = useSparkComponent(props.config as ComponentContext)
 const rowData = consume('rowData')
 
 // 2. 消费父组件的行事件能力

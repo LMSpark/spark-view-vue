@@ -26,11 +26,11 @@ export interface VueSparkPluginOptions {
  * @example
  * ```typescript
  * // 使用全局单例（最常见，推荐）
- * app.use(Spark.createVuePlugin())
+ * app.use(createVueSparkPlugin())
  * 
  * // 使用自定义注册表（多租户等场景）
- * const registry = Spark.createComponentRegistry()
- * app.use(Spark.createVuePlugin({ registry }))
+ * const registry = createComponentRegistry()
+ * app.use(createVueSparkPlugin({ registry }))
  * ```
  */
 export function createVueSparkPlugin(options?: VueSparkPluginOptions) {

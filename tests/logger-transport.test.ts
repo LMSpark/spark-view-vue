@@ -7,7 +7,6 @@ describe('file transport (replaced by custom provider test)', () => {
     let written = ''
     const provider = {
       name: 'logger',
-      version: '1.0.0',
       interface: { info: true },
       implementation: {
         info: (..._args: unknown[]) => { written += JSON.stringify(_args) }
@@ -20,7 +19,7 @@ describe('file transport (replaced by custom provider test)', () => {
       children: [],
       config: {},
       state: {},
-      providers: new Set([ provider ]),
+      providers: new Map([['logger', provider]]),
       consumers: new Map()
     }
 

@@ -45,7 +45,7 @@ export type SparkComponent<_TConfig = ComponentContext> = ReturnType<typeof defi
 
 // Local helper to create a noop provider when a capability is missing
 function createNoopProvider(name: string): CapabilityProvider {
-  return { name, version: '0.0.0', implementation: {} }
+  return { name, implementation: {} }
 }
 
 export interface SparkComponentHelpers {
@@ -194,7 +194,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
       // Resolve manager via DI
       const resolvedManager = (inject(SPARK_MANAGER_KEY)) ?? (inject('sparkManager'))
       if (!resolvedManager) {
-        throw new Error('Component manager not found. Install Spark Vue plugin: app.use(Spark.createVuePlugin())')
+        throw new Error('Component manager not found. Install Spark Vue plugin: app.use(createVueSparkPlugin())')
       }
       const manager = resolvedManager
       
@@ -209,7 +209,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
 
       // Capability system functions
       function provide(name: string, implementation?: Implementation) {
-        const p: CapabilityProvider = { name, version: '1.0.0', implementation }
+        const p: CapabilityProvider = { name, implementation }
         if (manager && typeof (manager).registerProvider === 'function') {
           (manager).registerProvider(context, p)
         } else {
@@ -253,7 +253,7 @@ export function defineSparkComponent<_TConfig extends ComponentContext = Compone
         while (current) {
           const p = current.providers.get(name)
           if (p?.implementation !== undefined) return p.implementation as T
-          current = (current.parent as ComponentContext | CapabilityContext | undefined) ?? undefined
+          current = current.parent ?? undefined
         }
         return undefined
       }

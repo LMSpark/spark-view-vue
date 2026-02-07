@@ -1,6 +1,6 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest'
-import { createComponentRegistry, Spark, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../src/index'
+import { createComponentRegistry, createVueSparkPlugin, SPARK_MANAGER_KEY, SPARK_REGISTRY_KEY } from '../src/index'
 
 // Minimal fake Vue app object
 function createFakeApp() {
@@ -15,7 +15,7 @@ function createFakeApp() {
 describe('Vue plugin integration', () => {
   it('createVuePlugin with default options uses global singleton', () => {
     const app = createFakeApp()
-    const plugin = Spark.createVuePlugin()
+    const plugin = createVueSparkPlugin()
     plugin.install(app)
     
     // Should provide manager and registry
@@ -25,7 +25,7 @@ describe('Vue plugin integration', () => {
 
   it('createVuePlugin with custom registry creates matching manager', () => {
     const registry = createComponentRegistry()
-    const plugin = Spark.createVuePlugin({ registry })
+    const plugin = createVueSparkPlugin({ registry })
     const app = createFakeApp()
     plugin.install(app)
     
