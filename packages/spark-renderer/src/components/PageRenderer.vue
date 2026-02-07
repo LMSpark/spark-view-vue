@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, nextTick, h } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick, h, type Component } from 'vue'
 import { useRoute } from 'vue-router'
 import { pageLogger, ErrorCodes, getErrorMessage } from '@spark-view/spark-app'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -84,7 +84,7 @@ const defaultFormCreateOptions = {
     'eColumns': { render: () => null },
     'e-column': { render: () => null },
     'eColumn': { render: () => null }
-  } as Record<string, any>
+  } as Record<string, Component>
 }
 
 const formCreateOptions = ref({
@@ -93,7 +93,6 @@ const formCreateOptions = ref({
 })
 
 // 初始化页面上下文
-// @ts-expect-error form-create API 类型复杂，使用 any 断言
 const pageContext: PageContext = {
   get $api() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,23 +134,25 @@ const { scopedCss, setScopedCss } = useCssScope({
 const pageFunctions = ref<Record<string, Function>>({})
 
 // DataSet 管理
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
   pageData,
   context: pageContext,
-  originalRules: originalRules as any,
-  formApi: formApi as any,
+  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
+  originalRules: originalRules,
+  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
+  formApi: formApi,
   enableDataSet: props.enableDataSet
 })
 
 // Rule 绑定（注意：此时 pageFunctions 还是空对象，需要等脚本执行后再绑定）
-// @ts-expect-error form-create 类型定义过于复杂，使用 any 断言
 const { boundRules, rebindRules } = useRuleBinding({
-  originalRules: originalRules as any,
+  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
+  originalRules: originalRules,
   pageData,
   pageFunctions,
   dataSet,
-  formApi: formApi as any
+  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
+  formApi: formApi
 })
 
 // 更新上下文的 rebindRules 方法
@@ -233,9 +234,8 @@ const loadPageConfig = async () => {
     if (scriptText) {
       try {
         // 从 rules 中提取需要返回的函数名
-        // @ts-expect-error form-create 类型定义过于复杂，使用 any 断言
         const requiredFunctionNames = getRequiredFunctionNames(
-          originalRules.value as any,
+          originalRules.value as Rule[],
           ['__init__']
         )
         
