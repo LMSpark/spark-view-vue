@@ -106,41 +106,22 @@ const handleClick = () => {
   
   emit('row-click', user.value)
   rowEventsEmitter.emit('row:click', user.value)
-  logger.info('👆 Row clicked:', user.value.name)
 }
 
 const handleCheckboxChange = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked
   const sel = selection?.value as SelectionCapability | null
   if (sel && user.value) {
-    if (checked) {
-      sel.select(user.value.id)
-      logger.info('✅ Row selected:', user.value.id)
-    } else {
-      sel.deselect(user.value.id)
-      logger.info('❌ Row deselected:', user.value.id)
-    }
+    checked ? sel.select(user.value.id) : sel.deselect(user.value.id)
     updateSelectionState()
   }
 }
 
 onMounted(() => {
   updateSelectionState()
-  logger.info('🚀 UserRow mounted (Instance Level)', {
+  logger.info('🚀 UserRow mounted', {
     contextId: context.id,
-    userId: user.value?.id,
-    userName: user.value?.name,
-    userFullData: user.value,
-    rowData: rowDataCapability.getData(),
-    rowDataFields: user.value ? {
-      id: rowDataCapability.getField('id'),
-      name: rowDataCapability.getField('name'),
-      age: rowDataCapability.getField('age'),
-      email: rowDataCapability.getField('email'),
-      role: rowDataCapability.getField('role')
-    } : null,
-    consumedCapabilities: ['selection', 'gridEvents'],
-    providedCapabilities: ['rowData', 'rowEvents']
+    userId: user.value?.id
   })
 })
 </script>

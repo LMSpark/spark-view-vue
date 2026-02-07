@@ -69,57 +69,29 @@ const fieldLabel = computed(() => {
 
 // 计算显示值
 const displayValue = computed(() => {
-  // 直接使用能力对象（不需要 .value）
   const data = rowData as unknown as RowDataCapability | null
   const field = props.config.props?.field as string
   
-  if (data && typeof data.getField === 'function') {
-    if (field) {
-      const value = data.getField(field)
-      
-      // 格式化显示
-      if (field === 'status') {
-        return value === 'active' ? '✅ 活跃' : '⭕ 非活跃'
-      }
-      
-      return value
+  if (data?.getField && field) {
+    const value = data.getField(field)
+    
+    // 格式化显示
+    if (field === 'status') {
+      return value === 'active' ? '✅ 活跃' : '⭕ 非活跃'
     }
+    
+    return value
   }
   
-  // 回退到 config.props.value
-  const configValue = props.config.props?.value
-  if (configValue !== undefined) {
-    return configValue
-  }
-  
-  // 最后回退到 props.value
-  return props.value
-})
-
-// 是否选中
-const isRowSelected = computed(() => {
-  const data = rowData as unknown as RowDataCapability | null
-  return data?.isSelected() || false
+  return props.config.props?.value ?? props.value
 })
 
 onMounted(() => {
-  const data = rowData as unknown as RowDataCapability | null
   const field = props.config.props?.field as string
-  
-  logger.info('🚀 UserField mounted (Field Level)', {
+  logger.info('🚀 UserField mounted', {
     contextId: context.id,
     field: field,
-    label: fieldLabel.value,
-    icon: fieldIcon.value,
-    metadataSource: metadata.value ? 'Grid元数据' : 'config.props',
-    metadata: metadata.value,
-    displayValue: displayValue.value,
-    rawRowData: data?.getData(),
-    fieldValueFromRowData: data ? data.getField(field) : null,
-    consumedCapabilities: ['rowData', 'rowEvents', 'fieldMetadata'],
-    hasRowData: !!rowData,
-    hasMetadata: !!fieldMetadata,
-    isSelected: isRowSelected.value
+    value: displayValue.value
   })
 })
 </script>

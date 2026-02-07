@@ -33,9 +33,7 @@ import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
 import type { 
   User, 
-  AppServicesCapability,
-  AppRouterCapability,
-  AppLoggerCapability
+  AppServicesCapability
 } from './types'
 
 interface Props {
@@ -84,14 +82,10 @@ const {
 // 🎯 关键：通过能力系统消费，不需要直接导入
 const appServices = consume('appServices')
 
-// 便捷访问（类型守卫）
-const appRouter = computed<AppRouterCapability | null>(() => {
+// 便捷访问
+const appRouter = computed(() => {
   const services = appServices?.value as AppServicesCapability | null
-  return services?.router ?? null
-})
-const appLogger = computed<AppLoggerCapability | null>(() => {
-  const services = appServices?.value as AppServicesCapability | null
-  return services?.logger ?? null
+  return services?.router
 })
 
 // 选中的行
@@ -152,40 +146,28 @@ provideCapability('dataSource', {
 // ============ 事件处理 ============
 
 const handleRefresh = () => {
-  // 使用 APP 服务能力
-  appLogger.value?.info('🔄 [APP Service] Grid refreshing...')
-  sparkLogger.info('🔄 Grid refreshing...')
+  sparkLogger.info('🔄 Grid refreshing')
   gridEventsEmitter.emit('grid:refresh')
 }
 
 const handleSelectAll = () => {
-  selectedIds.value.clear()
   usersFromConfig.value.forEach(u => selectedIds.value.add(u.id))
   gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
-  sparkLogger.info('☑️ All rows selected')
 }
 
 const handleClearSelection = () => {
   selectedIds.value.clear()
   gridEventsEmitter.emit('selection:changed', [])
-  sparkLogger.info('🗑️ Selection cleared')
 }
 
 const handleNavigateHome = () => {
-  // 使用 APP 服务能力：导航
-  appLogger.value?.info('🏠 [APP Service] Navigating to home via router')
   appRouter.value?.push('/')
 }
 
 onMounted(() => {
-  // 使用 APP 服务能力
-  appLogger.value?.info('🚀 [APP Service] UserGrid component mounted')
-  sparkLogger.info('🚀 UserGrid mounted (Model Level)', {
+  sparkLogger.info('🚀 UserGrid mounted', {
     contextId: context.id,
-    providedCapabilities: ['fieldMetadata', 'selection', 'gridEvents', 'dataSource'],
-    fieldMetadata: Object.keys(fieldMetadata.value),
-    fieldMetadataSource: 'JSON配置',
-    hasAppServices: !!(appServices?.value)
+    userCount: usersFromConfig.value.length
   })
 })
 </script>
