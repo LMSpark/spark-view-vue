@@ -29,10 +29,10 @@ export const Spark: {
   install: (app: App) => void
 
   /** 注册组件 */
-  register: (input: ComponentDefinition | ComponentDefinition[] | { name: string; path: string } | { name: string; component: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name'> }) => void
+  register: (input: { name: string; path: string } | { type: string; component: unknown }) => void
 
   /** 批量注册组件 */
-  registerAll: (configs: (ComponentDefinition | { name: string; path: string } | { name: string; component: unknown })[]) => void
+  registerAll: (configs: ({ name: string; path: string } | { type: string; component: unknown })[]) => void
 
   /** 解析组件 */
   resolveComponent: (type: string) => unknown
@@ -62,54 +62,30 @@ export const Spark: {
     app.use(plugin as VuePlugin)
   },
 
-  register(input: ComponentDefinition | ComponentDefinition[] | { name: string; path: string } | { name: string; component: unknown } | { spark?: Pick<ComponentDefinition, 'type' | 'name'> }) {
-    // 简化配置：检查是否有 'name' 但没有 'type'
-    if (input && typeof input === 'object' && 'name' in input && !('type' in input) && !Array.isArray(input)) {
-      const config = input as { name: string; path: string } | { name: string; component: unknown }
+  register(input: { name: string; path: string } | { type: string; component: unknown }) {
+    // 方式 1: 简化配置 - name + path（自动转换为 type + loader）
+    if ('name' in input && 'path' in input) {
+      const config = input as { name: string; path: string }
       const standardConfig = createSimpleRegistration(config)
       return componentManager.registerComponent(standardConfig)
     }
 
-    // 批量注册：处理组件数组
-    if (Array.isArray(input)) {
-      input.forEach(def => componentManager.registerComponent(def))
-      return
-    }
-
-    // Vue 组件附带 spark 元数据
-    if (input && typeof input === 'object' && 'spark' in input) {
-      const component = input as { spark?: Pick<ComponentDefinition, 'type' | 'name'> }
-      if (!component.spark) {
-        throw new Error('Component must have spark meta attached')
-      }
-      const meta = component.spark
-
+    // 方式 2: 同步注册 - type + component
+    if ('type' in input && 'component' in input) {
+      const config = input as { type: string; component: unknown }
       const definition: ComponentDefinition = {
-        type: meta.type,
-        name: meta.name ?? meta.type,
-        component: component
+        type: config.type,
+        name: config.type,
+        component: config.component
       }
       return componentManager.registerComponent(definition)
     }
 
-    // 标准配置：直接注册 ComponentDefinition
-    if (input && typeof input === 'object') {
-      return componentManager.registerComponent(input as ComponentDefinition)
-    }
-
-    throw new Error('❌ Invalid registration input.')
+    throw new Error('❌ Invalid registration. Use: { name, path } or { type, component }')
   },
 
-  registerAll(configs: (ComponentDefinition | { name: string; path: string } | { name: string; component: unknown })[]) {
-    configs.forEach(config => {
-      if ('name' in config && !('type' in config)) {
-        const simpleConfig = config as { name: string; path: string } | { name: string; component: unknown }
-        const standardConfig = createSimpleRegistration(simpleConfig)
-        componentManager.registerComponent(standardConfig)
-      } else {
-        componentManager.registerComponent(config)
-      }
-    })
+  registerAll(configs: ({ name: string; path: string } | { type: string; component: unknown })[]) {
+    configs.forEach(config => this.register(config))
   },
 
   resolveComponent: (type: string) => componentManager.resolveComponent(type),
@@ -117,6 +93,7 @@ export const Spark: {
   capabilities: () => capabilityManager,
 
   _manager: () => componentManager,
+
   _registry: () => componentRegistry,
 
   Logger,
