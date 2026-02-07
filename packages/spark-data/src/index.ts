@@ -24,18 +24,8 @@ export type {
   FlatTreeNode
 } from './types'
 
-export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-utils'
-
-// 导出核心类（向后兼容）
-export { DataSet } from './dataset'
-export { DataTable } from './dataTable'
-export { BindingContext } from './bindingContext'
-export { TreeManager } from './treeManager'
+// 导出核心类（被外部包直接导入使用）
 export { DataSetManager } from './dataSetManager'
-export { FilterExpressionParser } from './filterExpressionParser'
-
-// 导出 API 适配器
-export { ApiAdapter } from './apiAdapter'
 
 // 导出能力管理器
 export { 

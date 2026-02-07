@@ -46,11 +46,6 @@ export const ROW_DATA = Symbol.for('spark:capability:row-data')
 export const SELECTION = Symbol.for('spark:capability:selection')
 
 /**
- * 编辑能力（行编辑、字段编辑等）
- */
-export const EDITING = Symbol.for('spark:capability:editing')
-
-/**
  * 验证能力（数据验证）
  */
 export const VALIDATION = Symbol.for('spark:capability:validation')
@@ -68,49 +63,3 @@ export const GRID_EVENTS = Symbol.for('spark:capability:grid-events')
  * 行事件能力（行级事件）
  */
 export const ROW_EVENTS = Symbol.for('spark:capability:row-events')
-
-/**
- * 字段事件能力（字段级事件）
- */
-export const FIELD_EVENTS = Symbol.for('spark:capability:field-events')
-
-// ============================================================================
-// 工具函数
-// ============================================================================
-
-/**
- * 获取符号的可读名称（用于调试）
- */
-export function getCapabilityName(symbol: symbol): string {
-  return symbol.toString().replace('Symbol(', '').replace(')', '')
-}
-
-/**
- * 所有能力符号的集合（用于遍历或验证）
- */
-export const ALL_CAPABILITY_SYMBOLS = {
-  APP_SERVICES,
-  DATA_SOURCE,
-  FIELD_METADATA,
-  ROW_DATA,
-  SELECTION,
-  EDITING,
-  VALIDATION,
-  GRID_EVENTS,
-  ROW_EVENTS,
-  FIELD_EVENTS
-} as const
-
-/**
- * 能力符号类型
- */
-export type CapabilitySymbol = typeof APP_SERVICES 
-  | typeof DATA_SOURCE 
-  | typeof FIELD_METADATA 
-  | typeof ROW_DATA 
-  | typeof SELECTION 
-  | typeof EDITING 
-  | typeof VALIDATION 
-  | typeof GRID_EVENTS 
-  | typeof ROW_EVENTS 
-  | typeof FIELD_EVENTS

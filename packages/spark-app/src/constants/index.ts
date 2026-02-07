@@ -164,6 +164,7 @@ export function getErrorMessage(code: ErrorCode): string {
     [ErrorCodes.NETWORK_ERROR]: '网络错误',
     [ErrorCodes.NETWORK_TIMEOUT]: '请求超时',
     [ErrorCodes.NETWORK_OFFLINE]: '网络未连接',
+    [ErrorCodes.NETWORK_REQUEST_FAILED]: '网络请求失败',
     
     [ErrorCodes.CONFIG_LOAD_FAILED]: '配置加载失败',
     [ErrorCodes.CONFIG_INVALID]: '配置无效',

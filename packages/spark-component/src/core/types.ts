@@ -93,29 +93,8 @@ export interface ComponentRegistry {
 export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('sparkRegistry') as InjectionKey<ComponentRegistry>
 
 // ============================================================================
-// 实用类型
-// ============================================================================
-
-/** 带类型安全的 state */
-export type TypedContext<TState = Record<string, unknown>> = Omit<ComponentContext, 'state'> & {
-  state: TState
-}
-
-/** 带类型安全的 state + props */
-export type StrictContext<TState = Record<string, unknown>, TProps = Record<string, unknown>> = Omit<
-  ComponentContext,
-  'state' | 'props'
-> & {
-  state: TState
-  props: TProps
-}
-
-// ============================================================================
 // 向后兼容（用于 spark-app 等包的类型引用）
 // ============================================================================
-
-// ComponentConfig 是创建 context 时的输入类型
-export type ComponentConfig = Partial<ComponentContext> & { type: string }
 
 // 日志类型（从 spark-utils 透传）
 export type { LogLevel, LoggerApi, Transport } from '@spark-view/spark-utils'

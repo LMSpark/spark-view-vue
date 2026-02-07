@@ -16,10 +16,7 @@ export type {
 // 导出辅助函数
 export {
   provide,
-  consume,
-  consumeInherited,
-  getProvider,
-  getProviderInherited
+  consume
 } from './types.js'
 
 // 导出事件能力
