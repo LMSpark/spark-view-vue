@@ -31,8 +31,7 @@ import { useSparkComponent, Spark } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
 import type { 
   User, 
-  SelectionCapability, 
-  GridEventsCapability
+  SelectionCapability
 } from './types'
 
 interface Props {
@@ -58,6 +57,8 @@ const {
   context,
   consume,
   provide: provideCapability,
+  provideEvents,
+  consumeEvents,
   logger 
 } = useSparkComponent(props.config as ComponentContext)
 
@@ -76,17 +77,13 @@ const updateSelectionState = () => {
   }
 }
 
-// 2. 消费父组件的事件能力
-const gridEvents = consume('gridEvents')
-
-const events = gridEvents?.value as GridEventsCapability | null
-if (events) {
-  // 监听选择变化事件
-  events.on('selection:changed', () => {
+// 2. 消费父组件的事件能力（使用 consumeEvents 自动注册监听器）
+consumeEvents('gridEvents', {
+  'selection:changed': () => {
     updateSelectionState()
     logger.debug('🔄 Selection updated for row:', user.value?.id)
-  })
-}
+  }
+})
 
 // ============ 能力提供（给字段组件） ============
 
@@ -99,16 +96,8 @@ const rowDataCapability = {
 
 provideCapability('rowData', rowDataCapability as unknown as Record<string, unknown>)
 
-// 提供行事件能力
-const rowEmitter = {
-  on: (_event: string, _handler: Function) => {
-    logger.debug('📝 Row event registered:', _event)
-  },
-  emit: (_event: string, ..._args: unknown[]) => {
-    logger.debug('📡 Row event emitted:', _event, _args)
-  }
-}
-provideCapability('rowEvents', rowEmitter)
+// 提供行事件能力（使用真正的事件系统）
+const rowEventsEmitter = provideEvents('rowEvents')
 
 // ============ 事件处理 ============
 
@@ -116,13 +105,7 @@ const handleClick = () => {
   if (!user.value) return
   
   emit('row-click', user.value)
-  if (rowEmitter) {
-    rowEmitter.emit('row:click', user.value)
-  }
-  const events = gridEvents?.value as GridEventsCapability | null
-  if (events) {
-    events.emit('row:clicked', user.value)
-  }
+  rowEventsEmitter.emit('row:click', user.value)
   logger.info('👆 Row clicked:', user.value.name)
 }
 

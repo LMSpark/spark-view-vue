@@ -13,7 +13,7 @@
 import { computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
-import type { RowDataCapability, RowEventsCapability } from './types'
+import type { RowDataCapability } from './types'
 
 interface Props {
   config: Partial<ComponentContext>
@@ -32,23 +32,20 @@ const props = withDefaults(defineProps<Props>(), {
 const { 
   context,
   consume,
+  consumeEvents,
   logger 
 } = useSparkComponent(props.config as ComponentContext)
 const rowData = consume('rowData')
 
-// 2. 消费父组件的行事件能力
-const rowEvents = consume('rowEvents')
+// 2. 消费父组件的行事件能力（使用 consumeEvents 自动注册监听器）
+consumeEvents('rowEvents', {
+  'row:click': (user: unknown) => {
+    logger.debug('🔔 Field received row click event:', user)
+  }
+})
 
 // 3. 消费 Grid 层的字段元数据能力
 const fieldMetadata = consume('fieldMetadata')
-
-const events = rowEvents?.value as RowEventsCapability | null
-if (events) {
-  // 监听行事件
-  events.on('row:click', (user: unknown) => {
-    logger.debug('🔔 Field received row click event:', user)
-  })
-}
 
 // 获取当前字段名
 const currentField = computed(() => props.config.props?.field as string)
