@@ -14,24 +14,6 @@ export type {
 } from './types'
 
 // 注册三个级别的演示组件
-
-// 1. 模型级组件：UserGrid
-Spark.register({
-  type: 'user-grid',
-  name: 'UserGrid',
-  loader: () => import('./UserGrid.vue')
-})
-
-// 2. 实例级组件：UserRow
-Spark.register({
-  type: 'user-row',
-  name: 'UserRow',
-  loader: () => import('./UserRow.vue')
-})
-
-// 3. 字段级组件：UserField
-Spark.register({
-  type: 'user-field',
-  name: 'UserField',
-  loader: () => import('./UserField.vue')
-})
+Spark.register({ type: 'user-grid', loader: () => import('./UserGrid.vue') })
+Spark.register({ type: 'user-row', loader: () => import('./UserRow.vue') })
+Spark.register({ type: 'user-field', loader: () => import('./UserField.vue') })
