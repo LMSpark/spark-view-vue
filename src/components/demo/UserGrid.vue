@@ -75,6 +75,7 @@ const childConfigs = computed(() => {
 const { 
   context, 
   provide: provideCapability,
+  provideEvents,
   consume,
   logger: sparkLogger
 } = useSparkComponent(props.config as ComponentContext)
@@ -115,44 +116,36 @@ provideCapability('selection', {
   isSelected: (id: number) => selectedIds.value.has(id),
   select: (id: number) => {
     selectedIds.value.add(id)
-    emitter.emit('selection:changed', Array.from(selectedIds.value))
+    gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
     sparkLogger.info('✅ Selected row:', id)
   },
   deselect: (id: number) => {
     selectedIds.value.delete(id)
-    emitter.emit('selection:changed', Array.from(selectedIds.value))
+    gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
     sparkLogger.info('❌ Deselected row:', id)
   },
   selectAll: () => {
     usersFromConfig.value.forEach(u => selectedIds.value.add(u.id))
-    emitter.emit('selection:changed', Array.from(selectedIds.value))
+    gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
     sparkLogger.info('☑️ Selected all rows')
   },
   clearSelection: () => {
     selectedIds.value.clear()
-    emitter.emit('selection:changed', [])
+    gridEventsEmitter.emit('selection:changed', [])
     sparkLogger.info('🗑️ Cleared selection')
   },
   getSelected: () => Array.from(selectedIds.value)
 })
 
-// 2. 提供事件能力
-const emitter = {
-  on: (_event: string, _handler: Function) => {
-    sparkLogger.debug('📝 Event registered:', _event)
-  },
-  emit: (event: string, ...args: unknown[]) => {
-    sparkLogger.debug('📡 Event emitted:', event, args)
-  }
-}
-provideCapability('gridEvents', emitter)
+// 2. 提供事件能力（使用真正的事件系统）
+const gridEventsEmitter = provideEvents('gridEvents')
 
 // 3. 提供数据源能力
 provideCapability('dataSource', {
   getData: () => usersFromConfig.value,
   refresh: () => {
     sparkLogger.info('🔄 Data refreshed')
-    emitter.emit('data:refreshed', usersFromConfig.value)
+    gridEventsEmitter.emit('data:refreshed', usersFromConfig.value)
   }
 })
 
@@ -162,19 +155,19 @@ const handleRefresh = () => {
   // 使用 APP 服务能力
   appLogger.value?.info('🔄 [APP Service] Grid refreshing...')
   sparkLogger.info('🔄 Grid refreshing...')
-  emitter.emit('grid:refresh')
+  gridEventsEmitter.emit('grid:refresh')
 }
 
 const handleSelectAll = () => {
   selectedIds.value.clear()
   usersFromConfig.value.forEach(u => selectedIds.value.add(u.id))
-  emitter.emit('selection:changed', Array.from(selectedIds.value))
+  gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
   sparkLogger.info('☑️ All rows selected')
 }
 
 const handleClearSelection = () => {
   selectedIds.value.clear()
-  emitter.emit('selection:changed', [])
+  gridEventsEmitter.emit('selection:changed', [])
   sparkLogger.info('🗑️ Selection cleared')
 }
 
