@@ -68,13 +68,13 @@ export async function loadComponentLibrary(): Promise<ComponentLibrary> {
         return response.data.data
       }
     } catch (error) {
-      console.warn('无法从服务端加载组件库，回退到本地文件:', error.message)
+      console.warn('无法从服务端加载组件库，回退到本地文件:', error instanceof Error ? error.message : String(error))
     }
   }
 
   // 从本地文件加载
   try {
-    const filePath = config.localFilePath!
+    const filePath = config.localFilePath ?? path.resolve(process.cwd(), 'component-library.json')
     if (!fs.existsSync(filePath)) {
       console.warn('组件库文件不存在:', filePath)
       return {}
