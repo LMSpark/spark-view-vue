@@ -119,6 +119,24 @@ export interface PageRendererOptions {
   enableDataSet?: boolean
   
   /**
+   * UI 消息服务（可注入替代 ElementPlus，便于测试和解耦）
+   */
+  messageService?: {
+    success: (msg: string) => void
+    warning: (msg: string) => void
+    error: (msg: string) => void
+    info: (msg: string) => void
+  }
+  
+  /**
+   * UI 确认对话框服务（可注入替代 ElementPlus）
+   */
+  confirmService?: {
+    confirm: (msg: string, title?: string) => Promise<unknown>
+    alert: (msg: string, title?: string) => Promise<unknown>
+  }
+  
+  /**
    * 页面加载前钩子
    */
   beforeLoad?: (pageId: string) => void | Promise<void>

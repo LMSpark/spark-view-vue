@@ -5,7 +5,26 @@
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
 import type { RouteConfig, DynamicRouterOptions, ConfigLoader } from '../types'
-import { routerLogger, ErrorCodes, getErrorMessage } from '@spark-view/spark-app'
+import { Logger } from '@spark-view/spark-utils'
+
+// 本地 Logger（消除对 spark-app 的反向依赖）
+const routerLogger = Logger('PageConfig:Router')
+
+// 本地错误码
+const ErrorCodes = {
+  ROUTE_NOT_FOUND: 5001,
+  ROUTE_INVALID: 5002,
+  CONFIG_LOAD_FAILED: 4001
+} as const
+
+function getErrorMessage(code: number): string {
+  const messages: Record<number, string> = {
+    [ErrorCodes.ROUTE_NOT_FOUND]: '页面未找到',
+    [ErrorCodes.ROUTE_INVALID]: '路由无效',
+    [ErrorCodes.CONFIG_LOAD_FAILED]: '配置加载失败'
+  }
+  return messages[code] ?? '未知错误'
+}
 
 /**
  * 动态路由管理器
@@ -58,7 +77,7 @@ export class DynamicRouter {
       this.afterRegister(this.router.getRoutes())
     }
     
-    routerLogger.success('动态路由注册完成', { count: routes.length }) // 使用 L1 Logger
+    routerLogger.info('动态路由注册完成', { count: routes.length })
   }
 
   /**
@@ -118,7 +137,7 @@ export class DynamicRouter {
     // 重新注册
     await this.registerRoutes()
     
-    routerLogger.success('路由刷新完成') // 使用 L1 Logger
+    routerLogger.info('路由刷新完成')
   }
 
   /**

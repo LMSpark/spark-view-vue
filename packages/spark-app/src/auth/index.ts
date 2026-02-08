@@ -2,7 +2,7 @@
  * 认证模块入口
  */
 
-export { AuthService, authService } from './AuthService'
+export { AuthService, authService, createAuthService } from './AuthService'
 export { TokenManager } from './TokenManager'
 export type {
   AuthConfig,

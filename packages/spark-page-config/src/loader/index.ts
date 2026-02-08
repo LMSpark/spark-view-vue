@@ -13,12 +13,38 @@ import type {
   PageScriptConfig,
   ConfigCacheItem
 } from '../types'
-import { 
-  pageLogger,
-  ErrorCodes,
-  getErrorMessage,
-  DefaultConfig
-} from '@spark-view/spark-app'
+import { Logger } from '@spark-view/spark-utils'
+
+// 本地 Logger（消除对 spark-app 的反向依赖）
+const pageLogger = Logger('PageConfig')
+
+// 本地常量（消除对 spark-app DefaultConfig 的反向依赖）
+const CONFIG_CACHE_EXPIRY = 300_000  // 5 分钟
+const REQUEST_TIMEOUT = 10_000       // 10 秒
+
+// 本地错误码（消除对 spark-app ErrorCodes 的反向依赖）
+const ErrorCodes = {
+  CONFIG_LOAD_FAILED: 4001,
+  CONFIG_INVALID: 4002,
+  CONFIG_NOT_FOUND: 4003,
+  NETWORK_ERROR: 3001,
+  NETWORK_REQUEST_FAILED: 3002,
+  NETWORK_TIMEOUT: 3003,
+  UNKNOWN_ERROR: 9999
+} as const
+
+function getErrorMessage(code: number): string {
+  const messages: Record<number, string> = {
+    [ErrorCodes.CONFIG_LOAD_FAILED]: '配置加载失败',
+    [ErrorCodes.CONFIG_INVALID]: '配置无效',
+    [ErrorCodes.CONFIG_NOT_FOUND]: '配置未找到',
+    [ErrorCodes.NETWORK_ERROR]: '网络错误',
+    [ErrorCodes.NETWORK_REQUEST_FAILED]: '网络请求失败',
+    [ErrorCodes.NETWORK_TIMEOUT]: '网络请求超时',
+    [ErrorCodes.UNKNOWN_ERROR]: '未知错误'
+  }
+  return messages[code] ?? '未知错误'
+}
 
 /**
  * 默认配置
@@ -28,9 +54,10 @@ const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
   apiBaseUrl: '/api',
   localPrefix: '/pages-config',
   enableCache: true,
-  cacheExpiry: DefaultConfig.CONFIG_CACHE_EXPIRY, // 使用 L1 常量
+  cacheExpiry: CONFIG_CACHE_EXPIRY,
   enableValidation: false,
-  timeout: DefaultConfig.REQUEST_TIMEOUT // 使用 L1 常量
+  timeout: REQUEST_TIMEOUT,
+  fetchAdapter: globalThis.fetch?.bind(globalThis)
 }
 
 /**
@@ -39,9 +66,11 @@ const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
 export class PageConfigLoader implements ConfigLoader {
   private options: Required<ConfigLoaderOptions>
   private cache: Map<string, ConfigCacheItem> = new Map()
+  private _fetch: typeof fetch
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
+    this._fetch = this.options.fetchAdapter ?? globalThis.fetch?.bind(globalThis)
   }
 
   /**
@@ -160,7 +189,7 @@ export class PageConfigLoader implements ConfigLoader {
         pageLogger.debug('配置已缓存', { cacheKey }) // 使用 L1 Logger
       }
 
-      pageLogger.success('配置加载成功', { cacheKey }) // 使用 L1 Logger
+      pageLogger.info('配置加载成功', { cacheKey })
       return {
         success: true,
         data,
@@ -286,7 +315,7 @@ export class PageConfigLoader implements ConfigLoader {
     try {
       pageLogger.debug('发送远程请求', { url })
       
-      const response = await fetch(url, {
+      const response = await this._fetch(url, {
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json'
@@ -335,7 +364,7 @@ export class PageConfigLoader implements ConfigLoader {
     try {
       pageLogger.debug('加载本地配置', { url })
       
-      const response = await fetch(url)
+      const response = await this._fetch(url)
 
       if (!response.ok) {
         const errorMsg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
@@ -361,7 +390,7 @@ export class PageConfigLoader implements ConfigLoader {
     try {
       pageLogger.debug('加载远程脚本', { pageId, url })
       
-      const response = await fetch(url)
+      const response = await this._fetch(url)
 
       if (!response.ok) {
         const errorMsg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
@@ -389,7 +418,7 @@ export class PageConfigLoader implements ConfigLoader {
       pageLogger.debug('加载本地脚本', { pageId, url })
       
       // 使用 fetch 获取文本内容（不使用 import，因为脚本不是 ES6 模块）
-      const response = await fetch(url)
+      const response = await this._fetch(url)
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
       }

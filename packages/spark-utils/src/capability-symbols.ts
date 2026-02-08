@@ -27,6 +27,26 @@ export const APP_SERVICES = Symbol.for('spark:capability:app-services')
 export const DATA_SOURCE = Symbol.for('spark:capability:data-source')
 
 /**
+ * DataSet 状态能力（DataSet 数据和表访问）
+ */
+export const DATA_SET_STATE = Symbol.for('spark:capability:dataset-state')
+
+/**
+ * 全局数据能力（用户信息、字典等）
+ */
+export const GLOBAL_DATA = Symbol.for('spark:capability:global-data')
+
+/**
+ * 页面服务能力（消息、导航等）
+ */
+export const PAGE_SERVICE = Symbol.for('spark:capability:page-service')
+
+/**
+ * API 客户端能力
+ */
+export const API_CLIENT = Symbol.for('spark:capability:api-client')
+
+/**
  * 字段元数据能力（字段标签、类型、图标等）
  */
 export const FIELD_METADATA = Symbol.for('spark:capability:field-metadata')

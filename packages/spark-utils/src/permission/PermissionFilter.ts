@@ -112,6 +112,11 @@ export function createPermissionFilter(): IPermissionFilter {
   return filterInstance
 }
 
+/** 重置单例实例（测试用） */
+export function resetPermissionFilter(): void {
+  filterInstance = null
+}
+
 /**
  * 快捷方法：过滤数据
  */

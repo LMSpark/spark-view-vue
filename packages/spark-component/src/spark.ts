@@ -24,7 +24,7 @@ import { Logger } from '@spark-view/spark-utils'
 import { createComponentRegistry } from './registry/ComponentRegistry.js'
 import { createCapabilityManager } from './capability/CapabilityManager.js'
 import { createSparkPlugin } from './plugins/SparkPlugin.js'
-import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer } from './core/types.js'
+import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer, CapabilityName } from './core/types.js'
 
 /* -----------------------------------------------------------------------------
  * 类型定义
@@ -457,8 +457,8 @@ export const Spark = {
       type: 'spark-test-root',
       children: [],
       state: {},
-      providers: new Map<string, CapabilityProvider>(),
-      consumers: new Map<string, CapabilityConsumer>()
+      providers: new Map<CapabilityName, CapabilityProvider>(),
+      consumers: new Map<CapabilityName, CapabilityConsumer>()
     }
 
     return {
@@ -481,8 +481,8 @@ export const Spark = {
           children: [],
           props: config.props,
           state: {},
-          providers: new Map<string, CapabilityProvider>(),
-          consumers: new Map<string, CapabilityConsumer>()
+          providers: new Map<CapabilityName, CapabilityProvider>(),
+          consumers: new Map<CapabilityName, CapabilityConsumer>()
         }
         const p = ctx.parent
         if (p?.children) p.children.push(ctx)

@@ -22,12 +22,12 @@ import {
   AUTH_SERVICE_KEY
 } from '../constants'
 
-// Logger 类型（从实现中推断）
-type Logger = ReturnType<typeof import('../logger').createLogger>
+// Logger 类型（使用导出的接口，而非 ReturnType hack）
+import type { LoggerApi } from '../logger'
 
 // 外部类型（从相应包导入）
 type SparkRegistry = import('@spark-view/spark-component').ComponentRegistry
-type ConfigLoader = import('@spark-view/spark-page-config').PageConfigLoader
+type ConfigLoader = import('@spark-view/spark-page-config').ConfigLoader
 
 // ============================================================================
 // Composables（组合式函数）
@@ -76,7 +76,7 @@ export function useAppRouter(): Router {
  * logger.info('Component mounted')
  * ```
  */
-export function useLogger(): Logger {
+export function useLogger(): LoggerApi {
   const logger = inject(LOGGER_KEY)
   if (!logger) {
     throw new Error('Logger not provided.')

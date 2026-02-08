@@ -8,9 +8,9 @@
  */
 
 import type { App, Plugin } from 'vue'
-import { SPARK_REGISTRY_KEY } from '../core/types.js'
-import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer } from '../core/types.js'
-import { Spark } from '../spark.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
+import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer, CapabilityName } from '../core/types.js'
+import { getGlobalRegistry } from '../registry/ComponentRegistry.js'
 
 export interface SparkPluginOptions {
   /** 自定义注册表（测试/隔离场景用） */
@@ -21,7 +21,7 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
   return {
     install(app: App) {
       // 默认使用全局 registry，确保 Spark.register() 注册的组件可被找到
-      const registry = options?.registry ?? Spark.getRegistry()
+      const registry = options?.registry ?? getGlobalRegistry()
 
       // 创建应用级根上下文
       const rootContext: ComponentContext = {
@@ -29,13 +29,13 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
         type: 'spark-app',
         children: [],
         state: {},
-        providers: new Map<string, CapabilityProvider>(),
-        consumers: new Map<string, CapabilityConsumer>()
+        providers: new Map<CapabilityName, CapabilityProvider>(),
+        consumers: new Map<CapabilityName, CapabilityConsumer>()
       }
 
-      // 注入到 Vue DI
+      // 注入到 Vue DI（使用类型安全的 InjectionKey）
       app.provide(SPARK_REGISTRY_KEY, registry)
-      app.provide('sparkParentContext', rootContext)
+      app.provide(SPARK_PARENT_CONTEXT_KEY, rootContext)
 
       // 全局属性（可选，方便模板中使用）
       app.config.globalProperties.$sparkRegistry = registry

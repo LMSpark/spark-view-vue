@@ -7,6 +7,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createDataSetCapabilityManager } from '../packages/spark-data/src/capability/DataSetCapabilityManager'
 import { SparkData } from '../packages/spark-data/src/spark-data-namespace'
+import { DATA_SET_STATE, GLOBAL_DATA, PAGE_SERVICE, API_CLIENT } from '../packages/spark-utils/src/capability-symbols'
 
 describe('DataSetCapabilityManager', () => {
   let manager: ReturnType<typeof createDataSetCapabilityManager>
@@ -74,7 +75,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should register dataSetState capability', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('dataSetState')
+    const provider = context.providers.get(DATA_SET_STATE)
     
     expect(provider).toBeDefined()
     expect(provider?.implementation).toHaveProperty('getDataSet')
@@ -86,7 +87,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should provide access to DataSet', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('dataSetState')
+    const provider = context.providers.get(DATA_SET_STATE)
     
     const ds = (provider?.implementation as any).getDataSet()
     expect(ds).toBe(mockDataSet)
@@ -94,7 +95,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should provide access to table', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('dataSetState')
+    const provider = context.providers.get(DATA_SET_STATE)
     
     const table = (provider?.implementation as any).getTable('Users')
     expect(table).toBeDefined()
@@ -103,7 +104,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should provide page params', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('dataSetState')
+    const provider = context.providers.get(DATA_SET_STATE)
     
     const params = (provider?.implementation as any).getPageParams()
     expect(params).toEqual({ id: '123' })
@@ -111,7 +112,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should provide page permissions', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('dataSetState')
+    const provider = context.providers.get(DATA_SET_STATE)
     
     const permissions = (provider?.implementation as any).getPagePermission()
     expect(permissions).toEqual({ canEdit: true })
@@ -119,7 +120,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should register globalData capability when provided', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('globalData')
+    const provider = context.providers.get(GLOBAL_DATA)
     
     expect(provider).toBeDefined()
     
@@ -129,7 +130,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should register pageService capability when provided', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('pageService')
+    const provider = context.providers.get(PAGE_SERVICE)
     
     expect(provider).toBeDefined()
     expect(provider?.implementation).toHaveProperty('showMessage')
@@ -139,7 +140,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should register apiClient capability when provided', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('apiClient')
+    const provider = context.providers.get(API_CLIENT)
     
     expect(provider).toBeDefined()
     expect(provider?.implementation).toHaveProperty('request')
@@ -147,7 +148,7 @@ describe('DataSetCapabilityManager', () => {
 
   it('should handle table change listeners', () => {
     const context = manager.getContext()
-    const provider = context.providers.get('dataSetState')
+    const provider = context.providers.get(DATA_SET_STATE)
     
     let notified = false
     const unsubscribe = (provider?.implementation as any).onTableChange('Users', (_table: unknown) => {
@@ -173,7 +174,7 @@ describe('DataSetCapabilityManager', () => {
     })
     
     const context = manager.getContext()
-    const provider = context.providers.get('dataSetState')
+    const provider = context.providers.get(DATA_SET_STATE)
     const params = (provider?.implementation as any).getPageParams()
     
     expect(params).toEqual({ id: '456', newParam: 'value' })
@@ -197,6 +198,6 @@ describe('DataSetCapabilityManager', () => {
     
     // 只有 dataSetState
     expect(providers.length).toBe(1)
-    expect(providers[0].name).toBe('dataSetState')
+    expect(providers[0].name).toBe(DATA_SET_STATE)
   })
 })

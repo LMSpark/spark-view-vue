@@ -8,7 +8,10 @@
  */
 
 import type { InjectionKey } from 'vue'
-import type { Provider, Consumer, LoggerApi } from '@spark-view/spark-utils'
+import type { Provider, Consumer, LoggerApi, CapabilityName } from '@spark-view/spark-utils'
+
+// 能力名称类型（从 spark-utils 重新导出）
+export type { CapabilityName } from '@spark-view/spark-utils'
 
 // ============================================================================
 // 能力系统类型（直接复用 spark-utils）
@@ -60,12 +63,12 @@ export interface ComponentContext {
   /** 运行时状态 */
   state: Record<string, unknown>
 
-  /** 能力提供者 */
-  providers: Map<string, CapabilityProvider>
-  /** 能力消费者 */
-  consumers: Map<string, CapabilityConsumer>
-  /** Provider 注册监听器（延迟绑定） */
-  providerListeners?: Map<string, Set<(provider: CapabilityProvider) => void>>
+  /** 能力提供者（键支持 string | symbol） */
+  providers: Map<CapabilityName, CapabilityProvider>
+  /** 能力消费者（键支持 string | symbol） */
+  consumers: Map<CapabilityName, CapabilityConsumer>
+  /** Provider 注册监听器（延迟绑定，键支持 string | symbol） */
+  providerListeners?: Map<CapabilityName, Set<(provider: CapabilityProvider) => void>>
 
   /** 日志器 */
   logger?: LoggerApi
@@ -90,7 +93,14 @@ export interface ComponentRegistry {
 // DI Keys
 // ============================================================================
 
+/** 组件注册表注入键 */
 export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('sparkRegistry') as InjectionKey<ComponentRegistry>
+
+/** 父级上下文注入键（替代字符串 'sparkParentContext'） */
+export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('sparkParentContext') as InjectionKey<ComponentContext>
+
+/** 能力管理器注入键（可选注入，允许测试/多实例场景替换） */
+export const CAPABILITY_MANAGER_KEY = Symbol('sparkCapabilityManager') as InjectionKey<import('../capability/CapabilityManager.js').CapabilityManager>
 
 // ============================================================================
 // 向后兼容（用于 spark-app 等包的类型引用）

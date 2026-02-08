@@ -6,11 +6,11 @@
  * 设计原则：
  * - 无全局单例（实例通过 DI 管理）
  * - 沿 parent 链向上查找 provider（就近原则）
- * - 注册 provider 时自动通知监听器
- * - 不做递归子树遍历（性能安全）
+ * - 注册 provider 时自动通知监听器（递归通知子树）
  */
 
 import { Logger } from '@spark-view/spark-utils'
+import type { CapabilityName } from '@spark-view/spark-utils'
 import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../core/types.js'
 
 const logger = Logger('Spark:Capability')
@@ -19,7 +19,7 @@ export interface CapabilityManager {
   /** 注册能力提供者 */
   registerProvider(context: ComponentContext, provider: CapabilityProvider): void
   /** 沿 parent 链查找能力提供者 */
-  getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined
+  getProvider(context: ComponentContext, name: CapabilityName): CapabilityProvider | undefined
   /** 注册能力消费者并尝试连接 */
   registerConsumer(context: ComponentContext, consumer: CapabilityConsumer): void
   /** 手动连接 provider → consumer */
@@ -54,7 +54,7 @@ export function createCapabilityManager(): CapabilityManager {
       this._notifyChildren(context, provider)
     },
 
-    getProvider(context: ComponentContext, name: string): CapabilityProvider | undefined {
+    getProvider(context: ComponentContext, name: CapabilityName): CapabilityProvider | undefined {
       // 先查本 context
       const local = context.providers.get(name)
       if (local) return local
@@ -88,7 +88,7 @@ export function createCapabilityManager(): CapabilityManager {
       consumer.implementation = undefined
     },
 
-    /** 通知子组件中等待此 capability 的监听器 */
+    /** 通知子组件中等待此 capability 的监听器（递归通知孩子组件） */
     _notifyChildren(context: ComponentContext, provider: CapabilityProvider): void {
       if (!context.children) return
       for (const child of context.children) {

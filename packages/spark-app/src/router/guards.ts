@@ -1,13 +1,14 @@
 ﻿/**
  * Router Guards
  * 路由守卫（鉴权、权限检查、预加载）
+ * 
+ * 注意：路由守卫运行在 Vue setup 上下文之外，不能使用 inject()。
+ * AppContext 通过函数参数传入。
  */
 
 import type { Router } from 'vue-router'
 import type { RouterGuardOptions, AppContext } from '../types'
 import { createLogger } from '../logger'
-import { inject } from 'vue'
-import { APP_CONTEXT_KEY } from '../constants'
 
 const routerLogger = createLogger('router')
 
@@ -20,10 +21,15 @@ function hasAnyPermission(context: AppContext, permissions: string[]): boolean {
 
 /**
  * 设置路由守卫
+ * 
+ * @param router - Vue Router 实例
+ * @param options - 守卫配置
+ * @param appContext - 应用上下文（通过参数传入，非 inject）
  */
 export function setupRouterGuards(
   router: Router,
-  options: RouterGuardOptions = {}
+  options: RouterGuardOptions = {},
+  appContext?: AppContext
 ): void {
   const {
     loginPath = '/login',
@@ -33,9 +39,6 @@ export function setupRouterGuards(
 
   // 全局前置守卫
   router.beforeEach(async (to, _from, next) => {
-    // 1. 检查 AppContext 是否已初始化
-    const appContext = inject<AppContext | undefined>(APP_CONTEXT_KEY, undefined)
-    
     // 登录页和公开页面跳过检查
     if (to.path === loginPath || to.meta.public === true) {
       return next()
@@ -47,7 +50,7 @@ export function setupRouterGuards(
       return next({ path: loginPath, query: { redirect: to.fullPath } })
     }
 
-    // 2. 页面级权限检查
+    // 页面级权限检查
     const requiredPermissions = to.meta.permissions as string[] | undefined
     
     if (requiredPermissions?.length) {

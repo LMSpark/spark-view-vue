@@ -11,9 +11,8 @@ import type { AppContext } from '../types'
 import type { IAuthService } from '../auth/types'
 
 // 外部类型（延迟导入）
-type Logger = ReturnType<typeof import('../logger').createLogger>
-type SparkRegistry = import('@spark-view/spark-component').ComponentRegistry
-type ConfigLoader = import('@spark-view/spark-page-config').PageConfigLoader
+import type { LoggerApi } from '../logger'
+type ConfigLoader = import('@spark-view/spark-page-config').ConfigLoader
 
 /**
  * ============================================
@@ -34,7 +33,7 @@ export const ROUTER_KEY: InjectionKey<Router> = Symbol('Router')
 /**
  * Logger 注入键
  */
-export const LOGGER_KEY: InjectionKey<Logger> = Symbol('Logger')
+export const LOGGER_KEY: InjectionKey<LoggerApi> = Symbol('Logger')
 
 /**
  * ConfigLoader 注入键
@@ -43,8 +42,9 @@ export const CONFIG_LOADER_KEY: InjectionKey<ConfigLoader> = Symbol('ConfigLoade
 
 /**
  * SparkRegistry 注入键
+ * 直接复用 spark-component 包的 InjectionKey，避免 Symbol 不一致
  */
-export const SPARK_REGISTRY_KEY: InjectionKey<SparkRegistry> = Symbol('SparkRegistry')
+export { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 
 /**
  * AuthService 注入键

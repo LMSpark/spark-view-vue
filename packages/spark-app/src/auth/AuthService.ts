@@ -345,6 +345,14 @@ export class AuthService implements IAuthService {
 }
 
 /**
+ * 创建认证服务实例（推荐：用于 DI 注入场景）
+ */
+export function createAuthService(): IAuthService {
+  return new AuthService()
+}
+
+/**
  * 全局认证服务实例
+ * @deprecated 推荐使用 createAuthService() 配合 DI 注入
  */
 export const authService = new AuthService()

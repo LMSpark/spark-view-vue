@@ -105,6 +105,12 @@ export interface ConfigLoaderOptions {
    * 加载超时（毫秒）
    */
   timeout?: number
+  
+  /**
+   * 自定义 fetch 适配器（可注入用于测试或 SSR 场景）
+   * 默认使用全局 fetch
+   */
+  fetchAdapter?: typeof fetch
 }
 
 /**

@@ -32,9 +32,6 @@
         "vue": "^3.5.0",
         "vue-router": "^4.0.0"
     },
-    "dependencies": {
-        "@spark-view/spark-app": "workspace:*"
-    },
     "devDependencies": {
         "@types/node": "^18.19.130",
         "rimraf": "^6.1.2",

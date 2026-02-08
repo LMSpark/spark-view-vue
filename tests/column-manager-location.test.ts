@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid } from '../features/spark-ej2'
-import { Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
+import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
 
@@ -72,7 +72,7 @@ describe('ColumnManager provider location', () => {
       global: {
         provide: {
           [SPARK_REGISTRY_KEY as symbol]: registry,
-          sparkParentContext: rootContext
+          [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
         }
       }
     })

@@ -29,9 +29,28 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, nextTick, h, type Component } from 'vue'
 import { useRoute } from 'vue-router'
-import { pageLogger, ErrorCodes, getErrorMessage } from '@spark-view/spark-app'
+import { Logger } from '@spark-view/spark-utils'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { SparkData } from '@spark-view/spark-data'
+
+// 本地 Logger（消除对 spark-app 的反向依赖）
+const pageLogger = Logger('PageRenderer')
+
+// 本地错误码
+const ErrorCodes = {
+  CONFIG_LOAD_FAILED: 4001,
+  CONFIG_INVALID: 4002,
+  UNKNOWN_ERROR: 9999
+} as const
+
+function getErrorMessage(code: number): string {
+  const messages: Record<number, string> = {
+    [ErrorCodes.CONFIG_LOAD_FAILED]: '配置加载失败',
+    [ErrorCodes.CONFIG_INVALID]: '配置无效',
+    [ErrorCodes.UNKNOWN_ERROR]: '未知错误'
+  }
+  return messages[code] ?? '未知错误'
+}
 import type { PageRendererOptions, PageContext, FormCreateAPI, Rule } from '../types'
 import { useCssScope } from '../composables/useCssScope'
 import { compileFunctions } from '../utils/createSandbox'
@@ -117,9 +136,11 @@ const pageContext: PageContext = {
     return dataSet.value
   },
   
-  // 沙箱全局变量（从外部导入）
-  ElMessage,
-  ElMessageBox,
+  // 沙箱全局变量 — 优先使用注入的 UI 服务，回退到 ElementPlus
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ElMessage: (props.messageService ?? ElMessage) as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ElMessageBox: (props.confirmService ?? ElMessageBox) as any,
   SparkData,
   h
 }
@@ -206,7 +227,7 @@ const loadPageConfig = async () => {
       throw new Error(`${errorMsg}: 未提供 configLoader 或 pageConfig`)
     }
     
-    pageLogger.success('页面配置加载成功', { pageId })
+    pageLogger.info('页面配置加载成功', { pageId })
     
     // 处理页面数据
     Object.assign(pageData, config.data)
@@ -255,7 +276,7 @@ const loadPageConfig = async () => {
           requiredFunctionNames
         )
         
-        pageLogger.success('页面脚本执行成功', { 
+        pageLogger.info('页面脚本执行成功', { 
           pageId, 
           returnedCount: Object.keys(pageFunctions.value).length,
           returned: Object.keys(pageFunctions.value)
@@ -292,7 +313,7 @@ const loadPageConfig = async () => {
       await props.afterLoad(config)
     }
     
-    pageLogger.success('页面渲染完成', { pageId: currentPageId.value })
+    pageLogger.info('页面渲染完成', { pageId: currentPageId.value })
     loading.value = false
   } catch (err) {
     error.value = err instanceof Error ? err.message : String(err)

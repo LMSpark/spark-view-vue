@@ -8,6 +8,7 @@ export {
 
 // 导出基础类型
 export type {
+  CapabilityName,
   Provider,
   Consumer,
   Context
