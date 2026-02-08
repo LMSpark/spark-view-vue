@@ -9,7 +9,8 @@
  * - apiClient: 统一的 API 请求接口
  */
 
-import type { Provider as CapabilityProvider } from '@spark-view/spark-utils'
+import type { Provider as CapabilityProvider, CapabilityName } from '@spark-view/spark-utils'
+import { APP_SERVICES, DATA_SET_STATE, GLOBAL_DATA, PAGE_SERVICE, API_CLIENT } from '@spark-view/spark-utils'
 import type { IDataSet } from '../types'
 
 /**
@@ -99,8 +100,8 @@ export class DataSetCapabilityManager {
     id: string
     type: string
     parent?: unknown
-    providers: Map<string, CapabilityProvider>
-    consumers: Map<string, unknown>
+    providers: Map<CapabilityName, CapabilityProvider>
+    consumers: Map<CapabilityName, unknown>
   }
   private config: DataSetCapabilityConfig
   private tableListeners = new Map<string, Set<(table: unknown) => void>>()
@@ -113,8 +114,8 @@ export class DataSetCapabilityManager {
       id: `dataset:${pageId}`,
       type: 'dataset',
       parent: undefined,
-      providers: new Map(),
-      consumers: new Map()
+      providers: new Map<CapabilityName, CapabilityProvider>(),
+      consumers: new Map<CapabilityName, unknown>()
     }
     
     // 注册所有 DataSet 层能力
@@ -155,7 +156,7 @@ export class DataSetCapabilityManager {
    */
   private registerAppServicesCapability() {
     const provider: CapabilityProvider = {
-      name: 'appServices',
+      name: APP_SERVICES,
       implementation: {
         // Router 服务
         router: this.config.appServices?.router,
@@ -192,7 +193,7 @@ export class DataSetCapabilityManager {
    */
   private registerDataSetStateCapability() {
     const provider: CapabilityProvider = {
-      name: 'dataSetState',
+      name: DATA_SET_STATE,
       implementation: {
         getDataSet: () => this.config.dataSet,
         
@@ -239,7 +240,7 @@ export class DataSetCapabilityManager {
    */
   private registerGlobalDataCapability() {
     const provider: CapabilityProvider = {
-      name: 'globalData',
+      name: GLOBAL_DATA,
       implementation: {
         getUserInfo: () => this.config.globalData?.getUserInfo() ?? { id: '', name: '', roles: [] },
         getConfig: (key: string) => this.config.globalData?.getConfig(key),
@@ -255,7 +256,7 @@ export class DataSetCapabilityManager {
    */
   private registerPageServiceCapability() {
     const provider: CapabilityProvider = {
-      name: 'pageService',
+      name: PAGE_SERVICE,
       implementation: {
         showMessage: (message: string, type: 'success' | 'error' | 'warning') => 
           this.config.pageService?.showMessage(message, type),
@@ -276,7 +277,7 @@ export class DataSetCapabilityManager {
    */
   private registerApiClientCapability() {
     const provider: CapabilityProvider = {
-      name: 'apiClient',
+      name: API_CLIENT,
       implementation: {
         request: <T = unknown>(config: {
           url: string

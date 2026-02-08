@@ -138,6 +138,11 @@ export function createFieldRenderHelper(): IFieldRenderHelper {
   return helperInstance
 }
 
+/** 重置单例实例（测试用） */
+export function resetFieldRenderHelper(): void {
+  helperInstance = null
+}
+
 /**
  * 快捷方法：计算字段状态
  */

@@ -123,6 +123,8 @@ export interface BootstrapOptions {
   config: AppConfig
   /** 认证配置（可选，不提供则使用 authenticate 函数） */
   auth?: import('../auth').AuthConfig
+  /** 页面配置加载器（可选，提供后可通过 useConfigLoader() 注入） */
+  configLoader?: import('@spark-view/spark-page-config').ConfigLoader
   /** 挂载前钩子 */
   beforeMount?: (context: BootstrapContext) => void | Promise<void>
   /** 挂载后钩子 */

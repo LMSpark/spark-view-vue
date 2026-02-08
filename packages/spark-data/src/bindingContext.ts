@@ -4,17 +4,8 @@
  * 相当于 .NET 的 DataView - 视图层
  */
 
-import type { IDataRow, IBindingContext, FilterExpression, SortExpression, ITreeManager } from './types'
+import type { IDataRow, IBindingContext, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
 import { FilterExpressionParser } from './filterExpressionParser'
-
-/**
- * DataSet 接口（前向声明，避免循环依赖）
- */
-interface IDataSet {
-  updateRelatedTables(tableName: string, contextId: string): void
-  notifySubscribers(tableName: string, contextId: string): void
-  emit(event: string, data: unknown): void
-}
 
 /**
  * 绑定上下文类（实现 IBindingContext 接口 + 方法逻辑）

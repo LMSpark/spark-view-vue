@@ -438,7 +438,7 @@ export interface IDataSet {
   autoLoadRelations?: boolean
   
   // 必需方法
-  updateRelatedTables(tableName: string): void
+  updateRelatedTables(tableName: string, contextId?: string): void
   notifySubscribers(tableName: string, contextId?: string): void
   emit(event: string, data: unknown): void
   

@@ -164,6 +164,11 @@ export function createPermissionChecker(): IPermissionChecker {
   return checkerInstance
 }
 
+/** 重置单例实例（测试用） */
+export function resetPermissionChecker(): void {
+  checkerInstance = null
+}
+
 /**
  * 快捷方法：检查权限
  */

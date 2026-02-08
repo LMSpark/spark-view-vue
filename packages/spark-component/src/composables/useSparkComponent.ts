@@ -49,20 +49,22 @@ import type { EventProvider } from '@spark-view/spark-utils'
 import { createCapabilityManager } from '../capability/CapabilityManager.js'
 
 // SPARK 核心类型
-import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry } from '../core/types.js'
-import { SPARK_REGISTRY_KEY } from '../core/types.js'
+import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, CapabilityName } from '../core/types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, CAPABILITY_MANAGER_KEY } from '../core/types.js'
 
 /* -----------------------------------------------------------------------------
  * 全局实例
  * -------------------------------------------------------------------------- */
 
 /**
- * 共享能力管理器实例
+ * 共享能力管理器实例（默认）
  * 
  * 所有 useSparkComponent 调用共享同一个管理器实例，因为管理器本身无状态，
  * 所有状态存储在各个 context 的 providers/consumers Map 中。
+ * 
+ * 可通过 CAPABILITY_MANAGER_KEY 注入替代实例（测试/多实例场景）。
  */
-const capabilityManager = createCapabilityManager()
+const defaultCapabilityManager = createCapabilityManager()
 
 /* -----------------------------------------------------------------------------
  * 类型定义
@@ -188,13 +190,19 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * 从 Vue DI 获取父级上下文
    * 父组件通过 vueProvide('sparkParentContext', context) 传递
    */
-  const parentContext = options?.parentContext ?? inject<ComponentContext | undefined>('sparkParentContext', undefined)
+  const parentContext = options?.parentContext ?? inject(SPARK_PARENT_CONTEXT_KEY, undefined)
 
   /**
    * 从 Vue DI 获取组件注册表
    * 由 SparkPlugin 在根级别 provide
    */
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
+
+  /**
+   * 从 Vue DI 获取能力管理器（可选）
+   * 允许测试或多实例场景注入自定义管理器，默认使用模块级单例
+   */
+  const capabilityManager = inject(CAPABILITY_MANAGER_KEY, defaultCapabilityManager)
 
   /**
    * 创建组件上下文
@@ -214,8 +222,8 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
     children: [],
     props: config.props,
     state: {},
-    providers: new Map<string, CapabilityProvider>(),
-    consumers: new Map<string, CapabilityConsumer>()
+    providers: new Map<CapabilityName, CapabilityProvider>(),
+    consumers: new Map<CapabilityName, CapabilityConsumer>()
   }
 
   /**
@@ -236,7 +244,7 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * 向子组件提供当前 context
    * 子组件通过 inject('sparkParentContext') 获取
    */
-  vueProvide('sparkParentContext', context)
+  vueProvide(SPARK_PARENT_CONTEXT_KEY, context)
 
   /**
    * 创建带类型前缀的日志器
@@ -289,10 +297,9 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * ```
    */
   function provide(name: string | symbol, implementation?: Implementation): void {
-    const nameKey = typeof name === 'symbol' ? name.toString() : name
-    const provider: CapabilityProvider = { name: nameKey, implementation }
+    const provider: CapabilityProvider = { name, implementation }
     capabilityManager.registerProvider(context, provider)
-    logger.info(`🔌 Provided: ${nameKey}`)
+    logger.info(`🔌 Provided: ${String(name)}`)
   }
 
   /**
@@ -315,10 +322,11 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * ```
    */
   function provideEvents(name: string | symbol = 'events'): EventProvider {
-    const nameKey = typeof name === 'symbol' ? name.toString() : name
-    const { provider, emitter } = createEventProvider(nameKey)
-    capabilityManager.registerProvider(context, provider)
-    logger.info(`🎉 Provided events: ${nameKey}`)
+    const { provider, emitter } = createEventProvider(String(name))
+    // 用原始 name 作为 provider 的名称，保留 Symbol 唯一性
+    const capProvider: CapabilityProvider = { name, implementation: provider.implementation }
+    capabilityManager.registerProvider(context, capProvider)
+    logger.info(`🎉 Provided events: ${String(name)}`)
     return emitter
   }
 
@@ -348,18 +356,17 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * ```
    */
   function consume(name: string | symbol): Implementation | null {
-    const nameKey = typeof name === 'symbol' ? name.toString() : name
-    const consumer: CapabilityConsumer = { capabilityName: nameKey, implementation: undefined }
+    const consumer: CapabilityConsumer = { capabilityName: name, implementation: undefined }
     capabilityManager.registerConsumer(context, consumer)
 
-    const provider = capabilityManager.getProvider(context, nameKey)
+    const provider = capabilityManager.getProvider(context, name)
     if (provider) {
       consumer.implementation = provider.implementation
-      logger.info(`🔌 Consumed: ${nameKey}`)
+      logger.info(`🔌 Consumed: ${String(name)}`)
       return (provider.implementation ?? null) as Implementation | null
     }
 
-    logger.warn(`⚠️ Capability not found (late-binding): ${nameKey}`)
+    logger.warn(`⚠️ Capability not found (late-binding): ${String(name)}`)
     return null
   }
 
@@ -389,17 +396,16 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
     name: string | symbol,
     handlers: Record<string, (...args: unknown[]) => void>
   ): EventProvider | null {
-    const nameKey = typeof name === 'symbol' ? name.toString() : name
-    const provider = capabilityManager.getProvider(context, nameKey)
+    const provider = capabilityManager.getProvider(context, name)
     if (provider) {
       const emitter = provider.implementation as EventProvider
       Object.entries(handlers).forEach(([event, handler]) => {
         emitter.on(event, handler)
       })
-      logger.info(`🎉 Consumed events: ${nameKey}`)
+      logger.info(`🎉 Consumed events: ${String(name)}`)
       return emitter
     }
-    logger.warn(`⚠️ Event capability not found: ${nameKey}`)
+    logger.warn(`⚠️ Event capability not found: ${String(name)}`)
     return null
   }
 
@@ -425,8 +431,7 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * ```
    */
   function getProvider(name: string | symbol): CapabilityProvider | undefined {
-    const nameKey = typeof name === 'symbol' ? name.toString() : name
-    return context.providers.get(nameKey)
+    return context.providers.get(name)
   }
 
   /**
@@ -453,10 +458,9 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * ```
    */
   function getInheritedProvider<T = unknown>(name: string | symbol, ctx?: ComponentContext): T | undefined {
-    const nameKey = typeof name === 'symbol' ? name.toString() : name
     let current: ComponentContext | undefined = ctx ?? context
     while (current) {
-      const p = current.providers.get(nameKey)
+      const p = current.providers.get(name)
       if (p?.implementation !== undefined) return p.implementation as T
       current = current.parent
     }
@@ -487,16 +491,15 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * ```
    */
   function whenAvailable(name: string | symbol): Promise<CapabilityProvider> {
-    const nameKey = typeof name === 'symbol' ? name.toString() : name
-    const existing = capabilityManager.getProvider(context, nameKey)
+    const existing = capabilityManager.getProvider(context, name)
     if (existing) return Promise.resolve(existing)
 
     return new Promise((resolve, reject) => {
       context.providerListeners = context.providerListeners ?? new Map()
-      if (!context.providerListeners.has(nameKey)) context.providerListeners.set(nameKey, new Set())
-      const listeners = context.providerListeners.get(nameKey)
+      if (!context.providerListeners.has(name)) context.providerListeners.set(name, new Set())
+      const listeners = context.providerListeners.get(name)
       if (!listeners) {
-        reject(new Error(`Failed to create listeners for capability: ${nameKey}`))
+        reject(new Error(`Failed to create listeners for capability: ${String(name)}`))
         return
       }
       const cb = (prov: CapabilityProvider) => {
@@ -655,7 +658,7 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
   function printCapabilityTree(): void {
     const print = (ctx: ComponentContext, indent = 0) => {
       const prefix = '  '.repeat(indent)
-      const providers = Array.from(ctx.providers.keys()).join(', ')
+      const providers = Array.from(ctx.providers.keys()).map(String).join(', ')
       logger.info(`${prefix}├─ ${ctx.type} (${ctx.id})`)
       if (providers) logger.info(`${prefix}   Provides: [${providers}]`)
       ctx.children?.forEach(child => print(child, indent + 1))

@@ -23,19 +23,26 @@ export interface EnvironmentInfo {
 }
 
 /**
- * 简单环境适配器（仅客户端）
- * 用于替代原 envAdapter
+ * 简单环境适配器
+ * 支持客户端、服务端和测试环境自动检测
  */
 export const simpleEnvAdapter = {
   /**
-   * 获取环境信息（总是返回客户端）
+   * 获取环境信息（自动检测环境）
    */
   getEnvironment(): EnvironmentInfo {
+    const isServer = typeof window === 'undefined'
+    // 检测测试环境：Vitest / Jest / NODE_ENV=test
+    const isTest = typeof process !== 'undefined' && (
+      process.env?.VITEST === 'true' ||
+      process.env?.JEST_WORKER_ID !== undefined ||
+      process.env?.NODE_ENV === 'test'
+    )
     return {
-      type: 'client',
-      isServer: false,
-      isClient: true,
-      isTest: false  // SPA应用不是测试环境
+      type: isServer ? 'server' : 'client',
+      isServer,
+      isClient: !isServer,
+      isTest: !!isTest
     }
   },
   

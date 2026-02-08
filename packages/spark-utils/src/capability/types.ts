@@ -11,9 +11,12 @@
  * 能力提供者
  * @template T 能力实现的类型
  */
+/** 能力名称类型（支持 string 和 Symbol） */
+export type CapabilityName = string | symbol
+
 export interface Provider<T = unknown> {
-  /** 能力名称（唯一标识） */
-  name: string
+  /** 能力名称（唯一标识，支持 string 和 Symbol） */
+  name: CapabilityName
   /** 能力实现 */
   implementation?: T
 }
@@ -23,8 +26,8 @@ export interface Provider<T = unknown> {
  * @template T 能力实现的类型
  */
 export interface Consumer<T = unknown> {
-  /** 需要的能力名称 */
-  capabilityName: string
+  /** 需要的能力名称（支持 string 和 Symbol） */
+  capabilityName: CapabilityName
   /** 连接后会被赋值为 Provider.implementation */
   implementation?: T
 }
@@ -54,8 +57,8 @@ export interface Consumer<T = unknown> {
 export interface Context<T = Provider> {
   /** 父上下文（使用 this 类型支持子类型继承） */
   parent?: this | Context<T>
-  /** 当前上下文提供的能力（Map 实现 O(1) 查询） */
-  providers: Map<string, T>
+  /** 当前上下文提供的能力（Map 实现 O(1) 查询，键支持 string | symbol） */
+  providers: Map<CapabilityName, T>
 }
 
 /**
@@ -76,7 +79,7 @@ export interface Context<T = Provider> {
  */
 export function provide<T = unknown>(
   context: Context<Provider>,
-  name: string,
+  name: CapabilityName,
   implementation: T
 ): void {
   context.providers.set(name, {
@@ -105,7 +108,7 @@ export function provide<T = unknown>(
  */
 export function consume<T = unknown>(
   context: Context<Provider>,
-  name: string
+  name: CapabilityName
 ): T | undefined {
   const provider = context.providers.get(name)
   return provider?.implementation as T | undefined

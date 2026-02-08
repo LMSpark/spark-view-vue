@@ -9,6 +9,7 @@ import type { BootstrapOptions, AppContext, AppConfig } from '../types'
 import { setupRouterGuards } from '../router/guards'
 import { setupErrorHandler } from '../error/handler'
 import { createLogger } from '../logger'
+import { loadConfig } from '../config'
 import { authService } from '../auth'
 
 const bootstrapLogger = createLogger('bootstrap')
@@ -17,7 +18,7 @@ const bootstrapLogger = createLogger('bootstrap')
  * 应用初始化流水线
  */
 export async function bootstrap(options: BootstrapOptions): Promise<void> {
-  const { app, router, config, beforeMount, afterMount, auth } = options
+  const { app, router, config, beforeMount, afterMount, auth, configLoader } = options
 
   try {
     // 阶段 1: 配置加载
@@ -80,7 +81,8 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       APP_CONTEXT_KEY,
       ROUTER_KEY,
       LOGGER_KEY,
-      AUTH_SERVICE_KEY
+      AUTH_SERVICE_KEY,
+      CONFIG_LOADER_KEY
     } = await import('../constants')
     
     // 提供核心服务
@@ -100,14 +102,19 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       app.provide(AUTH_SERVICE_KEY, authService)
     }
     
+    // 提供配置加载器（如果传入）
+    if (configLoader) {
+      app.provide(CONFIG_LOADER_KEY, configLoader)
+    }
+    
     // 注意：sparkManager 的字符串 key 已在上面处理，不需要重复提供
 
-    // 阶段 5: 设置路由守卫
+    // 阶段 5: 设置路由守卫（传入 appContext，避免在非 setup 上下文中 inject）
     logPhase('ROUTER', '配置路由守卫')
     setupRouterGuards(router, {
       loginPath: auth?.loginPath ?? '/login',
       forbiddenPath: '/forbidden'
-    })
+    }, appContext)
 
     // 设置错误处理
     setupErrorHandler(app, {
@@ -155,23 +162,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
   }
 }
 
-/**
- * 加载配置
- */
-async function loadConfig(config: AppConfig): Promise<AppConfig> {
-  // 尝试加载远程配置
-  try {
-    const response = await fetch('/api/config')
-    if (response.ok) {
-      const remoteConfig = await response.json() as Partial<AppConfig>
-      return { ...config, ...remoteConfig }
-    }
-  } catch {
-    // 使用本地配置
-  }
-  
-  return config
-}
+// loadConfig 已统一到 config/index.ts 模块，从 import 获取
 
 /**
  * 默认鉴权函数（开发环境使用）
