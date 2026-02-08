@@ -91,6 +91,8 @@ export interface AppConfig {
   logLevel?: LogLevel
   /** 是否启用 Mock */
   enableMock?: boolean
+  /** 是否启用远程配置加载 */
+  enableRemoteConfig?: boolean
   /** 应用版本 */
   version?: string
   /** 功能开关 */
