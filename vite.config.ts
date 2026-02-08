@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
+import fs from 'fs'
+import axios from 'axios'
+import vueDocgen from 'vue-docgen-api'
 
 export default defineConfig({
   resolve: {
@@ -38,6 +41,98 @@ export default defineConfig({
         }
       }
     }),
+    {
+      name: 'generate-component-library',
+      buildStart() {
+        console.log('开始生成Vue组件资源库...')
+      },
+      async generateBundle(options, bundle) {
+        const componentLibrary: Record<string, any> = {}
+        
+        // 扫描组件目录
+        const componentDirs = [
+          path.resolve(__dirname, 'packages/spark-component/src/components'),
+          path.resolve(__dirname, 'features/spark/components'),
+          path.resolve(__dirname, 'features/spark-ej2/components')
+        ]
+        
+        for (const componentDir of componentDirs) {
+          if (!fs.existsSync(componentDir)) continue
+          
+          const files = fs.readdirSync(componentDir).filter(f => f.endsWith('.vue'))
+          
+          for (const file of files) {
+            const filePath = path.resolve(componentDir, file)
+            
+            try {
+              // 提取元数据
+              const docs = await vueDocgen.buildComponentDocs(filePath)
+              const componentName = file.replace('.vue', '')
+              
+              componentLibrary[componentName] = {
+                props: docs.props || [],
+                events: docs.events || [],
+                slots: docs.slots || [],
+                description: docs.description || '',
+                sourcePath: path.relative(__dirname, filePath)
+              }
+              
+              console.log(`✓ 提取组件元数据: ${componentName}`)
+            } catch (error) {
+              console.warn(`⚠ 无法提取 ${file} 的元数据:`, error.message)
+              
+              // 生成mock元数据
+              const componentName = file.replace('.vue', '')
+              componentLibrary[componentName] = {
+                props: [
+                  { name: 'id', type: 'string', description: '组件唯一标识' },
+                  { name: 'dataSource', type: 'Array', description: '数据源' }
+                ],
+                events: [
+                  { name: 'dataChanged', description: '数据变化事件' }
+                ],
+                slots: [
+                  { name: 'default', description: '默认插槽' }
+                ],
+                description: `Mock 元数据 for ${componentName}`,
+                sourcePath: path.relative(__dirname, filePath),
+                isMock: true
+              }
+            }
+          }
+        }
+        
+        // 生成JSON文件
+        const libraryPath = 'component-library.json'
+        const libraryContent = JSON.stringify(componentLibrary, null, 2)
+        fs.writeFileSync(libraryPath, libraryContent)
+        
+        console.log(`📄 组件库JSON已生成: ${libraryPath} (${Object.keys(componentLibrary).length} 个组件)`)
+        
+        // Mock 上传到服务端
+        try {
+          // 模拟上传 - 实际项目中替换为真实API
+          console.log('🚀 开始上传组件库到服务端...')
+          
+          // Mock API 调用
+          await new Promise(resolve => setTimeout(resolve, 1000)) // 模拟网络延迟
+          
+          console.log('✅ 组件库已成功上传到服务端 (Mock)')
+          console.log(`📊 上传统计: ${Object.keys(componentLibrary).length} 个组件, ${libraryContent.length} 字节`)
+          
+          // 在开发环境下输出前5个组件的预览
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('\n📋 组件库预览 (前5个):')
+            Object.entries(componentLibrary).slice(0, 5).forEach(([name, meta]: [string, any]) => {
+              console.log(`  - ${name}: ${meta.props?.length || 0} props, ${meta.events?.length || 0} events${meta.isMock ? ' (Mock)' : ''}`)
+            })
+          }
+          
+        } catch (error) {
+          console.error('❌ 上传失败:', error)
+        }
+      }
+    },
     ...(process.env.ANALYZE ? [visualizer({
       open: true,
       filename: 'dist/stats.html',
