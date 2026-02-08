@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, type RouteLocationRaw } from 'vue-router'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { Logger, APP_SERVICES } from '@spark-view/spark-utils'
@@ -33,18 +33,15 @@ const loading = ref(true)
 const error = ref('')
 const config = ref<Partial<ComponentContext> | null>(null)
 
-// === 提供 APP 服务能力（模拟页面层） ===
 const router = useRouter()
 const logger = Logger('JsonRendererDemo')
 
-// 创建父级上下文并提供 appServices
 const { provide: provideCapability } = useSparkComponent({
   type: 'json-renderer-demo-page',
   id: 'demo-page-root'
 })
 
-// 提供 appServices（和 PageRenderer 一样）
-const appServices = computed(() => ({
+provideCapability(APP_SERVICES, {
   router: {
     push: (to: unknown) => router.push(to as RouteLocationRaw),
     replace: (to: unknown) => router.replace(to as RouteLocationRaw),
@@ -57,26 +54,18 @@ const appServices = computed(() => ({
     warn: (...args: unknown[]) => logger.warn(...args),
     error: (...args: unknown[]) => logger.error(...args)
   }
-} as Record<string, unknown>))
-
-provideCapability(APP_SERVICES, appServices.value)
+} as Record<string, unknown>)
 
 onMounted(async () => {
   try {
-    console.log('🔄 开始加载 JSON 配置...')
-    
-    // 加载 JSON 配置
     const response = await fetch('/user-grid-demo.json')
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
     }
-    
     config.value = await response.json()
-    console.log('✅ JSON 配置加载成功:', config.value)
-    
     loading.value = false
   } catch (e) {
-    console.error('❌ 加载失败:', e)
+    logger.error('加载配置失败:', e)
     error.value = e instanceof Error ? e.message : String(e)
     loading.value = false
   }
