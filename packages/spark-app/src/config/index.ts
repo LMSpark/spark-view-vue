@@ -15,6 +15,7 @@ const DEFAULT_CONFIG: AppConfig = {
   apiBaseUrl: '/api',
   logLevel: 'info',
   enableMock: false,
+  enableRemoteConfig: false,
   version: '0.1.0',
   features: {
     enableAI: false,
@@ -33,13 +34,16 @@ export async function loadConfig(envConfig?: Partial<AppConfig>): Promise<AppCon
     ...envConfig
   }
 
-  // 2. 尝试加载远程配置
-  try {
-    const remoteConfig = await fetchRemoteConfig()
-    Object.assign(config, remoteConfig)
-    configLogger.info('远程配置已加载', remoteConfig)
-  } catch (error) {
-    configLogger.warn('远程配置加载失败，使用本地配置', { error: String(error) })
+  // 2. 尝试加载远程配置（可选）
+  if (config.enableRemoteConfig !== false) {
+    try {
+      const remoteConfig = await fetchRemoteConfig()
+      Object.assign(config, remoteConfig)
+      configLogger.info('远程配置已加载', remoteConfig)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      configLogger.debug('远程配置不可用，使用本地配置', { reason: errorMessage })
+    }
   }
 
   return config
