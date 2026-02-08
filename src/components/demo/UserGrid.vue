@@ -50,7 +50,9 @@ interface Props {
 const props = defineProps<Props>()
 
 // 从 config.props 获取 users
-const usersFromConfig = computed(() => (props.config.props?.users as User[]) || [])
+const usersFromConfig = computed(() => {
+  return (props.config.props?.users as User[]) || []
+})
 
 // 🎯 生成子组件配置（为每个 user 创建一个 row）
 const childConfigs = computed(() => {
@@ -63,12 +65,14 @@ const childConfigs = computed(() => {
   
   // 使用第一个 child 作为模板，为每个 user 生成配置
   const template = children[0]
-  if (!template?.type) return []
+  if (!template?.type) {
+    return []
+  }
   
   return users.map(user => ({
     ...template,
     id: `row-${user.id}`,
-    type: template.type, // ensure it's always a string for downstream resolution
+    type: template.type,
     props: {
       ...template.props,
       user // 传递 user 数据
