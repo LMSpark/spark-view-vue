@@ -7,6 +7,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import axios from 'axios'
 
 export interface ComponentMetadata {
   props: Array<{
@@ -14,7 +15,7 @@ export interface ComponentMetadata {
     type?: string
     description?: string
     required?: boolean
-    defaultValue?: any
+    defaultValue?: unknown
   }>
   events: Array<{
     name: string
@@ -33,18 +34,53 @@ export interface ComponentLibrary {
   [componentName: string]: ComponentMetadata
 }
 
+// 配置选项
+export interface ComponentLibraryConfig {
+  useServer?: boolean
+  serverUrl?: string
+  localFilePath?: string
+}
+
+let config: ComponentLibraryConfig = {
+  useServer: false,
+  serverUrl: 'http://localhost:3001',
+  localFilePath: path.resolve(process.cwd(), 'component-library.json')
+}
+
+/**
+ * 配置组件库工具
+ */
+export function configureComponentLibrary(newConfig: Partial<ComponentLibraryConfig>) {
+  config = { ...config, ...newConfig }
+}
+
 /**
  * 加载组件库元数据
  */
-export function loadComponentLibrary(): ComponentLibrary {
+export async function loadComponentLibrary(): Promise<ComponentLibrary> {
+  if (config.useServer) {
+    try {
+      const response = await axios.get(`${config.serverUrl}/api/component-library`, {
+        timeout: 3000
+      })
+
+      if (response.data.success) {
+        return response.data.data
+      }
+    } catch (error) {
+      console.warn('无法从服务端加载组件库，回退到本地文件:', error.message)
+    }
+  }
+
+  // 从本地文件加载
   try {
-    const libraryPath = path.resolve(process.cwd(), 'component-library.json')
-    if (!fs.existsSync(libraryPath)) {
-      console.warn('组件库文件不存在，请先运行构建命令生成')
+    const filePath = config.localFilePath!
+    if (!fs.existsSync(filePath)) {
+      console.warn('组件库文件不存在:', filePath)
       return {}
     }
 
-    const content = fs.readFileSync(libraryPath, 'utf-8')
+    const content = fs.readFileSync(filePath, 'utf-8')
     return JSON.parse(content)
   } catch (error) {
     console.error('加载组件库失败:', error)
@@ -55,16 +91,16 @@ export function loadComponentLibrary(): ComponentLibrary {
 /**
  * 查询组件信息 - MCP 工具实现
  */
-export function getComponentInfo(componentName: string): ComponentMetadata | null {
-  const library = loadComponentLibrary()
-  return library[componentName] || null
+export async function getComponentInfo(componentName: string): Promise<ComponentMetadata | null> {
+  const library = await loadComponentLibrary()
+  return library[componentName] ?? null
 }
 
 /**
  * 搜索组件 - 根据关键词搜索
  */
-export function searchComponents(keyword: string): Array<{ name: string; metadata: ComponentMetadata }> {
-  const library = loadComponentLibrary()
+export async function searchComponents(keyword: string): Promise<Array<{ name: string; metadata: ComponentMetadata }>> {
+  const library = await loadComponentLibrary()
   const results: Array<{ name: string; metadata: ComponentMetadata }> = []
 
   for (const [name, metadata] of Object.entries(library)) {
@@ -80,26 +116,26 @@ export function searchComponents(keyword: string): Array<{ name: string; metadat
 /**
  * 获取所有组件名称
  */
-export function getAllComponentNames(): string[] {
-  const library = loadComponentLibrary()
+export async function getAllComponentNames(): Promise<string[]> {
+  const library = await loadComponentLibrary()
   return Object.keys(library)
 }
 
 /**
  * 获取组件推荐 - 基于使用场景
  */
-export function getComponentRecommendations(scenario: string): Array<{ name: string; metadata: ComponentMetadata; score: number }> {
-  const library = loadComponentLibrary()
+export async function getComponentRecommendations(scenario: string): Promise<Array<{ name: string; metadata: ComponentMetadata; score: number }>> {
+  const library = await loadComponentLibrary()
   const recommendations: Array<{ name: string; metadata: ComponentMetadata; score: number }> = []
 
   for (const [name, metadata] of Object.entries(library)) {
     let score = 0
 
     // 简单的推荐逻辑 - 可以根据实际需求扩展
-    if (scenario.includes('grid') && name.includes('grid')) score += 10
-    if (scenario.includes('table') && name.includes('table')) score += 10
-    if (scenario.includes('form') && name.includes('form')) score += 10
-    if (scenario.includes('chart') && name.includes('chart')) score += 10
+    if (scenario.includes('grid') && name.toLowerCase().includes('grid')) score += 10
+    if (scenario.includes('table') && name.toLowerCase().includes('table')) score += 10
+    if (scenario.includes('form') && name.toLowerCase().includes('form')) score += 10
+    if (scenario.includes('chart') && name.toLowerCase().includes('chart')) score += 10
 
     if (score > 0) {
       recommendations.push({ name, metadata, score })
@@ -125,8 +161,8 @@ export const componentInfoTool = {
     },
     required: ['componentName']
   },
-  handler: (args: { componentName: string }) => {
-    const result = getComponentInfo(args.componentName)
+  handler: async (args: { componentName: string }) => {
+    const result = await getComponentInfo(args.componentName)
     return result ? {
       success: true,
       data: result
@@ -153,8 +189,8 @@ export const componentSearchTool = {
     },
     required: ['keyword']
   },
-  handler: (args: { keyword: string }) => {
-    const results = searchComponents(args.keyword)
+  handler: async (args: { keyword: string }) => {
+    const results = await searchComponents(args.keyword)
     return {
       success: true,
       data: results
@@ -178,8 +214,8 @@ export const componentRecommendationTool = {
     },
     required: ['scenario']
   },
-  handler: (args: { scenario: string }) => {
-    const recommendations = getComponentRecommendations(args.scenario)
+  handler: async (args: { scenario: string }) => {
+    const recommendations = await getComponentRecommendations(args.scenario)
     return {
       success: true,
       data: recommendations
@@ -192,4 +228,4 @@ export const componentLibraryTools = [
   componentInfoTool,
   componentSearchTool,
   componentRecommendationTool
-]
+] as const
