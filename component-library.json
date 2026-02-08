@@ -2,88 +2,60 @@
   "SparkComponentRenderer": {
     "props": [
       {
-        "name": "id",
-        "type": "string",
-        "description": "组件唯一标识"
+        "name": "config",
+        "required": true,
+        "type": {
+          "name": "ComponentContext"
+        }
       },
       {
-        "name": "dataSource",
-        "type": "Array",
-        "description": "数据源"
+        "name": "parentContext",
+        "required": false,
+        "type": {
+          "name": "ComponentContext"
+        }
       }
     ],
-    "events": [
-      {
-        "name": "dataChanged",
-        "description": "数据变化事件"
-      }
-    ],
-    "slots": [
-      {
-        "name": "default",
-        "description": "默认插槽"
-      }
-    ],
-    "description": "Mock 元数据 for SparkComponentRenderer",
-    "sourcePath": "features\\spark\\components\\SparkComponentRenderer.vue",
-    "isMock": true
+    "events": [],
+    "slots": [],
+    "description": "",
+    "sourcePath": "features\\spark\\components\\SparkComponentRenderer.vue"
   },
   "SparkEJ2Column": {
     "props": [
       {
-        "name": "id",
-        "type": "string",
-        "description": "组件唯一标识"
+        "name": "config",
+        "required": true,
+        "type": {
+          "name": "SparkEJ2ColumnConfig"
+        }
       },
       {
-        "name": "dataSource",
-        "type": "Array",
-        "description": "数据源"
+        "name": "parentContext",
+        "required": false,
+        "type": {
+          "name": "ComponentContext"
+        }
       }
     ],
-    "events": [
-      {
-        "name": "dataChanged",
-        "description": "数据变化事件"
-      }
-    ],
-    "slots": [
-      {
-        "name": "default",
-        "description": "默认插槽"
-      }
-    ],
-    "description": "Mock 元数据 for SparkEJ2Column",
-    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Column.vue",
-    "isMock": true
+    "events": [],
+    "slots": [],
+    "description": "",
+    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Column.vue"
   },
   "SparkEJ2Grid": {
     "props": [
       {
-        "name": "id",
-        "type": "string",
-        "description": "组件唯一标识"
-      },
-      {
-        "name": "dataSource",
-        "type": "Array",
-        "description": "数据源"
+        "name": "config",
+        "required": true,
+        "type": {
+          "name": "SparkEJ2GridConfig"
+        }
       }
     ],
-    "events": [
-      {
-        "name": "dataChanged",
-        "description": "数据变化事件"
-      }
-    ],
-    "slots": [
-      {
-        "name": "default",
-        "description": "默认插槽"
-      }
-    ],
-    "description": "Mock 元数据 for SparkEJ2Grid",
-    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Grid.vue",
-    "isMock": true
+    "events": [],
+    "slots": [],
+    "description": "",
+    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Grid.vue"
   }
 }

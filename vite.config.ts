@@ -4,7 +4,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import fs from 'fs'
 import axios from 'axios'
-import vueDocgen from 'vue-docgen-api'
+import { parse } from 'vue-docgen-api'
 
 export default defineConfig({
   resolve: {
@@ -66,7 +66,7 @@ export default defineConfig({
             
             try {
               // 提取元数据
-              const docs = await vueDocgen.buildComponentDocs(filePath)
+              const docs = await parse(filePath)
               const componentName = file.replace('.vue', '')
               
               componentLibrary[componentName] = {
@@ -109,27 +109,29 @@ export default defineConfig({
         
         console.log(`📄 组件库JSON已生成: ${libraryPath} (${Object.keys(componentLibrary).length} 个组件)`)
         
-        // Mock 上传到服务端
+        // 上传到服务端
         try {
-          // 模拟上传 - 实际项目中替换为真实API
           console.log('🚀 开始上传组件库到服务端...')
-          
-          // Mock API 调用
-          await new Promise(resolve => setTimeout(resolve, 1000)) // 模拟网络延迟
-          
-          console.log('✅ 组件库已成功上传到服务端 (Mock)')
-          console.log(`📊 上传统计: ${Object.keys(componentLibrary).length} 个组件, ${libraryContent.length} 字节`)
-          
-          // 在开发环境下输出前5个组件的预览
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('\n📋 组件库预览 (前5个):')
-            Object.entries(componentLibrary).slice(0, 5).forEach(([name, meta]: [string, any]) => {
-              console.log(`  - ${name}: ${meta.props?.length || 0} props, ${meta.events?.length || 0} events${meta.isMock ? ' (Mock)' : ''}`)
-            })
+
+          const response = await axios.post('http://localhost:3001/api/component-library', {
+            data: componentLibrary
+          }, {
+            timeout: 5000 // 5秒超时
+          })
+
+          if (response.data.success) {
+            console.log('✅ 组件库已成功上传到服务端')
+            console.log(`📊 上传统计: ${Object.keys(componentLibrary).length} 个组件, ${libraryContent.length} 字节`)
+          } else {
+            console.warn('⚠️ 服务端返回错误:', response.data.error)
           }
-          
+
         } catch (error) {
-          console.error('❌ 上传失败:', error)
+          console.warn('⚠️ 无法连接到组件库服务端，将使用本地文件')
+          console.warn('💡 请启动服务端: node component-library-server.js')
+
+          // 如果服务端不可用，至少保存本地文件
+          console.log(`💾 本地文件已保存: ${libraryPath}`)
         }
       }
     },
