@@ -21,7 +21,7 @@
 
 import { defineAsyncComponent } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import { createComponentRegistry } from './registry/ComponentRegistry.js'
+import { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
 import { createCapabilityManager } from './capability/CapabilityManager.js'
 import { createSparkPlugin } from './plugins/SparkPlugin.js'
 import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer, CapabilityName } from './core/types.js'
@@ -86,20 +86,15 @@ interface RegisterContext {
  * -------------------------------------------------------------------------- */
 
 /**
- * 全局组件注册表（惰性创建，首次调用时初始化）
- */
-let _globalRegistry: ComponentRegistry | undefined
-
-/**
- * 获取或创建全局注册表
+ * 获取全局注册表
  *
- * 使用单例模式确保整个应用共享同一个注册表实例
+ * 直接使用 ComponentRegistry.ts 中的全局注册表，
+ * 确保与 SparkPlugin 使用同一个实例
  *
  * @returns 全局组件注册表实例
  */
 function getOrCreateGlobalRegistry(): ComponentRegistry {
-  _globalRegistry ??= createComponentRegistry()
-  return _globalRegistry
+  return getGlobalRegistry()
 }
 
 /* -----------------------------------------------------------------------------
