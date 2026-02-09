@@ -19,7 +19,6 @@ describe('logger level filtering', () => {
       id: 'ctx-level',
       type: 'test',
       children: [],
-      config: {},
       state: {},
       providers: new Map([['logger', provider]]),
       consumers: new Map()

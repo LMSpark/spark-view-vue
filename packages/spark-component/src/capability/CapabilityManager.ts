@@ -24,14 +24,28 @@ export interface CapabilityManager {
   registerConsumer(context: ComponentContext, consumer: CapabilityConsumer): void
   /** 手动连接 provider → consumer */
   connectCapability(provider: CapabilityProvider, consumer: CapabilityConsumer): void
-  /** 手动断开连接 */
-  disconnectCapability(consumer: CapabilityConsumer): void
 }
 
 /**
  * 创建能力管理器
  */
 export function createCapabilityManager(): CapabilityManager {
+  /**
+   * 递归通知子组件中等待此 capability 的监听器（私有闭包，不暴露到接口）
+   */
+  function notifyChildren(context: ComponentContext, provider: CapabilityProvider): void {
+    if (!context.children) return
+    for (const child of context.children) {
+      const listeners = child.providerListeners?.get(provider.name)
+      if (listeners) {
+        listeners.forEach(cb => {
+          try { cb(provider) } catch (e) { logger.error('Child listener error:', String(e)) }
+        })
+      }
+      notifyChildren(child, provider)
+    }
+  }
+
   return {
     registerProvider(context: ComponentContext, provider: CapabilityProvider): void {
       if (!provider.name) {
@@ -51,7 +65,7 @@ export function createCapabilityManager(): CapabilityManager {
       }
 
       // 通知子组件中等待此能力的消费者
-      this._notifyChildren(context, provider)
+      notifyChildren(context, provider)
     },
 
     getProvider(context: ComponentContext, name: CapabilityName): CapabilityProvider | undefined {
@@ -82,26 +96,6 @@ export function createCapabilityManager(): CapabilityManager {
 
     connectCapability(provider: CapabilityProvider, consumer: CapabilityConsumer): void {
       consumer.implementation = provider.implementation
-    },
-
-    disconnectCapability(consumer: CapabilityConsumer): void {
-      consumer.implementation = undefined
-    },
-
-    /** 通知子组件中等待此 capability 的监听器（递归通知孩子组件） */
-    _notifyChildren(context: ComponentContext, provider: CapabilityProvider): void {
-      if (!context.children) return
-      for (const child of context.children) {
-        // 通知 child 的 providerListeners
-        const listeners = child.providerListeners?.get(provider.name)
-        if (listeners) {
-          listeners.forEach(cb => {
-            try { cb(provider) } catch (e) { logger.error('Child listener error:', String(e)) }
-          })
-        }
-        // 递归通知孙子
-        this._notifyChildren(child, provider)
-      }
     }
-  } as CapabilityManager & { _notifyChildren(ctx: ComponentContext, p: CapabilityProvider): void }
+  }
 }

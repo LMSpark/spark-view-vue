@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid } from '../features/spark-ej2'
 import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
+import { COLUMN_CONFIG } from '@spark-view/spark-utils'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
 
 const { registry, rootContext } = Spark.createSystem()
@@ -88,7 +89,7 @@ describe('ColumnManager provider location', () => {
 
     // Every column context should have columnConfig provider
     for (const colCtx of columnContexts) {
-      expect(colCtx.providers.has('columnConfig')).toBe(true)
+      expect(colCtx.providers.has(COLUMN_CONFIG)).toBe(true)
     }
 
     // Find the grid context
@@ -97,7 +98,7 @@ describe('ColumnManager provider location', () => {
 
     // The grid context should NOT have columnConfig provider (it provides other things)
     const gridCtx = gridContexts[0]
-    expect(gridCtx.providers.has('columnConfig')).toBe(false)
+    expect(gridCtx.providers.has(COLUMN_CONFIG)).toBe(false)
 
     // Verify there is a parent column that has child column context(s)
     const parentColumnCtx = columnContexts.find(ctx =>

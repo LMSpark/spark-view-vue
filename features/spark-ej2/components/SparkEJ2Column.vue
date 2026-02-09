@@ -18,6 +18,7 @@
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
+import { COLUMN_CONFIG } from '@spark-view/spark-utils'
 import type { SparkEJ2ColumnConfig } from '../types'
 
 interface Props {
@@ -33,7 +34,7 @@ const { context, provide, getComponent } = useSparkComponent(
 )
 
 // 提供能力给子组件
-provide('columnConfig', {
+provide(COLUMN_CONFIG, {
   addChildColumn: () => {},
   removeChildColumn: () => {}
 })

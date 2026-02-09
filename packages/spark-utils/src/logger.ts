@@ -69,23 +69,24 @@ export function Logger(context?: unknown): LoggerApi {
 }
 
 
-export function createConsoleTransport(_level: LogLevel = 'info') {
+export function createConsoleTransport(minLevel: LogLevel = 'info'): Transport {
   return {
-    level: _level,
-    log(_level: LogLevel, message: string, meta?: unknown) {
-      const out = `[${_level.toUpperCase()}] ${message}`
-      if (meta) console[_level === 'error' ? 'error' : 'log'](out, meta)
-      else console[_level === 'error' ? 'error' : 'log'](out)
+    level: minLevel,
+    log(level: LogLevel, message: string, meta?: unknown) {
+      const out = `[${level.toUpperCase()}] ${message}`
+      if (meta) console[level === 'error' ? 'error' : 'log'](out, meta)
+      else console[level === 'error' ? 'error' : 'log'](out)
     }
   }
 }
 
-export function createHttpTransport(endpoint: string, _level: LogLevel = 'error') {
+export function createHttpTransport(endpoint: string, minLevel: LogLevel = 'error'): Transport {
   return {
-    async log(_level: LogLevel, message: string, meta?: unknown) {
+    level: minLevel,
+    async log(level: LogLevel, message: string, meta?: unknown) {
       try {
         // fire and forget
-        await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ level: _level, message, meta }) })
+        await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ level, message, meta }) })
       } catch { /* ignore */ }
     }
   }

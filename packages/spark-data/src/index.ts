@@ -33,6 +33,5 @@ export { DataSetManager } from './dataSetManager'
 export { 
   DataSetCapabilityManager, 
   createDataSetCapabilityManager,
-  type DataSetCapabilityConfig,
-  type AppServices
+  type DataSetCapabilityConfig
 } from './capability/DataSetCapabilityManager'

@@ -14,7 +14,6 @@ import { computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { ROW_DATA, ROW_EVENTS, FIELD_METADATA } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
-import type { RowDataCapability } from './types'
 
 interface Props {
   config: Partial<ComponentContext>
@@ -55,8 +54,7 @@ const currentField = computed(() => props.config.props?.field as string)
 // 获取字段元数据
 const metadata = computed(() => {
   const field = currentField.value
-  const meta = fieldMetadata as unknown as Record<string, { label: string; icon: string; type: string }> | null
-  return field && meta ? meta[field] : null
+  return field && fieldMetadata ? (fieldMetadata as Record<string, { label: string; icon: string; type: string }>)[field] : null
 })
 
 // 计算图标（优先级：元数据 > config.props > props）
@@ -71,11 +69,10 @@ const fieldLabel = computed(() => {
 
 // 计算显示值
 const displayValue = computed(() => {
-  const data = rowData as unknown as RowDataCapability | null
   const field = props.config.props?.field as string
   
-  if (data?.getField && field) {
-    const value = data.getField(field)
+  if (rowData?.getField && field) {
+    const value = rowData.getField(field)
     
     // 格式化显示
     if (field === 'status') {

@@ -10,14 +10,7 @@ export {
 export type {
   CapabilityName,
   Provider,
-  Consumer,
-  Context
-} from './types.js'
-
-// 导出辅助函数
-export {
-  provide,
-  consume
+  Consumer
 } from './types.js'
 
 // 导出事件能力

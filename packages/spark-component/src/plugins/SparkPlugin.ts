@@ -36,9 +36,6 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
       // 注入到 Vue DI（使用类型安全的 InjectionKey）
       app.provide(SPARK_REGISTRY_KEY, registry)
       app.provide(SPARK_PARENT_CONTEXT_KEY, rootContext)
-
-      // 全局属性（可选，方便模板中使用）
-      app.config.globalProperties.$sparkRegistry = registry
     }
   }
 }

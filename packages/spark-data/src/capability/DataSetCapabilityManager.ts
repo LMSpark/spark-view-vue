@@ -9,45 +9,16 @@
  * - apiClient: 统一的 API 请求接口
  */
 
-import type { Provider as CapabilityProvider, CapabilityName } from '@spark-view/spark-utils'
+import type { Provider as CapabilityProvider, CapabilityName, LoggerApi } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
+import type {
+  AppServicesCapability,
+  GlobalDataCapability,
+  PageServiceCapability,
+  ApiClientCapability
+} from '@spark-view/spark-utils'
 import { APP_SERVICES, DATA_SET_STATE, GLOBAL_DATA, PAGE_SERVICE, API_CLIENT } from '@spark-view/spark-utils'
 import type { IDataSet } from '../types'
-
-/**
- * APP 服务接口（从 APP 层注入）
- */
-export interface AppServices {
-  /** Vue Router 实例 */
-  router?: {
-    push(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
-    replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
-    back(): void
-    currentRoute: { value: { path: string; query: Record<string, unknown> } }
-  }
-  
-  /** APP Logger - 匹配 LoggerApi 接口 */
-  logger?: {
-    debug(...args: unknown[]): void
-    info(...args: unknown[]): void
-    warn(...args: unknown[]): void
-    error(...args: unknown[]): void
-  }
-  
-  /** 配置加载器 */
-  configLoader?: {
-    loadPageConfig(pageId: string): Promise<unknown>
-    loadRoutes(): Promise<unknown>
-    clearCache(): void
-  }
-  
-  /** 认证服务 */
-  authService?: {
-    getUser(): { id: string; name: string; roles: string[] } | null
-    login(credentials: { username: string; password: string }): Promise<boolean>
-    logout(): Promise<void>
-    checkAuth(): Promise<boolean>
-  }
-}
 
 /**
  * DataSet 能力提供者配置
@@ -57,43 +28,50 @@ export interface DataSetCapabilityConfig {
   dataSet: IDataSet
   
   /** APP 层服务（可选） - 统一提供给子组件 */
-  appServices?: AppServices
+  appServices?: AppServicesCapability
   
   /** 全局数据提供者（可选） */
-  globalData?: {
-    getUserInfo(): { id: string; name: string; roles: string[] }
-    getConfig(key: string): unknown
-    getDictionary(type: string): Array<{ label: string; value: unknown }>
-  }
+  globalData?: GlobalDataCapability
   
   /** 页面服务提供者（可选） */
-  pageService?: {
-    showMessage(message: string, type: 'success' | 'error' | 'warning'): void
-    showConfirm(message: string): Promise<boolean>
-    showLoading(show: boolean): void
-    navigate(path: string, params?: Record<string, unknown>): void
-  }
+  pageService?: PageServiceCapability
   
   /** API 客户端（可选） */
-  apiClient?: {
-    request<T = unknown>(config: {
-      url: string
-      method?: string
-      params?: Record<string, unknown>
-      data?: unknown
-    }): Promise<T>
-  }
+  apiClient?: ApiClientCapability
   
   /** 页面参数 */
   pageParams?: Record<string, unknown>
   
   /** 页面级权限 */
   pagePermission?: Record<string, boolean>
+  
+  /** 父上下文（可选） - 将 DataSet 能力注入到 SPARK 组件树中 */
+  parentContext?: unknown
 }
 
 /**
  * DataSet 能力管理器
  * 管理页面级数据和服务能力
+ * 
+ * 架构说明：
+ * - DataSet 与页面组件在同一层级，不是独立的父层
+ * - 通过 parentContext 参数连接到 SPARK 组件树
+ * - 页面根组件可以直接注入 DataSet 能力，子组件通过 parent chain 访问
+ * 
+ * 使用方式 1 - 独立 Context（需要手动集成）：
+ * ```typescript
+ * const manager = createDataSetCapabilityManager('page-1', { dataSet, parentContext: appContext })
+ * const dsContext = manager.getContext()
+ * // 将 dsContext 作为页面组件的 parent
+ * ```
+ * 
+ * 使用方式 2 - 直接注入（推荐）：
+ * ```typescript
+ * // 在页面根组件中
+ * const { provide, context } = useSparkComponent({ type: 'page-root' })
+ * const manager = createDataSetCapabilityManager('page-1', { dataSet })
+ * manager.injectIntoContext(context) // 直接注入到页面 context
+ * ```
  */
 export class DataSetCapabilityManager {
   private dataSetContext: {
@@ -101,24 +79,28 @@ export class DataSetCapabilityManager {
     type: string
     parent?: unknown
     providers: Map<CapabilityName, CapabilityProvider>
-    consumers: Map<CapabilityName, unknown>
   }
   private config: DataSetCapabilityConfig
   private tableListeners = new Map<string, Set<(table: unknown) => void>>()
+  private logger: LoggerApi
 
   constructor(pageId: string, config: DataSetCapabilityConfig) {
     this.config = config
+    this.logger = Logger(`DataSet:${pageId}`)
     
-    // 创建 DataSet 层上下文
+    // 创建 DataSet Context，连接到 SPARK 组件树
     this.dataSetContext = {
       id: `dataset:${pageId}`,
       type: 'dataset',
-      parent: undefined,
-      providers: new Map<CapabilityName, CapabilityProvider>(),
-      consumers: new Map<CapabilityName, unknown>()
+      parent: config.parentContext, // 连接到父 context（app root 或 undefined）
+      providers: new Map<CapabilityName, CapabilityProvider>()
     }
     
-    // 注册所有 DataSet 层能力
+    this.logger.debug('Initializing DataSet capability manager', {
+      hasParent: !!config.parentContext
+    })
+    
+    // 注册所有 DataSet 能力
     this.registerDataSetCapabilities()
   }
 
@@ -128,65 +110,38 @@ export class DataSetCapabilityManager {
   private registerDataSetCapabilities() {
     // 0. APP 服务能力（如果提供）- 优先注册，让所有子组件可用
     if (this.config.appServices) {
-      this.registerAppServicesCapability()
+      this.registerCapability(APP_SERVICES, this.config.appServices)
     }
     
-    // 1. DataSet 状态能力
+    // 1. DataSet 状态能力（必需）
     this.registerDataSetStateCapability()
     
     // 2. 全局数据能力（如果提供）
     if (this.config.globalData) {
-      this.registerGlobalDataCapability()
+      this.registerCapability(GLOBAL_DATA, this.createGlobalDataImpl())
     }
     
     // 3. 页面服务能力（如果提供）
     if (this.config.pageService) {
-      this.registerPageServiceCapability()
+      this.registerCapability(PAGE_SERVICE, this.createPageServiceImpl())
     }
     
     // 4. API 客户端能力（如果提供）
     if (this.config.apiClient) {
-      this.registerApiClientCapability()
+      this.registerCapability(API_CLIENT, this.createApiClientImpl())
     }
   }
 
   /**
-   * 注册 APP 服务能力
-   * 统一提供 router, logger, configLoader, authService 等 APP 层服务
+   * 通用能力注册方法
    */
-  private registerAppServicesCapability() {
-    const provider: CapabilityProvider = {
-      name: APP_SERVICES,
-      implementation: {
-        // Router 服务
-        router: this.config.appServices?.router,
-        
-        // Logger 服务
-        logger: this.config.appServices?.logger,
-        
-        // ConfigLoader 服务
-        configLoader: this.config.appServices?.configLoader,
-        
-        // AuthService 服务
-        authService: this.config.appServices?.authService,
-        
-        // 便捷方法：导航
-        navigate: (to: string | { path: string; query?: Record<string, unknown> }) => {
-          return this.config.appServices?.router?.push(to)
-        },
-        
-        // 便捷方法：日志（类型安全，无需 any）
-        log: {
-          debug: (...args: unknown[]) => this.config.appServices?.logger?.debug(...args),
-          info: (...args: unknown[]) => this.config.appServices?.logger?.info(...args),
-          warn: (...args: unknown[]) => this.config.appServices?.logger?.warn(...args),
-          error: (...args: unknown[]) => this.config.appServices?.logger?.error(...args)
-        }
-      }
-    }
-    
-    this.dataSetContext.providers.set(provider.name, provider)
+  private registerCapability(name: CapabilityName, implementation: unknown) {
+    const provider: CapabilityProvider = { name, implementation }
+    this.dataSetContext.providers.set(name, provider)
+    this.logger.debug(`Registered capability: ${String(name)}`)
   }
+
+
 
   /**
    * 注册 DataSet 状态能力
@@ -205,18 +160,13 @@ export class DataSetCapabilityManager {
           return this.config.pageParams ?? {}
         },
         
-        getPagePermission: () => {
-          return this.config.pagePermission ?? {}
-        },
+        getPagePermission: () => this.config.pagePermission ?? {},
         
         onTableChange: (tableName: string, callback: (table: unknown) => void) => {
           if (!this.tableListeners.has(tableName)) {
             this.tableListeners.set(tableName, new Set())
           }
-          const listeners = this.tableListeners.get(tableName)
-          if (listeners) {
-            listeners.add(callback)
-          }
+          this.tableListeners.get(tableName)?.add(callback)
           
           // 返回取消订阅函数
           return () => {
@@ -232,76 +182,141 @@ export class DataSetCapabilityManager {
       }
     }
     
-    this.dataSetContext.providers.set(provider.name, provider)
+    this.registerCapability(provider.name, provider.implementation)
   }
 
   /**
-   * 注册全局数据能力
+   * 创建全局数据能力实现
    */
-  private registerGlobalDataCapability() {
-    const provider: CapabilityProvider = {
-      name: GLOBAL_DATA,
-      implementation: {
-        getUserInfo: () => this.config.globalData?.getUserInfo() ?? { id: '', name: '', roles: [] },
-        getConfig: (key: string) => this.config.globalData?.getConfig(key),
-        getDictionary: (type: string) => this.config.globalData?.getDictionary(type) ?? []
-      }
-    }
-    
-    this.dataSetContext.providers.set(provider.name, provider)
-  }
-
-  /**
-   * 注册页面服务能力
-   */
-  private registerPageServiceCapability() {
-    const provider: CapabilityProvider = {
-      name: PAGE_SERVICE,
-      implementation: {
-        showMessage: (message: string, type: 'success' | 'error' | 'warning') => 
-          this.config.pageService?.showMessage(message, type),
-        showConfirm: (message: string) => 
-          this.config.pageService?.showConfirm(message) ?? Promise.resolve(false),
-        showLoading: (show: boolean) => 
-          this.config.pageService?.showLoading(show),
-        navigate: (path: string, params?: Record<string, unknown>) => 
-          this.config.pageService?.navigate(path, params)
-      }
-    }
-    
-    this.dataSetContext.providers.set(provider.name, provider)
-  }
-
-  /**
-   * 注册 API 客户端能力
-   */
-  private registerApiClientCapability() {
-    const provider: CapabilityProvider = {
-      name: API_CLIENT,
-      implementation: {
-        request: <T = unknown>(config: {
-          url: string
-          method?: string
-          params?: Record<string, unknown>
-          data?: unknown
-        }): Promise<T> => {
-          if (!this.config.apiClient) {
-            return Promise.reject(new Error('API client not configured'))
-          }
-          return this.config.apiClient.request<T>(config)
+  private createGlobalDataImpl() {
+    return {
+      getUserInfo: () => {
+        try {
+          return this.config.globalData?.getUserInfo() ?? { id: '', name: '', roles: [] }
+        } catch (error) {
+          this.logger.error('Failed to get user info', { error })
+          return { id: '', name: '', roles: [] }
+        }
+      },
+      getConfig: (key: string) => {
+        try {
+          return this.config.globalData?.getConfig(key)
+        } catch (error) {
+          this.logger.error('Failed to get config', { key, error })
+          return undefined
+        }
+      },
+      getDictionary: (type: string) => {
+        try {
+          return this.config.globalData?.getDictionary(type) ?? []
+        } catch (error) {
+          this.logger.error('Failed to get dictionary', { type, error })
+          return []
         }
       }
     }
-    
-    this.dataSetContext.providers.set(provider.name, provider)
   }
 
   /**
-   * 获取 DataSet 上下文
-   * 组件可以通过此上下文访问 DataSet 层的所有能力
+   * 创建页面服务能力实现
+   */
+  private createPageServiceImpl() {
+    return {
+      showMessage: (message: string, type: 'success' | 'error' | 'warning') => {
+        try {
+          this.config.pageService?.showMessage(message, type)
+        } catch (error) {
+          this.logger.error('Failed to show message', { message, type, error })
+        }
+      },
+      showConfirm: async (message: string) => {
+        try {
+          return await (this.config.pageService?.showConfirm(message) ?? Promise.resolve(false))
+        } catch (error) {
+          this.logger.error('Failed to show confirm dialog', { message, error })
+          return false
+        }
+      },
+      showLoading: (show: boolean) => {
+        try {
+          this.config.pageService?.showLoading(show)
+        } catch (error) {
+          this.logger.error('Failed to toggle loading', { show, error })
+        }
+      },
+      navigate: (path: string, params?: Record<string, unknown>) => {
+        try {
+          this.config.pageService?.navigate(path, params)
+        } catch (error) {
+          this.logger.error('Failed to navigate', { path, params, error })
+        }
+      }
+    }
+  }
+
+  /**
+   * 创建 API 客户端能力实现
+   */
+  private createApiClientImpl() {
+    return {
+      request: async <T = unknown>(config: {
+        url: string
+        method?: string
+        params?: Record<string, unknown>
+        data?: unknown
+      }): Promise<T> => {
+        if (!this.config.apiClient) {
+          const error = new Error('API client not configured')
+          this.logger.error('API request failed', { config, error })
+          return Promise.reject(error)
+        }
+        try {
+          return await this.config.apiClient.request<T>(config)
+        } catch (error) {
+          this.logger.error('API request failed', { config, error })
+          throw error
+        }
+      }
+    }
+  }
+
+  /**
+   * 获取 DataSet Context
+   * 可作为页面组件的 parent context
    */
   getContext() {
     return this.dataSetContext
+  }
+
+  /**
+   * 将 DataSet 能力直接注入到指定 Context
+   * 推荐在页面根组件中使用，避免创建额外的层级
+   * 
+   * @param targetContext - 目标 SPARK 组件 Context（通常是页面根组件的 context）
+   * 
+   * @example
+   * ```typescript
+   * // 在页面根组件中
+   * const { context } = useSparkComponent({ type: 'page-root' })
+   * const dsManager = createDataSetCapabilityManager('page-1', { dataSet })
+   * dsManager.injectIntoContext(context) // 直接注入能力
+   * ```
+   */
+  injectIntoContext(targetContext: { providers?: Map<CapabilityName, CapabilityProvider> }) {
+    if (!targetContext.providers) {
+      this.logger.warn('Target context has no providers map, cannot inject capabilities')
+      return
+    }
+
+    this.logger.debug('Injecting DataSet capabilities into target context', {
+      capabilityCount: this.dataSetContext.providers.size
+    })
+
+    // 将所有 DataSet 能力复制到目标 context
+    const targetProviders = targetContext.providers
+    this.dataSetContext.providers.forEach((provider, name) => {
+      targetProviders.set(name, provider)
+    })
   }
 
   /**
@@ -310,15 +325,19 @@ export class DataSetCapabilityManager {
    */
   notifyTableChange(tableName: string, table: unknown) {
     const listeners = this.tableListeners.get(tableName)
-    if (listeners) {
-      listeners.forEach(callback => {
-        try {
-          callback(table)
-        } catch (error) {
-          console.error(`Error in table change listener for ${tableName}:`, error)
-        }
-      })
+    if (!listeners || listeners.size === 0) {
+      return
     }
+    
+    this.logger.debug(`Notifying table change: ${tableName}`, { listenerCount: listeners.size })
+    
+    listeners.forEach(callback => {
+      try {
+        callback(table)
+      } catch (error) {
+        this.logger.error(`Error in table change listener for ${tableName}`, { error })
+      }
+    })
   }
 
   /**
@@ -326,6 +345,7 @@ export class DataSetCapabilityManager {
    * 运行时可以更新部分配置
    */
   updateConfig(updates: Partial<DataSetCapabilityConfig>) {
+    this.logger.debug('Updating configuration', { updates: Object.keys(updates) })
     Object.assign(this.config, updates)
     
     // 重新注册能力
@@ -337,9 +357,9 @@ export class DataSetCapabilityManager {
    * 清理资源
    */
   dispose() {
+    this.logger.debug('Disposing DataSet capability manager')
     this.tableListeners.clear()
     this.dataSetContext.providers.clear()
-    this.dataSetContext.consumers.clear()
   }
 }
 

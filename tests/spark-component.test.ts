@@ -1,14 +1,14 @@
-﻿// tests/spark-component.test.ts
+// tests/spark-component.test.ts
 
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid, SparkEJ2Column } from '../features/spark-ej2'
-import { Spark } from '@spark-view/spark-component'
+import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
 import type { SparkEJ2GridConfig } from '@/features/spark-ej2'
 
-const { manager, registry } = Spark.createSystem()
-initializeSparkEJ2Components()
+const { registry, rootContext } = Spark.createSystem()
+initializeSparkEJ2Components(registry)
 
 // Mock EJ2 components
 vi.mock('@syncfusion/ej2-vue-grids', () => ({
@@ -45,7 +45,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Grid, {
         props: { config },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+        global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry, [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -75,7 +75,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Grid, {
         props: { config },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+        global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry, [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -100,7 +100,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Grid, {
         props: { config },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+        global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry, [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -120,7 +120,7 @@ describe('SPARK EJ2 Components', () => {
             width: '120'
           }
         },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+        global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry, [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -140,7 +140,7 @@ describe('SPARK EJ2 Components', () => {
             ]
           }
         },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+        global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry, [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -160,7 +160,7 @@ describe('SPARK EJ2 Components', () => {
             visible: true
           }
         },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+        global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry, [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -180,7 +180,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Grid, {
         props: { config: gridConfig },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+        global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry, [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext } }
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -211,7 +211,7 @@ describe('SPARK EJ2 Components', () => {
 
       const wrapper = mount(SparkEJ2Column, {
         props: { config: deepNestedConfig },
-        global: { provide: { sparkManager: manager, sparkRegistry: registry } }
+        global: { provide: { [SPARK_REGISTRY_KEY as symbol]: registry, [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext } }
       })
 
       expect(wrapper.exists()).toBe(true)

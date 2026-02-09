@@ -12,7 +12,7 @@
  * - **调试工具**：上下文链追踪、能力树可视化
  * 
  * ## 设计原则
- * - **无中间层**：直接操作 context，去除 Manager 抽象层
+ * - **能力委托**：通过 CapabilityManager 管理 provider/consumer 连接
  * - **依赖注入**：通过 Vue provide/inject 获取 registry 和 parent context
  * - **自动化**：parent/children 关系通过 Vue DI 自动建立
  * - **类型安全**：完整的 TypeScript 支持和泛型约束
@@ -43,13 +43,13 @@ import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as
 
 // SPARK 工具库
 import { Logger, createEventProvider } from '@spark-view/spark-utils'
-import type { EventProvider } from '@spark-view/spark-utils'
+import type { EventProvider, CapabilityKey } from '@spark-view/spark-utils'
 
 // SPARK 能力系统
 import { createCapabilityManager } from '../capability/CapabilityManager.js'
 
 // SPARK 核心类型
-import type { ComponentContext, CapabilityProvider, CapabilityConsumer, ComponentRegistry, CapabilityName } from '../core/types.js'
+import type { ComponentContext, ComponentConfig, CapabilityProvider, CapabilityConsumer, ComponentRegistry, CapabilityName } from '../core/types.js'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, CAPABILITY_MANAGER_KEY } from '../core/types.js'
 
 /* -----------------------------------------------------------------------------
@@ -95,8 +95,11 @@ export interface UseSparkComponentReturn {
   isDisabled: { readonly value: boolean }
 
   /* 能力提供 API */
-  /** 提供能力实现，自动注册到当前 context 的 providers Map */
-  provide: (name: string | symbol, implementation?: Implementation) => void
+  /** 提供能力实现（类型安全重载：CapabilityKey<T> 自动推断 T） */
+  provide: {
+    <T>(name: CapabilityKey<T>, implementation: T): void
+    (name: string | symbol, implementation?: Implementation): void
+  }
   /** 提供事件能力，返回事件发射器（EventEmitter 模式） */
   provideEvents: (name?: string | symbol) => EventProvider
   /** 获取当前 context 的本地 provider（不查找父级） */
@@ -105,14 +108,18 @@ export interface UseSparkComponentReturn {
   getInheritedProvider: <T = unknown>(name: string | symbol, ctx?: ComponentContext) => T | undefined
 
   /* 能力消费 API */
-  /** 消费能力，自动注册 consumer 并返回实现，支持延迟绑定 */
-  consume: (name: string | symbol) => Implementation | null
+  /** 消费能力（类型安全重载：CapabilityKey<T> 自动推断 T） */
+  consume: {
+    <T>(name: CapabilityKey<T>): T | null
+    (name: string | symbol): Implementation | null
+  }
   /** 消费事件能力，自动绑定多个事件处理器 */
   consumeEvents: (name: string | symbol, handlers: Record<string, (...args: unknown[]) => void>) => EventProvider | null
-  /** consume 的语义化别名（use 更符合 Vue Composable 命名习惯） */
-  use: (name: string | symbol) => Implementation | null
   /** 等待能力注册（异步），用于解决时序依赖问题 */
-  whenAvailable: (name: string | symbol) => Promise<CapabilityProvider>
+  whenAvailable: {
+    <T>(name: CapabilityKey<T>, timeout?: number): Promise<T>
+    (name: string | symbol, timeout?: number): Promise<CapabilityProvider>
+  }
 
   /* 生命周期 API */
   /** 初始化方法（onMounted 时自动调用，也可手动调用） */
@@ -127,8 +134,6 @@ export interface UseSparkComponentReturn {
   getComponent: (type: string) => unknown
   /** 检查组件是否已注册 */
   isComponentRegistered: (type: string) => boolean
-  /** 创建空 provider（用于占位或默认实现） */
-  getOrCreateNoopProvider: (name: string) => CapabilityProvider
 
   /* 调试工具 */
   /** 获取从当前 context 到根的上下文链（用于调试和追踪） */
@@ -175,7 +180,7 @@ export interface UseSparkComponentReturn {
  * 
  * @see {@link UseSparkComponentReturn} - 返回值类型定义
  */
-export function useSparkComponent<TConfig extends Partial<ComponentContext> & { type: string } = ComponentContext>(
+export function useSparkComponent<TConfig extends ComponentConfig = ComponentContext>(
   config: TConfig,
   options?: {
     registry?: ComponentRegistry
@@ -216,7 +221,7 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * - consumers: 当前 context 消费的能力 Map
    */
   const ctxRaw: ComponentContext = {
-    id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     type: config.type,
     parent: parentContext,
     children: [],
@@ -261,14 +266,14 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * - 未设置或 true → 可见
    * - false → 隐藏
    */
-  const isVisible = computed(() => (config as Record<string, unknown>).visible !== false)
+  const isVisible = computed(() => config.visible !== false)
 
   /**
    * 禁用状态（基于 config.disabled）
    * - 未设置或 false → 启用
    * - true → 禁用
    */
-  const isDisabled = computed(() => (config as Record<string, unknown>).disabled === true)
+  const isDisabled = computed(() => config.disabled === true)
 
   /* ---------------------------------------------------------------------------
    * 能力提供 API
@@ -280,21 +285,12 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * 将能力注册到当前 context 的 providers Map，子组件可通过 consume() 获取。
    * 能力会沿着 parent 链向上查找，支持跨层级传递。
    * 
-   * @param name - 能力名称（字符串或 Symbol，推荐使用 Symbol 避免冲突）
-   * @param implementation - 能力实现对象（任意键值对）
+   * 支持两种调用方式：
+   * 1. 类型安全：`provide(APP_SERVICES, { router, logger })` — 自动推断 T
+   * 2. 动态键：`provide('myCapability', impl)` — 向后兼容
    * 
-   * @example
-   * ```ts
-   * // 提供网格实例
-   * provide('gridInstance', {
-   *   refresh: () => grid.refresh(),
-   *   getSelectedRows: () => grid.getSelectedRecords()
-   * })
-   * 
-   * // 使用 Symbol（更安全）
-   * import { GRID_INSTANCE } from './symbols'
-   * provide(GRID_INSTANCE, gridAPI)
-   * ```
+   * @param name - 能力名称（CapabilityKey<T>、字符串或 Symbol）
+   * @param implementation - 能力实现对象
    */
   function provide(name: string | symbol, implementation?: Implementation): void {
     const provider: CapabilityProvider = { name, implementation }
@@ -340,30 +336,22 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * 从当前 context 开始沿 parent 链向上查找能力实现。如果找到，将实现对象
    * 绑定到 consumer 并返回；如果未找到，注册 consumer 等待延迟绑定。
    * 
+   * 支持两种调用方式：
+   * 1. 类型安全：`const svc = consume(APP_SERVICES)` — 返回 AppServicesCapability | null
+   * 2. 动态键：`const data = consume('myCapability')` — 返回 Implementation | null
+   * 
    * @param name - 能力名称
    * @returns 能力实现对象，未找到返回 null
-   * 
-   * @example
-   * ```ts
-   * // 消费 DataSet
-   * const dataSet = consume<DataSet>('dataSet')
-   * if (dataSet) {
-   *   const table = dataSet.getTable('Users')
-   * }
-   * 
-   * // 消费 Symbol 能力
-   * const gridAPI = consume<GridAPI>(GRID_INSTANCE)
-   * ```
    */
   function consume(name: string | symbol): Implementation | null {
     const consumer: CapabilityConsumer = { capabilityName: name, implementation: undefined }
     capabilityManager.registerConsumer(context, consumer)
 
-    const provider = capabilityManager.getProvider(context, name)
-    if (provider) {
-      consumer.implementation = provider.implementation
+    // registerConsumer 内部已执行 getProvider + connectCapability，
+    // 直接检查 consumer.implementation 即可，无需二次查找
+    if (consumer.implementation !== null && consumer.implementation !== undefined) {
       logger.info(`🔌 Consumed: ${String(name)}`)
-      return (provider.implementation ?? null) as Implementation | null
+      return consumer.implementation as Implementation | null
     }
 
     logger.warn(`⚠️ Capability not found (late-binding): ${String(name)}`)
@@ -473,24 +461,15 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * 如果能力已存在，立即 resolve；否则注册监听器，等待能力被提供时 resolve。
    * 用于解决组件初始化顺序问题，确保能力可用后再执行逻辑。
    * 
+   * 支持两种调用方式：
+   * 1. 类型安全：`const svc = await whenAvailable(APP_SERVICES)` — 返回 AppServicesCapability
+   * 2. 动态键：`const prov = await whenAvailable('myCapability')` — 返回 CapabilityProvider
+   * 
    * @param name - 能力名称
-   * @returns Promise<CapabilityProvider> 能力提供者对象
-   * 
-   * @example
-   * ```ts
-   * // 等待 DataSet 可用
-   * const dataSetProvider = await whenAvailable('dataSet')
-   * const dataSet = dataSetProvider.implementation as DataSet
-   * 
-   * // onMounted 中使用
-   * onMounted(async () => {
-   *   await whenAvailable('gridInstance')
-   *   // 此时 gridInstance 一定已注册
-   *   const grid = consume<GridAPI>('gridInstance')
-   * })
-   * ```
+   * @param timeout - 超时时间（毫秒），默认 10000ms，0 表示不超时
+   * @returns Promise 能力实现 / 提供者对象
    */
-  function whenAvailable(name: string | symbol): Promise<CapabilityProvider> {
+  function whenAvailable(name: string | symbol, timeout = 10000): Promise<CapabilityProvider> {
     const existing = capabilityManager.getProvider(context, name)
     if (existing) return Promise.resolve(existing)
 
@@ -502,11 +481,38 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
         reject(new Error(`Failed to create listeners for capability: ${String(name)}`))
         return
       }
-      const cb = (prov: CapabilityProvider) => {
+
+      let settled = false
+      let timer: ReturnType<typeof setTimeout> | undefined
+
+      const cleanup = () => {
+        settled = true
         listeners.delete(cb)
+        if (timer !== undefined) clearTimeout(timer)
+      }
+
+      const cb = (prov: CapabilityProvider) => {
+        if (settled) return
+        cleanup()
         resolve(prov)
       }
       listeners.add(cb)
+
+      // 超时处理
+      if (timeout > 0) {
+        timer = setTimeout(() => {
+          if (settled) return
+          cleanup()
+          reject(new Error(`whenAvailable("${String(name)}") timed out after ${timeout}ms`))
+        }, timeout)
+      }
+
+      // 组件卸载时自动清理，避免内存泄漏
+      onUnmounted(() => {
+        if (settled) return
+        cleanup()
+        // 静默丢弃，不 reject（组件已销毁，无人关心结果）
+      })
     })
   }
 
@@ -601,12 +607,6 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
     destroy()
   })
 
-  /**
-   * 默认提供 sparkContext 能力
-   * 子组件可通过 consume('sparkContext') 获取父级 context
-   */
-  provide('sparkContext', context as unknown as Implementation)
-
   /* ---------------------------------------------------------------------------
    * 调试工具 API
    * ------------------------------------------------------------------------ */
@@ -674,10 +674,6 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * 返回值构建
    * ------------------------------------------------------------------------ */
 
-  /* ---------------------------------------------------------------------------
-   * 返回值构建
-   * ------------------------------------------------------------------------ */
-
   /**
    * 返回组件 API 对象
    * 
@@ -686,7 +682,7 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
    * - 能力提供：provide, provideEvents, getProvider, getInheritedProvider
    * - 能力消费：consume, consumeEvents, use, whenAvailable
    * - 生命周期：initialize, destroy
-   * - 工具方法：logger, getComponent, isComponentRegistered, getOrCreateNoopProvider
+   * - 工具方法：logger, getComponent, isComponentRegistered
    * - 调试工具：getContextChain, printCapabilityTree
    */
   return {
@@ -704,7 +700,6 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
     // 能力消费
     consume,
     consumeEvents,
-    use: consume, // 语义化别名
 
     // 异步能力
     whenAvailable,
@@ -717,7 +712,6 @@ export function useSparkComponent<TConfig extends Partial<ComponentContext> & { 
     logger,
     getComponent,
     isComponentRegistered,
-    getOrCreateNoopProvider: (name: string) => ({ name, implementation: {} }),
 
     // 调试工具
     getContextChain,

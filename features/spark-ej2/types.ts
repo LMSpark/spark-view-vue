@@ -1,9 +1,14 @@
 // EJ2-specific component configuration types
 // Unified location for all Spark-EJ2 type definitions
 
-import type { ComponentContext } from '@spark-view/spark-component'
-
-export interface SparkEJ2GridConfig extends ComponentContext {
+/**
+ * EJ2 Grid 组件配置
+ *
+ * 纯配置类型 — 仅描述 JSON 可序列化的静态配置，
+ * 不继承 ComponentContext 的运行时字段（id, state, providers, consumers 等）。
+ * 运行时上下文由 useSparkComponent 在挂载时自动创建。
+ */
+export interface SparkEJ2GridConfig {
   type: 'spark-ej2-grid'
   dataSource?: unknown[]
   allowSorting?: boolean
@@ -22,7 +27,12 @@ export interface SparkEJ2GridConfig extends ComponentContext {
   [key: string]: unknown
 }
 
-export interface SparkEJ2ColumnConfig extends ComponentContext {
+/**
+ * EJ2 Column 组件配置
+ *
+ * 纯配置类型，同 SparkEJ2GridConfig 的设计原则。
+ */
+export interface SparkEJ2ColumnConfig {
   type: 'spark-ej2-column'
   field?: string
   headerText?: string
