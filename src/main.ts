@@ -126,7 +126,7 @@ async function startApp() {
         const About = (await import('./views/About.vue')).default
         const Settings = (await import('./views/Settings.vue')).default
         const CapabilityDemo = (await import('./views/CapabilityDemo.vue')).default
-        const CapabilitySystemDemo = (await import('./views/CapabilitySystemDemo.vue')).default
+        const ComponentRendererDemo = (await import('./views/ComponentRendererDemo.vue')).default
         const TenantConfigDemo = (await import('./views/TenantConfigDemo.vue')).default
         
         // 注册能力演示组件
@@ -156,12 +156,12 @@ async function startApp() {
         })
         
         router.addRoute({
-          path: '/capability-system-demo',
-          name: 'capability-system-demo',
-          component: CapabilitySystemDemo,
+          path: '/component-renderer',
+          name: 'component-renderer',
+          component: ComponentRendererDemo,
           meta: {
-            title: '三层级能力演示',
-            icon: '🔗',
+            title: '组件渲染器演示',
+            icon: '🎨',
             type: 'vue-component'
           }
         })
