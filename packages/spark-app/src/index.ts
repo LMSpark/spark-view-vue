@@ -67,14 +67,10 @@ export type {
   AppEnvironment
 } from './types'
 
-// AppContext (向后兼容 - 内部使用)
-// 注意：以下 API 主要供内部使用，推荐使用 Composables API
-// - 推荐：useAppContext(), usePermissions() from './composables/useServices'
+// AppContext (内部使用)
 export {
   createAppContext  // SparkApp 命名空间需要
 } from './context/AppContext'
-
-export { APP_CONTEXT_KEY } from './constants'
 
 // Router Guards
 export { setupRouterGuards, setupLoadingGuard } from './router/guards'

@@ -205,25 +205,12 @@ const ErrorBoundary = createErrorBoundary((error) => {
 
 ### 服务访问方式
 
-#### 推荐方式
-
 | 方式 | 用途 | 示例 |
 |------|------|------|
 | `useRouter()` from vue-router | 路由导航 | `const router = useRouter()` |
 | `Logger('module')` 工厂函数 | 日志记录 | `const logger = Logger('MyComponent')` |
 | `consume(APP_SERVICES)` | 应用服务能力 | `const services = consume(APP_SERVICES)` |
 | `useSparkRegistry()` | 组件注册表 | `const registry = useSparkRegistry()` |
-
-#### 废弃方式（已标记 @deprecated）
-
-| Composable | 状态 | 替代方案 |
-|------------|------|----------|
-| `useAppContext()` | ⚠️ 废弃 | `consume(APP_SERVICES)` |
-| `useLogger()` | ⚠️ 废弃 | `Logger('module')` |
-| `useAuth()` | ⚠️ 废弃 | `consume(APP_SERVICES).auth` |
-| `usePermissions()` | ⚠️ 废弃 | 通过 `APP_SERVICES` 获取 user.permissions |
-| `useCurrentUser()` | ⚠️ 废弃 | `consume(APP_SERVICES)` |
-| `useCurrentTenant()` | ⚠️ 废弃 | `consume(APP_SERVICES)` |
 
 ### 认证服务
 
@@ -273,7 +260,7 @@ interface TenantInfo {
 
 ## 最佳实践
 
-### ✅ 推荐（DI 架构统一）
+### ✅ 推荐用法
 
 ```typescript
 // 使用 vue-router 标准 API
@@ -293,34 +280,6 @@ const services = consume(APP_SERVICES)
 // 使用命名空间 API
 await SparkApp.start({ ... })
 ```
-
-### ❌ 不推荐（已废弃）
-
-```typescript
-// ❌ 已废弃：旧的 Vue DI composables
-import { useAppRouter, useLogger, useAuth } from '@spark-view/spark-app'
-const router = useAppRouter()  // ⚠️ 废弃，使用 useRouter() from vue-router
-const logger = useLogger()     // ⚠️ 废弃，使用 Logger('module')
-const auth = useAuth()          // ⚠️ 废弃，使用 consume(APP_SERVICES).auth
-
-// ❌ 已移除：DI 容器
-import { container } from '@spark-view/spark-app'
-
-// ❌ 已移除：事件总线
-import { AppEventBus } from '@spark-view/spark-app'
-```
-
-## 迁移指南
-
-### 从旧的 composables 迁移
-
-| 旧方式 | 新方式 |
-|-------|-------|
-| `useAppRouter()` | `useRouter()` from vue-router |
-| `useLogger()` | `Logger('module')` from spark-utils |
-| `useAuth()` | `consume(APP_SERVICES).auth` |
-| `useAppContext()` | `consume(APP_SERVICES)` |
-| `usePermissions()` | `consume(APP_SERVICES)` + 自定义逻辑 |
 
 ## 依赖
 

@@ -1,45 +1,6 @@
 # 服务访问指南
 
-> ⚠️ **重要更新**：项目已统一 DI 架构到单一管道（SPARK 能力系统）。本文档已更新为推荐的访问方式。
-
-## DI 架构演进
-
-### 旧架构（已废弃）
-```typescript
-// ❌ 旧方式 1：DI 容器
-import { container, ServiceIdentifiers } from '@spark-view/spark-app'
-const logger = container.resolve(ServiceIdentifiers.Logger)
-
-// ❌ 旧方式 2：Vue 原生 DI Composables
-import { useLogger, useAppContext, useAuth } from '@spark-view/spark-app'
-const logger = useLogger()  // ⚠️ 已标记 @deprecated
-```
-
-### 新架构（推荐）
-```typescript
-// ✅ 新方式 1：直接使用标准工具（推荐）
-import { useRouter } from 'vue-router'
-import { Logger } from '@spark-view/spark-utils'
-const router = useRouter()
-const logger = Logger('MyComponent')
-
-// ✅ 新方式 2：通过 SPARK 能力系统
-import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-utils'
-const { consume } = useSparkComponent({ type: 'my-comp' })
-const services = consume(APP_SERVICES)
-```
-
-## 架构优势对比
-
-| 特性 | 旧方式（Vue DI） | 新方式（SPARK 能力系统） |
-|-----|-----------------|------------------------|
-| 管道数量 | 2 条（混乱） | 1 条（统一） |
-| 类型安全 | ✅ 自动推断 | ✅ 自动推断 |
-| 延迟绑定 | ❌ 不支持 | ✅ 支持 |
-| 父链查找 | ❌ 不支持 | ✅ 支持 |
-| Tree-shaking | ✅ 按需引入 | ✅ 按需引入 |
-| 架构清晰度 | ⚠️ 两套体系 | ✅ 单一体系 |
+> ⚠️ **重要更新**：项目已统一 DI 架构到单一管道（SPARK 能力系统）。
 
 ## 推荐的服务访问方式
 
@@ -124,23 +85,6 @@ export default {
 ```
 
 > 📝 **注意**：`useSparkRegistry` 是唯一保留的 Vue DI composable，因为组件注册表是 SPARK 核心基础设施的一部分。
-
-## 废弃的 Composables（不推荐使用）
-
-以下 composables 已被标记为 `@deprecated`，请使用上述推荐方式替代：
-
-| 废弃的 Composable | 替代方案 |
-|-------------------|----------|
-| `useAppRouter()` | ✅ `useRouter()` from `vue-router` |
-| `useLogger()` | ✅ `Logger('module')` from `@spark-view/spark-utils` |
-| `useAppContext()` | ✅ `consume(APP_SERVICES)` |
-| `useAuth()` | ✅ `consume(APP_SERVICES)` |
-| `useConfigLoader()` | ✅ `consume(APP_SERVICES)` |
-| `useCurrentUser()` | ✅ `consume(APP_SERVICES)?.auth?.getCurrentUser()` |
-| `useCurrentTenant()` | ✅ `consume(APP_SERVICES)?.auth?.getCurrentTenant()` |
-| `usePermissions()` | ✅ `consume(APP_SERVICES)?.auth?.hasPermission()` |
-| `tryUseAuth()` | ✅ `consume(APP_SERVICES)` (已支持 undefined 返回) |
-| `tryUseAppContext()` | ✅ `consume(APP_SERVICES)` (已支持 undefined 返回) |
 
 ## 在组件中使用
 
@@ -280,34 +224,6 @@ router.beforeEach((to, from, next) => {
 ```
 
 ## 迁移指南
-
-### 从旧 Composables 迁移到新架构
-
-**Before (废弃方式):**
-```typescript
-import { useLogger, useAppRouter, useAuth } from '@spark-view/spark-app'
-
-const logger = useLogger('MyComponent')  // ⚠️ 已废弃
-const router = useAppRouter()  // ⚠️ 已废弃
-const auth = useAuth()  // ⚠️ 已废弃
-```
-
-**After (推荐方式):**
-```typescript
-// 方式 1: 直接使用标准工具（推荐）
-import { useRouter } from 'vue-router'
-import { Logger } from '@spark-view/spark-utils'
-
-const logger = Logger('MyComponent')
-const router = useRouter()
-
-// 方式 2: 通过 APP_SERVICES 能力（组件内）
-import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-utils'
-
-const { consume } = useSparkComponent({ type: 'my-comp' })
-const services = consume(APP_SERVICES)
-```
 
 ### 从 DI 容器迁移
 
