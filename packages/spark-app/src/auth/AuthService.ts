@@ -54,7 +54,7 @@ export class AuthService implements IAuthService {
   private config!: AuthConfig & { apiEndpoints: NonNullable<AuthConfig['apiEndpoints']> }
 
   /** Token 管理器 */
-  private tokenManager: TokenManager
+  private tokenManager!: TokenManager
 
   /** 初始化状态 */
   private initialized = false
@@ -63,8 +63,31 @@ export class AuthService implements IAuthService {
   // 构造函数 (Constructor)
   // =============================================================================
 
-  constructor() {
-    this.tokenManager = new TokenManager()
+  /**
+   * 创建 AuthService 实例
+   *
+   * @param config 可选的认证配置。如果不提供，将使用默认配置或延迟初始化
+   *
+   * @example
+   * ```typescript
+   * // 使用默认配置（延迟初始化）
+   * const auth = new AuthService()
+   *
+   * // 使用自定义配置
+   * const auth = new AuthService({
+   *   apiBaseUrl: '/api',
+   *   enableMock: true,
+   *   tokenStorage: 'sessionStorage'
+   * })
+   * ```
+   */
+  constructor(config?: AuthConfig) {
+    if (config) {
+      this.initialize(config)
+    } else {
+      // 延迟初始化 - 使用默认 TokenManager
+      this.tokenManager = new TokenManager()
+    }
   }
 
   // =============================================================================
@@ -353,9 +376,21 @@ export class AuthService implements IAuthService {
    * @private
    * @throws {Error} 如果未初始化
    */
+  /**
+   * 确保服务已初始化
+   *
+   * 如果未初始化，自动使用默认配置进行初始化。
+   * 这样可以避免在简单场景下需要显式调用 initialize()。
+   *
+   * @private
+   */
   private ensureInitialized(): void {
     if (!this.initialized) {
-      throw new Error('AuthService 未初始化，请先调用 initialize()')
+      // 自动初始化使用默认配置
+      this.initialize({
+        apiBaseUrl: '',
+        enableMock: false
+      })
     }
   }
 
