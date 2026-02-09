@@ -10,7 +10,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { CapabilityName } from '@spark-view/spark-utils'
+import type { CapabilityName } from '../core/types.js'
 import type { ComponentContext, CapabilityProvider, CapabilityConsumer } from '../core/types.js'
 
 const logger = Logger('Spark:Capability')

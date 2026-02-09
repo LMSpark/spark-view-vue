@@ -816,7 +816,7 @@ export class DataSet implements IDataSet {
    * 从 JSON 加载
    */
   static fromJSON(json: string, dataLoader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
-    const config = JSON.parse(json)
+    const config = JSON.parse(json) as IDataSet
     return new DataSet(config, dataLoader)
   }
 
@@ -853,7 +853,7 @@ export class DataSet implements IDataSet {
   emit(event: string, data: unknown): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
-      listeners.forEach(callback => callback(data))
+      listeners.forEach(callback => (callback as (data: unknown) => void)(data))
     }
   }
 
@@ -904,7 +904,7 @@ export class DataSet implements IDataSet {
         const context = this.getContext(tableName, contextId);
         console.info(`📢 通知 ${subscribers.size} 个订阅者: ${key} 数据已更新`);
         if (context) {
-          subscribers.forEach(callback => callback(context));
+          subscribers.forEach(callback => (callback as (context: IBindingContext) => void)(context));
         }
       }
     } else {
@@ -922,7 +922,7 @@ export class DataSet implements IDataSet {
         const subscribers = this.contextSubscribers.get(key);
         
         if (subscribers && context) {
-          subscribers.forEach(callback => callback(context));
+          subscribers.forEach(callback => (callback as (context: IBindingContext) => void)(context));
         }
       });
     }

@@ -13,7 +13,7 @@
 
 /**
  * SparkRegistry 注入键
- * 直接复用 spark-component 包的 InjectionKey，避免 Symbol 不一致
+ * 从 spark-component 导入（架构允许 spark-app 依赖 spark-component）
  */
 export { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 

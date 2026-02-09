@@ -64,7 +64,7 @@ async function fetchRemoteConfig(): Promise<Partial<AppConfig>> {
     throw new Error(`HTTP ${response.status}`)
   }
 
-  return await response.json()
+  return await response.json() as Partial<AppConfig>
 }
 
 /**

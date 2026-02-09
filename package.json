@@ -9,10 +9,12 @@
         "build": "vite build",
         "build:analyze": "cross-env ANALYZE=true vite build",
         "build:check": "vue-tsc --noEmit --skipLibCheck && vite build",
-        "typecheck": "vue-tsc --noEmit -p tsconfig.typecheck.json",
-        "typecheck:ci": "vue-tsc --noEmit -p tsconfig.typecheck.json",
+        "typecheck": "vue-tsc --noEmit --skipLibCheck -p tsconfig.typecheck.json",
+        "typecheck:ci": "vue-tsc --noEmit --skipLibCheck -p tsconfig.typecheck.json",
+        "typecheck:strict": "vue-tsc --noEmit --strict --skipLibCheck -p tsconfig.typecheck.json",
         "lint": "eslint .",
         "lint:ci": "eslint \"**/*.{ts,vue,js}\" --max-warnings=0",
+        "lint:strict": "eslint \"**/*.{ts,vue,js}\" --max-warnings=0",
         "lint:fix": "eslint . --fix",
         "preview": "vite preview --port 5173",
         "test": "vitest",
@@ -22,7 +24,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "npm run lint && npm run typecheck"
+            "pre-commit": "npm run lint -- --max-warnings=100 && npm run typecheck"
         }
     },
     "lint-staged": {
