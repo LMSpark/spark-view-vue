@@ -1,7 +1,10 @@
 /**
  * 字段渲染助手实现
- * 
- * 用于计算字段的最终渲染状态（结合配置和权限）
+ *
+ * 用于计算字段的最终渲染状态，结合字段配置和权限控制
+ * 支持字段可见性、可编辑性和脱敏处理
+ *
+ * @packageDocumentation
  */
 
 import type {
@@ -10,6 +13,10 @@ import type {
 } from '../data-types'
 
 import { FieldVisibility } from '../data-types'
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 1. 类型定义
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // 字段渲染配置接口
 export interface IFieldRenderConfig {
@@ -32,7 +39,7 @@ export interface IFieldRenderState {
   field: string
   /** 可见性状态 */
   visibility: FieldVisibility
-  /** 是否可编辑 */  
+  /** 是否可编辑 */
   editable: boolean
   /** 显示值（可能是脱敏值） */
   displayValue?: string
@@ -46,13 +53,13 @@ export interface IFieldRenderHelper {
     row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderState
-  
+
   computeFieldStates(
     configs: IFieldRenderConfig[],
     row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderState[]
-  
+
   filterVisibleFields(
     configs: IFieldRenderConfig[],
     row: IDataRowWithPermission,
@@ -60,12 +67,24 @@ export interface IFieldRenderHelper {
   ): IFieldRenderConfig[]
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 2. 字段渲染助手实现
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 /**
  * 字段渲染助手默认实现
+ *
+ * 实现 IFieldRenderHelper 接口，计算字段的最终渲染状态
  */
 export class FieldRenderHelper implements IFieldRenderHelper {
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 字段状态计算
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   /**
    * 计算字段渲染状态
+   *
+   * 结合字段配置和权限，计算出字段的最终渲染状态
    */
   computeFieldState(
     config: IFieldRenderConfig,
@@ -73,24 +92,24 @@ export class FieldRenderHelper implements IFieldRenderHelper {
     checker: IPermissionChecker
   ): IFieldRenderState {
     const { field } = config
-    
+
     // 1. 计算读权限：可见性（3种状态）
     const visibility = checker.getFieldVisibility(field, row)
-    
+
     // 2. 计算写权限：可编辑性（2种状态）
     const editable = checker.isFieldEditable(field, row) && (config.editable !== false)
-    
+
     // 3. 计算显示值（根据可见性）
     let displayValue: string | undefined
     const shouldRender = visibility !== FieldVisibility.Hidden && (config.visible !== false)
-    
+
     if (shouldRender) {
       // 后端返回的值已经是处理后的（Visible 或 Masked）
-      const value = row[field] 
+      const value = row[field]
       displayValue = value !== undefined && value !== null ? String(value) : ''
     }
     // Hidden 时不设置 displayValue，保持 undefined
-    
+
     return {
       field,
       visibility,      // 读权限（3种）
@@ -99,7 +118,7 @@ export class FieldRenderHelper implements IFieldRenderHelper {
       shouldRender
     }
   }
-  
+
   /**
    * 批量计算字段渲染状态
    */
@@ -108,11 +127,11 @@ export class FieldRenderHelper implements IFieldRenderHelper {
     row: IDataRowWithPermission,
     checker: IPermissionChecker
   ): IFieldRenderState[] {
-    return configs.map(config => 
+    return configs.map(config =>
       this.computeFieldState(config, row, checker)
     )
   }
-  
+
   /**
    * 过滤出可见字段配置
    */
@@ -128,6 +147,10 @@ export class FieldRenderHelper implements IFieldRenderHelper {
   }
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 3. 工厂函数和单例管理
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 /**
  * 创建字段渲染助手实例（单例）
  */
@@ -142,6 +165,10 @@ export function createFieldRenderHelper(): IFieldRenderHelper {
 export function resetFieldRenderHelper(): void {
   helperInstance = null
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 4. 快捷方法
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 /**
  * 快捷方法：计算字段状态

@@ -1,7 +1,14 @@
 /**
- * 基础数据类型定义
+ * 数据类型和权限系统定义
  *
- * 数据和权限类型的唯一定义源，所有包共享使用
+ * 提供 SPARK 架构的核心数据类型定义，包括：
+ * - 基础数据类型（IDataRow）
+ * - 权限系统类型（实例级、模型级权限）
+ * - UI 辅助类型（字段可见性、组件级别）
+ * - 权限操作接口（检查器、过滤器）
+ * - 类型工具和组合类型
+ *
+ * 这是数据和权限类型的唯一定义源，所有包共享使用
  *
  * @packageDocumentation
  */
@@ -113,29 +120,25 @@ export const MODEL_PERMISSION_FIELD = '_modelPerm' as const
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 /**
- * 字段可见性
+ * 字段可见性枚举
  *
- * Visible - 显示原始值
- * Masked - 显示脱敏值
- * Hidden - 不显示
+ * 定义字段在 UI 中的三种显示状态
  */
 export enum FieldVisibility {
-  Visible = 'visible',
-  Masked = 'masked',
-  Hidden = 'hidden'
+  Visible = 'visible',  // 显示原始值
+  Masked = 'masked',    // 显示脱敏值
+  Hidden = 'hidden'     // 不显示
 }
 
 /**
- * 组件级别
+ * 组件级别枚举
  *
- * Model - 模型级（Grid、CardList）
- * Instance - 实例级（Row、Card、Form）
- * Field - 字段级（Input、Text）
+ * 定义权限控制在不同组件层级的应用范围
  */
 export enum ComponentLevel {
-  Model = 'model',
-  Instance = 'instance',
-  Field = 'field'
+  Model = 'model',      // 模型级（Grid、CardList）
+  Instance = 'instance', // 实例级（Row、Card、Form）
+  Field = 'field'       // 字段级（Input、Text）
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -143,39 +146,74 @@ export enum ComponentLevel {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 /**
- * 权限检查和过滤服务
+ * 权限检查器接口
  *
- * 包含两个职责分离的接口：
- * - IPermissionChecker: 单个数据的权限检查
- * - IPermissionFilter: 批量数据的权限过滤
+ * 定义单个数据项权限检查的完整规范
  */
-
-/** 权限检查器：检查单个数据项的权限 */
 export interface IPermissionChecker {
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 模型级权限检查
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  /** 检查是否允许新增记录 */
   canCreate(modelPermission?: IModelPermission): boolean
+  /** 检查是否允许导入数据 */
   canImport(modelPermission?: IModelPermission): boolean
+  /** 检查是否允许导出数据 */
   canExport(modelPermission?: IModelPermission): boolean
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 实例级权限检查
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  /** 检查是否允许删除指定行 */
   canDelete(row: IDataRowWithPermission): boolean
+  /** 检查是否允许编辑指定行 */
   canEdit(row: IDataRowWithPermission): boolean
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // 字段级权限检查
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  /** 检查字段是否可见 */
   isFieldVisible(field: string, row: IDataRowWithPermission): boolean
+  /** 检查字段是否可编辑 */
   isFieldEditable(field: string, row: IDataRowWithPermission): boolean
+  /** 获取字段可见性状态 */
   getFieldVisibility(field: string, row: IDataRowWithPermission): FieldVisibility
 
-  // 脱敏处理
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 字段脱敏处理
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  /** 应用字段脱敏规则 */
   maskFieldValue(field: string, value: unknown, row: IDataRowWithPermission): string
 }
 
-/** 权限过滤器：批量过滤和处理数据 */
+/**
+ * 权限过滤器接口
+ *
+ * 定义批量数据权限过滤和处理的完整规范
+ */
 export interface IPermissionFilter {
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 数据行过滤
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  /** 过滤出可删除的行 */
   filterDeletableRows(rows: IDataRowWithPermission[]): IDataRowWithPermission[]
+  /** 过滤出可编辑的行 */
   filterEditableRows(rows: IDataRowWithPermission[]): IDataRowWithPermission[]
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 字段过滤和处理
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  /** 过滤字段（移除隐藏字段） */
   filterFields(row: IDataRowWithPermission): Record<string, unknown>
+  /** 应用字段脱敏 */
   applyFieldMasking(row: IDataRowWithPermission): IDataRowWithPermission
+  /** 批量应用脱敏（处理整个数据集） */
   applyMaskingToDataSet(rows: IDataRowWithPermission[]): IDataRowWithPermission[]
 }
 
@@ -183,25 +221,41 @@ export interface IPermissionFilter {
 // 6. 类型工具和组合类型
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-/** 添加实例权限的类型工具 */
+/**
+ * 类型工具：添加实例权限
+ *
+ * 为任意类型添加实例级权限字段
+ */
 export type WithInstancePermission<T = Record<string, unknown>> = T & {
   _perm?: IInstancePermission
 }
 
-/** 添加模型权限的类型工具 */
+/**
+ * 类型工具：添加模型权限
+ *
+ * 为任意类型添加模型级权限字段
+ */
 export type WithModelPermission<T = Record<string, unknown>> = T & {
   _modelPerm?: IModelPermission
 }
 
 /**
  * 带权限的数据行
- * 等价于 WithInstancePermission，保留为语义别名
+ *
+ * 语义别名，等价于 WithInstancePermission
+ * 用于表示包含权限信息的数据行
  */
 export type IDataRowWithPermission<T = Record<string, unknown>> = WithInstancePermission<T>
 
-/** 数据源（带权限和分页，支持泛型） */
+/**
+ * 数据源接口（带权限和分页）
+ *
+ * 定义包含权限控制和分页信息的数据源结构
+ */
 export interface IDataSource<T = Record<string, unknown>> {
+  /** 数据行数组（带权限） */
   rows: IDataRowWithPermission<T>[]
+  /** 模型级权限 */
   _modelPerm?: IModelPermission
   /** 总记录数 */
   total?: number
