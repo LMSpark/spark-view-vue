@@ -1,11 +1,11 @@
 /**
  * 能力系统 - 符号化常量
- * 
+ *
  * 使用 Symbol 代替字符串作为能力名称，提供：
  * - 类型安全（CapabilityKey<T> 幻影泛型自动推断实现类型）
  * - 避免命名冲突
  * - IDE 自动补全
- * 
+ *
  * 用法：
  * ```ts
  * import { APP_SERVICES } from '@spark-view/spark-utils'
@@ -33,9 +33,7 @@ import type {
   ColumnConfigCapability
 } from './capability-types.js'
 
-// ============================================================================
-// CapabilityKey<T> — 幻影类型 (Phantom Type)
-// ============================================================================
+// ==================== CapabilityKey<T> — 幻影类型 ====================
 
 /**
  * 带类型信息的能力键
@@ -63,9 +61,7 @@ export function defineCapability<T>(name: string): CapabilityKey<T> {
   return Symbol.for(name) as CapabilityKey<T>
 }
 
-// ============================================================================
-// 应用层能力（App Services）
-// ============================================================================
+// ==================== 应用层能力 ====================
 
 /**
  * APP 服务能力（路由、日志等）
@@ -73,9 +69,7 @@ export function defineCapability<T>(name: string): CapabilityKey<T> {
  */
 export const APP_SERVICES = defineCapability<AppServicesCapability>('spark:capability:app-services')
 
-// ============================================================================
-// 数据层能力（Data Layer）
-// ============================================================================
+// ==================== 数据层能力 ====================
 
 /**
  * 数据源能力（提供原始数据）
@@ -112,9 +106,7 @@ export const FIELD_METADATA = defineCapability<FieldMetadataCapability>('spark:c
  */
 export const ROW_DATA = defineCapability<RowDataCapability>('spark:capability:row-data')
 
-// ============================================================================
-// 交互层能力（Interaction Layer）
-// ============================================================================
+// ==================== 交互层能力 ====================
 
 /**
  * 选择能力（行选择、多选等）
@@ -126,9 +118,7 @@ export const SELECTION = defineCapability<SelectionCapability>('spark:capability
  */
 export const VALIDATION = defineCapability<ValidationCapability>('spark:capability:validation')
 
-// ============================================================================
-// 事件层能力（Event Layer）
-// ============================================================================
+// ==================== 事件层能力 ====================
 
 /**
  * Grid 事件能力（表格级事件）
@@ -140,9 +130,7 @@ export const GRID_EVENTS = defineCapability<GridEventsCapability>('spark:capabil
  */
 export const ROW_EVENTS = defineCapability<RowEventsCapability>('spark:capability:row-events')
 
-// ============================================================================
-// EJ2 Grid 专用能力
-// ============================================================================
+// ==================== EJ2 Grid 专用能力 ====================
 
 /**
  * Grid 实例能力（EJ2 Grid 实例引用）

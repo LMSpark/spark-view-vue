@@ -1,6 +1,14 @@
 ﻿/* eslint-disable no-console */
 
 /**
+ * SPARK Logger - 结构化日志系统
+ *
+ * 提供多级别日志记录、自定义传输器、上下文感知等功能
+ */
+
+// ==================== 类型定义 ====================
+
+/**
  * 日志级别枚举
  */
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
@@ -25,6 +33,16 @@ export interface Transport {
 }
 
 /**
+ * Logger 上下文接口
+ * 用于从组件上下文中查找 logger provider
+ */
+export interface LoggerContext {
+  providers: Map<string | symbol, { implementation?: unknown }>
+}
+
+// ==================== 核心 Logger 实现 ====================
+
+/**
  * 格式化日志消息
  * @param level 日志级别
  * @param args 日志参数
@@ -44,14 +62,6 @@ function formatMsg(level: LogLevel, args: unknown[]) {
  * @param context 可选的上下文对象，用于查找自定义 logger provider
  * @returns LoggerApi 实例
  */
-/**
- * Logger 上下文接口
- * 用于从组件上下文中查找 logger provider
- */
-export interface LoggerContext {
-  providers: Map<string | symbol, { implementation?: unknown }>
-}
-
 export function Logger(context?: string | LoggerContext): LoggerApi {
   // 纯字符串标签：直接返回带前缀的 console logger
   if (typeof context === 'string' || context === undefined) {
@@ -99,6 +109,7 @@ export function Logger(context?: string | LoggerContext): LoggerApi {
   }
 }
 
+// ==================== 内置传输器 ====================
 
 /**
  * 创建控制台传输器

@@ -1,7 +1,10 @@
 /**
  * 权限检查器实现
- * 
- * 提供统一的权限检查逻辑
+ *
+ * 提供统一的权限检查逻辑，支持模型级、实例级和字段级的权限验证
+ * 包含内置的脱敏规则和字段可见性判断
+ *
+ * @packageDocumentation
  */
 
 import type {
@@ -12,10 +15,20 @@ import type {
 
 import { FieldVisibility } from '../data-types'
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 1. 权限检查器实现
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 /**
  * 默认权限检查器实现
+ *
+ * 实现 IPermissionChecker 接口，提供完整的权限检查功能
  */
 export class PermissionChecker implements IPermissionChecker {
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 模型级权限检查
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   /**
    * 检查是否允许新增
    */
@@ -37,6 +50,10 @@ export class PermissionChecker implements IPermissionChecker {
     return modelPermission?.allowExport !== false
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 实例级权限检查
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   /**
    * 检查是否允许删除指定行
    */
@@ -47,13 +64,17 @@ export class PermissionChecker implements IPermissionChecker {
 
   /**
    * 检查是否允许编辑指定行
-   * 
+   *
    * 判断逻辑：editableFields 有值即表示可编辑
    */
   canEdit(row: IDataRowWithPermission): boolean {
     const perm = row._perm
     return (perm?.editableFields?.length ?? 0) > 0
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 字段级权限检查
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   /**
    * 检查字段是否可见
@@ -94,12 +115,16 @@ export class PermissionChecker implements IPermissionChecker {
     return FieldVisibility.Visible
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 字段脱敏处理
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   /**
    * 应用字段脱敏规则
    */
   maskFieldValue(field: string, value: unknown, row: IDataRowWithPermission): string {
     const visibility = this.getFieldVisibility(field, row)
-    
+
     if (visibility !== FieldVisibility.Masked) {
       return String(value ?? '')
     }
@@ -110,6 +135,8 @@ export class PermissionChecker implements IPermissionChecker {
 
   /**
    * 默认脱敏规则
+   *
+   * 支持手机号、身份证、邮箱、银行卡等常见字段的脱敏
    */
   private defaultMaskRule(field: string, value: unknown): string {
     if (value === null || value === undefined) return ''
@@ -154,6 +181,10 @@ export class PermissionChecker implements IPermissionChecker {
   }
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 2. 工厂函数和单例管理
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 /**
  * 创建权限检查器实例（单例）
  */
@@ -169,22 +200,28 @@ export function resetPermissionChecker(): void {
   checkerInstance = null
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 3. 快捷方法
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 /**
  * 快捷方法：检查权限
+ *
+ * 提供常用的权限检查方法的快捷调用
  */
 export const checkPermission = {
-  canCreate: (modelPermission?: IModelPermission) => 
+  canCreate: (modelPermission?: IModelPermission) =>
     createPermissionChecker().canCreate(modelPermission),
-  
-  canDelete: (row: IDataRowWithPermission) => 
+
+  canDelete: (row: IDataRowWithPermission) =>
     createPermissionChecker().canDelete(row),
-  
-  canEdit: (row: IDataRowWithPermission) => 
+
+  canEdit: (row: IDataRowWithPermission) =>
     createPermissionChecker().canEdit(row),
-  
-  isFieldVisible: (field: string, row: IDataRowWithPermission) => 
+
+  isFieldVisible: (field: string, row: IDataRowWithPermission) =>
     createPermissionChecker().isFieldVisible(field, row),
-  
-  isFieldEditable: (field: string, row: IDataRowWithPermission) => 
+
+  isFieldEditable: (field: string, row: IDataRowWithPermission) =>
     createPermissionChecker().isFieldEditable(field, row)
 }
