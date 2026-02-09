@@ -2,30 +2,77 @@
   "type": "user-grid",
   "id": "json-renderer-demo",
   "props": {
-    "users": [
-      {
-        "id": 1,
-        "name": "张三",
-        "age": 28,
-        "email": "zhangsan@example.com",
-        "status": "active"
-      },
-      {
-        "id": 2,
-        "name": "李四",
-        "age": 32,
-        "email": "lisi@example.com",
-        "status": "inactive"
+    "dataset": {
+      "dataSetName": "UserDataSet",
+      "tables": {
+        "Users": {
+          "tableName": "Users",
+          "columns": [
+            {
+              "name": "id",
+              "type": "number",
+              "label": "ID"
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "label": "姓名"
+            },
+            {
+              "name": "age",
+              "type": "number",
+              "label": "年龄"
+            },
+            {
+              "name": "email",
+              "type": "string",
+              "label": "邮箱"
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "label": "角色"
+            }
+          ],
+          "rows": [
+            {
+              "id": 1,
+              "name": "张三",
+              "age": 25,
+              "email": "zhangsan@example.com",
+              "role": "开发者"
+            },
+            {
+              "id": 2,
+              "name": "李四",
+              "age": 30,
+              "email": "lisi@example.com",
+              "role": "设计师"
+            },
+            {
+              "id": 3,
+              "name": "王五",
+              "age": 28,
+              "email": "wangwu@example.com",
+              "role": "产品经理"
+            }
+          ]
+        }
       }
-    ],
-    "enableSelection": true,
-    "showActions": true
+    }
   },
   "children": [
     {
       "type": "user-row",
       "id": "row-template",
       "children": [
+        {
+          "type": "user-field",
+          "id": "field-id",
+          "props": {
+            "field": "id"
+          }
+        },
         {
           "type": "user-field",
           "id": "field-name",
@@ -45,6 +92,13 @@
           "id": "field-email",
           "props": {
             "field": "email"
+          }
+        },
+        {
+          "type": "user-field",
+          "id": "field-role",
+          "props": {
+            "field": "role"
           }
         }
       ]
