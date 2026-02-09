@@ -75,7 +75,7 @@ export function compileFunctions(
     )
     
     // 执行函数，传入上下文参数，返回函数对象
-    const result = func(
+    const result = (func as (api: unknown, route: unknown, data: unknown, el: unknown, query: unknown, queryAll: unknown, dataSet: unknown, rebind: unknown, refresh: unknown, msg: unknown, msgBox: unknown, sparkData: unknown, h: unknown) => Record<string, unknown>)(
       context.$api,
       context.$route,
       context.$data,
@@ -96,7 +96,7 @@ export function compileFunctions(
     if (result) {
       for (const key of Object.keys(result)) {
         if (result[key] !== undefined) {
-          filteredResult[key] = result[key]
+          filteredResult[key] = result[key] as Function
         }
       }
     }

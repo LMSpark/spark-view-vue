@@ -30,7 +30,7 @@ export function scopeCSS(options: CssScopeOptions): string {
   // 为每个 CSS 规则添加属性选择器前缀
   return css.replace(
     /([^{}]+)\{([^}]*)\}/g,
-    (match, selector, rules) => {
+    (match: string, selector: string, rules: string) => {
       // 跳过 @media, @keyframes 等 at-rules
       if (selector.trim().startsWith('@')) {
         return match

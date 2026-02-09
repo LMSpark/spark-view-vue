@@ -191,9 +191,9 @@ export async function start(options: StartOptions): Promise<void> {
         router,
         configLoader,
         pageComponent,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         beforeRegister: pageConfig.beforeRegister as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         afterRegister: pageConfig.afterRegister as any
       })
       
