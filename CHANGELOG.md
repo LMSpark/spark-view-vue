@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-02-09
+
+### Breaking Changes - DI 架构统一
+
+**目标：** 统一到单一 DI 管道（SPARK 能力系统），删除冗余的 Vue 原生 DI
+
+**删除的 Symbol 常量（5 个）：**
+- `APP_CONTEXT_KEY`
+- `ROUTER_KEY`
+- `LOGGER_KEY`
+- `CONFIG_LOADER_KEY`
+- `AUTH_SERVICE_KEY`
+
+**删除的 Composable 函数（10 个）：**
+- `useAppRouter()` → 使用 `useRouter()` from vue-router
+- `useLogger()` → 使用 `Logger('module')` from @spark-view/spark-utils
+- `useAppContext()` → 使用 `consume(APP_SERVICES)`
+- `useAuth()` → 使用 `consume(APP_SERVICES).auth`
+- `usePermissions()` → 使用 `consume(APP_SERVICES)` + 自定义逻辑
+- `useCurrentUser()` → 使用 `consume(APP_SERVICES)?.auth?.getCurrentUser()`
+- `useCurrentTenant()` → 使用 `consume(APP_SERVICES)?.auth?.getCurrentTenant()`
+- `tryUseAuth()` → 使用 `consume(APP_SERVICES)` (已支持 undefined 返回)
+- `tryUseAppContext()` → 使用 `consume(APP_SERVICES)` (已支持 undefined 返回)
+- `useConfigLoader()` → 使用 `consume(APP_SERVICES).configLoader`
+
+**保留的核心基础设施（3 个）：**
+- `SPARK_REGISTRY_KEY` - 组件注册表（Vue DI）
+- `SPARK_PARENT_CONTEXT_KEY` - 父上下文引用
+- `CAPABILITY_MANAGER_KEY` - 能力管理器
+
+**新增能力系统组件：**
+- `capability-types.ts` - 集中定义所有能力接口
+- `DataSetCapabilityManager` 重构 - 支持 Logger、parentContext、injectIntoContext()
+- 新增 79 tests 验证（16 test files）
+
+**文档更新：**
+- 统一 DI 架构说明到 `.github/copilot-instructions.md`
+- 更新 `packages/spark-app/README.md` - 移除废弃 API 说明
+- 更新 `docs/guides/USE_COMPOSABLES.md` - 简化为推荐用法指南
+- 新增 4 个 DI 架构分析文档和示例代码
+
+**迁移指南：**
+```typescript
+// ❌ 旧方式（已删除）
+import { useAppRouter, useLogger, useAuth } from '@spark-view/spark-app'
+const router = useAppRouter()
+const logger = useLogger()
+const auth = useAuth()
+
+// ✅ 新方式（推荐）
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+
+const router = useRouter()
+const logger = Logger('MyComponent')
+const { consume } = useSparkComponent({ type: 'my-comp' })
+const services = consume(APP_SERVICES)
+```
+
+**验证结果：**
+- ✅ 79 tests passed (16 test files)
+- ✅ Type check passed
+- ✅ Lint check passed
+
 ## [0.2.0] - 2026-02-06
 
 ### Refactor - 代码清理与优化（7轮）
