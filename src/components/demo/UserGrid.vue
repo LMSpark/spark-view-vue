@@ -1,5 +1,6 @@
 <template>
   <div class="user-grid">
+    <!-- 网格头部：标题和操作按钮 -->
     <div class="grid-header">
       <h3>👥 用户列表</h3>
       <div class="grid-actions">
@@ -10,13 +11,14 @@
       </div>
     </div>
     
+    <!-- 网格信息栏：统计和能力提示 -->
     <div class="grid-info">
       <span>已选中: {{ selectedCount }} / {{ usersFromConfig.length }}</span>
       <span>提供能力: fieldMetadata, selection, gridEvents, dataSource</span>
     </div>
 
+    <!-- 网格主体：动态渲染子组件 -->
     <div class="grid-body">
-      <!-- 渲染为每个user生成的配置 -->
       <component
         v-for="childConfig in childConfigs"
         :key="childConfig.id"
@@ -38,6 +40,10 @@ import {
   DATA_SOURCE
 } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
+
+// ============================================================
+// 类型定义
+// ============================================================
 
 interface Props {
   config: Partial<ComponentContext> & {
@@ -61,12 +67,39 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 从 DataSet 配置获取 users
+// ============================================================
+// SPARK 组件系统初始化
+// ============================================================
+
+const { 
+  context, 
+  provide: provideCapability,
+  provideEvents,
+  consume,
+  getComponent,
+  logger: sparkLogger
+} = useSparkComponent(props.config as ComponentContext)
+
+// ============================================================
+// 应用服务消费
+// ============================================================
+
+// 通过能力系统消费 APP 服务（router、logger 等）
+const appServices = consume(APP_SERVICES)
+
+// 便捷访问路由
+const appRouter = computed(() => appServices?.router)
+
+// ============================================================
+// 数据获取与转换
+// ============================================================
+
+// 从 DataSet 配置获取用户数据
 const usersFromConfig = computed(() => {
   return props.config.props?.dataset?.tables?.Users?.rows || []
 })
 
-// 🎯 生成子组件配置（为每个 user 创建一个 row）
+// 生成子组件配置（为每个用户创建一个 row 组件）
 const childConfigs = computed(() => {
   const children = props.config.children ?? []
   const users = usersFromConfig.value
@@ -87,38 +120,26 @@ const childConfigs = computed(() => {
     type: template.type,
     props: {
       ...template.props,
-      user // 传递 user 数据
+      user // 传递 user 数据到子组件
     }
   }))
 })
 
-// ============ 组件能力系统 (SPARK Capability) ============
-const { 
-  context, 
-  provide: provideCapability,
-  provideEvents,
-  consume,
-  getComponent,
-  logger: sparkLogger
-} = useSparkComponent(props.config as ComponentContext)
+// ============================================================
+// 状态管理
+// ============================================================
 
-// ============ 消费 APP 服务能力（从页面层提供）============
-// 🎯 关键：通过能力系统消费，不需要直接导入
-const appServices = consume(APP_SERVICES)
-
-// 便捷访问
-const appRouter = computed(() => {
-  return appServices?.router
-})
-
-// 选中的行
+// 选中的行 ID 集合
 const selectedIds = ref<Set<number>>(new Set())
 
+// 选中行数量
 const selectedCount = computed(() => selectedIds.value.size)
 
-// ============ 字段元数据定义 ============
+// ============================================================
+// 字段元数据生成
+// ============================================================
 
-// 从 DataSet columns 生成字段元数据
+// 从 DataSet columns 动态生成字段元数据
 const fieldMetadata = computed(() => {
   const columns = props.config.props?.dataset?.tables?.Users?.columns || []
   const metadata: Record<string, { label: string; icon: string; type: string }> = {}
@@ -134,7 +155,7 @@ const fieldMetadata = computed(() => {
   return metadata
 })
 
-// 根据类型获取图标
+// 根据字段类型获取对应图标
 const getIconForType = (type: string): string => {
   const iconMap: Record<string, string> = {
     number: '🔢',
@@ -145,12 +166,14 @@ const getIconForType = (type: string): string => {
   return iconMap[type] || '📄'
 }
 
-// ============ 能力提供 ============
+// ============================================================
+// 能力提供（Provider Pattern）
+// ============================================================
 
-// 0. 提供字段元数据能力（供 UserField 消费）
+// 提供字段元数据能力（供 UserField 消费）
 provideCapability(FIELD_METADATA, fieldMetadata.value)
 
-// 1. 提供选择能力（数据流）
+// 提供选择管理能力（供 UserRow 消费）
 provideCapability(SELECTION, {
   isSelected: (id: number) => selectedIds.value.has(id),
   select: (id: number) => {
@@ -176,10 +199,10 @@ provideCapability(SELECTION, {
   getSelected: () => Array.from(selectedIds.value)
 })
 
-// 2. 提供事件能力（使用真正的事件系统）
+// 提供事件发布能力（Event Emitter）
 const gridEventsEmitter = provideEvents(GRID_EVENTS)
 
-// 3. 提供数据源能力
+// 提供数据源访问能力
 provideCapability(DATA_SOURCE, {
   getData: () => usersFromConfig.value,
   refresh: () => {
@@ -188,26 +211,36 @@ provideCapability(DATA_SOURCE, {
   }
 })
 
-// ============ 事件处理 ============
+// ============================================================
+// 事件处理器
+// ============================================================
 
+// 刷新网格数据
 const handleRefresh = () => {
   sparkLogger.info('🔄 Grid refreshing')
   gridEventsEmitter.emit('grid:refresh')
 }
 
+// 全选所有行
 const handleSelectAll = () => {
   usersFromConfig.value.forEach(u => selectedIds.value.add(u['id'] as number))
   gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
 }
 
+// 清空选择
 const handleClearSelection = () => {
   selectedIds.value.clear()
   gridEventsEmitter.emit('selection:changed', [])
 }
 
+// 导航到首页
 const handleNavigateHome = () => {
   appRouter.value?.push('/')
 }
+
+// ============================================================
+// 生命周期
+// ============================================================
 
 onMounted(() => {
   sparkLogger.info('🚀 UserGrid mounted', {
@@ -218,6 +251,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ============================================================
+   网格容器
+   ============================================================ */
 .user-grid {
   background: white;
   border-radius: 6px;
@@ -225,6 +261,9 @@ onMounted(() => {
   overflow: hidden;
 }
 
+/* ============================================================
+   头部样式
+   ============================================================ */
 .grid-header {
   display: flex;
   justify-content: space-between;
@@ -240,6 +279,7 @@ onMounted(() => {
   font-weight: 600;
 }
 
+/* 操作按钮组 */
 .grid-actions {
   display: flex;
   gap: 8px;
@@ -261,6 +301,9 @@ onMounted(() => {
   transform: translateY(-1px);
 }
 
+/* ============================================================
+   信息栏样式
+   ============================================================ */
 .grid-info {
   display: flex;
   justify-content: space-between;
@@ -276,6 +319,9 @@ onMounted(() => {
   font-weight: 500;
 }
 
+/* ============================================================
+   主体区域
+   ============================================================ */
 .grid-body {
   padding: 0;
 }
