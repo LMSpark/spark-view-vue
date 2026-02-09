@@ -21,7 +21,7 @@ import type { BindingContext } from './bindingContext'
 export class TreeManager {
   private config: TreeConfig
   private cache: FlatTreeCache = {}
-  private eventListeners: Map<string, Function[]> = new Map()
+  private eventListeners: Map<string, Array<(...args: unknown[]) => void>> = new Map()
   private bindingContext?: BindingContext  // 关联的 BindingContext
   private logger = Logger()
 
@@ -261,7 +261,7 @@ export class TreeManager {
   /**
    * 事件监听
    */
-  on(event: string, callback: Function): void {
+  on(event: string, callback: (...args: unknown[]) => void): void {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, [])
     }
@@ -274,7 +274,7 @@ export class TreeManager {
   /**
    * 移除事件监听
    */
-  off(event: string, callback: Function): void {
+  off(event: string, callback: (...args: unknown[]) => void): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
       const index = listeners.indexOf(callback)
@@ -290,7 +290,7 @@ export class TreeManager {
   private emit(event: string, data: unknown): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
-      listeners.forEach(callback => (callback as (data: unknown) => void)(data))
+      listeners.forEach(callback => callback(data))
     }
   }
 

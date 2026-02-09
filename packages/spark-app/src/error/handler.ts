@@ -4,7 +4,8 @@
  */
 
 import type { App } from 'vue'
-import type { ErrorHandlerOptions, ErrorType, ErrorContext } from '../types'
+import type { ErrorHandlerOptions, ErrorContext } from '../types'
+import { ErrorType } from '../types'
 import { createLogger } from '../logger'
 
 const errorLogger = createLogger('error')
@@ -69,19 +70,19 @@ function classifyError(error: Error): ErrorType {
   const message = error.message.toLowerCase()
   
   if (message.includes('auth') || message.includes('token')) {
-    return 'AUTH' as ErrorType
+    return ErrorType.Auth
   }
   if (message.includes('permission') || message.includes('forbidden')) {
-    return 'PERMISSION' as ErrorType
+    return ErrorType.Permission
   }
   if (message.includes('network') || message.includes('fetch')) {
-    return 'NETWORK' as ErrorType
+    return ErrorType.Network
   }
   if (message.includes('validation') || message.includes('invalid')) {
-    return 'VALIDATION' as ErrorType
+    return ErrorType.Validation
   }
   
-  return 'UNKNOWN' as ErrorType
+  return ErrorType.Unknown
 }
 
 /**

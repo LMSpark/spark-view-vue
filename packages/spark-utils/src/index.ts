@@ -7,7 +7,7 @@ export {
 } from './logger'
 
 // Types
-export type { LogLevel, LoggerApi, Transport } from './logger'
+export type { LogLevel, LoggerApi, Transport, LoggerContext } from './logger'
 
 // HTTP Client
 export {
@@ -30,6 +30,8 @@ export type {
   AppLoggerCapability,
   DataSourceCapability,
   DataSetStateCapability,
+  IDataSetLike,
+  IDataTableLike,
   GlobalDataCapability,
   PageServiceCapability,
   ApiClientCapability,

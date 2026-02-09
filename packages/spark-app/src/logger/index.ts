@@ -31,6 +31,7 @@ export interface AppLoggerApi {
   info(message: string, meta?: Record<string, unknown>): void
   warn(message: string, meta?: Record<string, unknown>): void
   error(message: string, error?: Error | Record<string, unknown>): void
+  success(message: string, meta?: Record<string, unknown>): void
 }
 
 /**

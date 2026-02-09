@@ -27,9 +27,12 @@ export type {
 } from './FieldRenderHelper'
 
 // 权限类型和接口（从 data-types 重新导出）
-export type {
+export {
   FieldVisibility,
-  ComponentLevel,
+  ComponentLevel
+} from '../data-types'
+
+export type {
   IPermissionChecker,
   IPermissionFilter,
   IInstancePermission,

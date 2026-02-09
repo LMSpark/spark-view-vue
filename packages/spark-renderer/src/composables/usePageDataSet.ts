@@ -143,11 +143,9 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       pageLogger.debug('currentRow 变化')
     })
     
-    dataSet.value.on('selectedRowsChanged', ({ tableName, contextId, rows }: { 
-      tableName: string
-      contextId: string
-      rows: IDataRow[] 
-    }) => {
+    dataSet.value.on('selectedRowsChanged', (...args: unknown[]) => {
+      const eventData = args[0] as { tableName: string; contextId: string; rows: IDataRow[] }
+      const { tableName, contextId, rows } = eventData
       pageLogger.debug('selectedRows 变化', { tableName, contextId, rowCount: rows.length })
       
       // 同步到 el-table

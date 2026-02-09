@@ -158,7 +158,7 @@ export interface PageRendererOptions {
 export interface RuleBindingOptions {
   rules: Rule[]
   pageData: Record<string, unknown>
-  pageFunctions: Record<string, Function>
+  pageFunctions: Record<string, (...args: unknown[]) => unknown>
   dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
   formApi: FormCreateAPI | null
 }

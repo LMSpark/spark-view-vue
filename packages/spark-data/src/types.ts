@@ -126,12 +126,15 @@ export interface CrudApi {
 
 // ==================== DataTable 定义 ====================
 
+/** 事件回调类型 */
+export type EventCallback = (...args: unknown[]) => void
+
 /**
  * TreeManager 接口（树形数据管理器）
  */
 export interface ITreeManager {
-  setBindingContext(context: unknown): void
-  getBindingContext(): unknown
+  setBindingContext(context: IBindingContext): void
+  getBindingContext(): IBindingContext | undefined
   getConfig(): TreeConfig
   getCache(): FlatTreeCache
   addNodesToCache(nodes: FlatTreeNode[]): void
@@ -140,8 +143,8 @@ export interface ITreeManager {
   getRoots(): FlatTreeNode[]
   buildNestedTree(rootId?: string | number | null): NestedTreeNode[]
   enrichNodes(): void
-  on(event: string, callback: Function): void
-  off(event: string, callback: Function): void
+  on(event: string, callback: EventCallback): void
+  off(event: string, callback: EventCallback): void
 }
 
 /**
@@ -443,9 +446,9 @@ export interface IDataSet {
   emit(event: string, data: unknown): void
   
   // 事件订阅方法 (新增)
-  subscribe(tableName: string, contextId: string, callback: () => void): void
-  on(event: string, handler: Function): void
-  off(event: string, handler: Function): void
+  subscribe(tableName: string, contextId: string, callback: () => void): () => void
+  on(event: string, handler: EventCallback): void
+  off(event: string, handler: EventCallback): void
 }
 
 // ==================== 辅助类型 ====================

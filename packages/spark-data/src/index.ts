@@ -18,6 +18,7 @@ export type {
   IDataSet,
   ITreeManager,
   IBindingContext,
+  EventCallback,
   FilterExpression,
   SortExpression,
   TreeConfig,
