@@ -100,9 +100,9 @@ Spark.register({
 
 -  **Lint**: 0 errors, 0 warnings
 -  **TypeCheck**: 0 errors
--  **Tests**: 45/45 passed
+-  **Tests**: 79/79 passed (16 test files)
 -  **Type Safety**: 完整的类型定义
--  **Recent Update**: 依赖注入架构，支持测试隔离（详见[测试指南](docs/guides/TESTING_BEST_PRACTICES.md)）
+-  **Recent Update**: DI 架构统一到单一管道（SPARK 能力系统），删除废弃 API（详见 [CHANGELOG](CHANGELOG.md)）
 
 ##  技术栈
 

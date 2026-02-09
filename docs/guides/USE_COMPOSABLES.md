@@ -372,16 +372,19 @@ function setupRouterGuards(services: AppServices) {
 }
 ```
 
-## 向后兼容
+## 遗留代码迁移
 
-DI 容器仍然可用，但推荐新代码使用 Composables：
+如果你的代码中使用了已删除的 Composable 函数（v0.3.0），请按以下方式迁移：
 
 ```typescript
-// ✅ 可用但不推荐
-import { container } from '@spark-view/spark-app'
-const logger = container.resolve('Logger')
-
-// ✅ 推荐
-import { useLogger } from '@spark-view/spark-app'
+// ❌ 已删除（v0.3.0）
+import { useLogger, useAppRouter } from '@spark-view/spark-app'
 const logger = useLogger()
+const router = useAppRouter()
+
+// ✅ 新方式
+import { Logger } from '@spark-view/spark-utils'
+import { useRouter } from 'vue-router'
+const logger = Logger('MyModule')
+const router = useRouter()
 ```

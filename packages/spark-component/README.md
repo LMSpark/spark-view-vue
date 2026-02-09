@@ -46,7 +46,7 @@ import { createApp } from 'vue'
 
 const app = createApp(App)
 // 使用全局单例（推荐）
-app.use(Spark.createVuePlugin())
+app.use(Spark.createPlugin())
 ```
 
 ### 3. 使用组件
@@ -100,7 +100,7 @@ import { Spark } from '@spark-view/spark-component'
 Spark.register({ type: 'my-component', name: 'My Component', component: MyComponent })
 
 // 安装 Vue 插件（使用全局单例）
-app.use(Spark.createVuePlugin())
+app.use(Spark.createPlugin())
 
 // 类型定义
 import type { ComponentContext, CapabilityProvider } from '@spark-view/spark-component'

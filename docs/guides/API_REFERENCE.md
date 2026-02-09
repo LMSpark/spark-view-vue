@@ -18,7 +18,7 @@ Spark.register({
 })
 
 // Vue 插件（使用全局单例）
-app.use(Spark.createVuePlugin())
+app.use(Spark.createPlugin())
 ```
 
 ### 组件 Composable

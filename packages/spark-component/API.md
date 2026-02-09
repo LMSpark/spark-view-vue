@@ -101,7 +101,7 @@ Spark.register({
 
 // 2. 安装到 Vue 应用
 const app = createApp(App)
-app.use(Spark.createVuePlugin())
+app.use(Spark.createPlugin())
 
 // 3. 在组件中使用
 import { useSparkComponent } from '@spark-view/spark-component'
@@ -756,7 +756,7 @@ Spark.installSparkPlugin(monitoringPlugin)
    // 现有代码无需修改，继续使用全局单例
    import { Spark } from '@spark-view/spark-component'
    
-   app.use(Spark.createVuePlugin()) // 自动使用全局 componentManager
+   app.use(Spark.createPlugin()) // 自动使用全局 componentManager
    ```
 
 ### 沙箱使用
@@ -841,7 +841,7 @@ Error: Spark manager not found in Vue context
 ```
 
 **原因**: 未正确安装 Vue 插件
-**解决**: 使用 `app.use(Spark.createVuePlugin())` 安装插件
+**解决**: 使用 `app.use(Spark.createPlugin())` 安装插件
 
 #### SSR window 错误
 
@@ -921,7 +921,7 @@ Spark.register({
 
 // 2. 在 Vue 应用中安装
 const app = createApp(App)
-app.use(Spark.createVuePlugin())
+app.use(Spark.createPlugin())
 
 // 3. 在组件中使用
 import { useSparkComponent } from '@spark-view/spark-component'
@@ -987,7 +987,7 @@ Spark.defineComponent: typeof defineSparkComponent
 
 ```ts
 // 创建 Vue 插件
-Spark.createVuePlugin(opts?: { registry?: ComponentRegistry }): Plugin
+Spark.createPlugin(opts?: { registry?: ComponentRegistry }): Plugin
 ```
 
 #### 插件系统
@@ -1290,7 +1290,7 @@ const gridData = use('grid-data')
 
 ##### 注意事项
 
-- 确保在应用入口安装了Spark Vue插件：`app.use(Spark.createVuePlugin())`
+- 确保在应用入口安装了Spark Vue插件：`app.use(Spark.createPlugin())`
 - 如果不提供manager选项，函数会尝试通过Vue的provide/inject系统获取
 - 能力消费是延迟绑定的，如果提供者在消费之后注册，系统会自动建立连接
 - 使用`whenAvailable`处理异步能力加载场景
@@ -1318,7 +1318,7 @@ interface LoggerApi {
 
 ```ts
 // 创建插件
-const plugin = Spark.createVuePlugin()
+const plugin = Spark.createPlugin()
 app.use(plugin)
 ```
 
@@ -1445,7 +1445,7 @@ const dataService2 = use('data-service')     // 更直观的别名
    Spark.install(app, { manager })
 
    // 新：manager 由框架自动管理
-   app.use(Spark.createVuePlugin())
+   app.use(Spark.createPlugin())
    ```
 
 4. **工厂函数**
@@ -1459,7 +1459,7 @@ const dataService2 = use('data-service')     // 更直观的别名
 
 ### 最佳实践
 
-- 总是使用 `Spark.createVuePlugin()` 安装插件
+- 总是使用 `Spark.createPlugin()` 安装插件
 - 使用 `useSparkComponent` 在组件中访问上下文
 - 优先使用能力系统而非直接导入
 - 为组件定义提供验证器确保配置正确
