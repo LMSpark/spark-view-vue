@@ -41,7 +41,8 @@ All notable changes to this project will be documented in this file.
 - 统一 DI 架构说明到 `.github/copilot-instructions.md`
 - 更新 `packages/spark-app/README.md` - 移除废弃 API 说明
 - 更新 `docs/guides/USE_COMPOSABLES.md` - 简化为推荐用法指南
-- 新增 4 个 DI 架构分析文档和示例代码
+- 修正 API 命名：`createVuePlugin` → `createPlugin` (11 处)
+- 更新测试统计：45 → 79 tests (16 files)
 
 **迁移指南：**
 ```typescript
