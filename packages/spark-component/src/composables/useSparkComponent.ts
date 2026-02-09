@@ -43,7 +43,7 @@ import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as
 
 // SPARK 工具库
 import { Logger, createEventProvider } from '@spark-view/spark-utils'
-import type { EventProvider, CapabilityKey } from '@spark-view/spark-utils'
+import type { EventProvider, CapabilityKey, LoggerApi } from '@spark-view/spark-utils'
 
 // SPARK 能力系统
 import { createCapabilityManager } from '../capability/CapabilityManager.js'
@@ -247,10 +247,48 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   vueProvide(SPARK_PARENT_CONTEXT_KEY, context)
 
   /**
-   * 创建带类型前缀的日志器
-   * 日志格式：[Spark:组件类型] 消息
+   * 创建日志器（从应用层获取）
+   * 
+   * 架构设计：
+   * 1. Logger 应该从应用层统一提供（通过 APP_SERVICES 或直接提供 'logger' 能力）
+   * 2. 使用 capabilityManager.getProvider() 沿 parent 链查找 logger provider
+   * 3. 如果应用层未提供 logger，则 fallback 到简单的 console（静默模式）
+   * 4. 避免在组件内部创建独立的 logger 实例，保持全局统一配置
+   * 
+   * 推荐用法：
+   * - 在 main.ts 中：provide('logger', createLogger('App'))
+   * - 或通过 APP_SERVICES：provide(APP_SERVICES, { logger: createLogger('App') })
    */
-  const logger = Logger(`Spark:${config.type}`)
+  const getActiveLogger = () => {
+    // 优先从能力系统查找应用层提供的 logger
+    const loggerProvider = capabilityManager.getProvider(context, 'logger')
+    if (loggerProvider?.implementation) {
+      const impl = loggerProvider.implementation as LoggerApi
+      // 验证是否为有效的 LoggerApi
+      if (impl && typeof impl === 'object' && 'info' in impl && 'warn' in impl && 'error' in impl && 'debug' in impl) {
+        return impl
+      }
+    }
+    // Fallback：使用静默 logger（应用层应该提供 logger）
+    return {
+      debug: () => undefined,
+      info: (...args: unknown[]) => console.info(...args),
+      warn: (...args: unknown[]) => console.warn(...args),
+      error: (...args: unknown[]) => console.error(...args)
+    }
+  }
+
+  const logger = {
+    debug: (...args: unknown[]) => getActiveLogger().debug(...args),
+    info: (...args: unknown[]) => getActiveLogger().info(...args),
+    warn: (...args: unknown[]) => getActiveLogger().warn(...args),
+    error: (...args: unknown[]) => getActiveLogger().error(...args)
+  }
+
+  /**
+   * 将 logger 存储到 context（供外部访问）
+   */
+  context.logger = logger
 
   /* ---------------------------------------------------------------------------
    * 计算属性：可见性和禁用状态

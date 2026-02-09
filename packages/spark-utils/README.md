@@ -53,23 +53,43 @@ const consumer: Consumer = {
 ### 2. 日志系统
 
 ```typescript
-import { Logger, createConsoleTransport, createHttpTransport } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
 
-// 创建 logger（优先从 context 获取 provider）
-const logger = Logger(context)
-
-// 或创建独立传输器
-const consoleTransport = createConsoleTransport('info')
-const httpTransport = createHttpTransport('/api/logs', 'error')
-
+// 方式 1：简单字符串标签（用于简单脚本或独立模块）
+const logger = Logger('MyModule')
 logger.info('应用启动')
 logger.error('错误', { code: 500 })
+
+// 方式 2：从组件上下文获取应用层提供的 logger（推荐）
+const { logger } = useSparkComponent({ type: 'my-comp' })
+logger.info('组件初始化')  // 自动使用应用层配置的 logger
+
+// 应用层提供 logger（在 main.ts 或 App.vue 中）
+import { createLogger } from '@spark-view/spark-app'
+const appLogger = createLogger('App', {
+  level: 'info',
+  enableRemote: true,  // 生产环境远程上报
+  remoteEndpoint: '/api/logs'
+})
+
+// 通过能力系统提供给所有组件
+provide('logger', appLogger)
+// 或通过 APP_SERVICES
+provide(APP_SERVICES, { logger: appLogger })
 ```
 
 **特性**:
 - ✅ 多级别：debug、info、warn、error
-- ✅ 多传输器：console、HTTP、memory
-- ✅ 命名空间：日志作用域隔离
+- ✅ 应用层统一配置：全局日志级别、传输器、格式
+- ✅ 继承支持：子组件自动继承应用层 logger
+- ✅ 多种传输器：console、HTTP（远程上报）、custom
+- ✅ 生产环境支持：远程日志上报、错误追踪
+
+**推荐架构**：
+1. 应用层（main.ts）创建全局 logger 并配置传输器
+2. 通过 APP_SERVICES 或直接 provide('logger') 提供
+3. 组件通过 useSparkComponent 获取 logger
+4. 所有日志统一格式、统一管理
 
 ### 3. 权限系统
 

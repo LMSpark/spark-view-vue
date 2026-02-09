@@ -1,0 +1,68 @@
+{
+    "configSource": {
+        "type": "local",
+        "api": {
+            "defaultConfigEndpoint": "/api/config/default",
+            "tenantConfigEndpoint": "/api/config/tenant/{tenantId}",
+            "timeout": 5000
+        },
+        "local": {
+            "defaultConfigPath": "/config/default.json",
+            "tenantConfigTemplate": "/config/tenants/tenant-{tenantId}.json"
+        },
+        "fallback": {
+            "enabled": true,
+            "useLocal": true
+        }
+    },
+    "router": {
+        "mode": "history"
+    },
+    "mountTarget": "#app",
+    "plugins": {
+        "element-plus": {
+            "enabled": true,
+            "options": {
+                "size": "default",
+                "zIndex": 2000
+            },
+            "priority": 1
+        },
+        "vxe-table": {
+            "enabled": true,
+            "priority": 2
+        },
+        "form-create": {
+            "enabled": true,
+            "priority": 3
+        }
+    },
+    "spark": {
+        "enabled": true
+    },
+    "pageConfig": {
+        "source": "local",
+        "apiBaseUrl": "/api",
+        "localPrefix": "/pages-config",
+        "enableCache": true,
+        "homePath": "/home"
+    },
+    "config": {
+        "apiBaseUrl": "/api",
+        "logLevel": "debug",
+        "enableMock": true,
+        "version": "1.0.0",
+        "features": {
+            "enableAI": false,
+            "enableExport": true,
+            "enableOffline": false
+        }
+    },
+    "logger": {
+        "level": "debug",
+        "enableColors": true,
+        "showTimestamp": true,
+        "enableRemote": false,
+        "remoteEndpoint": "/api/logs"
+    }
+}
