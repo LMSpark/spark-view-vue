@@ -108,35 +108,47 @@ logger.error('错误信息', new Error('Something went wrong'))
 logger.debug('调试信息', { data: {...} })
 ```
 
-### Composables API（推荐）
+### 服务访问（推荐使用 SPARK 能力系统）
 
 ```typescript
-import { 
-  useLogger,
-  useAppContext, 
-  usePermissions,
-  useAuth
-} from '@spark-view/spark-app'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
 
 export default {
   setup() {
-    // 日志
-    const logger = useLogger()
+    // 方式 1：直接使用标准工具（推荐）
+    const router = useRouter()  // vue-router
+    const logger = Logger('MyComponent')  // 工厂函数
     logger.info('组件初始化')
     
-    // 应用上下文
-    const context = useAppContext()
-    console.log('当前用户', context.user)
+    // 方式 2：通过 APP_SERVICES 能力获取（组件内）
+    const { consume } = useSparkComponent({ type: 'my-comp' })
+    const services = consume(APP_SERVICES)
+    if (services) {
+      services.router?.push('/home')
+      services.logger?.info('Action')
+      services.auth?.logout()
+    }
     
-    // 权限检查
-    const { hasPermission, hasRole } = usePermissions()
-    const canDelete = hasPermission('user:delete')
+    return { router, logger }
+  }
+}
+```
+
+### 组件注册表访问
+
+```typescript
+import { useSparkRegistry } from '@spark-view/spark-app'
+
+export default {
+  setup() {
+    // 访问 SPARK 组件注册表
+    const registry = useSparkRegistry()
+    const hasComponent = registry.has('my-component')
     
-    // 认证
-    const auth = useAuth()
-    const handleLogout = () => auth.logout()
-    
-    return { canDelete, handleLogout }
+    return { hasComponent }
   }
 }
 ```
@@ -191,16 +203,27 @@ const ErrorBoundary = createErrorBoundary((error) => {
 | `SparkApp.loadConfig()` | 加载配置 | 工具函数 |
 | `SparkApp.createAppContext()` | 创建应用上下文 | 工具函数 |
 
-### Composables
+### 服务访问方式
 
-| Composable | 描述 | 返回 |
-|------------|------|------|
-| `useAppContext()` | 获取应用上下文 | `AppContext` |
-| `useLogger()` | 获取日志实例 | `Logger` |
-| `useAuth()` | 获取认证服务 | `IAuthService` |
-| `usePermissions()` | 权限检查工具 | `{ hasPermission, hasRole, ... }` |
-| `useCurrentUser()` | 获取当前用户 | `UserInfo` |
-| `useCurrentTenant()` | 获取当前租户 | `TenantInfo` |
+#### 推荐方式
+
+| 方式 | 用途 | 示例 |
+|------|------|------|
+| `useRouter()` from vue-router | 路由导航 | `const router = useRouter()` |
+| `Logger('module')` 工厂函数 | 日志记录 | `const logger = Logger('MyComponent')` |
+| `consume(APP_SERVICES)` | 应用服务能力 | `const services = consume(APP_SERVICES)` |
+| `useSparkRegistry()` | 组件注册表 | `const registry = useSparkRegistry()` |
+
+#### 废弃方式（已标记 @deprecated）
+
+| Composable | 状态 | 替代方案 |
+|------------|------|----------|
+| `useAppContext()` | ⚠️ 废弃 | `consume(APP_SERVICES)` |
+| `useLogger()` | ⚠️ 废弃 | `Logger('module')` |
+| `useAuth()` | ⚠️ 废弃 | `consume(APP_SERVICES).auth` |
+| `usePermissions()` | ⚠️ 废弃 | 通过 `APP_SERVICES` 获取 user.permissions |
+| `useCurrentUser()` | ⚠️ 废弃 | `consume(APP_SERVICES)` |
+| `useCurrentTenant()` | ⚠️ 废弃 | `consume(APP_SERVICES)` |
 
 ### 认证服务
 
@@ -250,24 +273,35 @@ interface TenantInfo {
 
 ## 最佳实践
 
-### ✅ 推荐
+### ✅ 推荐（DI 架构统一）
 
 ```typescript
-// 使用 Composables
-const { hasPermission } = usePermissions()
+// 使用 vue-router 标准 API
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+// 使用 Logger 工厂函数
+import { Logger } from '@spark-view/spark-utils'
+const logger = Logger('MyComponent')
+
+// 使用 SPARK 能力系统
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+const { consume } = useSparkComponent({ type: 'my-comp' })
+const services = consume(APP_SERVICES)
 
 // 使用命名空间 API
 await SparkApp.start({ ... })
-
-// 使用作用域日志
-const logger = useLogger()
 ```
 
-### ❌ 不推荐
+### ❌ 不推荐（已废弃）
 
 ```typescript
-// ❌ 已移除：旧的工具函数
-import { hasPermission } from '@spark-view/spark-app'
+// ❌ 已废弃：旧的 Vue DI composables
+import { useAppRouter, useLogger, useAuth } from '@spark-view/spark-app'
+const router = useAppRouter()  // ⚠️ 废弃，使用 useRouter() from vue-router
+const logger = useLogger()     // ⚠️ 废弃，使用 Logger('module')
+const auth = useAuth()          // ⚠️ 废弃，使用 consume(APP_SERVICES).auth
 
 // ❌ 已移除：DI 容器
 import { container } from '@spark-view/spark-app'
@@ -278,18 +312,15 @@ import { AppEventBus } from '@spark-view/spark-app'
 
 ## 迁移指南
 
-### 从旧 API 迁移
+### 从旧的 composables 迁移
 
-```typescript
-// 旧版
-import { hasPermission } from '@spark-view/spark-app'
-const canDelete = hasPermission(context, 'user:delete')
-
-// 新版（推荐）
-import { usePermissions } from '@spark-view/spark-app'
-const { hasPermission } = usePermissions()
-const canDelete = hasPermission('user:delete')
-```
+| 旧方式 | 新方式 |
+|-------|-------|
+| `useAppRouter()` | `useRouter()` from vue-router |
+| `useLogger()` | `Logger('module')` from spark-utils |
+| `useAuth()` | `consume(APP_SERVICES).auth` |
+| `useAppContext()` | `consume(APP_SERVICES)` |
+| `usePermissions()` | `consume(APP_SERVICES)` + 自定义逻辑 |
 
 ## 依赖
 
