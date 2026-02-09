@@ -3,9 +3,6 @@
  */
 import { Spark } from '@spark-view/spark-component'
 
-// 导出业务类型
-export type { User } from './types'
-
 // 直接使用动态导入函数注册（无需 glob，更简洁！）
 Spark.registerAll({
   'user-grid': () => import('./UserGrid.vue'),
