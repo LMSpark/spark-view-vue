@@ -43,7 +43,7 @@ import type { User } from './types'
 interface Props {
   config: Partial<ComponentContext> & {
     props?: {
-      // DataSet 格式
+      // 仅支持 DataSet 格式
       dataset?: {
         tables?: {
           Users?: {
@@ -51,23 +51,15 @@ interface Props {
           }
         }
       }
-      // 向后兼容旧格式
-      users?: User[]
     }
   }
 }
 
 const props = defineProps<Props>()
 
-// 从 config.props 获取 users（支持 DataSet 格式）
+// 从 DataSet 配置获取 users
 const usersFromConfig = computed(() => {
-  // 优先使用 DataSet 格式
-  const datasetUsers = props.config.props?.dataset?.tables?.Users?.rows
-  if (datasetUsers) {
-    return datasetUsers as User[]
-  }
-  // 向后兼容旧格式
-  return (props.config.props?.users as User[]) || []
+  return props.config.props?.dataset?.tables?.Users?.rows || []
 })
 
 // 🎯 生成子组件配置（为每个 user 创建一个 row）
