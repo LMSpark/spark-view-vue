@@ -41,13 +41,32 @@ import type { ComponentContext } from '@spark-view/spark-component'
 import type { User } from './types'
 
 interface Props {
-  config: Partial<ComponentContext>
+  config: Partial<ComponentContext> & {
+    props?: {
+      // DataSet 格式
+      dataset?: {
+        tables?: {
+          Users?: {
+            rows?: User[]
+          }
+        }
+      }
+      // 向后兼容旧格式
+      users?: User[]
+    }
+  }
 }
 
 const props = defineProps<Props>()
 
-// 从 config.props 获取 users
+// 从 config.props 获取 users（支持 DataSet 格式）
 const usersFromConfig = computed(() => {
+  // 优先使用 DataSet 格式
+  const datasetUsers = props.config.props?.dataset?.tables?.Users?.rows
+  if (datasetUsers) {
+    return datasetUsers as User[]
+  }
+  // 向后兼容旧格式
   return (props.config.props?.users as User[]) || []
 })
 
