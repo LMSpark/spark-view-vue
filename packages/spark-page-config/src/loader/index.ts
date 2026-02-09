@@ -330,7 +330,7 @@ export class PageConfigLoader implements ConfigLoader {
         throw new Error(`${errorMsg}: HTTP ${response.status}`)
       }
 
-      const result = await response.json()
+      const result = await response.json() as Record<string, unknown>
       
       // 支持标准 API 响应格式: { code, data, message }
       if (result.code !== undefined) {
@@ -339,7 +339,7 @@ export class PageConfigLoader implements ConfigLoader {
           return result.data
         }
         pageLogger.error('API返回错误', { url, code: result.code, message: result.message })
-        throw new Error(result.message ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED))
+        throw new Error((result.message as string) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED))
       }
 
       pageLogger.debug('远程加载成功', { url })
@@ -372,7 +372,7 @@ export class PageConfigLoader implements ConfigLoader {
         throw new Error(`${errorMsg}: ${url}`)
       }
 
-      const result = await response.json()
+      const result = await response.json() as PageConfig
       pageLogger.debug('本地配置加载成功', { url })
       return result
     } catch (error) {

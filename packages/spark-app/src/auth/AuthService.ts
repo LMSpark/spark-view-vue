@@ -80,7 +80,7 @@ export class AuthService implements IAuthService {
         throw new Error(`登录失败: ${response.statusText}`)
       }
 
-      const result: AuthResult = await response.json()
+      const result = await response.json() as AuthResult
 
       // 保存 Token
       if (result.token) {
@@ -172,22 +172,14 @@ export class AuthService implements IAuthService {
         return null
       }
 
-      const result: AuthResult = await response.json()
+      const result = await response.json() as AuthResult
       authLogger.debug('认证检查成功', { username: result.user.username })
       return result
-
     } catch (error) {
       authLogger.error('认证检查失败', error as Error)
       this.clearToken()
       return null
     }
-  }
-
-  /**
-   * 是否已认证
-   */
-  isAuthenticated(): boolean {
-    return !!this.getToken() || !!this.config.enableMock
   }
 
   /**
@@ -235,7 +227,7 @@ export class AuthService implements IAuthService {
         throw new Error('Token 刷新失败')
       }
 
-      const { token } = await response.json()
+      const { token } = await response.json() as { token: string }
       this.setToken(token)
       this.config.onTokenRefresh?.(token)
 

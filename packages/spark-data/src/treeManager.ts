@@ -290,7 +290,7 @@ export class TreeManager {
   private emit(event: string, data: unknown): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
-      listeners.forEach(callback => callback(data))
+      listeners.forEach(callback => (callback as (data: unknown) => void)(data))
     }
   }
 
@@ -316,7 +316,7 @@ export class TreeManager {
    * 从 JSON 加载
    */
   static fromJSON(json: string, bindingContext?: BindingContext): TreeManager {
-    const data = JSON.parse(json)
+    const data = JSON.parse(json) as { config: TreeConfig; cache: TreeNode[] }
     const manager = new TreeManager(data.config, undefined, bindingContext)
     manager.cache = data.cache
     return manager

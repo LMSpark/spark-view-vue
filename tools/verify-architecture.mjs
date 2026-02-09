@@ -153,7 +153,7 @@ const packageNames = readdirSync(packagesDir).filter(name =>
 
 const allowedDeps = {
   'spark-utils': [],                                   // 工具层，零依赖
-  'spark-app': ['spark-utils', 'spark-page-config'],   // 应用层基础设施
+  'spark-app': ['spark-utils', 'spark-page-config', 'spark-component'],   // 应用层基础设施，可访问组件系统（必需）
   'spark-data': ['spark-utils', 'spark-app'],          // 可依赖 utils 和 app
   'spark-component': ['spark-utils', 'spark-app'],     // 可依赖 utils 和 app
   'spark-page-config': ['spark-utils', 'spark-app'],   // 可依赖 utils 和 app

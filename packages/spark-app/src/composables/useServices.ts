@@ -47,7 +47,7 @@ type SparkRegistry = import('@spark-view/spark-component').ComponentRegistry
  * ```
  */
 export function useSparkRegistry(): SparkRegistry {
-  const registry = inject(SPARK_REGISTRY_KEY)
+  const registry = inject(SPARK_REGISTRY_KEY) as SparkRegistry
   if (!registry) {
     throw new Error('SparkRegistry not provided. Make sure Spark.createPlugin() is installed.')
   }

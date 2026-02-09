@@ -300,7 +300,7 @@ export class FilterExpressionParser {
     // 支持函数对象格式
     if (typeof value === 'object' && value !== null && 'func' in value) {
       // 函数调用，如 { func: 'FIELD', args: ['id'] }
-      const func = value.func
+      const func = (value as Record<string, unknown>).func
       const args = (value as Record<string, unknown>).args as unknown[]
 
       if (func === 'FIELD' && context?.parentRow) {

@@ -172,7 +172,7 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
   try {
     const response = await fetch('/api/auth/me')
     if (response.ok) {
-      return await response.json()
+      return await response.json() as AppContext
     }
   } catch {
     // 鉴权失败
