@@ -53,7 +53,7 @@ import { setupRouterGuards } from '../router/guards'
 import { setupErrorHandler } from '../error/handler'
 import { createLogger } from '../logger'
 import { loadConfig } from '../config'
-import { authService } from '../auth'
+import { AuthService } from '../auth'
 
 /**
  * =============================================================================
@@ -115,9 +115,13 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // =========================================================================
     // 阶段 2: 初始化认证服务
     // =========================================================================
+    let authService: AuthService | null = null
+
     if (auth) {
       logPhase('AUTH-INIT', '初始化认证服务')
-      authService.initialize({
+
+      // 创建新的 AuthService 实例，传入配置（采用新方式，删除过时的 initialize 调用）
+      authService = new AuthService({
         ...auth,
         apiBaseUrl: auth.apiBaseUrl ?? appConfig.apiBaseUrl,
         enableMock: auth.enableMock ?? appConfig.enableMock
@@ -142,8 +146,8 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     logPhase('AUTH', '用户鉴权')
     let appContext: AppContext | null
 
-    if (auth) {
-      // 使用 AuthService 进行认证
+    if (auth && authService) {
+      // 使用新创建的 AuthService 实例进行认证
       const result = await authService.checkAuth()
       if (result) {
         appContext = {
