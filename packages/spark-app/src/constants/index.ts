@@ -5,15 +5,6 @@
  * 提供全局的 Symbol、枚举、错误码等常量定义
  */
 
-import type { InjectionKey } from 'vue'
-import type { Router } from 'vue-router'
-import type { AppContext } from '../types'
-import type { IAuthService } from '../auth/types'
-
-// 外部类型（延迟导入）
-import type { AppLoggerApi } from '../logger'
-type ConfigLoader = import('@spark-view/spark-page-config').ConfigLoader
-
 /**
  * ============================================
  * 依赖注入 Symbol Keys（Injection Keys）
@@ -21,40 +12,10 @@ type ConfigLoader = import('@spark-view/spark-page-config').ConfigLoader
  */
 
 /**
- * AppContext 注入键
- * @deprecated 使用 APP_SERVICES 能力替代：consume(APP_SERVICES) 获取统一的应用服务
- */
-export const APP_CONTEXT_KEY: InjectionKey<AppContext> = Symbol('AppContext')
-
-/**
- * Router 注入键
- * @deprecated 使用 vue-router 的 useRouter() 替代，或通过 consume(APP_SERVICES).router 获取
- */
-export const ROUTER_KEY: InjectionKey<Router> = Symbol('Router')
-
-/**
- * Logger 注入键
- * @deprecated 使用 Logger('module') 工厂函数替代，或通过 consume(APP_SERVICES).logger 获取
- */
-export const LOGGER_KEY: InjectionKey<AppLoggerApi> = Symbol('Logger')
-
-/**
- * ConfigLoader 注入键
- * @deprecated 使用 APP_SERVICES 能力替代：consume(APP_SERVICES).configLoader
- */
-export const CONFIG_LOADER_KEY: InjectionKey<ConfigLoader> = Symbol('ConfigLoader')
-
-/**
  * SparkRegistry 注入键
  * 直接复用 spark-component 包的 InjectionKey，避免 Symbol 不一致
  */
 export { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
-
-/**
- * AuthService 注入键
- * @deprecated 使用 APP_SERVICES 能力替代：consume(APP_SERVICES).auth
- */
-export const AUTH_SERVICE_KEY: InjectionKey<IAuthService> = Symbol('AuthService')
 
 /**
  * ============================================
