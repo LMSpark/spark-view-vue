@@ -185,7 +185,6 @@ describe('DataSetCapabilityManager', () => {
     
     const context = manager.getContext()
     expect(context.providers.size).toBe(0)
-    expect(context.consumers.size).toBe(0)
   })
 
   it('should create manager without optional capabilities', () => {
@@ -199,5 +198,66 @@ describe('DataSetCapabilityManager', () => {
     // 只有 dataSetState
     expect(providers.length).toBe(1)
     expect(providers[0].name).toBe(DATA_SET_STATE)
+  })
+
+  it('should accept parentContext and link to parent chain', () => {
+    const mockParentContext = {
+      id: 'app-root',
+      type: 'app',
+      providers: new Map()
+    }
+
+    const managerWithParent = createDataSetCapabilityManager('page-with-parent', {
+      dataSet: mockDataSet,
+      parentContext: mockParentContext
+    })
+
+    const context = managerWithParent.getContext()
+    expect(context.parent).toBe(mockParentContext)
+    expect(context.id).toBe('dataset:page-with-parent')
+  })
+
+  it('should inject capabilities into target context', () => {
+    const targetContext = {
+      id: 'page-root',
+      type: 'page',
+      providers: new Map()
+    }
+
+    const injectManager = createDataSetCapabilityManager('injectable-page', {
+      dataSet: mockDataSet,
+      globalData: {
+        getUserInfo: () => ({ id: 'user1', name: 'Test', roles: [] }),
+        getConfig: () => undefined,
+        getDictionary: () => []
+      }
+    })
+
+    // 注入之前 target 没有能力
+    expect(targetContext.providers.size).toBe(0)
+
+    // 注入能力
+    injectManager.injectIntoContext(targetContext)
+
+    // 注入之后 target 有了 DataSet 能力
+    expect(targetContext.providers.size).toBeGreaterThan(0)
+    expect(targetContext.providers.has(DATA_SET_STATE)).toBe(true)
+    expect(targetContext.providers.has(GLOBAL_DATA)).toBe(true)
+  })
+
+  it('should handle inject into context without providers map', () => {
+    const invalidContext = {
+      id: 'invalid',
+      type: 'invalid'
+    }
+
+    const injectManager = createDataSetCapabilityManager('test', {
+      dataSet: mockDataSet
+    })
+
+    // 不应该抛出错误
+    expect(() => {
+      injectManager.injectIntoContext(invalidContext as any)
+    }).not.toThrow()
   })
 })

@@ -15,7 +15,7 @@
  *
  * 支持泛型，可指定具体的数据类型
  */
-export type IDataRow<T = Record<string, unknown>> = T
+export type IDataRow<T extends Record<string, unknown> = Record<string, unknown>> = T
 
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -193,10 +193,11 @@ export type WithModelPermission<T = Record<string, unknown>> = T & {
   _modelPerm?: IModelPermission
 }
 
-/** 带权限的数据行（支持泛型，可指定具体数据类型） */
-export type IDataRowWithPermission<T = Record<string, unknown>> = T & {
-  _perm?: IInstancePermission
-}
+/**
+ * 带权限的数据行
+ * 等价于 WithInstancePermission，保留为语义别名
+ */
+export type IDataRowWithPermission<T = Record<string, unknown>> = WithInstancePermission<T>
 
 /** 数据源（带权限和分页，支持泛型） */
 export interface IDataSource<T = Record<string, unknown>> {

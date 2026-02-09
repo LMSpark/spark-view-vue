@@ -54,7 +54,7 @@ provideCapability(APP_SERVICES, {
     warn: (...args: unknown[]) => logger.warn(...args),
     error: (...args: unknown[]) => logger.error(...args)
   }
-} as Record<string, unknown>)
+})
 
 onMounted(async () => {
   try {

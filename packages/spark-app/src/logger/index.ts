@@ -14,18 +14,23 @@
  */
 
 /**
- * 日志级别
+ * 日志级别（与 spark-utils 共享）
  */
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type { LogLevel } from '@spark-view/spark-utils'
+import type { LogLevel } from '@spark-view/spark-utils'
 
 /**
- * Logger API 接口
+ * 应用层 Logger API 接口
+ * 
+ * 与 spark-utils 的 LoggerApi 是不同的接口：
+ * - spark-utils LoggerApi: 轻量级，(...args: unknown[]) => void
+ * - AppLoggerApi: 结构化参数，(message: string, meta?) => void
  */
-export interface LoggerApi {
-  debug(...args: unknown[]): void
-  info(...args: unknown[]): void
-  warn(...args: unknown[]): void
-  error(...args: unknown[]): void
+export interface AppLoggerApi {
+  debug(message: string, meta?: Record<string, unknown>): void
+  info(message: string, meta?: Record<string, unknown>): void
+  warn(message: string, meta?: Record<string, unknown>): void
+  error(message: string, error?: Error | Record<string, unknown>): void
 }
 
 /**

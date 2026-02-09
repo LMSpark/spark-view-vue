@@ -82,22 +82,6 @@ interface RegisterContext {
 }
 
 /* -----------------------------------------------------------------------------
- * 全局注册表管理
- * -------------------------------------------------------------------------- */
-
-/**
- * 获取全局注册表
- *
- * 直接使用 ComponentRegistry.ts 中的全局注册表，
- * 确保与 SparkPlugin 使用同一个实例
- *
- * @returns 全局组件注册表实例
- */
-function getOrCreateGlobalRegistry(): ComponentRegistry {
-  return getGlobalRegistry()
-}
-
-/* -----------------------------------------------------------------------------
  * 组件解析器
  * -------------------------------------------------------------------------- */
 
@@ -195,12 +179,12 @@ export const Spark = {
     return {
       register(type: string, path: string, meta?: Record<string, unknown>): void {
         const component = resolveComponent(path, modules)
-        getOrCreateGlobalRegistry().register(type, component, meta)
+        getGlobalRegistry().register(type, component, meta)
       },
       registerAll(components: Record<string, string>): void {
         Object.entries(components).forEach(([type, path]) => {
           const component = resolveComponent(path, modules)
-          getOrCreateGlobalRegistry().register(type, component)
+          getGlobalRegistry().register(type, component)
         })
       }
     }
@@ -263,7 +247,7 @@ export const Spark = {
     options?: { modules?: GlobModules; meta?: Record<string, unknown> }
   ): void {
     const finalComponent = resolveComponent(component, options?.modules)
-    getOrCreateGlobalRegistry().register(type, finalComponent, options?.meta)
+    getGlobalRegistry().register(type, finalComponent, options?.meta)
   },
 
   /**
@@ -323,7 +307,7 @@ export const Spark = {
    * @see {@link createRegister} - 创建绑定 modules 的注册器（推荐）
    */
   registerAll(components: Record<string, unknown | string | ComponentLoader>, modules?: GlobModules): void {
-    const reg = getOrCreateGlobalRegistry()
+    const reg = getGlobalRegistry()
     Object.entries(components).forEach(([type, component]) => {
       const finalComponent = resolveComponent(component, modules)
       reg.register(type, finalComponent)
@@ -381,7 +365,7 @@ export const Spark = {
    * const allTypes = registry.list()
    */
   getRegistry(): ComponentRegistry {
-    return getOrCreateGlobalRegistry()
+    return getGlobalRegistry()
   },
 
   /**
@@ -470,7 +454,7 @@ export const Spark = {
        */
       createContext(config: Partial<ComponentContext> & { type: string }, parent?: ComponentContext): ComponentContext {
         const ctx: ComponentContext = {
-          id: config.id ?? `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: config.id ?? `test-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
           type: config.type,
           parent: parent ?? rootContext,
           children: [],
@@ -505,3 +489,4 @@ export const Spark = {
    */
   Logger
 }
+

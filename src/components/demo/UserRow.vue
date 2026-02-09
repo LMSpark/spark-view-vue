@@ -30,10 +30,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
-import type { 
-  User, 
-  SelectionCapability
-} from './types'
+import type { User } from './types'
 
 interface Props {
   config: Partial<ComponentContext>
@@ -73,9 +70,8 @@ const selection = consume(SELECTION)
 
 // 更新选中状态
 const updateSelectionState = () => {
-  const sel = selection as SelectionCapability | null
-  if (sel && user.value) {
-    isSelected.value = sel.isSelected(user.value.id)
+  if (selection && user.value) {
+    isSelected.value = selection.isSelected(user.value.id)
   }
 }
 
@@ -101,7 +97,7 @@ const rowDataCapability = {
   isSelected: () => isSelected.value
 }
 
-provideCapability(ROW_DATA, rowDataCapability as unknown as Record<string, unknown>)
+provideCapability(ROW_DATA, rowDataCapability)
 
 // 提供行事件能力（使用真正的事件系统）
 const rowEventsEmitter = provideEvents(ROW_EVENTS)
@@ -117,9 +113,8 @@ const handleClick = () => {
 
 const handleCheckboxChange = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked
-  const sel = selection as SelectionCapability | null
-  if (sel && user.value) {
-    checked ? sel.select(user.value.id) : sel.deselect(user.value.id)
+  if (selection && user.value) {
+    checked ? selection.select(user.value.id) : selection.deselect(user.value.id)
     updateSelectionState()
   }
 }

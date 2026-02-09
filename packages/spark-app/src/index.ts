@@ -85,17 +85,11 @@ export { setupErrorHandler, createErrorBoundary } from './error/handler'
 // Config
 export { loadConfig, isFeatureEnabled } from './config'
 
-// Composables (推荐使用)
+// Composables
+// ⚠️ DI 架构已统一到 SPARK 能力系统（管道 B）
+// - 推荐：使用 consume(APP_SERVICES) 获取应用服务
+// - Router：直接使用 vue-router 的 useRouter()
+// - Logger：使用 Logger('module') 工厂函数
 export {
-  useAppContext,
-  useAppRouter,
-  useLogger,
-  useConfigLoader,
-  useSparkRegistry,
-  useAuth,
-  tryUseAppContext,
-  tryUseAuth,
-  useCurrentUser,
-  useCurrentTenant,
-  usePermissions
+  useSparkRegistry
 } from './composables/useServices'

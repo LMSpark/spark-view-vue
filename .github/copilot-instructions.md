@@ -27,7 +27,37 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - Inside components use `useSparkComponent(config)` to access `{ context, provide, consume, use, whenAvailable, logger }`.
 - Capability system uses provider/consumer pattern with Symbol-based capability names.
 - `GetProvider(name, ctx?)` behavior: if `ctx` provided, search only that scope; otherwise walk parent chain.
-- **APP Services**: Use `consume<AppServices>('appServices')` to access router/logger in components. Page layer provides via `DataSetCapabilityManager`.
+- **APP Services**: Use `consume(APP_SERVICES)` to access router/logger in components (类型自动推断).
+
+## DI 架构统一 🔄
+项目采用 **单一 DI 管道**（SPARK 能力系统）：
+
+| 机制 | 用途 | 例子 |
+|------|------|------|
+| **SPARK 能力系统** | `provide()` / `consume()` via `useSparkComponent` | `APP_SERVICES`, `DATA_SOURCE`, `SELECTION` |
+| **Vue 原生 DI (仅基础设施)** | `app.provide()` / `inject()` | `SPARK_REGISTRY_KEY`（组件注册表） |
+
+**使用规则**：
+1. ✅ **业务能力**：统一使用 `consume(APP_SERVICES)` 获取应用服务（router、logger、auth 等）
+2. ✅ **Router**：直接使用 `vue-router` 的 `useRouter()`（无需 DI）
+3. ✅ **Logger**：使用 `Logger('module')` 工厂函数（无需 DI）
+4. ✅ **新增能力**：使用 `CapabilityKey<T>`（`defineCapability<T>()`），接口定义在 `spark-utils/capability-types.ts`
+5. ⚠️ **SPARK 基础设施**：仅 `SPARK_REGISTRY_KEY` 保留 Vue DI（组件系统核心）
+
+**示例代码**：
+```typescript
+// ✅ 推荐：通过 APP_SERVICES 能力获取服务
+const { consume } = useSparkComponent({ type: 'my-comp' })
+const services = consume(APP_SERVICES)
+services?.router?.push('/home')
+services?.logger?.info('Action')
+
+// ✅ 或直接使用标准工具
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
+const router = useRouter()
+const logger = Logger('MyModule')
+```
 
 ## Testing & common pitfalls 🧪
 - Tests run with Vitest + jsdom; external EJ2 (custom tags `e-*`) should be stubbed/mocked in unit tests.

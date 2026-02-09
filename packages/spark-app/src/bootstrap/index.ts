@@ -18,7 +18,7 @@ const bootstrapLogger = createLogger('bootstrap')
  * 应用初始化流水线
  */
 export async function bootstrap(options: BootstrapOptions): Promise<void> {
-  const { app, router, config, beforeMount, afterMount, auth, configLoader } = options
+  const { app, router, config, beforeMount, afterMount, auth } = options
 
   try {
     // 阶段 1: 配置加载
@@ -74,40 +74,16 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       throw new Error('Authentication failed')
     }
 
-    // 阶段 4: 注入全局服务（使用类型安全的 InjectionKey）
-    logPhase('SERVICES', '初始化核心服务')
+    // 阶段 4: SPARK 组件系统已在 start() 中初始化
+    // 注意：通过 SparkApp.start() 启动时，Spark.createPlugin() 已在 bootstrap() 之前安装
+    // SPARK_REGISTRY_KEY 由插件自动提供，组件通过 inject(SPARK_REGISTRY_KEY) 获取
     
-    const {
-      APP_CONTEXT_KEY,
-      ROUTER_KEY,
-      LOGGER_KEY,
-      AUTH_SERVICE_KEY,
-      CONFIG_LOADER_KEY
-    } = await import('../constants')
+    // ⚠️ DI 架构已统一到管道 B（SPARK 能力系统）
+    // - 不再通过 Vue provide/inject 提供应用服务
+    // - 业务代码应使用 APP_SERVICES 能力获取 router/logger/auth 等服务
+    // - 参考：consume(APP_SERVICES) 或直接使用 useRouter() / Logger('module')
     
-    // 提供核心服务
-    // SPARK Manager 应该在 start() 中已创建
-    // 注意：通过 SparkApp.start() 启动时，插件已在 bootstrap() 之前安装
-    // 这里不再检查 Manager 是否存在，因为：
-    // 1. SparkApp.start() 会在调用 bootstrap() 前安装插件
-    // 2. 直接调用 bootstrap() 的旧方式会在组件使用时通过 inject 获取
-    // 3. 检查 app._context.provides 依赖 Vue 内部实现，不够可靠
-    
-    app.provide(APP_CONTEXT_KEY, appContext)
-    app.provide(ROUTER_KEY, router)
-    app.provide(LOGGER_KEY, createLogger('app'))
-    
-    // 提供认证服务（如果启用）
-    if (auth) {
-      app.provide(AUTH_SERVICE_KEY, authService)
-    }
-    
-    // 提供配置加载器（如果传入）
-    if (configLoader) {
-      app.provide(CONFIG_LOADER_KEY, configLoader)
-    }
-    
-    // 注意：sparkManager 的字符串 key 已在上面处理，不需要重复提供
+    logPhase('SERVICES', '应用服务通过 APP_SERVICES 能力提供')
 
     // 阶段 5: 设置路由守卫（传入 appContext，避免在非 setup 上下文中 inject）
     logPhase('ROUTER', '配置路由守卫')

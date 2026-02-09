@@ -38,10 +38,7 @@ import {
   DATA_SOURCE
 } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
-import type { 
-  User, 
-  AppServicesCapability
-} from './types'
+import type { User } from './types'
 
 interface Props {
   config: Partial<ComponentContext>
@@ -96,8 +93,7 @@ const appServices = consume(APP_SERVICES)
 
 // 便捷访问
 const appRouter = computed(() => {
-  const services = appServices as AppServicesCapability | null
-  return services?.router
+  return appServices?.router
 })
 
 // 选中的行

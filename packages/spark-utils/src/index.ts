@@ -9,12 +9,6 @@ export {
 // Types
 export type { LogLevel, LoggerApi, Transport } from './logger'
 
-// Event Emitter
-export {
-  EventEmitter,
-} from './eventEmitter'
-export type { EventMap } from './eventEmitter'
-
 // HTTP Client
 export {
   HttpClient,
@@ -27,6 +21,29 @@ export * from './capability/index.js'
 
 // 能力符号（Symbol-based capability names）
 export * from './capability-symbols.js'
+export type { CapabilityKey } from './capability-symbols.js'
+
+// 能力接口类型（集中定义）
+export type {
+  AppServicesCapability,
+  AppRouterCapability,
+  AppLoggerCapability,
+  DataSourceCapability,
+  DataSetStateCapability,
+  GlobalDataCapability,
+  PageServiceCapability,
+  ApiClientCapability,
+  FieldMetadataCapability,
+  RowDataCapability,
+  SelectionCapability,
+  ValidationCapability,
+  EventsCapability,
+  GridEventsCapability,
+  RowEventsCapability,
+  GridInstanceCapability,
+  ColumnManagerCapability,
+  ColumnConfigCapability
+} from './capability-types.js'
 
 // 基础数据类型和权限系统
 export type {

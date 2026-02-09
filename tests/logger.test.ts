@@ -17,7 +17,6 @@ describe('logger capability', () => {
       id: 'ctx-logger',
       type: 'test',
       children: [],
-      config: {},
       state: {},
       providers: new Map([['logger', provider]]),
       consumers: new Map()
@@ -43,7 +42,6 @@ describe('logger capability', () => {
       id: 'ctx-1',
       type: 'test',
       children: [],
-      config: {},
       state: {},
       providers: new Map([['logger', localProvider]]),
       consumers: new Map()

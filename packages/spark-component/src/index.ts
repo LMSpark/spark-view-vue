@@ -27,6 +27,7 @@ export type { CapabilityManager } from './capability/CapabilityManager.js'
 // === 核心类型 ===
 export type {
   CapabilityName,
+  ComponentConfig,
   ComponentContext,
   ComponentDefinition,
   ComponentRegistry,

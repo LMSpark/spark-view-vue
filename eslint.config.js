@@ -16,6 +16,7 @@ export default [
       'tests/**',  // 排除根目录测试文件
       'tools/**',  // 排除工具文件
       'examples/**',  // 排除示例文件
+      'docs/examples/**',  // 排除文档示例文件
       'dist/**',
       'node_modules/**',
       'vite.config.ts',

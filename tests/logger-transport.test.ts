@@ -17,7 +17,6 @@ describe('file transport (replaced by custom provider test)', () => {
       id: 'ctx-transport',
       type: 'test',
       children: [],
-      config: {},
       state: {},
       providers: new Map([['logger', provider]]),
       consumers: new Map()

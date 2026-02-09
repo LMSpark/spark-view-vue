@@ -17,8 +17,8 @@ export type { CapabilityName } from '@spark-view/spark-utils'
 // 能力系统类型（直接复用 spark-utils）
 // ============================================================================
 
-export type CapabilityProvider = Provider
-export type CapabilityConsumer = Consumer
+export type CapabilityProvider<T = unknown> = Provider<T>
+export type CapabilityConsumer<T = unknown> = Consumer<T>
 
 // ============================================================================
 // 组件定义（注册表使用）
@@ -74,6 +74,31 @@ export interface ComponentContext {
   logger?: LoggerApi
 
   /** 索引签名（支持 visible, disabled 等扩展字段） */
+  [key: string]: unknown
+}
+
+// ============================================================================
+// 组件配置（输入类型）
+// ============================================================================
+
+/**
+ * ComponentConfig - 组件配置的最小输入类型
+ *
+ * 用于 useSparkComponent 的泛型约束。
+ * 与 ComponentContext 的区别：
+ * - Config 是纯数据（JSON 可序列化），不含运行时字段（id, state, providers, consumers）
+ * - children 允许任意嵌套配置数组，不要求是完整的 ComponentContext
+ */
+export interface ComponentConfig {
+  /** 组件类型（对应 ComponentDefinition.type） */
+  type: string
+  /** 实例 ID（可选，运行时自动生成） */
+  id?: string
+  /** 组件属性 */
+  props?: Record<string, unknown>
+  /** 子组件配置（递归） */
+  children?: ComponentConfig[]
+  /** 扩展字段 */
   [key: string]: unknown
 }
 

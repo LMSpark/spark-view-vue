@@ -14,6 +14,7 @@
 <script setup lang="ts">
 import { computed, ref, defineComponent, onMounted, h, type Component } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
+import { GRID_INSTANCE, DATA_SOURCE, COLUMN_MANAGER } from '@spark-view/spark-utils'
 import type { SparkEJ2GridConfig } from '../types'
 
 // 组件 Props
@@ -71,9 +72,9 @@ import('@syncfusion/ej2-grids')
 
 // 注册网格相关能力
 const registerGridCapabilities = () => {
-  provide('gridInstance', { instance: null })
-  provide('dataSource', { getData: () => props.config.dataSource })
-  provide('columnManager', {
+  provide(GRID_INSTANCE, { instance: null })
+  provide(DATA_SOURCE, { getData: () => props.config.dataSource })
+  provide(COLUMN_MANAGER, {
     addColumn: (column: Record<string, unknown>) => { logger.info('Adding column:', column) },
     removeColumn: (field: string) => { logger.info('Removing column:', field) },
     getColumns: () => props.config.children || []
@@ -86,8 +87,6 @@ registerGridCapabilities()
 onMounted(() => {
   logger.info('🎯 SPARK EJ2 Grid mounted with config:', props.config)
 })
-
-provide('ejsGridInstance', { instance: null })
 </script>
 
 <style scoped>

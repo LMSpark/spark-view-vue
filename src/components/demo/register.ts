@@ -3,15 +3,8 @@
  */
 import { Spark } from '@spark-view/spark-component'
 
-// 导出类型定义供组件使用
-export type {
-  User,
-  SelectionCapability,
-  RowDataCapability,
-  AppServicesCapability,
-  AppRouterCapability,
-  AppLoggerCapability
-} from './types'
+// 导出业务类型
+export type { User } from './types'
 
 // 创建注册器（绑定 glob 模块）
 const modules = import.meta.glob('./*.vue')
