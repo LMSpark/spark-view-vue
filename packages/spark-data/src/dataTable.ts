@@ -6,12 +6,12 @@
 
 import { BindingContext } from './bindingContext'
 import { Logger } from '@spark-view/spark-utils'
-import type { 
-  IDataTable, 
+import type {
+  IDataTable,
   IDataTableWithApi,
-  IBindingContext, 
-  DataColumn, 
-  CrudApi, 
+  IBindingContext,
+  DataColumn,
+  CrudApi,
   IDataSet,
   IDataRow
 } from './types'
@@ -25,16 +25,18 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   columns: DataColumn[]
   api?: CrudApi
   contexts: Record<string, BindingContext> = {}
-  
+
   // 扩展属性
   loading?: boolean
   error?: string
-  
+
   // 日志系统
   private logger = Logger()
-  
+
   // API 适配器（注入）
   private apiAdapter?: ApiAdapter
+
+  // ==================== 构造函数 ====================
 
   constructor(
     tableName: string,
@@ -47,16 +49,16 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     this.columns = columns
     this.apiAdapter = apiAdapter
   }
-  
+
   /**
    * 设置 API 适配器（由 DataSet 或应用层注入）
    */
   setApiAdapter(adapter: ApiAdapter): void {
     this.apiAdapter = adapter
   }
-  
-  // ==================== CRUD 方法 ====================
-  
+
+  // ==================== 工具方法 ====================
+
   /**
    * 执行 API 请求的通用包装器（消除重复的错误处理和 loading 逻辑）
    * @private
@@ -67,17 +69,17 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   ): Promise<T> {
     this.loading = true
     this.error = undefined
-    
+
     try {
       const result = await execute()
       this.logger.info(`✅ [DataTable] ${this.tableName}.${apiEndpoint}() 成功`)
       return result
     } catch (error) {
       // 优雅的错误处理：支持 Error 对象和字符串
-      this.error = error instanceof Error 
-        ? error.message 
-        : typeof error === 'string' 
-        ? error 
+      this.error = error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+        ? error
         : '未知错误'
       this.logger.error(`❌ [DataTable] ${this.tableName}.${apiEndpoint}() 失败`, error)
       throw error
@@ -85,7 +87,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       this.loading = false
     }
   }
-  
+
   /**
    * 验证 API 配置和适配器
    * @private
@@ -98,7 +100,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       throw new Error('未注入 ApiAdapter，无法执行 API 调用')
     }
   }
-  
+
   /**
    * 更新行记录（同时更新 rows 和 __originalRows）
    * @private
@@ -111,7 +113,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
         updater(row)
       }
     }
-    
+
     const originalRows = this['__originalRows']
     if (originalRows) {
       const cacheIndex = originalRows.findIndex(predicate)
@@ -123,7 +125,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       }
     }
   }
-  
+
   /**
    * 从两个数组中删除行
    * @private
@@ -133,7 +135,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     if (index > -1) {
       this.rows.splice(index, 1)
     }
-    
+
     const originalRows = this['__originalRows']
     if (originalRows) {
       const cacheIndex = originalRows.findIndex(predicate)
@@ -142,122 +144,124 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       }
     }
   }
-  
+
+  // ==================== CRUD API 方法 ====================
+
   /**
    * 列表查询
    */
   async list(params?: Record<string, unknown>): Promise<IDataRow[]> {
     this.validateApi('list', this.api?.list)
-    
+
     return this.executeApi('list', async () => {
       // validateApi 已确保 apiAdapter 和 api.list 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const data = await this.apiAdapter!.execute<IDataRow[]>(this.api!.list!, params)
-      
+
       // 替换全部数据
       this.rows.splice(0, this.rows.length, ...data)
       this['__originalRows'] = [...data]
-      
+
       this.logger.info(`📊 加载 ${data.length} 行数据`)
       return data
     })
   }
-  
+
   /**
    * 创建记录
    */
   async create(data: IDataRow): Promise<IDataRow> {
     this.validateApi('create', this.api?.create)
-    
+
     return this.executeApi('create', async () => {
       // validateApi 已确保 apiAdapter 和 api.create 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = await this.apiAdapter!.execute<IDataRow>(this.api!.create!, data)
-      
+
       // 追加到两个数组
       this.rows.push(result)
       const originalRows = this['__originalRows']
       if (originalRows) {
         originalRows.push(result)
       }
-      
+
       return result
     })
   }
-  
+
   /**
    * 更新记录
    */
   async update(id: string | number, data: Partial<IDataRow>): Promise<IDataRow> {
     this.validateApi('update', this.api?.update)
-    
+
     return this.executeApi('update', async () => {
       // validateApi 已确保 apiAdapter 和 api.update 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = await this.apiAdapter!.execute<IDataRow>(this.api!.update!, { id, ...data })
-      
+
       // 更新两个数组中的记录
       this.updateRowInBoth(
         r => r.id === id,
         row => Object.assign(row, result)
       )
-      
+
       return result
     })
   }
-  
+
   /**
    * 删除记录
    */
   async delete(id: string | number): Promise<boolean> {
     this.validateApi('delete', this.api?.delete)
-    
+
     return this.executeApi('delete', async () => {
       // validateApi 已确保 apiAdapter 和 api.delete 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await this.apiAdapter!.execute(this.api!.delete!, { id })
-      
+
       // 从两个数组中删除
       this.removeRowFromBoth(r => r.id === id)
-      
+
       return true
     })
   }
-  
+
   /**
    * 批量创建
    */
   async batchCreate(data: IDataRow[]): Promise<IDataRow[]> {
     this.validateApi('batch.create', this.api?.batch?.create)
-    
+
     return this.executeApi('batchCreate', async () => {
       // validateApi 已确保 apiAdapter 和 api.batch.create 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = await this.apiAdapter!.execute<IDataRow[]>(this.api!.batch!.create!, { items: data })
-      
+
       // 批量追加
       this.rows.push(...result)
       const originalRows = this['__originalRows']
       if (originalRows) {
         originalRows.push(...result)
       }
-      
+
       this.logger.info(`📊 批量创建 ${result.length} 条`)
       return result
     })
   }
-  
+
   /**
    * 批量更新
    */
   async batchUpdate(updates: Array<{ id: string | number; data: Partial<IDataRow> }>): Promise<IDataRow[]> {
     this.validateApi('batch.update', this.api?.batch?.update)
-    
+
     return this.executeApi('batchUpdate', async () => {
       // validateApi 已确保 apiAdapter 和 api.batch.update 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const result = await this.apiAdapter!.execute<IDataRow[]>(this.api!.batch!.update!, { items: updates })
-      
+
       // 批量更新
       result.forEach(updated => {
         this.updateRowInBoth(
@@ -265,34 +269,34 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
           row => Object.assign(row, updated)
         )
       })
-      
+
       this.logger.info(`📊 批量更新 ${result.length} 条`)
       return result
     })
   }
-  
+
   /**
    * 批量删除
    */
   async batchDelete(ids: Array<string | number>): Promise<boolean> {
     this.validateApi('batch.delete', this.api?.batch?.delete)
-    
+
     return this.executeApi('batchDelete', async () => {
       // validateApi 已确保 apiAdapter 和 api.batch.delete 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       await this.apiAdapter!.execute(this.api!.batch!.delete!, { ids })
-      
+
       // 批量删除
       ids.forEach(id => {
         this.removeRowFromBoth(r => r.id === id)
       })
-      
+
       this.logger.info(`📊 批量删除 ${ids.length} 条`)
       return true
     })
   }
-  
-  // ==================== 原有方法 ====================
+
+  // ==================== 上下文管理 ====================
 
   /**
    * 获取或创建上下文
@@ -301,7 +305,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     if (contextId === 'default') {
       return this
     }
-    
+
     if (!this.contexts[contextId]) {
       this.contexts[contextId] = new BindingContext(
         this.tableName,
@@ -310,7 +314,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       )
       this.logger.info(`✨ [DataTable] 自动创建上下文: ${this.tableName}.${contextId}`)
     }
-    
+
     const context = this.contexts[contextId]
     if (!context) {
       throw new Error(`Failed to create context: ${contextId}`)
@@ -323,7 +327,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
    */
   refreshAllContexts(): void {
     const sourceData = this.originalRows ?? this.rows ?? [];
-    
+
     // 刷新所有自定义上下文
     Object.values(this.contexts).forEach(context => {
       if (context.filterExpression || context.sortExpression) {
@@ -332,6 +336,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
       }
     });
   }
+
+  // ==================== 序列化 ====================
 
   /**
    * 转换为普通对象（用于序列化）
@@ -382,7 +388,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
    */
   static fromPlainObject(data: IDataTable, dataSet?: IDataSet): DataTable {
     const table = new DataTable(data.tableName, data.columns ?? [], dataSet)
-    
+
     // 基本属性
     table.api = data.api
     table.currentRow = data.currentRow ?? null
@@ -394,7 +400,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     table.pagination = data.pagination
     table.loading = data.loading
     table.error = data.error
-    
+
     // 转换上下文
     if (data.contexts) {
       if (Array.isArray(data.contexts)) {
