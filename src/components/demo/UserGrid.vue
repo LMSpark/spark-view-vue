@@ -46,6 +46,11 @@ interface Props {
       dataset?: {
         tables?: {
           Users?: {
+            columns?: Array<{
+              name: string
+              type: string
+              label?: string
+            }>
             rows?: Record<string, unknown>[]
           }
         }
@@ -78,7 +83,7 @@ const childConfigs = computed(() => {
   
   return users.map(user => ({
     ...template,
-    id: `row-${user.id}`,
+    id: `row-${user['id']}`,
     type: template.type,
     props: {
       ...template.props,
@@ -113,10 +118,32 @@ const selectedCount = computed(() => selectedIds.value.size)
 
 // ============ 字段元数据定义 ============
 
-// 从配置中获取字段元数据
+// 从 DataSet columns 生成字段元数据
 const fieldMetadata = computed(() => {
-  return (props.config.props?.fieldMetadata as Record<string, { label: string; icon: string; type: string }>) || {}
+  const columns = props.config.props?.dataset?.tables?.Users?.columns || []
+  const metadata: Record<string, { label: string; icon: string; type: string }> = {}
+  
+  columns.forEach((col) => {
+    metadata[col.name] = {
+      label: col.label || col.name,
+      icon: getIconForType(col.type),
+      type: col.type
+    }
+  })
+  
+  return metadata
 })
+
+// 根据类型获取图标
+const getIconForType = (type: string): string => {
+  const iconMap: Record<string, string> = {
+    number: '🔢',
+    string: '📝',
+    boolean: '✅',
+    date: '📅'
+  }
+  return iconMap[type] || '📄'
+}
 
 // ============ 能力提供 ============
 
