@@ -420,7 +420,7 @@ export class FilterExpressionParser {
         return { [field]: { $ne: null } }
       case 'between':
         if (Array.isArray(value) && value.length === 2) {
-          return { [field]: { $gte: value[0], $lte: value[1] } }
+          return { [field]: { $gte: value[0] as string | number, $lte: value[1] as string | number } }
         }
         return { [field]: value }
       default:

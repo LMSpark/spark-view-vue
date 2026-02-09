@@ -108,11 +108,11 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       const ruleArray = Array.isArray(rules) ? rules : [rules]
       
       ruleArray.forEach(rule => {
-        if (rule.dataKey?.startsWith('dataset.tables.')) {
+        if (rule.dataKey && typeof rule.dataKey === 'string' && rule.dataKey.startsWith('dataset.tables.')) {
           const match = rule.dataKey.match(/^dataset\.tables\.([^.]+)(?:\.contexts\.([^.]+))?/)
           if (match) {
-            const tableName = match[1]
-            const contextId = match[2] ?? rule.contextId ?? 'default'
+            const tableName = match[1] as string
+            const contextId = (match[2] as string | undefined) ?? (rule.contextId as string | undefined) ?? 'default'
             const key = `${tableName}.${contextId}`
             contexts.add(key)
           }

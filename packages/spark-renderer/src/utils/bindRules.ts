@@ -81,7 +81,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     // 🎯 处理 el-table 的 dataKey 绑定
     if (newRule.type === 'el-table' && newRule.dataKey) {
       // 解析 dataKey 路径，获取数据
-      const keys = newRule.dataKey.split('.')
+      const keys = (newRule.dataKey as string).split('.')
       const value = getNestedValue<unknown[]>(pageData, keys)
       
       // 绑定数据到 props.data
@@ -99,7 +99,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定）
     if (newRule.dataKey && newRule.type !== 'el-table') {
       // 解析 dataKey 路径，获取数据值
-      const keys = newRule.dataKey.split('.')
+      const keys = (newRule.dataKey as string).split('.')
       const value = getNestedValue<string | number>(pageData, keys)
       
       // 如果有值，替换 children 内容
@@ -156,7 +156,7 @@ function createFunctionCaller(
       }
       
       // 调用函数（可在此处添加：bind、拦截、性能监控等）
-      const result = func(...args)
+      const result = (func as (...args: unknown[]) => unknown)(...args)
       
       // 可选：添加调试日志
       // pageLogger.debug('函数调用', { functionName, args, result })
@@ -185,12 +185,12 @@ function injectTableEvents(
   let isProcessingEvent = false
   // 解析 dataKey 获取表名
   if (!rule.dataKey) return
-  const dataKeyParts = rule.dataKey.split('.')
+  const dataKeyParts = (rule.dataKey as string).split('.')
   const tablesIndex = dataKeyParts.indexOf('tables')
   if (tablesIndex === -1 || !dataKeyParts[tablesIndex + 1]) return
   
-  const tableName = dataKeyParts[tablesIndex + 1]
-  const contextId = (rule).contextId ?? rule.props?.contextId ?? 'default'
+  const tableName = dataKeyParts[tablesIndex + 1] as string
+  const contextId = ((rule as { contextId?: string }).contextId ?? rule.props?.contextId ?? 'default') as string
   
   // 添加唯一的 name 属性
   rule.name ??= `table_${tableName}_${contextId}`
@@ -208,12 +208,12 @@ function injectTableEvents(
       
       // 先调用用户处理器
       if (typeof originalCurrentChange === 'function') {
-        originalCurrentChange(currentRow, oldRow)
+        (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
       }
       
       // 同步到 DataSet
       if (dataSet?.tables?.[tableName] && contextId) {
-        const table = dataSet.tables[tableName]
+        const table = dataSet.tables[tableName] as { contexts?: Record<string, { setCurrentRow?: (row: unknown, notify?: boolean) => void }> }
         const context = table?.contexts?.[String(contextId)]
         if (context?.setCurrentRow) {
           context.setCurrentRow(currentRow ?? null, false)
@@ -234,12 +234,12 @@ function injectTableEvents(
       
       // 先调用用户处理器
       if (typeof originalSelectionChange === 'function') {
-        originalSelectionChange(selection)
+        (originalSelectionChange as (selection: unknown) => void)(selection)
       }
       
       // 同步到 DataSet
       if (dataSet?.tables?.[tableName] && contextId) {
-        const table = dataSet.tables[tableName]
+        const table = dataSet.tables[tableName] as { contexts?: Record<string, { setSelectedRows?: (rows: unknown, notify?: boolean) => void }> }
         const context = table?.contexts?.[String(contextId)]
         if (context?.setSelectedRows) {
           context.setSelectedRows(selection, true)

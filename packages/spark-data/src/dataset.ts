@@ -465,12 +465,12 @@ export class DataSet implements IDataSet {
                         filterExpression.value.func === 'FIELD' && 
                         'args' in filterExpression.value && 
                         Array.isArray(filterExpression.value.args)
-        ? filterExpression.value.args[0] 
+        ? (filterExpression.value.args[0] as string)
         : null;
       
       if (fieldName && 'field' in filterExpression) {
         // 收集所有 parentRows 的 fieldName 值
-        const parentValues = parentRows.map(row => row[fieldName as string]).filter(v => v !== undefined);
+        const parentValues = parentRows.map(row => row[fieldName]).filter(v => v !== undefined);
         
         // 直接过滤子表：childRow[field] in parentValues
         const childFieldName = filterExpression.field;
@@ -968,7 +968,7 @@ export class DataSet implements IDataSet {
         // 加载完成，移除标记
         this.loadingTables.delete(tableName)
       })
-      .catch(error => {
+      .catch((error: unknown) => {
         console.error(`❌ 加载 ${tableName} 失败:`, error);
         this.emit('loadError', { tableName, error });
         // 失败也要移除标记，否则永远不能重试
