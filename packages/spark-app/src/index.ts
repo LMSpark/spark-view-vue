@@ -17,6 +17,22 @@ export type { StartOptions, SparkOptions, PageConfigOptions } from './start'
 export { bootstrap } from './bootstrap'
 export type { BootstrapOptions } from './types'
 
+// 插件管理系统
+export {
+  PluginRegistry,
+  PluginManager,
+  createPluginRegister,
+  registerBuiltinPlugins,
+  registerAllPresetPlugins
+} from './plugins'
+
+export type {
+  PluginConfigItem,
+  PluginConfig,
+  PluginLoader,
+  PluginInstance
+} from './plugins'
+
 // 认证模块
 export {
   AuthService,

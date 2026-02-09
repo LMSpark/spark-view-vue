@@ -30,6 +30,19 @@ export default defineConfig({
     port: 5173,
     fs: {
       allow: ['..', '../../src']
+    },
+    proxy: {
+      // 代理配置 API 请求到 mock 服务器
+      '/api/config': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false
+      },
+      '/api/tenants': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false
+      }
     }
   },
   plugins: [

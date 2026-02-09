@@ -5,6 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "dev:api": "node tools/mock-config-api.mjs",
+        "dev:full": "concurrently \"pnpm run dev\" \"pnpm run dev:api\"",
         "start": "vite preview --port 5173",
         "build": "vite build",
         "build:analyze": "cross-env ANALYZE=true vite build",
@@ -58,6 +60,7 @@
         "@typescript-eslint/parser": "^8.52.0",
         "@vitejs/plugin-vue": "^6.0.3",
         "@vue/test-utils": "^2.4.6",
+        "concurrently": "^8.2.2",
         "cors": "^2.8.6",
         "cross-env": "^10.1.0",
         "eslint": "^9.39.2",

@@ -40,23 +40,29 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 **使用规则**：
 1. ✅ **业务能力**：统一使用 `consume(APP_SERVICES)` 获取应用服务（router、logger、auth 等）
 2. ✅ **Router**：直接使用 `vue-router` 的 `useRouter()`（无需 DI）
-3. ✅ **Logger**：使用 `Logger('module')` 工厂函数（无需 DI）
+3. ✅ **Logger**：从应用层统一提供（通过 `APP_SERVICES` 或直接 `provide('logger', ...)`）
 4. ✅ **新增能力**：使用 `CapabilityKey<T>`（`defineCapability<T>()`），接口定义在 `spark-utils/capability-types.ts`
-5. ⚠️ **SPARK 基础设施**：仅 `SPARK_REGISTRY_KEY` 保留 Vue DI（组件系统核心）
+5. ⚠️ **SPARK 基础设施**：仅 `SPARK_REGISTRY_KEY` 保留 Vue DI（組件系统核心）
 
 **示例代码**：
 ```typescript
 // ✅ 推荐：通过 APP_SERVICES 能力获取服务
-const { consume } = useSparkComponent({ type: 'my-comp' })
+const { consume, logger } = useSparkComponent({ type: 'my-comp' })
 const services = consume(APP_SERVICES)
 services?.router?.push('/home')
-services?.logger?.info('Action')
+logger.info('Action')  // 使用应用层提供的 logger
 
-// ✅ 或直接使用标准工具
-import { useRouter } from 'vue-router'
-import { Logger } from '@spark-view/spark-utils'
-const router = useRouter()
-const logger = Logger('MyModule')
+// ✅ 应用层提供全局 logger（在 main.ts 或 bootstrap 中）
+import { createLogger } from '@spark-view/spark-app'
+const appLogger = createLogger('App')
+// 方式 1：通过 APP_SERVICES 提供
+const { provide } = useSparkComponent({ type: 'root' })
+provide(APP_SERVICES, { 
+  router: useRouter(), 
+  logger: appLogger 
+})
+// 方式 2：直接提供 logger 能力
+provide('logger', appLogger)
 ```
 
 ## Testing & common pitfalls 🧪
@@ -74,7 +80,15 @@ const logger = Logger('MyModule')
 ## Package structure 📦
 ```
 packages/
-├── spark-component/     # 组件系统（Spark namespace, 能力系统, 插件）
+├── spark-app/           # 应用层基础设施（✨ 新增 plugins/）
+│   ├── src/
+│   │   ├── plugins/     # 插件管理系统
+│   │   ├── auth/        # 认证模块
+│   │   ├── bootstrap/   # 引导模块
+│   │   ├── logger/      # 日志模块
+│   │   └── router/      # 路由模块
+│   └── API.md
+├── spark-component/     # 组件系统（Spark namespace, 能力系统）
 │   ├── src/
 │   │   ├── spark.ts
 │   │   ├── registry/
@@ -90,6 +104,65 @@ packages/
     ├── src/
     └── API.md
 ```
+
+## Plugin System (插件配置系统) 🔌
+
+### 插件管理在 SparkApp 层
+**重要**: 插件管理系统已提升到 `@spark-view/spark-app`，作为应用层基础设施
+
+```typescript
+import { 
+  PluginRegistry, 
+  PluginManager, 
+  registerBuiltinPlugins 
+} from '@spark-view/spark-app'
+```
+
+### 插件配置格式
+支持两种格式：简单布尔值或详细配置对象
+
+```json
+{
+  "plugins": {
+    "element-plus": true,  // 简单格式
+    "vxe-table": {         // 详细格式
+      "enabled": true,
+      "options": { "size": "large" },
+      "priority": 2
+    }
+  }
+}
+```
+
+### 注册自定义插件
+```typescript
+import { PluginRegistry } from '@spark-view/spark-app'
+
+PluginRegistry.register('my-plugin', {
+  name: 'My Plugin',
+  module: './plugins/my-plugin',
+  loader: () => import('./plugins/my-plugin'),
+  defaultOptions: { theme: 'light' }
+})
+```
+
+### 插件加载
+在 `main.ts` 中自动根据配置加载：
+```typescript
+import { 
+  SparkApp,
+  PluginManager, 
+  registerBuiltinPlugins 
+} from '@spark-view/spark-app'
+
+registerBuiltinPlugins()  // 注册内置插件
+const plugins = await PluginManager.loadPlugins(appConfig.plugins)
+await SparkApp.start({ plugins, ... })
+```
+
+**内置插件**: `element-plus`, `vxe-table`, `form-create`
+
+详细文档: `docs/guides/PLUGIN_CONFIGURATION.md`
 
 ## Package usage examples 📚
 

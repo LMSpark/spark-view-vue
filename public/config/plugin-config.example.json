@@ -1,0 +1,49 @@
+{
+    "description": "这是一个完整的插件配置示例，展示了所有可用的配置选项",
+    "plugins": {
+        "element-plus": {
+            "enabled": true,
+            "options": {
+                "size": "default",
+                "zIndex": 2000,
+                "locale": "zh-cn"
+            },
+            "priority": 1
+        },
+        "vxe-table": {
+            "enabled": true,
+            "options": {
+                "zIndex": 999,
+                "table": {
+                    "border": true,
+                    "stripe": true
+                }
+            },
+            "priority": 2
+        },
+        "form-create": {
+            "enabled": true,
+            "priority": 3
+        },
+        "_comments": {
+            "_简单格式": "也可以使用简单的布尔值格式",
+            "_示例": {
+                "element-plus": true,
+                "vxe-table": false
+            },
+            "_配置项说明": {
+                "enabled": "是否启用插件（必填）",
+                "options": "插件选项，传递给插件的 install 方法（可选）",
+                "priority": "加载优先级，数字越小越先加载，默认 100（可选）",
+                "lazy": "是否懒加载，暂未实现（可选）"
+            },
+            "_优先级建议": {
+                "状态管理": "0-10 (如 pinia, vuex)",
+                "UI框架": "10-20 (如 element-plus)",
+                "UI组件": "20-30 (如 vxe-table, form-create)",
+                "工具插件": "30-40 (如 i18n, router)",
+                "业务插件": "40+ (自定义插件)"
+            }
+        }
+    }
+}

@@ -35,9 +35,14 @@ export interface Transport {
 /**
  * Logger 上下文接口
  * 用于从组件上下文中查找 logger provider
+ * 
+ * 设计说明：
+ * - 支持任何包含 providers Map 的对象（如 ComponentContext）
+ * - provider 值可以是简单对象 { implementation } 或完整的 Provider 接口 { name, implementation }
+ * - 运行时只需要 implementation 字段，其他字段会被忽略
  */
 export interface LoggerContext {
-  providers: Map<string | symbol, { implementation?: unknown }>
+  providers: Map<string | symbol, unknown>
 }
 
 // ==================== 核心 Logger 实现 ====================
@@ -58,9 +63,25 @@ function formatMsg(level: LogLevel, args: unknown[]) {
  * 这是推荐的日志 API，支持以下使用方式：
  * 1. 简单调用：Logger('MyModule') - 默认使用 console 输出
  * 2. 上下文注入：Logger(context) - 使用上下文中的自定义 logger provider
+ * 
+ * 上下文模式说明：
+ * - 支持任何包含 `providers: Map<string | symbol, unknown>` 的对象
+ * - 会查找 key 为 'logger' 的 provider
+ * - provider 可以是 { implementation: LoggerApi } 或直接是 LoggerApi 对象
+ * - 与 ComponentContext 完全兼容，支持组件级日志自定义
  *
- * @param context 可选的上下文对象，用于查找自定义 logger provider
+ * @param context 可选的字符串标签或上下文对象
  * @returns LoggerApi 实例
+ * 
+ * @example
+ * ```ts
+ * // 方式 1：简单字符串标签
+ * const logger = Logger('MyModule')
+ * 
+ * // 方式 2：从组件上下文获取自定义 logger
+ * const { context } = useSparkComponent({ type: 'my-comp' })
+ * const logger = Logger(context)  // 如果 context 提供了 'logger' 能力则使用，否则 fallback 到 console
+ * ```
  */
 export function Logger(context?: string | LoggerContext): LoggerApi {
   // 纯字符串标签：直接返回带前缀的 console logger
@@ -76,9 +97,18 @@ export function Logger(context?: string | LoggerContext): LoggerApi {
 
   // 对象上下文：从 providers 中查找 logger
   const providersMap = context.providers
-  const ctxProvider = providersMap?.get('logger')
-  const provider = ctxProvider
-  const impl = provider?.implementation ?? null
+  const providerValue = providersMap?.get('logger')
+  
+  // 提取 implementation（支持多种结构）
+  let impl: unknown = null
+  if (providerValue && typeof providerValue === 'object') {
+    // 尝试提取 implementation 字段（Provider 接口）
+    impl = (providerValue as { implementation?: unknown }).implementation
+    // 如果没有 implementation 字段，则将整个对象作为实现
+    if (impl === undefined) {
+      impl = providerValue
+    }
+  }
 
   /**
    * 调用日志方法

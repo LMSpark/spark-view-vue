@@ -103,7 +103,7 @@ const bootstrapLogger = createLogger('bootstrap')
  * ```
  */
 export async function bootstrap(options: BootstrapOptions): Promise<void> {
-  const { app, router, config, beforeMount, afterMount, auth } = options
+  const { app, router, config, beforeMount, afterMount, auth, logger: appLogger } = options
 
   try {
     // =========================================================================
@@ -199,6 +199,13 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // ```
 
     logPhase('SERVICES', 'SPARK 能力系统服务已就绪')
+    
+    // 如果提供了 appLogger，通过全局属性提供给整个应用
+    if (appLogger) {
+      bootstrapLogger.debug('注册应用层 Logger 到全局属性');
+      (app.config.globalProperties as Record<string, unknown>).$logger = appLogger ;
+      bootstrapLogger.debug('应用层 Logger 已提供给所有组件')
+    }
 
     // =========================================================================
     // 阶段 5: 设置路由守卫

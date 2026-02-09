@@ -8,7 +8,7 @@ import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
-import { createLogger } from './logger'
+import { createLogger, type AppLoggerConfig } from './logger'
 
 const startLogger = createLogger('start')
 
@@ -49,7 +49,7 @@ export interface PageConfigOptions {
 /**
  * 启动配置（扩展自 BootstrapOptions）
  */
-export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
+export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router' | 'logger'> {
   /** 根组件 */
   rootComponent: Component
   
@@ -67,6 +67,9 @@ export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
   
   /** UI 插件列表 */
   plugins?: Plugin[]
+  
+  /** Logger 配置（应用层统一日志管理） */
+  logger?: AppLoggerConfig
   
   /** 启动前钩子 */
   onBeforeStart?: () => void | Promise<void>
@@ -111,6 +114,7 @@ export async function start(options: StartOptions): Promise<void> {
     spark,
     pageConfig,
     plugins,
+    logger: loggerConfig,
     onBeforeStart,
     onStartError,
     fallbackComponent,
@@ -124,7 +128,19 @@ export async function start(options: StartOptions): Promise<void> {
       await onBeforeStart()
     }
 
-    // 1. 创建 Vue 应用实例
+    // 1. 创建应用层 Logger（如果配置了）
+    let appLogger = null
+    if (loggerConfig) {
+      startLogger.debug('创建应用层 Logger...')
+      appLogger = createLogger('App', loggerConfig)
+      appLogger.debug('应用层 Logger 已创建', {
+        level: loggerConfig.level,
+        enableRemote: loggerConfig.enableRemote,
+        environment: (typeof process !== 'undefined' && process.env?.NODE_ENV) ?? 'development'
+      })
+    }
+
+    // 2. 创建 Vue 应用实例
     startLogger.debug('创建 Vue 应用...')
     const app = createApp(rootComponent)
 
@@ -144,20 +160,20 @@ export async function start(options: StartOptions): Promise<void> {
       console.warn(`[Vue warn]: ${msg}`)
     }
 
-    // 2. 安装 UI 插件
+    // 3. 安装 UI 插件
     if (plugins && plugins.length > 0) {
       startLogger.debug(`安装 ${plugins.length} 个 UI 插件...`)
       plugins.forEach(plugin => app.use(plugin))
     }
 
-    // 3. 创建 Vue Router 实例
+    // 4. 创建 Vue Router 实例
     startLogger.debug('创建 Vue Router...')
     const history = routerMode === 'hash' 
       ? createWebHashHistory() 
       : createWebHistory()
     const router = createRouter({ history, routes: [] })
 
-    // 4. 安装 SPARK 组件系统
+    // 5. 安装 SPARK 组件系统
     // 使用全局单例管理器，确保整个应用共享同一个组件实例集合
     if (spark?.enabled !== false) {
       startLogger.debug('安装 SPARK 组件系统...')
@@ -166,7 +182,7 @@ export async function start(options: StartOptions): Promise<void> {
       app.use(createSparkPlugin())
     }
 
-    // 5. 配置动态路由系统
+    // 6. 配置动态路由系统
     if (pageConfig) {
       startLogger.debug('配置动态路由系统...')
       const { SparkPageConfig } = await import('@spark-view/spark-page-config')
@@ -201,12 +217,13 @@ export async function start(options: StartOptions): Promise<void> {
       router.addRoute({ path: '/', redirect: pageConfig.homePath })
     }
 
-    // 6. 执行 Bootstrap 流程
+    // 7. 执行 Bootstrap 流程（传递 logger）
     startLogger.info('启动 Bootstrap 流程...')
     await bootstrap({
       ...bootstrapOptions,
       app,
-      router
+      router,
+      logger: appLogger
     })
 
     startLogger.success('应用启动成功')
