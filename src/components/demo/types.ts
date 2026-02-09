@@ -6,12 +6,12 @@
  */
 
 /**
- * 用户数据类型（demo 业务类型）
+ * 用户数据类型（基于 JSON 配置动态定义）
  */
 export interface User {
   id: number
   name: string
   age: number
   email: string
-  status: 'active' | 'inactive'
+  role: string
 }
