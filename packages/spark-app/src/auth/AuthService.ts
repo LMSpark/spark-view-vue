@@ -1,40 +1,109 @@
 ﻿/**
- * 认证服务
- * 提供完整的登录、登出、Token 管理、认证检查功能
+ * 认证服务 - AuthService
+ *
+ * 提供完整的用户认证解决方案，包括：
+ * - 用户登录/登出
+ * - Token 管理（存储、刷新、验证）
+ * - 认证状态检查
+ * - Mock 模式支持（开发环境）
+ * - 生命周期钩子（登录成功、登出成功、认证错误等）
+ *
+ * @packageDocumentation
  */
 
+// =============================================================================
+// 1. 导入语句 (Imports)
+// =============================================================================
+
+// ==================== 类型定义 ====================
 import type { AuthConfig, LoginCredentials, AuthResult, IAuthService } from './types'
 import type { AppEnvironment } from '../types'
+
+// ==================== 核心依赖 ====================
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
 import { simpleEnvAdapter as envAdapter } from '../utils/simpleEnv'
 
+// =============================================================================
+// 2. 常量和日志 (Constants & Logger)
+// =============================================================================
+
+/** 认证服务日志器 */
 const authLogger = createLogger('auth')
 
+// =============================================================================
+// 3. 核心类 (Core Class)
+// =============================================================================
+
 /**
- * 认证服务实现
+ * 认证服务实现类
+ *
+ * 架构特点：
+ * - 单例模式（通过工厂函数创建）
+ * - 支持 Mock 模式（开发环境）
+ * - 自动 Token 刷新
+ * - 完整的生命周期钩子
+ * - 错误处理和日志记录
  */
 export class AuthService implements IAuthService {
+  // =============================================================================
+  // 私有属性 (Private Properties)
+  // =============================================================================
+
+  /** 认证配置（合并默认值后） */
   private config!: AuthConfig & { apiEndpoints: NonNullable<AuthConfig['apiEndpoints']> }
+
+  /** Token 管理器 */
   private tokenManager: TokenManager
+
+  /** 初始化状态 */
   private initialized = false
+
+  // =============================================================================
+  // 构造函数 (Constructor)
+  // =============================================================================
 
   constructor() {
     this.tokenManager = new TokenManager()
   }
 
+  // =============================================================================
+  // 公共方法 - 核心功能 (Public Methods - Core)
+  // =============================================================================
+
   /**
    * 初始化认证服务
+   *
+   * @param config 认证配置
+   * @throws {Error} 如果已初始化
+   *
+   * @example
+   * ```typescript
+   * authService.initialize({
+   *   apiBaseUrl: '/api',
+   *   enableMock: import.meta.env.DEV,
+   *   onLoginSuccess: (user) => console.log('登录成功:', user.username)
+   * })
+   * ```
    */
   initialize(config: AuthConfig): void {
+    if (this.initialized) {
+      throw new Error('AuthService 已经初始化，不能重复初始化')
+    }
+
     this.config = {
+      // 默认配置
       tokenStorage: 'localStorage',
       tokenKey: 'spark_token',
       loginPath: '/login',
       enableMock: false,
       timeout: 10000,
       apiBaseUrl: '',
+
+      // 用户配置覆盖
       ...config,
+
+      // API 端点配置（合并默认值）
       apiEndpoints: {
         login: '/api/auth/login',
         logout: '/api/auth/logout',
@@ -43,96 +112,108 @@ export class AuthService implements IAuthService {
         ...config.apiEndpoints
       }
     }
+
+    // 重新创建 Token 管理器（使用新配置）
     this.tokenManager = new TokenManager(
       this.config.tokenStorage,
       this.config.tokenKey
     )
+
     this.initialized = true
-    authLogger.info('认证服务已初始化', { storage: this.config.tokenStorage })
+    authLogger.info('✅ 认证服务已初始化', {
+      storage: this.config.tokenStorage,
+      mockEnabled: this.config.enableMock
+    })
   }
 
   /**
-   * 登录
+   * 用户登录
+   *
+   * @param credentials 登录凭据
+   * @returns 认证结果（包含用户信息、租户信息、环境信息）
+   * @throws {Error} 登录失败时抛出异常
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   const result = await authService.login({
+   *     username: 'admin',
+   *     password: '123456'
+   *   })
+   *   console.log('登录成功:', result.user.username)
+   * } catch (error) {
+   *   console.error('登录失败:', error.message)
+   * }
+   * ```
    */
   async login(credentials: LoginCredentials): Promise<AuthResult> {
     this.ensureInitialized()
-    authLogger.info('执行登录', { username: credentials.username })
+    authLogger.info('🔐 执行登录', { username: credentials.username })
 
     try {
-      // Mock 模式
+      let result: AuthResult
+
+      // Mock 模式 vs 真实 API
       if (this.config.enableMock) {
-        return await this.mockLogin(credentials)
+        result = await this.mockLogin(credentials)
+      } else {
+        result = await this.realLogin(credentials)
       }
-
-      // 真实登录请求
-      const response = await this.fetchWithTimeout(
-        `${this.config.apiBaseUrl}${this.config.apiEndpoints.login}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(credentials),
-          credentials: 'include'
-        },
-        this.config.timeout ?? 10000
-      )
-
-      if (!response.ok) {
-        throw new Error(`登录失败: ${response.statusText}`)
-      }
-
-      const result = await response.json() as AuthResult
 
       // 保存 Token
       if (result.token) {
         this.setToken(result.token)
       }
 
-      // 触发钩子
+      // 触发登录成功钩子
       await this.config.onLoginSuccess?.(result.user)
 
-      authLogger.success('登录成功', { username: result.user.username })
+      authLogger.success('✅ 登录成功', { username: result.user.username })
       return result
 
     } catch (error) {
-      authLogger.error('登录失败', error as Error)
+      authLogger.error('❌ 登录失败', error as Error)
       this.config.onAuthError?.(error as Error)
       throw error
     }
   }
 
   /**
-   * 登出
+   * 用户登出
+   *
+   * @throws {Error} 登出 API 调用失败时抛出异常（但仍会清除本地 Token）
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   await authService.logout()
+   *   console.log('登出成功')
+   * } catch (error) {
+   *   console.error('登出失败:', error.message)
+   * }
+   * ```
    */
   async logout(): Promise<void> {
     this.ensureInitialized()
-    authLogger.info('执行登出')
+    authLogger.info('🚪 执行登出')
 
     try {
       // Mock 模式直接清除 Token
       if (!this.config.enableMock) {
-        // 调用登出 API
-        await this.fetchWithTimeout(
-          `${this.config.apiBaseUrl}${this.config.apiEndpoints.logout}`,
-          {
-            method: 'POST',
-            headers: this.getAuthHeaders(),
-            credentials: 'include'
-          },
-          this.config.timeout ?? 10000
-        )
+        await this.realLogout()
       }
 
-      // 清除 Token
+      // 清除本地 Token
       this.clearToken()
 
-      // 触发钩子
+      // 触发登出成功钩子
       await this.config.onLogoutSuccess?.()
 
-      authLogger.success('登出成功')
+      authLogger.success('✅ 登出成功')
 
     } catch (error) {
-      authLogger.error('登出失败', error as Error)
-      // 即使登出失败也清除本地 Token
+      authLogger.error('❌ 登出失败', error as Error)
+      // 即使 API 调用失败，也要清除本地 Token
       this.clearToken()
       throw error
     }
@@ -140,6 +221,18 @@ export class AuthService implements IAuthService {
 
   /**
    * 检查认证状态
+   *
+   * @returns 认证结果或 null（未认证）
+   *
+   * @example
+   * ```typescript
+   * const authResult = await authService.checkAuth()
+   * if (authResult) {
+   *   console.log('用户已认证:', authResult.user.username)
+   * } else {
+   *   console.log('用户未认证')
+   * }
+   * ```
    */
   async checkAuth(): Promise<AuthResult | null> {
     this.ensureInitialized()
@@ -150,47 +243,42 @@ export class AuthService implements IAuthService {
     }
 
     try {
-      // Mock 模式
+      let result: AuthResult
+
       if (this.config.enableMock) {
-        return await this.mockCheckAuth()
+        result = await this.mockCheckAuth()
+      } else {
+        result = await this.realCheckAuth()
       }
 
-      // 调用 /me 接口
-      const response = await this.fetchWithTimeout(
-        `${this.config.apiBaseUrl}${this.config.apiEndpoints.me}`,
-        {
-          method: 'GET',
-          headers: this.getAuthHeaders(),
-          credentials: 'include'
-        },
-        this.config.timeout ?? 10000
-      )
-
-      if (!response.ok) {
-        // Token 无效，清除
-        this.clearToken()
-        return null
-      }
-
-      const result = await response.json() as AuthResult
-      authLogger.debug('认证检查成功', { username: result.user.username })
+      authLogger.debug('✅ 认证检查成功', { username: result.user.username })
       return result
+
     } catch (error) {
-      authLogger.error('认证检查失败', error as Error)
+      authLogger.error('❌ 认证检查失败', error as Error)
       this.clearToken()
       return null
     }
   }
 
   /**
-   * 是否已认证
+   * 检查是否已认证
+   *
+   * @returns 是否已认证
+   * @note 这是一个同步方法，不会发起网络请求
    */
   isAuthenticated(): boolean {
     return !!this.getToken() || !!this.config.enableMock
   }
 
+  // =============================================================================
+  // 公共方法 - Token 管理 (Public Methods - Token)
+  // =============================================================================
+
   /**
-   * 获取 Token
+   * 获取当前 Token
+   *
+   * @returns Token 字符串或 null
    */
   getToken(): string | null {
     return this.tokenManager.getToken()
@@ -198,10 +286,12 @@ export class AuthService implements IAuthService {
 
   /**
    * 设置 Token
+   *
+   * @param token Token 字符串
    */
   setToken(token: string): void {
     this.tokenManager.setToken(token)
-    authLogger.debug('Token 已保存')
+    authLogger.debug('💾 Token 已保存')
   }
 
   /**
@@ -209,15 +299,18 @@ export class AuthService implements IAuthService {
    */
   clearToken(): void {
     this.tokenManager.clearToken()
-    authLogger.debug('Token 已清除')
+    authLogger.debug('🗑️ Token 已清除')
   }
 
   /**
    * 刷新 Token
+   *
+   * @returns 新的 Token
+   * @throws {Error} 刷新失败时抛出异常
    */
   async refreshToken(): Promise<string> {
     this.ensureInitialized()
-    authLogger.info('刷新 Token')
+    authLogger.info('🔄 刷新 Token')
 
     try {
       const response = await this.fetchWithTimeout(
@@ -231,31 +324,47 @@ export class AuthService implements IAuthService {
       )
 
       if (!response.ok) {
-        throw new Error('Token 刷新失败')
+        throw new Error(`Token 刷新失败: ${response.statusText}`)
       }
 
       const { token } = await response.json() as { token: string }
       this.setToken(token)
+
+      // 触发 Token 刷新钩子
       this.config.onTokenRefresh?.(token)
 
-      authLogger.success('Token 刷新成功')
+      authLogger.success('✅ Token 刷新成功')
       return token
 
     } catch (error) {
-      authLogger.error('Token 刷新失败', error as Error)
+      authLogger.error('❌ Token 刷新失败', error as Error)
       this.clearToken()
       throw error
     }
   }
 
-  // ========== Private Methods ==========
+  // =============================================================================
+  // 私有方法 - 工具函数 (Private Methods - Utils)
+  // =============================================================================
 
+  /**
+   * 确保服务已初始化
+   *
+   * @private
+   * @throws {Error} 如果未初始化
+   */
   private ensureInitialized(): void {
     if (!this.initialized) {
       throw new Error('AuthService 未初始化，请先调用 initialize()')
     }
   }
 
+  /**
+   * 获取认证请求头
+   *
+   * @private
+   * @returns 请求头对象
+   */
   private getAuthHeaders(): HeadersInit {
     const headers: HeadersInit = { 'Content-Type': 'application/json' }
     const token = this.getToken()
@@ -265,6 +374,15 @@ export class AuthService implements IAuthService {
     return headers
   }
 
+  /**
+   * 带超时的 Fetch 请求
+   *
+   * @private
+   * @param url 请求 URL
+   * @param options 请求选项
+   * @param timeout 超时时间（毫秒）
+   * @returns Response 对象
+   */
   private async fetchWithTimeout(
     url: string,
     options: RequestInit,
@@ -284,8 +402,94 @@ export class AuthService implements IAuthService {
     }
   }
 
+  // =============================================================================
+  // 私有方法 - 真实 API 调用 (Private Methods - Real API)
+  // =============================================================================
+
+  /**
+   * 执行真实登录 API 调用
+   *
+   * @private
+   * @param credentials 登录凭据
+   * @returns 认证结果
+   */
+  private async realLogin(credentials: LoginCredentials): Promise<AuthResult> {
+    const response = await this.fetchWithTimeout(
+      `${this.config.apiBaseUrl}${this.config.apiEndpoints.login}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+        credentials: 'include'
+      },
+      this.config.timeout ?? 10000
+    )
+
+    if (!response.ok) {
+      throw new Error(`登录失败: ${response.statusText}`)
+    }
+
+    return await response.json() as AuthResult
+  }
+
+  /**
+   * 执行真实登出 API 调用
+   *
+   * @private
+   */
+  private async realLogout(): Promise<void> {
+    const response = await this.fetchWithTimeout(
+      `${this.config.apiBaseUrl}${this.config.apiEndpoints.logout}`,
+      {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        credentials: 'include'
+      },
+      this.config.timeout ?? 10000
+    )
+
+    if (!response.ok) {
+      throw new Error(`登出失败: ${response.statusText}`)
+    }
+  }
+
+  /**
+   * 执行真实认证检查 API 调用
+   *
+   * @private
+   * @returns 认证结果
+   */
+  private async realCheckAuth(): Promise<AuthResult> {
+    const response = await this.fetchWithTimeout(
+      `${this.config.apiBaseUrl}${this.config.apiEndpoints.me}`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+        credentials: 'include'
+      },
+      this.config.timeout ?? 10000
+    )
+
+    if (!response.ok) {
+      throw new Error(`认证检查失败: ${response.statusText}`)
+    }
+
+    return await response.json() as AuthResult
+  }
+
+  // =============================================================================
+  // 私有方法 - Mock 实现 (Private Methods - Mock)
+  // =============================================================================
+
+  /**
+   * Mock 登录实现
+   *
+   * @private
+   * @param credentials 登录凭据
+   * @returns Mock 认证结果
+   */
   private async mockLogin(credentials: LoginCredentials): Promise<AuthResult> {
-    authLogger.debug('[Mock] 模拟登录', { username: credentials.username })
+    authLogger.debug('🎭 [Mock] 模拟登录', { username: credentials.username })
 
     // 模拟网络延迟
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -315,8 +519,14 @@ export class AuthService implements IAuthService {
     }
   }
 
+  /**
+   * Mock 认证检查实现
+   *
+   * @private
+   * @returns Mock 认证结果
+   */
   private async mockCheckAuth(): Promise<AuthResult> {
-    authLogger.debug('[Mock] 模拟认证检查')
+    authLogger.debug('🎭 [Mock] 模拟认证检查')
 
     const env = envAdapter.getEnvironment()
 
@@ -343,8 +553,21 @@ export class AuthService implements IAuthService {
   }
 }
 
+// =============================================================================
+// 4. 工厂函数 (Factory Functions)
+// =============================================================================
+
 /**
- * 创建认证服务实例（推荐：用于 DI 注入场景）
+ * 创建认证服务实例
+ *
+ * @returns 新的 AuthService 实例
+ *
+ * @example
+ * ```typescript
+ * // 推荐：用于依赖注入
+ * const authService = createAuthService()
+ * authService.initialize(config)
+ * ```
  */
 export function createAuthService(): IAuthService {
   return new AuthService()
@@ -352,6 +575,14 @@ export function createAuthService(): IAuthService {
 
 /**
  * 全局认证服务实例
- * @deprecated 推荐使用 createAuthService() 配合 DI 注入
+ *
+ * @deprecated 推荐使用 createAuthService() 配合依赖注入
+ *
+ * @example
+ * ```typescript
+ * // 不推荐：全局单例
+ * import { authService } from '@spark-view/spark-app'
+ * authService.initialize(config)
+ * ```
  */
 export const authService = new AuthService()
