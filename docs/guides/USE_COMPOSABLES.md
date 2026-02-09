@@ -1,181 +1,203 @@
-# Composables 使用指南
+# 服务访问指南
 
-## 为什么用 Composables？
+> ⚠️ **重要更新**：项目已统一 DI 架构到单一管道（SPARK 能力系统）。本文档已更新为推荐的访问方式。
 
-**旧方式（DI 容器）：**
+## DI 架构演进
+
+### 旧架构（已废弃）
 ```typescript
+// ❌ 旧方式 1：DI 容器
 import { container, ServiceIdentifiers } from '@spark-view/spark-app'
+const logger = container.resolve(ServiceIdentifiers.Logger)
 
-const logger = container.resolve(ServiceIdentifiers.Logger)  // ❌ 冗长、类型不安全
+// ❌ 旧方式 2：Vue 原生 DI Composables
+import { useLogger, useAppContext, useAuth } from '@spark-view/spark-app'
+const logger = useLogger()  // ⚠️ 已标记 @deprecated
 ```
 
-**新方式（Composables）：**
+### 新架构（推荐）
 ```typescript
-import { useLogger } from '@spark-view/spark-app'
+// ✅ 新方式 1：直接使用标准工具（推荐）
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
+const router = useRouter()
+const logger = Logger('MyComponent')
 
-const logger = useLogger()  // ✅ 简洁、类型安全、IDE 友好
+// ✅ 新方式 2：通过 SPARK 能力系统
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+const { consume } = useSparkComponent({ type: 'my-comp' })
+const services = consume(APP_SERVICES)
 ```
 
-## 优势对比
+## 架构优势对比
 
-| 特性 | DI 容器 | Composables |
-|-----|--------|------------|
-| 代码长度 | `container.resolve(ServiceIdentifiers.Logger)` | `useLogger()` |
-| 类型安全 | ⚠️ 需要手动标注 | ✅ 自动推断 |
-| IDE 支持 | ⚠️ 跳转到接口 | ✅ 跳转到实现 |
-| Tree-shaking | ❌ 全量引入 | ✅ 按需引入 |
-| Vue 生态 | ❌ 非标准 | ✅ 标准实践 |
+| 特性 | 旧方式（Vue DI） | 新方式（SPARK 能力系统） |
+|-----|-----------------|------------------------|
+| 管道数量 | 2 条（混乱） | 1 条（统一） |
+| 类型安全 | ✅ 自动推断 | ✅ 自动推断 |
+| 延迟绑定 | ❌ 不支持 | ✅ 支持 |
+| 父链查找 | ❌ 不支持 | ✅ 支持 |
+| Tree-shaking | ✅ 按需引入 | ✅ 按需引入 |
+| 架构清晰度 | ⚠️ 两套体系 | ✅ 单一体系 |
 
-## 核心 Composables
+## 推荐的服务访问方式
 
-### 应用上下文
-
-```typescript
-import { useAppContext, useCurrentUser, useCurrentTenant } from '@spark-view/spark-app'
-
-// 完整上下文
-const { user, tenant, env, config } = useAppContext()
-
-// 快捷访问
-const user = useCurrentUser()
-const tenant = useCurrentTenant()
-```
-
-### 权限检查
-
-```typescript
-import { usePermissions } from '@spark-view/spark-app'
-
-const { hasPermission, hasRole, hasAnyPermission } = usePermissions()
-
-if (hasPermission('user:delete')) {
-  // 显示删除按钮
-}
-
-if (hasRole('admin')) {
-  // 显示管理菜单
-}
-
-if (hasAnyPermission('user:read', 'user:write')) {
-  // 显示用户模块
-}
-```
-
-### 路由和日志
+### Router 访问
 
 ```typescript
-import { useAppRouter, useLogger } from '@spark-view/spark-app'
-
-// 路由
-const router = useAppRouter()
-router.push('/home')
-
-// 日志（自动带组件名称）
-const logger = useLogger('MyComponent')
-logger.info('Component mounted')
-logger.error('Something went wrong', error)
-```
-
-### 认证服务
-
-```typescript
-import { useAuth } from '@spark-view/spark-app'
-
-const auth = useAuth()
-
-// 登录
-await auth.login({ username: 'admin', password: '123' })
-
-// 检查状态
-if (auth.isAuthenticated()) {
-  console.log('已登录')
-}
-
-// 登出
-await auth.logout()
-```
-
-### SPARK 服务
-
-```typescript
-import { useSparkManager, useSparkRegistry } from '@spark-view/spark-app'
-
-// 组件管理器
-const manager = useSparkManager()
-const component = manager.getComponent('spark-grid')
-
-// 组件注册表
-const registry = useSparkRegistry()
-registry.register('my-component', MyComponent)
-```
-
-### 配置加载
-
-```typescript
-import { useConfigLoader } from '@spark-view/spark-app'
-
-const configLoader = useConfigLoader()
-const pageConfig = await configLoader.loadPageConfig('home')
-```
-
-## 可选访问（不抛出异常）
-
-某些场景下，服务可能未提供，使用 `tryUseXxx` 避免异常：
-
-```typescript
-import { tryUseAuth, tryUseAppContext } from '@spark-view/spark-app'
-
-const auth = tryUseAuth()
-if (auth) {
-  // 有认证服务
-  await auth.login(...)
-} else {
-  // 无认证服务，使用其他方式
-}
-```
-
-## 在组件中使用
-
-### Options API
-
-```vue
-<script>
-import { useCurrentUser, useLogger, usePermissions } from '@spark-view/spark-app'
+// ✅ 推荐：直接使用 vue-router
+import { useRouter } from 'vue-router'
 
 export default {
   setup() {
-    const user = useCurrentUser()
-    const logger = useLogger('MyComponent')
-    const { hasPermission } = usePermissions()
+    const router = useRouter()
+    router.push('/home')
+    return { router }
+  }
+}
+```
+
+### Logger 访问
+
+```typescript
+// ✅ 推荐：使用 Logger 工厂函数
+import { Logger } from '@spark-view/spark-utils'
+
+export default {
+  setup() {
+    const logger = Logger('MyComponent')
+    logger.info('Component mounted')
+    logger.error('Something went wrong', error)
+    return { logger }
+  }
+}
+```
+
+### 应用服务访问（组件内）
+
+```typescript
+// ✅ 推荐：通过 APP_SERVICES 能力
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+
+export default {
+  setup() {
+    const { consume } = useSparkComponent({ type: 'my-comp' })
+    const services = consume(APP_SERVICES)
     
-    return { user, logger, hasPermission }
+    if (services) {
+      // 访问路由
+      services.router?.push('/home')
+      
+      // 访问日志
+      services.logger?.info('Action')
+      
+      // 访问认证
+      if (services.auth?.isAuthenticated()) {
+        console.log('已登录')
+      }
+      
+      // 访问配置加载器
+      const config = await services.configLoader?.loadPageConfig('home')
+    }
+    
+    return { services }
+  }
+}
+```
+
+### SPARK 核心服务
+
+```typescript
+// ✅ 推荐：使用 useSparkRegistry（核心基础设施）
+import { useSparkRegistry } from '@spark-view/spark-app'
+
+export default {
+  setup() {
+    const registry = useSparkRegistry()
+    registry.register('my-component', MyComponent)
+    const ComponentClass = registry.get('spark-grid')
+    return { registry }
+  }
+}
+```
+
+> 📝 **注意**：`useSparkRegistry` 是唯一保留的 Vue DI composable，因为组件注册表是 SPARK 核心基础设施的一部分。
+
+## 废弃的 Composables（不推荐使用）
+
+以下 composables 已被标记为 `@deprecated`，请使用上述推荐方式替代：
+
+| 废弃的 Composable | 替代方案 |
+|-------------------|----------|
+| `useAppRouter()` | ✅ `useRouter()` from `vue-router` |
+| `useLogger()` | ✅ `Logger('module')` from `@spark-view/spark-utils` |
+| `useAppContext()` | ✅ `consume(APP_SERVICES)` |
+| `useAuth()` | ✅ `consume(APP_SERVICES)` |
+| `useConfigLoader()` | ✅ `consume(APP_SERVICES)` |
+| `useCurrentUser()` | ✅ `consume(APP_SERVICES)?.auth?.getCurrentUser()` |
+| `useCurrentTenant()` | ✅ `consume(APP_SERVICES)?.auth?.getCurrentTenant()` |
+| `usePermissions()` | ✅ `consume(APP_SERVICES)?.auth?.hasPermission()` |
+| `tryUseAuth()` | ✅ `consume(APP_SERVICES)` (已支持 undefined 返回) |
+| `tryUseAppContext()` | ✅ `consume(APP_SERVICES)` (已支持 undefined 返回) |
+
+## 在组件中使用
+
+### Options API（推荐新方式）
+
+```vue
+<script>
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+
+export default {
+  setup() {
+    const router = useRouter()
+    const logger = Logger('MyComponent')
+    const { consume } = useSparkComponent({ type: 'my-comp' })
+    const services = consume(APP_SERVICES)
+    
+    return { router, logger, services }
   },
   
   mounted() {
-    this.logger.info('Component mounted', { user: this.user.username })
+    this.logger.info('Component mounted', { 
+      user: this.services?.auth?.getCurrentUser()?.username 
+    })
   }
 }
 </script>
 ```
 
-### Composition API
+### Composition API（推荐新方式）
 
 ```vue
 <script setup lang="ts">
-import { useCurrentUser, useLogger, usePermissions } from '@spark-view/spark-app'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
 
-const user = useCurrentUser()
-const logger = useLogger('MyComponent')
-const { hasPermission } = usePermissions()
+const router = useRouter()
+const logger = Logger('MyComponent')
+const { consume } = useSparkComponent({ type: 'my-comp' })
+const services = consume(APP_SERVICES)
+
+const user = computed(() => services?.auth?.getCurrentUser())
+const hasPermission = (perm: string) => services?.auth?.hasPermission(perm) ?? false
 
 onMounted(() => {
-  logger.info('Component mounted', { user: user.username })
+  logger.info('Component mounted', { user: user.value?.username })
 })
 </script>
 
 <template>
   <div v-if="hasPermission('page:view')">
-    <h1>Welcome, {{ user.displayName }}</h1>
+    <h1>Welcome, {{ user?.displayName }}</h1>
   </div>
 </template>
 ```
@@ -186,9 +208,15 @@ onMounted(() => {
 
 ```vue
 <script setup lang="ts">
-import { usePermissions } from '@spark-view/spark-app'
+import { computed } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
 
-const { hasPermission, hasRole } = usePermissions()
+const { consume } = useSparkComponent({ type: 'user-manager' })
+const services = consume(APP_SERVICES)
+
+const hasPermission = (perm: string) => services?.auth?.hasPermission(perm) ?? false
+const hasRole = (role: string) => services?.auth?.hasRole(role) ?? false
 </script>
 
 <template>
@@ -210,13 +238,17 @@ const { hasPermission, hasRole } = usePermissions()
 
 ```vue
 <script setup lang="ts">
-import { useLogger, useCurrentUser } from '@spark-view/spark-app'
+import { Logger } from '@spark-view/spark-utils'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
 
-const logger = useLogger('UserProfile')
-const user = useCurrentUser()
+const logger = Logger('UserProfile')
+const { consume } = useSparkComponent({ type: 'user-profile' })
+const services = consume(APP_SERVICES)
+const user = computed(() => services?.auth?.getCurrentUser())
 
 async function saveProfile() {
-  logger.info('保存用户资料', { userId: user.userId })
+  logger.info('保存用户资料', { userId: user.value?.userId })
   
   try {
     await api.updateProfile(...)
@@ -231,29 +263,51 @@ async function saveProfile() {
 ### 路由守卫
 
 ```typescript
-import { usePermissions, useAppRouter, useLogger } from '@spark-view/spark-app'
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
 
-const router = useAppRouter()
-const logger = useLogger('RouteGuard')
+const router = useRouter()
+const logger = Logger('RouteGuard')
 
 router.beforeEach((to, from, next) => {
-  const { hasPermission } = usePermissions()
+  // ❌ 不能在路由守卫中使用 composables
+  // 因为路由守卫在 setup 外执行
   
-  const requiredPermission = to.meta.permission as string
-  
-  if (requiredPermission && !hasPermission(requiredPermission)) {
-    logger.warn('权限不足', { 
-      route: to.path, 
-      required: requiredPermission 
-    })
-    next('/forbidden')
-  } else {
-    next()
-  }
+  // ✅ 正确做法：通过 services 参数传递
+  // 或在组件内使用 onBeforeRouteEnter
+  next()
 })
 ```
 
 ## 迁移指南
+
+### 从旧 Composables 迁移到新架构
+
+**Before (废弃方式):**
+```typescript
+import { useLogger, useAppRouter, useAuth } from '@spark-view/spark-app'
+
+const logger = useLogger('MyComponent')  // ⚠️ 已废弃
+const router = useAppRouter()  // ⚠️ 已废弃
+const auth = useAuth()  // ⚠️ 已废弃
+```
+
+**After (推荐方式):**
+```typescript
+// 方式 1: 直接使用标准工具（推荐）
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
+
+const logger = Logger('MyComponent')
+const router = useRouter()
+
+// 方式 2: 通过 APP_SERVICES 能力（组件内）
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+
+const { consume } = useSparkComponent({ type: 'my-comp' })
+const services = consume(APP_SERVICES)
+```
 
 ### 从 DI 容器迁移
 
@@ -263,53 +317,130 @@ import { container, ServiceIdentifiers } from '@spark-view/spark-app'
 
 const logger = container.resolve(ServiceIdentifiers.Logger)
 const router = container.resolve(ServiceIdentifiers.Router)
-const context = container.resolve(ServiceIdentifiers.AppContext)
 ```
 
 **After:**
 ```typescript
-import { useLogger, useAppRouter, useAppContext } from '@spark-view/spark-app'
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
 
-const logger = useLogger()
-const router = useAppRouter()
-const context = useAppContext()
-```
-
-### 从 inject() 迁移
-
-**Before:**
-```typescript
-import { inject } from 'vue'
-
-const appContext = inject('appContext')  // ❌ 无类型、字符串 key
-const auth = inject('authService')
-```
-
-**After:**
-```typescript
-import { useAppContext, useAuth } from '@spark-view/spark-app'
-
-const appContext = useAppContext()  // ✅ 类型安全
-const auth = useAuth()
+const logger = Logger('MyModule')
+const router = useRouter()
 ```
 
 ## 最佳实践
 
-1. **优先使用 Composables**：在组件中使用 `useXxx()` 而非直接访问容器
-2. **按需导入**：只导入需要的 composables，支持 tree-shaking
-3. **明确错误处理**：可选服务使用 `tryUseXxx()`，必需服务使用 `useXxx()`
-4. **组合使用**：组合多个 composables 实现复杂逻辑
+### 1. 优先使用标准工具
+
+```typescript
+// ✅ 推荐：直接使用 vue-router
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+// ✅ 推荐：使用 Logger 工厂函数
+import { Logger } from '@spark-view/spark-utils'
+const logger = Logger('MyComponent')
+```
+
+### 2. 组件内使用 APP_SERVICES
+
+```typescript
+// ✅ 推荐：通过 SPARK 能力系统访问应用服务
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+
+const { consume } = useSparkComponent({ type: 'my-comp' })
+const services = consume(APP_SERVICES)
+
+if (services) {
+  services.router?.push('/home')
+  services.logger?.info('Action')
+  services.auth?.isAuthenticated()
+}
+```
+
+### 3. 组合使用构建复杂逻辑
 
 ```typescript
 // ✅ 推荐：组合使用
-import { useCurrentUser, useLogger, usePermissions } from '@spark-view/spark-app'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { Logger } from '@spark-view/spark-utils'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
 
 export function useUserOperations() {
-  const user = useCurrentUser()
-  const logger = useLogger('UserOperations')
-  const { hasPermission } = usePermissions()
+  const router = useRouter()
+  const logger = Logger('UserOperations')
+  const { consume } = useSparkComponent({ type: 'user-ops' })
+  const services = consume(APP_SERVICES)
   
-  const canDelete = computed(() => hasPermission('user:delete'))
+  const canDelete = computed(() => 
+    services?.auth?.hasPermission('user:delete') ?? false
+  )
+  
+  async function deleteUser(userId: string) {
+    if (!canDelete.value) {
+      logger.warn('权限不足')
+      return
+    }
+    
+    logger.info('删除用户', { userId })
+    try {
+      await api.deleteUser(userId)
+      logger.success('删除成功')
+      router.push('/users')
+    } catch (error) {
+      logger.error('删除失败', error)
+    }
+  }
+  
+  return {
+    canDelete,
+    deleteUser
+  }
+}
+```
+
+### 4. 避免在路由守卫中使用 Composables
+
+```typescript
+// ❌ 错误：Composables 只能在 setup 中使用
+router.beforeEach((to, from, next) => {
+  const services = consume(APP_SERVICES)  // ❌ 错误！
+  next()
+})
+
+// ✅ 正确：在应用启动时传递服务
+function setupRouterGuards(services: AppServices) {
+  router.beforeEach((to, from, next) => {
+    const requiredPermission = to.meta.permission as string
+    if (requiredPermission && !services.auth?.hasPermission(requiredPermission)) {
+      services.logger?.warn('权限不足', { route: to.path })
+      next('/forbidden')
+    } else {
+      next()
+    }
+  })
+}
+```
+
+## 总结
+
+| 场景 | 推荐方式 | 说明 |
+|-----|---------|------|
+| **路由访问** | `useRouter()` from `vue-router` | 标准 Vue Router composable |
+| **日志记录** | `Logger('module')` from `@spark-view/spark-utils` | 工厂函数，无需 DI |
+| **组件内服务** | `consume(APP_SERVICES)` | SPARK 能力系统 |
+| **组件注册表** | `useSparkRegistry()` | 唯一保留的 Vue DI composable |
+
+**核心原则**：统一到单一 DI 管道（SPARK 能力系统），避免两套体系的混乱。
+  const { consume } = useSparkComponent({ type: 'user-ops' })
+  const services = consume(APP_SERVICES)
+  
+  const canDelete = computed(() => 
+    services?.auth?.hasPermission('user:delete') ?? false
+  )
   
   async function deleteUser(userId: string) {
     if (!canDelete.value) {
