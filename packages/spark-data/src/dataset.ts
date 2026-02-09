@@ -30,7 +30,7 @@ export class DataSet implements IDataSet {
   version?: number
   pageId?: string
   autoLoadRelations?: boolean
-  
+
   // 事件系统
   private eventListeners: Map<string, Array<(...args: unknown[]) => void>> = new Map()
   // 上下文级别的订阅管理：key = "tableName.contextId"
@@ -39,21 +39,23 @@ export class DataSet implements IDataSet {
   public dataLoader?: (tableName: string) => Promise<IDataRow[]>
   // 正在加载的表
   private loadingTables: Set<string> = new Set()
-  
+
   // 日志系统
   private logger = Logger()
   // API 适配器（通过 setApiAdapter 设置，用于表级 API 注入）
   private apiAdapter?: ApiAdapter
 
+  // ==================== 构造函数 ====================
+
   constructor(
-    config: IDataSet, 
+    config: IDataSet,
     dataLoader?: (tableName: string) => Promise<IDataRow[]>,
     apiAdapter?: ApiAdapter
   ) {
     this.dataLoader = dataLoader
     this.apiAdapter = apiAdapter
     this.dataSetName = config.dataSetName
-    
+
     // 转换表为类实例
     this.tables = {}
     Object.entries(config.tables).forEach(([tableName, tableData]) => {
@@ -61,49 +63,51 @@ export class DataSet implements IDataSet {
         ...tableData,
         tableName // 确保 tableName 正确
       })
-      
+
       // 🔧 设置表（默认上下文）的 DataSet 引用
       table.setDataSet(this)
-      
+
       // 🔧 注入 API 适配器
       if (this.apiAdapter) {
         table.setApiAdapter(this.apiAdapter)
       }
-      
+
       // 处理自定义上下文
       Object.entries(table.contexts || {}).forEach(([contextId, context]) => {
         // 设置上下文的 DataSet 引用
         context.setDataSet(this)
-        
+
         // 如果有初始过滤配置，应用过滤
         if (context.filterExpression) {
           this.updateContextRows(context, table)
           this.logger.info(`🌪️ [Init] ${tableName}.${contextId} 应用初始过滤: ${context.rows?.length} 行`)
         }
       })
-      
+
       this.tables[tableName] = table
     })
-    
+
     this.relations = config.relations
     this.version = config.version
     this.pageId = config.pageId
     this.autoLoadRelations = config.autoLoadRelations
-    
+
     // 为关系分配默认 contextId
     this.relations?.forEach(relation => {
       relation.parentContextId = relation.parentContextId ?? 'default'
       relation.childContextId = relation.childContextId ?? 'default'
     })
   }
-  
+
+  // ==================== 上下文管理 ====================
+
   /**
    * 更新上下文的 rows（委托给 BindingContext）
    */
   private updateContextRows(context: BindingContext, table: DataTable): void {
     // 始终基于完整数据源
     let sourceData = table.originalRows ?? table.rows ?? [];
-    
+
     // 1. 执行过滤（需要 FilterExpressionParser）
     if (context.filterExpression) {
       try {
@@ -114,7 +118,7 @@ export class DataSet implements IDataSet {
         sourceData = [];
       }
     }
-    
+
     // 2. 委托给上下文处理排序并更新 rows
     context.updateRows(sourceData);
   }
@@ -148,20 +152,22 @@ export class DataSet implements IDataSet {
     this.logger.info(`✅ [DataSet] ${this.dataSetName} 已注入 ApiAdapter`)
   }
 
+  // ==================== 基础 CRUD 操作 ====================
+
   /**
    * 添加数据行
    */
   addRow(tableName: string, row: IDataRow): boolean {
     const table = this.getTable(tableName)
     if (!table) return false
-    
+
     table.rows.push(row)
-    
+
     // 同步默认上下文的缓存
     if (table.originalRows) {
       table.originalRows.push(row)
     }
-    
+
     return true
   }
 
@@ -173,13 +179,13 @@ export class DataSet implements IDataSet {
     if (!table || rowIndex < 0 || rowIndex >= table.rows.length) {
       return false
     }
-    
+
     // 保持对象引用，使用 assign 更新属性（这样 _originalRows 也会自动更新）
     const existingRow = table.rows[rowIndex]
     if (existingRow) {
       Object.assign(existingRow, row)
     }
-    
+
     return true
   }
 
@@ -191,14 +197,14 @@ export class DataSet implements IDataSet {
     if (!table || rowIndex < 0 || rowIndex >= table.rows.length) {
       return false
     }
-    
+
     const row = table.rows[rowIndex]
     if (!row) {
       return false
     }
-    
+
     table.rows.splice(rowIndex, 1)
-    
+
     // 同步默认上下文的缓存
     if (table.originalRows) {
       const cacheIndex = table.originalRows.indexOf(row)
@@ -206,9 +212,11 @@ export class DataSet implements IDataSet {
         table.originalRows.splice(cacheIndex, 1)
       }
     }
-    
+
     return true
   }
+
+  // ==================== 级联操作 ====================
 
   /**
    * 级联更新
@@ -520,6 +528,8 @@ export class DataSet implements IDataSet {
     })
   }
 
+  // ==================== 关系处理 ====================
+
   /**
    * 应用数据关系（根据父表状态过滤子表）
    * @param relation 关系定义
@@ -695,6 +705,8 @@ export class DataSet implements IDataSet {
     return DataSet.areRowsEqual(rows1, rows2);
   }
 
+  // ==================== 依赖分析 ====================
+
   /**
    * 获取表的所有父依赖（递归）
    * @param tableName 表名
@@ -791,6 +803,8 @@ export class DataSet implements IDataSet {
     
     return true; // 所有依赖条件都满足
   }
+
+  // ==================== 序列化 ====================
 
   /**
    * 导出为 JSON
