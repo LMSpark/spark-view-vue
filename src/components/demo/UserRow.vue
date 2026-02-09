@@ -30,7 +30,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
-import type { User } from './types'
 
 interface Props {
   config: Partial<ComponentContext>
@@ -39,7 +38,7 @@ interface Props {
 const props = defineProps<Props>()
 
 // 从 config.props 获取 user 数据
-const user = computed(() => props.config.props?.user as User)
+const user = computed(() => props.config.props?.user as Record<string, unknown>)
 
 const childConfigs = computed(() =>
   (props.config.children ?? []).filter(
@@ -47,7 +46,7 @@ const childConfigs = computed(() =>
   )
 )
 const emit = defineEmits<{
-  'row-click': [user: User]
+  'row-click': [user: Record<string, unknown>]
 }>()
 
 // 使用 SPARK 能力系统
@@ -71,7 +70,7 @@ const selection = consume(SELECTION)
 // 更新选中状态
 const updateSelectionState = () => {
   if (selection && user.value) {
-    isSelected.value = selection.isSelected(user.value.id)
+    isSelected.value = selection.isSelected(user.value['id'] as string | number)
   }
 }
 
@@ -93,7 +92,7 @@ consumeEvents(GRID_EVENTS, {
 // 提供行数据能力（响应式 - 每次访问时动态获取最新 user）
 const rowDataCapability = {
   getData: () => user.value!,
-  getField: (field: string) => user.value?.[field as keyof User],
+  getField: (field: string) => user.value?.[field],
   isSelected: () => isSelected.value
 }
 
@@ -114,7 +113,7 @@ const handleClick = () => {
 const handleCheckboxChange = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked
   if (selection && user.value) {
-    checked ? selection.select(user.value.id) : selection.deselect(user.value.id)
+    checked ? selection.select(user.value['id'] as string | number) : selection.deselect(user.value['id'] as string | number)
     updateSelectionState()
   }
 }
@@ -123,7 +122,7 @@ onMounted(() => {
   updateSelectionState()
   logger.info('🚀 UserRow mounted', {
     contextId: context.id,
-    userId: user.value?.id
+    userId: user.value?.['id']
   })
 })
 </script>
