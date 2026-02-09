@@ -14,7 +14,7 @@
     
     <!-- 渲染页面内容 -->
     <div ref="pageContainer" :data-page="currentPageId" class="spark-page-container">
-      <slot name="content" :rules="boundRules" :page-data="pageData">
+      <slot name="content" :rules="(boundRules as Rule[])" :page-data="pageData">
         <form-create
           v-if="boundRules.length > 0"
           v-model:api="formApi"
@@ -137,10 +137,8 @@ const pageContext: PageContext = {
   },
   
   // 沙箱全局变量 — 优先使用注入的 UI 服务，回退到 ElementPlus
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ElMessage: (props.messageService ?? ElMessage) as any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ElMessageBox: (props.confirmService ?? ElMessageBox) as any,
+  ElMessage: (props.messageService ?? ElMessage) as typeof ElMessage,
+  ElMessageBox: (props.confirmService ?? ElMessageBox) as typeof ElMessageBox,
   SparkData,
   h
 }
@@ -152,7 +150,7 @@ const { scopedCss, setScopedCss } = useCssScope({
 })
 
 // 页面脚本函数
-const pageFunctions = ref<Record<string, Function>>({})
+const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
 
 // DataSet 管理
 const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({

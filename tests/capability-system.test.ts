@@ -157,14 +157,14 @@ describe('Capability system integration', () => {
 
       // Provider 注册事件能力
       const handler = vi.fn()
-      const eventBus: Record<string, Function[]> = {}
+      const eventBus: Record<string, Array<(...args: unknown[]) => void>> = {}
 
       const eventImpl: EventsCapability = {
-        on(event: string, fn: Function) {
+        on(event: string, fn: (...args: unknown[]) => void) {
           if (!eventBus[event]) eventBus[event] = []
           eventBus[event].push(fn)
         },
-        off(event: string, fn: Function) {
+        off(event: string, fn: (...args: unknown[]) => void) {
           eventBus[event] = (eventBus[event] || []).filter(f => f !== fn)
         },
         emit(event: string, ...args: unknown[]) {

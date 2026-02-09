@@ -11,7 +11,7 @@ export type SimpleEnvironment = 'client' | 'server'
 /**
  * 环境信息接口
  */
-export interface EnvironmentInfo {
+export interface SimpleEnvironmentInfo {
   /** 环境类型 */
   type: SimpleEnvironment
   /** 是否为服务端 */
@@ -30,7 +30,7 @@ export const simpleEnvAdapter = {
   /**
    * 获取环境信息（自动检测环境）
    */
-  getEnvironment(): EnvironmentInfo {
+  getEnvironment(): SimpleEnvironmentInfo {
     const isServer = typeof window === 'undefined'
     // 检测测试环境：Vitest / Jest / NODE_ENV=test
     const isTest = typeof process !== 'undefined' && (

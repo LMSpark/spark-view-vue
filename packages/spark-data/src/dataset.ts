@@ -32,9 +32,9 @@ export class DataSet implements IDataSet {
   autoLoadRelations?: boolean
   
   // 事件系统
-  private eventListeners: Map<string, Function[]> = new Map()
+  private eventListeners: Map<string, Array<(...args: unknown[]) => void>> = new Map()
   // 上下文级别的订阅管理：key = "tableName.contextId"
-  private contextSubscribers: Map<string, Set<Function>> = new Map()
+  private contextSubscribers: Map<string, Set<() => void>> = new Map()
   // 数据加载器
   public dataLoader?: (tableName: string) => Promise<IDataRow[]>
   // 正在加载的表
@@ -326,12 +326,12 @@ export class DataSet implements IDataSet {
         })
         
         if (matches) {
-          console.info(`    ✓ [级联删除] 匹配到子行:`, childRow)
+          this.logger.info(`    ✓ [级联删除] 匹配到子行:`, childRow)
           rowsToDelete.add(childRow)
         }
       })
 
-      console.info(`  找到 ${rowsToDelete.size} 行需要删除`)
+      this.logger.info(`  找到 ${rowsToDelete.size} 行需要删除`)
 
       // 递归级联删除子表的子表
       rowsToDelete.forEach(childRow => {
@@ -369,7 +369,7 @@ export class DataSet implements IDataSet {
           }
         })
         
-        console.info(`✅ 级联删除: ${relation.childTable} 删除了 ${rowsToDelete.size} 行，剩余 ${childTable.rows.length} 行`)
+        this.logger.info(`✅ 级联删除: ${relation.childTable} 删除了 ${rowsToDelete.size} 行，剩余 ${childTable.rows.length} 行`)
         
         if (!affectedTables.includes(relation.childTable)) {
           affectedTables.push(relation.childTable)
@@ -542,7 +542,7 @@ export class DataSet implements IDataSet {
     
     const childContext = childTable.getOrCreateContext(relation.childContextId ?? 'default');
 
-    console.info(`🔗 [DataSet.applyRelation] ${relation.parentTable}.${relation.parentContextId} -> ${relation.childTable}.${relation.childContextId}`, {
+    this.logger.info(`🔗 [DataSet.applyRelation] ${relation.parentTable}.${relation.parentContextId} -> ${relation.childTable}.${relation.childContextId}`, {
       dependencyType: relation.dependencyType,
       autoLoad: relation.autoLoad
     });
@@ -552,7 +552,7 @@ export class DataSet implements IDataSet {
     
     // ⚠️ 父表条件不满足：递归清空子表及其所有后代
     if (!parentRows || parentRows.length === 0) {
-      console.info(`🧹 条件不满足：清空子表 ${relation.childTable}.${relation.childContextId}（父表无选中数据）`);
+      this.logger.info(`🧹 条件不满足：清空子表 ${relation.childTable}.${relation.childContextId}（父表无选中数据）`);
       
       const hadData = childContext.rows.length > 0 || childContext.currentRow !== null;
       
@@ -620,16 +620,16 @@ export class DataSet implements IDataSet {
     const validCurrentRow = filteredRows.find(row => isSameRow(row, childContext.currentRow));
     if (childContext.currentRow && !validCurrentRow) {
       if (childContext.autoSelectFirst && filteredRows.length > 0) {
-        console.info(`🎯 [自动选择] ${relation.childTable}.${relation.childContextId ?? 'default'} 自动选中第0行`);
+        this.logger.info(`🎯 [自动选择] ${relation.childTable}.${relation.childContextId ?? 'default'} 自动选中第0行`);
         childContext.currentRow = filteredRows[0] ?? null;
       } else {
-        console.info(`🧹 [清理] ${relation.childTable}.${relation.childContextId ?? 'default'} currentRow 置空`);
+        this.logger.info(`🧹 [清理] ${relation.childTable}.${relation.childContextId ?? 'default'} currentRow 置空`);
         childContext.currentRow = null;
       }
       selectionChanged = true;
     } else if (!childContext.currentRow && childContext.autoSelectFirst && filteredRows.length > 0) {
       // 如果之前没有 currentRow，且配置了自动选择，则选中第0行
-      console.info(`🎯 [自动选择] ${relation.childTable}.${relation.childContextId ?? 'default'} 自动选中第0行`);
+      this.logger.info(`🎯 [自动选择] ${relation.childTable}.${relation.childContextId ?? 'default'} 自动选中第0行`);
       childContext.currentRow = filteredRows[0] ?? null;
       selectionChanged = true;
     }
@@ -639,7 +639,7 @@ export class DataSet implements IDataSet {
       filteredRows.some(fr => isSameRow(fr, row))
     ) ?? [];
     if (childContext.selectedRows && childContext.selectedRows.length !== validSelectedRows.length) {
-      console.info(`🧹 [清理] ${relation.childTable}.${relation.childContextId ?? 'default'} selectedRows 从 ${childContext.selectedRows.length} → ${validSelectedRows.length}`);
+      this.logger.info(`🧹 [清理] ${relation.childTable}.${relation.childContextId ?? 'default'} selectedRows 从 ${childContext.selectedRows.length} → ${validSelectedRows.length}`);
       // ✅ 使用 setSelectedRows 方法，触发 UI 同步
       childContext.setSelectedRows(validSelectedRows, false); // skipNotify=false，需要同步 UI
       selectionChanged = true;
@@ -647,7 +647,7 @@ export class DataSet implements IDataSet {
     
     // 🔗 如果选中状态发生变化，触发子表更新（级联）
     if (selectionChanged) {
-      console.info(`🔗 [级联] ${relation.childTable}.${relation.childContextId ?? 'default'} 选中状态已变化，触发子表更新`);
+      this.logger.info(`🔗 [级联] ${relation.childTable}.${relation.childContextId ?? 'default'} 选中状态已变化，触发子表更新`);
       this.updateRelatedTables(relation.childTable, relation.childContextId ?? 'default');
       
       // 🔔 通知订阅者：选中状态已变化（触发 UI 更新）
@@ -765,7 +765,7 @@ export class DataSet implements IDataSet {
     for (const relation of relations) {
       const parentTableObj = this.getTable(relation.parentTable);
       if (!parentTableObj) {
-        console.info(`❌ [DataSet] 父表 ${relation.parentTable} 不存在`);
+        this.logger.info(`❌ [DataSet] 父表 ${relation.parentTable} 不存在`);
         return false;
       }
       
@@ -825,7 +825,7 @@ export class DataSet implements IDataSet {
   /**
    * 事件监听
    */
-  on(event: string, callback: Function): void {
+  on(event: string, callback: (...args: unknown[]) => void): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
       listeners.push(callback)
@@ -837,7 +837,7 @@ export class DataSet implements IDataSet {
   /**
    * 移除事件监听
    */
-  off(event: string, callback: Function): void {
+  off(event: string, callback: (...args: unknown[]) => void): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
       const index = listeners.indexOf(callback)
@@ -853,7 +853,7 @@ export class DataSet implements IDataSet {
   emit(event: string, data: unknown): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
-      listeners.forEach(callback => (callback as (data: unknown) => void)(data))
+      listeners.forEach(callback => callback(data))
     }
   }
 
@@ -865,7 +865,7 @@ export class DataSet implements IDataSet {
    * @param contextId 上下文ID，默认 'default'
    * @param callback 回调函数
    */
-  subscribe(tableName: string, contextId: string = 'default', callback: Function): () => void {
+  subscribe(tableName: string, contextId: string = 'default', callback: () => void): () => void {
     const key = `${tableName}.${contextId}`;
     
     const subscribers = this.contextSubscribers.get(key)
@@ -875,7 +875,7 @@ export class DataSet implements IDataSet {
       this.contextSubscribers.set(key, new Set([callback]))
     }
     
-    console.info(`📡 UI 订阅上下文: ${key}`);
+    this.logger.info(`📡 UI 订阅上下文: ${key}`);
     
     // 返回取消订阅函数
     return () => {
@@ -902,7 +902,7 @@ export class DataSet implements IDataSet {
       
       if (subscribers && subscribers.size > 0) {
         const context = this.getContext(tableName, contextId);
-        console.info(`📢 通知 ${subscribers.size} 个订阅者: ${key} 数据已更新`);
+        this.logger.info(`📢 通知 ${subscribers.size} 个订阅者: ${key} 数据已更新`);
         if (context) {
           subscribers.forEach(callback => (callback as (context: IBindingContext) => void)(context));
         }
@@ -913,7 +913,7 @@ export class DataSet implements IDataSet {
         .filter(key => key.startsWith(`${tableName}.`));
       
       if (allKeys.length > 0) {
-        console.info(`📢 通知表 ${tableName} 的所有上下文: ${allKeys.join(', ')}`);
+        this.logger.info(`📢 通知表 ${tableName} 的所有上下文: ${allKeys.join(', ')}`);
       }
       
       allKeys.forEach(key => {
@@ -952,11 +952,11 @@ export class DataSet implements IDataSet {
   requestTableData(tableName: string): void {
     // 防重入检查：如果表正在加载中，跳过
     if (this.loadingTables.has(tableName)) {
-      console.info(`⏭️ [DataSet] 表 ${tableName} 正在加载中，跳过重复请求`)
+      this.logger.info(`⏭️ [DataSet] 表 ${tableName} 正在加载中，跳过重复请求`)
       return
     }
     
-    console.info(`🔍 UI 请求表数据: ${tableName}`);
+    this.logger.info(`🔍 UI 请求表数据: ${tableName}`);
     this.emit('loadStart', { tableName });
     
     // 标记为正在加载
@@ -969,7 +969,7 @@ export class DataSet implements IDataSet {
         this.loadingTables.delete(tableName)
       })
       .catch((error: unknown) => {
-        console.error(`❌ 加载 ${tableName} 失败:`, error);
+        this.logger.error(`❌ 加载 ${tableName} 失败:`, error);
         this.emit('loadError', { tableName, error });
         // 失败也要移除标记，否则永远不能重试
         this.loadingTables.delete(tableName)
@@ -988,7 +988,7 @@ export class DataSet implements IDataSet {
     
     // 仅对根表（无依赖）：如果已有数据，直接使用
     if (!isDependentTable && table?.rows && table.rows.length > 0) {
-      console.info(`✅ 根表 ${tableName} 已有数据（${table.rows.length} 行），直接使用`);
+      this.logger.info(`✅ 根表 ${tableName} 已有数据（${table.rows.length} 行），直接使用`);
       this.notifySubscribers(tableName);
       this.emit('loadSuccess', { tableName });
       return;
@@ -996,7 +996,7 @@ export class DataSet implements IDataSet {
     
     // 依赖表即使有数据，也要重新过滤（因为父表 currentRow 可能变化）
     if (isDependentTable && table?.rows && table.rows.length > 0) {
-      console.info(`🔄 依赖表 ${tableName} 已有数据，重新应用过滤`);
+      this.logger.info(`🔄 依赖表 ${tableName} 已有数据，重新应用过滤`);
       if (this.areDependenciesSatisfied(tableName)) {
         // 查找所有关联的 autoLoad 关系
         const relations = this.relations?.filter(
@@ -1004,7 +1004,7 @@ export class DataSet implements IDataSet {
         ) ?? [];
         
         if (relations.length > 0) {
-          console.info(`🔄 处理 ${relations.length} 个 autoLoad 关系 for ${tableName}`);
+          this.logger.info(`🔄 处理 ${relations.length} 个 autoLoad 关系 for ${tableName}`);
 
           relations.forEach(relation => {
             this.applyRelation(relation);
@@ -1023,25 +1023,25 @@ export class DataSet implements IDataSet {
       
       // 如果是根表（无依赖）且无数据，需要加载
       if (dependencies.size === 0) {
-        console.info(`📦 ${tableName} 是根表且无数据，开始加载`);
+        this.logger.info(`📦 ${tableName} 是根表且无数据，开始加载`);
         await this.loadTableData(tableName);
         this.emit('loadSuccess', { tableName });
         return;
       }
       
       // 有依赖且依赖满足，检查是否需要加载数据
-      console.info(`✅ 依赖条件具备，检查 ${tableName} 是否需要加载数据`);
+      this.logger.info(`✅ 依赖条件具备，检查 ${tableName} 是否需要加载数据`);
       
       // 使用 _originalRows 判断数据是否已加载
       const needsLoading = table && !table.originalRows;
       
       if (needsLoading) {
-        console.info(`📦 ${tableName} 数据未加载（_originalRows 为空），开始加载`);
+        this.logger.info(`📦 ${tableName} 数据未加载（_originalRows 为空），开始加载`);
         await this.loadTableData(tableName);
       }
       
       // 数据加载完成后，应用关系过滤
-      console.info(`🔗 应用关系过滤: ${tableName}`);
+      this.logger.info(`🔗 应用关系过滤: ${tableName}`);
       this.applyRelationsForTable(tableName);
       
       this.notifySubscribers(tableName);
@@ -1057,7 +1057,7 @@ export class DataSet implements IDataSet {
       await this.loadTableData(tableName);
       this.emit('loadSuccess', { tableName });
     } else {
-      console.info(`📦 需要先加载根依赖表: ${Array.from(rootTables).join(', ')}`);
+      this.logger.info(`📦 需要先加载根依赖表: ${Array.from(rootTables).join(', ')}`);
       
       // 加载所有根表
       for (const rootTable of rootTables) {
@@ -1081,7 +1081,7 @@ export class DataSet implements IDataSet {
       return;
     }
     
-    console.info(`🌐 开始加载数据: ${tableName}`);
+    this.logger.info(`🌐 开始加载数据: ${tableName}`);
     
     try {
       const rows = await this.dataLoader(tableName);
@@ -1093,23 +1093,23 @@ export class DataSet implements IDataSet {
         const rowsChanged = !DataSet.areRowsEqual(existingRows, rows)
         
         if (!rowsChanged) {
-          console.info(`⏭️ [DataSet] ${tableName}.rows 未变化，跳过通知`)
+          this.logger.info(`⏭️ [DataSet] ${tableName}.rows 未变化，跳过通知`)
           return
         }
         
         // 将数据加载到默认上下文（table 本身）
         table.rows.splice(0, table.rows.length, ...rows);
-        console.info(`✅ 数据加载成功: ${tableName}，共 ${rows.length} 行`);
+        this.logger.info(`✅ 数据加载成功: ${tableName}，共 ${rows.length} 行`);
         
         // 缓存原始完整数据
         if (!table.originalRows) {
           table.originalRows = [...rows];
-          console.info(`💾 [默认上下文] 缓存原始数据: ${tableName} (${table.originalRows.length} 条)`);
+          this.logger.info(`💾 [默认上下文] 缓存原始数据: ${tableName} (${table.originalRows.length} 条)`);
         }
         
         // ✨ 自动选中第一行（如果配置了 autoSelectFirst）
         if (table.autoSelectFirst && rows.length > 0 && !table.currentRow) {
-          console.info(`🎯 自动选中第一行: ${tableName}`);
+          this.logger.info(`🎯 自动选中第一行: ${tableName}`);
           table.setCurrentRow(rows[0] ?? null, false);  // 不跳过通知，触发级联
         }
         
@@ -1122,11 +1122,11 @@ export class DataSet implements IDataSet {
         ) ?? [];
         
         if (parentRelations.length > 0) {
-          console.info(`🔄 [加载完成] ${tableName} 是子表，重新应用 ${parentRelations.length} 个父表过滤规则`);
+          this.logger.info(`🔄 [加载完成] ${tableName} 是子表，重新应用 ${parentRelations.length} 个父表过滤规则`);
           parentRelations.forEach(relation => {
             const result = this.applyRelation(relation);
             if (result.changed) {
-              console.info(`✅ [加载后过滤] ${relation.childTable}.${relation.childContextId ?? 'default'} 过滤完成: ${result.message}`);
+              this.logger.info(`✅ [加载后过滤] ${relation.childTable}.${relation.childContextId ?? 'default'} 过滤完成: ${result.message}`);
             }
           });
         }
@@ -1138,7 +1138,7 @@ export class DataSet implements IDataSet {
         this.notifyChildTables(tableName);
       }
     } catch (error) {
-      console.error(`❌ 加载数据失败: ${tableName}`, error);
+      this.logger.error(`❌ 加载数据失败: ${tableName}`, error);
       throw error;
     }
   }
@@ -1174,7 +1174,7 @@ export class DataSet implements IDataSet {
    * 通知依赖已更新（触发事件，不自动加载）
    */
   private notifyDependencyUpdated(tableName: string): void {
-    console.info(`📢 通知 ${tableName}: 依赖数据已更新，请根据需要加载`);
+    this.logger.info(`📢 通知 ${tableName}: 依赖数据已更新，请根据需要加载`);
     this.emit('dependencyUpdated', { tableName });
     
     const shouldAutoLoad = this.shouldAutoLoadDependentTable(tableName);
@@ -1184,12 +1184,12 @@ export class DataSet implements IDataSet {
       .some(key => key.startsWith(`${tableName}.`));
     
     if (shouldAutoLoad && hasSubscribers) {
-      console.info(`🎯 ${tableName} 依赖条件满足且有 UI 订阅者，自动加载数据`);
+      this.logger.info(`🎯 ${tableName} 依赖条件满足且有 UI 订阅者，自动加载数据`);
       this.loadTableData(tableName).catch(err => {
-        console.error(`❌ 自动加载 ${tableName} 失败:`, err);
+        this.logger.error(`❌ 自动加载 ${tableName} 失败:`, err);
       });
     } else if (!shouldAutoLoad) {
-      console.info(`⏸️ ${tableName} 依赖条件未满足（如 currentRow 为空），暂不加载`);
+      this.logger.info(`⏸️ ${tableName} 依赖条件未满足（如 currentRow 为空），暂不加载`);
     }
   }
 
@@ -1233,7 +1233,7 @@ export class DataSet implements IDataSet {
     );
     
     childRelations.forEach(relation => {
-      console.info(`📢 通知子表 ${relation.childTable}: 父表 ${parentTableName} 数据已更新`);
+      this.logger.info(`📢 通知子表 ${relation.childTable}: 父表 ${parentTableName} 数据已更新`);
       this.notifyDependencyUpdated(relation.childTable);
     });
   }
@@ -1255,7 +1255,7 @@ export class DataSet implements IDataSet {
       const childContext = this.getContext(relation.childTable, childContextId);
       
       if (childContext && (childContext.rows.length > 0 || childContext.currentRow !== null)) {
-        console.info(`🧹 递归清空子表: ${relation.childTable}.${childContextId}`);
+        this.logger.info(`🧹 递归清空子表: ${relation.childTable}.${childContextId}`);
         
         // 清空子表状态
         childContext.clearAll(true);  // skipNotify=true，稍后统一通知
@@ -1299,14 +1299,14 @@ export class DataSet implements IDataSet {
         return rel.parentContextId === parentContextId;
     });
 
-    console.info(`🔗 [Relation] 上下文 ${parentTableName}.${parentContextId} 触发了 ${relations.length} 个关联更新`);
+    this.logger.info(`🔗 [Relation] 上下文 ${parentTableName}.${parentContextId} 触发了 ${relations.length} 个关联更新`);
 
     relations.forEach(relation => {
       const childContext = this.getContext(relation.childTable, relation.childContextId ?? 'default');
       
       // ✅ 检查是否需要自动加载子表数据
       if (childContext && relation.autoLoad && (!childContext.originalRows || childContext.originalRows.length === 0)) {
-        console.info(`🚀 [AutoLoad] ${relation.childTable} 数据未加载，触发自动加载`);
+        this.logger.info(`🚀 [AutoLoad] ${relation.childTable} 数据未加载，触发自动加载`);
         this.requestTableData(relation.childTable);
         // 跳过本次 applyRelation，等待 loadTableData 完成后自动应用
         return;
@@ -1317,10 +1317,10 @@ export class DataSet implements IDataSet {
       
       // 如果数据变化了，通知子表的订阅者
       if (result.changed) {
-        console.info(`✅ [Relation] ${relation.childTable}.${relation.childContextId ?? 'default'} 数据已更新: ${result.message}`);
+        this.logger.info(`✅ [Relation] ${relation.childTable}.${relation.childContextId ?? 'default'} 数据已更新: ${result.message}`);
         this.notifySubscribers(relation.childTable, relation.childContextId ?? 'default');
       } else {
-        console.info(`⏭️ [Relation] ${relation.childTable}.${relation.childContextId ?? 'default'} 无变化: ${result.message}`);
+        this.logger.info(`⏭️ [Relation] ${relation.childTable}.${relation.childContextId ?? 'default'} 无变化: ${result.message}`);
       }
     })
   }

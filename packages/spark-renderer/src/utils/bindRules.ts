@@ -66,7 +66,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     
     // 处理事件处理器：通过 callFunc 包装
     if (newRule.on && typeof newRule.on === 'object') {
-      const newOn: Record<string, Function | Function[]> = {}
+      const newOn: Record<string, unknown> = {}
       for (const [eventName, handler] of Object.entries(newRule.on)) {
         if (typeof handler === 'string') {
           // 使用 callFunc 包装，提供运行时检查和扩展能力
@@ -75,7 +75,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
           newOn[eventName] = handler
         }
       }
-      newRule.on = newOn
+      newRule.on = newOn as Record<string, Function | Function[]>
     }
     
     // 🎯 处理 el-table 的 dataKey 绑定
@@ -139,7 +139,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
  * 4. 调试友好：清晰的调用栈
  */
 function createFunctionCaller(
-  pageFunctions: Record<string, Function>
+  pageFunctions: Record<string, (...args: unknown[]) => unknown>
 ): (functionName: string, ...args: unknown[]) => unknown {
   return function callFunc(functionName: string, ...args: unknown[]): unknown {
     try {

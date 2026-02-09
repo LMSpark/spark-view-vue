@@ -72,9 +72,6 @@ export interface ComponentContext {
 
   /** 日志器 */
   logger?: LoggerApi
-
-  /** 索引签名（支持 visible, disabled 等扩展字段） */
-  [key: string]: unknown
 }
 
 // ============================================================================
@@ -98,8 +95,10 @@ export interface ComponentConfig {
   props?: Record<string, unknown>
   /** 子组件配置（递归） */
   children?: ComponentConfig[]
-  /** 扩展字段 */
-  [key: string]: unknown
+  /** 可见性控制 */
+  visible?: boolean
+  /** 禁用状态控制 */
+  disabled?: boolean
 }
 
 // ============================================================================

@@ -44,20 +44,31 @@ function formatMsg(level: LogLevel, args: unknown[]) {
  * @param context 可选的上下文对象，用于查找自定义 logger provider
  * @returns LoggerApi 实例
  */
-export function Logger(context?: unknown): LoggerApi {
-  // 优先使用上下文级别的 provider，然后 fallback 到 console
-  const providersMap = typeof context === 'object' && context && 'providers' in context
-    ? (context.providers as Map<string, Record<string, unknown>> | undefined)
-    : undefined
+/**
+ * Logger 上下文接口
+ * 用于从组件上下文中查找 logger provider
+ */
+export interface LoggerContext {
+  providers: Map<string | symbol, { implementation?: unknown }>
+}
 
-  // 尝试从上下文获取 logger provider
+export function Logger(context?: string | LoggerContext): LoggerApi {
+  // 纯字符串标签：直接返回带前缀的 console logger
+  if (typeof context === 'string' || context === undefined) {
+    const prefix = context ? `[${context}]` : ''
+    return {
+      debug: (...args: unknown[]) => console.debug(...formatMsg('debug', prefix ? [prefix, ...args] : args)),
+      info: (...args: unknown[]) => console.info(...formatMsg('info', prefix ? [prefix, ...args] : args)),
+      warn: (...args: unknown[]) => console.warn(...formatMsg('warn', prefix ? [prefix, ...args] : args)),
+      error: (...args: unknown[]) => console.error(...formatMsg('error', prefix ? [prefix, ...args] : args))
+    }
+  }
+
+  // 对象上下文：从 providers 中查找 logger
+  const providersMap = context.providers
   const ctxProvider = providersMap?.get('logger')
-
-  // 提取 provider 的实现部分
   const provider = ctxProvider
-  const impl = provider
-    ? ('implementation' in provider ? provider.implementation : provider)
-    : null
+  const impl = provider?.implementation ?? null
 
   /**
    * 调用日志方法
@@ -130,7 +141,7 @@ export function createHttpTransport(endpoint: string, minLevel: LogLevel = 'erro
  * @param storage 存储日志的数组
  * @returns Transport 实例
  */
-export function createMemoryTransport(storage: unknown[] = []) {
+export function createMemoryTransport(storage: unknown[] = []): Transport {
   return {
     log(level: LogLevel, message: string, meta?: unknown) { storage.push({ level, message, meta, ts: Date.now() }) }
   }

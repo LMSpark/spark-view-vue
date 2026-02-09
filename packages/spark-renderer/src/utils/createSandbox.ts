@@ -43,8 +43,7 @@ export function compileFunctions(
   scriptText: string,
   context: PageContext,
   functionNames: string[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, any> {
+): Record<string, (...args: unknown[]) => unknown> {
   try {
     // 构造 return 语句 - 只返回存在的函数（使用 typeof 检查）
     const returnStatement = functionNames.length > 0
@@ -92,11 +91,11 @@ export function compileFunctions(
     )
     
     // 过滤掉 undefined 的函数
-    const filteredResult: Record<string, Function> = {}
+    const filteredResult: Record<string, (...args: unknown[]) => unknown> = {}
     if (result) {
       for (const key of Object.keys(result)) {
         if (result[key] !== undefined) {
-          filteredResult[key] = result[key] as Function
+          filteredResult[key] = result[key] as (...args: unknown[]) => unknown
         }
       }
     }

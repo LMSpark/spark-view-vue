@@ -13,14 +13,14 @@ const pageLogger = Logger('PageRenderer')
 export interface UseRuleBindingOptions {
   originalRules: Ref<Rule[]>
   pageData: Record<string, unknown>
-  pageFunctions: Ref<Record<string, Function>>
+  pageFunctions: Ref<Record<string, (...args: unknown[]) => unknown>>
   dataSet: Ref<IDataSet | null>
   formApi: Ref<FormCreateAPI | null>
 }
 
 export interface UseRuleBindingReturn {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  boundRules: Ref<any[]>
+  // FormCreate Rule 类型系统与 Vue Ref 类型不完全兼容，使用 unknown[] 避免类型断言
+  boundRules: Ref<unknown[]>
   rebindRules: () => void
 }
 
