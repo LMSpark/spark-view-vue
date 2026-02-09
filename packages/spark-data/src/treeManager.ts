@@ -316,9 +316,12 @@ export class TreeManager {
    * 从 JSON 加载
    */
   static fromJSON(json: string, bindingContext?: BindingContext): TreeManager {
-    const data = JSON.parse(json) as { config: TreeConfig; cache: TreeNode[] }
+    const data = JSON.parse(json) as { config: TreeConfig; cache: FlatTreeNode[] }
     const manager = new TreeManager(data.config, undefined, bindingContext)
-    manager.cache = data.cache
+    // 将数组转换为对象格式的 cache
+    data.cache.forEach(node => {
+      manager.cache[node.id] = node
+    })
     return manager
   }
 }

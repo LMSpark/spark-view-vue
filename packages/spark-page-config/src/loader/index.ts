@@ -336,14 +336,14 @@ export class PageConfigLoader implements ConfigLoader {
       if (result.code !== undefined) {
         if (result.code === 200 || result.code === 0) {
           pageLogger.debug('远程加载成功', { url })
-          return result.data
+          return result.data as T
         }
         pageLogger.error('API返回错误', { url, code: result.code, message: result.message })
         throw new Error((result.message as string) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED))
       }
 
       pageLogger.debug('远程加载成功', { url })
-      return result
+      return result as T
     } catch (error) {
       clearTimeout(timeoutId)
       if (error instanceof Error && error.name === 'AbortError') {
@@ -372,7 +372,7 @@ export class PageConfigLoader implements ConfigLoader {
         throw new Error(`${errorMsg}: ${url}`)
       }
 
-      const result = await response.json() as PageConfig
+      const result = await response.json() as T
       pageLogger.debug('本地配置加载成功', { url })
       return result
     } catch (error) {

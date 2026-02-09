@@ -183,6 +183,13 @@ export class AuthService implements IAuthService {
   }
 
   /**
+   * 是否已认证
+   */
+  isAuthenticated(): boolean {
+    return !!this.getToken() || !!this.config.enableMock
+  }
+
+  /**
    * 获取 Token
    */
   getToken(): string | null {
