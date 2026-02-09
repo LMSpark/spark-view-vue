@@ -38,7 +38,6 @@ import {
   DATA_SOURCE
 } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
-import type { User } from './types'
 
 interface Props {
   config: Partial<ComponentContext> & {
@@ -47,7 +46,7 @@ interface Props {
       dataset?: {
         tables?: {
           Users?: {
-            rows?: User[]
+            rows?: Record<string, unknown>[]
           }
         }
       }
@@ -138,7 +137,7 @@ provideCapability(SELECTION, {
     sparkLogger.info('❌ Deselected row:', id)
   },
   selectAll: () => {
-    usersFromConfig.value.forEach(u => selectedIds.value.add(u.id))
+    usersFromConfig.value.forEach(u => selectedIds.value.add(u['id'] as number))
     gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
     sparkLogger.info('☑️ Selected all rows')
   },
@@ -170,7 +169,7 @@ const handleRefresh = () => {
 }
 
 const handleSelectAll = () => {
-  usersFromConfig.value.forEach(u => selectedIds.value.add(u.id))
+  usersFromConfig.value.forEach(u => selectedIds.value.add(u['id'] as number))
   gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
 }
 
