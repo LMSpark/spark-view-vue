@@ -81,9 +81,10 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       // 创建 DataSet (使用工厂模式)
       dataSet.value = DataSetManager.create(pageData.dataset as IDataSet, defaultDataLoader)
       
-      // 移除 pageData.dataset.tables 引用
-      if (pageData.dataset && typeof pageData.dataset === 'object' && 'tables' in pageData.dataset) {
-        delete (pageData.dataset as Record<string, unknown>).tables
+      // 将 DataSet 实例的 tables 赋值给 pageData.dataset.tables，以支持 dataKey 绑定
+      // 这样 rule.json 中的 dataKey (如 "dataset.tables.Users.rows") 才能正确访问数据
+      if (dataSet.value && pageData.dataset && typeof pageData.dataset === 'object') {
+        (pageData.dataset as Record<string, unknown>).tables = dataSet.value.tables
       }
       
       // 注意：不需要设置 context.$dataSet，因为 PageRenderer 已通过 getter 提供访问
