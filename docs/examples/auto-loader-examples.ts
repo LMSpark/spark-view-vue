@@ -18,7 +18,7 @@ export async function example1_simpleSetup() {
   app.use(Spark.createPlugin())
   
   // 🎯 自动注册所有组件（一行代码）
-  const { setupAutoRegister } = await import('./bootstrap/auto-register')
+  const { setupAutoRegister } = await import('../../src/bootstrap/auto-register')
   await setupAutoRegister(app, {
     mode: 'demand',      // 按需加载模式
     showProgress: true   // 显示加载进度
@@ -84,7 +84,7 @@ export async function example3_envBasedSetup() {
   const app = createApp({})
   app.use(Spark.createPlugin())
   
-  const { setupAutoRegister } = await import('./bootstrap/auto-register')
+  const { setupAutoRegister } = await import('../../src/bootstrap/auto-register')
   
   // 根据环境选择加载模式
   if (import.meta.env.DEV) {
@@ -216,7 +216,7 @@ export async function example7_withRouter() {
   
   app.use(Spark.createPlugin())
   
-  const { setupAutoRegister } = await import('./bootstrap/auto-register')
+  const { setupAutoRegister } = await import('../../src/bootstrap/auto-register')
   const loader = await setupAutoRegister(app, { mode: 'demand' })
   
   // 路由守卫中预加载组件
@@ -319,7 +319,7 @@ export async function example9_migration() {
   const app = createApp({})
   app.use(Spark.createPlugin())
   
-  const { setupAutoRegister } = await import('./bootstrap/auto-register')
+  const { setupAutoRegister } = await import('../../src/bootstrap/auto-register')
   await setupAutoRegister(app)
   
   // 完成！所有组件自动注册
@@ -333,7 +333,7 @@ export async function example10_performance() {
   const app = createApp({})
   app.use(Spark.createPlugin())
   
-  const { setupAutoRegister } = await import('./bootstrap/auto-register')
+  const { setupAutoRegister } = await import('../../src/bootstrap/auto-register')
   
   console.time('  📦 组件加载')
   await setupAutoRegister(app, { mode: 'demand' })
