@@ -6,6 +6,14 @@ import fs from 'fs'
 import axios from 'axios'
 import { parse } from 'vue-docgen-api'
 import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
+import {
+  COMPONENT_SCAN_PATTERNS,
+  COMPONENT_EXCLUDE_PATTERNS,
+  SYNC_COMPONENTS,
+  ASYNC_COMPONENTS,
+  SIZE_THRESHOLD,
+  COMPONENT_CAPABILITIES
+} from './tools/spark-components-config'
 
 /**
  * 构建模式
@@ -67,73 +75,73 @@ export default defineConfig({
     }),
     
     // ✨ 智能模式：编译时组件注册 - 零运行时开销
-    // 🔄 经典模式：运行时注册 - 更灵活
+    // 🔄 经典模式：提供空模块以保持 import 兼容
     ...(isSmartMode ? [
       sparkComponentsPlugin({
-        // 扫描组件目录
-        patterns: [
-          './features/**/*.vue',
-          './src/components/**/*.vue',
-          './packages/*/src/components/**/*.vue'
-        ],
-        
-        // 同步加载的核心组件
-        syncComponents: [
-          'PageRenderer',
-          'SparkComponentRenderer',
-          'ErrorFallback',
-          'UserGrid',
-          'UserRow',
-          'UserField'
-        ],
-        
-        // 异步加载的大型/低频组件
-        asyncComponents: [
-          '*EJ2*',      // Syncfusion 组件
-          '*Demo',      // 演示组件
-          'Capability*', // 能力展示
-          'JsonRenderer*',
-          'Tree*'
-        ],
-        
-        // 文件大小阈值 (KB)
-        sizeThreshold: 50,
-        
-        // 排除的文件
-        exclude: [
-          'App.vue',
-          '**/*.test.vue',
-          '**/*.spec.vue'
-        ],
-        
-        // 开发环境显示详细日志
+        // 使用统一配置源
+        patterns: [...COMPONENT_SCAN_PATTERNS],
+        syncComponents: [...SYNC_COMPONENTS],
+        asyncComponents: [...ASYNC_COMPONENTS],
+        sizeThreshold: SIZE_THRESHOLD,
+        exclude: [...COMPONENT_EXCLUDE_PATTERNS],
         verbose: false
       })
-    ] : []),
+    ] : [
+      // Classic 模式：提供空的 virtual:spark-components 占位模块
+      {
+        name: 'spark-components-fallback',
+        resolveId(id: string) {
+          if (id === 'virtual:spark-components') return '\0virtual:spark-components'
+        },
+        load(id: string) {
+          if (id === '\0virtual:spark-components') {
+            return `
+export function registerComponents() { return null }
+export function getComponentMetadata() { return [] }
+export default registerComponents
+`
+          }
+        }
+      }
+    ]),
     
     {
       name: 'generate-component-library',
       buildStart() {
         console.log('开始生成Vue组件资源库...')
       },
-      async generateBundle(options, bundle) {
+      async generateBundle() {
         const componentLibrary: Record<string, any> = {}
         
-        // 扫描组件目录 - 包含所有可能的组件位置
+        // 使用统一配置源获取扫描目录
         const componentDirs = [
-          // SPARK 包组件
           path.resolve(__dirname, 'packages/spark-component/src/components'),
           path.resolve(__dirname, 'packages/spark-renderer/src/components'),
-          
-          // Features 组件
           path.resolve(__dirname, 'features/spark/components'),
           path.resolve(__dirname, 'features/spark-ej2/components'),
-          
-          // 应用组件
           path.resolve(__dirname, 'src/components'),
           path.resolve(__dirname, 'src/components/demo'),
           path.resolve(__dirname, 'src/views')
         ]
+
+        // ── kebab-case 转换工具（处理数字+字母边界如 EJ2Grid → ej2-grid）──
+        const toKebab = (s: string) => s
+          .replace(/([a-z])([A-Z])/g, '$1-$2')
+          .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+          .replace(/([a-zA-Z])(\d)/g, '$1-$2')
+          .replace(/(\d)([a-zA-Z])/g, '$1-$2')
+          .replace(/[\s_]+/g, '-')
+          .toLowerCase()
+
+        // ── 判断加载策略 ──
+        const matchPattern = (name: string, patterns: readonly string[]) =>
+          patterns.some(p => new RegExp('^' + p.replace(/\*/g, '.*') + '$', 'i').test(name))
+
+        const getStrategy = (name: string): 'sync' | 'async' => {
+          if (matchPattern(name, SYNC_COMPONENTS)) return 'sync'
+          if (matchPattern(name, ASYNC_COMPONENTS)) return 'async'
+          return 'sync'
+        }
         
         for (const componentDir of componentDirs) {
           if (!fs.existsSync(componentDir)) continue
@@ -203,6 +211,16 @@ export default defineConfig({
                 
                 // AI 知识库增强字段
                 exportName: docs.exportName,
+
+                // ── SPARK 特有元数据 ──
+                spark: {
+                  // 注册类型（kebab-case）
+                  type: toKebab(componentName),
+                  // 加载策略
+                  loadStrategy: getStrategy(componentName),
+                  // 能力系统（provide / consume）
+                  capabilities: COMPONENT_CAPABILITIES[componentName] || null,
+                },
                 
                 // 统计信息（便于 AI 理解组件复杂度）
                 complexity: {
@@ -328,8 +346,8 @@ export default defineConfig({
             return 'form-create'
           }
           // SPARK packages
-          if (id.includes('packages/spark-core')) {
-            return 'spark-core'
+          if (id.includes('packages/spark-component')) {
+            return 'spark-component'
           }
           if (id.includes('packages/spark-data')) {
             return 'spark-data'

@@ -480,6 +480,19 @@
     "methods": [],
     "sourcePath": "packages\\spark-renderer\\src\\components\\PageRenderer.vue",
     "exportName": "default",
+    "spark": {
+      "type": "page-renderer",
+      "loadStrategy": "sync",
+      "capabilities": {
+        "provides": [
+          "PAGE_CONTEXT",
+          "DATA_SET_STATE"
+        ],
+        "consumes": [
+          "APP_SERVICES"
+        ]
+      }
+    },
     "complexity": {
       "propsCount": 11,
       "eventsCount": 0,
@@ -531,6 +544,18 @@
     "methods": [],
     "sourcePath": "features\\spark\\components\\SparkComponentRenderer.vue",
     "exportName": "default",
+    "spark": {
+      "type": "spark-component-renderer",
+      "loadStrategy": "sync",
+      "capabilities": {
+        "provides": [
+          "COMPONENT_CONTEXT"
+        ],
+        "consumes": [
+          "APP_SERVICES"
+        ]
+      }
+    },
     "complexity": {
       "propsCount": 2,
       "eventsCount": 0,
@@ -582,6 +607,20 @@
     "methods": [],
     "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Column.vue",
     "exportName": "default",
+    "spark": {
+      "type": "spark-ej2column",
+      "loadStrategy": "async",
+      "capabilities": {
+        "consumes": [
+          "DATA_SOURCE",
+          "SELECTION",
+          "GRID_API"
+        ],
+        "nestableIn": [
+          "SparkEJ2Grid"
+        ]
+      }
+    },
     "complexity": {
       "propsCount": 2,
       "eventsCount": 0,
@@ -617,6 +656,23 @@
     "methods": [],
     "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Grid.vue",
     "exportName": "default",
+    "spark": {
+      "type": "spark-ej2grid",
+      "loadStrategy": "async",
+      "capabilities": {
+        "provides": [
+          "DATA_SOURCE",
+          "SELECTION",
+          "GRID_API"
+        ],
+        "consumes": [
+          "APP_SERVICES"
+        ],
+        "children": [
+          "SparkEJ2Column"
+        ]
+      }
+    },
     "complexity": {
       "propsCount": 1,
       "eventsCount": 0,
@@ -658,6 +714,11 @@
     "methods": [],
     "sourcePath": "src\\components\\ErrorFallback.vue",
     "exportName": "default",
+    "spark": {
+      "type": "error-fallback",
+      "loadStrategy": "sync",
+      "capabilities": null
+    },
     "complexity": {
       "propsCount": 1,
       "eventsCount": 0,
@@ -676,6 +737,11 @@
     "methods": [],
     "sourcePath": "src\\components\\demo\\JsonRendererDemo.vue",
     "exportName": "default",
+    "spark": {
+      "type": "json-renderer-demo",
+      "loadStrategy": "async",
+      "capabilities": null
+    },
     "complexity": {
       "propsCount": 0,
       "eventsCount": 0,
@@ -820,6 +886,19 @@
     "methods": [],
     "sourcePath": "src\\components\\demo\\UserField.vue",
     "exportName": "default",
+    "spark": {
+      "type": "user-field",
+      "loadStrategy": "sync",
+      "capabilities": {
+        "consumes": [
+          "DATA_SOURCE",
+          "FIELD_METADATA"
+        ],
+        "nestableIn": [
+          "UserRow"
+        ]
+      }
+    },
     "complexity": {
       "propsCount": 5,
       "eventsCount": 0,
@@ -868,6 +947,22 @@
     "methods": [],
     "sourcePath": "src\\components\\demo\\UserGrid.vue",
     "exportName": "default",
+    "spark": {
+      "type": "user-grid",
+      "loadStrategy": "sync",
+      "capabilities": {
+        "provides": [
+          "DATA_SOURCE",
+          "SELECTION"
+        ],
+        "consumes": [
+          "APP_SERVICES"
+        ],
+        "children": [
+          "UserRow"
+        ]
+      }
+    },
     "complexity": {
       "propsCount": 1,
       "eventsCount": 0,
@@ -934,6 +1029,22 @@
     "methods": [],
     "sourcePath": "src\\components\\demo\\UserRow.vue",
     "exportName": "default",
+    "spark": {
+      "type": "user-row",
+      "loadStrategy": "sync",
+      "capabilities": {
+        "consumes": [
+          "DATA_SOURCE",
+          "SELECTION"
+        ],
+        "nestableIn": [
+          "UserGrid"
+        ],
+        "children": [
+          "UserField"
+        ]
+      }
+    },
     "complexity": {
       "propsCount": 1,
       "eventsCount": 1,
@@ -952,6 +1063,11 @@
     "methods": [],
     "sourcePath": "src\\views\\About.vue",
     "exportName": "default",
+    "spark": {
+      "type": "about",
+      "loadStrategy": "sync",
+      "capabilities": null
+    },
     "complexity": {
       "propsCount": 0,
       "eventsCount": 0,
@@ -970,6 +1086,11 @@
     "methods": [],
     "sourcePath": "src\\views\\CapabilityDemo.vue",
     "exportName": "default",
+    "spark": {
+      "type": "capability-demo",
+      "loadStrategy": "async",
+      "capabilities": null
+    },
     "complexity": {
       "propsCount": 0,
       "eventsCount": 0,
@@ -988,6 +1109,11 @@
     "methods": [],
     "sourcePath": "src\\views\\ComponentRendererDemo.vue",
     "exportName": "default",
+    "spark": {
+      "type": "component-renderer-demo",
+      "loadStrategy": "async",
+      "capabilities": null
+    },
     "complexity": {
       "propsCount": 0,
       "eventsCount": 0,
@@ -1006,6 +1132,11 @@
     "methods": [],
     "sourcePath": "src\\views\\Dashboard.vue",
     "exportName": "default",
+    "spark": {
+      "type": "dashboard",
+      "loadStrategy": "sync",
+      "capabilities": null
+    },
     "complexity": {
       "propsCount": 0,
       "eventsCount": 0,
@@ -1024,6 +1155,11 @@
     "methods": [],
     "sourcePath": "src\\views\\Settings.vue",
     "exportName": "default",
+    "spark": {
+      "type": "settings",
+      "loadStrategy": "sync",
+      "capabilities": null
+    },
     "complexity": {
       "propsCount": 0,
       "eventsCount": 0,
@@ -1042,6 +1178,11 @@
     "methods": [],
     "sourcePath": "src\\views\\TenantConfigDemo.vue",
     "exportName": "default",
+    "spark": {
+      "type": "tenant-config-demo",
+      "loadStrategy": "async",
+      "capabilities": null
+    },
     "complexity": {
       "propsCount": 0,
       "eventsCount": 0,

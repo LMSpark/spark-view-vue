@@ -28,6 +28,10 @@ import { SparkApp, registerBuiltinPlugins, PluginManager } from '@spark-view/spa
 import { createLogger } from '@spark-view/spark-app'
 const startupLogger = createLogger('main')
 
+// 编译时组件注册（smart 模式由 Vite 插件生成完整代码，classic 模式返回 null）
+const { registerComponents } = await import('virtual:spark-components')
+const compiledRegister = registerComponents() !== null ? registerComponents : undefined
+
 // 配置加载器
 import { loadAppConfig } from './config/loader'
 
@@ -95,7 +99,11 @@ async function startApp() {
       plugins,
       
       // === SPARK 组件系统配置（从 JSON 加载）===
-      spark: appConfig.spark,
+      spark: {
+        ...appConfig.spark,
+        // 编译时注册函数（smart 模式自动注入，classic 模式为 undefined）
+        registerComponents: compiledRegister
+      },
       
       // === 页面配置系统（从 JSON 加载）===
       pageConfig: appConfig.pageConfig,

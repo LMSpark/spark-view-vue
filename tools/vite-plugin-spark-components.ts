@@ -405,7 +405,6 @@ class ComponentAnalyzer {
  */
 
 import { Spark } from '@spark-view/spark-component'
-import type { App } from 'vue'
 
 /* -----------------------------------------------------------------------------
  * 同步加载组件 (${syncComponents.length} 个)
@@ -428,17 +427,10 @@ ${asyncComponents.map(c => c.importStatement).join('\n')}
 /**
  * 注册所有组件到 SPARK Registry
  * 
- * @param app - Vue 应用实例（可选）
- * @returns 组件统计信息
- * 
- * @example
- * import { registerComponents } from 'virtual:spark-components'
- * 
- * const app = createApp(App)
- * const stats = registerComponents(app)
- * console.log(\`已注册 \${stats.total} 个组件\`)
+ * @param {import('vue').App} [app] - Vue 应用实例（可选）
+ * @returns {{ total: number, sync: number, async: number, components: Map }} 组件统计信息
  */
-export function registerComponents(app?: App) {
+export function registerComponents(app) {
   const registry = Spark.getRegistry()
   
   // 注册同步组件
