@@ -106,7 +106,8 @@ export interface ComponentConfig {
 // ============================================================================
 
 export interface ComponentRegistry {
-  register(type: string, component: unknown, meta?: Record<string, unknown>): void
+  register(type: string, component: unknown, meta?: Record<string, unknown>, options?: { silent?: boolean }): void
+  registerOnce(type: string, component: unknown, meta?: Record<string, unknown>): boolean
   get(type: string): ComponentDefinition | undefined
   has(type: string): boolean
   unregister(type: string): boolean

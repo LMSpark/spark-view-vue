@@ -134,6 +134,7 @@ export function createComponentRegistry(): ComponentRegistry {
      * @param type - 组件类型标识（kebab-case），唯一键
      * @param component - 组件定义（Vue 组件对象或异步组件）
      * @param meta - 可选的组件元数据，用于扩展信息存储
+     * @param options - 注册选项
      * @throws {Error} 当 type 为空字符串时抛出错误
      *
      * @example
@@ -150,16 +151,56 @@ export function createComponentRegistry(): ComponentRegistry {
      * @example
      * // 覆盖现有组件（会记录警告）
      * registry.register('user-grid', NewUserGrid) // 警告：Overwriting component: user-grid
+     * 
+     * @example
+     * // 静默覆盖（用于 HMR）
+     * registry.register('user-grid', NewUserGrid, undefined, { silent: true })
      */
-    register(type: string, component: unknown, meta?: Record<string, unknown>): void {
+    register(
+      type: string, 
+      component: unknown, 
+      meta?: Record<string, unknown>,
+      options?: { silent?: boolean }
+    ): void {
       if (!type) throw new Error('Component type is required')
 
-      if (components.has(type)) {
+      if (components.has(type) && !options?.silent) {
         logger.warn(`Overwriting component: ${type}`)
       }
 
       components.set(type, { type, component, meta })
+      
+      if (!options?.silent) {
+        logger.debug(`Registered: ${type}`)
+      }
+    },
+
+    /**
+     * 仅在组件未注册时注册（幂等操作）
+     * 
+     * 用于避免重复注册警告，适用于：
+     * - 多次调用的初始化代码
+     * - HMR 热更新场景
+     * - 模块重新导入场景
+     *
+     * @param type - 组件类型标识
+     * @param component - 组件定义
+     * @param meta - 组件元数据（可选）
+     * @returns 是否执行了注册（true: 已注册，false: 跳过）
+     *
+     * @example
+     * // 多次调用不会产生警告
+     * registry.registerOnce('user-grid', UserGrid) // ✅ 注册成功
+     * registry.registerOnce('user-grid', UserGrid) // ✅ 跳过，无警告
+     */
+    registerOnce(type: string, component: unknown, meta?: Record<string, unknown>): boolean {
+      if (components.has(type)) {
+        return false
+      }
+
+      components.set(type, { type, component, meta })
       logger.debug(`Registered: ${type}`)
+      return true
     },
 
     /**

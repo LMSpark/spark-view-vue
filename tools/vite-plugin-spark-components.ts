@@ -247,7 +247,8 @@ function generateRegisterStatement(componentName: string): string {
     .map((part, i) => i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1))
     .join('')
   
-  return `  registry.register('${componentName}', ${varName})`
+  // 使用 registerOnce 避免重复注册警告（HMR 场景）
+  return `  registry.registerOnce('${componentName}', ${varName})`
 }
 
 /* -----------------------------------------------------------------------------
