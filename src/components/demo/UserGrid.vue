@@ -41,11 +41,80 @@ import {
 } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 
+/**
+ * 用户网格组件 - SPARK 能力系统综合演示
+ * 
+ * @component UserGrid
+ * @description
+ * 功能完整的用户列表网格组件，展示 SPARK 能力系统的核心特性：
+ * - **能力消费**：从父组件获取 APP_SERVICES（路由、日志）
+ * - **能力提供**：向子组件提供 FIELD_METADATA、SELECTION、GRID_EVENTS、DATA_SOURCE
+ * - **递归渲染**：动态渲染 UserRow 子组件
+ * - **状态管理**：维护选中状态和用户交互
+ * - **事件总线**：通过 GRID_EVENTS 广播用户操作事件
+ * 
+ * @example
+ * ```vue
+ * <UserGrid
+ *   :config="{
+ *     type: 'user-grid',
+ *     id: 'grid-1',
+ *     props: {
+ *       dataset: {
+ *         tables: {
+ *           Users: {
+ *             columns: [
+ *               { name: 'id', type: 'number', label: 'ID' },
+ *               { name: 'name', type: 'string', label: '姓名' },
+ *               { name: 'email', type: 'string', label: '邮箱' }
+ *             ],
+ *             rows: [
+ *               { id: 1, name: '张三', email: 'zhang@example.com' },
+ *               { id: 2, name: '李四', email: 'li@example.com' }
+ *             ]
+ *           }
+ *         }
+ *       }
+ *     },
+ *     children: [
+ *       { type: 'user-row', id: 'row-1' },
+ *       { type: 'user-row', id: 'row-2' }
+ *     ]
+ *   }"
+ * />
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
+
 // ============================================================
 // 类型定义
 // ============================================================
 
+/**
+ * 组件属性定义
+ */
 interface Props {
+  /**
+   * 组件配置对象
+   * 必须包含 props.dataset.tables.Users 数据结构
+   * @example
+   * {
+   *   type: 'user-grid',
+   *   props: {
+   *     dataset: {
+   *       tables: {
+   *         Users: {
+   *           columns: [{ name: 'id', type: 'number', label: 'ID' }],
+   *           rows: [{ id: 1, name: '张三' }]
+   *         }
+   *       }
+   *     }
+   *   },
+   *   children: [{ type: 'user-row', id: 'row-1' }]
+   * }
+   */
   config: Partial<ComponentContext> & {
     props?: {
       // 仅支持 DataSet 格式

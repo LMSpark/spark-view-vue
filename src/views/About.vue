@@ -14,6 +14,11 @@
         </p>
 
         <!-- 渲染模式对比 -->
+        <!-- 渲染模式对比 -->
+        <!--
+          配置页面 vs Vue 组件页面特性对比
+          展示两种开发模式的优势和适用场景
+        -->
         <el-row :gutter="20" class="comparison-row">
           <el-col :span="12">
             <el-card header="📊 配置页面" class="mode-card config-mode">
@@ -97,6 +102,33 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 关于页面 - 系统介绍和架构说明
+ * 
+ * @component About
+ * @description
+ * 系统概览页面，展示 SPARK 混合渲染系统的核心特性、技术架构和开发模式对比。
+ * 帮助用户和开发者快速了解系统能力和使用场景。
+ * 
+ * 核心功能：
+ * 1. **渲染模式对比**：对比配置页面和 Vue 组件页面的优劣势
+ * 2. **技术架构图**：展示 L3 应用层、L2 路由层、L1 渲染层的三层架构
+ * 3. **核心特性展示**：快速启动、混合渲染、响应式设计、类型安全、高性能、可扩展
+ * 4. **快速导航**：提供快速跳转到其他示例页面的入口
+ * 5. **友好界面**：图标化展示，提升可读性和美观度
+ * 
+ * @example
+ * 路由配置：
+ * ```typescript
+ * {
+ *   path: '/about',
+ *   component: About
+ * }
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
 import { ref } from 'vue'
 
 // 核心特性

@@ -62,11 +62,20 @@ export default defineConfig({
       async generateBundle(options, bundle) {
         const componentLibrary: Record<string, any> = {}
         
-        // 扫描组件目录
+        // 扫描组件目录 - 包含所有可能的组件位置
         const componentDirs = [
+          // SPARK 包组件
           path.resolve(__dirname, 'packages/spark-component/src/components'),
+          path.resolve(__dirname, 'packages/spark-renderer/src/components'),
+          
+          // Features 组件
           path.resolve(__dirname, 'features/spark/components'),
-          path.resolve(__dirname, 'features/spark-ej2/components')
+          path.resolve(__dirname, 'features/spark-ej2/components'),
+          
+          // 应用组件
+          path.resolve(__dirname, 'src/components'),
+          path.resolve(__dirname, 'src/components/demo'),
+          path.resolve(__dirname, 'src/views')
         ]
         
         for (const componentDir of componentDirs) {
@@ -78,19 +87,76 @@ export default defineConfig({
             const filePath = path.resolve(componentDir, file)
             
             try {
-              // 提取元数据
+              // 提取完整元数据（用于 AI 知识库）
               const docs = await parse(filePath)
               const componentName = file.replace('.vue', '')
               
+              // 增强 props 信息提取
+              const enhancedProps = (docs.props || []).map(prop => ({
+                name: prop.name,
+                type: prop.type,
+                required: prop.required,
+                defaultValue: prop.defaultValue,
+                description: prop.description || '',
+                tags: prop.tags || {},  // JSDoc 标签（@param, @example 等）
+                values: prop.values,     // 枚举值
+              }))
+
+              // 增强 events 信息提取
+              const enhancedEvents = (docs.events || []).map(event => ({
+                name: event.name,
+                description: event.description || '',
+                type: event.type,
+                properties: event.properties || [],  // 事件参数
+                tags: event.tags || {}
+              }))
+
+              // 增强 slots 信息提取
+              const enhancedSlots = (docs.slots || []).map(slot => ({
+                name: slot.name,
+                description: slot.description || '',
+                bindings: slot.bindings || [],  // 插槽绑定的数据
+                tags: slot.tags || {}
+              }))
+
+              // 提取 methods（如果通过 expose 暴露）
+              const methods = (docs.methods || []).map(method => ({
+                name: method.name,
+                description: method.description || '',
+                params: method.params || [],
+                returns: method.returns,
+                tags: method.tags || {}
+              }))
+
               componentLibrary[componentName] = {
-                props: docs.props || [],
-                events: docs.events || [],
-                slots: docs.slots || [],
+                // 基本信息
+                name: componentName,
+                displayName: docs.displayName || componentName,
                 description: docs.description || '',
-                sourcePath: path.relative(__dirname, filePath)
+                tags: docs.tags || {},  // 组件级别的 JSDoc 标签
+                
+                // 详细元数据
+                props: enhancedProps,
+                events: enhancedEvents,
+                slots: enhancedSlots,
+                methods: methods,
+                
+                // 源码信息
+                sourcePath: path.relative(__dirname, filePath),
+                
+                // AI 知识库增强字段
+                exportName: docs.exportName,
+                
+                // 统计信息（便于 AI 理解组件复杂度）
+                complexity: {
+                  propsCount: enhancedProps.length,
+                  eventsCount: enhancedEvents.length,
+                  slotsCount: enhancedSlots.length,
+                  methodsCount: methods.length
+                }
               }
               
-              console.log(`✓ 提取组件元数据: ${componentName}`)
+              console.log(`✓ 提取组件元数据: ${componentName} (${enhancedProps.length} props, ${enhancedEvents.length} events, ${enhancedSlots.length} slots, ${methods.length} methods)`)
             } catch (error) {
               console.warn(`⚠ 无法提取 ${file} 的元数据:`, error.message)
               

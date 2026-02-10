@@ -13,6 +13,53 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * SPARK 组件系统演示页面 - 配置驱动渲染
+ * 
+ * @component ComponentRendererDemo
+ * @description
+ * 演示 SPARK 组件系统的核心功能：通过 JSON 配置 + SparkComponentRenderer 实现零代码组件渲染。
+ * 展示配置驱动开发模式，说明如何通过简单的 JSON 配置生成复杂的用户界面。
+ * 
+ * 核心功能：
+ * 1. **SparkComponentRenderer 递归渲染**：展示通用递归渲染器的使用方式
+ * 2. **JSON 配置展示**：可折叠查看完整的组件配置 JSON
+ * 3. **组件库集成**：演示 @spark-view/spark-component 的使用
+ * 4. **零代码开发**：无需编写 Vue 组件代码，仅通过配置生成界面
+ * 5. **响应式渲染**：配置变化自动更新界面
+ * 
+ * @example
+ * 路由配置：
+ * ```typescript
+ * {
+ *   path: '/component-renderer',
+ *   component: ComponentRendererDemo
+ * }
+ * ```
+ * 
+ * @example
+ * 组件配置示例：
+ * ```json
+ * {
+ *   "type": "user-grid",
+ *   "id": "demo-grid",
+ *   "props": {
+ *     "dataset": {
+ *       "tables": {
+ *         "Users": {
+ *           "columns": [...],
+ *           "rows": [...]
+ *         }
+ *       }
+ *     }
+ *   },
+ *   "children": [...]
+ * }
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
 import JsonRendererDemo from '../components/demo/JsonRendererDemo.vue'
 </script>
 

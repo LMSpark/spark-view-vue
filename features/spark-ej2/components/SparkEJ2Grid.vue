@@ -12,13 +12,62 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * SPARK EJ2 Grid 组件 - Syncfusion Grid 集成
+ * 
+ * @component SparkEJ2Grid
+ * @description
+ * 基于 Syncfusion EJ2 Grid 的 SPARK 网格组件，支持动态列配置、数据绑定和能力提供。
+ * 采用按需加载策略，在 EJ2 库不可用时自动降级到占位组件，保证系统稳定运行。
+ * 
+ * 核心特性：
+ * 1. **按需加载**：动态导入 EJ2 库，减小首屏体积
+ * 2. **优雅降级**：库加载失败时使用占位组件，不影响开发和测试
+ * 3. **能力提供**：提供 GRID_INSTANCE、DATA_SOURCE、COLUMN_MANAGER 能力
+ * 4. **递归渲染**：自动渲染子列组件（SparkEJ2Column）
+ * 5. **配置驱动**：支持 EJ2 原生配置和 SPARK 扩展配置
+ * 
+ * @example
+ * ```vue
+ * <SparkEJ2Grid
+ *   :config="{
+ *     type: 'spark-ej2-grid',
+ *     id: 'user-grid',
+ *     dataSource: users,
+ *     allowPaging: true,
+ *     pageSettings: { pageSize: 10 },
+ *     children: [
+ *       { type: 'spark-ej2-column', field: 'name', headerText: '姓名' },
+ *       { type: 'spark-ej2-column', field: 'email', headerText: '邮箱' }
+ *     ]
+ *   }"
+ * />
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
 import { computed, ref, defineComponent, onMounted, h, type Component } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { GRID_INSTANCE, DATA_SOURCE, COLUMN_MANAGER } from '@spark-view/spark-utils'
 import type { SparkEJ2GridConfig } from '../types'
 
-// 组件 Props
+/**
+ * 组件属性定义
+ */
 interface Props {
+  /**
+   * EJ2 Grid 配置对象
+   * 包含 EJ2 原生属性（dataSource, allowPaging 等）和 SPARK 扩展属性（children）
+   * @example
+   * {
+   *   type: 'spark-ej2-grid',
+   *   dataSource: [...],
+   *   allowPaging: true,
+   *   pageSettings: { pageSize: 20 },
+   *   children: [{ type: 'spark-ej2-column', field: 'id' }]
+   * }
+   */
   config: SparkEJ2GridConfig
 }
 

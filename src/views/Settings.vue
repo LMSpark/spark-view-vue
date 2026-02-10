@@ -153,6 +153,50 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 系统设置页面 - 配置管理和系统监控
+ * 
+ * @component Settings
+ * @description
+ * 系统配置管理页面，提供应用设置、渲染模式配置、开发工具选项和系统监控功能。
+ * 展示路由统计、操作日志，支持配置持久化到本地存储。
+ * 
+ * 核心功能：
+ * 1. **应用设置**：应用名称、版本、主题模式配置
+ * 2. **渲染设置**：页面渲染模式选择、动态路由、配置缓存开关
+ * 3. **开发设置**：日志级别、开发工具、热重载配置
+ * 4. **系统监控**：实时显示总路由数、配置页面数、Vue 页面数
+ * 5. **操作日志**：记录和显示系统操作历史
+ * 6. **配置持久化**：保存设置到 localStorage
+ * 
+ * @example
+ * 路由配置：
+ * ```typescript
+ * {
+ *   path: '/settings',
+ *   component: Settings
+ * }
+ * ```
+ * 
+ * @example
+ * 配置数据结构：
+ * ```typescript
+ * {
+ *   appName: 'SPARK 混合渲染系统',
+ *   appVersion: '1.0.0',
+ *   theme: 'light' | 'dark' | 'auto',
+ *   renderModes: ['vue-component', 'config-page', 'spark-component'],
+ *   dynamicRouting: true,
+ *   configCache: true,
+ *   logLevel: 'debug' | 'info' | 'warn' | 'error',
+ *   devTools: true,
+ *   hotReload: true
+ * }
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'

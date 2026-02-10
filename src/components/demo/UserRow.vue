@@ -26,12 +26,53 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * UserRow - 用户行组件
+ * 
+ * 用于在表格中展示单条用户记录，支持选择、点击交互和子组件渲染。
+ * 该组件演示了 SPARK 能力系统的能力提供和消费：
+ * - 消费 Grid 层的选择能力（SELECTION）和网格事件（GRID_EVENTS）
+ * - 提供行级数据能力（ROW_DATA）和行事件（ROW_EVENTS）给子字段组件
+ * 
+ * @component UserRow
+ * @example
+ * ```vue
+ * <UserRow 
+ *   :config="{
+ *     type: 'user-row',
+ *     props: { user: { id: 1, name: 'John' } },
+ *     children: [
+ *       { type: 'user-field', props: { field: 'name' } }
+ *     ]
+ *   }"
+ *   @row-click="handleRowClick"
+ * />
+ * ```
+ * 
+ * @author SPARK Team
+ * @since v1.0.0
+ */
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 
 interface Props {
+  /**
+   * 组件配置对象，包含用户数据和子组件配置
+   * @required
+   * @example 
+   * {
+   *   type: 'user-row',
+   *   props: { 
+   *     user: { id: 1, name: 'John', email: 'john@example.com' } 
+   *   },
+   *   children: [
+   *     { type: 'user-field', props: { field: 'name' } },
+   *     { type: 'user-field', props: { field: 'email' } }
+   *   ]
+   * }
+   */
   config: Partial<ComponentContext>
 }
 
@@ -45,6 +86,16 @@ const childConfigs = computed(() =>
     (c): c is ComponentContext => typeof c.type === 'string' && c.type.length > 0
   )
 )
+
+/**
+ * 行点击事件
+ * @event row-click
+ * @param {Record<string, unknown>} user - 被点击的用户数据对象
+ * @example
+ * ```vue
+ * <UserRow @row-click="(user) => console.log('Clicked:', user)" />
+ * ```
+ */
 const emit = defineEmits<{
   'row-click': [user: Record<string, unknown>]
 }>()

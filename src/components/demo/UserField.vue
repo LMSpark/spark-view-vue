@@ -10,16 +10,66 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * UserField - 用户字段展示组件
+ * 
+ * 用于显示用户数据的单个字段，支持图标、标签和值的展示。
+ * 该组件演示了 SPARK 能力系统的多层级数据消费：
+ * - 从 Row 层消费行数据（ROW_DATA）
+ * - 从 Grid 层消费字段元数据（FIELD_METADATA）
+ * - 监听行级事件（ROW_EVENTS）
+ * 
+ * @component UserField
+ * @example
+ * ```vue
+ * <UserField 
+ *   :config="{ type: 'user-field', props: { field: 'name' } }"
+ *   label="用户名"
+ *   icon="👤"
+ * />
+ * ```
+ * 
+ * @author SPARK Team
+ * @since v1.0.0
+ */
 import { computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { ROW_DATA, ROW_EVENTS, FIELD_METADATA } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 
 interface Props {
+  /**
+   * 组件配置对象
+   * @required
+   * @example { type: 'user-field', props: { field: 'name', value: 'John' } }
+   */
   config: Partial<ComponentContext>
+  
+  /**
+   * 字段值（当未从 ROW_DATA 获取时使用）
+   * @default undefined
+   * @example 'John Doe' | 25 | true
+   */
   value?: string | number
+  
+  /**
+   * 字段标签文本
+   * @default '' 
+   * @example '用户名' | '年龄' | '状态'
+   */
   label?: string
+  
+  /**
+   * 字段图标 emoji
+   * @default '📝'
+   * @example '👤' | '📧' | '📱'
+   */
   icon?: string
+  
+  /**
+   * 是否高亮显示（用于响应交互事件）
+   * @default false
+   */
   highlight?: boolean
 }
 
