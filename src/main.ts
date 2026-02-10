@@ -15,11 +15,11 @@
  * - L1: @spark-view/spark-app - 应用基础设施层
  * - L2: @spark-view/spark-page-config - 页面配置编排层
  * - L4-L6: @spark-view/spark-component - 组件核心层
+ * 
+ * ⚡ 性能优化：
+ * - Syncfusion 样式按需加载（路由级懒加载，首屏减少 ~800 KB）
+ * - 使用 useSyncfusionLoader 在使用时动态加载，不影响主入口
  */
-
-// Syncfusion 样式（使用本地 npm 包）
-import '@syncfusion/ej2-base/styles/material.css'
-import '@syncfusion/ej2-vue-grids/styles/material.css'
 
 // SPARK 架构包
 import { SparkApp, registerBuiltinPlugins, PluginManager } from '@spark-view/spark-app'
