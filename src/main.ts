@@ -30,7 +30,7 @@ const startupLogger = createLogger('main')
 
 // 编译时组件注册（smart 模式由 Vite 插件生成完整代码，classic 模式返回 null）
 const { registerComponents } = await import('virtual:spark-components')
-const compiledRegister = registerComponents() !== null ? registerComponents : undefined
+const compiledRegister = typeof registerComponents === 'function' ? registerComponents : undefined
 
 // 配置加载器
 import { loadAppConfig } from './config/loader'
@@ -137,8 +137,10 @@ async function startApp() {
         const ComponentRendererDemo = (await import('./views/ComponentRendererDemo.vue')).default
         const TenantConfigDemo = (await import('./views/TenantConfigDemo.vue')).default
         
-        // 注册能力演示组件
-        await import('./components/demo/register')
+        // 注册能力演示组件（仅在非 smart 模式下需要手动注册）
+        if (!compiledRegister) {
+          await import('./components/demo/register')
+        }
         
         // 注册静态路由
         router.addRoute({
