@@ -68,3 +68,11 @@ export type {
 
 /** Vue 依赖注入的 Symbol Keys */
 export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, CAPABILITY_MANAGER_KEY } from './core/types.js'
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 7. 智能加载器（Auto Loader）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/** 智能组件自动加载器：自动扫描、分析和注册组件 */
+export { AutoLoader, createAutoLoader } from './loader/index.js'
+export type { AutoLoaderConfig, ComponentMetadata, LoadStrategy } from './loader/index.js'
