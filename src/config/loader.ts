@@ -257,13 +257,13 @@ export class ConfigLoader {
       config.logger.level = config.logger.level ?? 'info'
       config.logger.showTimestamp = false
       config.logger.enableRemote = true
-      config.config.enableMock = false
+      // 演示项目：不覆盖 enableMock（允许生产环境使用 Mock 数据）
       config.config.logLevel = 'info'
     } else {
       config.logger.level = config.logger.level ?? 'debug'
       config.logger.showTimestamp = true
       config.logger.enableRemote = false
-      config.config.enableMock = true
+      config.config.enableMock = config.config.enableMock ?? true
       config.config.logLevel = 'debug'
     }
     
@@ -299,7 +299,7 @@ export class ConfigLoader {
       config: {
         apiBaseUrl: '/api',
         logLevel: 'debug',
-        enableMock: import.meta.env.DEV,
+        enableMock: true,  // 演示项目始终启用 Mock 数据
         version: '1.0.0',
         features: {
           enableAI: false,

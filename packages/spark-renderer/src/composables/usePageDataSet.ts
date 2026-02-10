@@ -51,7 +51,7 @@ export interface UsePageDataSetReturn {
 export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetReturn {
   const { 
     pageData, 
-    context, 
+    context: _context,  // 保留以维持接口一致性，但标记为未使用
     originalRules,
     formApi,
     enableDataSet = true,
@@ -162,7 +162,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
   const clearDataSet = () => {
     if (dataSet.value) {
       dataSet.value = null
-      context.$dataSet = null
+      // context.$dataSet 是只读 getter，无需手动设置
     }
   }
   
