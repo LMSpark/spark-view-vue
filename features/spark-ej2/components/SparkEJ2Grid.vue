@@ -100,24 +100,25 @@ const PlaceholderGrid = defineComponent({
 })
 
 import { markRaw } from 'vue'
+import { useSyncfusionLoader } from '../composables/useSyncfusionLoader'
 
 // activeComponent 初始为占位组件（markRaw 避免被 reactive 包装）
 const activeComponent = ref<Component>(markRaw(PlaceholderGrid))
 
+// 🚀 路由级懒加载 Syncfusion（CSS + JS）
+const { loadEJ2Grid } = useSyncfusionLoader()
+
 // 尝试按需加载 EJ2 Grid（非强制），加载失败则保持占位组件
-import('@syncfusion/ej2-vue-grids')
-  .then((m: Record<string, unknown>) => {
+loadEJ2Grid()
+  .then((m) => {
     if (m && m.GridComponent) {
       activeComponent.value = markRaw(m.GridComponent as Component)
+      logger.info('✅ EJ2 Grid loaded successfully')
     }
   })
   .catch(e => {
-    logger.info('EJ2 Grid not available, using placeholder', String(e))
+    logger.info('⚠️  EJ2 Grid not available, using placeholder', String(e))
   })
-
-import('@syncfusion/ej2-grids')
-  .then(m => { if (m && m.Grid && m.Page) m.Grid.Inject(m.Page) })
-  .catch(() => {})
 
 // 注册网格相关能力
 const registerGridCapabilities = () => {
