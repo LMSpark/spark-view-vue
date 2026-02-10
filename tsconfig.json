@@ -49,9 +49,9 @@
     "features/**/*.tsx",
     "features/**/*.vue",
     "features/**/*.d.ts",
-    "./packages/spark-core/src/**/*.ts",
+    "./packages/spark-component/src/**/*.ts",
     "vite.config.ts",
-    "packages/spark-core/vitest.config.ts"
+    "packages/spark-component/vitest.config.ts"
   ],
   "exclude": [
     "node_modules",

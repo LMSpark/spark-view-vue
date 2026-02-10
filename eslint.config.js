@@ -11,7 +11,7 @@ export default [
       'packages/**/*.d.ts',
       'packages/**/dist/**',  // 排除所有dist目录
       'API_SIMPLIFICATION_EXAMPLE.ts',
-      'packages/spark-core/tests/**',
+      'packages/spark-component/tests/**',
       'packages/**/tests/**',  // 排除所有包的测试文件
       'tests/**',  // 排除根目录测试文件
       'tools/**',  // 排除工具文件
@@ -51,7 +51,7 @@ export default [
   },
   // Core package restriction: prevent importing concrete UI components into core
   {
-    files: ['packages/spark-core/**'],
+    files: ['packages/spark-component/**'],
     rules: {
       'no-restricted-imports': ['error', { 'patterns': ['**/*.vue', '**/features/**'] }]
     }

@@ -18,6 +18,22 @@ const startLogger = createLogger('start')
 export interface SparkOptions {
   /** 是否启用 SPARK 组件系统（默认 true） */
   enabled?: boolean
+  /** 
+   * 编译时生成的注册函数
+   * 
+   * 当使用 sparkComponentsPlugin (BUILD_MODE=smart) 时，
+   * 传入 virtual:spark-components 导出的 registerComponents 函数。
+   * 
+   * @example
+   * ```typescript
+   * import { registerComponents } from 'virtual:spark-components'
+   * SparkApp.start({
+   *   spark: { registerComponents }
+   * })
+   * ```
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  registerComponents?: (...args: any[]) => { total: number; sync: number; async: number }
 }
 
 /**
@@ -180,6 +196,13 @@ export async function start(options: StartOptions): Promise<void> {
       const { createSparkPlugin } = await import('@spark-view/spark-component')
       // 使用默认全局单例（不传参数）
       app.use(createSparkPlugin())
+
+      // 如果提供了编译时注册函数，立即执行（零运行时开销）
+      if (spark?.registerComponents) {
+        startLogger.debug('执行编译时组件注册...')
+        const stats = spark.registerComponents(app)
+        startLogger.info(`编译时注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
+      }
     }
 
     // 6. 配置动态路由系统
