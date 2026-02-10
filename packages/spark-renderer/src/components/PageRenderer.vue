@@ -306,6 +306,17 @@ const loadPageConfig = async () => {
           returnedCount: Object.keys(pageFunctions.value).length,
           returned: Object.keys(pageFunctions.value)
         })
+        
+        // 执行 __init__ 函数（如果存在）
+        if (pageFunctions.value.__init__ && typeof pageFunctions.value.__init__ === 'function') {
+          try {
+            pageLogger.info('执行 __init__ 函数', { pageId })
+            pageFunctions.value.__init__()
+            pageLogger.info('__init__ 函数执行成功', { pageId })
+          } catch (initError) {
+            pageLogger.error('__init__ 函数执行失败', { pageId, error: initError })
+          }
+        }
       } catch (error) {
         pageLogger.error('页面脚本执行失败', { pageId, error })
         pageFunctions.value = {}
