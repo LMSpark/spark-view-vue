@@ -78,6 +78,35 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       newRule.on = newOn as Record<string, Function | Function[]>
     }
     
+    // 🎯 处理 r-table 的 dataSource 绑定
+    if (newRule.type === 'r-table' && newRule.dataSource) {
+      const dataSource = pageData[newRule.dataSource as string]
+      if (dataSource !== undefined) {
+        newRule.props ??= {}
+        newRule.props.data = dataSource
+      }
+    }
+    
+    // 🎯 处理 r-form 的 dataKey 绑定
+    if (newRule.type === 'r-form' && newRule.dataKey) {
+      const keys = (newRule.dataKey as string).split('.')
+      const value = getNestedValue<Record<string, unknown>>(pageData, keys)
+      if (value !== undefined) {
+        newRule.props ??= {}
+        newRule.props.data = value
+      }
+    }
+    
+    // 🎯 处理 r-detail 的 dataKey 绑定
+    if (newRule.type === 'r-detail' && newRule.dataKey) {
+      const keys = (newRule.dataKey as string).split('.')
+      const value = getNestedValue<Record<string, unknown>>(pageData, keys)
+      if (value !== undefined) {
+        newRule.props ??= {}
+        newRule.props.data = value
+      }
+    }
+    
     // 🎯 处理 el-table 的 dataKey 绑定
     if (newRule.type === 'el-table' && newRule.dataKey) {
       // 解析 dataKey 路径，获取数据
@@ -96,16 +125,24 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       }
     }
     
-    // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定）
-    if (newRule.dataKey && newRule.type !== 'el-table') {
+    // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定或表单值绑定）
+    // 排除已有专门处理逻辑的容器组件
+    const handledTypes = ['el-table', 'r-table', 'r-form', 'r-detail']
+    if (newRule.dataKey && !handledTypes.includes(newRule.type as string)) {
       // 解析 dataKey 路径，获取数据值
       const keys = (newRule.dataKey as string).split('.')
       const value = getNestedValue<string | number>(pageData, keys)
       
-      // 如果有值，替换 children 内容
+      // 如果有值，根据元素类型决定绑定方式
       if (value !== undefined && value !== null) {
-        // 将值转换为字符串并设置为 children
-        newRule.children = [String(value)]
+        // 表单元素：绑定到 props.modelValue（支持响应式）
+        if (newRule.type === 'el-input' || newRule.type === 'el-textarea') {
+          newRule.props ??= {}
+          newRule.props.modelValue = value
+        } else {
+          // 普通元素：将值转换为字符串并设置为 children
+          newRule.children = [String(value)]
+        }
       }
     }
     

@@ -5,7 +5,9 @@
     "children": [
       {
         "type": "h1",
-        "children": ["Renderer 架构演示"]
+        "children": [
+          "Renderer 架构演示"
+        ]
       },
       {
         "type": "div",
@@ -13,31 +15,41 @@
         "children": [
           {
             "type": "h2",
-            "children": ["表格渲染示例"]
+            "children": [
+              "表格渲染示例"
+            ]
           },
           {
-            "type": "table",
+            "type": "r-table",
             "dataSource": "users",
-            "border": true,
-            "stripe": true,
+            "props": {
+              "border": true,
+              "stripe": true
+            },
             "children": [
               {
-                "type": "text",
-                "name": "姓名",
-                "value": "name",
-                "width": 150
+                "type": "r-text",
+                "props": {
+                  "name": "姓名",
+                  "value": "name",
+                  "width": 150
+                }
               },
               {
-                "type": "number",
-                "name": "年龄",
-                "value": "age",
-                "width": 100
+                "type": "r-number",
+                "props": {
+                  "name": "年龄",
+                  "value": "age",
+                  "width": 100
+                }
               },
               {
-                "type": "date",
-                "name": "创建时间",
-                "value": "createTime",
-                "width": 150
+                "type": "r-date",
+                "props": {
+                  "name": "创建时间",
+                  "value": "createTime",
+                  "width": 150
+                }
               }
             ]
           }
@@ -49,28 +61,39 @@
         "children": [
           {
             "type": "h2",
-            "children": ["表单渲染示例"]
+            "children": [
+              "表单渲染示例"
+            ]
           },
           {
-            "type": "form",
-            "labelWidth": "100px",
+            "type": "r-form",
+            "dataKey": "formData",
+            "props": {
+              "labelWidth": "100px"
+            },
             "children": [
               {
-                "type": "text",
-                "name": "姓名",
-                "value": "name"
+                "type": "r-text",
+                "props": {
+                  "name": "姓名",
+                  "value": "name"
+                }
               },
               {
-                "type": "number",
-                "name": "年龄",
-                "value": "age",
-                "min": 0,
-                "max": 150
+                "type": "r-number",
+                "props": {
+                  "name": "年龄",
+                  "value": "age",
+                  "min": 0,
+                  "max": 150
+                }
               },
               {
-                "type": "date",
-                "name": "创建时间",
-                "value": "createTime"
+                "type": "r-date",
+                "props": {
+                  "name": "创建时间",
+                  "value": "createTime"
+                }
               }
             ]
           }
@@ -82,26 +105,35 @@
         "children": [
           {
             "type": "h2",
-            "children": ["详情展示示例"]
+            "children": [
+              "详情展示示例"
+            ]
           },
           {
-            "type": "div",
+            "type": "r-detail",
+            "dataKey": "formData",
             "class": "detail-container",
             "children": [
               {
-                "type": "text",
-                "name": "姓名",
-                "value": "name"
+                "type": "r-text",
+                "props": {
+                  "name": "姓名",
+                  "value": "name"
+                }
               },
               {
-                "type": "number",
-                "name": "年龄",
-                "value": "age"
+                "type": "r-number",
+                "props": {
+                  "name": "年龄",
+                  "value": "age"
+                }
               },
               {
-                "type": "date",
-                "name": "创建时间",
-                "value": "createTime"
+                "type": "r-date",
+                "props": {
+                  "name": "创建时间",
+                  "value": "createTime"
+                }
               }
             ]
           }
