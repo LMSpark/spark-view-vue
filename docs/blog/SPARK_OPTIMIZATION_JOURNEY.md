@@ -502,11 +502,71 @@ import './components/demo/register'  // 跳过 user-grid (已注册)
 
 ```mermaid
 graph TB
-    编译阶段 --> 虚拟模块
-    虚拟模块 --> 启动阶段
-    启动阶段 --> SparkApp流程
-    SparkApp流程 --> ComponentRegistry
-    ComponentRegistry --> 组件使用
+    subgraph "L0: 构建工具层"
+        A1[Vite 启动] --> A2[vite-plugin-spark-components]
+    end
+    
+    subgraph "编译阶段"
+        A2 --> B1[扫描 features/**/*.vue]
+        B1 --> B2[文件路径分析]
+        B2 --> B3{是否异步?}
+        B3 -->|是| B4[使用 loader: import]
+        B3 -->|否| B5[使用 component: 对象]
+        B4 --> B6[ComponentMetadata]
+        B5 --> B6
+    end
+    
+    subgraph "L1: 虚拟模块层"
+        B6 --> C1[生成 registerOnce 代码]
+        C1 --> C2[virtual:spark-components]
+        C2 --> C3[导出 registerComponents]
+    end
+    
+    subgraph "L2: 应用启动层"
+        C3 --> D1[main.ts import]
+        D1 --> D2{类型检查?}
+        D2 -->|是函数| D3[传递给 SparkApp]
+        D2 -->|非函数| D4[跳过注册]
+    end
+    
+    subgraph "L3: 应用框架层 SparkApp"
+        D3 --> E1[SparkApp.start]
+        E1 --> E2[获取全局 Registry]
+        E2 --> E3[执行 registerComponents]
+    end
+    
+    subgraph "L4: 组件系统层 Spark"
+        E3 --> F1[registry.registerOnce]
+        F1 --> F2{组件已存在?}
+        F2 -->|是| F3[返回 false, 静默跳过]
+        F2 -->|否| F4[存入 Map]
+        F4 --> F5[返回 true]
+    end
+    
+    subgraph "L5: 渲染层"
+        F5 --> G1[SparkComponentRenderer]
+        G1 --> G2[registry.get type]
+        G2 --> G3{异步组件?}
+        G3 -->|是| G4[调用 loader]
+        G3 -->|否| G5[直接使用 component]
+        G4 --> G6[Vue render]
+        G5 --> G6
+    end
+    
+    subgraph "L6: 业务组件层"
+        G6 --> H1[SparkEJ2Grid]
+        H1 --> H2[features/views]
+    end
+    
+    subgraph "L7: 配置层"
+        H2 --> I1[pages-config/]
+        I1 --> I2[pagedata.json]
+    end
+    
+    style A2 fill:#ff6b6b
+    style C2 fill:#4ecdc4
+    style F1 fill:#ffe66d
+    style G1 fill:#95e1d3
 ```
 
 **关键节点**：
@@ -523,14 +583,61 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    Vite ->> Plugin: 构建开始
-    Plugin ->> Virtual: 生成代码
-    Main ->> Virtual: import
-    Main ->> SparkApp: start()
-    SparkApp ->> Registry: registerOnce()
-    Registry -->> SparkApp: 注册完成
-    Renderer ->> Registry: get(type)
-    Registry -->> Renderer: ComponentDefinition
+    autonumber
+    participant Vite as Vite 构建
+    participant Plugin as vite-plugin-spark
+    participant Virtual as virtual:spark-components
+    participant Main as main.ts
+    participant SparkApp as SparkApp.start()
+    participant Registry as ComponentRegistry
+    participant Renderer as SparkComponentRenderer
+    participant Vue as Vue Render
+
+    Note over Vite,Plugin: 编译阶段
+    Vite->>Plugin: 构建开始
+    Plugin->>Plugin: 扫描 features/**/*.vue
+    Plugin->>Plugin: 分析文件路径 (路由级防抖)
+    Plugin->>Virtual: 生成 registerOnce 代码
+    Virtual-->>Plugin: 模块创建完成
+
+    Note over Main,SparkApp: 启动阶段
+    Main->>Virtual: import registerComponents
+    Main->>Main: typeof === 'function' 检查
+    Main->>SparkApp: start({ registerComponents })
+    SparkApp->>Registry: 获取全局单例
+    SparkApp->>Registry: registerComponents()
+    
+    loop 每个组件
+        Registry->>Registry: registerOnce(type, component, meta)
+        alt 组件未注册
+            Registry->>Registry: Map.set(type, definition)
+            Registry-->>SparkApp: true (已注册)
+        else 组件已存在
+            Registry-->>SparkApp: false (静默跳过)
+        end
+    end
+    
+    SparkApp-->>Main: 启动完成
+
+    Note over Renderer,Vue: 运行时阶段
+    Renderer->>Registry: get(type)
+    Registry-->>Renderer: ComponentDefinition
+    
+    alt 异步组件
+        Renderer->>Renderer: loader()
+        Renderer->>Vue: defineAsyncComponent
+        Vue->>Vue: import('./Component.vue')
+    else 同步组件
+        Renderer->>Vue: component 对象
+    end
+    
+    Vue-->>Renderer: 渲染完成
+
+    Note over Plugin,Registry: HMR 阶段 (文件修改)
+    Plugin->>Virtual: 重新生成代码
+    Virtual->>Registry: 再次 registerOnce
+    Registry->>Registry: 组件已存在，静默跳过
+    Registry-->>Virtual: 无重复警告
 ```
 
 **关键交互**：
@@ -554,14 +661,156 @@ sequenceDiagram
 | **L6** | 业务组件层 | features/ + views/ |
 | **L7** | 配置层 | pages-config/ |
 
+```mermaid
+graph TB
+    subgraph L0["L0: 构建工具层"]
+        L0A[Vite]
+        L0B[vite-plugin-spark-components]
+        L0C[TypeScript Compiler]
+    end
+    
+    subgraph L1["L1: 虚拟模块层"]
+        L1A[virtual:spark-components]
+        L1B[generateRegisterStatement]
+        L1C[ComponentMetadata]
+    end
+    
+    subgraph L2["L2: 应用启动层"]
+        L2A[main.ts]
+        L2B[app.use Spark.createPlugin]
+        L2C[typeof registerComponents]
+    end
+    
+    subgraph L3["L3: 应用框架层"]
+        L3A[SparkApp]
+        L3B[Bootstrap 引导]
+        L3C[Router 路由]
+        L3D[Plugins 插件]
+        L3E[Logger 日志]
+    end
+    
+    subgraph L4["L4: 组件系统层"]
+        L4A[Spark namespace]
+        L4B[ComponentRegistry]
+        L4C[Capability System]
+        L4D[useSparkComponent]
+        L4E[registerOnce 幂等注册]
+    end
+    
+    subgraph L5["L5: 渲染层"]
+        L5A[SparkComponentRenderer]
+        L5B[Dynamic Import]
+        L5C[Vue Lifecycle Hooks]
+    end
+    
+    subgraph L6["L6: 业务组件层"]
+        L6A[features/spark-ej2]
+        L6B[features/spark]
+        L6C[src/views]
+        L6D[useSyncfusionServices]
+    end
+    
+    subgraph L7["L7: 配置层"]
+        L7A[pages-config/]
+        L7B[pagedata.json]
+        L7C[rule.json]
+        L7D[script.js]
+    end
+    
+    L0 --> L1
+    L1 --> L2
+    L2 --> L3
+    L3 --> L4
+    L4 --> L5
+    L5 --> L6
+    L6 --> L7
+    
+    L0B -.->|扫描| L6A
+    L0B -.->|扫描| L6B
+    L4B -.->|注册| L6A
+    L5A -.->|渲染| L7B
+    
+    style L4 fill:#ffe66d
+    style L5 fill:#95e1d3
+    style L6 fill:#a8dadc
+    
+    classDef compileTime fill:#ff6b6b,color:#fff
+    classDef runtime fill:#4ecdc4,color:#fff
+    class L0,L1 compileTime
+    class L2,L3,L4,L5,L6,L7 runtime
+```
+
 #### 4. **数据流图**：对象生命周期视图
 
 ComponentDefinition 从源码到运行时的旅程：
 
-```
-*.vue 文件 → 文件分析 → ComponentMetadata → 
-代码生成 → 虚拟模块 → registerOnce() → 
-Map存储 → registry.get() → Vue渲染
+```mermaid
+graph LR
+    subgraph "源码阶段"
+        A1[UserGrid.vue] --> A2[文件系统]
+        A3[UserForm.vue] --> A2
+        A4[SparkButton.vue] --> A2
+    end
+    
+    subgraph "编译阶段"
+        A2 --> B1[Vite Plugin 扫描]
+        B1 --> B2[路径解析]
+        B2 --> B3{路由防抖?}
+        B3 -->|是| B4[异步策略]
+        B3 -->|否| B5[同步策略]
+        B4 --> B6[ComponentMetadata]
+        B5 --> B6
+        B6 --> B7[type: 'user-grid']
+        B6 --> B8[loader: import fn]
+        B6 --> B9[meta: filepath]
+    end
+    
+    subgraph "代码生成"
+        B7 --> C1[generateRegisterStatement]
+        B8 --> C1
+        B9 --> C1
+        C1 --> C2["registry.registerOnce('user-grid', ...)"]
+        C2 --> C3[virtual:spark-components]
+    end
+    
+    subgraph "启动阶段"
+        C3 --> D1[main.ts import]
+        D1 --> D2[SparkApp.start]
+        D2 --> D3[registerComponents]
+    end
+    
+    subgraph "注册阶段"
+        D3 --> E1[registry.registerOnce]
+        E1 --> E2{已存在?}
+        E2 -->|否| E3[Map.set]
+        E2 -->|是| E4[返回 false]
+        E3 --> E5[ComponentDefinition]
+        E5 --> E6[type: string]
+        E5 --> E7[component?: 对象]
+        E5 --> E8[loader?: Function]
+        E5 --> E9[meta: 元数据]
+    end
+    
+    subgraph "运行时阶段"
+        E5 --> F1[registry.get type]
+        F1 --> F2[SparkComponentRenderer]
+        F2 --> F3{异步?}
+        F3 -->|是| F4[loader 动态导入]
+        F3 -->|否| F5[component 直接使用]
+        F4 --> F6[Vue defineAsyncComponent]
+        F5 --> F6
+    end
+    
+    subgraph "渲染阶段"
+        F6 --> G1[Vue.h 创建 VNode]
+        G1 --> G2[DOM 挂载]
+        G2 --> G3[用户界面]
+    end
+    
+    style B6 fill:#ff6b6b
+    style C3 fill:#4ecdc4
+    style E5 fill:#ffe66d
+    style F2 fill:#95e1d3
 ```
 
 **关键对象**：
