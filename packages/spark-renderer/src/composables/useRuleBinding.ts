@@ -53,13 +53,18 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       return
     }
     
-    boundRules.value = bindDataToRules({
+    // 重新绑定规则
+    const newBoundRules = bindDataToRules({
       rules: originalRules.value,
       pageData,
       pageFunctions: pageFunctions.value,
       dataSet: dataSet.value,
       formApi: formApi.value
     })
+    
+    // 🔄 强制触发响应式更新 - 创建新数组而不是直接赋值
+    // 这样可以确保 Vue 和 FormCreate 都能检测到变化
+    boundRules.value = [...newBoundRules]
     
     pageLogger.debug('Rules 重新绑定', { rulesCount: originalRules.value.length })
   }

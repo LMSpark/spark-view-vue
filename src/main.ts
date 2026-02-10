@@ -119,9 +119,26 @@ async function startApp() {
       
       // 挂载前钩子
       beforeMount: async (context) => {
-        const { router } = context
+        const { router, app } = context
         
         startupLogger.info('✅ 应用准备挂载')
+        
+        // 🎨 注册 Renderer 智能组件
+        const {
+          RendererTable,
+          RendererForm,
+          RendererDetail,
+          FieldText,
+          FieldNumber,
+          FieldDate
+        } = await import('@spark-view/spark-renderer/components')
+        
+        app.component('r-table', RendererTable)
+        app.component('r-form', RendererForm)
+        app.component('r-detail', RendererDetail)
+        app.component('r-text', FieldText)
+        app.component('r-number', FieldNumber)
+        app.component('r-date', FieldDate)
         
         // 注册静态 Vue 组件路由（非配置页面）
         
