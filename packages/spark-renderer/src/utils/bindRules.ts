@@ -201,6 +201,8 @@ function injectTableEvents(
   // 注入 currentChange 事件（单选行变化）
   const originalCurrentChange = rule.on['currentChange']
   rule.on['currentChange'] = (currentRow: IDataRow | null, oldRow: IDataRow | null) => {
+    pageLogger.info(`🎯 [TableEvent] currentChange 触发`, { tableName, contextId, currentRow, oldRow})
+    
     if (isProcessingEvent) return
     
     try {
@@ -213,20 +215,33 @@ function injectTableEvents(
       
       // 同步到 DataSet
       if (dataSet?.tables?.[tableName] && contextId) {
-        const table = dataSet.tables[tableName] as { contexts?: Record<string, { setCurrentRow?: (row: unknown, notify?: boolean) => void }> }
-        const context = table?.contexts?.[String(contextId)]
-        if (context?.setCurrentRow) {
-          context.setCurrentRow(currentRow ?? null, false)
+        const table = dataSet.tables[tableName] as { getOrCreateContext?: (id: string) => { setCurrentRow?: (row: unknown, notify?: boolean) => void } }
+        if (table.getOrCreateContext) {
+          const context = table.getOrCreateContext(contextId)
+          if (context?.setCurrentRow) {
+            pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${contextId}`)
+            context.setCurrentRow(currentRow ?? null, false)
+          } else {
+            pageLogger.warn(`⚠️ [TableEvent] context 没有 setCurrentRow 方法`, { tableName, contextId })
+          }
+        } else {
+          pageLogger.warn(`⚠️ [TableEvent] table 没有 getOrCreateContext 方法`, { tableName })
         }
+      } else {
+        pageLogger.warn(`⚠️ [TableEvent] DataSet 或表不存在`, { tableName, hasDataSet: !!dataSet, hasTable: !!dataSet?.tables?.[tableName] })
       }
     } finally {
       isProcessingEvent = false
     }
   }
   
+  pageLogger.info(`✅ [TableEvent] 已注入 currentChange 事件处理器`, { tableName, contextId, ruleName: rule.name })
+  
   // 注入 selectionChange 事件（多选变化）
   const originalSelectionChange = rule.on['selectionChange']
   rule.on['selectionChange'] = (selection: IDataRow[]) => {
+    pageLogger.info(`🎯 [TableEvent] selectionChange 触发`, { tableName, contextId, selectionCount: selection.length })
+    
     if (isProcessingEvent) return
     
     try {
@@ -239,10 +254,13 @@ function injectTableEvents(
       
       // 同步到 DataSet
       if (dataSet?.tables?.[tableName] && contextId) {
-        const table = dataSet.tables[tableName] as { contexts?: Record<string, { setSelectedRows?: (rows: unknown, notify?: boolean) => void }> }
-        const context = table?.contexts?.[String(contextId)]
-        if (context?.setSelectedRows) {
-          context.setSelectedRows(selection, true)
+        const table = dataSet.tables[tableName] as { getOrCreateContext?: (id: string) => { setSelectedRows?: (rows: unknown, notify?: boolean) => void } }
+        if (table.getOrCreateContext) {
+          const context = table.getOrCreateContext(contextId)
+          if (context?.setSelectedRows) {
+            pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${contextId}`)
+            context.setSelectedRows(selection, true)
+          }
         }
       }
     } finally {
