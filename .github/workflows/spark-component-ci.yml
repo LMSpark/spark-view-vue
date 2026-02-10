@@ -1,12 +1,12 @@
-name: CI - spark-core
+name: CI - spark-component
 
 on:
   push:
     paths:
-      - 'packages/spark-core/**'
+      - 'packages/spark-component/**'
   pull_request:
     paths:
-      - 'packages/spark-core/**'
+      - 'packages/spark-component/**'
 
 jobs:
   test:
@@ -24,8 +24,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Typecheck package
-        run: pnpm -C packages/spark-core run typecheck
+        run: pnpm -C packages/spark-component run typecheck
       - name: Run package tests
-        run: pnpm -C packages/spark-core run test:run
+        run: pnpm -C packages/spark-component run test:run
         env:
           CI: true
