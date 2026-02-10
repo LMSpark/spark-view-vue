@@ -5,6 +5,7 @@ import path from 'path'
 import fs from 'fs'
 import axios from 'axios'
 import { parse } from 'vue-docgen-api'
+import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
 
 export default defineConfig({
   resolve: {
@@ -54,6 +55,49 @@ export default defineConfig({
         }
       }
     }),
+    
+    // ✨ 编译时组件注册 - 零运行时开销
+    sparkComponentsPlugin({
+      // 扫描组件目录
+      patterns: [
+        './features/**/*.vue',
+        './src/components/**/*.vue',
+        './packages/*/src/components/**/*.vue'
+      ],
+      
+      // 同步加载的核心组件
+      syncComponents: [
+        'PageRenderer',
+        'SparkComponentRenderer',
+        'ErrorFallback',
+        'UserGrid',
+        'UserRow',
+        'UserField'
+      ],
+      
+      // 异步加载的大型/低频组件
+      asyncComponents: [
+        '*EJ2*',      // Syncfusion 组件
+        '*Demo',      // 演示组件
+        'Capability*', // 能力展示
+        'JsonRenderer*',
+        'Tree*'
+      ],
+      
+      // 文件大小阈值 (KB)
+      sizeThreshold: 50,
+      
+      // 排除的文件
+      exclude: [
+        'App.vue',
+        '**/*.test.vue',
+        '**/*.spec.vue'
+      ],
+      
+      // 开发环境显示详细日志
+      verbose: false
+    }),
+    
     {
       name: 'generate-component-library',
       buildStart() {
