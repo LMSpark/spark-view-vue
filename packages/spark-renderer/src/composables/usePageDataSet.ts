@@ -86,8 +86,8 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
         delete (pageData.dataset as Record<string, unknown>).tables
       }
       
-      // 更新上下文
-      context.$dataSet = dataSet.value
+      // 注意：不需要设置 context.$dataSet，因为 PageRenderer 已通过 getter 提供访问
+      // context.$dataSet 是只读属性，通过 getter 返回 dataSet.value
       
       pageLogger.debug('DataSet 初始化成功', { 
         tables: dataSet.value ? Object.keys(dataSet.value.tables || {}) : []
