@@ -158,6 +158,58 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 能力管理系统演示页面 - DataSet 能力综合展示
+ * 
+ * @component CapabilityDemo
+ * @description
+ * 全面展示 SPARK 数据空间的能力管理系统，包括 DataSet State、Global Data、Page Service、API Client 等核心能力。
+ * 演示能力注册、消费、事件订阅和数据操作的完整流程。
+ * 
+ * 核心功能：
+ * 1. **DataSet State 演示**：展示表数量、页面参数、页面权限，支持动态添加数据行
+ * 2. **Global Data 演示**：展示用户信息、主题配置、字典选项
+ * 3. **Page Service 演示**：演示消息通知（成功、错误、警告）、确认对话框、页面导航
+ * 4. **API Client 演示**：模拟 API 请求，展示请求状态和响应数据
+ * 5. **能力变化监听**：订阅和监听能力变化事件，记录变化历史
+ * 6. **统计信息展示**：实时显示注册能力数、数据表数、数据行数、变化次数
+ * 
+ * @example
+ * 路由配置：
+ * ```typescript
+ * {
+ *   path: '/capability-demo',
+ *   component: CapabilityDemo
+ * }
+ * ```
+ * 
+ * @example
+ * 能力管理演示：
+ * ```typescript
+ * // 添加数据行
+ * const addTableRow = () => {
+ *   const newRow = { id: Date.now(), name: '新用户', age: 25 }
+ *   tableRows.value.push(newRow)
+ *   lastAddedRow.value = newRow
+ * }
+ * 
+ * // 消息通知
+ * const showSuccessMessage = () => {
+ *   pageService.message.success('操作成功')
+ * }
+ * 
+ * // API 请求
+ * const makeApiCall = async () => {
+ *   apiLoading.value = true
+ *   const response = await apiClient.request({ url: '/api/test' })
+ *   apiResponse.value = response
+ *   apiLoading.value = false
+ * }
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
 // @ts-nocheck
 /* 演示页面 - 禁用类型检查以简化实现 */
 import { ref, computed, onMounted, onUnmounted } from 'vue'

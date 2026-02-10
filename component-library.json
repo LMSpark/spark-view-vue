@@ -1,61 +1,1052 @@
 {
+  "PageRenderer": {
+    "name": "PageRenderer",
+    "displayName": "PageRenderer",
+    "description": "",
+    "tags": {},
+    "props": [
+      {
+        "name": "configLoader",
+        "type": {
+          "name": "ConfigLoader"
+        },
+        "required": false,
+        "description": "配置加载器实例\n用于从本地或远程加载页面配置（rule.json, pagedata.json, script.js）",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "ConfigLoader"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "example": [
+            {
+              "description": "```typescript\nimport { SparkPageConfig } from '@spark-view/spark-page-config'\n\nconst configLoader = SparkPageConfig.createLoader({\n  source: 'local',\n  apiBaseUrl: '/api/config',\n  localPrefix: '/pages-config'\n})\n```",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "pageId",
+        "type": {
+          "name": "string"
+        },
+        "required": false,
+        "description": "页面唯一标识符（优先级最高）\n如果提供，则直接使用此 ID 加载配置，忽略路由参数",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "string"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "example": [
+            {
+              "description": "'user-list' | 'dashboard' | 'settings'",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "pageConfig",
+        "type": {
+          "name": "PageConfig"
+        },
+        "required": false,
+        "description": "页面配置对象（直接传入，跳过加载）\n提供此选项时，configLoader 和 pageId 将被忽略",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "PageConfig"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "example": [
+            {
+              "description": "```typescript\n{\n  pageId: 'user-form',\n  rule: [...],\n  data: { users: [] },\n  style: '.user-form { padding: 20px; }',\n  script: 'console.log(\"Page loaded\");'\n}\n```",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "formCreateOptions",
+        "type": {
+          "name": "Record",
+          "elements": [
+            {
+              "name": "string"
+            },
+            {
+              "name": "unknown"
+            }
+          ]
+        },
+        "required": false,
+        "description": "FormCreate 配置选项\n传递给 form-create 的额外配置，用于自定义表单行为",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "Record<string, unknown>"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "default": [
+            {
+              "description": "{}",
+              "title": "default"
+            }
+          ],
+          "see": [
+            {
+              "description": "https://www.form-create.com/v3/guide/global.html",
+              "title": "see"
+            }
+          ],
+          "example": [
+            {
+              "description": "```typescript\n{\n  form: { labelWidth: '120px', size: 'large' },\n  submitBtn: false,\n  resetBtn: false\n}\n```",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "enableCssScope",
+        "type": {
+          "name": "boolean"
+        },
+        "required": false,
+        "defaultValue": {
+          "func": false,
+          "value": "true"
+        },
+        "description": "是否启用 CSS 作用域隔离\n开启后，页面样式会自动添加作用域前缀，避免全局污染",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "boolean"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "default": [
+            {
+              "description": "true",
+              "title": "default"
+            }
+          ],
+          "example": [
+            {
+              "description": "true | false",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "enableDataSet",
+        "type": {
+          "name": "boolean"
+        },
+        "required": false,
+        "defaultValue": {
+          "func": false,
+          "value": "true"
+        },
+        "description": "是否启用 DataSet 自动初始化\n开启后，根据页面配置的 relations 自动创建 DataSet 实例",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "boolean"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "default": [
+            {
+              "description": "true",
+              "title": "default"
+            }
+          ],
+          "example": [
+            {
+              "description": "true | false",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "messageService",
+        "type": {
+          "name": "{\r\n    success: (msg: string) => void;\r\n    warning: (msg: string) => void;\r\n    error: (msg: string) => void;\r\n    info: (msg: string) => void;\r\n}"
+        },
+        "required": false,
+        "description": "UI 消息服务接口（可注入替代 ElementPlus）\n用于显示成功、警告、错误等提示消息，便于测试和 UI 框架解耦",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "Object"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "default": [
+            {
+              "description": "ElementPlus Message",
+              "title": "default"
+            }
+          ],
+          "example": [
+            {
+              "description": "```typescript\n{\n  success: (msg) => console.log('✓', msg),\n  warning: (msg) => console.warn('⚠', msg),\n  error: (msg) => console.error('✗', msg),\n  info: (msg) => console.info('ℹ', msg)\n}\n```",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "confirmService",
+        "type": {
+          "name": "{\r\n    confirm: (msg: string, title?: string) => Promise<unknown>;\r\n    alert: (msg: string, title?: string) => Promise<unknown>;\r\n}"
+        },
+        "required": false,
+        "description": "UI 确认对话框服务接口（可注入替代 ElementPlus）\n用于显示确认和提示对话框，便于测试和 UI 框架解耦",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "Object"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "default": [
+            {
+              "description": "ElementPlus MessageBox",
+              "title": "default"
+            }
+          ],
+          "example": [
+            {
+              "description": "```typescript\n{\n  confirm: async (msg, title) => {\n    return window.confirm(`${title}: ${msg}`)\n  },\n  alert: async (msg, title) => {\n    window.alert(`${title}: ${msg}`)\n  }\n}\n```",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "beforeLoad",
+        "type": {
+          "name": "TSFunctionType"
+        },
+        "required": false,
+        "description": "页面加载前钩子函数\n在开始加载页面配置之前调用，可用于权限检查、数据预加载等",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "Function"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "params": [
+            {
+              "title": "param",
+              "type": {
+                "name": "string"
+              },
+              "name": "pageId",
+              "description": "即将加载的页面 ID"
+            }
+          ],
+          "returns": [
+            {
+              "title": "returns",
+              "type": {
+                "name": "void | Promise<void>"
+              }
+            }
+          ],
+          "example": [
+            {
+              "description": "```typescript\nasync (pageId) => {\n  console.log('Loading page:', pageId)\n  // 可以在这里做权限检查\n  if (!hasPermission(pageId)) {\n    throw new Error('No permission')\n  }\n}\n```",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "afterLoad",
+        "type": {
+          "name": "TSFunctionType"
+        },
+        "required": false,
+        "description": "页面加载后钩子函数\n在页面配置加载完成、规则绑定完成后调用",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "Function"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "params": [
+            {
+              "title": "param",
+              "type": {
+                "name": "PageConfig"
+              },
+              "name": "config",
+              "description": "加载的页面配置对象"
+            }
+          ],
+          "returns": [
+            {
+              "title": "returns",
+              "type": {
+                "name": "void | Promise<void>"
+              }
+            }
+          ],
+          "example": [
+            {
+              "description": "```typescript\nasync (config) => {\n  console.log('Page loaded:', config.pageId)\n  // 可以在这里做额外的初始化\n  await initializePageData(config.data)\n}\n```",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "onError",
+        "type": {
+          "name": "TSFunctionType"
+        },
+        "required": false,
+        "description": "错误处理函数\n当页面加载或渲染过程中发生错误时调用",
+        "tags": {
+          "type": [
+            {
+              "title": "type",
+              "type": {
+                "name": "Function"
+              }
+            }
+          ],
+          "optional": [
+            {
+              "description": true,
+              "title": "optional"
+            }
+          ],
+          "params": [
+            {
+              "title": "param",
+              "type": {
+                "name": "Error"
+              },
+              "name": "error",
+              "description": "错误对象"
+            }
+          ],
+          "returns": [
+            {
+              "title": "returns",
+              "type": {
+                "name": "void"
+              }
+            }
+          ],
+          "example": [
+            {
+              "description": "```typescript\n(error) => {\n  console.error('Page error:', error)\n  // 可以上报错误到监控系统\n  reportError(error)\n}\n```",
+              "title": "example"
+            }
+          ]
+        }
+      }
+    ],
+    "events": [],
+    "slots": [
+      {
+        "name": "loading",
+        "description": "",
+        "bindings": [],
+        "tags": {}
+      },
+      {
+        "name": "error",
+        "description": "",
+        "bindings": [
+          {
+            "name": "error",
+            "title": "binding"
+          }
+        ],
+        "tags": {}
+      },
+      {
+        "name": "content",
+        "description": "",
+        "bindings": [
+          {
+            "name": "rules",
+            "title": "binding"
+          },
+          {
+            "name": "page-data",
+            "title": "binding"
+          }
+        ],
+        "tags": {}
+      }
+    ],
+    "methods": [],
+    "sourcePath": "packages\\spark-renderer\\src\\components\\PageRenderer.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 11,
+      "eventsCount": 0,
+      "slotsCount": 3,
+      "methodsCount": 0
+    }
+  },
   "SparkComponentRenderer": {
+    "name": "SparkComponentRenderer",
+    "displayName": "SparkComponentRenderer",
+    "description": "",
+    "tags": {},
     "props": [
       {
         "name": "config",
-        "required": true,
         "type": {
           "name": "ComponentContext"
+        },
+        "required": true,
+        "description": "组件配置对象\n必须包含 type 字段指定组件类型，可选 id、children 等字段",
+        "tags": {
+          "example": [
+            {
+              "description": "{ type: 'spark-ej2-grid', id: 'grid-1', dataSource: [...] }",
+              "title": "example"
+            }
+          ]
         }
       },
       {
         "name": "parentContext",
-        "required": false,
         "type": {
           "name": "ComponentContext"
+        },
+        "required": false,
+        "description": "父组件上下文（可选）\n用于维护组件树的上下文链，支持能力系统的向上查找",
+        "tags": {
+          "default": [
+            {
+              "description": "undefined",
+              "title": "default"
+            }
+          ]
         }
       }
     ],
     "events": [],
     "slots": [],
-    "description": "",
-    "sourcePath": "features\\spark\\components\\SparkComponentRenderer.vue"
+    "methods": [],
+    "sourcePath": "features\\spark\\components\\SparkComponentRenderer.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 2,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
   },
   "SparkEJ2Column": {
+    "name": "SparkEJ2Column",
+    "displayName": "SparkEJ2Column",
+    "description": "",
+    "tags": {},
     "props": [
       {
         "name": "config",
-        "required": true,
         "type": {
           "name": "SparkEJ2ColumnConfig"
+        },
+        "required": true,
+        "description": "EJ2 列配置对象\n支持 EJ2 原生列属性和 SPARK 扩展（children）",
+        "tags": {
+          "example": [
+            {
+              "description": "{\n  field: 'email',\n  headerText: '邮箱地址',\n  width: 200,\n  format: 'C2',\n  textAlign: 'Right'\n}",
+              "title": "example"
+            }
+          ]
         }
       },
       {
         "name": "parentContext",
-        "required": false,
         "type": {
           "name": "ComponentContext"
+        },
+        "required": false,
+        "description": "父组件上下文（可选）\n用于列嵌套时的上下文传递",
+        "tags": {
+          "default": [
+            {
+              "description": "undefined",
+              "title": "default"
+            }
+          ]
         }
       }
     ],
     "events": [],
     "slots": [],
-    "description": "",
-    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Column.vue"
+    "methods": [],
+    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Column.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 2,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
   },
   "SparkEJ2Grid": {
+    "name": "SparkEJ2Grid",
+    "displayName": "SparkEJ2Grid",
+    "description": "",
+    "tags": {},
     "props": [
       {
         "name": "config",
-        "required": true,
         "type": {
           "name": "SparkEJ2GridConfig"
+        },
+        "required": true,
+        "description": "EJ2 Grid 配置对象\n包含 EJ2 原生属性（dataSource, allowPaging 等）和 SPARK 扩展属性（children）",
+        "tags": {
+          "example": [
+            {
+              "description": "{\n  type: 'spark-ej2-grid',\n  dataSource: [...],\n  allowPaging: true,\n  pageSettings: { pageSize: 20 },\n  children: [{ type: 'spark-ej2-column', field: 'id' }]\n}",
+              "title": "example"
+            }
+          ]
         }
       }
     ],
     "events": [],
     "slots": [],
+    "methods": [],
+    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Grid.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 1,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "ErrorFallback": {
+    "name": "ErrorFallback",
+    "displayName": "ErrorFallback",
     "description": "",
-    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Grid.vue"
+    "tags": {},
+    "props": [
+      {
+        "name": "error",
+        "type": {
+          "name": "Error"
+        },
+        "required": false,
+        "description": "错误对象\n包含错误消息（message）和堆栈信息（stack）",
+        "tags": {
+          "default": [
+            {
+              "description": "undefined",
+              "title": "default"
+            }
+          ],
+          "example": [
+            {
+              "description": "new Error('Network timeout')",
+              "title": "example"
+            }
+          ]
+        }
+      }
+    ],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\components\\ErrorFallback.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 1,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "JsonRendererDemo": {
+    "name": "JsonRendererDemo",
+    "displayName": "JsonRendererDemo",
+    "description": "",
+    "tags": {},
+    "props": [],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\components\\demo\\JsonRendererDemo.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 0,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "UserField": {
+    "name": "UserField",
+    "displayName": "UserField",
+    "description": "",
+    "tags": {},
+    "props": [
+      {
+        "name": "config",
+        "type": {
+          "name": "Partial",
+          "elements": [
+            {
+              "name": "ComponentContext"
+            }
+          ]
+        },
+        "required": true,
+        "description": "组件配置对象",
+        "tags": {
+          "required": [
+            {
+              "description": true,
+              "title": "required"
+            }
+          ],
+          "example": [
+            {
+              "description": "{ type: 'user-field', props: { field: 'name', value: 'John' } }",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "union",
+          "elements": [
+            {
+              "name": "string"
+            },
+            {
+              "name": "number"
+            }
+          ]
+        },
+        "required": false,
+        "description": "字段值（当未从 ROW_DATA 获取时使用）",
+        "tags": {
+          "default": [
+            {
+              "description": "undefined",
+              "title": "default"
+            }
+          ],
+          "example": [
+            {
+              "description": "'John Doe' | 25 | true",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "label",
+        "type": {
+          "name": "string"
+        },
+        "required": false,
+        "description": "字段标签文本",
+        "tags": {
+          "default": [
+            {
+              "description": "''",
+              "title": "default"
+            }
+          ],
+          "example": [
+            {
+              "description": "'用户名' | '年龄' | '状态'",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "icon",
+        "type": {
+          "name": "string"
+        },
+        "required": false,
+        "defaultValue": {
+          "func": false,
+          "value": "'📝'"
+        },
+        "description": "字段图标 emoji",
+        "tags": {
+          "default": [
+            {
+              "description": "'📝'",
+              "title": "default"
+            }
+          ],
+          "example": [
+            {
+              "description": "'👤' | '📧' | '📱'",
+              "title": "example"
+            }
+          ]
+        }
+      },
+      {
+        "name": "highlight",
+        "type": {
+          "name": "boolean"
+        },
+        "required": false,
+        "defaultValue": {
+          "func": false,
+          "value": "false"
+        },
+        "description": "是否高亮显示（用于响应交互事件）",
+        "tags": {
+          "default": [
+            {
+              "description": "false",
+              "title": "default"
+            }
+          ]
+        }
+      }
+    ],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\components\\demo\\UserField.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 5,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "UserGrid": {
+    "name": "UserGrid",
+    "displayName": "UserGrid",
+    "description": "",
+    "tags": {},
+    "props": [
+      {
+        "name": "config",
+        "type": {
+          "name": "intersection",
+          "elements": [
+            {
+              "name": "Partial",
+              "elements": [
+                {
+                  "name": "ComponentContext"
+                }
+              ]
+            },
+            {
+              "name": "{\r\n  props?: {\r\n    // 仅支持 DataSet 格式\r\n    dataset?: {\r\n      tables?: {\r\n        Users?: {\r\n          columns?: Array<{\r\n            name: string\r\n            type: string\r\n            label?: string\r\n          }>\r\n          rows?: Record<string, unknown>[]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}"
+            }
+          ]
+        },
+        "required": true,
+        "description": "组件配置对象\n必须包含 props.dataset.tables.Users 数据结构",
+        "tags": {
+          "example": [
+            {
+              "description": "{\n  type: 'user-grid',\n  props: {\n    dataset: {\n      tables: {\n        Users: {\n          columns: [{ name: 'id', type: 'number', label: 'ID' }],\n          rows: [{ id: 1, name: '张三' }]\n        }\n      }\n    }\n  },\n  children: [{ type: 'user-row', id: 'row-1' }]\n}",
+              "title": "example"
+            }
+          ]
+        }
+      }
+    ],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\components\\demo\\UserGrid.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 1,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "UserRow": {
+    "name": "UserRow",
+    "displayName": "UserRow",
+    "description": "",
+    "tags": {},
+    "props": [
+      {
+        "name": "config",
+        "type": {
+          "name": "Partial",
+          "elements": [
+            {
+              "name": "ComponentContext"
+            }
+          ]
+        },
+        "required": true,
+        "description": "组件配置对象，包含用户数据和子组件配置",
+        "tags": {
+          "required": [
+            {
+              "description": true,
+              "title": "required"
+            }
+          ],
+          "example": [
+            {
+              "description": "{\n  type: 'user-row',\n  props: { \n    user: { id: 1, name: 'John', email: 'john@example.com' } \n  },\n  children: [\n    { type: 'user-field', props: { field: 'name' } },\n    { type: 'user-field', props: { field: 'email' } }\n  ]\n}",
+              "title": "example"
+            }
+          ]
+        }
+      }
+    ],
+    "events": [
+      {
+        "name": "row-click",
+        "description": "",
+        "type": {
+          "names": [
+            "Record"
+          ],
+          "elements": [
+            {
+              "name": "string"
+            },
+            {
+              "name": "unknown"
+            }
+          ]
+        },
+        "properties": [],
+        "tags": {}
+      }
+    ],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\components\\demo\\UserRow.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 1,
+      "eventsCount": 1,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "About": {
+    "name": "About",
+    "displayName": "About",
+    "description": "",
+    "tags": {},
+    "props": [],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\views\\About.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 0,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "CapabilityDemo": {
+    "name": "CapabilityDemo",
+    "displayName": "CapabilityDemo",
+    "description": "",
+    "tags": {},
+    "props": [],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\views\\CapabilityDemo.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 0,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "ComponentRendererDemo": {
+    "name": "ComponentRendererDemo",
+    "displayName": "ComponentRendererDemo",
+    "description": "",
+    "tags": {},
+    "props": [],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\views\\ComponentRendererDemo.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 0,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "Dashboard": {
+    "name": "Dashboard",
+    "displayName": "Dashboard",
+    "description": "",
+    "tags": {},
+    "props": [],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\views\\Dashboard.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 0,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "Settings": {
+    "name": "Settings",
+    "displayName": "Settings",
+    "description": "",
+    "tags": {},
+    "props": [],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\views\\Settings.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 0,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "TenantConfigDemo": {
+    "name": "TenantConfigDemo",
+    "displayName": "TenantConfigDemo",
+    "description": "",
+    "tags": {},
+    "props": [],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\views\\TenantConfigDemo.vue",
+    "exportName": "default",
+    "complexity": {
+      "propsCount": 0,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
   }
 }

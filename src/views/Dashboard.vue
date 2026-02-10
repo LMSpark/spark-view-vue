@@ -103,6 +103,33 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 管理仪表板页面 - Vue 组件页面示例
+ * 
+ * @component Dashboard
+ * @description
+ * 展示系统核心指标、快捷操作和页面类型对比的管理仪表板。
+ * 这是一个纯 Vue 组件页面，演示了传统开发模式与 SPARK 配置驱动模式的对比。
+ * 
+ * 核心功能：
+ * 1. **统计卡片**：显示用户总数、今日访问、热门内容、今日收入等关键指标
+ * 2. **快捷操作**：提供快速导航到配置页面演示、Vue 组件页面、系统设置
+ * 3. **类型对比**：展示 Vue 组件页面 vs 配置页面的技术实现差异
+ * 4. **混合渲染说明**：解释系统支持的两种页面渲染模式
+ * 5. **响应式布局**：基于 Element Plus 的栅格系统
+ * 
+ * @example
+ * 路由配置：
+ * ```typescript
+ * {
+ *   path: '/dashboard',
+ *   component: Dashboard
+ * }
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 

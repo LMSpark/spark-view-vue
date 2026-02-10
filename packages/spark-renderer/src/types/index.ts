@@ -85,41 +85,118 @@ export interface PageConfig {
 }
 
 /**
- * 渲染器选项
+ * PageRenderer 组件选项接口
+ * 
+ * 用于配置页面渲染器的行为，包括配置加载、样式隔离、数据管理等功能。
+ * 
+ * @interface PageRendererOptions
  */
 export interface PageRendererOptions {
   /**
-   * 配置加载器
+   * 配置加载器实例
+   * 用于从本地或远程加载页面配置（rule.json, pagedata.json, script.js）
+   * 
+   * @type {ConfigLoader}
+   * @optional
+   * @example
+   * ```typescript
+   * import { SparkPageConfig } from '@spark-view/spark-page-config'
+   * 
+   * const configLoader = SparkPageConfig.createLoader({
+   *   source: 'local',
+   *   apiBaseUrl: '/api/config',
+   *   localPrefix: '/pages-config'
+   * })
+   * ```
    */
   configLoader?: ConfigLoader
   
   /**
-   * 页面ID（优先级最高）
+   * 页面唯一标识符（优先级最高）
+   * 如果提供，则直接使用此 ID 加载配置，忽略路由参数
+   * 
+   * @type {string}
+   * @optional
+   * @example 'user-list' | 'dashboard' | 'settings'
    */
   pageId?: string
   
   /**
-   * 页面配置（直接传入，跳过加载）
+   * 页面配置对象（直接传入，跳过加载）
+   * 提供此选项时，configLoader 和 pageId 将被忽略
+   * 
+   * @type {PageConfig}
+   * @optional
+   * @example
+   * ```typescript
+   * {
+   *   pageId: 'user-form',
+   *   rule: [...],
+   *   data: { users: [] },
+   *   style: '.user-form { padding: 20px; }',
+   *   script: 'console.log("Page loaded");'
+   * }
+   * ```
    */
   pageConfig?: PageConfig
   
   /**
-   * FormCreate 选项
+   * FormCreate 配置选项
+   * 传递给 form-create 的额外配置，用于自定义表单行为
+   * 
+   * @type {Record<string, unknown>}
+   * @optional
+   * @default {}
+   * @see https://www.form-create.com/v3/guide/global.html
+   * @example
+   * ```typescript
+   * {
+   *   form: { labelWidth: '120px', size: 'large' },
+   *   submitBtn: false,
+   *   resetBtn: false
+   * }
+   * ```
    */
   formCreateOptions?: Record<string, unknown>
   
   /**
-   * 是否启用 CSS 隔离
+   * 是否启用 CSS 作用域隔离
+   * 开启后，页面样式会自动添加作用域前缀，避免全局污染
+   * 
+   * @type {boolean}
+   * @optional
+   * @default true
+   * @example true | false
    */
   enableCssScope?: boolean
   
   /**
    * 是否启用 DataSet 自动初始化
+   * 开启后，根据页面配置的 relations 自动创建 DataSet 实例
+   * 
+   * @type {boolean}
+   * @optional
+   * @default true
+   * @example true | false
    */
   enableDataSet?: boolean
   
   /**
-   * UI 消息服务（可注入替代 ElementPlus，便于测试和解耦）
+   * UI 消息服务接口（可注入替代 ElementPlus）
+   * 用于显示成功、警告、错误等提示消息，便于测试和 UI 框架解耦
+   * 
+   * @type {Object}
+   * @optional
+   * @default ElementPlus Message
+   * @example
+   * ```typescript
+   * {
+   *   success: (msg) => console.log('✓', msg),
+   *   warning: (msg) => console.warn('⚠', msg),
+   *   error: (msg) => console.error('✗', msg),
+   *   info: (msg) => console.info('ℹ', msg)
+   * }
+   * ```
    */
   messageService?: {
     success: (msg: string) => void
@@ -129,7 +206,23 @@ export interface PageRendererOptions {
   }
   
   /**
-   * UI 确认对话框服务（可注入替代 ElementPlus）
+   * UI 确认对话框服务接口（可注入替代 ElementPlus）
+   * 用于显示确认和提示对话框，便于测试和 UI 框架解耦
+   * 
+   * @type {Object}
+   * @optional
+   * @default ElementPlus MessageBox
+   * @example
+   * ```typescript
+   * {
+   *   confirm: async (msg, title) => {
+   *     return window.confirm(`${title}: ${msg}`)
+   *   },
+   *   alert: async (msg, title) => {
+   *     window.alert(`${title}: ${msg}`)
+   *   }
+   * }
+   * ```
    */
   confirmService?: {
     confirm: (msg: string, title?: string) => Promise<unknown>
@@ -137,17 +230,61 @@ export interface PageRendererOptions {
   }
   
   /**
-   * 页面加载前钩子
+   * 页面加载前钩子函数
+   * 在开始加载页面配置之前调用，可用于权限检查、数据预加载等
+   * 
+   * @type {Function}
+   * @optional
+   * @param {string} pageId - 即将加载的页面 ID
+   * @returns {void | Promise<void>}
+   * @example
+   * ```typescript
+   * async (pageId) => {
+   *   console.log('Loading page:', pageId)
+   *   // 可以在这里做权限检查
+   *   if (!hasPermission(pageId)) {
+   *     throw new Error('No permission')
+   *   }
+   * }
+   * ```
    */
   beforeLoad?: (pageId: string) => void | Promise<void>
   
   /**
-   * 页面加载后钩子
+   * 页面加载后钩子函数
+   * 在页面配置加载完成、规则绑定完成后调用
+   * 
+   * @type {Function}
+   * @optional
+   * @param {PageConfig} config - 加载的页面配置对象
+   * @returns {void | Promise<void>}
+   * @example
+   * ```typescript
+   * async (config) => {
+   *   console.log('Page loaded:', config.pageId)
+   *   // 可以在这里做额外的初始化
+   *   await initializePageData(config.data)
+   * }
+   * ```
    */
   afterLoad?: (config: PageConfig) => void | Promise<void>
   
   /**
-   * 错误处理
+   * 错误处理函数
+   * 当页面加载或渲染过程中发生错误时调用
+   * 
+   * @type {Function}
+   * @optional
+   * @param {Error} error - 错误对象
+   * @returns {void}
+   * @example
+   * ```typescript
+   * (error) => {
+   *   console.error('Page error:', error)
+   *   // 可以上报错误到监控系统
+   *   reportError(error)
+   * }
+   * ```
    */
   onError?: (error: Error) => void
 }

@@ -122,6 +122,57 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * 多租户配置演示页面 - 租户隔离和配置管理
+ * 
+ * @component TenantConfigDemo
+ * @description
+ * 演示 SPARK 系统的多租户配置能力，展示如何根据不同租户加载不同的应用配置。
+ * 支持租户切换、配置展示和完整 JSON 配置查看。
+ * 
+ * 核心功能：
+ * 1. **租户信息展示**：显示当前租户 ID、名称、代码、主题色
+ * 2. **应用配置展示**：展示 API 地址、版本、日志级别、Mock 开关、首页路径
+ * 3. **功能开关展示**：显示各功能模块的启用状态
+ * 4. **租户切换**：支持切换到默认配置、演示租户、企业租户
+ * 5. **配置 JSON 查看**：展示完整的配置对象结构
+ * 6. **自动刷新**：切换租户后自动刷新页面加载新配置
+ * 
+ * 租户配置结构：
+ * - **租户信息**：tenantId, tenantName, tenantCode, theme
+ * - **应用配置**：apiBaseUrl, version, logLevel, enableMock, features
+ * - **页面配置**：source, apiBaseUrl, localPrefix, homePath
+ * 
+ * @example
+ * 路由配置：
+ * ```typescript
+ * {
+ *   path: '/tenant-config',
+ *   component: TenantConfigDemo
+ * }
+ * ```
+ * 
+ * @example
+ * 租户配置文件示例 (config/tenant-demo.json)：
+ * ```json
+ * {
+ *   "tenant": {
+ *     "tenantId": "demo",
+ *     "tenantName": "演示租户",
+ *     "tenantCode": "DEMO",
+ *     "theme": { "primaryColor": "#409EFF" }
+ *   },
+ *   "config": {
+ *     "apiBaseUrl": "https://demo-api.example.com",
+ *     "logLevel": "info",
+ *     "features": { "auth": true, "export": false }
+ *   }
+ * }
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
 import { ref, onMounted } from 'vue'
 import { TenantResolver, ConfigLoader } from '@/config/loader'
 import type { AppFullConfig, TenantInfo } from '@/config/types'

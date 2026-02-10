@@ -22,6 +22,44 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * JSON 渲染演示组件 - 配置驱动渲染示例
+ * 
+ * @component JsonRendererDemo
+ * @description
+ * 展示如何使用 JSON 配置文件驱动 SPARK 组件渲染。
+ * 从远程加载 JSON 配置，通过 SparkComponentRenderer 动态渲染 UserGrid 组件。
+ * 演示了 SPARK 系统的"零代码"配置化能力。
+ * 
+ * 核心功能：
+ * 1. **配置加载**：从 /user-grid-demo.json 加载组件配置
+ * 2. **动态渲染**：根据配置动态渲染 UserGrid 组件
+ * 3. **配置展示**：可折叠的 JSON 配置查看器
+ * 4. **能力提供**：提供 APP_SERVICES 能力（路由、日志）给子组件
+ * 5. **错误处理**：优雅处理配置加载失败场景
+ * 
+ * @example
+ * 配置文件格式 (/user-grid-demo.json):
+ * ```json
+ * {
+ *   "type": "user-grid",
+ *   "id": "demo-grid",
+ *   "props": {
+ *     "dataset": {
+ *       "tables": {
+ *         "Users": {
+ *           "columns": [...],
+ *           "rows": [...]
+ *         }
+ *       }
+ *     }
+ *   }
+ * }
+ * ```
+ * 
+ * @author SPARK Team
+ * @since 1.0.0
+ */
 import { ref, onMounted } from 'vue'
 import { useRouter, type RouteLocationRaw } from 'vue-router'
 import { useSparkComponent } from '@spark-view/spark-component'

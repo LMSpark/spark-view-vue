@@ -67,9 +67,36 @@ import { getRequiredFunctionNames } from '../utils/extractFunctionNames'
  * 3. CSS 隔离（作用域样式）
  * 4. 脚本沙箱（安全执行脚本）
  * 5. Rule 绑定（数据和事件绑定）
+ * 
+ * @component PageRenderer
+ * @example
+ * ```vue
+ * <PageRenderer 
+ *   :configLoader="configLoader"
+ *   :pageId="'user-list'"
+ *   :enableCssScope="true"
+ *   :enableDataSet="true"
+ *   @beforeLoad="handleBeforeLoad"
+ *   @afterLoad="handleAfterLoad"
+ * >
+ *   <template #loading>加载中...</template>
+ *   <template #error="{ error }">加载失败: {{ error }}</template>
+ * </PageRenderer>
+ * ```
+ * 
+ * @author SPARK Team
+ * @since v1.0.0
  */
 
 // 定义插槽类型
+/**
+ * @slot loading - 页面加载中时显示的内容
+ * @slot error - 页面加载失败时显示的内容
+ * @slot error.error {string} - 错误信息
+ * @slot content - 自定义页面内容渲染
+ * @slot content.rules {Rule[]} - FormCreate 规则数组
+ * @slot content.pageData {Record<string, unknown>} - 页面数据对象
+ */
 defineSlots<{
   loading?: () => unknown
   error?: (props: { error: string }) => unknown
