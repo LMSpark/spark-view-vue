@@ -28,10 +28,6 @@ import { SparkApp, registerBuiltinPlugins, PluginManager } from '@spark-view/spa
 import { createLogger } from '@spark-view/spark-app'
 const startupLogger = createLogger('main')
 
-// 编译时组件注册（smart 模式由 Vite 插件生成完整代码，classic 模式返回 null）
-const { registerComponents } = await import('virtual:spark-components')
-const compiledRegister = typeof registerComponents === 'function' ? registerComponents : undefined
-
 // 配置加载器
 import { loadAppConfig } from './config/loader'
 
@@ -98,11 +94,11 @@ async function startApp() {
       // === UI 插件（动态加载）===
       plugins,
       
-      // === SPARK 组件系统配置（从 JSON 加载）===
+      // === SPARK 组件系统配置（从iSON 加载）===
       spark: {
-        ...appConfig.spark,
-        // 编译时注册函数（smart 模式自动注入，classic 模式为 undefined）
-        registerComponents: compiledRegister
+        ...appConfig.spark
+        // SparkApp 会自动导入 virtual:spark-components
+        // 不需要手动传递 registerComponents
       },
       
       // === 页面配置系统（从 JSON 加载）===
@@ -137,10 +133,8 @@ async function startApp() {
         const ComponentRendererDemo = (await import('./views/ComponentRendererDemo.vue')).default
         const TenantConfigDemo = (await import('./views/TenantConfigDemo.vue')).default
         
-        // 注册能力演示组件（仅在非 smart 模式下需要手动注册）
-        if (!compiledRegister) {
-          await import('./components/demo/register')
-        }
+        // 注册能力演示组件（SparkApp 已自动处理编译时注册）
+        // 如果需要运行时动态注册，可在此处添加
         
         // 注册静态路由
         router.addRoute({
