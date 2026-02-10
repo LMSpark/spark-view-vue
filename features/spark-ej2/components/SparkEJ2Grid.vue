@@ -105,15 +105,16 @@ import { useSyncfusionLoader } from '../composables/useSyncfusionLoader'
 // activeComponent 初始为占位组件（markRaw 避免被 reactive 包装）
 const activeComponent = ref<Component>(markRaw(PlaceholderGrid))
 
-// 🚀 路由级懒加载 Syncfusion（CSS + JS）
+// 🚀 路由级懒加载 Syncfusion（CSS + JS + 按需服务注入）
 const { loadEJ2Grid } = useSyncfusionLoader()
 
 // 尝试按需加载 EJ2 Grid（非强制），加载失败则保持占位组件
-loadEJ2Grid()
+// 传入配置以实现功能级按需引入（仅加载配置中启用的服务）
+loadEJ2Grid(props.config)
   .then((m) => {
     if (m && m.GridComponent) {
       activeComponent.value = markRaw(m.GridComponent as Component)
-      logger.info('✅ EJ2 Grid loaded successfully')
+      logger.info('✅ EJ2 Grid loaded successfully (on-demand services)')
     }
   })
   .catch(e => {

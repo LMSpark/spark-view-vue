@@ -608,7 +608,7 @@
     "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Column.vue",
     "exportName": "default",
     "spark": {
-      "type": "spark-ej2column",
+      "type": "spark-ej-2-column",
       "loadStrategy": "async",
       "capabilities": {
         "consumes": [
@@ -657,7 +657,7 @@
     "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Grid.vue",
     "exportName": "default",
     "spark": {
-      "type": "spark-ej2grid",
+      "type": "spark-ej-2-grid",
       "loadStrategy": "async",
       "capabilities": {
         "provides": [
