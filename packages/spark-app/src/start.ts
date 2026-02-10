@@ -18,19 +18,20 @@ const startLogger = createLogger('start')
 export interface SparkOptions {
   /** 是否启用 SPARK 组件系统（默认 true） */
   enabled?: boolean
+  
   /** 
-   * 编译时生成的注册函数
+   * 是否自动导入并执行编译时组件注册（默认 true）
    * 
-   * 当使用 sparkComponentsPlugin (BUILD_MODE=smart) 时，
-   * 传入 virtual:spark-components 导出的 registerComponents 函数。
+   * SparkApp 会自动导入 virtual:spark-components 并执行注册函数。
+   * 设置为 false 可禁用自动注册（用于自定义注册流程）。
+   */
+  autoRegister?: boolean
+  
+  /** 
+   * @deprecated 不再需要手动传递 registerComponents
+   * SparkApp 会自动导入 virtual:spark-components
    * 
-   * @example
-   * ```typescript
-   * import { registerComponents } from 'virtual:spark-components'
-   * SparkApp.start({
-   *   spark: { registerComponents }
-   * })
-   * ```
+   * 保留此字段仅用于向后兼容，将在下一个大版本中移除
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registerComponents?: (...args: any[]) => { total: number; sync: number; async: number }
@@ -197,11 +198,38 @@ export async function start(options: StartOptions): Promise<void> {
       // 使用默认全局单例（不传参数）
       app.use(createSparkPlugin())
 
-      // 如果提供了编译时注册函数，立即执行（零运行时开销）
-      if (spark?.registerComponents) {
-        startLogger.debug('执行编译时组件注册...')
+      // 自动导入并执行编译时组件注册
+      const shouldAutoRegister = spark?.autoRegister !== false
+      
+      if (shouldAutoRegister) {
+        try {
+          startLogger.debug('自动导入 virtual:spark-components...')
+          // 动态导入虚拟模块（由 vite-plugin-spark-components 生成）
+          type RegisterFn = (app: ReturnType<typeof createApp>) => { total: number; sync: number; async: number }
+          const virtualModule = await import('virtual:spark-components')
+          const { registerComponents } = virtualModule as { 
+            registerComponents?: RegisterFn
+          }
+          
+          if (typeof registerComponents === 'function') {
+            startLogger.debug('执行自动组件注册...')
+            const stats = registerComponents(app)
+            startLogger.info(`自动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
+          } else {
+            startLogger.warn('virtual:spark-components 未导出 registerComponents 函数（可能使用 classic 模式）')
+          }
+        } catch (error) {
+          const err = error as Error
+          startLogger.warn('无法导入 virtual:spark-components', { error: err.message })
+          startLogger.info('可能原因：未配置 sparkComponentsPlugin 或使用 classic 模式')
+        }
+      }
+      
+      // 向后兼容：如果手动传递了 registerComponents（已废弃）
+      if (spark?.registerComponents && !shouldAutoRegister) {
+        startLogger.debug('[DEPRECATED] 执行手动传递的组件注册函数...')
         const stats = spark.registerComponents(app)
-        startLogger.info(`编译时注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
+        startLogger.info(`手动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
       }
     }
 

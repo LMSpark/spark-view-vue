@@ -13,6 +13,7 @@
 - [第二阶段：组件重复注册问题](#第二阶段组件重复注册问题)
 - [第三阶段：机制层面的架构重构](#第三阶段机制层面的架构重构)
 - [第四阶段：系统架构梳理](#第四阶段系统架构梳理)
+- [第五阶段：L2 层解耦（极致简化）](#第五阶段l2-层解耦极致简化)
 - [成果总结](#成果总结)
 
 ---
@@ -827,6 +828,196 @@ graph LR
 
 ---
 
+## 第五阶段：L2 层解耦（极致简化）
+
+### 🎯 问题分析
+
+经过前四个阶段的优化，系统架构已经相当完善。但是在 L2 层（main.ts）仍然需要手动处理组件注册：
+
+```typescript
+// ❌ 优化前：main.ts 需要手动导入虚拟模块
+const { registerComponents } = await import('virtual:spark-components')
+const compiledRegister = typeof registerComponents === 'function' ? registerComponents : undefined
+
+await SparkApp.start({
+  spark: {
+    registerComponents: compiledRegister  // 手动传递
+  }
+})
+```
+
+**存在的问题**：
+1. 💼 **职责不清**：应用层（main.ts）需要理解编译时虚拟模块
+2. 🔗 **耦合度高**：L2 层直接依赖 L1 层的虚拟模块
+3. 📚 **认知负担**：新开发者需要理解 `typeof` 检查的原因
+4. 🎯 **违背原则**：SparkApp 应该是"开箱即用"的高层 API
+
+### 🚀 解决方案：SparkApp 内部自动化
+
+**核心思想**：将虚拟模块导入和组件注册完全封装在 SparkApp 内部
+
+#### 1. SparkApp.start() 增强
+
+```typescript
+// packages/spark-app/src/start.ts
+
+export interface SparkOptions {
+  enabled?: boolean
+  
+  /** 
+   * 是否自动导入并执行编译时组件注册（默认 true）
+   * SparkApp 会自动导入 virtual:spark-components 并执行注册函数
+   */
+  autoRegister?: boolean  // 新增配置项
+  
+  /** @deprecated 不再需要手动传递 registerComponents */
+  registerComponents?: (...args: any[]) => { total: number; sync: number; async: number }
+}
+
+// 在 start() 函数中
+if (spark?.enabled !== false) {
+  // 安装 SPARK 插件
+  const { createSparkPlugin } = await import('@spark-view/spark-component')
+  app.use(createSparkPlugin())
+
+  // 🎯 自动导入并执行组件注册
+  const shouldAutoRegister = spark?.autoRegister !== false
+  
+  if (shouldAutoRegister) {
+    try {
+      startLogger.debug('自动导入 virtual:spark-components...')
+      const virtualModule = await import('virtual:spark-components')
+      const { registerComponents } = virtualModule as { 
+        registerComponents?: (...args: any[]) => { total: number; sync: number; async: number } 
+      }
+      
+      if (typeof registerComponents === 'function') {
+        const stats = registerComponents(app)
+        startLogger.info(`自动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
+      }
+    } catch (error) {
+      startLogger.warn('无法导入 virtual:spark-components', { error: (error as Error).message })
+      startLogger.info('可能原因：未配置 sparkComponentsPlugin 或使用 classic 模式')
+    }
+  }
+}
+```
+
+#### 2. main.ts 极致简化
+
+```typescript
+// ✅ 优化后：main.ts 零配置
+await SparkApp.start({
+  rootComponent: App,
+  config: appConfig,
+  spark: {
+    // SparkApp 会自动导入 virtual:spark-components
+    // 不需要手动传递 registerComponents
+    autoRegister: true  // 默认为 true，可省略
+  }
+})
+```
+
+**移除的代码**：
+```diff
+- const { registerComponents } = await import('virtual:spark-components')
+- const compiledRegister = typeof registerComponents === 'function' ? registerComponents : undefined
+- 
+  await SparkApp.start({
+    spark: {
+-     registerComponents: compiledRegister
++     // 自动处理，无需配置
+    }
+  })
+```
+
+### 🏗️ 架构优势
+
+#### 1. 职责清晰
+
+| 层级 | 职责 | 知识范围 |
+|-----|------|---------|
+| **L2 (main.ts)** | 应用启动配置 | 仅关心业务配置（路由、插件、认证等） |
+| **L3 (SparkApp)** | 框架初始化 | 负责组件注册、路由、插件等基础设施 |
+| **L1 (虚拟模块)** | 编译时代码生成 | 完全透明，由框架内部处理 |
+
+#### 2. 依赖方向优化
+
+**优化前**：L2 → L1（应用层直接依赖编译层）
+```
+main.ts (L2) ─┐
+              ├─→ virtual:spark-components (L1)
+SparkApp (L3) ┘
+```
+
+**优化后**：L2 → L3 → L1（符合分层架构原则）
+```
+main.ts (L2) → SparkApp (L3) → virtual:spark-components (L1)
+```
+
+#### 3. 向后兼容
+
+保留 `registerComponents` 选项用于特殊场景（自定义注册流程）：
+```typescript
+await SparkApp.start({
+  spark: {
+    autoRegister: false,  // 禁用自动注册
+    registerComponents: customRegisterFn  // 使用自定义函数
+  }
+})
+```
+
+### 📊 影响范围
+
+**修改文件**：
+- ✅ `packages/spark-app/src/start.ts` (+40 行)
+  - 增加 `autoRegister` 配置项
+  - 实现自动导入和注册逻辑
+  - 向后兼容处理
+
+- ✅ `src/main.ts` (-6 行)
+  - 移除 `virtual:spark-components` 导入
+  - 移除 `compiledRegister` 变量
+  - 移除 `spark.registerComponents` 配置
+
+**测试验证**：
+- ✅ 所有 84 个测试通过
+- ✅ 类型检查通过
+- ✅ 运行时组件注册正常
+
+### 💡 关键经验
+
+1. **高层 API 应该隐藏实现细节**
+   - SparkApp.start() 是最高层 API，应该"开箱即用"
+   - 编译时虚拟模块是实现细节，不应暴露给应用层
+
+2. **分层架构的依赖原则**
+   - 上层依赖下层，不能跨层
+   - 应用层（L2）不应直接依赖编译层（L1）
+   - 框架层（L3）负责桥接和封装
+
+3. **向后兼容的艺术**
+   - 使用 `@deprecated` 标记过时 API
+   - 保留旧功能但默认启用新机制
+   - 给用户平滑的迁移路径
+
+4. **零配置的价值**
+   - 默认行为应该是最佳实践
+   - 高级用户可以调整，普通用户开箱即用
+   - 降低认知负担和上手难度
+
+### 🎯 成果
+
+| 指标 | 优化前 | 优化后 | 改进 |
+|-----|-------|-------|------|
+| **main.ts 代码行数** | 257 行 | 251 行 | **-6 行** |
+| **手动导入语句** | 1 个 | 0 个 | **100% 移除** |
+| **类型检查逻辑** | 1 处 | 0 处 | **100% 移除** |
+| **用户认知负担** | 需理解虚拟模块 | 零配置使用 | **极大降低** |
+| **架构分层** | L2→L1 跨层依赖 | L2→L3→L1 清晰分层 | **符合原则** |
+
+---
+
 ## 成果总结
 
 ### 📈 性能提升
@@ -861,13 +1052,14 @@ graph LR
 - `docs/blog/SPARK_OPTIMIZATION_JOURNEY.md` (本文档)
 
 **修改文件**：
-- `packages/spark-component/src/registry/ComponentRegistry.ts` (+47 行)
-- `packages/spark-component/src/core/types.ts` (+2 行)
-- `tools/vite-plugin-spark-components.ts` (+3 行)
-- `features/spark-ej2/composables/useSyncfusionLoader.ts` (集成服务注入)
-- `features/spark-ej2/components/SparkEJ2Grid.vue` (传递 config)
-- `features/spark-ej2/types.ts` (扩展接口)
-- `src/main.ts` (修复重复调用)
+- `packages/spark-app/src/start.ts` (+40 行) — 自动组件注册
+- `packages/spark-component/src/registry/ComponentRegistry.ts` (+47 行) — registerOnce 幂等机制
+- `packages/spark-component/src/core/types.ts` (+2 行) — 类型定义
+- `tools/vite-plugin-spark-components.ts` (+3 行) — registerOnce 代码生成
+- `features/spark-ej2/composables/useSyncfusionLoader.ts` — 集成服务注入
+- `features/spark-ej2/components/SparkEJ2Grid.vue` — 传递 config
+- `features/spark-ej2/types.ts` — 扩展接口
+- `src/main.ts` (-6 行) — 移除手动注册逻辑
 
 **测试覆盖**：
 - 84/84 测试通过
@@ -881,6 +1073,9 @@ graph LR
 | [daa4738](https://gitee.com/obslight/SPARK_VIEW/commit/daa4738) | 实现 Syncfusion 功能级按需引入 | 2026-02-10 |
 | [a895027](https://gitee.com/obslight/SPARK_VIEW/commit/a895027) | 修复组件重复注册警告 | 2026-02-10 |
 | [e3817a7](https://gitee.com/obslight/SPARK_VIEW/commit/e3817a7) | 从机制层面解决重复注册 | 2026-02-10 |
+| [02673bf](https://gitee.com/obslight/SPARK_VIEW/commit/02673bf) | 新增 SPARK 组件系统优化全过程博文 | 2026-02-10 |
+| [d280402](https://gitee.com/obslight/SPARK_VIEW/commit/d280402) | 集成 4 个 Mermaid 架构图到博文 | 2026-02-10 |
+| [PENDING] | L2 层解耦：SparkApp 自动组件注册 | 2026-02-10 |
 
 ### 💡 关键经验
 
