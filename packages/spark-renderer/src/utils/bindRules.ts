@@ -86,6 +86,46 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
         newRule.props.data = dataSource
       }
     }
+
+    // 🎯 处理 r-tree 的 dataSource 绑定
+    if (newRule.type === 'r-tree' && newRule.dataSource) {
+      const dataSource = pageData[newRule.dataSource as string]
+      if (dataSource !== undefined) {
+        newRule.props ??= {}
+        newRule.props.data = dataSource
+      }
+    }
+
+    // 🎯 处理 r-tree 的 dataKey 绑定（用于 default-expanded-keys）
+    if (newRule.type === 'r-tree' && newRule.dataKey) {
+      const keys = (newRule.dataKey as string).split('.')
+      const value = getNestedValue<unknown[]>(pageData, keys)
+      if (value !== undefined && Array.isArray(value)) {
+        newRule.props ??= {}
+        newRule.props['default-expanded-keys'] = value
+      }
+    }
+
+    // 🎯 处理 r-tree 的 currentKey 绑定（用于 current-key 高亮）
+    if (newRule.type === 'r-tree' && newRule.currentKey) {
+      const keys = (newRule.currentKey as string).split('.')
+      const value = getNestedValue<string | number>(pageData, keys)
+      if (value !== undefined) {
+        newRule.props ??= {}
+        newRule.props['current-key'] = value
+      }
+    }
+
+    // 🎯 处理 props 中的事件处理函数（针对自定义组件，如 r-tree）
+    if (newRule.props && typeof newRule.props === 'object') {
+      for (const [propName, propValue] of Object.entries(newRule.props)) {
+        // 检测以 "on" 开头的 prop（如 onNodeClick）
+        if (propName.startsWith('on') && typeof propValue === 'string') {
+          // 将字符串函数名转换为实际的函数调用
+          newRule.props[propName] = (...args: unknown[]) => callFunc(propValue, ...args)
+        }
+      }
+    }
     
     // 🎯 处理 r-form 的 dataKey 绑定
     if (newRule.type === 'r-form' && newRule.dataKey) {
@@ -127,7 +167,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     
     // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定或表单值绑定）
     // 排除已有专门处理逻辑的容器组件
-    const handledTypes = ['el-table', 'r-table', 'r-form', 'r-detail']
+    const handledTypes = ['el-table', 'r-table', 'r-form', 'r-detail', 'r-tree']
     if (newRule.dataKey && !handledTypes.includes(newRule.type as string)) {
       // 解析 dataKey 路径，获取数据值
       const keys = (newRule.dataKey as string).split('.')

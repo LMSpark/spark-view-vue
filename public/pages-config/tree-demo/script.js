@@ -29,88 +29,187 @@ let treeManager = null
  */
 function __init__() {
   const pageData = $data
-  const { TreeManager } = pageData._imports || {}
   
-  if (!TreeManager) {
-    console.error('❌ TreeManager 未导入')
+  // 初始化展开状态数组
+  if (!pageData.expandedKeys) {
+    pageData.expandedKeys = []
+  }
+  
+  // 使用 SparkData 命名空间创建 TreeManager
+  if (!SparkData || !SparkData.createTreeManager) {
+    console.error('❌ SparkData 或 createTreeManager 未注入')
     return
   }
   
   const { config, nodes } = pageData.treeData
   
-  // 创建树管理器
-  treeManager = new TreeManager(config, nodes)
+  // 使用 SparkData.createTreeManager() 创建树管理器
+  treeManager = SparkData.createTreeManager(config, nodes)
+  
+  if (!treeManager) {
+    console.error('❌ TreeManager 创建失败')
+    return
+  }
   
   // 富化节点信息（计算 level 和 hasChildren）
-  treeManager.enrichNodes()
-  
-  // 🔑 使用 TreeManager 原生方法构建树形结构
-  const treeNodes = treeManager.buildNestedTree()
-  
-  // 更新为树形结构
-  pageData.treeData.nodes = treeNodes
+  if (treeManager.enrichNodes) {
+    treeManager.enrichNodes()
+  }
   
   console.log('✅ TreeManager 初始化完成')
-  console.log('扁平节点数量:', Object.keys(treeManager.getCache()).length)
-  console.log('根节点数量:', treeNodes.length)
-  console.log('树形结构:', treeNodes)
+  console.log('扁平节点数量:', nodes.length)
   
-  $rebindRules()
+  // 注意：不需要重新构建树形结构，因为 RendererTree 使用的是 hierarchicalTreeData
+  // pageData.hierarchicalTreeData 已经是嵌套的树形结构
+}
+
+/**
+ * 测试点击函数
+ */
+function testNodeClick() {
+  console.log('🧪 测试按钮被点击！')
+  console.log('🧪 $data:', $data)
+  console.log('🧪 handleNodeClick 函数:', typeof handleNodeClick)
+  
+  // 模拟点击第一个节点
+  const testData = {
+    id: 1,
+    name: '测试节点',
+    label: '测试节点',
+    type: 'test'
+  }
+  
+  const testNode = {
+    level: 0,
+    expanded: false
+  }
+  
+  console.log('🧪 手动调用 handleNodeClick')
+  handleNodeClick(testData, testNode)
+  
+  ElMessage?.success('测试函数已执行，请查看控制台')
 }
 
 /**
  * 展开节点
+ * 注意：FormCreate 会在第一个参数注入上下文，需要跳过
  */
-function handleNodeExpand(node) {
+function handleNodeExpand(...args) {
+  // 跳过 FormCreate 上下文
+  let data = args[0]
+  if (data && (data.$f || data.api)) {
+    data = args[1]
+  }
   const pageData = $data
-  console.log('🔽 展开节点:', node.name)
+  console.log('🔽 展开节点:', data)
   
-  // 记录展开的节点
-  if (!pageData.expandedKeys.includes(node.id)) {
-    pageData.expandedKeys.push(node.id)
+  // 初始化 expandedKeys（如果不存在）
+  if (!pageData.expandedKeys) {
+    pageData.expandedKeys = []
   }
   
-  const children = treeManager.getChildren(node.id)
-  console.log('子节点数量:', children.length)
+  // 记录展开的节点
+  if (data && data.id && !pageData.expandedKeys.includes(data.id)) {
+    pageData.expandedKeys.push(data.id)
+    console.log('📌 保存展开状态，当前展开节点:', pageData.expandedKeys)
+  }
+  
+  if (treeManager) {
+    const children = treeManager.getChildren(data.id)
+    console.log('子节点数量:', children.length)
+  }
 }
 
 /**
  * 收起节点
+ * 注意：FormCreate 会在第一个参数注入上下文，需要跳过
  */
-function handleNodeCollapse(node) {
+function handleNodeCollapse(...args) {
+  // 跳过 FormCreate 上下文
+  let data = args[0]
+  if (data && (data.$f || data.api)) {
+    data = args[1]
+  }
   const pageData = $data
-  console.log('🔼 收起节点:', node.name)
+  console.log('🔼 收起节点:', data)
+  
+  // 初始化 expandedKeys（如果不存在）
+  if (!pageData.expandedKeys) {
+    pageData.expandedKeys = []
+  }
   
   // 移除折叠的节点
-  const index = pageData.expandedKeys.indexOf(node.id)
-  if (index > -1) {
-    pageData.expandedKeys.splice(index, 1)
+  if (data && data.id) {
+    const index = pageData.expandedKeys.indexOf(data.id)
+    if (index > -1) {
+      pageData.expandedKeys.splice(index, 1)
+      console.log('📌 移除展开状态，当前展开节点:', pageData.expandedKeys)
+    }
   }
 }
 
 /**
  * 点击节点
+ * 注意：FormCreate 会在第一个参数注入上下文（包含 $f, api 等），需要跳过
  */
-function handleNodeClick(node) {
+function handleNodeClick(...args) {
   const pageData = $data
-  const { ElMessage } = pageData._imports || {}
   
-  console.log('📍 点击节点:', node.name)
+  // 跳过 FormCreate 注入的上下文参数（包含 $f 或 api 字段）
+  let nodeData = args[0]
+  if (nodeData && (nodeData.$f || nodeData.api)) {
+    // 第一个参数是 FormCreate 上下文，使用第二个参数
+    nodeData = args[1]
+  }
   
-  // 获取节点路径
-  const path = treeManager.getNodePath(node.id)
-  const pathNames = path.pathNodes.map(n => n.name).join(' > ')
+  console.log('📍 点击节点 - 原始参数:', args)
+  console.log('📍 点击节点 - 节点数据:', nodeData)
+  console.log('📍 更新前 selectedNode:', pageData.selectedNode)
   
-  // 更新选中状态
-  pageData.selectedNode = node
-  pageData.selectedPath = path.pathNodes
-  pageData.selectedPathText = pathNames
-  pageData.currentNodeKey = node.id  // 更新当前选中节点 key
+  if (!nodeData || !nodeData.id) {
+    console.error('❌ 无效的节点数据:', nodeData)
+    return
+  }
   
-  // 🔑 关键：只重新绑定节点信息部分，避免树重新渲染
+  // 基本信息更新（不依赖 treeManager）
+  pageData.selectedNode = nodeData
+  pageData.currentNodeKey = nodeData.id
+  
+  console.log('📍 更新后 selectedNode:', pageData.selectedNode)
+  console.log('📍 selectedNode.id:', pageData.selectedNode?.id)
+  console.log('📍 selectedNode.name:', pageData.selectedNode?.name)
+  
+  // 如果有 treeManager，获取完整的路径信息
+  if (treeManager) {
+    try {
+      const path = treeManager.getNodePath(nodeData.id)
+      const pathNames = path.pathNodes.map(n => n.name).join(' > ')
+      pageData.selectedPath = path.pathNodes
+      pageData.selectedPathText = pathNames
+      console.log('📍 节点路径:', pathNames)
+      ElMessage?.success(`已选中: ${pathNames}`)
+    } catch (error) {
+      console.error('获取节点路径失败:', error)
+      pageData.selectedPath = []
+      pageData.selectedPathText = nodeData.name || nodeData.label || '未知节点'
+      ElMessage?.info(`已选中: ${nodeData.name || nodeData.label}`)
+    }
+  } else {
+    // 没有 treeManager 时的简化处理
+    console.log('⚠️ TreeManager 未初始化，使用简化处理')
+    pageData.selectedPath = []
+    pageData.selectedPathText = nodeData.name || nodeData.label || '未知节点'
+    ElMessage?.info(`已选中: ${nodeData.name || nodeData.label}`)
+  }
+  
+  console.log('📍 准备调用 $rebindRules() 更新节点信息显示')
+  console.log('📍 当前 expandedKeys:', pageData.expandedKeys)
+  
+  // 重新绑定规则以更新节点信息显示
+  // 注意：会导致树重新渲染，但应该通过 default-expanded-keys 恢复展开状态
   $rebindRules()
   
-  ElMessage?.success(`已选中: ${pathNames}`)
+  console.log('📍 $rebindRules() 调用完成')
 }
 
 /**
@@ -161,7 +260,6 @@ function handleSearch() {
   pageData.searchResults = resultsWithPath
   $rebindRules()
   
-  const { ElMessage } = pageData._imports || {}
   if (results.length > 0) {
     ElMessage?.success(`找到 ${results.length} 个匹配节点`)
   } else {
@@ -196,7 +294,6 @@ function handleClearSearch() {
  */
 function handleLocateNode(row, column, event) {
   const pageData = $data
-  const { ElMessage } = pageData._imports || {}
   
   console.log('🎯 定位到节点 - row:', row)
   console.log('🎯 定位到节点 - column:', column)
@@ -233,7 +330,6 @@ function handleLocateNode(row, column, event) {
  */
 function handleToggleMode() {
   const pageData = $data
-  const { ElMessage } = pageData._imports || {}
   const currentMode = pageData.treeData.config.mode
   const newMode = currentMode === 'flat' ? 'nested' : 'flat'
   
@@ -259,7 +355,6 @@ function handleToggleMode() {
  */
 function handleExpandAll() {
   const pageData = $data
-  const { ElMessage } = pageData._imports || {}
   console.log('🔽 展开全部节点')
   ElMessage?.success('展开全部功能需要 UI 组件支持')
 }
@@ -269,7 +364,6 @@ function handleExpandAll() {
  */
 function handleCollapseAll() {
   const pageData = $data
-  const { ElMessage } = pageData._imports || {}
   console.log('🔼 收起全部节点')
   ElMessage?.success('收起全部功能需要 UI 组件支持')
 }
@@ -279,10 +373,14 @@ function handleCollapseAll() {
  */
 async function handleAddNode() {
   const pageData = $data
-  const { ElMessage, buildTreeFromFlat } = pageData._imports || {}
   
   if (!pageData.selectedNode) {
     ElMessage?.warning('请先选择父节点')
+    return
+  }
+  
+  if (!treeManager) {
+    ElMessage?.error('TreeManager 未初始化')
     return
   }
   
@@ -303,19 +401,16 @@ async function handleAddNode() {
   // 添加到缓存
   treeManager.addNodesToCache([newNode])
   
-  // 🔑 关键：重新构建树形结构
-  const flatNodes = Object.values(treeManager.getCache())
-  const treeNodes = buildTreeFromFlat(
-    flatNodes,
-    'id',
-    'parentId'
-  )
-  
-  // 更新树形数据
-  pageData.treeData.nodes = treeNodes
+  // 🔑 关键：重新构建树形结构并更新 hierarchicalTreeData
+  if (treeManager.buildNestedTree) {
+    const nestedTree = treeManager.buildNestedTree()
+    pageData.hierarchicalTreeData = nestedTree
+  }
   
   // 更新父节点的 hasChildren
-  treeManager.markHasChildren(parentNode.id)
+  if (treeManager.markHasChildren) {
+    treeManager.markHasChildren(parentNode.id)
+  }
   
   $rebindRules()
   
@@ -328,10 +423,14 @@ async function handleAddNode() {
  */
 async function handleDeleteNode() {
   const pageData = $data
-  const { ElMessage, buildTreeFromFlat } = pageData._imports || {}
   
   if (!pageData.selectedNode) {
     ElMessage?.warning('请先选择要删除的节点')
+    return
+  }
+  
+  if (!treeManager) {
+    ElMessage?.error('TreeManager 未初始化')
     return
   }
   
@@ -348,16 +447,12 @@ async function handleDeleteNode() {
   const cache = treeManager.getCache()
   delete cache[node.id]
   
-  // 🔑 关键：重新构建树形结构
-  const flatNodes = Object.values(cache)
-  const treeNodes = buildTreeFromFlat(
-    flatNodes,
-    'id',
-    'parentId'
-  )
+  // 🔑 关键：重新构建树形结构并更新 hierarchicalTreeData
+  if (treeManager.buildNestedTree) {
+    const nestedTree = treeManager.buildNestedTree()
+    pageData.hierarchicalTreeData = nestedTree
+  }
   
-  // 更新树形数据
-  pageData.treeData.nodes = treeNodes
   pageData.selectedNode = null
   pageData.selectedPath = []
   
@@ -372,7 +467,12 @@ async function handleDeleteNode() {
  */
 function handleExport() {
   const pageData = $data
-  const { ElMessage } = pageData._imports || {}
+  
+  if (!treeManager) {
+    ElMessage?.error('TreeManager 未初始化')
+    return
+  }
+  
   const json = treeManager.toJSON()
   
   // 创建下载链接
@@ -393,7 +493,12 @@ function handleExport() {
  */
 function handleViewDetails(node) {
   const pageData = $data
-  const { ElMessage } = pageData._imports || {}
+  
+  if (!treeManager) {
+    ElMessage?.error('TreeManager 未初始化')
+    return
+  }
+  
   const path = treeManager.getNodePath(node.id)
   const children = treeManager.getChildren(node.id)
   

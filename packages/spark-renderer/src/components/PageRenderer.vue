@@ -123,8 +123,8 @@ const defaultFormCreateOptions = {
   form: false,
   submitBtn: false,
   resetBtn: false,
-  // 避免插槽在渲染函数外调用的警告
-  injectEvent: false, // 禁用事件注入优化，使用标准响应式
+  // 启用事件注入，使 on 属性中的事件能正常工作
+  injectEvent: true, // ✅ 必须为 true，否则事件监听器不生效
   global: {
     'e-columns': { render: () => null },
     'eColumns': { render: () => null },

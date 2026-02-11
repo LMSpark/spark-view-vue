@@ -41,6 +41,16 @@ export function extractFunctionNames(rules: Rule[]): Set<string> {
         }
       }
     }
+
+    // 2.1 提取 props 中的事件处理器函数（如 onNodeClick）
+    if (rule.props && typeof rule.props === 'object') {
+      for (const [propName, propValue] of Object.entries(rule.props)) {
+        // 检测以 'on' 开头的属性（Vue 事件命名约定）
+        if (propName.startsWith('on') && typeof propValue === 'string' && propValue) {
+          functionNames.add(propValue)
+        }
+      }
+    }
     
     // 3. 递归扫描子元素
     if (rule.children && Array.isArray(rule.children)) {

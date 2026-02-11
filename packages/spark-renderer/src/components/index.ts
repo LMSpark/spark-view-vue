@@ -6,6 +6,7 @@
 export { default as RendererTable } from './containers/RendererTable.vue'
 export { default as RendererForm } from './containers/RendererForm.vue'
 export { default as RendererDetail } from './containers/RendererDetail.vue'
+export { default as RendererTree } from './containers/RendererTree.vue'
 
 // 字段组件
 export { default as FieldText } from './fields/FieldText.vue'

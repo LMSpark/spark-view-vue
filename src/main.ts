@@ -128,6 +128,7 @@ async function startApp() {
           RendererTable,
           RendererForm,
           RendererDetail,
+          RendererTree,
           FieldText,
           FieldNumber,
           FieldDate
@@ -136,6 +137,7 @@ async function startApp() {
         app.component('r-table', RendererTable)
         app.component('r-form', RendererForm)
         app.component('r-detail', RendererDetail)
+        app.component('r-tree', RendererTree)
         app.component('r-text', FieldText)
         app.component('r-number', FieldNumber)
         app.component('r-date', FieldDate)

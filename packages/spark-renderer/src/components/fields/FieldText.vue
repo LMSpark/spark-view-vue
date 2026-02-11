@@ -15,6 +15,11 @@
     />
   </el-form-item>
 
+  <!-- 在 tree 中：渲染为树节点的文本内容 -->
+  <template v-else-if="context === 'tree'">
+    <span class="tree-node-text">{{ fieldValue || '' }}</span>
+  </template>
+
   <!-- 在 detail 或其他上下文中：只读展示 -->
   <div v-else class="field-display">
     <span class="field-label">{{ name }}：</span>
