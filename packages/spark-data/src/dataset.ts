@@ -137,7 +137,7 @@ export class DataSet implements IDataSet {
    * 
    * @example
    * ```typescript
-   * const apiAdapter = new ApiAdapter(httpClient, apiContext)
+   * const apiAdapter = new ApiAdapter(apiContext)
    * dataSet.setApiAdapter(apiAdapter)
    * ```
    */

@@ -9,8 +9,9 @@
 - 🔌 **能力系统** - 供需解耦的组件通信机制
 - 📝 **日志系统** - 多传输器、多级别日志
 - 🔐 **权限系统** - 统一的权限检查和过滤
-- 🌐 **HTTP 客户端** - 类型安全的 HTTP 请求
-- 📡 **事件系统** - 类型安全的事件发布订阅
+- 🌐 **统一请求层** - 基于拦截器的现代化请求系统
+- 📡 **文件加载器** - 基于时间戳的智能缓存
+- 🎯 **事件系统** - 类型安全的事件发布订阅
 
 ## 安装
 
@@ -114,21 +115,73 @@ const helper = createFieldRenderHelper()
 const states = helper.computeFieldStates(fields, row)
 ```
 
-### 4. HTTP 客户端
+### 4. 统一请求层
 
 ```typescript
-import { createHttpClient } from '@spark-view/spark-utils'
+import { 
+  createRequest,
+  createAuthInterceptor,
+  createStandardApiInterceptor
+} from '@spark-view/spark-utils'
 
-const client = createHttpClient({
-  baseURL: 'https://api.example.com',
-  headers: { 'Authorization': 'Bearer token' }
+// 创建请求实例
+const request = createRequest({
+  baseURL: '/api',
+  timeout: 10000
 })
 
-const users = await client.get<User[]>('/users')
-const newUser = await client.post<User>('/users', { name: 'John' })
+// 配置拦截器
+request.interceptors.request.use(
+  createAuthInterceptor(() => localStorage.getItem('token'))
+)
+request.interceptors.response.use(
+  createStandardApiInterceptor()
+)
+
+// 发起请求
+const users = await request.get<User[]>('/users')
+const newUser = await request.post<User>('/users', { name: 'John' })
 ```
 
-### 5. 事件系统
+**特性**:
+- ✅ 拦截器系统：请求/响应双向拦截
+- ✅ 自动重试：支持配置重试次数和延迟
+- ✅ 内置缓存：GET 请求自动缓存
+- ✅ 超时控制：基于 AbortController
+- ✅ 9 个预设拦截a器：认证、租户、日志、错误处理等
+- ✅ TypeScript 类型安全
+
+**完整指南**: [REQUEST_GUIDE.md](./REQUEST_GUIDE.md)
+
+### 5. 文件加载器
+
+```typescript
+import { createFileLoader } from '@spark-view/spark-utils'
+
+// 创建文件加载器
+const loader = createFileLoader({
+  baseURL: '/config',
+  storage: 'localStorage'
+})
+
+// 加载文件（带时间戳缓存）
+const config = await loader.load('app.json', { timestamp: 123456 })
+
+// 批量加载
+const [rule, pageData] = await loader.loadMultiple([
+  { url: 'rule.json', options: { timestamp: 123456 } },
+  { url: 'pagedata.json', options: { timestamp: 789012 } }
+])
+```
+
+**特性**:
+- ✅ 时间戳缓存：前端带 timestamp，后端判断变化
+- ✅ 自动降级：网络失败自动使用缓存
+- ✅ 三种存储策略：localStorage/sessionStorage/memory
+- ✅ 批量加载：Promise.all 并行加载
+- ✅ 缓存统计：查看缓存命中率
+
+### 6. 事件系统
 
 ```typescript
 import { EventEmitter } from '@spark-view/spark-utils'
@@ -150,7 +203,8 @@ emitter.emit('user:login', { id: 1, name: 'Alice' })
 | **Capability** | 能力系统（Provider/Consumer） |
 | **Logger** | 日志系统（多级别、多传输器） |
 | **Permission** | 权限系统（检查器、过滤器、渲染助手） |
-| **HttpClient** | HTTP 客户端（类型安全） |
+| **Request** | 统一请求层（拦截a器、重试、缓存） |
+| **FileLoader** | 文件加载器（时间戳缓存、自动降级） |
 | **EventEmitter** | 事件发射器（类型安全） |
 | **Data Types** | 基础数据类型和权限接口 |
 

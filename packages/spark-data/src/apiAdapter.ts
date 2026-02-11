@@ -13,16 +13,30 @@
 import type { 
   HttpEndpoint
 } from './types'
-import type { IApiContext } from '@spark-view/spark-utils'
-import { HttpClient } from '@spark-view/spark-utils'
+import { Request, createRequest } from '@spark-view/spark-utils'
+
+/**
+ * API 上下文配置
+ */
+export interface IApiContext {
+  /** API 基础地址 */
+  baseURL?: string
+  /** 认证 Token */
+  token?: string
+  /** 租户 ID */
+  tenantId?: string
+  /** 自定义请求头 */
+  headers?: Record<string, string>
+  /** 请求超时时间（毫秒） */
+  timeout?: number
+}
 
 /**
  * API 适配器实现类
  * 
  * @example
  * ```typescript
- * const httpClient = createHttpClient(apiContext)
- * const apiAdapter = new ApiAdapter(httpClient, {
+ * const apiAdapter = new ApiAdapter({
  *   baseURL: '/api',
  *   token: 'Bearer xxx',
  *   tenantId: 'tenant-123'
@@ -36,10 +50,41 @@ import { HttpClient } from '@spark-view/spark-utils'
  * ```
  */
 export class ApiAdapter {
-  constructor(
-    private client: HttpClient,
-    private context: IApiContext
-  ) {}
+  private request: Request
+  private context: IApiContext
+  
+  constructor(context: IApiContext) {
+    this.context = context
+    
+    // 创建 Request 实例
+    this.request = createRequest({
+      baseURL: context.baseURL ?? '',
+      timeout: context.timeout ?? 10000,
+      headers: context.headers
+    })
+    
+    // 配置请求拦截器
+    this.request.interceptors.request.use({
+      name: 'ApiAdapter-Auth',
+      onRequest: (config) => {
+        // 添加认证头
+        if (this.context.token) {
+          config.headers = config.headers ?? {}
+          config.headers['Authorization'] = this.context.token.startsWith('Bearer ')
+            ? this.context.token
+            : `Bearer ${this.context.token}`
+        }
+        
+        // 添加租户头
+        if (this.context.tenantId) {
+          config.headers = config.headers ?? {}
+          config.headers['X-Tenant-Id'] = this.context.tenantId
+        }
+        
+        return config
+      }
+    })
+  }
   
   /**
    * 构建完整 URL（处理路径参数和查询参数）
@@ -163,9 +208,19 @@ export class ApiAdapter {
     params?: Record<string, unknown>
   ): Promise<T> {
     const config = this.buildRequest(endpoint, params)
+    const method = config.method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete'
     
     try {
-      return await this.client.request<T>(config)
+      // 使用 Request 的快捷方法
+      if (method === 'get' || method === 'delete') {
+        return await this.request[method]<T>(config.url, {}, {
+          headers: config.headers
+        })
+      } else {
+        return await this.request[method]<T>(config.url, config.data, {
+          headers: config.headers
+        })
+      }
     } catch (error) {
       console.error('[ApiAdapter] 请求失败', { 
         endpoint, 
