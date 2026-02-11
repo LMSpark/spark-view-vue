@@ -513,7 +513,7 @@ export class Request {
   private async parseResponse<T>(response: Response, responseType: string): Promise<T> {
     switch (responseType) {
       case 'json':
-        return await response.json()
+        return (await response.json()) as T
       case 'text':
         return await response.text() as T
       case 'blob':
@@ -521,7 +521,7 @@ export class Request {
       case 'arraybuffer':
         return await response.arrayBuffer() as T
       default:
-        return await response.json()
+        return (await response.json()) as T
     }
   }
   

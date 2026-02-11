@@ -232,7 +232,7 @@ export class FileLoader {
         if (cache) {
           return {
             success: true,
-            data: parseJSON ? JSON.parse(cache.content) : (cache.content as T),
+            data: parseJSON ? (JSON.parse(cache.content) as T) : (cache.content as T),
             timestamp: cache.timestamp,
             fromCache: true,
             notModified: true
@@ -262,7 +262,7 @@ export class FileLoader {
         if (cache) {
           return {
             success: true,
-            data: parseJSON ? JSON.parse(cache.content) : (cache.content as T),
+            data: parseJSON ? (JSON.parse(cache.content) as T) : (cache.content as T),
             timestamp: cache.timestamp,
             fromCache: true,
             notModified: true
@@ -298,7 +298,7 @@ export class FileLoader {
       // 10. 返回结果
       return {
         success: true,
-        data: parseJSON ? JSON.parse(result.content) : (result.content as T),
+        data: parseJSON ? (JSON.parse(result.content) as T) : (result.content as T),
         timestamp: result.timestamp,
         fromCache: false
       }
@@ -315,7 +315,7 @@ export class FileLoader {
           
           return {
             success: true,
-            data: parseJSON ? JSON.parse(cache.content) : (cache.content as T),
+            data: parseJSON ? (JSON.parse(cache.content) as T) : (cache.content as T),
             timestamp: cache.timestamp,
             fromCache: true,
             error: `网络失败，使用缓存（${errorMsg}）`
@@ -399,7 +399,7 @@ export class FileLoader {
         
         try {
           const cached = storage.getItem(cacheKey)
-          return cached ? JSON.parse(cached) : null
+          return cached ? (JSON.parse(cached) as FileCache) : null
         } catch (error) {
           logger.warn('读取缓存失败', { cacheKey, error })
           return null
@@ -525,7 +525,7 @@ export class FileLoader {
           try {
             const item = storage.getItem(key)
             if (item) {
-              const cache = JSON.parse(item)
+              const cache = JSON.parse(item) as FileCache
               caches.push(cache)
             }
           } catch (error) {
