@@ -2,6 +2,75 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### 💥 Breaking Changes - 统一网络请求层
+
+**目标：** 完全迁移到 Request 类，删除 HttpClient
+
+#### 删除
+
+- ❌ **HttpClient 类和工厂函数**
+  - `HttpClient` 类
+  - `createHttpClient()` 工厂函数
+  - `packages/spark-utils/src/http/HttpClient.ts` 文件
+  - `packages/spark-utils/src/http/` 目录
+
+#### 移动
+
+- 📦 **IApiContext 类型定义**
+  - 从：`@spark-view/spark-utils`
+  - 到：`@spark-view/spark-data`
+  - 原因：现在由 ApiAdapter 使用
+
+#### 变更
+
+- 🔄 **ApiAdapter 重构**
+  - 构造函数：从双参数 `(client, context)` 改为单参数 `(context)`
+  - 内部实现：使用 Request 类代替 HttpClient
+  - 自动配置：认证和租户拦截器自动添加
+
+#### 新增
+
+- ✅ **Request 类（统一请求层）**
+  - 拦截器系统：请求/响应双向拦截
+  - 自动重试：支持配置重试次数和延迟
+  - 内置缓存：GET 请求自动缓存
+  - 超时控制：基于 AbortController
+  - 9 个预设拦截器：认证、租户、日志、错误处理等
+
+- ✅ **RequestInterceptors 预设库**
+  - 请求拦截器：`createAuthInterceptor`, `createTenantInterceptor`, `createRequestLogInterceptor`, `createTimestampInterceptor`, `createHeadersInterceptor`
+  - 响应拦截器：`createStandardApiInterceptor`, `createResponseLogInterceptor`, `createErrorTransformInterceptor`, `createRedirectInterceptor`
+
+- ✅ **完整文档**
+  - `REQUEST_GUIDE.md` - 使用指南
+  - `MIGRATION.md` - 迁移指南
+  - `Request.example.ts` - 12 个使用示例
+
+#### 迁移指南
+
+详见 [MIGRATION.md](./packages/spark-utils/MIGRATION.md)
+
+**快速迁移示例：**
+
+```typescript
+// ❌ 旧代码
+import { createHttpClient } from '@spark-view/spark-utils'
+const client = createHttpClient({ baseURL: '/api', token: 'xxx' })
+const users = await client.get<User[]>('/users')
+
+// ✅ 新代码
+import { createRequest, createAuthInterceptor } from '@spark-view/spark-utils'
+const request = createRequest({ baseURL: '/api' })
+request.interceptors.request.use(createAuthInterceptor(() => 'xxx'))
+const users = await request.get<User[]>('/users')
+```
+
+**影响范围：**
+- `@spark-view/spark-utils` - 导出变更
+- `@spark-view/spark-data` - ApiAdapter 重构，IApiContext 移入
+
 ## [0.3.0] - 2026-02-09
 
 ### Breaking Changes - DI 架构统一

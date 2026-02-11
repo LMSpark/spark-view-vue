@@ -22,17 +22,59 @@ export {
  */
 export type { LogLevel, LoggerApi, Transport, LoggerContext } from './logger'
 
-// ==================== HTTP 客户端 ====================
+
+// ==================== 统一请求层 ====================
 
 /**
- * HTTP 客户端
- * 提供统一的 HTTP 请求封装、错误处理、拦截器等功能
+ * 统一请求类
+ * 基于拦截器模式的现代化请求层，支持重试、缓存、超时控制等
  */
 export {
-  HttpClient,
-  createHttpClient,
-} from './http/HttpClient'
-export type { IApiContext } from './http/HttpClient'
+  Request,
+  createRequest,
+  getDefaultRequest,
+  setDefaultRequest
+} from './Request'
+export type {
+  RequestConfig,
+  RequestInterceptor,
+  ResponseInterceptor,
+  RequestError,
+  RequestResponse
+} from './Request'
+
+/**
+ * 预设拦截器库
+ * 提供常用的请求/响应拦截器，如认证、租户、日志、错误处理等
+ */
+export {
+  createAuthInterceptor,
+  createTenantInterceptor,
+  createRequestLogInterceptor,
+  createTimestampInterceptor,
+  createHeadersInterceptor,
+  createStandardApiInterceptor,
+  createResponseLogInterceptor,
+  createErrorTransformInterceptor,
+  createRedirectInterceptor,
+  createRetryInterceptor
+} from './RequestInterceptors'
+
+// ==================== 文件加载器 ====================
+
+/**
+ * 文件加载器
+ * 基于时间戳的智能缓存系统，支持自动降级和批量加载
+ */
+export {
+  FileLoader,
+  createFileLoader,
+} from './FileLoader'
+export type {
+  FileLoadOptions,
+  FileCache,
+  FileLoadResult
+} from './FileLoader'
 
 // ==================== 能力系统 ====================
 

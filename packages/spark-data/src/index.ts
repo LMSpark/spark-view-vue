@@ -79,3 +79,16 @@ export {
   createDataSetCapabilityManager,
   type DataSetCapabilityConfig
 } from './capability/DataSetCapabilityManager'
+
+// =============================================================================
+// 6. API 适配器 (API Adapter)
+// =============================================================================
+
+/**
+ * API 适配器和配置类型
+ * 提供 HTTP 端点配置到实际请求的转换
+ */
+export {
+  ApiAdapter
+} from './apiAdapter'
+export type { IApiContext } from './apiAdapter'
