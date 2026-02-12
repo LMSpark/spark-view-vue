@@ -96,20 +96,20 @@ export class DataTable extends BindingContext implements IDataTable {
       tableName: this.tableName,
       columns: this.columns,
       api: this.api,
-      currentRow: this.currentRow,
-      currentRowIndex: this.currentRowIndex,
-      selectedRows: this.selectedRows,
-      selectedRowIndices: this.selectedRowIndices,
-      rows: this.rows,
-      originalRows: this.originalRows,
+      // 配置数据（从 IBindingContextData）
       hostTable: this.hostTable,
       contextId: this.contextId,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
-      pagination: this.pagination,
-      contexts: this.contextsToData(),
+      autoSelectFirst: this.autoSelectFirst,
+      autoDeselectOnEmpty: this.autoDeselectOnEmpty,
+      page: this.page,
+      pageSize: this.pageSize,
+      // 扩展属性
       loading: this.loading,
-      error: this.error
+      error: this.error,
+      // 其他上下文的配置数据
+      contexts: this.contextsToData()
     }
   }
 
@@ -139,19 +139,18 @@ export class DataTable extends BindingContext implements IDataTable {
 
     // 基本属性
     table.api = data.api
-    table.currentRow = data.currentRow ?? null
-    table.currentRowIndex = data.currentRowIndex ?? null
-    table.selectedRows = data.selectedRows ?? []
-    table.selectedRowIndices = data.selectedRowIndices ?? []
-    table.rows = data.rows ?? []
-    table['__originalRows'] = data.originalRows  // 直接访问私有字段
+    // 配置数据（从 IBindingContextData）
     table.filterExpression = data.filterExpression
     table.sortExpression = data.sortExpression
-    table.pagination = data.pagination
+    table.autoSelectFirst = data.autoSelectFirst
+    table.autoDeselectOnEmpty = data.autoDeselectOnEmpty
+    table.page = data.page ?? 1
+    table.pageSize = data.pageSize ?? 20
+    // 扩展属性
     table.loading = data.loading
     table.error = data.error
 
-    // 转换上下文
+    // 转换上下文（只读取配置数据）
     if (data.contexts) {
       if (Array.isArray(data.contexts)) {
         // 兼容旧格式：数组
@@ -177,7 +176,7 @@ export class DataTable extends BindingContext implements IDataTable {
         })
       }
     }
-    
+
     return table
   }
 
