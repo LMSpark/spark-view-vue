@@ -9,11 +9,24 @@
  * 参考：https://ligh60.blog.csdn.net/article/details/150585411
  */
 
-import type { IDataRow as IDataRowBase, HttpRequestConfig } from '@spark-view/spark-utils'
+import type { 
+  IDataRow as IDataRowBase, 
+  IDataSource,
+  IDataRowWithPermission,
+  IModelPermission,
+  IInstancePermission,
+  HttpRequestConfig 
+} from '@spark-view/spark-utils'
 
 // 重新导出基础类型（数据空间需要这些类型）
 export type IDataRow = IDataRowBase
-export type { HttpRequestConfig }
+export type { 
+  HttpRequestConfig, 
+  IDataSource, 
+  IDataRowWithPermission,
+  IModelPermission,
+  IInstancePermission
+}
 
 // ==================== 基础类型 ====================
 
