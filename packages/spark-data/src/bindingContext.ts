@@ -4,7 +4,7 @@
  * 相当于 .NET 的 DataView - 视图层
  */
 
-import type { IDataRow, IBindingContext, IBindingContextData, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
+import type { IDataRow, IDataRowWithPermission, IBindingContext, IBindingContextData, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
 import { FilterExpressionParser } from './filterExpressionParser'
 import { Logger } from '@spark-view/spark-utils'
 
@@ -12,10 +12,12 @@ import { Logger } from '@spark-view/spark-utils'
  * 绑定上下文类（实现 IBindingContext 接口 + 方法逻辑）
  */
 export class BindingContext implements IBindingContext {
-  currentRow: IDataRow | null = null
-  selectedRows: IDataRow[] = []
-  rows: IDataRow[] = []
-  private __originalRows?: IDataRow[]
+  currentRow: IDataRowWithPermission | null = null
+  currentRowIndex: number | null = null  // 当前行索引
+  selectedRows: IDataRowWithPermission[] = []
+  selectedRowIndices: number[] = []      // 选中行索引数组
+  rows: IDataRowWithPermission[] = []
+  private __originalRows?: IDataRowWithPermission[]
   
   // 宿主信息
   private __hostTable: string
@@ -62,10 +64,10 @@ export class BindingContext implements IBindingContext {
   get contextId(): string { return this.__contextId }
   
   /** 获取原始数据行（过滤/排序前的完整数据） */
-  get originalRows(): IDataRow[] | undefined { return this.__originalRows }
+  get originalRows(): IDataRowWithPermission[] | undefined { return this.__originalRows }
   
   /** 设置原始数据行 */
-  set originalRows(value: IDataRow[] | undefined) { this.__originalRows = value }
+  set originalRows(value: IDataRowWithPermission[] | undefined) { this.__originalRows = value }
   
   /**
    * 设置 DataSet 引用
@@ -119,7 +121,7 @@ export class BindingContext implements IBindingContext {
    * 
    * @fires DataSet#currentRowChanged - 当 skipNotify=false 时触发
    */
-  setCurrentRow(row: IDataRow | null, skipNotify: boolean = false): void {
+  setCurrentRow(row: IDataRowWithPermission | null, skipNotify: boolean = false): void {
     // 防重复检查 - 只比较引用
     const existingRow = this.currentRow
     const isSameRow = existingRow === row
@@ -131,6 +133,12 @@ export class BindingContext implements IBindingContext {
     
     console.info(`🔄 [Context] ${this.hostTable}.${this.contextId}.currentRow 更新`, { from: existingRow, to: row })
     this.currentRow = row
+    
+    // 同步维护索引
+    this.currentRowIndex = row === null ? null : this.rows.indexOf(row)
+    if (this.currentRowIndex === -1) {
+      this.currentRowIndex = null  // 如果行不在 rows 中，设为 null
+    }
     
     if (!skipNotify && this.dataSet) {
       // 触发关系更新
@@ -176,7 +184,7 @@ export class BindingContext implements IBindingContext {
    * 
    * @fires DataSet#selectedRowsChanged - 当 skipNotify=false 时触发
    */
-  setSelectedRows(rows: IDataRow[], skipNotify: boolean = false): void {
+  setSelectedRows(rows: IDataRowWithPermission[], skipNotify: boolean = false): void {
     // 防重复检查：只比较引用
     const existingRows = this.selectedRows || []
     const isSameSelection = (
@@ -194,6 +202,11 @@ export class BindingContext implements IBindingContext {
       to: rows.length 
     })
     this.selectedRows = rows
+    
+    // 同步维护索引数组
+    this.selectedRowIndices = rows
+      .map(row => this.rows.indexOf(row))
+      .filter(index => index !== -1)  // 过滤掉不在 rows 中的行
     
     if (this.dataSet) {
       // ✅ 始终触发关系更新（过滤子表）
@@ -467,7 +480,9 @@ export class BindingContext implements IBindingContext {
   toData(): IBindingContextData {
     return {
       currentRow: this.currentRow,
+      currentRowIndex: this.currentRowIndex,
       selectedRows: this.selectedRows,
+      selectedRowIndices: this.selectedRowIndices,
       rows: this.rows,
       originalRows: this.__originalRows,
       hostTable: this.__hostTable,
@@ -493,7 +508,9 @@ export class BindingContext implements IBindingContext {
     const context = new BindingContext(hostTable, contextId, dataSet)
     
     context.currentRow = data.currentRow ?? null
+    context.currentRowIndex = data.currentRowIndex ?? null
     context.selectedRows = data.selectedRows ?? []
+    context.selectedRowIndices = data.selectedRowIndices ?? []
     context.rows = data.rows ?? []
     context['__originalRows'] = data.originalRows  // 直接访问私有字段
     context.filterExpression = data.filterExpression

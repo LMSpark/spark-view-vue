@@ -43,7 +43,9 @@ export type {
 export interface IBindingContextData {
   // ===== 数据状态 =====
   currentRow?: IDataRowWithPermission | null
+  currentRowIndex?: number | null  // 当前行在 rows 中的索引（null 表示无当前行）
   selectedRows?: IDataRowWithPermission[]
+  selectedRowIndices?: number[]    // 选中行的索引数组（对应 rows 中的位置）
   rows?: IDataRowWithPermission[]  // 支持权限的数据行
   originalRows?: IDataRowWithPermission[]
   
@@ -81,7 +83,9 @@ export interface IBindingContextData {
 export interface IBindingContext extends IBindingContextData, Omit<IDataSource, 'rows'> {
   // ===== 运行时必需字段（覆盖可选） =====
   currentRow: IDataRowWithPermission | null
+  currentRowIndex: number | null   // 必需：当前行索引
   selectedRows: IDataRowWithPermission[]
+  selectedRowIndices: number[]     // 必需：选中行索引数组
   rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
   hostTable: string
   contextId: string
