@@ -16,7 +16,7 @@ import type {
   FilterExpression
 } from './types'
 import { DataTable } from './data-table'
-import { DataView } from './binding-context'
+import { DataView } from './data-view'
 import { FilterExpressionParser } from './filter-expression-parser'
 import { Logger } from '@spark-view/spark-utils'
 

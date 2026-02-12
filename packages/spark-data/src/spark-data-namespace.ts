@@ -5,7 +5,7 @@
 
 import { DataSet } from './dataset.js'
 import { DataTable } from './data-table.js'
-import { DataView } from './binding-context.js'
+import { DataView } from './data-view.js'
 import { TreeManager } from './tree-manager.js'
 import { FilterExpressionParser } from './filter-expression-parser.js'
 import { 
