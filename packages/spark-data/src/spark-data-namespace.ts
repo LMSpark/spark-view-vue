@@ -7,7 +7,6 @@ import { DataSet } from './dataset.js'
 import { DataTable } from './dataTable.js'
 import { BindingContext } from './bindingContext.js'
 import { TreeManager } from './treeManager.js'
-import { DataSetManager } from './dataSetManager.js'
 import { FilterExpressionParser } from './filterExpressionParser.js'
 import { 
   DataSetCapabilityManager, 
@@ -35,7 +34,7 @@ export const SparkData = {
     config: IDataSet,
     dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): DataSet => {
-    return DataSetManager.create(config, dataLoader)
+    return new DataSet(config, dataLoader)
   },
 
   /**
@@ -47,7 +46,7 @@ export const SparkData = {
     json: string,
     dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): DataSet => {
-    return DataSetManager.fromJSON(json, dataLoader)
+    return DataSet.fromJSON(json, dataLoader)
   },
 
   // ==================== TreeManager 工厂方法 ====================
@@ -131,7 +130,6 @@ export const SparkData = {
     DataTable,
     BindingContext,
     TreeManager,
-    DataSetManager,
     FilterExpressionParser
   }
 } as const

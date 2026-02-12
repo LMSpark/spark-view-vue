@@ -1,76 +1,79 @@
 /**
  * SPARK 数据空间类型定义
  * 
- * ⚠️ 重要：这是所有数据类型的唯一定义源
- * - DataTable, DataSet, BindingContext 等高级数据类型在此定义
- * - IDataRow 等基础类型从 spark-utils 导入
- * - 其他包（spark-app, spark-component）只能导入使用，不能重新定义
- * - 保持数据类型系统的一致性和可维护性
+ * ⚠️ 重要：这是数据空间高级类型的唯一定义源
+ * - DataTable, DataSet, BindingContext, TreeManager 等高级类型在此定义
+ * - IDataRow, HttpRequestConfig 等基础类型从 spark-utils 导入并重新导出（便于类型系统一致性）
+ * - 保持类型系统的单一职责和清晰依赖关系
  * 
  * 参考：https://ligh60.blog.csdn.net/article/details/150585411
  */
 
-// 导入基础类型
-import type { IDataRow, HttpRequestConfig } from '@spark-view/spark-utils'
+import type { IDataRow as IDataRowBase, HttpRequestConfig } from '@spark-view/spark-utils'
 
-// 重新导出以保持兼容性
-export type { IDataRow, HttpRequestConfig } from '@spark-view/spark-utils'
+// 重新导出基础类型（数据空间需要这些类型）
+export type IDataRow = IDataRowBase
+export type { HttpRequestConfig }
 
 // ==================== 基础类型 ====================
 
 /**
- * 数据绑定上下文接口（纯数据结构，可序列化）
+ * 数据绑定上下文数据接口（纯数据，用于序列化）
  * 
  * 作用域：单个数据表（DataTable）的某个绑定实例
- * 生命周期：与宿主表格/列表组件一致
  * 
  * 用途：
- * - 管理表格/列表组件的数据状态（当前行、选中行、可见行）
- * - 支持过滤、排序、分页等数据操作
- * - 实现数据与 UI 的双向绑定
- * 
- * 架构说明：
- * - 一个 DataTable 可以有多个 BindingContext（不同的 contextId）
- * - 通过 contextId 区分不同的绑定实例（如主表 vs 详情表）
- * - 支持主从表级联（主表 currentRow 变化 → 从表过滤）
- * 
- * 注意：
- * - 这是接口定义，实现类是 BindingContext
- * - 所有属性可选，支持增量更新
- * - _开头的字段是内部状态，不应直接修改
- * 
- * 典型使用场景：
- * - el-table 的 dataKey 绑定
- * - 主从表联动（通过 filterExpression）
- * - 表格行选中状态管理
+ * - 表示数据状态的纯数据结构
+ * - 支持 JSON 序列化/反序列化
+ * - 用于配置文件、网络传输等场景
  */
-export interface IBindingContext {
+export interface IBindingContextData {
+  // ===== 数据状态 =====
   currentRow?: IDataRow | null
   selectedRows?: IDataRow[]
   rows?: IDataRow[]
   originalRows?: IDataRow[]
   
-  // 宿主信息
+  // ===== 宿主信息 =====
   hostTable?: string
   contextId?: string
   
-  // 方法
-  setCurrentRow?(row: IDataRow | null, skipNotify?: boolean): void
-  setSelectedRows?(rows: IDataRow[], skipNotify?: boolean): void
-  
-  // 初始配置
+  // ===== 扩展属性 =====
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
-  autoSelectFirst?: boolean        // 自动选中第一行
-  autoDeselectOnEmpty?: boolean    // 数据清空时自动取消选中
+  autoSelectFirst?: boolean
+  autoDeselectOnEmpty?: boolean
   
-  // 分页状态
+  // ===== 分页状态 =====
   pagination?: {
     pageIndex?: number
     pageSize?: number
     total?: number
     totalPages?: number
   }
+}
+
+/**
+ * 数据绑定上下文接口（包含方法，用于运行时）
+ * 
+ * 扩展 IBindingContextData，添加必需的方法和运行时保证的字段
+ * 
+ * 典型使用场景：
+ * - el-table 的 dataKey 绑定
+ * - 主从表联动（通过 filterExpression）
+ * - 表格行选中状态管理
+ */
+export interface IBindingContext extends IBindingContextData {
+  // ===== 运行时必需字段（覆盖可选） =====
+  currentRow: IDataRow | null
+  selectedRows: IDataRow[]
+  rows: IDataRow[]
+  hostTable: string
+  contextId: string
+  
+  // ===== 核心方法（运行时必需） =====
+  setCurrentRow(row: IDataRow | null, skipNotify?: boolean): void
+  setSelectedRows(rows: IDataRow[], skipNotify?: boolean): void
 }
 
 /**
@@ -146,7 +149,22 @@ export interface ITreeManager {
 }
 
 /**
- * DataTable 接口（纯数据结构，用于序列化）
+ * DataTable 数据接口（纯数据结构，用于序列化）
+ */
+export interface IDataTableData extends IBindingContextData {
+  tableName: string
+  columns: DataColumn[]
+  api?: CrudApi
+  rows: IDataRow[]
+  contexts?: Record<string, IBindingContextData>
+  
+  // 扩展属性
+  loading?: boolean
+  error?: string
+}
+
+/**
+ * DataTable 接口（运行时接口，包含方法）
  */
 export interface IDataTable extends IBindingContext {
   tableName: string
