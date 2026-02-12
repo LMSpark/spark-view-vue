@@ -9,11 +9,17 @@
  * 参考：https://ligh60.blog.csdn.net/article/details/150585411
  */
 
-import type { IDataRow as IDataRowBase, HttpRequestConfig } from '@spark-view/spark-utils'
+import type { 
+  IDataRow as IDataRowBase, 
+  IDataSource,
+  IDataRowWithPermission,
+  IModelPermission,
+  HttpRequestConfig 
+} from '@spark-view/spark-utils'
 
 // 重新导出基础类型（数据空间需要这些类型）
 export type IDataRow = IDataRowBase
-export type { HttpRequestConfig }
+export type { HttpRequestConfig, IDataSource, IDataRowWithPermission, IModelPermission }
 
 // ==================== 基础类型 ====================
 
@@ -31,8 +37,8 @@ export interface IBindingContextData {
   // ===== 数据状态 =====
   currentRow?: IDataRow | null
   selectedRows?: IDataRow[]
-  rows?: IDataRow[]
-  originalRows?: IDataRow[]
+  rows?: IDataRowWithPermission[]  // 支持权限的数据行
+  originalRows?: IDataRowWithPermission[]
   
   // ===== 宿主信息 =====
   hostTable?: string
@@ -57,17 +63,19 @@ export interface IBindingContextData {
  * 数据绑定上下文接口（包含方法，用于运行时）
  * 
  * 扩展 IBindingContextData，添加必需的方法和运行时保证的字段
+ * 同时实现 IDataSource，支持权限控制和分页
  * 
  * 典型使用场景：
  * - el-table 的 dataKey 绑定
  * - 主从视图联动（通过 filterExpression）
  * - 表格行选中状态管理
+ * - 带权限的数据源
  */
-export interface IBindingContext extends IBindingContextData {
+export interface IBindingContext extends IBindingContextData, Omit<IDataSource, 'rows'> {
   // ===== 运行时必需字段（覆盖可选） =====
   currentRow: IDataRow | null
   selectedRows: IDataRow[]
-  rows: IDataRow[]
+  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
   hostTable: string
   contextId: string
   
@@ -163,7 +171,7 @@ export interface IDataTableData extends IBindingContextData {
   tableName: string
   columns: DataColumn[]
   api?: CrudApi
-  rows: IDataRow[]
+  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
   contexts?: Record<string, IBindingContextData>
   
   // 扩展属性
@@ -178,7 +186,7 @@ export interface IDataTable extends IBindingContext {
   tableName: string
   columns: DataColumn[]
   api?: CrudApi
-  rows: IDataRow[]
+  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
   contexts?: Record<string, IBindingContext>
   
   // 扩展属性
