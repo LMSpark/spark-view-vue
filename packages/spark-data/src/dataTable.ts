@@ -5,7 +5,7 @@
  */
 
 import { BindingContext } from './bindingContext'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, type Request } from '@spark-view/spark-utils'
 import type {
   IDataTable,
   IDataTableWithApi,
@@ -15,7 +15,6 @@ import type {
   IDataSet,
   IDataRow
 } from './types'
-import type { ApiAdapter } from './apiAdapter'
 
 /**
  * 数据表类（实现 IDataTableWithApi 接口 + 方法逻辑）
@@ -30,11 +29,10 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   loading?: boolean
   error?: string
 
-  // 日志系统
-  private logger = Logger()
+  // 日志系统（继承自 BindingContext）
 
-  // API 适配器（注入）
-  private apiAdapter?: ApiAdapter
+  // HTTP 请求实例（注入）
+  private request?: Request
 
   // ==================== 构造函数 ====================
 
@@ -42,19 +40,19 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     tableName: string,
     columns: DataColumn[] = [],
     dataSet?: IDataSet,
-    apiAdapter?: ApiAdapter
+    request?: Request
   ) {
     super(tableName, 'default', dataSet)
     this.tableName = tableName
     this.columns = columns
-    this.apiAdapter = apiAdapter
+    this.request = request
   }
 
   /**
-   * 设置 API 适配器（由 DataSet 或应用层注入）
+   * 设置 HTTP 请求实例（由 DataSet 或应用层注入）
    */
-  setApiAdapter(adapter: ApiAdapter): void {
-    this.apiAdapter = adapter
+  setApiAdapter(request: Request): void {
+    this.request = request
   }
 
   // ==================== 工具方法 ====================
@@ -96,8 +94,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     if (!apiPath) {
       throw new Error(`表 ${this.tableName} 未配置 ${endpoint} API`)
     }
-    if (!this.apiAdapter) {
-      throw new Error('未注入 ApiAdapter，无法执行 API 调用')
+    if (!this.request) {
+      throw new Error('未注入 HTTP 请求实例，无法执行 API 调用')
     }
   }
 
@@ -156,7 +154,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     return this.executeApi('list', async () => {
       // validateApi 已确保 apiAdapter 和 api.list 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const data = await this.apiAdapter!.execute<IDataRow[]>(this.api!.list!, params)
+      const data = await this.request!.executeEndpoint<IDataRow[]>(this.api!.list!, params)
 
       // 替换全部数据
       this.rows.splice(0, this.rows.length, ...data)
@@ -176,7 +174,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     return this.executeApi('create', async () => {
       // validateApi 已确保 apiAdapter 和 api.create 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = await this.apiAdapter!.execute<IDataRow>(this.api!.create!, data)
+      const result = await this.request!.executeEndpoint<IDataRow>(this.api!.create!, data)
 
       // 追加到两个数组
       this.rows.push(result)
@@ -198,7 +196,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     return this.executeApi('update', async () => {
       // validateApi 已确保 apiAdapter 和 api.update 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = await this.apiAdapter!.execute<IDataRow>(this.api!.update!, { id, ...data })
+      const result = await this.request!.executeEndpoint<IDataRow>(this.api!.update!, { id, ...data })
 
       // 更新两个数组中的记录
       this.updateRowInBoth(
@@ -219,7 +217,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     return this.executeApi('delete', async () => {
       // validateApi 已确保 apiAdapter 和 api.delete 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await this.apiAdapter!.execute(this.api!.delete!, { id })
+      await this.request!.executeEndpoint(this.api!.delete!, { id })
 
       // 从两个数组中删除
       this.removeRowFromBoth(r => r.id === id)
@@ -237,7 +235,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     return this.executeApi('batchCreate', async () => {
       // validateApi 已确保 apiAdapter 和 api.batch.create 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = await this.apiAdapter!.execute<IDataRow[]>(this.api!.batch!.create!, { items: data })
+      const result = await this.request!.executeEndpoint<IDataRow[]>(this.api!.batch!.create!, { items: data })
 
       // 批量追加
       this.rows.push(...result)
@@ -260,7 +258,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     return this.executeApi('batchUpdate', async () => {
       // validateApi 已确保 apiAdapter 和 api.batch.update 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const result = await this.apiAdapter!.execute<IDataRow[]>(this.api!.batch!.update!, { items: updates })
+      const result = await this.request!.executeEndpoint<IDataRow[]>(this.api!.batch!.update!, { items: updates })
 
       // 批量更新
       result.forEach(updated => {
@@ -284,7 +282,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
     return this.executeApi('batchDelete', async () => {
       // validateApi 已确保 apiAdapter 和 api.batch.delete 存在
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      await this.apiAdapter!.execute(this.api!.batch!.delete!, { ids })
+      await this.request!.executeEndpoint(this.api!.batch!.delete!, { ids })
 
       // 批量删除
       ids.forEach(id => {

@@ -1,171 +1,188 @@
 /**
- * ApiAdapter 集成测试
- * 测试 ApiAdapter 与 Request 类的集成
+ * Request.executeEndpoint 集成测试
+ * 测试 Request 类的 executeEndpoint 方法与 HttpEndpoint 的集成
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ApiAdapter } from '../packages/spark-data/src/apiAdapter'
-import type { IApiContext } from '../packages/spark-data/src/apiAdapter'
+import { createRequest, type Request } from '../packages/spark-utils/src/Request'
 import type { HttpEndpoint } from '../packages/spark-data/src/types'
+import axios from 'axios'
 
-// Mock fetch
-global.fetch = vi.fn()
+// Mock axios
+vi.mock('axios', async () => {
+  const actualAxios = await vi.importActual<typeof import('axios')>('axios')
+  return {
+    ...actualAxios,
+    default: {
+      ...actualAxios.default,
+      create: vi.fn(),
+      isAxiosError: actualAxios.default.isAxiosError
+    }
+  }
+})
 
-describe('ApiAdapter with Request', () => {
-  let adapter: ApiAdapter
-  let apiContext: IApiContext
+describe('Request.executeEndpoint', () => {
+  let request: Request
+  let mockAxiosInstance: any
 
   beforeEach(() => {
-    apiContext = {
+    // 创建 mock axios 实例
+    mockAxiosInstance = {
+      request: vi.fn(),
+      defaults: { responseType: 'json' },
+      interceptors: {
+        request: { use: vi.fn() },
+        response: { use: vi.fn() }
+      }
+    }
+    
+    // 设置 mock 返回值
+    vi.mocked(axios.create).mockReturnValue(mockAxiosInstance)
+    
+    // 创建 Request 实例
+    request = createRequest({
       baseURL: '/api',
       token: 'test-token',
       tenantId: 'test-tenant',
       timeout: 5000
-    }
-    
-    adapter = new ApiAdapter(apiContext)
-    
-    // Reset fetch mock
-    vi.mocked(fetch).mockReset()
+    })
   })
 
-  it('应该正确创建 ApiAdapter', () => {
-    expect(adapter).toBeDefined()
+  it('应该正确创建 Request 实例', () => {
+    expect(request).toBeDefined()
   })
 
-  it('应该构建正确的请求URL', () => {
+  it('应该正确处理路径参数替换', async () => {
     const endpoint: HttpEndpoint = {
-      url: '/users',
-      method: 'GET'
-    }
-    
-    const config = adapter.buildRequest(endpoint)
-    
-    expect(config.url).toContain('/api/users')
-    expect(config.method).toBe('GET')
-  })
-
-  it('应该处理路径参数', () => {
-    const endpoint: HttpEndpoint = {
-      url: '/users/{id}',
+      url: '/users/{userId}',
       method: 'GET',
-      pathParams: ['id']
+      pathParams: ['userId']
     }
-    
-    const config = adapter.buildRequest(endpoint, { id: 123 })
-    
-    expect(config.url).toContain('/api/users/123')
+
+    mockAxiosInstance.request.mockResolvedValue({
+      data: { id: 123, name: 'Test User' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {}
+    })
+
+    const result = await request.executeEndpoint(endpoint, { userId: 123 })
+
+    expect(mockAxiosInstance.request).toHaveBeenCalledWith({
+      url: '/users/123',
+      method: 'GET',
+      params: {},
+      timeout: 5000,
+      responseType: 'json'
+    })
+    expect(result).toEqual({ id: 123, name: 'Test User' })
   })
 
-  it('应该在请求头中添加认证信息', () => {
+  it('应该正确处理查询参数', async () => {
     const endpoint: HttpEndpoint = {
       url: '/users',
       method: 'GET'
     }
-    
-    const config = adapter.buildRequest(endpoint)
-    
-    expect(config.headers?.Authorization).toBe('Bearer test-token')
+
+    mockAxiosInstance.request.mockResolvedValue({
+      data: [{ id: 1, name: 'User 1' }],
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {}
+    })
+
+    const result = await request.executeEndpoint(endpoint, { page: 1, limit: 10 })
+
+    expect(mockAxiosInstance.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/users',
+        method: 'GET',
+        params: { page: 1, limit: 10 }
+      })
+    )
+    expect(result).toEqual([{ id: 1, name: 'User 1' }])
   })
 
-  it('应该在请求头中添加租户ID', () => {
-    const endpoint: HttpEndpoint = {
-      url: '/users',
-      method: 'GET'
-    }
-    
-    const config = adapter.buildRequest(endpoint)
-    
-    expect(config.headers?.['X-Tenant-Id']).toBe('test-tenant')
-  })
-
-  it('应该正确构建 POST 请求体', () => {
+  it('应该正确处理 POST 请求体', async () => {
     const endpoint: HttpEndpoint = {
       url: '/users',
       method: 'POST'
     }
-    
-    const params = {
-      name: 'John',
-      email: 'john@example.com'
-    }
-    
-    const config = adapter.buildRequest(endpoint, params)
-    
-    expect(config.method).toBe('POST')
-    expect(config.data).toEqual(params)
+
+    mockAxiosInstance.request.mockResolvedValue({
+      data: { id: 123, name: 'New User' },
+      status: 201,
+      statusText: 'Created',
+      headers: {},
+      config: {}
+    })
+
+    const userData = { name: 'New User', email: 'user@example.com' }
+    const result = await request.executeEndpoint(endpoint, userData)
+
+    expect(mockAxiosInstance.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/users',
+        method: 'POST',
+        data: userData
+      })
+    )
+    expect(result).toEqual({ id: 123, name: 'New User' })
   })
 
-  it('应该支持 GET 请求的查询参数', () => {
-    const endpoint: HttpEndpoint = {
-      url: '/users',
-      method: 'GET'
-    }
-    
-    const params = {
-      page: 1,
-      pageSize: 10
-    }
-    
-    const config = adapter.buildRequest(endpoint, params)
-    
-    expect(config.url).toContain('page=1')
-    expect(config.url).toContain('pageSize=10')
-  })
-
-  it('应该支持更新上下文', () => {
-    const newToken = 'new-token'
-    adapter.updateContext({ token: newToken })
-    
-    const context = adapter.getContext()
-    expect(context.token).toBe(newToken)
-  })
-
-  it('应该正确合并自定义请求头', () => {
+  it('应该正确处理端点定义的查询参数', async () => {
     const endpoint: HttpEndpoint = {
       url: '/users',
       method: 'GET',
-      headers: {
-        'X-Custom-Header': 'custom-value'
-      }
+      params: { status: 'active' }
     }
-    
-    const config = adapter.buildRequest(endpoint)
-    
-    expect(config.headers?.['X-Custom-Header']).toBe('custom-value')
-    expect(config.headers?.Authorization).toBe('Bearer test-token')
+
+    mockAxiosInstance.request.mockResolvedValue({
+      data: [{ id: 1, name: 'Active User' }],
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {}
+    })
+
+    const result = await request.executeEndpoint(endpoint, { page: 1 })
+
+    expect(mockAxiosInstance.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/users',
+        method: 'GET',
+        params: { status: 'active', page: 1 }
+      })
+    )
+    expect(result).toEqual([{ id: 1, name: 'Active User' }])
   })
 
-  it('应该处理没有 Bearer 前缀的 token', () => {
-    // 测试 token 自动添加 Bearer 前缀
-    const adapterNoBearerToken = new ApiAdapter({
-      baseURL: '/api',
-      token: 'plain-token'
-    })
-    
+  it('应该正确处理端点定义的请求头', async () => {
     const endpoint: HttpEndpoint = {
       url: '/users',
-      method: 'GET'
+      method: 'GET',
+      headers: { 'X-Custom': 'test' }
     }
-    
-    const config = adapterNoBearerToken.buildRequest(endpoint)
-    
-    expect(config.headers?.Authorization).toBe('Bearer plain-token')
-  })
 
-  it('应该保留已有 Bearer 前缀的 token', () => {
-    const adapterWithBearer = new ApiAdapter({
-      baseURL: '/api',
-      token: 'Bearer existing-token'
+    mockAxiosInstance.request.mockResolvedValue({
+      data: [{ id: 1 }],
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {}
     })
-    
-    const endpoint: HttpEndpoint = {
-      url: '/users',
-      method: 'GET'
-    }
-    
-    const config = adapterWithBearer.buildRequest(endpoint)
-    
-    expect(config.headers?.Authorization).toBe('Bearer existing-token')
+
+    await request.executeEndpoint(endpoint)
+
+    // 验证端点定义的 headers 被正确传递
+    expect(mockAxiosInstance.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/users',
+        method: 'GET',
+        headers: { 'X-Custom': 'test' }
+      })
+    )
   })
 })

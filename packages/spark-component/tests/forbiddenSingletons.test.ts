@@ -28,7 +28,7 @@ describe('forbidden singletons imports', () => {
     const text = fs.readFileSync(file, 'utf8')
     const lines = text.split(/\r?\n/)
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i] ?? ''
       if (importPattern.test(line)) {
         const found = (line.match(importPattern) ?? [line])[0]
         violations.push({ file: path.relative(root, file), line: i + 1, match: found })

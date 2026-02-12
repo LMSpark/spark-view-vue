@@ -85,10 +85,7 @@ export {
 // =============================================================================
 
 /**
- * API 适配器和配置类型
- * 提供 HTTP 端点配置到实际请求的转换
+ * HTTP 请求工具
+ * 直接使用 @spark-view/spark-utils 的 Request 类
  */
-export {
-  ApiAdapter
-} from './apiAdapter'
-export type { IApiContext } from './apiAdapter'
+export type { Request } from '@spark-view/spark-utils'
