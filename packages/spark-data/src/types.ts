@@ -263,50 +263,20 @@ export type FilterExpression =
 /**
  * DataRelation：绑定上下文（视图）之间的关系配置
  * 
- * ⚠️ 重要概念：
- * - 这不是传统数据库的"表关系"，而是**视图/绑定上下文之间的关系**
- * - 关系的主体是 BindingContext（上下文实例），不是 DataTable（表）
- * - 同一个表可以有多个上下文，每个上下文可以有不同的关系配置
+ * ⚠️ 核心概念：
+ * - 关系主体是 BindingContext（视图实例），不是 DataTable（数据表）
+ * - 同一表可有多个视图，每个视图有独立的关系配置
+ * - 父视图状态变化 → 触发子视图通过 filterExpression 动态过滤
  * 
- * 核心机制：
- * - 父上下文状态变化（currentRow/selectedRows）→ 触发子上下文过滤
- * - 通过 filterExpression 动态过滤子上下文的数据
- * - 支持级联更新/删除操作
- * 
- * @example 订单主从表联动（单行依赖）
+ * @example
  * ```typescript
  * {
  *   parentTable: 'Orders',
- *   parentContextId: 'currentOrder',      // 🎯 父视图：当前订单
+ *   parentContextId: 'currentOrder',      // 父视图
  *   childTable: 'OrderDetails',
- *   childContextId: 'relatedDetails',     // 🎯 子视图：关联明细
+ *   childContextId: 'relatedDetails',     // 子视图
  *   dependencyType: 'currentRow',
- *   filterExpression: {
- *     field: 'orderId',
- *     op: '==',
- *     value: { func: 'parentRow.id', args: [] }
- *   }
- * }
- * ```
- * 
- * @example 同一表的多上下文关系
- * ```typescript
- * // 关系1：选中订单 → 批量明细
- * {
- *   parentTable: 'Orders',
- *   parentContextId: 'selectedOrders',    // 🎯 父视图：多选订单
- *   childTable: 'OrderDetails',
- *   childContextId: 'batchDetails',       // 🎯 子视图：批量明细
- *   dependencyType: 'selectedRows'
- * }
- * 
- * // 关系2：当前订单 → 当前明细（同一表，不同视图）
- * {
- *   parentTable: 'Orders',
- *   parentContextId: 'currentOrder',      // 🎯 另一个父视图
- *   childTable: 'OrderDetails',
- *   childContextId: 'currentDetails',     // 🎯 另一个子视图
- *   dependencyType: 'currentRow'
+ *   filterExpression: { field: 'orderId', op: '==', value: { func: 'parentRow.id', args: [] } }
  * }
  * ```
  */
@@ -415,18 +385,11 @@ export interface FilterResult {
 /**
  * 过滤上下文接口（用于主从视图关联过滤）
  * 
- * 作用域：单次视图过滤操作的临时上下文
- * 生命周期：过滤表达式解析时创建，过滤完成后销毁
+ * 用途：为子视图过滤提供父视图的当前行/选中行数据
  * 
- * 用途：
- * - 为子视图过滤提供父视图的当前行/选中行数据
- * - 支持主从视图级联过滤（如订单明细视图 ↔ 订单主视图）
- * - 提供全局变量访问（variables）
- * 
- * 典型使用场景：
- * - filterExpression: "parentRow.id" → 父视图单行关联
- * - filterExpression: "IN(parentRows, 'id')" → 父视图多行关联
- * - 通过 variables 传递额外的过滤参数
+ * @example
+ * - `parentRow.id` → 父视图单行关联
+ * - `IN(parentRows, 'id')` → 父视图多行关联
  */
 export interface FilterContext {
   parentRow?: IDataRow
