@@ -14,12 +14,19 @@ import type {
   IDataSource,
   IDataRowWithPermission,
   IModelPermission,
+  IInstancePermission,
   HttpRequestConfig 
 } from '@spark-view/spark-utils'
 
 // 重新导出基础类型（数据空间需要这些类型）
 export type IDataRow = IDataRowBase
-export type { HttpRequestConfig, IDataSource, IDataRowWithPermission, IModelPermission }
+export type { 
+  HttpRequestConfig, 
+  IDataSource, 
+  IDataRowWithPermission,
+  IModelPermission,
+  IInstancePermission
+}
 
 // ==================== 基础类型 ====================
 
