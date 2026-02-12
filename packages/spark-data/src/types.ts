@@ -95,14 +95,19 @@ export interface DataColumn {
 // ==================== HTTP API 配置 ====================
 
 /**
- * HTTP 端点定义：描述单个 API 调用的属性
+ * HTTP 端点定义：API 静态配置（排除运行时选项）
  * 
- * 基于统一的 HttpRequestConfig，专注于静态 API 配置
- * 主要用于 API 端点的声明式定义，不包含运行时选项
+ * 基于 HttpRequestConfig，排除运行时选项和动态数据
+ * 适用于配置文件中的声明式 API 定义
  */
-export interface HttpEndpoint extends Pick<HttpRequestConfig,
-  'url' | 'method' | 'headers' | 'params' | 'pathParams' | 'bodySchema'
-> {}
+export type HttpEndpoint = Omit<HttpRequestConfig,
+  // 运行时选项
+  | 'timeout' | 'responseType' | 'cache' | 'cacheKey' | 'cacheExpiry'
+  | 'retry' | 'retryDelay' | 'skipRequestInterceptor' | 'skipResponseInterceptor'
+  | 'meta'
+  // 运行时数据
+  | 'data' | 'token'
+>
 
 /**
  * CRUD API 组：一组增删改查及导入导出接口
