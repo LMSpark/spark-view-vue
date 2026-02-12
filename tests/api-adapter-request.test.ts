@@ -29,7 +29,10 @@ describe('Request.executeEndpoint', () => {
     // 创建 mock axios 实例
     mockAxiosInstance = {
       request: vi.fn(),
-      defaults: { responseType: 'json' },
+      defaults: { 
+        responseType: 'json',
+        timeout: 5000
+      },
       interceptors: {
         request: { use: vi.fn() },
         response: { use: vi.fn() }

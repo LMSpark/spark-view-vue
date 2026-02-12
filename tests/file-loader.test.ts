@@ -30,6 +30,10 @@ describe('FileLoader', () => {
     // 创建mock axios实例
     mockAxiosInstance = {
       request: vi.fn(),
+      defaults: {
+        responseType: 'json',
+        timeout: 5000
+      },
       interceptors: {
         request: { use: vi.fn() },
         response: { use: vi.fn() }
@@ -72,7 +76,9 @@ describe('FileLoader', () => {
       expect(mockAxiosInstance.request).toHaveBeenCalledWith({
         url: 'test.json',
         method: 'GET',
-        params: {}
+        params: {},
+        timeout: 5000,
+        responseType: 'json'
       })
     })
     

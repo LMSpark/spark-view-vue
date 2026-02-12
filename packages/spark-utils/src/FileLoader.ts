@@ -266,17 +266,31 @@ export class FileLoader {
         size: result.content.length
       })
       
-      // 6. 更新缓存
+      // 6. 如果需要解析 JSON，先验证是否有效
+      let parsedData: T
+      if (parseJSON) {
+        try {
+          parsedData = JSON.parse(result.content) as T
+        } catch (parseError) {
+          const errorMsg = parseError instanceof Error ? parseError.message : String(parseError)
+          logger.error('JSON 解析失败', { fileName, error: errorMsg })
+          throw new Error(`JSON 解析失败: ${errorMsg}`)
+        }
+      } else {
+        parsedData = result.content as T
+      }
+      
+      // 7. 只有解析成功才更新缓存
       this.setCache(fileName, {
         content: result.content,
         timestamp: result.timestamp,
         cachedAt: Date.now()
       })
       
-      // 7. 返回结果
+      // 8. 返回结果
       return {
         success: true,
-        data: parseJSON ? (JSON.parse(result.content) as T) : (result.content as T),
+        data: parsedData,
         timestamp: result.timestamp,
         fromCache: false
       }
@@ -284,24 +298,36 @@ export class FileLoader {
     } catch (error) {
       logger.error('文件加载失败', { fileName, error })
       
-      // 8. 自动降级到缓存
+      // 9. 自动降级到缓存
       if (this.options.fallbackToCache) {
         const cache = this.getCache(fileName)
         if (cache) {
           const errorMsg = error instanceof Error ? error.message : String(error)
           logger.warn('网络失败，使用缓存', { fileName, error: errorMsg })
           
-          return {
-            success: true,
-            data: parseJSON ? (JSON.parse(cache.content) as T) : (cache.content as T),
-            timestamp: cache.timestamp,
-            fromCache: true,
-            error: `网络失败，使用缓存（${errorMsg}）`
+          try {
+            const cachedData = parseJSON ? (JSON.parse(cache.content) as T) : (cache.content as T)
+            return {
+              success: true,
+              data: cachedData,
+              timestamp: cache.timestamp,
+              fromCache: true,
+              error: `网络失败，使用缓存（${errorMsg}）`
+            }
+          } catch (parseError) {
+            // 缓存内容无法解析，返回失败
+            const parseErrorMsg = parseError instanceof Error ? parseError.message : String(parseError)
+            logger.error('缓存内容解析失败', { fileName, error: parseErrorMsg })
+            return {
+              success: false,
+              error: `缓存内容无效: ${parseErrorMsg}`,
+              fromCache: false
+            }
           }
         }
       }
       
-      // 9. 无缓存可用，返回失败
+      // 10. 无缓存可用，返回失败
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
