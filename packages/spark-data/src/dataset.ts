@@ -5,7 +5,7 @@
 
 import type {
   IDataSet,
-  IDataTable,
+  IDataTableData,
   IBindingContext,
   DataRelation,
   IDataRow,
@@ -435,18 +435,17 @@ export class DataSet implements IDataSet {
         return parentContext.selectedRows ?? []
       case 'allRows':
         return parentContext.rows ?? []
-      case 'pagedRows':
-        // 返回当前分页的数据行
-        if ('rows' in parentContext && 'pagination' in parentContext) {
-          const table = parentContext as DataTable
-          const pagination = table.pagination
-          if (pagination?.pageIndex && pagination.pageSize) {
-            const start = (pagination.pageIndex - 1) * pagination.pageSize
-            const end = start + pagination.pageSize
-            return table.rows.slice(start, end)
-          }
+      case 'pagedRows': {
+        // 返回当前分页的数据行（基于 context.rows 切片）
+        const pagination = parentContext.pagination
+        const rows = parentContext.rows ?? []
+        if (pagination?.pageIndex && pagination.pageSize) {
+          const start = (pagination.pageIndex - 1) * pagination.pageSize
+          const end = start + pagination.pageSize
+          return rows.slice(start, end)
         }
-        return []
+        return rows
+      }
       default:
         // 自定义类型，暂时返回 currentRow
         return parentContext.currentRow ? [parentContext.currentRow] : []
@@ -810,8 +809,8 @@ export class DataSet implements IDataSet {
    * 导出为 JSON
    */
   toJSON(): string {
-    // 转换表为普通对象
-    const tables: Record<string, IDataTable> = {}
+    // 转换表为普通对象（纯数据，不包含方法）
+    const tables: Record<string, IDataTableData> = {}
     Object.entries(this.tables).forEach(([tableName, table]) => {
       tables[tableName] = table.toPlainObject()
     })

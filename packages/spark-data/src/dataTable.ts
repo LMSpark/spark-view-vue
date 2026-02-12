@@ -8,8 +8,10 @@ import { BindingContext } from './bindingContext'
 import { Logger, type Request } from '@spark-view/spark-utils'
 import type {
   IDataTable,
+  IDataTableData,
   IDataTableWithApi,
   IBindingContext,
+  IBindingContextData,
   DataColumn,
   CrudApi,
   IDataSet,
@@ -340,7 +342,7 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   /**
    * 转换为普通对象（用于序列化）
    */
-  toPlainObject(): IDataTable {
+  toPlainObject(): IDataTableData {
     return {
       tableName: this.tableName,
       columns: this.columns,
@@ -363,8 +365,8 @@ export class DataTable extends BindingContext implements IDataTableWithApi {
   /**
    * 转换上下文为普通对象
    */
-  private contextsToPlainObject(): Record<string, IBindingContext> {
-    const result: Record<string, IBindingContext> = {}
+  private contextsToPlainObject(): Record<string, IBindingContextData> {
+    const result: Record<string, IBindingContextData> = {}
     Object.entries(this.contexts).forEach(([contextId, context]) => {
       result[contextId] = {
         currentRow: context.currentRow,

@@ -2,9 +2,24 @@
  * @spark-view/spark-data
  * SPARK 数据空间包 - 提供类似 .NET DataSet 的数据管理能力
  *
- * ⚠️ 重要：这是所有数据类型和权限类型的唯一定义源
- * - 其他包只能导入使用，不能重新定义
- * - 保持数据类型系统的一致性和可维护性
+ * ⚠️ 架构原则
+ * - 数据空间高级类型（DataTable, DataSet, BindingContext 等）的唯一定义源
+ * - 基础类型（IDataRow, HttpRequestConfig 等）从 @spark-view/spark-utils 导入使用
+ * - 其他包只能导入使用，不能重新定义，保持单一数据源原则 (Single Source of Truth)
+ * 
+ * 📦 推荐使用方式
+ * ```typescript
+ * import { SparkData } from '@spark-view/spark-data'
+ * 
+ * // 创建 DataSet
+ * const dataSet = SparkData.createDataSet({
+ *   dataSetName: 'MyData',
+ *   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
+ * })
+ * 
+ * // 创建 TreeManager
+ * const tree = SparkData.createTreeManager({ idField: 'id', parentIdField: 'parentId' })
+ * ```
  */
 
 // =============================================================================
@@ -26,18 +41,22 @@ export { default } from './spark-data-namespace'
 
 /**
  * 所有基础数据类型定义
- * - IDataRow: 数据行接口
- * - IDataTable: 数据表接口
+ * - IDataRow: 数据行接口（从 spark-utils 重新导出）
+ * - IDataTable: 数据表接口（运行时，包含方法）
+ * - IDataTableData: 数据表数据接口（序列化，纯数据）
  * - IDataSet: 数据集接口
+ * - IBindingContext: 数据绑定上下文接口（运行时，包含方法）
+ * - IBindingContextData: 绑定上下文数据接口（序列化，纯数据）
  * - ITreeManager: 树形数据管理器接口
- * - IBindingContext: 数据绑定上下文接口
  */
 export type {
   IDataRow,
   IDataTable,
+  IDataTableData,
   IDataSet,
   ITreeManager,
   IBindingContext,
+  IBindingContextData,
   EventCallback,
   FilterExpression,
   SortExpression,
@@ -59,17 +78,7 @@ export type {
 export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-utils'
 
 // =============================================================================
-// 4. 核心类 (Core Classes)
-// =============================================================================
-
-/**
- * 向后兼容的直接类导入
- * @deprecated 推荐使用 SparkData.createDataSet() 命名空间 API
- */
-export { DataSetManager } from './dataSetManager'
-
-// =============================================================================
-// 5. 能力管理器 (Capability Managers)
+// 4. 能力管理器 (Capability Managers)
 // =============================================================================
 
 /**
@@ -83,7 +92,7 @@ export {
 } from './capability/DataSetCapabilityManager'
 
 // =============================================================================
-// 6. API 适配器 (API Adapter)
+// 5. API 适配器 (API Adapter)
 // =============================================================================
 
 /**

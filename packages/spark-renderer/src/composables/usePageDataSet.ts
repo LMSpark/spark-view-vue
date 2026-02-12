@@ -4,7 +4,7 @@
 
 import { ref, Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import { DataSetManager } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
 import type { IDataSet, IDataRow } from '@spark-view/spark-data'
 import type { PageContext, Rule, FormCreateAPI } from '../types'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
@@ -78,8 +78,8 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
         return []
       })
       
-      // 创建 DataSet (使用工厂模式)
-      dataSet.value = DataSetManager.create(pageData.dataset as IDataSet, defaultDataLoader)
+      // 创建 DataSet (使用命名空间 API)
+      dataSet.value = SparkData.createDataSet(pageData.dataset as IDataSet, defaultDataLoader)
       
       // 将 DataSet 实例的 tables 赋值给 pageData.dataset.tables，以支持 dataKey 绑定
       // 这样 rule.json 中的 dataKey (如 "dataset.tables.Users.rows") 才能正确访问数据

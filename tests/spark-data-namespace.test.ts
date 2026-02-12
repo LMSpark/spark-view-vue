@@ -84,7 +84,6 @@ describe('SparkData Namespace', () => {
     expect(SparkData.classes.DataSet).toBeDefined()
     expect(SparkData.classes.TreeManager).toBeDefined()
     expect(SparkData.classes.BindingContext).toBeDefined()
-    expect(SparkData.classes.DataSetManager).toBeDefined()
     expect(SparkData.classes.FilterExpressionParser).toBeDefined()
   })
 
@@ -94,8 +93,8 @@ describe('SparkData Namespace', () => {
       tables: {}
     })
 
-    const { DataSetManager } = SparkData.classes
-    const dataSet2 = DataSetManager.create({
+    const { DataSet } = SparkData.classes
+    const dataSet2 = new DataSet({
       dataSetName: 'Test2',
       tables: {}
     })
