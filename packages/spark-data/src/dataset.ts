@@ -17,7 +17,6 @@ import { DataTable } from './dataTable'
 import { BindingContext } from './bindingContext'
 import { FilterExpressionParser } from './filterExpressionParser'
 import { Logger } from '@spark-view/spark-utils'
-import { type Request } from '@spark-view/spark-utils'
 
 /**
  * DataSet 类（实现 IDataSet 接口 + 方法逻辑）
@@ -42,18 +41,14 @@ export class DataSet implements IDataSet {
 
   // 日志系统
   private logger = Logger()
-  // HTTP 请求实例（通过 setRequest 设置，用于表级 API 注入）
-  private request?: Request
 
   // ==================== 构造函数 ====================
 
   constructor(
     config: IDataSet,
-    dataLoader?: (tableName: string) => Promise<IDataRow[]>,
-    request?: Request
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ) {
     this.dataLoader = dataLoader
-    this.request = request
     this.dataSetName = config.dataSetName
 
     // 转换表为类实例
@@ -66,11 +61,6 @@ export class DataSet implements IDataSet {
 
       // 🔧 设置表（默认上下文）的 DataSet 引用
       table.setDataSet(this)
-
-      // 🔧 注入 HTTP 请求实例
-      if (this.request) {
-        table.setApiAdapter(this.request)
-      }
 
       // 处理自定义上下文
       Object.entries(table.contexts || {}).forEach(([contextId, context]) => {
@@ -128,28 +118,6 @@ export class DataSet implements IDataSet {
    */
   getTable(tableName: string): DataTable | undefined {
     return this.tables[tableName]
-  }
-  
-  /**
-   * 设置 HTTP 请求实例（运行时注入）
-   * 
-   * @param request - HTTP 请求实例
-   * 
-   * @example
-   * ```typescript
-   * const request = createRequest({ baseURL: '/api', token: 'xxx' })
-   * dataSet.setApiAdapter(request)
-   * ```
-   */
-  setApiAdapter(request: Request): void {
-    this.request = request
-    
-    // 为所有表注入 HTTP 请求实例
-    Object.values(this.tables).forEach(table => {
-      table.setApiAdapter(request)
-    })
-    
-    this.logger.info(`✅ [DataSet] ${this.dataSetName} 已注入 HTTP 请求实例`)
   }
 
   // ==================== 基础 CRUD 操作 ====================
