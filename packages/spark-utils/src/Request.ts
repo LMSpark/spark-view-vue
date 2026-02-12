@@ -260,11 +260,13 @@ export class Request {
           this.axiosInstance.interceptors.request.use(
             async (config) => {
               // 转换为我们的HttpRequestConfig格式进行处理
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- axios config 类型部分为 any
               const requestConfig: HttpRequestConfig = {
                 url: config.url ?? '',
                 method: (config.method as RequestMethod ?? 'GET'),
                 params: config.params,
                 data: config.data,
+                 
                 headers: (config.headers ?? {}) as Record<string, string>,
                 timeout: config.timeout,
                 responseType: config.responseType as 'json' | 'text' | 'blob' | 'arraybuffer',
