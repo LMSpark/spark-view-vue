@@ -13,7 +13,7 @@ import {
   createDataSetCapabilityManager,
   type DataSetCapabilityConfig 
 } from './capability/DataSetCapabilityManager.js'
-import type { IDataSet, IDataRow, TreeConfig, FlatTreeNode } from './types.js'
+import type { IDataSet, IDataSetConfig, IDataRow, TreeConfig, FlatTreeNode } from './types.js'
 
 /**
  * SparkData 命名空间
@@ -30,11 +30,8 @@ export const SparkData = {
    *   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
    * })
    */
-  createDataSet: (
-    config: IDataSet,
-    dataLoader?: (tableName: string) => Promise<IDataRow[]>
-  ): DataSet => {
-    return new DataSet(config, dataLoader)
+  createDataSet: (config: IDataSetConfig): DataSet => {
+    return new DataSet(config)
   },
 
   /**

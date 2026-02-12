@@ -74,6 +74,9 @@ export interface IBindingContext extends IBindingContextData {
   // ===== 核心方法（运行时必需） =====
   setCurrentRow(row: IDataRow | null, skipNotify?: boolean): void
   setSelectedRows(rows: IDataRow[], skipNotify?: boolean): void
+  
+  // ===== 序列化方法 =====
+  toData(): IBindingContextData
 }
 
 /**
@@ -280,25 +283,76 @@ export interface DataRelation {
 // ==================== DataSet 定义 ====================
 
 /**
- * DataSet 接口 (ISP: 接口隔离原则 - 分离数据访问和事件订阅)
+ * DataSet 数据接口（纯数据，用于序列化）
+ * 
+ * 用途：JSON 序列化、网络传输、存储
+ * 特征：只包含数据字段，无方法
+ * 
+ * @example
+ * ```typescript
+ * const data: IDataSetData = {
+ *   dataSetName: 'MyData',
+ *   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
+ * }
+ * ```
  */
-export interface IDataSet {
+export interface IDataSetData {
   dataSetName: string
-  tables: Record<string, IDataTable>
+  tables: Record<string, IDataTableData>  // 纯数据表
   relations?: DataRelation[]
   version?: number
   pageId?: string
+}
+
+/**
+ * DataSet 配置接口（用于构造函数）
+ * 
+ * 用途：创建 DataSet 实例时的配置
+ * 特征：扩展数据层，增加可选的运行时配置
+ * 
+ * @example
+ * ```typescript
+ * const config: IDataSetConfig = {
+ *   dataSetName: 'MyData',
+ *   tables: { Users: tableData },
+ *   autoLoadRelations: true,
+ *   dataLoader: async (tableName) => fetchData(tableName)
+ * }
+ * const ds = new DataSet(config)
+ * ```
+ */
+export interface IDataSetConfig extends IDataSetData {
+  autoLoadRelations?: boolean
+  dataLoader?: (tableName: string) => Promise<IDataRow[]>
+}
+
+/**
+ * DataSet 运行时接口（包含方法）
+ * 
+ * 用途：运行时操作的接口定义
+ * 特征：包含运行时方法和状态管理
+ */
+export interface IDataSet extends IDataSetData {
+  // 覆盖为运行时类型
+  tables: Record<string, IDataTable>  // 运行时表实例
   autoLoadRelations?: boolean
   
-  // 必需方法
+  // 数据访问
+  getTable(tableName: string): IDataTable | undefined
+  
+  // 关系管理
   updateRelatedTables(tableName: string, contextId?: string): void
   notifySubscribers(tableName: string, contextId?: string): void
-  emit(event: string, data: unknown): void
   
-  // 事件订阅方法 (新增)
+  // 事件系统
   subscribe(tableName: string, contextId: string, callback: () => void): () => void
   on(event: string, handler: EventCallback): void
   off(event: string, handler: EventCallback): void
+  emit(event: string, data: unknown): void
+  
+  // 序列化
+  toData(): IDataSetData
+  toJSON(): string
 }
 
 // ==================== 辅助类型 ====================

@@ -79,7 +79,10 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       })
       
       // 创建 DataSet (使用命名空间 API)
-      dataSet.value = SparkData.createDataSet(pageData.dataset as IDataSet, defaultDataLoader)
+      dataSet.value = SparkData.createDataSet({
+        ...(pageData.dataset as IDataSet),
+        dataLoader: defaultDataLoader
+      })
       
       // 将 DataSet 实例的 tables 赋值给 pageData.dataset.tables，以支持 dataKey 绑定
       // 这样 rule.json 中的 dataKey (如 "dataset.tables.Users.rows") 才能正确访问数据

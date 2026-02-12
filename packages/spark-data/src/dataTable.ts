@@ -89,9 +89,9 @@ export class DataTable extends BindingContext implements IDataTable {
   // ==================== 序列化 ====================
 
   /**
-   * 转换为普通对象（用于序列化）
+   * 转换为纯数据对象（用于序列化）
    */
-  toPlainObject(): IDataTableData {
+  override toData(): IDataTableData {
     return {
       tableName: this.tableName,
       columns: this.columns,
@@ -105,37 +105,34 @@ export class DataTable extends BindingContext implements IDataTable {
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
       pagination: this.pagination,
-      contexts: this.contextsToPlainObject(),
+      contexts: this.contextsToData(),
       loading: this.loading,
       error: this.error
     }
   }
 
   /**
-   * 转换上下文为普通对象
+   * @deprecated 使用 toData() 替代
    */
-  private contextsToPlainObject(): Record<string, IBindingContextData> {
+  toPlainObject(): IDataTableData {
+    return this.toData()
+  }
+
+  /**
+   * 转换上下文为纯数据对象
+   */
+  private contextsToData(): Record<string, IBindingContextData> {
     const result: Record<string, IBindingContextData> = {}
     Object.entries(this.contexts).forEach(([contextId, context]) => {
-      result[contextId] = {
-        currentRow: context.currentRow,
-        selectedRows: context.selectedRows,
-        rows: context.rows,
-        originalRows: context.originalRows,
-        hostTable: context.hostTable,
-        contextId: context.contextId,
-        filterExpression: context.filterExpression,
-        sortExpression: context.sortExpression,
-        pagination: context.pagination
-      }
+      result[contextId] = context.toData()
     })
     return result
   }
 
   /**
-   * 从普通对象创建实例
+   * 从数据对象创建 DataTable 实例（静态工厂方法）
    */
-  static fromPlainObject(data: IDataTable, dataSet?: IDataSet): DataTable {
+  static fromTableData(data: IDataTableData, dataSet?: IDataSet): DataTable {
     const table = new DataTable(data.tableName, data.columns ?? [], dataSet)
 
     // 基本属性
@@ -157,8 +154,8 @@ export class DataTable extends BindingContext implements IDataTable {
         Logger().info(`🔄 [DataTable] 转换 ${table.tableName}.contexts 为 Record 格式`)
         data.contexts.forEach((ctx: Partial<IBindingContext>, index: number) => {
           const contextId = `ctx_${index + 1}`
-          table.contexts[contextId] = BindingContext.fromJSON(
-            ctx,
+          table.contexts[contextId] = BindingContext.fromData(
+            ctx as IBindingContextData,
             table.tableName,
             contextId,
             dataSet
@@ -167,8 +164,8 @@ export class DataTable extends BindingContext implements IDataTable {
       } else {
         // 新格式：Record
         Object.entries(data.contexts).forEach(([contextId, ctxData]) => {
-          table.contexts[contextId] = BindingContext.fromJSON(
-            ctxData as Partial<IBindingContext>,
+          table.contexts[contextId] = BindingContext.fromData(
+            ctxData,
             table.tableName,
             contextId,
             dataSet
@@ -178,5 +175,12 @@ export class DataTable extends BindingContext implements IDataTable {
     }
     
     return table
+  }
+
+  /**
+   * @deprecated 请使用 fromTableData() 方法
+   */
+  static fromPlainObject(data: IDataTable, dataSet?: IDataSet): DataTable {
+    return DataTable.fromTableData(data, dataSet)
   }
 }

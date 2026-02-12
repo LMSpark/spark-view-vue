@@ -4,7 +4,7 @@
  * 相当于 .NET 的 DataView - 视图层
  */
 
-import type { IDataRow, IBindingContext, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
+import type { IDataRow, IBindingContext, IBindingContextData, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
 import { FilterExpressionParser } from './filterExpressionParser'
 import { Logger } from '@spark-view/spark-utils'
 
@@ -462,9 +462,9 @@ export class BindingContext implements IBindingContext {
   }
 
   /**
-   * 转换为普通对象（用于序列化）
+   * 转换为纯数据对象（新）
    */
-  toJSON() {
+  toData(): IBindingContextData {
     return {
       currentRow: this.currentRow,
       selectedRows: this.selectedRows,
@@ -479,9 +479,17 @@ export class BindingContext implements IBindingContext {
   }
 
   /**
-   * 从普通对象创建实例
+   * 转换为普通对象（用于序列化）
+   * @deprecated 请使用 toData() 方法
    */
-  static fromJSON(data: Partial<IBindingContext>, hostTable: string, contextId: string, dataSet?: IDataSet): BindingContext {
+  toJSON() {
+    return this.toData()
+  }
+
+  /**
+   * 从数据对象创建实例（新）
+   */
+  static fromData(data: IBindingContextData, hostTable: string, contextId: string, dataSet?: IDataSet): BindingContext {
     const context = new BindingContext(hostTable, contextId, dataSet)
     
     context.currentRow = data.currentRow ?? null
@@ -493,5 +501,13 @@ export class BindingContext implements IBindingContext {
     context.pagination = data.pagination
     
     return context
+  }
+
+  /**
+   * 从普通对象创建实例
+   * @deprecated 请使用 fromData() 方法
+   */
+  static fromJSON(data: Partial<IBindingContext>, hostTable: string, contextId: string, dataSet?: IDataSet): BindingContext {
+    return BindingContext.fromData(data as IBindingContextData, hostTable, contextId, dataSet)
   }
 }
