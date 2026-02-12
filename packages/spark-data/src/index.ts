@@ -42,7 +42,9 @@ export type {
   FilterExpression,
   SortExpression,
   TreeConfig,
-  FlatTreeNode
+  FlatTreeNode,
+  HttpEndpoint,
+  CrudApi
 } from './types'
 
 // =============================================================================

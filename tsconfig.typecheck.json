@@ -9,7 +9,8 @@
     "features/**/*.vue", 
     "features/**/*.d.ts", 
     "packages/**/*.ts",
-    "packages/**/*.tsx"
+    "packages/**/*.tsx",
+    "verify-integration.ts"
   ],
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
