@@ -420,6 +420,9 @@ export interface IDataSet extends IDataSetMetadata {
 
   // 数据访问
   getTable(tableName: string): IDataTable | undefined
+  
+  // 数据加载
+  requestTableData(tableName: string): void
 
   // 关系管理
   updateRelatedTables(tableName: string, contextId?: string): void

@@ -1,12 +1,29 @@
 /**
  * DataView 类 - 数据视图
- * 负责：选中状态管理、数据视图、通知机制
+ * 负责：选中状态管理、数据视图、通知机制、加载状态管理
  * 相当于 .NET 的 DataView - 视图层
+ * 
+ * 核心概念：
+ * - 视图是 UI 和后端的桥梁
+ * - 视图管理加载状态（loading/error/ready）
+ * - UI 监听视图状态变化进行渲染
+ * - 非阻塞设计：UI 请求 → 视图标记loading → 异步加载 → 通知UI
  */
 
 import type { IDataRow, IDataRowWithPermission, IDataView, IViewMetadata, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
-import { FilterExpressionParser } from './filter-expression-parser'
 import { Logger } from '@spark-view/spark-utils'
+
+/**
+ * 视图状态历史记录
+ */
+export interface ViewStateHistoryEntry {
+  timestamp: number                              // 时间戳
+  state: 'loading' | 'ready' | 'error' | 'cancelled'  // 状态
+  rowCount?: number                              // 数据行数
+  error?: string                                 // 错误信息
+  duration?: number                              // 操作耗时（毫秒）
+  retryCount?: number                            // 重试次数
+}
 
 /**
  * 数据视图类（实现 IDataView 接口 + 方法逻辑）
@@ -30,6 +47,37 @@ export class DataView implements IDataView {
   sortExpression?: SortExpression
   autoSelectFirst?: boolean  // 自动选中第一行
   autoDeselectOnEmpty?: boolean  // 数据清空时自动取消选中
+  
+  // ==================== 视图状态（非阻塞设计的核心）====================
+  
+  // 基础加载状态
+  isLoading: boolean = false         // 数据加载中
+  loadingError: Error | null = null  // 加载错误
+  lastLoadTime: number | null = null // 上次加载时间戳（成功加载）
+  
+  // 取消机制
+  private abortController: AbortController | null = null  // 用于取消加载
+  
+  // 重试逻辑
+  retryCount: number = 0             // 当前重试次数
+  maxRetries: number = 3             // 最大重试次数
+  retryDelay: number = 1000          // 重试延迟（毫秒）
+  lastRetryTime: number | null = null // 上次重试时间戳
+  
+  // 性能指标
+  loadStartTime: number | null = null    // 加载开始时间
+  loadDuration: number | null = null     // 加载耗时（毫秒）
+  totalLoadCount: number = 0             // 总加载次数
+  
+  // 状态历史（调试用）
+  private stateHistory: ViewStateHistoryEntry[] = []
+  maxHistorySize: number = 20        // 最大历史记录数
+  
+  // 生命周期钩子
+  onBeforeLoad?: (context: DataView) => void | Promise<void>
+  onAfterLoad?: (context: DataView, success: boolean) => void | Promise<void>
+  onLoadError?: (context: DataView, error: Error) => void | Promise<void>
+  onLoadCancel?: (context: DataView) => void | Promise<void>
   
   // 分页状态（运行时必需）
   total: number = 0           // 总记录数
@@ -294,6 +342,429 @@ export class DataView implements IDataView {
     }
   }
 
+  // ==================== 视图状态管理（非阻塞设计） ====================
+
+  /**
+   * 设置视图为加载中状态（增强版）
+   * 
+   * 使用场景：
+   * - UI 请求数据时立即调用
+   * - 视图标记为"请求中"，UI 显示 loading 状态
+   * - 非阻塞设计的关键：UI 不等待数据返回
+   * 
+   * 增强特性：
+   * - 创建 AbortController（支持取消）
+   * - 记录加载开始时间（性能监控）
+   * - 调用 onBeforeLoad 钩子
+   * - 记录状态历史
+   * 
+   * @example
+   * ```typescript
+   * // UI 点击加载按钮
+   * context.setLoading()  // 立即标记loading
+   * dataSet.requestTableData('Users')  // 异步加载
+   * ```
+   */
+  async setLoading(): Promise<void> {
+    // 如果已经在加载中，先取消之前的加载
+    if (this.isLoading && this.abortController) {
+      this.logger.info(`⏭️ [视图状态] ${this.hostTable}.${this.contextId} 取消上一个加载请求`);
+      this.abortController.abort();
+    }
+    
+    this.isLoading = true;
+    this.loadingError = null;
+    this.loadStartTime = Date.now();
+    this.totalLoadCount++;
+    
+    // 创建新的 AbortController
+    this.abortController = new AbortController();
+    
+    this.logger.info(`⏳ [视图状态] ${this.hostTable}.${this.contextId} → loading (第 ${this.totalLoadCount} 次)`);
+    
+    // 记录状态历史
+    this.addStateHistory({
+      timestamp: Date.now(),
+      state: 'loading',
+      retryCount: this.retryCount
+    });
+    
+    // 调用生命周期钩子
+    if (this.onBeforeLoad) {
+      try {
+        await this.onBeforeLoad(this);
+      } catch (error) {
+        this.logger.error(`❌ [钩子错误] onBeforeLoad:`, error);
+      }
+    }
+    
+    // 通知 UI 更新状态
+    if (this.dataSet) {
+      this.dataSet.emit('viewStateChanged', {
+        tableName: this.hostTable,
+        contextId: this.contextId,
+        state: 'loading',
+        retryCount: this.retryCount,
+        totalLoadCount: this.totalLoadCount
+      });
+    }
+  }
+
+  /**
+   * 设置视图为就绪状态（数据加载成功）
+   * 
+   * 使用场景：
+   * - 数据加载成功后调用
+   * - 视图标记为"就绪"，UI 显示数据
+   * 
+   * 增强特性：
+   * - 计算加载耗时
+   * - 重置重试计数
+   * - 调用 onAfterLoad 钩子
+   * - 记录状态历史
+   * 
+   * @example
+   * ```typescript
+   * // DataLoader 加载成功
+   * context.setReady()
+   * context.rows = loadedData  // 更新数据
+   * ```
+   */
+  async setReady(): Promise<void> {
+    if (this.isLoading || this.loadingError) {
+      this.isLoading = false;
+      this.loadingError = null;
+      this.lastLoadTime = Date.now();
+      
+      // 计算加载耗时
+      if (this.loadStartTime) {
+        this.loadDuration = Date.now() - this.loadStartTime;
+      }
+      
+      // 重置重试计数
+      this.retryCount = 0;
+      this.lastRetryTime = null;
+      
+      // 清除 AbortController
+      this.abortController = null;
+      
+      this.logger.info(
+        `✅ [视图状态] ${this.hostTable}.${this.contextId} → ready ` +
+        `(${this.rows.length} rows, ${this.loadDuration}ms)`
+      );
+      
+      // 记录状态历史
+      this.addStateHistory({
+        timestamp: Date.now(),
+        state: 'ready',
+        rowCount: this.rows.length,
+        duration: this.loadDuration ?? undefined
+      });
+      
+      // 调用生命周期钩子
+      if (this.onAfterLoad) {
+        try {
+          await this.onAfterLoad(this, true);
+        } catch (error) {
+          this.logger.error(`❌ [钩子错误] onAfterLoad:`, error);
+        }
+      }
+      
+      // 通知 UI 更新状态
+      if (this.dataSet) {
+        this.dataSet.emit('viewStateChanged', {
+          tableName: this.hostTable,
+          contextId: this.contextId,
+          state: 'ready',
+          rowCount: this.rows.length,
+          duration: this.loadDuration,
+          totalLoadCount: this.totalLoadCount
+        });
+      }
+    }
+  }
+
+  /**
+   * 设置视图为错误状态（数据加载失败）
+   * 
+   * 使用场景：
+   * - 数据加载失败后调用
+   * - 视图标记为"错误"，UI 显示错误信息
+   * 
+   * 增强特性：
+   * - 自动重试逻辑（如果未超过 maxRetries）
+   * - 调用 onLoadError 钩子
+   * - 记录状态历史
+   * 
+   * @param error - 错误对象
+   * @param autoRetry - 是否自动重试（默认 true）
+   * 
+   * @example
+   * ```typescript
+   * // DataLoader 加载失败
+   * try {
+   *   await loadData()
+   * } catch (error) {
+   *   context.setError(error)
+   * }
+   * ```
+   */
+  async setError(error: Error, autoRetry: boolean = true): Promise<void> {
+    this.isLoading = false;
+    this.loadingError = error;
+    
+    // 计算加载耗时（失败也记录）
+    if (this.loadStartTime) {
+      this.loadDuration = Date.now() - this.loadStartTime;
+    }
+    
+    // 清除 AbortController
+    this.abortController = null;
+    
+    this.logger.error(
+      `❌ [视图状态] ${this.hostTable}.${this.contextId} → error ` +
+      `(重试 ${this.retryCount}/${this.maxRetries}): ${error.message}`
+    );
+    
+    // 记录状态历史
+    this.addStateHistory({
+      timestamp: Date.now(),
+      state: 'error',
+      error: error.message,
+      duration: this.loadDuration ?? undefined,
+      retryCount: this.retryCount
+    });
+    
+    // 调用生命周期钩子
+    if (this.onLoadError) {
+      try {
+        await this.onLoadError(this, error);
+      } catch (hookError) {
+        this.logger.error(`❌ [钩子错误] onLoadError:`, hookError);
+      }
+    }
+    
+    // 调用 onAfterLoad 钩子（失败情况）
+    if (this.onAfterLoad) {
+      try {
+        await this.onAfterLoad(this, false);
+      } catch (hookError) {
+        this.logger.error(`❌ [钩子错误] onAfterLoad:`, hookError);
+      }
+    }
+    
+    // 判断是否需要自动重试
+    if (autoRetry && this.retryCount < this.maxRetries) {
+      this.retryCount++;
+      this.lastRetryTime = Date.now();
+      
+      this.logger.info(
+        `🔄 [自动重试] ${this.hostTable}.${this.contextId} 将在 ${this.retryDelay}ms 后重试 ` +
+        `(${this.retryCount}/${this.maxRetries})`
+      );
+      
+      // 延迟重试（指数退避）
+      const delay = this.retryDelay * Math.pow(2, this.retryCount - 1);
+      setTimeout(() => {
+        if (this.dataSet) {
+          this.logger.info(`♻️ [重试] ${this.hostTable}.${this.contextId} 开始第 ${this.retryCount} 次重试`);
+          this.dataSet.requestTableData(this.hostTable);
+        }
+      }, delay);
+    } else {
+      // 重试次数已用尽或不自动重试
+      if (this.retryCount >= this.maxRetries) {
+        this.logger.error(
+          `🚫 [重试失败] ${this.hostTable}.${this.contextId} 已达到最大重试次数 (${this.maxRetries})`
+        );
+      }
+    }
+    
+    // 通知 UI 更新状态
+    if (this.dataSet) {
+      this.dataSet.emit('viewStateChanged', {
+        tableName: this.hostTable,
+        contextId: this.contextId,
+        state: 'error',
+        error: error.message,
+        retryCount: this.retryCount,
+        maxRetries: this.maxRetries,
+        willRetry: autoRetry && this.retryCount < this.maxRetries
+      });
+    }
+  }
+
+  /**
+   * 取消正在进行的数据加载
+   * 
+   * 使用场景：
+   * - 用户手动取消加载
+   * - 组件卸载时取消加载
+   * - 切换视图时取消之前的加载
+   * 
+   * @example
+   * ```typescript
+   * // 用户点击取消按钮
+   * context.cancelLoad()
+   * ```
+   */
+  async cancelLoad(): Promise<void> {
+    if (this.isLoading && this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+      this.isLoading = false;
+      
+      this.logger.info(`🛑 [取消加载] ${this.hostTable}.${this.contextId}`);
+      
+      // 记录状态历史
+      this.addStateHistory({
+        timestamp: Date.now(),
+        state: 'cancelled'
+      });
+      
+      // 调用生命周期钩子
+      if (this.onLoadCancel) {
+        try {
+          await this.onLoadCancel(this);
+        } catch (error) {
+          this.logger.error(`❌ [钩子错误] onLoadCancel:`, error);
+        }
+      }
+      
+      // 通知 UI 更新状态
+      if (this.dataSet) {
+        this.dataSet.emit('viewStateChanged', {
+          tableName: this.hostTable,
+          contextId: this.contextId,
+          state: 'cancelled'
+        });
+      }
+    }
+  }
+
+  /**
+   * 手动重试加载
+   * 
+   * 使用场景：
+   * - 加载失败后用户点击"重试"按钮
+   * - 自动重试失败后手动触发
+   * 
+   * @param resetRetryCount - 是否重置重试计数（默认 false）
+   * 
+   * @example
+   * ```typescript
+   * // 用户点击重试按钮
+   * context.retryLoad(true)  // 重置重试计数
+   * ```
+   */
+  retryLoad(resetRetryCount: boolean = false): void {
+    if (resetRetryCount) {
+      this.retryCount = 0;
+      this.lastRetryTime = null;
+    }
+    
+    this.logger.info(`♻️ [手动重试] ${this.hostTable}.${this.contextId}`);
+    
+    if (this.dataSet) {
+      this.dataSet.requestTableData(this.hostTable);
+    }
+  }
+
+  /**
+   * 获取视图当前状态
+   * 
+   * @returns 'loading' | 'ready' | 'error' | 'empty'
+   */
+  getState(): 'loading' | 'ready' | 'error' | 'empty' {
+    if (this.isLoading) return 'loading';
+    if (this.loadingError) return 'error';
+    if (this.rows.length === 0) return 'empty';
+    return 'ready';
+  }
+
+  /**
+   * 添加状态历史记录
+   * 
+   * @param entry - 状态历史条目
+   */
+  private addStateHistory(entry: ViewStateHistoryEntry): void {
+    this.stateHistory.push(entry);
+    
+    // 限制历史记录大小
+    if (this.stateHistory.length > this.maxHistorySize) {
+      this.stateHistory.shift();
+    }
+  }
+
+  /**
+   * 获取状态历史记录
+   * 
+   * @param limit - 返回最近 N 条记录（默认返回全部）
+   * @returns 状态历史数组
+   * 
+   * @example
+   * ```typescript
+   * // 获取最近 5 条状态变化
+   * const recentStates = context.getStateHistory(5)
+   * console.table(recentStates)
+   * ```
+   */
+  getStateHistory(limit?: number): ViewStateHistoryEntry[] {
+    if (limit) {
+      return this.stateHistory.slice(-limit);
+    }
+    return [...this.stateHistory];
+  }
+
+  /**
+   * 清空状态历史记录
+   */
+  clearStateHistory(): void {
+    this.stateHistory = [];
+    this.logger.info(`🧹 [清空历史] ${this.hostTable}.${this.contextId} 状态历史已清空`);
+  }
+
+  /**
+   * 获取性能统计信息
+   * 
+   * @returns 性能统计对象
+   * 
+   * @example
+   * ```typescript
+   * const stats = context.getPerformanceStats()
+   * console.log(`平均加载时间: ${stats.avgLoadDuration}ms`)
+   * console.log(`成功率: ${stats.successRate}%`)
+   * ```
+   */
+  getPerformanceStats() {
+    const successCount = this.stateHistory.filter(h => h.state === 'ready').length;
+    const errorCount = this.stateHistory.filter(h => h.state === 'error').length;
+    const cancelCount = this.stateHistory.filter(h => h.state === 'cancelled').length;
+    const totalAttempts = successCount + errorCount + cancelCount;
+    
+    const durations = this.stateHistory
+      .filter(h => h.duration !== undefined)
+      .map(h => h.duration as number);
+    
+    const avgLoadDuration = durations.length > 0
+      ? durations.reduce((sum, d) => sum + d, 0) / durations.length
+      : 0;
+    
+    return {
+      totalLoadCount: this.totalLoadCount,
+      successCount,
+      errorCount,
+      cancelCount,
+      totalAttempts,
+      successRate: totalAttempts > 0 ? (successCount / totalAttempts) * 100 : 0,
+      avgLoadDuration: Math.round(avgLoadDuration),
+      lastLoadTime: this.lastLoadTime,
+      lastLoadDuration: this.loadDuration,
+      currentRetryCount: this.retryCount,
+      maxRetries: this.maxRetries
+    };
+  }
+
   /**
    * 应用排序表达式
    */
@@ -408,18 +879,10 @@ export class DataView implements IDataView {
   updateRows(sourceData: IDataRow[]): void {
     let result = [...sourceData];
     
-    // 1. 执行过滤
-    if (this.filterExpression) {
-      try {
-        const filterFn = FilterExpressionParser.toMemoryFilter(this.filterExpression);
-        result = result.filter(filterFn);
-      } catch (e) {
-        this.logger.error(`过滤失败:`, e);
-        result = [];
-      }
-    }
+    // 注意：filterExpression 应传给后端 API，前端不执行
+    // 如果需要过滤，应从后端获取已过滤的数据
     
-    // 2. 执行排序
+    // 执行排序
     if (this.sortExpression) {
       try {
         result = this.applySorting(result, this.sortExpression);
