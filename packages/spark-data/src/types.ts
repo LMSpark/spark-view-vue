@@ -80,13 +80,13 @@ export interface IBindingContextData {
  * - 表格行选中状态管理
  * - 带权限的数据源
  */
-export interface IBindingContext extends IBindingContextData, Omit<IDataSource, 'rows'> {
+export interface IBindingContext extends IBindingContextData, IDataSource {
   // ===== 运行时必需字段（覆盖可选） =====
   currentRow: IDataRowWithPermission | null
   currentRowIndex: number | null   // 必需：当前行索引
   selectedRows: IDataRowWithPermission[]
   selectedRowIndices: number[]     // 必需：选中行索引数组
-  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
+  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行（覆盖 IDataSource.rows）
   hostTable: string
   contextId: string
   
