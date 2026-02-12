@@ -344,11 +344,16 @@ export class Request {
     const axiosConfig: AxiosRequestConfig = {
       url: config.url,
       method: config.method ?? 'GET',
-      params: config.params,
-      data: config.data,
-      headers: config.headers,
-      timeout: config.timeout,
-      responseType: config.responseType
+      // 始终设置 timeout 和 responseType（从配置或实例默认值）
+      timeout: config.timeout ?? this.axiosInstance.defaults.timeout ?? 10000,
+      responseType: config.responseType ?? this.axiosInstance.defaults.responseType ?? 'json'
+    }
+    
+    // 只有非 undefined 的属性才添加
+    if (config.params !== undefined) axiosConfig.params = config.params
+    if (config.data !== undefined) axiosConfig.data = config.data
+    if (config.headers !== undefined && Object.keys(config.headers).length > 0) {
+      axiosConfig.headers = config.headers
     }
 
     const response: AxiosResponse<T> = await this.axiosInstance.request(axiosConfig)
@@ -377,25 +382,17 @@ export class Request {
     try {
       const axiosConfig: AxiosRequestConfig = {
         url: config.url,
-        method: config.method ?? 'GET'
+        method: config.method ?? 'GET',
+        // 始终设置 timeout 和 responseType（从配置或实例默认值）
+        timeout: config.timeout ?? this.axiosInstance.defaults.timeout ?? 10000,
+        responseType: config.responseType ?? this.axiosInstance.defaults.responseType ?? 'json'
       }
       
-      // 只有非 undefined 的属性才添加到配置中，避免覆盖 axios 实例的默认配置
+      // 只有非 undefined 的属性才添加到配置中
       if (config.params !== undefined) axiosConfig.params = config.params
       if (config.data !== undefined) axiosConfig.data = config.data
       if (config.headers !== undefined && Object.keys(config.headers).length > 0) {
         axiosConfig.headers = config.headers
-      }
-      // 使用 config 中的值，如果没有则使用 axios 实例的默认值
-      if (config.timeout !== undefined) {
-        axiosConfig.timeout = config.timeout
-      } else if (this.axiosInstance.defaults.timeout !== undefined) {
-        axiosConfig.timeout = this.axiosInstance.defaults.timeout
-      }
-      if (config.responseType !== undefined) {
-        axiosConfig.responseType = config.responseType
-      } else if (this.axiosInstance.defaults.responseType !== undefined) {
-        axiosConfig.responseType = this.axiosInstance.defaults.responseType
       }
 
       const response: AxiosResponse<T> = await this.axiosInstance.request(axiosConfig)
