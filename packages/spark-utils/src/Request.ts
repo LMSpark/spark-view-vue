@@ -265,8 +265,7 @@ export class Request {
                 method: (config.method as RequestMethod ?? 'GET'),
                 params: config.params,
                 data: config.data,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                headers: config.headers as Record<string, string>,
+                headers: (config.headers ?? {}) as Record<string, string>,
                 timeout: config.timeout,
                 responseType: config.responseType as 'json' | 'text' | 'blob' | 'arraybuffer',
                 cache: false, // axios配置中没有cache
