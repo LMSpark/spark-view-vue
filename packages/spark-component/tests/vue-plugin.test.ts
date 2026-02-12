@@ -17,7 +17,7 @@ describe('Vue plugin integration', () => {
   it('createSparkPlugin with default options uses global singleton', () => {
     const app = createFakeApp()
     const plugin = createSparkPlugin()
-    plugin.install(app)
+    plugin.install!(app)
     
     // Should provide registry and root context
     expect((app._provided)[SPARK_REGISTRY_KEY]).toBeDefined()
@@ -28,7 +28,7 @@ describe('Vue plugin integration', () => {
     const registry = createComponentRegistry()
     const plugin = createSparkPlugin({ registry })
     const app = createFakeApp()
-    plugin.install(app)
+    plugin.install!(app)
     
     // Should provide the custom registry
     expect((app._provided)[SPARK_REGISTRY_KEY]).toBe(registry)

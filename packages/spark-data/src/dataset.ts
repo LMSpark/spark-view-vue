@@ -17,7 +17,7 @@ import { DataTable } from './dataTable'
 import { BindingContext } from './bindingContext'
 import { FilterExpressionParser } from './filterExpressionParser'
 import { Logger } from '@spark-view/spark-utils'
-import type { ApiAdapter } from './apiAdapter'
+import { type Request } from '@spark-view/spark-utils'
 
 /**
  * DataSet 类（实现 IDataSet 接口 + 方法逻辑）
@@ -42,18 +42,18 @@ export class DataSet implements IDataSet {
 
   // 日志系统
   private logger = Logger()
-  // API 适配器（通过 setApiAdapter 设置，用于表级 API 注入）
-  private apiAdapter?: ApiAdapter
+  // HTTP 请求实例（通过 setRequest 设置，用于表级 API 注入）
+  private request?: Request
 
   // ==================== 构造函数 ====================
 
   constructor(
     config: IDataSet,
     dataLoader?: (tableName: string) => Promise<IDataRow[]>,
-    apiAdapter?: ApiAdapter
+    request?: Request
   ) {
     this.dataLoader = dataLoader
-    this.apiAdapter = apiAdapter
+    this.request = request
     this.dataSetName = config.dataSetName
 
     // 转换表为类实例
@@ -67,9 +67,9 @@ export class DataSet implements IDataSet {
       // 🔧 设置表（默认上下文）的 DataSet 引用
       table.setDataSet(this)
 
-      // 🔧 注入 API 适配器
-      if (this.apiAdapter) {
-        table.setApiAdapter(this.apiAdapter)
+      // 🔧 注入 HTTP 请求实例
+      if (this.request) {
+        table.setApiAdapter(this.request)
       }
 
       // 处理自定义上下文
@@ -131,25 +131,25 @@ export class DataSet implements IDataSet {
   }
   
   /**
-   * 设置 API 适配器（运行时注入）
+   * 设置 HTTP 请求实例（运行时注入）
    * 
-   * @param adapter - API 适配器实例
+   * @param request - HTTP 请求实例
    * 
    * @example
    * ```typescript
-   * const apiAdapter = new ApiAdapter(apiContext)
-   * dataSet.setApiAdapter(apiAdapter)
+   * const request = createRequest({ baseURL: '/api', token: 'xxx' })
+   * dataSet.setApiAdapter(request)
    * ```
    */
-  setApiAdapter(adapter: ApiAdapter): void {
-    this.apiAdapter = adapter
+  setApiAdapter(request: Request): void {
+    this.request = request
     
-    // 为所有表注入 API 适配器
+    // 为所有表注入 HTTP 请求实例
     Object.values(this.tables).forEach(table => {
-      table.setApiAdapter(adapter)
+      table.setApiAdapter(request)
     })
     
-    this.logger.info(`✅ [DataSet] ${this.dataSetName} 已注入 ApiAdapter`)
+    this.logger.info(`✅ [DataSet] ${this.dataSetName} 已注入 HTTP 请求实例`)
   }
 
   // ==================== 基础 CRUD 操作 ====================

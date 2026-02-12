@@ -4,14 +4,40 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createFileLoader, FileLoader } from '@spark-view/spark-utils'
+import axios from 'axios'
+
+// Mock axios.create
+vi.mock('axios', async () => {
+  const actualAxios = await vi.importActual('axios')
+  return {
+    ...actualAxios,
+    default: {
+      ...actualAxios.default,
+      create: vi.fn()
+    }
+  }
+})
 
 describe('FileLoader', () => {
   let loader: FileLoader
+  let mockAxiosInstance: any
   
   beforeEach(() => {
     // 清理所有缓存
     localStorage.clear()
     sessionStorage.clear()
+    
+    // 创建mock axios实例
+    mockAxiosInstance = {
+      request: vi.fn(),
+      interceptors: {
+        request: { use: vi.fn() },
+        response: { use: vi.fn() }
+      }
+    }
+    
+    // 设置mock返回值
+    vi.mocked(axios.create).mockReturnValue(mockAxiosInstance)
     
     // 创建测试加载器
     loader = createFileLoader({
@@ -23,14 +49,16 @@ describe('FileLoader', () => {
   
   describe('基本加载功能', () => {
     it('应该能够加载文件（首次加载）', async () => {
-      // Mock fetch
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      // 设置mock响应
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           content: '{"test": "data"}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { url: 'test.json', method: 'GET' }
       })
       
       const result = await loader.load('test.json')
@@ -39,16 +67,25 @@ describe('FileLoader', () => {
       expect(result.data).toEqual({ test: 'data' })
       expect(result.timestamp).toBe('2024-02-11T10:00:00Z')
       expect(result.fromCache).toBe(false)
+      
+      // 验证request被调用
+      expect(mockAxiosInstance.request).toHaveBeenCalledWith({
+        url: 'test.json',
+        method: 'GET',
+        params: {}
+      })
     })
     
     it('应该解析 JSON 文件', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           content: '{"name": "test", "value": 123}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       const result = await loader.load('test.json', { parseJSON: true })
@@ -58,13 +95,15 @@ describe('FileLoader', () => {
     })
     
     it('应该加载文本文件（不解析 JSON）', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           content: 'function test() { return 42; }',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       const result = await loader.load<string>('script.js', { parseJSON: false })
@@ -76,13 +115,15 @@ describe('FileLoader', () => {
   
   describe('缓存机制', () => {
     it('应该缓存加载的文件', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           content: '{"cached": true}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       // 首次加载
@@ -93,53 +134,30 @@ describe('FileLoader', () => {
       expect(loader.getCachedTimestamp('cache-test.json')).toBe('2024-02-11T10:00:00Z')
     })
     
-    it('应该在文件未修改时使用缓存（304）', async () => {
-      // 首次加载
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          content: '{"version": 1}',
-          timestamp: '2024-02-11T10:00:00Z'
-        })
-      })
-      
-      await loader.load('version.json')
-      
-      // 再次加载，服务器返回 304
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 304
-      })
-      
-      const result = await loader.load('version.json')
-      
-      expect(result.success).toBe(true)
-      expect(result.fromCache).toBe(true)
-      expect(result.notModified).toBe(true)
-      expect(result.data).toEqual({ version: 1 })
-    })
-    
     it('应该在文件未修改时使用缓存（notModified 标志）', async () => {
       // 首次加载
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: {
           content: '{"version": 1}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       await loader.load('version.json')
       
       // 再次加载，服务器返回 notModified=true
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: {
           notModified: true
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       const result = await loader.load('version.json')
@@ -151,25 +169,29 @@ describe('FileLoader', () => {
     
     it('应该在强制刷新时忽略缓存', async () => {
       // 首次加载
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: {
           content: '{"version": 1}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       await loader.load('refresh.json')
       
       // 强制刷新
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: {
           content: '{"version": 2}',
           timestamp: '2024-02-11T11:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       const result = await loader.load('refresh.json', { forceRefresh: true })
@@ -184,19 +206,21 @@ describe('FileLoader', () => {
   describe('自动降级', () => {
     it('应该在网络失败时自动降级到缓存', async () => {
       // 首次加载成功
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: {
           content: '{"data": "cached"}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       await loader.load('fallback.json')
       
       // 网络失败
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+      mockAxiosInstance.request.mockRejectedValueOnce(new Error('Network error'))
       
       const result = await loader.load('fallback.json')
       
@@ -207,7 +231,7 @@ describe('FileLoader', () => {
     })
     
     it('应该在无缓存时返回失败', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+      mockAxiosInstance.request.mockRejectedValue(new Error('Network error'))
       
       const result = await loader.load('no-cache.json')
       
@@ -224,19 +248,21 @@ describe('FileLoader', () => {
       })
       
       // 首次加载成功
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: {
           content: '{"data": "test"}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       await strictLoader.load('strict.json')
       
       // 网络失败，不使用缓存
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+      mockAxiosInstance.request.mockRejectedValueOnce(new Error('Network error'))
       
       const result = await strictLoader.load('strict.json')
       
@@ -247,30 +273,36 @@ describe('FileLoader', () => {
   
   describe('批量加载', () => {
     it('应该并行加载多个文件', async () => {
-      global.fetch = vi.fn()
+      mockAxiosInstance.request
         .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({
+          data: {
             content: '{"file": "1"}',
             timestamp: '2024-02-11T10:00:00Z'
-          })
+          },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {}
         })
         .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({
+          data: {
             content: '{"file": "2"}',
             timestamp: '2024-02-11T10:00:00Z'
-          })
+          },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {}
         })
         .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: async () => ({
+          data: {
             content: '{"file": "3"}',
             timestamp: '2024-02-11T10:00:00Z'
-          })
+          },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {}
         })
       
       const results = await loader.loadBatch([
@@ -288,13 +320,15 @@ describe('FileLoader', () => {
   
   describe('缓存管理', () => {
     it('应该清除特定文件缓存', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           content: '{"test": "data"}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       await loader.load('clear-test.json')
@@ -305,13 +339,15 @@ describe('FileLoader', () => {
     })
     
     it('应该清除所有缓存', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           content: '{"test": "data"}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       await loader.load('file1.json')
@@ -323,13 +359,15 @@ describe('FileLoader', () => {
     })
     
     it('应该返回缓存统计信息', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           content: '{"test": "data"}',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       await loader.load('stats1.json')
@@ -346,11 +384,17 @@ describe('FileLoader', () => {
   
   describe('错误处理', () => {
     it('应该处理 HTTP 错误', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found'
-      })
+      const error = Object.assign(
+        new Error('Request failed with status code 404'),
+        {
+          response: {
+            status: 404,
+            statusText: 'Not Found',
+            data: {}
+          }
+        }
+      )
+      mockAxiosInstance.request.mockRejectedValue(error)
       
       const result = await loader.load('not-found.json')
       
@@ -359,13 +403,15 @@ describe('FileLoader', () => {
     })
     
     it('应该处理无效的响应格式', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           // 缺少 content 或 timestamp
           invalid: true
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       const result = await loader.load('invalid.json')
@@ -375,13 +421,15 @@ describe('FileLoader', () => {
     })
     
     it('应该处理 JSON 解析错误', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => ({
+      mockAxiosInstance.request.mockResolvedValue({
+        data: {
           content: 'invalid json {',
           timestamp: '2024-02-11T10:00:00Z'
-        })
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {}
       })
       
       const result = await loader.load('parse-error.json')

@@ -55,8 +55,6 @@
     "packages/**/examples/**/*",
     "packages/**/*.example.ts",
     "packages/**/*.example.vue",
-    "packages/**/tests/**/*",
-    "tests/**/*",
     "tools/**/*",
     "examples/**/*"
   ]

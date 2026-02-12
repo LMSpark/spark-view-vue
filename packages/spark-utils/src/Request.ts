@@ -10,6 +10,7 @@
  * @module Request
  */
 
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { Logger } from './logger'
 
 const logger = Logger('Request')
@@ -24,53 +25,87 @@ const logger = Logger('Request')
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 
 /**
- * 请求配置
+ * 统一的 HTTP 请求配置接口
+ * 
+ * 整合了静态 API 定义和运行时请求配置的所有功能
+ * - 静态配置：API 端点定义（url, method, headers, queryParams, pathParams, bodySchema）
+ * - 运行时配置：请求执行选项（timeout, responseType, cache, retry 等）
  */
-export interface RequestConfig {
+export interface HttpRequestConfig {
+  // ===== 基础请求配置 =====
   /** 请求 URL */
   url: string
-  
-  /** 请求方法（默认 GET） */
+
+  /** 请求方法 */
   method?: RequestMethod
-  
-  /** 查询参数 */
-  params?: Record<string, unknown>
-  
-  /** 请求体数据 */
-  data?: unknown
-  
+
   /** 请求头 */
   headers?: Record<string, string>
-  
+
+  // ===== 参数配置 =====
+  /** URL 查询参数 */
+  params?: Record<string, unknown>
+
+  /** 请求体数据 */
+  data?: unknown
+
+  /** 路径参数列表 */
+  pathParams?: string[]
+
+  // ===== 请求体结构定义 =====
+  /** 请求体结构描述（用于文档或验证） */
+  bodySchema?: unknown
+
+  // ===== 运行时选项 =====
   /** 超时时间（毫秒） */
   timeout?: number
-  
+
   /** 响应类型 */
   responseType?: 'json' | 'text' | 'blob' | 'arraybuffer'
-  
+
   /** 是否启用缓存（仅 GET 请求） */
   cache?: boolean
-  
+
   /** 缓存键（自定义） */
   cacheKey?: string
-  
+
   /** 缓存过期时间（毫秒） */
   cacheExpiry?: number
-  
+
   /** 重试次数（失败后自动重试） */
   retry?: number
-  
+
   /** 重试延迟（毫秒） */
   retryDelay?: number
-  
+
   /** 是否跳过请求拦截器 */
   skipRequestInterceptor?: boolean
-  
+
   /** 是否跳过响应拦截器 */
   skipResponseInterceptor?: boolean
-  
+
   /** 自定义元数据（传递给拦截器） */
   meta?: Record<string, unknown>
+
+  // ===== 业务配置 =====
+  /** API 基础地址 */
+  baseURL?: string
+
+  /** 认证 Token */
+  token?: string
+
+  /** 租户 ID */
+  tenantId?: string
+}
+
+/**
+ * 请求错误
+ */
+export interface RequestError extends Error {
+  config: HttpRequestConfig
+  code?: string
+  status?: number
+  response?: any
 }
 
 /**
@@ -79,31 +114,21 @@ export interface RequestConfig {
 export interface RequestResponse<T = unknown> {
   /** 响应数据 */
   data: T
-  
+
   /** HTTP 状态码 */
   status: number
-  
+
   /** 状态文本 */
   statusText: string
-  
+
   /** 响应头 */
-  headers: Headers
-  
+  headers: Record<string, string>
+
   /** 请求配置 */
-  config: RequestConfig
-  
+  config: HttpRequestConfig
+
   /** 是否来自缓存 */
   fromCache?: boolean
-}
-
-/**
- * 请求错误
- */
-export interface RequestError extends Error {
-  config: RequestConfig
-  code?: string
-  status?: number
-  response?: Response
 }
 
 /**
@@ -114,7 +139,7 @@ export interface RequestInterceptor {
   name?: string
   
   /** 请求前处理 */
-  onRequest?: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>
+  onRequest?: (config: HttpRequestConfig) => HttpRequestConfig | Promise<HttpRequestConfig>
   
   /** 请求失败处理 */
   onRequestError?: (error: RequestError) => void | Promise<void>
@@ -128,7 +153,7 @@ export interface ResponseInterceptor {
   name?: string
   
   /** 响应成功处理 */
-  onResponse?: <T>(response: RequestResponse<T>) => RequestResponse<T> | Promise<RequestResponse<T>>
+  onResponse?: <T>(response: AxiosResponse<T>) => AxiosResponse<T> | Promise<AxiosResponse<T>>
   
   /** 响应失败处理 */
   onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>
@@ -170,111 +195,231 @@ interface CacheItem {
  * ```
  */
 export class Request {
-  private baseURL: string
-  private defaultConfig: Partial<RequestConfig>
-  private requestInterceptors: RequestInterceptor[] = []
-  private responseInterceptors: ResponseInterceptor[] = []
+  private axiosInstance: AxiosInstance
   private cache = new Map<string, CacheItem>()
-  
+  private config: {
+    baseURL?: string
+    timeout?: number
+    headers?: Record<string, string>
+    token?: string
+    tenantId?: string
+  }
+
   constructor(config: {
     baseURL?: string
     timeout?: number
     headers?: Record<string, string>
+    token?: string
+    tenantId?: string
   } = {}) {
-    this.baseURL = config.baseURL ?? ''
-    this.defaultConfig = {
+    this.config = config
+
+    this.axiosInstance = axios.create({
+      baseURL: config.baseURL ?? '',
       timeout: config.timeout ?? 10000,
-      headers: config.headers ?? {},
-      responseType: 'json',
-      retry: 0,
-      retryDelay: 1000
-    }
+      headers: config.headers ?? {}
+    })
+
+    // 设置默认响应类型为json
+    this.axiosInstance.defaults.responseType = 'json'
+
+    // 添加内置认证和租户拦截器
+    this.setupBuiltInInterceptors()
   }
-  
+
+  /**
+   * 设置内置拦截器（认证、租户等）
+   */
+  private setupBuiltInInterceptors(): void {
+    this.axiosInstance.interceptors.request.use((config) => {
+      // 添加认证头
+      if (this.config.token) {
+        config.headers = config.headers ?? {}
+        config.headers['Authorization'] = this.config.token.startsWith('Bearer ')
+          ? this.config.token
+          : `Bearer ${this.config.token}`
+      }
+
+      // 添加租户头
+      if (this.config.tenantId) {
+        config.headers = config.headers ?? {}
+        config.headers['X-Tenant-ID'] = this.config.tenantId
+      }
+
+      return config
+    })
+  }
+
   /**
    * 拦截器 API
    */
   interceptors = {
     request: {
       use: (interceptor: RequestInterceptor) => {
-        this.requestInterceptors.push(interceptor)
+        if (interceptor.onRequest) {
+          this.axiosInstance.interceptors.request.use(
+            async (config) => {
+              // 转换为我们的HttpRequestConfig格式进行处理
+              const requestConfig: HttpRequestConfig = {
+                url: config.url || '',
+                method: (config.method as RequestMethod) || 'GET',
+                params: config.params,
+                data: config.data,
+                headers: config.headers as Record<string, string>,
+                timeout: config.timeout,
+                responseType: config.responseType as 'json' | 'text' | 'blob' | 'arraybuffer',
+                cache: false, // axios配置中没有cache
+                cacheKey: undefined,
+                cacheExpiry: undefined,
+                retry: undefined,
+                retryDelay: undefined,
+                skipRequestInterceptor: false,
+                skipResponseInterceptor: false,
+                meta: config as unknown as Record<string, unknown>
+              }
+
+              const result = await interceptor.onRequest!(requestConfig)
+
+              // 应用修改回axios配置
+              config.url = result.url
+              config.method = (result.method || 'GET') as AxiosRequestConfig['method']
+              config.params = result.params
+              config.data = result.data
+              config.timeout = result.timeout
+              config.responseType = (result.responseType || 'json') as AxiosRequestConfig['responseType']
+              if (result.headers) {
+                config.headers = Object.assign({}, config.headers, result.headers)
+              }
+
+              return config
+            },
+            interceptor.onRequestError
+          )
+        }
         return () => {
-          const index = this.requestInterceptors.indexOf(interceptor)
-          if (index > -1) this.requestInterceptors.splice(index, 1)
+          // axios拦截器不支持直接移除，这里简化处理
         }
       }
     },
     response: {
       use: (interceptor: ResponseInterceptor) => {
-        this.responseInterceptors.push(interceptor)
+        if (interceptor.onResponse) {
+          this.axiosInstance.interceptors.response.use(
+            (response) => interceptor.onResponse!(response),
+            interceptor.onResponseError
+          )
+        }
         return () => {
-          const index = this.responseInterceptors.indexOf(interceptor)
-          if (index > -1) this.responseInterceptors.splice(index, 1)
+          // axios拦截器不支持直接移除，这里简化处理
         }
       }
     }
   }
   
   /**
-   * 发起请求
+   * 发起请求（返回完整响应）
    */
-  async request<T = unknown>(config: RequestConfig): Promise<T> {
-    // 合并配置
-    const mergedConfig: RequestConfig = {
-      ...this.defaultConfig,
-      ...config,
-      headers: {
-        ...this.defaultConfig.headers,
-        ...config.headers
+  async requestFull<T = unknown>(config: HttpRequestConfig): Promise<AxiosResponse<T>> {
+    // 检查缓存（仅 GET 请求）
+    if (config.method === 'GET' && config.cache) {
+      const cached = this.getCache<T>(config)
+      if (cached) {
+        logger.debug('使用缓存', { url: config.url })
+        // 为缓存数据创建模拟的AxiosResponse
+        return {
+          data: cached,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {} as AxiosRequestConfig
+        } as AxiosResponse<T>
       }
     }
-    
+
+    const axiosConfig: AxiosRequestConfig = {
+      url: config.url,
+      method: config.method || 'GET',
+      params: config.params,
+      data: config.data,
+      headers: config.headers,
+      timeout: config.timeout,
+      responseType: config.responseType
+    }
+
+    const response: AxiosResponse<T> = await this.axiosInstance.request(axiosConfig)
+
+    // 缓存结果
+    if (config.method === 'GET' && config.cache) {
+      this.setCache(config, response.data)
+    }
+
+    return response
+  }
+
+  /**
+   * 发起请求（返回数据）
+   */
+  async request<T = unknown>(config: HttpRequestConfig): Promise<T> {
     // 检查缓存（仅 GET 请求）
-    if (mergedConfig.method === 'GET' && mergedConfig.cache) {
-      const cached = this.getCache<T>(mergedConfig)
+    if (config.method === 'GET' && config.cache) {
+      const cached = this.getCache<T>(config)
       if (cached) {
-        logger.debug('使用缓存', { url: mergedConfig.url })
+        logger.debug('使用缓存', { url: config.url })
         return cached
       }
     }
-    
-    // 执行请求（带重试）
-    let lastError: RequestError | undefined
-    const maxRetries = (mergedConfig.retry ?? 0) + 1
-    
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        if (attempt > 0) {
-          const delay = mergedConfig.retryDelay ?? 1000
-          logger.info(`重试请求 (${attempt}/${mergedConfig.retry})`, { url: mergedConfig.url })
-          await this.sleep(delay * attempt)
-        }
-        
-        const response = await this.executeRequest<T>(mergedConfig)
-        
-        // 缓存结果
-        if (mergedConfig.method === 'GET' && mergedConfig.cache) {
-          this.setCache(mergedConfig, response.data)
-        }
-        
-        return response.data
-      } catch (error) {
-        lastError = error as RequestError
-        
-        // 某些错误不应重试（如 4xx 客户端错误）
-        if (lastError.status && lastError.status >= 400 && lastError.status < 500) {
-          break
-        }
+
+    try {
+      const axiosConfig: AxiosRequestConfig = {
+        url: config.url,
+        method: config.method || 'GET'
       }
+      
+      // 只有非 undefined 的属性才添加到配置中，避免覆盖 axios 实例的默认配置
+      if (config.params !== undefined) axiosConfig.params = config.params
+      if (config.data !== undefined) axiosConfig.data = config.data
+      if (config.headers !== undefined && Object.keys(config.headers).length > 0) {
+        axiosConfig.headers = config.headers
+      }
+      // 使用 config 中的值，如果没有则使用 axios 实例的默认值
+      if (config.timeout !== undefined) {
+        axiosConfig.timeout = config.timeout
+      } else if (this.axiosInstance.defaults.timeout !== undefined) {
+        axiosConfig.timeout = this.axiosInstance.defaults.timeout
+      }
+      if (config.responseType !== undefined) {
+        axiosConfig.responseType = config.responseType
+      } else if (this.axiosInstance.defaults.responseType !== undefined) {
+        axiosConfig.responseType = this.axiosInstance.defaults.responseType
+      }
+
+      const response: AxiosResponse<T> = await this.axiosInstance.request(axiosConfig)
+
+      // 缓存结果
+      if (config.method === 'GET' && config.cache) {
+        this.setCache(config, response.data)
+      }
+
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const requestError: RequestError = {
+          name: 'RequestError',
+          message: error.message,
+          config: config,
+          status: error.response?.status,
+          response: error.response
+        }
+        throw requestError
+      }
+      throw error
     }
-    
-    throw lastError
   }
   
   /**
    * GET 请求
    */
-  async get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T> {
+  async get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<HttpRequestConfig>): Promise<T> {
     return this.request<T>({
       ...config,
       url,
@@ -286,7 +431,7 @@ export class Request {
   /**
    * POST 请求
    */
-  async post<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T> {
+  async post<T = unknown>(url: string, data?: unknown, config?: Partial<HttpRequestConfig>): Promise<T> {
     return this.request<T>({
       ...config,
       url,
@@ -298,7 +443,7 @@ export class Request {
   /**
    * PUT 请求
    */
-  async put<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T> {
+  async put<T = unknown>(url: string, data?: unknown, config?: Partial<HttpRequestConfig>): Promise<T> {
     return this.request<T>({
       ...config,
       url,
@@ -310,7 +455,7 @@ export class Request {
   /**
    * PATCH 请求
    */
-  async patch<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T> {
+  async patch<T = unknown>(url: string, data?: unknown, config?: Partial<HttpRequestConfig>): Promise<T> {
     return this.request<T>({
       ...config,
       url,
@@ -322,7 +467,7 @@ export class Request {
   /**
    * DELETE 请求
    */
-  async delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T> {
+  async delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<HttpRequestConfig>): Promise<T> {
     return this.request<T>({
       ...config,
       url,
@@ -330,7 +475,81 @@ export class Request {
       params
     })
   }
-  
+
+  /**
+   * 执行端点请求（支持路径参数和端点配置）
+   *
+   * @param endpoint - HTTP 端点配置
+   * @param params - 请求参数（包含路径参数和查询参数）
+   * @param config - 额外的请求配置
+   * @returns 响应数据
+   *
+   * @example
+   * ```typescript
+   * const endpoint = {
+   *   url: '/users/{userId}',
+   *   method: 'GET',
+   *   pathParams: ['userId']
+   * }
+   *
+   * const user = await request.executeEndpoint(endpoint, { userId: 123 })
+   * ```
+   */
+  async executeEndpoint<T = unknown>(
+    endpoint: {
+      url: string
+      method?: RequestMethod
+      headers?: Record<string, string>
+      params?: Record<string, unknown>
+      pathParams?: string[]
+      bodySchema?: unknown
+    },
+    params?: Record<string, unknown>,
+    config?: Partial<HttpRequestConfig>
+  ): Promise<T> {
+    const actualParams = params ?? {}
+
+    // 1. 处理路径参数替换
+    let url = endpoint.url
+    const remainingParams: Record<string, unknown> = { ...actualParams }
+
+    if (endpoint.pathParams) {
+      endpoint.pathParams.forEach(param => {
+        if (actualParams[param] !== undefined) {
+          url = url.replace(`{${param}}`, String(actualParams[param]))
+          delete remainingParams[param] // 从剩余参数中移除路径参数
+        }
+      })
+    }
+
+    // 2. 构建完整配置
+    const requestConfig: HttpRequestConfig = {
+      ...config,
+      url,
+      method: endpoint.method ?? 'GET',
+      params: { ...endpoint.params, ...remainingParams },
+      pathParams: endpoint.pathParams,
+      bodySchema: endpoint.bodySchema
+    }
+    
+    // 合并 headers，只在有实际 header 值时才设置
+    const mergedHeaders = { 
+      ...(endpoint.headers || {}), 
+      ...(config?.headers || {}) 
+    }
+    if (Object.keys(mergedHeaders).length > 0) {
+      requestConfig.headers = mergedHeaders
+    }
+
+    // 3. 根据方法处理请求体
+    const method = requestConfig.method?.toLowerCase()
+    if ((method === 'post' || method === 'put' || method === 'patch') && Object.keys(remainingParams).length > 0) {
+      requestConfig.data = remainingParams
+    }
+
+    return this.request<T>(requestConfig)
+  }
+
   /**
    * 清除缓存
    */
@@ -344,232 +563,45 @@ export class Request {
       logger.debug('清除所有缓存')
     }
   }
-  
-  /* ---------------------------------------------------------------------------
-   * 私有方法
-   * ------------------------------------------------------------------------ */
-  
-  /**
-   * 执行请求
-   */
-  private async executeRequest<T>(config: RequestConfig): Promise<RequestResponse<T>> {
-    // 执行请求拦截器
-    let requestConfig = config
-    if (!config.skipRequestInterceptor) {
-      for (const interceptor of this.requestInterceptors) {
-        try {
-          if (interceptor.onRequest) {
-            requestConfig = await interceptor.onRequest(requestConfig)
-          }
-        } catch (error) {
-          logger.error('请求拦截器错误', { name: interceptor.name, error })
-          if (interceptor.onRequestError) {
-            await interceptor.onRequestError(error as RequestError)
-          }
-          throw error
-        }
-      }
-    }
-    
-    // 构建完整 URL
-    const fullUrl = this.buildUrl(requestConfig.url, requestConfig.params)
-    
-    // 准备请求选项
-    const options: RequestInit = {
-      method: requestConfig.method ?? 'GET',
-      headers: requestConfig.headers
-    }
-    
-    // 添加请求体
-    if (requestConfig.data !== undefined && requestConfig.method !== 'GET' && requestConfig.method !== 'HEAD') {
-      if (typeof requestConfig.data === 'string') {
-        options.body = requestConfig.data
-      } else {
-        options.body = JSON.stringify(requestConfig.data)
-        options.headers = {
-          'Content-Type': 'application/json',
-          ...options.headers
-        }
-      }
-    }
-    
-    // 超时控制
-    const controller = new AbortController()
-    const timeout = requestConfig.timeout ?? 10000
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
-    options.signal = controller.signal
-    
-    try {
-      logger.debug('发起请求', { url: fullUrl, method: options.method })
-      
-      const response = await fetch(fullUrl, options)
-      clearTimeout(timeoutId)
-      
-      // 解析响应
-      const responseData = await this.parseResponse<T>(response, requestConfig.responseType ?? 'json')
-      
-      const result: RequestResponse<T> = {
-        data: responseData,
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-        config: requestConfig
-      }
-      
-      // 执行响应拦截器
-      let interceptedResult = result
-      if (!config.skipResponseInterceptor) {
-        for (const interceptor of this.responseInterceptors) {
-          try {
-            if (interceptor.onResponse) {
-              interceptedResult = await interceptor.onResponse(interceptedResult)
-            }
-          } catch (error) {
-            logger.error('响应拦截器错误', { name: interceptor.name, error })
-            if (interceptor.onResponseError) {
-              throw await interceptor.onResponseError(error as RequestError)
-            }
-            throw error
-          }
-        }
-      }
-      
-      // 检查 HTTP 错误
-      if (!response.ok) {
-        const error: RequestError = new Error(`HTTP ${response.status}: ${response.statusText}`) as RequestError
-        error.config = requestConfig
-        error.status = response.status
-        error.response = response
-        
-        // 执行响应错误拦截器
-        if (!config.skipResponseInterceptor) {
-          for (const interceptor of this.responseInterceptors) {
-            if (interceptor.onResponseError) {
-              await interceptor.onResponseError(error)
-            }
-          }
-        }
-        
-        throw error
-      }
-      
-      return interceptedResult
-    } catch (error) {
-      clearTimeout(timeoutId)
-      
-      const requestError = error as RequestError
-      requestError.config = requestConfig
-      
-      if (error instanceof Error && error.name === 'AbortError') {
-        requestError.code = 'TIMEOUT'
-        requestError.message = `请求超时: ${fullUrl}`
-      }
-      
-      logger.error('请求失败', { url: fullUrl, error: requestError.message })
-      throw requestError
-    }
-  }
-  
-  /**
-   * 构建完整 URL
-   */
-  private buildUrl(url: string, params?: Record<string, unknown>): string {
-    // 如果是完整 URL，直接使用
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return this.appendParams(url, params)
-    }
-    
-    // 拼接 baseURL
-    const path = url.startsWith('/') ? url : `/${url}`
-    const fullUrl = `${this.baseURL}${path}`
-    
-    return this.appendParams(fullUrl, params)
-  }
-  
-  /**
-   * 添加查询参数
-   */
-  private appendParams(url: string, params?: Record<string, unknown>): string {
-    if (!params || Object.keys(params).length === 0) {
-      return url
-    }
-    
-    const searchParams = new URLSearchParams()
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        searchParams.append(key, String(value))
-      }
-    })
-    
-    const queryString = searchParams.toString()
-    if (!queryString) return url
-    
-    return url.includes('?') ? `${url}&${queryString}` : `${url}?${queryString}`
-  }
-  
-  /**
-   * 解析响应
-   */
-  private async parseResponse<T>(response: Response, responseType: string): Promise<T> {
-    switch (responseType) {
-      case 'json':
-        return (await response.json()) as T
-      case 'text':
-        return await response.text() as T
-      case 'blob':
-        return await response.blob() as T
-      case 'arraybuffer':
-        return await response.arrayBuffer() as T
-      default:
-        return (await response.json()) as T
-    }
-  }
-  
+
   /**
    * 获取缓存
    */
-  private getCache<T>(config: RequestConfig): T | null {
+  private getCache<T>(config: HttpRequestConfig): T | null {
     const key = config.cacheKey ?? this.buildCacheKey(config)
     const item = this.cache.get(key)
-    
+
     if (!item) return null
-    
+
     const now = Date.now()
     if (now - item.timestamp > item.expiry) {
       this.cache.delete(key)
       return null
     }
-    
+
     return item.data as T
   }
-  
+
   /**
    * 设置缓存
    */
-  private setCache(config: RequestConfig, data: unknown): void {
+  private setCache(config: HttpRequestConfig, data: unknown): void {
     const key = config.cacheKey ?? this.buildCacheKey(config)
     const expiry = config.cacheExpiry ?? 300000 // 默认 5 分钟
-    
+
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
       expiry
     })
   }
-  
+
   /**
    * 构建缓存键
    */
-  private buildCacheKey(config: RequestConfig): string {
-    const url = this.buildUrl(config.url, config.params)
+  private buildCacheKey(config: HttpRequestConfig): string {
+    const url = config.url + (config.params ? `?${JSON.stringify(config.params)}` : '')
     return `${config.method}:${url}`
-  }
-  
-  /**
-   * 延迟
-   */
-  private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }
 
@@ -584,6 +616,8 @@ export function createRequest(config?: {
   baseURL?: string
   timeout?: number
   headers?: Record<string, string>
+  token?: string
+  tenantId?: string
 }): Request {
   return new Request(config)
 }

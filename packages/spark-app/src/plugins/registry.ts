@@ -239,7 +239,11 @@ export class PluginManager {
       
       return { plugin, options, loader }
     } catch (error) {
-      console.error(`[PluginManager] Failed to load plugin "${id}":`, error)
+      if (error instanceof Error) {
+        pluginLogger.error(`Failed to load plugin "${id}":`, error)
+      } else {
+        pluginLogger.error(`Failed to load plugin "${id}": ${String(error)}`)
+      }
       return null
     }
   }

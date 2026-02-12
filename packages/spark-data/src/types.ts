@@ -11,10 +11,10 @@
  */
 
 // 导入基础类型
-import type { IDataRow } from '@spark-view/spark-utils'
+import type { IDataRow, HttpRequestConfig } from '@spark-view/spark-utils'
 
 // 重新导出以保持兼容性
-export type { IDataRow } from '@spark-view/spark-utils'
+export type { IDataRow, HttpRequestConfig } from '@spark-view/spark-utils'
 
 // ==================== 基础类型 ====================
 
@@ -90,15 +90,13 @@ export interface DataColumn {
 
 /**
  * HTTP 端点定义：描述单个 API 调用的属性
+ * 
+ * 基于统一的 HttpRequestConfig，专注于静态 API 配置
+ * 主要用于 API 端点的声明式定义，不包含运行时选项
  */
-export interface HttpEndpoint {
-  url: string                                 // 接口地址
-  method?: 'GET'|'POST'|'PUT'|'PATCH'|'DELETE' // HTTP 方法
-  headers?: Record<string, string>            // 请求头
-  queryParams?: Record<string, unknown>       // URL 查询参数
-  pathParams?: string[]                       // 路由参数列表
-  bodySchema?: unknown                        // 请求体结构（可选）
-}
+export interface HttpEndpoint extends Pick<HttpRequestConfig,
+  'url' | 'method' | 'headers' | 'params' | 'pathParams' | 'bodySchema'
+> {}
 
 /**
  * CRUD API 组：一组增删改查及导入导出接口
@@ -195,10 +193,10 @@ export interface IDataTable extends IBindingContext {
  */
 export interface IDataTableWithApi extends IDataTable {
   /**
-   * 设置 API 适配器（由 DataSet 或应用层注入）
-   * @param adapter - ApiAdapter 实例（来自 ./apiAdapter）
+   * 设置 HTTP 请求实例（由 DataSet 或应用层注入）
+   * @param request - Request 实例（来自 @spark-view/spark-utils）
    */
-  setApiAdapter(adapter: unknown): void
+  setApiAdapter(request: unknown): void
   
   /**
    * 列表查询

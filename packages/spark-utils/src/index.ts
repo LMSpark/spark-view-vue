@@ -36,7 +36,7 @@ export {
   setDefaultRequest
 } from './Request'
 export type {
-  RequestConfig,
+  HttpRequestConfig,
   RequestInterceptor,
   ResponseInterceptor,
   RequestError,

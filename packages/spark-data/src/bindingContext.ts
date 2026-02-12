@@ -6,6 +6,7 @@
 
 import type { IDataRow, IBindingContext, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
 import { FilterExpressionParser } from './filterExpressionParser'
+import { Logger } from '@spark-view/spark-utils'
 
 /**
  * 绑定上下文类（实现 IBindingContext 接口 + 方法逻辑）
@@ -19,6 +20,8 @@ export class BindingContext implements IBindingContext {
   // 宿主信息
   private __hostTable: string
   private __contextId: string
+  
+  protected logger = Logger('BindingContext')
   
   // 初始配置
   filterExpression?: FilterExpression
@@ -393,7 +396,7 @@ export class BindingContext implements IBindingContext {
         const filterFn = FilterExpressionParser.toMemoryFilter(this.filterExpression);
         result = result.filter(filterFn);
       } catch (e) {
-        console.error(`❌ [Context] ${this.hostTable}.${this.contextId} 过滤失败:`, e);
+        this.logger.error(`过滤失败:`, e);
         result = [];
       }
     }
@@ -403,7 +406,7 @@ export class BindingContext implements IBindingContext {
       try {
         result = this.applySorting(result, this.sortExpression);
       } catch (e) {
-        console.error(`❌ [Context] ${this.hostTable}.${this.contextId} 排序失败:`, e);
+        this.logger.error(`排序失败:`, e);
       }
     }
     

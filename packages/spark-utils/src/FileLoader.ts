@@ -26,6 +26,7 @@
  */
 
 import { Logger } from './logger'
+import { Request } from './Request'
 
 const logger = Logger('FileLoader')
 
@@ -144,6 +145,7 @@ interface FileResponse {
 export class FileLoader {
   private options: Required<FileLoadOptions>
   private memoryCache = new Map<string, FileCache>()
+  private request: Request
   
   constructor(options: FileLoadOptions) {
     this.options = {
@@ -154,6 +156,13 @@ export class FileLoader {
       fallbackToCache: true,
       ...options
     }
+    
+    // 创建Request实例
+    this.request = new Request({
+      baseURL: this.options.baseUrl,
+      timeout: this.options.timeout,
+      headers: this.options.headers
+    })
     
     logger.debug('FileLoader 已创建', {
       baseUrl: this.options.baseUrl,
@@ -206,56 +215,25 @@ export class FileLoader {
         timestamp: timestamp || '(empty)' 
       })
       
-      // 2. 构造请求 URL
-      const url = new URL(fileName, this.options.baseUrl)
+      // 2. 构造请求 URL 和参数
+      const url = fileName
+      const params: Record<string, unknown> = {}
       if (timestamp) {
-        url.searchParams.set('timestamp', timestamp)
+        params.timestamp = timestamp
       }
       
-      // 3. 发起请求（带超时控制）
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), this.options.timeout)
+      // 3. 发起请求
+      logger.debug('发起请求', { url, params })
       
-      logger.debug('发起请求', { url: url.toString() })
-      
-      const response = await fetch(url.toString(), {
-        headers: this.options.headers,
-        signal: controller.signal
+      const response = await this.request.requestFull<FileResponse>({
+        url,
+        method: 'GET',
+        params
       })
       
-      clearTimeout(timeoutId)
+      const result = response.data
       
-      // 4. 处理 304 Not Modified
-      if (response.status === 304) {
-        logger.info('文件未修改 (304)', { fileName })
-        
-        if (cache) {
-          return {
-            success: true,
-            data: parseJSON ? (JSON.parse(cache.content) as T) : (cache.content as T),
-            timestamp: cache.timestamp,
-            fromCache: true,
-            notModified: true
-          }
-        } else {
-          logger.warn('收到 304 但本地无缓存', { fileName })
-          return {
-            success: false,
-            error: '服务器返回 304 但本地无缓存',
-            fromCache: false
-          }
-        }
-      }
-      
-      // 5. 处理其他 HTTP 错误
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      
-      // 6. 解析响应
-      const result = await response.json() as FileResponse
-      
-      // 7. 处理约定的 notModified 标志
+      // 4. 处理约定的 notModified 标志
       if (result.notModified === true) {
         logger.info('文件未修改 (notModified=true)', { fileName })
         
@@ -277,7 +255,7 @@ export class FileLoader {
         }
       }
       
-      // 8. 验证响应格式
+      // 5. 验证响应格式
       if (!result.content || !result.timestamp) {
         throw new Error('响应格式错误：缺少 content 或 timestamp')
       }
@@ -288,14 +266,14 @@ export class FileLoader {
         size: result.content.length
       })
       
-      // 9. 更新缓存
+      // 6. 更新缓存
       this.setCache(fileName, {
         content: result.content,
         timestamp: result.timestamp,
         cachedAt: Date.now()
       })
       
-      // 10. 返回结果
+      // 7. 返回结果
       return {
         success: true,
         data: parseJSON ? (JSON.parse(result.content) as T) : (result.content as T),
@@ -306,7 +284,7 @@ export class FileLoader {
     } catch (error) {
       logger.error('文件加载失败', { fileName, error })
       
-      // 11. 自动降级到缓存
+      // 8. 自动降级到缓存
       if (this.options.fallbackToCache) {
         const cache = this.getCache(fileName)
         if (cache) {
@@ -323,7 +301,7 @@ export class FileLoader {
         }
       }
       
-      // 12. 无缓存可用，返回失败
+      // 9. 无缓存可用，返回失败
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),

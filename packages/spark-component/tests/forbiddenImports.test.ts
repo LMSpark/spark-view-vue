@@ -29,7 +29,7 @@ describe('packages/spark-component: forbidden imports', () => {
     const text = fs.readFileSync(file, 'utf8')
     const lines = text.split(/\r?\n/)
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
+      const line = lines[i] ?? ''
       if (vueImportRegex.test(line) || requireVueRegex.test(line) || featuresPathRegex.test(line)) {
         const found = (line.match(vueImportRegex) ?? line.match(requireVueRegex) ?? line.match(featuresPathRegex))?.[0] ?? line
         matches.push({ file: path.relative(root, file), line: i + 1, match: found })

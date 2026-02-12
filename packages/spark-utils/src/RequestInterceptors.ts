@@ -4,7 +4,8 @@
  * 提供常用的拦截器，可直接使用或参考自定义
  */
 
-import type { RequestInterceptor, ResponseInterceptor, RequestConfig, RequestResponse, RequestError } from './Request'
+import type { RequestInterceptor, ResponseInterceptor, HttpRequestConfig, RequestError } from './Request'
+import type { AxiosResponse } from 'axios'
 import { Logger } from './logger'
 
 const logger = Logger('RequestInterceptors')
@@ -188,7 +189,7 @@ export function createStandardApiInterceptor(
   
   return {
     name: 'StandardApiInterceptor',
-    onResponse: <T>(response: RequestResponse<T>) => {
+    onResponse: <T>(response: AxiosResponse<T>) => {
       const result = response.data as unknown
       
       // 检查是否是标准格式
@@ -204,7 +205,7 @@ export function createStandardApiInterceptor(
         if (!successCodes.includes(standardResult.code)) {
           const error = new Error(standardResult.message ?? '请求失败') as RequestError
           error.code = String(standardResult.code)
-          error.config = response.config
+          error.config = response.config as HttpRequestConfig
           error.status = response.status
           
           if (options.errorHandler) {
@@ -242,15 +243,14 @@ export function createResponseLogInterceptor(
 ): ResponseInterceptor {
   return {
     name: 'ResponseLogInterceptor',
-    onResponse: <T>(response: RequestResponse<T>) => {
+    onResponse: <T>(response: AxiosResponse<T>) => {
       const logData: Record<string, unknown> = {
         url: response.config.url,
-        status: response.status,
-        fromCache: response.fromCache
+        status: response.status
       }
       
-      if (options.logHeaders) {
-        logData.headers = Object.fromEntries(response.headers.entries())
+      if (options.logHeaders && response.headers) {
+        logData.headers = response.headers
       }
       
       if (options.logData) {
@@ -370,7 +370,7 @@ export function createRetryInterceptor(
   const maxRetries = options.maxRetries ?? 3
   const retryDelay = options.retryDelay ?? 1000
   
-  const retryMap = new Map<RequestConfig, number>()
+  const retryMap = new Map<HttpRequestConfig, number>()
   
   return {
     name: 'RetryInterceptor',

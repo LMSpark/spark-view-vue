@@ -19,5 +19,8 @@ export default defineConfig({
       '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/src/index.ts'),
       '@spark-view/spark-data/*': resolve(__dirname, './packages/spark-data/src/*')
     }
+  },
+  esbuild: {
+    target: 'node14'
   }
 })
