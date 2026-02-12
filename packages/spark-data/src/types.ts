@@ -261,17 +261,64 @@ export type FilterExpression =
 // ==================== DataRelation 定义 ====================
 
 /**
- * DataRelation：父子表关系配置
+ * DataRelation：绑定上下文（视图）之间的关系配置
+ * 
+ * ⚠️ 重要概念：
+ * - 这不是传统数据库的"表关系"，而是**视图/绑定上下文之间的关系**
+ * - 关系的主体是 BindingContext（上下文实例），不是 DataTable（表）
+ * - 同一个表可以有多个上下文，每个上下文可以有不同的关系配置
+ * 
+ * 核心机制：
+ * - 父上下文状态变化（currentRow/selectedRows）→ 触发子上下文过滤
+ * - 通过 filterExpression 动态过滤子上下文的数据
+ * - 支持级联更新/删除操作
+ * 
+ * @example 订单主从表联动（单行依赖）
+ * ```typescript
+ * {
+ *   parentTable: 'Orders',
+ *   parentContextId: 'currentOrder',      // 🎯 父视图：当前订单
+ *   childTable: 'OrderDetails',
+ *   childContextId: 'relatedDetails',     // 🎯 子视图：关联明细
+ *   dependencyType: 'currentRow',
+ *   filterExpression: {
+ *     field: 'orderId',
+ *     op: '==',
+ *     value: { func: 'parentRow.id', args: [] }
+ *   }
+ * }
+ * ```
+ * 
+ * @example 同一表的多上下文关系
+ * ```typescript
+ * // 关系1：选中订单 → 批量明细
+ * {
+ *   parentTable: 'Orders',
+ *   parentContextId: 'selectedOrders',    // 🎯 父视图：多选订单
+ *   childTable: 'OrderDetails',
+ *   childContextId: 'batchDetails',       // 🎯 子视图：批量明细
+ *   dependencyType: 'selectedRows'
+ * }
+ * 
+ * // 关系2：当前订单 → 当前明细（同一表，不同视图）
+ * {
+ *   parentTable: 'Orders',
+ *   parentContextId: 'currentOrder',      // 🎯 另一个父视图
+ *   childTable: 'OrderDetails',
+ *   childContextId: 'currentDetails',     // 🎯 另一个子视图
+ *   dependencyType: 'currentRow'
+ * }
+ * ```
  */
 export interface DataRelation {
-  parentTable: string             // 父表名
-  parentContextId?: string        // 父上下文 ID（可选，内核初始化时会自动设置为 'default'）
+  parentTable: string             // 父表名（数据源标识）
+  parentContextId?: string        // 🎯 父上下文 ID（视图标识，默认 'default'）
   
-  childTable: string              // 子表名
-  childContextId?: string         // 子上下文 ID（可选，内核初始化时会自动设置为 'default'）
+  childTable: string              // 子表名（数据源标识）
+  childContextId?: string         // 🎯 子上下文 ID（视图标识，默认 'default'）
   
-  dependencyType: DependencyType  // 依赖类型
-  filterExpression: FilterExpression // 通用 JSON 过滤表达式
+  dependencyType: DependencyType  // 依赖类型：currentRow | selectedRows | allRows | pagedRows
+  filterExpression: FilterExpression // 通用 JSON 过滤表达式（定义如何从父上下文过滤子上下文）
   cascadeUpdate?: boolean         // 是否级联更新
   cascadeDelete?: boolean         // 是否级联删除
   autoLoad?: boolean              // 是否自动加载子表数据（用于 currentRow/selectedRows 依赖）
