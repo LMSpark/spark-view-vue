@@ -42,8 +42,8 @@ export type {
  */
 export interface IBindingContextData {
   // ===== 数据状态 =====
-  currentRow?: IDataRow | null
-  selectedRows?: IDataRow[]
+  currentRow?: IDataRowWithPermission | null
+  selectedRows?: IDataRowWithPermission[]
   rows?: IDataRowWithPermission[]  // 支持权限的数据行
   originalRows?: IDataRowWithPermission[]
   
@@ -80,15 +80,15 @@ export interface IBindingContextData {
  */
 export interface IBindingContext extends IBindingContextData, Omit<IDataSource, 'rows'> {
   // ===== 运行时必需字段（覆盖可选） =====
-  currentRow: IDataRow | null
-  selectedRows: IDataRow[]
+  currentRow: IDataRowWithPermission | null
+  selectedRows: IDataRowWithPermission[]
   rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
   hostTable: string
   contextId: string
   
   // ===== 核心方法（运行时必需） =====
-  setCurrentRow(row: IDataRow | null, skipNotify?: boolean): void
-  setSelectedRows(rows: IDataRow[], skipNotify?: boolean): void
+  setCurrentRow(row: IDataRowWithPermission | null, skipNotify?: boolean): void
+  setSelectedRows(rows: IDataRowWithPermission[], skipNotify?: boolean): void
   
   // ===== 序列化方法 =====
   toData(): IBindingContextData
@@ -412,8 +412,8 @@ export interface FilterResult {
  * - `IN(parentRows, 'id')` → 父视图多行关联
  */
 export interface FilterContext {
-  parentRow?: IDataRow
-  parentRows?: IDataRow[]
+  parentRow?: IDataRowWithPermission
+  parentRows?: IDataRowWithPermission[]
   variables?: Record<string, unknown>
 }
 
