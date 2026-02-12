@@ -1,17 +1,17 @@
 /**
- * BindingContext 类 - 上下文绑定
+ * DataView 类 - 数据视图
  * 负责：选中状态管理、数据视图、通知机制
  * 相当于 .NET 的 DataView - 视图层
  */
 
-import type { IDataRow, IDataRowWithPermission, IBindingContext, IBindingContextData, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
+import type { IDataRow, IDataRowWithPermission, IDataView, IViewMetadata, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
 import { FilterExpressionParser } from './filterExpressionParser'
 import { Logger } from '@spark-view/spark-utils'
 
 /**
- * 绑定上下文类（实现 IBindingContext 接口 + 方法逻辑）
+ * 数据视图类（实现 IDataView 接口 + 方法逻辑）
  */
-export class BindingContext implements IBindingContext {
+export class DataView implements IDataView {
   currentRow: IDataRowWithPermission | null = null
   currentRowIndex: number | null = null  // 当前行索引
   selectedRows: IDataRowWithPermission[] = []
@@ -23,7 +23,7 @@ export class BindingContext implements IBindingContext {
   private __hostTable: string
   private __contextId: string
   
-  protected logger = Logger('BindingContext')
+  protected logger = Logger('DataView')
   
   // 初始配置
   filterExpression?: FilterExpression
@@ -87,8 +87,8 @@ export class BindingContext implements IBindingContext {
   setTreeManager(treeManager: ITreeManager): void {
     this.treeManager = treeManager
     // 双向绑定
-    if (treeManager && typeof treeManager.setBindingContext === 'function') {
-      treeManager.setBindingContext(this)
+    if (treeManager && typeof treeManager.setDataView === 'function') {
+      treeManager.setDataView(this)
     }
   }
   
@@ -482,7 +482,7 @@ export class BindingContext implements IBindingContext {
   /**
    * 转换为纯数据对象（新）
    */
-  toData(): IBindingContextData {
+  toData(): IViewMetadata {
     return {
       // 配置数据
       hostTable: this.__hostTable,
@@ -508,8 +508,8 @@ export class BindingContext implements IBindingContext {
   /**
    * 从数据对象创建实例（新）
    */
-  static fromData(data: IBindingContextData, hostTable: string, contextId: string, dataSet?: IDataSet): BindingContext {
-    const context = new BindingContext(hostTable, contextId, dataSet)
+  static fromData(data: IViewMetadata, hostTable: string, contextId: string, dataSet?: IDataSet): DataView {
+    const context = new DataView(hostTable, contextId, dataSet)
 
     // 配置数据
     context.filterExpression = data.filterExpression
@@ -530,7 +530,7 @@ export class BindingContext implements IBindingContext {
    * 从普通对象创建实例
    * @deprecated 请使用 fromData() 方法
    */
-  static fromJSON(data: Partial<IBindingContext>, hostTable: string, contextId: string, dataSet?: IDataSet): BindingContext {
-    return BindingContext.fromData(data as IBindingContextData, hostTable, contextId, dataSet)
+  static fromJSON(data: Partial<IDataView>, hostTable: string, contextId: string, dataSet?: IDataSet): DataView {
+    return DataView.fromData(data as IViewMetadata, hostTable, contextId, dataSet)
   }
 }

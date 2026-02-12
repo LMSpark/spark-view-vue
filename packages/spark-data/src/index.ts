@@ -3,7 +3,7 @@
  * SPARK 数据空间包 - 提供类似 .NET DataSet 的数据管理能力
  *
  * ⚠️ 架构原则
- * - 数据空间高级类型（DataTable, DataSet, BindingContext 等）的唯一定义源
+ * - 数据空间高级类型（DataTable, DataSet, DataView 等）的唯一定义源
  * - 基础类型（IDataRow, HttpRequestConfig 等）从 @spark-view/spark-utils 导入使用
  * - 其他包只能导入使用，不能重新定义，保持单一数据源原则 (Single Source of Truth)
  * 
@@ -43,20 +43,22 @@ export { default } from './spark-data-namespace'
  * 所有基础数据类型定义
  * - IDataRow: 数据行接口（从 spark-utils 重新导出）
  * - IDataTable: 数据表接口（运行时，包含方法）
- * - IDataTableData: 数据表数据接口（序列化，纯数据）
- * - IDataSet: 数据集接口
- * - IBindingContext: 数据绑定上下文接口（运行时，包含方法）
- * - IBindingContextData: 绑定上下文数据接口（序列化，纯数据）
+ * - ITableMetadata: 数据表元数据接口（序列化，纯数据）
+ * - IDataSet: 数据集接口（运行时，包含方法）
+ * - IDataSetMetadata: 数据集元数据接口（序列化，纯数据）
+ * - IDataView: 数据视图接口（运行时，继承 IViewMetadata，相当于 .NET DataView）
+ * - IViewMetadata: 视图元数据接口（序列化，纯配置数据）
  * - ITreeManager: 树形数据管理器接口
  */
 export type {
   IDataRow,
   IDataTable,
-  IDataTableData,
+  ITableMetadata,
   IDataSet,
+  IDataSetMetadata,
   ITreeManager,
-  IBindingContext,
-  IBindingContextData,
+  IDataView,
+  IViewMetadata,
   EventCallback,
   FilterExpression,
   SortExpression,

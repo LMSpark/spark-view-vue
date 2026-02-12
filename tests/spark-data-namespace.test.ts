@@ -83,7 +83,7 @@ describe('SparkData Namespace', () => {
     expect(SparkData.classes).toBeDefined()
     expect(SparkData.classes.DataSet).toBeDefined()
     expect(SparkData.classes.TreeManager).toBeDefined()
-    expect(SparkData.classes.BindingContext).toBeDefined()
+    expect(SparkData.classes.DataView).toBeDefined()
     expect(SparkData.classes.FilterExpressionParser).toBeDefined()
   })
 

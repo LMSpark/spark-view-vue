@@ -1,16 +1,16 @@
 /**
  * DataTable 类 - 数据表
- * 继承 BindingContext，实现 IDataTable 接口
+ * 继承 DataView，实现 IDataTable 接口
  * 相当于 .NET 的 DataTable - 结构层
  */
 
-import { BindingContext } from './bindingContext'
+import { DataView } from './bindingContext'
 import { Logger } from '@spark-view/spark-utils'
 import type {
   IDataTable,
-  IDataTableData,
-  IBindingContext,
-  IBindingContextData,
+  ITableMetadata,
+  IDataView,
+  IViewMetadata,
   DataColumn,
   CrudApi,
   IDataSet
@@ -19,17 +19,17 @@ import type {
 /**
  * 数据表类（实现 IDataTable 接口）
  */
-export class DataTable extends BindingContext implements IDataTable {
+export class DataTable extends DataView implements IDataTable {
   tableName: string
   columns: DataColumn[]
   api?: CrudApi
-  contexts: Record<string, BindingContext> = {}
+  contexts: Record<string, DataView> = {}
 
   // 扩展属性
   loading?: boolean
   error?: string
 
-  // 日志系统（继承自 BindingContext）
+  // 日志系统（继承自 DataView）
 
   // ==================== 构造函数 ====================
 
@@ -50,13 +50,13 @@ export class DataTable extends BindingContext implements IDataTable {
   /**
    * 获取或创建上下文
    */
-  getOrCreateContext(contextId: string): BindingContext {
+  getOrCreateContext(contextId: string): DataView {
     if (contextId === 'default') {
       return this
     }
 
     if (!this.contexts[contextId]) {
-      this.contexts[contextId] = new BindingContext(
+      this.contexts[contextId] = new DataView(
         this.tableName,
         contextId,
         this.dataSet
@@ -91,12 +91,12 @@ export class DataTable extends BindingContext implements IDataTable {
   /**
    * 转换为纯数据对象（用于序列化）
    */
-  override toData(): IDataTableData {
+  override toData(): ITableMetadata {
     return {
       tableName: this.tableName,
       columns: this.columns,
       api: this.api,
-      // 配置数据（从 IBindingContextData）
+      // 配置数据（从 IViewMetadata）
       hostTable: this.hostTable,
       contextId: this.contextId,
       filterExpression: this.filterExpression,
@@ -116,15 +116,15 @@ export class DataTable extends BindingContext implements IDataTable {
   /**
    * @deprecated 使用 toData() 替代
    */
-  toPlainObject(): IDataTableData {
+  toPlainObject(): ITableMetadata {
     return this.toData()
   }
 
   /**
    * 转换上下文为纯数据对象
    */
-  private contextsToData(): Record<string, IBindingContextData> {
-    const result: Record<string, IBindingContextData> = {}
+  private contextsToData(): Record<string, IViewMetadata> {
+    const result: Record<string, IViewMetadata> = {}
     Object.entries(this.contexts).forEach(([contextId, context]) => {
       result[contextId] = context.toData()
     })
@@ -134,12 +134,16 @@ export class DataTable extends BindingContext implements IDataTable {
   /**
    * 从数据对象创建 DataTable 实例（静态工厂方法）
    */
-  static fromTableData(data: IDataTableData, dataSet?: IDataSet): DataTable {
+  static fromTableData(data: ITableMetadata, dataSet?: IDataSet): DataTable {
     const table = new DataTable(data.tableName, data.columns ?? [], dataSet)
 
     // 基本属性
     table.api = data.api
-    // 配置数据（从 IBindingContextData）
+    // 设置数据行（转换为带权限的数据行）
+    if (data.rows) {
+      table.rows = data.rows.map(row => ({ ...row, __permissions: {} }))
+    }
+    // 配置数据（从 ViewConfig）
     table.filterExpression = data.filterExpression
     table.sortExpression = data.sortExpression
     table.autoSelectFirst = data.autoSelectFirst
@@ -155,10 +159,10 @@ export class DataTable extends BindingContext implements IDataTable {
       if (Array.isArray(data.contexts)) {
         // 兼容旧格式：数组
         Logger().info(`🔄 [DataTable] 转换 ${table.tableName}.contexts 为 Record 格式`)
-        data.contexts.forEach((ctx: Partial<IBindingContext>, index: number) => {
+        data.contexts.forEach((ctx: Partial<IDataView>, index: number) => {
           const contextId = `ctx_${index + 1}`
-          table.contexts[contextId] = BindingContext.fromData(
-            ctx as IBindingContextData,
+          table.contexts[contextId] = DataView.fromData(
+            ctx as IViewMetadata,
             table.tableName,
             contextId,
             dataSet
@@ -167,7 +171,7 @@ export class DataTable extends BindingContext implements IDataTable {
       } else {
         // 新格式：Record
         Object.entries(data.contexts).forEach(([contextId, ctxData]) => {
-          table.contexts[contextId] = BindingContext.fromData(
+          table.contexts[contextId] = DataView.fromData(
             ctxData,
             table.tableName,
             contextId,
