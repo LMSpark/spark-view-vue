@@ -5,6 +5,8 @@
 
 import type {
   IDataSet,
+  IDataSetData,
+  IDataSetConfig,
   IDataTableData,
   IBindingContext,
   DataRelation,
@@ -44,20 +46,18 @@ export class DataSet implements IDataSet {
 
   // ==================== 构造函数 ====================
 
-  constructor(
-    config: IDataSet,
-    dataLoader?: (tableName: string) => Promise<IDataRow[]>
-  ) {
-    this.dataLoader = dataLoader
+  /**
+   * 创建 DataSet 实例
+   * @param config - DataSet 配置（数据 + 可选运行时配置）
+   */
+  constructor(config: IDataSetConfig) {
+    this.dataLoader = config.dataLoader
     this.dataSetName = config.dataSetName
 
     // 转换表为类实例
     this.tables = {}
     Object.entries(config.tables).forEach(([tableName, tableData]) => {
-      const table = DataTable.fromPlainObject({
-        ...tableData,
-        tableName // 确保 tableName 正确
-      })
+      const table = DataTable.fromTableData(tableData, this)
 
       // 🔧 设置表（默认上下文）的 DataSet 引用
       table.setDataSet(this)
@@ -774,31 +774,53 @@ export class DataSet implements IDataSet {
   // ==================== 序列化 ====================
 
   /**
-   * 导出为 JSON
+   * 转换为纯数据对象（用于序列化）
    */
-  toJSON(): string {
+  toData(): IDataSetData {
     // 转换表为普通对象（纯数据，不包含方法）
     const tables: Record<string, IDataTableData> = {}
     Object.entries(this.tables).forEach(([tableName, table]) => {
-      tables[tableName] = table.toPlainObject()
+      tables[tableName] = table.toData()
     })
     
-    return JSON.stringify({
+    return {
       dataSetName: this.dataSetName,
       tables,
       relations: this.relations,
       version: this.version,
-      pageId: this.pageId,
-      autoLoadRelations: this.autoLoadRelations
-    }, null, 2)
+      pageId: this.pageId
+    }
   }
 
   /**
-   * 从 JSON 加载
+   * 导出为 JSON 字符串
    */
-  static fromJSON(json: string, dataLoader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
-    const config = JSON.parse(json) as IDataSet
-    return new DataSet(config, dataLoader)
+  toJSON(): string {
+    return JSON.stringify(this.toData(), null, 2)
+  }
+
+  /**
+   * 从数据对象创建 DataSet
+   */
+  static fromData(
+    data: IDataSetData,
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
+  ): DataSet {
+    return new DataSet({
+      ...data,
+      dataLoader
+    })
+  }
+
+  /**
+   * 从 JSON 字符串加载
+   */
+  static fromJSON(
+    json: string,
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
+  ): DataSet {
+    const data = JSON.parse(json) as IDataSetData
+    return DataSet.fromData(data, dataLoader)
   }
 
   // ==================== 事件系统 ====================
