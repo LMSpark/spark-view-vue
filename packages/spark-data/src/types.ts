@@ -90,6 +90,10 @@ export interface IBindingContext extends IBindingContextData, IDataSource {
   hostTable: string
   contextId: string
   
+  // ===== 数据视图配置 =====
+  filterExpression?: FilterExpression  // 行过滤表达式（定义当前视图显示哪些行）
+  sortExpression?: SortExpression      // 排序表达式（定义行的排序规则）
+  
   // ===== 核心方法（运行时必需） =====
   setCurrentRow(row: IDataRowWithPermission | null, skipNotify?: boolean): void
   setSelectedRows(rows: IDataRowWithPermission[], skipNotify?: boolean): void
