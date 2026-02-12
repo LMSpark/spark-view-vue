@@ -32,48 +32,37 @@ export type {
 
 /**
  * 数据绑定上下文数据接口（纯数据，用于序列化）
- * 
+ *
  * 作用域：单个数据表（DataTable）的某个绑定实例
- * 
+ *
  * 用途：
- * - 表示数据状态的纯数据结构
+ * - 表示配置数据的纯数据结构
  * - 支持 JSON 序列化/反序列化
  * - 用于配置文件、网络传输等场景
+ * - 只包含配置数据，不包含运行时状态
  */
 export interface IBindingContextData {
-  // ===== 数据状态 =====
-  currentRow?: IDataRowWithPermission | null
-  currentRowIndex?: number | null  // 当前行在 rows 中的索引（null 表示无当前行）
-  selectedRows?: IDataRowWithPermission[]
-  selectedRowIndices?: number[]    // 选中行的索引数组（对应 rows 中的位置）
-  rows?: IDataRowWithPermission[]  // 支持权限的数据行
-  originalRows?: IDataRowWithPermission[]
-  
-  // ===== 宿主信息 =====
+  // ===== 宿主信息（配置） =====
   hostTable?: string
   contextId?: string
-  
-  // ===== 扩展属性 =====
-  filterExpression?: FilterExpression
-  sortExpression?: SortExpression
-  autoSelectFirst?: boolean
-  autoDeselectOnEmpty?: boolean
-  
-  // ===== 分页状态 =====
-  pagination?: {
-    pageIndex?: number
-    pageSize?: number
-    total?: number
-    totalPages?: number
-  }
+
+  // ===== 数据视图配置（配置） =====
+  filterExpression?: FilterExpression  // 行过滤表达式（定义当前视图显示哪些行）
+  sortExpression?: SortExpression      // 排序表达式（定义行的排序规则）
+  autoSelectFirst?: boolean           // 自动选中第一行
+  autoDeselectOnEmpty?: boolean       // 数据清空时自动取消选中
+
+  // ===== 分页配置（配置） =====
+  page?: number         // 当前页码
+  pageSize?: number     // 每页大小
 }
 
 /**
  * 数据绑定上下文接口（包含方法，用于运行时）
- * 
- * 扩展 IBindingContextData，添加必需的方法和运行时保证的字段
+ *
+ * 扩展 IBindingContextData 配置，添加必需的运行时状态字段和方法
  * 同时实现 IDataSource，支持权限控制和分页
- * 
+ *
  * 🔄 完整数据流转链路：
  * ```
  * 1️⃣ API 响应        → const response: PagedDataResponse = await fetchData()
@@ -82,45 +71,70 @@ export interface IBindingContextData {
  * 4️⃣ 用户操作         → @row-click / @selection-change
  * 5️⃣ 自动更新索引     → context.currentRowIndex / selectedRowIndices 自动维护
  * ```
- * 
+ *
  * 典型使用场景：
  * - el-table 的 dataKey 绑定
  * - 主从视图联动（通过 filterExpression）
  * - 表格行选中状态管理
  * - 带权限的数据源
- * 
+ *
  * @example
  * ```typescript
  * // 1. 从 API 获取数据
  * const response: PagedDataResponse = await api.getUsers()
- * 
+ *
  * // 2. 创建并填充 BindingContext
  * const context = new BindingContext('Users', 'default')
  * context.rows = response.data.rows
  * context.total = response.data.total
- * 
+ *
  * // 3. UI 绑定（Vue 组件）
- * <el-table 
+ * <el-table
  *   :data="context.rows"
  *   @row-click="handleRowClick"
  *   @selection-change="handleSelectionChange">
- * 
+ *
  * // 4. 用户操作处理
  * function handleRowClick(row: IDataRowWithPermission) {
  *   context.setCurrentRow(row)
  *   // ✅ context.currentRowIndex 自动更新为该行在 rows 中的索引
  * }
- * 
+ *
  * function handleSelectionChange(rows: IDataRowWithPermission[]) {
  *   context.setSelectedRows(rows)
  *   // ✅ context.selectedRowIndices 自动更新为 [0, 2, 5]
  * }
- * 
+ *
  * // 5. 索引的便利使用
  * const nextRow = context.rows[context.currentRowIndex + 1]  // 下一行
  * const prevRow = context.rows[context.currentRowIndex - 1]  // 上一行
  * ```
  */
+export interface IBindingContext extends IBindingContextData, IDataSource {
+  // ===== 运行时状态字段（必需） =====
+  currentRow: IDataRowWithPermission | null
+  currentRowIndex: number | null   // 必需：当前行索引
+  selectedRows: IDataRowWithPermission[]
+  selectedRowIndices: number[]     // 必需：选中行索引数组
+  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行（覆盖 IDataSource.rows）
+  originalRows?: IDataRowWithPermission[]  // 原始数据行（运行时缓存）
+
+  // ===== 宿主信息（运行时必需） =====
+  hostTable: string
+  contextId: string
+
+  // ===== 分页状态（运行时保证） =====
+  total: number        // 必需：总记录数（默认 0）
+  page: number         // 必需：当前页码（默认 1）
+  pageSize: number     // 必需：每页大小（默认 20）
+
+  // ===== 核心方法（运行时必需） =====
+  setCurrentRow(row: IDataRowWithPermission | null, skipNotify?: boolean): void
+  setSelectedRows(rows: IDataRowWithPermission[], skipNotify?: boolean): void
+
+  // ===== 序列化方法 =====
+  toData(): IBindingContextData
+}
 export interface IBindingContext extends IBindingContextData, IDataSource {
   // ===== 运行时必需字段（覆盖可选） =====
   currentRow: IDataRowWithPermission | null
@@ -130,6 +144,11 @@ export interface IBindingContext extends IBindingContextData, IDataSource {
   rows: IDataRowWithPermission[]  // 必需：支持权限的数据行（覆盖 IDataSource.rows）
   hostTable: string
   contextId: string
+  
+  // ===== 分页状态（运行时保证） =====
+  total: number        // 必需：总记录数（默认 0）
+  page: number         // 必需：当前页码（默认 1）
+  pageSize: number     // 必需：每页大小（默认 20）
   
   // ===== 数据视图配置 =====
   filterExpression?: FilterExpression  // 行过滤表达式（定义当前视图显示哪些行）
@@ -275,15 +294,17 @@ export interface ITreeManager {
 
 /**
  * DataTable 数据接口（纯数据结构，用于序列化）
+ *
+ * 继承 IBindingContextData 配置数据，添加表特定的配置信息
+ * 只包含配置数据，不包含运行时状态
  */
 export interface IDataTableData extends IBindingContextData {
   tableName: string
   columns: DataColumn[]
   api?: CrudApi
-  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
   contexts?: Record<string, IBindingContextData>
-  
-  // 扩展属性
+
+  // 扩展属性（配置）
   loading?: boolean
   error?: string
 }

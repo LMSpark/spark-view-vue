@@ -31,7 +31,12 @@ export class BindingContext implements IBindingContext {
   autoSelectFirst?: boolean  // 自动选中第一行
   autoDeselectOnEmpty?: boolean  // 数据清空时自动取消选中
   
-  // 分页状态
+  // 分页状态（运行时必需）
+  total: number = 0           // 总记录数
+  page: number = 1            // 当前页码（1-based）
+  pageSize: number = 20       // 每页大小
+  
+  // @deprecated 使用独立的 total/page/pageSize 字段
   pagination?: {
     pageIndex?: number
     pageSize?: number
@@ -479,17 +484,16 @@ export class BindingContext implements IBindingContext {
    */
   toData(): IBindingContextData {
     return {
-      currentRow: this.currentRow,
-      currentRowIndex: this.currentRowIndex,
-      selectedRows: this.selectedRows,
-      selectedRowIndices: this.selectedRowIndices,
-      rows: this.rows,
-      originalRows: this.__originalRows,
+      // 配置数据
       hostTable: this.__hostTable,
       contextId: this.__contextId,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
-      pagination: this.pagination
+      autoSelectFirst: this.autoSelectFirst,
+      autoDeselectOnEmpty: this.autoDeselectOnEmpty,
+      // 分页配置
+      page: this.page,
+      pageSize: this.pageSize
     }
   }
 
@@ -506,17 +510,19 @@ export class BindingContext implements IBindingContext {
    */
   static fromData(data: IBindingContextData, hostTable: string, contextId: string, dataSet?: IDataSet): BindingContext {
     const context = new BindingContext(hostTable, contextId, dataSet)
-    
-    context.currentRow = data.currentRow ?? null
-    context.currentRowIndex = data.currentRowIndex ?? null
-    context.selectedRows = data.selectedRows ?? []
-    context.selectedRowIndices = data.selectedRowIndices ?? []
-    context.rows = data.rows ?? []
-    context['__originalRows'] = data.originalRows  // 直接访问私有字段
+
+    // 配置数据
     context.filterExpression = data.filterExpression
     context.sortExpression = data.sortExpression
-    context.pagination = data.pagination
-    
+    context.autoSelectFirst = data.autoSelectFirst
+    context.autoDeselectOnEmpty = data.autoDeselectOnEmpty
+    // 分页配置
+    context.page = data.page ?? 1
+    context.pageSize = data.pageSize ?? 20
+
+    // 运行时状态使用默认值（不从配置中恢复）
+    // currentRow, selectedRows, rows 等运行时状态应该在运行时设置
+
     return context
   }
 

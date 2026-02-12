@@ -405,14 +405,13 @@ export class DataSet implements IDataSet {
         return parentContext.rows ?? []
       case 'pagedRows': {
         // 返回当前分页的数据行（基于 context.rows 切片）
-        const pagination = parentContext.pagination
         const rows = parentContext.rows ?? []
-        if (pagination?.pageIndex && pagination.pageSize) {
-          const start = (pagination.pageIndex - 1) * pagination.pageSize
-          const end = start + pagination.pageSize
-          return rows.slice(start, end)
-        }
-        return rows
+        const pageSize = parentContext.pageSize ?? 20
+        const page = parentContext.page ?? 1
+        const start = (page - 1) * pageSize
+        const end = start + pageSize
+        return rows.slice(start, end)
+      }
       }
       default:
         // 自定义类型，暂时返回 currentRow
