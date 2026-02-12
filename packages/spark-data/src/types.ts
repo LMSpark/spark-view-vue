@@ -111,6 +111,59 @@ export interface DataColumn {
   autoIncrement?: boolean   // 是否自增
 }
 
+// ==================== API 响应包装 ====================
+
+/**
+ * 标准 API 响应包装
+ * 
+ * 后端统一返回格式，业务数据在 data 字段中
+ * 
+ * @example
+ * ```typescript
+ * // 列表响应
+ * const response: ApiResponse<IDataSource> = {
+ *   code: 200,
+ *   message: 'success',
+ *   data: {
+ *     rows: [{id: 1, name: 'Alice', _perm: {...}}],
+ *     total: 100,
+ *     page: 1,
+ *     pageSize: 20,
+ *     _modelPerm: {allowCreate: true}
+ *   }
+ * }
+ * 
+ * // 单条数据响应
+ * const detailResponse: ApiResponse<IDataRowWithPermission> = {
+ *   code: 200,
+ *   message: 'success',
+ *   data: {id: 1, name: 'Alice', _perm: {...}}
+ * }
+ * ```
+ */
+export interface ApiResponse<T = unknown> {
+  /** 响应码（200 成功，其他为错误码） */
+  code: number
+  /** 响应消息 */
+  message: string
+  /** 业务数据 */
+  data: T
+  /** 时间戳（可选） */
+  timestamp?: string
+  /** 追踪 ID（可选，用于日志追踪） */
+  traceId?: string
+}
+
+/**
+ * 分页列表响应类型别名
+ */
+export type PagedDataResponse = ApiResponse<IDataSource>
+
+/**
+ * 单条数据响应类型别名
+ */
+export type SingleDataResponse<T = Record<string, unknown>> = ApiResponse<IDataRowWithPermission<T>>
+
 // ==================== HTTP API 配置 ====================
 
 /**
