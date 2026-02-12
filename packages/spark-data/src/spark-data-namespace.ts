@@ -7,7 +7,6 @@ import { DataSet } from './dataset.js'
 import { DataTable } from './data-table.js'
 import { DataView } from './data-view.js'
 import { TreeManager } from './tree-manager.js'
-import { FilterExpressionParser } from './filter-expression-parser.js'
 import { 
   DataSetCapabilityManager, 
   createDataSetCapabilityManager,
@@ -90,16 +89,6 @@ export const SparkData = {
     return new DataView(hostTable, contextId, dataSet)
   },
 
-  // ==================== 工具方法 ====================
-  
-  /**
-   * 过滤表达式解析器（静态工具类）
-   * @example
-   * const filterFn = SparkData.FilterParser.toMemoryFilter(expression)
-   * const sql = SparkData.FilterParser.toSQL(expression)
-   */
-  FilterParser: FilterExpressionParser,
-
   // ==================== 能力管理器 ====================
   
   /**
@@ -126,8 +115,7 @@ export const SparkData = {
     DataSet,
     DataTable,
     DataView,
-    TreeManager,
-    FilterExpressionParser
+    TreeManager
   }
 } as const
 

@@ -54,13 +54,6 @@ describe('SparkData Namespace', () => {
     expect(context['contextId']).toBe('default')
   })
 
-  it('应该提供 FilterParser 静态工具类', () => {
-    expect(SparkData.FilterParser).toBeDefined()
-    expect(typeof SparkData.FilterParser.toMemoryFilter).toBe('function')
-    expect(typeof SparkData.FilterParser.toSQL).toBe('function')
-    expect(typeof SparkData.FilterParser.toMongoDB).toBe('function')
-  })
-
   it('应该提供 fromJSON 工厂方法', () => {
     const json = JSON.stringify({
       dataSetName: 'TestData',
@@ -84,7 +77,6 @@ describe('SparkData Namespace', () => {
     expect(SparkData.classes.DataSet).toBeDefined()
     expect(SparkData.classes.TreeManager).toBeDefined()
     expect(SparkData.classes.DataView).toBeDefined()
-    expect(SparkData.classes.FilterExpressionParser).toBeDefined()
   })
 
   it('命名空间 API 应该与直接导入保持一致', () => {
