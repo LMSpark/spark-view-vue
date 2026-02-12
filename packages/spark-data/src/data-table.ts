@@ -4,7 +4,7 @@
  * 相当于 .NET 的 DataTable - 结构层
  */
 
-import { DataView } from './bindingContext'
+import { DataView } from './binding-context'
 import { Logger } from '@spark-view/spark-utils'
 import type {
   IDataTable,
