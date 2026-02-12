@@ -105,7 +105,7 @@ export interface RequestError extends Error {
   config: HttpRequestConfig
   code?: string
   status?: number
-  response?: any
+  response?: unknown
 }
 
 /**
@@ -261,10 +261,11 @@ export class Request {
             async (config) => {
               // 转换为我们的HttpRequestConfig格式进行处理
               const requestConfig: HttpRequestConfig = {
-                url: config.url || '',
-                method: (config.method as RequestMethod) || 'GET',
+                url: config.url ?? '',
+                method: (config.method as RequestMethod ?? 'GET'),
                 params: config.params,
                 data: config.data,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 headers: config.headers as Record<string, string>,
                 timeout: config.timeout,
                 responseType: config.responseType as 'json' | 'text' | 'blob' | 'arraybuffer',
@@ -278,15 +279,16 @@ export class Request {
                 meta: config as unknown as Record<string, unknown>
               }
 
-              const result = await interceptor.onRequest!(requestConfig)
+              if (!interceptor.onRequest) return config
+              const result = await interceptor.onRequest(requestConfig)
 
               // 应用修改回axios配置
               config.url = result.url
-              config.method = (result.method || 'GET') as AxiosRequestConfig['method']
+              config.method = (result.method ?? 'GET') as AxiosRequestConfig['method']
               config.params = result.params
               config.data = result.data
               config.timeout = result.timeout
-              config.responseType = (result.responseType || 'json') as AxiosRequestConfig['responseType']
+              config.responseType = (result.responseType ?? 'json') as AxiosRequestConfig['responseType']
               if (result.headers) {
                 config.headers = Object.assign({}, config.headers, result.headers)
               }
@@ -305,7 +307,10 @@ export class Request {
       use: (interceptor: ResponseInterceptor) => {
         if (interceptor.onResponse) {
           this.axiosInstance.interceptors.response.use(
-            (response) => interceptor.onResponse!(response),
+            (response) => {
+              if (!interceptor.onResponse) return response
+              return interceptor.onResponse(response)
+            },
             interceptor.onResponseError
           )
         }
@@ -338,7 +343,7 @@ export class Request {
 
     const axiosConfig: AxiosRequestConfig = {
       url: config.url,
-      method: config.method || 'GET',
+      method: config.method ?? 'GET',
       params: config.params,
       data: config.data,
       headers: config.headers,
@@ -372,7 +377,7 @@ export class Request {
     try {
       const axiosConfig: AxiosRequestConfig = {
         url: config.url,
-        method: config.method || 'GET'
+        method: config.method ?? 'GET'
       }
       
       // 只有非 undefined 的属性才添加到配置中，避免覆盖 axios 实例的默认配置
@@ -534,8 +539,8 @@ export class Request {
     
     // 合并 headers，只在有实际 header 值时才设置
     const mergedHeaders = { 
-      ...(endpoint.headers || {}), 
-      ...(config?.headers || {}) 
+      ...(endpoint.headers ?? {}), 
+      ...(config?.headers ?? {}) 
     }
     if (Object.keys(mergedHeaders).length > 0) {
       requestConfig.headers = mergedHeaders
