@@ -12,7 +12,7 @@ import type {
   TreePath
 } from './types'
 import { Logger } from '@spark-view/spark-utils'
-import type { DataView } from './binding-context'
+import type { DataView } from './data-view'
 
 /**
  * 树管理器类
