@@ -4,10 +4,10 @@
  */
 
 import { DataSet } from './dataset.js'
-import { DataTable } from './dataTable.js'
-import { DataView } from './bindingContext.js'
-import { TreeManager } from './treeManager.js'
-import { FilterExpressionParser } from './filterExpressionParser.js'
+import { DataTable } from './data-table.js'
+import { DataView } from './binding-context.js'
+import { TreeManager } from './tree-manager.js'
+import { FilterExpressionParser } from './filter-expression-parser.js'
 import { 
   DataSetCapabilityManager, 
   createDataSetCapabilityManager,

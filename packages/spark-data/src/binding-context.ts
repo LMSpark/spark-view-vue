@@ -5,7 +5,7 @@
  */
 
 import type { IDataRow, IDataRowWithPermission, IDataView, IViewMetadata, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
-import { FilterExpressionParser } from './filterExpressionParser'
+import { FilterExpressionParser } from './filter-expression-parser'
 import { Logger } from '@spark-view/spark-utils'
 
 /**
