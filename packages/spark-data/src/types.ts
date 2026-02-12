@@ -74,11 +74,52 @@ export interface IBindingContextData {
  * 扩展 IBindingContextData，添加必需的方法和运行时保证的字段
  * 同时实现 IDataSource，支持权限控制和分页
  * 
+ * 🔄 完整数据流转链路：
+ * ```
+ * 1️⃣ API 响应        → const response: PagedDataResponse = await fetchData()
+ * 2️⃣ 填充到 Context   → context.rows = response.data.rows
+ * 3️⃣ UI 显示          → <el-table :data="context.rows">
+ * 4️⃣ 用户操作         → @row-click / @selection-change
+ * 5️⃣ 自动更新索引     → context.currentRowIndex / selectedRowIndices 自动维护
+ * ```
+ * 
  * 典型使用场景：
  * - el-table 的 dataKey 绑定
  * - 主从视图联动（通过 filterExpression）
  * - 表格行选中状态管理
  * - 带权限的数据源
+ * 
+ * @example
+ * ```typescript
+ * // 1. 从 API 获取数据
+ * const response: PagedDataResponse = await api.getUsers()
+ * 
+ * // 2. 创建并填充 BindingContext
+ * const context = new BindingContext('Users', 'default')
+ * context.rows = response.data.rows
+ * context.total = response.data.total
+ * 
+ * // 3. UI 绑定（Vue 组件）
+ * <el-table 
+ *   :data="context.rows"
+ *   @row-click="handleRowClick"
+ *   @selection-change="handleSelectionChange">
+ * 
+ * // 4. 用户操作处理
+ * function handleRowClick(row: IDataRowWithPermission) {
+ *   context.setCurrentRow(row)
+ *   // ✅ context.currentRowIndex 自动更新为该行在 rows 中的索引
+ * }
+ * 
+ * function handleSelectionChange(rows: IDataRowWithPermission[]) {
+ *   context.setSelectedRows(rows)
+ *   // ✅ context.selectedRowIndices 自动更新为 [0, 2, 5]
+ * }
+ * 
+ * // 5. 索引的便利使用
+ * const nextRow = context.rows[context.currentRowIndex + 1]  // 下一行
+ * const prevRow = context.rows[context.currentRowIndex - 1]  // 上一行
+ * ```
  */
 export interface IBindingContext extends IBindingContextData, IDataSource {
   // ===== 运行时必需字段（覆盖可选） =====
