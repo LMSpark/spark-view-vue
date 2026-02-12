@@ -12,20 +12,20 @@ import type {
   TreePath
 } from './types'
 import { Logger } from '@spark-view/spark-utils'
-import type { BindingContext } from './bindingContext'
+import type { DataView } from './bindingContext'
 
 /**
  * 树管理器类
- * 管理 BindingContext 中的树形数据视图
+ * 管理 DataView 中的树形数据视图
  */
 export class TreeManager {
   private config: TreeConfig
   private cache: FlatTreeCache = {}
   private eventListeners: Map<string, Array<(...args: unknown[]) => void>> = new Map()
-  private bindingContext?: BindingContext  // 关联的 BindingContext
+  private dataView?: DataView  // 关联的 DataView
   private logger = Logger()
 
-  constructor(config: TreeConfig, initialNodes?: FlatTreeNode[], bindingContext?: BindingContext) {
+  constructor(config: TreeConfig, initialNodes?: FlatTreeNode[], dataView?: DataView) {
     this.config = {
       idField: 'id',
       parentIdField: 'parentId',
@@ -33,24 +33,26 @@ export class TreeManager {
       lazy: true,
       ...config
     }
-        this.bindingContext = bindingContext
-        if (initialNodes) {
+    if (dataView) {
+      this.dataView = dataView
+    }
+    if (initialNodes) {
       this.addNodesToCache(initialNodes)
     }
   }
 
   /**
-   * 设置关联的 BindingContext
+   * 设置关联的 DataView
    */
-  setBindingContext(bindingContext: BindingContext): void {
-    this.bindingContext = bindingContext
+  setDataView(dataView: DataView): void {
+    this.dataView = dataView
   }
 
   /**
-   * 获取关联的 BindingContext
+   * 获取关联的 DataView
    */
-  getBindingContext(): BindingContext | undefined {
-    return this.bindingContext
+  getDataView(): DataView | undefined {
+    return this.dataView
   }
 
   /**
@@ -315,9 +317,9 @@ export class TreeManager {
   /**
    * 从 JSON 加载
    */
-  static fromJSON(json: string, bindingContext?: BindingContext): TreeManager {
+  static fromJSON(json: string, dataView?: DataView): TreeManager {
     const data = JSON.parse(json) as { config: TreeConfig; cache: FlatTreeNode[] }
-    const manager = new TreeManager(data.config, undefined, bindingContext)
+    const manager = new TreeManager(data.config, undefined, dataView)
     // 将数组转换为对象格式的 cache
     data.cache.forEach(node => {
       manager.cache[node.id] = node

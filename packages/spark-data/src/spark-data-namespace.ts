@@ -5,7 +5,7 @@
 
 import { DataSet } from './dataset.js'
 import { DataTable } from './dataTable.js'
-import { BindingContext } from './bindingContext.js'
+import { DataView } from './bindingContext.js'
 import { TreeManager } from './treeManager.js'
 import { FilterExpressionParser } from './filterExpressionParser.js'
 import { 
@@ -60,9 +60,9 @@ export const SparkData = {
   createTreeManager: (
     config: TreeConfig,
     initialNodes?: FlatTreeNode[],
-    bindingContext?: BindingContext
+    dataView?: DataView
   ): TreeManager => {
-    return new TreeManager(config, initialNodes, bindingContext)
+    return new TreeManager(config, initialNodes, dataView)
   },
 
   /**
@@ -70,15 +70,15 @@ export const SparkData = {
    */
   treeFromJSON: (
     json: string,
-    bindingContext?: BindingContext
+    dataView?: DataView
   ): TreeManager => {
-    return TreeManager.fromJSON(json, bindingContext)
+    return TreeManager.fromJSON(json, dataView)
   },
 
-  // ==================== BindingContext 工厂方法 ====================
-  
+  // ==================== DataView 工厂方法 ====================
+
   /**
-   * 创建 BindingContext 实例
+   * 创建 DataView 实例
    * @example
    * const ctx = SparkData.createContext('Users', 'default', dataSet)
    */
@@ -86,8 +86,8 @@ export const SparkData = {
     hostTable: string,
     contextId: string = 'default',
     dataSet?: IDataSet
-  ): BindingContext => {
-    return new BindingContext(hostTable, contextId, dataSet)
+  ): DataView => {
+    return new DataView(hostTable, contextId, dataSet)
   },
 
   // ==================== 工具方法 ====================
@@ -125,7 +125,7 @@ export const SparkData = {
   classes: {
     DataSet,
     DataTable,
-    BindingContext,
+    DataView,
     TreeManager,
     FilterExpressionParser
   }

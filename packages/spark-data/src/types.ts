@@ -2,7 +2,7 @@
  * SPARK 数据空间类型定义
  * 
  * ⚠️ 重要：这是数据空间高级类型的唯一定义源
- * - DataTable, DataSet, BindingContext, TreeManager 等高级类型在此定义
+ * - DataTable, DataSet, DataView, TreeManager 等高级类型在此定义
  * - IDataRow, HttpRequestConfig 等基础类型从 spark-utils 导入并重新导出（便于类型系统一致性）
  * - 保持类型系统的单一职责和清晰依赖关系
  * 
@@ -15,7 +15,8 @@ import type {
   IDataRowWithPermission,
   IModelPermission,
   IInstancePermission,
-  HttpRequestConfig 
+  HttpRequestConfig,
+  ApiResponse
 } from '@spark-view/spark-utils'
 
 // 重新导出基础类型（数据空间需要这些类型）
@@ -25,23 +26,26 @@ export type {
   IDataSource, 
   IDataRowWithPermission,
   IModelPermission,
-  IInstancePermission
+  IInstancePermission,
+  ApiResponse
 }
 
 // ==================== 基础类型 ====================
 
 /**
- * 数据绑定上下文数据接口（纯数据，用于序列化）
+ * 视图元数据接口（纯数据，用于序列化）
  *
  * 作用域：单个数据表（DataTable）的某个绑定实例
  *
  * 用途：
- * - 表示配置数据的纯数据结构
+ * - 表示视图配置的纯数据结构
  * - 支持 JSON 序列化/反序列化
  * - 用于配置文件、网络传输等场景
  * - 只包含配置数据，不包含运行时状态
+ *
+ * 同时作为绑定上下文的元数据接口
  */
-export interface IBindingContextData {
+export interface IViewMetadata {
   // ===== 宿主信息（配置） =====
   hostTable?: string
   contextId?: string
@@ -58,10 +62,10 @@ export interface IBindingContextData {
 }
 
 /**
- * 数据绑定上下文接口（包含方法，用于运行时）
+ * 数据视图接口（运行时接口）
  *
- * 扩展 IBindingContextData 配置，添加必需的运行时状态字段和方法
- * 同时实现 IDataSource，支持权限控制和分页
+ * 继承 IViewMetadata（配置数据）和 IDataSource（数据源），支持权限控制和分页
+ * 相当于 .NET 的 DataView，提供数据的视图表示和选中状态管理
  *
  * 🔄 完整数据流转链路：
  * ```
@@ -83,8 +87,8 @@ export interface IBindingContextData {
  * // 1. 从 API 获取数据
  * const response: PagedDataResponse = await api.getUsers()
  *
- * // 2. 创建并填充 BindingContext
- * const context = new BindingContext('Users', 'default')
+ * // 2. 创建并填充 DataView
+ * const context = new DataView('Users', 'default')
  * context.rows = response.data.rows
  * context.total = response.data.total
  *
@@ -110,7 +114,16 @@ export interface IBindingContextData {
  * const prevRow = context.rows[context.currentRowIndex - 1]  // 上一行
  * ```
  */
-export interface IBindingContext extends IBindingContextData, IDataSource {
+export interface IDataView extends IViewMetadata, IDataSource {
+  // ===== 配置数据（从 IViewMetadata 继承） =====
+  // hostTable, contextId, filterExpression, sortExpression, autoSelectFirst, autoDeselectOnEmpty, page, pageSize
+  
+  // 覆盖可选字段为必需字段
+  hostTable: string
+  contextId: string
+  page: number
+  pageSize: number
+
   // ===== 运行时状态字段（必需） =====
   currentRow: IDataRowWithPermission | null
   currentRowIndex: number | null   // 必需：当前行索引
@@ -119,47 +132,15 @@ export interface IBindingContext extends IBindingContextData, IDataSource {
   rows: IDataRowWithPermission[]  // 必需：支持权限的数据行（覆盖 IDataSource.rows）
   originalRows?: IDataRowWithPermission[]  // 原始数据行（运行时缓存）
 
-  // ===== 宿主信息（运行时必需） =====
-  hostTable: string
-  contextId: string
-
   // ===== 分页状态（运行时保证） =====
   total: number        // 必需：总记录数（默认 0）
-  page: number         // 必需：当前页码（默认 1）
-  pageSize: number     // 必需：每页大小（默认 20）
 
   // ===== 核心方法（运行时必需） =====
   setCurrentRow(row: IDataRowWithPermission | null, skipNotify?: boolean): void
   setSelectedRows(rows: IDataRowWithPermission[], skipNotify?: boolean): void
 
   // ===== 序列化方法 =====
-  toData(): IBindingContextData
-}
-export interface IBindingContext extends IBindingContextData, IDataSource {
-  // ===== 运行时必需字段（覆盖可选） =====
-  currentRow: IDataRowWithPermission | null
-  currentRowIndex: number | null   // 必需：当前行索引
-  selectedRows: IDataRowWithPermission[]
-  selectedRowIndices: number[]     // 必需：选中行索引数组
-  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行（覆盖 IDataSource.rows）
-  hostTable: string
-  contextId: string
-  
-  // ===== 分页状态（运行时保证） =====
-  total: number        // 必需：总记录数（默认 0）
-  page: number         // 必需：当前页码（默认 1）
-  pageSize: number     // 必需：每页大小（默认 20）
-  
-  // ===== 数据视图配置 =====
-  filterExpression?: FilterExpression  // 行过滤表达式（定义当前视图显示哪些行）
-  sortExpression?: SortExpression      // 排序表达式（定义行的排序规则）
-  
-  // ===== 核心方法（运行时必需） =====
-  setCurrentRow(row: IDataRowWithPermission | null, skipNotify?: boolean): void
-  setSelectedRows(rows: IDataRowWithPermission[], skipNotify?: boolean): void
-  
-  // ===== 序列化方法 =====
-  toData(): IBindingContextData
+  toData(): IViewMetadata
 }
 
 /**
@@ -176,47 +157,7 @@ export interface DataColumn {
 }
 
 // ==================== API 响应包装 ====================
-
-/**
- * 标准 API 响应包装
- * 
- * 后端统一返回格式，业务数据在 data 字段中
- * 
- * @example
- * ```typescript
- * // 列表响应
- * const response: ApiResponse<IDataSource> = {
- *   code: 200,
- *   message: 'success',
- *   data: {
- *     rows: [{id: 1, name: 'Alice', _perm: {...}}],
- *     total: 100,
- *     page: 1,
- *     pageSize: 20,
- *     _modelPerm: {allowCreate: true}
- *   }
- * }
- * 
- * // 单条数据响应
- * const detailResponse: ApiResponse<IDataRowWithPermission> = {
- *   code: 200,
- *   message: 'success',
- *   data: {id: 1, name: 'Alice', _perm: {...}}
- * }
- * ```
- */
-export interface ApiResponse<T = unknown> {
-  /** 响应码（200 成功，其他为错误码） */
-  code: number
-  /** 响应消息 */
-  message: string
-  /** 业务数据 */
-  data: T
-  /** 时间戳（可选） */
-  timestamp?: string
-  /** 追踪 ID（可选，用于日志追踪） */
-  traceId?: string
-}
+// ApiResponse 已从 spark-utils 导入并重新导出
 
 /**
  * 分页列表响应类型别名
@@ -278,8 +219,8 @@ export type EventCallback = (...args: unknown[]) => void
  * TreeManager 接口（树形数据管理器）
  */
 export interface ITreeManager {
-  setBindingContext(context: IBindingContext): void
-  getBindingContext(): IBindingContext | undefined
+  setDataView(context: IDataView): void
+  getDataView(): IDataView | undefined
   getConfig(): TreeConfig
   getCache(): FlatTreeCache
   addNodesToCache(nodes: FlatTreeNode[]): void
@@ -293,16 +234,17 @@ export interface ITreeManager {
 }
 
 /**
- * DataTable 数据接口（纯数据结构，用于序列化）
+ * 表元数据接口（纯数据结构，用于序列化）
  *
- * 继承 IBindingContextData 配置数据，添加表特定的配置信息
+ * 继承 IViewMetadata 配置数据，添加表特定的配置信息
  * 只包含配置数据，不包含运行时状态
  */
-export interface IDataTableData extends IBindingContextData {
+export interface ITableMetadata extends IViewMetadata {
   tableName: string
   columns: DataColumn[]
+  rows?: IDataRow[]  // 可选：纯数据行（无权限信息）
   api?: CrudApi
-  contexts?: Record<string, IBindingContextData>
+  contexts?: Record<string, IViewMetadata>
 
   // 扩展属性（配置）
   loading?: boolean
@@ -312,12 +254,12 @@ export interface IDataTableData extends IBindingContextData {
 /**
  * DataTable 接口（运行时接口，包含方法）
  */
-export interface IDataTable extends IBindingContext {
+export interface IDataTable extends IDataView {
   tableName: string
   columns: DataColumn[]
   api?: CrudApi
   rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
-  contexts?: Record<string, IBindingContext>
+  contexts?: Record<string, IDataView>
   
   // 扩展属性
   loading?: boolean
@@ -407,7 +349,7 @@ export type FilterExpression =
  * DataRelation：绑定上下文（视图）之间的关系配置
  * 
  * ⚠️ 核心概念：
- * - 关系主体是 BindingContext（视图实例），不是 DataTable（数据表）
+ * - 关系主体是 DataView（视图实例），不是 DataTable（数据表）
  * - 同一表可有多个视图，每个视图有独立的关系配置
  * - 父视图状态变化 → 触发子视图通过 filterExpression 动态过滤
  * 
@@ -443,25 +385,55 @@ export interface DataRelation {
 // ==================== DataSet 定义 ====================
 
 /**
- * DataSet 数据接口（纯数据，用于序列化）
- * 
+ * 数据集元数据接口（纯数据，用于序列化）
+ *
  * 用途：JSON 序列化、网络传输、存储
  * 特征：只包含数据字段，无方法
- * 
+ *
  * @example
  * ```typescript
- * const data: IDataSetData = {
+ * const data: IDataSetMetadata = {
  *   dataSetName: 'MyData',
  *   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
  * }
  * ```
  */
-export interface IDataSetData {
+export interface IDataSetMetadata {
   dataSetName: string
-  tables: Record<string, IDataTableData>  // 纯数据表
+  tables: Record<string, ITableMetadata>  // 纯数据表
   relations?: DataRelation[]
   version?: number
   pageId?: string
+}
+
+/**
+ * DataSet 运行时接口（包含方法）
+ *
+ * 用途：运行时操作的接口定义
+ * 特征：包含运行时方法和状态管理
+ * 注意：覆盖 tables 字段为运行时类型
+ */
+export interface IDataSet extends IDataSetMetadata {
+  // 覆盖为运行时类型
+  tables: Record<string, IDataTable>  // 运行时表实例
+  autoLoadRelations?: boolean
+
+  // 数据访问
+  getTable(tableName: string): IDataTable | undefined
+
+  // 关系管理
+  updateRelatedTables(tableName: string, contextId?: string): void
+  notifySubscribers(tableName: string, contextId?: string): void
+
+  // 事件系统
+  subscribe(tableName: string, contextId: string, callback: () => void): () => void
+  on(event: string, handler: EventCallback): void
+  off(event: string, handler: EventCallback): void
+  emit(event: string, data: unknown): void
+
+  // 序列化
+  toData(): IDataSetMetadata
+  toJSON(): string
 }
 
 /**
@@ -481,38 +453,14 @@ export interface IDataSetData {
  * const ds = new DataSet(config)
  * ```
  */
-export interface IDataSetConfig extends IDataSetData {
-  autoLoadRelations?: boolean
-  dataLoader?: (tableName: string) => Promise<IDataRow[]>
-}
-
 /**
- * DataSet 运行时接口（包含方法）
- * 
- * 用途：运行时操作的接口定义
- * 特征：包含运行时方法和状态管理
+ * DataSet 配置接口（用于创建 DataSet 实例）
  */
-export interface IDataSet extends IDataSetData {
-  // 覆盖为运行时类型
-  tables: Record<string, IDataTable>  // 运行时表实例
+export interface IDataSetConfig extends IDataSetMetadata {
+  // 数据加载器（可选，用于懒加载数据）
+  dataLoader?: (tableName: string) => Promise<IDataRow[]>
+  // 自动加载关联表（可选）
   autoLoadRelations?: boolean
-  
-  // 数据访问
-  getTable(tableName: string): IDataTable | undefined
-  
-  // 关系管理
-  updateRelatedTables(tableName: string, contextId?: string): void
-  notifySubscribers(tableName: string, contextId?: string): void
-  
-  // 事件系统
-  subscribe(tableName: string, contextId: string, callback: () => void): () => void
-  on(event: string, handler: EventCallback): void
-  off(event: string, handler: EventCallback): void
-  emit(event: string, data: unknown): void
-  
-  // 序列化
-  toData(): IDataSetData
-  toJSON(): string
 }
 
 // ==================== 辅助类型 ====================

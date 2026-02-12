@@ -40,7 +40,8 @@ export type {
   RequestInterceptor,
   ResponseInterceptor,
   RequestError,
-  RequestResponse
+  RequestResponse,
+  ApiResponse
 } from './Request'
 
 /**

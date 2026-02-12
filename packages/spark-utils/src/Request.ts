@@ -132,6 +132,46 @@ export interface RequestResponse<T = unknown> {
 }
 
 /**
+ * 标准 API 响应包装
+ * 
+ * 后端统一返回格式，业务数据在 data 字段中
+ * 
+ * @example
+ * ```typescript
+ * // 列表响应
+ * const response: ApiResponse<IDataSource> = {
+ *   code: 200,
+ *   message: 'success',
+ *   data: {
+ *     rows: [{id: 1, name: 'Alice'}],
+ *     total: 100,
+ *     page: 1,
+ *     pageSize: 20
+ *   }
+ * }
+ * 
+ * // 单条数据响应
+ * const detailResponse: ApiResponse<User> = {
+ *   code: 200,
+ *   message: 'success',
+ *   data: {id: 1, name: 'Alice'}
+ * }
+ * ```
+ */
+export interface ApiResponse<T = unknown> {
+  /** 响应码（200 成功，其他为错误码） */
+  code: number
+  /** 响应消息 */
+  message: string
+  /** 业务数据 */
+  data: T
+  /** 时间戳（可选） */
+  timestamp?: string
+  /** 追踪 ID（可选，用于日志追踪） */
+  traceId?: string
+}
+
+/**
  * 请求拦截器
  */
 export interface RequestInterceptor {

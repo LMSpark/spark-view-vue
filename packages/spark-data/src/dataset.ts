@@ -5,10 +5,10 @@
 
 import type {
   IDataSet,
-  IDataSetData,
+  IDataSetMetadata,
   IDataSetConfig,
-  IDataTableData,
-  IBindingContext,
+  ITableMetadata,
+  IDataView,
   DataRelation,
   IDataRow,
   FilterContext,
@@ -16,7 +16,7 @@ import type {
   FilterExpression
 } from './types'
 import { DataTable } from './dataTable'
-import { BindingContext } from './bindingContext'
+import { DataView } from './bindingContext'
 import { FilterExpressionParser } from './filterExpressionParser'
 import { Logger } from '@spark-view/spark-utils'
 
@@ -92,9 +92,9 @@ export class DataSet implements IDataSet {
   // ==================== 上下文管理 ====================
 
   /**
-   * 更新上下文的 rows（委托给 BindingContext）
+   * 更新上下文的 rows（委托给 DataView）
    */
-  private updateContextRows(context: BindingContext, table: DataTable): void {
+  private updateContextRows(context: DataView, table: DataTable): void {
     // 始终基于完整数据源
     let sourceData = table.originalRows ?? table.rows ?? [];
 
@@ -393,7 +393,7 @@ export class DataSet implements IDataSet {
    * 根据依赖类型获取父数据范围
    */
   getParentRows(
-    parentContext: BindingContext | IBindingContext,
+    parentContext: DataView | IDataView,
     dependencyType: DependencyType
   ): IDataRow[] | undefined {
     switch (dependencyType) {
@@ -412,7 +412,6 @@ export class DataSet implements IDataSet {
         const end = start + pageSize
         return rows.slice(start, end)
       }
-      }
       default:
         // 自定义类型，暂时返回 currentRow
         return parentContext.currentRow ? [parentContext.currentRow] : []
@@ -426,7 +425,7 @@ export class DataSet implements IDataSet {
     childRows: IDataRow[],
     filterExpression: FilterExpression,
     parentRows: IDataRow[],
-    _parentContext: BindingContext | IBindingContext
+    _parentContext: DataView | IDataView
   ): IDataRow[] {
     // 特殊处理：如果是 'in' 操作符且有多个 parentRows
     // 需要一次性提取所有 parentRows 的字段值，而不是逐个过滤
@@ -775,9 +774,9 @@ export class DataSet implements IDataSet {
   /**
    * 转换为纯数据对象（用于序列化）
    */
-  toData(): IDataSetData {
+  toData(): IDataSetMetadata {
     // 转换表为普通对象（纯数据，不包含方法）
-    const tables: Record<string, IDataTableData> = {}
+    const tables: Record<string, ITableMetadata> = {}
     Object.entries(this.tables).forEach(([tableName, table]) => {
       tables[tableName] = table.toData()
     })
@@ -802,7 +801,7 @@ export class DataSet implements IDataSet {
    * 从数据对象创建 DataSet
    */
   static fromData(
-    data: IDataSetData,
+    data: IDataSetMetadata,
     dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): DataSet {
     return new DataSet({
@@ -818,7 +817,7 @@ export class DataSet implements IDataSet {
     json: string,
     dataLoader?: (tableName: string) => Promise<IDataRow[]>
   ): DataSet {
-    const data = JSON.parse(json) as IDataSetData
+    const data = JSON.parse(json) as IDataSetMetadata
     return DataSet.fromData(data, dataLoader)
   }
 
@@ -906,7 +905,7 @@ export class DataSet implements IDataSet {
         const context = this.getContext(tableName, contextId);
         this.logger.info(`📢 通知 ${subscribers.size} 个订阅者: ${key} 数据已更新`);
         if (context) {
-          subscribers.forEach(callback => (callback as (context: IBindingContext) => void)(context));
+          subscribers.forEach(callback => (callback as (context: IDataView) => void)(context));
         }
       }
     } else {
@@ -924,7 +923,7 @@ export class DataSet implements IDataSet {
         const subscribers = this.contextSubscribers.get(key);
         
         if (subscribers && context) {
-          subscribers.forEach(callback => (callback as (context: IBindingContext) => void)(context));
+          subscribers.forEach(callback => (callback as (context: IDataView) => void)(context));
         }
       });
     }
@@ -934,7 +933,7 @@ export class DataSet implements IDataSet {
    * 获取表的指定上下文
    * @param contextId 上下文ID，默认 'default'（返回 DataTable 本身）
    */
-  getContext(tableName: string, contextId: string = 'default'): BindingContext | undefined {
+  getContext(tableName: string, contextId: string = 'default'): DataView | undefined {
     const table = this.getTable(tableName)
     if (!table) return undefined
     
