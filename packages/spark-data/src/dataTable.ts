@@ -97,7 +97,9 @@ export class DataTable extends BindingContext implements IDataTable {
       columns: this.columns,
       api: this.api,
       currentRow: this.currentRow,
+      currentRowIndex: this.currentRowIndex,
       selectedRows: this.selectedRows,
+      selectedRowIndices: this.selectedRowIndices,
       rows: this.rows,
       originalRows: this.originalRows,
       hostTable: this.hostTable,
@@ -138,7 +140,9 @@ export class DataTable extends BindingContext implements IDataTable {
     // 基本属性
     table.api = data.api
     table.currentRow = data.currentRow ?? null
+    table.currentRowIndex = data.currentRowIndex ?? null
     table.selectedRows = data.selectedRows ?? []
+    table.selectedRowIndices = data.selectedRowIndices ?? []
     table.rows = data.rows ?? []
     table['__originalRows'] = data.originalRows  // 直接访问私有字段
     table.filterExpression = data.filterExpression
