@@ -60,7 +60,7 @@ export interface IBindingContextData {
  * 
  * 典型使用场景：
  * - el-table 的 dataKey 绑定
- * - 主从表联动（通过 filterExpression）
+ * - 主从视图联动（通过 filterExpression）
  * - 表格行选中状态管理
  */
 export interface IBindingContext extends IBindingContextData {
@@ -413,19 +413,19 @@ export interface FilterResult {
 }
 
 /**
- * 过滤上下文接口（用于主从表关联过滤）
+ * 过滤上下文接口（用于主从视图关联过滤）
  * 
- * 作用域：单次主从表过滤操作的临时上下文
+ * 作用域：单次视图过滤操作的临时上下文
  * 生命周期：过滤表达式解析时创建，过滤完成后销毁
  * 
  * 用途：
- * - 为从表过滤提供主表的当前行/选中行数据
- * - 支持主从表级联过滤（如订单明细 ↔ 订单主表）
+ * - 为子视图过滤提供父视图的当前行/选中行数据
+ * - 支持主从视图级联过滤（如订单明细视图 ↔ 订单主视图）
  * - 提供全局变量访问（variables）
  * 
  * 典型使用场景：
- * - filterExpression: "parentRow.id" → 主表单行关联
- * - filterExpression: "IN(parentRows, 'id')" → 主表多行关联
+ * - filterExpression: "parentRow.id" → 父视图单行关联
+ * - filterExpression: "IN(parentRows, 'id')" → 父视图多行关联
  * - 通过 variables 传递额外的过滤参数
  */
 export interface FilterContext {
