@@ -98,24 +98,21 @@ export type SingleDataResponse<T = Record<string, unknown>> = ApiResponse<IDataR
 
 // ==================== DataTable 类型 ====================
 
-export interface ITableMetadata extends IViewMetadata {
+export interface ITableBase {
   tableName: string
   columns: DataColumn[]
-  rows?: IDataRow[]
   api?: CrudApi
+}
+
+export interface ITableMetadata extends ITableBase, IViewMetadata {
+  rows?: IDataRow[]
   contexts?: Record<string, IViewMetadata>
   loading?: boolean
   error?: string
 }
 
-export interface IDataTable extends IDataView {
-  tableName: string
-  columns: DataColumn[]
-  api?: CrudApi
-  rows: IDataRowWithPermission[]
+export interface IDataTable extends ITableBase, IDataView {
   contexts?: Record<string, IDataView>
-  loading?: boolean
-  error?: string
 }
 
 // ==================== 过滤和排序类型 ====================
