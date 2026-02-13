@@ -98,20 +98,20 @@ export type SingleDataResponse<T = Record<string, unknown>> = ApiResponse<IDataR
 
 // ==================== DataTable 类型 ====================
 
-export interface ITableBase {
+export interface ITableMetadata extends IViewMetadata {
   tableName: string
   columns: DataColumn[]
-  api?: CrudApi
-}
-
-export interface ITableMetadata extends ITableBase, IViewMetadata {
   rows?: IDataRow[]
+  api?: CrudApi
   contexts?: Record<string, IViewMetadata>
   loading?: boolean
   error?: string
 }
 
-export interface IDataTable extends ITableBase, IDataView {
+export interface IDataTable extends IDataView {
+  tableName: string
+  columns: DataColumn[]
+  api?: CrudApi
   contexts?: Record<string, IDataView>
 }
 
