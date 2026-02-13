@@ -134,17 +134,17 @@ export class DataSetCapabilityManager {
     // ===== 2. 委托：DataSet 自身的能力（DATA_SET_STATE） =====
     this.delegateDataSetCapabilities()
 
-    // ===== 3. 外部注入：页面服务层 =====
+    // ===== 3. 外部注入：页面服务层（直接传递，不做冗余包装） =====
     if (this.config.globalData) {
-      this.registerCapability(GLOBAL_DATA, this.createGlobalDataImpl())
+      this.registerCapability(GLOBAL_DATA, this.config.globalData)
     }
 
     if (this.config.pageService) {
-      this.registerCapability(PAGE_SERVICE, this.createPageServiceImpl())
+      this.registerCapability(PAGE_SERVICE, this.config.pageService)
     }
 
     if (this.config.apiClient) {
-      this.registerCapability(API_CLIENT, this.createApiClientImpl())
+      this.registerCapability(API_CLIENT, this.config.apiClient)
     }
   }
 
@@ -180,101 +180,6 @@ export class DataSetCapabilityManager {
     const provider: CapabilityProvider = { name, implementation }
     this.dataSetContext.providers.set(name as CapabilityKey<unknown>, provider)
     this.logger.debug(`Registered capability: ${String(name)}`)
-  }
-
-  /**
-   * 创建全局数据能力实现
-   */
-  private createGlobalDataImpl() {
-    return {
-      getUserInfo: () => {
-        try {
-          return this.config.globalData?.getUserInfo() ?? { id: '', name: '', roles: [] }
-        } catch (error) {
-          this.logger.error('Failed to get user info', { error })
-          return { id: '', name: '', roles: [] }
-        }
-      },
-      getConfig: (key: string) => {
-        try {
-          return this.config.globalData?.getConfig(key)
-        } catch (error) {
-          this.logger.error('Failed to get config', { key, error })
-          return undefined
-        }
-      },
-      getDictionary: (type: string) => {
-        try {
-          return this.config.globalData?.getDictionary(type) ?? []
-        } catch (error) {
-          this.logger.error('Failed to get dictionary', { type, error })
-          return []
-        }
-      }
-    }
-  }
-
-  /**
-   * 创建页面服务能力实现
-   */
-  private createPageServiceImpl() {
-    return {
-      showMessage: (message: string, type: 'success' | 'error' | 'warning') => {
-        try {
-          this.config.pageService?.showMessage(message, type)
-        } catch (error) {
-          this.logger.error('Failed to show message', { message, type, error })
-        }
-      },
-      showConfirm: async (message: string) => {
-        try {
-          return await (this.config.pageService?.showConfirm(message) ?? Promise.resolve(false))
-        } catch (error) {
-          this.logger.error('Failed to show confirm dialog', { message, error })
-          return false
-        }
-      },
-      showLoading: (show: boolean) => {
-        try {
-          this.config.pageService?.showLoading(show)
-        } catch (error) {
-          this.logger.error('Failed to toggle loading', { show, error })
-        }
-      },
-      navigate: (path: string, params?: Record<string, unknown>) => {
-        try {
-          this.config.pageService?.navigate(path, params)
-        } catch (error) {
-          this.logger.error('Failed to navigate', { path, params, error })
-        }
-      }
-    }
-  }
-
-  /**
-   * 创建 API 客户端能力实现
-   */
-  private createApiClientImpl() {
-    return {
-      request: async <T = unknown>(config: {
-        url: string
-        method?: string
-        params?: Record<string, unknown>
-        data?: unknown
-      }): Promise<T> => {
-        if (!this.config.apiClient) {
-          const error = new Error('API client not configured')
-          this.logger.error('API request failed', { config, error })
-          return Promise.reject(error)
-        }
-        try {
-          return await this.config.apiClient.request<T>(config)
-        } catch (error) {
-          this.logger.error('API request failed', { config, error })
-          throw error
-        }
-      }
-    }
   }
 
   // =============================================================================

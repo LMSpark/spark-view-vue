@@ -5,12 +5,11 @@
  */
 
 import { DataView } from './data-view'
-import { Logger, FIELD_METADATA } from '@spark-view/spark-utils'
+import { FIELD_METADATA } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
 import type {
   IDataTable,
   ITableMetadata,
-  IDataView,
   IViewMetadata,
   IDataRowWithPermission,
   DataColumn,
@@ -285,13 +284,6 @@ export class DataTable extends DataView implements IDataTable {
   }
 
   /**
-   * @deprecated 使用 toData() 替代
-   */
-  toPlainObject(): ITableMetadata {
-    return this.toData()
-  }
-
-  /**
    * 转换上下文为纯数据对象
    */
   private contextsToData(): Record<string, IViewMetadata> {
@@ -325,40 +317,18 @@ export class DataTable extends DataView implements IDataTable {
     table.loading = data.loading
     table.error = data.error
 
-    // 转换上下文（只读取配置数据）
+    // 新格式：Record
     if (data.contexts) {
-      if (Array.isArray(data.contexts)) {
-        // 兼容旧格式：数组
-        Logger().info(`🔄 [DataTable] 转换 ${table.tableName}.contexts 为 Record 格式`)
-        data.contexts.forEach((ctx: Partial<IDataView>, index: number) => {
-          const contextId = `ctx_${index + 1}`
-          table.contexts[contextId] = DataView.fromData(
-            ctx as IViewMetadata,
-            table.tableName,
-            contextId,
-            dataSet
-          )
-        })
-      } else {
-        // 新格式：Record
-        Object.entries(data.contexts).forEach(([contextId, ctxData]) => {
-          table.contexts[contextId] = DataView.fromData(
-            ctxData,
-            table.tableName,
-            contextId,
-            dataSet
-          )
-        })
-      }
+      Object.entries(data.contexts).forEach(([contextId, ctxData]) => {
+        table.contexts[contextId] = DataView.fromData(
+          ctxData,
+          table.tableName,
+          contextId,
+          dataSet
+        )
+      })
     }
 
     return table
-  }
-
-  /**
-   * @deprecated 请使用 fromTableData() 方法
-   */
-  static fromPlainObject(data: IDataTable, dataSet?: IDataSet): DataTable {
-    return DataTable.fromTableData(data, dataSet)
   }
 }

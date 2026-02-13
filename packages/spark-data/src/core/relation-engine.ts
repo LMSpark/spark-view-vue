@@ -35,6 +35,7 @@ import type {
 import type { DataSet } from '../dataset'
 import type { DataView } from '../data-view'
 import { Logger } from '@spark-view/spark-utils'
+import { rowsEqual, isSameRow } from './utils'
 
 /**
  * 关系引擎类
@@ -117,7 +118,7 @@ export class RelationEngine {
     
     // 检查过滤结果是否变化
     const existingRows = childContext.rows ?? [];
-    const rowsChanged = !this.areRowsEqual(existingRows, filteredRows);
+    const rowsChanged = !rowsEqual(existingRows, filteredRows);
     
     if (!rowsChanged) {
       return { changed: false, message: `过滤结果未变化` };
@@ -128,17 +129,6 @@ export class RelationEngine {
     
     // 🔄 rows 改变 → 重置选中状态
     let selectionChanged = false;
-    
-    // 辅助函数：通过主键判断两行是否相同
-    const isSameRow = (row1: IDataRow | null, row2: IDataRow | null): boolean => {
-      if (!row1 || !row2) return row1 === row2;
-      // 尝试通过 id 比较（约定主键字段名为 id）
-      if ('id' in row1 && 'id' in row2) {
-        return row1.id === row2.id;
-      }
-      // 如果没有 id，则使用引用比较
-      return row1 === row2;
-    };
     
     // 1. 清理 currentRow：如果不在新结果中，则置空或自动选第0行
     const validCurrentRow = filteredRows.find(row => isSameRow(row, childContext.currentRow));
@@ -415,17 +405,4 @@ export class RelationEngine {
     });
   }
 
-  /**
-   * 比较两个数据集是否相等（用于UI状态管理）
-   */
-  private areRowsEqual(rows1: IDataRow[], rows2: IDataRow[]): boolean {
-    if (rows1.length !== rows2.length) return false;
-    
-    // 简单比较：检查每个索引位置的行是否相同（引用）
-    for (let i = 0; i < rows1.length; i++) {
-      if (rows1[i] !== rows2[i]) return false;
-    }
-    
-    return true;
-  }
 }

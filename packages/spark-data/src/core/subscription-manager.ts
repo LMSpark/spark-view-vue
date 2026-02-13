@@ -128,15 +128,13 @@ export class SubscriptionManager {
   notifySubscribers(tableName: string, contextId?: string): void {
     const table = this.dataSet.getTable(tableName);
     if (!table) return;
-    
-    // 自动刷新所有视图的过滤数据（委托给 DataTable）
-    table.refreshAllContexts();
 
     // 精确通知：只通知指定视图
     if (contextId !== undefined) {
       this.notifySingleView(tableName, contextId);
     } else {
-      // 广播通知：通知表的所有视图
+      // 广播通知前先刷新所有视图的过滤数据
+      table.refreshAllContexts();
       this.notifyAllViews(tableName);
     }
   }

@@ -13,6 +13,21 @@
 import type { IDataRow, IDataRowWithPermission, IDataView, IViewMetadata, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
 import { Logger, DATA_SOURCE, SELECTION } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
+import { isSameRow } from './core/utils'
+
+/**
+ * DataTable 引用接口（避免循环依赖）
+ * DataView 通过此接口调用表层方法
+ */
+export interface IDataTableRef {
+  loadForView(view: DataView, params: {
+    page: number
+    pageSize: number
+    filter?: FilterExpression
+    sort?: SortExpression
+  }): Promise<void>
+  saveRow(row: IDataRowWithPermission): Promise<void>
+}
 
 /**
  * 视图状态历史记录
@@ -85,14 +100,6 @@ export class DataView implements IDataView {
   page: number = 1            // 当前页码（1-based）
   pageSize: number = 20       // 每页大小
   
-  // @deprecated 使用独立的 total/page/pageSize 字段
-  pagination?: {
-    pageIndex?: number
-    pageSize?: number
-    total?: number
-    totalPages?: number
-  }
-  
   // DataSet 引用（用于触发通知）
   protected dataSet?: IDataSet
   
@@ -100,8 +107,7 @@ export class DataView implements IDataView {
   treeManager?: ITreeManager
   
   // DataTable 引用（用于主动请求数据）
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private dataTable?: any // IDataTable 会造成循环依赖，使用 any
+  private dataTable?: IDataTableRef
 
   constructor(
     hostTable: string,
@@ -156,17 +162,14 @@ export class DataView implements IDataView {
    * 设置 DataTable 引用
    * 使视图能够主动向表层请求数据
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setDataTable(dataTable: any): void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  setDataTable(dataTable: IDataTableRef): void {
     this.dataTable = dataTable
   }
   
   /**
    * 获取 DataTable 引用
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getDataTable(): any | undefined {
+  getDataTable(): IDataTableRef | undefined {
     return this.dataTable
   }
   
@@ -247,24 +250,12 @@ export class DataView implements IDataView {
       return
     }
     
-    // 执行生命周期钩子
-    if (this.onBeforeLoad) {
-      await this.onBeforeLoad(this)
-    }
-    
-    // 标记加载状态
-    this.isLoading = true
-    this.loadStartTime = Date.now()
-    this.totalLoadCount++
+    // 标记加载状态（包含 onBeforeLoad 钩子、AbortController、状态历史）
+    await this.setLoading()
     
     try {
       // 准备请求参数（从视图中获取）
-      const params: {
-        page: number
-        pageSize: number
-        filter?: FilterExpression
-        sort?: SortExpression
-      } = {
+      const params = {
         page: this.page,
         pageSize: this.pageSize,
         filter: this.filterExpression,
@@ -274,66 +265,21 @@ export class DataView implements IDataView {
       this.logger.info(`📡 [DataView] ${this.hostTable}.${this.contextId} 开始加载数据`, params)
       
       // 委托给 DataTable 执行请求
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof this.dataTable?.loadForView === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      if (this.dataTable?.loadForView) {
         await this.dataTable.loadForView(this, params)
       } else {
         throw new Error(`DataTable 未实现 loadForView 方法`)
       }
       
-      // 记录成功
-      this.lastLoadTime = Date.now()
-      this.loadDuration = this.lastLoadTime - (this.loadStartTime || 0)
-      this.loadingError = null
-      this.retryCount = 0
+      // 标记就绪状态（包含 onAfterLoad 钩子、性能记录、状态历史）
+      await this.setReady()
       
-      this.logger.info(`✅ [DataView] ${this.hostTable}.${this.contextId} 加载完成，耗时 ${this.loadDuration}ms，${this.rows.length} 行`)
-      
-      // 记录状态历史
-      this.addStateHistory({
-        timestamp: this.lastLoadTime,
-        state: 'ready',
-        rowCount: this.rows.length,
-        duration: this.loadDuration
-      })
-      
-      // 执行成功钩子
-      if (this.onAfterLoad) {
-        await this.onAfterLoad(this, true)
-      }
+      this.logger.info(`✅ [DataView] ${this.hostTable}.${this.contextId} 加载完成，${this.rows.length} 行`)
       
     } catch (error) {
-      // 记录错误
-      this.loadingError = error as Error
-      this.loadDuration = Date.now() - (this.loadStartTime || 0)
-      
-      this.logger.error(`❌ [DataView] ${this.hostTable}.${this.contextId} 加载失败`, error)
-      
-      // 记录状态历史
-      this.addStateHistory({
-        timestamp: Date.now(),
-        state: 'error',
-        error: (error as Error).message,
-        duration: this.loadDuration
-      })
-      
-      // 执行错误钩子
-      if (this.onLoadError) {
-        await this.onLoadError(this, error as Error)
-      }
-      
-      // 执行失败钩子
-      if (this.onAfterLoad) {
-        await this.onAfterLoad(this, false)
-      }
-      
+      // 标记错误状态（包含 onLoadError/onAfterLoad 钩子、自动重试、状态历史）
+      await this.setError(error as Error, false) // load() 自身不自动重试，由外部控制
       throw error
-      
-    } finally {
-      // 清除加载状态
-      this.isLoading = false
-      this.loadStartTime = null
     }
   }
   
@@ -370,9 +316,7 @@ export class DataView implements IDataView {
     
     try {
       // 委托给 DataTable 执行请求
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (typeof this.dataTable?.saveRow === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      if (this.dataTable?.saveRow) {
         await this.dataTable.saveRow(rowToSave)
       } else {
         throw new Error(`DataTable 未实现 saveRow 方法`)
@@ -387,16 +331,7 @@ export class DataView implements IDataView {
   }
   
   /**
-   * 刷新数据
-   * 使用当前参数重新加载数据
-   * 
-   * @returns Promise<void>
-   * 
-   * @example
-   * ```typescript
-   * // 刷新当前数据
-   * await view.refresh()
-   * ```
+   * 刷新数据（使用当前参数重新加载）
    */
   async reload(): Promise<void> {
     this.logger.info(`🔄 [DataView] ${this.hostTable}.${this.contextId} 刷新数据`)
@@ -436,11 +371,11 @@ export class DataView implements IDataView {
     const isSameRow = existingRow === row
     
     if (isSameRow) {
-      console.info(`⏭️ [Context] ${this.hostTable}.${this.contextId}.currentRow 未变化`)
+      this.logger.info(`⏭️ [Context] ${this.hostTable}.${this.contextId}.currentRow 未变化`)
       return
     }
     
-    console.info(`🔄 [Context] ${this.hostTable}.${this.contextId}.currentRow 更新`, { from: existingRow, to: row })
+    this.logger.info(`🔄 [Context] ${this.hostTable}.${this.contextId}.currentRow 更新`, { from: existingRow, to: row })
     this.currentRow = row
     
     // 同步维护索引
@@ -502,11 +437,11 @@ export class DataView implements IDataView {
     )
     
     if (isSameSelection) {
-      console.info(`⏭️ [Context] ${this.hostTable}.${this.contextId}.selectedRows 未变化`)
+      this.logger.info(`⏭️ [Context] ${this.hostTable}.${this.contextId}.selectedRows 未变化`)
       return
     }
     
-    console.info(`🔄 [Context] ${this.hostTable}.${this.contextId}.selectedRows 更新`, { 
+    this.logger.info(`🔄 [Context] ${this.hostTable}.${this.contextId}.selectedRows 更新`, { 
       from: existingRows.length, 
       to: rows.length 
     })
@@ -532,28 +467,6 @@ export class DataView implements IDataView {
           rows 
         })
       }
-    }
-  }
-
-  /**
-   * 手动触发通知
-   * 
-   * @remarks
-   * 用于手动触发订阅者更新，通常在以下场景使用：
-   * - 批量修改数据后一次性通知
-   * - 手动刷新 UI
-   * - 强制重新计算依赖关系
-   * 
-   * @example
-   * ```typescript
-   * // 批量修改后通知
-   * context.rows.push(newRow1, newRow2, newRow3)
-   * context.notifyChange()  // 一次性通知所有订阅者
-   * ```
-   */
-  notifyChange(): void {
-    if (this.dataSet) {
-      this.dataSet.notifySubscribers(this.hostTable, this.contextId)
     }
   }
 
@@ -588,7 +501,7 @@ export class DataView implements IDataView {
     // 注意：不清空 _originalRows，保留缓存数据
     
     if (hadData) {
-      console.info(`🧹 [Context] ${this.hostTable}.${this.contextId} 已清空所有状态`);
+      this.logger.info(`🧹 [Context] ${this.hostTable}.${this.contextId} 已清空所有状态`);
     }
     
     if (!skipNotify && hadData && this.dataSet) {
@@ -1151,15 +1064,6 @@ export class DataView implements IDataView {
   }
 
   /**
-   * 刷新上下文（重新应用过滤和排序）
-   * @param sourceData 完整数据源
-   */
-  refresh(sourceData: IDataRow[]): void {
-    this.updateRows(sourceData);
-    console.info(`✅ [Refresh] 上下文 ${this.contextId} 已刷新，当前 ${this.rows.length} 行`);
-  }
-
-  /**
    * 清理无效的选中状态
    * 检查 currentRow 和 selectedRows 是否还在当前上下文的 rows 中
    * @returns 是否发生了清理操作
@@ -1168,28 +1072,25 @@ export class DataView implements IDataView {
     const contextRows = this.rows || [];
     let needsCleanup = false;
     
-    // 检查 currentRow
+    // 检查 currentRow（使用 ID 或引用比较）
     if (this.currentRow) {
-      const currentRowExists = contextRows.some(row => 
-        JSON.stringify(row) === JSON.stringify(this.currentRow)
-      );
+      const currentRowExists = contextRows.some(row => isSameRow(row, this.currentRow));
       
       if (!currentRowExists) {
-        console.info(`🧹 [Cleanup] ${this.hostTable}.${this.contextId}.currentRow 不在上下文数据中，清空`);
+        this.logger.info(`🧹 [Cleanup] ${this.hostTable}.${this.contextId}.currentRow 不在上下文数据中，清空`);
         this.currentRow = null;
         needsCleanup = true;
       }
     }
     
-    // 检查 selectedRows
+    // 检查 selectedRows（使用 ID 或引用比较）
     if (this.selectedRows && this.selectedRows.length > 0) {
-      const validSelectedRows = this.selectedRows.filter(selectedRow => {
-        const selectedRowStr = JSON.stringify(selectedRow)
-        return contextRows.some(row => JSON.stringify(row) === selectedRowStr)
-      });
+      const validSelectedRows = this.selectedRows.filter(selectedRow =>
+        contextRows.some(row => isSameRow(row, selectedRow))
+      );
       
       if (validSelectedRows.length !== this.selectedRows.length) {
-        console.info(`🧹 [Cleanup] ${this.hostTable}.${this.contextId}.selectedRows 清理: ${this.selectedRows.length} -> ${validSelectedRows.length}`);
+        this.logger.info(`🧹 [Cleanup] ${this.hostTable}.${this.contextId}.selectedRows 清理: ${this.selectedRows.length} -> ${validSelectedRows.length}`);
         this.selectedRows = validSelectedRows;
         needsCleanup = true;
       }
@@ -1217,15 +1118,7 @@ export class DataView implements IDataView {
   }
 
   /**
-   * 转换为普通对象（用于序列化）
-   * @deprecated 请使用 toData() 方法
-   */
-  toJSON() {
-    return this.toData()
-  }
-
-  /**
-   * 从数据对象创建实例（新）
+   * 从数据对象创建实例
    */
   static fromData(data: IViewMetadata, hostTable: string, contextId: string, dataSet?: IDataSet): DataView {
     const context = new DataView(hostTable, contextId, dataSet)
@@ -1245,11 +1138,4 @@ export class DataView implements IDataView {
     return context
   }
 
-  /**
-   * 从普通对象创建实例
-   * @deprecated 请使用 fromData() 方法
-   */
-  static fromJSON(data: Partial<IDataView>, hostTable: string, contextId: string, dataSet?: IDataSet): DataView {
-    return DataView.fromData(data as IViewMetadata, hostTable, contextId, dataSet)
-  }
 }

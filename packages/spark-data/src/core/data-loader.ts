@@ -15,9 +15,9 @@
  */
 
 import type { DataSet } from '../dataset'
-import type { IDataRow } from '../types'
 import { Logger } from '@spark-view/spark-utils'
 import type { DataTable } from '../data-table'
+import { rowsEqual } from './utils'
 
 /**
  * 数据加载器类
@@ -182,7 +182,7 @@ export class DataLoader {
    */
   private async loadTableData(tableName: string): Promise<void> {
     if (!this.dataSet.dataLoader) {
-      console.warn(`⚠️ 未配置数据加载器，无法加载 ${tableName}`);
+      this.logger.warn(`⚠️ 未配置数据加载器，无法加载 ${tableName}`);
       return;
     }
     
@@ -201,7 +201,7 @@ export class DataLoader {
       if (table) {
         // 检查 rows 是否变化
         const existingRows = table.rows || []
-        const rowsChanged = !DataLoader.areRowsEqual(existingRows, rows)
+        const rowsChanged = !rowsEqual(existingRows, rows)
         
         if (!rowsChanged) {
           this.logger.info(`⏭️ [DataLoader] ${tableName}.rows 未变化，跳过通知`)
@@ -378,23 +378,6 @@ export class DataLoader {
     relations.forEach(relation => {
       this.dataSet.applyRelation(relation);
     });
-  }
-
-  /**
-   * 比较两个数据集是否相等（浅比较）
-   * 用于判断数据是否变化，避免不必要的通知
-   */
-  private static areRowsEqual(rows1: IDataRow[], rows2: IDataRow[]): boolean {
-    if (rows1.length !== rows2.length) return false;
-    
-    for (let i = 0; i < rows1.length; i++) {
-      if (rows1[i] !== rows2[i]) {
-        // 浅比较：如果引用不同，认为数据变化
-        return false;
-      }
-    }
-    
-    return true;
   }
 
   /**
