@@ -134,7 +134,8 @@ export type {
   WithInstancePermission,
   WithModelPermission,
   IPermissionChecker,
-  IPermissionFilter
+  IPermissionFilter,
+  EventCallback
 } from './data-types'
 
 /**

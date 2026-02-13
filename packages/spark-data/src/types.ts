@@ -16,7 +16,8 @@ import type {
   IModelPermission,
   IInstancePermission,
   HttpRequestConfig,
-  ApiResponse
+  ApiResponse,
+  EventCallback
 } from '@spark-view/spark-utils'
 
 // 重新导出基础类型（数据空间需要这些类型）
@@ -27,7 +28,8 @@ export type {
   IDataRowWithPermission,
   IModelPermission,
   IInstancePermission,
-  ApiResponse
+  ApiResponse,
+  EventCallback
 }
 
 // ==================== 基础类型 ====================
@@ -211,8 +213,7 @@ export interface CrudApi {
 
 // ==================== DataTable 定义 ====================
 
-/** 事件回调类型 */
-export type EventCallback = (...args: unknown[]) => void
+// EventCallback 类型已从 @spark-view/spark-utils 导入
 
 /**
  * TreeManager 接口（树形数据管理器）
@@ -264,6 +265,32 @@ export interface IDataTable extends IDataView {
   loading?: boolean
   error?: string
 }
+
+// ==================== 事件系统和树管理器 ====================
+
+// EventCallback 类型已从 @spark-view/spark-utils 导入
+
+/**
+ * TreeManager 接口（树形数据管理器）
+ */
+export interface ITreeManager {
+  setDataView(context: IDataView): void
+  getDataView(): IDataView | undefined
+  getConfig(): TreeConfig
+  getCache(): FlatTreeCache
+  addNodesToCache(nodes: FlatTreeNode[]): void
+  getNode(id: string | number): FlatTreeNode | undefined
+  getChildren(parentId: string | number | null): FlatTreeNode[]
+  getRoots(): FlatTreeNode[]
+  buildNestedTree(rootId?: string | number | null): NestedTreeNode[]
+  enrichNodes(): void
+  on(event: string, callback: EventCallback): void
+  off(event: string, callback: EventCallback): void
+}
+
+// ==================== 事件系统和树管理器 ====================
+
+// EventCallback 类型已从 @spark-view/spark-utils 导入
 
 // ==================== 依赖类型和过滤表达式 ====================
 
