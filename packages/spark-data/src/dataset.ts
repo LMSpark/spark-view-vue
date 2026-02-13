@@ -209,70 +209,6 @@ export class DataSet implements IDataSet {
     return this.tables[tableName]
   }
 
-  // ==================== 基础 CRUD 操作 ====================
-
-  /**
-   * 添加数据行
-   */
-  addRow(tableName: string, row: IDataRow): boolean {
-    const table = this.getTable(tableName)
-    if (!table) return false
-
-    table.rows.push(row)
-
-    // 同步默认上下文的缓存
-    if (table.originalRows) {
-      table.originalRows.push(row)
-    }
-
-    return true
-  }
-
-  /**
-   * 更新数据行
-   */
-  updateRow(tableName: string, rowIndex: number, row: IDataRow): boolean {
-    const table = this.getTable(tableName)
-    if (!table || rowIndex < 0 || rowIndex >= table.rows.length) {
-      return false
-    }
-
-    // 保持对象引用，使用 assign 更新属性（这样 _originalRows 也会自动更新）
-    const existingRow = table.rows[rowIndex]
-    if (existingRow) {
-      Object.assign(existingRow, row)
-    }
-
-    return true
-  }
-
-  /**
-   * 删除数据行
-   */
-  deleteRow(tableName: string, rowIndex: number): boolean {
-    const table = this.getTable(tableName)
-    if (!table || rowIndex < 0 || rowIndex >= table.rows.length) {
-      return false
-    }
-
-    const row = table.rows[rowIndex]
-    if (!row) {
-      return false
-    }
-
-    table.rows.splice(rowIndex, 1)
-
-    // 同步默认上下文的缓存
-    if (table.originalRows) {
-      const cacheIndex = table.originalRows.indexOf(row)
-      if (cacheIndex > -1) {
-        table.originalRows.splice(cacheIndex, 1)
-      }
-    }
-
-    return true
-  }
-
   // ==================== 级联操作（轻量级 - API参数构建器） ====================
 
   /**
@@ -446,33 +382,6 @@ export class DataSet implements IDataSet {
    */
   applyRelation(relation: DataRelation): { changed: boolean; message: string } {
     return this.relationEngine.applyRelation(relation)
-  }
-
-  /**
-   * 比较两个数据集是否相等（静态工具方法）
-   */
-  static areRowsEqual(rows1: IDataRow[], rows2: IDataRow[]): boolean {
-    if (rows1.length !== rows2.length) return false;
-    
-    return rows1.every((row1, index) => {
-      const row2 = rows2[index];
-      if (row1 === row2) return true;
-      if (!row1 || !row2) return false;
-      
-      const keys1 = Object.keys(row1);
-      const keys2 = Object.keys(row2);
-      if (keys1.length !== keys2.length) return false;
-      
-      return keys1.every(key => {
-        const val1 = row1[key];
-        const val2 = row2[key];
-        if (val1 === val2) return true;
-        if (typeof val1 === 'object' && typeof val2 === 'object') {
-          return JSON.stringify(val1) === JSON.stringify(val2);
-        }
-        return false;
-      });
-    });
   }
 
   // ==================== 依赖分析 ====================

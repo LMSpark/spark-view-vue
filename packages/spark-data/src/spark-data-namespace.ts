@@ -4,7 +4,6 @@
  */
 
 import { DataSet } from './dataset.js'
-import { DataTable } from './data-table.js'
 import { DataView } from './data-view.js'
 import { TreeManager } from './tree-manager.js'
 import { 
@@ -12,7 +11,7 @@ import {
   createDataSetCapabilityManager,
   type DataSetCapabilityConfig 
 } from './capability/DataSetCapabilityManager.js'
-import type { IDataSet, IDataSetConfig, IDataRow, TreeConfig, FlatTreeNode } from './types.js'
+import type { IDataSetConfig, IDataRow, TreeConfig, FlatTreeNode } from './types.js'
 
 /**
  * SparkData 命名空间
@@ -23,11 +22,6 @@ export const SparkData = {
   
   /**
    * 创建 DataSet 实例
-   * @example
-   * const ds = SparkData.createDataSet({
-   *   dataSetName: 'MyData',
-   *   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
-   * })
    */
   createDataSet: (config: IDataSetConfig): DataSet => {
     return new DataSet(config)
@@ -35,8 +29,6 @@ export const SparkData = {
 
   /**
    * 从 JSON 创建 DataSet
-   * @example
-   * const ds = SparkData.fromJSON(jsonString, dataLoader)
    */
   fromJSON: (
     json: string,
@@ -49,12 +41,6 @@ export const SparkData = {
   
   /**
    * 创建 TreeManager 实例
-   * @example
-   * const tree = SparkData.createTreeManager({
-   *   idField: 'id',
-   *   parentIdField: 'parentId',
-   *   lazy: true
-   * })
    */
   createTreeManager: (
     config: TreeConfig,
@@ -78,13 +64,11 @@ export const SparkData = {
 
   /**
    * 创建 DataView 实例
-   * @example
-   * const ctx = SparkData.createContext('Users', 'default', dataSet)
    */
   createContext: (
     hostTable: string,
     contextId: string = 'default',
-    dataSet?: IDataSet
+    dataSet?: DataSet
   ): DataView => {
     return new DataView(hostTable, contextId, dataSet)
   },
@@ -93,29 +77,12 @@ export const SparkData = {
   
   /**
    * 创建 DataSet 能力管理器
-   * @example
-   * const capManager = SparkData.createCapabilityManager('page1', {
-   *   dataSet: myDataSet,
-   *   globalData: { getUserInfo: () => ({...}) }
-   * })
    */
   createCapabilityManager: (
     pageId: string,
     config: DataSetCapabilityConfig
   ): DataSetCapabilityManager => {
     return createDataSetCapabilityManager(pageId, config)
-  },
-
-  // ==================== 直接类访问（高级用户） ====================
-  
-  /**
-   * 直接访问类构造器（高级用户）
-   */
-  classes: {
-    DataSet,
-    DataTable,
-    DataView,
-    TreeManager
   }
 } as const
 

@@ -13,6 +13,7 @@ import type {
 } from './types'
 import { Logger } from '@spark-view/spark-utils'
 import type { DataView } from './data-view'
+import { EventManager } from './core/event-manager'
 
 /**
  * 树管理器类
@@ -21,7 +22,7 @@ import type { DataView } from './data-view'
 export class TreeManager {
   private config: TreeConfig
   private cache: FlatTreeCache = {}
-  private eventListeners: Map<string, Array<(...args: unknown[]) => void>> = new Map()
+  private eventManager = new EventManager()
   private dataView?: DataView  // 关联的 DataView
   private logger = Logger()
 
@@ -264,36 +265,21 @@ export class TreeManager {
    * 事件监听
    */
   on(event: string, callback: (...args: unknown[]) => void): void {
-    if (!this.eventListeners.has(event)) {
-      this.eventListeners.set(event, [])
-    }
-    const listeners = this.eventListeners.get(event)
-    if (listeners) {
-      listeners.push(callback)
-    }
+    this.eventManager.on(event, callback)
   }
 
   /**
    * 移除事件监听
    */
   off(event: string, callback: (...args: unknown[]) => void): void {
-    const listeners = this.eventListeners.get(event)
-    if (listeners) {
-      const index = listeners.indexOf(callback)
-      if (index > -1) {
-        listeners.splice(index, 1)
-      }
-    }
+    this.eventManager.off(event, callback)
   }
 
   /**
    * 触发事件
    */
   private emit(event: string, data: unknown): void {
-    const listeners = this.eventListeners.get(event)
-    if (listeners) {
-      listeners.forEach(callback => callback(data))
-    }
+    this.eventManager.emit(event, data)
   }
 
   /**

@@ -68,6 +68,11 @@ export type {
   CrudApi
 } from './types'
 
+/**
+ * DataTable 引用接口（避免循环依赖时使用）
+ */
+export type { IDataTableRef } from './data-view'
+
 // =============================================================================
 // 3. 权限字段常量 (Permission Field Constants)
 // =============================================================================
@@ -94,51 +99,10 @@ export {
 } from './capability/DataSetCapabilityManager'
 
 // =============================================================================
-// 5. API 适配器 (API Adapter)
+// 5. 工具函数 (Utilities)
 // =============================================================================
 
 /**
- * HTTP 请求工具
- * 直接使用 @spark-view/spark-utils 的 Request 类
+ * 数据行比较工具
  */
-export type { Request } from '@spark-view/spark-utils'
-
-// =============================================================================
-// 6. 核心引擎 (Core Engines)
-// =============================================================================
-
-/**
- * 关系引擎 - 处理表间关系
- * 支持级联更新/删除、关系过滤等功能
- */
-export { RelationEngine } from './core/relation-engine'
-
-/**
- * 依赖分析器 - 分析视图间依赖关系
- * 支持依赖图构建、循环依赖检测、加载顺序优化等功能
- * 
- * 注意：依赖关系是视图与视图之间的，不是表与表之间的
- */
-export { DependencyAnalyzer } from './core/dependency-analyzer'
-
-/**
- * 数据加载器 - 智能数据加载
- * 支持依赖分析、防重入、自动加载等功能
- */
-export { DataLoader } from './core/data-loader'
-
-/**
- * 订阅管理器 - 管理视图订阅和通知
- * 支持视图订阅、精确/广播通知、订阅统计等功能
- * 
- * 核心概念：订阅的是视图（Context），不是表（Table）
- */
-export { SubscriptionManager } from './core/subscription-manager'
-
-/**
- * 事件管理器 - 管理DataSet的事件系统
- * 支持事件注册、触发、移除、统计等功能
- * 
- * 增强功能：一次性监听器、Promise风格等待、事件统计
- */
-export { EventManager } from './core/event-manager'
+export { rowsEqual, isSameRow } from './core/utils'

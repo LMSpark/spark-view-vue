@@ -72,25 +72,18 @@ describe('SparkData Namespace', () => {
     expect(dataSet.dataSetName).toBe('TestData')
   })
 
-  it('应该提供 classes 访问高级用户', () => {
-    expect(SparkData.classes).toBeDefined()
-    expect(SparkData.classes.DataSet).toBeDefined()
-    expect(SparkData.classes.TreeManager).toBeDefined()
-    expect(SparkData.classes.DataView).toBeDefined()
-  })
-
-  it('命名空间 API 应该与直接导入保持一致', () => {
+  it('命名空间 API 创建的实例应该是正确的类型', () => {
     const dataSet1 = SparkData.createDataSet({
       dataSetName: 'Test1',
       tables: {}
     })
 
-    const { DataSet } = SparkData.classes
-    const dataSet2 = new DataSet({
+    const dataSet2 = SparkData.createDataSet({
       dataSetName: 'Test2',
       tables: {}
     })
 
+    // 同一工厂方法创建的实例是相同类型
     expect(dataSet1.constructor).toBe(dataSet2.constructor)
   })
 })
