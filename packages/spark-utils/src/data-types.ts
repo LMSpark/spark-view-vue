@@ -264,3 +264,22 @@ export interface IDataSource<T = Record<string, unknown>> {
   /** 每页大小 */
   pageSize?: number
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 8. 事件系统类型
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * 事件回调函数类型
+ *
+ * 用于事件系统（EventManager）和观察者模式
+ *
+ * @example
+ * ```ts
+ * const callback: EventCallback = (data) => {
+ *   console.log('Event fired:', data)
+ * }
+ * manager.on('dataChanged', callback)
+ * ```
+ */
+export type EventCallback = (...args: unknown[]) => void
