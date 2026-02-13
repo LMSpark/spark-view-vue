@@ -1,9 +1,17 @@
 /**
  * DataView — 数据视图（UI 状态容器）
  *
- * 定位：UI 和后端之间的薄状态层
- * - 持有：rows、选中状态、分页、加载标记
- * - 不做：排序、过滤、网络请求、重试、性能监控
+ * Purpose: 作为 UI 层与数据结构（DataSet/DataTable）之间的薄状态容器，
+ * - 负责：持有视图行（rows）、选中/当前行状态、分页与加载标记、视图序列化
+ * - 不负责：网络请求、复杂的持久化、跨表业务逻辑（由 DataSet 管理）
+ *
+ * Public surface:
+ * - 构造与序列化：fromData / toData
+ * - 状态管理：setCurrentRow / setSelectedRows / clearAll / cleanupInvalidSelections
+ *
+ * Usage example:
+ * const dv = new DataView('Users', 'default', dataSet)
+ * dv.rows = fetchedRows; dv.setSelectedRows([dv.rows[0]])
  */
 
 import type {
@@ -14,7 +22,12 @@ import { Logger } from '@spark-view/spark-utils'
 import { isSameRow } from './core/utils'
 
 export class DataView implements IDataView {
-  // ===== 数据状态 =====
+  /* ---------------------------------------------------------------------------
+   * 状态（State） — 存储视图数据与选中/当前行信息
+   * - rows / originalRows: 当前页面/视图的行数据
+   * - currentRow / currentRowIndex: 当前焦点行
+   * - selectedRows / selectedRowIndices: 选中行的缓存
+   * --------------------------------------------------------------------------- */
   rows: IDataRowWithPermission[] = []
   originalRows?: IDataRowWithPermission[]
   currentRow: IDataRowWithPermission | null = null
@@ -22,21 +35,35 @@ export class DataView implements IDataView {
   selectedRows: IDataRowWithPermission[] = []
   selectedRowIndices: number[] = []
 
-  // ===== 分页 =====
+  /* ---------------------------------------------------------------------------
+   * 分页（Paging） — 仅保存分页参数（由 DataLoader/外部负责实际分页请求）
+   * - page / pageSize / total
+   * --------------------------------------------------------------------------- */
   total: number = 0
   page: number = 1
   pageSize: number = 20
 
-  // ===== 加载状态 =====
+  /* ---------------------------------------------------------------------------
+   * 加载状态（Loading） — 简要记录加载中与加载错误，供 UI 显示
+   * - isLoading: 加载标记
+   * - loadingError: 最近一次加载错误（若有）
+   * --------------------------------------------------------------------------- */
   isLoading = false
   loadingError: Error | null = null
 
-  // ===== 配置 =====
+  /* ---------------------------------------------------------------------------
+   * 视图配置（Configuration） — 持久化到 IViewMetadata 的可选设置
+   * - filterExpression / sortExpression / autoSelectFirst
+   * --------------------------------------------------------------------------- */
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
   autoSelectFirst?: boolean
 
-  // ===== 引用 =====
+  /* ---------------------------------------------------------------------------
+   * 引用（References） — 关联到宿主 DataSet 与可选 TreeManager
+   * - dataSet: 用于通知/广播/跨表同步
+   * - treeManager: 树形视图支持的可选关联
+   * --------------------------------------------------------------------------- */
   protected dataSet?: IDataSet
   treeManager?: ITreeManager
 
@@ -51,7 +78,11 @@ export class DataView implements IDataView {
     this.dataSet = dataSet
   }
 
-  // ===== 访问器 =====
+  /* ---------------------------------------------------------------------------
+   * 访问器（Accessors） — 公开只读属性和小型设置方法
+   * - hostTable / contextId
+   * - setDataSet / setTreeManager / getTreeManager
+   * --------------------------------------------------------------------------- */
   get hostTable() { return this.__hostTable }
   get contextId() { return this.__contextId }
 
@@ -62,12 +93,19 @@ export class DataView implements IDataView {
   }
   getTreeManager() { return this.treeManager }
 
-  // ===== 加载状态（供 DataLoader 调用） =====
+  /* ---------------------------------------------------------------------------
+   * 加载生命周期（Loading helpers） — 供 DataLoader 或上层调用以切换加载状态
+   * - setLoading / setReady / setError
+   * --------------------------------------------------------------------------- */
   setLoading() { this.isLoading = true; this.loadingError = null }
   setReady()   { this.isLoading = false; this.loadingError = null }
   setError(e: Error) { this.isLoading = false; this.loadingError = e }
 
-  // ===== 选中管理 =====
+  /* ---------------------------------------------------------------------------
+   * 选中管理（Selection management） — current / selected 行的设置、清理与通知
+   * - setCurrentRow / setSelectedRows / clearAll / cleanupInvalidSelections
+   * - 变更会通知关联的 DataSet（updateRelatedTables / notifySubscribers / emit）
+   * --------------------------------------------------------------------------- */
 
   setCurrentRow(row: IDataRowWithPermission | null, skipNotify = false): void {
     if (this.currentRow === row) return
@@ -137,7 +175,10 @@ export class DataView implements IDataView {
     return cleaned
   }
 
-  // ===== 序列化 =====
+  /* ---------------------------------------------------------------------------
+   * 序列化（Serialization） — 将视图配置序列化为 IViewMetadata（仅配置，不包含行数据）
+   * - toData / static fromData
+   * --------------------------------------------------------------------------- */
 
   toData(): IViewMetadata {
     return {

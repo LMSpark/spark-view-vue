@@ -1,11 +1,13 @@
 /**
  * 极简数据加载器 — 智能加载表数据（依赖分析 + 防重入）
+ *
+ * 核心原则：
+ * - 非阻塞：异步加载，不等待
+ * - 简化状态：数据加载后清空选中状态，不做新旧值比较
  */
 
 import type { DataSet } from '../dataset'
-import type { DataTable } from '../data-table'
 import { Logger } from '@spark-view/spark-utils'
-import { rowsEqual } from './utils'
 
 export class DataLoader {
   private logger = Logger('DataLoader')
@@ -90,19 +92,29 @@ export class DataLoader {
       const rows = await this.ds.dataLoader(tableName)
       if (!table) return
 
-      if (!rowsEqual(table.rows, rows)) {
-        table.rows.splice(0, table.rows.length, ...rows)
-        table.originalRows ??= [...rows]
+      // 直接替换数据，不做新旧值比较
+      table.rows.splice(0, table.rows.length, ...rows)
+      table.originalRows ??= [...rows]
 
-        if (table.autoSelectFirst && rows.length > 0 && !table.currentRow) {
-          table.setCurrentRow(rows[0] ?? null, false)
-        }
-        this.cleanupSelections(table)
-
-        // 子表 → 重新应用父关系
-        const parentRels = this.ds.relations?.filter(r => r.childTable === tableName) ?? []
-        for (const rel of parentRels) this.ds.applyRelation(rel)
+      // 清空选中状态（核心原则：数据加载后重置状态）
+      if (table.currentRow !== null || table.selectedRows.length > 0) {
+        table.currentRow = null
+        table.selectedRows.splice(0)
+        table.selectedRowIndices.splice(0)
       }
+
+      // 清空所有视图的选中状态
+      for (const ctx of Object.values(table.contexts ?? {})) {
+        if (ctx.currentRow !== null || ctx.selectedRows.length > 0) {
+          ctx.currentRow = null
+          ctx.selectedRows.splice(0)
+          ctx.selectedRowIndices.splice(0)
+        }
+      }
+
+      // 子表 → 重新应用父关系
+      const parentRels = this.ds.relations?.filter(r => r.childTable === tableName) ?? []
+      for (const rel of parentRels) this.ds.applyRelation(rel)
 
       table.setReady()
       this.ds.notifySubscribers(tableName)
@@ -111,14 +123,6 @@ export class DataLoader {
       if (table) table.setError(err instanceof Error ? err : new Error(String(err)))
       throw err
     }
-  }
-
-  private cleanupSelections(table: DataTable) {
-    let dirty = table.cleanupInvalidSelections()
-    for (const ctx of Object.values(table.contexts ?? {})) {
-      if (ctx.cleanupInvalidSelections()) dirty = true
-    }
-    if (dirty) this.ds.emit('selectionCleaned', { tableName: table.hostTable })
   }
 
   private notifyChildren(parentTable: string) {
