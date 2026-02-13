@@ -1,16 +1,9 @@
 /**
  * SPARK 数据空间类型定义
- * 
- * ⚠️ 重要：这是数据空间高级类型的唯一定义源
- * - DataTable, DataSet, DataView, TreeManager 等高级类型在此定义
- * - IDataRow, HttpRequestConfig 等基础类型从 spark-utils 导入并重新导出（便于类型系统一致性）
- * - 保持类型系统的单一职责和清晰依赖关系
- * 
- * 参考：https://ligh60.blog.csdn.net/article/details/150585411
  */
 
-import type { 
-  IDataRow as IDataRowBase, 
+import type {
+  IDataRow as IDataRowBase,
   IDataSource,
   IDataRowWithPermission,
   IModelPermission,
@@ -20,11 +13,10 @@ import type {
   EventCallback
 } from '@spark-view/spark-utils'
 
-// 重新导出基础类型（数据空间需要这些类型）
 export type IDataRow = IDataRowBase
-export type { 
-  HttpRequestConfig, 
-  IDataSource, 
+export type {
+  HttpRequestConfig,
+  IDataSource,
   IDataRowWithPermission,
   IModelPermission,
   IInstancePermission,
@@ -34,512 +26,218 @@ export type {
 
 // ==================== 基础类型 ====================
 
-/**
- * 视图元数据接口（纯数据，用于序列化）
- *
- * 作用域：单个数据表（DataTable）的某个绑定实例
- *
- * 用途：
- * - 表示视图配置的纯数据结构
- * - 支持 JSON 序列化/反序列化
- * - 用于配置文件、网络传输等场景
- * - 只包含配置数据，不包含运行时状态
- *
- * 同时作为绑定上下文的元数据接口
- */
 export interface IViewMetadata {
-  // ===== 宿主信息（配置） =====
   hostTable?: string
   contextId?: string
-
-  // ===== 数据视图配置（配置） =====
-  filterExpression?: FilterExpression  // 行过滤表达式（定义当前视图显示哪些行）
-  sortExpression?: SortExpression      // 排序表达式（定义行的排序规则）
-  autoSelectFirst?: boolean           // 自动选中第一行
-
-  // ===== 分页配置（配置） =====
-  page?: number         // 当前页码
-  pageSize?: number     // 每页大小
+  filterExpression?: FilterExpression
+  sortExpression?: SortExpression
+  autoSelectFirst?: boolean
+  page?: number
+  pageSize?: number
 }
 
-/**
- * 数据视图接口（运行时接口）
- *
- * 继承 IViewMetadata（配置数据）和 IDataSource（数据源），支持权限控制和分页
- * 相当于 .NET 的 DataView，提供数据的视图表示和选中状态管理
- *
- * 🔄 完整数据流转链路：
- * ```
- * 1️⃣ API 响应        → const response: PagedDataResponse = await fetchData()
- * 2️⃣ 填充到 Context   → context.rows = response.data.rows
- * 3️⃣ UI 显示          → <el-table :data="context.rows">
- * 4️⃣ 用户操作         → @row-click / @selection-change
- * 5️⃣ 自动更新索引     → context.currentRowIndex / selectedRowIndices 自动维护
- * ```
- *
- * 典型使用场景：
- * - el-table 的 dataKey 绑定
- * - 主从视图联动（通过 filterExpression）
- * - 表格行选中状态管理
- * - 带权限的数据源
- *
- * @example
- * ```typescript
- * // 1. 从 API 获取数据
- * const response: PagedDataResponse = await api.getUsers()
- *
- * // 2. 创建并填充 DataView
- * const context = new DataView('Users', 'default')
- * context.rows = response.data.rows
- * context.total = response.data.total
- *
- * // 3. UI 绑定（Vue 组件）
- * <el-table
- *   :data="context.rows"
- *   @row-click="handleRowClick"
- *   @selection-change="handleSelectionChange">
- *
- * // 4. 用户操作处理
- * function handleRowClick(row: IDataRowWithPermission) {
- *   context.setCurrentRow(row)
- *   // ✅ context.currentRowIndex 自动更新为该行在 rows 中的索引
- * }
- *
- * function handleSelectionChange(rows: IDataRowWithPermission[]) {
- *   context.setSelectedRows(rows)
- *   // ✅ context.selectedRowIndices 自动更新为 [0, 2, 5]
- * }
- *
- * // 5. 索引的便利使用
- * const nextRow = context.rows[context.currentRowIndex + 1]  // 下一行
- * const prevRow = context.rows[context.currentRowIndex - 1]  // 上一行
- * ```
- */
 export interface IDataView extends IViewMetadata, IDataSource {
-  // ===== 配置数据（从 IViewMetadata 继承） =====
-  // hostTable, contextId, filterExpression, sortExpression, autoSelectFirst, autoDeselectOnEmpty, page, pageSize
-  
-  // 覆盖可选字段为必需字段
   hostTable: string
   contextId: string
   page: number
   pageSize: number
-
-  // ===== 运行时状态字段（必需） =====
   currentRow: IDataRowWithPermission | null
-  currentRowIndex: number | null   // 必需：当前行索引
+  currentRowIndex: number | null
   selectedRows: IDataRowWithPermission[]
-  selectedRowIndices: number[]     // 必需：选中行索引数组
-  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行（覆盖 IDataSource.rows）
-  originalRows?: IDataRowWithPermission[]  // 原始数据行（运行时缓存）
-
-  // ===== 分页状态（运行时保证） =====
-  total: number        // 必需：总记录数（默认 0）
-
-  // ===== 核心方法（运行时必需） =====
+  selectedRowIndices: number[]
+  rows: IDataRowWithPermission[]
+  originalRows?: IDataRowWithPermission[]
+  total: number
   setCurrentRow(row: IDataRowWithPermission | null, skipNotify?: boolean): void
   setSelectedRows(rows: IDataRowWithPermission[], skipNotify?: boolean): void
-
-  // ===== 序列化方法 =====
   toData(): IViewMetadata
 }
 
-/**
- * 列定义：描述表中每个字段的元数据
- */
 export interface DataColumn {
-  name: string              // 字段名称，必须唯一（原 columnName）
-  type: string              // 数据类型，如 'string'、'number'（原 dataType）
-  label?: string            // 显示名称（原 caption）
-  allowDBNull?: boolean     // 是否允许空值
-  defaultValue?: unknown    // 默认值
-  isPrimaryKey?: boolean    // 是否主键
-  autoIncrement?: boolean   // 是否自增
+  name: string
+  type: string
+  label?: string
+  allowDBNull?: boolean
+  defaultValue?: unknown
+  isPrimaryKey?: boolean
+  autoIncrement?: boolean
 }
 
-// ==================== API 响应包装 ====================
-// ApiResponse 已从 spark-utils 导入并重新导出
+// ==================== API 类型 ====================
 
-/**
- * 分页列表响应类型别名
- */
-export type PagedDataResponse = ApiResponse<IDataSource>
-
-/**
- * 单条数据响应类型别名
- */
-export type SingleDataResponse<T = Record<string, unknown>> = ApiResponse<IDataRowWithPermission<T>>
-
-// ==================== HTTP API 配置 ====================
-
-/**
- * HTTP 端点定义：API 静态配置（排除运行时选项）
- * 
- * 基于 HttpRequestConfig，排除运行时选项和动态数据
- * 适用于配置文件中的声明式 API 定义
- */
 export type HttpEndpoint = Omit<HttpRequestConfig,
-  // 运行时选项
   | 'timeout' | 'responseType' | 'cache' | 'cacheKey' | 'cacheExpiry'
   | 'retry' | 'retryDelay' | 'skipRequestInterceptor' | 'skipResponseInterceptor'
   | 'meta'
-  // 运行时数据
   | 'data' | 'token'
 >
 
-/**
- * CRUD API 组：一组增删改查及导入导出接口
- */
 export interface CrudApi {
-  create?: HttpEndpoint                       // 新增接口
-  retrieve?: HttpEndpoint                     // 查询单条接口
-  update?: HttpEndpoint                       // 更新接口
-  delete?: HttpEndpoint                       // 删除接口
-  list?: HttpEndpoint & {                     // 列表接口
-    pagination?: {                            // 分页参数配置
-      pageParam?: string                      // 页码参数名
-      sizeParam?: string                      // 页大小参数名
-      sortParam?: string                      // 排序参数名
+  create?: HttpEndpoint
+  retrieve?: HttpEndpoint
+  update?: HttpEndpoint
+  delete?: HttpEndpoint
+  list?: HttpEndpoint & {
+    pagination?: {
+      pageParam?: string
+      sizeParam?: string
+      sortParam?: string
     }
   }
-  batch?: {                                   // 批量操作
-    create?: HttpEndpoint                     // 批量新增
-    update?: HttpEndpoint                     // 批量更新
-    delete?: HttpEndpoint                     // 批量删除
+  batch?: {
+    create?: HttpEndpoint
+    update?: HttpEndpoint
+    delete?: HttpEndpoint
   }
-  import?: HttpEndpoint                       // 导入接口
-  export?: HttpEndpoint                       // 导出接口
+  import?: HttpEndpoint
+  export?: HttpEndpoint
 }
 
-// ==================== DataTable 定义 ====================
+export type PagedDataResponse = ApiResponse<IDataSource>
+export type SingleDataResponse<T = Record<string, unknown>> = ApiResponse<IDataRowWithPermission<T>>
 
-// EventCallback 类型已从 @spark-view/spark-utils 导入
+// ==================== DataTable 类型 ====================
 
-/**
- * TreeManager 接口（树形数据管理器）
- */
-export interface ITreeManager {
-  setDataView(context: IDataView): void
-  getDataView(): IDataView | undefined
-  getConfig(): TreeConfig
-  getCache(): FlatTreeCache
-  addNodesToCache(nodes: FlatTreeNode[]): void
-  getNode(id: string | number): FlatTreeNode | undefined
-  getChildren(parentId: string | number | null): FlatTreeNode[]
-  getRoots(): FlatTreeNode[]
-  buildNestedTree(rootId?: string | number | null): NestedTreeNode[]
-  enrichNodes(): void
-  on(event: string, callback: EventCallback): void
-  off(event: string, callback: EventCallback): void
-}
-
-/**
- * 表元数据接口（纯数据结构，用于序列化）
- *
- * 继承 IViewMetadata 配置数据，添加表特定的配置信息
- * 只包含配置数据，不包含运行时状态
- */
 export interface ITableMetadata extends IViewMetadata {
   tableName: string
   columns: DataColumn[]
-  rows?: IDataRow[]  // 可选：纯数据行（无权限信息）
+  rows?: IDataRow[]
   api?: CrudApi
   contexts?: Record<string, IViewMetadata>
-
-  // 扩展属性（配置）
   loading?: boolean
   error?: string
 }
 
-/**
- * DataTable 接口（运行时接口，包含方法）
- */
 export interface IDataTable extends IDataView {
   tableName: string
   columns: DataColumn[]
   api?: CrudApi
-  rows: IDataRowWithPermission[]  // 必需：支持权限的数据行
+  rows: IDataRowWithPermission[]
   contexts?: Record<string, IDataView>
-  
-  // 扩展属性
   loading?: boolean
   error?: string
 }
 
-// ==================== 事件系统和树管理器 ====================
+// ==================== 过滤和排序类型 ====================
 
-// EventCallback 类型已从 @spark-view/spark-utils 导入
-
-/**
- * TreeManager 接口（树形数据管理器）
- */
-export interface ITreeManager {
-  setDataView(context: IDataView): void
-  getDataView(): IDataView | undefined
-  getConfig(): TreeConfig
-  getCache(): FlatTreeCache
-  addNodesToCache(nodes: FlatTreeNode[]): void
-  getNode(id: string | number): FlatTreeNode | undefined
-  getChildren(parentId: string | number | null): FlatTreeNode[]
-  getRoots(): FlatTreeNode[]
-  buildNestedTree(rootId?: string | number | null): NestedTreeNode[]
-  enrichNodes(): void
-  on(event: string, callback: EventCallback): void
-  off(event: string, callback: EventCallback): void
-}
-
-// ==================== 事件系统和树管理器 ====================
-
-// EventCallback 类型已从 @spark-view/spark-utils 导入
-
-// ==================== 依赖类型和过滤表达式 ====================
-
-/**
- * 依赖类型：当前行 / 选中行 / 全部行 / 可自定义扩展
- */
 export type DependencyType =
-  | 'currentRow'   // 依赖父上下文的 currentRow
-  | 'selectedRows' // 依赖父上下文的 selectedRows
-  | 'allRows'      // 依赖父上下文的全部行 (对于子Context，即为过滤后的行)
-  | 'pagedRows'    // 依赖父上下文的分页行
-  | string         // 预留自定义类型
+  | 'currentRow'
+  | 'selectedRows'
+  | 'allRows'
+  | 'pagedRows'
+  | string
 
-/**
- * 排序方向
- */
 export type SortDirection = 'asc' | 'desc' | 'ASC' | 'DESC'
 
-/**
- * 排序表达式：单个字段或多个字段组合排序
- */
 export type SortExpression =
-  // 单字段排序
-  | {
-      field: string           // 字段名
-      direction: SortDirection // 排序方向
-    }
-  // 多字段排序
-  | {
-      fields: Array<{
-        field: string
-        direction: SortDirection
-      }>
-    }
+  | { field: string; direction: SortDirection }
+  | { fields: Array<{ field: string; direction: SortDirection }> }
 
-/**
- * 过滤操作符
- */
 export type FilterOperator =
-  | '=='  | '!='  | '>'   | '>='  | '<'   | '<='
-  | 'in'  | 'not in' | 'like' | 'not like'
+  | '==' | '!=' | '>' | '>=' | '<' | '<='
+  | 'in' | 'not in' | 'like' | 'not like'
   | 'is null' | 'is not null'
   | 'between' | 'not between'
   | 'startsWith' | 'endsWith' | 'contains'
 
-/**
- * 通用 JSON 过滤表达式节点定义
- */
 export type FilterExpression =
-  // 单一条件节点
-  | { 
-      field: string
-      op: FilterOperator
-      value: unknown
-    }
-  // 与 / 或 逻辑组合
-  | { 
-      type: 'and' | 'or'
-      children: FilterExpression[]
-    }
-  // 条件取反（保留 field, op, value）
-  | { 
-      type: '!condition'
-      field: string
-      op: FilterOperator
-      value: unknown
-    }
-  // 逻辑取反组合
-  | { 
-      type: '!and' | '!or'
-      children: FilterExpression[]
-    }
-  // 函数调用节点
-  | { 
-      func: string
-      args: unknown[]
-    }
+  | { field: string; op: FilterOperator; value: unknown }
+  | { type: 'and' | 'or'; children: FilterExpression[] }
+  | { type: '!condition'; field: string; op: FilterOperator; value: unknown }
+  | { type: '!and' | '!or'; children: FilterExpression[] }
+  | { func: string; args: unknown[] }
 
-// ==================== DataRelation 定义 ====================
+// ==================== 关系类型 ====================
 
-/**
- * DataRelation：绑定上下文（视图）之间的关系配置
- * 
- * ⚠️ 核心概念：
- * - 关系主体是 DataView（视图实例），不是 DataTable（数据表）
- * - 同一表可有多个视图，每个视图有独立的关系配置
- * - 父视图状态变化 → 触发子视图通过 filterExpression 动态过滤
- * 
- * @example
- * ```typescript
- * {
- *   parentTable: 'Orders',
- *   parentContextId: 'currentOrder',      // 父视图
- *   childTable: 'OrderDetails',
- *   childContextId: 'relatedDetails',     // 子视图
- *   dependencyType: 'currentRow',
- *   filterExpression: { field: 'orderId', op: '==', value: { func: 'parentRow.id', args: [] } }
- * }
- * ```
- */
 export interface DataRelation {
-  parentTable: string             // 父表名（数据源标识）
-  parentContextId?: string        // 🎯 父上下文 ID（视图标识，默认 'default'）
-  
-  childTable: string              // 子表名（数据源标识）
-  childContextId?: string         // 🎯 子上下文 ID（视图标识，默认 'default'）
-  
-  dependencyType: DependencyType  // 依赖类型：currentRow | selectedRows | allRows | pagedRows
-  filterExpression: FilterExpression // 通用 JSON 过滤表达式（定义如何从父上下文过滤子上下文）
-  cascadeUpdate?: boolean         // 是否级联更新
-  cascadeDelete?: boolean         // 是否级联删除
-  autoLoad?: boolean              // 是否自动加载子表数据（用于 currentRow/selectedRows 依赖）
-  
-  // 扩展：关系名称
-  relationName?: string           // 关系名称，便于引用
+  parentTable: string
+  parentContextId?: string
+  childTable: string
+  childContextId?: string
+  dependencyType: DependencyType
+  filterExpression: FilterExpression
+  cascadeUpdate?: boolean
+  cascadeDelete?: boolean
+  autoLoad?: boolean
+  relationName?: string
 }
 
-// ==================== DataSet 定义 ====================
+// ==================== DataSet 类型 ====================
 
-/**
- * 数据集元数据接口（纯数据，用于序列化）
- *
- * 用途：JSON 序列化、网络传输、存储
- * 特征：只包含数据字段，无方法
- *
- * @example
- * ```typescript
- * const data: IDataSetMetadata = {
- *   dataSetName: 'MyData',
- *   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
- * }
- * ```
- */
 export interface IDataSetMetadata {
   dataSetName: string
-  tables: Record<string, ITableMetadata>  // 纯数据表
+  tables: Record<string, ITableMetadata>
   relations?: DataRelation[]
   version?: number
   pageId?: string
 }
 
-/**
- * DataSet 运行时接口（包含方法）
- *
- * 用途：运行时操作的接口定义
- * 特征：包含运行时方法和状态管理
- * 注意：覆盖 tables 字段为运行时类型
- */
 export interface IDataSet extends IDataSetMetadata {
-  // 覆盖为运行时类型
-  tables: Record<string, IDataTable>  // 运行时表实例
+  tables: Record<string, IDataTable>
   autoLoadRelations?: boolean
-
-  // 数据访问
   getTable(tableName: string): IDataTable | undefined
-  
-  // 数据加载
   requestTableData(tableName: string): void
-
-  // 关系管理
   updateRelatedTables(tableName: string, contextId?: string): void
   notifySubscribers(tableName: string, contextId?: string): void
-
-  // 事件系统
   subscribe(tableName: string, contextId: string, callback: () => void): () => void
   on(event: string, handler: EventCallback): void
   off(event: string, handler: EventCallback): void
   emit(event: string, data: unknown): void
-
-  // 序列化
   toData(): IDataSetMetadata
   toJSON(): string
 }
 
-/**
- * DataSet 配置接口（用于构造函数）
- * 
- * 用途：创建 DataSet 实例时的配置
- * 特征：扩展数据层，增加可选的运行时配置
- * 
- * @example
- * ```typescript
- * const config: IDataSetConfig = {
- *   dataSetName: 'MyData',
- *   tables: { Users: tableData },
- *   autoLoadRelations: true,
- *   dataLoader: async (tableName) => fetchData(tableName)
- * }
- * const ds = new DataSet(config)
- * ```
- */
-/**
- * DataSet 配置接口（用于创建 DataSet 实例）
- */
 export interface IDataSetConfig extends IDataSetMetadata {
-  // 数据加载器（可选，用于懒加载数据）
   dataLoader?: (tableName: string) => Promise<IDataRow[]>
-  // 自动加载关联表（可选）
   autoLoadRelations?: boolean
 }
 
+// ==================== 树类型 ====================
 
-
-// ==================== 自引用树（Self-Reference Tree）====================
-
-/**
- * 树配置
- */
 export interface TreeConfig {
-  mode: 'flat' | 'nested'   // 模式：扁平化 或 嵌套结构
-  tableName?: string         // 表名（多表支持）
-  idField?: string           // ID 字段名，默认 'id'
-  parentIdField?: string     // 父 ID 字段名，默认 'parentId'
-  textField?: string         // 显示文本字段，默认 'name'
-  depthLimit?: number        // 深度限制
-  lazy?: boolean             // 是否启用懒加载，默认 true
+  mode: 'flat' | 'nested'
+  tableName?: string
+  idField?: string
+  parentIdField?: string
+  textField?: string
+  depthLimit?: number
+  lazy?: boolean
 }
 
-/**
- * 扁平树节点
- */
 export interface FlatTreeNode {
-  id: string | number        // 节点 ID
-  parentId?: string | number | null // 父节点 ID（根节点为 null）
-  name: string               // 节点名称
-  level?: number             // 层级（0 表示根节点）
-  hasChildren?: boolean      // 是否有子节点
-  isLoaded?: boolean         // 子节点是否已加载
-  [key: string]: unknown     // 其他业务字段
+  id: string | number
+  parentId?: string | number | null
+  name: string
+  level?: number
+  hasChildren?: boolean
+  isLoaded?: boolean
+  [key: string]: unknown
 }
 
-/**
- * 嵌套树节点
- */
 export interface NestedTreeNode extends FlatTreeNode {
-  children: NestedTreeNode[] // 子节点数组
+  children: NestedTreeNode[]
 }
 
-/**
- * 扁平树缓存（用于懒加载）
- */
 export type FlatTreeCache = Record<string | number, FlatTreeNode>
 
-/**
- * 树路径信息
- */
 export interface TreePath {
-  pathIds: Array<string | number>  // 路径 ID 列表（从根到目标）
-  pathNodes?: FlatTreeNode[]        // 路径节点列表
+  pathIds: Array<string | number>
+  pathNodes?: FlatTreeNode[]
+}
+
+export interface ITreeManager {
+  setDataView(context: IDataView): void
+  getDataView(): IDataView | undefined
+  getConfig(): TreeConfig
+  getCache(): FlatTreeCache
+  addNodesToCache(nodes: FlatTreeNode[]): void
+  getNode(id: string | number): FlatTreeNode | undefined
+  getChildren(parentId: string | number | null): FlatTreeNode[]
+  getRoots(): FlatTreeNode[]
+  buildNestedTree(rootId?: string | number | null): NestedTreeNode[]
+  enrichNodes(): void
+  on(event: string, callback: EventCallback): void
+  off(event: string, callback: EventCallback): void
 }
 
 
