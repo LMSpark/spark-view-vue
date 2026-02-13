@@ -35,7 +35,8 @@ import { DependencyAnalyzer } from './core/dependency-analyzer'
 import { DataLoader } from './core/data-loader'
 import { SubscriptionManager } from './core/subscription-manager'
 import { EventManager } from './core/event-manager'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, DATA_SET_STATE } from '@spark-view/spark-utils'
+import type { Provider as CapabilityProvider, CapabilityKey} from '@spark-view/spark-utils'
 
 /**
  * DataSet 类（实现 IDataSet 接口 + 方法逻辑）
@@ -131,6 +132,61 @@ export class DataSet implements IDataSet {
   }
 
   // ==================== 上下文管理 ====================
+
+  // ==================== 能力注册 ====================
+  
+  /**
+   * 获取数据空间层能力列表
+   * 
+   * 数据空间层提供的能力：
+   * - DATA_SET_STATE: DataSet 状态（数据表访问、页面参数、权限、表变化监听）
+   * 
+   * @param pageParams 页面参数（可选）
+   * @param pagePermission 页面权限（可选）
+   * @returns 能力 Map（CapabilityKey → Provider）
+   */
+  getCapabilities(
+    pageParams?: Record<string, unknown>,
+    pagePermission?: Record<string, boolean>
+  ): Map<CapabilityKey<unknown>, CapabilityProvider> {
+    const capabilities = new Map<CapabilityKey<unknown>, CapabilityProvider>()
+    
+    // DATA_SET_STATE 能力
+    capabilities.set(DATA_SET_STATE as CapabilityKey<unknown>, {
+      name: DATA_SET_STATE,
+      implementation: {
+        getDataSet: () => this,
+        
+        getTable: (tableName: string) => {
+          return this.tables[tableName]
+        },
+        
+        getPageParams: () => {
+          return pageParams ?? {}
+        },
+        
+        getPagePermission: () => pagePermission ?? {},
+        
+        onTableChange: (tableName: string, callback: (table: unknown) => void) => {
+          // 使用 DataSet 的事件系统，而非局部 Map
+          const wrappedCallback = (data: unknown) => {
+            const event = data as { tableName: string }
+            if (event.tableName === tableName) {
+              callback(this.tables[tableName])
+            }
+          }
+          this.on('tableChanged', wrappedCallback)
+          
+          // 返回取消订阅函数
+          return () => {
+            this.off('tableChanged', wrappedCallback)
+          }
+        }
+      }
+    })
+    
+    return capabilities
+  }
 
   /**
    * 更新上下文的 rows（委托给 DataView）

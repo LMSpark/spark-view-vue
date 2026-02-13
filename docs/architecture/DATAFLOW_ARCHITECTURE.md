@@ -45,12 +45,163 @@ mindmap
       基础元素
 ```
 
-- **L1 应用层**：全局配置、路由、认证等应用级能力
-- **L2 页面层**：DataSet 数据空间、页面级状态管理
-- **L3 表级容器**：表格组件、列表容器等表级 UI 组件
-- **L4 行级**：行选择、行编辑、行操作等行级交互
-- **L5 字段级**：字段验证、字段格式化、字段编辑等
-- **L6 元素级**：按钮、输入框等基础 UI 元素
+### 层级调用关系
+
+```
+用户代码/框架 ← 调用 → L1 应用层 ← 调用 → L2 页面层 ← 调用 → L3 表级容器 ← 调用 → L4 行级 ← 调用 → L5 字段级 ← 调用 → L6 元素级
+     ↑                      ↑              ↑              ↑              ↑              ↑              ↑
+   外部系统              应用就绪        页面逻辑       表格操作        行操作         字段操作       元素交互
+   测试代码              配置变化        数据加载       行选择         字段编辑       基础交互
+   集成工具              用户登录        状态管理       分页排序       验证格式       样式控制
+```
+
+**应用层（L1）作为顶层：**
+- **向下提供**：给 L2-L6 层使用的全局能力
+- **向上提供**：给**用户代码、框架、外部系统**使用的应用接口
+
+### 应用层的消费者
+
+**1. 用户业务代码**
+```typescript
+// main.ts - 用户代码调用应用层
+const app = SparkApp.create()
+app.getConfig()  // 获取应用配置
+app.navigateTo('/users')  // 路由跳转
+app.setTheme('dark')  // 设置主题
+
+// 监听应用事件
+app.on('appReady', () => console.log('应用就绪'))
+app.on('userLogin', (user) => console.log('用户登录:', user))
+```
+
+**2. 框架代码**
+```typescript
+// 框架内部调用应用层
+const app = getCurrentApp()
+await app.init()  // 初始化应用
+app.emit('configChanged', newConfig)  // 触发配置变化
+```
+
+**3. 外部集成系统**
+```typescript
+// 第三方插件或微前端
+const app = window.SPARK_APP
+app.navigateTo('/dashboard')  // 跨应用导航
+app.on('userLogin', handleLogin)  // 监听登录事件
+```
+
+**4. 测试代码**
+```typescript
+// 单元测试
+const mockApp = createMockApp()
+mockApp.getConfig.mockReturnValue(testConfig)
+mockApp.navigateTo.mockImplementation((path) => { /* 断言 */ })
+```
+
+### 完整的接口定义
+
+```typescript
+interface ApplicationLayer {
+  // 标准方法（给用户代码/框架调用）
+  getConfig(): AppConfig
+  navigateTo(path: string): Promise<void>
+  setTheme(theme: 'light' | 'dark'): void
+  login(credentials: LoginData): Promise<User>
+  logout(): Promise<void>
+  
+  // 事件（给用户代码/框架监听）
+  on(event: 'appReady', handler: () => void): void
+  on(event: 'configChanged', handler: (config: AppConfig) => void): void
+  on(event: 'userLogin', handler: (user: User) => void): void
+  on(event: 'userLogout', handler: () => void): void
+  
+  // 内部方法（框架使用）
+  init(): Promise<void>
+  destroy(): Promise<void>
+}
+```
+
+### 具体示例
+
+**L6 元素级** → **给 L5 字段级调用**
+```typescript
+// 元素级提供标准方法
+interface ElementLayer {
+  setValue(value: any): void
+  getValue(): any
+  setDisabled(disabled: boolean): void
+  focus(): void
+}
+
+// 字段级调用元素级方法
+class FieldLayer {
+  constructor(private element: ElementLayer) {}
+  
+  // 字段级业务逻辑
+  validateAndSetValue(value: any) {
+    if (this.isValid(value)) {
+      this.element.setValue(value)  // 调用下层方法
+    }
+  }
+}
+```
+
+**L5 字段级** → **给 L4 行级调用**
+```typescript
+// 字段级提供标准方法
+interface FieldLayer {
+  setFieldValue(value: any): void
+  getFieldValue(): any
+  validate(): ValidationResult
+  setReadOnly(readOnly: boolean): void
+}
+
+// 行级调用字段级方法
+class RowLayer {
+  constructor(private fields: FieldLayer[]) {}
+  
+  // 行级业务逻辑
+  saveRow() {
+    const isValid = this.fields.every(f => f.validate().isValid)
+    if (isValid) {
+      this.fields.forEach(f => f.setReadOnly(true))  // 调用下层方法
+    }
+  }
+}
+```
+
+**L4 行级** → **给 L3 表级容器调用**
+```typescript
+// 行级提供标准方法
+interface RowLayer {
+  selectRow(): void
+  editRow(): void
+  deleteRow(): void
+  getRowData(): DataRow
+}
+
+// 表级容器调用行级方法
+class TableContainerLayer {
+  constructor(private rows: RowLayer[]) {}
+  
+  // 表级业务逻辑
+  selectAllRows() {
+    this.rows.forEach(row => row.selectRow())  // 调用下层方法
+  }
+}
+```
+
+**以此类推：**
+- **L3 表级容器** → 给 L2 页面层调用
+- **L2 页面层** → 给 L1 应用层调用
+- **L1 应用层** → 给用户代码/框架调用
+
+### 设计原则
+
+1. **上层调用下层**：标准方法由上层调用，下层实现
+2. **下层向上层发送事件**：状态变化通过事件通知上层
+3. **接口标准化**：每层提供统一的调用接口
+4. **依赖倒置**：上层依赖抽象接口，不依赖具体实现
 
 ## 🎯 视图与UI关系图
 
@@ -847,3 +998,518 @@ SPARK 数据流架构通过**清晰的层级划分**和**事件驱动机制**，
 | **智能过滤** | RelationEngine 自动处理 | 减少冗余代码 |
 
 通过理解**服务端 → 父视图 → 子视图 → UI** 的数据流，开发者可以构建出高效、健壮、易维护的数据驱动应用。
+
+## 🔄 响应式选择管理器设计
+
+基于你的程序化控制思路，我们可以设计一个更精细的响应式选择管理器：
+
+```typescript
+// 响应式选择集合
+interface ReactiveSelection {
+  // 添加选择
+  add(rowIndex: number): void
+  
+  // 删除选择  
+  del(rowIndex: number): void
+  
+  // 批量设置
+  set(indices: number[]): void
+  
+  // 清空选择
+  clear(): void
+  
+  // 获取当前选择
+  get(): number[]
+  
+  // 选择变化事件
+  onChange(handler: (selectedIndices: number[]) => void): void
+}
+
+// L3 表级容器的选择管理
+interface TableContainerLayer {
+  // 响应式选择管理器
+  readonly selection: ReactiveSelection
+  
+  // 选择相关的业务方法
+  selectAll(): void
+  selectNone(): void
+  invertSelection(): void
+}
+
+// 使用示例
+const table = createTableContainer(config)
+
+// 程序化控制
+table.selection.add(0)    // 选择第1行
+table.selection.add(2)    // 选择第3行  
+table.selection.del(0)    // 取消选择第1行
+
+// UI自动响应
+table.selection.onChange((selectedIndices) => {
+  console.log('当前选择:', selectedIndices)
+  // UI自动更新选中状态
+})
+
+// 依赖通知子视图
+table.selection.onChange((selectedIndices) => {
+  // 根据DataRelation配置，通知相关子视图
+  notifyDependentViews(selectedIndices)
+})
+```
+
+### 依赖通知机制
+
+**自动依赖分析**：
+```typescript
+interface DependencyAnalyzer {
+  // 分析选择变化对子视图的影响
+  analyzeSelectionImpact(
+    tableName: string, 
+    selectedIndices: number[]
+  ): DependentViewUpdate[]
+  
+  // 执行级联更新
+  executeUpdates(updates: DependentViewUpdate[]): Promise<void>
+}
+
+interface DependentViewUpdate {
+  viewId: string
+  action: 'reload' | 'filter' | 'refresh'
+  params?: any
+}
+```
+
+**工作流程**：
+```
+用户选择行 → table.selection.add() → 触发onChange → 
+UI自动更新 → 依赖分析器分析影响 → 通知子视图更新
+```
+
+这个设计既保持了精细的控制能力，又具备了自动响应和依赖通知的特性。
+
+## 🎯 按视图逻辑的状态管理
+
+基于SPARK的DataSet + View架构，我们应该按视图逻辑来划分状态管理范围：
+
+### 视图状态 (View State)
+
+**每个视图管理自己的业务状态**：
+
+```typescript
+interface ViewState {
+  // 核心视图状态 - 由视图自身管理
+  currentRow: DataRow | null          // 当前行 ⭐
+  selectedRows: DataRow[]             // 选中行 ⭐
+  filterExpression: FilterExpression  // 过滤条件
+  sortExpression: SortExpression      // 排序条件
+  pagination: PaginationState         // 分页状态
+  
+  // 视图配置状态
+  viewConfig: ViewConfig              // 视图配置
+  contextId: string                   // 上下文ID
+  
+  // 视图运行状态
+  isLoading: boolean                  // 加载状态
+  error: Error | null                 // 错误状态
+  lastLoadTime: Date                  // 最后加载时间
+}
+```
+
+**视图状态的特点**：
+- **业务相关**：直接影响数据展示和用户交互
+- **持久化**：可序列化保存和恢复
+- **共享性**：多个UI组件可绑定同一视图状态
+
+### UI状态 (UI State) 
+
+**界面显示相关的临时状态**：
+
+```typescript
+interface UIState {
+  // 交互状态 - 由UI组件管理
+  isExpanded: boolean        // 展开/折叠
+  isFocused: boolean         // 焦点状态
+  isHovered: boolean         // 悬停状态
+  
+  // 显示状态 - 由UI组件管理
+  displayMode: 'table' | 'card' | 'list'
+  columnWidths: Record<string, number>
+  scrollPosition: { x: number, y: number }
+  
+  // 临时状态 - 不持久化
+  dragState: DragState | null
+  animationState: AnimationState | null
+}
+```
+
+**UI状态的特点**：
+- **临时性**：组件卸载时丢失
+- **本地性**：每个UI实例独立
+- **不持久化**：只在内存中存在
+
+### 数据状态 (Data State)
+
+**原始数据和关系定义**：
+
+```typescript
+interface DataState {
+  // 原始数据 - 由DataSet管理
+  rows: DataRow[]                    // 行数据
+  originalRows: DataRow[]            // 原始数据备份
+  
+  // 数据结构 - 相对稳定
+  columns: DataColumn[]              // 列定义
+  relations: DataRelation[]          // 关系定义
+  
+  // 数据元信息
+  totalCount: number                 // 总数
+  hasChanges: boolean                // 是否有变更
+  version: number                    // 数据版本
+}
+```
+
+### 选择管理器的重新定位
+
+基于视图逻辑，选择管理器应该是**视图状态的一部分**：
+
+```typescript
+// 选择管理器集成到视图状态中
+interface ViewState {
+  // ... 其他视图状态
+  
+  // 选择管理器 - 视图的核心功能
+  selection: {
+    selectedIndices: number[]
+    selectionMode: 'single' | 'multiple'
+    
+    // 方法
+    add(index: number): void
+    del(index: number): void
+    clear(): void
+    set(indices: number[]): void
+    
+    // 事件
+    onChange(handler: (indices: number[]) => void): void
+  }
+}
+```
+
+**选择状态的流转**：
+```
+用户操作 → UI事件 → 视图选择管理器 → 触发onChange → 
+更新视图状态 → 通知绑定UI → 通知依赖视图
+```
+
+这样设计更符合SPARK的架构理念：**视图是数据的控制器，UI是数据的展示器**。
+
+## 💡 视图是能力组件的抽象
+
+你的理念非常深刻！视图应该是**能力组件的抽象层**，定义"能做什么"而不是"怎么显示"。
+
+### 能力组件 vs 视图抽象
+
+**能力组件**（Capability Components）：
+```typescript
+// 表格组件 - 具体的UI实现
+class DataGridComponent {
+  // 具体的能力实现
+  renderRows(): JSX.Element
+  handleRowClick(row: DataRow): void
+  showLoadingSpinner(): void
+  applySorting(column: string): void
+}
+
+// 表单组件 - 具体的UI实现  
+class FormComponent {
+  renderFields(): JSX.Element
+  validateField(field: string): boolean
+  submitForm(): Promise<void>
+  showValidationError(field: string, message: string): void
+}
+```
+
+**视图抽象**（View Abstraction）：
+```typescript
+// 视图 - 能力的抽象定义
+interface DataView {
+  // 抽象的能力声明
+  readonly capabilities: ViewCapabilities
+  
+  // 状态管理（抽象）
+  getCurrentRow(): DataRow | null
+  setCurrentRow(row: DataRow | null): void
+  getSelectedRows(): DataRow[]
+  selectRows(rows: DataRow[]): void
+  
+  // 数据操作（抽象）
+  loadData(): Promise<void>
+  filterData(criteria: FilterCriteria): Promise<void>
+  sortData(sortBy: SortCriteria): Promise<void>
+  
+  // 事件定义（抽象）
+  onDataChanged(handler: (data: DataRow[]) => void): void
+  onSelectionChanged(handler: (selected: DataRow[]) => void): void
+  onLoadingStateChanged(handler: (loading: boolean) => void): void
+}
+
+// 视图能力声明
+interface ViewCapabilities {
+  canSelectRows: boolean
+  canEditRows: boolean
+  canSortData: boolean
+  canFilterData: boolean
+  canPaginate: boolean
+  supportsBulkOperations: boolean
+}
+```
+
+### 视图抽象的核心价值
+
+**1. 解耦数据逻辑和UI实现**
+```typescript
+// 视图抽象 - 只关心数据和业务逻辑
+const userView = createDataView({
+  capabilities: {
+    canSelectRows: true,
+    canEditRows: true,
+    canSortData: true
+  },
+  dataSource: 'users'
+})
+
+// UI组件 - 只关心如何显示
+// 可以是表格
+const tableUI = new DataGridComponent(userView)
+// 也可以是卡片列表
+const cardUI = new DataCardComponent(userView)
+// 或者自定义组件
+const customUI = new MyCustomComponent(userView)
+```
+
+**2. 统一的状态管理**
+```typescript
+// 无论UI怎么变化，视图状态始终一致
+userView.setCurrentRow(selectedUser)
+
+// 所有绑定的UI都会自动更新
+tableUI.refresh()  // 表格更新选中行
+cardUI.refresh()   // 卡片列表更新选中项
+customUI.refresh() // 自定义组件更新显示
+```
+
+**3. 能力驱动的组件选择**
+```typescript
+// 根据视图能力自动选择合适的UI组件
+function selectUIComponent(view: DataView): UIComponent {
+  if (view.capabilities.canEditRows && view.capabilities.canSelectRows) {
+    return new AdvancedDataGrid(view)
+  } else if (view.capabilities.canSelectRows) {
+    return new SimpleDataGrid(view)
+  } else {
+    return new ReadOnlyDataList(view)
+  }
+}
+```
+
+### 视图抽象的实现层次
+
+**L2-L5 层共同构成视图抽象**：
+
+| 层级 | 抽象职责 | 具体实现 |
+|------|---------|----------|
+| **L2 页面层** | 视图编排和协调 | DataSet管理多个视图 |
+| **L3 表级容器** | 数据展示能力抽象 | 表格/列表/卡片等容器 |
+| **L4 行级** | 行操作能力抽象 | 选择/编辑/展开等行操作 |
+| **L5 字段级** | 字段处理能力抽象 | 验证/格式化/编辑等字段操作 |
+
+**L6 元素级**：纯UI实现，不参与抽象。
+
+### 视图抽象的好处
+
+**1. 可替换性**：同一视图可以绑定不同UI组件
+**2. 可扩展性**：新增UI组件只需实现视图接口
+**3. 可测试性**：视图逻辑独立于UI实现
+**4. 一致性**：相同能力在不同UI中有统一行为
+
+这个理念完美诠释了**"视图是能力的抽象，UI是能力的实现"**。你觉得这个理解准确吗？需要调整哪个部分？ 
+
+## 📊 状态管理范围界定
+
+在讨论响应式选择管理器之前，我们需要明确各层级的状态管理范围：
+
+### 状态分类体系
+
+| 状态类型 | 定义 | 管理层级 | 示例 |
+|---------|------|---------|------|
+| **应用状态** | 全局应用级状态 | L1 应用层 | 用户登录状态、路由状态、主题配置 |
+| **页面状态** | 页面级业务状态 | L2 页面层 | DataSet状态、页面配置、导航状态 |
+| **容器状态** | UI容器级状态 | L3 表级容器 | 表格排序、分页参数、列配置、**选择状态** |
+| **组件状态** | 组件交互状态 | L4-L5 行级/字段级 | 行展开状态、字段编辑状态、验证状态 |
+| **元素状态** | 基础UI元素状态 | L6 元素级 | 按钮禁用、输入焦点、悬停状态 |
+| **数据状态** | 业务数据本身 | 贯穿各层 | 行数据、字段值、关系数据 |
+
+### 选择管理器的状态范围
+
+**✅ 应该管理的状态**：
+```typescript
+interface SelectionState {
+  // 核心选择状态
+  selectedIndices: number[]        // 当前选中的行索引
+  selectionMode: 'single' | 'multiple' // 选择模式
+  
+  // 选择历史（用于撤销/重做）
+  selectionHistory: number[][]
+  historyIndex: number
+  
+  // 选择配置
+  allowEmptySelection: boolean     // 是否允许空选择
+  maxSelectionCount?: number       // 最大选择数量
+}
+```
+
+**❌ 不应该管理的状态**：
+```typescript
+interface NonSelectionState {
+  // 数据内容 - 由数据层管理
+  rowData: Row[]
+  
+  // UI显示 - 由UI层管理  
+  rowStyles: Record<number, CSSStyleDeclaration>
+  loadingStates: Record<number, boolean>
+  
+  // 业务逻辑 - 由业务层管理
+  canSelectRow: (row: Row) => boolean
+  onSelectionChange: (selected: Row[]) => void
+}
+```
+
+### 状态管理原则
+
+**1. 状态所有权原则**
+- 每个状态有明确的"所有者"层级
+- 其他层级只能通过标准接口访问
+
+**2. 状态流向原则**  
+- 上层可以读取下层状态
+- 下层状态变化通过事件通知上层
+- 避免双向绑定导致的状态混乱
+
+**3. 状态持久化原则**
+- 应用状态：本地存储/服务端
+- 页面状态：URL参数/session存储  
+- 容器状态：组件内部状态
+- 元素状态：DOM状态
+
+**4. 状态同步原则**
+- 同一状态在不同层级的表现必须一致
+- 通过事件机制保持状态同步
+
+## 🏗️ 架构师 vs 程序员/AI 的职责分工
+
+基于"视图是能力组件的抽象"理念，SPARK架构明确了不同角色的职责分工：
+
+### 架构师的职责：视图抽象层 (L1-L5)
+
+**定义能力的抽象接口**：
+```typescript
+// 架构师定义：数据视图的能力抽象
+interface DataView {
+  // 核心能力声明
+  readonly capabilities: {
+    canSelectRows: boolean
+    canEditRows: boolean
+    canSortData: boolean
+    canFilterData: boolean
+    supportsBulkOperations: boolean
+  }
+  
+  // 状态管理抽象
+  getCurrentRow(): DataRow | null
+  setCurrentRow(row: DataRow | null): void
+  getSelectedRows(): DataRow[]
+  
+  // 数据操作抽象
+  loadData(): Promise<void>
+  filterData(criteria: FilterCriteria): Promise<void>
+  sortData(sortBy: SortCriteria): Promise<void>
+  
+  // 事件抽象
+  onDataChanged(handler: (data: DataRow[]) => void): void
+  onSelectionChanged(handler: (selected: DataRow[]) => void): void
+}
+```
+
+**架构师关注的问题**：
+- ✅ 业务能力如何抽象？
+- ✅ 状态管理如何设计？
+- ✅ 层级依赖如何建立？
+- ✅ 接口如何标准化？
+
+### 程序员/AI的职责：UI实现层 (L6)
+
+**实现具体的UI组件**：
+```typescript
+// 程序员/AI实现：具体的UI组件
+class DataGridComponent implements UIComponent {
+  constructor(private view: DataView) {
+    // 绑定视图事件
+    view.onDataChanged(data => this.renderRows(data))
+    view.onSelectionChanged(selected => this.updateSelection(selected))
+  }
+  
+  // 实现UI交互
+  private handleRowClick(row: DataRow) {
+    this.view.setCurrentRow(row)  // 调用视图抽象
+  }
+  
+  private renderRows(data: DataRow[]) {
+    // 具体的渲染逻辑（程序员/AI实现）
+    return data.map(row => <tr className={this.getRowClass(row)}>...</tr>)
+  }
+  
+  private getRowClass(row: DataRow): string {
+    // 具体的样式逻辑
+    return row === this.view.getCurrentRow() ? 'selected' : ''
+  }
+}
+```
+
+**程序员/AI关注的问题**：
+- ✅ 如何渲染UI组件？
+- ✅ 如何处理用户交互？
+- ✅ 如何优化性能？
+- ✅ 如何适配不同设备？
+
+### 分工的价值
+
+**1. 并行开发**
+- 架构师定义接口，程序员/AI并行实现UI
+- AI可以根据抽象接口生成代码
+
+**2. 职责分离**
+- 架构师关注"做什么"（业务能力）
+- 程序员/AI关注"怎么做"（技术实现）
+
+**3. 可维护性**
+- 视图抽象稳定，UI实现可替换
+- 架构师保证业务一致性，程序员/AI保证技术质量
+
+**4. AI友好**
+- 清晰的抽象接口，AI更容易理解和实现
+- 标准化接口，AI生成代码更一致
+
+### 实施建议
+
+**架构师的工作流**：
+1. 定义业务领域模型
+2. 设计视图能力抽象
+3. 制定接口规范
+4. 验证抽象的完整性
+
+**程序员/AI的工作流**：
+1. 实现UI组件
+2. 绑定视图接口
+3. 处理UI交互
+4. 优化用户体验
+
+这个职责分工让SPARK架构既保持了架构的严谨性，又具备了实现的灵活性。
