@@ -43,12 +43,108 @@ const dataSet = SparkData.createDataSet({
         { id: 2, name: 'Bob', email: 'bob@example.com' }
       ]
     }
-  }
+  },
+  // 数据关系配置
+  relations: [
+    {
+      parentTable: 'Departments',
+      parentContextId: 'deptGrid',
+      childTable: 'Users',
+      childContextId: 'userGrid',
+      dependencyType: 'currentRow',
+      filterExpression: {
+        field: 'departmentId',
+        op: '==',
+        value: { func: 'parentRow.id', args: [] }
+      },
+      autoLoad: true,
+      cascadeDelete: true,
+      relationName: 'dept-users'
+    }
+  ]
 }, async (tableName) => {
   // 自定义数据加载逻辑
   const response = await fetch(`/api/${tableName}`)
   return response.json()
 })
+```
+
+---
+
+### 数据关系管理
+
+#### DataRelation 配置
+
+DataRelation 定义父子视图之间的依赖关系，支持级联操作和动态过滤。
+
+**接口定义：**
+```typescript
+interface DataRelation {
+  parentTable: string             // 父表名（数据源标识）
+  parentContextId?: string        // 父上下文 ID（视图标识，默认 'default'）
+  
+  childTable: string              // 子表名（数据源标识）
+  childContextId?: string         // 子上下文 ID（视图标识，默认 'default'）
+  
+  dependencyType: DependencyType  // 依赖类型：'currentRow' | 'selectedRows' | 'allRows' | 'pagedRows'
+  filterExpression: FilterExpression // 过滤表达式，定义如何从父上下文过滤子上下文
+  cascadeUpdate?: boolean         // 是否级联更新
+  cascadeDelete?: boolean         // 是否级联删除
+  autoLoad?: boolean              // 是否自动加载子表数据
+  relationName?: string           // 关系名称，便于引用
+}
+```
+
+**依赖类型 (DependencyType)：**
+- `'currentRow'` - 依赖父上下文的当前行
+- `'selectedRows'` - 依赖父上下文的选中行
+- `'allRows'` - 依赖父上下文的全部行
+- `'pagedRows'` - 依赖父上下文的分页行
+
+**过滤表达式 (FilterExpression)：**
+```typescript
+type FilterExpression =
+  // 单一条件
+  | { field: string; op: FilterOperator; value: unknown }
+  // 逻辑组合
+  | { type: 'and' | 'or'; children: FilterExpression[] }
+  // 函数调用
+  | { func: string; args: unknown[] }
+```
+
+**示例：**
+```typescript
+// 部门-用户主从关系
+{
+  parentTable: 'Departments',
+  parentContextId: 'deptGrid',
+  childTable: 'Users',
+  childContextId: 'userGrid',
+  dependencyType: 'currentRow',
+  filterExpression: {
+    field: 'departmentId',
+    op: '==',
+    value: { func: 'parentRow.id', args: [] }
+  },
+  autoLoad: true,
+  cascadeDelete: true,
+  relationName: 'dept-users'
+}
+
+// 订单-订单明细关系
+{
+  parentTable: 'Orders',
+  childTable: 'OrderDetails',
+  dependencyType: 'selectedRows',
+  filterExpression: {
+    type: 'and',
+    children: [
+      { field: 'orderId', op: 'in', value: { func: 'parentRows.ids', args: [] } },
+      { field: 'status', op: '!=', value: 'cancelled' }
+    ]
+  },
+  autoLoad: false
+}
 ```
 
 #### `SparkData.fromJSON(json, dataLoader?)`
