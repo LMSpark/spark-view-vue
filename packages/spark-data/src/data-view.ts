@@ -11,7 +11,8 @@
  */
 
 import type { IDataRow, IDataRowWithPermission, IDataView, IViewMetadata, IDataSet, FilterExpression, SortExpression, ITreeManager } from './types'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, DATA_SOURCE, SELECTION } from '@spark-view/spark-utils'
+import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
 
 /**
  * 视图状态历史记录
@@ -97,6 +98,10 @@ export class DataView implements IDataView {
   
   // TreeManager 引用（用于树形数据管理）
   treeManager?: ITreeManager
+  
+  // DataTable 引用（用于主动请求数据）
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private dataTable?: any // IDataTable 会造成循环依赖，使用 any
 
   constructor(
     hostTable: string,
@@ -145,6 +150,257 @@ export class DataView implements IDataView {
    */
   getTreeManager(): ITreeManager | undefined {
     return this.treeManager
+  }
+  
+  /**
+   * 设置 DataTable 引用
+   * 使视图能够主动向表层请求数据
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setDataTable(dataTable: any): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    this.dataTable = dataTable
+  }
+  
+  /**
+   * 获取 DataTable 引用
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getDataTable(): any | undefined {
+    return this.dataTable
+  }
+  
+  // ==================== 能力注册 ====================
+  
+  /**
+   * 获取视图层能力列表
+   * 
+   * 视图层提供的能力：
+   * - DATA_SOURCE: 数据源（rows 访问、刷新）
+   * - SELECTION: 选择状态（currentRow、selectedRows）
+   * 
+   * @returns 能力 Map（CapabilityKey → Provider）
+   */
+  getCapabilities(): Map<CapabilityKey<unknown>, CapabilityProvider> {
+    const capabilities = new Map<CapabilityKey<unknown>, CapabilityProvider>()
+    
+    // 1. 数据源能力
+    capabilities.set(DATA_SOURCE as CapabilityKey<unknown>, {
+      name: DATA_SOURCE,
+      implementation: {
+        getData: () => this.rows,
+        refresh: () => this.reload()
+      }
+    })
+    
+    // 2. 选择能力
+    capabilities.set(SELECTION as CapabilityKey<unknown>, {
+      name: SELECTION,
+      implementation: {
+        select: (id: number | string) => {
+          const row = this.rows.find(r => r.id === id)
+          if (row) this.setCurrentRow(row)
+        },
+        deselect: (_id: number | string) => {
+          this.setCurrentRow(null)
+        },
+        isSelected: (id: number | string) => {
+          return this.currentRow?.id === id || this.selectedRows.some(r => r.id === id)
+        },
+        clearSelection: () => {
+          this.setCurrentRow(null)
+          this.setSelectedRows([])
+        },
+        getSelected: () => {
+          return this.selectedRows.map(r => r.id as string | number).filter(Boolean)
+        }
+      }
+    })
+    
+    return capabilities
+  }
+  
+  // ==================== 主动请求能力 ====================
+  
+  /**
+   * 加载数据
+   * 向表层请求加载数据，携带当前视图的请求参数（page, pageSize, filter, sort）
+   * 
+   * @returns Promise<void>
+   * 
+   * @example
+   * ```typescript
+   * // UI 触发加载
+   * await view.load()
+   * 
+   * // 内部流程：
+   * // 1. 视图标记 isLoading = true
+   * // 2. 调用 dataTable.load(this, params)
+   * // 3. 表层执行网络请求
+   * // 4. 表层填充 view.rows
+   * // 5. 视图标记 isLoading = false
+   * ```
+   */
+  async load(): Promise<void> {
+    if (!this.dataTable) {
+      this.logger.warn(`⚠️ [DataView] ${this.hostTable}.${this.contextId} 未设置 DataTable 引用，无法加载数据`)
+      return
+    }
+    
+    // 执行生命周期钩子
+    if (this.onBeforeLoad) {
+      await this.onBeforeLoad(this)
+    }
+    
+    // 标记加载状态
+    this.isLoading = true
+    this.loadStartTime = Date.now()
+    this.totalLoadCount++
+    
+    try {
+      // 准备请求参数（从视图中获取）
+      const params: {
+        page: number
+        pageSize: number
+        filter?: FilterExpression
+        sort?: SortExpression
+      } = {
+        page: this.page,
+        pageSize: this.pageSize,
+        filter: this.filterExpression,
+        sort: this.sortExpression
+      }
+      
+      this.logger.info(`📡 [DataView] ${this.hostTable}.${this.contextId} 开始加载数据`, params)
+      
+      // 委托给 DataTable 执行请求
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (typeof this.dataTable?.loadForView === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        await this.dataTable.loadForView(this, params)
+      } else {
+        throw new Error(`DataTable 未实现 loadForView 方法`)
+      }
+      
+      // 记录成功
+      this.lastLoadTime = Date.now()
+      this.loadDuration = this.lastLoadTime - (this.loadStartTime || 0)
+      this.loadingError = null
+      this.retryCount = 0
+      
+      this.logger.info(`✅ [DataView] ${this.hostTable}.${this.contextId} 加载完成，耗时 ${this.loadDuration}ms，${this.rows.length} 行`)
+      
+      // 记录状态历史
+      this.addStateHistory({
+        timestamp: this.lastLoadTime,
+        state: 'ready',
+        rowCount: this.rows.length,
+        duration: this.loadDuration
+      })
+      
+      // 执行成功钩子
+      if (this.onAfterLoad) {
+        await this.onAfterLoad(this, true)
+      }
+      
+    } catch (error) {
+      // 记录错误
+      this.loadingError = error as Error
+      this.loadDuration = Date.now() - (this.loadStartTime || 0)
+      
+      this.logger.error(`❌ [DataView] ${this.hostTable}.${this.contextId} 加载失败`, error)
+      
+      // 记录状态历史
+      this.addStateHistory({
+        timestamp: Date.now(),
+        state: 'error',
+        error: (error as Error).message,
+        duration: this.loadDuration
+      })
+      
+      // 执行错误钩子
+      if (this.onLoadError) {
+        await this.onLoadError(this, error as Error)
+      }
+      
+      // 执行失败钩子
+      if (this.onAfterLoad) {
+        await this.onAfterLoad(this, false)
+      }
+      
+      throw error
+      
+    } finally {
+      // 清除加载状态
+      this.isLoading = false
+      this.loadStartTime = null
+    }
+  }
+  
+  /**
+   * 保存数据变更
+   * 向表层请求保存单行或多行数据
+   * 
+   * @param row 要保存的行数据（可选，如果不提供则保存当前选中行）
+   * @returns Promise<void>
+   * 
+   * @example
+   * ```typescript
+   * // 保存指定行
+   * await view.save(modifiedRow)
+   * 
+   * // 保存当前行
+   * await view.save()
+   * ```
+   */
+  async save(row?: IDataRowWithPermission): Promise<void> {
+    if (!this.dataTable) {
+      this.logger.warn(`⚠️ [DataView] ${this.hostTable}.${this.contextId} 未设置 DataTable 引用，无法保存数据`)
+      return
+    }
+    
+    // 确定要保存的行
+    const rowToSave = row ?? this.currentRow
+    if (!rowToSave) {
+      this.logger.warn(`⚠️ [DataView] ${this.hostTable}.${this.contextId} 没有要保存的数据`)
+      return
+    }
+    
+    this.logger.info(`💾 [DataView] ${this.hostTable}.${this.contextId} 开始保存数据`)
+    
+    try {
+      // 委托给 DataTable 执行请求
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (typeof this.dataTable?.saveRow === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        await this.dataTable.saveRow(rowToSave)
+      } else {
+        throw new Error(`DataTable 未实现 saveRow 方法`)
+      }
+      
+      this.logger.info(`✅ [DataView] ${this.hostTable}.${this.contextId} 保存成功`)
+      
+    } catch (error) {
+      this.logger.error(`❌ [DataView] ${this.hostTable}.${this.contextId} 保存失败`, error)
+      throw error
+    }
+  }
+  
+  /**
+   * 刷新数据
+   * 使用当前参数重新加载数据
+   * 
+   * @returns Promise<void>
+   * 
+   * @example
+   * ```typescript
+   * // 刷新当前数据
+   * await view.refresh()
+   * ```
+   */
+  async reload(): Promise<void> {
+    this.logger.info(`🔄 [DataView] ${this.hostTable}.${this.contextId} 刷新数据`)
+    return this.load()
   }
 
   /**
