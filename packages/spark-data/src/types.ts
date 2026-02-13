@@ -54,7 +54,6 @@ export interface IViewMetadata {
   filterExpression?: FilterExpression  // 行过滤表达式（定义当前视图显示哪些行）
   sortExpression?: SortExpression      // 排序表达式（定义行的排序规则）
   autoSelectFirst?: boolean           // 自动选中第一行
-  autoDeselectOnEmpty?: boolean       // 数据清空时自动取消选中
 
   // ===== 分页配置（配置） =====
   page?: number         // 当前页码
@@ -466,30 +465,7 @@ export interface IDataSetConfig extends IDataSetMetadata {
   autoLoadRelations?: boolean
 }
 
-// ==================== 辅助类型 ====================
 
-/**
- * 过滤结果
- */
-export interface FilterResult {
-  rows: IDataRow[]
-  count: number
-}
-
-/**
- * 过滤上下文接口（用于主从视图关联过滤）
- * 
- * 用途：为子视图过滤提供父视图的当前行/选中行数据
- * 
- * @example
- * - `parentRow.id` → 父视图单行关联
- * - `IN(parentRows, 'id')` → 父视图多行关联
- */
-export interface FilterContext {
-  parentRow?: IDataRowWithPermission
-  parentRows?: IDataRowWithPermission[]
-  variables?: Record<string, unknown>
-}
 
 // ==================== 自引用树（Self-Reference Tree）====================
 
@@ -532,19 +508,6 @@ export interface NestedTreeNode extends FlatTreeNode {
 export type FlatTreeCache = Record<string | number, FlatTreeNode>
 
 /**
- * 自引用表（扩展 IDataTable）
- */
-export interface SelfReferenceTable extends IDataTable {
-  treeConfig: TreeConfig     // 树配置
-  flatTreeCache?: FlatTreeCache // 扁平树缓存（懒加载模式）
-  
-  // 扩展方法（运行时添加）
-  loadChildren?(parentId: string | number | null): Promise<FlatTreeNode[]>
-  expandToNode?(targetId: string | number): Promise<void>
-  searchNodes?(keyword: string): Promise<FlatTreeNode[]>
-}
-
-/**
  * 树路径信息
  */
 export interface TreePath {
@@ -552,10 +515,4 @@ export interface TreePath {
   pathNodes?: FlatTreeNode[]        // 路径节点列表
 }
 
-/**
- * 树搜索结果
- */
-export interface TreeSearchResult {
-  matchedNodes: FlatTreeNode[]      // 匹配的节点
-  paths: Record<string | number, TreePath> // 每个节点的路径
-}
+

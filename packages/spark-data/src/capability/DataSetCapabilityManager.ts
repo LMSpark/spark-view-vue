@@ -150,19 +150,13 @@ export class DataSetCapabilityManager {
 
   /**
    * 委托 DataSet 注册自身能力
-   * DataSet.getCapabilities() → DATA_SET_STATE（含 tableListeners）
    */
   private delegateDataSetCapabilities() {
     const dataSet = this.config.dataSet
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-    const ds = dataSet as any
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (typeof ds.getCapabilities === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const dsCapabilities: Map<CapabilityKey<unknown>, CapabilityProvider> =
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        ds.getCapabilities(this.config.pageParams, this.config.pagePermission)
+    if ('getCapabilities' in dataSet && typeof dataSet.getCapabilities === 'function') {
+      const dsCapabilities = (dataSet as { getCapabilities: (p?: Record<string, unknown>, pp?: Record<string, boolean>) => Map<CapabilityKey<unknown>, CapabilityProvider> })
+        .getCapabilities(this.config.pageParams, this.config.pagePermission)
 
       dsCapabilities.forEach((provider: CapabilityProvider, key: CapabilityKey<unknown>) => {
         this.dataSetContext.providers.set(key, provider)
@@ -222,13 +216,8 @@ export class DataSetCapabilityManager {
    */
   notifyTableChange(tableName: string, _table: unknown) {
     this.logger.debug(`Notifying table change: ${tableName}`)
-
-    // 通过 DataSet 实例的事件系统来通知
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-    const ds = this.config.dataSet as any
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (typeof ds.emit === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    const ds = this.config.dataSet
+    if ('emit' in ds && typeof ds.emit === 'function') {
       ds.emit('tableChanged', { tableName })
     }
   }
