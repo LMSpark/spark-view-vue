@@ -6,12 +6,181 @@
 
 ## 🎯 核心概念
 
+### 能力分级体系
+
+SPARK 架构采用分层能力体系，从应用级到元素级提供不同粒度的功能：
+
+```mermaid
+mindmap
+  root((SPARK 能力分级))
+    L1_应用层
+      全局配置
+      路由管理
+      用户认证
+      应用状态
+    L2_页面层
+      DataSet 数据空间
+      页面级状态管理
+      视图协调
+      数据加载器
+    L3_表级容器
+      表格组件
+      列表容器
+      数据网格
+      分页组件
+    L4_行级
+      行选择 currentRow
+      行编辑
+      行操作
+      行状态管理
+    L5_字段级
+      字段验证
+      字段格式化
+      字段编辑
+      数据绑定
+    L6_元素级
+      按钮组件
+      输入框
+      选择器
+      基础元素
+```
+
+- **L1 应用层**：全局配置、路由、认证等应用级能力
+- **L2 页面层**：DataSet 数据空间、页面级状态管理
+- **L3 表级容器**：表格组件、列表容器等表级 UI 组件
+- **L4 行级**：行选择、行编辑、行操作等行级交互
+- **L5 字段级**：字段验证、字段格式化、字段编辑等
+- **L6 元素级**：按钮、输入框等基础 UI 元素
+
+## 🎯 视图与UI关系图
+
+以下流程图专门展示视图层与UI层的关系，突出数据绑定和职责分工：
+
+```mermaid
+graph TD
+    A[视图层<br/>View Layer] --> B[当前视图<br/>Current View]
+    
+    B --> C[数据属性<br/>view.rows<br/>view.currentRow<br/>view.selectedRows]
+    B --> D[操作方法<br/>setCurrentRow<br/>setSelectedRows<br/>requestTableData]
+    
+    C --> E[UI 绑定<br/>UI Binding]
+    E --> F[列表渲染<br/>v-for='row in view.rows']
+    E --> G[状态显示<br/>:class='row === view.currentRow']
+    E --> H[选择管理<br/>checkbox states]
+    
+    D --> I[UI 触发<br/>UI Triggers]
+    I --> J["用户点击<br/>@click='setCurrentRow'"]
+    I --> K["选择操作<br/>@change='setSelectedRows'"]
+    
+    B --> L[视图互作<br/>View Interactions]
+    L --> M[父视图<br/>Parent View]
+    L --> N[子视图<br/>Child View]
+    
+    B --> O[数据加载<br/>Data Loading]
+    O --> P[触发加载<br/>requestTableData]
+    P --> Q[数据加载器<br/>DataLoader]
+    
+    classDef view fill:#f3e5f5
+    classDef ui fill:#e8f5e8
+    classDef action fill:#fff3e0
+    classDef data fill:#e1f5fe
+    
+    class A,B view
+    class E,F,G,H ui
+    class I,J,K action
+    class C,D data
+    class O,P,Q data
+```
+
+**视图与UI关系说明：**
+- **视图层**：数据和业务逻辑的载体
+- **当前视图**：UI直接绑定的视图实例 ⭐
+- **数据属性**：视图暴露给UI的数据（rows、currentRow、selectedRows）
+- **操作方法**：视图提供给UI的方法（setCurrentRow、setSelectedRows）
+- **UI绑定**：UI通过响应式绑定显示数据和状态
+- **UI触发**：UI通过事件触发视图方法
+- **视图互作**：当前视图与其他视图的交互
+- **数据加载**：视图层面触发的异步数据加载
+
+## 🔗 架构依赖关系图
+
+以下流程图展示了服务端、根视图、父视图、子视图、UI 之间的依赖关系和数据流向：
+
+```mermaid
+graph TD
+    A[服务端<br/>Backend API] --> B[数据加载器<br/>DataLoader]
+    B --> C[根视图<br/>Root View]
+    C --> D[父视图<br/>Parent View]
+    D --> E[当前视图<br/>Current View<br/>view.rows<br/>view.currentRow<br/>view.selectedRows]
+    E --> F[子视图<br/>Child View]
+    
+    %% UI 只与当前视图互作
+    E <--> G[UI 层<br/>User Interface]
+    
+    %% 当前视图与父视图互作
+    D <--> E
+    
+    %% 当前视图与子视图互作
+    E <--> F
+    
+    G --> H[用户操作<br/>User Actions]
+    H --> J[设置当前行<br/>setCurrentRow]
+    J --> E
+    
+    %% 视图层面触发数据加载
+    E --> I[触发数据加载<br/>requestTableData]
+    I --> B
+    
+    E --> K[触发子视图更新<br/>Child View Refresh]
+    K --> F
+    
+    L[关系定义<br/>DataRelation] --> D
+    L --> E
+    L --> F
+    
+    classDef backend fill:#e1f5fe
+    classDef view fill:#f3e5f5
+    classDef current fill:#ffebee
+    classDef ui fill:#e8f5e8
+    classDef action fill:#fff3e0
+    
+    class A,B backend
+    class C,D,F view
+    class E current
+    class G ui
+    class H,I,J,K action
+```
+
+**依赖关系说明：**
+- **服务端** ← **数据加载器**：通过 API 调用获取原始数据
+- **数据加载器** → **根视图**：填充根视图数据
+- **根视图** → **父视图** → **当前视图** → **子视图**：视图层级链
+- **当前视图** ↔ **UI 层**：双向绑定 ⭐（UI 只与当前视图互作）
+  - `view.rows` → UI 列表渲染
+  - `view.currentRow` → UI 选中状态显示
+  - `view.selectedRows` → UI 多选状态管理
+  - UI 操作 → 视图状态更新
+  - **重要**：UI 只能操作它所绑定的当前视图
+- **当前视图** ↔ **父视图**：父子视图互作
+- **当前视图** ↔ **子视图**：父子视图互作
+- **视图层面触发数据加载**：当前视图调用 `requestTableData` ⭐
+- **UI 层** → **用户操作**：响应交互但不直接触发数据加载
+- **关系定义** ↔ **视图**：配置视图间的依赖规则
+
 ### 1. 服务端（Backend API）
 - **职责**：提供原始数据源
 - **特征**：
   - 无状态（Stateless）
   - RESTful API 或 GraphQL
   - 返回完整数据集（不负责过滤）
+- **数据加载器**：前端通过 `dataLoader` 函数调用服务端API
+  ```typescript
+  // DataSet 配置中的数据加载器
+  const dataSet = SparkData.createDataSet(config, async (tableName) => {
+    const response = await fetch(`/api/${tableName}`)
+    return response.json()
+  })
+  ```
 - **示例**：
   ```typescript
   GET /api/departments → [{id:1, name:'IT'}, {id:2, name:'HR'}]
@@ -19,11 +188,11 @@
   ```
 
 ### 2. DataSet（数据空间）
-- **职责**：管理所有视图，协调数据流
+- **职责**：管理页面级数据视图，协调数据流
 - **特征**：
-  - 单例模式（每个应用一个 DataSet）
+  - 页面级别实例（每个业务页面一个 DataSet）
   - 管理视图实例（tables: Record<string, DataView>）
-  - 定义视图关系（relations: Relation[]）
+  - 定义视图关系（relations: DataRelation[]）
   - 协调 5 个核心引擎
 - **核心方法**：
   ```typescript
@@ -33,18 +202,32 @@
   dataSet.on('viewStateChanged', ...)   // 监听状态变化
   ```
 
-### 3. 父视图（Parent View / Root View）
-- **定义**：没有依赖的视图，可以独立加载数据
+### 3. 父视图（Parent View）
+- **定义**：在关系定义中作为 `parentTable` 的视图，可以有自己的父视图
 - **特征**：
-  - 无 `dependencies`（或 dependencies 为空）
-  - 直接从服务端加载数据
+  - 在至少一个 `DataRelation` 中作为父方
   - 管理 `currentRow`（当前选中行）
   - `currentRow` 变化会触发子视图更新
+  - 可以是其他视图的子视图（多层级关系）
 - **示例**：
   ```typescript
-  // Departments 是父视图（根视图）
+  // Departments 是父视图（但可能有自己的父视图）
   const deptView = dataSet.getTable('Departments')
   deptView.currentRow = {id: 1, name: 'IT'}  // 触发子视图更新
+  ```
+
+### 3.1 根视图（Root View）
+- **定义**：最顶层的视图，没有任何父视图的视图
+- **特征**：
+  - 不作为任何关系的 `childTable`
+  - 可以独立加载数据，无需依赖其他视图
+  - 通常是数据层级结构的起点
+- **示例**：
+  ```typescript
+  // Company 是根视图（没有任何父视图）
+  const companyView = dataSet.getTable('Company')
+  // 加载根视图数据
+  await dataSet.requestTableData('Company')
   ```
 
 ### 4. 子视图（Child View / Dependent View）
@@ -68,16 +251,24 @@
   ```typescript
   {
     parentTable: 'Departments',      // 父表名
+    parentContextId: 'deptGrid',     // 父视图ID（默认'default'）
     childTable: 'Users',             // 子表名
-    parentKey: 'id',                 // 父表关联字段
-    childKey: 'departmentId',        // 子表关联字段
-    autoLoad: true                   // 自动加载子表
+    childContextId: 'userGrid',      // 子视图ID（默认'default'）
+    dependencyType: 'currentRow',    // 依赖类型：currentRow|selectedRows|allRows|pagedRows
+    filterExpression: {              // 过滤表达式（定义如何过滤子视图）
+      field: 'departmentId',
+      op: '==',
+      value: { func: 'parentRow.id', args: [] }
+    },
+    autoLoad: true,                  // 自动加载子表
+    cascadeDelete: true,             // 级联删除
+    relationName: 'dept-users'       // 关系名称（可选）
   }
   ```
 - **作用**：
-  - 定义依赖条件
+  - 定义依赖条件（通过 filterExpression）
   - 自动过滤子视图数据
-  - 触发级联加载
+  - 触发级联加载和删除
 
 ### 6. UI 层
 - **职责**：展示数据，响应用户操作
@@ -85,19 +276,72 @@
   - 订阅视图状态变化（`viewStateChanged`）
   - 响应式渲染（Vue/React）
   - 触发数据加载（`requestTableData`）
-  - 触发选中操作（`setCurrentRow`）
+  - 触发选中操作（`setCurrentRow`、`setSelectedRows`）
+- **重要原则**：UI 只能操作它所绑定的视图，即当前视图 ⭐
+  - 每个 UI 组件绑定到一个特定的视图实例
+  - UI 操作（如点击、选择）只会影响当前绑定的视图
+  - 视图状态变化只会更新绑定该视图的 UI 组件
+- **绑定属性**：
+  - `view.rows` ⭐ **最常用** - 数据行数组，用于渲染列表
+  - `view.currentRow` ⭐ **最常用** - 当前选中行，用于显示选中状态
+  - `view.selectedRows` - 选中的多行数据
+  - `view.isLoading` - 加载状态
+  - `view.totalCount` - 总记录数
 - **示例**：
   ```vue
   <template>
-    <div v-if="deptView.isLoading">加载中...</div>
-    <ul v-else>
-      <li v-for="dept in deptView.rows" 
-          :key="dept.id"
-          @click="selectDept(dept)">
-        {{ dept.name }}
-      </li>
-    </ul>
+    <div>
+      <!-- ⭐ 最常用：绑定 view.rows 渲染列表 -->
+      <ul v-if="!view.isLoading">
+        <li v-for="row in view.rows" :key="row.id" 
+            :class="{ 
+              active: row === view.currentRow,  <!-- ⭐ 当前行状态 -->
+              selected: view.selectedRows.includes(row)  <!-- 选择行状态 -->
+            }">
+          
+          <!-- 选择行复选框 -->
+          <input type="checkbox" 
+                 :checked="view.selectedRows.includes(row)"
+                 @change="toggleRowSelection(row)" />
+          
+          <!-- 行内容，点击设置当前行 -->
+          <span @click="view.setCurrentRow(row)">
+            {{ row.name }}
+          </span>
+        </li>
+      </ul>
+      
+      <!-- 当前行信息 -->
+      <div v-if="view.currentRow">
+        当前选中：{{ view.currentRow.name }}
+      </div>
+      
+      <!-- 选择行信息及操作 -->
+      <div v-if="view.selectedRows.length > 0">
+        已选择 {{ view.selectedRows.length }} 项
+        <button @click="clearSelection">清空选择</button>
+        <button @click="selectAll">全选</button>
+      </div>
+    </div>
   </template>
+  
+  <script setup>
+  const toggleRowSelection = (row) => {
+    if (view.selectedRows.includes(row)) {
+      view.setSelectedRows(view.selectedRows.filter(r => r !== row))
+    } else {
+      view.setSelectedRows([...view.selectedRows, row])
+    }
+  }
+  
+  const clearSelection = () => {
+    view.setSelectedRows([])
+  }
+  
+  const selectAll = () => {
+    view.setSelectedRows([...view.rows])
+  }
+  </script>
   ```
 
 ## 🔄 数据流向
@@ -309,7 +553,7 @@ childView.checkDependency()
     │      ↓
     │   从服务端加载数据
     │      ↓
-    │   应用过滤规则 (parentKey = childKey)
+    │   应用过滤规则 (filterExpression)
     │      ↓
     │   childView.setReady()
     │
@@ -353,8 +597,12 @@ dataSet.addRelations([
   {
     parentTable: 'Departments',
     childTable: 'Users',
-    parentKey: 'id',
-    childKey: 'departmentId',
+    dependencyType: 'currentRow',
+    filterExpression: {
+      field: 'departmentId',
+      op: '==',
+      value: { func: 'parentRow.id', args: [] }
+    },
     autoLoad: true  // 父视图选中时自动加载子视图
   }
 ])
