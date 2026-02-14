@@ -116,43 +116,36 @@ export interface HttpEndpoint {
 // ==================== 序列化接口（只保留必要的） ====================
 
 export interface IViewMetadata {
-  hostTable?: string
-  contextId?: string | "default"
-  rows?: IDataRow[]
-  filterExpression?: FilterExpression
-  sortExpression?: SortExpression
-  autoSelectFirst?: boolean
-  page?: number
-  pageSize?: number
+  hostTable: string | undefined
+  contextId: string | "default" | undefined
+  rows: IDataRow[] | undefined
+  filterExpression: FilterExpression | undefined
+  sortExpression: SortExpression | undefined
+  autoSelectFirst: boolean | undefined
+  page: number | undefined
+  pageSize: number | undefined
 }
 
 export interface ITableMetadata extends IViewMetadata {
   tableName: string
   columns: DataColumn[]
-  rows?: IDataRow[]
-  api?: CrudApi
-  contexts?: Record<string, IViewMetadata>
-  loading?: boolean
-  error?: string
-  // DataView properties
-  filterExpression?: FilterExpression
-  sortExpression?: SortExpression
-  autoSelectFirst?: boolean
-  page?: number
-  pageSize?: number
+  api: CrudApi | undefined
+  contexts: Record<string, IViewMetadata> | undefined
+  loading: boolean | undefined
+  error: string | undefined
 }
 
 export interface IDataSetMetadata {
   dataSetName: string
   tables: Record<string, ITableMetadata>
-  relations?: DataRelation[]
-  version?: number
-  pageId?: string
+  relations: DataRelation[] | undefined
+  version: number | undefined
+  pageId: string | undefined
 }
 
 export interface IDataSetConfig extends IDataSetMetadata {
-  dataLoader?: (tableName: string) => Promise<IDataRow[]>
-  autoLoadRelations?: boolean
+  dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
+  autoLoadRelations: boolean | undefined
 }
 
 // ==================== 过滤和排序类型 ====================

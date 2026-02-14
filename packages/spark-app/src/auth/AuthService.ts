@@ -114,25 +114,30 @@ export class AuthService implements IAuthService {
       throw new Error('AuthService 已经初始化，不能重复初始化')
     }
 
-    this.config = {
-      // 默认配置
-      tokenStorage: 'localStorage',
-      tokenKey: 'spark_token',
-      loginPath: '/login',
-      enableMock: false,
-      timeout: 10000,
-      apiBaseUrl: '',
+    this.config = config
 
-      // 用户配置覆盖
-      ...config,
+    // 设置默认值
+    this.config.tokenStorage ??= 'localStorage'
+    this.config.tokenKey ??= 'spark_token'
+    this.config.loginPath ??= '/login'
+    this.config.enableMock ??= false
+    this.config.timeout ??= 10000
+    this.config.apiBaseUrl ??= ''
 
-      // API 端点配置（合并默认值）
-      apiEndpoints: {
+    // API 端点配置（合并默认值）
+    if (this.config.apiEndpoints === undefined) {
+      this.config.apiEndpoints = {
         login: '/api/auth/login',
         logout: '/api/auth/logout',
         me: '/api/auth/me',
-        refresh: '/api/auth/refresh',
-        ...config.apiEndpoints
+        refresh: '/api/auth/refresh'
+      }
+    } else {
+      this.config.apiEndpoints = {
+        login: this.config.apiEndpoints.login ?? '/api/auth/login',
+        logout: this.config.apiEndpoints.logout ?? '/api/auth/logout',
+        me: this.config.apiEndpoints.me ?? '/api/auth/me',
+        refresh: this.config.apiEndpoints.refresh ?? '/api/auth/refresh'
       }
     }
 
@@ -388,8 +393,20 @@ export class AuthService implements IAuthService {
     if (!this.initialized) {
       // 自动初始化使用默认配置
       this.initialize({
+        apiEndpoints: undefined,
+        tokenStorage: undefined,
+        tokenKey: undefined,
+        loginPath: undefined,
+        loginComponent: undefined,
+        enableMock: false,
+        mockUser: undefined,
+        mockTenant: undefined,
+        timeout: undefined,
         apiBaseUrl: '',
-        enableMock: false
+        onLoginSuccess: undefined,
+        onLogoutSuccess: undefined,
+        onAuthError: undefined,
+        onTokenRefresh: undefined
       })
     }
   }

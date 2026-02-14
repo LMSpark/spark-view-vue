@@ -458,7 +458,7 @@ export const Spark = {
           type: config.type,
           parent: parent ?? rootContext,
           children: [],
-          props: config.props,
+          props: config.props ?? {},
           state: {},
           providers: new Map<CapabilityName, CapabilityProvider>(),
           consumers: new Map<CapabilityName, CapabilityConsumer>()

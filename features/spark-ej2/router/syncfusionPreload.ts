@@ -92,5 +92,5 @@ export function withSyncfusionPreload(routeNames: string[]) {
  * @returns 是否使用 Syncfusion
  */
 export function routeUsesSyncfusion(route: RouteLocationNormalized): boolean {
-  return route.meta?.useSyncfusion === true
+  return route.meta?.['useSyncfusion'] === true
 }

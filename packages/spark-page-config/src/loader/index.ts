@@ -333,13 +333,13 @@ export class PageConfigLoader implements ConfigLoader {
       const result = await response.json() as Record<string, unknown>
       
       // 支持标准 API 响应格式: { code, data, message }
-      if (result.code !== undefined) {
-        if (result.code === 200 || result.code === 0) {
+      if (result['code'] !== undefined) {
+        if (result['code'] === 200 || result['code'] === 0) {
           pageLogger.debug('远程加载成功', { url })
-          return result.data as T
+          return result['data'] as T
         }
-        pageLogger.error('API返回错误', { url, code: result.code, message: result.message })
-        throw new Error((result.message as string) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED))
+        pageLogger.error('API返回错误', { url, code: result['code'], message: result['message'] })
+        throw new Error((result['message'] as string) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED))
       }
 
       pageLogger.debug('远程加载成功', { url })

@@ -231,8 +231,8 @@ async function startApp() {
         
         // 统计路由信息
         const allRoutes = context.router.getRoutes()
-        const vueRoutes = allRoutes.filter(r => r.meta?.type === 'vue-component')
-        const configRoutes = allRoutes.filter(r => r.meta?.type !== 'vue-component')
+        const vueRoutes = allRoutes.filter(r => r.meta?.['type'] === 'vue-component')
+        const configRoutes = allRoutes.filter(r => r.meta?.['type'] !== 'vue-component')
         
         startupLogger.info('📊 路由统计', {
           总路由数: allRoutes.length,

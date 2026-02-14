@@ -22,9 +22,12 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
     const errorType = errorClassifier ? errorClassifier(error) : classifyError(error)
     
     const context: ErrorContext = {
-      source: instance?.$options?.name,
       info,
       timestamp: Date.now()
+    }
+    
+    if (instance?.$options?.name !== undefined) {
+      context.source = instance.$options.name
     }
 
     errorLogger.error('[Global Error]', {
@@ -133,11 +136,11 @@ export function createErrorBoundary(fallbackRender?: (error: Error) => unknown) 
       if (self.error) {
         return fallbackRender
           ? fallbackRender(self.error)
-          : self.$slots.fallback
-          ? self.$slots.fallback()
+          : self.$slots['fallback']
+          ? self.$slots['fallback']()
           : null
       }
-      return self.$slots.default?.()
+      return self.$slots['default']?.()
     }
   }
 }

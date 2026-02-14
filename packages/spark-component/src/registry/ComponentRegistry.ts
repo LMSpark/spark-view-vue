@@ -168,7 +168,11 @@ export function createComponentRegistry(): ComponentRegistry {
         logger.warn(`Overwriting component: ${type}`)
       }
 
-      components.set(type, { type, component, meta })
+      const definition: ComponentDefinition = { type, component }
+      if (meta !== undefined) {
+        definition.meta = meta
+      }
+      components.set(type, definition)
       
       if (!options?.silent) {
         logger.debug(`Registered: ${type}`)
@@ -198,7 +202,11 @@ export function createComponentRegistry(): ComponentRegistry {
         return false
       }
 
-      components.set(type, { type, component, meta })
+      const definition: ComponentDefinition = { type, component }
+      if (meta !== undefined) {
+        definition.meta = meta
+      }
+      components.set(type, definition)
       logger.debug(`Registered: ${type}`)
       return true
     },

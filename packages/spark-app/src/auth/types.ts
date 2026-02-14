@@ -36,74 +36,74 @@ export interface AuthConfig {
   /**
    * API 端点配置
    */
-  apiEndpoints?: {
+  apiEndpoints: {
     /** 登录接口 - POST */
-    login?: string
+    login: string | undefined
     /** 登出接口 - POST */
-    logout?: string
+    logout: string | undefined
     /** 获取当前用户信息 - GET */
-    me?: string
+    me: string | undefined
     /** 刷新 Token - POST */
-    refresh?: string
-  }
+    refresh: string | undefined
+  } | undefined
 
   /**
    * Token 存储方式
    * @default 'localStorage'
    */
-  tokenStorage?: TokenStorage
+  tokenStorage: TokenStorage | undefined
 
   /**
    * Token 存储键名
    * @default 'spark_token'
    */
-  tokenKey?: string
+  tokenKey: string | undefined
 
   /**
    * 登录页面路径
    * @default '/login'
    */
-  loginPath?: string
+  loginPath: string | undefined
 
   /**
    * 登录页面组件（可选，如果提供则自动注册路由）
    */
-  loginComponent?: Component | (() => Promise<Component>)
+  loginComponent: Component | (() => Promise<Component>) | undefined
 
   /**
    * 是否启用 Mock 模式（开发环境）
    * @default false
    */
-  enableMock?: boolean
+  enableMock: boolean | undefined
 
   /**
    * Mock 用户数据（enableMock=true 时使用）
    */
-  mockUser?: UserInfo
+  mockUser: UserInfo | undefined
 
   /**
    * Mock 租户数据
    */
-  mockTenant?: TenantInfo
+  mockTenant: TenantInfo | undefined
 
   /**
    * 请求超时时间（毫秒）
    * @default 10000
    */
-  timeout?: number
+  timeout: number | undefined
 
   /**
    * API 基础路径
    */
-  apiBaseUrl?: string
+  apiBaseUrl: string | undefined
 
   /**
    * 钩子函数
    */
-  onLoginSuccess?: (user: UserInfo) => void | Promise<void>
-  onLogoutSuccess?: () => void | Promise<void>
-  onAuthError?: (error: Error) => void
-  onTokenRefresh?: (token: string) => void
+  onLoginSuccess: ((user: UserInfo) => void | Promise<void>) | undefined
+  onLogoutSuccess: (() => void | Promise<void>) | undefined
+  onAuthError: ((error: Error) => void) | undefined
+  onTokenRefresh: ((token: string) => void) | undefined
 }
 
 /**

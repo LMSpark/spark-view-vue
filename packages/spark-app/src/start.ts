@@ -153,7 +153,7 @@ export async function start(options: StartOptions): Promise<void> {
       appLogger.debug('应用层 Logger 已创建', {
         level: loggerConfig.level,
         enableRemote: loggerConfig.enableRemote,
-        environment: (typeof process !== 'undefined' && process.env?.NODE_ENV) ?? 'development'
+        environment: (typeof process !== 'undefined' && process.env?.['NODE_ENV']) ?? 'development'
       })
     }
 
@@ -238,14 +238,17 @@ export async function start(options: StartOptions): Promise<void> {
       startLogger.debug('配置动态路由系统...')
       const { SparkPageConfig } = await import('@spark-view/spark-page-config')
       
-      const configLoader = SparkPageConfig.createConfigLoader({
+      const configLoaderOptions: Partial<import('@spark-view/spark-page-config').ConfigLoaderOptions> = {
         source: pageConfig.source,
         apiBaseUrl: pageConfig.apiBaseUrl,
-        localPrefix: pageConfig.localPrefix,
-        enableCache: pageConfig.enableCache,
-        cacheExpiry: pageConfig.cacheExpiry,
-        timeout: pageConfig.timeout
-      })
+        localPrefix: pageConfig.localPrefix
+      }
+      
+      if (pageConfig.enableCache !== undefined) configLoaderOptions.enableCache = pageConfig.enableCache
+      if (pageConfig.cacheExpiry !== undefined) configLoaderOptions.cacheExpiry = pageConfig.cacheExpiry
+      if (pageConfig.timeout !== undefined) configLoaderOptions.timeout = pageConfig.timeout
+      
+      const configLoader = SparkPageConfig.createConfigLoader(configLoaderOptions)
       
       // 默认使用 PageRenderer 组件
       let pageComponent = pageConfig.pageComponent

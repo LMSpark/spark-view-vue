@@ -23,7 +23,7 @@ export interface IFieldRenderState {
   field: string
   visibility: FieldVisibility
   editable: boolean
-  displayValue?: string
+  displayValue: string | undefined
   shouldRender: boolean
 }
 

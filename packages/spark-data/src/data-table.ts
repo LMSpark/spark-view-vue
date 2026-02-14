@@ -75,32 +75,44 @@ export class DataTable extends DataView {
     for (const [id, ctx] of Object.entries(this.contexts)) {
       ctxData[id] = ctx.toData()
     }
-    return {
+    const result: ITableMetadata = {
       tableName: this.tableName,
       columns: this.columns,
-      api: this.api,
       hostTable: this.hostTable,
       contextId: this.contextId,
+      contexts: ctxData,
+      api: this.api,
+      loading: this.isLoading,
+      error: this.loadingError?.message,
+      rows: this.rows,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
       autoSelectFirst: this.autoSelectFirst,
       page: this.page,
       pageSize: this.pageSize,
-      contexts: ctxData,
     }
+    
+    if (this.api !== undefined) result.api = this.api
+    if (this.filterExpression !== undefined) result.filterExpression = this.filterExpression
+    if (this.sortExpression !== undefined) result.sortExpression = this.sortExpression
+    if (this.autoSelectFirst !== undefined) result.autoSelectFirst = this.autoSelectFirst
+    if (this.page !== undefined) result.page = this.page
+    if (this.pageSize !== undefined) result.pageSize = this.pageSize
+    
+    return result
   }
 
   // ===== 工厂方法 =====
 
   static fromTableData(data: ITableMetadata): DataTable {
     const t = new DataTable(data.tableName, data.columns ?? [])
-    t.api = data.api
+    if (data.api !== undefined) t.api = data.api
     if (data.rows) {
       t.rows = data.rows.map(r => ({ ...r, __permissions: {} } as IDataRow))
     }
-    t.filterExpression = data.filterExpression
-    t.sortExpression = data.sortExpression
-    t.autoSelectFirst = data.autoSelectFirst
+    if (data.filterExpression !== undefined) t.filterExpression = data.filterExpression
+    if (data.sortExpression !== undefined) t.sortExpression = data.sortExpression
+    if (data.autoSelectFirst !== undefined) t.autoSelectFirst = data.autoSelectFirst
     t.page = data.page ?? 1
     t.pageSize = data.pageSize ?? 20
 

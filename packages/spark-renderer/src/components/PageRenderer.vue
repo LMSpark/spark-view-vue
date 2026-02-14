@@ -212,8 +212,8 @@ const loadPageConfig = async () => {
   try {
     // 确定页面ID
     const pageId = props.pageId || 
-                   (route.meta.pageId as string) || 
-                   (route.params.id as string) || 
+                   (route.meta['pageId'] as string) ||
+                   (route.params['id'] as string) ||
                    route.name as string
     
     if (!pageId) {
@@ -262,9 +262,9 @@ const loadPageConfig = async () => {
     originalRules.value = (config.rule || []) as unknown as Rule[]
     
     // 设置样式
-    if (pageData.style && typeof pageData.style === 'string') {
+    if (pageData['style'] && typeof pageData['style'] === 'string') {
       pageLogger.debug('设置页面样式', { pageId, hasStyle: true })
-      setScopedCss(pageData.style as string)
+      setScopedCss(pageData['style'] as string)
     }
     
     // 初始化 DataSet
@@ -308,10 +308,10 @@ const loadPageConfig = async () => {
         })
         
         // 执行 __init__ 函数（如果存在）
-        if (pageFunctions.value.__init__ && typeof pageFunctions.value.__init__ === 'function') {
+        if (pageFunctions.value['__init__'] && typeof pageFunctions.value['__init__'] === 'function') {
           try {
             pageLogger.info('执行 __init__ 函数', { pageId })
-            pageFunctions.value.__init__()
+            pageFunctions.value['__init__']()
             pageLogger.info('__init__ 函数执行成功', { pageId })
           } catch (initError) {
             pageLogger.error('__init__ 函数执行失败', { pageId, error: initError })

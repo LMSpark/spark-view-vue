@@ -61,7 +61,7 @@ export interface PageConfig {
   pageId: string
   rule: RuleConfig[]
   data: PageDataConfig
-  script?: PageScriptConfig  // 脚本文本
+  script: PageScriptConfig | undefined  // 脚本文本
 }
 
 /**

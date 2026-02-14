@@ -34,9 +34,9 @@ export const simpleEnvAdapter = {
     const isServer = typeof window === 'undefined'
     // 检测测试环境：Vitest / Jest / NODE_ENV=test
     const isTest = typeof process !== 'undefined' && (
-      process.env?.VITEST === 'true' ||
-      process.env?.JEST_WORKER_ID !== undefined ||
-      process.env?.NODE_ENV === 'test'
+      process.env?.['VITEST'] === 'true' ||
+      process.env?.['JEST_WORKER_ID'] !== undefined ||
+      process.env?.['NODE_ENV'] === 'test'
     )
     return {
       type: isServer ? 'server' : 'client',

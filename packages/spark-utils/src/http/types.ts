@@ -6,6 +6,8 @@
  * @packageDocumentation
  */
 
+import type { ResponseType } from 'axios'
+
 // ==================== 请求配置 ====================
 
 export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -29,7 +31,7 @@ export interface RequestConfig {
   /** 超时（ms，默认 10000） */
   timeout?: number
   /** 响应类型（默认 json） */
-  responseType?: 'json' | 'text' | 'blob' | 'arraybuffer'
+  responseType?: ResponseType
   /** API 基础地址 */
   baseURL?: string
 

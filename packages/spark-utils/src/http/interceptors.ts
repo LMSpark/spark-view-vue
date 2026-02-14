@@ -81,8 +81,8 @@ export function createRequestLogInterceptor(
     name: 'RequestLog',
     onRequest: (config) => {
       const info: Record<string, unknown> = { url: config.url, method: config.method }
-      if (options.logHeaders) info.headers = config.headers
-      if (options.logData) info.data = config.data
+      if (options.logHeaders) info['headers'] = config['headers']
+      if (options.logData) info['data'] = config['data']
       logger.info('→', info)
       return config
     }
@@ -99,7 +99,7 @@ export function createResponseLogInterceptor(
     name: 'ResponseLog',
     onResponse: <T>(response: HttpResponse<T>) => {
       const info: Record<string, unknown> = { status: response.status }
-      if (options.logData) info.data = response.data
+      if (options.logData) info['data'] = response['data']
       logger.info('←', info)
       return response
     }
@@ -123,10 +123,11 @@ export function createStandardApiInterceptor(
       const { code, message, data } = raw as { code: number; message?: string; data?: T }
       if (!successCodes.includes(code)) {
         if (options.errorHandler) options.errorHandler(code, message ?? '')
-        const err = new Error(message ?? '请求失败') as RequestError
-        err.code = String(code)
-        err.status = response.status
-        err.config = { url: '' }
+        const err: RequestError = Object.assign(new Error(message ?? '请求失败'), {
+          config: { url: '' },
+          code: String(code),
+          status: response.status
+        })
         throw err
       }
       return { ...response, data: (data ?? raw) as T }

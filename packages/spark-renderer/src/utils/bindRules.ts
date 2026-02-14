@@ -79,26 +79,26 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     }
     
     // 🎯 处理 r-table 的 dataSource 绑定
-    if (newRule.type === 'r-table' && newRule.dataSource) {
-      const dataSource = pageData[newRule.dataSource as string]
+    if (newRule.type === 'r-table' && newRule['dataSource']) {
+      const dataSource = pageData[newRule['dataSource'] as string]
       if (dataSource !== undefined) {
         newRule.props ??= {}
-        newRule.props.data = dataSource
+        newRule.props['data'] = dataSource
       }
     }
 
     // 🎯 处理 r-tree 的 dataSource 绑定
-    if (newRule.type === 'r-tree' && newRule.dataSource) {
-      const dataSource = pageData[newRule.dataSource as string]
+    if (newRule.type === 'r-tree' && newRule['dataSource']) {
+      const dataSource = pageData[newRule['dataSource'] as string]
       if (dataSource !== undefined) {
         newRule.props ??= {}
-        newRule.props.data = dataSource
+        newRule.props['data'] = dataSource
       }
     }
 
     // 🎯 处理 r-tree 的 dataKey 绑定（用于 default-expanded-keys）
-    if (newRule.type === 'r-tree' && newRule.dataKey) {
-      const keys = (newRule.dataKey as string).split('.')
+    if (newRule.type === 'r-tree' && newRule['dataKey']) {
+      const keys = (newRule['dataKey'] as string).split('.')
       const value = getNestedValue<unknown[]>(pageData, keys)
       if (value !== undefined && Array.isArray(value)) {
         newRule.props ??= {}
@@ -107,8 +107,8 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     }
 
     // 🎯 处理 r-tree 的 currentKey 绑定（用于 current-key 高亮）
-    if (newRule.type === 'r-tree' && newRule.currentKey) {
-      const keys = (newRule.currentKey as string).split('.')
+    if (newRule.type === 'r-tree' && newRule['currentKey']) {
+      const keys = (newRule['currentKey'] as string).split('.')
       const value = getNestedValue<string | number>(pageData, keys)
       if (value !== undefined) {
         newRule.props ??= {}
@@ -128,35 +128,35 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     }
     
     // 🎯 处理 r-form 的 dataKey 绑定
-    if (newRule.type === 'r-form' && newRule.dataKey) {
-      const keys = (newRule.dataKey as string).split('.')
+    if (newRule.type === 'r-form' && newRule['dataKey']) {
+      const keys = (newRule['dataKey'] as string).split('.')
       const value = getNestedValue<Record<string, unknown>>(pageData, keys)
       if (value !== undefined) {
         newRule.props ??= {}
-        newRule.props.data = value
+        newRule.props['data'] = value
       }
     }
     
     // 🎯 处理 r-detail 的 dataKey 绑定
-    if (newRule.type === 'r-detail' && newRule.dataKey) {
-      const keys = (newRule.dataKey as string).split('.')
+    if (newRule.type === 'r-detail' && newRule['dataKey']) {
+      const keys = (newRule['dataKey'] as string).split('.')
       const value = getNestedValue<Record<string, unknown>>(pageData, keys)
       if (value !== undefined) {
         newRule.props ??= {}
-        newRule.props.data = value
+        newRule.props['data'] = value
       }
     }
     
     // 🎯 处理 el-table 的 dataKey 绑定
-    if (newRule.type === 'el-table' && newRule.dataKey) {
+    if (newRule.type === 'el-table' && newRule['dataKey']) {
       // 解析 dataKey 路径，获取数据
-      const keys = (newRule.dataKey as string).split('.')
+      const keys = (newRule['dataKey'] as string).split('.')
       const value = getNestedValue<unknown[]>(pageData, keys)
       
       // 绑定数据到 props.data
       if (value !== undefined) {
         newRule.props ??= {}
-        newRule.props.data = value
+        newRule.props['data'] = value
       }
       
       // 如果有 dataSet，注入同步事件
@@ -168,9 +168,9 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定或表单值绑定）
     // 排除已有专门处理逻辑的容器组件
     const handledTypes = ['el-table', 'r-table', 'r-form', 'r-detail', 'r-tree']
-    if (newRule.dataKey && !handledTypes.includes(newRule.type as string)) {
+    if (newRule['dataKey'] && !handledTypes.includes(newRule.type as string)) {
       // 解析 dataKey 路径，获取数据值
-      const keys = (newRule.dataKey as string).split('.')
+      const keys = (newRule['dataKey'] as string).split('.')
       const value = getNestedValue<string | number>(pageData, keys)
       
       // 如果有值，根据元素类型决定绑定方式
@@ -178,7 +178,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
         // 表单元素：绑定到 props.modelValue（支持响应式）
         if (newRule.type === 'el-input' || newRule.type === 'el-textarea') {
           newRule.props ??= {}
-          newRule.props.modelValue = value
+          newRule.props['modelValue'] = value
         } else {
           // 普通元素：将值转换为字符串并设置为 children
           newRule.children = [String(value)]
@@ -261,13 +261,13 @@ function injectTableEvents(
   // 使用局部防重入标志
   let isProcessingEvent = false
   // 解析 dataKey 获取表名
-  if (!rule.dataKey) return
-  const dataKeyParts = (rule.dataKey as string).split('.')
+  if (!rule['dataKey']) return
+  const dataKeyParts = (rule['dataKey'] as string).split('.')
   const tablesIndex = dataKeyParts.indexOf('tables')
   if (tablesIndex === -1 || !dataKeyParts[tablesIndex + 1]) return
   
   const tableName = dataKeyParts[tablesIndex + 1] as string
-  const contextId = ((rule as { contextId?: string }).contextId ?? rule.props?.contextId ?? 'default') as string
+  const contextId = ((rule as { contextId?: string })['contextId'] ?? rule.props?.['contextId'] ?? 'default') as string
   
   // 添加唯一的 name 属性
   rule.name ??= `table_${tableName}_${contextId}`
@@ -351,7 +351,7 @@ function injectTableEvents(
  */
 export function findRuleByDataKey(rules: Rule[], dataKey: string): Rule | null {
   for (const rule of rules) {
-    if (rule.dataKey === dataKey) {
+    if (rule['dataKey'] === dataKey) {
       return rule
     }
     if (rule.children && Array.isArray(rule.children)) {
