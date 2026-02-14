@@ -1,53 +1,501 @@
 # SPARK 快速开始
 
-> 5 分钟上手 SPARK 框架
+> 5 分钟上手 SPARK 企业级低代码组件系统
 
-## 前置要求
+## 📋 前置要求
 
-- Node.js >= 18
-- pnpm >= 8
+- **Node.js** >= 18.0.0
+- **pnpm** >= 8.0.0
+- **TypeScript** >= 5.0 (推荐使用最新版本)
 
-## 安装
+## 🚀 安装和运行
 
 ```bash
-# 克隆项目
+# 1. 克隆项目
 git clone https://github.com/your-org/spark-view.git
 cd spark-view
 
-# 安装依赖
+# 2. 安装依赖
 pnpm install
 
-# 启动开发服务器
+# 3. 启动开发服务器
 pnpm run dev
 ```
 
-访问 http://localhost:5173 查看效果。
+访问 **http://localhost:5173** 查看运行效果。
 
-## 核心概念
+## 🏗️ 项目结构
+
+```
+spark-view/
+├── packages/                 # 核心包
+│   ├── spark-app/           # 应用层基础设施
+│   ├── spark-component/     # 组件系统核心
+│   ├── spark-data/          # 数据管理
+│   ├── spark-utils/         # 工具函数
+│   └── spark-*/             # 其他功能包
+├── src/                     # 示例应用
+├── docs/                    # 文档
+└── tests/                   # 测试
+```
+
+## 📖 核心概念
 
 ### 1. 组件注册
 
+SPARK 支持三种组件注册方式：
+
 ```typescript
 import { Spark } from '@spark-view/spark-component'
+import MyGrid from './MyGrid.vue'
 
-// 注册组件
-Spark.register({
-  type: 'my-grid',
-  name: 'My Grid',
-  component: MyGridComponent
-})
+// 方式 1：直接注册（同步加载）
+Spark.register('my-grid', MyGrid)
 
-// 懒加载注册
-Spark.register({
-  type: 'my-chart',
-  name: 'My Chart',
-  loader: () => import('./MyChartComponent.vue')
+// 方式 2：动态导入（代码分割）
+Spark.register('user-chart', () => import('./UserChart.vue'))
+
+// 方式 3：批量注册（推荐）
+const register = Spark.createRegister(import.meta.glob('./components/*.vue'))
+register.registerAll({
+  'data-table': './DataTable.vue',
+  'user-form': './UserForm.vue',
+  'dashboard': './Dashboard.vue'
 })
 ```
 
 ### 2. 使用组件
 
 ```vue
+<template>
+  <div class="app">
+    <!-- 使用 kebab-case 组件类型名 -->
+    <spark-component type="my-grid" :config="gridConfig" />
+    <spark-component type="user-chart" :config="chartConfig" />
+  </div>
+</template>
+
+<script setup lang="ts">
+const gridConfig = {
+  type: 'my-grid',
+  title: '用户数据',
+  columns: ['name', 'email', 'role']
+}
+
+const chartConfig = {
+  type: 'user-chart',
+  dataSource: 'users',
+  chartType: 'bar'
+}
+</script>
+```
+
+### 3. 能力系统
+
+组件间的松耦合通信：
+
+```typescript
+// 定义能力
+import { defineCapability } from '@spark-view/spark-utils'
+
+export const GRID_SELECTION = defineCapability<SelectionApi>('grid-selection')
+
+// 提供能力
+const { provide } = useSparkComponent(props.config)
+provide(GRID_SELECTION, {
+  getSelectedRows: () => selectedRows.value,
+  selectAll: () => { /* ... */ },
+  clearSelection: () => selectedRows.value = []
+})
+
+// 消费能力
+const { consume } = useSparkComponent(props.config)
+const selection = consume(GRID_SELECTION)
+```
+
+### 4. 数据管理
+
+```typescript
+import { SparkData } from '@spark-view/spark-data'
+
+// 创建数据集
+const dataSet = SparkData.createDataSet({
+  dataSetName: 'UserManagement',
+  tables: {
+    Users: {
+      tableName: 'Users',
+      columns: [
+        { name: 'id', type: 'number', primaryKey: true },
+        { name: 'name', type: 'string', nullable: false },
+        { name: 'email', type: 'string', nullable: false }
+      ],
+      rows: []
+    }
+  }
+})
+
+// 数据操作
+await dataSet.loadTable('Users')
+const users = dataSet.getTable('Users').getRows()
+```
+
+## 🎯 创建你的第一个组件
+
+### 步骤 1：创建组件文件
+
+```vue
+<!-- src/components/HelloWorld.vue -->
+<template>
+  <div class="hello-world">
+    <h2>{{ config.title || 'Hello World' }}</h2>
+    <p>计数: {{ count }}</p>
+    <button @click="increment">+</button>
+    <button @click="decrement">-</button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+
+interface HelloWorldConfig {
+  title?: string
+  initialCount?: number
+}
+
+const props = defineProps<{
+  config: ComponentContext<HelloWorldConfig>
+}>()
+
+const { logger } = useSparkComponent(props.config)
+
+const count = ref(props.config.initialCount || 0)
+
+const increment = () => {
+  count.value++
+  logger.info('Count incremented', { newValue: count.value })
+}
+
+const decrement = () => {
+  count.value--
+  logger.info('Count decremented', { newValue: count.value })
+}
+</script>
+
+<style scoped>
+.hello-world {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+}
+
+button {
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #007acc;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #005aa3;
+}
+</style>
+```
+
+### 步骤 2：注册组件
+
+```typescript
+// src/main.ts
+import { Spark } from '@spark-view/spark-component'
+import HelloWorld from './components/HelloWorld.vue'
+
+// 注册组件
+Spark.register('hello-world', HelloWorld)
+```
+
+### 步骤 3：在页面中使用
+
+```vue
+<!-- src/App.vue -->
+<template>
+  <div class="app">
+    <h1>SPARK 快速开始</h1>
+
+    <spark-component
+      type="hello-world"
+      :config="{
+        title: '我的第一个 SPARK 组件',
+        initialCount: 5
+      }"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { Spark } from '@spark-view/spark-component'
+import HelloWorld from './components/HelloWorld.vue'
+
+// 确保组件已注册
+Spark.register('hello-world', HelloWorld)
+</script>
+```
+
+## 🔧 应用配置
+
+### 基础应用启动
+
+```typescript
+// src/main.ts
+import { createApp } from 'vue'
+import { SparkApp } from '@spark-view/spark-app'
+import App from './App.vue'
+
+const app = createApp(App)
+
+// 启动 SPARK 应用
+await SparkApp.start({
+  // 路由配置
+  router: {
+    mode: 'history',
+    routes: [
+      { path: '/', component: 'page-home' },
+      { path: '/users', component: 'page-users' }
+    ]
+  },
+
+  // 页面配置
+  pageConfig: {
+    source: 'local',
+    apiBaseUrl: '/api'
+  }
+})
+
+app.mount('#app')
+```
+
+### 完整配置示例
+
+```typescript
+await SparkApp.start({
+  // 路由配置
+  router: {
+    mode: 'history',
+    base: '/',
+    routes: [
+      { path: '/', component: 'page-home' },
+      { path: '/users', component: 'page-users' },
+      { path: '/dashboard', component: 'page-dashboard' }
+    ]
+  },
+
+  // 插件配置
+  plugins: {
+    'element-plus': true,
+    'vxe-table': {
+      enabled: true,
+      options: { size: 'large' }
+    }
+  },
+
+  // 页面配置系统
+  pageConfig: {
+    source: 'hybrid', // local | remote | hybrid
+    apiBaseUrl: '/api',
+    localPrefix: '/config',
+    cacheEnabled: true
+  },
+
+  // 应用级配置
+  app: {
+    title: 'My SPARK App',
+    theme: 'light',
+    locale: 'zh-CN'
+  }
+})
+```
+
+## 📊 数据集成
+
+### 创建数据模型
+
+```typescript
+// src/data/models.ts
+import { SparkData } from '@spark-view/spark-data'
+
+export const userDataSet = SparkData.createDataSet({
+  dataSetName: 'UserManagement',
+  tables: {
+    Users: {
+      tableName: 'Users',
+      columns: [
+        { name: 'id', type: 'number', primaryKey: true },
+        { name: 'name', type: 'string', nullable: false },
+        { name: 'email', type: 'string', nullable: false },
+        { name: 'role', type: 'string', defaultValue: 'user' }
+      ],
+      rows: [
+        { id: 1, name: 'Admin', email: 'admin@example.com', role: 'admin' },
+        { id: 2, name: 'User', email: 'user@example.com', role: 'user' }
+      ]
+    }
+  }
+})
+```
+
+### 在组件中使用数据
+
+```vue
+<template>
+  <div class="user-list">
+    <h3>用户列表</h3>
+    <div v-for="user in users" :key="user.id" class="user-item">
+      <span>{{ user.name }}</span>
+      <span>{{ user.email }}</span>
+      <span class="role">{{ user.role }}</span>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { userDataSet } from '../data/models'
+
+const props = defineProps<{
+  config: ComponentContext
+}>()
+
+const { logger } = useSparkComponent(props.config)
+
+const users = ref<any[]>([])
+
+onMounted(async () => {
+  try {
+    await userDataSet.loadTable('Users')
+    users.value = userDataSet.getTable('Users').getRows()
+    logger.info('Users loaded', { count: users.value.length })
+  } catch (error) {
+    logger.error('Failed to load users', { error })
+  }
+})
+</script>
+```
+
+## 🎨 添加样式和主题
+
+### 全局样式
+
+```css
+/* src/style.css */
+:root {
+  --primary-color: #007acc;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --border-radius: 4px;
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+.spark-component {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+```
+
+### 主题支持
+
+```typescript
+// src/themes.ts
+export const themes = {
+  light: {
+    background: '#ffffff',
+    surface: '#f8f9fa',
+    text: '#212529',
+    textSecondary: '#6c757d',
+    border: '#dee2e6'
+  },
+  dark: {
+    background: '#1a1a1a',
+    surface: '#2d3748',
+    text: '#ffffff',
+    textSecondary: '#a0aec0',
+    border: '#4a5568'
+  }
+}
+
+export type Theme = keyof typeof themes
+```
+
+## 🧪 运行测试
+
+```bash
+# 运行所有测试
+pnpm run test
+
+# 运行特定测试
+pnpm run test -- -t "component"
+
+# 类型检查
+pnpm run typecheck
+
+# 代码质量检查
+pnpm run lint
+```
+
+## 📚 进阶学习
+
+完成基础设置后，建议按以下顺序学习：
+
+1. **[组件开发指南](COMPONENT_DEVELOPMENT.md)** - 深入了解组件系统和能力机制
+2. **[数据管理指南](DATA_MANAGEMENT.md)** - 掌握 DataSet 和 TreeManager
+3. **[插件配置](PLUGIN_CONFIGURATION.md)** - 集成第三方 UI 库
+4. **[页面配置](MULTI_TENANT_CONFIG.md)** - 实现配置驱动开发
+5. **[架构设计](https://github.com/your-org/spark-view/tree/main/docs/architecture)** - 理解系统设计理念
+
+## 🆘 常见问题
+
+### Q: 组件没有渲染？
+A: 检查组件是否已正确注册，类型名是否使用 kebab-case。
+
+### Q: 数据不更新？
+A: 确保使用响应式数据，DataSet 的变更会自动触发更新。
+
+### Q: 类型错误？
+A: 运行 `pnpm run typecheck` 检查类型，确保使用正确的接口定义。
+
+### Q: 性能问题？
+A: 使用动态导入进行代码分割，避免一次性加载所有组件。
+
+## 🎉 下一步
+
+恭喜！你已经成功创建了第一个 SPARK 应用。现在你可以：
+
+- 添加更多自定义组件
+- 集成真实 API 数据
+- 配置用户权限系统
+- 部署到生产环境
+
+加入我们的社区，分享你的经验和建议！
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 
