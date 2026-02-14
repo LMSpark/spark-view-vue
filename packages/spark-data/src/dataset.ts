@@ -19,11 +19,11 @@ export class DataSet {
   // 基础属性
   dataSetName: string
   tables: Record<string, DataTable> = {}
-  relations?: DataRelation[]
-  version?: number
-  pageId?: string
-  autoLoadRelations?: boolean
-  dataLoader?: (tableName: string) => Promise<IDataRow[]>
+  relations: DataRelation[] | undefined
+  version: number | undefined
+  pageId: string | undefined
+  autoLoadRelations: boolean | undefined
+  dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
 
   // 内部引擎
   private relationEngine: RelationEngine
@@ -35,11 +35,11 @@ export class DataSet {
   constructor(config: {
     dataSetName: string
     tables: Record<string, ITableMetadata>
-    relations?: DataRelation[]
-    version?: number
-    pageId?: string
-    autoLoadRelations?: boolean
-    dataLoader?: (tableName: string) => Promise<IDataRow[]>
+    relations: DataRelation[] | undefined
+    version: number | undefined
+    pageId: string | undefined
+    autoLoadRelations: boolean | undefined
+    dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
   }) {
     this.dataSetName = config.dataSetName
     this.dataLoader = config.dataLoader
@@ -85,24 +85,14 @@ export class DataSet {
     const tables: Record<string, ITableMetadata> = {}
 
     for (const [key, tableConfig] of Object.entries(config.tables)) {
-      tables[key] = {
-        tableName: tableConfig.tableName,
-        columns: tableConfig.columns,
-        rows: tableConfig.rows,
-        api: tableConfig.api
-      }
+      tables[key] = { ...tableConfig } as ITableMetadata
     }
 
-    return new DataSet({
-      dataSetName: config.dataSetName,
-      tables,
-      relations: config.relations,
-      dataLoader: config.dataLoader
-    })
+    return new DataSet({ ...config })
   }
 
   static fromMetadata(metadata: IDataSetMetadata): DataSet {
-    return new DataSet(metadata)
+    return new DataSet({ ...metadata, autoLoadRelations: undefined, dataLoader: undefined })
   }
 
   // ===== 能力注册 =====
@@ -214,7 +204,7 @@ export class DataSet {
       relations: this.relations,
       version: this.version,
       pageId: this.pageId
-    }
+    } as IDataSetMetadata
   }
 
   toJSON(): string {
@@ -224,7 +214,7 @@ export class DataSet {
   // ===== 工厂方法 =====
 
   static fromData(data: IDataSetMetadata, loader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
-    return new DataSet({ ...data, dataLoader: loader })
+    return new DataSet({ ...data, dataLoader: loader, autoLoadRelations: undefined })
   }
 
   static fromJSON(json: string, loader?: (tableName: string) => Promise<IDataRow[]>): DataSet {

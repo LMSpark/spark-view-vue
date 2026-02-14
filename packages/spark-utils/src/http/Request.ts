@@ -21,7 +21,7 @@ export class Request {
 
   constructor(private defaults: Partial<RequestConfig> = {}) {
     this.ax = axios.create({
-      baseURL: defaults.baseURL,
+      baseURL: defaults.baseURL ?? '',
       timeout: defaults.timeout ?? 10000,
       headers: defaults.headers,
     })
@@ -39,7 +39,7 @@ export class Request {
             const result = await interceptor.onRequest(cfg)
             // 合并修改回 axios config（保留 axios 内部字段）
             axCfg.url = result.url
-            axCfg.method = result.method?.toLowerCase()
+            axCfg.method = result.method?.toLowerCase() as Method
             if (result.params !== undefined) axCfg.params = result.params
             if (result.data !== undefined) axCfg.data = result.data
             if (result.timeout !== undefined) axCfg.timeout = result.timeout
@@ -61,7 +61,7 @@ export class Request {
             if (!interceptor.onResponse) return axRes
             const res = this.toHttpResponse(axRes)
             const result = await interceptor.onResponse(res)
-            return { ...axRes, data: result.data, status: result.status, statusText: result.statusText }
+            return { ...axRes, data: result.data as unknown, status: result.status, statusText: result.statusText }
           },
           async (error) => {
             if (!interceptor.onResponseError) throw error
@@ -124,7 +124,7 @@ export class Request {
   }
 
   async get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T> {
-    return this.request<T>({ ...config, url, method: 'GET', params })
+    return this.request<T>({ ...config, url, method: 'GET', params: params ?? {} })
   }
 
   async post<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T> {
@@ -140,7 +140,7 @@ export class Request {
   }
 
   async delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T> {
-    return this.request<T>({ ...config, url, method: 'DELETE', params })
+    return this.request<T>({ ...config, url, method: 'DELETE', params: params ?? {} })
   }
 
   /** 清除缓存 */
@@ -158,11 +158,11 @@ export class Request {
 
   private toAxios(config: RequestConfig | Partial<RequestConfig>): AxiosRequestConfig {
     const c: AxiosRequestConfig = {
-      url: config.url,
+      url: config.url ?? '',
       method: config.method ?? 'GET',
-      timeout: config.timeout,
-      responseType: config.responseType,
-      baseURL: config.baseURL,
+      timeout: config.timeout ?? 10000,
+      responseType: config.responseType ?? 'json',
+      baseURL: config.baseURL ?? '',
     }
     if (config.params !== undefined) c.params = config.params
     if (config.data !== undefined) c.data = config.data
@@ -185,9 +185,9 @@ export class Request {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- axios params 为 any
       params: c.params,
       data: c.data as unknown,
-      timeout: c.timeout,
-      responseType: c.responseType as RequestConfig['responseType'],
-      baseURL: c.baseURL,
+      timeout: c.timeout ?? 10000,
+      responseType: c.responseType ?? 'json',
+      baseURL: c.baseURL ?? '',
     }
   }
 
@@ -208,16 +208,16 @@ export class Request {
 
   private normalizeError(err: unknown, fallback?: RequestConfig): RequestError {
     const base = err instanceof Error ? err : new Error(String(err))
-    const error = base as RequestError
-    error.name = 'RequestError'
+    const error: RequestError = Object.assign(base, {
+      config: fallback ?? { url: '' },
+      name: 'RequestError'
+    })
 
     if (axios.isAxiosError(err)) {
       error.config = err.config ? this.fromAxios(err.config) : (fallback ?? { url: '' })
-      error.code = err.code
-      error.status = err.response?.status
+      error.code = err.code ?? 'UNKNOWN'
+      error.status = err.response?.status ?? 0
       error.response = err.response?.data
-    } else if (!error.config) {
-      error.config = fallback ?? { url: '' }
     }
     return error
   }

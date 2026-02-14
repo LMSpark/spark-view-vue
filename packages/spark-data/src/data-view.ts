@@ -51,7 +51,7 @@ export class DataView {
   constructor(hostTable: string, contextId: string | "default" = 'default', dataSet?: IDataSet) {
     this.hostTable = hostTable
     this.contextId = contextId
-    this.dataSet = dataSet
+    if (dataSet !== undefined) this.dataSet = dataSet
   }
 
   // 树管理器设置
@@ -151,23 +151,26 @@ export class DataView {
 
   // 序列化
   toData(): IViewMetadata {
-    return {
+    const result: IViewMetadata = {
       hostTable: this.hostTable,
       contextId: this.contextId,
+      page: this.page,
+      pageSize: this.pageSize,
+      rows: this.rows,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
       autoSelectFirst: this.autoSelectFirst,
-      page: this.page,
-      pageSize: this.pageSize,
     }
+    
+    return result
   }
 
   // 工厂方法
   static fromData(data: IViewMetadata, hostTable: string, contextId: string, dataSet?: IDataSet): DataView {
     const v = new DataView(hostTable, contextId, dataSet)
-    v.filterExpression = data.filterExpression
-    v.sortExpression = data.sortExpression
-    v.autoSelectFirst = data.autoSelectFirst
+    if (data.filterExpression !== undefined) v.filterExpression = data.filterExpression
+    if (data.sortExpression !== undefined) v.sortExpression = data.sortExpression
+    if (data.autoSelectFirst !== undefined) v.autoSelectFirst = data.autoSelectFirst
     v.page = data.page ?? 1
     v.pageSize = data.pageSize ?? 20
     return v

@@ -78,7 +78,9 @@ export class ConfigLoader {
       // 首次加载：从本地获取配置源设置
       if (!this.configSource) {
         const localConfig = await this.fetchFromLocal('/config/default.json') as AppFullConfig
-        this.configSource = localConfig.configSource
+        if (localConfig.configSource) {
+          this.configSource = localConfig.configSource
+        }
         
         // 如果配置源是 local，直接返回本地配置
         if (this.configSource?.type === 'local') {
@@ -268,9 +270,9 @@ export class ConfigLoader {
     }
     
     // 支持环境变量覆盖 API 地址
-    if (env.VITE_API_BASE_URL) {
-      config.config.apiBaseUrl = env.VITE_API_BASE_URL as string
-      config.pageConfig.apiBaseUrl = env.VITE_API_BASE_URL as string
+    if (env['VITE_API_BASE_URL']) {
+      config.config.apiBaseUrl = env['VITE_API_BASE_URL'] as string
+      config.pageConfig.apiBaseUrl = env['VITE_API_BASE_URL'] as string
     }
     
     return config
@@ -308,10 +310,10 @@ export class ConfigLoader {
         }
       },
       logger: {
-        level: import.meta.env.PROD ? 'info' : 'debug',
+        level: import.meta.env['PROD'] ? 'info' : 'debug',
         enableColors: true,
-        showTimestamp: !import.meta.env.PROD,
-        enableRemote: import.meta.env.PROD,
+        showTimestamp: !import.meta.env['PROD'],
+        enableRemote: import.meta.env['PROD'],
         remoteEndpoint: '/api/logs'
       }
     }

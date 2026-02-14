@@ -16,7 +16,7 @@
           :index="route.path"
         >
           <template #default>
-            <span>{{ route.meta?.icon }} {{ route.meta?.title }}</span>
+            <span>{{ route.meta?.['icon'] }} {{ route.meta?.['title'] }}</span>
           </template>
         </el-menu-item>
       </el-menu>
@@ -52,7 +52,7 @@ const menuRoutes = computed(() => {
   if (!isRoutesLoaded.value) return []
   
   return router.getRoutes()
-    .filter(route => route.meta?.title && route.path !== '/')
+    .filter(route => route.meta?.['title'] && route.path !== '/')
     .sort((a, b) => a.path.localeCompare(b.path))
 })
 </script>

@@ -54,6 +54,7 @@ import { setupErrorHandler } from '../error/handler'
 import { createLogger } from '../logger'
 import { loadConfig } from '../config'
 import { AuthService } from '../auth'
+import type { AuthConfig } from '../auth/types'
 
 /**
  * =============================================================================
@@ -121,11 +122,24 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       logPhase('AUTH-INIT', '初始化认证服务')
 
       // 创建新的 AuthService 实例，传入配置（采用新方式，删除过时的 initialize 调用）
-      authService = new AuthService({
-        ...auth,
+      const authConfig: AuthConfig = {
+        apiEndpoints: auth.apiEndpoints,
+        tokenStorage: auth.tokenStorage,
+        tokenKey: auth.tokenKey,
+        loginPath: auth.loginPath,
+        loginComponent: auth.loginComponent,
+        enableMock: auth.enableMock ?? appConfig.enableMock,
+        mockUser: auth.mockUser,
+        mockTenant: auth.mockTenant,
+        timeout: auth.timeout,
         apiBaseUrl: auth.apiBaseUrl ?? appConfig.apiBaseUrl,
-        enableMock: auth.enableMock ?? appConfig.enableMock
-      })
+        onLoginSuccess: auth.onLoginSuccess,
+        onLogoutSuccess: auth.onLogoutSuccess,
+        onAuthError: auth.onAuthError,
+        onTokenRefresh: auth.onTokenRefresh
+      }
+      
+      authService = new AuthService(authConfig)
 
       // 注册登录路由（如果提供了 loginComponent）
       if (auth.loginComponent) {
@@ -203,7 +217,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // 如果提供了 appLogger，通过全局属性提供给整个应用
     if (appLogger) {
       bootstrapLogger.debug('注册应用层 Logger 到全局属性');
-      (app.config.globalProperties as Record<string, unknown>).$logger = appLogger ;
+      (app.config.globalProperties as Record<string, unknown>)['$logger'] = appLogger ;
       bootstrapLogger.debug('应用层 Logger 已提供给所有组件')
     }
 

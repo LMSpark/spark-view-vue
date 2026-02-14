@@ -81,7 +81,7 @@ export interface PageConfig {
   rule: RuleConfig[]  // 使用配置层的 RuleConfig，而非 FormCreate 的 Rule
   data: Record<string, unknown>
   style?: string
-  script?: string  // 脚本文本
+  script: string | undefined  // 脚本文本
 }
 
 /**

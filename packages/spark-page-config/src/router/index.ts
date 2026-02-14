@@ -74,7 +74,7 @@ export class DynamicRouter {
     // 执行 afterRegister 钩子
     if (this.afterRegister) {
       routerLogger.debug('执行 afterRegister 钩子') // 使用 L1 Logger
-      this.afterRegister(this.router.getRoutes())
+      this.afterRegister(this.router.getRoutes() as RouteRecordRaw[])
     }
     
     routerLogger.info('动态路由注册完成', { count: routes.length })

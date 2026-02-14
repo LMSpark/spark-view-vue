@@ -90,7 +90,7 @@ class AppLogger {
 
   constructor(config: AppLoggerConfig = {}) {
     this.config = {
-      level: config.level ?? (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production' ? 'info' : 'debug'),
+      level: config.level ?? (typeof process !== 'undefined' && process.env?.['NODE_ENV'] === 'production' ? 'info' : 'debug'),
       enableColors: config.enableColors ?? true,
       showTimestamp: config.showTimestamp ?? false,
       prefix: config.prefix ?? '',
@@ -209,7 +209,7 @@ class AppLogger {
    * Success 日志（扩展）
    */
   success(message: string, meta?: Record<string, unknown>): void {
-    const formattedMessage = this.formatMessage(message, EMOJI_ICONS.success)
+    const formattedMessage = this.formatMessage(message, EMOJI_ICONS['success'])
     const args = meta ? [formattedMessage, meta] : [formattedMessage]
     console.info(...args)
     this.transports.forEach(t => t.send('info', message, meta))

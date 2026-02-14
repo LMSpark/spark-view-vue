@@ -156,7 +156,7 @@ export class AutoLoader {
       ],
       sizeThreshold: config.sizeThreshold ?? 50,
       autoAnalyze: config.autoAnalyze ?? true,
-      registry: config.registry
+      ...(config.registry !== undefined && { registry: config.registry })
     }
   }
 

@@ -52,7 +52,7 @@ export class FileLoader {
       const timestamp = cache?.timestamp ?? ''
 
       const params: Record<string, unknown> = {}
-      if (timestamp) params.timestamp = timestamp
+      if (timestamp) params['timestamp'] = timestamp
 
       const response = await this.request.requestFull<FileResponse>({
         url: fileName,

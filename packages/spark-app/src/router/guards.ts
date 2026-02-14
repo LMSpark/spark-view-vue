@@ -40,7 +40,7 @@ export function setupRouterGuards(
   // 全局前置守卫
   router.beforeEach(async (to, _from, next) => {
     // 登录页和公开页面跳过检查
-    if (to.path === loginPath || to.meta.public === true) {
+    if (to.path === loginPath || to.meta['public'] === true) {
       return next()
     }
 
@@ -51,7 +51,7 @@ export function setupRouterGuards(
     }
 
     // 页面级权限检查
-    const requiredPermissions = to.meta.permissions as string[] | undefined
+    const requiredPermissions = to.meta['permissions'] as string[] | undefined
     
     if (requiredPermissions?.length) {
       const hasPermission = checkPermission
@@ -74,8 +74,8 @@ export function setupRouterGuards(
   // 全局后置守卫
   router.afterEach((to) => {
     // 更新页面标题
-    if (to.meta.title && typeof document !== 'undefined') {
-      document.title = `${to.meta.title} - SPARK`
+    if (to.meta['title'] && typeof document !== 'undefined') {
+      document.title = `${to.meta['title']} - SPARK`
     }
   })
 

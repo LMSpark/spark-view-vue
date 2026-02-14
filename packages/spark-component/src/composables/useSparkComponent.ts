@@ -218,12 +218,15 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   const ctxRaw: ComponentContext = {
     id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     type: config.type,
-    parent: parentContext,
     children: [],
-    props: config.props,
+    props: config.props ?? {},
     state: {},
     providers: new Map<CapabilityName, CapabilityProvider>(),
     consumers: new Map<CapabilityName, CapabilityConsumer>()
+  }
+  
+  if (parentContext !== undefined) {
+    ctxRaw.parent = parentContext
   }
 
   /**

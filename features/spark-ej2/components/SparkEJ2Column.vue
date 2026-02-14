@@ -85,7 +85,7 @@ const props = defineProps<Props>()
 
 const { context, provide, getComponent } = useSparkComponent(
   props.config,
-  { parentContext: props.parentContext }
+  props.parentContext ? { parentContext: props.parentContext } : {}
 )
 
 // 提供能力给子组件

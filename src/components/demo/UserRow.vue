@@ -79,7 +79,7 @@ interface Props {
 const props = defineProps<Props>()
 
 // 从 config.props 获取 user 数据
-const user = computed(() => props.config.props?.user as Record<string, unknown>)
+const user = computed(() => props.config.props?.['user'] as Record<string, unknown>)
 
 const childConfigs = computed(() =>
   (props.config.children ?? []).filter(
@@ -129,7 +129,7 @@ const updateSelectionState = () => {
 consumeEvents(GRID_EVENTS, {
   'selection:changed': () => {
     updateSelectionState()
-    logger.debug('🔄 Selection updated for row:', user.value?.id)  },
+    logger.debug('🔄 Selection updated for row:', user.value?.['id'])  },
   'grid:refresh': () => {
     logger.info('📡 Row received grid refresh event')
     // 可以在这里添加刷新逻辑，比如重新获取数据

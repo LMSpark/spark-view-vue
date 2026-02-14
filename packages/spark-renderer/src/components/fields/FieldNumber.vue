@@ -51,11 +51,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   name: '',
-  value: '',
-  width: undefined,
-  modelValue: undefined,
-  min: undefined,
-  max: undefined
+  value: ''
 })
 
 const emit = defineEmits<{

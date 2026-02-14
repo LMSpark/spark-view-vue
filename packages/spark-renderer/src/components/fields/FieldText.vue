@@ -47,9 +47,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   name: '',
-  value: '',
-  width: undefined,
-  modelValue: undefined
+  value: ''
 })
 
 const emit = defineEmits<{

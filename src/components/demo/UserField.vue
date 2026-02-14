@@ -99,7 +99,7 @@ consumeEvents(ROW_EVENTS, {
 const fieldMetadata = consume(FIELD_METADATA)
 
 // 获取当前字段名
-const currentField = computed(() => props.config.props?.field as string)
+const currentField = computed(() => props.config.props?.['field'] as string)
 
 // 获取字段元数据
 const metadata = computed(() => {
@@ -109,17 +109,17 @@ const metadata = computed(() => {
 
 // 计算图标（优先级：元数据 > config.props > props）
 const fieldIcon = computed(() => {
-  return metadata.value?.icon || (props.config.props?.icon as string) || props.icon || '📝'
+  return metadata.value?.icon || (props.config.props?.['icon'] as string) || props.icon || '📝'
 })
 
 // 计算标签（优先级：元数据 > config.props > props）
 const fieldLabel = computed(() => {
-  return metadata.value?.label || (props.config.props?.label as string) || props.label || ''
+  return metadata.value?.label || (props.config.props?.['label'] as string) || props.label || ''
 })
 
 // 计算显示值
 const displayValue = computed(() => {
-  const field = props.config.props?.field as string
+  const field = props.config.props?.['field'] as string
   
   if (rowData?.getField && field) {
     const value = rowData.getField(field)
@@ -132,11 +132,11 @@ const displayValue = computed(() => {
     return value
   }
   
-  return props.config.props?.value ?? props.value
+  return props.config.props?.['value'] ?? props.value
 })
 
 onMounted(() => {
-  const field = props.config.props?.field as string
+  const field = props.config.props?.['field'] as string
   logger.info('🚀 UserField mounted', {
     contextId: context.id,
     field: field,

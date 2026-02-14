@@ -165,7 +165,7 @@ const appRouter = computed(() => appServices?.router)
 
 // 从 DataSet 配置获取用户数据
 const usersFromConfig = computed(() => {
-  return props.config.props?.dataset?.tables?.Users?.rows || []
+  return props.config.props?.['dataset']?.tables?.Users?.rows || []
 })
 
 // 生成子组件配置（为每个用户创建一个 row 组件）
@@ -210,7 +210,7 @@ const selectedCount = computed(() => selectedIds.value.size)
 
 // 从 DataSet columns 动态生成字段元数据
 const fieldMetadata = computed(() => {
-  const columns = props.config.props?.dataset?.tables?.Users?.columns || []
+  const columns = props.config.props?.['dataset']?.tables?.Users?.columns || []
   const metadata: Record<string, { label: string; icon: string; type: string }> = {}
   
   columns.forEach((col) => {
