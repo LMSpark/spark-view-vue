@@ -4,14 +4,13 @@
  * 直接实现类，不再继承复杂接口
  */
 
-import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
+import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewStateEvent } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
 import { RelationEngine } from './core/relation-engine'
 import { DependencyAnalyzer } from './core/dependency-analyzer'
 import { DataLoader } from './core/data-loader'
-import { SubscriptionManager } from './core/subscription-manager'
-import { EventManager } from './core/event-manager'
+import { DataEventHub } from './core/data-event-hub'
 import { DATA_SET_STATE } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
 
@@ -50,11 +49,8 @@ export class DataSet {
   /** 数据加载器实例 */
   private dataLoaderInstance: DataLoader
 
-  /** 订阅管理器 */
-  private subscriptionManager: SubscriptionManager
-
-  /** 事件管理器 */
-  private eventManager: EventManager
+  /** 统一事件中枢（替代原 EventManager + SubscriptionManager） */
+  private events: DataEventHub
 
   // ===== 构造函数 =====
 
@@ -92,11 +88,29 @@ export class DataSet {
     })
 
     // 初始化引擎
+    this.events = new DataEventHub()
     this.dependencyAnalyzer = new DependencyAnalyzer(this)
     this.relationEngine = new RelationEngine(this)
     this.dataLoaderInstance = new DataLoader(this)
-    this.subscriptionManager = new SubscriptionManager(this)
-    this.eventManager = new EventManager()
+
+    // 统一事件驱动：视图状态变化 → 级联关系 + 通知订阅者 + 广播具名事件
+    this.events.on('view:stateChanged', (data) => {
+      const evt = data as ViewStateEvent
+      // 1. 级联关系（父视图变化 → 子视图响应）
+      this.relationEngine.updateRelatedTables(evt.tableName, evt.contextId)
+      // 2. 通知该视图的订阅者
+      this.notifySubscribers(evt.tableName, evt.contextId)
+      // 3. 发送具名事件（供外部监听）
+      const eventName = evt.changeType === 'currentRow' ? 'currentRowChanged'
+        : evt.changeType === 'selectedRows' ? 'selectedRowsChanged'
+        : 'contextCleared'
+      this.events.emit(eventName, {
+        tableName: evt.tableName, contextId: evt.contextId,
+        row: evt.row, rows: evt.rows
+      })
+      // 4. 通知能力层消费者（DataSetStateCapability.onTableChange）
+      this.events.emit('tableChanged', { tableName: evt.tableName })
+    })
   }
 
   // ===== 工厂方法 =====
@@ -237,7 +251,7 @@ export class DataSet {
     return this.dependencyAnalyzer.areDependenciesSatisfied(tableName)
   }
 
-  // ===== 订阅管理 =====
+  // ===== 订阅管理（通过统一事件中枢实现） =====
 
   /**
    * 订阅表数据变化
@@ -247,16 +261,28 @@ export class DataSet {
    * @returns 取消订阅函数
    */
   subscribe(tableName: string, contextId: string, cb: () => void): () => void {
-    return this.subscriptionManager.subscribe(tableName, contextId, cb)
+    return this.events.on(`view:${tableName}.${contextId}:changed`, () => cb())
   }
 
   /**
    * 通知订阅者
    * @param tableName 表名
-   * @param contextId 数据视图ID
+   * @param contextId 数据视图ID（不指定则广播该表所有视图）
    */
   notifySubscribers(tableName: string, contextId?: string): void {
-    this.subscriptionManager.notifySubscribers(tableName, contextId)
+    const table = this.getTable(tableName)
+    if (!table) return
+
+    if (contextId !== undefined) {
+      this.events.emit(`view:${tableName}.${contextId}:changed`)
+    } else {
+      // 广播模式：先刷新所有子视图数据，再逐个通知
+      table.refreshAllContexts()
+      this.events.emit(`view:${tableName}.default:changed`)
+      for (const id of Object.keys(table.contexts)) {
+        this.events.emit(`view:${tableName}.${id}:changed`)
+      }
+    }
   }
 
   /**
@@ -266,10 +292,13 @@ export class DataSet {
    * @returns 是否有订阅者
    */
   hasSubscribers(tableName: string, contextId?: string): boolean {
-    return this.subscriptionManager.hasSubscribers(tableName, contextId)
+    if (contextId !== undefined) {
+      return this.events.has(`view:${tableName}.${contextId}:changed`)
+    }
+    return this.events.hasPrefix(`view:${tableName}.`)
   }
 
-  // ===== 事件管理 =====
+  // ===== 事件管理（通过统一事件中枢实现） =====
 
   /**
    * 监听事件
@@ -277,7 +306,7 @@ export class DataSet {
    * @param cb 回调函数
    */
   on(event: string, cb: (...args: unknown[]) => void): void {
-    this.eventManager.on(event, cb)
+    this.events.on(event, cb)
   }
 
   /**
@@ -286,7 +315,7 @@ export class DataSet {
    * @param cb 回调函数
    */
   off(event: string, cb: (...args: unknown[]) => void): void {
-    this.eventManager.off(event, cb)
+    this.events.off(event, cb)
   }
 
   /**
@@ -295,7 +324,7 @@ export class DataSet {
    * @param data 事件数据
    */
   emit(event: string, data: unknown): void {
-    this.eventManager.emit(event, data)
+    this.events.emit(event, data)
   }
 
   // ===== 数据加载 =====

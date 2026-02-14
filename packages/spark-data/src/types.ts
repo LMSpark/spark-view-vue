@@ -8,6 +8,17 @@ import type { RequestConfig, ApiResponse } from '@spark-view/spark-utils'
 
 export type { RequestConfig, ApiResponse }
 
+// ===== 视图状态事件 =====
+
+/** 视图状态变化事件（统一事件系统使用） */
+export interface ViewStateEvent {
+  tableName: string
+  contextId: string
+  changeType: 'currentRow' | 'selectedRows' | 'cleared'
+  row?: IDataRow | null
+  rows?: IDataRow[]
+}
+
 // ===== 权限类型 =====
 
 /**

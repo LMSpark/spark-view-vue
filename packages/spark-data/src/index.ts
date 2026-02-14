@@ -36,7 +36,8 @@ export type {
   HttpEndpoint,
   CrudApi,
   DataColumn,
-  DataRelation
+  DataRelation,
+  ViewStateEvent
 } from './types'
 
 export {
@@ -62,3 +63,7 @@ export type {
 // ===== 工具函数 =====
 
 export { rowsEqual, isSameRow } from './core/utils'
+
+// ===== 统一事件中枢 =====
+
+export { DataEventHub } from './core/data-event-hub'

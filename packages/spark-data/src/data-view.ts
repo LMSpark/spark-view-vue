@@ -11,9 +11,8 @@ import { Logger } from '@spark-view/spark-utils'
 import { isSameRow } from './core/utils'
 
 // 前向声明，避免循环依赖
-interface IDataSet {
-  updateRelatedTables(tableName: string, contextId?: string): void
-  notifySubscribers(tableName: string, contextId?: string): void
+// DataView 只需要 emit 能力，彻底解耦关系引擎和订阅管理
+interface IDataSetEmitter {
   emit(event: string, data: unknown): void
 }
 
@@ -78,8 +77,8 @@ export class DataView {
 
   // ===== 关联对象 =====
 
-  /** 关联的数据集 */
-  protected dataSet?: IDataSet
+  /** 关联的数据集事件发射器 */
+  protected dataSet?: IDataSetEmitter
 
   /** 树形数据管理器 */
   treeManager?: TreeManager
@@ -95,7 +94,7 @@ export class DataView {
    * @param contextId 数据视图ID
    * @param dataSet 关联的数据集
    */
-  constructor(tableName: string, contextId: string | "default" = 'default', dataSet?: IDataSet) {
+  constructor(tableName: string, contextId: string | "default" = 'default', dataSet?: IDataSetEmitter) {
     this.tableName = tableName
     this.contextId = contextId
     if (dataSet !== undefined) this.dataSet = dataSet
@@ -162,10 +161,9 @@ export class DataView {
     if (this.currentRowIndex === -1) this.currentRowIndex = null
 
     if (!skipNotify && this.dataSet) {
-      this.dataSet.updateRelatedTables(this.tableName, this.contextId)
-      this.dataSet.notifySubscribers(this.tableName, this.contextId)
-      this.dataSet.emit('currentRowChanged', {
-        tableName: this.tableName, contextId: this.contextId, row
+      this.dataSet.emit('view:stateChanged', {
+        tableName: this.tableName, contextId: this.contextId,
+        changeType: 'currentRow', row
       })
     }
   }
@@ -182,14 +180,11 @@ export class DataView {
     this.selectedRows = rows
     this.selectedRowIndices = rows.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
 
-    if (this.dataSet) {
-      this.dataSet.updateRelatedTables(this.tableName, this.contextId)
-      if (!skipNotify) {
-        this.dataSet.notifySubscribers(this.tableName, this.contextId)
-        this.dataSet.emit('selectedRowsChanged', {
-          tableName: this.tableName, contextId: this.contextId, rows
-        })
-      }
+    if (!skipNotify && this.dataSet) {
+      this.dataSet.emit('view:stateChanged', {
+        tableName: this.tableName, contextId: this.contextId,
+        changeType: 'selectedRows', rows
+      })
     }
   }
 
@@ -208,8 +203,10 @@ export class DataView {
     this.selectedRowIndices = []
 
     if (!skipNotify && had && this.dataSet) {
-      this.dataSet.notifySubscribers(this.tableName, this.contextId)
-      this.dataSet.emit('contextCleared', { tableName: this.tableName, contextId: this.contextId })
+      this.dataSet.emit('view:stateChanged', {
+        tableName: this.tableName, contextId: this.contextId,
+        changeType: 'cleared'
+      })
     }
   }
 
@@ -266,7 +263,7 @@ export class DataView {
    * @param dataSet 关联的数据集
    * @returns 数据视图实例
    */
-  static fromData(data: IViewMetadata, tableName: string, contextId: string, dataSet?: IDataSet): DataView {
+  static fromData(data: IViewMetadata, tableName: string, contextId: string, dataSet?: IDataSetEmitter): DataView {
     const v = new DataView(tableName, contextId, dataSet)
     if (data.filterExpression !== undefined) v.filterExpression = data.filterExpression
     if (data.sortExpression !== undefined) v.sortExpression = data.sortExpression
