@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### 🏗️ Refactor - spark-data 统一事件系统
+
+**目标：** 消除多种数据处理模式（EventManager / SubscriptionManager / 直接方法调用），统一为单一事件中枢（DataEventHub）
+
+#### 架构变化
+- **新增** `DataEventHub` 类（`core/data-event-hub.ts`）— 统一的事件发布/订阅系统
+  - 提供 `on/off/emit` 标准事件接口（兼容 spark-utils EventProvider 模式）
+  - 新增 `has(event)` / `hasPrefix(prefix)` 查询方法（原 SubscriptionManager 优化能力）
+  - 事件命名规范：`view:stateChanged`、`view:{table}.{ctx}:changed`、`load:*`、`crud:*`
+
+- **删除** `EventManager` 类（`core/event-manager.ts`）— 被 DataEventHub 取代
+- **删除** `SubscriptionManager` 类（`core/subscription-manager.ts`）— 订阅逻辑合并到 DataEventHub
+
+#### DataView 解耦（SRP 改进）
+- DataView 不再直接调用 `dataSet.updateRelatedTables()` + `dataSet.notifySubscribers()` + `dataSet.emit()`
+- 改为只发射单一事件 `view:stateChanged`，所有后续处理由 DataSet 事件监听器完成
+- DataView 对 DataSet 的依赖接口从 3 个方法简化为 1 个（`emit`）
+
+#### 事件驱动数据流
+- DataSet 构造函数中注册 `view:stateChanged` 监听器，统一协调：
+  1. 级联关系更新（RelationEngine）
+  2. 视图订阅通知
+  3. 具名事件广播（`currentRowChanged` / `selectedRowsChanged` / `contextCleared`）
+  4. 能力层 `tableChanged` 通知
+
+#### 导出
+- 新增 `ViewStateEvent` 类型和 `DataEventHub` 类导出
+
 ### 🧹 Refactor - spark-data 深度清理
 
 **目标：** 移除错误的、重复的、冗余的、过时的逻辑，不考虑向后兼容

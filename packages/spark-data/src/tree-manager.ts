@@ -14,7 +14,7 @@ import type {
 type FlatTreeCache = Record<string | number, FlatTreeNode>
 import { Logger } from '@spark-view/spark-utils'
 import type { DataView } from './data-view'
-import { EventManager } from './core/event-manager'
+import { DataEventHub } from './core/data-event-hub'
 
 /**
  * 树管理器类
@@ -29,8 +29,8 @@ export class TreeManager {
   /** 节点缓存 */
   private cache: FlatTreeCache = {}
 
-  /** 事件管理器 */
-  private eventManager = new EventManager()
+  /** 统一事件中枢 */
+  private events = new DataEventHub()
 
   /** 关联的数据视图 */
   private dataView?: DataView
@@ -335,7 +335,7 @@ export class TreeManager {
    * @param callback 回调函数
    */
   on(event: string, callback: (...args: unknown[]) => void): void {
-    this.eventManager.on(event, callback)
+    this.events.on(event, callback)
   }
 
   /**
@@ -344,7 +344,7 @@ export class TreeManager {
    * @param callback 回调函数
    */
   off(event: string, callback: (...args: unknown[]) => void): void {
-    this.eventManager.off(event, callback)
+    this.events.off(event, callback)
   }
 
   /**
@@ -353,7 +353,7 @@ export class TreeManager {
    * @param data 事件数据
    */
   private emit(event: string, data: unknown): void {
-    this.eventManager.emit(event, data)
+    this.events.emit(event, data)
   }
 
   // ===== 序列化 =====
