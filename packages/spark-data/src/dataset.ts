@@ -96,20 +96,24 @@ export class DataSet {
     // 统一事件驱动：视图状态变化 → 级联关系 + 通知订阅者 + 广播具名事件
     this.events.on('view:stateChanged', (data) => {
       const evt = data as ViewStateEvent
-      // 1. 级联关系（父视图变化 → 子视图响应）
+      // 1. 级联关系始终执行（父视图变化 → 子视图响应）
       this.relationEngine.updateRelatedTables(evt.tableName, evt.contextId)
-      // 2. 通知该视图的订阅者
-      this.notifySubscribers(evt.tableName, evt.contextId)
-      // 3. 发送具名事件（供外部监听）
-      const eventName = evt.changeType === 'currentRow' ? 'currentRowChanged'
-        : evt.changeType === 'selectedRows' ? 'selectedRowsChanged'
-        : 'contextCleared'
-      this.events.emit(eventName, {
-        tableName: evt.tableName, contextId: evt.contextId,
-        row: evt.row, rows: evt.rows
-      })
-      // 4. 通知能力层消费者（DataSetStateCapability.onTableChange）
-      this.events.emit('tableChanged', { tableName: evt.tableName })
+
+      // 2-4 仅在非 skipNotify 时执行
+      if (!evt.skipNotify) {
+        // 2. 通知该视图的订阅者
+        this.notifySubscribers(evt.tableName, evt.contextId)
+        // 3. 发送具名事件（供外部监听）
+        const eventName = evt.changeType === 'currentRow' ? 'currentRowChanged'
+          : evt.changeType === 'selectedRows' ? 'selectedRowsChanged'
+          : 'contextCleared'
+        this.events.emit(eventName, {
+          tableName: evt.tableName, contextId: evt.contextId,
+          row: evt.row, rows: evt.rows
+        })
+        // 4. 通知能力层消费者（DataSetStateCapability.onTableChange）
+        this.events.emit('tableChanged', { tableName: evt.tableName })
+      }
     })
   }
 

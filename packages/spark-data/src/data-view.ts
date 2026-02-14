@@ -171,7 +171,7 @@ export class DataView {
   /**
    * 设置选中的多行数据
    * @param rows 选中的行数据数组
-   * @param skipNotify 是否跳过通知
+   * @param skipNotify 是否跳过订阅通知（关系级联始终执行）
    */
   setSelectedRows(rows: IDataRow[], skipNotify = false): void {
     const cur = this.selectedRows
@@ -180,10 +180,11 @@ export class DataView {
     this.selectedRows = rows
     this.selectedRowIndices = rows.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
 
-    if (!skipNotify && this.dataSet) {
+    // 选择行变化始终发射事件（关系级联必须执行），skipNotify 仅控制通知和广播
+    if (this.dataSet) {
       this.dataSet.emit('view:stateChanged', {
         tableName: this.tableName, contextId: this.contextId,
-        changeType: 'selectedRows', rows
+        changeType: 'selectedRows', rows, skipNotify
       })
     }
   }
