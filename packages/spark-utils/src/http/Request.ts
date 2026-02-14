@@ -23,7 +23,7 @@ export class Request {
     this.ax = axios.create({
       baseURL: defaults.baseURL ?? '',
       timeout: defaults.timeout ?? 10000,
-      headers: defaults.headers,
+      ...(defaults.headers && { headers: defaults.headers }),
     })
   }
 

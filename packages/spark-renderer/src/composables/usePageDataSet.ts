@@ -87,7 +87,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       const config = {
         dataSetName: datasetConfig.dataSetName ?? 'PageDataSet',
         tables: datasetConfig.tables ?? {},
-        relations: datasetConfig.relations,
+        ...(datasetConfig.relations && { relations: datasetConfig.relations }),
         dataLoader: defaultDataLoader
       }
       dataSet.value = SparkData.createDataSet(config)

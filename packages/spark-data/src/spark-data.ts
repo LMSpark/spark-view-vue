@@ -19,8 +19,8 @@ export namespace SparkData {
       rows?: IDataRow[]
       api?: CrudApi
     }>
-    relations: DataRelation[] | undefined
-    dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
+    relations?: DataRelation[]
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
   }): DataSet {
     return DataSet.fromConfig(config)
   }

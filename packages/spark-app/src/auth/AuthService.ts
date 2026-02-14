@@ -114,32 +114,30 @@ export class AuthService implements IAuthService {
       throw new Error('AuthService 已经初始化，不能重复初始化')
     }
 
-    this.config = config
-
-    // 设置默认值
-    this.config.tokenStorage ??= 'localStorage'
-    this.config.tokenKey ??= 'spark_token'
-    this.config.loginPath ??= '/login'
-    this.config.enableMock ??= false
-    this.config.timeout ??= 10000
-    this.config.apiBaseUrl ??= ''
-
-    // API 端点配置（合并默认值）
-    if (this.config.apiEndpoints === undefined) {
-      this.config.apiEndpoints = {
+    // 合并默认值后再赋值
+    const mergedConfig = {
+      tokenStorage: config.tokenStorage ?? 'localStorage',
+      tokenKey: config.tokenKey ?? 'spark_token',
+      loginPath: config.loginPath ?? '/login',
+      loginComponent: config.loginComponent,
+      enableMock: config.enableMock ?? false,
+      mockUser: config.mockUser,
+      mockTenant: config.mockTenant,
+      timeout: config.timeout ?? 10000,
+      apiBaseUrl: config.apiBaseUrl ?? '',
+      apiEndpoints: config.apiEndpoints ?? {
         login: '/api/auth/login',
         logout: '/api/auth/logout',
         me: '/api/auth/me',
         refresh: '/api/auth/refresh'
-      }
-    } else {
-      this.config.apiEndpoints = {
-        login: this.config.apiEndpoints.login ?? '/api/auth/login',
-        logout: this.config.apiEndpoints.logout ?? '/api/auth/logout',
-        me: this.config.apiEndpoints.me ?? '/api/auth/me',
-        refresh: this.config.apiEndpoints.refresh ?? '/api/auth/refresh'
-      }
+      },
+      onLoginSuccess: config.onLoginSuccess,
+      onLogoutSuccess: config.onLogoutSuccess,
+      onAuthError: config.onAuthError,
+      onTokenRefresh: config.onTokenRefresh
     }
+
+    this.config = mergedConfig
 
     // 重新创建 Token 管理器（使用新配置）
     this.tokenManager = new TokenManager(
