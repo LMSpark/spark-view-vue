@@ -236,4 +236,7 @@ export type IDataTable = import('./data-table').DataTable
 export type IDataView = import('./data-view').DataView
 export type ITreeManager = import('./tree-manager').TreeManager
 
+// CRUD服务相关类型
+export type { CrudResult, QueryParams, BatchResult } from './crud-service'
+
 

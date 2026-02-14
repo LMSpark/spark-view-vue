@@ -60,6 +60,12 @@ export namespace SparkData {
     return table
   }
 
+  // CRUD服务相关
+  export function createCrudService(api: CrudApi, httpConfig?: import('./types').RequestConfig) {
+    const { createCrudService } = require('./crud-service')
+    return createCrudService(api, httpConfig)
+  }
+
   // DataView 相关
   export function createDataView(config: {
     hostTable: string
