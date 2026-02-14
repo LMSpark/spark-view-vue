@@ -8,40 +8,83 @@ import type { IModelPermission, IDataRow } from '../types'
 import { FieldVisibility } from '../types'
 
 export class PermissionChecker {
-  // ── 模型级 ──
+  // ===== 模型级权限 =====
 
+  /**
+   * 检查是否允许创建
+   * @param modelPermission 模型权限配置
+   * @returns 是否允许创建
+   */
   canCreate(modelPermission?: IModelPermission): boolean {
     return modelPermission?.allowCreate !== false
   }
 
+  /**
+   * 检查是否允许导入
+   * @param modelPermission 模型权限配置
+   * @returns 是否允许导入
+   */
   canImport(modelPermission?: IModelPermission): boolean {
     return modelPermission?.allowImport !== false
   }
 
+  /**
+   * 检查是否允许导出
+   * @param modelPermission 模型权限配置
+   * @returns 是否允许导出
+   */
   canExport(modelPermission?: IModelPermission): boolean {
     return modelPermission?.allowExport !== false
   }
 
-  // ── 实例级 ──
+  // ===== 实例级权限 =====
 
+  /**
+   * 检查是否允许删除行数据
+   * @param row 数据行
+   * @returns 是否允许删除
+   */
   canDelete(row: IDataRow): boolean {
     return row._perm?.allowDelete !== false
   }
 
+  /**
+   * 检查是否允许编辑行数据
+   * @param row 数据行
+   * @returns 是否允许编辑
+   */
   canEdit(row: IDataRow): boolean {
     return (row._perm?.editableFields?.length ?? 0) > 0
   }
 
-  // ── 字段级 ──
+  // ===== 字段级权限 =====
 
+  /**
+   * 检查字段是否可见
+   * @param field 字段名
+   * @param row 数据行
+   * @returns 字段是否可见
+   */
   isFieldVisible(field: string, row: IDataRow): boolean {
     return this.getFieldVisibility(field, row) !== FieldVisibility.Hidden
   }
 
+  /**
+   * 检查字段是否可编辑
+   * @param field 字段名
+   * @param row 数据行
+   * @returns 字段是否可编辑
+   */
   isFieldEditable(field: string, row: IDataRow): boolean {
     return row._perm?.editableFields?.includes(field) ?? false
   }
 
+  /**
+   * 获取字段可见性状态
+   * @param field 字段名
+   * @param row 数据行
+   * @returns 字段可见性
+   */
   getFieldVisibility(field: string, row: IDataRow): FieldVisibility {
     const perm = row._perm
     if (!perm) return FieldVisibility.Visible
@@ -50,8 +93,15 @@ export class PermissionChecker {
     return FieldVisibility.Visible
   }
 
-  // ── 脱敏 ──
+  // ===== 字段脱敏 =====
 
+  /**
+   * 对字段值进行脱敏处理
+   * @param field 字段名
+   * @param value 字段值
+   * @param row 数据行
+   * @returns 脱敏后的字符串
+   */
   maskFieldValue(field: string, value: unknown, row: IDataRow): string {
     if (this.getFieldVisibility(field, row) !== FieldVisibility.Masked) {
       return String(value ?? '')
@@ -59,6 +109,12 @@ export class PermissionChecker {
     return this.defaultMaskRule(field, value)
   }
 
+  /**
+   * 默认脱敏规则
+   * @param field 字段名
+   * @param value 字段值
+   * @returns 脱敏后的字符串
+   */
   private defaultMaskRule(field: string, value: unknown): string {
     if (value === null || value === undefined) return ''
     const str = String(value)
@@ -88,20 +144,29 @@ export class PermissionChecker {
   }
 }
 
-// ── 工厂 ──
+// ===== 工厂函数 =====
 
 let instance: PermissionChecker | null = null
 
+/**
+ * 创建权限检查器实例
+ * @returns 权限检查器实例
+ */
 export function createPermissionChecker(): PermissionChecker {
   instance ??= new PermissionChecker()
   return instance
 }
 
+/**
+ * 重置权限检查器实例
+ */
 export function resetPermissionChecker(): void {
   instance = null
 }
 
-/** 快捷方法 */
+// ===== 快捷方法 =====
+
+/** 权限检查快捷方法 */
 export const checkPermission = {
   canCreate: (modelPermission?: IModelPermission) =>
     createPermissionChecker().canCreate(modelPermission),

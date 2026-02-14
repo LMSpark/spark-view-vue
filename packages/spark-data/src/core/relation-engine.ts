@@ -13,10 +13,22 @@ import type { DataSet } from '../dataset'
 import type { DataView as SparkDataView } from '../data-view'
 
 export class RelationEngine {
+  // ===== 构造函数 =====
 
+  /**
+   * 创建关系引擎实例
+   * @param dataSet 关联的数据集
+   */
   constructor(private dataSet: DataSet) {}
 
-  /** 根据依赖类型获取父数据范围（用于构建查询参数） */
+  // ===== 父数据获取 =====
+
+  /**
+   * 根据依赖类型获取父数据范围（用于构建查询参数）
+   * @param ctx 父视图
+   * @param dep 依赖类型
+   * @returns 父数据行数组
+   */
   getParentRows(ctx: SparkDataView, dep: DependencyType): IDataRow[] {
     switch (dep) {
       case 'currentRow':   return ctx.currentRow ? [ctx.currentRow] : []
@@ -32,6 +44,8 @@ export class RelationEngine {
     }
   }
 
+  // ===== 关系应用 =====
+
   /**
    * 应用关系：父视图变化 → 子视图响应（非阻塞）
    *
@@ -39,6 +53,7 @@ export class RelationEngine {
    *  - 父视图无数据 → 清空子视图（递归）
    *  - 父视图有数据 → 非阻塞请求子视图数据（autoLoad控制）
    *  - 不做状态比较，不维护选中状态
+   * @param rel 数据关系
    */
   applyRelation(rel: DataRelation): void {
     const parentCtx = this.dataSet.getContext(rel.parentTable, rel.parentContextId ?? 'default')
@@ -63,7 +78,11 @@ export class RelationEngine {
     }
   }
 
-  /** 父视图变化时触发所有子关系响应 */
+  /**
+   * 父视图变化时触发所有子关系响应
+   * @param parentTable 父表名
+   * @param parentContextId 父视图ID
+   */
   updateRelatedTables(parentTable: string, parentContextId: string = 'default'): void {
     for (const rel of this.dataSet.relations ?? []) {
       if (rel.parentTable === parentTable && (rel.parentContextId ?? 'default') === parentContextId) {
@@ -72,14 +91,22 @@ export class RelationEngine {
     }
   }
 
-  /** 刷新所有关系 */
+  /**
+   * 刷新所有关系
+   */
   refreshAllRelations(): void {
     for (const rel of this.dataSet.relations ?? []) {
       this.applyRelation(rel)
     }
   }
 
-  /** 递归清空后代视图 */
+  // ===== 私有方法 =====
+
+  /**
+   * 递归清空后代视图
+   * @param parentTable 父表名
+   * @param parentCtxId 父视图ID
+   */
   private recursiveClear(parentTable: string, parentCtxId: string): void {
     for (const rel of this.dataSet.relations ?? []) {
       if (rel.parentTable === parentTable && (rel.parentContextId ?? 'default') === parentCtxId) {

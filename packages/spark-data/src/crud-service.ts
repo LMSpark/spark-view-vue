@@ -13,39 +13,20 @@ import type {
   CrudApi,
   HttpEndpoint,
   IDataRow,
-  IDataSource
+  IDataSource,
+  CrudResult,
+  QueryParams,
+  BatchResult,
+  CrudOperationConfig
+} from './types'
+import {
+  INSTANCE_PERMISSION_FIELD,
+  MODEL_PERMISSION_FIELD
 } from './types'
 
-/**
- * CRUD操作结果
- */
-export interface CrudResult<T = unknown> {
-  success: boolean
-  data?: T
-  error?: Error
-  message?: string
-}
+// ===== 接口定义 =====
 
-/**
- * 分页查询参数
- */
-export interface QueryParams {
-  page?: number
-  pageSize?: number
-  sort?: string
-  filter?: Record<string, unknown>
-  [key: string]: unknown
-}
-
-/**
- * 批量操作结果
- */
-export interface BatchResult {
-  successCount: number
-  failureCount: number
-  results: CrudResult[]
-  errors: Error[]
-}
+// 接口已在 types.ts 中定义，此处不再重复
 
 /**
  * 业务层CRUD服务
@@ -57,6 +38,13 @@ export class CrudService {
   private http: Request
   private logger = Logger('CrudService')
 
+  // ===== 构造函数 =====
+
+  /**
+   * 创建CRUD服务实例
+   * @param api CRUD API配置
+   * @param httpConfig HTTP客户端配置
+   */
   constructor(
     private api: CrudApi,
     httpConfig?: Partial<RequestConfig>
@@ -68,17 +56,22 @@ export class CrudService {
 
   /**
    * 创建记录
+   * @param data 记录数据
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
   async create<T = IDataRow>(
     data: Partial<T>,
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
     if (!this.api.create) {
       return this.errorResult('Create API not configured')
     }
 
     try {
-      const result = await this.executeEndpoint<T>(this.api.create, data, config)
+      const requestConfig = this.buildRequestConfig(config)
+      const sanitizedData = this.sanitizeDataForUpload(data)
+      const result = await this.executeEndpoint<T>(this.api.create, sanitizedData, requestConfig)
       this.logger.info('记录创建成功', { data: result })
       return { success: true, data: result }
     } catch (error) {
@@ -89,10 +82,13 @@ export class CrudService {
 
   /**
    * 查询单条记录
+   * @param id 记录ID
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
   async retrieve<T = IDataRow>(
     id: string | number,
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
     if (!this.api.retrieve) {
       return this.errorResult('Retrieve API not configured')
@@ -100,9 +96,10 @@ export class CrudService {
 
     try {
       const endpoint = this.resolveEndpoint(this.api.retrieve, { id })
+      const requestConfig = this.buildRequestConfig(config)
       const result = await this.http.get<T>(endpoint.url, endpoint.params, {
-        ...config,
-        headers: { ...endpoint.headers, ...config?.headers }
+        ...requestConfig,
+        headers: { ...endpoint.headers, ...requestConfig?.headers }
       })
       this.logger.info('记录查询成功', { id, data: result })
       return { success: true, data: result }
@@ -114,19 +111,25 @@ export class CrudService {
 
   /**
    * 更新记录
+   * @param id 记录ID
+   * @param data 更新数据
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
   async update<T = IDataRow>(
     id: string | number,
     data: Partial<T>,
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
     if (!this.api.update) {
       return this.errorResult('Update API not configured')
     }
 
     try {
-      const updateData = { ...data, id }
-      const result = await this.executeEndpoint<T>(this.api.update, updateData, config)
+      const requestConfig = this.buildRequestConfig(config)
+      const sanitizedData = this.sanitizeDataForUpload(data)
+      const updateData = { ...sanitizedData, id }
+      const result = await this.executeEndpoint<T>(this.api.update, updateData, requestConfig)
       this.logger.info('记录更新成功', { id, data: result })
       return { success: true, data: result }
     } catch (error) {
@@ -137,17 +140,21 @@ export class CrudService {
 
   /**
    * 删除记录
+   * @param id 记录ID
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
   async delete(
     id: string | number,
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<boolean>> {
     if (!this.api.delete) {
       return this.errorResult('Delete API not configured')
     }
 
     try {
-      await this.executeEndpoint(this.api.delete, { id }, config)
+      const requestConfig = this.buildRequestConfig(config)
+      await this.executeEndpoint(this.api.delete, { id }, requestConfig)
       this.logger.info('记录删除成功', { id })
       return { success: true, data: true }
     } catch (error) {
@@ -158,10 +165,13 @@ export class CrudService {
 
   /**
    * 查询列表（支持分页）
+   * @param params 查询参数（包含权限令牌）
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
   async list<T = IDataSource>(
     params?: QueryParams,
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
     if (!this.api.list) {
       return this.errorResult('List API not configured')
@@ -170,10 +180,11 @@ export class CrudService {
     try {
       const endpoint = this.api.list
       const queryParams = this.buildQueryParams(params, endpoint)
+      const requestConfig = this.buildRequestConfig(config)
 
       const result = await this.http.get<T>(endpoint.url, queryParams, {
-        ...config,
-        headers: { ...endpoint.headers, ...config?.headers }
+        ...requestConfig,
+        headers: { ...endpoint.headers, ...requestConfig?.headers }
       })
 
       this.logger.info('列表查询成功', { params, count: this.getResultCount(result) })
@@ -188,17 +199,22 @@ export class CrudService {
 
   /**
    * 批量创建
+   * @param items 记录数据数组
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns 批量操作结果
    */
   async batchCreate<T = IDataRow>(
     items: Partial<T>[],
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<BatchResult>> {
     if (!this.api.batch?.create) {
       return this.errorResult('Batch create API not configured')
     }
 
     try {
-      const results = await this.executeBatch(this.api.batch.create, items, config)
+      const requestConfig = this.buildRequestConfig(config)
+      const sanitizedItems = items.map(item => this.sanitizeDataForUpload(item))
+      const results = await this.executeBatch(this.api.batch.create, sanitizedItems, requestConfig)
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量创建完成', { total: items.length, success: successCount })
       return {
@@ -218,17 +234,25 @@ export class CrudService {
 
   /**
    * 批量更新
+   * @param items 包含ID的更新数据数组
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns 批量操作结果
    */
   async batchUpdate<T = IDataRow>(
     items: Array<{ id: string | number } & Partial<T>>,
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<BatchResult>> {
     if (!this.api.batch?.update) {
       return this.errorResult('Batch update API not configured')
     }
 
     try {
-      const results = await this.executeBatch(this.api.batch.update, items, config)
+      const requestConfig = this.buildRequestConfig(config)
+      const sanitizedItems = items.map(item => ({
+        ...this.sanitizeDataForUpload(item),
+        id: item.id // 保留ID字段
+      }))
+      const results = await this.executeBatch(this.api.batch.update, sanitizedItems, requestConfig)
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量更新完成', { total: items.length, success: successCount })
       return {
@@ -248,6 +272,9 @@ export class CrudService {
 
   /**
    * 批量删除
+   * @param ids 记录ID数组
+   * @param config 请求配置
+   * @returns 批量操作结果
    */
   async batchDelete(
     ids: Array<string | number>,
@@ -281,6 +308,9 @@ export class CrudService {
 
   /**
    * 导入数据
+   * @param file 上传的文件
+   * @param config 请求配置
+   * @returns 导入结果
    */
   async importData(
     file: File,
@@ -312,10 +342,13 @@ export class CrudService {
 
   /**
    * 导出数据
+   * @param params 导出参数
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns 导出结果（Blob）
    */
   async exportData(
     params?: QueryParams,
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<Blob>> {
     if (!this.api.export) {
       return this.errorResult('Export API not configured')
@@ -324,14 +357,15 @@ export class CrudService {
     try {
       const endpoint = this.api.export
       const queryParams = this.buildQueryParams(params, endpoint)
+      const requestConfig = this.buildRequestConfig(config)
 
       const result = await this.http.requestFull({
         url: endpoint.url,
         method: endpoint.method ?? 'GET',
         params: queryParams,
         responseType: 'blob',
-        ...config,
-        headers: { ...endpoint.headers, ...config?.headers }
+        ...requestConfig,
+        headers: { ...endpoint.headers, ...requestConfig?.headers }
       })
 
       this.logger.info('数据导出成功')
@@ -342,10 +376,55 @@ export class CrudService {
     }
   }
 
-  // ===== 工具方法 =====
+  // ===== 私有工具方法 =====
+
+  /**
+   * 清理数据中的权限字段（用于上传数据）
+   * @param data 原始数据
+   * @returns 清理后的数据（不含权限字段）
+   */
+  private sanitizeDataForUpload<T extends Record<string, unknown>>(data: T): Omit<T, typeof INSTANCE_PERMISSION_FIELD | typeof MODEL_PERMISSION_FIELD> {
+    const sanitized = { ...data }
+    delete sanitized[INSTANCE_PERMISSION_FIELD]
+    delete sanitized[MODEL_PERMISSION_FIELD]
+    return sanitized
+  }
+
+  /**
+   * 构建请求配置（集成权限快照）
+   * @param config CRUD操作配置
+   * @returns HTTP请求配置
+   */
+  private buildRequestConfig(config?: CrudOperationConfig): Partial<RequestConfig> | undefined {
+    if (!config) return undefined
+
+    const headers: Record<string, string> = {}
+
+    // 添加权限令牌到请求头
+    if (config.modelPermission?.permissionToken) {
+      headers['X-Permission-Token'] = config.modelPermission.permissionToken
+    }
+
+    // 如果有实例级权限快照，也添加到请求头
+    if (config.instancePermission?.permissionToken) {
+      headers['X-Instance-Permission-Token'] = config.instancePermission.permissionToken
+    }
+
+    const result: Partial<RequestConfig> = { headers }
+
+    if (config.timeout !== undefined) {
+      result.timeout = config.timeout
+    }
+
+    return result
+  }
 
   /**
    * 执行单个端点
+   * @param endpoint HTTP端点配置
+   * @param data 请求数据
+   * @param config 请求配置
+   * @returns 响应数据
    */
   private async executeEndpoint<T>(
     endpoint: HttpEndpoint,
@@ -385,6 +464,10 @@ export class CrudService {
 
   /**
    * 执行批量操作
+   * @param endpoint HTTP端点配置
+   * @param items 数据项数组
+   * @param config 请求配置
+   * @returns 批量操作结果数组
    */
   private async executeBatch<T>(
     endpoint: HttpEndpoint,
@@ -408,6 +491,9 @@ export class CrudService {
 
   /**
    * 解析端点（处理路径参数）
+   * @param endpoint HTTP端点配置
+   * @param data 数据对象
+   * @returns 解析后的端点信息
    */
   private resolveEndpoint(
     endpoint: HttpEndpoint,
@@ -432,6 +518,9 @@ export class CrudService {
 
   /**
    * 构建查询参数（分页、排序等）
+   * @param params 查询参数
+   * @param endpoint 端点配置
+   * @returns 查询参数对象
    */
   private buildQueryParams(
     params?: QueryParams,
@@ -452,6 +541,8 @@ export class CrudService {
 
   /**
    * 获取结果计数（用于日志）
+   * @param result 结果数据
+   * @returns 数据项数量
    */
   private getResultCount(result: unknown): number {
     if (result && typeof result === 'object' && 'rows' in result) {
@@ -466,6 +557,9 @@ export class CrudService {
 
   /**
    * 创建错误结果
+   * @param message 错误消息
+   * @param error 错误对象
+   * @returns 错误结果
    */
   private errorResult<T>(message: string, error?: Error): CrudResult<T> {
     return {
@@ -476,8 +570,13 @@ export class CrudService {
   }
 }
 
+// ===== 工厂函数 =====
+
 /**
  * 创建CRUD服务工厂函数
+ * @param api CRUD API配置
+ * @param httpConfig HTTP客户端配置
+ * @returns CrudService实例
  */
 export function createCrudService(
   api: CrudApi,
