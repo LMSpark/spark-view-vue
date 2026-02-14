@@ -17,6 +17,8 @@ export interface ViewStateEvent {
   changeType: 'currentRow' | 'selectedRows' | 'cleared'
   row?: IDataRow | null
   rows?: IDataRow[]
+  /** 为 true 时仅级联关系，跳过订阅通知和事件广播 */
+  skipNotify?: boolean
 }
 
 // ===== 权限类型 =====
