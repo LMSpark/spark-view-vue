@@ -74,10 +74,11 @@ export class DataSet {
     this.pageId = config.pageId
     this.autoLoadRelations = config.autoLoadRelations
 
-    // 构建表实例
+    // 构建表实例并关联 dataSet 引用
     this.tables = {}
     for (const [name, td] of Object.entries(config.tables)) {
       const table = DataTable.fromTableData(td)
+      table.setDataSet(this as unknown as { emit(event: string, data: unknown): void })
       this.tables[name] = table
     }
 
