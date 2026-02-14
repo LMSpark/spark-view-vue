@@ -2,52 +2,533 @@
 
 > 使用 SPARK 框架创建自定义组件
 
-## 快速开始
+## 📖 概述
 
-### 1. 创建组件
+SPARK 组件系统基于 Vue 3 Composition API，支持类型安全的组件注册、能力驱动的通信机制和声明式的配置系统。本指南将帮助你创建符合 SPARK 架构的自定义组件。
+
+## 🚀 快速开始
+
+### 1. 创建基础组件
 
 ```vue
 <template>
-  <div class="my-grid">
+  <div class="my-component">
+    <h3>{{ config.title || 'My Component' }}</h3>
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
+
+interface MyComponentConfig {
+  title?: string
+  theme?: 'light' | 'dark'
+}
 
 const props = defineProps<{
-  id: string
-  dataSource?: any[]
+  config: ComponentContext<MyComponentConfig>
 }>()
 
-const { provide, consume, logger } = useSparkComponent({
-  type: 'my-grid',
-  config: props
-})
+// 获取 SPARK 上下文
+const { provide, consume, logger, context } = useSparkComponent(props.config)
 
-// 提供能力
-provide('columnManager', {
-  addColumn: (col) => console.log('Add column:', col),
-  removeColumn: (id) => console.log('Remove column:', id)
-})
+// 组件初始化日志
+logger.info('MyComponent initialized', { config: props.config })
 </script>
+
+<style scoped>
+.my-component {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+</style>
 ```
 
 ### 2. 注册组件
 
+SPARK 支持三种组件注册方式：
+
 ```typescript
 import { Spark } from '@spark-view/spark-component'
-import MyGrid from './MyGrid.vue'
+import MyComponent from './MyComponent.vue'
 
-// 静态注册
-Spark.register({
-  type: 'my-grid',
-  name: 'My Grid',
-  component: MyGrid
+// 方式 1：直接注册（同步加载）
+Spark.register('my-component', MyComponent)
+
+// 方式 2：动态导入（代码分割）
+Spark.register('user-detail', () => import('./UserDetail.vue'))
+
+// 方式 3：路径注册（推荐用于批量管理）
+const register = Spark.createRegister(import.meta.glob('./components/*.vue'))
+register.registerAll({
+  'my-component': './MyComponent.vue',
+  'user-grid': './UserGrid.vue',
+  'data-table': './DataTable.vue'
+})
+```
+
+### 3. 使用组件
+
+```vue
+<template>
+  <div class="page">
+    <!-- 使用 kebab-case 类型名 -->
+    <spark-component type="my-component" :config="componentConfig" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { Spark } from '@spark-view/spark-component'
+
+// 注册组件（通常在应用启动时完成）
+Spark.register('my-component', () => import('./MyComponent.vue'))
+
+const componentConfig = {
+  type: 'my-component',
+  title: '示例组件',
+  theme: 'light' as const
+}
+</script>
+```
+
+## 🔗 能力系统
+
+SPARK 的核心特性是基于 Symbol 的能力系统，支持组件间的松耦合通信。
+
+### 定义能力
+
+```typescript
+// types/capabilities.ts
+import { defineCapability } from '@spark-view/spark-utils'
+
+export interface SelectionApi {
+  getSelectedItems(): any[]
+  selectItem(item: any): void
+  clearSelection(): void
+}
+
+export const GRID_SELECTION = defineCapability<SelectionApi>('grid-selection')
+export const DATA_PROVIDER = defineCapability<DataProvider>('data-provider')
+```
+
+### 提供能力
+
+```vue
+<template>
+  <div class="data-grid">
+    <div v-for="item in selectedItems" :key="item.id">
+      {{ item.name }}
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-component'
+import { GRID_SELECTION } from './capabilities'
+
+const props = defineProps<{
+  config: ComponentContext
+}>()
+
+const { provide, logger } = useSparkComponent(props.config)
+
+const selectedItems = ref<any[]>([])
+
+// 提供选择能力
+provide(GRID_SELECTION, {
+  getSelectedItems: () => selectedItems.value,
+  selectItem: (item: any) => {
+    selectedItems.value.push(item)
+    logger.info('Item selected:', item)
+  },
+  clearSelection: () => {
+    selectedItems.value = []
+    logger.info('Selection cleared')
+  }
+})
+</script>
+```
+
+### 消费能力
+
+```vue
+<template>
+  <div class="action-bar">
+    <button @click="selectAll">全选</button>
+    <button @click="clearAll">清空</button>
+    <span>已选择 {{ selectedCount }} 项</span>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-component'
+import { GRID_SELECTION } from './capabilities'
+
+const props = defineProps<{
+  config: ComponentContext
+}>()
+
+const { consume } = useSparkComponent(props.config)
+
+// 消费选择能力（支持延迟绑定）
+const selectionApi = consume(GRID_SELECTION)
+
+const selectedCount = computed(() => {
+  return selectionApi.value?.getSelectedItems().length ?? 0
 })
 
-// 懒加载注册
+const selectAll = () => {
+  // 这里需要从数据源获取所有项
+  // selectionApi.value?.selectAll()
+}
+
+const clearAll = () => {
+  selectionApi.value?.clearSelection()
+}
+</script>
+```
+
+## 📊 组件生命周期
+
+SPARK 组件具有完整的生命周期管理：
+
+```vue
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-component'
+import { onMounted, onUnmounted } from 'vue'
+
+const props = defineProps<{
+  config: ComponentContext
+}>()
+
+const { logger, context } = useSparkComponent(props.config)
+
+// 组件挂载
+onMounted(() => {
+  logger.info('Component mounted', {
+    type: context.type,
+    id: context.id
+  })
+
+  // 初始化逻辑
+  initComponent()
+})
+
+// 组件卸载
+onUnmounted(() => {
+  logger.info('Component unmounted')
+
+  // 清理逻辑
+  cleanupComponent()
+})
+
+const initComponent = () => {
+  // 组件初始化逻辑
+}
+
+const cleanupComponent = () => {
+  // 资源清理逻辑
+}
+</script>
+```
+
+## 🎨 样式和主题
+
+SPARK 支持灵活的样式定制：
+
+```vue
+<template>
+  <div :class="componentClasses">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-component'
+import { computed } from 'vue'
+
+const props = defineProps<{
+  config: ComponentContext<{ theme?: string; size?: string }>
+}>()
+
+const { consume } = useSparkComponent(props.config)
+
+// 消费主题能力（如果有的话）
+const themeProvider = consume('theme-provider')
+
+const componentClasses = computed(() => {
+  const classes = ['spark-component']
+
+  // 从配置获取样式
+  if (props.config.theme) {
+    classes.push(`theme-${props.config.theme}`)
+  }
+
+  if (props.config.size) {
+    classes.push(`size-${props.config.size}`)
+  }
+
+  // 从全局主题获取样式
+  if (themeProvider.value?.currentTheme) {
+    classes.push(`global-theme-${themeProvider.value.currentTheme}`)
+  }
+
+  return classes
+})
+</script>
+
+<style scoped>
+.spark-component {
+  /* 基础样式 */
+}
+
+.theme-dark {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.theme-light {
+  background: #ffffff;
+  color: #333333;
+}
+
+.size-small {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.size-large {
+  padding: 1.5rem;
+  font-size: 1.125rem;
+}
+</style>
+```
+
+## 🔧 高级特性
+
+### 条件渲染和权限控制
+
+```vue
+<template>
+  <div v-if="isVisible" class="conditional-component">
+    <component :is="dynamicComponent" :config="config" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-component'
+import { computed } from 'vue'
+
+const props = defineProps<{
+  config: ComponentContext<{
+    condition?: string
+    permissions?: string[]
+    componentType?: string
+  }>
+}>()
+
+const { consume } = useSparkComponent(props.config)
+
+// 消费权限系统
+const permissionProvider = consume('permission-provider')
+
+const isVisible = computed(() => {
+  // 检查显示条件
+  if (props.config.condition) {
+    // 这里可以实现复杂的条件判断逻辑
+    return evaluateCondition(props.config.condition)
+  }
+
+  // 检查权限
+  if (props.config.permissions && permissionProvider.value) {
+    return props.config.permissions.every(perm =>
+      permissionProvider.value.hasPermission(perm)
+    )
+  }
+
+  return true
+})
+
+const dynamicComponent = computed(() => {
+  if (!props.config.componentType) return null
+
+  // 根据类型动态加载组件
+  return () => import(`./components/${props.config.componentType}.vue`)
+})
+
+const evaluateCondition = (condition: string): boolean => {
+  // 实现条件表达式解析
+  // 这里可以集成表达式引擎
+  return true
+}
+</script>
+```
+
+### 错误处理
+
+```vue
+<template>
+  <div class="error-boundary">
+    <slot v-if="!hasError" />
+    <div v-else class="error-message">
+      <h3>组件加载失败</h3>
+      <p>{{ error.message }}</p>
+      <button @click="retry">重试</button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useSparkComponent } from '@spark-view/spark-component'
+import { ref, onErrorCaptured } from 'vue'
+
+const props = defineProps<{
+  config: ComponentContext
+}>()
+
+const { logger } = useSparkComponent(props.config)
+
+const hasError = ref(false)
+const error = ref<Error | null>(null)
+
+// 捕获子组件错误
+onErrorCaptured((err, instance, info) => {
+  hasError.value = true
+  error.value = err as Error
+
+  logger.error('Component error captured', {
+    error: err,
+    component: instance,
+    info
+  })
+
+  // 阻止错误继续向上传播
+  return false
+})
+
+const retry = () => {
+  hasError.value = false
+  error.value = null
+
+  logger.info('Retrying component after error')
+}
+</script>
+```
+
+## 📚 最佳实践
+
+### 1. 类型安全
+
+```typescript
+// ✅ 推荐：明确的类型定义
+interface UserGridConfig {
+  title: string
+  columns: ColumnConfig[]
+  dataSource: string
+}
+
+const props = defineProps<{
+  config: ComponentContext<UserGridConfig>
+}>()
+
+// ❌ 避免：使用 any
+const props = defineProps<{
+  config: any // 不推荐
+}>()
+```
+
+### 2. 能力命名
+
+```typescript
+// ✅ 推荐：使用 Symbol 和描述性名称
+export const USER_GRID_DATA = defineCapability<UserGridData>('user-grid-data')
+export const COLUMN_MANAGER = defineCapability<ColumnManager>('column-manager')
+
+// ❌ 避免：使用字符串常量
+provide('data', data) // 不推荐，容易冲突
+```
+
+### 3. 错误处理
+
+```typescript
+// ✅ 推荐：优雅的错误处理
+const { logger } = useSparkComponent(props.config)
+
+try {
+  await loadData()
+} catch (error) {
+  logger.error('Failed to load data', { error })
+  // 显示用户友好的错误信息
+}
+
+// ❌ 避免：静默失败
+try {
+  await loadData()
+} catch (error) {
+  // 静默处理，可能导致调试困难
+}
+```
+
+### 4. 性能优化
+
+```typescript
+// ✅ 推荐：使用计算属性缓存
+const processedData = computed(() => {
+  return props.config.data?.map(item => ({
+    ...item,
+    displayName: formatName(item)
+  }))
+})
+
+// ❌ 避免：在模板中进行复杂计算
+<template>
+  <div v-for="item in config.data" :key="item.id">
+    {{ item.firstName + ' ' + item.lastName }} <!-- 每次渲染都计算 -->
+  </div>
+</template>
+```
+
+## 🔍 调试技巧
+
+### 启用调试日志
+
+```typescript
+import { Logger } from '@spark-view/spark-utils'
+
+// 创建组件专用 logger
+const logger = Logger('MyComponent')
+
+// 在组件中使用
+logger.debug('Component initialized', { props, config })
+logger.info('Data loaded', { count: data.length })
+logger.warn('Deprecated prop used', { prop: 'oldProp' })
+logger.error('Failed to save', { error })
+```
+
+### 检查能力连接
+
+```typescript
+const { consume, logger } = useSparkComponent(props.config)
+
+const dataProvider = consume('data-provider')
+
+// 检查能力是否可用
+if (dataProvider.value) {
+  logger.debug('Data provider connected')
+} else {
+  logger.warn('Data provider not available, using fallback')
+}
+```
+
+## 📖 相关文档
+
+- [能力系统详解](CAPABILITY_PROVISION.md) - 深入了解能力系统的设计和使用
+- [数据管理](DATA_MANAGEMENT.md) - 学习 DataSet 和数据操作
+- [插件配置](PLUGIN_CONFIGURATION.md) - 集成第三方 UI 库
+- [页面配置](MULTI_TENANT_CONFIG.md) - 配置驱动的页面开发
 Spark.register({
   type: 'my-chart',
   name: 'My Chart',
