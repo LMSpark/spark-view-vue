@@ -278,8 +278,8 @@ const usersView = dataSet.getTable('Users')
 
 // 加载前验证权限
 usersView.onBeforeLoad = async (context) => {
-  console.log(`🔐 [钩子] 检查用户权限: ${context.hostTable}`)
-  const hasPermission = await checkPermission('read', context.hostTable)
+  console.log(`🔐 [钩子] 检查用户权限: ${context.tableName}`)
+  const hasPermission = await checkPermission('read', context.tableName)
   
   if (!hasPermission) {
     throw new Error('No permission to load data')
@@ -288,11 +288,11 @@ usersView.onBeforeLoad = async (context) => {
 
 // 加载完成后记录日志
 usersView.onAfterLoad = async (context, success) => {
-  console.log(`📝 [钩子] 加载${success ? '成功' : '失败'}: ${context.hostTable}`)
+  console.log(`📝 [钩子] 加载${success ? '成功' : '失败'}: ${context.tableName}`)
   
   // 上报统计数据
   await reportAnalytics({
-    table: context.hostTable,
+    table: context.tableName,
     success,
     duration: context.loadDuration
   })
@@ -304,7 +304,7 @@ usersView.onLoadError = async (context, error) => {
   
   // 发送错误报告
   await sendErrorReport({
-    table: context.hostTable,
+    table: context.tableName,
     error: error.message,
     retryCount: context.retryCount
   })
@@ -312,10 +312,10 @@ usersView.onLoadError = async (context, error) => {
 
 // 加载取消时清理资源
 usersView.onLoadCancel = async (context) => {
-  console.log(`🛑 [钩子] 加载已取消: ${context.hostTable}`)
+  console.log(`🛑 [钩子] 加载已取消: ${context.tableName}`)
   
   // 清理临时资源
-  await cleanupTempResources(context.hostTable)
+  await cleanupTempResources(context.tableName)
 }
 ```
 
@@ -338,11 +338,11 @@ const dataSet = new DataSet({
 // 为所有表设置统一钩子
 Object.values(dataSet.tables).forEach(table => {
   table.onBeforeLoad = async (context) => {
-    console.log(`⏱️ [全局] 开始加载: ${context.hostTable}`)
+    console.log(`⏱️ [全局] 开始加载: ${context.tableName}`)
   }
   
   table.onAfterLoad = async (context, success) => {
-    console.log(`✅ [全局] 加载${success ? '完成' : '失败'}: ${context.hostTable}`)
+    console.log(`✅ [全局] 加载${success ? '完成' : '失败'}: ${context.tableName}`)
   }
 })
 ```
@@ -475,7 +475,7 @@ usersView.retryDelay = 1000
 
 // 加载前权限检查
 usersView.onBeforeLoad = async (context) => {
-  console.log(`🔐 检查权限: ${context.hostTable}`)
+  console.log(`🔐 检查权限: ${context.tableName}`)
   
   const token = localStorage.getItem('token')
   if (!token) {
@@ -490,7 +490,7 @@ usersView.onAfterLoad = async (context, success) => {
     
     // 更新本地缓存
     localStorage.setItem(
-      `cache_${context.hostTable}`,
+      `cache_${context.tableName}`,
       JSON.stringify(context.rows)
     )
   } else {
@@ -506,7 +506,7 @@ usersView.onLoadError = async (context, error) => {
   await fetch('/api/log-error', {
     method: 'POST',
     body: JSON.stringify({
-      table: context.hostTable,
+      table: context.tableName,
       error: error.message,
       retryCount: context.retryCount,
       timestamp: Date.now()
@@ -514,7 +514,7 @@ usersView.onLoadError = async (context, error) => {
   })
   
   // 尝试使用缓存数据
-  const cachedData = localStorage.getItem(`cache_${context.hostTable}`)
+  const cachedData = localStorage.getItem(`cache_${context.tableName}`)
   if (cachedData && context.retryCount >= context.maxRetries) {
     console.log('📦 使用缓存数据兜底')
     context.rows.splice(0, context.rows.length, ...JSON.parse(cachedData))
@@ -524,7 +524,7 @@ usersView.onLoadError = async (context, error) => {
 
 // 取消加载时清理
 usersView.onLoadCancel = async (context) => {
-  console.log(`🛑 加载已取消: ${context.hostTable}`)
+  console.log(`🛑 加载已取消: ${context.tableName}`)
   // 清理临时资源...
 }
 

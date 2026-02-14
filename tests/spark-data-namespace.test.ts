@@ -46,8 +46,8 @@ describe('SparkData Namespace', () => {
     expect(treeManager.getChildren(1)).toHaveLength(2)
   })
 
-  it('应该提供 createContext 工厂方法', () => {
-    const context = SparkData.createContext('Users', 'default')
+  it('应该提供 createDataView 工厂方法', () => {
+    const context = SparkData.createDataView({ tableName: 'Users', contextId: 'default' })
 
     expect(context).toBeDefined()
     expect(context['tableName']).toBe('Users')

@@ -7,13 +7,13 @@
 // ===== 类型定义 =====
 
 import type { DataSet } from '../dataset'
-import type { IDataView } from '../types'
+import type { DataView } from '../data-view'
 
 /**
  * 订阅回调函数类型
  * @param dataView 发生变化的数据视图
  */
-export type SubscriptionCallback = (dataView: IDataView) => void
+export type SubscriptionCallback = (dataView: DataView) => void
 
 // ===== 类定义 =====
 

@@ -167,14 +167,14 @@ const dataSet = SparkData.fromJSON(jsonString)
 
 ### TreeManager 管理
 
-#### `SparkData.createTreeManager(config, initialNodes?, bindingContext?)`
+#### `SparkData.createTreeManager(config, initialNodes?, dataView?)`
 
 创建 TreeManager 实例，用于管理树形数据结构
 
 **参数：**
 - `config: TreeConfig` - 树配置
 - `initialNodes?: FlatTreeNode[]` - 初始节点数组
-- `bindingContext?: BindingContext` - 关联的 BindingContext
+- `dataView?: DataView` - 关联的 DataView
 
 **返回：** `TreeManager`
 
@@ -198,51 +198,46 @@ const treeManager = SparkData.createTreeManager(
   ]
 )
 
-// 关联到 BindingContext
-const context = SparkData.createContext('Departments', 'default', dataSet)
+// 关联到 DataView
+const dataView = SparkData.createDataView({ tableName: 'Departments', contextId: 'default' })
 const treeManager = SparkData.createTreeManager(
   { idField: 'id', parentIdField: 'parentId' },
   nodes,
-  context
+  dataView
 )
 ```
 
-#### `SparkData.treeFromJSON(json, bindingContext?)`
+#### `SparkData.treeFromJSON(json, dataView?)`
 
 从 JSON 恢复 TreeManager
 
 **参数：**
 - `json: string` - JSON 字符串
-- `bindingContext?: BindingContext` - 关联的 BindingContext
+- `dataView?: DataView` - 关联的 DataView
 
 **返回：** `TreeManager`
 
 ---
 
-### BindingContext 管理
+### DataView 管理
 
-#### `SparkData.createContext(hostTable, contextId?, dataSet?)`
+#### `SparkData.createDataView(config)`
 
-创建 BindingContext 实例，用于数据绑定和视图管理
+创建 DataView 实例，用于数据绑定和视图管理
 
 **参数：**
-- `hostTable: string` - 宿主表名
-- `contextId?: string` - 上下文 ID（默认：'default'）
-- `dataSet?: IDataSet` - 关联的 DataSet
+- `config.tableName: string` - 表名
+- `config.contextId?: string` - 上下文 ID（默认：'default'）
 
-**返回：** `BindingContext`
+**返回：** `DataView`
 
 **示例：**
 ```typescript
 // 基本使用
-const context = SparkData.createContext('Users')
+const view = SparkData.createDataView({ tableName: 'Users' })
 
 // 指定上下文 ID
-const detailContext = SparkData.createContext('Orders', 'detail', dataSet)
-
-// 完整配置
-const context = SparkData.createContext('Users', 'main', dataSet)
-context.setCurrentRow(dataSet.getTable('Users')?.rows[0] || null)
+const detailView = SparkData.createDataView({ tableName: 'Orders', contextId: 'detail' })
 ```
 
 ---
@@ -287,20 +282,16 @@ const result = parser.evaluate(rows, expression)
 ```typescript
 import { SparkData } from '@spark-view/spark-data'
 
-const { DataSet, TreeManager, BindingContext } = SparkData.classes
-
 // 使用构造器
-const dataSet = new DataSet({ ... })
-const tree = new TreeManager({ ... })
+const dataSet = new (await import('@spark-view/spark-data')).DataSet({ ... })
 ```
 
 ### 向后兼容的导入方式
 
 ```typescript
-import { DataSet, DataSetManager, TreeManager } from '@spark-view/spark-data'
+import { DataSet, TreeManager } from '@spark-view/spark-data'
 
 // 直接使用类
-const dataSet = DataSetManager.create({ ... })
 const tree = new TreeManager({ ... })
 ```
 
@@ -341,18 +332,18 @@ const dataSet = SparkData.createDataSet({
   }
 })
 
-// 创建 BindingContext
-const context = SparkData.createContext('Departments', 'default', dataSet)
+// 创建 DataView
+const dataView = SparkData.createDataView({ tableName: 'Departments' })
 
 // 创建 TreeManager 并关联
 const treeManager = SparkData.createTreeManager(
   { idField: 'id', parentIdField: 'parentId' },
   dataSet.getTable('Departments')?.rows || [],
-  context
+  dataView
 )
 
 // 双向绑定
-context.setTreeManager(treeManager)
+dataView.setTreeManager(treeManager)
 ```
 
 ### 3. 使用数据加载器
@@ -381,13 +372,14 @@ await dataSet.loadTableAsync('Users')
 ```typescript
 import type {
   IDataSet,
-  IDataTable,
-  IBindingContext,
-  DataRow,
+  IDataRow,
   DataColumn,
   TreeConfig,
   FlatTreeNode,
-  FilterExpression
+  FilterExpression,
+  CrudApi,
+  ITableMetadata,
+  IViewMetadata
 } from '@spark-view/spark-data'
 ```
 
@@ -399,7 +391,7 @@ import type {
 |-----------|---------------|------|
 | `DataSet` | `System.Data.DataSet` | 数据集管理 |
 | `DataTable` | `System.Data.DataTable` | 数据表结构 |
-| `BindingContext` | `BindingContext` | 数据绑定上下文 |
+| `DataView` | `System.Data.DataView` | 数据视图 / 绑定上下文 |
 | `TreeManager` | (自定义) | 树形数据管理 |
 
 ---

@@ -134,15 +134,6 @@ export class DataSet {
     })
   }
 
-  /**
-   * 从元数据创建数据集实例
-   * @param metadata 数据集元数据
-   * @returns 数据集实例
-   */
-  static fromMetadata(metadata: IDataSetMetadata): DataSet {
-    return new DataSet({ ...metadata, autoLoadRelations: undefined, dataLoader: undefined })
-  }
-
   // ===== 能力注册 =====
 
   /**

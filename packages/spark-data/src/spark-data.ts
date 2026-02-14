@@ -7,7 +7,7 @@ import { TreeManager } from './tree-manager'
 import { DataTable } from './data-table'
 import { DataView } from './data-view'
 import { CrudService } from './crud-service'
-import type { DataColumn, CrudApi, DataRelation, IDataSetMetadata, FlatTreeNode, IDataRow } from './types'
+import type { DataColumn, CrudApi, DataRelation, FlatTreeNode, IDataRow } from './types'
 
 // ===== SparkData 命名空间 API =====
 
@@ -32,15 +32,6 @@ export namespace SparkData {
     dataLoader?: (tableName: string) => Promise<IDataRow[]>
   }): DataSet {
     return DataSet.fromConfig(config)
-  }
-
-  /**
-   * 从元数据创建数据集实例
-   * @param metadata 数据集元数据
-   * @returns 数据集实例
-   */
-  export function createDataSetFromMetadata(metadata: IDataSetMetadata): DataSet {
-    return DataSet.fromMetadata(metadata)
   }
 
   /**
@@ -112,56 +103,16 @@ export namespace SparkData {
    * @returns 数据视图实例
    */
   export function createDataView(config: {
-    hostTable: string
+    tableName: string
     contextId?: string
   }): DataView {
-    return new DataView(config.hostTable, config.contextId)
-  }
-
-  // ===== 兼容性方法 =====
-
-  /**
-   * 创建数据视图实例（兼容旧API）
-   * @param hostTable 宿主表名
-   * @param contextId 数据视图ID
-   * @returns 数据视图实例
-   */
-  export function createContext(hostTable: string, contextId?: string): DataView {
-    return new DataView(hostTable, contextId)
+    return new DataView(config.tableName, config.contextId)
   }
 }
 
-// ===== 向后兼容的直接导出 =====
+// ===== 类导出 =====
 
 export { DataSet } from './dataset'
 export { TreeManager } from './tree-manager'
 export { DataTable } from './data-table'
 export { DataView } from './data-view'
-
-// ===== 核心引擎导出（内部使用） =====
-
-export { RelationEngine } from './core/relation-engine'
-export { EventManager } from './core/event-manager'
-export { DependencyAnalyzer } from './core/dependency-analyzer'
-export { SubscriptionManager } from './core/subscription-manager'
-export { DataLoader } from './core/data-loader'
-
-// ===== 类型导出 =====
-
-export type {
-  IDataSet,
-  IDataTable,
-  IDataView,
-  ITableMetadata,
-  IViewMetadata,
-  DataColumn,
-  CrudApi,
-  FilterExpression,
-  SortExpression,
-  DataRelation,
-  DependencyType,
-  TreePath,
-  FlatTreeNode,
-  NestedTreeNode,
-  ITreeManager
-} from './types'

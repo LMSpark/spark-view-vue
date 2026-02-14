@@ -14,9 +14,6 @@ import type { IDataRow, DataColumn, CrudApi, ITableMetadata, QueryParams, CrudRe
 export class DataTable extends DataView {
   // ===== 属性定义 =====
 
-  /** 表名 */
-  override tableName: string
-
   /** 列定义 */
   columns: DataColumn[]
 
@@ -38,7 +35,6 @@ export class DataTable extends DataView {
    */
   constructor(tableName: string, columns: DataColumn[] = []) {
     super(tableName, 'default')
-    this.tableName = tableName
     this.columns = columns
     this.initializeCrudService()
   }
@@ -143,14 +139,6 @@ export class DataTable extends DataView {
       page: this.page,
       pageSize: this.pageSize,
     }
-
-    // 只序列化非undefined值
-    if (this.api !== undefined) result.api = this.api
-    if (this.filterExpression !== undefined) result.filterExpression = this.filterExpression
-    if (this.sortExpression !== undefined) result.sortExpression = this.sortExpression
-    if (this.autoSelectFirst !== undefined) result.autoSelectFirst = this.autoSelectFirst
-    if (this.page !== undefined) result.page = this.page
-    if (this.pageSize !== undefined) result.pageSize = this.pageSize
 
     return result
   }
@@ -411,7 +399,7 @@ export class DataTable extends DataView {
     const t = new DataTable(data.tableName, data.columns ?? [])
     if (data.api !== undefined) t.api = data.api
     if (data.rows) {
-      t.rows = data.rows.map(r => ({ ...r, __permissions: {} } as IDataRow))
+      t.rows = [...data.rows]
     }
     if (data.filterExpression !== undefined) t.filterExpression = data.filterExpression
     if (data.sortExpression !== undefined) t.sortExpression = data.sortExpression

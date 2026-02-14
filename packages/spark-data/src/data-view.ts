@@ -5,7 +5,8 @@
  * 管理数据展示状态、选中状态、分页状态等UI相关状态。
  */
 
-import type { IDataRow, IViewMetadata, FilterExpression, SortExpression, ITreeManager } from './types'
+import type { IDataRow, IViewMetadata, FilterExpression, SortExpression } from './types'
+import type { TreeManager } from './tree-manager'
 import { Logger } from '@spark-view/spark-utils'
 import { isSameRow } from './core/utils'
 
@@ -81,7 +82,7 @@ export class DataView {
   protected dataSet?: IDataSet
 
   /** 树形数据管理器 */
-  treeManager?: ITreeManager
+  treeManager?: TreeManager
 
   /** 日志记录器 */
   protected logger = Logger('DataView')
@@ -106,7 +107,7 @@ export class DataView {
    * 设置树形数据管理器
    * @param tm 树管理器实例
    */
-  setTreeManager(tm: ITreeManager): void {
+  setTreeManager(tm: TreeManager): void {
     this.treeManager = tm
     if (typeof tm.setDataView === 'function') tm.setDataView(this)
   }
@@ -115,7 +116,7 @@ export class DataView {
    * 获取树形数据管理器
    * @returns 树管理器实例
    */
-  getTreeManager(): ITreeManager | undefined {
+  getTreeManager(): TreeManager | undefined {
     return this.treeManager
   }
 
