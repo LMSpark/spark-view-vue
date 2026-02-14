@@ -50,7 +50,7 @@ describe('SparkData Namespace', () => {
     const context = SparkData.createContext('Users', 'default')
 
     expect(context).toBeDefined()
-    expect(context['hostTable']).toBe('Users')
+    expect(context['tableName']).toBe('Users')
     expect(context['contextId']).toBe('default')
   })
 
