@@ -88,7 +88,15 @@ export class DataSet {
       tables[key] = { ...tableConfig } as ITableMetadata
     }
 
-    return new DataSet({ ...config })
+    return new DataSet({
+      dataSetName: config.dataSetName,
+      tables,
+      relations: config.relations,
+      version: undefined,
+      pageId: undefined,
+      autoLoadRelations: undefined,
+      dataLoader: config.dataLoader
+    })
   }
 
   static fromMetadata(metadata: IDataSetMetadata): DataSet {
