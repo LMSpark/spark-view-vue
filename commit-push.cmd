@@ -4,16 +4,20 @@ echo Adding files...
 git add -A
 echo.
 echo Committing...
-git commit -m "refactor: 权限快照系统和数据清理优化
+REM 支持：commit-push.cmd "your commit message"
+if "%~1"=="" (
+  git commit -m "chore: <短描述（必填）>
 
-- 实现JWT-like权限快照系统，避免服务端重复计算
-- 统一CrudOperationConfig权限对象传递设计
-- 添加数据上传时权限字段自动清理功能
-- 重命名DataView.hostTable为tableName保持一致性
-- 新增权限数据清理测试用例
-- 优化类型定义和注释
+- 描述: <一句话说明本次改动>
+- 变更点: <高层要点，逗号分隔>
+- 影响范围: <packages/...>
+- 测试: <unit tests / manual checks>
 
-影响范围: @spark-view/spark-data"
+请在运行脚本时替换引号内占位符，或通过参数传入具体提交信息。"
+) else (
+  git commit -m "%~1"
+)
+
 echo.
 echo Pushing...
 git push
