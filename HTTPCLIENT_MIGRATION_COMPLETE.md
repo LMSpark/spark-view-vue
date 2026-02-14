@@ -11,8 +11,8 @@
 - ❌ `packages/spark-utils/src/http/` (整个目录)
 
 ### 新增的文件
-- ✅ `packages/spark-utils/src/Request.ts` (606 行)
-- ✅ `packages/spark-utils/src/RequestInterceptors.ts` (396 行)
+- ✅ `packages/spark-utils/src/http/Request.ts` (606 行)
+- ✅ `packages/spark-utils/src/http/RequestInterceptors.ts` (396 行)
 - ✅ `packages/spark-utils/src/Request.example.ts` (414 行)
 - ✅ `packages/spark-utils/REQUEST_GUIDE.md` (400+ 行)
 - ✅ `packages/spark-utils/MIGRATION.md` (300+ 行)

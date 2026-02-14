@@ -8,16 +8,16 @@
  * - 单一职责：只负责关系逻辑，数据加载由 DataLoader 处理
  */
 
-import type { DataRelation, IDataRow, DependencyType, IDataView } from '../types'
+import type { DataRelation, IDataRow, DependencyType } from '../types'
 import type { DataSet } from '../dataset'
-import type { DataView } from '../data-view'
+import type { DataView as SparkDataView } from '../data-view'
 
 export class RelationEngine {
 
   constructor(private dataSet: DataSet) {}
 
   /** 根据依赖类型获取父数据范围（用于构建查询参数） */
-  getParentRows(ctx: DataView | IDataView, dep: DependencyType): IDataRow[] {
+  getParentRows(ctx: SparkDataView, dep: DependencyType): IDataRow[] {
     switch (dep) {
       case 'currentRow':   return ctx.currentRow ? [ctx.currentRow] : []
       case 'selectedRows': return ctx.selectedRows ?? []

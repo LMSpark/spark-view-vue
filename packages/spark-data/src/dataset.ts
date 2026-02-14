@@ -1,21 +1,12 @@
 /**
  * DataSet — 数据空间（UI↔后端 桥接层）
  *
- * 职责：
- * 1. 维护表结构和关系定义
- * 2. 管理 UI 状态（选中、分页）
- * 3. 调度数据加载
- * 4. 事件 + 订阅通知
- *
- * 不负责：前端过滤/排序/级联写操作（全部由后端完成）
+ * 直接实现类，不再继承复杂接口
  */
 
-import type {
-  IDataSet, IDataSetMetadata, IDataSetConfig, ITableMetadata,
-  DataRelation, IDataRow
-} from './types'
+import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
+import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
-import { DataView } from './data-view'
 import { RelationEngine } from './core/relation-engine'
 import { DependencyAnalyzer } from './core/dependency-analyzer'
 import { DataLoader } from './core/data-loader'
@@ -24,21 +15,32 @@ import { EventManager } from './core/event-manager'
 import { DATA_SET_STATE } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
 
-export class DataSet implements IDataSet {
+export class DataSet {
+  // 基础属性
   dataSetName: string
-  tables: Record<string, DataTable>
+  tables: Record<string, DataTable> = {}
   relations?: DataRelation[]
   version?: number
   pageId?: string
   autoLoadRelations?: boolean
   dataLoader?: (tableName: string) => Promise<IDataRow[]>
+
+  // 内部引擎
   private relationEngine: RelationEngine
   private dependencyAnalyzer: DependencyAnalyzer
   private dataLoaderInstance: DataLoader
   private subscriptionManager: SubscriptionManager
   private eventManager: EventManager
 
-  constructor(config: IDataSetConfig) {
+  constructor(config: {
+    dataSetName: string
+    tables: Record<string, ITableMetadata>
+    relations?: DataRelation[]
+    version?: number
+    pageId?: string
+    autoLoadRelations?: boolean
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
+  }) {
     this.dataSetName = config.dataSetName
     this.dataLoader = config.dataLoader
     this.relations = config.relations
@@ -49,11 +51,7 @@ export class DataSet implements IDataSet {
     // 构建表实例
     this.tables = {}
     for (const [name, td] of Object.entries(config.tables)) {
-      const table = DataTable.fromTableData(td, this)
-      table.setDataSet(this)
-      for (const ctx of Object.values(table.contexts ?? {})) {
-        ctx.setDataSet(this)
-      }
+      const table = DataTable.fromTableData(td)
       this.tables[name] = table
     }
 
@@ -69,6 +67,42 @@ export class DataSet implements IDataSet {
     this.dataLoaderInstance = new DataLoader(this)
     this.subscriptionManager = new SubscriptionManager(this)
     this.eventManager = new EventManager()
+  }
+
+  // ===== 工厂方法（支持 SparkData 命名空间） =====
+
+  static fromConfig(config: {
+    dataSetName: string
+    tables: Record<string, {
+      tableName: string
+      columns: DataColumn[]
+      rows?: IDataRow[]
+      api?: CrudApi
+    }>
+    relations?: DataRelation[]
+    dataLoader?: (tableName: string) => Promise<IDataRow[]>
+  }): DataSet {
+    const tables: Record<string, ITableMetadata> = {}
+
+    for (const [key, tableConfig] of Object.entries(config.tables)) {
+      tables[key] = {
+        tableName: tableConfig.tableName,
+        columns: tableConfig.columns,
+        rows: tableConfig.rows,
+        api: tableConfig.api
+      }
+    }
+
+    return new DataSet({
+      dataSetName: config.dataSetName,
+      tables,
+      relations: config.relations,
+      dataLoader: config.dataLoader
+    })
+  }
+
+  static fromMetadata(metadata: IDataSetMetadata): DataSet {
+    return new DataSet(metadata)
   }
 
   // ===== 能力注册 =====
@@ -99,9 +133,11 @@ export class DataSet implements IDataSet {
 
   // ===== 数据访问 =====
 
-  getTable(name: string): DataTable | undefined { return this.tables[name] }
+  getTable(name: string): DataTable | undefined {
+    return this.tables[name]
+  }
 
-  getContext(tableName: string, contextId = 'default'): DataView | undefined {
+  getContext(tableName: string, contextId = 'default'): SparkDataView | undefined {
     const t = this.getTable(tableName)
     if (!t) return undefined
     return contextId === 'default' ? t : t.getOrCreateContext(contextId)
@@ -109,54 +145,89 @@ export class DataSet implements IDataSet {
 
   // ===== 关系 =====
 
-  applyRelation(rel: DataRelation) { return this.relationEngine.applyRelation(rel) }
-  updateRelatedTables(parent: string, ctxId = 'default') { this.relationEngine.updateRelatedTables(parent, ctxId) }
-  refreshAllRelations() { this.relationEngine.refreshAllRelations() }
+  applyRelation(rel: DataRelation): void {
+    this.relationEngine.applyRelation(rel)
+  }
+
+  updateRelatedTables(parent: string, ctxId = 'default'): void {
+    this.relationEngine.updateRelatedTables(parent, ctxId)
+  }
 
   // ===== 依赖 =====
 
-  getTableDependencies(t: string) { return this.dependencyAnalyzer.getTableDependencies(t) }
-  getRootDependencies(t: string) { return this.dependencyAnalyzer.getRootDependencies(t) }
-  areDependenciesSatisfied(t: string) { return this.dependencyAnalyzer.areDependenciesSatisfied(t) }
+  getTableDependencies(tableName: string): string[] {
+    return Array.from(this.dependencyAnalyzer.getTableDependencies(tableName))
+  }
 
-  // ===== 数据加载 =====
+  getRootDependencies(tableName: string): string[] {
+    return Array.from(this.dependencyAnalyzer.getRootDependencies(tableName))
+  }
 
-  requestTableData(t: string) { this.dataLoaderInstance.requestTableData(t) }
-  notifyDependencyUpdated(t: string) { this.dataLoaderInstance.notifyDependencyUpdated(t) }
-
-  // ===== 事件 =====
-
-  on(event: string, cb: (...args: unknown[]) => void) { this.eventManager.on(event, cb) }
-  off(event: string, cb: (...args: unknown[]) => void) { this.eventManager.off(event, cb) }
-  emit(event: string, data: unknown) { this.eventManager.emit(event, data) }
+  areDependenciesSatisfied(tableName: string): boolean {
+    return this.dependencyAnalyzer.areDependenciesSatisfied(tableName)
+  }
 
   // ===== 订阅 =====
 
-  subscribe(tableName: string, contextId = 'default', cb: () => void) {
+  subscribe(tableName: string, contextId: string, cb: () => void): () => void {
     return this.subscriptionManager.subscribe(tableName, contextId, cb)
   }
-  notifySubscribers(tableName: string, contextId?: string) {
+
+  notifySubscribers(tableName: string, contextId?: string): void {
     this.subscriptionManager.notifySubscribers(tableName, contextId)
   }
-  hasSubscribers(tableName: string, contextId?: string) {
+
+  hasSubscribers(tableName: string, contextId?: string): boolean {
     return this.subscriptionManager.hasSubscribers(tableName, contextId)
+  }
+
+  // ===== 事件 =====
+
+  on(event: string, cb: (...args: unknown[]) => void): void {
+    this.eventManager.on(event, cb)
+  }
+
+  off(event: string, cb: (...args: unknown[]) => void): void {
+    this.eventManager.off(event, cb)
+  }
+
+  emit(event: string, data: unknown): void {
+    this.eventManager.emit(event, data)
+  }
+
+  // ===== 数据加载 =====
+
+  requestTableData(tableName: string): void {
+    this.dataLoaderInstance.requestTableData(tableName)
   }
 
   // ===== 序列化 =====
 
   toData(): IDataSetMetadata {
     const tables: Record<string, ITableMetadata> = {}
-    for (const [n, t] of Object.entries(this.tables)) tables[n] = t.toData()
-    return { dataSetName: this.dataSetName, tables, relations: this.relations, version: this.version, pageId: this.pageId }
+    for (const [n, t] of Object.entries(this.tables)) {
+      tables[n] = t.toData()
+    }
+    return {
+      dataSetName: this.dataSetName,
+      tables,
+      relations: this.relations,
+      version: this.version,
+      pageId: this.pageId
+    }
   }
 
-  toJSON(): string { return JSON.stringify(this.toData(), null, 2) }
+  toJSON(): string {
+    return JSON.stringify(this.toData(), null, 2)
+  }
 
-  static fromData(data: IDataSetMetadata, loader?: (t: string) => Promise<IDataRow[]>): DataSet {
+  // ===== 工厂方法 =====
+
+  static fromData(data: IDataSetMetadata, loader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
     return new DataSet({ ...data, dataLoader: loader })
   }
 
-  static fromJSON(json: string, loader?: (t: string) => Promise<IDataRow[]>): DataSet {
+  static fromJSON(json: string, loader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
     return DataSet.fromData(JSON.parse(json) as IDataSetMetadata, loader)
   }
 }

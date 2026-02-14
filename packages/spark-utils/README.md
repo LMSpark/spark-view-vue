@@ -139,7 +139,7 @@ request.interceptors.response.use(
 )
 
 // 发起请求
-const users = await request.get<User[]>('/users')
+const users = await request.get('/users')
 const newUser = await request.post<User>('/users', { name: 'John' })
 ```
 

@@ -26,6 +26,7 @@
     "dependencies": {
         "@spark-view/spark-utils": "workspace:*"
     },
+    "postcss": {},
     "devDependencies": {
         "@types/node": "^18.19.130",
         "typescript": "~5.3.3",

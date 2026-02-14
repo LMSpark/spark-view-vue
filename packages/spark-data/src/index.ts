@@ -1,42 +1,59 @@
 /**
  * @spark-view/spark-data
- * SPARK 数据空间 — UI↔后端 桥接层
- *
- * 推荐使用 SparkData 命名空间 API
+ * SPARK 数据空间 — 数据模型 + 权限系统
  */
 
-// 命名空间
-export { SparkData } from './spark-data-namespace'
-export { default } from './spark-data-namespace'
+// 命名空间 API（推荐）
+export { SparkData } from './spark-data'
 
-// 类型
+// 核心类
+export { DataSet, DataTable, DataView, TreeManager } from './spark-data'
+
+// 数据类型
 export type {
   IDataRow,
+  IDataSource,
+  IInstancePermission,
+  IModelPermission,
+  EventCallback,
+  RequestConfig,
+  ApiResponse,
   IDataTable,
   ITableMetadata,
   IDataSet,
   IDataSetMetadata,
+  IDataSetConfig,
   ITreeManager,
   IDataView,
   IViewMetadata,
-  EventCallback,
   FilterExpression,
   SortExpression,
   TreeConfig,
   FlatTreeNode,
   HttpEndpoint,
-  CrudApi
+  CrudApi,
+  DataColumn,
+  DataRelation
 } from './types'
 
-// 权限常量
-export { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-utils'
-
-// 能力管理器
 export {
-  DataSetCapabilityManager,
-  createDataSetCapabilityManager,
-  type DataSetCapabilityConfig
-} from './capability/DataSetCapabilityManager'
+  INSTANCE_PERMISSION_FIELD,
+  MODEL_PERMISSION_FIELD,
+  FieldVisibility,
+  ComponentLevel
+} from './types'
+
+// 权限系统
+export {
+  PermissionChecker, createPermissionChecker, checkPermission, resetPermissionChecker,
+  PermissionFilter, createPermissionFilter, filterByPermission, resetPermissionFilter,
+  FieldRenderHelper, createFieldRenderHelper, resetFieldRenderHelper,
+  computeFieldState, computeFieldStates, filterVisibleFields
+} from './permission/index.js'
+
+export type {
+  IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper
+} from './permission/index.js'
 
 // 工具函数
 export { rowsEqual, isSameRow } from './core/utils'

@@ -1,0 +1,728 @@
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mD:/SPARK_VIEW[39m
+
+ [32m鉁?[39m tests/incremental-update.test.ts [2m([22m[2m7 tests[22m[2m)[22m[90m 4[2mms[22m[39m
+ [32m鉁?[39m tests/api-adapter-request.test.ts [2m([22m[2m6 tests[22m[2m)[22m[90m 12[2mms[22m[39m
+[90mstdout[2m | tests/spark-utils-types.test.ts[2m > [22m[2mLogger basic[2m > [22m[2mlogger conforms to LoggerApi interface
+[22m[39m[2026-02-13T12:16:03.975Z] [DEBUG] test debug
+[2026-02-13T12:16:03.976Z] [INFO] test info
+
+stderr | tests/spark-utils-types.test.ts > Logger basic > logger conforms to LoggerApi interface
+[2026-02-13T12:16:03.976Z] [WARN] test warn
+[2026-02-13T12:16:03.977Z] [ERROR] test error
+
+ [32m鉁?[39m tests/spark-utils-types.test.ts [2m([22m[2m21 tests[22m[2m)[22m[90m 13[2mms[22m[39m
+ [31m鉂?[39m tests/dataset-capability-manager.test.ts [2m([22m[2m0 test[22m[2m)[22m
+ [31m鉂?[39m tests/spark-data-namespace.test.ts [2m([22m[2m0 test[22m[2m)[22m
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m鍩烘湰鍔犺浇鍔熻兘[2m > [22m[2m搴旇鑳藉鍔犺浇鏂囦欢锛堥娆″姞杞斤級
+[22m[39m[2026-02-13T12:16:03.969Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.972Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'test.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.972Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'test.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.972Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'test.json'[39m, params: {} }
+[2026-02-13T12:16:03.972Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 { fileName: [32m'test.json'[39m, timestamp: [32m'2024-02-11T10:00:00Z'[39m, size: [33m16[39m }
+[2026-02-13T12:16:03.973Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'test.json'[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m鍩烘湰鍔犺浇鍔熻兘[2m > [22m[2m搴旇瑙ｆ瀽 JSON 鏂囦欢
+[22m[39m[2026-02-13T12:16:03.976Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.977Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'test.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.977Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'test.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.977Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'test.json'[39m, params: {} }
+[2026-02-13T12:16:03.977Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 { fileName: [32m'test.json'[39m, timestamp: [32m'2024-02-11T10:00:00Z'[39m, size: [33m30[39m }
+[2026-02-13T12:16:03.977Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'test.json'[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m鍩烘湰鍔犺浇鍔熻兘[2m > [22m[2m搴旇鍔犺浇鏂囨湰鏂囦欢锛堜笉瑙ｆ瀽 JSON锛?[22m[39m[2026-02-13T12:16:03.978Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.979Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'script.js'[39m, parseJSON: [33mfalse[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.979Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'script.js'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.979Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'script.js'[39m, params: {} }
+[2026-02-13T12:16:03.979Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 { fileName: [32m'script.js'[39m, timestamp: [32m'2024-02-11T10:00:00Z'[39m, size: [33m30[39m }
+[2026-02-13T12:16:03.979Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'script.js'[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m缂撳瓨鏈哄埗[2m > [22m[2m搴旇缂撳瓨鍔犺浇鐨勬枃浠?[22m[39m[2026-02-13T12:16:03.980Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.980Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'cache-test.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.980Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'cache-test.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.980Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'cache-test.json'[39m, params: {} }
+[2026-02-13T12:16:03.980Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'cache-test.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m16[39m
+}
+[2026-02-13T12:16:03.981Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'cache-test.json'[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m缂撳瓨鏈哄埗[2m > [22m[2m搴旇鍦ㄦ枃浠舵湭淇敼鏃朵娇鐢ㄧ紦瀛橈紙notModified 鏍囧織锛?[22m[39m[2026-02-13T12:16:03.981Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.981Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'version.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.982Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'version.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.982Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'version.json'[39m, params: {} }
+[2026-02-13T12:16:03.982Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'version.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m14[39m
+}
+[2026-02-13T12:16:03.983Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'version.json'[39m }
+[2026-02-13T12:16:03.983Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'version.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.983Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{
+  fileName: [32m'version.json'[39m,
+  hasCache: [33mtrue[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m
+}
+[2026-02-13T12:16:03.983Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'version.json'[39m, params: { timestamp: [32m'2024-02-11T10:00:00Z'[39m } }
+[2026-02-13T12:16:03.983Z] [INFO] [FileLoader] 鏂囦欢鏈慨鏀?(notModified=true) { fileName: [32m'version.json'[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m缂撳瓨鏈哄埗[2m > [22m[2m搴旇鍦ㄥ己鍒跺埛鏂版椂蹇界暐缂撳瓨
+[22m[39m[2026-02-13T12:16:03.983Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.984Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'refresh.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.984Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'refresh.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.984Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'refresh.json'[39m, params: {} }
+[2026-02-13T12:16:03.984Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'refresh.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m14[39m
+}
+[2026-02-13T12:16:03.984Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'refresh.json'[39m }
+[2026-02-13T12:16:03.984Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'refresh.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mtrue[39m }
+[2026-02-13T12:16:03.984Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'refresh.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.984Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'refresh.json'[39m, params: {} }
+[2026-02-13T12:16:03.984Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'refresh.json'[39m,
+  timestamp: [32m'2024-02-11T11:00:00Z'[39m,
+  size: [33m14[39m
+}
+[2026-02-13T12:16:03.985Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'refresh.json'[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m鑷姩闄嶇骇[2m > [22m[2m搴旇鍦ㄧ綉缁滃け璐ユ椂鑷姩闄嶇骇鍒扮紦瀛?[22m[39m[2026-02-13T12:16:03.985Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.986Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'fallback.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.986Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'fallback.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.986Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'fallback.json'[39m, params: {} }
+[2026-02-13T12:16:03.986Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'fallback.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m18[39m
+}
+[2026-02-13T12:16:03.986Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'fallback.json'[39m }
+[2026-02-13T12:16:03.986Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'fallback.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.986Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{
+  fileName: [32m'fallback.json'[39m,
+  hasCache: [33mtrue[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m
+}
+[2026-02-13T12:16:03.986Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'fallback.json'[39m, params: { timestamp: [32m'2024-02-11T10:00:00Z'[39m } }
+
+stderr | tests/file-loader.test.ts > FileLoader > 鑷姩闄嶇骇 > 搴旇鍦ㄧ綉缁滃け璐ユ椂鑷姩闄嶇骇鍒扮紦瀛?[2026-02-13T12:16:03.986Z] [ERROR] [FileLoader] 鏂囦欢鍔犺浇澶辫触 {
+  fileName: 'fallback.json',
+  error: Error: Network error
+      at D:\SPARK_VIEW\tests\file-loader.test.ts:229:55
+      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:533:5
+      at runTest (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1056:11)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runFiles (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1262:5)
+      at startTests (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1271:3)
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/vitest@2.1.9_@types+node@18_5ea28e12e23ea2c4c1a2b0fc743b41c8/node_modules/vitest/dist/chunks/runBaseTests.3qpJUEJM.js:126:11
+}
+[2026-02-13T12:16:03.992Z] [WARN] [FileLoader] 缃戠粶澶辫触锛屼娇鐢ㄧ紦瀛?{ fileName: 'fallback.json', error: 'Network error' }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m鑷姩闄嶇骇[2m > [22m[2m搴旇鍦ㄦ棤缂撳瓨鏃惰繑鍥炲け璐?[22m[39m[2026-02-13T12:16:03.992Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.992Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'no-cache.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.993Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'no-cache.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.993Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'no-cache.json'[39m, params: {} }
+
+stderr | tests/file-loader.test.ts > FileLoader > 鑷姩闄嶇骇 > 搴旇鍦ㄦ棤缂撳瓨鏃惰繑鍥炲け璐?[2026-02-13T12:16:03.993Z] [ERROR] [FileLoader] 鏂囦欢鍔犺浇澶辫触 {
+  fileName: 'no-cache.json',
+  error: Error: Network error
+      at D:\SPARK_VIEW\tests\file-loader.test.ts:240:51
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:146:14
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:533:11
+      at runWithTimeout (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:39:7)
+      at runTest (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1056:17)
+      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runFiles (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1262:5)
+}
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m鑷姩闄嶇骇[2m > [22m[2m搴旇鏀寔绂佺敤鑷姩闄嶇骇
+[22m[39m[2026-02-13T12:16:03.994Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.994Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mfalse[39m }
+[2026-02-13T12:16:03.994Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'strict.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.994Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'strict.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.994Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'strict.json'[39m, params: {} }
+[2026-02-13T12:16:03.994Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'strict.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m16[39m
+}
+[2026-02-13T12:16:03.994Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'strict.json'[39m }
+[2026-02-13T12:16:03.994Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'strict.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.994Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{
+  fileName: [32m'strict.json'[39m,
+  hasCache: [33mtrue[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m
+}
+[2026-02-13T12:16:03.995Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'strict.json'[39m, params: { timestamp: [32m'2024-02-11T10:00:00Z'[39m } }
+
+stderr | tests/file-loader.test.ts > FileLoader > 鑷姩闄嶇骇 > 搴旇鏀寔绂佺敤鑷姩闄嶇骇
+[2026-02-13T12:16:03.995Z] [ERROR] [FileLoader] 鏂囦欢鍔犺浇澶辫触 {
+  fileName: 'strict.json',
+  error: Error: Network error
+      at D:\SPARK_VIEW\tests\file-loader.test.ts:271:55
+      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:533:5
+      at runTest (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1056:11)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runFiles (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1262:5)
+      at startTests (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1271:3)
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/vitest@2.1.9_@types+node@18_5ea28e12e23ea2c4c1a2b0fc743b41c8/node_modules/vitest/dist/chunks/runBaseTests.3qpJUEJM.js:126:11
+}
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m鎵归噺鍔犺浇[2m > [22m[2m搴旇骞惰鍔犺浇澶氫釜鏂囦欢
+[22m[39m[2026-02-13T12:16:03.995Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 鎵归噺鍔犺浇鏂囦欢 { count: [33m3[39m, fileNames: [ [32m'file1.json'[39m, [32m'file2.json'[39m, [32m'file3.json'[39m ] }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'file1.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'file1.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'file1.json'[39m, params: {} }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'file2.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'file2.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'file2.json'[39m, params: {} }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'file3.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'file3.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.996Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'file3.json'[39m, params: {} }
+[2026-02-13T12:16:03.996Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 { fileName: [32m'file1.json'[39m, timestamp: [32m'2024-02-11T10:00:00Z'[39m, size: [33m13[39m }
+[2026-02-13T12:16:03.997Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'file1.json'[39m }
+[2026-02-13T12:16:03.997Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 { fileName: [32m'file2.json'[39m, timestamp: [32m'2024-02-11T10:00:00Z'[39m, size: [33m13[39m }
+[2026-02-13T12:16:03.997Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'file2.json'[39m }
+[2026-02-13T12:16:03.997Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 { fileName: [32m'file3.json'[39m, timestamp: [32m'2024-02-11T10:00:00Z'[39m, size: [33m13[39m }
+[2026-02-13T12:16:03.997Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'file3.json'[39m }
+[2026-02-13T12:16:03.997Z] [INFO] [FileLoader] 鎵归噺鍔犺浇瀹屾垚 { total: [33m3[39m, success: [33m3[39m, failed: [33m0[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m缂撳瓨绠＄悊[2m > [22m[2m搴旇娓呴櫎鐗瑰畾鏂囦欢缂撳瓨
+[22m[39m[2026-02-13T12:16:03.998Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.998Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'clear-test.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.998Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'clear-test.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.998Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'clear-test.json'[39m, params: {} }
+[2026-02-13T12:16:03.998Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'clear-test.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m16[39m
+}
+[2026-02-13T12:16:03.998Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'clear-test.json'[39m }
+[2026-02-13T12:16:03.998Z] [INFO] [FileLoader] 缂撳瓨宸叉竻闄?{ fileName: [32m'clear-test.json'[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m缂撳瓨绠＄悊[2m > [22m[2m搴旇娓呴櫎鎵€鏈夌紦瀛?[22m[39m[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'file1.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'file1.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'file1.json'[39m, params: {} }
+[2026-02-13T12:16:03.999Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 { fileName: [32m'file1.json'[39m, timestamp: [32m'2024-02-11T10:00:00Z'[39m, size: [33m16[39m }
+[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'file1.json'[39m }
+[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'file2.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'file2.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'file2.json'[39m, params: {} }
+[2026-02-13T12:16:03.999Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 { fileName: [32m'file2.json'[39m, timestamp: [32m'2024-02-11T10:00:00Z'[39m, size: [33m16[39m }
+[2026-02-13T12:16:03.999Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'file2.json'[39m }
+[2026-02-13T12:16:03.999Z] [INFO] [FileLoader] 鎵€鏈夌紦瀛樺凡娓呴櫎
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m缂撳瓨绠＄悊[2m > [22m[2m搴旇杩斿洖缂撳瓨缁熻淇℃伅
+[22m[39m[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'stats1.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'stats1.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'stats1.json'[39m, params: {} }
+[2026-02-13T12:16:04.000Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'stats1.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m16[39m
+}
+[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'stats1.json'[39m }
+[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'stats2.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'stats2.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'stats2.json'[39m, params: {} }
+[2026-02-13T12:16:04.000Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'stats2.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m16[39m
+}
+[2026-02-13T12:16:04.000Z] [DEBUG] [FileLoader] 缂撳瓨宸插瓨鍌?(memory) { fileName: [32m'stats2.json'[39m }
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m閿欒澶勭悊[2m > [22m[2m搴旇澶勭悊 HTTP 閿欒
+[22m[39m[2026-02-13T12:16:04.001Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:04.001Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'not-found.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:04.001Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'not-found.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:04.001Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'not-found.json'[39m, params: {} }
+
+stderr | tests/file-loader.test.ts > FileLoader > 閿欒澶勭悊 > 搴旇澶勭悊 HTTP 閿欒
+[2026-02-13T12:16:04.001Z] [ERROR] [FileLoader] 鏂囦欢鍔犺浇澶辫触 {
+  fileName: 'not-found.json',
+  error: Error: Request failed with status code 404
+      at D:\SPARK_VIEW\tests\file-loader.test.ts:394:9
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:146:14
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:533:11
+      at runWithTimeout (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:39:7)
+      at runTest (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1056:17)
+      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runFiles (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1262:5) {
+    response: { status: 404, statusText: 'Not Found', data: {} }
+  }
+}
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m閿欒澶勭悊[2m > [22m[2m搴旇澶勭悊鏃犳晥鐨勫搷搴旀牸寮?[22m[39m[2026-02-13T12:16:04.002Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:04.002Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'invalid.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:04.003Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'invalid.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:04.003Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'invalid.json'[39m, params: {} }
+
+stderr | tests/file-loader.test.ts > FileLoader > 閿欒澶勭悊 > 搴旇澶勭悊鏃犳晥鐨勫搷搴旀牸寮?[2026-02-13T12:16:04.003Z] [ERROR] [FileLoader] 鏂囦欢鍔犺浇澶辫触 {
+  fileName: 'invalid.json',
+  error: Error: 鍝嶅簲鏍煎紡閿欒锛氱己灏?content 鎴?timestamp
+      at FileLoader.load (D:\SPARK_VIEW\packages\spark-utils\src\FileLoader.ts:260:15)
+      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at D:\SPARK_VIEW\tests\file-loader.test.ts:423:22
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:533:5
+      at runTest (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1056:11)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runFiles (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1262:5)
+      at startTests (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1271:3)
+}
+
+[90mstdout[2m | tests/file-loader.test.ts[2m > [22m[2mFileLoader[2m > [22m[2m閿欒澶勭悊[2m > [22m[2m搴旇澶勭悊 JSON 瑙ｆ瀽閿欒
+[22m[39m[2026-02-13T12:16:04.004Z] [DEBUG] [FileLoader] FileLoader 宸插垱寤?{ baseUrl: [32m'/api/config'[39m, storage: [32m'memory'[39m, fallbackToCache: [33mtrue[39m }
+[2026-02-13T12:16:04.005Z] [DEBUG] [FileLoader] 寮€濮嬪姞杞芥枃浠?{ fileName: [32m'parse-error.json'[39m, parseJSON: [33mtrue[39m, forceRefresh: [33mfalse[39m }
+[2026-02-13T12:16:04.005Z] [DEBUG] [FileLoader] 缂撳瓨鐘舵€?{ fileName: [32m'parse-error.json'[39m, hasCache: [33mfalse[39m, timestamp: [32m'(empty)'[39m }
+[2026-02-13T12:16:04.005Z] [DEBUG] [FileLoader] 鍙戣捣璇锋眰 { url: [32m'parse-error.json'[39m, params: {} }
+[2026-02-13T12:16:04.005Z] [INFO] [FileLoader] 鏂囦欢鍔犺浇鎴愬姛 {
+  fileName: [32m'parse-error.json'[39m,
+  timestamp: [32m'2024-02-11T10:00:00Z'[39m,
+  size: [33m14[39m
+}
+
+stderr | tests/file-loader.test.ts > FileLoader > 閿欒澶勭悊 > 搴旇澶勭悊 JSON 瑙ｆ瀽閿欒
+[2026-02-13T12:16:04.005Z] [ERROR] [FileLoader] JSON 瑙ｆ瀽澶辫触 {
+  fileName: 'parse-error.json',
+  error: `Unexpected token 'i', "invalid json {" is not valid JSON`
+}
+[2026-02-13T12:16:04.005Z] [ERROR] [FileLoader] 鏂囦欢鍔犺浇澶辫触 {
+  fileName: 'parse-error.json',
+  error: Error: JSON 瑙ｆ瀽澶辫触: Unexpected token 'i', "invalid json {" is not valid JSON
+      at FileLoader.load (D:\SPARK_VIEW\packages\spark-utils\src\FileLoader.ts:277:17)
+      at processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at D:\SPARK_VIEW\tests\file-loader.test.ts:441:22
+      at file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:533:5
+      at runTest (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1056:11)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runSuite (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1205:15)
+      at runFiles (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1262:5)
+      at startTests (file:///D:/SPARK_VIEW/node_modules/.pnpm/@vitest+runner@2.1.9/node_modules/@vitest/runner/dist/index.js:1271:3)
+}
+
+ [32m鉁?[39m tests/file-loader.test.ts [2m([22m[2m16 tests[22m[2m)[22m[90m 39[2mms[22m[39m
+[90mstdout[2m | tests/capability-system.test.ts[2m > [22m[2mCapability system integration[2m > [22m[2museSparkComponent return interface[2m > [22m[2mdoes NOT return use alias
+[22m[39m馃殌 Init: test-comp (spark-1770984964185-lfsr3qbik)
+
+[90mstdout[2m | tests/capability-system.test.ts[2m > [22m[2mCapability system integration[2m > [22m[2museSparkComponent return interface[2m > [22m[2mreturns all expected API methods
+[22m[39m馃殌 Init: test-comp (spark-1770984964193-b52042gpn)
+
+ [32m鉁?[39m tests/capability-system.test.ts [2m([22m[2m6 tests[22m[2m)[22m[90m 26[2mms[22m[39m
+[90mstdout[2m | tests/logger-context-integration.test.ts[2m > [22m[2mLogger Context Integration[2m > [22m[2m浣跨敤榛樿 console logger锛堝瓧绗︿覆妯″紡锛?[22m[39mtest message
+馃殌 Init: test-comp (spark-1770984964184-ajf3ub8ue)
+
+[90mstdout[2m | tests/logger-context-integration.test.ts[2m > [22m[2mLogger Context Integration[2m > [22m[2m瀛愮粍浠剁户鎵跨埗缁勪欢鐨?logger provider
+[22m[39m[2026-02-13T12:16:04.197Z] [DEBUG] [Spark:Registry] Registered: child-comp
+
+ [32m鉁?[39m tests/logger-context-integration.test.ts [2m([22m[2m5 tests[22m[2m)[22m[90m 36[2mms[22m[39m
+[90mstdout[2m | tests/ej2-renderer.test.ts[2m > [22m[2mEJ2 SparkComponentRenderer (registry-driven)[2m > [22m[2mrenders registered component for type
+[22m[39m[2026-02-13T12:16:04.191Z] [DEBUG] [Spark:Registry] Registered: registered-type
+馃殌 Init: registered-type (spark-1770984964204-omdpszho4)
+
+[90mstdout[2m | tests/ej2-renderer.test.ts[2m > [22m[2mEJ2 SparkComponentRenderer (registry-driven)[2m > [22m[2mrecurses into children when not registered
+[22m[39m[2026-02-13T12:16:04.225Z] [DEBUG] [Spark:Registry] Registered: child-type
+馃殌 Init: child-type (spark-1770984964230-ap4q6a6jn)
+馃殌 Init: unknown (spark-1770984964226-yq4l9k6rh)
+
+stderr | tests/ej2-renderer.test.ts > EJ2 SparkComponentRenderer (registry-driven) > recurses into children when not registered
+鈿狅笍 SPARK Component not registered: unknown
+
+[90mstdout[2m | tests/ej2-renderer.test.ts[2m > [22m[2mEJ2 SparkComponentRenderer (registry-driven)[2m > [22m[2mshows error when not registered and no children
+[22m[39m馃殌 Init: not-found (spark-1770984964237-pbs96ytfp)
+
+stderr | tests/ej2-renderer.test.ts > EJ2 SparkComponentRenderer (registry-driven) > shows error when not registered and no children
+鈿狅笍 SPARK Component not registered: not-found
+
+ [32m鉁?[39m tests/ej2-renderer.test.ts [2m([22m[2m3 tests[22m[2m)[22m[90m 51[2mms[22m[39m
+[90mstdout[2m | tests/column-manager-location.test.ts
+[22m[39m[2026-02-13T12:16:04.327Z] [INFO] 馃殌 Registering SPARK-EJ2 components...
+[2026-02-13T12:16:04.328Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-grid
+[2026-02-13T12:16:04.328Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-column
+[2026-02-13T12:16:04.328Z] [INFO] 鉁?SPARK-EJ2 components registered
+
+[90mstdout[2m | tests/spark-component.test.ts
+[22m[39m[2026-02-13T12:16:04.327Z] [INFO] 馃殌 Registering SPARK-EJ2 components...
+[2026-02-13T12:16:04.328Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-grid
+[2026-02-13T12:16:04.329Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-column
+[2026-02-13T12:16:04.329Z] [INFO] 鉁?SPARK-EJ2 components registered
+
+[90mstdout[2m | tests/column-manager-location.test.ts[2m > [22m[2mColumnManager provider location[2m > [22m[2mparent column should provide columnConfig; grid should not
+[22m[39m馃攲 Provided: Symbol(spark:capability:grid-instance)
+馃攲 Provided: Symbol(spark:capability:data-source)
+馃攲 Provided: Symbol(spark:capability:column-manager)
+馃幆 SPARK EJ2 Grid capabilities registered
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964359-r6v5oy50f)
+馃殌 Init: spark-ej2-column (spark-1770984964351-7c4mnhoyw)
+馃殌 Init: spark-ej2-grid (spark-1770984964344-qkfkgca60)
+馃幆 SPARK EJ2 Grid mounted with config: {
+  type: [32m'spark-ej2-grid'[39m,
+  dataSource: [ { id: [33m1[39m } ],
+  children: [
+    {
+      type: [32m'spark-ej2-column'[39m,
+      field: [32m'parent'[39m,
+      headerText: [32m'Parent'[39m,
+      children: [36m[Array][39m
+    }
+  ]
+}
+
+ [32m鉁?[39m tests/column-manager-location.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 41[2mms[22m[39m
+[90mstdout[2m | tests/spark-component.test.ts[2m > [22m[2mSPARK EJ2 Components[2m > [22m[2mSparkEJ2Grid[2m > [22m[2mshould initialize SPARK context correctly
+[22m[39m馃攲 Provided: Symbol(spark:capability:grid-instance)
+馃攲 Provided: Symbol(spark:capability:data-source)
+馃攲 Provided: Symbol(spark:capability:column-manager)
+馃幆 SPARK EJ2 Grid capabilities registered
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964352-6de7mzhst)
+馃殌 Init: spark-ej2-column (spark-1770984964361-6vfpdxdz3)
+馃殌 Init: spark-ej2-column (spark-1770984964364-6tpfsi0w4)
+馃殌 Init: spark-ej2-grid (spark-1770984964345-mep1kv53o)
+馃幆 SPARK EJ2 Grid mounted with config: {
+  type: [32m'spark-ej2-grid'[39m,
+  dataSource: [ { id: [33m1[39m, name: [32m'Test User'[39m, age: [33m25[39m } ],
+  children: [
+    { type: [32m'spark-ej2-column'[39m, field: [32m'id'[39m, headerText: [32m'ID'[39m },
+    { type: [32m'spark-ej2-column'[39m, field: [32m'name'[39m, headerText: [32m'Name'[39m },
+    { type: [32m'spark-ej2-column'[39m, field: [32m'age'[39m, headerText: [32m'Age'[39m }
+  ]
+}
+
+[90mstdout[2m | tests/spark-component.test.ts[2m > [22m[2mSPARK EJ2 Components[2m > [22m[2mSparkEJ2Grid[2m > [22m[2mshould handle nested columns configuration
+[22m[39m馃攲 Provided: Symbol(spark:capability:grid-instance)
+馃攲 Provided: Symbol(spark:capability:data-source)
+馃攲 Provided: Symbol(spark:capability:column-manager)
+馃幆 SPARK EJ2 Grid capabilities registered
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964387-z9tbbrizx)
+馃殌 Init: spark-ej2-column (spark-1770984964392-1lrquflk7)
+馃殌 Init: spark-ej2-column (spark-1770984964394-i1nyj3l1r)
+馃殌 Init: spark-ej2-column (spark-1770984964389-y0hrt2aa7)
+馃殌 Init: spark-ej2-column (spark-1770984964395-vfswurzg1)
+馃殌 Init: spark-ej2-grid (spark-1770984964383-of4pyt6q9)
+馃幆 SPARK EJ2 Grid mounted with config: {
+  type: [32m'spark-ej2-grid'[39m,
+  dataSource: [ { id: [33m1[39m, name: [32m'Test User'[39m, age: [33m25[39m, city: [32m'Beijing'[39m } ],
+  children: [
+    { type: [32m'spark-ej2-column'[39m, field: [32m'id'[39m, headerText: [32m'ID'[39m },
+    {
+      type: [32m'spark-ej2-column'[39m,
+      headerText: [32m'Personal Info'[39m,
+      children: [36m[Array][39m
+    },
+    { type: [32m'spark-ej2-column'[39m, field: [32m'city'[39m, headerText: [32m'City'[39m }
+  ]
+}
+
+[90mstdout[2m | tests/spark-component.test.ts[2m > [22m[2mSPARK EJ2 Components[2m > [22m[2mSparkEJ2Grid[2m > [22m[2mshould handle paging configuration
+[22m[39m馃攲 Provided: Symbol(spark:capability:grid-instance)
+馃攲 Provided: Symbol(spark:capability:data-source)
+馃攲 Provided: Symbol(spark:capability:column-manager)
+馃幆 SPARK EJ2 Grid capabilities registered
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964405-1wq7jem2w)
+馃殌 Init: spark-ej2-column (spark-1770984964406-1kw5wl5p1)
+馃殌 Init: spark-ej2-grid (spark-1770984964403-ovxt7fuse)
+馃幆 SPARK EJ2 Grid mounted with config: {
+  type: [32m'spark-ej2-grid'[39m,
+  dataSource: [
+    { id: [33m1[39m, name: [32m'User 1'[39m },
+    { id: [33m2[39m, name: [32m'User 2'[39m },
+    { id: [33m3[39m, name: [32m'User 3'[39m },
+    { id: [33m4[39m, name: [32m'User 4'[39m },
+    { id: [33m5[39m, name: [32m'User 5'[39m },
+    { id: [33m6[39m, name: [32m'User 6'[39m },
+    { id: [33m7[39m, name: [32m'User 7'[39m },
+    { id: [33m8[39m, name: [32m'User 8'[39m },
+    { id: [33m9[39m, name: [32m'User 9'[39m },
+    { id: [33m10[39m, name: [32m'User 10'[39m },
+    { id: [33m11[39m, name: [32m'User 11'[39m },
+    { id: [33m12[39m, name: [32m'User 12'[39m },
+    { id: [33m13[39m, name: [32m'User 13'[39m },
+    { id: [33m14[39m, name: [32m'User 14'[39m },
+    { id: [33m15[39m, name: [32m'User 15'[39m },
+    { id: [33m16[39m, name: [32m'User 16'[39m },
+    { id: [33m17[39m, name: [32m'User 17'[39m },
+    { id: [33m18[39m, name: [32m'User 18'[39m },
+    { id: [33m19[39m, name: [32m'User 19'[39m },
+    { id: [33m20[39m, name: [32m'User 20'[39m },
+    { id: [33m21[39m, name: [32m'User 21'[39m },
+    { id: [33m22[39m, name: [32m'User 22'[39m },
+    { id: [33m23[39m, name: [32m'User 23'[39m },
+    { id: [33m24[39m, name: [32m'User 24'[39m },
+    { id: [33m25[39m, name: [32m'User 25'[39m },
+    { id: [33m26[39m, name: [32m'User 26'[39m },
+    { id: [33m27[39m, name: [32m'User 27'[39m },
+    { id: [33m28[39m, name: [32m'User 28'[39m },
+    { id: [33m29[39m, name: [32m'User 29'[39m },
+    { id: [33m30[39m, name: [32m'User 30'[39m },
+    { id: [33m31[39m, name: [32m'User 31'[39m },
+    { id: [33m32[39m, name: [32m'User 32'[39m },
+    { id: [33m33[39m, name: [32m'User 33'[39m },
+    { id: [33m34[39m, name: [32m'User 34'[39m },
+    { id: [33m35[39m, name: [32m'User 35'[39m },
+    { id: [33m36[39m, name: [32m'User 36'[39m },
+    { id: [33m37[39m, name: [32m'User 37'[39m },
+    { id: [33m38[39m, name: [32m'User 38'[39m },
+    { id: [33m39[39m, name: [32m'User 39'[39m },
+    { id: [33m40[39m, name: [32m'User 40'[39m },
+    { id: [33m41[39m, name: [32m'User 41'[39m },
+    { id: [33m42[39m, name: [32m'User 42'[39m },
+    { id: [33m43[39m, name: [32m'User 43'[39m },
+    { id: [33m44[39m, name: [32m'User 44'[39m },
+    { id: [33m45[39m, name: [32m'User 45'[39m },
+    { id: [33m46[39m, name: [32m'User 46'[39m },
+    { id: [33m47[39m, name: [32m'User 47'[39m },
+    { id: [33m48[39m, name: [32m'User 48'[39m },
+    { id: [33m49[39m, name: [32m'User 49'[39m },
+    { id: [33m50[39m, name: [32m'User 50'[39m }
+  ],
+  allowPaging: [33mtrue[39m,
+  pageSettings: { pageSize: [33m10[39m, pageSizes: [ [33m5[39m, [33m10[39m, [33m20[39m ] },
+  children: [
+    { type: [32m'spark-ej2-column'[39m, field: [32m'id'[39m, headerText: [32m'ID'[39m },
+    { type: [32m'spark-ej2-column'[39m, field: [32m'name'[39m, headerText: [32m'Name'[39m }
+  ]
+}
+
+[90mstdout[2m | tests/spark-component.test.ts[2m > [22m[2mSPARK EJ2 Components[2m > [22m[2mSparkEJ2Column[2m > [22m[2mshould initialize SPARK context for column
+[22m[39m馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964412-6t8awivgr)
+
+[90mstdout[2m | tests/spark-component.test.ts[2m > [22m[2mSPARK EJ2 Components[2m > [22m[2mSparkEJ2Column[2m > [22m[2mshould handle nested columns structure
+[22m[39m馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964416-eya9awa09)
+馃殌 Init: spark-ej2-column (spark-1770984964417-wry4sd5so)
+馃殌 Init: spark-ej2-column (spark-1770984964414-vxfoj4y3x)
+
+[90mstdout[2m | tests/spark-component.test.ts[2m > [22m[2mSPARK EJ2 Components[2m > [22m[2mSparkEJ2Column[2m > [22m[2mshould handle column properties
+[22m[39m馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964422-6tyvha1zp)
+
+[90mstdout[2m | tests/spark-component.test.ts[2m > [22m[2mSPARK EJ2 Components[2m > [22m[2mSPARK Architecture[2m > [22m[2mshould demonstrate capability provider pattern
+[22m[39m馃攲 Provided: Symbol(spark:capability:grid-instance)
+馃攲 Provided: Symbol(spark:capability:data-source)
+馃攲 Provided: Symbol(spark:capability:column-manager)
+馃幆 SPARK EJ2 Grid capabilities registered
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964430-ddou8qlo8)
+馃殌 Init: spark-ej2-grid (spark-1770984964429-ukwomn9w6)
+馃幆 SPARK EJ2 Grid mounted with config: {
+  type: [32m'spark-ej2-grid'[39m,
+  dataSource: [ { id: [33m1[39m, name: [32m'Test'[39m } ],
+  children: [ { type: [32m'spark-ej2-column'[39m, field: [32m'id'[39m, headerText: [32m'ID'[39m } ]
+}
+
+[90mstdout[2m | tests/spark-component.test.ts[2m > [22m[2mSPARK EJ2 Components[2m > [22m[2mSPARK Architecture[2m > [22m[2mshould support infinite nesting
+[22m[39m馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984964437-bkoxbs82d)
+馃殌 Init: spark-ej2-column (spark-1770984964437-xq2f00i40)
+馃殌 Init: spark-ej2-column (spark-1770984964436-kt564bzmf)
+馃殌 Init: spark-ej2-column (spark-1770984964435-ofny9kihc)
+
+ [32m鉁?[39m tests/spark-component.test.ts [2m([22m[2m8 tests[22m[2m)[22m[90m 107[2mms[22m[39m
+[90mstdout[2m | tests/spark-component.test.ts
+[22m[39m鉁?EJ2 Grid loaded successfully (on-demand services)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964352-6de7mzhst)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964361-6vfpdxdz3)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964364-6tpfsi0w4)
+馃殌 Init: spark-ej2-column (spark-1770984964457-r3agli3j5)
+馃殌 Init: spark-ej2-column (spark-1770984964458-j7wwemn8v)
+馃殌 Init: spark-ej2-column (spark-1770984964459-knyn8pns5)
+
+[90mstdout[2m | Object.info (D:\SPARK_VIEW\packages\spark-component\src\composables\useSparkComponent.ts:275:45)
+[22m[39m鉁?EJ2 Grid loaded successfully (on-demand services)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964405-1wq7jem2w)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964406-1kw5wl5p1)
+馃殌 Init: spark-ej2-column (spark-1770984964487-y5lbsf0by)
+馃殌 Init: spark-ej2-column (spark-1770984964489-xsveyaggh)
+鉁?EJ2 Grid loaded successfully (on-demand services)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964430-ddou8qlo8)
+馃殌 Init: spark-ej2-column (spark-1770984964502-8n5x35ntg)
+鉁?EJ2 Grid loaded successfully (on-demand services)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964387-z9tbbrizx)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964392-1lrquflk7)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964394-i1nyj3l1r)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964389-y0hrt2aa7)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984964395-vfswurzg1)
+馃殌 Init: spark-ej2-column (spark-1770984964512-ogsuyv4od)
+馃殌 Init: spark-ej2-column (spark-1770984964521-4vbq34sfj)
+馃殌 Init: spark-ej2-column (spark-1770984964522-xwrfou9gc)
+馃殌 Init: spark-ej2-column (spark-1770984964519-it1uvr8wm)
+馃殌 Init: spark-ej2-column (spark-1770984964523-45eiqxhx8)
+
+[90mstdout[2m | tests/column-manager-connector.test.ts
+[22m[39m[2026-02-13T12:16:05.169Z] [INFO] 馃殌 Registering SPARK-EJ2 components...
+[2026-02-13T12:16:05.170Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-grid
+[2026-02-13T12:16:05.170Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-column
+[2026-02-13T12:16:05.170Z] [INFO] 鉁?SPARK-EJ2 components registered
+
+[90mstdout[2m | tests/column-manager-connector.test.ts[2m > [22m[2mColumn manager connector[2m > [22m[2mdoes not warn about missing connector for columnManager
+[22m[39m馃攲 Provided: Symbol(spark:capability:grid-instance)
+馃攲 Provided: Symbol(spark:capability:data-source)
+馃攲 Provided: Symbol(spark:capability:column-manager)
+馃幆 SPARK EJ2 Grid capabilities registered
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984965188-o14r6bbvs)
+馃殌 Init: spark-ej2-column (spark-1770984965191-hv2cja2rg)
+馃殌 Init: spark-ej2-grid (spark-1770984965182-f3n9pk8eu)
+馃幆 SPARK EJ2 Grid mounted with config: {
+  type: [32m'spark-ej2-grid'[39m,
+  dataSource: [ { id: [33m1[39m, name: [32m'A'[39m } ],
+  children: [
+    { type: [32m'spark-ej2-column'[39m, field: [32m'id'[39m, headerText: [32m'ID'[39m },
+    { type: [32m'spark-ej2-column'[39m, field: [32m'name'[39m, headerText: [32m'Name'[39m }
+  ]
+}
+
+ [32m鉁?[39m tests/column-manager-connector.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 27[2mms[22m[39m
+[90mstdout[2m | tests/column-manager-connector.test.ts
+[22m[39m鉁?EJ2 Grid loaded successfully (on-demand services)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984965188-o14r6bbvs)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984965191-hv2cja2rg)
+馃殌 Init: spark-ej2-column (spark-1770984965210-80p20hv8s)
+馃殌 Init: spark-ej2-column (spark-1770984965211-u6lck0i10)
+
+ [32m鉁?[39m tests/provider-listener.test.ts [2m([22m[2m2 tests[22m[2m)[22m[90m 2[2mms[22m[39m
+[90mstdout[2m | tests/EJ2GridDemo.test.ts
+[22m[39m[2026-02-13T12:16:05.695Z] [INFO] 馃殌 Registering SPARK-EJ2 components...
+[2026-02-13T12:16:05.696Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-grid
+[2026-02-13T12:16:05.696Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-column
+[2026-02-13T12:16:05.697Z] [INFO] 鉁?SPARK-EJ2 components registered
+
+ [32m鉁?[39m tests/simple.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 3[2mms[22m[39m
+[90mstdout[2m | tests/EJ2GridDemo.test.ts[2m > [22m[2mEJ2GridDemo[2m > [22m[2mshould render EJ2 grid with SPARK components
+[22m[39m馃攲 Provided: Symbol(spark:capability:grid-instance)
+馃攲 Provided: Symbol(spark:capability:data-source)
+馃攲 Provided: Symbol(spark:capability:column-manager)
+馃幆 SPARK EJ2 Grid capabilities registered
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃殌 Init: spark-ej2-column (spark-1770984965721-ud3exh2cg)
+馃殌 Init: spark-ej2-column (spark-1770984965727-6e1awf6i0)
+馃殌 Init: spark-ej2-column (spark-1770984965729-q2sy4o2rl)
+馃殌 Init: spark-ej2-grid (spark-1770984965713-q8ukrzc5u)
+馃幆 SPARK EJ2 Grid mounted with config: {
+  type: [32m'spark-ej2-grid'[39m,
+  dataSource: [ { id: [33m1[39m, name: [32m'Test User'[39m, age: [33m25[39m } ],
+  children: [
+    { type: [32m'spark-ej2-column'[39m, field: [32m'id'[39m, headerText: [32m'ID'[39m },
+    { type: [32m'spark-ej2-column'[39m, field: [32m'name'[39m, headerText: [32m'Name'[39m },
+    { type: [32m'spark-ej2-column'[39m, field: [32m'age'[39m, headerText: [32m'Age'[39m }
+  ]
+}
+
+ [32m鉁?[39m tests/EJ2GridDemo.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 36[2mms[22m[39m
+[90mstdout[2m | tests/EJ2GridDemo.test.ts
+[22m[39m鉁?EJ2 Grid loaded successfully (on-demand services)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃攲 Provided: Symbol(spark:capability:column-config)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984965721-ud3exh2cg)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984965727-6e1awf6i0)
+馃棏锔?Destroyed: spark-ej2-column (spark-1770984965729-q2sy4o2rl)
+馃殌 Init: spark-ej2-column (spark-1770984965744-69b1jo4pp)
+馃殌 Init: spark-ej2-column (spark-1770984965745-7mzp124w8)
+馃殌 Init: spark-ej2-column (spark-1770984965746-fyq7s3fg4)
+
+ [32m鉁?[39m tests/logger.test.ts [2m([22m[2m2 tests[22m[2m)[22m[90m 3[2mms[22m[39m
+ [32m鉁?[39m tests/capability-late-binding.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 2[2mms[22m[39m
+[90mstdout[2m | tests/logger-level.test.ts[2m > [22m[2mlogger level filtering[2m > [22m[2mdoes not call info when provider only implements warn/error
+[22m[39m[2026-02-13T12:16:05.912Z] [INFO] should be noop
+
+ [32m鉁?[39m tests/logger-level.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 4[2mms[22m[39m
+ [32m鉁?[39m tests/logger-transport.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 2[2mms[22m[39m
+[90mstdout[2m | tests/spark-component-renderer.test.ts[2m > [22m[2mSparkComponentRenderer mounts spark-ej2-grid without missing render
+[22m[39m[2026-02-13T12:16:05.926Z] [INFO] 馃殌 Registering SPARK-EJ2 components...
+[2026-02-13T12:16:05.927Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-grid
+[2026-02-13T12:16:05.927Z] [DEBUG] [Spark:Registry] Registered: spark-ej2-column
+[2026-02-13T12:16:05.927Z] [INFO] 鉁?SPARK-EJ2 components registered
+馃攲 Provided: Symbol(spark:capability:grid-instance)
+馃攲 Provided: Symbol(spark:capability:data-source)
+馃攲 Provided: Symbol(spark:capability:column-manager)
+馃幆 SPARK EJ2 Grid capabilities registered
+馃殌 Init: spark-ej2-grid (spark-1770984965939-sd4a4ds5u)
+馃幆 SPARK EJ2 Grid mounted with config: { type: [32m'spark-ej2-grid'[39m, children: [] }
+馃殌 Init: spark-ej2-grid (spark-1770984965935-dm1qeiiyr)
+
+ [32m鉁?[39m tests/spark-component-renderer.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 37[2mms[22m[39m
+
+鈳幆鈳幆鈳幆 Failed Suites 2 鈳幆鈳幆鈳幆鈳?[39m
+
+ FAIL  tests/dataset-capability-manager.test.ts [ tests/dataset-capability-manager.test.ts ]
+ FAIL  tests/spark-data-namespace.test.ts [ tests/spark-data-namespace.test.ts ]
+Error: Transform failed with 1 error:
+D:/SPARK_VIEW/packages/spark-data/src/core/data-loader.ts:121:10: ERROR: Expected ";" but found "cleanupSelections"
+  Plugin: vite:esbuild
+  File: D:/SPARK_VIEW/packages/spark-data/src/core/data-loader.ts:121:10
+  
+  Expected ";" but found "cleanupSelections"
+  119|  
+  120|  
+  121|    private cleanupSelections(table: DataTable) {
+     |            ^
+  122|      let dirty = table.cleanupInvalidSelections()
+  123|      for (const ctx of Object.values(table.contexts ?? {})) {
+  
+ 鉂?[22m failureErrorWithLog node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:1472:15
+ 鉂?[22m node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:755:50
+ 鉂?[22m responseCallbacks.<computed> node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:622:9
+ 鉂?[22m handleIncomingPacket node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:677:12
+ 鉂?[22m Socket.readFromStdout node_modules/.pnpm/esbuild@0.21.5/node_modules/esbuild/lib/main.js:600:7
+
+鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆[1/2]鈳?[22m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m18 passed[39m[22m[90m (20)[39m
+[2m      Tests [22m [1m[32m84 passed[39m[22m[90m (84)[39m
+[2m   Start at [22m 20:16:01
+[2m   Duration [22m 4.47s[2m (transform 2.34s, setup 0ms, collect 10.01s, tests 446ms, environment 19.40s, prepare 3.56s)[22m
+

@@ -34,7 +34,7 @@ const request = createRequest({ baseURL: '/api' })
 request.interceptors.request.use(
   createAuthInterceptor(() => 'xxx')
 )
-const users = await request.get<User[]>('/users')
+const users = await request.get('/users')
 ```
 
 ### 2. IApiContext 移动位置
@@ -254,7 +254,7 @@ import { request } from './request'
 
 export class UserService {
   async getUsers(params?: { page?: number; pageSize?: number }) {
-    return request.get<User[]>('/users', params)
+    return request.get('/users', params)
   }
 
   async getUserById(id: number) {
@@ -353,8 +353,8 @@ const adapter = new ApiAdapter({
 ## 参考文档
 
 - [REQUEST_GUIDE.md](./REQUEST_GUIDE.md) - 完整使用指南
-- [Request.ts](./src/Request.ts) - 源代码
-- [RequestInterceptors.ts](./src/RequestInterceptors.ts) - 预设拦截器
+- [Request.ts](./src/http/Request.ts) - 源代码
+- [RequestInterceptors.ts](./src/http/RequestInterceptors.ts) - 预设拦截器
 - [Request.example.ts](./src/Request.example.ts) - 12 个使用示例
 
 ## 检查清单
