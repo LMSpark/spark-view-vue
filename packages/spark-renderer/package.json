@@ -28,10 +28,11 @@
         "README.md"
     ],
     "scripts": {
-        "build": "tsc",
-        "typecheck": "tsc --noEmit",
+        "build": "vue-tsc",
+        "typecheck": "vue-tsc --noEmit",
         "test": "vitest",
-        "lint": "eslint src --ext .ts,.vue"
+        "lint": "eslint src --ext .ts,.vue",
+        "lint:fix": "eslint src --ext .ts,.vue --fix"
     },
     "peerDependencies": {
         "vue": "^3.5.0",
@@ -43,10 +44,16 @@
         "@spark-view/spark-utils": "workspace:*"
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.2",
         "@types/node": "^18.19.130",
+        "@typescript-eslint/eslint-plugin": "^8.52.0",
+        "@typescript-eslint/parser": "^8.52.0",
         "@vue/test-utils": "^2.4.6",
+        "eslint": "^9.39.2",
+        "eslint-plugin-vue": "^10.7.0",
+        "jsdom": "^25.0.1",
         "typescript": "~5.3.3",
         "vitest": "^2.1.8",
-        "jsdom": "^25.0.1"
+        "vue-eslint-parser": "^10.2.0"
     }
 }
