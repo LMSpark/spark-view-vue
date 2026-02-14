@@ -5,9 +5,10 @@
  */
 
 import { DataView } from './data-view'
+import { CrudService, createCrudService } from './crud-service'
 import { FIELD_METADATA } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
-import type { IDataRow, DataColumn, CrudApi, ITableMetadata } from './types'
+import type { IDataRow, DataColumn, CrudApi, ITableMetadata, QueryParams, CrudResult, BatchResult } from './types'
 
 export class DataTable extends DataView {
   // 表特有属性
@@ -16,10 +17,27 @@ export class DataTable extends DataView {
   api?: CrudApi
   contexts: Record<string, DataView> = {}
 
+  // CRUD服务实例
+  private crudService?: CrudService
+
   constructor(tableName: string, columns: DataColumn[] = []) {
     super(tableName, 'default')
     this.tableName = tableName
     this.columns = columns
+    this.initializeCrudService()
+  }
+
+  /**
+   * 发送事件（DataTable级别事件）
+   */
+  emit(event: string, data: unknown): void {
+    // 如果有关联的dataSet，通过dataSet发送事件
+    if (this.dataSet) {
+      this.dataSet.emit(event, data)
+    } else {
+      // 否则创建简单的日志记录
+      this.logger.info(`Event: ${event}`, data)
+    }
   }
 
   // ===== 能力注册（供 CapabilityManager 调用） =====
@@ -99,6 +117,213 @@ export class DataTable extends DataView {
     if (this.page !== undefined) result.page = this.page
     if (this.pageSize !== undefined) result.pageSize = this.pageSize
     
+    return result
+  }
+
+  // ===== CRUD服务初始化 =====
+
+  /**
+   * 初始化CRUD服务
+   */
+  private initializeCrudService(): void {
+    if (this.api) {
+      this.crudService = createCrudService(this.api)
+    }
+  }
+
+  /**
+   * 更新API配置
+   */
+  setApi(api: CrudApi): void {
+    this.api = api
+    this.initializeCrudService()
+  }
+
+  // ===== 网络CRUD操作 =====
+
+  /**
+   * 从服务器加载数据
+   */
+  async loadFromServer(params?: QueryParams): Promise<CrudResult> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    this.isLoading = true
+    try {
+      const result = await this.crudService.list(params)
+      if (result.success && result.data) {
+        // 处理服务器返回的数据格式
+        const data = result.data as any
+        if (data.rows) {
+          this.rows = data.rows
+          this.total = data.total
+          this.page = data.page
+          this.pageSize = data.pageSize
+        } else if (Array.isArray(data)) {
+          this.rows = data
+        }
+        this.emit('dataLoaded', { tableName: this.tableName, data: result.data })
+      }
+      return result
+    } catch (error) {
+      this.loadingError = error as Error
+      throw error
+    } finally {
+      this.isLoading = false
+    }
+  }
+
+  /**
+   * 创建新记录
+   */
+  async createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    const result = await this.crudService.create<IDataRow>(data)
+    if (result.success && result.data) {
+      this.rows.push(result.data)
+      this.emit('recordCreated', { tableName: this.tableName, record: result.data })
+    }
+    return result
+  }
+
+  /**
+   * 更新记录
+   */
+  async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    const result = await this.crudService.update<IDataRow>(id, data)
+    if (result.success && result.data) {
+      const index = this.rows.findIndex(row => row['id'] === id)
+      if (index >= 0) {
+        this.rows[index] = { ...this.rows[index], ...result.data }
+        this.emit('recordUpdated', { tableName: this.tableName, record: result.data })
+      }
+    }
+    return result
+  }
+
+  /**
+   * 删除记录
+   */
+  async deleteRecord(id: string | number): Promise<CrudResult<boolean>> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    const result = await this.crudService.delete(id)
+    if (result.success) {
+      const index = this.rows.findIndex(row => row['id'] === id)
+      if (index >= 0) {
+        this.rows.splice(index, 1)
+        this.emit('recordDeleted', { tableName: this.tableName, id })
+      }
+    }
+    return result
+  }
+
+  /**
+   * 批量创建记录
+   */
+  async batchCreateRecords(items: Partial<IDataRow>[]): Promise<CrudResult<BatchResult>> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    const result = await this.crudService.batchCreate<IDataRow>(items)
+    if (result.success && result.data) {
+      // 添加成功创建的记录
+      for (const itemResult of result.data.results) {
+        if (itemResult.success && itemResult.data) {
+          this.rows.push(itemResult.data as IDataRow)
+        }
+      }
+      this.emit('batchCreated', { tableName: this.tableName, results: result.data })
+    }
+    return result
+  }
+
+  /**
+   * 批量更新记录
+   */
+  async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    const result = await this.crudService.batchUpdate<IDataRow>(items)
+    if (result.success && result.data) {
+      // 更新成功的记录
+      for (const itemResult of result.data.results) {
+        if (itemResult.success && itemResult.data) {
+          const index = this.rows.findIndex(row => row['id'] === (itemResult.data as any).id)
+          if (index >= 0) {
+            this.rows[index] = { ...this.rows[index], ...itemResult.data }
+          }
+        }
+      }
+      this.emit('batchUpdated', { tableName: this.tableName, results: result.data })
+    }
+    return result
+  }
+
+  /**
+   * 批量删除记录
+   */
+  async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    const result = await this.crudService.batchDelete(ids)
+    if (result.success && result.data) {
+      // 移除成功删除的记录
+      for (const id of ids) {
+        const index = this.rows.findIndex(row => row['id'] === id)
+        if (index >= 0) {
+          this.rows.splice(index, 1)
+        }
+      }
+      this.emit('batchDeleted', { tableName: this.tableName, results: result.data })
+    }
+    return result
+  }
+
+  /**
+   * 导入数据
+   */
+  async importData(file: File): Promise<CrudResult<{ imported: number; failed: number }>> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    const result = await this.crudService.importData(file)
+    if (result.success) {
+      // 重新加载数据
+      await this.loadFromServer()
+      this.emit('dataImported', { tableName: this.tableName, result: result.data })
+    }
+    return result
+  }
+
+  /**
+   * 导出数据
+   */
+  async exportData(params?: QueryParams): Promise<CrudResult<Blob>> {
+    if (!this.crudService) {
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
+    const result = await this.crudService.exportData(params)
+    if (result.success) {
+      this.emit('dataExported', { tableName: this.tableName })
+    }
     return result
   }
 

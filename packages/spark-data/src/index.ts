@@ -9,6 +9,10 @@ export { SparkData } from './spark-data'
 // 核心类
 export { DataSet, DataTable, DataView, TreeManager } from './spark-data'
 
+// CRUD服务
+export { CrudService, createCrudService, defaultCrudService } from './crud-service'
+export type { CrudResult, QueryParams, BatchResult } from './crud-service'
+
 // 数据类型
 export type {
   IDataRow,
