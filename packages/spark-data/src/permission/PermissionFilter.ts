@@ -11,17 +11,33 @@ import { createPermissionChecker } from './PermissionChecker'
 export class PermissionFilter {
   private checker = createPermissionChecker()
 
-  /** 过滤出可删除行 */
+  // ===== 行级过滤 =====
+
+  /**
+   * 过滤出可删除的行
+   * @param rows 数据行数组
+   * @returns 可删除的行数组
+   */
   filterDeletableRows(rows: IDataRow[]): IDataRow[] {
     return rows.filter(row => this.checker.canDelete(row))
   }
 
-  /** 过滤出可编辑行 */
+  /**
+   * 过滤出可编辑的行
+   * @param rows 数据行数组
+   * @returns 可编辑的行数组
+   */
   filterEditableRows(rows: IDataRow[]): IDataRow[] {
     return rows.filter(row => this.checker.canEdit(row))
   }
 
-  /** 过滤字段（移除隐藏字段） */
+  // ===== 字段级过滤 =====
+
+  /**
+   * 过滤字段（移除隐藏字段）
+   * @param row 数据行
+   * @returns 过滤后的字段对象
+   */
   filterFields(row: IDataRow): Record<string, unknown> {
     const filtered: Record<string, unknown> = {}
     for (const [field, value] of Object.entries(row)) {
@@ -32,7 +48,33 @@ export class PermissionFilter {
     return filtered
   }
 
-  /** 应用字段脱敏 */
+  /**
+   * 获取可编辑字段列表
+   * @param row 数据行
+   * @param allFields 所有字段名数组
+   * @returns 可编辑字段名数组
+   */
+  getEditableFields(row: IDataRow, allFields: string[]): string[] {
+    return allFields.filter(field => this.checker.isFieldEditable(field, row))
+  }
+
+  /**
+   * 获取可见字段列表
+   * @param row 数据行
+   * @param allFields 所有字段名数组
+   * @returns 可见字段名数组
+   */
+  getVisibleFields(row: IDataRow, allFields: string[]): string[] {
+    return allFields.filter(field => this.checker.isFieldVisible(field, row))
+  }
+
+  // ===== 脱敏处理 =====
+
+  /**
+   * 应用字段脱敏
+   * @param row 数据行
+   * @returns 脱敏后的数据行
+   */
   applyFieldMasking(row: IDataRow): IDataRow {
     const masked: IDataRow = { ...row }
     for (const [field, value] of Object.entries(row)) {
@@ -44,36 +86,39 @@ export class PermissionFilter {
     return masked
   }
 
-  /** 批量脱敏 */
+  /**
+   * 批量应用脱敏处理
+   * @param rows 数据行数组
+   * @returns 脱敏后的数据行数组
+   */
   applyMaskingToDataSet(rows: IDataRow[]): IDataRow[] {
     return rows.map(row => this.applyFieldMasking(row))
   }
-
-  /** 获取可编辑字段 */
-  getEditableFields(row: IDataRow, allFields: string[]): string[] {
-    return allFields.filter(field => this.checker.isFieldEditable(field, row))
-  }
-
-  /** 获取可见字段 */
-  getVisibleFields(row: IDataRow, allFields: string[]): string[] {
-    return allFields.filter(field => this.checker.isFieldVisible(field, row))
-  }
 }
 
-// ── 工厂 ──
+// ===== 工厂函数 =====
 
 let instance: PermissionFilter | null = null
 
+/**
+ * 创建权限过滤器实例
+ * @returns 权限过滤器实例
+ */
 export function createPermissionFilter(): PermissionFilter {
   instance ??= new PermissionFilter()
   return instance
 }
 
+/**
+ * 重置权限过滤器实例
+ */
 export function resetPermissionFilter(): void {
   instance = null
 }
 
-/** 快捷方法 */
+// ===== 快捷方法 =====
+
+/** 权限过滤快捷方法 */
 export const filterByPermission = {
   deletableRows: (rows: IDataRow[]) => createPermissionFilter().filterDeletableRows(rows),
   editableRows: (rows: IDataRow[]) => createPermissionFilter().filterEditableRows(rows),

@@ -1,7 +1,8 @@
 /**
  * DataTable — 数据表（结构 + 多视图管理）
  *
- * 继承 DataView 作为默认视图，管理额外的命名视图
+ * 继承 DataView 作为默认视图，管理额外的命名数据视图。
+ * 提供完整的CRUD操作、数据视图管理、序列化等功能。
  */
 
 import { DataView } from './data-view'
@@ -11,15 +12,30 @@ import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/
 import type { IDataRow, DataColumn, CrudApi, ITableMetadata, QueryParams, CrudResult, BatchResult } from './types'
 
 export class DataTable extends DataView {
-  // 表特有属性
-  tableName: string
+  // ===== 属性定义 =====
+
+  /** 表名 */
+  override tableName: string
+
+  /** 列定义 */
   columns: DataColumn[]
+
+  /** CRUD API配置 */
   api?: CrudApi
+
+  /** 命名数据视图集合（除默认视图外的额外视图） */
   contexts: Record<string, DataView> = {}
 
-  // CRUD服务实例
+  /** CRUD服务实例 */
   private crudService?: CrudService
 
+  // ===== 构造函数 =====
+
+  /**
+   * 创建数据表实例
+   * @param tableName 表名
+   * @param columns 列定义数组
+   */
   constructor(tableName: string, columns: DataColumn[] = []) {
     super(tableName, 'default')
     this.tableName = tableName
@@ -27,25 +43,33 @@ export class DataTable extends DataView {
     this.initializeCrudService()
   }
 
+  // ===== 事件管理 =====
+
   /**
    * 发送事件（DataTable级别事件）
+   * 如果有关联的dataSet，通过dataSet发送事件，否则记录日志
+   * @param event 事件名称
+   * @param data 事件数据
    */
   emit(event: string, data: unknown): void {
-    // 如果有关联的dataSet，通过dataSet发送事件
     if (this.dataSet) {
       this.dataSet.emit(event, data)
     } else {
-      // 否则创建简单的日志记录
       this.logger.info(`Event: ${event}`, data)
     }
   }
 
-  // ===== 能力注册（供 CapabilityManager 调用） =====
+  // ===== 能力注册 =====
 
+  /**
+   * 获取能力提供者映射（供 CapabilityManager 调用）
+   * 注册字段元数据能力，提供列的类型、标签、主键等信息
+   * @returns 能力提供者映射
+   */
   getCapabilities(): Map<CapabilityKey<unknown>, CapabilityProvider> {
     const caps = new Map<CapabilityKey<unknown>, CapabilityProvider>()
 
-    // 字段元数据
+    // 构建字段元数据
     const meta: Record<string, Record<string, unknown>> = {}
     for (const col of this.columns) {
       meta[col.name] = {
@@ -56,6 +80,7 @@ export class DataTable extends DataView {
         defaultValue: col.defaultValue,
       }
     }
+
     caps.set(FIELD_METADATA as CapabilityKey<unknown>, {
       name: FIELD_METADATA,
       implementation: meta,
@@ -64,20 +89,26 @@ export class DataTable extends DataView {
     return caps
   }
 
-  // ===== 上下文管理 =====
+  // ===== 数据视图管理 =====
 
+  /**
+   * 获取或创建命名数据视图
+   * @param contextId 数据视图ID，'default'返回自身
+   * @returns 数据视图实例
+   */
   getOrCreateContext(contextId: string): DataView {
     if (contextId === 'default') return this
     this.contexts[contextId] ??= new DataView(this.tableName, contextId, this.dataSet)
     return this.contexts[contextId] as DataView
   }
 
-  /** 把原始数据重新分发到所有子上下文 */
+  /**
+   * 把原始数据重新分发到所有子数据视图
+   * 子数据视图的数据来源是表的原始数据，实际过滤由后端完成
+   */
   refreshAllContexts(): void {
     const src = this.originalRows ?? this.rows ?? []
     for (const ctx of Object.values(this.contexts)) {
-      // 子上下文的数据来源是表的原始数据
-      // 实际过滤由后端完成，这里只做同步
       if (ctx.originalRows) {
         ctx.rows.splice(0, ctx.rows.length, ...ctx.originalRows)
       } else {
@@ -88,6 +119,10 @@ export class DataTable extends DataView {
 
   // ===== 序列化 =====
 
+  /**
+   * 序列化为元数据对象
+   * @returns 表元数据
+   */
   override toData(): ITableMetadata {
     const ctxData: Record<string, import('./types').IViewMetadata> = {}
     for (const [id, ctx] of Object.entries(this.contexts)) {
@@ -96,12 +131,11 @@ export class DataTable extends DataView {
     const result: ITableMetadata = {
       tableName: this.tableName,
       columns: this.columns,
-      hostTable: this.hostTable,
       contextId: this.contextId,
       contexts: ctxData,
       api: this.api,
       loading: this.isLoading,
-      error: this.loadingError?.message,
+      error: this.loadingError ? String(this.loadingError.message) : undefined,
       rows: this.rows,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
@@ -109,21 +143,23 @@ export class DataTable extends DataView {
       page: this.page,
       pageSize: this.pageSize,
     }
-    
+
+    // 只序列化非undefined值
     if (this.api !== undefined) result.api = this.api
     if (this.filterExpression !== undefined) result.filterExpression = this.filterExpression
     if (this.sortExpression !== undefined) result.sortExpression = this.sortExpression
     if (this.autoSelectFirst !== undefined) result.autoSelectFirst = this.autoSelectFirst
     if (this.page !== undefined) result.page = this.page
     if (this.pageSize !== undefined) result.pageSize = this.pageSize
-    
+
     return result
   }
 
-  // ===== CRUD服务初始化 =====
+  // ===== CRUD服务管理 =====
 
   /**
    * 初始化CRUD服务
+   * 根据API配置创建CRUD服务实例
    */
   private initializeCrudService(): void {
     if (this.api) {
@@ -133,6 +169,7 @@ export class DataTable extends DataView {
 
   /**
    * 更新API配置
+   * @param api 新的CRUD API配置
    */
   setApi(api: CrudApi): void {
     this.api = api
@@ -143,15 +180,18 @@ export class DataTable extends DataView {
 
   /**
    * 从服务器加载数据
+   * @param params 查询参数
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
-  async loadFromServer(params?: QueryParams): Promise<CrudResult> {
+  async loadFromServer(params?: QueryParams, config?: import('./types').CrudOperationConfig): Promise<CrudResult> {
     if (!this.crudService) {
       throw new Error(`Table ${this.tableName} has no API configuration`)
     }
 
     this.isLoading = true
     try {
-      const result = await this.crudService.list(params)
+      const result = await this.crudService.list(params, config)
       if (result.success && result.data) {
         // 处理服务器返回的数据格式
         const data = result.data as {
@@ -181,13 +221,16 @@ export class DataTable extends DataView {
 
   /**
    * 创建新记录
+   * @param data 记录数据
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
-  async createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+  async createRecord(data: Partial<IDataRow>, config?: import('./types').CrudOperationConfig): Promise<CrudResult<IDataRow>> {
     if (!this.crudService) {
       throw new Error(`Table ${this.tableName} has no API configuration`)
     }
 
-    const result = await this.crudService.create<IDataRow>(data)
+    const result = await this.crudService.create<IDataRow>(data, config)
     if (result.success && result.data) {
       this.rows.push(result.data)
       this.emit('recordCreated', { tableName: this.tableName, record: result.data })
@@ -197,13 +240,17 @@ export class DataTable extends DataView {
 
   /**
    * 更新记录
+   * @param id 记录ID
+   * @param data 更新数据
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
-  async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+  async updateRecord(id: string | number, data: Partial<IDataRow>, config?: import('./types').CrudOperationConfig): Promise<CrudResult<IDataRow>> {
     if (!this.crudService) {
       throw new Error(`Table ${this.tableName} has no API configuration`)
     }
 
-    const result = await this.crudService.update<IDataRow>(id, data)
+    const result = await this.crudService.update<IDataRow>(id, data, config)
     if (result.success && result.data) {
       const index = this.rows.findIndex(row => row['id'] === id)
       if (index >= 0) {
@@ -216,13 +263,16 @@ export class DataTable extends DataView {
 
   /**
    * 删除记录
+   * @param id 记录ID
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns CRUD操作结果
    */
-  async deleteRecord(id: string | number): Promise<CrudResult<boolean>> {
+  async deleteRecord(id: string | number, config?: import('./types').CrudOperationConfig): Promise<CrudResult<boolean>> {
     if (!this.crudService) {
       throw new Error(`Table ${this.tableName} has no API configuration`)
     }
 
-    const result = await this.crudService.delete(id)
+    const result = await this.crudService.delete(id, config)
     if (result.success) {
       const index = this.rows.findIndex(row => row['id'] === id)
       if (index >= 0) {
@@ -233,15 +283,20 @@ export class DataTable extends DataView {
     return result
   }
 
+  // ===== 批量CRUD操作 =====
+
   /**
    * 批量创建记录
+   * @param items 记录数据数组
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns 批量操作结果
    */
-  async batchCreateRecords(items: Partial<IDataRow>[]): Promise<CrudResult<BatchResult>> {
+  async batchCreateRecords(items: Partial<IDataRow>[], config?: import('./types').CrudOperationConfig): Promise<CrudResult<BatchResult>> {
     if (!this.crudService) {
       throw new Error(`Table ${this.tableName} has no API configuration`)
     }
 
-    const result = await this.crudService.batchCreate<IDataRow>(items)
+    const result = await this.crudService.batchCreate<IDataRow>(items, config)
     if (result.success && result.data) {
       // 添加成功创建的记录
       for (const itemResult of result.data.results) {
@@ -256,13 +311,16 @@ export class DataTable extends DataView {
 
   /**
    * 批量更新记录
+   * @param items 包含ID的更新数据数组
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns 批量操作结果
    */
-  async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
+  async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>, config?: import('./types').CrudOperationConfig): Promise<CrudResult<BatchResult>> {
     if (!this.crudService) {
       throw new Error(`Table ${this.tableName} has no API configuration`)
     }
 
-    const result = await this.crudService.batchUpdate<IDataRow>(items)
+    const result = await this.crudService.batchUpdate<IDataRow>(items, config)
     if (result.success && result.data) {
       // 更新成功的记录
       for (const itemResult of result.data.results) {
@@ -281,13 +339,16 @@ export class DataTable extends DataView {
 
   /**
    * 批量删除记录
+   * @param ids 记录ID数组
+   * @param config CRUD操作配置（包含权限快照）
+   * @returns 批量操作结果
    */
-  async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
+  async batchDeleteRecords(ids: Array<string | number>, config?: import('./types').CrudOperationConfig): Promise<CrudResult<BatchResult>> {
     if (!this.crudService) {
       throw new Error(`Table ${this.tableName} has no API configuration`)
     }
 
-    const result = await this.crudService.batchDelete(ids)
+    const result = await this.crudService.batchDelete(ids, config)
     if (result.success && result.data) {
       // 移除成功删除的记录
       for (const id of ids) {
@@ -301,8 +362,12 @@ export class DataTable extends DataView {
     return result
   }
 
+  // ===== 数据导入导出 =====
+
   /**
    * 导入数据
+   * @param file 上传的文件
+   * @returns 导入结果
    */
   async importData(file: File): Promise<CrudResult<{ imported: number; failed: number }>> {
     if (!this.crudService) {
@@ -320,6 +385,8 @@ export class DataTable extends DataView {
 
   /**
    * 导出数据
+   * @param params 导出参数
+   * @returns 导出结果（Blob）
    */
   async exportData(params?: QueryParams): Promise<CrudResult<Blob>> {
     if (!this.crudService) {
@@ -335,6 +402,11 @@ export class DataTable extends DataView {
 
   // ===== 工厂方法 =====
 
+  /**
+   * 从表元数据创建DataTable实例
+   * @param data 表元数据
+   * @returns DataTable实例
+   */
   static fromTableData(data: ITableMetadata): DataTable {
     const t = new DataTable(data.tableName, data.columns ?? [])
     if (data.api !== undefined) t.api = data.api

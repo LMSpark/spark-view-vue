@@ -11,12 +11,28 @@ import type { DataView as SparkDataView } from '../data-view'
 import { Logger } from '@spark-view/spark-utils'
 
 export class DataLoader {
+  // ===== 属性定义 =====
+
+  /** 日志记录器 */
   private logger = Logger('DataLoader')
+
+  /** 正在加载的表集合（防重入） */
   private loading = new Set<string>()
 
+  // ===== 构造函数 =====
+
+  /**
+   * 创建数据加载器实例
+   * @param ds 关联的数据集
+   */
   constructor(private ds: DataSet) {}
 
-  /** 请求加载表数据（异步非阻塞） */
+  // ===== 公共接口 =====
+
+  /**
+   * 请求加载表数据（异步非阻塞）
+   * @param tableName 表名
+   */
   requestTableData(tableName: string): void {
     if (this.loading.has(tableName)) return
     this.ds.emit('loadStart', { tableName })
@@ -30,7 +46,10 @@ export class DataLoader {
       .finally(() => this.loading.delete(tableName))
   }
 
-  /** 通知依赖更新，按需自动加载 */
+  /**
+   * 通知依赖更新，按需自动加载
+   * @param tableName 表名
+   */
   notifyDependencyUpdated(tableName: string): void {
     this.ds.emit('dependencyUpdated', { tableName })
     if (this.shouldAutoLoad(tableName) && this.ds.hasSubscribers(tableName)) {
@@ -38,8 +57,12 @@ export class DataLoader {
     }
   }
 
-  // ===== 内部 =====
+  // ===== 内部实现 =====
 
+  /**
+   * 执行数据加载逻辑
+   * @param tableName 表名
+   */
   private async doLoad(tableName: string): Promise<void> {
     const table = this.ds.getTable(tableName)
     const deps = this.ds.getTableDependencies(tableName)
@@ -84,6 +107,10 @@ export class DataLoader {
     this.notifyDependencyUpdated(tableName)
   }
 
+  /**
+   * 加载单个表数据
+   * @param tableName 表名
+   */
   private async loadTable(tableName: string): Promise<void> {
     if (!this.ds.dataLoader) return
     const table = this.ds.getTable(tableName)
@@ -126,6 +153,10 @@ export class DataLoader {
     }
   }
 
+  /**
+   * 通知子表依赖更新
+   * @param parentTable 父表名
+   */
   private notifyChildren(parentTable: string) {
     for (const rel of this.ds.relations ?? []) {
       if (rel.parentTable === parentTable) {
@@ -135,12 +166,21 @@ export class DataLoader {
     }
   }
 
+  /**
+   * 为指定表应用关系
+   * @param tableName 表名
+   */
   private applyRelationsFor(tableName: string) {
     for (const rel of this.ds.relations ?? []) {
       if (rel.childTable === tableName) this.ds.applyRelation(rel)
     }
   }
 
+  /**
+   * 判断是否应该自动加载表数据
+   * @param tableName 表名
+   * @returns 是否应该自动加载
+   */
   private shouldAutoLoad(tableName: string): boolean {
     for (const rel of this.ds.relations?.filter(r => r.childTable === tableName) ?? []) {
       const ctx: SparkDataView | undefined = this.ds.getContext(rel.parentTable, rel.parentContextId)

@@ -5,9 +5,21 @@
 import type { DataSet } from '../dataset'
 
 export class DependencyAnalyzer {
+  // ===== 构造函数 =====
+
+  /**
+   * 创建依赖分析器实例
+   * @param dataSet 关联的数据集
+   */
   constructor(private dataSet: DataSet) {}
 
-  /** 获取表的所有祖先表（递归） */
+  // ===== 依赖分析 =====
+
+  /**
+   * 获取表的所有祖先表（递归）
+   * @param tableName 表名
+   * @returns 祖先表名集合
+   */
   getTableDependencies(tableName: string): Set<string> {
     const deps = new Set<string>()
     const visited = new Set<string>()
@@ -27,7 +39,11 @@ export class DependencyAnalyzer {
     return deps
   }
 
-  /** 获取最上层根表 */
+  /**
+   * 获取最上层根表
+   * @param tableName 表名
+   * @returns 根表名集合
+   */
   getRootDependencies(tableName: string): Set<string> {
     const all = this.getTableDependencies(tableName)
     const roots = new Set<string>()
@@ -38,7 +54,11 @@ export class DependencyAnalyzer {
     return roots
   }
 
-  /** 依赖条件是否满足 */
+  /**
+   * 检查依赖条件是否满足
+   * @param tableName 表名
+   * @returns 依赖是否满足
+   */
   areDependenciesSatisfied(tableName: string): boolean {
     const rels = this.dataSet.relations?.filter(r => r.childTable === tableName) ?? []
     if (rels.length === 0) return true

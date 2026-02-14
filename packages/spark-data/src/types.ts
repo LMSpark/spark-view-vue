@@ -8,47 +8,65 @@ import type { RequestConfig, ApiResponse } from '@spark-view/spark-utils'
 
 export type { RequestConfig, ApiResponse }
 
-// ==================== 事件 ====================
+// ===== 事件类型 =====
 
+/** 事件回调函数类型 */
 export type EventCallback = (...args: unknown[]) => void
 
-// ==================== 权限类型 ====================
+// ===== 权限类型 =====
 
-/** 实例级权限（行级） */
+/**
+ * 实例级权限（行级）- 服务端权限快照
+ *
+ * 采用类似JWT的设计理念，权限信息由服务端一次性计算并返回前端，
+ * 前端保存权限快照，在数据更新时回传给服务端，避免重复计算。
+ */
 export interface IInstancePermission {
   allowDelete?: boolean
   editableFields?: string[]
   hiddenFields?: string[]
   maskedFields?: string[]
+
+  // ===== 权限快照 =====
+  permissionToken?: string  // 权限令牌（后端验证有效性）
 }
 
-/** 模型级权限（表级） */
+/**
+ * 模型级权限（表级）- 服务端权限快照
+ *
+ * 权限信息在首次数据加载时由服务端计算并缓存，
+ * 前端负责维护和传递权限状态。
+ */
 export interface IModelPermission {
   allowCreate?: boolean
   allowImport?: boolean
   allowExport?: boolean
+
+  // ===== 权限快照 =====
+  permissionToken?: string  // 权限令牌（后端验证有效性）
 }
 
 /** 实例权限字段名 */
 export const INSTANCE_PERMISSION_FIELD = '_perm' as const
+
 /** 模型权限字段名 */
 export const MODEL_PERMISSION_FIELD = '_modelPerm' as const
 
-/** 字段可见性 */
+/** 字段可见性枚举 */
 export enum FieldVisibility {
   Visible = 'visible',
   Masked = 'masked',
   Hidden = 'hidden'
 }
 
-/** 组件级别 */
+/** 组件级别枚举 */
 export enum ComponentLevel {
   Model = 'model',
   Instance = 'instance',
   Field = 'field'
 }
 
-// ==================== 基础数据类型 ====================
+// ===== 基础数据类型 =====
 
 /** 数据行（带权限） */
 export type IDataRow = Record<string, unknown> & {
@@ -64,8 +82,9 @@ export interface IDataSource {
   pageSize?: number
 }
 
-// ==================== 基础类型 ====================
+// ===== 数据模型类型 =====
 
+/** 数据列定义 */
 export interface DataColumn {
   name: string
   type: string
@@ -74,8 +93,14 @@ export interface DataColumn {
   defaultValue?: unknown
   isPrimaryKey?: boolean
   autoIncrement?: boolean
+
+  // ===== 计算字段属性 =====
+
+  /** 计算表达式（JSON格式，如 {"op": "+", "left": "field1", "right": "field2"}） */
+  computeExpression?: unknown
 }
 
+/** CRUD API配置 */
 export interface CrudApi {
   create?: HttpEndpoint
   retrieve?: HttpEndpoint
@@ -97,26 +122,27 @@ export interface CrudApi {
   export?: HttpEndpoint
 }
 
-/** API 端点定义（用于 CrudApi 配置） */
+/** HTTP端点定义 */
 export interface HttpEndpoint {
-  /** 请求 URL */
+  /** 请求URL */
   url: string
-  /** HTTP 方法 */
+  /** HTTP方法 */
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   /** 请求头 */
   headers?: Record<string, string>
-  /** URL 查询参数 */
+  /** URL查询参数 */
   params?: Record<string, unknown>
-  /** URL 路径参数 */
+  /** URL路径参数 */
   pathParams?: string[]
-  /** API 基础地址 */
+  /** API基础地址 */
   baseURL?: string
 }
 
-// ==================== 序列化接口（只保留必要的） ====================
+// ===== 序列化接口 =====
 
+/** 数据视图元数据 */
 export interface IViewMetadata {
-  hostTable: string | undefined
+  tableName: string | undefined
   contextId: string | "default" | undefined
   rows: IDataRow[] | undefined
   filterExpression: FilterExpression | undefined
@@ -126,6 +152,7 @@ export interface IViewMetadata {
   pageSize: number | undefined
 }
 
+/** 数据表元数据 */
 export interface ITableMetadata extends IViewMetadata {
   tableName: string
   columns: DataColumn[]
@@ -135,6 +162,7 @@ export interface ITableMetadata extends IViewMetadata {
   error: string | undefined
 }
 
+/** 数据集元数据 */
 export interface IDataSetMetadata {
   dataSetName: string
   tables: Record<string, ITableMetadata>
@@ -143,13 +171,15 @@ export interface IDataSetMetadata {
   pageId: string | undefined
 }
 
+/** 数据集配置 */
 export interface IDataSetConfig extends IDataSetMetadata {
   dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
   autoLoadRelations: boolean | undefined
 }
 
-// ==================== 过滤和排序类型 ====================
+// ===== 过滤和排序类型 =====
 
+/** 依赖类型 */
 export type DependencyType =
   | 'currentRow'
   | 'selectedRows'
@@ -157,12 +187,15 @@ export type DependencyType =
   | 'pagedRows'
   | string
 
+/** 排序方向 */
 export type SortDirection = 'asc' | 'desc' | 'ASC' | 'DESC'
 
+/** 排序表达式 */
 export type SortExpression =
   | { field: string; direction: SortDirection }
   | { fields: Array<{ field: string; direction: SortDirection }> }
 
+/** 过滤操作符 */
 export type FilterOperator =
   | '==' | '!=' | '>' | '>=' | '<' | '<='
   | 'in' | 'not in' | 'like' | 'not like'
@@ -170,6 +203,7 @@ export type FilterOperator =
   | 'between' | 'not between'
   | 'startsWith' | 'endsWith' | 'contains'
 
+/** 过滤表达式 */
 export type FilterExpression =
   | { field: string; op: FilterOperator; value: unknown }
   | { type: 'and' | 'or'; children: FilterExpression[] }
@@ -177,8 +211,9 @@ export type FilterExpression =
   | { type: '!and' | '!or'; children: FilterExpression[] }
   | { func: string; args: unknown[] }
 
-// ==================== 关系类型 ====================
+// ===== 关系类型 =====
 
+/** 数据关系定义 */
 export interface DataRelation {
   parentTable: string
   parentContextId?: string
@@ -192,8 +227,9 @@ export interface DataRelation {
   relationName?: string
 }
 
-// ==================== 树类型 ====================
+// ===== 树类型 =====
 
+/** 树配置 */
 export interface TreeConfig {
   mode: 'flat' | 'nested'
   tableName?: string
@@ -204,6 +240,7 @@ export interface TreeConfig {
   lazy?: boolean
 }
 
+/** 平面树节点 */
 export interface FlatTreeNode {
   id: string | number
   parentId?: string | number | null
@@ -214,29 +251,166 @@ export interface FlatTreeNode {
   [key: string]: unknown
 }
 
+/** 嵌套树节点 */
 export interface NestedTreeNode extends FlatTreeNode {
   children: NestedTreeNode[]
 }
 
+/** 平面树缓存 */
 export type FlatTreeCache = Record<string | number, FlatTreeNode>
 
+/** 树路径 */
 export interface TreePath {
   pathIds: Array<string | number>
   pathNodes?: FlatTreeNode[]
 }
 
-// ==================== 类型别名 ====================
+// ===== 响应类型别名 =====
 
+/** 分页数据响应 */
 export type PagedDataResponse = ApiResponse<IDataSource>
+
+/** 单条数据响应 */
 export type SingleDataResponse = ApiResponse<IDataRow>
 
-// 向后兼容的类型别名
+// ===== 向后兼容类型别名 =====
+
+/** 数据集类型别名 */
 export type IDataSet = import('./dataset').DataSet
+
+/** 数据表类型别名 */
 export type IDataTable = import('./data-table').DataTable
+
+/** 数据视图类型别名 */
 export type IDataView = import('./data-view').DataView
+
+/** 树管理器类型别名 */
 export type ITreeManager = import('./tree-manager').TreeManager
 
-// CRUD服务相关类型
-export type { CrudResult, QueryParams, BatchResult } from './crud-service'
+// ===== CRUD服务相关类型 =====
+
+/**
+ * CRUD操作结果
+ */
+export interface CrudResult<T = unknown> {
+  success: boolean
+  data?: T
+  error?: Error
+  message?: string
+  code?: string
+  timestamp?: number
+}
+
+/**
+ * 分页查询参数 - 支持权限快照传递
+ */
+export interface QueryParams {
+  page?: number
+  pageSize?: number
+  sort?: string
+  filter?: Record<string, unknown> | FilterExpression
+  search?: string
+  fields?: string[]  // 要查询的字段列表
+  include?: string[] // 要包含的关联数据
+
+  // ===== 权限快照利用 =====
+  modelPermission?: IModelPermission       // 完整的模型级权限对象（用于提取权限令牌）
+  instancePermission?: IInstancePermission // 完整的实例级权限对象（用于提取权限令牌）
+
+  [key: string]: unknown
+}
+
+/**
+ * 批量操作结果
+ */
+export interface BatchResult {
+  successCount: number
+  failureCount: number
+  results: CrudResult[]
+  errors: Error[]
+  totalTime?: number
+}
+
+/**
+ * 数据导入配置
+ */
+export interface ImportConfig {
+  file: File | Blob
+  format?: 'csv' | 'excel' | 'json'
+  mapping?: Record<string, string>  // 字段映射
+  skipHeader?: boolean
+  batchSize?: number
+  onProgress?: (progress: number) => void
+}
+
+/**
+ * 数据导出配置
+ */
+export interface ExportConfig {
+  format?: 'csv' | 'excel' | 'json' | 'xml'
+  fields?: string[]  // 要导出的字段
+  filter?: FilterExpression
+  sort?: SortExpression
+  includeHeaders?: boolean
+  filename?: string
+}
+
+/**
+ * 导入结果
+ */
+export interface ImportResult {
+  successCount: number
+  failureCount: number
+  totalCount: number
+  errors: Array<{ row: number; error: string }>
+  duration: number
+}
+
+/**
+ * 导出结果
+ */
+export interface ExportResult {
+  url?: string
+  blob?: Blob
+  filename: string
+  size: number
+  format: string
+}
+
+/**
+ * CRUD操作配置 - 集成权限快照利用
+ */
+export interface CrudOperationConfig {
+  timeout?: number
+  retryCount?: number
+  skipPermissionCheck?: boolean
+
+  // ===== 权限快照利用 =====
+  modelPermission?: IModelPermission       // 完整的模型级权限对象（用于提取权限令牌）
+  instancePermission?: IInstancePermission // 完整的实例级权限对象（用于提取权限令牌）
+
+  // ===== 数据处理 =====
+  validateData?: boolean
+  transformRequest?: (data: unknown) => unknown
+  transformResponse?: (data: unknown) => unknown
+}
+
+/**
+ * 审计日志条目
+ */
+export interface AuditLogEntry {
+  id: string
+  operation: 'create' | 'read' | 'update' | 'delete' | 'import' | 'export'
+  tableName: string
+  recordId?: string | number
+  userId: string
+  timestamp: number
+  beforeData?: Record<string, unknown>
+  afterData?: Record<string, unknown>
+  ipAddress?: string
+  userAgent?: string
+  success: boolean
+  errorMessage?: string
+}
 
 

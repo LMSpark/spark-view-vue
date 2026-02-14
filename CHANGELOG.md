@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### ✨ Features & Refactor - 权限快照与数据清理
+
+- 实现 **服务端权限快照（JWT-like）**：服务端一次计算并返回快照，前端保存 snapshot 并在写操作时回传，避免服务端重复计算。
+- CRUD 服务集成权限令牌传递：统一从 `modelPermission` / `instancePermission` 提取 `permissionToken`，并作为请求头 `X-Permission-Token` / `X-Instance-Permission-Token` 发送。
+- 上传前自动清理权限字段：在 `create` / `update` / `batch` 操作中移除从服务端返回的 `_perm` / `_modelPerm`，避免将权限元数据发送回服务端。
+- 统一 `CrudOperationConfig` 权限传递设计：使用完整的权限对象（`modelPermission` / `instancePermission`）用于提取令牌与字段级控制。
+- 小范围重构：`DataView.hostTable` 重命名为 `tableName`，并同步更新 `IViewMetadata`。
+- 测试与类型：新增单元测试覆盖权限字段清理（`tests/crud-service-permission.test.ts`），并完善类型注释。
+
+**影响文件（示例）**：
+- `packages/spark-data/src/crud-service.ts`
+- `packages/spark-data/src/types.ts`
+- `packages/spark-data/src/data-view.ts`
+- `tests/crud-service-permission.test.ts`
+
+
 ### 💥 Breaking Changes - 统一网络请求层
 
 **目标：** 完全迁移到 Request 类，删除 HttpClient
