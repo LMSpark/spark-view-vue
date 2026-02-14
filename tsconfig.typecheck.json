@@ -27,7 +27,9 @@
     "noPropertyAccessFromIndexSignature": true,
     "noErrorTruncation": true,
     "preserveWatchOutput": true,
-    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "useUnknownInCatchVariables": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
     "paths": {
