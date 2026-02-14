@@ -183,6 +183,9 @@ await SparkApp.start({
 2. 添加相应的测试用例
 3. 更新相关文档
 4. 提交前运行 `pnpm run typecheck && pnpm run lint && pnpm run test`
+5. 提交信息遵循 Conventional Commits（由 Husky + commitlint 强制校验），格式示例：`feat(spark-data): add X`。
+   - 允许的 scope：`deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-component`, `spark-utils`, `spark-renderer`。
+   - 详情与示例见 `CONTRIBUTING.md`（新增）。
 
 ## 📄 许可证
 
