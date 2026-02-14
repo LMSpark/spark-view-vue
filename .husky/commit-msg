@@ -1,18 +1,6 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-MSG_FILE="$1"
-# 读取第一行（提交标题）
-SUBJECT=$(sed -n '1p' "$MSG_FILE" | tr -d '\r')
+# Enforce Conventional Commits via commitlint (explicit config to avoid JS/ESM loader issues)
+pnpm exec -- commitlint --config commitlint.config.cjs --edit "$1" || exit 1
 
-# Conventional Commits 简单校验：type[(scope)]: description
-PATTERN='^(feat|fix|chore|docs|refactor|perf|test|style|ci|build|revert)(\([a-z0-9_\-]+\))?: .+'
-
-if ! echo "$SUBJECT" | grep -E "$PATTERN" >/dev/null 2>&1; then
-  echo "\nERROR: Commit message does not follow Conventional Commits format."
-  echo "Expected: <type>(optional-scope): <description>"
-  echo "Allowed types: feat, fix, chore, docs, refactor, perf, test, style, ci, build, revert"
-  echo "Example: feat(parser): add support for X"
-  echo "\nPlease edit your commit message to match the pattern and try again."
-  exit 1
-fi

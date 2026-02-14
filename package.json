@@ -26,6 +26,7 @@
         "test:contract": "vitest run tests/contract",
         "verify:arch": "node tools/verify-architecture.mjs",
         "verify": "pnpm run typecheck && pnpm run lint && pnpm run verify:arch",
+        "commitlint": "commitlint --edit",
         "build:packages": "pnpm --filter 'packages/*' run build",
         "lint:packages": "pnpm --filter 'packages/*' run lint",
         "lint:fix:packages": "pnpm --filter 'packages/*' run lint:fix",
