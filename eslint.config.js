@@ -21,7 +21,8 @@ export default [
       'dist/**',
       'node_modules/**',
       'vite.config.ts',
-      'vitest.config.ts'
+      'vitest.config.ts',
+      'packages/**/vitest.config.ts'
     ]
   },
   // Vue SFC files

@@ -40,7 +40,7 @@ export class SubscriptionManager {
       this.notifyView(tableName, contextId)
     } else {
       table.refreshAllContexts()
-      for (const k of this.subs.keys()) {
+      for (const k of Array.from(this.subs.keys())) {
         if (k.startsWith(`${tableName}.`)) {
           const cid = k.split('.')[1] ?? 'default'
           this.notifyView(tableName, cid)
@@ -53,7 +53,7 @@ export class SubscriptionManager {
     if (contextId !== undefined) {
       return (this.subs.get(this.key(tableName, contextId))?.size ?? 0) > 0
     }
-    for (const k of this.subs.keys()) {
+    for (const k of Array.from(this.subs.keys())) {
       if (k.startsWith(`${tableName}.`)) return true
     }
     return false

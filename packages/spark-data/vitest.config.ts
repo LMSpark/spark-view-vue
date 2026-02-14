@@ -1,9 +1,7 @@
-﻿import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vitest/config'
 import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [vue()],
   test: {
     globals: true,
     environment: 'jsdom',
@@ -11,8 +9,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@spark-view/spark-component': resolve(__dirname, './src/index.ts'),
-      '@spark-view/spark-component/*': resolve(__dirname, './src/*'),
+      '@spark-view/spark-data': resolve(__dirname, './src/index.ts'),
+      '@spark-view/spark-data/*': resolve(__dirname, './src/*'),
       '@spark-view/spark-utils': resolve(__dirname, '../spark-utils/src/index.ts'),
       '@spark-view/spark-utils/*': resolve(__dirname, '../spark-utils/src/*')
     }

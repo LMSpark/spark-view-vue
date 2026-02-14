@@ -21,14 +21,19 @@
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "test": "vitest",
         "test:run": "vitest run",
-        "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0"
+        "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
+        "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
     },
     "dependencies": {
         "@spark-view/spark-utils": "workspace:*"
     },
     "postcss": {},
     "devDependencies": {
+        "@eslint/js": "^9.39.2",
         "@types/node": "^18.19.130",
+        "@typescript-eslint/eslint-plugin": "^8.52.0",
+        "@typescript-eslint/parser": "^8.52.0",
+        "eslint": "^9.39.2",
         "typescript": "~5.3.3",
         "vitest": "^2.1.8",
         "vue": "^3.5.27"

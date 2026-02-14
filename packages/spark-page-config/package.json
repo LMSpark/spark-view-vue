@@ -26,7 +26,8 @@
         "build": "npm run clean && tsc",
         "typecheck": "tsc --noEmit",
         "test": "vitest",
-        "lint": "eslint src --ext .ts"
+        "lint": "eslint src --ext .ts",
+        "lint:fix": "eslint src --ext .ts --fix"
     },
     "peerDependencies": {
         "vue": "^3.5.0",
@@ -36,7 +37,11 @@
         "@spark-view/spark-utils": "workspace:*"
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.2",
         "@types/node": "^18.19.130",
+        "@typescript-eslint/eslint-plugin": "^8.52.0",
+        "@typescript-eslint/parser": "^8.52.0",
+        "eslint": "^9.39.2",
         "rimraf": "^6.1.2",
         "typescript": "~5.3.3",
         "vitest": "^2.1.8"

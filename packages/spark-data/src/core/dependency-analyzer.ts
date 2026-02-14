@@ -31,7 +31,7 @@ export class DependencyAnalyzer {
   getRootDependencies(tableName: string): Set<string> {
     const all = this.getTableDependencies(tableName)
     const roots = new Set<string>()
-    for (const dep of all) {
+    for (const dep of Array.from(all)) {
       const hasParent = this.dataSet.relations?.some(r => r.childTable === dep)
       if (!hasParent) roots.add(dep)
     }
