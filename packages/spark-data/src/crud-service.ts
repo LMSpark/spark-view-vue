@@ -584,8 +584,3 @@ export function createCrudService(
 ): CrudService {
   return new CrudService(api, httpConfig)
 }
-
-/**
- * 默认CRUD服务实例（使用默认HTTP配置）
- */
-export const defaultCrudService = new CrudService({})

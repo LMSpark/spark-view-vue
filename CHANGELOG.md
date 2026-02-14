@@ -4,6 +4,57 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### 🧹 Refactor - spark-data 深度清理
+
+**目标：** 移除错误的、重复的、冗余的、过时的逻辑，不考虑向后兼容
+
+#### 删除的类型（types.ts）
+- `EventCallback` — 未使用
+- `IDataSetConfig` — 未使用
+- `IDataTable` / `IDataView` / `ITreeManager` — 冗余类型别名，外部直接使用类
+- `PagedDataResponse` / `SingleDataResponse` — 向后兼容别名，无调用方
+- `ImportConfig` / `ExportConfig` / `ImportResult` / `ExportResult` / `AuditLogEntry` — 预设性接口，从未实现
+
+#### 删除的方法
+- `SparkData.createContext()` — `createDataView()` 的重复
+- `SparkData.createDataSetFromMetadata()` — `DataSet.fromConfig()` 的薄包装，无外部调用
+- `DataSet.fromMetadata()` — 死代码，无调用方
+- `defaultCrudService` — 空配置实例，始终失败
+
+#### 删除的冗余代码
+- `DataTable.override tableName` 属性声明和构造函数重复赋值（父类已处理）
+- `DataTable.toData()` 中重复条件赋值块（值已在对象字面量中设置）
+- `DataTable.fromTableData()` 中注入 `__permissions: {}`（无实际用途）
+- `spark-data.ts` 底部重复的核心引擎导出和类型导出（与 index.ts 重复）
+- `FlatTreeCache` 从导出改为 tree-manager 内部类型
+
+#### 修复
+- `SparkData.createDataView()` 参数 `hostTable` → `tableName`（与 DataView 属性一致）
+- `index.ts` 权限导入移除 `.js` 扩展名（与项目其他文件一致）
+- `data-view.ts` / `subscription-manager.ts` 中 `ITreeManager` / `IDataView` 类型别名替换为直接使用类
+
+#### 文档同步
+- 更新 `packages/spark-data/API.md`：移除 `createContext` / `BindingContext` / 已删类型引用
+- 更新 `docs/guides/VIEW_STATE_ADVANCED.md`：`hostTable` → `tableName`
+- 更新 `.github/copilot-instructions.md`：同步类型和 API 变更
+
+**影响文件：**
+- `packages/spark-data/src/types.ts`
+- `packages/spark-data/src/spark-data.ts`
+- `packages/spark-data/src/data-table.ts`
+- `packages/spark-data/src/dataset.ts`
+- `packages/spark-data/src/index.ts`
+- `packages/spark-data/src/crud-service.ts`
+- `packages/spark-data/src/data-view.ts`
+- `packages/spark-data/src/tree-manager.ts`
+- `packages/spark-data/src/core/subscription-manager.ts`
+- `tests/spark-data-namespace.test.ts`
+
+**验证结果：**
+- ✅ 83 tests passed (19 test files)
+- ✅ Type check passed（零错误）
+- ✅ Lint check passed（零警告）
+
 ### ✨ Features & Refactor - 权限快照与数据清理
 
 - 实现 **服务端权限快照（JWT-like）**：服务端一次计算并返回快照，前端保存 snapshot 并在写操作时回传，避免服务端重复计算。

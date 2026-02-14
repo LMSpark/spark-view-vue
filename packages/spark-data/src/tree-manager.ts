@@ -8,9 +8,10 @@ import type {
   TreeConfig,
   FlatTreeNode,
   NestedTreeNode,
-  FlatTreeCache,
   TreePath
 } from './types'
+
+type FlatTreeCache = Record<string | number, FlatTreeNode>
 import { Logger } from '@spark-view/spark-utils'
 import type { DataView } from './data-view'
 import { EventManager } from './core/event-manager'

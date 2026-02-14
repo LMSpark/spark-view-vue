@@ -8,11 +8,6 @@ import type { RequestConfig, ApiResponse } from '@spark-view/spark-utils'
 
 export type { RequestConfig, ApiResponse }
 
-// ===== 事件类型 =====
-
-/** 事件回调函数类型 */
-export type EventCallback = (...args: unknown[]) => void
-
 // ===== 权限类型 =====
 
 /**
@@ -171,12 +166,6 @@ export interface IDataSetMetadata {
   pageId: string | undefined
 }
 
-/** 数据集配置 */
-export interface IDataSetConfig extends IDataSetMetadata {
-  dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
-  autoLoadRelations: boolean | undefined
-}
-
 // ===== 过滤和排序类型 =====
 
 /** 依赖类型 */
@@ -256,9 +245,6 @@ export interface NestedTreeNode extends FlatTreeNode {
   children: NestedTreeNode[]
 }
 
-/** 平面树缓存 */
-export type FlatTreeCache = Record<string | number, FlatTreeNode>
-
 /** 树路径 */
 export interface TreePath {
   pathIds: Array<string | number>
@@ -267,25 +253,8 @@ export interface TreePath {
 
 // ===== 响应类型别名 =====
 
-/** 分页数据响应 */
-export type PagedDataResponse = ApiResponse<IDataSource>
-
-/** 单条数据响应 */
-export type SingleDataResponse = ApiResponse<IDataRow>
-
-// ===== 向后兼容类型别名 =====
-
 /** 数据集类型别名 */
 export type IDataSet = import('./dataset').DataSet
-
-/** 数据表类型别名 */
-export type IDataTable = import('./data-table').DataTable
-
-/** 数据视图类型别名 */
-export type IDataView = import('./data-view').DataView
-
-/** 树管理器类型别名 */
-export type ITreeManager = import('./tree-manager').TreeManager
 
 // ===== CRUD服务相关类型 =====
 
@@ -332,52 +301,6 @@ export interface BatchResult {
 }
 
 /**
- * 数据导入配置
- */
-export interface ImportConfig {
-  file: File | Blob
-  format?: 'csv' | 'excel' | 'json'
-  mapping?: Record<string, string>  // 字段映射
-  skipHeader?: boolean
-  batchSize?: number
-  onProgress?: (progress: number) => void
-}
-
-/**
- * 数据导出配置
- */
-export interface ExportConfig {
-  format?: 'csv' | 'excel' | 'json' | 'xml'
-  fields?: string[]  // 要导出的字段
-  filter?: FilterExpression
-  sort?: SortExpression
-  includeHeaders?: boolean
-  filename?: string
-}
-
-/**
- * 导入结果
- */
-export interface ImportResult {
-  successCount: number
-  failureCount: number
-  totalCount: number
-  errors: Array<{ row: number; error: string }>
-  duration: number
-}
-
-/**
- * 导出结果
- */
-export interface ExportResult {
-  url?: string
-  blob?: Blob
-  filename: string
-  size: number
-  format: string
-}
-
-/**
  * CRUD操作配置 - 集成权限快照利用
  */
 export interface CrudOperationConfig {
@@ -394,23 +317,3 @@ export interface CrudOperationConfig {
   transformRequest?: (data: unknown) => unknown
   transformResponse?: (data: unknown) => unknown
 }
-
-/**
- * 审计日志条目
- */
-export interface AuditLogEntry {
-  id: string
-  operation: 'create' | 'read' | 'update' | 'delete' | 'import' | 'export'
-  tableName: string
-  recordId?: string | number
-  userId: string
-  timestamp: number
-  beforeData?: Record<string, unknown>
-  afterData?: Record<string, unknown>
-  ipAddress?: string
-  userAgent?: string
-  success: boolean
-  errorMessage?: string
-}
-
-

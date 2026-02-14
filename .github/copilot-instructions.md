@@ -13,7 +13,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - Architecture docs: `docs/SPARK_ARCHITECTURE.md` (big-picture + rationale)
 - **Packages**:
   - `packages/spark-component/` — 组件系统（API docs: `packages/spark-component/API.md`）
-  - `packages/spark-data/` — 数据空间（DataSet, TreeManager, BindingContext）
+  - `packages/spark-data/` — 数据空间（DataSet, DataTable, DataView, TreeManager）
 - **Pages config**: `pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
 - Example components: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
 - Key composable: `packages/spark-component/src/composables/useSparkComponent.ts`
@@ -97,7 +97,7 @@ packages/
 │   │   ├── plugins/
 │   │   └── core/
 │   └── API.md
-├── spark-data/          # 数据空间（DataSet, TreeManager, BindingContext）
+├── spark-data/          # 数据空间（DataSet, DataTable, DataView, TreeManager）
 │   ├── src/
 │   └── API.md
 └── spark-utils/         # 共享工具（Logger, Capability Symbols）
@@ -188,7 +188,7 @@ app.use(Spark.createPlugin({ registry }))
 ### Using spark-data (数据空间)
 ```ts
 import { SparkData } from '@spark-view/spark-data'
-import type { IDataSet, DataRow } from '@spark-view/spark-data'
+import type { IDataSet, IDataRow } from '@spark-view/spark-data'
 
 // 推荐：使用命名空间 API
 const dataSet = SparkData.createDataSet({
@@ -201,9 +201,10 @@ const treeManager = SparkData.createTreeManager({
   parentIdField: 'parentId'
 })
 
-// 向后兼容：直接导入类
-import { DataSetManager, TreeManager } from '@spark-view/spark-data'
-const ds = DataSetManager.create({ ... })
+const dataView = SparkData.createDataView({ tableName: 'Users', contextId: 'grid' })
+
+// 直接导入类
+import { DataSet, TreeManager, DataTable, DataView } from '@spark-view/spark-data'
 const tree = new TreeManager({ ... })
 ```
 
