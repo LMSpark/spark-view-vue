@@ -100,6 +100,16 @@ export class DataView {
     if (dataSet !== undefined) this.dataSet = dataSet
   }
 
+  // ===== 数据集关联 =====
+
+  /**
+   * 设置关联的数据集（事件发射目标）
+   * @param ds 数据集事件发射器
+   */
+  setDataSet(ds: IDataSetEmitter): void {
+    this.dataSet = ds
+  }
+
   // ===== 树管理器管理 =====
 
   /**
