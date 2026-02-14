@@ -207,7 +207,7 @@ export class CrudService {
           successCount,
           failureCount: results.length - successCount,
           results,
-          errors: results.filter(r => !r.success).map(r => r.error!)
+          errors: results.filter(r => !r.success).map(r => r.error ?? new Error('Batch create failed'))
         }
       }
     } catch (error) {
@@ -237,7 +237,7 @@ export class CrudService {
           successCount,
           failureCount: results.length - successCount,
           results,
-          errors: results.filter(r => !r.success).map(r => r.error!)
+          errors: results.filter(r => !r.success).map(r => r.error ?? new Error('Batch update failed'))
         }
       }
     } catch (error) {
@@ -268,7 +268,7 @@ export class CrudService {
           successCount,
           failureCount: results.length - successCount,
           results,
-          errors: results.filter(r => !r.success).map(r => r.error!)
+          errors: results.filter(r => !r.success).map(r => r.error ?? new Error('Batch delete failed'))
         }
       }
     } catch (error) {
@@ -327,7 +327,7 @@ export class CrudService {
 
       const result = await this.http.requestFull({
         url: endpoint.url,
-        method: endpoint.method || 'GET',
+        method: endpoint.method ?? 'GET',
         params: queryParams,
         responseType: 'blob',
         ...config,
@@ -470,7 +470,7 @@ export class CrudService {
   private errorResult<T>(message: string, error?: Error): CrudResult<T> {
     return {
       success: false,
-      error: error || new Error(message),
+      error: error ?? new Error(message),
       message
     }
   }

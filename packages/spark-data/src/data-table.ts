@@ -154,12 +154,17 @@ export class DataTable extends DataView {
       const result = await this.crudService.list(params)
       if (result.success && result.data) {
         // 处理服务器返回的数据格式
-        const data = result.data as any
+        const data = result.data as {
+          rows?: IDataRow[]
+          total?: number
+          page?: number
+          pageSize?: number
+        }
         if (data.rows) {
           this.rows = data.rows
-          this.total = data.total
-          this.page = data.page
-          this.pageSize = data.pageSize
+          this.total = data.total ?? 0
+          this.page = data.page ?? 1
+          this.pageSize = data.pageSize ?? 20
         } else if (Array.isArray(data)) {
           this.rows = data
         }
@@ -262,9 +267,10 @@ export class DataTable extends DataView {
       // 更新成功的记录
       for (const itemResult of result.data.results) {
         if (itemResult.success && itemResult.data) {
-          const index = this.rows.findIndex(row => row['id'] === (itemResult.data as any).id)
+          const record = itemResult.data as IDataRow
+          const index = this.rows.findIndex(row => row['id'] === (record as { id?: unknown }).id)
           if (index >= 0) {
-            this.rows[index] = { ...this.rows[index], ...itemResult.data }
+            this.rows[index] = { ...this.rows[index], ...record }
           }
         }
       }

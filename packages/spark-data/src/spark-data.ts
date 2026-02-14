@@ -6,6 +6,7 @@ import { DataSet } from './dataset'
 import { TreeManager } from './tree-manager'
 import { DataTable } from './data-table'
 import { DataView } from './data-view'
+import { CrudService } from './crud-service'
 import type { DataColumn, CrudApi, DataRelation, IDataSetMetadata, FlatTreeNode, IDataRow } from './types'
 
 // SparkData 命名空间 API（推荐使用）
@@ -62,8 +63,7 @@ export namespace SparkData {
 
   // CRUD服务相关
   export function createCrudService(api: CrudApi, httpConfig?: import('./types').RequestConfig) {
-    const { createCrudService } = require('./crud-service')
-    return createCrudService(api, httpConfig)
+    return new CrudService(api, httpConfig)
   }
 
   // DataView 相关
