@@ -26,7 +26,7 @@ const request = createRequest({
 })
 
 // GET 请求
-const users = await request.get<User[]>('/users')
+const users = await request.get('/users')
 
 // POST 请求
 const newUser = await request.post<User>('/users', { name: 'John' })
@@ -331,11 +331,11 @@ import { request } from './request'
 
 export class UserService {
   async getUsers(params?: { page?: number; pageSize?: number }) {
-    return request.get<User[]>('/users', params)
+    return request.get('/users', params)
   }
 
   async getUserById(id: number) {
-    return request.get<User>(`/users/${id}`)
+    return request.get(`/users/${id}`)
   }
 
   async createUser(data: Partial<User>) {
@@ -464,5 +464,5 @@ interface RequestConfig {
 ## 参考资料
 
 - 完整示例：`src/Request.example.ts`
-- 拦截器实现：`src/RequestInterceptors.ts`
+- 拦截器实现：`src/http/RequestInterceptors.ts`
 - API 文档：`API.md`

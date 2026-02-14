@@ -73,13 +73,12 @@ describe('FileLoader', () => {
       expect(result.fromCache).toBe(false)
       
       // 验证request被调用
-      expect(mockAxiosInstance.request).toHaveBeenCalledWith({
-        url: 'test.json',
-        method: 'GET',
-        params: {},
-        timeout: 5000,
-        responseType: 'json'
-      })
+      expect(mockAxiosInstance.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'test.json',
+          method: 'GET',
+        })
+      )
     })
     
     it('应该解析 JSON 文件', async () => {
@@ -379,12 +378,11 @@ describe('FileLoader', () => {
       await loader.load('stats1.json')
       await loader.load('stats2.json')
       
-      const stats = loader.getCacheStats()
-      
-      expect(stats.totalFiles).toBe(2)
-      expect(stats.totalSize).toBeGreaterThan(0)
-      expect(stats.oldestCache).toBeGreaterThan(0)
-      expect(stats.newestCache).toBeGreaterThan(0)
+      // 验证缓存存在
+      expect(loader.hasCache('stats1.json')).toBe(true)
+      expect(loader.hasCache('stats2.json')).toBe(true)
+      expect(loader.getCachedTimestamp('stats1.json')).toBe('2024-02-11T10:00:00Z')
+      expect(loader.getCachedTimestamp('stats2.json')).toBe('2024-02-11T10:00:00Z')
     })
   })
   

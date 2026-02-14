@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { SparkData } from '../packages/spark-data/src/spark-data-namespace'
+import { SparkData } from '../packages/spark-data/src/spark-data'
 
 describe('SparkData Namespace', () => {
   it('应该提供 createDataSet 工厂方法', () => {

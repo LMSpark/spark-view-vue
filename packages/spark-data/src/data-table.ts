@@ -7,19 +7,17 @@
 import { DataView } from './data-view'
 import { FIELD_METADATA } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
-import type {
-  IDataTable, ITableMetadata, IViewMetadata,
-  IDataRowWithPermission, DataColumn, CrudApi, IDataSet
-} from './types'
+import type { IDataRow, DataColumn, CrudApi, ITableMetadata } from './types'
 
-export class DataTable extends DataView implements IDataTable {
+export class DataTable extends DataView {
+  // 表特有属性
   tableName: string
   columns: DataColumn[]
   api?: CrudApi
   contexts: Record<string, DataView> = {}
 
-  constructor(tableName: string, columns: DataColumn[] = [], dataSet?: IDataSet) {
-    super(tableName, 'default', dataSet)
+  constructor(tableName: string, columns: DataColumn[] = []) {
+    super(tableName, 'default')
     this.tableName = tableName
     this.columns = columns
   }
@@ -73,7 +71,7 @@ export class DataTable extends DataView implements IDataTable {
   // ===== 序列化 =====
 
   override toData(): ITableMetadata {
-    const ctxData: Record<string, IViewMetadata> = {}
+    const ctxData: Record<string, import('./types').IViewMetadata> = {}
     for (const [id, ctx] of Object.entries(this.contexts)) {
       ctxData[id] = ctx.toData()
     }
@@ -92,11 +90,13 @@ export class DataTable extends DataView implements IDataTable {
     }
   }
 
-  static fromTableData(data: ITableMetadata, dataSet?: IDataSet): DataTable {
-    const t = new DataTable(data.tableName, data.columns ?? [], dataSet)
+  // ===== 工厂方法 =====
+
+  static fromTableData(data: ITableMetadata): DataTable {
+    const t = new DataTable(data.tableName, data.columns ?? [])
     t.api = data.api
     if (data.rows) {
-      t.rows = data.rows.map(r => ({ ...r, __permissions: {} } as IDataRowWithPermission))
+      t.rows = data.rows.map(r => ({ ...r, __permissions: {} } as IDataRow))
     }
     t.filterExpression = data.filterExpression
     t.sortExpression = data.sortExpression
@@ -106,7 +106,7 @@ export class DataTable extends DataView implements IDataTable {
 
     if (data.contexts) {
       for (const [cid, cd] of Object.entries(data.contexts)) {
-        t.contexts[cid] = DataView.fromData(cd, t.tableName, cid, dataSet)
+        t.contexts[cid] = DataView.fromData(cd, t.tableName, cid)
       }
     }
     return t

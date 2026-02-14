@@ -2,10 +2,10 @@
  * DataSet 管理 Composable
  */
 
-import { ref, Ref, onUnmounted } from 'vue'
+import { shallowRef, Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { SparkData } from '@spark-view/spark-data'
-import type { IDataSet, IDataRow } from '@spark-view/spark-data'
+import type { DataSet, IDataRow, DataColumn, CrudApi, DataRelation } from '@spark-view/spark-data'
 import type { PageContext, Rule, FormCreateAPI } from '../types'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
 
@@ -27,7 +27,7 @@ export interface UsePageDataSetOptions {
  * DataSet管理返回值接口 (ISP: 接口隔离原则)
  */
 export interface UsePageDataSetReturn {
-  dataSet: Ref<IDataSet | null>
+  dataSet: Ref<DataSet | null>
   initDataSet: () => void
   autoSubscribeTables: () => void
   clearDataSet: () => void
@@ -58,7 +58,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     dataLoader
   } = options
   
-  const dataSet = ref<IDataSet | null>(null)
+  const dataSet = shallowRef<DataSet | null>(null)
   
   /**
    * 初始化DataSet (SRP: 单一职责 - 只负责初始化)
@@ -79,16 +79,18 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       })
       
       // 创建 DataSet (使用命名空间 API)
-      dataSet.value = SparkData.createDataSet({
-        ...(pageData.dataset as IDataSet),
-        dataLoader: defaultDataLoader
-      })
-      
-      // 将 DataSet 实例的 tables 赋值给 pageData.dataset.tables，以支持 dataKey 绑定
-      // 这样 rule.json 中的 dataKey (如 "dataset.tables.Users.rows") 才能正确访问数据
-      if (dataSet.value && pageData.dataset && typeof pageData.dataset === 'object') {
-        (pageData.dataset as Record<string, unknown>).tables = dataSet.value.tables
+      const datasetConfig = pageData.dataset as {
+        dataSetName?: string
+        tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>
+        relations?: DataRelation[]
       }
+      const config = {
+        dataSetName: datasetConfig.dataSetName ?? 'PageDataSet',
+        tables: datasetConfig.tables ?? {},
+        relations: datasetConfig.relations,
+        dataLoader: defaultDataLoader
+      }
+      dataSet.value = SparkData.createDataSet(config)
       
       // 注意：不需要设置 context.$dataSet，因为 PageRenderer 已通过 getter 提供访问
       // context.$dataSet 是只读属性，通过 getter 返回 dataSet.value

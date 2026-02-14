@@ -1,113 +1,87 @@
 /**
  * DataView — 数据视图（UI 状态容器）
  *
- * Purpose: 作为 UI 层与数据结构（DataSet/DataTable）之间的薄状态容器，
- * - 负责：持有视图行（rows）、选中/当前行状态、分页与加载标记、视图序列化
- * - 不负责：网络请求、复杂的持久化、跨表业务逻辑（由 DataSet 管理）
- *
- * Public surface:
- * - 构造与序列化：fromData / toData
- * - 状态管理：setCurrentRow / setSelectedRows / clearAll / cleanupInvalidSelections
- *
- * Usage example:
- * const dv = new DataView('Users', 'default', dataSet)
- * dv.rows = fetchedRows; dv.setSelectedRows([dv.rows[0]])
+ * 直接实现类，不再继承复杂接口
  */
 
-import type {
-  IDataRowWithPermission, IDataView, IViewMetadata,
-  IDataSet, FilterExpression, SortExpression, ITreeManager
-} from './types'
+import type { IDataRow, IViewMetadata, FilterExpression, SortExpression, ITreeManager } from './types'
 import { Logger } from '@spark-view/spark-utils'
 import { isSameRow } from './core/utils'
 
-export class DataView implements IDataView {
-  /* ---------------------------------------------------------------------------
-   * 状态（State） — 存储视图数据与选中/当前行信息
-   * - rows / originalRows: 当前页面/视图的行数据
-   * - currentRow / currentRowIndex: 当前焦点行
-   * - selectedRows / selectedRowIndices: 选中行的缓存
-   * --------------------------------------------------------------------------- */
-  rows: IDataRowWithPermission[] = []
-  originalRows?: IDataRowWithPermission[]
-  currentRow: IDataRowWithPermission | null = null
+// 前向声明，避免循环依赖
+interface IDataSet {
+  updateRelatedTables(tableName: string, contextId?: string): void
+  notifySubscribers(tableName: string, contextId?: string): void
+  emit(event: string, data: unknown): void
+}
+
+export class DataView {
+  // 基础标识
+  hostTable: string
+  contextId: string | "default"
+
+  // 数据状态
+  rows: IDataRow[] = []
+  originalRows?: IDataRow[]
+  currentRow: IDataRow | null = null
   currentRowIndex: number | null = null
-  selectedRows: IDataRowWithPermission[] = []
+  selectedRows: IDataRow[] = []
   selectedRowIndices: number[] = []
 
-  /* ---------------------------------------------------------------------------
-   * 分页（Paging） — 仅保存分页参数（由 DataLoader/外部负责实际分页请求）
-   * - page / pageSize / total
-   * --------------------------------------------------------------------------- */
+  // 分页状态
   total: number = 0
   page: number = 1
   pageSize: number = 20
 
-  /* ---------------------------------------------------------------------------
-   * 加载状态（Loading） — 简要记录加载中与加载错误，供 UI 显示
-   * - isLoading: 加载标记
-   * - loadingError: 最近一次加载错误（若有）
-   * --------------------------------------------------------------------------- */
-  isLoading = false
+  // 加载状态
+  isLoading: boolean = false
   loadingError: Error | null = null
 
-  /* ---------------------------------------------------------------------------
-   * 视图配置（Configuration） — 持久化到 IViewMetadata 的可选设置
-   * - filterExpression / sortExpression / autoSelectFirst
-   * --------------------------------------------------------------------------- */
+  // 视图配置
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
   autoSelectFirst?: boolean
 
-  /* ---------------------------------------------------------------------------
-   * 引用（References） — 关联到宿主 DataSet 与可选 TreeManager
-   * - dataSet: 用于通知/广播/跨表同步
-   * - treeManager: 树形视图支持的可选关联
-   * --------------------------------------------------------------------------- */
+  // 关联对象
   protected dataSet?: IDataSet
   treeManager?: ITreeManager
 
   protected logger = Logger('DataView')
 
-  private __hostTable: string
-  private __contextId: string
-
-  constructor(hostTable: string, contextId = 'default', dataSet?: IDataSet) {
-    this.__hostTable = hostTable
-    this.__contextId = contextId
+  constructor(hostTable: string, contextId: string | "default" = 'default', dataSet?: IDataSet) {
+    this.hostTable = hostTable
+    this.contextId = contextId
     this.dataSet = dataSet
   }
 
-  /* ---------------------------------------------------------------------------
-   * 访问器（Accessors） — 公开只读属性和小型设置方法
-   * - hostTable / contextId
-   * - setDataSet / setTreeManager / getTreeManager
-   * --------------------------------------------------------------------------- */
-  get hostTable() { return this.__hostTable }
-  get contextId() { return this.__contextId }
-
-  setDataSet(ds: IDataSet) { this.dataSet = ds }
-  setTreeManager(tm: ITreeManager) {
+  // 树管理器设置
+  setTreeManager(tm: ITreeManager): void {
     this.treeManager = tm
     if (typeof tm.setDataView === 'function') tm.setDataView(this)
   }
-  getTreeManager() { return this.treeManager }
 
-  /* ---------------------------------------------------------------------------
-   * 加载生命周期（Loading helpers） — 供 DataLoader 或上层调用以切换加载状态
-   * - setLoading / setReady / setError
-   * --------------------------------------------------------------------------- */
-  setLoading() { this.isLoading = true; this.loadingError = null }
-  setReady()   { this.isLoading = false; this.loadingError = null }
-  setError(e: Error) { this.isLoading = false; this.loadingError = e }
+  getTreeManager(): ITreeManager | undefined {
+    return this.treeManager
+  }
 
-  /* ---------------------------------------------------------------------------
-   * 选中管理（Selection management） — current / selected 行的设置、清理与通知
-   * - setCurrentRow / setSelectedRows / clearAll / cleanupInvalidSelections
-   * - 变更会通知关联的 DataSet（updateRelatedTables / notifySubscribers / emit）
-   * --------------------------------------------------------------------------- */
+  // 加载状态管理
+  setLoading(): void {
+    this.isLoading = true
+    this.loadingError = null
+  }
 
-  setCurrentRow(row: IDataRowWithPermission | null, skipNotify = false): void {
+  setReady(): void {
+    this.isLoading = false
+    this.loadingError = null
+  }
+
+  setError(e: Error): void {
+    this.isLoading = false
+    this.loadingError = e
+  }
+
+  // 选中管理
+  setCurrentRow(row: IDataRow | null, skipNotify = false): void {
     if (this.currentRow === row) return
 
     this.currentRow = row
@@ -115,15 +89,15 @@ export class DataView implements IDataView {
     if (this.currentRowIndex === -1) this.currentRowIndex = null
 
     if (!skipNotify && this.dataSet) {
-      this.dataSet.updateRelatedTables(this.__hostTable, this.__contextId)
-      this.dataSet.notifySubscribers(this.__hostTable, this.__contextId)
+      this.dataSet.updateRelatedTables(this.hostTable, this.contextId)
+      this.dataSet.notifySubscribers(this.hostTable, this.contextId)
       this.dataSet.emit('currentRowChanged', {
-        tableName: this.__hostTable, contextId: this.__contextId, row
+        tableName: this.hostTable, contextId: this.contextId, row
       })
     }
   }
 
-  setSelectedRows(rows: IDataRowWithPermission[], skipNotify = false): void {
+  setSelectedRows(rows: IDataRow[], skipNotify = false): void {
     const cur = this.selectedRows
     if (cur.length === rows.length && cur.every((r, i) => r === rows[i])) return
 
@@ -131,17 +105,17 @@ export class DataView implements IDataView {
     this.selectedRowIndices = rows.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
 
     if (this.dataSet) {
-      this.dataSet.updateRelatedTables(this.__hostTable, this.__contextId)
+      this.dataSet.updateRelatedTables(this.hostTable, this.contextId)
       if (!skipNotify) {
-        this.dataSet.notifySubscribers(this.__hostTable, this.__contextId)
+        this.dataSet.notifySubscribers(this.hostTable, this.contextId)
         this.dataSet.emit('selectedRowsChanged', {
-          tableName: this.__hostTable, contextId: this.__contextId, rows
+          tableName: this.hostTable, contextId: this.contextId, rows
         })
       }
     }
   }
 
-  /** 清空所有状态 */
+  // 清空所有状态
   clearAll(skipNotify = false): void {
     const had = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0
     this.rows.splice(0, this.rows.length)
@@ -151,12 +125,12 @@ export class DataView implements IDataView {
     this.selectedRowIndices = []
 
     if (!skipNotify && had && this.dataSet) {
-      this.dataSet.notifySubscribers(this.__hostTable, this.__contextId)
-      this.dataSet.emit('contextCleared', { tableName: this.__hostTable, contextId: this.__contextId })
+      this.dataSet.notifySubscribers(this.hostTable, this.contextId)
+      this.dataSet.emit('contextCleared', { tableName: this.hostTable, contextId: this.contextId })
     }
   }
 
-  /** 清理不在 rows 里的无效选中 */
+  // 清理无效选中
   cleanupInvalidSelections(): boolean {
     let cleaned = false
     if (this.currentRow && !this.rows.some(r => isSameRow(r, this.currentRow))) {
@@ -175,15 +149,11 @@ export class DataView implements IDataView {
     return cleaned
   }
 
-  /* ---------------------------------------------------------------------------
-   * 序列化（Serialization） — 将视图配置序列化为 IViewMetadata（仅配置，不包含行数据）
-   * - toData / static fromData
-   * --------------------------------------------------------------------------- */
-
+  // 序列化
   toData(): IViewMetadata {
     return {
-      hostTable: this.__hostTable,
-      contextId: this.__contextId,
+      hostTable: this.hostTable,
+      contextId: this.contextId,
       filterExpression: this.filterExpression,
       sortExpression: this.sortExpression,
       autoSelectFirst: this.autoSelectFirst,
@@ -192,6 +162,7 @@ export class DataView implements IDataView {
     }
   }
 
+  // 工厂方法
   static fromData(data: IViewMetadata, hostTable: string, contextId: string, dataSet?: IDataSet): DataView {
     const v = new DataView(hostTable, contextId, dataSet)
     v.filterExpression = data.filterExpression

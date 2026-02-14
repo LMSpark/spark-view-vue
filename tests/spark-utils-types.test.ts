@@ -16,19 +16,20 @@ import {
   createHttpTransport,
   createMemoryTransport,
   defineCapability,
+} from '@spark-view/spark-utils'
+import {
   FieldVisibility,
   ComponentLevel,
   INSTANCE_PERMISSION_FIELD,
   MODEL_PERMISSION_FIELD
-} from '@spark-view/spark-utils'
+} from '@spark-view/spark-data'
 import type {
   IDataRow,
-  IDataRowWithPermission,
-  WithInstancePermission,
-  WithModelPermission,
   IDataSource,
   IInstancePermission,
   IModelPermission,
+} from '@spark-view/spark-data'
+import type {
   EventsCapability,
   GridEventsCapability,
   RowEventsCapability,
@@ -40,7 +41,7 @@ import type {
 } from '@spark-view/spark-utils'
 
 // ============================================================================
-// IDataRow<T> 泛型约束
+// IDataRow 类型
 // ============================================================================
 
 describe('IDataRow type constraint', () => {
@@ -50,46 +51,16 @@ describe('IDataRow type constraint', () => {
     expect(row.name).toBe('Alice')
   })
 
-  it('accepts typed data rows', () => {
-    interface User { id: number; name: string }
-    const row: IDataRow<User> = { id: 1, name: 'Alice' }
-    expect(row.id).toBe(1)
-  })
-
-  // 编译时测试：以下应该报类型错误（无法在运行时验证，但确认类型设计正确）
-  // const badRow: IDataRow<number> = 42 // TS Error: number does not extend Record<string, unknown>
-})
-
-// ============================================================================
-// IDataRowWithPermission ≡ WithInstancePermission
-// ============================================================================
-
-describe('IDataRowWithPermission equals WithInstancePermission', () => {
-  it('both types have identical structure', () => {
-    const row1: IDataRowWithPermission = {
+  it('supports _perm field', () => {
+    const row: IDataRow = {
       id: 1,
       _perm: { allowDelete: true, editableFields: ['name'] }
     }
-    // 可以赋值给 WithInstancePermission
-    const row2: WithInstancePermission = row1
-    expect(row2._perm?.allowDelete).toBe(true)
-  })
-
-  it('works with generics', () => {
-    interface User { id: number; name: string }
-    const row: IDataRowWithPermission<User> = {
-      id: 1,
-      name: 'Alice',
-      _perm: { maskedFields: ['name'] }
-    }
-    // 也可以赋值给 WithInstancePermission<User>
-    const asWIP: WithInstancePermission<User> = row
-    expect(asWIP.name).toBe('Alice')
-    expect(asWIP._perm?.maskedFields).toContain('name')
+    expect(row._perm?.allowDelete).toBe(true)
   })
 
   it('permission field is optional', () => {
-    const row: IDataRowWithPermission = { id: 1 }
+    const row: IDataRow = { id: 1 }
     expect(row._perm).toBeUndefined()
   })
 })

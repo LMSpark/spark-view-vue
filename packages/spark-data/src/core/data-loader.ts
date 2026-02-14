@@ -7,6 +7,7 @@
  */
 
 import type { DataSet } from '../dataset'
+import type { DataView as SparkDataView } from '../data-view'
 import { Logger } from '@spark-view/spark-utils'
 
 export class DataLoader {
@@ -42,7 +43,7 @@ export class DataLoader {
   private async doLoad(tableName: string): Promise<void> {
     const table = this.ds.getTable(tableName)
     const deps = this.ds.getTableDependencies(tableName)
-    const isRoot = deps.size === 0
+    const isRoot = deps.length === 0
 
     // 根表已有数据 → 直接通知
     if (isRoot && table?.rows?.length) {
@@ -142,7 +143,7 @@ export class DataLoader {
 
   private shouldAutoLoad(tableName: string): boolean {
     for (const rel of this.ds.relations?.filter(r => r.childTable === tableName) ?? []) {
-      const ctx = this.ds.getContext(rel.parentTable, rel.parentContextId)
+      const ctx: SparkDataView | undefined = this.ds.getContext(rel.parentTable, rel.parentContextId)
       if (!ctx) continue
       if (rel.dependencyType === 'currentRow' && ctx.currentRow) return true
       if (rel.dependencyType === 'selectedRows' && ctx.selectedRows?.length) return true
