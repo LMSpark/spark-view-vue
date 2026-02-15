@@ -1,135 +1,16 @@
 /**
- * 统一事件系统测试
+ * 能力驱动事件系统测试（IDataSetContext 模式）
  *
  * 覆盖：
- * - DataEventHub 基础 API（on / off / emit / has / hasPrefix）
- * - DataSet 事件驱动流：view:stateChanged → 级联 + 通知 + 广播
+ * - DataSet handleViewStateChanged 事件流：级联 + 通知 + 广播
  * - setCurrentRow / setSelectedRows / clearAll 的事件发射行为
- * - skipNotify 语义差异（selectedRows 级联始终执行）
- * - subscribe / notifySubscribers 通过事件中枢工作
+ * - subscribe / notifySubscribers 通过内联 Map 工作
+ * - TreeManager 内联事件系统
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { DataEventHub } from '../packages/spark-data/src/core/data-event-hub'
 import { DataSet } from '../packages/spark-data/src/dataset'
 import { SparkData } from '../packages/spark-data/src/spark-data'
-
-// ==================== DataEventHub 单元测试 ====================
-
-describe('DataEventHub', () => {
-  it('on/emit 基本发布订阅', () => {
-    const hub = new DataEventHub()
-    const handler = vi.fn()
-
-    hub.on('test', handler)
-    hub.emit('test', { value: 42 })
-
-    expect(handler).toHaveBeenCalledOnce()
-    expect(handler).toHaveBeenCalledWith({ value: 42 })
-  })
-
-  it('on 返回取消注册函数', () => {
-    const hub = new DataEventHub()
-    const handler = vi.fn()
-
-    const unsubscribe = hub.on('test', handler)
-    unsubscribe()
-    hub.emit('test')
-
-    expect(handler).not.toHaveBeenCalled()
-  })
-
-  it('off 移除指定处理器', () => {
-    const hub = new DataEventHub()
-    const h1 = vi.fn()
-    const h2 = vi.fn()
-
-    hub.on('test', h1)
-    hub.on('test', h2)
-    hub.off('test', h1)
-    hub.emit('test', 'data')
-
-    expect(h1).not.toHaveBeenCalled()
-    expect(h2).toHaveBeenCalledWith('data')
-  })
-
-  it('off 不传 handler 移除该事件全部监听', () => {
-    const hub = new DataEventHub()
-    const h1 = vi.fn()
-    const h2 = vi.fn()
-
-    hub.on('test', h1)
-    hub.on('test', h2)
-    hub.off('test')
-    hub.emit('test')
-
-    expect(h1).not.toHaveBeenCalled()
-    expect(h2).not.toHaveBeenCalled()
-  })
-
-  it('emit 无监听器时不报错', () => {
-    const hub = new DataEventHub()
-    expect(() => hub.emit('nonexistent', 'data')).not.toThrow()
-  })
-
-  it('emit 错误隔离 — 一个处理器抛异常不影响其他处理器', () => {
-    const hub = new DataEventHub()
-    const h1 = vi.fn(() => { throw new Error('boom') })
-    const h2 = vi.fn()
-
-    hub.on('test', h1)
-    hub.on('test', h2)
-    hub.emit('test', 'data')
-
-    expect(h1).toHaveBeenCalled()
-    expect(h2).toHaveBeenCalledWith('data')
-  })
-
-  it('has 检查事件是否有监听器', () => {
-    const hub = new DataEventHub()
-    expect(hub.has('test')).toBe(false)
-
-    const unsub = hub.on('test', vi.fn())
-    expect(hub.has('test')).toBe(true)
-
-    unsub()
-    expect(hub.has('test')).toBe(false)
-  })
-
-  it('hasPrefix 检查匹配前缀的事件', () => {
-    const hub = new DataEventHub()
-    expect(hub.hasPrefix('view:')).toBe(false)
-
-    hub.on('view:Users.default:changed', vi.fn())
-    expect(hub.hasPrefix('view:')).toBe(true)
-    expect(hub.hasPrefix('view:Users.')).toBe(true)
-    expect(hub.hasPrefix('view:Orders.')).toBe(false)
-  })
-
-  it('多个事件互不干扰', () => {
-    const hub = new DataEventHub()
-    const hA = vi.fn()
-    const hB = vi.fn()
-
-    hub.on('eventA', hA)
-    hub.on('eventB', hB)
-    hub.emit('eventA', 'a')
-
-    expect(hA).toHaveBeenCalledWith('a')
-    expect(hB).not.toHaveBeenCalled()
-  })
-
-  it('同一处理器多次注册只响应一次（Set 去重）', () => {
-    const hub = new DataEventHub()
-    const handler = vi.fn()
-
-    hub.on('test', handler)
-    hub.on('test', handler) // 重复注册
-    hub.emit('test', 'data')
-
-    expect(handler).toHaveBeenCalledTimes(1)
-  })
-})
 
 // ==================== DataSet 事件驱动集成测试 ====================
 
@@ -206,18 +87,6 @@ describe('DataSet 统一事件驱动', () => {
     )
   })
 
-  it('setCurrentRow skipNotify=true 不触发任何事件', () => {
-    const ds = createTestDataSet()
-    const handler = vi.fn()
-    ds.on('currentRowChanged', handler)
-    ds.on('tableChanged', handler)
-
-    const dept = ds.getTable('Departments')!
-    dept.setCurrentRow(dept.rows[0]!, true)
-
-    expect(handler).not.toHaveBeenCalled()
-  })
-
   it('setSelectedRows 触发 selectedRowsChanged 事件', () => {
     const ds = createTestDataSet()
     const handler = vi.fn()
@@ -233,30 +102,6 @@ describe('DataSet 统一事件驱动', () => {
         contextId: 'default'
       })
     )
-  })
-
-  it('setSelectedRows skipNotify=true：不触发通知事件但级联仍执行', () => {
-    const ds = createTestDataSet()
-    const notifyHandler = vi.fn()
-    const tableChangedHandler = vi.fn()
-
-    ds.on('selectedRowsChanged', notifyHandler)
-    ds.on('tableChanged', tableChangedHandler)
-
-    // 用 subscribe 验证通知也被跳过
-    const subscribeHandler = vi.fn()
-    ds.subscribe('Departments', 'default', subscribeHandler)
-
-    const dept = ds.getTable('Departments')!
-    dept.setSelectedRows([dept.rows[0]!], true)
-
-    // 通知和广播应被跳过
-    expect(notifyHandler).not.toHaveBeenCalled()
-    expect(tableChangedHandler).not.toHaveBeenCalled()
-    expect(subscribeHandler).not.toHaveBeenCalled()
-
-    // 但状态已更新（说明事件发射了，级联逻辑走过了）
-    expect(dept.selectedRows).toHaveLength(1)
   })
 
   it('clearAll 触发 contextCleared 事件', () => {
@@ -275,16 +120,6 @@ describe('DataSet 统一事件驱动', () => {
         contextId: 'default'
       })
     )
-  })
-
-  it('clearAll skipNotify=true 不触发事件', () => {
-    const ds = createTestDataSet()
-    const dept = ds.getTable('Departments')!
-    const handler = vi.fn()
-    ds.on('contextCleared', handler)
-    dept.clearAll(true)
-
-    expect(handler).not.toHaveBeenCalled()
   })
 
   it('setCurrentRow 同一行重复设置不触发事件（去重）', () => {
@@ -331,7 +166,7 @@ describe('DataSet 统一事件驱动', () => {
 
 // ==================== subscribe / notifySubscribers 测试 ====================
 
-describe('DataSet subscribe（通过事件中枢）', () => {
+describe('DataSet subscribe（内联 Map 实现）', () => {
   it('subscribe 返回取消订阅函数', () => {
     const ds = createTestDataSet()
     const cb = vi.fn()
@@ -444,7 +279,7 @@ describe('事件流完整端到端', () => {
     expect(handler).toHaveBeenCalledOnce() // 取消后不再触发
   })
 
-  it('TreeManager 使用 DataEventHub 发射事件', () => {
+  it('TreeManager 内联事件系统发射事件', () => {
     const tree = SparkData.createTreeManager({
       idField: 'id',
       parentIdField: 'parentId'

@@ -107,9 +107,6 @@ async function startApp() {
       // === 应用基础配置（从 JSON 加载）===
       config: appConfig.config,
       
-      // === Logger 配置（从 JSON 加载）===
-      logger: appConfig.logger,
-      
       // === 生命周期钩子 ===
       
       // 启动前钩子

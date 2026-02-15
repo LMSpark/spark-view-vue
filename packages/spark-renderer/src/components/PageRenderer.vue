@@ -28,13 +28,37 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, nextTick, h, type Component } from 'vue'
-import { useRoute } from 'vue-router'
-import { Logger } from '@spark-view/spark-utils'
+import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
+import { Logger, APP_SERVICES } from '@spark-view/spark-utils'
+import { useSparkComponent } from '@spark-view/spark-component'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { SparkData } from '@spark-view/spark-data'
 
-// 本地 Logger（消除对 spark-app 的反向依赖）
+// 本地 Logger
 const pageLogger = Logger('PageRenderer')
+
+// ==================== SPARK 能力上下文 ====================
+// 接入 spark-component 的组件树，保证子组件通过 consume() 能找到这里 provide 的能力
+const router = useRouter()
+const { provide: provideCapability } = useSparkComponent({
+  type: 'page-renderer',
+  id: 'page-renderer-root'
+})
+
+provideCapability(APP_SERVICES, {
+  router: {
+    push: (to: unknown) => router.push(to as RouteLocationRaw),
+    replace: (to: unknown) => router.replace(to as RouteLocationRaw),
+    back: () => router.back(),
+    currentRoute: router.currentRoute.value
+  },
+  logger: {
+    debug: (...args: unknown[]) => pageLogger.debug(...args),
+    info: (...args: unknown[]) => pageLogger.info(...args),
+    warn: (...args: unknown[]) => pageLogger.warn(...args),
+    error: (...args: unknown[]) => pageLogger.error(...args)
+  }
+})
 
 // 本地错误码
 const ErrorCodes = {

@@ -10,15 +10,26 @@ export type { RequestConfig, ApiResponse }
 
 // ===== 视图状态事件 =====
 
-/** 视图状态变化事件（统一事件系统使用） */
+/** 视图状态变化事件 */
 export interface ViewStateEvent {
   tableName: string
   contextId: string
   changeType: 'currentRow' | 'selectedRows' | 'cleared'
   row?: IDataRow | null
   rows?: IDataRow[]
-  /** 为 true 时仅级联关系，跳过订阅通知和事件广播 */
-  skipNotify?: boolean
+}
+
+/**
+ * DataSet 向下层提供的能力接口（Dependency Inversion）
+ *
+ * DataView / DataTable 只依赖此接口，不知道 DataSet 的具体实现。
+ * 遵循 Demo 能力模式：上层 provide → 下层 consume。
+ */
+export interface IDataSetContext {
+  /** 处理视图状态变化（currentRow / selectedRows / cleared） */
+  handleViewStateChanged(event: ViewStateEvent): void
+  /** 发送具名事件（dataLoaded / recordCreated 等 CRUD 通知） */
+  emit(event: string, data: unknown): void
 }
 
 // ===== 权限类型 =====

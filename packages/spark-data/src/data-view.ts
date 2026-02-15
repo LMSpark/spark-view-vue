@@ -5,16 +5,10 @@
  * 管理数据展示状态、选中状态、分页状态等UI相关状态。
  */
 
-import type { IDataRow, IViewMetadata, FilterExpression, SortExpression } from './types'
+import type { IDataRow, IViewMetadata, FilterExpression, SortExpression, IDataSetContext } from './types'
 import type { TreeManager } from './tree-manager'
 import { Logger } from '@spark-view/spark-utils'
 import { isSameRow } from './core/utils'
-
-// 前向声明，避免循环依赖
-// DataView 只需要 emit 能力，彻底解耦关系引擎和订阅管理
-interface IDataSetEmitter {
-  emit(event: string, data: unknown): void
-}
 
 export class DataView {
   // ===== 属性定义 =====
@@ -77,11 +71,14 @@ export class DataView {
 
   // ===== 关联对象 =====
 
-  /** 关联的数据集事件发射器 */
-  protected dataSet?: IDataSetEmitter
+  /** 关联的数据集能力接口（上层提供的能力） */
+  protected dataSet?: IDataSetContext
 
   /** 树形数据管理器 */
   treeManager?: TreeManager
+
+  /** 订阅者集合（UI 层通过 subscribe 注册） */
+  private subscribers = new Set<() => void>()
 
   /** 日志记录器 */
   protected logger = Logger('DataView')
@@ -94,7 +91,7 @@ export class DataView {
    * @param contextId 数据视图ID
    * @param dataSet 关联的数据集
    */
-  constructor(tableName: string, contextId: string | "default" = 'default', dataSet?: IDataSetEmitter) {
+  constructor(tableName: string, contextId: string | "default" = 'default', dataSet?: IDataSetContext) {
     this.tableName = tableName
     this.contextId = contextId
     if (dataSet !== undefined) this.dataSet = dataSet
@@ -103,10 +100,10 @@ export class DataView {
   // ===== 数据集关联 =====
 
   /**
-   * 设置关联的数据集（事件发射目标）
-   * @param ds 数据集事件发射器
+   * 设置关联的数据集能力接口（上层提供的能力）
+   * @param ds 数据集能力接口
    */
-  setDataSet(ds: IDataSetEmitter): void {
+  setDataSet(ds: IDataSetContext): void {
     this.dataSet = ds
   }
 
@@ -161,17 +158,16 @@ export class DataView {
   /**
    * 设置当前选中行
    * @param row 当前行数据
-   * @param skipNotify 是否跳过通知
    */
-  setCurrentRow(row: IDataRow | null, skipNotify = false): void {
+  setCurrentRow(row: IDataRow | null): void {
     if (this.currentRow === row) return
 
     this.currentRow = row
     this.currentRowIndex = row === null ? null : this.rows.indexOf(row)
     if (this.currentRowIndex === -1) this.currentRowIndex = null
 
-    if (!skipNotify && this.dataSet) {
-      this.dataSet.emit('view:stateChanged', {
+    if (this.dataSet) {
+      this.dataSet.handleViewStateChanged({
         tableName: this.tableName, contextId: this.contextId,
         changeType: 'currentRow', row
       })
@@ -181,20 +177,18 @@ export class DataView {
   /**
    * 设置选中的多行数据
    * @param rows 选中的行数据数组
-   * @param skipNotify 是否跳过订阅通知（关系级联始终执行）
    */
-  setSelectedRows(rows: IDataRow[], skipNotify = false): void {
+  setSelectedRows(rows: IDataRow[]): void {
     const cur = this.selectedRows
     if (cur.length === rows.length && cur.every((r, i) => r === rows[i])) return
 
     this.selectedRows = rows
     this.selectedRowIndices = rows.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
 
-    // 选择行变化始终发射事件（关系级联必须执行），skipNotify 仅控制通知和广播
     if (this.dataSet) {
-      this.dataSet.emit('view:stateChanged', {
+      this.dataSet.handleViewStateChanged({
         tableName: this.tableName, contextId: this.contextId,
-        changeType: 'selectedRows', rows, skipNotify
+        changeType: 'selectedRows', rows
       })
     }
   }
@@ -202,23 +196,30 @@ export class DataView {
   // ===== 数据清理 =====
 
   /**
-   * 清空所有状态
-   * @param skipNotify 是否跳过通知
+   * 清空所有状态（通知上层）
    */
-  clearAll(skipNotify = false): void {
+  clearAll(): void {
     const had = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0
+    this.resetState()
+
+    if (had && this.dataSet) {
+      this.dataSet.handleViewStateChanged({
+        tableName: this.tableName, contextId: this.contextId,
+        changeType: 'cleared'
+      })
+    }
+  }
+
+  /**
+   * 静默重置状态（不通知上层，供关系级联使用）
+   * 遵循 SOLID：上层通过此方法清理下层状态，避免循环通知
+   */
+  resetState(): void {
     this.rows.splice(0, this.rows.length)
     this.currentRow = null
     this.currentRowIndex = null
     this.selectedRows.splice(0, this.selectedRows.length)
     this.selectedRowIndices = []
-
-    if (!skipNotify && had && this.dataSet) {
-      this.dataSet.emit('view:stateChanged', {
-        tableName: this.tableName, contextId: this.contextId,
-        changeType: 'cleared'
-      })
-    }
   }
 
   /**
@@ -241,6 +242,36 @@ export class DataView {
       }
     }
     return cleaned
+  }
+
+  // ===== 订阅管理（视图级） =====
+
+  /**
+   * 订阅此视图的数据变化
+   * @param cb 回调函数
+   * @returns 取消订阅函数
+   */
+  subscribe(cb: () => void): () => void {
+    this.subscribers.add(cb)
+    return () => {
+      this.subscribers.delete(cb)
+    }
+  }
+
+  /**
+   * 通知此视图的所有订阅者
+   */
+  notifySubscribers(): void {
+    for (const cb of [...this.subscribers]) {
+      try { cb() } catch (e) { this.logger.error('订阅通知错误:', e) }
+    }
+  }
+
+  /**
+   * 检查此视图是否有订阅者
+   */
+  hasSubscribers(): boolean {
+    return this.subscribers.size > 0
   }
 
   // ===== 序列化 =====
@@ -274,7 +305,7 @@ export class DataView {
    * @param dataSet 关联的数据集
    * @returns 数据视图实例
    */
-  static fromData(data: IViewMetadata, tableName: string, contextId: string, dataSet?: IDataSetEmitter): DataView {
+  static fromData(data: IViewMetadata, tableName: string, contextId: string, dataSet?: IDataSetContext): DataView {
     const v = new DataView(tableName, contextId, dataSet)
     if (data.filterExpression !== undefined) v.filterExpression = data.filterExpression
     if (data.sortExpression !== undefined) v.sortExpression = data.sortExpression

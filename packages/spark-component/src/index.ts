@@ -40,9 +40,9 @@ export type { SparkPluginOptions } from './plugins/SparkPlugin.js'
 /** 组件注册表工厂函数 */
 export { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
 
-/** 能力管理器工厂函数 */
-export { createCapabilityManager } from './capability/CapabilityManager.js'
-export type { CapabilityManager } from './capability/CapabilityManager.js'
+/** 能力管理器工厂函数（从 spark-utils 透传） */
+export { createCapabilityManager } from '@spark-view/spark-utils'
+export type { ICapabilityManager } from '@spark-view/spark-utils'
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 5. 核心类型

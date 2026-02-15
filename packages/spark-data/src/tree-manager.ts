@@ -14,7 +14,6 @@ import type {
 type FlatTreeCache = Record<string | number, FlatTreeNode>
 import { Logger } from '@spark-view/spark-utils'
 import type { DataView } from './data-view'
-import { DataEventHub } from './core/data-event-hub'
 
 /**
  * 树管理器类
@@ -29,8 +28,8 @@ export class TreeManager {
   /** 节点缓存 */
   private cache: FlatTreeCache = {}
 
-  /** 统一事件中枢 */
-  private events = new DataEventHub()
+  /** 内联事件监听器（替代 DataEventHub） */
+  private listeners = new Map<string, Set<(...args: unknown[]) => void>>()
 
   /** 关联的数据视图 */
   private dataView?: DataView
@@ -335,7 +334,12 @@ export class TreeManager {
    * @param callback 回调函数
    */
   on(event: string, callback: (...args: unknown[]) => void): void {
-    this.events.on(event, callback)
+    let set = this.listeners.get(event)
+    if (!set) {
+      set = new Set()
+      this.listeners.set(event, set)
+    }
+    set.add(callback)
   }
 
   /**
@@ -344,16 +348,23 @@ export class TreeManager {
    * @param callback 回调函数
    */
   off(event: string, callback: (...args: unknown[]) => void): void {
-    this.events.off(event, callback)
+    const set = this.listeners.get(event)
+    if (!set) return
+    set.delete(callback)
+    if (set.size === 0) this.listeners.delete(event)
   }
 
   /**
-   * 触发事件
+   * 触发事件（内部使用，错误隔离）
    * @param event 事件名
    * @param data 事件数据
    */
   private emit(event: string, data: unknown): void {
-    this.events.emit(event, data)
+    const set = this.listeners.get(event)
+    if (!set?.size) return
+    for (const handler of [...set]) {
+      try { handler(data) } catch (e) { this.logger.error(`事件错误 '${event}':`, e) }
+    }
   }
 
   // ===== 序列化 =====
