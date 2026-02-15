@@ -1,20 +1,15 @@
 /**
  * spark-utils 类型系统测试
  * 
- * 验证第 4 轮清理的核心类型变更：
- * - IDataRow<T> 泛型约束
- * - IDataRowWithPermission ≡ WithInstancePermission 一致性
- * - EventsCapability 基础接口提取
+ * 验证核心类型：
+ * - IEventEmitter 接口
  * - CapabilityKey<T> 幻影类型
- * - Logger Transport 修复
+ * - Logger 基本功能
  */
 
 import { describe, it, expect } from 'vitest'
 import {
   Logger,
-  createConsoleTransport,
-  createHttpTransport,
-  createMemoryTransport,
   defineCapability,
 } from '@spark-view/spark-utils'
 import {
@@ -30,14 +25,11 @@ import type {
   IModelPermission,
 } from '@spark-view/spark-data'
 import type {
-  IEventsCapability,
-  IGridEventsCapability,
-  IRowEventsCapability,
   IAppServicesCapability,
   CapabilityKey,
   LogLevel,
   LoggerApi,
-  Transport
+  IEventEmitter
 } from '@spark-view/spark-utils'
 
 // ============================================================================
@@ -88,13 +80,12 @@ describe('IDataSource type', () => {
 })
 
 // ============================================================================
-// EventsCapability 基础接口
+// IEventEmitter 接口
 // ============================================================================
 
-describe('EventsCapability base interface', () => {
-  it('GridEventsCapability and RowEventsCapability are type aliases', () => {
-    // 创建符合 EventsCapability 的对象
-    const events: EventsCapability = {
+describe('IEventEmitter interface', () => {
+  it('IEventEmitter has on/off/emit methods', () => {
+    const emitter: IEventEmitter = {
       on: (event: string, handler: (...args: unknown[]) => void) => {
         expect(typeof event).toBe('string')
         expect(typeof handler).toBe('function')
@@ -103,24 +94,12 @@ describe('EventsCapability base interface', () => {
         expect(typeof event).toBe('string')
         expect(typeof handler).toBe('function')
       },
-      emit: (event: string, ...args: unknown[]) => {
+      emit: (event: string, ..._args: unknown[]) => {
         expect(typeof event).toBe('string')
       }
     }
 
-    // 可以赋值给 GridEventsCapability 和 RowEventsCapability
-    const gridEvents: GridEventsCapability = events
-    const rowEvents: RowEventsCapability = events
-    expect(gridEvents).toBe(events)
-    expect(rowEvents).toBe(events)
-  })
-
-  it('emit is optional', () => {
-    const events: EventsCapability = {
-      on: () => {},
-      off: () => {}
-    }
-    expect(events.emit).toBeUndefined()
+    expect(emitter).toBeTruthy()
   })
 })
 
@@ -144,41 +123,6 @@ describe('CapabilityKey phantom type', () => {
     const key1 = defineCapability<{ a: 1 }>('test:name-a')
     const key2 = defineCapability<{ a: 1 }>('test:name-b')
     expect(key1).not.toBe(key2)
-  })
-})
-
-// ============================================================================
-// Logger Transport 修复
-// ============================================================================
-
-describe('Logger transports', () => {
-  it('createConsoleTransport returns Transport with level', () => {
-    const transport = createConsoleTransport('warn')
-    expect(transport.level).toBe('warn')
-    expect(typeof transport.log).toBe('function')
-  })
-
-  it('createConsoleTransport defaults to info', () => {
-    const transport = createConsoleTransport()
-    expect(transport.level).toBe('info')
-  })
-
-  it('createHttpTransport returns Transport with level', () => {
-    const transport = createHttpTransport('/api/logs', 'error')
-    expect(transport.level).toBe('error')
-    expect(typeof transport.log).toBe('function')
-  })
-
-  it('createMemoryTransport stores log entries', () => {
-    const storage: unknown[] = []
-    const transport = createMemoryTransport(storage)
-    transport.log('info', 'hello', { key: 'val' })
-    expect(storage).toHaveLength(1)
-    const entry = storage[0] as { level: string; message: string; meta: unknown; ts: number }
-    expect(entry.level).toBe('info')
-    expect(entry.message).toBe('hello')
-    expect(entry.meta).toEqual({ key: 'val' })
-    expect(entry.ts).toBeGreaterThan(0)
   })
 })
 

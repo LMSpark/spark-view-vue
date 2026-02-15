@@ -354,7 +354,11 @@ export default registerComponents
           if (id.includes('@form-create')) {
             return 'form-create'
           }
-          // SPARK packages
+
+          // ── 智能路由级代码分割 ──
+          // 基于文件路径进行更细粒度的分割，提高缓存命中率
+
+          // SPARK packages - 按功能模块分割
           if (id.includes('packages/spark-component')) {
             return 'spark-component'
           }
@@ -370,6 +374,39 @@ export default registerComponents
           if (id.includes('packages/spark-renderer')) {
             return 'spark-renderer'
           }
+
+          // ── 页面组件懒加载分组 ──
+          // 将大型页面组件分组，便于按需加载
+
+          // 数据密集型页面（包含大量图表/表格）
+          if (id.includes('views/Dashboard') || id.includes('views/CapabilityDemo')) {
+            return 'pages-data-heavy'
+          }
+          // 配置管理页面
+          if (id.includes('views/Settings') || id.includes('views/TenantConfigDemo')) {
+            return 'pages-config'
+          }
+          // 演示页面
+          if (id.includes('views/JsonRendererDemo') || id.includes('views/ComponentRendererDemo')) {
+            return 'pages-demo'
+          }
+
+          // ── 第三方库智能分组 ──
+          // 基于使用频率和大小进行分组
+
+          // 经常使用的工具库
+          if (id.includes('axios') || id.includes('lodash') || id.includes('dayjs')) {
+            return 'vendor-utils'
+          }
+          // 图表和可视化库
+          if (id.includes('echarts') || id.includes('d3')) {
+            return 'vendor-charts'
+          }
+          // 表单和验证库
+          if (id.includes('async-validator') || id.includes('vxe-table')) {
+            return 'vendor-forms'
+          }
+
           // Node modules通用处理
           if (id.includes('node_modules')) {
             return 'vendor'

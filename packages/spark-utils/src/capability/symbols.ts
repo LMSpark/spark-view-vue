@@ -1,95 +1,111 @@
 /**
- * 能力系统 — 符号 + 接口 (一体化)
+ * SPARK 能力系统 — 类型 + 符号 + 操作（一体化）
  *
- * 本文件定义了能力键（Symbol）及其类型接口，按功能分区组织：
+ * 单文件包含：
+ * - 核心类型（CapabilityName, ICapabilityContext, IEventEmitter）
+ * - 类型安全能力键（CapabilityKey<T>, defineCapability）
+ * - 内置能力常量 + 配套接口
+ * - 纯函数操作（provide, lookup, createEventEmitter）
  *
- * **功能分区**：
- * - 应用服务：应用级和页面级服务能力
- * - 数据访问：数据集、数据表、数据视图能力
- * - UI交互：用户界面交互能力
- * - 事件系统：组件间事件通信能力
- *
- * **核心理念**：
- * 能力是固定的抽象概念，可在任意合适的上下文层级中提供和消费。
- * 这里的组织方式按功能分区，便于查找和理解相关能力。
- *
- * 每个能力定义 = Symbol 常量 + 配套接口，放在同一位置方便查阅。
- *
- * **使用示例**：
+ * @example
  * ```ts
- * import { Cap } from '@spark-view/spark-utils'
- * provide(Cap.APP_SERVICES, { router, logger })
- * const svc = consume(Cap.APP_SERVICES)   // AppServicesCapability | null
+ * import { APP_SERVICES, provide, lookup } from '@spark-view/spark-utils'
+ * provide(ctx, APP_SERVICES, { router, logger })
+ * const svc = lookup(ctx, APP_SERVICES)
  * ```
  */
 
-// ==================== 基础类型和工具 ====================
+import type { LoggerApi } from '../logger.js'
+
+// ==================== 核心类型 ====================
+
+/** 能力名称 */
+export type CapabilityName = string | symbol
 
 /**
- * 带类型信息的能力键
- *
- * 通过 branded intersection 将泛型参数 T 编码到 symbol 类型中，
- * 使得 provide/consume 函数可以根据键自动推断实现类型。
- *
- * @template T 能力实现的接口类型
+ * 能力上下文 — 运行时核心结构
+ * 一个上下文 = 一个组件/数据实例 的能力容器。
  */
+export interface ICapabilityContext {
+  id: string
+  type: string
+  parent?: ICapabilityContext
+  /** 能力 Map：名称 → 实现 */
+  capabilities: Map<CapabilityName, unknown>
+}
+
+/** 事件发射器协议 */
+export interface IEventEmitter {
+  on(event: string, handler: (...args: unknown[]) => void): void
+  off(event: string, handler: (...args: unknown[]) => void): void
+  emit(event: string, ...args: unknown[]): void
+}
+
+// ==================== 类型安全能力键 ====================
+
+/** 带类型信息的能力键（branded symbol） */
 export type CapabilityKey<T> = symbol & { readonly __capabilityType?: T }
 
-/**
- * 定义一个类型安全的能力键
- *
- * @template T 能力实现的接口类型
- * @param name Symbol.for() 的全局注册名
- * @returns 带类型参数的 CapabilityKey<T>
- */
+/** 定义类型安全的能力键 */
 export function defineCapability<T>(name: string): CapabilityKey<T> {
   return Symbol.for(name) as CapabilityKey<T>
 }
 
-// ==================== 应用服务分区 ====================
+// ==================== 纯函数操作 ====================
 
-/** APP Router 能力 */
-export interface IAppRouterCapability {
-  push(to: string | { path: string; query?: Record<string, unknown> }): Promise<void | unknown>
-  replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<void | unknown>
-  back(): void
-  currentRoute: unknown
+/** 在上下文中注册能力 */
+export function provide<T>(ctx: ICapabilityContext, name: CapabilityName, impl: T): void {
+  ctx.capabilities.set(name, impl)
 }
 
-/** APP Logger 能力 */
-export interface IAppLoggerCapability {
-  debug(...args: unknown[]): void
-  info(...args: unknown[]): void
-  warn(...args: unknown[]): void
-  error(...args: unknown[]): void
+/** 沿 parent 链查找能力（就近原则） */
+export function lookup<T = unknown>(ctx: ICapabilityContext, name: CapabilityName): T | undefined {
+  let current: ICapabilityContext | undefined = ctx
+  while (current) {
+    const impl = current.capabilities.get(name)
+    if (impl !== undefined) return impl as T
+    current = current.parent
+  }
+  return undefined
 }
 
-/** 租户信息 */
-export interface ITenantInfo {
-  tenantId: string
-  tenantName?: string
-  [key: string]: unknown
+/** 创建事件发射器 */
+export function createEventEmitter(): IEventEmitter {
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
+  return {
+    on(event: string, handler: (...args: unknown[]) => void) {
+      let handlers = listeners.get(event)
+      if (!handlers) { handlers = new Set(); listeners.set(event, handlers) }
+      handlers.add(handler)
+    },
+    off(event: string, handler: (...args: unknown[]) => void) {
+      listeners.get(event)?.delete(handler)
+    },
+    emit(event: string, ...args: unknown[]) {
+      listeners.get(event)?.forEach(h => { try { h(...args) } catch { /* swallow */ } })
+    }
+  }
 }
 
-/**
- * APP Services 能力（应用全局服务）
- * 由 PageRenderer / 应用根组件提供，整个组件树可消费
- */
+// ==================== 应用服务 ====================
+
+/** APP Services 能力（应用全局服务聚合） */
 export interface IAppServicesCapability {
-  router?: IAppRouterCapability
-  logger?: IAppLoggerCapability
-  tenant?: ITenantInfo
+  router?: {
+    push(to: string | { path: string; query?: Record<string, unknown> }): Promise<void | unknown>
+    replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<void | unknown>
+    back(): void
+    currentRoute: unknown
+  }
+  logger?: LoggerApi
+  tenant?: { tenantId: string; tenantName?: string; [key: string]: unknown }
   configLoader?: unknown
   authService?: unknown
 }
 
-/** APP 服务能力（router, logger, auth, configLoader, tenant） */
 export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
 
-/**
- * 页面服务能力（UI 交互服务）
- * 由 PageRenderer 提供，封装 ElMessage/ElMessageBox 等页面级 UI
- */
+/** 页面服务能力（UI 交互） */
 export interface IPageServiceCapability {
   showMessage(message: string, type?: 'success' | 'error' | 'warning' | 'info'): void
   showConfirm(message: string, title?: string): Promise<boolean>
@@ -97,60 +113,15 @@ export interface IPageServiceCapability {
   navigate(path: string, params?: Record<string, unknown>): void
 }
 
-/** 页面服务能力（showMessage, showConfirm, showLoading, navigate） */
 export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capability:page-service')
 
-// ==================== 数据访问分区 ====================
+// ==================== 数据 ====================
 
-/** DataSet 基础类型（避免循环依赖，使用结构化类型） */
-export interface IDataSetLike {
-  dataSetName: string
-  tables: Record<string, IDataTableLike>
-  [key: string]: unknown
-}
+export const DATA_SET = defineCapability<{ dataSetName: string; tables: Record<string, unknown>; [k: string]: unknown }>('spark:capability:dataset')
+export const DATA_TABLE = defineCapability<{ tableName: string; columns: unknown[]; rows: unknown[]; [k: string]: unknown }>('spark:capability:datatable')
+export const DATA_VIEW = defineCapability<{ tableName: string; rows: unknown[]; currentRow: unknown | null; [k: string]: unknown }>('spark:capability:dataview')
 
-export interface IDataTableLike {
-  tableName: string
-  columns: unknown[]
-  rows: unknown[]
-  [key: string]: unknown
-}
-
-/** DataSet 能力（暴露 DataSet 实例） */
-export interface IDataSetCapability {
-  dataSet: IDataSetLike
-}
-
-/** DataSet 能力 */
-export const DATA_SET = defineCapability<IDataSetCapability>('spark:capability:dataset')
-
-/** DataTable 能力（管理列、视图、通用 CRUD API） */
-export interface IDataTableCapability {
-  dataTable: IDataTableLike
-}
-
-/** DataTable 能力 */
-export const DATA_TABLE = defineCapability<IDataTableCapability>('spark:capability:datatable')
-
-/** DataView 基础类型 */
-export interface IDataViewLike {
-  tableName: string
-  rows: unknown[]
-  currentRow: unknown | null
-  currentRowIndex: number | null
-  selectedRows: unknown[]
-  [key: string]: unknown
-}
-
-/** DataView 能力（过滤/排序/分页视图） */
-export interface IDataViewCapability {
-  dataView: IDataViewLike
-}
-
-/** DataView 能力 */
-export const DATA_VIEW = defineCapability<IDataViewCapability>('spark:capability:dataview')
-
-// ==================== UI交互分区 ====================
+// ==================== UI 交互 ====================
 
 /** 当前行能力 */
 export interface ICurrentRowCapability {
@@ -159,10 +130,9 @@ export interface ICurrentRowCapability {
   setRow(row: unknown | null): void
 }
 
-/** 当前行能力 */
 export const CURRENT_ROW = defineCapability<ICurrentRowCapability>('spark:capability:current-row')
 
-/** 选择能力（行选择、多选等） */
+/** 选择能力 */
 export interface ISelectionCapability {
   select(id: number | string): void
   deselect(id: number | string): void
@@ -172,34 +142,18 @@ export interface ISelectionCapability {
   getSelected(): (number | string)[]
 }
 
-/** 选择行能力 */
 export const SELECTION = defineCapability<ISelectionCapability>('spark:capability:selection')
 
-/** 行数据能力（单行数据访问） */
+/** 行数据能力 */
 export interface IRowDataCapability {
   getData(): unknown
   getField(field: string): unknown
   isSelected?(): boolean
 }
 
-/** 行数据能力 */
 export const ROW_DATA = defineCapability<IRowDataCapability>('spark:capability:row-data')
 
-// ==================== 事件系统分区 ====================
+// ==================== 事件 ====================
 
-import type { IEventEmitter } from './types.js'
-
-/** 事件能力基础接口（= IEventEmitter） */
-export type IEventsCapability = IEventEmitter
-
-/** 表级事件能力 */
-export type IGridEventsCapability = IEventEmitter
-
-/** 表级事件能力 */
-export const GRID_EVENTS = defineCapability<IGridEventsCapability>('spark:capability:grid-events')
-
-/** 行级事件能力 */
-export type IRowEventsCapability = IEventEmitter
-
-/** 行级事件能力 */
-export const ROW_EVENTS = defineCapability<IRowEventsCapability>('spark:capability:row-events')
+export const GRID_EVENTS = defineCapability<IEventEmitter>('spark:capability:grid-events')
+export const ROW_EVENTS = defineCapability<IEventEmitter>('spark:capability:row-events')

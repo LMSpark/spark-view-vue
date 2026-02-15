@@ -1,32 +1,13 @@
 /**
- * SPARK 能力系统（统一模块）
+ * SPARK 能力系统
  *
- * 按功能分区组织：应用服务 → 数据访问 → UI交互 → 事件系统
+ * 单文件 symbols.ts 包含类型 + 符号 + 纯函数操作
  *
- * 文件结构：
- * - types.ts            → ICapabilityContext, IEventEmitter 基础类型
- * - symbols.ts          → CapabilityKey, defineCapability, 符号常量 + 配套接口
- * - CapabilityManager.ts → 能力操作纯函数 + 事件工厂
- *
- * 导入风格：
+ * @example
  * ```ts
  * import { APP_SERVICES, provide, lookup } from '@spark-view/spark-utils'
  * ```
  */
 
-// ==================== 基础类型 ====================
-
-export type {
-  CapabilityName,
-  ICapabilityContext,
-  IEventEmitter
-} from './types.js'
-
-// ==================== 符号 + 接口 ====================
-
 export * from './symbols.js'
 export type { CapabilityKey } from './symbols.js'
-
-// ==================== 能力操作 + 事件工厂 ====================
-
-export { provide, lookup, getLocal, createEventEmitter } from './CapabilityManager.js'

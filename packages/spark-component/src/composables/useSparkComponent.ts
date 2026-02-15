@@ -42,7 +42,7 @@
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
 
 // SPARK 工具库
-import { Logger, provide as setCapability, lookup, getLocal, createEventEmitter } from '@spark-view/spark-utils'
+import { Logger, provide as setCapability, lookup, createEventEmitter } from '@spark-view/spark-utils'
 import type { IEventEmitter, ICapabilityContext, CapabilityKey, CapabilityName, LoggerApi } from '@spark-view/spark-utils'
 
 // SPARK 核心类型
@@ -404,7 +404,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * @returns 能力实现，未找到返回 undefined
    */
   function getProvider(name: string | symbol): unknown {
-    return getLocal(context, name)
+    return context.capabilities.get(name)
   }
 
   /**

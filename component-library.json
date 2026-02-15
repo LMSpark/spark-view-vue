@@ -509,7 +509,7 @@
       {
         "name": "config",
         "type": {
-          "name": "ComponentContext"
+          "name": "ComponentConfig"
         },
         "required": true,
         "description": "组件配置对象\n必须包含 type 字段指定组件类型，可选 id、children 等字段",
