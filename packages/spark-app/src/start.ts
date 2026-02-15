@@ -241,15 +241,20 @@ export async function start(options: StartOptions): Promise<void> {
         pageComponent = PageRenderer
       }
       
-      const dynamicRouter = SparkPageConfig.createDynamicRouter({
+      const dynamicRouterOptions: import('@spark-view/spark-page-config').DynamicRouterOptions = {
         router,
         configLoader,
-        pageComponent,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         beforeRegister: pageConfig.beforeRegister as any,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         afterRegister: pageConfig.afterRegister as any
-      })
+      }
+      
+      if (pageComponent) {
+        dynamicRouterOptions.pageComponent = pageComponent
+      }
+      
+      const dynamicRouter = SparkPageConfig.createDynamicRouter(dynamicRouterOptions)
       
       await dynamicRouter.registerRoutes()
       router.addRoute({ path: '/', redirect: pageConfig.homePath })
