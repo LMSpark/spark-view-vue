@@ -13,8 +13,8 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { Cap } from '@spark-view/spark-utils'
-import type { EventsCapability } from '@spark-view/spark-utils'
+import { APP_SERVICES, PAGE_SERVICE, DATA_SET, DATA_TABLE, DATA_VIEW, CURRENT_ROW, SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS, defineCapability, provide as capProvide, lookup } from '@spark-view/spark-utils'
+import type { IEventsCapability } from '@spark-view/spark-utils'
 
 describe('Capability system integration', () => {
   /**
@@ -91,50 +91,42 @@ describe('Capability system integration', () => {
 
   describe('Symbol-based provide/consume', () => {
     it('provides and consumes with CapabilityKey via createSystem', () => {
-      const { capabilities, createContext, rootContext } = Spark.createSystem()
+      const { createContext, rootContext } = Spark.createSystem()
 
       const parentCtx = createContext({ type: 'provider', id: 'p-1' }, rootContext)
       const childCtx = createContext({ type: 'consumer', id: 'c-1' }, parentCtx)
 
-      // 使用 Symbol-based CapabilityKey 注册 provider  
-      const provider = {
-        name: Cap.DATA_SET,
-        implementation: {
-          dataSet: { tables: {}, getTable: () => null }
-        }
-      }
-      capabilities.registerProvider(parentCtx, provider)
+      // 使用纯函数 provide 注册能力
+      capProvide(parentCtx, DATA_SET, {
+        dataSet: { tables: {}, getTable: () => null }
+      })
 
-      // consumer 通过 parent chain 找到 provider
-      const found = capabilities.getProvider(childCtx, Cap.DATA_SET)
+      // consumer 通过 parent chain 找到 capability
+      const found = lookup(childCtx, DATA_SET)
       expect(found).toBeTruthy()
-      const impl = found!.implementation as { dataSet: unknown }
+      const impl = found as { dataSet: unknown }
       expect(impl.dataSet).toBeDefined()
     })
 
     it('custom capability key with defineCapability', () => {
-      const { capabilities, createContext, rootContext } = Spark.createSystem()
+      const { createContext, rootContext } = Spark.createSystem()
       interface CustomCapability { getValue(): string }
-      const CUSTOM = Cap.define<CustomCapability>('test:custom-cap-sys')
+      const CUSTOM = defineCapability<CustomCapability>('test:custom-cap-sys')
 
       const parentCtx = createContext({ type: 'provider', id: 'p-2' }, rootContext)
       const childCtx = createContext({ type: 'consumer', id: 'c-2' }, parentCtx)
 
-      capabilities.registerProvider(parentCtx, {
-        name: CUSTOM,
-        implementation: { getValue: () => 'hello from custom' }
-      })
+      capProvide(parentCtx, CUSTOM, { getValue: () => 'hello from custom' })
 
-      const found = capabilities.getProvider(childCtx, CUSTOM)
+      const found = lookup<CustomCapability>(childCtx, CUSTOM)
       expect(found).toBeTruthy()
-      const impl = found!.implementation as CustomCapability
-      expect(impl.getValue()).toBe('hello from custom')
+      expect(found!.getValue()).toBe('hello from custom')
     })
   })
 
   describe('EventsCapability usage', () => {
     it('provides events and consumer can subscribe via createSystem', () => {
-      const { capabilities, createContext, rootContext } = Spark.createSystem()
+      const { createContext, rootContext } = Spark.createSystem()
 
       const gridCtx = createContext({ type: 'grid', id: 'grid-1' }, rootContext)
       const rowCtx = createContext({ type: 'row', id: 'row-1' }, gridCtx)
@@ -143,7 +135,7 @@ describe('Capability system integration', () => {
       const handler = vi.fn()
       const eventBus: Record<string, Array<(...args: unknown[]) => void>> = {}
 
-      const eventImpl: EventsCapability = {
+      const eventImpl: IEventsCapability = {
         on(event: string, fn: (...args: unknown[]) => void) {
           if (!eventBus[event]) eventBus[event] = []
           eventBus[event].push(fn)
@@ -156,18 +148,14 @@ describe('Capability system integration', () => {
         }
       }
 
-      capabilities.registerProvider(gridCtx, {
-        name: Cap.GRID_EVENTS,
-        implementation: eventImpl
-      })
+      capProvide(gridCtx, GRID_EVENTS, eventImpl)
 
       // Consumer 通过 parent chain 找到事件能力
-      const found = capabilities.getProvider(rowCtx, Cap.GRID_EVENTS)
+      const found = lookup<IEventsCapability>(rowCtx, GRID_EVENTS)
       expect(found).toBeTruthy()
 
-      const events = found!.implementation as EventsCapability
-      events.on('rowClick', handler)
-      events.emit!('rowClick', { id: 1 })
+      found!.on('rowClick', handler)
+      found!.emit('rowClick', { id: 1 })
 
       expect(handler).toHaveBeenCalledWith({ id: 1 })
     })
@@ -176,16 +164,16 @@ describe('Capability system integration', () => {
   describe('All capability symbols are defined', () => {
     it('core symbols exist and are unique', () => {
       const symbols = [
-        Cap.APP_SERVICES,
-        Cap.PAGE_SERVICE,
-        Cap.DATA_SET,
-        Cap.DATA_TABLE,
-        Cap.DATA_VIEW,
-        Cap.CURRENT_ROW,
-        Cap.SELECTION,
-        Cap.GRID_EVENTS,
-        Cap.ROW_DATA,
-        Cap.ROW_EVENTS
+        APP_SERVICES,
+        PAGE_SERVICE,
+        DATA_SET,
+        DATA_TABLE,
+        DATA_VIEW,
+        CURRENT_ROW,
+        SELECTION,
+        GRID_EVENTS,
+        ROW_DATA,
+        ROW_EVENTS
       ]
 
       // 全部是 symbol

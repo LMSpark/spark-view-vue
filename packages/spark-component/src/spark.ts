@@ -20,10 +20,11 @@
  */
 
 import { defineAsyncComponent } from 'vue'
-import { Logger, Cap } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
+import type { CapabilityName } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
 import { createSparkPlugin } from './plugins/SparkPlugin.js'
-import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer, CapabilityName } from './core/types.js'
+import type { ComponentContext, ComponentRegistry } from './core/types.js'
 
 /* -----------------------------------------------------------------------------
  * 类型定义
@@ -417,17 +418,12 @@ export const Spark = {
    * const rowCtx = system.createContext({ type: 'test-row' }, gridCtx)
    *
    * // 模拟能力提供
-   * gridCtx.providers.set('selection', {
-   *   name: 'selection',
-   *   context: gridCtx,
-   *   implementation: { getSelected() { return [] } }
-   * })
+   * gridCtx.capabilities.set('selection', { getSelected() { return [] } })
    *
    * @see {@link createRegistry} - 仅创建隔离注册表
    */
   createSystem() {
     const registry = createComponentRegistry()
-    const capabilities = Cap.createManager()
 
     // 创建测试用根上下文
     const rootContext: ComponentContext = {
@@ -435,13 +431,11 @@ export const Spark = {
       type: 'spark-test-root',
       children: [],
       state: {},
-      providers: new Map<CapabilityName, CapabilityProvider>(),
-      consumers: new Map<CapabilityName, CapabilityConsumer>()
+      capabilities: new Map<CapabilityName, unknown>()
     }
 
     return {
       registry,
-      capabilities,
       rootContext,
 
       /**
@@ -459,12 +453,14 @@ export const Spark = {
           children: [],
           props: config.props ?? {},
           state: {},
-          providers: new Map<CapabilityName, CapabilityProvider>(),
-          consumers: new Map<CapabilityName, CapabilityConsumer>()
+          capabilities: new Map<CapabilityName, unknown>()
         }
         const p = ctx.parent
-        if (p?.children) p.children.push(ctx)
-        else if (p) p.children = [ctx]
+        if (p && 'children' in p) {
+          const parentCtx = p as ComponentContext
+          if (parentCtx.children) parentCtx.children.push(ctx)
+          else parentCtx.children = [ctx]
+        }
         return ctx
       }
     }

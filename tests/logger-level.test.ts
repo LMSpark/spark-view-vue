@@ -6,13 +6,9 @@ describe('logger level filtering', () => {
   it('does not call info when provider only implements warn/error', () => {
     let calledWarn = false
 
-    const provider = {
-      name: 'logger',
-      interface: { warn: true, error: true },
-      implementation: {
-        warn: (..._args: unknown[]) => { calledWarn = true },
-        error: (..._args: unknown[]) => {}
-      }
+    const loggerImpl = {
+      warn: (..._args: unknown[]) => { calledWarn = true },
+      error: (..._args: unknown[]) => {}
     }
 
     const ctx: ComponentContext = {
@@ -20,12 +16,11 @@ describe('logger level filtering', () => {
       type: 'test',
       children: [],
       state: {},
-      providers: new Map([['logger', provider]]),
-      consumers: new Map()
+      capabilities: new Map([['logger', loggerImpl]])
     }
 
     const logger = Spark.Logger(ctx)
-    // info is not implemented, so calling it should be a no-op (no exception)
+    // info is not implemented, so calling it should fallback to console
     logger.info('should be noop')
     logger.warn('should call warn')
 

@@ -14,9 +14,7 @@ export default Spark
 
 // 导出类型
 export type {
-  ComponentContext,
-  CapabilityProvider,
-  CapabilityConsumer
+  ComponentContext
 } from '@spark-view/spark-component'
 
 // 导出 EJ2 组件

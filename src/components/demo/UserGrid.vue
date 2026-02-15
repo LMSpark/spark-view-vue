@@ -32,7 +32,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { Cap } from '@spark-view/spark-utils'
+import { APP_SERVICES, SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 
 /**
@@ -148,7 +148,7 @@ const {
 // ============================================================
 
 // 通过能力系统消费 APP 服务（router、logger 等）
-const appServices = consume(Cap.APP_SERVICES)
+const appServices = consume(APP_SERVICES)
 
 // 便捷访问路由
 const appRouter = computed(() => appServices?.router)
@@ -203,7 +203,7 @@ const selectedCount = computed(() => selectedIds.value.size)
 // ============================================================
 
 // 提供选择管理能力（供 UserRow 消费）
-provideCapability(Cap.SELECTION, {
+provideCapability(SELECTION, {
   isSelected: (id: number) => selectedIds.value.has(id),
   select: (id: number) => {
     selectedIds.value.add(id)
@@ -229,7 +229,7 @@ provideCapability(Cap.SELECTION, {
 })
 
 // 提供事件发布能力（Event Emitter）
-const gridEventsEmitter = provideEvents(Cap.GRID_EVENTS)
+const gridEventsEmitter = provideEvents(GRID_EVENTS)
 
 // ============================================================
 // 事件处理器

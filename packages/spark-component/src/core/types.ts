@@ -4,21 +4,14 @@
  * 设计原则：
  * - 最小化类型，只定义必要的接口
  * - ComponentContext = 配置 + 运行时状态 的统一表示
- * - 能力系统通过 providers/consumers Map 实现，无需独立接口
+ * - 能力系统通过 capabilities Map 实现（继承自 ICapabilityContext）
  */
 
 import type { InjectionKey } from 'vue'
-import type { Provider, Consumer, LoggerApi, CapabilityContext } from '@spark-view/spark-utils'
+import type { LoggerApi, ICapabilityContext } from '@spark-view/spark-utils'
 
 // 能力名称类型（从 spark-utils 重新导出）
-export type { CapabilityName, CapabilityContext } from '@spark-view/spark-utils'
-
-// ============================================================================
-// 能力系统类型（直接复用 spark-utils）
-// ============================================================================
-
-export type CapabilityProvider<T = unknown> = Provider<T>
-export type CapabilityConsumer<T = unknown> = Consumer<T>
+export type { CapabilityName, ICapabilityContext as CapabilityContext } from '@spark-view/spark-utils'
 
 // ============================================================================
 // 组件定义（注册表使用）
@@ -43,20 +36,20 @@ export interface ComponentDefinition {
 /**
  * ComponentContext - 组件实例的运行时表示
  *
- * 继承 CapabilityContext（id, type, parent, providers, consumers），
+ * 继承 ICapabilityContext（id, type, parent, capabilities），
  * 扩展 Vue 组件专属字段（props, children, state, logger）。
  *
  * 双重职责：
  * 1. 配置描述（JSON → type + props + children）
- * 2. 运行时管理（id + parent/children + providers/consumers）
+ * 2. 运行时管理（id + parent/children + capabilities）
  */
-export interface ComponentContext extends CapabilityContext {
+export interface ComponentContext extends ICapabilityContext {
   /** 组件属性（JSON 配置传入） */
   props?: Record<string, unknown>
   /** 子组件上下文（递归结构） */
   children?: ComponentContext[]
   /** 父上下文（能力查找用，覆盖基类为更具体的类型） */
-  parent?: ComponentContext
+  parent?: ICapabilityContext
 
   /** 运行时状态 */
   state: Record<string, unknown>
@@ -114,9 +107,6 @@ export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('spark
 
 /** 父级上下文注入键（替代字符串 'sparkParentContext'） */
 export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('sparkParentContext') as InjectionKey<ComponentContext>
-
-/** 能力管理器注入键（可选注入，允许测试/多实例场景替换） */
-export const CAPABILITY_MANAGER_KEY = Symbol('sparkCapabilityManager') as InjectionKey<import('@spark-view/spark-utils').ICapabilityManager>
 
 // ============================================================================
 // 向后兼容（用于 spark-app 等包的类型引用）

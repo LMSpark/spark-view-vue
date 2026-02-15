@@ -262,7 +262,7 @@ describe('事件流完整端到端', () => {
     const entry = [...caps.entries()][0]
     expect(entry).toBeDefined()
 
-    const impl = entry![1].implementation as {
+    const impl = entry![1] as {
       dataSet: typeof ds
     }
 

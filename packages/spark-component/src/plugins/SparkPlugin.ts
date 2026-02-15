@@ -9,7 +9,8 @@
 
 import type { App, Plugin } from 'vue'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
-import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer, CapabilityName } from '../core/types.js'
+import type { ComponentContext, ComponentRegistry } from '../core/types.js'
+import type { CapabilityName } from '@spark-view/spark-utils'
 import { getGlobalRegistry } from '../registry/ComponentRegistry.js'
 
 export interface SparkPluginOptions {
@@ -29,8 +30,7 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
         type: 'spark-app',
         children: [],
         state: {},
-        providers: new Map<CapabilityName, CapabilityProvider>(),
-        consumers: new Map<CapabilityName, CapabilityConsumer>()
+        capabilities: new Map<CapabilityName, unknown>()
       }
 
       // 注入到 Vue DI（使用类型安全的 InjectionKey）
