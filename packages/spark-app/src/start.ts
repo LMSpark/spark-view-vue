@@ -8,7 +8,7 @@ import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
-import { createLogger, type AppLoggerConfig } from './logger'
+import { createLogger } from './logger'
 
 const startLogger = createLogger('start')
 
@@ -66,7 +66,7 @@ export interface PageConfigOptions {
 /**
  * 启动配置（扩展自 BootstrapOptions）
  */
-export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router' | 'logger'> {
+export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
   /** 根组件 */
   rootComponent: Component
   
@@ -84,9 +84,6 @@ export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router' | 
   
   /** UI 插件列表 */
   plugins?: Plugin[]
-  
-  /** Logger 配置（应用层统一日志管理） */
-  logger?: AppLoggerConfig
   
   /** 启动前钩子 */
   onBeforeStart?: () => void | Promise<void>
@@ -131,7 +128,6 @@ export async function start(options: StartOptions): Promise<void> {
     spark,
     pageConfig,
     plugins,
-    logger: loggerConfig,
     onBeforeStart,
     onStartError,
     fallbackComponent,
@@ -145,19 +141,7 @@ export async function start(options: StartOptions): Promise<void> {
       await onBeforeStart()
     }
 
-    // 1. 创建应用层 Logger（如果配置了）
-    let appLogger = null
-    if (loggerConfig) {
-      startLogger.debug('创建应用层 Logger...')
-      appLogger = createLogger('App', loggerConfig)
-      appLogger.debug('应用层 Logger 已创建', {
-        level: loggerConfig.level,
-        enableRemote: loggerConfig.enableRemote,
-        environment: (typeof process !== 'undefined' && process.env?.['NODE_ENV']) ?? 'development'
-      })
-    }
-
-    // 2. 创建 Vue 应用实例
+    // 1. 创建 Vue 应用实例
     startLogger.debug('创建 Vue 应用...')
     const app = createApp(rootComponent)
 
@@ -271,13 +255,12 @@ export async function start(options: StartOptions): Promise<void> {
       router.addRoute({ path: '/', redirect: pageConfig.homePath })
     }
 
-    // 7. 执行 Bootstrap 流程（传递 logger）
+    // 7. 执行 Bootstrap 流程
     startLogger.info('启动 Bootstrap 流程...')
     await bootstrap({
       ...bootstrapOptions,
       app,
-      router,
-      logger: appLogger
+      router
     })
 
     startLogger.success('应用启动成功')

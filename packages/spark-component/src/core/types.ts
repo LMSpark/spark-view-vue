@@ -8,10 +8,10 @@
  */
 
 import type { InjectionKey } from 'vue'
-import type { Provider, Consumer, LoggerApi, CapabilityName } from '@spark-view/spark-utils'
+import type { Provider, Consumer, LoggerApi, CapabilityContext } from '@spark-view/spark-utils'
 
 // 能力名称类型（从 spark-utils 重新导出）
-export type { CapabilityName } from '@spark-view/spark-utils'
+export type { CapabilityName, CapabilityContext } from '@spark-view/spark-utils'
 
 // ============================================================================
 // 能力系统类型（直接复用 spark-utils）
@@ -43,32 +43,23 @@ export interface ComponentDefinition {
 /**
  * ComponentContext - 组件实例的运行时表示
  *
+ * 继承 CapabilityContext（id, type, parent, providers, consumers），
+ * 扩展 Vue 组件专属字段（props, children, state, logger）。
+ *
  * 双重职责：
  * 1. 配置描述（JSON → type + props + children）
  * 2. 运行时管理（id + parent/children + providers/consumers）
  */
-export interface ComponentContext {
-  /** 实例 ID（运行时自动生成） */
-  id: string
-  /** 组件类型（对应 ComponentDefinition.type） */
-  type: string
-
+export interface ComponentContext extends CapabilityContext {
   /** 组件属性（JSON 配置传入） */
   props?: Record<string, unknown>
   /** 子组件上下文（递归结构） */
   children?: ComponentContext[]
-  /** 父上下文（能力查找用） */
+  /** 父上下文（能力查找用，覆盖基类为更具体的类型） */
   parent?: ComponentContext
 
   /** 运行时状态 */
   state: Record<string, unknown>
-
-  /** 能力提供者（键支持 string | symbol） */
-  providers: Map<CapabilityName, CapabilityProvider>
-  /** 能力消费者（键支持 string | symbol） */
-  consumers: Map<CapabilityName, CapabilityConsumer>
-  /** Provider 注册监听器（延迟绑定，键支持 string | symbol） */
-  providerListeners?: Map<CapabilityName, Set<(provider: CapabilityProvider) => void>>
 
   /** 日志器 */
   logger?: LoggerApi
@@ -125,7 +116,7 @@ export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('spark
 export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('sparkParentContext') as InjectionKey<ComponentContext>
 
 /** 能力管理器注入键（可选注入，允许测试/多实例场景替换） */
-export const CAPABILITY_MANAGER_KEY = Symbol('sparkCapabilityManager') as InjectionKey<import('../capability/CapabilityManager.js').CapabilityManager>
+export const CAPABILITY_MANAGER_KEY = Symbol('sparkCapabilityManager') as InjectionKey<import('@spark-view/spark-utils').ICapabilityManager>
 
 // ============================================================================
 // 向后兼容（用于 spark-app 等包的类型引用）

@@ -23,29 +23,3 @@ export * from './http/index.js'
 // ==================== 能力系统 ====================
 
 export * from './capability/index.js'
-
-export * from './capability-symbols.js'
-export type { CapabilityKey } from './capability-symbols.js'
-
-export type {
-  AppServicesCapability,
-  AppRouterCapability,
-  AppLoggerCapability,
-  DataSourceCapability,
-  DataSetStateCapability,
-  IDataSetLike,
-  IDataTableLike,
-  GlobalDataCapability,
-  PageServiceCapability,
-  ApiClientCapability,
-  FieldMetadataCapability,
-  RowDataCapability,
-  SelectionCapability,
-  ValidationCapability,
-  EventsCapability,
-  GridEventsCapability,
-  RowEventsCapability,
-  GridInstanceCapability,
-  ColumnManagerCapability,
-  ColumnConfigCapability
-} from './capability-types.js'

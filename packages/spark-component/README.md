@@ -55,16 +55,16 @@ app.use(Spark.createPlugin())
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
 
-const { provide, consume, whenAvailable } = useSparkComponent({
+const { provide, consume } = useSparkComponent({
   type: 'my-grid'
 })
 
-// 提供能力
+// 提供能力（必须在 setup 同步阶段调用）
 provide('dataSource', {
   getData: () => fetchData()
 })
 
-// 消费能力
+// 消费能力（必须在 setup 同步阶段调用）
 const logger = consume('logger')
 </script>
 ```
@@ -76,17 +76,15 @@ const logger = consume('logger')
 组件间通过能力系统通信，避免紧耦合：
 
 ```typescript
-// Provider 提供能力
+// Provider 提供能力（setup 同步阶段）
 provide('columnManager', {
   addColumn: (col) => columns.value.push(col),
   removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id)
 })
 
-// Consumer 消费能力
+// Consumer 消费能力（setup 同步阶段）
 const columnManager = consume('columnManager')
-whenAvailable('columnManager', (mgr) => {
-  mgr.addColumn({ id: '1', name: 'Name' })
-})
+// ⚠️ provide/consume 必须在 setup() 同步阶段调用，不要在 onMounted/watch/async 中使用
 ```
 
 ### 命名空间 API

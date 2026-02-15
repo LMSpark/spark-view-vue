@@ -46,7 +46,7 @@ import { Logger, createEventProvider } from '@spark-view/spark-utils'
 import type { EventProvider, CapabilityKey, LoggerApi } from '@spark-view/spark-utils'
 
 // SPARK 能力系统
-import { createCapabilityManager } from '../capability/CapabilityManager.js'
+import { createCapabilityManager } from '@spark-view/spark-utils'
 
 // SPARK 核心类型
 import type { ComponentContext, ComponentConfig, CapabilityProvider, CapabilityConsumer, ComponentRegistry, CapabilityName } from '../core/types.js'
@@ -76,7 +76,7 @@ const defaultCapabilityManager = createCapabilityManager()
  * 提供组件开发所需的完整 API 集合，按功能分组：
  * - 核心状态：context, isVisible, isDisabled
  * - 能力提供：provide, provideEvents, getProvider
- * - 能力消费：consume, consumeEvents, whenAvailable
+ * - 能力消费：consume, consumeEvents
  * - 生命周期：initialize, destroy
  * - 工具方法：logger, getComponent, 调试工具等
  */
@@ -110,11 +110,6 @@ export interface UseSparkComponentReturn {
   }
   /** 消费事件能力，自动绑定多个事件处理器 */
   consumeEvents: (name: string | symbol, handlers: Record<string, (...args: unknown[]) => void>) => EventProvider | null
-  /** 等待能力注册（异步），用于解决时序依赖问题 */
-  whenAvailable: {
-    <T>(name: CapabilityKey<T>, timeout?: number): Promise<T>
-    (name: string | symbol, timeout?: number): Promise<unknown>
-  }
 
   /* 生命周期 API */
   /** 初始化方法（onMounted 时自动调用，也可手动调用） */
@@ -163,14 +158,11 @@ export interface UseSparkComponentReturn {
  *   props: { dataSource: [] }
  * })
  * 
- * // 提供能力
+ * // 提供能力（必须在 setup 同步阶段调用）
  * provide('gridInstance', { refresh: () => {...} })
  * 
- * // 消费能力
+ * // 消费能力（必须在 setup 同步阶段调用）
  * const dataSet = consume<DataSet>('dataSet')
- * 
- * // 延迟消费（异步等待）
- * const selection = await whenAvailable('selection')
  * ```
  * 
  * @see {@link UseSparkComponentReturn} - 返回值类型定义
@@ -491,67 +483,6 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     return undefined
   }
 
-  /**
-   * 等待能力注册（异步）
-   * 
-   * 如果能力已存在，立即 resolve；否则注册监听器，等待能力被提供时 resolve。
-   * 用于解决组件初始化顺序问题，确保能力可用后再执行逻辑。
-   * 
-   * 支持两种调用方式：
-   * 1. 类型安全：`const svc = await whenAvailable(APP_SERVICES)` — 返回 AppServicesCapability
-   * 2. 动态键：`const prov = await whenAvailable('myCapability')` — 返回 CapabilityProvider
-   * 
-   * @param name - 能力名称
-   * @param timeout - 超时时间（毫秒），默认 10000ms，0 表示不超时
-   * @returns Promise 能力实现 / 提供者对象
-   */
-  function whenAvailable(name: string | symbol, timeout = 10000): Promise<unknown> {
-    const existing = capabilityManager.getProvider(context, name)
-    if (existing) return Promise.resolve(existing.implementation)
-
-    return new Promise((resolve, reject) => {
-      context.providerListeners = context.providerListeners ?? new Map()
-      if (!context.providerListeners.has(name)) context.providerListeners.set(name, new Set())
-      const listeners = context.providerListeners.get(name)
-      if (!listeners) {
-        reject(new Error(`Failed to create listeners for capability: ${String(name)}`))
-        return
-      }
-
-      let settled = false
-      let timer: ReturnType<typeof setTimeout> | undefined
-
-      const cleanup = () => {
-        settled = true
-        listeners.delete(cb)
-        if (timer !== undefined) clearTimeout(timer)
-      }
-
-      const cb = (prov: CapabilityProvider) => {
-        if (settled) return
-        cleanup()
-        resolve(prov.implementation)
-      }
-      listeners.add(cb)
-
-      // 超时处理
-      if (timeout > 0) {
-        timer = setTimeout(() => {
-          if (settled) return
-          cleanup()
-          reject(new Error(`whenAvailable("${String(name)}") timed out after ${timeout}ms`))
-        }, timeout)
-      }
-
-      // 组件卸载时自动清理，避免内存泄漏
-      onUnmounted(() => {
-        if (settled) return
-        cleanup()
-        // 静默丢弃，不 reject（组件已销毁，无人关心结果）
-      })
-    })
-  }
-
   /* ---------------------------------------------------------------------------
    * 注册表访问 API
    * ------------------------------------------------------------------------ */
@@ -716,7 +647,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * 按功能分组提供完整的组件能力访问接口：
    * - 核心状态：context, isVisible, isDisabled
    * - 能力提供：provide, provideEvents, getProvider, getInheritedProvider
-   * - 能力消费：consume, consumeEvents, whenAvailable
+   * - 能力消费：consume, consumeEvents
    * - 生命周期：initialize, destroy
    * - 工具方法：logger, getComponent, isComponentRegistered
    * - 调试工具：getContextChain, printCapabilityTree
@@ -736,9 +667,6 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     // 能力消费
     consume,
     consumeEvents,
-
-    // 异步能力
-    whenAvailable,
 
     // 生命周期
     initialize,

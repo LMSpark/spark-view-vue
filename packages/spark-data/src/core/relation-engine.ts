@@ -64,9 +64,9 @@ export class RelationEngine {
 
     const parentRows = this.getParentRows(parentCtx, rel.dependencyType)
 
-    // 父视图无数据 → 递归清空子视图
+    // 父视图无数据 → 静默重置子视图（不触发通知，避免循环级联）
     if (!parentRows.length) {
-      childCtx.clearAll(true)
+      childCtx.resetState()
       this.dataSet.notifySubscribers(rel.childTable, rel.childContextId ?? 'default')
       this.recursiveClear(rel.childTable, rel.childContextId ?? 'default')
       return
@@ -113,7 +113,7 @@ export class RelationEngine {
         const cid = rel.childContextId ?? 'default'
         const ctx = this.dataSet.getContext(rel.childTable, cid)
         if (ctx) {
-          ctx.clearAll(true)
+        ctx.resetState()
           this.dataSet.notifySubscribers(rel.childTable, cid)
           this.recursiveClear(rel.childTable, cid)
         }

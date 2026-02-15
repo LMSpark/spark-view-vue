@@ -20,9 +20,8 @@
  */
 
 import { defineAsyncComponent } from 'vue'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, createCapabilityManager } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
-import { createCapabilityManager } from './capability/CapabilityManager.js'
 import { createSparkPlugin } from './plugins/SparkPlugin.js'
 import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer, CapabilityName } from './core/types.js'
 

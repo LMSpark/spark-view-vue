@@ -79,7 +79,6 @@ describe('Capability system integration', () => {
           // 能力消费
           expect(typeof result.consume).toBe('function')
           expect(typeof result.consumeEvents).toBe('function')
-          expect(typeof result.whenAvailable).toBe('function')
 
           // 生命周期
           expect(typeof result.initialize).toBe('function')

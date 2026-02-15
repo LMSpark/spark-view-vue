@@ -1,20 +1,21 @@
 /**
  * DataSet — 数据空间（UI↔后端 桥接层）
  *
- * 直接实现类，不再继承复杂接口
+ * 实现 IDataSetContext 接口，向下层提供能力（handleViewStateChanged / emit）。
+ * 遵循 SOLID 依赖倒置：DataView/DataTable 只依赖 IDataSetContext，不知道 DataSet。
  */
 
-import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewStateEvent } from './types'
+import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewStateEvent, IDataSetContext } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
 import { RelationEngine } from './core/relation-engine'
 import { DependencyAnalyzer } from './core/dependency-analyzer'
 import { DataLoader } from './core/data-loader'
-import { DataEventHub } from './core/data-event-hub'
 import { DATA_SET_STATE } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
 
-export class DataSet {
+export class DataSet implements IDataSetContext {
   // ===== 属性定义 =====
 
   /** 数据集名称 */
@@ -49,8 +50,11 @@ export class DataSet {
   /** 数据加载器实例 */
   private dataLoaderInstance: DataLoader
 
-  /** 统一事件中枢（替代原 EventManager + SubscriptionManager） */
-  private events: DataEventHub
+  /** 内联事件监听器（替代 DataEventHub） */
+  private listeners = new Map<string, Set<(...args: unknown[]) => void>>()
+
+  /** 日志记录器 */
+  private logger = Logger('DataSet')
 
   // ===== 构造函数 =====
 
@@ -74,11 +78,11 @@ export class DataSet {
     this.pageId = config.pageId
     this.autoLoadRelations = config.autoLoadRelations
 
-    // 构建表实例并关联 dataSet 引用
+    // 构建表实例并关联 dataSet 引用（向下提供 IDataSetContext 能力）
     this.tables = {}
     for (const [name, td] of Object.entries(config.tables)) {
       const table = DataTable.fromTableData(td)
-      table.setDataSet(this as unknown as { emit(event: string, data: unknown): void })
+      table.setDataSet(this)
       this.tables[name] = table
     }
 
@@ -89,33 +93,37 @@ export class DataSet {
     })
 
     // 初始化引擎
-    this.events = new DataEventHub()
     this.dependencyAnalyzer = new DependencyAnalyzer(this)
     this.relationEngine = new RelationEngine(this)
     this.dataLoaderInstance = new DataLoader(this)
+  }
 
-    // 统一事件驱动：视图状态变化 → 级联关系 + 通知订阅者 + 广播具名事件
-    this.events.on('view:stateChanged', (data) => {
-      const evt = data as ViewStateEvent
-      // 1. 级联关系始终执行（父视图变化 → 子视图响应）
-      this.relationEngine.updateRelatedTables(evt.tableName, evt.contextId)
+  // ===== IDataSetContext 能力实现 =====
 
-      // 2-4 仅在非 skipNotify 时执行
-      if (!evt.skipNotify) {
-        // 2. 通知该视图的订阅者
-        this.notifySubscribers(evt.tableName, evt.contextId)
-        // 3. 发送具名事件（供外部监听）
-        const eventName = evt.changeType === 'currentRow' ? 'currentRowChanged'
-          : evt.changeType === 'selectedRows' ? 'selectedRowsChanged'
-          : 'contextCleared'
-        this.events.emit(eventName, {
-          tableName: evt.tableName, contextId: evt.contextId,
-          row: evt.row, rows: evt.rows
-        })
-        // 4. 通知能力层消费者（DataSetStateCapability.onTableChange）
-        this.events.emit('tableChanged', { tableName: evt.tableName })
-      }
+  /**
+   * 处理视图状态变化（IDataSetContext 核心能力）
+   *
+   * 事件流：DataView 调用 → 级联关系 → 通知订阅者 → 广播具名事件
+   * 遵循 Demo 能力模式：下层通过消费的能力接口回调上层
+   */
+  handleViewStateChanged(event: ViewStateEvent): void {
+    // 1. 级联关系（父视图变化 → 子视图响应）
+    this.relationEngine.updateRelatedTables(event.tableName, event.contextId)
+
+    // 2. 通知该视图的订阅者
+    this.notifySubscribers(event.tableName, event.contextId)
+
+    // 3. 发送具名事件（供外部监听）
+    const eventName = event.changeType === 'currentRow' ? 'currentRowChanged'
+      : event.changeType === 'selectedRows' ? 'selectedRowsChanged'
+      : 'contextCleared'
+    this.emitInternal(eventName, {
+      tableName: event.tableName, contextId: event.contextId,
+      row: event.row, rows: event.rows
     })
+
+    // 4. 通知能力层消费者（DataSetStateCapability.onTableChange）
+    this.emitInternal('tableChanged', { tableName: event.tableName })
   }
 
   // ===== 工厂方法 =====
@@ -256,21 +264,23 @@ export class DataSet {
     return this.dependencyAnalyzer.areDependenciesSatisfied(tableName)
   }
 
-  // ===== 订阅管理（通过统一事件中枢实现） =====
+  // ===== 订阅管理（委托到 DataView） =====
 
   /**
-   * 订阅表数据变化
+   * 订阅表数据变化（便捷方法，委托到对应 DataView）
    * @param tableName 表名
    * @param contextId 数据视图ID
    * @param cb 回调函数
    * @returns 取消订阅函数
    */
   subscribe(tableName: string, contextId: string, cb: () => void): () => void {
-    return this.events.on(`view:${tableName}.${contextId}:changed`, () => cb())
+    const view = this.getContext(tableName, contextId)
+    if (!view) return () => {}
+    return view.subscribe(cb)
   }
 
   /**
-   * 通知订阅者
+   * 通知订阅者（委托到 DataView）
    * @param tableName 表名
    * @param contextId 数据视图ID（不指定则广播该表所有视图）
    */
@@ -279,31 +289,41 @@ export class DataSet {
     if (!table) return
 
     if (contextId !== undefined) {
-      this.events.emit(`view:${tableName}.${contextId}:changed`)
+      const view = this.getContext(tableName, contextId)
+      view?.notifySubscribers()
     } else {
       // 广播模式：先刷新所有子视图数据，再逐个通知
       table.refreshAllContexts()
-      this.events.emit(`view:${tableName}.default:changed`)
-      for (const id of Object.keys(table.contexts)) {
-        this.events.emit(`view:${tableName}.${id}:changed`)
+      table.notifySubscribers() // default 视图
+      for (const ctx of Object.values(table.contexts)) {
+        ctx.notifySubscribers()
       }
     }
   }
 
   /**
-   * 检查是否有订阅者
+   * 检查是否有订阅者（委托到 DataView）
    * @param tableName 表名
    * @param contextId 数据视图ID
    * @returns 是否有订阅者
    */
   hasSubscribers(tableName: string, contextId?: string): boolean {
+    const table = this.getTable(tableName)
+    if (!table) return false
+
     if (contextId !== undefined) {
-      return this.events.has(`view:${tableName}.${contextId}:changed`)
+      const view = this.getContext(tableName, contextId)
+      return view?.hasSubscribers() ?? false
     }
-    return this.events.hasPrefix(`view:${tableName}.`)
+    // 检查该表所有视图
+    if (table.hasSubscribers()) return true
+    for (const ctx of Object.values(table.contexts)) {
+      if (ctx.hasSubscribers()) return true
+    }
+    return false
   }
 
-  // ===== 事件管理（通过统一事件中枢实现） =====
+  // ===== 事件管理（内联 Map 实现，替代 DataEventHub） =====
 
   /**
    * 监听事件
@@ -311,7 +331,12 @@ export class DataSet {
    * @param cb 回调函数
    */
   on(event: string, cb: (...args: unknown[]) => void): void {
-    this.events.on(event, cb)
+    let set = this.listeners.get(event)
+    if (!set) {
+      set = new Set()
+      this.listeners.set(event, set)
+    }
+    set.add(cb)
   }
 
   /**
@@ -320,16 +345,30 @@ export class DataSet {
    * @param cb 回调函数
    */
   off(event: string, cb: (...args: unknown[]) => void): void {
-    this.events.off(event, cb)
+    const set = this.listeners.get(event)
+    if (!set) return
+    set.delete(cb)
+    if (set.size === 0) this.listeners.delete(event)
   }
 
   /**
-   * 触发事件
+   * 触发事件（IDataSetContext 能力 — 供 DataTable CRUD 使用）
    * @param event 事件名
    * @param data 事件数据
    */
   emit(event: string, data: unknown): void {
-    this.events.emit(event, data)
+    this.emitInternal(event, data)
+  }
+
+  /**
+   * 内部事件分发（错误隔离）
+   */
+  private emitInternal(event: string, data?: unknown): void {
+    const set = this.listeners.get(event)
+    if (!set?.size) return
+    for (const handler of [...set]) {
+      try { handler(data) } catch (e) { this.logger.error(`事件错误 '${event}':`, e) }
+    }
   }
 
   // ===== 数据加载 =====
