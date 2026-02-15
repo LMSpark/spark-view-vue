@@ -41,7 +41,7 @@ export type { SparkPluginOptions } from './plugins/SparkPlugin.js'
 export { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
 
 /** 能力操作纯函数（从 spark-utils 透传） */
-export { provide, lookup, getLocal, createEventEmitter } from '@spark-view/spark-utils'
+export { provide, lookup, createEventEmitter } from '@spark-view/spark-utils'
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 5. 核心类型
@@ -55,8 +55,7 @@ export type {
   ComponentDefinition,
   ComponentRegistry,
   LogLevel,
-  LoggerApi,
-  Transport
+  LoggerApi
 } from './core/types.js'
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

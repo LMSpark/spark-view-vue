@@ -14,7 +14,7 @@ import { defineComponent, h } from 'vue'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE, DATA_SET, DATA_TABLE, DATA_VIEW, CURRENT_ROW, SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS, defineCapability, provide as capProvide, lookup } from '@spark-view/spark-utils'
-import type { IEventsCapability } from '@spark-view/spark-utils'
+import type { IEventEmitter } from '@spark-view/spark-utils'
 
 describe('Capability system integration', () => {
   /**
@@ -135,7 +135,7 @@ describe('Capability system integration', () => {
       const handler = vi.fn()
       const eventBus: Record<string, Array<(...args: unknown[]) => void>> = {}
 
-      const eventImpl: IEventsCapability = {
+      const eventImpl: IEventEmitter = {
         on(event: string, fn: (...args: unknown[]) => void) {
           if (!eventBus[event]) eventBus[event] = []
           eventBus[event].push(fn)
@@ -151,7 +151,7 @@ describe('Capability system integration', () => {
       capProvide(gridCtx, GRID_EVENTS, eventImpl)
 
       // Consumer 通过 parent chain 找到事件能力
-      const found = lookup<IEventsCapability>(rowCtx, GRID_EVENTS)
+      const found = lookup<IEventEmitter>(rowCtx, GRID_EVENTS)
       expect(found).toBeTruthy()
 
       found!.on('rowClick', handler)

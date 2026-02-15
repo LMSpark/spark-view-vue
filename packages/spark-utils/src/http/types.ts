@@ -1,12 +1,7 @@
 /**
  * HTTP 模块类型定义
- *
- * 网络请求相关的全部类型集中于此
- *
  * @packageDocumentation
  */
-
-import type { ResponseType } from 'axios'
 
 // ==================== 请求配置 ====================
 
@@ -14,42 +9,30 @@ export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 /**
  * 请求配置
- *
- * 每次请求的完整配置，简洁且可扩展
  */
 export interface RequestConfig {
-  /** 请求 URL */
   url: string
-  /** HTTP 方法（默认 GET） */
   method?: Method
-  /** 请求头 */
   headers?: Record<string, string>
-  /** URL 查询参数 */
   params?: Record<string, unknown>
-  /** 请求体 */
   data?: unknown
-  /** 超时（ms，默认 10000） */
   timeout?: number
   /** 响应类型（默认 json） */
-  responseType?: ResponseType
-  /** API 基础地址 */
+  responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata'
   baseURL?: string
 
-  // ===== 缓存（仅 GET） =====
-  /** 启用缓存 */
+  // 缓存（仅 GET）
   cache?: boolean
-  /** 自定义缓存键 */
   cacheKey?: string
   /** 缓存过期（ms，默认 300000） */
   cacheExpiry?: number
 
-  // ===== 重试 =====
+  // 重试
   /** 重试次数（默认 0） */
   retry?: number
   /** 重试延迟（ms，默认 1000） */
   retryDelay?: number
 
-  // ===== 扩展 =====
   /** 自定义元数据（透传给拦截器） */
   meta?: Record<string, unknown>
 }

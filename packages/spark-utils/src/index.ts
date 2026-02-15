@@ -7,14 +7,9 @@
 
 // ==================== 日志系统 ====================
 
-export {
-  Logger,
-  createConsoleTransport,
-  createHttpTransport,
-  createMemoryTransport,
-} from './logger'
+export { Logger } from './logger'
 
-export type { LogLevel, LoggerApi, Transport, LoggerContext } from './logger'
+export type { LogLevel, LoggerApi } from './logger'
 
 // ==================== HTTP 模块 ====================
 
@@ -23,3 +18,7 @@ export * from './http/index.js'
 // ==================== 能力系统 ====================
 
 export * from './capability/index.js'
+
+// ==================== 智能加载器 ====================
+
+export { useSyncfusionLoader, useLazyLoader, preloader } from './lazy-loader'

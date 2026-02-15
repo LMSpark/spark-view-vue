@@ -249,14 +249,3 @@ export class Request {
 export function createRequest(config?: Partial<RequestConfig>): Request {
   return new Request(config)
 }
-
-let defaultInstance: Request | undefined
-
-export function getDefaultRequest(): Request {
-  defaultInstance ??= createRequest()
-  return defaultInstance
-}
-
-export function setDefaultRequest(instance: Request): void {
-  defaultInstance = instance
-}

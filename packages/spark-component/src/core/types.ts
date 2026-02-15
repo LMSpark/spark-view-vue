@@ -113,4 +113,4 @@ export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('
 // ============================================================================
 
 // 日志类型（从 spark-utils 透传）
-export type { LogLevel, LoggerApi, Transport } from '@spark-view/spark-utils'
+export type { LogLevel, LoggerApi } from '@spark-view/spark-utils'
