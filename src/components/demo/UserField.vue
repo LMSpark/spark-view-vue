@@ -16,7 +16,6 @@
  * 用于显示用户数据的单个字段，支持图标、标签和值的展示。
  * 该组件演示了 SPARK 能力系统的多层级数据消费：
  * - 从 Row 层消费行数据（ROW_DATA）
- * - 从 Grid 层消费字段元数据（FIELD_METADATA）
  * - 监听行级事件（ROW_EVENTS）
  * 
  * @component UserField
@@ -34,7 +33,7 @@
  */
 import { computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { ROW_DATA, ROW_EVENTS, FIELD_METADATA } from '@spark-view/spark-utils'
+import { Cap } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 
 interface Props {
@@ -85,36 +84,24 @@ const {
   consumeEvents,
   logger 
 } = useSparkComponent(props.config as ComponentContext)
-const rowData = consume(ROW_DATA)
+const rowData = consume(Cap.ROW_DATA)
 
 // 2. 消费父组件的行事件能力（使用 consumeEvents 自动注册监听器）
-consumeEvents(ROW_EVENTS, {
+consumeEvents(Cap.ROW_EVENTS, {
   'row:click': (user: unknown) => {
     logger.info('🔔 Field received row click event:', user)
     // 可以在这里添加高亮效果等
   }
 })
 
-// 3. 消费 Grid 层的字段元数据能力
-const fieldMetadata = consume(FIELD_METADATA)
-
-// 获取当前字段名
-const currentField = computed(() => props.config.props?.['field'] as string)
-
-// 获取字段元数据
-const metadata = computed(() => {
-  const field = currentField.value
-  return field && fieldMetadata ? (fieldMetadata as Record<string, { label: string; icon: string; type: string }>)[field] : null
-})
-
-// 计算图标（优先级：元数据 > config.props > props）
+// 计算图标（优先级：config.props > props）
 const fieldIcon = computed(() => {
-  return metadata.value?.icon || (props.config.props?.['icon'] as string) || props.icon || '📝'
+  return (props.config.props?.['icon'] as string) || props.icon || '📝'
 })
 
-// 计算标签（优先级：元数据 > config.props > props）
+// 计算标签（优先级：config.props > props）
 const fieldLabel = computed(() => {
-  return metadata.value?.label || (props.config.props?.['label'] as string) || props.label || ''
+  return (props.config.props?.['label'] as string) || props.label || ''
 })
 
 // 计算显示值

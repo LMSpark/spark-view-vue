@@ -42,11 +42,8 @@
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
 
 // SPARK 工具库
-import { Logger, createEventProvider } from '@spark-view/spark-utils'
+import { Logger, Cap } from '@spark-view/spark-utils'
 import type { EventProvider, CapabilityKey, LoggerApi } from '@spark-view/spark-utils'
-
-// SPARK 能力系统
-import { createCapabilityManager } from '@spark-view/spark-utils'
 
 // SPARK 核心类型
 import type { ComponentContext, ComponentConfig, CapabilityProvider, CapabilityConsumer, ComponentRegistry, CapabilityName } from '../core/types.js'
@@ -64,7 +61,7 @@ import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, CAPABILITY_MANAGER_KEY } 
  * 
  * 可通过 CAPABILITY_MANAGER_KEY 注入替代实例（测试/多实例场景）。
  */
-const defaultCapabilityManager = createCapabilityManager()
+const defaultCapabilityManager = Cap.createManager()
 
 /* -----------------------------------------------------------------------------
  * 类型定义
@@ -346,7 +343,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * ```
    */
   function provideEvents(name: string | symbol = 'events'): EventProvider {
-    const { provider, emitter } = createEventProvider(String(name))
+    const { provider, emitter } = Cap.createEvents(String(name))
     // 用原始 name 作为 provider 的名称，保留 Symbol 唯一性
     const capProvider: CapabilityProvider = { name, implementation: provider.implementation }
     capabilityManager.registerProvider(context, capProvider)

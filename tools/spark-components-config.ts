@@ -148,34 +148,34 @@ export const COMPONENT_CAPABILITIES: Record<string, {
   children?: string[]
 }> = {
   'SparkEJ2Grid': {
-    provides: ['DATA_SOURCE', 'SELECTION', 'GRID_API'],
-    consumes: ['APP_SERVICES'],
+    provides: ['SELECTION', 'GRID_EVENTS'],
+    consumes: ['APP_SERVICES', 'DATA_TABLE'],
     children: ['SparkEJ2Column']
   },
   'SparkEJ2Column': {
-    consumes: ['DATA_SOURCE', 'SELECTION', 'GRID_API'],
+    consumes: ['GRID_EVENTS'],
     nestableIn: ['SparkEJ2Grid']
   },
   'UserGrid': {
-    provides: ['DATA_SOURCE', 'SELECTION'],
+    provides: ['SELECTION', 'GRID_EVENTS'],
     consumes: ['APP_SERVICES'],
     children: ['UserRow']
   },
   'UserRow': {
-    consumes: ['DATA_SOURCE', 'SELECTION'],
+    consumes: ['SELECTION'],
     nestableIn: ['UserGrid'],
     children: ['UserField']
   },
   'UserField': {
-    consumes: ['DATA_SOURCE', 'FIELD_METADATA'],
+    consumes: ['ROW_DATA'],
     nestableIn: ['UserRow']
   },
   'PageRenderer': {
-    provides: ['PAGE_CONTEXT', 'DATA_SET_STATE'],
+    provides: ['APP_SERVICES', 'PAGE_SERVICE'],
     consumes: ['APP_SERVICES']
   },
   'SparkComponentRenderer': {
-    provides: ['COMPONENT_CONTEXT'],
+    provides: [],
     consumes: ['APP_SERVICES']
   }
 }

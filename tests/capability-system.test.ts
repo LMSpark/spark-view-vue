@@ -13,22 +13,8 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import {
-  APP_SERVICES,
-  DATA_SOURCE,
-  SELECTION,
-  GRID_INSTANCE,
-  COLUMN_MANAGER,
-  COLUMN_CONFIG,
-  GRID_EVENTS,
-  ROW_EVENTS,
-  VALIDATION,
-  defineCapability
-} from '@spark-view/spark-utils'
-import type {
-  DataSourceCapability,
-  EventsCapability
-} from '@spark-view/spark-utils'
+import { Cap } from '@spark-view/spark-utils'
+import type { EventsCapability } from '@spark-view/spark-utils'
 
 describe('Capability system integration', () => {
   /**
@@ -112,25 +98,24 @@ describe('Capability system integration', () => {
 
       // 使用 Symbol-based CapabilityKey 注册 provider  
       const provider = {
-        name: DATA_SOURCE,
+        name: Cap.DATA_SET,
         implementation: {
-          getData: () => [{ id: 1 }],
-          refresh: () => Promise.resolve()
+          dataSet: { tables: {}, getTable: () => null }
         }
       }
       capabilities.registerProvider(parentCtx, provider)
 
       // consumer 通过 parent chain 找到 provider
-      const found = capabilities.getProvider(childCtx, DATA_SOURCE)
+      const found = capabilities.getProvider(childCtx, Cap.DATA_SET)
       expect(found).toBeTruthy()
-      const impl = found!.implementation as DataSourceCapability
-      expect(impl.getData()).toEqual([{ id: 1 }])
+      const impl = found!.implementation as { dataSet: unknown }
+      expect(impl.dataSet).toBeDefined()
     })
 
     it('custom capability key with defineCapability', () => {
       const { capabilities, createContext, rootContext } = Spark.createSystem()
       interface CustomCapability { getValue(): string }
-      const CUSTOM = defineCapability<CustomCapability>('test:custom-cap-sys')
+      const CUSTOM = Cap.define<CustomCapability>('test:custom-cap-sys')
 
       const parentCtx = createContext({ type: 'provider', id: 'p-2' }, rootContext)
       const childCtx = createContext({ type: 'consumer', id: 'c-2' }, parentCtx)
@@ -172,12 +157,12 @@ describe('Capability system integration', () => {
       }
 
       capabilities.registerProvider(gridCtx, {
-        name: GRID_EVENTS,
+        name: Cap.GRID_EVENTS,
         implementation: eventImpl
       })
 
       // Consumer 通过 parent chain 找到事件能力
-      const found = capabilities.getProvider(rowCtx, GRID_EVENTS)
+      const found = capabilities.getProvider(rowCtx, Cap.GRID_EVENTS)
       expect(found).toBeTruthy()
 
       const events = found!.implementation as EventsCapability
@@ -191,15 +176,16 @@ describe('Capability system integration', () => {
   describe('All capability symbols are defined', () => {
     it('core symbols exist and are unique', () => {
       const symbols = [
-        APP_SERVICES,
-        DATA_SOURCE,
-        SELECTION,
-        GRID_INSTANCE,
-        COLUMN_MANAGER,
-        COLUMN_CONFIG,
-        GRID_EVENTS,
-        ROW_EVENTS,
-        VALIDATION
+        Cap.APP_SERVICES,
+        Cap.PAGE_SERVICE,
+        Cap.DATA_SET,
+        Cap.DATA_TABLE,
+        Cap.DATA_VIEW,
+        Cap.CURRENT_ROW,
+        Cap.SELECTION,
+        Cap.GRID_EVENTS,
+        Cap.ROW_DATA,
+        Cap.ROW_EVENTS
       ]
 
       // 全部是 symbol

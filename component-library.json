@@ -485,8 +485,8 @@
       "loadStrategy": "sync",
       "capabilities": {
         "provides": [
-          "PAGE_CONTEXT",
-          "DATA_SET_STATE"
+          "APP_SERVICES",
+          "PAGE_SERVICE"
         ],
         "consumes": [
           "APP_SERVICES"
@@ -548,9 +548,7 @@
       "type": "spark-component-renderer",
       "loadStrategy": "sync",
       "capabilities": {
-        "provides": [
-          "COMPONENT_CONTEXT"
-        ],
+        "provides": [],
         "consumes": [
           "APP_SERVICES"
         ]
@@ -612,9 +610,7 @@
       "loadStrategy": "async",
       "capabilities": {
         "consumes": [
-          "DATA_SOURCE",
-          "SELECTION",
-          "GRID_API"
+          "GRID_EVENTS"
         ],
         "nestableIn": [
           "SparkEJ2Grid"
@@ -661,12 +657,12 @@
       "loadStrategy": "async",
       "capabilities": {
         "provides": [
-          "DATA_SOURCE",
           "SELECTION",
-          "GRID_API"
+          "GRID_EVENTS"
         ],
         "consumes": [
-          "APP_SERVICES"
+          "APP_SERVICES",
+          "DATA_TABLE"
         ],
         "children": [
           "SparkEJ2Column"
@@ -891,8 +887,7 @@
       "loadStrategy": "sync",
       "capabilities": {
         "consumes": [
-          "DATA_SOURCE",
-          "FIELD_METADATA"
+          "ROW_DATA"
         ],
         "nestableIn": [
           "UserRow"
@@ -952,8 +947,8 @@
       "loadStrategy": "sync",
       "capabilities": {
         "provides": [
-          "DATA_SOURCE",
-          "SELECTION"
+          "SELECTION",
+          "GRID_EVENTS"
         ],
         "consumes": [
           "APP_SERVICES"
@@ -1034,7 +1029,6 @@
       "loadStrategy": "sync",
       "capabilities": {
         "consumes": [
-          "DATA_SOURCE",
           "SELECTION"
         ],
         "nestableIn": [

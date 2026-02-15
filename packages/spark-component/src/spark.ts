@@ -20,7 +20,7 @@
  */
 
 import { defineAsyncComponent } from 'vue'
-import { Logger, createCapabilityManager } from '@spark-view/spark-utils'
+import { Logger, Cap } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
 import { createSparkPlugin } from './plugins/SparkPlugin.js'
 import type { ComponentContext, ComponentRegistry, CapabilityProvider, CapabilityConsumer, CapabilityName } from './core/types.js'
@@ -427,7 +427,7 @@ export const Spark = {
    */
   createSystem() {
     const registry = createComponentRegistry()
-    const capabilities = createCapabilityManager()
+    const capabilities = Cap.createManager()
 
     // 创建测试用根上下文
     const rootContext: ComponentContext = {

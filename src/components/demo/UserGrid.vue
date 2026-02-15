@@ -14,7 +14,7 @@
     <!-- 网格信息栏：统计和能力提示 -->
     <div class="grid-info">
       <span>已选中: {{ selectedCount }} / {{ usersFromConfig.length }}</span>
-      <span>提供能力: fieldMetadata, selection, gridEvents, dataSource</span>
+      <span>提供能力: selection, gridEvents</span>
     </div>
 
     <!-- 网格主体：动态渲染子组件 -->
@@ -32,13 +32,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import {
-  APP_SERVICES,
-  FIELD_METADATA,
-  SELECTION,
-  GRID_EVENTS,
-  DATA_SOURCE
-} from '@spark-view/spark-utils'
+import { Cap } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 
 /**
@@ -48,7 +42,7 @@ import type { ComponentContext } from '@spark-view/spark-component'
  * @description
  * 功能完整的用户列表网格组件，展示 SPARK 能力系统的核心特性：
  * - **能力消费**：从父组件获取 APP_SERVICES（路由、日志）
- * - **能力提供**：向子组件提供 FIELD_METADATA、SELECTION、GRID_EVENTS、DATA_SOURCE
+ * - **能力提供**：向子组件提供 SELECTION、GRID_EVENTS
  * - **递归渲染**：动态渲染 UserRow 子组件
  * - **状态管理**：维护选中状态和用户交互
  * - **事件总线**：通过 GRID_EVENTS 广播用户操作事件
@@ -154,7 +148,7 @@ const {
 // ============================================================
 
 // 通过能力系统消费 APP 服务（router、logger 等）
-const appServices = consume(APP_SERVICES)
+const appServices = consume(Cap.APP_SERVICES)
 
 // 便捷访问路由
 const appRouter = computed(() => appServices?.router)
@@ -205,45 +199,11 @@ const selectedIds = ref<Set<number>>(new Set())
 const selectedCount = computed(() => selectedIds.value.size)
 
 // ============================================================
-// 字段元数据生成
-// ============================================================
-
-// 从 DataSet columns 动态生成字段元数据
-const fieldMetadata = computed(() => {
-  const columns = props.config.props?.['dataset']?.tables?.Users?.columns || []
-  const metadata: Record<string, { label: string; icon: string; type: string }> = {}
-  
-  columns.forEach((col) => {
-    metadata[col.name] = {
-      label: col.label || col.name,
-      icon: getIconForType(col.type),
-      type: col.type
-    }
-  })
-  
-  return metadata
-})
-
-// 根据字段类型获取对应图标
-const getIconForType = (type: string): string => {
-  const iconMap: Record<string, string> = {
-    number: '🔢',
-    string: '📝',
-    boolean: '✅',
-    date: '📅'
-  }
-  return iconMap[type] || '📄'
-}
-
-// ============================================================
 // 能力提供（Provider Pattern）
 // ============================================================
 
-// 提供字段元数据能力（供 UserField 消费）
-provideCapability(FIELD_METADATA, fieldMetadata.value)
-
 // 提供选择管理能力（供 UserRow 消费）
-provideCapability(SELECTION, {
+provideCapability(Cap.SELECTION, {
   isSelected: (id: number) => selectedIds.value.has(id),
   select: (id: number) => {
     selectedIds.value.add(id)
@@ -269,16 +229,7 @@ provideCapability(SELECTION, {
 })
 
 // 提供事件发布能力（Event Emitter）
-const gridEventsEmitter = provideEvents(GRID_EVENTS)
-
-// 提供数据源访问能力
-provideCapability(DATA_SOURCE, {
-  getData: () => usersFromConfig.value,
-  refresh: () => {
-    sparkLogger.info('🔄 Data refreshed')
-    gridEventsEmitter.emit('data:refreshed', usersFromConfig.value)
-  }
-})
+const gridEventsEmitter = provideEvents(Cap.GRID_EVENTS)
 
 // ============================================================
 // 事件处理器
