@@ -7,7 +7,7 @@
 
 import { DataView } from './data-view'
 import { CrudService, createCrudService } from './crud-service'
-import { FIELD_METADATA } from '@spark-view/spark-utils'
+import { DATA_TABLE } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
 import type { IDataRow, DataColumn, CrudApi, ITableMetadata, QueryParams, CrudResult, BatchResult } from './types'
 
@@ -77,9 +77,11 @@ export class DataTable extends DataView {
       }
     }
 
-    caps.set(FIELD_METADATA as CapabilityKey<unknown>, {
-      name: FIELD_METADATA,
-      implementation: meta,
+    caps.set(DATA_TABLE as CapabilityKey<unknown>, {
+      name: DATA_TABLE,
+      implementation: {
+        dataTable: this
+      },
     })
 
     return caps

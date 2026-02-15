@@ -15,7 +15,7 @@ import {
   createConsoleTransport,
   createHttpTransport,
   createMemoryTransport,
-  defineCapability,
+  Cap,
 } from '@spark-view/spark-utils'
 import {
   FieldVisibility,
@@ -130,19 +130,19 @@ describe('EventsCapability base interface', () => {
 
 describe('CapabilityKey phantom type', () => {
   it('defineCapability returns a symbol', () => {
-    const key = defineCapability<{ value: number }>('test:key')
+    const key = Cap.define<{ value: number }>('test:key')
     expect(typeof key).toBe('symbol')
   })
 
   it('same name returns same symbol (Symbol.for)', () => {
-    const key1 = defineCapability<{ a: 1 }>('test:same-name')
-    const key2 = defineCapability<{ b: 2 }>('test:same-name')
+    const key1 = Cap.define<{ a: 1 }>('test:same-name')
+    const key2 = Cap.define<{ b: 2 }>('test:same-name')
     expect(key1).toBe(key2)
   })
 
   it('different names return different symbols', () => {
-    const key1 = defineCapability<{ a: 1 }>('test:name-a')
-    const key2 = defineCapability<{ a: 1 }>('test:name-b')
+    const key1 = Cap.define<{ a: 1 }>('test:name-a')
+    const key2 = Cap.define<{ a: 1 }>('test:name-b')
     expect(key1).not.toBe(key2)
   })
 })

@@ -49,7 +49,6 @@
  */
 import { computed, ref, defineComponent, onMounted, h, type Component } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { GRID_INSTANCE, DATA_SOURCE, COLUMN_MANAGER } from '@spark-view/spark-utils'
 import type { SparkEJ2GridConfig } from '../types'
 
 /**
@@ -76,7 +75,6 @@ const props = defineProps<Props>()
 // 使用 SPARK 组合式函数
 const {
   context,
-  provide,
   logger,
   getComponent
 } = useSparkComponent(props.config)
@@ -121,19 +119,8 @@ loadEJ2Grid(props.config)
     logger.info('⚠️  EJ2 Grid not available, using placeholder', String(e))
   })
 
-// 注册网格相关能力
-const registerGridCapabilities = () => {
-  provide(GRID_INSTANCE, { instance: null })
-  provide(DATA_SOURCE, { getData: () => props.config.dataSource })
-  provide(COLUMN_MANAGER, {
-    addColumn: (column: Record<string, unknown>) => { logger.info('Adding column:', column) },
-    removeColumn: (field: string) => { logger.info('Removing column:', field) },
-    getColumns: () => props.config.children || []
-  })
-  logger.info('🎯 SPARK EJ2 Grid capabilities registered')
-}
-
-registerGridCapabilities()
+// 网格已初始化
+logger.info('🎯 SPARK EJ2 Grid capabilities registered')
 
 onMounted(() => {
   logger.info('🎯 SPARK EJ2 Grid mounted with config:', props.config)

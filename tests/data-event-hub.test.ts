@@ -254,29 +254,22 @@ describe('事件流完整端到端', () => {
     expect(events).toContain('tableChanged')
   })
 
-  it('getCapabilities 中的 onTableChange 通过 tableChanged 事件工作', () => {
+  it('getCapabilities 返回 DATA_SET 能力（暴露 dataSet 实例）', () => {
     const ds = createTestDataSet()
     const caps = ds.getCapabilities()
 
-    // 获取 DATA_SET_STATE 能力
+    // 获取 DATA_SET 能力
     const entry = [...caps.entries()][0]
     expect(entry).toBeDefined()
 
     const impl = entry![1].implementation as {
-      onTableChange: (tableName: string, cb: (t: unknown) => void) => () => void
+      dataSet: typeof ds
     }
 
-    const handler = vi.fn()
-    const unsub = impl.onTableChange('Departments', handler)
-
-    const dept = ds.getTable('Departments')!
-    dept.setCurrentRow(dept.rows[0]!)
-
-    expect(handler).toHaveBeenCalledOnce()
-
-    unsub()
-    dept.setCurrentRow(dept.rows[1]!)
-    expect(handler).toHaveBeenCalledOnce() // 取消后不再触发
+    // 验证暴露的是 DataSet 实例本身
+    expect(impl.dataSet).toBe(ds)
+    expect(impl.dataSet.dataSetName).toBe('TestDS')
+    expect(impl.dataSet.getTable('Departments')).toBeDefined()
   })
 
   it('TreeManager 内联事件系统发射事件', () => {

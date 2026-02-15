@@ -1,7 +1,9 @@
 /**
- * 通用能力管理器
+ * 通用能力管理器 + 事件能力工厂
  *
- * 职责：Provider/Consumer 注册、parent-chain 查找、连接
+ * 职责：
+ * 1. Provider/Consumer 注册、parent-chain 查找、连接
+ * 2. 事件能力创建（on/off/emit 发布订阅）
  *
  * 设计原则：
  * - 框架无关（不依赖 Vue），只操作 CapabilityContext
@@ -9,16 +11,14 @@
  * - 沿 parent 链向上查找 provider（就近原则）
  */
 
+// ==================== 导入和依赖 ====================
+
 import { Logger } from '../logger.js'
 import type { CapabilityContext, CapabilityName, Provider, Consumer } from './types.js'
 
 const logger = Logger('Capability')
 
-// ============================================================================
-// 接口
-// ============================================================================
-
-
+// ==================== 类型定义 ====================
 
 /**
  * 通用能力管理器接口
@@ -34,9 +34,16 @@ export interface ICapabilityManager {
   connectCapability(provider: Provider, consumer: Consumer): void
 }
 
-// ============================================================================
-// 实现
-// ============================================================================
+/**
+ * 事件提供者接口 — on/off/emit 发布订阅
+ */
+export interface EventProvider {
+  on: (event: string, handler: (...args: unknown[]) => void) => void
+  off: (event: string, handler: (...args: unknown[]) => void) => void
+  emit: (event: string, ...args: unknown[]) => void
+}
+
+// ==================== 核心管理器 ====================
 
 /**
  * 创建通用能力管理器
@@ -50,7 +57,7 @@ export interface ICapabilityManager {
  * @example
  * ```ts
  * const manager = createCapabilityManager()
- * manager.registerProvider(ctx, { name: DATA_SET_STATE, implementation: dsState })
+ * manager.registerProvider(ctx, { name: DATA_SET, implementation: dsState })
  * ```
  */
 export function createCapabilityManager(): ICapabilityManager {
@@ -95,5 +102,52 @@ export function createCapabilityManager(): ICapabilityManager {
     connectCapability(provider: Provider, consumer: Consumer): void {
       consumer.implementation = provider.implementation
     }
+  }
+}
+
+// ==================== 事件系统 ====================
+
+/**
+ * 创建事件提供者
+ *
+ * @param name 能力名称，用于在能力系统中注册
+ * @returns 包含 Provider 和 EventProvider 实例的对象
+ *
+ * @example
+ * ```ts
+ * const { provider, emitter } = createEventProvider('grid-events')
+ * provide(context, provider.name, provider.implementation)
+ * emitter.emit('rowClick', { id: 1 })
+ * ```
+ */
+export function createEventProvider(name: string): { provider: Provider; emitter: EventProvider } {
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
+
+  const emitter: EventProvider = {
+    on(event: string, handler: (...args: unknown[]) => void) {
+      if (!listeners.has(event)) listeners.set(event, new Set())
+      listeners.get(event)?.add(handler)
+    },
+    off(event: string, handler: (...args: unknown[]) => void) {
+      const handlers = listeners.get(event)
+      if (handlers) {
+        handlers.delete(handler)
+        if (handlers.size === 0) listeners.delete(event)
+      }
+    },
+    emit(event: string, ...args: unknown[]) {
+      listeners.get(event)?.forEach(handler => {
+        try {
+          handler(...args)
+        } catch (e) {
+          logger.error(`事件错误 '${event}':`, e)
+        }
+      })
+    }
+  }
+
+  return {
+    provider: { name, implementation: emitter },
+    emitter
   }
 }

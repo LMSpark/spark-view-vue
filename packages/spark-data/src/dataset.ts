@@ -11,7 +11,7 @@ import { DataTable } from './data-table'
 import { RelationEngine } from './core/relation-engine'
 import { DependencyAnalyzer } from './core/dependency-analyzer'
 import { DataLoader } from './core/data-loader'
-import { DATA_SET_STATE } from '@spark-view/spark-utils'
+import { DATA_SET } from '@spark-view/spark-utils'
 import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
 import { Logger } from '@spark-view/spark-utils'
 
@@ -165,29 +165,14 @@ export class DataSet implements IDataSetContext {
 
   /**
    * 获取数据集的能力提供者
-   * @param pageParams 页面参数
-   * @param pagePermission 页面权限
    * @returns 能力映射
    */
-  getCapabilities(
-    pageParams?: Record<string, unknown>,
-    pagePermission?: Record<string, boolean>
-  ): Map<CapabilityKey<unknown>, CapabilityProvider> {
+  getCapabilities(): Map<CapabilityKey<unknown>, CapabilityProvider> {
     const caps = new Map<CapabilityKey<unknown>, CapabilityProvider>()
-    caps.set(DATA_SET_STATE as CapabilityKey<unknown>, {
-      name: DATA_SET_STATE,
+    caps.set(DATA_SET as CapabilityKey<unknown>, {
+      name: DATA_SET,
       implementation: {
-        getDataSet: () => this,
-        getTable: (name: string) => this.tables[name],
-        getPageParams: () => pageParams ?? {},
-        getPagePermission: () => pagePermission ?? {},
-        onTableChange: (tableName: string, cb: (t: unknown) => void) => {
-          const wrapped = (d: unknown) => {
-            if ((d as { tableName: string }).tableName === tableName) cb(this.tables[tableName])
-          }
-          this.on('tableChanged', wrapped)
-          return () => this.off('tableChanged', wrapped)
-        },
+        dataSet: this,
       },
     })
     return caps
