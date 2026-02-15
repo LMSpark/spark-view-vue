@@ -12,7 +12,7 @@
  * - **调试工具**：上下文链追踪、能力树可视化
  * 
  * ## 设计原则
- * - **能力委托**：通过 CapabilityManager 管理 provider/consumer 连接
+ * - **能力委托**：通过纯函数 provide/lookup/getLocal 操作 capabilities Map
  * - **依赖注入**：通过 Vue provide/inject 获取 registry 和 parent context
  * - **自动化**：parent/children 关系通过 Vue DI 自动建立
  * - **类型安全**：完整的 TypeScript 支持和泛型约束
@@ -42,26 +42,12 @@
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
 
 // SPARK 工具库
-import { Logger, Cap } from '@spark-view/spark-utils'
-import type { EventProvider, CapabilityKey, LoggerApi } from '@spark-view/spark-utils'
+import { Logger, provide as setCapability, lookup, getLocal, createEventEmitter } from '@spark-view/spark-utils'
+import type { IEventEmitter, ICapabilityContext, CapabilityKey, CapabilityName, LoggerApi } from '@spark-view/spark-utils'
 
 // SPARK 核心类型
-import type { ComponentContext, ComponentConfig, CapabilityProvider, CapabilityConsumer, ComponentRegistry, CapabilityName } from '../core/types.js'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, CAPABILITY_MANAGER_KEY } from '../core/types.js'
-
-/* -----------------------------------------------------------------------------
- * 全局实例
- * -------------------------------------------------------------------------- */
-
-/**
- * 共享能力管理器实例（默认）
- * 
- * 所有 useSparkComponent 调用共享同一个管理器实例，因为管理器本身无状态，
- * 所有状态存储在各个 context 的 providers/consumers Map 中。
- * 
- * 可通过 CAPABILITY_MANAGER_KEY 注入替代实例（测试/多实例场景）。
- */
-const defaultCapabilityManager = Cap.createManager()
+import type { ComponentContext, ComponentConfig, ComponentRegistry } from '../core/types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
 
 /* -----------------------------------------------------------------------------
  * 类型定义
@@ -79,7 +65,7 @@ const defaultCapabilityManager = Cap.createManager()
  */
 export interface UseSparkComponentReturn {
   /* 核心状态 */
-  /** 响应式组件上下文（包含 id, type, parent, children, props, state, providers, consumers） */
+  /** 响应式组件上下文（包含 id, type, parent, children, props, state, capabilities） */
   context: ComponentContext
   /** 可见性计算属性（基于 config.visible，默认 true） */
   isVisible: { readonly value: boolean }
@@ -93,10 +79,10 @@ export interface UseSparkComponentReturn {
     (name: string | symbol, implementation?: unknown): void
   }
   /** 提供事件能力，返回事件发射器（EventEmitter 模式） */
-  provideEvents: (name?: string | symbol) => EventProvider
-  /** 获取当前 context 的本地 provider（不查找父级） */
-  getProvider: (name: string | symbol) => CapabilityProvider | undefined
-  /** 沿 parent 链向上查找 provider 实现（支持继承） */
+  provideEvents: (name?: string | symbol) => IEventEmitter
+  /** 获取当前 context 的本地能力（不查找父级） */
+  getProvider: (name: string | symbol) => unknown
+  /** 沿 parent 链向上查找能力实现（支持继承） */
   getInheritedProvider: <T = unknown>(name: string | symbol, ctx?: ComponentContext) => T | undefined
 
   /* 能力消费 API */
@@ -106,12 +92,12 @@ export interface UseSparkComponentReturn {
     (name: string | symbol): unknown
   }
   /** 消费事件能力，自动绑定多个事件处理器 */
-  consumeEvents: (name: string | symbol, handlers: Record<string, (...args: unknown[]) => void>) => EventProvider | null
+  consumeEvents: (name: string | symbol, handlers: Record<string, (...args: unknown[]) => void>) => IEventEmitter | null
 
   /* 生命周期 API */
   /** 初始化方法（onMounted 时自动调用，也可手动调用） */
   initialize: () => void
-  /** 清理方法（onUnmounted 时自动调用，清理 providers/consumers 和父子关系） */
+  /** 清理方法（onUnmounted 时自动调用，清理 capabilities 和父子关系） */
   destroy: () => void
 
   /* 工具 API */
@@ -164,7 +150,7 @@ export interface UseSparkComponentReturn {
  * 
  * @see {@link UseSparkComponentReturn} - 返回值类型定义
  */
-export function useSparkComponent<TConfig extends ComponentConfig = ComponentContext>(
+export function useSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(
   config: TConfig,
   options?: {
     registry?: ComponentRegistry
@@ -188,12 +174,6 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
 
   /**
-   * 从 Vue DI 获取能力管理器（可选）
-   * 允许测试或多实例场景注入自定义管理器，默认使用模块级单例
-   */
-  const capabilityManager = inject(CAPABILITY_MANAGER_KEY, defaultCapabilityManager)
-
-  /**
    * 创建组件上下文
    * - id: 唯一标识符（自动生成或使用配置值）
    * - type: 组件类型（kebab-case，如 'spark-ej2-grid'）
@@ -201,18 +181,18 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * - children: 子级上下文列表（动态维护）
    * - props: 组件属性（来自配置或 Vue props）
    * - state: 组件内部状态
-   * - providers: 当前 context 提供的能力 Map
-   * - consumers: 当前 context 消费的能力 Map
+   * - capabilities: 能力 Map（provide/consume 共用）
    */
-  const ctxRaw: ComponentContext = {
+  const ctxRaw = reactive({
     id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     type: config.type,
     children: [],
     props: config.props ?? {},
     state: {},
-    providers: new Map<CapabilityName, CapabilityProvider>(),
-    consumers: new Map<CapabilityName, CapabilityConsumer>()
-  }
+    capabilities: new Map<CapabilityName, unknown>(),
+    parent: undefined,
+    logger: undefined
+  } as unknown as ComponentContext)
   
   if (parentContext !== undefined) {
     ctxRaw.parent = parentContext
@@ -222,7 +202,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * 包装为响应式对象
    * 使 context 的变化可以被 Vue 追踪，支持 computed/watch 等
    */
-  const context = reactive(ctxRaw)
+  const context: ComponentContext = reactive(ctxRaw)
 
   /**
    * 建立父子关系
@@ -253,13 +233,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    */
   const getActiveLogger = () => {
     // 优先从能力系统查找应用层提供的 logger
-    const loggerProvider = capabilityManager.getProvider(context, 'logger')
-    if (loggerProvider?.implementation) {
-      const impl = loggerProvider.implementation as LoggerApi
-      // 验证是否为有效的 LoggerApi
-      if (impl && typeof impl === 'object' && 'info' in impl && 'warn' in impl && 'error' in impl && 'debug' in impl) {
-        return impl
-      }
+    const impl = lookup<LoggerApi>(context, 'logger')
+    if (impl && typeof impl === 'object' && 'info' in impl && 'warn' in impl && 'error' in impl && 'debug' in impl) {
+      return impl
     }
     // Fallback：使用静默 logger（应用层应该提供 logger）
     return {
@@ -318,8 +294,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * @param implementation - 能力实现对象
    */
   function provide(name: string | symbol, implementation?: unknown): void {
-    const provider: CapabilityProvider = { name, implementation }
-    capabilityManager.registerProvider(context, provider)
+    setCapability(context, name, implementation)
     logger.info(`🔌 Provided: ${String(name)}`)
   }
 
@@ -342,11 +317,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * events.emit('dataChanged', { newData })
    * ```
    */
-  function provideEvents(name: string | symbol = 'events'): EventProvider {
-    const { provider, emitter } = Cap.createEvents(String(name))
-    // 用原始 name 作为 provider 的名称，保留 Symbol 唯一性
-    const capProvider: CapabilityProvider = { name, implementation: provider.implementation }
-    capabilityManager.registerProvider(context, capProvider)
+  function provideEvents(name: string | symbol = 'events'): IEventEmitter {
+    const emitter = createEventEmitter()
+    setCapability(context, name, emitter)
     logger.info(`🎉 Provided events: ${String(name)}`)
     return emitter
   }
@@ -369,14 +342,10 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * @returns 能力实现对象，未找到返回 null
    */
   function consume(name: string | symbol): unknown {
-    const consumer: CapabilityConsumer = { capabilityName: name, implementation: undefined }
-    capabilityManager.registerConsumer(context, consumer)
-
-    // registerConsumer 内部已执行 getProvider + connectCapability，
-    // 直接检查 consumer.implementation 即可，无需二次查找
-    if (consumer.implementation !== null && consumer.implementation !== undefined) {
+    const impl = lookup(context, name)
+    if (impl !== undefined) {
       logger.info(`🔌 Consumed: ${String(name)}`)
-      return consumer.implementation
+      return impl
     }
 
     logger.warn(`⚠️ Capability not found (late-binding): ${String(name)}`)
@@ -408,10 +377,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   function consumeEvents(
     name: string | symbol,
     handlers: Record<string, (...args: unknown[]) => void>
-  ): EventProvider | null {
-    const provider = capabilityManager.getProvider(context, name)
-    if (provider) {
-      const emitter = provider.implementation as EventProvider
+  ): IEventEmitter | null {
+    const emitter = lookup<IEventEmitter>(context, name)
+    if (emitter) {
       Object.entries(handlers).forEach(([event, handler]) => {
         emitter.on(event, handler)
       })
@@ -427,28 +395,20 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * ------------------------------------------------------------------------ */
 
   /**
-   * 获取当前 context 的本地 provider
+   * 获取当前 context 的本地能力
    * 
-   * 仅查找当前 context 的 providers Map，不向父级查找。
+   * 仅查找当前 context 的 capabilities Map，不向父级查找。
    * 用于检查本组件是否提供了某个能力。
    * 
    * @param name - 能力名称
-   * @returns CapabilityProvider 对象，未找到返回 undefined
-   * 
-   * @example
-   * ```ts
-   * const localProvider = getProvider('gridInstance')
-   * if (localProvider) {
-   *   console.log('当前组件提供了 gridInstance')
-   * }
-   * ```
+   * @returns 能力实现，未找到返回 undefined
    */
-  function getProvider(name: string | symbol): CapabilityProvider | undefined {
-    return context.providers.get(name)
+  function getProvider(name: string | symbol): unknown {
+    return getLocal(context, name)
   }
 
   /**
-   * 沿 parent 链向上查找 provider 实现
+   * 沿 parent 链向上查找能力实现
    * 
    * 从指定 context（默认当前）开始向上遍历，返回第一个找到的实现。
    * 支持泛型指定返回类型，提供类型安全。
@@ -457,27 +417,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * @param name - 能力名称
    * @param ctx - 起始 context（默认为当前 context）
    * @returns 实现对象，未找到返回 undefined
-   * 
-   * @example
-   * ```ts
-   * // 查找 DataSet（带类型）
-   * const dataSet = getInheritedProvider<DataSet>('dataSet')
-   * if (dataSet) {
-   *   const users = dataSet.getTable('Users')
-   * }
-   * 
-   * // 从指定 context 开始查找
-   * const parentDS = getInheritedProvider<DataSet>('dataSet', parentContext)
-   * ```
    */
   function getInheritedProvider<T = unknown>(name: string | symbol, ctx?: ComponentContext): T | undefined {
-    let current: ComponentContext | undefined = ctx ?? context
-    while (current) {
-      const p = current.providers.get(name)
-      if (p?.implementation !== undefined) return p.implementation as T
-      current = current.parent
-    }
-    return undefined
+    return lookup<T>(ctx ?? context, name)
   }
 
   /* ---------------------------------------------------------------------------
@@ -553,8 +495,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       const idx = parentContext.children.indexOf(context)
       if (idx !== -1) parentContext.children.splice(idx, 1)
     }
-    context.providers.clear()
-    context.consumers.clear()
+    context.capabilities.clear()
     logger.info(`🗑️ Destroyed: ${context.type} (${context.id})`)
   }
 
@@ -592,9 +533,11 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    */
   function getContextChain(): ComponentContext[] {
     const chain: ComponentContext[] = []
-    let current: ComponentContext | undefined = context
+    let current: ICapabilityContext | undefined = context
     while (current) {
-      chain.push(current)
+      if ('state' in current) { // Only include ComponentContext instances
+        chain.push(current as ComponentContext)
+      }
       current = current.parent
     }
     return chain
@@ -622,16 +565,16 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   function printCapabilityTree(): void {
     const print = (ctx: ComponentContext, indent = 0) => {
       const prefix = '  '.repeat(indent)
-      const providers = Array.from(ctx.providers.keys()).map(String).join(', ')
+      const caps = Array.from(ctx.capabilities.keys()).map(String).join(', ')
       logger.info(`${prefix}├─ ${ctx.type} (${ctx.id})`)
-      if (providers) logger.info(`${prefix}   Provides: [${providers}]`)
+      if (caps) logger.info(`${prefix}   Provides: [${caps}]`)
       ctx.children?.forEach(child => print(child, indent + 1))
     }
 
-    let root: ComponentContext = context
+    let root: ICapabilityContext = context
     while (root.parent) root = root.parent
     logger.info('🌲 Capability Tree:')
-    print(root)
+    print(root as ComponentContext)
   }
 
   /* ---------------------------------------------------------------------------

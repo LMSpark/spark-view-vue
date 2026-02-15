@@ -33,7 +33,7 @@
  */
 import { computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { Cap } from '@spark-view/spark-utils'
+import { ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 
 interface Props {
@@ -84,10 +84,10 @@ const {
   consumeEvents,
   logger 
 } = useSparkComponent(props.config as ComponentContext)
-const rowData = consume(Cap.ROW_DATA)
+const rowData = consume(ROW_DATA)
 
 // 2. 消费父组件的行事件能力（使用 consumeEvents 自动注册监听器）
-consumeEvents(Cap.ROW_EVENTS, {
+consumeEvents(ROW_EVENTS, {
   'row:click': (user: unknown) => {
     logger.info('🔔 Field received row click event:', user)
     // 可以在这里添加高亮效果等

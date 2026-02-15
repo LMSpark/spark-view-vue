@@ -8,7 +8,7 @@
 import { DataView } from './data-view'
 import { CrudService, createCrudService } from './crud-service'
 import { DATA_TABLE } from '@spark-view/spark-utils'
-import type { Provider as CapabilityProvider, CapabilityKey } from '@spark-view/spark-utils'
+import type { CapabilityKey } from '@spark-view/spark-utils'
 import type { IDataRow, DataColumn, CrudApi, ITableMetadata, QueryParams, CrudResult, BatchResult } from './types'
 
 export class DataTable extends DataView {
@@ -62,8 +62,8 @@ export class DataTable extends DataView {
    * 注册字段元数据能力，提供列的类型、标签、主键等信息
    * @returns 能力提供者映射
    */
-  getCapabilities(): Map<CapabilityKey<unknown>, CapabilityProvider> {
-    const caps = new Map<CapabilityKey<unknown>, CapabilityProvider>()
+  getCapabilities(): Map<CapabilityKey<unknown>, unknown> {
+    const caps = new Map<CapabilityKey<unknown>, unknown>()
 
     // 构建字段元数据
     const meta: Record<string, Record<string, unknown>> = {}
@@ -77,12 +77,7 @@ export class DataTable extends DataView {
       }
     }
 
-    caps.set(DATA_TABLE as CapabilityKey<unknown>, {
-      name: DATA_TABLE,
-      implementation: {
-        dataTable: this
-      },
-    })
+    caps.set(DATA_TABLE as CapabilityKey<unknown>, { dataTable: this })
 
     return caps
   }

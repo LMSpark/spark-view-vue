@@ -5,12 +5,11 @@ import type { ComponentContext } from '@spark-view/spark-component'
 describe('file transport (replaced by custom provider test)', () => {
   it('uses context-level logger provider', () => {
     let written = ''
-    const provider = {
-      name: 'logger',
-      interface: { info: true },
-      implementation: {
-        info: (..._args: unknown[]) => { written += JSON.stringify(_args) }
-      }
+    const loggerImpl = {
+      info: (..._args: unknown[]) => { written += JSON.stringify(_args) },
+      debug: (..._args: unknown[]) => {},
+      warn: (..._args: unknown[]) => {},
+      error: (..._args: unknown[]) => {}
     }
 
     const ctx: ComponentContext = {
@@ -18,8 +17,7 @@ describe('file transport (replaced by custom provider test)', () => {
       type: 'test',
       children: [],
       state: {},
-      providers: new Map([['logger', provider]]),
-      consumers: new Map()
+      capabilities: new Map([['logger', loggerImpl]])
     }
 
     const logger = Spark.Logger(ctx)

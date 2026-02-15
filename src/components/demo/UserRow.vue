@@ -54,7 +54,7 @@
  */
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { Cap } from '@spark-view/spark-utils'
+import { SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
 import type { ComponentContext } from '@spark-view/spark-component'
 
 interface Props {
@@ -116,7 +116,7 @@ const isSelected = ref(false)
 // ============ 能力消费 ============
 
 // 1. 消费父组件的选择能力
-const selection = consume(Cap.SELECTION)
+const selection = consume(SELECTION)
 
 // 更新选中状态
 const updateSelectionState = () => {
@@ -126,7 +126,7 @@ const updateSelectionState = () => {
 }
 
 // 2. 消费父组件的事件能力（使用 consumeEvents 自动注册监听器）
-consumeEvents(Cap.GRID_EVENTS, {
+consumeEvents(GRID_EVENTS, {
   'selection:changed': () => {
     updateSelectionState()
     logger.debug('🔄 Selection updated for row:', user.value?.['id'])  },
@@ -147,10 +147,10 @@ const rowDataCapability = {
   isSelected: () => isSelected.value
 }
 
-provideCapability(Cap.ROW_DATA, rowDataCapability)
+provideCapability(ROW_DATA, rowDataCapability)
 
 // 提供行事件能力（使用真正的事件系统）
-const rowEventsEmitter = provideEvents(Cap.ROW_EVENTS)
+const rowEventsEmitter = provideEvents(ROW_EVENTS)
 
 // ============ 事件处理 ============
 

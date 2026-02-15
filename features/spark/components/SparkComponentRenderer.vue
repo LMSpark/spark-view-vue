@@ -68,7 +68,7 @@
  * @since 1.0.0
  */
 import { computed } from 'vue'
-import { useSparkComponent, type ComponentContext } from '@spark-view/spark-component'
+import { useSparkComponent, type ComponentContext, type ComponentConfig } from '@spark-view/spark-component'
 
 // ==================== Props ====================
 
@@ -82,7 +82,7 @@ interface Props {
    * @example
    * { type: 'spark-ej2-grid', id: 'grid-1', dataSource: [...] }
    */
-  config: ComponentContext
+  config: ComponentConfig
   
   /**
    * 父组件上下文（可选）

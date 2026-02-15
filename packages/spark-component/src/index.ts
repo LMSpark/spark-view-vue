@@ -40,9 +40,8 @@ export type { SparkPluginOptions } from './plugins/SparkPlugin.js'
 /** 组件注册表工厂函数 */
 export { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
 
-/** 能力管理器工厂函数（从 spark-utils 透传） */
-export { createCapabilityManager } from '@spark-view/spark-utils'
-export type { ICapabilityManager } from '@spark-view/spark-utils'
+/** 能力操作纯函数（从 spark-utils 透传） */
+export { provide, lookup, getLocal, createEventEmitter } from '@spark-view/spark-utils'
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 5. 核心类型
@@ -55,8 +54,6 @@ export type {
   ComponentContext,
   ComponentDefinition,
   ComponentRegistry,
-  CapabilityProvider,
-  CapabilityConsumer,
   LogLevel,
   LoggerApi,
   Transport
@@ -67,7 +64,7 @@ export type {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 /** Vue 依赖注入的 Symbol Keys */
-export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, CAPABILITY_MANAGER_KEY } from './core/types.js'
+export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './core/types.js'
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 7. 智能加载器（Auto Loader）

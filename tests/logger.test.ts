@@ -5,12 +5,11 @@ import type { ComponentContext } from '@spark-view/spark-component'
 describe('logger capability', () => {
   it('uses context-level logger provider', () => {
     let called = false
-    const provider = {
-      name: 'logger',
-      interface: { info: true },
-      implementation: {
-        info: (..._args: unknown[]) => { called = true }
-      }
+    const loggerImpl = {
+      info: (..._args: unknown[]) => { called = true },
+      debug: (..._args: unknown[]) => {},
+      warn: (..._args: unknown[]) => {},
+      error: (..._args: unknown[]) => {}
     }
 
     const ctx: ComponentContext = {
@@ -18,8 +17,7 @@ describe('logger capability', () => {
       type: 'test',
       children: [],
       state: {},
-      providers: new Map([['logger', provider]]),
-      consumers: new Map()
+      capabilities: new Map([['logger', loggerImpl]])
     }
 
     const logger = Spark.Logger(ctx)
@@ -30,12 +28,11 @@ describe('logger capability', () => {
 
   it('prefers context-level logger provider over missing global', () => {
     let calledLocal = false
-    const localProvider = {
-      name: 'logger',
-      interface: { info: true },
-      implementation: {
-        info: (..._args: unknown[]) => { calledLocal = true }
-      }
+    const loggerImpl = {
+      info: (..._args: unknown[]) => { calledLocal = true },
+      debug: (..._args: unknown[]) => {},
+      warn: (..._args: unknown[]) => {},
+      error: (..._args: unknown[]) => {}
     }
 
     const ctx: ComponentContext = {
@@ -43,8 +40,7 @@ describe('logger capability', () => {
       type: 'test',
       children: [],
       state: {},
-      providers: new Map([['logger', localProvider]]),
-      consumers: new Map()
+      capabilities: new Map([['logger', loggerImpl]])
     }
 
     const logger = Spark.Logger(ctx)
