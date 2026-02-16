@@ -61,7 +61,8 @@
     "features/**/*.d.ts",
     "packages/**/*.ts",
     "packages/**/*.tsx",
-    "verify-integration.ts"
+    "verify-integration.ts",
+    ".storybook/**/*.ts"
   ],
   "exclude": [
     "node_modules",
@@ -73,7 +74,6 @@
     "tools/**/*",
     "examples/**/*",
     "node_modules/.pnpm/@vitejs+plugin-vue*/**",
-    "**/*.config.ts",
     "**/*.config.js"
   ]
 }

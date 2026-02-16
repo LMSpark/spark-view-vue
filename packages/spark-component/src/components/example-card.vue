@@ -24,7 +24,7 @@ interface Props {
 const props = defineProps<Props>()
 
 // 使用SPARK组件hook
-const { logger, context } = useSparkComponent(props.config)
+const { logger } = useSparkComponent(props.config)
 
 // 组件初始化
 logger.info('ExampleCard component mounted', { config: props.config })

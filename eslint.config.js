@@ -58,6 +58,20 @@ export default [
       'no-restricted-imports': ['error', { 'patterns': ['**/*.vue', '**/features/**'] }]
     }
   },
+  // Allow stories to import Vue components
+  {
+    files: ['packages/spark-component/stories/**'],
+    rules: {
+      'no-restricted-imports': 'off'
+    }
+  },
+  // Storybook config files - skip TypeScript parsing
+  {
+    files: ['.storybook/**/*'],
+    rules: {
+      '@typescript-eslint/no-unsafe-member-access': 'off'
+    }
+  },
   // TypeScript files
   {
     files: ['**/*.ts', '**/*.tsx'],

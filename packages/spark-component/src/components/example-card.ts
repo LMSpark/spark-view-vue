@@ -11,7 +11,7 @@ export interface ExampleCardConfig {
   /** 是否显示加载状态 */
   loading?: boolean
   /** 自定义数据 */
-  data?: Record<string, any>
+  data?: Record<string, unknown>
 }
 
 /**
