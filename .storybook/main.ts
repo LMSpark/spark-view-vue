@@ -23,9 +23,9 @@ const config: StorybookConfig = {
   },
   "viteFinal": async (config) => {
     // 自定义Vite配置以支持SPARK工作空间
-    config.resolve = config.resolve || {};
+    config.resolve = config.resolve ?? {};
     config.resolve.alias = {
-      ...config.resolve.alias,
+      ...(config.resolve.alias as Record<string, string>),
       '@spark-view/spark-component': new URL('../packages/spark-component/src', import.meta.url).pathname,
       '@spark-view/spark-data': new URL('../packages/spark-data/src', import.meta.url).pathname,
       '@spark-view/spark-app': new URL('../packages/spark-app/src', import.meta.url).pathname,
