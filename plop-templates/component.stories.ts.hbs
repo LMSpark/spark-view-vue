@@ -1,0 +1,63 @@
+import type { Meta, StoryObj } from '@storybook/vue3'
+import {{pascalName}} from '../src/components/{{name}}.vue'
+import type { {{pascalName}}Config } from '../src/components/{{name}}'
+
+const meta: Meta<typeof {{pascalName}}> = {
+  title: 'SPARK Components/{{pascalName}}',
+  component: {{pascalName}},
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component: '{{description}}'
+      }
+    }
+  },
+  argTypes: {
+    config: {
+      description: '组件配置对象',
+      control: { type: 'object' }
+    }
+  },
+  args: {
+    config: {
+      type: '{{name}}',
+      title: '{{pascalName}} 示例'
+    } as {{pascalName}}Config
+  }
+}
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = {
+  args: {
+    config: {
+      type: '{{name}}',
+      title: '默认{{pascalName}}'
+    }
+  }
+}
+
+export const Loading: Story = {
+  args: {
+    config: {
+      type: '{{name}}',
+      title: '加载中...',
+      loading: true
+    }
+  }
+}
+
+export const WithCustomData: Story = {
+  args: {
+    config: {
+      type: '{{name}}',
+      title: '自定义数据',
+      data: {
+        message: '来自Storybook的自定义消息',
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+}
