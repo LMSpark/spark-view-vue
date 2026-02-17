@@ -58,7 +58,7 @@ function resolveRuleDataKey(
   if (dataSet && isDataKey(rawKey)) {
     const dk = parseDataKey(rawKey)
     if (dk) {
-      return resolveDataKey(dk, dataSet as import('@spark-view/spark-data').DataSet)
+      return resolveDataKey(dk, dataSet)
     }
   }
 
@@ -298,7 +298,7 @@ function injectTableEvents(
       }
       
       // 同步到 DataSet — 通过公共 API
-      const table = (dataSet as import('@spark-view/spark-data').DataSet).getTable(tableName)
+      const table = dataSet.getTable(tableName)
       if (table) {
         const view = table.getOrCreateView(viewId)
         view.setCurrentRow(currentRow ?? null)
@@ -329,7 +329,7 @@ function injectTableEvents(
       }
       
       // 同步到 DataSet — 通过公共 API
-      const table = (dataSet as import('@spark-view/spark-data').DataSet).getTable(tableName)
+      const table = dataSet.getTable(tableName)
       if (table) {
         const view = table.getOrCreateView(viewId)
         view.setSelectedRows(selection)
