@@ -10,7 +10,7 @@
  *
  * 事件命名规范：
  * - 视图状态变化：  `view:stateChanged`
- * - 视图订阅通知：  `view:{tableName}.{contextId}:changed`
+ * - 视图订阅通知：  `view:{tableName}.{viewId}:changed`
  * - 加载生命周期：  `load:start` / `load:success` / `load:error`
  * - CRUD 操作：     `dataLoaded` / `recordCreated` / `recordUpdated` / ...
  * - 表变化通知：    `tableChanged`

@@ -532,9 +532,59 @@ const apm = initApm({
 3. **监控告警**: 设置性能劣化告警
 4. **A/B 测试**: 逐步灰度发布
 
+---
+
+## Syncfusion 路由级懒加载
+
+### 优化效果
+
+| 指标 | 优化前 | 优化后 | 改进 |
+|------|--------|--------|------|
+| 首屏加载 | 包含 Syncfusion 全量 | 0 KB | -800 KB (gzipped) |
+| 使用页面 | 同步加载 | 路由级懒加载 | 延迟到需要时 |
+
+### 实现方式
+
+主入口移除 Syncfusion 同步导入，改用组件级动态加载器：
+
+```typescript
+// useSyncfusionLoader.ts
+async function loadEJ2Grid() {
+  const [, ej2VueModule] = await Promise.all([
+    loadSyncfusionStyles(),                    // CSS 动态加载
+    import('@syncfusion/ej2-vue-grids'),       // JS 动态加载
+    import('@syncfusion/ej2-grids').then(m => {
+      if (m?.Grid && m?.Page) m.Grid.Inject(m.Page)
+    })
+  ])
+  return ej2VueModule
+}
+```
+
+### 路由预加载
+
+```typescript
+// router/index.ts
+import { preloadSyncfusionForRoute } from '@/features/spark-ej2'
+
+const routes = [{
+  path: '/users',
+  component: () => import('@/views/Users.vue'),
+  beforeEnter: preloadSyncfusionForRoute  // 路由跳转时预加载
+}]
+```
+
+### 最佳实践
+
+- 首页/登录页确保不使用 Syncfusion 组件（保持轻量）
+- 频繁访问的 Grid 页面使用 `beforeEnter` 预加载
+- 生产环境使用 HTTP/2 并行加载更高效
+- Syncfusion chunk 使用 hash 命名（强缓存友好）
+
+---
+
 ## 📚 参考资源
 
 - [Web Vitals](https://web.dev/vitals/)
 - [Lighthouse Performance Budgets](https://web.dev/performance-budgets-101/)
-- [HTTP/2 Server Push](https://web.dev/http2-push/)
 - [Vite 性能优化](https://vitejs.dev/guide/performance.html)

@@ -28,9 +28,6 @@ export class TreeManager {
   /** 节点缓存 */
   private cache: FlatTreeCache = {}
 
-  /** 内联事件监听器（替代 DataEventHub） */
-  private listeners = new Map<string, Set<(...args: unknown[]) => void>>()
-
   /** 关联的数据视图 */
   private dataView?: DataView
 
@@ -107,7 +104,6 @@ export class TreeManager {
     nodes.forEach(node => {
       this.cache[node.id] = node
     })
-    this.emit('cacheUpdated', { cache: this.cache })
   }
 
   /**
@@ -115,7 +111,6 @@ export class TreeManager {
    */
   clear(): void {
     this.cache = {}
-    this.emit('cacheCleared', {})
   }
 
   // ===== 节点查询 =====
@@ -187,8 +182,6 @@ export class TreeManager {
 
     // 5. 更新缓存
     this.addNodesToCache(nodes)
-
-    this.emit('pathExpanded', { targetId, path, missing })
   }
 
   // ===== 搜索功能 =====
@@ -324,47 +317,6 @@ export class TreeManager {
         this.markHasChildren(node.id)
       }
     })
-  }
-
-  // ===== 事件管理 =====
-
-  /**
-   * 监听事件
-   * @param event 事件名
-   * @param callback 回调函数
-   */
-  on(event: string, callback: (...args: unknown[]) => void): void {
-    let set = this.listeners.get(event)
-    if (!set) {
-      set = new Set()
-      this.listeners.set(event, set)
-    }
-    set.add(callback)
-  }
-
-  /**
-   * 移除事件监听
-   * @param event 事件名
-   * @param callback 回调函数
-   */
-  off(event: string, callback: (...args: unknown[]) => void): void {
-    const set = this.listeners.get(event)
-    if (!set) return
-    set.delete(callback)
-    if (set.size === 0) this.listeners.delete(event)
-  }
-
-  /**
-   * 触发事件（内部使用，错误隔离）
-   * @param event 事件名
-   * @param data 事件数据
-   */
-  private emit(event: string, data: unknown): void {
-    const set = this.listeners.get(event)
-    if (!set?.size) return
-    for (const handler of [...set]) {
-      try { handler(data) } catch (e) { this.logger.error(`事件错误 '${event}':`, e) }
-    }
   }
 
   // ===== 序列化 =====

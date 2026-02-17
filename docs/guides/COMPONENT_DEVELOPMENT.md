@@ -525,10 +525,9 @@ if (dataProvider.value) {
 
 ## 📖 相关文档
 
-- [能力系统详解](CAPABILITY_PROVISION.md) - 深入了解能力系统的设计和使用
-- [数据管理](DATA_MANAGEMENT.md) - 学习 DataSet 和数据操作
+- [数据管理](DATA_MANAGEMENT.md) - DataSet、视图状态、CRUD
 - [插件配置](PLUGIN_CONFIGURATION.md) - 集成第三方 UI 库
-- [页面配置](MULTI_TENANT_CONFIG.md) - 配置驱动的页面开发
+- [配置系统](CONFIG_SYSTEM.md) - 多租户与远程配置
 Spark.register({
   type: 'my-chart',
   name: 'My Chart',
@@ -801,6 +800,148 @@ export default defineConfig({
 
 ## 更多信息
 
-- [能力系统指南](CAPABILITY_PROVISION.md)
 - [数据管理指南](DATA_MANAGEMENT.md)
-- [API 参考手册](API_REFERENCE.md)
+
+---
+
+## 能力系统
+
+组件间通过能力系统通信，基于 Provider/Consumer 模式，避免紧耦合。
+
+### 提供能力
+
+```typescript
+const { provide } = useSparkComponent({ type: 'my-grid' })
+
+provide('columnManager', {
+  addColumn: (col) => columns.value.push(col),
+  removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id),
+  getColumns: () => columns.value
+})
+
+provide('dataSource', {
+  getData: () => rows.value,
+  setData: (data) => rows.value = data,
+  refresh: async () => { rows.value = await fetchData() }
+})
+```
+
+### 消费能力
+
+```typescript
+const { consume, whenAvailable, use } = useSparkComponent({ type: 'my-column' })
+
+// 立即消费（可能 undefined）
+const mgr = consume('columnManager')
+mgr?.addColumn({ id: '1', field: 'name' })
+
+// 等待就绪后执行（推荐）
+whenAvailable('columnManager', (mgr) => {
+  mgr.addColumn({ id: props.id, field: props.field })
+})
+
+// use() 是 whenAvailable 的语法糖
+use('columnManager', (mgr) => { mgr.addColumn({ ... }) })
+```
+
+### 能力查找规则
+
+沿父子关系向上查找，就近原则：
+
+```
+Page (提供 logger)
+  └─ Container (提供 dataSet)
+       └─ Grid (提供 columnManager)
+            └─ Column → consume('columnManager') ✅ 找到 Grid 的
+                       → consume('dataSet') ✅ 找到 Container 的
+                       → consume('logger') ✅ 找到 Page 的
+```
+
+### 类型安全
+
+```typescript
+import { defineCapability } from '@spark-view/spark-utils'
+
+// 定义能力键
+const COLUMN_MANAGER = defineCapability<ColumnManagerCapability>('spark:column-manager')
+
+// 提供
+provide(COLUMN_MANAGER, { addColumn, removeColumn, getColumns })
+
+// 消费
+const mgr = consume(COLUMN_MANAGER)  // 类型自动推断
+```
+
+### 完整 Grid + Column 示例
+
+```vue
+<!-- Grid.vue（提供能力） -->
+<script setup lang="ts">
+const columns = ref<ColumnConfig[]>([])
+const { provide } = useSparkComponent({ type: 'my-grid' })
+provide('columnManager', {
+  addColumn: (col) => columns.value.push(col),
+  removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id),
+  getColumns: () => columns.value
+})
+</script>
+
+<!-- Column.vue（消费能力） -->
+<script setup lang="ts">
+const props = defineProps<{ id: string; field: string }>()
+const { whenAvailable, consume } = useSparkComponent({ type: 'my-column' })
+whenAvailable('columnManager', (mgr) => mgr.addColumn({ id: props.id, field: props.field }))
+onUnmounted(() => consume('columnManager')?.removeColumn(props.id))
+</script>
+```
+
+---
+
+## 能力树架构
+
+SPARK 从应用层到子组件形成完整的能力树，每个节点都是 `ICapabilityContext`。
+
+```
+APP                         ← provide(APP_SERVICES)
+  └─ Page                   ← provide(PAGE_SERVICE)
+       └─ DataSet           ← provide(DATA_SET)
+            └─ DataTable    ← provide(DATA_TABLE)
+                 └─ DataView ← provide(DATA_VIEW)
+                      └─ 组件 (useSparkComponent)
+                           └─ 子组件
+```
+
+### 能力键定义
+
+```typescript
+// packages/spark-utils/src/capability/symbols.ts
+export const DATA_SET    = defineCapability<IDataSetCapability>('spark:capability:dataset')
+export const DATA_TABLE  = defineCapability<IDataTableCapability>('spark:capability:datatable')
+export const DATA_VIEW   = defineCapability<IDataViewCapability>('spark:capability:dataview')
+export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
+export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capability:page-service')
+```
+
+### parent 链建立
+
+```typescript
+// DataSet 构造：为每个 table 设置 parent
+table.setDataSet(this)  // table.parent = dataSet, view.parent = table
+
+// DataView 构造：注册 DATA_VIEW 能力
+setCapability(this, DATA_VIEW, { dataView: this, tableName, viewId, rows, currentRow })
+
+// lookup 沿 parent 链查找：DataView → DataTable → DataSet → Page → APP
+lookup(componentCtx, DATA_SET)
+```
+
+### 级联机制
+
+子视图通过 `setupCascade()` 订阅父视图 `stateChanged` 事件，完全遵循 SOLID（子订阅父，父不知道子）。
+
+| dependencyType | 数据范围 | 典型场景 |
+|---------------|---------|---------|
+| `'currentRow'` | 父视图当前行 | 主从表 |
+| `'selectedRows'` | 父视图选中行 | 批量关联查询 |
+| `'allRows'` | 父视图全部行 | 汇总/统计 |
+| `'pagedRows'` | 父视图当前页 | 分页联动 |

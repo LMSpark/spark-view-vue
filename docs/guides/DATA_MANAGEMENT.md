@@ -730,8 +730,7 @@ const transferUser = (userId: number, fromDeptId: number, toDeptId: number) => {
 ## 📖 相关文档
 
 - [组件开发指南](COMPONENT_DEVELOPMENT.md) - 创建数据驱动的组件
-- [页面配置](MULTI_TENANT_CONFIG.md) - 配置驱动的数据管理
-- [API 参考](API_REFERENCE.md) - 完整的 DataSet 和 TreeManager API
+- [配置系统](CONFIG_SYSTEM.md) - 多租户与远程配置
   email: 'charlie@example.com'
 })
 
@@ -996,5 +995,150 @@ try {
 ## 更多信息
 
 - [组件开发指南](COMPONENT_DEVELOPMENT.md)
-- [能力系统指南](CAPABILITY_PROVISION.md)
-- [API 参考手册](API_REFERENCE.md)
+
+---
+
+## 视图状态管理
+
+DataView 是 UI 和数据之间的智能桥梁，管理数据加载的完整生命周期。
+
+### 视图状态
+
+| 状态 | 条件 | 说明 |
+|------|------|------|
+| `loading` | `isLoading=true` | 数据加载中 |
+| `ready` | `isLoading=false`, `rows.length > 0` | 数据已就绪 |
+| `error` | `loadingError !== null` | 加载失败 |
+| `empty` | `isLoading=false`, `rows.length === 0` | 无数据 |
+
+```typescript
+class DataView {
+  isLoading: boolean
+  loadingError: Error | null
+  rows: IDataRow[]
+  currentRow: IDataRow | null
+  selectedRows: IDataRow[]
+
+  setLoading(): void
+  setReady(): void
+  setError(error: Error): void
+}
+```
+
+### 订阅视图变化
+
+```typescript
+// 事件方式 — 细粒度监听
+view.events.on('stateChanged', (event: ViewStateEvent) => {
+  console.log(`[${event.tableName}.${event.viewId}] ${event.changeType}`)
+})
+
+// subscribe 方式 — UI 更新用
+const unsub = view.subscribe(() => {
+  if (view.isLoading) showLoading()
+  else if (view.loadingError) showError(view.loadingError.message)
+  else renderData(view.rows)
+})
+```
+
+### 依赖链管理
+
+```typescript
+dataSet.addRelations([{
+  parentTable: 'Departments',
+  childTable: 'Users',
+  parentKey: 'id',
+  childKey: 'departmentId',
+  autoLoad: true  // 父表就绪后自动加载子表
+}])
+
+// 子视图通过 setupCascade() 自动订阅父视图 stateChanged
+// 父无数据 → 清空子；父有数据 + autoLoad → 请求子数据
+```
+
+### Vue 组件示例
+
+```vue
+<script setup>
+const view = computed(() => dataSet.getTable('Users')?.views['default'])
+const viewState = ref({ isLoading: false, error: null, ready: false })
+
+let unsub
+onMounted(() => {
+  unsub = view.value?.subscribe(() => {
+    viewState.value = {
+      isLoading: view.value.isLoading,
+      error: view.value.loadingError?.message ?? null,
+      ready: !view.value.isLoading && view.value.rows.length > 0
+    }
+  })
+  dataSet.requestTableData('Users')  // 非阻塞
+})
+onUnmounted(() => unsub?.())
+</script>
+```
+
+---
+
+## 网络 CRUD 封装
+
+spark-data 提供完整的网络 CRUD 封装，基于 spark-utils HTTP 客户端。
+
+### 创建 CRUD 服务
+
+```typescript
+import { createCrudService } from '@spark-view/spark-data'
+
+const crudService = createCrudService({
+  create:   { url: '/api/users', method: 'POST' },
+  retrieve: { url: '/api/users/:id', method: 'GET', pathParams: ['id'] },
+  update:   { url: '/api/users/:id', method: 'PUT', pathParams: ['id'] },
+  delete:   { url: '/api/users/:id', method: 'DELETE', pathParams: ['id'] },
+  list:     { url: '/api/users', method: 'GET', pagination: { pageParam: 'page', sizeParam: 'size' } }
+})
+```
+
+### DataTable 集成
+
+```typescript
+const userTable = SparkData.createDataTable({
+  tableName: 'users',
+  columns: [
+    { name: 'id', type: 'number', isPrimaryKey: true },
+    { name: 'name', type: 'string' },
+    { name: 'email', type: 'string' }
+  ],
+  api: {
+    create:   { url: '/api/users', method: 'POST' },
+    retrieve: { url: '/api/users/:id', method: 'GET', pathParams: ['id'] },
+    update:   { url: '/api/users/:id', method: 'PUT', pathParams: ['id'] },
+    delete:   { url: '/api/users/:id', method: 'DELETE', pathParams: ['id'] },
+    list:     { url: '/api/users', method: 'GET' }
+  }
+})
+
+// CRUD 操作
+await userTable.createRecord({ name: '张三', email: 'zhang@example.com' })
+await userTable.loadFromServer({ page: 1, pageSize: 20 })
+await userTable.updateRecord(1, { name: '李四' })
+await userTable.deleteRecord(1)
+
+// 批量操作
+await userTable.batchCreateRecords([...])
+await userTable.batchDeleteRecords([1, 2, 3])
+
+// 导入导出
+await userTable.importData(file)
+await userTable.exportData({ filter: { status: 'active' } })
+```
+
+### 权限集成
+
+CRUD 操作自动处理权限：
+
+```typescript
+const result = await userTable.createRecord({ name: '新用户' })
+if (result.success && result.data?._perm?.allowDelete) {
+  // 用户有删除权限
+}
+```

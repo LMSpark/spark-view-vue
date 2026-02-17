@@ -517,7 +517,6 @@ interface PluginConfigItem {
 
 ## 相关文档
 
-- [多租户配置指南](./MULTI_TENANT_CONFIG.md)
-- [远程配置 API](./REMOTE_CONFIG_API.md)
+- [配置系统指南](./CONFIG_SYSTEM.md)
 - [配置类型定义](../../src/config/types.ts)
 - [插件注册表源码](../../packages/spark-app/src/plugins/registry.ts)

@@ -118,7 +118,7 @@ export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capa
 // ==================== 数据 ====================
 
 export const DATA_SET = defineCapability<{ dataSetName: string; tables: Record<string, unknown>; [k: string]: unknown }>('spark:capability:dataset')
-export const DATA_TABLE = defineCapability<{ tableName: string; columns: unknown[]; rows: unknown[]; [k: string]: unknown }>('spark:capability:datatable')
+export const DATA_TABLE = defineCapability<{ dataTable: unknown; [k: string]: unknown }>('spark:capability:datatable')
 export const DATA_VIEW = defineCapability<{ tableName: string; rows: unknown[]; currentRow: unknown | null; [k: string]: unknown }>('spark:capability:dataview')
 
 // ==================== UI 交互 ====================

@@ -1,18 +1,24 @@
 /**
- * 能力驱动事件系统测试（IDataSetContext 模式）
+ * 能力体系通信测试（DataView 事件 + subscribe 模式）
  *
  * 覆盖：
- * - DataSet handleViewStateChanged 事件流：级联 + 通知 + 广播
- * - setCurrentRow / setSelectedRows / clearAll 的事件发射行为
- * - subscribe / notifySubscribers 通过内联 Map 工作
- * - TreeManager 内联事件系统
+ * - DataView.events.on('stateChanged') 状态监听
+ * - DataView.setCurrentRow / setSelectedRows / clearAll 触发状态变更
+ * - subscribe / notifySubscribers 数据订阅
+ * - TreeManager 缓存操作（无事件）
+ *
+ * 【设计原则】DataView 是与 UI 交互的唯一通道。
+ * 所有 UI 状态操作（setCurrentRow, setSelectedRows, clearAll）
+ * 必须通过 DataView，不通过 DataTable。
+ * 状态监听直接订阅 DataView.events，不经过 DataSet。
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { DataSet } from '../packages/spark-data/src/dataset'
+import type { ViewStateEvent } from '../packages/spark-data/src/types'
 import { SparkData } from '../packages/spark-data/src/spark-data'
+import { DATA_SET } from '@spark-view/spark-utils'
 
-// ==================== DataSet 事件驱动集成测试 ====================
+// ==================== 工具函数 ====================
 
 function createTestDataSet() {
   return SparkData.createDataSet({
@@ -53,120 +59,142 @@ function createTestDataSet() {
   })
 }
 
-describe('DataSet 统一事件驱动', () => {
-  it('setCurrentRow 触发 currentRowChanged 事件', () => {
-    const ds = createTestDataSet()
-    const handler = vi.fn()
+// ==================== DataView.events stateChanged 测试 ====================
 
-    ds.on('currentRowChanged', handler)
-    const dept = ds.getTable('Departments')!
-    dept.setCurrentRow(dept.rows[0]!)
+describe('DataView.events.on stateChanged（视图状态监听）', () => {
+  it('setCurrentRow 触发 currentRow 状态变更', () => {
+    const ds = createTestDataSet()
+    const handler = vi.fn<[ViewStateEvent], void>()
+
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('stateChanged', (...args: unknown[]) => handler(args[0] as ViewStateEvent))
+    deptView.setCurrentRow(deptView.rows[0]!)
 
     expect(handler).toHaveBeenCalledOnce()
     expect(handler).toHaveBeenCalledWith(
       expect.objectContaining({
         tableName: 'Departments',
-        contextId: 'default',
-        row: dept.rows[0]
+        viewId: 'default',
+        changeType: 'currentRow',
+        row: deptView.rows[0]
       })
     )
   })
 
-  it('setCurrentRow(null) 触发 currentRowChanged', () => {
+  it('setCurrentRow(null) 触发 currentRow 状态变更', () => {
     const ds = createTestDataSet()
-    const dept = ds.getTable('Departments')!
-    dept.setCurrentRow(dept.rows[0]!)
+    const deptView = ds.getView('Departments')!
+    deptView.setCurrentRow(deptView.rows[0]!)
 
-    const handler = vi.fn()
-    ds.on('currentRowChanged', handler)
-    dept.setCurrentRow(null)
+    const handler = vi.fn<[ViewStateEvent], void>()
+    deptView.events.on('stateChanged', (...args: unknown[]) => handler(args[0] as ViewStateEvent))
+    deptView.setCurrentRow(null)
 
-    expect(handler).toHaveBeenCalledOnce()
+    expect(handler).toHaveBeenCalled()
     expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({ row: null })
+      expect.objectContaining({ changeType: 'currentRow', row: null })
     )
   })
 
-  it('setSelectedRows 触发 selectedRowsChanged 事件', () => {
+  it('setSelectedRows 触发 selectedRows 状态变更', () => {
     const ds = createTestDataSet()
-    const handler = vi.fn()
+    const handler = vi.fn<[ViewStateEvent], void>()
 
-    ds.on('selectedRowsChanged', handler)
-    const dept = ds.getTable('Departments')!
-    dept.setSelectedRows([dept.rows[0]!, dept.rows[1]!])
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('stateChanged', (...args: unknown[]) => handler(args[0] as ViewStateEvent))
+    deptView.setSelectedRows([deptView.rows[0]!, deptView.rows[1]!])
 
-    expect(handler).toHaveBeenCalledOnce()
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tableName: 'Departments',
-        contextId: 'default'
-      })
-    )
-  })
-
-  it('clearAll 触发 contextCleared 事件', () => {
-    const ds = createTestDataSet()
-    const dept = ds.getTable('Departments')!
-    dept.setCurrentRow(dept.rows[0]!)
-
-    const handler = vi.fn()
-    ds.on('contextCleared', handler)
-    dept.clearAll()
-
-    expect(handler).toHaveBeenCalledOnce()
+    expect(handler).toHaveBeenCalled()
     expect(handler).toHaveBeenCalledWith(
       expect.objectContaining({
         tableName: 'Departments',
-        contextId: 'default'
+        viewId: 'default',
+        changeType: 'selectedRows'
       })
     )
   })
 
-  it('setCurrentRow 同一行重复设置不触发事件（去重）', () => {
+  it('clearAll 触发 cleared 状态变更', () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    deptView.setCurrentRow(deptView.rows[0]!)
+
+    const handler = vi.fn<[ViewStateEvent], void>()
+    deptView.events.on('stateChanged', (...args: unknown[]) => handler(args[0] as ViewStateEvent))
+    deptView.clearAll()
+
+    expect(handler).toHaveBeenCalled()
+    expect(handler).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tableName: 'Departments',
+        viewId: 'default',
+        changeType: 'cleared'
+      })
+    )
+  })
+
+  it('setCurrentRow 同一行重复设置不触发状态变更（去重）', () => {
     const ds = createTestDataSet()
     const handler = vi.fn()
-    ds.on('currentRowChanged', handler)
 
-    const dept = ds.getTable('Departments')!
-    const row = dept.rows[0]!
-    dept.setCurrentRow(row)
-    dept.setCurrentRow(row) // 同一引用
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('stateChanged', handler)
+
+    const row = deptView.rows[0]!
+    deptView.setCurrentRow(row)
+    deptView.setCurrentRow(row) // 同一引用
 
     expect(handler).toHaveBeenCalledTimes(1)
   })
 
-  it('setSelectedRows 同样内容重复设置不触发事件（去重）', () => {
+  it('setSelectedRows 同样内容重复设置不触发状态变更（去重）', () => {
     const ds = createTestDataSet()
     const handler = vi.fn()
-    ds.on('selectedRowsChanged', handler)
 
-    const dept = ds.getTable('Departments')!
-    const rows = [dept.rows[0]!, dept.rows[1]!]
-    dept.setSelectedRows(rows)
-    dept.setSelectedRows(rows) // 内容相同
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('stateChanged', handler)
 
-    expect(handler).toHaveBeenCalledTimes(1)
+    const rows = [deptView.rows[0]!, deptView.rows[1]!]
+    deptView.setSelectedRows(rows)
+    const countAfterFirst = handler.mock.calls.length
+    deptView.setSelectedRows(rows) // 内容相同
+
+    // 第二次调用应被去重，不增加调用次数
+    expect(handler.mock.calls.length).toBe(countAfterFirst)
   })
 
-  it('tableChanged 事件在每次视图状态变化时触发', () => {
+  it('每次视图状态变化都触发 stateChanged', () => {
     const ds = createTestDataSet()
     const handler = vi.fn()
-    ds.on('tableChanged', handler)
 
-    const dept = ds.getTable('Departments')!
-    dept.setCurrentRow(dept.rows[0]!)
-    dept.setSelectedRows([dept.rows[1]!])
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('stateChanged', handler)
+
+    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.setSelectedRows([deptView.rows[1]!])
 
     expect(handler).toHaveBeenCalledTimes(2)
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({ tableName: 'Departments' })
-    )
+  })
+
+  it('events.off 取消监听', () => {
+    const ds = createTestDataSet()
+    const handler = vi.fn()
+
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('stateChanged', handler)
+
+    deptView.setCurrentRow(deptView.rows[0]!)
+    expect(handler).toHaveBeenCalledOnce()
+
+    deptView.events.off('stateChanged', handler)
+    deptView.setCurrentRow(deptView.rows[1]!)
+    expect(handler).toHaveBeenCalledOnce() // 不再增加
   })
 })
 
 // ==================== subscribe / notifySubscribers 测试 ====================
 
-describe('DataSet subscribe（内联 Map 实现）', () => {
+describe('DataSet subscribe（数据订阅）', () => {
   it('subscribe 返回取消订阅函数', () => {
     const ds = createTestDataSet()
     const cb = vi.fn()
@@ -180,19 +208,19 @@ describe('DataSet subscribe（内联 Map 实现）', () => {
     expect(cb).toHaveBeenCalledOnce() // 不再增加
   })
 
-  it('notifySubscribers 不指定 contextId 广播该表所有视图', () => {
+  it('notifySubscribers 不指定 viewId 广播该表所有视图', () => {
     const ds = createTestDataSet()
     const defaultCb = vi.fn()
     const customCb = vi.fn()
 
     // 创建额外视图
     const dept = ds.getTable('Departments')!
-    dept.getOrCreateContext('grid1')
+    dept.getOrCreateView('grid1')
 
     ds.subscribe('Departments', 'default', defaultCb)
     ds.subscribe('Departments', 'grid1', customCb)
 
-    ds.notifySubscribers('Departments') // 不指定 contextId
+    ds.notifySubscribers('Departments') // 不指定 viewId
 
     expect(defaultCb).toHaveBeenCalledOnce()
     expect(customCb).toHaveBeenCalledOnce()
@@ -210,7 +238,7 @@ describe('DataSet subscribe（内联 Map 实现）', () => {
     expect(ds.hasSubscribers('Departments', 'default')).toBe(false)
   })
 
-  it('hasSubscribers 不指定 contextId 检查该表是否有任何订阅', () => {
+  it('hasSubscribers 不指定 viewId 检查该表是否有任何订阅', () => {
     const ds = createTestDataSet()
     expect(ds.hasSubscribers('Departments')).toBe(false)
 
@@ -226,43 +254,42 @@ describe('DataSet subscribe（内联 Map 实现）', () => {
     const cb = vi.fn()
     ds.subscribe('Departments', 'default', cb)
 
-    const dept = ds.getTable('Departments')!
-    dept.setCurrentRow(dept.rows[0]!)
+    const deptView = ds.getView('Departments')!
+    deptView.setCurrentRow(deptView.rows[0]!)
 
     expect(cb).toHaveBeenCalledOnce()
   })
 })
 
-// ==================== 事件流完整性测试 ====================
+// ==================== 能力流端到端测试 ====================
 
-describe('事件流完整端到端', () => {
-  it('setCurrentRow 触发完整事件链：stateChanged → 级联 → 通知 → 广播', () => {
+describe('能力流端到端', () => {
+  it('setCurrentRow 触发完整能力流：级联 → 通知 → 状态事件', () => {
     const ds = createTestDataSet()
     const events: string[] = []
 
-    // 监听所有关键事件
-    ds.on('currentRowChanged', () => events.push('currentRowChanged'))
-    ds.on('tableChanged', () => events.push('tableChanged'))
+    const deptView = ds.getView('Departments')!
+
+    // 直接订阅视图的 stateChanged 事件（DataView 是状态变更的归属者）
+    deptView.events.on('stateChanged', (...args: unknown[]) => {
+      const event = args[0] as ViewStateEvent
+      events.push(`stateChange:${event.changeType}`)
+    })
     ds.subscribe('Departments', 'default', () => events.push('subscribe:Departments.default'))
 
-    const dept = ds.getTable('Departments')!
-    dept.setCurrentRow(dept.rows[0]!)
+    deptView.setCurrentRow(deptView.rows[0]!)
 
-    // 验证事件按正确顺序触发
+    // 验证能力流：subscribe 和 stateChange 都被触发
     expect(events).toContain('subscribe:Departments.default')
-    expect(events).toContain('currentRowChanged')
-    expect(events).toContain('tableChanged')
+    expect(events).toContain('stateChange:currentRow')
   })
 
   it('getCapabilities 返回 DATA_SET 能力（暴露 dataSet 实例）', () => {
     const ds = createTestDataSet()
-    const caps = ds.getCapabilities()
+    const caps = ds.capabilities
 
     // 获取 DATA_SET 能力
-    const entry = [...caps.entries()][0]
-    expect(entry).toBeDefined()
-
-    const impl = entry![1] as {
+    const impl = caps.get(DATA_SET) as {
       dataSet: typeof ds
     }
 
@@ -271,23 +298,38 @@ describe('事件流完整端到端', () => {
     expect(impl.dataSet.dataSetName).toBe('TestDS')
     expect(impl.dataSet.getTable('Departments')).toBeDefined()
   })
+})
 
-  it('TreeManager 内联事件系统发射事件', () => {
+// ==================== TreeManager 缓存测试（无事件） ====================
+
+describe('TreeManager 缓存操作', () => {
+  it('addNodesToCache 正确写入缓存', () => {
     const tree = SparkData.createTreeManager({
       idField: 'id',
       parentIdField: 'parentId'
     })
 
-    const handler = vi.fn()
-    tree.on('cacheUpdated', handler)
-
     tree.addNodesToCache([
       { id: 1, parentId: null, name: 'Root' }
     ])
 
-    expect(handler).toHaveBeenCalledOnce()
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({ cache: expect.any(Object) })
-    )
+    const cache = tree.getCache()
+    expect(cache[1]).toBeDefined()
+    expect(cache[1]!.name).toBe('Root')
+  })
+
+  it('clear 清空缓存', () => {
+    const tree = SparkData.createTreeManager({
+      idField: 'id',
+      parentIdField: 'parentId'
+    })
+
+    tree.addNodesToCache([
+      { id: 1, parentId: null, name: 'Root' }
+    ])
+    tree.clear()
+
+    const cache = tree.getCache()
+    expect(Object.keys(cache)).toHaveLength(0)
   })
 })

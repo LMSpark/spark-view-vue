@@ -172,7 +172,7 @@ await SparkApp.start({
 - [⚙️ 组件开发](docs/guides/COMPONENT_DEVELOPMENT.md) - 组件注册和能力系统
 - [📊 数据管理](docs/guides/DATA_MANAGEMENT.md) - DataSet 和 TreeManager 使用
 - [🔌 插件配置](docs/guides/PLUGIN_CONFIGURATION.md) - 第三方库集成
-- [📄 页面配置](docs/guides/MULTI_TENANT_CONFIG.md) - 配置驱动开发
+- [📄 配置系统](docs/guides/CONFIG_SYSTEM.md) - 多租户与远程配置
 - [🚀 快速开始](docs/guides/QUICKSTART.md) - 5分钟上手指南
 
 ## 🤝 贡献
@@ -230,10 +230,9 @@ Spark.register({
 
 ##  文档
 
-- [能力系统指南](docs/guides/CAPABILITY_PROVISION.md)
-- [组件开发指南](docs/guides/COMPONENT_DEVELOPMENT.md)
-- [数据管理指南](docs/guides/DATA_MANAGEMENT.md)- [测试最佳实践](docs/guides/TESTING_BEST_PRACTICES.md) 🆕- [API 参考](docs/guides/API_REFERENCE.md)
-- [完整文档索引](docs/README.md)
+- [组件开发指南](docs/guides/COMPONENT_DEVELOPMENT.md)（含能力系统）
+- [数据管理指南](docs/guides/DATA_MANAGEMENT.md)（含视图状态、CRUD）
+- [测试最佳实践](docs/guides/TESTING_BEST_PRACTICES.md)
 
 ##  质量保证
 

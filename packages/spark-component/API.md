@@ -265,11 +265,8 @@ interface ComponentManager {
   getComponentDefinition(type: string): ComponentConfig | undefined
   getRegisteredComponentTypes(): string[]
 
-  // 上下文管理
-  createContext(config: ComponentConfig, parent?: ComponentContext): ComponentContext
-  getContext(id: string): ComponentContext | undefined
-  destroyContext(id: string): boolean
-  getAllContexts(): ComponentContext[]
+  // 上下文管理（通过 Spark.createSystem() 的便捷方法）
+  createContext(config: { type: string }, parent?: ComponentContext): ComponentContext
 
   // 能力管理
   registerProvider(context: ComponentContext, provider: CapabilityProvider): void
@@ -874,9 +871,10 @@ const { width } = useWindowSize() // SSR: width = 0
 
 3. **验证能力连接**:
    ```typescript
-   const context = Spark.manager().getContext(componentId)
-   console.log('Providers:', context?.providers)
-   console.log('Consumers:', context?.consumers)
+   // 通过 useSparkComponent 的调试工具
+   const { getContextChain, printCapabilityTree } = useSparkComponent({ type: 'my-comp' })
+   console.log('Context chain:', getContextChain())
+   printCapabilityTree()
    ```
 
 ---
@@ -1037,14 +1035,13 @@ interface ComponentConfig {
 负责组件的生命周期、上下文管理和渲染。
 
 ```ts
-interface ComponentManager {
-  registerComponent(config: ComponentConfig): void
-  createContext(config: ComponentConfig, parent?: ComponentContext): ComponentContext
-  render(config: ComponentConfig, parentContext?: ComponentContext): any
-  destroyContext(id: string): boolean
-  getContext(id: string): ComponentContext | undefined
-  registerProvider(context: ComponentContext, provider: CapabilityProvider): void
-  getProvider(context: ComponentContext, name: string): any
+// 通过 Spark.createSystem() 创建测试用组件管理器
+const system = Spark.createSystem()
+
+interface TestSystem {
+  registry: ComponentRegistry
+  rootContext: ComponentContext
+  createContext(config: { type: string }, parent?: ComponentContext): ComponentContext
 }
 ```
 

@@ -28,7 +28,6 @@ export type {
   ITableMetadata,
   IDataSet,
   IDataSetMetadata,
-  IDataSetContext,
   IViewMetadata,
   FilterExpression,
   SortExpression,
@@ -40,6 +39,13 @@ export type {
   DataRelation,
   ViewStateEvent
 } from './types'
+
+// ===== 能力接口 =====
+
+export type { IDataViewCapability } from './data-view'
+export type { IDataTableCapability } from './data-table'
+export type { IDataSetCapability } from './dataset'
+export type { ViewRef } from './core/dependency-analyzer'
 
 export {
   INSTANCE_PERMISSION_FIELD,

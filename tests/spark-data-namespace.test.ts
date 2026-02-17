@@ -27,7 +27,7 @@ describe('SparkData Namespace', () => {
     expect(dataSet).toBeDefined()
     expect(dataSet.dataSetName).toBe('TestData')
     expect(dataSet.getTable('Users')).toBeDefined()
-    expect(dataSet.getTable('Users')?.rows).toHaveLength(2)
+    expect(dataSet.getTable('Users')?.views['default'].rows).toHaveLength(2)
   })
 
   it('应该提供 createTreeManager 工厂方法', () => {
@@ -47,11 +47,11 @@ describe('SparkData Namespace', () => {
   })
 
   it('应该提供 createDataView 工厂方法', () => {
-    const context = SparkData.createDataView({ tableName: 'Users', contextId: 'default' })
+    const view = SparkData.createDataView({ tableName: 'Users', viewId: 'default' })
 
-    expect(context).toBeDefined()
-    expect(context['tableName']).toBe('Users')
-    expect(context['contextId']).toBe('default')
+    expect(view).toBeDefined()
+    expect(view['tableName']).toBe('Users')
+    expect(view['viewId']).toBe('default')
   })
 
   it('应该提供 fromJSON 工厂方法', () => {

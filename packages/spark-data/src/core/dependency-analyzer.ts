@@ -1,8 +1,17 @@
 /**
- * 极简依赖分析器 — 分析表间父子关系
+ * 极简依赖分析器 — 分析视图间父子关系
+ *
+ * 关系定义在视图级别：parentTable:parentViewId → childTable:childViewId
+ * 所有查询均以 (tableName, viewId) 为单位
  */
 
 import type { DataSet } from '../dataset'
+
+/** 视图标识：tableName + viewId */
+export interface ViewRef {
+  tableName: string
+  viewId: string
+}
 
 export class DependencyAnalyzer {
   // ===== 构造函数 =====
@@ -16,60 +25,73 @@ export class DependencyAnalyzer {
   // ===== 依赖分析 =====
 
   /**
-   * 获取表的所有祖先表（递归）
+   * 获取视图的所有祖先视图（递归）
    * @param tableName 表名
-   * @returns 祖先表名集合
+   * @param viewId 视图ID
+   * @returns 祖先视图引用集合
    */
-  getTableDependencies(tableName: string): Set<string> {
-    const deps = new Set<string>()
+  getViewDependencies(tableName: string, viewId: string = 'default'): ViewRef[] {
+    const deps: ViewRef[] = []
     const visited = new Set<string>()
 
-    const walk = (t: string) => {
-      if (visited.has(t)) return
-      visited.add(t)
+    const key = (t: string, c: string) => `${t}:${c}`
+
+    const walk = (t: string, c: string) => {
+      const k = key(t, c)
+      if (visited.has(k)) return
+      visited.add(k)
       for (const r of this.dataSet.relations ?? []) {
-        if (r.childTable === t && !deps.has(r.parentTable)) {
-          walk(r.parentTable)
-          deps.add(r.parentTable)
+        const childViewId = r.childViewId ?? 'default'
+        if (r.childTable === t && childViewId === c) {
+          const parentViewId = r.parentViewId ?? 'default'
+          const pk = key(r.parentTable, parentViewId)
+          if (!visited.has(pk)) {
+            walk(r.parentTable, parentViewId)
+            deps.push({ tableName: r.parentTable, viewId: parentViewId })
+          }
         }
       }
     }
 
-    walk(tableName)
+    walk(tableName, viewId)
     return deps
   }
 
   /**
-   * 获取最上层根表
+   * 获取最上层根视图（无父关系的祖先）
    * @param tableName 表名
-   * @returns 根表名集合
+   * @param viewId 视图ID
+   * @returns 根视图引用数组
    */
-  getRootDependencies(tableName: string): Set<string> {
-    const all = this.getTableDependencies(tableName)
-    const roots = new Set<string>()
-    for (const dep of Array.from(all)) {
-      const hasParent = this.dataSet.relations?.some(r => r.childTable === dep)
-      if (!hasParent) roots.add(dep)
-    }
-    return roots
+  getRootDependencies(tableName: string, viewId: string = 'default'): ViewRef[] {
+    const all = this.getViewDependencies(tableName, viewId)
+    return all.filter(dep => {
+      // 如果该视图没有任何关系以它为子，则是根
+      return !(this.dataSet.relations ?? []).some(
+        r => r.childTable === dep.tableName && (r.childViewId ?? 'default') === dep.viewId
+      )
+    })
   }
 
   /**
-   * 检查依赖条件是否满足
+   * 检查视图的依赖条件是否满足
    * @param tableName 表名
+   * @param viewId 视图ID
    * @returns 依赖是否满足
    */
-  areDependenciesSatisfied(tableName: string): boolean {
-    const rels = this.dataSet.relations?.filter(r => r.childTable === tableName) ?? []
+  areDependenciesSatisfied(tableName: string, viewId: string = 'default'): boolean {
+    const rels = (this.dataSet.relations ?? []).filter(
+      r => r.childTable === tableName && (r.childViewId ?? 'default') === viewId
+    )
     if (rels.length === 0) return true
 
     for (const rel of rels) {
-      const parent = this.dataSet.getTable(rel.parentTable)
-      if (!parent?.rows?.length) return false
+      const parentViewId = rel.parentViewId ?? 'default'
+      const parentView = this.dataSet.getView(rel.parentTable, parentViewId)
+      if (!parentView?.rows?.length) return false
 
-      const ctx = parent.getOrCreateContext(rel.parentContextId ?? 'default')
-      if (rel.dependencyType === 'currentRow' && !ctx.currentRow) return false
-      if (rel.dependencyType === 'selectedRows' && !ctx.selectedRows?.length) return false
+      if (rel.dependencyType === 'currentRow' && !parentView.currentRow) return false
+      if (rel.dependencyType === 'selectedRows' && !parentView.selectedRows?.length) return false
     }
     return true
   }
