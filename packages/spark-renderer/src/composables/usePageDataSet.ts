@@ -116,7 +116,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       
       ruleArray.forEach(rule => {
         if (rule['dataKey'] && typeof rule['dataKey'] === 'string') {
-          const rawKey = rule['dataKey'] as string
+          const rawKey = rule['dataKey']
           
           // 统一使用 DataKey 解析器（支持新格式 @ 和旧格式 dataset.tables.X）
           if (isDataKey(rawKey)) {
