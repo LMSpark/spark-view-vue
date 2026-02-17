@@ -5,7 +5,9 @@
     "children": [
       {
         "type": "h1",
-        "children": ["DataSet 主从表演示"]
+        "children": [
+          "DataSet 主从表演示"
+        ]
       },
       {
         "type": "el-alert",
@@ -24,11 +26,13 @@
         "children": [
           {
             "type": "h2",
-            "children": ["用户列表（父表 - 自动加载）"]
+            "children": [
+              "用户列表（父表 - 自动加载）"
+            ]
           },
           {
             "type": "el-table",
-            "dataKey": "dataset.tables.Users.rows",
+            "dataKey": "UserOrderDataSet@Users@default@rows",
             "props": {
               "border": true,
               "stripe": true,
@@ -83,7 +87,9 @@
             "children": [
               {
                 "type": "h2",
-                "children": ["订单列表（子表 - 根据选中用户过滤）"]
+                "children": [
+                  "订单列表（子表 - 根据选中用户过滤）"
+                ]
               },
               {
                 "type": "div",
@@ -91,12 +97,16 @@
                 "children": [
                   {
                     "type": "span",
-                    "children": ["当前用户: "],
+                    "children": [
+                      "当前用户: "
+                    ],
                     "dataKey": "currentUser.label"
                   },
                   {
                     "type": "span",
-                    "children": [" | 订单数: "],
+                    "children": [
+                      " | 订单数: "
+                    ],
                     "dataKey": "currentUser.orderCount"
                   }
                 ]
@@ -105,7 +115,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "dataset.tables.Orders.rows",
+            "dataKey": "UserOrderDataSet@Orders@default@rows",
             "props": {
               "border": true,
               "stripe": true
@@ -166,7 +176,9 @@
             "children": [
               {
                 "type": "h2",
-                "children": ["订单明细（孙表 - 根据选中订单过滤）"]
+                "children": [
+                  "订单明细（孙表 - 根据选中订单过滤）"
+                ]
               },
               {
                 "type": "div",
@@ -174,7 +186,9 @@
                 "children": [
                   {
                     "type": "span",
-                    "children": ["已选订单数: "],
+                    "children": [
+                      "已选订单数: "
+                    ],
                     "dataKey": "selectedOrdersCount"
                   }
                 ]
@@ -183,7 +197,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "dataset.tables.OrderItems.rows",
+            "dataKey": "UserOrderDataSet@OrderItems@default@rows",
             "props": {
               "border": true,
               "stripe": true
@@ -230,7 +244,9 @@
         "children": [
           {
             "type": "h3",
-            "children": ["调试信息"]
+            "children": [
+              "调试信息"
+            ]
           },
           {
             "type": "el-button",
@@ -241,7 +257,9 @@
             "on": {
               "click": "showSQLQuery"
             },
-            "children": ["显示 SQL 查询"]
+            "children": [
+              "显示 SQL 查询"
+            ]
           },
           {
             "type": "el-button",
@@ -252,7 +270,9 @@
             "on": {
               "click": "showMongoQuery"
             },
-            "children": ["显示 MongoDB 查询"]
+            "children": [
+              "显示 MongoDB 查询"
+            ]
           },
           {
             "type": "el-button",
@@ -263,7 +283,9 @@
             "on": {
               "click": "exportDataSet"
             },
-            "children": ["导出 DataSet"]
+            "children": [
+              "导出 DataSet"
+            ]
           }
         ]
       }

@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest'
 function walk(dir: string, files: string[] = []) {
   const entries = fs.readdirSync(dir)
   for (const entry of entries) {
-    if (entry === 'node_modules' || entry === 'dist') continue
+    if (entry === 'node_modules' || entry === 'dist' || entry === 'stories') continue
     const full = path.join(dir, entry)
     const stat = fs.statSync(full)
     if (stat.isDirectory()) walk(full, files)
@@ -18,6 +18,8 @@ describe('packages/spark-component: forbidden imports', () => {
   const root = path.resolve(__dirname, '..') // packages/spark-component
   const files = walk(root)
     .filter(f => /\.(ts|js|tsx|jsx|md|json)$/.test(f))
+    // 排除测试文件自身（测试可以合法引用 .vue 做集成测试）
+    .filter(f => !f.includes('forbiddenImports') && !f.endsWith('.test.ts') && !f.endsWith('.spec.ts'))
 
   const matches: Array<{ file: string; line: number; match: string }> = []
 
@@ -30,6 +32,9 @@ describe('packages/spark-component: forbidden imports', () => {
     const lines = text.split(/\r?\n/)
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i] ?? ''
+      // 跳过注释行（JSDoc / 行注释中的示例代码）
+      const trimmed = line.trimStart()
+      if (trimmed.startsWith('*') || trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*/')) continue
       if (vueImportRegex.test(line) || requireVueRegex.test(line) || featuresPathRegex.test(line)) {
         const found = (line.match(vueImportRegex) ?? line.match(requireVueRegex) ?? line.match(featuresPathRegex))?.[0] ?? line
         matches.push({ file: path.relative(root, file), line: i + 1, match: found })

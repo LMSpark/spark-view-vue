@@ -131,7 +131,7 @@ scopedCss.value = enableScope
 
 **实现要点**：
 - 使用 `DataSetManager.create` 创建实例
-- 自动订阅 el-table 的 dataKey 对应的表
+- 自动订阅 el-table 的 dataKey（DataKey @ 格式）对应的表和视图
 - 监听 currentRow 和 selectedRows 变化
 - 组件卸载时清理订阅
 
@@ -347,8 +347,7 @@ interface RuleConfig {
   props?: Record<string, unknown>
   children?: RuleConfig[]
   on?: Record<string, string | Function>  // 支持字符串引用
-  dataKey?: string
-  contextId?: string
+  dataKey?: string                        // DataKey @ 格式
   [key: string]: unknown
 }
 ```

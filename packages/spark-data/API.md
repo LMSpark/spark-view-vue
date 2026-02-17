@@ -385,6 +385,97 @@ import type {
 
 ---
 
+## DataKey 统一数据绑定键
+
+### 概览
+
+DataKey 是统一的数据绑定键格式，用于在页面配置（rule.json）中声明数据绑定关系。所有数据绑定使用 `@` 分隔的标准格式。
+
+### 格式
+
+```
+scope@tableName@viewId@field     # 完整 4 段格式
+scope@tableName@field            # 简写（viewId 默认 'default'）
+```
+
+- **scope** — 页面 ID 或 DataSet 名称（`dataSetName`）
+- **tableName** — 表名
+- **viewId** — 视图 ID（省略时默认 `'default'`）
+- **field** — `rows` | `currentRow` | `selectedRows`
+
+### API
+
+#### `isDataKey(dataKey: string): boolean`
+
+判断字符串是否为 DataKey 格式。
+
+#### `parseDataKey(dataKey: string): DataKeyDescriptor | null`
+
+解析 DataKey 字符串为结构化描述符。非 DataKey 格式返回 `null`。
+
+```typescript
+import { parseDataKey } from '@spark-view/spark-data'
+
+parseDataKey('MyApp@Users@grid@rows')
+// → { scope: 'MyApp', tableName: 'Users', viewId: 'grid', field: 'rows', raw: '...' }
+
+parseDataKey('MyApp@Users@rows')
+// → { scope: 'MyApp', tableName: 'Users', viewId: 'default', field: 'rows', raw: '...' }
+
+parseDataKey('settings.siteName')
+// → null（非 DataKey，回落到 pageData 路径）
+```
+
+#### `resolveDataKey(descriptor: DataKeyDescriptor, dataSet: DataSet): IDataRow[] | IDataRow | null | undefined`
+
+从 DataSet 中解析数据键对应的值。
+
+```typescript
+const dk = parseDataKey('MyApp@Users@default@rows')!
+const rows = resolveDataKey(dk, dataSet)  // → DataView.rows
+```
+
+#### `buildDataKey(scope, tableName, field, viewId?): string`
+
+构建标准化 DataKey 字符串。
+
+```typescript
+buildDataKey('MyApp', 'Users', 'rows')           // → 'MyApp@Users@default@rows'
+buildDataKey('MyApp', 'Users', 'rows', 'grid')   // → 'MyApp@Users@grid@rows'
+```
+
+#### `getViewKey(descriptor: DataKeyDescriptor): string`
+
+从描述符提取视图唯一键（`tableName.viewId`），用于订阅去重。
+
+### 类型
+
+```typescript
+type DataKeyField = 'rows' | 'currentRow' | 'selectedRows'
+
+interface DataKeyDescriptor {
+  scope: string
+  tableName: string
+  viewId: string
+  field: DataKeyField
+  raw: string
+}
+```
+
+### 在 rule.json 中使用
+
+```json
+{
+  "type": "el-table",
+  "dataKey": "MyApp@Users@default@rows",
+  "props": { "border": true, "highlightCurrentRow": true }
+}
+```
+
+非 DataSet 键（如 `"dataKey": "settings.siteName"`）会回落到 pageData 路径解析。
+
+---
+
 ## 架构对应关系
 
 | SPARK Data | .NET Framework | 职责 |

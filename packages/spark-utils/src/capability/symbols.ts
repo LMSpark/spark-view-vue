@@ -117,9 +117,12 @@ export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capa
 
 // ==================== 数据 ====================
 
-export const DATA_SET = defineCapability<{ dataSetName: string; tables: Record<string, unknown>; [k: string]: unknown }>('spark:capability:dataset')
-export const DATA_TABLE = defineCapability<{ dataTable: unknown; [k: string]: unknown }>('spark:capability:datatable')
-export const DATA_VIEW = defineCapability<{ tableName: string; rows: unknown[]; currentRow: unknown | null; [k: string]: unknown }>('spark:capability:dataview')
+/** DataSet 能力（实际提供值类型由 spark-data 的 IDataSetCapability 定义） */
+export const DATA_SET = defineCapability<{ readonly dataSet: { dataSetName: string; tables: Record<string, unknown>; relations?: unknown[]; [k: string]: unknown } }>('spark:capability:dataset')
+/** DataTable 能力（实际提供值类型由 spark-data 的 IDataTableCapability 定义） */
+export const DATA_TABLE = defineCapability<{ readonly dataTable: unknown }>('spark:capability:datatable')
+/** DataView 能力（实际提供值类型由 spark-data 的 IDataViewCapability 定义） */
+export const DATA_VIEW = defineCapability<{ readonly tableName: string; readonly viewId: string; readonly rows: unknown[]; readonly currentRow: unknown | null; [k: string]: unknown }>('spark:capability:dataview')
 
 // ==================== UI 交互 ====================
 

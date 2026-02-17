@@ -5,6 +5,8 @@
 import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
+import { parseDataKey, resolveDataKey, isDataKey } from '@spark-view/spark-data'
+import type { DataKeyDescriptor } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
 import { nextTick } from 'vue'
@@ -39,6 +41,31 @@ function getNestedValue<T = unknown>(
   
   // 最终结果无法静态验证类型，需要运行时断言
   return current as T
+}
+
+/**
+ * 统一解析 dataKey：先尝试 DataSet 解析，失败则回落到 pageData 路径解析
+ *
+ * 支持格式：
+ *   DataKey：`scope@tableName@viewId@field`（优先）
+ *   pageData 路径：`settings.siteName`
+ */
+function resolveRuleDataKey(
+  rawKey: string,
+  dataSet: IDataSet | null,
+  pageData: Record<string, unknown>
+): unknown {
+  // 1. 尝试 DataSet 统一解析
+  if (dataSet && isDataKey(rawKey)) {
+    const dk = parseDataKey(rawKey)
+    if (dk) {
+      return resolveDataKey(dk, dataSet as import('@spark-view/spark-data').DataSet)
+    }
+  }
+
+  // 2. 回落到 pageData 路径解析
+  const keys = rawKey.split('.')
+  return getNestedValue(pageData, keys)
 }
 
 /**
@@ -98,11 +125,23 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
 
     // 🎯 处理 r-tree 的 dataKey 绑定（用于 default-expanded-keys）
     if (newRule.type === 'r-tree' && newRule['dataKey']) {
-      const keys = (newRule['dataKey'] as string).split('.')
-      const value = getNestedValue<unknown[]>(pageData, keys)
-      if (value !== undefined && Array.isArray(value)) {
-        newRule.props ??= {}
-        newRule.props['default-expanded-keys'] = value
+      const rawKey = newRule['dataKey'] as string
+      if (dataSet && isDataKey(rawKey)) {
+        const dk = parseDataKey(rawKey)
+        if (dk) {
+          const value = resolveDataKey(dk, dataSet as import('@spark-view/spark-data').DataSet)
+          if (value !== undefined && Array.isArray(value)) {
+            newRule.props ??= {}
+            newRule.props['default-expanded-keys'] = value
+          }
+        }
+      } else {
+        const keys = rawKey.split('.')
+        const value = getNestedValue<unknown[]>(pageData, keys)
+        if (value !== undefined && Array.isArray(value)) {
+          newRule.props ??= {}
+          newRule.props['default-expanded-keys'] = value
+        }
       }
     }
 
@@ -129,34 +168,28 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     
     // 🎯 处理 r-form 的 dataKey 绑定
     if (newRule.type === 'r-form' && newRule['dataKey']) {
-      const keys = (newRule['dataKey'] as string).split('.')
-      const value = getNestedValue<Record<string, unknown>>(pageData, keys)
-      if (value !== undefined) {
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
+      if (resolved !== undefined) {
         newRule.props ??= {}
-        newRule.props['data'] = value
+        newRule.props['data'] = resolved
       }
     }
     
     // 🎯 处理 r-detail 的 dataKey 绑定
     if (newRule.type === 'r-detail' && newRule['dataKey']) {
-      const keys = (newRule['dataKey'] as string).split('.')
-      const value = getNestedValue<Record<string, unknown>>(pageData, keys)
-      if (value !== undefined) {
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
+      if (resolved !== undefined) {
         newRule.props ??= {}
-        newRule.props['data'] = value
+        newRule.props['data'] = resolved
       }
     }
     
     // 🎯 处理 el-table 的 dataKey 绑定
     if (newRule.type === 'el-table' && newRule['dataKey']) {
-      // 解析 dataKey 路径，获取数据
-      const keys = (newRule['dataKey'] as string).split('.')
-      const value = getNestedValue<unknown[]>(pageData, keys)
-      
-      // 绑定数据到 props.data
-      if (value !== undefined) {
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
+      if (resolved !== undefined) {
         newRule.props ??= {}
-        newRule.props['data'] = value
+        newRule.props['data'] = resolved
       }
       
       // 如果有 dataSet，注入同步事件
@@ -169,19 +202,17 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     // 排除已有专门处理逻辑的容器组件
     const handledTypes = ['el-table', 'r-table', 'r-form', 'r-detail', 'r-tree']
     if (newRule['dataKey'] && !handledTypes.includes(newRule.type as string)) {
-      // 解析 dataKey 路径，获取数据值
-      const keys = (newRule['dataKey'] as string).split('.')
-      const value = getNestedValue<string | number>(pageData, keys)
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
       
       // 如果有值，根据元素类型决定绑定方式
-      if (value !== undefined && value !== null) {
+      if (resolved !== undefined && resolved !== null) {
         // 表单元素：绑定到 props.modelValue（支持响应式）
         if (newRule.type === 'el-input' || newRule.type === 'el-textarea') {
           newRule.props ??= {}
-          newRule.props['modelValue'] = value
+          newRule.props['modelValue'] = resolved
         } else {
           // 普通元素：将值转换为字符串并设置为 children
-          newRule.children = [String(value)]
+          newRule.children = [String(resolved)]
         }
       }
     }
@@ -260,17 +291,25 @@ function injectTableEvents(
 ): void {
   // 使用局部防重入标志
   let isProcessingEvent = false
-  // 解析 dataKey 获取表名
-  if (!rule['dataKey']) return
-  const dataKeyParts = (rule['dataKey'] as string).split('.')
-  const tablesIndex = dataKeyParts.indexOf('tables')
-  if (tablesIndex === -1 || !dataKeyParts[tablesIndex + 1]) return
   
-  const tableName = dataKeyParts[tablesIndex + 1] as string
-  const contextId = ((rule as { contextId?: string })['contextId'] ?? rule.props?.['contextId'] ?? 'default') as string
+  // 通过统一 DataKey 解析获取表名和视图ID
+  const rawKey = rule['dataKey'] as string | undefined
+  if (!rawKey) return
+
+  let tableName: string
+  let viewId: string
+
+  const dk = parseDataKey(rawKey)
+  if (dk) {
+    tableName = dk.tableName
+    viewId = dk.viewId
+  } else {
+    // 非 DataSet 键，无法注入事件
+    return
+  }
   
   // 添加唯一的 name 属性
-  rule.name ??= `table_${tableName}_${contextId}`
+  rule.name ??= `table_${tableName}_${viewId}`
   
   // 确保 on 对象存在
   rule.on ??= {}
@@ -278,7 +317,7 @@ function injectTableEvents(
   // 注入 currentChange 事件（单选行变化）
   const originalCurrentChange = rule.on['currentChange']
   rule.on['currentChange'] = (currentRow: IDataRow | null, oldRow: IDataRow | null) => {
-    pageLogger.info(`🎯 [TableEvent] currentChange 触发`, { tableName, contextId, currentRow, oldRow})
+    pageLogger.info(`🎯 [TableEvent] currentChange 触发`, { tableName, viewId, currentRow, oldRow})
     
     if (isProcessingEvent) return
     
@@ -291,15 +330,15 @@ function injectTableEvents(
       }
       
       // 同步到 DataSet
-      if (dataSet?.tables?.[tableName] && contextId) {
-        const table = dataSet.tables[tableName] as { getOrCreateView?: (id: string) => { setCurrentRow?: (row: unknown, notify?: boolean) => void } }
+      if (dataSet?.tables?.[tableName] && viewId) {
+        const table = dataSet.tables[tableName] as { getOrCreateView?: (id: string) => { setCurrentRow?: (row: IDataRow | null) => void } }
         if (table.getOrCreateView) {
-          const view = table.getOrCreateView(contextId)
+          const view = table.getOrCreateView(viewId)
           if (view?.setCurrentRow) {
-            pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${contextId}`)
-            view.setCurrentRow(currentRow ?? null, false)
+            pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
+            view.setCurrentRow(currentRow ?? null)
           } else {
-            pageLogger.warn(`⚠️ [TableEvent] view 没有 setCurrentRow 方法`, { tableName, contextId })
+            pageLogger.warn(`⚠️ [TableEvent] view 没有 setCurrentRow 方法`, { tableName, viewId })
           }
         } else {
           pageLogger.warn(`⚠️ [TableEvent] table 没有 getOrCreateView 方法`, { tableName })
@@ -312,12 +351,12 @@ function injectTableEvents(
     }
   }
   
-  pageLogger.info(`✅ [TableEvent] 已注入 currentChange 事件处理器`, { tableName, contextId, ruleName: rule.name })
+  pageLogger.info(`✅ [TableEvent] 已注入 currentChange 事件处理器`, { tableName, viewId, ruleName: rule.name })
   
   // 注入 selectionChange 事件（多选变化）
   const originalSelectionChange = rule.on['selectionChange']
   rule.on['selectionChange'] = (selection: IDataRow[]) => {
-    pageLogger.info(`🎯 [TableEvent] selectionChange 触发`, { tableName, contextId, selectionCount: selection.length })
+    pageLogger.info(`🎯 [TableEvent] selectionChange 触发`, { tableName, viewId, selectionCount: selection.length })
     
     if (isProcessingEvent) return
     
@@ -330,13 +369,13 @@ function injectTableEvents(
       }
       
       // 同步到 DataSet
-      if (dataSet?.tables?.[tableName] && contextId) {
-        const table = dataSet.tables[tableName] as { getOrCreateView?: (id: string) => { setSelectedRows?: (rows: unknown, notify?: boolean) => void } }
+      if (dataSet?.tables?.[tableName] && viewId) {
+        const table = dataSet.tables[tableName] as { getOrCreateView?: (id: string) => { setSelectedRows?: (rows: IDataRow[]) => void } }
         if (table.getOrCreateView) {
-          const view = table.getOrCreateView(contextId)
+          const view = table.getOrCreateView(viewId)
           if (view?.setSelectedRows) {
-            pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${contextId}`)
-            view.setSelectedRows(selection, true)
+            pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${viewId}`)
+            view.setSelectedRows(selection)
           }
         }
       }
@@ -370,13 +409,13 @@ export function findRuleByDataKey(rules: Rule[], dataKey: string): Rule | null {
  */
 export function syncSelectedRowsToTable(
   tableName: string,
-  contextId: string,
+  viewId: string,
   rows: IDataRow[],
   formApi: FormCreateAPI | null
 ): void {
   void nextTick(() => {
     if (formApi && typeof formApi.el === 'function') {
-      const componentName = `table_${tableName}_${contextId}`
+      const componentName = `table_${tableName}_${viewId}`
       const tableComponent = formApi.el(componentName) as ElTableComponent | null
       
       if (tableComponent) {
