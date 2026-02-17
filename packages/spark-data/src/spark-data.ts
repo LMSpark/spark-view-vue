@@ -104,9 +104,9 @@ export namespace SparkData {
    */
   export function createDataView(config: {
     tableName: string
-    contextId?: string
+    viewId?: string
   }): DataView {
-    return new DataView(config.tableName, config.contextId)
+    return new DataView(config.tableName, config.viewId)
   }
 }
 

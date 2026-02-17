@@ -632,4 +632,4 @@ pnpm run test -- --threads
 - [Vitest 官方文档](https://vitest.dev/)
 - [Vue Test Utils](https://test-utils.vuejs.org/)
 - [SPARK API 文档](../../packages/spark-component/API.md)
-- [SPARK 架构设计](../../docs/SPARK_ARCHITECTURE.md)
+- [数据流架构](../architecture/DATAFLOW_ARCHITECTURE.md)

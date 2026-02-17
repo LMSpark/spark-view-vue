@@ -107,56 +107,59 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
   const autoSubscribeTables = () => {
     if (!dataSet.value || !originalRules?.value) return
     
-    // 收集所有 (tableName, contextId) 组合
-    const contexts = new Set<string>()
+    // 收集所有 (tableName, viewId) 组合
+    const viewKeys = new Set<string>()
     
-    const extractContexts = (rules: Rule[] | Rule) => {
+    const extractViewKeys = (rules: Rule[] | Rule) => {
       const ruleArray = Array.isArray(rules) ? rules : [rules]
       
       ruleArray.forEach(rule => {
         if (rule['dataKey'] && typeof rule['dataKey'] === 'string' && rule['dataKey'].startsWith('dataset.tables.')) {
-          const match = rule['dataKey'].match(/^dataset\.tables\.([^.]+)(?:\.contexts\.([^.]+))?/)
+          const match = rule['dataKey'].match(/^dataset\.tables\.([^.]+)(?:\.views\.([^.]+))?/)
           if (match) {
             const tableName = match[1]
-            const contextId = match[2] ?? (rule['contextId'] as string | undefined) ?? 'default'
-            const key = `${tableName}.${contextId}`
-            contexts.add(key)
+            const viewId = match[2] ?? (rule['contextId'] as string | undefined) ?? 'default'
+            const key = `${tableName}.${viewId}`
+            viewKeys.add(key)
           }
         }
         if (rule.children && Array.isArray(rule.children)) {
           const childRules = rule.children.filter((child: unknown): child is Rule => typeof child !== 'string')
-          extractContexts(childRules)
+          extractViewKeys(childRules)
         }
       })
     }
     
-    extractContexts(originalRules.value)
+    extractViewKeys(originalRules.value)
     
-    // 为每个上下文注册订阅
-    contexts.forEach(key => {
-      const [tableName, contextId] = key.split('.')
-      // 类型安全：确保contextId存在且是有效字符串
-      if (tableName && contextId && contextId !== 'undefined' && dataSet.value) {
-        dataSet.value.subscribe(tableName, contextId, () => {
-          pageLogger.debug('上下文数据变化', { contextKey: key })
+    // 为每个视图注册订阅 + 视图状态监听
+    viewKeys.forEach(key => {
+      const [tableName, viewId] = key.split('.')
+      // 类型安全：确保viewId存在且是有效字符串
+      if (tableName && viewId && viewId !== 'undefined' && dataSet.value) {
+        const view = dataSet.value.getView(tableName, viewId)
+        if (!view) return
+
+        dataSet.value.subscribe(tableName, viewId, () => {
+          pageLogger.debug('视图数据变化', { viewKey: key })
         })
-        pageLogger.debug('自动订阅上下文', { contextKey: key })
-      }
-    })
-    
-    // 监听 currentRow 和 selectedRows 变化
-    dataSet.value.on('currentRowChanged', () => {
-      pageLogger.debug('currentRow 变化')
-    })
-    
-    dataSet.value.on('selectedRowsChanged', (...args: unknown[]) => {
-      const eventData = args[0] as { tableName: string; contextId: string; rows: IDataRow[] }
-      const { tableName, contextId, rows } = eventData
-      pageLogger.debug('selectedRows 变化', { tableName, contextId, rowCount: rows.length })
-      
-      // 同步到 el-table
-      if (formApi?.value) {
-        syncSelectedRowsToTable(tableName, contextId, rows, formApi.value)
+        pageLogger.debug('自动订阅视图', { viewKey: key })
+
+        // 直接订阅 DataView 的 stateChanged 事件（状态变更归属于 DataView）
+        view.events.on('stateChanged', (...args: unknown[]) => {
+          const event = args[0] as { changeType: string; tableName: string; viewId: string; rows?: unknown[] }
+          if (event.changeType === 'currentRow') {
+            pageLogger.debug('currentRow 变化', { tableName: event.tableName, viewId: event.viewId })
+          } else if (event.changeType === 'selectedRows') {
+            const rows = event.rows ?? []
+            pageLogger.debug('selectedRows 变化', { tableName: event.tableName, viewId: event.viewId, rowCount: rows.length })
+            
+            // 同步到 el-table
+            if (formApi?.value) {
+              syncSelectedRowsToTable(event.tableName, event.viewId, rows, formApi.value)
+            }
+          }
+        })
       }
     })
   }

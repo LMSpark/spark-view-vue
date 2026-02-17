@@ -48,9 +48,9 @@ const dataSet = SparkData.createDataSet({
   relations: [
     {
       parentTable: 'Departments',
-      parentContextId: 'deptGrid',
+      parentViewId: 'deptGrid',
       childTable: 'Users',
-      childContextId: 'userGrid',
+      childViewId: 'userGrid',
       dependencyType: 'currentRow',
       filterExpression: {
         field: 'departmentId',
@@ -81,10 +81,10 @@ DataRelation 定义父子视图之间的依赖关系，支持级联操作和动�
 ```typescript
 interface DataRelation {
   parentTable: string             // 父表名（数据源标识）
-  parentContextId?: string        // 父上下文 ID（视图标识，默认 'default'）
+  parentViewId?: string           // 父视图 ID（默认 'default'）
   
   childTable: string              // 子表名（数据源标识）
-  childContextId?: string         // 子上下文 ID（视图标识，默认 'default'）
+  childViewId?: string            // 子视图 ID（默认 'default'）
   
   dependencyType: DependencyType  // 依赖类型：'currentRow' | 'selectedRows' | 'allRows' | 'pagedRows'
   filterExpression: FilterExpression // 过滤表达式，定义如何从父上下文过滤子上下文
@@ -117,9 +117,9 @@ type FilterExpression =
 // 部门-用户主从关系
 {
   parentTable: 'Departments',
-  parentContextId: 'deptGrid',
+  parentViewId: 'deptGrid',
   childTable: 'Users',
-  childContextId: 'userGrid',
+  childViewId: 'userGrid',
   dependencyType: 'currentRow',
   filterExpression: {
     field: 'departmentId',
@@ -199,7 +199,7 @@ const treeManager = SparkData.createTreeManager(
 )
 
 // 关联到 DataView
-const dataView = SparkData.createDataView({ tableName: 'Departments', contextId: 'default' })
+const dataView = SparkData.createDataView({ tableName: 'Departments', viewId: 'default' })
 const treeManager = SparkData.createTreeManager(
   { idField: 'id', parentIdField: 'parentId' },
   nodes,
@@ -227,7 +227,7 @@ const treeManager = SparkData.createTreeManager(
 
 **参数：**
 - `config.tableName: string` - 表名
-- `config.contextId?: string` - 上下文 ID（默认：'default'）
+- `config.viewId?: string` - 视图 ID（默认：'default'）
 
 **返回：** `DataView`
 
@@ -237,7 +237,7 @@ const treeManager = SparkData.createTreeManager(
 const view = SparkData.createDataView({ tableName: 'Users' })
 
 // 指定上下文 ID
-const detailView = SparkData.createDataView({ tableName: 'Orders', contextId: 'detail' })
+const detailView = SparkData.createDataView({ tableName: 'Orders', viewId: 'detail' })
 ```
 
 ---

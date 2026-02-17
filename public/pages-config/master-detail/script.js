@@ -37,30 +37,28 @@ function __init__() {
   // 注册数据加载器
   dataSet.dataLoader = mockDataLoader
   
-  // 监听加载成功事件
-  dataSet.on('loadSuccess', ({ tableName }) => {
-    if (tableName === 'Orders') {
-      const ordersTable = dataSet.getTable('Orders')
-      const count = ordersTable?.rows?.length || 0
+  // 监听 Users 视图状态变化（直接订阅 DataView 的事件）
+  const usersView = dataSet.getView('Users', 'default')
+  if (usersView) {
+    usersView.events.on('stateChanged', (event) => {
+      if (event.changeType === 'currentRow' && event.tableName === 'Users') {
+        const pageData = $data
+        const jsonText = event.row ? JSON.stringify(event.row, null, 2) : '未选择行'
+        pageData.currentRowJson = jsonText
+        console.log('📝 [CurrentRow] JSON 已更新:', jsonText.substring(0, 50) + '...')
+        
+        // 手动触发 UI 更新
+        $rebindRules()
+      }
+    })
+  }
+  
+  // 订阅 Orders 表加载完成通知
+  dataSet.subscribe('Orders', 'default', () => {
+    const ordersTable = dataSet.getTable('Orders')
+    const count = ordersTable?.rows?.length || 0
+    if (count > 0) {
       ElMessage.success(`✅ 订单数据加载完成！共 ${count} 条记录`)
-    }
-  })
-  
-  // 监听加载错误事件
-  dataSet.on('loadError', ({ tableName, error }) => {
-    ElMessage.error(`❌ ${tableName} 加载失败: ${error.message}`)
-  })
-  
-  // 监听 Users 表的 currentRow 变化，自动更新 JSON 显示
-  dataSet.on('currentRowChanged', ({ tableName, row }) => {
-    if (tableName === 'Users') {
-      const pageData = $data
-      const jsonText = row ? JSON.stringify(row, null, 2) : '未选择行'
-      pageData.currentRowJson = jsonText
-      console.log('📝 [CurrentRow] JSON 已更新:', jsonText.substring(0, 50) + '...')
-      
-      // 手动触发 UI 更新
-      $rebindRules()
     }
   })
   

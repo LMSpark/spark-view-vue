@@ -13,23 +13,10 @@ export type { RequestConfig, ApiResponse }
 /** 视图状态变化事件 */
 export interface ViewStateEvent {
   tableName: string
-  contextId: string
+  viewId: string
   changeType: 'currentRow' | 'selectedRows' | 'cleared'
   row?: IDataRow | null
   rows?: IDataRow[]
-}
-
-/**
- * DataSet 向下层提供的能力接口（Dependency Inversion）
- *
- * DataView / DataTable 只依赖此接口，不知道 DataSet 的具体实现。
- * 遵循 Demo 能力模式：上层 provide → 下层 consume。
- */
-export interface IDataSetContext {
-  /** 处理视图状态变化（currentRow / selectedRows / cleared） */
-  handleViewStateChanged(event: ViewStateEvent): void
-  /** 发送具名事件（dataLoaded / recordCreated 等 CRUD 通知） */
-  emit(event: string, data: unknown): void
 }
 
 // ===== 权限类型 =====
@@ -162,7 +149,7 @@ export interface HttpEndpoint {
 /** 数据视图元数据 */
 export interface IViewMetadata {
   tableName: string | undefined
-  contextId: string | "default" | undefined
+  viewId: string | "default" | undefined
   rows: IDataRow[] | undefined
   filterExpression: FilterExpression | undefined
   sortExpression: SortExpression | undefined
@@ -176,7 +163,7 @@ export interface ITableMetadata extends IViewMetadata {
   tableName: string
   columns: DataColumn[]
   api: CrudApi | undefined
-  contexts: Record<string, IViewMetadata> | undefined
+  views: Record<string, IViewMetadata> | undefined
   loading: boolean | undefined
   error: string | undefined
 }
@@ -229,9 +216,9 @@ export type FilterExpression =
 /** 数据关系定义 */
 export interface DataRelation {
   parentTable: string
-  parentContextId?: string
+  parentViewId?: string
   childTable: string
-  childContextId?: string
+  childViewId?: string
   dependencyType: DependencyType
   filterExpression: FilterExpression
   cascadeUpdate?: boolean

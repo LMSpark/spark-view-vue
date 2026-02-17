@@ -469,7 +469,7 @@ pnpm run lint
 1. **[组件开发指南](COMPONENT_DEVELOPMENT.md)** - 深入了解组件系统和能力机制
 2. **[数据管理指南](DATA_MANAGEMENT.md)** - 掌握 DataSet 和 TreeManager
 3. **[插件配置](PLUGIN_CONFIGURATION.md)** - 集成第三方 UI 库
-4. **[页面配置](MULTI_TENANT_CONFIG.md)** - 实现配置驱动开发
+4. **[配置系统](CONFIG_SYSTEM.md)** - 多租户与远程配置
 5. **[架构设计](https://github.com/your-org/spark-view/tree/main/docs/architecture)** - 理解系统设计理念
 
 ## 🆘 常见问题
@@ -605,10 +605,75 @@ pnpm -F <包名> run test   # 测试单个包
 
 ## 下一步
 
-- [组件开发指南](COMPONENT_DEVELOPMENT.md) - 创建自定义组件
-- [数据管理指南](DATA_MANAGEMENT.md) - DataSet 和 TreeManager
-- [能力系统指南](CAPABILITY_PROVISION.md) - 组件间通信
-- [API 参考手册](API_REFERENCE.md) - 完整 API 文档
+- [组件开发指南](COMPONENT_DEVELOPMENT.md) - 创建自定义组件（含能力系统）
+- [数据管理指南](DATA_MANAGEMENT.md) - DataSet、视图状态、CRUD
+- [组件注册指南](COMPONENT_REGISTRATION.md) - 编译时/运行时注册
+
+---
+
+## 服务访问
+
+### Router
+
+```typescript
+// 直接使用 vue-router
+import { useRouter } from 'vue-router'
+const router = useRouter()
+router.push('/home')
+```
+
+### Logger
+
+```typescript
+// 使用 Logger 工厂函数
+import { Logger } from '@spark-view/spark-utils'
+const logger = Logger('MyComponent')
+logger.info('初始化')
+logger.error('出错了', error)
+```
+
+### APP_SERVICES（组件内）
+
+```typescript
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+
+const { consume } = useSparkComponent({ type: 'my-comp' })
+const services = consume(APP_SERVICES)
+
+services?.router?.push('/home')
+services?.logger?.info('Action')
+services?.auth?.isAuthenticated()
+```
+
+### Logger 提供方式（App.vue 中）
+
+```vue
+<script setup lang="ts">
+import { createLogger } from '@spark-view/spark-app'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+import { useRouter } from 'vue-router'
+
+const { provide } = useSparkComponent({ type: 'root' })
+const appLogger = createLogger('App')
+const router = useRouter()
+
+provide(APP_SERVICES, {
+  router: { push: (to) => router.push(to), replace: (to) => router.replace(to), back: () => router.back() },
+  logger: appLogger
+})
+</script>
+```
+
+| 场景 | 推荐方式 |
+|------|----------|
+| 路由访问 | `useRouter()` from `vue-router` |
+| 日志记录 | `Logger('module')` from `@spark-view/spark-utils` |
+| 组件内服务 | `consume(APP_SERVICES)` |
+| 组件注册表 | `useSparkRegistry()` |
+
+---
 
 ## 常见问题
 

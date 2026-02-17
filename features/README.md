@@ -96,6 +96,6 @@ pnpm run test spark-component   # 运行特定测试
 
 ## 📚 相关文档
 
-- [SPARK 架构文档](../docs/SPARK_ARCHITECTURE.md)
-- [组件开发指南](../docs/COMPONENT_DEV_GUIDE.md)
+- [数据流架构](../docs/architecture/DATAFLOW_ARCHITECTURE.md)
+- [组件开发指南](../docs/guides/COMPONENT_DEVELOPMENT.md)
 - [PageRenderer API](../packages/spark-renderer/API.md)

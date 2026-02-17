@@ -292,17 +292,17 @@ function injectTableEvents(
       
       // 同步到 DataSet
       if (dataSet?.tables?.[tableName] && contextId) {
-        const table = dataSet.tables[tableName] as { getOrCreateContext?: (id: string) => { setCurrentRow?: (row: unknown, notify?: boolean) => void } }
-        if (table.getOrCreateContext) {
-          const context = table.getOrCreateContext(contextId)
-          if (context?.setCurrentRow) {
+        const table = dataSet.tables[tableName] as { getOrCreateView?: (id: string) => { setCurrentRow?: (row: unknown, notify?: boolean) => void } }
+        if (table.getOrCreateView) {
+          const view = table.getOrCreateView(contextId)
+          if (view?.setCurrentRow) {
             pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${contextId}`)
-            context.setCurrentRow(currentRow ?? null, false)
+            view.setCurrentRow(currentRow ?? null, false)
           } else {
-            pageLogger.warn(`⚠️ [TableEvent] context 没有 setCurrentRow 方法`, { tableName, contextId })
+            pageLogger.warn(`⚠️ [TableEvent] view 没有 setCurrentRow 方法`, { tableName, contextId })
           }
         } else {
-          pageLogger.warn(`⚠️ [TableEvent] table 没有 getOrCreateContext 方法`, { tableName })
+          pageLogger.warn(`⚠️ [TableEvent] table 没有 getOrCreateView 方法`, { tableName })
         }
       } else {
         pageLogger.warn(`⚠️ [TableEvent] DataSet 或表不存在`, { tableName, hasDataSet: !!dataSet, hasTable: !!dataSet?.tables?.[tableName] })
@@ -331,12 +331,12 @@ function injectTableEvents(
       
       // 同步到 DataSet
       if (dataSet?.tables?.[tableName] && contextId) {
-        const table = dataSet.tables[tableName] as { getOrCreateContext?: (id: string) => { setSelectedRows?: (rows: unknown, notify?: boolean) => void } }
-        if (table.getOrCreateContext) {
-          const context = table.getOrCreateContext(contextId)
-          if (context?.setSelectedRows) {
+        const table = dataSet.tables[tableName] as { getOrCreateView?: (id: string) => { setSelectedRows?: (rows: unknown, notify?: boolean) => void } }
+        if (table.getOrCreateView) {
+          const view = table.getOrCreateView(contextId)
+          if (view?.setSelectedRows) {
             pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${contextId}`)
-            context.setSelectedRows(selection, true)
+            view.setSelectedRows(selection, true)
           }
         }
       }

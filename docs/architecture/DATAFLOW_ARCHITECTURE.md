@@ -402,9 +402,9 @@ graph TD
   ```typescript
   {
     parentTable: 'Departments',      // 父表名
-    parentContextId: 'deptGrid',     // 父视图ID（默认'default'）
+    parentViewId: 'deptGrid',        // 父视图ID（默认'default'）
     childTable: 'Users',             // 子表名
-    childContextId: 'userGrid',      // 子视图ID（默认'default'）
+    childViewId: 'userGrid',         // 子视图ID（默认'default'）
     dependencyType: 'currentRow',    // 依赖类型：currentRow|selectedRows|allRows|pagedRows
     filterExpression: {              // 过滤表达式（定义如何过滤子视图）
       field: 'departmentId',
@@ -979,9 +979,7 @@ if (DataLoader.areRowsEqual(existingRows, newRows)) {
 
 ## 📚 相关文档
 
-- [视图状态管理基础](./VIEW_STATE_MANAGEMENT.md)
-- [视图状态高级特性](./VIEW_STATE_ADVANCED.md)
-- [SPARK 架构概览](../SPARK_ARCHITECTURE.md)
+- [数据管理指南（含视图状态）](../guides/DATA_MANAGEMENT.md)
 - [依赖分析器](../../packages/spark-data/src/core/dependency-analyzer.ts)
 - [关系引擎](../../packages/spark-data/src/core/relation-engine.ts)
 
@@ -1106,12 +1104,11 @@ interface ViewState {
   
   // 视图配置状态
   viewConfig: ViewConfig              // 视图配置
-  contextId: string                   // 上下文ID
+  viewId: string                      // 视图ID
   
   // 视图运行状态
   isLoading: boolean                  // 加载状态
-  error: Error | null                 // 错误状态
-  lastLoadTime: Date                  // 最后加载时间
+  loadingError: Error | null          // 错误状态
 }
 ```
 

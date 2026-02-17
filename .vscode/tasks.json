@@ -1,14 +1,31 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "重启 TypeScript 服务器",
-      "type": "shell",
-      "command": "echo '请在 VS Code 中按 F1 或 Ctrl+Shift+P，输入: TypeScript: Restart TS Server'",
-      "presentation": {
-        "reveal": "always",
-        "panel": "new"
-      }
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "重启 TypeScript 服务器",
+			"type": "shell",
+			"command": "echo '请在 VS Code 中按 F1 或 Ctrl+Shift+P，输入: TypeScript: Restart TS Server'",
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			}
+		},
+		{
+			"label": "vitest-run",
+			"type": "shell",
+			"command": "npx vitest run --reporter verbose",
+			"isBackground": false
+		},
+		{
+			"label": "vitest-full-run",
+			"type": "shell",
+			"command": "npx vitest run --reporter verbose",
+			"isBackground": false
+		},
+		{
+			"label": "vitest-full",
+			"type": "shell",
+			"command": "npx vitest run --reporter verbose"
+		}
+	]
 }

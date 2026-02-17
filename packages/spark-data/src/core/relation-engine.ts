@@ -2,7 +2,7 @@
  * 极简关系引擎 — 管理视图间联动
  *
  * 核心原则（SOLID）：
- * - 关系建立在视图（view/context）之间，不是表
+ * - 关系建立在视图之间，不是表
  * - 非阻塞数据流：向上只请求不等待，向下只通知
  * - 简化状态管理：不做新旧值比较，不维护选中状态
  * - 单一职责：只负责关系逻辑，数据加载由 DataLoader 处理
@@ -56,19 +56,19 @@ export class RelationEngine {
    * @param rel 数据关系
    */
   applyRelation(rel: DataRelation): void {
-    const parentCtx = this.dataSet.getContext(rel.parentTable, rel.parentContextId ?? 'default')
-    if (!parentCtx) return
+    const parentView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
+    if (!parentView) return
 
-    const childCtx = this.dataSet.getContext(rel.childTable, rel.childContextId ?? 'default')
-    if (!childCtx) return
+    const childView = this.dataSet.getView(rel.childTable, rel.childViewId ?? 'default')
+    if (!childView) return
 
-    const parentRows = this.getParentRows(parentCtx, rel.dependencyType)
+    const parentRows = this.getParentRows(parentView, rel.dependencyType)
 
-    // 父视图无数据 → 静默重置子视图（不触发通知，避免循环级联）
+    // 父视图无数据 → 静默重置子视图 → 直接通知子视图订阅者
     if (!parentRows.length) {
-      childCtx.resetState()
-      this.dataSet.notifySubscribers(rel.childTable, rel.childContextId ?? 'default')
-      this.recursiveClear(rel.childTable, rel.childContextId ?? 'default')
+      childView.resetState()
+      childView.notifySubscribers()
+      this.recursiveClear(rel.childTable, rel.childViewId ?? 'default')
       return
     }
 
@@ -81,11 +81,11 @@ export class RelationEngine {
   /**
    * 父视图变化时触发所有子关系响应
    * @param parentTable 父表名
-   * @param parentContextId 父视图ID
+   * @param parentViewId 父视图ID
    */
-  updateRelatedTables(parentTable: string, parentContextId: string = 'default'): void {
+  updateRelatedTables(parentTable: string, parentViewId: string = 'default'): void {
     for (const rel of this.dataSet.relations ?? []) {
-      if (rel.parentTable === parentTable && (rel.parentContextId ?? 'default') === parentContextId) {
+      if (rel.parentTable === parentTable && (rel.parentViewId ?? 'default') === parentViewId) {
         this.applyRelation(rel)
       }
     }
@@ -105,16 +105,16 @@ export class RelationEngine {
   /**
    * 递归清空后代视图
    * @param parentTable 父表名
-   * @param parentCtxId 父视图ID
+   * @param parentViewId 父视图ID
    */
-  private recursiveClear(parentTable: string, parentCtxId: string): void {
+  private recursiveClear(parentTable: string, parentViewId: string): void {
     for (const rel of this.dataSet.relations ?? []) {
-      if (rel.parentTable === parentTable && (rel.parentContextId ?? 'default') === parentCtxId) {
-        const cid = rel.childContextId ?? 'default'
-        const ctx = this.dataSet.getContext(rel.childTable, cid)
-        if (ctx) {
-        ctx.resetState()
-          this.dataSet.notifySubscribers(rel.childTable, cid)
+      if (rel.parentTable === parentTable && (rel.parentViewId ?? 'default') === parentViewId) {
+        const cid = rel.childViewId ?? 'default'
+        const view = this.dataSet.getView(rel.childTable, cid)
+        if (view) {
+          view.resetState()
+          view.notifySubscribers()
           this.recursiveClear(rel.childTable, cid)
         }
       }

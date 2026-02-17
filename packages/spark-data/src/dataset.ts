@@ -1,21 +1,45 @@
 /**
- * DataSet — 数据空间（UI↔后端 桥接层）
+ * DataSet — 数据空间协调器（容器 + 能力提供）
  *
- * 实现 IDataSetContext 接口，向下层提供能力（handleViewStateChanged / emit）。
- * 遵循 SOLID 依赖倒置：DataView/DataTable 只依赖 IDataSetContext，不知道 DataSet。
+ * SPARK 能力系统模式（与组件系统同构）：
+ *   - 实现 ICapabilityContext → 提供 DATA_SET 能力
+ *   - 下层通过 lookup(ctx, DATA_SET) 消费
+ *
+ * 职责：表注册管理查询、关系注册管理查询、数据加载协调
+ * 不操作下层：不主动调用 DataView/DataTable 的方法来改变它们的状态
+ * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewStateEvent, IDataSetContext } from './types'
+import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
-import { RelationEngine } from './core/relation-engine'
-import { DependencyAnalyzer } from './core/dependency-analyzer'
 import { DataLoader } from './core/data-loader'
-import { DATA_SET } from '@spark-view/spark-utils'
-import type { CapabilityKey } from '@spark-view/spark-utils'
-import { Logger } from '@spark-view/spark-utils'
+import { DATA_SET, provide as setCapability } from '@spark-view/spark-utils'
+import type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
 
-export class DataSet implements IDataSetContext {
+// ===== 能力接口（与类共同定义，避免循环引用） =====
+
+/** DataSet 向 UI/组件暴露的能力 */
+export interface IDataSetCapability {
+  /** DataSet 实例引用 */
+  readonly dataSet: DataSet
+}
+
+export class DataSet implements ICapabilityContext {
+  // ===== ICapabilityContext =====
+
+  /** 唯一标识 */
+  id: string
+
+  /** 上下文类型 */
+  readonly type = 'dataset'
+
+  /** 父级上下文（无，DataSet 是根） */
+  parent?: ICapabilityContext
+
+  /** 能力 Map */
+  capabilities = new Map<CapabilityName, unknown>()
+
   // ===== 属性定义 =====
 
   /** 数据集名称 */
@@ -41,20 +65,8 @@ export class DataSet implements IDataSetContext {
 
   // ===== 内部引擎 =====
 
-  /** 关系引擎 */
-  private relationEngine: RelationEngine
-
-  /** 依赖分析器 */
-  private dependencyAnalyzer: DependencyAnalyzer
-
   /** 数据加载器实例 */
   private dataLoaderInstance: DataLoader
-
-  /** 内联事件监听器（替代 DataEventHub） */
-  private listeners = new Map<string, Set<(...args: unknown[]) => void>>()
-
-  /** 日志记录器 */
-  private logger = Logger('DataSet')
 
   // ===== 构造函数 =====
 
@@ -72,58 +84,56 @@ export class DataSet implements IDataSetContext {
     dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
   }) {
     this.dataSetName = config.dataSetName
+    this.id = `ds:${config.dataSetName}`
     this.dataLoader = config.dataLoader
     this.relations = config.relations
     this.version = config.version
     this.pageId = config.pageId
     this.autoLoadRelations = config.autoLoadRelations
 
-    // 构建表实例并关联 dataSet 引用（向下提供 IDataSetContext 能力）
+    // 注册 DATA_SET 能力
+    setCapability(this, DATA_SET, { dataSet: this } satisfies IDataSetCapability)
+
+    // 构建表实例并建立 parent 链（DataSet → DataTable → DataView）
     this.tables = {}
     for (const [name, td] of Object.entries(config.tables)) {
       const table = DataTable.fromTableData(td)
-      table.setDataSet(this)
+      table.setDataSet(this)  // 设置 table.parent = this, view.parent = table
       this.tables[name] = table
     }
 
-    // 关系默认 contextId
+    // 关系默认 viewId
     this.relations?.forEach(r => {
-      r.parentContextId ??= 'default'
-      r.childContextId ??= 'default'
+      r.parentViewId ??= 'default'
+      r.childViewId ??= 'default'
     })
 
-    // 初始化引擎
-    this.dependencyAnalyzer = new DependencyAnalyzer(this)
-    this.relationEngine = new RelationEngine(this)
+    // 初始化数据加载器
     this.dataLoaderInstance = new DataLoader(this)
   }
 
-  // ===== IDataSetContext 能力实现 =====
+  // ===== 关系图查询（网状关系，非树形） =====
 
   /**
-   * 处理视图状态变化（IDataSetContext 核心能力）
-   *
-   * 事件流：DataView 调用 → 级联关系 → 通知订阅者 → 广播具名事件
-   * 遵循 Demo 能力模式：下层通过消费的能力接口回调上层
+   * 查询以指定视图为父的子关系
+   * @param parentTable 父表名
+   * @param parentViewId 父视图ID
    */
-  handleViewStateChanged(event: ViewStateEvent): void {
-    // 1. 级联关系（父视图变化 → 子视图响应）
-    this.relationEngine.updateRelatedTables(event.tableName, event.contextId)
+  getChildRelations(parentTable: string, parentViewId: string): DataRelation[] {
+    return (this.relations ?? []).filter(
+      r => r.parentTable === parentTable && (r.parentViewId ?? 'default') === parentViewId
+    )
+  }
 
-    // 2. 通知该视图的订阅者
-    this.notifySubscribers(event.tableName, event.contextId)
-
-    // 3. 发送具名事件（供外部监听）
-    const eventName = event.changeType === 'currentRow' ? 'currentRowChanged'
-      : event.changeType === 'selectedRows' ? 'selectedRowsChanged'
-      : 'contextCleared'
-    this.emitInternal(eventName, {
-      tableName: event.tableName, contextId: event.contextId,
-      row: event.row, rows: event.rows
-    })
-
-    // 4. 通知能力层消费者（DataSetStateCapability.onTableChange）
-    this.emitInternal('tableChanged', { tableName: event.tableName })
+  /**
+   * 查询以指定视图为子的父关系（在网状关系图中向上查找）
+   * @param childTable 子表名
+   * @param childViewId 子视图ID
+   */
+  getParentRelations(childTable: string, childViewId: string): DataRelation[] {
+    return (this.relations ?? []).filter(
+      r => r.childTable === childTable && (r.childViewId ?? 'default') === childViewId
+    )
   }
 
   // ===== 工厂方法 =====
@@ -161,18 +171,6 @@ export class DataSet implements IDataSetContext {
     })
   }
 
-  // ===== 能力注册 =====
-
-  /**
-   * 获取数据集的能力提供者
-   * @returns 能力映射
-   */
-  getCapabilities(): Map<CapabilityKey<unknown>, unknown> {
-    const caps = new Map<CapabilityKey<unknown>, unknown>()
-    caps.set(DATA_SET as CapabilityKey<unknown>, { dataSet: this })
-    return caps
-  }
-
   // ===== 数据访问 =====
 
   /**
@@ -185,63 +183,12 @@ export class DataSet implements IDataSetContext {
   }
 
   /**
-   * 获取数据视图
-   * @param tableName 表名
-   * @param contextId 数据视图ID
-   * @returns 数据视图实例
+   * 获取数据视图（委托到 DataTable）
    */
-  getContext(tableName: string, contextId = 'default'): SparkDataView | undefined {
+  getView(tableName: string, viewId = 'default'): SparkDataView | undefined {
     const t = this.getTable(tableName)
     if (!t) return undefined
-    return contextId === 'default' ? t : t.getOrCreateContext(contextId)
-  }
-
-  // ===== 关系管理 =====
-
-  /**
-   * 应用数据关系
-   * @param rel 数据关系
-   */
-  applyRelation(rel: DataRelation): void {
-    this.relationEngine.applyRelation(rel)
-  }
-
-  /**
-   * 更新相关表数据
-   * @param parent 父表名
-   * @param ctxId 数据视图ID
-   */
-  updateRelatedTables(parent: string, ctxId = 'default'): void {
-    this.relationEngine.updateRelatedTables(parent, ctxId)
-  }
-
-  // ===== 依赖分析 =====
-
-  /**
-   * 获取表依赖关系
-   * @param tableName 表名
-   * @returns 依赖表名数组
-   */
-  getTableDependencies(tableName: string): string[] {
-    return Array.from(this.dependencyAnalyzer.getTableDependencies(tableName))
-  }
-
-  /**
-   * 获取根依赖关系
-   * @param tableName 表名
-   * @returns 根依赖表名数组
-   */
-  getRootDependencies(tableName: string): string[] {
-    return Array.from(this.dependencyAnalyzer.getRootDependencies(tableName))
-  }
-
-  /**
-   * 检查依赖是否满足
-   * @param tableName 表名
-   * @returns 是否满足依赖
-   */
-  areDependenciesSatisfied(tableName: string): boolean {
-    return this.dependencyAnalyzer.areDependenciesSatisfied(tableName)
+    return t.getOrCreateView(viewId)
   }
 
   // ===== 订阅管理（委托到 DataView） =====
@@ -249,106 +196,37 @@ export class DataSet implements IDataSetContext {
   /**
    * 订阅表数据变化（便捷方法，委托到对应 DataView）
    * @param tableName 表名
-   * @param contextId 数据视图ID
+   * @param viewId 数据视图ID
    * @param cb 回调函数
    * @returns 取消订阅函数
    */
-  subscribe(tableName: string, contextId: string, cb: () => void): () => void {
-    const view = this.getContext(tableName, contextId)
+  subscribe(tableName: string, viewId: string, cb: () => void): () => void {
+    const view = this.getView(tableName, viewId)
     if (!view) return () => {}
     return view.subscribe(cb)
   }
 
   /**
-   * 通知订阅者（委托到 DataView）
+   * 通知订阅者（委托到 DataTable，避免重复刷新）
    * @param tableName 表名
-   * @param contextId 数据视图ID（不指定则广播该表所有视图）
+   * @param viewId 数据视图ID（不指定则广播该表所有视图）
    */
-  notifySubscribers(tableName: string, contextId?: string): void {
+  notifySubscribers(tableName: string, viewId?: string): void {
     const table = this.getTable(tableName)
     if (!table) return
-
-    if (contextId !== undefined) {
-      const view = this.getContext(tableName, contextId)
-      view?.notifySubscribers()
-    } else {
-      // 广播模式：先刷新所有子视图数据，再逐个通知
-      table.refreshAllContexts()
-      table.notifySubscribers() // default 视图
-      for (const ctx of Object.values(table.contexts)) {
-        ctx.notifySubscribers()
-      }
-    }
+    table.notifySubscribers(viewId)
   }
 
   /**
-   * 检查是否有订阅者（委托到 DataView）
+   * 检查是否有订阅者（委托到 DataTable）
    * @param tableName 表名
-   * @param contextId 数据视图ID
+   * @param viewId 数据视图ID
    * @returns 是否有订阅者
    */
-  hasSubscribers(tableName: string, contextId?: string): boolean {
+  hasSubscribers(tableName: string, viewId?: string): boolean {
     const table = this.getTable(tableName)
     if (!table) return false
-
-    if (contextId !== undefined) {
-      const view = this.getContext(tableName, contextId)
-      return view?.hasSubscribers() ?? false
-    }
-    // 检查该表所有视图
-    if (table.hasSubscribers()) return true
-    for (const ctx of Object.values(table.contexts)) {
-      if (ctx.hasSubscribers()) return true
-    }
-    return false
-  }
-
-  // ===== 事件管理（内联 Map 实现，替代 DataEventHub） =====
-
-  /**
-   * 监听事件
-   * @param event 事件名
-   * @param cb 回调函数
-   */
-  on(event: string, cb: (...args: unknown[]) => void): void {
-    let set = this.listeners.get(event)
-    if (!set) {
-      set = new Set()
-      this.listeners.set(event, set)
-    }
-    set.add(cb)
-  }
-
-  /**
-   * 取消监听事件
-   * @param event 事件名
-   * @param cb 回调函数
-   */
-  off(event: string, cb: (...args: unknown[]) => void): void {
-    const set = this.listeners.get(event)
-    if (!set) return
-    set.delete(cb)
-    if (set.size === 0) this.listeners.delete(event)
-  }
-
-  /**
-   * 触发事件（IDataSetContext 能力 — 供 DataTable CRUD 使用）
-   * @param event 事件名
-   * @param data 事件数据
-   */
-  emit(event: string, data: unknown): void {
-    this.emitInternal(event, data)
-  }
-
-  /**
-   * 内部事件分发（错误隔离）
-   */
-  private emitInternal(event: string, data?: unknown): void {
-    const set = this.listeners.get(event)
-    if (!set?.size) return
-    for (const handler of [...set]) {
-      try { handler(data) } catch (e) { this.logger.error(`事件错误 '${event}':`, e) }
-    }
+    return table.hasSubscribers(viewId)
   }
 
   // ===== 数据加载 =====
@@ -356,9 +234,10 @@ export class DataSet implements IDataSetContext {
   /**
    * 请求表数据
    * @param tableName 表名
+   * @param viewId 视图ID（默认 'default'）
    */
-  requestTableData(tableName: string): void {
-    this.dataLoaderInstance.requestTableData(tableName)
+  requestTableData(tableName: string, viewId = 'default'): void {
+    this.dataLoaderInstance.requestTableData(tableName, viewId)
   }
 
   // ===== 序列化 =====

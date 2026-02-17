@@ -10,7 +10,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - Lint & hooks: `pnpm run lint`; Husky pre-commit runs `lint` + `typecheck`
 
 ## Where to look (high value files) 🔎
-- Architecture docs: `docs/SPARK_ARCHITECTURE.md` (big-picture + rationale)
+- Architecture docs: `docs/architecture/DATAFLOW_ARCHITECTURE.md` (data-flow + rationale)
 - **Packages**:
   - `packages/spark-component/` — 组件系统（API docs: `packages/spark-component/API.md`）
   - `packages/spark-data/` — 数据空间（DataSet, DataTable, DataView, TreeManager）
@@ -207,7 +207,7 @@ const treeManager = SparkData.createTreeManager({
   parentIdField: 'parentId'
 })
 
-const dataView = SparkData.createDataView({ tableName: 'Users', contextId: 'grid' })
+const dataView = SparkData.createDataView({ tableName: 'Users', viewId: 'grid' })
 
 // 直接导入类
 import { DataSet, TreeManager, DataTable, DataView } from '@spark-view/spark-data'
