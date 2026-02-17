@@ -2,27 +2,8 @@
  * spark-data 内部工具函数
  */
 
-import type { IDataRow } from '../types'
-
-/**
- * 比较两个数据行数组是否相等（引用比较）
- * 
- * 高性能浅比较：仅检查数组长度和每个位置的引用是否相同
- * 适用于判断数据是否变化，避免不必要的通知
- * 
- * @param rows1 第一个数据行数组
- * @param rows2 第二个数据行数组
- * @returns 是否相等
- */
-export function rowsEqual(rows1: IDataRow[], rows2: IDataRow[]): boolean {
-  if (rows1.length !== rows2.length) return false
-  
-  for (let i = 0; i < rows1.length; i++) {
-    if (rows1[i] !== rows2[i]) return false
-  }
-  
-  return true
-}
+import type { IDataRow, DependencyType } from '../types'
+import type { DataView } from '../data-view'
 
 /**
  * 通过主键或引用比较判断两行是否相同
@@ -47,4 +28,27 @@ export function isSameRow(
   
   // 没有主键则引用比较
   return false
+}
+
+/**
+ * 根据依赖类型获取源视图的数据范围
+ * 
+ * 统一逻辑：RelationEngine 和 DataView 级联共用
+ * @param sourceView 源视图
+ * @param dep 依赖类型
+ * @returns 数据行数组
+ */
+export function getParentRows(sourceView: DataView, dep: DependencyType): IDataRow[] {
+  switch (dep) {
+    case 'currentRow':   return sourceView.currentRow ? [sourceView.currentRow] : []
+    case 'selectedRows': return sourceView.selectedRows ?? []
+    case 'allRows':      return sourceView.rows ?? []
+    case 'pagedRows': {
+      const rows = sourceView.rows ?? []
+      const ps = sourceView.pageSize ?? 20
+      const p = sourceView.page ?? 1
+      return rows.slice((p - 1) * ps, p * ps)
+    }
+    default: return sourceView.currentRow ? [sourceView.currentRow] : []
+  }
 }

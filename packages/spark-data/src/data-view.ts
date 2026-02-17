@@ -14,11 +14,11 @@
  *   父不知道子、不操作子。
  */
 
-import type { IDataRow, IViewMetadata, FilterExpression, SortExpression, ViewStateEvent, DataRelation, DependencyType } from './types'
+import type { IDataRow, IViewMetadata, FilterExpression, SortExpression, ViewStateEvent, DataRelation } from './types'
 import type { TreeManager } from './tree-manager'
 import { Logger, DATA_VIEW, DATA_SET, provide as setCapability, lookup, createEventEmitter } from '@spark-view/spark-utils'
 import type { CapabilityName, ICapabilityContext, IEventEmitter } from '@spark-view/spark-utils'
-import { isSameRow } from './core/utils'
+import { isSameRow, getParentRows } from './core/utils'
 
 // ===== 能力接口（与类共同定义，避免循环引用） =====
 
@@ -57,7 +57,7 @@ export class DataView implements ICapabilityContext {
   tableName: string
 
   /** 数据视图ID */
-  viewId: string | "default"
+  viewId: string
 
   // ===== 数据状态 =====
 
@@ -133,7 +133,7 @@ export class DataView implements ICapabilityContext {
    * @param tableName 表名
    * @param viewId 数据视图ID
    */
-  constructor(tableName: string, viewId: string | "default" = 'default') {
+  constructor(tableName: string, viewId: string = 'default') {
     this.tableName = tableName
     this.viewId = viewId
     this.id = `dv:${tableName}:${viewId}`
@@ -199,7 +199,7 @@ export class DataView implements ICapabilityContext {
    * - 父有数据 + autoLoad → 请求自己的数据
    */
   private respondToParentChange(rel: DataRelation, parentView: DataView): void {
-    const parentRows = this.getParentRows(parentView, rel.dependencyType)
+    const parentRows = getParentRows(parentView, rel.dependencyType)
 
     if (!parentRows.length) {
       this.resetState()
@@ -215,24 +215,6 @@ export class DataView implements ICapabilityContext {
       // 消费 DATA_SET 能力请求数据加载
       const dsCap = lookup<{ dataSet: { requestTableData(n: string): void } }>(this, DATA_SET)
       dsCap?.dataSet.requestTableData(this.tableName)
-    }
-  }
-
-  /**
-   * 根据依赖类型获取源视图的数据范围
-   */
-  private getParentRows(sourceView: DataView, dep: DependencyType): IDataRow[] {
-    switch (dep) {
-      case 'currentRow':   return sourceView.currentRow ? [sourceView.currentRow] : []
-      case 'selectedRows': return sourceView.selectedRows ?? []
-      case 'allRows':      return sourceView.rows ?? []
-      case 'pagedRows': {
-        const rows = sourceView.rows ?? []
-        const ps = sourceView.pageSize ?? 20
-        const p = sourceView.page ?? 1
-        return rows.slice((p - 1) * ps, p * ps)
-      }
-      default: return sourceView.currentRow ? [sourceView.currentRow] : []
     }
   }
 

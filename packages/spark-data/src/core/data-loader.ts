@@ -134,20 +134,12 @@ export class DataLoader {
       view.rows.splice(0, view.rows.length, ...rows)
       view.originalRows ??= [...rows]
 
-      // 清空选中状态
-      if (view.currentRow !== null || view.selectedRows.length > 0) {
-        view.currentRow = null
-        view.selectedRows.splice(0)
-        view.selectedRowIndices.splice(0)
-      }
-
-      // 清空所有命名视图的选中状态
+      // 清空所有视图的选中状态
       for (const v of Object.values(table.views ?? {})) {
-        if (v.currentRow !== null || v.selectedRows.length > 0) {
-          v.currentRow = null
-          v.selectedRows.splice(0)
-          v.selectedRowIndices.splice(0)
-        }
+        v.currentRow = null
+        v.currentRowIndex = null
+        v.selectedRows.splice(0)
+        v.selectedRowIndices = []
       }
 
       // 子视图 → 重新应用父关系

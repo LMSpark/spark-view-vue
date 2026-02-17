@@ -20,11 +20,9 @@ export type { CrudResult, QueryParams, BatchResult, CrudOperationConfig } from '
 
 export type {
   IDataRow,
-  IDataSource,
   IInstancePermission,
   IModelPermission,
   RequestConfig,
-  ApiResponse,
   ITableMetadata,
   IDataSet,
   IDataSetMetadata,
@@ -37,7 +35,8 @@ export type {
   CrudApi,
   DataColumn,
   DataRelation,
-  ViewStateEvent
+  ViewStateEvent,
+  DependencyType
 } from './types'
 
 // ===== 能力接口 =====
@@ -74,4 +73,4 @@ export type {
 
 // ===== 工具函数 =====
 
-export { rowsEqual, isSameRow } from './core/utils'
+export { isSameRow, getParentRows } from './core/utils'

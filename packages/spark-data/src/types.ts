@@ -148,14 +148,14 @@ export interface HttpEndpoint {
 
 /** 数据视图元数据 */
 export interface IViewMetadata {
-  tableName: string | undefined
-  viewId: string | "default" | undefined
-  rows: IDataRow[] | undefined
-  filterExpression: FilterExpression | undefined
-  sortExpression: SortExpression | undefined
-  autoSelectFirst: boolean | undefined
-  page: number | undefined
-  pageSize: number | undefined
+  tableName?: string
+  viewId?: string
+  rows?: IDataRow[]
+  filterExpression?: FilterExpression
+  sortExpression?: SortExpression
+  autoSelectFirst?: boolean
+  page?: number
+  pageSize?: number
 }
 
 /** 数据表元数据 */

@@ -3,13 +3,12 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
+import { nextTick } from 'vue'
 import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { parseDataKey, resolveDataKey, isDataKey } from '@spark-view/spark-data'
-import type { DataKeyDescriptor } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
-import { nextTick } from 'vue'
 
 /**
  * ElementPlus Table 组件接口
@@ -105,17 +104,8 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       newRule.on = newOn as Record<string, Function | Function[]>
     }
     
-    // 🎯 处理 r-table 的 dataSource 绑定
-    if (newRule.type === 'r-table' && newRule['dataSource']) {
-      const dataSource = pageData[newRule['dataSource'] as string]
-      if (dataSource !== undefined) {
-        newRule.props ??= {}
-        newRule.props['data'] = dataSource
-      }
-    }
-
-    // 🎯 处理 r-tree 的 dataSource 绑定
-    if (newRule.type === 'r-tree' && newRule['dataSource']) {
+    // 🎯 处理 dataSource 绑定（r-table, r-tree 共用）
+    if ((newRule.type === 'r-table' || newRule.type === 'r-tree') && newRule['dataSource']) {
       const dataSource = pageData[newRule['dataSource'] as string]
       if (dataSource !== undefined) {
         newRule.props ??= {}
@@ -125,23 +115,10 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
 
     // 🎯 处理 r-tree 的 dataKey 绑定（用于 default-expanded-keys）
     if (newRule.type === 'r-tree' && newRule['dataKey']) {
-      const rawKey = newRule['dataKey'] as string
-      if (dataSet && isDataKey(rawKey)) {
-        const dk = parseDataKey(rawKey)
-        if (dk) {
-          const value = resolveDataKey(dk, dataSet as import('@spark-view/spark-data').DataSet)
-          if (value !== undefined && Array.isArray(value)) {
-            newRule.props ??= {}
-            newRule.props['default-expanded-keys'] = value
-          }
-        }
-      } else {
-        const keys = rawKey.split('.')
-        const value = getNestedValue<unknown[]>(pageData, keys)
-        if (value !== undefined && Array.isArray(value)) {
-          newRule.props ??= {}
-          newRule.props['default-expanded-keys'] = value
-        }
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
+      if (resolved !== undefined && Array.isArray(resolved)) {
+        newRule.props ??= {}
+        newRule.props['default-expanded-keys'] = resolved
       }
     }
 
@@ -166,17 +143,8 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       }
     }
     
-    // 🎯 处理 r-form 的 dataKey 绑定
-    if (newRule.type === 'r-form' && newRule['dataKey']) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
-      if (resolved !== undefined) {
-        newRule.props ??= {}
-        newRule.props['data'] = resolved
-      }
-    }
-    
-    // 🎯 处理 r-detail 的 dataKey 绑定
-    if (newRule.type === 'r-detail' && newRule['dataKey']) {
+    // 🎯 处理 dataKey → props.data 绑定（r-form, r-detail 共用）
+    if ((newRule.type === 'r-form' || newRule.type === 'r-detail') && newRule['dataKey']) {
       const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
       if (resolved !== undefined) {
         newRule.props ??= {}
@@ -329,22 +297,14 @@ function injectTableEvents(
         (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
       }
       
-      // 同步到 DataSet
-      if (dataSet?.tables?.[tableName] && viewId) {
-        const table = dataSet.tables[tableName] as { getOrCreateView?: (id: string) => { setCurrentRow?: (row: IDataRow | null) => void } }
-        if (table.getOrCreateView) {
-          const view = table.getOrCreateView(viewId)
-          if (view?.setCurrentRow) {
-            pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
-            view.setCurrentRow(currentRow ?? null)
-          } else {
-            pageLogger.warn(`⚠️ [TableEvent] view 没有 setCurrentRow 方法`, { tableName, viewId })
-          }
-        } else {
-          pageLogger.warn(`⚠️ [TableEvent] table 没有 getOrCreateView 方法`, { tableName })
-        }
+      // 同步到 DataSet — 通过公共 API
+      const table = (dataSet as import('@spark-view/spark-data').DataSet).getTable(tableName)
+      if (table) {
+        const view = table.getOrCreateView(viewId)
+        view.setCurrentRow(currentRow ?? null)
+        pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
       } else {
-        pageLogger.warn(`⚠️ [TableEvent] DataSet 或表不存在`, { tableName, hasDataSet: !!dataSet, hasTable: !!dataSet?.tables?.[tableName] })
+        pageLogger.warn(`⚠️ [TableEvent] DataSet 表不存在`, { tableName })
       }
     } finally {
       isProcessingEvent = false
@@ -368,40 +328,17 @@ function injectTableEvents(
         (originalSelectionChange as (selection: unknown) => void)(selection)
       }
       
-      // 同步到 DataSet
-      if (dataSet?.tables?.[tableName] && viewId) {
-        const table = dataSet.tables[tableName] as { getOrCreateView?: (id: string) => { setSelectedRows?: (rows: IDataRow[]) => void } }
-        if (table.getOrCreateView) {
-          const view = table.getOrCreateView(viewId)
-          if (view?.setSelectedRows) {
-            pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${viewId}`)
-            view.setSelectedRows(selection)
-          }
-        }
+      // 同步到 DataSet — 通过公共 API
+      const table = (dataSet as import('@spark-view/spark-data').DataSet).getTable(tableName)
+      if (table) {
+        const view = table.getOrCreateView(viewId)
+        view.setSelectedRows(selection)
+        pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${viewId}`)
       }
     } finally {
       isProcessingEvent = false
     }
   }
-}
-
-/**
- * 查找具有特定 dataKey 的 rule
- */
-export function findRuleByDataKey(rules: Rule[], dataKey: string): Rule | null {
-  for (const rule of rules) {
-    if (rule['dataKey'] === dataKey) {
-      return rule
-    }
-    if (rule.children && Array.isArray(rule.children)) {
-      const childRules = rule.children.filter(
-        (child: unknown): child is Rule => typeof child !== 'string'
-      )
-      const found = findRuleByDataKey(childRules, dataKey)
-      if (found) return found
-    }
-  }
-  return null
 }
 
 /**
