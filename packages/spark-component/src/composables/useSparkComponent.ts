@@ -231,19 +231,29 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
    * - 在 main.ts 中：provide('logger', createLogger('App'))
    * - 或通过 APP_SERVICES：provide(APP_SERVICES, { logger: createLogger('App') })
    */
-  const getActiveLogger = () => {
-    // 优先从能力系统查找应用层提供的 logger
+  // 静态 fallback logger（共享实例，避免每次调用创建新对象）
+  const fallbackLogger: LoggerApi = {
+    debug: () => undefined,
+    info: (...args: unknown[]) => console.info(...args),
+    warn: (...args: unknown[]) => console.warn(...args),
+    error: (...args: unknown[]) => console.error(...args)
+  }
+
+  // 缓存已解析的 logger，避免每次 log 调用都执行 lookup()
+  let cachedLogger: LoggerApi | null = null
+
+  const getActiveLogger = (): LoggerApi => {
+    // 已缓存则直接返回（找到真正的 logger 后不再重复查找）
+    if (cachedLogger) return cachedLogger
+
+    // 从能力系统查找应用层提供的 logger
     const impl = lookup<LoggerApi>(context, 'logger')
     if (impl && typeof impl === 'object' && 'info' in impl && 'warn' in impl && 'error' in impl && 'debug' in impl) {
+      cachedLogger = impl
       return impl
     }
-    // Fallback：使用静默 logger（应用层应该提供 logger）
-    return {
-      debug: () => undefined,
-      info: (...args: unknown[]) => console.info(...args),
-      warn: (...args: unknown[]) => console.warn(...args),
-      error: (...args: unknown[]) => console.error(...args)
-    }
+    // Fallback：返回静态 fallback（不缓存，允许后续 late-binding 解析）
+    return fallbackLogger
   }
 
   const logger = {
