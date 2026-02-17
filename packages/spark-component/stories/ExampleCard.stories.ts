@@ -35,7 +35,7 @@ export const Default: Story = {
     config: {
       type: 'example-card',
       title: '默认ExampleCard'
-    }
+    } as ExampleCardConfig
   }
 }
 
@@ -45,7 +45,7 @@ export const Loading: Story = {
       type: 'example-card',
       title: '加载中...',
       loading: true
-    }
+    } as ExampleCardConfig
   }
 }
 
@@ -58,6 +58,6 @@ export const WithCustomData: Story = {
         message: '来自Storybook的自定义消息',
         timestamp: new Date().toISOString()
       }
-    }
+    } as ExampleCardConfig
   }
 }

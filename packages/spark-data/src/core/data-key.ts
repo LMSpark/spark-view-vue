@@ -88,14 +88,14 @@ export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
   if (parts.length === 4) {
     // scope@tableName@viewId@field
     const [scope, tableName, viewId, field] = parts
-    if (!scope || !tableName || !viewId || !VALID_FIELDS.has(field)) return null
+    if (!scope || !tableName || !viewId || !field || !VALID_FIELDS.has(field)) return null
     return { scope, tableName, viewId, field: field as DataKeyField, raw: dataKey }
   }
 
   if (parts.length === 3) {
     // scope@tableName@field → viewId = 'default'
     const [scope, tableName, field] = parts
-    if (!scope || !tableName || !VALID_FIELDS.has(field)) return null
+    if (!scope || !tableName || !field || !VALID_FIELDS.has(field)) return null
     return { scope, tableName, viewId: 'default', field: field as DataKeyField, raw: dataKey }
   }
 

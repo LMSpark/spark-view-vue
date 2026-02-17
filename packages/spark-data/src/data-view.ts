@@ -398,10 +398,11 @@ export class DataView implements ICapabilityContext {
       page: this.page,
       pageSize: this.pageSize,
       rows: this.rows,
-      filterExpression: this.filterExpression,
-      sortExpression: this.sortExpression,
-      autoSelectFirst: this.autoSelectFirst,
     }
+
+    if (this.filterExpression !== undefined) result.filterExpression = this.filterExpression
+    if (this.sortExpression !== undefined) result.sortExpression = this.sortExpression
+    if (this.autoSelectFirst !== undefined) result.autoSelectFirst = this.autoSelectFirst
 
     return result
   }

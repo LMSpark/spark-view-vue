@@ -157,7 +157,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
             
             // 同步到 el-table
             if (formApi?.value) {
-              syncSelectedRowsToTable(event.tableName, event.viewId, rows, formApi.value)
+              syncSelectedRowsToTable(event.tableName, event.viewId, rows as import('@spark-view/spark-data').IDataRow[], formApi.value)
             }
           }
         })

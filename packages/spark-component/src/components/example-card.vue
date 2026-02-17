@@ -1,7 +1,7 @@
 <template>
   <div class="spark-example-card">
     <div class="component-header">
-      <h3 class="component-title">{{ config.title }}</h3>
+      <h3 class="component-title">{{ title }}</h3>
     </div>
     <div class="component-content">
       <slot />
@@ -11,17 +11,18 @@
 
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
-import type { ComponentContext } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
-interface ExampleCardConfig {
+interface ExampleCardConfig extends ComponentConfig {
   title?: string
 }
 
 interface Props {
-  config: ComponentContext<ExampleCardConfig>
+  config: ExampleCardConfig
 }
 
 const props = defineProps<Props>()
+const title = props.config.title ?? ''
 
 // 使用SPARK组件hook
 const { logger } = useSparkComponent(props.config)

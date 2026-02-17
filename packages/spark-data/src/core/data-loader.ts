@@ -146,11 +146,11 @@ export class DataLoader {
       const parentRels = this.ds.relations?.filter(r => r.childTable === tableName) ?? []
       for (const rel of parentRels) this.relationEngine.applyRelation(rel)
 
-      table.views['default'].setReady()
+      table.views['default']?.setReady()
       this.notifyTableSubscribers(tableName)
       this.notifyChildren(tableName)
     } catch (err) {
-      if (table) table.views['default'].setError(err instanceof Error ? err : new Error(String(err)))
+      if (table) table.views['default']?.setError(err instanceof Error ? err : new Error(String(err)))
       throw err
     }
   }

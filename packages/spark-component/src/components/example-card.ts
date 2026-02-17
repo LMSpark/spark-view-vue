@@ -5,7 +5,7 @@ import type { ComponentConfig } from '@spark-view/spark-component'
  *
  * 一个示例卡片组件
  */
-export interface ExampleCardConfig {
+export interface ExampleCardConfig extends ComponentConfig {
   /** 组件标题 */
   title?: string
   /** 是否显示加载状态 */
@@ -29,6 +29,7 @@ export const exampleCardConfig: ComponentConfig = {
  * 默认配置
  */
 export const defaultExampleCardConfig: ExampleCardConfig = {
+  type: 'example-card',
   title: 'ExampleCard',
   loading: false
 }
