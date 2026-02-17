@@ -278,7 +278,7 @@ export class CrudService {
    */
   async batchDelete(
     ids: Array<string | number>,
-    config?: Partial<RequestConfig>
+    config?: CrudOperationConfig
   ): Promise<CrudResult<BatchResult>> {
     if (!this.api.batch?.delete) {
       return this.errorResult('Batch delete API not configured')

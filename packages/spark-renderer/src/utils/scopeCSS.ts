@@ -57,18 +57,6 @@ export function scopeCSS(options: CssScopeOptions): string {
 }
 
 /**
- * 创建作用域样式元素
- */
-export function createScopedStyleElement(pageId: string, css: string): HTMLStyleElement | null {
-  if (typeof document === 'undefined') return null
-  
-  const style = document.createElement('style')
-  style.setAttribute('data-page-style', pageId)
-  style.textContent = scopeCSS({ pageId, css })
-  return style
-}
-
-/**
  * 移除页面样式
  */
 export function removeScopedStyle(pageId: string): void {

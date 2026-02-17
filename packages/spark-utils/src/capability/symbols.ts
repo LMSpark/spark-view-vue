@@ -82,7 +82,7 @@ export function createEventEmitter(): IEventEmitter {
       listeners.get(event)?.delete(handler)
     },
     emit(event: string, ...args: unknown[]) {
-      listeners.get(event)?.forEach(h => { try { h(...args) } catch { /* swallow */ } })
+      listeners.get(event)?.forEach(h => { try { h(...args) } catch (e) { console.error(`[EventEmitter] Error in handler for '${event}':`, e) } })
     }
   }
 }

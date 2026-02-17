@@ -160,22 +160,6 @@ export class DataTable implements ICapabilityContext {
     return false
   }
 
-  /**
-   * 重置所有视图状态
-   */
-  resetAllViews(): void {
-    for (const view of Object.values(this.views)) view.resetState()
-  }
-
-  /**
-   * 清理所有视图的无效选中状态
-   */
-  cleanupAllViews(): boolean {
-    let cleaned = false
-    for (const view of Object.values(this.views)) cleaned = view.cleanupInvalidSelections() || cleaned
-    return cleaned
-  }
-
   /** 委托到 views['default'] */
   setTreeManager(tm: TreeManager): void { this.views['default'].setTreeManager(tm) }
   getTreeManager(): TreeManager | undefined { return this.views['default'].getTreeManager() }

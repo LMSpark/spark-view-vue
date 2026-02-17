@@ -10,4 +10,3 @@
  */
 
 export * from './symbols.js'
-export type { CapabilityKey } from './symbols.js'
