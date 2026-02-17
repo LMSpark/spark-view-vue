@@ -14,7 +14,7 @@ const errorLogger = createLogger('error')
  * 设置全局错误处理
  */
 export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): void {
-  const { onError, errorClassifier, onErrorByType } = options
+  const { onError, errorClassifier, onErrorByType, enableFallback } = options
 
   // Vue 错误处理
   app.config.errorHandler = (err: unknown, instance, info) => {
@@ -61,6 +61,12 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
         )
       }
     })
+  }
+
+  // 启用降级边界组件
+  if (enableFallback) {
+    app.component('ErrorBoundary', createErrorBoundary())
+    errorLogger.info('已注册 ErrorBoundary 降级组件')
   }
 
   errorLogger.info('全局错误处理已设置')

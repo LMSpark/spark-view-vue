@@ -7,7 +7,7 @@ import { Logger } from '@spark-view/spark-utils'
 import { SparkData } from '@spark-view/spark-data'
 import { parseDataKey, isDataKey } from '@spark-view/spark-data'
 import type { DataSet, IDataRow, DataColumn, CrudApi, DataRelation } from '@spark-view/spark-data'
-import type { PageContext, Rule, FormCreateAPI } from '../types'
+import type { Rule, FormCreateAPI } from '../types'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
 
 const pageLogger = Logger('PageRenderer')
@@ -17,7 +17,6 @@ const pageLogger = Logger('PageRenderer')
  */
 export interface UsePageDataSetOptions {
   pageData: Record<string, unknown>
-  context: PageContext
   originalRules?: Ref<Rule[]>
   formApi?: Ref<FormCreateAPI | null>
   enableDataSet?: boolean
@@ -41,7 +40,6 @@ export interface UsePageDataSetReturn {
  * ```typescript
  * const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
  *   pageData,
- *   context,
  *   originalRules
  * })
  * 
@@ -52,7 +50,6 @@ export interface UsePageDataSetReturn {
 export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetReturn {
   const { 
     pageData, 
-    context: _context,  // 保留以维持接口一致性，但标记为未使用
     originalRules,
     formApi,
     enableDataSet = true,

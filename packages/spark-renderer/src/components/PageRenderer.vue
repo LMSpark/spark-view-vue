@@ -206,7 +206,6 @@ const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
 // DataSet 管理
 const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
   pageData,
-  context: pageContext,
   // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
   originalRules: originalRules,
   // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容

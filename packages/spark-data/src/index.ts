@@ -22,7 +22,6 @@ export type {
   IDataRow,
   IInstancePermission,
   IModelPermission,
-  RequestConfig,
   ITableMetadata,
   IDataSet,
   IDataSetMetadata,

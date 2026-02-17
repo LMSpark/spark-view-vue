@@ -4,9 +4,10 @@
  * 数据模型、权限、过滤/排序、关系、树 的唯一类型源
  */
 
-import type { RequestConfig, ApiResponse } from '@spark-view/spark-utils'
+import type { RequestConfig } from '@spark-view/spark-utils'
 
-export type { RequestConfig, ApiResponse }
+// RequestConfig 仅内部使用，消费者应从 @spark-view/spark-utils 直接导入
+export type { RequestConfig }
 
 // ===== 视图状态事件 =====
 

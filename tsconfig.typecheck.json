@@ -5,7 +5,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "allowJs": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": false,
+    "skipDefaultLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -30,8 +30,6 @@
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
     "useUnknownInCatchVariables": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
     "paths": {
       "@/*": ["src/*"],
       "@spark-view/spark-utils": ["./packages/spark-utils/src/index.ts"],
