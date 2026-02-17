@@ -4,9 +4,9 @@
  */
 
 /**
- * 日志级别
+ * 日志级别（从 spark-utils 统一导入）
  */
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type { LogLevel } from '@spark-view/spark-utils'
 
 /**
  * 应用环境

@@ -13,7 +13,7 @@ import type {
   PageScriptConfig,
   ConfigCacheItem
 } from '../types'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, SharedErrorCodes, getSharedErrorMessage } from '@spark-view/spark-utils'
 
 // 本地 Logger（消除对 spark-app 的反向依赖）
 const pageLogger = Logger('PageConfig')
@@ -22,29 +22,9 @@ const pageLogger = Logger('PageConfig')
 const CONFIG_CACHE_EXPIRY = 300_000  // 5 分钟
 const REQUEST_TIMEOUT = 10_000       // 10 秒
 
-// 本地错误码（消除对 spark-app ErrorCodes 的反向依赖）
-const ErrorCodes = {
-  CONFIG_LOAD_FAILED: 4001,
-  CONFIG_INVALID: 4002,
-  CONFIG_NOT_FOUND: 4003,
-  NETWORK_ERROR: 3001,
-  NETWORK_REQUEST_FAILED: 3002,
-  NETWORK_TIMEOUT: 3003,
-  UNKNOWN_ERROR: 9999
-} as const
-
-function getErrorMessage(code: number): string {
-  const messages: Record<number, string> = {
-    [ErrorCodes.CONFIG_LOAD_FAILED]: '配置加载失败',
-    [ErrorCodes.CONFIG_INVALID]: '配置无效',
-    [ErrorCodes.CONFIG_NOT_FOUND]: '配置未找到',
-    [ErrorCodes.NETWORK_ERROR]: '网络错误',
-    [ErrorCodes.NETWORK_REQUEST_FAILED]: '网络请求失败',
-    [ErrorCodes.NETWORK_TIMEOUT]: '网络请求超时',
-    [ErrorCodes.UNKNOWN_ERROR]: '未知错误'
-  }
-  return messages[code] ?? '未知错误'
-}
+// 使用共享错误码（消除重复定义）
+const ErrorCodes = SharedErrorCodes
+const getErrorMessage = getSharedErrorMessage
 
 /**
  * 默认配置

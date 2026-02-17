@@ -19,8 +19,10 @@ export interface ExampleCardConfig {
  */
 export const exampleCardConfig: ComponentConfig = {
   type: 'example-card',
-  version: '1.0.0',
-  description: '一个示例卡片组件'
+  props: {
+    version: '1.0.0',
+    description: '一个示例卡片组件'
+  }
 }
 
 /**

@@ -5,6 +5,8 @@
  * 提供全局的 Symbol、枚举、错误码等常量定义
  */
 
+import { SharedErrorCodes, getSharedErrorMessage } from '@spark-view/spark-utils'
+
 /**
  * ============================================
  * 依赖注入 Symbol Keys（Injection Keys）
@@ -24,6 +26,9 @@ export { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
  */
 
 export const ErrorCodes = {
+  // 继承共享错误码（网络、配置、路由、系统）
+  ...SharedErrorCodes,
+
   // 认证相关 (1xxx)
   AUTH_REQUIRED: 1001,
   AUTH_TOKEN_EXPIRED: 1002,
@@ -35,29 +40,13 @@ export const ErrorCodes = {
   PERMISSION_INSUFFICIENT: 2002,
   PERMISSION_NOT_FOUND: 2003,
   
-  // 网络相关 (3xxx)
-  NETWORK_ERROR: 3001,
-  NETWORK_TIMEOUT: 3002,
-  NETWORK_OFFLINE: 3003,
-  NETWORK_REQUEST_FAILED: 3004, // 添加：网络请求失败
-  
-  // 配置相关 (4xxx)
-  CONFIG_LOAD_FAILED: 4001,
-  CONFIG_INVALID: 4002,
-  CONFIG_NOT_FOUND: 4003,
-  
-  // 路由相关 (5xxx)
-  ROUTE_NOT_FOUND: 5001,
-  ROUTE_INVALID: 5002,
+  // 路由相关 (5xxx) — 扩展共享码
   ROUTE_REDIRECT_FAILED: 5003,
   
   // 数据相关 (6xxx)
   DATA_LOAD_FAILED: 6001,
   DATA_SAVE_FAILED: 6002,
   DATA_VALIDATION_FAILED: 6003,
-  
-  // 系统相关 (9xxx)
-  UNKNOWN_ERROR: 9999
 } as const
 
 export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
@@ -68,6 +57,10 @@ export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
  * ============================================
  */
 
+/**
+ * 环境常量
+ * @internal 待实际使用时移除 internal 标记
+ */
 export const Environments = {
   DEVELOPMENT: 'development',
   STAGING: 'staging',
@@ -83,6 +76,10 @@ export type Environment = typeof Environments[keyof typeof Environments]
  * ============================================
  */
 
+/**
+ * 默认配置值
+ * @internal 待实际使用时移除 internal 标记
+ */
 export const DefaultConfig = {
   // 应用配置
   APP_NAME: 'SPARK View',
@@ -117,35 +114,24 @@ export const DefaultConfig = {
  * 获取错误消息
  */
 export function getErrorMessage(code: ErrorCode): string {
-  const messages: Record<number, string> = {
+  // 应用层专属消息
+  const appMessages: Record<number, string> = {
     [ErrorCodes.AUTH_REQUIRED]: '需要登录',
     [ErrorCodes.AUTH_TOKEN_EXPIRED]: '登录已过期',
     [ErrorCodes.AUTH_TOKEN_INVALID]: '登录凭证无效',
     [ErrorCodes.AUTH_LOGIN_FAILED]: '登录失败',
     
-    [ErrorCodes.PERMISSION_DENIED]: '权限不足',
-    [ErrorCodes.PERMISSION_INSUFFICIENT]: '权限不足',
+    [ErrorCodes.PERMISSION_DENIED]: '没有权限',
+    [ErrorCodes.PERMISSION_INSUFFICIENT]: '权限不足，需要更高权限',
     [ErrorCodes.PERMISSION_NOT_FOUND]: '权限未找到',
     
-    [ErrorCodes.NETWORK_ERROR]: '网络错误',
-    [ErrorCodes.NETWORK_TIMEOUT]: '请求超时',
-    [ErrorCodes.NETWORK_OFFLINE]: '网络未连接',
-    [ErrorCodes.NETWORK_REQUEST_FAILED]: '网络请求失败',
-    
-    [ErrorCodes.CONFIG_LOAD_FAILED]: '配置加载失败',
-    [ErrorCodes.CONFIG_INVALID]: '配置无效',
-    [ErrorCodes.CONFIG_NOT_FOUND]: '配置未找到',
-    
-    [ErrorCodes.ROUTE_NOT_FOUND]: '页面未找到',
-    [ErrorCodes.ROUTE_INVALID]: '路由无效',
     [ErrorCodes.ROUTE_REDIRECT_FAILED]: '跳转失败',
     
     [ErrorCodes.DATA_LOAD_FAILED]: '数据加载失败',
     [ErrorCodes.DATA_SAVE_FAILED]: '数据保存失败',
     [ErrorCodes.DATA_VALIDATION_FAILED]: '数据验证失败',
-    
-    [ErrorCodes.UNKNOWN_ERROR]: '未知错误'
   }
   
-  return messages[code] ?? '未知错误'
+  // 优先使用应用层消息，回退到共享消息
+  return appMessages[code] ?? getSharedErrorMessage(code)
 }

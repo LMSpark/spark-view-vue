@@ -161,20 +161,20 @@ export async function start(options: StartOptions): Promise<void> {
       console.warn(`[Vue warn]: ${msg}`)
     }
 
-    // 3. 安装 UI 插件
+    // 2. 安装 UI 插件
     if (plugins && plugins.length > 0) {
       startLogger.debug(`安装 ${plugins.length} 个 UI 插件...`)
       plugins.forEach(plugin => app.use(plugin))
     }
 
-    // 4. 创建 Vue Router 实例
+    // 3. 创建 Vue Router 实例
     startLogger.debug('创建 Vue Router...')
     const history = routerMode === 'hash' 
       ? createWebHashHistory() 
       : createWebHistory()
     const router = createRouter({ history, routes: [] })
 
-    // 5. 安装 SPARK 组件系统
+    // 4. 安装 SPARK 组件系统
     // 使用全局单例管理器，确保整个应用共享同一个组件实例集合
     if (spark?.enabled !== false) {
       startLogger.debug('安装 SPARK 组件系统...')
@@ -217,7 +217,7 @@ export async function start(options: StartOptions): Promise<void> {
       }
     }
 
-    // 6. 配置动态路由系统
+    // 5. 配置动态路由系统
     if (pageConfig) {
       startLogger.debug('配置动态路由系统...')
       const { SparkPageConfig } = await import('@spark-view/spark-page-config')
@@ -260,7 +260,7 @@ export async function start(options: StartOptions): Promise<void> {
       router.addRoute({ path: '/', redirect: pageConfig.homePath })
     }
 
-    // 7. 执行 Bootstrap 流程
+    // 6. 执行 Bootstrap 流程
     startLogger.info('启动 Bootstrap 流程...')
     await bootstrap({
       ...bootstrapOptions,
