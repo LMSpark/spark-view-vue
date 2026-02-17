@@ -47,6 +47,11 @@ export type { IDataTableCapability } from './data-table'
 export type { IDataSetCapability } from './dataset'
 export type { ViewRef } from './core/dependency-analyzer'
 
+// ===== DataKey 统一解析 =====
+
+export { isDataKey, parseDataKey, resolveDataKey, buildDataKey, getViewKey } from './core/data-key'
+export type { DataKeyDescriptor, DataKeyField } from './core/data-key'
+
 export {
   INSTANCE_PERMISSION_FIELD,
   MODEL_PERMISSION_FIELD,

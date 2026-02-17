@@ -17,6 +17,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **Pages config**: `pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
 - Example components: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
 - Key composable: `packages/spark-component/src/composables/useSparkComponent.ts`
+- DataKey parser: `packages/spark-data/src/core/data-key.ts`
 - Tests: `tests/` (look for `capability-late-binding.test.ts`, `provider-listener.test.ts`)
 
 ## Project conventions & patterns 📌
@@ -28,6 +29,24 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - Capability system uses provider/consumer pattern with Symbol-based capability names.
 - `GetProvider(name, ctx?)` behavior: if `ctx` provided, search only that scope; otherwise walk parent chain.
 - **APP Services**: Use `consume(APP_SERVICES)` to access router/logger in components (类型自动推断).
+
+## DataKey 数据绑定键 🔗
+统一格式（`@` 分隔符）：`{scope}@{tableName}@{viewId}@{field}`
+
+| 段数 | 格式 | 示例 |
+|------|------|------|
+| 4 段 | `scope@table@viewId@field` | `UserDS@Users@grid@rows` |
+| 3 段 | `scope@table@field`（viewId 默认 `default`） | `UserDS@Users@rows` |
+
+- `field` 可选值：`rows`、`currentRow`、`selectedRows`
+- ⚠️ 旧格式 `dataset.tables.X.rows` **已移除**，不再支持
+- API：`isDataKey()`, `parseDataKey()`, `resolveDataKey()` — 位于 `packages/spark-data/src/core/data-key.ts`
+- 页面配置 `rule.json` 的 `dataKey` 字段必须使用 `@` 格式
+
+```json
+// rule.json 示例
+{ "dataKey": "UserOrderDataSet@Users@default@rows" }
+```
 
 ## DI 架构统一 🔄
 项目采用 **单一 DI 管道**（SPARK 能力系统）：

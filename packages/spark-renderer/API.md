@@ -288,8 +288,7 @@ interface RuleConfig {
   props?: Record<string, unknown>           // 组件属性
   children?: RuleConfig[]                   // 子元素
   on?: Record<string, string | Function>    // 事件（支持字符串引用）
-  dataKey?: string                          // 数据绑定键
-  contextId?: string                        // 上下文 ID
+  dataKey?: string                          // 数据绑定键（DataKey @ 格式）
   [key: string]: unknown                    // 其他属性
 }
 ```
@@ -297,6 +296,11 @@ interface RuleConfig {
 **说明**：
 - 用于配置文件（rule.json、pagedata.json）
 - 简化的类型，支持字符串函数引用（`"click": "handleClick"`）
+- `dataKey` 使用统一的 DataKey @ 格式：`scope@tableName@viewId@field`
+  - 完整格式：`MyApp@Users@grid@rows`
+  - 简写（viewId 默认 default）：`MyApp@Users@rows`
+  - field 可选值：`rows` | `currentRow` | `selectedRows`
+  - 非 DataSet 键（如 `settings.siteName`）回落到 pageData 路径
 - 在 PageRenderer 加载时会转换为 `Rule` 类型
 
 **类型转换**：

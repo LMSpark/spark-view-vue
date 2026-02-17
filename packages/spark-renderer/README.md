@@ -123,7 +123,8 @@ const pageConfig = {
   script: {
     onMounted: function() {
       // 在沙箱中执行
-      this.dataSet.tables.Users.addRow({ id: 1, name: 'Alice' })
+      const table = this.dataSet.getTable('Users')
+      table?.addRow({ id: 1, name: 'Alice' })
     }
   }
 }

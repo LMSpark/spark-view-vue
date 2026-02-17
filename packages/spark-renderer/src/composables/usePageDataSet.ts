@@ -5,6 +5,7 @@
 import { shallowRef, Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { SparkData } from '@spark-view/spark-data'
+import { parseDataKey, isDataKey } from '@spark-view/spark-data'
 import type { DataSet, IDataRow, DataColumn, CrudApi, DataRelation } from '@spark-view/spark-data'
 import type { PageContext, Rule, FormCreateAPI } from '../types'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
@@ -114,13 +115,16 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       const ruleArray = Array.isArray(rules) ? rules : [rules]
       
       ruleArray.forEach(rule => {
-        if (rule['dataKey'] && typeof rule['dataKey'] === 'string' && rule['dataKey'].startsWith('dataset.tables.')) {
-          const match = rule['dataKey'].match(/^dataset\.tables\.([^.]+)(?:\.views\.([^.]+))?/)
-          if (match) {
-            const tableName = match[1]
-            const viewId = match[2] ?? (rule['contextId'] as string | undefined) ?? 'default'
-            const key = `${tableName}.${viewId}`
-            viewKeys.add(key)
+        if (rule['dataKey'] && typeof rule['dataKey'] === 'string') {
+          const rawKey = rule['dataKey'] as string
+          
+          // 统一使用 DataKey 解析器（支持新格式 @ 和旧格式 dataset.tables.X）
+          if (isDataKey(rawKey)) {
+            const dk = parseDataKey(rawKey)
+            if (dk) {
+              const key = `${dk.tableName}.${dk.viewId}`
+              viewKeys.add(key)
+            }
           }
         }
         if (rule.children && Array.isArray(rule.children)) {

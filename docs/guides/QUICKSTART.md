@@ -533,12 +533,17 @@ const dataSet = SparkData.createDataSet({
   }
 })
 
-// 添加数据
-dataSet.tables.Users.addRow({ id: 1, name: 'Alice' })
+// 添加数据到默认视图
+const table = dataSet.getTable('Users')
+const view = table?.getOrCreateView('default')
+if (view) {
+  view.rows.push({ id: 1, name: 'Alice' })
+  view.notifySubscribers()
+}
 
-// 订阅变化
-dataSet.subscribe('Users', (event) => {
-  console.log('数据变化:', event)
+// 订阅视图变化
+dataSet.subscribe('Users', 'default', () => {
+  console.log('用户数据已变化')
 })
 ```
 

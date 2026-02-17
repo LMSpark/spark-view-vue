@@ -731,64 +731,113 @@ const transferUser = (userId: number, fromDeptId: number, toDeptId: number) => {
 
 - [组件开发指南](COMPONENT_DEVELOPMENT.md) - 创建数据驱动的组件
 - [配置系统](CONFIG_SYSTEM.md) - 多租户与远程配置
-  email: 'charlie@example.com'
-})
 
-// 更新行
-dataSet.tables.Users.updateRow(0, { age: 26 })
+---
 
-// 删除行
-dataSet.tables.Users.deleteRow(2)
+## DataKey 统一数据绑定
 
-// 查询行
-const users = dataSet.tables.Users.rows.filter(r => r.age > 25)
+### 格式
 
-// 清空表
-dataSet.tables.Users.clear()
-\\\
+DataKey 使用 `@` 分隔符统一描述数据绑定关系：
+
+```
+scope@tableName@viewId@field     # 完整 4 段
+scope@tableName@field            # 简写（viewId 默认 'default'）
+```
+
+- **scope** — DataSet 名称（`dataSetName`）或页面 ID
+- **tableName** — 表名
+- **viewId** — 视图 ID（省略则默认 `'default'`）
+- **field** — `rows` | `currentRow` | `selectedRows`
+
+### 在 rule.json 中使用
+
+```json
+{
+  "type": "el-table",
+  "dataKey": "MyApp@Users@default@rows",
+  "props": { "border": true, "highlightCurrentRow": true }
+}
+```
+
+非 DataSet 键（如 `"dataKey": "settings.siteName"`）回落到 pageData 路径解析。
+
+### API
+
+```typescript
+import { parseDataKey, resolveDataKey, isDataKey, buildDataKey } from '@spark-view/spark-data'
+
+// 解析
+const dk = parseDataKey('MyApp@Users@grid@rows')
+// → { scope: 'MyApp', tableName: 'Users', viewId: 'grid', field: 'rows', raw: '...' }
+
+// 从 DataSet 取值
+const rows = resolveDataKey(dk, dataSet)
+
+// 构建
+buildDataKey('MyApp', 'Users', 'rows')         // → 'MyApp@Users@default@rows'
+buildDataKey('MyApp', 'Users', 'rows', 'grid') // → 'MyApp@Users@grid@rows'
+```
+
+---
+
+## 数据操作
+
+### 访问表和视图
+
+```typescript
+// 通过 DataSet 获取表
+const table = dataSet.getTable('Users')
+
+// 获取默认视图
+const view = table?.getOrCreateView('default')
+
+// 读取数据
+const rows = view?.rows ?? []
+const currentRow = view?.currentRow
+
+// 设置状态
+view?.setCurrentRow(rows[0])
+view?.setSelectedRows([rows[0], rows[1]])
+```
 
 ### 订阅变化
 
-\\\	ypescript
-// 订阅表变化
-dataSet.subscribe('Users', (event) => {
-  console.log('事件类型:', event.type)  // 'add' | 'update' | 'delete'
-  console.log('行索引:', event.rowIndex)
-  console.log('数据:', event.row)
+```typescript
+// 订阅视图变化（UI 更新通知）
+const unsubscribe = dataSet.subscribe('Users', 'default', () => {
+  console.log('用户表视图数据已变化')
 })
 
 // 取消订阅
-const unsubscribe = dataSet.subscribe('Users', handler)
 unsubscribe()
-\\\
+```
 
 ### 主从表关联
 
-\\\	ypescript
-// 创建带关联的 DataSet
+```typescript
 const dataSet = SparkData.createDataSet({
   dataSetName: 'OrderData',
   tables: {
-    Users: { ... },
-    Orders: { ... }
+    Users: { tableName: 'Users', columns: [...], rows: [...] },
+    Orders: { tableName: 'Orders', columns: [...], rows: [] }
   },
-  relations: [
-    {
-      name: 'UserOrders',
-      parentTable: 'Users',
-      childTable: 'Orders',
-      parentColumn: 'id',
-      childColumn: 'userId'
+  relations: [{
+    parentTable: 'Users',
+    childTable: 'Orders',
+    dependencyType: 'currentRow',
+    autoLoad: true,
+    filterExpression: {
+      field: 'userId',
+      op: '==',
+      value: { func: 'parentRow.id', args: [] }
     }
-  ]
+  }]
 })
 
-// 查询关联数据
-const userId = 1
-const userOrders = dataSet.tables.Orders.rows.filter(
-  order => order.userId === userId
-)
-\\\
+// 子视图自动通过 setupCascade() 订阅父视图 stateChanged
+// 父无数据 → 清空子；父有数据 + autoLoad → 请求子数据
+```
 
 ## TreeManager 树形数据
 
@@ -796,20 +845,20 @@ const userOrders = dataSet.tables.Orders.rows.filter(
 
 ### 创建 TreeManager
 
-\\\	ypescript
+```typescript
 import { SparkData } from '@spark-view/spark-data'
 
 const treeManager = SparkData.createTreeManager({
   idField: 'id',
   parentIdField: 'parentId',
   childrenField: 'children',
-  lazy: false  // 是否懒加载
+  lazy: false
 })
-\\\
+```
 
 ### 扁平转树形
 
-\\\	ypescript
+```typescript
 const flatData = [
   { id: 1, name: '根节点', parentId: null },
   { id: 2, name: '子节点1', parentId: 1 },
@@ -818,186 +867,95 @@ const flatData = [
 ]
 
 const tree = treeManager.buildTree(flatData)
-// [
-//   {
-//     id: 1,
-//     name: '根节点',
-//     children: [
-//       {
-//         id: 2,
-//         name: '子节点1',
-//         children: [
-//           { id: 4, name: '孙节点', children: [] }
-//         ]
-//       },
-//       { id: 3, name: '子节点2', children: [] }
-//     ]
-//   }
-// ]
-\\\
+```
 
 ### 树形转扁平
 
-\\\	ypescript
+```typescript
 const treeData = [{ id: 1, children: [...] }]
 const flatData = treeManager.flatten(treeData)
-\\\
-
-### 懒加载
-
-\\\	ypescript
-// 创建支持懒加载的 TreeManager
-const lazyTree = SparkData.createTreeManager({
-  idField: 'id',
-  parentIdField: 'parentId',
-  lazy: true
-})
-
-// 加载子节点
-await lazyTree.loadChildren(1, async (parentId) => {
-  const response = await fetch(\/api/nodes?parentId=\\)
-  return await response.json()
-})
-
-// 检查是否有子节点
-const hasChildren = lazyTree.hasChildren(nodeId)
-
-// 获取已加载的子节点
-const children = lazyTree.getChildren(nodeId)
-\\\
-
-## BindingContext 数据绑定
-
-提供数据导航和绑定功能。
-
-### 创建绑定上下文
-
-\\\	ypescript
-import { SparkData } from '@spark-view/spark-data'
-
-const context = SparkData.createContext('Users', 'default', dataSet)
-\\\
-
-### 数据导航
-
-\\\	ypescript
-// 当前行
-const currentRow = context.getCurrentRow()
-
-// 移动指针
-context.moveNext()       // 下一行
-context.movePrevious()   // 上一行
-context.moveFirst()      // 第一行
-context.moveLast()       // 最后一行
-context.moveTo(5)        // 移到指定索引
-
-// 检查位置
-const isFirst = context.isFirst()
-const isLast = context.isLast()
-const currentIndex = context.getCurrentIndex()
-\\\
-
-### 数据查询
-
-\\\	ypescript
-// 获取所有行
-const allRows = context.getRows()
-
-// 过滤数据
-const filtered = context.filter(row => row.age > 25)
-
-// 排序数据
-const sorted = context.sort((a, b) => a.age - b.age)
-
-// 分页
-const page = context.page(1, 10)  // 第1页，每页10条
-\\\
+```
 
 ## 在组件中使用
 
 ### 提供 DataSet 能力
 
-\\\ue
+```vue
 <script setup lang="ts">
 import { SparkData } from '@spark-view/spark-data'
 import { useSparkComponent } from '@spark-view/spark-component'
+import { DATA_SET } from '@spark-view/spark-utils'
 
 const dataSet = SparkData.createDataSet({ ... })
 
 const { provide } = useSparkComponent({ type: 'page-container' })
 
-// 提供 DataSet 给子组件
-provide('dataSet', dataSet)
+// 通过能力系统提供 DataSet
+provide(DATA_SET, { dataSet })
 </script>
-\\\
+```
 
 ### 消费 DataSet 能力
 
-\\\ue
+```vue
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
+import { DATA_SET } from '@spark-view/spark-utils'
 
 const { consume } = useSparkComponent({ type: 'data-grid' })
 
-const dataSet = consume('dataSet')
+const dsCap = consume(DATA_SET)
+const dataSet = dsCap?.dataSet
 
 const rows = computed(() => {
-  return dataSet?.tables.Users?.rows || []
-})
-
-// 订阅变化
-dataSet?.subscribe('Users', (event) => {
-  console.log('数据变化:', event)
+  const view = dataSet?.getTable('Users')?.getOrCreateView('default')
+  return view?.rows ?? []
 })
 </script>
-\\\
+```
 
 ## 最佳实践
 
-### 1. 数据验证
+### 1. 使用 DataKey 统一格式
 
-\\\	ypescript
-function validateUser(row: any): boolean {
-  return row.name && row.email && row.age > 0
-}
+```json
+// rule.json 中统一使用 @ 格式
+{ "dataKey": "MyApp@Users@default@rows" }
+{ "dataKey": "MyApp@Users@currentRow" }
+```
 
-if (validateUser(newUser)) {
-  dataSet.tables.Users.addRow(newUser)
-}
-\\\
+### 2. 通过 DataView 管理选中状态
 
-### 2. 批量操作
+```typescript
+const view = dataSet.getTable('Users')?.getOrCreateView('default')
 
-\\\	ypescript
-// 暂停订阅通知
-dataSet.pauseNotifications()
+// 设置当前行（自动触发级联和订阅通知）
+view?.setCurrentRow(selectedRow)
 
-users.forEach(user => {
-  dataSet.tables.Users.addRow(user)
-})
-
-// 恢复订阅通知
-dataSet.resumeNotifications()
-\\\
+// 设置多选
+view?.setSelectedRows(checkedRows)
+```
 
 ### 3. 错误处理
 
-\\\	ypescript
+```typescript
+const view = dataSet.getTable('Users')?.getOrCreateView('default')
+view?.setLoading()
 try {
-  dataSet.tables.Users.updateRow(index, newData)
+  const data = await fetchData()
+  view?.rows.splice(0, view.rows.length, ...data)
+  view?.setReady()
 } catch (error) {
-  console.error('更新失败:', error)
-  // 回滚操作
+  view?.setError(error as Error)
 }
-\\\
+```
 
 ## 更多信息
 
 - [组件开发指南](COMPONENT_DEVELOPMENT.md)
 
 ---
-
 ## 视图状态管理
 
 DataView 是 UI 和数据之间的智能桥梁，管理数据加载的完整生命周期。
