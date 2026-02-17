@@ -11,7 +11,7 @@
 
 import { DataView } from './data-view'
 import { CrudService, createCrudService } from './crud-service'
-import { DATA_TABLE, Logger, provide as setCapability } from '@spark-view/spark-utils'
+import { DATA_TABLE, provide as setCapability } from '@spark-view/spark-utils'
 import type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
 import type { IDataRow, DataColumn, CrudApi, ITableMetadata, QueryParams, CrudResult, BatchResult, IViewMetadata } from './types'
 import type { TreeManager } from './tree-manager'
@@ -56,11 +56,14 @@ export class DataTable implements ICapabilityContext {
 
   // ===== 内部 =====
 
+  /** 获取默认视图（构造函数保证始终存在） */
+  private get defaultView(): DataView {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return this.views['default']!
+  }
+
   /** CRUD服务实例 */
   private crudService?: CrudService
-
-  /** 日志 */
-  private logger = Logger('DataTable')
 
   // ===== 构造函数 =====
 
@@ -124,7 +127,7 @@ export class DataTable implements ICapabilityContext {
    * 刷新命名视图数据（从 default 视图同步到其它视图）
    */
   refreshAllViews(): void {
-    const def = this.views['default']
+    const def = this.defaultView
     const src = def.originalRows ?? def.rows ?? []
     for (const [id, view] of Object.entries(this.views)) {
       if (id === 'default') continue
@@ -161,8 +164,8 @@ export class DataTable implements ICapabilityContext {
   }
 
   /** 委托到 views['default'] */
-  setTreeManager(tm: TreeManager): void { this.views['default'].setTreeManager(tm) }
-  getTreeManager(): TreeManager | undefined { return this.views['default'].getTreeManager() }
+  setTreeManager(tm: TreeManager): void { this.defaultView.setTreeManager(tm) }
+  getTreeManager(): TreeManager | undefined { return this.defaultView.getTreeManager() }
 
   // ===== CRUD 服务 =====
 
@@ -180,7 +183,7 @@ export class DataTable implements ICapabilityContext {
 
   async loadFromServer(params?: QueryParams, config?: import('./types').CrudOperationConfig): Promise<CrudResult> {
     if (!this.crudService) throw new Error(`Table ${this.tableName} has no API configuration`)
-    const view = this.views['default']
+    const view = this.defaultView
     view.setLoading()
     try {
       const result = await this.crudService.list(params, config)
@@ -209,7 +212,7 @@ export class DataTable implements ICapabilityContext {
     if (!this.crudService) throw new Error(`Table ${this.tableName} has no API configuration`)
     const result = await this.crudService.create<IDataRow>(data, config)
     if (result.success && result.data) {
-      this.views['default'].rows.push(result.data)
+      this.defaultView.rows.push(result.data)
       this.notifyTableChanged()
     }
     return result
@@ -219,9 +222,9 @@ export class DataTable implements ICapabilityContext {
     if (!this.crudService) throw new Error(`Table ${this.tableName} has no API configuration`)
     const result = await this.crudService.update<IDataRow>(id, data, config)
     if (result.success && result.data) {
-      const index = this.views['default'].rows.findIndex(row => row['id'] === id)
+      const index = this.defaultView.rows.findIndex(row => row['id'] === id)
       if (index >= 0) {
-        this.views['default'].rows[index] = { ...this.views['default'].rows[index], ...result.data }
+        this.defaultView.rows[index] = { ...this.defaultView.rows[index], ...result.data }
         this.notifyTableChanged()
       }
     }
@@ -232,8 +235,8 @@ export class DataTable implements ICapabilityContext {
     if (!this.crudService) throw new Error(`Table ${this.tableName} has no API configuration`)
     const result = await this.crudService.delete(id, config)
     if (result.success) {
-      const index = this.views['default'].rows.findIndex(row => row['id'] === id)
-      if (index >= 0) this.views['default'].rows.splice(index, 1)
+      const index = this.defaultView.rows.findIndex(row => row['id'] === id)
+      if (index >= 0) this.defaultView.rows.splice(index, 1)
       this.notifyTableChanged()
     }
     return result
@@ -244,7 +247,7 @@ export class DataTable implements ICapabilityContext {
     const result = await this.crudService.batchCreate<IDataRow>(items, config)
     if (result.success && result.data) {
       for (const itemResult of result.data.results) {
-        if (itemResult.success && itemResult.data) this.views['default'].rows.push(itemResult.data as IDataRow)
+        if (itemResult.success && itemResult.data) this.defaultView.rows.push(itemResult.data as IDataRow)
       }
       this.notifyTableChanged()
     }
@@ -258,8 +261,8 @@ export class DataTable implements ICapabilityContext {
       for (const itemResult of result.data.results) {
         if (itemResult.success && itemResult.data) {
           const record = itemResult.data as IDataRow
-          const index = this.views['default'].rows.findIndex(row => row['id'] === (record as { id?: unknown }).id)
-          if (index >= 0) this.views['default'].rows[index] = { ...this.views['default'].rows[index], ...record }
+          const index = this.defaultView.rows.findIndex(row => row['id'] === (record as { id?: unknown }).id)
+          if (index >= 0) this.defaultView.rows[index] = { ...this.defaultView.rows[index], ...record }
         }
       }
       this.notifyTableChanged()
@@ -272,8 +275,8 @@ export class DataTable implements ICapabilityContext {
     const result = await this.crudService.batchDelete(ids, config)
     if (result.success && result.data) {
       for (const id of ids) {
-        const index = this.views['default'].rows.findIndex(row => row['id'] === id)
-        if (index >= 0) this.views['default'].rows.splice(index, 1)
+        const index = this.defaultView.rows.findIndex(row => row['id'] === id)
+        if (index >= 0) this.defaultView.rows.splice(index, 1)
       }
       this.notifyTableChanged()
     }
@@ -304,22 +307,23 @@ export class DataTable implements ICapabilityContext {
       viewsData[id] = view.toData()
     }
 
-    const def = this.views['default'].toData()
-    return {
+    const def = this.defaultView.toData()
+    const result: ITableMetadata = {
       tableName: this.tableName,
       columns: this.columns,
-      viewId: def.viewId,
+      viewId: def.viewId ?? 'default',
       views: viewsData,
       api: this.api,
-      loading: this.views['default'].isLoading || undefined,
-      error: this.views['default'].loadingError?.message,
-      rows: def.rows,
-      filterExpression: def.filterExpression,
-      sortExpression: def.sortExpression,
-      autoSelectFirst: def.autoSelectFirst,
-      page: def.page,
-      pageSize: def.pageSize,
+      loading: this.defaultView.isLoading || undefined,
+      error: this.defaultView.loadingError?.message,
     }
+    if (def.rows !== undefined) result.rows = def.rows
+    if (def.filterExpression !== undefined) result.filterExpression = def.filterExpression
+    if (def.sortExpression !== undefined) result.sortExpression = def.sortExpression
+    if (def.autoSelectFirst !== undefined) result.autoSelectFirst = def.autoSelectFirst
+    if (def.page !== undefined) result.page = def.page
+    if (def.pageSize !== undefined) result.pageSize = def.pageSize
+    return result
   }
 
   // ===== 工厂方法 =====
@@ -328,7 +332,8 @@ export class DataTable implements ICapabilityContext {
     const t = new DataTable(data.tableName, data.columns ?? [])
     if (data.api !== undefined) t.api = data.api
 
-    const def = t.views['default']
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const def = t.views['default']!
     if (data.rows) def.rows = [...data.rows]
     if (data.filterExpression !== undefined) def.filterExpression = data.filterExpression
     if (data.sortExpression !== undefined) def.sortExpression = data.sortExpression

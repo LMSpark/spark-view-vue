@@ -14,12 +14,6 @@ const config: StorybookConfig = {
   },
   "typescript": {
     "check": false,
-    "checkOptions": {},
-    "reactDocgen": "react-docgen-typescript",
-    "reactDocgenTypescriptOptions": {
-      "shouldExtractLiteralValuesFromEnum": true,
-      "propFilter": (prop) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
-    },
   },
   "viteFinal": async (config) => {
     // 自定义Vite配置以支持SPARK工作空间

@@ -8,7 +8,6 @@ import { DataTable } from './data-table'
 import { DataView } from './data-view'
 import { CrudService } from './crud-service'
 import { parseDataKey as _parseDataKey, resolveDataKey as _resolveDataKey, isDataKey as _isDataKey, buildDataKey as _buildDataKey, getViewKey as _getViewKey } from './core/data-key'
-import type { DataKeyDescriptor, DataKeyField } from './core/data-key'
 import type { DataColumn, CrudApi, DataRelation, FlatTreeNode, IDataRow } from './types'
 
 // ===== SparkData 命名空间 API =====
@@ -114,7 +113,8 @@ export namespace SparkData {
   // ===== DataKey 统一解析 =====
 
   /** DataKey 描述符类型 */
-  export type { DataKeyDescriptor, DataKeyField }
+  export type DataKeyDescriptor = import('./core/data-key').DataKeyDescriptor
+  export type DataKeyField = import('./core/data-key').DataKeyField
 
   /**
    * 判断 dataKey 是否为 DataSet 数据键

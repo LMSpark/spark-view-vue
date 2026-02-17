@@ -3,7 +3,7 @@
  * 全局错误处理与降级策略
  */
 
-import type { App } from 'vue'
+import { type App, defineComponent } from 'vue'
 import type { ErrorHandlerOptions, ErrorContext } from '../types'
 import { ErrorType } from '../types'
 import { createLogger } from '../logger'
@@ -124,29 +124,27 @@ function classifyError(error: Error): ErrorType {
  * 创建错误边界组件（Vue 3）
  */
 export function createErrorBoundary(fallbackRender?: (error: Error) => unknown) {
-  return {
+  return defineComponent({
     name: 'ErrorBoundary',
     data() {
       return {
         error: null as Error | null
       }
     },
-    errorCaptured(err: Error) {
-      const self = this as unknown as { error: Error | null }
-      self.error = err
-      errorLogger.error('[Error Boundary]', err)
+    errorCaptured(err: unknown) {
+      this.error = err instanceof Error ? err : new Error(String(err))
+      errorLogger.error('[Error Boundary]', this.error)
       return false // 阻止错误继续传播
     },
-    render(): unknown {
-      const self = this as unknown as { error: Error | null; $slots: Record<string, () => unknown> }
-      if (self.error) {
+    render() {
+      if (this.error) {
         return fallbackRender
-          ? fallbackRender(self.error)
-          : self.$slots['fallback']
-          ? self.$slots['fallback']()
+          ? fallbackRender(this.error)
+          : this.$slots['fallback']
+          ? this.$slots['fallback']?.()
           : null
       }
-      return self.$slots['default']?.()
+      return this.$slots['default']?.()
     }
-  }
+  })
 }

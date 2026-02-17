@@ -6,7 +6,8 @@
 /**
  * 日志级别（从 spark-utils 统一导入）
  */
-export type { LogLevel } from '@spark-view/spark-utils'
+import type { LogLevel } from '@spark-view/spark-utils'
+export type { LogLevel }
 
 /**
  * 应用环境
