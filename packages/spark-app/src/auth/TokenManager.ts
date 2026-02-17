@@ -263,9 +263,7 @@ export class TokenManager {
    * @returns {string | null} 令牌字符串或 null
    */
   private getFromLocalStorage(): string | null {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer) return null
-
+    // 注意：服务端/测试环境已由公共方法提前拦截，此处无需重复检查
     const adapter = envAdapter as { localStorage?: Storage }
     return adapter.localStorage?.getItem(this.tokenKey) ?? null
   }
@@ -276,9 +274,6 @@ export class TokenManager {
    * @param token - 要存储的令牌
    */
   private setToLocalStorage(token: string): void {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer) return
-
     const adapter = envAdapter as { localStorage?: Storage }
     adapter.localStorage?.setItem(this.tokenKey, token)
   }
@@ -288,9 +283,6 @@ export class TokenManager {
    * @private
    */
   private clearFromLocalStorage(): void {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer) return
-
     const adapter = envAdapter as { localStorage?: Storage }
     adapter.localStorage?.removeItem(this.tokenKey)
   }
@@ -307,9 +299,6 @@ export class TokenManager {
    * @returns {string | null} 令牌字符串或 null
    */
   private getFromSessionStorage(): string | null {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer) return null
-
     const adapter = envAdapter as { sessionStorage?: Storage }
     return adapter.sessionStorage?.getItem(this.tokenKey) ?? null
   }
@@ -320,9 +309,6 @@ export class TokenManager {
    * @param token - 要存储的令牌
    */
   private setToSessionStorage(token: string): void {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer) return
-
     const adapter = envAdapter as { sessionStorage?: Storage }
     adapter.sessionStorage?.setItem(this.tokenKey, token)
   }
@@ -332,9 +318,6 @@ export class TokenManager {
    * @private
    */
   private clearFromSessionStorage(): void {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer) return
-
     const adapter = envAdapter as { sessionStorage?: Storage }
     adapter.sessionStorage?.removeItem(this.tokenKey)
   }
@@ -355,8 +338,7 @@ export class TokenManager {
    * @returns {string | null} 令牌字符串或 null
    */
   private getFromCookie(): string | null {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer || typeof document === 'undefined') return null
+    if (typeof document === 'undefined') return null
 
     const cookies = document.cookie.split(';')
     for (const cookie of cookies) {
@@ -378,8 +360,7 @@ export class TokenManager {
    * @param token - 要存储的令牌
    */
   private setToCookie(token: string): void {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer || typeof document === 'undefined') return
+    if (typeof document === 'undefined') return
 
     const expires = new Date()
     expires.setDate(expires.getDate() + 30) // 30 天后过期
@@ -395,8 +376,7 @@ export class TokenManager {
    * @private
    */
   private clearFromCookie(): void {
-    const env = envAdapter.getEnvironment()
-    if (env.isServer || typeof document === 'undefined') return
+    if (typeof document === 'undefined') return
 
     // 设置过期时间为过去的时间来删除 cookie
     document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`

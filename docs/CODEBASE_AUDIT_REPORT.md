@@ -3,6 +3,7 @@
 **审计时间**: 2025 年  
 **范围**: `packages/spark-utils`, `packages/spark-data`, `packages/spark-component`, `packages/spark-renderer`, `packages/spark-app`  
 **审计文件数**: 67 个 `.ts` 文件 + 配置文件  
+**修复状态**: ✅ 全部完成（P0: 3/3, P1: 4/4, P2: 11/11, P3: 5/5）
 
 ---
 
@@ -571,10 +572,11 @@ private getFromLocalStorage(): string | null {
 
 **优先修复顺序**:
 1. ✅ P0-3 (`tsconfig.json` include) → 解锁全包类型检查
-2. ✅ P0-2 (data-loader.ts 编译错误) → 再验证是否因 P0-3 修复后消失
+2. ✅ P0-2 (data-loader.ts 编译错误) → 因 P0-3 修复后消失
 3. ✅ P0-1 (`enableFallback` 未实现) → 功能完整性
 4. ✅ P1-1 ~ P1-4 (重复逻辑/死代码) → 可维护性
-5. 🔄 P2/P3 可分批处理
+5. ✅ P2-1 ~ P2-11 全部修复
+6. ✅ P3-1 ~ P3-5 全部修复（含 logger 缓存、TokenManager 去冗余、步骤编号等）
 
 ---
 
