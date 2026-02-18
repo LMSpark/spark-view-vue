@@ -2,41 +2,6 @@
 // - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
 
-// Mock 数据加载器（模拟 API 请求）
-const mockDataLoader = async (tableName) => {
-  console.log(`🔄 [按需加载] 开始加载表: ${tableName}`)
-  
-  // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 500))
-  
-  // 从 database 加载数据
-  const mockData = {
-    Users: [
-      { id: 1, name: '张三', email: 'zhangsan@example.com', status: '激活' },
-      { id: 2, name: '李四', email: 'lisi@example.com', status: '激活' },
-      { id: 3, name: '王五', email: 'wangwu@example.com', status: '禁用' }
-    ],
-    Orders: [
-      { id: 101, userId: 1, orderNo: 'ORD001', amount: 1200, status: '已完成', date: '2024-01-15' },
-      { id: 102, userId: 1, orderNo: 'ORD002', amount: 800, status: '进行中', date: '2024-01-20' },
-      { id: 103, userId: 2, orderNo: 'ORD003', amount: 1500, status: '已完成', date: '2024-01-18' },
-      { id: 104, userId: 2, orderNo: 'ORD004', amount: 600, status: '待付款', date: '2024-01-22' },
-      { id: 105, userId: 3, orderNo: 'ORD005', amount: 2000, status: '已完成', date: '2024-01-25' }
-    ],
-    OrderItems: [
-      { id: 1, orderId: 101, productName: '商品A', quantity: 2, price: 400 },
-      { id: 2, orderId: 101, productName: '商品B', quantity: 1, price: 400 },
-      { id: 3, orderId: 102, productName: '商品C', quantity: 4, price: 200 },
-      { id: 4, orderId: 103, productName: '商品A', quantity: 3, price: 500 },
-      { id: 5, orderId: 104, productName: '商品D', quantity: 2, price: 300 },
-      { id: 6, orderId: 105, productName: '商品E', quantity: 5, price: 400 }
-    ]
-  }
-  
-  console.log(`✅ [按需加载] 表 ${tableName} 加载完成: ${mockData[tableName]?.length || 0} 行`)
-  return mockData[tableName] || []
-}
-
 /**
  * 初始化 DataSet - __init__ 生命周期
  */
@@ -71,30 +36,27 @@ function handleUserSelect(row) {
   
   console.log('👤 选中用户:', row)
   
-  // 🔑 关键修复：检查默认上下文的 _originalRows 判断数据是否已加载
-  // _originalRows 是缓存的全量数据，只在首次加载时触发请求
-  const table = dataSet.getTable('Users')
-  
   // ✅ 使用 OOP 方式设置当前行（内核会自动触发关系过滤）
+  const table = dataSet.getTable('Users')
   table.setCurrentRow(row)
   
-  // 检查子表数据是否已加载
-  const ordersTable = dataSet.getTable('Orders')
-  const itemsTable = dataSet.getTable('OrderItems')
+  // 检查子表视图是否已加载过数据（requestState: 0=Idle 表示未加载）
+  const ordersView = dataSet.getView('Orders', 'default')
+  const itemsView = dataSet.getView('OrderItems', 'default')
   
-  // 如果原始数据未加载（_originalRows 为 undefined），先加载（按需加载）
-  if (!ordersTable.originalRows) {
-    console.log('🔄 检测到 Orders 原始数据未加载，触发加载...')
-    dataSet.getView('Orders', 'default').loadFromServer()
+  if (ordersView && ordersView.requestState === 0) {
+    console.log('🔄 检测到 Orders 数据未加载，触发按需加载...')
+    ordersView.loadFromServer()
   }
   
-  if (!itemsTable.originalRows) {
-    console.log('🔄 检测到 OrderItems 原始数据未加载，触发加载...')
-    dataSet.getView('OrderItems', 'default').loadFromServer()
+  if (itemsView && itemsView.requestState === 0) {
+    console.log('🔄 检测到 OrderItems 数据未加载，触发按需加载...')
+    itemsView.loadFromServer()
   }
   
   // 更新 UI 统计信息
   const pageData = $data;
+  const ordersTable = dataSet.getTable('Orders')
   pageData.currentUser = {
     label: row.name,
     orderCount: ordersTable?.rows?.length || 0

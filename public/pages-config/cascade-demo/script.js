@@ -70,16 +70,34 @@ async function handleUpdateUserIdBatch() {
 
     const dataSet = $dataSet;
     const userTable = dataSet.getTable('Users');
+    const ordersTable = dataSet.getTable('Orders');
     const offsetNum = parseInt(offset);
     
-    // 低代码：遍历更新，内核自动级联
+    // 存储旧ID→新ID映射
+    const idMapping = new Map();
+    
+    // 低代码：先更新用户ID
     userTable.rows.forEach(user => {
-      const oldValues = { ...user };
-      user.id += offsetNum;
-      dataSet.cascadeUpdate('Users', user, oldValues);
+      const oldId = user.id;
+      const newId = oldId + offsetNum;
+      idMapping.set(oldId, newId);
+      user.id = newId;
     });
     
-    ElMessage.success(`✅ 已批量更新 ${userTable.rows.length} 个用户ID，订单已自动级联更新`);
+    // 手动级联：更新 Orders 中的 userId 外键引用
+    ordersTable.rows.forEach(order => {
+      if (idMapping.has(order.userId)) {
+        order.userId = idMapping.get(order.userId);
+      }
+    });
+    
+    // 通知 UI 刷新（通过视图的 stateChanged 事件）
+    const usersView = dataSet.getView('Users', 'default');
+    const ordersView = dataSet.getView('Orders', 'default');
+    usersView?.events.emit('stateChanged', { tableName: 'Users', viewId: 'default', changeType: 'rows' });
+    ordersView?.events.emit('stateChanged', { tableName: 'Orders', viewId: 'default', changeType: 'rows' });
+    
+    ElMessage.success(`✅ 已批量更新 ${userTable.rows.length} 个用户ID，订单已手动级联更新`);
   } catch (error) {
     if (error !== 'cancel') {
       console.error('批量更新失败:', error);
@@ -125,12 +143,26 @@ async function handleDeleteSelectedUser() {
     const index = Users.rows.findIndex(u => u.id === selectedUser.id);
     
     if (index !== -1) {
-      // 1. 先删除父行（修改数据）
+      // 级联删除：手动处理子表（从最深层开始）
+      
+      // 1. 找到关联的 Order ID
+      const relatedOrderIds = Orders.rows.filter(o => o.userId === selectedUser.id).map(o => o.id);
+      
+      // 2. 删除 OrderItems（子表先删）
+      const remainingItems = OrderItems.rows.filter(item => !relatedOrderIds.includes(item.orderId));
+      OrderItems.rows.splice(0, OrderItems.rows.length, ...remainingItems);
+      
+      // 3. 删除 Orders
+      const remainingOrders = Orders.rows.filter(o => o.userId !== selectedUser.id);
+      Orders.rows.splice(0, Orders.rows.length, ...remainingOrders);
+      
+      // 4. 删除 User
       Users.rows.splice(index, 1);
       
-      // 2. 再调用级联删除（内核处理子表删除并通知订阅者）
-      // 注意：必须先修改数据再通知，否则 UI 绑定时数据还是旧的
-      dataSet.cascadeDelete('Users', selectedUser);
+      // 5. 通知所有视图刷新
+      dataSet.getView('Users', 'default')?.events.emit('stateChanged', { tableName: 'Users', viewId: 'default', changeType: 'rows' });
+      dataSet.getView('Orders', 'default')?.events.emit('stateChanged', { tableName: 'Orders', viewId: 'default', changeType: 'rows' });
+      dataSet.getView('OrderItems', 'default')?.events.emit('stateChanged', { tableName: 'OrderItems', viewId: 'default', changeType: 'rows' });
       
       ElMessage.success(
         `✅ 用户删除成功！\n级联删除了 ${relatedOrders.length} 个订单和 ${relatedOrderItems.length} 个明细`

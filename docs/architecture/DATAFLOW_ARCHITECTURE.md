@@ -436,14 +436,14 @@ graph TD
   - `view.rows` ⭐ **最常用** - 数据行数组，用于渲染列表
   - `view.currentRow` ⭐ **最常用** - 当前选中行，用于显示选中状态
   - `view.selectedRows` - 选中的多行数据
-  - `view.isLoading` - 加载状态
+  - `view.requestState` - 请求状态（`RequestState.Idle/Loading/Loaded/Failed`）
   - `view.totalCount` - 总记录数
 - **示例**：
   ```vue
   <template>
     <div>
       <!-- ⭐ 最常用：绑定 view.rows 渲染列表 -->
-      <ul v-if="!view.isLoading">
+      <ul v-if="view.requestState !== 'loading'">
         <li v-for="row in view.rows" :key="row.id" 
             :class="{ 
               active: row === view.currentRow,  <!-- ⭐ 当前行状态 -->
@@ -509,13 +509,13 @@ graph TD
 └────────────┬────────────────────────────────────────────────┘
              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 2️⃣ DataLoader：检查依赖（调用 DependencyAnalyzer）           │
+│ 2️⃣ DataSet.requestTableData：检查依赖                         │
 │    结果：Departments 无依赖，可以直接加载                     │
 └────────────┬────────────────────────────────────────────────┘
              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 3️⃣ 父视图状态：Departments.setLoading()                      │
-│    - isLoading = true                                        │
+│ 3️⃣ 父视图状态：Departments 开始加载                           │
+│    - requestState = RequestState.Loading                     │
 │    - 创建 AbortController                                    │
 │    - 调用 onBeforeLoad 钩子                                  │
 └────────────┬────────────────────────────────────────────────┘
@@ -529,7 +529,7 @@ graph TD
 └────────────┬────────────────────────────────────────────────┘
              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 6️⃣ DataLoader 调用：dataLoader('Departments')                │
+│ 6️⃣ 视图加载：Departments.loadFromServer()                     │
 │    → 服务端 API: GET /api/departments                        │
 └────────────┬────────────────────────────────────────────────┘
              ▼
@@ -542,8 +542,8 @@ graph TD
 └────────────┬────────────────────────────────────────────────┘
              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 9️⃣ 父视图状态：Departments.setReady()                        │
-│    - isLoading = false                                       │
+│ 9️⃣ 父视图状态：Departments 加载完成                           │
+│    - requestState = RequestState.Loaded                      │
 │    - 计算 loadDuration                                       │
 │    - 调用 onAfterLoad 钩子                                   │
 └────────────┬────────────────────────────────────────────────┘
@@ -565,7 +565,7 @@ graph TD
 └────────────┬────────────────────────────────────────────────┘
              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 1️⃣3️⃣ 触发通知：SubscriptionManager.notifySubscribers()       │
+│ 1️⃣3️⃣ 触发通知：events.emit('stateChanged')                   │
 └────────────┬────────────────────────────────────────────────┘
              ▼
 ┌─────────────────────────────────────────────────────────────┐
@@ -575,11 +575,11 @@ graph TD
 └────────────┬────────────────────────────────────────────────┘
              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 1️⃣5️⃣ 子视图加载：Users.setLoading()                          │
+│ 1️⃣5️⃣ 子视图加载：Users requestState → Loading               │
 └────────────┬────────────────────────────────────────────────┘
              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 1️⃣6️⃣ DataLoader 调用：dataLoader('Users')                    │
+│ 1️⃣6️⃣ 视图加载：Users.loadFromServer()                        │
 │    → 服务端 API: GET /api/users                              │
 └────────────┬────────────────────────────────────────────────┘
              ▼
@@ -624,11 +624,9 @@ graph TD
            ▼
 ┌──────────────────────────────────────┐
 │      数据协调层（DataSet + 引擎）       │  ← 协调器，策略层
-│  • DataLoader: 智能加载                │
-│  • DependencyAnalyzer: 依赖分析        │
-│  • RelationEngine: 关系处理            │
-│  • SubscriptionManager: 订阅管理       │
-│  • EventManager: 事件系统              │
+│  • DataView.setupCascade: 级联联动      │
+│  • DataView.respondToParentChange       │
+│  • DataEventHub: 统一事件中枢           │
 └──────────┬───────────────────────────┘
            │ 数据请求
            ▼
@@ -694,9 +692,9 @@ function checkDependency(childView: DataView): boolean {
 ```
 父视图.setCurrentRow(row)
     ↓
-SubscriptionManager.notifySubscribers('ParentTable')
+events.emit('stateChanged', { changeType: 'currentRow' })
     ↓
-遍历所有子视图: for (childView of childViews)
+级联子视图: respondToParentChange()
     ↓
 childView.checkDependency()
     ↓
@@ -767,7 +765,7 @@ dataSet.addRelations([
     <h3>部门列表</h3>
     
     <!-- Loading 状态 -->
-    <div v-if="deptView.isLoading" class="loading">
+    <div v-if="deptView.requestState === 'loading'" class="loading">
       <spinner />
       <p>加载中...</p>
     </div>
@@ -817,7 +815,7 @@ onMounted(() => {
     </div>
     
     <!-- Loading 状态 -->
-    <div v-else-if="usersView.isLoading" class="loading">
+    <div v-else-if="usersView.requestState === 'loading'" class="loading">
       <spinner />
       <p>加载员工...</p>
     </div>
@@ -917,19 +915,17 @@ usersView.onLoadError = async (context, error) => {
 | 层级 | 职责 |
 |------|------|
 | 服务端 | 提供数据 |
-| DataLoader | 加载策略 |
-| DataView | 状态管理 |
-| RelationEngine | 关系处理 |
-| SubscriptionManager | 通知管理 |
+| DataView | 状态管理 + 加载 |
+| DataView.setupCascade | 级联联动 |
+| DataEventHub | 事件通知 |
 | UI | 展示和交互 |
 
 ## 📊 性能优化
 
 ### 1. 智能缓存
 ```typescript
-// 父视图数据缓存在 originalRows
+// 父视图数据
 const deptView = dataSet.getTable('Departments')
-console.log(deptView.originalRows)  // 完整数据（未过滤）
 console.log(deptView.rows)          // 当前显示数据
 ```
 
@@ -971,8 +967,8 @@ if (DataLoader.areRowsEqual(existingRows, newRows)) {
 
 ### ❌ 避免的做法
 
-1. **直接修改 rows**：应使用 DataLoader 加载数据
-2. **手动过滤子视图**：依赖 RelationEngine 自动过滤
+1. **直接修改 rows**：应使用 `DataView.loadFromServer()` 加载数据
+2. **手动过滤子视图**：依赖 `setupCascade` / `respondToParentChange` 自动处理
 3. **循环依赖**：A 依赖 B，B 又依赖 A
 4. **忽略错误状态**：不处理 loadingError
 5. **阻塞 UI**：在 UI 线程中等待数据加载
@@ -980,8 +976,8 @@ if (DataLoader.areRowsEqual(existingRows, newRows)) {
 ## 📚 相关文档
 
 - [数据管理指南（含视图状态）](../guides/DATA_MANAGEMENT.md)
-- [依赖分析器](../../packages/spark-data/src/core/dependency-analyzer.ts)
-- [关系引擎](../../packages/spark-data/src/core/relation-engine.ts)
+- [数据视图](../../packages/spark-data/src/data-view.ts)（含 `setupCascade` / `respondToParentChange`）
+- [事件中枢](../../packages/spark-data/src/core/DataEventHub.ts)
 
 ## 🎉 总结
 
@@ -989,7 +985,7 @@ SPARK 数据流架构通过**清晰的层级划分**和**事件驱动机制**，
 
 | 特性 | 实现方式 | 价值 |
 |------|---------|------|
-| **父子依赖** | Relation + DependencyAnalyzer | 自动级联加载，零代码实现 |
+| **父子依赖** | Relation + setupCascade | 自动级联加载，零代码实现 |
 | **非阻塞体验** | 异步加载 + 状态管理 | UI 流畅，响应迅速 |
 | **状态透明** | viewStateChanged 事件 | 状态可见，便于调试 |
 | **解耦设计** | 分层架构 + 事件驱动 | 易于维护，可扩展 |
@@ -1152,7 +1148,6 @@ interface UIState {
 interface DataState {
   // 原始数据 - 由DataSet管理
   rows: DataRow[]                    // 行数据
-  originalRows: DataRow[]            // 原始数据备份
   
   // 数据结构 - 相对稳定
   columns: DataColumn[]              // 列定义

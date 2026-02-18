@@ -62,7 +62,7 @@ function resolveRuleDataKey(
       if (dk.field === 'rows') {
         const table = dataSet.getTable(dk.tableName)
         const view = table ? dataSet.getView(dk.tableName, dk.viewId) : undefined
-        // 直接返回 DataView 实例（DataView 已实现 IDataSource）
+        // 直接返回 DataView 实例（结构兼容 IDataSource）
         return view
       }
 

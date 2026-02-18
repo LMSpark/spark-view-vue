@@ -11,6 +11,10 @@ export { SparkData } from './spark-data'
 
 export { DataSet, DataTable, DataView, TreeManager } from './spark-data'
 
+// ===== 枚举 / 常量 =====
+
+export { RequestState } from './data-view'
+
 // ===== CRUD 服务 =====
 
 export { CrudService, createCrudService } from './crud-service'

@@ -20,7 +20,6 @@ export interface UsePageDataSetOptions {
   originalRules?: Ref<Rule[]>
   formApi?: Ref<FormCreateAPI | null>
   enableDataSet?: boolean
-  dataLoader?: (tableName: string) => Promise<IDataRow[]>
 }
 
 /**
@@ -52,8 +51,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     pageData, 
     originalRules,
     formApi,
-    enableDataSet = true,
-    dataLoader
+    enableDataSet = true
   } = options
   
   const dataSet = shallowRef<DataSet | null>(null)
@@ -69,12 +67,6 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
 
     // 清理旧的 DataSet
     if (dataSet.value) dataSet.value = null
-
-    // 创建默认 dataLoader (DIP: 依赖注入)
-    const defaultDataLoader = dataLoader ?? (async (tableName: string) => {
-      pageLogger.warn('使用默认 dataLoader，页面脚本应该注册自定义 dataLoader', { tableName })
-      return []
-    })
 
     // helper: 简单类型推断
     const inferType = (v: unknown): string => {
@@ -141,11 +133,9 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       | { dataSetName: string; tables: Record<string, { tableName: string; columns: DataColumn[]; rows: IDataRow[] }> }
 
     const rd = rawDataset as DatasetCandidate
-    const cfg: { dataSetName: string; tables: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; relations?: DataRelation[]; dataLoader: typeof defaultDataLoader } = {
+    const cfg: { dataSetName: string; tables: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; relations?: DataRelation[] } = {
       dataSetName: rd.dataSetName ?? 'PageDataSet',
       tables: (rd as { tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; }).tables ?? {},
-
-      dataLoader: defaultDataLoader
     }
 
     if ('relations' in rd && rd.relations) cfg.relations = rd.relations
