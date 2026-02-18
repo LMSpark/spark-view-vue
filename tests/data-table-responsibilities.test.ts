@@ -206,8 +206,8 @@ describe('ICapabilityContext capability system', () => {
     let notified = false
     view.subscribe(() => { notified = true })
 
-    // DataTable.notifyTableChanged 广播所有视图
-    ds.notifySubscribers('Orders')
+    // DataSet.notifySubscribers 委托到 DataTable（指定视图）
+    ds.notifySubscribers('Orders', 'default')
     expect(notified).toBe(true)
   })
 
@@ -236,7 +236,7 @@ describe('ICapabilityContext capability system', () => {
     expect(stateEvents).toContain('Departments:currentRow')
   })
 
-  it('DataSet.notifySubscribers 委托到 DataTable（不重复刷新）', () => {
+  it('DataSet.notifySubscribers 委托到 DataTable（只通知不操作数据）', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
@@ -245,20 +245,24 @@ describe('ICapabilityContext capability system', () => {
     })
 
     const table = ds.getTable('Items')!
+    const defaultView = table.getOrCreateView('default')
+    const grid1View = table.getOrCreateView('grid1')
 
-    // 监控 refreshAllViews 应只被调用一次（不重复）
-    let refreshCount = 0
-    const origRefresh = table.refreshAllViews.bind(table)
-    table.refreshAllViews = () => { refreshCount++; origRefresh() }
+    // 设置不同的数据
+    defaultView.rows = [{ id: 1 }]
+    grid1View.rows = [{ id: 2 }, { id: 3 }]
 
-    // 创建命名视图来触发广播模式
-    table.getOrCreateView('grid1')
+    let notifyCount = 0
+    grid1View.subscribe(() => { notifyCount++ })
 
-    // 广播通知
-    ds.notifySubscribers('Items')
+    // 通知指定视图
+    ds.notifySubscribers('Items', 'grid1')
 
-    // refreshAllViews 应只发生一次（DataTable.notifySubscribers 内部调用）
-    expect(refreshCount).toBe(1)
+    // 应该通知订阅者
+    expect(notifyCount).toBe(1)
+    
+    // 但不应该修改视图数据（DataTable 不操作数据）
+    expect(grid1View.rows).toEqual([{ id: 2 }, { id: 3 }])
   })
 
   it('DataSet.hasSubscribers 委托到 DataTable', () => {
@@ -269,15 +273,14 @@ describe('ICapabilityContext capability system', () => {
       }
     })
 
-    expect(ds.hasSubscribers('Items')).toBe(false)
+    expect(ds.hasSubscribers('Items', 'default')).toBe(false)
 
     const view = ds.getView('Items', 'default')!
     const unsub = view.subscribe(() => {})
-    expect(ds.hasSubscribers('Items')).toBe(true)
     expect(ds.hasSubscribers('Items', 'default')).toBe(true)
     expect(ds.hasSubscribers('Items', 'other')).toBe(false)
 
     unsub()
-    expect(ds.hasSubscribers('Items')).toBe(false)
+    expect(ds.hasSubscribers('Items', 'default')).toBe(false)
   })
 })

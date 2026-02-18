@@ -14,16 +14,50 @@
 import { provide, computed } from 'vue'
 
 interface Props {
-  data?: unknown[]
+  dataSource?: import('@spark-view/spark-data').IDataSource | import('@spark-view/spark-data').DataView | undefined
+  dataView?: import('@spark-view/spark-data').DataView | undefined
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  data: () => []
+const props = defineProps<Props>()
+
+// 只支持 props.dataSource / props.dataView（不再支持 props.data）
+const resolvedDataSource = computed(() => (props.dataSource ?? props.dataView) as import('@spark-view/spark-data').IDataSource | undefined)
+
+const tableData = computed(() => {
+  const ds = resolvedDataSource.value as import('@spark-view/spark-data').IDataSource | undefined
+  if (ds && Array.isArray(ds.rows)) return ds.rows
+  return []
 })
 
-const tableData = computed(() => props.data)
+// 若 dataSource 为 DataView 并且当前无数据，组件挂载后调用其 loadFromServer()
+import { onMounted, watch } from 'vue'
 
-// 提供上下文给子字段组件
+function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefined) {
+  if (!ds) return
+  // 仅在 rows 为空且 loadFromServer 可用时触发
+  const maybeDV = ds as import('@spark-view/spark-data').DataView | undefined
+  if (Array.isArray(ds.rows) && ds.rows.length === 0 && maybeDV && typeof maybeDV.loadFromServer === 'function') {
+    // 不等待，视图方法会自己处理 isLoading/错误
+    void maybeDV.loadFromServer().catch((e: unknown) => {
+      // 记录但不抛出，避免破坏渲染
+      // eslint-disable-next-line no-console
+      console.error('RendererTable: dataSource.loadFromServer() 失败', e)
+    })
+  }
+}
+
+onMounted(() => {
+  tryAutoLoad(resolvedDataSource.value)
+})
+
+// 当 dataSource 发生变更（prop 替换）时再次尝试加载
+watch(resolvedDataSource, (nv) => {
+  tryAutoLoad(nv)
+})
+
+// 提供上下文给子字段组件（保持向后兼容：contextData 仍为 rows 数组）
 provide('fieldContext', 'table')
 provide('contextData', tableData)
+// 新增提供 dataSource（供需要分页/元信息的自定义子组件使用）
+provide('contextDataSource', resolvedDataSource)
 </script>

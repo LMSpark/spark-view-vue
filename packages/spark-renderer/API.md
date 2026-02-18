@@ -300,6 +300,9 @@ interface RuleConfig {
   - 完整格式：`MyApp@Users@grid@rows`
   - 简写（viewId 默认 default）：`MyApp@Users@rows`
   - field 可选值：`rows` | `currentRow` | `selectedRows`
+  - 当 `field === 'rows'` 时，渲染层会把目标 `DataView` 规范化为 `IDataSource`（{ rows, total, page, pageSize }）；
+    - `el-table` / 渲染器会把 `dataSource.rows` 绑定到组件的 `data`，并同时把完整的 `dataSource` 放入 `props.dataSource`（`props.dataSource` **为 DataView 实例**，因为 DataView 实现了 `IDataSource`）。
+    - 额外注入：若 DataKey 指向 DataSet，则会把对应的 `DataView` 实例注入到 `props.dataView`（可用于调用 `loadFromServer()`、`setSelectedRows()` 等方法）。
   - 非 DataSet 键（如 `settings.siteName`）回落到 pageData 路径
 - 在 PageRenderer 加载时会转换为 `Rule` 类型
 

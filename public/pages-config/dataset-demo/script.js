@@ -59,7 +59,7 @@ function __init__() {
     // 🚀 页面启动时自动加载主表（Users）
     // 从表（Orders、OrderItems）只在依赖条件满足时才加载
     console.log('🚀 [自动加载] 启动时加载主表: Users')
-    dataSet.requestTableData('Users')
+    dataSet.getView('Users', 'default').loadFromServer()
   }
 }
 
@@ -86,12 +86,12 @@ function handleUserSelect(row) {
   // 如果原始数据未加载（_originalRows 为 undefined），先加载（按需加载）
   if (!ordersTable.originalRows) {
     console.log('🔄 检测到 Orders 原始数据未加载，触发加载...')
-    dataSet.requestTableData('Orders')
+    dataSet.getView('Orders', 'default').loadFromServer()
   }
   
   if (!itemsTable.originalRows) {
     console.log('🔄 检测到 OrderItems 原始数据未加载，触发加载...')
-    dataSet.requestTableData('OrderItems')
+    dataSet.getView('OrderItems', 'default').loadFromServer()
   }
   
   // 更新 UI 统计信息

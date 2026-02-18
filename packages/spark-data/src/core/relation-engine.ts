@@ -19,7 +19,7 @@ export class RelationEngine {
    * 应用关系：父视图变化 → 子视图响应（非阻塞）
    *
    * - 父视图无数据 → 清空子视图（递归）
-   * - 父视图有数据 → 非阻塞请求子视图数据（autoLoad控制）
+   * - 父视图有数据 → 子视图主动调用自己的 loadFromServer（autoLoad控制）
    */
   applyRelation(rel: DataRelation): void {
     const parentView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
@@ -38,7 +38,10 @@ export class RelationEngine {
     }
 
     if (rel.autoLoad) {
-      this.dataSet.requestTableData(rel.childTable)
+      // 子视图主动加载（视图主动模式）
+      childView.loadFromServer().catch(err => {
+        console.error(`RelationEngine: 加载 ${rel.childTable}:${rel.childViewId ?? 'default'} 失败`, err)
+      })
     }
   }
 

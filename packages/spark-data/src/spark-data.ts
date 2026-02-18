@@ -6,6 +6,7 @@ import { DataSet } from './dataset'
 import { TreeManager } from './tree-manager'
 import { DataTable } from './data-table'
 import { DataView } from './data-view'
+import { reactive } from 'vue'
 import { CrudService } from './crud-service'
 import { parseDataKey as _parseDataKey, resolveDataKey as _resolveDataKey, isDataKey as _isDataKey, buildDataKey as _buildDataKey, getViewKey as _getViewKey } from './core/data-key'
 import type { DataColumn, CrudApi, DataRelation, FlatTreeNode, IDataRow } from './types'
@@ -107,7 +108,7 @@ export namespace SparkData {
     tableName: string
     viewId?: string
   }): DataView {
-    return new DataView(config.tableName, config.viewId)
+    return reactive(new DataView(config.tableName, config.viewId)) as DataView
   }
 
   // ===== DataKey 统一解析 =====

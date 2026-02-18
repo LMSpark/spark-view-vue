@@ -54,10 +54,19 @@ function resolveRuleDataKey(
   dataSet: IDataSet | null,
   pageData: Record<string, unknown>
 ): unknown {
-  // 1. 尝试 DataSet 统一解析
+  // 1. 尝试 DataSet 统一解析（优先）
   if (dataSet && isDataKey(rawKey)) {
     const dk = parseDataKey(rawKey)
     if (dk) {
+      // 对于 rows 字段，规范化为 IDataSource（包含 rows/total/page/pageSize）
+      if (dk.field === 'rows') {
+        const table = dataSet.getTable(dk.tableName)
+        const view = table ? dataSet.getView(dk.tableName, dk.viewId) : undefined
+        // 直接返回 DataView 实例（DataView 已实现 IDataSource）
+        return view
+      }
+
+      // 其它字段（currentRow / selectedRows）仍返回原始值
       return resolveDataKey(dk, dataSet)
     }
   }
@@ -65,6 +74,23 @@ function resolveRuleDataKey(
   // 2. 回落到 pageData 路径解析
   const keys = rawKey.split('.')
   return getNestedValue(pageData, keys)
+}
+
+/**
+ * 如果 dataKey 指向 DataSet 的视图，则把对应的 DataView 注入到 rule.props.dataView
+ */
+function attachDataViewIfDataKey(
+  rawKey: string | undefined,
+  dataSet: IDataSet | null,
+  rule: Rule
+): void {
+  if (!rawKey || !dataSet || !isDataKey(rawKey)) return
+  const dk = parseDataKey(rawKey)
+  if (!dk) return
+  const view = dataSet.getView(dk.tableName, dk.viewId)
+  if (!view) return
+  rule.props ??= {}
+  rule.props['dataView'] = view
 }
 
 /**
@@ -109,7 +135,8 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       const dataSource = pageData[newRule['dataSource'] as string]
       if (dataSource !== undefined) {
         newRule.props ??= {}
-        newRule.props['data'] = dataSource
+        // 强制绑定为 dataSource（不再向后兼容 props.data）
+        newRule.props['dataSource'] = dataSource
       }
     }
 
@@ -120,6 +147,9 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
         newRule.props ??= {}
         newRule.props['default-expanded-keys'] = resolved
       }
+
+      // 同时注入 DataView（若是 DataKey）
+      attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)
     }
 
     // 🎯 处理 r-tree 的 currentKey 绑定（用于 current-key 高亮）
@@ -150,16 +180,28 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
         newRule.props ??= {}
         newRule.props['data'] = resolved
       }
-    }
+      // 注入 DataView 实例（如果 dataKey 指向 DataSet）
+      attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)    }
     
     // 🎯 处理 el-table 的 dataKey 绑定
     if (newRule.type === 'el-table' && newRule['dataKey']) {
       const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
       if (resolved !== undefined) {
         newRule.props ??= {}
-        newRule.props['data'] = resolved
+
+        // 严格要求：只绑定 props.dataSource（若解析到 DataView/IDataSource）
+        if (resolved && typeof resolved === 'object' && 'rows' in (resolved as Record<string, unknown>)) {
+          const ds = resolved as import('@spark-view/spark-data').IDataSource
+          newRule.props['dataSource'] = ds
+        } else {
+          // 非 IDataSource 的解析结果不再绑定到 el-table（删除兼容 props.data）
+          // 留空以便用户修正 dataKey 或确保 pageData 已归一化为 DataSet
+        }
+
+        // 注入 DataView（如果 dataKey 指向 DataSet）
+        attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)
       }
-      
+
       // 如果有 dataSet，注入同步事件
       if (dataSet) {
         injectTableEvents(newRule, dataSet, formApi)
@@ -172,6 +214,9 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     if (newRule['dataKey'] && !handledTypes.includes(newRule.type as string)) {
       const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
       
+      // 注入 DataView（若 dataKey 指向 DataSet）
+      attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)
+
       // 如果有值，根据元素类型决定绑定方式
       if (resolved !== undefined && resolved !== null) {
         // 表单元素：绑定到 props.modelValue（支持响应式）
@@ -242,7 +287,7 @@ function createFunctionCaller(
       pageLogger.error('函数执行错误', { 
         functionName, 
         args, 
-        error 
+        error: error instanceof Error ? error : String(error)
       })
       throw error
     }
