@@ -151,13 +151,11 @@ interface UsePageDataSetOptions {
   originalRules?: Ref<Rule[]>
   formApi?: Ref<FormCreateAPI | null>
   enableDataSet?: boolean
-  dataLoader?: (tableName: string) => Promise<DataRow[]>
 }
 
 interface UsePageDataSetReturn {
   dataSet: Ref<IDataSet | null>
   initDataSet: () => void
-  autoSubscribeTables: () => void
   clearDataSet: () => void
 }
 ```
@@ -169,13 +167,11 @@ interface UsePageDataSetReturn {
 - `originalRules` - 原始规则数组（可选）
 - `formApi` - FormCreate API（可选）
 - `enableDataSet` - 是否启用 DataSet（默认 true）
-- `dataLoader` - 自定义数据加载器（可选）
 
 #### 返回值
 
 - `dataSet` - DataSet 实例（响应式）
 - `initDataSet` - 初始化 DataSet
-- `autoSubscribeTables` - 自动订阅表数据变化
 - `clearDataSet` - 清除 DataSet
 
 #### 使用示例
@@ -183,17 +179,12 @@ interface UsePageDataSetReturn {
 ```typescript
 import { usePageDataSet } from '@spark-view/spark-renderer'
 
-const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
+const { dataSet, initDataSet } = usePageDataSet({
   pageData,
   context: pageContext,
   originalRules,
   formApi,
   enableDataSet: true,
-  dataLoader: async (tableName) => {
-    // 自定义数据加载逻辑
-    const response = await fetch(`/api/${tableName}`)
-    return response.json()
-  }
 })
 
 // 初始化
@@ -697,7 +688,7 @@ function handleClick() {
 
 ### Q: 如何注册自定义数据加载器？
 
-A: 在页面脚本的 `__init__` 函数中注册：
+A: 数据加载现在通过 DataView 的 CRUD API 完成：
 
 ```javascript
 // script.js
@@ -705,10 +696,9 @@ function __init__() {
   const dataSet = $dataSet
   
   if (dataSet) {
-    dataSet.dataLoader = async (tableName) => {
-      const response = await fetch(`/api/${tableName}`)
-      return response.json()
-    }
+    // 通过视图的 loadFromServer() 加载数据
+    const view = dataSet.getView('Users', 'default')
+    view?.loadFromServer()
   }
 }
 ```

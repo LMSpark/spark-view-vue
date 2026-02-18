@@ -35,7 +35,8 @@ describe('DataTable responsibilities (refactor verification)', () => {
     expect(typeof def.setCurrentRow).toBe('function')
     expect(typeof def.setSelectedRows).toBe('function')
     expect(typeof def.clearAll).toBe('function')
-    expect(typeof def.subscribe).toBe('function')
+    // subscribe 已移除，统一使用 events.on('stateChanged', handler)
+    expect(typeof def.events.on).toBe('function')
   })
 
   it('DataView 的订阅可被 UI 与子视图使用（语义一致）', () => {
@@ -56,19 +57,18 @@ describe('DataTable responsibilities (refactor verification)', () => {
     let parentNotified = false
     let dsNotified = false
 
-    // UI/组件直接订阅父视图
-    const unsub = parent.subscribe(() => { parentNotified = true })
+    // UI/组件直接订阅父视图的 stateChanged 事件
+    parent.events.on('stateChanged', () => { parentNotified = true })
 
-    // DataSet 的订阅（语义等价）
-    const unsub2 = ds.subscribe('Departments', 'default', () => { dsNotified = true })
+    // 单独获取视图并订阅（语义等价）
+    const parentView2 = ds.getView('Departments', 'default')!
+    parentView2.events.on('stateChanged', () => { dsNotified = true })
 
     // 触发父视图状态变化
     parent.setCurrentRow(parent.rows[0]!)
 
     expect(parentNotified).toBe(true)
     expect(dsNotified).toBe(true)
-
-    unsub(); unsub2()
   })
 
   it('DataSet.getView 应返回指定视图的 DataView（包含 default）', () => {
@@ -194,7 +194,7 @@ describe('Capability interfaces (typed getCapabilities)', () => {
 // ===== ICapabilityContext 能力体系测试 =====
 
 describe('ICapabilityContext capability system', () => {
-  it('DataTable 通知视图订阅者', () => {
+  it('DataView.events.on stateChanged 通知 UI', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
@@ -204,10 +204,11 @@ describe('ICapabilityContext capability system', () => {
 
     const view = ds.getView('Orders', 'default')!
     let notified = false
-    view.subscribe(() => { notified = true })
+    view.events.on('stateChanged', () => { notified = true })
 
-    // DataSet.notifySubscribers 委托到 DataTable（指定视图）
-    ds.notifySubscribers('Orders', 'default')
+    // 通过 clearAll 触发事件
+    view.rows.push({ id: 1 })
+    view.clearAll()
     expect(notified).toBe(true)
   })
 
@@ -236,7 +237,7 @@ describe('ICapabilityContext capability system', () => {
     expect(stateEvents).toContain('Departments:currentRow')
   })
 
-  it('DataSet.notifySubscribers 委托到 DataTable（只通知不操作数据）', () => {
+  it('命名视图独立接收 stateChanged 事件', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
@@ -253,34 +254,15 @@ describe('ICapabilityContext capability system', () => {
     grid1View.rows = [{ id: 2 }, { id: 3 }]
 
     let notifyCount = 0
-    grid1View.subscribe(() => { notifyCount++ })
+    grid1View.events.on('stateChanged', () => { notifyCount++ })
 
-    // 通知指定视图
-    ds.notifySubscribers('Items', 'grid1')
+    // 通过 setCurrentRow 触发指定视图事件
+    grid1View.setCurrentRow(grid1View.rows[0]!)
 
     // 应该通知订阅者
     expect(notifyCount).toBe(1)
     
-    // 但不应该修改视图数据（DataTable 不操作数据）
+    // 但不应该修改视图行数据
     expect(grid1View.rows).toEqual([{ id: 2 }, { id: 3 }])
-  })
-
-  it('DataSet.hasSubscribers 委托到 DataTable', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'S',
-      tables: {
-        Items: { tableName: 'Items', columns: [{ name: 'id', type: 'number' }] }
-      }
-    })
-
-    expect(ds.hasSubscribers('Items', 'default')).toBe(false)
-
-    const view = ds.getView('Items', 'default')!
-    const unsub = view.subscribe(() => {})
-    expect(ds.hasSubscribers('Items', 'default')).toBe(true)
-    expect(ds.hasSubscribers('Items', 'other')).toBe(false)
-
-    unsub()
-    expect(ds.hasSubscribers('Items', 'default')).toBe(false)
   })
 })

@@ -34,13 +34,10 @@ import { onMounted, watch } from 'vue'
 
 function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefined) {
   if (!ds) return
-  // 仅在 rows 为空且 loadFromServer 可用时触发
   const maybeDV = ds as import('@spark-view/spark-data').DataView | undefined
-  if (Array.isArray(ds.rows) && ds.rows.length === 0 && maybeDV && typeof maybeDV.loadFromServer === 'function') {
-    // 不等待，视图方法会自己处理 isLoading/错误
-    void maybeDV.loadFromServer().catch((e: unknown) => {
-      // 记录但不抛出，避免破坏渲染
-      console.error('RendererTable: dataSource.loadFromServer() 失败', e)
+  if (maybeDV && typeof maybeDV.requestData === 'function') {
+    void maybeDV.requestData().catch((e: unknown) => {
+      console.error('RendererTable: requestData() 失败', e)
     })
   }
 }

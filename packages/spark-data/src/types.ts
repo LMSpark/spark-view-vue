@@ -15,7 +15,7 @@ export type { RequestConfig }
 export interface ViewStateEvent {
   tableName: string
   viewId: string
-  changeType: 'currentRow' | 'selectedRows' | 'cleared'
+  changeType: 'currentRow' | 'selectedRows' | 'cleared' | 'rows' | 'requestState'
   row?: IDataRow | null
   rows?: IDataRow[]
 }

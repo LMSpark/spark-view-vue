@@ -34,8 +34,7 @@ async function mockDataLoader(tableName) {
 function __init__() {
   const dataSet = $dataSet
   
-  // 注册数据加载器
-  dataSet.dataLoader = mockDataLoader
+  // 数据加载通过视图的 CRUD API 完成，不再使用 dataLoader
   
   // 监听 Users 视图状态变化（直接订阅 DataView 的事件）
   const usersView = dataSet.getView('Users', 'default')
@@ -53,14 +52,16 @@ function __init__() {
     })
   }
   
-  // 订阅 Orders 表加载完成通知
-  dataSet.subscribe('Orders', 'default', () => {
-    const ordersTable = dataSet.getTable('Orders')
-    const count = ordersTable?.rows?.length || 0
-    if (count > 0) {
-      ElMessage.success(`✅ 订单数据加载完成！共 ${count} 条记录`)
-    }
-  })
+  // 订阅 Orders 视图的 stateChanged 事件
+  const ordersView = dataSet.getView('Orders', 'default')
+  if (ordersView) {
+    ordersView.events.on('stateChanged', () => {
+      const count = ordersView.rows?.length || 0
+      if (count > 0) {
+        ElMessage.success(`✅ 订单数据加载完成！共 ${count} 条记录`)
+      }
+    })
+  }
   
   console.log('✅ [Master-Detail] 初始化完成')
 }

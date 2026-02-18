@@ -5,7 +5,6 @@
  *  - 能力暴露：作为 ICapabilityContext 并通过 `DATA_TABLE` 提供表级能力（仅结构/配置）
  *  - 表元数据：管理 tableName、columns、api、crudConfig（不含具体数据）
  *  - 视图容器：维护 default 与命名视图的集合（不遍历、不协调、不关心运行时状态）
- *  - 单视图委托：notifySubscribers(viewId) 仅做单视图通知委托
  *  - 配置中心：提供 api 和 crudConfig 给 DataView 使用
  *  - 序列化：提供 toData()/fromTableData 用于持久化与恢复
  *
@@ -17,7 +16,7 @@
  *  - 符合 SOLID：单一职责（结构定义）、依赖倒置（不依赖运行时状态）
  */
 
-import { DataView } from './data-view'
+import { DataView, RequestState } from './data-view'
 import { reactive } from 'vue'
 import { DATA_TABLE, provide as setCapability } from '@spark-view/spark-utils'
 import type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
@@ -134,16 +133,6 @@ export class DataTable implements ICapabilityContext {
   }
 
   /**
-   * 通知指定视图的订阅者（DataSet 的委托入口，仅单视图）
-   * @param viewId - 视图 ID（必须指定）
-   * @remarks 广播逻辑由 DataSet 负责（协调层），DataTable 只做单视图委托（结构层）
-   */
-  notifySubscribers(viewId: string): void {
-    const view = this.getOrCreateView(viewId)
-    view.notifySubscribers()
-  }
-
-  /**
    * 将 TreeManager 委托给 `default` 视图（常用于自引用树场景）
    * @param tm - TreeManager 实例
    */
@@ -187,7 +176,7 @@ export class DataTable implements ICapabilityContext {
       viewId: def.viewId ?? 'default',
       views: viewsData,
       api: this.api,
-      loading: dv.isLoading || undefined,
+      loading: (dv.requestState === RequestState.Loading) || undefined,
       error: dv.loadingError?.message,
     }
     if (def.rows !== undefined) result.rows = def.rows

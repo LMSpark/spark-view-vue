@@ -44,7 +44,6 @@ export type {
 export type { IDataViewCapability } from './data-view'
 export type { IDataTableCapability } from './data-table'
 export type { IDataSetCapability } from './dataset'
-export type { ViewRef } from './core/dependency-analyzer'
 
 // ===== DataKey 统一解析 =====
 

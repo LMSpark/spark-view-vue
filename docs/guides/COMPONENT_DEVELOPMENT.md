@@ -615,13 +615,12 @@ const { consume } = useSparkComponent({ type: 'my-grid' })
 // 消费 DataSet 能力
 const dataSet = consume('dataSet')
 
-// 绑定表数据
-const rows = computed(() => {
-  return dataSet?.tables.Users?.rows || []
-})
+// 绑定表数据（通过 DataView）
+const usersView = dataSet?.getView('Users', 'default')
+const rows = computed(() => usersView?.rows || [])
 
-// 订阅变化
-dataSet?.subscribe('Users', (event) => {
+// 订阅变化（统一使用 events.on）
+usersView?.events.on('stateChanged', (event) => {
   console.log('数据变化:', event)
 })
 </script>

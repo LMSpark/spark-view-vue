@@ -118,7 +118,7 @@ packages/
 │   └── API.md
 ├── spark-data/          # 数据空间（DataSet, DataTable, DataView, TreeManager）
 │   ├── src/
-│   │   ├── core/        # DataEventHub（统一事件中枢）, RelationEngine, DataLoader, DependencyAnalyzer
+│   │   ├── core/        # DataEventHub（统一事件中枢）, utils
 │   │   ├── permission/  # 权限系统
 │   │   ├── dataset.ts   # DataSet（事件驱动协调器）
 │   │   ├── data-table.ts

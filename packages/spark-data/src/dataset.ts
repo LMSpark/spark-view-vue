@@ -56,11 +56,7 @@ export class DataSet implements ICapabilityContext {
   /** 页面ID */
   pageId: string | undefined
 
-  /** 是否自动加载关系数据 */
-  autoLoadRelations: boolean | undefined
 
-  /** 数据加载器函数（已废弃，由视图通过 CRUD API 主动加载） */
-  dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
 
   // ===== 构造函数 =====
 
@@ -71,19 +67,15 @@ export class DataSet implements ICapabilityContext {
   constructor(config: {
     dataSetName: string
     tables: Record<string, ITableMetadata>
-    relations: DataRelation[] | undefined
-    version: number | undefined
-    pageId: string | undefined
-    autoLoadRelations: boolean | undefined
-    dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
+    relations?: DataRelation[] | undefined
+    version?: number | undefined
+    pageId?: string | undefined
   }) {
     this.dataSetName = config.dataSetName
     this.id = `ds:${config.dataSetName}`
-    this.dataLoader = config.dataLoader
     this.relations = config.relations
     this.version = config.version
     this.pageId = config.pageId
-    this.autoLoadRelations = config.autoLoadRelations
 
     // 注册 DATA_SET 能力
     setCapability(this, DATA_SET, { dataSet: this } satisfies IDataSetCapability)
@@ -143,7 +135,6 @@ export class DataSet implements ICapabilityContext {
       api?: CrudApi
     }>
     relations?: DataRelation[]
-    dataLoader?: (tableName: string) => Promise<IDataRow[]>
   }): DataSet {
     const tables: Record<string, ITableMetadata> = {}
 
@@ -155,10 +146,6 @@ export class DataSet implements ICapabilityContext {
       dataSetName: config.dataSetName,
       tables,
       relations: config.relations,
-      version: undefined,
-      pageId: undefined,
-      autoLoadRelations: undefined,
-      dataLoader: config.dataLoader
     })
   }
 
@@ -180,32 +167,6 @@ export class DataSet implements ICapabilityContext {
     const t = this.getTable(tableName)
     if (!t) return undefined
     return t.getOrCreateView(viewId)
-  }
-
-  // ===== 订阅管理（委托到 DataView） =====
-
-  /**
-   * 订阅表数据变化（便捷方法，委托到对应 DataView）
-   * @param tableName 表名
-   * @param viewId 数据视图ID
-   * @param cb 回调函数
-   * @returns 取消订阅函数
-   */
-  subscribe(tableName: string, viewId: string, cb: () => void): () => void {
-    const view = this.getView(tableName, viewId)
-    if (!view) return () => {}
-    return view.subscribe(cb)
-  }
-
-  /**
-   * 通知指定视图的订阅者
-   * @param tableName 表名
-   * @param viewId 数据视图ID（默认 'default'）
-   */
-  notifySubscribers(tableName: string, viewId: string = 'default'): void {
-    const table = this.getTable(tableName)
-    if (!table) return
-    table.notifySubscribers(viewId)
   }
 
   // ===== 序列化 =====
@@ -244,8 +205,8 @@ export class DataSet implements ICapabilityContext {
    * @param loader 数据加载器
    * @returns 数据集实例
    */
-  static fromData(data: IDataSetMetadata, loader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
-    return new DataSet({ ...data, dataLoader: loader, autoLoadRelations: undefined })
+  static fromData(data: IDataSetMetadata): DataSet {
+    return new DataSet(data)
   }
 
   /**
@@ -254,7 +215,7 @@ export class DataSet implements ICapabilityContext {
    * @param loader 数据加载器
    * @returns 数据集实例
    */
-  static fromJSON(json: string, loader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
-    return DataSet.fromData(JSON.parse(json) as IDataSetMetadata, loader)
+  static fromJSON(json: string): DataSet {
+    return DataSet.fromData(JSON.parse(json) as IDataSetMetadata)
   }
 }

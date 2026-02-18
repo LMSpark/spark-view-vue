@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '../packages/spark-data/src/spark-data'
+import { RequestState } from '../packages/spark-data/src/data-view'
 
 describe('DataView.requestData orchestration', () => {
   it('should load parents first then child and update requestState', async () => {
@@ -25,7 +26,7 @@ describe('DataView.requestData orchestration', () => {
 
     const pSpy = vi.spyOn(pView, 'loadFromServer').mockImplementation(async () => {
       pView.rows.splice(0, pView.rows.length, { id: 11 })
-      pView.requestState = 2
+      pView.requestState = RequestState.Loaded
       return { success: true, data: pView.rows } as any
     })
 
@@ -33,19 +34,19 @@ describe('DataView.requestData orchestration', () => {
       expect(params).toBeDefined()
       expect(params.parentId).toBe(11)
       cView.rows.splice(0, cView.rows.length, { id: 101, parentId: 11 })
-      cView.requestState = 2
+      cView.requestState = RequestState.Loaded
       return { success: true, data: cView.rows } as any
     })
 
-    expect(pView.requestState).toBe(0)
-    expect(cView.requestState).toBe(0)
+    expect(pView.requestState).toBe(RequestState.Idle)
+    expect(cView.requestState).toBe(RequestState.Idle)
 
     await cView.requestData()
 
     expect(pSpy).toHaveBeenCalledOnce()
     expect(cSpy).toHaveBeenCalledOnce()
-    expect(pView.requestState).toBe(2)
-    expect(cView.requestState).toBe(2)
+    expect(pView.requestState).toBe(RequestState.Loaded)
+    expect(cView.requestState).toBe(RequestState.Loaded)
 
     pSpy.mockRestore(); cSpy.mockRestore()
   })
@@ -67,7 +68,7 @@ describe('DataView.requestData orchestration', () => {
 
     // parent load succeeds, but returns no rows
     const pSpy = vi.spyOn(pView, 'loadFromServer').mockImplementation(async () => {
-      pView.requestState = 2
+      pView.requestState = RequestState.Loaded
       return { success: true, data: [] } as any
     })
     const cSpy = vi.spyOn(cView, 'loadFromServer')
@@ -77,8 +78,8 @@ describe('DataView.requestData orchestration', () => {
     // parent was called but since parentRows empty, child should NOT be called
     expect(pSpy).toHaveBeenCalled()
     expect(cSpy).not.toHaveBeenCalled()
-    // child dependency failed → requestState=3
-    expect(cView.requestState).toBe(3)
+    // child dependency failed → requestState=Failed
+    expect(cView.requestState).toBe(RequestState.Failed)
 
     pSpy.mockRestore(); cSpy.mockRestore()
   })
@@ -107,7 +108,7 @@ describe('DataView.requestData orchestration', () => {
       pView.rows.splice(0, pView.rows.length, { uuid: 'p-1' })
       // 直接赋值 currentRow，避免 setCurrentRow 触发 stateChanged 干扰编排
       pView.currentRow = pView.rows[0]!
-      pView.requestState = 2
+      pView.requestState = RequestState.Loaded
       return { success: true, data: pView.rows } as any
     })
 
@@ -115,7 +116,7 @@ describe('DataView.requestData orchestration', () => {
       expect(params).toBeDefined()
       expect(params.parentUuid).toBe('p-1')
       cView.rows.splice(0, cView.rows.length, { id: 101, parentUuid: 'p-1' })
-      cView.requestState = 2
+      cView.requestState = RequestState.Loaded
       return { success: true, data: cView.rows } as any
     })
 
@@ -158,7 +159,8 @@ describe('DataView.requestData orchestration', () => {
 
     const aSpy = vi.spyOn(aView, 'loadFromServer').mockImplementation(async () => {
       aView.rows.splice(0, aView.rows.length, { id: 1 })
-      aView.requestState = 2
+      aView.requestState = RequestState.Loaded
+      aView.events.emit('stateChanged', { tableName: 'A', viewId: 'default', changeType: 'rows', rows: aView.rows })
       return { success: true, data: aView.rows } as any
     })
 
@@ -166,7 +168,8 @@ describe('DataView.requestData orchestration', () => {
       expect(params).toBeDefined()
       expect(params.aId).toBe(1)
       bView.rows.splice(0, bView.rows.length, { id: 10, aId: 1 })
-      bView.requestState = 2
+      bView.requestState = RequestState.Loaded
+      bView.events.emit('stateChanged', { tableName: 'B', viewId: 'default', changeType: 'rows', rows: bView.rows })
       return { success: true, data: bView.rows } as any
     })
 
@@ -174,7 +177,7 @@ describe('DataView.requestData orchestration', () => {
       expect(params).toBeDefined()
       expect(params.bId).toBe(10)
       cView.rows.splice(0, cView.rows.length, { id: 100, bId: 10 })
-      cView.requestState = 2
+      cView.requestState = RequestState.Loaded
       return { success: true, data: cView.rows } as any
     })
 
@@ -183,20 +186,20 @@ describe('DataView.requestData orchestration', () => {
 
     // A 立即完成
     expect(aSpy).toHaveBeenCalledOnce()
-    expect(aView.requestState).toBe(2)
+    expect(aView.requestState).toBe(RequestState.Loaded)
 
     // B 和 C 是 fire-and-forget，等待微任务队列冲刷
     await new Promise(r => setTimeout(r, 50))
 
     expect(bSpy).toHaveBeenCalledOnce()
-    expect(bView.requestState).toBe(2)
+    expect(bView.requestState).toBe(RequestState.Loaded)
     expect(cSpy).toHaveBeenCalledOnce()
-    expect(cView.requestState).toBe(2)
+    expect(cView.requestState).toBe(RequestState.Loaded)
 
     aSpy.mockRestore(); bSpy.mockRestore(); cSpy.mockRestore()
   })
 
-  it('step 4.1: sets requestState=1 immediately at start', async () => {
+  it('step 4.1: sets requestState to Orchestrating before calling loadFromServer', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'StateDS',
       tables: {
@@ -205,20 +208,20 @@ describe('DataView.requestData orchestration', () => {
     })
 
     const view = ds.getView('T', 'default')!
-    let capturedState: number | undefined
+    let capturedState: RequestState | undefined
 
     vi.spyOn(view, 'loadFromServer').mockImplementation(async () => {
-      // 在 loadFromServer 被调用时，requestState 应已是 1
+      // requestData 在调 loadFromServer 之前处于 Orchestrating 阶段
       capturedState = view.requestState
-      view.requestState = 2
+      view.requestState = RequestState.Loaded
       return { success: true } as any
     })
 
     await view.requestData()
 
-    // 验证 loadFromServer 被调用时 requestState 已经是 1
-    expect(capturedState).toBe(1)
-    expect(view.requestState).toBe(2)
+    // 进入 loadFromServer 时 requestData 编排阶段尚未结束 → Orchestrating
+    expect(capturedState).toBe(RequestState.Orchestrating)
+    expect(view.requestState).toBe(RequestState.Loaded)
   })
 
   it('idempotent: returns immediately if requestState !== 0', async () => {
@@ -232,13 +235,13 @@ describe('DataView.requestData orchestration', () => {
     const view = ds.getView('T', 'default')!
     const spy = vi.spyOn(view, 'loadFromServer')
 
-    // 设置 requestState=2（已完成）
-    view.requestState = 2
+    // 设置 requestState=Loaded（已完成）
+    view.requestState = RequestState.Loaded
     await view.requestData()
     expect(spy).not.toHaveBeenCalled()
 
-    // 设置 requestState=1（请求中）
-    view.requestState = 1
+    // 设置 requestState=Orchestrating（编排中）
+    view.requestState = RequestState.Orchestrating
     await view.requestData()
     expect(spy).not.toHaveBeenCalled()
 

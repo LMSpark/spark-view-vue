@@ -4,7 +4,7 @@
  * 覆盖：
  * - DataView.events.on('stateChanged') 状态监听
  * - DataView.setCurrentRow / setSelectedRows / clearAll 触发状态变更
- * - subscribe / notifySubscribers 数据订阅
+ * - events.on / events.off 事件订阅
  * - TreeManager 缓存操作（无事件）
  *
  * 【设计原则】DataView 是与 UI 交互的唯一通道。
@@ -192,28 +192,29 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
   })
 })
 
-// ==================== subscribe / notifySubscribers 测试 ====================
+// ==================== events.on / events.off 测试 ====================
 
-describe('DataSet subscribe（数据订阅）', () => {
-  it('subscribe 返回取消订阅函数', () => {
+describe('DataView events.on stateChanged（事件订阅）', () => {
+  it('events.off 取消监听', () => {
     const ds = createTestDataSet()
-    const cb = vi.fn()
+    const cb = vi.fn() as (...args: unknown[]) => void
 
-    const unsub = ds.subscribe('Departments', 'default', cb)
-    ds.notifySubscribers('Departments', 'default')
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('stateChanged', cb)
+    deptView.setCurrentRow(deptView.rows[0]!)
     expect(cb).toHaveBeenCalledOnce()
 
-    unsub()
-    ds.notifySubscribers('Departments', 'default')
+    deptView.events.off('stateChanged', cb)
+    deptView.setCurrentRow(deptView.rows[1]!)
     expect(cb).toHaveBeenCalledOnce() // 不再增加
   })
 
-  it('setCurrentRow 自动触发 subscribe 回调', () => {
+  it('setCurrentRow 自动触发 stateChanged 回调', () => {
     const ds = createTestDataSet()
-    const cb = vi.fn()
-    ds.subscribe('Departments', 'default', cb)
-
+    const cb = vi.fn() as (...args: unknown[]) => void
     const deptView = ds.getView('Departments')!
+    deptView.events.on('stateChanged', cb)
+
     deptView.setCurrentRow(deptView.rows[0]!)
 
     expect(cb).toHaveBeenCalledOnce()
@@ -234,12 +235,13 @@ describe('能力流端到端', () => {
       const event = args[0] as ViewStateEvent
       events.push(`stateChange:${event.changeType}`)
     })
-    ds.subscribe('Departments', 'default', () => events.push('subscribe:Departments.default'))
+    // 第二个监听器也应收到同一事件
+    deptView.events.on('stateChanged', () => events.push('listener2:Departments.default'))
 
     deptView.setCurrentRow(deptView.rows[0]!)
 
-    // 验证能力流：subscribe 和 stateChange 都被触发
-    expect(events).toContain('subscribe:Departments.default')
+    // 验证能力流：两个监听器都被触发
+    expect(events).toContain('listener2:Departments.default')
     expect(events).toContain('stateChange:currentRow')
   })
 
