@@ -32,8 +32,6 @@ export function isSameRow(
 
 /**
  * 根据依赖类型获取源视图的数据范围
- * 
- * 统一逻辑：RelationEngine 和 DataView 级联共用
  * @param sourceView 源视图
  * @param dep 依赖类型
  * @returns 数据行数组

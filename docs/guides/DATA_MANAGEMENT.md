@@ -334,11 +334,12 @@ const dataSet = SparkData.createDataSet({
 })
 
 const usersTable = dataSet.getTable('Users')
-const users = ref(usersTable.getRows())
+const usersView = dataSet.getView('Users', 'default')!
+const users = ref(usersView.rows)
 
-// 监听数据变更
-usersTable.subscribe(() => {
-  users.value = usersTable.getRows()
+// 监听数据变更（统一使用 events.on）
+usersView.events.on('stateChanged', () => {
+  users.value = usersView.rows
 })
 
 onMounted(async () => {
@@ -601,17 +602,11 @@ const dataSet = SparkData.createDataSet({
       rows: []
     }
   },
-  dataLoader: async (tableName) => {
-    const response = await fetch(`/api/${tableName.toLowerCase()}`)
-    if (!response.ok) {
-      throw new Error(`Failed to load ${tableName}`)
-    }
-    return response.json()
-  }
 })
 
-// 自动加载数据
-await dataSet.loadTable('Users')
+// 数据加载通过视图的 CRUD API 完成
+const usersView = dataSet.getView('Users', 'default')!
+await usersView.loadFromServer()
 
 // 增删改查操作
 const usersTable = dataSet.getTable('Users')
@@ -804,13 +799,15 @@ view?.setSelectedRows([rows[0], rows[1]])
 ### 订阅变化
 
 ```typescript
-// 订阅视图变化（UI 更新通知）
-const unsubscribe = dataSet.subscribe('Users', 'default', () => {
+// 订阅视图变化（统一使用 events.on）
+const view = dataSet.getView('Users', 'default')!
+const handler = () => {
   console.log('用户表视图数据已变化')
-})
+}
+view.events.on('stateChanged', handler)
 
 // 取消订阅
-unsubscribe()
+view.events.off('stateChanged', handler)
 ```
 
 ### 主从表关联
@@ -986,15 +983,11 @@ class DataView {
 ### 订阅视图变化
 
 ```typescript
-// 事件方式 — 细粒度监听
+// 事件方式 — 统一使用 events.on 监听所有状态变化
 view.events.on('stateChanged', (event: ViewStateEvent) => {
   console.log(`[${event.tableName}.${event.viewId}] ${event.changeType}`)
-})
-
-// subscribe 方式 — UI 更新用
-const unsub = view.subscribe(() => {
-  if (view.isLoading) showLoading()
-  else if (view.loadingError) showError(view.loadingError.message)
+  if (view.requestState === RequestState.Loading) showLoading()
+  else if (view.requestState === RequestState.Failed) showError(view.loadingError?.message)
   else renderData(view.rows)
 })
 ```
@@ -1021,18 +1014,19 @@ dataSet.addRelations([{
 const view = computed(() => dataSet.getTable('Users')?.views['default'])
 const viewState = ref({ isLoading: false, error: null, ready: false })
 
-let unsub
+const handler = () => {
+  viewState.value = {
+    isLoading: view.value.requestState === RequestState.Loading,
+    error: view.value.loadingError?.message ?? null,
+    ready: view.value.requestState === RequestState.Loaded && view.value.rows.length > 0
+  }
+}
+
 onMounted(() => {
-  unsub = view.value?.subscribe(() => {
-    viewState.value = {
-      isLoading: view.value.isLoading,
-      error: view.value.loadingError?.message ?? null,
-      ready: !view.value.isLoading && view.value.rows.length > 0
-    }
-  })
-  dataSet.requestTableData('Users')  // 非阻塞
+  view.value?.events.on('stateChanged', handler)
+  view.value?.requestData()  // 非阻塞
 })
-onUnmounted(() => unsub?.())
+onUnmounted(() => view.value?.events.off('stateChanged', handler))
 </script>
 ```
 

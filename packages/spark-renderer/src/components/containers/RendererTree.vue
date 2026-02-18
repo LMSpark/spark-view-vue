@@ -70,10 +70,9 @@ import { onMounted, watch } from 'vue'
 function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefined) {
   if (!ds) return
   const maybeDV = ds as import('@spark-view/spark-data').DataView | undefined
-  const rows = ds.rows
-  if (Array.isArray(rows) && rows.length === 0 && maybeDV && typeof maybeDV.loadFromServer === 'function') {
-    void maybeDV.loadFromServer().catch((e: unknown) => {
-      console.error('RendererTree: dataSource.loadFromServer() 失败', e)
+  if (maybeDV && typeof maybeDV.requestData === 'function') {
+    void maybeDV.requestData().catch((e: unknown) => {
+      console.error('RendererTree: requestData() 失败', e)
     })
   }
 }

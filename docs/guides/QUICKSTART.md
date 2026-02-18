@@ -537,12 +537,12 @@ const dataSet = SparkData.createDataSet({
 const table = dataSet.getTable('Users')
 const view = table?.getOrCreateView('default')
 if (view) {
-  view.rows.push({ id: 1, name: 'Alice' })
-  view.notifySubscribers()
+  view.create({ id: 1, name: 'Alice' })
 }
 
-// 订阅视图变化
-dataSet.subscribe('Users', 'default', () => {
+// 订阅视图变化（统一使用 events.on）
+const usersView = dataSet.getView('Users', 'default')
+usersView?.events.on('stateChanged', () => {
   console.log('用户数据已变化')
 })
 ```

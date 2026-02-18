@@ -105,11 +105,8 @@ function handleClearAll() {
   const tables = dataSet.dataSet.tables;
   
   Object.keys(tables).forEach(tableName => {
-    const table = tables[tableName];
-    table.rows.splice(0, table.rows.length); // 使用 splice 保持响应式
-    
-    // 通知订阅者数据已更新
-    dataSet.notifySubscribers(tableName, 'default');
+    const view = dataSet.dataSet.getView(tableName, 'default');
+    if (view) view.clearAll(); // clearAll 自动通知订阅者
   });
   
   ElMessage?.success('🗑️ 所有数据已清空');
@@ -127,9 +124,8 @@ function __init__() {
   const dataSet = $dataSet;
   
   if (dataSet) {
-    // 注册数据加载器
-    dataSet.dataLoader = mockDataLoader;
-    console.log('✅ 数据加载器已注册到 DataSetManager');
+    // 数据加载通过视图的 CRUD API 完成，不再使用 dataLoader
+    console.log('✅ smart-load 初始化完成');
     console.log('📋 可用表: Categories, Products, OrderDetails');
     console.log('🔗 依赖关系: OrderDetails → Products → Categories');
     

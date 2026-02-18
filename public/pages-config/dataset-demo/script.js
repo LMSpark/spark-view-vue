@@ -43,9 +43,8 @@ const mockDataLoader = async (tableName) => {
 function __init__() {
   const dataSet = $dataSet
   if (dataSet) {
-    // 注册数据加载器
-    dataSet.dataLoader = mockDataLoader
-    console.log('✅ DataSet 已注册 dataLoader')
+    // 数据加载通过视图的 CRUD API 完成，不再使用 dataLoader
+    console.log('✅ DataSet 初始化完成')
     
     // 监听加载事件
     dataSet.on('loadSuccess', ({ tableName }) => {

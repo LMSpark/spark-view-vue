@@ -31,19 +31,17 @@ export namespace SparkData {
       api?: CrudApi
     }>
     relations?: DataRelation[]
-    dataLoader?: (tableName: string) => Promise<IDataRow[]>
   }): DataSet {
     return DataSet.fromConfig(config)
   }
 
   /**
-   * 从JSON字符串创建数据集实例
+   * 从json字符串创建数据集实例
    * @param json JSON字符串
-   * @param dataLoader 数据加载器
    * @returns 数据集实例
    */
-  export function fromJSON(json: string, dataLoader?: (tableName: string) => Promise<IDataRow[]>): DataSet {
-    return DataSet.fromJSON(json, dataLoader)
+  export function fromJSON(json: string): DataSet {
+    return DataSet.fromJSON(json)
   }
 
   // ===== TreeManager 工厂方法 =====

@@ -16,13 +16,12 @@ import { SparkData } from '@spark-view/spark-data'
 
 ### DataSet 管理
 
-#### `SparkData.createDataSet(config, dataLoader?)`
+#### `SparkData.createDataSet(config)`
 
 创建 DataSet 实例
 
 **参数：**
 - `config: IDataSet` - DataSet 配置
-- `dataLoader?: (tableName: string) => Promise<DataRow[]>` - 可选的数据加载器
 
 **返回：** `DataSet`
 
@@ -147,13 +146,12 @@ type FilterExpression =
 }
 ```
 
-#### `SparkData.fromJSON(json, dataLoader?)`
+#### `SparkData.fromJSON(json)`
 
 从 JSON 字符串恢复 DataSet
 
 **参数：**
 - `json: string` - JSON 字符串
-- `dataLoader?: (tableName: string) => Promise<DataRow[]>` - 可选的数据加载器
 
 **返回：** `DataSet`
 

@@ -121,17 +121,15 @@ scopedCss.value = enableScope
 - `originalRules` - 原始规则
 - `formApi` - FormCreate API
 - `enableDataSet` - 是否启用
-- `dataLoader` - 数据加载器（可选）
 
 **输出**：
 - `dataSet` - DataSet 实例
 - `initDataSet` - 初始化方法
-- `autoSubscribeTables` - 自动订阅方法
 - `clearDataSet` - 清理方法
 
 **实现要点**：
 - 使用 `DataSetManager.create` 创建实例
-- 自动订阅 el-table 的 dataKey（DataKey @ 格式）对应的表和视图
+- 通过 DataView 的 `events.on('stateChanged')` 监听变化
 - 监听 currentRow 和 selectedRows 变化
 - 组件卸载时清理订阅
 
@@ -472,7 +470,7 @@ bindRules / FormCreate
    ConfigLoader.loadPageConfig(pageId)
    ↓
 2. 初始化 DataSet
-   DataSetManager.create(pageData.dataset, dataLoader)
+   DataSetManager.create(pageData.dataset)
    ↓
 3. 执行脚本
    compileFunctions(scriptText, pageContext, functionNames)

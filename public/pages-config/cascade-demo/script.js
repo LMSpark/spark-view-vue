@@ -39,9 +39,9 @@ async function handleAddUser() {
     const maxId = Math.max(...userTable.rows.map(r => r.id), 0);
     const newUser = { id: maxId + 1, name, email };
 
-    // 低代码：直接操作，内核通知订阅者，UI自动更新
-    userTable.rows.push(newUser);
-    dataSet.notifySubscribers('Users', 'default'); // 手动触发通知
+    // 低代码：通过 DataView CRUD 操作，内核自动通知订阅者，UI 自动更新
+    const view = dataSet.getView('Users', 'default');
+    view.create(newUser);
     
     ElMessage.success(`✅ 用户添加成功: ${name}`);
   } catch (error) {

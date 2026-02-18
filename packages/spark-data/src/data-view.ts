@@ -13,15 +13,16 @@
  *   子视图通过 setupCascade() 订阅父视图的 stateChanged 事件，
  *   父状态变化时子视图自行决定：清空 or 重新请求。
  *
- * ## 请求编排（requestState 状态机）
- *   0=未请求  1=请求中  2=已完成  3=失败
- *   requestData() 实现完整的 C 方法四步流程。
+ * ## 请求编排
+ *   requestData() 是统一入口：解析父依赖 → 加载自身 → 级联子视图
+ *   requestState（RequestState 枚举）是唯一状态源，避免 isLoading/isRequesting 等布尔别名的歧义。
+ *   幂等：requestState≠Idle 时立即返回，UI 层直接调用无需额外判断。
  */
 
 import type {
   IDataRow, IViewMetadata, FilterExpression, SortExpression,
   ViewStateEvent, DataRelation, CrudOperationConfig, QueryParams,
-  CrudResult, BatchResult, IDataSource, IModelPermission,
+  CrudResult, BatchResult,
 } from './types'
 import type { TreeManager } from './tree-manager'
 import {
@@ -36,6 +37,29 @@ import type { IDataTableCapability } from './data-table'
 // ─────────────────────────────────────────────
 // 能力接口（避免循环引用，与类同文件定义）
 // ─────────────────────────────────────────────
+
+/**
+ * DataView 请求状态机
+ *
+ * ```
+ * Idle ──requestData()──▶ Orchestrating ──loadFromServer()──▶ Loading
+ *                                                                │
+ *                                                ┌──────────────┴──────────────┐
+ *                                              Loaded                        Failed
+ * ```
+ */
+export enum RequestState {
+  /** 未请求（初始态 / 被外部重置后） */
+  Idle         = 0,
+  /** requestData 编排中：逐个检查父依赖、组装查询参数（条件具备前） */
+  Orchestrating = 1,
+  /** loadFromServer 网络请求中（从服务器请求中） */
+  Loading      = 2,
+  /** 已完成 */
+  Loaded       = 3,
+  /** 失败（父依赖不满足 / 网络错误） */
+  Failed       = 4,
+}
 
 /**
  * DataSet 能力中用于关系查询的最小接口
@@ -62,7 +86,7 @@ export interface IDataViewCapability {
 // DataView 类
 // ─────────────────────────────────────────────
 
-export class DataView implements ICapabilityContext, IDataSource {
+export class DataView implements ICapabilityContext {
 
   // ── ICapabilityContext ──────────────────────
 
@@ -80,8 +104,6 @@ export class DataView implements ICapabilityContext, IDataSource {
   // ── 行数据 ──────────────────────────────────
 
   rows: IDataRow[] = []
-  /** 过滤 / 排序前的原始行（备用） */
-  originalRows?: IDataRow[]
 
   // ── 选中状态 ────────────────────────────────
 
@@ -98,24 +120,15 @@ export class DataView implements ICapabilityContext, IDataSource {
 
   // ── 加载状态 ────────────────────────────────
 
-  /** 派生自 requestState：requestState===1 时为 true */
-  get isLoading(): boolean { return this.requestState === 1 }
   loadingError: Error | null = null
-  /**
-   * 请求状态机
-   *   0 未请求 | 1 请求中 | 2 已完成 | 3 失败
-   */
-  requestState: 0 | 1 | 2 | 3 = 0
+  /** 请求状态机，见 {@link RequestState}。唯一状态源，勿另设布尔标志。 */
+  requestState: RequestState = RequestState.Idle
 
   // ── 视图配置 ────────────────────────────────
 
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
   autoSelectFirst?: boolean
-
-  // ── 权限（IDataSource 兼容） ─────────────────
-
-  _modelPerm?: IModelPermission
 
   // ── 关联对象 ────────────────────────────────
 
@@ -125,14 +138,17 @@ export class DataView implements ICapabilityContext, IDataSource {
 
   /** CRUD 服务（按需懒初始化） */
   private crudService?: CrudService
-  /** UI 订阅者 */
-  private subscribers = new Set<() => void>()
   /** 级联取消订阅句柄 */
   private cascadeUnsubscribers: (() => void)[] = []
 
-  // ── 公共内部对象 ─────────────────────────────
+  // ── 公共内部对象 ─────────────────────────
 
-  /** stateChanged 事件总线，供子视图订阅 */
+  /**
+   * stateChanged 事件总线——唯一通知通道
+   *
+   * UI 组件、子视图级联、外部监听者均通过此总线接收变更事件。
+   * UI 组件、子视图级联、外部监听者均通过 `events.on('stateChanged', handler)` 订阅。
+   */
   readonly events: IEventEmitter = createEventEmitter()
 
   protected logger = Logger('DataView')
@@ -163,23 +179,23 @@ export class DataView implements ICapabilityContext, IDataSource {
   // ── 上行：父依赖解析 → 加载自身 ──────────────
 
   /**
-   * 视图级加载编排器（幂等：requestState≠0 时直接返回）
+   * 视图级加载编排器（幂等：requestState≠Idle 时直接返回）
    *
-   * 1. 置 requestState=1，沿 parent 链取 DataSet 父关系列表
+   * 1. 置 requestState=Orchestrating，沿 parent 链取 DataSet 父关系列表
    * 2. 逐个父视图：若未请求则先递归调用其 requestData()；
-   *    父 requestState≠2 或无数据 → 置 requestState=3 中止
+   *    父 requestState∉{Loaded,Loading} 或无数据 → 置 requestState=Failed 中止
    * 3. 所有父满足后，按各关系的 filterExpression 组装查询参数
-   *    → 调用 loadFromServer()（成功置 requestState=2，失败置 3）
+   *    → 调用 loadFromServer()（进入 Loading；成功置 Loaded，失败置 Failed）
    * 4. 成功后调用 triggerChildViews() 触发所有子视图
    */
   async requestData(): Promise<void> {
-    if (this.requestState !== 0) return
+    if (this.requestState !== RequestState.Idle) return
 
-    this.requestState = 1
+    this.requestState = RequestState.Orchestrating
 
     const dsCap = lookup<{ dataSet: IDataSetRelationCap }>(this, DATA_SET)
     const ds = dsCap?.dataSet
-    if (!ds) { this.requestState = 0; return }
+    if (!ds) { this.requestState = RequestState.Idle; return }
 
     // 逐个父视图检查依赖是否满足
     const parents = ds.getParentRelations(this.tableName, this.viewId)
@@ -187,14 +203,15 @@ export class DataView implements ICapabilityContext, IDataSource {
       const pView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!pView) continue
 
-      if (pView.requestState === 0) {
+      if (pView.requestState === RequestState.Idle) {
         try { await pView.requestData() }
-        catch { this.requestState = 3; return }
+        catch { this.requestState = RequestState.Failed; this.emitStateChanged('requestState'); return }
       }
 
       const parentRows = getParentRows(pView, rel.dependencyType)
-      if (pView.requestState !== 2 || parentRows.length === 0) {
-        this.requestState = 3
+      if ((pView.requestState !== RequestState.Loaded && pView.requestState !== RequestState.Loading) || parentRows.length === 0) {
+        this.requestState = RequestState.Failed
+        this.emitStateChanged('requestState')
         return
       }
     }
@@ -233,60 +250,52 @@ export class DataView implements ICapabilityContext, IDataSource {
       }
     }
 
-    try { await this.loadFromServer(params) }
-    catch { return }
+    try {
+      const result = await this.loadFromServer(params)
+      if (!result.success) return          // 非异常失败（loadFromServer 内已设 Failed + 通知 UI）
+    } catch { return }                     // 异常失败
 
-    this.triggerChildViews(ds)
+    // 子视图级联由 stateChanged('rows') 事件驱动（respondToParentChange），无需主动推
   }
 
   /**
    * 从服务器拉取列表（带防重入）
-   * - 成功：requestState=2，数据写入 rows，通知订阅者
-   * - 失败：requestState=3，抛出异常
+   * - 成功：写入 rows，重置选中状态，requestState=Loaded，发射 stateChanged + 通知 UI
+   * - 失败：requestState=Failed，通知 UI，抛出异常
    */
   async loadFromServer(params?: QueryParams): Promise<CrudResult> {
-    if (this.isLoading) return { success: true, message: 'Already loading' }
+    if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
 
-    this.requestState = 1
+    this.requestState = RequestState.Loading
     this.loadingError = null
     if (!this.crudService) this.initializeCrudService()
     if (!this.crudService) {
-      this.requestState = 3
+      this.requestState = RequestState.Failed
+      this.emitStateChanged('requestState')
       throw new Error(`Table ${this.tableName} has no API configuration`)
     }
 
     try {
       const result = await this.crudService.list(params, this.getCrudConfig())
       if (result.success && result.data) {
+        // 写入行数据 + 重置选中状态（新数据 → 旧选中无效）
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
-        this.notifySubscribers()
-        this.requestState = 2
+        this.currentRow = null
+        this.currentRowIndex = null
+        this.selectedRows.splice(0, this.selectedRows.length)
+        this.selectedRowIndices = []
+        this.requestState = RequestState.Loaded
+        this.emitStateChanged('rows')
       } else {
-        this.requestState = 3
+        this.requestState = RequestState.Failed
+        this.emitStateChanged('requestState')
       }
       return result
     } catch (error) {
       this.loadingError = error as Error
-      this.requestState = 3
+      this.requestState = RequestState.Failed
+      this.emitStateChanged('requestState')
       throw error
-    }
-  }
-
-  // ── 下行：级联触发子视图 ──────────────────────
-
-  /**
-   * 对所有子关系视图触发 requestData()（fire-and-forget）
-   * 仅当子视图 requestState===0 时触发，避免重复请求。
-   */
-  private triggerChildViews(ds: IDataSetRelationCap): void {
-    const children = ds.getChildRelations(this.tableName, this.viewId)
-    for (const bi of children) {
-      const childView = ds.getView(bi.childTable, bi.childViewId ?? 'default')
-      if (childView?.requestState === 0) {
-        childView.requestData().catch(err => {
-          this.logger.error(`子视图 ${bi.childTable}:${bi.childViewId ?? 'default'} 请求失败`, err)
-        })
-      }
     }
   }
 
@@ -300,7 +309,7 @@ export class DataView implements ICapabilityContext, IDataSource {
     const result = await svc.create<IDataRow>(data, this.getCrudConfig())
     if (result.success && result.data) {
       this.appendRow(result.data)
-      this.notifySubscribers()
+      this.emitStateChanged('rows')
     }
     return result
   }
@@ -310,7 +319,7 @@ export class DataView implements ICapabilityContext, IDataSource {
     const svc = this.ensureCrudService()
     const result = await svc.update<IDataRow>(id, data, this.getCrudConfig())
     if (result.success && result.data && this.updateRowById(id, result.data)) {
-      this.notifySubscribers()
+      this.emitStateChanged('rows')
     }
     return result
   }
@@ -320,7 +329,7 @@ export class DataView implements ICapabilityContext, IDataSource {
     const svc = this.ensureCrudService()
     const result = await svc.delete(id, this.getCrudConfig())
     if (result.success && this.deleteRowById(id)) {
-      this.notifySubscribers()
+      this.emitStateChanged('rows')
     }
     return result
   }
@@ -333,7 +342,7 @@ export class DataView implements ICapabilityContext, IDataSource {
       for (const r of result.data.results) {
         if (r.success && r.data) this.appendRow(r.data as IDataRow)
       }
-      this.notifySubscribers()
+      this.emitStateChanged('rows')
     }
     return result
   }
@@ -350,7 +359,7 @@ export class DataView implements ICapabilityContext, IDataSource {
           if (id !== undefined) this.updateRowById(id as string | number, record)
         }
       }
-      this.notifySubscribers()
+      this.emitStateChanged('rows')
     }
     return result
   }
@@ -361,16 +370,19 @@ export class DataView implements ICapabilityContext, IDataSource {
     const result = await svc.batchDelete(ids, this.getCrudConfig())
     if (result.success && result.data) {
       for (const id of ids) this.deleteRowById(id)
-      this.notifySubscribers()
+      this.emitStateChanged('rows')
     }
     return result
   }
 
-  /** 导入文件，成功后刷新列表 */
+  /** 导入文件，成功后重置状态并重新走完整编排（含父依赖检查和子视图级联） */
   async importData(file: File): Promise<CrudResult<{ imported: number; failed: number }>> {
     const svc = this.ensureCrudService()
     const result = await svc.importData(file)
-    if (result.success) await this.loadFromServer()
+    if (result.success) {
+      this.resetState()        // requestState 回到 Idle
+      await this.requestData() // 重新走完整编排
+    }
     return result
   }
 
@@ -383,12 +395,12 @@ export class DataView implements ICapabilityContext, IDataSource {
   // 行数据操作（内存）
   // ─────────────────────────────────────────────
 
-  /** 将服务端响应同步到本地字段（rows / total / page / pageSize） */
+  /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——全程使用 splice 保持数组引用稳定 */
   updateFromServer(data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[]): void {
     if (Array.isArray(data)) {
-      this.rows = data
+      this.rows.splice(0, this.rows.length, ...data)
     } else {
-      if (data.rows) this.rows = data.rows
+      if (data.rows) this.rows.splice(0, this.rows.length, ...data.rows)
       if (data.total !== undefined) this.total = data.total
       if (data.page !== undefined) this.page = data.page
       if (data.pageSize !== undefined) this.pageSize = data.pageSize
@@ -427,34 +439,23 @@ export class DataView implements ICapabilityContext, IDataSource {
 
   /**
    * 设置当前行
-   * 状态变更 → 发射 stateChanged → 通知 UI 订阅者
-   * 子视图通过 stateChanged 自行级联响应（SOLID）
+   * 状态变更 → 发射 stateChanged → UI + 子视图级联均通过 events 接收
    */
   setCurrentRow(row: IDataRow | null): void {
     if (this.currentRow === row) return
     this.currentRow = row
     this.currentRowIndex = row === null ? null : this.rows.indexOf(row)
     if (this.currentRowIndex === -1) this.currentRowIndex = null
-
-    this.events.emit('stateChanged', {
-      tableName: this.tableName, viewId: this.viewId,
-      changeType: 'currentRow', row,
-    } satisfies ViewStateEvent)
-    this.notifySubscribers()
+    this.emitStateChanged('currentRow', { row })
   }
 
   /** 设置多选行（幂等：内容不变时跳过） */
   setSelectedRows(rows: IDataRow[]): void {
     const cur = this.selectedRows
     if (cur.length === rows.length && cur.every((r, i) => r === rows[i])) return
-    this.selectedRows = rows
+    this.selectedRows.splice(0, this.selectedRows.length, ...rows)
     this.selectedRowIndices = rows.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
-
-    this.events.emit('stateChanged', {
-      tableName: this.tableName, viewId: this.viewId,
-      changeType: 'selectedRows', rows,
-    } satisfies ViewStateEvent)
-    this.notifySubscribers()
+    this.emitStateChanged('selectedRows', { rows })
   }
 
   // ─────────────────────────────────────────────
@@ -466,20 +467,22 @@ export class DataView implements ICapabilityContext, IDataSource {
     const had = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0
     this.resetState()
     if (had) {
-      this.events.emit('stateChanged', {
-        tableName: this.tableName, viewId: this.viewId, changeType: 'cleared',
-      } satisfies ViewStateEvent)
-      this.notifySubscribers()
+      this.emitStateChanged('cleared')
     }
   }
 
-  /** 静默重置（不发事件），供关系级联调用 */
+  /**
+   * 静默重置行数据和选中状态，并将 requestState 重置为 Idle。
+   * 不发事件、不通知订阅者——该工作由调用方负责。
+   */
   resetState(): void {
     this.rows.splice(0, this.rows.length)
     this.currentRow = null
     this.currentRowIndex = null
     this.selectedRows.splice(0, this.selectedRows.length)
     this.selectedRowIndices = []
+    this.requestState = RequestState.Idle
+    this.loadingError = null
   }
 
   /** 清理已不在 rows 中的选中状态，返回是否发生了清理 */
@@ -493,7 +496,7 @@ export class DataView implements ICapabilityContext, IDataSource {
     if (this.selectedRows.length > 0) {
       const valid = this.selectedRows.filter(sr => this.rows.some(r => isSameRow(r, sr)))
       if (valid.length !== this.selectedRows.length) {
-        this.selectedRows = valid
+        this.selectedRows.splice(0, this.selectedRows.length, ...valid)
         this.selectedRowIndices = valid.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
         cleaned = true
       }
@@ -515,24 +518,20 @@ export class DataView implements ICapabilityContext, IDataSource {
   }
 
   // ─────────────────────────────────────────────
-  // UI 订阅（视图级）
+  // 事件通知（统一通道）
   // ─────────────────────────────────────────────
 
-  /** 订阅数据变化，返回取消订阅函数 */
-  subscribe(cb: () => void): () => void {
-    this.subscribers.add(cb)
-    return () => this.subscribers.delete(cb)
-  }
-
-  /** 通知所有 UI 订阅者 */
-  notifySubscribers(): void {
-    for (const cb of [...this.subscribers]) {
-      try { cb() } catch (e) { this.logger.error('订阅通知错误:', e) }
-    }
-  }
-
-  hasSubscribers(): boolean {
-    return this.subscribers.size > 0
+  /**
+   * 统一发射 stateChanged 事件
+   *
+   * 所有状态变更均通过此方法发射，UI 和子视图共用同一事件总线。
+   */
+  private emitStateChanged(changeType: ViewStateEvent['changeType'], extra?: Partial<ViewStateEvent>): void {
+    this.events.emit('stateChanged', {
+      tableName: this.tableName, viewId: this.viewId,
+      changeType,
+      ...extra,
+    } satisfies ViewStateEvent)
   }
 
   // ─────────────────────────────────────────────
@@ -550,14 +549,7 @@ export class DataView implements ICapabilityContext, IDataSource {
   setupCascade(): void {
     this.teardownCascade()
 
-    const dsCap = lookup<{
-      dataSet: {
-        relations?: DataRelation[]
-        getTable(n: string): { getOrCreateView(id: string): DataView } | undefined
-        getParentRelations(childTable: string, childViewId?: string): DataRelation[]
-        getView(tableName: string, viewId?: string): DataView | undefined
-      }
-    }>(this, DATA_SET)
+    const dsCap = lookup<{ dataSet: IDataSetRelationCap }>(this, DATA_SET)
     if (!dsCap) return
 
     const ds = dsCap.dataSet
@@ -567,9 +559,9 @@ export class DataView implements ICapabilityContext, IDataSource {
       const parentView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!parentView) continue
 
-      const handler = () => this.respondToParentChange(rel, parentView)
-      parentView.events.on('stateChanged', handler)
-      this.cascadeUnsubscribers.push(() => parentView.events.off('stateChanged', handler))
+      const handler = (evt: ViewStateEvent) => this.respondToParentChange(rel, parentView, evt)
+      parentView.events.on('stateChanged', handler as (...args: unknown[]) => void)
+      this.cascadeUnsubscribers.push(() => parentView.events.off('stateChanged', handler as (...args: unknown[]) => void))
     }
   }
 
@@ -580,24 +572,37 @@ export class DataView implements ICapabilityContext, IDataSource {
   }
 
   /**
-   * 响应父视图状态变化
-   * - 父无数据 → 静默清空自己并下传 cleared 事件
-   * - 父有数据且 autoLoad → 主动调用 loadFromServer()
+   * 响应父视图状态变化（统一级联入口，SOLID：子订阅父，父不知子）
+   *
+   * dependencyType 与 changeType 对齐——只响应自身依赖类型对应的变化：
+   *   allRows / pagedRows  → rows / cleared
+   *   currentRow            → currentRow / cleared
+   *   selectedRows          → selectedRows / cleared
+   *
+   * 行为：
+   * - 父无数据（cleared 或 parentRows 空）→ resetState + emit cleared + 通知 UI
+   * - autoLoad 且当前未在请求中 → 重置为 Idle 再走完整的 requestData() 编排
    */
-  private respondToParentChange(rel: DataRelation, parentView: DataView): void {
+  private respondToParentChange(rel: DataRelation, parentView: DataView, evt: ViewStateEvent): void {
+    // dependencyType 与 changeType 对齐
+    if (evt.changeType !== 'cleared') {
+      if ((rel.dependencyType === 'allRows' || rel.dependencyType === 'pagedRows') && evt.changeType !== 'rows') return
+      if (rel.dependencyType === 'currentRow'  && evt.changeType !== 'currentRow')  return
+      if (rel.dependencyType === 'selectedRows' && evt.changeType !== 'selectedRows') return
+    }
+
     const parentRows = getParentRows(parentView, rel.dependencyType)
 
     if (!parentRows.length) {
       this.resetState()
-      this.notifySubscribers()
-      this.events.emit('stateChanged', {
-        tableName: this.tableName, viewId: this.viewId, changeType: 'cleared',
-      })
+      this.emitStateChanged('cleared')
       return
     }
 
-    if (rel.autoLoad) {
-      this.loadFromServer().catch(err => {
+    if (rel.autoLoad && this.requestState !== RequestState.Orchestrating && this.requestState !== RequestState.Loading) {
+      // 重置为 Idle，再走完整的 requestData() 编排（含父依赖检查）
+      this.requestState = RequestState.Idle
+      this.requestData().catch(err => {
         this.logger.error(`级联加载 ${this.tableName}:${this.viewId} 失败`, err)
       })
     }
