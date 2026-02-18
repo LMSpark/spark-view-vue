@@ -202,7 +202,6 @@ export class DataSet implements ICapabilityContext {
   /**
    * 从元数据创建数据集实例
    * @param data 数据集元数据
-   * @param loader 数据加载器
    * @returns 数据集实例
    */
   static fromData(data: IDataSetMetadata): DataSet {
@@ -212,7 +211,6 @@ export class DataSet implements ICapabilityContext {
   /**
    * 从JSON字符串创建数据集实例
    * @param json JSON字符串
-   * @param loader 数据加载器
    * @returns 数据集实例
    */
   static fromJSON(json: string): DataSet {

@@ -214,10 +214,14 @@ export class TreeManager {
   getNodePath(nodeId: string | number): TreePath {
     const pathIds: Array<string | number> = []
     const pathNodes: FlatTreeNode[] = []
+    const visited = new Set<string | number>()
 
     let currentId: string | number | null | undefined = nodeId
 
     while (currentId !== null && currentId !== undefined) {
+      if (visited.has(currentId)) break  // 防止循环引用导致无限循环
+      visited.add(currentId)
+
       const node: FlatTreeNode | undefined = this.cache[currentId]
       if (!node) break
 
@@ -341,12 +345,18 @@ export class TreeManager {
    * @returns 树管理器实例
    */
   static fromJSON(json: string, dataView?: DataView): TreeManager {
-    const data = JSON.parse(json) as { config: TreeConfig; cache: FlatTreeNode[] }
+    const data = JSON.parse(json) as { config: TreeConfig; cache: FlatTreeNode[] | Record<string | number, FlatTreeNode> }
     const manager = new TreeManager(data.config, undefined, dataView)
-    // 将数组转换为对象格式的 cache
-    data.cache.forEach(node => {
-      manager.cache[node.id] = node
-    })
+    // 兼容数组格式和对象格式（toJSON 序列化为对象）
+    if (Array.isArray(data.cache)) {
+      data.cache.forEach(node => {
+        manager.cache[node.id] = node
+      })
+    } else if (data.cache && typeof data.cache === 'object') {
+      Object.values(data.cache).forEach(node => {
+        manager.cache[node.id] = node
+      })
+    }
     return manager
   }
 }

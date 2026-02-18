@@ -2,35 +2,7 @@
 // - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
 
-// 模拟数据加载器（实际项目中应该是 API 请求）
-const mockDataLoader = async (tableName) => {
-  console.log(`🌐 模拟加载数据: ${tableName}`);
-  
-  // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  const mockData = {
-    Categories: [
-      { id: 1, name: '电子产品' },
-      { id: 2, name: '图书' },
-      { id: 3, name: '服装' }
-    ],
-    Products: [
-      { id: 101, categoryId: 1, name: '笔记本电脑', price: 5999 },
-      { id: 102, categoryId: 1, name: '鼠标', price: 99 },
-      { id: 103, categoryId: 2, name: 'JavaScript 高级程序设计', price: 89 },
-      { id: 104, categoryId: 3, name: 'T恤', price: 59 }
-    ],
-    OrderDetails: [
-      { id: 1001, productId: 101, quantity: 1 },
-      { id: 1002, productId: 102, quantity: 2 },
-      { id: 1003, productId: 103, quantity: 1 },
-      { id: 1004, productId: 104, quantity: 3 }
-    ]
-  };
-  
-  return mockData[tableName] || [];
-};
+// 数据加载通过视图的 CRUD API 完成（loadFromServer）
 
 /**
  * 请求订单明细数据 - 完全解耦：发起请求不等待，数据加载完成后自动更新 UI

@@ -961,22 +961,26 @@ DataView 是 UI 和数据之间的智能桥梁，管理数据加载的完整生�
 
 | 状态 | 条件 | 说明 |
 |------|------|------|
-| `loading` | `isLoading=true` | 数据加载中 |
-| `ready` | `isLoading=false`, `rows.length > 0` | 数据已就绪 |
-| `error` | `loadingError !== null` | 加载失败 |
-| `empty` | `isLoading=false`, `rows.length === 0` | 无数据 |
+| `loading` | `requestState === RequestState.Loading` | 数据加载中 |
+| `ready` | `requestState === RequestState.Loaded` | 数据已就绪 |
+| `error` | `requestState === RequestState.Failed` | 加载失败 |
+| `empty` | `requestState === RequestState.Loaded`, `rows.length === 0` | 无数据 |
 
 ```typescript
 class DataView {
-  isLoading: boolean
+  requestState: RequestState  // Idle | Orchestrating | Loading | Loaded | Failed
   loadingError: Error | null
   rows: IDataRow[]
   currentRow: IDataRow | null
   selectedRows: IDataRow[]
+}
 
-  setLoading(): void
-  setReady(): void
-  setError(error: Error): void
+enum RequestState {
+  Idle = 'idle',
+  Orchestrating = 'orchestrating',
+  Loading = 'loading',
+  Loaded = 'loaded',
+  Failed = 'failed'
 }
 ```
 

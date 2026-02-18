@@ -2,39 +2,11 @@
 // - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
 
-// Mock 数据加载器
-const mockOrders = [
-  // 用户1的订单
-  { id: 101, userId: 1, product: 'MacBook Pro', amount: 12999 },
-  { id: 102, userId: 1, product: 'iPhone 15', amount: 6999 },
-  { id: 103, userId: 1, product: 'AirPods Pro', amount: 1999 },
-  // 用户2的订单
-  { id: 201, userId: 2, product: 'ThinkPad X1', amount: 8999 },
-  { id: 202, userId: 2, product: 'Dell Monitor', amount: 2499 },
-  // 用户3的订单
-  { id: 301, userId: 3, product: 'Surface Pro', amount: 7999 }
-]
-
-async function mockDataLoader(tableName) {
-  console.log(`🌐 [Mock API] 加载 ${tableName} 数据...`)
-  
-  // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 500))
-  
-  if (tableName === 'Orders') {
-    // 返回全部订单数据，由 DataSetManager 根据 relation 的 filterExpression 过滤
-    console.log(`✅ [Mock API] 返回全部 ${mockOrders.length} 条订单数据`)
-    return mockOrders
-  }
-  
-  return []
-}
+// 数据加载通过视图的 CRUD API 完成（loadFromServer）
 
 // 初始化函数
 function __init__() {
   const dataSet = $dataSet
-  
-  // 数据加载通过视图的 CRUD API 完成，不再使用 dataLoader
   
   // 监听 Users 视图状态变化（直接订阅 DataView 的事件）
   const usersView = dataSet.getView('Users', 'default')
