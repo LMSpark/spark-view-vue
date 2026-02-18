@@ -228,6 +228,7 @@ export interface DataRelation {
   filterExpression: FilterExpression
   cascadeUpdate?: boolean
   cascadeDelete?: boolean
+  /** 父变化时是否自动级联加载子视图（默认 true——仅 `false` 时跳过） */
   autoLoad?: boolean
   relationName?: string
 }

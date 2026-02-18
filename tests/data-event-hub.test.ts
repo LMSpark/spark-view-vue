@@ -53,7 +53,8 @@ function createTestDataSet() {
         parentTable: 'Departments',
         childTable: 'Users',
         dependencyType: 'currentRow' as const,
-        filterExpression: { field: 'deptId', op: '==' as const, value: null }
+        filterExpression: { field: 'deptId', op: '==' as const, value: null },
+        autoLoad: false,  // 本测试聚焦事件发射，级联行为在 dataset-request-orchestration.test.ts 测试
       }
     ]
   })
@@ -197,7 +198,7 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
 describe('DataView events.on stateChanged（事件订阅）', () => {
   it('events.off 取消监听', () => {
     const ds = createTestDataSet()
-    const cb = vi.fn() as (...args: unknown[]) => void
+    const cb = vi.fn()
 
     const deptView = ds.getView('Departments')!
     deptView.events.on('stateChanged', cb)
@@ -211,7 +212,7 @@ describe('DataView events.on stateChanged（事件订阅）', () => {
 
   it('setCurrentRow 自动触发 stateChanged 回调', () => {
     const ds = createTestDataSet()
-    const cb = vi.fn() as (...args: unknown[]) => void
+    const cb = vi.fn()
     const deptView = ds.getView('Departments')!
     deptView.events.on('stateChanged', cb)
 

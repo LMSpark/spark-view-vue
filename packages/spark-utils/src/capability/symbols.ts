@@ -35,10 +35,29 @@ export interface ICapabilityContext {
 }
 
 /** 事件发射器协议 */
-export interface IEventEmitter {
-  on(event: string, handler: (...args: unknown[]) => void): void
-  off(event: string, handler: (...args: unknown[]) => void): void
-  emit(event: string, ...args: unknown[]): void
+/**
+ * 类型安全事件发射器
+ *
+ * 支持泛型事件映射表，提供事件名和参数的自动类型推断。
+ * 无类型参数时退化为 `Record<string, any[]>`，保持向后兼容。
+ *
+ * @example
+ * ```ts
+ * // 无类型参数——接受任意 handler
+ * const emitter: IEventEmitter = createEventEmitter()
+ * emitter.on('click', (x, y) => { ... })
+ *
+ * // 带事件映射——handler 参数自动推断
+ * type Events = { stateChanged: [ViewStateEvent] }
+ * const emitter: IEventEmitter<Events> = createEventEmitter()
+ * emitter.on('stateChanged', (evt) => { // evt: ViewStateEvent })
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface IEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> {
+  on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
+  off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
+  emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
 }
 
 // ==================== 类型安全能力键 ====================
@@ -69,19 +88,21 @@ export function lookup<T = unknown>(ctx: ICapabilityContext, name: CapabilityNam
   return undefined
 }
 
-/** 创建事件发射器 */
-export function createEventEmitter(): IEventEmitter {
-  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
+/** 创建类型安全事件发射器（泛型参数可选，默认接受任意事件） */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>>(): IEventEmitter<TEventMap> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const listeners = new Map<string, Set<(...args: any[]) => void>>()
   return {
-    on(event: string, handler: (...args: unknown[]) => void) {
+    on(event, handler) {
       let handlers = listeners.get(event)
       if (!handlers) { handlers = new Set(); listeners.set(event, handlers) }
       handlers.add(handler)
     },
-    off(event: string, handler: (...args: unknown[]) => void) {
+    off(event, handler) {
       listeners.get(event)?.delete(handler)
     },
-    emit(event: string, ...args: unknown[]) {
+    emit(event, ...args) {
       listeners.get(event)?.forEach(h => { try { h(...args) } catch (e) { console.error(`[EventEmitter] Error in handler for '${event}':`, e) } })
     }
   }
@@ -122,7 +143,17 @@ export const DATA_SET = defineCapability<{ readonly dataSet: { dataSetName: stri
 /** DataTable 能力（实际提供值类型由 spark-data 的 IDataTableCapability 定义） */
 export const DATA_TABLE = defineCapability<{ readonly dataTable: unknown }>('spark:capability:datatable')
 /** DataView 能力（实际提供值类型由 spark-data 的 IDataViewCapability 定义） */
-export const DATA_VIEW = defineCapability<{ readonly tableName: string; readonly viewId: string; readonly rows: unknown[]; readonly currentRow: unknown | null; [k: string]: unknown }>('spark:capability:dataview')
+export const DATA_VIEW = defineCapability<{
+  readonly tableName: string
+  readonly viewId: string
+  readonly rows: unknown[]
+  readonly currentRow: unknown | null
+  readonly selectedRows: unknown[]
+  readonly requestState: number
+  setCurrentRow(row: unknown | null): void
+  setSelectedRows(rows: unknown[]): void
+  requestData(): Promise<void>
+}>('spark:capability:dataview')
 
 // ==================== UI 交互 ====================
 

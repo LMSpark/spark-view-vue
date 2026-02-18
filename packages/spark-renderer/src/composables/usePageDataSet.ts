@@ -189,9 +189,8 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
         const view = dataSet.value.getView(tableName, viewId)
         if (!view) return
 
-        // 统一通过 DataView 的 stateChanged 事件订阅（单通道）
-        view.events.on('stateChanged', (...args: unknown[]) => {
-          const event = args[0] as { changeType: string; tableName: string; viewId: string; rows?: unknown[] }
+        // 统一通过 DataView 的 stateChanged 事件订阅（单通道，handler 参数由 DataViewEventMap 自动推断）
+        view.events.on('stateChanged', (event) => {
           if (event.changeType === 'currentRow') {
             pageLogger.debug('currentRow 变化', { tableName: event.tableName, viewId: event.viewId })
           } else if (event.changeType === 'selectedRows') {
@@ -200,7 +199,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
             
             // 同步到 el-table
             if (formApi?.value) {
-              syncSelectedRowsToTable(event.tableName, event.viewId, rows as import('@spark-view/spark-data').IDataRow[], formApi.value)
+              syncSelectedRowsToTable(event.tableName, event.viewId, rows, formApi.value)
             }
           } else {
             pageLogger.debug('视图数据变化', { viewKey: key, changeType: event.changeType })

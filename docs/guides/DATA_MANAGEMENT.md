@@ -968,7 +968,7 @@ DataView 是 UI 和数据之间的智能桥梁，管理数据加载的完整生�
 
 ```typescript
 class DataView {
-  requestState: RequestState  // Idle | Orchestrating | Loading | Loaded | Failed
+  requestState: RequestState  // Idle | Preparing | Loading | Loaded | Failed
   loadingError: Error | null
   rows: IDataRow[]
   currentRow: IDataRow | null
@@ -977,7 +977,7 @@ class DataView {
 
 enum RequestState {
   Idle = 'idle',
-  Orchestrating = 'orchestrating',
+  Preparing = 'preparing',
   Loading = 'loading',
   Loaded = 'loaded',
   Failed = 'failed'

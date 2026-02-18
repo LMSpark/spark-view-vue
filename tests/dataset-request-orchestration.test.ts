@@ -199,7 +199,7 @@ describe('DataView.requestData orchestration', () => {
     aSpy.mockRestore(); bSpy.mockRestore(); cSpy.mockRestore()
   })
 
-  it('step 4.1: sets requestState to Orchestrating before calling loadFromServer', async () => {
+  it('step 4.1: sets requestState to Preparing before calling loadFromServer', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'StateDS',
       tables: {
@@ -211,7 +211,7 @@ describe('DataView.requestData orchestration', () => {
     let capturedState: RequestState | undefined
 
     vi.spyOn(view, 'loadFromServer').mockImplementation(async () => {
-      // requestData 在调 loadFromServer 之前处于 Orchestrating 阶段
+      // requestData 在调 loadFromServer 之前处于 Preparing 阶段
       capturedState = view.requestState
       view.requestState = RequestState.Loaded
       return { success: true } as any
@@ -219,8 +219,8 @@ describe('DataView.requestData orchestration', () => {
 
     await view.requestData()
 
-    // 进入 loadFromServer 时 requestData 编排阶段尚未结束 → Orchestrating
-    expect(capturedState).toBe(RequestState.Orchestrating)
+    // 进入 loadFromServer 时 requestData 编排阶段尚未结束 → Preparing
+    expect(capturedState).toBe(RequestState.Preparing)
     expect(view.requestState).toBe(RequestState.Loaded)
   })
 
@@ -240,8 +240,8 @@ describe('DataView.requestData orchestration', () => {
     await view.requestData()
     expect(spy).not.toHaveBeenCalled()
 
-    // 设置 requestState=Orchestrating（编排中）
-    view.requestState = RequestState.Orchestrating
+    // 设置 requestState=Preparing（准备中）
+    view.requestState = RequestState.Preparing
     await view.requestData()
     expect(spy).not.toHaveBeenCalled()
 
