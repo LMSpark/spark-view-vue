@@ -927,8 +927,16 @@ export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capa
 // DataSet 构造：为每个 table 设置 parent
 table.setDataSet(this)  // table.parent = dataSet, view.parent = table
 
-// DataView 构造：注册 DATA_VIEW 能力
-setCapability(this, DATA_VIEW, { dataView: this, tableName, viewId, rows, currentRow })
+// DataView 构造：注册 DATA_VIEW 能力（受控门面，不暴露 DataView 类实例）
+setCapability(this, DATA_VIEW, {
+  tableName, viewId,
+  get rows() { ... },       // 响应式 getter
+  get currentRow() { ... },
+  setCurrentRow(row) { ... },      // 受控操作
+  setSelectedRows(rows) { ... },
+  requestData() { ... },
+  get parentRelations() { ... },   // 懒解析父视图上下文
+})
 
 // lookup 沿 parent 链查找：DataView → DataTable → DataSet → Page → APP
 lookup(componentCtx, DATA_SET)

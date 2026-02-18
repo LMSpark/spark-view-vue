@@ -42,7 +42,7 @@ import type { IDataTableCapability } from './data-table'
  * DataView 请求状态机
  *
  * ```
- * Idle ──requestData()──▶ Orchestrating ──loadFromServer()──▶ Loading
+ * Idle ──requestData()──▶ Preparing ──loadFromServer()──▶ Loading
  *                                                                │
  *                                                ┌──────────────┴──────────────┐
  *                                              Loaded                        Failed
@@ -51,8 +51,8 @@ import type { IDataTableCapability } from './data-table'
 export enum RequestState {
   /** 未请求（初始态 / 被外部重置后） */
   Idle         = 0,
-  /** requestData 编排中：逐个检查父依赖、组装查询参数（条件具备前） */
-  Orchestrating = 1,
+  /** 准备中：逐个检查父依赖、组装查询参数（条件具备前） */
+  Preparing     = 1,
   /** loadFromServer 网络请求中（从服务器请求中） */
   Loading      = 2,
   /** 已完成 */
@@ -71,17 +71,41 @@ interface IDataSetRelationCap {
   getView:            (t: string, v?: string)  => DataView | undefined
 }
 
-/** DataView 向 UI/组件暴露的能力 */
+/**
+ * DataView 向 UI/组件暴露的能力（受控门面）
+ *
+ * 设计原则：不直接暴露 DataView 类实例，仅暴露 UI 组件需要的读写接口。
+ */
 export interface IDataViewCapability {
-  readonly dataView: DataView
   readonly tableName: string
   readonly viewId: string
-  /** 响应式 getter — 当前行数据 */
-  readonly rows: IDataRow[]
-  /** 响应式 getter — 当前选中行 */
-  readonly currentRow: IDataRow | null
-}
 
+  // ── 数据（响应式 getter） ──
+  readonly rows: IDataRow[]
+  readonly currentRow: IDataRow | null
+  readonly selectedRows: IDataRow[]
+
+  // ── 分页 ──
+  readonly total: number
+  readonly page: number
+  readonly pageSize: number
+
+  // ── 状态 ──
+  readonly requestState: RequestState
+
+  // ── 操作 ──
+  setCurrentRow(row: IDataRow | null): void
+  setSelectedRows(rows: IDataRow[]): void
+  /** 触发数据加载（幂等：已在请求中时直接返回） */
+  requestData(): Promise<void>
+
+  // ── 事件 ──
+  readonly events: IEventEmitter<DataViewEventMap>
+}
+/** DataView 事件映射表（类型安全的 handler 参数推断） */
+export type DataViewEventMap = {
+  stateChanged: [ViewStateEvent]
+}
 // ─────────────────────────────────────────────
 // DataView 类
 // ─────────────────────────────────────────────
@@ -149,7 +173,7 @@ export class DataView implements ICapabilityContext {
    * UI 组件、子视图级联、外部监听者均通过此总线接收变更事件。
    * UI 组件、子视图级联、外部监听者均通过 `events.on('stateChanged', handler)` 订阅。
    */
-  readonly events: IEventEmitter = createEventEmitter()
+  readonly events: IEventEmitter<DataViewEventMap> = createEventEmitter()
 
   protected logger = Logger('DataView')
 
@@ -164,11 +188,24 @@ export class DataView implements ICapabilityContext {
 
     const view = this
     setCapability(this, DATA_VIEW, {
-      get dataView() { return view },
       tableName: this.tableName,
       viewId: this.viewId,
+      // 数据
       get rows() { return view.rows },
       get currentRow() { return view.currentRow },
+      get selectedRows() { return view.selectedRows },
+      // 分页
+      get total() { return view.total },
+      get page() { return view.page },
+      get pageSize() { return view.pageSize },
+      // 状态
+      get requestState() { return view.requestState },
+      // 操作
+      setCurrentRow: (row: IDataRow | null) => view.setCurrentRow(row),
+      setSelectedRows: (rows: IDataRow[]) => view.setSelectedRows(rows),
+      requestData: () => view.requestData(),
+      // 事件
+      get events() { return view.events },
     } satisfies IDataViewCapability)
   }
 
@@ -181,7 +218,7 @@ export class DataView implements ICapabilityContext {
   /**
    * 视图级加载编排器（幂等：requestState≠Idle 时直接返回）
    *
-   * 1. 置 requestState=Orchestrating，沿 parent 链取 DataSet 父关系列表
+   * 1. 置 requestState=Preparing，沿 parent 链取 DataSet 父关系列表
    * 2. 逐个父视图：若未请求则先递归调用其 requestData()；
    *    父 requestState∉{Loaded,Loading} 或无数据 → 置 requestState=Failed 中止
    * 3. 所有父满足后，按各关系的 filterExpression 组装查询参数
@@ -191,7 +228,7 @@ export class DataView implements ICapabilityContext {
   async requestData(): Promise<void> {
     if (this.requestState !== RequestState.Idle) return
 
-    this.requestState = RequestState.Orchestrating
+    this.requestState = RequestState.Preparing
 
     const dsCap = lookup<{ dataSet: IDataSetRelationCap }>(this, DATA_SET)
     const ds = dsCap?.dataSet
@@ -560,8 +597,8 @@ export class DataView implements ICapabilityContext {
       if (!parentView) continue
 
       const handler = (evt: ViewStateEvent) => this.respondToParentChange(rel, parentView, evt)
-      parentView.events.on('stateChanged', handler as (...args: unknown[]) => void)
-      this.cascadeUnsubscribers.push(() => parentView.events.off('stateChanged', handler as (...args: unknown[]) => void))
+      parentView.events.on('stateChanged', handler)
+      this.cascadeUnsubscribers.push(() => parentView.events.off('stateChanged', handler))
     }
   }
 
@@ -574,22 +611,18 @@ export class DataView implements ICapabilityContext {
   /**
    * 响应父视图状态变化（统一级联入口，SOLID：子订阅父，父不知子）
    *
-   * dependencyType 与 changeType 对齐——只响应自身依赖类型对应的变化：
-   *   allRows / pagedRows  → rows / cleared
-   *   currentRow            → currentRow / cleared
-   *   selectedRows          → selectedRows / cleared
+   * dependencyType 仅用于 getParentRows() 决定取哪些行构造查询参数，
+   * 不用于过滤事件——父视图任何数据变化，子视图都必须响应。
+   * requestState 事件除外（内部状态机转换，不代表数据变化）。
    *
    * 行为：
-   * - 父无数据（cleared 或 parentRows 空）→ resetState + emit cleared + 通知 UI
-   * - autoLoad 且当前未在请求中 → 重置为 Idle 再走完整的 requestData() 编排
+   * - 父无数据（parentRows 空）→ resetState + emit cleared
+   * - autoLoad≠false 且当前未在请求中 → 重置为 Idle 再走完整的 requestData() 编排
+   *   （autoLoad 默认 true——既然定义了父子关系，级联就是默认行为；仅 `autoLoad: false` 跳过）
    */
   private respondToParentChange(rel: DataRelation, parentView: DataView, evt: ViewStateEvent): void {
-    // dependencyType 与 changeType 对齐
-    if (evt.changeType !== 'cleared') {
-      if ((rel.dependencyType === 'allRows' || rel.dependencyType === 'pagedRows') && evt.changeType !== 'rows') return
-      if (rel.dependencyType === 'currentRow'  && evt.changeType !== 'currentRow')  return
-      if (rel.dependencyType === 'selectedRows' && evt.changeType !== 'selectedRows') return
-    }
+    // requestState 是内部状态机转换，不代表数据变化，跳过
+    if (evt.changeType === 'requestState') return
 
     const parentRows = getParentRows(parentView, rel.dependencyType)
 
@@ -599,7 +632,7 @@ export class DataView implements ICapabilityContext {
       return
     }
 
-    if (rel.autoLoad && this.requestState !== RequestState.Orchestrating && this.requestState !== RequestState.Loading) {
+    if (rel.autoLoad !== false && this.requestState !== RequestState.Preparing && this.requestState !== RequestState.Loading) {
       // 重置为 Idle，再走完整的 requestData() 编排（含父依赖检查）
       this.requestState = RequestState.Idle
       this.requestData().catch(err => {

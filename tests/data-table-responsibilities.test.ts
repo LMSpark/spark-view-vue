@@ -146,13 +146,29 @@ describe('Capability interfaces (typed getCapabilities)', () => {
     expect(caps.has(DATA_VIEW)).toBe(true)
 
     const cap = caps.get(DATA_VIEW) as IDataViewCapability
-    expect(cap.dataView).toBe(view)
     expect(cap.tableName).toBe('Orders')
     expect(cap.viewId).toBe('grid1')
+
+    // 受控门面：不暴露 dataView 类实例
+    expect((cap as any).dataView).toBeUndefined()
 
     // 响应式 getter：rows/currentRow 是活引用
     expect(cap.rows).toBe(view.rows)
     expect(cap.currentRow).toBe(view.rows[0])
+
+    // 操作方法受控奖接
+    expect(typeof cap.setCurrentRow).toBe('function')
+    expect(typeof cap.setSelectedRows).toBe('function')
+    expect(typeof cap.requestData).toBe('function')
+
+    // 分页 / 状态
+    expect(cap.total).toBe(view.total)
+    expect(cap.page).toBe(view.page)
+    expect(cap.pageSize).toBe(view.pageSize)
+    expect(cap.requestState).toBe(view.requestState)
+
+    // 事件总线
+    expect(cap.events).toBe(view.events)
 
     // 修改 view 后，capability 反映最新值
     view.currentRow = null
