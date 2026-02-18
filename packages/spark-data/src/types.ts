@@ -220,6 +220,10 @@ export interface DataRelation {
   parentViewId?: string
   childTable: string
   childViewId?: string
+  /** 指定父表中用于匹配的字段（默认为 'id'） */
+  parentField?: string
+  /** 指定子表中用于匹配的字段（如果未指定，使用 filterExpression.field） */
+  childField?: string
   dependencyType: DependencyType
   filterExpression: FilterExpression
   cascadeUpdate?: boolean

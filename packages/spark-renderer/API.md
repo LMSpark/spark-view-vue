@@ -1,5 +1,7 @@
 # @spark-view/spark-renderer API 文档
 
+<!-- markdownlint-disable MD024 MD033 MD009 -->
+
 ## 目录
 
 - [组件](#组件)

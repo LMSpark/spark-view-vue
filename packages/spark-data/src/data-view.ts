@@ -103,6 +103,12 @@ export class DataView implements ICapabilityContext, IDataSource {
   /** 加载错误信息 */
   loadingError: Error | null = null
 
+  /**
+   * 请求状态：0=未请求, 1=请求中, 2=已完成, 3=失败
+   * - 用于 DataSet 的调度器判断依赖/去重
+   */
+  requestState: 0 | 1 | 2 | 3 = 0
+
   // ===== 视图配置 =====
 
   /** 过滤表达式 */
@@ -171,19 +177,16 @@ export class DataView implements ICapabilityContext, IDataSource {
     this.teardownCascade()
 
     // 消费 DATA_SET 能力（沿 parent 链：DataView → DataTable → DataSet）
-    const dsCap = lookup<{ dataSet: { relations?: DataRelation[]; getTable(n: string): { getOrCreateView(id: string): DataView } | undefined; requestTableData(n: string): void } }>(this, DATA_SET)
+    const dsCap = lookup<{ dataSet: { relations?: DataRelation[]; getTable(n: string): { getOrCreateView(id: string): DataView } | undefined; getParentRelations(childTable: string, childViewId?: string): DataRelation[]; getView(tableName: string, viewId?: string): DataView | undefined } }>(this, DATA_SET)
     if (!dsCap) return
 
     const ds = dsCap.dataSet
-    // 查找以本视图为子的关系
-    const parentRels = (ds.relations ?? []).filter(
-      (r: DataRelation) => r.childTable === this.tableName && (r.childViewId ?? 'default') === this.viewId
-    )
+    // 查找以本视图为子的关系（由 DataSet 提供）
+    const parentRels = ds.getParentRelations(this.tableName, this.viewId)
 
     for (const rel of parentRels) {
-      const parentTable = ds.getTable(rel.parentTable)
-      if (!parentTable) continue
-      const parentView = parentTable.getOrCreateView(rel.parentViewId ?? 'default')
+      const parentView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      if (!parentView) continue
 
       // 订阅父视图 stateChanged 事件 → 自行响应
       const handler = () => this.respondToParentChange(rel, parentView)
@@ -330,6 +333,117 @@ export class DataView implements ICapabilityContext, IDataSource {
   }
 
   /**
+   * 查询数据方法 C（视图级编排器）
+   *
+   * 流程（C 自身不迭代，每段独立）：
+   *   4.1  设 D=1（请求中）
+   *   4.2  遍历 AR（父关系），父 D==0 → 调用父的 C；
+   *        确认所有父 D==2 且数据存在
+   *   4.3  全部依赖满足 → 根据关系表达式组织请求参数 → 发起请求
+   *        成功 D=2，失败 D=3
+   *   4.4  请求成功 → 数据赋值（UI 自动同步）→ 调用 BR（子关系）每项的 C
+   */
+  async requestWithRelations(): Promise<void> {
+    // 幂等：仅在未请求状态下触发
+    if (this.requestState !== 0) return
+
+    // 4.1: 标识 D=1 请求中
+    this.requestState = 1
+
+    // 通过 DATA_SET 获取关系查询能力（AR + BR + 视图查找）
+    const dsCap = lookup<{ dataSet: {
+      getParentRelations: (t: string, v?: string) => DataRelation[]
+      getChildRelations: (t: string, v: string) => DataRelation[]
+      getView: (t: string, v?: string) => DataView | undefined
+    } }>(this, DATA_SET)
+    const ds = dsCap?.dataSet
+    if (!ds) { this.requestState = 0; return }
+
+    // 4.2: 获取 AR（父关系），逐项确保父依赖满足
+    const parents = ds.getParentRelations(this.tableName, this.viewId)
+
+    for (const rel of parents) {
+      const pView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      if (!pView) continue
+
+      // 父未请求 → 调用父的 C（requestWithRelations），不是 loadFromServer
+      if (pView.requestState === 0) {
+        try {
+          await pView.requestWithRelations()
+        } catch {
+          this.requestState = 3
+          return
+        }
+      }
+
+      // 检查父依赖是否满足：D==2 且数据存在
+      const parentRows = getParentRows(pView, rel.dependencyType)
+      if (pView.requestState !== 2 || parentRows.length === 0) {
+        this.requestState = 3
+        return
+      }
+    }
+
+    // 4.3: 全部依赖满足 → 根据关系中的表达式组织请求参数
+    const params: QueryParams = {}
+    for (const rel of parents) {
+      const pView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      if (!pView) continue
+      const parentRows = getParentRows(pView, rel.dependencyType)
+      if (!parentRows.length) continue
+      const expr = rel.filterExpression
+      if (!expr) continue
+
+      // 父端字段：优先 rel.parentField → 'id' → 第一个字段
+      let parentKey: string | undefined
+      const pf = rel.parentField as unknown
+      if (typeof pf === 'string') {
+        parentKey = pf
+      } else {
+        const firstRow = parentRows[0]
+        if (firstRow) parentKey = (firstRow['id'] !== undefined ? 'id' : Object.keys(firstRow)[0])
+        else parentKey = 'id'
+      }
+
+      const values = parentRows.map(r => (r[parentKey as string] ?? Object.values(r)[0]))
+
+      // 子端参数名：优先 rel.childField → filterExpression.field → parentKey
+      let childKey: string
+      const cf = rel.childField as unknown
+      if (typeof cf === 'string') childKey = cf
+      else if ('field' in expr) childKey = expr.field
+      else childKey = parentKey as string
+
+      if ('op' in expr && 'field' in expr) {
+        if (expr.op === 'in') params[childKey] = values
+        else params[childKey] = values[0]
+      } else {
+        params[childKey] = values[0]
+      }
+    }
+
+    // 发起请求（loadFromServer 设 D=2 或 D=3）
+    try {
+      await this.loadFromServer(params)
+    } catch {
+      // loadFromServer 内部已设 requestState=3
+      return
+    }
+
+    // 4.4: 请求成功 → 数据已赋值给当前视图 → UI 自动同步
+    //      调用 BR（子关系）中每项的 C — C 自身不迭代，只触发
+    const children = ds.getChildRelations(this.tableName, this.viewId)
+    for (const bi of children) {
+      const childView = ds.getView(bi.childTable, bi.childViewId ?? 'default')
+      if (childView?.requestState === 0) {
+        // fire-and-forget：C 自身不迭代，子视图独立执行自己的 C
+        childView.requestWithRelations().catch(err => {
+          this.logger.error(`子视图 ${bi.childTable}:${bi.childViewId ?? 'default'} 请求失败`, err)
+        })
+      }
+    }
+  }
+  /**
    * 添加单行数据
    * @param row 新行数据
    */
@@ -404,20 +518,32 @@ export class DataView implements ICapabilityContext, IDataSource {
     if (this.isLoading) {
       return { success: true, message: 'Already loading' }
     }
-    
+
+    // 标记请求状态 = 请求中
+    this.requestState = 1
+
     if (!this.crudService) this.initializeCrudService()
-    if (!this.crudService) throw new Error(`Table ${this.tableName} has no API configuration`)
-    
+    if (!this.crudService) {
+      this.requestState = 3
+      throw new Error(`Table ${this.tableName} has no API configuration`)
+    }
+
     this.setLoading()
     try {
       const result = await this.crudService.list(params, this.getCrudConfig())
       if (result.success && result.data) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         this.notifySubscribers()
+        // 标记完成
+        this.requestState = 2
+      } else {
+        // 认为为失败分支（保持语义明确）
+        this.requestState = 3
       }
       return result
     } catch (error) {
       this.setError(error as Error)
+      this.requestState = 3
       throw error
     } finally {
       this.setReady()
