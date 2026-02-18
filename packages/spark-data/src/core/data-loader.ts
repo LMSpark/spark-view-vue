@@ -82,7 +82,8 @@ export class DataLoader {
     const deps = this.depAnalyzer.getViewDependencies(tableName, viewId)
     const isRoot = deps.length === 0
 
-    const view = table?.views['default']
+    // 修正：按传入的 viewId 获取视图（之前始终使用 'default'，会导致命名视图判断不正确）
+    const view = table?.views[viewId]
 
     // 根视图已有数据 → 直接通知
     if (isRoot && view?.rows?.length) {

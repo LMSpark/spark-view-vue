@@ -324,10 +324,10 @@ export class CrudService {
       const formData = new FormData()
       formData.append('file', file)
 
+      // 不要手动设置 Content-Type：浏览器 / HTTP 客户端会自动添加 boundary
       const result = await this.executeEndpoint(this.api.import, formData, {
         ...config,
         headers: {
-          'Content-Type': 'multipart/form-data',
           ...config?.headers
         }
       })
