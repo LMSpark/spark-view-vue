@@ -208,47 +208,6 @@ describe('DataSet subscribe（数据订阅）', () => {
     expect(cb).toHaveBeenCalledOnce() // 不再增加
   })
 
-  it('notifySubscribers 不指定 viewId 广播该表所有视图', () => {
-    const ds = createTestDataSet()
-    const defaultCb = vi.fn()
-    const customCb = vi.fn()
-
-    // 创建额外视图
-    const dept = ds.getTable('Departments')!
-    dept.getOrCreateView('grid1')
-
-    ds.subscribe('Departments', 'default', defaultCb)
-    ds.subscribe('Departments', 'grid1', customCb)
-
-    ds.notifySubscribers('Departments') // 不指定 viewId
-
-    expect(defaultCb).toHaveBeenCalledOnce()
-    expect(customCb).toHaveBeenCalledOnce()
-  })
-
-  it('hasSubscribers 精确查询', () => {
-    const ds = createTestDataSet()
-    expect(ds.hasSubscribers('Departments', 'default')).toBe(false)
-
-    const unsub = ds.subscribe('Departments', 'default', vi.fn())
-    expect(ds.hasSubscribers('Departments', 'default')).toBe(true)
-    expect(ds.hasSubscribers('Departments', 'other')).toBe(false)
-
-    unsub()
-    expect(ds.hasSubscribers('Departments', 'default')).toBe(false)
-  })
-
-  it('hasSubscribers 不指定 viewId 检查该表是否有任何订阅', () => {
-    const ds = createTestDataSet()
-    expect(ds.hasSubscribers('Departments')).toBe(false)
-
-    const unsub = ds.subscribe('Departments', 'grid1', vi.fn())
-    expect(ds.hasSubscribers('Departments')).toBe(true)
-
-    unsub()
-    expect(ds.hasSubscribers('Departments')).toBe(false)
-  })
-
   it('setCurrentRow 自动触发 subscribe 回调', () => {
     const ds = createTestDataSet()
     const cb = vi.fn()

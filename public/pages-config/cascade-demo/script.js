@@ -41,7 +41,7 @@ async function handleAddUser() {
 
     // 低代码：直接操作，内核通知订阅者，UI自动更新
     userTable.rows.push(newUser);
-    dataSet.notifySubscribers('Users'); // 手动触发通知
+    dataSet.notifySubscribers('Users', 'default'); // 手动触发通知
     
     ElMessage.success(`✅ 用户添加成功: ${name}`);
   } catch (error) {

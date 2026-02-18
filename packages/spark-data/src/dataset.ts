@@ -13,7 +13,6 @@
 import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
-import { DataLoader } from './core/data-loader'
 import { DATA_SET, provide as setCapability } from '@spark-view/spark-utils'
 import type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
 
@@ -60,13 +59,8 @@ export class DataSet implements ICapabilityContext {
   /** 是否自动加载关系数据 */
   autoLoadRelations: boolean | undefined
 
-  /** 数据加载器函数 */
+  /** 数据加载器函数（已废弃，由视图通过 CRUD API 主动加载） */
   dataLoader: ((tableName: string) => Promise<IDataRow[]>) | undefined
-
-  // ===== 内部引擎 =====
-
-  /** 数据加载器实例 */
-  private dataLoaderInstance: DataLoader
 
   // ===== 构造函数 =====
 
@@ -107,9 +101,6 @@ export class DataSet implements ICapabilityContext {
       r.parentViewId ??= 'default'
       r.childViewId ??= 'default'
     })
-
-    // 初始化数据加载器
-    this.dataLoaderInstance = new DataLoader(this)
   }
 
   // ===== 关系图查询（网状关系，非树形） =====
@@ -207,37 +198,14 @@ export class DataSet implements ICapabilityContext {
   }
 
   /**
-   * 通知订阅者（委托到 DataTable，避免重复刷新）
+   * 通知指定视图的订阅者
    * @param tableName 表名
-   * @param viewId 数据视图ID（不指定则广播该表所有视图）
+   * @param viewId 数据视图ID（默认 'default'）
    */
-  notifySubscribers(tableName: string, viewId?: string): void {
+  notifySubscribers(tableName: string, viewId: string = 'default'): void {
     const table = this.getTable(tableName)
     if (!table) return
     table.notifySubscribers(viewId)
-  }
-
-  /**
-   * 检查是否有订阅者（委托到 DataTable）
-   * @param tableName 表名
-   * @param viewId 数据视图ID
-   * @returns 是否有订阅者
-   */
-  hasSubscribers(tableName: string, viewId?: string): boolean {
-    const table = this.getTable(tableName)
-    if (!table) return false
-    return table.hasSubscribers(viewId)
-  }
-
-  // ===== 数据加载 =====
-
-  /**
-   * 请求表数据
-   * @param tableName 表名
-   * @param viewId 视图ID（默认 'default'）
-   */
-  requestTableData(tableName: string, viewId = 'default'): void {
-    this.dataLoaderInstance.requestTableData(tableName, viewId)
   }
 
   // ===== 序列化 =====

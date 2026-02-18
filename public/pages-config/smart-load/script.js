@@ -56,7 +56,7 @@ function handleRequestOrderDetails() {
   
   // 完全解耦：只发起请求，不等待
   // DataSetManager 加载完成后会自动通知订阅者 → UI 自动更新
-  dataSet.requestTableData('OrderDetails');
+  dataSet.getView('OrderDetails', 'default').loadFromServer();
   
   console.log('✅ 请求已发起，等待数据加载...');
 }
@@ -71,7 +71,7 @@ function handleRequestProducts() {
   console.log('🚀 用户请求: Products 数据（非阻塞）');
   console.log('='.repeat(60));
   
-  dataSet.requestTableData('Products');
+  dataSet.getView('Products', 'default').loadFromServer();
   console.log('✅ 请求已发起，等待数据加载...');
 }
 
@@ -85,7 +85,7 @@ function handleRequestCategories() {
   console.log('🚀 用户请求: Categories 数据（非阻塞）');
   console.log('='.repeat(60));
   
-  dataSet.requestTableData('Categories');
+  dataSet.getView('Categories', 'default').loadFromServer();
   console.log('✅ 请求已发起，等待数据加载...');
 }
 
@@ -109,7 +109,7 @@ function handleClearAll() {
     table.rows.splice(0, table.rows.length); // 使用 splice 保持响应式
     
     // 通知订阅者数据已更新
-    dataSet.notifySubscribers(tableName);
+    dataSet.notifySubscribers(tableName, 'default');
   });
   
   ElMessage?.success('🗑️ 所有数据已清空');

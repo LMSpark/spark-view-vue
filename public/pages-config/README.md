@@ -58,6 +58,8 @@ public/pages-config/
 ### pagedata.json - 页面数据
 包含数据集定义和零代码配置：
 
+> 注意：从现在起，框架会**将任意 pagedata.json 归一化为 DataSet**（顶层键映射为表，数组/对象/基础类型均会转换为表的 rows）。请始终以 `dataset` 语义为目标结构或让框架自动归一化。
+
 ```json
 {
   "dataSets": {

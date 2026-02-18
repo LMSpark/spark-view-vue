@@ -47,6 +47,7 @@ interface ElTreeComponent {
 
 interface Props {
   data?: TreeNode[]
+  dataSource?: import('@spark-view/spark-data').IDataSource | import('@spark-view/spark-data').DataView | undefined
   // FormCreate 通过 props 传递事件处理函数
   onNodeClick?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
   onNodeExpand?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
@@ -55,11 +56,31 @@ interface Props {
   [key: string]: unknown
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  data: () => []
+const props = defineProps<Props>()
+
+const resolvedDataSource = computed(() => props.dataSource)
+const treeData = computed(() => {
+  const ds = resolvedDataSource.value as import('@spark-view/spark-data').IDataSource | undefined
+  if (ds && Array.isArray(ds.rows)) return ds.rows
+  return []
 })
 
-const treeData = computed(() => props.data)
+// 若 dataSource 为 DataView 且无数据，则尝试由 dataSource 自行加载
+import { onMounted, watch } from 'vue'
+function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefined) {
+  if (!ds) return
+  const maybeDV = ds as import('@spark-view/spark-data').DataView | undefined
+  const rows = ds.rows
+  if (Array.isArray(rows) && rows.length === 0 && maybeDV && typeof maybeDV.loadFromServer === 'function') {
+    void maybeDV.loadFromServer().catch((e: unknown) => {
+      // eslint-disable-next-line no-console
+      console.error('RendererTree: dataSource.loadFromServer() 失败', e)
+    })
+  }
+}
+
+onMounted(() => tryAutoLoad(resolvedDataSource.value))
+watch(resolvedDataSource, (nv) => tryAutoLoad(nv))
 
 // 事件处理：直接调用 props 中的处理函数
 const handleNodeClick = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
@@ -83,6 +104,8 @@ const handleNodeCollapse = (data: TreeNode, node: ElTreeNode, component: ElTreeC
 // 提供上下文给子字段组件
 provide('fieldContext', 'tree')
 provide('contextData', treeData)
+// 提供 dataSource（如为 IDataSource/DataView）
+provide('contextDataSource', resolvedDataSource)
 </script>
 
 <style scoped>

@@ -20,6 +20,7 @@ export type { CrudResult, QueryParams, BatchResult, CrudOperationConfig } from '
 
 export type {
   IDataRow,
+  IDataSource,
   IInstancePermission,
   IModelPermission,
   ITableMetadata,

@@ -65,9 +65,13 @@ export class DataLoader {
    * 通知依赖更新，按需自动加载
    */
   private notifyDependencyUpdated(tableName: string, viewId: string = 'default'): void {
-    if (this.shouldAutoLoad(tableName, viewId) && this.hasSubscribers(tableName, viewId)) {
-      this.loadTable(tableName).catch(e => this.logger.error(`自动加载 ${tableName} 失败`, e))
-    }
+    if (!this.shouldAutoLoad(tableName, viewId)) return
+    
+    // 检查视图是否有订阅者（性能优化：避免无意义的加载）
+    const view = this.ds.getView(tableName, viewId)
+    if (!view?.hasSubscribers()) return
+    
+    this.loadTable(tableName).catch(e => this.logger.error(`自动加载 ${tableName} 失败`, e))
   }
 
   /**
@@ -82,7 +86,7 @@ export class DataLoader {
 
     // 根视图已有数据 → 直接通知
     if (isRoot && view?.rows?.length) {
-      this.notifyTableSubscribers(tableName)
+      this.ds.notifySubscribers(tableName, viewId)
       return
     }
 
@@ -90,7 +94,7 @@ export class DataLoader {
     if (!isRoot && view?.rows?.length) {
       if (this.depAnalyzer.areDependenciesSatisfied(tableName, viewId)) {
         this.applyRelationsFor(tableName, viewId)
-        this.notifyTableSubscribers(tableName)
+        this.ds.notifySubscribers(tableName, viewId)
         return
       }
     }
@@ -102,7 +106,7 @@ export class DataLoader {
       } else {
         if (table && !view?.originalRows) await this.loadTable(tableName)
         this.applyRelationsFor(tableName, viewId)
-        this.notifyTableSubscribers(tableName)
+        this.ds.notifySubscribers(tableName, viewId)
       }
       return
     }
@@ -118,12 +122,14 @@ export class DataLoader {
   }
 
   /**
-   * 加载单个表数据
+   * 加载单个表数据（默认加载 default 视图）
+   * @param tableName - 表名
+   * @param viewId - 视图 ID（默认 'default'）
    */
-  private async loadTable(tableName: string): Promise<void> {
+  private async loadTable(tableName: string, viewId: string = 'default'): Promise<void> {
     if (!this.ds.dataLoader) return
     const table = this.ds.getTable(tableName)
-    const view = table?.views['default']
+    const view = table?.views[viewId]
     if (view) view.setLoading()
 
     try {
@@ -134,41 +140,26 @@ export class DataLoader {
       view.rows.splice(0, view.rows.length, ...rows)
       view.originalRows ??= [...rows]
 
-      // 清空所有视图的选中状态
-      for (const v of Object.values(table.views ?? {})) {
-        v.currentRow = null
-        v.currentRowIndex = null
-        v.selectedRows.splice(0)
-        v.selectedRowIndices = []
-      }
+      // 清空当前视图的选中状态
+      view.currentRow = null
+      view.currentRowIndex = null
+      view.selectedRows.splice(0)
+      view.selectedRowIndices = []
 
       // 子视图 → 重新应用父关系
       const parentRels = this.ds.relations?.filter(r => r.childTable === tableName) ?? []
       for (const rel of parentRels) this.relationEngine.applyRelation(rel)
 
-      table.views['default']?.setReady()
-      this.notifyTableSubscribers(tableName)
+      view.setReady()
+      this.ds.notifySubscribers(tableName, viewId)  // 只通知指定视图
       this.notifyChildren(tableName)
     } catch (err) {
-      if (table) table.views['default']?.setError(err instanceof Error ? err : new Error(String(err)))
+      if (view) view.setError(err instanceof Error ? err : new Error(String(err)))
       throw err
     }
   }
 
-  // ===== 辅助方法（直接操作树节点，不经过 DataSet 委托） =====
-
-  /** 通知表的所有视图订阅者 */
-  private notifyTableSubscribers(tableName: string): void {
-    const table = this.ds.getTable(tableName)
-    if (table) table.notifySubscribers()
-  }
-
-  /** 检查视图是否有订阅者 */
-  private hasSubscribers(tableName: string, viewId: string): boolean {
-    const table = this.ds.getTable(tableName)
-    if (!table) return false
-    return table.hasSubscribers(viewId)
-  }
+  // ===== 辅助方法 =====
 
   /** 通知子视图依赖更新 */
   private notifyChildren(parentTable: string) {
