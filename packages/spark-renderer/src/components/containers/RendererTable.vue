@@ -40,7 +40,6 @@ function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefine
     // 不等待，视图方法会自己处理 isLoading/错误
     void maybeDV.loadFromServer().catch((e: unknown) => {
       // 记录但不抛出，避免破坏渲染
-      // eslint-disable-next-line no-console
       console.error('RendererTable: dataSource.loadFromServer() 失败', e)
     })
   }

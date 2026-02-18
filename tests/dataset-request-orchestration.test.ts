@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '../packages/spark-data/src/spark-data'
 
-describe('DataView.requestWithRelations orchestration', () => {
+describe('DataView.requestData orchestration', () => {
   it('should load parents first then child and update requestState', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'OrchDS',
@@ -40,7 +40,7 @@ describe('DataView.requestWithRelations orchestration', () => {
     expect(pView.requestState).toBe(0)
     expect(cView.requestState).toBe(0)
 
-    await cView.requestWithRelations()
+    await cView.requestData()
 
     expect(pSpy).toHaveBeenCalledOnce()
     expect(cSpy).toHaveBeenCalledOnce()
@@ -72,7 +72,7 @@ describe('DataView.requestWithRelations orchestration', () => {
     })
     const cSpy = vi.spyOn(cView, 'loadFromServer')
 
-    await cView.requestWithRelations()
+    await cView.requestData()
 
     // parent was called but since parentRows empty, child should NOT be called
     expect(pSpy).toHaveBeenCalled()
@@ -119,7 +119,7 @@ describe('DataView.requestWithRelations orchestration', () => {
       return { success: true, data: cView.rows } as any
     })
 
-    await cView.requestWithRelations()
+    await cView.requestData()
 
     expect(pSpy).toHaveBeenCalled()
     expect(cSpy).toHaveBeenCalled()
@@ -129,7 +129,7 @@ describe('DataView.requestWithRelations orchestration', () => {
 
   it('step 4.4: triggers children BR after successful load (3-level cascade)', async () => {
     // 三层级联：A → B → C
-    // 调用 A.requestWithRelations()
+    // 调用 A.requestData()
     // A 加载成功后 step 4.4 触发 B 的 C，B 成功后 step 4.4 触发 C 的 C
     const ds = SparkData.createDataSet({
       dataSetName: 'ThreeLevel',
@@ -179,7 +179,7 @@ describe('DataView.requestWithRelations orchestration', () => {
     })
 
     // 只调用 A 的 C — 期望 B 和 C 被 step 4.4 自动级联触发
-    await aView.requestWithRelations()
+    await aView.requestData()
 
     // A 立即完成
     expect(aSpy).toHaveBeenCalledOnce()
@@ -214,7 +214,7 @@ describe('DataView.requestWithRelations orchestration', () => {
       return { success: true } as any
     })
 
-    await view.requestWithRelations()
+    await view.requestData()
 
     // 验证 loadFromServer 被调用时 requestState 已经是 1
     expect(capturedState).toBe(1)
@@ -234,12 +234,12 @@ describe('DataView.requestWithRelations orchestration', () => {
 
     // 设置 requestState=2（已完成）
     view.requestState = 2
-    await view.requestWithRelations()
+    await view.requestData()
     expect(spy).not.toHaveBeenCalled()
 
     // 设置 requestState=1（请求中）
     view.requestState = 1
-    await view.requestWithRelations()
+    await view.requestData()
     expect(spy).not.toHaveBeenCalled()
 
     spy.mockRestore()

@@ -73,7 +73,6 @@ function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefine
   const rows = ds.rows
   if (Array.isArray(rows) && rows.length === 0 && maybeDV && typeof maybeDV.loadFromServer === 'function') {
     void maybeDV.loadFromServer().catch((e: unknown) => {
-      // eslint-disable-next-line no-console
       console.error('RendererTree: dataSource.loadFromServer() 失败', e)
     })
   }
