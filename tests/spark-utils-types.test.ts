@@ -21,13 +21,8 @@ import {
 import type {
   IDataRow,
   IDataSource,
-  IInstancePermission,
-  IModelPermission,
 } from '@spark-view/spark-data'
 import type {
-  IAppServicesCapability,
-  CapabilityKey,
-  LogLevel,
   LoggerApi,
   IEventEmitter
 } from '@spark-view/spark-utils'
@@ -39,8 +34,8 @@ import type {
 describe('IDataRow type constraint', () => {
   it('accepts Record<string, unknown> by default', () => {
     const row: IDataRow = { id: 1, name: 'Alice' }
-    expect(row.id).toBe(1)
-    expect(row.name).toBe('Alice')
+    expect(row['id']).toBe(1)
+    expect(row['name']).toBe('Alice')
   })
 
   it('supports _perm field', () => {

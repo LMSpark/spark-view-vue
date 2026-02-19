@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { DataTable } from '../packages/spark-data/src/data-table'
 import { DataView } from '../packages/spark-data/src/data-view'
 import { DataSet } from '../packages/spark-data/src/dataset'
@@ -53,7 +53,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
     })
 
     const parent = ds.getView('Departments', 'default')!
-    const child = ds.getView('Users', 'default')!
+    ds.getView('Users', 'default')
 
     let parentNotified = false
     let dsNotified = false
@@ -108,29 +108,29 @@ describe('DataTable responsibilities (refactor verification)', () => {
 
     // CRUD：由于 mock 替换了 createRecord，需要手动模拟真实行为
     // 真实 createRecord 会 push 到 views['default'].rows 并通知
-    t.createRecord = async (data: any) => {
+    ;(t as any).createRecord = async (data: any) => {
       def.rows.push(data)
       return { success: true, data } as any
     }
-    const res = await t.createRecord({ id: 3, name: 'C' })
+    await (t as any).createRecord({ id: 3, name: 'C' })
     expect(def.rows.some(r => (r as any).id === 3)).toBe(true)
 
     // updateRecord 也应影响 views['default']
-    t.updateRecord = async (id: any, data: any) => {
+    ;(t as any).updateRecord = async (id: any, data: any) => {
       const idx = def.rows.findIndex(r => (r as any).id === id)
       if (idx >= 0) def.rows[idx] = { ...def.rows[idx], ...data, id }
       return { success: true, data: { id, ...data } } as any
     }
-    await t.updateRecord(3, { name: 'C-updated' })
+    await (t as any).updateRecord(3, { name: 'C-updated' })
     expect(def.rows.some(r => (r as any).name === 'C-updated')).toBe(true)
 
     // 删除记录
-    t.deleteRecord = async (id: any) => {
+    ;(t as any).deleteRecord = async (id: any) => {
       const idx = def.rows.findIndex(r => (r as any).id === id)
       if (idx >= 0) def.rows.splice(idx, 1)
       return { success: true } as any
     }
-    await t.deleteRecord(3)
+    await (t as any).deleteRecord(3)
     expect(def.rows.some(r => (r as any).id === 3)).toBe(false)
   })
 })

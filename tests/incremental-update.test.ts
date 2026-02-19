@@ -41,7 +41,7 @@ function haveChildrenChanged(oldChildren: ComponentConfig[], newChildren: Compon
   if (oldChildren.length !== newChildren.length) return true
 
   for (let i = 0; i < oldChildren.length; i++) {
-    if (shouldUpdateComponent(oldChildren[i], newChildren[i])) return true
+    if (shouldUpdateComponent(oldChildren[i]!, newChildren[i]!)) return true
   }
 
   return false

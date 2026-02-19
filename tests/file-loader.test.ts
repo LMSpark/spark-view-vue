@@ -8,7 +8,7 @@ import axios from 'axios'
 
 // Mock axios.create
 vi.mock('axios', async () => {
-  const actualAxios = await vi.importActual('axios')
+  const actualAxios = await vi.importActual<any>('axios')
   return {
     ...actualAxios,
     default: {

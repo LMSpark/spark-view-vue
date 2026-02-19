@@ -13,7 +13,6 @@ import {
   buildDataKey,
   getViewKey
 } from '@spark-view/spark-data'
-import type { DataKeyDescriptor } from '@spark-view/spark-data'
 
 describe('DataKey 统一解析器', () => {
   // ===== parseDataKey =====
