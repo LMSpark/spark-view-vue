@@ -20,6 +20,7 @@ import { reactive } from 'vue'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { TreeManager } from './tree-manager'
 import type { DataSet } from './dataset'
+import { DataValidator, createValidator, createSchema } from './validation'
 
 /**
  * DataTable - 管理单表的结构定义与配置
@@ -47,6 +48,11 @@ export class DataTable {
   /** CRUD 操作配置（全局默认配置） */
   crudConfig?: CrudOperationConfig
 
+  // ===== 数据校验 =====
+
+  /** 数据校验器（基于列定义创建） */
+  validator?: DataValidator
+
   // ===== 视图容器 =====
 
   /** 视图集合（包含 'default'） */
@@ -62,6 +68,10 @@ export class DataTable {
     this.tableName = tableName
     this.columns = columns
     this.views['default'] = reactive(new DataView(tableName, 'default')) as DataView
+    // 初始化数据校验器
+    if (columns.length > 0) {
+      this.validator = createValidator(createSchema(columns))
+    }
   }
 
   // ===== DataSet 关联（设置引用链） =====

@@ -26,6 +26,7 @@ import { Logger, createEventEmitter } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows } from './core/utils'
 import { CrudService, createCrudService } from './crud-service'
+import type { ValidationResult } from './validation'
 
 // ─────────────────────────────────────────────
 // 事件类型映射
@@ -318,6 +319,16 @@ export class DataView {
 
   /** 新增记录，成功后追加至 rows */
   async createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+    // 数据校验
+    const validationResult = this.validateRow(data as IDataRow)
+    if (validationResult && !validationResult.valid) {
+      return {
+        success: false,
+        message: `数据校验失败: ${validationResult.errors[0]?.message ?? '未知错误'}`,
+        error: new Error(validationResult.errors[0]?.message ?? '数据校验失败')
+      }
+    }
+
     const svc = this.ensureCrudService()
     const result = await svc.create<IDataRow>(data, this.getCrudConfig())
     if (result.success && result.data) {
@@ -329,6 +340,16 @@ export class DataView {
 
   /** 更新记录，成功后刷新对应行 */
   async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+    // 数据校验
+    const validationResult = this.validateRow(data as IDataRow)
+    if (validationResult && !validationResult.valid) {
+      return {
+        success: false,
+        message: `数据校验失败: ${validationResult.errors[0]?.message ?? '未知错误'}`,
+        error: new Error(validationResult.errors[0]?.message ?? '数据校验失败')
+      }
+    }
+
     const svc = this.ensureCrudService()
     const result = await svc.update<IDataRow>(id, data, this.getCrudConfig())
     if (result.success && result.data && this.updateRowById(id, result.data)) {
@@ -349,6 +370,22 @@ export class DataView {
 
   /** 批量新增 */
   async batchCreateRecords(items: Partial<IDataRow>[]): Promise<CrudResult<BatchResult>> {
+    // 批量数据校验
+    const validationErrors: string[] = []
+    for (let i = 0; i < items.length; i++) {
+      const validationResult = this.validateRow(items[i] as IDataRow)
+      if (validationResult && !validationResult.valid) {
+        validationErrors.push(`第${i + 1}条: ${validationResult.errors[0]?.message ?? '校验失败'}`)
+      }
+    }
+    if (validationErrors.length > 0) {
+      return {
+        success: false,
+        message: `批量数据校验失败: ${validationErrors.join('; ')}`,
+        error: new Error(validationErrors[0])
+      }
+    }
+
     const svc = this.ensureCrudService()
     const result = await svc.batchCreate<IDataRow>(items, this.getCrudConfig())
     if (result.success && result.data) {
@@ -362,6 +399,22 @@ export class DataView {
 
   /** 批量更新 */
   async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
+    // 批量数据校验
+    const validationErrors: string[] = []
+    for (let i = 0; i < items.length; i++) {
+      const validationResult = this.validateRow(items[i] as IDataRow)
+      if (validationResult && !validationResult.valid) {
+        validationErrors.push(`第${i + 1}条: ${validationResult.errors[0]?.message ?? '校验失败'}`)
+      }
+    }
+    if (validationErrors.length > 0) {
+      return {
+        success: false,
+        message: `批量数据校验失败: ${validationErrors.join('; ')}`,
+        error: new Error(validationErrors[0])
+      }
+    }
+
     const svc = this.ensureCrudService()
     const result = await svc.batchUpdate<IDataRow>(items, this.getCrudConfig())
     if (result.success && result.data) {
@@ -754,6 +807,12 @@ export class DataView {
   /** 获取 CRUD 操作配置（超时、重试等） */
   private getCrudConfig(): CrudOperationConfig | undefined {
     return this.dataTable?.crudConfig
+  }
+
+  /** 校验数据行（如果 DataTable 配置了 validator） */
+  private validateRow(row: IDataRow): ValidationResult | null {
+    if (!this.dataTable?.validator) return null
+    return this.dataTable.validator.validate(row)
   }
 
   /** 确保 CrudService 已初始化，否则抛出；返回实例供调用方直接使用 */
