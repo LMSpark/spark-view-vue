@@ -28,17 +28,17 @@ describe('usePageDataSet - pagedata -> dataset 归一化', () => {
     // 键名应与 pageData 的顶层键一致
     expect(Object.keys(ds.tables)).toEqual(expect.arrayContaining(['stats', 'recentOrders', 'title']))
 
-    const statsView = ds.getView('stats', 'default')
+    const statsView = ds.getView('stats', 'default')!
     expect(statsView).toBeDefined()
     expect(statsView.rows).toHaveLength(1)
     expect((statsView.rows[0] as any).totalUsers).toBe(8523)
 
-    const ordersView = ds.getView('recentOrders', 'default')
+    const ordersView = ds.getView('recentOrders', 'default')!
     expect(ordersView).toBeDefined()
     expect(ordersView.rows).toHaveLength(5)
     expect((ordersView.rows[0] as any).orderNo).toBe('ORD1738653421001')
 
-    const titleView = ds.getView('title', 'default')
+    const titleView = ds.getView('title', 'default')!
     expect(titleView.rows[0]).toEqual({ value: 'Async Demo' })
   })
 })

@@ -23,14 +23,15 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
     })
 
     // component's computed tableData should come from dataSource.rows
-    expect(wrapper.vm.tableData).toBeDefined()
-    expect(wrapper.vm.tableData).toEqual(dv.rows)
+    const vm = wrapper.vm as any
+    expect(vm.tableData).toBeDefined()
+    expect(vm.tableData).toEqual(dv.rows)
 
     // reactive: when DataView.rows changes, component updates
     dv.appendRow({ id: 3 })
     await nextTick()
-    expect(wrapper.vm.tableData).toHaveLength(3)
-    expect(wrapper.vm.tableData[2].id).toBe(3)
+    expect(vm.tableData).toHaveLength(3)
+    expect(vm.tableData[2].id).toBe(3)
   })
 
   it('should call dataSource.loadFromServer() on mount when rows empty', async () => {

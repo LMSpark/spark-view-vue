@@ -27,14 +27,13 @@ describe('SparkData Namespace', () => {
     expect(dataSet).toBeDefined()
     expect(dataSet.dataSetName).toBe('TestData')
     expect(dataSet.getTable('Users')).toBeDefined()
-    expect(dataSet.getTable('Users')?.views['default'].rows).toHaveLength(2)
+    expect(dataSet.getTable('Users')?.views['default']?.rows).toHaveLength(2)
   })
 
   it('应该提供 createTreeManager 工厂方法', () => {
     const treeManager = SparkData.createTreeManager({
       idField: 'id',
-      parentIdField: 'parentId',
-      lazy: false
+      parentIdField: 'parentId'
     }, [
       { id: 1, parentId: null, name: 'Root' },
       { id: 2, parentId: 1, name: 'Child 1' },

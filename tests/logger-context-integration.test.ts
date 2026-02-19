@@ -185,7 +185,7 @@ describe('Logger Context Integration', () => {
     
     const TestComponent = defineComponent({
       setup() {
-        const { context, logger, provide } = useSparkComponent({ type: 'test-comp' })
+        const { logger, provide } = useSparkComponent({ type: 'test-comp' })
         
         // 使用 Provider 接口结构（包含 name 和 implementation）
         provide('logger', customLogger)

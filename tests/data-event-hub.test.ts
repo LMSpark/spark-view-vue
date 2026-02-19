@@ -65,10 +65,10 @@ function createTestDataSet() {
 describe('DataView.events.on stateChanged（视图状态监听）', () => {
   it('setCurrentRow 触发 currentRow 状态变更', () => {
     const ds = createTestDataSet()
-    const handler = vi.fn<[ViewStateEvent], void>()
+    const handler = vi.fn<(evt: ViewStateEvent) => void>()
 
     const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', (...args: unknown[]) => handler(args[0] as ViewStateEvent))
+    deptView.events.on('stateChanged', handler)
     deptView.setCurrentRow(deptView.rows[0]!)
 
     expect(handler).toHaveBeenCalledOnce()
@@ -87,8 +87,8 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
     const deptView = ds.getView('Departments')!
     deptView.setCurrentRow(deptView.rows[0]!)
 
-    const handler = vi.fn<[ViewStateEvent], void>()
-    deptView.events.on('stateChanged', (...args: unknown[]) => handler(args[0] as ViewStateEvent))
+    const handler = vi.fn<(evt: ViewStateEvent) => void>()
+    deptView.events.on('stateChanged', handler)
     deptView.setCurrentRow(null)
 
     expect(handler).toHaveBeenCalled()
@@ -99,10 +99,10 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
 
   it('setSelectedRows 触发 selectedRows 状态变更', () => {
     const ds = createTestDataSet()
-    const handler = vi.fn<[ViewStateEvent], void>()
+    const handler = vi.fn<(evt: ViewStateEvent) => void>()
 
     const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', (...args: unknown[]) => handler(args[0] as ViewStateEvent))
+    deptView.events.on('stateChanged', handler)
     deptView.setSelectedRows([deptView.rows[0]!, deptView.rows[1]!])
 
     expect(handler).toHaveBeenCalled()
@@ -120,8 +120,8 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
     const deptView = ds.getView('Departments')!
     deptView.setCurrentRow(deptView.rows[0]!)
 
-    const handler = vi.fn<[ViewStateEvent], void>()
-    deptView.events.on('stateChanged', (...args: unknown[]) => handler(args[0] as ViewStateEvent))
+    const handler = vi.fn<(evt: ViewStateEvent) => void>()
+    deptView.events.on('stateChanged', handler)
     deptView.clearAll()
 
     expect(handler).toHaveBeenCalled()
