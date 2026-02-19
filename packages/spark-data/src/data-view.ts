@@ -134,6 +134,8 @@ export class DataView {
   private nextCascadeRequestId = 0
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
+  /** 销毁状态标记 */
+  private _isDestroyed = false
   
   // ── 公共内部对象 ─────────────────────────
 
@@ -253,6 +255,7 @@ export class DataView {
    * - 竞态：后发请求到达时忽略先发但晚到的响应
    */
   async loadFromServer(params?: QueryParams): Promise<CrudResult> {
+    this.checkDestroyed()  // 检查销毁状态
     if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
 
     this.requestState = RequestState.Loading
@@ -714,6 +717,68 @@ export class DataView {
     if (!this.crudService) this.initializeCrudService()
     if (!this.crudService) throw new Error(`Table ${this.tableName} has no API configuration`)
     return this.crudService
+  }
+
+  // ─────────────────────────────────────────────
+  // 销毁与内存管理
+  // ─────────────────────────────────────────────
+
+  /**
+   * 销毁视图，清理所有订阅和引用
+   * 应在组件 onUnmounted 时调用，防止内存泄漏
+   */
+  destroy(): void {
+    if (this._isDestroyed) return
+    
+    this.logger.debug(`销毁 DataView: ${this.tableName}:${this.viewId}`)
+    
+    // 1. 清理级联订阅
+    this.teardownCascade()
+    
+    // 2. 取消待处理的请求
+    if (this.pendingCascadeRequest) {
+      this.pendingCascadeRequest.cancel()
+      this.pendingCascadeRequest = undefined
+    }
+    
+    // 3. 清理事件监听器（如果支持）
+    // Note: IEventEmitter 接口目前不支持 removeAllListeners，跳过此步
+    // TODO: 如需要清理监听器，需要扩展 IEventEmitter 接口
+    
+    // 4. 清理 CRUD 服务（设为 undefined）
+    // @ts-expect-error - 清理可选属性
+    this.crudService = undefined
+    
+    // 5. 清空数据
+    this.resetState()
+    
+    // 6. 清除 TreeManager 引用
+    // @ts-expect-error - 清理可选属性
+    this.treeManager = undefined
+    
+    // 7. 清除 DataTable 引用（打破循环引用）
+    // @ts-expect-error - 需要清理引用以防止内存泄漏
+    this.dataTable = undefined
+    
+    // 8. 标记为已销毁
+    this._isDestroyed = true
+  }
+
+  /**
+   * 检查视图是否已销毁
+   */
+  isDestroyed(): boolean {
+    return this._isDestroyed
+  }
+
+  /**
+   * 检查销毁状态，已销毁则抛出异常
+   * @private 内部方法，关键操作前调用
+   */
+  private checkDestroyed(): void {
+    if (this._isDestroyed) {
+      throw new Error(`DataView ${this.tableName}:${this.viewId} has been destroyed`)
+    }
   }
 
   // ─────────────────────────────────────────────
