@@ -125,8 +125,6 @@ export class DataView {
   private crudService?: CrudService
   /** 级联取消订阅句柄 */
   private cascadeUnsubscribers: (() => void)[] = []
-  /** 数据变更事件总线（独立于 stateChanged，专供 UI 组件通过 DATA_EVENTS 能力订阅） */
-  private readonly dataEvents: IEventEmitter = createEventEmitter()
 
   // ── 公共内部对象 ─────────────────────────
 
@@ -513,19 +511,6 @@ export class DataView {
       changeType,
       ...extra,
     } satisfies ViewStateEvent)
-
-    // ── 数据变更事件（供 UI 组件通过 DATA_EVENTS 能力订阅） ──
-    if (changeType === 'rows') {
-      this.dataEvents.emit('rows:changed', this.rows)
-    } else if (changeType === 'currentRow') {
-      this.dataEvents.emit('currentRow:changed', this.currentRow)
-    } else if (changeType === 'selectedRows') {
-      this.dataEvents.emit('selectedRows:changed', this.selectedRows)
-    } else if (changeType === 'cleared') {
-      this.dataEvents.emit('data:cleared')
-    } else if (changeType === 'requestState') {
-      this.dataEvents.emit('state:changed', this.requestState)
-    }
   }
 
   // ─────────────────────────────────────────────
