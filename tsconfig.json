@@ -37,6 +37,7 @@
       "@spark-view/spark-component": ["./packages/spark-component/src/index.ts"],
       "@spark-view/spark-component/*": ["./packages/spark-component/src/*"],
       "@spark-view/spark-data": ["./packages/spark-data/src/index.ts"],
+      "@spark-view/spark-data/*": ["./packages/spark-data/src/*"],
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
       "@spark-view/spark-app/*": ["./packages/spark-app/src/*"],
       "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"],
