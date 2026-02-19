@@ -1,13 +1,9 @@
 /**
  * DataView — 数据视图，SPARK 数据层的统一交互枢纽
  *
- * ## 能力系统角色
- *   提供：DATA_VIEW（供 UI 组件消费行数据、选中状态）
- *   消费：DATA_SET（沿 parent 链查询关系，驱动加载编排）
- *
- * ## parent 链
+ * ## 引用链
  *   DataView → DataTable → DataSet
- *   lookup(this, DATA_SET) 自动向上查找，无需手动传引用。
+ *   直接访问：dataTable 获取 api/crudConfig，dataTable.dataSet 获取关系配置
  *
  * ## 级联加载（SOLID：子订阅父，父不知子）
  *   子视图通过 setupCascade() 订阅父视图的 stateChanged 事件，
@@ -25,14 +21,22 @@ import type {
   CrudResult, BatchResult,
 } from './types'
 import type { TreeManager } from './tree-manager'
-import {
-  Logger, DATA_VIEW, DATA_SET, DATA_TABLE, DATA_EVENTS,
-  provide as setCapability, lookup, createEventEmitter,
-} from '@spark-view/spark-utils'
-import type { CapabilityName, ICapabilityContext, IEventEmitter } from '@spark-view/spark-utils'
+import type { DataTable } from './data-table'
+import { Logger, createEventEmitter } from '@spark-view/spark-utils'
+import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows } from './core/utils'
 import { CrudService, createCrudService } from './crud-service'
-import type { IDataTableCapability } from './data-table'
+
+// ─────────────────────────────────────────────
+// 事件类型映射
+// ─────────────────────────────────────────────
+
+/**
+ * DataView 事件映射（用于 events 事件总线类型约束）
+ */
+interface DataViewEventMap extends Record<string, any[]> {
+  stateChanged: [ViewStateEvent]
+}
 
 // ─────────────────────────────────────────────
 // 能力接口（避免循环引用，与类同文件定义）
@@ -61,65 +65,16 @@ export enum RequestState {
   Failed       = 4,
 }
 
-/**
- * DataSet 能力中用于关系查询的最小接口
- * （requestData / triggerChildViews 共用）
- */
-interface IDataSetRelationCap {
-  getParentRelations: (t: string, v?: string) => DataRelation[]
-  getChildRelations:  (t: string, v: string)  => DataRelation[]
-  getView:            (t: string, v?: string)  => DataView | undefined
-}
-
-/**
- * DataView 向 UI/组件暴露的能力（受控门面）
- *
- * 设计原则：不直接暴露 DataView 类实例，仅暴露 UI 组件需要的读写接口。
- */
-export interface IDataViewCapability {
-  readonly tableName: string
-  readonly viewId: string
-  readonly primaryKey: string
-
-  // ── 数据（响应式 getter） ──
-  readonly rows: IDataRow[]
-  readonly currentRow: IDataRow | null
-  readonly selectedRows: IDataRow[]
-
-  // ── 分页 ──
-  readonly total: number
-  readonly page: number
-  readonly pageSize: number
-
-  // ── 状态 ──
-  readonly requestState: RequestState
-
-  // ── 操作 ──
-  setCurrentRow(row: IDataRow | null): void
-  setSelectedRows(rows: IDataRow[]): void
-  /** 触发数据加载（幂等：已在请求中时直接返回） */
-  requestData(): Promise<void>
-
-  // ── 事件 ──
-  readonly events: IEventEmitter<DataViewEventMap>
-}
-/** DataView 事件映射表（类型安全的 handler 参数推断） */
-export type DataViewEventMap = {
-  stateChanged: [ViewStateEvent]
-}
 // ─────────────────────────────────────────────
 // DataView 类
 // ─────────────────────────────────────────────
 
-export class DataView implements ICapabilityContext {
+export class DataView {
 
-  // ── ICapabilityContext ──────────────────────
+  // ── DataTable 引用 ──────────────────
 
-  id: string
-  readonly type = 'dataview'
-  /** 父级：DataTable，由 DataTable.setDataSet() 建立 parent 链时设置 */
-  parent?: ICapabilityContext
-  capabilities = new Map<CapabilityName, unknown>()
+  /** 所属 DataTable（由 DataTable.setDataSet() 时设置） */
+  dataTable!: DataTable
 
   // ── 标识 ────────────────────────────────────
 
@@ -186,41 +141,17 @@ export class DataView implements ICapabilityContext {
   protected logger = Logger('DataView')
 
   // ─────────────────────────────────────────────
-  // 构造 & 能力注册
+  // 构造
   // ─────────────────────────────────────────────
 
   constructor(tableName: string, viewId: string = 'default') {
     this.tableName = tableName
     this.viewId = viewId
-    this.id = `dv:${tableName}:${viewId}`
+  }
 
-    const view = this
-
-    // ── DATA_VIEW 能力（受控门面） ──
-    setCapability(this, DATA_VIEW, {
-      tableName: this.tableName,
-      viewId: this.viewId,
-      get primaryKey() { return view.primaryKey },
-      // 数据
-      get rows() { return view.rows },
-      get currentRow() { return view.currentRow },
-      get selectedRows() { return view.selectedRows },
-      // 分页
-      get total() { return view.total },
-      get page() { return view.page },
-      get pageSize() { return view.pageSize },
-      // 状态
-      get requestState() { return view.requestState },
-      // 操作
-      setCurrentRow: (row: IDataRow | null) => view.setCurrentRow(row),
-      setSelectedRows: (rows: IDataRow[]) => view.setSelectedRows(rows),
-      requestData: () => view.requestData(),
-      // 事件
-      get events() { return view.events },
-    } satisfies IDataViewCapability)
-
-    // ── DATA_EVENTS 能力（数据变更事件） ──
-    setCapability(this, DATA_EVENTS, this.dataEvents)
+  /** 获取 DataSet（向上访问） */
+  private getDataSet() {
+    return this.dataTable?.dataSet
   }
 
   // ─────────────────────────────────────────────
@@ -244,8 +175,7 @@ export class DataView implements ICapabilityContext {
 
     this.requestState = RequestState.Preparing
 
-    const dsCap = lookup<{ dataSet: IDataSetRelationCap }>(this, DATA_SET)
-    const ds = dsCap?.dataSet
+    const ds = this.getDataSet()
     if (!ds) { this.requestState = RequestState.Idle; return }
 
     // 逐个父视图检查依赖是否满足
@@ -613,10 +543,9 @@ export class DataView implements ICapabilityContext {
   setupCascade(): void {
     this.teardownCascade()
 
-    const dsCap = lookup<{ dataSet: IDataSetRelationCap }>(this, DATA_SET)
-    if (!dsCap) return
+    const ds = this.getDataSet()
+    if (!ds) return
 
-    const ds = dsCap.dataSet
     const parentRels = ds.getParentRelations(this.tableName, this.viewId)
 
     for (const rel of parentRels) {
@@ -672,19 +601,15 @@ export class DataView implements ICapabilityContext {
   // CRUD 服务私有辅助
   // ─────────────────────────────────────────────
 
-  /** 懒初始化 CrudService（从 parent DataTable 的 api 配置创建） */
+  /** 懒初始化 CrudService（从 DataTable 的 api 配置创建） */
   private initializeCrudService(): void {
-    if (!this.parent) return
-    const cap = lookup<IDataTableCapability>(this.parent, DATA_TABLE)
-    if (cap?.api) {
-      this.crudService = createCrudService(cap.api)
-    }
+    if (!this.dataTable?.api) return
+    this.crudService = createCrudService(this.dataTable.api)
   }
 
   /** 获取 CRUD 操作配置（超时、重试等） */
   private getCrudConfig(): CrudOperationConfig | undefined {
-    if (!this.parent) return undefined
-    return lookup<IDataTableCapability>(this.parent, DATA_TABLE)?.crudConfig
+    return this.dataTable?.crudConfig
   }
 
   /** 确保 CrudService 已初始化，否则抛出；返回实例供调用方直接使用 */

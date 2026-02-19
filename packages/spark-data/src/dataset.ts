@@ -1,9 +1,5 @@
 /**
- * DataSet — 数据空间协调器（容器 + 能力提供）
- *
- * SPARK 能力系统模式（与组件系统同构）：
- *   - 实现 ICapabilityContext → 提供 DATA_SET 能力
- *   - 下层通过 lookup(ctx, DATA_SET) 消费
+ * DataSet — 数据空间协调器（容器 + 数据管理）
  *
  * 职责：表注册管理查询、关系注册管理查询、数据加载协调
  * 不操作下层：不主动调用 DataView/DataTable 的方法来改变它们的状态
@@ -13,31 +9,8 @@
 import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
-import { DATA_SET, provide as setCapability } from '@spark-view/spark-utils'
-import type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
 
-// ===== 能力接口（与类共同定义，避免循环引用） =====
-
-/** DataSet 向 UI/组件暴露的能力 */
-export interface IDataSetCapability {
-  /** DataSet 实例引用 */
-  readonly dataSet: DataSet
-}
-
-export class DataSet implements ICapabilityContext {
-  // ===== ICapabilityContext =====
-
-  /** 唯一标识 */
-  id: string
-
-  /** 上下文类型 */
-  readonly type = 'dataset'
-
-  /** 父级上下文（无，DataSet 是根） */
-  parent?: ICapabilityContext
-
-  /** 能力 Map */
-  capabilities = new Map<CapabilityName, unknown>()
+export class DataSet {
 
   // ===== 属性定义 =====
 
@@ -72,19 +45,15 @@ export class DataSet implements ICapabilityContext {
     pageId?: string | undefined
   }) {
     this.dataSetName = config.dataSetName
-    this.id = `ds:${config.dataSetName}`
     this.relations = config.relations
     this.version = config.version
     this.pageId = config.pageId
 
-    // 注册 DATA_SET 能力
-    setCapability(this, DATA_SET, { dataSet: this } satisfies IDataSetCapability)
-
-    // 构建表实例并建立 parent 链（DataSet → DataTable → DataView）
+    // 构建表实例并建立引用链（DataSet → DataTable → DataView）
     this.tables = {}
     for (const [name, td] of Object.entries(config.tables)) {
       const table = DataTable.fromTableData(td)
-      table.setDataSet(this)  // 设置 table.parent = this, view.parent = table
+      table.setDataSet(this)  // 设置 table.dataSet = this, view.dataTable = table
       this.tables[name] = table
     }
 

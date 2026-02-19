@@ -2,11 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { DataTable } from '../packages/spark-data/src/data-table'
 import { DataView } from '../packages/spark-data/src/data-view'
 import { DataSet } from '../packages/spark-data/src/dataset'
-import { DATA_VIEW, DATA_TABLE, DATA_SET, FIELD_METADATA } from '@spark-view/spark-utils'
-import type { IFieldMetadataCapability } from '@spark-view/spark-utils'
-import type { IDataViewCapability } from '../packages/spark-data/src/data-view'
-import type { IDataTableCapability } from '../packages/spark-data/src/data-table'
-import type { IDataSetCapability } from '../packages/spark-data/src/dataset'
+
 
 describe('DataTable responsibilities (refactor verification)', () => {
   it('DataTable 管理 views[default]（DataView），不暴露 UI 状态代理', () => {
@@ -135,107 +131,9 @@ describe('DataTable responsibilities (refactor verification)', () => {
   })
 })
 
-// ===== 能力接口测试 =====
+// ===== 事件系统测试 =====
 
-describe('Capability interfaces (typed getCapabilities)', () => {
-  it('DataView.getCapabilities() 应返回类型安全的 IDataViewCapability', () => {
-    const view = new DataView('Orders', 'grid1')
-    view.rows.push({ id: 1, total: 100 })
-    view.currentRow = view.rows[0]!
-
-    const caps = view.capabilities
-    expect(caps.has(DATA_VIEW)).toBe(true)
-
-    const cap = caps.get(DATA_VIEW) as IDataViewCapability
-    expect(cap.tableName).toBe('Orders')
-    expect(cap.viewId).toBe('grid1')
-
-    // 受控门面：不暴露 dataView 类实例
-    expect((cap as any).dataView).toBeUndefined()
-
-    // 响应式 getter：rows/currentRow 是活引用
-    expect(cap.rows).toBe(view.rows)
-    expect(cap.currentRow).toBe(view.rows[0])
-
-    // 操作方法受控奖接
-    expect(typeof cap.setCurrentRow).toBe('function')
-    expect(typeof cap.setSelectedRows).toBe('function')
-    expect(typeof cap.requestData).toBe('function')
-
-    // 分页 / 状态
-    expect(cap.total).toBe(view.total)
-    expect(cap.page).toBe(view.page)
-    expect(cap.pageSize).toBe(view.pageSize)
-    expect(cap.requestState).toBe(view.requestState)
-
-    // 事件总线
-    expect(cap.events).toBe(view.events)
-
-    // 修改 view 后，capability 反映最新值
-    view.currentRow = null
-    expect(cap.currentRow).toBeNull()
-
-    view.rows.push({ id: 2, total: 200 })
-    expect(cap.rows).toHaveLength(2)
-  })
-
-  it('DataTable.getCapabilities() 应返回 IDataTableCapability（受控门面）', () => {
-    const table = new DataTable('Products', [
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'name', type: 'string' }
-    ])
-
-    const caps = table.capabilities
-    expect(caps.has(DATA_TABLE)).toBe(true)
-
-    const cap = caps.get(DATA_TABLE) as IDataTableCapability
-    // 受控门面：不暴露 DataTable 实例
-    expect((cap as any).dataTable).toBeUndefined()
-    // 暴露表名和列定义
-    expect(cap.tableName).toBe('Products')
-    expect(cap.columns).toHaveLength(2)
-    expect(cap.columns[0]!.name).toBe('id')
-    expect(cap.api).toBeUndefined()
-    expect(cap.crudConfig).toBeUndefined()
-  })
-
-  it('DataTable 应注册 FIELD_METADATA 能力', () => {
-    const table = new DataTable('Users', [
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'name', type: 'string', label: '姓名' },
-      { name: 'email', type: 'string', label: '邮箱' }
-    ])
-
-    const caps = table.capabilities
-    expect(caps.has(FIELD_METADATA)).toBe(true)
-
-    const meta = caps.get(FIELD_METADATA) as IFieldMetadataCapability
-    expect(meta.tableName).toBe('Users')
-    expect(meta.getColumns()).toHaveLength(3)
-    expect(meta.getColumn('name')?.label).toBe('姓名')
-    expect(meta.getColumn('nonexistent')).toBeUndefined()
-    expect(meta.getPrimaryKey()).toBe('id')
-  })
-
-  it('DataSet.getCapabilities() 应返回 IDataSetCapability', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'TestDS',
-      tables: {
-        Users: { tableName: 'Users', columns: [{ name: 'id', type: 'number' }] }
-      }
-    })
-
-    const caps = ds.capabilities
-    expect(caps.has(DATA_SET)).toBe(true)
-
-    const cap = caps.get(DATA_SET) as IDataSetCapability
-    expect(cap.dataSet).toBe(ds)
-  })
-})
-
-// ===== ICapabilityContext 能力体系测试 =====
-
-describe('ICapabilityContext capability system', () => {
+describe('Event system', () => {
   it('DataView.events.on stateChanged 通知 UI', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',

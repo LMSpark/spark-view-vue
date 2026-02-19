@@ -43,12 +43,6 @@ export type {
   DependencyType
 } from './types'
 
-// ===== 能力接口 =====
-
-export type { IDataViewCapability } from './data-view'
-export type { IDataTableCapability } from './data-table'
-export type { IDataSetCapability } from './dataset'
-
 // ===== DataKey 统一解析 =====
 
 export { isDataKey, parseDataKey, resolveDataKey, buildDataKey, getViewKey } from './core/data-key'

@@ -16,7 +16,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { ViewStateEvent } from '../packages/spark-data/src/types'
 import { SparkData } from '../packages/spark-data/src/spark-data'
-import { DATA_SET } from '@spark-view/spark-utils'
+
 
 // ==================== 工具函数 ====================
 
@@ -244,21 +244,6 @@ describe('能力流端到端', () => {
     // 验证能力流：两个监听器都被触发
     expect(events).toContain('listener2:Departments.default')
     expect(events).toContain('stateChange:currentRow')
-  })
-
-  it('getCapabilities 返回 DATA_SET 能力（暴露 dataSet 实例）', () => {
-    const ds = createTestDataSet()
-    const caps = ds.capabilities
-
-    // 获取 DATA_SET 能力
-    const impl = caps.get(DATA_SET) as {
-      dataSet: typeof ds
-    }
-
-    // 验证暴露的是 DataSet 实例本身
-    expect(impl.dataSet).toBe(ds)
-    expect(impl.dataSet.dataSetName).toBe('TestDS')
-    expect(impl.dataSet.getTable('Departments')).toBeDefined()
   })
 })
 
