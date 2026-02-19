@@ -132,6 +132,9 @@ export class DataView {
   } | undefined
   /** 级联请求 ID 计数器 */
   private nextCascadeRequestId = 0
+  /** 当前 loadFromServer 请求 ID（用于防止竞态） */
+  private currentLoadRequestId = 0
+  
   // ── 公共内部对象 ─────────────────────────
 
   /**
@@ -244,15 +247,20 @@ export class DataView {
   }
 
   /**
-   * 从服务器拉取列表（带防重入）
+   * 从服务器拉取列表（带防重入 + 请求ID防竞态）
    * - 成功：写入 rows，重置选中状态，requestState=Loaded，发射 stateChanged + 通知 UI
    * - 失败：requestState=Failed，通知 UI，抛出异常
+   * - 竞态：后发请求到达时忽略先发但晚到的响应
    */
   async loadFromServer(params?: QueryParams): Promise<CrudResult> {
     if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
 
     this.requestState = RequestState.Loading
     this.loadingError = null
+    
+    // 生成请求 ID（递增计数器）
+    const requestId = ++this.currentLoadRequestId
+    
     if (!this.crudService) this.initializeCrudService()
     if (!this.crudService) {
       this.requestState = RequestState.Failed
@@ -262,6 +270,13 @@ export class DataView {
 
     try {
       const result = await this.crudService.list(params, this.getCrudConfig())
+      
+      // 检查是否被更新的请求替代
+      if (requestId !== this.currentLoadRequestId) {
+        this.logger.debug(`loadFromServer 请求 ${requestId} 被更新的请求 ${this.currentLoadRequestId} 替代，忽略响应`)
+        return { success: false, message: 'Request superseded' }
+      }
+      
       if (result.success && result.data) {
         // 写入行数据 + 重置选中状态（新数据 → 旧选中无效）
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
@@ -277,6 +292,12 @@ export class DataView {
       }
       return result
     } catch (error) {
+      // 异常时也要检查请求 ID（避免旧请求的异常覆盖新请求的状态）
+      if (requestId !== this.currentLoadRequestId) {
+        this.logger.debug(`loadFromServer 请求 ${requestId} 异常被忽略（已被新请求替代）`)
+        return { success: false, message: 'Request superseded' }
+      }
+      
       this.loadingError = error as Error
       this.requestState = RequestState.Failed
       this.emitStateChanged('requestState')
