@@ -6,12 +6,12 @@
     @node-expand="handleNodeExpand"
     @node-collapse="handleNodeCollapse"
   >
-    <template #default="{ node, data }">
+    <template #default="slotProps">
       <span class="custom-tree-node">
-        <!-- 支持通过 slot 自定义节点内容 -->
-        <slot :node="node" :data="data">
+        <!-- 支持通过 slot 自定义节点内容（防御 undefined scope，测试环境 el-tree 未注册时 slotProps 可能为空） -->
+        <slot :node="slotProps?.node" :data="slotProps?.data">
           <!-- 默认渲染：显示节点标签 -->
-          <span class="node-label">{{ data.label || data.name || data.title || '节点' }}</span>
+          <span class="node-label">{{ (slotProps?.data as any)?.label || (slotProps?.data as any)?.name || (slotProps?.data as any)?.title || '节点' }}</span>
         </slot>
       </span>
     </template>

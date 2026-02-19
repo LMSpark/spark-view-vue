@@ -74,9 +74,16 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
     })
 
     const dv = ds.getView('Nodes', 'default')!
-    const spy = vi.spyOn(dv, 'loadFromServer').mockResolvedValue({ success: true, data: [] } as any)
+    // RendererTree calls requestData() → loadFromServer(); spy on requestData directly
+    const spy = vi.spyOn(dv, 'requestData').mockResolvedValue(undefined)
 
-    mount(RendererTree as any, { props: { dataSource: dv } })
+    mount(RendererTree as any, {
+      props: { dataSource: dv },
+      global: {
+        // Stub el-tree so the unknown component doesn't crash slot rendering
+        stubs: { 'el-tree': { template: '<div><slot :node="{}" :data="{}" /></div>' } }
+      }
+    })
     await nextTick()
 
     expect(spy).toHaveBeenCalled()
