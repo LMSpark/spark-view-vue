@@ -157,6 +157,32 @@ export class DataTable {
     return result
   }
 
+  // ===== 销毁与内存管理 =====
+
+  /**
+   * 销毁指定视图
+   * @param viewId - 视图ID
+   * @remarks 调用视图的 destroy() 方法并从视图集合中移除
+   */
+  destroyView(viewId: string): void {
+    const view = this.views[viewId]
+    if (view) {
+      view.destroy()
+      delete this.views[viewId]
+    }
+  }
+
+  /**
+   * 销毁所有视图（包括 default 视图）
+   * @remarks 应在 DataTable 不再使用时调用，防止内存泄漏
+   */
+  destroy(): void {
+    for (const view of Object.values(this.views)) {
+      view.destroy()
+    }
+    this.views = {}
+  }
+
   // ===== 工厂方法 =====
 
   /**
