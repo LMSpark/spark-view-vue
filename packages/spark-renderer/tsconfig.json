@@ -28,7 +28,6 @@
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
-    "noEmitOnError": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "allowSyntheticDefaultImports": true,
