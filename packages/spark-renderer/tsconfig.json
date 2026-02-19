@@ -31,6 +31,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "allowSyntheticDefaultImports": true,
+    "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
       "@spark-view/spark-utils": ["../spark-utils/src/index.ts"],
