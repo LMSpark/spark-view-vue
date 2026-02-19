@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { DataTable } from '../packages/spark-data/src/data-table'
 import { DataView } from '../packages/spark-data/src/data-view'
 import { DataSet } from '../packages/spark-data/src/dataset'
-import { DATA_VIEW, DATA_TABLE, DATA_SET } from '@spark-view/spark-utils'
+import { DATA_VIEW, DATA_TABLE, DATA_SET, FIELD_METADATA } from '@spark-view/spark-utils'
+import type { IFieldMetadataCapability } from '@spark-view/spark-utils'
 import type { IDataViewCapability } from '../packages/spark-data/src/data-view'
 import type { IDataTableCapability } from '../packages/spark-data/src/data-table'
 import type { IDataSetCapability } from '../packages/spark-data/src/dataset'
@@ -178,7 +179,7 @@ describe('Capability interfaces (typed getCapabilities)', () => {
     expect(cap.rows).toHaveLength(2)
   })
 
-  it('DataTable.getCapabilities() 应返回 IDataTableCapability', () => {
+  it('DataTable.getCapabilities() 应返回 IDataTableCapability（受控门面）', () => {
     const table = new DataTable('Products', [
       { name: 'id', type: 'number', isPrimaryKey: true },
       { name: 'name', type: 'string' }
@@ -188,7 +189,32 @@ describe('Capability interfaces (typed getCapabilities)', () => {
     expect(caps.has(DATA_TABLE)).toBe(true)
 
     const cap = caps.get(DATA_TABLE) as IDataTableCapability
-    expect(cap.dataTable).toBe(table)
+    // 受控门面：不暴露 DataTable 实例
+    expect((cap as any).dataTable).toBeUndefined()
+    // 暴露表名和列定义
+    expect(cap.tableName).toBe('Products')
+    expect(cap.columns).toHaveLength(2)
+    expect(cap.columns[0]!.name).toBe('id')
+    expect(cap.api).toBeUndefined()
+    expect(cap.crudConfig).toBeUndefined()
+  })
+
+  it('DataTable 应注册 FIELD_METADATA 能力', () => {
+    const table = new DataTable('Users', [
+      { name: 'id', type: 'number', isPrimaryKey: true },
+      { name: 'name', type: 'string', label: '姓名' },
+      { name: 'email', type: 'string', label: '邮箱' }
+    ])
+
+    const caps = table.capabilities
+    expect(caps.has(FIELD_METADATA)).toBe(true)
+
+    const meta = caps.get(FIELD_METADATA) as IFieldMetadataCapability
+    expect(meta.tableName).toBe('Users')
+    expect(meta.getColumns()).toHaveLength(3)
+    expect(meta.getColumn('name')?.label).toBe('姓名')
+    expect(meta.getColumn('nonexistent')).toBeUndefined()
+    expect(meta.getPrimaryKey()).toBe('id')
   })
 
   it('DataSet.getCapabilities() 应返回 IDataSetCapability', () => {

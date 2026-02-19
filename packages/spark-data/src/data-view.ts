@@ -26,7 +26,7 @@ import type {
 } from './types'
 import type { TreeManager } from './tree-manager'
 import {
-  Logger, DATA_VIEW, DATA_SET, DATA_TABLE,
+  Logger, DATA_VIEW, DATA_SET, DATA_TABLE, DATA_EVENTS,
   provide as setCapability, lookup, createEventEmitter,
 } from '@spark-view/spark-utils'
 import type { CapabilityName, ICapabilityContext, IEventEmitter } from '@spark-view/spark-utils'
@@ -79,6 +79,7 @@ interface IDataSetRelationCap {
 export interface IDataViewCapability {
   readonly tableName: string
   readonly viewId: string
+  readonly primaryKey: string
 
   // ── 数据（响应式 getter） ──
   readonly rows: IDataRow[]
@@ -129,6 +130,11 @@ export class DataView implements ICapabilityContext {
 
   rows: IDataRow[] = []
 
+  // ── 主键 ────────────────────────────────────
+
+  /** 主键字段名，用于 SELECTION 能力的 ID 定位（默认 'id'） */
+  primaryKey: string = 'id'
+
   // ── 选中状态 ────────────────────────────────
 
   currentRow: IDataRow | null = null
@@ -164,6 +170,8 @@ export class DataView implements ICapabilityContext {
   private crudService?: CrudService
   /** 级联取消订阅句柄 */
   private cascadeUnsubscribers: (() => void)[] = []
+  /** 数据变更事件总线（独立于 stateChanged，专供 UI 组件通过 DATA_EVENTS 能力订阅） */
+  private readonly dataEvents: IEventEmitter = createEventEmitter()
 
   // ── 公共内部对象 ─────────────────────────
 
@@ -187,9 +195,12 @@ export class DataView implements ICapabilityContext {
     this.id = `dv:${tableName}:${viewId}`
 
     const view = this
+
+    // ── DATA_VIEW 能力（受控门面） ──
     setCapability(this, DATA_VIEW, {
       tableName: this.tableName,
       viewId: this.viewId,
+      get primaryKey() { return view.primaryKey },
       // 数据
       get rows() { return view.rows },
       get currentRow() { return view.currentRow },
@@ -207,6 +218,9 @@ export class DataView implements ICapabilityContext {
       // 事件
       get events() { return view.events },
     } satisfies IDataViewCapability)
+
+    // ── DATA_EVENTS 能力（数据变更事件） ──
+    setCapability(this, DATA_EVENTS, this.dataEvents)
   }
 
   // ─────────────────────────────────────────────
@@ -449,17 +463,17 @@ export class DataView implements ICapabilityContext {
     this.rows.push(row)
   }
 
-  /** 按 id 部分更新一行，返回是否成功 */
+  /** 按主键部分更新一行，返回是否成功 */
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
-    const idx = this.rows.findIndex(r => r['id'] === id)
+    const idx = this.rows.findIndex(r => r[this.primaryKey] === id)
     if (idx < 0) return false
     this.rows[idx] = { ...this.rows[idx], ...data }
     return true
   }
 
-  /** 按 id 删除一行，返回是否成功 */
+  /** 按主键删除一行，返回是否成功 */
   deleteRowById(id: string | number): boolean {
-    const idx = this.rows.findIndex(r => r['id'] === id)
+    const idx = this.rows.findIndex(r => r[this.primaryKey] === id)
     if (idx < 0) return false
     this.rows.splice(idx, 1)
     return true
@@ -569,6 +583,19 @@ export class DataView implements ICapabilityContext {
       changeType,
       ...extra,
     } satisfies ViewStateEvent)
+
+    // ── 数据变更事件（供 UI 组件通过 DATA_EVENTS 能力订阅） ──
+    if (changeType === 'rows') {
+      this.dataEvents.emit('rows:changed', this.rows)
+    } else if (changeType === 'currentRow') {
+      this.dataEvents.emit('currentRow:changed', this.currentRow)
+    } else if (changeType === 'selectedRows') {
+      this.dataEvents.emit('selectedRows:changed', this.selectedRows)
+    } else if (changeType === 'cleared') {
+      this.dataEvents.emit('data:cleared')
+    } else if (changeType === 'requestState') {
+      this.dataEvents.emit('state:changed', this.requestState)
+    }
   }
 
   // ─────────────────────────────────────────────
@@ -649,15 +676,15 @@ export class DataView implements ICapabilityContext {
   private initializeCrudService(): void {
     if (!this.parent) return
     const cap = lookup<IDataTableCapability>(this.parent, DATA_TABLE)
-    if (cap?.dataTable?.api) {
-      this.crudService = createCrudService(cap.dataTable.api)
+    if (cap?.api) {
+      this.crudService = createCrudService(cap.api)
     }
   }
 
   /** 获取 CRUD 操作配置（超时、重试等） */
   private getCrudConfig(): CrudOperationConfig | undefined {
     if (!this.parent) return undefined
-    return lookup<IDataTableCapability>(this.parent, DATA_TABLE)?.dataTable?.crudConfig
+    return lookup<IDataTableCapability>(this.parent, DATA_TABLE)?.crudConfig
   }
 
   /** 确保 CrudService 已初始化，否则抛出；返回实例供调用方直接使用 */
