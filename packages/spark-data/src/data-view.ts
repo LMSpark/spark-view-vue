@@ -34,6 +34,7 @@ import { CrudService, createCrudService } from './crud-service'
 /**
  * DataView 事件映射（用于 events 事件总线类型约束）
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DataViewEventMap extends Record<string, any[]> {
   stateChanged: [ViewStateEvent]
 }
