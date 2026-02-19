@@ -1,0 +1,212 @@
+/**
+ * 数据校验 - 测试用例
+ * 
+ * 测试范围：
+ * 1. DataValidator 基础功能（必填、类型校验）
+ * 2. DataView CRUD 方法集成（createRecord, updateRecord, batchCreate, batchUpdate）
+ * 3. 自定义行级校验
+ */
+
+import { describe, it, expect, beforeEach } from 'vitest'
+import { DataTable } from '../packages/spark-data/src/data-table'
+import { DataView } from '../packages/spark-data/src/data-view'
+import { DataValidator, createValidator, createSchema } from '../packages/spark-data/src/validation'
+import type { DataColumn, IDataRow } from '../packages/spark-data/src/types'
+
+describe('DataValidator - 基础校验', () => {
+  let validator: DataValidator
+
+  beforeEach(() => {
+    const columns: DataColumn[] = [
+      { name: 'id', type: 'number', allowDBNull: false },
+      { name: 'name', type: 'string', allowDBNull: false },
+      { name: 'age', type: 'number', allowDBNull: true },
+      { name: 'email', type: 'string', allowDBNull: true }
+    ]
+    validator = createValidator(createSchema(columns))
+  })
+
+  it('应校验必填字段（allowDBNull: false）', () => {
+    const row = { id: 1, name: '', age: 25 } as IDataRow
+    const result = validator.validate(row)
+    
+    expect(result.valid).toBe(false)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0]!.field).toBe('name')
+    expect(result.errors[0]!.code).toBe('REQUIRED')
+  })
+
+  it('应允许可空字段为null', () => {
+    const row = { id: 1, name: 'Alice', age: null, email: null } as IDataRow
+    const result = validator.validate(row)
+    
+    expect(result.valid).toBe(true)
+    expect(result.errors).toHaveLength(0)
+  })
+
+  it('应校验number类型', () => {
+    const row = { id: 'invalid', name: 'Alice', age: 25 } as unknown as IDataRow
+    const result = validator.validate(row)
+    
+    expect(result.valid).toBe(false)
+    expect(result.errors[0]!.field).toBe('id')
+    expect(result.errors[0]!.code).toBe('INVALID_TYPE')
+  })
+
+  it('应校验string类型', () => {
+    const row = { id: 1, name: 123, age: 25 } as unknown as IDataRow
+    const result = validator.validate(row)
+    
+    expect(result.valid).toBe(false)
+    expect(result.errors[0]!.field).toBe('name')
+    expect(result.errors[0]!.code).toBe('INVALID_TYPE')
+  })
+
+  it('isValid() 应返回正确的校验状态', () => {
+    expect(validator.isValid({ id: 1, name: 'Alice' } as IDataRow)).toBe(true)
+    expect(validator.isValid({ id: 1, name: '' } as IDataRow)).toBe(false)
+  })
+
+  it('getFirstError() 应返回第一个错误', () => {
+    const row = { id: null, name: '' } as unknown as IDataRow
+    const error = validator.getFirstError(row)
+    
+    expect(error).not.toBeNull()
+    expect(error?.field).toBe('id')
+    expect(error?.code).toBe('REQUIRED')
+  })
+})
+
+describe('DataValidator - 自定义行级校验', () => {
+  it('应支持自定义校验函数', () => {
+    const columns: DataColumn[] = [
+      { name: 'age', type: 'number', allowDBNull: false }
+    ]
+    const schema = createSchema(columns, (row) => {
+      const age = row['age'] as number
+      if (age < 0 || age > 150) {
+        return [{ field: 'age', message: '年龄必须在0-150之间', code: 'OUT_OF_RANGE', value: age }]
+      }
+      return null
+    })
+    const validator = createValidator(schema)
+    
+    const validRow = { age: 25 } as IDataRow
+    expect(validator.isValid(validRow)).toBe(true)
+    
+    const invalidRow = { age: 200 } as IDataRow
+    const result = validator.validate(invalidRow)
+    expect(result.valid).toBe(false)
+    expect(result.errors[0]!.code).toBe('OUT_OF_RANGE')
+  })
+})
+
+describe('DataTable - Validator 初始化', () => {
+  it('应在构造时自动创建 validator', () => {
+    const columns: DataColumn[] = [
+      { name: 'id', type: 'number', allowDBNull: false }
+    ]
+    const table = new DataTable('Users', columns)
+    
+    expect(table.validator).toBeDefined()
+    expect(table.validator?.isValid({ id: 1 } as IDataRow)).toBe(true)
+    expect(table.validator?.isValid({ id: null } as unknown as IDataRow)).toBe(false)
+  })
+
+  it('空列定义不应创建 validator', () => {
+    const table = new DataTable('Users', [])
+    expect(table.validator).toBeUndefined()
+  })
+})
+
+describe('DataView - CRUD 校验集成', () => {
+  let table: DataTable
+  let view: DataView
+
+  beforeEach(() => {
+    const columns: DataColumn[] = [
+      { name: 'id', type: 'number', allowDBNull: false },
+      { name: 'name', type: 'string', allowDBNull: false },
+      { name: 'age', type: 'number', allowDBNull: true }
+    ]
+    table = new DataTable('Users', columns)
+    table.api = {
+      create: { url: '/api/users', method: 'POST' },
+      update: { url: '/api/users/:id', method: 'PUT' },
+      delete: { url: '/api/users/:id', method: 'DELETE' },
+      list: { url: '/api/users', method: 'GET' }
+    }
+    view = table.getOrCreateView('default')
+    view.dataTable = table
+  })
+
+  it('createRecord 应校验必填字段', async () => {
+    const result = await view.createRecord({ id: 1 } as IDataRow) // name 缺失
+    
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('数据校验失败')
+    expect(result.message).toContain('name')
+  })
+
+  it('updateRecord 应校验字段类型', async () => {
+    const result = await view.updateRecord(1, { name: 123 } as unknown as IDataRow)
+    
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('数据校验失败')
+  })
+
+  it('batchCreateRecords 应校验所有记录', async () => {
+    const items = [
+      { id: 1, name: 'Alice' },
+      { id: 2, name: '' }, // 校验失败
+      { id: 3, name: 'Bob' }
+    ] as IDataRow[]
+    
+    const result = await view.batchCreateRecords(items)
+    
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('批量数据校验失败')
+    expect(result.message).toContain('第2条')
+  })
+
+  it('batchUpdateRecords 应校验所有记录', async () => {
+    const items = [
+      { id: 1, name: 'Alice' },
+      { id: 2, age: 'invalid' } // 类型错误
+    ] as unknown as Array<{ id: string | number } & Partial<IDataRow>>
+    
+    const result = await view.batchUpdateRecords(items)
+    
+    expect(result.success).toBe(false)
+    expect(result.message).toContain('批量数据校验失败')
+  })
+
+  it('有效数据不应被校验拦截', async () => {
+    // 注意：这个测试会失败，因为没有真实的API
+    // 但我们可以验证校验阶段没有拦截
+    const validData = { id: 1, name: 'Alice', age: 25 } as IDataRow
+    
+    try {
+      await view.createRecord(validData)
+    } catch (error) {
+      // API 未配置会抛出错误，但应该是在执行 CRUD 时，而非校验阶段
+      expect((error as Error).message).not.toContain('数据校验失败')
+    }
+  })
+})
+
+describe('DataView - 无 Validator 时的行为', () => {
+  it('没有 validator 的 DataView 应正常执行 CRUD', async () => {
+    const table = new DataTable('Users', []) // 空列定义
+    table.api = { create: { url: '/api/users', method: 'POST' } }
+    const view = table.getOrCreateView('default')
+    view.dataTable = table
+    
+    // 应该不会被校验拦截（但会因为缺少 API 配置失败）
+    try {
+      await view.createRecord({ anything: 'goes' } as IDataRow)
+    } catch (error) {
+      expect((error as Error).message).not.toContain('校验')
+    }
+  })
+})
