@@ -74,6 +74,7 @@
     "tools/**/*",
     "examples/**/*",
     "node_modules/.pnpm/@vitejs+plugin-vue*/**",
-    "**/*.config.js"
+    "**/*.config.js",
+    "**/*.config.ts"
   ]
 }
