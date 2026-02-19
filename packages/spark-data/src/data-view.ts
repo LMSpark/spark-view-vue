@@ -125,8 +125,13 @@ export class DataView {
   /** CRUD 服务（按需懒初始化） */
   private crudService?: CrudService
   /** 级联取消订阅句柄 */
-  private cascadeUnsubscribers: (() => void)[] = []
-
+  private cascadeUnsubscribers: (() => void)[] = []  /** 待处理的级联请求（用于取消旧请求） */
+  private pendingCascadeRequest?: {
+    requestId: number
+    cancel: () => void
+  } | undefined
+  /** 级联请求 ID 计数器 */
+  private nextCascadeRequestId = 0
   // ── 公共内部对象 ─────────────────────────
 
   /**
@@ -348,10 +353,33 @@ export class DataView {
   async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
     const svc = this.ensureCrudService()
     const result = await svc.batchDelete(ids, this.getCrudConfig())
+    
     if (result.success && result.data) {
-      for (const id of ids) this.deleteRowById(id)
-      this.emitStateChanged('rows')
+      // 只删除成功的项
+      const successIds = new Set<string | number>()
+      result.data.results.forEach((r, i) => {
+        const id = ids[i]
+        if (r.success && id !== undefined) successIds.add(id)
+      })
+      
+      let deletedCount = 0
+      for (const id of successIds) {
+        if (this.deleteRowById(id)) deletedCount++
+      }
+      
+      // 记录部分失败
+      if (result.data.failureCount > 0) {
+        this.logger.warn(`批量删除部分失败: ${result.data.failureCount}/${ids.length}`, {
+          successCount: result.data.successCount,
+          failureCount: result.data.failureCount
+        })
+      }
+      
+      if (deletedCount > 0) {
+        this.emitStateChanged('rows')
+      }
     }
+    
     return result
   }
 
@@ -396,7 +424,25 @@ export class DataView {
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
     const idx = this.rows.findIndex(r => r[this.primaryKey] === id)
     if (idx < 0) return false
-    this.rows[idx] = { ...this.rows[idx], ...data }
+    
+    const oldRow = this.rows[idx]
+    if (!oldRow) return false
+    
+    const newRow = { ...oldRow, ...data }
+    this.rows[idx] = newRow
+    
+    // 同步更新选中状态的引用
+    if (this.currentRow && isSameRow(this.currentRow, oldRow, this.primaryKey)) {
+      this.currentRow = newRow
+    }
+    
+    if (this.selectedRows.length > 0) {
+      const selectedIdx = this.selectedRows.findIndex(r => isSameRow(r, oldRow, this.primaryKey))
+      if (selectedIdx !== -1) {
+        this.selectedRows[selectedIdx] = newRow
+      }
+    }
+    
     return true
   }
 
@@ -404,7 +450,26 @@ export class DataView {
   deleteRowById(id: string | number): boolean {
     const idx = this.rows.findIndex(r => r[this.primaryKey] === id)
     if (idx < 0) return false
+    
+    const deletedRow = this.rows[idx]
+    if (!deletedRow) return false
+    
     this.rows.splice(idx, 1)
+    
+    // 清理选中状态
+    if (this.currentRow && isSameRow(this.currentRow, deletedRow, this.primaryKey)) {
+      this.currentRow = null
+      this.currentRowIndex = null
+    }
+    
+    if (this.selectedRows.length > 0) {
+      const newSelected = this.selectedRows.filter(r => !isSameRow(r, deletedRow, this.primaryKey))
+      if (newSelected.length !== this.selectedRows.length) {
+        this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
+        this.selectedRowIndices = newSelected.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
+      }
+    }
+    
     return true
   }
 
@@ -566,6 +631,13 @@ export class DataView {
     // requestState 是内部状态机转换，不代表数据变化，跳过
     if (evt.changeType === 'requestState') return
 
+    // 取消待处理的级联请求
+    if (this.pendingCascadeRequest) {
+      this.pendingCascadeRequest.cancel()
+      this.logger.debug(`取消级联请求 ${this.pendingCascadeRequest.requestId} (父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 变化)`)
+      this.pendingCascadeRequest = undefined
+    }
+
     const parentRows = getParentRows(parentView, rel.dependencyType)
 
     if (!parentRows.length) {
@@ -575,11 +647,29 @@ export class DataView {
     }
 
     if (rel.autoLoad !== false && this.requestState !== RequestState.Preparing && this.requestState !== RequestState.Loading) {
+      // 创建可取消的级联请求
+      const requestId = ++this.nextCascadeRequestId
+      let cancelled = false
+      
       // 重置为 Idle，再走完整的 requestData() 编排（含父依赖检查）
       this.requestState = RequestState.Idle
-      this.requestData().catch(err => {
-        this.logger.error(`级联加载 ${this.tableName}:${this.viewId} 失败`, err)
-      })
+      this.requestData()
+        .then(() => {
+          if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
+            this.pendingCascadeRequest = undefined
+          }
+        })
+        .catch(err => {
+          if (!cancelled) {
+            this.logger.error(`级联加载 ${this.tableName}:${this.viewId} 失败 [${requestId}]`, err)
+          }
+        })
+      
+      // 保存请求信息以便取消
+      this.pendingCascadeRequest = {
+        requestId,
+        cancel: () => { cancelled = true }
+      }
     }
   }
 
