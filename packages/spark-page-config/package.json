@@ -24,7 +24,7 @@
     "scripts": {
         "clean": "rimraf dist",
         "build": "pnpm run clean && tsc -p tsconfig.build.json",
-        "typecheck": "tsc --noEmit",
+        "typecheck": "tsc --noEmit -p tsconfig.json",
         "test": "vitest",
         "lint": "eslint src --ext .ts",
         "lint:fix": "eslint src --ext .ts --fix"
