@@ -8,10 +8,9 @@
     "emitDeclarationOnly": false,
     "noEmit": false,
     "removeComments": false,
-    "sourceMap": false,
+    "sourceMap": true,
     "inlineSources": false,
     "noEmitOnError": true,
-    "sourceMap": true,
     "composite": false
   },
   "include": ["src/**/*.ts"],
