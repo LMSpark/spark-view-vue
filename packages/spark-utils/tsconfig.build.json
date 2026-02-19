@@ -11,6 +11,7 @@
     "sourceMap": false,
     "inlineSources": false,
     "noEmitOnError": true,
+    "sourceMap": true,
     "composite": false
   },
   "include": ["src/**/*.ts"],
