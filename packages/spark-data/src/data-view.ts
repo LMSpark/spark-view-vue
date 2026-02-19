@@ -136,6 +136,10 @@ export class DataView {
   private currentLoadRequestId = 0
   /** 销毁状态标记 */
   private _isDestroyed = false
+  /** 行索引缓存（用于加速 setSelectedRows，O(n) 而非 O(n²)） */
+  private rowIndexMap?: Map<IDataRow, number>
+  /** stateChanged 事件防抖定时器 */
+  private stateChangedDebouncer?: ReturnType<typeof setTimeout>
   
   // ── 公共内部对象 ─────────────────────────
 
@@ -437,6 +441,10 @@ export class DataView {
       if (data.page !== undefined) this.page = data.page
       if (data.pageSize !== undefined) this.pageSize = data.pageSize
     }
+    
+    // 清除索引缓存（行数据变更后缓存失效）
+    // @ts-expect-error - 清理可选属性
+    this.rowIndexMap = undefined
   }
 
   /** 追加一行 */
@@ -522,8 +530,16 @@ export class DataView {
   setSelectedRows(rows: IDataRow[]): void {
     const cur = this.selectedRows
     if (cur.length === rows.length && cur.every((r, i) => r === rows[i])) return
+    
     this.selectedRows.splice(0, this.selectedRows.length, ...rows)
-    this.selectedRowIndices = rows.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
+    
+    // 使用 Map 加速索引查找（O(n) 而非 O(n²)）
+    this.rowIndexMap ??= new Map(this.rows.map((r, i) => [r, i]))
+    
+    this.selectedRowIndices = rows
+      .map(r => this.rowIndexMap?.get(r) ?? -1)
+      .filter(i => i !== -1)
+    
     this.emitStateChanged('selectedRows', { rows })
   }
 
@@ -591,16 +607,44 @@ export class DataView {
   // ─────────────────────────────────────────────
 
   /**
-   * 统一发射 stateChanged 事件
+   * 统一发射 stateChanged 事件（带防抖优化）
    *
    * 所有状态变更均通过此方法发射，UI 和子视图共用同一事件总线。
+   * 关键状态和用户交互立即触发，数据变更（rows）防抖16ms。
    */
   private emitStateChanged(changeType: ViewStateEvent['changeType'], extra?: Partial<ViewStateEvent>): void {
-    this.events.emit('stateChanged', {
-      tableName: this.tableName, viewId: this.viewId,
+    const event: ViewStateEvent = {
+      tableName: this.tableName,
+      viewId: this.viewId,
       changeType,
       ...extra,
-    } satisfies ViewStateEvent)
+    }
+    
+    // 清除上次的防抖定时器
+    if (this.stateChangedDebouncer) {
+      clearTimeout(this.stateChangedDebouncer)
+      // @ts-expect-error - 清理可选属性
+      this.stateChangedDebouncer = undefined
+    }
+    
+    // 关键状态和用户交互立即触发（避免 UI 延迟响应）
+    // - cleared, requestState: 关键状态变化
+    // - currentRow, selectedRows: 用户交互，需要即时反馈
+    if (changeType === 'cleared' || 
+        changeType === 'requestState' || 
+        changeType === 'currentRow' || 
+        changeType === 'selectedRows') {
+      this.events.emit('stateChanged', event)
+      return
+    }
+    
+    // 数据变更（rows）防抖 16ms（约一帧，60fps）
+    // 适用于批量更新场景，减少 UI 重绘频率
+    this.stateChangedDebouncer = setTimeout(() => {
+      this.events.emit('stateChanged', event)
+      // @ts-expect-error - 清理可选属性
+      this.stateChangedDebouncer = undefined
+    }, 16)
   }
 
   // ─────────────────────────────────────────────
@@ -739,6 +783,13 @@ export class DataView {
     if (this.pendingCascadeRequest) {
       this.pendingCascadeRequest.cancel()
       this.pendingCascadeRequest = undefined
+    }
+    
+    // 3. 清除防抖定时器
+    if (this.stateChangedDebouncer) {
+      clearTimeout(this.stateChangedDebouncer)
+      // @ts-expect-error - 清理可选属性
+      this.stateChangedDebouncer = undefined
     }
     
     // 3. 清理事件监听器（如果支持）
