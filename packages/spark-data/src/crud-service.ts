@@ -463,26 +463,50 @@ export class CrudService {
   }
 
   /**
-   * 执行批量操作
+   * 执行批量操作（带并发控制）
    * @param endpoint HTTP端点配置
    * @param items 数据项数组
    * @param config 请求配置
+   * @param concurrency 最大并发数（默认5）
+   * @param onProgress 进度回调 (completed, total) => void
    * @returns 批量操作结果数组
    */
   private async executeBatch<T>(
     endpoint: HttpEndpoint,
     items: T[],
-    config?: Partial<RequestConfig>
+    config?: Partial<RequestConfig>,
+    concurrency = 5,
+    onProgress?: (completed: number, total: number) => void
   ): Promise<CrudResult<T>[]> {
-    const results: CrudResult<T>[] = []
+    const results: CrudResult<T>[] = new Array(items.length).fill(null) as CrudResult<T>[]
+    let index = 0
+    let completed = 0
 
-    // 简单的顺序执行，可扩展为并发控制
-    for (const item of items) {
+    const executeOne = async (i: number, item: T): Promise<void> => {
       try {
         const result = await this.executeEndpoint<T>(endpoint, item, config)
-        results.push({ success: true, data: result })
+        results[i] = { success: true, data: result }
       } catch (error) {
-        results.push(this.errorResult('Batch item failed', error as Error))
+        this.logger.error(`批量操作项 ${i} 失败`, error)
+        results[i] = this.errorResult('Batch item failed', error as Error)
+      } finally {
+        completed++
+        onProgress?.(completed, items.length)
+      }
+    }
+
+    // 使用 Promise.all 的并发池控制（避免 floating promise 警告）
+    const tasks: Promise<void>[] = []
+    while (index < items.length) {
+      const item = items[index]
+      if (item !== undefined) {
+        tasks.push(executeOne(index, item))
+      }
+      index++
+      
+      // 当达到并发数或所有项都已启动时，等待当前批次完成
+      if (tasks.length >= concurrency || index >= items.length) {
+        await Promise.all(tasks.splice(0, tasks.length))
       }
     }
 
