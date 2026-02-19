@@ -18,16 +18,23 @@
 
 import { DataView, RequestState } from './data-view'
 import { reactive } from 'vue'
-import { DATA_TABLE, provide as setCapability } from '@spark-view/spark-utils'
-import type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
+import { DATA_TABLE, FIELD_METADATA, provide as setCapability } from '@spark-view/spark-utils'
+import type { CapabilityName, ICapabilityContext, IFieldMetadataCapability, IColumnMeta } from '@spark-view/spark-utils'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { TreeManager } from './tree-manager'
 
 // ===== 能力接口（与类共同定义，避免循环引用） =====
 
-/** DataTable 向能力系统暴露的能力（仅表结构，不含 UI 状态） */
+/**
+ * DataTable 向能力系统暴露的能力（受控门面，不泄露 DataTable 实例）
+ *
+ * 提供表元数据和 CRUD 配置，供 DataView 等消费方使用。
+ */
 export interface IDataTableCapability {
-  readonly dataTable: DataTable
+  readonly tableName: string
+  readonly columns: ReadonlyArray<DataColumn>
+  readonly api: CrudApi | undefined
+  readonly crudConfig: CrudOperationConfig | undefined
 }
 
 /**
@@ -84,11 +91,22 @@ export class DataTable implements ICapabilityContext {
     this.columns = columns
     this.views['default'] = reactive(new DataView(tableName, 'default')) as DataView
 
-    // 注册 DATA_TABLE 能力
+    // ── DATA_TABLE 能力（受控门面） ──
     const table = this
     setCapability(this, DATA_TABLE, {
-      get dataTable() { return table }
+      get tableName() { return table.tableName },
+      get columns() { return table.columns },
+      get api() { return table.api },
+      get crudConfig() { return table.crudConfig },
     } satisfies IDataTableCapability)
+
+    // ── FIELD_METADATA 能力（列/字段元数据） ──
+    setCapability(this, FIELD_METADATA, {
+      get tableName() { return table.tableName },
+      getColumns: () => table.columns as ReadonlyArray<IColumnMeta>,
+      getColumn: (name: string) => table.columns.find(c => c.name === name) as IColumnMeta | undefined,
+      getPrimaryKey: () => table.columns.find(c => c.isPrimaryKey)?.name,
+    } satisfies IFieldMetadataCapability)
   }
 
   // ===== DataSet 关联（设置 parent 链） =====

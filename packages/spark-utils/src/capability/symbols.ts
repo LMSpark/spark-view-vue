@@ -140,8 +140,13 @@ export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capa
 
 /** DataSet 能力（实际提供值类型由 spark-data 的 IDataSetCapability 定义） */
 export const DATA_SET = defineCapability<{ readonly dataSet: { dataSetName: string; tables: Record<string, unknown>; relations?: unknown[]; [k: string]: unknown } }>('spark:capability:dataset')
-/** DataTable 能力（实际提供值类型由 spark-data 的 IDataTableCapability 定义） */
-export const DATA_TABLE = defineCapability<{ readonly dataTable: unknown }>('spark:capability:datatable')
+/** DataTable 能力（受控门面，实际提供值类型由 spark-data 的 IDataTableCapability 定义） */
+export const DATA_TABLE = defineCapability<{
+  readonly tableName: string
+  readonly columns: ReadonlyArray<{ name: string; type: string; label?: string; isPrimaryKey?: boolean; [k: string]: unknown }>
+  readonly api: unknown | undefined
+  readonly crudConfig: unknown | undefined
+}>('spark:capability:datatable')
 /** DataView 能力（实际提供值类型由 spark-data 的 IDataViewCapability 定义） */
 export const DATA_VIEW = defineCapability<{
   readonly tableName: string
@@ -154,6 +159,48 @@ export const DATA_VIEW = defineCapability<{
   setSelectedRows(rows: unknown[]): void
   requestData(): Promise<void>
 }>('spark:capability:dataview')
+
+// ==================== 数据变更事件 ====================
+
+/**
+ * 数据变更事件能力（数据层提供，非 UI 事件）
+ *
+ * 事件名称约定：
+ * - `rows:changed`     — 行数据变更（加载、增删改）
+ * - `currentRow:changed` — 当前行变更
+ * - `selectedRows:changed` — 选中行变更
+ * - `data:cleared`     — 数据清空
+ * - `state:changed`    — requestState 变更
+ */
+export const DATA_EVENTS = defineCapability<IEventEmitter>('spark:capability:data-events')
+
+// ==================== 字段元数据 ====================
+
+/** 列/字段定义（与 DataColumn 对齐的最小结构） */
+export interface IColumnMeta {
+  readonly name: string
+  readonly type: string
+  readonly label?: string
+  readonly isPrimaryKey?: boolean
+  readonly allowDBNull?: boolean
+  readonly defaultValue?: unknown
+  readonly autoIncrement?: boolean
+  readonly computeExpression?: unknown
+}
+
+/** 字段元数据能力（UI 组件消费列定义） */
+export interface IFieldMetadataCapability {
+  /** 表名 */
+  readonly tableName: string
+  /** 全部列定义 */
+  getColumns(): ReadonlyArray<IColumnMeta>
+  /** 按名称获取单列 */
+  getColumn(name: string): IColumnMeta | undefined
+  /** 获取主键字段名（首个 isPrimaryKey 列，无则 undefined） */
+  getPrimaryKey(): string | undefined
+}
+
+export const FIELD_METADATA = defineCapability<IFieldMetadataCapability>('spark:capability:field-metadata')
 
 // ==================== UI 交互 ====================
 
