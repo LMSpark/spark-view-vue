@@ -19,13 +19,13 @@
         }
     },
     "scripts": {
-        "build": "tsc -p tsconfig.build.json",
-        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "build": "vue-tsc -p tsconfig.build.json",
+        "typecheck": "vue-tsc -p tsconfig.json --noEmit",
         "test": "vitest",
         "test:run": "vitest run",
         "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
         "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix",
-        "prepare": "npm run build"
+        "prepare": "pnpm run build"
     },
     "dependencies": {
         "@spark-view/spark-utils": "workspace:*"

@@ -29,7 +29,7 @@
     ],
     "scripts": {
         "build": "vue-tsc -p tsconfig.build.json",
-        "typecheck": "vue-tsc --noEmit",
+        "typecheck": "vue-tsc --noEmit -p tsconfig.json",
         "test": "vitest",
         "lint": "eslint src --ext .ts,.vue",
         "lint:fix": "eslint src --ext .ts,.vue --fix"
