@@ -5,7 +5,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "allowJs": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
+    "skipDefaultLibCheck": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -59,6 +59,7 @@
     "features/**/*.d.ts",
     "packages/**/*.ts",
     "packages/**/*.tsx",
+    "tests/**/*.ts",
     "verify-integration.ts",
     ".storybook/**/*.ts"
   ],
