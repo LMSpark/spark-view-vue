@@ -13,7 +13,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { APP_SERVICES, PAGE_SERVICE, DATA_SET, DATA_TABLE, DATA_VIEW, CURRENT_ROW, SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS, defineCapability, provide as capProvide, lookup } from '@spark-view/spark-utils'
+import { APP_SERVICES, PAGE_SERVICE, CURRENT_ROW, SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS, defineCapability, provide as capProvide, lookup } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 
 describe('Capability system integration', () => {
@@ -97,15 +97,17 @@ describe('Capability system integration', () => {
       const childCtx = createContext({ type: 'consumer', id: 'c-1' }, parentCtx)
 
       // 使用纯函数 provide 注册能力
-      capProvide(parentCtx, DATA_SET, {
-        dataSet: { tables: {}, getTable: () => null }
+      capProvide(parentCtx, APP_SERVICES, {
+        router: { push: async () => {}, replace: async () => {}, back: () => {}, currentRoute: {} },
+        logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} }
       })
 
       // consumer 通过 parent chain 找到 capability
-      const found = lookup(childCtx, DATA_SET)
+      const found = lookup(childCtx, APP_SERVICES)
       expect(found).toBeTruthy()
-      const impl = found as { dataSet: unknown }
-      expect(impl.dataSet).toBeDefined()
+      const impl = found as { router: unknown; logger: unknown }
+      expect(impl.router).toBeDefined()
+      expect(impl.logger).toBeDefined()
     })
 
     it('custom capability key with defineCapability', () => {
@@ -166,9 +168,6 @@ describe('Capability system integration', () => {
       const symbols = [
         APP_SERVICES,
         PAGE_SERVICE,
-        DATA_SET,
-        DATA_TABLE,
-        DATA_VIEW,
         CURRENT_ROW,
         SELECTION,
         GRID_EVENTS,
