@@ -2,7 +2,6 @@
  * DataTable — 数据表（表结构定义、配置管理、视图容器）
  *
  * 职责（按功能分区）：
- *  - 能力暴露：作为 ICapabilityContext 并通过 `DATA_TABLE` 提供表级能力（仅结构/配置）
  *  - 表元数据：管理 tableName、columns、api、crudConfig（不含具体数据）
  *  - 视图容器：维护 default 与命名视图的集合（不遍历、不协调、不关心运行时状态）
  *  - 配置中心：提供 api 和 crudConfig 给 DataView 使用
@@ -18,46 +17,21 @@
 
 import { DataView, RequestState } from './data-view'
 import { reactive } from 'vue'
-import { DATA_TABLE, FIELD_METADATA, provide as setCapability } from '@spark-view/spark-utils'
-import type { CapabilityName, ICapabilityContext, IFieldMetadataCapability, IColumnMeta } from '@spark-view/spark-utils'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { TreeManager } from './tree-manager'
-
-// ===== 能力接口（与类共同定义，避免循环引用） =====
-
-/**
- * DataTable 向能力系统暴露的能力（受控门面，不泄露 DataTable 实例）
- *
- * 提供表元数据和 CRUD 配置，供 DataView 等消费方使用。
- */
-export interface IDataTableCapability {
-  readonly tableName: string
-  readonly columns: ReadonlyArray<DataColumn>
-  readonly api: CrudApi | undefined
-  readonly crudConfig: CrudOperationConfig | undefined
-}
+import type { DataSet } from './dataset'
 
 /**
  * DataTable - 管理单表的结构定义与配置
  *
  * 说明：管理表结构（columns）、视图集合（DataView）、CRUD 配置（api, crudConfig）；
- * 将自身以 `DATA_TABLE` 能力注入能力系统（仅结构/配置，不含数据）；
  * 数据操作由 DataView 负责。
  */
-export class DataTable implements ICapabilityContext {
-  // ===== ICapabilityContext =====
+export class DataTable {
+  // ===== DataSet 引用 =====
 
-  /** 唯一标识 */
-  id: string
-
-  /** 上下文类型 */
-  readonly type = 'datatable'
-
-  /** 父级上下文（DataSet），由 DataSet 在构建时设置 */
-  parent?: ICapabilityContext
-
-  /** 能力 Map */
-  capabilities = new Map<CapabilityName, unknown>()
+  /** 所属 DataSet（由 DataSet 在构建时设置） */
+  dataSet!: DataSet
 
   // ===== 表元数据 =====
 
@@ -83,50 +57,27 @@ export class DataTable implements ICapabilityContext {
   /**
    * 创建 DataTable 实例
    * - 自动创建 `default` DataView
-   * - 将 DataTable 以 `DATA_TABLE` 能力注册到能力系统
    */
   constructor(tableName: string, columns: DataColumn[] = []) {
     this.tableName = tableName
-    this.id = `dt:${tableName}`
     this.columns = columns
     this.views['default'] = reactive(new DataView(tableName, 'default')) as DataView
-
-    // ── DATA_TABLE 能力（受控门面） ──
-    const table = this
-    setCapability(this, DATA_TABLE, {
-      get tableName() { return table.tableName },
-      get columns() { return table.columns },
-      get api() { return table.api },
-      get crudConfig() { return table.crudConfig },
-    } satisfies IDataTableCapability)
-
-    // ── FIELD_METADATA 能力（列/字段元数据） ──
-    setCapability(this, FIELD_METADATA, {
-      get tableName() { return table.tableName },
-      getColumns: () => table.columns as ReadonlyArray<IColumnMeta>,
-      getColumn: (name: string) => table.columns.find(c => c.name === name) as IColumnMeta | undefined,
-      getPrimaryKey: () => table.columns.find(c => c.isPrimaryKey)?.name,
-    } satisfies IFieldMetadataCapability)
   }
 
-  // ===== DataSet 关联（设置 parent 链） =====
+  // ===== DataSet 关联（设置引用链） =====
 
   /**
-   * 将 DataTable 绑定到 DataSet（设置 parent 链）
-   * @param ds - DataSet 的 ICapabilityContext，用于建立能力链（parent）
-   * @remarks 为每个 DataView 设置 parent 并调用 setupCascade，使视图能响应父级变化
+   * 将 DataTable 绑定到 DataSet（设置引用链）
+   * @param ds - DataSet 实例
+   * @remarks 为每个 DataView 设置 dataTable 引用并调用 setupCascade，使视图能响应父级变化
    */
-  setDataSet(ds: ICapabilityContext): void {
-    this.parent = ds
-    // 统一设置所有视图的 parent 链并建立级联订阅
+  setDataSet(ds: DataSet): void {
+    this.dataSet = ds
+    // 统一设置所有视图的引用链并建立级联订阅
     for (const view of Object.values(this.views)) {
-      view.parent = this
+      view.dataTable = this
       view.setupCascade()
     }
-  }
-
-  getDataSet(): ICapabilityContext | undefined {
-    return this.parent
   }
 
   // ===== 视图管理 =====
@@ -135,14 +86,14 @@ export class DataTable implements ICapabilityContext {
    * 获取或创建视图
    * @param viewId - 视图 ID（'default' 为主视图）
    * @returns 对应的 DataView 实例
-   * @behavior 若表已关联 DataSet，会为新视图设置 parent 并触发 setupCascade
+   * @behavior 若表已关联 DataSet，会为新视图设置 dataTable 引用并触发 setupCascade
    */
   getOrCreateView(viewId: string): DataView {
     if (!this.views[viewId]) {
       const view = reactive(new DataView(this.tableName, viewId)) as DataView
-      // 视图管理职责：设置 parent 链并触发级联
-      if (this.parent) {
-        view.parent = this
+      // 视图管理职责：设置引用链并触发级联
+      if (this.dataSet) {
+        view.dataTable = this
         view.setupCascade()
       }
       this.views[viewId] = view
