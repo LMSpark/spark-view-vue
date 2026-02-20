@@ -10,6 +10,15 @@ import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColu
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
 
+/** @internal 从未知值推断列类型 */
+function inferColumnType(v: unknown): string {
+  if (typeof v === 'number') return 'number'
+  if (typeof v === 'boolean') return 'boolean'
+  if (v === null) return 'string'
+  if (typeof v === 'object') return 'object'
+  return 'string'
+}
+
 export class DataSet {
 
   // ===== 属性定义 =====
@@ -184,5 +193,82 @@ export class DataSet {
    */
   static fromJSON(json: string): DataSet {
     return DataSet.fromData(JSON.parse(json) as IDataSetMetadata)
+  }
+
+  /**
+   * 从 pagedata.json 原始对象归一化并构建 DataSet 实例
+   *
+   * 支持两种格式：
+   * 1. 标准 DataSet 配置（含 `dataset.tables` 字段）→ 直接使用该子结构
+   * 2. 任意 key-value 结构 → 每个 key 归一化为一张表（数组/对象/基础类型）
+   *
+   * @param rawPageData pagedata.json 原始对象
+   * @returns 归一化后的 DataSet 实例
+   */
+  static fromPageData(rawPageData: Record<string, unknown>): DataSet {
+    // 情形 1：rawPageData.dataset.tables 存在 → 标准 DataSet 配置，直接透传
+    const datasetCandidate = rawPageData['dataset']
+    if (
+      datasetCandidate &&
+      typeof datasetCandidate === 'object' &&
+      'tables' in (datasetCandidate as Record<string, unknown>)
+    ) {
+      const rd = datasetCandidate as {
+        dataSetName?: string
+        tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>
+        relations?: DataRelation[]
+      }
+      return DataSet.fromConfig({
+        dataSetName: rd.dataSetName ?? 'PageDataSet',
+        tables: rd.tables ?? {},
+        ...(rd.relations ? { relations: rd.relations } : {}),
+      })
+    }
+
+    // 情形 2：将整个 pagedata 的每个 key 归一化为一张表
+    const tables: Record<string, { tableName: string; columns: DataColumn[]; rows: IDataRow[] }> = {}
+
+    for (const [key, val] of Object.entries(rawPageData)) {
+      if (key === 'dataset') continue
+
+      // 数组 → 表格行
+      if (Array.isArray(val)) {
+        const rows: IDataRow[] = []
+        let columns: DataColumn[] = []
+
+        if (val.length === 0) {
+          columns = []
+        } else if (typeof val[0] === 'object' && val[0] !== null && !Array.isArray(val[0])) {
+          // 对象数组：以第一个元素的键推断列
+          const sample = val[0] as Record<string, unknown>
+          columns = Object.keys(sample).map(n => ({ name: n, type: inferColumnType(sample[n]), label: n })) as DataColumn[]
+          for (const r of val) rows.push(r as IDataRow)
+        } else {
+          // 基础类型数组：单列 value
+          columns = [{ name: 'value', type: inferColumnType(val[0]), label: 'value' }]
+          for (const r of val) rows.push({ value: r } as IDataRow)
+        }
+
+        tables[key] = { tableName: key, columns, rows }
+        continue
+      }
+
+      // 对象 → 单行表
+      if (val && typeof val === 'object') {
+        const obj = val as Record<string, unknown>
+        const columns = Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n })) as DataColumn[]
+        tables[key] = { tableName: key, columns, rows: [obj as IDataRow] }
+        continue
+      }
+
+      // 基础类型 → 单列单行表
+      tables[key] = {
+        tableName: key,
+        columns: [{ name: 'value', type: inferColumnType(val), label: 'value' }],
+        rows: [{ value: val } as IDataRow],
+      }
+    }
+
+    return DataSet.fromConfig({ dataSetName: 'PageDataSet', tables })
   }
 }

@@ -4,9 +4,8 @@
 
 import { shallowRef, Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import { SparkData, DataSet } from '@spark-view/spark-data'
+import { DataSet } from '@spark-view/spark-data'
 import { parseDataKey, isDataKey } from '@spark-view/spark-data'
-import type { IDataRow, DataColumn, CrudApi, DataRelation } from '@spark-view/spark-data' 
 import type { Rule, FormCreateAPI } from '../types'
 import { syncSelectedRowsToTable } from '../utils/bindRules'
 
@@ -87,79 +86,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     // 清理旧的 DataSet
     if (dataSet.value) dataSet.value = null
 
-    // helper: 简单类型推断
-    const inferType = (v: unknown): string => {
-      if (typeof v === 'number') return 'number'
-      if (typeof v === 'boolean') return 'boolean'
-      if (v === null) return 'string'
-      if (typeof v === 'object') return 'object'
-      return 'string'
-    }
-
-    // helper: 将任意 pagedata 归一化为 { tables: Record<...> }
-    const normalizeToDataset = (pd: Record<string, unknown>) => {
-      const tables: Record<string, { tableName: string; columns: DataColumn[]; rows: IDataRow[] }> = {}
-
-      for (const [key, val] of Object.entries(pd)) {
-        // 跳过显式的 dataset 字段（如果存在也会在上层被直接使用）
-        if (key === 'dataset') continue
-
-        // 数组 -> 表格行
-        if (Array.isArray(val)) {
-          const rows: IDataRow[] = []
-          let columns: DataColumn[] = []
-
-          if (val.length === 0) {
-            columns = []
-          } else if (typeof val[0] === 'object' && val[0] !== null && !Array.isArray(val[0])) {
-            // 数组元素为对象：以第一个元素的键推断列
-            const sample = val[0] as Record<string, unknown>
-            columns = Object.keys(sample).map(n => ({ name: n, type: inferType(sample[n]), label: n })) as DataColumn[]
-            for (const r of val) rows.push(r as IDataRow)
-          } else {
-            // 数组元素为基础类型：用单列 value 存储
-            columns = [{ name: 'value', type: inferType(val[0]), label: 'value' }]
-            for (const r of val) rows.push({ value: r } as IDataRow)
-          }
-
-          tables[key] = { tableName: key, columns, rows }
-          continue
-        }
-
-        // 对象 -> 单行表
-        if (val && typeof val === 'object') {
-          const obj = val as Record<string, unknown>
-          const columns = Object.keys(obj).map(n => ({ name: n, type: inferType(obj[n]), label: n }))
-          tables[key] = { tableName: key, columns, rows: [obj] }
-          continue
-        }
-
-        // 基本类型 -> 单列单行表
-        tables[key] = { tableName: key, columns: [{ name: 'value', type: inferType(val), label: 'value' }], rows: [{ value: val }] }
-      }
-
-      return { dataSetName: 'PageDataSet', tables }
-    }
-
-    // 优先使用 rawPageData.dataset（含 tables 即视为标准 DataSet 配置），否则归一化整个 pagedata
-    const datasetCandidate = rawPageData['dataset']
-    const rawDataset = (datasetCandidate && typeof datasetCandidate === 'object' && 'tables' in (datasetCandidate as Record<string, unknown>))
-      ? (datasetCandidate as { dataSetName?: string; tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; relations?: DataRelation[] })
-      : normalizeToDataset(rawPageData)
-
-    type DatasetCandidate =
-      | { dataSetName?: string; tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; relations?: DataRelation[] }
-      | { dataSetName: string; tables: Record<string, { tableName: string; columns: DataColumn[]; rows: IDataRow[] }> }
-
-    const rd = rawDataset as DatasetCandidate
-    const cfg: { dataSetName: string; tables: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; relations?: DataRelation[] } = {
-      dataSetName: rd.dataSetName ?? 'PageDataSet',
-      tables: (rd as { tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; }).tables ?? {},
-    }
-
-    if ('relations' in rd && rd.relations) cfg.relations = rd.relations
-
-    dataSet.value = SparkData.createDataSet(cfg)
+    dataSet.value = DataSet.fromPageData(rawPageData)
     currentDataVersion = incomingVersion
 
     pageLogger.debug('DataSet 初始化成功（pagedata 归一化）', { 
