@@ -1,25 +1,29 @@
 /**
- * FileLoader — HTTP 文件加载 + 通用计算结果缓存
+ * FileLoader — HTTP 文件加载 + 自动计算结果缓存
  *
- * 两种使用模式：
+ * ## 基础用法（返回原始 JSON）
+ * ```ts
+ * const result = await loader.load<RuleConfig[]>('/page/rule.json')
+ * ```
  *
- * 1. **文件加载**（HTTP）
- *    load<T>(fileName) → GET ?timestamp=<cached> → { content, timestamp, notModified? }
- *    自动将原始文件内容缓存为 CacheEntry<string>。
- *    下次加载若服务器返回 notModified，直接从缓存取并按需 JSON.parse。
+ * ## 内联变换（一次性）
+ * ```ts
+ * const result = await loader.load<DataSet>('/pagedata.json', {
+ *   transform: buildDataSet   // 变换结果自动缓存，下次命中跳过 buildDataSet
+ * })
+ * ```
  *
- * 2. **计算结果缓存**（任意数据）
- *    store<T>(key, data, sourceTimestamp)  — 缓存 DataSet / 编译脚本 / 编译 CSS / 编译规则等
- *    retrieve<T>(key, sourceTimestamp)     — sourceTimestamp 匹配则命中，否则返回 null
+ * ## 预绑定变换（业务代码零感知）
+ * ```ts
+ * // 基础设施层：
+ * const dataSetLoader = fileLoader.withTransform(buildDataSet)
  *
- *    典型用法：
- *      const ts = await fileLoader.getTimestamp(filePath)  // 读文件时间戳
- *      const cached = fileLoader.retrieve<DataSet>(filePath + ':dataset', ts)
- *      if (cached) return cached
- *      const raw = await fileLoader.load(filePath)
- *      const ds = buildDataSet(raw.data)
- *      fileLoader.store(filePath + ':dataset', ds, raw.timestamp!)
- *      return ds
+ * // 业务代码：
+ * const ds = await dataSetLoader.load('/order-page/pagedata.json')
+ * ```
+ *
+ * 缓存策略：所有结果（原始内容 & 变换产物）均以 sourceTimestamp 标记。
+ * 源文件变更 → timestamp 变化 → 缓存自动失效 → 重新加载并计算。
  */
 
 import { Logger } from '../logger'
@@ -32,6 +36,30 @@ interface FileResponse {
   content: string
   timestamp: string
   notModified?: boolean
+}
+
+/** load() 选项 */
+export interface LoadOptions<T = unknown> {
+  /** false = 返回原始字符串，不 JSON.parse（默认 true） */
+  parseJSON?: boolean
+  /** 跳过缓存强制重新请求（默认 false） */
+  forceRefresh?: boolean
+  /**
+   * 对原始文件内容应用变换，结果自动缓存。
+   * 提供后 load() 返回 T（变换结果），而非原始 JSON。
+   */
+  transform?: (rawContent: string) => T | Promise<T>
+  /**
+   * 变换结果的缓存键后缀。
+   * 默认取 transform.name；匿名函数时用 'derived'。
+   */
+  transformKey?: string
+}
+
+/** withTransform() 返回的子加载器接口 */
+export interface DerivedLoader<T> {
+  load(fileName: string, opts?: Pick<LoadOptions<T>, 'forceRefresh'>): Promise<FileLoadResult<T>>
+  loadBatch(fileNames: string[], opts?: Pick<LoadOptions<T>, 'forceRefresh'>): Promise<Map<string, FileLoadResult<T>>>
 }
 
 export class FileLoader {
@@ -57,82 +85,62 @@ export class FileLoader {
 
   // ==================== HTTP 文件加载 ====================
 
-  /** 加载单个文件，自动缓存原始内容 */
+  /**
+   * 加载单个文件。
+   * - 不传 transform：返回解析后的原始 JSON（或字符串）。
+   * - 传入 transform：返回变换结果，变换产物自动缓存，timestamp 未变时跳过变换。
+   */
   async load<T = unknown>(
     fileName: string,
-    options?: { parseJSON?: boolean; forceRefresh?: boolean }
+    options?: LoadOptions<T>
   ): Promise<FileLoadResult<T>> {
     const parseJSON = options?.parseJSON ?? true
     const forceRefresh = options?.forceRefresh ?? false
+    const transform = options?.transform
 
-    const parse = (raw: string): T => {
-      if (!parseJSON) return raw as T
-      try { return JSON.parse(raw) as T }
-      catch (e) { throw new Error(`JSON 解析失败: ${e instanceof Error ? e.message : String(e)}`) }
+    // --- 1. 获取原始文件（带时间戳缓存） ---
+    const rawResult = await this.loadRaw(fileName, forceRefresh)
+    if (!rawResult.success) return rawResult as FileLoadResult<T>
+
+    const rawContent = rawResult.data ?? ''
+    const timestamp = rawResult.timestamp ?? ''
+
+    // --- 2. 如有 transform：检查变换结果缓存 ---
+    if (transform) {
+      const suffix = options?.transformKey ?? (transform.name || 'derived')
+      const derivedKey = `${fileName}:${suffix}`
+
+      if (!forceRefresh) {
+        const cached = this.retrieve<T>(derivedKey, timestamp)
+        if (cached !== null) {
+          return { success: true, data: cached, timestamp, fromCache: true, ...(rawResult.notModified !== undefined && { notModified: rawResult.notModified }) }
+        }
+      }
+
+      try {
+        const transformed = await transform(rawContent)
+        this.store(derivedKey, transformed, timestamp)
+        return { success: true, data: transformed, timestamp, fromCache: false, ...(rawResult.error !== undefined && { error: rawResult.error }) }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e)
+        logger.error('transform 执行失败', { fileName, error: msg })
+        return { success: false, error: `transform 失败: ${msg}`, fromCache: false }
+      }
     }
 
+    // --- 3. 无 transform：直接解析原始内容 ---
     try {
-      const cached = forceRefresh ? null : this.readEntry<string>(fileName)
-      const knownTimestamp = cached?.sourceTimestamp ?? ''
-
-      const params: Record<string, unknown> = {}
-      if (knownTimestamp) params['timestamp'] = knownTimestamp
-
-      const response = await this.request.requestFull<FileResponse>({
-        url: fileName,
-        method: 'GET',
-        params
-      })
-      const result = response.data
-
-      // 服务器确认未变更
-      if (result.notModified === true) {
-        if (cached) {
-          return {
-            success: true,
-            data: parse(cached.data),
-            timestamp: cached.sourceTimestamp,
-            fromCache: true,
-            notModified: true
-          }
-        }
-        return { success: false, error: 'notModified 但无本地缓存', fromCache: false }
-      }
-
-      if (!result.content || !result.timestamp) {
-        throw new Error('响应格式错误：缺少 content 或 timestamp')
-      }
-
-      // 写原始内容缓存
-      this.writeEntry<string>(fileName, result.content, result.timestamp)
-
-      return { success: true, data: parse(result.content), timestamp: result.timestamp, fromCache: false }
-
-    } catch (error) {
-      if (this.opts.fallbackToCache) {
-        const cached = this.readEntry<string>(fileName)
-        if (cached) {
-          const msg = error instanceof Error ? error.message : String(error)
-          logger.warn('网络失败，使用缓存', { fileName, error: msg })
-          try {
-            return {
-              success: true,
-              data: parse(cached.data),
-              timestamp: cached.sourceTimestamp,
-              fromCache: true,
-              error: `降级缓存（${msg}）`
-            }
-          } catch { /* 缓存无效，继续返回失败 */ }
-        }
-      }
-      return { success: false, error: error instanceof Error ? error.message : String(error), fromCache: false }
+      const data = parseJSON ? (JSON.parse(rawContent) as T) : (rawContent as T)
+      return { success: true, data, timestamp, fromCache: rawResult.fromCache, ...(rawResult.notModified !== undefined && { notModified: rawResult.notModified }), ...(rawResult.error !== undefined && { error: rawResult.error }) }
+    } catch (e) {
+      return { success: false, error: `JSON 解析失败: ${e instanceof Error ? e.message : String(e)}`, fromCache: false }
     }
   }
 
   /** 批量加载（并行） */
   async loadBatch<T = unknown>(
     fileNames: string[],
-    options?: { parseJSON?: boolean; forceRefresh?: boolean }
+    options?: LoadOptions<T>
   ): Promise<Map<string, FileLoadResult<T>>> {
     const results = new Map<string, FileLoadResult<T>>()
     await Promise.all(
@@ -141,22 +149,42 @@ export class FileLoader {
     return results
   }
 
-  // ==================== 通用计算结果缓存 ====================
+  /**
+   * 预绑定变换函数，返回业务代码直接使用的子加载器。
+   *
+   * ```ts
+   * // 基础设施层（一次）：
+   * const dataSetLoader = fileLoader.withTransform(buildDataSet)
+   *
+   * // 业务代码（任意多处）：
+   * const ds = await dataSetLoader.load('/order-page/pagedata.json')
+   * ```
+   */
+  withTransform<T>(
+    transform: (rawContent: string) => T | Promise<T>,
+    transformKey?: string
+  ): DerivedLoader<T> {
+    return {
+      load: (fileName, opts) =>
+        this.load<T>(fileName, { ...opts, transform, ...(transformKey !== undefined && { transformKey }) }),
+      loadBatch: (fileNames, opts) =>
+        this.loadBatch<T>(fileNames, { ...opts, transform, ...(transformKey !== undefined && { transformKey }) })
+    }
+  }
+
+  // ==================== 底层缓存操作（供高级使用） ====================
 
   /**
-   * 缓存任意计算结果（DataSet、编译脚本、编译 CSS、编译规则等）。
-   * @param key          — 缓存键（建议用 `filePath + ':type'` 形式区分同文件不同产物）
-   * @param data         — 要缓存的数据，必须可被 JSON.stringify 序列化
-   * @param sourceTimestamp — 数据来源时间戳（通常取自 load() 返回的 timestamp）
+   * 手动缓存任意计算结果。
+   * 通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。
    */
   store<T>(key: string, data: T, sourceTimestamp: string): void {
     this.writeEntry<T>(key, data, sourceTimestamp)
   }
 
   /**
-   * 取回计算结果缓存，时间戳不匹配时返回 null（源文件已更新，需重新计算）。
-   * @param key              — 与 store() 一致的缓存键
-   * @param sourceTimestamp  — 当前源文件时间戳；与缓存不一致则返回 null
+   * 取回计算结果缓存，时间戳不匹配返回 null。
+   * 通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。
    */
   retrieve<T>(key: string, sourceTimestamp: string): T | null {
     const entry = this.readEntry<T>(key)
@@ -183,7 +211,7 @@ export class FileLoader {
     return this.readEntry(key) !== null
   }
 
-  /** 获取缓存的时间戳（不存在则返回 null） */
+  /** 获取缓存的 sourceTimestamp（不存在则返回 null） */
   getTimestamp(key: string): string | null {
     return this.readEntry(key)?.sourceTimestamp ?? null
   }
@@ -193,7 +221,50 @@ export class FileLoader {
     return this.getTimestamp(key)
   }
 
-  // ==================== 内部存储 ====================
+  // ==================== 内部实现 ====================
+
+  /** 加载原始文件内容（仅维护 string 缓存，不做 JSON.parse 或 transform） */
+  private async loadRaw(fileName: string, forceRefresh: boolean): Promise<FileLoadResult<string>> {
+    try {
+      const cached = forceRefresh ? null : this.readEntry<string>(fileName)
+      const knownTimestamp = cached?.sourceTimestamp ?? ''
+
+      const params: Record<string, unknown> = {}
+      if (knownTimestamp) params['timestamp'] = knownTimestamp
+
+      const response = await this.request.requestFull<FileResponse>({
+        url: fileName,
+        method: 'GET',
+        params
+      })
+      const result = response.data
+
+      if (result.notModified === true) {
+        if (cached) {
+          return { success: true, data: cached.data, timestamp: cached.sourceTimestamp, fromCache: true, notModified: true }
+        }
+        return { success: false, error: 'notModified 但无本地缓存', fromCache: false }
+      }
+
+      if (!result.content || !result.timestamp) {
+        throw new Error('响应格式错误：缺少 content 或 timestamp')
+      }
+
+      this.writeEntry<string>(fileName, result.content, result.timestamp)
+      return { success: true, data: result.content, timestamp: result.timestamp, fromCache: false }
+
+    } catch (error) {
+      if (this.opts.fallbackToCache) {
+        const cached = this.readEntry<string>(fileName)
+        if (cached) {
+          const msg = error instanceof Error ? error.message : String(error)
+          logger.warn('网络失败，使用缓存', { fileName, error: msg })
+          return { success: true, data: cached.data, timestamp: cached.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
+        }
+      }
+      return { success: false, error: error instanceof Error ? error.message : String(error), fromCache: false }
+    }
+  }
 
   private readEntry<T>(key: string): CacheEntry<T> | null {
     const k = this.opts.cachePrefix + key
