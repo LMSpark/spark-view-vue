@@ -245,11 +245,11 @@ function createFunctionCaller(
       // pageLogger.debug('函数调用', { functionName, args, result })
       
       return result
-    } catch (error) {
+    } catch (error: unknown) {
       pageLogger.error('函数执行错误', { 
         functionName, 
         args, 
-        error: error instanceof Error ? error : String(error)
+        error: error instanceof Error ? error.message : String(error)
       })
       throw error
     }
