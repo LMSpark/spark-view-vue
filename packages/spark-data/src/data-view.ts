@@ -133,6 +133,11 @@ export class DataView {
   } | undefined
   /** 级联请求 ID 计数器 */
   private nextCascadeRequestId = 0
+  /**
+   * 父视图在本视图 Loading/Preparing 期间发出了相关事件（依赖行发生变化），
+   * loadFromServer 完成后需要用最新父状态重新加载一次，避免数据陈旧。
+   */
+  private cascadeDirty = false
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
   /** 销毁状态标记 */
@@ -182,7 +187,7 @@ export class DataView {
    *    父 requestState∉{Loaded,Loading} 或无数据 → 置 requestState=Failed 中止
    * 3. 所有父满足后，按各关系的 filterExpression 组装查询参数
    *    → 调用 loadFromServer()（进入 Loading；成功置 Loaded，失败置 Failed）
-   * 4. 成功后调用 triggerChildViews() 触发所有子视图
+   * 4. 子视图级联由 stateChanged('rows') 事件驱动（子订阅父，父不知子），无需主动推
    */
   async requestData(): Promise<void> {
     if (this.requestState !== RequestState.Idle) return
@@ -247,10 +252,24 @@ export class DataView {
 
     try {
       const result = await this.loadFromServer(params)
-      if (!result.success) return          // 非异常失败（loadFromServer 内已设 Failed + 通知 UI）
-    } catch { return }                     // 异常失败
+      if (!result.success) {
+        this.cascadeDirty = false  // 非异常失败，清除 dirty，防止用旧结果重试
+        return
+      }
+    } catch {
+      this.cascadeDirty = false   // 异常失败，同上
+      return
+    }
 
     // 子视图级联由 stateChanged('rows') 事件驱动（respondToParentChange），无需主动推
+
+    // 父视图在本次 Loading/Preparing 期间改变了依赖行 → 用最新父状态重新加载一次
+    // 注：检查在 requestData() 而非 loadFromServer() 内，保证被 mock 的情形下也能生效
+    if (this.cascadeDirty && !this._isDestroyed) {
+      this.cascadeDirty = false
+      this.requestState = RequestState.Idle
+      void this.requestData()
+    }
   }
 
   /**
@@ -739,18 +758,28 @@ export class DataView {
   /**
    * 响应父视图状态变化（统一级联入口，SOLID：子订阅父，父不知子）
    *
-   * dependencyType 仅用于 getParentRows() 决定取哪些行构造查询参数，
-   * 不用于过滤事件——父视图任何数据变化，子视图都必须响应。
-   * requestState 事件除外（内部状态机转换，不代表数据变化）。
+   * ## 事件过滤规则（dependencyType 与 changeType 对应关系）
    *
-   * 行为：
-   * - 父无数据（parentRows 空）→ resetState + emit cleared
-   * - autoLoad≠false 且当前未在请求中 → 重置为 Idle 再走完整的 requestData() 编排
-   *   （autoLoad 默认 true——既然定义了父子关系，级联就是默认行为；仅 `autoLoad: false` 跳过）
+   * `rows` 加载成功时会**静默**清空 `currentRow`/`selectedRows`，只发一个 `'rows'` 事件。
+   * 因此 `'currentRow'`/`'selectedRows'` 事件只代表用户的交互行为，与数据加载无关。
+   * 过滤规则如下（`'rows'`/`'cleared'` 对所有依赖类型始终相关）：
+   *
+   *   dep=currentRow   → 响应 ['rows','cleared','currentRow']     忽略 selectedRows
+   *   dep=selectedRows → 响应 ['rows','cleared','selectedRows']   忽略 currentRow
+   *   dep=allRows      → 响应 ['rows','cleared']                  忽略 currentRow/selectedRows
+   *   dep=pagedRows    → 响应 ['rows','cleared']                  忽略 currentRow/selectedRows
+   *   dep=unknown      → fallback：同 currentRow 规则
+   *
+   * ## Loading 期间父改变（cascadeDirty）
+   *   若本视图正在 Loading/Preparing，不中断当前请求，而是设 cascadeDirty=true；
+   *   loadFromServer 完成后检查 dirty 并用最新父状态重新加载，避免数据陈旧。
    */
   private respondToParentChange(rel: DataRelation, parentView: DataView, evt: ViewStateEvent): void {
     // requestState 是内部状态机转换，不代表数据变化，跳过
     if (evt.changeType === 'requestState') return
+
+    // 按 dependencyType 过滤不相关事件，避免白请求风暴
+    if (!this.isRelevantChangeType(rel.dependencyType, evt.changeType)) return
 
     // 取消待处理的级联请求
     if (this.pendingCascadeRequest) {
@@ -767,11 +796,18 @@ export class DataView {
       return
     }
 
-    if (rel.autoLoad !== false && this.requestState !== RequestState.Preparing && this.requestState !== RequestState.Loading) {
+    if (rel.autoLoad !== false) {
+      if (this.requestState === RequestState.Preparing || this.requestState === RequestState.Loading) {
+        // 正在请求中：记录脏标记，loadFromServer 完成后用最新父状态重新加载
+        this.cascadeDirty = true
+        this.logger.debug(`cascadeDirty 标记（${this.tableName}:${this.viewId} 正在 ${this.requestState === RequestState.Loading ? 'Loading' : 'Preparing'}，父变化将在完成后触发重载）`)
+        return
+      }
+
       // 创建可取消的级联请求
       const requestId = ++this.nextCascadeRequestId
       let cancelled = false
-      
+
       // 重置为 Idle，再走完整的 requestData() 编排（含父依赖检查）
       this.requestState = RequestState.Idle
       this.requestData()
@@ -785,12 +821,30 @@ export class DataView {
             this.logger.error(`级联加载 ${this.tableName}:${this.viewId} 失败 [${requestId}]`, err)
           }
         })
-      
+
       // 保存请求信息以便取消
       this.pendingCascadeRequest = {
         requestId,
         cancel: () => { cancelled = true }
       }
+    }
+  }
+
+  /**
+   * 判断给定 changeType 是否与当前 dependencyType 相关
+   *
+   * - 'rows' / 'cleared' 始终相关（父数据重置时无论依赖类型都需要响应）
+   * - 'currentRow'  仅与 dep=currentRow 或 unknown fallback 相关
+   * - 'selectedRows' 仅与 dep=selectedRows 相关
+   */
+  private isRelevantChangeType(dep: string, changeType: ViewStateEvent['changeType']): boolean {
+    if (changeType === 'rows' || changeType === 'cleared') return true
+    switch (dep) {
+      case 'currentRow':   return changeType === 'currentRow'
+      case 'selectedRows': return changeType === 'selectedRows'
+      case 'allRows':
+      case 'pagedRows':    return false
+      default:             return changeType === 'currentRow'  // fallback: currentRow 语义
     }
   }
 
