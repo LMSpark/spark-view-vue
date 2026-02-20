@@ -11,4 +11,4 @@
 
 export { Request, createRequest } from './Request'
 export { FileLoader, createFileLoader } from './FileLoader'
-export type { RequestConfig, ApiResponse } from './types'
+export type { RequestConfig, ApiResponse, FileLoadOptions, FileLoadResult, CacheEntry } from './types'
