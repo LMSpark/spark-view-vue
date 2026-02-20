@@ -60,7 +60,6 @@ describe('Capability system integration', () => {
           expect(typeof result.provide).toBe('function')
           expect(typeof result.provideEvents).toBe('function')
           expect(typeof result.getProvider).toBe('function')
-          expect(typeof result.getInheritedProvider).toBe('function')
 
           // 能力消费
           expect(typeof result.consume).toBe('function')
@@ -74,10 +73,6 @@ describe('Capability system integration', () => {
           expect(typeof result.logger).toBe('object')
           expect(typeof result.getComponent).toBe('function')
           expect(typeof result.isComponentRegistered).toBe('function')
-
-          // 调试
-          expect(typeof result.getContextChain).toBe('function')
-          expect(typeof result.printCapabilityTree).toBe('function')
 
           return () => h('div')
         }

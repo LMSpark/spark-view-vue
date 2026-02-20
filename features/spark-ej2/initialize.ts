@@ -5,6 +5,7 @@ import SparkEJ2Grid from './components/SparkEJ2Grid.vue'
 import SparkEJ2Column from './components/SparkEJ2Column.vue'
 import { Spark } from '@spark-view/spark-component'
 import type { ComponentRegistry } from '@spark-view/spark-component'
+import { Logger } from '@spark-view/spark-utils'
 
 /**
  * 初始化 SPARK-EJ2 组件
@@ -14,7 +15,7 @@ import type { ComponentRegistry } from '@spark-view/spark-component'
  */
 export function initializeSparkEJ2Components(registry?: ComponentRegistry) {
   const reg = registry ?? Spark.getRegistry()
-  const logger = Spark.Logger()
+  const logger = Logger('SparkEJ2')
   logger.info('🚀 Registering SPARK-EJ2 components...')
 
   reg.register('spark-ej2-grid', SparkEJ2Grid)
