@@ -42,8 +42,8 @@
       "@spark-view/spark-app/*": ["./packages/spark-app/src/*"],
       "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"],
       "@spark-view/spark-page-config/*": ["./packages/spark-page-config/src/*"],
-      "@spark-view/spark-renderer": ["./packages/spark-renderer/src/index.ts"],
-      "@spark-view/spark-renderer/*": ["./packages/spark-renderer/src/*"],
+      "@spark-view/spark-renderer": ["./packages/spark-component/src/index.ts"],
+      "@spark-view/spark-renderer/*": ["./packages/spark-component/src/*"],
       "@/features/spark-ej2": ["./features/spark-ej2"]
     },
     "types": ["vite/client", "vitest/globals"]
@@ -65,8 +65,6 @@
     "./packages/spark-data/src/**/*.vue",
     "./packages/spark-app/src/**/*.ts",
     "./packages/spark-app/src/**/*.vue",
-    "./packages/spark-renderer/src/**/*.ts",
-    "./packages/spark-renderer/src/**/*.vue",
     "./packages/spark-page-config/src/**/*.ts",
     "./packages/spark-business/src/**/*.ts",
     "vite.config.ts",

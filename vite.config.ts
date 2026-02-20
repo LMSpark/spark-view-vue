@@ -36,7 +36,7 @@ export default defineConfig({
       '@spark-view/spark-component': path.resolve(__dirname, 'packages', 'spark-component', 'src'),
       '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'src'),
       '@spark-view/spark-utils': path.resolve(__dirname, 'packages', 'spark-utils', 'src'),
-      '@spark-view/spark-renderer': path.resolve(__dirname, 'packages', 'spark-renderer', 'src'),
+      '@spark-view/spark-renderer': path.resolve(__dirname, 'packages', 'spark-component', 'src'),
       '@spark-view/spark-page-config': path.resolve(__dirname, 'packages', 'spark-page-config', 'src'),
       '@spark-view/spark-app': path.resolve(__dirname, 'packages', 'spark-app', 'src'),
       '/pages-config': path.resolve(__dirname, 'public', 'pages-config')
@@ -148,7 +148,7 @@ export default registerComponents
         // 使用统一配置源获取扫描目录
         const componentDirs = [
           path.resolve(__dirname, 'packages/spark-component/src/components'),
-          path.resolve(__dirname, 'packages/spark-renderer/src/components'),
+          path.resolve(__dirname, 'packages/spark-component/src/renderer'),
           path.resolve(__dirname, 'features/spark/components'),
           path.resolve(__dirname, 'features/spark-ej2/components'),
           path.resolve(__dirname, 'src/components'),
@@ -403,9 +403,7 @@ export default registerComponents
           if (id.includes('packages/spark-page-config')) {
             return 'spark-config'
           }
-          if (id.includes('packages/spark-renderer')) {
-            return 'spark-renderer'
-          }
+          // spark-renderer 已并入 spark-component
 
           // ── 页面组件懒加载分组 ──
           // 将大型页面组件分组，便于按需加载

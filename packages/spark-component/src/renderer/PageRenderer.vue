@@ -75,12 +75,12 @@ function getErrorMessage(code: number): string {
   }
   return messages[code] ?? '未知错误'
 }
-import type { PageRendererOptions, PageContext, FormCreateAPI, Rule } from '../types'
-import { useCssScope } from '../composables/useCssScope'
-import { compileFunctions } from '../utils/createSandbox'
-import { usePageDataSet } from '../composables/usePageDataSet'
-import { useRuleBinding } from '../composables/useRuleBinding'
-import { useTableDataSync } from '../composables/useTableDataSync'
+import type { PageRendererOptions, PageContext, FormCreateAPI, Rule } from './types'
+import { useCssScope } from './composables/useCssScope'
+import { compileFunctions } from './utils/createSandbox'
+import { usePageDataSet } from './composables/usePageDataSet'
+import { useRuleBinding } from './composables/useRuleBinding'
+import { useTableDataSync } from './composables/useTableDataSync'
 
 /**
  * PageRenderer - SPARK 页面渲染引擎

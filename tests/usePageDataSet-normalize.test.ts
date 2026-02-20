@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { usePageDataSet } from '../packages/spark-renderer/src/composables/usePageDataSet'
+import { usePageDataSet } from '../packages/spark-component/src/renderer/composables/usePageDataSet'
 
 describe('usePageDataSet - pagedata -> dataset 归一化', () => {
   it('应该把任意 pagedata.json 归一化为 DataSet（object/array/primitive）', () => {

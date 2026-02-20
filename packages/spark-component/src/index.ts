@@ -71,3 +71,25 @@ export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './core/types.js'
 /** 智能组件自动加载器：自动扫描、分析和注册组件 */
 export { AutoLoader, createAutoLoader } from './loader/index.js'
 export type { AutoLoaderConfig, ComponentMetadata, LoadStrategy } from './loader/index.js'
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 8. 页面渲染引擎（原 spark-renderer 包）
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/** PageRenderer 组件、Composables 及类型（通过 renderer/index.ts 中间层导出，避免此文件直接引用 .vue） */
+export {
+  PageRenderer,
+  useCssScope,
+  usePageDataSet,
+  useRuleBinding,
+  useTableDataSync
+} from './renderer/index.js'
+
+export type {
+  Rule,
+  FormCreateAPI,
+  PageContext,
+  PageConfig,
+  PageRendererOptions,
+  RuleBindingOptions
+} from './renderer/index.js'

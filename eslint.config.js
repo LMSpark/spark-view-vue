@@ -58,6 +58,13 @@ export default [
       'no-restricted-imports': ['error', { 'patterns': ['**/*.vue', '**/features/**'] }]
     }
   },
+  // Allow Vue SFC imports in the renderer sub-module (PageRenderer.vue 是合法组件)
+  {
+    files: ['packages/spark-component/src/renderer/**'],
+    rules: {
+      'no-restricted-imports': 'off'
+    }
+  },
   // Allow stories to import Vue components
   {
     files: ['packages/spark-component/stories/**'],

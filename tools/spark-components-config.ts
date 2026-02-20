@@ -102,7 +102,7 @@ export function getComponentDirs(rootDir: string): string[] {
   return [
     // SPARK 包内组件
     resolve(rootDir, 'packages/spark-component/src/components'),
-    resolve(rootDir, 'packages/spark-renderer/src/components'),
+    resolve(rootDir, 'packages/spark-component/src/renderer'),
     
     // Features 组件
     resolve(rootDir, 'features/spark/components'),
