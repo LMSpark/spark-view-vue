@@ -153,6 +153,41 @@ export function resolveDataKeyAsSource(
   }
 }
 
+// ===== 字符串入口（raw string → 数据）=====
+// 调用方无需手动组合 isDataKey + parseDataKey + resolveXxx 三步
+
+/**
+ * 从原始字符串一步解析到绑定值（rows → DataView，其他 → 原始行数据）
+ *
+ * - 格式无效或解析失败 → `undefined`（不打日志，由调用方决定是否 warn）
+ * - 等价于 `resolveDataKeyAsSource(parseDataKey(rawKey)!, dataSet)`
+ */
+export function resolveRawKey(
+  rawKey: string,
+  dataSet: DataSet
+): DataView | IDataRow | IDataRow[] | null | undefined {
+  if (!isDataKey(rawKey)) return undefined
+  const dk = parseDataKey(rawKey)
+  if (!dk) return undefined
+  return resolveDataKeyAsSource(dk, dataSet)
+}
+
+/**
+ * 从原始字符串获取对应的 DataView（不依赖 field 字段）
+ *
+ * 合并了 isDataKey + parseDataKey + dataSet.getView 三步。
+ * 用于需要注入 DataView 引用但不关心具体 field 的场景。
+ */
+export function getViewFromRawKey(
+  rawKey: string,
+  dataSet: DataSet
+): DataView | undefined {
+  if (!isDataKey(rawKey)) return undefined
+  const dk = parseDataKey(rawKey)
+  if (!dk) return undefined
+  return dataSet.getView(dk.tableName, dk.viewId)
+}
+
 /**
  * 构建标准化 DataKey 字符串
  *

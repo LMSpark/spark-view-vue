@@ -5,8 +5,9 @@
 import { Logger } from '@spark-view/spark-utils'
 import { nextTick } from 'vue'
 import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
-import type { IDataRow, IDataSet } from '@spark-view/spark-data'
-import { parseDataKey, resolveDataKeyAsSource, isDataKey } from '@spark-view/spark-data'
+import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
+import { DataView } from '@spark-view/spark-data'
+import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
 
@@ -43,16 +44,14 @@ function getNestedValue<T = unknown>(
 }
 
 /**
- * 解析 DataKey → DataSet 数据（仅支持 `scope@tableName@viewId@field` 格式）
+ * 解析 DataKey 字符串 → 绑定值（渲染层薄包装，负责 warn 日志）
  *
- * - `rows` 字段 → 返回 DataView 实例（实现了 IDataSource，适合绑定到表格组件）
- * - `currentRow` / `selectedRows` 字段 → 返回原始数据行
- * - 非 DataKey 字符串（缺少 @）：打印 warn 并返回 undefined
+ * 数据解析逻辑完全委托给 spark-data 的 `resolveRawKey`。
  */
 function resolveRuleDataKey(
   rawKey: string,
   dataSet: IDataSet | null
-): unknown {
+): ReturnType<typeof resolveRawKey> {
   if (!isDataKey(rawKey)) {
     pageLogger.warn(
       `dataKey "${rawKey}" 不是有效的 DataKey 格式（缺少 @），已跳过绑定。` +
@@ -61,23 +60,21 @@ function resolveRuleDataKey(
     return undefined
   }
   if (!dataSet) return undefined
-  const dk = parseDataKey(rawKey)
-  if (!dk) return undefined
-  return resolveDataKeyAsSource(dk, dataSet)
+  return resolveRawKey(rawKey, dataSet)
 }
 
 /**
- * 如果 dataKey 指向 DataSet 的视图，则把对应的 DataView 注入到 rule.props.dataView
+ * 将 dataKey 对应的 DataView 注入到 rule.props.dataView（渲染层薄包装）
+ *
+ * 视图查找完全委托给 spark-data 的 `getViewFromRawKey`。
  */
 function attachDataViewIfDataKey(
   rawKey: string | undefined,
   dataSet: IDataSet | null,
   rule: Rule
 ): void {
-  if (!rawKey || !dataSet || !isDataKey(rawKey)) return
-  const dk = parseDataKey(rawKey)
-  if (!dk) return
-  const view = dataSet.getView(dk.tableName, dk.viewId)
+  if (!rawKey || !dataSet) return
+  const view = getViewFromRawKey(rawKey, dataSet)
   if (!view) return
   rule.props ??= {}
   rule.props['dataView'] = view
@@ -159,28 +156,14 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       }
     }
     
-    // 🎯 处理 dataKey → props.data 绑定（r-form, r-detail 已迁移到组件内自解析，跳过）
-    // 旧逻辑已移除；组件通过 consume(PAGE_DATASET) 自行处理 dataKey
-
     // 🎯 处理 el-table 的 dataKey 绑定
     if (newRule.type === 'el-table' && newRule['dataKey']) {
       const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
-      if (resolved !== undefined) {
+      if (resolved instanceof DataView) {
         newRule.props ??= {}
-
-        // 严格要求：只绑定 props.dataSource（若解析到 DataView/IDataSource）
-        if (resolved && typeof resolved === 'object' && 'rows' in (resolved as Record<string, unknown>)) {
-          const ds = resolved as import('@spark-view/spark-data').IDataSource
-          newRule.props['dataSource'] = ds
-        } else {
-          // 非 IDataSource 的解析结果不再绑定到 el-table（删除兼容 props.data）
-          // 留空以便用户修正 dataKey 或确保 pageData 已归一化为 DataSet
-        }
-
-        // 注入 DataView（如果 dataKey 指向 DataSet）
-        attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)
+        newRule.props['dataSource'] = resolved as IDataSource
+        newRule.props['dataView'] = resolved
       }
-
       // 如果有 dataSet，注入同步事件
       if (dataSet) {
         injectTableEvents(newRule, dataSet, formApi)
