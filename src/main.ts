@@ -129,7 +129,7 @@ async function startApp() {
           FieldText,
           FieldNumber,
           FieldDate
-        } = await import('@spark-view/spark-renderer/components')
+        } = await import('./components/renderer-components')
         
         app.component('r-table', RendererTable)
         app.component('r-form', RendererForm)
