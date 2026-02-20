@@ -109,8 +109,6 @@ export interface CacheEntry<T = string> {
    * 对比此字段判断缓存是否仍有效。
    */
   sourceTimestamp: string
-  /** 缓存写入时刻（Unix ms） */
-  cachedAt: number
 }
 
 /** @deprecated 请使用 CacheEntry<string> */
