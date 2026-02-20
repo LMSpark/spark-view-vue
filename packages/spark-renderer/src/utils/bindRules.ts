@@ -43,32 +43,24 @@ function getNestedValue<T = unknown>(
 }
 
 /**
- * 统一解析 dataKey：只走 DataSet 路径（`scope@tableName@viewId@field` / `scope@tableName@field`）
+ * 解析 DataKey → DataSet 数据（仅支持 `scope@tableName@viewId@field` 格式）
  *
- * pagedata.json 数据统一通过 DataKey + DataSet 访问；
- * 脚本运行时状态（$data）由 pageData 直接读取，不经此函数。
- *
- * 旧格式 dot-path（如 `settings.siteName`）已弃用——
- * 请将 pagedata.json 数据改用 DataKey 格式，脚本写入值改用 $data.xxx。
+ * - pagedata.json 数据通过 DataSet + DataKey 访问
+ * - 脚本运行时状态（$data）由调用方直接读取 pageData，不经此函数
+ * - 非 DataKey 字符串（缺少 @）：打印 warn 并返回 undefined
  */
 function resolveRuleDataKey(
   rawKey: string,
-  dataSet: IDataSet | null,
-  pageData: Record<string, unknown>
+  dataSet: IDataSet | null
 ): unknown {
-  // 非 DataKey：不再支持 dot-path 回退，避免 pagedata.json 与 $data 来源混淆
   if (!isDataKey(rawKey)) {
     pageLogger.warn(
       `dataKey "${rawKey}" 不是有效的 DataKey 格式（缺少 @），已跳过绑定。` +
       '请使用 scope@tableName@viewId@field 格式，或将值写入 $data 后通过 dataSource/currentKey 绑定。'
     )
-    // 保留对 pageData 的只读访问，供少数仍在迁移中的旧配置临时使用
-    // TODO: 迁移完成后删除此行，改为直接 return undefined
-    const keys = rawKey.split('.')
-    return getNestedValue(pageData, keys)
+    return undefined
   }
 
-  // DataKey 路径：通过 DataSet 解析
   if (!dataSet) return undefined
   const dk = parseDataKey(rawKey)
   if (!dk) return undefined
@@ -149,7 +141,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
 
     // 🎯 处理 r-tree 的 dataKey 绑定（用于 default-expanded-keys）
     if (newRule.type === 'r-tree' && newRule['dataKey']) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
       if (resolved !== undefined && Array.isArray(resolved)) {
         newRule.props ??= {}
         newRule.props['default-expanded-keys'] = resolved
@@ -182,7 +174,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     
     // 🎯 处理 dataKey → props.data 绑定（r-form, r-detail 共用）
     if ((newRule.type === 'r-form' || newRule.type === 'r-detail') && newRule['dataKey']) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
       if (resolved !== undefined) {
         newRule.props ??= {}
         newRule.props['data'] = resolved
@@ -192,7 +184,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     
     // 🎯 处理 el-table 的 dataKey 绑定
     if (newRule.type === 'el-table' && newRule['dataKey']) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
       if (resolved !== undefined) {
         newRule.props ??= {}
 
@@ -219,7 +211,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     // 排除已有专门处理逻辑的容器组件
     const handledTypes = ['el-table', 'r-table', 'r-form', 'r-detail', 'r-tree']
     if (newRule['dataKey'] && !handledTypes.includes(newRule.type as string)) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet, pageData)
+      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
       
       // 注入 DataView（若 dataKey 指向 DataSet）
       attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)
