@@ -442,4 +442,170 @@ describe('FileLoader', () => {
       expect(result.error).toBeDefined()
     })
   })
+
+  // ────────────────────────────────────────────────────────────────
+  // withTransform / load({ transform }) — 变换缓存
+  // ────────────────────────────────────────────────────────────────
+
+  describe('load() 内联 transform', () => {
+    it('transform 正常执行并返回变换结果', async () => {
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: { content: '{"value":1}', timestamp: 'ts-1' },
+        status: 200, statusText: 'OK', headers: {}, config: {}
+      })
+
+      const toUpper = (raw: string) => raw.toUpperCase()
+      const result = await loader.load<string>('t.json', { transform: toUpper, parseJSON: false })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toBe('{"VALUE":1}')
+      expect(result.fromCache).toBe(false)
+    })
+
+    it('相同 timestamp → 第二次命中变换缓存，不再调用 transform', async () => {
+      // 首次：HTTP 请求
+      mockAxiosInstance.request.mockResolvedValue({
+        data: { content: '{"x":42}', timestamp: 'ts-same' },
+        status: 200, statusText: 'OK', headers: {}, config: {}
+      })
+
+      let callCount = 0
+      function countedTransform(raw: string): string {
+        callCount++
+        return raw + '-transformed'
+      }
+
+      await loader.load<string>('cached-transform.json', {
+        transform: countedTransform,
+        parseJSON: false
+      })
+
+      // 第二次请求返回 notModified（timestamp 不变）
+      mockAxiosInstance.request.mockResolvedValue({
+        data: { notModified: true },
+        status: 200, statusText: 'OK', headers: {}, config: {}
+      })
+
+      const result2 = await loader.load<string>('cached-transform.json', {
+        transform: countedTransform,
+        parseJSON: false
+      })
+
+      expect(result2.success).toBe(true)
+      expect(result2.fromCache).toBe(true)
+      expect(callCount).toBe(1) // transform 只执行一次
+    })
+
+    it('forceRefresh 跳过变换缓存，重新执行 transform', async () => {
+      mockAxiosInstance.request.mockResolvedValue({
+        data: { content: '{"n":1}', timestamp: 'ts-x' },
+        status: 200, statusText: 'OK', headers: {}, config: {}
+      })
+
+      let callCount = 0
+      const fn = (raw: string) => { callCount++; return raw }
+
+      await loader.load<string>('force.json', { transform: fn, parseJSON: false })
+      expect(callCount).toBe(1)
+
+      mockAxiosInstance.request.mockResolvedValue({
+        data: { content: '{"n":2}', timestamp: 'ts-x' },
+        status: 200, statusText: 'OK', headers: {}, config: {}
+      })
+
+      await loader.load<string>('force.json', {
+        transform: fn,
+        parseJSON: false,
+        forceRefresh: true
+      })
+      expect(callCount).toBe(2)
+    })
+
+    it('transform 抛出异常时返回 success: false', async () => {
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: { content: '{}', timestamp: 'ts-err' },
+        status: 200, statusText: 'OK', headers: {}, config: {}
+      })
+
+      const brokenFn = (_raw: string) => { throw new Error('解析崩了') }
+      const result = await loader.load<string>('err.json', { transform: brokenFn })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('transform 失败')
+      expect(result.error).toContain('解析崩了')
+    })
+  })
+
+  describe('withTransform() 子加载器', () => {
+    it('子加载器 .load() 返回变换结果', async () => {
+      mockAxiosInstance.request.mockResolvedValueOnce({
+        data: { content: '[1,2,3]', timestamp: 'ts-w1' },
+        status: 200, statusText: 'OK', headers: {}, config: {}
+      })
+
+      function parseNumbers(raw: string): number[] {
+        return JSON.parse(raw) as number[]
+      }
+
+      const numLoader = loader.withTransform(parseNumbers)
+      const result = await numLoader.load('nums.json')
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual([1, 2, 3])
+    })
+
+    it('子加载器 .loadBatch() 返回 Map', async () => {
+      mockAxiosInstance.request
+        .mockResolvedValueOnce({
+          data: { content: '[1]', timestamp: 'ts-b1' },
+          status: 200, statusText: 'OK', headers: {}, config: {}
+        })
+        .mockResolvedValueOnce({
+          data: { content: '[2,3]', timestamp: 'ts-b2' },
+          status: 200, statusText: 'OK', headers: {}, config: {}
+        })
+
+      const numLoader = loader.withTransform((raw: string) => JSON.parse(raw) as number[])
+      const map = await numLoader.loadBatch(['a.json', 'b.json'])
+
+      expect(map.size).toBe(2)
+      expect(map.get('a.json')?.data).toEqual([1])
+      expect(map.get('b.json')?.data).toEqual([2, 3])
+    })
+
+    it('不同 transform key 互不污染缓存', async () => {
+      const baseContent = '{"v":1}'
+      mockAxiosInstance.request.mockResolvedValue({
+        data: { content: baseContent, timestamp: 'ts-key' },
+        status: 200, statusText: 'OK', headers: {}, config: {}
+      })
+
+      const loaderA = loader.withTransform((r) => r + '-A', 'keyA')
+      const loaderB = loader.withTransform((r) => r + '-B', 'keyB')
+
+      const ra = await loaderA.load('shared.json')
+      const rb = await loaderB.load('shared.json')
+
+      expect(ra.data).toBe(baseContent + '-A')
+      expect(rb.data).toBe(baseContent + '-B')
+    })
+  })
+
+  describe('store() / retrieve() 高级 API', () => {
+    it('store 后 retrieve 命中（timestamp 匹配）', () => {
+      loader.store('my-key', { computed: true }, 'ts-store')
+      const result = loader.retrieve<{ computed: boolean }>('my-key', 'ts-store')
+      expect(result).toEqual({ computed: true })
+    })
+
+    it('timestamp 不匹配时 retrieve 返回 null', () => {
+      loader.store('stale-key', { old: true }, 'ts-old')
+      const result = loader.retrieve('stale-key', 'ts-new')
+      expect(result).toBeNull()
+    })
+
+    it('key 不存在时 retrieve 返回 null', () => {
+      expect(loader.retrieve('nonexistent', 'ts-any')).toBeNull()
+    })
+  })
 })
