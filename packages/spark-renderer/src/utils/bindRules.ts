@@ -43,37 +43,44 @@ function getNestedValue<T = unknown>(
 }
 
 /**
- * 统一解析 dataKey：先尝试 DataSet 解析，失败则回落到 pageData 路径解析
+ * 统一解析 dataKey：只走 DataSet 路径（`scope@tableName@viewId@field` / `scope@tableName@field`）
  *
- * 支持格式：
- *   DataKey：`scope@tableName@viewId@field`（优先）
- *   pageData 路径：`settings.siteName`
+ * pagedata.json 数据统一通过 DataKey + DataSet 访问；
+ * 脚本运行时状态（$data）由 pageData 直接读取，不经此函数。
+ *
+ * 旧格式 dot-path（如 `settings.siteName`）已弃用——
+ * 请将 pagedata.json 数据改用 DataKey 格式，脚本写入值改用 $data.xxx。
  */
 function resolveRuleDataKey(
   rawKey: string,
   dataSet: IDataSet | null,
   pageData: Record<string, unknown>
 ): unknown {
-  // 1. 尝试 DataSet 统一解析（优先）
-  if (dataSet && isDataKey(rawKey)) {
-    const dk = parseDataKey(rawKey)
-    if (dk) {
-      // 对于 rows 字段，规范化为 IDataSource（包含 rows/total/page/pageSize）
-      if (dk.field === 'rows') {
-        const table = dataSet.getTable(dk.tableName)
-        const view = table ? dataSet.getView(dk.tableName, dk.viewId) : undefined
-        // 直接返回 DataView 实例（结构兼容 IDataSource）
-        return view
-      }
-
-      // 其它字段（currentRow / selectedRows）仍返回原始值
-      return resolveDataKey(dk, dataSet)
-    }
+  // 非 DataKey：不再支持 dot-path 回退，避免 pagedata.json 与 $data 来源混淆
+  if (!isDataKey(rawKey)) {
+    pageLogger.warn(
+      `dataKey "${rawKey}" 不是有效的 DataKey 格式（缺少 @），已跳过绑定。` +
+      '请使用 scope@tableName@viewId@field 格式，或将值写入 $data 后通过 dataSource/currentKey 绑定。'
+    )
+    // 保留对 pageData 的只读访问，供少数仍在迁移中的旧配置临时使用
+    // TODO: 迁移完成后删除此行，改为直接 return undefined
+    const keys = rawKey.split('.')
+    return getNestedValue(pageData, keys)
   }
 
-  // 2. 回落到 pageData 路径解析
-  const keys = rawKey.split('.')
-  return getNestedValue(pageData, keys)
+  // DataKey 路径：通过 DataSet 解析
+  if (!dataSet) return undefined
+  const dk = parseDataKey(rawKey)
+  if (!dk) return undefined
+
+  // rows 字段 → 返回 DataView 实例（结构兼容 IDataSource）
+  if (dk.field === 'rows') {
+    const table = dataSet.getTable(dk.tableName)
+    return table ? dataSet.getView(dk.tableName, dk.viewId) : undefined
+  }
+
+  // currentRow / selectedRows → 返回原始值
+  return resolveDataKey(dk, dataSet)
 }
 
 /**
