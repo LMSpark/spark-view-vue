@@ -80,7 +80,6 @@ export type { AutoLoaderConfig, ComponentMetadata, LoadStrategy } from './loader
 export {
   PageRenderer,
   useCssScope,
-  usePageDataSet,
   useRuleBinding,
   useTableDataSync
 } from './renderer/index.js'

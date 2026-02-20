@@ -78,7 +78,7 @@ function getErrorMessage(code: number): string {
 import type { PageRendererOptions, PageContext, FormCreateAPI, Rule } from './types'
 import { useCssScope } from './composables/useCssScope'
 import { compileFunctions } from './utils/createSandbox'
-import { usePageDataSet } from './composables/usePageDataSet'
+import { usePageDataSet } from '@spark-view/spark-data'
 import { useRuleBinding } from './composables/useRuleBinding'
 import { useTableDataSync } from './composables/useTableDataSync'
 

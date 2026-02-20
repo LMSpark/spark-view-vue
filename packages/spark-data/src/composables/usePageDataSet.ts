@@ -4,7 +4,7 @@
 
 import { shallowRef, Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import { DataSet } from '@spark-view/spark-data'
+import { DataSet } from '../dataset'
 
 const pageLogger = Logger('PageRenderer')
 

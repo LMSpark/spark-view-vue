@@ -75,3 +75,9 @@ export type {
 // ===== 工具函数 =====
 
 export { isSameRow, getParentRows } from './core/utils'
+
+// ===== Vue Composables =====
+// DataSet 生命周期管理（需要 Vue 3.5+）
+
+export { usePageDataSet } from './composables/index'
+export type { UsePageDataSetOptions, UsePageDataSetReturn } from './composables/index'
