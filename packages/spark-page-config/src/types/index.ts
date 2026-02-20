@@ -87,12 +87,18 @@ export interface ConfigLoaderOptions {
   localPrefix?: string
   
   /**
-   * 启用缓存
+   * FileLoader 缓存存储方式（本地模式使用）
+   * @default 'localStorage'
+   */
+  fileStorage?: 'localStorage' | 'sessionStorage' | 'memory'
+
+  /**
+   * @deprecated 本地模式已由 FileLoader 接管缓存，此字段不再生效
    */
   enableCache?: boolean
   
   /**
-   * 缓存有效期（毫秒）
+   * @deprecated 本地模式已由 FileLoader 接管缓存，此字段不再生效
    */
   cacheExpiry?: number
   
