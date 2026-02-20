@@ -16,7 +16,6 @@ const pageLogger = Logger('PageRenderer')
  * DataSet管理选项接口 (ISP: 接口隔离原则)
  */
 export interface UsePageDataSetOptions {
-  pageData: Record<string, unknown>
   originalRules?: Ref<Rule[]>
   formApi?: Ref<FormCreateAPI | null>
   enableDataSet?: boolean
@@ -27,7 +26,8 @@ export interface UsePageDataSetOptions {
  */
 export interface UsePageDataSetReturn {
   dataSet: Ref<DataSet | null>
-  initDataSet: () => void
+  /** pagedata.json 原始对象 → 归一化 → 创建 DataSet，DataSet 是唯一缓存 */
+  initDataSet: (rawPageData: Record<string, unknown>) => void
   autoSubscribeTables: () => void
   clearDataSet: () => void
 }
@@ -48,7 +48,6 @@ export interface UsePageDataSetReturn {
  */
 export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetReturn {
   const { 
-    pageData, 
     originalRules,
     formApi,
     enableDataSet = true
@@ -57,13 +56,10 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
   const dataSet = shallowRef<DataSet | null>(null)
   
   /**
-   * 初始化DataSet (SRP: 单一职责 - 只负责初始化)
+   * pagedata.json 原始对象 → 归一化 → DataSet（唯一缓存，不写入 pageData）
    */
-  const initDataSet = () => {
+  const initDataSet = (rawPageData: Record<string, unknown>) => {
     if (!enableDataSet) return
-
-    // 统一行为：无论 pagedata.json 长什么样，都**归一化为 dataset** 格式然后创建 DataSet
-    // 如果 pageData 已包含合法的 `dataset` 字段则直接使用，否则将 pageData 的顶层键映射为表
 
     // 清理旧的 DataSet
     if (dataSet.value) dataSet.value = null
@@ -122,11 +118,11 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       return { dataSetName: 'PageDataSet', tables }
     }
 
-    // 准备 datasetConfig：优先使用 pageData.dataset；否则归一化整个 pageData
-    const pageDatasetCandidate = pageData['dataset']
-    const rawDataset = (pageDatasetCandidate && typeof pageDatasetCandidate === 'object' && 'tables' in (pageDatasetCandidate as Record<string, unknown>))
-      ? (pageDatasetCandidate as { dataSetName?: string; tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; relations?: DataRelation[] })
-      : normalizeToDataset(pageData)
+    // 优先使用 rawPageData.dataset（含 tables 即视为标准 DataSet 配置），否则归一化整个 pagedata
+    const datasetCandidate = rawPageData['dataset']
+    const rawDataset = (datasetCandidate && typeof datasetCandidate === 'object' && 'tables' in (datasetCandidate as Record<string, unknown>))
+      ? (datasetCandidate as { dataSetName?: string; tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; relations?: DataRelation[] })
+      : normalizeToDataset(rawPageData)
 
     type DatasetCandidate =
       | { dataSetName?: string; tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>; relations?: DataRelation[] }

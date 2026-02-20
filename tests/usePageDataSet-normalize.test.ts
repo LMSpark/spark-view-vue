@@ -19,8 +19,8 @@ describe('usePageDataSet - pagedata -> dataset 归一化', () => {
       title: 'Async Demo' // primitive -> single-cell table
     }
 
-    const { dataSet, initDataSet } = usePageDataSet({ pageData, enableDataSet: true })
-    initDataSet()
+    const { dataSet, initDataSet } = usePageDataSet({ enableDataSet: true })
+    initDataSet(pageData)
 
     expect(dataSet.value).not.toBeNull()
     const ds = dataSet.value!

@@ -205,7 +205,6 @@ const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
 
 // DataSet 管理
 const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
-  pageData,
   // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
   originalRules: originalRules,
   // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
@@ -290,9 +289,9 @@ const loadPageConfig = async () => {
       setScopedCss(pageData['style'] as string)
     }
     
-    // 初始化 DataSet
+    // 初始化 DataSet（pagedata.json 直接转 DataSet，不经过 pageData 缓存）
     pageLogger.debug('初始化 DataSet', { pageId })
-    initDataSet()
+    initDataSet(config.data ?? {})
     
     // ========================================
     // 执行页面脚本
