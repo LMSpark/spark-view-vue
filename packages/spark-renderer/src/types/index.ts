@@ -294,6 +294,10 @@ export interface PageRendererOptions {
  */
 export interface RuleBindingOptions {
   rules: Rule[]
+  /**
+   * 脚本运行时状态（PageContext.$data）——仅由脚本写入，不再用于 pagedata.json 数据。
+   * pagedata.json 数据统一通过 DataSet + DataKey（`scope@tableName@viewId@field`）访问。
+   */
   pageData: Record<string, unknown>
   pageFunctions: Record<string, (...args: unknown[]) => unknown>
   dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
