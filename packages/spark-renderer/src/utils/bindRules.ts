@@ -6,7 +6,7 @@ import { Logger } from '@spark-view/spark-utils'
 import { nextTick } from 'vue'
 import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
-import { parseDataKey, resolveDataKey, isDataKey } from '@spark-view/spark-data'
+import { parseDataKey, resolveDataKeyAsSource, isDataKey } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
 
@@ -45,8 +45,8 @@ function getNestedValue<T = unknown>(
 /**
  * 解析 DataKey → DataSet 数据（仅支持 `scope@tableName@viewId@field` 格式）
  *
- * - pagedata.json 数据通过 DataSet + DataKey 访问
- * - 脚本运行时状态（$data）由调用方直接读取 pageData，不经此函数
+ * - `rows` 字段 → 返回 DataView 实例（实现了 IDataSource，适合绑定到表格组件）
+ * - `currentRow` / `selectedRows` 字段 → 返回原始数据行
  * - 非 DataKey 字符串（缺少 @）：打印 warn 并返回 undefined
  */
 function resolveRuleDataKey(
@@ -60,19 +60,10 @@ function resolveRuleDataKey(
     )
     return undefined
   }
-
   if (!dataSet) return undefined
   const dk = parseDataKey(rawKey)
   if (!dk) return undefined
-
-  // rows 字段 → 返回 DataView 实例（结构兼容 IDataSource）
-  if (dk.field === 'rows') {
-    const table = dataSet.getTable(dk.tableName)
-    return table ? dataSet.getView(dk.tableName, dk.viewId) : undefined
-  }
-
-  // currentRow / selectedRows → 返回原始值
-  return resolveDataKey(dk, dataSet)
+  return resolveDataKeyAsSource(dk, dataSet)
 }
 
 /**

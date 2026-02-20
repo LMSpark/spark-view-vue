@@ -25,6 +25,7 @@
  */
 
 import type { DataSet } from '../dataset'
+import type { DataView } from '../data-view'
 import type { IDataRow } from '../types'
 
 // ===== 类型定义 =====
@@ -81,8 +82,7 @@ export function isDataKey(dataKey: string): boolean {
 export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
   if (!dataKey) return null
 
-  // ── 新格式：使用 @ 分隔 ──
-  // ── 使用 @ 分隔的新格式 ──
+  // 使用 @ 分隔符解析
   const parts = dataKey.split(SEPARATOR)
 
   if (parts.length === 4) {
@@ -122,6 +122,31 @@ export function resolveDataKey(
 
   switch (descriptor.field) {
     case 'rows':         return view.rows
+    case 'currentRow':   return view.currentRow
+    case 'selectedRows': return view.selectedRows
+    default:             return undefined
+  }
+}
+
+/**
+ * 解析 DataKey → 绑定友好的值（rows → DataView 实例，其他字段 → 原始值）
+ *
+ * 与 `resolveDataKey` 的区别：`rows` 字段返回 **DataView 实例**（实现了 `IDataSource`），
+ * 而非 `view.rows` 数组，更适合绑定到需要完整 DataSource 接口的组件
+ * （如 `el-table`、`r-table` 等）。
+ */
+export function resolveDataKeyAsSource(
+  descriptor: DataKeyDescriptor,
+  dataSet: DataSet
+): DataView | IDataRow | IDataRow[] | null | undefined {
+  const table = dataSet.getTable(descriptor.tableName)
+  if (!table) return undefined
+
+  const view = table.getOrCreateView(descriptor.viewId)
+  if (!view) return undefined
+
+  switch (descriptor.field) {
+    case 'rows':         return view             // DataView 实现 IDataSource，适合整表绑定
     case 'currentRow':   return view.currentRow
     case 'selectedRows': return view.selectedRows
     default:             return undefined
