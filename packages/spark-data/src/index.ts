@@ -45,7 +45,7 @@ export type {
 
 // ===== DataKey 统一解析 =====
 
-export { isDataKey, parseDataKey, resolveDataKey, resolveDataKeyAsSource, buildDataKey, getViewKey } from './core/data-key'
+export { isDataKey, parseDataKey, resolveDataKey, resolveDataKeyAsSource, resolveRawKey, getViewFromRawKey, buildDataKey, getViewKey } from './core/data-key'
 export type { DataKeyDescriptor, DataKeyField } from './core/data-key'
 
 // ===== 能力键 =====
