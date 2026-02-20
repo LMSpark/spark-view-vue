@@ -132,7 +132,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
     const selfResolvingTypes = ['r-table', 'r-form', 'r-detail', 'r-tree']
     if (newRule['dataKey'] && selfResolvingTypes.includes(newRule.type as string)) {
       newRule.props ??= {}
-      newRule.props['dataKey'] = newRule['dataKey']
+      newRule.props['dataKey'] = newRule['dataKey'] as string
     }
 
     // 🎯 处理 r-tree 的 currentKey 绑定（用于 current-key 高亮）
