@@ -101,8 +101,8 @@ export function compileFunctions(
     }
     
     return filteredResult
-  } catch (error) {
-    pageLogger.error('脚本执行错误', { error })
+  } catch (error: unknown) {
+    pageLogger.error('脚本执行错误', { error: error instanceof Error ? error.message : String(error) })
     throw error
   }
 }
