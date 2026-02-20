@@ -27,6 +27,9 @@
     "dependencies": {
         "@spark-view/spark-utils": "workspace:*"
     },
+    "peerDependencies": {
+        "vue": "^3.5.0"
+    },
     "postcss": {},
     "devDependencies": {
         "@eslint/js": "^9.39.2",
