@@ -28,7 +28,15 @@
         "prepare": "pnpm run build"
     },
     "dependencies": {
-        "@spark-view/spark-utils": "workspace:*"
+        "@spark-view/spark-utils": "workspace:*",
+        "@spark-view/spark-data": "workspace:*",
+        "@spark-view/spark-page-config": "workspace:*"
+    },
+    "peerDependencies": {
+        "vue": "^3.5.0",
+        "vue-router": "^4.0.0",
+        "element-plus": ">=2.0.0",
+        "@form-create/element-ui": ">=3.0.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",

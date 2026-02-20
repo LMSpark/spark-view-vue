@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { isReactive } from 'vue'
-import { bindDataToRules } from '../packages/spark-renderer/src/utils/bindRules'
+import { bindDataToRules } from '../packages/spark-component/src/renderer/utils/bindRules'
 import { SparkData } from '../packages/spark-data/src/spark-data'
 
 describe('bindRules - DataKey rows -> IDataSource binding', () => {
