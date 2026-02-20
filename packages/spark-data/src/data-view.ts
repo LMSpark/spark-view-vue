@@ -189,13 +189,10 @@ export class DataView {
 
     this.requestState = RequestState.Preparing
 
-    const ds = this.dataSet
-    if (!ds) { this.requestState = RequestState.Idle; return }
-
     // 逐个父视图检查依赖是否满足
-    const parents = ds.getParentRelations(this.tableName, this.viewId)
+    const parents = this.dataSet?.getParentRelations(this.tableName, this.viewId) ?? []
     for (const rel of parents) {
-      const pView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      const pView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!pView) continue
 
       if (pView.requestState === RequestState.Idle) {
@@ -214,7 +211,7 @@ export class DataView {
     // 按各关系的 filterExpression 组装查询参数
     const params: QueryParams = {}
     for (const rel of parents) {
-      const pView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      const pView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!pView) continue
       const parentRows = getParentRows(pView, rel.dependencyType)
       if (!parentRows.length) continue
@@ -717,13 +714,10 @@ export class DataView {
   setupCascade(): void {
     this.teardownCascade()
 
-    const ds = this.dataSet
-    if (!ds) return
-
-    const parentRels = ds.getParentRelations(this.tableName, this.viewId)
+    const parentRels = this.dataSet?.getParentRelations(this.tableName, this.viewId) ?? []
 
     for (const rel of parentRels) {
-      const parentView = ds.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      const parentView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!parentView) continue
 
       const handler = (evt: ViewStateEvent) => this.respondToParentChange(rel, parentView, evt)
