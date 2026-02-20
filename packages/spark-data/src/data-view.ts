@@ -165,7 +165,7 @@ export class DataView {
 
   /** DataSet（向上访问） */
   private get dataSet() {
-    return this.dataTable?.dataSet
+    return this.dataTable.dataSet
   }
 
   // ─────────────────────────────────────────────
@@ -190,10 +190,10 @@ export class DataView {
     this.requestState = RequestState.Preparing
 
     // 逐个父视图检查依赖是否满足
-    const parents = this.dataSet?.getParentRelations(this.tableName, this.viewId) ?? []
+    const parents = this.dataSet.getParentRelations(this.tableName, this.viewId) ?? []
     for (const rel of parents) {
-      const pView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
-      if (!pView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
+      const pView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      if (!pView) continue
 
       if (pView.requestState === RequestState.Idle) {
         void pView.requestData()
@@ -210,8 +210,8 @@ export class DataView {
     // 按各关系的 filterExpression 组装查询参数
     const params: QueryParams = {}
     for (const rel of parents) {
-      const pView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
-      if (!pView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
+      const pView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      if (!pView) continue
       const parentRows = getParentRows(pView, rel.dependencyType)
       if (!parentRows.length) continue
       const expr = rel.filterExpression
@@ -713,10 +713,10 @@ export class DataView {
   setupCascade(): void {
     this.teardownCascade()
 
-    const parentRels = this.dataSet?.getParentRelations(this.tableName, this.viewId) ?? []
+    const parentRels = this.dataSet.getParentRelations(this.tableName, this.viewId) ?? []
 
     for (const rel of parentRels) {
-      const parentView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      const parentView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!parentView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
 
       const handler = (evt: ViewStateEvent) => this.respondToParentChange(rel, parentView, evt)
