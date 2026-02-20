@@ -276,22 +276,22 @@ const loadPageConfig = async () => {
     
     pageLogger.info('页面配置加载成功', { pageId })
     
-    // 处理页面数据
-    Object.assign(pageData, config.data)
+    // config.data 已是 DataSet 实例，不再需要 Object.assign 到 pageData
     
     // 将配置层的 RuleConfig 转换为 FormCreate 的 Rule
     // 注意：虽然类型不同，但运行时结构兼容，FormCreate 能识别我们的配置格式
     originalRules.value = (config.rule || []) as unknown as Rule[]
     
-    // 设置样式
-    if (pageData['style'] && typeof pageData['style'] === 'string') {
+    // 设置样式（config.css 为 parseCss 编译后的样式字符串）
+    const cssText = config.css
+    if (cssText) {
       pageLogger.debug('设置页面样式', { pageId, hasStyle: true })
-      setScopedCss(pageData['style'] as string)
+      setScopedCss(cssText)
     }
     
-    // 初始化 DataSet（pagedata.json 直接转 DataSet，不经过 pageData 缓存）
+    // 初始化 DataSet（config.data 已是编译后的 DataSet 实例）
     pageLogger.debug('初始化 DataSet', { pageId })
-    initDataSet(config.data ?? {})
+    initDataSet(config.data)
     
     // ========================================
     // 执行页面脚本

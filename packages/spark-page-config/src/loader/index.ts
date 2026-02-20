@@ -33,6 +33,7 @@ import {
   createFileLoader
 } from '@spark-view/spark-utils'
 import type { FileLoader, DerivedLoader } from '@spark-view/spark-utils'
+import { DataSet } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageConfig')
 
@@ -78,13 +79,15 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
 }
 
 /**
- * pagedata.json 原始字符串 → PageDataConfig
+ * pagedata.json 原始字符串 → DataSet 实例
  *
- * 当前：JSON.parse + 透传（占位）。
- * 后续可加：dataset 子树预处理、字段类型推断、DataSet 元数据归一化。
+ * 调用 DataSet.fromJSON() 构建完整实例：分配对象、建各表的 DataTable/DataView，
+ * 建立 DataSet → DataTable → DataView 引用链。
+ * 实例缓存在内存派生缓存中，timestamp 不变时直接复用，
+ * 同一页面多次访问跳过重建，冷启动仍需跑一次（但无网络请求）。
  */
 export function parsePageData(raw: string): PageDataConfig {
-  return JSON.parse(raw) as PageDataConfig
+  return DataSet.fromJSON(raw)
 }
 
 /**
@@ -227,7 +230,8 @@ export class PageConfigLoader implements ConfigLoader {
       data: {
         pageId,
         rule: ruleResult.data ?? [],
-        data: dataResult.data ?? {},
+        // dataResult.success 已验证，data 必定存在
+        data: dataResult.data as PageDataConfig,
         script: scriptResult.data,
         css: cssResult.data
       },
