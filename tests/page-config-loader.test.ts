@@ -9,6 +9,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import type { FileLoadResult } from '@spark-view/spark-utils'
 import { PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
+import { DataSet } from '@spark-view/spark-data'
 
 // ── Mock FileLoader ──────────────────────────────────────────────────────────
 
@@ -420,14 +421,29 @@ describe('normalizeRuleNode', () => {
 })
 
 describe('parsePageData', () => {
-  it('解析 JSON 字符串', () => {
-    const data = { title: '订单', list: [1, 2, 3] }
-    expect(parsePageData(JSON.stringify(data))).toEqual(data)
+  const makeRaw = (name: string, tables: Record<string, unknown> = {}) =>
+    JSON.stringify({ dataSetName: name, tables, relations: undefined, version: undefined, pageId: undefined })
+
+  it('返回 DataSet 实例', () => {
+    const result = parsePageData(makeRaw('OrderDS'))
+    expect(result).toBeInstanceOf(DataSet)
   })
 
-  it('含 dataset 子树原样保留', () => {
-    const data = { dataset: { dataSetName: 'DS', tables: {} } }
-    expect(parsePageData(JSON.stringify(data))).toEqual(data)
+  it('dataSetName 正确传入', () => {
+    const result = parsePageData(makeRaw('UserDS'))
+    expect(result.dataSetName).toBe('UserDS')
+  })
+
+  it('含 tables 时构建 DataTable', () => {
+    const raw = JSON.stringify({
+      dataSetName: 'TestDS',
+      tables: {
+        Orders: { tableName: 'Orders', columns: [], rows: [], api: undefined, views: undefined, loading: undefined, error: undefined }
+      }
+    })
+    const result = parsePageData(raw)
+    expect(result).toBeInstanceOf(DataSet)
+    expect(result.tables['Orders']).toBeDefined()
   })
 })
 

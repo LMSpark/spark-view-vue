@@ -4,6 +4,7 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router'
+import type { IDataSet } from '@spark-view/spark-data'
 
 /**
  * 路由配置（routes.json）
@@ -39,10 +40,10 @@ export interface RuleConfig {
 }
 
 /**
- * 页面数据配置（pagedata.json）
- * 页面初始数据
+ * 页面数据配置（pagedata.json）编译结果
+ * parsePageData 执行后得到的 DataSet 实例
  */
-export type PageDataConfig = Record<string, unknown>
+export type PageDataConfig = IDataSet
 
 /**
  * 页面脚本配置（script.js）

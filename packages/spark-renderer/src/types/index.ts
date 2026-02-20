@@ -79,9 +79,10 @@ export interface PageContext {
 export interface PageConfig {
   pageId: string
   rule: RuleConfig[]  // 使用配置层的 RuleConfig，而非 FormCreate 的 Rule
-  data: Record<string, unknown>
+  data: IDataSet      // parsePageData 编译后的 DataSet 实例
   style?: string
   script: string | undefined  // 脚本文本
+  css: string | undefined     // parseCss 编译后的样式字符串
 }
 
 /**
