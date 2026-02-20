@@ -65,6 +65,38 @@ export default defineConfig({
     }
   },
   plugins: [
+    // ==================== pages-config 文件服务（FileLoader 协议） ====================
+    // 拦截 GET /api/pages-config/** 请求，从 public/pages-config/** 读取文件，
+    // 以 { content, timestamp } 格式响应，供 FileLoader 时间戳缓存协议使用。
+    {
+      name: 'spark-pages-config-server',
+      configureServer(server) {
+        server.middlewares.use(async (req, res, next) => {
+          if (req.method !== 'GET' || !req.url?.startsWith('/api/pages-config/')) {
+            return next()
+          }
+          const urlClean = req.url.split('?')[0]
+          const relPath = urlClean.slice('/api/pages-config/'.length)
+          const filePath = path.resolve(__dirname, 'public', 'pages-config', relPath)
+          const clientTs = new URLSearchParams(req.url.includes('?') ? req.url.split('?')[1] : '').get('timestamp') ?? ''
+
+          try {
+            const stat = await fs.promises.stat(filePath)
+            const timestamp = stat.mtime.toISOString()
+            res.setHeader('Content-Type', 'application/json')
+            if (clientTs && clientTs === timestamp) {
+              res.end(JSON.stringify({ notModified: true, timestamp, content: '' }))
+              return
+            }
+            const content = await fs.promises.readFile(filePath, 'utf-8')
+            res.end(JSON.stringify({ content, timestamp }))
+          } catch {
+            next()
+          }
+        })
+      }
+    },
+
     vue({
       include: /\.(vue)$/,
       template: {

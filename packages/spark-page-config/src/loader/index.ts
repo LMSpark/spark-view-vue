@@ -10,17 +10,18 @@ import type {
   PageConfig,
   RuleConfig,
   PageDataConfig,
-  PageScriptConfig,
-  ConfigCacheItem
+  PageScriptConfig
 } from '../types'
-import { Logger, SharedErrorCodes, getSharedErrorMessage } from '@spark-view/spark-utils'
+import { Logger, SharedErrorCodes, getSharedErrorMessage, createFileLoader } from '@spark-view/spark-utils'
+import type { FileLoader } from '@spark-view/spark-utils'
 
 // 本地 Logger（消除对 spark-app 的反向依赖）
 const pageLogger = Logger('PageConfig')
 
-// 本地常量（消除对 spark-app DefaultConfig 的反向依赖）
-const CONFIG_CACHE_EXPIRY = 300_000  // 5 分钟
-const REQUEST_TIMEOUT = 10_000       // 10 秒
+// 本地常量
+const REQUEST_TIMEOUT = 10_000  // 10 秒
+// 本地 pages-config 文件服务地址（由 Vite 中间件 / 生产 API 提供 FileLoader 协议）
+const PAGES_CONFIG_FILE_BASE = '/api/pages-config'
 
 // 使用共享错误码（消除重复定义）
 const ErrorCodes = SharedErrorCodes
@@ -33,8 +34,9 @@ const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
   source: 'hybrid',
   apiBaseUrl: '/api',
   localPrefix: '/pages-config',
-  enableCache: true,
-  cacheExpiry: CONFIG_CACHE_EXPIRY,
+  fileStorage: 'localStorage',
+  enableCache: true,     // 保留字段供外部兼容，本地模式已由 FileLoader 接管
+  cacheExpiry: 300_000,  // 同上，仅保留接口兼容
   enableValidation: false,
   timeout: REQUEST_TIMEOUT,
   fetchAdapter: globalThis.fetch?.bind(globalThis)
@@ -45,12 +47,20 @@ const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
  */
 export class PageConfigLoader implements ConfigLoader {
   private options: Required<ConfigLoaderOptions>
-  private cache: Map<string, ConfigCacheItem> = new Map()
   private _fetch: typeof fetch
+  /** 本地文件加载器（时间戳缓存协议，替代内部 TTL Map 缓存） */
+  private fileLoader: FileLoader
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
     this._fetch = this.options.fetchAdapter ?? globalThis.fetch?.bind(globalThis)
+    this.fileLoader = createFileLoader({
+      baseUrl: PAGES_CONFIG_FILE_BASE,
+      storage: this.options.fileStorage ?? 'localStorage',
+      cachePrefix: 'spark_page_',
+      fallbackToCache: true,
+      timeout: this.options.timeout
+    })
   }
 
   /**
@@ -120,55 +130,29 @@ export class PageConfigLoader implements ConfigLoader {
    * 清除缓存
    */
   clearCache(key?: string): void {
-    if (key) {
-      this.cache.delete(key)
-    } else {
-      this.cache.clear()
-    }
+    this.fileLoader.clearCache(key)
   }
 
   /**
    * 获取缓存统计
    */
   getCacheStats(): { size: number; keys: string[] } {
-    return {
-      size: this.cache.size,
-      keys: Array.from(this.cache.keys())
-    }
+    // FileLoader 使用 localStorage，通过 hasCache 可查询单个文件
+    return { size: 0, keys: [] }
   }
 
   /**
-   * 通用加载逻辑（带缓存）
+   * 通用加载逻辑
+   * 本地模式：缓存由 FileLoader（localStorage + 时间戳）接管。
+   * 远程模式：依赖服务器 HTTP 缓存策略，不做客户端缓存。
    */
   private async load<T>(
     cacheKey: string,
     fetcher: () => Promise<T>
   ): Promise<ConfigLoadResult<T>> {
     try {
-      // 检查缓存
-      if (this.options.enableCache) {
-        const cached = this.getFromCache<T>(cacheKey)
-        if (cached) {
-          pageLogger.debug('从缓存加载配置', { cacheKey }) // 使用 L1 Logger
-          return {
-            success: true,
-            data: cached,
-            source: 'cache',
-            timestamp: Date.now()
-          }
-        }
-      }
-
-      // 加载数据
-      pageLogger.info('加载配置', { cacheKey, source: this.options.source }) // 使用 L1 Logger
+      pageLogger.info('加载配置', { cacheKey, source: this.options.source })
       const data = await fetcher()
-
-      // 更新缓存
-      if (this.options.enableCache) {
-        this.setCache(cacheKey, data)
-        pageLogger.debug('配置已缓存', { cacheKey }) // 使用 L1 Logger
-      }
-
       pageLogger.info('配置加载成功', { cacheKey })
       return {
         success: true,
@@ -177,39 +161,13 @@ export class PageConfigLoader implements ConfigLoader {
         timestamp: Date.now()
       }
     } catch (error) {
-      pageLogger.error('配置加载失败', { cacheKey, error }) // 使用 L1 Logger
+      pageLogger.error('配置加载失败', { cacheKey, error })
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
         timestamp: Date.now()
       }
     }
-  }
-
-  /**
-   * 获取缓存数据
-   */
-  private getFromCache<T>(key: string): T | null {
-    const cached = this.cache.get(key)
-    if (!cached) return null
-
-    const now = Date.now()
-    if (now - cached.timestamp > this.options.cacheExpiry) {
-      this.cache.delete(key)
-      return null
-    }
-
-    return cached.data as T
-  }
-
-  /**
-   * 设置缓存
-   */
-  private setCache<T>(key: string, data: T): void {
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now()
-    })
   }
 
   /**
@@ -336,29 +294,18 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   /**
-   * 从本地加载 JSON 配置
+   * 从本地加载 JSON 配置（通过 FileLoader 时间戳缓存协议）
    */
   private async fetchFromLocal<T>(path: string): Promise<T> {
-    const url = `${this.options.localPrefix}${path}`
-    
-    try {
-      pageLogger.debug('加载本地配置', { url })
-      
-      const response = await this._fetch(url)
-
-      if (!response.ok) {
-        const errorMsg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
-        pageLogger.error('本地配置加载失败', { url, status: response.status })
-        throw new Error(`${errorMsg}: ${url}`)
-      }
-
-      const result = await response.json() as T
-      pageLogger.debug('本地配置加载成功', { url })
-      return result
-    } catch (error) {
-      pageLogger.error('本地配置加载异常', { url, error })
-      throw error
+    pageLogger.debug('FileLoader 加载本地配置', { path })
+    const result = await this.fileLoader.load<T>(path)
+    if (!result.success) {
+      const errorMsg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
+      pageLogger.error('本地配置加载失败', { path, error: result.error })
+      throw new Error(`${errorMsg}: ${PAGES_CONFIG_FILE_BASE}${path} — ${result.error ?? ''}`)
     }
+    pageLogger.debug('本地配置加载成功', { path, fromCache: result.fromCache })
+    return result.data as T
   }
 
   /**
@@ -389,28 +336,18 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   /**
-   * 从本地加载脚本
+   * 从本地加载脚本（通过 FileLoader 时间戳缓存协议，parseJSON: false）
+   * 脚本文件可选，加载失败返回空字符串。
    */
   private async fetchScriptFromLocal(pageId: string): Promise<PageScriptConfig> {
-    const url = `${this.options.localPrefix}/${pageId}/script.js?t=${Date.now()}`
-    
-    try {
-      pageLogger.debug('加载本地脚本', { pageId, url })
-      
-      // 使用 fetch 获取文本内容（不使用 import，因为脚本不是 ES6 模块）
-      const response = await this._fetch(url)
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-      
-      const scriptText = await response.text()
-      pageLogger.debug('本地脚本加载成功', { pageId, size: scriptText.length })
-      return scriptText
-    } catch {
-      // 脚本文件可选，不存在不是错误
+    pageLogger.debug('FileLoader 加载本地脚本', { pageId })
+    const result = await this.fileLoader.load<string>(`/${pageId}/script.js`, { parseJSON: false })
+    if (!result.success) {
       pageLogger.debug('页面无脚本文件，跳过', { pageId })
-      return '' // 返回空字符串
+      return ''
     }
+    pageLogger.debug('本地脚本加载成功', { pageId, size: result.data?.length ?? 0 })
+    return result.data ?? ''
   }
 }
 
