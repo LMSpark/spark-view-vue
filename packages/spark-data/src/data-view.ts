@@ -178,7 +178,7 @@ export class DataView {
    * 视图级加载编排器（幂等：requestState≠Idle 时直接返回）
    *
    * 1. 置 requestState=Preparing，沿 parent 链取 DataSet 父关系列表
-   * 2. 逐个父视图：若未请求则先递归调用其 requestData()；
+   * 2. 逐个父视图：若未请求则 fire-and-forget 触发其 requestData()（不等待）；
    *    父 requestState∉{Loaded,Loading} 或无数据 → 置 requestState=Failed 中止
    * 3. 所有父满足后，按各关系的 filterExpression 组装查询参数
    *    → 调用 loadFromServer()（进入 Loading；成功置 Loaded，失败置 Failed）
@@ -196,8 +196,7 @@ export class DataView {
       if (!pView) continue
 
       if (pView.requestState === RequestState.Idle) {
-        try { await pView.requestData() }
-        catch { this.requestState = RequestState.Failed; this.emitStateChanged('requestState'); return }
+        void pView.requestData()
       }
 
       const parentRows = getParentRows(pView, rel.dependencyType)
