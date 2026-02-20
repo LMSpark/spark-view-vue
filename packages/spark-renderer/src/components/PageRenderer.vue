@@ -80,7 +80,6 @@ import { useCssScope } from '../composables/useCssScope'
 import { compileFunctions } from '../utils/createSandbox'
 import { usePageDataSet } from '../composables/usePageDataSet'
 import { useRuleBinding } from '../composables/useRuleBinding'
-import { getRequiredFunctionNames } from '../utils/extractFunctionNames'
 
 /**
  * PageRenderer - SPARK 页面渲染引擎
@@ -306,27 +305,7 @@ const loadPageConfig = async () => {
     
     if (scriptText) {
       try {
-        // 从 rules 中提取需要返回的函数名
-        const requiredFunctionNames = getRequiredFunctionNames(
-          originalRules.value as Rule[],
-          ['__init__']
-        )
-        
-        pageLogger.debug('分析脚本需求', { 
-          pageId, 
-          scriptSize: scriptText.length,
-          requiredFunctions: requiredFunctionNames.length,
-          required: requiredFunctionNames
-        })
-        
-        // 统一编译所有函数，按需返回
-        // - scriptText 中所有函数都会被定义（可以相互调用）
-        // - 但只返回 requiredFunctionNames 中的函数
-        pageFunctions.value = compileFunctions(
-          scriptText,
-          pageContext,
-          requiredFunctionNames
-        )
+        pageFunctions.value = compileFunctions(scriptText, pageContext)
         
         pageLogger.info('页面脚本执行成功', { 
           pageId, 

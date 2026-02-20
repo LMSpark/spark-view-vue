@@ -8,42 +8,55 @@ const pageLogger = Logger('PageRenderer')
 import type { PageContext } from '../types'
 
 /**
+ * 从脚本文本中提取所有顶层函数名
+ * 匹配：`function foo()`、`async function foo()`、
+ *        `const/let/var foo = () =>`、`const/let/var foo = function`、
+ *        `const/let/var foo = async () =>`
+ */
+function extractNamesFromScript(scriptText: string): string[] {
+  const names = new Set<string>()
+
+  // 函数声明：function foo() / async function foo()
+  const fnDecl = /(?:^|\n)\s*(?:async\s+)?function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g
+  for (const m of scriptText.matchAll(fnDecl)) if (m[1]) names.add(m[1])
+
+  // 变量赋值函数：const/let/var foo = (...) => / function
+  const varFn = /(?:^|\n)\s*(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:async\s+)?(?:function|\(|[a-zA-Z_$][a-zA-Z0-9_$]*\s*=>)/g
+  for (const m of scriptText.matchAll(varFn)) if (m[1]) names.add(m[1])
+
+  // 始终包含 __init__（即使脚本未定义，compileFunctions 会过滤掉 undefined）
+  names.add('__init__')
+
+  return Array.from(names)
+}
+
+/**
  * 编译业务脚本为可执行的函数对象
- * 
- * 策略：统一编译所有函数（支持函数间相互调用），但只返回需要的函数
- * 
+ *
+ * 自动扫描脚本文本中所有顶层函数声明和箭头函数赋值，无需调用方预先提供函数名列表。
+ * 所有函数都在同一作用域内编译（支持相互调用），只返回实际存在的函数。
+ *
  * @param scriptText - 业务脚本文本（纯函数定义）
- * @param context - 页面上下文
- * @param functionNames - 需要返回的函数名称数组
- * @returns 编译后的函数对象（只包含需要的函数）
- * 
+ * @param context    - 页面上下文
+ * @returns 编译后的函数对象
+ *
  * @example
  * ```javascript
  * // 脚本内容：
- * function handleClick(event) {
- *   helper() // 调用辅助函数
- * }
- * 
- * function helper() {
- *   console.log('helper')
- * }
- * 
- * async function loadData() {
- *   const items = await fetch('/api')
- *   $data.items = items
- * }
- * 
+ * function handleClick(event) { helper() }
+ * function helper() { console.log('helper') }
+ * async function loadData() { $data.items = await fetch('/api') }
+ *
  * // 调用：
- * const code = compileFunctions(script, context, ['handleClick', 'loadData'])
- * // 返回: { handleClick: Function, loadData: Function }
- * // helper 不返回，但在 handleClick 内部可以调用
+ * const fns = compileFunctions(script, context)
+ * // 返回: { handleClick: Function, helper: Function, loadData: Function, ... }
  * ```
  */
 export function compileFunctions(
   scriptText: string,
-  context: PageContext,
-  functionNames: string[]
+  context: PageContext
 ): Record<string, (...args: unknown[]) => unknown> {
+  const functionNames = extractNamesFromScript(scriptText)
   try {
     // 构造 return 语句 - 只返回存在的函数（使用 typeof 检查）
     const returnStatement = functionNames.length > 0
