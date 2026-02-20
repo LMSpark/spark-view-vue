@@ -22,8 +22,8 @@
 import { type Ref, onUnmounted } from 'vue'
 import { nextTick } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import type { DataSet } from '@spark-view/spark-data'
-import type { ViewStateEvent, IDataRow } from '@spark-view/spark-data'
+import type { IDataSet, IDataRow } from '@spark-view/spark-data'
+import { subscribeViewStateChanges } from '@spark-view/spark-data'
 import type { FormCreateAPI } from '../types'
 
 const logger = Logger('PageRenderer')
@@ -78,7 +78,7 @@ function syncSelectedRowsToTable(
 // ─────────────────────────────────────────────
 
 export interface UseTableDataSyncOptions {
-  dataSet: Ref<DataSet | null>
+  dataSet: Ref<IDataSet | null>
   formApi: Ref<FormCreateAPI | null>
 }
 
@@ -93,46 +93,42 @@ export interface UseTableDataSyncOptions {
  */
 export function useTableDataSync(options: UseTableDataSyncOptions) {
   const { dataSet, formApi } = options
-  const cleanupFns: Array<() => void> = []
+  let cleanupSubscription: (() => void) | null = null
 
   /**
    * 订阅 DataSet 中所有已存在视图的 stateChanged 事件
    *
+   * 委托给 spark-data 的 subscribeViewStateChanges() 统一管理订阅。
    * 每次调用都会先清理旧订阅再重新订阅，支持 DataSet 重建场景。
    */
   const setupSync = () => {
     // 清理旧订阅
-    cleanupFns.forEach(fn => fn())
-    cleanupFns.length = 0
+    cleanupSubscription?.()
+    cleanupSubscription = null
 
     if (!dataSet.value) return
 
-    // 订阅所有已存在的视图（由 bindRules.injectTableEvents 通过 getOrCreateView 创建）
-    for (const table of Object.values(dataSet.value.tables)) {
-      for (const [viewId, view] of Object.entries(table.views)) {
-        const handler = (event: ViewStateEvent) => {
-          if (event.changeType === 'selectedRows') {
-            const rows = event.rows ?? []
-            logger.debug('selectedRows 变化 → 同步 el-table', {
-              tableName: table.tableName,
-              viewId,
-              rowCount: rows.length
-            })
-            syncSelectedRowsToTable(table.tableName, viewId, rows, formApi.value)
-          }
+    // 委托 spark-data 统一管理 DataView 事件订阅
+    cleanupSubscription = subscribeViewStateChanges(
+      dataSet.value,
+      (tableName, viewId, event) => {
+        if (event.changeType === 'selectedRows') {
+          const rows = event.rows ?? []
+          logger.debug('selectedRows 变化 → 同步 el-table', {
+            tableName,
+            viewId,
+            rowCount: rows.length
+          })
+          syncSelectedRowsToTable(tableName, viewId, rows, formApi.value)
         }
-
-        view.events.on('stateChanged', handler)
-        cleanupFns.push(() => view.events.off('stateChanged', handler))
-        logger.debug('已订阅视图同步', { tableName: table.tableName, viewId })
       }
-    }
+    )
   }
 
   // 组件卸载时清理所有订阅，避免内存泄漏
   onUnmounted(() => {
-    cleanupFns.forEach(fn => fn())
-    cleanupFns.length = 0
+    cleanupSubscription?.()
+    cleanupSubscription = null
   })
 
   return { setupSync }

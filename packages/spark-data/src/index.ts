@@ -76,6 +76,12 @@ export type {
 
 export { isSameRow, getParentRows } from './core/utils'
 
+// ===== DataSet 同步辅助 =====
+// UI ↔ DataSet 双向同步的高层 API（渲染层消费）
+
+export { createTableSyncHandlers, subscribeViewStateChanges } from './sync-helpers'
+export type { TableSyncHandlers, ViewStateChangeCallback } from './sync-helpers'
+
 // ===== Vue Composables =====
 // DataSet 生命周期管理（需要 Vue 3.5+）
 

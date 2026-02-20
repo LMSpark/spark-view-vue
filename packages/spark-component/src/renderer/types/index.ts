@@ -12,8 +12,11 @@
  */
 
 import type { IDataSet } from '@spark-view/spark-data'
-import type { ConfigLoader, RuleConfig } from '@spark-view/spark-page-config'
+import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+
+// PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
+export type { PageConfig }
 
 // 导入 FormCreate 官方类型
 import type { Rule as FormCreateRule, Api as FormCreateApi } from '@form-create/element-ui'
@@ -71,18 +74,6 @@ export interface PageContext {
   ElMessageBox: typeof import('element-plus')['ElMessageBox']  // Element Plus 消息框
   SparkData: typeof import('@spark-view/spark-data')['SparkData']  // SPARK 数据空间命名空间
   h: typeof import('vue')['h']  // Vue h 函数
-}
-
-/**
- * 页面配置（从配置文件加载的原始配置）
- */
-export interface PageConfig {
-  pageId: string
-  rule: RuleConfig[]  // 使用配置层的 RuleConfig，而非 FormCreate 的 Rule
-  data: IDataSet      // parsePageData 编译后的 DataSet 实例
-  style?: string
-  script: string | undefined  // 脚本文本
-  css: string | undefined     // parseCss 编译后的样式字符串
 }
 
 /**

@@ -5,7 +5,7 @@
 import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
-import { DataView } from '@spark-view/spark-data'
+import { DataView, createTableSyncHandlers } from '@spark-view/spark-data'
 import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
@@ -265,23 +265,19 @@ function injectTableEvents(
   const rawKey = rule['dataKey'] as string | undefined
   if (!rawKey) return
 
-  let tableName: string
-  let viewId: string
-
   const dk = parseDataKey(rawKey)
-  if (dk) {
-    tableName = dk.tableName
-    viewId = dk.viewId
-  } else {
-    // 非 DataSet 键，无法注入事件
-    return
-  }
+  if (!dk) return  // 非 DataSet 键，无法注入事件
+
+  const { tableName, viewId } = dk
   
   // 添加唯一的 name 属性
   rule.name ??= `table_${tableName}_${viewId}`
   
   // 确保 on 对象存在
   rule.on ??= {}
+
+  // 使用 spark-data 提供的同步写入 API（渲染层不直接操作 table/view 内部）
+  const sync = createTableSyncHandlers(dataSet, tableName, viewId)
   
   // 注入 currentChange 事件（单选行变化）
   const originalCurrentChange = rule.on['currentChange']
@@ -298,15 +294,9 @@ function injectTableEvents(
         (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
       }
       
-      // 同步到 DataSet — 通过公共 API
-      const table = dataSet.getTable(tableName)
-      if (table) {
-        const view = table.getOrCreateView(viewId)
-        view.setCurrentRow(currentRow ?? null)
-        pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
-      } else {
-        pageLogger.warn(`⚠️ [TableEvent] DataSet 表不存在`, { tableName })
-      }
+      // 委托 spark-data 同步写入
+      sync.onCurrentChange(currentRow ?? null)
+      pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
     } finally {
       isProcessingEvent = false
     }
@@ -329,13 +319,9 @@ function injectTableEvents(
         (originalSelectionChange as (selection: unknown) => void)(selection)
       }
       
-      // 同步到 DataSet — 通过公共 API
-      const table = dataSet.getTable(tableName)
-      if (table) {
-        const view = table.getOrCreateView(viewId)
-        view.setSelectedRows(selection)
-        pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${viewId}`)
-      }
+      // 委托 spark-data 同步写入
+      sync.onSelectionChange(selection)
+      pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${viewId}`)
     } finally {
       isProcessingEvent = false
     }
