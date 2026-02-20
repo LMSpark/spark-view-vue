@@ -193,7 +193,7 @@ export class DataView {
     const parents = this.dataSet?.getParentRelations(this.tableName, this.viewId) ?? []
     for (const rel of parents) {
       const pView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
-      if (!pView) continue
+      if (!pView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
 
       if (pView.requestState === RequestState.Idle) {
         void pView.requestData()
@@ -211,7 +211,7 @@ export class DataView {
     const params: QueryParams = {}
     for (const rel of parents) {
       const pView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
-      if (!pView) continue
+      if (!pView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
       const parentRows = getParentRows(pView, rel.dependencyType)
       if (!parentRows.length) continue
       const expr = rel.filterExpression
@@ -717,7 +717,7 @@ export class DataView {
 
     for (const rel of parentRels) {
       const parentView = this.dataSet?.getView(rel.parentTable, rel.parentViewId ?? 'default')
-      if (!parentView) continue
+      if (!parentView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
 
       const handler = (evt: ViewStateEvent) => this.respondToParentChange(rel, parentView, evt)
       parentView.events.on('stateChanged', handler)
