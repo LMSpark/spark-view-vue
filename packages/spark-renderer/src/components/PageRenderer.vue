@@ -32,7 +32,7 @@ import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router'
 import { Logger, APP_SERVICES } from '@spark-view/spark-utils'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData, PAGE_DATASET } from '@spark-view/spark-data'
 
 // 本地 Logger
 const pageLogger = Logger('PageRenderer')
@@ -292,6 +292,11 @@ const loadPageConfig = async () => {
     // 初始化 DataSet（config.data 已是编译后的 DataSet 实例）
     pageLogger.debug('初始化 DataSet', { pageId })
     initDataSet(config.data)
+
+    // 将 DataSet 注入能力链，子组件通过 consume(PAGE_DATASET) 自行解析 dataKey
+    if (dataSet.value) {
+      provideCapability(PAGE_DATASET, dataSet.value)
+    }
     
     // ========================================
     // 执行页面脚本

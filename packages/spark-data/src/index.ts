@@ -48,6 +48,10 @@ export type {
 export { isDataKey, parseDataKey, resolveDataKey, buildDataKey, getViewKey } from './core/data-key'
 export type { DataKeyDescriptor, DataKeyField } from './core/data-key'
 
+// ===== 能力键 =====
+
+export { PAGE_DATASET, DATA_SOURCE } from './capability-keys'
+
 export {
   INSTANCE_PERMISSION_FIELD,
   MODEL_PERMISSION_FIELD,
