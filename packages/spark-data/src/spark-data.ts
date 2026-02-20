@@ -44,6 +44,20 @@ export namespace SparkData {
     return DataSet.fromJSON(json)
   }
 
+  /**
+   * 从 pagedata.json 原始对象归一化并构建 DataSet 实例
+   *
+   * 支持两种格式：
+   * 1. 标准 DataSet 配置（含 `dataset.tables` 字段）→ 直接使用
+   * 2. 任意 key-value 结构 → 每个 key 归一化为一张表
+   *
+   * @param rawPageData pagedata.json 原始对象
+   * @returns 归一化后的 DataSet 实例
+   */
+  export function fromPageData(rawPageData: Record<string, unknown>): DataSet {
+    return DataSet.fromPageData(rawPageData)
+  }
+
   // ===== TreeManager 工厂方法 =====
 
   /**
