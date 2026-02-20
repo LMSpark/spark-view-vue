@@ -11,6 +11,7 @@ export type {
   RuleConfig,
   PageDataConfig,
   PageScriptConfig,
+  PageCssConfig,
   PageConfig,
   ConfigLoaderOptions,
   ConfigLoadResult,
@@ -23,7 +24,12 @@ export type {
 // 配置加载器
 export {
   PageConfigLoader,
-  createConfigLoader
+  createConfigLoader,
+  compileRule,
+  normalizeRuleNode,
+  parsePageData,
+  parseScript,
+  parseCss
 } from './loader'
 
 // 动态路由

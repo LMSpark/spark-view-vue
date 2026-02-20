@@ -55,13 +55,22 @@ export type PageDataConfig = Record<string, unknown>
 export type PageScriptConfig = string
 
 /**
+ * 页面样式配置（style.css）
+ * 页面级 CSS 文本，由渲染器通过 <style> 标签注入。
+ *
+ * 后续可加：作用域前缀注入、CSS 变量展开、预处理器编译结果缓存。
+ */
+export type PageCssConfig = string
+
+/**
  * 完整页面配置
  */
 export interface PageConfig {
   pageId: string
   rule: RuleConfig[]
   data: PageDataConfig
-  script: PageScriptConfig | undefined  // 脚本文本
+  script: PageScriptConfig | undefined
+  css: PageCssConfig | undefined
 }
 
 /**
@@ -178,6 +187,11 @@ export interface ConfigLoader {
    * 加载页面脚本
    */
   loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>>
+
+  /**
+   * 加载页面样式
+   */
+  loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>>
   
   /**
    * 清除缓存
