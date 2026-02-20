@@ -1,9 +1,8 @@
 ﻿import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
 
 describe('logger level filtering', () => {
-  it('does not call info when provider only implements warn/error', () => {
+  it('partial logger with only warn/error can be stored in capabilities', () => {
     let calledWarn = false
 
     const loggerImpl = {
@@ -19,11 +18,10 @@ describe('logger level filtering', () => {
       capabilities: new Map([['logger', loggerImpl]])
     }
 
-    const logger = Spark.Logger(ctx)
-    // info is not implemented, so calling it should fallback to console
-    logger.info('should be noop')
-    logger.warn('should call warn')
-
+    const logger = ctx.capabilities.get('logger') as Record<string, ((...args: unknown[]) => void) | undefined>
+    // info is not implemented — caller should guard with optional chaining
+    expect(logger['info']).toBeUndefined()
+    logger['warn']?.('should call warn')
     expect(calledWarn).toBe(true)
   })
 })

@@ -108,9 +108,5 @@ export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('spark
 /** 父级上下文注入键（替代字符串 'sparkParentContext'） */
 export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('sparkParentContext') as InjectionKey<ComponentContext>
 
-// ============================================================================
-// 向后兼容（用于 spark-app 等包的类型引用）
-// ============================================================================
-
-// 日志类型（从 spark-utils 透传）
-export type { LogLevel, LoggerApi } from '@spark-view/spark-utils'
+// 日志类型 — 直接从 @spark-view/spark-utils 导入
+export type { LoggerApi } from '@spark-view/spark-utils'

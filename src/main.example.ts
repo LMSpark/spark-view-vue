@@ -85,10 +85,7 @@ async function startWithClassicMode() {
   const { setupAutoRegister } = await import('./bootstrap/auto-register')
   
   // 运行时扫描和注册组件
-  await setupAutoRegister(app, {
-    mode: 'demand',      // 按需加载模式
-    showProgress: false  // 生产环境不显示进度
-  })
+  await setupAutoRegister(app)
   
   console.info('✅ 经典模式组件注册完成')
   

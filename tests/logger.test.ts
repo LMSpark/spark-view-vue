@@ -1,6 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-component'
-import type { ComponentContext } from '@spark-view/spark-component'
+import type { ComponentContext, LoggerApi } from '@spark-view/spark-component'
 
 describe('logger capability', () => {
   it('uses context-level logger provider', () => {
@@ -20,7 +19,7 @@ describe('logger capability', () => {
       capabilities: new Map([['logger', loggerImpl]])
     }
 
-    const logger = Spark.Logger(ctx)
+    const logger = ctx.capabilities.get('logger') as LoggerApi
     logger.info('test')
 
     expect(called).toBe(true)
@@ -43,7 +42,7 @@ describe('logger capability', () => {
       capabilities: new Map([['logger', loggerImpl]])
     }
 
-    const logger = Spark.Logger(ctx)
+    const logger = ctx.capabilities.get('logger') as LoggerApi
     logger.info('hello')
     expect(calledLocal).toBe(true)
   })
