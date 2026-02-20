@@ -205,7 +205,7 @@ export class FileLoader {
   }
 
   private writeEntry<T>(key: string, data: T, sourceTimestamp: string): void {
-    const entry: CacheEntry<T> = { data, sourceTimestamp, cachedAt: Date.now() }
+    const entry: CacheEntry<T> = { data, sourceTimestamp }
     const k = this.opts.cachePrefix + key
     if (this.opts.storage === 'memory') { this.memCache.set(k, entry as CacheEntry<unknown>); return }
     try { this.storage.setItem(k, JSON.stringify(entry)) }
