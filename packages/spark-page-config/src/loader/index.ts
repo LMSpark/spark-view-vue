@@ -1,5 +1,18 @@
-﻿/**
- * 配置加载器 - 支持本地/远程配置加载
+/**
+ * 配置加载器 - 支持本地/远程/混合配置加载
+ *
+ * ## 数据流
+ * ```
+ * loadRule(pageId)
+ *   └── hybridLoad('/pageId/rule.json', '/page/pageId/rule')
+ *         ├── local  → fileLoader.load<T>(path)  → localResult<T>
+ *         ├── remote → fetchFromRemote<T>(path)  → remoteResult<T>
+ *         └── hybrid → remote first, fallback to local
+ * ```
+ *
+ * ## 缓存策略
+ * - 本地文件：FileLoader 时间戳协议（localStorage / sessionStorage / memory）
+ * - 远程 API：依赖服务器 HTTP 缓存，客户端无缓存
  */
 
 import type {
@@ -12,24 +25,22 @@ import type {
   PageDataConfig,
   PageScriptConfig
 } from '../types'
-import { Logger, SharedErrorCodes, getSharedErrorMessage, createFileLoader } from '@spark-view/spark-utils'
-import type { FileLoader } from '@spark-view/spark-utils'
+import {
+  Logger,
+  SharedErrorCodes,
+  getSharedErrorMessage,
+  createFileLoader
+} from '@spark-view/spark-utils'
+import type { FileLoader, FileLoadResult } from '@spark-view/spark-utils'
 
-// 本地 Logger（消除对 spark-app 的反向依赖）
 const pageLogger = Logger('PageConfig')
 
-// 本地常量
-const REQUEST_TIMEOUT = 10_000  // 10 秒
-// 本地 pages-config 文件服务地址（由 Vite 中间件 / 生产 API 提供 FileLoader 协议）
+const REQUEST_TIMEOUT = 10_000
 const PAGES_CONFIG_FILE_BASE = '/api/pages-config'
 
-// 使用共享错误码（消除重复定义）
 const ErrorCodes = SharedErrorCodes
 const getErrorMessage = getSharedErrorMessage
 
-/**
- * 默认配置
- */
 const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
   source: 'hybrid',
   apiBaseUrl: '/api',
@@ -38,316 +49,235 @@ const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
   timeout: REQUEST_TIMEOUT
 }
 
-/**
- * 配置加载器实现
- */
 export class PageConfigLoader implements ConfigLoader {
-  private options: Required<ConfigLoaderOptions>
-  /** 本地文件加载器（时间戳缓存协议） */
+  private opts: Required<ConfigLoaderOptions>
   private fileLoader: FileLoader
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
-    this.options = { ...DEFAULT_OPTIONS, ...options }
+    this.opts = { ...DEFAULT_OPTIONS, ...options }
     this.fileLoader = createFileLoader({
       baseUrl: PAGES_CONFIG_FILE_BASE,
-      storage: this.options.fileStorage ?? 'localStorage',
+      storage: this.opts.fileStorage ?? 'localStorage',
       cachePrefix: 'spark_page_',
       fallbackToCache: true,
-      timeout: this.options.timeout
+      timeout: this.opts.timeout
     })
   }
 
-  /**
-   * 加载路由配置
-   */
+  // ── 公开 API ──────────────────────────────────────────────────────
+
   async loadRoutes(): Promise<ConfigLoadResult<RouteConfig[]>> {
-    return this.load<RouteConfig[]>(
-      'routes',
-      () => this.fetchRoutes()
-    )
+    pageLogger.info('加载路由配置', { source: this.opts.source })
+    return this.hybridLoad<RouteConfig[]>('/routes.json', '/routes')
   }
 
-  /**
-   * 加载页面配置（rule + data + script）
-   */
-  async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
-    return this.load<PageConfig>(
-      `page:${pageId}`,
-      async () => {
-        const [rule, data, script] = await Promise.all([
-          this.fetchRule(pageId),
-          this.fetchPageData(pageId),
-          this.fetchScript(pageId).catch(() => undefined) // script 可选
-        ])
-
-        return {
-          pageId,
-          rule,
-          data,
-          script
-        }
-      }
-    )
-  }
-
-  /**
-   * 加载页面规则
-   */
   async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
-    return this.load<RuleConfig[]>(
-      `rule:${pageId}`,
-      () => this.fetchRule(pageId)
-    )
+    pageLogger.info('加载页面规则', { pageId, source: this.opts.source })
+    return this.hybridLoad<RuleConfig[]>(`/${pageId}/rule.json`, `/page/${pageId}/rule`)
   }
 
-  /**
-   * 加载页面数据
-   */
   async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
-    return this.load<PageDataConfig>(
-      `data:${pageId}`,
-      () => this.fetchPageData(pageId)
+    pageLogger.info('加载页面数据', { pageId, source: this.opts.source })
+    return this.hybridLoad<PageDataConfig>(
+      `/${pageId}/pagedata.json`,
+      `/page/${pageId}/data`
     )
   }
 
-  /**
-   * 加载页面脚本
-   */
   async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
-    return this.load<PageScriptConfig>(
-      `script:${pageId}`,
-      () => this.fetchScript(pageId)
-    )
+    pageLogger.debug('加载页面脚本', { pageId, source: this.opts.source })
+
+    if (this.opts.source === 'remote') {
+      const script = await this.remoteScript(pageId)
+      return { success: true, data: script, source: 'remote', timestamp: Date.now() }
+    }
+
+    if (this.opts.source === 'local') {
+      return this.localScriptResult(pageId)
+    }
+
+    // hybrid: 先尝试远程，失败降级本地
+    try {
+      const script = await this.remoteScript(pageId)
+      return { success: true, data: script, source: 'remote', timestamp: Date.now() }
+    } catch {
+      pageLogger.debug('远程脚本不可用，降级到本地', { pageId })
+      return this.localScriptResult(pageId)
+    }
   }
 
-  /**
-   * 清除缓存
-   */
+  async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
+    pageLogger.info('加载完整页面配置', { pageId })
+
+    const [ruleResult, dataResult, scriptResult] = await Promise.all([
+      this.loadRule(pageId),
+      this.loadPageData(pageId),
+      this.loadScript(pageId)
+    ])
+
+    if (!ruleResult.success) {
+      return { success: false, ...(ruleResult.error !== undefined && { error: ruleResult.error }), timestamp: Date.now() }
+    }
+    if (!dataResult.success) {
+      return { success: false, ...(dataResult.error !== undefined && { error: dataResult.error }), timestamp: Date.now() }
+    }
+
+    return {
+      success: true,
+      data: {
+        pageId,
+        rule: ruleResult.data ?? [],
+        data: dataResult.data ?? {},
+        script: scriptResult.data
+      },
+      ...(ruleResult.source !== undefined && { source: ruleResult.source }),
+      timestamp: Date.now()
+    }
+  }
+
   clearCache(key?: string): void {
     this.fileLoader.clearCache(key)
   }
 
-  /**
-   * 获取缓存统计
-   */
   getCacheStats(): { size: number; keys: string[] } {
-    // FileLoader 使用 localStorage，通过 hasCache 可查询单个文件
     return { size: 0, keys: [] }
   }
 
+  // ── 私有辅助 ──────────────────────────────────────────────────────
+
   /**
-   * 通用加载逻辑
-   * 本地模式：缓存由 FileLoader（localStorage + 时间戳）接管。
-   * 远程模式：依赖服务器 HTTP 缓存策略，不做客户端缓存。
+   * 统一 local / remote / hybrid 分支。
+   * @param localPath  FileLoader 相对路径（如 `/pageId/rule.json`）
+   * @param remotePath API 相对路径  （如 `/page/pageId/rule`）
    */
-  private async load<T>(
-    cacheKey: string,
-    fetcher: () => Promise<T>
+  private async hybridLoad<T>(
+    localPath: string,
+    remotePath: string
   ): Promise<ConfigLoadResult<T>> {
+    const { source } = this.opts
+
+    if (source === 'local') {
+      return this.localResult<T>(localPath)
+    }
+
+    if (source === 'remote') {
+      return this.remoteResult<T>(remotePath)
+    }
+
+    // hybrid: 先 remote，失败降级 local
     try {
-      pageLogger.info('加载配置', { cacheKey, source: this.options.source })
-      const data = await fetcher()
-      pageLogger.info('配置加载成功', { cacheKey })
-      return {
-        success: true,
-        data,
-        source: this.options.source === 'local' ? 'local' : 'remote',
-        timestamp: Date.now()
-      }
-    } catch (error) {
-      pageLogger.error('配置加载失败', { cacheKey, error })
+      pageLogger.debug('hybrid: 尝试远程', { remotePath })
+      return await this.remoteResult<T>(remotePath)
+    } catch {
+      pageLogger.debug('hybrid: 远程失败，降级本地', { localPath })
+      return this.localResult<T>(localPath)
+    }
+  }
+
+  /** FileLoader 加载 → ConfigLoadResult */
+  private async localResult<T>(path: string): Promise<ConfigLoadResult<T>> {
+    const r = await this.fileLoader.load<T>(path)
+    if (!r.success) {
+      pageLogger.error('本地配置加载失败', { path, error: r.error })
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: `${PAGES_CONFIG_FILE_BASE}${path}: ${r.error ?? ''}`,
         timestamp: Date.now()
       }
     }
+    pageLogger.debug('本地配置加载成功', { path, fromCache: r.fromCache })
+    return { success: true, ...(r.data !== undefined && { data: r.data }), source: 'local', timestamp: Date.now() }
+  }
+
+  /** 远程 JSON fetch → ConfigLoadResult（失败时抛出，由 hybridLoad 捕获） */
+  private async remoteResult<T>(path: string): Promise<ConfigLoadResult<T>> {
+    const data = await this.fetchFromRemote<T>(path)
+    return { success: true, data, source: 'remote', timestamp: Date.now() }
+  }
+
+  /** 从本地加载脚本（可选文件，失败返回 success:true, data:''） */
+  private async localScriptResult(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+    const r: FileLoadResult<string> = await this.fileLoader.load<string>(
+      `/${pageId}/script.js`,
+      { parseJSON: false }
+    )
+    if (!r.success) {
+      pageLogger.debug('页面无脚本文件，跳过', { pageId })
+      return { success: true, data: '', source: 'local', timestamp: Date.now() }
+    }
+    pageLogger.debug('本地脚本加载成功', { pageId, size: r.data?.length ?? 0 })
+    return { success: true, data: r.data ?? '', source: 'local', timestamp: Date.now() }
+  }
+
+  /** 从远程加载脚本文本（失败时抛出） */
+  private async remoteScript(pageId: string): Promise<PageScriptConfig> {
+    const url = `${this.opts.apiBaseUrl}/page/${pageId}/script`
+    pageLogger.debug('加载远程脚本', { pageId, url })
+
+    const response = await globalThis.fetch(url)
+    if (!response.ok) {
+      const msg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
+      pageLogger.error('远程脚本加载失败', { pageId, status: response.status })
+      throw new Error(`${msg}: ${url}`)
+    }
+
+    const text = await response.text()
+    pageLogger.debug('远程脚本加载成功', { pageId, size: text.length })
+    return text
   }
 
   /**
-   * 加载路由配置
-   */
-  private async fetchRoutes(): Promise<RouteConfig[]> {
-    if (this.options.source === 'remote') {
-      return this.fetchFromRemote<RouteConfig[]>('/routes')
-    }
-    if (this.options.source === 'local') {
-      return this.fetchFromLocal<RouteConfig[]>('/routes.json')
-    }
-    // hybrid: 优先远程，失败降级到本地
-    try {
-      pageLogger.debug('尝试从远程加载路由') // 使用 L1 Logger
-      return await this.fetchFromRemote<RouteConfig[]>('/routes')
-    } catch {
-      pageLogger.debug('远程不可用，使用本地配置') // 使用 L1 Logger
-      return this.fetchFromLocal<RouteConfig[]>('/routes.json')
-    }
-  }
-
-  /**
-   * 加载页面规则
-   */
-  private async fetchRule(pageId: string): Promise<RuleConfig[]> {
-    if (this.options.source === 'remote') {
-      return this.fetchFromRemote<RuleConfig[]>(`/page/${pageId}/rule`)
-    }
-    if (this.options.source === 'local') {
-      return this.fetchFromLocal<RuleConfig[]>(`/${pageId}/rule.json`)
-    }
-    // hybrid: 优先远程，失败降级到本地
-    try {
-      pageLogger.debug('尝试从远程加载规则', { pageId })
-      return await this.fetchFromRemote<RuleConfig[]>(`/page/${pageId}/rule`)
-    } catch {
-      pageLogger.debug('远程不可用，使用本地配置', { pageId })
-      return this.fetchFromLocal<RuleConfig[]>(`/${pageId}/rule.json`)
-    }
-  }
-
-  /**
-   * 加载页面数据
-   */
-  private async fetchPageData(pageId: string): Promise<PageDataConfig> {
-    if (this.options.source === 'remote') {
-      return this.fetchFromRemote<PageDataConfig>(`/page/${pageId}/data`)
-    }
-    if (this.options.source === 'local') {
-      return this.fetchFromLocal<PageDataConfig>(`/${pageId}/pagedata.json`)
-    }
-    // hybrid: 优先远程，失败降级到本地
-    try {
-      pageLogger.debug('尝试从远程加载页面数据', { pageId })
-      return await this.fetchFromRemote<PageDataConfig>(`/page/${pageId}/data`)
-    } catch {
-      pageLogger.debug('远程不可用，使用本地配置', { pageId })
-      return this.fetchFromLocal<PageDataConfig>(`/${pageId}/pagedata.json`)
-    }
-  }
-
-  /**
-   * 加载页面脚本
-   */
-  private async fetchScript(pageId: string): Promise<PageScriptConfig> {
-    pageLogger.debug('加载页面脚本', { pageId, source: this.options.source })
-    
-    if (this.options.source === 'remote') {
-      return this.fetchScriptFromRemote(pageId)
-    }
-    return this.fetchScriptFromLocal(pageId)
-  }
-
-  /**
-   * 从远程加载 JSON 配置
+   * 从远程 API 加载 JSON 配置。
+   * 支持标准封装格式 `{ code, data, message }` 和裸对象两种响应。
+   * 失败时抛出，由调用方（hybridLoad / remoteResult）处理或透传。
    */
   private async fetchFromRemote<T>(path: string): Promise<T> {
-    const url = `${this.options.apiBaseUrl}${path}`
+    const url = `${this.opts.apiBaseUrl}${path}`
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), this.options.timeout)
+    const timeoutId = setTimeout(() => controller.abort(), this.opts.timeout)
 
     try {
       pageLogger.debug('发送远程请求', { url })
-      
+
       const response = await globalThis.fetch(url, {
         signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       })
-
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        const errorMsg = getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED)
-        pageLogger.error('远程请求失败', { url, status: response.status, statusText: response.statusText })
-        throw new Error(`${errorMsg}: HTTP ${response.status}`)
+        const msg = getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED)
+        pageLogger.error('远程请求失败', { url, status: response.status })
+        throw new Error(`${msg}: HTTP ${response.status}`)
       }
 
-      const result = await response.json() as Record<string, unknown>
-      
-      // 支持标准 API 响应格式: { code, data, message }
+      const result = (await response.json()) as Record<string, unknown>
+
+      // 标准 API 封装格式 { code, data, message }
       if (result['code'] !== undefined) {
         if (result['code'] === 200 || result['code'] === 0) {
           pageLogger.debug('远程加载成功', { url })
           return result['data'] as T
         }
-        pageLogger.error('API返回错误', { url, code: result['code'], message: result['message'] })
-        throw new Error((result['message'] as string) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED))
+        const msg = (result['message'] as string) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED)
+        pageLogger.error('API 返回错误', { url, code: result['code'], message: msg })
+        throw new Error(msg)
       }
 
       pageLogger.debug('远程加载成功', { url })
       return result as T
-    } catch (error) {
+    } catch (err) {
       clearTimeout(timeoutId)
-      if (error instanceof Error && error.name === 'AbortError') {
-        const errorMsg = getErrorMessage(ErrorCodes.NETWORK_TIMEOUT)
-        pageLogger.error('请求超时', { url, timeout: this.options.timeout })
-        throw new Error(`${errorMsg}: ${url}`)
+      if (err instanceof Error && err.name === 'AbortError') {
+        const msg = getErrorMessage(ErrorCodes.NETWORK_TIMEOUT)
+        pageLogger.error('请求超时', { url, timeout: this.opts.timeout })
+        throw new Error(`${msg}: ${url}`)
       }
-      throw error
+      throw err
     }
-  }
-
-  /**
-   * 从本地加载 JSON 配置（通过 FileLoader 时间戳缓存协议）
-   */
-  private async fetchFromLocal<T>(path: string): Promise<T> {
-    pageLogger.debug('FileLoader 加载本地配置', { path })
-    const result = await this.fileLoader.load<T>(path)
-    if (!result.success) {
-      const errorMsg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
-      pageLogger.error('本地配置加载失败', { path, error: result.error })
-      throw new Error(`${errorMsg}: ${PAGES_CONFIG_FILE_BASE}${path} — ${result.error ?? ''}`)
-    }
-    pageLogger.debug('本地配置加载成功', { path, fromCache: result.fromCache })
-    return result.data as T
-  }
-
-  /**
-   * 从远程加载脚本
-   */
-  private async fetchScriptFromRemote(pageId: string): Promise<PageScriptConfig> {
-    const url = `${this.options.apiBaseUrl}/page/${pageId}/script`
-    
-    try {
-      pageLogger.debug('加载远程脚本', { pageId, url })
-      
-      const response = await globalThis.fetch(url)
-
-      if (!response.ok) {
-        const errorMsg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
-        pageLogger.error('远程脚本加载失败', { pageId, url, status: response.status })
-        throw new Error(`${errorMsg}: ${url}`)
-      }
-
-      const scriptText = await response.text()
-      
-      pageLogger.debug('远程脚本加载成功', { pageId, size: scriptText.length })
-      return scriptText
-    } catch (error) {
-      pageLogger.error('远程脚本加载异常', { pageId, url, error })
-      throw error
-    }
-  }
-
-  /**
-   * 从本地加载脚本（通过 FileLoader 时间戳缓存协议，parseJSON: false）
-   * 脚本文件可选，加载失败返回空字符串。
-   */
-  private async fetchScriptFromLocal(pageId: string): Promise<PageScriptConfig> {
-    pageLogger.debug('FileLoader 加载本地脚本', { pageId })
-    const result = await this.fileLoader.load<string>(`/${pageId}/script.js`, { parseJSON: false })
-    if (!result.success) {
-      pageLogger.debug('页面无脚本文件，跳过', { pageId })
-      return ''
-    }
-    pageLogger.debug('本地脚本加载成功', { pageId, size: result.data?.length ?? 0 })
-    return result.data ?? ''
   }
 }
 
-/**
- * 创建配置加载器
- */
 export function createConfigLoader(options?: Partial<ConfigLoaderOptions>): ConfigLoader {
   return new PageConfigLoader(options)
 }
