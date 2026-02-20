@@ -133,11 +133,6 @@ export class DataView {
   } | undefined
   /** 级联请求 ID 计数器 */
   private nextCascadeRequestId = 0
-  /**
-   * 父视图在本视图 Loading/Preparing 期间发出了相关事件（依赖行发生变化），
-   * loadFromServer 完成后需要用最新父状态重新加载一次，避免数据陈旧。
-   */
-  private cascadeDirty = false
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
   /** 销毁状态标记 */
@@ -252,24 +247,12 @@ export class DataView {
 
     try {
       const result = await this.loadFromServer(params)
-      if (!result.success) {
-        this.cascadeDirty = false  // 非异常失败，清除 dirty，防止用旧结果重试
-        return
-      }
+      if (!result.success) return
     } catch {
-      this.cascadeDirty = false   // 异常失败，同上
       return
     }
 
     // 子视图级联由 stateChanged('rows') 事件驱动（respondToParentChange），无需主动推
-
-    // 父视图在本次 Loading/Preparing 期间改变了依赖行 → 用最新父状态重新加载一次
-    // 注：检查在 requestData() 而非 loadFromServer() 内，保证被 mock 的情形下也能生效
-    if (this.cascadeDirty && !this._isDestroyed) {
-      this.cascadeDirty = false
-      this.requestState = RequestState.Idle
-      void this.requestData()
-    }
   }
 
   /**
@@ -770,9 +753,9 @@ export class DataView {
    *   dep=pagedRows    → 响应 ['rows','cleared']                  忽略 currentRow/selectedRows
    *   dep=unknown      → fallback：同 currentRow 规则
    *
-   * ## Loading 期间父改变（cascadeDirty）
-   *   若本视图正在 Loading/Preparing，不中断当前请求，而是设 cascadeDirty=true；
-   *   loadFromServer 完成后检查 dirty 并用最新父状态重新加载，避免数据陈旧。
+   * ## Loading 期间父改变
+   *   若本视图正在 Loading/Preparing，直接重置为 Idle 再发起新请求；
+   *   loadFromServer 内部的 currentLoadRequestId 机制会自动忽略旧请求的响应（竞态安全）。
    */
   private respondToParentChange(rel: DataRelation, parentView: DataView, evt: ViewStateEvent): void {
     // requestState 是内部状态机转换，不代表数据变化，跳过
@@ -797,20 +780,16 @@ export class DataView {
     }
 
     if (rel.autoLoad !== false) {
-      if (this.requestState === RequestState.Preparing || this.requestState === RequestState.Loading) {
-        // 正在请求中：记录脏标记，loadFromServer 完成后用最新父状态重新加载
-        this.cascadeDirty = true
-        this.logger.debug(`cascadeDirty 标记（${this.tableName}:${this.viewId} 正在 ${this.requestState === RequestState.Loading ? 'Loading' : 'Preparing'}，父变化将在完成后触发重载）`)
-        return
-      }
+      // Loading/Preparing 时直接重置为 Idle，requestData() 会发起新请求；
+      // loadFromServer 的 currentLoadRequestId 机制会忽略旧请求的响应（竞态安全）
+      this.requestState = RequestState.Idle
 
       // 创建可取消的级联请求
       const requestId = ++this.nextCascadeRequestId
       let cancelled = false
 
-      // 重置为 Idle，再走完整的 requestData() 编排（含父依赖检查）
-      this.requestState = RequestState.Idle
-      this.requestData()
+      // 走完整的 requestData() 编排（含父依赖检查）
+      void this.requestData()
         .then(() => {
           if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
             this.pendingCascadeRequest = undefined
