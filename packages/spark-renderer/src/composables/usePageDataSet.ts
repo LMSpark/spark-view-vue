@@ -5,24 +5,20 @@
 import { shallowRef, Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { DataSet } from '@spark-view/spark-data'
-import { parseDataKey, isDataKey } from '@spark-view/spark-data'
-import type { Rule, FormCreateAPI } from '../types'
-import { syncSelectedRowsToTable } from '../utils/bindRules'
 
 const pageLogger = Logger('PageRenderer')
 
 /**
- * DataSet管理选项接口 (ISP: 接口隔离原则)
+ * DataSet 管理选项接口
+ *
+ * 职责单一：仅关注 DataSet 生命周期，不持有 UI/Rule 相关依赖。
+ * DataSet ↔ el-table 的同步桥由 useTableDataSync 单独负责。
  */
 export interface UsePageDataSetOptions {
-  originalRules?: Ref<Rule[]>
-  formApi?: Ref<FormCreateAPI | null>
   enableDataSet?: boolean
 }
 
-/**
- * DataSet管理返回值接口 (ISP: 接口隔离原则)
- */
+/** DataSet 管理返回值接口 */
 export interface UsePageDataSetReturn {
   dataSet: Ref<DataSet | null>
   /** pagedata.json 原始对象 或 已编译的 DataSet 实例 → 初始化 DataSet
@@ -30,7 +26,6 @@ export interface UsePageDataSetReturn {
    * - 传入原始对象时：就地归一化并构建 DataSet
    */
   initDataSet: (rawPageData: Record<string, unknown> | DataSet) => void
-  autoSubscribeTables: () => void
   clearDataSet: () => void
 }
 
@@ -39,21 +34,12 @@ export interface UsePageDataSetReturn {
  * 
  * @example
  * ```typescript
- * const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
- *   pageData,
- *   originalRules
- * })
- * 
- * initDataSet()
- * autoSubscribeTables()
+ * const { dataSet, initDataSet } = usePageDataSet({ enableDataSet: true })
+ * initDataSet(config.data)
  * ```
  */
 export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetReturn {
-  const { 
-    originalRules,
-    formApi,
-    enableDataSet = true
-  } = options
+  const { enableDataSet = true } = options
   
   const dataSet = shallowRef<DataSet | null>(null)
   /** 当前 DataSet 对应的 pagedata._version，undefined = 无版本信息 */
@@ -95,69 +81,6 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
   }
   
   /**
-   * 自动订阅表数据变化 (SRP: 单一职责 - 只负责订阅管理)
-   */
-  const autoSubscribeTables = () => {
-    if (!dataSet.value || !originalRules?.value) return
-    
-    // 收集所有 (tableName, viewId) 组合
-    const viewKeys = new Set<string>()
-    
-    const extractViewKeys = (rules: Rule[] | Rule) => {
-      const ruleArray = Array.isArray(rules) ? rules : [rules]
-      
-      ruleArray.forEach(rule => {
-        if (rule['dataKey'] && typeof rule['dataKey'] === 'string') {
-          const rawKey = rule['dataKey']
-          
-          // 统一使用 DataKey 解析器（支持新格式 @ 和旧格式 dataset.tables.X）
-          if (isDataKey(rawKey)) {
-            const dk = parseDataKey(rawKey)
-            if (dk) {
-              const key = `${dk.tableName}.${dk.viewId}`
-              viewKeys.add(key)
-            }
-          }
-        }
-        if (rule.children && Array.isArray(rule.children)) {
-          const childRules = rule.children.filter((child: unknown): child is Rule => typeof child !== 'string')
-          extractViewKeys(childRules)
-        }
-      })
-    }
-    
-    extractViewKeys(originalRules.value)
-    
-    // 为每个视图注册订阅 + 视图状态监听
-    viewKeys.forEach(key => {
-      const [tableName, viewId] = key.split('.')
-      // 类型安全：确保viewId存在且是有效字符串
-      if (tableName && viewId && viewId !== 'undefined' && dataSet.value) {
-        const view = dataSet.value.getView(tableName, viewId)
-        if (!view) return
-
-        // 统一通过 DataView 的 stateChanged 事件订阅（单通道，handler 参数由 DataViewEventMap 自动推断）
-        view.events.on('stateChanged', (event) => {
-          if (event.changeType === 'currentRow') {
-            pageLogger.debug('currentRow 变化', { tableName: event.tableName, viewId: event.viewId })
-          } else if (event.changeType === 'selectedRows') {
-            const rows = event.rows ?? []
-            pageLogger.debug('selectedRows 变化', { tableName: event.tableName, viewId: event.viewId, rowCount: rows.length })
-            
-            // 同步到 el-table
-            if (formApi?.value) {
-              syncSelectedRowsToTable(event.tableName, event.viewId, rows, formApi.value)
-            }
-          } else {
-            pageLogger.debug('视图数据变化', { viewKey: key, changeType: event.changeType })
-          }
-        })
-        pageLogger.debug('自动订阅视图', { viewKey: key })
-      }
-    })
-  }
-  
-  /**
    * 清理DataSet (SRP: 单一职责 - 只负责清理)
    */
   const clearDataSet = () => {
@@ -174,7 +97,6 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
   return {
     dataSet,
     initDataSet,
-    autoSubscribeTables,
     clearDataSet
   }
 }

@@ -20,7 +20,7 @@ describe('bindRules - DataKey rows -> IDataSource binding', () => {
       { type: 'el-table', dataKey: 'TestDS@Users@default@rows' }
     ] as any[]
 
-    const bound = bindDataToRules({ rules, pageData: {}, pageFunctions: {}, dataSet, formApi: null })
+    const bound = bindDataToRules({ rules, pageData: {}, pageFunctions: {}, dataSet })
     expect(bound).toHaveLength(1)
 
     const r = bound[0]!
