@@ -163,8 +163,8 @@ export class DataView {
     this.viewId = viewId
   }
 
-  /** 获取 DataSet（向上访问） */
-  private getDataSet() {
+  /** DataSet（向上访问） */
+  private get dataSet() {
     return this.dataTable?.dataSet
   }
 
@@ -189,7 +189,7 @@ export class DataView {
 
     this.requestState = RequestState.Preparing
 
-    const ds = this.getDataSet()
+    const ds = this.dataSet
     if (!ds) { this.requestState = RequestState.Idle; return }
 
     // 逐个父视图检查依赖是否满足
@@ -717,7 +717,7 @@ export class DataView {
   setupCascade(): void {
     this.teardownCascade()
 
-    const ds = this.getDataSet()
+    const ds = this.dataSet
     if (!ds) return
 
     const parentRels = ds.getParentRelations(this.tableName, this.viewId)
