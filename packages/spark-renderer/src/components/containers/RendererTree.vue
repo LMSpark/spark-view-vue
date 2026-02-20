@@ -8,9 +8,7 @@
   >
     <template #default="slotProps">
       <span class="custom-tree-node">
-        <!-- 支持通过 slot 自定义节点内容（防御 undefined scope，测试环境 el-tree 未注册时 slotProps 可能为空） -->
         <slot :node="slotProps?.node" :data="slotProps?.data">
-          <!-- 默认渲染：显示节点标签 -->
           <span class="node-label">{{ (slotProps?.data as any)?.label || (slotProps?.data as any)?.name || (slotProps?.data as any)?.title || '节点' }}</span>
         </slot>
       </span>
@@ -22,10 +20,13 @@
 /**
  * RendererTree - 树形容器组件
  *
- * 通过 provide 告知子字段组件当前处于 tree 上下文，
- * 同时提供树形数据供子组件访问。
+ * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
+ * 不再依赖 bindRules.ts 外部注入。
  */
-import { provide, computed } from 'vue'
+import { computed, onMounted, watch, provide } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { PAGE_DATASET, DATA_SOURCE, parseDataKey } from '@spark-view/spark-data'
+import type { IDataSource, DataView } from '@spark-view/spark-data'
 
 interface TreeNode {
   id?: string | number
@@ -46,30 +47,50 @@ interface ElTreeComponent {
 }
 
 interface Props {
+  /** DataKey 格式：scope@tableName@viewId@field （优先） */
+  dataKey?: string
   data?: TreeNode[]
-  dataSource?: import('@spark-view/spark-data').IDataSource | import('@spark-view/spark-data').DataView | undefined
-  // FormCreate 通过 props 传递事件处理函数
+  /** 直接传入的数据源（备用） */
+  dataSource?: IDataSource | DataView | undefined
   onNodeClick?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
   onNodeExpand?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
   onNodeCollapse?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
-  // 其他 el-tree 的 props（通过 $attrs 透传）
   [key: string]: unknown
 }
 
 const props = defineProps<Props>()
 
-const resolvedDataSource = computed(() => props.dataSource)
-const treeData = computed(() => {
-  const ds = resolvedDataSource.value as import('@spark-view/spark-data').IDataSource | undefined
-  if (ds && Array.isArray(ds.rows)) return ds.rows
-  return []
+// 接入 SPARK 能力链
+const { consume, provide: sparkProvide } = useSparkComponent({ type: 'r-tree' })
+const pageDataSet = consume(PAGE_DATASET)
+
+// 解析数据视图：dataKey 优先 → PAGE_DATASET；回退到直接 props
+const resolvedDataSource = computed(() => {
+  if (props.dataKey && pageDataSet) {
+    const dk = parseDataKey(props.dataKey)
+    if (dk) {
+      const view = pageDataSet.getView(dk.tableName, dk.viewId)
+      if (view) return view as IDataSource
+    }
+  }
+  return props.dataSource as IDataSource | undefined
 })
 
-// 若 dataSource 为 DataView 且无数据，则尝试由 dataSource 自行加载
-import { onMounted, watch } from 'vue'
-function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefined) {
+const treeData = computed(() => {
+  const ds = resolvedDataSource.value
+  if (ds && Array.isArray(ds.rows)) return ds.rows
+  return props.data ?? []
+})
+
+// 提供 DATA_SOURCE 能力给子组件
+watch(resolvedDataSource, (nv) => {
+  if (nv) sparkProvide(DATA_SOURCE, nv)
+}, { immediate: true })
+
+// 自动加载
+function tryAutoLoad(ds: IDataSource | undefined) {
   if (!ds) return
-  const maybeDV = ds as import('@spark-view/spark-data').DataView | undefined
+  const maybeDV = ds as DataView | undefined
   if (maybeDV && typeof maybeDV.requestData === 'function') {
     void maybeDV.requestData().catch((e: unknown) => {
       console.error('RendererTree: requestData() 失败', e)
@@ -80,29 +101,18 @@ function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefine
 onMounted(() => tryAutoLoad(resolvedDataSource.value))
 watch(resolvedDataSource, (nv) => tryAutoLoad(nv))
 
-// 事件处理：直接调用 props 中的处理函数
+// 事件处理器
 const handleNodeClick = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-  if (props.onNodeClick) {
-    props.onNodeClick(data, node, component)
-  }
+  if (props.onNodeClick) props.onNodeClick(data, node, component)
 }
-
 const handleNodeExpand = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-  if (props.onNodeExpand) {
-    props.onNodeExpand(data, node, component)
-  }
+  if (props.onNodeExpand) props.onNodeExpand(data, node, component)
 }
-
 const handleNodeCollapse = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-  if (props.onNodeCollapse) {
-    props.onNodeCollapse(data, node, component)
-  }
+  if (props.onNodeCollapse) props.onNodeCollapse(data, node, component)
 }
 
-// 提供上下文给子字段组件
 provide('fieldContext', 'tree')
-provide('contextData', treeData)
-// 提供 dataSource（如为 IDataSource/DataView）
 provide('contextDataSource', resolvedDataSource)
 </script>
 

@@ -129,7 +129,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       newRule.on = newOn as Record<string, Function | Function[]>
     }
     
-    // 🎯 处理 dataSource 绑定（r-table, r-tree 共用）
+    // 🎯 处理 dataSource 绑定（r-table, r-tree 共用 —— 脚本写入 pageData 的值）
     if ((newRule.type === 'r-table' || newRule.type === 'r-tree') && newRule['dataSource']) {
       const dataSource = pageData[newRule['dataSource'] as string]
       if (dataSource !== undefined) {
@@ -139,16 +139,12 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       }
     }
 
-    // 🎯 处理 r-tree 的 dataKey 绑定（用于 default-expanded-keys）
-    if (newRule.type === 'r-tree' && newRule['dataKey']) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
-      if (resolved !== undefined && Array.isArray(resolved)) {
-        newRule.props ??= {}
-        newRule.props['default-expanded-keys'] = resolved
-      }
-
-      // 同时注入 DataView（若是 DataKey）
-      attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)
+    // 🎯 将 dataKey 透传到 props — r-table/r-form/r-detail/r-tree 自行 consume(PAGE_DATASET) 解析
+    // el-table 保持旧的外部注入模式（原生组件无法使用 useSparkComponent）
+    const selfResolvingTypes = ['r-table', 'r-form', 'r-detail', 'r-tree']
+    if (newRule['dataKey'] && selfResolvingTypes.includes(newRule.type as string)) {
+      newRule.props ??= {}
+      newRule.props['dataKey'] = newRule['dataKey']
     }
 
     // 🎯 处理 r-tree 的 currentKey 绑定（用于 current-key 高亮）
@@ -172,16 +168,9 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       }
     }
     
-    // 🎯 处理 dataKey → props.data 绑定（r-form, r-detail 共用）
-    if ((newRule.type === 'r-form' || newRule.type === 'r-detail') && newRule['dataKey']) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
-      if (resolved !== undefined) {
-        newRule.props ??= {}
-        newRule.props['data'] = resolved
-      }
-      // 注入 DataView 实例（如果 dataKey 指向 DataSet）
-      attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)    }
-    
+    // 🎯 处理 dataKey → props.data 绑定（r-form, r-detail 已迁移到组件内自解析，跳过）
+    // 旧逻辑已移除；组件通过 consume(PAGE_DATASET) 自行处理 dataKey
+
     // 🎯 处理 el-table 的 dataKey 绑定
     if (newRule.type === 'el-table' && newRule['dataKey']) {
       const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
