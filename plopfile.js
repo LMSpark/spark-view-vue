@@ -96,9 +96,7 @@ export default function (plop) {
         name: 'package',
         message: '选择目标包:',
         choices: [
-          { name: 'spark-component (核心组件)', value: 'spark-component' },
-          { name: 'spark-business (业务组件)', value: 'spark-business' },
-          { name: 'spark-renderer (渲染组件)', value: 'spark-renderer' }
+          { name: 'spark-component (核心组件)', value: 'spark-component' }
         ]
       },
       {
