@@ -7,34 +7,57 @@
 <script setup lang="ts">
 /**
  * RendererTable - 表格容器组件
- * 
- * 通过 provide 告知子字段组件当前处于 table 上下文，
- * 同时提供表格数据供子组件访问。
+ *
+ * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
+ * 不再依赖 bindRules.ts 外部注入。
+ * 解析结果通过 provide(DATA_SOURCE) 供子行/子单元格组件消费。
  */
-import { provide, computed } from 'vue'
+import { computed, provide, onMounted, watch } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { PAGE_DATASET, DATA_SOURCE, parseDataKey } from '@spark-view/spark-data'
+import type { IDataSource, DataView } from '@spark-view/spark-data'
 
 interface Props {
-  dataSource?: import('@spark-view/spark-data').IDataSource | import('@spark-view/spark-data').DataView | undefined
-  dataView?: import('@spark-view/spark-data').DataView | undefined
+  /** DataKey 格式：scope@tableName@viewId@field （优先） */
+  dataKey?: string
+  /** 直接传入的数据源（备用，dataKey 不存在时生效） */
+  dataSource?: IDataSource | DataView | undefined
+  dataView?: DataView | undefined
 }
 
 const props = defineProps<Props>()
 
-// 只支持 props.dataSource / props.dataView（不再支持 props.data）
-const resolvedDataSource = computed(() => (props.dataSource ?? props.dataView) as import('@spark-view/spark-data').IDataSource | undefined)
+// 接入 SPARK 能力链，消费页面层 provide 的 DataSet
+const { consume, provide: sparkProvide } = useSparkComponent({ type: 'r-table' })
+const pageDataSet = consume(PAGE_DATASET)
+
+// 解析数据视图：dataKey 优先 → PAGE_DATASET；回退到直接 props
+const resolvedDataSource = computed(() => {
+  if (props.dataKey && pageDataSet) {
+    const dk = parseDataKey(props.dataKey)
+    if (dk) {
+      const view = pageDataSet.getView(dk.tableName, dk.viewId)
+      if (view) return view as IDataSource
+    }
+  }
+  return (props.dataSource ?? props.dataView) as IDataSource | undefined
+})
 
 const tableData = computed(() => {
-  const ds = resolvedDataSource.value as import('@spark-view/spark-data').IDataSource | undefined
+  const ds = resolvedDataSource.value
   if (ds && Array.isArray(ds.rows)) return ds.rows
   return []
 })
 
-// 若 dataSource 为 DataView 并且当前无数据，组件挂载后调用其 loadFromServer()
-import { onMounted, watch } from 'vue'
+// 将 DataView 向下 provide，供子行/单元格组件 consume(DATA_SOURCE)
+watch(resolvedDataSource, (nv) => {
+  if (nv) sparkProvide(DATA_SOURCE, nv)
+}, { immediate: true })
 
-function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefined) {
+// 若 DataView 无数据，尝试自动加载
+function tryAutoLoad(ds: IDataSource | undefined) {
   if (!ds) return
-  const maybeDV = ds as import('@spark-view/spark-data').DataView | undefined
+  const maybeDV = ds as DataView | undefined
   if (maybeDV && typeof maybeDV.requestData === 'function') {
     void maybeDV.requestData().catch((e: unknown) => {
       console.error('RendererTable: requestData() 失败', e)
@@ -42,18 +65,11 @@ function tryAutoLoad(ds: import('@spark-view/spark-data').IDataSource | undefine
   }
 }
 
-onMounted(() => {
-  tryAutoLoad(resolvedDataSource.value)
-})
+onMounted(() => tryAutoLoad(resolvedDataSource.value))
+watch(resolvedDataSource, (nv) => tryAutoLoad(nv))
 
-// 当 dataSource 发生变更（prop 替换）时再次尝试加载
-watch(resolvedDataSource, (nv) => {
-  tryAutoLoad(nv)
-})
-
-// 提供上下文给子字段组件（保持向后兼容：contextData 仍为 rows 数组）
+// 向子字段组件提供上下文（向后兼容）
 provide('fieldContext', 'table')
 provide('contextData', tableData)
-// 新增提供 dataSource（供需要分页/元信息的自定义子组件使用）
 provide('contextDataSource', resolvedDataSource)
 </script>
