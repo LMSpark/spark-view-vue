@@ -8,7 +8,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import type { FileLoadResult } from '@spark-view/spark-utils'
-import { PageConfigLoader } from '@spark-view/spark-page-config'
+import { PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
 
 // ── Mock FileLoader ──────────────────────────────────────────────────────────
 
@@ -20,7 +20,15 @@ const mockFileLoader = {
   getCachedTimestamp: vi.fn(),
   store: vi.fn(),
   retrieve: vi.fn(),
-  withTransform: vi.fn()
+  /**
+   * withTransform 返回一个 DerivedLoader，其 load() 委托给 mockFileLoader.load。
+   * 这样测试中对 mockFileLoader.load.mockResolvedValue() 的设置
+   * 对所有三个派生加载器（ruleLoader / dataLoader / scriptLoader）同样生效。
+   */
+  withTransform: vi.fn().mockImplementation(() => ({
+    load: (path: string) => mockFileLoader.load(path),
+    loadBatch: vi.fn()
+  }))
 }
 
 vi.mock('@spark-view/spark-utils', async (importOriginal) => {
@@ -57,6 +65,11 @@ describe('PageConfigLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.unstubAllGlobals()
+    // 每次清理后重违 withTransform mock（clearAllMocks 会清除 mockImplementation）
+    mockFileLoader.withTransform.mockImplementation(() => ({
+      load: (path: string) => mockFileLoader.load(path),
+      loadBatch: vi.fn()
+    }))
   })
 
   // ─────────────────────────────────────────────────────────────────
@@ -109,10 +122,8 @@ describe('PageConfigLoader', () => {
       const r = await loader.loadScript('order-page')
       expect(r.success).toBe(true)
       expect(r.data).toBe('function onLoad() {}')
-      expect(mockFileLoader.load).toHaveBeenCalledWith(
-        '/order-page/script.js',
-        { parseJSON: false }
-      )
+      // scriptLoader.load() 委托给 mockFileLoader.load，仅传路径（parseJSON 由 withTransform 控制）
+      expect(mockFileLoader.load).toHaveBeenCalledWith('/order-page/script.js')
     })
 
     it('loadScript: 无脚本文件 → 返回空字符串（非失败）', async () => {
@@ -122,19 +133,36 @@ describe('PageConfigLoader', () => {
       expect(r.data).toBe('')
     })
 
+    it('loadCss: 有样式文件', async () => {
+      mockFileLoader.load.mockResolvedValue(fileOk('.root { color: red }'))
+      const r = await loader.loadCss('order-page')
+      expect(r.success).toBe(true)
+      expect(r.data).toBe('.root { color: red }')
+      expect(mockFileLoader.load).toHaveBeenCalledWith('/order-page/style.css')
+    })
+
+    it('loadCss: 无样式文件 → 返回空字符串（非失败）', async () => {
+      mockFileLoader.load.mockResolvedValue(fileFail('Not found'))
+      const r = await loader.loadCss('order-page')
+      expect(r.success).toBe(true)
+      expect(r.data).toBe('')
+    })
+
     it('loadPageConfig: 全部成功 → 组合 PageConfig', async () => {
       const rules = [{ type: 'div' }]
       const data = { title: '订单' }
       mockFileLoader.load
-        .mockResolvedValueOnce(fileOk(rules))       // rule.json
-        .mockResolvedValueOnce(fileOk(data))         // pagedata.json
-        .mockResolvedValueOnce(fileOk('// script')) // script.js
+        .mockResolvedValueOnce(fileOk(rules))           // rule.json
+        .mockResolvedValueOnce(fileOk(data))             // pagedata.json
+        .mockResolvedValueOnce(fileOk('// script'))     // script.js
+        .mockResolvedValueOnce(fileOk('.app{}'))         // style.css
       const r = await loader.loadPageConfig('order-page')
       expect(r.success).toBe(true)
       expect(r.data?.pageId).toBe('order-page')
       expect(r.data?.rule).toEqual(rules)
       expect(r.data?.data).toEqual(data)
       expect(r.data?.script).toBe('// script')
+      expect(r.data?.css).toBe('.app{}')
     })
 
     it('loadPageConfig: rule 失败 → 快速返回 false', async () => {
@@ -142,6 +170,7 @@ describe('PageConfigLoader', () => {
         .mockResolvedValueOnce(fileFail('rule missing')) // rule.json
         .mockResolvedValueOnce(fileOk({}))               // pagedata.json
         .mockResolvedValueOnce(fileFail('no script'))    // script.js
+        .mockResolvedValueOnce(fileFail('no css'))       // style.css
       const r = await loader.loadPageConfig('order-page')
       expect(r.success).toBe(false)
       expect(r.error).toContain('rule missing')
@@ -153,6 +182,7 @@ describe('PageConfigLoader', () => {
         .mockResolvedValueOnce(fileOk(rules))
         .mockResolvedValueOnce(fileFail('data missing'))
         .mockResolvedValueOnce(fileOk(''))
+        .mockResolvedValueOnce(fileOk(''))              // css
       const r = await loader.loadPageConfig('order-page')
       expect(r.success).toBe(false)
       expect(r.error).toContain('data missing')
@@ -163,9 +193,21 @@ describe('PageConfigLoader', () => {
         .mockResolvedValueOnce(fileOk([{ type: 'div' }]))
         .mockResolvedValueOnce(fileOk({ x: 1 }))
         .mockResolvedValueOnce(fileFail('no script'))
+        .mockResolvedValueOnce(fileOk('.app{}'))        // css
       const r = await loader.loadPageConfig('order-page')
       expect(r.success).toBe(true)
       expect(r.data?.script).toBe('')
+    })
+
+    it('loadPageConfig: css 失败 → 仍然成功（空样式）', async () => {
+      mockFileLoader.load
+        .mockResolvedValueOnce(fileOk([{ type: 'div' }]))
+        .mockResolvedValueOnce(fileOk({ x: 1 }))
+        .mockResolvedValueOnce(fileOk('// script'))
+        .mockResolvedValueOnce(fileFail('no css file'))
+      const r = await loader.loadPageConfig('order-page')
+      expect(r.success).toBe(true)
+      expect(r.data?.css).toBe('')
     })
 
     it('clearCache: 委托给 fileLoader.clearCache', () => {
@@ -236,6 +278,18 @@ describe('PageConfigLoader', () => {
       }))
       await expect(loader.loadScript('my-page')).rejects.toThrow()
     })
+
+    it('loadCss: 远程 CSS 文本', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve('.app { color: blue }')
+      }))
+      // remote loadCss → remoteResult → fetchFromRemote (JSON)
+      // 由于远程 CSS 经 fetchFromRemote 返回，此处期望 success:true
+      const r = await loader.loadCss('my-page')
+      expect(r.success).toBe(true)
+    })
   })
 
   // ─────────────────────────────────────────────────────────────────
@@ -287,7 +341,114 @@ describe('PageConfigLoader', () => {
       expect(r.success).toBe(true)
       expect(r.data).toBe('// local script')
     })
+
+    it('hybrid loadCss: 远程失败 → 降级本地', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no css remote')))
+      mockFileLoader.load.mockResolvedValue(fileOk('.root{}')
+      )
+      const r = await loader.loadCss('some-page')
+      expect(r.success).toBe(true)
+      expect(r.data).toBe('.root{}')
+    })
   })
 
 })
 
+// ────────────────────────────────────────────────────────────────────────────
+// 编译 transform 函数单元测试（与 PageConfigLoader 解耦）
+// ────────────────────────────────────────────────────────────────────────────
+
+describe('compileRule', () => {
+  it('解析 JSON 数组并保持结构', () => {
+    const raw = JSON.stringify([{ type: 'div', props: { id: 'root' } }])
+    const result = compileRule(raw)
+    expect(result).toHaveLength(1)
+    expect(result[0]!.type).toBe('div')
+    expect(result[0]!.props).toEqual({ id: 'root' })
+  })
+
+  it('单对象自动包装为数组', () => {
+    const raw = JSON.stringify({ type: 'el-button', props: { text: 'OK' } })
+    const result = compileRule(raw)
+    expect(Array.isArray(result)).toBe(true)
+    expect(result[0]!.type).toBe('el-button')
+  })
+
+  it('type 缺失时默认为 "div"', () => {
+    const raw = JSON.stringify([{}])
+    expect(compileRule(raw)[0]!.type).toBe('div')
+  })
+
+  it('props 缺失时默认为 {}', () => {
+    const raw = JSON.stringify([{ type: 'span' }])
+    expect(compileRule(raw)[0]!.props).toEqual({})
+  })
+
+  it('children null → 不含 children 字段', () => {
+    const raw = JSON.stringify([{ type: 'div', children: null }])
+    const rule = compileRule(raw)[0]!
+    expect('children' in rule).toBe(false)
+  })
+
+  it('children 数组 → 递归规范化子节点', () => {
+    const raw = JSON.stringify([{
+      type: 'div',
+      children: [
+        '文本节点',
+        { type: 'span' },
+        { type: 'em', props: { class: 'red' }, children: null }
+      ]
+    }])
+    const rule = compileRule(raw)[0]!
+    expect(rule.children).toHaveLength(3)
+    expect(rule.children![0]).toBe('文本节点')
+    expect((rule.children![1] as typeof rule).type).toBe('span')
+    expect((rule.children![1] as typeof rule).props).toEqual({})
+    expect('children' in (rule.children![2] as typeof rule)).toBe(false)
+  })
+})
+
+describe('normalizeRuleNode', () => {
+  it('字符串节点 → { type: string }', () => {
+    expect(normalizeRuleNode('my-widget')).toEqual({ type: 'my-widget' })
+  })
+
+  it('null/undefined → type="null"/"undefined"', () => {
+    expect(normalizeRuleNode(null).type).toBe('null')
+    expect(normalizeRuleNode(undefined).type).toBe('undefined')
+  })
+})
+
+describe('parsePageData', () => {
+  it('解析 JSON 字符串', () => {
+    const data = { title: '订单', list: [1, 2, 3] }
+    expect(parsePageData(JSON.stringify(data))).toEqual(data)
+  })
+
+  it('含 dataset 子树原样保留', () => {
+    const data = { dataset: { dataSetName: 'DS', tables: {} } }
+    expect(parsePageData(JSON.stringify(data))).toEqual(data)
+  })
+})
+
+describe('parseScript', () => {
+  it('直接返回原始字符串（透传）', () => {
+    const code = 'function onLoad() { console.log("hi") }'
+    expect(parseScript(code)).toBe(code)
+  })
+
+  it('空字符串原样返回', () => {
+    expect(parseScript('')).toBe('')
+  })
+})
+
+describe('parseCss', () => {
+  it('直接返回原始样式字符串（透传）', () => {
+    const css = '.app { color: red; font-size: 14px; }'
+    expect(parseCss(css)).toBe(css)
+  })
+
+  it('空字符串原样返回', () => {
+    expect(parseCss('')).toBe('')
+  })
+})

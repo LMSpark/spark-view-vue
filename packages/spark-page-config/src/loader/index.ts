@@ -23,7 +23,8 @@ import type {
   PageConfig,
   RuleConfig,
   PageDataConfig,
-  PageScriptConfig
+  PageScriptConfig,
+  PageCssConfig
 } from '../types'
 import {
   Logger,
@@ -31,7 +32,7 @@ import {
   getSharedErrorMessage,
   createFileLoader
 } from '@spark-view/spark-utils'
-import type { FileLoader, FileLoadResult } from '@spark-view/spark-utils'
+import type { FileLoader, DerivedLoader } from '@spark-view/spark-utils'
 
 const pageLogger = Logger('PageConfig')
 
@@ -40,6 +41,73 @@ const PAGES_CONFIG_FILE_BASE = '/api/pages-config'
 
 const ErrorCodes = SharedErrorCodes
 const getErrorMessage = getSharedErrorMessage
+
+// ── 编译函数（模块级，named 函数名即默认 transformKey）──────────────────────
+
+/**
+ * rule.json 原始字符串 → 规范化 RuleConfig[]
+ *
+ * 规范化内容：
+ * - 顶层确保是 Array（单对象自动包装）
+ * - 每条规则：type 强制 string；props 缺省 {}；children null→undefined，递归规范化
+ * - 后续可在此加：类型别名展开、dataKey 格式校验、props 默认值注入
+ */
+export function compileRule(raw: string): RuleConfig[] {
+  const parsed: unknown = JSON.parse(raw)
+  const arr = Array.isArray(parsed) ? parsed : [parsed]
+  return arr.map(normalizeRuleNode)
+}
+
+export function normalizeRuleNode(node: unknown): RuleConfig {
+  if (typeof node === 'string') return { type: node }
+  if (!node || typeof node !== 'object') return { type: String(node) }
+  // 先把 children 从展开中排除，避免 null 被带入结果
+  const { children: rawChildren, ...rest } = node as Record<string, unknown>
+  const children =
+    rawChildren === null || rawChildren === undefined
+      ? undefined
+      : (rawChildren as unknown[]).map((c) =>
+          typeof c === 'string' ? c : normalizeRuleNode(c)
+        )
+  return {
+    ...rest,
+    type: String(rest['type'] ?? 'div'),
+    props: (rest['props'] as Record<string, unknown> | undefined) ?? {},
+    ...(children !== undefined && { children })
+  } as RuleConfig
+}
+
+/**
+ * pagedata.json 原始字符串 → PageDataConfig
+ *
+ * 当前：JSON.parse + 透传（占位）。
+ * 后续可加：dataset 子树预处理、字段类型推断、DataSet 元数据归一化。
+ */
+export function parsePageData(raw: string): PageDataConfig {
+  return JSON.parse(raw) as PageDataConfig
+}
+
+/**
+ * script.js 原始字符串 → PageScriptConfig（脚本文本）
+ *
+ * 当前：透传（占位）。
+ * 后续可加：语法检查、沙箱包装、依赖提取、压缩。
+ */
+export function parseScript(raw: string): PageScriptConfig {
+  return raw
+}
+
+/**
+ * style.css 原始字符串 → PageCssConfig（样式文本）
+ *
+ * 当前：透传（占位）。
+ * 后续可加：CSS 变量提取、作用域前缀注入、压缩。
+ */
+export function parseCss(raw: string): PageCssConfig {
+  return raw
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
   source: 'hybrid',
@@ -53,6 +121,15 @@ export class PageConfigLoader implements ConfigLoader {
   private opts: Required<ConfigLoaderOptions>
   private fileLoader: FileLoader
 
+  /**
+   * 派生加载器：各自对应一种文件类型的编译产物缓存。
+   * 相同 timestamp → 直接返回缓存结果，跳过 transform 函数。
+   */
+  private readonly ruleLoader: DerivedLoader<RuleConfig[]>
+  private readonly dataLoader: DerivedLoader<PageDataConfig>
+  private readonly scriptLoader: DerivedLoader<PageScriptConfig>
+  private readonly cssLoader: DerivedLoader<PageCssConfig>
+
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
     this.fileLoader = createFileLoader({
@@ -62,6 +139,11 @@ export class PageConfigLoader implements ConfigLoader {
       fallbackToCache: true,
       timeout: this.opts.timeout
     })
+    // 绑定编译函数——函数名自动成为派生缓存的 key 后缀
+    this.ruleLoader = this.fileLoader.withTransform(compileRule)
+    this.dataLoader = this.fileLoader.withTransform(parsePageData)
+    this.scriptLoader = this.fileLoader.withTransform(parseScript)
+    this.cssLoader = this.fileLoader.withTransform(parseCss)
   }
 
   // ── 公开 API ──────────────────────────────────────────────────────
@@ -73,15 +155,32 @@ export class PageConfigLoader implements ConfigLoader {
 
   async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
     pageLogger.info('加载页面规则', { pageId, source: this.opts.source })
-    return this.hybridLoad<RuleConfig[]>(`/${pageId}/rule.json`, `/page/${pageId}/rule`)
+    return this.hybridLoad(`/${pageId}/rule.json`, `/page/${pageId}/rule`, this.ruleLoader)
   }
 
   async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
     pageLogger.info('加载页面数据', { pageId, source: this.opts.source })
-    return this.hybridLoad<PageDataConfig>(
-      `/${pageId}/pagedata.json`,
-      `/page/${pageId}/data`
-    )
+    return this.hybridLoad(`/${pageId}/pagedata.json`, `/page/${pageId}/data`, this.dataLoader)
+  }
+
+  async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+    pageLogger.debug('加载页面样式', { pageId, source: this.opts.source })
+
+    if (this.opts.source === 'remote') {
+      return this.remoteResult<PageCssConfig>(`/page/${pageId}/css`)
+    }
+
+    if (this.opts.source === 'local') {
+      return this.localCssResult(pageId)
+    }
+
+    // hybrid: 先尝试远程，失败降级本地
+    try {
+      return await this.remoteResult<PageCssConfig>(`/page/${pageId}/css`)
+    } catch {
+      pageLogger.debug('远程样式不可用，降级到本地', { pageId })
+      return this.localCssResult(pageId)
+    }
   }
 
   async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
@@ -109,10 +208,11 @@ export class PageConfigLoader implements ConfigLoader {
   async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
     pageLogger.info('加载完整页面配置', { pageId })
 
-    const [ruleResult, dataResult, scriptResult] = await Promise.all([
+    const [ruleResult, dataResult, scriptResult, cssResult] = await Promise.all([
       this.loadRule(pageId),
       this.loadPageData(pageId),
-      this.loadScript(pageId)
+      this.loadScript(pageId),
+      this.loadCss(pageId)
     ])
 
     if (!ruleResult.success) {
@@ -128,7 +228,8 @@ export class PageConfigLoader implements ConfigLoader {
         pageId,
         rule: ruleResult.data ?? [],
         data: dataResult.data ?? {},
-        script: scriptResult.data
+        script: scriptResult.data,
+        css: cssResult.data
       },
       ...(ruleResult.source !== undefined && { source: ruleResult.source }),
       timestamp: Date.now()
@@ -147,22 +248,23 @@ export class PageConfigLoader implements ConfigLoader {
 
   /**
    * 统一 local / remote / hybrid 分支。
-   * @param localPath  FileLoader 相对路径（如 `/pageId/rule.json`）
-   * @param remotePath API 相对路径  （如 `/page/pageId/rule`）
+   * @param localPath   FileLoader 相对路径（如 `/pageId/rule.json`）
+   * @param remotePath  API 相对路径  （如 `/page/pageId/rule`）
+   * @param localLoader 指定派生加载器时，本地命中后直接返回编译缓存结果
    */
   private async hybridLoad<T>(
     localPath: string,
-    remotePath: string
+    remotePath: string,
+    localLoader?: DerivedLoader<T>
   ): Promise<ConfigLoadResult<T>> {
     const { source } = this.opts
+    const doLocal = () =>
+      localLoader
+        ? this.derivedResult(localLoader, localPath)
+        : this.localResult<T>(localPath)
 
-    if (source === 'local') {
-      return this.localResult<T>(localPath)
-    }
-
-    if (source === 'remote') {
-      return this.remoteResult<T>(remotePath)
-    }
+    if (source === 'local') return doLocal()
+    if (source === 'remote') return this.remoteResult<T>(remotePath)
 
     // hybrid: 先 remote，失败降级 local
     try {
@@ -170,8 +272,29 @@ export class PageConfigLoader implements ConfigLoader {
       return await this.remoteResult<T>(remotePath)
     } catch {
       pageLogger.debug('hybrid: 远程失败，降级本地', { localPath })
-      return this.localResult<T>(localPath)
+      return doLocal()
     }
+  }
+
+  /**
+   * 通过 DerivedLoader 加载本地文件并转为 ConfigLoadResult。
+   * timestamp 未变时直接命中编译缓存，跳过 transform 函数。
+   */
+  private async derivedResult<T>(
+    loader: DerivedLoader<T>,
+    path: string
+  ): Promise<ConfigLoadResult<T>> {
+    const r = await loader.load(path)
+    if (!r.success) {
+      pageLogger.error('本地配置加载失败', { path, error: r.error })
+      return {
+        success: false,
+        error: `${PAGES_CONFIG_FILE_BASE}${path}: ${r.error ?? ''}`,
+        timestamp: Date.now()
+      }
+    }
+    pageLogger.debug('本地配置加载成功', { path, fromCache: r.fromCache })
+    return { success: true, ...(r.data !== undefined && { data: r.data }), source: 'local', timestamp: Date.now() }
   }
 
   /** FileLoader 加载 → ConfigLoadResult */
@@ -195,17 +318,34 @@ export class PageConfigLoader implements ConfigLoader {
     return { success: true, data, source: 'remote', timestamp: Date.now() }
   }
 
-  /** 从本地加载脚本（可选文件，失败返回 success:true, data:''） */
+  /**
+   * 从本地加载脚本（可选文件，失败返回 success:true, data:''）。
+   * 使用 scriptLoader（withTransform(parseScript)）：
+   *   - fileLoader 内部以 parseJSON:false 读取原始文本并缓存
+   *   - parseScript 变换结果（当前透传）单独缓存，timestamp 未变直接返回
+   */
   private async localScriptResult(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
-    const r: FileLoadResult<string> = await this.fileLoader.load<string>(
-      `/${pageId}/script.js`,
-      { parseJSON: false }
-    )
+    const r = await this.scriptLoader.load(`/${pageId}/script.js`)
     if (!r.success) {
       pageLogger.debug('页面无脚本文件，跳过', { pageId })
       return { success: true, data: '', source: 'local', timestamp: Date.now() }
     }
     pageLogger.debug('本地脚本加载成功', { pageId, size: r.data?.length ?? 0 })
+    return { success: true, data: r.data ?? '', source: 'local', timestamp: Date.now() }
+  }
+
+  /**
+   * 本地加载 CSS：文件可选，缺失时静默返回空字符串。
+   * - style.css 存在 → 经 parseCss 变换后返回
+   * - 文件缺失   → success:true, data:''（CSS 为可选资源）
+   */
+  private async localCssResult(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+    const r = await this.cssLoader.load(`/${pageId}/style.css`)
+    if (!r.success) {
+      pageLogger.debug('页面无样式文件，跳过', { pageId })
+      return { success: true, data: '', source: 'local', timestamp: Date.now() }
+    }
+    pageLogger.debug('本地样式加载成功', { pageId, size: r.data?.length ?? 0 })
     return { success: true, data: r.data ?? '', source: 'local', timestamp: Date.now() }
   }
 
