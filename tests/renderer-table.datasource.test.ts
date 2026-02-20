@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import RendererTable from '../packages/spark-renderer/src/components/containers/RendererTable.vue'
+import RendererTable from '../src/components/renderer-containers/RendererTable.vue'
 import { SparkData } from '../packages/spark-data/src/spark-data'
 import { nextTick } from 'vue'
 
@@ -60,7 +60,7 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
   })
 
   it('RendererTree should call dataSource.loadFromServer() on mount when rows empty', async () => {
-    const { default: RendererTree } = await import('../packages/spark-renderer/src/components/containers/RendererTree.vue')
+    const { default: RendererTree } = await import('../src/components/renderer-containers/RendererTree.vue')
 
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS3',
