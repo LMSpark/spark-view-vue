@@ -132,4 +132,4 @@
   - `--config` 会检查：所有 scoringSpec 引用到的配置 key（`*KeyRequired` / `parametersRequired`）在 config 中都“存在且不为 null”。
   - 备注：对 `docs/MindVector/scoring-config.template.json` 运行该检查会报大量 `null` 错误，这是预期行为（模板就是用来提示哪些 key 需要被实现侧填值）。
 - 生成配置模板：`node tools/generate-mindvector-scoring-config-template.cjs`
-  - 输出：`docs/MindVector/scoring-config.template.json`
+  - 输出：`docs/MindVector/scoring-config.template.json`（生成产物，可再生；默认不纳入版本控制）
