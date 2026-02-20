@@ -80,6 +80,7 @@ import { useCssScope } from '../composables/useCssScope'
 import { compileFunctions } from '../utils/createSandbox'
 import { usePageDataSet } from '../composables/usePageDataSet'
 import { useRuleBinding } from '../composables/useRuleBinding'
+import { useTableDataSync } from '../composables/useTableDataSync'
 
 /**
  * PageRenderer - SPARK 页面渲染引擎
@@ -161,7 +162,34 @@ const formCreateOptions = ref({
   ...props.formCreateOptions
 })
 
-// 初始化页面上下文
+// CSS 作用域
+const { scopedCss, setScopedCss } = useCssScope({
+  pageId: currentPageId.value,
+  enableScope: props.enableCssScope
+})
+
+// 页面脚本函数
+const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
+
+// DataSet 管理（纯生命周期，不依赖 rules/formApi）
+const { dataSet, initDataSet } = usePageDataSet({
+  enableDataSet: props.enableDataSet
+})
+
+// Rule 绑定（注意：此时 pageFunctions 还是空对象，需要等脚本执行后再绑定）
+const { boundRules, rebindRules } = useRuleBinding({
+  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
+  originalRules: originalRules,
+  pageData,
+  pageFunctions,
+  dataSet
+})
+
+// DataSet ↔ el-table 双向同步桥（统一管理选中/当前行的 DataSet → UI 方向）
+// @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
+const { setupSync } = useTableDataSync({ dataSet, formApi })
+
+// 页面上下文（在所有 composable 之后创建，rebindRules/dataSet 均已就绪，闭包引用安全）
 const pageContext: PageContext = {
   get $api() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -180,50 +208,18 @@ const pageContext: PageContext = {
     }
     return [] as unknown as NodeListOf<Element>
   },
-  $rebindRules: () => {},
+  $rebindRules: () => rebindRules(),  // 直接闭包引用，无需事后赋值修补
   $refreshData: async () => {},
   get $dataSet() {
     return dataSet.value
   },
-  
+
   // 沙箱全局变量 — 优先使用注入的 UI 服务，回退到 ElementPlus
   ElMessage: (props.messageService ?? ElMessage) as typeof ElMessage,
   ElMessageBox: (props.confirmService ?? ElMessageBox) as typeof ElMessageBox,
   SparkData,
   h
 }
-
-// CSS 作用域
-const { scopedCss, setScopedCss } = useCssScope({
-  pageId: currentPageId.value,
-  enableScope: props.enableCssScope
-})
-
-// 页面脚本函数
-const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
-
-// DataSet 管理
-const { dataSet, initDataSet, autoSubscribeTables } = usePageDataSet({
-  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
-  originalRules: originalRules,
-  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
-  formApi: formApi,
-  enableDataSet: props.enableDataSet
-})
-
-// Rule 绑定（注意：此时 pageFunctions 还是空对象，需要等脚本执行后再绑定）
-const { boundRules, rebindRules } = useRuleBinding({
-  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
-  originalRules: originalRules,
-  pageData,
-  pageFunctions,
-  dataSet,
-  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
-  formApi: formApi
-})
-
-// 更新上下文的 rebindRules 方法
-pageContext.$rebindRules = rebindRules
 
 // 加载页面配置
 const loadPageConfig = async () => {
@@ -336,18 +332,17 @@ const loadPageConfig = async () => {
     // 数据订阅和规则绑定
     // ========================================
     
-    // 自动订阅表
-    await nextTick()
-    pageLogger.debug('自动订阅表', { pageId })
-    autoSubscribeTables()
-    
     // 绑定 rules（必须在脚本执行之后，确保 pageFunctions 已就绪）
+    await nextTick()
     pageLogger.debug('绑定 rules', { 
       pageId, 
       rulesCount: originalRules.value.length,
       functionCount: Object.keys(pageFunctions.value).length
     })
     rebindRules()
+
+    // DataSet ↔ el-table 同步桥（在规则绑定后调用，视图已由 injectTableEvents 创建）
+    setupSync()
     
     // 执行 afterLoad 钩子
     if (props.afterLoad) {

@@ -3,21 +3,12 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import { nextTick } from 'vue'
-import type { Rule, RuleBindingOptions, FormCreateAPI } from '../types'
+import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
 import { DataView } from '@spark-view/spark-data'
 import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
-
-/**
- * ElementPlus Table 组件接口
- */
-interface ElTableComponent extends HTMLElement {
-  clearSelection?: () => void
-  toggleRowSelection?: (row: IDataRow, selected: boolean) => void
-}
 
 /**
  * 类型安全的嵌套值获取函数
@@ -84,7 +75,7 @@ function attachDataViewIfDataKey(
  * 递归替换 rule 中的数据占位符和事件处理器
  */
 export function bindDataToRules(options: RuleBindingOptions): Rule[] {
-  const { rules, pageData, pageFunctions, dataSet, formApi } = options
+  const { rules, pageData, pageFunctions, dataSet } = options
   
   // 创建统一的函数调用包装器
   const callFunc = createFunctionCaller(pageFunctions)
@@ -166,7 +157,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       }
       // 如果有 dataSet，注入同步事件
       if (dataSet) {
-        injectTableEvents(newRule, dataSet, formApi)
+        injectTableEvents(newRule, dataSet)
       }
     }
     
@@ -202,8 +193,7 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
           rules: childRules,
           pageData,
           pageFunctions,
-          dataSet,
-          formApi
+          dataSet
         })
       }
     }
@@ -257,12 +247,16 @@ function createFunctionCaller(
 }
 
 /**
- * 为 el-table 注入 DataSet 同步事件
+ * 为 el-table 注入 DataSet 同步事件（UI → DataSet 方向）
+ *
+ * 为表格的 currentChange 和 selectionChange 事件注入处理器，
+ * 将 el-table UI 事件同步写入对应的 DataView。
+ *
+ * DataSet → UI 方向由 useTableDataSync 单独负责。
  */
 function injectTableEvents(
   rule: Rule,
-  dataSet: IDataSet,
-  _formApi: FormCreateAPI | null
+  dataSet: IDataSet
 ): void {
   // 使用局部防重入标志
   let isProcessingEvent = false
@@ -346,32 +340,4 @@ function injectTableEvents(
       isProcessingEvent = false
     }
   }
-}
-
-/**
- * 同步 DataSet 选中状态到 el-table
- */
-export function syncSelectedRowsToTable(
-  tableName: string,
-  viewId: string,
-  rows: IDataRow[],
-  formApi: FormCreateAPI | null
-): void {
-  void nextTick(() => {
-    if (formApi && typeof formApi.el === 'function') {
-      const componentName = `table_${tableName}_${viewId}`
-      const tableComponent = formApi.el(componentName) as ElTableComponent | null
-      
-      if (tableComponent) {
-        if (rows.length === 0 && typeof tableComponent.clearSelection === 'function') {
-          tableComponent.clearSelection()
-        } else if (typeof tableComponent.toggleRowSelection === 'function') {
-          tableComponent.clearSelection?.()
-          rows.forEach(row => {
-            tableComponent.toggleRowSelection?.(row, true)
-          })
-        }
-      }
-    }
-  })
 }

@@ -12,6 +12,7 @@ export { default as PageRenderer } from './components/PageRenderer.vue'
 export { useCssScope } from './composables/useCssScope'
 export { usePageDataSet } from './composables/usePageDataSet'
 export { useRuleBinding } from './composables/useRuleBinding'
+export { useTableDataSync } from './composables/useTableDataSync'
 
 // 类型导出
 export type {

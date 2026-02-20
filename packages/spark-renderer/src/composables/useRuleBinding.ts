@@ -4,7 +4,7 @@
 
 import { ref, Ref } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import type { Rule, FormCreateAPI } from '../types'
+import type { Rule } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
 
@@ -15,7 +15,6 @@ export interface UseRuleBindingOptions {
   pageData: Record<string, unknown>
   pageFunctions: Ref<Record<string, (...args: unknown[]) => unknown>>
   dataSet: Ref<IDataSet | null>
-  formApi: Ref<FormCreateAPI | null>
 }
 
 export interface UseRuleBindingReturn {
@@ -44,7 +43,7 @@ export interface UseRuleBindingReturn {
  * ```
  */
 export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingReturn {
-  const { originalRules, pageData, pageFunctions, dataSet, formApi } = options
+  const { originalRules, pageData, pageFunctions, dataSet } = options
   const boundRules = ref<Rule[]>([])
   
   const rebindRules = () => {
@@ -58,8 +57,7 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       rules: originalRules.value,
       pageData,
       pageFunctions: pageFunctions.value,
-      dataSet: dataSet.value,
-      formApi: formApi.value
+      dataSet: dataSet.value
     })
     
     // 🔄 强制触发响应式更新 - 创建新数组而不是直接赋值
