@@ -82,26 +82,11 @@ export interface ConfigLoaderOptions {
   apiBaseUrl?: string
   
   /**
-   * 本地配置路径前缀
-   */
-  localPrefix?: string
-  
-  /**
    * FileLoader 缓存存储方式（本地模式使用）
    * @default 'localStorage'
    */
   fileStorage?: 'localStorage' | 'sessionStorage' | 'memory'
 
-  /**
-   * @deprecated 本地模式已由 FileLoader 接管缓存，此字段不再生效
-   */
-  enableCache?: boolean
-  
-  /**
-   * @deprecated 本地模式已由 FileLoader 接管缓存，此字段不再生效
-   */
-  cacheExpiry?: number
-  
   /**
    * 启用配置验证
    */
@@ -111,21 +96,6 @@ export interface ConfigLoaderOptions {
    * 加载超时（毫秒）
    */
   timeout?: number
-  
-  /**
-   * 自定义 fetch 适配器（可注入用于测试或 SSR 场景）
-   * 默认使用全局 fetch
-   */
-  fetchAdapter?: typeof fetch
-}
-
-/**
- * 配置缓存项
- */
-export interface ConfigCacheItem<T = unknown> {
-  data: T
-  timestamp: number
-  version?: string
 }
 
 /**
@@ -144,7 +114,7 @@ export interface ConfigLoadResult<T = unknown> {
   success: boolean
   data?: T
   error?: string
-  source?: 'local' | 'remote' | 'cache'
+  source?: 'local' | 'remote'
   timestamp?: number
   validationErrors?: ValidationError[]
 }

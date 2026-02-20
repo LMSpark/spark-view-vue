@@ -294,8 +294,6 @@ export class ConfigLoader {
       pageConfig: {
         source: 'local',
         apiBaseUrl: '/api',
-        localPrefix: '/pages-config',
-        enableCache: true,
         homePath: '/home'
       },
       config: {

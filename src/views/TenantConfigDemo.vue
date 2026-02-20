@@ -187,7 +187,6 @@ const config = ref<AppFullConfig['config']>({
 const pageConfig = ref<AppFullConfig['pageConfig']>({
   source: 'local',
   apiBaseUrl: '/api',
-  localPrefix: '/pages-config',
   homePath: '/home'
 })
 const fullConfig = ref<AppFullConfig | null>(null)
