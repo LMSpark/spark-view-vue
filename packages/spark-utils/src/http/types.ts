@@ -79,10 +79,10 @@ export interface ResponseInterceptor {
   onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>
 }
 
-// ==================== 文件加载器 ====================
+// ==================== 文件加载器 / 缓存层 ====================
 
 export interface FileLoadOptions {
-  /** API 基础路径 */
+  /** API 基础路径（文件 HTTP 加载使用） */
   baseUrl: string
   /** 缓存存储方式 */
   storage?: 'localStorage' | 'sessionStorage' | 'memory'
@@ -96,15 +96,30 @@ export interface FileLoadOptions {
   fallbackToCache?: boolean
 }
 
-export interface FileCache {
-  content: string
-  timestamp: string
+/**
+ * 通用缓存条目（泛型）
+ * - 文件内容：T = string
+ * - DataSet、编译后脚本、编译后规则等计算结果：T = 具体类型
+ */
+export interface CacheEntry<T = string> {
+  /** 缓存的数据（文件原始内容或任意计算结果） */
+  data: T
+  /**
+   * 来源时间戳（来自文件服务器的 mtime、版本号或任意标识）
+   * 对比此字段判断缓存是否仍有效。
+   */
+  sourceTimestamp: string
+  /** 缓存写入时刻（Unix ms） */
   cachedAt: number
 }
+
+/** @deprecated 请使用 CacheEntry<string> */
+export type FileCache = CacheEntry<string>
 
 export interface FileLoadResult<T = unknown> {
   success: boolean
   data?: T
+  /** 来源时间戳 */
   timestamp?: string
   fromCache: boolean
   error?: string

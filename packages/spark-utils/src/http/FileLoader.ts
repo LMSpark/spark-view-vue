@@ -1,14 +1,30 @@
 /**
- * 文件加载器 - 基于时间戳的智能缓存系统
+ * FileLoader — HTTP 文件加载 + 通用计算结果缓存
  *
- * 流程：首次加载 → 缓存 content + timestamp → 再次请求带 timestamp →
- *       后端 304/notModified → 用缓存 | 200 → 更新缓存
- *       网络失败 → 降级到缓存
+ * 两种使用模式：
+ *
+ * 1. **文件加载**（HTTP）
+ *    load<T>(fileName) → GET ?timestamp=<cached> → { content, timestamp, notModified? }
+ *    自动将原始文件内容缓存为 CacheEntry<string>。
+ *    下次加载若服务器返回 notModified，直接从缓存取并按需 JSON.parse。
+ *
+ * 2. **计算结果缓存**（任意数据）
+ *    store<T>(key, data, sourceTimestamp)  — 缓存 DataSet / 编译脚本 / 编译 CSS / 编译规则等
+ *    retrieve<T>(key, sourceTimestamp)     — sourceTimestamp 匹配则命中，否则返回 null
+ *
+ *    典型用法：
+ *      const ts = await fileLoader.getTimestamp(filePath)  // 读文件时间戳
+ *      const cached = fileLoader.retrieve<DataSet>(filePath + ':dataset', ts)
+ *      if (cached) return cached
+ *      const raw = await fileLoader.load(filePath)
+ *      const ds = buildDataSet(raw.data)
+ *      fileLoader.store(filePath + ':dataset', ds, raw.timestamp!)
+ *      return ds
  */
 
 import { Logger } from '../logger'
 import { Request } from './Request'
-import type { FileLoadOptions, FileCache, FileLoadResult } from './types'
+import type { FileLoadOptions, CacheEntry, FileLoadResult } from './types'
 
 const logger = Logger('FileLoader')
 
@@ -20,7 +36,7 @@ interface FileResponse {
 
 export class FileLoader {
   private opts: Required<FileLoadOptions>
-  private memCache = new Map<string, FileCache>()
+  private memCache = new Map<string, CacheEntry<unknown>>()
   private request: Request
 
   constructor(options: FileLoadOptions) {
@@ -39,7 +55,9 @@ export class FileLoader {
     })
   }
 
-  /** 加载单个文件 */
+  // ==================== HTTP 文件加载 ====================
+
+  /** 加载单个文件，自动缓存原始内容 */
   async load<T = unknown>(
     fileName: string,
     options?: { parseJSON?: boolean; forceRefresh?: boolean }
@@ -47,12 +65,18 @@ export class FileLoader {
     const parseJSON = options?.parseJSON ?? true
     const forceRefresh = options?.forceRefresh ?? false
 
+    const parse = (raw: string): T => {
+      if (!parseJSON) return raw as T
+      try { return JSON.parse(raw) as T }
+      catch (e) { throw new Error(`JSON 解析失败: ${e instanceof Error ? e.message : String(e)}`) }
+    }
+
     try {
-      const cache = forceRefresh ? null : this.getCache(fileName)
-      const timestamp = cache?.timestamp ?? ''
+      const cached = forceRefresh ? null : this.readEntry<string>(fileName)
+      const knownTimestamp = cached?.sourceTimestamp ?? ''
 
       const params: Record<string, unknown> = {}
-      if (timestamp) params['timestamp'] = timestamp
+      if (knownTimestamp) params['timestamp'] = knownTimestamp
 
       const response = await this.request.requestFull<FileResponse>({
         url: fileName,
@@ -61,13 +85,13 @@ export class FileLoader {
       })
       const result = response.data
 
-      // 304 / notModified
+      // 服务器确认未变更
       if (result.notModified === true) {
-        if (cache) {
+        if (cached) {
           return {
             success: true,
-            data: parseJSON ? (JSON.parse(cache.content) as T) : (cache.content as T),
-            timestamp: cache.timestamp,
+            data: parse(cached.data),
+            timestamp: cached.sourceTimestamp,
             fromCache: true,
             notModified: true
           }
@@ -79,30 +103,25 @@ export class FileLoader {
         throw new Error('响应格式错误：缺少 content 或 timestamp')
       }
 
-      // 解析数据
-      let data: T
-      if (parseJSON) {
-        try { data = JSON.parse(result.content) as T }
-        catch (e) { throw new Error(`JSON 解析失败: ${e instanceof Error ? e.message : String(e)}`) }
-      } else {
-        data = result.content as T
-      }
+      // 写原始内容缓存
+      this.writeEntry<string>(fileName, result.content, result.timestamp)
 
-      // 更新缓存
-      this.setCache(fileName, { content: result.content, timestamp: result.timestamp, cachedAt: Date.now() })
-
-      return { success: true, data, timestamp: result.timestamp, fromCache: false }
+      return { success: true, data: parse(result.content), timestamp: result.timestamp, fromCache: false }
 
     } catch (error) {
-      // 降级到缓存
       if (this.opts.fallbackToCache) {
-        const cache = this.getCache(fileName)
-        if (cache) {
+        const cached = this.readEntry<string>(fileName)
+        if (cached) {
           const msg = error instanceof Error ? error.message : String(error)
           logger.warn('网络失败，使用缓存', { fileName, error: msg })
           try {
-            const data = parseJSON ? (JSON.parse(cache.content) as T) : (cache.content as T)
-            return { success: true, data, timestamp: cache.timestamp, fromCache: true, error: `降级缓存（${msg}）` }
+            return {
+              success: true,
+              data: parse(cached.data),
+              timestamp: cached.sourceTimestamp,
+              fromCache: true,
+              error: `降级缓存（${msg}）`
+            }
           } catch { /* 缓存无效，继续返回失败 */ }
         }
       }
@@ -122,44 +141,75 @@ export class FileLoader {
     return results
   }
 
-  /** 清除缓存 */
-  clearCache(fileName?: string): void {
-    if (fileName) {
-      const key = this.opts.cachePrefix + fileName
-      this.memCache.delete(key)
-      this.storageRemove(key)
+  // ==================== 通用计算结果缓存 ====================
+
+  /**
+   * 缓存任意计算结果（DataSet、编译脚本、编译 CSS、编译规则等）。
+   * @param key          — 缓存键（建议用 `filePath + ':type'` 形式区分同文件不同产物）
+   * @param data         — 要缓存的数据，必须可被 JSON.stringify 序列化
+   * @param sourceTimestamp — 数据来源时间戳（通常取自 load() 返回的 timestamp）
+   */
+  store<T>(key: string, data: T, sourceTimestamp: string): void {
+    this.writeEntry<T>(key, data, sourceTimestamp)
+  }
+
+  /**
+   * 取回计算结果缓存，时间戳不匹配时返回 null（源文件已更新，需重新计算）。
+   * @param key              — 与 store() 一致的缓存键
+   * @param sourceTimestamp  — 当前源文件时间戳；与缓存不一致则返回 null
+   */
+  retrieve<T>(key: string, sourceTimestamp: string): T | null {
+    const entry = this.readEntry<T>(key)
+    if (entry?.sourceTimestamp !== sourceTimestamp) return null
+    return entry.data
+  }
+
+  // ==================== 缓存管理 ====================
+
+  /** 清除缓存（不传 key 则清全部） */
+  clearCache(key?: string): void {
+    if (key) {
+      const k = this.opts.cachePrefix + key
+      this.memCache.delete(k)
+      this.storageRemove(k)
     } else {
       this.memCache.clear()
       this.storageClearPrefix()
     }
   }
 
-  /** 检查文件是否有缓存 */
-  hasCache(fileName: string): boolean {
-    return this.getCache(fileName) !== null
+  /** 检查是否有缓存 */
+  hasCache(key: string): boolean {
+    return this.readEntry(key) !== null
   }
 
-  /** 获取缓存的时间戳 */
-  getCachedTimestamp(fileName: string): string | null {
-    return this.getCache(fileName)?.timestamp ?? null
+  /** 获取缓存的时间戳（不存在则返回 null） */
+  getTimestamp(key: string): string | null {
+    return this.readEntry(key)?.sourceTimestamp ?? null
   }
 
-  // ==================== 缓存内部方法 ====================
+  /** @deprecated 请使用 getTimestamp() */
+  getCachedTimestamp(key: string): string | null {
+    return this.getTimestamp(key)
+  }
 
-  private getCache(fileName: string): FileCache | null {
-    const key = this.opts.cachePrefix + fileName
-    if (this.opts.storage === 'memory') return this.memCache.get(key) ?? null
+  // ==================== 内部存储 ====================
+
+  private readEntry<T>(key: string): CacheEntry<T> | null {
+    const k = this.opts.cachePrefix + key
+    if (this.opts.storage === 'memory') return (this.memCache.get(k) as CacheEntry<T>) ?? null
     try {
-      const raw = this.storage.getItem(key)
-      return raw ? (JSON.parse(raw) as FileCache) : null
+      const raw = this.storage.getItem(k)
+      return raw ? (JSON.parse(raw) as CacheEntry<T>) : null
     } catch { return null }
   }
 
-  private setCache(fileName: string, cache: FileCache): void {
-    const key = this.opts.cachePrefix + fileName
-    if (this.opts.storage === 'memory') { this.memCache.set(key, cache); return }
-    try { this.storage.setItem(key, JSON.stringify(cache)) }
-    catch (e) { logger.error('缓存写入失败', { key, error: e }) }
+  private writeEntry<T>(key: string, data: T, sourceTimestamp: string): void {
+    const entry: CacheEntry<T> = { data, sourceTimestamp, cachedAt: Date.now() }
+    const k = this.opts.cachePrefix + key
+    if (this.opts.storage === 'memory') { this.memCache.set(k, entry as CacheEntry<unknown>); return }
+    try { this.storage.setItem(k, JSON.stringify(entry)) }
+    catch (e) { logger.error('缓存写入失败', { key: k, error: e }) }
   }
 
   private get storage(): Storage {
