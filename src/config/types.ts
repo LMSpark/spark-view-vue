@@ -62,9 +62,6 @@ export interface SparkConfig {
 export interface PageConfigOptions {
   source: 'local' | 'remote' | 'hybrid'
   apiBaseUrl: string
-  localPrefix: string
-  enableCache?: boolean
-  cacheExpiry?: number
   timeout?: number
   homePath: string
 }

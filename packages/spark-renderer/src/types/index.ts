@@ -104,8 +104,7 @@ export interface PageRendererOptions {
    * 
    * const configLoader = SparkPageConfig.createLoader({
    *   source: 'local',
-   *   apiBaseUrl: '/api/config',
-   *   localPrefix: '/pages-config'
+   *   apiBaseUrl: '/api/config'
    * })
    * ```
    */

@@ -152,8 +152,6 @@ app.get('/api/config/default', async (req, res) => {
       pageConfig: {
         source: 'local',
         apiBaseUrl: '/api',
-        localPrefix: '/pages-config',
-        enableCache: true,
         homePath: '/home'
       },
       config: {

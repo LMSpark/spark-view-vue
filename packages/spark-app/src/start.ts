@@ -45,12 +45,6 @@ export interface PageConfigOptions {
   source: 'local' | 'remote' | 'hybrid'
   /** API 基础路径 */
   apiBaseUrl: string
-  /** 本地配置前缀 */
-  localPrefix: string
-  /** 是否启用缓存 */
-  enableCache?: boolean
-  /** 缓存过期时间 */
-  cacheExpiry?: number
   /** 请求超时时间 */
   timeout?: number
   /** 页面组件（默认使用 PageRenderer） */
@@ -224,12 +218,9 @@ export async function start(options: StartOptions): Promise<void> {
       
       const configLoaderOptions: Partial<import('@spark-view/spark-page-config').ConfigLoaderOptions> = {
         source: pageConfig.source,
-        apiBaseUrl: pageConfig.apiBaseUrl,
-        localPrefix: pageConfig.localPrefix
+        apiBaseUrl: pageConfig.apiBaseUrl
       }
       
-      if (pageConfig.enableCache !== undefined) configLoaderOptions.enableCache = pageConfig.enableCache
-      if (pageConfig.cacheExpiry !== undefined) configLoaderOptions.cacheExpiry = pageConfig.cacheExpiry
       if (pageConfig.timeout !== undefined) configLoaderOptions.timeout = pageConfig.timeout
       
       const configLoader = SparkPageConfig.createConfigLoader(configLoaderOptions)

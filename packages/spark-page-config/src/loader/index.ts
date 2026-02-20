@@ -33,13 +33,9 @@ const getErrorMessage = getSharedErrorMessage
 const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
   source: 'hybrid',
   apiBaseUrl: '/api',
-  localPrefix: '/pages-config',
   fileStorage: 'localStorage',
-  enableCache: true,     // 保留字段供外部兼容，本地模式已由 FileLoader 接管
-  cacheExpiry: 300_000,  // 同上，仅保留接口兼容
   enableValidation: false,
-  timeout: REQUEST_TIMEOUT,
-  fetchAdapter: globalThis.fetch?.bind(globalThis)
+  timeout: REQUEST_TIMEOUT
 }
 
 /**
@@ -47,13 +43,11 @@ const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
  */
 export class PageConfigLoader implements ConfigLoader {
   private options: Required<ConfigLoaderOptions>
-  private _fetch: typeof fetch
-  /** 本地文件加载器（时间戳缓存协议，替代内部 TTL Map 缓存） */
+  /** 本地文件加载器（时间戳缓存协议） */
   private fileLoader: FileLoader
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options }
-    this._fetch = this.options.fetchAdapter ?? globalThis.fetch?.bind(globalThis)
     this.fileLoader = createFileLoader({
       baseUrl: PAGES_CONFIG_FILE_BASE,
       storage: this.options.fileStorage ?? 'localStorage',
@@ -253,7 +247,7 @@ export class PageConfigLoader implements ConfigLoader {
     try {
       pageLogger.debug('发送远程请求', { url })
       
-      const response = await this._fetch(url, {
+      const response = await globalThis.fetch(url, {
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json'
@@ -317,7 +311,7 @@ export class PageConfigLoader implements ConfigLoader {
     try {
       pageLogger.debug('加载远程脚本', { pageId, url })
       
-      const response = await this._fetch(url)
+      const response = await globalThis.fetch(url)
 
       if (!response.ok) {
         const errorMsg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
