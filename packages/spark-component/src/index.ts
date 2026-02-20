@@ -76,12 +76,15 @@ export type { AutoLoaderConfig, ComponentMetadata, LoadStrategy } from './loader
 // 8. 页面渲染引擎（原 spark-renderer 包）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-/** PageRenderer 组件、Composables 及类型（通过 renderer/index.ts 中间层导出，避免此文件直接引用 .vue） */
+/** PageRenderer 组件、页面编排 Composable 及类型（通过 renderer/index.ts 中间层导出，避免此文件直接引用 .vue） */
 export {
   PageRenderer,
-  useCssScope,
-  useRuleBinding,
-  useTableDataSync
+  usePageRenderer
+} from './renderer/index.js'
+
+export type {
+  UsePageRendererReturn,
+  UsePageRendererRefs
 } from './renderer/index.js'
 
 export type {
