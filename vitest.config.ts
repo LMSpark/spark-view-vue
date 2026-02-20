@@ -17,7 +17,9 @@ export default defineConfig({
       '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/src/index.ts'),
       '@spark-view/spark-utils/*': resolve(__dirname, './packages/spark-utils/src/*'),
       '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/src/index.ts'),
-      '@spark-view/spark-data/*': resolve(__dirname, './packages/spark-data/src/*')
+      '@spark-view/spark-data/*': resolve(__dirname, './packages/spark-data/src/*'),
+      '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/src/index.ts'),
+      '@spark-view/spark-page-config/*': resolve(__dirname, './packages/spark-page-config/src/*')
     }
   },
   esbuild: {
