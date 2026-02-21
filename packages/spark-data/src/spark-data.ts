@@ -8,7 +8,7 @@ import { DataTable } from './data-table'
 import { DataView } from './data-view'
 import { reactive } from 'vue'
 import { CrudService } from './crud-service'
-import { parseDataKey as _parseDataKey, resolveDataKey as _resolveDataKey, isDataKey as _isDataKey, buildDataKey as _buildDataKey, getViewKey as _getViewKey } from './core/data-key'
+import { parseDataKey as _parseDataKey, resolveDataKey as _resolveDataKey, isDataKey as _isDataKey, buildDataKey as _buildDataKey, getViewKey as _getViewKey, resolveDataKeyBinding as _resolveDataKeyBinding } from './core/data-key'
 import type { DataColumn, CrudApi, DataRelation, FlatTreeNode, IDataRow } from './types'
 
 // ===== SparkData 命名空间 API =====
@@ -128,6 +128,8 @@ export namespace SparkData {
   /** DataKey 描述符类型 */
   export type DataKeyDescriptor = import('./core/data-key').DataKeyDescriptor
   export type DataKeyField = import('./core/data-key').DataKeyField
+  /** DataKey 渲染绑定结果（判别联合） */
+  export type DataKeyBinding = import('./core/data-key').DataKeyBinding
 
   /**
    * 判断 dataKey 是否为 DataSet 数据键
@@ -147,6 +149,13 @@ export namespace SparkData {
    * @example resolveDataKey(descriptor, dataSet) // → view.rows
    */
   export const resolveDataKey = _resolveDataKey
+
+  /**
+   * 解析 DataKey 为渲染绑定描述符（判别联合，避免 instanceof DataView）
+   * @example resolveDataKeyBinding('DS@Users@rows', dataSet)
+   * // { kind: 'view', source: DataView }
+   */
+  export const resolveDataKeyBinding = _resolveDataKeyBinding
 
   /**
    * 构建标准化 DataKey 字符串

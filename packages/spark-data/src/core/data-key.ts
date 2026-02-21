@@ -26,7 +26,7 @@
 
 import type { DataSet } from '../dataset'
 import { DataView } from '../data-view'
-import type { IDataRow } from '../types'
+import type { IDataRow, IDataSource } from '../types'
 
 // ===== 类型定义 =====
 
@@ -262,6 +262,42 @@ export function getViewFromRawKey(
   const dk = parseDataKey(rawKey)
   if (!dk) return undefined
   return dataSet.getView(dk.tableName, dk.viewId)
+}
+
+/**
+ * DataKey 渲染绑定结果（判别联合）
+ *
+ * 供渲染层消费，避免渲染层直接依赖 `DataView` 具体类。
+ *
+ * - `kind: 'view'`  — field='rows'，返回实现了 IDataSource 的视图对象
+ * - `kind: 'value'` — field='currentRow'|'selectedRows'，返回标量 / 行数组
+ */
+export type DataKeyBinding =
+  | { kind: 'view'; source: IDataSource }
+  | { kind: 'value'; value: unknown }
+
+/**
+ * 解析 DataKey 为渲染绑定描述符（渲染层入口）
+ *
+ * 封装了 isDataKey → parseDataKey → getOrCreateView 全链路；
+ * 返回判别联合，渲染层无需 `instanceof DataView` 判断。
+ *
+ * @returns 绑定描述符，键无效或未找到返回 `null`
+ */
+export function resolveDataKeyBinding(
+  rawKey: string,
+  dataSet: DataSet
+): DataKeyBinding | null {
+  if (!isDataKey(rawKey)) return null
+  const dk = parseDataKey(rawKey)
+  if (!dk) return null
+  const table = dataSet.getTable(dk.tableName)
+  if (!table) return null
+  const view = table.getOrCreateView(dk.viewId)
+  if (!view) return null
+  if (dk.field === 'rows') return { kind: 'view', source: view as IDataSource }
+  const value = dk.field === 'currentRow' ? view.currentRow : view.selectedRows
+  return { kind: 'value', value }
 }
 
 /**
