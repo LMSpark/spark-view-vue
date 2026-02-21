@@ -125,12 +125,6 @@ export namespace SparkData {
 
   // ===== DataKey 统一解析 =====
 
-  /** DataKey 描述符类型 */
-  export type DataKeyDescriptor = import('./core/data-key').DataKeyDescriptor
-  export type DataKeyField = import('./core/data-key').DataKeyField
-  /** DataKey 渲染绑定结果（判别联合） */
-  export type DataKeyBinding = import('./core/data-key').DataKeyBinding
-
   /**
    * 判断 dataKey 是否为 DataSet 数据键
    * @example isDataKey('MyApp@Users@default@rows') // true
