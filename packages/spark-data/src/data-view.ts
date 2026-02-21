@@ -103,9 +103,15 @@ export class DataView {
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
   /**
-   * 请求成功后是否自动将 currentRow / selectedRows 设为第一行。
-   * - `true`：有数据时自动选中第一行（currentRow = rows[0]，selectedRows = [rows[0]]）
-   * - `false`（默认）：清空 currentRow 和 selectedRows
+   * 请求成功后是否自动将 currentRow 设为第一行。
+   * - `true`：有数据时 currentRow = rows[0]
+   * - `false`（默认）：清空 currentRow
+   */
+  autoCurrentFirst?: boolean
+  /**
+   * 请求成功后是否自动将 selectedRows 设为第一行。
+   * - `true`：有数据时 selectedRows = [rows[0]]
+   * - `false`（默认）：清空 selectedRows
    */
   autoSelectFirst?: boolean
 
@@ -289,14 +295,17 @@ export class DataView {
       
       if (result.success && result.data) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
-        if (this.autoSelectFirst && this.rows.length > 0) {
+        if (this.autoCurrentFirst && this.rows.length > 0) {
           this.currentRow = this.rows[0]
           this.currentRowIndex = 0
-          this.selectedRows.splice(0, this.selectedRows.length, this.rows[0])
-          this.selectedRowIndices = [0]
         } else {
           this.currentRow = null
           this.currentRowIndex = null
+        }
+        if (this.autoSelectFirst && this.rows.length > 0) {
+          this.selectedRows.splice(0, this.selectedRows.length, this.rows[0])
+          this.selectedRowIndices = [0]
+        } else {
           this.selectedRows.splice(0, this.selectedRows.length)
           this.selectedRowIndices = []
         }
@@ -690,6 +699,7 @@ export class DataView {
     }
     if (this.filterExpression !== undefined) result.filterExpression = this.filterExpression
     if (this.sortExpression !== undefined) result.sortExpression = this.sortExpression
+    if (this.autoCurrentFirst !== undefined) result.autoCurrentFirst = this.autoCurrentFirst
     if (this.autoSelectFirst !== undefined) result.autoSelectFirst = this.autoSelectFirst
     return result
   }
@@ -698,6 +708,7 @@ export class DataView {
     const v = new DataView(tableName, viewId)
     if (data.filterExpression !== undefined) v.filterExpression = data.filterExpression
     if (data.sortExpression !== undefined) v.sortExpression = data.sortExpression
+    if (data.autoCurrentFirst !== undefined) v.autoCurrentFirst = data.autoCurrentFirst
     if (data.autoSelectFirst !== undefined) v.autoSelectFirst = data.autoSelectFirst
     v.page = data.page ?? 1
     v.pageSize = data.pageSize ?? 20

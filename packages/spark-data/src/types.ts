@@ -156,6 +156,9 @@ export interface IViewMetadata {
   rows?: IDataRow[]
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
+  /** 请求成功后自动将 currentRow 设为第一行 */
+  autoCurrentFirst?: boolean
+  /** 请求成功后自动将 selectedRows 设为第一行 */
   autoSelectFirst?: boolean
   page?: number
   pageSize?: number
