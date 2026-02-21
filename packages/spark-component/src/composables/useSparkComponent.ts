@@ -140,13 +140,12 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   function provide(name: string | symbol, implementation?: unknown): void {
     setCapability(context, name, implementation)
-    logger.info(`🔌 Provided: ${String(name)}`)
+    logger.debug(`[spark] provided: ${String(name)}`)
   }
 
   function provideEvents(name: string | symbol = 'events'): IEventEmitter {
     const emitter = createEventEmitter()
     setCapability(context, name, emitter)
-    logger.info(`🎉 Provided events: ${String(name)}`)
     return emitter
   }
 
@@ -154,11 +153,8 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   function consume(name: string | symbol): unknown {
     const impl = lookup(context, name)
-    if (impl !== undefined) {
-      logger.info(`🔌 Consumed: ${String(name)}`)
-      return impl
-    }
-    logger.warn(`⚠️ Capability not found (late-binding): ${String(name)}`)
+    if (impl !== undefined) return impl
+    logger.debug(`[spark] capability not found (late-binding ok): ${String(name)}`)
     return null
   }
 
@@ -171,10 +167,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       Object.entries(handlers).forEach(([event, handler]) => {
         emitter.on(event, handler)
       })
-      logger.info(`🎉 Consumed events: ${String(name)}`)
       return emitter
     }
-    logger.warn(`⚠️ Event capability not found: ${String(name)}`)
+    logger.debug(`[spark] event capability not found: ${String(name)}`)
     return null
   }
 
@@ -198,7 +193,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   // ── 生命周期 ──
 
-  const initialize = () => logger.info(`🚀 Init: ${context.type} (${context.id})`)
+  const initialize = () => logger.debug(`[spark] init: ${context.type} (${context.id})`)
 
   const destroy = () => {
     if (parentContext?.children) {
@@ -206,7 +201,6 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       if (idx !== -1) parentContext.children.splice(idx, 1)
     }
     context.capabilities.clear()
-    logger.info(`🗑️ Destroyed: ${context.type} (${context.id})`)
   }
 
   onMounted(() => initialize())

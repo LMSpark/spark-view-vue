@@ -22,9 +22,10 @@
  */
 
 import { ref, onMounted, watch, type Ref } from 'vue'
-import { useRouter, type RouteLocationRaw } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { Logger, APP_SERVICES } from '@spark-view/spark-utils'
 import { useSparkComponent } from '../../composables/useSparkComponent'
+import { buildAppServices } from '../utils/provideAppServices'
 import type { JsonRendererOptions } from '../types'
 
 const logger = Logger('JsonRenderer')
@@ -64,20 +65,7 @@ export function useJsonRenderer(
     id: 'json-renderer-root'
   })
 
-  provideCapability(APP_SERVICES, {
-    router: {
-      push: (to: RouteLocationRaw) => router.push(to),
-      replace: (to: RouteLocationRaw) => router.replace(to),
-      back: () => router.back(),
-      currentRoute: router.currentRoute.value
-    },
-    logger: {
-      debug: (...args: unknown[]) => logger.debug(...args),
-      info: (...args: unknown[]) => logger.info(...args),
-      warn: (...args: unknown[]) => logger.warn(...args),
-      error: (...args: unknown[]) => logger.error(...args)
-    }
-  })
+  provideCapability(APP_SERVICES, buildAppServices(router, logger))
 
   // ==================== 状态声明 ====================
   const loading = ref(true)
