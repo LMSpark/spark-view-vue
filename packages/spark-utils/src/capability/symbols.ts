@@ -131,6 +131,17 @@ export interface IAppServicesCapability {
 
 export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
 
+/**
+ * Logger 能力键
+ *
+ * 组件树中任一层可通过 `provide(LOGGER, myLogger)` 注入自定义 Logger；
+ * `useSparkComponent` 的内置 `logger` 代理按以下优先级解析：
+ *   1. `LOGGER` 能力（最近的祖先）
+ *   2. `APP_SERVICES.logger`（应用层统一提供）
+ *   3. fallback console
+ */
+export const LOGGER = defineCapability<LoggerApi>('spark:capability:logger')
+
 /** 页面服务能力（UI 交互） */
 export interface IPageServiceCapability {
   showMessage(message: string, type?: 'success' | 'error' | 'warning' | 'info'): void
