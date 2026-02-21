@@ -75,9 +75,8 @@ import { createConfigLoader } from '@spark-view/spark-page-config'
 
 // 创建加载器
 const loader = createConfigLoader({
-  mode: 'local',  // 'local' | 'remote' | 'hybrid'
-  basePath: '/pages-config',
-  cache: true
+  source: 'local',  // 'local' | 'remote' | 'hybrid'
+  fileStorage: 'localStorage'  // 'localStorage' | 'sessionStorage' | 'memory'
 })
 
 // 加载路由配置
@@ -91,18 +90,13 @@ const pageConfig = await loader.loadPageConfig('home')
 
 ```typescript
 import { setupDynamicRoutes } from '@spark-view/spark-page-config'
+import { PageRenderer } from '@spark-view/spark-component'
 import { createRouter } from 'vue-router'
 
 const router = createRouter({ ... })
 
 // 注册动态路由
-await setupDynamicRoutes(router, {
-  loader,
-  beforeRegister: (route) => {
-    // 过滤或修改路由
-    return checkPermission(route)
-  }
-})
+await setupDynamicRoutes(router, loader, PageRenderer)
 ```
 
 ## 核心 API
@@ -113,22 +107,22 @@ await setupDynamicRoutes(router, {
 
 ```typescript
 const loader = createConfigLoader({
-  mode: 'local',           // 加载模式
-  basePath: '/config',     // 基础路径
-  cache: true,             // 启用缓存
-  cacheTTL: 60000          // 缓存过期时间（毫秒）
+  source: 'local',           // 加载模式
+  fileStorage: 'localStorage', // 缓存存储次层
+  timeout: 10000             // 请求超时（毫秒，仅 remote 模式有效）
 })
 
 // 加载方法
 await loader.loadRoutes()                    // 加载路由
-await loader.loadPageConfig(pageId)          // 加载页面配置
-await loader.loadPageRule(pageId)            // 加载页面规则
+await loader.loadPageConfig(pageId)          // 加载页面配置（rule + data + script + css）
+await loader.loadRule(pageId)               // 加载页面规则
 await loader.loadPageData(pageId)            // 加载页面数据
-await loader.loadPageScript(pageId)          // 加载页面脚本
+await loader.loadScript(pageId)             // 加载页面脚本
+await loader.loadCss(pageId)                // 加载页面样式
 
 // 缓存管理
 loader.clearCache()                          // 清空缓存
-loader.refreshConfig(pageId)                 // 刷新指定配置
+loader.getCacheStats()                       // 缓存统计
 ```
 
 ### 配置验证
@@ -136,16 +130,16 @@ loader.refreshConfig(pageId)                 // 刷新指定配置
 ```typescript
 import { validateRouteConfig, validateRuleConfig } from '@spark-view/spark-page-config'
 
-// 验证路由配置
-const routeResult = validateRouteConfig(routeConfig)
-if (!routeResult.valid) {
-  console.error('路由配置无效:', routeResult.errors)
+// 验证路由配置（返回错误数组，空数组表示有效）
+const routeErrors = validateRouteConfig(routeConfig)
+if (routeErrors.length > 0) {
+  console.error('路由配置无效:', routeErrors)
 }
 
 // 验证页面规则
-const ruleResult = validateRuleConfig(ruleConfig)
-if (!ruleResult.valid) {
-  console.error('规则配置无效:', ruleResult.errors)
+const ruleErrors = validateRuleConfig(ruleConfig)
+if (ruleErrors.length > 0) {
+  console.error('规则配置无效:', ruleErrors)
 }
 ```
 

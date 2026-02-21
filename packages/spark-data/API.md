@@ -61,10 +61,6 @@ const dataSet = SparkData.createDataSet({
       relationName: 'dept-users'
     }
   ]
-}, async (tableName) => {
-  // 自定义数据加载逻辑
-  const response = await fetch(`/api/${tableName}`)
-  return response.json()
 })
 ```
 
@@ -165,14 +161,13 @@ const dataSet = SparkData.fromJSON(jsonString)
 
 ### TreeManager 管理
 
-#### `SparkData.createTreeManager(config, initialNodes?, dataView?)`
+#### `SparkData.createTreeManager(config, initialNodes?)`
 
 创建 TreeManager 实例，用于管理树形数据结构
 
 **参数：**
 - `config: TreeConfig` - 树配置
 - `initialNodes?: FlatTreeNode[]` - 初始节点数组
-- `dataView?: DataView` - 关联的 DataView
 
 **返回：** `TreeManager`
 
@@ -195,25 +190,7 @@ const treeManager = SparkData.createTreeManager(
     { id: 3, parentId: 1, name: 'Child 2' }
   ]
 )
-
-// 关联到 DataView
-const dataView = SparkData.createDataView({ tableName: 'Departments', viewId: 'default' })
-const treeManager = SparkData.createTreeManager(
-  { idField: 'id', parentIdField: 'parentId' },
-  nodes,
-  dataView
-)
 ```
-
-#### `SparkData.treeFromJSON(json, dataView?)`
-
-从 JSON 恢复 TreeManager
-
-**参数：**
-- `json: string` - JSON 字符串
-- `dataView?: DataView` - 关联的 DataView
-
-**返回：** `TreeManager`
 
 ---
 
@@ -239,35 +216,6 @@ const detailView = SparkData.createDataView({ tableName: 'Orders', viewId: 'deta
 ```
 
 ---
-
-### 工具方法
-
-#### `SparkData.createFilterParser()`
-
-创建过滤表达式解析器
-
-**返回：** `FilterExpressionParser`
-
-**示例：**
-```typescript
-const parser = SparkData.createFilterParser()
-
-// 使用解析器过滤数据
-const rows = [
-  { age: 25, status: 'active' },
-  { age: 30, status: 'inactive' },
-  { age: 35, status: 'active' }
-]
-
-const expression = {
-  field: 'age',
-  operator: 'gt',
-  value: 28
-}
-
-const result = parser.evaluate(rows, expression)
-// result.filtered = [{ age: 30, ... }, { age: 35, ... }]
-```
 
 ---
 
@@ -336,8 +284,7 @@ const dataView = SparkData.createDataView({ tableName: 'Departments' })
 // 创建 TreeManager 并关联
 const treeManager = SparkData.createTreeManager(
   { idField: 'id', parentIdField: 'parentId' },
-  dataSet.getTable('Departments')?.rows || [],
-  dataView
+  dataSet.getTable('Departments')?.rows || []
 )
 
 // 双向绑定
@@ -348,17 +295,12 @@ dataView.setTreeManager(treeManager)
 
 ```typescript
 const dataSet = SparkData.createDataSet(
-  { dataSetName: 'MyApp', tables: { ... } },
-  async (tableName) => {
-    console.log(`Loading ${tableName}...`)
-    const response = await fetch(`/api/${tableName}`)
-    if (!response.ok) throw new Error(`Failed to load ${tableName}`)
-    return response.json()
-  }
+  { dataSetName: 'MyApp', tables: { ... } }
 )
 
-// 异步加载表数据
-await dataSet.loadTableAsync('Users')
+// 通过 DataView.requestData() 加载表数据
+const view = SparkData.createDataView({ tableName: 'Users' })
+await view.requestData()
 ```
 
 ---

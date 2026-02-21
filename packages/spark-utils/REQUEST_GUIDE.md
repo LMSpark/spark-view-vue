@@ -51,141 +51,122 @@ const users = await request.get('/users', {
 
 ## 拦截器系统
 
-### 预设拦截器
+### 拦截器接口
 
-#### 1. 认证拦截器
+拦截器使用 `RequestInterceptor` / `ResponseInterceptor` 对象注册，`use()` 返回取消函数。
 
-```typescript
-import { createAuthInterceptor } from '@spark-view/spark-utils'
-
-request.interceptors.request.use(
-  createAuthInterceptor(() => localStorage.getItem('token'))
-)
-```
-
-#### 2. 租户拦截器
+#### 自定义请求拦截器
 
 ```typescript
-import { createTenantInterceptor } from '@spark-view/spark-utils'
-
-request.interceptors.request.use(
-  createTenantInterceptor(() => 'tenant-123')
-)
-```
-
-#### 3. 标准 API 响应拦截器
-
-处理 `{ code, message, data }` 格式的响应：
-
-```typescript
-import { createStandardApiInterceptor } from '@spark-view/spark-utils'
-
-request.interceptors.response.use(
-  createStandardApiInterceptor({
-    successCodes: [0, 200],
-    errorHandler: (code, message) => {
-      console.error(`API 错误 ${code}: ${message}`)
-    }
-  })
-)
-```
-
-#### 4. 日志拦截器
-
-```typescript
-import { 
-  createRequestLogInterceptor,
-  createResponseLogInterceptor 
-} from '@spark-view/spark-utils'
-
-// 请求日志
-request.interceptors.request.use(
-  createRequestLogInterceptor({ logHeaders: true })
-)
-
-// 响应日志
-request.interceptors.response.use(
-  createResponseLogInterceptor()
-)
-```
-
-#### 5. 错误转换拦截器
-
-```typescript
-import { createErrorTransformInterceptor } from '@spark-view/spark-utils'
-
-request.interceptors.response.use(
-  createErrorTransformInterceptor({
-    400: '请求参数错误',
-    401: '登录已过期，请重新登录',
-    403: '没有访问权限',
-    404: '请求的资源不存在',
-    500: '服务器错误，请稍后重试'
-  })
-)
-```
-
-#### 6. 重定向拦截器
-
-```typescript
-import { createRedirectInterceptor } from '@spark-view/spark-utils'
-
-request.interceptors.response.use(
-  createRedirectInterceptor({
-    onUnauthorized: () => {
-      window.location.href = '/login'
-    },
-    onForbidden: () => {
-      console.error('没有权限访问')
-    }
-  })
-)
-```
-
-### 自定义拦截器
-
-#### 请求拦截器
-
-```typescript
-request.interceptors.request.use({
-  name: 'CustomRequestInterceptor',
+// 添加认证头
+const unsubscribe = request.interceptors.request.use({
+  name: 'AuthInterceptor',
   onRequest: (config) => {
-    // 添加自定义请求头
-    config.headers = config.headers || {}
-    config.headers['X-Request-Id'] = Math.random().toString(36).slice(2)
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers = { ...config.headers, Authorization: `Bearer ${token}` }
+    }
     return config
   },
   onRequestError: (error) => {
     console.error('请求失败:', error)
   }
 })
+
+// 移除拦截器
+unsubscribe()
 ```
 
-#### 响应拦截器
+#### 自定义响应拦截器
 
 ```typescript
+// 处理 { code, message, data } 标准应答格式
 request.interceptors.response.use({
-  name: 'CustomResponseInterceptor',
+  name: 'ApiResponseInterceptor',
   onResponse: (response) => {
-    // 处理响应
-    console.log('收到响应:', response.status)
-    return response
+    const body = response.data as { code: number; message: string; data: unknown }
+    if (body.code !== 0 && body.code !== 200) {
+      throw new Error(`API 错误 ${body.code}: ${body.message}`)
+    }
+    return { ...response, data: body.data }
   },
   onResponseError: (error) => {
-    console.error('响应错误:', error.message)
+    if (error.status === 401) {
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
     return error
   }
 })
 ```
 
-#### 移除拦截器
+#### 租户头拦截器示例
 
 ```typescript
-// 拦截器返回取消函数
-const unsubscribe = request.interceptors.request.use(myInterceptor)
+request.interceptors.request.use({
+  name: 'TenantInterceptor',
+  onRequest: (config) => {
+    const tenantId = localStorage.getItem('tenantId')
+    if (tenantId) {
+      config.headers = { ...config.headers, 'X-Tenant-Id': tenantId }
+    }
+    return config
+  }
+})
+```
 
-// 移除拦截器
-unsubscribe()
+#### 日志拦截器示例
+
+```typescript
+request.interceptors.request.use({
+  name: 'RequestLogger',
+  onRequest: (config) => {
+    console.log(`[HTTP] ${config.method} ${config.url}`)
+    return config
+  }
+})
+
+request.interceptors.response.use({
+  name: 'ResponseLogger',
+  onResponse: (response) => {
+    console.log(`[HTTP] ${response.status} ${response.statusText}`)
+    return response
+  }
+})
+```
+
+### 启动配置示例
+
+```typescript
+import { createRequest } from '@spark-view/spark-utils'
+
+// 创建全局请求实例
+const request = createRequest({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  timeout: 10000,
+  headers: { 'X-App-Version': '1.0.0' }
+})
+
+// 认证拦截器
+request.interceptors.request.use({
+  name: 'Auth',
+  onRequest: (config) => {
+    const token = localStorage.getItem('token')
+    if (token) config.headers = { ...config.headers, Authorization: `Bearer ${token}` }
+    return config
+  }
+})
+
+// 响应拦截器
+request.interceptors.response.use({
+  name: 'Error',
+  onResponseError: (error) => {
+    if (error.status === 401) window.location.href = '/login'
+    return error
+  }
+})
+
+export { request }
 ```
 
 ## 高级功能
@@ -257,71 +238,6 @@ const result = await request.post('/upload', formData)
 ```
 
 ## 完整配置示例
-
-### 应用初始化
-
-```typescript
-import { 
-  createRequest,
-  createAuthInterceptor,
-  createTenantInterceptor,
-  createStandardApiInterceptor,
-  createRequestLogInterceptor,
-  createResponseLogInterceptor,
-  createErrorTransformInterceptor,
-  createRedirectInterceptor
-} from '@spark-view/spark-utils'
-
-// 创建全局请求实例
-const request = createRequest({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 10000,
-  headers: {
-    'X-App-Version': '1.0.0'
-  }
-})
-
-// 配置拦截器
-request.interceptors.request.use(
-  createAuthInterceptor(() => localStorage.getItem('token'))
-)
-
-request.interceptors.request.use(
-  createTenantInterceptor(() => localStorage.getItem('tenantId'))
-)
-
-request.interceptors.request.use(
-  createRequestLogInterceptor({ logHeaders: true })
-)
-
-request.interceptors.response.use(
-  createStandardApiInterceptor({
-    successCodes: [0, 200],
-    errorHandler: (code, message) => {
-      console.error(`API 错误 ${code}: ${message}`)
-    }
-  })
-)
-
-request.interceptors.response.use(
-  createResponseLogInterceptor()
-)
-
-request.interceptors.response.use(
-  createErrorTransformInterceptor()
-)
-
-request.interceptors.response.use(
-  createRedirectInterceptor({
-    onUnauthorized: () => {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
-    }
-  })
-)
-
-export { request }
-```
 
 ### 业务 API 封装
 
@@ -463,6 +379,6 @@ interface RequestConfig {
 
 ## 参考资料
 
-- 完整示例：`src/Request.example.ts`
-- 拦截器实现：`src/http/RequestInterceptors.ts`
-- API 文档：`API.md`
+- [Request 源码](./src/http/Request.ts)
+- [FileLoader 源码](./src/http/FileLoader.ts)
+- [HTTP 类型定义](./src/http/types.ts)
