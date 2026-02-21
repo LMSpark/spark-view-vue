@@ -33,7 +33,7 @@ import type { IDataSet } from '@spark-view/spark-data'
 import { SparkData, PAGE_DATASET, usePageDataSet } from '@spark-view/spark-data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSparkComponent } from '../../composables/useSparkComponent'
-import type { PageRendererOptions, PageContext, Rule } from '../types'
+import type { PageRendererOptions, PageContext, Rule, FormCreateAPI } from '../types'
 import { useCssScope } from './useCssScope'
 import { useRuleBinding } from './useRuleBinding'
 import { useTableDataSync } from './useTableDataSync'
@@ -186,10 +186,9 @@ export function usePageRenderer(
 
   // Note: PageContext.$api 使用 any 类型，因为 form-create API 对象有复杂的动态属性
   const pageContext: PageContext = {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     get $api() {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return formApi.value
+      // 通过 FormCreateAPI 类型断言，避免 no-unsafe-return
+      return formApi.value as FormCreateAPI | null
     },
     $route: route,
     $data: pageData,

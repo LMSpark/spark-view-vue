@@ -211,12 +211,17 @@
  * @since 1.0.0
  */
 // @ts-nocheck
-/* 演示页面 - 禁用类型检查以简化实现 */
+/**
+ * 注意：该演示页面故意使用通用的 Record<string, unknown> 类型来展示多种数据结构的兼容性。
+ * 由于编译选项开启了 noPropertyAccessFromIndexSignature 和 noUnusedLocals，
+ * 该文件均需用 ['key'] 字内访问和移除演示用变量才能通过类型检查。
+ * 作为演示文件，此注解是永久的。
+ */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { SparkData } from '@spark-view/spark-data'
 
 // DataSet 能力管理器
-let capabilityManager: Record<string, unknown> | null = null
+let capabilityManager: { dispose?(): void } | null = null
 const dataSetContext = ref<Record<string, unknown>>({ id: 'demo-page', providers: new Set() })
 const userInfo = ref<Record<string, unknown>>({ id: 'user001', name: '演示用户', roles: ['admin', 'developer'] })
 const themeConfig = ref<string>('dark')

@@ -182,9 +182,8 @@ export class Request {
       url: c.url ?? '',
       method: (c.method?.toUpperCase() ?? 'GET') as Method,
       headers,
-      // Note: axios 官方定义 params 为 any 类型，此处保持与 axios 类型兼容
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      params: c.params,
+      // axios 定义 params 为 any；用条件展开避免将 undefined 赋到 exactOptionalPropertyTypes 严格的可选属性
+      ...(c.params !== null && c.params !== undefined && { params: c.params as Record<string, unknown> }),
       data: c.data as unknown,
       timeout: c.timeout ?? 10000,
       responseType: c.responseType ?? 'json',
