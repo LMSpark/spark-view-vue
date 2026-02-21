@@ -9,7 +9,7 @@
  * - 类型定义（Rule、FormCreateAPI、PageContext、PageConfig 等）
  *
  * 内部实现（不导出）：
- * - useCssScope、useRuleBinding、useTableDataSync — 由 usePageRenderer 组合调用
+ * - useCssScope、useRuleBinding — 由 usePageRenderer 组合调用
  * - 注意：usePageDataSet 已迁移到 @spark-view/spark-data（数据管理领域）
  */
 
