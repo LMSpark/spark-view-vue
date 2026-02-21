@@ -18,6 +18,13 @@ export type EmitStateChangedFn = (
   extra?: Partial<ViewStateEvent>
 ) => void
 
+/**
+ * CrudDelegate 向宿主汇报 mutating 状态变化的回调签名
+ * - delta=1 : 开始一个 CRUD 网络请求
+ * - delta=-1 : 结束一个 CRUD 网络请求（error=null 表示成功）
+ */
+export type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
+
 // ─────────────────────────────────────────────
 // CrudDelegate Host 接口
 // ─────────────────────────────────────────────
