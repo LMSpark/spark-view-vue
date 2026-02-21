@@ -17,16 +17,17 @@
 
 import type {
   IDataRow, IViewMetadata, FilterExpression, SortExpression,
-  ViewStateEvent, DataRelation, CrudOperationConfig, QueryParams,
+  ViewStateEvent, QueryParams,
   CrudResult, BatchResult,
 } from './types'
+import { RequestState } from './types'
 import type { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import { Logger, createEventEmitter } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows } from './core/utils'
-import { CrudService, createCrudService } from './crud-service'
-import type { ValidationResult } from './validation'
+import { CrudDelegate } from './strategies/crud-delegate'
+import { CascadeDelegate } from './strategies/cascade-delegate'
 
 // ─────────────────────────────────────────────
 // 事件类型映射
@@ -45,28 +46,8 @@ interface DataViewEventMap extends Record<string, any[]> {
 // 能力接口（避免循环引用，与类同文件定义）
 // ─────────────────────────────────────────────
 
-/**
- * DataView 请求状态机
- *
- * ```
- * Idle ──requestData()──▶ Preparing ──loadFromServer()──▶ Loading
- *                                                                │
- *                                                ┌──────────────┴──────────────┐
- *                                              Loaded                        Failed
- * ```
- */
-export enum RequestState {
-  /** 未请求（初始态 / 被外部重置后） */
-  Idle         = 0,
-  /** 准备中：逐个检查父依赖、组装查询参数（条件具备前） */
-  Preparing     = 1,
-  /** loadFromServer 网络请求中（从服务器请求中） */
-  Loading      = 2,
-  /** 已完成 */
-  Loaded       = 3,
-  /** 失败（父依赖不满足 / 网络错误） */
-  Failed       = 4,
-}
+// RequestState 已移至 types.ts，此处重新导出以保持向后兼容
+export { RequestState } from './types'
 
 // ─────────────────────────────────────────────
 // DataView 类
@@ -124,16 +105,6 @@ export class DataView {
 
   // ── 私有 ─────────────────────────────────────
 
-  /** CRUD 服务（按需懒初始化） */
-  private crudService?: CrudService | undefined
-  /** 级联取消订阅句柄 */
-  private cascadeUnsubscribers: (() => void)[] = []  /** 待处理的级联请求（用于取消旧请求） */
-  private pendingCascadeRequest?: {
-    requestId: number
-    cancel: () => void
-  } | undefined
-  /** 级联请求 ID 计数器 */
-  private nextCascadeRequestId = 0
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
   /** 销毁状态标记 */
@@ -142,6 +113,31 @@ export class DataView {
   private rowIndexMap?: Map<IDataRow, number> | undefined
   /** stateChanged 事件防抖定时器 */
   private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
+
+  // ── 委托 ─────────────────────────────────────
+
+  /** CRUD 操作委托（懒初始化） */
+  private _crudDelegate?: CrudDelegate | undefined
+  /** 级联订阅委托（懒初始化） */
+  private _cascadeDelegate?: CascadeDelegate | undefined
+
+  /** 获取 CRUD 委托（懒初始化） */
+  private get crudDelegate(): CrudDelegate {
+    this._crudDelegate ??= new CrudDelegate(
+      this,
+      (changeType, extra) => this.emitStateChanged(changeType, extra)
+    )
+    return this._crudDelegate
+  }
+
+  /** 获取级联委托（懒初始化） */
+  private get cascadeDelegate(): CascadeDelegate {
+    this._cascadeDelegate ??= new CascadeDelegate(
+      this,
+      (changeType, extra) => this.emitStateChanged(changeType, extra)
+    )
+    return this._cascadeDelegate
+  }
   
   // ── 公共内部对象 ─────────────────────────
 
@@ -259,33 +255,23 @@ export class DataView {
    * - 竞态：后发请求到达时忽略先发但晚到的响应
    */
   async loadFromServer(params?: QueryParams): Promise<CrudResult> {
-    this.checkDestroyed()  // 检查销毁状态
+    this.checkDestroyed()
     if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
 
     this.requestState = RequestState.Loading
     this.loadingError = null
     
-    // 生成请求 ID（递增计数器）
     const requestId = ++this.currentLoadRequestId
-    
-    if (!this.crudService) this.initializeCrudService()
-    if (!this.crudService) {
-      this.requestState = RequestState.Failed
-      this.emitStateChanged('requestState')
-      throw new Error(`Table ${this.tableName} has no API configuration`)
-    }
 
     try {
-      const result = await this.crudService.list(params, this.getCrudConfig())
+      const result = await this.crudDelegate.list(params)
       
-      // 检查是否被更新的请求替代
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadFromServer 请求 ${requestId} 被更新的请求 ${this.currentLoadRequestId} 替代，忽略响应`)
         return { success: false, message: 'Request superseded' }
       }
       
       if (result.success && result.data) {
-        // 写入行数据 + 重置选中状态（新数据 → 旧选中无效）
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         this.currentRow = null
         this.currentRowIndex = null
@@ -299,7 +285,6 @@ export class DataView {
       }
       return result
     } catch (error) {
-      // 异常时也要检查请求 ID（避免旧请求的异常覆盖新请求的状态）
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadFromServer 请求 ${requestId} 异常被忽略（已被新请求替代）`)
         return { success: false, message: 'Request superseded' }
@@ -313,170 +298,47 @@ export class DataView {
   }
 
   // ─────────────────────────────────────────────
-  // CRUD（单条 & 批量 & 导入导出）
+  // CRUD（委托给 CrudDelegate）
   // ─────────────────────────────────────────────
 
   /** 新增记录，成功后追加至 rows */
   async createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
-    // 数据校验
-    const validationResult = this.validateRow(data as IDataRow)
-    if (validationResult && !validationResult.valid) {
-      return {
-        success: false,
-        message: `数据校验失败: ${validationResult.errors[0]?.message ?? '未知错误'}`,
-        error: new Error(validationResult.errors[0]?.message ?? '数据校验失败')
-      }
-    }
-
-    const svc = this.ensureCrudService()
-    const result = await svc.create<IDataRow>(data, this.getCrudConfig())
-    if (result.success && result.data) {
-      this.appendRow(result.data)
-      this.emitStateChanged('rows')
-    }
-    return result
+    return this.crudDelegate.createRecord(data)
   }
 
   /** 更新记录，成功后刷新对应行 */
   async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
-    // 数据校验
-    const validationResult = this.validateRow(data as IDataRow)
-    if (validationResult && !validationResult.valid) {
-      return {
-        success: false,
-        message: `数据校验失败: ${validationResult.errors[0]?.message ?? '未知错误'}`,
-        error: new Error(validationResult.errors[0]?.message ?? '数据校验失败')
-      }
-    }
-
-    const svc = this.ensureCrudService()
-    const result = await svc.update<IDataRow>(id, data, this.getCrudConfig())
-    if (result.success && result.data && this.updateRowById(id, result.data)) {
-      this.emitStateChanged('rows')
-    }
-    return result
+    return this.crudDelegate.updateRecord(id, data)
   }
 
   /** 删除记录，成功后从 rows 移除 */
   async deleteRecord(id: string | number): Promise<CrudResult<boolean>> {
-    const svc = this.ensureCrudService()
-    const result = await svc.delete(id, this.getCrudConfig())
-    if (result.success && this.deleteRowById(id)) {
-      this.emitStateChanged('rows')
-    }
-    return result
+    return this.crudDelegate.deleteRecord(id)
   }
 
   /** 批量新增 */
   async batchCreateRecords(items: Partial<IDataRow>[]): Promise<CrudResult<BatchResult>> {
-    // 批量数据校验
-    const validationErrors: string[] = []
-    for (let i = 0; i < items.length; i++) {
-      const validationResult = this.validateRow(items[i] as IDataRow)
-      if (validationResult && !validationResult.valid) {
-        validationErrors.push(`第${i + 1}条: ${validationResult.errors[0]?.message ?? '校验失败'}`)
-      }
-    }
-    if (validationErrors.length > 0) {
-      return {
-        success: false,
-        message: `批量数据校验失败: ${validationErrors.join('; ')}`,
-        error: new Error(validationErrors[0])
-      }
-    }
-
-    const svc = this.ensureCrudService()
-    const result = await svc.batchCreate<IDataRow>(items, this.getCrudConfig())
-    if (result.success && result.data) {
-      for (const r of result.data.results) {
-        if (r.success && r.data) this.appendRow(r.data as IDataRow)
-      }
-      this.emitStateChanged('rows')
-    }
-    return result
+    return this.crudDelegate.batchCreateRecords(items)
   }
 
   /** 批量更新 */
   async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
-    // 批量数据校验
-    const validationErrors: string[] = []
-    for (let i = 0; i < items.length; i++) {
-      const validationResult = this.validateRow(items[i] as IDataRow)
-      if (validationResult && !validationResult.valid) {
-        validationErrors.push(`第${i + 1}条: ${validationResult.errors[0]?.message ?? '校验失败'}`)
-      }
-    }
-    if (validationErrors.length > 0) {
-      return {
-        success: false,
-        message: `批量数据校验失败: ${validationErrors.join('; ')}`,
-        error: new Error(validationErrors[0])
-      }
-    }
-
-    const svc = this.ensureCrudService()
-    const result = await svc.batchUpdate<IDataRow>(items, this.getCrudConfig())
-    if (result.success && result.data) {
-      for (const r of result.data.results) {
-        if (r.success && r.data) {
-          const record = r.data as IDataRow
-          const id = (record as { id?: unknown }).id
-          if (id !== undefined) this.updateRowById(id as string | number, record)
-        }
-      }
-      this.emitStateChanged('rows')
-    }
-    return result
+    return this.crudDelegate.batchUpdateRecords(items)
   }
 
   /** 批量删除 */
   async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
-    const svc = this.ensureCrudService()
-    const result = await svc.batchDelete(ids, this.getCrudConfig())
-    
-    if (result.success && result.data) {
-      // 只删除成功的项
-      const successIds = new Set<string | number>()
-      result.data.results.forEach((r, i) => {
-        const id = ids[i]
-        if (r.success && id !== undefined) successIds.add(id)
-      })
-      
-      let deletedCount = 0
-      for (const id of successIds) {
-        if (this.deleteRowById(id)) deletedCount++
-      }
-      
-      // 记录部分失败
-      if (result.data.failureCount > 0) {
-        this.logger.warn(`批量删除部分失败: ${result.data.failureCount}/${ids.length}`, {
-          successCount: result.data.successCount,
-          failureCount: result.data.failureCount
-        })
-      }
-      
-      if (deletedCount > 0) {
-        this.emitStateChanged('rows')
-      }
-    }
-    
-    return result
+    return this.crudDelegate.batchDeleteRecords(ids)
   }
 
-  /** 导入文件，成功后重置状态并重新走完整编排（含父依赖检查和子视图级联） */
+  /** 导入文件，成功后重置状态并重新走完整编排 */
   async importData(file: File): Promise<CrudResult<{ imported: number; failed: number }>> {
-    const svc = this.ensureCrudService()
-    const result = await svc.importData(file)
-    if (result.success) {
-      this.resetState()        // requestState 回到 Idle
-      await this.requestData() // 重新走完整编排
-    }
-    return result
+    return this.crudDelegate.importData(file)
   }
 
   /** 导出数据 */
   async exportData(params?: QueryParams): Promise<CrudResult<Blob>> {
-    return this.ensureCrudService().exportData(params)
+    return this.crudDelegate.exportData(params)
   }
 
   // ─────────────────────────────────────────────
@@ -697,153 +559,17 @@ export class DataView {
   }
 
   // ─────────────────────────────────────────────
-  // 级联订阅（SOLID：子订阅父，父不知子）
+  // 级联订阅（委托给 CascadeDelegate）
   // ─────────────────────────────────────────────
 
-  /**
-   * 建立级联监听
-   *
-   * 沿 parent 链找到 DataSet → 查询以本视图为 child 的关系 →
-   * 订阅每个父视图的 stateChanged 事件 → 父变化时自行响应。
-   *
-   * 调用时机：DataTable 建立 parent 链后调用。
-   */
+  /** 建立级联监听 */
   setupCascade(): void {
-    this.teardownCascade()
-
-    const parentRels = this.dataSet.getParentRelations(this.tableName, this.viewId) ?? []
-
-    for (const rel of parentRels) {
-      const parentView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
-      if (!parentView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
-
-      const handler = (evt: ViewStateEvent) => this.respondToParentChange(rel, parentView, evt)
-      parentView.events.on('stateChanged', handler)
-      this.cascadeUnsubscribers.push(() => parentView.events.off('stateChanged', handler))
-    }
+    this.cascadeDelegate.setupCascade()
   }
 
   /** 清理全部级联订阅 */
   teardownCascade(): void {
-    for (const unsub of this.cascadeUnsubscribers) unsub()
-    this.cascadeUnsubscribers = []
-  }
-
-  /**
-   * 响应父视图状态变化（统一级联入口，SOLID：子订阅父，父不知子）
-   *
-   * ## 事件过滤规则（dependencyType 与 changeType 对应关系）
-   *
-   * `rows` 加载成功时会**静默**清空 `currentRow`/`selectedRows`，只发一个 `'rows'` 事件。
-   * 因此 `'currentRow'`/`'selectedRows'` 事件只代表用户的交互行为，与数据加载无关。
-   * 过滤规则如下（`'rows'`/`'cleared'` 对所有依赖类型始终相关）：
-   *
-   *   dep=currentRow   → 响应 ['rows','cleared','currentRow']     忽略 selectedRows
-   *   dep=selectedRows → 响应 ['rows','cleared','selectedRows']   忽略 currentRow
-   *   dep=allRows      → 响应 ['rows','cleared']                  忽略 currentRow/selectedRows
-   *   dep=pagedRows    → 响应 ['rows','cleared']                  忽略 currentRow/selectedRows
-   *   dep=unknown      → fallback：同 currentRow 规则
-   *
-   * ## Loading 期间父改变
-   *   若本视图正在 Loading/Preparing，直接重置为 Idle 再发起新请求；
-   *   loadFromServer 内部的 currentLoadRequestId 机制会自动忽略旧请求的响应（竞态安全）。
-   */
-  private respondToParentChange(rel: DataRelation, parentView: DataView, evt: ViewStateEvent): void {
-    // requestState 是内部状态机转换，不代表数据变化，跳过
-    if (evt.changeType === 'requestState') return
-
-    // 按 dependencyType 过滤不相关事件，避免白请求风暴
-    if (!this.isRelevantChangeType(rel.dependencyType, evt.changeType)) return
-
-    // 取消待处理的级联请求
-    if (this.pendingCascadeRequest) {
-      this.pendingCascadeRequest.cancel()
-      this.logger.debug(`取消级联请求 ${this.pendingCascadeRequest.requestId} (父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 变化)`)
-      this.pendingCascadeRequest = undefined
-    }
-
-    const parentRows = getParentRows(parentView, rel.dependencyType)
-
-    if (!parentRows.length) {
-      this.resetState()
-      this.emitStateChanged('cleared')
-      return
-    }
-
-    if (rel.autoLoad !== false) {
-      // Loading/Preparing 时直接重置为 Idle，requestData() 会发起新请求；
-      // loadFromServer 的 currentLoadRequestId 机制会忽略旧请求的响应（竞态安全）
-      this.requestState = RequestState.Idle
-
-      // 创建可取消的级联请求
-      const requestId = ++this.nextCascadeRequestId
-      let cancelled = false
-
-      // 走完整的 requestData() 编排（含父依赖检查）
-      void this.requestData()
-        .then(() => {
-          if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
-            this.pendingCascadeRequest = undefined
-          }
-        })
-        .catch(err => {
-          if (!cancelled) {
-            this.logger.error(`级联加载 ${this.tableName}:${this.viewId} 失败 [${requestId}]`, err)
-          }
-        })
-
-      // 保存请求信息以便取消
-      this.pendingCascadeRequest = {
-        requestId,
-        cancel: () => { cancelled = true }
-      }
-    }
-  }
-
-  /**
-   * 判断给定 changeType 是否与当前 dependencyType 相关
-   *
-   * - 'rows' / 'cleared' 始终相关（父数据重置时无论依赖类型都需要响应）
-   * - 'currentRow'  仅与 dep=currentRow 或 unknown fallback 相关
-   * - 'selectedRows' 仅与 dep=selectedRows 相关
-   */
-  private isRelevantChangeType(dep: string, changeType: ViewStateEvent['changeType']): boolean {
-    if (changeType === 'rows' || changeType === 'cleared') return true
-    switch (dep) {
-      case 'currentRow':   return changeType === 'currentRow'
-      case 'selectedRows': return changeType === 'selectedRows'
-      case 'allRows':
-      case 'pagedRows':    return false
-      default:             return changeType === 'currentRow'  // fallback: currentRow 语义
-    }
-  }
-
-  // ─────────────────────────────────────────────
-  // CRUD 服务私有辅助
-  // ─────────────────────────────────────────────
-
-  /** 懒初始化 CrudService（从 DataTable 的 api 配置创建） */
-  private initializeCrudService(): void {
-    if (!this.dataTable?.api) return
-    this.crudService = createCrudService(this.dataTable.api)
-  }
-
-  /** 获取 CRUD 操作配置（超时、重试等） */
-  private getCrudConfig(): CrudOperationConfig | undefined {
-    return this.dataTable?.crudConfig
-  }
-
-  /** 校验数据行（如果 DataTable 配置了 validator） */
-  private validateRow(row: IDataRow): ValidationResult | null {
-    if (!this.dataTable?.validator) return null
-    return this.dataTable.validator.validate(row)
-  }
-
-  /** 确保 CrudService 已初始化，否则抛出；返回实例供调用方直接使用 */
-  private ensureCrudService(): CrudService {
-    if (!this.crudService) this.initializeCrudService()
-    if (!this.crudService) throw new Error(`Table ${this.tableName} has no API configuration`)
-    return this.crudService
+    this.cascadeDelegate.teardownCascade()
   }
 
   // ─────────────────────────────────────────────
@@ -859,14 +585,13 @@ export class DataView {
     
     this.logger.debug(`销毁 DataView: ${this.tableName}:${this.viewId}`)
     
-    // 1. 清理级联订阅
-    this.teardownCascade()
+    // 1. 销毁级联委托（清理订阅 + 取消待处理请求）
+    this._cascadeDelegate?.destroy()
+    this._cascadeDelegate = undefined
     
-    // 2. 取消待处理的请求
-    if (this.pendingCascadeRequest) {
-      this.pendingCascadeRequest.cancel()
-      this.pendingCascadeRequest = undefined
-    }
+    // 2. 销毁 CRUD 委托（释放 CrudService）
+    this._crudDelegate?.destroy()
+    this._crudDelegate = undefined
     
     // 3. 清除防抖定时器
     if (this.stateChangedDebouncer) {
@@ -874,12 +599,8 @@ export class DataView {
       this.stateChangedDebouncer = undefined
     }
     
-    // 3. 清理事件监听器（如果支持）
-    // Note: IEventEmitter 接口目前不支持 removeAllListeners，跳过此步
-    // TODO: 如需要清理监听器，需要扩展 IEventEmitter 接口
-    
-    // 4. 清理 CRUD 服务（设为 undefined）
-    this.crudService = undefined
+    // 4. 清理事件监听器（Batch 2 已扩展 IEventEmitter.removeAllListeners）
+    this.events.removeAllListeners()
     
     // 5. 清空数据
     this.resetState()
