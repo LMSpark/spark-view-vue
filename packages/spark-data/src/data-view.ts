@@ -28,6 +28,7 @@ import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
+import type { CrudLifecycleEvent } from './strategies/types'
 
 // ─────────────────────────────────────────────
 // 事件类型映射
@@ -40,6 +41,10 @@ import { CascadeDelegate } from './strategies/cascade-delegate'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DataViewEventMap extends Record<string, any[]> {
   stateChanged: [ViewStateEvent]
+  /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */
+  'crud:before': [CrudLifecycleEvent]
+  /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */
+  'crud:after': [CrudLifecycleEvent]
 }
 
 // ─────────────────────────────────────────────
@@ -125,7 +130,11 @@ export class DataView {
   private get crudDelegate(): CrudDelegate {
     this._crudDelegate ??= new CrudDelegate(
       this,
-      (changeType, extra) => this.emitStateChanged(changeType, extra)
+      (changeType, extra) => this.emitStateChanged(changeType, extra),
+      (event) => this.events.emit(
+        event.phase === 'before' ? 'crud:before' : 'crud:after',
+        event,
+      ),
     )
     return this._crudDelegate
   }

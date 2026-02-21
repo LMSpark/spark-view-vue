@@ -5,53 +5,51 @@
  * - 单条 CRUD（create/update/delete）
  * - 批量 CRUD（batchCreate/batchUpdate/batchDelete）
  * - 导入/导出（importData/exportData）
- * - CrudService 生命周期管理
  * - 数据校验代理
+ * - CRUD 生命周期事件（before/after hooks）
  *
  * 通过 ICrudHost 接口与宿主（DataView）交互，
  * 不直接依赖 DataView 类（避免循环引用）。
+ *
+ * CrudService 实例由 DataTable 持有并缓存（模型级共享）。
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import { CrudService, createCrudService } from '../crud-service'
+import type { CrudService } from '../crud-service'
 import type {
   IDataRow, CrudResult, BatchResult,
   CrudOperationConfig, QueryParams,
 } from '../types'
 import type { ValidationResult } from '../validation'
-import type { ICrudHost, EmitStateChangedFn } from './types'
+import type { ICrudHost, EmitStateChangedFn, EmitCrudLifecycleFn, CrudOperation } from './types'
+import { createCrudLifecycleEvent } from './types'
 
 const logger = Logger('DataView:CRUD')
 
 /**
  * CRUD 委托
  *
- * 封装所有 CRUD 相关逻辑，包括 CrudService 懒初始化、
- * 数据校验、单条 & 批量操作、导入导出。
+ * 封装所有 CRUD 相关逻辑，包括数据校验、单条 & 批量操作、导入导出。
+ * CrudService 由 DataTable 持有，本委托通过 host.dataTable 获取。
+ * 每个操作前后发射 crud:before / crud:after 事件，供业务脚本层拦截和联动。
  */
 export class CrudDelegate {
-  private crudService?: CrudService | undefined
 
   constructor(
     private host: ICrudHost,
-    private emit: EmitStateChangedFn,
+    private emitStateChanged: EmitStateChangedFn,
+    private emitCrudLifecycle: EmitCrudLifecycleFn,
   ) {}
 
   // ─────────────────────────────────────────────
-  // CrudService 生命周期
+  // CrudService 获取（DataTable 持有）
   // ─────────────────────────────────────────────
 
-  /** 懒初始化 CrudService */
-  private initializeCrudService(): void {
-    if (!this.host.dataTable?.api) return
-    this.crudService = createCrudService(this.host.dataTable.api)
-  }
-
-  /** 确保 CrudService 已初始化，否则抛出 */
+  /** 确保 CrudService 已初始化（从 DataTable 获取），否则抛出 */
   ensureCrudService(): CrudService {
-    if (!this.crudService) this.initializeCrudService()
-    if (!this.crudService) throw new Error(`Table ${this.host.dataTable?.tableName ?? '?'} has no API configuration`)
-    return this.crudService
+    const svc = this.host.dataTable?.crudService
+    if (!svc) throw new Error(`Table ${this.host.dataTable?.tableName ?? '?'} has no API configuration`)
+    return svc
   }
 
   // ─────────────────────────────────────────────
@@ -70,6 +68,31 @@ export class CrudDelegate {
   }
 
   // ─────────────────────────────────────────────
+  // 生命周期事件辅助
+  // ─────────────────────────────────────────────
+
+  /**
+   * 发射 before 事件，返回是否继续执行
+   * @returns `true` = 继续执行，`false` = 已取消
+   */
+  private fireBefore(operation: CrudOperation, data: unknown): boolean {
+    const event = createCrudLifecycleEvent(operation, 'before', data)
+    this.emitCrudLifecycle(event)
+    return !event.cancelled
+  }
+
+  /** 发射 after 事件（通知性质，不可取消） */
+  private fireAfter(operation: CrudOperation, data: unknown, result: CrudResult): void {
+    const event = createCrudLifecycleEvent(operation, 'after', data, result)
+    this.emitCrudLifecycle(event)
+  }
+
+  /** 创建取消结果 */
+  private cancelledResult<T>(operation: string): CrudResult<T> {
+    return { success: false, message: `${operation} cancelled by before hook` }
+  }
+
+  // ─────────────────────────────────────────────
   // 列表查询（供 DataView.loadFromServer 使用）
   // ─────────────────────────────────────────────
 
@@ -84,6 +107,8 @@ export class CrudDelegate {
 
   /** 新增记录，成功后追加至 rows */
   async createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+    if (!this.fireBefore('create', data)) return this.cancelledResult('create')
+
     const validationResult = this.validateRow(data as IDataRow)
     if (validationResult && !validationResult.valid) {
       return {
@@ -97,13 +122,17 @@ export class CrudDelegate {
     const result = await svc.create<IDataRow>(data, this.getCrudConfig())
     if (result.success && result.data) {
       this.host.appendRow(result.data)
-      this.emit('rows')
+      this.emitStateChanged('rows')
     }
+
+    this.fireAfter('create', data, result)
     return result
   }
 
   /** 更新记录，成功后刷新对应行 */
   async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+    if (!this.fireBefore('update', { id, ...data })) return this.cancelledResult('update')
+
     const validationResult = this.validateRow(data as IDataRow)
     if (validationResult && !validationResult.valid) {
       return {
@@ -116,18 +145,24 @@ export class CrudDelegate {
     const svc = this.ensureCrudService()
     const result = await svc.update<IDataRow>(id, data, this.getCrudConfig())
     if (result.success && result.data && this.host.updateRowById(id, result.data)) {
-      this.emit('rows')
+      this.emitStateChanged('rows')
     }
+
+    this.fireAfter('update', { id, ...data }, result)
     return result
   }
 
   /** 删除记录，成功后从 rows 移除 */
   async deleteRecord(id: string | number): Promise<CrudResult<boolean>> {
+    if (!this.fireBefore('delete', { id })) return this.cancelledResult('delete')
+
     const svc = this.ensureCrudService()
     const result = await svc.delete(id, this.getCrudConfig())
     if (result.success && this.host.deleteRowById(id)) {
-      this.emit('rows')
+      this.emitStateChanged('rows')
     }
+
+    this.fireAfter('delete', { id }, result)
     return result
   }
 
@@ -137,6 +172,8 @@ export class CrudDelegate {
 
   /** 批量新增 */
   async batchCreateRecords(items: Partial<IDataRow>[]): Promise<CrudResult<BatchResult>> {
+    if (!this.fireBefore('batchCreate', items)) return this.cancelledResult('batchCreate')
+
     const validationErrors: string[] = []
     for (let i = 0; i < items.length; i++) {
       const validationResult = this.validateRow(items[i] as IDataRow)
@@ -158,13 +195,17 @@ export class CrudDelegate {
       for (const r of result.data.results) {
         if (r.success && r.data) this.host.appendRow(r.data as IDataRow)
       }
-      this.emit('rows')
+      this.emitStateChanged('rows')
     }
+
+    this.fireAfter('batchCreate', items, result)
     return result
   }
 
   /** 批量更新 */
   async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
+    if (!this.fireBefore('batchUpdate', items)) return this.cancelledResult('batchUpdate')
+
     const validationErrors: string[] = []
     for (let i = 0; i < items.length; i++) {
       const validationResult = this.validateRow(items[i] as IDataRow)
@@ -190,13 +231,17 @@ export class CrudDelegate {
           if (id !== undefined) this.host.updateRowById(id as string | number, record)
         }
       }
-      this.emit('rows')
+      this.emitStateChanged('rows')
     }
+
+    this.fireAfter('batchUpdate', items, result)
     return result
   }
 
   /** 批量删除 */
   async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
+    if (!this.fireBefore('batchDelete', ids)) return this.cancelledResult('batchDelete')
+
     const svc = this.ensureCrudService()
     const result = await svc.batchDelete(ids, this.getCrudConfig())
 
@@ -220,10 +265,11 @@ export class CrudDelegate {
       }
 
       if (deletedCount > 0) {
-        this.emit('rows')
+        this.emitStateChanged('rows')
       }
     }
 
+    this.fireAfter('batchDelete', ids, result)
     return result
   }
 
@@ -233,12 +279,16 @@ export class CrudDelegate {
 
   /** 导入文件，成功后重置状态并重新走完整编排 */
   async importData(file: File): Promise<CrudResult<{ imported: number; failed: number }>> {
+    if (!this.fireBefore('import', file)) return this.cancelledResult('import')
+
     const svc = this.ensureCrudService()
     const result = await svc.importData(file)
     if (result.success) {
       this.host.resetState()
       await this.host.requestData()
     }
+
+    this.fireAfter('import', file, result)
     return result
   }
 
@@ -251,8 +301,8 @@ export class CrudDelegate {
   // 生命周期
   // ─────────────────────────────────────────────
 
-  /** 销毁 — 释放 CrudService 引用 */
+  /** 销毁 — CrudService 由 DataTable 管理，此处无需释放 */
   destroy(): void {
-    this.crudService = undefined
+    // CrudService 归属 DataTable，delegate 无持有
   }
 }
