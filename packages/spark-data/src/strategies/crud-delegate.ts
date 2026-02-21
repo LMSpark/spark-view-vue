@@ -21,7 +21,7 @@ import type {
   CrudOperationConfig, QueryParams,
 } from '../types'
 import type { ValidationResult } from '../validation'
-import type { ICrudHost, EmitStateChangedFn, EmitCrudLifecycleFn, CrudOperation } from './types'
+import type { ICrudHost, EmitStateChangedFn, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
 import { createCrudLifecycleEvent } from './types'
 
 const logger = Logger('DataView:CRUD')
@@ -39,7 +39,25 @@ export class CrudDelegate {
     private host: ICrudHost,
     private emitStateChanged: EmitStateChangedFn,
     private emitCrudLifecycle: EmitCrudLifecycleFn,
+    private emitMutating: MutatingFn,
   ) {}
+
+  /**
+   * 包装网络变更操作：emitMutating(+1) → 执行 → emitMutating(-1)
+   * 仅在 fireBefore 通过、校验通过后调用，不追踪取消/校验失败。
+   */
+  private async withMutating<T>(fn: () => Promise<T>): Promise<T> {
+    this.emitMutating(1)
+    let caughtError: Error | null = null
+    try {
+      return await fn()
+    } catch (error) {
+      caughtError = error instanceof Error ? error : new Error(String(error))
+      throw error
+    } finally {
+      this.emitMutating(-1, caughtError)
+    }
+  }
 
   // ─────────────────────────────────────────────
   // CrudService 获取（DataTable 持有）
@@ -118,15 +136,16 @@ export class CrudDelegate {
       }
     }
 
-    const svc = this.ensureCrudService()
-    const result = await svc.create<IDataRow>(data, this.getCrudConfig())
-    if (result.success && result.data) {
-      this.host.appendRow(result.data)
-      this.emitStateChanged('rows')
-    }
-
-    this.fireAfter('create', data, result)
-    return result
+    return this.withMutating(async () => {
+      const svc = this.ensureCrudService()
+      const result = await svc.create<IDataRow>(data, this.getCrudConfig())
+      if (result.success && result.data) {
+        this.host.appendRow(result.data)
+        this.emitStateChanged('rows')
+      }
+      this.fireAfter('create', data, result)
+      return result
+    })
   }
 
   /** 更新记录，成功后刷新对应行 */
@@ -142,28 +161,30 @@ export class CrudDelegate {
       }
     }
 
-    const svc = this.ensureCrudService()
-    const result = await svc.update<IDataRow>(id, data, this.getCrudConfig())
-    if (result.success && result.data && this.host.updateRowById(id, result.data)) {
-      this.emitStateChanged('rows')
-    }
-
-    this.fireAfter('update', { id, ...data }, result)
-    return result
+    return this.withMutating(async () => {
+      const svc = this.ensureCrudService()
+      const result = await svc.update<IDataRow>(id, data, this.getCrudConfig())
+      if (result.success && result.data && this.host.updateRowById(id, result.data)) {
+        this.emitStateChanged('rows')
+      }
+      this.fireAfter('update', { id, ...data }, result)
+      return result
+    })
   }
 
   /** 删除记录，成功后从 rows 移除 */
   async deleteRecord(id: string | number): Promise<CrudResult<boolean>> {
     if (!this.fireBefore('delete', { id })) return this.cancelledResult('delete')
 
-    const svc = this.ensureCrudService()
-    const result = await svc.delete(id, this.getCrudConfig())
-    if (result.success && this.host.deleteRowById(id)) {
-      this.emitStateChanged('rows')
-    }
-
-    this.fireAfter('delete', { id }, result)
-    return result
+    return this.withMutating(async () => {
+      const svc = this.ensureCrudService()
+      const result = await svc.delete(id, this.getCrudConfig())
+      if (result.success && this.host.deleteRowById(id)) {
+        this.emitStateChanged('rows')
+      }
+      this.fireAfter('delete', { id }, result)
+      return result
+    })
   }
 
   // ─────────────────────────────────────────────
@@ -189,17 +210,18 @@ export class CrudDelegate {
       }
     }
 
-    const svc = this.ensureCrudService()
-    const result = await svc.batchCreate<IDataRow>(items, this.getCrudConfig())
-    if (result.success && result.data) {
-      for (const r of result.data.results) {
-        if (r.success && r.data) this.host.appendRow(r.data as IDataRow)
+    return this.withMutating(async () => {
+      const svc = this.ensureCrudService()
+      const result = await svc.batchCreate<IDataRow>(items, this.getCrudConfig())
+      if (result.success && result.data) {
+        for (const r of result.data.results) {
+          if (r.success && r.data) this.host.appendRow(r.data as IDataRow)
+        }
+        this.emitStateChanged('rows')
       }
-      this.emitStateChanged('rows')
-    }
-
-    this.fireAfter('batchCreate', items, result)
-    return result
+      this.fireAfter('batchCreate', items, result)
+      return result
+    })
   }
 
   /** 批量更新 */
@@ -221,56 +243,59 @@ export class CrudDelegate {
       }
     }
 
-    const svc = this.ensureCrudService()
-    const result = await svc.batchUpdate<IDataRow>(items, this.getCrudConfig())
-    if (result.success && result.data) {
-      for (const r of result.data.results) {
-        if (r.success && r.data) {
-          const record = r.data as IDataRow
-          const id = (record as { id?: unknown }).id
-          if (id !== undefined) this.host.updateRowById(id as string | number, record)
+    return this.withMutating(async () => {
+      const svc = this.ensureCrudService()
+      const result = await svc.batchUpdate<IDataRow>(items, this.getCrudConfig())
+      if (result.success && result.data) {
+        for (const r of result.data.results) {
+          if (r.success && r.data) {
+            const record = r.data as IDataRow
+            const id = (record as { id?: unknown }).id
+            if (id !== undefined) this.host.updateRowById(id as string | number, record)
+          }
         }
+        this.emitStateChanged('rows')
       }
-      this.emitStateChanged('rows')
-    }
-
-    this.fireAfter('batchUpdate', items, result)
-    return result
+      this.fireAfter('batchUpdate', items, result)
+      return result
+    })
   }
 
   /** 批量删除 */
   async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchDelete', ids)) return this.cancelledResult('batchDelete')
 
-    const svc = this.ensureCrudService()
-    const result = await svc.batchDelete(ids, this.getCrudConfig())
+    return this.withMutating(async () => {
+      const svc = this.ensureCrudService()
+      const result = await svc.batchDelete(ids, this.getCrudConfig())
 
-    if (result.success && result.data) {
-      const successIds = new Set<string | number>()
-      result.data.results.forEach((r, i) => {
-        const id = ids[i]
-        if (r.success && id !== undefined) successIds.add(id)
-      })
-
-      let deletedCount = 0
-      for (const id of successIds) {
-        if (this.host.deleteRowById(id)) deletedCount++
-      }
-
-      if (result.data.failureCount > 0) {
-        logger.warn(`批量删除部分失败: ${result.data.failureCount}/${ids.length}`, {
-          successCount: result.data.successCount,
-          failureCount: result.data.failureCount
+      if (result.success && result.data) {
+        const successIds = new Set<string | number>()
+        result.data.results.forEach((r, i) => {
+          const id = ids[i]
+          if (r.success && id !== undefined) successIds.add(id)
         })
+
+        let deletedCount = 0
+        for (const id of successIds) {
+          if (this.host.deleteRowById(id)) deletedCount++
+        }
+
+        if (result.data.failureCount > 0) {
+          logger.warn(`批量删除部分失败: ${result.data.failureCount}/${ids.length}`, {
+            successCount: result.data.successCount,
+            failureCount: result.data.failureCount
+          })
+        }
+
+        if (deletedCount > 0) {
+          this.emitStateChanged('rows')
+        }
       }
 
-      if (deletedCount > 0) {
-        this.emitStateChanged('rows')
-      }
-    }
-
-    this.fireAfter('batchDelete', ids, result)
-    return result
+      this.fireAfter('batchDelete', ids, result)
+      return result
+    })
   }
 
   // ─────────────────────────────────────────────
@@ -281,15 +306,16 @@ export class CrudDelegate {
   async importData(file: File): Promise<CrudResult<{ imported: number; failed: number }>> {
     if (!this.fireBefore('import', file)) return this.cancelledResult('import')
 
-    const svc = this.ensureCrudService()
-    const result = await svc.importData(file)
-    if (result.success) {
-      this.host.resetState()
-      await this.host.requestData()
-    }
-
-    this.fireAfter('import', file, result)
-    return result
+    return this.withMutating(async () => {
+      const svc = this.ensureCrudService()
+      const result = await svc.importData(file)
+      if (result.success) {
+        this.host.resetState()
+        await this.host.requestData()
+      }
+      this.fireAfter('import', file, result)
+      return result
+    })
   }
 
   /** 导出数据 */

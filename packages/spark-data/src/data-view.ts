@@ -97,6 +97,10 @@ export class DataView {
   loadingError: Error | null = null
   /** 请求状态机，见 {@link RequestState}。唯一状态源，勿另设布尔标志。 */
   requestState: RequestState = RequestState.Idle
+  /** 增删改批网络请求进行中（与 requestState 独立，可同时为 true） */
+  mutating: boolean = false
+  /** 最近一次增删改批操作的错误；成功或未发起时为 null */
+  mutatingError: Error | null = null
 
   // ── 视图配置 ────────────────────────────────
 
@@ -123,6 +127,8 @@ export class DataView {
 
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
+  /** 并发 CRUD 请求计数器（支持多操作同时在途） */
+  private _mutatingCount = 0
   /** 销毁状态标记 */
   private _isDestroyed = false
   /** 行索引缓存（用于加速 setSelectedRows，O(n) 而非 O(n²)） */
@@ -146,6 +152,7 @@ export class DataView {
         event.phase === 'before' ? 'crud:before' : 'crud:after',
         event,
       ),
+      (delta, error) => this._trackMutating(delta, error),
     )
     return this._crudDelegate
   }
@@ -590,10 +597,11 @@ export class DataView {
     }
     
     // 关键状态和用户交互立即触发（避免 UI 延迟响应）
-    // - cleared, requestState: 关键状态变化
+    // - cleared, requestState, mutating: 关键状态变化
     // - currentRow, selectedRows: 用户交互，需要即时反馈
     if (changeType === 'cleared' || 
         changeType === 'requestState' || 
+        changeType === 'mutating' ||
         changeType === 'currentRow' || 
         changeType === 'selectedRows') {
       this.events.emit('stateChanged', event)
@@ -682,6 +690,22 @@ export class DataView {
     if (this._isDestroyed) {
       throw new Error(`DataView ${this.tableName}:${this.viewId} has been destroyed`)
     }
+  }
+
+  /**
+   * CrudDelegate 回调：追踪并发 CRUD 请求数，更新 mutating / mutatingError
+   * - delta=1  → 请求开始，清除上次错误
+   * - delta=-1 → 请求结束，error 非 null 时记录错误
+   */
+  private _trackMutating(delta: 1 | -1, error?: Error | null): void {
+    this._mutatingCount = Math.max(0, this._mutatingCount + delta)
+    this.mutating = this._mutatingCount > 0
+    if (delta === 1) {
+      this.mutatingError = null
+    } else {
+      if (error) this.mutatingError = error
+    }
+    this.emitStateChanged('mutating')
   }
 
   // ─────────────────────────────────────────────
