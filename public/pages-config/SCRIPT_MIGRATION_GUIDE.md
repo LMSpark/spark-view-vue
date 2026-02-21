@@ -100,7 +100,7 @@ const dataSet = $dataSet
 | `$el` | () => HTMLElement \| null | 页面容器元素（getter） |
 | `$query` | (selector) => Element \| null | 查询单个元素 |
 | `$queryAll` | (selector) => NodeListOf | 查询所有元素 |
-| `$dataSet` | DataSetManager \| null | DataSet 实例 |
+| `$dataSet` | IDataSet \| null | DataSet 实例 |
 | `$rebindRules` | () => void | 重新绑定规则 |
 | `$refreshData` | async () => void | 刷新数据 |
 
