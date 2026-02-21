@@ -120,12 +120,12 @@ export class DataView {
 
   // ── 关联对象 ────────────────────────────────
 
-  treeManager?: TreeManager
+  treeManager?: TreeManager | undefined
 
   // ── 私有 ─────────────────────────────────────
 
   /** CRUD 服务（按需懒初始化） */
-  private crudService?: CrudService
+  private crudService?: CrudService | undefined
   /** 级联取消订阅句柄 */
   private cascadeUnsubscribers: (() => void)[] = []  /** 待处理的级联请求（用于取消旧请求） */
   private pendingCascadeRequest?: {
@@ -139,9 +139,9 @@ export class DataView {
   /** 销毁状态标记 */
   private _isDestroyed = false
   /** 行索引缓存（用于加速 setSelectedRows，O(n) 而非 O(n²)） */
-  private rowIndexMap?: Map<IDataRow, number>
+  private rowIndexMap?: Map<IDataRow, number> | undefined
   /** stateChanged 事件防抖定时器 */
-  private stateChangedDebouncer?: ReturnType<typeof setTimeout>
+  private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
   
   // ── 公共内部对象 ─────────────────────────
 
@@ -495,7 +495,6 @@ export class DataView {
     }
     
     // 清除索引缓存（行数据变更后缓存失效）
-    // @ts-expect-error - 清理可选属性
     this.rowIndexMap = undefined
   }
 
@@ -675,7 +674,6 @@ export class DataView {
     // 清除上次的防抖定时器
     if (this.stateChangedDebouncer) {
       clearTimeout(this.stateChangedDebouncer)
-      // @ts-expect-error - 清理可选属性
       this.stateChangedDebouncer = undefined
     }
     
@@ -694,7 +692,6 @@ export class DataView {
     // 适用于批量更新场景，减少 UI 重绘频率
     this.stateChangedDebouncer = setTimeout(() => {
       this.events.emit('stateChanged', event)
-      // @ts-expect-error - 清理可选属性
       this.stateChangedDebouncer = undefined
     }, 16)
   }
@@ -874,7 +871,6 @@ export class DataView {
     // 3. 清除防抖定时器
     if (this.stateChangedDebouncer) {
       clearTimeout(this.stateChangedDebouncer)
-      // @ts-expect-error - 清理可选属性
       this.stateChangedDebouncer = undefined
     }
     
@@ -883,19 +879,18 @@ export class DataView {
     // TODO: 如需要清理监听器，需要扩展 IEventEmitter 接口
     
     // 4. 清理 CRUD 服务（设为 undefined）
-    // @ts-expect-error - 清理可选属性
     this.crudService = undefined
     
     // 5. 清空数据
     this.resetState()
     
     // 6. 清除 TreeManager 引用
-    // @ts-expect-error - 清理可选属性
     this.treeManager = undefined
     
-    // 7. 清除 DataTable 引用（打破循环引用）
-    // @ts-expect-error - 需要清理引用以防止内存泄漏
-    this.dataTable = undefined
+    // 7. 清除 DataTable 引用（打破循环引用，防止内存泄漏）
+    // 作为 DataView 生命周期的最终清理步骤，需要在运行时断开与 DataTable 的关联。
+    // 类型声明维持严格契约（dataTable!: DataTable），此转换仅在 destroy() 内部使用。
+    ;(this as unknown as { dataTable: DataTable | undefined }).dataTable = undefined
     
     // 8. 标记为已销毁
     this._isDestroyed = true
