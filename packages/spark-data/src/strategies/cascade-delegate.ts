@@ -11,7 +11,6 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import { RequestState } from '../types'
 import type { DataRelation, ViewStateEvent, IDataRow } from '../types'
 import type { DataView } from '../data-view'
 import { getParentRows } from '../core/utils'
@@ -109,12 +108,13 @@ export class CascadeDelegate {
     }
 
     if (rel.autoLoad !== false) {
-      this.host.requestState = RequestState.Idle
-
+      // 使用 refresh()（下行刷新）而非 requestData()（上行请求）：
+      // 父数据变化时子视图可能已处于 Loaded，必须强制重新请求
+      // refresh() = resetState() + requestData()，无需此处手动修改 requestState
       const requestId = ++this.nextCascadeRequestId
       let cancelled = false
 
-      void this.host.requestData()
+      void this.host.refresh()
         .then(() => {
           if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
             this.pendingCascadeRequest = undefined

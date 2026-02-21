@@ -55,12 +55,20 @@ export interface ICascadeHost {
   readonly tableName: string
   readonly viewId: string
   readonly dataTable: DataTable
-  /** 可读写，级联时需重置为 Idle */
-  requestState: import('../types').RequestState
-  /** 静默重置状态 */
+  /** 只读，级联时检查状态 */
+  readonly requestState: import('../types').RequestState
+  /** 静默重置状态（requestState→Idle，清空行和选中） */
   resetState(): void
-  /** 走完整请求编排 */
+  /**
+   * 走完整请求编排（幂等：requestState≠Idle 时直接返回）
+   * 上行触发（UI/脚本主动请求）用此方法。
+   */
   requestData(): Promise<void>
+  /**
+   * 强制刷新：先 resetState() 再 requestData()
+   * 下行触发（父数据变化→级联子视图）用此方法。
+   */
+  refresh(): Promise<void>
 }
 
 // ─────────────────────────────────────────────
