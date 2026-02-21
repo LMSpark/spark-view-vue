@@ -26,8 +26,9 @@ describe('bindRules - DataKey rows -> IDataSource binding', () => {
     const r = bound[0]!
     const rp = r.props as Record<string, any>
     expect(rp).toBeDefined()
-    // 兼容逻辑已移除：el-table 只绑定 props.dataSource（props.data 不再使用）
-    expect(rp['data']).toBeUndefined()
+    // el-table 仍需 props.data（Element Plus 原生属性），值为 DataView.rows 响应式数组
+    expect(Array.isArray(rp['data'])).toBe(true)
+    expect(rp['data']).toEqual([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }])
 
     // props.dataSource 应包含 rows + meta（现在 props.dataSource 就是 DataView）
     expect(rp['dataSource']).toBeDefined()

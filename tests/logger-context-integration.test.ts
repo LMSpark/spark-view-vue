@@ -11,6 +11,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
+import { LOGGER } from '@spark-view/spark-utils'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
 describe('Logger Context Integration', () => {
@@ -48,8 +49,8 @@ describe('Logger Context Integration', () => {
       setup() {
         const { context, logger, provide } = useSparkComponent({ type: 'test-comp' })
         
-        // 提供自定义 logger
-        provide('logger', customLogger)
+        // 使用 LOGGER Symbol 提供自定义 logger（能力系统使用 Symbol key，非字符串）
+        provide(LOGGER, customLogger)
         
         // 等待下一个 tick 确保 provider 注册完成
         nextTick(() => {
@@ -100,8 +101,8 @@ describe('Logger Context Integration', () => {
       setup() {
         const { context, logger, provide } = useSparkComponent({ type: 'parent-comp' })
         
-        // 父组件提供自定义 logger
-        provide('logger', customLogger)
+        // 父组件使用 LOGGER Symbol 提供自定义 logger
+        provide(LOGGER, customLogger)
         
         logger.info('parent message')
         
@@ -144,8 +145,8 @@ describe('Logger Context Integration', () => {
         // 第一次调用：使用默认 logger
         logger.info('before custom')
         
-        // 提供自定义 logger
-        provide('logger', customLogger)
+        // 使用 LOGGER Symbol 提供自定义 logger
+        provide(LOGGER, customLogger)
         
         // 第二次调用：应该使用自定义 logger
         nextTick(() => {
@@ -173,7 +174,7 @@ describe('Logger Context Integration', () => {
     consoleInfoSpy.mockRestore()
   })
 
-  it('支持 Provider 接口结构（带 name 和 implementation）', async () => {
+  it('组件自身提供 LOGGER 后 logger 代理使用自定义实现', async () => {
     const logs: string[] = []
     
     const customLogger: LoggerApi = {
@@ -187,8 +188,8 @@ describe('Logger Context Integration', () => {
       setup() {
         const { logger, provide } = useSparkComponent({ type: 'test-comp' })
         
-        // 使用 Provider 接口结构（包含 name 和 implementation）
-        provide('logger', customLogger)
+        // 使用 LOGGER Symbol 提供自定义 logger
+        provide(LOGGER, customLogger)
         
         nextTick(() => {
           logger.info('with provider structure')
