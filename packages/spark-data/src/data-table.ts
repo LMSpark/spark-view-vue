@@ -22,6 +22,7 @@ import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationC
 import type { TreeManager } from './tree-manager'
 import type { DataSet } from './dataset'
 import { DataValidator, createValidator, createSchema } from './validation'
+import { CrudService, createCrudService } from './crud-service'
 
 /**
  * DataTable - 管理单表的结构定义与配置
@@ -48,6 +49,23 @@ export class DataTable {
 
   /** CRUD 操作配置（全局默认配置） */
   crudConfig?: CrudOperationConfig
+
+  // ===== CrudService 缓存 =====
+
+  /** CrudService 实例缓存（懒初始化，模型级共享） */
+  private _crudService?: CrudService | undefined
+
+  /**
+   * 获取或创建 CrudService（懒初始化，配置变更时自动清除缓存）
+   *
+   * CrudService 属于模型层（DataTable），多个 DataView 共享同一实例。
+   */
+  get crudService(): CrudService | undefined {
+    if (!this._crudService && this.api) {
+      this._crudService = createCrudService(this.api)
+    }
+    return this._crudService
+  }
 
   // ===== 数据校验 =====
 
@@ -127,8 +145,12 @@ export class DataTable {
   /**
    * 设置 CRUD API 配置
    * @param api - CRUD 端点配置
+   * @remarks 配置变更时自动清除 CrudService 缓存，下次访问时重建
    */
-  setApi(api: CrudApi): void { this.api = api }
+  setApi(api: CrudApi): void {
+    this.api = api
+    this._crudService = undefined
+  }
 
   /**
    * 设置 CRUD 操作配置（权限、超时、重试等）
@@ -192,6 +214,7 @@ export class DataTable {
       view.destroy()
     }
     this.views = {}
+    this._crudService = undefined
   }
 
   // ===== 工厂方法 =====

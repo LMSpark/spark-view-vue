@@ -5,7 +5,7 @@
  * 遵循 ISP 原则：Delegate 只依赖自己需要的方法。
  */
 
-import type { IDataRow, ViewStateEvent, CrudOperationConfig } from '../types'
+import type { IDataRow, ViewStateEvent, CrudResult } from '../types'
 import type { DataTable } from '../data-table'
 
 // ─────────────────────────────────────────────
@@ -64,10 +64,51 @@ export interface ICascadeHost {
 }
 
 // ─────────────────────────────────────────────
-// CRUD 操作配置解析接口
+// CRUD 生命周期事件
 // ─────────────────────────────────────────────
 
-/** CrudDelegate 内部需要从 DataTable 获取的配置 */
-export interface ICrudConfigProvider {
-  getCrudConfig(): CrudOperationConfig | undefined
+/** CRUD 操作类型 */
+export type CrudOperation =
+  | 'create' | 'update' | 'delete'
+  | 'batchCreate' | 'batchUpdate' | 'batchDelete'
+  | 'import'
+
+/**
+ * CRUD 生命周期事件
+ *
+ * - `before` 阶段：业务脚本可调用 `cancel()` 取消操作（如弹窗确认、权限二次校验）
+ * - `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）
+ */
+export interface CrudLifecycleEvent {
+  readonly operation: CrudOperation
+  readonly phase: 'before' | 'after'
+  /** 提交的数据（before 阶段为原始入参，after 阶段同前） */
+  readonly data: unknown
+  /** 操作结果（仅 after 阶段） */
+  result?: CrudResult | undefined
+  /** 是否已取消（仅 before 阶段有效） */
+  cancelled: boolean
+  /** 取消操作（仅 before 阶段调用） */
+  cancel(): void
 }
+
+/** 创建 CRUD 生命周期事件实例 */
+export function createCrudLifecycleEvent(
+  operation: CrudOperation,
+  phase: 'before' | 'after',
+  data: unknown,
+  result?: CrudResult | undefined,
+): CrudLifecycleEvent {
+  const event: CrudLifecycleEvent = {
+    operation,
+    phase,
+    data,
+    result,
+    cancelled: false,
+    cancel() { event.cancelled = true },
+  }
+  return event
+}
+
+/** Delegate 向宿主发射 CRUD 生命周期事件的回调签名 */
+export type EmitCrudLifecycleFn = (event: CrudLifecycleEvent) => void

@@ -18,7 +18,9 @@ export { RequestState } from './types'
 // ===== CRUD 服务 =====
 
 export { CrudService, createCrudService } from './crud-service'
+export { createCrudLifecycleEvent } from './strategies/types'
 export type { CrudResult, QueryParams, BatchResult, CrudOperationConfig } from './types'
+export type { CrudOperation, CrudLifecycleEvent } from './strategies/types'
 
 // ===== 数据类型定义 =====
 
