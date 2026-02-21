@@ -24,25 +24,22 @@ pnpm add @spark-view/spark-utils
 ### 1. 能力系统
 
 ```typescript
-import type { Provider, Consumer, Context } from '@spark-view/spark-utils'
+import { defineCapability, provide, lookup } from '@spark-view/spark-utils'
+import { useSparkComponent } from '@spark-view/spark-component'
 
-// 定义能力提供者
-const provider: Provider = {
-  name: 'userService',
-  version: '1.0.0',
-  implementation: {
-    getUser: (id: string) => ({ id, name: 'User' })
-  }
-}
+// 定义类型安全的能力键
+const USER_SERVICE = defineCapability<{ getUser(id: string): { id: string; name: string } }>('app:user-service')
 
-// 添加到上下文
-context.providers.add(provider)
+// 提供能力（在父组件 setup 中）
+const { provide: provideCapability } = useSparkComponent({ type: 'provider' })
+provideCapability(USER_SERVICE, {
+  getUser: (id) => ({ id, name: 'User' })
+})
 
-// 组件中消费能力
-const consumer: Consumer = {
-  capabilityName: 'userService',
-  implementation: null // 由连接器注入
-}
+// 消费能力（任意深度子组件 setup 中）
+const { consume } = useSparkComponent({ type: 'consumer' })
+const service = consume(USER_SERVICE)  // 类型自动推断，null 表示未找到
+service?.getUser('1')
 ```
 
 **特性**:
@@ -73,10 +70,13 @@ const appLogger = createLogger('App', {
   remoteEndpoint: '/api/logs'
 })
 
-// 通过能力系统提供给所有组件
-provide('logger', appLogger)
-// 或通过 APP_SERVICES
-provide(APP_SERVICES, { logger: appLogger })
+// 在组件 setup 中通过 SPARK 能力系统提供
+import { LOGGER, APP_SERVICES } from '@spark-view/spark-utils'
+const { provide: provideCapability } = useSparkComponent({ type: 'app-root' })
+// 方式 1：直接覆盖 logger
+provideCapability(LOGGER, appLogger)
+// 方式 2：通过 APP_SERVICES 提供（推荐，同时提供 router 等）
+provideCapability(APP_SERVICES, { logger: appLogger, router: /* 路由实例 */ undefined })
 ```
 
 **特性**:
@@ -184,14 +184,14 @@ const [rule, pageData] = await loader.loadMultiple([
 ### 6. 事件系统
 
 ```typescript
-import { EventEmitter } from '@spark-view/spark-utils'
+import { createEventEmitter } from '@spark-view/spark-utils'
 
-interface MyEvents {
-  'user:login': (user: User) => void
-  'user:logout': () => void
+type MyEventMap = {
+  'user:login': [user: { id: number; name: string }]
+  'user:logout': []
 }
 
-const emitter = new EventEmitter<MyEvents>()
+const emitter = createEventEmitter<MyEventMap>()
 emitter.on('user:login', (user) => console.log(user))
 emitter.emit('user:login', { id: 1, name: 'Alice' })
 ```

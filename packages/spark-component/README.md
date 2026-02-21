@@ -24,18 +24,20 @@ pnpm add @spark-view/spark-component
 ### 1. 注册组件
 
 ```typescript
+import { Spark } from '@spark-view/spark-component'
+import MyGridComponent from './MyGridComponent.vue'
+
 // 静态注册
-Spark.register({
-  type: 'my-grid',
-  name: 'My Grid',
-  component: MyGridComponent
-})
+Spark.register('my-grid', MyGridComponent)
 
 // 懒加载注册
-Spark.register({
-  type: 'my-chart',
-  name: 'My Chart',
-  loader: () => import('./MyChartComponent.vue')
+Spark.register('my-chart', () => import('./MyChartComponent.vue'))
+
+// 批量注册（推荐）
+const reg = Spark.createRegister(import.meta.glob('./*.vue'))
+reg.registerAll({
+  'my-grid': './MyGridComponent.vue',
+  'my-chart': './MyChartComponent.vue'
 })
 ```
 
@@ -95,13 +97,13 @@ const columnManager = consume('columnManager')
 import { Spark } from '@spark-view/spark-component'
 
 // 注册组件
-Spark.register({ type: 'my-component', name: 'My Component', component: MyComponent })
+Spark.register('my-component', MyComponent)
 
 // 安装 Vue 插件（使用全局单例）
 app.use(Spark.createPlugin())
 
 // 类型定义
-import type { ComponentContext, CapabilityProvider } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 ```
 
 ## API 文档
