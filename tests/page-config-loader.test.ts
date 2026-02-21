@@ -462,7 +462,7 @@ describe('parsePageData', () => {
     // currentUser becomes a single-row table with value 'user1'
     const cuView = result.getView('currentUser')
     expect(cuView).toBeDefined()
-    expect(cuView!.rows[0].value).toBe('user1')
+    expect(cuView!.rows[0]?.['value']).toBe('user1')
 
     // tableData is an empty array → empty-rows table
     const tdView = result.getView('tableData')
@@ -472,7 +472,7 @@ describe('parsePageData', () => {
     // responseData null should still convert to a single-row table
     const rdView = result.getView('responseData')
     expect(rdView).toBeDefined()
-    expect(rdView!.rows[0].value).toBeNull()
+    expect(rdView!.rows[0]?.['value']).toBeNull()
   })
 })
 

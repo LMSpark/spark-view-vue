@@ -94,7 +94,7 @@ async function startApp() {
       if (badKeys.length > 0) {
         startupLogger.warn(`🔧 检测到 ${badKeys.length} 个损坏的缓存项，正在清除...`)
         badKeys.forEach(k => {
-          startupLogger.debug('清除缓存:', k)
+          startupLogger.debug('清除缓存', { key: k })
           localStorage.removeItem(k)
         })
         startupLogger.info('✅ 缓存已清除')

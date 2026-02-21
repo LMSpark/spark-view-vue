@@ -60,7 +60,10 @@ export type FormCreateAPI = FormCreateApi
  * - 事件处理函数中访问当前页面的数据和 API
  */
 export interface PageContext {
-  $api: FormCreateAPI | null
+  // Note: form-create API 对象在运行时有动态属性，官方类型定义不完全兼容
+  // FormCreateAPI 类型只是部分定义，实际 API 对象有 index signature
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  $api: any
   $route: RouteLocationNormalizedLoaded
   $data: Record<string, unknown>
   $el: () => HTMLElement | null
@@ -327,7 +330,7 @@ export interface JsonRendererOptions {
    * @optional
    * @example '/user-grid-demo.json' | '/api/config/dashboard.json'
    */
-  configUrl?: string
+  configUrl?: string | undefined
   
   /**
    * 配置对象（直接传入，跳过加载）
@@ -346,7 +349,7 @@ export interface JsonRendererOptions {
    * }
    * ```
    */
-  config?: Record<string, unknown>
+  config?: Record<string, unknown> | undefined
   
   /**
    * 渲染组件（自定义组件）
@@ -356,7 +359,7 @@ export interface JsonRendererOptions {
    * @optional
    * @example import UserGrid from './UserGrid.vue'
    */
-  component?: Component
+  component?: Component | undefined
   
   /**
    * 是否显示配置查看器（调试用）
@@ -366,7 +369,7 @@ export interface JsonRendererOptions {
    * @optional
    * @default false
    */
-  showConfigViewer?: boolean
+  showConfigViewer?: boolean | undefined
   
   /**
    * 配置加载前钩子函数
@@ -377,7 +380,7 @@ export interface JsonRendererOptions {
    * @param {string} url - 即将加载的配置 URL
    * @returns {void | Promise<void>}
    */
-  beforeLoad?: (url: string) => void | Promise<void>
+  beforeLoad?: ((url: string) => void | Promise<void>) | undefined
   
   /**
    * 配置加载后钩子函数
@@ -388,7 +391,7 @@ export interface JsonRendererOptions {
    * @param {Record<string, unknown>} config - 加载的配置对象
    * @returns {void | Promise<void> | Record<string, unknown>}
    */
-  afterLoad?: (config: Record<string, unknown>) => void | Promise<void> | Record<string, unknown>
+  afterLoad?: ((config: Record<string, unknown>) => void | Promise<void> | Record<string, unknown>) | undefined
   
   /**
    * 错误处理函数
@@ -399,5 +402,5 @@ export interface JsonRendererOptions {
    * @param {Error} error - 错误对象
    * @returns {void}
    */
-  onError?: (error: Error) => void
+  onError?: ((error: Error) => void) | undefined
 }
