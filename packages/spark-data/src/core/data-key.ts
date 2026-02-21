@@ -25,7 +25,7 @@
  */
 
 import type { DataSet } from '../dataset'
-import type { DataView } from '../data-view'
+import { DataView } from '../data-view'
 import type { IDataRow } from '../types'
 
 // ===== 类型定义 =====
@@ -43,6 +43,8 @@ export interface DataKeyDescriptor {
   viewId: string
   /** 绑定字段 */
   field: DataKeyField
+  /** 字段路径（用于访问行对象的具体字段，如 currentRow.totalUsers 中的 totalUsers） */
+  fieldPath?: string
   /** 原始 dataKey 字符串 */
   raw: string
 }
@@ -73,8 +75,10 @@ export function isDataKey(dataKey: string): boolean {
  * 解析 dataKey 字符串为结构化描述符
  *
  * 支持格式：
- *   - `scope@tableName@viewId@field`   → 完整 4 段
- *   - `scope@tableName@field`           → 省略 viewId，默认 'default'
+ *   - `scope@tableName@viewId@field`        → 完整 4 段
+ *   - `scope@tableName@field`               → 省略 viewId，默认 'default'
+ *   - `scope@tableName@viewId@field.path`   → 带字段路径（如 currentRow.totalUsers）
+ *   - `scope@tableName@field.path`          → 简写 + 字段路径
  *
  * @param dataKey 原始 dataKey 字符串
  * @returns 解析后的描述符，非 DataSet 键返回 null
@@ -86,17 +90,49 @@ export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
   const parts = dataKey.split(SEPARATOR)
 
   if (parts.length === 4) {
-    // scope@tableName@viewId@field
-    const [scope, tableName, viewId, field] = parts
-    if (!scope || !tableName || !viewId || !field || !VALID_FIELDS.has(field)) return null
-    return { scope, tableName, viewId, field: field as DataKeyField, raw: dataKey }
+    // scope@tableName@viewId@field 或 scope@tableName@viewId@field.path
+    const [scope, tableName, viewId, fieldPart] = parts
+    if (!scope || !tableName || !viewId || !fieldPart) return null
+    
+    // 检查是否有字段路径（如 currentRow.totalUsers）
+    const dotIndex = fieldPart.indexOf('.')
+    let field: string
+    let fieldPath: string | undefined
+    
+    if (dotIndex > 0) {
+      field = fieldPart.substring(0, dotIndex)
+      fieldPath = fieldPart.substring(dotIndex + 1)
+    } else {
+      field = fieldPart
+    }
+    
+    if (!VALID_FIELDS.has(field)) return null
+    const result: DataKeyDescriptor = { scope, tableName, viewId, field: field as DataKeyField, raw: dataKey }
+    if (fieldPath !== undefined) result.fieldPath = fieldPath
+    return result
   }
 
   if (parts.length === 3) {
-    // scope@tableName@field → viewId = 'default'
-    const [scope, tableName, field] = parts
-    if (!scope || !tableName || !field || !VALID_FIELDS.has(field)) return null
-    return { scope, tableName, viewId: 'default', field: field as DataKeyField, raw: dataKey }
+    // scope@tableName@field 或 scope@tableName@field.path → viewId = 'default'
+    const [scope, tableName, fieldPart] = parts
+    if (!scope || !tableName || !fieldPart) return null
+    
+    // 检查是否有字段路径
+    const dotIndex = fieldPart.indexOf('.')
+    let field: string
+    let fieldPath: string | undefined
+    
+    if (dotIndex > 0) {
+      field = fieldPart.substring(0, dotIndex)
+      fieldPath = fieldPart.substring(dotIndex + 1)
+    } else {
+      field = fieldPart
+    }
+    
+    if (!VALID_FIELDS.has(field)) return null
+    const result: DataKeyDescriptor = { scope, tableName, viewId: 'default', field: field as DataKeyField, raw: dataKey }
+    if (fieldPath !== undefined) result.fieldPath = fieldPath
+    return result
   }
 
   // 段数不对或不含 @
@@ -113,19 +149,39 @@ export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
 export function resolveDataKey(
   descriptor: DataKeyDescriptor,
   dataSet: DataSet
-): IDataRow[] | IDataRow | null | undefined {
+): IDataRow[] | IDataRow | null | undefined | unknown {
   const table = dataSet.getTable(descriptor.tableName)
   if (!table) return undefined
 
   const view = table.getOrCreateView(descriptor.viewId)
   if (!view) return undefined
 
+  let value: IDataRow[] | IDataRow | null | undefined
+  
   switch (descriptor.field) {
-    case 'rows':         return view.rows
-    case 'currentRow':   return view.currentRow
-    case 'selectedRows': return view.selectedRows
+    case 'rows':         value = view.rows; break
+    case 'currentRow':   value = view.currentRow; break
+    case 'selectedRows': value = view.selectedRows; break
     default:             return undefined
   }
+  
+  // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
+  if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value)) {
+    const pathParts = descriptor.fieldPath.split('.')
+    let current: unknown = value
+    
+    for (const part of pathParts) {
+      if (current && typeof current === 'object' && part in current) {
+        current = (current as Record<string, unknown>)[part]
+      } else {
+        return undefined
+      }
+    }
+    
+    return current
+  }
+  
+  return value
 }
 
 /**
@@ -138,19 +194,39 @@ export function resolveDataKey(
 export function resolveDataKeyAsSource(
   descriptor: DataKeyDescriptor,
   dataSet: DataSet
-): DataView | IDataRow | IDataRow[] | null | undefined {
+): DataView | IDataRow | IDataRow[] | null | undefined | unknown {
   const table = dataSet.getTable(descriptor.tableName)
   if (!table) return undefined
 
   const view = table.getOrCreateView(descriptor.viewId)
   if (!view) return undefined
 
+  let value: DataView | IDataRow | IDataRow[] | null | undefined
+  
   switch (descriptor.field) {
-    case 'rows':         return view             // DataView 实现 IDataSource，适合整表绑定
-    case 'currentRow':   return view.currentRow
-    case 'selectedRows': return view.selectedRows
+    case 'rows':         value = view; break             // DataView 实现 IDataSource，适合整表绑定
+    case 'currentRow':   value = view.currentRow; break
+    case 'selectedRows': value = view.selectedRows; break
     default:             return undefined
   }
+  
+  // 如果有字段路径且值是行对象，提取字段值
+  if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof DataView)) {
+    const pathParts = descriptor.fieldPath.split('.')
+    let current: unknown = value
+    
+    for (const part of pathParts) {
+      if (current && typeof current === 'object' && part in current) {
+        current = (current as Record<string, unknown>)[part]
+      } else {
+        return undefined
+      }
+    }
+    
+    return current
+  }
+  
+  return value
 }
 
 // ===== 字符串入口（raw string → 数据）=====
@@ -169,7 +245,7 @@ export function resolveRawKey(
   if (!isDataKey(rawKey)) return undefined
   const dk = parseDataKey(rawKey)
   if (!dk) return undefined
-  return resolveDataKeyAsSource(dk, dataSet)
+  return resolveDataKeyAsSource(dk, dataSet) as DataView | IDataRow | IDataRow[] | null | undefined
 }
 
 /**

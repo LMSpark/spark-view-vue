@@ -87,7 +87,42 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
  * 同一页面多次访问跳过重建，冷启动仍需跑一次（但无网络请求）。
  */
 export function parsePageData(raw: string): PageDataConfig {
-  return DataSet.fromJSON(raw)
+  // pagedata.json can be one of two shapes:
+  // 1. A full DataSet metadata string (the format used by tests and
+  //    by some server-side generators).  In this case we want to use
+  //    the fast path `DataSet.fromJSON` which simply parses and feeds
+  //    the object to the constructor.
+  // 2. An arbitrary key/value map produced by page authors.  We
+  //    normalise this into a DataSet using `DataSet.fromPageData`,
+  //    which knows how to convert arrays/objects/primitive values
+  //    into one-table-per-key.  The function also handles the
+  //    legacy nested `dataset` field.
+  //
+  // Previously we blindly delegated to `fromJSON`, which meant that
+  //  any pagedata not conforming to the metadata shape (e.g. the demo
+  //  pages that include `currentUser`/`responseData`) would produce
+  //  an object without a `tables` property.  The DataSet constructor
+  //  then attempted `Object.entries(config.tables)` and exploded with
+  //  “Cannot convert undefined or null to object” during runtime.
+  
+  const parsed: unknown = JSON.parse(raw)
+  if (parsed === null || parsed === undefined) {
+    return DataSet.fromConfig({ dataSetName: 'PageDataSet', tables: {} })
+  }
+  if (typeof parsed !== 'object') {
+    return DataSet.fromPageData({ value: parsed })
+  }
+  const obj = parsed as Record<string, unknown>
+  // metadata shape has top‑level `tables` key; keep the existing
+  // fast path for it so we preserve the name that may be carried by
+  // the JSON string itself.
+  if ('tables' in obj) {
+    // reuse the existing utility which already handles
+    // string→object→DataSet conversion and avoids a second parse.
+    return DataSet.fromJSON(raw)
+  }
+  // otherwise treat it as generic page data
+  return DataSet.fromPageData(obj)
 }
 
 /**
@@ -140,7 +175,10 @@ export class PageConfigLoader implements ConfigLoader {
       storage: this.opts.fileStorage ?? 'localStorage',
       cachePrefix: 'spark_page_',
       fallbackToCache: true,
-      timeout: this.opts.timeout
+      timeout: this.opts.timeout,
+      // 分级过期策略配置（可选，使用默认值）
+      defaultExpirationLevel: 3,  // 默认15天
+      maxCacheSize: 50             // 最多缓存 50 个页面配置
     })
     // 绑定编译函数——函数名自动成为派生缓存的 key 后缀
     this.ruleLoader = this.fileLoader.withTransform(compileRule)

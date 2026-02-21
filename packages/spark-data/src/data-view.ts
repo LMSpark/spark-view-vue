@@ -35,6 +35,7 @@ import type { ValidationResult } from './validation'
 /**
  * DataView 事件映射（用于 events 事件总线类型约束）
  */
+// Note: any[] 在此处是合理的泛型约束（与 IEventEmitter 接口保持一致）
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DataViewEventMap extends Record<string, any[]> {
   stateChanged: [ViewStateEvent]

@@ -5,6 +5,7 @@
 import { shallowRef, Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { DataSet } from '../dataset'
+import type { IDataSetMetadata } from '../types'
 
 const pageLogger = Logger('PageRenderer')
 
@@ -51,6 +52,28 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
   const initDataSet = (rawPageData: Record<string, unknown> | DataSet) => {
     if (!enableDataSet) return
 
+    // 🔍 类型验证：检测到字符串或无效数据时报错
+    if (typeof rawPageData === 'string') {
+      const preview = (rawPageData as string).substring(0, 100)
+      pageLogger.error('❌ 检测到无效的缓存数据（字符串），需要清除浏览器缓存', {
+        type: typeof rawPageData,
+        preview
+      })
+      console.error('❌ DataSet 缓存数据损坏，请清除浏览器缓存后刷新页面：')
+      console.error('  方法1: 执行 localStorage.clear() 然后 location.reload()')
+      console.error('  方法2: 按 Ctrl+Shift+Delete 清除缓存')
+      // 尝试自动清除相关缓存
+      if (typeof localStorage !== 'undefined') {
+        const keys = Object.keys(localStorage).filter(k => k.includes('pagedata') || k.includes('spark_file_'))
+        keys.forEach(k => {
+          console.warn('  清除缓存键:', k)
+          localStorage.removeItem(k)
+        })
+        console.warn('✅ 已清除 ' + keys.length + ' 个缓存项，请刷新页面')
+      }
+      return
+    }
+
     // DataSet 实例直接赋值，跳过归一化（已由 parsePageData 编译并缓存）
     if (rawPageData instanceof DataSet) {
       if (dataSet.value) dataSet.value = null
@@ -60,6 +83,21 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
         tables: Object.keys(rawPageData.tables || {})
       })
       return
+    }
+
+    // 🔍 检测 DataSet 元数据格式（缓存反序列化后的普通对象）
+    if (rawPageData && typeof rawPageData === 'object' && 'tables' in rawPageData) {
+      const metadata = rawPageData as { dataSetName?: string; tables?: unknown }
+      if (metadata.tables && typeof metadata.tables === 'object') {
+        pageLogger.debug('检测到 DataSet 元数据格式，使用 fromData 转换')
+        if (dataSet.value) dataSet.value = null
+        dataSet.value = DataSet.fromData(rawPageData as unknown as IDataSetMetadata)
+        currentDataVersion = (rawPageData as { version?: unknown }).version
+        pageLogger.debug('DataSet 从元数据创建', {
+          tables: Object.keys(dataSet.value.tables || {})
+        })
+        return
+      }
     }
 
     // 版本对齐：rawPageData._version 存在且与当前缓存版本一致 → 直接复用 DataSet

@@ -19,6 +19,26 @@
  * ⚡ 性能优化：
  * - Syncfusion 样式按需加载（路由级懒加载，首屏减少 ~800 KB）
  * - 使用 useSyncfusionLoader 在使用时动态加载，不影响主入口
+ * 
+ * 💾 缓存分级过期策略：
+ * - 默认级别定义：0=永不过期, 1=3天, 2=7天, 3=15天(默认), 4=30天
+ * - 可在 createFileLoader 配置 expirationTiers 自定义级别
+ * - 可在 load 时指定 expirationLevel 为单个文件设置级别
+ * - 示例：
+ *   ```ts
+ *   // 全局配置
+ *   createFileLoader({ 
+ *     defaultExpirationLevel: 3,  // 默认15天
+ *     expirationTiers: [
+ *       { level: 0, maxAge: Infinity, description: '永不过期' },
+ *       { level: 1, maxAge: 3 * 24 * 60 * 60 * 1000 }
+ *     ]
+ *   })
+ *   
+ *   // 单文件配置
+ *   loader.load('/home/pagedata.json', { expirationLevel: 0 })  // 永不过期
+ *   loader.load('/admin/rule.json', { expirationLevel: 1 })     // 3天过期
+ *   ```
  */
 
 // SPARK 架构包
@@ -52,6 +72,35 @@ import './style.css'
  */
 async function startApp() {
   try {
+    // 🔧 清除损坏的缓存（旧版 toJSON 问题导致）
+    if (typeof localStorage !== 'undefined') {
+      const badKeys = Object.keys(localStorage).filter(k => {
+        if (!k.startsWith('spark_file_')) return false
+        try {
+          const cached = localStorage.getItem(k)
+          if (!cached) return false
+          const parsed = JSON.parse(cached) as { data?: unknown }
+          // 检测双重字符串化的情况（data 字段是字符串且看起来像 JSON）
+          if (parsed && typeof parsed.data === 'string') {
+            const trimmed = parsed.data.trim()
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+              return true
+            }
+          }
+        } catch { /* ignore */ }
+        return false
+      })
+      
+      if (badKeys.length > 0) {
+        startupLogger.warn(`🔧 检测到 ${badKeys.length} 个损坏的缓存项，正在清除...`)
+        badKeys.forEach(k => {
+          startupLogger.debug('清除缓存:', k)
+          localStorage.removeItem(k)
+        })
+        startupLogger.info('✅ 缓存已清除')
+      }
+    }
+    
     startupLogger.info('⏳ 正在加载应用配置...')
     
     // 1. 加载配置（支持多租户）
@@ -148,6 +197,25 @@ async function startApp() {
         const CapabilityDemo = (await import('./views/CapabilityDemo.vue')).default
         const ComponentRendererDemo = (await import('./views/ComponentRendererDemo.vue')).default
         const TenantConfigDemo = (await import('./views/TenantConfigDemo.vue')).default
+        
+        // 验证组件导入成功
+        const components = {
+          Dashboard,
+          About,
+          Settings,
+          CapabilityDemo,
+          ComponentRendererDemo,
+          TenantConfigDemo
+        }
+        
+        for (const [name, component] of Object.entries(components)) {
+          if (!component) {
+            startupLogger.error(`❌ 组件导入失败: ${name}`)
+            throw new Error(`组件导入失败: ${name}`)
+          }
+        }
+        
+        startupLogger.info('✅ 所有静态组件导入成功')
         
         // 注册能力演示组件（SparkApp 已自动处理编译时注册）
         // 如果需要运行时动态注册，可在此处添加
@@ -249,6 +317,13 @@ async function startApp() {
         // TODO: 错误上报到监控系统
         // await reportError(error)
         
+        // 检查 #app 是否已经有挂载的应用
+        const appElement = document.querySelector('#app')
+        if (appElement?.innerHTML) {
+          startupLogger.warn('⚠️ 检测到已挂载的应用，跳过错误页面渲染')
+          return
+        }
+        
         // 显示错误降级页面
         const errorApp = createApp(ErrorFallback, { 
           error: error instanceof Error ? error : new Error(String(error))
@@ -258,6 +333,13 @@ async function startApp() {
     })
   } catch (error) {
     startupLogger.error('❌ 应用启动失败', error instanceof Error ? error : { error })
+    
+    // 检查 #app 是否已经有挂载的应用
+    const appElement = document.querySelector('#app')
+    if (appElement?.innerHTML) {
+      startupLogger.warn('⚠️ 检测到已挂载的应用，跳过错误页面渲染')
+      return
+    }
     
     // 配置加载失败时的降级处理
     const errorApp = createApp(ErrorFallback, { 

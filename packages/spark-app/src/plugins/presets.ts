@@ -40,12 +40,11 @@ export function registerBuiltinPlugins(): void {
     'form-create': {
       name: 'Form Create',
       module: '@form-create/element-ui',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      loader: async (): Promise<{ default: any }> => {
+      loader: async () => {
         const formCreate = await import('@form-create/element-ui')
         // form-create 导出的是一个对象，需要包装为 Plugin
         return { 
-          default: formCreate.default ?? formCreate
+          default: (formCreate.default ?? formCreate) as import('vue').Plugin
         }
       },
       description: '动态表单生成器',

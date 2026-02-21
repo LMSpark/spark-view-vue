@@ -182,7 +182,8 @@ export class Request {
       url: c.url ?? '',
       method: (c.method?.toUpperCase() ?? 'GET') as Method,
       headers,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- axios params 为 any
+      // Note: axios 官方定义 params 为 any 类型，此处保持与 axios 类型兼容
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       params: c.params,
       data: c.data as unknown,
       timeout: c.timeout ?? 10000,

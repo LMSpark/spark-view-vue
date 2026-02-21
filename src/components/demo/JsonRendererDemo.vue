@@ -1,3 +1,18 @@
+<!--
+  ⚠️ DEPRECATED - 此组件已废弃
+  
+  此组件已迁移到 @spark-view/spark-component 包中作为标准组件。
+  
+  新代码请使用标准化的 JsonRenderer 组件：
+  - 位置: packages/spark-component/src/renderer/JsonRenderer.vue
+  - 导入: import { JsonRenderer } from '@spark-view/spark-component'
+  - 文档: docs/guides/JSON_RENDERER_GUIDE.md
+  - 迁移指南: docs/guides/JSON_RENDERER_MIGRATION.md
+  - 新示例: src/components/demo/JsonRendererExample.vue
+  
+  保留此文件仅作为历史参考。
+  迁移日期: 2026-02-21
+-->
 <template>
   <div style="background: white; padding: 20px; border-radius: 8px;">
     <h3>📋 JSON 配置驱动渲染</h3>
@@ -24,6 +39,10 @@
 <script setup lang="ts">
 /**
  * JSON 渲染演示组件 - 配置驱动渲染示例
+ * 
+ * @deprecated 此组件已废弃，请使用 @spark-view/spark-component 中的 JsonRenderer
+ * @see {@link packages/spark-component/src/renderer/JsonRenderer.vue}
+ * @see {@link docs/guides/JSON_RENDERER_MIGRATION.md} 迁移指南
  * 
  * @component JsonRendererDemo
  * @description

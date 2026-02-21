@@ -81,6 +81,16 @@ export interface ResponseInterceptor {
 
 // ==================== 文件加载器 / 缓存层 ====================
 
+/** 缓存过期策略级别定义 */
+export interface CacheExpirationTier {
+  /** 级别编号 */
+  level: number
+  /** 最大闲置时间（毫秒），Infinity 表示永不过期 */
+  maxAge: number
+  /** 级别说明 */
+  description?: string
+}
+
 export interface FileLoadOptions {
   /** API 基础路径（文件 HTTP 加载使用） */
   baseUrl: string
@@ -94,6 +104,15 @@ export interface FileLoadOptions {
   headers?: Record<string, string>
   /** 网络失败时降级到缓存 */
   fallbackToCache?: boolean
+  /** 
+   * 过期策略级别定义（默认：0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天）
+   * 可自定义级别定义
+   */
+  expirationTiers?: CacheExpirationTier[]
+  /** 默认过期级别（默认 3 = 15天），对应 expirationTiers 中的 level */
+  defaultExpirationLevel?: number
+  /** 最大缓存条目数（默认 100），超过按 LRU 清理 */
+  maxCacheSize?: number
 }
 
 /**
@@ -109,6 +128,12 @@ export interface CacheEntry<T = string> {
    * 对比此字段判断缓存是否仍有效。
    */
   sourceTimestamp: string
+  /** 缓存创建时间（毫秒时间戳，用于兜底） */
+  cachedAt: number
+  /** 最后访问时间（毫秒时间戳，用于滑动过期 + LRU 清理） */
+  lastAccess: number
+  /** 过期级别（0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天） */
+  expirationLevel: number
 }
 
 /** @deprecated 请使用 CacheEntry<string> */

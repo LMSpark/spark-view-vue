@@ -28,7 +28,13 @@ export class DynamicRouter {
   constructor(options: DynamicRouterOptions) {
     this.router = options.router
     this.configLoader = options.configLoader
-    this.pageComponent = options.pageComponent ?? (() => null) as unknown as Component
+    
+    // 验证 pageComponent 必须提供
+    if (!options.pageComponent) {
+      throw new Error('DynamicRouter: pageComponent 是必需的，请提供有效的 Vue 组件')
+    }
+    
+    this.pageComponent = options.pageComponent
     this.beforeRegister = options.beforeRegister
     this.afterRegister = options.afterRegister
   }

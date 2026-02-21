@@ -33,8 +33,7 @@ export interface SparkOptions {
    * 
    * 保留此字段仅用于向后兼容，将在下一个大版本中移除
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  registerComponents?: (...args: any[]) => { total: number; sync: number; async: number }
+  registerComponents?: (...args: unknown[]) => { total: number; sync: number; async: number }
 }
 
 /**
@@ -227,22 +226,21 @@ export async function start(options: StartOptions): Promise<void> {
       
       // 默认使用 PageRenderer 组件
       let pageComponent = pageConfig.pageComponent
+      
+      // 如果未提供 pageComponent，自动导入 PageRenderer
       if (!pageComponent) {
-        const { PageRenderer } = await import('@spark-view/spark-renderer')
+        startLogger.debug('未提供 pageComponent，自动导入 PageRenderer...')
+        const { PageRenderer } = await import('@spark-view/spark-component')
         pageComponent = PageRenderer
+        startLogger.debug('✅ PageRenderer 已导入')
       }
       
       const dynamicRouterOptions: import('@spark-view/spark-page-config').DynamicRouterOptions = {
         router,
         configLoader,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-        beforeRegister: pageConfig.beforeRegister as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-        afterRegister: pageConfig.afterRegister as any
-      }
-      
-      if (pageComponent) {
-        dynamicRouterOptions.pageComponent = pageComponent
+        pageComponent, // 确保传入有效组件
+        beforeRegister: pageConfig.beforeRegister,
+        afterRegister: pageConfig.afterRegister
       }
       
       const dynamicRouter = SparkPageConfig.createDynamicRouter(dynamicRouterOptions)

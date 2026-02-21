@@ -34,12 +34,15 @@ export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './core/types.js'
 // ── 7. 页面渲染引擎 ──
 export {
   PageRenderer,
-  usePageRenderer
+  usePageRenderer,
+  JsonRenderer,
+  useJsonRenderer
 } from './renderer/index.js'
 
 export type {
   UsePageRendererReturn,
-  UsePageRendererRefs
+  UsePageRendererRefs,
+  UseJsonRendererReturn
 } from './renderer/index.js'
 
 export type {
@@ -48,5 +51,6 @@ export type {
   PageContext,
   PageConfig,
   PageRendererOptions,
-  RuleBindingOptions
+  RuleBindingOptions,
+  JsonRendererOptions
 } from './renderer/index.js'

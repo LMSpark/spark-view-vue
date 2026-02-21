@@ -28,9 +28,18 @@
 
 import { Logger } from '../logger'
 import { Request } from './Request'
-import type { FileLoadOptions, CacheEntry, FileLoadResult } from './types'
+import type { FileLoadOptions, CacheEntry, FileLoadResult, CacheExpirationTier } from './types'
 
 const logger = Logger('FileLoader')
+
+/** 默认过期策略级别定义 */
+const DEFAULT_EXPIRATION_TIERS: CacheExpirationTier[] = [
+  { level: 0, maxAge: Infinity, description: '永不过期' },
+  { level: 1, maxAge: 3 * 24 * 60 * 60 * 1000, description: '3天' },
+  { level: 2, maxAge: 7 * 24 * 60 * 60 * 1000, description: '7天' },
+  { level: 3, maxAge: 15 * 24 * 60 * 60 * 1000, description: '15天' },
+  { level: 4, maxAge: 30 * 24 * 60 * 60 * 1000, description: '30天' }
+]
 
 interface FileResponse {
   content: string
@@ -45,15 +54,12 @@ export interface LoadOptions<T = unknown> {
   /** 跳过缓存强制重新请求（默认 false） */
   forceRefresh?: boolean
   /**
-   * 对原始文件内容应用变换，结果自动缓存。
+   * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。
    * 提供后 load() 返回 T（变换结果），而非原始 JSON。
    */
   transform?: (rawContent: string) => T | Promise<T>
-  /**
-   * 变换结果的缓存键后缀。
-   * 默认取 transform.name；匿名函数时用 'derived'。
-   */
-  transformKey?: string
+  /** 过期级别（覆盖全局默认值），对应 expirationTiers 中的 level */
+  expirationLevel?: number
 }
 
 /** withTransform() 返回的子加载器接口 */
@@ -66,6 +72,7 @@ export class FileLoader {
   private opts: Required<FileLoadOptions>
   private memCache = new Map<string, CacheEntry<unknown>>()
   private request: Request
+  private storage: Storage | null
 
   constructor(options: FileLoadOptions) {
     this.opts = {
@@ -74,6 +81,9 @@ export class FileLoader {
       timeout: 10000,
       headers: {},
       fallbackToCache: true,
+      expirationTiers: DEFAULT_EXPIRATION_TIERS,
+      defaultExpirationLevel: 3,  // 默认15天
+      maxCacheSize: 100,
       ...options
     }
     this.request = new Request({
@@ -81,6 +91,20 @@ export class FileLoader {
       timeout: this.opts.timeout,
       headers: this.opts.headers
     })
+    this.storage = this.opts.storage === 'localStorage' 
+      ? localStorage 
+      : this.opts.storage === 'sessionStorage' 
+        ? sessionStorage 
+        : null
+
+    // 启动时清理一次过期缓存
+    this.cleanupExpiredCache()
+  }
+
+  /** 获取指定级别的过期时间（毫秒） */
+  private getMaxAgeForLevel(level: number): number {
+    const tier = this.opts.expirationTiers.find(t => t.level === level)
+    return tier?.maxAge ?? this.opts.expirationTiers.find(t => t.level === this.opts.defaultExpirationLevel)?.maxAge ?? Infinity
   }
 
   // ==================== HTTP 文件加载 ====================
@@ -97,38 +121,69 @@ export class FileLoader {
     const parseJSON = options?.parseJSON ?? true
     const forceRefresh = options?.forceRefresh ?? false
     const transform = options?.transform
+    const expirationLevel = options?.expirationLevel ?? this.opts.defaultExpirationLevel
 
-    // --- 1. 获取原始文件（带时间戳缓存） ---
-    const rawResult = await this.loadRaw(fileName, forceRefresh)
+    // --- 1. 有 transform：只缓存 transform 结果，不缓存原始文件 ---
+    if (transform) {
+      // 缓存键直接用文件路径，不加 transformKey 后缀
+      const cacheKey = fileName
+
+      // 读取 transform 缓存（获取 sourceTimestamp）
+      const cachedEntry = forceRefresh ? null : this.readEntry<T>(cacheKey)
+      const knownTimestamp = cachedEntry?.sourceTimestamp ?? ''
+
+      try {
+        // 发起网络请求（带 timestamp 参数）
+        const params: Record<string, unknown> = {}
+        if (knownTimestamp) params['timestamp'] = knownTimestamp
+
+        const response = await this.request.requestFull<FileResponse>({
+          url: fileName,
+          method: 'GET',
+          params
+        })
+        const result = response.data
+
+        // 如果服务器返回 notModified，使用缓存的 transform 结果
+        if (result.notModified === true) {
+          if (cachedEntry) {
+            return { success: true, data: cachedEntry.data, timestamp: cachedEntry.sourceTimestamp, fromCache: true, notModified: true }
+          }
+          return { success: false, error: 'notModified 但无本地缓存', fromCache: false }
+        }
+
+        // 获取新内容
+        if (!result.content || !result.timestamp) {
+          throw new Error('响应格式错误：缺少 content 或 timestamp')
+        }
+
+        // 执行 transform 并缓存结果（不缓存原始文件）
+        const transformed = await transform(result.content)
+        this.store(cacheKey, transformed, result.timestamp, expirationLevel)
+        return { success: true, data: transformed, timestamp: result.timestamp, fromCache: false }
+
+      } catch (error) {
+        // 网络失败时降级使用缓存
+        if (this.opts.fallbackToCache && cachedEntry) {
+          const msg = error instanceof Error ? error.message : String(error)
+          logger.warn('网络失败，使用 transform 缓存', { fileName, error: msg })
+          return { success: true, data: cachedEntry.data, timestamp: cachedEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
+        }
+
+        // transform 执行失败
+        const msg = error instanceof Error ? error.message : String(error)
+        logger.error('文件加载或 transform 失败', { fileName, error: msg })
+        return { success: false, error: msg, fromCache: false }
+      }
+    }
+
+    // --- 2. 无 transform：缓存原始文件（保持原有逻辑） ---
+    const rawResult = await this.loadRaw(fileName, forceRefresh, expirationLevel)
     if (!rawResult.success) return rawResult as FileLoadResult<T>
 
     const rawContent = rawResult.data ?? ''
     const timestamp = rawResult.timestamp ?? ''
 
-    // --- 2. 如有 transform：检查变换结果缓存 ---
-    if (transform) {
-      const suffix = options?.transformKey ?? (transform.name || 'derived')
-      const derivedKey = `${fileName}:${suffix}`
-
-      if (!forceRefresh) {
-        const cached = this.retrieve<T>(derivedKey, timestamp)
-        if (cached !== null) {
-          return { success: true, data: cached, timestamp, fromCache: true, ...(rawResult.notModified !== undefined && { notModified: rawResult.notModified }) }
-        }
-      }
-
-      try {
-        const transformed = await transform(rawContent)
-        this.store(derivedKey, transformed, timestamp)
-        return { success: true, data: transformed, timestamp, fromCache: false, ...(rawResult.error !== undefined && { error: rawResult.error }) }
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e)
-        logger.error('transform 执行失败', { fileName, error: msg })
-        return { success: false, error: `transform 失败: ${msg}`, fromCache: false }
-      }
-    }
-
-    // --- 3. 无 transform：直接解析原始内容 ---
     try {
       const data = parseJSON ? (JSON.parse(rawContent) as T) : (rawContent as T)
       return { success: true, data, timestamp, fromCache: rawResult.fromCache, ...(rawResult.notModified !== undefined && { notModified: rawResult.notModified }), ...(rawResult.error !== undefined && { error: rawResult.error }) }
@@ -161,14 +216,13 @@ export class FileLoader {
    * ```
    */
   withTransform<T>(
-    transform: (rawContent: string) => T | Promise<T>,
-    transformKey?: string
+    transform: (rawContent: string) => T | Promise<T>
   ): DerivedLoader<T> {
     return {
       load: (fileName, opts) =>
-        this.load<T>(fileName, { ...opts, transform, ...(transformKey !== undefined && { transformKey }) }),
+        this.load<T>(fileName, { ...opts, transform }),
       loadBatch: (fileNames, opts) =>
-        this.loadBatch<T>(fileNames, { ...opts, transform, ...(transformKey !== undefined && { transformKey }) })
+        this.loadBatch<T>(fileNames, { ...opts, transform })
     }
   }
 
@@ -178,8 +232,8 @@ export class FileLoader {
    * 手动缓存任意计算结果。
    * 通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。
    */
-  store<T>(key: string, data: T, sourceTimestamp: string): void {
-    this.writeEntry<T>(key, data, sourceTimestamp)
+  store<T>(key: string, data: T, sourceTimestamp: string, expirationLevel?: number): void {
+    this.writeEntry<T>(key, data, sourceTimestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
   }
 
   /**
@@ -224,7 +278,7 @@ export class FileLoader {
   // ==================== 内部实现 ====================
 
   /** 加载原始文件内容（仅维护 string 缓存，不做 JSON.parse 或 transform） */
-  private async loadRaw(fileName: string, forceRefresh: boolean): Promise<FileLoadResult<string>> {
+  private async loadRaw(fileName: string, forceRefresh: boolean, expirationLevel?: number): Promise<FileLoadResult<string>> {
     try {
       const cached = forceRefresh ? null : this.readEntry<string>(fileName)
       const knownTimestamp = cached?.sourceTimestamp ?? ''
@@ -250,7 +304,7 @@ export class FileLoader {
         throw new Error('响应格式错误：缺少 content 或 timestamp')
       }
 
-      this.writeEntry<string>(fileName, result.content, result.timestamp)
+      this.writeEntry<string>(fileName, result.content, result.timestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
       return { success: true, data: result.content, timestamp: result.timestamp, fromCache: false }
 
     } catch (error) {
@@ -268,34 +322,166 @@ export class FileLoader {
 
   private readEntry<T>(key: string): CacheEntry<T> | null {
     const k = this.opts.cachePrefix + key
-    if (this.opts.storage === 'memory') return (this.memCache.get(k) as CacheEntry<T>) ?? null
-    try {
-      const raw = this.storage.getItem(k)
-      return raw ? (JSON.parse(raw) as CacheEntry<T>) : null
-    } catch { return null }
+    let entry: CacheEntry<T> | null = null
+
+    if (this.opts.storage === 'memory') {
+      entry = (this.memCache.get(k) as CacheEntry<T>) ?? null
+    } else {
+      try {
+        const raw = this.storage?.getItem(k)
+        entry = raw ? (JSON.parse(raw) as CacheEntry<T>) : null
+      } catch { return null }
+    }
+
+    if (!entry) return null
+
+    // 滑动过期：基于 expirationLevel 检查闲置时间
+    const now = Date.now()
+    const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
+    const maxAge = this.getMaxAgeForLevel(entry.expirationLevel ?? this.opts.defaultExpirationLevel)
+    
+    if (maxAge !== Infinity && idleTime > maxAge) {
+      const tier = this.opts.expirationTiers.find(t => t.level === entry.expirationLevel)
+      logger.debug('缓存闲置过期，自动删除', { 
+        key, 
+        level: entry.expirationLevel,
+        tierDesc: tier?.description,
+        idleDays: Math.round(idleTime / 1000 / 60 / 60 / 24) 
+      })
+      this.clearCache(key)
+      return null
+    }
+
+    // 更新最后访问时间（滑动窗口）
+    entry.lastAccess = now
+    this.writeEntryDirect(k, entry)
+
+    return entry
   }
 
-  private writeEntry<T>(key: string, data: T, sourceTimestamp: string): void {
-    const entry: CacheEntry<T> = { data, sourceTimestamp }
+  private writeEntry<T>(key: string, data: T, sourceTimestamp: string, expirationLevel: number): void {
+    const now = Date.now()
+    const entry: CacheEntry<T> = { 
+      data, 
+      sourceTimestamp,
+      cachedAt: now,
+      lastAccess: now,
+      expirationLevel
+    }
     const k = this.opts.cachePrefix + key
-    if (this.opts.storage === 'memory') { this.memCache.set(k, entry as CacheEntry<unknown>); return }
-    try { this.storage.setItem(k, JSON.stringify(entry)) }
-    catch (e) { logger.error('缓存写入失败', { key: k, error: e }) }
+
+    // 检查缓存数量限制，超限时执行 LRU 清理
+    this.enforceMaxCacheSize()
+
+    this.writeEntryDirect(k, entry)
   }
 
-  private get storage(): Storage {
-    return this.opts.storage === 'sessionStorage' ? sessionStorage : localStorage
+  /** 直接写入缓存（不检查限制，内部方法） */
+  private writeEntryDirect<T>(key: string, entry: CacheEntry<T>): void {
+    if (this.opts.storage === 'memory') { 
+      this.memCache.set(key, entry as CacheEntry<unknown>)
+      return 
+    }
+    try { 
+      this.storage?.setItem(key, JSON.stringify(entry)) 
+    } catch (e) { 
+      logger.error('缓存写入失败', { key, error: e }) 
+    }
   }
 
   private storageRemove(key: string): void {
     if (this.opts.storage !== 'memory') {
-      try { this.storage.removeItem(key) } catch { /* ignore */ }
+      try { this.storage?.removeItem(key) } catch { /* ignore */ }
+    }
+  }
+
+  /** 清理过期缓存（基于分级过期策略） */
+  private cleanupExpiredCache(): void {
+    const now = Date.now()
+    const prefix = this.opts.cachePrefix
+    let cleaned = 0
+
+    if (this.opts.storage === 'memory') {
+      for (const [key, entry] of this.memCache.entries()) {
+        if (!key.startsWith(prefix)) continue
+        const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
+        const maxAge = this.getMaxAgeForLevel(entry.expirationLevel ?? this.opts.defaultExpirationLevel)
+        if (maxAge !== Infinity && idleTime > maxAge) {
+          this.memCache.delete(key)
+          cleaned++
+        }
+      }
+    } else {
+      const storage = this.storage
+      if (!storage) return
+      for (let i = storage.length - 1; i >= 0; i--) {
+        const key = storage.key(i)
+        if (!key?.startsWith(prefix)) continue
+        try {
+          const raw = storage.getItem(key)
+          if (!raw) continue
+          const entry = JSON.parse(raw) as CacheEntry<unknown>
+          const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
+          const maxAge = this.getMaxAgeForLevel(entry.expirationLevel ?? this.opts.defaultExpirationLevel)
+          if (maxAge !== Infinity && idleTime > maxAge) {
+            storage.removeItem(key)
+            cleaned++
+          }
+        } catch { /* 损坏的缓存直接删除 */ storage.removeItem(key) }
+      }
+    }
+
+    if (cleaned > 0) {
+      logger.info('清理闲置缓存完成', { cleaned, defaultLevel: this.opts.defaultExpirationLevel })
+    }
+  }
+
+  /** 强制执行缓存数量限制（LRU 策略） */
+  private enforceMaxCacheSize(): void {
+    const prefix = this.opts.cachePrefix
+    const entries: Array<{ key: string; lastAccess: number }> = []
+
+    if (this.opts.storage === 'memory') {
+      for (const [key, entry] of this.memCache.entries()) {
+        if (key.startsWith(prefix)) {
+          entries.push({ key, lastAccess: entry.lastAccess || 0 })
+        }
+      }
+    } else {
+      const storage = this.storage
+      if (!storage) return
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i)
+        if (!key?.startsWith(prefix)) continue
+        try {
+          const raw = storage.getItem(key)
+          if (!raw) continue
+          const entry = JSON.parse(raw) as CacheEntry<unknown>
+          entries.push({ key, lastAccess: entry.lastAccess || 0 })
+        } catch { /* ignore */ }
+      }
+    }
+
+    // 如果超出限制，删除最旧的项
+    const excess = entries.length - this.opts.maxCacheSize
+    if (excess > 0) {
+      entries.sort((a, b) => a.lastAccess - b.lastAccess)
+      const toRemove = entries.slice(0, excess)
+      for (const item of toRemove) {
+        if (this.opts.storage === 'memory') {
+          this.memCache.delete(item.key)
+        } else {
+          this.storage?.removeItem(item.key)
+        }
+      }
+      logger.info('LRU 清理缓存', { removed: toRemove.length, totalEntries: entries.length })
     }
   }
 
   private storageClearPrefix(): void {
     if (this.opts.storage === 'memory') return
     const s = this.storage
+    if (!s) return
     Object.keys(s).filter(k => k.startsWith(this.opts.cachePrefix)).forEach(k => s.removeItem(k))
   }
 }
