@@ -217,7 +217,7 @@ export class DataView {
       }
 
       const parentRows = getParentRows(pView, rel.dependencyType)
-      // 父视图成功后状态重置为 Idle（rows 仍存在），需用 rows.length 判断数据是否就绪
+      // 用 rows.length 而非 requestState===Loaded 判断就绪，兼容父视图处于 Loaded/Idle 两种终态
       const parentReady = pView.requestState === RequestState.Loading || pView.rows.length > 0
       if (!parentReady || parentRows.length === 0) {
         this.requestState = RequestState.Failed
@@ -309,9 +309,7 @@ export class DataView {
           this.selectedRows.splice(0, this.selectedRows.length)
           this.selectedRowIndices = []
         }
-        // 成功后重置为 Idle（而非 Loaded），使 requestData() 可再次上行触发
-        // rows 已写入，子视图依赖检查改为 rows.length > 0，仍可级联
-        this.requestState = RequestState.Idle
+        this.requestState = RequestState.Loaded
         this.emitStateChanged('rows')
       } else {
         this.requestState = RequestState.Failed
@@ -382,7 +380,7 @@ export class DataView {
    * - `requestData()` —— 上行请求，有幂等守卫（仅 Idle 状态才执行）
    * - `refresh()` —— 下行刷新，先将状态置为 Idle，再调用 `requestData()`，无论当前状态一律重新拉取
    *
-   * 注意：不清空现有 rows，刷新完成前原数据仍可读取。
+   * 注意：不清空现有 rows，刷新完成前原数据仍可读取（Loaded 状态被重置为 Idle 后重新请求）。
    * 如需同时清空数据，请先调用 `resetState()`。
    *
    * 适用场景：父视图数据变化后，CascadeDelegate 触发子视图级联更新。
