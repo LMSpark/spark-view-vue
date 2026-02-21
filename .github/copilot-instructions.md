@@ -1,34 +1,82 @@
 # SPARK Component System - AI Coding Agent Instructions
 
-Purpose: Quick, actionable guidance to make an AI coding agent productive in this mono-repo (apps share the SPARK component architecture).
+Purpose: Quick, actionable guidance to make an AI coding agent productive in this mono-repo.
 
 ## Quick facts ✅
-- Dev: `pnpm run dev` or `npm run dev` (Vite, preview on port 5173)
+- Dev: `pnpm run dev` (Vite, port 5173)
 - Build: `pnpm run build` (runs `vue-tsc` then `vite build`)
 - Typecheck: `pnpm run typecheck` (uses `tsconfig.typecheck.json`)
-- Tests: `pnpm run test` (Vitest + jsdom + @vue/test-utils); run a single test: `pnpm run test -- -t "capability-late-binding"`
+- Tests: `pnpm run test` (Vitest + jsdom + @vue/test-utils); single test: `pnpm run test -- -t "capability-late-binding"`
 - Lint & hooks: `pnpm run lint`; Husky pre-commit runs `lint` + `typecheck`
+- Commit scope 必须是: `deps, docs, scripts, spark-data, spark-app, spark-component, spark-utils, spark-renderer, spark-page-config`
 
 ## Where to look (high value files) 🔎
-- Architecture docs: `docs/architecture/DATAFLOW_ARCHITECTURE.md` (data-flow + rationale)
 - **Packages**:
   - `packages/spark-component/` — 组件系统（API docs: `packages/spark-component/API.md`）
   - `packages/spark-data/` — 数据空间（DataSet, DataTable, DataView, TreeManager）
-- **Pages config**: `pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
-- Example components: `features/spark/components/ej2/SparkEJ2Grid.vue`, `features/spark/components/ej2/SparkEJ2Column.vue`
-- Key composable: `packages/spark-component/src/composables/useSparkComponent.ts`
-- DataKey parser: `packages/spark-data/src/core/data-key.ts`
-- Tests: `tests/` (look for `capability-late-binding.test.ts`, `provider-listener.test.ts`)
+  - `packages/spark-utils/` — 能力系统基础设施 + Logger（`src/capability/symbols.ts`）
+  - `packages/spark-app/` — 应用层（start, bootstrap, logger, auth, plugins）
+- **Pages config**: `public/pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
+- **Example components**: `features/spark-ej2/components/SparkEJ2Grid.vue`, `features/spark-ej2/components/SparkEJ2Column.vue`
+- **Key composable**: `packages/spark-component/src/composables/useSparkComponent.ts`
+- **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
+- **Capability keys**: `packages/spark-utils/src/capability/symbols.ts` (APP_SERVICES, LOGGER 等), `packages/spark-data/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
+- **Tests**: `tests/` (重要: `capability-late-binding.test.ts`, `capability-system.test.ts`, `data-key.test.ts`)
 
 ## Project conventions & patterns 📌
-- Component `type` uses **kebab-case** (e.g., `spark-ej2-grid`) and is registered with `Spark.register()`.
-- **Dynamic Import** ⚡: Use `loader: () => import('./Component.vue')` for lazy loading (首屏提速 70%+).
-- **Registration API**: Use `Spark.createRegister(import.meta.glob('./*.vue'))` for path-based registration.
-- App installs the plugin: `app.use(Spark.createPlugin())` (Symbol-based DI, manager auto-created).
-- Inside components use `useSparkComponent(config)` to access `{ context, provide, consume, use, whenAvailable, logger }`.
-- Capability system uses provider/consumer pattern with Symbol-based capability names.
-- `GetProvider(name, ctx?)` behavior: if `ctx` provided, search only that scope; otherwise walk parent chain.
-- **APP Services**: Use `consume(APP_SERVICES)` to access router/logger in components (类型自动推断).
+- Component `type` 使用 **kebab-case**（如 `spark-ej2-grid`），通过 `Spark.register()` 注册
+- **Dynamic Import** ⚡: `Spark.register('type', () => import('./Component.vue'))` 懒加载
+- **批量注册**: `Spark.createRegister(import.meta.glob('./*.vue')).registerAll({ 'type': './Comp.vue' })`
+- App 安装插件: `app.use(Spark.createPlugin())`（Symbol-based DI，自动创建 rootContext）
+- 组件内使用 `useSparkComponent(config)` 获取 SPARK 上下文
+
+## useSparkComponent 返回值接口
+
+```typescript
+const {
+  context,          // ComponentContext — 当前组件上下文（响应式）
+  isVisible,        // ComputedRef<boolean> — 基于 config.visible
+  isDisabled,       // ComputedRef<boolean> — 基于 config.disabled
+  provide,          // (name, impl) => void — 写入 ctx.capabilities（SPARK 能力，非 Vue DI）
+  provideEvents,    // (name?) => IEventEmitter — 提供事件总线
+  getProvider,      // (name) => unknown — 仅查找本组件 capabilities（不走 parent 链）
+  consume,          // <T>(name) => T | null — 沿 parent 链向上查找能力
+  consumeEvents,    // (name, handlers) => IEventEmitter | null — 消费并绑定事件
+  initialize,       // () => void — onMounted 自动调用
+  destroy,          // () => void — onUnmounted 自动调用（清理 children + capabilities）
+  logger,           // LoggerApi — 带优先级的日志代理（见下方说明）
+  getComponent,     // (type) => unknown — 从注册表获取组件（markRaw 包装）
+  isComponentRegistered, // (type) => boolean
+} = useSparkComponent(props.config)
+```
+
+**logger 优先级**（无需手动 consume，代理自动解析）：
+1. `LOGGER` 能力键（最近祖先 `provide(LOGGER, impl)`）
+2. `APP_SERVICES.logger`（应用层统一提供）
+3. fallback console
+
+## Spark 命名空间 API
+
+```typescript
+// 批量注册（推荐）
+const reg = Spark.createRegister(import.meta.glob('./*.vue'))
+reg.register('user-grid', './UserGrid.vue')
+reg.registerAll({ 'user-grid': './UserGrid.vue', 'user-row': './UserRow.vue' })
+
+// 单个注册
+Spark.register('my-comp', MyComp)                         // 同步组件
+Spark.register('my-comp', () => import('./MyComp.vue'))   // 懒加载
+
+// 批量注册（无 glob 绑定）
+Spark.registerAll({ 'my-comp': MyComp }, modules?)
+
+// 插件 & 注册表
+app.use(Spark.createPlugin())                 // 使用全局 registry
+app.use(Spark.createPlugin({ registry }))    // 使用自定义 registry
+Spark.getRegistry()                           // 获取全局注册表
+Spark.createRegistry()                        // 创建隔离注册表（测试用）
+Spark.createSystem()                          // 测试专用: { registry, rootContext, createContext }
+```
 
 ## DataKey 数据绑定键 🔗
 统一格式（`@` 分隔符）：`{scope}@{tableName}@{viewId}@{field}`
@@ -40,209 +88,204 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 
 - `field` 可选值：`rows`、`currentRow`、`selectedRows`
 - ⚠️ 旧格式 `dataset.tables.X.rows` **已移除**，不再支持
-- API：`isDataKey()`, `parseDataKey()`, `resolveDataKey()` — 位于 `packages/spark-data/src/core/data-key.ts`
-- 页面配置 `rule.json` 的 `dataKey` 字段必须使用 `@` 格式
+- API（`packages/spark-data/src/core/data-key.ts`）：
+  - `isDataKey(key)` — 格式校验
+  - `parseDataKey(key)` — 解析为 `DataKeyDescriptor`
+  - `resolveDataKey(descriptor, dataSet)` — 解析数据值
+  - `resolveDataKeyBinding(key, dataSet)` — 返回 `DataKeyBinding` 判别联合（渲染层首选）
+  - `buildDataKey(scope, table, field, viewId?)` — 构建 key 字符串
 
 ```json
 // rule.json 示例
 { "dataKey": "UserOrderDataSet@Users@default@rows" }
 ```
 
-## DI 架构统一 🔄
-项目采用 **单一 DI 管道**（SPARK 能力系统）：
+## 能力体系 🔧
 
-| 机制 | 用途 | 例子 |
+### DI 双轨（严格区分）
+
+| 机制 | 实现 | 用途 |
 |------|------|------|
-| **SPARK 能力系统** | `provide()` / `consume()` via `useSparkComponent` | `APP_SERVICES`, `DATA_SOURCE`, `SELECTION` |
-| **Vue 原生 DI (仅基础设施)** | `app.provide()` / `inject()` | `SPARK_REGISTRY_KEY`（组件注册表） |
+| **SPARK 能力系统** | `ctx.capabilities` Map + `lookup()` 走 parent 链 | 所有业务能力 |
+| **Vue DI（仅基础设施）** | `app.provide()` / `inject()` | 仅 `SPARK_REGISTRY_KEY`（注册表）+ `SPARK_PARENT_CONTEXT_KEY`（根上下文） |
 
-**使用规则**：
-1. ✅ **业务能力**：统一使用 `consume(APP_SERVICES)` 获取应用服务（router、logger、auth 等）
-2. ✅ **Router**：直接使用 `vue-router` 的 `useRouter()`（无需 DI）
-3. ✅ **Logger**：从应用层统一提供（通过 `APP_SERVICES` 或直接 `provide('logger', ...)`）
-4. ✅ **新增能力**：使用 `CapabilityKey<T>`（`defineCapability<T>()`），接口定义在 `spark-utils/capability-types.ts`
-5. ⚠️ **SPARK 基础设施**：仅 `SPARK_REGISTRY_KEY` 保留 Vue DI（組件系统核心）
+**重要**：`useSparkComponent` 的 `provide()` / `consume()` 是 **SPARK 能力系统**，不是 Vue 的 `provide/inject`。
 
-**示例代码**：
-```typescript
-// ✅ 推荐：通过 APP_SERVICES 能力获取服务
-const { consume, logger } = useSparkComponent({ type: 'my-comp' })
-const services = consume(APP_SERVICES)
-services?.router?.push('/home')
-logger.info('Action')  // 使用应用层提供的 logger
+### 能力键一览
 
-// ✅ 应用层提供全局 logger（在 main.ts 或 bootstrap 中）
-import { createLogger } from '@spark-view/spark-app'
-const appLogger = createLogger('App')
-// 方式 1：通过 APP_SERVICES 提供
-const { provide } = useSparkComponent({ type: 'root' })
-provide(APP_SERVICES, { 
-  router: useRouter(), 
-  logger: appLogger 
-})
-// 方式 2：直接提供 logger 能力
-provide('logger', appLogger)
+| 键 | 定义包 | 类型 | 用途 |
+|---|---|---|---|
+| `APP_SERVICES` | spark-utils | `IAppServicesCapability` | 路由、logger、租户等应用服务 |
+| `LOGGER` | spark-utils | `LoggerApi` | 组件级自定义 logger 覆盖 |
+| `PAGE_SERVICE` | spark-utils | `IPageServiceCapability` | UI 消息、确认框、导航 |
+| `SELECTION` | spark-utils | `ISelectionCapability` | 选择状态管理 |
+| `CURRENT_ROW` | spark-utils | `ICurrentRowCapability` | 当前行管理 |
+| `ROW_DATA` | spark-utils | `IRowDataCapability` | 行数据访问 |
+| `GRID_EVENTS` | spark-utils | `IEventEmitter` | 表格事件总线 |
+| `ROW_EVENTS` | spark-utils | `IEventEmitter` | 行事件总线 |
+| `PAGE_DATASET` | spark-data | `IDataSet` | 页面级 DataSet（PageRenderer provide） |
+| `DATA_SOURCE` | spark-data | `IDataSource` | 组件级数据视图（容器组件 provide） |
+
+### 标准调用链
+
+```
+SparkPlugin.install()
+  rootContext.capabilities = Map(空)         ← 应用层通过 APP_SERVICES 填充
+  Vue DI: SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY
+    ↓
+PageRenderer
+  provide(APP_SERVICES, { router, logger })   ← SPARK 能力，不是 Vue DI
+  provide(PAGE_DATASET, dataSet)
+    ↓
+r-table / r-tree
+  consume(PAGE_DATASET) → 解析 dataKey → DataView
+  provide(DATA_SOURCE, dataView)
+  provide(SELECTION, {...})
+    ↓
+r-row / r-cell
+  consume(DATA_SOURCE)  → DataView (IDataSource)
+  consume(SELECTION)
 ```
 
-## Testing & common pitfalls 🧪
-- Tests run with Vitest + jsdom; external EJ2 (custom tags `e-*`) should be stubbed/mocked in unit tests.
-- Provide `sparkManager` in test mounts using `Spark.createPlugin()`.
-- Common runtime error: Component not found → ensure component is registered before use.
-- Network-dependent CSS (Syncfusion CDN) can break styling in offline tests; mock or vendor styles locally for tests.
+### 新增自定义能力
 
-## Integration & build notes 🔧
-- Vite recognizes `e-*` custom elements; SSR uses `ssr.noExternal` for `element-plus` (check `vite.config.ts` for SSR quirks).
-- TypeScript path aliases:
-  - `@spark-view/spark-component` → `./packages/spark-component/src`
-  - `@spark-view/spark-data` → `./packages/spark-data/src`
+```typescript
+// spark-utils/capability/symbols.ts 中添加（或在项目中本地定义）
+import { defineCapability } from '@spark-view/spark-utils'
+export const MY_CAP = defineCapability<{ doSomething(): void }>('app:my-capability')
+
+// Provider
+const { provide } = useSparkComponent({ type: 'provider' })
+provide(MY_CAP, { doSomething() { ... } })
+
+// Consumer（任意深度子孙）
+const { consume } = useSparkComponent({ type: 'consumer' })
+const cap = consume(MY_CAP)  // T | null，类型自动推断
+```
 
 ## Package structure 📦
 ```
 packages/
-├── spark-app/           # 应用层基础设施（✨ 新增 plugins/）
-│   ├── src/
-│   │   ├── plugins/     # 插件管理系统
-│   │   ├── auth/        # 认证模块
-│   │   ├── bootstrap/   # 引导模块
-│   │   ├── logger/      # 日志模块
-│   │   └── router/      # 路由模块
-│   └── API.md
-├── spark-component/     # 组件系统（Spark namespace, 能力系统）
-│   ├── src/
-│   │   ├── spark.ts
-│   │   ├── registry/
-│   │   ├── capability/
-│   │   ├── composables/
-│   │   ├── plugins/
-│   │   └── core/
-│   └── API.md
-├── spark-data/          # 数据空间（DataSet, DataTable, DataView, TreeManager）
-│   ├── src/
-│   │   ├── core/        # DataEventHub（统一事件中枢）, utils
-│   │   ├── permission/  # 权限系统
-│   │   ├── dataset.ts   # DataSet（事件驱动协调器）
-│   │   ├── data-table.ts
-│   │   ├── data-view.ts # DataView（只发射 view:stateChanged 事件）
-│   │   └── tree-manager.ts
-│   └── API.md
-└── spark-utils/         # 共享工具（Logger, Capability Symbols）
-    ├── src/
-    └── API.md
+├── spark-app/           # 应用层基础设施
+│   └── src/
+│       ├── auth/        # AuthService, TokenManager
+│       ├── bootstrap/   # bootstrap()
+│       ├── logger/      # createLogger, createAppLogger
+│       ├── plugins/     # PluginRegistry, PluginManager
+│       ├── namespace.ts # SparkApp 命名空间
+│       └── start.ts     # start() 高级 API
+├── spark-component/     # 组件系统（Spark 命名空间、能力系统）
+│   └── src/
+│       ├── spark.ts          # Spark 命名空间（唯一入口）
+│       ├── core/types.ts     # ComponentConfig, ComponentContext, ComponentRegistry
+│       ├── registry/         # ComponentRegistry 实现
+│       ├── composables/      # useSparkComponent
+│       ├── plugins/          # SparkPlugin (Vue plugin)
+│       └── renderer/
+│           ├── composables/  # usePageRenderer, useJsonRenderer, useRuleBinding, useCssScope
+│           └── utils/        # bindRules, createSandbox, provideAppServices, scopeCSS
+├── spark-data/          # 数据空间
+│   └── src/
+│       ├── core/data-key.ts  # DataKey 解析（resolveDataKeyBinding 等）
+│       ├── capability-keys.ts # PAGE_DATASET, DATA_SOURCE
+│       ├── spark-data.ts     # SparkData 命名空间（推荐 API）
+│       ├── dataset.ts        # DataSet（事件驱动协调器）
+│       ├── data-table.ts     # DataTable
+│       ├── data-view.ts      # DataView（IDataSource 实现）
+│       ├── tree-manager.ts   # TreeManager
+│       └── sync-helpers.ts   # createTableSyncHandlers（UI↔DataSet 桥接）
+├── spark-page-config/   # 页面配置加载器（ConfigLoader, SparkPageConfig）
+└── spark-utils/         # 共享基础设施
+    └── src/
+        ├── capability/symbols.ts  # 所有能力键定义 + provide/lookup/defineCapability
+        ├── logger.ts              # Logger 工厂
+        ├── http/                  # Request, FileLoader
+        └── lazy-loader.ts        # useSyncfusionLoader, useLazyLoader
 ```
 
 ## Plugin System (插件配置系统) 🔌
 
-### 插件管理在 SparkApp 层
-**重要**: 插件管理系统已提升到 `@spark-view/spark-app`，作为应用层基础设施
-
 ```typescript
-import { 
-  PluginRegistry, 
-  PluginManager, 
-  registerBuiltinPlugins 
-} from '@spark-view/spark-app'
+import { PluginRegistry, PluginManager, registerBuiltinPlugins } from '@spark-view/spark-app'
+
+registerBuiltinPlugins()  // 注册内置: element-plus, vxe-table, form-create
+const plugins = await PluginManager.loadPlugins(appConfig.plugins)
 ```
 
-### 插件配置格式
-支持两种格式：简单布尔值或详细配置对象
-
+插件配置（支持简单布尔值或详细对象）：
 ```json
 {
   "plugins": {
-    "element-plus": true,  // 简单格式
-    "vxe-table": {         // 详细格式
-      "enabled": true,
-      "options": { "size": "large" },
-      "priority": 2
-    }
+    "element-plus": true,
+    "vxe-table": { "enabled": true, "options": { "size": "large" } }
   }
 }
 ```
-
-### 注册自定义插件
-```typescript
-import { PluginRegistry } from '@spark-view/spark-app'
-
-PluginRegistry.register('my-plugin', {
-  name: 'My Plugin',
-  module: './plugins/my-plugin',
-  loader: () => import('./plugins/my-plugin'),
-  defaultOptions: { theme: 'light' }
-})
-```
-
-### 插件加载
-在 `main.ts` 中自动根据配置加载：
-```typescript
-import { 
-  SparkApp,
-  PluginManager, 
-  registerBuiltinPlugins 
-} from '@spark-view/spark-app'
-
-registerBuiltinPlugins()  // 注册内置插件
-const plugins = await PluginManager.loadPlugins(appConfig.plugins)
-await SparkApp.start({ plugins, ... })
-```
-
-**内置插件**: `element-plus`, `vxe-table`, `form-create`
 
 详细文档: `docs/guides/PLUGIN_CONFIGURATION.md`
 
 ## Package usage examples 📚
 
-### Using spark-component (组件系统)
+### spark-component（组件系统）
 ```ts
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 
-// Install plugin (uses global singleton by default)
 app.use(Spark.createPlugin())
 
-// Register components with glob patterns
-const register = Spark.createRegister(import.meta.glob('./*.vue'))
-register.registerAll({
-  'user-grid': './UserGrid.vue',
-  'user-row': './UserRow.vue'
-})
+const reg = Spark.createRegister(import.meta.glob('./*.vue'))
+reg.registerAll({ 'user-grid': './UserGrid.vue' })
 
-// Or with custom registry for advanced scenarios
-const registry = Spark.createRegistry()
-app.use(Spark.createPlugin({ registry }))
+// 组件 setup 内
+const { consume, provide, logger } = useSparkComponent(props.config)
+const services = consume(APP_SERVICES)
+services?.router?.push('/home')
+// logger 自动感知 APP_SERVICES.logger，无需手动 consume
+
+// 覆盖当前子树的 logger
+provide(LOGGER, myCustomLogger)
 ```
 
-### Using spark-data (数据空间)
+### spark-data（数据空间）
 ```ts
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataSet, IDataRow } from '@spark-view/spark-data'
 
-// 推荐：使用命名空间 API
 const dataSet = SparkData.createDataSet({
   dataSetName: 'MyData',
   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
 })
 
-const treeManager = SparkData.createTreeManager({
-  idField: 'id',
-  parentIdField: 'parentId'
-})
-
+const treeManager = SparkData.createTreeManager({ idField: 'id', parentIdField: 'parentId' })
 const dataView = SparkData.createDataView({ tableName: 'Users', viewId: 'grid' })
 
-// 直接导入类
-import { DataSet, TreeManager, DataTable, DataView } from '@spark-view/spark-data'
-const tree = new TreeManager({ ... })
+// DataKey 绑定解析（渲染层）
+const binding = SparkData.resolveDataKeyBinding('MyData@Users@rows', dataSet)
+if (binding?.kind === 'view') { /* binding.source: IDataSource */ }
 ```
 
-### Using spark-utils (工具集)
+### spark-utils（工具集）
 ```ts
-import { Logger, APP_SERVICES, FIELD_METADATA } from '@spark-view/spark-utils'
+import { Logger, defineCapability, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 
-// 创建 Logger
-const logger = Logger('MyComponent')
-logger.info('Component initialized')
+const logger = Logger('MyModule')
+logger.info('initialized')
 
-// 使用 Symbol-based capability names
-provide(APP_SERVICES, { router, logger })
-const appServices = consume(APP_SERVICES)
-```</content>
-<parameter name="filePath">e:\form-create-ssr-app\apps\spark-view\.github\copilot-instructions.md
+// 定义自定义能力键
+const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
+```
+
+## Testing & common pitfalls 🧪
+- 测试使用 Vitest + jsdom；外部 EJ2（`e-*` 标签）需在单元测试中 stub/mock
+- 测试挂载时通过 `Spark.createPlugin()` 注入 `sparkManager`
+- 常见运行时错误：`Component not found` → 确认组件注册发生在使用之前
+- 能力 `consume` 返回 null 是正常情况（late-binding），不是错误
+- Network-dependent CSS（Syncfusion CDN）在离线测试中会破坏样式，建议 mock 或本地化
+
+## Integration & build notes 🔧
+- Vite 识别 `e-*` 为自定义元素；SSR 通过 `ssr.noExternal` 处理 element-plus
+- TypeScript path aliases（根 `tsconfig.json`）:
+  - `@spark-view/spark-component` → `./packages/spark-component/src`
+  - `@spark-view/spark-data` → `./packages/spark-data/src`
+  - `@spark-view/spark-utils` → `./packages/spark-utils/src`
+- 每个子包 `tsconfig.json` 独立声明 `paths`（相对于包目录），IDE 类型解析正确

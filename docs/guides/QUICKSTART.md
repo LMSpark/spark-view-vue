@@ -134,9 +134,9 @@ const dataSet = SparkData.createDataSet({
   }
 })
 
-// 数据操作
-await dataSet.loadTable('Users')
-const users = dataSet.getTable('Users').getRows()
+// 获取数据（通过 DataView）
+const usersView = dataSet.getView('Users', 'default')
+const users = usersView?.rows ?? []
 ```
 
 ## 🎯 创建你的第一个组件
@@ -157,14 +157,15 @@ const users = dataSet.getTable('Users').getRows()
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
-interface HelloWorldConfig {
+interface HelloWorldConfig extends ComponentConfig {
   title?: string
   initialCount?: number
 }
 
 const props = defineProps<{
-  config: ComponentContext<HelloWorldConfig>
+  config: HelloWorldConfig
 }>()
 
 const { logger } = useSparkComponent(props.config)
@@ -366,17 +367,17 @@ import { useSparkComponent } from '@spark-view/spark-component'
 import { userDataSet } from '../data/models'
 
 const props = defineProps<{
-  config: ComponentContext
+  config: ComponentConfig
 }>()
 
 const { logger } = useSparkComponent(props.config)
 
 const users = ref<any[]>([])
 
-onMounted(async () => {
+onMounted(() => {
   try {
-    await userDataSet.loadTable('Users')
-    users.value = userDataSet.getTable('Users').getRows()
+    const view = userDataSet.getView('Users', 'default')
+    users.value = view?.rows ?? []
     logger.info('Users loaded', { count: users.value.length })
   } catch (error) {
     logger.error('Failed to load users', { error })
@@ -498,18 +499,15 @@ A: 使用动态导入进行代码分割，避免一次性加载所有组件。
 加入我们的社区，分享你的经验和建议！
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
+import { LOGGER } from '@spark-view/spark-utils'
 
-const { provide, consume, whenAvailable } = useSparkComponent({
+const { provide, consume, logger } = useSparkComponent({
   type: 'my-grid'
 })
 
-// 提供能力
-provide('dataSource', {
-  getData: () => fetchData()
-})
-
-// 消费能力
-const logger = consume('logger')
+// 提供能力（推荐使用 defineCapability 定义类型安全的能力键）
+provide(LOGGER, myCustomLogger)  // LOGGER 加 SPARK 能力键
+// logger 已由 useSparkComponent 自动解析，无需手动 consume
 </script>
 ```
 
