@@ -82,55 +82,40 @@ export function registerComponents() {
 
 ---
 
-## 运行时自动加载（Classic 模式）
+## 运行时注册（手动/按需）
 
-### 快速使用
+不使用 Vite 插件时，通过 `Spark.createRegister()` 配合 `import.meta.glob` 批量注册：
 
 ```typescript
 // main.ts
-import { setupAutoRegister } from './bootstrap/auto-register'
+import { createApp } from 'vue'
+import { Spark } from '@spark-view/spark-component'
+import App from './App.vue'
 
 const app = createApp(App)
 app.use(Spark.createPlugin())
 
-await setupAutoRegister(app, {
-  mode: 'demand',      // 'all' | 'demand'（按需推荐）
-  showProgress: true
+// 批量注册（懒加载）
+const reg = Spark.createRegister(import.meta.glob('./features/**/*.vue'))
+reg.registerAll({
+  'spark-ej2-grid':   './features/spark-ej2/components/SparkEJ2Grid.vue',
+  'spark-ej2-column': './features/spark-ej2/components/SparkEJ2Column.vue',
+  'page-renderer':    './features/spark/components/PageRenderer.vue'
 })
 
 app.mount('#app')
 ```
 
-### 高级配置
+单个注册：
 
 ```typescript
-import { AutoLoader } from '@spark-view/spark-component'
+// 同步（小组件）
+import PageRenderer from './components/PageRenderer.vue'
+Spark.register('page-renderer', PageRenderer)
 
-const loader = AutoLoader.create({
-  patterns: {
-    ...import.meta.glob('./components/**/*.vue'),
-    ...import.meta.glob('./features/**/*.vue')
-  },
-  syncComponents: ['PageRenderer', 'SparkComponentRenderer', 'ErrorFallback'],
-  asyncComponents: ['*EJ2*', '*Demo', 'Heavy*'],
-  sizeThreshold: 50,
-  autoAnalyze: true
-})
-
-await loader.loadOnDemand()
+// 懒加载（大组件，推荐）
+Spark.register('spark-ej2-grid', () => import('./features/spark-ej2/components/SparkEJ2Grid.vue'))
 ```
-
-### 加载策略
-
-| 策略 | 规则 | 示例 |
-|------|------|------|
-| **同步** | 配置白名单 / `Page*` `Spark*` `Core*` / < 50KB | `PageRenderer` |
-| **异步** | 配置黑名单 / `*Demo` `*EJ2*` / > 50KB | `SparkEJ2Grid` |
-
-### 模式选择
-
-- **按需加载** `mode: 'demand'`：仅加载核心组件，其余使用时自动加载（推荐生产）
-- **全部加载** `mode: 'all'`：启动时加载所有组件（推荐开发）
 
 ---
 
@@ -176,19 +161,20 @@ asyncComponents: [
 | `Cannot find module 'virtual:spark-components'` | 检查 vite.config.ts 插件配置，重启 dev server |
 | 组件未被扫描 | 检查 `patterns` 路径和 `exclude` 规则，开启 `verbose: true` |
 | HMR 不工作 | 确认 `server.hmr: true` |
-| 首屏加载慢（Classic） | 切换到 `mode: 'demand'` 或使用 Smart 模式 |
+| 运行时 `Component not found` | 确认注册发生在 `app.mount()` 之前 |
 
 ## 从手动注册迁移
 
 ```typescript
-// ❌ Before: 手动 import + register
+// ❌ Before: 每个组件单独 import + register
 import UserGrid from './components/UserGrid.vue'
 registry.register('user-grid', UserGrid)
 
-// ✅ After (Smart): 一行搞定
+// ✅ 使用 Vite 插件（Smart 模式）
 import { registerComponents } from 'virtual:spark-components'
-registerComponents(app)
+registerComponents()
 
-// ✅ After (Classic): 一行搞定
-await setupAutoRegister(app)
+// ✅ 使用 createRegister 批量注册
+const reg = Spark.createRegister(import.meta.glob('./components/**/*.vue'))
+reg.registerAll({ 'user-grid': './UserGrid.vue', 'user-form': './UserForm.vue' })
 ```
