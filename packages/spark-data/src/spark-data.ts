@@ -119,10 +119,13 @@ export namespace SparkData {
   export function createDataView(config: {
     tableName: string
     viewId?: string
-    /** 请求成功后自动选中第一行，见 {@link DataView.autoSelectFirst} */
+    /** 请求成功后自动将 currentRow 设为第一行，见 {@link DataView.autoCurrentFirst} */
+    autoCurrentFirst?: boolean
+    /** 请求成功后自动将 selectedRows 设为第一行，见 {@link DataView.autoSelectFirst} */
     autoSelectFirst?: boolean
   }): DataView {
     const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
+    if (config.autoCurrentFirst !== undefined) view.autoCurrentFirst = config.autoCurrentFirst
     if (config.autoSelectFirst !== undefined) view.autoSelectFirst = config.autoSelectFirst
     return view
   }
