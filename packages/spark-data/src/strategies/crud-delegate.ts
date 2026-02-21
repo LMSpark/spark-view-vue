@@ -60,13 +60,13 @@ export class CrudDelegate {
   }
 
   // ─────────────────────────────────────────────
-  // CrudService 获取（DataTable 持有）
+  // CrudService 获取
   // ─────────────────────────────────────────────
 
-  /** 确保 CrudService 已初始化（从 DataTable 获取），否则抛出 */
+  /** 确保 CrudService 已初始化，否则抛出 */
   ensureCrudService(): CrudService {
-    const svc = this.host.dataTable?.crudService
-    if (!svc) throw new Error(`Table ${this.host.dataTable?.tableName ?? '?'} has no API configuration`)
+    const svc = this.host.crudService
+    if (!svc) throw new Error(`Table ${this.host.tableName} has no API configuration`)
     return svc
   }
 
@@ -76,13 +76,13 @@ export class CrudDelegate {
 
   /** 获取 CRUD 操作配置（超时、重试等） */
   getCrudConfig(): CrudOperationConfig | undefined {
-    return this.host.dataTable?.crudConfig
+    return this.host.crudConfig
   }
 
   /** 校验数据行 */
   private validateRow(row: IDataRow): ValidationResult | null {
-    if (!this.host.dataTable?.validator) return null
-    return this.host.dataTable.validator.validate(row)
+    if (!this.host.validator) return null
+    return this.host.validator.validate(row)
   }
 
   // ─────────────────────────────────────────────

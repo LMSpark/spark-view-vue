@@ -47,7 +47,7 @@ export class CascadeDelegate {
   setupCascade(): void {
     this.teardownCascade()
 
-    const dataSet = this.host.dataTable.dataSet
+    const dataSet = this.host.dataSet
     const parentRels = dataSet.getParentRelations(this.host.tableName, this.host.viewId) ?? []
 
     for (const rel of parentRels) {
