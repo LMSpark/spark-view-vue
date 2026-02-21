@@ -5,8 +5,9 @@
  * 遵循 ISP 原则：Delegate 只依赖自己需要的方法。
  */
 
-import type { IDataRow, ViewStateEvent, CrudResult } from '../types'
-import type { DataTable } from '../data-table'
+import type { IDataRow, IDataSet, ViewStateEvent, CrudResult, CrudOperationConfig } from '../types'
+import type { CrudService } from '../crud-service'
+import type { DataValidator } from '../validation'
 
 // ─────────────────────────────────────────────
 // 共享类型
@@ -37,7 +38,14 @@ export type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
 export interface ICrudHost {
   readonly rows: IDataRow[]
   readonly primaryKey: string
-  readonly dataTable: DataTable
+  /** 表名（用于错误信息） */
+  readonly tableName: string
+  /** CrudService 实例（来自 DataTable，未配置 API 时为 undefined） */
+  readonly crudService: CrudService | undefined
+  /** CRUD 操作全局配置 */
+  readonly crudConfig: CrudOperationConfig | undefined
+  /** 数据校验器 */
+  readonly validator: DataValidator | undefined
 
   /** 追加一行到 rows */
   appendRow(row: IDataRow): void
@@ -61,7 +69,8 @@ export interface ICrudHost {
 export interface ICascadeHost {
   readonly tableName: string
   readonly viewId: string
-  readonly dataTable: DataTable
+  /** DataSet（沿 parent 链向上访问） */
+  readonly dataSet: IDataSet
   /** 只读，级联时检查状态 */
   readonly requestState: import('../types').RequestState
   /** 静默重置状态（requestState→Idle，清空行和选中） */

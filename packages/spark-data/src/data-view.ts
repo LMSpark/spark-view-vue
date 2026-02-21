@@ -18,11 +18,13 @@
 import type {
   IDataRow, IViewMetadata, FilterExpression, SortExpression,
   ViewStateEvent, QueryParams,
-  CrudResult, BatchResult,
+  CrudResult, BatchResult, CrudOperationConfig,
 } from './types'
 import { RequestState } from './types'
 import type { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
+import type { CrudService } from './crud-service'
+import type { DataValidator } from './validation'
 import { Logger, createEventEmitter } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows } from './core/utils'
@@ -187,10 +189,15 @@ export class DataView {
     this.viewId = viewId
   }
 
-  /** DataSet（向上访问） */
-  private get dataSet() {
+  /** DataSet（向上访问，供 CascadeDelegate/ICascadeHost 使用） */
+  get dataSet() {
     return this.dataTable.dataSet
   }
+
+  // ICrudHost 属性：转发 DataTable 相应属性
+  get crudService(): CrudService | undefined { return this.dataTable.crudService }
+  get crudConfig(): CrudOperationConfig | undefined { return this.dataTable.crudConfig }
+  get validator(): DataValidator | undefined { return this.dataTable.validator }
 
   // ─────────────────────────────────────────────
   // 请求流
