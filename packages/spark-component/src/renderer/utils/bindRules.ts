@@ -4,9 +4,9 @@
 
 import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
-import type { IDataRow, IDataSet, IDataSource } from '@spark-view/spark-data'
-import { DataView, createTableSyncHandlers } from '@spark-view/spark-data'
-import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey } from '@spark-view/spark-data'
+import type { IDataRow, IDataSet } from '@spark-view/spark-data'
+import { createTableSyncHandlers } from '@spark-view/spark-data'
+import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
 
@@ -151,13 +151,15 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     
     // 🎯 处理 el-table 的 dataKey 绑定
     if (newRule.type === 'el-table' && newRule['dataKey']) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
-      if (resolved instanceof DataView) {
+      const binding = dataSet
+        ? resolveDataKeyBinding(newRule['dataKey'] as string, dataSet)
+        : null
+      if (binding?.kind === 'view') {
         newRule.props ??= {}
-        newRule.props['dataSource'] = resolved as IDataSource
-        newRule.props['dataView'] = resolved
+        newRule.props['dataSource'] = binding.source
+        newRule.props['dataView'] = binding.source
         // Element Plus el-table 需要 data 属性（响应式数组）
-        newRule.props['data'] = resolved.rows
+        newRule.props['data'] = binding.source.rows
       }
       // 如果有 dataSet，注入同步事件
       if (dataSet) {
