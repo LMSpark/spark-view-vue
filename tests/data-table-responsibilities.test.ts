@@ -61,7 +61,8 @@ describe('DataTable responsibilities (refactor verification)', () => {
     const parentView2 = ds.getView('Departments', 'default')!
     parentView2.events.on('stateChanged', () => { dsNotified = true })
 
-    // 触发父视图状态变化
+    // 触发父视图状态变化（先 clear，避免 DataSet 构造时 auto-setCurrentRow 导致 row 相同被跳过）
+    parent.setCurrentRow(null)
     parent.setCurrentRow(parent.rows[0]!)
 
     expect(parentNotified).toBe(true)

@@ -17,7 +17,7 @@ function walk(dir: string, files: string[] = []) {
 describe('packages/spark-component: forbidden imports', () => {
   const root = path.resolve(__dirname, '..') // packages/spark-component
   const files = walk(root)
-    .filter(f => /\.(ts|js|tsx|jsx|md|json)$/.test(f))
+    .filter(f => /\.(ts|js|tsx|jsx|json)$/.test(f))  // 排除 .md（文档代码示例不是真实 import）
     // 排除测试文件自身（测试可以合法引用 .vue 做集成测试）
     .filter(f => !f.includes('forbiddenImports') && !f.endsWith('.test.ts') && !f.endsWith('.spec.ts'))
 

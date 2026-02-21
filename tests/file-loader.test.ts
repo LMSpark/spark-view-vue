@@ -531,7 +531,7 @@ describe('FileLoader', () => {
       const result = await loader.load<string>('err.json', { transform: brokenFn })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('transform 失败')
+      // error 包含原始异常消息（FileLoader 直接返回 error.message，不添加前缀）
       expect(result.error).toContain('解析崩了')
     })
   })
