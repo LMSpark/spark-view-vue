@@ -5,7 +5,8 @@
  */
 
 import { createApp, type Component, type Plugin } from 'vue'
-import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
+import type { RouteConfig } from '@spark-view/spark-page-config'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
@@ -51,9 +52,9 @@ export interface PageConfigOptions {
   /** 首页路径 */
   homePath: string
   /** 注册前钩子（可以转换路由） */
-  beforeRegister?: (routes: unknown[]) => unknown[] | Promise<unknown[]>
+  beforeRegister?: ((routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>) | undefined
   /** 注册后钩子（仅通知） */
-  afterRegister?: (routes: unknown[]) => void | Promise<void>
+  afterRegister?: ((routes: RouteRecordRaw[]) => void) | undefined
 }
 
 /**
@@ -239,8 +240,8 @@ export async function start(options: StartOptions): Promise<void> {
         router,
         configLoader,
         pageComponent, // 确保传入有效组件
-        beforeRegister: pageConfig.beforeRegister,
-        afterRegister: pageConfig.afterRegister
+        ...(pageConfig.beforeRegister !== undefined && { beforeRegister: pageConfig.beforeRegister }),
+        ...(pageConfig.afterRegister !== undefined && { afterRegister: pageConfig.afterRegister })
       }
       
       const dynamicRouter = SparkPageConfig.createDynamicRouter(dynamicRouterOptions)

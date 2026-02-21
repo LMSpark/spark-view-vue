@@ -33,7 +33,7 @@ import type { IDataSet } from '@spark-view/spark-data'
 import { SparkData, PAGE_DATASET, usePageDataSet } from '@spark-view/spark-data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSparkComponent } from '../../composables/useSparkComponent'
-import type { PageRendererOptions, PageContext, FormCreateAPI, Rule } from '../types'
+import type { PageRendererOptions, PageContext, Rule } from '../types'
 import { useCssScope } from './useCssScope'
 import { useRuleBinding } from './useRuleBinding'
 import { useTableDataSync } from './useTableDataSync'
@@ -78,7 +78,9 @@ export interface UsePageRendererReturn {
   scopedCss: Ref<string>
   boundRules: Ref<unknown[]>
   pageData: Record<string, unknown>
-  formApi: Ref<FormCreateAPI | null>
+  // Note: form-create API 对象类型复杂，使用 any 避免类型冲突
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formApi: Ref<any>
   formCreateOptions: Ref<Record<string, unknown>>
   // defineExpose / 外部调用
   loadPageConfig: () => Promise<void>
@@ -131,8 +133,12 @@ export function usePageRenderer(
   const loading = ref(true)
   const error = ref<string>('')
   const currentPageId = ref<string>('')
-  const formApi = ref<FormCreateAPI | null>(null)
-  const originalRules = ref<Rule[]>([])
+  // Note: form-create API 对象类型复杂，使用 any 避免类型冲突
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const formApi = ref<any>(null)
+  // Note: form-create 的 Rule 类型过于复杂，使用 any[] 避免类型冲突
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const originalRules = ref<any[]>([])
   const pageData = reactive<Record<string, unknown>>({})
   const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
 
@@ -168,20 +174,21 @@ export function usePageRenderer(
   })
 
   const { boundRules, rebindRules } = useRuleBinding({
-    // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
     originalRules,
     pageData,
     pageFunctions,
     dataSet
   })
 
-  // @ts-expect-error FormCreate 类型系统与 Ref 类型不完全兼容
   const { setupSync } = useTableDataSync({ dataSet, formApi })
 
   // ==================== 页面上下文 ====================
 
+  // Note: PageContext.$api 使用 any 类型，因为 form-create API 对象有复杂的动态属性
   const pageContext: PageContext = {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     get $api() {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return formApi.value
     },
     $route: route,

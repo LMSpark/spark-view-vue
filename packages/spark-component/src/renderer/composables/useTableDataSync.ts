@@ -24,7 +24,6 @@ import { nextTick } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import type { IDataSet, IDataRow } from '@spark-view/spark-data'
 import { subscribeViewStateChanges } from '@spark-view/spark-data'
-import type { FormCreateAPI } from '../types'
 
 const logger = Logger('PageRenderer')
 
@@ -47,16 +46,21 @@ interface ElTableComponent extends HTMLElement {
  *
  * 通过 FormCreate API 查找命名为 `table_{tableName}_{viewId}` 的组件，
  * 调用 el-table 的 clearSelection / toggleRowSelection API 更新 UI。
+ *
+ * Note: formApi 使用 any 类型以避免与 form-create 官方复杂类型定义冲突
  */
 function syncSelectedRowsToTable(
   tableName: string,
   viewId: string,
   rows: IDataRow[],
-  formApi: FormCreateAPI | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formApi: any
 ): void {
   void nextTick(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (formApi && typeof formApi.el === 'function') {
       const componentName = `table_${tableName}_${viewId}`
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       const tableComponent = formApi.el(componentName) as ElTableComponent | null
 
       if (tableComponent) {
@@ -79,7 +83,9 @@ function syncSelectedRowsToTable(
 
 export interface UseTableDataSyncOptions {
   dataSet: Ref<IDataSet | null>
-  formApi: Ref<FormCreateAPI | null>
+  // Note: formApi 使用 any 类型以避免与 form-create 官方复杂类型定义冲突
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formApi: Ref<any>
 }
 
 /**

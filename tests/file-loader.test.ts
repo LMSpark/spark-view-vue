@@ -580,8 +580,8 @@ describe('FileLoader', () => {
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
 
-      const loaderA = loader.withTransform((r) => r + '-A', 'keyA')
-      const loaderB = loader.withTransform((r) => r + '-B', 'keyB')
+      const loaderA = loader.withTransform((r) => r + '-A')
+      const loaderB = loader.withTransform((r) => r + '-B')
 
       const ra = await loaderA.load('shared.json')
       const rb = await loaderB.load('shared.json')
