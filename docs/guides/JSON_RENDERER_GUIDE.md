@@ -411,9 +411,7 @@ A: 使用 SPARK 组件注册系统：
 import { Spark } from '@spark-view/spark-component'
 import UserGrid from './UserGrid.vue'
 
-Spark.register('user-grid', {
-  component: UserGrid
-})
+Spark.register('user-grid', UserGrid)
 ```
 
 ### Q: 配置文件找不到怎么办？

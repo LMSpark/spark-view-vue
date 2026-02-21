@@ -1,287 +1,124 @@
 # SPARK 测试最佳实践
 
-> 利用依赖注入架构实现高质量的测试隔离
-> 
-> 最后更新：2026年2月6日
+> 基于实际测试代码的指导原则
+>
+> 核心参考：`tests/capability-system.test.ts`、`tests/spark-component.test.ts`
 
-## 目录
+## 工具链
 
-1. [为什么需要测试隔离](#为什么需要测试隔离)
-2. [核心原则](#核心原则)
-3. [测试工具链](#测试工具链)
-4. [基础测试模式](#基础测试模式)
-5. [高级测试场景](#高级测试场景)
-6. [常见陷阱](#常见陷阱)
-7. [持续集成](#持续集成)
+- **测试框架**：Vitest + jsdom
+- **Vue 测试**：@vue/test-utils
+- **命令**：`pnpm run test`；单个用例：`pnpm run test -- -t "用例名称"`
 
 ---
 
-## 为什么需要测试隔离
+## 1. 测试隔离原则
 
-### 全局单例的问题
-
-在依赖注入改造之前，SPARK 使用全局单例模式：
+每个测试文件或每个 describe 块创建独立系统，避免全局状态污染。
 
 ```typescript
-// ❌ 旧模式：全局单例导致测试污染
-import { componentManager } from '@spark-view/spark-component'
+// ❌ 旧模式（不要用）：全局单例
+// componentManager.registerComponent({ type: 'test-1' })
 
-describe('Test Suite', () => {
-  it('test 1', () => {
-    // 修改全局 componentManager 状态
-    componentManager.registerComponent({ type: 'test-1' })
-  })
-  
-  it('test 2', () => {
-    // ⚠️ 继承了 test 1 的状态！
-    const types = componentManager.getRegisteredComponentTypes()
-    // types 包含 'test-1'，导致测试不可靠
-  })
-})
-```
-
-**问题**：
-- 测试用例之间状态共享
-- 测试顺序敏感（调换顺序可能失败）
-- 难以并行执行测试
-- 覆盖率提升困难
-
-### 依赖注入的解决方案
-
-现在每个测试可以创建独立的组件系统：
-
-```typescript
-// ✅ 新模式：完全隔离的测试环境
+// ✅ 正确模式：每个测试独立系统
 import { Spark } from '@spark-view/spark-component'
 
-describe('Test Suite', () => {
-  it('test 1', () => {
-    const system1 = Spark.createComponentSystem()
-    system1.registry.register('test-component', { /* ... */ })
-    // system1 独立存在
-  })
-  
-  it('test 2', () => {
-    const system2 = Spark.createComponentSystem()
-    // system2 完全独立，不受 test 1 影响
-  })
-})
+const { registry, rootContext, createContext } = Spark.createSystem()
+// 或使用 Spark.createPlugin({ registry }) 创建 Vue 插件
 ```
 
-**优势**：
-- ✅ 测试用例完全独立
-- ✅ 可以并行执行
-- ✅ 测试更可靠和可维护
-- ✅ 易于编写复杂场景
+`Spark.createSystem()` 返回 `{ registry, rootContext, createContext }`。
 
 ---
 
-## 核心原则
-
-### 1. 每个测试文件创建独立系统
+## 2. 组件注册测试
 
 ```typescript
-describe('MyComponent', () => {
-  let system: ReturnType<typeof Spark.createComponentSystem>
-  
-  beforeEach(() => {
-    system = Spark.createComponentSystem()
-  })
-  
-  afterEach(() => {
-    // 清理（可选，系统会自动 GC）
-    system = null as any
-  })
-  
-  it('should initialize correctly', () => {
-    // 使用 system.manager, system.registry, system.capabilities
-  })
-})
-```
-
-### 2. 通过 DI 注入
-
-```typescript
-import { mount } from '@vue/test-utils'
-import { Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
-
-const wrapper = mount(MyComponent, {
-  global: {
-    plugins: [Spark.createPlugin()]
-  }
-})
-```
-
-### 3. 避免导入全局单例
-
-```typescript
-// ❌ 避免
-import { componentManager, capabilityManager } from './singletons'
-
-// ✅ 推荐
-const { manager, capabilities } = Spark.createComponentSystem()
-```
-
----
-
-## 测试工具链
-
-### 推荐工具
-
-- **测试框架**: Vitest（项目使用）
-- **Vue 测试**: @vue/test-utils
-- **断言库**: Vitest 内置（兼容 Jest API）
-- **覆盖率**: Vitest Coverage (c8/istanbul)
-
-### 基础配置
-
-```typescript
-// vitest.config.ts
-import { defineConfig } from 'vitest/config'
-
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
-    coverage: {
-      provider: 'c8',
-      reporter: ['text', 'json', 'html'],
-      include: ['packages/*/src/**/*.ts'],
-      exclude: ['**/*.test.ts', '**/*.spec.ts', '**/types/**']
-    }
-  }
-})
-```
-
-```typescript
-// tests/setup.ts
-import { expect, beforeEach } from 'vitest'
-
-// 全局 beforeEach（如果需要）
-beforeEach(() => {
-  // 重置全局状态
-})
-
-// 自定义匹配器（可选）
-expect.extend({
-  toHaveCapability(received, capabilityName) {
-    const providers = Array.from(received.providers)
-    const hasCapability = providers.some(p => p.name === capabilityName)
-    return {
-      pass: hasCapability,
-      message: () => `Expected context to have capability "${capabilityName}"`
-    }
-  }
-})
-```
-
----
-
-## 基础测试模式
-
-### 模式 1: 组件注册测试
-
-```typescript
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { Spark } from '@spark-view/spark-component'
 
 describe('Component Registration', () => {
-  let system: ReturnType<typeof Spark.createComponentSystem>
-  
-  beforeEach(() => {
-    system = Spark.createComponentSystem()
+  const { registry } = Spark.createSystem()
+
+  it('registers and retrieves component', () => {
+    registry.register('my-component', { template: '<div/>' })
+    expect(registry.has('my-component')).toBe(true)
   })
-  
-  it('should register component successfully', () => {
-    system.registry.register('my-component', {
-      type: 'my-component',
-      name: 'My Component',
-      component: MyComponent
-    })
-    
-    expect(system.registry.has('my-component')).toBe(true)
-    expect(system.registry.get('my-component')?.name).toBe('My Component')
+
+  it('registers lazy component', () => {
+    registry.register('lazy-grid', () => import('./MyGrid.vue'))
+    expect(registry.has('lazy-grid')).toBe(true)
   })
-  
-  it('should unregister component', () => {
-    system.registry.register('temp-component', { type: 'temp-component' })
-    expect(system.registry.has('temp-component')).toBe(true)
-    
-    system.registry.unregister('temp-component')
-    expect(system.registry.has('temp-component')).toBe(false)
+
+  it('unregisters component', () => {
+    registry.register('temp', {})
+    registry.unregister('temp')
+    expect(registry.has('temp')).toBe(false)
   })
 })
 ```
 
-### 模式 2: 能力系统测试
+---
+
+## 3. 能力系统测试
+
+使用 `provide()` / `lookup()` 纯函数（来自 `@spark-view/spark-utils`）测试能力链。
 
 ```typescript
+import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-component'
+import { provide, lookup, defineCapability, APP_SERVICES } from '@spark-view/spark-utils'
+
 describe('Capability System', () => {
-  let system: ReturnType<typeof Spark.createComponentSystem>
-  
-  beforeEach(() => {
-    system = Spark.createComponentSystem()
+  it('provides and consumes up the parent chain', () => {
+    const { createContext, rootContext } = Spark.createSystem()
+
+    const parentCtx = createContext({ type: 'provider', id: 'p-1' }, rootContext)
+    const childCtx = createContext({ type: 'consumer', id: 'c-1' }, parentCtx)
+
+    // 父组件提供能力
+    provide(parentCtx, APP_SERVICES, {
+      router: { push: async () => {}, replace: async () => {}, back: () => {}, currentRoute: {} },
+      logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} }
+    })
+
+    // 子组件通过 parent 链查找
+    const found = lookup(childCtx, APP_SERVICES)
+    expect(found).toBeTruthy()
+    expect(found!.router).toBeDefined()
+    expect(found!.logger).toBeDefined()
   })
-  
-  it('should connect provider and consumer', () => {
-    const context = system.manager.createContext({
-      type: 'test-component'
-    })
-    
-    const provider = {
-      name: 'testCapability',
-      version: '1.0.0',
-      implementation: { value: 42 }
-    }
-    
-    system.manager.registerProvider(context, provider)
-    
-    const foundProvider = system.manager.getProvider(context, 'testCapability')
-    expect(foundProvider).toBeDefined()
-    expect(foundProvider?.implementation.value).toBe(42)
+
+  it('supports custom capability keys', () => {
+    const { createContext, rootContext } = Spark.createSystem()
+    interface ThemeApi { color: string }
+    const THEME = defineCapability<ThemeApi>('test:theme')
+
+    const parentCtx = createContext({ type: 'provider' }, rootContext)
+    const childCtx = createContext({ type: 'consumer' }, parentCtx)
+
+    provide(parentCtx, THEME, { color: 'blue' })
+
+    const found = lookup<ThemeApi>(childCtx, THEME)
+    expect(found?.color).toBe('blue')
   })
-  
-  it('should support late binding', async () => {
-    const context = system.manager.createContext({
-      type: 'test-component'
-    })
-    
-    // 消费者先注册
-    const consumer = {
-      capabilityName: 'lateCapability',
-      implementation: undefined
-    }
-    context.consumers.set('lateCapability', consumer)
-    
-    // 提供者后注册
-    setTimeout(() => {
-      const provider = {
-        name: 'lateCapability',
-        version: '1.0.0',
-        implementation: { ready: true }
-      }
-      system.manager.registerProvider(context, provider)
-    }, 10)
-    
-    // 等待提供者
-    const provider = await new Promise(resolve => {
-      const listeners = context.providerListeners || new Map()
-      context.providerListeners = listeners
-      
-      if (!listeners.has('lateCapability')) {
-        listeners.set('lateCapability', new Set())
-      }
-      
-      listeners.get('lateCapability')!.add(resolve)
-    })
-    
-    expect(provider).toBeDefined()
+
+  it('returns null when capability not provided', () => {
+    const { createContext, rootContext } = Spark.createSystem()
+    const UNKNOWN = defineCapability<{ x: number }>('test:unknown')
+    const ctx = createContext({ type: 'orphan' }, rootContext)
+
+    const result = lookup(ctx, UNKNOWN)
+    expect(result).toBeNull()
   })
 })
 ```
 
-### 模式 3: Vue 组件挂载测试
+---
+
+## 4. Vue 组件挂载测试
+
+### 方式 1：使用 `Spark.createPlugin()`（推荐）
 
 ```typescript
 import { mount } from '@vue/test-utils'
@@ -289,347 +126,196 @@ import { Spark } from '@spark-view/spark-component'
 import MyComponent from './MyComponent.vue'
 
 describe('MyComponent', () => {
-  let system: ReturnType<typeof Spark.createComponentSystem>
-  
-  beforeEach(() => {
-    system = Spark.createComponentSystem()
-    
-    // 注册依赖组件
-    system.registry.register('spark-button', {
-      type: 'spark-button',
-      component: ButtonComponent
-    })
-  })
-  
-  it('should render correctly', () => {
+  function createTestPlugin() {
+    const registry = Spark.createRegistry()
+    return { plugin: Spark.createPlugin({ registry }), registry }
+  }
+
+  it('renders correctly', () => {
+    const { plugin } = createTestPlugin()
+
     const wrapper = mount(MyComponent, {
-      props: {
-        config: {
-          type: 'my-component',
-          label: 'Test'
-        }
-      },
-      global: {
-        provide: {
-          sparkManager: system.manager
-        }
-      }
+      props: { config: { type: 'my-component', title: 'Test' } },
+      global: { plugins: [plugin] }
     })
-    
+
     expect(wrapper.text()).toContain('Test')
   })
-  
-  it('should consume capabilities', async () => {
-    const wrapper = mount(MyComponent, {
-      global: {
-        provide: {
-          sparkManager: system.manager
-        }
-      }
-    })
-    
-    // 提供能力
-    const context = (wrapper.vm as any).context
-    const provider = {
-      name: 'dataSource',
-      version: '1.0.0',
-      implementation: { data: [1, 2, 3] }
+})
+```
+
+### 方式 2：手动提供 DI Keys（逐层控制）
+
+```typescript
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
+
+const { registry, rootContext } = Spark.createSystem()
+
+const wrapper = mount(MyComponent, {
+  props: { config: { type: 'my-component' } },
+  global: {
+    provide: {
+      [SPARK_REGISTRY_KEY as symbol]: registry,
+      [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
     }
-    system.manager.registerProvider(context, provider)
-    
-    await wrapper.vm.$nextTick()
-    
-    expect(wrapper.find('.data-list').exists()).toBe(true)
+  }
+})
+```
+
+---
+
+## 5. 组件树与能力传递测试
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-component'
+import { provide, lookup, defineCapability } from '@spark-view/spark-utils'
+
+describe('Component Tree', () => {
+  it('creates nested contexts with parent references', () => {
+    const { createContext, rootContext } = Spark.createSystem()
+
+    const parentCtx = createContext({ type: 'parent' }, rootContext)
+    const childCtx = createContext({ type: 'child' }, parentCtx)
+
+    expect(childCtx.parent).toBe(parentCtx)
+    expect(parentCtx.children).toContain(childCtx)
+  })
+
+  it('propagates capabilities from parent to deep descendants', () => {
+    const { createContext, rootContext } = Spark.createSystem()
+    const SERVICE = defineCapability<{ ping(): string }>('test:service')
+
+    const root = createContext({ type: 'root' }, rootContext)
+    const mid = createContext({ type: 'mid' }, root)
+    const leaf = createContext({ type: 'leaf' }, mid)
+
+    provide(root, SERVICE, { ping: () => 'pong' })
+
+    const found = lookup(leaf, SERVICE)
+    expect(found?.ping()).toBe('pong')
   })
 })
 ```
 
 ---
 
-## 高级测试场景
-
-### 场景 1: 测试组件树
+## 6. DataSet / DataView 测试
 
 ```typescript
-describe('Component Tree', () => {
-  let system: ReturnType<typeof Spark.createComponentSystem>
-  
-  beforeEach(() => {
-    system = Spark.createComponentSystem()
-  })
-  
-  it('should create nested contexts', () => {
-    const parentContext = system.manager.createContext({
-      type: 'parent-component'
-    })
-    
-    const child1Context = system.manager.createContext(
-      { type: 'child-component-1' },
-      parentContext
-    )
-    
-    const child2Context = system.manager.createContext(
-      { type: 'child-component-2' },
-      parentContext
-    )
-    
-    expect(parentContext.children).toHaveLength(2)
-    expect(child1Context.parent).toBe(parentContext)
-    expect(child2Context.parent).toBe(parentContext)
-  })
-  
-  it('should propagate capabilities to children', () => {
-    const parentContext = system.manager.createContext({
-      type: 'parent'
-    })
-    
-    const childContext = system.manager.createContext(
-      { type: 'child' },
-      parentContext
-    )
-    
-    // 父组件提供能力
-    const provider = {
-      name: 'theme',
-      version: '1.0.0',
-      implementation: { color: 'blue' }
-    }
-    system.manager.registerProvider(parentContext, provider)
-    
-    // 子组件继承能力
-    let current = childContext
-    while (current) {
-      const found = Array.from(current.providers).find(
-        p => p.name === 'theme'
-      )
-      if (found) {
-        expect(found.implementation.color).toBe('blue')
-        break
+import { SparkData } from '@spark-view/spark-data'
+
+describe('DataSet', () => {
+  it('creates dataset with tables', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'TestDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'id', type: 'number' }, { name: 'name', type: 'string' }],
+          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+        }
       }
-      current = current.parent as any
-    }
-  })
-})
-```
-
-### 场景 2: 测试异步加载
-
-```typescript
-describe('Async Component Loading', () => {
-  let system: ReturnType<typeof Spark.createComponentSystem>
-  
-  beforeEach(() => {
-    system = Spark.createComponentSystem()
-  })
-  
-  it('should load component dynamically', async () => {
-    system.registry.register('async-component', {
-      type: 'async-component',
-      loader: () => import('./AsyncComponent.vue')
     })
-    
-    expect(system.registry.has('async-component')).toBe(true)
-    
-    const def = system.registry.get('async-component')
-    expect(def?.loader).toBeDefined()
-    
-    // 解析 loader
-    const component = await def!.loader!()
-    expect(component).toBeDefined()
+
+    const view = ds.getView('Users', 'default')!
+    expect(view.rows).toHaveLength(2)
+    expect(view.rows[0].name).toBe('Alice')
+  })
+
+  it('resolves DataKey binding', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'TestDS',
+      tables: {
+        Users: { tableName: 'Users', columns: [], rows: [{ id: 1 }] }
+      }
+    })
+    const binding = SparkData.resolveDataKeyBinding('TestDS@Users@rows', ds)
+    expect(binding?.kind).toBe('view')
   })
 })
 ```
 
-### 场景 3: Mock 能力管理器
+---
+
+## 7. 外部组件 Mock
+
+测试依赖第三方库（如 Syncfusion EJ2）的组件时，需要 mock 外部模块：
 
 ```typescript
 import { vi } from 'vitest'
 
-describe('Capability Manager Mocking', () => {
-  it('should mock capability connections', () => {
-    const mockCapabilities = {
-      connectCapability: vi.fn(),
-      disconnectCapability: vi.fn(),
-      autoConnectCapabilities: vi.fn()
+vi.mock('@syncfusion/ej2-vue-grids', () => ({
+  GridComponent: {
+    name: 'GridComponent',
+    template: '<div class="ej2-grid"><slot /></div>',
+    props: ['dataSource', 'allowPaging', 'pageSettings']
+  },
+  ColumnsDirective: { name: 'ColumnsDirective', template: '<slot />' },
+  ColumnDirective: { name: 'ColumnDirective', template: '<div />', props: ['field', 'headerText'] }
+}))
+```
+
+---
+
+## 8. useSparkComponent 返回值验证
+
+```typescript
+import { defineComponent, h } from 'vue'
+import { mount } from '@vue/test-utils'
+import { Spark, useSparkComponent } from '@spark-view/spark-component'
+
+it('useSparkComponent returns correct interface', () => {
+  const { plugin } = (() => {
+    const registry = Spark.createRegistry()
+    return { plugin: Spark.createPlugin({ registry }) }
+  })()
+
+  mount(defineComponent({
+    setup() {
+      const result = useSparkComponent({ type: 'test' })
+      // 验证返回值
+      expect(typeof result.consume).toBe('function')
+      expect(typeof result.provide).toBe('function')
+      expect(typeof result.provideEvents).toBe('function')
+      expect(typeof result.getProvider).toBe('function')
+      expect(typeof result.consumeEvents).toBe('function')
+      expect(typeof result.logger).toBe('object')
+      expect(typeof result.getComponent).toBe('function')
+      // 'use' 别名不存在
+      expect('use' in result).toBe(false)
+      return () => h('div')
     }
-    
-    const manager = Spark.createComponentManager(
-      undefined,
-      undefined,
-      mockCapabilities as any
-    )
-    
-    const context = manager.createContext({ type: 'test' })
-    const provider = { name: 'test', version: '1.0.0' }
-    
-    manager.registerProvider(context, provider)
-    
-    expect(mockCapabilities.autoConnectCapabilities).toHaveBeenCalledWith(context)
-  })
+  }), { global: { plugins: [plugin] } })
 })
 ```
 
 ---
 
-## 常见陷阱
+## 9. 常见陷阱
 
-### 陷阱 1: 忘记清理全局状态
-
-```typescript
-// ❌ 错误：全局单例污染
-import { componentManager } from './global'
-
-describe('Tests', () => {
-  it('test 1', () => {
-    componentManager.registerComponent({ type: 'a' })
-  })
-  
-  it('test 2', () => {
-    // 'a' 仍然存在！
-  })
-})
-
-// ✅ 正确：使用独立系统
-describe('Tests', () => {
-  let system: ReturnType<typeof Spark.createComponentSystem>
-  
-  beforeEach(() => {
-    system = Spark.createComponentSystem()
-  })
-  
-  it('test 1', () => {
-    system.registry.register('a', { type: 'a' })
-  })
-  
-  it('test 2', () => {
-    // 全新系统，'a' 不存在
-  })
-})
-```
-
-### 陷阱 2: 异步测试未等待
-
-```typescript
-// ❌ 错误：未等待异步操作
-it('should load async', () => {
-  loadComponent() // 返回 Promise，但未 await
-  expect(isLoaded).toBe(true) // 失败！
-})
-
-// ✅ 正确：等待 Promise
-it('should load async', async () => {
-  await loadComponent()
-  expect(isLoaded).toBe(true)
-})
-```
-
-### 陷阱 3: 过度 Mock
-
-```typescript
-// ❌ 过度 Mock 降低测试价值
-it('should work', () => {
-  const mockEverything = vi.fn(() => 'success')
-  expect(mockEverything()).toBe('success')
-  // 这测试了什么？
-})
-
-// ✅ 只 Mock 外部依赖
-it('should work', () => {
-  const mockApi = vi.fn().mockResolvedValue({ data: [] })
-  // 测试真实逻辑
-})
-```
+| 陷阱 | 原因 | 修复 |
+|------|------|------|
+| 测试间状态泄漏 | 多个测试共用同一 `registry` | 每个 `describe` 块内 `const { registry } = Spark.createSystem()` |
+| 异步测试未 await | 忘记 `async/await` | `it('...', async () => { await ... })` |
+| EJ2 组件报错 | 真实 EJ2 在 jsdom 不可用 | `vi.mock('@syncfusion/ej2-vue-grids', ...)` |
+| `consume()` 返回 null | 正常延迟绑定，非错误 | 用可选链 `?.` 处理 |
+| `Spark.createComponentSystem` | **不存在** | 使用 `Spark.createSystem()` |
 
 ---
 
-## 持续集成
-
-### GitHub Actions 示例
-
-```yaml
-# .github/workflows/test.yml
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Install pnpm
-        run: npm install -g pnpm
-      
-      - name: Install dependencies
-        run: pnpm install
-      
-      - name: Run tests
-        run: pnpm run test -- --run
-      
-      - name: Generate coverage
-        run: pnpm run test -- --coverage
-      
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./coverage/coverage-final.json
-```
-
-### 本地测试命令
+## 常用命令
 
 ```bash
-# 运行所有测试
+# 所有测试
 pnpm run test
 
-# 运行单个测试文件
-pnpm run test -- path/to/test.test.ts
+# 指定测试文件
+pnpm run test tests/capability-system.test.ts
 
-# 运行特定测试用例
-pnpm run test -- -t "test name pattern"
+# 指定测试名称
+pnpm run test -- -t "capability-late-binding"
 
-# 生成覆盖率报告
-pnpm run test -- --coverage
-
-# 监听模式（开发时）
-pnpm run test -- --watch
-
-# 并行测试（加速）
-pnpm run test -- --threads
+# 类型检查
+pnpm run typecheck
 ```
-
----
-
-## 总结
-
-### 关键要点
-
-1. ✅ 使用 `Spark.createComponentSystem()` 创建隔离测试环境
-2. ✅ 每个测试用例独立系统（beforeEach 创建）
-3. ✅ 通过 DI 注入 manager 到 Vue 组件
-4. ✅ 避免导入全局单例
-5. ✅ 等待异步操作（async/await）
-6. ✅ 适度 Mock（只 Mock 外部依赖）
-7. ✅ 持续监控覆盖率（目标 50%+）
-
-### 下一步
-
-- 为核心模块编写单元测试
-- 为业务组件编写集成测试
-- 设置 CI/CD 自动化测试
-- 提升测试覆盖率（当前 3.2% → 目标 50%+）
-
----
-
-## 参考资源
-
-- [Vitest 官方文档](https://vitest.dev/)
-- [Vue Test Utils](https://test-utils.vuejs.org/)
-- [SPARK API 文档](../../packages/spark-component/API.md)
-- [数据流架构](../architecture/DATAFLOW_ARCHITECTURE.md)
