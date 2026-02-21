@@ -60,7 +60,8 @@ export class DataSet {
 
     // 构建表实例并建立引用链（DataSet → DataTable → DataView）
     this.tables = {}
-    for (const [name, td] of Object.entries(config.tables)) {
+    const tableDefs = config.tables ?? {}
+    for (const [name, td] of Object.entries(tableDefs)) {
       const table = DataTable.fromTableData(td)
       table.setDataSet(this)  // 设置 table.dataSet = this, view.dataTable = table
       this.tables[name] = table
@@ -71,6 +72,17 @@ export class DataSet {
       r.parentViewId ??= 'default'
       r.childViewId ??= 'default'
     })
+    
+    // 🔧 自动设置单行表的 currentRow（方便数据绑定）
+    for (const table of Object.values(this.tables)) {
+      const view = table.getOrCreateView('default')
+      if (view.rows.length === 1 && !view.currentRow) {
+        const firstRow = view.rows[0]
+        if (firstRow) {
+          view.setCurrentRow(firstRow)
+        }
+      }
+    }
   }
 
   // ===== 关系图查询（网状关系，非树形） =====
@@ -168,11 +180,11 @@ export class DataSet {
   }
 
   /**
-   * 序列化为JSON字符串
-   * @returns JSON字符串
+   * 序列化为可 JSON 化的对象（供 JSON.stringify 自动调用）
+   * @returns 数据集配置对象
    */
-  toJSON(): string {
-    return JSON.stringify(this.toData(), null, 2)
+  toJSON(): IDataSetMetadata {
+    return this.toData()
   }
 
   // ===== 反序列化工厂方法 =====
@@ -257,7 +269,8 @@ export class DataSet {
       if (val && typeof val === 'object') {
         const obj = val as Record<string, unknown>
         const columns = Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n })) as DataColumn[]
-        tables[key] = { tableName: key, columns, rows: [obj as IDataRow] }
+        const row = obj as IDataRow
+        tables[key] = { tableName: key, columns, rows: [row] }
         continue
       }
 
@@ -269,6 +282,8 @@ export class DataSet {
       }
     }
 
+    // 构造函数会自动设置单行表的 currentRow
     return DataSet.fromConfig({ dataSetName: 'PageDataSet', tables })
   }
 }
+

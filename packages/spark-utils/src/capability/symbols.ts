@@ -53,6 +53,9 @@ export interface ICapabilityContext {
  * emitter.on('stateChanged', (evt) => { // evt: ViewStateEvent })
  * ```
  */
+// Note: any[] 在此处是合理的泛型约束
+// 原因：事件参数类型在泛型层面需要最大灵活性，允许任意类型的参数数组
+// TypeScript 在具体使用时会通过 TEventMap 推断出正确的类型
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface IEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> {
   on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
@@ -89,8 +92,10 @@ export function lookup<T = unknown>(ctx: ICapabilityContext, name: CapabilityNam
 }
 
 /** 创建类型安全事件发射器（泛型参数可选，默认接受任意事件） */
+// Note: any[] 在此处是合理的泛型约束（与 IEventEmitter 接口保持一致）
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>>(): IEventEmitter<TEventMap> {
+  // Note: any 在此处是内部实现细节，外部通过泛型确保类型安全
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const listeners = new Map<string, Set<(...args: any[]) => void>>()
   return {

@@ -1,4 +1,5 @@
-﻿/* eslint-disable no-console */
+﻿// Note: Logger 系统本身需要使用 console 输出日志，禁用 no-console 规则是合理的
+/* eslint-disable no-console */
 
 /**
  * SPARK Logger - 轻量级结构化日志

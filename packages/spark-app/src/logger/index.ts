@@ -151,6 +151,7 @@ class AppLogger {
     const formattedMessage = this.formatMessage(message, emoji)
 
     // 直接输出到控制台
+    // Note: Logger 系统需要使用原生 console API 进行输出
     // eslint-disable-next-line no-console
     const consoleFn = level === 'debug' ? console.debug :
                      level === 'info' ? console.info :

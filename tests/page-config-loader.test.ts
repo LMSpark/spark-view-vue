@@ -445,6 +445,35 @@ describe('parsePageData', () => {
     expect(result).toBeInstanceOf(DataSet)
     expect(result.tables['Orders']).toBeDefined()
   })
+
+  it('generic page data creates one-table-per-key (handles null)', () => {
+    const raw = JSON.stringify({
+      currentUser: 'user1',
+      tableData: [],
+      responseData: null
+    })
+    const result = parsePageData(raw)
+    expect(result).toBeInstanceOf(DataSet)
+
+    // inspect what tables were actually generated – debugging help during failure
+    // eslint-disable-next-line no-console
+    console.log('tables keys', Object.keys(result.tables))
+
+    // currentUser becomes a single-row table with value 'user1'
+    const cuView = result.getView('currentUser')
+    expect(cuView).toBeDefined()
+    expect(cuView!.rows[0].value).toBe('user1')
+
+    // tableData is an empty array → empty-rows table
+    const tdView = result.getView('tableData')
+    expect(tdView).toBeDefined()
+    expect(tdView!.rows).toEqual([])
+
+    // responseData null should still convert to a single-row table
+    const rdView = result.getView('responseData')
+    expect(rdView).toBeDefined()
+    expect(rdView!.rows[0].value).toBeNull()
+  })
 })
 
 describe('parseScript', () => {

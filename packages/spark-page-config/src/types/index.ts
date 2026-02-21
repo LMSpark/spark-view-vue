@@ -144,10 +144,21 @@ export interface DynamicRouterOptions {
   configLoader: ConfigLoader
   
   /**
-   * 动态页面组件
+   * 动态页面组件（必需）
    * 用于渲染配置化页面
+   * 
+   * @example
+   * ```typescript
+   * import { PageRenderer } from '@spark-view/spark-component'
+   * 
+   * const options = {
+   *   router,
+   *   configLoader,
+   *   pageComponent: PageRenderer
+   * }
+   * ```
    */
-  pageComponent?: import('vue').Component
+  pageComponent: import('vue').Component
   
   /**
    * 路由注册前钩子

@@ -4,7 +4,9 @@
     "children": [
       {
         "type": "h3",
-        "children": ["数据统计"]
+        "children": [
+          "数据统计"
+        ]
       },
       {
         "type": "div",
@@ -21,7 +23,9 @@
             "on": {
               "click": "testButtonClick"
             },
-            "children": ["🎯 测试 JS 和 CSS"]
+            "children": [
+              "🎯 测试 JS 和 CSS"
+            ]
           },
           {
             "type": "el-button",
@@ -34,7 +38,9 @@
             "on": {
               "click": "showAlert"
             },
-            "children": ["🔔 显示提示"]
+            "children": [
+              "🔔 显示提示"
+            ]
           },
           {
             "type": "el-button",
@@ -47,7 +53,9 @@
             "on": {
               "click": "highlightButtons"
             },
-            "children": ["✨ 按钮高亮动画"]
+            "children": [
+              "✨ 按钮高亮动画"
+            ]
           }
         ]
       },
@@ -66,8 +74,13 @@
             "children": [
               {
                 "type": "div",
-                "style": { "fontSize": "14px", "color": "#999" },
-                "children": ["总用户数"]
+                "style": {
+                  "fontSize": "14px",
+                  "color": "#999"
+                },
+                "children": [
+                  "总用户数"
+                ]
               },
               {
                 "type": "div",
@@ -76,8 +89,10 @@
                   "fontWeight": "bold",
                   "marginTop": "10px"
                 },
-                "dataKey": "stats.totalUsers",
-                "children": [""]
+                "dataKey": "PageDataSet@stats@default@currentRow.totalUsers",
+                "children": [
+                  ""
+                ]
               }
             ]
           },
@@ -87,8 +102,13 @@
             "children": [
               {
                 "type": "div",
-                "style": { "fontSize": "14px", "color": "#999" },
-                "children": ["今日订单"]
+                "style": {
+                  "fontSize": "14px",
+                  "color": "#999"
+                },
+                "children": [
+                  "今日订单"
+                ]
               },
               {
                 "type": "div",
@@ -98,8 +118,10 @@
                   "marginTop": "10px",
                   "color": "#67c23a"
                 },
-                "dataKey": "stats.todayOrders",
-                "children": [""]
+                "dataKey": "PageDataSet@stats@default@currentRow.todayOrders",
+                "children": [
+                  ""
+                ]
               }
             ]
           },
@@ -109,8 +131,13 @@
             "children": [
               {
                 "type": "div",
-                "style": { "fontSize": "14px", "color": "#999" },
-                "children": ["营业额"]
+                "style": {
+                  "fontSize": "14px",
+                  "color": "#999"
+                },
+                "children": [
+                  "营业额"
+                ]
               },
               {
                 "type": "div",
@@ -119,8 +146,10 @@
                   "fontWeight": "bold",
                   "marginTop": "10px"
                 },
-                "dataKey": "stats.revenue",
-                "children": [""]
+                "dataKey": "PageDataSet@stats@default@currentRow.revenue",
+                "children": [
+                  ""
+                ]
               }
             ]
           },
@@ -130,8 +159,13 @@
             "children": [
               {
                 "type": "div",
-                "style": { "fontSize": "14px", "color": "#999" },
-                "children": ["待处理"]
+                "style": {
+                  "fontSize": "14px",
+                  "color": "#999"
+                },
+                "children": [
+                  "待处理"
+                ]
               },
               {
                 "type": "div",
@@ -141,8 +175,10 @@
                   "marginTop": "10px",
                   "color": "#e6a23c"
                 },
-                "dataKey": "stats.pending",
-                "children": [""]
+                "dataKey": "PageDataSet@stats@default@currentRow.pending",
+                "children": [
+                  ""
+                ]
               }
             ]
           }
@@ -154,12 +190,16 @@
         "children": [
           {
             "type": "h3",
-            "style": { "marginBottom": "15px" },
-            "children": ["用户列表"]
+            "style": {
+              "marginBottom": "15px"
+            },
+            "children": [
+              "用户列表"
+            ]
           },
           {
             "type": "el-table",
-            "dataKey": "tableData",
+            "dataKey": "PageDataSet@tableData@default@rows",
             "props": {
               "data": [],
               "stripe": true,
@@ -168,23 +208,42 @@
             "children": [
               {
                 "type": "el-table-column",
-                "props": { "prop": "id", "label": "ID", "width": "80" }
+                "props": {
+                  "prop": "id",
+                  "label": "ID",
+                  "width": "80"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "name", "label": "姓名", "width": "120" }
+                "props": {
+                  "prop": "name",
+                  "label": "姓名",
+                  "width": "120"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "email", "label": "邮箱" }
+                "props": {
+                  "prop": "email",
+                  "label": "邮箱"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "status", "label": "状态", "width": "100" }
+                "props": {
+                  "prop": "status",
+                  "label": "状态",
+                  "width": "100"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "date", "label": "创建时间", "width": "120" }
+                "props": {
+                  "prop": "date",
+                  "label": "创建时间",
+                  "width": "120"
+                }
               }
             ]
           }
@@ -196,26 +255,45 @@
         "children": [
           {
             "type": "h3",
-            "style": { "marginBottom": "15px" },
-            "children": ["新增用户"]
+            "style": {
+              "marginBottom": "15px"
+            },
+            "children": [
+              "新增用户"
+            ]
           },
           {
             "type": "input",
             "field": "username",
             "title": "用户名",
             "value": "",
-            "props": { "placeholder": "请输入用户名" },
-            "validate": [{ "required": true, "message": "请输入用户名" }]
+            "props": {
+              "placeholder": "请输入用户名"
+            },
+            "validate": [
+              {
+                "required": true,
+                "message": "请输入用户名"
+              }
+            ]
           },
           {
             "type": "input",
             "field": "email",
             "title": "邮箱",
             "value": "",
-            "props": { "placeholder": "请输入邮箱" },
+            "props": {
+              "placeholder": "请输入邮箱"
+            },
             "validate": [
-              { "required": true, "message": "请输入邮箱" },
-              { "type": "email", "message": "邮箱格式不正确" }
+              {
+                "required": true,
+                "message": "请输入邮箱"
+              },
+              {
+                "type": "email",
+                "message": "邮箱格式不正确"
+              }
             ]
           },
           {
@@ -223,7 +301,7 @@
             "field": "status",
             "title": "状态",
             "value": "激活",
-            "dataKey": "formOptions.statusOptions",
+            "dataKey": "PageDataSet@formOptions@default@currentRow.statusOptions",
             "options": []
           },
           {
@@ -231,7 +309,7 @@
             "field": "gender",
             "title": "性别",
             "value": "男",
-            "dataKey": "formOptions.genderOptions",
+            "dataKey": "PageDataSet@formOptions@default@currentRow.genderOptions",
             "options": []
           },
           {

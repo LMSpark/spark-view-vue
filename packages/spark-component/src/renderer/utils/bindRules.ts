@@ -154,6 +154,8 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
         newRule.props ??= {}
         newRule.props['dataSource'] = resolved as IDataSource
         newRule.props['dataView'] = resolved
+        // Element Plus el-table 需要 data 属性（响应式数组）
+        newRule.props['data'] = resolved.rows
       }
       // 如果有 dataSet，注入同步事件
       if (dataSet) {

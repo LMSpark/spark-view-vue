@@ -78,8 +78,7 @@ export interface UsePageRendererReturn {
   scopedCss: Ref<string>
   boundRules: Ref<unknown[]>
   pageData: Record<string, unknown>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formApi: Ref<any>
+  formApi: Ref<FormCreateAPI | null>
   formCreateOptions: Ref<Record<string, unknown>>
   // defineExpose / 外部调用
   loadPageConfig: () => Promise<void>
@@ -182,10 +181,8 @@ export function usePageRenderer(
   // ==================== 页面上下文 ====================
 
   const pageContext: PageContext = {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     get $api() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
-      return formApi.value as any
+      return formApi.value
     },
     $route: route,
     $data: pageData,
