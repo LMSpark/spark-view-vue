@@ -102,6 +102,11 @@ export class DataView {
 
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
+  /**
+   * 请求成功后是否自动将 currentRow / selectedRows 设为第一行。
+   * - `true`：有数据时自动选中第一行（currentRow = rows[0]，selectedRows = [rows[0]]）
+   * - `false`（默认）：清空 currentRow 和 selectedRows
+   */
   autoSelectFirst?: boolean
 
   // ── 关联对象 ────────────────────────────────
@@ -284,10 +289,17 @@ export class DataView {
       
       if (result.success && result.data) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
-        this.currentRow = null
-        this.currentRowIndex = null
-        this.selectedRows.splice(0, this.selectedRows.length)
-        this.selectedRowIndices = []
+        if (this.autoSelectFirst && this.rows.length > 0) {
+          this.currentRow = this.rows[0]
+          this.currentRowIndex = 0
+          this.selectedRows.splice(0, this.selectedRows.length, this.rows[0])
+          this.selectedRowIndices = [0]
+        } else {
+          this.currentRow = null
+          this.currentRowIndex = null
+          this.selectedRows.splice(0, this.selectedRows.length)
+          this.selectedRowIndices = []
+        }
         // 成功后重置为 Idle（而非 Loaded），使 requestData() 可再次上行触发
         // rows 已写入，子视图依赖检查改为 rows.length > 0，仍可级联
         this.requestState = RequestState.Idle

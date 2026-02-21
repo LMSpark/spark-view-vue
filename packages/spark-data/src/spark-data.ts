@@ -119,8 +119,12 @@ export namespace SparkData {
   export function createDataView(config: {
     tableName: string
     viewId?: string
+    /** 请求成功后自动选中第一行，见 {@link DataView.autoSelectFirst} */
+    autoSelectFirst?: boolean
   }): DataView {
-    return reactive(new DataView(config.tableName, config.viewId)) as DataView
+    const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
+    if (config.autoSelectFirst !== undefined) view.autoSelectFirst = config.autoSelectFirst
+    return view
   }
 
   // ===== DataKey 统一解析 =====
