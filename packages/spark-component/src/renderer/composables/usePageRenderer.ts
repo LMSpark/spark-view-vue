@@ -36,7 +36,6 @@ import { useSparkComponent } from '../../composables/useSparkComponent'
 import type { PageRendererOptions, PageContext, Rule, FormCreateAPI, PageConfig } from '../types'
 import { useCssScope } from './useCssScope'
 import { useRuleBinding } from './useRuleBinding'
-import { useTableDataSync } from './useTableDataSync'
 import { compileFunctions } from '../utils/createSandbox'
 import { buildAppServices } from '../utils/provideAppServices'
 
@@ -146,10 +145,9 @@ export function usePageRenderer(
     originalRules,
     pageData,
     pageFunctions,
-    dataSet
+    dataSet,
+    formApi
   })
-
-  const { setupSync } = useTableDataSync({ dataSet, formApi })
 
   // ==================== 页面上下文 ====================
 
@@ -239,7 +237,6 @@ export function usePageRenderer(
     executeScript(pageId, config.script ?? '')
     await nextTick()
     rebindRules()
-    setupSync()
   }
 
   /** 完整页面加载流程编排：beforeLoad → resolvePageId → fetchConfig → applyConfig → afterLoad。 */
