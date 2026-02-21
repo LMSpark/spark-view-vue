@@ -20,15 +20,15 @@ SPARK 组件系统基于 Vue 3 Composition API，支持类型安全的组件注�
 
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
-import type { ComponentContext } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
-interface MyComponentConfig {
+interface MyComponentConfig extends ComponentConfig {
   title?: string
   theme?: 'light' | 'dark'
 }
 
 const props = defineProps<{
-  config: ComponentContext<MyComponentConfig>
+  config: MyComponentConfig
 }>()
 
 // 获取 SPARK 上下文
@@ -168,25 +168,26 @@ import { useSparkComponent } from '@spark-view/spark-component'
 import { GRID_SELECTION } from './capabilities'
 
 const props = defineProps<{
-  config: ComponentContext
+  config: ComponentConfig
 }>()
 
 const { consume } = useSparkComponent(props.config)
 
 // 消费选择能力（支持延迟绑定）
+// consume() 返回 T | null，不是 Ref
 const selectionApi = consume(GRID_SELECTION)
 
 const selectedCount = computed(() => {
-  return selectionApi.value?.getSelectedItems().length ?? 0
+  return selectionApi?.getSelectedItems().length ?? 0
 })
 
 const selectAll = () => {
   // 这里需要从数据源获取所有项
-  // selectionApi.value?.selectAll()
+  // selectionApi?.selectAll()
 }
 
 const clearAll = () => {
-  selectionApi.value?.clearSelection()
+  selectionApi?.clearSelection()
 }
 </script>
 ```
@@ -250,14 +251,22 @@ SPARK 支持灵活的样式定制：
 import { useSparkComponent } from '@spark-view/spark-component'
 import { computed } from 'vue'
 
+interface ThemeConfig extends ComponentConfig {
+  theme?: string
+  size?: string
+}
+
+interface ThemeProvider { currentTheme: string }
+const THEME_PROVIDER = defineCapability<ThemeProvider>('app:theme-provider')
+
 const props = defineProps<{
-  config: ComponentContext<{ theme?: string; size?: string }>
+  config: ThemeConfig
 }>()
 
 const { consume } = useSparkComponent(props.config)
 
-// 消费主题能力（如果有的话）
-const themeProvider = consume('theme-provider')
+// 消费主题能力（返回 ThemeProvider | null，不是 Ref）
+const themeProvider = consume(THEME_PROVIDER)
 
 const componentClasses = computed(() => {
   const classes = ['spark-component']
@@ -272,8 +281,8 @@ const componentClasses = computed(() => {
   }
 
   // 从全局主题获取样式
-  if (themeProvider.value?.currentTheme) {
-    classes.push(`global-theme-${themeProvider.value.currentTheme}`)
+  if (themeProvider?.currentTheme) {
+    classes.push(`global-theme-${themeProvider.currentTheme}`)
   }
 
   return classes
@@ -322,18 +331,23 @@ const componentClasses = computed(() => {
 import { useSparkComponent } from '@spark-view/spark-component'
 import { computed } from 'vue'
 
+interface PermissionProvider { hasPermission(perm: string): boolean }
+const PERMISSION_PROVIDER = defineCapability<PermissionProvider>('app:permission-provider')
+
+interface ConditionalConfig extends ComponentConfig {
+  condition?: string
+  permissions?: string[]
+  componentType?: string
+}
+
 const props = defineProps<{
-  config: ComponentContext<{
-    condition?: string
-    permissions?: string[]
-    componentType?: string
-  }>
+  config: ConditionalConfig
 }>()
 
 const { consume } = useSparkComponent(props.config)
 
-// 消费权限系统
-const permissionProvider = consume('permission-provider')
+// 消费权限系统（返回 PermissionProvider | null，不是 Ref）
+const permissionProvider = consume(PERMISSION_PROVIDER)
 
 const isVisible = computed(() => {
   // 检查显示条件
@@ -343,9 +357,9 @@ const isVisible = computed(() => {
   }
 
   // 检查权限
-  if (props.config.permissions && permissionProvider.value) {
+  if (props.config.permissions && permissionProvider) {
     return props.config.permissions.every(perm =>
-      permissionProvider.value.hasPermission(perm)
+      permissionProvider.hasPermission(perm)
     )
   }
 
@@ -424,14 +438,14 @@ const retry = () => {
 
 ```typescript
 // ✅ 推荐：明确的类型定义
-interface UserGridConfig {
+interface UserGridConfig extends ComponentConfig {
   title: string
   columns: ColumnConfig[]
   dataSource: string
 }
 
 const props = defineProps<{
-  config: ComponentContext<UserGridConfig>
+  config: UserGridConfig
 }>()
 
 // ❌ 避免：使用 any
@@ -513,10 +527,11 @@ logger.error('Failed to save', { error })
 ```typescript
 const { consume, logger } = useSparkComponent(props.config)
 
+// consume() 返回 T | null，不是 Ref
 const dataProvider = consume('data-provider')
 
 // 检查能力是否可用
-if (dataProvider.value) {
+if (dataProvider) {
   logger.debug('Data provider connected')
 } else {
   logger.warn('Data provider not available, using fallback')
@@ -565,14 +580,16 @@ provide('columnManager', {
 ### 消费能力
 
 ```typescript
-const { consume, whenAvailable } = useSparkComponent({ type: 'my-column' })
+const { consume } = useSparkComponent({ type: 'my-column' })
 
 // 立即消费（可能为 undefined）
 const columnManager = consume('columnManager')
 
-// 等待能力就绪
-whenAvailable('columnManager', (mgr) => {
-  mgr.addColumn({
+// consume() 返回 T | null（延迟绑定正常，不是错误）
+// 若需要在 onMounted 后使用：
+onMounted(() => {
+  const mgr = consume('columnManager')
+  mgr?.addColumn({
     id: props.id,
     field: props.field,
     title: props.title
@@ -612,14 +629,17 @@ import { useSparkComponent } from '@spark-view/spark-component'
 
 const { consume } = useSparkComponent({ type: 'my-grid' })
 
-// 消费 DataSet 能力
-const dataSet = consume('dataSet')
+// 消费页面级 DataSet（通过 PAGE_DATASET 能力键）
+import { PAGE_DATASET, SparkData } from '@spark-view/spark-data'
 
-// 绑定表数据（通过 DataView）
-const usersView = dataSet?.getView('Users', 'default')
+const dataSet = consume(PAGE_DATASET)
+
+// 解析 DataKey → DataView
+const binding = SparkData.resolveDataKeyBinding('UserDS@Users@default@rows', dataSet)
+const usersView = binding?.kind === 'view' ? binding.source : null
 const rows = computed(() => usersView?.rows || [])
 
-// 订阅变化（统一使用 events.on）
+// 订阅变化
 usersView?.events.on('stateChanged', (event) => {
   console.log('数据变化:', event)
 })
@@ -688,8 +708,8 @@ export interface ColumnManager {
 ## 完整示例
 
 参考项目中的 EJ2 组件实现：
-- [features/spark/components/ej2/SparkEJ2Grid.vue](../../../features/spark/components/ej2/SparkEJ2Grid.vue)
-- [features/spark/components/ej2/SparkEJ2Column.vue](../../../features/spark/components/ej2/SparkEJ2Column.vue)
+- [features/spark-ej2/components/SparkEJ2Grid.vue](../../../features/spark-ej2/components/SparkEJ2Grid.vue)
+- [features/spark-ej2/components/SparkEJ2Column.vue](../../../features/spark-ej2/components/SparkEJ2Column.vue)
 
 ## 构建时组件库生成与AI集成
 
@@ -828,19 +848,16 @@ provide('dataSource', {
 ### 消费能力
 
 ```typescript
-const { consume, whenAvailable, use } = useSparkComponent({ type: 'my-column' })
+const { consume } = useSparkComponent({ type: 'my-column' })
 
 // 立即消费（可能 undefined）
 const mgr = consume('columnManager')
 mgr?.addColumn({ id: '1', field: 'name' })
 
-// 等待就绪后执行（推荐）
-whenAvailable('columnManager', (mgr) => {
-  mgr.addColumn({ id: props.id, field: props.field })
+// 在 onMounted 后执行（推荐）
+onMounted(() => {
+  consume('columnManager')?.addColumn({ id: props.id, field: props.field })
 })
-
-// use() 是 whenAvailable 的语法糖
-use('columnManager', (mgr) => { mgr.addColumn({ ... }) })
 ```
 
 ### 能力查找规则
@@ -888,8 +905,9 @@ provide('columnManager', {
 <!-- Column.vue（消费能力） -->
 <script setup lang="ts">
 const props = defineProps<{ id: string; field: string }>()
-const { whenAvailable, consume } = useSparkComponent({ type: 'my-column' })
-whenAvailable('columnManager', (mgr) => mgr.addColumn({ id: props.id, field: props.field }))
+const { consume } = useSparkComponent({ type: 'my-column' })
+// 在挂载后注册（父组件已就绪）
+onMounted(() => consume('columnManager')?.addColumn({ id: props.id, field: props.field }))
 onUnmounted(() => consume('columnManager')?.removeColumn(props.id))
 </script>
 ```
