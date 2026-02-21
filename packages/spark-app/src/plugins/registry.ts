@@ -62,82 +62,114 @@ export interface PluginInstance {
 }
 
 /**
- * 插件注册表
- * 
- * 管理插件名称到加载器的映射
+ * 插件注册表接口
+ */
+export interface IPluginRegistry {
+  register(id: string, loader: Omit<PluginLoader, 'id'>): void
+  registerAll(loaders: Record<string, Omit<PluginLoader, 'id'>>): void
+  get(id: string): PluginLoader | undefined
+  has(id: string): boolean
+  getAll(): PluginLoader[]
+  getAllIds(): string[]
+  unregister(id: string): boolean
+  clear(): void
+  getStats(): { total: number; plugins: string[] }
+}
+
+/**
+ * 创建隔离的插件注册表实例（测试 / 微前端场景）
+ */
+export function createPluginRegistry(): IPluginRegistry {
+  const loaders = new Map<string, PluginLoader>()
+  return {
+    register(id: string, loader: Omit<PluginLoader, 'id'>): void {
+      if (loaders.has(id)) {
+        pluginLogger.warn(`Plugin "${id}" already registered, will be overwritten`)
+      }
+      loaders.set(id, { id, ...loader })
+    },
+    registerAll(entries: Record<string, Omit<PluginLoader, 'id'>>): void {
+      Object.entries(entries).forEach(([id, loader]) => {
+        this.register(id, loader)
+      })
+    },
+    get(id: string): PluginLoader | undefined {
+      return loaders.get(id)
+    },
+    has(id: string): boolean {
+      return loaders.has(id)
+    },
+    getAll(): PluginLoader[] {
+      return Array.from(loaders.values())
+    },
+    getAllIds(): string[] {
+      return Array.from(loaders.keys())
+    },
+    unregister(id: string): boolean {
+      return loaders.delete(id)
+    },
+    clear(): void {
+      loaders.clear()
+    },
+    getStats() {
+      return { total: loaders.size, plugins: Array.from(loaders.keys()) }
+    }
+  }
+}
+
+/** 全局插件注册表单例（惰性创建） */
+let _globalPluginRegistry: IPluginRegistry | undefined
+
+/** 获取全局插件注册表单例 */
+export function getGlobalPluginRegistry(): IPluginRegistry {
+  _globalPluginRegistry ??= createPluginRegistry()
+  return _globalPluginRegistry
+}
+
+/**
+ * 插件注册表（静态门面 — 向后兼容）
+ *
+ * 内部委托给全局 {@link IPluginRegistry} 实例。
+ * 新代码建议直接使用 `createPluginRegistry()` 或 `getGlobalPluginRegistry()`。
+ *
+ * @deprecated 优先使用 `getGlobalPluginRegistry()` 或 `createPluginRegistry()`
  */
 export class PluginRegistry {
-  private static loaders = new Map<string, PluginLoader>()
-  
-  /**
-   * 注册插件加载器
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().register() */
   static register(id: string, loader: Omit<PluginLoader, 'id'>): void {
-    if (this.loaders.has(id)) {
-      console.warn(`[PluginRegistry] Plugin "${id}" already registered, will be overwritten`)
-    }
-    this.loaders.set(id, { id, ...loader })
+    getGlobalPluginRegistry().register(id, loader)
   }
-  
-  /**
-   * 批量注册插件加载器
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().registerAll() */
   static registerAll(loaders: Record<string, Omit<PluginLoader, 'id'>>): void {
-    Object.entries(loaders).forEach(([id, loader]) => {
-      this.register(id, loader)
-    })
+    getGlobalPluginRegistry().registerAll(loaders)
   }
-  
-  /**
-   * 获取插件加载器
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().get() */
   static get(id: string): PluginLoader | undefined {
-    return this.loaders.get(id)
+    return getGlobalPluginRegistry().get(id)
   }
-  
-  /**
-   * 检查插件是否已注册
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().has() */
   static has(id: string): boolean {
-    return this.loaders.has(id)
+    return getGlobalPluginRegistry().has(id)
   }
-  
-  /**
-   * 获取所有已注册的插件
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().getAll() */
   static getAll(): PluginLoader[] {
-    return Array.from(this.loaders.values())
+    return getGlobalPluginRegistry().getAll()
   }
-  
-  /**
-   * 获取所有已注册的插件 ID
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().getAllIds() */
   static getAllIds(): string[] {
-    return Array.from(this.loaders.keys())
+    return getGlobalPluginRegistry().getAllIds()
   }
-  
-  /**
-   * 注销插件
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().unregister() */
   static unregister(id: string): boolean {
-    return this.loaders.delete(id)
+    return getGlobalPluginRegistry().unregister(id)
   }
-  
-  /**
-   * 清除所有注册
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().clear() */
   static clear(): void {
-    this.loaders.clear()
+    getGlobalPluginRegistry().clear()
   }
-  
-  /**
-   * 获取注册表统计信息
-   */
+  /** @deprecated 使用 getGlobalPluginRegistry().getStats() */
   static getStats() {
-    return {
-      total: this.loaders.size,
-      plugins: Array.from(this.loaders.keys())
-    }
+    return getGlobalPluginRegistry().getStats()
   }
 }
 
@@ -149,10 +181,12 @@ export class PluginManager {
    * 根据配置加载插件
    * 
    * @param pluginConfigs - 插件配置对象
+   * @param registry - 可选的插件注册表实例（默认使用全局注册表）
    * @returns 插件实例数组（按优先级排序）
    */
   static async loadPlugins(
-    pluginConfigs: Record<string, PluginConfig>
+    pluginConfigs: Record<string, PluginConfig>,
+    registry: IPluginRegistry = getGlobalPluginRegistry()
   ): Promise<PluginInstance[]> {
     const plugins: PluginInstance[] = []
     
@@ -160,7 +194,7 @@ export class PluginManager {
     const normalizedConfigs = Object.entries(pluginConfigs)
       .map(([id, config]) => {
         const normalized = this.normalizeConfig(config)
-        const loader = PluginRegistry.get(id)
+        const loader = registry.get(id)
         
         return {
           id,
@@ -209,10 +243,15 @@ export class PluginManager {
   
   /**
    * 加载单个插件
+   *
+   * @param id - 插件 ID
+   * @param config - 插件配置
+   * @param registry - 可选的插件注册表实例（默认使用全局注册表）
    */
   static async loadPlugin(
     id: string,
-    config: PluginConfig = { enabled: true }
+    config: PluginConfig = { enabled: true },
+    registry: IPluginRegistry = getGlobalPluginRegistry()
   ): Promise<PluginInstance | null> {
     const normalized = this.normalizeConfig(config)
     
@@ -220,7 +259,7 @@ export class PluginManager {
       return null
     }
     
-    const loader = PluginRegistry.get(id)
+    const loader = registry.get(id)
     if (!loader) {
       pluginLogger.warn(`Plugin "${id}" not registered`)
       return null
@@ -262,6 +301,8 @@ export class PluginManager {
 /**
  * 便捷函数：创建插件注册器
  * 
+ * @param registry - 可选的插件注册表实例（默认使用全局注册表）
+ *
  * @example
  * ```typescript
  * const register = createPluginRegister()
@@ -272,13 +313,13 @@ export class PluginManager {
  * })
  * ```
  */
-export function createPluginRegister() {
+export function createPluginRegister(registry: IPluginRegistry = getGlobalPluginRegistry()) {
   return {
     register: (id: string, loader: Omit<PluginLoader, 'id'>) => {
-      PluginRegistry.register(id, loader)
+      registry.register(id, loader)
     },
     registerAll: (loaders: Record<string, Omit<PluginLoader, 'id'>>) => {
-      PluginRegistry.registerAll(loaders)
+      registry.registerAll(loaders)
     }
   }
 }

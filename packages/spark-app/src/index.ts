@@ -22,11 +22,14 @@ export {
   PluginRegistry,
   PluginManager,
   createPluginRegister,
+  createPluginRegistry,
+  getGlobalPluginRegistry,
   registerBuiltinPlugins,
   registerAllPresetPlugins
 } from './plugins'
 
 export type {
+  IPluginRegistry,
   PluginConfigItem,
   PluginConfig,
   PluginLoader,

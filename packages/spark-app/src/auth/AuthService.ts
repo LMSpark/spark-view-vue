@@ -328,16 +328,40 @@ export class AuthService implements IAuthService {
     authLogger.debug('🗑️ Token 已清除')
   }
 
+  /** 并发刷新锁：多个请求同时发现 token 过期时，共享同一个 refresh Promise */
+  private refreshPromise: Promise<string> | null = null
+
   /**
    * 刷新 Token
+   *
+   * 内置并发锁：多个并发调用会共享同一个刷新请求，
+   * 避免多个 refresh 请求同时发出导致 refresh token 被消耗。
    *
    * @returns 新的 Token
    * @throws {Error} 刷新失败时抛出异常
    */
   async refreshToken(): Promise<string> {
     this.ensureInitialized()
-    authLogger.info('🔄 刷新 Token')
 
+    // 并发锁：后续调用复用正在进行的刷新 Promise
+    if (this.refreshPromise) {
+      authLogger.debug('🔄 复用正在进行的 Token 刷新请求')
+      return this.refreshPromise
+    }
+
+    authLogger.info('🔄 刷新 Token')
+    this.refreshPromise = this.doRefreshToken().finally(() => {
+      this.refreshPromise = null
+    })
+
+    return this.refreshPromise
+  }
+
+  /**
+   * 实际执行 Token 刷新的内部方法
+   * @private
+   */
+  private async doRefreshToken(): Promise<string> {
     try {
       const response = await this.fetchWithTimeout(
         `${this.config.apiBaseUrl}${this.config.apiEndpoints.refresh}`,

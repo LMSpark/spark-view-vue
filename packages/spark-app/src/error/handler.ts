@@ -12,9 +12,12 @@ const errorLogger = createLogger('error')
 
 /**
  * 设置全局错误处理
+ *
+ * @returns 清理函数，调用后移除全局事件监听器（HMR / 应用卸载时使用）
  */
-export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): void {
+export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): () => void {
   const { onError, errorClassifier, onErrorByType, enableFallback } = options
+  const cleanupFns: Array<() => void> = []
 
   // Vue 错误处理
   app.config.errorHandler = (err: unknown, instance, info) => {
@@ -50,7 +53,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
 
   // Promise 未捕获错误
   if (typeof window !== 'undefined') {
-    window.addEventListener('unhandledrejection', (event) => {
+    const rejectionHandler = (event: PromiseRejectionEvent) => {
       errorLogger.error('[Unhandled Promise]', event.reason)
       event.preventDefault()
       
@@ -60,7 +63,9 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
           { info: 'unhandledrejection', timestamp: Date.now() }
         )
       }
-    })
+    }
+    window.addEventListener('unhandledrejection', rejectionHandler)
+    cleanupFns.push(() => window.removeEventListener('unhandledrejection', rejectionHandler))
   }
 
   // 启用降级边界组件
@@ -70,6 +75,12 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
   }
 
   errorLogger.info('全局错误处理已设置')
+
+  // 返回清理函数（HMR / 应用卸载时调用，避免累积监听器）
+  return () => {
+    cleanupFns.forEach(fn => fn())
+    cleanupFns.length = 0
+  }
 }
 
 /**

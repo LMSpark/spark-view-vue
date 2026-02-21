@@ -13,6 +13,9 @@ export interface CssScopeOptions {
 /**
  * 为 CSS 添加作用域前缀
  * 
+ * 支持顶层规则和 @media / @supports 等 at-rules 内部的嵌套规则。
+ * pageId 中的特殊字符会被转义以防止 CSS 注入。
+ *
  * @example
  * ```typescript
  * const scopedCss = scopeCSS({
@@ -26,33 +29,46 @@ export function scopeCSS(options: CssScopeOptions): string {
   const { pageId, css } = options
   
   if (!css) return ''
-  
-  // 为每个 CSS 规则添加属性选择器前缀
-  return css.replace(
-    /([^{}]+)\{([^}]*)\}/g,
-    (match: string, selector: string, rules: string) => {
-      // 跳过 @media, @keyframes 等 at-rules
-      if (selector.trim().startsWith('@')) {
-        return match
-      }
-      
-      // 分割多个选择器（如 .a, .b { }）
-      const selectors = selector.split(',').map((s: string) => {
-        const trimmed = s.trim()
-        // 如果已经有 data-page 前缀，跳过
-        if (trimmed.includes('[data-page')) {
-          return trimmed
+
+  // 转义 pageId 中的特殊字符（防止 CSS 属性选择器注入）
+  const safePageId = pageId.replace(/[\\"]/g, '\\$&')
+  const prefix = `[data-page="${safePageId}"].spark-page-container`
+
+  /** 为单层 CSS 文本中的选择器添加 scope 前缀 */
+  function scopeSelectors(cssText: string): string {
+    return cssText.replace(
+      /([^{}]+)\{([^}]*)\}/g,
+      (_match: string, selector: string, rules: string) => {
+        // 跳过内部 at-rules（不应出现在此层，但保险起见）
+        if (selector.trim().startsWith('@')) {
+          return `${selector}{${rules}}`
         }
-        
-        // 增强隔离：同时使用 data-page 属性和类名，提高优先级
-        // 方案1: [data-page="xxx"].spark-page-container selector
-        // 方案2: .spark-page-xxx selector (更简洁)
-        // 这里使用方案1，因为更明确
-        return `[data-page="${pageId}"].spark-page-container ${trimmed}`
-      })
-      
-      return `${selectors.join(', ')} {${rules}}`
+
+        const selectors = selector.split(',').map((s: string) => {
+          const trimmed = s.trim()
+          if (trimmed.includes('[data-page')) return trimmed
+          return `${prefix} ${trimmed}`
+        })
+
+        return `${selectors.join(', ')} {${rules}}`
+      }
+    )
+  }
+
+  // 先处理 at-rules（@media, @supports 等）的内部规则
+  // 匹配: @media (...) { ... }  —— 用贪婪匹配内部花括号块
+  const result = css.replace(
+    /(@(?:media|supports|layer|container)[^{]*)\{([\s\S]*?\})\s*\}/g,
+    (_match: string, atRule: string, innerCss: string) => {
+      return `${atRule}{${scopeSelectors(innerCss)}}`
     }
+  )
+
+  // 再处理顶层规则（排除已处理的 at-rules 和 @keyframes/@font-face）
+  return scopeSelectors(result).replace(
+    // 恢复 @keyframes / @font-face：它们不应被 scope（内部不含选择器）
+    new RegExp(`${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} (@(?:keyframes|font-face))`, 'g'),
+    '$1'
   )
 }
 

@@ -61,6 +61,10 @@ export interface IEventEmitter<TEventMap extends Record<string, any[]> = Record<
   on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
+  /** 移除指定事件的所有监听器，或不传参时移除全部监听器（用于 destroy 清理） */
+  removeAllListeners<K extends string & keyof TEventMap>(event?: K): void
+  /** 返回指定事件的监听器数量，不传参时返回所有事件监听器总数 */
+  listenerCount<K extends string & keyof TEventMap>(event?: K): number
 }
 
 // ==================== 类型安全能力键 ====================
@@ -109,6 +113,21 @@ export function createEventEmitter<TEventMap extends Record<string, any[]> = Rec
     },
     emit(event, ...args) {
       listeners.get(event)?.forEach(h => { try { h(...args) } catch (e) { console.error(`[EventEmitter] Error in handler for '${event}':`, e) } })
+    },
+    removeAllListeners(event?: string) {
+      if (event !== undefined) {
+        listeners.delete(event)
+      } else {
+        listeners.clear()
+      }
+    },
+    listenerCount(event?: string) {
+      if (event !== undefined) {
+        return listeners.get(event)?.size ?? 0
+      }
+      let total = 0
+      listeners.forEach(s => { total += s.size })
+      return total
     }
   }
 }

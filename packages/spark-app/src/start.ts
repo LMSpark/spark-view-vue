@@ -254,6 +254,7 @@ export async function start(options: StartOptions): Promise<void> {
     startLogger.info('启动 Bootstrap 流程...')
     await bootstrap({
       ...bootstrapOptions,
+      mountTarget,
       app,
       router
     })

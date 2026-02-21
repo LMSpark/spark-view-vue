@@ -142,6 +142,13 @@ describe('Capability system integration', () => {
         },
         emit(event: string, ...args: unknown[]) {
           (eventBus[event] || []).forEach(fn => fn(...args))
+        },
+        removeAllListeners(event?: string) {
+          if (event) { delete eventBus[event] } else { Object.keys(eventBus).forEach(k => delete eventBus[k]) }
+        },
+        listenerCount(event?: string) {
+          if (event) return (eventBus[event] || []).length
+          return Object.values(eventBus).reduce((sum, arr) => sum + arr.length, 0)
         }
       }
 

@@ -365,7 +365,7 @@ export class TokenManager {
     const expires = new Date()
     expires.setDate(expires.getDate() + 30) // 30 天后过期
 
-    document.cookie = `${this.tokenKey}=${encodeURIComponent(token)}; expires=${expires.toUTCString()}; path=/`
+    document.cookie = `${this.tokenKey}=${encodeURIComponent(token)}; expires=${expires.toUTCString()}; path=/; SameSite=Strict${location.protocol === 'https:' ? '; Secure' : ''}`
   }
 
   /**
@@ -379,6 +379,6 @@ export class TokenManager {
     if (typeof document === 'undefined') return
 
     // 设置过期时间为过去的时间来删除 cookie
-    document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+    document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict${location.protocol === 'https:' ? '; Secure' : ''}`
   }
 }
