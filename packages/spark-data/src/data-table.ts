@@ -15,7 +15,8 @@
  *  - 符合 SOLID：单一职责（结构定义）、依赖倒置（不依赖运行时状态）
  */
 
-import { DataView, RequestState } from './data-view'
+import { DataView } from './data-view'
+import { RequestState } from './types'
 import { reactive } from 'vue'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { TreeManager } from './tree-manager'

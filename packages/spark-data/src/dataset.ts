@@ -6,7 +6,7 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
 
@@ -19,7 +19,7 @@ function inferColumnType(v: unknown): string {
   return 'string'
 }
 
-export class DataSet {
+export class DataSet implements IDataSet {
 
   // ===== 属性定义 =====
 

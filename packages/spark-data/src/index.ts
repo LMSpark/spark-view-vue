@@ -13,7 +13,7 @@ export { DataSet, DataTable, DataView, TreeManager } from './spark-data'
 
 // ===== 枚举 / 常量 =====
 
-export { RequestState } from './data-view'
+export { RequestState } from './types'
 
 // ===== CRUD 服务 =====
 

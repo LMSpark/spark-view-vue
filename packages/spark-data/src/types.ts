@@ -5,6 +5,8 @@
  */
 
 import type { RequestConfig } from '@spark-view/spark-utils'
+import type { DataTable } from './data-table'
+import type { DataView as SparkDataView } from './data-view'
 
 // RequestConfig 仅内部使用，消费者应从 @spark-view/spark-utils 直接导入
 export type { RequestConfig }
@@ -268,10 +270,64 @@ export interface TreePath {
   pathNodes?: FlatTreeNode[]
 }
 
-// ===== 响应类型别名 =====
+// ===== 请求状态 =====
 
-/** 数据集类型别名 */
-export type IDataSet = import('./dataset').DataSet
+/**
+ * DataView 请求状态机
+ *
+ * ```
+ * Idle ──requestData()──▶ Preparing ──loadFromServer()──▶ Loading
+ *                                                                │
+ *                                                ┌──────────────┴──────────────┐
+ *                                              Loaded                        Failed
+ * ```
+ */
+export enum RequestState {
+  /** 未请求（初始态 / 被外部重置后） */
+  Idle         = 0,
+  /** 准备中：逐个检查父依赖、组装查询参数（条件具备前） */
+  Preparing     = 1,
+  /** loadFromServer 网络请求中（从服务器请求中） */
+  Loading      = 2,
+  /** 已完成 */
+  Loaded       = 3,
+  /** 失败（父依赖不满足 / 网络错误） */
+  Failed       = 4,
+}
+
+// ===== 数据集接口 =====
+
+/**
+ * 数据集公共契约
+ *
+ * 消费者（渲染层、能力系统）应依赖此接口而非具体 DataSet 类，
+ * 便于测试 mock 与未来扩展。
+ */
+export interface IDataSet {
+  /** 数据集名称 */
+  readonly dataSetName: string
+  /** 数据表集合 */
+  readonly tables: Record<string, DataTable>
+  /** 数据关系定义 */
+  readonly relations: DataRelation[] | undefined
+  /** 版本号 */
+  readonly version: number | undefined
+  /** 页面ID */
+  readonly pageId: string | undefined
+
+  /** 查询以指定视图为父的子关系 */
+  getChildRelations(parentTable: string, parentViewId: string): DataRelation[]
+  /** 查询以指定视图为子的父关系 */
+  getParentRelations(childTable: string, childViewId: string): DataRelation[]
+  /** 获取数据表 */
+  getTable(name: string): DataTable | undefined
+  /** 获取数据视图（委托到 DataTable） */
+  getView(tableName: string, viewId?: string): SparkDataView | undefined
+  /** 序列化为元数据对象 */
+  toData(): IDataSetMetadata
+  /** 序列化（供 JSON.stringify 自动调用） */
+  toJSON(): IDataSetMetadata
+}
 
 // ===== CRUD服务相关类型 =====
 
