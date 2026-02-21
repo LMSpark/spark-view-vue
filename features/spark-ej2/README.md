@@ -42,10 +42,14 @@ Column 列组件，支持：
 
 ```typescript
 import { initializeSparkEJ2Components } from '@/features/spark-ej2'
-import { Spark } from '@spark-view/spark-component'
 
-// 初始化 SPARK-EJ2 组件（使用全局管理器）
-await initializeSparkEJ2Components(Spark._manager())
+// 初始化 SPARK-EJ2 组件（默认使用全局注册表 Spark.getRegistry()）
+initializeSparkEJ2Components()
+
+// 或传入自定义注册表（多实例 / 测试场景）
+import { Spark } from '@spark-view/spark-component'
+const registry = Spark.createRegistry()
+initializeSparkEJ2Components(registry)
 ```
 
 ### 使用组件
