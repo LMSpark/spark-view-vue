@@ -7,8 +7,8 @@
  */
 
 import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
-import { provide as setCapability, lookup, createEventEmitter } from '@spark-view/spark-utils'
-import type { IEventEmitter, CapabilityKey, CapabilityName, LoggerApi } from '@spark-view/spark-utils'
+import { provide as setCapability, lookup, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
+import type { IEventEmitter, CapabilityKey, CapabilityName, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { ComponentContext, ComponentConfig, ComponentRegistry } from '../core/types.js'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
 
@@ -114,10 +114,17 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   const getActiveLogger = (): LoggerApi => {
     if (cachedLogger) return cachedLogger
-    const impl = lookup<LoggerApi>(context, 'logger')
-    if (impl && typeof impl === 'object' && 'info' in impl && 'warn' in impl && 'error' in impl && 'debug' in impl) {
-      cachedLogger = impl
-      return impl
+    // 1. 优先查找 LOGGER 能力键（最近的祖先覆盖）
+    const loggerImpl = lookup<LoggerApi>(context, LOGGER)
+    if (loggerImpl && typeof loggerImpl === 'object' && 'info' in loggerImpl) {
+      cachedLogger = loggerImpl
+      return loggerImpl
+    }
+    // 2. 次选 APP_SERVICES.logger（应用层统一提供）
+    const appServices = lookup<IAppServicesCapability>(context, APP_SERVICES)
+    if (appServices?.logger) {
+      cachedLogger = appServices.logger
+      return appServices.logger
     }
     return fallbackLogger
   }
