@@ -295,15 +295,16 @@ export class DataView {
       
       if (result.success && result.data) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
-        if (this.autoCurrentFirst && this.rows.length > 0) {
-          this.currentRow = this.rows[0]
+        const firstRow = this.rows.length > 0 ? this.rows[0] : null
+        if (this.autoCurrentFirst && firstRow) {
+          this.currentRow = firstRow
           this.currentRowIndex = 0
         } else {
           this.currentRow = null
           this.currentRowIndex = null
         }
-        if (this.autoSelectFirst && this.rows.length > 0) {
-          this.selectedRows.splice(0, this.selectedRows.length, this.rows[0])
+        if (this.autoSelectFirst && firstRow) {
+          this.selectedRows.splice(0, this.selectedRows.length, firstRow)
           this.selectedRowIndices = [0]
         } else {
           this.selectedRows.splice(0, this.selectedRows.length)
