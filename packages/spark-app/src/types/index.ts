@@ -126,6 +126,8 @@ export interface BootstrapOptions {
   config: AppConfig
   /** 认证配置（可选，不提供则使用 authenticate 函数） */
   auth?: import('../auth').AuthConfig
+  /** 挂载目标元素选择器（默认 '#app'） */
+  mountTarget?: string
   /** 挂载前钩子 */
   beforeMount?: (context: BootstrapContext) => void | Promise<void>
   /** 挂载后钩子 */

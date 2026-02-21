@@ -104,7 +104,7 @@ const bootstrapLogger = createLogger('bootstrap')
  * ```
  */
 export async function bootstrap(options: BootstrapOptions): Promise<void> {
-  const { app, router, config, beforeMount, afterMount, auth } = options
+  const { app, router, config, beforeMount, afterMount, auth, mountTarget = '#app' } = options
 
   try {
     // =========================================================================
@@ -247,7 +247,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     logPhase('MOUNT', '挂载应用')
     app.use(router)
     await router.isReady()
-    app.mount('#app')
+    app.mount(mountTarget)
 
     // =========================================================================
     // 阶段 8: 挂载后钩子

@@ -24,12 +24,12 @@ function hasAnyPermission(context: AppContext, permissions: string[]): boolean {
  * 
  * @param router - Vue Router 实例
  * @param options - 守卫配置
- * @param appContext - 应用上下文（通过参数传入，非 inject）
+ * @param getAppContext - 应用上下文 getter（函数或静态值），用户登录后守卫能获取最新状态
  */
 export function setupRouterGuards(
   router: Router,
   options: RouterGuardOptions = {},
-  appContext?: AppContext
+  getAppContext?: AppContext | (() => AppContext | undefined)
 ): void {
   const {
     loginPath = '/login',
@@ -37,12 +37,19 @@ export function setupRouterGuards(
     checkPermission
   } = options
 
+  /** 解析 appContext：支持函数或静态值，保证登录后路由守卫可取到最新上下文 */
+  const resolveContext = (): AppContext | undefined =>
+    typeof getAppContext === 'function' ? getAppContext() : getAppContext
+
   // 全局前置守卫
   router.beforeEach(async (to, _from, next) => {
     // 登录页和公开页面跳过检查
     if (to.path === loginPath || to.meta['public'] === true) {
       return next()
     }
+
+    // 每次导航时解析最新的 appContext（支持登录后状态更新）
+    const appContext = resolveContext()
 
     // 未登录 - 重定向到登录页
     if (!appContext) {

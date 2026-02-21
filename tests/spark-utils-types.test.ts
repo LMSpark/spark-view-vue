@@ -91,7 +91,9 @@ describe('IEventEmitter interface', () => {
       },
       emit: (event: string, ..._args: unknown[]) => {
         expect(typeof event).toBe('string')
-      }
+      },
+      removeAllListeners: (_event?: string) => {},
+      listenerCount: (_event?: string) => 0
     }
 
     expect(emitter).toBeTruthy()

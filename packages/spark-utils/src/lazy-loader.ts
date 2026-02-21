@@ -55,6 +55,8 @@ export function useSyncfusionLoader() {
         loading.value = false
         return gridsModule
       } catch (err) {
+        // 清除失败的缓存条目，允许后续重试（网络恢复后）
+        loadCache.delete('syncfusion-grids')
         error.value = err instanceof Error ? err.message : '加载失败'
         loading.value = false
         throw err
@@ -105,6 +107,8 @@ export function useLazyLoader<T = unknown>(moduleId: string) {
         loading.value = false
         return module
       } catch (err) {
+        // 清除失败的缓存条目，允许后续重试（网络恢复后）
+        loadCache.delete(moduleId)
         error.value = err instanceof Error ? err.message : '模块加载失败'
         loading.value = false
         throw err
