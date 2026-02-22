@@ -463,15 +463,17 @@ export class DataView implements IDataSource {
     const newRow = { ...oldRow, ...data }
     this.rows[idx] = newRow
     
-    // 同步更新选中状态的引用
+    // 同步更新选中状态的引用，并发射对应事件（引用已变，UI 需感知）
     if (this.currentRow && isSameRow(this.currentRow, oldRow, this.primaryKey)) {
       this.currentRow = newRow
+      this.emitStateChanged('currentRow', { row: newRow })
     }
     
     if (this.selectedRows.length > 0) {
       const selectedIdx = this.selectedRows.findIndex(r => isSameRow(r, oldRow, this.primaryKey))
       if (selectedIdx !== -1) {
         this.selectedRows[selectedIdx] = newRow
+        this.emitStateChanged('selectedRows', { rows: this.selectedRows })
       }
     }
     
@@ -489,17 +491,20 @@ export class DataView implements IDataSource {
     
     this.rows.splice(idx, 1)
     
-    // 清理选中状态
+    // 被删行是当前行 → 清空并立即通知
     if (this.currentRow && isSameRow(this.currentRow, deletedRow, this.primaryKey)) {
       this.currentRow = null
       this.currentRowIndex = null
+      this.emitStateChanged('currentRow', { row: null })
     }
     
+    // 被删行在多选中 → 移除并立即通知
     if (this.selectedRows.length > 0) {
       const newSelected = this.selectedRows.filter(r => !isSameRow(r, deletedRow, this.primaryKey))
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
+        this.emitStateChanged('selectedRows', { rows: this.selectedRows })
       }
     }
     
@@ -507,9 +512,24 @@ export class DataView implements IDataSource {
     return true
   }
 
-  /** 本地整批替换所有行（响应式安全），发射 stateChanged('rows') */
+  /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 stateChanged('rows') */
   replaceRows(rows: IDataRow[]): void {
     this.rows.splice(0, this.rows.length, ...rows)
+    // 行集合完全替换，旧引用失效 → 清理选中状态并通知
+    const rowSet = new Set(rows)
+    if (this.currentRow && !rowSet.has(this.currentRow)) {
+      this.currentRow = null
+      this.currentRowIndex = null
+      this.emitStateChanged('currentRow', { row: null })
+    }
+    if (this.selectedRows.length > 0) {
+      const newSelected = this.selectedRows.filter(r => rowSet.has(r))
+      if (newSelected.length !== this.selectedRows.length) {
+        this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
+        this.selectedRowIndices = newSelected.map(r => rows.indexOf(r)).filter(i => i !== -1)
+        this.emitStateChanged('selectedRows', { rows: this.selectedRows })
+      }
+    }
     this.emitStateChanged('rows')
   }
 
