@@ -8,7 +8,14 @@
 function __init__() {
   const dataSet = $dataSet
   
-  // 初始化完成
+  // 🔍 验证新时序：$api 应该在脚本编译时就可用
+  console.log('🔍 [__init__] $api 状态验证（新时序）:', {
+    hasApi: !!$api,
+    apiType: typeof $api,
+    apiIsNull: $api === null,
+    canSetValue: $api && typeof $api.setValue === 'function',
+    apiMethods: $api ? Object.keys($api).filter(k => typeof $api[k] === 'function').slice(0, 5) : []
+  })
   
   // 初始化 currentRowJson（防止 undefined）
   $data.currentRowJson = '未选择行'
@@ -31,6 +38,12 @@ function __init__() {
     usersView.events.on('stateChanged', (event) => {
       if (event.changeType === 'currentRow' && event.tableName === 'Users') {
         const currentIndex = usersView.currentRowIndex
+        
+        // 🔍 验证事件触发时 $api 状态
+        console.log('🔍 [stateChanged] $api 状态验证:', {
+          hasApi: !!$api,
+          canSetValue: $api && typeof $api.setValue === 'function'
+        })
         
         if (currentIndex !== null && currentIndex >= 0 && currentIndex < usersView.rows.length) {
           const cleanRow = usersView.rows[currentIndex]
