@@ -23,10 +23,43 @@ const pageLogger = Logger('PageRenderer')
 interface ElTableComponent extends HTMLElement {
   clearSelection?: () => void
   toggleRowSelection?: (row: IDataRow, selected: boolean) => void
+  setCurrentRow?: (row: IDataRow | null) => void
 }
 
 // 防止 DataSet→UI 同步触发 UI→DataSet 反向同步的标志
 let isSyncingToUI = false
+
+/**
+ * 将 DataSet 当前行同步到 el-table UI（DataSet → UI 方向）。
+ *
+ * 通过 formApi.el(`table_{tableName}_{viewId}`) 查找 el-table 实例，
+ * 调用其 setCurrentRow 方法更新高亮行。
+ */
+function syncCurrentRowToTable(
+  tableName: string,
+  viewId: string,
+  row: IDataRow | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formApi: any
+): void {
+  void nextTick(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (!formApi || typeof formApi.el !== 'function') return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    const table = formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
+    if (!table) return
+    
+    // ✅ 设置同步标志，防止 setCurrentRow 触发的 currentChange 事件反向同步
+    isSyncingToUI = true
+    try {
+      table.setCurrentRow?.(row)
+      const rowId = row ? (row as Record<string, unknown>)['id'] : null
+      pageLogger.debug('✅ [DataSet→UI] 同步 currentRow 到 el-table', { tableName, viewId, rowId })
+    } finally {
+      isSyncingToUI = false
+    }
+  })
+}
 
 /**
  * 将 DataSet 选中行同步到 el-table UI（DataSet → UI 方向）。
@@ -123,7 +156,9 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       cleanupSync = subscribeViewStateChanges(
         dataSet.value,
         (tableName, viewId, event) => {
-          if (event.changeType === 'selectedRows') {
+          if (event.changeType === 'currentRow') {
+            syncCurrentRowToTable(tableName, viewId, event.row ?? null, formApi.value)
+          } else if (event.changeType === 'selectedRows') {
             syncSelectedRowsToTable(tableName, viewId, event.rows ?? [], formApi.value)
           }
         }

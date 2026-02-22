@@ -127,8 +127,22 @@ export function usePageRenderer(
 
   const formCreateOptions = ref({
     ...defaultFormCreateOptions,
-    formData: pageData,  // 绑定 pageData 为数据源，使 field 属性生效
-    ...props.formCreateOptions
+    // ⚠️ 暂时移除 formData 绑定，避免与 DataSet 事件的无限循环
+    // formData: pageData,  
+    ...props.formCreateOptions,
+    // ✅ 使用 form-create 的 mounted 生命周期执行 __init__
+    mounted: () => {
+      pageLogger.info('✅ [FormCreate] mounted 触发，开始执行 __init__')
+      const init = pageFunctions.value['__init__']
+      if (typeof init === 'function') {
+        try {
+          init()
+          pageLogger.info('✅ __init__ 执行成功')
+        } catch (e) {
+          pageLogger.error('__init__ 执行失败', { error: e })
+        }
+      }
+    }
   })
 
   // ==================== 子 Composables ====================
@@ -186,25 +200,6 @@ export function usePageRenderer(
 
   // ==================== 页面配置加载 ====================
 
-  /** 等待 formApi 可用（form-create 异步初始化） */
-  async function waitForFormApi(): Promise<void> {
-    if (formApi.value) {
-      pageLogger.debug('formApi 已可用，无需等待')
-      return
-    }
-    
-    pageLogger.info('⏳ 等待 formApi 初始化...')
-    return new Promise((resolve) => {
-      const unwatch = watch(formApi, (newApi) => {
-        if (newApi) {
-          pageLogger.info('✅ formApi 已就绪')
-          unwatch()
-          resolve()
-        }
-      }, { immediate: true })
-    })
-  }
-
   /** 从 props / route 推断当前页面ID，无法确定时抛出。 */
   function resolvePageId(): string {
     const pageId =
@@ -233,55 +228,50 @@ export function usePageRenderer(
     throw new Error('配置无效: 未提供 configLoader 或 pageConfig')
   }
 
-  /** 编译并执行脚本，调用 __init__（如存在）。 */
-  function executeScript(pageId: string, scriptText: string, callInit: boolean = true): void {
+  /** 编译脚本（不执行 __init__，由 form-create mounted 钩子执行）。 */
+  function executeScript(pageId: string, scriptText: string): void {
     if (!scriptText) { pageFunctions.value = {}; return }
     try {
       pageFunctions.value = compileFunctions(scriptText, pageContext)
-      if (callInit) {
-        const init = pageFunctions.value['__init__']
-        if (typeof init === 'function') {
-          try { init() } catch (e) { pageLogger.error('__init__ 执行失败', { pageId, error: e }) }
-        }
-      }
+      pageLogger.info('📜 [Script] 脚本编译成功', { 
+        pageId, 
+        functionCount: Object.keys(pageFunctions.value).length,
+        functions: Object.keys(pageFunctions.value)
+      })
     } catch (e) {
-      pageLogger.error('脚本执行失败', { pageId, error: e })
+      pageLogger.error('脚本编译失败', { pageId, error: e })
       pageFunctions.value = {}
     }
   }
 
-  /** 将已加载的 config 应用到渲染状态（rules / CSS / DataSet / script / 绑定）。
+  /** 将已加载的 config 应用到渲染状态。
    * 
    * 新的时序策略：
-   * 1. 设置 rules/CSS/pageData（不依赖 formApi）
-   * 2. rebindRules 触发 form-create 挂载
-   * 3. 等待 formApi 初始化完成
-   * 4. 初始化 DataSet（此时脚本中可能需要访问 $api）
-   * 5. 编译并执行脚本（$api 已可用）
+   * 1. 设置 rules/CSS/pageData
+   * 2. 初始化 DataSet
+   * 3. 编译脚本（不执行 __init__）
+   * 4. rebindRules 触发 form-create 挂载
+   * 5. form-create mounted 钩子执行 __init__（此时 $api 已可用）
    */
   async function applyConfig(pageId: string, config: PageConfig): Promise<void> {
-    // 阶段1: 设置不依赖 formApi 的配置
+    // 阶段1: 设置配置
     originalRules.value = (config.rule ?? []) as unknown as Rule[]
     Object.assign(pageData, config.data)
     if (config.css) setScopedCss(config.css)
     
-    await nextTick()
-    rebindRules()  // 触发 form-create 挂载
-    
-    // 阶段2: 等待 formApi 可用
-    await waitForFormApi()
-    pageLogger.info('📋 [Timing] formApi 已就绪，继续初始化', { pageId })
-    
-    // 阶段3: 初始化 DataSet（此时 $api 已可用）
+    // 阶段2: 初始化 DataSet
     initDataSet(config.data)
     if (dataSet.value) provideCapability(PAGE_DATASET, dataSet.value)
     
-    // 阶段4: 编译并执行脚本（$api getter 返回有效值）
-    pageLogger.info('🎬 [Timing] 开始编译脚本', { pageId, hasApi: !!formApi.value })
-    executeScript(pageId, config.script ?? '', true)
+    // 阶段3: 编译脚本（不执行 __init__）
+    pageLogger.info('🎬 [Timing] 开始编译脚本', { pageId })
+    executeScript(pageId, config.script ?? '')
     
+    // 阶段4: 绑定 rules，触发 form-create 挂载
     await nextTick()
-    rebindRules()  // 最终绑定
+    rebindRules()
+    
+    // 此时 form-create 开始挂载，当挂载完成后会触发 mounted 钩子，执行 __init__
   }
 
   /** 完整页面加载流程编排：beforeLoad → resolvePageId → fetchConfig → applyConfig → afterLoad。 */

@@ -128,6 +128,13 @@ export class DataView implements IDataSource {
    * - `false`：清空 selectedRows
    */
   autoSelectFirst: boolean = true
+  
+  /**
+   * 设置 currentRow 时是否自动同步到 selectedRows（实现“点击行 = 选中该行”）。
+   * - `true`（默认）： setCurrentRow(row) 后自动调用 setSelectedRows([row])
+   * - `false`：currentRow 和 selectedRows 独立管理
+   */
+  syncCurrentToSelected: boolean = false  //  ⚠️ 暂时禁用，避免循环触发
 
   // ── 关联对象 ────────────────────────────────
 
@@ -565,6 +572,19 @@ export class DataView implements IDataSource {
     this.currentRowIndex = row === null ? null : this.rows.indexOf(row)
     if (this.currentRowIndex === -1) this.currentRowIndex = null
     this.emitStateChanged('currentRow', { row })
+    
+    // ✅ 如果启用了 syncCurrentToSelected，自动将当前行同步到选中行
+    // 注意：setSelectedRows 内部有幂等检查，如果内容相同不会重复发射事件
+    if (this.syncCurrentToSelected) {
+      const newSelection = row ? [row] : []
+      // 只在选中状态真正改变时才调用（避免不必要的事件）
+      const current = this.selectedRows
+      const needsUpdate = current.length !== newSelection.length || 
+                         (newSelection.length > 0 && current[0] !== newSelection[0])
+      if (needsUpdate) {
+        this.setSelectedRows(newSelection)
+      }
+    }
   }
 
   /** 设置多选行（幂等：内容不变时跳过） */
