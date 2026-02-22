@@ -293,13 +293,17 @@ function injectTableEvents(
   rule.on['currentChange'] = (currentRow: IDataRow | null, oldRow: IDataRow | null) => {
     pageLogger.info(`🎯 [TableEvent] currentChange 触发`, { tableName, viewId })
     
-    // ✅ 防止 DataSet→UI 同步期间的反向同步（循环触发）
+    // ✅ 防止 DataSet→UI 同步期间的反向调用（el-table API 副作用）
     if (isCurrentlySyncingToUI()) {
-      pageLogger.debug(`⏭️ [TableEvent] 跳过反向同步（正在执行 DataSet→UI 同步）`, { tableName, viewId })
+      pageLogger.debug(`⏭️ [防循环] 跳过 el-table API 副作用触发的事件`, { tableName, viewId })
       return
     }
     
-    if (isProcessingEvent) return
+    // ✅ 防止同一表格的重入调用
+    if (isProcessingEvent) {
+      pageLogger.debug(`⏭️ [防循环] 跳过重入事件`, { tableName, viewId })
+      return
+    }
     
     try {
       isProcessingEvent = true
@@ -324,13 +328,17 @@ function injectTableEvents(
   rule.on['selectionChange'] = (selection: IDataRow[]) => {
     pageLogger.info(`🎯 [TableEvent] selectionChange 触发`, { tableName, viewId, selectionCount: selection.length })
     
-    // ✅ 防止 DataSet→UI 同步期间的反向同步（循环触发）
+    // ✅ 防止 DataSet→UI 同步期间的反向调用（el-table API 副作用）
     if (isCurrentlySyncingToUI()) {
-      pageLogger.debug(`⏭️ [TableEvent] 跳过反向同步（正在执行 DataSet→UI 同步）`, { tableName, viewId })
+      pageLogger.debug(`⏭️ [防循环] 跳过 el-table API 副作用触发的事件`, { tableName, viewId })
       return
     }
     
-    if (isProcessingEvent) return
+    // ✅ 防止同一表格的重入调用
+    if (isProcessingEvent) {
+      pageLogger.debug(`⏭️ [防循环] 跳过重入事件`, { tableName, viewId })
+      return
+    }
     
     try {
       isProcessingEvent = true

@@ -57,7 +57,9 @@ export function createTableSyncHandlers(
       const view = table.getOrCreateView(viewId)
       
       if (row === null) {
-        view.setCurrentRow(null)
+        // ✅ 创建新的事件上下文（使用视图级别的 ID）
+        const { createEventContext } = require('./types')
+        view.setCurrentRow(null, createEventContext('ui', { tableName, viewId }))
         logger.debug('清空 currentRow', { tableName, viewId })
         return
       }
@@ -77,26 +79,25 @@ export function createTableSyncHandlers(
           logger.debug('从 args[0] 提取原始数据', {
             tableName,
             viewId,
-            id: cleanRow ? cleanRow[view.primaryKey ?? 'id'] : null
+            id: cleanRow ? view.getPrimaryKeyValue(cleanRow) : null
           })
         }
       }
       
       // 回退方案：通过主键从 view.rows 查找
       if (!cleanRow) {
-        const primaryKey = view.primaryKey ?? 'id'
-        const rowId = row[primaryKey]
+        const rowPk = view.getPrimaryKeyValue(row)
         
-        if (rowId !== undefined) {
-          cleanRow = view.rows.find(r => r[primaryKey] === rowId) ?? null
+        if (rowPk !== undefined) {
+          cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === rowPk) ?? null
           if (cleanRow) {
-            logger.debug('通过主键查找到原始数据', { tableName, viewId, pk: primaryKey, id: rowId })
+            logger.debug('通过主键查找到原始数据', { tableName, viewId, pk: view.primaryKey, id: rowPk })
           } else {
             logger.warn('在 view.rows 中找不到匹配行', {
               tableName,
               viewId,
-              pk: primaryKey,
-              id: rowId
+              pk: view.primaryKey,
+              id: rowPk
             })
           }
         }
@@ -104,7 +105,9 @@ export function createTableSyncHandlers(
       
       // 设置干净的行对象
       if (cleanRow) {
-        view.setCurrentRow(cleanRow)
+        // ✅ 创建新的事件上下文（使用视图级别的 ID）
+        const { createEventContext } = require('./types')
+        view.setCurrentRow(cleanRow, createEventContext('ui', { tableName, viewId }))
       }
     },
 
@@ -114,7 +117,9 @@ export function createTableSyncHandlers(
         const view = table.getOrCreateView(viewId)
         // ✅ 修复：el-table selectionChange 事件可能传入非数组参数，做防御性检查
         const validRows = Array.isArray(rows) ? rows : []
-        view.setSelectedRows(validRows)
+        // ✅ 创建新的事件上下文（使用视图级别的 ID）
+        const { createEventContext } = require('./types')
+        view.setSelectedRows(validRows, createEventContext('ui', { tableName, viewId }))
         logger.debug('同步 selectedRows', { tableName, viewId, count: validRows.length })
       } else {
         logger.warn('表不存在', { tableName })

@@ -37,7 +37,7 @@ export type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
  */
 export interface ICrudHost {
   readonly rows: IDataRow[]
-  readonly primaryKey: string
+  readonly primaryKey: string | string[]
   /** 表名（用于错误信息） */
   readonly tableName: string
   /** CrudService 实例（来自 DataTable，未配置 API 时为 undefined） */
@@ -47,6 +47,8 @@ export interface ICrudHost {
   /** 数据校验器 */
   readonly validator: DataValidator | undefined
 
+  /** 获取行的主键值（用于 Map/Set 键） */
+  getPrimaryKeyValue(row: IDataRow): string | number | undefined
   /** 追加一行到 rows */
   appendRow(row: IDataRow): void
   /** 按主键更新一行 */
