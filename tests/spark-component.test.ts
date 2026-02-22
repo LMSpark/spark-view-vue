@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils'
 import { SparkEJ2Grid, SparkEJ2Column } from '../features/spark-ej2'
 import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
 import { initializeSparkEJ2Components } from '../features/spark-ej2'
-import type { SparkEJ2GridConfig } from '@/features/spark-ej2'
+import type { SparkEJ2GridConfig, SparkEJ2ColumnConfig } from '@/features/spark-ej2'
 
 const { registry, rootContext } = Spark.createSystem()
 initializeSparkEJ2Components(registry)
@@ -50,7 +50,7 @@ describe('SPARK EJ2 Components', () => {
 
       expect(wrapper.exists()).toBe(true)
       // Verify component initializes without errors
-      expect(wrapper.vm.config).toEqual(config)
+      expect(wrapper.vm['config']).toEqual(config)
     })
 
     it('should handle nested columns configuration', async () => {
@@ -80,7 +80,7 @@ describe('SPARK EJ2 Components', () => {
 
       expect(wrapper.exists()).toBe(true)
       // Verify nested column structure is preserved
-      expect(wrapper.vm.config.children?.[1]?.children).toHaveLength(2)
+      expect((wrapper.vm['config'] as SparkEJ2GridConfig).children?.[1]?.children).toHaveLength(2)
     })
 
     it('should handle paging configuration', async () => {
@@ -104,8 +104,8 @@ describe('SPARK EJ2 Components', () => {
       })
 
       expect(wrapper.exists()).toBe(true)
-      expect(wrapper.vm.config.allowPaging).toBe(true)
-      expect(wrapper.vm.config.pageSettings?.pageSize).toBe(10)
+      expect((wrapper.vm['config'] as SparkEJ2GridConfig).allowPaging).toBe(true)
+      expect((wrapper.vm['config'] as SparkEJ2GridConfig).pageSettings?.pageSize).toBe(10)
     })
   })
 
@@ -124,8 +124,8 @@ describe('SPARK EJ2 Components', () => {
       })
 
       expect(wrapper.exists()).toBe(true)
-      expect(wrapper.vm.config.field).toBe('name')
-      expect(wrapper.vm.config.headerText).toBe('Name')
+      expect((wrapper.vm['config'] as SparkEJ2ColumnConfig).field).toBe('name')
+      expect((wrapper.vm['config'] as SparkEJ2ColumnConfig).headerText).toBe('Name')
     })
 
     it('should handle nested columns structure', async () => {
@@ -145,7 +145,7 @@ describe('SPARK EJ2 Components', () => {
 
       expect(wrapper.exists()).toBe(true)
       // Verify nested structure is preserved
-      expect(wrapper.props().config.children).toHaveLength(2)
+      expect((wrapper.props() as unknown as { config: SparkEJ2ColumnConfig }).config.children).toHaveLength(2)
     })
 
     it('should handle column properties', async () => {
@@ -164,9 +164,9 @@ describe('SPARK EJ2 Components', () => {
       })
 
       expect(wrapper.exists()).toBe(true)
-      expect(wrapper.vm.config.width).toBe('200')
-      expect(wrapper.vm.config.textAlign).toBe('Left')
-      expect(wrapper.vm.config.visible).toBe(true)
+      expect((wrapper.vm['config'] as SparkEJ2ColumnConfig).width).toBe('200')
+      expect((wrapper.vm['config'] as SparkEJ2ColumnConfig).textAlign).toBe('Left')
+      expect((wrapper.vm['config'] as SparkEJ2ColumnConfig).visible).toBe(true)
     })
   })
 
@@ -216,8 +216,8 @@ describe('SPARK EJ2 Components', () => {
 
       expect(wrapper.exists()).toBe(true)
       // Verify deep nesting works without infinite loops
-      expect(wrapper.props().config.children).toHaveLength(1)
-      expect(wrapper.props().config.children?.[0]?.children).toHaveLength(1)
+      expect((wrapper.props() as unknown as { config: SparkEJ2ColumnConfig }).config.children).toHaveLength(1)
+      expect((wrapper.props() as unknown as { config: SparkEJ2ColumnConfig }).config.children?.[0]?.children).toHaveLength(1)
     })
   })
 })
