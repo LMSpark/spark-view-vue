@@ -109,8 +109,6 @@ export function usePageRenderer(
   const originalRules = ref<any[]>([])
   const pageData = reactive<Record<string, unknown>>({})
   const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
-  const pendingInit = ref<(() => Promise<void>) | null>(null)  // ✅ 保存待执行的 __init__ 函数
-  const pendingScriptInfo = ref<{ pageId: string; scriptText: string } | null>(null)  // ✅ 保存待重新编译的脚本信息
 
   // ==================== FormCreate 配置 ====================
 
@@ -186,33 +184,26 @@ export function usePageRenderer(
     h
   }
 
-  // ==================== formApi 监听 - 当 API 可用时重新编译脚本并执行 __init__ ====================
-  
-  watch(formApi, (newApi) => {
-    if (newApi && pendingInit.value) {
-      pageLogger.info('✅ [FormCreate] API 已就绪，重新编译脚本并执行 __init__')
-      
-      // ✅ 关键修复：在 formApi 就绪后重新编译脚本，此时解构的 $api 才有值
-      if (pendingScriptInfo.value) {
-        const { pageId, scriptText } = pendingScriptInfo.value
-        try {
-          pageFunctions.value = compileFunctions(scriptText, pageContext)
-          pageLogger.info('🔄 [Script] 脚本重新编译完成', { pageId })
-        } catch (e) {
-          pageLogger.error('脚本重新编译失败', { pageId, error: e })
-        }
-        pendingScriptInfo.value = null
-      }
-      
-      const init = pendingInit.value
-      pendingInit.value = null
-      init().catch((e: unknown) => {
-        pageLogger.error('__init__ 执行失败', { error: e })
-      })
-    }
-  }, { immediate: false })
-
   // ==================== 页面配置加载 ====================
+
+  /** 等待 formApi 可用（form-create 异步初始化） */
+  async function waitForFormApi(): Promise<void> {
+    if (formApi.value) {
+      pageLogger.debug('formApi 已可用，无需等待')
+      return
+    }
+    
+    pageLogger.info('⏳ 等待 formApi 初始化...')
+    return new Promise((resolve) => {
+      const unwatch = watch(formApi, (newApi) => {
+        if (newApi) {
+          pageLogger.info('✅ formApi 已就绪')
+          unwatch()
+          resolve()
+        }
+      }, { immediate: true })
+    })
+  }
 
   /** 从 props / route 推断当前页面ID，无法确定时抛出。 */
   function resolvePageId(): string {
@@ -259,47 +250,38 @@ export function usePageRenderer(
     }
   }
 
-  /** 将已加载的 config 应用到渲染状态（rules / CSS / DataSet / script / 绑定）。 */
+  /** 将已加载的 config 应用到渲染状态（rules / CSS / DataSet / script / 绑定）。
+   * 
+   * 新的时序策略：
+   * 1. 设置 rules/CSS/pageData（不依赖 formApi）
+   * 2. rebindRules 触发 form-create 挂载
+   * 3. 等待 formApi 初始化完成
+   * 4. 初始化 DataSet（此时脚本中可能需要访问 $api）
+   * 5. 编译并执行脚本（$api 已可用）
+   */
   async function applyConfig(pageId: string, config: PageConfig): Promise<void> {
+    // 阶段1: 设置不依赖 formApi 的配置
     originalRules.value = (config.rule ?? []) as unknown as Rule[]
+    Object.assign(pageData, config.data)
     if (config.css) setScopedCss(config.css)
+    
+    await nextTick()
+    rebindRules()  // 触发 form-create 挂载
+    
+    // 阶段2: 等待 formApi 可用
+    await waitForFormApi()
+    pageLogger.info('📋 [Timing] formApi 已就绪，继续初始化', { pageId })
+    
+    // 阶段3: 初始化 DataSet（此时 $api 已可用）
     initDataSet(config.data)
     if (dataSet.value) provideCapability(PAGE_DATASET, dataSet.value)
     
-    // ✅ 首次编译脚本（此时 formApi 可能还是 null）
-    executeScript(pageId, config.script ?? '', false)
+    // 阶段4: 编译并执行脚本（$api getter 返回有效值）
+    pageLogger.info('🎬 [Timing] 开始编译脚本', { pageId, hasApi: !!formApi.value })
+    executeScript(pageId, config.script ?? '', true)
     
     await nextTick()
-    rebindRules()
-    
-    // ✅ 保存脚本信息，等待 formApi 就绪后重新编译
-    const scriptText = config.script ?? ''
-    if (scriptText.trim()) {
-      pendingScriptInfo.value = { pageId, scriptText }
-    }
-    
-    // ✅ 设置 pendingInit，等待 formApi 被赋值时执行
-    const init = pageFunctions.value['__init__']
-    if (typeof init === 'function') {
-      pendingInit.value = async () => {
-        pageLogger.info('🎬 [Script] 开始执行 __init__', { hasApi: !!formApi.value })
-        try {
-          await init()
-        } catch (e) {
-          pageLogger.error('__init__ 执行失败', { pageId, error: e })
-          throw e
-        }
-      }
-      
-      // ✅ 如果 formApi 已经可用（同步赋值的情况），立即重新编译并执行
-      if (formApi.value) {
-        pendingScriptInfo.value = null  // 清除待编译标记
-        pageFunctions.value = compileFunctions(scriptText, pageContext)
-        const immediateInit = pendingInit.value
-        pendingInit.value = null
-        await immediateInit()
-      }
-    }
+    rebindRules()  // 最终绑定
   }
 
   /** 完整页面加载流程编排：beforeLoad → resolvePageId → fetchConfig → applyConfig → afterLoad。 */
