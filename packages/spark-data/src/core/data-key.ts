@@ -295,7 +295,7 @@ export function resolveDataKeyBinding(
   if (!table) return null
   const view = table.getOrCreateView(dk.viewId)
   if (!view) return null
-  if (dk.field === 'rows') return { kind: 'view', source: view as IDataSource }
+  if (dk.field === 'rows') return { kind: 'view', source: view }
   const value = dk.field === 'currentRow' ? view.currentRow : view.selectedRows
   return { kind: 'value', value }
 }

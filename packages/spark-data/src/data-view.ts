@@ -25,6 +25,7 @@ import type {
   IDataRow, IViewMetadata, FilterExpression, SortExpression,
   ViewStateEvent, QueryParams,
   CrudResult, BatchResult, CrudOperationConfig,
+  IDataSource,
 } from './types'
 import { RequestState } from './types'
 import type { TreeManager } from './tree-manager'
@@ -66,7 +67,7 @@ export { RequestState } from './types'
 // DataView 类
 // ─────────────────────────────────────────────
 
-export class DataView {
+export class DataView implements IDataSource {
 
   // ── DataTable 引用（运行时注入，由 DataTable 在 attach 时赋值）────────
 
