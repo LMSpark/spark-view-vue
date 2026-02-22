@@ -12,8 +12,9 @@
  *   父状态变化时子视图自行决定：清空 or 重新请求。
  *
  * ## 请求编排
- *   requestData()   —— 上行入口（幂等）：解析父依赖 → 调用 loadFromServer → 子视图级联
- *   refresh()       —— 下行入口（强制）：重置 Idle → 调用 requestData()
+ *   requestData()   —— 上行入口（幂等、非阻塞）：解析父依赖 → 调用 loadFromServer → 子视图级联
+ *   refresh()       —— 下行入口（强制、非阻塞）：重置 Idle → 调用 requestData()
+ *   两者均立即返回，结果通过 stateChanged 事件通知；loadFromServer() 可 await（有返回值）
  *   requestState    —— 唯一状态源（RequestState 枚举），禁止另设布尔别名
  *
  * ## 委托分工

@@ -55,8 +55,8 @@ export interface ICrudHost {
   deleteRowById(id: string | number): boolean
   /** 静默重置状态（requestState→Idle，清空行和选中） */
   resetState(): void
-  /** 走完整请求编排 */
-  requestData(): Promise<void>
+  /** 走完整请求编排（非阻塞，结果经 stateChanged 事件通知） */
+  requestData(): void
 }
 
 // ─────────────────────────────────────────────
@@ -77,14 +77,14 @@ export interface ICascadeHost {
   resetState(): void
   /**
    * 走完整请求编排（幂等：requestState≠Idle 时直接返回）
-   * 上行触发（UI/脚本主动请求）用此方法。
+   * 上行触发（UI/脚本主动请求）用此方法。非阻塞，结果经 stateChanged 事件通知。
    */
-  requestData(): Promise<void>
+  requestData(): void
   /**
    * 强制刷新：先 resetState() 再 requestData()
-   * 下行触发（父数据变化→级联子视图）用此方法。
+   * 下行触发（父数据变化→级联子视图）用此方法。非阻塞，同上。
    */
-  refresh(): Promise<void>
+  refresh(): void
 }
 
 // ─────────────────────────────────────────────
