@@ -1,18 +1,24 @@
 /**
  * DataView — 数据视图，SPARK 数据层的统一交互枢纽
  *
- * ## 引用链
+ * ## 对象引用链
  *   DataView → DataTable → DataSet
- *   直接访问：dataTable 获取 api/crudConfig，dataTable.dataSet 获取关系配置
+ *   DataView 通过 `dataTable` 持有对 DataTable 的引用，
+ *   并以 getter（crudService / crudConfig / validator / dataSet）
+ *   向委托层暴露所需属性，实现 ICrudHost / ICascadeHost 接口。
  *
  * ## 级联加载（SOLID：子订阅父，父不知子）
  *   子视图通过 setupCascade() 订阅父视图的 stateChanged 事件，
  *   父状态变化时子视图自行决定：清空 or 重新请求。
  *
  * ## 请求编排
- *   requestData() 是统一入口：解析父依赖 → 加载自身 → 级联子视图
- *   requestState（RequestState 枚举）是唯一状态源，避免 isLoading/isRequesting 等布尔别名的歧义。
- *   幂等：requestState≠Idle 时立即返回，UI 层直接调用无需额外判断。
+ *   requestData()   —— 上行入口（幂等）：解析父依赖 → 调用 loadFromServer → 子视图级联
+ *   refresh()       —— 下行入口（强制）：重置 Idle → 调用 requestData()
+ *   requestState    —— 唯一状态源（RequestState 枚举），禁止另设布尔别名
+ *
+ * ## 委托分工
+ *   CrudDelegate    —— 单条 / 批量 CRUD、校验、生命周期钩子、mutating 状态
+ *   CascadeDelegate —— 父视图依赖订阅 / 响应 / 防抖级联
  */
 
 import type {
@@ -62,9 +68,9 @@ export { RequestState } from './types'
 
 export class DataView {
 
-  // ── DataTable 引用 ──────────────────
+  // ── DataTable 引用（运行时注入，由 DataTable 在 attach 时赋值）────────
 
-  /** 所属 DataTable（由 DataTable.setDataSet() 时设置） */
+  /** 所属 DataTable */
   dataTable!: DataTable
 
   // ── 标识 ────────────────────────────────────
@@ -189,14 +195,21 @@ export class DataView {
     this.viewId = viewId
   }
 
-  /** DataSet（向上访问，供 CascadeDelegate/ICascadeHost 使用） */
+  // ─────────────────────────────────────────────
+  // 接口实现 getter（ICrudHost / ICascadeHost）
+  // 将 DataTable 属性转发给委托层，委托层不持有 DataTable 直接引用
+  // ─────────────────────────────────────────────
+
+  /** ICascadeHost：向上访问 DataSet，供 CascadeDelegate 解析父子关系 */
   get dataSet() {
     return this.dataTable.dataSet
   }
 
-  // ICrudHost 属性：转发 DataTable 相应属性
+  /** ICrudHost：CrudService 实例（DataTable 持有并缓存；未配置 API 时为 undefined） */
   get crudService(): CrudService | undefined { return this.dataTable.crudService }
+  /** ICrudHost：CRUD 操作全局配置（超时、重试等） */
   get crudConfig(): CrudOperationConfig | undefined { return this.dataTable.crudConfig }
+  /** ICrudHost：数据校验器 */
   get validator(): DataValidator | undefined { return this.dataTable.validator }
 
   // ─────────────────────────────────────────────
@@ -285,10 +298,14 @@ export class DataView {
   }
 
   /**
-   * 从服务器拉取列表（带防重入 + 请求ID防竞态）
-   * - 成功：写入 rows，重置选中状态，requestState=Loaded，发射 stateChanged + 通知 UI
-   * - 失败：requestState=Failed，通知 UI，抛出异常
-   * - 竞态：后发请求到达时忽略先发但晚到的响应
+   * 从服务器拉取列表（带防重入 + 请求 ID 竞态保护）
+   *
+   * 通常由 `requestData()` 内部调用；也可直接调用以跳过父依赖编排。
+   *
+   * - 成功：updateFromServer() 写入行数据，处理 autoCurrentFirst/autoSelectFirst，
+   *         requestState=Loaded，发射 stateChanged('rows')
+   * - 失败：requestState=Failed，发射 stateChanged('requestState')，重新抛出异常
+   * - 竞态：requestId 不匹配时静默丢弃（旧请求晚于新请求到达）
    */
   async loadFromServer(params?: QueryParams): Promise<CrudResult> {
     this.checkDestroyed()
@@ -345,7 +362,8 @@ export class DataView {
   }
 
   // ─────────────────────────────────────────────
-  // CRUD（委托给 CrudDelegate）
+  // CRUD 写操作（委托给 CrudDelegate）
+  // mutating 状态由 CrudDelegate 通过 _trackMutating 回调维护
   // ─────────────────────────────────────────────
 
   /** 新增记录，成功后追加至 rows */
@@ -406,10 +424,10 @@ export class DataView {
   }
 
   // ─────────────────────────────────────────────
-  // 行数据操作（内存）
+  // 行数据操作（内存同步，不触发网络请求）
   // ─────────────────────────────────────────────
 
-  /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——全程使用 splice 保持数组引用稳定 */
+  /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定，对 Vue 响应式友好 */
   updateFromServer(data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[]): void {
     if (Array.isArray(data)) {
       this.rows.splice(0, this.rows.length, ...data)
@@ -638,12 +656,14 @@ export class DataView {
   }
 
   // ─────────────────────────────────────────────
-  // 销毁与内存管理
+  // 生命周期（销毁与内存管理）
   // ─────────────────────────────────────────────
 
   /**
-   * 销毁视图，清理所有订阅和引用
-   * 应在组件 onUnmounted 时调用，防止内存泄漏
+   * 销毁视图，释放所有订阅、委托和外部引用
+   *
+   * 应在组件 `onUnmounted` 时调用，防止内存泄漏。
+   * 销毁顺序：级联委托 → CRUD 委托 → 防抖定时器 → 事件总线 → 行数据 → TreeManager → DataTable 引用
    */
   destroy(): void {
     if (this._isDestroyed) return
@@ -700,9 +720,11 @@ export class DataView {
   }
 
   /**
-   * CrudDelegate 回调：追踪并发 CRUD 请求数，更新 mutating / mutatingError
-   * - delta=1  → 请求开始，清除上次错误
-   * - delta=-1 → 请求结束，error 非 null 时记录错误
+   * CrudDelegate 回调：追踪并发 CRUD 请求数，维护 `mutating` / `mutatingError`
+   *
+   * - `delta=1`  → 新请求开始，清除上次 mutatingError
+   * - `delta=-1` → 请求结束，有 error 时写入 mutatingError
+   * - 多操作并发时计数大于 1，计数归零才将 mutating 置 false
    */
   private _trackMutating(delta: 1 | -1, error?: Error | null): void {
     this._mutatingCount = Math.max(0, this._mutatingCount + delta)
