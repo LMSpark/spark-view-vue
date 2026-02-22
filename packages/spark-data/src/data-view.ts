@@ -39,6 +39,8 @@ import { isSameRow, getParentRows } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
 import type { CrudLifecycleEvent } from './strategies/types'
+import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from './core/primary-key-generator'
+import { createPrimaryKeyGenerator } from './core/primary-key-generator'
 
 // ─────────────────────────────────────────────
 // 事件类型映射
@@ -86,8 +88,11 @@ export class DataView implements IDataSource {
 
   // ── 主键 ────────────────────────────────────
 
-  /** 主键字段名，用于 SELECTION 能力的 ID 定位（默认 'id'） */
-  primaryKey: string = 'id'
+  /** 主键字段名（支持单主键字符串或多主键数组），用于 SELECTION 能力的 ID 定位（默认 'id'） */
+  primaryKey: string | string[] = 'id'
+  
+  /** 主键生成器（可选，用于自动生成新记录的主键） */
+  private primaryKeyGenerator?: PrimaryKeyGenerator | undefined
 
   // ── 选中状态 ────────────────────────────────
 
@@ -220,6 +225,174 @@ export class DataView implements IDataSource {
   get crudConfig(): CrudOperationConfig | undefined { return this.dataTable.crudConfig }
   /** ICrudHost：数据校验器 */
   get validator(): DataValidator | undefined { return this.dataTable.validator }
+
+  // ─────────────────────────────────────────────
+  // 主键辅助方法
+  // ─────────────────────────────────────────────
+
+  /**
+   * 获取行的主键值（用于 Map/Set 键）
+   * 
+   * - 单主键：返回字段值（string | number）
+   * - 多主键：返回连接字符串（格式："value1:value2:value3"）
+   * 
+   * @param row 数据行
+   * @returns 主键值，如果主键字段不存在则返回 undefined
+   */
+  getPrimaryKeyValue(row: IDataRow): string | number | undefined {
+    if (typeof this.primaryKey === 'string') {
+      const value = row[this.primaryKey]
+      if (value === undefined || value === null) return undefined
+      if (typeof value === 'string' || typeof value === 'number') return value
+      return undefined
+    }
+    
+    // 多主键：连接所有字段值
+    const values: Array<string | number> = []
+    for (const field of this.primaryKey) {
+      const value = row[field]
+      if (value === undefined || value === null) return undefined
+      if (typeof value !== 'string' && typeof value !== 'number') return undefined
+      values.push(value)
+    }
+    return values.join(':')
+  }
+
+  /**
+   * 获取行的所有主键字段值（数组形式）
+   * 
+   * @param row 数据行
+   * @returns 主键值数组，如果任一主键字段不存在则返回 undefined
+   */
+  getPrimaryKeyValues(row: IDataRow): Array<string | number> | undefined {
+    const fields = typeof this.primaryKey === 'string' ? [this.primaryKey] : this.primaryKey
+    const values: Array<string | number> = []
+    
+    for (const field of fields) {
+      const value = row[field]
+      if (value === undefined || value === null) return undefined
+      if (typeof value !== 'string' && typeof value !== 'number') return undefined
+      values.push(value)
+    }
+    
+    return values
+  }
+
+  /**
+   * 检查两行是否有相同的主键
+   * 
+   * @param row1 第一行
+   * @param row2 第二行
+   * @returns 是否相同
+   */
+  isSamePrimaryKey(row1: IDataRow, row2: IDataRow): boolean {
+    return isSameRow(row1, row2, this.primaryKey)
+  }
+
+  /**
+   * 配置主键生成器
+   * 
+   * @param config 主键生成器配置
+   * 
+   * @example
+   * ```ts
+   * // 雪花ID生成器
+   * view.setPrimaryKeyGenerator({
+   *   strategy: 'snowflake',
+   *   fields: 'id',
+   *   snowflake: {
+   *     workerId: 1,
+   *     datacenterId: 1
+   *   }
+   * })
+   * 
+   * // UUID生成器
+   * view.setPrimaryKeyGenerator({
+   *   strategy: 'uuid',
+   *   fields: 'id'
+   * })
+   * 
+   * // 自增ID
+   * view.setPrimaryKeyGenerator({
+   *   strategy: 'auto-increment',
+   *   fields: 'id',
+   *   startValue: 1000
+   * })
+   * ```
+   */
+  setPrimaryKeyGenerator(config: PrimaryKeyGeneratorConfig): void {
+    this.primaryKeyGenerator = createPrimaryKeyGenerator(config)
+  }
+
+  /**
+   * 移除主键生成器
+   */
+  removePrimaryKeyGenerator(): void {
+    this.primaryKeyGenerator = undefined
+  }
+
+  /**
+   * 为新记录生成主键值
+   * 
+   * @param row 部分数据行（可能已包含部分字段值）
+   * @returns 包含主键的数据行
+   * 
+   * @throws 如果未配置主键生成器
+   */
+  generatePrimaryKey(row: Partial<IDataRow>): IDataRow {
+    if (!this.primaryKeyGenerator) {
+      throw new Error('未配置主键生成器，请先调用 setPrimaryKeyGenerator()')
+    }
+    
+    const pkValue = this.primaryKeyGenerator.generate(row, this.rows)
+    
+    // 单主键
+    if (typeof this.primaryKey === 'string') {
+      return { ...row, [this.primaryKey]: pkValue } as IDataRow
+    }
+    
+    // 复合主键
+    if (typeof pkValue === 'object' && pkValue !== null) {
+      return { ...row, ...pkValue } as IDataRow
+    }
+    
+    throw new Error('主键生成器返回值类型与配置不匹配')
+  }
+
+  /**
+   * 为新记录生成主键值（如果配置了生成器且行中缺少主键）
+   * 
+   * @param row 部分数据行
+   * @returns 包含主键的数据行（如果需要生成）或原始数据（如果已有主键）
+   */
+  ensurePrimaryKey(row: Partial<IDataRow>): IDataRow {
+    // 未配置生成器：返回原始数据
+    if (!this.primaryKeyGenerator) {
+      return row as IDataRow
+    }
+    
+    // 检查是否已有主键值
+    const fields = typeof this.primaryKey === 'string' ? [this.primaryKey] : this.primaryKey
+    const hasPrimaryKey = fields.every(field => {
+      const value = row[field]
+      return value !== undefined && value !== null
+    })
+    
+    // 已有主键：返回原始数据
+    if (hasPrimaryKey) {
+      return row as IDataRow
+    }
+    
+    // 生成主键
+    return this.generatePrimaryKey(row)
+  }
+
+  /**
+   * 获取主键生成器配置
+   */
+  getPrimaryKeyGeneratorConfig(): Readonly<PrimaryKeyGeneratorConfig> | undefined {
+    return this.primaryKeyGenerator?.getConfig()
+  }
 
   // ─────────────────────────────────────────────
   // 请求流
@@ -361,13 +534,28 @@ export class DataView implements IDataSource {
         this.emitStateChanged('rows')
         
         // 显式触发 currentRow 事件（让 UI 和业务脚本能感知自动选中）
+        // ✅ 创建新的事件上下文（使用视图级别的 ID）
         if (this.autoCurrentFirst !== false) {
-          this.emitStateChanged('currentRow', { row: this.currentRow })
+          const { createEventContext } = await import('./types')
+          this.emitStateChanged('currentRow', { 
+            row: this.currentRow, 
+            context: createEventContext('auto', { 
+              tableName: this.tableName, 
+              viewId: this.viewId 
+            })
+          })
         }
         
         // 显式触发 selectedRows 事件
         if (this.autoSelectFirst !== false && firstRow) {
-          this.emitStateChanged('selectedRows', { rows: this.selectedRows })
+          const { createEventContext } = await import('./types')
+          this.emitStateChanged('selectedRows', { 
+            rows: this.selectedRows,
+            context: createEventContext('auto', { 
+              tableName: this.tableName, 
+              viewId: this.viewId 
+            })
+          })
         }
       } else {
         this.requestState = RequestState.Failed
@@ -478,7 +666,10 @@ export class DataView implements IDataSource {
 
   /** 本地按主键部分更新一行，发射 stateChanged('rows')；返回是否成功（行不存在时 false） */
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
-    const idx = this.rows.findIndex(r => r[this.primaryKey] === id)
+    const idx = this.rows.findIndex(r => {
+      const pkValue = this.getPrimaryKeyValue(r)
+      return pkValue === id
+    })
     if (idx < 0) return false
     
     const oldRow = this.rows[idx]
@@ -488,13 +679,13 @@ export class DataView implements IDataSource {
     this.rows[idx] = newRow
     
     // 同步更新选中状态的引用，并发射对应事件（引用已变，UI 需感知）
-    if (this.currentRow && isSameRow(this.currentRow, oldRow, this.primaryKey)) {
+    if (this.currentRow && this.isSamePrimaryKey(this.currentRow, oldRow)) {
       this.currentRow = newRow
       this.emitStateChanged('currentRow', { row: newRow })
     }
     
     if (this.selectedRows.length > 0) {
-      const selectedIdx = this.selectedRows.findIndex(r => isSameRow(r, oldRow, this.primaryKey))
+      const selectedIdx = this.selectedRows.findIndex(r => this.isSamePrimaryKey(r, oldRow))
       if (selectedIdx !== -1) {
         this.selectedRows[selectedIdx] = newRow
         this.emitStateChanged('selectedRows', { rows: [...this.selectedRows] })
@@ -507,7 +698,10 @@ export class DataView implements IDataSource {
 
   /** 本地按主键删除一行，清理选中引用，发射 stateChanged('rows')；返回是否成功（行不存在时 false） */
   deleteRowById(id: string | number): boolean {
-    const idx = this.rows.findIndex(r => r[this.primaryKey] === id)
+    const idx = this.rows.findIndex(r => {
+      const pkValue = this.getPrimaryKeyValue(r)
+      return pkValue === id
+    })
     if (idx < 0) return false
     
     const deletedRow = this.rows[idx]
@@ -516,7 +710,7 @@ export class DataView implements IDataSource {
     this.rows.splice(idx, 1)
     
     // 被删行是当前行 → 清空并立即通知
-    if (this.currentRow && isSameRow(this.currentRow, deletedRow, this.primaryKey)) {
+    if (this.currentRow && this.isSamePrimaryKey(this.currentRow, deletedRow)) {
       this.currentRow = null
       this.currentRowIndex = null
       this.emitStateChanged('currentRow', { row: null })
@@ -524,7 +718,7 @@ export class DataView implements IDataSource {
     
     // 被删行在多选中 → 移除并立即通知
     if (this.selectedRows.length > 0) {
-      const newSelected = this.selectedRows.filter(r => !isSameRow(r, deletedRow, this.primaryKey))
+      const newSelected = this.selectedRows.filter(r => !this.isSamePrimaryKey(r, deletedRow))
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
@@ -564,14 +758,28 @@ export class DataView implements IDataSource {
   /**
    * 设置当前行
    * 状态变更 → 发射 stateChanged → UI + 子视图级联均通过 events 接收
+   * 
+   * @param row - 要设置的行（null 表示清空）
+   * @param context - 事件上下文（可选，未提供时自动生成）
    */
-  setCurrentRow(row: IDataRow | null): void {
+  setCurrentRow(
+    row: IDataRow | null, 
+    context?: import('./types').EventContext
+  ): void {
     if (this.currentRow === row) return
     
     this.currentRow = row
     this.currentRowIndex = row === null ? null : this.rows.indexOf(row)
     if (this.currentRowIndex === -1) this.currentRowIndex = null
-    this.emitStateChanged('currentRow', { row })
+    
+    // ✅ 如果未提供 context，自动生成一个
+    const eventContext = context ?? require('./types').createEventContext(
+      'program', 
+      { tableName: this.tableName, viewId: this.viewId }
+    )
+    
+    // 发射事件，透传 context
+    this.emitStateChanged('currentRow', { row, context: eventContext })
     
     // ✅ 如果启用了 syncCurrentToSelected，自动将当前行同步到选中行
     // 注意：setSelectedRows 内部有幂等检查，如果内容相同不会重复发射事件
@@ -582,13 +790,22 @@ export class DataView implements IDataSource {
       const needsUpdate = current.length !== newSelection.length || 
                          (newSelection.length > 0 && current[0] !== newSelection[0])
       if (needsUpdate) {
-        this.setSelectedRows(newSelection)
+        // ✅ 级联更新时透传相同的 context
+        this.setSelectedRows(newSelection, eventContext)
       }
     }
   }
 
-  /** 设置多选行（幂等：内容不变时跳过） */
-  setSelectedRows(rows: IDataRow[]): void {
+  /**
+   * 设置多选行（幂等：内容不变时跳过）
+   * 
+   * @param rows - 要设置的行数组
+   * @param context - 事件上下文（可选，未提供时自动生成）
+   */
+  setSelectedRows(
+    rows: IDataRow[], 
+    context?: import('./types').EventContext
+  ): void {
     // ✅ 修复：防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
     if (!Array.isArray(rows)) {
       this.logger.warn('setSelectedRows 收到非数组参数', { rows, tableName: this.tableName, viewId: this.viewId })
@@ -607,7 +824,356 @@ export class DataView implements IDataSource {
       .map(r => this.rowIndexMap?.get(r) ?? -1)
       .filter(i => i !== -1)
     
-    this.emitStateChanged('selectedRows', { rows: [...rows] })
+    // ✅ 如果未提供 context，自动生成一个
+    const eventContext = context ?? require('./types').createEventContext(
+      'program', 
+      { tableName: this.tableName, viewId: this.viewId }
+    )
+    
+    // 发射事件，透传 context
+    this.emitStateChanged('selectedRows', { rows: [...rows], context: eventContext })
+  }
+
+  /**
+   * 根据主键设置当前行
+   * 
+   * @param id - 主键值
+   * @param context - 事件上下文（可选，未提供时自动生成）
+   * @returns 是否成功（行不存在时返回 false）
+   */
+  setCurrentRowById(
+    id: string | number,
+    context?: import('./types').EventContext
+  ): boolean {
+    this.checkDestroyed()
+    
+    // 特殊处理 null：清空当前行
+    if (id === null || id === undefined) {
+      this.setCurrentRow(null, context)
+      return true
+    }
+    
+    // 根据主键查找行
+    const row = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+    
+    if (!row) {
+      this.logger.warn('setCurrentRowById: 行不存在', {
+        tableName: this.tableName,
+        viewId: this.viewId,
+        primaryKey: this.primaryKey,
+        id,
+        totalRows: this.rows.length
+      })
+      return false
+    }
+    
+    this.setCurrentRow(row, context)
+    return true
+  }
+
+  /**
+   * 根据主键数组设置多选行
+   * 
+   * @param ids - 主键值数组
+   * @param context - 事件上下文（可选，未提供时自动生成）
+   * @param options - 可选配置
+   * @param options.strict - 严格模式：如果有任何 ID 找不到对应行则报错（默认 false，跳过无效 ID）
+   * @returns 成功找到的行数（严格模式下找不到会抛出错误）
+   */
+  setSelectedRowsById(
+    ids: Array<string | number>,
+    context?: import('./types').EventContext,
+    options?: { strict?: boolean }
+  ): number {
+    this.checkDestroyed()
+    
+    // 防御性检查
+    if (!Array.isArray(ids)) {
+      this.logger.warn('setSelectedRowsById 收到非数组参数', { ids, tableName: this.tableName, viewId: this.viewId })
+      return 0
+    }
+    
+    // 空数组：清空选中
+    if (ids.length === 0) {
+      this.setSelectedRows([], context)
+      return 0
+    }
+    
+    // 构建主键到行的映射（O(n) 一次性构建）
+    const idToRow = new Map<string | number, IDataRow>()
+    for (const row of this.rows) {
+      const pkValue = this.getPrimaryKeyValue(row)
+      if (pkValue !== undefined) {
+        idToRow.set(pkValue, row)
+      }
+    }
+    
+    // 根据 ID 查找行
+    const foundRows: IDataRow[] = []
+    const notFoundIds: Array<string | number> = []
+    
+    for (const id of ids) {
+      const row = idToRow.get(id)
+      if (row) {
+        foundRows.push(row)
+      } else {
+        notFoundIds.push(id)
+      }
+    }
+    
+    // 严格模式：有找不到的 ID 则报错
+    if (options?.strict && notFoundIds.length > 0) {
+      const error = new Error(
+        `setSelectedRowsById (strict): 有 ${notFoundIds.length} 个 ID 找不到对应行`
+      )
+      this.logger.error('setSelectedRowsById: 严格模式下有 ID 找不到', {
+        tableName: this.tableName,
+        viewId: this.viewId,
+        primaryKey: this.primaryKey,
+        notFoundIds,
+        totalRows: this.rows.length
+      })
+      throw error
+    }
+    
+    // 非严格模式：记录警告
+    if (notFoundIds.length > 0) {
+      this.logger.warn('setSelectedRowsById: 部分 ID 找不到对应行', {
+        tableName: this.tableName,
+        viewId: this.viewId,
+        primaryKey: this.primaryKey,
+        notFoundIds,
+        foundCount: foundRows.length,
+        totalRows: this.rows.length
+      })
+    }
+    
+    // 设置选中行
+    this.setSelectedRows(foundRows, context)
+    return foundRows.length
+  }
+
+  /**
+   * 清空选中行
+   * 
+   * @param context - 事件上下文（可选，未提供时自动生成）
+   */
+  clearSelectedRows(context?: import('./types').EventContext): void {
+    this.setSelectedRows([], context)
+  }
+
+  /**
+   * 添加行到选中集（去重）
+   * 
+   * @param rows - 要添加的行数组
+   * @param context - 事件上下文（可选，未提供时自动生成）
+   * @returns 实际添加的行数
+   */
+  addSelectedRows(
+    rows: IDataRow[],
+    context?: import('./types').EventContext
+  ): number {
+    this.checkDestroyed()
+    
+    // 防御性检查
+    if (!Array.isArray(rows)) {
+      this.logger.warn('addSelectedRows 收到非数组参数', { rows, tableName: this.tableName, viewId: this.viewId })
+      return 0
+    }
+    
+    if (rows.length === 0) return 0
+    
+    // 构建现有选中行的 Set（使用主键去重）
+    const selectedSet = new Set(
+      this.selectedRows.map(r => this.getPrimaryKeyValue(r)).filter(pk => pk !== undefined)
+    )
+    
+    // 过滤出真正需要添加的行（不在现有选中集中）
+    const toAdd = rows.filter(r => {
+      const pk = this.getPrimaryKeyValue(r)
+      return pk !== undefined && !selectedSet.has(pk)
+    })
+    
+    if (toAdd.length === 0) return 0
+    
+    // 合并：现有选中 + 新增
+    const newSelection = [...this.selectedRows, ...toAdd]
+    this.setSelectedRows(newSelection, context)
+    return toAdd.length
+  }
+
+  /**
+   * 从选中集移除行
+   * 
+   * @param rows - 要移除的行数组
+   * @param context - 事件上下文（可选，未提供时自动生成）
+   * @returns 实际移除的行数
+   */
+  removeSelectedRows(
+    rows: IDataRow[],
+    context?: import('./types').EventContext
+  ): number {
+    this.checkDestroyed()
+    
+    // 防御性检查
+    if (!Array.isArray(rows)) {
+      this.logger.warn('removeSelectedRows 收到非数组参数', { rows, tableName: this.tableName, viewId: this.viewId })
+      return 0
+    }
+    
+    if (rows.length === 0 || this.selectedRows.length === 0) return 0
+    
+    // 构建要移除的行的主键 Set
+    const toRemoveSet = new Set(
+      rows.map(r => this.getPrimaryKeyValue(r)).filter(pk => pk !== undefined)
+    )
+    
+    if (toRemoveSet.size === 0) return 0
+    
+    // 过滤出保留的行
+    const newSelection = this.selectedRows.filter(r => {
+      const pk = this.getPrimaryKeyValue(r)
+      return pk === undefined || !toRemoveSet.has(pk)
+    })
+    
+    const removedCount = this.selectedRows.length - newSelection.length
+    if (removedCount > 0) {
+      this.setSelectedRows(newSelection, context)
+    }
+    
+    return removedCount
+  }
+
+  /**
+   * 根据主键数组添加选中行
+   * 
+   * @param ids - 主键值数组
+   * @param context - 事件上下文（可选，未提供时自动生成）
+   * @param options - 可选配置
+   * @param options.strict - 严格模式：如果有任何 ID 找不到对应行则报错（默认 false，跳过无效 ID）
+   * @returns 实际添加的行数（严格模式下找不到会抛出错误）
+   */
+  addSelectedRowsById(
+    ids: Array<string | number>,
+    context?: import('./types').EventContext,
+    options?: { strict?: boolean }
+  ): number {
+    this.checkDestroyed()
+    
+    // 防御性检查
+    if (!Array.isArray(ids)) {
+      this.logger.warn('addSelectedRowsById 收到非数组参数', { ids, tableName: this.tableName, viewId: this.viewId })
+      return 0
+    }
+    
+    if (ids.length === 0) return 0
+    
+    // 构建主键到行的映射
+    const idToRow = new Map<string | number, IDataRow>()
+    for (const row of this.rows) {
+      const pkValue = this.getPrimaryKeyValue(row)
+      if (pkValue !== undefined) {
+        idToRow.set(pkValue, row)
+      }
+    }
+    
+    // 构建现有选中行的主键 Set
+    const selectedSet = new Set(
+      this.selectedRows.map(r => this.getPrimaryKeyValue(r)).filter(pk => pk !== undefined)
+    )
+    
+    // 查找要添加的行
+    const toAdd: IDataRow[] = []
+    const notFoundIds: Array<string | number> = []
+    const alreadySelectedIds: Array<string | number> = []
+    
+    for (const id of ids) {
+      // 已经选中，跳过
+      if (selectedSet.has(id)) {
+        alreadySelectedIds.push(id)
+        continue
+      }
+      
+      const row = idToRow.get(id)
+      if (row) {
+        toAdd.push(row)
+      } else {
+        notFoundIds.push(id)
+      }
+    }
+    
+    // 严格模式：有找不到的 ID 则报错
+    if (options?.strict && notFoundIds.length > 0) {
+      const error = new Error(
+        `addSelectedRowsById (strict): 有 ${notFoundIds.length} 个 ID 找不到对应行`
+      )
+      this.logger.error('addSelectedRowsById: 严格模式下有 ID 找不到', {
+        tableName: this.tableName,
+        viewId: this.viewId,
+        primaryKey: this.primaryKey,
+        notFoundIds,
+        totalRows: this.rows.length
+      })
+      throw error
+    }
+    
+    // 非严格模式：记录警告
+    if (notFoundIds.length > 0) {
+      this.logger.warn('addSelectedRowsById: 部分 ID 找不到对应行', {
+        tableName: this.tableName,
+        viewId: this.viewId,
+        primaryKey: this.primaryKey,
+        notFoundIds,
+        foundCount: toAdd.length,
+        alreadySelected: alreadySelectedIds.length,
+        totalRows: this.rows.length
+      })
+    }
+    
+    // 添加到选中集
+    if (toAdd.length > 0) {
+      return this.addSelectedRows(toAdd, context)
+    }
+    
+    return 0
+  }
+
+  /**
+   * 根据主键数组移除选中行
+   * 
+   * @param ids - 主键值数组
+   * @param context - 事件上下文（可选，未提供时自动生成）
+   * @returns 实际移除的行数
+   */
+  removeSelectedRowsById(
+    ids: Array<string | number>,
+    context?: import('./types').EventContext
+  ): number {
+    this.checkDestroyed()
+    
+    // 防御性检查
+    if (!Array.isArray(ids)) {
+      this.logger.warn('removeSelectedRowsById 收到非数组参数', { ids, tableName: this.tableName, viewId: this.viewId })
+      return 0
+    }
+    
+    if (ids.length === 0 || this.selectedRows.length === 0) return 0
+    
+    // 构建要移除的主键 Set
+    const toRemoveSet = new Set(ids)
+    
+    // 过滤出保留的行
+    const newSelection = this.selectedRows.filter(r => {
+      const pk = this.getPrimaryKeyValue(r)
+      return pk === undefined || !toRemoveSet.has(pk)
+    })
+    
+    const removedCount = this.selectedRows.length - newSelection.length
+    if (removedCount > 0) {
+      this.setSelectedRows(newSelection, context)
+    }
+    
+    return removedCount
   }
 
   // ─────────────────────────────────────────────
@@ -640,13 +1206,13 @@ export class DataView implements IDataSource {
   /** 清理已不在 rows 中的选中状态，返回是否发生了清理 */
   cleanupInvalidSelections(): boolean {
     let cleaned = false
-    if (this.currentRow && !this.rows.some(r => isSameRow(r, this.currentRow))) {
+    if (this.currentRow && !this.rows.some(r => this.isSamePrimaryKey(r, this.currentRow!))) {
       this.currentRow = null
       this.currentRowIndex = null
       cleaned = true
     }
     if (this.selectedRows.length > 0) {
-      const valid = this.selectedRows.filter(sr => this.rows.some(r => isSameRow(r, sr)))
+      const valid = this.selectedRows.filter(sr => this.rows.some(r => this.isSamePrimaryKey(r, sr)))
       if (valid.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...valid)
         this.selectedRowIndices = valid.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
@@ -680,10 +1246,17 @@ export class DataView implements IDataSource {
    * 关键状态和用户交互立即触发，数据变更（rows）防抖16ms。
    */
   private emitStateChanged(changeType: ViewStateEvent['changeType'], extra?: Partial<ViewStateEvent>): void {
+    // ✅ 如果没有提供 context，自动创建一个（使用 'program' 作为 source）
+    const context = extra?.context ?? require('./types').createEventContext(
+      'program', 
+      { tableName: this.tableName, viewId: this.viewId }
+    )
+    
     const event: ViewStateEvent = {
       tableName: this.tableName,
       viewId: this.viewId,
       changeType,
+      context,
       ...extra,
     }
     

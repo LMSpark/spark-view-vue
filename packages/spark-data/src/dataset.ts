@@ -79,7 +79,15 @@ export class DataSet implements IDataSet {
       if (view.rows.length === 1 && !view.currentRow) {
         const firstRow = view.rows[0]
         if (firstRow) {
-          view.setCurrentRow(firstRow)
+          // ✅ 创建事件上下文
+          const { createEventContext } = require('./types')
+          view.setCurrentRow(
+            firstRow, 
+            createEventContext('auto', { 
+              tableName: table.tableName, 
+              viewId: 'default' 
+            })
+          )
         }
       }
     }

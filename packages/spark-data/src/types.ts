@@ -8,10 +8,143 @@ import type { RequestConfig } from '@spark-view/spark-utils'
 import type { DataTable } from './data-table'
 import type { DataView as SparkDataView } from './data-view'
 
+// ===== 事件 ID 生成器 =====
+
+let eventIdCounter = 0
+
+/**
+ * 生成唯一的事件 ID（全局递增）
+ * 
+ * 使用递增计数器生成唯一标识，用于循环检测。
+ * 注意：计数器在溢出后会重置为 0（Number.MAX_SAFE_INTEGER）。
+ */
+export function generateEventId(): number {
+  eventIdCounter = (eventIdCounter + 1) % Number.MAX_SAFE_INTEGER
+  return eventIdCounter
+}
+
+/**
+ * 生成视图级别的事件 ID
+ * 
+ * 格式: `${tableName}@${viewId}:${counter}`
+ * 适用于需要按视图隔离循环检测的场景。
+ * 
+ * @param tableName - 表名
+ * @param viewId - 视图ID
+ * @returns 视图级别的事件ID字符串
+ */
+export function generateViewEventId(tableName: string, viewId: string): string {
+  return `${tableName}@${viewId}:${generateEventId()}`
+}
+
+/**
+ * 生成组件级别的事件 ID
+ * 
+ * 格式: `component:${componentId}:${counter}`
+ * 适用于需要按组件实例隔离循环检测的场景。
+ * 
+ * @param componentId - 组件实例ID（通常是唯一标识符）
+ * @returns 组件级别的事件ID字符串
+ */
+export function generateComponentEventId(componentId: string): string {
+  return `component:${componentId}:${generateEventId()}`
+}
+
+/**
+ * 创建事件上下文
+ * 
+ * @param source - 事件来源类型（必填）
+ * @param options - 可选配置
+ * @param options.tableName - 表名（用于生成视图级别的 eventId）
+ * @param options.viewId - 视图ID（用于生成视图级别的 eventId）
+ * @param options.componentId - 组件ID（用于生成组件级别的 eventId）
+ * @param options.meta - 扩展元数据
+ * @returns EventContext 对象
+ */
+export function createEventContext(
+  source: EventSource,
+  options?: {
+    tableName?: string
+    viewId?: string
+    componentId?: string
+    meta?: Record<string, unknown>
+  }
+): EventContext {
+  let eventId: number | string
+  
+  // 根据提供的参数决定 eventId 的类型
+  if (options?.tableName && options?.viewId) {
+    // 视图级别的 ID
+    eventId = generateViewEventId(options.tableName, options.viewId)
+  } else if (options?.componentId) {
+    // 组件级别的 ID
+    eventId = generateComponentEventId(options.componentId)
+  } else {
+    // 全局 ID
+    eventId = generateEventId()
+  }
+  
+  const ctx: EventContext = { 
+    eventId, 
+    source
+  }
+  if (options?.meta !== undefined) {
+    ctx.meta = options.meta
+  }
+  
+  return ctx
+}
+
 // RequestConfig 仅内部使用，消费者应从 @spark-view/spark-utils 直接导入
 export type { RequestConfig }
 
 // ===== 视图状态事件 =====
+
+/**
+ * 事件来源标识（用于日志和调试）
+ * - 'ui': UI 组件触发（用户交互，如点击行）
+ * - 'program': 程序代码直接调用（如 __init__ 中设置）
+ * - 'sync': DataSet→UI 同步触发（由 useRuleBinding 发起）
+ * - 'cascade': 级联更新触发（父视图变化导致子视图更新）
+ * - 'auto': 自动触发（如 loadFromServer 后的 autoCurrentFirst）
+ * - 'crud': CRUD 操作触发（增删改后的状态更新）
+ */
+export type EventSource = 'ui' | 'program' | 'sync' | 'cascade' | 'auto' | 'crud'
+
+/**
+ * 事件上下文（用于循环检测）
+ * 
+ * 每个事件拥有唯一的 ID，在调用链中透传。
+ * 当检测到同一个 eventId 再次出现时，说明形成了循环，应立即退出。
+ */
+export interface EventContext {
+  /**
+   * 事件唯一标识符
+   * - 由事件发起者生成（如 UI 事件处理器）
+   * - 沿着调用链透传（DataSet → UI → DataSet）
+   * - 用于检测循环：如果同一个 ID 再次出现，说明循环了
+   * 
+   * 推荐格式：
+   * - 全局唯一：递增数字（如 generateEventId()）
+   * - 视图级别：`${tableName}@${viewId}:${counter}`
+   * - 组件级别：`${componentId}:${counter}`
+   */
+  eventId: number | string
+  
+  /**
+   * 事件来源类型（必填，用于日志和调试）
+   */
+  source: EventSource
+  
+  /**
+   * 扩展元数据（可选）
+   * - tableName: 表名
+   * - viewId: 视图ID
+   * - componentId: 组件实例ID
+   * - timestamp: 时间戳
+   */
+  meta?: Record<string, unknown>
+}
 
 /** 视图状态变化事件 */
 export interface ViewStateEvent {
@@ -20,6 +153,24 @@ export interface ViewStateEvent {
   changeType: 'currentRow' | 'selectedRows' | 'cleared' | 'rows' | 'requestState' | 'mutating'
   row?: IDataRow | null
   rows?: IDataRow[]
+  
+  /**
+   * 事件上下文（必填，用于循环检测和调试）
+   * 
+   * 工作原理：
+   * 1. 事件发起者（如 UI 事件处理器）创建新的 EventContext
+   * 2. 调用 DataSet API 时传入 context
+   * 3. DataSet 发射事件时透传 context
+   * 4. 订阅者检查是否已处理过此 eventId
+   * 5. 如果已处理，说明形成循环，立即退出
+   * 
+   * 优势：
+   * - 精确检测循环（基于唯一 ID）
+   * - 无时序依赖
+   * - 支持多实例
+   * - 易于追踪和调试
+   */
+  context: EventContext
 }
 
 // ===== 权限类型 =====

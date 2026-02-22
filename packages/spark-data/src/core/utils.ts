@@ -10,23 +10,34 @@ import type { DataView } from '../data-view'
  * 
  * @param row1 第一行数据
  * @param row2 第二行数据
- * @param idField 主键字段名，默认 'id'
+ * @param idField 主键字段名（支持单主键字符串或多主键数组），默认 'id'
  * @returns 是否相同
  */
 export function isSameRow(
   row1: IDataRow | null, 
   row2: IDataRow | null, 
-  idField: string = 'id'
+  idField: string | string[] = 'id'
 ): boolean {
   if (row1 === row2) return true
   if (!row1 || !row2) return false
   
-  // 通过主键比较
-  if (idField in row1 && idField in row2) {
-    return row1[idField] === row2[idField]
+  // 单主键比较
+  if (typeof idField === 'string') {
+    if (idField in row1 && idField in row2) {
+      return row1[idField] === row2[idField]
+    }
+    return false
   }
   
-  // 没有主键则引用比较
+  // 多主键比较（所有主键字段值都相等才视为同一行）
+  if (Array.isArray(idField)) {
+    for (const field of idField) {
+      if (!(field in row1) || !(field in row2)) return false
+      if (row1[field] !== row2[field]) return false
+    }
+    return true
+  }
+  
   return false
 }
 

@@ -257,11 +257,13 @@ export class DataTable {
       
       // 延迟触发事件，确保组件已挂载和事件监听器已注册
       setTimeout(() => {
+        const { createEventContext } = require('./types')
         def.events.emit('stateChanged', {
           tableName: def.tableName,
           viewId: def.viewId,
           changeType: 'currentRow',
-          row: firstRow
+          row: firstRow,
+          context: createEventContext('auto', { tableName: def.tableName, viewId: def.viewId })
         })
       }, 100)  // ✅ 延迟 100ms，确保页面脚本 __init__ 已执行
     }
@@ -271,11 +273,13 @@ export class DataTable {
       def.selectedRows.splice(0, def.selectedRows.length, firstRow)
       def.selectedRowIndices = [0]
       setTimeout(() => {
+        const { createEventContext } = require('./types')
         def.events.emit('stateChanged', {
           tableName: def.tableName,
           viewId: def.viewId,
           changeType: 'selectedRows',
-          rows: [...def.selectedRows]  // ✅ 传递数组副本而非 reactive proxy
+          rows: [...def.selectedRows],  // ✅ 传递数组副本而非 reactive proxy
+          context: createEventContext('auto', { tableName: def.tableName, viewId: def.viewId })
         })
       }, 100)  // ✅ 延迟 100ms，确保页面脚本 __init__ 已执行
     }

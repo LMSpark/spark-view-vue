@@ -42,8 +42,24 @@ export type {
   DataColumn,
   DataRelation,
   ViewStateEvent,
+  EventSource,
+  EventContext,
   DependencyType
 } from './types'
+
+export { generateEventId, generateViewEventId, generateComponentEventId, createEventContext } from './types'
+
+// ===== 主键生成器 =====
+
+export { 
+  PrimaryKeyGenerator, 
+  createPrimaryKeyGenerator, 
+  createSnowflakeGenerator 
+} from './core/primary-key-generator'
+export type { 
+  PrimaryKeyStrategy, 
+  PrimaryKeyGeneratorConfig 
+} from './core/primary-key-generator'
 
 // ===== DataKey 统一解析 =====
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '../packages/spark-data/src/spark-data'
 import { RequestState } from '../packages/spark-data/src/data-view'
+import { createEventContext } from '../packages/spark-data/src/types'
 
 describe('DataView.requestData orchestration', () => {
   it('should load parents first then child and update requestState', async () => {
@@ -160,7 +161,13 @@ describe('DataView.requestData orchestration', () => {
     const aSpy = vi.spyOn(aView, 'loadFromServer').mockImplementation(async () => {
       aView.rows.splice(0, aView.rows.length, { id: 1 })
       aView.requestState = RequestState.Loaded
-      aView.events.emit('stateChanged', { tableName: 'A', viewId: 'default', changeType: 'rows', rows: aView.rows })
+      aView.events.emit('stateChanged', { 
+        tableName: 'A', 
+        viewId: 'default', 
+        changeType: 'rows', 
+        rows: aView.rows,
+        context: createEventContext('program', { tableName: 'A', viewId: 'default' })
+      })
       return { success: true, data: aView.rows } as any
     })
 
@@ -169,7 +176,13 @@ describe('DataView.requestData orchestration', () => {
       expect(params.aId).toBe(1)
       bView.rows.splice(0, bView.rows.length, { id: 10, aId: 1 })
       bView.requestState = RequestState.Loaded
-      bView.events.emit('stateChanged', { tableName: 'B', viewId: 'default', changeType: 'rows', rows: bView.rows })
+      bView.events.emit('stateChanged', { 
+        tableName: 'B', 
+        viewId: 'default', 
+        changeType: 'rows', 
+        rows: bView.rows,
+        context: createEventContext('program', { tableName: 'B', viewId: 'default' })
+      })
       return { success: true, data: bView.rows } as any
     })
 
