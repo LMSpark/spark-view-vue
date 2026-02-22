@@ -11,6 +11,7 @@
 
 import { Logger } from '@spark-view/spark-utils'
 import type { IDataSet, IDataRow, ViewStateEvent } from './types'
+import { createEventContext } from './types'
 
 const logger = Logger('SparkData:Sync')
 
@@ -58,7 +59,6 @@ export function createTableSyncHandlers(
       
       if (row === null) {
         // ✅ 创建新的事件上下文（使用视图级别的 ID）
-        const { createEventContext } = require('./types')
         view.setCurrentRow(null, createEventContext('ui', { tableName, viewId }))
         logger.debug('清空 currentRow', { tableName, viewId })
         return
@@ -106,7 +106,6 @@ export function createTableSyncHandlers(
       // 设置干净的行对象
       if (cleanRow) {
         // ✅ 创建新的事件上下文（使用视图级别的 ID）
-        const { createEventContext } = require('./types')
         view.setCurrentRow(cleanRow, createEventContext('ui', { tableName, viewId }))
       }
     },
@@ -118,7 +117,6 @@ export function createTableSyncHandlers(
         // ✅ 修复：el-table selectionChange 事件可能传入非数组参数，做防御性检查
         const validRows = Array.isArray(rows) ? rows : []
         // ✅ 创建新的事件上下文（使用视图级别的 ID）
-        const { createEventContext } = require('./types')
         view.setSelectedRows(validRows, createEventContext('ui', { tableName, viewId }))
         logger.debug('同步 selectedRows', { tableName, viewId, count: validRows.length })
       } else {

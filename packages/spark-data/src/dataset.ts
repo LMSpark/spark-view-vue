@@ -7,6 +7,7 @@
  */
 
 import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
+import { createEventContext } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
 
@@ -80,7 +81,6 @@ export class DataSet implements IDataSet {
         const firstRow = view.rows[0]
         if (firstRow) {
           // ✅ 创建事件上下文
-          const { createEventContext } = require('./types')
           view.setCurrentRow(
             firstRow, 
             createEventContext('auto', { 
