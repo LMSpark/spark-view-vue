@@ -114,17 +114,19 @@ export class CascadeDelegate {
       const requestId = ++this.nextCascadeRequestId
       let cancelled = false
 
-      void this.host.refresh()
-        .then(() => {
+      // refresh() 为非阻塞接口，用 Promise.resolve 包装以统一处理异步/同步实现
+      void (async () => {
+        try {
+          await Promise.resolve(this.host.refresh())
           if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
             this.pendingCascadeRequest = undefined
           }
-        })
-        .catch(err => {
+        } catch (err) {
           if (!cancelled) {
             logger.error(`级联加载 ${this.host.tableName}:${this.host.viewId} 失败 [${requestId}]`, err)
           }
-        })
+        }
+      })()
 
       this.pendingCascadeRequest = {
         requestId,
