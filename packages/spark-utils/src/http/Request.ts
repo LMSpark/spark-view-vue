@@ -1,7 +1,13 @@
 /**
- * 统一请求类
+ * Request — SPARK 统一请求封装
  *
- * 基于 axios，提供拦截器、缓存、重试，不泄露 axios 类型
+ * 基于 axios 实现，对上层完全隐藏 axios 类型。
+ *
+ * 功能点：
+ *   - 拦截器：请求前 / 响应后可拦截，支持异步操作
+ *   - 重试：服务端错误（状态码 ≥500）自动按次迟延重试
+ *   - 缓存：GET 请求可配置内存缓存（cacheExpiry 控制 TTL）
+ *   - 类型安全：所有公共 API 接收 `RequestConfig`，返回 `HttpResponse`
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
@@ -13,6 +19,7 @@ import type {
 
 const logger = Logger('Http')
 
+/** 缓存条目：存储数据、写入时间戳和过期时长（ms） */
 interface CacheItem { data: unknown; timestamp: number; expiry: number }
 
 export class Request {
@@ -28,6 +35,7 @@ export class Request {
   }
 
   // ==================== 拦截器 ====================
+  // 返回的反注册函数可用于移除拦截器（如 `const unuse = interceptors.request.use(...); unuse()`）
 
   interceptors = {
     request: {
@@ -74,9 +82,14 @@ export class Request {
     }
   }
 
-  // ==================== 请求方法 ====================
+  // ==================== 核心请求 ====================
 
-  /** 发起请求（返回数据） */
+  /**
+   * 发起请求，返回响应体中的 data
+   *
+   * 执行顺序：缓存检查 → 重试循环 → axios 发送 → 写入缓存 → 返回 data
+   * 仅 GET 请求 + `config.cache=true` 时启用缓存。
+   */
   async request<T = unknown>(config: RequestConfig): Promise<T> {
     const merged: RequestConfig = { ...this.defaults, ...config }
     const method = merged.method ?? 'GET'
@@ -112,7 +125,7 @@ export class Request {
     throw new Error('unreachable')
   }
 
-  /** 发起请求（返回完整响应） */
+  /** 发起请求，返回包含 status / headers 的完整响应对象 */
   async requestFull<T = unknown>(config: RequestConfig): Promise<HttpResponse<T>> {
     const merged: RequestConfig = { ...this.defaults, ...config }
     try {
@@ -122,6 +135,9 @@ export class Request {
       throw this.normalizeError(err, merged)
     }
   }
+
+  // ==================== HTTP 快捷方法 ====================
+  // 均为 request() 的语法糖，需配置重试/缓存时通过 config 参数传入
 
   async get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T> {
     return this.request<T>({ ...config, url, method: 'GET', params: params ?? {} })
@@ -143,7 +159,9 @@ export class Request {
     return this.request<T>({ ...config, url, method: 'DELETE', params: params ?? {} })
   }
 
-  /** 清除缓存 */
+  // ==================== 缓存管理 ====================
+
+  /** 清除缓存；传入 url 则只清包含该字符串的条目，不传则清全 */
   clearCache(url?: string): void {
     if (url) {
       for (const key of this.cache.keys()) {
@@ -155,6 +173,8 @@ export class Request {
   }
 
   // ==================== 内部方法 ====================
+
+  // ── 配置转换（RequestConfig ↔ AxiosRequestConfig）───────────────────────
 
   private toAxios(config: RequestConfig | Partial<RequestConfig>): AxiosRequestConfig {
     const c: AxiosRequestConfig = {
@@ -206,6 +226,9 @@ export class Request {
     }
   }
 
+  // ── 错误处理 ────────────────────────────────────────────
+
+  /** 将 axios 错误或未知异常标准化为 `RequestError`，确保上层只需处理一种错误类型 */
   private normalizeError(err: unknown, fallback?: RequestConfig): RequestError {
     const base = err instanceof Error ? err : new Error(String(err))
     const error: RequestError = Object.assign(base, {
@@ -221,6 +244,8 @@ export class Request {
     }
     return error
   }
+
+  // ── 缓存内部实现 ────────────────────────────────────────
 
   private getCache<T>(config: RequestConfig): T | null {
     const key = config.cacheKey ?? this.cacheKey(config)
@@ -244,8 +269,9 @@ export class Request {
   }
 }
 
-// ==================== 工厂 ====================
+// ==================== 工厂函数 ====================
 
+/** 创建 `Request` 实例；支持传入默认配置（baseURL、timeout、headers 等） */
 export function createRequest(config?: Partial<RequestConfig>): Request {
   return new Request(config)
 }
