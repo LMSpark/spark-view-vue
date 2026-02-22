@@ -27,8 +27,9 @@ import type {
   ViewStateEvent, QueryParams,
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
+  EventContext,
 } from './types'
-import { RequestState } from './types'
+import { RequestState, createEventContext } from './types'
 import type { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
@@ -536,7 +537,6 @@ export class DataView implements IDataSource {
         // 显式触发 currentRow 事件（让 UI 和业务脚本能感知自动选中）
         // ✅ 创建新的事件上下文（使用视图级别的 ID）
         if (this.autoCurrentFirst !== false) {
-          const { createEventContext } = await import('./types')
           this.emitStateChanged('currentRow', { 
             row: this.currentRow, 
             context: createEventContext('auto', { 
@@ -548,7 +548,6 @@ export class DataView implements IDataSource {
         
         // 显式触发 selectedRows 事件
         if (this.autoSelectFirst !== false && firstRow) {
-          const { createEventContext } = await import('./types')
           this.emitStateChanged('selectedRows', { 
             rows: this.selectedRows,
             context: createEventContext('auto', { 
@@ -681,14 +680,16 @@ export class DataView implements IDataSource {
     // 同步更新选中状态的引用，并发射对应事件（引用已变，UI 需感知）
     if (this.currentRow && this.isSamePrimaryKey(this.currentRow, oldRow)) {
       this.currentRow = newRow
-      this.emitStateChanged('currentRow', { row: newRow })
+      const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+      this.emitStateChanged('currentRow', { row: newRow, context: ctx })
     }
     
     if (this.selectedRows.length > 0) {
       const selectedIdx = this.selectedRows.findIndex(r => this.isSamePrimaryKey(r, oldRow))
       if (selectedIdx !== -1) {
         this.selectedRows[selectedIdx] = newRow
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows] })
+        const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
       }
     }
     
@@ -713,7 +714,8 @@ export class DataView implements IDataSource {
     if (this.currentRow && this.isSamePrimaryKey(this.currentRow, deletedRow)) {
       this.currentRow = null
       this.currentRowIndex = null
-      this.emitStateChanged('currentRow', { row: null })
+      const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+      this.emitStateChanged('currentRow', { row: null, context: ctx })
     }
     
     // 被删行在多选中 → 移除并立即通知
@@ -722,7 +724,8 @@ export class DataView implements IDataSource {
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows] })
+        const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
       }
     }
     
@@ -738,14 +741,16 @@ export class DataView implements IDataSource {
     if (this.currentRow && !rowSet.has(this.currentRow)) {
       this.currentRow = null
       this.currentRowIndex = null
-      this.emitStateChanged('currentRow', { row: null })
+      const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+      this.emitStateChanged('currentRow', { row: null, context: ctx })
     }
     if (this.selectedRows.length > 0) {
       const newSelected = this.selectedRows.filter(r => rowSet.has(r))
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => rows.indexOf(r)).filter(i => i !== -1)
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows] })
+        const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
       }
     }
     this.emitStateChanged('rows')
@@ -764,7 +769,7 @@ export class DataView implements IDataSource {
    */
   setCurrentRow(
     row: IDataRow | null, 
-    context?: import('./types').EventContext
+    context?: EventContext
   ): void {
     if (this.currentRow === row) return
     
@@ -773,7 +778,7 @@ export class DataView implements IDataSource {
     if (this.currentRowIndex === -1) this.currentRowIndex = null
     
     // ✅ 如果未提供 context，自动生成一个
-    const eventContext = context ?? require('./types').createEventContext(
+    const eventContext = context ?? createEventContext(
       'program', 
       { tableName: this.tableName, viewId: this.viewId }
     )
@@ -804,7 +809,7 @@ export class DataView implements IDataSource {
    */
   setSelectedRows(
     rows: IDataRow[], 
-    context?: import('./types').EventContext
+    context?: EventContext
   ): void {
     // ✅ 修复：防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
     if (!Array.isArray(rows)) {
@@ -825,7 +830,7 @@ export class DataView implements IDataSource {
       .filter(i => i !== -1)
     
     // ✅ 如果未提供 context，自动生成一个
-    const eventContext = context ?? require('./types').createEventContext(
+    const eventContext = context ?? createEventContext(
       'program', 
       { tableName: this.tableName, viewId: this.viewId }
     )
@@ -843,7 +848,7 @@ export class DataView implements IDataSource {
    */
   setCurrentRowById(
     id: string | number,
-    context?: import('./types').EventContext
+    context?: EventContext
   ): boolean {
     this.checkDestroyed()
     
@@ -882,7 +887,7 @@ export class DataView implements IDataSource {
    */
   setSelectedRowsById(
     ids: Array<string | number>,
-    context?: import('./types').EventContext,
+    context?: EventContext,
     options?: { strict?: boolean }
   ): number {
     this.checkDestroyed()
@@ -958,7 +963,7 @@ export class DataView implements IDataSource {
    * 
    * @param context - 事件上下文（可选，未提供时自动生成）
    */
-  clearSelectedRows(context?: import('./types').EventContext): void {
+  clearSelectedRows(context?: EventContext): void {
     this.setSelectedRows([], context)
   }
 
@@ -971,7 +976,7 @@ export class DataView implements IDataSource {
    */
   addSelectedRows(
     rows: IDataRow[],
-    context?: import('./types').EventContext
+    context?: EventContext
   ): number {
     this.checkDestroyed()
     
@@ -1011,7 +1016,7 @@ export class DataView implements IDataSource {
    */
   removeSelectedRows(
     rows: IDataRow[],
-    context?: import('./types').EventContext
+    context?: EventContext
   ): number {
     this.checkDestroyed()
     
@@ -1055,7 +1060,7 @@ export class DataView implements IDataSource {
    */
   addSelectedRowsById(
     ids: Array<string | number>,
-    context?: import('./types').EventContext,
+    context?: EventContext,
     options?: { strict?: boolean }
   ): number {
     this.checkDestroyed()
@@ -1147,7 +1152,7 @@ export class DataView implements IDataSource {
    */
   removeSelectedRowsById(
     ids: Array<string | number>,
-    context?: import('./types').EventContext
+    context?: EventContext
   ): number {
     this.checkDestroyed()
     
@@ -1206,7 +1211,8 @@ export class DataView implements IDataSource {
   /** 清理已不在 rows 中的选中状态，返回是否发生了清理 */
   cleanupInvalidSelections(): boolean {
     let cleaned = false
-    if (this.currentRow && !this.rows.some(r => this.isSamePrimaryKey(r, this.currentRow!))) {
+    const currentRow = this.currentRow
+    if (currentRow && !this.rows.some(r => this.isSamePrimaryKey(r, currentRow))) {
       this.currentRow = null
       this.currentRowIndex = null
       cleaned = true
@@ -1247,7 +1253,7 @@ export class DataView implements IDataSource {
    */
   private emitStateChanged(changeType: ViewStateEvent['changeType'], extra?: Partial<ViewStateEvent>): void {
     // ✅ 如果没有提供 context，自动创建一个（使用 'program' 作为 source）
-    const context = extra?.context ?? require('./types').createEventContext(
+    const context = extra?.context ?? createEventContext(
       'program', 
       { tableName: this.tableName, viewId: this.viewId }
     )

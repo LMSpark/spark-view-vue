@@ -16,7 +16,7 @@
  */
 
 import { DataView } from './data-view'
-import { RequestState } from './types'
+import { RequestState, createEventContext } from './types'
 import { reactive } from 'vue'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { TreeManager } from './tree-manager'
@@ -257,7 +257,6 @@ export class DataTable {
       
       // 延迟触发事件，确保组件已挂载和事件监听器已注册
       setTimeout(() => {
-        const { createEventContext } = require('./types')
         def.events.emit('stateChanged', {
           tableName: def.tableName,
           viewId: def.viewId,
@@ -273,7 +272,6 @@ export class DataTable {
       def.selectedRows.splice(0, def.selectedRows.length, firstRow)
       def.selectedRowIndices = [0]
       setTimeout(() => {
-        const { createEventContext } = require('./types')
         def.events.emit('stateChanged', {
           tableName: def.tableName,
           viewId: def.viewId,
