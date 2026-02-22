@@ -426,7 +426,9 @@ export class DataView implements IDataSource {
   }
 
   // ─────────────────────────────────────────────
-  // 行数据操作（内存同步，不触发网络请求）
+  // 本地 CRUD（内存同步，不触发网络请求）
+  // 可独立调用；CrudDelegate 也通过这些方法写入数据，
+  // 两者均发射 stateChanged('rows')，因防抖合并为单次通知
   // ─────────────────────────────────────────────
 
   /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定，对 Vue 响应式友好 */
@@ -444,12 +446,13 @@ export class DataView implements IDataSource {
     this.rowIndexMap = undefined
   }
 
-  /** 追加一行 */
+  /** 本地追加一行，发射 stateChanged('rows') */
   appendRow(row: IDataRow): void {
     this.rows.push(row)
+    this.emitStateChanged('rows')
   }
 
-  /** 按主键部分更新一行，返回是否成功 */
+  /** 本地按主键部分更新一行，发射 stateChanged('rows')；返回是否成功（行不存在时 false） */
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
     const idx = this.rows.findIndex(r => r[this.primaryKey] === id)
     if (idx < 0) return false
@@ -472,10 +475,11 @@ export class DataView implements IDataSource {
       }
     }
     
+    this.emitStateChanged('rows')
     return true
   }
 
-  /** 按主键删除一行，返回是否成功 */
+  /** 本地按主键删除一行，清理选中引用，发射 stateChanged('rows')；返回是否成功（行不存在时 false） */
   deleteRowById(id: string | number): boolean {
     const idx = this.rows.findIndex(r => r[this.primaryKey] === id)
     if (idx < 0) return false
@@ -499,12 +503,14 @@ export class DataView implements IDataSource {
       }
     }
     
+    this.emitStateChanged('rows')
     return true
   }
 
-  /** 整批替换所有行（响应式安全） */
+  /** 本地整批替换所有行（响应式安全），发射 stateChanged('rows') */
   replaceRows(rows: IDataRow[]): void {
     this.rows.splice(0, this.rows.length, ...rows)
+    this.emitStateChanged('rows')
   }
 
   // ─────────────────────────────────────────────
