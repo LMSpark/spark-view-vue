@@ -6,7 +6,7 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
 
@@ -123,6 +123,7 @@ export class DataSet implements IDataSet {
       columns: DataColumn[]
       rows?: IDataRow[]
       api?: CrudApi
+      views?: Record<string, IViewMetadata>  // ✅ 支持 views 配置
     }>
     relations?: DataRelation[]
   }): DataSet {
@@ -227,7 +228,13 @@ export class DataSet implements IDataSet {
     ) {
       const rd = datasetCandidate as {
         dataSetName?: string
-        tables?: Record<string, { tableName: string; columns: DataColumn[]; rows?: IDataRow[]; api?: CrudApi }>
+        tables?: Record<string, { 
+          tableName: string
+          columns: DataColumn[]
+          rows?: IDataRow[]
+          api?: CrudApi
+          views?: Record<string, IViewMetadata>  // ✅ 支持 views 配置
+        }>
         relations?: DataRelation[]
       }
       return DataSet.fromConfig({

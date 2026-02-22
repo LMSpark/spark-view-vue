@@ -25,6 +25,9 @@ interface ElTableComponent extends HTMLElement {
   toggleRowSelection?: (row: IDataRow, selected: boolean) => void
 }
 
+// 防止 DataSet→UI 同步触发 UI→DataSet 反向同步的标志
+let isSyncingToUI = false
+
 /**
  * 将 DataSet 选中行同步到 el-table UI（DataSet → UI 方向）。
  *
@@ -44,13 +47,25 @@ function syncSelectedRowsToTable(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     const table = formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
     if (!table) return
-    if (rows.length === 0) {
-      table.clearSelection?.()
-    } else {
-      table.clearSelection?.()
-      rows.forEach(row => table.toggleRowSelection?.(row, true))
+    
+    // ✅ 设置同步标志，防止 toggleRowSelection 触发的 selectionChange 事件反向同步
+    isSyncingToUI = true
+    try {
+      if (rows.length === 0) {
+        table.clearSelection?.()
+      } else {
+        table.clearSelection?.()
+        rows.forEach(row => table.toggleRowSelection?.(row, true))
+      }
+    } finally {
+      isSyncingToUI = false
     }
   })
+}
+
+// 导出标志检查函数，供 bindRules 使用
+export function isCurrentlySyncingToUI(): boolean {
+  return isSyncingToUI
 }
 
 // ─── 公共接口 ─────────────────────────────────────────────────────────────────

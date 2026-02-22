@@ -107,6 +107,7 @@
                   },
                   {
                     "type": "el-input",
+                    "field": "currentRowJson",
                     "props": {
                       "type": "textarea",
                       "readonly": true,
@@ -116,8 +117,7 @@
                         "fontFamily": "monospace",
                         "fontSize": "14px"
                       }
-                    },
-                    "dataKey": "currentRowJson"
+                    }
                   }
                 ]
               }

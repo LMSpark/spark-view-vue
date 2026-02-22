@@ -118,16 +118,16 @@ export class DataView implements IDataSource {
   sortExpression?: SortExpression
   /**
    * 请求成功后是否自动将 currentRow 设为第一行。
-   * - `true`：有数据时 currentRow = rows[0]
-   * - `false`（默认）：清空 currentRow
+   * - `true`（默认）：有数据时 currentRow = rows[0]
+   * - `false`：清空 currentRow
    */
-  autoCurrentFirst?: boolean
+  autoCurrentFirst: boolean = true
   /**
    * 请求成功后是否自动将 selectedRows 设为第一行。
-   * - `true`：有数据时 selectedRows = [rows[0]]
-   * - `false`（默认）：清空 selectedRows
+   * - `true`（默认）：有数据时 selectedRows = [rows[0]]
+   * - `false`：清空 selectedRows
    */
-  autoSelectFirst?: boolean
+  autoSelectFirst: boolean = true
 
   // ── 关联对象 ────────────────────────────────
 
@@ -329,22 +329,39 @@ export class DataView implements IDataSource {
       if (result.success && result.data) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         const firstRow = this.rows.length > 0 ? this.rows[0] : null
-        if (this.autoCurrentFirst && firstRow) {
+        
+        // 处理 autoCurrentFirst（默认 true）
+        if (this.autoCurrentFirst !== false && firstRow) {
           this.currentRow = firstRow
           this.currentRowIndex = 0
         } else {
           this.currentRow = null
           this.currentRowIndex = null
         }
-        if (this.autoSelectFirst && firstRow) {
+        
+        // 处理 autoSelectFirst（默认 true）
+        if (this.autoSelectFirst !== false && firstRow) {
           this.selectedRows.splice(0, this.selectedRows.length, firstRow)
           this.selectedRowIndices = [0]
         } else {
           this.selectedRows.splice(0, this.selectedRows.length)
           this.selectedRowIndices = []
         }
+        
         this.requestState = RequestState.Loaded
+        
+        // 先触发 rows 事件，再触发 currentRow 和 selectedRows 事件（如果有变化）
         this.emitStateChanged('rows')
+        
+        // 显式触发 currentRow 事件（让 UI 和业务脚本能感知自动选中）
+        if (this.autoCurrentFirst !== false) {
+          this.emitStateChanged('currentRow', { row: this.currentRow })
+        }
+        
+        // 显式触发 selectedRows 事件
+        if (this.autoSelectFirst !== false && firstRow) {
+          this.emitStateChanged('selectedRows', { rows: this.selectedRows })
+        }
       } else {
         this.requestState = RequestState.Failed
         this.emitStateChanged('requestState')
@@ -473,7 +490,7 @@ export class DataView implements IDataSource {
       const selectedIdx = this.selectedRows.findIndex(r => isSameRow(r, oldRow, this.primaryKey))
       if (selectedIdx !== -1) {
         this.selectedRows[selectedIdx] = newRow
-        this.emitStateChanged('selectedRows', { rows: this.selectedRows })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows] })
       }
     }
     
@@ -504,7 +521,7 @@ export class DataView implements IDataSource {
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
-        this.emitStateChanged('selectedRows', { rows: this.selectedRows })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows] })
       }
     }
     
@@ -527,7 +544,7 @@ export class DataView implements IDataSource {
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => rows.indexOf(r)).filter(i => i !== -1)
-        this.emitStateChanged('selectedRows', { rows: this.selectedRows })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows] })
       }
     }
     this.emitStateChanged('rows')
@@ -543,6 +560,7 @@ export class DataView implements IDataSource {
    */
   setCurrentRow(row: IDataRow | null): void {
     if (this.currentRow === row) return
+    
     this.currentRow = row
     this.currentRowIndex = row === null ? null : this.rows.indexOf(row)
     if (this.currentRowIndex === -1) this.currentRowIndex = null
@@ -551,6 +569,12 @@ export class DataView implements IDataSource {
 
   /** 设置多选行（幂等：内容不变时跳过） */
   setSelectedRows(rows: IDataRow[]): void {
+    // ✅ 修复：防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
+    if (!Array.isArray(rows)) {
+      this.logger.warn('setSelectedRows 收到非数组参数', { rows, tableName: this.tableName, viewId: this.viewId })
+      return
+    }
+    
     const cur = this.selectedRows
     if (cur.length === rows.length && cur.every((r, i) => r === rows[i])) return
     
@@ -563,7 +587,7 @@ export class DataView implements IDataSource {
       .map(r => this.rowIndexMap?.get(r) ?? -1)
       .filter(i => i !== -1)
     
-    this.emitStateChanged('selectedRows', { rows })
+    this.emitStateChanged('selectedRows', { rows: [...rows] })
   }
 
   // ─────────────────────────────────────────────
@@ -779,8 +803,9 @@ export class DataView implements IDataSource {
     }
     if (this.filterExpression !== undefined) result.filterExpression = this.filterExpression
     if (this.sortExpression !== undefined) result.sortExpression = this.sortExpression
-    if (this.autoCurrentFirst !== undefined) result.autoCurrentFirst = this.autoCurrentFirst
-    if (this.autoSelectFirst !== undefined) result.autoSelectFirst = this.autoSelectFirst
+    // 只在非默认值时序列化（减少 JSON 体积）
+    if (this.autoCurrentFirst !== true) result.autoCurrentFirst = this.autoCurrentFirst
+    if (this.autoSelectFirst !== true) result.autoSelectFirst = this.autoSelectFirst
     return result
   }
 
@@ -788,6 +813,7 @@ export class DataView implements IDataSource {
     const v = new DataView(tableName, viewId)
     if (data.filterExpression !== undefined) v.filterExpression = data.filterExpression
     if (data.sortExpression !== undefined) v.sortExpression = data.sortExpression
+    // autoCurrentFirst 和 autoSelectFirst 默认为 true，只在显式指定时覆盖
     if (data.autoCurrentFirst !== undefined) v.autoCurrentFirst = data.autoCurrentFirst
     if (data.autoSelectFirst !== undefined) v.autoSelectFirst = data.autoSelectFirst
     v.page = data.page ?? 1

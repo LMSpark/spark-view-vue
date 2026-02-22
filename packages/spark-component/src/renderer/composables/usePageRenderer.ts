@@ -109,6 +109,8 @@ export function usePageRenderer(
   const originalRules = ref<any[]>([])
   const pageData = reactive<Record<string, unknown>>({})
   const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
+  const pendingInit = ref<(() => Promise<void>) | null>(null)  // ✅ 保存待执行的 __init__ 函数
+  const pendingScriptInfo = ref<{ pageId: string; scriptText: string } | null>(null)  // ✅ 保存待重新编译的脚本信息
 
   // ==================== FormCreate 配置 ====================
 
@@ -127,6 +129,7 @@ export function usePageRenderer(
 
   const formCreateOptions = ref({
     ...defaultFormCreateOptions,
+    formData: pageData,  // 绑定 pageData 为数据源，使 field 属性生效
     ...props.formCreateOptions
   })
 
@@ -183,6 +186,32 @@ export function usePageRenderer(
     h
   }
 
+  // ==================== formApi 监听 - 当 API 可用时重新编译脚本并执行 __init__ ====================
+  
+  watch(formApi, (newApi) => {
+    if (newApi && pendingInit.value) {
+      pageLogger.info('✅ [FormCreate] API 已就绪，重新编译脚本并执行 __init__')
+      
+      // ✅ 关键修复：在 formApi 就绪后重新编译脚本，此时解构的 $api 才有值
+      if (pendingScriptInfo.value) {
+        const { pageId, scriptText } = pendingScriptInfo.value
+        try {
+          pageFunctions.value = compileFunctions(scriptText, pageContext)
+          pageLogger.info('🔄 [Script] 脚本重新编译完成', { pageId })
+        } catch (e) {
+          pageLogger.error('脚本重新编译失败', { pageId, error: e })
+        }
+        pendingScriptInfo.value = null
+      }
+      
+      const init = pendingInit.value
+      pendingInit.value = null
+      init().catch((e: unknown) => {
+        pageLogger.error('__init__ 执行失败', { error: e })
+      })
+    }
+  }, { immediate: false })
+
   // ==================== 页面配置加载 ====================
 
   /** 从 props / route 推断当前页面ID，无法确定时抛出。 */
@@ -214,13 +243,15 @@ export function usePageRenderer(
   }
 
   /** 编译并执行脚本，调用 __init__（如存在）。 */
-  function executeScript(pageId: string, scriptText: string): void {
+  function executeScript(pageId: string, scriptText: string, callInit: boolean = true): void {
     if (!scriptText) { pageFunctions.value = {}; return }
     try {
       pageFunctions.value = compileFunctions(scriptText, pageContext)
-      const init = pageFunctions.value['__init__']
-      if (typeof init === 'function') {
-        try { init() } catch (e) { pageLogger.error('__init__ 执行失败', { pageId, error: e }) }
+      if (callInit) {
+        const init = pageFunctions.value['__init__']
+        if (typeof init === 'function') {
+          try { init() } catch (e) { pageLogger.error('__init__ 执行失败', { pageId, error: e }) }
+        }
       }
     } catch (e) {
       pageLogger.error('脚本执行失败', { pageId, error: e })
@@ -234,9 +265,41 @@ export function usePageRenderer(
     if (config.css) setScopedCss(config.css)
     initDataSet(config.data)
     if (dataSet.value) provideCapability(PAGE_DATASET, dataSet.value)
-    executeScript(pageId, config.script ?? '')
+    
+    // ✅ 首次编译脚本（此时 formApi 可能还是 null）
+    executeScript(pageId, config.script ?? '', false)
+    
     await nextTick()
     rebindRules()
+    
+    // ✅ 保存脚本信息，等待 formApi 就绪后重新编译
+    const scriptText = config.script ?? ''
+    if (scriptText.trim()) {
+      pendingScriptInfo.value = { pageId, scriptText }
+    }
+    
+    // ✅ 设置 pendingInit，等待 formApi 被赋值时执行
+    const init = pageFunctions.value['__init__']
+    if (typeof init === 'function') {
+      pendingInit.value = async () => {
+        pageLogger.info('🎬 [Script] 开始执行 __init__', { hasApi: !!formApi.value })
+        try {
+          await init()
+        } catch (e) {
+          pageLogger.error('__init__ 执行失败', { pageId, error: e })
+          throw e
+        }
+      }
+      
+      // ✅ 如果 formApi 已经可用（同步赋值的情况），立即重新编译并执行
+      if (formApi.value) {
+        pendingScriptInfo.value = null  // 清除待编译标记
+        pageFunctions.value = compileFunctions(scriptText, pageContext)
+        const immediateInit = pendingInit.value
+        pendingInit.value = null
+        await immediateInit()
+      }
+    }
   }
 
   /** 完整页面加载流程编排：beforeLoad → resolvePageId → fetchConfig → applyConfig → afterLoad。 */
