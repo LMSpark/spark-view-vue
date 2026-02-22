@@ -7,6 +7,7 @@ import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { createTableSyncHandlers } from '@spark-view/spark-data'
 import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding } from '@spark-view/spark-data'
+import { isCurrentlySyncingToUI } from '../composables/useRuleBinding'
 
 const pageLogger = Logger('PageRenderer')
 
@@ -290,7 +291,13 @@ function injectTableEvents(
   // 注入 currentChange 事件（单选行变化）
   const originalCurrentChange = rule.on['currentChange']
   rule.on['currentChange'] = (currentRow: IDataRow | null, oldRow: IDataRow | null) => {
-    pageLogger.info(`🎯 [TableEvent] currentChange 触发`, { tableName, viewId, currentRow, oldRow})
+    pageLogger.info(`🎯 [TableEvent] currentChange 触发`, { tableName, viewId })
+    
+    // ✅ 防止 DataSet→UI 同步期间的反向同步（循环触发）
+    if (isCurrentlySyncingToUI()) {
+      pageLogger.debug(`⏭️ [TableEvent] 跳过反向同步（正在执行 DataSet→UI 同步）`, { tableName, viewId })
+      return
+    }
     
     if (isProcessingEvent) return
     
@@ -302,7 +309,7 @@ function injectTableEvents(
         (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
       }
       
-      // 委托 spark-data 同步写入
+      // 委托 spark-data 同步写入（会从 args[0] 提取干净数据）
       sync.onCurrentChange(currentRow ?? null)
       pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
     } finally {
@@ -316,6 +323,12 @@ function injectTableEvents(
   const originalSelectionChange = rule.on['selectionChange']
   rule.on['selectionChange'] = (selection: IDataRow[]) => {
     pageLogger.info(`🎯 [TableEvent] selectionChange 触发`, { tableName, viewId, selectionCount: selection.length })
+    
+    // ✅ 防止 DataSet→UI 同步期间的反向同步（循环触发）
+    if (isCurrentlySyncingToUI()) {
+      pageLogger.debug(`⏭️ [TableEvent] 跳过反向同步（正在执行 DataSet→UI 同步）`, { tableName, viewId })
+      return
+    }
     
     if (isProcessingEvent) return
     

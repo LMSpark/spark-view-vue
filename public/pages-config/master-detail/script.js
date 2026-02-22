@@ -8,34 +8,80 @@
 function __init__() {
   const dataSet = $dataSet
   
+  // 初始化完成
+  
+  // 初始化 currentRowJson（防止 undefined）
+  $data.currentRowJson = '未选择行'
+  
+  // 获取 Users 表的列定义（用于提取干净的数据对象）
+  const usersTable = dataSet.getTable('Users')
+  const columns = usersTable?.columns || []
+
+  
   // 监听 Users 视图状态变化（直接订阅 DataView 的事件）
   const usersView = dataSet.getView('Users', 'default')
+  
+  console.log('📡 [Script] 获取 Users 视图', {
+    hasView: !!usersView,
+    currentRow: usersView?.currentRow,
+    rowsCount: usersView?.rows?.length ?? 0
+  })
+  
   if (usersView) {
     usersView.events.on('stateChanged', (event) => {
       if (event.changeType === 'currentRow' && event.tableName === 'Users') {
-        const pageData = $data
-        const jsonText = event.row ? JSON.stringify(event.row, null, 2) : '未选择行'
-        pageData.currentRowJson = jsonText
-        console.log('📝 [CurrentRow] JSON 已更新:', jsonText.substring(0, 50) + '...')
+        const currentIndex = usersView.currentRowIndex
         
-        // 手动触发 UI 更新
-        $rebindRules()
+        if (currentIndex !== null && currentIndex >= 0 && currentIndex < usersView.rows.length) {
+          const cleanRow = usersView.rows[currentIndex]
+          
+          // 基于 columns 定义提取字段（过滤 _perm 等元数据）
+          const pureData = {}
+          columns.forEach(col => {
+            if (cleanRow[col.name] !== undefined) {
+              pureData[col.name] = cleanRow[col.name]
+            }
+          })
+          
+          const jsonStr = JSON.stringify(pureData, null, 2)
+          
+          // ✅ 使用 $api.setValue() 更新字段（FormCreate 的标准方式）
+          if ($api) {
+            $api.setValue('currentRowJson', jsonStr)
+          } else {
+            // 回退方案：直接赋值
+            $data.currentRowJson = jsonStr
+          }
+        } else {
+          if ($api) {
+            $api.setValue('currentRowJson', '未选择行')
+          } else {
+            $data.currentRowJson = '未选择行'
+          }
+        }
       }
     })
+    // Users 视图事件已订阅
+  } else {
+    console.warn('⚠️ [Script] 无法获取 Users 视图')
   }
   
   // 订阅 Orders 视图的 stateChanged 事件
   const ordersView = dataSet.getView('Orders', 'default')
+  console.log('📡 [Script] 获取 Orders 视图', { hasView: !!ordersView })
+  
   if (ordersView) {
     ordersView.events.on('stateChanged', () => {
       const count = ordersView.rows?.length || 0
+      console.log('📥 [Script] Orders 视图状态变化', { rowsCount: count })
       if (count > 0) {
         ElMessage.success(`✅ 订单数据加载完成！共 ${count} 条记录`)
       }
     })
+    // Orders 视图事件已订阅
+  } else {
+    console.warn('⚠️ [Script] 无法获取 Orders 视图')
   }
-  
-  console.log('✅ [Master-Detail] 初始化完成')
 }
 
 /**

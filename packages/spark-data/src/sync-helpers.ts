@@ -52,12 +52,59 @@ export function createTableSyncHandlers(
   return {
     onCurrentChange(row: IDataRow | null) {
       const table = dataSet.getTable(tableName)
-      if (table) {
-        const view = table.getOrCreateView(viewId)
-        view.setCurrentRow(row)
-        logger.debug('同步 currentRow', { tableName, viewId })
-      } else {
-        logger.warn('表不存在', { tableName })
+      if (!table) return
+      
+      const view = table.getOrCreateView(viewId)
+      
+      if (row === null) {
+        view.setCurrentRow(null)
+        logger.debug('清空 currentRow', { tableName, viewId })
+        return
+      }
+      
+      // ✅ 修复：form-create 污染了原始对象（添加了 $f, api, rule 等内部属性）
+      // 原始数据被保存在 row.args[0] 中
+      let cleanRow: IDataRow | null = null
+      
+      // 优先方案：从 args[0] 提取原始数据（污染检测）
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ('args' in row && Array.isArray((row as any).args)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        const originalRow = (row as any).args[0]
+        if (originalRow && typeof originalRow === 'object') {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          cleanRow = originalRow
+          logger.debug('从 args[0] 提取原始数据', {
+            tableName,
+            viewId,
+            id: cleanRow ? cleanRow[view.primaryKey ?? 'id'] : null
+          })
+        }
+      }
+      
+      // 回退方案：通过主键从 view.rows 查找
+      if (!cleanRow) {
+        const primaryKey = view.primaryKey ?? 'id'
+        const rowId = row[primaryKey]
+        
+        if (rowId !== undefined) {
+          cleanRow = view.rows.find(r => r[primaryKey] === rowId) ?? null
+          if (cleanRow) {
+            logger.debug('通过主键查找到原始数据', { tableName, viewId, pk: primaryKey, id: rowId })
+          } else {
+            logger.warn('在 view.rows 中找不到匹配行', {
+              tableName,
+              viewId,
+              pk: primaryKey,
+              id: rowId
+            })
+          }
+        }
+      }
+      
+      // 设置干净的行对象
+      if (cleanRow) {
+        view.setCurrentRow(cleanRow)
       }
     },
 
@@ -65,8 +112,10 @@ export function createTableSyncHandlers(
       const table = dataSet.getTable(tableName)
       if (table) {
         const view = table.getOrCreateView(viewId)
-        view.setSelectedRows(rows)
-        logger.debug('同步 selectedRows', { tableName, viewId, count: rows.length })
+        // ✅ 修复：el-table selectionChange 事件可能传入非数组参数，做防御性检查
+        const validRows = Array.isArray(rows) ? rows : []
+        view.setSelectedRows(validRows)
+        logger.debug('同步 selectedRows', { tableName, viewId, count: validRows.length })
       } else {
         logger.warn('表不存在', { tableName })
       }

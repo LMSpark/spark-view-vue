@@ -8,27 +8,6 @@ const pageLogger = Logger('PageRenderer')
 import type { PageContext } from '../types'
 
 /**
- * PageContext 中暴露给业务脚本的变量名列表。
- *
- * 新增沙箱变量时只需在此处追加，`compileFunctions` 的实现无需修改。
- */
-const SANDBOX_KEYS = [
-  '$api',
-  '$route',
-  '$data',
-  '$el',
-  '$query',
-  '$queryAll',
-  '$dataSet',
-  '$rebindRules',
-  '$refreshData',
-  'ElMessage',
-  'ElMessageBox',
-  'SparkData',
-  'h'
-] as const satisfies ReadonlyArray<keyof PageContext>
-
-/**
  * 从脚本文本中提取所有顶层函数名
  * 匹配：`function foo()`、`async function foo()`、
  *        `const/let/var foo = () =>`、`const/let/var foo = function`、
@@ -76,9 +55,10 @@ export function compileFunctions(
         ).join(', ')} }`
       : '\nreturn {}'
 
-    // 使用单一 __ctx 参数解构，避免位置参数膨胀
-    const destructure = `const { ${SANDBOX_KEYS.join(', ')} } = __ctx;\n`
-    const fullScript = destructure + scriptText + returnStatement
+    // ✅ 使用 with 语句创建动态作用域，让变量每次访问都从 __ctx 获取最新值
+    // 这样 $api 和 $dataSet 的 getter 才能正常工作
+    // 注意：with 在非严格模式下工作，所以不能在函数内添加 'use strict'
+    const fullScript = `with (__ctx) { ${scriptText} }${returnStatement}`
 
     const func = new Function('__ctx', fullScript)
     const result = (func as (ctx: PageContext) => Record<string, unknown>)(context)

@@ -228,12 +228,59 @@ export class DataTable {
 
     const def = t.getOrCreateView('default')
     if (data.rows) def.rows = [...data.rows]
-    if (data.filterExpression !== undefined) def.filterExpression = data.filterExpression
-    if (data.sortExpression !== undefined) def.sortExpression = data.sortExpression
-    if (data.autoSelectFirst !== undefined) def.autoSelectFirst = data.autoSelectFirst
-    def.page = data.page ?? 1
-    def.pageSize = data.pageSize ?? 20
+    
+    // ✅ 优先从 views.default 读取配置（如果存在）
+    if (data.views?.['default']) {
+      const defaultViewConfig = data.views['default']
+      if (defaultViewConfig.filterExpression !== undefined) def.filterExpression = defaultViewConfig.filterExpression
+      if (defaultViewConfig.sortExpression !== undefined) def.sortExpression = defaultViewConfig.sortExpression
+      if (defaultViewConfig.autoCurrentFirst !== undefined) def.autoCurrentFirst = defaultViewConfig.autoCurrentFirst
+      if (defaultViewConfig.autoSelectFirst !== undefined) def.autoSelectFirst = defaultViewConfig.autoSelectFirst
+      def.page = defaultViewConfig.page ?? data.page ?? 1
+      def.pageSize = defaultViewConfig.pageSize ?? data.pageSize ?? 20
+    } else {
+      // 回退：从表级配置读取（兼容旧格式）
+      if (data.filterExpression !== undefined) def.filterExpression = data.filterExpression
+      if (data.sortExpression !== undefined) def.sortExpression = data.sortExpression
+      if (data.autoSelectFirst !== undefined) def.autoSelectFirst = data.autoSelectFirst
+      def.page = data.page ?? 1
+      def.pageSize = data.pageSize ?? 20
+    }
+    
+    // ✅ 应用 autoCurrentFirst 和 autoSelectFirst 逻辑（静态数据加载场景）
+    const firstRow = def.rows.length > 0 ? def.rows[0] : null
+    
+    // autoCurrentFirst 默认 true，只有显式设为 false 时才不自动选中
+    if (def.autoCurrentFirst !== false && firstRow) {
+      def.currentRow = firstRow
+      def.currentRowIndex = 0
+      
+      // 延迟触发事件，确保组件已挂载和事件监听器已注册
+      setTimeout(() => {
+        def.events.emit('stateChanged', {
+          tableName: def.tableName,
+          viewId: def.viewId,
+          changeType: 'currentRow',
+          row: firstRow
+        })
+      }, 100)  // ✅ 延迟 100ms，确保页面脚本 __init__ 已执行
+    }
+    
+    // autoSelectFirst 默认 true，只有显式设为 false 时才不自动选中
+    if (def.autoSelectFirst !== false && firstRow) {
+      def.selectedRows.splice(0, def.selectedRows.length, firstRow)
+      def.selectedRowIndices = [0]
+      setTimeout(() => {
+        def.events.emit('stateChanged', {
+          tableName: def.tableName,
+          viewId: def.viewId,
+          changeType: 'selectedRows',
+          rows: [...def.selectedRows]  // ✅ 传递数组副本而非 reactive proxy
+        })
+      }, 100)  // ✅ 延迟 100ms，确保页面脚本 __init__ 已执行
+    }
 
+    // 处理命名视图（非 default）
     if (data.views) {
       for (const [cid, cd] of Object.entries(data.views)) {
         if (cid === 'default') continue
