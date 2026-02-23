@@ -1,19 +1,35 @@
 # 组件开发指南
 
-> 使用 SPARK 框架创建自定义组件
+> 使用 SPARK 框架创建符合架构规范的自定义组件
 
-## 📖 概述
+---
 
-SPARK 组件系统基于 Vue 3 Composition API，支持类型安全的组件注册、能力驱动的通信机制和声明式的配置系统。本指南将帮助你创建符合 SPARK 架构的自定义组件。
+## 目录
 
-## 🚀 快速开始
+1. [快速开始](#1-快速开始)
+2. [组件注册](#2-组件注册)
+3. [useSparkComponent 完整 API](#3-usesparkcomponent-完整-api)
+4. [能力系统（Capability）](#4-能力系统capability)
+5. [数据绑定](#5-数据绑定)
+6. [DataView 交互](#6-dataview-交互)
+7. [事件系统](#7-事件系统)
+8. [日志与调试](#8-日志与调试)
+9. [样式隔离](#9-样式隔离)
+10. [测试](#10-测试)
+11. [最佳实践与规范](#11-最佳实践与规范)
+12. [使用 Plop 脚手架](#12-使用-plop-脚手架)
+13. [附录：完整示例——主从表组件](#13-附录完整示例主从表组件)
 
-### 1. 创建基础组件
+---
+
+## 1. 快速开始
+
+### 最小组件模板
 
 ```vue
+<!-- packages/spark-component/src/components/MyWidget.vue -->
 <template>
-  <div class="my-component">
-    <h3>{{ config.title || 'My Component' }}</h3>
+  <div v-if="isVisible" :class="['my-widget', { 'my-widget--disabled': isDisabled }]">
     <slot />
   </div>
 </template>
@@ -22,951 +38,761 @@ SPARK 组件系统基于 Vue 3 Composition API，支持类型安全的组件注�
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 
-interface MyComponentConfig extends ComponentConfig {
+// 1. 扩展 ComponentConfig，声明组件专属配置
+interface MyWidgetConfig extends ComponentConfig {
   title?: string
   theme?: 'light' | 'dark'
 }
 
-const props = defineProps<{
-  config: MyComponentConfig
-}>()
+const props = defineProps<{ config: MyWidgetConfig }>()
 
-// 获取 SPARK 上下文
-const { provide, consume, logger, context } = useSparkComponent(props.config)
+// 2. 获取 SPARK 上下文
+const {
+  isVisible,    // ComputedRef<boolean>  基于 config.visible
+  isDisabled,   // ComputedRef<boolean>  基于 config.disabled
+  logger,       // 带优先级的日志代理
+} = useSparkComponent(props.config)
 
-// 组件初始化日志
-logger.info('MyComponent initialized', { config: props.config })
+logger.info('MyWidget initialized', { title: props.config.title })
 </script>
-
-<style scoped>
-.my-component {
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-</style>
 ```
 
-### 2. 注册组件
+> `useSparkComponent` 必须在 `<script setup>` 的**顶层**调用（Vue 组合式函数规则）。
 
-SPARK 支持三种组件注册方式：
+---
+
+## 2. 组件注册
+
+`type` 使用 **kebab-case**，与 JSON 配置中的 `"type"` 字段一一对应。
+
+### 方式一：单个注册（同步 / 懒加载）
 
 ```typescript
 import { Spark } from '@spark-view/spark-component'
-import MyComponent from './MyComponent.vue'
+import MyWidget from './MyWidget.vue'
 
-// 方式 1：直接注册（同步加载）
-Spark.register('my-component', MyComponent)
+// 同步（直接引用，不做代码分割）
+Spark.register('my-widget', MyWidget)
 
-// 方式 2：动态导入（代码分割）
-Spark.register('user-detail', () => import('./UserDetail.vue'))
+// 懒加载（推荐——自动代码分割）
+Spark.register('my-widget', () => import('./MyWidget.vue'))
+```
 
-// 方式 3：路径注册（推荐用于批量管理）
-const register = Spark.createRegister(import.meta.glob('./components/*.vue'))
-register.registerAll({
-  'my-component': './MyComponent.vue',
-  'user-grid': './UserGrid.vue',
-  'data-table': './DataTable.vue'
+### 方式二：批量注册（`createRegister` + glob，推荐）
+
+```typescript
+// features/my-app/index.ts
+import { Spark } from '@spark-view/spark-component'
+
+const reg = Spark.createRegister(import.meta.glob('./components/*.vue'))
+
+reg.registerAll({
+  'my-widget':      './components/MyWidget.vue',
+  'my-grid':        './components/MyGrid.vue',
+  'my-detail-form': './components/MyDetailForm.vue',
 })
 ```
 
-### 3. 使用组件
-
-```vue
-<template>
-  <div class="page">
-    <!-- 使用 kebab-case 类型名 -->
-    <spark-component type="my-component" :config="componentConfig" />
-  </div>
-</template>
-
-<script setup lang="ts">
-import { Spark } from '@spark-view/spark-component'
-
-// 注册组件（通常在应用启动时完成）
-Spark.register('my-component', () => import('./MyComponent.vue'))
-
-const componentConfig = {
-  type: 'my-component',
-  title: '示例组件',
-  theme: 'light' as const
-}
-</script>
-```
-
-## 🔗 能力系统
-
-SPARK 的核心特性是基于 Symbol 的能力系统，支持组件间的松耦合通信。
-
-### 定义能力
+### 方式三：一次性批量（无 glob 绑定，适合内置组件）
 
 ```typescript
-// types/capabilities.ts
+import { Spark } from '@spark-view/spark-component'
+import WidgetA from './WidgetA.vue'
+import WidgetB from './WidgetB.vue'
+
+Spark.registerAll({
+  'widget-a': WidgetA,
+  'widget-b': WidgetB,
+})
+```
+
+### 安装 Vue 插件
+
+```typescript
+// main.ts
+import { createApp } from 'vue'
+import { Spark } from '@spark-view/spark-component'
+import App from './App.vue'
+
+const app = createApp(App)
+app.use(Spark.createPlugin())   // 建立 rootContext + Symbol-based DI
+app.mount('#app')
+```
+
+---
+
+## 3. useSparkComponent 完整 API
+
+```typescript
+const {
+  context,              // ComponentContext — 当前组件上下文（响应式）
+  isVisible,            // ComputedRef<boolean> — 基于 config.visible
+  isDisabled,           // ComputedRef<boolean> — 基于 config.disabled
+
+  provide,              // (capabilityKey, impl) => void — 写入本组件能力
+  provideEvents,        // (name?) => IEventEmitter — 提供事件总线
+  getProvider,          // (capabilityKey) => unknown — 仅查本组件能力（不走 parent 链）
+  consume,              // <T>(capabilityKey) => T | null — 沿 parent 链向上查找
+  consumeEvents,        // (name, handlers) => IEventEmitter | null — 消费并绑定事件
+
+  initialize,           // () => void — onMounted 自动调用
+  destroy,              // () => void — onUnmounted 自动调用
+
+  logger,               // LoggerApi — 带优先级的日志代理
+  getComponent,         // (type) => unknown — 从注册表获取组件（markRaw 包装）
+  isComponentRegistered,// (type) => boolean
+} = useSparkComponent(props.config)
+```
+
+**关键规则**：
+
+| 规则 | 说明 |
+|------|------|
+| `consume()` 返回 `T \| null` | `null` 是正常情况（延迟绑定），不是错误 |
+| `provide()` / `consume()` 是 SPARK 能力系统 | ≠ Vue 的 `provide/inject` |
+| `logger` 自动解析 | 无需 `consume(LOGGER)`，代理自动查找最近祖先 |
+| `initialize` / `destroy` 自动调用 | `onMounted` / `onUnmounted` 内自动触发 |
+
+---
+
+## 4. 能力系统（Capability）
+
+SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 parent 链向上查找（就近原则）。
+
+### 4.1 内置能力键
+
+| 能力键 | 定义包 | 类型 | 典型提供者 |
+|---|---|---|---|
+| `APP_SERVICES` | `spark-utils` | `IAppServicesCapability` — router、logger、租户 | 应用层 |
+| `LOGGER` | `spark-utils` | `LoggerApi` — 自定义日志覆盖 | 任意祖先 |
+| `PAGE_SERVICE` | `spark-utils` | `IPageServiceCapability` — 弹框、导航、消息 | PageRenderer |
+| `SELECTION` | `spark-utils` | `ISelectionCapability` — 选择状态管理 | 容器组件 |
+| `CURRENT_ROW` | `spark-utils` | `ICurrentRowCapability` — 当前行管理 | 容器组件 |
+| `ROW_DATA` | `spark-utils` | `IRowDataCapability` — 行数据访问 | 行组件 |
+| `GRID_EVENTS` | `spark-utils` | `IEventEmitter` — 表格事件总线 | 表格组件 |
+| `ROW_EVENTS` | `spark-utils` | `IEventEmitter` — 行事件总线 | 行组件 |
+| `PAGE_DATASET` | `spark-data` | `IDataSet` — 页面级 DataSet | PageRenderer |
+| `DATA_SOURCE` | `spark-data` | `IDataSource` — 组件级数据视图 | 容器组件 |
+
+### 4.2 消费内置能力
+
+```typescript
+import { useSparkComponent } from '@spark-view/spark-component'
+import { APP_SERVICES, PAGE_SERVICE, SELECTION } from '@spark-view/spark-utils'
+import { PAGE_DATASET } from '@spark-view/spark-data'
+
+const { consume } = useSparkComponent(props.config)
+
+// 路由跳转
+consume(APP_SERVICES)?.router?.push('/detail/1')
+
+// 弹出确认框
+consume(PAGE_SERVICE)?.confirm('确认删除？').then(ok => { if (ok) doDelete() })
+
+// 读取当前选择
+const selectedIds = consume(SELECTION)?.getSelectedIds() ?? []
+
+// 获取页面 DataSet
+const dataSet = consume(PAGE_DATASET)
+```
+
+### 4.3 定义并提供自定义能力
+
+```typescript
+// capability.ts
 import { defineCapability } from '@spark-view/spark-utils'
 
-export interface SelectionApi {
-  getSelectedItems(): any[]
-  selectItem(item: any): void
-  clearSelection(): void
+export interface IMySearchCapability {
+  search(keyword: string): void
+  getKeyword(): string
 }
 
-export const GRID_SELECTION = defineCapability<SelectionApi>('grid-selection')
-export const DATA_PROVIDER = defineCapability<DataProvider>('data-provider')
+export const MY_SEARCH = defineCapability<IMySearchCapability>('app:my-search')
 ```
 
-### 提供能力
+```typescript
+// SearchBar.vue（Provider）
+import { MY_SEARCH } from './capability'
+const { provide } = useSparkComponent(props.config)
+const keyword = ref('')
 
-```vue
-<template>
-  <div class="data-grid">
-    <div v-for="item in selectedItems" :key="item.id">
-      {{ item.name }}
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-component'
-import { GRID_SELECTION } from './capabilities'
-
-const props = defineProps<{
-  config: ComponentContext
-}>()
-
-const { provide, logger } = useSparkComponent(props.config)
-
-const selectedItems = ref<any[]>([])
-
-// 提供选择能力
-provide(GRID_SELECTION, {
-  getSelectedItems: () => selectedItems.value,
-  selectItem: (item: any) => {
-    selectedItems.value.push(item)
-    logger.info('Item selected:', item)
-  },
-  clearSelection: () => {
-    selectedItems.value = []
-    logger.info('Selection cleared')
-  }
+provide(MY_SEARCH, {
+  search: (kw) => { keyword.value = kw },
+  getKeyword: () => keyword.value,
 })
-</script>
 ```
 
-### 消费能力
+```typescript
+// ResultList.vue（Consumer，任意深度子孙）
+import { MY_SEARCH } from './capability'
+const { consume } = useSparkComponent(props.config)
+const search = consume(MY_SEARCH)   // IMySearchCapability | null，类型自动推断
 
-```vue
-<template>
-  <div class="action-bar">
-    <button @click="selectAll">全选</button>
-    <button @click="clearAll">清空</button>
-    <span>已选择 {{ selectedCount }} 项</span>
-  </div>
-</template>
+function handleSearch() {
+  search?.search('keyword')
+}
+```
 
-<script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-component'
-import { GRID_SELECTION } from './capabilities'
+### 4.4 能力查找链示意
 
-const props = defineProps<{
-  config: ComponentConfig
-}>()
+```
+APP (provide APP_SERVICES)
+ └─ PageRenderer (provide PAGE_DATASET, PAGE_SERVICE)
+      └─ 容器组件   (provide DATA_SOURCE, SELECTION)
+           └─ 行组件 (provide ROW_DATA)
+                └─ 子组件 → consume(DATA_SOURCE) ✅ 向上找到容器组件
+                          → consume(APP_SERVICES) ✅ 向上找到 APP
+```
+
+---
+
+## 5. 数据绑定
+
+### 5.1 DataKey 格式
+
+SPARK 以统一的 DataKey 字符串描述数据来源：
+
+```
+{scope}@{tableName}@{viewId}@{field}
+```
+
+| 段数 | 示例 | 说明 |
+|------|------|------|
+| 4 段 | `UserDS@Users@grid@rows` | 完整格式 |
+| 3 段 | `UserDS@Users@rows` | viewId 默认 `default` |
+
+`field` 可选值：`rows`、`currentRow`、`selectedRows`。
+
+### 5.2 解析 DataKey → 数据视图
+
+```typescript
+import { PAGE_DATASET } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
 
 const { consume } = useSparkComponent(props.config)
-
-// 消费选择能力（支持延迟绑定）
-// consume() 返回 T | null，不是 Ref
-const selectionApi = consume(GRID_SELECTION)
-
-const selectedCount = computed(() => {
-  return selectionApi?.getSelectedItems().length ?? 0
-})
-
-const selectAll = () => {
-  // 这里需要从数据源获取所有项
-  // selectionApi?.selectAll()
-}
-
-const clearAll = () => {
-  selectionApi?.clearSelection()
-}
-</script>
-```
-
-## 📊 组件生命周期
-
-SPARK 组件具有完整的生命周期管理：
-
-```vue
-<script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-component'
-import { onMounted, onUnmounted } from 'vue'
-
-const props = defineProps<{
-  config: ComponentContext
-}>()
-
-const { logger, context } = useSparkComponent(props.config)
-
-// 组件挂载
-onMounted(() => {
-  logger.info('Component mounted', {
-    type: context.type,
-    id: context.id
-  })
-
-  // 初始化逻辑
-  initComponent()
-})
-
-// 组件卸载
-onUnmounted(() => {
-  logger.info('Component unmounted')
-
-  // 清理逻辑
-  cleanupComponent()
-})
-
-const initComponent = () => {
-  // 组件初始化逻辑
-}
-
-const cleanupComponent = () => {
-  // 资源清理逻辑
-}
-</script>
-```
-
-## 🎨 样式和主题
-
-SPARK 支持灵活的样式定制：
-
-```vue
-<template>
-  <div :class="componentClasses">
-    <slot />
-  </div>
-</template>
-
-<script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-component'
-import { computed } from 'vue'
-
-interface ThemeConfig extends ComponentConfig {
-  theme?: string
-  size?: string
-}
-
-interface ThemeProvider { currentTheme: string }
-const THEME_PROVIDER = defineCapability<ThemeProvider>('app:theme-provider')
-
-const props = defineProps<{
-  config: ThemeConfig
-}>()
-
-const { consume } = useSparkComponent(props.config)
-
-// 消费主题能力（返回 ThemeProvider | null，不是 Ref）
-const themeProvider = consume(THEME_PROVIDER)
-
-const componentClasses = computed(() => {
-  const classes = ['spark-component']
-
-  // 从配置获取样式
-  if (props.config.theme) {
-    classes.push(`theme-${props.config.theme}`)
-  }
-
-  if (props.config.size) {
-    classes.push(`size-${props.config.size}`)
-  }
-
-  // 从全局主题获取样式
-  if (themeProvider?.currentTheme) {
-    classes.push(`global-theme-${themeProvider.currentTheme}`)
-  }
-
-  return classes
-})
-</script>
-
-<style scoped>
-.spark-component {
-  /* 基础样式 */
-}
-
-.theme-dark {
-  background: #1a1a1a;
-  color: #ffffff;
-}
-
-.theme-light {
-  background: #ffffff;
-  color: #333333;
-}
-
-.size-small {
-  padding: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.size-large {
-  padding: 1.5rem;
-  font-size: 1.125rem;
-}
-</style>
-```
-
-## 🔧 高级特性
-
-### 条件渲染和权限控制
-
-```vue
-<template>
-  <div v-if="isVisible" class="conditional-component">
-    <component :is="dynamicComponent" :config="config" />
-  </div>
-</template>
-
-<script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-component'
-import { computed } from 'vue'
-
-interface PermissionProvider { hasPermission(perm: string): boolean }
-const PERMISSION_PROVIDER = defineCapability<PermissionProvider>('app:permission-provider')
-
-interface ConditionalConfig extends ComponentConfig {
-  condition?: string
-  permissions?: string[]
-  componentType?: string
-}
-
-const props = defineProps<{
-  config: ConditionalConfig
-}>()
-
-const { consume } = useSparkComponent(props.config)
-
-// 消费权限系统（返回 PermissionProvider | null，不是 Ref）
-const permissionProvider = consume(PERMISSION_PROVIDER)
-
-const isVisible = computed(() => {
-  // 检查显示条件
-  if (props.config.condition) {
-    // 这里可以实现复杂的条件判断逻辑
-    return evaluateCondition(props.config.condition)
-  }
-
-  // 检查权限
-  if (props.config.permissions && permissionProvider) {
-    return props.config.permissions.every(perm =>
-      permissionProvider.hasPermission(perm)
-    )
-  }
-
-  return true
-})
-
-const dynamicComponent = computed(() => {
-  if (!props.config.componentType) return null
-
-  // 根据类型动态加载组件
-  return () => import(`./components/${props.config.componentType}.vue`)
-})
-
-const evaluateCondition = (condition: string): boolean => {
-  // 实现条件表达式解析
-  // 这里可以集成表达式引擎
-  return true
-}
-</script>
-```
-
-### 错误处理
-
-```vue
-<template>
-  <div class="error-boundary">
-    <slot v-if="!hasError" />
-    <div v-else class="error-message">
-      <h3>组件加载失败</h3>
-      <p>{{ error.message }}</p>
-      <button @click="retry">重试</button>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-component'
-import { ref, onErrorCaptured } from 'vue'
-
-const props = defineProps<{
-  config: ComponentContext
-}>()
-
-const { logger } = useSparkComponent(props.config)
-
-const hasError = ref(false)
-const error = ref<Error | null>(null)
-
-// 捕获子组件错误
-onErrorCaptured((err, instance, info) => {
-  hasError.value = true
-  error.value = err as Error
-
-  logger.error('Component error captured', {
-    error: err,
-    component: instance,
-    info
-  })
-
-  // 阻止错误继续向上传播
-  return false
-})
-
-const retry = () => {
-  hasError.value = false
-  error.value = null
-
-  logger.info('Retrying component after error')
-}
-</script>
-```
-
-## 📚 最佳实践
-
-### 1. 类型安全
-
-```typescript
-// ✅ 推荐：明确的类型定义
-interface UserGridConfig extends ComponentConfig {
-  title: string
-  columns: ColumnConfig[]
-  dataSource: string
-}
-
-const props = defineProps<{
-  config: UserGridConfig
-}>()
-
-// ❌ 避免：使用 any
-const props = defineProps<{
-  config: any // 不推荐
-}>()
-```
-
-### 2. 能力命名
-
-```typescript
-// ✅ 推荐：使用 Symbol 和描述性名称
-export const USER_GRID_DATA = defineCapability<UserGridData>('user-grid-data')
-export const COLUMN_MANAGER = defineCapability<ColumnManager>('column-manager')
-
-// ❌ 避免：使用字符串常量
-provide('data', data) // 不推荐，容易冲突
-```
-
-### 3. 错误处理
-
-```typescript
-// ✅ 推荐：优雅的错误处理
-const { logger } = useSparkComponent(props.config)
-
-try {
-  await loadData()
-} catch (error) {
-  logger.error('Failed to load data', { error })
-  // 显示用户友好的错误信息
-}
-
-// ❌ 避免：静默失败
-try {
-  await loadData()
-} catch (error) {
-  // 静默处理，可能导致调试困难
-}
-```
-
-### 4. 性能优化
-
-```typescript
-// ✅ 推荐：使用计算属性缓存
-const processedData = computed(() => {
-  return props.config.data?.map(item => ({
-    ...item,
-    displayName: formatName(item)
-  }))
-})
-
-// ❌ 避免：在模板中进行复杂计算
-<template>
-  <div v-for="item in config.data" :key="item.id">
-    {{ item.firstName + ' ' + item.lastName }} <!-- 每次渲染都计算 -->
-  </div>
-</template>
-```
-
-## 🔍 调试技巧
-
-### 启用调试日志
-
-```typescript
-import { Logger } from '@spark-view/spark-utils'
-
-// 创建组件专用 logger
-const logger = Logger('MyComponent')
-
-// 在组件中使用
-logger.debug('Component initialized', { props, config })
-logger.info('Data loaded', { count: data.length })
-logger.warn('Deprecated prop used', { prop: 'oldProp' })
-logger.error('Failed to save', { error })
-```
-
-### 检查能力连接
-
-```typescript
-const { consume, logger } = useSparkComponent(props.config)
-
-// consume() 返回 T | null，不是 Ref
-const dataProvider = consume('data-provider')
-
-// 检查能力是否可用
-if (dataProvider) {
-  logger.debug('Data provider connected')
-} else {
-  logger.warn('Data provider not available, using fallback')
-}
-```
-
-## 📖 相关文档
-
-- [数据管理](DATA_MANAGEMENT.md) - DataSet、视图状态、CRUD
-- [插件配置](PLUGIN_CONFIGURATION.md) - 集成第三方 UI 库
-- [配置系统](CONFIG_SYSTEM.md) - 多租户与远程配置
-Spark.register({
-  type: 'my-chart',
-  name: 'My Chart',
-  loader: () => import('./MyChart.vue')
-})
-```
-
-### 3. 使用组件
-
-```vue
-<template>
-  <my-grid id="grid1" :dataSource="users">
-    <my-column field="name" title="姓名" />
-    <my-column field="age" title="年龄" />
-  </my-grid>
-</template>
-```
-
-## 能力系统
-
-组件通过能力系统通信，避免直接依赖。
-
-### 提供能力
-
-```typescript
-const { provide } = useSparkComponent({ type: 'my-grid' })
-
-provide('columnManager', {
-  addColumn: (col) => columns.value.push(col),
-  removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id),
-  getColumns: () => columns.value
-})
-```
-
-### 消费能力
-
-```typescript
-const { consume } = useSparkComponent({ type: 'my-column' })
-
-// 立即消费（可能为 undefined）
-const columnManager = consume('columnManager')
-
-// consume() 返回 T | null（延迟绑定正常，不是错误）
-// 若需要在 onMounted 后使用：
-onMounted(() => {
-  const mgr = consume('columnManager')
-  mgr?.addColumn({
-    id: props.id,
-    field: props.field,
-    title: props.title
-  })
-})
-```
-
-## 组件生命周期
-
-```vue
-<script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
-
-const { context, logger } = useSparkComponent({ type: 'my-grid' })
-
-onMounted(() => {
-  logger.info('Component mounted')
-  // 初始化逻辑
-})
-
-onUnmounted(() => {
-  logger.info('Component unmounting')
-  // 清理逻辑
-})
-</script>
-```
-
-## 数据绑定
-
-### 绑定 DataSet
-
-```vue
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
-
-const { consume } = useSparkComponent({ type: 'my-grid' })
-
-// 消费页面级 DataSet（通过 PAGE_DATASET 能力键）
-import { PAGE_DATASET, SparkData } from '@spark-view/spark-data'
-
 const dataSet = consume(PAGE_DATASET)
 
-// 解析 DataKey → DataView
-const binding = SparkData.resolveDataKeyBinding('UserDS@Users@default@rows', dataSet)
-const usersView = binding?.kind === 'view' ? binding.source : null
-const rows = computed(() => usersView?.rows || [])
+// resolveDataKeyBinding 返回判别联合（渲染层首选）
+const binding = props.config.dataKey
+  ? SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
+  : null
 
-// 订阅变化
-usersView?.events.on('stateChanged', (event) => {
-  console.log('数据变化:', event)
+// kind === 'view' 时，source 是 IDataSource（DataView 的公开接口）
+const dataSource = binding?.kind === 'view' ? binding.source : null
+
+// 响应式读取行数据
+const rows = computed(() => dataSource?.rows ?? [])
+const currentRow = computed(() => dataSource?.currentRow ?? null)
+```
+
+### 5.3 订阅数据变化
+
+DataView 通过 `events.on('stateChanged', handler)` 通知所有订阅者：
+
+```typescript
+import { onMounted, onUnmounted } from 'vue'
+import type { ViewStateEvent } from '@spark-view/spark-data'
+
+onMounted(() => dataSource?.events.on('stateChanged', handleStateChange))
+onUnmounted(() => dataSource?.events.off('stateChanged', handleStateChange))
+
+function handleStateChange(event: ViewStateEvent) {
+  switch (event.changeType) {
+    case 'rows':         // 行数据变化（16ms 防抖后触发）
+    case 'currentRow':   // 当前行变化（立即触发）— event.row
+    case 'selectedRows': // 选中变化（立即触发）— event.rows
+    case 'requestState': // 加载状态变化
+    case 'cleared':      // 数据已清空
+    case 'mutating':     // CRUD 请求进行中/完成
+  }
+}
+```
+
+`changeType === 'rows'` 有 16ms 防抖（批量合并），其余事件立即触发。
+
+### 5.4 提供 DATA_SOURCE（容器组件模式）
+
+容器组件（如表格）解析 DataKey 后将 `DataView` 向下提供，子组件通过 `consume(DATA_SOURCE)` 获取：
+
+```typescript
+import { DATA_SOURCE, PAGE_DATASET } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
+
+const { provide, consume } = useSparkComponent(props.config)
+
+const dataSet = consume(PAGE_DATASET)
+const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
+const dataView = binding?.kind === 'view' ? binding.source : null
+
+if (dataView) {
+  provide(DATA_SOURCE, dataView)   // 子组件通过 consume(DATA_SOURCE) 获取
+}
+```
+
+---
+
+## 6. DataView 交互
+
+`IDataSource` 是 `DataView` 的公开接口，组件通过 `consume(DATA_SOURCE)` 获得它。
+DataView 内部通过委托层（`SelectionDelegate` / `LocalMutationDelegate` / `CrudDelegate`）处理各类操作，组件无需感知委托细节，直接调用 `DataView` 的公开方法即可。
+
+### 6.1 只读状态
+
+```typescript
+const ds = consume(DATA_SOURCE)
+
+const allRows    = ds?.rows              // IDataRow[]
+const total      = ds?.total            // 服务端总记录数
+const page       = ds?.page
+const pageSize   = ds?.pageSize
+const current    = ds?.currentRow       // IDataRow | null
+const selected   = ds?.selectedRows     // IDataRow[]
+const state      = ds?.requestState     // RequestState 枚举
+const isLoading  = ds?.mutating         // CRUD 请求中
+const err        = ds?.loadingError     // Error | null
+```
+
+### 6.2 选中状态管理
+
+```typescript
+const ds = consume(DATA_SOURCE)
+
+// 当前行
+ds?.setCurrentRow(row)
+ds?.setCurrentRowById(123)         // returns boolean（是否找到）
+
+// 多选
+ds?.setSelectedRows([row1, row2])
+ds?.setSelectedRowsById([1, 2, 3]) // returns 成功匹配数
+ds?.clearSelectedRows()
+ds?.addSelectedRows([newRow])
+ds?.removeSelectedRows([oldRow])
+ds?.addSelectedRowsById([4, 5])
+ds?.removeSelectedRowsById([1])
+
+// 传入 EventContext（可选，用于追踪操作来源）
+import { createEventContext } from '@spark-view/spark-data'
+const ctx = createEventContext('user', { tableName: 'Users', viewId: 'grid' })
+ds?.setCurrentRow(row, ctx)
+```
+
+### 6.3 本地内存变更
+
+本地变更不触发网络请求，但会同步 `currentRow` / `selectedRows` 引用，并发射对应 `stateChanged` 事件：
+
+```typescript
+const ds = consume(DATA_SOURCE)
+
+ds?.appendRow({ id: 999, name: 'New Row' })        // 追加行
+ds?.updateRowById(1, { name: 'Updated Name' })     // returns boolean
+ds?.deleteRowById(1)                               // returns boolean，自动清理选中
+ds?.replaceRows(newRowArray)                       // 整批替换，清理失效引用
+```
+
+> **不要直接修改 `ds?.rows`**——绕过委托层会导致 `selectedRows` 等状态不一致。
+
+### 6.4 网络请求操作
+
+```typescript
+ds?.requestData()                                  // 上行（幂等）
+await ds?.refresh()                                // 下行（强制重新加载）
+await ds?.loadFromServer({ page: 2, pageSize: 20 }) // 直接加载（跳过父依赖检查）
+
+await ds?.createRecord({ name: 'Alice' })
+await ds?.updateRecord(1, { name: 'Alice M.' })
+await ds?.deleteRecord(1)
+await ds?.batchCreateRecords([...])
+await ds?.batchUpdateRecords([...])
+await ds?.batchDeleteRecords([1, 2, 3])
+```
+
+---
+
+## 7. 事件系统
+
+### 7.1 提供事件总线
+
+```typescript
+import { GRID_EVENTS } from '@spark-view/spark-utils'
+
+const { provideEvents } = useSparkComponent(props.config)
+
+const gridEvents = provideEvents(GRID_EVENTS)
+
+// 触发事件（内部使用）
+gridEvents.emit('rowClick', { row, index })
+gridEvents.emit('pageChange', { page: 2 })
+```
+
+### 7.2 消费事件总线
+
+```typescript
+import { GRID_EVENTS } from '@spark-view/spark-utils'
+
+const { consumeEvents } = useSparkComponent(props.config)
+
+// 自动处理挂载/卸载
+consumeEvents(GRID_EVENTS, {
+  rowClick: ({ row }) => console.log('row clicked:', row),
+  pageChange: ({ page }) => console.log('page:', page),
 })
-</script>
 ```
 
-## 事件处理
+### 7.3 手动管理生命周期
 
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{
-  rowClick: [row: any]
-  rowSelect: [rows: any[]]
-}>()
+```typescript
+const gridEvents = consume(GRID_EVENTS)
+const onRowClick = (payload: RowClickPayload) => { /* ... */ }
 
-function handleRowClick(row: any) {
-  emit('rowClick', row)
-}
-
-function handleRowSelect(rows: any[]) {
-  emit('rowSelect', rows)
-}
-</script>
+onMounted(() => gridEvents?.on('rowClick', onRowClick))
+onUnmounted(() => gridEvents?.off('rowClick', onRowClick))
 ```
 
-## 样式隔离
+---
+
+## 8. 日志与调试
+
+`useSparkComponent` 返回的 `logger` 自动按以下优先级解析：
+1. 最近祖先 `provide(LOGGER, impl)` 覆盖
+2. `APP_SERVICES.logger`（应用层统一提供）
+3. Fallback console
+
+```typescript
+const { logger } = useSparkComponent(props.config)
+
+logger.debug('详细调试信息', { state })
+logger.info('初始化完成', { count: rows.length })
+logger.warn('数据源未连接，降级展示空状态')
+logger.error('请求失败', { error })
+```
+
+### 自定义 Logger（子树覆盖）
+
+```typescript
+import { LOGGER } from '@spark-view/spark-utils'
+import { createLogger } from '@spark-view/spark-app'
+
+const { provide } = useSparkComponent(props.config)
+
+// 提供后，所有子孙组件的 logger 将使用此实现
+provide(LOGGER, createLogger({ prefix: '[MySection]', level: 'warn' }))
+```
+
+---
+
+## 9. 样式隔离
+
+使用 `<style scoped>` + BEM 命名：
 
 ```vue
+<template>
+  <div
+    v-if="isVisible"
+    :class="[
+      'spark-my-widget',
+      `spark-my-widget--${props.config.theme ?? 'light'}`,
+      { 'spark-my-widget--disabled': isDisabled }
+    ]"
+  >
+    <div class="spark-my-widget__header">{{ props.config.title }}</div>
+    <div class="spark-my-widget__body"><slot /></div>
+  </div>
+</template>
+
 <style scoped>
-.my-grid {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.my-grid__header {
-  background: #f5f5f5;
-  padding: 8px;
-}
+.spark-my-widget { display: flex; flex-direction: column; }
+.spark-my-widget--disabled { pointer-events: none; opacity: 0.5; }
+.spark-my-widget__header { font-weight: bold; padding: 8px 12px; }
+.spark-my-widget__body { flex: 1; overflow: auto; }
 </style>
 ```
 
-## 类型定义
+---
+
+## 10. 测试
+
+### 10.1 基础挂载
 
 ```typescript
-export interface MyGridProps {
-  id: string
-  dataSource?: any[]
-  columns?: ColumnConfig[]
-  pageSize?: number
-}
+// tests/MyWidget.test.ts
+import { mount } from '@vue/test-utils'
+import { createApp } from 'vue'
+import { describe, it, expect } from 'vitest'
+import { Spark } from '@spark-view/spark-component'
+import MyWidget from '../components/MyWidget.vue'
 
-export interface ColumnConfig {
-  id: string
-  field: string
-  title: string
-  width?: number
-}
+describe('MyWidget', () => {
+  it('renders correctly', () => {
+    const wrapper = mount(MyWidget, {
+      global: { plugins: [Spark.createPlugin()] },  // 必须：提供 ComponentContext 基础设施
+      props: {
+        config: { type: 'my-widget', title: 'Test Widget' }
+      }
+    })
 
-export interface ColumnManager {
-  addColumn: (col: ColumnConfig) => void
-  removeColumn: (id: string) => void
-  getColumns: () => ColumnConfig[]
-}
+    expect(wrapper.find('.spark-my-widget__header').text()).toBe('Test Widget')
+  })
+})
 ```
 
-## 完整示例
-
-参考项目中的 EJ2 组件实现：
-- [features/spark-ej2/components/SparkEJ2Grid.vue](../../../features/spark-ej2/components/SparkEJ2Grid.vue)
-- [features/spark-ej2/components/SparkEJ2Column.vue](../../../features/spark-ej2/components/SparkEJ2Column.vue)
-
-## 构建时组件库生成与AI集成
-
-### 概述
-
-在Vite打包过程中，可以自动生成完整的Vue组件资源库，提取组件的属性配置信息（如props、events、slots等），并上传到服务端。这为AI提供组件元数据的上下文，通过MCP协议让AI了解和使用这些组件，增强低代码开发中的辅助能力。
-
-### 可行性分析
-
-- **技术基础**：
-  - Vite插件支持：在打包生命周期中钩入，扫描Vue组件文件并提取元数据。
-  - 组件元数据提取：使用`vue-docgen`或自定义AST解析提取props、events等信息。
-  - 资源库生成：生成JSON文件包含所有组件元数据。
-  - 上传到服务端：在打包完成后通过HTTP上传数据。
-  - AI边界与MCP：将元数据作为MCP工具上下文，让AI查询组件信息。
-
-- **潜在挑战**：
-  - 动态组件：确保覆盖所有注册组件。
-  - 性能：大型项目可通过缓存优化。
-  - 安全性：确保上传时的认证安全。
-
-### 实现方案
-
-#### 步骤1: 安装依赖
-
-```bash
-pnpm add -D vue-docgen-api axios
-```
-
-#### 步骤2: 配置Vite插件
-
-在`vite.config.ts`中添加插件：
+### 10.2 能力系统测试
 
 ```typescript
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
-import fs from 'fs'
-import axios from 'axios'
-import { buildComponentDocs } from 'vue-docgen-api'
+import { Spark } from '@spark-view/spark-component'
+import { MY_SEARCH } from '../capability'
 
-export default defineConfig({
-  plugins: [
-    vue(),
-    {
-      name: 'generate-component-library',
-      buildStart() {
-        console.log('开始生成Vue组件资源库...')
-      },
-      async generateBundle(options, bundle) {
-        const componentLibrary = {}
-        
-        // 扫描组件目录
-        const componentDir = resolve(__dirname, 'packages/spark-component/src/components')
-        const files = fs.readdirSync(componentDir).filter(f => f.endsWith('.vue'))
-        
-        for (const file of files) {
-          const filePath = resolve(componentDir, file)
-          
-          // 提取元数据
-          const docs = await buildComponentDocs(filePath)
-          componentLibrary[file.replace('.vue', '')] = {
-            props: docs.props || [],
-            events: docs.events || [],
-            slots: docs.slots || [],
-            description: docs.description || ''
-          }
-        }
-        
-        // 生成JSON文件
-        const libraryPath = 'component-library.json'
-        fs.writeFileSync(libraryPath, JSON.stringify(componentLibrary, null, 2))
-        
-        // 上传到服务端
-        try {
-          await axios.post('https://your-server.com/api/upload-component-library', {
-            data: componentLibrary
-          }, {
-            headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
-          })
-          console.log('组件资源库已上传到服务端')
-        } catch (error) {
-          console.error('上传失败:', error)
-        }
+it('provides and consumes capability', () => {
+  const { createContext } = Spark.createSystem()   // 隔离注册表（测试专用）
+
+  const rootCtx = createContext(null, { type: 'root' })
+  const providerCtx = createContext(rootCtx, { type: 'provider' })
+  const consumerCtx = createContext(providerCtx, { type: 'consumer' })
+
+  // 模拟 provide
+  const searchImpl = { search: vi.fn(), getKeyword: () => 'test' }
+  providerCtx.capabilities.set(MY_SEARCH.key, searchImpl)
+
+  // 验证 consume 沿 parent 链查找
+  const found = consumerCtx.capabilities.lookup(MY_SEARCH.key)
+  expect(found).toBe(searchImpl)
+  expect(found?.getKeyword()).toBe('test')
+})
+```
+
+### 10.3 DataView 数据绑定测试
+
+```typescript
+import { SparkData } from '@spark-view/spark-data'
+
+it('resolves DataKey to rows', () => {
+  const dataSet = SparkData.createDataSet({
+    dataSetName: 'Test',
+    tables: {
+      Items: {
+        tableName: 'Items',
+        columns: [{ name: 'id', type: 'number', primaryKey: true }],
+        rows: [{ id: 1 }, { id: 2 }]
       }
     }
-  ]
+  })
+
+  const binding = SparkData.resolveDataKeyBinding('Test@Items@rows', dataSet)
+  expect(binding?.kind).toBe('view')
+  if (binding?.kind === 'view') {
+    expect(binding.source.rows).toHaveLength(2)
+  }
 })
 ```
-
-#### 步骤3: 配置MCP工具
-
-在MCP服务器中添加工具查询组件元数据，例如：
-- 工具名：`get-component-info`
-- 输入：组件名
-- 输出：JSON数据
-
-#### 步骤4: 测试与优化
-
-运行`pnpm run build`测试，验证生成和上传。
-
-### 潜在扩展
-
-- 集成到SPARK系统：与`Spark.register()`结合。
-- AI增强：提供组件推荐和代码生成。
-- 其他工具：使用`vue-component-meta`提取TypeScript类型。
-
-## 更多信息
-
-- [数据管理指南](DATA_MANAGEMENT.md)
 
 ---
 
-## 能力系统
+## 11. 最佳实践与规范
 
-组件间通过能力系统通信，基于 Provider/Consumer 模式，避免紧耦合。
-
-### 提供能力
+### 11.1 组件 type 命名
 
 ```typescript
-const { provide } = useSparkComponent({ type: 'my-grid' })
+// ✅ 必须 kebab-case
+Spark.register('user-detail-form', ...)
+Spark.register('spark-ej2-grid', ...)
 
-provide('columnManager', {
-  addColumn: (col) => columns.value.push(col),
-  removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id),
-  getColumns: () => columns.value
-})
-
-provide('dataSource', {
-  getData: () => rows.value,
-  setData: (data) => rows.value = data,
-  refresh: async () => { rows.value = await fetchData() }
-})
+// ❌ 禁止
+Spark.register('UserDetailForm', ...)
+Spark.register('userDetailForm', ...)
 ```
 
-### 消费能力
+### 11.2 Config 接口设计
 
 ```typescript
-const { consume } = useSparkComponent({ type: 'my-column' })
+// ✅ 继承 ComponentConfig，只声明本组件需要的字段
+interface MyGridConfig extends ComponentConfig {
+  dataKey?: string          // DataKey 字符串
+  pageSize?: number
+  showPagination?: boolean
+}
 
-// 立即消费（可能 undefined）
-const mgr = consume('columnManager')
-mgr?.addColumn({ id: '1', field: 'name' })
-
-// 在 onMounted 后执行（推荐）
-onMounted(() => {
-  consume('columnManager')?.addColumn({ id: props.id, field: props.field })
-})
+// ✅ 组件内提供默认值
+const pageSize = computed(() => props.config.pageSize ?? 20)
 ```
 
-### 能力查找规则
-
-沿父子关系向上查找，就近原则：
-
-```
-Page (提供 logger)
-  └─ Container (提供 dataSet)
-       └─ Grid (提供 columnManager)
-            └─ Column → consume('columnManager') ✅ 找到 Grid 的
-                       → consume('dataSet') ✅ 找到 Container 的
-                       → consume('logger') ✅ 找到 Page 的
-```
-
-### 类型安全
+### 11.3 consume 空值安全
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-utils'
+// ✅ 延迟绑定：在 onMounted 后使用
+onMounted(() => consume(COLUMN_MANAGER)?.addColumn({ id: props.id, field: props.field }))
 
-// 定义能力键
-const COLUMN_MANAGER = defineCapability<ColumnManagerCapability>('spark:column-manager')
+// ✅ 空值安全：用 ?. 链式调用
+const rows = computed(() => consume(DATA_SOURCE)?.rows ?? [])
 
-// 提供
-provide(COLUMN_MANAGER, { addColumn, removeColumn, getColumns })
-
-// 消费
-const mgr = consume(COLUMN_MANAGER)  // 类型自动推断
+// ❌ 非空断言——可能为 null
+const mgr = consume(COLUMN_MANAGER)!   // 危险
 ```
 
-### 完整 Grid + Column 示例
+### 11.4 行数据变更通过 DataView 方法（不要直接改 rows）
+
+```typescript
+// ✅ 使用受控方法（SelectionDelegate / LocalMutationDelegate 保证一致性）
+dataView.appendRow({ id: newId, name: 'Alice' })
+dataView.updateRowById(1, { name: 'Alice M.' })
+dataView.deleteRowById(1)
+dataView.replaceRows(newRowArray)
+
+// ❌ 直接修改 rows 绕过委托层，selectedRows 等状态会不一致
+dataView.rows.push({ id: newId, name: 'Alice' })   // 禁止
+dataView.rows.splice(0, 1)                          // 禁止
+```
+
+### 11.5 避免组件间直接实例引用
+
+```typescript
+// ✅ 通过能力系统通信
+consume(SELECTION)?.selectAll()
+
+// ❌ 通过 ref 直接耦合另一组件实例
+gridRef.value?.selectAll()
+```
+
+### 11.6 Commit scope 规范
+
+| 修改范围 | scope |
+|---------|-------|
+| `packages/spark-component/` | `spark-component` |
+| `packages/spark-data/` | `spark-data` |
+| `packages/spark-utils/` | `spark-utils` |
+| `packages/spark-app/` | `spark-app` |
+| `packages/spark-page-config/` | `spark-page-config` |
+| `docs/` / `scripts/` / 构建配置 | `docs` / `scripts` |
+
+---
+
+## 12. 使用 Plop 脚手架
+
+项目提供 Plop 模板快速创建符合规范的组件骨架：
+
+```bash
+pnpm run plop
+# 选择 "component" 模板，按提示输入组件名称
+# 自动生成：
+#   src/components/MyComponent/MyComponent.vue
+#   src/components/MyComponent/MyComponent.test.ts
+#   src/components/MyComponent/MyComponent.stories.ts
+```
+
+生成的文件已包含：
+- 正确的 `ComponentConfig` 继承
+- `useSparkComponent` 调用骨架
+- Vitest 测试文件（含 `Spark.createPlugin()` 挂载模板）
+- 基础 JSDoc 注释
+
+---
+
+## 13. 附录：完整示例——主从表组件
+
+展示 DataView 选中驱动子视图级联的完整模式。
+
+### 配置（rule.json）
+
+```json
+{
+  "type": "panel",
+  "children": [
+    {
+      "type": "master-grid",
+      "dataKey": "PageDS@Orders@grid@rows"
+    },
+    {
+      "type": "detail-grid",
+      "dataKey": "PageDS@OrderItems@detail@rows"
+    }
+  ]
+}
+```
+
+```json
+// DataSet relations 配置
+{
+  "relations": [{
+    "name": "OrderItems",
+    "parentTable": "Orders",
+    "childTable": "OrderItems",
+    "parentViewId": "grid",
+    "childViewId": "detail",
+    "dependencyType": "currentRow",
+    "parentField": "id",
+    "childField": "orderId"
+  }]
+}
+```
+
+### 主表组件
 
 ```vue
-<!-- Grid.vue（提供能力） -->
+<!-- MasterGrid.vue -->
 <script setup lang="ts">
-const columns = ref<ColumnConfig[]>([])
-const { provide } = useSparkComponent({ type: 'my-grid' })
-provide('columnManager', {
-  addColumn: (col) => columns.value.push(col),
-  removeColumn: (id) => columns.value = columns.value.filter(c => c.id !== id),
-  getColumns: () => columns.value
-})
-</script>
+import { computed } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
-<!-- Column.vue（消费能力） -->
+interface MasterGridConfig extends ComponentConfig {
+  dataKey: string
+}
+
+const props = defineProps<{ config: MasterGridConfig }>()
+const { consume, provide, logger } = useSparkComponent(props.config)
+
+const dataSet = consume(PAGE_DATASET)
+const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
+const ds = binding?.kind === 'view' ? binding.source : null
+
+// 向子组件提供数据源
+if (ds) provide(DATA_SOURCE, ds)
+
+const rows = computed(() => ds?.rows ?? [])
+
+function onRowClick(row: any) {
+  ds?.setCurrentRow(row)    // SelectionDelegate 处理，自动发射 stateChanged('currentRow')
+  logger.info('currentRow changed', { id: row.id })
+}
+</script>
+```
+
+### 明细表组件
+
+```vue
+<!-- DetailGrid.vue -->
+<!-- 级联由 DataSet relation 驱动（CascadeDelegate 自动订阅父表 stateChanged('currentRow')） -->
+<!-- 无需手动订阅——只需在 DataSet.relations 中正确配置 dependencyType: 'currentRow' -->
 <script setup lang="ts">
-const props = defineProps<{ id: string; field: string }>()
-const { consume } = useSparkComponent({ type: 'my-column' })
-// 在挂载后注册（父组件已就绪）
-onMounted(() => consume('columnManager')?.addColumn({ id: props.id, field: props.field }))
-onUnmounted(() => consume('columnManager')?.removeColumn(props.id))
+import { computed } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { PAGE_DATASET } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
+import type { ComponentConfig } from '@spark-view/spark-component'
+
+interface DetailGridConfig extends ComponentConfig {
+  dataKey: string
+}
+
+const props = defineProps<{ config: DetailGridConfig }>()
+const { consume } = useSparkComponent(props.config)
+
+const dataSet = consume(PAGE_DATASET)
+const binding = SparkData.resolveDataKeyBinding(props.config.dataKey, dataSet)
+const ds = binding?.kind === 'view' ? binding.source : null
+
+// 父表 currentRow 变化时 CascadeDelegate 自动触发 refresh()
+const rows = computed(() => ds?.rows ?? [])
 </script>
 ```
 
 ---
 
-## 能力树架构
+## 相关文档
 
-SPARK 从应用层到子组件形成完整的能力树，每个节点都是 `ICapabilityContext`。
-
-```
-APP                         ← provide(APP_SERVICES)
-  └─ Page                   ← provide(PAGE_SERVICE)
-       └─ DataSet           ← provide(DATA_SET)
-            └─ DataTable    ← provide(DATA_TABLE)
-                 └─ DataView ← provide(DATA_VIEW)
-                      └─ 组件 (useSparkComponent)
-                           └─ 子组件
-```
-
-### 能力键定义
-
-```typescript
-// packages/spark-utils/src/capability/symbols.ts
-export const DATA_SET    = defineCapability<IDataSetCapability>('spark:capability:dataset')
-export const DATA_TABLE  = defineCapability<IDataTableCapability>('spark:capability:datatable')
-export const DATA_VIEW   = defineCapability<IDataViewCapability>('spark:capability:dataview')
-export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capability:app-services')
-export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capability:page-service')
-```
-
-### parent 链建立
-
-```typescript
-// DataSet 构造：为每个 table 设置 parent
-table.setDataSet(this)  // table.parent = dataSet, view.parent = table
-
-// DataView 构造：注册 DATA_VIEW 能力（受控门面，不暴露 DataView 类实例）
-setCapability(this, DATA_VIEW, {
-  tableName, viewId,
-  get rows() { ... },       // 响应式 getter
-  get currentRow() { ... },
-  setCurrentRow(row) { ... },      // 受控操作
-  setSelectedRows(rows) { ... },
-  requestData() { ... },
-  get parentRelations() { ... },   // 懒解析父视图上下文
-})
-
-// lookup 沿 parent 链查找：DataView → DataTable → DataSet → Page → APP
-lookup(componentCtx, DATA_SET)
-```
-
-### 级联机制
-
-子视图通过 `setupCascade()` 订阅父视图 `stateChanged` 事件，完全遵循 SOLID（子订阅父，父不知道子）。
-
-| dependencyType | 数据范围 | 典型场景 |
-|---------------|---------|---------|
-| `'currentRow'` | 父视图当前行 | 主从表 |
-| `'selectedRows'` | 父视图选中行 | 批量关联查询 |
-| `'allRows'` | 父视图全部行 | 汇总/统计 |
-| `'pagedRows'` | 父视图当前页 | 分页联动 |
+- [数据管理指南](DATA_MANAGEMENT.md) — DataSet / DataView / CRUD / 主键生成器
+- [数据加载与绑定](DATA_LOADING_AND_BINDING.md) — DataKey 解析、视图绑定
+- [插件配置](PLUGIN_CONFIGURATION.md) — element-plus / vxe-table 集成
+- [配置系统](CONFIG_SYSTEM.md) — 多租户与远程配置加载
+- [测试最佳实践](TESTING_BEST_PRACTICES.md) — Vitest + @vue/test-utils 完整规范
+- [快速开始](QUICKSTART.md) — 应用级初始化流程
