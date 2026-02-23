@@ -482,7 +482,9 @@ export class FileLoader {
     if (this.opts.storage === 'memory') return
     const s = this.storage
     if (!s) return
-    Object.keys(s).filter(k => k.startsWith(this.opts.cachePrefix)).forEach(k => s.removeItem(k))
+    for (const k of Object.keys(s)) {
+      if (k.startsWith(this.opts.cachePrefix)) s.removeItem(k)
+    }
   }
 }
 

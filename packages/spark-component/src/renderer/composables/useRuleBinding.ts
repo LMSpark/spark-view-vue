@@ -92,7 +92,7 @@ function syncSelectedRowsToTable(
       table.clearSelection?.()
     } else {
       table.clearSelection?.()
-      rows.forEach(row => table.toggleRowSelection?.(row, true))
+      for (const row of rows) table.toggleRowSelection?.(row, true)
     }
   })
 }

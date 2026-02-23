@@ -171,9 +171,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   ): IEventEmitter | null {
     const emitter = lookup<IEventEmitter>(context, name)
     if (emitter) {
-      Object.entries(handlers).forEach(([event, handler]) => {
+      for (const [event, handler] of Object.entries(handlers)) {
         emitter.on(event, handler)
-      })
+      }
       return emitter
     }
     logger.debug(`[spark] event capability not found: ${String(name)}`)
