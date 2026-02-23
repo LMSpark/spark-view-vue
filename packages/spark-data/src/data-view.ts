@@ -35,6 +35,7 @@ import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
 import { Logger, createEventEmitter } from '@spark-view/spark-utils'
+import { bus } from './event-bus'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
@@ -765,26 +766,18 @@ export class DataView implements IDataSource {
    * 状态变更 → 发射 stateChanged → UI + 子视图级联均通过 events 接收
    * 
    * @param row - 要设置的行（null 表示清空）
-   * @param context - 事件上下文（可选，未提供时自动生成）
    */
-  setCurrentRow(
-    row: IDataRow | null, 
-    context?: EventContext
-  ): void {
+  setCurrentRow(row: IDataRow | null, context?: EventContext): void {
     if (this.currentRow === row) return
     
     this.currentRow = row
     this.currentRowIndex = row === null ? null : this.rows.indexOf(row)
     if (this.currentRowIndex === -1) this.currentRowIndex = null
     
-    // ✅ 如果未提供 context，自动生成一个
-    const eventContext = context ?? createEventContext(
-      'program', 
-      { tableName: this.tableName, viewId: this.viewId }
-    )
-    
-    // 发射事件，透传 context
+    // 使用调用方传入的上下文（携带 source='ui'/'sync' 等），否则默认 'program'
+    const eventContext = context ?? createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
     this.emitStateChanged('currentRow', { row, context: eventContext })
+    bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row, context: eventContext })
     
     // ✅ 如果启用了 syncCurrentToSelected，自动将当前行同步到选中行
     // 注意：setSelectedRows 内部有幂等检查，如果内容相同不会重复发射事件
@@ -805,13 +798,9 @@ export class DataView implements IDataSource {
    * 设置多选行（幂等：内容不变时跳过）
    * 
    * @param rows - 要设置的行数组
-   * @param context - 事件上下文（可选，未提供时自动生成）
    */
-  setSelectedRows(
-    rows: IDataRow[], 
-    context?: EventContext
-  ): void {
-    // ✅ 修复：防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
+  setSelectedRows(rows: IDataRow[], context?: EventContext): void {
+    // 防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
     if (!Array.isArray(rows)) {
       this.logger.warn('setSelectedRows 收到非数组参数', { rows, tableName: this.tableName, viewId: this.viewId })
       return
@@ -829,21 +818,15 @@ export class DataView implements IDataSource {
       .map(r => this.rowIndexMap?.get(r) ?? -1)
       .filter(i => i !== -1)
     
-    // ✅ 如果未提供 context，自动生成一个
-    const eventContext = context ?? createEventContext(
-      'program', 
-      { tableName: this.tableName, viewId: this.viewId }
-    )
-    
-    // 发射事件，透传 context
+    const eventContext = context ?? createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
     this.emitStateChanged('selectedRows', { rows: [...rows], context: eventContext })
+    bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...rows], context: eventContext })
   }
 
   /**
    * 根据主键设置当前行
    * 
    * @param id - 主键值
-   * @param context - 事件上下文（可选，未提供时自动生成）
    * @returns 是否成功（行不存在时返回 false）
    */
   setCurrentRowById(

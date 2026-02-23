@@ -11,7 +11,8 @@ import { ref, type Ref, onUnmounted } from 'vue'
 import { nextTick } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import type { IDataSet, IDataRow } from '@spark-view/spark-data'
-import { subscribeViewStateChanges } from '@spark-view/spark-data'
+import { bus } from '@spark-view/spark-data'
+import type { ViewCurrentRowPayload, ViewSelectedRowsPayload } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
 import type { Rule } from '../types'
 
@@ -26,8 +27,7 @@ interface ElTableComponent extends HTMLElement {
   setCurrentRow?: (row: IDataRow | null) => void
 }
 
-// 防止 DataSet→UI 同步触发 UI→DataSet 反向同步的标志
-let isSyncingToUI = false
+// 旧的同步标志已废弃；事件上下文带有 source='sync' 便可防止循环
 
 /**
  * 将 DataSet 当前行同步到 el-table UI（DataSet → UI 方向）。
@@ -52,16 +52,10 @@ function syncCurrentRowToTable(
     const table = formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
     if (!table) return
     
-    // ✅ 设置临时标志，防止 setCurrentRow 触发的 currentChange 调用 DataSet API
-    // （虽然幂等检查会阻止真正的循环，但此标志可避免不必要的调用）
-    isSyncingToUI = true
-    try {
-      table.setCurrentRow?.(row)
-      const rowId = row ? (row as Record<string, unknown>)['id'] : null
-      pageLogger.debug('✅ [DataSet→UI] 同步 currentRow 到 el-table', { tableName, viewId, rowId })
-    } finally {
-      isSyncingToUI = false
-    }
+    // 直接同步，无需任何临时标志
+    table.setCurrentRow?.(row)
+    const rowId = row ? (row as Record<string, unknown>)['id'] : null
+    pageLogger.debug('✅ [DataSet→UI] 同步 currentRow 到 el-table', { tableName, viewId, rowId })
   })
 }
 
@@ -88,29 +82,16 @@ function syncSelectedRowsToTable(
     const table = formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
     if (!table) return
     
-    // ✅ 设置临时标志，防止 toggleRowSelection 触发的 selectionChange 调用 DataSet API
-    isSyncingToUI = true
-    try {
-      if (rows.length === 0) {
-        table.clearSelection?.()
-      } else {
-        table.clearSelection?.()
-        rows.forEach(row => table.toggleRowSelection?.(row, true))
-      }
-    } finally {
-      isSyncingToUI = false
+    // 直接同步选中状态到表格
+    if (rows.length === 0) {
+      table.clearSelection?.()
+    } else {
+      table.clearSelection?.()
+      rows.forEach(row => table.toggleRowSelection?.(row, true))
     }
   })
 }
 
-/**
- * 检查当前是否正在执行 DataSet→UI 同步
- * 
- * 用于 bindRules.ts 中过滤由 el-table API 副作用触发的事件。
- */
-export function isCurrentlySyncingToUI(): boolean {
-  return isSyncingToUI
-}
 
 // ─── 公共接口 ─────────────────────────────────────────────────────────────────
 
@@ -164,50 +145,22 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
     // injectTableEvents 已在上方 bindDataToRules 中为每个 el-table 创建 DataView；
     // 现在订阅所有视图的 stateChanged，驱动 DataSet → el-table UI 方向。
     if (dataSet.value) {
-      // ✅ 记录正在处理的事件 ID（用于循环检测）
-      // 使用 Set<number | string> 支持不同类型的 eventId
-      const processingEvents = new Set<number | string>()
-      
-      cleanupSync = subscribeViewStateChanges(
-        dataSet.value,
-        (tableName, viewId, event) => {
-          // ✅ 精确的循环检测：基于唯一 eventId
-          if (processingEvents.has(event.context.eventId)) {
-            pageLogger.warn('🔄 [防循环] 检测到事件循环，退出', { 
-              tableName, 
-              viewId, 
-              changeType: event.changeType,
-              eventId: event.context.eventId,
-              source: event.context.source,
-              meta: event.context.meta
-            })
-            return
-          }
-          
-          // 标记为正在处理
-          processingEvents.add(event.context.eventId)
-          
-          // ✅ 优化：UI 触发的事件直接跳过（已是最新状态）
-          if (event.context.source === 'ui') {
-            pageLogger.debug('⏭️ [防循环] 跳过 UI 触发的事件（已是最新状态）', { 
-              tableName, viewId, changeType: event.changeType 
-            })
-            processingEvents.delete(event.context.eventId)
-            return
-          }
-          
-          try {
-            if (event.changeType === 'currentRow') {
-              syncCurrentRowToTable(tableName, viewId, event.row ?? null, formApi.value)
-            } else if (event.changeType === 'selectedRows') {
-              syncSelectedRowsToTable(tableName, viewId, event.rows ?? [], formApi.value)
-            }
-          } finally {
-            // ✅ 处理完成后移除标记
-            processingEvents.delete(event.context.eventId)
-          }
-        }
-      )
+      // 使用全局 bus 订阅 DataView 状态变化，驱动 el-table UI 同步（DataSet → UI 方向）
+      // source='ui' 表示事件源自 UI 操作，无需反向同步回 UI（防止死循环）
+      const currentRowHandler = (payload: ViewCurrentRowPayload) => {
+        if (payload.context.source === 'ui') return
+        syncCurrentRowToTable(payload.tableName, payload.viewId, payload.row ?? null, formApi.value)
+      }
+      const selectedRowsHandler = (payload: ViewSelectedRowsPayload) => {
+        if (payload.context.source === 'ui') return
+        syncSelectedRowsToTable(payload.tableName, payload.viewId, payload.rows ?? [], formApi.value)
+      }
+      bus.on('view:currentRow', currentRowHandler)
+      bus.on('view:selectedRows', selectedRowsHandler)
+      cleanupSync = () => {
+        bus.off('view:currentRow', currentRowHandler)
+        bus.off('view:selectedRows', selectedRowsHandler)
+      }
     }
   }
 
