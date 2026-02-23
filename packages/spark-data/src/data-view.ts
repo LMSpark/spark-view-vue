@@ -400,6 +400,9 @@ export class DataView implements IDataSource {
 
     // 逐个父视图检查依赖是否满足
     const parents = this.dataSet.getParentRelations(this.tableName, this.viewId) ?? []
+
+    // 合并两轮循环：检查父依赖就绪度的同时缓存视图和行数据，避免 getView/getParentRows 二次调用
+    const resolvedParents: Array<{ rel: (typeof parents)[number]; pView: DataView; rows: IDataRow[] }> = []
     for (const rel of parents) {
       const pView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!pView) continue
@@ -416,14 +419,12 @@ export class DataView implements IDataSource {
         this.emitStateChanged('requestState')
         return
       }
+      resolvedParents.push({ rel, pView, rows: parentRows })
     }
 
-    // 按各关系的 filterExpression 组装查询参数
+    // 按各关系的 filterExpression 组装查询参数（复用 resolvedParents，无需二次 getView/getParentRows）
     const params: QueryParams = {}
-    for (const rel of parents) {
-      const pView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
-      if (!pView) continue
-      const parentRows = getParentRows(pView, rel.dependencyType)
+    for (const { rel, rows: parentRows } of resolvedParents) {
       if (!parentRows.length) continue
       const expr = rel.filterExpression
       if (!expr) continue
@@ -616,7 +617,11 @@ export class DataView implements IDataSource {
     
     const newRow = { ...oldRow, ...data }
     this.rows[idx] = newRow
-    this.rowIndexMap = undefined   // 行引用已替换，缓存失效
+    // 行引用已替换：在 Map 中原地更新 O(1)，避免 setSelectedRows 时全量重建
+    if (this.rowIndexMap) {
+      this.rowIndexMap.delete(oldRow)
+      this.rowIndexMap.set(newRow, idx)
+    }
 
     const ctx = this._mkCtx()
     // 同步更新选中状态的引用，并发射对应事件（引用已变，UI 需感知）
@@ -758,7 +763,8 @@ export class DataView implements IDataSource {
     if (this.currentRow === row) return
     
     this.currentRow = row
-    this.currentRowIndex = row === null ? null : this.rows.indexOf(row)
+    // rowIndexMap 已构建时 O(1) 查找，未构建时回退到 O(n) indexOf
+    this.currentRowIndex = row === null ? null : (this.rowIndexMap?.get(row) ?? this.rows.indexOf(row))
     if (this.currentRowIndex === -1) this.currentRowIndex = null
     
     // 使用调用方传入的上下文（携带 source='ui'/'sync' 等），否则默认 'program'
