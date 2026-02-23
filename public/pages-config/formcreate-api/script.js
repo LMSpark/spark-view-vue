@@ -9,8 +9,11 @@
 
 // 添加日志
 function addLog(message, type = 'info') {
-  const pageData = $data
+  const pageData = $data || {}
   const timestamp = new Date().toLocaleTimeString()
+  
+  // ensure array exists (防止 ${pageData} 还未初始化时调用)
+  pageData.apiLog = pageData.apiLog || []
   
   pageData.apiLog.unshift({
     time: timestamp,
