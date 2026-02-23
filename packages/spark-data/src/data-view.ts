@@ -732,7 +732,7 @@ export class DataView implements IDataSource {
     this.currentRowIndex = null
     this.selectedRows.splice(0, this.selectedRows.length)
     this.selectedRowIndices = []
-    this.rowIndexMap = undefined
+    // rowIndexMap 已由 updateFromServer() 清零（updateFromServer 总在本方法之前被调用），无需重复清零
 
     const firstRow = this.rows[0] ?? null
     const autoCtx = createEventContext('auto', { tableName: this.tableName, viewId: this.viewId })
@@ -944,10 +944,12 @@ export class DataView implements IDataSource {
     
     if (rows.length === 0) return 0
     
-    // 构建现有选中行的 Set（使用主键去重）
-    const selectedSet = new Set(
-      this.selectedRows.map(r => this.getPrimaryKeyValue(r)).filter(pk => pk !== undefined)
-    )
+    // 构建现有选中行的主键 Set（单次遍历，避免 .map().filter() 双遍历）
+    const selectedSet = new Set<string | number>()
+    for (const r of this.selectedRows) {
+      const pk = this.getPrimaryKeyValue(r)
+      if (pk !== undefined) selectedSet.add(pk)
+    }
     
     // 过滤出真正需要添加的行（不在现有选中集中）
     const toAdd = rows.filter(r => {

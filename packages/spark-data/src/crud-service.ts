@@ -412,7 +412,12 @@ export class CrudService {
       headers['X-Instance-Permission-Token'] = config.instancePermission.permissionToken
     }
 
-    const result: Partial<RequestConfig> = { headers }
+    const result: Partial<RequestConfig> = {}
+
+    // 只在有实际 header 时才附加，避免传递空 headers 对象
+    if (Object.keys(headers).length > 0) {
+      result.headers = headers
+    }
 
     if (config.timeout !== undefined) {
       result.timeout = config.timeout
