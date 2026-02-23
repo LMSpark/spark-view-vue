@@ -8,7 +8,6 @@
     "description": "SPARK Component System - 组件核心（能力系统、组件管理器、组件注册表）",
     "files": [
         "dist",
-        "src",
         "API.md",
         "README.md"
     ],
