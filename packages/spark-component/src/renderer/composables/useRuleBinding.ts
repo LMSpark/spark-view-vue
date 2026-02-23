@@ -13,6 +13,7 @@ import { Logger } from '@spark-view/spark-utils'
 import type { IDataSet, IDataRow } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
 import type { Rule } from '../types'
+import type { ComponentRegistry } from '../../core/types.js'
 
 const pageLogger = Logger('PageRenderer')
 
@@ -108,6 +109,8 @@ export interface UseRuleBindingOptions {
   // Note: formApi 使用 any 类型以避免与 form-create 官方复杂类型定义冲突
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formApi: Ref<any>
+  /** 组件注册表（可选）——用于 dataKey 行为查询，替代硬编码的内置组件白名单 */
+  registry?: ComponentRegistry
 }
 
 export interface UseRuleBindingReturn {
@@ -119,7 +122,7 @@ export interface UseRuleBindingReturn {
 // ─── Composable ───────────────────────────────────────────────────────────────
 
 export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingReturn {
-  const { originalRules, pageData, pageFunctions, dataSet, formApi } = options
+  const { originalRules, pageData, pageFunctions, dataSet, formApi, registry } = options
   const boundRules = ref<unknown[]>([])
   let cleanupSync: (() => void) | null = null
 
@@ -138,7 +141,8 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       rules: originalRules.value as unknown as Rule[],
       pageData,
       pageFunctions: pageFunctions.value,
-      dataSet: dataSet.value
+      dataSet: dataSet.value,
+      ...(registry !== undefined ? { registry } : {})
     }) as unknown[]
 
     // 创建新数组强制触发响应式更新

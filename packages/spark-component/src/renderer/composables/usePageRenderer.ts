@@ -26,13 +26,14 @@
  * ```
  */
 
-import { ref, reactive, onMounted, watch, nextTick, h, type Ref, type Component } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick, h, inject, type Ref, type Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
 import type { IDataSet } from '@spark-view/spark-data'
 import { SparkData, PAGE_DATASET } from '@spark-view/spark-data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSparkComponent } from '../../composables/useSparkComponent'
+import { SPARK_REGISTRY_KEY } from '../../core/types.js'
 import { usePageDataSet } from './usePageDataSet'
 import type { PageRendererOptions, PageContext, Rule, FormCreateAPI, PageConfig } from '../types'
 import { useCssScope } from './useCssScope'
@@ -109,13 +110,16 @@ export function usePageRenderer(
     id: 'page-renderer-root'
   })
 
+  // 获取组件注册表（用于 bindRules 查询 dataKey 行为元数据）
+  const registry = inject(SPARK_REGISTRY_KEY, undefined)
+
   provideCapability(APP_SERVICES, buildAppServices(router, pageLogger))
 
   // 构建 PAGE_SERVICE 能力（优先使用 props 注入，回退到 element-plus）
   const pageService: IPageServiceCapability = {
     showMessage: (message, type = 'info') => {
       if (props.messageService) {
-        const fn = props.messageService[type as keyof NonNullable<typeof props.messageService>]
+        const fn = props.messageService[type]
         if (typeof fn === 'function') { fn(message); return }
       }
       ElMessage({ message, type })
@@ -187,7 +191,8 @@ export function usePageRenderer(
     pageData,
     pageFunctions,
     dataSet,
-    formApi
+    formApi,
+    ...(registry !== undefined ? { registry } : {})
   })
 
   // ==================== 页面上下文 ====================

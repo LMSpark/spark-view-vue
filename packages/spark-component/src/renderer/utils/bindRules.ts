@@ -1,18 +1,42 @@
-/**
- * Rule 数据绑定工具
- */
-
 import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding, createEventContext } from '@spark-view/spark-data'
+import type { ComponentRegistry } from '../../core/types.js'
 
 const pageLogger = Logger('PageRenderer')
 
-/** dataKey 自解析组件类型（consume PAGE_DATASET，props.dataKey 直透传） */
-const SELF_RESOLVING_TYPES = new Set(['r-table', 'r-form', 'r-detail', 'r-tree'])
-/** dataKey 绑定已有专用处理逻辑的容器类型（排除默认绑定逻辑） */
-const DATAKEY_HANDLED_TYPES = new Set(['el-table', 'r-table', 'r-form', 'r-detail', 'r-tree'])
+/**
+ * dataKey 自解析组件类型回退默认列表
+ *
+ * 当组件没有在注册表中声明 meta.dataKey 时，回退到此硬编码列表。
+ * 尶内置 SPARK r-* 组件实现后，将在注册时明硬声明 meta.dataKey: 'self-resolve'，则可移除此列表。
+ */
+const _SELF_RESOLVING_FALLBACK = new Set(['r-table', 'r-form', 'r-detail', 'r-tree'])
+
+/**
+ * 检查组件是否为自解析类型（优先查询注册表 meta，回退到核心列表）
+ *
+ * - 注册表已有该组件且声明了 meta.dataKey 时：以 meta.dataKey 为准
+ * - 如果未注册或无 meta.dataKey：回退到内置列表（兼容暂未实现的 r-* 组件）
+ */
+function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolean {
+  if (registry?.has(type)) {
+    const behavior = registry.get(type)?.meta?.['dataKey'] as string | undefined
+    if (behavior !== undefined) return behavior === 'self-resolve'
+  }
+  return _SELF_RESOLVING_FALLBACK.has(type)
+}
+
+/**
+ * 检查组件 dataKey 是否已有专用处理逻辑（排除默认绑定逻辑）
+ *
+ * - el-table：始终有专用注入块（外部组件，不在注册表中）
+ * - 自解析组件：自行解析 dataKey，无需默认绑定
+ */
+function isDataKeyHandledType(type: string, registry?: ComponentRegistry): boolean {
+  return type === 'el-table' || isSelfResolvingType(type, registry)
+}
 
 /**
  * 类型安全的嵌套值获取函数
@@ -88,7 +112,7 @@ function attachDataViewIfDataKey(
 // Note: form-create 的 Rule 类型过于复杂，使用 any[] 作为返回类型避免类型冲突
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function bindDataToRules(options: RuleBindingOptions): any[] {
-  const { rules, pageData, pageFunctions, dataSet } = options
+  const { rules, pageData, pageFunctions, dataSet, registry } = options
   
   // 创建统一的函数调用包装器
   const callFunc = createFunctionCaller(pageFunctions)
@@ -132,7 +156,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
 
     // 🎯 将 dataKey 透传到 props — r-table/r-form/r-detail/r-tree 自行 consume(PAGE_DATASET) 解析
     // el-table 保持旧的外部注入模式（原生组件无法使用 useSparkComponent）
-    if (newRule['dataKey'] && SELF_RESOLVING_TYPES.has(newRule.type as string)) {
+    if (newRule['dataKey'] && isSelfResolvingType(newRule.type as string, registry)) {
       setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
     }
 
@@ -175,7 +199,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     
     // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定或表单值绑定）
     // 排除已有专门处理逻辑的容器组件
-    if (newRule['dataKey'] && !DATAKEY_HANDLED_TYPES.has(newRule.type as string)) {
+    if (newRule['dataKey'] && !isDataKeyHandledType(newRule.type as string, registry)) {
       const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
       
       // 注入 DataView（若 dataKey 指向 DataSet）
@@ -205,7 +229,8 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
           rules: childRules,
           pageData,
           pageFunctions,
-          dataSet
+          dataSet,
+          ...(registry !== undefined ? { registry } : {})
         })
       }
     }

@@ -18,8 +18,10 @@ export function initializeSparkEJ2Components(registry?: ComponentRegistry) {
   const logger = Logger('SparkEJ2')
   logger.info('🚀 Registering SPARK-EJ2 components...')
 
-  reg.register('spark-ej2-grid', SparkEJ2Grid)
-  reg.register('spark-ej2-column', SparkEJ2Column)
+  // spark-ej2-grid: 数据通过 config.props 传入，不参与 dataKey 绑定系统
+  reg.register('spark-ej2-grid', SparkEJ2Grid, { dataKey: 'none' })
+  // spark-ej2-column: 列定义组件，由父 grid consume(DATA_SOURCE) 协调，无需 dataKey
+  reg.register('spark-ej2-column', SparkEJ2Column, { dataKey: 'none' })
 
   logger.info('✅ SPARK-EJ2 components registered')
 }
