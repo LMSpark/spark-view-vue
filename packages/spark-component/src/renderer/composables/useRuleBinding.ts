@@ -30,6 +30,17 @@ interface ElTableComponent extends HTMLElement {
 // 旧的同步标志已废弃；事件上下文带有 source='sync' 便可防止循环
 
 /**
+ * 通过 formApi 查找指定表格的 el-table 实例（命令式 API 共享入口）。
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getTableEl(tableName: string, viewId: string, formApi: any): ElTableComponent | null {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (!formApi || typeof formApi.el !== 'function') return null
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  return formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
+}
+
+/**
  * 将 DataSet 当前行同步到 el-table UI（DataSet → UI 方向）。
  *
  * 通过 formApi.el(`table_{tableName}_{viewId}`) 查找 el-table 实例，
@@ -46,10 +57,7 @@ function syncCurrentRowToTable(
   formApi: any
 ): void {
   void nextTick(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (!formApi || typeof formApi.el !== 'function') return
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const table = formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
+    const table = getTableEl(tableName, viewId, formApi)
     if (!table) return
     
     // 直接同步，无需任何临时标志
@@ -76,10 +84,7 @@ function syncSelectedRowsToTable(
   formApi: any
 ): void {
   void nextTick(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (!formApi || typeof formApi.el !== 'function') return
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const table = formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
+    const table = getTableEl(tableName, viewId, formApi)
     if (!table) return
     
     // 直接同步选中状态到表格

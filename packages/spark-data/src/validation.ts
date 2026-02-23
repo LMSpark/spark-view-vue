@@ -137,8 +137,10 @@ export class DataValidator {
    */
   private validateType(col: DataColumn, value: unknown, label: string): ValidationError | null {
     const actualType = typeof value
+    // toLowerCase() 提前到 switch 前，避免 case 匹配时重复计算
+    const colType = col.type.toLowerCase()
 
-    switch (col.type.toLowerCase()) {
+    switch (colType) {
       case 'number':
       case 'int':
       case 'integer':
