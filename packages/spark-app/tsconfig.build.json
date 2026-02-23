@@ -3,6 +3,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
+    "paths": {},
     "declarationDir": "./dist/types",
     "declaration": true,
     "declarationMap": true,
