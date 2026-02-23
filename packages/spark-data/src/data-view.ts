@@ -40,6 +40,7 @@ import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
+import { SelectionDelegate } from './strategies/selection-delegate'
 import type { CrudLifecycleEvent } from './strategies/types'
 import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from './core/primary-key-generator'
 import { createPrimaryKeyGenerator } from './core/primary-key-generator'
@@ -157,8 +158,8 @@ export class DataView implements IDataSource {
   private _mutatingCount = 0
   /** 销毁状态标记 */
   private _isDestroyed = false
-  /** 行索引缓存（用于加速 setSelectedRows，O(n) 而非 O(n²)） */
-  private rowIndexMap?: Map<IDataRow, number> | undefined
+  /** 行索引缓存（用于加速 setSelectedRows，O(n) 而非 O(n²)）——由 SelectionDelegate 管理，内部状态勿直接操作 */
+  rowIndexMap?: Map<IDataRow, number> | undefined
   /** stateChanged 事件防抖定时器 */
   private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
 
@@ -168,6 +169,8 @@ export class DataView implements IDataSource {
   private _crudDelegate?: CrudDelegate | undefined
   /** 级联订阅委托（懒初始化） */
   private _cascadeDelegate?: CascadeDelegate | undefined
+  /** 选中状态委托（懒初始化） */
+  private _selectionDelegate?: SelectionDelegate | undefined
 
   /** 获取 CRUD 委托（懒初始化） */
   private get crudDelegate(): CrudDelegate {
@@ -189,6 +192,16 @@ export class DataView implements IDataSource {
       (changeType, extra) => this.emitStateChanged(changeType, extra)
     )
     return this._cascadeDelegate
+  }
+
+  /** 获取选中状态委托（懒初始化） */
+  private get selectionDelegate(): SelectionDelegate {
+    this._selectionDelegate ??= new SelectionDelegate(
+      this,
+      (changeType, extra) => this.emitStateChanged(changeType, extra),
+      () => this._mkCtx(),
+    )
+    return this._selectionDelegate
   }
   
   // ── 公共内部对象 ─────────────────────────
@@ -492,7 +505,7 @@ export class DataView implements IDataSource {
       
       if (result.success && result.data) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
-        this._applyAutoFirst()
+        this.selectionDelegate.applyAutoFirst()
         this.requestState = RequestState.Loaded
         this.emitStateChanged('requestState')   // 通知 Idle→Loading→Loaded 转换（DataSet.on('loadSuccess') 依赖此事件）
         this.emitStateChanged('rows')
@@ -708,413 +721,51 @@ export class DataView implements IDataSource {
   }
 
   // ─────────────────────────────────────────────
-  // 选中状态
+  // 选中状态（委托给 SelectionDelegate）
   // ─────────────────────────────────────────────
 
-  /**
-   * 数据加载完成后应用 autoCurrentFirst / autoSelectFirst 逻辑。
-   *
-   * updateFromServer() 替换了全部行引用，旧的 currentRow/selectedRows 指针已失效。
-   * 先强制清零（无事件），再通过正式 setter 写入新值；setter 发射 stateChanged 事件，
-   * DataSet.onAnyViewChange 订阅者（如 useRuleBinding）因此能正确收到事件。
-   */
-  private _applyAutoFirst(): void {
-    const prevCurrentRow = this.currentRow
-    const prevHadSelected = this.selectedRows.length > 0
-    this.currentRow = null
-    this.currentRowIndex = null
-    this.selectedRows.splice(0, this.selectedRows.length)
-    this.selectedRowIndices = []
-    // rowIndexMap 已由 updateFromServer() 清零（updateFromServer 总在本方法之前被调用），无需重复清零
-
-    const firstRow = this.rows[0] ?? null
-    const autoCtx = createEventContext('auto', { tableName: this.tableName, viewId: this.viewId })
-
-    if (this.autoCurrentFirst !== false && firstRow) {
-      this.setCurrentRow(firstRow, autoCtx)   // guard: null !== firstRow → always fires
-    } else if (prevCurrentRow !== null) {
-      // autoCurrentFirst=false 或无数据：当前行被强制清零，stateChanged 通知订阅者
-      this.emitStateChanged('currentRow', { row: null, context: autoCtx })
-    }
-    if (this.autoSelectFirst !== false && firstRow) {
-      this.setSelectedRows([firstRow], autoCtx)  // guard: [] !== [firstRow] → always fires
-    } else if (prevHadSelected) {
-      // autoSelectFirst=false 或无数据：已选行被强制清零，stateChanged 通知订阅者
-      this.emitStateChanged('selectedRows', { rows: [], context: autoCtx })
-    }
-  }
-
-  /**
-   * 设置当前行
-   * 状态变更 → 发射 stateChanged → UI + 子视图级联均通过 events 接收
-   * 
-   * @param row - 要设置的行（null 表示清空）
-   */
   setCurrentRow(row: IDataRow | null, context?: EventContext): void {
-    if (this.currentRow === row) return
-    
-    this.currentRow = row
-    // rowIndexMap 已构建时 O(1) 查找，未构建时回退到 O(n) indexOf
-    this.currentRowIndex = row === null ? null : (this.rowIndexMap?.get(row) ?? this.rows.indexOf(row))
-    if (this.currentRowIndex === -1) this.currentRowIndex = null
-    
-    // 使用调用方传入的上下文（携带 source='ui'/'sync' 等），否则默认 'program'
-    const eventContext = context ?? this._mkCtx()
-    this.emitStateChanged('currentRow', { row, context: eventContext })
+    this.selectionDelegate.setCurrentRow(row, context)
   }
 
-  /**
-   * 设置多选行（幂等：内容不变时跳过）
-   * 
-   * @param rows - 要设置的行数组
-   */
   setSelectedRows(rows: IDataRow[], context?: EventContext): void {
-    // 防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
-    if (!Array.isArray(rows)) {
-      this.logger.warn('setSelectedRows 收到非数组参数', { rows, tableName: this.tableName, viewId: this.viewId })
-      return
-    }
-    
-    const cur = this.selectedRows
-    if (cur.length === rows.length && cur.every((r, i) => r === rows[i])) return
-    
-    this.selectedRows.splice(0, this.selectedRows.length, ...rows)
-    
-    // 使用 Map 加速索引查找（O(n) 而非 O(n²)）
-    const rowMap = this.rowIndexMap ??= this.buildRowIndexMap(this.rows)
-    this.selectedRowIndices = this.mapRowsToIndices(rows, rowMap)
-    
-    const eventContext = context ?? this._mkCtx()
-    this.emitStateChanged('selectedRows', { rows: [...rows], context: eventContext })
+    this.selectionDelegate.setSelectedRows(rows, context)
   }
 
-  /**
-   * 根据主键设置当前行
-   * 
-   * @param id - 主键值
-   * @returns 是否成功（行不存在时返回 false）
-   */
-  setCurrentRowById(
-    id: string | number,
-    context?: EventContext
-  ): boolean {
-    this.checkDestroyed()
-
-    // 根据主键查找行
-    const row = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
-    
-    if (!row) {
-      this.logger.warn('setCurrentRowById: 行不存在', {
-        tableName: this.tableName,
-        viewId: this.viewId,
-        primaryKey: this.primaryKey,
-        id,
-        totalRows: this.rows.length
-      })
-      return false
-    }
-    
-    this.setCurrentRow(row, context)
-    return true
+  setCurrentRowById(id: string | number, context?: EventContext): boolean {
+    return this.selectionDelegate.setCurrentRowById(id, context)
   }
 
-  /**
-   * 根据主键数组设置多选行
-   * 
-   * @param ids - 主键值数组
-   * @param context - 事件上下文（可选，未提供时自动生成）
-   * @param options - 可选配置
-   * @param options.strict - 严格模式：如果有任何 ID 找不到对应行则报错（默认 false，跳过无效 ID）
-   * @returns 成功找到的行数（严格模式下找不到会抛出错误）
-   */
   setSelectedRowsById(
     ids: Array<string | number>,
     context?: EventContext,
     options?: { strict?: boolean }
   ): number {
-    this.checkDestroyed()
-    
-    // 防御性检查
-    if (!Array.isArray(ids)) {
-      this.logger.warn('setSelectedRowsById 收到非数组参数', { ids, tableName: this.tableName, viewId: this.viewId })
-      return 0
-    }
-    
-    // 空数组：清空选中
-    if (ids.length === 0) {
-      this.setSelectedRows([], context)
-      return 0
-    }
-    
-    // 构建主键到行的映射（O(n) 一次性构建）
-    const idToRow = this.buildIdToRowMap()
-    
-    // 根据 ID 查找行
-    const foundRows: IDataRow[] = []
-    const notFoundIds: Array<string | number> = []
-    
-    for (const id of ids) {
-      const row = idToRow.get(id)
-      if (row) {
-        foundRows.push(row)
-      } else {
-        notFoundIds.push(id)
-      }
-    }
-    
-    // 严格模式：有找不到的 ID 则报错
-    if (options?.strict && notFoundIds.length > 0) {
-      const error = new Error(
-        `setSelectedRowsById (strict): 有 ${notFoundIds.length} 个 ID 找不到对应行`
-      )
-      this.logger.error('setSelectedRowsById: 严格模式下有 ID 找不到', {
-        tableName: this.tableName,
-        viewId: this.viewId,
-        primaryKey: this.primaryKey,
-        notFoundIds,
-        totalRows: this.rows.length
-      })
-      throw error
-    }
-    
-    // 非严格模式：记录警告
-    if (notFoundIds.length > 0) {
-      this.logger.warn('setSelectedRowsById: 部分 ID 找不到对应行', {
-        tableName: this.tableName,
-        viewId: this.viewId,
-        primaryKey: this.primaryKey,
-        notFoundIds,
-        foundCount: foundRows.length,
-        totalRows: this.rows.length
-      })
-    }
-    
-    // 设置选中行
-    this.setSelectedRows(foundRows, context)
-    return foundRows.length
+    return this.selectionDelegate.setSelectedRowsById(ids, context, options)
   }
 
-  /**
-   * 清空选中行
-   * 
-   * @param context - 事件上下文（可选，未提供时自动生成）
-   */
   clearSelectedRows(context?: EventContext): void {
-    this.setSelectedRows([], context)
+    this.selectionDelegate.clearSelectedRows(context)
   }
 
-  /**
-   * 添加行到选中集（去重）
-   * 
-   * @param rows - 要添加的行数组
-   * @param context - 事件上下文（可选，未提供时自动生成）
-   * @returns 实际添加的行数
-   */
-  addSelectedRows(
-    rows: IDataRow[],
-    context?: EventContext
-  ): number {
-    this.checkDestroyed()
-    
-    // 防御性检查
-    if (!Array.isArray(rows)) {
-      this.logger.warn('addSelectedRows 收到非数组参数', { rows, tableName: this.tableName, viewId: this.viewId })
-      return 0
-    }
-    
-    if (rows.length === 0) return 0
-    
-    // 构建现有选中行的主键 Set（单次遍历，避免 .map().filter() 双遍历）
-    const selectedSet = new Set<string | number>()
-    for (const r of this.selectedRows) {
-      const pk = this.getPrimaryKeyValue(r)
-      if (pk !== undefined) selectedSet.add(pk)
-    }
-    
-    // 过滤出真正需要添加的行（不在现有选中集中）
-    const toAdd = rows.filter(r => {
-      const pk = this.getPrimaryKeyValue(r)
-      return pk !== undefined && !selectedSet.has(pk)
-    })
-    
-    if (toAdd.length === 0) return 0
-    
-    // 合并：现有选中 + 新增
-    const newSelection = [...this.selectedRows, ...toAdd]
-    this.setSelectedRows(newSelection, context)
-    return toAdd.length
+  addSelectedRows(rows: IDataRow[], context?: EventContext): number {
+    return this.selectionDelegate.addSelectedRows(rows, context)
   }
 
-  /**
-   * 从选中集移除行
-   * 
-   * @param rows - 要移除的行数组
-   * @param context - 事件上下文（可选，未提供时自动生成）
-   * @returns 实际移除的行数
-   */
-  removeSelectedRows(
-    rows: IDataRow[],
-    context?: EventContext
-  ): number {
-    this.checkDestroyed()
-    
-    // 防御性检查
-    if (!Array.isArray(rows)) {
-      this.logger.warn('removeSelectedRows 收到非数组参数', { rows, tableName: this.tableName, viewId: this.viewId })
-      return 0
-    }
-    
-    if (rows.length === 0 || this.selectedRows.length === 0) return 0
-    
-    // 构建要移除的行的主键 Set（单次遍历，避免 .map().filter() 双遍历）
-    const toRemoveSet = new Set<string | number>()
-    for (const r of rows) {
-      const pk = this.getPrimaryKeyValue(r)
-      if (pk !== undefined) toRemoveSet.add(pk)
-    }
-    
-    if (toRemoveSet.size === 0) return 0
-    
-    // 过滤出保留的行
-    const newSelection = this.selectedRows.filter(r => {
-      const pk = this.getPrimaryKeyValue(r)
-      return pk === undefined || !toRemoveSet.has(pk)
-    })
-    
-    const removedCount = this.selectedRows.length - newSelection.length
-    if (removedCount > 0) {
-      this.setSelectedRows(newSelection, context)
-    }
-    
-    return removedCount
+  removeSelectedRows(rows: IDataRow[], context?: EventContext): number {
+    return this.selectionDelegate.removeSelectedRows(rows, context)
   }
 
-  /**
-   * 根据主键数组添加选中行
-   * 
-   * @param ids - 主键值数组
-   * @param context - 事件上下文（可选，未提供时自动生成）
-   * @param options - 可选配置
-   * @param options.strict - 严格模式：如果有任何 ID 找不到对应行则报错（默认 false，跳过无效 ID）
-   * @returns 实际添加的行数（严格模式下找不到会抛出错误）
-   */
   addSelectedRowsById(
     ids: Array<string | number>,
     context?: EventContext,
     options?: { strict?: boolean }
   ): number {
-    this.checkDestroyed()
-    
-    // 防御性检查
-    if (!Array.isArray(ids)) {
-      this.logger.warn('addSelectedRowsById 收到非数组参数', { ids, tableName: this.tableName, viewId: this.viewId })
-      return 0
-    }
-    
-    if (ids.length === 0) return 0
-    
-    // 构建主键到行的映射
-    const idToRow = this.buildIdToRowMap()
-    
-    // 构建现有选中行的主键 Set（单次遍历，避免 .map().filter() 双遍历）
-    const selectedSet = new Set<string | number>()
-    for (const r of this.selectedRows) {
-      const pk = this.getPrimaryKeyValue(r)
-      if (pk !== undefined) selectedSet.add(pk)
-    }
-    
-    // 查找要添加的行
-    const toAdd: IDataRow[] = []
-    const notFoundIds: Array<string | number> = []
-    const alreadySelectedIds: Array<string | number> = []
-    
-    for (const id of ids) {
-      // 已经选中，跳过
-      if (selectedSet.has(id)) {
-        alreadySelectedIds.push(id)
-        continue
-      }
-      
-      const row = idToRow.get(id)
-      if (row) {
-        toAdd.push(row)
-      } else {
-        notFoundIds.push(id)
-      }
-    }
-    
-    // 严格模式：有找不到的 ID 则报错
-    if (options?.strict && notFoundIds.length > 0) {
-      const error = new Error(
-        `addSelectedRowsById (strict): 有 ${notFoundIds.length} 个 ID 找不到对应行`
-      )
-      this.logger.error('addSelectedRowsById: 严格模式下有 ID 找不到', {
-        tableName: this.tableName,
-        viewId: this.viewId,
-        primaryKey: this.primaryKey,
-        notFoundIds,
-        totalRows: this.rows.length
-      })
-      throw error
-    }
-    
-    // 非严格模式：记录警告
-    if (notFoundIds.length > 0) {
-      this.logger.warn('addSelectedRowsById: 部分 ID 找不到对应行', {
-        tableName: this.tableName,
-        viewId: this.viewId,
-        primaryKey: this.primaryKey,
-        notFoundIds,
-        foundCount: toAdd.length,
-        alreadySelected: alreadySelectedIds.length,
-        totalRows: this.rows.length
-      })
-    }
-    
-    // 添加到选中集
-    if (toAdd.length > 0) {
-      return this.addSelectedRows(toAdd, context)
-    }
-    
-    return 0
+    return this.selectionDelegate.addSelectedRowsById(ids, context, options)
   }
 
-  /**
-   * 根据主键数组移除选中行
-   * 
-   * @param ids - 主键值数组
-   * @param context - 事件上下文（可选，未提供时自动生成）
-   * @returns 实际移除的行数
-   */
-  removeSelectedRowsById(
-    ids: Array<string | number>,
-    context?: EventContext
-  ): number {
-    this.checkDestroyed()
-    
-    // 防御性检查
-    if (!Array.isArray(ids)) {
-      this.logger.warn('removeSelectedRowsById 收到非数组参数', { ids, tableName: this.tableName, viewId: this.viewId })
-      return 0
-    }
-    
-    if (ids.length === 0 || this.selectedRows.length === 0) return 0
-    
-    // 构建要移除的主键 Set
-    const toRemoveSet = new Set(ids)
-    
-    // 过滤出保留的行
-    const newSelection = this.selectedRows.filter(r => {
-      const pk = this.getPrimaryKeyValue(r)
-      return pk === undefined || !toRemoveSet.has(pk)
-    })
-    
-    const removedCount = this.selectedRows.length - newSelection.length
-    if (removedCount > 0) {
-      this.setSelectedRows(newSelection, context)
-    }
-    
-    return removedCount
+  removeSelectedRowsById(ids: Array<string | number>, context?: EventContext): number {
+    return this.selectionDelegate.removeSelectedRowsById(ids, context)
   }
 
   // ─────────────────────────────────────────────
@@ -1137,16 +788,6 @@ export class DataView implements IDataSource {
       if (idx !== undefined) result.push(idx)
     }
     return result
-  }
-
-  /** 构建 pk → row 映射（O(n)），供 setSelectedRowsById / addSelectedRowsById 共用 */
-  private buildIdToRowMap(): Map<string | number, IDataRow> {
-    const m = new Map<string | number, IDataRow>()
-    for (const row of this.rows) {
-      const pk = this.getPrimaryKeyValue(row)
-      if (pk !== undefined) m.set(pk, row)
-    }
-    return m
   }
 
   /** 清空所有状态并发射 cleared 事件（通知 UI 和子视图） */
@@ -1174,37 +815,9 @@ export class DataView implements IDataSource {
     this.loadingError = null
   }
 
-  /** 清理已不在 rows 中的选中状态，返回是否发生了清理 */
+  /** 清理已不在 rows 中的选中状态，返回是否发生了清理（委托给 SelectionDelegate） */
   cleanupInvalidSelections(): boolean {
-    let cleaned = false
-    // O(n) 单次遍历构建主键 Set，避免 .map().filter() 双遍历
-    const rowPkSet = new Set<string | number>()
-    for (const r of this.rows) {
-      const pk = this.getPrimaryKeyValue(r)
-      if (pk !== undefined) rowPkSet.add(pk)
-    }
-    const currentRow = this.currentRow
-    if (currentRow) {
-      const pk = this.getPrimaryKeyValue(currentRow)
-      if (pk === undefined || !rowPkSet.has(pk)) {
-        this.currentRow = null
-        this.currentRowIndex = null
-        cleaned = true
-      }
-    }
-    if (this.selectedRows.length > 0) {
-      const valid = this.selectedRows.filter(sr => {
-        const pk = this.getPrimaryKeyValue(sr)
-        return pk !== undefined && rowPkSet.has(pk)
-      })
-      if (valid.length !== this.selectedRows.length) {
-        this.selectedRows.splice(0, this.selectedRows.length, ...valid)
-        const rowMap = this.rowIndexMap ??= this.buildRowIndexMap(this.rows)
-        this.selectedRowIndices = this.mapRowsToIndices(valid, rowMap)
-        cleaned = true
-      }
-    }
-    return cleaned
+    return this.selectionDelegate.cleanupInvalidSelections()
   }
 
   // ─────────────────────────────────────────────
