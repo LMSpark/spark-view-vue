@@ -207,18 +207,14 @@ export class PageConfigLoader implements ConfigLoader {
   async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
     pageLogger.debug('加载页面样式', { pageId, source: this.opts.source })
 
-    if (this.opts.source === 'remote') {
-      return this.remoteResult<PageCssConfig>(`/page/${pageId}/css`)
-    }
-
     if (this.opts.source === 'local') {
       return this.localCssResult(pageId)
     }
-
-    // hybrid: 先尝试远程，失败降级本地
+    // remote 或 hybrid: 先尝试远程
     try {
       return await this.remoteResult<PageCssConfig>(`/page/${pageId}/css`)
-    } catch {
+    } catch (e) {
+      if (this.opts.source === 'remote') throw e
       pageLogger.debug('远程样式不可用，降级到本地', { pageId })
       return this.localCssResult(pageId)
     }
@@ -227,20 +223,15 @@ export class PageConfigLoader implements ConfigLoader {
   async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
     pageLogger.debug('加载页面脚本', { pageId, source: this.opts.source })
 
-    if (this.opts.source === 'remote') {
-      const script = await this.remoteScript(pageId)
-      return { success: true, data: script, source: 'remote', timestamp: Date.now() }
-    }
-
     if (this.opts.source === 'local') {
       return this.localScriptResult(pageId)
     }
-
-    // hybrid: 先尝试远程，失败降级本地
+    // remote 或 hybrid: 先尝试远程
     try {
       const script = await this.remoteScript(pageId)
       return { success: true, data: script, source: 'remote', timestamp: Date.now() }
-    } catch {
+    } catch (e) {
+      if (this.opts.source === 'remote') throw e
       pageLogger.debug('远程脚本不可用，降级到本地', { pageId })
       return this.localScriptResult(pageId)
     }
@@ -256,12 +247,8 @@ export class PageConfigLoader implements ConfigLoader {
       this.loadCss(pageId)
     ])
 
-    if (!ruleResult.success) {
-      return { success: false, ...(ruleResult.error !== undefined && { error: ruleResult.error }), timestamp: Date.now() }
-    }
-    if (!dataResult.success) {
-      return { success: false, ...(dataResult.error !== undefined && { error: dataResult.error }), timestamp: Date.now() }
-    }
+    if (!ruleResult.success) return this.failFrom(ruleResult.error)
+    if (!dataResult.success) return this.failFrom(dataResult.error)
 
     return {
       success: true,
@@ -284,6 +271,11 @@ export class PageConfigLoader implements ConfigLoader {
 
   getCacheStats(): { size: number; keys: string[] } {
     return { size: 0, keys: [] }
+  }
+
+  /** 从失败的 ConfigLoadResult 构建错误响应（DRY）*/
+  private failFrom(error: string | undefined): ConfigLoadResult<never> {
+    return { success: false, ...(error !== undefined && { error }), timestamp: Date.now() }
   }
 
   // ── 私有辅助 ──────────────────────────────────────────────────────

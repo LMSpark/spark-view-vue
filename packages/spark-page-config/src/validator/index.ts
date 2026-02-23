@@ -96,12 +96,12 @@ export function validatePageDataConfig(config: PageDataConfig): ValidationError[
 export function validateRoutes(routes: RouteConfig[]): Map<string, ValidationError[]> {
   const errorMap = new Map<string, ValidationError[]>()
 
-  routes.forEach(route => {
+  for (const route of routes) {
     const errors = validateRouteConfig(route)
     if (errors.length > 0) {
       errorMap.set(route.path || 'unknown', errors)
     }
-  })
+  }
 
   return errorMap
 }
@@ -120,17 +120,17 @@ export function validateRules(rules: RuleConfig[]): ValidationError[] {
     })))
 
     if (Array.isArray(rule.children)) {
-      rule.children.forEach((child, index) => {
+      for (const [index, child] of rule.children.entries()) {
         if (typeof child === 'object') {
           validateRecursive(child, `${path}.children[${index}]`)
         }
-      })
+      }
     }
   }
 
-  rules.forEach((rule, index) => {
+  for (const [index, rule] of rules.entries()) {
     validateRecursive(rule, `rules[${index}]`)
-  })
+  }
 
   return errors
 }

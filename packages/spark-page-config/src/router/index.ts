@@ -120,12 +120,12 @@ export class DynamicRouter {
     this.configLoader.clearCache('routes')
     
     // 清除已注册路由
-    this.registeredRoutes.forEach(path => {
+    for (const path of this.registeredRoutes) {
       const route = this.router.getRoutes().find(r => r.path === path)
       if (route?.name) {
         this.router.removeRoute(route.name)
       }
-    })
+    }
     this.registeredRoutes.clear()
 
     // 重新注册
