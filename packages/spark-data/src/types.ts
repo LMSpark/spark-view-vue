@@ -481,6 +481,14 @@ export interface IDataSet {
   toData(): IDataSetMetadata
   /** 序列化（供 JSON.stringify 自动调用） */
   toJSON(): IDataSetMetadata
+  /**
+   * 订阅数据集级别的加载事件（覆盖所有已注册表的所有视图）
+   * @returns 取消订阅函数
+   */
+  on(
+    event: 'loadSuccess' | 'loadError',
+    handler: (payload: { tableName: string; viewId: string; error?: Error }) => void
+  ): () => void
 }
 
 // ===== CRUD服务相关类型 =====
