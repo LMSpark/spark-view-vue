@@ -84,9 +84,9 @@ export interface ICascadeHost {
   requestData(): void
   /**
    * 强制刷新：先 resetState() 再 requestData()
-   * 下行触发（父数据变化→级联子视图）用此方法。非阻塞，同上。
+   * 下行触发（父数据变化→级联子视图）用此方法。非阻塞，结果经 stateChanged 事件通知。
    */
-  refresh(): void
+  refresh(): Promise<void>
 }
 
 // ─────────────────────────────────────────────

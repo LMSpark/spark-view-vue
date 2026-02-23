@@ -170,7 +170,9 @@ export class DataTable {
       viewsData[id] = view.toData()
     }
 
-    const dv = this.getOrCreateView('default')
+    // 'default' 视图始终在构造函数中创建，直接访问避免 getOrCreateView 的副作用；
+    // 使用 ?? 兜底以满足 TypeScript 类型检查（运行时不可能触发右侧）
+    const dv = this.views['default'] ?? this.getOrCreateView('default')
     const def = dv.toData()
     const result: ITableMetadata = {
       tableName: this.tableName,
