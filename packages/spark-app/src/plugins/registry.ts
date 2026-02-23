@@ -89,9 +89,9 @@ export function createPluginRegistry(): IPluginRegistry {
       loaders.set(id, { id, ...loader })
     },
     registerAll(entries: Record<string, Omit<PluginLoader, 'id'>>): void {
-      Object.entries(entries).forEach(([id, loader]) => {
+      for (const [id, loader] of Object.entries(entries)) {
         this.register(id, loader)
-      })
+      }
     },
     get(id: string): PluginLoader | undefined {
       return loaders.get(id)

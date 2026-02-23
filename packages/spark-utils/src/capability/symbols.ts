@@ -126,7 +126,7 @@ export function createEventEmitter<TEventMap extends Record<string, any[]> = Rec
         return listeners.get(event)?.size ?? 0
       }
       let total = 0
-      listeners.forEach(s => { total += s.size })
+      for (const s of listeners.values()) total += s.size
       return total
     }
   }
