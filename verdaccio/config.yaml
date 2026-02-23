@@ -1,0 +1,63 @@
+# Verdaccio 私有 npm 注册表配置
+# 文档：https://verdaccio.org/docs/configuration
+
+# 包存储路径（相对于 config.yaml）
+storage: ./storage
+
+# 插件路径
+plugins: ./plugins
+
+# 鉴权配置（htpasswd 文件方式）
+auth:
+  htpasswd:
+    file: ./htpasswd
+    # 最大注册用户数：-1 = 无限制；0 = 禁止注册（仅管理员手动添加）
+    max_users: 100
+
+# 上游（未找到时透传到公共 registry）
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+    timeout: 30s
+    maxage: 10m
+
+# 包访问规则
+packages:
+  # @spark-view/* 私有包：发布 / 访问均需登录
+  '@spark-view/*':
+    access: $authenticated
+    publish: $authenticated
+    unpublish: $authenticated
+    # 不回源到 npmjs（私有包，不对外）
+
+  # 其余公共包：任何人可读，登录后可发布，未找到时回源 npmjs
+  '**':
+    access: $all
+    publish: $authenticated
+    unpublish: $authenticated
+    proxy: npmjs
+
+# HTTP 服务器配置
+server:
+  keepAliveTimeout: 60
+
+# Web UI
+web:
+  title: SPARK-VIEW Private Registry
+  # logo: logo.png
+  primary_color: '#4D7CF4'
+  favicon: https://verdaccio.org/img/logo/symbol/png/verdaccio-tiny@2x.png
+
+# 日志
+logs:
+  - type: stdout
+    format: pretty
+    level: http
+
+# CORS（开发期间开放所有来源，生产环境按需限制）
+middlewares:
+  audit:
+    enabled: true
+
+# 监听地址
+listen: '0.0.0.0:4873'
