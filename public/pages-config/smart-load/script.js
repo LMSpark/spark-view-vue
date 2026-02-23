@@ -73,11 +73,11 @@ function handleClearAll() {
   console.log('🗑️ 清空所有表数据');
   console.log('='.repeat(60));
   
-  // ✅ 使用 DataSetManager API 获取所有表
-  const tables = dataSet.dataSet.tables;
+  // 获取所有表
+  const tables = dataSet.tables;
   
   Object.keys(tables).forEach(tableName => {
-    const view = dataSet.dataSet.getView(tableName, 'default');
+    const view = dataSet.getView(tableName, 'default');
     if (view) view.clearAll(); // clearAll 自动通知订阅者
   });
   

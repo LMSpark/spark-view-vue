@@ -36,9 +36,9 @@ function handleUserSelect(row) {
   
   console.log('👤 选中用户:', row)
   
-  // ✅ 使用 OOP 方式设置当前行（内核会自动触发关系过滤）
-  const table = dataSet.getTable('Users')
-  table.setCurrentRow(row)
+  // 通过视图设置当前行（内核会自动触发关系过滤）
+  const view = dataSet.getView('Users', 'default')
+  view?.setCurrentRow(row)
   
   // 检查子表视图是否已加载过数据（requestState: 0=Idle 表示未加载）
   const ordersView = dataSet.getView('Orders', 'default')

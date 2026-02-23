@@ -6,7 +6,8 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewStateEvent } from './types'
+import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
 
@@ -72,6 +73,51 @@ export class DataSet implements IDataSet {
       r.parentViewId ??= 'default'
       r.childViewId ??= 'default'
     })
+  }
+
+  // ===== 数据集级别事件订阅（页面脚本便捷 API） =====
+
+  /**
+   * 订阅数据集级别的加载事件（覆盖所有已注册表的所有视图）
+   *
+   * - `'loadSuccess'`：任一视图从服务器成功加载数据后触发
+   * - `'loadError'`：任一视图加载失败后触发（payload.error 含错误对象）
+   *
+   * @returns 取消订阅函数（页面卸载时调用以防内存泄漏）
+   *
+   * @example
+   * ```js
+   * const off = dataSet.on('loadSuccess', ({ tableName }) => {
+   *   ElMessage.success(`${tableName} 加载完成`)
+   * })
+   * // onUnmounted: off()
+   * ```
+   */
+  on(
+    event: 'loadSuccess' | 'loadError',
+    handler: (payload: { tableName: string; viewId: string; error?: Error }) => void
+  ): () => void {
+    const unsubscribers: (() => void)[] = []
+    for (const table of Object.values(this.tables)) {
+      for (const view of Object.values(table.views)) {
+        const h = (evt: ViewStateEvent) => {
+          if (event === 'loadSuccess'
+            && evt.changeType === 'rows'
+            && view.requestState === RequestState.Loaded) {
+            handler({ tableName: evt.tableName, viewId: evt.viewId })
+          } else if (event === 'loadError'
+            && evt.changeType === 'requestState'
+            && view.requestState === RequestState.Failed) {
+            const payload: { tableName: string; viewId: string; error?: Error } = { tableName: evt.tableName, viewId: evt.viewId }
+            if (view.loadingError) payload.error = view.loadingError
+            handler(payload)
+          }
+        }
+        view.events.on('stateChanged', h)
+        unsubscribers.push(() => view.events.off('stateChanged', h))
+      }
+    }
+    return () => unsubscribers.forEach(u => u())
   }
 
   // ===== 关系图查询（网状关系，非树形） =====
