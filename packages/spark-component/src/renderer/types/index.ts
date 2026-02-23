@@ -16,6 +16,7 @@ import type { IDataSet } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type { ComponentRegistry } from '../../core/types.js'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
 export type { PageConfig }
@@ -298,7 +299,8 @@ export interface RuleBindingOptions {
   pageData: Record<string, unknown>
   pageFunctions: Record<string, (...args: unknown[]) => unknown>
   dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
-
+  /** 组件注册表（可选）——用于查询 dataKey 行为元数据，替代硬编码的组件白名单 */
+  registry?: ComponentRegistry
 }
 
 /**

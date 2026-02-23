@@ -29,6 +29,15 @@ export interface ComponentDefinition {
   meta?: Record<string, unknown>
 }
 
+/**
+ * 组件 dataKey 行为声明（Registry meta.dataKey）
+ *
+ * - `'self-resolve'`：组件内部 consume(PAGE_DATASET) 自行解析 dataKey prop（r-table、r-form 等）
+ * - `'injected'`：由 bindRules 外部注入数据（el-table 等原生组件）
+ * - `'none'`：不参与 dataKey 系统
+ */
+export type ComponentDataKeyBehavior = 'self-resolve' | 'injected' | 'none'
+
 // ============================================================================
 // 组件上下文（核心）
 // ============================================================================
