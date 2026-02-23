@@ -173,7 +173,8 @@ describe('Event system', () => {
       stateEvents.push(`${e.tableName}:${e.changeType}`)
     })
 
-    deptView.setCurrentRow(deptView.rows[0]!)
+    // rows[0] 已被 autoCurrentFirst 自动选为 currentRow；使用 rows[1] 触发真实变更
+    deptView.setCurrentRow(deptView.rows[1]!)
 
     expect(stateEvents).toContain('Departments:currentRow')
   })

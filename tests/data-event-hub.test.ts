@@ -33,7 +33,9 @@ function createTestDataSet() {
         rows: [
           { id: 1, name: 'Engineering' },
           { id: 2, name: 'Marketing' }
-        ]
+        ],
+        autoCurrentFirst: false,
+        autoSelectFirst: false
       },
       Users: {
         tableName: 'Users',

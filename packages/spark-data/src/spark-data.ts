@@ -29,6 +29,8 @@ export namespace SparkData {
       columns: DataColumn[]
       rows?: IDataRow[]
       api?: CrudApi
+      autoCurrentFirst?: boolean
+      autoSelectFirst?: boolean
     }>
     relations?: DataRelation[]
   }): DataSet {

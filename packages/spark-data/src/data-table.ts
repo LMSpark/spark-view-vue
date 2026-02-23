@@ -242,6 +242,7 @@ export class DataTable {
       // 回退：从表级配置读取（兼容旧格式）
       if (data.filterExpression !== undefined) def.filterExpression = data.filterExpression
       if (data.sortExpression !== undefined) def.sortExpression = data.sortExpression
+      if (data.autoCurrentFirst !== undefined) def.autoCurrentFirst = data.autoCurrentFirst
       if (data.autoSelectFirst !== undefined) def.autoSelectFirst = data.autoSelectFirst
       def.page = data.page ?? 1
       def.pageSize = data.pageSize ?? 20
