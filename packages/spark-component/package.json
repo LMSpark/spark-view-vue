@@ -12,8 +12,8 @@
         "README.md"
     ],
     "publishConfig": {
-        "registry": "http://localhost:4873",
-        "access": "restricted"
+        "registry": "https://registry.npmjs.org",
+        "access": "public"
     },
     "exports": {
         ".": {
