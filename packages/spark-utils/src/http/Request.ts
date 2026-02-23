@@ -19,6 +19,8 @@ import type {
 
 const logger = Logger('Http')
 
+const DEFAULT_TIMEOUT = 10_000
+
 /** 缓存条目：存储数据、写入时间戳和过期时长（ms） */
 interface CacheItem { data: unknown; timestamp: number; expiry: number }
 
@@ -29,7 +31,7 @@ export class Request {
   constructor(private defaults: Partial<RequestConfig> = {}) {
     this.ax = axios.create({
       baseURL: defaults.baseURL ?? '',
-      timeout: defaults.timeout ?? 10000,
+      timeout: defaults.timeout ?? DEFAULT_TIMEOUT,
       ...(defaults.headers && { headers: defaults.headers }),
     })
   }
@@ -180,7 +182,7 @@ export class Request {
     const c: AxiosRequestConfig = {
       url: config.url ?? '',
       method: config.method ?? 'GET',
-      timeout: config.timeout ?? 10000,
+      timeout: config.timeout ?? DEFAULT_TIMEOUT,
       responseType: config.responseType ?? 'json',
       baseURL: config.baseURL ?? '',
     }
@@ -205,7 +207,7 @@ export class Request {
       // axios 定义 params 为 any；用条件展开避免将 undefined 赋到 exactOptionalPropertyTypes 严格的可选属性
       ...(c.params !== null && c.params !== undefined && { params: c.params as Record<string, unknown> }),
       data: c.data as unknown,
-      timeout: c.timeout ?? 10000,
+      timeout: c.timeout ?? DEFAULT_TIMEOUT,
       responseType: c.responseType ?? 'json',
       baseURL: c.baseURL ?? '',
     }

@@ -100,7 +100,7 @@ class SnowflakeIdGenerator {
    * @returns 雪花ID（字符串形式的19位数字）
    */
   nextId(): string {
-    let timestamp = BigInt(Date.now() - this.epoch)
+    let timestamp = this.nowRelative()
     
     // 时钟回拨检测
     if (timestamp < this.lastTimestamp) {
@@ -133,13 +133,18 @@ class SnowflakeIdGenerator {
     return id.toString()
   }
   
+  /** 当前时刻相对于 epoch 的 BigInt 毫秒数 */
+  private nowRelative(): bigint {
+    return BigInt(Date.now() - this.epoch)
+  }
+
   /**
    * 等待到下一毫秒
    */
   private waitNextMillis(lastTimestamp: bigint): bigint {
-    let timestamp = BigInt(Date.now() - this.epoch)
+    let timestamp = this.nowRelative()
     while (timestamp <= lastTimestamp) {
-      timestamp = BigInt(Date.now() - this.epoch)
+      timestamp = this.nowRelative()
     }
     return timestamp
   }

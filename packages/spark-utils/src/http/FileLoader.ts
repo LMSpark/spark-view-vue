@@ -134,8 +134,7 @@ export class FileLoader {
 
       try {
         // 发起网络请求（带 timestamp 参数）
-        const params: Record<string, unknown> = {}
-        if (knownTimestamp) params['timestamp'] = knownTimestamp
+        const params = FileLoader.timestampParams(knownTimestamp)
 
         const response = await this.request.requestFull<FileResponse>({
           url: fileName,
@@ -277,14 +276,18 @@ export class FileLoader {
 
   // ==================== 内部实现 ====================
 
+  /** 将已知 timestamp 包装为 params 对象，缺失时返回空对象 */
+  private static timestampParams(knownTimestamp: string): Record<string, unknown> {
+    return knownTimestamp ? { timestamp: knownTimestamp } : {}
+  }
+
   /** 加载原始文件内容（仅维护 string 缓存，不做 JSON.parse 或 transform） */
   private async loadRaw(fileName: string, forceRefresh: boolean, expirationLevel?: number): Promise<FileLoadResult<string>> {
     try {
       const cached = forceRefresh ? null : this.readEntry<string>(fileName)
       const knownTimestamp = cached?.sourceTimestamp ?? ''
 
-      const params: Record<string, unknown> = {}
-      if (knownTimestamp) params['timestamp'] = knownTimestamp
+      const params = FileLoader.timestampParams(knownTimestamp)
 
       const response = await this.request.requestFull<FileResponse>({
         url: fileName,
