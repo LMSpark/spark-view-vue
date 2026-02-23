@@ -1,0 +1,24 @@
+services:
+  verdaccio:
+    image: verdaccio/verdaccio:latest
+    container_name: spark-registry
+    restart: unless-stopped
+    ports:
+      - "4873:4873"
+    volumes:
+      # 持久化配置、存储、htpasswd
+      - ./verdaccio/config.yaml:/verdaccio/conf/config.yaml
+      - verdaccio-storage:/verdaccio/storage
+      - verdaccio-plugins:/verdaccio/plugins
+    environment:
+      - VERDACCIO_PORT=4873
+    networks:
+      - spark-net
+
+networks:
+  spark-net:
+    driver: bridge
+
+volumes:
+  verdaccio-storage:
+  verdaccio-plugins:

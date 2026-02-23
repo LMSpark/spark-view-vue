@@ -11,6 +11,10 @@
         "API.md",
         "README.md"
     ],
+    "publishConfig": {
+        "registry": "http://localhost:4873",
+        "access": "restricted"
+    },
     "exports": {
         ".": {
             "import": "./dist/index.js",

@@ -21,6 +21,10 @@
         "dist",
         "README.md"
     ],
+    "publishConfig": {
+        "registry": "http://localhost:4873",
+        "access": "restricted"
+    },
     "scripts": {
         "clean": "rimraf dist",
         "build": "pnpm run clean && tsc -p tsconfig.build.json",
