@@ -27,6 +27,38 @@ export type EmitStateChangedFn = (
 export type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
 
 // ─────────────────────────────────────────────
+// SelectionDelegate Host 接口
+// ─────────────────────────────────────────────
+
+/**
+ * SelectionDelegate 所需的宿主能力（ISP 最小子集）
+ *
+ * DataView 实现此接口，SelectionDelegate 仅通过此接口访问宿主状态。
+ * 可写字段（currentRow / selectedRows 等）由委托直接修改——
+ * 与 DataView 字段同引用，无需回调。
+ */
+export interface ISelectionHost {
+  // ── 只读配置 ──────────────────────────────
+  readonly rows: IDataRow[]
+  readonly tableName: string
+  readonly viewId: string
+  readonly primaryKey: string | string[]
+  readonly autoCurrentFirst: boolean
+  readonly autoSelectFirst: boolean
+
+  // ── 选中状态（委托直接写入，DataView 读同变更） ──
+  currentRow: IDataRow | null
+  currentRowIndex: number | null
+  selectedRows: IDataRow[]          // 委托通过 splice 操作，保持数组引用稳定（Vue 响应式友好）
+  selectedRowIndices: number[]
+  rowIndexMap?: Map<IDataRow, number> | undefined  // 索引缓存，委托负责懒建与失效
+
+  // ── 工具方法 ──────────────────────────────
+  getPrimaryKeyValue(row: IDataRow): string | number | undefined
+  isDestroyed(): boolean
+}
+
+// ─────────────────────────────────────────────
 // CrudDelegate Host 接口
 // ─────────────────────────────────────────────
 
