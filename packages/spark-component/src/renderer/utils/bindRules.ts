@@ -59,6 +59,14 @@ function resolveRuleDataKey(
 }
 
 /**
+ * 安全设置 rule.props（初始化后赋值，避免重复 ??=）
+ */
+function setRuleProp(rule: Rule, key: string, value: unknown): void {
+  rule.props ??= {}
+  rule.props[key] = value
+}
+
+/**
  * 将 dataKey 对应的 DataView 注入到 rule.props.dataView（渲染层薄包装）
  *
  * 视图查找完全委托给 spark-data 的 `getViewFromRawKey`。
@@ -71,8 +79,7 @@ function attachDataViewIfDataKey(
   if (!rawKey || !dataSet) return
   const view = getViewFromRawKey(rawKey, dataSet)
   if (!view) return
-  rule.props ??= {}
-  rule.props['dataView'] = view
+  setRuleProp(rule, 'dataView', view)
 }
 
 /**
@@ -118,17 +125,15 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     if ((newRule.type === 'r-table' || newRule.type === 'r-tree') && newRule['dataSource']) {
       const dataSource = pageData[newRule['dataSource'] as string]
       if (dataSource !== undefined) {
-        newRule.props ??= {}
         // 强制绑定为 dataSource（不再向后兼容 props.data）
-        newRule.props['dataSource'] = dataSource
+        setRuleProp(newRule, 'dataSource', dataSource)
       }
     }
 
     // 🎯 将 dataKey 透传到 props — r-table/r-form/r-detail/r-tree 自行 consume(PAGE_DATASET) 解析
     // el-table 保持旧的外部注入模式（原生组件无法使用 useSparkComponent）
     if (newRule['dataKey'] && SELF_RESOLVING_TYPES.has(newRule.type as string)) {
-      newRule.props ??= {}
-      newRule.props['dataKey'] = newRule['dataKey'] as string
+      setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
     }
 
     // 🎯 处理 r-tree 的 currentKey 绑定（用于 current-key 高亮）
@@ -136,8 +141,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
       const keys = (newRule['currentKey'] as string).split('.')
       const value = getNestedValue<string | number>(pageData, keys)
       if (value !== undefined) {
-        newRule.props ??= {}
-        newRule.props['current-key'] = value
+        setRuleProp(newRule, 'current-key', value)
       }
     }
 
@@ -158,11 +162,10 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
         ? resolveDataKeyBinding(newRule['dataKey'] as string, dataSet)
         : null
       if (binding?.kind === 'view') {
-        newRule.props ??= {}
-        newRule.props['dataSource'] = binding.source
-        newRule.props['dataView'] = binding.source
+        setRuleProp(newRule, 'dataSource', binding.source)
+        setRuleProp(newRule, 'dataView', binding.source)
         // Element Plus el-table 需要 data 属性（响应式数组）
-        newRule.props['data'] = binding.source.rows
+        setRuleProp(newRule, 'data', binding.source.rows)
       }
       // 如果有 dataSet，注入同步事件
       if (dataSet) {
@@ -182,8 +185,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
       if (resolved !== undefined && resolved !== null) {
         // 表单元素：绑定到 props.modelValue（支持响应式）
         if (newRule.type === 'el-input' || newRule.type === 'el-textarea') {
-          newRule.props ??= {}
-          newRule.props['modelValue'] = resolved
+          setRuleProp(newRule, 'modelValue', resolved)
         } else {
           // 普通元素：将值转换为字符串并设置为 children
           newRule.children = [String(resolved)]
