@@ -50,7 +50,8 @@ function run(cmd, cwd = ROOT) {
 
 function getPackageJson(pkgDir) {
   const p = join(pkgDir, 'package.json')
-  return JSON.parse(readFileSync(p, 'utf-8'))
+  const content = readFileSync(p, 'utf-8').replace(/^\uFEFF/, '') // strip BOM
+  return JSON.parse(content)
 }
 
 // ── 主流程 ────────────────────────────────────────────────
@@ -84,12 +85,15 @@ for (const pkgName of PUBLISH_ORDER) {
 
   if (DRY_RUN) {
     console.log('   [dry-run] would publish:', pkg.name)
-    run('pnpm pack --dry-run', pkgDir)
+    run(
+      `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --access restricted --dry-run --ignore-scripts`,
+      pkgDir,
+    )
     continue
   }
 
   run(
-    `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --access restricted`,
+    `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --access restricted --ignore-scripts`,
     pkgDir,
   )
   console.log(`✅  Published ${pkg.name}@${pkg.version}`)

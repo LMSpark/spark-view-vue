@@ -27,8 +27,7 @@
         "test": "vitest",
         "test:run": "vitest run",
         "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
-        "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix",
-        "prepare": "pnpm run build"
+        "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
     },
     "dependencies": {
         "@spark-view/spark-utils": "workspace:*",

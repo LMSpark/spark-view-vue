@@ -37,8 +37,7 @@
         "test": "vitest",
         "test:run": "vitest run",
         "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
-        "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
-        "prepare": "pnpm run build"
+        "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
     },
     "peerDependencies": {
         "vue": "^3.5.0",
