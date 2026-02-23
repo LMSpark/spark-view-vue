@@ -100,19 +100,25 @@ export class DataSet implements IDataSet {
     const unsubscribers: (() => void)[] = []
     for (const table of Object.values(this.tables)) {
       for (const view of Object.values(table.views)) {
-        const h = (evt: ViewStateEvent) => {
-          if (event === 'loadSuccess'
-            && evt.changeType === 'requestState'
-            && view.requestState === RequestState.Loaded) {
+        // 根据 event 类型创建专用 handler，消除每次回调内的永久死分支
+        let h: (evt: ViewStateEvent) => void
+        if (event === 'loadSuccess') {
+          h = (evt: ViewStateEvent) => {
             // requestState 事件仅在 loadFromServer 成功时（Loaded 转换）发射，
             // appendRow/replaceRows 等本地操作不发射 requestState → 无误触发
-            handler({ tableName: evt.tableName, viewId: evt.viewId })
-          } else if (event === 'loadError'
-            && evt.changeType === 'requestState'
-            && view.requestState === RequestState.Failed) {
-            const payload: { tableName: string; viewId: string; error?: Error } = { tableName: evt.tableName, viewId: evt.viewId }
-            if (view.loadingError) payload.error = view.loadingError
-            handler(payload)
+            if (evt.changeType === 'requestState' && view.requestState === RequestState.Loaded) {
+              handler({ tableName: evt.tableName, viewId: evt.viewId })
+            }
+          }
+        } else {
+          h = (evt: ViewStateEvent) => {
+            // view.loadingError !== null 用于区分「真实网络错误」与「父依赖未满足」：
+            // 父依赖不满足时 requestState=Failed 但 loadingError===null，不应触发 loadError
+            if (evt.changeType === 'requestState'
+              && view.requestState === RequestState.Failed
+              && view.loadingError !== null) {
+              handler({ tableName: evt.tableName, viewId: evt.viewId, error: view.loadingError })
+            }
           }
         }
         view.events.on('stateChanged', h)
