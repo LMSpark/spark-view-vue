@@ -109,6 +109,16 @@ export class CrudDelegate {
     return { success: false, message: `${operation} cancelled by before hook` }
   }
 
+  /** 创建校验失败结果（消除 createRecord/updateRecord 中的重复块） */
+  private validationFailedResult<T>(errors: import('../validation').ValidationError[]): CrudResult<T> {
+    const msg = errors[0]?.message ?? '数据校验失败'
+    return {
+      success: false,
+      message: `数据校验失败: ${msg}`,
+      error: new Error(msg)
+    }
+  }
+
   // ─────────────────────────────────────────────
   // 列表查询（供 DataView.loadFromServer 使用）
   // ─────────────────────────────────────────────
@@ -128,11 +138,7 @@ export class CrudDelegate {
 
     const validationResult = this.validateRow(data as IDataRow)
     if (validationResult && !validationResult.valid) {
-      return {
-        success: false,
-        message: `数据校验失败: ${validationResult.errors[0]?.message ?? '未知错误'}`,
-        error: new Error(validationResult.errors[0]?.message ?? '数据校验失败')
-      }
+      return this.validationFailedResult(validationResult.errors)
     }
 
     return this.withMutating(async () => {
@@ -152,11 +158,7 @@ export class CrudDelegate {
 
     const validationResult = this.validateRow(data as IDataRow)
     if (validationResult && !validationResult.valid) {
-      return {
-        success: false,
-        message: `数据校验失败: ${validationResult.errors[0]?.message ?? '未知错误'}`,
-        error: new Error(validationResult.errors[0]?.message ?? '数据校验失败')
-      }
+      return this.validationFailedResult(validationResult.errors)
     }
 
     return this.withMutating(async () => {

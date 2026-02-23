@@ -87,8 +87,8 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       const metadata = rawPageData as { dataSetName?: string; tables?: unknown }
       if (metadata.tables && typeof metadata.tables === 'object') {
         pageLogger.debug('检测到 DataSet 元数据格式，使用 fromData 转换')
-      dataSet.value = DataSet.fromData(rawPageData as unknown as IDataSetMetadata)
-      currentDataVersion = (rawPageData as { version?: unknown }).version
+        dataSet.value = DataSet.fromData(rawPageData as unknown as IDataSetMetadata)
+        currentDataVersion = (rawPageData as { version?: unknown }).version
         pageLogger.debug('DataSet 从元数据创建', {
           tables: Object.keys(dataSet.value.tables || {})
         })

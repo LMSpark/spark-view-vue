@@ -114,10 +114,10 @@ export class CascadeDelegate {
       const requestId = ++this.nextCascadeRequestId
       let cancelled = false
 
-      // refresh() 为非阻塞接口，用 Promise.resolve 包装以统一处理异步/同步实现
+      // refresh() 返回 Promise<void>（声明于 ICascadeHost），直接 await
       void (async () => {
         try {
-          await Promise.resolve(this.host.refresh())
+          await this.host.refresh()
           if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
             this.pendingCascadeRequest = undefined
           }
