@@ -342,7 +342,11 @@ export class TokenManager {
 
     const cookies = document.cookie.split(';')
     for (const cookie of cookies) {
-      const [name, value] = cookie.trim().split('=')
+      const trimmed = cookie.trim()
+      const eqIdx = trimmed.indexOf('=')
+      if (eqIdx < 0) continue
+      const name = trimmed.slice(0, eqIdx)
+      const value = trimmed.slice(eqIdx + 1)
       if (name === this.tokenKey && value) {
         return decodeURIComponent(value)
       }
