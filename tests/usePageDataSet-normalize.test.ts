@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { usePageDataSet } from '@spark-view/spark-data'
+import { usePageDataSet } from '@spark-view/spark-component'
 
 describe('usePageDataSet - pagedata -> dataset 归一化', () => {
   it('应该把任意 pagedata.json 归一化为 DataSet（object/array/primitive）', () => {

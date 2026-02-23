@@ -16,7 +16,8 @@
  */
 
 import { DataView } from './data-view'
-import { RequestState, createEventContext } from './types'
+import { RequestState } from './types'
+import { createEventContext } from './core/event-id'
 import { reactive } from 'vue'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { TreeManager } from './tree-manager'

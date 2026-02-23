@@ -1,19 +1,22 @@
 /**
  * DataSet 管理 Composable
+ *
+ * 位于 spark-component 渲染层，负责将 spark-data 的 DataSet
+ * 与 Vue 响应式系统桥接（shallowRef + 生命周期管理）。
+ *
+ * 职责单一：仅关注 DataSet 生命周期，不持有 UI/Rule 相关依赖。
+ * DataSet ↔ el-table 的同步桥由 useRuleBinding 单独负责。
  */
 
-import { shallowRef, Ref, onUnmounted } from 'vue'
+import { shallowRef, type Ref, onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
-import { DataSet } from '../dataset'
-import type { IDataSetMetadata } from '../types'
+import { DataSet } from '@spark-view/spark-data'
+import type { IDataSetMetadata } from '@spark-view/spark-data'
 
-const pageLogger = Logger('PageRenderer')
+const pageLogger = Logger('PageRenderer:DataSet')
 
 /**
  * DataSet 管理选项接口
- *
- * 职责单一：仅关注 DataSet 生命周期，不持有 UI/Rule 相关依赖。
- * DataSet ↔ el-table 的同步桥由 useTableDataSync 单独负责。
  */
 export interface UsePageDataSetOptions {
   enableDataSet?: boolean
@@ -32,7 +35,7 @@ export interface UsePageDataSetReturn {
 
 /**
  * DataSet 管理 Hook
- * 
+ *
  * @example
  * ```typescript
  * const { dataSet, initDataSet } = usePageDataSet({ enableDataSet: true })
@@ -41,11 +44,11 @@ export interface UsePageDataSetReturn {
  */
 export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetReturn {
   const { enableDataSet = true } = options
-  
+
   const dataSet = shallowRef<DataSet | null>(null)
   /** 当前 DataSet 对应的 pagedata._version，undefined = 无版本信息 */
   let currentDataVersion: unknown = undefined
-  
+
   /**
    * pagedata.json 原始对象 → 归一化 → DataSet（唯一缓存，不写入 pageData）
    */
@@ -106,23 +109,23 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     dataSet.value = DataSet.fromPageData(rawPageData)
     currentDataVersion = incomingVersion
 
-    pageLogger.debug('DataSet 初始化成功（pagedata 归一化）', { 
+    pageLogger.debug('DataSet 初始化成功（pagedata 归一化）', {
       tables: dataSet.value ? Object.keys(dataSet.value.tables || {}) : []
     })
   }
-  
+
   /**
-   * 清理DataSet (SRP: 单一职责 - 只负责清理)
+   * 清理 DataSet（SRP：单一职责 - 只负责清理）
    */
   const clearDataSet = () => {
     dataSet.value = null
     currentDataVersion = undefined
   }
-  
+
   onUnmounted(() => {
     clearDataSet()
   })
-  
+
   return {
     dataSet,
     initDataSet,

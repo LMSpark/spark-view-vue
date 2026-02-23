@@ -10,7 +10,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '../packages/spark-data/src/spark-data'
 import { RequestState } from '../packages/spark-data/src/data-view'
 import type { ViewStateEvent, IDataRow } from '../packages/spark-data/src/types'
-import { createEventContext } from '../packages/spark-data/src/types'
+import { createEventContext } from '../packages/spark-data/src/core/event-id'
 
 // ─── 通用测试 DataSet 工厂 ─────────────────────────────────────
 

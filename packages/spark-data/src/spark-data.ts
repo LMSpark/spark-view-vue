@@ -107,7 +107,7 @@ export namespace SparkData {
    * @param httpConfig HTTP配置
    * @returns CRUD服务实例
    */
-  export function createCrudService(api: CrudApi, httpConfig?: import('./types').RequestConfig) {
+  export function createCrudService(api: CrudApi, httpConfig?: import('@spark-view/spark-utils').RequestConfig) {
     return new CrudService(api, httpConfig)
   }
 
