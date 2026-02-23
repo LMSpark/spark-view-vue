@@ -59,6 +59,40 @@ export interface ISelectionHost {
 }
 
 // ─────────────────────────────────────────────
+// LocalMutationDelegate Host 接口
+// ─────────────────────────────────────────────
+
+/**
+ * LocalMutationDelegate 所需的宿主能力（ISP 最小子集）
+ *
+ * 涵盖本地行数据写入所需的所有可变字段及辅助方法。
+ * 可写字段由委托直接修改，与 DataView 同引用，Vue 响应式兼容。
+ */
+export interface ILocalMutationHost {
+  // ── 行数据（委托直接 splice） ───────────────
+  readonly rows: IDataRow[]
+  readonly tableName: string
+  readonly viewId: string
+  readonly primaryKey: string | string[]
+
+  // ── 分页（委托直接写入） ──────────────────
+  total: number
+  page: number
+  pageSize: number
+
+  // ── 选中状态（updateRowById/deleteRowById/replaceRows 同步引用） ──
+  currentRow: IDataRow | null
+  currentRowIndex: number | null
+  selectedRows: IDataRow[]
+  selectedRowIndices: number[]
+  rowIndexMap?: Map<IDataRow, number> | undefined
+
+  // ── 工具方法 ──────────────────────────────
+  getPrimaryKeyValue(row: IDataRow): string | number | undefined
+  isDestroyed(): boolean
+}
+
+// ─────────────────────────────────────────────
 // CrudDelegate Host 接口
 // ─────────────────────────────────────────────
 

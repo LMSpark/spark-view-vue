@@ -41,6 +41,7 @@ import { isSameRow, getParentRows } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
 import { SelectionDelegate } from './strategies/selection-delegate'
+import { LocalMutationDelegate } from './strategies/local-mutation-delegate'
 import type { CrudLifecycleEvent } from './strategies/types'
 import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from './core/primary-key-generator'
 import { createPrimaryKeyGenerator } from './core/primary-key-generator'
@@ -171,6 +172,8 @@ export class DataView implements IDataSource {
   private _cascadeDelegate?: CascadeDelegate | undefined
   /** 选中状态委托（懒初始化） */
   private _selectionDelegate?: SelectionDelegate | undefined
+  /** 本地内存变更委托（懒初始化） */
+  private _localMutationDelegate?: LocalMutationDelegate | undefined
 
   /** 获取 CRUD 委托（懒初始化） */
   private get crudDelegate(): CrudDelegate {
@@ -202,6 +205,16 @@ export class DataView implements IDataSource {
       () => this._mkCtx(),
     )
     return this._selectionDelegate
+  }
+
+  /** 获取本地变更委托（懒初始化） */
+  private get localMutationDelegate(): LocalMutationDelegate {
+    this._localMutationDelegate ??= new LocalMutationDelegate(
+      this,
+      (changeType, extra) => this.emitStateChanged(changeType, extra),
+      () => this._mkCtx(),
+    )
+    return this._localMutationDelegate
   }
   
   // ── 公共内部对象 ─────────────────────────
@@ -597,127 +610,27 @@ export class DataView implements IDataSource {
 
   /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定，对 Vue 响应式友好 */
   updateFromServer(data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[]): void {
-    if (Array.isArray(data)) {
-      this.rows.splice(0, this.rows.length, ...data)
-    } else {
-      if (data.rows) this.rows.splice(0, this.rows.length, ...data.rows)
-      if (data.total !== undefined) this.total = data.total
-      if (data.page !== undefined) this.page = data.page
-      if (data.pageSize !== undefined) this.pageSize = data.pageSize
-    }
-    
-    // 清除索引缓存（行数据变更后缓存失效）
-    this.rowIndexMap = undefined
+    this.localMutationDelegate.updateFromServer(data)
   }
 
   /** 本地追加一行，发射 stateChanged('rows') */
   appendRow(row: IDataRow): void {
-    this.rows.push(row)
-    this.rowIndexMap = undefined   // 新行未加入缓存，直接失效
-    this.emitStateChanged('rows')
+    this.localMutationDelegate.appendRow(row)
   }
 
   /** 本地按主键部分更新一行，发射 stateChanged('rows')；返回是否成功（行不存在时 false） */
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
-    const idx = this.rows.findIndex(r => {
-      const pkValue = this.getPrimaryKeyValue(r)
-      return pkValue === id
-    })
-    if (idx < 0) return false
-    
-    const oldRow = this.rows[idx]
-    if (!oldRow) return false
-    
-    const newRow = { ...oldRow, ...data }
-    this.rows[idx] = newRow
-    // 行引用已替换：在 Map 中原地更新 O(1)，避免 setSelectedRows 时全量重建
-    if (this.rowIndexMap) {
-      this.rowIndexMap.delete(oldRow)
-      this.rowIndexMap.set(newRow, idx)
-    }
-
-    const ctx = this._mkCtx()
-    // 同步更新选中状态的引用，并发射对应事件（引用已变，UI 需感知）
-    if (this.currentRow && this.isSamePrimaryKey(this.currentRow, oldRow)) {
-      this.currentRow = newRow
-      this.emitStateChanged('currentRow', { row: newRow, context: ctx })
-    }
-    
-    if (this.selectedRows.length > 0) {
-      const selectedIdx = this.selectedRows.findIndex(r => this.isSamePrimaryKey(r, oldRow))
-      if (selectedIdx !== -1) {
-        this.selectedRows[selectedIdx] = newRow
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
-      }
-    }
-    
-    this.emitStateChanged('rows')
-    return true
+    return this.localMutationDelegate.updateRowById(id, data)
   }
 
   /** 本地按主键删除一行，清理选中引用，发射 stateChanged('rows')；返回是否成功（行不存在时 false） */
   deleteRowById(id: string | number): boolean {
-    const idx = this.rows.findIndex(r => {
-      const pkValue = this.getPrimaryKeyValue(r)
-      return pkValue === id
-    })
-    if (idx < 0) return false
-    
-    const deletedRow = this.rows[idx]
-    if (!deletedRow) return false
-    
-    this.rows.splice(idx, 1)
-    // splice 后重建索引 Map（O(n))，供删除后 selectedRowIndices 更新复用（O(1) vs O(n) indexOf）
-    const postDeleteMap = this.buildRowIndexMap(this.rows)
-    this.rowIndexMap = postDeleteMap
-
-    const ctx = this._mkCtx()
-    // 被删行是当前行 → 清空并立即通知
-    if (this.currentRow && this.isSamePrimaryKey(this.currentRow, deletedRow)) {
-      this.currentRow = null
-      this.currentRowIndex = null
-      this.emitStateChanged('currentRow', { row: null, context: ctx })
-    }
-    
-    // 被删行在多选中 → 移除并立即通知
-    if (this.selectedRows.length > 0) {
-      const newSelected = this.selectedRows.filter(r => !this.isSamePrimaryKey(r, deletedRow))
-      if (newSelected.length !== this.selectedRows.length) {
-        this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
-        // postDeleteMap 已在上方构建，O(1) 查找代替 O(n) indexOf
-        this.selectedRowIndices = this.mapRowsToIndices(newSelected, postDeleteMap)
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
-      }
-    }
-    
-    this.emitStateChanged('rows')
-    return true
+    return this.localMutationDelegate.deleteRowById(id)
   }
 
   /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 stateChanged('rows') */
   replaceRows(rows: IDataRow[]): void {
-    this.rows.splice(0, this.rows.length, ...rows)
-    // O(n) 构建索引 Map，供后续 selectedRowIndices 计算和 setSelectedRows 复用
-    const idxMap = this.buildRowIndexMap(rows)
-    this.rowIndexMap = idxMap
-    // 行集合完全替换，旧引用失效 → 清理选中状态并通知
-    const ctx = this._mkCtx()
-    const rowSet = new Set(rows)
-    if (this.currentRow && !rowSet.has(this.currentRow)) {
-      this.currentRow = null
-      this.currentRowIndex = null
-      this.emitStateChanged('currentRow', { row: null, context: ctx })
-    }
-    if (this.selectedRows.length > 0) {
-      const newSelected = this.selectedRows.filter(r => rowSet.has(r))
-      if (newSelected.length !== this.selectedRows.length) {
-        this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
-        // idxMap 已在函数头部构建，O(1) 查找代替 O(n) indexOf
-        this.selectedRowIndices = this.mapRowsToIndices(newSelected, idxMap)
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
-      }
-    }
-    this.emitStateChanged('rows')
+    this.localMutationDelegate.replaceRows(rows)
   }
 
   // ─────────────────────────────────────────────
@@ -771,24 +684,6 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
   // 状态重置
   // ─────────────────────────────────────────────
-
-  /** 构建 row → index 映射（O(n)），供 deleteRow / replaceRows / setSelectedRows 复用 */
-  private buildRowIndexMap(rows: IDataRow[]): Map<IDataRow, number> {
-    const m = new Map<IDataRow, number>()
-    let i = 0
-    for (const row of rows) m.set(row, i++)
-    return m
-  }
-
-  /** 将行数组映射为索引数组（单次遍历，无 -1 占位，替代 .map(get ?? -1).filter(≠-1)）*/
-  private mapRowsToIndices(rows: IDataRow[], map: Map<IDataRow, number>): number[] {
-    const result: number[] = []
-    for (const r of rows) {
-      const idx = map.get(r)
-      if (idx !== undefined) result.push(idx)
-    }
-    return result
-  }
 
   /** 清空所有状态并发射 cleared 事件（通知 UI 和子视图） */
   clearAll(): void {
