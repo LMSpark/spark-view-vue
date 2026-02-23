@@ -267,9 +267,6 @@ function injectTableEvents(
   rule: Rule,
   dataSet: IDataSet
 ): void {
-  // 使用局部防重入标志
-  let isProcessingEvent = false
-  
   // 通过统一 DataKey 解析获取表名和视图ID
   const rawKey = rule['dataKey'] as string | undefined
   if (!rawKey) return
@@ -299,15 +296,8 @@ function injectTableEvents(
       return
     }
     
-    // ✅ 防止同一表格的重入调用
-    if (isProcessingEvent) {
-      pageLogger.debug(`⏭️ [防循环] 跳过重入事件`, { tableName, viewId })
-      return
-    }
-    
+    // （本地防重逻辑已移除）
     try {
-      isProcessingEvent = true
-      
       // 先调用用户处理器
       if (typeof originalCurrentChange === 'function') {
         (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
@@ -317,7 +307,7 @@ function injectTableEvents(
       sync.onCurrentChange(currentRow ?? null)
       pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
     } finally {
-      isProcessingEvent = false
+      // no-op
     }
   }
   
@@ -334,14 +324,8 @@ function injectTableEvents(
       return
     }
     
-    // ✅ 防止同一表格的重入调用
-    if (isProcessingEvent) {
-      pageLogger.debug(`⏭️ [防循环] 跳过重入事件`, { tableName, viewId })
-      return
-    }
-    
+    // （本地防重逻辑已移除）
     try {
-      isProcessingEvent = true
       
       // 先调用用户处理器
       if (typeof originalSelectionChange === 'function') {
@@ -352,7 +336,7 @@ function injectTableEvents(
       sync.onSelectionChange(selection)
       pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${viewId}`)
     } finally {
-      isProcessingEvent = false
+      // no-op
     }
   }
 }
