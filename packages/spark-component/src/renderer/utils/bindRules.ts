@@ -279,6 +279,11 @@ function injectTableEvents(
   rule.name ??= `table_${tableName}_${viewId}`
   rule.on ??= {}
 
+  // 提前查找并缓存 view，避免两个事件处理器各自重复调用 getTable + getOrCreateView
+  const table = dataSet.getTable(tableName)
+  if (!table) return
+  const view = table.getOrCreateView(viewId)
+
   // 注入 currentChange 事件（单选行变化）
   const originalCurrentChange = rule.on['currentChange']
   rule.on['currentChange'] = (currentRow: IDataRow | null, oldRow: IDataRow | null) => {
@@ -288,9 +293,6 @@ function injectTableEvents(
       (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
     }
 
-    const table = dataSet.getTable(tableName)
-    if (!table) return
-    const view = table.getOrCreateView(viewId)
     const ctx = createEventContext('ui', { tableName, viewId })
 
     if (currentRow === null) {
@@ -320,9 +322,6 @@ function injectTableEvents(
       (originalSelectionChange as (selection: unknown) => void)(selection)
     }
 
-    const table = dataSet.getTable(tableName)
-    if (!table) return
-    const view = table.getOrCreateView(viewId)
     const valid = Array.isArray(selection) ? selection : []
     view.setSelectedRows(valid, createEventContext('ui', { tableName, viewId }))
   }

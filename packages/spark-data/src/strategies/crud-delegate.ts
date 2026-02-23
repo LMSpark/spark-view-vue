@@ -119,6 +119,18 @@ export class CrudDelegate {
     }
   }
 
+  /** 批量校验所有行，返回错误消息列表（消除 batchCreateRecords/batchUpdateRecords 中的重复循环） */
+  private collectBatchValidationErrors(items: Partial<IDataRow>[]): string[] {
+    const errors: string[] = []
+    for (let i = 0; i < items.length; i++) {
+      const result = this.validateRow(items[i] as IDataRow)
+      if (result && !result.valid) {
+        errors.push(`第${i + 1}条: ${result.errors[0]?.message ?? '校验失败'}`)
+      }
+    }
+    return errors
+  }
+
   // ─────────────────────────────────────────────
   // 列表查询（供 DataView.loadFromServer 使用）
   // ─────────────────────────────────────────────
@@ -195,13 +207,7 @@ export class CrudDelegate {
   async batchCreateRecords(items: Partial<IDataRow>[]): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchCreate', items)) return this.cancelledResult('batchCreate')
 
-    const validationErrors: string[] = []
-    for (let i = 0; i < items.length; i++) {
-      const validationResult = this.validateRow(items[i] as IDataRow)
-      if (validationResult && !validationResult.valid) {
-        validationErrors.push(`第${i + 1}条: ${validationResult.errors[0]?.message ?? '校验失败'}`)
-      }
-    }
+    const validationErrors = this.collectBatchValidationErrors(items)
     if (validationErrors.length > 0) {
       return {
         success: false,
@@ -227,13 +233,7 @@ export class CrudDelegate {
   async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchUpdate', items)) return this.cancelledResult('batchUpdate')
 
-    const validationErrors: string[] = []
-    for (let i = 0; i < items.length; i++) {
-      const validationResult = this.validateRow(items[i] as IDataRow)
-      if (validationResult && !validationResult.valid) {
-        validationErrors.push(`第${i + 1}条: ${validationResult.errors[0]?.message ?? '校验失败'}`)
-      }
-    }
+    const validationErrors = this.collectBatchValidationErrors(items)
     if (validationErrors.length > 0) {
       return {
         success: false,

@@ -73,7 +73,6 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
 
     // DataSet 实例直接赋值，跳过归一化（已由 parsePageData 编译并缓存）
     if (rawPageData instanceof DataSet) {
-
       dataSet.value = rawPageData
       currentDataVersion = rawPageData.version
       pageLogger.debug('DataSet 直接赋值（已编译实例）', {
@@ -116,10 +115,8 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
    * 清理DataSet (SRP: 单一职责 - 只负责清理)
    */
   const clearDataSet = () => {
-    if (dataSet.value) {
-      dataSet.value = null
-      currentDataVersion = undefined
-    }
+    dataSet.value = null
+    currentDataVersion = undefined
   }
   
   onUnmounted(() => {
