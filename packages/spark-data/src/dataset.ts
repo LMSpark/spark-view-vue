@@ -7,7 +7,6 @@
  */
 
 import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi } from './types'
-import { createEventContext } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
 
@@ -73,24 +72,6 @@ export class DataSet implements IDataSet {
       r.parentViewId ??= 'default'
       r.childViewId ??= 'default'
     })
-    
-    // 🔧 自动设置单行表的 currentRow（方便数据绑定）
-    for (const table of Object.values(this.tables)) {
-      const view = table.getOrCreateView('default')
-      if (view.rows.length === 1 && !view.currentRow) {
-        const firstRow = view.rows[0]
-        if (firstRow) {
-          // ✅ 创建事件上下文
-          view.setCurrentRow(
-            firstRow, 
-            createEventContext('auto', { 
-              tableName: table.tableName, 
-              viewId: 'default' 
-            })
-          )
-        }
-      }
-    }
   }
 
   // ===== 关系图查询（网状关系，非树形） =====
@@ -131,7 +112,9 @@ export class DataSet implements IDataSet {
       columns: DataColumn[]
       rows?: IDataRow[]
       api?: CrudApi
-      views?: Record<string, IViewMetadata>  // ✅ 支持 views 配置
+      autoCurrentFirst?: boolean
+      autoSelectFirst?: boolean
+      views?: Record<string, IViewMetadata>
     }>
     relations?: DataRelation[]
   }): DataSet {

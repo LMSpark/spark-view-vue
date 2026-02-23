@@ -136,12 +136,6 @@ export class DataView implements IDataSource {
    */
   autoSelectFirst: boolean = true
   
-  /**
-   * 设置 currentRow 时是否自动同步到 selectedRows（实现“点击行 = 选中该行”）。
-   * - `true`（默认）： setCurrentRow(row) 后自动调用 setSelectedRows([row])
-   * - `false`：currentRow 和 selectedRows 独立管理
-   */
-  syncCurrentToSelected: boolean = false  //  ⚠️ 暂时禁用，避免循环触发
 
   // ── 关联对象 ────────────────────────────────
 
@@ -258,26 +252,6 @@ export class DataView implements IDataSource {
       values.push(value)
     }
     return values.join(':')
-  }
-
-  /**
-   * 获取行的所有主键字段值（数组形式）
-   * 
-   * @param row 数据行
-   * @returns 主键值数组，如果任一主键字段不存在则返回 undefined
-   */
-  getPrimaryKeyValues(row: IDataRow): Array<string | number> | undefined {
-    const fields = typeof this.primaryKey === 'string' ? [this.primaryKey] : this.primaryKey
-    const values: Array<string | number> = []
-    
-    for (const field of fields) {
-      const value = row[field]
-      if (value === undefined || value === null) return undefined
-      if (typeof value !== 'string' && typeof value !== 'number') return undefined
-      values.push(value)
-    }
-    
-    return values
   }
 
   /**
@@ -510,53 +484,9 @@ export class DataView implements IDataSource {
       
       if (result.success && result.data) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
-        const firstRow = this.rows.length > 0 ? this.rows[0] : null
-        
-        // 处理 autoCurrentFirst（默认 true）
-        if (this.autoCurrentFirst !== false && firstRow) {
-          this.currentRow = firstRow
-          this.currentRowIndex = 0
-        } else {
-          this.currentRow = null
-          this.currentRowIndex = null
-        }
-        
-        // 处理 autoSelectFirst（默认 true）
-        if (this.autoSelectFirst !== false && firstRow) {
-          this.selectedRows.splice(0, this.selectedRows.length, firstRow)
-          this.selectedRowIndices = [0]
-        } else {
-          this.selectedRows.splice(0, this.selectedRows.length)
-          this.selectedRowIndices = []
-        }
-        
+        this._applyAutoFirst()
         this.requestState = RequestState.Loaded
-        
-        // 先触发 rows 事件，再触发 currentRow 和 selectedRows 事件（如果有变化）
         this.emitStateChanged('rows')
-        
-        // 显式触发 currentRow 事件（让 UI 和业务脚本能感知自动选中）
-        // ✅ 创建新的事件上下文（使用视图级别的 ID）
-        if (this.autoCurrentFirst !== false) {
-          this.emitStateChanged('currentRow', { 
-            row: this.currentRow, 
-            context: createEventContext('auto', { 
-              tableName: this.tableName, 
-              viewId: this.viewId 
-            })
-          })
-        }
-        
-        // 显式触发 selectedRows 事件
-        if (this.autoSelectFirst !== false && firstRow) {
-          this.emitStateChanged('selectedRows', { 
-            rows: this.selectedRows,
-            context: createEventContext('auto', { 
-              tableName: this.tableName, 
-              viewId: this.viewId 
-            })
-          })
-        }
       } else {
         this.requestState = RequestState.Failed
         this.emitStateChanged('requestState')
@@ -762,6 +692,32 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /**
+   * 数据加载完成后应用 autoCurrentFirst / autoSelectFirst 逻辑。
+   *
+   * updateFromServer() 替换了全部行引用，旧的 currentRow/selectedRows 指针已失效。
+   * 先强制清零（无事件），再通过正式 setter 写入新值；setter 会同时触发
+   * this.events（stateChanged）和全局 bus（view:currentRow / view:selectedRows），
+   * useRuleBinding 等订阅者因此能正确收到事件。
+   */
+  private _applyAutoFirst(): void {
+    this.currentRow = null
+    this.currentRowIndex = null
+    this.selectedRows.splice(0, this.selectedRows.length)
+    this.selectedRowIndices = []
+    this.rowIndexMap = undefined
+
+    const firstRow = this.rows[0] ?? null
+    const autoCtx = createEventContext('auto', { tableName: this.tableName, viewId: this.viewId })
+
+    if (this.autoCurrentFirst !== false && firstRow) {
+      this.setCurrentRow(firstRow, autoCtx)   // guard: null !== firstRow → always fires
+    }
+    if (this.autoSelectFirst !== false && firstRow) {
+      this.setSelectedRows([firstRow], autoCtx)  // guard: [] !== [firstRow] → always fires
+    }
+  }
+
+  /**
    * 设置当前行
    * 状态变更 → 发射 stateChanged → UI + 子视图级联均通过 events 接收
    * 
@@ -778,20 +734,6 @@ export class DataView implements IDataSource {
     const eventContext = context ?? createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
     this.emitStateChanged('currentRow', { row, context: eventContext })
     bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row, context: eventContext })
-    
-    // ✅ 如果启用了 syncCurrentToSelected，自动将当前行同步到选中行
-    // 注意：setSelectedRows 内部有幂等检查，如果内容相同不会重复发射事件
-    if (this.syncCurrentToSelected) {
-      const newSelection = row ? [row] : []
-      // 只在选中状态真正改变时才调用（避免不必要的事件）
-      const current = this.selectedRows
-      const needsUpdate = current.length !== newSelection.length || 
-                         (newSelection.length > 0 && current[0] !== newSelection[0])
-      if (needsUpdate) {
-        // ✅ 级联更新时透传相同的 context
-        this.setSelectedRows(newSelection, eventContext)
-      }
-    }
   }
 
   /**
@@ -1229,50 +1171,30 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /**
-   * 统一发射 stateChanged 事件（带防抖优化）
+   * 统一发射 stateChanged 事件
    *
-   * 所有状态变更均通过此方法发射，UI 和子视图共用同一事件总线。
-   * 关键状态和用户交互立即触发，数据变更（rows）防抖16ms。
+   * - rows：防抖 16ms（合并批量更新，减少重绘）；只有同类事件才取消前一次防抖，
+   *   立即事件（currentRow 等）不会意外取消正在等待的 rows 通知。
+   * - 其余事件：立即触发（cleared / requestState / mutating / currentRow / selectedRows）。
+   * - extra 先展开，再用具名字段覆盖，防止 extra.context 等字段覆盖计算值。
    */
   private emitStateChanged(changeType: ViewStateEvent['changeType'], extra?: Partial<ViewStateEvent>): void {
-    // ✅ 如果没有提供 context，自动创建一个（使用 'program' 作为 source）
-    const context = extra?.context ?? createEventContext(
-      'program', 
-      { tableName: this.tableName, viewId: this.viewId }
-    )
-    
-    const event: ViewStateEvent = {
-      tableName: this.tableName,
-      viewId: this.viewId,
-      changeType,
-      context,
-      ...extra,
-    }
-    
-    // 清除上次的防抖定时器
-    if (this.stateChangedDebouncer) {
-      clearTimeout(this.stateChangedDebouncer)
-      this.stateChangedDebouncer = undefined
-    }
-    
-    // 关键状态和用户交互立即触发（避免 UI 延迟响应）
-    // - cleared, requestState, mutating: 关键状态变化
-    // - currentRow, selectedRows: 用户交互，需要即时反馈
-    if (changeType === 'cleared' || 
-        changeType === 'requestState' || 
-        changeType === 'mutating' ||
-        changeType === 'currentRow' || 
-        changeType === 'selectedRows') {
+    const context = extra?.context ?? createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+    // extra spreads first; explicit fields always win
+    const event: ViewStateEvent = { ...extra, tableName: this.tableName, viewId: this.viewId, changeType, context }
+
+    if (changeType === 'rows') {
+      // Only rows uses debounce; cancel only a previous rows debounce (not immediate events)
+      if (this.stateChangedDebouncer) {
+        clearTimeout(this.stateChangedDebouncer)
+      }
+      this.stateChangedDebouncer = setTimeout(() => {
+        this.events.emit('stateChanged', event)
+        this.stateChangedDebouncer = undefined
+      }, 16)
+    } else {
       this.events.emit('stateChanged', event)
-      return
     }
-    
-    // 数据变更（rows）防抖 16ms（约一帧，60fps）
-    // 适用于批量更新场景，减少 UI 重绘频率
-    this.stateChangedDebouncer = setTimeout(() => {
-      this.events.emit('stateChanged', event)
-      this.stateChangedDebouncer = undefined
-    }, 16)
   }
 
   // ─────────────────────────────────────────────
