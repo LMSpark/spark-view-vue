@@ -145,17 +145,16 @@ async function loadConfigFromUrl(url: string, options: JsonRendererOptions): Pro
       else {
         throw new Error('必须提供 configUrl 或 config 参数')
       }
-      
-      loading.value = false
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e))
       error.value = err.message
-      loading.value = false
       
       // 调用 onError 钩子
       if (props.onError) {
         props.onError(err)
       }
+    } finally {
+      loading.value = false
     }
   }
 

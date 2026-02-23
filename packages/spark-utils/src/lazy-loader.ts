@@ -52,14 +52,14 @@ export function useSyncfusionLoader() {
         ])
 
         loadedModules.set('syncfusion-grids', gridsModule)
-        loading.value = false
         return gridsModule
       } catch (err) {
         // 清除失败的缓存条目，允许后续重试（网络恢复后）
         loadCache.delete('syncfusion-grids')
         error.value = err instanceof Error ? err.message : '加载失败'
-        loading.value = false
         throw err
+      } finally {
+        loading.value = false
       }
     })()
 
@@ -104,14 +104,14 @@ export function useLazyLoader<T = unknown>(moduleId: string) {
         const module = await importFn()
         loadedModules.set(moduleId, module)
         loaded.value = true
-        loading.value = false
         return module
       } catch (err) {
         // 清除失败的缓存条目，允许后续重试（网络恢复后）
         loadCache.delete(moduleId)
         error.value = err instanceof Error ? err.message : '模块加载失败'
-        loading.value = false
         throw err
+      } finally {
+        loading.value = false
       }
     })()
 
@@ -163,6 +163,15 @@ export class Preloader {
     })
   }
 
+  /** 在空闲期调度任务：优先使用 requestIdleCallback，降级为 setTimeout */
+  private schedule(fn: () => void): void {
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(fn)
+    } else {
+      setTimeout(fn, 100)
+    }
+  }
+
   private async run(): Promise<void> {
     if (this.isRunning || this.preloadQueue.length === 0) return
 
@@ -177,22 +186,11 @@ export class Preloader {
 
       const task = this.preloadQueue.shift()
       if (task) {
-        void task().finally(() => {
-          // 递归执行下一个任务
-          if (typeof requestIdleCallback !== 'undefined') {
-            requestIdleCallback(runTask)
-          } else {
-            setTimeout(runTask, 100)
-          }
-        })
+        void task().finally(() => this.schedule(runTask))
       }
     }
 
-    if (typeof requestIdleCallback !== 'undefined') {
-      requestIdleCallback(runTask)
-    } else {
-      setTimeout(runTask, 100)
-    }
+    this.schedule(runTask)
   }
 }
 
