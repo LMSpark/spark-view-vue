@@ -618,17 +618,20 @@ export class DataView implements IDataSource {
     this.rows[idx] = newRow
     this.rowIndexMap = undefined   // 行引用已替换，缓存失效
 
+    const ctx = this._mkCtx()
     // 同步更新选中状态的引用，并发射对应事件（引用已变，UI 需感知）
     if (this.currentRow && this.isSamePrimaryKey(this.currentRow, oldRow)) {
       this.currentRow = newRow
-      this.emitStateChanged('currentRow', { row: newRow, context: this._mkCtx() })
+      this.emitStateChanged('currentRow', { row: newRow, context: ctx })
+      bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: newRow, context: ctx })
     }
     
     if (this.selectedRows.length > 0) {
       const selectedIdx = this.selectedRows.findIndex(r => this.isSamePrimaryKey(r, oldRow))
       if (selectedIdx !== -1) {
         this.selectedRows[selectedIdx] = newRow
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: this._mkCtx() })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
+        bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
     }
     
@@ -650,11 +653,13 @@ export class DataView implements IDataSource {
     this.rows.splice(idx, 1)
     this.rowIndexMap = undefined   // splice 后索引偏移，缓存失效
 
+    const ctx = this._mkCtx()
     // 被删行是当前行 → 清空并立即通知
     if (this.currentRow && this.isSamePrimaryKey(this.currentRow, deletedRow)) {
       this.currentRow = null
       this.currentRowIndex = null
-      this.emitStateChanged('currentRow', { row: null, context: this._mkCtx() })
+      this.emitStateChanged('currentRow', { row: null, context: ctx })
+      bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: null, context: ctx })
     }
     
     // 被删行在多选中 → 移除并立即通知
@@ -663,7 +668,8 @@ export class DataView implements IDataSource {
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: this._mkCtx() })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
+        bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
     }
     
@@ -676,18 +682,21 @@ export class DataView implements IDataSource {
     this.rows.splice(0, this.rows.length, ...rows)
     this.rowIndexMap = undefined   // 全量替换，缓存失效
     // 行集合完全替换，旧引用失效 → 清理选中状态并通知
+    const ctx = this._mkCtx()
     const rowSet = new Set(rows)
     if (this.currentRow && !rowSet.has(this.currentRow)) {
       this.currentRow = null
       this.currentRowIndex = null
-      this.emitStateChanged('currentRow', { row: null, context: this._mkCtx() })
+      this.emitStateChanged('currentRow', { row: null, context: ctx })
+      bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: null, context: ctx })
     }
     if (this.selectedRows.length > 0) {
       const newSelected = this.selectedRows.filter(r => rowSet.has(r))
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => rows.indexOf(r)).filter(i => i !== -1)
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: this._mkCtx() })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
+        bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
     }
     this.emitStateChanged('rows')
@@ -706,6 +715,8 @@ export class DataView implements IDataSource {
    * useRuleBinding 等订阅者因此能正确收到事件。
    */
   private _applyAutoFirst(): void {
+    const prevCurrentRow = this.currentRow
+    const prevHadSelected = this.selectedRows.length > 0
     this.currentRow = null
     this.currentRowIndex = null
     this.selectedRows.splice(0, this.selectedRows.length)
@@ -717,9 +728,17 @@ export class DataView implements IDataSource {
 
     if (this.autoCurrentFirst !== false && firstRow) {
       this.setCurrentRow(firstRow, autoCtx)   // guard: null !== firstRow → always fires
+    } else if (prevCurrentRow !== null) {
+      // autoCurrentFirst=false 或无数据：当前行被强制清零，仍需通知 bus（el-table 高亮清除）
+      this.emitStateChanged('currentRow', { row: null, context: autoCtx })
+      bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: null, context: autoCtx })
     }
     if (this.autoSelectFirst !== false && firstRow) {
       this.setSelectedRows([firstRow], autoCtx)  // guard: [] !== [firstRow] → always fires
+    } else if (prevHadSelected) {
+      // autoSelectFirst=false 或无数据：已选行被强制清零，仍需通知 bus
+      this.emitStateChanged('selectedRows', { rows: [], context: autoCtx })
+      bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [], context: autoCtx })
     }
   }
 
@@ -1112,9 +1131,19 @@ export class DataView implements IDataSource {
 
   /** 清空所有状态并发射 cleared 事件（通知 UI 和子视图） */
   clearAll(): void {
-    const had = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0
+    const prevCurrentRow = this.currentRow
+    const prevHadSelected = this.selectedRows.length > 0
+    const had = this.rows.length > 0 || prevCurrentRow !== null || prevHadSelected
     this.resetState()
     if (had) {
+      const ctx = this._mkCtx()
+      // 通知 bus：el-table 需要通过 bus 事件（而非 stateChanged）清除 currentRow/selectedRows 高亮
+      if (prevCurrentRow !== null) {
+        bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: null, context: ctx })
+      }
+      if (prevHadSelected) {
+        bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [], context: ctx })
+      }
       this.emitStateChanged('cleared')
     }
   }
