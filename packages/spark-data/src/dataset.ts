@@ -102,8 +102,10 @@ export class DataSet implements IDataSet {
       for (const view of Object.values(table.views)) {
         const h = (evt: ViewStateEvent) => {
           if (event === 'loadSuccess'
-            && evt.changeType === 'rows'
+            && evt.changeType === 'requestState'
             && view.requestState === RequestState.Loaded) {
+            // requestState 事件仅在 loadFromServer 成功时（Loaded 转换）发射，
+            // appendRow/replaceRows 等本地操作不发射 requestState → 无误触发
             handler({ tableName: evt.tableName, viewId: evt.viewId })
           } else if (event === 'loadError'
             && evt.changeType === 'requestState'

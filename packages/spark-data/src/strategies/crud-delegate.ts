@@ -21,7 +21,7 @@ import type {
   CrudOperationConfig, QueryParams,
 } from '../types'
 import type { ValidationResult } from '../validation'
-import type { ICrudHost, EmitStateChangedFn, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
+import type { ICrudHost, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
 import { createCrudLifecycleEvent } from './types'
 
 const logger = Logger('DataView:CRUD')
@@ -37,7 +37,6 @@ export class CrudDelegate {
 
   constructor(
     private host: ICrudHost,
-    private emitStateChanged: EmitStateChangedFn,
     private emitCrudLifecycle: EmitCrudLifecycleFn,
     private emitMutating: MutatingFn,
   ) {}
@@ -140,8 +139,7 @@ export class CrudDelegate {
       const svc = this.ensureCrudService()
       const result = await svc.create<IDataRow>(data, this.getCrudConfig())
       if (result.success && result.data) {
-        this.host.appendRow(result.data)
-        this.emitStateChanged('rows')
+        this.host.appendRow(result.data)   // appendRow 内部已发射 stateChanged('rows')
       }
       this.fireAfter('create', data, result)
       return result
@@ -164,8 +162,8 @@ export class CrudDelegate {
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
       const result = await svc.update<IDataRow>(id, data, this.getCrudConfig())
-      if (result.success && result.data && this.host.updateRowById(id, result.data)) {
-        this.emitStateChanged('rows')
+      if (result.success && result.data) {
+        this.host.updateRowById(id, result.data)   // updateRowById 内部已发射 stateChanged('rows')
       }
       this.fireAfter('update', { id, ...data }, result)
       return result
@@ -179,8 +177,8 @@ export class CrudDelegate {
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
       const result = await svc.delete(id, this.getCrudConfig())
-      if (result.success && this.host.deleteRowById(id)) {
-        this.emitStateChanged('rows')
+      if (result.success) {
+        this.host.deleteRowById(id)   // deleteRowById 内部已发射 stateChanged('rows')
       }
       this.fireAfter('delete', { id }, result)
       return result
@@ -215,9 +213,8 @@ export class CrudDelegate {
       const result = await svc.batchCreate<IDataRow>(items, this.getCrudConfig())
       if (result.success && result.data) {
         for (const r of result.data.results) {
-          if (r.success && r.data) this.host.appendRow(r.data as IDataRow)
+          if (r.success && r.data) this.host.appendRow(r.data as IDataRow)  // 每行 appendRow 内部已发射（防抖合并）
         }
-        this.emitStateChanged('rows')
       }
       this.fireAfter('batchCreate', items, result)
       return result
@@ -251,10 +248,9 @@ export class CrudDelegate {
           if (r.success && r.data) {
             const record = r.data as IDataRow
             const id = (record as { id?: unknown }).id
-            if (id !== undefined) this.host.updateRowById(id as string | number, record)
+            if (id !== undefined) this.host.updateRowById(id as string | number, record)  // updateRowById 内部已发射
           }
         }
-        this.emitStateChanged('rows')
       }
       this.fireAfter('batchUpdate', items, result)
       return result
@@ -276,9 +272,8 @@ export class CrudDelegate {
           if (r.success && id !== undefined) successIds.add(id)
         })
 
-        let deletedCount = 0
         for (const id of successIds) {
-          if (this.host.deleteRowById(id)) deletedCount++
+          this.host.deleteRowById(id)   // deleteRowById 内部已发射（防抖合并）
         }
 
         if (result.data.failureCount > 0) {
@@ -286,10 +281,6 @@ export class CrudDelegate {
             successCount: result.data.successCount,
             failureCount: result.data.failureCount
           })
-        }
-
-        if (deletedCount > 0) {
-          this.emitStateChanged('rows')
         }
       }
 

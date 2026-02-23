@@ -143,6 +143,14 @@ export class DataView implements IDataSource {
 
   // ── 私有 ─────────────────────────────────────
 
+  /**
+   * 创建本视图的 'program' 来源事件上下文（私有快捷方式，减少重复代码）
+   * 每次调用生成新的 eventId，确保唯一性。
+   */
+  private _mkCtx(): import('./types').EventContext {
+    return createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+  }
+
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
   /** 并发 CRUD 请求计数器（支持多操作同时在途） */
@@ -165,7 +173,6 @@ export class DataView implements IDataSource {
   private get crudDelegate(): CrudDelegate {
     this._crudDelegate ??= new CrudDelegate(
       this,
-      (changeType, extra) => this.emitStateChanged(changeType, extra),
       (event) => this.events.emit(
         event.phase === 'before' ? 'crud:before' : 'crud:after',
         event,
@@ -486,6 +493,7 @@ export class DataView implements IDataSource {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         this._applyAutoFirst()
         this.requestState = RequestState.Loaded
+        this.emitStateChanged('requestState')   // 通知 Idle→Loading→Loaded 转换（DataSet.on('loadSuccess') 依赖此事件）
         this.emitStateChanged('rows')
       } else {
         this.requestState = RequestState.Failed
@@ -591,6 +599,7 @@ export class DataView implements IDataSource {
   /** 本地追加一行，发射 stateChanged('rows') */
   appendRow(row: IDataRow): void {
     this.rows.push(row)
+    this.rowIndexMap = undefined   // 新行未加入缓存，直接失效
     this.emitStateChanged('rows')
   }
 
@@ -607,20 +616,19 @@ export class DataView implements IDataSource {
     
     const newRow = { ...oldRow, ...data }
     this.rows[idx] = newRow
-    
+    this.rowIndexMap = undefined   // 行引用已替换，缓存失效
+
     // 同步更新选中状态的引用，并发射对应事件（引用已变，UI 需感知）
     if (this.currentRow && this.isSamePrimaryKey(this.currentRow, oldRow)) {
       this.currentRow = newRow
-      const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
-      this.emitStateChanged('currentRow', { row: newRow, context: ctx })
+      this.emitStateChanged('currentRow', { row: newRow, context: this._mkCtx() })
     }
     
     if (this.selectedRows.length > 0) {
       const selectedIdx = this.selectedRows.findIndex(r => this.isSamePrimaryKey(r, oldRow))
       if (selectedIdx !== -1) {
         this.selectedRows[selectedIdx] = newRow
-        const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: this._mkCtx() })
       }
     }
     
@@ -640,13 +648,13 @@ export class DataView implements IDataSource {
     if (!deletedRow) return false
     
     this.rows.splice(idx, 1)
-    
+    this.rowIndexMap = undefined   // splice 后索引偏移，缓存失效
+
     // 被删行是当前行 → 清空并立即通知
     if (this.currentRow && this.isSamePrimaryKey(this.currentRow, deletedRow)) {
       this.currentRow = null
       this.currentRowIndex = null
-      const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
-      this.emitStateChanged('currentRow', { row: null, context: ctx })
+      this.emitStateChanged('currentRow', { row: null, context: this._mkCtx() })
     }
     
     // 被删行在多选中 → 移除并立即通知
@@ -655,8 +663,7 @@ export class DataView implements IDataSource {
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
-        const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: this._mkCtx() })
       }
     }
     
@@ -667,21 +674,20 @@ export class DataView implements IDataSource {
   /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 stateChanged('rows') */
   replaceRows(rows: IDataRow[]): void {
     this.rows.splice(0, this.rows.length, ...rows)
+    this.rowIndexMap = undefined   // 全量替换，缓存失效
     // 行集合完全替换，旧引用失效 → 清理选中状态并通知
     const rowSet = new Set(rows)
     if (this.currentRow && !rowSet.has(this.currentRow)) {
       this.currentRow = null
       this.currentRowIndex = null
-      const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
-      this.emitStateChanged('currentRow', { row: null, context: ctx })
+      this.emitStateChanged('currentRow', { row: null, context: this._mkCtx() })
     }
     if (this.selectedRows.length > 0) {
       const newSelected = this.selectedRows.filter(r => rowSet.has(r))
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         this.selectedRowIndices = newSelected.map(r => rows.indexOf(r)).filter(i => i !== -1)
-        const ctx = createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
-        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
+        this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: this._mkCtx() })
       }
     }
     this.emitStateChanged('rows')
@@ -731,7 +737,7 @@ export class DataView implements IDataSource {
     if (this.currentRowIndex === -1) this.currentRowIndex = null
     
     // 使用调用方传入的上下文（携带 source='ui'/'sync' 等），否则默认 'program'
-    const eventContext = context ?? createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+    const eventContext = context ?? this._mkCtx()
     this.emitStateChanged('currentRow', { row, context: eventContext })
     bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row, context: eventContext })
   }
@@ -760,7 +766,7 @@ export class DataView implements IDataSource {
       .map(r => this.rowIndexMap?.get(r) ?? -1)
       .filter(i => i !== -1)
     
-    const eventContext = context ?? createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+    const eventContext = context ?? this._mkCtx()
     this.emitStateChanged('selectedRows', { rows: [...rows], context: eventContext })
     bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...rows], context: eventContext })
   }
@@ -1179,7 +1185,7 @@ export class DataView implements IDataSource {
    * - extra 先展开，再用具名字段覆盖，防止 extra.context 等字段覆盖计算值。
    */
   private emitStateChanged(changeType: ViewStateEvent['changeType'], extra?: Partial<ViewStateEvent>): void {
-    const context = extra?.context ?? createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
+    const context = extra?.context ?? this._mkCtx()
     // extra spreads first; explicit fields always win
     const event: ViewStateEvent = { ...extra, tableName: this.tableName, viewId: this.viewId, changeType, context }
 
