@@ -1219,10 +1219,8 @@ export class DataView implements IDataSource {
       })
       if (valid.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...valid)
-        this.rowIndexMap ??= new Map(this.rows.map((r, i) => [r, i]))
-        this.selectedRowIndices = valid
-          .map(r => this.rowIndexMap?.get(r) ?? -1)
-          .filter(i => i !== -1)
+        const rowMap = this.rowIndexMap ??= this.buildRowIndexMap(this.rows)
+        this.selectedRowIndices = this.mapRowsToIndices(valid, rowMap)
         cleaned = true
       }
     }

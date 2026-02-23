@@ -79,5 +79,5 @@ export function removeScopedStyle(pageId: string): void {
   if (typeof document === 'undefined') return
   
   const styles = document.querySelectorAll(`style[data-page-style="${pageId}"]`)
-  styles.forEach(style => style.remove())
+  for (const style of styles) style.remove()
 }
