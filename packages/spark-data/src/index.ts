@@ -49,6 +49,9 @@ export type {
 
 export { generateEventId, generateViewEventId, generateComponentEventId, createEventContext } from './types'
 
+// ===== 事件总线 =====
+export { bus, emitRowSelected } from './event-bus'
+
 // ===== 主键生成器 =====
 
 export { 
