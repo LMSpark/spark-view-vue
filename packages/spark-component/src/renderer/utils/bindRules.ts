@@ -9,6 +9,11 @@ import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataK
 
 const pageLogger = Logger('PageRenderer')
 
+/** dataKey 自解析组件类型（consume PAGE_DATASET，props.dataKey 直透传） */
+const SELF_RESOLVING_TYPES = new Set(['r-table', 'r-form', 'r-detail', 'r-tree'])
+/** dataKey 绑定已有专用处理逻辑的容器类型（排除默认绑定逻辑） */
+const DATAKEY_HANDLED_TYPES = new Set(['el-table', 'r-table', 'r-form', 'r-detail', 'r-tree'])
+
 /**
  * 类型安全的嵌套值获取函数
  * @param obj - 源对象
@@ -121,8 +126,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
 
     // 🎯 将 dataKey 透传到 props — r-table/r-form/r-detail/r-tree 自行 consume(PAGE_DATASET) 解析
     // el-table 保持旧的外部注入模式（原生组件无法使用 useSparkComponent）
-    const selfResolvingTypes = ['r-table', 'r-form', 'r-detail', 'r-tree']
-    if (newRule['dataKey'] && selfResolvingTypes.includes(newRule.type as string)) {
+    if (newRule['dataKey'] && SELF_RESOLVING_TYPES.has(newRule.type as string)) {
       newRule.props ??= {}
       newRule.props['dataKey'] = newRule['dataKey'] as string
     }
@@ -168,8 +172,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     
     // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定或表单值绑定）
     // 排除已有专门处理逻辑的容器组件
-    const handledTypes = ['el-table', 'r-table', 'r-form', 'r-detail', 'r-tree']
-    if (newRule['dataKey'] && !handledTypes.includes(newRule.type as string)) {
+    if (newRule['dataKey'] && !DATAKEY_HANDLED_TYPES.has(newRule.type as string)) {
       const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
       
       // 注入 DataView（若 dataKey 指向 DataSet）
