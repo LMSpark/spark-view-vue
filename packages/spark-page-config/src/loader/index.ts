@@ -311,6 +311,26 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   /**
+   * 本地加载结果转换为 ConfigLoadResult。
+   * 由 derivedResult / localResult 共同使用，避免两写相同的评斷/日志/返回逻辑。
+   */
+  private localResultFromData<T>(
+    r: { success: boolean; error?: string; fromCache?: boolean; data?: T },
+    path: string
+  ): ConfigLoadResult<T> {
+    if (!r.success) {
+      pageLogger.error('本地配置加载失败', { path, error: r.error })
+      return {
+        success: false,
+        error: `${PAGES_CONFIG_FILE_BASE}${path}: ${r.error ?? ''}`,
+        timestamp: Date.now()
+      }
+    }
+    pageLogger.debug('本地配置加载成功', { path, fromCache: r.fromCache })
+    return { success: true, ...(r.data !== undefined && { data: r.data }), source: 'local', timestamp: Date.now() }
+  }
+
+  /**
    * 通过 DerivedLoader 加载本地文件并转为 ConfigLoadResult。
    * timestamp 未变时直接命中编译缓存，跳过 transform 函数。
    */
@@ -318,38 +338,23 @@ export class PageConfigLoader implements ConfigLoader {
     loader: DerivedLoader<T>,
     path: string
   ): Promise<ConfigLoadResult<T>> {
-    const r = await loader.load(path)
-    if (!r.success) {
-      pageLogger.error('本地配置加载失败', { path, error: r.error })
-      return {
-        success: false,
-        error: `${PAGES_CONFIG_FILE_BASE}${path}: ${r.error ?? ''}`,
-        timestamp: Date.now()
-      }
-    }
-    pageLogger.debug('本地配置加载成功', { path, fromCache: r.fromCache })
-    return { success: true, ...(r.data !== undefined && { data: r.data }), source: 'local', timestamp: Date.now() }
+    return this.localResultFromData(await loader.load(path), path)
   }
 
   /** FileLoader 加载 → ConfigLoadResult */
   private async localResult<T>(path: string): Promise<ConfigLoadResult<T>> {
-    const r = await this.fileLoader.load<T>(path)
-    if (!r.success) {
-      pageLogger.error('本地配置加载失败', { path, error: r.error })
-      return {
-        success: false,
-        error: `${PAGES_CONFIG_FILE_BASE}${path}: ${r.error ?? ''}`,
-        timestamp: Date.now()
-      }
-    }
-    pageLogger.debug('本地配置加载成功', { path, fromCache: r.fromCache })
-    return { success: true, ...(r.data !== undefined && { data: r.data }), source: 'local', timestamp: Date.now() }
+    return this.localResultFromData(await this.fileLoader.load<T>(path), path)
   }
 
   /** 远程 JSON fetch → ConfigLoadResult（失败时抛出，由 hybridLoad 捕获） */
   private async remoteResult<T>(path: string): Promise<ConfigLoadResult<T>> {
     const data = await this.fetchFromRemote<T>(path)
     return { success: true, data, source: 'remote', timestamp: Date.now() }
+  }
+
+  /** 文本型 loader 结果 → ConfigLoadResult（缺失文件视为 success:true, data:''） */
+  private toLocalTextResult<T extends string>(r: { success: boolean; data?: T }): ConfigLoadResult<T> {
+    return { success: true, data: (r.data ?? '') as T, source: 'local', timestamp: Date.now() }
   }
 
   /**
@@ -360,12 +365,9 @@ export class PageConfigLoader implements ConfigLoader {
    */
   private async localScriptResult(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
     const r = await this.scriptLoader.load(`/${pageId}/script.js`)
-    if (!r.success) {
-      pageLogger.debug('页面无脚本文件，跳过', { pageId })
-      return { success: true, data: '', source: 'local', timestamp: Date.now() }
-    }
-    pageLogger.debug('本地脚本加载成功', { pageId, size: r.data?.length ?? 0 })
-    return { success: true, data: r.data ?? '', source: 'local', timestamp: Date.now() }
+    if (!r.success) pageLogger.debug('页面无脚本文件，跳过', { pageId })
+    else pageLogger.debug('本地脚本加载成功', { pageId, size: r.data?.length ?? 0 })
+    return this.toLocalTextResult(r)
   }
 
   /**
@@ -375,12 +377,9 @@ export class PageConfigLoader implements ConfigLoader {
    */
   private async localCssResult(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
     const r = await this.cssLoader.load(`/${pageId}/style.css`)
-    if (!r.success) {
-      pageLogger.debug('页面无样式文件，跳过', { pageId })
-      return { success: true, data: '', source: 'local', timestamp: Date.now() }
-    }
-    pageLogger.debug('本地样式加载成功', { pageId, size: r.data?.length ?? 0 })
-    return { success: true, data: r.data ?? '', source: 'local', timestamp: Date.now() }
+    if (!r.success) pageLogger.debug('页面无样式文件，跳过', { pageId })
+    else pageLogger.debug('本地样式加载成功', { pageId, size: r.data?.length ?? 0 })
+    return this.toLocalTextResult(r)
   }
 
   /** 从远程加载脚本文本（失败时抛出） */
