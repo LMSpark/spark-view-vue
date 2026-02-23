@@ -114,19 +114,17 @@ export class CascadeDelegate {
       const requestId = ++this.nextCascadeRequestId
       let cancelled = false
 
-      // refresh() 返回 Promise<void>（声明于 ICascadeHost），直接 await
-      void (async () => {
-        try {
-          await this.host.refresh()
+      void this.host.refresh()
+        .then(() => {
           if (!cancelled && this.pendingCascadeRequest?.requestId === requestId) {
             this.pendingCascadeRequest = undefined
           }
-        } catch (err) {
+        })
+        .catch((err: unknown) => {
           if (!cancelled) {
             logger.error(`级联加载 ${this.host.tableName}:${this.host.viewId} 失败 [${requestId}]`, err)
           }
-        }
-      })()
+        })
 
       this.pendingCascadeRequest = {
         requestId,
