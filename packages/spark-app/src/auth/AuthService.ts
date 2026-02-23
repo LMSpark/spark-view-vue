@@ -17,7 +17,7 @@
 
 // ==================== 类型定义 ====================
 import type { AuthConfig, LoginCredentials, AuthResult, IAuthService } from './types'
-import type { AppEnvironment } from '../types'
+import type { AppEnvironment, EnvironmentInfo } from '../types'
 
 // ==================== 核心依赖 ====================
 import { TokenManager } from './TokenManager'
@@ -364,13 +364,13 @@ export class AuthService implements IAuthService {
   private async doRefreshToken(): Promise<string> {
     try {
       const response = await this.fetchWithTimeout(
-        `${this.config.apiBaseUrl}${this.config.apiEndpoints.refresh}`,
+        this.apiUrl(this.config.apiEndpoints.refresh),
         {
           method: 'POST',
           headers: this.getAuthHeaders(),
           credentials: 'include'
         },
-        this.config.timeout ?? 10000
+        this.callTimeout
       )
 
       if (!response.ok) {
@@ -457,6 +457,26 @@ export class AuthService implements IAuthService {
    * @param timeout 超时时间（毫秒）
    * @returns Response 对象
    */
+  /** 配置超时（毫秒），回退到 10 秒 */
+  private get callTimeout(): number {
+    return this.config.timeout ?? 10000
+  }
+
+  /** 拼接 API 完整 URL */
+  private apiUrl(endpoint: string | undefined): string {
+    return this.config.apiBaseUrl + (endpoint ?? '')
+  }
+
+  /** 构建 Mock 环境信息（mockLogin / mockCheckAuth 共用） */
+  private buildMockEnv(): EnvironmentInfo {
+    const env = envAdapter.getEnvironment()
+    return {
+      mode: (env.isClient ? 'development' : 'production') as AppEnvironment,
+      apiBaseUrl: this.config.apiBaseUrl ?? '',
+      version: '1.0.0'
+    }
+  }
+
   private async fetchWithTimeout(
     url: string,
     options: RequestInit,
@@ -489,14 +509,14 @@ export class AuthService implements IAuthService {
    */
   private async realLogin(credentials: LoginCredentials): Promise<AuthResult> {
     const response = await this.fetchWithTimeout(
-      `${this.config.apiBaseUrl}${this.config.apiEndpoints.login}`,
+      this.apiUrl(this.config.apiEndpoints.login),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
         credentials: 'include'
       },
-      this.config.timeout ?? 10000
+      this.callTimeout
     )
 
     if (!response.ok) {
@@ -513,13 +533,13 @@ export class AuthService implements IAuthService {
    */
   private async realLogout(): Promise<void> {
     const response = await this.fetchWithTimeout(
-      `${this.config.apiBaseUrl}${this.config.apiEndpoints.logout}`,
+      this.apiUrl(this.config.apiEndpoints.logout),
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
         credentials: 'include'
       },
-      this.config.timeout ?? 10000
+      this.callTimeout
     )
 
     if (!response.ok) {
@@ -535,13 +555,13 @@ export class AuthService implements IAuthService {
    */
   private async realCheckAuth(): Promise<AuthResult> {
     const response = await this.fetchWithTimeout(
-      `${this.config.apiBaseUrl}${this.config.apiEndpoints.me}`,
+      this.apiUrl(this.config.apiEndpoints.me),
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
         credentials: 'include'
       },
-      this.config.timeout ?? 10000
+      this.callTimeout
     )
 
     if (!response.ok) {
@@ -568,8 +588,6 @@ export class AuthService implements IAuthService {
     // 模拟网络延迟
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    const env = envAdapter.getEnvironment()
-
     return {
       user: this.config.mockUser ?? {
         userId: 'mock-user-001',
@@ -584,11 +602,7 @@ export class AuthService implements IAuthService {
         tenantName: '模拟租户',
         config: {}
       },
-      env: {
-        mode: (env.isClient ? 'development' : 'production') as AppEnvironment,
-        apiBaseUrl: this.config.apiBaseUrl ?? '',
-        version: '1.0.0'
-      },
+      env: this.buildMockEnv(),
       token: 'mock-token-' + Date.now()
     }
   }
@@ -601,8 +615,6 @@ export class AuthService implements IAuthService {
    */
   private async mockCheckAuth(): Promise<AuthResult> {
     authLogger.debug('🎭 [Mock] 模拟认证检查')
-
-    const env = envAdapter.getEnvironment()
 
     return {
       user: this.config.mockUser ?? {
@@ -618,11 +630,7 @@ export class AuthService implements IAuthService {
         tenantName: '默认租户',
         config: {}
       },
-      env: {
-        mode: (env.isClient ? 'development' : 'production') as AppEnvironment,
-        apiBaseUrl: this.config.apiBaseUrl ?? '',
-        version: '1.0.0'
-      }
+      env: this.buildMockEnv()
     }
   }
 }

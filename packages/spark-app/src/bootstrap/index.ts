@@ -231,13 +231,9 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // =========================================================================
     // 阶段 6: 挂载前钩子
     // =========================================================================
+    // 构建扩展的 Bootstrap Context（包含 app 和 router 实例），供前后挂载钩子共用
+    const bootstrapContext = { ...appContext, app, router }
     if (beforeMount) {
-      // 创建扩展的 Bootstrap Context，包含 app 和 router 实例
-      const bootstrapContext = {
-        ...appContext,
-        app,
-        router
-      }
       await beforeMount(bootstrapContext)
     }
 
@@ -254,12 +250,6 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // =========================================================================
     logPhase('COMPLETE', '应用启动完成')
     if (afterMount) {
-      // 创建扩展的 Bootstrap Context，包含 app 和 router 实例
-      const bootstrapContext = {
-        ...appContext,
-        app,
-        router
-      }
       await afterMount(bootstrapContext)
     }
 
