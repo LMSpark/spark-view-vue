@@ -657,7 +657,7 @@ export class DataView implements IDataSource {
     
     this.rows.splice(idx, 1)
     // splice 后重建索引 Map（O(n))，供删除后 selectedRowIndices 更新复用（O(1) vs O(n) indexOf）
-    const postDeleteMap = new Map(this.rows.map((r, i) => [r, i] as [IDataRow, number]))
+    const postDeleteMap = this.buildRowIndexMap(this.rows)
     this.rowIndexMap = postDeleteMap
 
     const ctx = this._mkCtx()
@@ -675,7 +675,7 @@ export class DataView implements IDataSource {
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         // postDeleteMap 已在上方构建，O(1) 查找代替 O(n) indexOf
-        this.selectedRowIndices = newSelected.map(r => postDeleteMap.get(r) ?? -1).filter(i => i !== -1)
+        this.selectedRowIndices = this.mapRowsToIndices(newSelected, postDeleteMap)
         this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
         bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
@@ -689,7 +689,7 @@ export class DataView implements IDataSource {
   replaceRows(rows: IDataRow[]): void {
     this.rows.splice(0, this.rows.length, ...rows)
     // O(n) 构建索引 Map，供后续 selectedRowIndices 计算和 setSelectedRows 复用
-    const idxMap = new Map(rows.map((r, i) => [r, i] as [IDataRow, number]))
+    const idxMap = this.buildRowIndexMap(rows)
     this.rowIndexMap = idxMap
     // 行集合完全替换，旧引用失效 → 清理选中状态并通知
     const ctx = this._mkCtx()
@@ -705,7 +705,7 @@ export class DataView implements IDataSource {
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
         // idxMap 已在函数头部构建，O(1) 查找代替 O(n) indexOf
-        this.selectedRowIndices = newSelected.map(r => idxMap.get(r) ?? -1).filter(i => i !== -1)
+        this.selectedRowIndices = this.mapRowsToIndices(newSelected, idxMap)
         this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
         bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
@@ -791,11 +791,8 @@ export class DataView implements IDataSource {
     this.selectedRows.splice(0, this.selectedRows.length, ...rows)
     
     // 使用 Map 加速索引查找（O(n) 而非 O(n²)）
-    this.rowIndexMap ??= new Map(this.rows.map((r, i) => [r, i]))
-    
-    this.selectedRowIndices = rows
-      .map(r => this.rowIndexMap?.get(r) ?? -1)
-      .filter(i => i !== -1)
+    const rowMap = this.rowIndexMap ??= this.buildRowIndexMap(this.rows)
+    this.selectedRowIndices = this.mapRowsToIndices(rows, rowMap)
     
     const eventContext = context ?? this._mkCtx()
     this.emitStateChanged('selectedRows', { rows: [...rows], context: eventContext })
@@ -1134,6 +1131,24 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
   // 状态重置
   // ─────────────────────────────────────────────
+
+  /** 构建 row → index 映射（O(n)），供 deleteRow / replaceRows / setSelectedRows 复用 */
+  private buildRowIndexMap(rows: IDataRow[]): Map<IDataRow, number> {
+    const m = new Map<IDataRow, number>()
+    let i = 0
+    for (const row of rows) m.set(row, i++)
+    return m
+  }
+
+  /** 将行数组映射为索引数组（单次遍历，无 -1 占位，替代 .map(get ?? -1).filter(≠-1)）*/
+  private mapRowsToIndices(rows: IDataRow[], map: Map<IDataRow, number>): number[] {
+    const result: number[] = []
+    for (const r of rows) {
+      const idx = map.get(r)
+      if (idx !== undefined) result.push(idx)
+    }
+    return result
+  }
 
   /** 构建 pk → row 映射（O(n)），供 setSelectedRowsById / addSelectedRowsById 共用 */
   private buildIdToRowMap(): Map<string | number, IDataRow> {

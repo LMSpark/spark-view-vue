@@ -20,6 +20,11 @@ function inferColumnType(v: unknown): string {
   return 'string'
 }
 
+/** @internal 从对象的键推断列配置（fromPageData 内部复用，避免两处重复 Object.keys.map） */
+function inferColumnsFromRecord(obj: Record<string, unknown>): DataColumn[] {
+  return Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n })) as DataColumn[]
+}
+
 export class DataSet implements IDataSet {
 
   // ===== 属性定义 =====
@@ -305,7 +310,7 @@ export class DataSet implements IDataSet {
         } else if (typeof val[0] === 'object' && val[0] !== null && !Array.isArray(val[0])) {
           // 对象数组：以第一个元素的键推断列
           const sample = val[0] as Record<string, unknown>
-          columns = Object.keys(sample).map(n => ({ name: n, type: inferColumnType(sample[n]), label: n })) as DataColumn[]
+          columns = inferColumnsFromRecord(sample)
           for (const r of val) rows.push(r as IDataRow)
         } else {
           // 基础类型数组：单列 value
@@ -320,7 +325,7 @@ export class DataSet implements IDataSet {
       // 对象 → 单行表
       if (val && typeof val === 'object') {
         const obj = val as Record<string, unknown>
-        const columns = Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n })) as DataColumn[]
+        const columns = inferColumnsFromRecord(obj)
         const row = obj as IDataRow
         tables[key] = { tableName: key, columns, rows: [row] }
         continue
