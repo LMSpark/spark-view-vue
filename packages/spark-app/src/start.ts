@@ -141,16 +141,11 @@ export async function start(options: StartOptions): Promise<void> {
 
     // 过滤 form-create + Element Plus 的已知兼容性警告
     app.config.warnHandler = (msg) => {
-      // 忽略插槽在渲染函数外调用的警告（form-create + Element Plus 已知问题）
-      const ignoredWarnings = [
-        'Slot "default" invoked outside of the render function',
-        'invoked outside of the render function'
-      ]
-      
-      if (ignoredWarnings.some(warning => msg.includes(warning))) {
-        return // 静默忽略
+      // 忽略 form-create + Element Plus 插槽在渲染函数外调用的已知兼容性警告
+      if (msg.includes('invoked outside of the render function')) {
+        return
       }
-      
+
       // 其他警告正常输出到控制台
       console.warn(`[Vue warn]: ${msg}`)
     }
