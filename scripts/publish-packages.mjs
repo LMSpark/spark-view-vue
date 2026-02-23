@@ -85,10 +85,7 @@ for (const pkgName of PUBLISH_ORDER) {
 
   if (DRY_RUN) {
     console.log('   [dry-run] would publish:', pkg.name)
-    run(
-      `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --access restricted --dry-run --ignore-scripts`,
-      pkgDir,
-    )
+    run(`npm pack --dry-run`, pkgDir)
     continue
   }
 
