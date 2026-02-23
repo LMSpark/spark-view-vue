@@ -269,10 +269,10 @@ export class CrudDelegate {
 
       if (result.success && result.data) {
         const successIds = new Set<string | number>()
-        result.data.results.forEach((r, i) => {
+        for (const [i, r] of result.data.results.entries()) {
           const id = ids[i]
           if (r.success && id !== undefined) successIds.add(id)
-        })
+        }
 
         for (const id of successIds) {
           this.host.deleteRowById(id)   // deleteRowById 内部已发射（防抖合并）

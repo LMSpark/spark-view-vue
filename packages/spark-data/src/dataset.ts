@@ -74,10 +74,12 @@ export class DataSet implements IDataSet {
     }
 
     // 关系默认 viewId
-    this.relations?.forEach(r => {
-      r.parentViewId ??= 'default'
-      r.childViewId ??= 'default'
-    })
+    if (this.relations) {
+      for (const r of this.relations) {
+        r.parentViewId ??= 'default'
+        r.childViewId ??= 'default'
+      }
+    }
   }
 
   // ===== 数据集级别事件订阅（页面脚本便捷 API） =====
@@ -130,7 +132,7 @@ export class DataSet implements IDataSet {
         unsubscribers.push(() => view.events.off('stateChanged', h))
       }
     }
-    return () => unsubscribers.forEach(u => u())
+    return () => { for (const u of unsubscribers) u() }
   }
 
   // ===== 关系图查询（网状关系，非树形） =====

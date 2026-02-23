@@ -62,10 +62,10 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       // 尝试自动清除相关缓存
       if (typeof localStorage !== 'undefined') {
         const keys = Object.keys(localStorage).filter(k => k.includes('pagedata') || k.includes('spark_file_'))
-        keys.forEach(k => {
+        for (const k of keys) {
           pageLogger.warn('  清除缓存键:', k)
           localStorage.removeItem(k)
-        })
+        }
         pageLogger.warn('✅ 已清除 ' + keys.length + ' 个缓存项，请刷新页面')
       }
       return
