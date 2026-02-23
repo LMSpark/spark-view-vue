@@ -35,7 +35,6 @@ import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
 import { Logger, createEventEmitter } from '@spark-view/spark-utils'
-import { bus } from './event-bus'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
@@ -628,7 +627,6 @@ export class DataView implements IDataSource {
     if (this.currentRow && this.isSamePrimaryKey(this.currentRow, oldRow)) {
       this.currentRow = newRow
       this.emitStateChanged('currentRow', { row: newRow, context: ctx })
-      bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: newRow, context: ctx })
     }
     
     if (this.selectedRows.length > 0) {
@@ -636,7 +634,6 @@ export class DataView implements IDataSource {
       if (selectedIdx !== -1) {
         this.selectedRows[selectedIdx] = newRow
         this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
-        bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
     }
     
@@ -666,7 +663,6 @@ export class DataView implements IDataSource {
       this.currentRow = null
       this.currentRowIndex = null
       this.emitStateChanged('currentRow', { row: null, context: ctx })
-      bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: null, context: ctx })
     }
     
     // 被删行在多选中 → 移除并立即通知
@@ -677,7 +673,6 @@ export class DataView implements IDataSource {
         // postDeleteMap 已在上方构建，O(1) 查找代替 O(n) indexOf
         this.selectedRowIndices = this.mapRowsToIndices(newSelected, postDeleteMap)
         this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
-        bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
     }
     
@@ -698,7 +693,6 @@ export class DataView implements IDataSource {
       this.currentRow = null
       this.currentRowIndex = null
       this.emitStateChanged('currentRow', { row: null, context: ctx })
-      bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: null, context: ctx })
     }
     if (this.selectedRows.length > 0) {
       const newSelected = this.selectedRows.filter(r => rowSet.has(r))
@@ -707,7 +701,6 @@ export class DataView implements IDataSource {
         // idxMap 已在函数头部构建，O(1) 查找代替 O(n) indexOf
         this.selectedRowIndices = this.mapRowsToIndices(newSelected, idxMap)
         this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
-        bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
     }
     this.emitStateChanged('rows')
@@ -721,9 +714,8 @@ export class DataView implements IDataSource {
    * 数据加载完成后应用 autoCurrentFirst / autoSelectFirst 逻辑。
    *
    * updateFromServer() 替换了全部行引用，旧的 currentRow/selectedRows 指针已失效。
-   * 先强制清零（无事件），再通过正式 setter 写入新值；setter 会同时触发
-   * this.events（stateChanged）和全局 bus（view:currentRow / view:selectedRows），
-   * useRuleBinding 等订阅者因此能正确收到事件。
+   * 先强制清零（无事件），再通过正式 setter 写入新值；setter 发射 stateChanged 事件，
+   * DataSet.onAnyViewChange 订阅者（如 useRuleBinding）因此能正确收到事件。
    */
   private _applyAutoFirst(): void {
     const prevCurrentRow = this.currentRow
@@ -740,16 +732,14 @@ export class DataView implements IDataSource {
     if (this.autoCurrentFirst !== false && firstRow) {
       this.setCurrentRow(firstRow, autoCtx)   // guard: null !== firstRow → always fires
     } else if (prevCurrentRow !== null) {
-      // autoCurrentFirst=false 或无数据：当前行被强制清零，仍需通知 bus（el-table 高亮清除）
+      // autoCurrentFirst=false 或无数据：当前行被强制清零，stateChanged 通知订阅者
       this.emitStateChanged('currentRow', { row: null, context: autoCtx })
-      bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: null, context: autoCtx })
     }
     if (this.autoSelectFirst !== false && firstRow) {
       this.setSelectedRows([firstRow], autoCtx)  // guard: [] !== [firstRow] → always fires
     } else if (prevHadSelected) {
-      // autoSelectFirst=false 或无数据：已选行被强制清零，仍需通知 bus
+      // autoSelectFirst=false 或无数据：已选行被强制清零，stateChanged 通知订阅者
       this.emitStateChanged('selectedRows', { rows: [], context: autoCtx })
-      bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [], context: autoCtx })
     }
   }
 
@@ -770,7 +760,6 @@ export class DataView implements IDataSource {
     // 使用调用方传入的上下文（携带 source='ui'/'sync' 等），否则默认 'program'
     const eventContext = context ?? this._mkCtx()
     this.emitStateChanged('currentRow', { row, context: eventContext })
-    bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row, context: eventContext })
   }
 
   /**
@@ -796,7 +785,6 @@ export class DataView implements IDataSource {
     
     const eventContext = context ?? this._mkCtx()
     this.emitStateChanged('selectedRows', { rows: [...rows], context: eventContext })
-    bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...rows], context: eventContext })
   }
 
   /**
@@ -1162,19 +1150,10 @@ export class DataView implements IDataSource {
 
   /** 清空所有状态并发射 cleared 事件（通知 UI 和子视图） */
   clearAll(): void {
-    const prevCurrentRow = this.currentRow
-    const prevHadSelected = this.selectedRows.length > 0
-    const had = this.rows.length > 0 || prevCurrentRow !== null || prevHadSelected
+    const had = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0
     this.resetState()
     if (had) {
-      const ctx = this._mkCtx()
-      // 通知 bus：el-table 需要通过 bus 事件（而非 stateChanged）清除 currentRow/selectedRows 高亮
-      if (prevCurrentRow !== null) {
-        bus.emit('view:currentRow', { tableName: this.tableName, viewId: this.viewId, row: null, context: ctx })
-      }
-      if (prevHadSelected) {
-        bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [], context: ctx })
-      }
+      // stateChanged('cleared') 通知 DataSet.onAnyViewChange 订阅者清除 UI 高亮
       this.emitStateChanged('cleared')
     }
   }
