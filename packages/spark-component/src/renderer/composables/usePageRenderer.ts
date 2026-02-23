@@ -28,7 +28,7 @@
 
 import { ref, reactive, onMounted, watch, nextTick, h, type Ref, type Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Logger, APP_SERVICES } from '@spark-view/spark-utils'
+import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
 import type { IDataSet } from '@spark-view/spark-data'
 import { SparkData, PAGE_DATASET } from '@spark-view/spark-data'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -111,6 +111,30 @@ export function usePageRenderer(
 
   provideCapability(APP_SERVICES, buildAppServices(router, pageLogger))
 
+  // 构建 PAGE_SERVICE 能力（优先使用 props 注入，回退到 element-plus）
+  const pageService: IPageServiceCapability = {
+    showMessage: (message, type = 'info') => {
+      if (props.messageService) {
+        const fn = props.messageService[type as keyof NonNullable<typeof props.messageService>]
+        if (typeof fn === 'function') { fn(message); return }
+      }
+      ElMessage({ message, type })
+    },
+    showConfirm: async (message, title) => {
+      if (props.confirmService) {
+        await props.confirmService.confirm(message, title)
+        return true
+      }
+      try { await ElMessageBox.confirm(message, title ?? '确认'); return true }
+      catch { return false }
+    },
+    showLoading: (_show) => { /* TODO: 待接入加载遗罩服务 */ },
+    navigate: (path, params) => {
+      void router.push(params ? { path, query: params as Record<string, string> } : path)
+    }
+  }
+  provideCapability(PAGE_SERVICE, pageService)
+
   // ==================== 状态声明 ====================
 
   const loading = ref(true)
@@ -192,8 +216,10 @@ export function usePageRenderer(
     get $dataSet() {
       return dataSet.value
     },
+    // PAGE_SERVICE 能力快捷访问（脚本中优先使用 $page.showMessage 替代 ElMessage）
+    $page: pageService,
 
-    // 沙箱全局变量 — 优先使用注入的 UI 服务，回退到 ElementPlus
+    // 沙笼全局变量 — 优先使用注入的 UI 服务，回退到 ElementPlus（legacy，新脚本请改用 $page）
     ElMessage: (props.messageService ?? ElMessage) as typeof ElMessage,
     ElMessageBox: (props.confirmService ?? ElMessageBox) as typeof ElMessageBox,
     SparkData,
