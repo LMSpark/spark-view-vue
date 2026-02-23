@@ -217,15 +217,7 @@ export class CrudService {
       const results = await this.executeBatch(this.api.batch.create, sanitizedItems, requestConfig)
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量创建完成', { total: items.length, success: successCount })
-      return {
-        success: true,
-        data: {
-          successCount,
-          failureCount: results.length - successCount,
-          results,
-          errors: results.filter(r => !r.success).map(r => r.error ?? new Error('Batch create failed'))
-        }
-      }
+      return this.buildBatchResult(results, successCount)
     } catch (error) {
       this.logger.error('批量创建失败', error)
       return this.errorResult('Batch create failed', error as Error)
@@ -255,15 +247,7 @@ export class CrudService {
       const results = await this.executeBatch(this.api.batch.update, sanitizedItems, requestConfig)
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量更新完成', { total: items.length, success: successCount })
-      return {
-        success: true,
-        data: {
-          successCount,
-          failureCount: results.length - successCount,
-          results,
-          errors: results.filter(r => !r.success).map(r => r.error ?? new Error('Batch update failed'))
-        }
-      }
+      return this.buildBatchResult(results, successCount)
     } catch (error) {
       this.logger.error('批量更新失败', error)
       return this.errorResult('Batch update failed', error as Error)
@@ -291,15 +275,7 @@ export class CrudService {
       const results = await this.executeBatch(this.api.batch.delete, items, requestConfig)
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量删除完成', { total: ids.length, success: successCount })
-      return {
-        success: true,
-        data: {
-          successCount,
-          failureCount: results.length - successCount,
-          results,
-          errors: results.filter(r => !r.success).map(r => r.error ?? new Error('Batch delete failed'))
-        }
-      }
+      return this.buildBatchResult(results, successCount)
     } catch (error) {
       this.logger.error('批量删除失败', error)
       return this.errorResult('Batch delete failed', error as Error)
@@ -584,6 +560,23 @@ export class CrudService {
       return result.length
     }
     return 0
+  }
+
+  /** 构建批量操作结果（单次遍历收集 errors）*/
+  private buildBatchResult<T>(results: CrudResult<T>[], successCount: number): CrudResult<BatchResult> {
+    const errors: Error[] = []
+    for (const r of results) {
+      if (!r.success) errors.push(r.error ?? new Error('Batch operation failed'))
+    }
+    return {
+      success: true,
+      data: {
+        successCount,
+        failureCount: results.length - successCount,
+        results: results as CrudResult[],
+        errors
+      }
+    }
   }
 
   /**

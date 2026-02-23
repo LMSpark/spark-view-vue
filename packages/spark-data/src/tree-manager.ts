@@ -314,13 +314,13 @@ export class TreeManager {
    * 批量标记所有节点的 hasChildren 和 level
    */
   enrichNodes(): void {
-    Object.keys(this.cache).forEach(id => {
+    for (const id of Object.keys(this.cache)) {
       const node = this.cache[id]
       if (node) {
         node.level = this.calculateLevel(node.id)
         this.markHasChildren(node.id)
       }
-    })
+    }
   }
 
   // ===== 序列化 =====
@@ -349,13 +349,13 @@ export class TreeManager {
     const manager = new TreeManager(data.config, undefined, dataView)
     // 兼容数组格式和对象格式（toJSON 序列化为对象）
     if (Array.isArray(data.cache)) {
-      data.cache.forEach(node => {
+      for (const node of data.cache) {
         manager.cache[node.id] = node
-      })
+      }
     } else if (data.cache && typeof data.cache === 'object') {
-      Object.values(data.cache).forEach(node => {
+      for (const node of Object.values(data.cache)) {
         manager.cache[node.id] = node
-      })
+      }
     }
     return manager
   }
