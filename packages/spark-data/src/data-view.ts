@@ -861,13 +861,7 @@ export class DataView implements IDataSource {
     }
     
     // 构建主键到行的映射（O(n) 一次性构建）
-    const idToRow = new Map<string | number, IDataRow>()
-    for (const row of this.rows) {
-      const pkValue = this.getPrimaryKeyValue(row)
-      if (pkValue !== undefined) {
-        idToRow.set(pkValue, row)
-      }
-    }
+    const idToRow = this.buildIdToRowMap()
     
     // 根据 ID 查找行
     const foundRows: IDataRow[] = []
@@ -986,10 +980,12 @@ export class DataView implements IDataSource {
     
     if (rows.length === 0 || this.selectedRows.length === 0) return 0
     
-    // 构建要移除的行的主键 Set
-    const toRemoveSet = new Set(
-      rows.map(r => this.getPrimaryKeyValue(r)).filter(pk => pk !== undefined)
-    )
+    // 构建要移除的行的主键 Set（单次遍历，避免 .map().filter() 双遍历）
+    const toRemoveSet = new Set<string | number>()
+    for (const r of rows) {
+      const pk = this.getPrimaryKeyValue(r)
+      if (pk !== undefined) toRemoveSet.add(pk)
+    }
     
     if (toRemoveSet.size === 0) return 0
     
@@ -1032,18 +1028,14 @@ export class DataView implements IDataSource {
     if (ids.length === 0) return 0
     
     // 构建主键到行的映射
-    const idToRow = new Map<string | number, IDataRow>()
-    for (const row of this.rows) {
-      const pkValue = this.getPrimaryKeyValue(row)
-      if (pkValue !== undefined) {
-        idToRow.set(pkValue, row)
-      }
-    }
+    const idToRow = this.buildIdToRowMap()
     
-    // 构建现有选中行的主键 Set
-    const selectedSet = new Set(
-      this.selectedRows.map(r => this.getPrimaryKeyValue(r)).filter(pk => pk !== undefined)
-    )
+    // 构建现有选中行的主键 Set（单次遍历，避免 .map().filter() 双遍历）
+    const selectedSet = new Set<string | number>()
+    for (const r of this.selectedRows) {
+      const pk = this.getPrimaryKeyValue(r)
+      if (pk !== undefined) selectedSet.add(pk)
+    }
     
     // 查找要添加的行
     const toAdd: IDataRow[] = []
@@ -1143,6 +1135,16 @@ export class DataView implements IDataSource {
   // 状态重置
   // ─────────────────────────────────────────────
 
+  /** 构建 pk → row 映射（O(n)），供 setSelectedRowsById / addSelectedRowsById 共用 */
+  private buildIdToRowMap(): Map<string | number, IDataRow> {
+    const m = new Map<string | number, IDataRow>()
+    for (const row of this.rows) {
+      const pk = this.getPrimaryKeyValue(row)
+      if (pk !== undefined) m.set(pk, row)
+    }
+    return m
+  }
+
   /** 清空所有状态并发射 cleared 事件（通知 UI 和子视图） */
   clearAll(): void {
     const prevCurrentRow = this.currentRow
@@ -1180,10 +1182,12 @@ export class DataView implements IDataSource {
   /** 清理已不在 rows 中的选中状态，返回是否发生了清理 */
   cleanupInvalidSelections(): boolean {
     let cleaned = false
-    // O(n) 构建主键查找 Map，避免内部每次 isSamePrimaryKey 再做 O(n) 扫描
-    const rowPkSet = new Set(
-      this.rows.map(r => this.getPrimaryKeyValue(r)).filter(pk => pk !== undefined)
-    )
+    // O(n) 单次遍历构建主键 Set，避免 .map().filter() 双遍历
+    const rowPkSet = new Set<string | number>()
+    for (const r of this.rows) {
+      const pk = this.getPrimaryKeyValue(r)
+      if (pk !== undefined) rowPkSet.add(pk)
+    }
     const currentRow = this.currentRow
     if (currentRow) {
       const pk = this.getPrimaryKeyValue(currentRow)
