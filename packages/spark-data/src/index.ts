@@ -47,7 +47,7 @@ export type {
   DependencyType
 } from './types'
 
-export { generateEventId, generateViewEventId, generateComponentEventId, createEventContext } from './types'
+export { generateEventId, generateViewEventId, generateComponentEventId, createEventContext } from './core/event-id'
 
 // ===== 事件总线 =====
 export { bus } from './event-bus'
@@ -99,7 +99,5 @@ export type {
 export { isSameRow, getParentRows } from './core/utils'
 
 // ===== Vue Composables =====
-// DataSet 生命周期管理（需要 Vue 3.5+）
-
-export { usePageDataSet } from './composables/index'
-export type { UsePageDataSetOptions, UsePageDataSetReturn } from './composables/index'
+// usePageDataSet 已迁移至 @spark-view/spark-component 渲染层（页面渲染职责）
+// 请从 '@spark-view/spark-component' 导入 usePageDataSet

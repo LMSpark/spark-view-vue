@@ -35,6 +35,7 @@ export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './core/types.js'
 export {
   PageRenderer,
   usePageRenderer,
+  usePageDataSet,
   JsonRenderer,
   useJsonRenderer
 } from './renderer/index.js'
@@ -42,6 +43,8 @@ export {
 export type {
   UsePageRendererReturn,
   UsePageRendererRefs,
+  UsePageDataSetOptions,
+  UsePageDataSetReturn,
   UseJsonRendererReturn
 } from './renderer/index.js'
 

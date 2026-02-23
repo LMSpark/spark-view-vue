@@ -10,7 +10,6 @@
  *
  * 内部实现（不导出）：
  * - useCssScope、useRuleBinding — 由 usePageRenderer 组合调用
- * - 注意：usePageDataSet 已迁移到 @spark-view/spark-data（数据管理领域）
  */
 
 // 组件（Vue SFC，由此文件统一导出，避免 index.ts 直接引用 .vue 文件）
@@ -20,6 +19,10 @@ export { default as JsonRenderer } from './JsonRenderer.vue'
 // 页面编排 Composable（统一入口）
 export { usePageRenderer } from './composables/usePageRenderer'
 export type { UsePageRendererReturn, UsePageRendererRefs } from './composables/usePageRenderer'
+
+// DataSet 初始化 Composable（迁移自 spark-data）
+export { usePageDataSet } from './composables/usePageDataSet'
+export type { UsePageDataSetOptions, UsePageDataSetReturn } from './composables/usePageDataSet'
 
 // JSON 渲染 Composable
 export { useJsonRenderer } from './composables/useJsonRenderer'

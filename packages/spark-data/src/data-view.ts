@@ -29,7 +29,8 @@ import type {
   IDataSource,
   EventContext,
 } from './types'
-import { RequestState, createEventContext } from './types'
+import { RequestState } from './types'
+import { createEventContext } from './core/event-id'
 import type { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
