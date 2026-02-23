@@ -198,7 +198,9 @@ describe('DataKey 统一解析器', () => {
             rows: [
               { id: 1, name: '张三' },
               { id: 2, name: '李四' }
-            ]
+            ],
+            autoCurrentFirst: false,
+            autoSelectFirst: false
           },
           Orders: {
             tableName: 'Orders',
