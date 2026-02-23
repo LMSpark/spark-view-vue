@@ -29,7 +29,7 @@ const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
 const REGISTRY = args.includes('--registry')
   ? args[args.indexOf('--registry') + 1]
-  : 'http://localhost:4873'
+  : 'https://registry.npmjs.org'
 const TAG = args.includes('--tag')
   ? args[args.indexOf('--tag') + 1]
   : 'latest'
@@ -90,7 +90,7 @@ for (const pkgName of PUBLISH_ORDER) {
   }
 
   run(
-    `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --access restricted --ignore-scripts`,
+    `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --ignore-scripts`,
     pkgDir,
   )
   console.log(`✅  Published ${pkg.name}@${pkg.version}`)

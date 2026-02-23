@@ -30,6 +30,7 @@
         "build:packages": "pnpm --filter 'packages/*' run build",
         "publish:packages": "node scripts/publish-packages.mjs",
         "publish:dry": "node scripts/publish-packages.mjs --dry-run",
+        "publish:verdaccio": "node scripts/publish-packages.mjs --registry http://localhost:4873",
         "registry:start": "docker compose -f docker-compose.registry.yml up -d",
         "registry:stop": "docker compose -f docker-compose.registry.yml down",
         "registry:logs": "docker compose -f docker-compose.registry.yml logs -f",

@@ -16,8 +16,8 @@
         "dist"
     ],
     "publishConfig": {
-        "registry": "http://localhost:4873",
-        "access": "restricted"
+        "registry": "https://registry.npmjs.org",
+        "access": "public"
     },
     "scripts": {
         "build": "tsc -p tsconfig.build.json",
