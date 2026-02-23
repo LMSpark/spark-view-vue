@@ -1,17 +1,27 @@
 import mitt from 'mitt'
-import type { IDataRow } from './types'
-import { createEventContext } from './types'
-import { withEventContext } from './event-context-manager'
+import type { IDataRow, EventContext } from './types'
 
-// 📍 全局事件总线（mitt）
-export const bus = mitt<{ rowSelected: IDataRow }>()
+// ─────────────────────────────────────────────
+// 全局事件总线（mitt）
+// ─────────────────────────────────────────────
 
-/**
- * 发布行选中事件，会自动创建并传播 EventContext
- */
-export function emitRowSelected(row: IDataRow): void {
-  const ctx = createEventContext('ui')
-  withEventContext(ctx, () => {
-    bus.emit('rowSelected', row)
-  })
+export interface ViewCurrentRowPayload {
+  tableName: string
+  viewId: string
+  row: IDataRow | null
+  context: EventContext
 }
+
+export interface ViewSelectedRowsPayload {
+  tableName: string
+  viewId: string
+  rows: IDataRow[]
+  context: EventContext
+}
+
+export const bus = mitt<{
+  /** DataView.setCurrentRow 调用后广播（UI↔DataSet 双向同步） */
+  'view:currentRow': ViewCurrentRowPayload
+  /** DataView.setSelectedRows 调用后广播（UI↔DataSet 双向同步） */
+  'view:selectedRows': ViewSelectedRowsPayload
+}>()

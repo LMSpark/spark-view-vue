@@ -5,9 +5,7 @@
 import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
-import { createTableSyncHandlers } from '@spark-view/spark-data'
-import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding, bus } from '@spark-view/spark-data'
-import { isCurrentlySyncingToUI } from '../composables/useRuleBinding'
+import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding, createEventContext } from '@spark-view/spark-data'
 
 const pageLogger = Logger('PageRenderer')
 
@@ -260,87 +258,69 @@ function createFunctionCaller(
  *
  * 为表格的 currentChange 和 selectionChange 事件注入处理器，
  * 将 el-table UI 事件同步写入对应的 DataView。
+ * 事件携带 source='ui' 的 EventContext，下游 useRuleBinding 会跳过该事件的反向同步。
  *
- * DataSet → UI 方向由 useTableDataSync 单独负责。
+ * DataSet → UI 方向由 useRuleBinding 经 bus 播厩1单独负责。
  */
 function injectTableEvents(
   rule: Rule,
   dataSet: IDataSet
 ): void {
-  // 通过统一 DataKey 解析获取表名和视图ID
   const rawKey = rule['dataKey'] as string | undefined
   if (!rawKey) return
 
   const dk = parseDataKey(rawKey)
-  if (!dk) return  // 非 DataSet 键，无法注入事件
+  if (!dk) return
 
   const { tableName, viewId } = dk
-  
-  // 添加唯一的 name 属性
   rule.name ??= `table_${tableName}_${viewId}`
-  
-  // 确保 on 对象存在
   rule.on ??= {}
 
-  // 使用 spark-data 提供的同步写入 API（渲染层不直接操作 table/view 内部）
-  const sync = createTableSyncHandlers(dataSet, tableName, viewId)
-  
   // 注入 currentChange 事件（单选行变化）
   const originalCurrentChange = rule.on['currentChange']
   rule.on['currentChange'] = (currentRow: IDataRow | null, oldRow: IDataRow | null) => {
-    pageLogger.info(`🎯 [TableEvent] currentChange 触发`, { tableName, viewId })
-    
-    // ✅ 防止 DataSet→UI 同步期间的反向调用（el-table API 副作用）
-    if (isCurrentlySyncingToUI()) {
-      pageLogger.debug(`⏭️ [防循环] 跳过 el-table API 副作用触发的事件`, { tableName, viewId })
+    pageLogger.debug(`[TableEvent] currentChange`, { tableName, viewId })
+
+    if (typeof originalCurrentChange === 'function') {
+      (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
+    }
+
+    const table = dataSet.getTable(tableName)
+    if (!table) return
+    const view = table.getOrCreateView(viewId)
+    const ctx = createEventContext('ui', { tableName, viewId })
+
+    if (currentRow === null) {
+      view.setCurrentRow(null, ctx)
       return
     }
-    
-    // （本地防重逻辑已移除）
-    try {
-      // 先调用用户处理器
-      if (typeof originalCurrentChange === 'function') {
-        (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
-      }
-      
-      // 委托 spark-data 同步写入（会从 args[0] 提取干净数据）
-      sync.onCurrentChange(currentRow ?? null)
-      pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
-      // 同时通过全局事件总线广播（可用于跨组件联动）
-      if (currentRow) {
-        bus.emit('rowSelected', currentRow)
-      }
-    } finally {
-      // no-op
+
+    // form-create 会污染原始对象（添加 $f/api/rule 属性），原始数据保存在 row.args[0]
+    let cleanRow: IDataRow | null = null
+    if ('args' in currentRow && Array.isArray((currentRow as { args: unknown }).args)) {
+      const maybeRow = (currentRow as { args: unknown[] }).args[0]
+      if (maybeRow && typeof maybeRow === 'object') cleanRow = maybeRow as IDataRow
     }
+    if (!cleanRow) {
+      const pk = view.getPrimaryKeyValue(currentRow)
+      if (pk !== undefined) cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === pk) ?? null
+    }
+    if (cleanRow) view.setCurrentRow(cleanRow, ctx)
   }
-  
-  pageLogger.info(`✅ [TableEvent] 已注入 currentChange 事件处理器`, { tableName, viewId, ruleName: rule.name })
-  
+
   // 注入 selectionChange 事件（多选变化）
   const originalSelectionChange = rule.on['selectionChange']
   rule.on['selectionChange'] = (selection: IDataRow[]) => {
-    pageLogger.info(`🎯 [TableEvent] selectionChange 触发`, { tableName, viewId, selectionCount: selection.length })
-    
-    // ✅ 防止 DataSet→UI 同步期间的反向调用（el-table API 副作用）
-    if (isCurrentlySyncingToUI()) {
-      pageLogger.debug(`⏭️ [防循环] 跳过 el-table API 副作用触发的事件`, { tableName, viewId })
-      return
+    pageLogger.debug(`[TableEvent] selectionChange`, { tableName, viewId, count: selection.length })
+
+    if (typeof originalSelectionChange === 'function') {
+      (originalSelectionChange as (selection: unknown) => void)(selection)
     }
-    
-    // （本地防重逻辑已移除）
-    try {
-      
-      // 先调用用户处理器
-      if (typeof originalSelectionChange === 'function') {
-        (originalSelectionChange as (selection: unknown) => void)(selection)
-      }
-      
-      // 委托 spark-data 同步写入
-      sync.onSelectionChange(selection)
-      pageLogger.info(`📝 [TableEvent] 同步 selectedRows 到 DataSet.${tableName}.${viewId}`)
-    } finally {
-      // no-op
-    }
+
+    const table = dataSet.getTable(tableName)
+    if (!table) return
+    const view = table.getOrCreateView(viewId)
+    const valid = Array.isArray(selection) ? selection : []
+    view.setSelectedRows(valid, createEventContext('ui', { tableName, viewId }))
   }
 }
