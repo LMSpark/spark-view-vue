@@ -3,9 +3,9 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
+import type { PageContext } from '../types'
 
 const pageLogger = Logger('PageRenderer')
-import type { PageContext } from '../types'
 
 /**
  * 从脚本文本中提取所有顶层函数名
