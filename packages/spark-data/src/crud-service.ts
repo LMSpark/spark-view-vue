@@ -286,7 +286,9 @@ export class CrudService {
 
     try {
       const items = ids.map(id => ({ id }))
-      const results = await this.executeBatch(this.api.batch.delete, items, config)
+      // buildRequestConfig 将 CrudOperationConfig 转换为 Partial<RequestConfig>
+      const requestConfig = this.buildRequestConfig(config)
+      const results = await this.executeBatch(this.api.batch.delete, items, requestConfig)
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量删除完成', { total: ids.length, success: successCount })
       return {

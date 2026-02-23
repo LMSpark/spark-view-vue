@@ -59,24 +59,21 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
         type: typeof rawPageData,
         preview
       })
-      console.error('❌ DataSet 缓存数据损坏，请清除浏览器缓存后刷新页面：')
-      console.error('  方法1: 执行 localStorage.clear() 然后 location.reload()')
-      console.error('  方法2: 按 Ctrl+Shift+Delete 清除缓存')
       // 尝试自动清除相关缓存
       if (typeof localStorage !== 'undefined') {
         const keys = Object.keys(localStorage).filter(k => k.includes('pagedata') || k.includes('spark_file_'))
         keys.forEach(k => {
-          console.warn('  清除缓存键:', k)
+          pageLogger.warn('  清除缓存键:', k)
           localStorage.removeItem(k)
         })
-        console.warn('✅ 已清除 ' + keys.length + ' 个缓存项，请刷新页面')
+        pageLogger.warn('✅ 已清除 ' + keys.length + ' 个缓存项，请刷新页面')
       }
       return
     }
 
     // DataSet 实例直接赋值，跳过归一化（已由 parsePageData 编译并缓存）
     if (rawPageData instanceof DataSet) {
-      if (dataSet.value) dataSet.value = null
+
       dataSet.value = rawPageData
       currentDataVersion = rawPageData.version
       pageLogger.debug('DataSet 直接赋值（已编译实例）', {
@@ -90,9 +87,8 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
       const metadata = rawPageData as { dataSetName?: string; tables?: unknown }
       if (metadata.tables && typeof metadata.tables === 'object') {
         pageLogger.debug('检测到 DataSet 元数据格式，使用 fromData 转换')
-        if (dataSet.value) dataSet.value = null
-        dataSet.value = DataSet.fromData(rawPageData as unknown as IDataSetMetadata)
-        currentDataVersion = (rawPageData as { version?: unknown }).version
+      dataSet.value = DataSet.fromData(rawPageData as unknown as IDataSetMetadata)
+      currentDataVersion = (rawPageData as { version?: unknown }).version
         pageLogger.debug('DataSet 从元数据创建', {
           tables: Object.keys(dataSet.value.tables || {})
         })
@@ -108,8 +104,6 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
     }
 
     // 清理旧的 DataSet
-    if (dataSet.value) dataSet.value = null
-
     dataSet.value = DataSet.fromPageData(rawPageData)
     currentDataVersion = incomingVersion
 
