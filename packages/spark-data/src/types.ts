@@ -489,6 +489,15 @@ export interface IDataSet {
     event: 'loadSuccess' | 'loadError',
     handler: (payload: { tableName: string; viewId: string; error?: Error }) => void
   ): () => void
+  /**
+   * 订阅此 DataSet 内任意视图的状态变化。
+   *
+   * 严格作用于本 DataSet 实例，多个 PageRenderer 并存时互不干扰（替代全局 event-bus）。
+   * 订阅时遍历当前已存在的所有视图；如需监听后续动态创建的视图，可在创建后重新订阅。
+   *
+   * @returns 取消订阅函数（组件卸载时调用）
+   */
+  onAnyViewChange(handler: (evt: ViewStateEvent) => void): () => void
 }
 
 // ===== CRUD服务相关类型 =====

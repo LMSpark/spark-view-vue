@@ -135,6 +135,24 @@ export class DataSet implements IDataSet {
     return () => { for (const u of unsubscribers) u() }
   }
 
+  /**
+   * 订阅此 DataSet 内任意视图的状态变化（替代全局 event-bus）。
+   *
+   * 遍历当前所有表的所有视图，分别绑定 stateChanged 处理器。
+   * 作用域严格限定于本实例，不同页面的 DataSet 相互隔离。
+   */
+  onAnyViewChange(handler: (evt: ViewStateEvent) => void): () => void {
+    const unsubscribers: (() => void)[] = []
+    for (const table of Object.values(this.tables)) {
+      for (const view of Object.values(table.views)) {
+        const h = (evt: ViewStateEvent) => handler(evt)
+        view.events.on('stateChanged', h)
+        unsubscribers.push(() => view.events.off('stateChanged', h))
+      }
+    }
+    return () => { for (const u of unsubscribers) u() }
+  }
+
   // ===== 关系图查询（网状关系，非树形） =====
 
   /**

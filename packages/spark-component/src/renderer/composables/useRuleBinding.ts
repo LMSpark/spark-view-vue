@@ -11,8 +11,6 @@ import { ref, type Ref, onUnmounted } from 'vue'
 import { nextTick } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import type { IDataSet, IDataRow } from '@spark-view/spark-data'
-import { bus } from '@spark-view/spark-data'
-import type { ViewCurrentRowPayload, ViewSelectedRowsPayload } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
 import type { Rule } from '../types'
 
@@ -150,22 +148,19 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
     // injectTableEvents 已在上方 bindDataToRules 中为每个 el-table 创建 DataView；
     // 现在订阅所有视图的 stateChanged，驱动 DataSet → el-table UI 方向。
     if (dataSet.value) {
-      // 使用全局 bus 订阅 DataView 状态变化，驱动 el-table UI 同步（DataSet → UI 方向）
+      // 订阅此 DataSet 内所有视图的状态变化，驱动 el-table UI 同步（DataSet → UI 方向）
       // source='ui' 表示事件源自 UI 操作，无需反向同步回 UI（防止死循环）
-      const currentRowHandler = (payload: ViewCurrentRowPayload) => {
-        if (payload.context.source === 'ui') return
-        syncCurrentRowToTable(payload.tableName, payload.viewId, payload.row ?? null, formApi.value)
-      }
-      const selectedRowsHandler = (payload: ViewSelectedRowsPayload) => {
-        if (payload.context.source === 'ui') return
-        syncSelectedRowsToTable(payload.tableName, payload.viewId, payload.rows ?? [], formApi.value)
-      }
-      bus.on('view:currentRow', currentRowHandler)
-      bus.on('view:selectedRows', selectedRowsHandler)
-      cleanupSync = () => {
-        bus.off('view:currentRow', currentRowHandler)
-        bus.off('view:selectedRows', selectedRowsHandler)
-      }
+      cleanupSync = dataSet.value.onAnyViewChange((evt) => {
+        if (evt.context.source === 'ui') return
+        if (evt.changeType === 'currentRow') {
+          syncCurrentRowToTable(evt.tableName, evt.viewId, evt.row ?? null, formApi.value)
+        } else if (evt.changeType === 'selectedRows') {
+          syncSelectedRowsToTable(evt.tableName, evt.viewId, evt.rows ?? [], formApi.value)
+        } else if (evt.changeType === 'cleared') {
+          syncCurrentRowToTable(evt.tableName, evt.viewId, null, formApi.value)
+          syncSelectedRowsToTable(evt.tableName, evt.viewId, [], formApi.value)
+        }
+      })
     }
   }
 
