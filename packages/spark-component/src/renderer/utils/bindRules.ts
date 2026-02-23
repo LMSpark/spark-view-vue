@@ -6,7 +6,7 @@ import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { createTableSyncHandlers } from '@spark-view/spark-data'
-import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding } from '@spark-view/spark-data'
+import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding, bus } from '@spark-view/spark-data'
 import { isCurrentlySyncingToUI } from '../composables/useRuleBinding'
 
 const pageLogger = Logger('PageRenderer')
@@ -306,6 +306,10 @@ function injectTableEvents(
       // 委托 spark-data 同步写入（会从 args[0] 提取干净数据）
       sync.onCurrentChange(currentRow ?? null)
       pageLogger.info(`📝 [TableEvent] 同步 currentRow 到 DataSet.${tableName}.${viewId}`)
+      // 同时通过全局事件总线广播（可用于跨组件联动）
+      if (currentRow) {
+        bus.emit('rowSelected', currentRow)
+      }
     } finally {
       // no-op
     }
