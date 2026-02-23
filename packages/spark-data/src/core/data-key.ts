@@ -62,7 +62,7 @@ const VALID_FIELDS = new Set<string>(['rows', 'currentRow', 'selectedRows'])
 
 /**
  * 解析 fieldPart（可能带字段路径，如 `currentRow.totalUsers`）
- * @returns { field, fieldPath } 就就合法返回对象，字段非法返回 null
+ * @returns { field, fieldPath } 合法时返回对象，字段非法返回 null
  */
 function parseFieldPart(fieldPart: string): { field: DataKeyField; fieldPath?: string } | null {
   const dotIndex = fieldPart.indexOf('.')

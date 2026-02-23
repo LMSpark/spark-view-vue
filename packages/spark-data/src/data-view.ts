@@ -651,7 +651,9 @@ export class DataView implements IDataSource {
     if (!deletedRow) return false
     
     this.rows.splice(idx, 1)
-    this.rowIndexMap = undefined   // splice 后索引偏移，缓存失效
+    // splice 后重建索引 Map（O(n))，供删除后 selectedRowIndices 更新复用（O(1) vs O(n) indexOf）
+    const postDeleteMap = new Map(this.rows.map((r, i) => [r, i] as [IDataRow, number]))
+    this.rowIndexMap = postDeleteMap
 
     const ctx = this._mkCtx()
     // 被删行是当前行 → 清空并立即通知
@@ -667,7 +669,8 @@ export class DataView implements IDataSource {
       const newSelected = this.selectedRows.filter(r => !this.isSamePrimaryKey(r, deletedRow))
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
-        this.selectedRowIndices = newSelected.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
+        // postDeleteMap 已在上方构建，O(1) 查找代替 O(n) indexOf
+        this.selectedRowIndices = newSelected.map(r => postDeleteMap.get(r) ?? -1).filter(i => i !== -1)
         this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
         bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
@@ -680,7 +683,9 @@ export class DataView implements IDataSource {
   /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 stateChanged('rows') */
   replaceRows(rows: IDataRow[]): void {
     this.rows.splice(0, this.rows.length, ...rows)
-    this.rowIndexMap = undefined   // 全量替换，缓存失效
+    // O(n) 构建索引 Map，供后续 selectedRowIndices 计算和 setSelectedRows 复用
+    const idxMap = new Map(rows.map((r, i) => [r, i] as [IDataRow, number]))
+    this.rowIndexMap = idxMap
     // 行集合完全替换，旧引用失效 → 清理选中状态并通知
     const ctx = this._mkCtx()
     const rowSet = new Set(rows)
@@ -694,7 +699,8 @@ export class DataView implements IDataSource {
       const newSelected = this.selectedRows.filter(r => rowSet.has(r))
       if (newSelected.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...newSelected)
-        this.selectedRowIndices = newSelected.map(r => rows.indexOf(r)).filter(i => i !== -1)
+        // idxMap 已在函数头部构建，O(1) 查找代替 O(n) indexOf
+        this.selectedRowIndices = newSelected.map(r => idxMap.get(r) ?? -1).filter(i => i !== -1)
         this.emitStateChanged('selectedRows', { rows: [...this.selectedRows], context: ctx })
         bus.emit('view:selectedRows', { tableName: this.tableName, viewId: this.viewId, rows: [...this.selectedRows], context: ctx })
       }
