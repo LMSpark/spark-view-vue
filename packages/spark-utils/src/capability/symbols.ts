@@ -112,7 +112,12 @@ export function createEventEmitter<TEventMap extends Record<string, any[]> = Rec
       listeners.get(event)?.delete(handler)
     },
     emit(event, ...args) {
-      listeners.get(event)?.forEach(h => { try { h(...args) } catch (e) { console.error(`[EventEmitter] Error in handler for '${event}':`, e) } })
+      const handlers = listeners.get(event)
+      if (handlers) {
+        for (const h of handlers) {
+          try { h(...args) } catch (e) { console.error(`[EventEmitter] Error in handler for '${event}':`, e) }
+        }
+      }
     },
     removeAllListeners(event?: string) {
       if (event !== undefined) {

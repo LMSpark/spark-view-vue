@@ -101,9 +101,9 @@ export class TreeManager {
    * @param nodes 要添加的节点数组
    */
   addNodesToCache(nodes: FlatTreeNode[]): void {
-    nodes.forEach(node => {
+    for (const node of nodes) {
       this.cache[node.id] = node
-    })
+    }
   }
 
   /**
@@ -259,14 +259,14 @@ export class TreeManager {
       ? (this.cache[rootId] ? [this.cache[rootId]] : [])
       : this.getRoots()
 
-    rootNodes.forEach(rootNode => {
+    for (const rootNode of rootNodes) {
       if (rootNode) {
         const nestedRoot = this.buildSubTree(rootNode.id)
         if (nestedRoot) {
           roots.push(nestedRoot)
         }
       }
-    })
+    }
 
     return roots
   }
@@ -284,12 +284,12 @@ export class TreeManager {
 
     // 递归构建子节点
     const children = this.getChildren(rootId)
-    children.forEach(child => {
+    for (const child of children) {
       const childTree = this.buildSubTree(child.id)
       if (childTree) {
         nestedNode.children.push(childTree)
       }
-    })
+    }
 
     return nestedNode
   }
