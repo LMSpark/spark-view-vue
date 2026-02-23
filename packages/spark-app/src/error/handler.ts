@@ -78,7 +78,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
 
   // 返回清理函数（HMR / 应用卸载时调用，避免累积监听器）
   return () => {
-    cleanupFns.forEach(fn => fn())
+    for (const fn of cleanupFns) fn()
     cleanupFns.length = 0
   }
 }

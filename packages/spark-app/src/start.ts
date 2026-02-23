@@ -158,7 +158,7 @@ export async function start(options: StartOptions): Promise<void> {
     // 2. 安装 UI 插件
     if (plugins && plugins.length > 0) {
       startLogger.debug(`安装 ${plugins.length} 个 UI 插件...`)
-      plugins.forEach(plugin => app.use(plugin))
+      for (const plugin of plugins) app.use(plugin)
     }
 
     // 3. 创建 Vue Router 实例

@@ -165,14 +165,14 @@ class AppLogger {
     }
 
     // 触发所有传输器
-    this.transports.forEach(transport => {
+    for (const transport of this.transports) {
       try {
         void transport.send(level, message, meta ?? {})
       } catch (error) {
         // Fallback to console when logger transport fails
         console.error('日志传输失败', error)
       }
-    })
+    }
   }
 
   /**
@@ -213,7 +213,7 @@ class AppLogger {
     const formattedMessage = this.formatMessage(message, EMOJI_ICONS['success'])
     const args = meta ? [formattedMessage, meta] : [formattedMessage]
     console.info(...args)
-    this.transports.forEach(t => t.send('info', message, meta))
+    for (const t of this.transports) void t.send('info', message, meta)
   }
 }
 
