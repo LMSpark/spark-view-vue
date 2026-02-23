@@ -233,3 +233,5 @@ export const GRID_EVENTS = defineCapability<IEventEmitter>('spark:capability:gri
  * 目前无 provider 和 consumer。
  */
 export const ROW_EVENTS = defineCapability<IEventEmitter>('spark:capability:row-events')
+
+// === 业务能力扩展点（plop spark-capability 生成的自定义能力在此追加） ===
