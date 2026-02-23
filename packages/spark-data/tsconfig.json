@@ -32,6 +32,6 @@
       "@spark-view/spark-utils/*": ["../spark-utils/src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "vite.config.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

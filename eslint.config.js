@@ -22,6 +22,7 @@ export default [
       'node_modules/**',
       'vite.config.ts',
       'vitest.config.ts',
+      'packages/**/vite.config.ts',
       'packages/**/vitest.config.ts'
     ]
   },

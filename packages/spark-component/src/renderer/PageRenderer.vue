@@ -37,12 +37,6 @@ import { ref } from 'vue'
 import type { PageRendererOptions, Rule } from './types'
 import { usePageRenderer } from './composables/usePageRenderer'
 
-defineSlots<{
-  loading?: () => unknown
-  error?: (props: { error: string }) => unknown
-  content?: (props: { rules: Rule[], pageData: Record<string, unknown> }) => unknown
-}>()
-
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,
   enableDataSet: true
