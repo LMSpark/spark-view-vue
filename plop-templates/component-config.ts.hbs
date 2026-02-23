@@ -1,32 +1,11 @@
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { ComponentContext } from '@spark-view/spark-component'
 
 /**
- * {{pascalName}} 组件配置
+ * {{pascalName}} 组件 config prop 类型
  *
  * {{description}}
+ *
+ * 遵循 demo/UserGrid.vue 模式：使用 Partial<ComponentContext> 而非自定义接口。
+ * 如需扩展额外 props，通过 props.config.props?.['key'] 运行时访问。
  */
-export interface {{pascalName}}Config {
-  /** 组件标题 */
-  title?: string
-  /** 是否显示加载状态 */
-  loading?: boolean
-  /** 自定义数据 */
-  data?: Record<string, any>
-}
-
-/**
- * {{pascalName}} 组件注册配置
- */
-export const {{camelName}}Config: ComponentConfig = {
-  type: '{{name}}',
-  version: '1.0.0',
-  description: '{{description}}'
-}
-
-/**
- * 默认配置
- */
-export const default{{pascalName}}Config: {{pascalName}}Config = {
-  title: '{{pascalName}}',
-  loading: false
-}
+export type {{pascalName}}Config = Partial<ComponentContext>

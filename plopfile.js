@@ -110,6 +110,29 @@ export default function (plop) {
         name: 'hasTests',
         message: '是否创建单元测试?',
         default: true
+      },
+      {
+        type: 'list',
+        name: 'capabilityRole',
+        message: '能力角色（组件是否提供 / 消费 SPARK 能力）：',
+        choices: [
+          { name: 'none     — 不涉及能力系统', value: 'none' },
+          { name: 'provider — 向子组件提供能力', value: 'provider' },
+          { name: 'consumer — 消费祖先提供的能力', value: 'consumer' },
+          { name: 'both     — 既提供也消费', value: 'both' }
+        ],
+        default: 'none'
+      },
+      {
+        type: 'list',
+        name: 'dataKeyBehavior',
+        message: 'DataKey 行为（组件如何处理数据绑定）：',
+        choices: [
+          { name: 'none         — 不接入 DataSet', value: 'none' },
+          { name: 'self-resolve — 自行消费 PAGE_DATASET', value: 'self-resolve' },
+          { name: 'injected     — 由 bindRules 外部注入', value: 'injected' }
+        ],
+        default: 'none'
       }
     ],
     actions: function (data) {
@@ -119,17 +142,36 @@ export default function (plop) {
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join('');
+      const SCREAMING_NAME = componentName.toUpperCase().replace(/-/g, '_');
+      const isProvider = ['provider', 'both'].includes(data.capabilityRole);
+      const isConsumer = ['consumer', 'both'].includes(data.capabilityRole);
+      const isDataSelfResolve = data.dataKeyBehavior === 'self-resolve';
+
+      /** 模板变量一并传递，确保所有 .hbs 模板均可访问 */
+      const templateData = {
+        name: componentName,
+        pascalName,
+        description: data.description,
+        capabilityRole: data.capabilityRole,
+        dataKeyBehavior: data.dataKeyBehavior,
+        isProvider,
+        isConsumer,
+        isDataSelfResolve,
+        SCREAMING_NAME,
+      };
 
       const actions = [
         {
           type: 'add',
           path: `${basePath}/${componentName}.vue`,
-          templateFile: 'plop-templates/component.vue.hbs'
+          templateFile: 'plop-templates/component.vue.hbs',
+          data: templateData
         },
         {
           type: 'add',
-          path: `${basePath}/${componentName}.ts`,
-          templateFile: 'plop-templates/component-config.ts.hbs'
+          path: `${basePath}/${componentName}.config.ts`,
+          templateFile: 'plop-templates/component-config.ts.hbs',
+          data: templateData
         }
       ];
 
@@ -137,7 +179,8 @@ export default function (plop) {
         actions.push({
           type: 'add',
           path: `packages/${data.package}/stories/${pascalName}.stories.ts`,
-          templateFile: 'plop-templates/component.stories.ts.hbs'
+          templateFile: 'plop-templates/component.stories.ts.hbs',
+          data: templateData
         });
       }
 
@@ -145,7 +188,8 @@ export default function (plop) {
         actions.push({
           type: 'add',
           path: `packages/${data.package}/tests/${componentName}.test.ts`,
-          templateFile: 'plop-templates/component.test.ts.hbs'
+          templateFile: 'plop-templates/component.test.ts.hbs',
+          data: templateData
         });
       }
 
@@ -153,19 +197,19 @@ export default function (plop) {
     }
   });
 
-  // SPARK能力生成器
+  // SPARK 能力生成器
   plop.setGenerator('spark-capability', {
-    description: '创建一个新的SPARK能力定义',
+    description: '创建新的 SPARK 能力（将接口 + 能力键一并添加到 symbols.ts）',
     prompts: [
       {
         type: 'input',
         name: 'name',
-        message: '能力名称 (使用SCREAMING_SNAKE_CASE，如: USER_DATA):',
+        message: '能力键名称 (SCREAMING_SNAKE_CASE，如: USER_DATA):',
         validate: function (value) {
           if ((/^[A-Z][A-Z0-9_]*$/).test(value)) {
             return true;
           }
-          return '能力名称必须是SCREAMING_SNAKE_CASE格式';
+          return '能力键必须为 SCREAMING_SNAKE_CASE 格式';
         }
       },
       {
@@ -176,28 +220,36 @@ export default function (plop) {
       {
         type: 'input',
         name: 'interfaceName',
-        message: 'TypeScript接口名称 (如: IUserDataService):',
+        message: 'TypeScript 接口名称 (以 I 开头 PascalCase，如: IUserDataCapability):',
         validate: function (value) {
           if ((/^I[A-Z][a-zA-Z0-9]*$/).test(value)) {
             return true;
           }
-          return '接口名称必须以I开头，采用PascalCase格式';
+          return '接口名称必须以 I 开头且采用 PascalCase 格式';
         }
       }
     ],
-    actions: [
-      {
-        type: 'append',
-        path: 'packages/spark-utils/src/capability/types.ts',
-        pattern: '// 新能力接口定义在这里',
-        templateFile: 'plop-templates/capability-interface.ts.hbs'
-      },
-      {
-        type: 'append',
-        path: 'packages/spark-utils/src/capability/symbols.ts',
-        pattern: '// 新能力符号定义在这里',
-        templateFile: 'plop-templates/capability-symbol.ts.hbs'
-      }
-    ]
+    actions: function (data) {
+      // 将 SCREAMING_SNAKE_CASE 转换为 kebab-case，用于能力键字符串
+      const kebabName = data.name.toLowerCase().replace(/_/g, '-');
+      const capabilityData = {
+        name: data.name,
+        description: data.description,
+        interfaceName: data.interfaceName,
+        kebabName,
+      };
+
+      return [
+        {
+          // 将接口定义 + 能力键一并添加到 symbols.ts 拓展点
+          type: 'append',
+          path: 'packages/spark-utils/src/capability/symbols.ts',
+          pattern: '// === 业务能力扩展点（plop spark-capability 生成的自定义能力在此追加） ===',
+          templateFile: 'plop-templates/capability-symbol.ts.hbs',
+          separator: '\n',
+          data: capabilityData
+        }
+      ];
+    }
   });
 }

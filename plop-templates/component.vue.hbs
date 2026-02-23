@@ -1,45 +1,94 @@
 <template>
-  <div class="spark-{{name}}">
-    <div class="component-header">
-      <h3 class="component-title">{{ config.title }}</h3>
-    </div>
-    <div class="component-content">
-      <slot />
-    </div>
+  <div class="{{name}}">
+    <!-- 子组件递归渲染 -->
+    <component
+      v-for="childConfig in childConfigs"
+      :key="childConfig.id"
+      :is="getComponent(childConfig.type)"
+      :config="childConfig"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+/**
+ * {{pascalName}} — {{description}}
+ *
+ * dataKey 行为：{{dataKeyBehavior}}
+ * 能力角色：{{capabilityRole}}
+ *
+ * 注册示例（register.ts / initialize.ts）：
+ *   Spark.registerAll({ '{{name}}': () => import('./{{pascalName}}.vue') })
+ *   // 带元数据（Sprint D registry-driven dataKey）：
+ *   registry.register('{{name}}', {{pascalName}}, { dataKey: '{{dataKeyBehavior}}' })
+ */
+import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
+{{#if isConsumer}}
+// 从 @spark-view/spark-utils 导入需要消费的能力键，例如：
+// import { APP_SERVICES } from '@spark-view/spark-utils'
+{{/if}}
+{{#if isProvider}}
+// 在 packages/spark-utils/src/capability/symbols.ts 中已生成能力键 {{SCREAMING_NAME}}
+// import { {{SCREAMING_NAME}} } from '@spark-view/spark-utils'
+{{/if}}
+{{#if isDataSelfResolve}}
+import { PAGE_DATASET } from '@spark-view/spark-data'
+import { resolveDataKeyBinding } from '@spark-view/spark-data'
+{{/if}}
 
-interface {{pascalName}}Config {
-  title?: string
-}
-
+// ── Props ────────────────────────────────────────────────────────────────────
 interface Props {
-  config: ComponentContext<{{pascalName}}Config>
+  config: Partial<ComponentContext>
 }
 
 const props = defineProps<Props>()
 
-// 使用SPARK组件hook
-const { logger, context } = useSparkComponent(props.config)
+// ── 子组件配置（类型守卫过滤无效项） ────────────────────────────────────────
+const childConfigs = computed(() =>
+  (props.config.children ?? []).filter(
+    (c): c is ComponentContext => typeof c.type === 'string' && c.type.length > 0
+  )
+)
 
-// 组件初始化
-logger.info('{{pascalName}} component mounted', { config: props.config })
+// ── SPARK 能力上下文 ──────────────────────────────────────────────────────────
+const {
+  context,
+  provide: provideCapability,  // 注意：别名避免与 Vue provide 冲突
+  provideEvents,
+  consume,
+  consumeEvents,
+  getComponent,
+  logger,
+} = useSparkComponent(props.config as ComponentContext)
+{{#if isProvider}}
+
+// ── Provider：向子组件提供能力 ─────────────────────────────────────────────
+// provideCapability({{SCREAMING_NAME}}, {
+//   /* 实现 I{{pascalName}}Capability 接口所有方法 */
+// })
+{{/if}}
+{{#if isConsumer}}
+
+// ── Consumer：消费祖先提供的能力（late-binding 容忍，null 时不崩溃） ────────
+// const parentCap = consume(SOME_CAPABILITY_KEY)
+// if (parentCap) { /* 使用能力 */ }
+{{/if}}
+{{#if isDataSelfResolve}}
+
+// ── DataSet 接入（self-resolve 模式） ──────────────────────────────────────
+const dataSet = consume(PAGE_DATASET)
+const dataKey = (props.config as Record<string, unknown>)['dataKey'] as string | undefined
+// const binding = dataKey && dataSet ? resolveDataKeyBinding(dataKey, dataSet) : null
+// if (binding?.kind === 'view') { /* binding.source: IDataSource */ }
+{{/if}}
+
+logger.info('{{pascalName}} mounted', { id: context.id })
 </script>
 
 <style scoped>
-.spark-{{name}} {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1rem;
-  background: white;
-}
-
-.component-title {
-  margin: 0 0 1rem 0;
-  color: #2c3e50;
+.{{name}} {
+  /* TODO: 添加组件样式 */
 }
 </style>
