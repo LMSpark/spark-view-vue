@@ -15,6 +15,7 @@ import type { Component } from 'vue'
 import type { IDataSet } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { IPageServiceCapability } from '@spark-view/spark-utils'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
 export type { PageConfig }
@@ -72,7 +73,8 @@ export interface PageContext {
   $rebindRules: () => void
   $refreshData: (key?: string) => Promise<void>
   $dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
-  
+  $page: IPageServiceCapability  // PAGE_SERVICE 能力快捷访问（showMessage/showConfirm/navigate）
+
   // 沙箱全局变量
   ElMessage: typeof import('element-plus')['ElMessage']  // Element Plus 消息提示
   ElMessageBox: typeof import('element-plus')['ElMessageBox']  // Element Plus 消息框
