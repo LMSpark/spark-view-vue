@@ -41,6 +41,20 @@ import { buildAppServices } from '../utils/provideAppServices'
 
 const pageLogger = Logger('PageRenderer')
 
+// 模块级常量：form-create 默认选项（不依赖任何 composable 内部状态，避免每次调用时重建）
+const DEFAULT_FORM_CREATE_OPTIONS = {
+  form: false,
+  submitBtn: false,
+  resetBtn: false,
+  injectEvent: true,
+  global: {
+    'e-columns': { render: () => null },
+    'eColumns': { render: () => null },
+    'e-column': { render: () => null },
+    'eColumn': { render: () => null }
+  } as Record<string, Component>
+}
+
 // ─────────────────────────────────────────────
 // 公共接口
 // ─────────────────────────────────────────────
@@ -112,21 +126,8 @@ export function usePageRenderer(
 
   // ==================== FormCreate 配置 ====================
 
-  const defaultFormCreateOptions = {
-    form: false,
-    submitBtn: false,
-    resetBtn: false,
-    injectEvent: true,
-    global: {
-      'e-columns': { render: () => null },
-      'eColumns': { render: () => null },
-      'e-column': { render: () => null },
-      'eColumn': { render: () => null }
-    } as Record<string, Component>
-  }
-
   const formCreateOptions = ref({
-    ...defaultFormCreateOptions,
+    ...DEFAULT_FORM_CREATE_OPTIONS,
     // ⚠️ 暂时移除 formData 绑定，避免与 DataSet 事件的无限循环
     // formData: pageData,  
     ...props.formCreateOptions,
