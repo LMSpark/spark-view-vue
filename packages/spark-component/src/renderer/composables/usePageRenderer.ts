@@ -286,11 +286,11 @@ export function usePageRenderer(
       const config = await fetchConfig(pageId)
       await applyConfig(pageId, config)
       if (props.afterLoad) await props.afterLoad(config)
-      loading.value = false
     } catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-      loading.value = false
       props.onError?.(err instanceof Error ? err : new Error(String(err)))
+    } finally {
+      loading.value = false
     }
   }
 

@@ -178,6 +178,21 @@ export class PluginRegistry {
  */
 export class PluginManager {
   /**
+   * 从加载器构建插件实例（loadPlugins / loadPlugin 共用）
+   */
+  private static async createInstance(
+    loader: PluginLoader,
+    configOptions?: Record<string, unknown>
+  ): Promise<PluginInstance> {
+    const module = await loader.loader()
+    return {
+      plugin: module.default,
+      options: { ...loader.defaultOptions, ...configOptions },
+      loader
+    }
+  }
+
+  /**
    * 根据配置加载插件
    * 
    * @param pluginConfigs - 插件配置对象
@@ -215,20 +230,8 @@ export class PluginManager {
       try {
         pluginLogger.info(`Loading plugin: ${loader.name} (${id})`)
         
-        const module = await loader.loader()
-        const plugin = module.default
-        
-        // 合并默认选项和用户选项
-        const options = {
-          ...loader.defaultOptions,
-          ...config.options
-        }
-        
-        plugins.push({
-          plugin,
-          options,
-          loader
-        })
+        const instance = await PluginManager.createInstance(loader, config.options)
+        plugins.push(instance)
         
         pluginLogger.info(`Plugin loaded: ${loader.name}`)
       } catch (error) {
@@ -267,22 +270,9 @@ export class PluginManager {
     
     try {
       pluginLogger.info(`Loading plugin: ${loader.name}`)
-      
-      const module = await loader.loader()
-      const plugin = module.default
-      
-      const options = {
-        ...loader.defaultOptions,
-        ...normalized.options
-      }
-      
-      return { plugin, options, loader }
+      return await PluginManager.createInstance(loader, normalized.options)
     } catch (error) {
-      if (error instanceof Error) {
-        pluginLogger.error(`Failed to load plugin "${id}":`, error)
-      } else {
-        pluginLogger.error(`Failed to load plugin "${id}": ${String(error)}`)
-      }
+      pluginLogger.error(`Failed to load plugin "${id}"`, error as Error)
       return null
     }
   }

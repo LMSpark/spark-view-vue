@@ -417,7 +417,6 @@ export class PageConfigLoader implements ConfigLoader {
         signal: controller.signal,
         headers: { 'Content-Type': 'application/json' }
       })
-      clearTimeout(timeoutId)
 
       if (!response.ok) {
         const msg = getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED)
@@ -441,13 +440,14 @@ export class PageConfigLoader implements ConfigLoader {
       pageLogger.debug('远程加载成功', { url })
       return result as T
     } catch (err) {
-      clearTimeout(timeoutId)
       if (err instanceof Error && err.name === 'AbortError') {
         const msg = getErrorMessage(ErrorCodes.NETWORK_TIMEOUT)
         pageLogger.error('请求超时', { url, timeout: this.opts.timeout })
         throw new Error(`${msg}: ${url}`)
       }
       throw err
+    } finally {
+      clearTimeout(timeoutId)
     }
   }
 }
