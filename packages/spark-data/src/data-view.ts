@@ -782,13 +782,7 @@ export class DataView implements IDataSource {
     context?: EventContext
   ): boolean {
     this.checkDestroyed()
-    
-    // 特殊处理 null：清空当前行
-    if (id === null || id === undefined) {
-      this.setCurrentRow(null, context)
-      return true
-    }
-    
+
     // 根据主键查找行
     const row = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
     
@@ -1135,6 +1129,7 @@ export class DataView implements IDataSource {
     this.currentRowIndex = null
     this.selectedRows.splice(0, this.selectedRows.length)
     this.selectedRowIndices = []
+    this.rowIndexMap = undefined   // 行集合已清空，索引缓存失效
     this.requestState = RequestState.Idle
     this.loadingError = null
   }
@@ -1142,17 +1137,30 @@ export class DataView implements IDataSource {
   /** 清理已不在 rows 中的选中状态，返回是否发生了清理 */
   cleanupInvalidSelections(): boolean {
     let cleaned = false
+    // O(n) 构建主键查找 Map，避免内部每次 isSamePrimaryKey 再做 O(n) 扫描
+    const rowPkSet = new Set(
+      this.rows.map(r => this.getPrimaryKeyValue(r)).filter(pk => pk !== undefined)
+    )
     const currentRow = this.currentRow
-    if (currentRow && !this.rows.some(r => this.isSamePrimaryKey(r, currentRow))) {
-      this.currentRow = null
-      this.currentRowIndex = null
-      cleaned = true
+    if (currentRow) {
+      const pk = this.getPrimaryKeyValue(currentRow)
+      if (pk === undefined || !rowPkSet.has(pk)) {
+        this.currentRow = null
+        this.currentRowIndex = null
+        cleaned = true
+      }
     }
     if (this.selectedRows.length > 0) {
-      const valid = this.selectedRows.filter(sr => this.rows.some(r => this.isSamePrimaryKey(r, sr)))
+      const valid = this.selectedRows.filter(sr => {
+        const pk = this.getPrimaryKeyValue(sr)
+        return pk !== undefined && rowPkSet.has(pk)
+      })
       if (valid.length !== this.selectedRows.length) {
         this.selectedRows.splice(0, this.selectedRows.length, ...valid)
-        this.selectedRowIndices = valid.map(r => this.rows.indexOf(r)).filter(i => i !== -1)
+        this.rowIndexMap ??= new Map(this.rows.map((r, i) => [r, i]))
+        this.selectedRowIndices = valid
+          .map(r => this.rowIndexMap?.get(r) ?? -1)
+          .filter(i => i !== -1)
         cleaned = true
       }
     }

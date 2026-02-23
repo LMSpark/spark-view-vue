@@ -260,7 +260,7 @@ function createFunctionCaller(
  * 将 el-table UI 事件同步写入对应的 DataView。
  * 事件携带 source='ui' 的 EventContext，下游 useRuleBinding 会跳过该事件的反向同步。
  *
- * DataSet → UI 方向由 useRuleBinding 经 bus 播厩1单独负责。
+ * DataSet → UI 方向由 useRuleBinding 经 bus 单独负责。
  */
 function injectTableEvents(
   rule: Rule,

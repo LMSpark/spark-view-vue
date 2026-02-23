@@ -58,6 +58,28 @@ const SEPARATOR = '@'
 const VALID_FIELDS = new Set<string>(['rows', 'currentRow', 'selectedRows'])
 
 
+// ===== 内部辅助 =====
+
+/**
+ * 解析 fieldPart（可能带字段路径，如 `currentRow.totalUsers`）
+ * @returns { field, fieldPath } 就就合法返回对象，字段非法返回 null
+ */
+function parseFieldPart(fieldPart: string): { field: DataKeyField; fieldPath?: string } | null {
+  const dotIndex = fieldPart.indexOf('.')
+  let field: string
+  let fieldPath: string | undefined
+  if (dotIndex > 0) {
+    field = fieldPart.substring(0, dotIndex)
+    fieldPath = fieldPart.substring(dotIndex + 1)
+  } else {
+    field = fieldPart
+  }
+  if (!VALID_FIELDS.has(field)) return null
+  const result: { field: DataKeyField; fieldPath?: string } = { field: field as DataKeyField }
+  if (fieldPath !== undefined) result.fieldPath = fieldPath
+  return result
+}
+
 // ===== 解析函数 =====
 
 /**
@@ -93,46 +115,18 @@ export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
     // scope@tableName@viewId@field 或 scope@tableName@viewId@field.path
     const [scope, tableName, viewId, fieldPart] = parts
     if (!scope || !tableName || !viewId || !fieldPart) return null
-    
-    // 检查是否有字段路径（如 currentRow.totalUsers）
-    const dotIndex = fieldPart.indexOf('.')
-    let field: string
-    let fieldPath: string | undefined
-    
-    if (dotIndex > 0) {
-      field = fieldPart.substring(0, dotIndex)
-      fieldPath = fieldPart.substring(dotIndex + 1)
-    } else {
-      field = fieldPart
-    }
-    
-    if (!VALID_FIELDS.has(field)) return null
-    const result: DataKeyDescriptor = { scope, tableName, viewId, field: field as DataKeyField, raw: dataKey }
-    if (fieldPath !== undefined) result.fieldPath = fieldPath
-    return result
+    const fp = parseFieldPart(fieldPart)
+    if (!fp) return null
+    return { scope, tableName, viewId, field: fp.field, raw: dataKey, ...(fp.fieldPath !== undefined ? { fieldPath: fp.fieldPath } : {}) }
   }
 
   if (parts.length === 3) {
     // scope@tableName@field 或 scope@tableName@field.path → viewId = 'default'
     const [scope, tableName, fieldPart] = parts
     if (!scope || !tableName || !fieldPart) return null
-    
-    // 检查是否有字段路径
-    const dotIndex = fieldPart.indexOf('.')
-    let field: string
-    let fieldPath: string | undefined
-    
-    if (dotIndex > 0) {
-      field = fieldPart.substring(0, dotIndex)
-      fieldPath = fieldPart.substring(dotIndex + 1)
-    } else {
-      field = fieldPart
-    }
-    
-    if (!VALID_FIELDS.has(field)) return null
-    const result: DataKeyDescriptor = { scope, tableName, viewId: 'default', field: field as DataKeyField, raw: dataKey }
-    if (fieldPath !== undefined) result.fieldPath = fieldPath
-    return result
+    const fp = parseFieldPart(fieldPart)
+    if (!fp) return null
+    return { scope, tableName, viewId: 'default', field: fp.field, raw: dataKey, ...(fp.fieldPath !== undefined ? { fieldPath: fp.fieldPath } : {}) }
   }
 
   // 段数不对或不含 @
