@@ -48,6 +48,25 @@ function run(cmd, cwd = ROOT) {
   execSync(cmd, { cwd, stdio: 'inherit' })
 }
 
+function runPublish(cmd, cwd, name, version) {
+  try {
+    console.log(`\n$ ${cmd}`)
+    execSync(cmd, { cwd, stdio: 'pipe' })
+  } catch (err) {
+    const output = (err.stdout?.toString() ?? '') + (err.stderr?.toString() ?? '')
+    if (output.includes('You cannot publish over the previously published versions') ||
+        output.includes('cannot publish over') ||
+        output.includes('EPUBLISHCONFLICT')) {
+      console.log(`⏭  Skip: ${name}@${version} already published`)
+      return false
+    }
+    // 其他错误继续抛出
+    console.error(output)
+    throw err
+  }
+  return true
+}
+
 function getPackageJson(pkgDir) {
   const p = join(pkgDir, 'package.json')
   const content = readFileSync(p, 'utf-8').replace(/^\uFEFF/, '') // strip BOM
@@ -89,11 +108,13 @@ for (const pkgName of PUBLISH_ORDER) {
     continue
   }
 
-  run(
+  const published = runPublish(
     `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --ignore-scripts`,
     pkgDir,
+    pkg.name,
+    pkg.version,
   )
-  console.log(`✅  Published ${pkg.name}@${pkg.version}`)
+  if (published) console.log(`✅  Published ${pkg.name}@${pkg.version}`)
 }
 
 console.log('\n🎉  Done!')

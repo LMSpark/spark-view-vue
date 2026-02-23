@@ -8,6 +8,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "noEmit": false,
+    "emitDeclarationOnly": true,
     "noEmitOnError": true,
     "removeComments": false,
     "paths": {}

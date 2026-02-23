@@ -1,6 +1,6 @@
-﻿{
+{
     "name": "@spark-view/spark-component",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -22,7 +22,7 @@
         }
     },
     "scripts": {
-        "build": "vue-tsc -p tsconfig.build.json",
+        "build": "vite build && vue-tsc -p tsconfig.build.json",
         "typecheck": "vue-tsc -p tsconfig.json --noEmit",
         "test": "vitest",
         "test:run": "vitest run",
@@ -30,24 +30,26 @@
         "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
     },
     "dependencies": {
-        "@spark-view/spark-utils": "workspace:*",
         "@spark-view/spark-data": "workspace:*",
-        "@spark-view/spark-page-config": "workspace:*"
+        "@spark-view/spark-page-config": "workspace:*",
+        "@spark-view/spark-utils": "workspace:*"
     },
     "peerDependencies": {
-        "vue": "^3.5.0",
-        "vue-router": "^4.0.0",
+        "@form-create/element-ui": ">=3.0.0",
         "element-plus": ">=2.0.0",
-        "@form-create/element-ui": ">=3.0.0"
+        "vue": "^3.5.0",
+        "vue-router": "^4.0.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",
         "@types/node": "^18.19.130",
         "@typescript-eslint/eslint-plugin": "^8.52.0",
         "@typescript-eslint/parser": "^8.52.0",
+        "@vitejs/plugin-vue": "^6.0.4",
         "eslint": "^9.39.2",
         "typescript": "~5.8.2",
         "undici-types": "^7.19.2",
+        "vite": "^7.3.1",
         "vitest": "^2.1.8",
         "vue": "^3.5.27"
     }

@@ -87,12 +87,6 @@ import type { ComponentRegistry } from '../core/types'
 
 // ==================== Props & Slots ====================
 
-defineSlots<{
-  loading?: () => unknown
-  error?: (props: { error: string }) => unknown
-  content?: (props: { config: Record<string, unknown> | null }) => unknown
-}>()
-
 const props = withDefaults(defineProps<JsonRendererOptions>(), {
   showConfigViewer: false
 })
