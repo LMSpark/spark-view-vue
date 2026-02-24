@@ -30,6 +30,7 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({ inheritAttrs: false })
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES, SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
