@@ -1,6 +1,6 @@
 {
     "name": "@spark-view/spark-app",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/types/index.d.ts",
@@ -28,8 +28,8 @@
         }
     },
     "dependencies": {
-        "@spark-view/spark-component": "^0.2.3",
-        "@spark-view/spark-utils": "^0.2.3"
+        "@spark-view/spark-component": "^0.2.4",
+        "@spark-view/spark-utils": "^0.2.4"
     },
     "scripts": {
         "build": "vite build && tsc -p tsconfig.build.json",
