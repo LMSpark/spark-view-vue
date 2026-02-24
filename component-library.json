@@ -1,148 +1,4 @@
 {
-  "PageRenderer": {
-    "name": "PageRenderer",
-    "displayName": "PageRenderer",
-    "description": "",
-    "tags": {},
-    "props": [
-      {
-        "name": "enableCssScope",
-        "defaultValue": {
-          "func": false,
-          "value": "true"
-        },
-        "description": "",
-        "tags": {}
-      },
-      {
-        "name": "enableDataSet",
-        "defaultValue": {
-          "func": false,
-          "value": "true"
-        },
-        "description": "",
-        "tags": {}
-      }
-    ],
-    "events": [],
-    "slots": [
-      {
-        "name": "loading",
-        "description": "",
-        "bindings": [],
-        "tags": {}
-      },
-      {
-        "name": "error",
-        "description": "",
-        "bindings": [
-          {
-            "name": "error",
-            "title": "binding"
-          }
-        ],
-        "tags": {}
-      },
-      {
-        "name": "content",
-        "description": "",
-        "bindings": [
-          {
-            "name": "rules",
-            "title": "binding"
-          },
-          {
-            "name": "page-data",
-            "title": "binding"
-          }
-        ],
-        "tags": {}
-      }
-    ],
-    "methods": [],
-    "sourcePath": "packages\\spark-component\\src\\renderer\\PageRenderer.vue",
-    "exportName": "default",
-    "spark": {
-      "type": "page-renderer",
-      "loadStrategy": "sync",
-      "capabilities": {
-        "provides": [
-          "APP_SERVICES",
-          "PAGE_SERVICE"
-        ],
-        "consumes": [
-          "APP_SERVICES"
-        ]
-      }
-    },
-    "complexity": {
-      "propsCount": 2,
-      "eventsCount": 0,
-      "slotsCount": 3,
-      "methodsCount": 0
-    }
-  },
-  "SparkComponentRenderer": {
-    "name": "SparkComponentRenderer",
-    "displayName": "SparkComponentRenderer",
-    "description": "",
-    "tags": {},
-    "props": [
-      {
-        "name": "config",
-        "type": {
-          "name": "ComponentConfig"
-        },
-        "required": true,
-        "description": "组件配置对象\n必须包含 type 字段指定组件类型，可选 id、children 等字段",
-        "tags": {
-          "example": [
-            {
-              "description": "{ type: 'spark-ej2-grid', id: 'grid-1', dataSource: [...] }",
-              "title": "example"
-            }
-          ]
-        }
-      },
-      {
-        "name": "parentContext",
-        "type": {
-          "name": "ComponentContext"
-        },
-        "required": false,
-        "description": "父组件上下文（可选）\n用于维护组件树的上下文链，支持能力系统的向上查找",
-        "tags": {
-          "default": [
-            {
-              "description": "undefined",
-              "title": "default"
-            }
-          ]
-        }
-      }
-    ],
-    "events": [],
-    "slots": [],
-    "methods": [],
-    "sourcePath": "features\\spark\\components\\SparkComponentRenderer.vue",
-    "exportName": "default",
-    "spark": {
-      "type": "spark-component-renderer",
-      "loadStrategy": "sync",
-      "capabilities": {
-        "provides": [],
-        "consumes": [
-          "APP_SERVICES"
-        ]
-      }
-    },
-    "complexity": {
-      "propsCount": 2,
-      "eventsCount": 0,
-      "slotsCount": 0,
-      "methodsCount": 0
-    }
-  },
   "SparkEJ2Column": {
     "name": "SparkEJ2Column",
     "displayName": "SparkEJ2Column",
@@ -185,7 +41,7 @@
     "events": [],
     "slots": [],
     "methods": [],
-    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Column.vue",
+    "sourcePath": "src\\features\\spark-ej2\\components\\SparkEJ2Column.vue",
     "exportName": "default",
     "spark": {
       "type": "spark-ej-2-column",
@@ -232,7 +88,7 @@
     "events": [],
     "slots": [],
     "methods": [],
-    "sourcePath": "features\\spark-ej2\\components\\SparkEJ2Grid.vue",
+    "sourcePath": "src\\features\\spark-ej2\\components\\SparkEJ2Grid.vue",
     "exportName": "default",
     "spark": {
       "type": "spark-ej-2-grid",
@@ -299,6 +155,29 @@
     },
     "complexity": {
       "propsCount": 1,
+      "eventsCount": 0,
+      "slotsCount": 0,
+      "methodsCount": 0
+    }
+  },
+  "JsonRendererExample": {
+    "name": "JsonRendererExample",
+    "displayName": "JsonRendererExample",
+    "description": "",
+    "tags": {},
+    "props": [],
+    "events": [],
+    "slots": [],
+    "methods": [],
+    "sourcePath": "src\\components\\demo\\JsonRendererExample.vue",
+    "exportName": "default",
+    "spark": {
+      "type": "json-renderer-example",
+      "loadStrategy": "async",
+      "capabilities": null
+    },
+    "complexity": {
+      "propsCount": 0,
       "eventsCount": 0,
       "slotsCount": 0,
       "methodsCount": 0

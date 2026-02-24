@@ -38,7 +38,11 @@ export default defineConfig({
       '@spark-view/spark-utils': path.resolve(__dirname, 'packages', 'spark-utils', 'dist', 'index.js'),
       '@spark-view/spark-renderer': path.resolve(__dirname, 'packages', 'spark-component', 'dist', 'index.js'),
       '@spark-view/spark-page-config': path.resolve(__dirname, 'packages', 'spark-page-config', 'dist', 'index.js'),
-      '@spark-view/spark-app': path.resolve(__dirname, 'packages', 'spark-app', 'dist', 'index.js'),
+      // during development we alias to source so that new exports (e.g. setupAutoRegister)
+      // are available without rebuilding the package. In production builds the dist file is used.
+      '@spark-view/spark-app': process.env.NODE_ENV === 'production'
+        ? path.resolve(__dirname, 'packages', 'spark-app', 'dist', 'index.js')
+        : path.resolve(__dirname, 'packages', 'spark-app', 'src', 'index.ts'),
       '/pages-config': path.resolve(__dirname, 'public', 'pages-config')
     }
   },

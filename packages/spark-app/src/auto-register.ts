@@ -13,23 +13,12 @@ const logger = Logger('AutoRegister')
 
 export interface AutoRegisterOptions {
   /**
-   * 需要扫描的 glob 模式列表（相对于项目根）
-   * 默认为 packages、features、src/components 和 src/views 下的 vue 文件
-   */
-  patterns?: string[]
-
-  /**
    * 排除规则（glob 模式）
    */
   exclude?: string[]
 }
 
-const DEFAULT_PATTERNS = [
-  './packages/*/src/components/**/*.vue',
-  './features/**/components/**/*.vue',
-  './src/components/**/*.vue',
-  './src/views/**/*.vue'
-]
+
 
 const DEFAULT_EXCLUDE = [
   'App.vue',
@@ -47,19 +36,23 @@ const DEFAULT_EXCLUDE = [
 export async function setupAutoRegister(app: App, options: AutoRegisterOptions = {}) {
   void app // 预留参数
 
-  const patterns = options.patterns ?? DEFAULT_PATTERNS
   const exclude = options.exclude ?? DEFAULT_EXCLUDE
 
   logger.info('🚀 启动组件自动注册...')
 
-  // import.meta.glob 的根目录是当前项目的 src 目录
-  // 所以模式使用相对路径即可
-  const allModules: Record<string, () => Promise<{ default: unknown }>> = {}
-
-  for (const pattern of patterns) {
-    const mods = import.meta.glob(pattern)
-    Object.assign(allModules, mods)
-  }
+  // 只能静态声明所有扫描目录
+  const modulesA = import.meta.glob('./packages/*/src/components/**/*.vue')
+  const modulesB = import.meta.glob('./features/**/components/**/*.vue')
+  const modulesC = import.meta.glob('./src/components/**/*.vue')
+  const modulesD = import.meta.glob('./src/views/**/*.vue')
+  // 为了让 TypeScript 识别出符合 Spark.createRegister 的类型，我们在这里显式声明
+  // 与 @spark-view/spark-component 内部的 GlobModules 等价。
+  const allModules = {
+    ...modulesA,
+    ...modulesB,
+    ...modulesC,
+    ...modulesD,
+  } as Record<string, () => Promise<{ default: unknown }>>
 
   // 生成注册器
   const reg = Spark.createRegister(allModules)
