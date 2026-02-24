@@ -100,6 +100,10 @@ export { setupErrorHandler, createErrorBoundary } from './error/handler'
 // Config
 export { loadConfig, isFeatureEnabled } from './config'
 
+// 运行时组件注册辅助（可选，经典模式使用）
+export { setupAutoRegister } from './auto-register'
+export type { AutoRegisterOptions } from './auto-register'
+
 // Composables
 // ⚠️ DI 架构已统一到 SPARK 能力系统（管道 B）
 // - 推荐：使用 consume(APP_SERVICES) 获取应用服务
