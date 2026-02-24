@@ -25,3 +25,7 @@ tsc-output.txt
 # Verdaccio runtime artifacts (本地私有 registry 运行时产物，不入库)
 verdaccio/htpasswd
 verdaccio/storage/
+
+# 本地敏感凭据（token、密钥等）— 不可提交
+secrets.local
+.env.local
