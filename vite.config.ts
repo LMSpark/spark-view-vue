@@ -417,7 +417,7 @@ export default registerComponents
             return 'pages-config'
           }
           // 演示页面
-          if (id.includes('views/JsonRendererDemo') || id.includes('views/ComponentRendererDemo')) {
+          if (id.includes('views/ComponentRendererDemo')) {
             return 'pages-demo'
           }
 

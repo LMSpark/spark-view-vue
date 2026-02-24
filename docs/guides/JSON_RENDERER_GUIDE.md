@@ -357,7 +357,7 @@ onMounted(async () => {
 
 ### 示例 3：从 JsonRendererDemo 迁移
 
-**原始代码** (`src/components/demo/JsonRendererDemo.vue`)：
+**原始代码** (`src/components/demo/JsonRendererDemo.vue`，该文件已于 2026-02-21 删除，示例仅供参考)：
 ```vue
 <template>
   <component :is="UserGrid" v-if="config" :config="config" />

@@ -262,13 +262,14 @@ const routes = [
 
 ### Q: 原来的 JsonRendererDemo 要删除吗？
 
-A: **建议保留作为参考**，可以在文件顶部添加注释：
+A: 文件已在 2026-02-21 从仓库中移除。历史用户可以放心删除所有引用，
+   也可在需要时参考迁移文档中的原始示例片段。
 
-```vue
-<!--
-  @deprecated 此组件已迁移到 @spark-view/spark-component
-  新代码请使用 JsonRenderer 组件
-  参考: packages/spark-component/src/renderer/JsonRenderer.vue
+```markdown
+# 注意
+以下示例源自已删除的 `src/components/demo/JsonRendererDemo.vue`，
+仅保留用于文档参考。
+```  参考: packages/spark-component/src/renderer/JsonRenderer.vue
 -->
 ```
 
