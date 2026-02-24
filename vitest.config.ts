@@ -12,14 +12,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@spark-view/spark-component': resolve(__dirname, './packages/spark-component/src/index.ts'),
-      '@spark-view/spark-component/*': resolve(__dirname, './packages/spark-component/src/*'),
-      '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/src/index.ts'),
-      '@spark-view/spark-utils/*': resolve(__dirname, './packages/spark-utils/src/*'),
-      '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/src/index.ts'),
-      '@spark-view/spark-data/*': resolve(__dirname, './packages/spark-data/src/*'),
-      '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/src/index.ts'),
-      '@spark-view/spark-page-config/*': resolve(__dirname, './packages/spark-page-config/src/*')
+      '@/features/spark-ej2': resolve(__dirname, './features/spark-ej2'),
+      // 安装方式：根测试环境通过 dist 解析 @spark-view/*（不引用 src/）
+      '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/dist/index.js'),
+      '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/dist/index.js'),
+      '@spark-view/spark-component': resolve(__dirname, './packages/spark-component/dist/index.js'),
+      '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/dist/index.js'),
+      '@spark-view/spark-app': resolve(__dirname, './packages/spark-app/dist/index.js')
     }
   },
   esbuild: {
