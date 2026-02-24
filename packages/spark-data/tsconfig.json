@@ -28,6 +28,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "paths": {
+      "@spark-view/spark-data": ["./src/index.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]
     }
   },
