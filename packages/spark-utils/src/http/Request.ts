@@ -10,7 +10,8 @@
  *   - 类型安全：所有公共 API 接收 `RequestConfig`，返回 `HttpResponse`
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios from 'axios'
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { Logger } from '../logger'
 import type {
   RequestConfig, Method, HttpResponse,
