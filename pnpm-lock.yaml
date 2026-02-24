@@ -157,16 +157,16 @@ importers:
   packages/spark-app:
     dependencies:
       '@spark-view/spark-component':
-        specifier: workspace:*
-        version: link:../spark-component
+        specifier: ^0.2.9
+        version: 0.2.9(@form-create/element-ui@3.2.37(vue@3.5.27(typescript@5.8.3)))(element-plus@2.13.2(vue@3.5.27(typescript@5.8.3)))(vue-router@4.6.4(vue@3.5.27(typescript@5.8.3)))(vue@3.5.27(typescript@5.8.3))
       '@spark-view/spark-utils':
-        specifier: workspace:*
-        version: link:../spark-utils
+        specifier: ^0.2.9
+        version: 0.2.9
       vue:
-        specifier: ^3.5.0
+        specifier: ^3.5.27
         version: 3.5.27(typescript@5.8.3)
       vue-router:
-        specifier: ^4.0.0
+        specifier: ^4.6.4
         version: 4.6.4(vue@3.5.27(typescript@5.8.3))
     devDependencies:
       '@eslint/js':
@@ -200,19 +200,19 @@ importers:
         specifier: '>=3.0.0'
         version: 3.2.37(vue@3.5.27(typescript@5.8.3))
       '@spark-view/spark-data':
-        specifier: workspace:*
-        version: link:../spark-data
+        specifier: ^0.2.9
+        version: 0.2.9(vue@3.5.27(typescript@5.8.3))
       '@spark-view/spark-page-config':
-        specifier: workspace:*
-        version: link:../spark-page-config
+        specifier: ^0.2.9
+        version: 0.2.9(vue-router@4.6.4(vue@3.5.27(typescript@5.8.3)))(vue@3.5.27(typescript@5.8.3))
       '@spark-view/spark-utils':
-        specifier: workspace:*
-        version: link:../spark-utils
+        specifier: ^0.2.9
+        version: 0.2.9
       element-plus:
         specifier: '>=2.0.0'
         version: 2.13.2(vue@3.5.27(typescript@5.8.3))
       vue-router:
-        specifier: ^4.0.0
+        specifier: ^4.6.4
         version: 4.6.4(vue@3.5.27(typescript@5.8.3))
     devDependencies:
       '@eslint/js':
@@ -252,8 +252,8 @@ importers:
   packages/spark-data:
     dependencies:
       '@spark-view/spark-utils':
-        specifier: workspace:*
-        version: link:../spark-utils
+        specifier: ^0.2.9
+        version: 0.2.9
       mitt:
         specifier: ^3.0.1
         version: 3.0.1
@@ -289,16 +289,16 @@ importers:
   packages/spark-page-config:
     dependencies:
       '@spark-view/spark-data':
-        specifier: workspace:*
-        version: link:../spark-data
+        specifier: ^0.2.9
+        version: 0.2.9(vue@3.5.27(typescript@5.8.3))
       '@spark-view/spark-utils':
-        specifier: workspace:*
-        version: link:../spark-utils
+        specifier: ^0.2.9
+        version: 0.2.9
       vue:
-        specifier: ^3.5.0
+        specifier: ^3.5.27
         version: 3.5.27(typescript@5.8.3)
       vue-router:
-        specifier: ^4.0.0
+        specifier: ^4.6.4
         version: 4.6.4(vue@3.5.27(typescript@5.8.3))
     devDependencies:
       '@eslint/js':
@@ -2285,6 +2285,28 @@ packages:
 
   '@sinclair/typebox@0.27.10':
     resolution: {integrity: sha512-MTBk/3jGLNB2tVxv6uLlFh1iu64iYOQ2PbdOSK3NW8JZsmlaOh2q6sdtKowBhfw8QFLmYNzTW4/oK4uATIi6ZA==}
+
+  '@spark-view/spark-component@0.2.9':
+    resolution: {integrity: sha512-j7ys3jq76GrylywyYtkrHHDVvUAyRVQxWDK4q8Q/PYRA6Zqy0kCXgq99M0i6apiCgQDpea3IiwKugIh7fWCtyA==}
+    peerDependencies:
+      '@form-create/element-ui': '>=3.0.0'
+      element-plus: '>=2.0.0'
+      vue: ^3.5.0
+      vue-router: ^4.0.0
+
+  '@spark-view/spark-data@0.2.9':
+    resolution: {integrity: sha512-9vtlIztXPiAg11Acu6z3kcUsqKxNLHMNIuNoCdp93IbieE7uOgJXBUpK1y086ch9DiV8rkG+M3jE+JAjUajydw==}
+    peerDependencies:
+      vue: ^3.5.0
+
+  '@spark-view/spark-page-config@0.2.9':
+    resolution: {integrity: sha512-v6MrpiR1VHQSIQ0DYERfFXdD7KojLF+/ch9Ey/yi/jE4LEkU+yHj66WufA10yzJuUR7dl7Ul7SaEnEL8rzZMBA==}
+    peerDependencies:
+      vue: ^3.5.0
+      vue-router: ^4.0.0
+
+  '@spark-view/spark-utils@0.2.9':
+    resolution: {integrity: sha512-A31cijF+O6/bub1jFrggMeuwz3hwH3gxcTf0+LEUgWHrab/V/1h72TyBZFjLZ6BewochM+3mdeu2KUexpIn+Ow==}
 
   '@storybook/addon-actions@7.6.21':
     resolution: {integrity: sha512-iIbxQiY4vdvhaklSFkjb3vaCKbz53KX4+Sbm1ZBnuHKBN5+p140OW5q9OGoKTiyn2MSVwzXhIW0kitn1PkUtXg==}
@@ -8146,6 +8168,31 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.57.1': {}
 
   '@sinclair/typebox@0.27.10': {}
+
+  '@spark-view/spark-component@0.2.9(@form-create/element-ui@3.2.37(vue@3.5.27(typescript@5.8.3)))(element-plus@2.13.2(vue@3.5.27(typescript@5.8.3)))(vue-router@4.6.4(vue@3.5.27(typescript@5.8.3)))(vue@3.5.27(typescript@5.8.3))':
+    dependencies:
+      '@form-create/element-ui': 3.2.37(vue@3.5.27(typescript@5.8.3))
+      '@spark-view/spark-data': 0.2.9(vue@3.5.27(typescript@5.8.3))
+      '@spark-view/spark-page-config': 0.2.9(vue-router@4.6.4(vue@3.5.27(typescript@5.8.3)))(vue@3.5.27(typescript@5.8.3))
+      '@spark-view/spark-utils': 0.2.9
+      element-plus: 2.13.2(vue@3.5.27(typescript@5.8.3))
+      vue: 3.5.27(typescript@5.8.3)
+      vue-router: 4.6.4(vue@3.5.27(typescript@5.8.3))
+
+  '@spark-view/spark-data@0.2.9(vue@3.5.27(typescript@5.8.3))':
+    dependencies:
+      '@spark-view/spark-utils': 0.2.9
+      mitt: 3.0.1
+      vue: 3.5.27(typescript@5.8.3)
+
+  '@spark-view/spark-page-config@0.2.9(vue-router@4.6.4(vue@3.5.27(typescript@5.8.3)))(vue@3.5.27(typescript@5.8.3))':
+    dependencies:
+      '@spark-view/spark-data': 0.2.9(vue@3.5.27(typescript@5.8.3))
+      '@spark-view/spark-utils': 0.2.9
+      vue: 3.5.27(typescript@5.8.3)
+      vue-router: 4.6.4(vue@3.5.27(typescript@5.8.3))
+
+  '@spark-view/spark-utils@0.2.9': {}
 
   '@storybook/addon-actions@7.6.21':
     dependencies:

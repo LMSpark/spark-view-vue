@@ -1,6 +1,6 @@
 {
     "name": "@spark-view/spark-app",
-    "version": "0.2.9",
+    "version": "0.3.0",
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/types/index.d.ts",
@@ -28,8 +28,8 @@
         }
     },
     "dependencies": {
-        "@spark-view/spark-component": "^0.2.9",
-        "@spark-view/spark-utils": "^0.2.9"
+        "@spark-view/spark-component": "^0.3.0",
+        "@spark-view/spark-utils": "^0.3.0"
     },
     "scripts": {
         "build": "vite build && tsc -p tsconfig.build.json",
@@ -40,8 +40,8 @@
         "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
     },
     "peerDependencies": {
-        "vue": "^3.5.0",
-        "vue-router": "^4.0.0"
+        "vue": "^3.5.27",
+        "vue-router": "^4.6.4"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",
