@@ -2,8 +2,8 @@
     "name": "@spark-view/spark-data",
     "version": "0.1.2",
     "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/types/index.d.ts",
+    "main": "./dist/index.js",
+    "types": "./dist/types/index.d.ts",
     "private": false,
     "files": [
         "dist",
