@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin as VitePlugin } from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
@@ -321,15 +321,12 @@ export default registerComponents
         }
       }
     },
-    // rollup-plugin-visualizer@6 与 Vite 7 内置 rollup 类型在
-    // exactOptionalPropertyTypes 下 filter.id 签名不兼容，
-    // 显式断言为 VitePlugin 以通过类型检查
     ...(process.env.ANALYZE ? [visualizer({
       open: true,
       filename: 'dist/stats.html',
       gzipSize: true,
       brotliSize: true
-    }) as unknown as VitePlugin] : [])
+    })] : [])
   ],
   build: {
     rollupOptions: {

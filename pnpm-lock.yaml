@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  rollup: ^4.57.1
+
 importers:
 
   .:
@@ -325,61 +328,6 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@18.19.130)(jsdom@25.0.1)(terser@5.46.0)
-
-  packages/spark-renderer:
-    dependencies:
-      '@spark-view/spark-component':
-        specifier: workspace:*
-        version: link:../spark-component
-      '@spark-view/spark-data':
-        specifier: workspace:*
-        version: link:../spark-data
-      '@spark-view/spark-page-config':
-        specifier: workspace:*
-        version: link:../spark-page-config
-      '@spark-view/spark-utils':
-        specifier: workspace:*
-        version: link:../spark-utils
-      vue:
-        specifier: ^3.5.0
-        version: 3.5.27(typescript@5.8.3)
-      vue-router:
-        specifier: ^4.0.0
-        version: 4.6.4(vue@3.5.27(typescript@5.8.3))
-    devDependencies:
-      '@eslint/js':
-        specifier: ^9.39.2
-        version: 9.39.2
-      '@types/node':
-        specifier: ^18.19.130
-        version: 18.19.130
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^8.52.0
-        version: 8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^8.52.0
-        version: 8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3)
-      '@vue/test-utils':
-        specifier: ^2.4.6
-        version: 2.4.6
-      eslint:
-        specifier: ^9.39.2
-        version: 9.39.2(jiti@2.6.1)
-      eslint-plugin-vue:
-        specifier: ^10.7.0
-        version: 10.7.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.8.3))(eslint@9.39.2(jiti@2.6.1))(vue-eslint-parser@10.2.0(eslint@9.39.2(jiti@2.6.1)))
-      jsdom:
-        specifier: ^25.0.1
-        version: 25.0.1
-      typescript:
-        specifier: ~5.8.2
-        version: 5.8.3
-      vitest:
-        specifier: ^2.1.8
-        version: 2.1.9(@types/node@18.19.130)(jsdom@25.0.1)(terser@5.46.0)
-      vue-eslint-parser:
-        specifier: ^10.2.0
-        version: 10.2.0(eslint@9.39.2(jiti@2.6.1))
 
   packages/spark-utils:
     devDependencies:
@@ -5427,17 +5375,12 @@ packages:
     hasBin: true
     peerDependencies:
       rolldown: 1.x || ^1.0.0-beta
-      rollup: 2.x || 3.x || 4.x
+      rollup: ^4.57.1
     peerDependenciesMeta:
       rolldown:
         optional: true
       rollup:
         optional: true
-
-  rollup@3.29.5:
-    resolution: {integrity: sha512-GVsDdsbJzzy4S/v3dqWPJ7EfvZJfCHiDqe80IyrF59LYuP+e6U1LJoUqeuqRbwAWoMNoXivMNeNAOf5E22VA1w==}
-    engines: {node: '>=14.18.0', npm: '>=8.0.0'}
-    hasBin: true
 
   rollup@4.57.1:
     resolution: {integrity: sha512-oQL6lgK3e2QZeQ7gcgIkS2YZPg5slw37hYufJ3edKlfQSGGm8ICoxswK15ntSzF/a8+h7ekRy7k7oWc3BQ7y8A==}
@@ -8385,7 +8328,7 @@ snapshots:
       find-cache-dir: 3.3.2
       fs-extra: 11.3.3
       magic-string: 0.30.21
-      rollup: 3.29.5
+      rollup: 4.57.1
       vite: 7.3.1(@types/node@18.19.130)(jiti@2.6.1)(terser@5.46.0)
     optionalDependencies:
       typescript: 5.8.3
@@ -12030,10 +11973,6 @@ snapshots:
       yargs: 17.7.2
     optionalDependencies:
       rollup: 4.57.1
-
-  rollup@3.29.5:
-    optionalDependencies:
-      fsevents: 2.3.3
 
   rollup@4.57.1:
     dependencies:
