@@ -2,8 +2,8 @@
     "name": "@spark-view/spark-app",
     "version": "0.1.1",
     "type": "module",
-    "main": "dist/index.js",
-    "types": "dist/types/index.d.ts",
+    "main": "./dist/index.js",
+    "types": "./dist/types/index.d.ts",
     "private": false,
     "description": "SPARK Application Layer - 应用层基础设施（AppContext、Router Guards、Error Boundary、Bootstrap）",
     "keywords": [
