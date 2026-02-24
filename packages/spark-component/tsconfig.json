@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": ".",
     "paths": {
+      "@spark-view/spark-component": ["./src/index.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"]
