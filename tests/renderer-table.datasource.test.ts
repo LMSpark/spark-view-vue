@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import RendererTable from '../src/components/renderer-containers/RendererTable.vue'
-import { SparkData } from '../packages/spark-data/src/spark-data'
+import { SparkData } from '@spark-view/spark-data'
 import { nextTick } from 'vue'
 
 describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {

@@ -37,6 +37,7 @@
         "lint:packages": "pnpm --filter 'packages/*' run lint",
         "lint:fix:packages": "pnpm --filter 'packages/*' run lint:fix",
         "test:packages": "pnpm --filter 'packages/*' run test",
+        "test:packages:run": "pnpm --filter './packages/**' run test:run",
         "typecheck:packages": "pnpm --filter 'packages/*' run typecheck",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",

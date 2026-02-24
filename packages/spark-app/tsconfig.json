@@ -36,6 +36,6 @@
       "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"]
     }
   },
-  "include": ["src/**/*", "vite.config.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.example.ts", "**/*.example.vue"]
+  "include": ["src/**/*", "tests/**/*", "vite.config.ts"],
+  "exclude": ["node_modules", "dist", "**/*.example.ts", "**/*.example.vue"]
 }

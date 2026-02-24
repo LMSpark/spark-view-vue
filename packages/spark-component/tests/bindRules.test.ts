@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isReactive } from 'vue'
-import { bindDataToRules } from '../packages/spark-component/src/renderer/utils/bindRules'
-import { SparkData } from '../packages/spark-data/src/spark-data'
+import { bindDataToRules } from '@spark-view/spark-component'
+import { SparkData } from '@spark-view/spark-data'
 
 describe('bindRules - DataKey rows -> IDataSource binding', () => {
   it('el-table 应仅绑定 props.dataSource（DataView / IDataSource）', () => {

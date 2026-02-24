@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { toRaw } from 'vue'
-import { DataSet } from '../packages/spark-data/src/dataset'
+import { DataSet } from '@spark-view/spark-data'
 
 describe('Data Architecture Refactor', () => {
   it('DataTable 只提供配置，DataView 拥有数据', () => {

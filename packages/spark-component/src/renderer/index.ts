@@ -44,3 +44,6 @@ export type {
   RuleBindingOptions,
   JsonRendererOptions
 } from './types/index'
+
+// 渲染工具（供测试及高级用例）
+export { bindDataToRules } from './utils/bindRules'

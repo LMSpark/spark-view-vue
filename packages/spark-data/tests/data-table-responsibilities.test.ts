@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DataTable } from '../packages/spark-data/src/data-table'
-import { DataView } from '../packages/spark-data/src/data-view'
-import { DataSet } from '../packages/spark-data/src/dataset'
+import { DataTable, DataView, DataSet } from '@spark-view/spark-data'
 
 
 describe('DataTable responsibilities (refactor verification)', () => {
