@@ -12,7 +12,6 @@
       "@spark-view/spark-page-config": ["../../packages/spark-page-config/src/index.ts"],
       "@spark-view/spark-page-config/*": ["../../packages/spark-page-config/src/*"]
     },
-    "rootDir": "src",
     "outDir": "./dist",
     "composite": false,
     "target": "ES2020",
