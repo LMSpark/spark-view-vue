@@ -188,6 +188,19 @@ async function startApp() {
         app.component('r-number', FieldNumber)
         app.component('r-date', FieldDate)
         
+        // 示例：使用包提供的运行时自动注册工具
+        // 这段代码演示了在项目根的 `src/main.ts` 中直接调用
+        // `setupAutoRegister` 来扫描并注册所有 Vue 组件。
+        //
+        // 如果你不需要自定义选项，可以把它放在 `onBeforeStart`
+        // 或者 `beforeMount` 钩子里，SparkApp.start 会在此之后进行
+        // 路由/页面配置等初始化。
+        const { setupAutoRegister } = await import('@spark-view/spark-app')
+        await setupAutoRegister(app, {
+          // patterns: ['./src/components/**/*.vue'],
+          // exclude: ['**/demo/**']
+        })
+
         // 注册静态 Vue 组件路由（非配置页面）
         
         // 导入 Vue 组件页面
