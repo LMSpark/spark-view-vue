@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 /**
- * JsonRenderer - SPARK JSON 配置渲染器
+ * SparkPageRenderer - SPARK 原生页面渲染器
  *
  * 纯视图层：模板绑定 + props / slots / expose 声明。
  * 全部编排逻辑由 useJsonRenderer composable 承担。
@@ -69,21 +69,21 @@
  * <JsonRenderer :config="config" :component="UserGrid" />
  * 
  * <!-- 自定义插槽 -->
- * <JsonRenderer configUrl="/config.json">
+ * <SparkPageRenderer configUrl="/config.json">
  *   <template #loading>加载中...</template>
  *   <template #error="{ error }">错误：{{ error }}</template>
  *   <template #content="{ config }">
  *     <MyComponent :config="config" />
  *   </template>
- * </JsonRenderer>
+ * </SparkPageRenderer>
  * ```
  */
 import { computed, inject } from 'vue'
 import type { Component } from 'vue'
-import type { JsonRendererOptions } from './types'
-import { useJsonRenderer } from './composables/useJsonRenderer'
-import { SPARK_REGISTRY_KEY } from '../core/types'
-import type { ComponentRegistry } from '../core/types'
+import type { JsonRendererOptions } from '../types'
+import { useJsonRenderer } from '../composables/useJsonRenderer'
+import { SPARK_REGISTRY_KEY } from '../../core/types'
+import type { ComponentRegistry } from '../../core/types'
 
 // ==================== Props & Slots ====================
 

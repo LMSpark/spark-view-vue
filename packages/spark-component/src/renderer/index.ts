@@ -13,8 +13,14 @@
  */
 
 // 组件（Vue SFC，由此文件统一导出，避免 index.ts 直接引用 .vue 文件）
-export { default as PageRenderer } from './PageRenderer.vue'
-export { default as JsonRenderer } from './JsonRenderer.vue'
+// fc/ — FormCreate 技术路线：规则引擎驱动的页面渲染
+export { default as FCPageRenderer } from './fc/FCPageRenderer.vue'
+
+// spark/ — SPARK 原生技术路线
+// SparkPageRenderer: 页面级入口（远程加载 JSON + 状态管理）
+// SparkComponentRenderer: 递归组件引擎（被 SparkPageRenderer 及业务组件调用）
+export { default as SparkPageRenderer } from './spark/SparkPageRenderer.vue'
+export { default as SparkComponentRenderer } from './spark/SparkComponentRenderer.vue'
 
 // 页面编排 Composable（统一入口）
 export { usePageRenderer } from './composables/usePageRenderer'

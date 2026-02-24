@@ -102,6 +102,11 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   vueProvide(SPARK_PARENT_CONTEXT_KEY, context)
 
   // ── Logger（从能力链查找，fallback 到 console） ──
+  //
+  // 设计决策：每次调用均重新查找，不缓存。
+  // 原因：SPARK 能力系统是 late-binding 的，父组件可能在子组件 setup 之后调用
+  // provide(LOGGER, impl)（onMounted 中提供）。若缓存第一次查找结果（往往为 null），
+  // 后续即使能力链已就绪也无法感知。不缓存保证 logger 始终反映最新能力链状态。
 
   const fallbackLogger: LoggerApi = {
     debug: () => undefined,
@@ -110,20 +115,15 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     error: (...args: unknown[]) => console.error(...args)
   }
 
-  let cachedLogger: LoggerApi | null = null
-
   const getActiveLogger = (): LoggerApi => {
-    if (cachedLogger) return cachedLogger
-    // 1. 优先查找 LOGGER 能力键（最近的祖先覆盖）
+    // 1. 优先查找 LOGGER 能力键（最近祖先覆盖，实现组件子树级日志替换）
     const loggerImpl = lookup<LoggerApi>(context, LOGGER)
     if (loggerImpl && typeof loggerImpl === 'object' && 'info' in loggerImpl) {
-      cachedLogger = loggerImpl
       return loggerImpl
     }
     // 2. 次选 APP_SERVICES.logger（应用层统一提供）
     const appServices = lookup<IAppServicesCapability>(context, APP_SERVICES)
     if (appServices?.logger) {
-      cachedLogger = appServices.logger
       return appServices.logger
     }
     return fallbackLogger

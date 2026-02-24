@@ -220,21 +220,21 @@ export async function start(options: StartOptions): Promise<void> {
       
       const configLoader = SparkPageConfig.createConfigLoader(configLoaderOptions)
       
-      // 默认使用 PageRenderer 组件
+      // 默认使用 FCPageRenderer 组件（FC 技术路线页面渲染器）
       let pageComponent = pageConfig.pageComponent
       
-      // 如果未提供 pageComponent，自动导入 PageRenderer
+      // 如果未提供 pageComponent，自动导入 FCPageRenderer
       if (!pageComponent) {
-        startLogger.debug('未提供 pageComponent，自动导入 PageRenderer...')
-        const { PageRenderer } = await import('@spark-view/spark-component')
-        pageComponent = PageRenderer
-        startLogger.debug('✅ PageRenderer 已导入')
+        startLogger.debug('未提供 pageComponent，自动导入 FCPageRenderer...')
+        const { FCPageRenderer } = await import('@spark-view/spark-component')
+        pageComponent = FCPageRenderer
+        startLogger.debug('✅ FCPageRenderer 已导入')
       }
       
       const dynamicRouterOptions: import('@spark-view/spark-page-config').DynamicRouterOptions = {
         router,
         configLoader,
-        pageComponent, // 确保传入有效组件
+        pageComponent, // FCPageRenderer 或用户提供的组件，if 块已确保非空
         ...(pageConfig.beforeRegister !== undefined && { beforeRegister: pageConfig.beforeRegister }),
         ...(pageConfig.afterRegister !== undefined && { afterRegister: pageConfig.afterRegister })
       }
