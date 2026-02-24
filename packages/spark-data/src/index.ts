@@ -94,6 +94,20 @@ export type {
   IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper
 } from './permission/index'
 
+// ===== 验证系统 =====
+
+export {
+  DataValidator,
+  createValidator,
+  createSchema
+} from './validation'
+export type {
+  ValidationError,
+  ValidationResult,
+  RowValidator,
+  DataSchema
+} from './validation'
+
 // ===== 工具函数 =====
 
 export { isSameRow, getParentRows } from './core/utils'

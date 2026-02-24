@@ -86,7 +86,14 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: './tsconfig.typecheck.json',
+        project: [
+          './tsconfig.typecheck.json',
+          './packages/spark-utils/tsconfig.json',
+          './packages/spark-data/tsconfig.json',
+          './packages/spark-component/tsconfig.json',
+          './packages/spark-page-config/tsconfig.json',
+          './packages/spark-app/tsconfig.json'
+        ],
         tsconfigRootDir: import.meta.dirname,
         ecmaVersion: 2020,
         sourceType: 'module'

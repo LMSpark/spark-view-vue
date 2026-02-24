@@ -5,12 +5,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    include: ['src/**/*.test.ts', 'src/**/*.spec.ts']
+    include: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'tests/**/*.test.ts']
   },
   resolve: {
     alias: {
       '@spark-view/spark-utils': resolve(__dirname, './src/index.ts'),
-      '@spark-view/spark-utils/*': resolve(__dirname, './src/*')
+      '@spark-view/spark-utils/*': resolve(__dirname, './src/*'),
+      '@spark-view/spark-data': resolve(__dirname, '../spark-data/src/index.ts'),
+      '@spark-view/spark-data/*': resolve(__dirname, '../spark-data/src/*')
     }
   }
 })

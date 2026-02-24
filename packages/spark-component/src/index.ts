@@ -38,7 +38,8 @@ export {
   usePageDataSet,
   SparkPageRenderer,
   useJsonRenderer,
-  SparkComponentRenderer
+  SparkComponentRenderer,
+  bindDataToRules
 } from './renderer/index.js'
 
 export type {

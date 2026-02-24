@@ -14,8 +14,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import type { ViewStateEvent } from '../packages/spark-data/src/types'
-import { SparkData } from '../packages/spark-data/src/spark-data'
+import { SparkData } from '@spark-view/spark-data'
+import type { ViewStateEvent } from '@spark-view/spark-data'
 
 
 // ==================== 工具函数 ====================
