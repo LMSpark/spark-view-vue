@@ -56,7 +56,7 @@
  * @since 1.0.0
  */
 import { ref } from 'vue'
-import { JsonRenderer } from '@spark-view/spark-component'
+import { SparkPageRenderer as JsonRenderer } from '@spark-view/spark-component'
 import UserGrid from './UserGrid.vue'
 
 const rendererRef = ref<InstanceType<typeof JsonRenderer> | null>(null)

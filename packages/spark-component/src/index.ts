@@ -33,11 +33,12 @@ export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './core/types.js'
 
 // ── 7. 页面渲染引擎 ──
 export {
-  PageRenderer,
+  FCPageRenderer,
   usePageRenderer,
   usePageDataSet,
-  JsonRenderer,
-  useJsonRenderer
+  SparkPageRenderer,
+  useJsonRenderer,
+  SparkComponentRenderer
 } from './renderer/index.js'
 
 export type {

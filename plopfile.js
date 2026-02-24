@@ -199,7 +199,7 @@ export default function (plop) {
 
   // SPARK 能力生成器
   plop.setGenerator('spark-capability', {
-    description: '创建新的 SPARK 能力（将接口 + 能力键一并添加到 symbols.ts）',
+    description: '创建新的 SPARK 能力（支持任意包/路径，与 spark-utils 解耦）',
     prompts: [
       {
         type: 'input',
@@ -227,10 +227,31 @@ export default function (plop) {
           }
           return '接口名称必须以 I 开头且采用 PascalCase 格式';
         }
+      },
+      {
+        type: 'list',
+        name: 'location',
+        message: '将能力键放在哪个包/位置：',
+        choices: [
+          { name: 'spark-utils   (内置公共能力，追加到 symbols.ts)', value: 'spark-utils' },
+          { name: 'spark-component (组件包独立 capability 目录)',      value: 'spark-component' },
+          { name: 'spark-data    (数据包独立 capability 目录)',         value: 'spark-data' },
+          { name: 'spark-app     (应用包独立 capability 目录)',         value: 'spark-app' },
+          { name: 'spark-page-config (页面配置包)',                    value: 'spark-page-config' },
+          { name: 'features/spark-ej2 (EJ2 Feature 包)',               value: 'features/spark-ej2' },
+          { name: 'features/spark    (Spark Feature 包)',              value: 'features/spark' },
+          { name: '自定义路径…',                                         value: 'custom' }
+        ],
+        default: 'spark-utils'
+      },
+      {
+        type: 'input',
+        name: 'customPath',
+        message: '自定义目录路径（相对项目根，如: features/my-feature/src/capability）：',
+        when: function (answers) { return answers.location === 'custom'; }
       }
     ],
     actions: function (data) {
-      // 将 SCREAMING_SNAKE_CASE 转换为 kebab-case，用于能力键字符串
       const kebabName = data.name.toLowerCase().replace(/_/g, '-');
       const capabilityData = {
         name: data.name,
@@ -239,14 +260,32 @@ export default function (plop) {
         kebabName,
       };
 
+      // ── spark-utils：追加到 symbols.ts 扩展点（保留原有行为）
+      if (data.location === 'spark-utils') {
+        return [
+          {
+            type: 'append',
+            path: 'packages/spark-utils/src/capability/symbols.ts',
+            pattern: '// === 业务能力扩展点（plop spark-capability 生成的自定义能力在此追加） ===',
+            templateFile: 'plop-templates/capability-symbol.ts.hbs',
+            separator: '\n',
+            data: capabilityData
+          }
+        ];
+      }
+
+      // ── 其他包 / 自定义路径：创建独立 capability 文件
+      const dir = data.location === 'custom'
+        ? data.customPath.replace(/\\/g, '/')
+        : data.location.startsWith('features/')
+          ? `${data.location}/src/capability`
+          : `packages/${data.location}/src/capability`;
+
       return [
         {
-          // 将接口定义 + 能力键一并添加到 symbols.ts 拓展点
-          type: 'append',
-          path: 'packages/spark-utils/src/capability/symbols.ts',
-          pattern: '// === 业务能力扩展点（plop spark-capability 生成的自定义能力在此追加） ===',
-          templateFile: 'plop-templates/capability-symbol.ts.hbs',
-          separator: '\n',
+          type: 'add',
+          path: `${dir}/${kebabName}.ts`,
+          templateFile: 'plop-templates/capability-standalone.ts.hbs',
           data: capabilityData
         }
       ];

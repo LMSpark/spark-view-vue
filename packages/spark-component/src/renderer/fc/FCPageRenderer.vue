@@ -34,8 +34,8 @@
  * 全部编排逻辑由 usePageRenderer composable 承担。
  */
 import { ref } from 'vue'
-import type { PageRendererOptions, Rule } from './types'
-import { usePageRenderer } from './composables/usePageRenderer'
+import type { PageRendererOptions, Rule } from '../types'
+import { usePageRenderer } from '../composables/usePageRenderer'
 
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,
