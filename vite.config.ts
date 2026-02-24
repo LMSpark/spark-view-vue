@@ -326,7 +326,7 @@ export default registerComponents
       filename: 'dist/stats.html',
       gzipSize: true,
       brotliSize: true
-    })] : [])
+    }) as any] : [])
   ],
   build: {
     rollupOptions: {
