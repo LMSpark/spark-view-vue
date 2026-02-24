@@ -20,10 +20,11 @@ const config: StorybookConfig = {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
       ...(config.resolve.alias as Record<string, string>),
-      '@spark-view/spark-component': new URL('../packages/spark-component/src', import.meta.url).pathname,
-      '@spark-view/spark-data': new URL('../packages/spark-data/src', import.meta.url).pathname,
-      '@spark-view/spark-app': new URL('../packages/spark-app/src', import.meta.url).pathname,
-      '@spark-view/spark-utils': new URL('../packages/spark-utils/src', import.meta.url).pathname,
+      // 安装方式：通过 dist 解析，不直接引用包项目 src/
+      '@spark-view/spark-component': new URL('../packages/spark-component/dist/index.js', import.meta.url).pathname,
+      '@spark-view/spark-data': new URL('../packages/spark-data/dist/index.js', import.meta.url).pathname,
+      '@spark-view/spark-app': new URL('../packages/spark-app/dist/index.js', import.meta.url).pathname,
+      '@spark-view/spark-utils': new URL('../packages/spark-utils/dist/index.js', import.meta.url).pathname,
     };
     return config;
   }
