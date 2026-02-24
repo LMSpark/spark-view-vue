@@ -149,8 +149,8 @@ export default registerComponents
         const componentDirs = [
           path.resolve(__dirname, 'packages/spark-component/src/components'),
           path.resolve(__dirname, 'packages/spark-component/src/renderer'),
-          path.resolve(__dirname, 'features/spark/components'),
-          path.resolve(__dirname, 'features/spark-ej2/components'),
+          path.resolve(__dirname, 'src/features/spark/components'),
+          path.resolve(__dirname, 'src/features/spark-ej2/components'),
           path.resolve(__dirname, 'src/components'),
           path.resolve(__dirname, 'src/components/demo'),
           path.resolve(__dirname, 'src/views')

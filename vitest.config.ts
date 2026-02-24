@@ -12,7 +12,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@/features/spark-ej2': resolve(__dirname, './features/spark-ej2'),
+      '@/features/spark-ej2': resolve(__dirname, './src/features/spark-ej2'),
       // 安装方式：根测试环境通过 dist 解析 @spark-view/*（不引用 src/）
       '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/dist/index.js'),
       '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/dist/index.js'),

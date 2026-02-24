@@ -1,11 +1,11 @@
 ﻿import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { SparkEJ2Grid } from '../features/spark-ej2'
+import { SparkEJ2Grid } from '../src/features/spark-ej2'
 import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
 
 const { registry, rootContext } = Spark.createSystem()
 // Initialize SPARK components (registers spark-ej2-grid / spark-ej2-column) for this manager
-import { initializeSparkEJ2Components } from '../features/spark-ej2'
+import { initializeSparkEJ2Components } from '../src/features/spark-ej2'
 initializeSparkEJ2Components(registry)
 
 // Mock EJ2 components so we can mount without real EJ2 runtime

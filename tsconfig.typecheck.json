@@ -38,7 +38,7 @@
       "@spark-view/spark-page-config": ["./packages/spark-page-config/dist/index.d.ts"],
       "@spark-view/spark-app": ["./packages/spark-app/dist/types/index.d.ts"],
       "@spark-view/spark-renderer": ["./packages/spark-component/dist/index.d.ts"],
-      "@/features/spark-ej2": ["./features/spark-ej2"]
+      "@/features/spark-ej2": ["./src/features/spark-ej2"]
     },
     "types": ["vite/client", "vitest/globals"]
   },
@@ -47,10 +47,6 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/**/*.d.ts",
-    "features/**/*.ts",
-    "features/**/*.tsx",
-    "features/**/*.vue",
-    "features/**/*.d.ts",
     "tests/**/*.ts",
     "verify-integration.ts",
     ".storybook/**/*.ts"
