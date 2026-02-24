@@ -1,6 +1,6 @@
 {
     "name": "spark-view-architecture-prototype",
-    "version": "0.2.9",
+    "version": "0.3.0",
     "description": "SPARK 架构原型 - 能力分层 × 职责解耦 × 上下文契约",
     "type": "module",
     "scripts": {

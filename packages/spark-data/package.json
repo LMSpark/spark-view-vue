@@ -1,6 +1,6 @@
 {
     "name": "@spark-view/spark-data",
-    "version": "0.2.9",
+    "version": "0.4.0",
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/types/index.d.ts",
@@ -28,7 +28,7 @@
         "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
     },
     "dependencies": {
-        "@spark-view/spark-utils": "^0.2.9",
+        "@spark-view/spark-utils": "^0.3.0",
         "mitt": "^3.0.1"
     },
     "peerDependencies": {
