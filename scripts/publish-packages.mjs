@@ -33,6 +33,9 @@ const REGISTRY = args.includes('--registry')
 const TAG = args.includes('--tag')
   ? args[args.indexOf('--tag') + 1]
   : 'latest'
+const OTP = args.includes('--otp')
+  ? args[args.indexOf('--otp') + 1]
+  : ''
 
 // ── 顺序：被依赖的包先发布 ───────────────────────────────
 const PUBLISH_ORDER = [
@@ -109,7 +112,7 @@ for (const pkgName of PUBLISH_ORDER) {
   }
 
   const published = runPublish(
-    `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --ignore-scripts`,
+    `pnpm publish --registry ${REGISTRY} --tag ${TAG} --no-git-checks --ignore-scripts${OTP ? ` --otp ${OTP}` : ''}`,
     pkgDir,
     pkg.name,
     pkg.version,
