@@ -1,12 +1,62 @@
-# 本地使用 @spark-view/* 包（不通过 npm）
+# 使用 @spark-view/* 包
 
 ## 概览
 
 | 使用场景 | 推荐方式 | 特点 |
 |---|---|---|
 | 在本 monorepo 内开发 | `workspace:*` | 零配置，已就绪 |
-| 外部独立项目（稳定引用） | `file:` 协议 | 指向本地构建产物 |
-| 外部独立项目（开发调试） | `pnpm link` | 改包立即生效 |
+| 外部项目，直接安装 | npm 安装 | 最简单，无需本地仓库 |
+| 外部项目，稳定引用本地 | `file:` 协议 | 指向本地构建产物 |
+| 外部项目，边改边调试 | `pnpm link` | 改包立即生效 |
+
+---
+
+## 方式零：通过 npm 安装（最简单）
+
+包已发布至 npm，无需克隆本仓库，直接安装：
+
+```powershell
+# 按需选择安装的包
+pnpm add @spark-view/spark-utils
+pnpm add @spark-view/spark-data
+pnpm add @spark-view/spark-component
+pnpm add @spark-view/spark-app
+pnpm add @spark-view/spark-page-config
+```
+
+或者一次性安装所有包：
+
+```powershell
+pnpm add @spark-view/spark-utils @spark-view/spark-data @spark-view/spark-component @spark-view/spark-app @spark-view/spark-page-config
+```
+
+### 包依赖关系（按需安装）
+
+```
+spark-utils          — 无 @spark-view/* 依赖，基础工具
+spark-data           — 依赖 spark-utils
+spark-page-config    — 依赖 spark-utils
+spark-component      — 依赖 spark-utils、spark-data、spark-page-config
+spark-app            — 依赖 spark-component、spark-data、spark-utils
+```
+
+安装 `spark-component` 或 `spark-app` 时，pnpm 会自动解析安装以上所有依赖包。
+
+### 使用示例
+
+```typescript
+import { Spark, useSparkComponent } from '@spark-view/spark-component'
+import { SparkData } from '@spark-view/spark-data'
+import { APP_SERVICES, Logger } from '@spark-view/spark-utils'
+```
+
+### 查看当前发布版本
+
+```powershell
+npm view @spark-view/spark-component version
+# 或查看所有包
+npm view @spark-view/spark-utils @spark-view/spark-data @spark-view/spark-component @spark-view/spark-app @spark-view/spark-page-config version
+```
 
 ---
 
@@ -143,10 +193,13 @@ pnpm install  # 重新从 npm 安装
 ## 选择建议
 
 ```
+不需要修改包源码，只想用稳定版本？
+  → 方式零（npm 安装，最简单）
+
 修改本仓库包的同时在外部项目测试效果？
   → 方式三（pnpm link + --watch）
 
-外部项目仅需稳定使用当前版本？
+外部项目需要固定引用某次本地构建结果？
   → 方式二（file: 协议）+ 偶尔 build:packages + pnpm install
 
 只在本仓库 monorepo 内部开发？
