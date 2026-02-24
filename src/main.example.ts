@@ -81,11 +81,14 @@ async function startWithClassicMode() {
   // 安装 SPARK 插件
   app.use(Spark.createPlugin())
   
-  // 导入运行时注册助手
-  const { setupAutoRegister } = await import('./bootstrap/auto-register')
+  // 导入运行时注册助手，来自 spark-app 包
+  const { setupAutoRegister } = await import('@spark-view/spark-app')
   
-  // 运行时扫描和注册组件
-  await setupAutoRegister(app)
+  // 运行时扫描和注册组件，可传入自定义选项
+  await setupAutoRegister(app, {
+    // patterns: ['./src/components/**/*.vue'],
+    // exclude: ['**/demo/**']
+  })
   
   console.info('✅ 经典模式组件注册完成')
   

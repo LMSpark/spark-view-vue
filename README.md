@@ -76,6 +76,21 @@ register.registerAll({
 })
 ```
 
+### 运行时自动注册
+
+对于希望在运行时扫描组件的场景，或者不使用 Vite 智能模式的项目，
+可以调用 `setupAutoRegister` 来自动注册全局组件。该函数现在位于
+`@spark-view/spark-app` 包中，并支持配置扫描模式和排除规则：
+
+```ts
+import { setupAutoRegister } from '@spark-view/spark-app'
+
+await setupAutoRegister(app, {
+  patterns: ['./src/components/**/*.vue'],
+  exclude: ['**/demo/**']
+})
+```
+
 ### 能力系统
 
 基于 Symbol 的松耦合通信机制：

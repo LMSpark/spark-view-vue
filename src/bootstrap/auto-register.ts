@@ -1,50 +1,29 @@
 /**
- * SPARK 组件自动注册引导程序
+ * 运行时组件自动注册引导程序（包装包内实现）
  *
- * 使用 Spark.createRegister() + import.meta.glob 自动扫描和注册组件。
+ * 为了方便快速上手，原先的实现位于 `src/bootstrap/auto-register.ts`。
+ *
+ * 现在函数已提取到 `@spark-view/spark-app` 包中，支持通过参数
+ * 配置 glob 模式和排除规则。此处仅作简单的 re-export，保留
+ * 旧路径兼容性。
  */
 
 import type { App } from 'vue'
-import { Spark } from '@spark-view/spark-component'
-import { Logger } from '@spark-view/spark-utils'
-
-const logger = Logger('AutoRegister')
+import {
+  setupAutoRegister as pkgSetupAutoRegister
+} from '@spark-view/spark-app'
+import type { AutoRegisterOptions } from '@spark-view/spark-app'
 
 /**
- * 设置自动组件注册
+ * 运行时扫描并注册组件。
+ *
+ * @param app Vue 应用实例
+ * @param options 可选配置（glob 模式、exclude 等）
  */
-export async function setupAutoRegister(app: App) {
-  void app // app 参数保留供后续插件注入使用
-
-  logger.info('🚀 启动组件自动注册...')
-
-  // packages 目录
-  const pkgModules = import.meta.glob('../../packages/*/src/components/**/*.vue')
-  // features 目录
-  const featureModules = import.meta.glob('../features/**/components/**/*.vue')
-  // src/components 目录
-  const srcModules = import.meta.glob('../components/**/*.vue')
-  // src/views 目录
-  const viewModules = import.meta.glob('../views/**/*.vue')
-
-  const allModules = { ...pkgModules, ...featureModules, ...srcModules, ...viewModules }
-
-  // 从路径提取 kebab-case 组件名并注册
-  const reg = Spark.createRegister(allModules as Record<string, () => Promise<{ default: unknown }>>)
-  const registered: string[] = []
-
-  for (const path of Object.keys(allModules)) {
-    const fileName = path.split('/').pop()?.replace('.vue', '') ?? ''
-    if (!fileName) continue
-    const kebab = fileName
-      .replace(/([a-z])([A-Z])/g, '$1-$2')
-      .replace(/[\s_]+/g, '-')
-      .toLowerCase()
-    reg.register(kebab, path)
-    registered.push(kebab)
-  }
-
-  logger.info(`✅ 组件自动注册完成 (${registered.length} 个)`)
+export async function setupAutoRegister(app: App, options?: AutoRegisterOptions) {
+  return pkgSetupAutoRegister(app, options)
 }
+
+export type { AutoRegisterOptions } from '@spark-view/spark-app'
 
 export default setupAutoRegister

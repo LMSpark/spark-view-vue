@@ -37,7 +37,9 @@
       "@spark-view/spark-component": ["./packages/spark-component/dist/index.d.ts"],
       "@spark-view/spark-data": ["./packages/spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-page-config": ["./packages/spark-page-config/dist/index.d.ts"],
-      "@spark-view/spark-app": ["./packages/spark-app/dist/types/index.d.ts"],
+      // during development we prefer to resolve to source so that new exports
+      // (e.g. setupAutoRegister) are picked up without rebuilding the package
+      "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
       "@spark-view/spark-renderer": ["./packages/spark-component/dist/index.d.ts"],
       "@/features/spark-ej2": ["./src/features/spark-ej2"]
     },
