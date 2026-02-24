@@ -1,6 +1,6 @@
 {
     "name": "@spark-view/spark-utils",
-    "version": "0.2.4",
+    "version": "0.2.9",
     "type": "module",
     "description": "SPARK 工具层 - 常量、符号、Logger 等基础设施",
     "main": "./dist/index.js",
