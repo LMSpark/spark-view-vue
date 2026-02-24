@@ -21,3 +21,7 @@ dist/
 # Temporary files
 *.cache
 tsc-output.txt
+
+# Verdaccio runtime artifacts (本地私有 registry 运行时产物，不入库)
+verdaccio/htpasswd
+verdaccio/storage/
