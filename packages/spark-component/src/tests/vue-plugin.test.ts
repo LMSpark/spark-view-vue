@@ -1,6 +1,6 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest'
-import { createComponentRegistry, createSparkPlugin, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../src/index'
+import { createComponentRegistry, createSparkPlugin, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
 
 // Minimal fake Vue app object
 function createFakeApp() {
