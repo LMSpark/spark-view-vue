@@ -392,6 +392,11 @@ class ComponentAnalyzer {
    * 生成注册代码
    */
   generateCode(): string {
+    // 确保在每次生成前都执行一次扫描，这样即便某些组件被删除或者
+    // HMR 未能触发也能保持最新状态。之前的问题就是删除 JsonRendererDemo
+    // 后虚拟模块未更新导致残留引用。
+    this.scan()
+
     const syncComponents = this.components.filter(c => c.strategy === 'sync')
     const asyncComponents = this.components.filter(c => c.strategy === 'async')
 
@@ -473,6 +478,9 @@ export default registerComponents
    * 生成类型定义
    */
   generateTypes(): string {
+    // 保持组件列表为最新状态
+    this.scan()
+
     const componentNames = this.components.map(c => `'${c.name}'`).join(' | ')
 
     return `/**
@@ -565,9 +573,11 @@ export function sparkComponentsPlugin(
      * HMR 热更新
      */
     handleHotUpdate({ file, server }) {
-      // 如果是 Vue 组件文件变更，重新扫描
+      // 如果是 Vue 组件文件变更/新增/删除，重新扫描
+      // Vite 在删除文件时也会触发此 hook，虽然文件已不存在，
+      // scan() 内部会跳过 missing paths。
       if (file.endsWith('.vue')) {
-        logger.debug('🔄 检测到组件变更，重新扫描...')
+        logger.debug('🔄 检测到组件变更或删除，重新扫描...')
         analyzer.scan()
         
         // 触发虚拟模块重新加载

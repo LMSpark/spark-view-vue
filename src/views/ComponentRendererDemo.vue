@@ -7,7 +7,7 @@
     <div class="spark-renderer-section">
       <h2>🎯 SparkComponentRenderer 递归渲染</h2>
       <p class="section-desc">使用 JSON 配置 + <code>@spark-view/spark-component</code> 的通用递归渲染器</p>
-      <JsonRendererDemo />
+      <JsonRendererExample />
     </div>
   </div>
 </template>
@@ -60,7 +60,7 @@
  * @author SPARK Team
  * @since 1.0.0
  */
-import JsonRendererDemo from '../components/demo/JsonRendererDemo.vue'
+import JsonRendererExample from '../components/demo/JsonRendererExample.vue'
 </script>
 
 <style scoped>

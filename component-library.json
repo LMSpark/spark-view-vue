@@ -304,29 +304,6 @@
       "methodsCount": 0
     }
   },
-  "JsonRendererDemo": {
-    "name": "JsonRendererDemo",
-    "displayName": "JsonRendererDemo",
-    "description": "",
-    "tags": {},
-    "props": [],
-    "events": [],
-    "slots": [],
-    "methods": [],
-    "sourcePath": "src\\components\\demo\\JsonRendererDemo.vue",
-    "exportName": "default",
-    "spark": {
-      "type": "json-renderer-demo",
-      "loadStrategy": "async",
-      "capabilities": null
-    },
-    "complexity": {
-      "propsCount": 0,
-      "eventsCount": 0,
-      "slotsCount": 0,
-      "methodsCount": 0
-    }
-  },
   "UserField": {
     "name": "UserField",
     "displayName": "UserField",
