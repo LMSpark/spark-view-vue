@@ -105,8 +105,8 @@ export function getComponentDirs(rootDir: string): string[] {
     resolve(rootDir, 'packages/spark-component/src/renderer'),
     
     // Features 组件
-    resolve(rootDir, 'features/spark/components'),
-    resolve(rootDir, 'features/spark-ej2/components'),
+    resolve(rootDir, 'src/features/spark/components'),
+    resolve(rootDir, 'src/features/spark-ej2/components'),
     
     // 应用层组件
     resolve(rootDir, 'src/components'),

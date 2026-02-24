@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkComponentRenderer } from '@spark-view/spark-component'
 import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
-import { initializeSparkEJ2Components } from '../features/spark-ej2'
+import { initializeSparkEJ2Components } from '../src/features/spark-ej2'
 import type { DefineComponent } from 'vue'
 
 const { registry, rootContext } = Spark.createSystem()

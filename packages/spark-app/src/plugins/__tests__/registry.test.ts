@@ -167,6 +167,9 @@ describe('PluginManager', () => {
     })
 
     it('loader 抛错 → 返回 null（不影响调用者）', async () => {
+      // 预期的错误处理路径：静默 console.error 避免测试输出噪声
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
       registry.register('bad', {
         name: 'Bad',
         module: 'bad',
@@ -175,6 +178,8 @@ describe('PluginManager', () => {
 
       const result = await PluginManager.loadPlugin('bad', true, registry)
       expect(result).toBeNull()
+
+      errorSpy.mockRestore()
     })
   })
 
@@ -227,6 +232,9 @@ describe('PluginManager', () => {
     })
 
     it('单个插件加载失败不影响其余', async () => {
+      // 预期的错误处理路径：静默 console.error 避免测试输出噪声
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
       registry.register('ok', fakeLoader('OK'))
       registry.register('bad', {
         name: 'Bad',
@@ -241,6 +249,8 @@ describe('PluginManager', () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]?.loader.id).toBe('ok')
+
+      errorSpy.mockRestore()
     })
 
     it('空配置 → 返回空数组', async () => {

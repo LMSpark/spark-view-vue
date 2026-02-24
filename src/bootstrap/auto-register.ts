@@ -21,7 +21,7 @@ export async function setupAutoRegister(app: App) {
   // packages 目录
   const pkgModules = import.meta.glob('../../packages/*/src/components/**/*.vue')
   // features 目录
-  const featureModules = import.meta.glob('../../features/**/components/**/*.vue')
+  const featureModules = import.meta.glob('../features/**/components/**/*.vue')
   // src/components 目录
   const srcModules = import.meta.glob('../components/**/*.vue')
   // src/views 目录
