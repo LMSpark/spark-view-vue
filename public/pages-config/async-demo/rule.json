@@ -52,7 +52,7 @@
                   {
                     "type": "div",
                     "class": "stat-value",
-                    "dataKey": "stats.totalUsers",
+                    "dataKey": "AsyncDemoDataSet@Stats@default@currentRow.totalUsers",
                     "children": [
                       ""
                     ]
@@ -81,7 +81,7 @@
                   {
                     "type": "div",
                     "class": "stat-value",
-                    "dataKey": "stats.todayOrders",
+                    "dataKey": "AsyncDemoDataSet@Stats@default@currentRow.todayOrders",
                     "children": [
                       ""
                     ]
@@ -110,7 +110,7 @@
                   {
                     "type": "div",
                     "class": "stat-value",
-                    "dataKey": "stats.revenue",
+                    "dataKey": "AsyncDemoDataSet@Stats@default@currentRow.revenue",
                     "children": [
                       ""
                     ]

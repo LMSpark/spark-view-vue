@@ -11,24 +11,56 @@ console.log('📄 页面容器:', $el());
 
 // 定义函数（不使用 export）
 function testButtonClick() {
-    alert('✅ JavaScript 执行成功！\n按钮变色说明 CSS 也生效了！');
     console.log('🎯 测试按钮被点击');
-    
-    // 访问表单 API
-    if ($api) {
-        console.log('📋 表单值:', $api.formData());
+
+    // 用 $el() 拿到页面容器，再 querySelectorAll 查找卡片
+    const container = $el()
+    console.log('📦 容器元素:', container)
+    if (!container) {
+        ElMessage.warning('页面容器未就绪，请稍后再试')
+        return
     }
-    
-    // 访问 DOM 元素
-    const el = $el()
-    if (el) {
-        console.log('📄 页面容器元素:', el);
-        console.log('📏 容器高度:', el.offsetHeight);
+
+    // 只操作统计卡片区域，不影响表格和表单
+    const cards = container.querySelectorAll('.stats-grid .content-section')
+    console.log('🃏 找到统计卡片数:', cards.length)
+
+    if (!cards || cards.length === 0) {
+        ElMessage.warning('找不到 .content-section 元素')
+        return
     }
-    
-    // 查询页面中的按钮
-    const buttons = $queryAll('button');
-    console.log('🔘 页面中有', buttons?.length, '个按钮');
+
+    // 以第一张卡片的 data-active 属性判断当前状态
+    const isActive = cards[0].dataset.cssActive !== 'true'
+
+    cards.forEach(card => {
+        if (isActive) {
+            card.dataset.cssActive = 'true'
+            // 直接操作内联样式，100% 生效，无需担心选择器优先级
+            card.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            card.style.color = '#ffffff'
+            card.style.borderTopColor = '#feca57'
+            card.style.transform = 'scale(1.04)'
+            card.style.boxShadow = '0 12px 36px rgba(102,126,234,0.5)'
+            card.style.transition = 'all 0.4s ease'
+            // 子文本也变白
+            card.querySelectorAll('div').forEach(d => d.style.color = '#ffffff')
+        } else {
+            card.dataset.cssActive = 'false'
+            card.style.background = ''
+            card.style.color = ''
+            card.style.borderTopColor = ''
+            card.style.transform = ''
+            card.style.boxShadow = ''
+            card.querySelectorAll('div').forEach(d => d.style.color = '')
+        }
+    })
+
+    if (isActive) {
+        ElMessage.success('🎨 JS + CSS 已激活！卡片变为蓝紫渐变，切换到其他页面后样式自动消失')
+    } else {
+        ElMessage.info('🔄 已恢复原始样式')
+    }
 }
 
 function showAlert() {

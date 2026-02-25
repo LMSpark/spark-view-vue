@@ -140,7 +140,6 @@ export async function start(options: StartOptions): Promise<void> {
     const app = createApp(rootComponent)
 
     // 过滤 form-create + Element Plus 的已知兼容性警告
-    /*
     app.config.warnHandler = (msg) => {
       // 忽略 form-create + Element Plus 插槽在渲染函数外调用的已知兼容性警告
       if (msg.includes('invoked outside of the render function')) {
@@ -150,8 +149,6 @@ export async function start(options: StartOptions): Promise<void> {
       // 其他警告正常输出到控制台
       console.warn(`[Vue warn]: ${msg}`)
     }
-    */
-
     // 2. 安装 UI 插件
     if (plugins && plugins.length > 0) {
       startLogger.debug(`安装 ${plugins.length} 个 UI 插件...`)

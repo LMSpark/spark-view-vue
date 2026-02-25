@@ -23,44 +23,119 @@
 // ========================================
 
 let treeManager = null
+let _initialized = false
 
 /**
  * 初始化树管理器
  */
 function __init__() {
+  if (_initialized) return   // 防止 $rebindRules() 触发重复初始化
+  _initialized = true
   const pageData = $data
-  
+  const dataSet = $dataSet
+
   // 初始化展开状态数组
   if (!pageData.expandedKeys) {
     pageData.expandedKeys = []
   }
-  
-  // 使用 SparkData 命名空间创建 TreeManager
+
   if (!SparkData || !SparkData.createTreeManager) {
     console.error('❌ SparkData 或 createTreeManager 未注入')
     return
   }
-  
-  const { config, nodes } = pageData.treeData
-  
-  // 使用 SparkData.createTreeManager() 创建树管理器
-  treeManager = SparkData.createTreeManager(config, nodes)
-  
+
+  if (!dataSet) {
+    console.error('❌ DataSet 未就绪')
+    return
+  }
+
+  // ── 从 DataSet 取出 treeData（被 fromPageData 归一化为单行表）──
+  let treeConfig = { idField: 'id', parentIdField: 'parentId', textField: 'name' }
+  let nodes = []
+
+  const treeDataTable = dataSet.getTable('treeData')
+  if (treeDataTable) {
+    const row = treeDataTable.views['default']?.rows?.[0]
+    if (row) {
+      if (row.config) treeConfig = Object.assign({}, treeConfig, row.config)
+      if (Array.isArray(row.nodes)) nodes = row.nodes
+    }
+  }
+  console.log('📦 treeConfig:', treeConfig, '节点数:', nodes.length)
+
+  // ── 从 DataSet 取出 hierarchicalTreeData 并写回 $data 供 r-tree 使用 ──
+  const hierarchTable = dataSet.getTable('hierarchicalTreeData')
+  if (hierarchTable) {
+    const rows = hierarchTable.views['default']?.rows
+    if (rows && rows.length > 0) {
+      pageData.hierarchicalTreeData = rows
+      console.log('🌲 hierarchicalTreeData 根节点数:', rows.length)
+    }
+  }
+
+  // ── 创建 TreeManager ──
+  treeManager = SparkData.createTreeManager(treeConfig, nodes)
   if (!treeManager) {
     console.error('❌ TreeManager 创建失败')
     return
   }
-  
-  // 富化节点信息（计算 level 和 hasChildren）
+
   if (treeManager.enrichNodes) {
     treeManager.enrichNodes()
   }
-  
-  console.log('✅ TreeManager 初始化完成')
-  console.log('扁平节点数量:', nodes.length)
-  
-  // 注意：不需要重新构建树形结构，因为 RendererTree 使用的是 hierarchicalTreeData
-  // pageData.hierarchicalTreeData 已经是嵌套的树形结构
+
+  console.log('✅ TreeManager 初始化完成，扁平节点数:', nodes.length)
+
+  // 写入 $data 后需要手动触发重绑，让 r-tree 拿到 hierarchicalTreeData
+  $rebindRules()
+}
+
+/**
+ * RenderNodeInfo — 响应式节点信息面板
+ * 直接读取 $data.selectedNode / $data.selectedPathText，
+ * 依赖 Vue 响应式自动刷新，无需 $rebindRules()
+ */
+function RenderNodeInfo() {
+  const node = $data.selectedNode
+  const pathText = $data.selectedPathText
+
+  if (!node) {
+    return h('p', {
+      style: { color: '#909399', textAlign: 'center', padding: '24px 0', margin: 0 }
+    }, ['请点击左侧树节点查看详情'])
+  }
+
+  const rows = [
+    ['节点 ID',   node.id],
+    ['节点名称', node.name],
+    ['节点类型', node.type],
+    ['层级',     node.level],
+    ['父节点 ID', node.parentId ?? '-'],
+  ]
+
+  const tdBaseStyle = 'padding:8px 12px;border-bottom:1px solid #ebeef5;'
+  const table = h('table', { style: { width: '100%', borderCollapse: 'collapse' } },
+    rows.map(([label, value]) =>
+      h('tr', {}, [
+        h('td', {
+          style: tdBaseStyle + 'background:#fafafa;width:96px;color:#606266;font-weight:600;'
+        }, [label]),
+        h('td', {
+          style: tdBaseStyle + 'color:#303133;'
+        }, [String(value ?? '-')])
+      ])
+    )
+  )
+
+  const pathSection = h('div', { style: { marginTop: '16px' } }, [
+    h('h4', { style: { margin: '0 0 8px 0', fontSize: '14px', color: '#303133' } }, ['节点路径:']),
+    h('div', {
+      style: { padding: '10px 14px', background: '#f5f7fa', borderRadius: '4px',
+               color: '#606266', fontSize: '13px', lineHeight: '1.6' }
+    }, [pathText || '-'])
+  ])
+
+  return h('div', {}, [table, pathSection])
 }
 
 /**
@@ -202,14 +277,45 @@ function handleNodeClick(...args) {
     ElMessage?.info(`已选中: ${nodeData.name || nodeData.label}`)
   }
   
-  console.log('📍 准备调用 $rebindRules() 更新节点信息显示')
-  console.log('📍 当前 expandedKeys:', pageData.expandedKeys)
-  
-  // 重新绑定规则以更新节点信息显示
-  // 注意：会导致树重新渲染，但应该通过 default-expanded-keys 恢复展开状态
-  $rebindRules()
-  
-  console.log('📍 $rebindRules() 调用完成')
+  // 通过 form-create API 获取 RendererTree 组件实例，再取内部 el-tree 调用 setCurrentKey
+  // 避免 $rebindRules() 重建整棵树导致展开状态丢失
+  try {
+    const treeComp = $api?.el('organization-tree')
+    // RendererTree 根元素是 el-tree，其 $el.__vueParentComponent 可向上找到 el-tree vm
+    // 更简单：直接查 DOM 上挂的 __vueParentComponent
+    if (treeComp) {
+      const elTreeVm = treeComp.__vue_app__
+        ? null  // element ref，不是 vm
+        : treeComp?.$refs?.tree   // r-tree 暴露的 ref（若存在）
+      if (elTreeVm && typeof elTreeVm.setCurrentKey === 'function') {
+        elTreeVm.setCurrentKey(nodeData.id)
+      }
+    }
+  } catch (e) {
+    // 忽略，el-tree 内部已通过 click 维护了 highlight 状态
+  }
+
+  // ── 级联更新子节点表格（通过 DataView.replaceRows，无需 $rebindRules）──
+  try {
+    const childView = $dataSet?.getView?.('childNodes')
+    if (childView) {
+      const children = treeManager ? treeManager.getChildren(nodeData.id) : []
+      const childRows = children.map(c => {
+        try {
+          const p = treeManager.getNodePath(c.id)
+          return Object.assign({}, c, { pathText: p.pathNodes.map(n => n.name).join(' > ') })
+        } catch (e2) {
+          return Object.assign({}, c, { pathText: c.name })
+        }
+      })
+      childView.replaceRows(childRows)
+      console.log('📋 子节点级联更新:', childRows.length, '条')
+    }
+  } catch (e3) {
+    console.error('级联更新子节点失败:', e3)
+  }
+
+  console.log('📍 handleNodeClick 完成，节点信息已响应式更新')
 }
 
 /**
@@ -234,10 +340,11 @@ function handleSearch() {
   
   console.log('📝 当前 searchKeyword:', keyword)
   
+  const childView = $dataSet?.getView?.('childNodes')
+
   if (!keyword || keyword.trim() === '') {
     console.log('⚠️ 关键词为空，清空搜索结果')
-    pageData.searchResults = []
-    $rebindRules()
+    if (childView) childView.replaceRows([])
     return
   }
   
@@ -251,14 +358,15 @@ function handleSearch() {
   // 添加路径信息
   const resultsWithPath = results.map(node => {
     const path = treeManager.getNodePath(node.id)
-    return {
-      ...node,
+    return Object.assign({}, node, {
       pathText: path.pathNodes.map(n => n.name).join(' > ')
-    }
+    })
   })
   
-  pageData.searchResults = resultsWithPath
-  $rebindRules()
+  // 通过 DataView.replaceRows 更新表格，无需 $rebindRules()
+  if (childView) {
+    childView.replaceRows(resultsWithPath)
+  }
   
   if (results.length > 0) {
     ElMessage?.success(`找到 ${results.length} 个匹配节点`)
@@ -283,10 +391,9 @@ function handleSearchKeyup(event) {
  * 清空搜索
  */
 function handleClearSearch() {
-  const pageData = $data
-  pageData.searchKeyword = ''
-  pageData.searchResults = []
-  $rebindRules()
+  $data.searchKeyword = ''
+  const childView = $dataSet?.getView?.('childNodes')
+  if (childView) childView.replaceRows([])
 }
 
 /**
