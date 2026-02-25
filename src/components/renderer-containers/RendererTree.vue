@@ -77,8 +77,14 @@ const resolvedDataSource = computed(() => {
 })
 
 const treeData = computed(() => {
-  const ds = resolvedDataSource.value
-  if (ds && Array.isArray(ds.rows)) return ds.rows
+  // 兼容三种来源：
+  // 1. 直接传入数组（bindRules 从 pageData 注入的裸数组）
+  // 2. IDataSource / DataView（.rows 属性）
+  // 3. props.data 直传
+  const ds = resolvedDataSource.value as unknown
+  if (Array.isArray(ds)) return ds as TreeNode[]
+  const dsTyped = ds as IDataSource | undefined
+  if (dsTyped && Array.isArray(dsTyped.rows)) return dsTyped.rows as TreeNode[]
   return props.data ?? []
 })
 

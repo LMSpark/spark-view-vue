@@ -26,7 +26,7 @@
  * ```
  */
 
-import { ref, reactive, onMounted, watch, nextTick, h, inject, type Ref, type Component } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick, h, inject, getCurrentInstance, defineComponent, markRaw, type Ref, type Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
 import type { IDataSet } from '@spark-view/spark-data'
@@ -300,7 +300,26 @@ export function usePageRenderer(
     pageLogger.info('🎬 [Timing] 开始编译脚本', { pageId })
     executeScript(pageId, config.script ?? '')
     
-    // 阶段4: 绑定 rules，触发 form-create 挂载
+    // 将 Render* 函数注册为响应式 Vue 全局组件
+    // 这样 form-create 遇到 { type: 'RenderXxx' } 时能从 Vue 组件注册表找到它
+    // 组件的 setup 返回 render fn，Vue 自动追踪响应式依赖，数据变化时自动重渲染
+    const appCtx = getCurrentInstance()?.appContext.app
+    if (appCtx) {
+      for (const [name, fn] of Object.entries(pageFunctions.value)) {
+        if (name.startsWith('Render') && typeof fn === 'function') {
+          const capturedFn = fn
+          const comp = markRaw(defineComponent({
+            name,
+            setup() { return () => (capturedFn as () => unknown)() }
+          }))
+          // 注册 PascalCase 版本（"RenderNodeInfo"）
+          appCtx.component(name, comp)
+          // form-create toCase 会将类型转为首字母小写，同时注册 camelCase 版本（"renderNodeInfo"）
+          const camelName = name.charAt(0).toLowerCase() + name.slice(1)
+          appCtx.component(camelName, comp)
+        }
+      }
+    }
     await nextTick()
     rebindRules()
     

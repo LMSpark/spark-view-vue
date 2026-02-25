@@ -41,11 +41,11 @@ export function setupRouterGuards(
   const resolveContext = (): AppContext | undefined =>
     typeof getAppContext === 'function' ? getAppContext() : getAppContext
 
-  // 全局前置守卫
-  router.beforeEach(async (to, _from, next) => {
+  // 全局前置守卫（返回值式）
+  router.beforeEach(async (to, _from) => {
     // 登录页和公开页面跳过检查
     if (to.path === loginPath || to.meta['public'] === true) {
-      return next()
+      return true
     }
 
     // 每次导航时解析最新的 appContext（支持登录后状态更新）
@@ -54,7 +54,7 @@ export function setupRouterGuards(
     // 未登录 - 重定向到登录页
     if (!appContext) {
       routerLogger.warn('未登录，重定向到登录页', { path: to.path })
-      return next({ path: loginPath, query: { redirect: to.fullPath } })
+      return { path: loginPath, query: { redirect: to.fullPath } }
     }
 
     // 页面级权限检查
@@ -71,11 +71,11 @@ export function setupRouterGuards(
           required: requiredPermissions,
           userPermissions: appContext.user.permissions
         })
-        return next({ path: forbiddenPath })
+        return { path: forbiddenPath }
       }
     }
 
-    next()
+    return true
   })
 
   // 全局后置守卫

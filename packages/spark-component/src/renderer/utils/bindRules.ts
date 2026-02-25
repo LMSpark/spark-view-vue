@@ -121,16 +121,13 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     const newRule = { ...rule }
     
     // 🎯 处理自定义渲染函数（以 Render 开头的 type）
+    // Render* 组件已由 usePageRenderer 通过 app.component() 注册为响应式 Vue 组件
+    // 此处保持字符串 type 不变，form-create 会从 Vue 全局组件注册表中解析
     if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
-      const renderFn = pageFunctions[newRule.type]
-      if (typeof renderFn === 'function') {
-        return {
-          type: 'div',
-          render: renderFn
-        } as Rule
-      }
+      return newRule as Rule
     }
     
+
     // 处理事件处理器：通过 callFunc 包装
     if (newRule.on && typeof newRule.on === 'object') {
       const newOn: Record<string, unknown> = {}
@@ -143,6 +140,17 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
         }
       }
       newRule.on = newOn as Record<string, Function | Function[]>
+    }
+
+
+
+    // 🎯 select / radio 组件特殊处理：如果自身 dataKey 指向选项数组，则注入 rule.options
+    // form-create 读取的是 rule.options，不是 rule.props.options
+    if ((newRule.type === 'select' || newRule.type === 'radio') && isDataKey(newRule['dataKey'] as string)) {
+      const resolvedOptions = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
+      if (Array.isArray(resolvedOptions)) {
+        newRule.options = resolvedOptions as Rule[]
+      }
     }
     
     // 🎯 处理 dataSource 绑定（r-table, r-tree 共用 —— 脚本写入 pageData 的值）
@@ -198,12 +206,22 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     }
     
     // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定或表单值绑定）
-    // 排除已有专门处理逻辑的容器组件
-    if (newRule['dataKey'] && !isDataKeyHandledType(newRule.type as string, registry)) {
-      const resolved = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
-      
-      // 注入 DataView（若 dataKey 指向 DataSet）
-      attachDataViewIfDataKey(newRule['dataKey'] as string | undefined, dataSet, newRule)
+    // 排除已有专门处理逻辑的容器组件，以及 select/radio（其 dataKey 已由上方 options 注入块处理）
+    if (newRule['dataKey'] && !isDataKeyHandledType(newRule.type as string, registry)
+        && newRule.type !== 'select' && newRule.type !== 'radio') {
+      const rawKey = newRule['dataKey'] as string
+      let resolved: unknown
+
+      if (isDataKey(rawKey)) {
+        // DataSet 路径（@ 格式）：走 DataSet 解析，非法格式时打 warn
+        resolved = resolveRuleDataKey(rawKey, dataSet)
+        // 注入 DataView（若 dataKey 指向 DataSet）
+        attachDataViewIfDataKey(rawKey, dataSet, newRule)
+      } else {
+        // $data 路径（dot 格式，如 currentUser.label）：从 pageData 中按路径取值
+        const keys = rawKey.split('.')
+        resolved = getNestedValue(pageData, keys)
+      }
 
       // 如果有值，根据元素类型决定绑定方式
       if (resolved !== undefined && resolved !== null) {

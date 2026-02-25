@@ -33,13 +33,23 @@ export default defineConfig({
       '@pages': path.resolve(__dirname, 'pages'),
       '@shared': path.resolve(__dirname, 'shared'),
       '@root': path.resolve(__dirname, '..', '..', 'src'),
-      '@spark-view/spark-component': path.resolve(__dirname, 'packages', 'spark-component', 'dist', 'index.js'),
-      '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'dist', 'index.js'),
-      '@spark-view/spark-utils': path.resolve(__dirname, 'packages', 'spark-utils', 'dist', 'index.js'),
-      '@spark-view/spark-renderer': path.resolve(__dirname, 'packages', 'spark-component', 'dist', 'index.js'),
-      '@spark-view/spark-page-config': path.resolve(__dirname, 'packages', 'spark-page-config', 'dist', 'index.js'),
-      // during development we alias to source so that new exports (e.g. setupAutoRegister)
-      // are available without rebuilding the package. In production builds the dist file is used.
+      // 开发环境直接指向 src 源码，改动即时生效无需重新构建；生产环境用 dist
+      '@spark-view/spark-component': process.env.NODE_ENV === 'production'
+        ? path.resolve(__dirname, 'packages', 'spark-component', 'dist', 'index.js')
+        : path.resolve(__dirname, 'packages', 'spark-component', 'src', 'index.ts'),
+      '@spark-view/spark-data': process.env.NODE_ENV === 'production'
+        ? path.resolve(__dirname, 'packages', 'spark-data', 'dist', 'index.js')
+        : path.resolve(__dirname, 'packages', 'spark-data', 'src', 'index.ts'),
+      '@spark-view/spark-utils': process.env.NODE_ENV === 'production'
+        ? path.resolve(__dirname, 'packages', 'spark-utils', 'dist', 'index.js')
+        : path.resolve(__dirname, 'packages', 'spark-utils', 'src', 'index.ts'),
+      '@spark-view/spark-renderer': process.env.NODE_ENV === 'production'
+        ? path.resolve(__dirname, 'packages', 'spark-component', 'dist', 'index.js')
+        : path.resolve(__dirname, 'packages', 'spark-component', 'src', 'index.ts'),
+      '@spark-view/spark-page-config': process.env.NODE_ENV === 'production'
+        ? path.resolve(__dirname, 'packages', 'spark-page-config', 'dist', 'index.js')
+        : path.resolve(__dirname, 'packages', 'spark-page-config', 'src', 'index.ts'),
+      // spark-app 同样开发走 src
       '@spark-view/spark-app': process.env.NODE_ENV === 'production'
         ? path.resolve(__dirname, 'packages', 'spark-app', 'dist', 'index.js')
         : path.resolve(__dirname, 'packages', 'spark-app', 'src', 'index.ts'),

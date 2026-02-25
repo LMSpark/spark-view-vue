@@ -3,6 +3,33 @@
     "type": "div",
     "children": [
       {
+        "type": "div",
+        "class": "css-isolation-banner",
+        "children": [
+          {
+            "type": "div",
+            "class": "badge",
+            "children": [
+              "CSS 隔离"
+            ]
+          },
+          {
+            "type": "div",
+            "class": "banner-text",
+            "children": [
+              "以下样式仅在 home 页面生效，切换到其他路由后自动失效"
+            ]
+          },
+          {
+            "type": "div",
+            "class": "scope-code",
+            "children": [
+              "[data-page=\"home\"].spark-page-container .xxx"
+            ]
+          }
+        ]
+      },
+      {
         "type": "h3",
         "children": [
           "数据统计"
@@ -61,6 +88,7 @@
       },
       {
         "type": "div",
+        "class": "stats-grid",
         "style": {
           "display": "grid",
           "gridTemplateColumns": "repeat(4, 1fr)",
@@ -273,7 +301,8 @@
             "validate": [
               {
                 "required": true,
-                "message": "请输入用户名"
+                "message": "请输入用户名",
+                "trigger": "submit"
               }
             ]
           },
@@ -288,11 +317,13 @@
             "validate": [
               {
                 "required": true,
-                "message": "请输入邮箱"
+                "message": "请输入邮箱",
+                "trigger": "submit"
               },
               {
                 "type": "email",
-                "message": "邮箱格式不正确"
+                "message": "邮箱格式不正确",
+                "trigger": "submit"
               }
             ]
           },
