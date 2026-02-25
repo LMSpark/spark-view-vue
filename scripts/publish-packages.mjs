@@ -79,13 +79,30 @@ console.log('\n📋 发布顺序:', packages.join(' → '))
 
 for (const pkg of packages) {
   const pkgDir = join(PACKAGES_DIR, pkg)
+  const pkgJson = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf-8'))
+  const pkgName = pkgJson.name
+  const pkgVersion = pkgJson.version
+
   if (DRY_RUN) {
     // dry-run 时用 pnpm pack 验证产物中 workspace:* 已被替换
     console.log(`\n[dry-run] 检查打包产物: ${pkg}`)
     run(`pnpm pack --dry-run`, pkgDir)
     continue
   }
-  console.log(`\n🚀 发布 ${pkg} ...`)
+
+  // 检查版本是否已在 npm 发布，若已发布则跳过
+  let alreadyPublished = false
+  try {
+    const result = execSync(`npm view ${pkgName}@${pkgVersion} version`, { cwd: pkgDir, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
+    if (result === pkgVersion) alreadyPublished = true
+  } catch (_) { /* 未发布 */ }
+
+  if (alreadyPublished) {
+    console.log(`\n⏭️  跳过 ${pkgName}@${pkgVersion}（已发布）`)
+    continue
+  }
+
+  console.log(`\n🚀 发布 ${pkg} (${pkgVersion}) ...`)
   // 使用 pnpm publish：自动将 dependencies 中的 workspace:* 替换为实际解析版本
   run(`pnpm publish --access public --tag ${TAG} --no-git-checks`, pkgDir)
 }
