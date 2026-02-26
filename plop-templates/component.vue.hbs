@@ -1,12 +1,19 @@
 <template>
-  <div class="{{name}}">
-    <!-- 子组件递归渲染 -->
-    <component
-      v-for="childConfig in childConfigs"
-      :key="childConfig.id"
-      :is="getComponent(childConfig.type)"
-      :config="childConfig"
-    />
+  <div v-if="isVisible" class="{{name}}" :class="{ disabled: isDisabled }">
+    {{#if isProvider}}
+    <!-- Config 驱动：通用递归渲染子树，父级不知道子级是谁 -->
+    <template v-if="config.children?.length">
+      <SparkComponentRenderer
+        v-for="(child, i) in config.children"
+        :key="child.id ?? `child-${i}`"
+        :config="child"
+      />
+    </template>
+    <!-- Template 驱动：向后兼容 slot -->
+    <slot v-else />
+    {{else}}
+    <slot />
+    {{/if}}
   </div>
 </template>
 
@@ -17,74 +24,80 @@
  * dataKey 行为：{{dataKeyBehavior}}
  * 能力角色：{{capabilityRole}}
  *
- * 注册示例（register.ts / initialize.ts）：
- *   Spark.registerAll({ '{{name}}': () => import('./{{pascalName}}.vue') })
- *   // 带元数据（Sprint D registry-driven dataKey）：
- *   registry.register('{{name}}', {{pascalName}}, { dataKey: '{{dataKeyBehavior}}' })
+ * 注册示例：
+ *   const reg = Spark.createRegister(import.meta.glob('./*.vue') as GlobModules)
+ *   reg.registerAll({ '{{name}}': './{{pascalName}}.vue' })
  */
-import { computed } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
-import type { ComponentContext } from '@spark-view/spark-component'
+import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 {{#if isConsumer}}
-// 从 @spark-view/spark-utils 导入需要消费的能力键，例如：
-// import { APP_SERVICES } from '@spark-view/spark-utils'
+// 从对应包导入需要消费的能力键，例如：
+// import { APP_SERVICES, SELECTION } from '@spark-view/spark-utils'
+// import { DATA_SOURCE } from '@spark-view/spark-data'
+// 或使用字符串键（需在 capability-keys.ts 中通过 declare module 扩展 CapabilityTypeMap）
 {{/if}}
 {{#if isProvider}}
-// 在 packages/spark-utils/src/capability/symbols.ts 中已生成能力键 {{SCREAMING_NAME}}
-// import { {{SCREAMING_NAME}} } from '@spark-view/spark-utils'
+// 向子组件提供的能力键：
+// import { SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
+// import { DATA_SOURCE } from '@spark-view/spark-data'
 {{/if}}
 {{#if isDataSelfResolve}}
 import { PAGE_DATASET } from '@spark-view/spark-data'
-import { resolveDataKeyBinding } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
 {{/if}}
 
 // ── Props ────────────────────────────────────────────────────────────────────
 interface Props {
-  config: Partial<ComponentContext>
+  config: ComponentConfig
 }
 
 const props = defineProps<Props>()
 
-// ── 子组件配置（类型守卫过滤无效项） ────────────────────────────────────────
-const childConfigs = computed(() =>
-  (props.config.children ?? []).filter(
-    (c): c is ComponentContext => typeof c.type === 'string' && c.type.length > 0
-  )
-)
-
-// ── SPARK 能力上下文 ──────────────────────────────────────────────────────────
+// ── SPARK 上下文（setup 第一行） ──────────────────────────────────────────────
 const {
   context,
-  provide: provideCapability,  // 注意：别名避免与 Vue provide 冲突
+  isVisible,
+  isDisabled,
+  provide,
   provideEvents,
   consume,
   consumeEvents,
-  getComponent,
   logger,
-} = useSparkComponent(props.config as ComponentContext)
+} = useSparkComponent(props.config)
 {{#if isProvider}}
 
-// ── Provider：向子组件提供能力 ─────────────────────────────────────────────
-// provideCapability({{SCREAMING_NAME}}, {
-//   /* 实现 I{{pascalName}}Capability 接口所有方法 */
+// ── Provider：父级无条件提供能力，不关心谁消费 ────────────────────────────
+// provide(DATA_SOURCE, dataView)
+// provide(SELECTION, {
+//   isSelected: (id) => selectedIds.value.has(id),
+//   select:     (id) => { selectedIds.value.add(id) },
+//   deselect:   (id) => { selectedIds.value.delete(id) },
+//   getSelected:() => [...selectedIds.value],
 // })
+// const events = provideEvents(GRID_EVENTS)
 {{/if}}
 {{#if isConsumer}}
 
-// ── Consumer：消费祖先提供的能力（late-binding 容忍，null 时不崩溃） ────────
-// const parentCap = consume(SOME_CAPABILITY_KEY)
-// if (parentCap) { /* 使用能力 */ }
+// ── Consumer：consume 返回 null 是正常 late-binding，做好防空 ─────────────
+// const sel = consume(SELECTION)        // ISelectionCapability | null
+// const src = consume(DATA_SOURCE)      // IDataSource | null
+// 字符串键示例（需先用 declare module 扩展 CapabilityTypeMap）：
+// const ctx = consume('app:field-context')  // FieldContext | null
 {{/if}}
 {{#if isDataSelfResolve}}
 
 // ── DataSet 接入（self-resolve 模式） ──────────────────────────────────────
 const dataSet = consume(PAGE_DATASET)
-const dataKey = (props.config as Record<string, unknown>)['dataKey'] as string | undefined
-// const binding = dataKey && dataSet ? resolveDataKeyBinding(dataKey, dataSet) : null
-// if (binding?.kind === 'view') { /* binding.source: IDataSource */ }
+const dataKey = props.config.props?.['dataKey'] as string | undefined
+// const binding = dataKey && dataSet
+//   ? SparkData.resolveDataKeyBinding(dataKey, dataSet)
+//   : null
+// if (binding?.kind === 'view') {
+//   provide(DATA_SOURCE, binding.source)
+// }
 {{/if}}
 
-logger.info('{{pascalName}} mounted', { id: context.id })
+logger.info('{{pascalName}} initialized', { id: context.id })
 </script>
 
 <style scoped>

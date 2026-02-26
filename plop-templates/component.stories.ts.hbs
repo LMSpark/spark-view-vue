@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3'
 import {{pascalName}} from '../src/components/{{name}}.vue'
-import type { {{pascalName}}Config } from '../src/components/{{name}}'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
 const meta: Meta<typeof {{pascalName}}> = {
   title: 'SPARK Components/{{pascalName}}',
@@ -22,8 +22,7 @@ const meta: Meta<typeof {{pascalName}}> = {
   args: {
     config: {
       type: '{{name}}',
-      title: '{{pascalName}} 示例'
-    } as {{pascalName}}Config
+    } as ComponentConfig
   }
 }
 
@@ -34,30 +33,24 @@ export const Default: Story = {
   args: {
     config: {
       type: '{{name}}',
-      title: '默认{{pascalName}}'
-    }
+    } as ComponentConfig
   }
 }
 
-export const Loading: Story = {
+export const WithChildren: Story = {
   args: {
     config: {
       type: '{{name}}',
-      title: '加载中...',
-      loading: true
-    }
+      children: []
+    } as ComponentConfig
   }
 }
 
-export const WithCustomData: Story = {
+export const Hidden: Story = {
   args: {
     config: {
       type: '{{name}}',
-      title: '自定义数据',
-      data: {
-        message: '来自Storybook的自定义消息',
-        timestamp: new Date().toISOString()
-      }
-    }
+      visible: false,
+    } as ComponentConfig
   }
 }
