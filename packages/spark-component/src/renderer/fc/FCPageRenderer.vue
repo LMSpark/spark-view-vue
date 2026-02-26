@@ -33,7 +33,7 @@
  * 纯视图层：模板绑定 + props / slots / expose 声明。
  * 全部编排逻辑由 usePageRenderer composable 承担。
  */
-import { ref } from 'vue'
+import { ref, getCurrentInstance } from 'vue'
 import type { PageRendererOptions, Rule } from '../types'
 import { usePageRenderer } from '../composables/usePageRenderer'
 
@@ -43,6 +43,9 @@ const props = withDefaults(defineProps<PageRendererOptions>(), {
 })
 
 const pageContainer = ref<HTMLElement | null>(null)
+// 在同步 setup() 中捕获 app 实例，供 usePageRenderer 注册脚本中的 Render* 组件
+// 必须在此处捕获：usePageRenderer 内部的 loadPageConfig 是 async 函数，await 后 getCurrentInstance() 为 null
+const vueApp = getCurrentInstance()?.appContext.app
 
 const {
   loading,
@@ -57,7 +60,7 @@ const {
   rebindRules,
   pageContext,
   dataSet
-} = usePageRenderer(props as PageRendererOptions, { pageContainer })
+} = usePageRenderer(props as PageRendererOptions, { pageContainer, vueApp })
 
 defineExpose({
   reload: loadPageConfig,
