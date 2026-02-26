@@ -38,9 +38,11 @@ const {
   isVisible,        // ComputedRef<boolean> — 基于 config.visible
   isDisabled,       // ComputedRef<boolean> — 基于 config.disabled
   provide,          // (name, impl) => void — 写入 ctx.capabilities（SPARK 能力，非 Vue DI）
+                    // 重载：provide<K extends keyof CapabilityTypeMap>(name: K, impl: CapabilityTypeMap[K])
   provideEvents,    // (name?) => IEventEmitter — 提供事件总线
   getProvider,      // (name) => unknown — 仅查找本组件 capabilities（不走 parent 链）
   consume,          // <T>(name) => T | null — 沿 parent 链向上查找能力
+                    // 重载：consume<K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
   consumeEvents,    // (name, handlers) => IEventEmitter | null — 消费并绑定事件
   initialize,       // () => void — onMounted 自动调用
   destroy,          // () => void — onUnmounted 自动调用（清理 children + capabilities）
@@ -111,6 +113,29 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 
 **重要**：`useSparkComponent` 的 `provide()` / `consume()` 是 **SPARK 能力系统**，不是 Vue 的 `provide/inject`。
 
+### 能力键类型扩展（CapabilityTypeMap）
+
+能力键支持两种形式：
+- **Symbol 键**（向后兼容）：`import { DATA_SOURCE } from '@spark-view/spark-data'`
+- **字符串键**（可扩展）：`consume('spark:capability:page-dataset')` — 通过 `CapabilityTypeMap` 声明合并提供类型推断
+
+`normalizeKey(name)` 内部将字符串转换为 `Symbol.for(name)`，与 Symbol 键等价。
+
+**扩展自定义能力键（declaration merging）：**
+```typescript
+// 在项目自己的 capability-keys.ts 中
+declare module '@spark-view/spark-utils' {
+  interface CapabilityTypeMap {
+    'app:field-context': FieldContext
+    'app:context-data': Record<string, unknown>
+  }
+}
+
+// 之后即可直接用字符串调用，有完整类型推断
+const ctx = consume('app:field-context')  // FieldContext | null（自动类型）
+provide('app:context-data', { key: 'value' })
+```
+
 ### 能力键一览
 
 | 键 | 定义包 | 类型 | 用途 |
@@ -149,18 +174,33 @@ r-row / r-cell
 
 ### 新增自定义能力
 
+**方式一：Symbol 键（适合跨包共享）**
 ```typescript
-// spark-utils/capability/symbols.ts 中添加（或在项目中本地定义）
+// 用 defineCapability 创建具名 symbol
 import { defineCapability } from '@spark-view/spark-utils'
 export const MY_CAP = defineCapability<{ doSomething(): void }>('app:my-capability')
 
-// Provider
-const { provide } = useSparkComponent({ type: 'provider' })
+const { provide } = useSparkComponent(props.config)
 provide(MY_CAP, { doSomething() { ... } })
 
-// Consumer（任意深度子孙）
-const { consume } = useSparkComponent({ type: 'consumer' })
-const cap = consume(MY_CAP)  // T | null，类型自动推断
+const { consume } = useSparkComponent(props.config)
+const cap = consume(MY_CAP)  // { doSomething(): void } | null
+```
+
+**方式二：字符串键 + CapabilityTypeMap（推荐，可扩展）**
+```typescript
+// src/components/capability-keys.ts
+import type { MyServiceCapability } from './types'
+
+declare module '@spark-view/spark-utils' {
+  interface CapabilityTypeMap {
+    'app:my-service': MyServiceCapability
+  }
+}
+
+// 直接用字符串，类型从 CapabilityTypeMap 自动推断
+provide('app:my-service', myImpl)   // impl 类型必须匹配 MyServiceCapability
+const cap = consume('app:my-service') // MyServiceCapability | null
 ```
 
 ## Package structure 📦
@@ -289,3 +329,12 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
   - `@spark-view/spark-data` → `./packages/spark-data/src`
   - `@spark-view/spark-utils` → `./packages/spark-utils/src`
 - 每个子包 `tsconfig.json` 独立声明 `paths`（相对于包目录），IDE 类型解析正确
+- ⚠️ **`tsconfig.build.json` 注意**：每个子包的 `tsconfig.build.json` 中 `"paths"` 必须保留依赖包的 dist 路径别名（不能设为 `{}`），否则 `tsc` 无法追踪 pnpm 软链中的 `.js` 重导出链，导致编译时找不到新增导出成员（如 `normalizeKey`、`CapabilityTypeMap`）
+
+## Performance notes ⚡
+- `useSparkComponent` 使用 `shallowReactive`（顶层响应式）+ `markRaw(capabilities)`、`markRaw(children)`，大幅减少 Vue 响应系统开销
+- logger 解析带缓存（`_loggerCache`），`provide(LOGGER/APP_SERVICES, ...)` 时自动失效
+- 组件 ID 使用全局单调计数器（`spark-${++_idCounter}`），比 `Date.now()+random` 更快且 SSR 友好
+- `getAll()` 直接返回内部 Map 引用（`ReadonlyMap`）：O(1)，无拷贝
+- `SparkComponentRenderer` 不再调用 `useSparkComponent()`，直接 `inject(SPARK_REGISTRY_KEY)`，消除渲染器中间 context 节点（上下文链：`root → business`，而非 `root → renderer → business`）
+- 调试日志全部包裹在 `import.meta.env.DEV` 守卫内，生产包无调试输出
