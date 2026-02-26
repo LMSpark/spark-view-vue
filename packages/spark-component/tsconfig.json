@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": "src",
     "paths": {
       "@spark-view/spark-component": ["./src/index.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
@@ -36,6 +35,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "*.stories.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -10,20 +10,28 @@ import type { LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 /**
  * 根据 vue-router 实例和 Logger 构建 APP_SERVICES payload。
  *
- * router 的 push/replace 已做最窄参数签名（与 IAppServicesCapability 对齐）；
- * logger 直接透传，无需再次包装。
+ * router 可选：在 Storybook / 测试等无路由环境下传入 null/undefined 时，
+ * 降级为 noop stub，避免运行时崩溃。
  */
 export function buildAppServices(
-  router: Router,
+  router: Router | null | undefined,
   logger: LoggerApi
 ): IAppServicesCapability {
+  const noop = () => Promise.resolve()
   return {
-    router: {
-      push: (to) => router.push(to as Parameters<Router['push']>[0]),
-      replace: (to) => router.replace(to as Parameters<Router['replace']>[0]),
-      back: () => router.back(),
-      currentRoute: router.currentRoute.value
-    },
+    router: router
+      ? {
+          push: (to) => router.push(to as Parameters<Router['push']>[0]),
+          replace: (to) => router.replace(to as Parameters<Router['replace']>[0]),
+          back: () => router.back(),
+          currentRoute: router.currentRoute.value
+        }
+      : {
+          push: noop,
+          replace: noop,
+          back: () => {},
+          currentRoute: undefined
+        },
     logger
   }
 }

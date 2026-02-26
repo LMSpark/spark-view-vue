@@ -12,12 +12,17 @@ export default [
       'packages/**/dist/**',  // 排除所有dist目录
       'API_SIMPLIFICATION_EXAMPLE.ts',
       'packages/spark-component/tests/**',
-      'packages/**/tests/**',  // 排除所有包的测试文件
-      'tests/**',  // 排除根目录测试文件
-      'tools/**',  // 排除工具文件
-      'examples/**',  // 排除示例文件
-      '**/*.example.ts',  // 排除所有示例文件
-      'docs/examples/**',  // 排除文档示例文件
+      'packages/**/tests/**',
+      'packages/**/src/tests/**',
+      'tests/**',
+      '**/*.test.ts',          // 文件名兜底：任意目录下的测试文件
+      '**/*.spec.ts',
+      '**/*.stories.ts',       // Storybook stories 非产品代码
+      '**/*.stories.tsx',
+      'tools/**',
+      'examples/**',
+      '**/*.example.ts',
+      'docs/examples/**',
       'dist/**',
       'node_modules/**',
       'vite.config.ts',
@@ -66,11 +71,12 @@ export default [
       'no-restricted-imports': 'off'
     }
   },
-  // Allow stories to import Vue components
+  // Allow stories to import Vue components / SPARK packages
   {
-    files: ['packages/spark-component/stories/**'],
+    files: ['packages/**/*.stories.ts', 'packages/**/*.stories.tsx', 'packages/spark-component/stories/**'],
     rules: {
-      'no-restricted-imports': 'off'
+      'no-restricted-imports': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
     }
   },
   // 严禁挎包路径导入：packages 内任何文件不得用相对路径引入其他包的源码
@@ -109,6 +115,7 @@ export default [
       parserOptions: {
         project: [
           './tsconfig.typecheck.json',
+          './.storybook/tsconfig.json',
           './packages/spark-utils/tsconfig.json',
           './packages/spark-data/tsconfig.json',
           './packages/spark-component/tsconfig.json',
@@ -154,6 +161,35 @@ export default [
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: 'module'
+    }
+  },
+  // ─── 测试文件宽松规则（必须在 TypeScript files 块之后） ─────────────────────
+  {
+    files: [
+      '**/*.test.ts',
+      '**/*.spec.ts',
+      '**/src/tests/**/*.ts',
+      '**/tests/**/*.ts'
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off'
+    }
+  },
+  // ─── Stories 文件宽松规则（必须在 TypeScript files 块之后） ──────────────────
+  {
+    files: ['**/*.stories.ts', '**/*.stories.tsx'],
+    rules: {
+      'no-restricted-imports': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off'
     }
   }
 ]

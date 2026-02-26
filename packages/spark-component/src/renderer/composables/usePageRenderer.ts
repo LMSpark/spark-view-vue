@@ -237,6 +237,7 @@ export function usePageRenderer(
   function resolvePageId(): string {
     const pageId =
       props.pageId ??
+      props.pageConfig?.pageId ??
       (route.meta['pageId'] as string | undefined) ??
       (route.params['id'] as string | undefined) ??
       (route.name as string | undefined)
