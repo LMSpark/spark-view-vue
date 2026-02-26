@@ -31,8 +31,10 @@ const {
   isVisible,        // ComputedRef<boolean>
   isDisabled,       // ComputedRef<boolean>
   provide,          // (capKey, impl) => void   — SPARK 能力提供（非 Vue DI）
+                    // 重载：provide<K extends keyof CapabilityTypeMap>(name: K, impl)
   provideEvents,    // (eventKey) => IEventEmitter
   consume,          // <T>(capKey) => T | null   — 沿 parent 链向上查找
+                    // 重载：consume<K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
   consumeEvents,    // (eventKey, handlers) => void
   getComponent,     // (type) => unknown         — 从注册表取组件（markRaw）
   logger,           // LoggerApi（自动代理，无需手动注入）
@@ -214,10 +216,24 @@ const displayValue = computed(() => row.value?.[field.value] ?? rowData?.getFiel
 | `PAGE_DATASET` | spark-data | `IDataSet` | PageRenderer |
 | `DATA_SOURCE` | spark-data | `IDataSource` | 容器组件 |
 
-自定义能力：
+内置能力键同时支持 **Symbol 键**（`import { DATA_SOURCE }`）和 **字符串键**（`consume('spark:capability:data-source')`）两种形式，等价互通。
+
+自定义能力（两种方式）：
 ```ts
-// packages/spark-utils/src/capability/symbols.ts 中或本地定义
+// 方式一：Symbol 键（适合跨包共享）
 export const MY_CAP = defineCapability<{ doSomething(): void }>('app:my-capability')
+// 平时就能用，需导入 symbol
+consume(MY_CAP)  // { doSomething(): void } | null
+
+// 方式二：字符串键 + CapabilityTypeMap（推荐，可扩展）
+// 在项目自己的 capability-keys.ts 中
+declare module '@spark-view/spark-utils' {
+  interface CapabilityTypeMap {
+    'app:my-capability': { doSomething(): void }
+  }
+}
+// 扩展后可直接用字符串，无需导入 symbol
+consume('app:my-capability')  // { doSomething(): void } | null（类型自动推断）
 ```
 
 ---
@@ -350,4 +366,4 @@ it('should provide DATA_SOURCE to children', async () => {
 - [ ] 注册文件使用 `Spark.createRegister(glob).registerAll({...})`
 - [ ] 测试使用 `flushPromises()` 等待异步组件
 - [ ] `pnpm run typecheck` 零错误
-- [ ] `pnpm run test` 全部通过
+- [ ] `pnpm run test` 全部通过- [ ] 自定义能力键优先用 `declare module '@spark-view/spark-utils' { interface CapabilityTypeMap {...} }` 扩展，而非直接修改包源文件
