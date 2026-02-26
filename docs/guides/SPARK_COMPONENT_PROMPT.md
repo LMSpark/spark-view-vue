@@ -366,4 +366,5 @@ it('should provide DATA_SOURCE to children', async () => {
 - [ ] 注册文件使用 `Spark.createRegister(glob).registerAll({...})`
 - [ ] 测试使用 `flushPromises()` 等待异步组件
 - [ ] `pnpm run typecheck` 零错误
-- [ ] `pnpm run test` 全部通过- [ ] 自定义能力键优先用 `declare module '@spark-view/spark-utils' { interface CapabilityTypeMap {...} }` 扩展，而非直接修改包源文件
+- [ ] `pnpm run test` 全部通过
+- [ ] 自定义能力键优先用 `declare module '@spark-view/spark-utils' { interface CapabilityTypeMap {...} }` 扩展，而非直接修改包源文件
