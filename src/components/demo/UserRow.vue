@@ -1,7 +1,8 @@
 <template>
   <div 
+    v-if="isVisible"
     class="user-row" 
-    :class="{ selected: isSelected }"
+    :class="{ selected: isSelected, 'is-disabled': isDisabled }"
     @click="handleClick"
   >
     <div class="row-checkbox">
@@ -55,7 +56,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
-import type { ComponentContext } from '@spark-view/spark-component'
+import { DATA_SOURCE } from '@spark-view/spark-data'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
 interface Props {
   /**
@@ -73,43 +75,61 @@ interface Props {
    *   ]
    * }
    */
-  config: Partial<ComponentContext>
+  config: ComponentConfig
 }
 
 const props = defineProps<Props>()
-
-// 从 config.props 获取 user 数据
-const user = computed(() => props.config.props?.['user'] as Record<string, unknown>)
-
-const childConfigs = computed(() =>
-  (props.config.children ?? []).filter(
-    (c): c is ComponentContext => typeof c.type === 'string' && c.type.length > 0
-  )
-)
 
 /**
  * 行点击事件
  * @event row-click
  * @param {Record<string, unknown>} user - 被点击的用户数据对象
- * @example
- * ```vue
- * <UserRow @row-click="(user) => console.log('Clicked:', user)" />
- * ```
  */
 const emit = defineEmits<{
   'row-click': [user: Record<string, unknown>]
 }>()
 
-// 使用 SPARK 能力系统
-const { 
+// ============================================================
+// SPARK 组件系统初始化（先于所有业务逻辑）
+// ============================================================
+const {
   context,
+  isVisible,
+  isDisabled,
   consume,
   provide: provideCapability,
   provideEvents,
   consumeEvents,
   getComponent,
-  logger 
-} = useSparkComponent(props.config as ComponentContext)
+  logger
+} = useSparkComponent(props.config)
+
+// ============================================================
+// 数据获取（SOLID 正确姿势：消费父级能力，不依赖 props 注入）
+// ============================================================
+
+// 消费父级（UserGrid 或任何提供了 DATA_SOURCE 的组件）的数据源能力
+// UserRow 不关心父级是谁，只要能消费到 DATA_SOURCE 就能正常工作
+const dataSource = consume(DATA_SOURCE)
+
+// 本行的唯一标识（来自配置，由父级生成 childConfigs 时写入，不携带具体数据）
+const rowId = computed(() => props.config.props?.['rowId'] as string | number | undefined)
+
+// 从 DATA_SOURCE 中按 rowId 定位本行数据
+// 父级没有注入数据 —— 行组件主动通过能力读取自己的数据
+const user = computed(() => {
+  const id = rowId.value
+  if (id === undefined || id === null) return undefined
+  return dataSource?.rows?.find(r => r['id'] === id || r['_id'] === id) as Record<string, unknown> | undefined
+})
+
+const childConfigs = computed(() =>
+  (props.config.children ?? []).filter(
+    (c): c is ComponentConfig => typeof c.type === 'string' && c.type.length > 0
+  )
+)
+
+// ============ 状态 ============
 
 const isSelected = ref(false)
 

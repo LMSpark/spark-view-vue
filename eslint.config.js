@@ -73,6 +73,27 @@ export default [
       'no-restricted-imports': 'off'
     }
   },
+  // 严禁挎包路径导入：packages 内任何文件不得用相对路径引入其他包的源码
+  // 必须通过 @spark-view/xxx 包名导入
+  {
+    files: ['packages/**/*.ts', 'packages/**/*.vue', 'packages/**/*.js'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: [
+              '../**/spark-utils*',
+              '../**/spark-data*',
+              '../**/spark-component*',
+              '../**/spark-app*',
+              '../**/spark-page-config*'
+            ],
+            message: '禁止挎包路径导入，请使用 @spark-view/<package-name> 替代'
+          }
+        ]
+      }]
+    }
+  },
   // Storybook config files - skip TypeScript parsing
   {
     files: ['.storybook/**/*'],

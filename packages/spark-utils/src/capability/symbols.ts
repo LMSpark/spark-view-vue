@@ -79,16 +79,30 @@ export function defineCapability<T>(name: string): CapabilityKey<T> {
 
 // ==================== 纯函数操作 ====================
 
+/**
+ * 标准化能力键：字符串 → Symbol.for(string)，symbol 原样返回。
+ *
+ * 作用：允许用字符串名称 provide / consume 能力，与用 CapabilityKey<T>
+ * 符号 provide 的值共享同一 Map 槽位。
+ *
+ * @example
+ * normalizeKey('spark:capability:app-services') === APP_SERVICES // true
+ */
+export function normalizeKey(name: CapabilityName): symbol | string {
+  return typeof name === 'string' ? Symbol.for(name) : name
+}
+
 /** 在上下文中注册能力 */
 export function provide<T>(ctx: ICapabilityContext, name: CapabilityName, impl: T): void {
-  ctx.capabilities.set(name, impl)
+  ctx.capabilities.set(normalizeKey(name), impl)
 }
 
 /** 沿 parent 链查找能力（就近原则） */
 export function lookup<T = unknown>(ctx: ICapabilityContext, name: CapabilityName): T | undefined {
+  const key = normalizeKey(name)
   let current: ICapabilityContext | undefined = ctx
   while (current) {
-    const impl = current.capabilities.get(name)
+    const impl = current.capabilities.get(key)
     if (impl !== undefined) return impl as T
     current = current.parent
   }
@@ -233,5 +247,37 @@ export const GRID_EVENTS = defineCapability<IEventEmitter>('spark:capability:gri
  * 目前无 provider 和 consumer。
  */
 export const ROW_EVENTS = defineCapability<IEventEmitter>('spark:capability:row-events')
+
+// ==================== 能力类型映射表（可扩展） ====================
+
+/**
+ * 能力名称 → 实现类型的映射表。
+ *
+ * 任意包可通过 declaration merging 注入新条目，无需修改 spark-utils：
+ *
+ * @example
+ * ```ts
+ * // packages/spark-data/src/capability-keys.ts
+ * declare module '@spark-view/spark-utils' {
+ *   interface CapabilityTypeMap {
+ *     'spark:capability:page-dataset': IDataSet
+ *     'spark:capability:data-source':  IDataSource
+ *   }
+ * }
+ *
+ * // 消费方（无需 import 符号对象）
+ * const ds = consume('spark:capability:data-source') // 类型：IDataSource | null
+ * ```
+ */
+export interface CapabilityTypeMap {
+  'spark:capability:app-services': IAppServicesCapability
+  'spark:capability:logger':       LoggerApi
+  'spark:capability:page-service': IPageServiceCapability
+  'spark:capability:current-row':  ICurrentRowCapability
+  'spark:capability:selection':    ISelectionCapability
+  'spark:capability:row-data':     IRowDataCapability
+  'spark:capability:grid-events':  IEventEmitter
+  'spark:capability:row-events':   IEventEmitter
+}
 
 // === 业务能力扩展点（plop spark-capability 生成的自定义能力在此追加） ===

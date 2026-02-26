@@ -1,26 +1,31 @@
 <template>
   <el-form :model="formModel" v-bind="$attrs">
-    <slot />
+    <!-- Config 驱动 —— 通用递归渲染 config.children -->
+    <template v-if="configChildren.length">
+      <SparkComponentRenderer
+        v-for="(child, i) in configChildren"
+        :key="child.id ?? `r-form-child-${i}`"
+        :config="child"
+      />
+    </template>
+    <!-- Template 驱动 —— 向后兼容 -->
+    <slot v-else />
   </el-form>
 </template>
 
 <script setup lang="ts">
 /**
  * RendererForm - 表单容器组件
- *
- * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey：
- *   field=currentRow → DataView.currentRow
- *   field=rows       → rows[0]（首行作为表单模型）
- * 未设置 dataKey 时回退到 props.data。
  */
-import { provide, reactive, computed, watch } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
+import { reactive, computed, watch } from 'vue'
+import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 import { PAGE_DATASET, parseDataKey, resolveDataKey } from '@spark-view/spark-data'
+import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
 
 interface Props {
-  /** DataKey 格式：scope@tableName@viewId@field （优先） */
+  config?: ComponentConfig
   dataKey?: string
-  /** 表单数据对象（备用， dataKey 不存在时生效） */
   data?: Record<string, unknown>
   labelWidth?: string
 }
@@ -30,31 +35,36 @@ const props = withDefaults(defineProps<Props>(), {
   labelWidth: '100px'
 })
 
-// 接入 SPARK 能力链
-const { consume } = useSparkComponent({ type: 'r-form' })
+const effectiveDataKey = computed(() =>
+  (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
+)
+const configChildren = computed(() => props.config?.children ?? [])
+
+const { consume, provide: sparkProvide } = useSparkComponent(
+  props.config ?? { type: 'r-form' }
+)
 const pageDataSet = consume(PAGE_DATASET)
 
-// 解析表单数据：dataKey 优先，回退到 props.data
 const resolvedData = computed<Record<string, unknown>>(() => {
-  if (props.dataKey && pageDataSet) {
-    const dk = parseDataKey(props.dataKey)
+  if (effectiveDataKey.value && pageDataSet) {
+    const dk = parseDataKey(effectiveDataKey.value)
     if (dk) {
       const raw = resolveDataKey(dk, pageDataSet)
       if (raw && typeof raw === 'object') return raw as Record<string, unknown>
     }
   }
+  const configData = props.config?.props?.['data']
+  if (configData && typeof configData === 'object') return configData as Record<string, unknown>
   return props.data ?? {}
 })
 
-// 表单数据模型（响应式）
 const formModel = reactive<Record<string, unknown>>({ ...resolvedData.value })
 
-// 数据源变化时同步到 formModel
 watch(resolvedData, (nv) => {
   Object.keys(formModel).forEach(k => { delete formModel[k] })
   Object.assign(formModel, nv)
 }, { deep: false })
 
-provide('fieldContext', 'form')
-provide('contextData', formModel)
+sparkProvide(FIELD_CONTEXT, 'form')
+sparkProvide(CONTEXT_DATA, formModel)
 </script>

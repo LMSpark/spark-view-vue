@@ -1,5 +1,5 @@
 <template>
-  <div class="user-field" :class="{ highlight }">
+  <div v-if="isVisible" class="user-field" :class="{ highlight }">
     <span class="field-icon">{{ fieldIcon }}</span>
     <div class="field-content">
       <span class="field-label">{{ fieldLabel }}</span>
@@ -34,7 +34,7 @@
 import { computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
-import type { ComponentContext } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
 interface Props {
   /**
@@ -42,7 +42,7 @@ interface Props {
    * @required
    * @example { type: 'user-field', props: { field: 'name', value: 'John' } }
    */
-  config: Partial<ComponentContext>
+  config: ComponentConfig
   
   /**
    * 字段值（当未从 ROW_DATA 获取时使用）
@@ -80,10 +80,11 @@ const props = withDefaults(defineProps<Props>(), {
 // 使用 SPARK 能力系统
 const { 
   context,
+  isVisible,
   consume,
   consumeEvents,
   logger 
-} = useSparkComponent(props.config as ComponentContext)
+} = useSparkComponent(props.config)
 const rowData = consume(ROW_DATA)
 
 // 2. 消费父组件的行事件能力（使用 consumeEvents 自动注册监听器）

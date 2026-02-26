@@ -179,7 +179,7 @@ export async function start(options: StartOptions): Promise<void> {
           // 动态导入虚拟模块（由 vite-plugin-spark-components 生成）
           type RegisterFn = (app: ReturnType<typeof createApp>) => { total: number; sync: number; async: number }
           const virtualModule = await import('virtual:spark-components')
-          const { registerComponents } = virtualModule as { 
+          const { registerComponents } = virtualModule as unknown as { 
             registerComponents?: RegisterFn
           }
           

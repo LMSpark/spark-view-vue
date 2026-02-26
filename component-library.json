@@ -192,12 +192,7 @@
       {
         "name": "config",
         "type": {
-          "name": "Partial",
-          "elements": [
-            {
-              "name": "ComponentContext"
-            }
-          ]
+          "name": "ComponentConfig"
         },
         "required": true,
         "description": "组件配置对象",
@@ -348,20 +343,7 @@
       {
         "name": "config",
         "type": {
-          "name": "intersection",
-          "elements": [
-            {
-              "name": "Partial",
-              "elements": [
-                {
-                  "name": "ComponentContext"
-                }
-              ]
-            },
-            {
-              "name": "{\r\n  props?: {\r\n    // 仅支持 DataSet 格式\r\n    dataset?: {\r\n      tables?: {\r\n        Users?: {\r\n          columns?: Array<{\r\n            name: string\r\n            type: string\r\n            label?: string\r\n          }>\r\n          rows?: Record<string, unknown>[]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}"
-            }
-          ]
+          "name": "ComponentConfig"
         },
         "required": true,
         "description": "组件配置对象\n必须包含 props.dataset.tables.Users 数据结构",
@@ -412,12 +394,7 @@
       {
         "name": "config",
         "type": {
-          "name": "Partial",
-          "elements": [
-            {
-              "name": "ComponentContext"
-            }
-          ]
+          "name": "ComponentConfig"
         },
         "required": true,
         "description": "组件配置对象，包含用户数据和子组件配置",

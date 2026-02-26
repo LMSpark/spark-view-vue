@@ -1,24 +1,31 @@
 <template>
   <div class="renderer-detail" v-bind="$attrs">
-    <slot />
+    <!-- Config 驱动 —— 通用递归渲染 config.children -->
+    <template v-if="configChildren.length">
+      <SparkComponentRenderer
+        v-for="(child, i) in configChildren"
+        :key="child.id ?? `r-detail-child-${i}`"
+        :config="child"
+      />
+    </template>
+    <!-- Template 驱动 —— 向后兼容 -->
+    <slot v-else />
   </div>
 </template>
 
 <script setup lang="ts">
 /**
  * RendererDetail - 详情展示容器组件
- *
- * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
- * 不再依赖 bindRules.ts 外部注入。
  */
-import { provide, reactive, computed, watch } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
+import { reactive, computed, watch } from 'vue'
+import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 import { PAGE_DATASET, parseDataKey, resolveDataKey } from '@spark-view/spark-data'
+import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
 
 interface Props {
-  /** DataKey 格式：scope@tableName@viewId@field （优先） */
+  config?: ComponentConfig
   dataKey?: string
-  /** 详情数据对象（备用） */
   data?: Record<string, unknown>
 }
 
@@ -26,18 +33,26 @@ const props = withDefaults(defineProps<Props>(), {
   data: () => ({})
 })
 
-const { consume } = useSparkComponent({ type: 'r-detail' })
+const effectiveDataKey = computed(() =>
+  (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
+)
+const configChildren = computed(() => props.config?.children ?? [])
+
+const { consume, provide: sparkProvide } = useSparkComponent(
+  props.config ?? { type: 'r-detail' }
+)
 const pageDataSet = consume(PAGE_DATASET)
 
-// 解析详情数据
 const resolvedData = computed<Record<string, unknown>>(() => {
-  if (props.dataKey && pageDataSet) {
-    const dk = parseDataKey(props.dataKey)
+  if (effectiveDataKey.value && pageDataSet) {
+    const dk = parseDataKey(effectiveDataKey.value)
     if (dk) {
       const raw = resolveDataKey(dk, pageDataSet)
       if (raw && typeof raw === 'object') return raw as Record<string, unknown>
     }
   }
+  const configData = props.config?.props?.['data']
+  if (configData && typeof configData === 'object') return configData as Record<string, unknown>
   return props.data ?? {}
 })
 
@@ -48,6 +63,6 @@ watch(resolvedData, (nv) => {
   Object.assign(detailData, nv)
 }, { deep: false })
 
-provide('fieldContext', 'detail')
-provide('contextData', detailData)
+sparkProvide(FIELD_CONTEXT, 'detail')
+sparkProvide(CONTEXT_DATA, detailData)
 </script>

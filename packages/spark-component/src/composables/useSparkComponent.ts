@@ -6,9 +6,9 @@
  * @module composables/useSparkComponent
  */
 
-import { reactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
-import { provide as setCapability, lookup, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
-import type { IEventEmitter, CapabilityKey, CapabilityName, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
+import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
+import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
+import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { ComponentContext, ComponentConfig, ComponentRegistry } from '../core/types.js'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
 
@@ -23,8 +23,16 @@ export interface UseSparkComponentReturn {
   /** 禁用状态（基于 config.disabled，默认 false） */
   isDisabled: { readonly value: boolean }
 
-  /** 提供能力实现（支持 CapabilityKey<T> 类型推断） */
+  /**
+   * 提供能力实现。
+   *
+   * 重载顺序（TypeScript 按最具体优先匹配）：
+   * 1. `CapabilityTypeMap` 字符串键 → 对应类型（declaration merging 可扩展）
+   * 2. `CapabilityKey<T>` 符号键 → 类型推断
+   * 3. 任意 string | symbol → unknown（fallback）
+   */
   provide: {
+    <K extends keyof CapabilityTypeMap>(name: K, implementation: CapabilityTypeMap[K]): void
     <T>(name: CapabilityKey<T>, implementation: T): void
     (name: string | symbol, implementation?: unknown): void
   }
@@ -33,8 +41,21 @@ export interface UseSparkComponentReturn {
   /** 获取当前 context 的本地能力（不向父级查找） */
   getProvider: (name: string | symbol) => unknown
 
-  /** 消费能力（沿 parent 链向上查找） */
+  /**
+   * 消费能力（沿 parent 链向上查找，未找到返回 null）。
+   *
+   * 重载顺序：
+   * 1. `CapabilityTypeMap` 字符串键 → 对应类型 | null（无需 import 符号对象）
+   * 2. `CapabilityKey<T>` 符号键 → T | null
+   * 3. 任意 string | symbol → unknown（fallback）
+   *
+   * @example
+   * // 按字符串名称消费，类型来自 CapabilityTypeMap declaration merging
+   * const sel = consume('spark:capability:selection')
+   * // sel: ISelectionCapability | null
+   */
   consume: {
+    <K extends keyof CapabilityTypeMap>(name: K): CapabilityTypeMap[K] | null
     <T>(name: CapabilityKey<T>): T | null
     (name: string | symbol): unknown
   }
@@ -61,6 +82,10 @@ export interface UseSparkComponentReturn {
  *
  * 每个 SPARK 组件在 setup 中调用一次，获得上下文、能力管理和生命周期控制。
  */
+
+/** 全局单调递增 ID 计数器，替代 Date.now()+random（更快、确定、SSR 友好） */
+let _idCounter = 0
+
 export function useSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(
   config: TConfig,
   options?: {
@@ -75,25 +100,25 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
 
   // ── 上下文创建 ──
+  //
+  // 优化：
+  // 1. shallowReactive 替代 reactive：顶层字段响应式，子对象不做深层代理
+  // 2. capabilities / children 用 markRaw，完全脱离 Vue 响应系统：
+  //    capabilities 只做命令式 Map.get/set，children 只在 destroy 时 indexOf
+  // 3. id 用全局单调计数器，比 Date.now()+random 更快且确定（SSR 友好）
 
-  const ctxRaw = reactive({
-    id: config.id ?? `spark-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+  const context: ComponentContext = shallowReactive({
+    id: config.id ?? `spark-${++_idCounter}`,
     type: config.type,
-    children: [],
+    children: markRaw([] as ComponentContext[]),
     props: config.props ?? {},
     state: {},
-    capabilities: new Map<CapabilityName, unknown>(),
-    parent: undefined,
+    capabilities: markRaw(new Map<CapabilityName, unknown>()),
+    parent: parentContext,
     logger: undefined
-  } as unknown as ComponentContext)
+  } as ComponentContext)
 
-  if (parentContext !== undefined) {
-    ctxRaw.parent = parentContext
-  }
-
-  const context: ComponentContext = reactive(ctxRaw)
-
-  // 建立父子关系
+  // 建立父子关系（父 children 是 markRaw 数组，无响应式开销）
   if (parentContext?.children) {
     parentContext.children.push(context)
   }
@@ -101,12 +126,13 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   // 向子组件提供当前 context
   vueProvide(SPARK_PARENT_CONTEXT_KEY, context)
 
-  // ── Logger（从能力链查找，fallback 到 console） ──
+  // ── Logger（从能力链查找，带一次性缓存） ──
   //
-  // 设计决策：每次调用均重新查找，不缓存。
-  // 原因：SPARK 能力系统是 late-binding 的，父组件可能在子组件 setup 之后调用
-  // provide(LOGGER, impl)（onMounted 中提供）。若缓存第一次查找结果（往往为 null），
-  // 后续即使能力链已就绪也无法感知。不缓存保证 logger 始终反映最新能力链状态。
+  // 缓存策略：首次成功 lookup 后缓存结果，避免每次日志调用都遍历 parent 链。
+  // 失效时机：调用 provide(LOGGER, ...) 或 provide(APP_SERVICES, ...) 时主动置 null。
+  // Late-binding 边界：父组件在 onMounted 中 provide(LOGGER) 时，
+  // 若本组件的 provide() 未被触发则缓存不失效（已被这个父 provide 填充的子组件不受影响）。
+  // 对于典型使用场景（setup 期间提供能力）此策略覆盖 100%；极端晚绑定下退化为重查一次。
 
   const fallbackLogger: LoggerApi = {
     debug: () => undefined,
@@ -115,25 +141,31 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     error: (...args: unknown[]) => console.error(...args)
   }
 
-  const getActiveLogger = (): LoggerApi => {
+  let _loggerCache: LoggerApi | null = null
+
+  const resolveLogger = (): LoggerApi => {
+    if (_loggerCache !== null) return _loggerCache
     // 1. 优先查找 LOGGER 能力键（最近祖先覆盖，实现组件子树级日志替换）
     const loggerImpl = lookup<LoggerApi>(context, LOGGER)
     if (loggerImpl && typeof loggerImpl === 'object' && 'info' in loggerImpl) {
+      _loggerCache = loggerImpl
       return loggerImpl
     }
     // 2. 次选 APP_SERVICES.logger（应用层统一提供）
     const appServices = lookup<IAppServicesCapability>(context, APP_SERVICES)
     if (appServices?.logger) {
+      _loggerCache = appServices.logger
       return appServices.logger
     }
+    // fallback 不缓存：保留重查机会（等待父级 provide）
     return fallbackLogger
   }
 
   const logger: LoggerApi = {
-    debug: (...args: unknown[]) => getActiveLogger().debug(...args),
-    info: (...args: unknown[]) => getActiveLogger().info(...args),
-    warn: (...args: unknown[]) => getActiveLogger().warn(...args),
-    error: (...args: unknown[]) => getActiveLogger().error(...args)
+    debug: (...args: unknown[]) => resolveLogger().debug(...args),
+    info:  (...args: unknown[]) => resolveLogger().info(...args),
+    warn:  (...args: unknown[]) => resolveLogger().warn(...args),
+    error: (...args: unknown[]) => resolveLogger().error(...args)
   }
 
   context.logger = logger
@@ -147,7 +179,14 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   function provide(name: string | symbol, implementation?: unknown): void {
     setCapability(context, name, implementation)
-    logger.debug(`[spark] provided: ${String(name)}`)
+    // 当 LOGGER 或 APP_SERVICES 被更新时，使 logger 缓存失效
+    const key = normalizeKey(name)
+    if (key === LOGGER || key === APP_SERVICES) {
+      _loggerCache = null
+    }
+    if (import.meta.env.DEV) {
+      logger.debug(`[spark] provided: ${String(name)}`)
+    }
   }
 
   function provideEvents(name: string | symbol = 'events'): IEventEmitter {
@@ -161,7 +200,9 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   function consume(name: string | symbol): unknown {
     const impl = lookup(context, name)
     if (impl !== undefined) return impl
-    logger.debug(`[spark] capability not found (late-binding ok): ${String(name)}`)
+    if (import.meta.env.DEV) {
+      logger.debug(`[spark] capability not found (late-binding ok): ${String(name)}`)
+    }
     return null
   }
 
@@ -176,14 +217,16 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       }
       return emitter
     }
-    logger.debug(`[spark] event capability not found: ${String(name)}`)
+    if (import.meta.env.DEV) {
+      logger.debug(`[spark] event capability not found: ${String(name)}`)
+    }
     return null
   }
 
   // ── 能力查找 ──
 
   function getProvider(name: string | symbol): unknown {
-    return context.capabilities.get(name)
+    return context.capabilities.get(normalizeKey(name))
   }
 
   // ── 注册表访问 ──
@@ -200,7 +243,11 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   // ── 生命周期 ──
 
-  const initialize = () => logger.debug(`[spark] init: ${context.type} (${context.id})`)
+  const initialize = () => {
+    if (import.meta.env.DEV) {
+      logger.debug(`[spark] init: ${context.type} (${context.id})`)
+    }
+  }
 
   const destroy = () => {
     if (parentContext?.children) {

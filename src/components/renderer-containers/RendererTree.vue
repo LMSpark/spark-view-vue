@@ -8,8 +8,17 @@
   >
     <template #default="slotProps">
       <span class="custom-tree-node">
-        <slot :node="slotProps?.node" :data="slotProps?.data">
-          <span class="node-label">{{ (slotProps?.data as any)?.label || (slotProps?.data as any)?.name || (slotProps?.data as any)?.title || '节点' }}</span>
+        <!-- Config 驱动 —— 节点内容由 config.children 递归渲染 -->
+        <template v-if="configChildren.length">
+          <SparkComponentRenderer
+            v-for="(child, i) in configChildren"
+            :key="child.id ?? `r-tree-node-${i}`"
+            :config="{ ...child, props: { ...child.props, node: slotProps?.node, data: slotProps?.data } }"
+          />
+        </template>
+        <!-- Template 驱动 —— 向后兼容 -->
+        <slot v-else :node="slotProps?.node" :data="slotProps?.data">
+          <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
         </slot>
       </span>
     </template>
@@ -23,10 +32,12 @@
  * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
-import { computed, onMounted, watch, provide } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
+import { computed, onMounted, watch } from 'vue'
+import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 import { PAGE_DATASET, DATA_SOURCE, parseDataKey } from '@spark-view/spark-data'
 import type { IDataSource, DataView } from '@spark-view/spark-data'
+import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
 
 interface TreeNode {
   id?: string | number
@@ -47,10 +58,10 @@ interface ElTreeComponent {
 }
 
 interface Props {
+  config?: ComponentConfig
   /** DataKey 格式：scope@tableName@viewId@field （优先） */
   dataKey?: string
   data?: TreeNode[]
-  /** 直接传入的数据源（备用） */
   dataSource?: IDataSource | DataView | undefined
   onNodeClick?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
   onNodeExpand?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
@@ -60,14 +71,27 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const effectiveDataKey = computed(() =>
+  (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
+)
+const configChildren = computed(() => props.config?.children ?? [])
+
+/** 提取树节点显示文本，避免模板中使用 as any */
+function getNodeLabel(data: unknown): string {
+  const node = data as TreeNode | undefined
+  return node?.label ?? (node?.['name'] as string | undefined) ?? (node?.['title'] as string | undefined) ?? '节点'
+}
+
 // 接入 SPARK 能力链
-const { consume, provide: sparkProvide } = useSparkComponent({ type: 'r-tree' })
+const { consume, provide: sparkProvide, logger } = useSparkComponent(
+  props.config ?? { type: 'r-tree' }
+)
 const pageDataSet = consume(PAGE_DATASET)
 
-// 解析数据视图：dataKey 优先 → PAGE_DATASET；回退到直接 props
+// 解析数据视图
 const resolvedDataSource = computed(() => {
-  if (props.dataKey && pageDataSet) {
-    const dk = parseDataKey(props.dataKey)
+  if (effectiveDataKey.value && pageDataSet) {
+    const dk = parseDataKey(effectiveDataKey.value)
     if (dk) {
       const view = pageDataSet.getView(dk.tableName, dk.viewId)
       if (view) return view as IDataSource
@@ -88,24 +112,28 @@ const treeData = computed(() => {
   return props.data ?? []
 })
 
-// 提供 DATA_SOURCE 能力给子组件
-watch(resolvedDataSource, (nv) => {
-  if (nv) sparkProvide(DATA_SOURCE, nv)
-}, { immediate: true })
-
-// 自动加载
 function tryAutoLoad(ds: IDataSource | undefined) {
   if (!ds) return
   const maybeDV = ds as DataView | undefined
   if (maybeDV && typeof maybeDV.requestData === 'function') {
     void maybeDV.requestData().catch((e: unknown) => {
-      console.error('RendererTree: requestData() 失败', e)
+      logger.error('RendererTree: requestData() 失败', e)
     })
   }
 }
 
+// 向字段子组件提供渲染上下文（同步，先于 watcher）
+sparkProvide(FIELD_CONTEXT, 'tree')
+sparkProvide(CONTEXT_DATA, {} as Record<string, unknown>)
+
+// 统一 watcher：DATA_SOURCE 提供 + 自动加载
+watch(resolvedDataSource, (nv) => {
+  if (!nv) return
+  sparkProvide(DATA_SOURCE, nv)
+  tryAutoLoad(nv)
+}, { immediate: true })
+
 onMounted(() => tryAutoLoad(resolvedDataSource.value))
-watch(resolvedDataSource, (nv) => tryAutoLoad(nv))
 
 // 事件处理器
 const handleNodeClick = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
@@ -117,9 +145,6 @@ const handleNodeExpand = (data: TreeNode, node: ElTreeNode, component: ElTreeCom
 const handleNodeCollapse = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
   if (props.onNodeCollapse) props.onNodeCollapse(data, node, component)
 }
-
-provide('fieldContext', 'tree')
-provide('contextDataSource', resolvedDataSource)
 </script>
 
 <style scoped>

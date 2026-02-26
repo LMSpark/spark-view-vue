@@ -87,9 +87,10 @@ export function createComponentRegistry(): ComponentRegistry {
       return existed
     },
 
-    /** 返回所有已注册组件的 Map 副本（防止外部直接修改内部存储）。 */
-    getAll(): Map<string, ComponentDefinition> {
-      return new Map(components)
+    /** 返回所有已注册组件的只读 Map（直接暴露内部引用，零拷贝）。
+     *  调用方不得修改（TypeScript ReadonlyMap 保证编译期安全）。 */
+    getAll(): ReadonlyMap<string, ComponentDefinition> {
+      return components
     }
   }
 }

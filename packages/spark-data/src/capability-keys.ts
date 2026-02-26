@@ -20,6 +20,17 @@
 import { defineCapability } from '@spark-view/spark-utils'
 import type { IDataSet, IDataSource } from './types'
 
+// 将本包的能力合并到 CapabilityTypeMap，消费方按字符串名称即可得到精确类型，
+// 无需 import 能力符号对象。
+declare module '@spark-view/spark-utils' {
+  interface CapabilityTypeMap {
+    /** 页面级 DataSet（PageRenderer provide） */
+    'spark:capability:page-dataset': IDataSet
+    /** 组件级 DataView / IDataSource（容器组件 provide） */
+    'spark:capability:data-source':  IDataSource
+  }
+}
+
 /**
  * 页面级 DataSet 能力键
  *

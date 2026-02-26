@@ -8,6 +8,7 @@
  */
 
 import type { App, Plugin } from 'vue'
+import { markRaw } from 'vue'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
 import type { ComponentContext, ComponentRegistry } from '../core/types.js'
 import type { CapabilityName } from '@spark-view/spark-utils'
@@ -24,13 +25,13 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
       // 默认使用全局 registry，确保 Spark.register() 注册的组件可被找到
       const registry = options?.registry ?? getGlobalRegistry()
 
-      // 创建应用级根上下文
+      // 创建应用级根上下文（capabilities / children markRaw：不需要响应式）
       const rootContext: ComponentContext = {
         id: 'spark-root',
         type: 'spark-app',
-        children: [],
+        children: markRaw([]),
         state: {},
-        capabilities: new Map<CapabilityName, unknown>()
+        capabilities: markRaw(new Map<CapabilityName, unknown>())
       }
 
       // 注入到 Vue DI（使用类型安全的 InjectionKey）

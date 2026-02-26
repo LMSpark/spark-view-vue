@@ -32,12 +32,10 @@ export const simpleEnvAdapter = {
    */
   getEnvironment(): SimpleEnvironmentInfo {
     const isServer = typeof window === 'undefined'
-    // 检测测试环境：Vitest / Jest / NODE_ENV=test
-    const isTest = typeof process !== 'undefined' && (
-      process.env?.['VITEST'] === 'true' ||
-      process.env?.['JEST_WORKER_ID'] !== undefined ||
-      process.env?.['NODE_ENV'] === 'test'
-    )
+    // 检测测试环境：Vitest (import.meta.env.VITEST) 或 MODE=test
+    const isTest =
+      (import.meta.env['VITEST'] as string | undefined) === 'true' ||
+      import.meta.env.MODE === 'test'
     return {
       type: isServer ? 'server' : 'client',
       isServer,

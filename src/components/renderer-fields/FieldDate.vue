@@ -38,7 +38,9 @@
  * - form  → el-form-item + el-date-picker
  * - 其他  → 只读日期展示
  */
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
+import { useSparkComponent } from '@spark-view/spark-component'
+import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
 
 interface Props {
   name?: string
@@ -56,9 +58,10 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | Date]
 }>()
 
-// 从父容器注入上下文
-const context = inject<string>('fieldContext', 'detail')
-const contextData = inject<Record<string, unknown>>('contextData', {})
+// 从 SPARK 能力链消费父容器提供的上下文
+const { consume } = useSparkComponent({ type: 'r-date' })
+const context = consume(FIELD_CONTEXT) ?? 'detail'
+const contextData = consume(CONTEXT_DATA) ?? {}
 
 // 字段值：优先 modelValue，其次从 contextData 取
 const fieldValue = computed(() => {

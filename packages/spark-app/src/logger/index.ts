@@ -90,7 +90,7 @@ class AppLogger {
 
   constructor(config: AppLoggerConfig = {}) {
     this.config = {
-      level: config.level ?? (typeof process !== 'undefined' && process.env?.['NODE_ENV'] === 'production' ? 'info' : 'debug'),
+      level: config.level ?? (import.meta.env.PROD ? 'info' : 'debug'),
       enableColors: config.enableColors ?? true,
       showTimestamp: config.showTimestamp ?? false,
       prefix: config.prefix ?? '',

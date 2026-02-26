@@ -47,8 +47,9 @@
  * @author SPARK Team
  * @since 1.0.0
  */
-import { computed, ref, defineComponent, onMounted, h, type Component } from 'vue'
+import { computed, ref, defineComponent, onMounted, h, markRaw, type Component } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
+import { useSyncfusionLoader } from '../composables/useSyncfusionLoader'
 import type { SparkEJ2GridConfig } from '../types'
 
 /**
@@ -97,33 +98,26 @@ const PlaceholderGrid = defineComponent({
   }
 })
 
-import { markRaw } from 'vue'
-import { useSyncfusionLoader } from '../composables/useSyncfusionLoader'
-
 // activeComponent 初始为占位组件（markRaw 避免被 reactive 包装）
 const activeComponent = ref<Component>(markRaw(PlaceholderGrid))
 
 // 🚀 路由级懒加载 Syncfusion（CSS + JS + 按需服务注入）
 const { loadEJ2Grid } = useSyncfusionLoader()
 
-// 尝试按需加载 EJ2 Grid（非强制），加载失败则保持占位组件
-// 传入配置以实现功能级按需引入（仅加载配置中启用的服务）
-loadEJ2Grid(props.config)
-  .then((m) => {
-    if (m && m.GridComponent) {
-      activeComponent.value = markRaw(m.GridComponent as Component)
-      logger.info('✅ EJ2 Grid loaded successfully (on-demand services)')
-    }
-  })
-  .catch(e => {
-    logger.info('⚠️  EJ2 Grid not available, using placeholder', String(e))
-  })
-
-// 网格已初始化
-logger.info('🎯 SPARK EJ2 Grid capabilities registered')
-
 onMounted(() => {
   logger.info('🎯 SPARK EJ2 Grid mounted with config:', props.config)
+
+  // 组件挂载后才发起 Syncfusion 按需加载，避免 setup 期间的异步副作用
+  void loadEJ2Grid(props.config)
+    .then((m) => {
+      if (m && m.GridComponent) {
+        activeComponent.value = markRaw(m.GridComponent as Component)
+        logger.info('✅ EJ2 Grid loaded successfully (on-demand services)')
+      }
+    })
+    .catch(e => {
+      logger.info('⚠️  EJ2 Grid not available, using placeholder', String(e))
+    })
 })
 </script>
 

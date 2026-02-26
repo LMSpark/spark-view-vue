@@ -1,6 +1,6 @@
 {
     "name": "@spark-view/spark-component",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -32,7 +32,7 @@
     "dependencies": {
         "@spark-view/spark-data": "^0.4.0",
         "@spark-view/spark-page-config": "^0.3.1",
-        "@spark-view/spark-utils": "^0.3.0"
+        "@spark-view/spark-utils": "^0.4.0"
     },
     "peerDependencies": {
         "@form-create/element-ui": ">=3.0.0",
