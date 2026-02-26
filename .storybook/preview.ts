@@ -5,27 +5,34 @@ import { createLogger } from '@spark-view/spark-app'
 import { APP_SERVICES } from '@spark-view/spark-utils'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import formCreate from '@form-create/element-ui'
+import { createRouter, createMemoryHistory } from 'vue-router'
 
-// Storybook 7.x setup
+// Storybook 全局安装
 setup((app) => {
-  // 安装Element Plus
   app.use(ElementPlus)
+  // FormCreate.install 满足 ObjectPlugin 结构，用包装对象避免类型转换
+  app.use({ install: (vueApp) => { formCreate.install(vueApp) } })
 
-  // 创建SPARK插件
+  // 安装内存路由：消除 FCPageRenderer 内部 useRouter/useRoute 的 Vue warn
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: '/', component: { template: '<div/>' } }]
+  })
+  app.use(router)
+
   const sparkPlugin = Spark.createPlugin()
   app.use(sparkPlugin)
 
-  // 创建应用级logger
   const appLogger = createLogger('Storybook', {
     level: 'debug',
     enableColors: true,
     showTimestamp: false
   })
 
-  // 提供应用服务
-  app.provide(APP_SERVICES, {
+  app.provide(APP_SERVICES as symbol, {
     logger: appLogger,
-    router: null // Storybook环境中不需要路由
+    router: null
   })
 })
 

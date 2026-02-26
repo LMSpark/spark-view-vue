@@ -77,8 +77,6 @@
         "@commitlint/config-conventional": "^20.4.2",
         "@eslint/js": "^10.0.1",
         "@rollup/rollup-win32-x64-msvc": "^4.59.0",
-        "@storybook/addon-essentials": "^8.6.14",
-        "@storybook/addon-interactions": "^8.6.14",
         "@storybook/vue3": "^10.2.12",
         "@storybook/vue3-vite": "^10.2.12",
         "@types/node": "^25.3.0",
@@ -108,7 +106,16 @@
     },
     "pnpm": {
         "overrides": {
-            "rollup": "^4.57.1"
+            "rollup": "^4.57.1",
+            "vue": "3.5.29",
+            "@vue/runtime-core": "3.5.29",
+            "@vue/runtime-dom": "3.5.29",
+            "@vue/reactivity": "3.5.29",
+            "@vue/shared": "3.5.29",
+            "@vue/compiler-core": "3.5.29",
+            "@vue/compiler-dom": "3.5.29",
+            "@vue/compiler-sfc": "3.5.29",
+            "@vue/server-renderer": "3.5.29"
         }
     }
 }
