@@ -1,11 +1,10 @@
-import type { ComponentContext } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
 /**
- * {{pascalName}} 组件 config prop 类型
+ * {{pascalName}} 组件配置局部类型
  *
  * {{description}}
  *
- * 遵循 demo/UserGrid.vue 模式：使用 Partial<ComponentContext> 而非自定义接口。
- * 如需扩展额外 props，通过 props.config.props?.['key'] 运行时访问。
+ * 和所有 SPARK 组件一样使用 ComponentConfig，额外 props 通过 config.props['key'] 访问。
  */
-export type {{pascalName}}Config = Partial<ComponentContext>
+export type {{pascalName}}Config = ComponentConfig

@@ -2,73 +2,88 @@
  * {{pascalName}} 组件单元测试
  */
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { Spark } from '@spark-view/spark-component'
+import { mount, flushPromises } from '@vue/test-utils'
+import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
 import {{pascalName}} from '../src/components/{{name}}.vue'
-import type { {{pascalName}}Config } from '../src/components/{{name}}.config'
 {{#if isProvider}}
-// import { {{SCREAMING_NAME}} } from '@spark-view/spark-utils'
+// import { provide as setCapability, lookup } from '@spark-view/spark-utils'
+// import { SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
 {{/if}}
 {{#if isConsumer}}
-// import { SOME_CAPABILITY_KEY } from '@spark-view/spark-utils'
+// import { provide as setCapability } from '@spark-view/spark-utils'
+// import { DATA_SOURCE } from '@spark-view/spark-data'
 {{/if}}
 
-// ── 测试辅助 ──────────────────────────────────────────────────────────────────
+// ── 测试辅助 ────────────────────────────────────────────────────────────────────
 
-function makeConfig(overrides: {{pascalName}}Config = {}): {{pascalName}}Config {
+function makeConfig(overrides: Partial<ComponentConfig> = {}): ComponentConfig {
   return { type: '{{name}}', ...overrides }
 }
 
-function mountComponent(config: {{pascalName}}Config) {
-  const { registry } = Spark.createSystem()
-  registry.register('{{name}}', {{pascalName}}, { dataKey: '{{dataKeyBehavior}}' })
+function mountComponent(config: ComponentConfig) {
+  const { registry, rootContext } = Spark.createSystem()
+  registry.register('{{name}}', {{pascalName}})
   return mount({{pascalName}}, {
     props: { config },
-    global: { plugins: [Spark.createPlugin({ registry })] }
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext,
+      }
+    }
   })
 }
 
-// ── 基础渲染 ──────────────────────────────────────────────────────────────────
+// ── 测试套件 ────────────────────────────────────────────────────────────────────
 
 describe('{{pascalName}}', () => {
   describe('基础渲染', () => {
-    it('应该挂载成功', () => {
+    it('应该挂载成功', async () => {
       const wrapper = mountComponent(makeConfig())
+      await flushPromises()
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('应该渲染根元素', () => {
+    it('应该渲染根元素', async () => {
       const wrapper = mountComponent(makeConfig())
-      expect(wrapper.find('.spark-{{name}}').exists()).toBe(true)
+      await flushPromises()
+      expect(wrapper.find('.{{name}}').exists()).toBe(true)
+    })
+
+    it('visible=false 时应隐藏', async () => {
+      const wrapper = mountComponent(makeConfig({ visible: false }))
+      await flushPromises()
+      expect(wrapper.find('.{{name}}').exists()).toBe(false)
     })
   })
 {{#if isProvider}}
 
   describe('Provider — 能力提供', () => {
-    it('应该向子组件注入能力', () => {
-      // TODO: 验证 provide({{SCREAMING_NAME}}, ...) 已被调用
-      // 使用 Spark.createSystem() 构建父子上下文并调用 lookup 验证
-      // const { rootContext, createContext } = Spark.createSystem()
-      // const ctx = createContext({ type: '{{name}}' }, rootContext)
-      // expect(lookup(ctx, {{SCREAMING_NAME}})).toBeDefined()
-      expect(true).toBe(true) // TODO: 替换为真实断言
+    it('应该向子组件注入能力', async () => {
+      // 示例：通过 createSystem 建立父子上下文并用 lookup 验证
+      // const { registry, rootContext } = Spark.createSystem()
+      // 在组件挂载后，子级上下文应该能通过 lookup 找到能力
+      const wrapper = mountComponent(makeConfig())
+      await flushPromises()
+      expect(wrapper.exists()).toBe(true) // TODO: 替换为真实能力断言
     })
   })
 {{/if}}
 {{#if isConsumer}}
 
   describe('Consumer — 能力消费', () => {
-    it('能力不存在时应该优雅降级（late-binding 容忍）', () => {
+    it('能力不存在时应该优雅降级（late-binding 容忍）', async () => {
       // consume 返回 null 时组件不应崩溃
       const wrapper = mountComponent(makeConfig())
+      await flushPromises()
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('能力存在时应该正确使用', () => {
-      // TODO: 通过父级 provide 注入能力，验证消费行为
-      // const { registry, rootContext, createContext } = Spark.createSystem()
-      // const parentCtx = createContext({ type: 'parent' }, rootContext)
-      // provide(parentCtx, SOME_CAPABILITY_KEY, { ... })
+    it('能力存在时应该正确使用', async () => {
+      // 示例：通过父级 provide 注入能力，验证消费行为
+      // const { registry, rootContext } = Spark.createSystem()
+      // setCapability(rootContext, DATA_SOURCE, { rows: [...] })
       expect(true).toBe(true) // TODO: 替换为真实断言
     })
   })
@@ -76,20 +91,19 @@ describe('{{pascalName}}', () => {
 {{#if isDataSelfResolve}}
 
   describe('DataSet 接入', () => {
-    it('dataKey 不存在时不应崩溃', () => {
+    it('dataKey 不存在时不应崩溃', async () => {
       const wrapper = mountComponent(makeConfig())
+      await flushPromises()
       expect(wrapper.exists()).toBe(true)
     })
   })
 {{/if}}
 
   describe('SPARK 注册', () => {
-    it('应该以正确的 meta 注册到 registry', () => {
+    it('应该能成功注册到 registry', () => {
       const { registry } = Spark.createSystem()
-      registry.register('{{name}}', {{pascalName}}, { dataKey: '{{dataKeyBehavior}}' })
-      const def = registry.get('{{name}}')
-      expect(def).toBeDefined()
-      expect(def?.meta?.['dataKey']).toBe('{{dataKeyBehavior}}')
+      registry.register('{{name}}', {{pascalName}})
+      expect(registry.has('{{name}}')).toBe(true)
     })
   })
 })
