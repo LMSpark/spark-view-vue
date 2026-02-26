@@ -3,7 +3,11 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "paths": {},
+    "paths": {
+      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
+      "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
+      "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"]
+    },
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
