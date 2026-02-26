@@ -58,11 +58,13 @@
     "node_modules",
     "**/dist",
     "src/**/*.old.vue",
+    "src/**/*.example.ts",
     "packages/**/examples/**/*",
     "packages/**/*.example.ts",
     "packages/**/*.example.vue",
     "tools/**/*",
     "examples/**/*",
+    ".storybook/**/*.ts",
     "node_modules/.pnpm/@vitejs+plugin-vue*/**",
     "**/*.config.js",
     "**/*.config.ts"

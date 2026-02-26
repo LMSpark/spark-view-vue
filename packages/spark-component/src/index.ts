@@ -6,6 +6,12 @@
 
 // ── 1. 命名空间 ──
 export { Spark } from './spark.js'
+export type {
+  ComponentLoader,
+  GlobModules,
+  RegisterContext,
+  SparkSystem
+} from './spark.js'
 
 // ── 2. 组件开发 Composable ──
 export { useSparkComponent } from './composables/useSparkComponent.js'

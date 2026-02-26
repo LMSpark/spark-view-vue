@@ -1,5 +1,5 @@
 <template>
-  <div class="user-grid">
+  <div v-if="isVisible" class="user-grid" :class="{ 'is-disabled': isDisabled }">
     <!-- 网格头部：标题和操作按钮 -->
     <div class="grid-header">
       <h3>👥 用户列表</h3>
@@ -34,7 +34,10 @@ defineOptions({ inheritAttrs: false })
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES, SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
-import type { ComponentContext } from '@spark-view/spark-component'
+import { DATA_SOURCE } from '@spark-view/spark-data'
+import type { IDataRow } from '@spark-view/spark-data'
+import type { ComponentConfig } from '@spark-view/spark-component'
+import type { ISelectionCapability } from '@spark-view/spark-utils'
 
 /**
  * 用户网格组件 - SPARK 能力系统综合演示
@@ -110,23 +113,7 @@ interface Props {
    *   children: [{ type: 'user-row', id: 'row-1' }]
    * }
    */
-  config: Partial<ComponentContext> & {
-    props?: {
-      // 仅支持 DataSet 格式
-      dataset?: {
-        tables?: {
-          Users?: {
-            columns?: Array<{
-              name: string
-              type: string
-              label?: string
-            }>
-            rows?: Record<string, unknown>[]
-          }
-        }
-      }
-    }
-  }
+  config: ComponentConfig
 }
 
 const props = defineProps<Props>()
@@ -135,14 +122,16 @@ const props = defineProps<Props>()
 // SPARK 组件系统初始化
 // ============================================================
 
-const { 
-  context, 
+const {
+  context,
+  isVisible,
+  isDisabled,
   provide: provideCapability,
   provideEvents,
   consume,
   getComponent,
-  logger: sparkLogger
-} = useSparkComponent(props.config as ComponentContext)
+  logger
+} = useSparkComponent(props.config)
 
 // ============================================================
 // 应用服务消费
@@ -155,36 +144,43 @@ const appServices = consume(APP_SERVICES)
 const appRouter = computed(() => appServices?.router)
 
 // ============================================================
-// 数据获取与转换
+// 数据获取（配置驱动，不耐合具体表名）
 // ============================================================
 
-// 从 DataSet 配置获取用户数据
-const usersFromConfig = computed(() => {
-  return props.config.props?.['dataset']?.tables?.Users?.rows || []
+// 从 config.props.rows 读取行数据（扩展层通过配置注入，父级不关心数据结构）
+const usersFromConfig = computed<IDataRow[]>(() => {
+  // 优先：config.props.rows（标准平面配置格式）
+  const rows = props.config.props?.['rows']
+  if (Array.isArray(rows)) return rows as IDataRow[]
+  // 备用：兼容旧格式 dataset.tables.{tableName}.rows（如果入口配置使用该结构）
+  const dataset = props.config.props?.['dataset'] as { tables?: Record<string, { rows?: unknown[] }> } | undefined
+  if (dataset?.tables) {
+    const firstTable = Object.values(dataset.tables)[0]
+    if (firstTable?.rows) return firstTable.rows as IDataRow[]
+  }
+  return []
 })
 
-// 生成子组件配置（为每个用户创建一个 row 组件）
+// 生成子组件配置：**父级不注入数据**，只传入 rowId
+// 子组件通过 consume(DATA_SOURCE) 自行按 rowId 取行数据
 const childConfigs = computed(() => {
   const children = props.config.children ?? []
-  const users = usersFromConfig.value
-  
-  if (children.length === 0 || users.length === 0) {
-    return []
-  }
-  
-  // 使用第一个 child 作为模板，为每个 user 生成配置
+  const rows = usersFromConfig.value
+
+  if (children.length === 0 || rows.length === 0) return []
+
+  // 使用配置中的 template，父级不关心 template.type 是什么组件
   const template = children[0]
-  if (!template?.type) {
-    return []
-  }
-  
-  return users.map(user => ({
+  if (!template?.type) return []
+
+  return rows.map(row => ({
     ...template,
-    id: `row-${user['id']}`,
-    type: template.type,
+    id: `${template.type}-${String(row['id'] ?? row['_id'] ?? Math.random())}`,
     props: {
       ...template.props,
-      user // 传递 user 数据到子组件
+      // 只传 rowId（版本键），不传整个 row 对象
+      // 子组件通过 consume(DATA_SOURCE) + rowId 自行查找自身那行
+      rowId: row['id'] ?? row['_id']
     }
   }))
 })
@@ -194,43 +190,60 @@ const childConfigs = computed(() => {
 // ============================================================
 
 // 选中的行 ID 集合
-const selectedIds = ref<Set<number>>(new Set())
+const selectedIds = ref<Set<string | number>>(new Set())
 
 // 选中行数量
 const selectedCount = computed(() => selectedIds.value.size)
+
+// ============================================================
+// 事件总线（先于 SELECTION 能力初始化）
+// ============================================================
+
+const gridEventsEmitter = provideEvents(GRID_EVENTS)
+
+// ============================================================
+// 向下 provide DATA_SOURCE —— 父级主动提供能力，不知道子级是谁
+// ============================================================
+//
+// 任何消费 DATA_SOURCE 的子组件（UserRow 、UserCard 等）
+// 只需 consume(DATA_SOURCE) + 自身 config.props.rowId 即可自行定位行数据。
+provideCapability(DATA_SOURCE, {
+  get rows() { return usersFromConfig.value }
+})
+
+// ============================================================
+// 选择操作（提取为函数，供 SELECTION 能力和按钮 handlers 共用）
+// ============================================================
+
+const selectionOps: ISelectionCapability = {
+  isSelected: (id) => selectedIds.value.has(id as string | number),
+  select: (id) => {
+    selectedIds.value.add(id as string | number)
+    gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
+    logger.info('✅ Selected row:', id)
+  },
+  deselect: (id) => {
+    selectedIds.value.delete(id as string | number)
+    gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
+    logger.info('❌ Deselected row:', id)
+  },
+  selectAll: () => {
+    usersFromConfig.value.forEach(row => selectionOps.select(row['id'] as string | number))
+  },
+  clearSelection: () => {
+    selectedIds.value.clear()
+    gridEventsEmitter.emit('selection:changed', [])
+    logger.info('🗑️ Cleared selection')
+  },
+  getSelected: () => Array.from(selectedIds.value)
+}
 
 // ============================================================
 // 能力提供（Provider Pattern）
 // ============================================================
 
 // 提供选择管理能力（供 UserRow 消费）
-provideCapability(SELECTION, {
-  isSelected: (id: number) => selectedIds.value.has(id),
-  select: (id: number) => {
-    selectedIds.value.add(id)
-    gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
-    sparkLogger.info('✅ Selected row:', id)
-  },
-  deselect: (id: number) => {
-    selectedIds.value.delete(id)
-    gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
-    sparkLogger.info('❌ Deselected row:', id)
-  },
-  selectAll: () => {
-    usersFromConfig.value.forEach(u => selectedIds.value.add(u['id'] as number))
-    gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
-    sparkLogger.info('☑️ Selected all rows')
-  },
-  clearSelection: () => {
-    selectedIds.value.clear()
-    gridEventsEmitter.emit('selection:changed', [])
-    sparkLogger.info('🗑️ Cleared selection')
-  },
-  getSelected: () => Array.from(selectedIds.value)
-})
-
-// 提供事件发布能力（Event Emitter）
-const gridEventsEmitter = provideEvents(GRID_EVENTS)
+provideCapability(SELECTION, selectionOps)
 
 // ============================================================
 // 事件处理器
@@ -238,21 +251,15 @@ const gridEventsEmitter = provideEvents(GRID_EVENTS)
 
 // 刷新网格数据
 const handleRefresh = () => {
-  sparkLogger.info('🔄 Grid refreshing')
+  logger.info('🔄 Grid refreshing')
   gridEventsEmitter.emit('grid:refresh')
 }
 
-// 全选所有行
-const handleSelectAll = () => {
-  usersFromConfig.value.forEach(u => selectedIds.value.add(u['id'] as number))
-  gridEventsEmitter.emit('selection:changed', Array.from(selectedIds.value))
-}
+// 全选所有行（复用 selectionOps，保证与 SELECTION 能力行为一致）
+const handleSelectAll = () => selectionOps.selectAll?.()
 
-// 清空选择
-const handleClearSelection = () => {
-  selectedIds.value.clear()
-  gridEventsEmitter.emit('selection:changed', [])
-}
+// 清空选择（复用 selectionOps，保证与 SELECTION 能力行为一致）
+const handleClearSelection = () => selectionOps.clearSelection()
 
 // 导航到首页
 const handleNavigateHome = () => {
@@ -264,7 +271,7 @@ const handleNavigateHome = () => {
 // ============================================================
 
 onMounted(() => {
-  sparkLogger.info('🚀 UserGrid mounted', {
+  logger.info('🚀 UserGrid mounted', {
     contextId: context.id,
     userCount: usersFromConfig.value.length
   })
@@ -345,5 +352,11 @@ onMounted(() => {
    ============================================================ */
 .grid-body {
   padding: 0;
+}
+
+/* 禁用状态 */
+.user-grid.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 </style>

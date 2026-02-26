@@ -4,6 +4,52 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+---
+
+## [0.4.0] — 2026-02-26
+
+### spark-utils@0.4.0
+
+#### ✨ Features
+- **`normalizeKey(name)`** — 新增公开导出。将字符串名称标准化为 `Symbol.for(name)`，symbol 原样返回，使字符串键与符号键在 `capabilities` Map 中等价
+- **`CapabilityTypeMap` 接口** — 可扩展的能力类型映射表，任意包可通过 `declare module '@spark-view/spark-utils' { interface CapabilityTypeMap { ... } }` 注入类型，消费方无需 import 符号对象即可获得精确类型
+- `provide` 和 `lookup` 内部调用 `normalizeKey`，字符串键与 `defineCapability` 符号键完全等价
+
+### spark-component@0.4.0
+
+#### ✨ Features
+- **`consume` 新增 `CapabilityTypeMap` 字符串键重载** — `consume('spark:capability:selection')` 直接返回 `ISelectionCapability | null`，无需 import 符号对象；declaration merging 可扩展
+- **`provide` 新增 `CapabilityTypeMap` 字符串键重载** — 同上，类型安全
+
+#### ⚡ Performance
+- **`capabilities` / `children` markRaw** — `Map` 和子上下文数组从 Vue 深层响应系统中摘出，消除每次 `provide/consume` 的依赖追踪开销
+- **去掉双重 `reactive()`** — `reactive(reactive(obj))` 改为单次 `shallowReactive({})`
+- **全局单调 ID 计数器** — `spark-${++_idCounter}` 替代 `Date.now()+random`，更快、确定、SSR 友好
+- **Logger 惰性缓存** — 首次成功 lookup 后缓存结果（O(1) 快路径）；`provide(LOGGER/APP_SERVICES)` 时主动失效；fallback 不缓存保留重查机会
+- **`SparkComponentRenderer` 零 context 化** — 渲染器不再创建中间 `ComponentContext`，直接 `inject(SPARK_REGISTRY_KEY)` 解析组件。能力链从 `root→renderer→business` 简化为 `root→business`
+- **`getAll()` 返回 `ReadonlyMap`（零拷贝）** — 不再每次 `new Map(components)`，O(1) 直接暴露内部引用
+
+#### 🐛 Bug Fixes
+- `SparkPlugin` 和 `createSystem()` 的 `capabilities`/`children` 补充 `markRaw`，与 `useSparkComponent` 保持一致
+- `createSystem().createContext()` 的 id 改用单调计数器
+
+#### ♻️ Refactor
+- `provide`/`consume`/`consumeEvents`/`initialize` 的 debug 日志加 `import.meta.env.DEV` 守卫，生产构建零字符串构建开销
+
+### spark-data@0.4.1
+
+#### ✨ Features
+- `capability-keys.ts` 补充 `declare module '@spark-view/spark-utils'` 声明合并，`PAGE_DATASET` / `DATA_SOURCE` 加入 `CapabilityTypeMap`；消费方可用 `consume('spark:capability:data-source')` 获得 `IDataSource | null` 精确类型
+
+### spark-app@0.3.2
+
+#### 🐛 Bug Fixes
+- `logger/index.ts`：`process.env.NODE_ENV` → `import.meta.env.PROD`
+- `utils/simpleEnv.ts`：`process.env.VITEST` → `import.meta.env['VITEST']`
+- `start.ts`：修复 TS2352 类型断言
+
+---
+
 ### 🏗️ Refactor - spark-data 统一事件系统
 
 **目标：** 消除多种数据处理模式（EventManager / SubscriptionManager / 直接方法调用），统一为单一事件中枢（DataEventHub）

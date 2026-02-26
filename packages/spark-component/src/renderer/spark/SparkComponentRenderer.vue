@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 /**
- * SparkComponentRenderer — SPARK 通用组件递归渲染引擎
+ * SparkComponentRenderer — SPARK 通用组件递归渲染引擎（无上下文版本）
  *
  * 职责：
  * 1. 从注册表解析 config.type → Vue 组件
@@ -33,9 +33,14 @@
  * 3. 未注册组件降级显示警告（不抛出异常）
  *
  * 设计要点：
- * - 父子上下文传递完全依赖 Vue DI（useSparkComponent 已 vueProvide SPARK_PARENT_CONTEXT_KEY）
- * - 递归渲染器**不显式传递** parentContext prop，避免冗余耦合
- * - 根节点（或测试场景）可通过 parentContext prop 注入初始父上下文
+ * - **不创建自己的 ComponentContext**：渲染器是透明的路由层，不加入能力链
+ * - 直接 inject(SPARK_REGISTRY_KEY) 获取注册表，不经过 useSparkComponent
+ * - 父子上下文传递完全依赖 Vue DI（业务组件的 useSparkComponent 自行 vueProvide）
+ * - 根节点 / 测试场景通过 parentContext prop 显式注入初始父上下文
+ *
+ * 上下文链对比：
+ *   旧：rootContext → rendererContext → businessContext  ← 多一层噪声
+ *   新：rootContext → businessContext                   ← 干净
  *
  * @example
  * ```vue
@@ -46,40 +51,44 @@
  * <SparkComponentRenderer :config="config" :parent-context="rootContext" />
  * ```
  */
-import { computed } from 'vue'
-import { useSparkComponent } from '../../composables/useSparkComponent.js'
-import type { ComponentConfig, ComponentContext } from '../../core/types.js'
+import { computed, inject, markRaw, provide as vueProvide } from 'vue'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../../core/types.js'
+import type { ComponentConfig, ComponentContext, ComponentRegistry } from '../../core/types.js'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  /**
-   * 组件配置（type + props + children）
-   */
+  /** 组件配置（type + props + children） */
   config: ComponentConfig
   /**
    * 显式父上下文（可选）
-   * 仅用于根节点 / 测试场景。递归子渲染器无需传递，由 Vue DI 自动注入。
+   * 仅用于根节点 / 测试场景：将其注入 DI 链，子业务组件 inject 时自动获取。
+   * 普通递归渲染无需传递，子组件继承已有的 DI 链。
    */
   parentContext?: ComponentContext
 }
 
 const props = defineProps<Props>()
 
-// ── SPARK 上下文 ───────────────────────────────────────────────────────────────
+// ── 根节点 / 测试场景：覆盖 DI 链的父上下文 ─────────────────────────────────
+// 业务组件的 useSparkComponent 会通过 inject(SPARK_PARENT_CONTEXT_KEY) 消费此值
+if (props.parentContext !== undefined) {
+  vueProvide(SPARK_PARENT_CONTEXT_KEY, props.parentContext)
+}
 
-const { getComponent, isComponentRegistered, logger } = useSparkComponent(
-  props.config,
-  props.parentContext ? { parentContext: props.parentContext } : undefined
-)
+// ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────
+const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
 
 // ── 组件解析 ──────────────────────────────────────────────────────────────────
 
 const resolvedComponent = computed(() => {
-  if (!isComponentRegistered(props.config.type)) {
-    logger.warn(`[SparkComponentRenderer] 未注册的组件类型: ${props.config.type}`)
+  if (!registry?.has(props.config.type)) {
+    if (import.meta.env.DEV) {
+      console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${props.config.type}`)
+    }
     return null
   }
-  return getComponent(props.config.type)
+  const def = registry.get(props.config.type)
+  return def?.component ? markRaw(def.component as object) : null
 })
 </script>

@@ -15,11 +15,14 @@
   <div class="json-renderer-example">
     <h3>📋 JSON 配置驱动渲染（标准化版本）</h3>
     
-    <!-- 基础用法：远程加载配置 -->
-    <JsonRenderer 
+    <!-- 基础用法：远程加载配置（ref 绑定用于暴露 reload/loadConfig） -->
+    <JsonRenderer
+      ref="rendererRef"
       configUrl="/user-grid-demo.json"
       :component="UserGrid"
-      show-config-viewer
+      :show-config-viewer="true"
+      :after-load="onAfterLoad"
+      :on-error="onLoadError"
     >
       <!-- 自定义加载状态 -->
       <template #loading>
@@ -59,12 +62,35 @@ import { ref } from 'vue'
 import { SparkPageRenderer as JsonRenderer } from '@spark-view/spark-component'
 import UserGrid from './UserGrid.vue'
 
-const rendererRef = ref<InstanceType<typeof JsonRenderer> | null>(null)
+/** SparkPageRenderer 对外暴露的方法接口（避免 InstanceType<> 导致类型栈溢出） */
+interface RendererInstance {
+  reload(): Promise<void>
+  loadConfig(): Promise<void>
+}
+
+/** 绑定渲染器实例，用于外部调用 reload / loadConfig */
+const rendererRef = ref<RendererInstance | null>(null)
 
 /**
- * 重新加载配置
+ * 配置加载完成钩子
+ * @param config - 远程加载的配置对象
  */
-function reloadConfig() {
+function onAfterLoad(config: Record<string, unknown>): void {
+  console.info('[JsonRendererExample] 配置加载完成', { type: config['type'], id: config['id'] })
+}
+
+/**
+ * 配置加载错误钩子
+ * @param error - 错误对象
+ */
+function onLoadError(error: Error): void {
+  console.error('[JsonRendererExample] 配置加载失败', error.message)
+}
+
+/**
+ * 重新加载配置（绑定到 #error 插槽的重试按钮）
+ */
+function reloadConfig(): void {
   rendererRef.value?.reload()
 }
 </script>

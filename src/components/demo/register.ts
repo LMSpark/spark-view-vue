@@ -1,11 +1,17 @@
 /**
  * 能力系统演示组件注册
+ *
+ * 使用 Spark.createRegister + import.meta.glob 批量注册：
+ * - Vite 自动感知所有 .vue 文件，支持代码分割（懒加载）
+ * - 通过 registerAll 建立 type → 文件路径映射
  */
 import { Spark } from '@spark-view/spark-component'
+import type { GlobModules } from '@spark-view/spark-component'
 
-// 直接使用动态导入函数注册（无需 glob，更简洁！）
-Spark.registerAll({
-  'user-grid': () => import('./UserGrid.vue'),
-  'user-row': () => import('./UserRow.vue'),
-  'user-field': () => import('./UserField.vue')
+const reg = Spark.createRegister(import.meta.glob('./*.vue') as GlobModules)
+
+reg.registerAll({
+  'user-grid': './UserGrid.vue',
+  'user-row': './UserRow.vue',
+  'user-field': './UserField.vue'
 })

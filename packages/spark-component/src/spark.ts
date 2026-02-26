@@ -11,7 +11,7 @@
  * @module spark
  */
 
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, markRaw } from 'vue'
 import type { CapabilityName } from '@spark-view/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
 import { createSparkPlugin } from './plugins/SparkPlugin.js'
@@ -19,12 +19,25 @@ import type { ComponentContext, ComponentRegistry } from './core/types.js'
 
 /* -------------------------------------------------------------------------- */
 
-type ComponentLoader = () => Promise<{ default: unknown }>
-type GlobModules = Record<string, ComponentLoader>
+/** 单个懒加载组件 loader 类型（与 import.meta.glob 配合使用） */
+export type ComponentLoader = () => Promise<{ default: unknown }>
 
-interface RegisterContext {
+/** Vite import.meta.glob 返回的模块映射类型 */
+export type GlobModules = Record<string, ComponentLoader>
+
+/** Spark.createRegister() 返回的注册器上下文 */
+export interface RegisterContext {
+  /** 注册单个组件（路径 → type 映射） */
   register(type: string, path: string, meta?: Record<string, unknown>): void
+  /** 批量注册（{ type: path } 映射表） */
   registerAll(components: Record<string, string>): void
+}
+
+/** Spark.createSystem() 返回的隔离测试系统 */
+export interface SparkSystem {
+  registry: ComponentRegistry
+  rootContext: ComponentContext
+  createContext(config: Partial<ComponentContext> & { type: string }, parent?: ComponentContext): ComponentContext
 }
 
 /* -------------------------------------------------------------------------- */
@@ -126,19 +139,20 @@ export const Spark = {
   },
 
   /**
-   * 创建隔离的测试系统
+   * 创建隔离的测试系统（用于单元测试，不影响全局注册表）
    *
-   * @returns { registry, rootContext, createContext }
+   * @returns SparkSystem — { registry, rootContext, createContext }
    */
-  createSystem() {
+  createSystem(): SparkSystem {
     const registry = createComponentRegistry()
+    let _testCounter = 0
 
     const rootContext: ComponentContext = {
       id: 'test-root',
       type: 'spark-test-root',
-      children: [],
+      children: markRaw([]),
       state: {},
-      capabilities: new Map<CapabilityName, unknown>()
+      capabilities: markRaw(new Map<CapabilityName, unknown>())
     }
 
     return {
@@ -146,19 +160,19 @@ export const Spark = {
       rootContext,
       createContext(config: Partial<ComponentContext> & { type: string }, parent?: ComponentContext): ComponentContext {
         const ctx: ComponentContext = {
-          id: config.id ?? `test-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+          id: config.id ?? `test-${++_testCounter}`,
           type: config.type,
           parent: parent ?? rootContext,
-          children: [],
+          children: markRaw([] as ComponentContext[]),
           props: config.props ?? {},
           state: {},
-          capabilities: new Map<CapabilityName, unknown>()
+          capabilities: markRaw(new Map<CapabilityName, unknown>())
         }
         const p = ctx.parent
         if (p && 'children' in p) {
           const parentCtx = p as ComponentContext
           if (parentCtx.children) parentCtx.children.push(ctx)
-          else parentCtx.children = [ctx]
+          else parentCtx.children = markRaw([ctx])
         }
         return ctx
       }

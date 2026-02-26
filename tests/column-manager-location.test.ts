@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { SparkEJ2Grid } from '../src/features/spark-ej2'
 import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
 import type { ComponentContext } from '@spark-view/spark-component'
@@ -77,7 +77,8 @@ describe('ColumnManager provider location', () => {
       }
     })
 
-    // Wait for component to mount and render
+    // Wait for async components to resolve (lazy-registered via defineAsyncComponent)
+    await flushPromises()
     await wrapper.vm.$nextTick()
 
     // Walk the rootContext tree to find column contexts

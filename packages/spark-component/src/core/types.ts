@@ -104,7 +104,7 @@ export interface ComponentRegistry {
   get(type: string): ComponentDefinition | undefined
   has(type: string): boolean
   unregister(type: string): boolean
-  getAll(): Map<string, ComponentDefinition>
+  getAll(): ReadonlyMap<string, ComponentDefinition>
 }
 
 // ============================================================================
