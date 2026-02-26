@@ -116,7 +116,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     capabilities: markRaw(new Map<CapabilityName, unknown>()),
     parent: parentContext,
     logger: undefined
-  } as ComponentContext)
+  } as unknown as ComponentContext)
 
   // 建立父子关系（父 children 是 markRaw 数组，无响应式开销）
   if (parentContext?.children) {

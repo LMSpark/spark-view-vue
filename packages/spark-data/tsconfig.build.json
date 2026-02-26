@@ -11,7 +11,9 @@
     "emitDeclarationOnly": true,
     "noEmitOnError": true,
     "removeComments": false,
-    "paths": {}
+    "paths": {
+      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["**/*.test.ts", "**/*.spec.ts", "dist", "node_modules"]
