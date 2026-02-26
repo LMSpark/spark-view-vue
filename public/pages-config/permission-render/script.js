@@ -7,117 +7,67 @@
 // - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
 
-// 模拟后端返回的数据（已包含权限字段）
-const mockBackendData = {
-  user1: {
-    _modelPerm: { canAdd: false },
-    data: [
-      {
-        id: 1,
-        name: '张***',
-        email: 'zhang@example.com',
-        department: '销售部',
-        _perm: { canEdit: false, canDelete: false, editableFields: [] }
-      },
-      {
-        id: 2,
-        name: '李***',
-        email: 'li@example.com',
-        department: '销售部',
-        _perm: { canEdit: true, canDelete: false, editableFields: ['email'] }
-      }
-    ]
-  },
-  manager: {
-    _modelPerm: { canAdd: true },
-    data: [
-      {
-        id: 1,
-        name: '张三',
-        email: 'zhang@example.com',
-        department: '销售部',
-        _perm: { canEdit: true, canDelete: false, editableFields: ['name', 'email'] }
-      },
-      {
-        id: 2,
-        name: '李四',
-        email: 'li@example.com',
-        department: '销售部',
-        _perm: { canEdit: true, canDelete: false, editableFields: ['name', 'email'] }
-      },
-      {
-        id: 3,
-        name: '王五',
-        email: 'wang@example.com',
-        department: '市场部',
-        _perm: { canEdit: true, canDelete: false, editableFields: ['name', 'email'] }
-      }
-    ]
-  },
-  admin: {
-    _modelPerm: { canAdd: true },
-    data: [
-      {
-        id: 1,
-        name: '张三',
-        email: 'zhang@example.com',
-        department: '销售部',
-        _perm: { canEdit: true, canDelete: true, editableFields: ['name', 'email', 'department'] }
-      },
-      {
-        id: 2,
-        name: '李四',
-        email: 'li@example.com',
-        department: '销售部',
-        _perm: { canEdit: true, canDelete: true, editableFields: ['name', 'email', 'department'] }
-      },
-      {
-        id: 3,
-        name: '王五',
-        email: 'wang@example.com',
-        department: '市场部',
-        _perm: { canEdit: true, canDelete: true, editableFields: ['name', 'email', 'department'] }
-      },
-      {
-        id: 4,
-        name: '赵六',
-        email: 'zhao@example.com',
-        department: '技术部',
-        _perm: { canEdit: true, canDelete: true, editableFields: ['name', 'email', 'department'] }
-      }
-    ]
-  }
-};
-
 /**
- * 切换用户
+ * 切换用户（on.change 会将新值作为第一个参数传入，直接使用最可靠）
  */
-function handleSwitchUser(userId) {
+function handleSwitchUser(newUserId) {
+  console.log('[handleSwitchUser] 收到参数:', newUserId, '类型:', typeof newUserId);
   const pageData = $data;
-  pageData.currentUser = userId;
-  pageData.tableData = [];
+  // change 事件参数是字符串时直接用；否则兜底读 pageData
+  const userId = (typeof newUserId === 'string' && newUserId)
+    || pageData.currentUser
+    || 'user1';
+  console.log('[handleSwitchUser] 最终 userId:', userId);
+  pageData.currentUser  = userId;
+  pageData.tableData    = [];
   pageData.responseData = null;
-  
-  ElMessage.info(`已切换到：${userId}`);
+
+  const users = {
+    user1: {
+      _modelPerm: { canAdd: false },
+      data: [
+        { id: 1, name: '张***', email: 'zhang@example.com', department: '销售部', _perm: { canEdit: false, canDelete: false, editableFields: [] } },
+        { id: 2, name: '李***', email: 'li@example.com',   department: '销售部', _perm: { canEdit: true,  canDelete: false, editableFields: ['email'] } }
+      ]
+    },
+    manager: {
+      _modelPerm: { canAdd: true },
+      data: [
+        { id: 1, name: '张三', email: 'zhang@example.com', department: '销售部', _perm: { canEdit: true, canDelete: false, editableFields: ['name','email'] } },
+        { id: 2, name: '李四', email: 'li@example.com',   department: '销售部', _perm: { canEdit: true, canDelete: false, editableFields: ['name','email'] } },
+        { id: 3, name: '王五', email: 'wang@example.com', department: '市场部', _perm: { canEdit: true, canDelete: false, editableFields: ['name','email'] } }
+      ]
+    },
+    admin: {
+      _modelPerm: { canAdd: true },
+      data: [
+        { id: 1, name: '张三', email: 'zhang@example.com', department: '销售部', _perm: { canEdit: true, canDelete: true, editableFields: ['name','email','department'] } },
+        { id: 2, name: '李四', email: 'li@example.com',   department: '销售部', _perm: { canEdit: true, canDelete: true, editableFields: ['name','email','department'] } },
+        { id: 3, name: '王五', email: 'wang@example.com', department: '市场部', _perm: { canEdit: true, canDelete: true, editableFields: ['name','email','department'] } },
+        { id: 4, name: '赵六', email: 'zhao@example.com', department: '技术部', _perm: { canEdit: true, canDelete: true, editableFields: ['name','email','department'] } }
+      ]
+    }
+  };
+
+  const response = users[userId];
+  console.log('[handleSwitchUser] 找到数据:', response ? `${response.data.length} 条` : '未找到');
+  if (!response) {
+    ElMessage.warning(`未知用户: ${userId}`);
+    return;
+  }
+  pageData.tableData    = response.data;
+  pageData.responseData = response;
+  ElMessage.success(`✅ 已切换到 ${userId}，可见 ${response.data.length} 条数据`);
 }
 
 /**
- * 加载数据（模拟后端返回）
+ * 加载数据按钮点击
  */
 function handleLoadData() {
-  const pageData = $data;
+  const pageData    = $data;
   const currentUser = pageData.currentUser || 'user1';
-  
-  // 模拟网络延迟
-  setTimeout(() => {
-    const response = mockBackendData[currentUser];
-    
-    pageData.tableData = response.data;
-    pageData.responseData = response;
-    
-    ElMessage.success(`✅ 加载成功！可见 ${response.data.length} 条数据`);
-    console.log('后端返回数据：', response);
-  }, 300);
+  console.log('[handleLoadData] currentUser:', currentUser);
+  handleSwitchUser(currentUser);
 }
 
 /**
@@ -136,46 +86,28 @@ function renderPermInfo(row) {
 }
 
 /**
- * 渲染操作按钮
+ * 渲染操作按钮（使用原生 button，避免 h('el-button') 字符串无法 resolveComponent）
  */
 function renderActions(row) {
-  const buttons = [];
-  
-  if (row._perm?.canEdit) {
-    buttons.push(
-      h('el-button', {
-        size: 'small',
-        type: 'primary',
-        onClick: () => handleEdit(row)
-      }, '编辑')
-    );
-  } else {
-    buttons.push(
-      h('el-button', {
-        size: 'small',
-        disabled: true
-      }, '编辑')
-    );
-  }
-  
-  if (row._perm?.canDelete) {
-    buttons.push(
-      h('el-button', {
-        size: 'small',
-        type: 'danger',
-        onClick: () => handleDelete(row)
-      }, '删除')
-    );
-  } else {
-    buttons.push(
-      h('el-button', {
-        size: 'small',
-        disabled: true
-      }, '删除')
-    );
-  }
-  
-  return h('div', buttons);
+  const canEdit   = row._perm?.canEdit   ?? false;
+  const canDelete = row._perm?.canDelete ?? false;
+
+  const btnStyle = (active, color) =>
+    `margin-right:6px;padding:3px 10px;border-radius:3px;font-size:12px;cursor:${active ? 'pointer' : 'not-allowed'};` +
+    `border:1px solid ${active ? color : '#dcdfe6'};background:${active ? color : '#f5f7fa'};color:${active ? '#fff' : '#c0c4cc'};`;
+
+  return h('div', [
+    h('button', {
+      style: btnStyle(canEdit, '#409eff'),
+      disabled: !canEdit,
+      onClick: canEdit ? () => handleEdit(row) : undefined
+    }, '编辑'),
+    h('button', {
+      style: btnStyle(canDelete, '#f56c6c'),
+      disabled: !canDelete,
+      onClick: canDelete ? () => handleDelete(row) : undefined
+    }, '删除')
+  ]);
 }
 
 /**
@@ -219,53 +151,67 @@ function handleDelete(row) {
 }
 
 /**
- * 自定义组件：渲染新增按钮
+ * 页面初始化 —— form-create mounted 后自动调用
+ */
+function __init__() {
+  handleLoadData();
+}
+
+/**
+ * 自定义组件：渲染新增按钮（使用原生元素，避免 h('el-*') 字符串不走 resolveComponent）
  */
 function RenderAddButton() {
   const pageData = $data;
   const canAdd = pageData.responseData?._modelPerm?.canAdd ?? false;
-  
-  return h('el-card', null, [
-    h('div', { style: 'margin-bottom: 10px' }, [
-      h('el-button', {
-        type: 'success',
-        disabled: !canAdd,
-        onClick: handleAdd
-      }, `新增（模型级权限：_modelPerm.canAdd = ${canAdd}）`)
-    ])
+
+  return h('div', { style: 'padding:14px 16px;background:#fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px;' }, [
+    h('button', {
+      style: `padding:7px 16px;border-radius:4px;font-size:14px;cursor:${canAdd ? 'pointer' : 'not-allowed'};` +
+             `border:1px solid ${canAdd ? '#67c23a' : '#dcdfe6'};background:${canAdd ? '#67c23a' : '#f5f7fa'};color:${canAdd ? '#fff' : '#c0c4cc'};`,
+      disabled: !canAdd,
+      onClick: canAdd ? handleAdd : undefined
+    }, `新增（模型级权限：_modelPerm.canAdd = ${canAdd}）`)
   ]);
 }
 
 /**
- * 自定义组件：渲染数据表格
+ * 自定义组件：渲染数据表格（使用原生 table，避免 h('el-table') 字符串不走 resolveComponent）
  */
 function RenderTable() {
-  const pageData = $data;
+  const pageData  = $data;
   const tableData = pageData.tableData || [];
-  
-  return h('el-card', { style: 'margin-top: 20px' }, [
-    h('el-table', {
-      data: tableData,
-      border: true
-    }, {
-      default: () => [
-        h('el-table-column', { prop: 'id', label: 'ID', width: 80 }),
-        h('el-table-column', { prop: 'name', label: '姓名', width: 120 }),
-        h('el-table-column', { prop: 'email', label: '邮箱', width: 200 }),
-        h('el-table-column', { prop: 'department', label: '部门', width: 120 }),
-        h('el-table-column', {
-          label: '权限信息',
-          width: 300
-        }, {
-          default: ({ row }) => renderPermInfo(row)
-        }),
-        h('el-table-column', {
-          label: '操作',
-          width: 200
-        }, {
-          default: ({ row }) => renderActions(row)
-        })
-      ]
-    })
+
+  const wrapStyle = 'margin-top:16px;background:#fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;';
+  const thStyle   = 'padding:11px 12px;text-align:left;font-weight:600;font-size:13px;color:#606266;background:#f5f7fa;border-bottom:1px solid #ebeef5;';
+  const tdStyle   = 'padding:10px 12px;font-size:13px;color:#606266;border-bottom:1px solid #ebeef5;vertical-align:middle;';
+
+  const cols = [
+    { prop: 'id',         label: 'ID',   width: '60px'  },
+    { prop: 'name',       label: '姓名', width: '100px' },
+    { prop: 'email',      label: '邮箱', width: '180px' },
+    { prop: 'department', label: '部门', width: '100px' },
+  ];
+
+  if (tableData.length === 0) {
+    return h('div', { style: wrapStyle + 'padding:24px;text-align:center;color:#909399;' }, '暂无数据，请点击「加载数据」');
+  }
+
+  return h('div', { style: wrapStyle }, [
+    h('table', { style: 'width:100%;border-collapse:collapse;' }, [
+      h('thead', [
+        h('tr', [
+          ...cols.map(c => h('th', { style: thStyle + `width:${c.width};` }, c.label)),
+          h('th', { style: thStyle }, '权限信息'),
+          h('th', { style: thStyle + 'width:160px;' }, '操作'),
+        ])
+      ]),
+      h('tbody', tableData.map((row, i) =>
+        h('tr', { style: i % 2 === 0 ? '' : 'background:#fafafa;' }, [
+          ...cols.map(c => h('td', { style: tdStyle }, String(row[c.prop] ?? ''))),
+          h('td', { style: tdStyle }, [renderPermInfo(row)]),
+          h('td', { style: tdStyle }, [renderActions(row)]),
+        ])
+      ))
+    ])
   ]);
 }

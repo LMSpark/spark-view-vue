@@ -1,7 +1,9 @@
 [
   {
     "type": "div",
-    "style": { "padding": "20px" },
+    "style": {
+      "padding": "20px"
+    },
     "children": [
       {
         "type": "el-alert",
@@ -11,37 +13,56 @@
           "closable": false,
           "description": "演示：切换不同用户，查看不同的数据和操作权限（_perm、_modelPerm）"
         },
-        "style": { "marginBottom": "20px" }
+        "style": {
+          "marginBottom": "20px"
+        }
       },
       {
         "type": "el-card",
-        "style": { "marginBottom": "20px" },
+        "style": {
+          "marginBottom": "20px"
+        },
         "children": [
           {
             "type": "h3",
-            "children": ["用户切换"]
+            "children": [
+              "用户切换"
+            ]
           },
           {
             "type": "el-radio-group",
-            "dataKey": "currentUser",
+            "field": "currentUser",
+            "value": "user1",
             "on": {
-              "update:modelValue": "handleSwitchUser"
+              "change": "handleSwitchUser"
             },
             "children": [
               {
                 "type": "el-radio",
-                "props": { "value": "user1" },
-                "children": ["员工（只看部分数据）"]
+                "props": {
+                  "value": "user1"
+                },
+                "children": [
+                  "员工（只看部分数据）"
+                ]
               },
               {
                 "type": "el-radio",
-                "props": { "value": "manager" },
-                "children": ["经理（看更多数据）"]
+                "props": {
+                  "value": "manager"
+                },
+                "children": [
+                  "经理（看更多数据）"
+                ]
               },
               {
                 "type": "el-radio",
-                "props": { "value": "admin" },
-                "children": ["管理员（完整权限）"]
+                "props": {
+                  "value": "admin"
+                },
+                "children": [
+                  "管理员（完整权限）"
+                ]
               }
             ]
           },
@@ -54,7 +75,9 @@
             "on": {
               "click": "handleLoadData"
             },
-            "children": ["加载数据"]
+            "children": [
+              "加载数据"
+            ]
           }
         ]
       },

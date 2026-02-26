@@ -225,8 +225,24 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
 
       // 如果有值，根据元素类型决定绑定方式
       if (resolved !== undefined && resolved !== null) {
-        // 表单元素：绑定到 props.modelValue（支持响应式）
-        if (newRule.type === 'el-input' || newRule.type === 'el-textarea') {
+        // 表单元素（持有 modelValue 的组件）：绑定到 props.modelValue
+        // 注意：el-radio-group / el-checkbox-group / el-select 等如果绑定到 children 会破坏子节点结构
+        const isFormElement =
+          typeof newRule.type === 'string' && (
+            newRule.type === 'el-input' ||
+            newRule.type === 'el-textarea' ||
+            newRule.type === 'el-input-number' ||
+            newRule.type === 'el-select' ||
+            newRule.type === 'el-radio-group' ||
+            newRule.type === 'el-checkbox-group' ||
+            newRule.type === 'el-switch' ||
+            newRule.type === 'el-slider' ||
+            newRule.type === 'el-rate' ||
+            newRule.type === 'el-date-picker' ||
+            newRule.type === 'el-time-picker' ||
+            newRule.type === 'el-color-picker'
+          )
+        if (isFormElement) {
           setRuleProp(newRule, 'modelValue', resolved)
         } else {
           // 普通元素：将值转换为字符串并设置为 children
