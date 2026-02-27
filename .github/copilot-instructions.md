@@ -296,13 +296,57 @@ const dataSet = SparkData.createDataSet({
   tables: { Users: { tableName: 'Users', columns: [], rows: [] } }
 })
 
-const treeManager = SparkData.createTreeManager({ idField: 'id', parentIdField: 'parentId' })
-const dataView = SparkData.createDataView({ tableName: 'Users', viewId: 'grid' })
-
 // DataKey 绑定解析（渲染层）
 const binding = SparkData.resolveDataKeyBinding('MyData@Users@rows', dataSet)
 if (binding?.kind === 'view') { /* binding.source: IDataSource */ }
 ```
+
+**树结构（CrudApi extends TreeApi）**
+```ts
+// DataTable 层：CRUD + 树端点全部平铺在同一个 api 对象（无需 wrapper）
+table.setApi({
+  list:         { url: '/api/users',              method: 'GET' },
+  create:       { url: '/api/users',              method: 'POST' },
+  // 树端点直接平铺（来自 TreeApi 继承）
+  children:     { url: '/api/tree/children',      method: 'GET' },
+  path:         { url: '/api/tree/path',          method: 'GET' },
+  subtree:      { url: '/api/tree/subtree',       method: 'GET' },
+  nestedSearch: { url: '/api/tree/nested/search', method: 'GET' },
+})
+
+// DataView 层：字段映射 + 视图模式（treeMode 存在 treeConfig 内）
+view.treeConfig = {
+  idField: 'id', parentIdField: 'parentId', textField: 'name',
+  treeMode: 'nested'   // 'flat'（默认）| 'nested'
+}
+// 或通过工厂方法创建时传入
+const treeView = SparkData.createDataView({
+  tableName: 'Users', viewId: 'tree',
+  treeConfig: { idField: 'id', parentIdField: 'parentId', treeMode: 'flat' }
+})
+
+// DataView 委托给 TreeManager 的 4 个树方法（懒初始化，自动使用 table.api 的树端点）
+await view.loadTreeChildren(null)           // 根节点
+await view.loadTreeChildren('node-1')       // 子节点
+await view.expandTreeToNode('node-123')     // 差量补齐路径
+await view.loadTreePath('node-123')         // 获取祖先链
+const results = await view.searchTreeNested('关键词')
+
+// 独立使用 TreeManager（不依赖 DataView）
+const treeManager = SparkData.createTreeManager(
+  { idField: 'id', parentIdField: 'parentId', textField: 'name', treeMode: 'nested' },
+  initialNodes  // 可选：初始节点写入缓存
+)
+// 本地内存操作（不需要 api）
+treeManager.getNode('id-1')
+treeManager.getRoots()
+treeManager.buildNestedTree()
+treeManager.searchNodes('关键词')
+```
+
+**TreeManager HTTP 方法 vs 本地方法**
+- `fetchChildren / fetchPath / expandToNode / fetchNestedSearch` — 需配置 `api`，调用远端并写缓存
+- `getNode / getChildren / getRoots / searchNodes / buildNestedTree / buildSubTree` — 纯内存操作，无需 `api`
 
 ### spark-utils（工具集）
 ```ts
