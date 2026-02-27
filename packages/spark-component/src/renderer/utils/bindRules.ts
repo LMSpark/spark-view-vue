@@ -322,7 +322,7 @@ function createFunctionCaller(
  *
  * 为表格的 currentChange 和 selectionChange 事件注入处理器，
  * 将 el-table UI 事件同步写入对应的 DataView。
- * 事件携带 source='ui' + originatorId，下游 useRuleBinding 仅跳过同一 bindingId 的回写，
+ * 事件携带 originatorId，下游 useRuleBinding 仅跳过同一 bindingId 的回写，
  * 其他同级 binding 实例仍正常进行 DataSet→UI 同步。
  *
  * DataSet → UI 方向由 useRuleBinding 经 bus 单独负责。
