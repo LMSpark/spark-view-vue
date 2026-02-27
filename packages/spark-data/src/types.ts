@@ -44,7 +44,19 @@ export interface EventContext {
    * 事件来源类型（必填，用于日志和调试）
    */
   source: EventSource
-  
+
+  /**
+   * 发起方实例标识（可选）
+   *
+   * 用于网状订阅场景：同一个 DataView 被多个 UI 实例（useRuleBinding）绑定时，
+   * DataSet→UI 同步应跳过"事件来自该实例"的那一方，但其余同级实例仍应更新。
+   *
+   * 约定：
+   * - UI 操作时由 createTableSyncHandlers 注入（值为 useRuleBinding 的 instanceId）
+   * - 程序操作（'program'/'auto'/'crud'）不设置此字段，所有订阅方均更新
+   */
+  originatorId?: string
+
   /**
    * 扩展元数据（可选）
    * - tableName: 表名

@@ -1,7 +1,7 @@
 import { Logger } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
-import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding, createEventContext } from '@spark-view/spark-data'
+import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding } from '@spark-view/spark-data'
 import type { ComponentRegistry } from '../../core/types.js'
 
 const pageLogger = Logger('PageRenderer')
@@ -199,9 +199,9 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
         // Element Plus el-table 需要 data 属性（响应式数组）
         setRuleProp(newRule, 'data', binding.source.rows)
       }
-      // 如果有 dataSet，注入同步事件
+      // 如果有 dataSet，注入同步事件；传入 bindingId 用于 originatorId 回路防护
       if (dataSet) {
-        injectTableEvents(newRule, dataSet)
+        injectTableEvents(newRule, dataSet, options.bindingId)
       }
     }
     
@@ -322,13 +322,15 @@ function createFunctionCaller(
  *
  * 为表格的 currentChange 和 selectionChange 事件注入处理器，
  * 将 el-table UI 事件同步写入对应的 DataView。
- * 事件携带 source='ui' 的 EventContext，下游 useRuleBinding 会跳过该事件的反向同步。
+ * 事件携带 source='ui' + originatorId，下游 useRuleBinding 仅跳过同一 bindingId 的回写，
+ * 其他同级 binding 实例仍正常进行 DataSet→UI 同步。
  *
  * DataSet → UI 方向由 useRuleBinding 经 bus 单独负责。
  */
 function injectTableEvents(
   rule: Rule,
-  dataSet: IDataSet
+  dataSet: IDataSet,
+  bindingId?: string
 ): void {
   const rawKey = rule['dataKey'] as string | undefined
   if (!rawKey) return
@@ -354,10 +356,8 @@ function injectTableEvents(
       (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
     }
 
-    const ctx = createEventContext('ui', { tableName, viewId })
-
     if (currentRow === null) {
-      view.setCurrentRow(null, ctx)
+      view.setCurrentRow(null, 'ui', { originatorId: bindingId })
       return
     }
 
@@ -371,7 +371,7 @@ function injectTableEvents(
       const pk = view.getPrimaryKeyValue(currentRow)
       if (pk !== undefined) cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === pk) ?? null
     }
-    if (cleanRow) view.setCurrentRow(cleanRow, ctx)
+    if (cleanRow) view.setCurrentRow(cleanRow, 'ui', { originatorId: bindingId })
   }
 
   // 注入 selectionChange 事件（多选变化）
@@ -384,6 +384,6 @@ function injectTableEvents(
     }
 
     const valid = Array.isArray(selection) ? selection : []
-    view.setSelectedRows(valid, createEventContext('ui', { tableName, viewId }))
+    view.setSelectedRows(valid, 'ui', bindingId)
   }
 }

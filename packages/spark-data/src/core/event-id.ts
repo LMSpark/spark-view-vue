@@ -54,6 +54,7 @@ export function createEventContext(
     tableName?: string
     viewId?: string
     componentId?: string
+    originatorId?: string
     meta?: Record<string, unknown>
   }
 ): EventContext {
@@ -68,6 +69,9 @@ export function createEventContext(
   }
 
   const ctx: EventContext = { eventId, source }
+  if (options?.originatorId !== undefined) {
+    ctx.originatorId = options.originatorId
+  }
   if (options?.meta !== undefined) {
     ctx.meta = options.meta
   }
