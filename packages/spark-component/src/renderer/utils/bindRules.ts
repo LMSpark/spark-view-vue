@@ -357,7 +357,7 @@ function injectTableEvents(
     }
 
     if (currentRow === null) {
-      view.setCurrentRow(null, 'ui', { originatorId: bindingId })
+      view.setCurrentRow(null, bindingId)
       return
     }
 
@@ -371,7 +371,7 @@ function injectTableEvents(
       const pk = view.getPrimaryKeyValue(currentRow)
       if (pk !== undefined) cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === pk) ?? null
     }
-    if (cleanRow) view.setCurrentRow(cleanRow, 'ui', { originatorId: bindingId })
+    if (cleanRow) view.setCurrentRow(cleanRow, bindingId)
   }
 
   // 注入 selectionChange 事件（多选变化）
@@ -384,6 +384,6 @@ function injectTableEvents(
     }
 
     const valid = Array.isArray(selection) ? selection : []
-    view.setSelectedRows(valid, 'ui', bindingId)
+    view.setSelectedRows(valid, bindingId)
   }
 }

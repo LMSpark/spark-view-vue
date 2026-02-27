@@ -657,19 +657,30 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /**
-   * @param source - 事件来源标签（默认 'program'）。
-   *   eventId 由内部独立生成，调用方只需说明"谁发起了这次操作"，
-   *   不能也不应控制事件的唯一标识。
-   * @param opts.originatorId - UI 实例标识（由 createTableSyncHandlers 注入）；
-   *   同一 DataView 的其余 binding 实例仍会收到事件并更新，只有 originatorId 匹配的
-   *   binding 实例跳过回写（避免重复 setCurrentRow → currentChange → setCurrentRow 循环）。
+   * 设置当前行。
+   *
+   * @param originatorId - 调用方实例 ID（可选）。
+   *   传入时跳过该实例的 DataSet→UI 回写，避免循环；
+   *   不传时所有订阅方均会收到更新。
    */
-  setCurrentRow(row: IDataRow | null, source?: EventSource, opts?: { originatorId?: string }): void {
-    this.selectionDelegate.setCurrentRow(row, source, opts)
+  setCurrentRow(row: IDataRow | null, originatorId?: string): void {
+    this.selectionDelegate.setCurrentRow(
+      row,
+      originatorId !== undefined ? 'ui' : 'program',
+      originatorId !== undefined ? { originatorId } : undefined,
+    )
   }
 
-  setSelectedRows(rows: IDataRow[], source?: EventSource, originatorId?: string): void {
-    this.selectionDelegate.setSelectedRows(rows, source, originatorId)
+  /**
+   * 设置多选行。
+   * @param originatorId - 调用方实例 ID（同 setCurrentRow，可选）。
+   */
+  setSelectedRows(rows: IDataRow[], originatorId?: string): void {
+    this.selectionDelegate.setSelectedRows(
+      rows,
+      originatorId !== undefined ? 'ui' : 'program',
+      originatorId,
+    )
   }
 
   setCurrentRowById(id: string | number, source?: EventSource): boolean {

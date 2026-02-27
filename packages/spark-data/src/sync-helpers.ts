@@ -65,7 +65,7 @@ export function createTableSyncHandlers(
       const view = table.getOrCreateView(viewId)
       
       if (row === null) {
-        view.setCurrentRow(null, 'ui', bindingId !== undefined ? { originatorId: bindingId } : undefined)
+        view.setCurrentRow(null, bindingId)
         logger.debug('清空 currentRow', { tableName, viewId })
         return
       }
@@ -111,7 +111,7 @@ export function createTableSyncHandlers(
       
       // 设置干净的行对象
       if (cleanRow) {
-        view.setCurrentRow(cleanRow, 'ui', bindingId !== undefined ? { originatorId: bindingId } : undefined)
+        view.setCurrentRow(cleanRow, bindingId)
       }
     },
 
@@ -121,7 +121,7 @@ export function createTableSyncHandlers(
         const view = table.getOrCreateView(viewId)
         // ✅ 修复：el-table selectionChange 事件可能传入非数组参数，做防御性检查
         const validRows = Array.isArray(rows) ? rows : []
-        view.setSelectedRows(validRows, 'ui', bindingId)
+        view.setSelectedRows(validRows, bindingId)
         logger.debug('同步 selectedRows', { tableName, viewId, count: validRows.length })
       } else {
         logger.warn('表不存在', { tableName })
