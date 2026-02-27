@@ -5,14 +5,14 @@
  */
 
 // 权限检查器
-export { PermissionChecker, createPermissionChecker, checkPermission, resetPermissionChecker } from './PermissionChecker'
+export { PermissionChecker, createPermissionChecker, checkPermission } from './PermissionChecker'
 
 // 权限过滤器
-export { PermissionFilter, createPermissionFilter, filterByPermission, resetPermissionFilter } from './PermissionFilter'
+export { PermissionFilter, createPermissionFilter, filterByPermission } from './PermissionFilter'
 
 // 字段渲染助手
 export {
-  FieldRenderHelper, createFieldRenderHelper, resetFieldRenderHelper,
+  FieldRenderHelper, createFieldRenderHelper,
   computeFieldState, computeFieldStates, filterVisibleFields
 } from './FieldRenderHelper'
 

@@ -27,6 +27,31 @@ export type EmitStateChangedFn = (
 export type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
 
 // ─────────────────────────────────────────────
+// 共享基础接口
+// ─────────────────────────────────────────────
+
+/** 视图标识（tableName + viewId） */
+export interface IViewIdentity {
+  readonly tableName: string
+  readonly viewId: string
+}
+
+/** 行存储 + 主键访问 */
+export interface IRowStore {
+  readonly rows: IDataRow[]
+  readonly primaryKey: string | string[]
+  getPrimaryKeyValue(row: IDataRow): string | number | undefined
+}
+
+/** 选中状态存储（主键形式） */
+export interface ISelectionState {
+  _currentRowId: string | number | null
+  _selectedRowIds: Array<string | number>
+  readonly currentRow: IDataRow | null
+  readonly selectedRows: IDataRow[]
+}
+
+// ─────────────────────────────────────────────
 // SelectionDelegate Host 接口
 // ─────────────────────────────────────────────
 
@@ -37,26 +62,10 @@ export type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
  * 选中状态以主键值存储，委托写入 _currentRowId / _selectedRowIds；
  * currentRow / selectedRows 是宿主 DataView 上的 getter（按需从 rows 解析），委托只读。
  */
-export interface ISelectionHost {
-  // ── 只读配置 ──────────────────────────────
-  readonly rows: IDataRow[]
-  readonly tableName: string
-  readonly viewId: string
-  readonly primaryKey: string | string[]
+export interface ISelectionHost extends IViewIdentity, IRowStore, ISelectionState {
   readonly autoCurrentFirst: boolean
   readonly autoSelectFirst: boolean
   readonly selectionFollowsCurrent: boolean
-
-  // ── 主键存储（委托直接写入）──────────────
-  _currentRowId: string | number | null
-  _selectedRowIds: Array<string | number>
-
-  // ── 派生只读（宿主 getter，委托只读）──────
-  readonly currentRow: IDataRow | null
-  readonly selectedRows: IDataRow[]
-
-  // ── 工具方法 ──────────────────────────────
-  getPrimaryKeyValue(row: IDataRow): string | number | undefined
   isDestroyed(): boolean
 }
 
@@ -70,31 +79,16 @@ export interface ISelectionHost {
  * 涵盖本地行数据写入所需的所有可变字段及辅助方法。
  * 选中状态以主键值存储，委托写入 _currentRowId / _selectedRowIds。
  */
-export interface ILocalMutationHost {
-  // ── 行数据（委托直接 splice） ───────────────
-  readonly rows: IDataRow[]
-  readonly tableName: string
-  readonly viewId: string
-  readonly primaryKey: string | string[]
-
+export interface ILocalMutationHost extends IViewIdentity, IRowStore, ISelectionState {
   // ── 分页（委托直接写入） ──────────────────
   total: number
   page: number
   pageSize: number
 
-  // ── 选中状态（主键存储）──────────────────
-  _currentRowId: string | number | null
-  _selectedRowIds: Array<string | number>
-
-  // ── 派生只读（宿主 getter，委托只读）──────
-  readonly currentRow: IDataRow | null
-  readonly selectedRows: IDataRow[]
-
   // ── 行索引缓存（updateRowById 行对象替换时原地更新）──
   rowIndexMap?: Map<IDataRow, number> | undefined
 
   // ── 工具方法 ──────────────────────────────
-  getPrimaryKeyValue(row: IDataRow): string | number | undefined
   isDestroyed(): boolean
 }
 
@@ -107,9 +101,7 @@ export interface ILocalMutationHost {
  *
  * DataView 实现此接口，CrudDelegate 仅通过此接口与宿主交互。
  */
-export interface ICrudHost {
-  readonly rows: IDataRow[]
-  readonly primaryKey: string | string[]
+export interface ICrudHost extends IRowStore {
   /** 表名（用于错误信息） */
   readonly tableName: string
   /** CrudService 实例（来自 DataTable，未配置 API 时为 undefined） */
@@ -119,8 +111,6 @@ export interface ICrudHost {
   /** 数据校验器 */
   readonly validator: DataValidator | undefined
 
-  /** 获取行的主键值（用于 Map/Set 键） */
-  getPrimaryKeyValue(row: IDataRow): string | number | undefined
   /** 追加一行到 rows */
   appendRow(row: IDataRow): void
   /** 按主键更新一行 */
@@ -140,9 +130,7 @@ export interface ICrudHost {
 /**
  * CascadeDelegate 所需的宿主能力
  */
-export interface ICascadeHost {
-  readonly tableName: string
-  readonly viewId: string
+export interface ICascadeHost extends IViewIdentity {
   /** DataSet（沿 parent 链向上访问） */
   readonly dataSet: IDataSet
   /** 只读，级联时检查状态 */

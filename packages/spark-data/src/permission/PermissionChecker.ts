@@ -146,22 +146,15 @@ export class PermissionChecker {
 
 // ===== 工厂函数 =====
 
-let instance: PermissionChecker | null = null
+/** 模块级单例（类无状态，无需 reset） */
+const _instance = new PermissionChecker()
 
 /**
- * 创建权限检查器实例
+ * 获取权限检查器实例（无状态单例）
  * @returns 权限检查器实例
  */
 export function createPermissionChecker(): PermissionChecker {
-  instance ??= new PermissionChecker()
-  return instance
-}
-
-/**
- * 重置权限检查器实例
- */
-export function resetPermissionChecker(): void {
-  instance = null
+  return _instance
 }
 
 // ===== 快捷方法 =====

@@ -98,22 +98,15 @@ export class PermissionFilter {
 
 // ===== 工厂函数 =====
 
-let instance: PermissionFilter | null = null
+/** 模块级单例（类无状态，无需 reset） */
+const _instance = new PermissionFilter()
 
 /**
- * 创建权限过滤器实例
+ * 获取权限过滤器实例（无状态单例）
  * @returns 权限过滤器实例
  */
 export function createPermissionFilter(): PermissionFilter {
-  instance ??= new PermissionFilter()
-  return instance
-}
-
-/**
- * 重置权限过滤器实例
- */
-export function resetPermissionFilter(): void {
-  instance = null
+  return _instance
 }
 
 // ===== 快捷方法 =====
