@@ -120,6 +120,18 @@ export class DataView implements IDataSource {
   set primaryKey(value: string | string[]) {
     this._primaryKeyOverride = value
   }
+
+  /**
+   * 清除显式覆盖，恢复从 DataTable 列定义自动推导主键。
+   *
+   * @example
+   * view.primaryKey = 'uuid'        // 显式覆盖
+   * view.resetPrimaryKey()          // 恢复列推导
+   * view.primaryKey                 // → 推导自 isPrimaryKey 列，或回退 'id'
+   */
+  resetPrimaryKey(): void {
+    this._primaryKeyOverride = undefined
+  }
   
   /** 主键生成器（可选，用于自动生成新记录的主键） */
   private primaryKeyGenerator?: PrimaryKeyGenerator | undefined
