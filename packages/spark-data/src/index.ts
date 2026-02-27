@@ -109,7 +109,3 @@ export type {
 export { isSameRow, getParentRows } from './core/utils'
 export { resolveUrlTemplate } from './core/url-template'
 export type { ResolvedUrl } from './core/url-template'
-
-// ===== Vue Composables =====
-// usePageDataSet 已迁移至 @spark-view/spark-component 渲染层（页面渲染职责）
-// 请从 '@spark-view/spark-component' 导入 usePageDataSet

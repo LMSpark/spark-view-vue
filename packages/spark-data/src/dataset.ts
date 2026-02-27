@@ -73,12 +73,13 @@ export class DataSet implements IDataSet {
       this.tables[name] = table
     }
 
-    // 关系默认 viewId
+    // 关系默认 viewId（Phase 3 M8: 浅拷贝避免 mutate 调用方原始对象）
     if (this.relations) {
-      for (const r of this.relations) {
-        r.parentViewId ??= 'default'
-        r.childViewId ??= 'default'
-      }
+      this.relations = this.relations.map(r => ({
+        ...r,
+        parentViewId: r.parentViewId ?? 'default',
+        childViewId: r.childViewId ?? 'default',
+      }))
     }
   }
 
