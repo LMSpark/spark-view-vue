@@ -43,11 +43,24 @@ export interface IRowStore {
   getPrimaryKeyValue(row: IDataRow): string | number | undefined
 }
 
-/** 选中状态存储（主键形式） */
+/**
+ * 选中状态存储（主键形式）
+ *
+ * 可变契约：委托（SelectionDelegate / LocalMutationDelegate）
+ * 通过此接口直接写入宿主的选中状态字段。
+ * 这是有意设计——性能优先（避免 setter 层开销）且
+ * 保持与 Vue reactive() 包装后的响应式追踪兼容。
+ *
+ * @internal 仅供 spark-data 内部委托使用，外部不应直接操作这些字段。
+ */
 export interface ISelectionState {
+  /** @internal 当前行主键值——委托可写 */
   _currentRowId: string | number | null
+  /** @internal 多选行主键值列表——委托通过 splice 维护（保持数组引用稳定） */
   _selectedRowIds: Array<string | number>
+  /** 只读 getter，按 _currentRowId 从 rows 解析行对象 */
   readonly currentRow: IDataRow | null
+  /** 只读 getter，按 _selectedRowIds 从 rows 过滤行对象数组 */
   readonly selectedRows: IDataRow[]
 }
 
@@ -77,7 +90,9 @@ export interface ISelectionHost extends IViewIdentity, IRowStore, ISelectionStat
  * LocalMutationDelegate 所需的宿主能力（ISP 最小子集）
  *
  * 涵盖本地行数据写入所需的所有可变字段及辅助方法。
- * 选中状态以主键值存储，委托写入 _currentRowId / _selectedRowIds。
+ * 选中状态以主键值存储，委托通过 ISelectionState 可变契约写入。
+ *
+ * @see ISelectionState 可变契约说明
  */
 export interface ILocalMutationHost extends IViewIdentity, IRowStore, ISelectionState {
   // ── 分页（委托直接写入） ──────────────────

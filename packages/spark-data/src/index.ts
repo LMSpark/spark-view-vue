@@ -1,6 +1,13 @@
 /**
  * @spark-view/spark-data
  * SPARK 数据空间 — 数据模型 + 权限系统
+ *
+ * L1: 按职责分组，支持子路径按需导入。
+ * 主入口保持全导出（向后兼容），高级消费者可使用：
+ *   - @spark-view/spark-data/permission
+ *   - @spark-view/spark-data/validation
+ *   - @spark-view/spark-data/data-key
+ *   - @spark-view/spark-data/utils
  */
 
 // ===== 命名空间 API =====
@@ -113,3 +120,9 @@ export type {
 export { isSameRow, getParentRows, buildPkSet, pruneInvalidSelections } from './core/utils'
 export { resolveUrlTemplate } from './core/url-template'
 export type { ResolvedUrl } from './core/url-template'
+
+// ===== 委托类型导出（S1: 高级消费者通过 view.selection / view.mutation / view.crud 访问） =====
+
+export { SelectionDelegate } from './strategies/selection-delegate'
+export { LocalMutationDelegate } from './strategies/local-mutation-delegate'
+export { CrudDelegate } from './strategies/crud-delegate'

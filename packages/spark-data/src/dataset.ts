@@ -9,6 +9,7 @@
 import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewStateEvent } from './types'
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
+import type { Request } from '@spark-view/spark-utils'
 import { DataTable } from './data-table'
 import { assertNoSeparator } from './core/utils'
 
@@ -47,6 +48,13 @@ export class DataSet implements IDataSet {
 
   /** 页面ID */
   pageId: string | undefined
+
+  /**
+   * M5: 共享 HTTP 客户端——所有 DataTable 的 CrudService 复用同一 Request 实例。
+   * 由外部通过 `setSharedHttpClient(client)` 注入。未设置时各 CrudService 各自 createRequest()。
+   * @internal
+   */
+  _sharedHttpClient?: Request | undefined
 
   // ===== 动态视图订阅追踪 =====
 
@@ -111,6 +119,20 @@ export class DataSet implements IDataSet {
         childViewId: r.childViewId ?? 'default',
       }))
     }
+  }
+
+  // ===== HTTP 客户端共享 =====
+
+  /**
+   * 注入共享 HTTP 客户端（M5）——所有 DataTable 的 CrudService 将复用该实例。
+   *
+   * 调用时机：DataSet 构建完成后、首次数据请求之前。
+   * 已创建的 CrudService 实例不受影响（它们保留初始化时的 Request）。
+   *
+   * @param client  Request 实例（通常由应用层 auth 模块创建，带统一拦截器）
+   */
+  setSharedHttpClient(client: Request): void {
+    this._sharedHttpClient = client
   }
 
   // ===== 数据集级别事件订阅（页面脚本便捷 API） =====

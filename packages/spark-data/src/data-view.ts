@@ -359,6 +359,32 @@ export class DataView implements IDataSource {
     return this._localMutationDelegate
   }
   
+  // ── 公共委托访问器（S1: 高级消费者可直接访问委托实例）────────
+
+  /**
+   * 选中状态委托（只读访问）。
+   *
+   * 高级场景可直接调用 `view.selection.addSelectedRows(...)` 等方法，
+   * DataView 上的同名方法是简化的委托透传入口。
+   */
+  get selection(): SelectionDelegate { return this.selectionDelegate }
+
+  /**
+   * 本地内存变更委托（只读访问）。
+   *
+   * 高级场景可直接调用 `view.mutation.appendRow(...)` 等方法，
+   * DataView 上的同名方法是简化的委托透传入口。
+   */
+  get mutation(): LocalMutationDelegate { return this.localMutationDelegate }
+
+  /**
+   * 网络 CRUD 委托（只读访问）。
+   *
+   * 高级场景可直接调用 `view.crud.createRecord(...)` 等方法，
+   * DataView 上的同名方法是简化的委托透传入口。
+   */
+  get crud(): CrudDelegate { return this.crudDelegate }
+
   // ── 公共内部对象 ─────────────────────────
 
   /**

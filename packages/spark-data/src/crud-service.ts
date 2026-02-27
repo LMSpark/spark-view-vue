@@ -44,13 +44,20 @@ export class CrudService {
   /**
    * 创建CRUD服务实例
    * @param api CRUD API配置
-   * @param httpConfig HTTP客户端配置
+   * @param httpConfigOrClient 可选：HTTP 客户端配置对象 **或** 已有 Request 实例（共享 auth/拦截器）
    */
   constructor(
     private api: CrudApi,
-    httpConfig?: Partial<RequestConfig>
+    httpConfigOrClient?: Partial<RequestConfig> | Request
   ) {
-    this.http = httpConfig ? createRequest(httpConfig) : createRequest()
+    if (httpConfigOrClient && typeof (httpConfigOrClient as Request).get === 'function') {
+      // M5: 传入现有 Request 实例，跳过 createRequest（共享 auth/拦截器）
+      this.http = httpConfigOrClient as Request
+    } else {
+      this.http = httpConfigOrClient
+        ? createRequest(httpConfigOrClient as Partial<RequestConfig>)
+        : createRequest()
+    }
   }
 
   /**
@@ -453,13 +460,17 @@ export class CrudService {
   }
 
   /**
-   * 执行批量操作（带并发控制）
+   * 执行批量操作（真滑动窗口并发控制）
+   *
+   * 与固定批次 Promise.all 不同，此实现在任意一个请求完成后**立即**
+   * 启动队列中的下一个，始终保持 concurrency 个在途请求，吞吐量更高。
+   *
    * @param endpoint HTTP端点配置
    * @param items 数据项数组
    * @param config 请求配置
    * @param concurrency 最大并发数（默认5）
    * @param onProgress 进度回调 (completed, total) => void
-   * @returns 批量操作结果数组
+   * @returns 批量操作结果数组（顺序与 items 一致）
    */
   private async executeBatch<T>(
     endpoint: HttpEndpoint,
@@ -469,36 +480,34 @@ export class CrudService {
     onProgress?: (completed: number, total: number) => void
   ): Promise<CrudResult<T>[]> {
     const results: CrudResult<T>[] = new Array(items.length).fill(null) as CrudResult<T>[]
-    let index = 0
+    let nextIndex = 0
     let completed = 0
 
-    const executeOne = async (i: number, item: T): Promise<void> => {
-      try {
-        const result = await this.executeEndpoint<T>(endpoint, item, config)
-        results[i] = { success: true, data: result }
-      } catch (error) {
-        this.logger.error(`批量操作项 ${i} 失败`, error)
-        results[i] = this.errorResult('Batch item failed', error as Error)
-      } finally {
-        completed++
-        onProgress?.(completed, items.length)
+    const executeNext = async (): Promise<void> => {
+      while (nextIndex < items.length) {
+        const i = nextIndex++
+        const item = items[i]
+        if (item === undefined) continue
+
+        try {
+          const result = await this.executeEndpoint<T>(endpoint, item, config)
+          results[i] = { success: true, data: result }
+        } catch (error) {
+          this.logger.error(`批量操作项 ${i} 失败`, error)
+          results[i] = this.errorResult('Batch item failed', error as Error)
+        } finally {
+          completed++
+          onProgress?.(completed, items.length)
+        }
       }
     }
 
-    // 使用 Promise.all 的并发池控制（避免 floating promise 警告）
-    const tasks: Promise<void>[] = []
-    while (index < items.length) {
-      const item = items[index]
-      if (item !== undefined) {
-        tasks.push(executeOne(index, item))
-      }
-      index++
-      
-      // 当达到并发数或所有项都已启动时，等待当前批次完成
-      if (tasks.length >= concurrency || index >= items.length) {
-        await Promise.all(tasks.splice(0, tasks.length))
-      }
-    }
+    // 启动 min(concurrency, items.length) 个 worker，每个 worker 完成后立即取下一项
+    const workers = Array.from(
+      { length: Math.min(concurrency, items.length) },
+      () => executeNext()
+    )
+    await Promise.all(workers)
 
     return results
   }
@@ -607,12 +616,12 @@ export class CrudService {
 /**
  * 创建CRUD服务工厂函数
  * @param api CRUD API配置
- * @param httpConfig HTTP客户端配置
+ * @param httpConfigOrClient HTTP 客户端配置 **或** 已有 Request 实例（共享 auth/拦截器）
  * @returns CrudService实例
  */
 export function createCrudService(
   api: CrudApi,
-  httpConfig?: Partial<RequestConfig>
+  httpConfigOrClient?: Partial<RequestConfig> | Request
 ): CrudService {
-  return new CrudService(api, httpConfig)
+  return new CrudService(api, httpConfigOrClient)
 }

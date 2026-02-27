@@ -70,7 +70,9 @@ export class DataTable {
    */
   get crudService(): CrudService | undefined {
     if (!this._crudService && this.api) {
-      this._crudService = createCrudService(this.api)
+      // M5: 若 DataSet 提供共享 httpClient，所有表的 CrudService 复用同一 Request 实例
+      const sharedClient = this.dataSet?._sharedHttpClient
+      this._crudService = createCrudService(this.api, sharedClient)
     }
     return this._crudService
   }
