@@ -12,14 +12,13 @@
  *   - buildRowIndexMap : O(n) 构建 row→index 映射（加速 updateRowById 行对象替换）
  */
 
-import type { IDataRow, EventContext } from '../types'
+import type { IDataRow } from '../types'
 import type { EmitStateChangedFn, ILocalMutationHost } from './types'
 
 export class LocalMutationDelegate {
   constructor(
     private readonly host: ILocalMutationHost,
     private readonly emitStateChanged: EmitStateChangedFn,
-    private readonly mkCtx: () => EventContext,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -88,10 +87,10 @@ export class LocalMutationDelegate {
 
     // 主键未变，_currentRowId / _selectedRowIds 仍有效；只需通知 UI 重新从 getter 获取最新对象
     if (h._currentRowId === id) {
-      this.emitStateChanged('currentRow', { row: h.currentRow, context: this.mkCtx() })
+      this.emitStateChanged('currentRow', { row: h.currentRow })
     }
     if (h._selectedRowIds.includes(id)) {
-      this.emitStateChanged('selectedRows', { rows: h.selectedRows, context: this.mkCtx() })
+      this.emitStateChanged('selectedRows', { rows: h.selectedRows })
     }
 
     this.emitStateChanged('rows')
@@ -112,14 +111,14 @@ export class LocalMutationDelegate {
 
     if (h._currentRowId === id) {
       h._currentRowId = null
-      this.emitStateChanged('currentRow', { row: null, context: this.mkCtx() })
+      this.emitStateChanged('currentRow', { row: null })
     }
 
     if (h._selectedRowIds.length > 0) {
       const newIds = h._selectedRowIds.filter(sid => sid !== id)
       if (newIds.length !== h._selectedRowIds.length) {
         h._selectedRowIds.splice(0, h._selectedRowIds.length, ...newIds)
-        this.emitStateChanged('selectedRows', { rows: h.selectedRows, context: this.mkCtx() })
+        this.emitStateChanged('selectedRows', { rows: h.selectedRows })
       }
     }
 
@@ -142,14 +141,14 @@ export class LocalMutationDelegate {
 
     if (h._currentRowId !== null && !newPkSet.has(h._currentRowId)) {
       h._currentRowId = null
-      this.emitStateChanged('currentRow', { row: null, context: this.mkCtx() })
+      this.emitStateChanged('currentRow', { row: null })
     }
 
     if (h._selectedRowIds.length > 0) {
       const validIds = h._selectedRowIds.filter(id => newPkSet.has(id))
       if (validIds.length !== h._selectedRowIds.length) {
         h._selectedRowIds.splice(0, h._selectedRowIds.length, ...validIds)
-        this.emitStateChanged('selectedRows', { rows: h.selectedRows, context: this.mkCtx() })
+        this.emitStateChanged('selectedRows', { rows: h.selectedRows })
       }
     }
 

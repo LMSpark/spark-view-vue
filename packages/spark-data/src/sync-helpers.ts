@@ -51,7 +51,7 @@ export function createTableSyncHandlers(
   /**
    * 当前 useRuleBinding 实例的唯一标识。
    *
-   * 注入后，setCurrentRow/setSelectedRows 会将其写入 EventContext.originatorId，
+   * 注入后，setCurrentRow/setSelectedRows 会将其写入 ViewStateEvent.originatorId，
    * useRuleBinding 的 onAnyViewChange 过滤逻辑可据此只跳过本实例的回写，
    * 同一 DataView 上的其他 binding 实例仍会收到通知并执行 DataSet→UI 同步。
    */

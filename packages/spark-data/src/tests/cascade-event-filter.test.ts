@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { SparkData, RequestState, createEventContext } from '@spark-view/spark-data'
+import { SparkData, RequestState } from '@spark-view/spark-data'
 import type { ViewStateEvent, IDataRow } from '@spark-view/spark-data'
 
 // ─── 通用测试 DataSet 工厂 ─────────────────────────────────────
@@ -77,7 +77,6 @@ describe('cascade event filter — no spurious child requests', () => {
       viewId: 'default',
       changeType: 'selectedRows',
       rows: [pView.rows[0]!, pView.rows[1]!],
-      context: createEventContext('ui', { tableName: 'Orders', viewId: 'default' })
     }
     pView.events.emit('stateChanged', evt)
     await new Promise(r => setTimeout(r, 30))
@@ -95,7 +94,7 @@ describe('cascade event filter — no spurious child requests', () => {
 
     // 父已加载，selectedRows 设为第一行
     setParentLoaded(pView, [{ id: 1 }, { id: 2 }])
-    pView.selectedRows.splice(0, pView.selectedRows.length, pView.rows[0]!)
+    pView._selectedRowIds.splice(0, pView._selectedRowIds.length, pView.getPrimaryKeyValue(pView.rows[0]!) as string | number)
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {
       cView.requestState = RequestState.Loaded
@@ -108,7 +107,6 @@ describe('cascade event filter — no spurious child requests', () => {
       viewId: 'default',
       changeType: 'currentRow',
       row: pView.rows[1]!,
-      context: createEventContext('ui', { tableName: 'Orders', viewId: 'default' })
     }
     pView.events.emit('stateChanged', evt)
     await new Promise(r => setTimeout(r, 30))
@@ -132,12 +130,10 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[0]!,
-      context: createEventContext('ui', { tableName: 'Orders', viewId: 'default' })
+      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[0]!
     })
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'selectedRows', rows: [pView.rows[0]!],
-      context: createEventContext('ui', { tableName: 'Orders', viewId: 'default' })
+      tableName: 'Orders', viewId: 'default', changeType: 'selectedRows', rows: [pView.rows[0]!]
     })
     await new Promise(r => setTimeout(r, 30))
 
@@ -162,8 +158,7 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.currentRow,
-      context: createEventContext('ui', { tableName: 'Orders', viewId: 'default' })
+      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.currentRow
     })
     await new Promise(r => setTimeout(r, 30))
 
@@ -186,8 +181,7 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'rows', rows: pView.rows,
-      context: createEventContext('program', { tableName: 'Orders', viewId: 'default' })
+      tableName: 'Orders', viewId: 'default', changeType: 'rows', rows: pView.rows
     })
     await new Promise(r => setTimeout(r, 50))
 
@@ -210,8 +204,7 @@ describe('cascade event filter — no spurious child requests', () => {
     setParentLoaded(pView, [{ id: 1 }])
     // rows 事件 → 子应清空（parentRows 为空，因为 currentRow=null）
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'rows', rows: pView.rows,
-      context: createEventContext('program', { tableName: 'Orders', viewId: 'default' })
+      tableName: 'Orders', viewId: 'default', changeType: 'rows', rows: pView.rows
     })
     await new Promise(r => setTimeout(r, 30))
 
@@ -257,15 +250,13 @@ describe('cascade reload — parent changes during child loading triggers immedi
 
     // 启动第一次加载（dep=currentRow, currentRow=id=1）
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[0]!,
-      context: createEventContext('ui', { tableName: 'Orders', viewId: 'default' })
+      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[0]!
     })
 
     // 此时子处于 Preparing（requestData 同步设置的），切换父 currentRow
     pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[1]!) ?? null
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[1]!,
-      context: createEventContext('ui', { tableName: 'Orders', viewId: 'default' })
+      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[1]!
     })
 
     // 等待所有微任务完成

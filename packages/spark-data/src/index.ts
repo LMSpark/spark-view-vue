@@ -46,12 +46,8 @@ export type {
   DataColumn,
   DataRelation,
   ViewStateEvent,
-  EventSource,
-  EventContext,
   DependencyType
 } from './types'
-
-export { generateEventId, generateViewEventId, generateComponentEventId, createEventContext } from './core/event-id'
 
 // ===== 主键生成器 =====
 
