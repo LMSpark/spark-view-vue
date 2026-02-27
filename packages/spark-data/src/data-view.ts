@@ -105,6 +105,20 @@ export class DataView implements IDataSource {
   /** 多选行主键值列表。通过 selectedRows getter 取对应行对象数组 */
   _selectedRowIds: Array<string | number> = []
 
+  // ── 选中值序列化配置（多选下拉 / DataGrid 通用）────
+
+  /**
+   * 标签显示字段名（用于 selectedLabels / currentLabel getter，渲染多选 tag 时使用）。
+   * 未指定时回退到主键值字符串。
+   * 示例：labelField = 'name' → selectedLabels 返回各选中行的 name 字段值。
+   */
+  labelField?: string
+  /**
+   * 多选值序列化分隔符（默认 ','）。
+   * 用于 selectedValue getter（行对象 → 字符串）和 setSelectedValue（字符串 → 行对象）两端互转。
+   */
+  selectionDelimiter: string = ','
+
   /** 当前行（getter：从 rows 中按主键查找；rows 刷新后自动指向新对象） */
   get currentRow(): IDataRow | null {
     if (this._currentRowId === null) return null
@@ -119,6 +133,72 @@ export class DataView implements IDataSource {
       const pk = this.getPrimaryKeyValue(r)
       return pk !== undefined && idSet.has(pk)
     })
+  }
+
+  // ── 选中值序列化层（下拉多选 / DataGrid 通用）────
+
+  /**
+   * 多选已选主键序列化字符串（供表单字段 v-model 或 API 传值使用）。
+   *
+   * - 格式：各主键值以 {@link selectionDelimiter} 连接，如 `"1,2,3"` 或 `"a|b|c"`
+   * - 未选中任何行时返回空字符串 `""`
+   *
+   * 搭配 {@link setSelectedValue} 使用，构成完整的序列化/反序列化回路。
+   * 搭配 {@link selectedLabels} 使用，完成 tag 渲染。
+   */
+  get selectedValue(): string {
+    return this._selectedRowIds.join(this.selectionDelimiter)
+  }
+
+  /**
+   * 当前行主键值（供单选表单字段 v-model 使用）。
+   * 语义化别名，与 `_currentRowId` 等价。
+   */
+  get currentValue(): string | number | null {
+    return this._currentRowId
+  }
+
+  /**
+   * 多选已选行的显示标签数组（供渲染 tag 使用）。
+   *
+   * - 有 {@link labelField} 配置时：取各选中行的 `labelField` 字段值
+   * - 无 {@link labelField} 配置时：回退到主键值字符串
+   * - 行找不到（options 尚未加载）时：回退到主键值字符串
+   *
+   * @example
+   * view.labelField = 'name'
+   * view.selectedLabels // → ["Alice", "Bob"]
+   */
+  get selectedLabels(): string[] {
+    if (!this.labelField) {
+      return this._selectedRowIds.map(id => String(id))
+    }
+    const field = this.labelField
+    const rowMap = new Map(
+      this.rows.map(r => [this.getPrimaryKeyValue(r), r])
+    )
+    return this._selectedRowIds.map(id => {
+      const row = rowMap.get(id)
+      if (!row) return String(id)
+      const v = row[field]
+      return v !== undefined && v !== null ? String(v) : String(id)
+    })
+  }
+
+  /**
+   * 当前行的显示标签（供渲染单选 tag 或面包屑使用）。
+   *
+   * - 有 {@link labelField} 配置时：取 currentRow[labelField]
+   * - 无 {@link labelField} 配置时：回退到主键值字符串
+   * - 无当前行时：返回 null
+   */
+  get currentLabel(): string | null {
+    if (this._currentRowId === null) return null
+    if (!this.labelField) return String(this._currentRowId)
+    const row = this.currentRow
+    if (!row) return String(this._currentRowId)
+    const v = row[this.labelField]
+    return v !== undefined && v !== null ? String(v) : String(this._currentRowId)
   }
 
   // ── 分页 ────────────────────────────────────
@@ -694,6 +774,36 @@ export class DataView implements IDataSource {
     return this.selectionDelegate.setSelectedRowsById(ids, options)
   }
 
+  /**
+   * 通过序列化字符串设置多选（与 {@link selectedValue} getter 构成序列化回路）。
+   *
+   * - 自动按 {@link selectionDelimiter} 分割，每段尝试解析为数字，失败则保留字符串
+   * - 空字符串 / null / undefined → 清空多选
+   * - 解析完成后调用 `setSelectedRowsById`，若 rows 尚未加载则仅写入 `_selectedRowIds`，
+   *   待 rows 加载后 selectedRows / selectedLabels getter 自动反映新数据
+   *
+   * @param value - 以 {@link selectionDelimiter} 连接的主键字符串，如 `"1,2,3"`
+   *
+   * @example
+   * view.setSelectedValue("1,2,3")   // → selectedRows = [row1, row2, row3]
+   * view.setSelectedValue(null)      // → selectedRows = []
+   */
+  setSelectedValue(value: string | null | undefined): void {
+    if (!value) {
+      this.selectionDelegate.clearSelectedRows()
+      return
+    }
+    const ids: Array<string | number> = value
+      .split(this.selectionDelimiter)
+      .map(s => s.trim())
+      .filter(s => s !== '')
+      .map(s => {
+        const n = Number(s)
+        return Number.isFinite(n) ? n : s
+      })
+    this.selectionDelegate.setSelectedRowsById(ids)
+  }
+
   clearSelectedRows(): void {
     this.selectionDelegate.clearSelectedRows()
   }
@@ -925,6 +1035,8 @@ export class DataView implements IDataSource {
     if (this.autoSelectFirst !== true) result.autoSelectFirst = this.autoSelectFirst
     if (this.selectionFollowsCurrent !== true) result.selectionFollowsCurrent = this.selectionFollowsCurrent
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
+    if (this.labelField !== undefined) result.labelField = this.labelField
+    if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter
     return result
   }
 
@@ -938,6 +1050,8 @@ export class DataView implements IDataSource {
     if (data.autoSelectFirst !== undefined) v.autoSelectFirst = data.autoSelectFirst
     if (data.selectionFollowsCurrent !== undefined) v.selectionFollowsCurrent = data.selectionFollowsCurrent
     if (data.treeConfig !== undefined) v.treeConfig = data.treeConfig
+    if (data.labelField !== undefined) v.labelField = data.labelField
+    if (data.selectionDelimiter !== undefined) v.selectionDelimiter = data.selectionDelimiter
     v.page = data.page ?? 1
     v.pageSize = data.pageSize ?? 20
     return v

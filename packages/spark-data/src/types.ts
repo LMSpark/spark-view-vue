@@ -183,6 +183,18 @@ export interface IViewMetadata {
   pageSize?: number
   /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode），属于视图层关注点 */
   treeConfig?: TreeConfig
+  /**
+   * 标签显示字段名（用于 selectedLabels / currentLabel getter，渲染多选 tag 时使用）。
+   * 未指定时回退到主键值字符串。
+   * 示例：labelField = 'name' → selectedLabels 返回各选中行的 name 字段值。
+   */
+  labelField?: string
+  /**
+   * 多选值序列化分隔符（默认 ','）。
+   * 用于 selectedValue getter（行对象 → 字符串）和 setSelectedValue（字符串 → 行对象）两端互转。
+   * 当主键值本身包含逗号时可改用其他分隔符，如 '|' 或 ';'。
+   */
+  selectionDelimiter?: string
 }
 
 /** 数据表元数据 */
