@@ -78,6 +78,21 @@ export class LocalMutationDelegate {
     const oldRow = h.rows[idx]
     if (!oldRow) return false
 
+    // L3: 拦截主键变更——data 中不允许修改主键字段值，否则选中状态指针悬空
+    const pkFields = typeof h.primaryKey === 'string' ? [h.primaryKey] : h.primaryKey
+    for (const field of pkFields) {
+      if (Object.prototype.hasOwnProperty.call(data, field)) {
+        const newVal = data[field]
+        const oldVal = oldRow[field]
+        if (newVal !== oldVal) {
+          throw new Error(
+            `updateRowById: 不允许修改主键字段 "${field}"（旧值=${String(oldVal)}, 新值=${String(newVal)}）。` +
+            `如需更换主键，请先 deleteRowById 旧行再 appendRow 新行。`
+          )
+        }
+      }
+    }
+
     const newRow = { ...oldRow, ...data }
     h.rows[idx] = newRow
     // 行对象已替换：在 Map 中原地更新 O(1)，避免 updateRowById 时全量重建

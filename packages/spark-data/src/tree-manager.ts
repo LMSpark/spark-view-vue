@@ -15,7 +15,7 @@ import type {
 } from './types'
 import { resolveUrlTemplate } from './core/url-template'
 
-import { Logger, createRequest } from '@spark-view/spark-utils'
+import { Logger, createRequest, type Request } from '@spark-view/spark-utils'
 
 /**
  * 树管理器类
@@ -33,8 +33,8 @@ export class TreeManager {
   /** 树 HTTP 接口族配置（来自 DataTable.treeApi，可选） */
   private api?: TreeApi
 
-  /** HTTP 客户端（懒初始化） */
-  private _http?: ReturnType<typeof createRequest>
+  /** HTTP 客户端（优先使用外部注入的实例，共享拦截器/认证/配置；否则懒初始化独立实例） */
+  private _http?: Request
 
   /** 日志记录器 */
   private logger = Logger()
@@ -47,7 +47,7 @@ export class TreeManager {
    * @param initialNodes 初始节点
    * @param dataView 关联的数据视图
    */
-  constructor(config: TreeConfig, api?: TreeApi, initialNodes?: FlatTreeNode[]) {
+  constructor(config: TreeConfig, api?: TreeApi, initialNodes?: FlatTreeNode[], httpClient?: Request) {
     this.config = {
       idField: 'id',
       parentIdField: 'parentId',
@@ -56,6 +56,7 @@ export class TreeManager {
       ...config
     }
     if (api) this.api = api
+    if (httpClient) this._http = httpClient
     if (initialNodes) {
       this.addNodesToCache(initialNodes)
     }
@@ -63,7 +64,7 @@ export class TreeManager {
 
   // ===== HTTP 辅助 =====
 
-  private _getHttp(): ReturnType<typeof createRequest> {
+  private _getHttp(): Request {
     this._http ??= createRequest()
     return this._http
   }
