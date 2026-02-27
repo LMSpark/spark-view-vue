@@ -27,12 +27,10 @@ import type {
   ViewStateEvent, QueryParams,
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
-  EventSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
   TreeConfig,
 } from './types'
 import { RequestState } from './types'
-import { createEventContext } from './core/event-id'
 import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
@@ -181,14 +179,6 @@ export class DataView implements IDataSource {
 
   // ── 私有 ─────────────────────────────────────
 
-  /**
-   * 创建本视图的 'program' 来源事件上下文（私有快捷方式，减少重复代码）
-   * 每次调用生成新的 eventId，确保唯一性。
-   */
-  private _mkCtx(): import('./types').EventContext {
-    return createEventContext('program', { tableName: this.tableName, viewId: this.viewId })
-  }
-
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
   /** 并发 CRUD 请求计数器（支持多操作同时在途） */
@@ -247,7 +237,6 @@ export class DataView implements IDataSource {
     this._localMutationDelegate ??= new LocalMutationDelegate(
       this,
       (changeType, extra) => this.emitStateChanged(changeType, extra),
-      () => this._mkCtx(),
     )
     return this._localMutationDelegate
   }
@@ -682,7 +671,6 @@ export class DataView implements IDataSource {
   setCurrentRow(row: IDataRow | null, originatorId?: string): void {
     this.selectionDelegate.setCurrentRow(
       row,
-      originatorId !== undefined ? 'ui' : 'program',
       originatorId !== undefined ? { originatorId } : undefined,
     )
   }
@@ -692,47 +680,41 @@ export class DataView implements IDataSource {
    * @param originatorId - 调用方实例 ID（同 setCurrentRow，可选）。
    */
   setSelectedRows(rows: IDataRow[], originatorId?: string): void {
-    this.selectionDelegate.setSelectedRows(
-      rows,
-      originatorId !== undefined ? 'ui' : 'program',
-      originatorId,
-    )
+    this.selectionDelegate.setSelectedRows(rows, originatorId)
   }
 
-  setCurrentRowById(id: string | number, source?: EventSource): boolean {
-    return this.selectionDelegate.setCurrentRowById(id, source)
+  setCurrentRowById(id: string | number): boolean {
+    return this.selectionDelegate.setCurrentRowById(id)
   }
 
   setSelectedRowsById(
     ids: Array<string | number>,
-    source?: EventSource,
     options?: { strict?: boolean }
   ): number {
-    return this.selectionDelegate.setSelectedRowsById(ids, source, options)
+    return this.selectionDelegate.setSelectedRowsById(ids, options)
   }
 
-  clearSelectedRows(source?: EventSource): void {
-    this.selectionDelegate.clearSelectedRows(source)
+  clearSelectedRows(): void {
+    this.selectionDelegate.clearSelectedRows()
   }
 
-  addSelectedRows(rows: IDataRow[], source?: EventSource): number {
-    return this.selectionDelegate.addSelectedRows(rows, source)
+  addSelectedRows(rows: IDataRow[]): number {
+    return this.selectionDelegate.addSelectedRows(rows)
   }
 
-  removeSelectedRows(rows: IDataRow[], source?: EventSource): number {
-    return this.selectionDelegate.removeSelectedRows(rows, source)
+  removeSelectedRows(rows: IDataRow[]): number {
+    return this.selectionDelegate.removeSelectedRows(rows)
   }
 
   addSelectedRowsById(
     ids: Array<string | number>,
-    source?: EventSource,
     options?: { strict?: boolean }
   ): number {
-    return this.selectionDelegate.addSelectedRowsById(ids, source, options)
+    return this.selectionDelegate.addSelectedRowsById(ids, options)
   }
 
-  removeSelectedRowsById(ids: Array<string | number>, source?: EventSource): number {
-    return this.selectionDelegate.removeSelectedRowsById(ids, source)
+  removeSelectedRowsById(ids: Array<string | number>): number {
+    return this.selectionDelegate.removeSelectedRowsById(ids)
   }
 
   // ─────────────────────────────────────────────
@@ -810,12 +792,9 @@ export class DataView implements IDataSource {
    * - rows：防抖 16ms（合并批量更新，减少重绘）；只有同类事件才取消前一次防抖，
    *   立即事件（currentRow 等）不会意外取消正在等待的 rows 通知。
    * - 其余事件：立即触发（cleared / requestState / mutating / currentRow / selectedRows）。
-   * - extra 先展开，再用具名字段覆盖，防止 extra.context 等字段覆盖计算值。
    */
   private emitStateChanged(changeType: ViewStateEvent['changeType'], extra?: Partial<ViewStateEvent>): void {
-    const context = extra?.context ?? this._mkCtx()
-    // extra spreads first; explicit fields always win
-    const event: ViewStateEvent = { ...extra, tableName: this.tableName, viewId: this.viewId, changeType, context }
+    const event: ViewStateEvent = { ...extra, tableName: this.tableName, viewId: this.viewId, changeType }
 
     if (changeType === 'rows') {
       // Only rows uses debounce; cancel only a previous rows debounce (not immediate events)

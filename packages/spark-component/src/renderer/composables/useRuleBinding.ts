@@ -161,7 +161,7 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       // source='ui' 表示事件源自 UI 操作，无需反向同步回 UI（防止死循环）
       cleanupSync = dataSet.value.onAnyViewChange((evt) => {
         // 跳过由本实例自身发起的事件（无论 source 类型），避免 UI→DataSet→UI 回环
-        if (evt.context.originatorId === instanceId) return
+        if (evt.originatorId === instanceId) return
         if (evt.changeType === 'currentRow') {
           syncCurrentRowToTable(evt.tableName, evt.viewId, evt.row ?? null, formApi.value)
         } else if (evt.changeType === 'selectedRows') {

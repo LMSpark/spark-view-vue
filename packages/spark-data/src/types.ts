@@ -9,41 +9,13 @@ import type { DataView as SparkDataView } from './data-view'
 
 // ===== 视图状态事件 =====
 
-/**
- * 事件来源标识（用于日志和调试）
- * - 'ui': UI 组件触发（用户交互，如点击行）
- * - 'program': 程序代码直接调用（如 __init__ 中设置）
- * - 'sync': DataSet→UI 同步触发（由 useRuleBinding 发起）
- * - 'cascade': 级联更新触发（父视图变化导致子视图更新）
- * - 'auto': 自动触发（如 loadFromServer 后的 autoCurrentFirst）
- * - 'crud': CRUD 操作触发（增删改后的状态更新）
- */
-export type EventSource = 'ui' | 'program' | 'sync' | 'cascade' | 'auto' | 'crud'
-
-/**
- * 事件上下文（用于循环检测）
- * 
- * 每个事件拥有唯一的 ID，在调用链中透传。
- * 当检测到同一个 eventId 再次出现时，说明形成了循环，应立即退出。
- */
-export interface EventContext {
-  /**
-   * 事件唯一标识符
-   * - 由事件发起者生成（如 UI 事件处理器）
-   * - 沿着调用链透传（DataSet → UI → DataSet）
-   * - 用于检测循环：如果同一个 ID 再次出现，说明循环了
-   * 
-   * 推荐格式：
-   * - 全局唯一：递增数字（如 generateEventId()）
-   * - 视图级别：`${tableName}@${viewId}:${counter}`
-   * - 组件级别：`${componentId}:${counter}`
-   */
-  eventId: number | string
-  
-  /**
-   * 事件来源类型（必填，用于日志和调试）
-   */
-  source: EventSource
+/** 视图状态变化事件 */
+export interface ViewStateEvent {
+  tableName: string
+  viewId: string
+  changeType: 'currentRow' | 'selectedRows' | 'cleared' | 'rows' | 'requestState' | 'mutating'
+  row?: IDataRow | null
+  rows?: IDataRow[]
 
   /**
    * 发起方实例标识（可选）
@@ -53,45 +25,9 @@ export interface EventContext {
    *
    * 约定：
    * - UI 操作时由 createTableSyncHandlers 注入（值为 useRuleBinding 的 instanceId）
-   * - 程序操作（'program'/'auto'/'crud'）不设置此字段，所有订阅方均更新
+   * - 程序操作不设置此字段，所有订阅方均更新
    */
   originatorId?: string
-
-  /**
-   * 扩展元数据（可选）
-   * - tableName: 表名
-   * - viewId: 视图ID
-   * - componentId: 组件实例ID
-   * - timestamp: 时间戳
-   */
-  meta?: Record<string, unknown>
-}
-
-/** 视图状态变化事件 */
-export interface ViewStateEvent {
-  tableName: string
-  viewId: string
-  changeType: 'currentRow' | 'selectedRows' | 'cleared' | 'rows' | 'requestState' | 'mutating'
-  row?: IDataRow | null
-  rows?: IDataRow[]
-  
-  /**
-   * 事件上下文（必填，用于循环检测和调试）
-   * 
-   * 工作原理：
-   * 1. 事件发起者（如 UI 事件处理器）创建新的 EventContext
-   * 2. 调用 DataSet API 时传入 context
-   * 3. DataSet 发射事件时透传 context
-   * 4. 订阅者检查是否已处理过此 eventId
-   * 5. 如果已处理，说明形成循环，立即退出
-   * 
-   * 优势：
-   * - 精确检测循环（基于唯一 ID）
-   * - 无时序依赖
-   * - 支持多实例
-   * - 易于追踪和调试
-   */
-  context: EventContext
 }
 
 // ===== 权限类型 =====
