@@ -256,7 +256,8 @@ export class PrimaryKeyGenerator {
         return this.snowflakeGenerator.nextId()
       
       case 'timestamp':
-        return Date.now()
+        // Phase 3 S4: 附加自增后缀防止同毫秒碰撞（batch 场景）
+        return Date.now() * 10000 + (this.autoIncrementCounter++)
       
       case 'custom':
         if (!this.config.generator) {

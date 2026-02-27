@@ -554,7 +554,7 @@ export class DataView implements IDataSource {
 
     // 按各关系的 filterExpression 组装查询参数（复用 resolvedParents，无需二次 getView/getParentRows）
     const params: QueryParams = {}
-    for (const { rel, rows: parentRows } of resolvedParents) {
+    for (const { rel, pView, rows: parentRows } of resolvedParents) {
       if (!parentRows.length) continue
       const expr = rel.filterExpression
       if (!expr) continue
@@ -564,8 +564,8 @@ export class DataView implements IDataSource {
       if (typeof pf === 'string') {
         parentKey = pf
       } else {
-        const first = parentRows[0]
-        parentKey = first ? (first['id'] !== undefined ? 'id' : Object.keys(first)[0]) : 'id'
+        // 回退到父视图的 primaryKey 配置（Phase 3 S1: 消除硬编码 'id'）
+        parentKey = typeof pView.primaryKey === 'string' ? pView.primaryKey : pView.primaryKey[0]
       }
 
       const values = parentRows.map(r => r[parentKey as string] ?? Object.values(r)[0])
@@ -793,14 +793,21 @@ export class DataView implements IDataSource {
       this.selectionDelegate.clearSelectedRows()
       return
     }
-    const ids: Array<string | number> = value
+    // Phase 3 S3: 按 primaryKey 实际存储类型决定转换策略，避免 string PK 被误转为 number
+    const rawTokens = value
       .split(this.selectionDelimiter)
       .map(s => s.trim())
       .filter(s => s !== '')
-      .map(s => {
-        const n = Number(s)
-        return Number.isFinite(n) ? n : s
-      })
+
+    // 采样 rows 中首行的 PK 值类型；rows 为空时保持字符串（后续 getter 惰性匹配）
+    const samplePkType = this.rows.length > 0
+      ? typeof this.getPrimaryKeyValue(this.rows[0])
+      : 'string'
+
+    const ids: Array<string | number> = samplePkType === 'number'
+      ? rawTokens.map(s => { const n = Number(s); return Number.isFinite(n) ? n : s })
+      : rawTokens
+
     this.selectionDelegate.setSelectedRowsById(ids)
   }
 
