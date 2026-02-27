@@ -160,8 +160,8 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       // 订阅此 DataSet 内所有视图的状态变化，驱动 el-table UI 同步（DataSet → UI 方向）
       // source='ui' 表示事件源自 UI 操作，无需反向同步回 UI（防止死循环）
       cleanupSync = dataSet.value.onAnyViewChange((evt) => {
-        // 只跳过本实例自身触发的 UI 事件（originatorId 精确匹配），兄弟实例仍正常同步
-        if (evt.context.source === 'ui' && evt.context.originatorId === instanceId) return
+        // 跳过由本实例自身发起的事件（无论 source 类型），避免 UI→DataSet→UI 回环
+        if (evt.context.originatorId === instanceId) return
         if (evt.changeType === 'currentRow') {
           syncCurrentRowToTable(evt.tableName, evt.viewId, evt.row ?? null, formApi.value)
         } else if (evt.changeType === 'selectedRows') {
