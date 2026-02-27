@@ -53,10 +53,6 @@ export type {
 
 export { generateEventId, generateViewEventId, generateComponentEventId, createEventContext } from './core/event-id'
 
-// ===== 事件总线 =====
-export { bus } from './event-bus'
-export type { ViewCurrentRowPayload, ViewSelectedRowsPayload } from './event-bus'
-
 // ===== 主键生成器 =====
 
 export { 
