@@ -390,15 +390,16 @@ export class DataView implements IDataSource {
   /** ICascadeHost：向上访问 DataSet，供 CascadeDelegate 解析父子关系 */
   get dataSet() {
     this.checkDestroyed()
+    this.checkDataTableAttached()
     return this.dataTable.dataSet
   }
 
   /** ICrudHost：CrudService 实例（DataTable 持有并缓存；未配置 API 时为 undefined） */
-  get crudService(): CrudService | undefined { this.checkDestroyed(); return this.dataTable.crudService }
+  get crudService(): CrudService | undefined { this.checkDestroyed(); this.checkDataTableAttached(); return this.dataTable.crudService }
   /** ICrudHost：CRUD 操作全局配置（超时、重试等） */
-  get crudConfig(): CrudOperationConfig | undefined { this.checkDestroyed(); return this.dataTable.crudConfig }
+  get crudConfig(): CrudOperationConfig | undefined { this.checkDestroyed(); this.checkDataTableAttached(); return this.dataTable.crudConfig }
   /** ICrudHost：数据校验器 */
-  get validator(): DataValidator | undefined { this.checkDestroyed(); return this.dataTable.validator }
+  get validator(): DataValidator | undefined { this.checkDestroyed(); this.checkDataTableAttached(); return this.dataTable.validator }
 
   // ─────────────────────────────────────────────
   // 主键辅助方法
@@ -911,11 +912,13 @@ export class DataView implements IDataSource {
   // 树操作（委托给 TreeManager）
   // ─────────────────────────────────────────────
 
-  /** 懒初始化 TreeManager（传入 treeConfig 字段映射 + DataTable.treeApi 接口族） */
+  /** 懒初始化 TreeManager（传入 treeConfig 字段映射 + DataTable 的 api 和 HTTP 客户端） */
   private _ensureTreeManager(): TreeManager {
     if (!this.treeManager) {
       const cfg = this.treeConfig ?? {}
-      this.treeManager = new TreeManager(cfg, this.dataTable?.api)
+      // S3: 将 CrudService 的 HTTP 客户端传递给 TreeManager，共享拦截器/认证/配置
+      const httpClient = this.dataTable?.crudService?.getHttpClient()
+      this.treeManager = new TreeManager(cfg, this.dataTable?.api, undefined, httpClient)
     }
     return this.treeManager
   }
@@ -1042,6 +1045,23 @@ export class DataView implements IDataSource {
   private checkDestroyed(): void {
     if (this._isDestroyed) {
       throw new Error(`DataView ${this.tableName}:${this.viewId} has been destroyed`)
+    }
+  }
+
+  /**
+   * 检查 DataTable 是否已绑定，未绑定则抛出描述性异常。
+   *
+   * 独立创建的 DataView（如 SparkData.createDataView / DataView.fromData）
+   * 未经过 DataTable 绑定流程，调用依赖 DataTable 的操作时会在此处捕获。
+   *
+   * @private 内部守卫，由依赖 dataTable 的 getter 调用
+   */
+  private checkDataTableAttached(): void {
+    if (!this.dataTable) {
+      throw new Error(
+        `DataView ${this.tableName}:${this.viewId} is not attached to a DataTable. ` +
+        `Use DataTable.getOrCreateView() or DataSet.fromConfig() instead of standalone DataView construction.`
+      )
     }
   }
 

@@ -53,6 +53,15 @@ export class CrudService {
     this.http = httpConfig ? createRequest(httpConfig) : createRequest()
   }
 
+  /**
+   * 获取内部 HTTP 客户端实例（供 TreeManager 等模块共享拦截器/认证/配置）
+   *
+   * @returns Request 实例
+   */
+  getHttpClient(): Request {
+    return this.http
+  }
+
   // ===== 基础CRUD操作 =====
 
   /**
