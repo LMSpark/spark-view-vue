@@ -17,6 +17,22 @@
         ".": {
             "import": "./dist/index.js",
             "types": "./dist/types/index.d.ts"
+        },
+        "./permission": {
+            "import": "./dist/entry-permission.js",
+            "types": "./dist/types/entry-permission.d.ts"
+        },
+        "./validation": {
+            "import": "./dist/entry-validation.js",
+            "types": "./dist/types/entry-validation.d.ts"
+        },
+        "./data-key": {
+            "import": "./dist/entry-data-key.js",
+            "types": "./dist/types/entry-data-key.d.ts"
+        },
+        "./utils": {
+            "import": "./dist/entry-utils.js",
+            "types": "./dist/types/entry-utils.d.ts"
         }
     },
     "scripts": {
