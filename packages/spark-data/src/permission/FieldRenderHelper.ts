@@ -88,22 +88,15 @@ export class FieldRenderHelper implements IFieldRenderHelper {
 
 // ===== 工厂函数 =====
 
-let instance: IFieldRenderHelper | null = null
+/** 模块级单例（类无状态，无需 reset） */
+const _instance: IFieldRenderHelper = new FieldRenderHelper()
 
 /**
- * 创建字段渲染助手实例
+ * 获取字段渲染助手实例（无状态单例）
  * @returns 字段渲染助手实例
  */
 export function createFieldRenderHelper(): IFieldRenderHelper {
-  instance ??= new FieldRenderHelper()
-  return instance
-}
-
-/**
- * 重置字段渲染助手实例
- */
-export function resetFieldRenderHelper(): void {
-  instance = null
+  return _instance
 }
 
 // ===== 快捷函数 =====

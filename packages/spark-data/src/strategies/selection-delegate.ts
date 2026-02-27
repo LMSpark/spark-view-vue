@@ -16,6 +16,7 @@
 import { Logger } from '@spark-view/spark-utils'
 import type { IDataRow } from '../types'
 import type { ISelectionHost, EmitStateChangedFn } from './types'
+import { buildPkSet, pruneInvalidSelections } from '../core/utils'
 
 const logger = Logger('DataView:Selection')
 
@@ -399,29 +400,16 @@ export class SelectionDelegate {
    */
   cleanupInvalidSelections(): boolean {
     const host = this.host
-    let cleaned = false
+    const rowPkSet = buildPkSet(host.rows, r => host.getPrimaryKeyValue(r))
+    const { currentRowPruned, selectedRowsPruned } = pruneInvalidSelections(host, rowPkSet)
 
-    const rowPkSet = new Set<string | number>()
-    for (const r of host.rows) {
-      const pk = host.getPrimaryKeyValue(r)
-      if (pk !== undefined) rowPkSet.add(pk)
-    }
-
-    if (host._currentRowId !== null && !rowPkSet.has(host._currentRowId)) {
-      host._currentRowId = null
+    if (currentRowPruned) {
       this.emitStateChanged('currentRow', { row: null })
-      cleaned = true
+    }
+    if (selectedRowsPruned) {
+      this.emitStateChanged('selectedRows', { rows: host.selectedRows })
     }
 
-    if (host._selectedRowIds.length > 0) {
-      const validIds = host._selectedRowIds.filter(id => rowPkSet.has(id))
-      if (validIds.length !== host._selectedRowIds.length) {
-        host._selectedRowIds.splice(0, host._selectedRowIds.length, ...validIds)
-        this.emitStateChanged('selectedRows', { rows: host.selectedRows })
-        cleaned = true
-      }
-    }
-
-    return cleaned
+    return currentRowPruned || selectedRowsPruned
   }
 }

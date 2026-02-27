@@ -20,7 +20,10 @@ export { RequestState } from './types'
 export { CrudService, createCrudService } from './crud-service'
 export { createCrudLifecycleEvent } from './strategies/types'
 export type { CrudResult, QueryParams, BatchResult, CrudOperationConfig } from './types'
-export type { CrudOperation, CrudLifecycleEvent } from './strategies/types'
+export type {
+  IViewIdentity, IRowStore, ISelectionState,
+  CrudOperation, CrudLifecycleEvent
+} from './strategies/types'
 
 // ===== 数据类型定义 =====
 
@@ -80,9 +83,9 @@ export {
 // ===== 权限系统 =====
 
 export {
-  PermissionChecker, createPermissionChecker, checkPermission, resetPermissionChecker,
-  PermissionFilter, createPermissionFilter, filterByPermission, resetPermissionFilter,
-  FieldRenderHelper, createFieldRenderHelper, resetFieldRenderHelper,
+  PermissionChecker, createPermissionChecker, checkPermission,
+  PermissionFilter, createPermissionFilter, filterByPermission,
+  FieldRenderHelper, createFieldRenderHelper,
   computeFieldState, computeFieldStates, filterVisibleFields
 } from './permission/index'
 
@@ -106,6 +109,6 @@ export type {
 
 // ===== 工具函数 =====
 
-export { isSameRow, getParentRows } from './core/utils'
+export { isSameRow, getParentRows, buildPkSet, pruneInvalidSelections } from './core/utils'
 export { resolveUrlTemplate } from './core/url-template'
 export type { ResolvedUrl } from './core/url-template'

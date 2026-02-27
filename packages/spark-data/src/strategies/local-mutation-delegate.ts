@@ -14,6 +14,7 @@
 
 import type { IDataRow } from '../types'
 import type { EmitStateChangedFn, ILocalMutationHost } from './types'
+import { buildPkSet, pruneInvalidSelections } from '../core/utils'
 
 export class LocalMutationDelegate {
   constructor(
@@ -127,25 +128,9 @@ export class LocalMutationDelegate {
     h.rows.splice(0, h.rows.length, ...rows)
     h.rowIndexMap = undefined  // 行集合已替换，缓存失效
 
-    // 构建新行主键集合，清理已失效的选中状态
-    const newPkSet = new Set<string | number>()
-    for (const r of rows) {
-      const pk = h.getPrimaryKeyValue(r)
-      if (pk !== undefined) newPkSet.add(pk)
-    }
-
-    // Phase 4 M5: 内部状态静默更新，仅发射 rows 事件（防抖 16ms）。
-    // 订阅方从 rows 回调中重新读取 currentRow/selectedRows getter 获取最新值。
-    if (h._currentRowId !== null && !newPkSet.has(h._currentRowId)) {
-      h._currentRowId = null
-    }
-
-    if (h._selectedRowIds.length > 0) {
-      const validIds = h._selectedRowIds.filter(id => newPkSet.has(id))
-      if (validIds.length !== h._selectedRowIds.length) {
-        h._selectedRowIds.splice(0, h._selectedRowIds.length, ...validIds)
-      }
-    }
+    // Phase 5 M4: 委托 pruneInvalidSelections 清理已失效的选中状态（纯状态修改，不发事件）
+    const validPks = buildPkSet(rows, r => h.getPrimaryKeyValue(r))
+    pruneInvalidSelections(h, validPks)
 
     this.emitStateChanged('rows')
   }
