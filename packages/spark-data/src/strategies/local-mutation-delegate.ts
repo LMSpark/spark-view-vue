@@ -9,8 +9,7 @@
  *   - replaceRows      : 整批替换行，清理无效选中引用
  *
  * 私有辅助：
- *   - buildRowIndexMap : O(n) 构建 row→index 映射（加速 selectedRowIndices 计算）
- *   - mapRowsToIndices : 将行数组映射为索引数组
+ *   - buildRowIndexMap : O(n) 构建 row→index 映射（加速 updateRowById 行对象替换）
  */
 
 import type { IDataRow, EventContext } from '../types'

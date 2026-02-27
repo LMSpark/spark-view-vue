@@ -113,13 +113,6 @@ export class DataView implements IDataSource {
     return this.rows.find(r => this.getPrimaryKeyValue(r) === this._currentRowId) ?? null
   }
 
-  /** 当前行在 rows 中的下标（getter：-1 时返回 null） */
-  get currentRowIndex(): number | null {
-    if (this._currentRowId === null) return null
-    const idx = this.rows.findIndex(r => this.getPrimaryKeyValue(r) === this._currentRowId)
-    return idx === -1 ? null : idx
-  }
-
   /** 多选行数组（getter：从 rows 中按主键集合过滤；rows 刷新后自动指向新对象） */
   get selectedRows(): IDataRow[] {
     if (this._selectedRowIds.length === 0) return []
@@ -128,20 +121,6 @@ export class DataView implements IDataSource {
       const pk = this.getPrimaryKeyValue(r)
       return pk !== undefined && idSet.has(pk)
     })
-  }
-
-  /** 多选行下标数组（getter：从 rows 中按主键集合计算） */
-  get selectedRowIndices(): number[] {
-    if (this._selectedRowIds.length === 0) return []
-    const idSet = new Set(this._selectedRowIds)
-    const result: number[] = []
-    for (let i = 0; i < this.rows.length; i++) {
-      const row = this.rows[i]
-      if (!row) continue
-      const pk = this.getPrimaryKeyValue(row)
-      if (pk !== undefined && idSet.has(pk)) result.push(i)
-    }
-    return result
   }
 
   // ── 分页 ────────────────────────────────────
