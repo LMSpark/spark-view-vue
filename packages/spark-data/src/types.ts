@@ -197,8 +197,13 @@ export interface IViewMetadata {
   selectionDelimiter?: string
 }
 
-/** 数据表元数据 */
-export interface ITableMetadata extends IViewMetadata {
+/**
+ * 数据表自有元数据（不含视图层字段）
+ *
+ * 表级关注点：表名、列定义、API 端点、命名视图集合、加载状态。
+ * 视图层关注点（rows / filter / sort / page / treeConfig 等）由 IViewMetadata 描述。
+ */
+export interface ITableOwnMetadata {
   tableName: string
   columns: DataColumn[]
   api: CrudApi | undefined
@@ -207,11 +212,26 @@ export interface ITableMetadata extends IViewMetadata {
   error: string | undefined
 }
 
+/**
+ * 数据表完整元数据
+ *
+ * 组合方式：表自有字段 + 默认视图字段（扁平化）。
+ * 序列化时 default 视图的 rows / filter / sort 等直接挂在表级，
+ * 保持 JSON 配置（pagedata.json）的向后兼容。
+ */
+export type ITableMetadata = ITableOwnMetadata & IViewMetadata
+
 /** 数据集元数据 */
 export interface IDataSetMetadata {
+  /**
+   * Schema 格式版本（用于未来迁移兼容）。
+   * 缺失时视为 1（当前格式：default 视图字段扁平化到 ITableMetadata）。
+   */
+  schemaVersion?: number
   dataSetName: string
   tables: Record<string, ITableMetadata>
   relations: DataRelation[] | undefined
+  /** 业务数据版本号（乐观锁），与 schemaVersion 含义不同 */
   version: number | undefined
   pageId: string | undefined
 }
@@ -420,7 +440,9 @@ export interface IDataSet {
   readonly tables: Record<string, DataTable>
   /** 数据关系定义 */
   readonly relations: DataRelation[] | undefined
-  /** 版本号 */
+  /** Schema 格式版本（默认 1） */
+  readonly schemaVersion: number
+  /** 业务数据版本号（乐观锁） */
   readonly version: number | undefined
   /** 页面ID */
   readonly pageId: string | undefined

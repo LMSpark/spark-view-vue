@@ -32,6 +32,7 @@ export type {
   IDataSource,
   IInstancePermission,
   IModelPermission,
+  ITableOwnMetadata,
   ITableMetadata,
   IDataSet,
   IDataSetMetadata,
