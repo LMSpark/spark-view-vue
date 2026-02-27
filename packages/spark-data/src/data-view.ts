@@ -100,12 +100,49 @@ export class DataView implements IDataSource {
   /** 主键生成器（可选，用于自动生成新记录的主键） */
   private primaryKeyGenerator?: PrimaryKeyGenerator | undefined
 
-  // ── 选中状态 ────────────────────────────────
+  // ── 选中状态（主键存储，getter 按需解析）────
 
-  currentRow: IDataRow | null = null
-  currentRowIndex: number | null = null
-  selectedRows: IDataRow[] = []
-  selectedRowIndices: number[] = []
+  /** 当前行主键值（null 表示未选中）。通过 currentRow getter 取对应行对象 */
+  _currentRowId: string | number | null = null
+  /** 多选行主键值列表。通过 selectedRows getter 取对应行对象数组 */
+  _selectedRowIds: Array<string | number> = []
+
+  /** 当前行（getter：从 rows 中按主键查找；rows 刷新后自动指向新对象） */
+  get currentRow(): IDataRow | null {
+    if (this._currentRowId === null) return null
+    return this.rows.find(r => this.getPrimaryKeyValue(r) === this._currentRowId) ?? null
+  }
+
+  /** 当前行在 rows 中的下标（getter：-1 时返回 null） */
+  get currentRowIndex(): number | null {
+    if (this._currentRowId === null) return null
+    const idx = this.rows.findIndex(r => this.getPrimaryKeyValue(r) === this._currentRowId)
+    return idx === -1 ? null : idx
+  }
+
+  /** 多选行数组（getter：从 rows 中按主键集合过滤；rows 刷新后自动指向新对象） */
+  get selectedRows(): IDataRow[] {
+    if (this._selectedRowIds.length === 0) return []
+    const idSet = new Set(this._selectedRowIds)
+    return this.rows.filter(r => {
+      const pk = this.getPrimaryKeyValue(r)
+      return pk !== undefined && idSet.has(pk)
+    })
+  }
+
+  /** 多选行下标数组（getter：从 rows 中按主键集合计算） */
+  get selectedRowIndices(): number[] {
+    if (this._selectedRowIds.length === 0) return []
+    const idSet = new Set(this._selectedRowIds)
+    const result: number[] = []
+    for (let i = 0; i < this.rows.length; i++) {
+      const row = this.rows[i]
+      if (!row) continue
+      const pk = this.getPrimaryKeyValue(row)
+      if (pk !== undefined && idSet.has(pk)) result.push(i)
+    }
+    return result
+  }
 
   // ── 分页 ────────────────────────────────────
 
@@ -179,7 +216,7 @@ export class DataView implements IDataSource {
   private _mutatingCount = 0
   /** 销毁状态标记 */
   private _isDestroyed = false
-  /** 行索引缓存（用于加速 setSelectedRows，O(n) 而非 O(n²)）——由 SelectionDelegate 管理，内部状态勿直接操作 */
+  /** 行索引缓存（用于加速 updateRowById 行对象替换）——由 LocalMutationDelegate 管理，内部状态勿直接操作 */
   rowIndexMap?: Map<IDataRow, number> | undefined
   /** stateChanged 事件防抖定时器 */
   private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
@@ -739,10 +776,8 @@ export class DataView implements IDataSource {
    */
   resetState(): void {
     this.rows.splice(0, this.rows.length)
-    this.currentRow = null
-    this.currentRowIndex = null
-    this.selectedRows.splice(0, this.selectedRows.length)
-    this.selectedRowIndices = []
+    this._currentRowId = null
+    this._selectedRowIds.splice(0, this._selectedRowIds.length)
     this.rowIndexMap = undefined   // 行集合已清空，索引缓存失效
     this.requestState = RequestState.Idle
     this.loadingError = null

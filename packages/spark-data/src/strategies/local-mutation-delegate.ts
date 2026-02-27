@@ -15,7 +15,6 @@
 
 import type { IDataRow, EventContext } from '../types'
 import type { EmitStateChangedFn, ILocalMutationHost } from './types'
-import { isSameRow } from '../core/utils'
 
 export class LocalMutationDelegate {
   constructor(
@@ -28,22 +27,12 @@ export class LocalMutationDelegate {
   // 私有辅助
   // ─────────────────────────────────────────────
 
-  /** 构建 row → index 映射（O(n)），供 deleteRowById / replaceRows / setSelectedRows 复用 */
+  /** 构建 row → index 映射（O(n)），供 updateRowById 原地更新 rowIndexMap 复用 */
   buildRowIndexMap(rows: IDataRow[]): Map<IDataRow, number> {
     const m = new Map<IDataRow, number>()
     let i = 0
     for (const row of rows) m.set(row, i++)
     return m
-  }
-
-  /** 将行数组映射为索引数组（单次遍历，无 -1 占位） */
-  mapRowsToIndices(rows: IDataRow[], map: Map<IDataRow, number>): number[] {
-    const result: number[] = []
-    for (const r of rows) {
-      const idx = map.get(r)
-      if (idx !== undefined) result.push(idx)
-    }
-    return result
   }
 
   // ─────────────────────────────────────────────
@@ -92,24 +81,18 @@ export class LocalMutationDelegate {
 
     const newRow = { ...oldRow, ...data }
     h.rows[idx] = newRow
-    // 行引用已替换：在 Map 中原地更新 O(1)，避免 setSelectedRows 时全量重建
+    // 行对象已替换：在 Map 中原地更新 O(1)，避免 updateRowById 时全量重建
     if (h.rowIndexMap) {
       h.rowIndexMap.delete(oldRow)
       h.rowIndexMap.set(newRow, idx)
     }
 
-    // 每次 emit 独立调用 mkCtx()，确保 currentRow 与 selectedRows 事件各有唯一 eventId
-    if (h.currentRow && isSameRow(h.currentRow, oldRow, h.primaryKey)) {
-      h.currentRow = newRow
-      this.emitStateChanged('currentRow', { row: newRow, context: this.mkCtx() })
+    // 主键未变，_currentRowId / _selectedRowIds 仍有效；只需通知 UI 重新从 getter 获取最新对象
+    if (h._currentRowId === id) {
+      this.emitStateChanged('currentRow', { row: h.currentRow, context: this.mkCtx() })
     }
-
-    if (h.selectedRows.length > 0) {
-      const selectedIdx = h.selectedRows.findIndex(r => isSameRow(r, oldRow, h.primaryKey))
-      if (selectedIdx !== -1) {
-        h.selectedRows[selectedIdx] = newRow
-        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: this.mkCtx() })
-      }
+    if (h._selectedRowIds.includes(id)) {
+      this.emitStateChanged('selectedRows', { rows: h.selectedRows, context: this.mkCtx() })
     }
 
     this.emitStateChanged('rows')
@@ -125,28 +108,19 @@ export class LocalMutationDelegate {
     const idx = h.rows.findIndex(r => h.getPrimaryKeyValue(r) === id)
     if (idx < 0) return false
 
-    const deletedRow = h.rows[idx]
-    if (!deletedRow) return false
-
     h.rows.splice(idx, 1)
-    // splice 后重建索引 Map（O(n)），供删除后 selectedRowIndices 更新复用
-    const postDeleteMap = this.buildRowIndexMap(h.rows)
-    h.rowIndexMap = postDeleteMap
+    h.rowIndexMap = undefined  // 行集合已变，缓存失效
 
-    // 被删行是当前行 → 清空并立即通知（独立 eventId）
-    if (h.currentRow && isSameRow(h.currentRow, deletedRow, h.primaryKey)) {
-      h.currentRow = null
-      h.currentRowIndex = null
+    if (h._currentRowId === id) {
+      h._currentRowId = null
       this.emitStateChanged('currentRow', { row: null, context: this.mkCtx() })
     }
 
-    // 被删行在多选中 → 移除并立即通知（独立 eventId）
-    if (h.selectedRows.length > 0) {
-      const newSelected = h.selectedRows.filter(r => !isSameRow(r, deletedRow, h.primaryKey))
-      if (newSelected.length !== h.selectedRows.length) {
-        h.selectedRows.splice(0, h.selectedRows.length, ...newSelected)
-        h.selectedRowIndices = this.mapRowsToIndices(newSelected, postDeleteMap)
-        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: this.mkCtx() })
+    if (h._selectedRowIds.length > 0) {
+      const newIds = h._selectedRowIds.filter(sid => sid !== id)
+      if (newIds.length !== h._selectedRowIds.length) {
+        h._selectedRowIds.splice(0, h._selectedRowIds.length, ...newIds)
+        this.emitStateChanged('selectedRows', { rows: h.selectedRows, context: this.mkCtx() })
       }
     }
 
@@ -158,24 +132,28 @@ export class LocalMutationDelegate {
   replaceRows(rows: IDataRow[]): void {
     const h = this.host
     h.rows.splice(0, h.rows.length, ...rows)
-    // O(n) 构建索引 Map，供后续 selectedRowIndices 计算复用
-    const idxMap = this.buildRowIndexMap(rows)
-    h.rowIndexMap = idxMap
+    h.rowIndexMap = undefined  // 行集合已替换，缓存失效
 
-    const rowSet = new Set(rows)
-    if (h.currentRow && !rowSet.has(h.currentRow)) {
-      h.currentRow = null
-      h.currentRowIndex = null
+    // 构建新行主键集合，清理已失效的选中状态
+    const newPkSet = new Set<string | number>()
+    for (const r of rows) {
+      const pk = h.getPrimaryKeyValue(r)
+      if (pk !== undefined) newPkSet.add(pk)
+    }
+
+    if (h._currentRowId !== null && !newPkSet.has(h._currentRowId)) {
+      h._currentRowId = null
       this.emitStateChanged('currentRow', { row: null, context: this.mkCtx() })
     }
-    if (h.selectedRows.length > 0) {
-      const newSelected = h.selectedRows.filter(r => rowSet.has(r))
-      if (newSelected.length !== h.selectedRows.length) {
-        h.selectedRows.splice(0, h.selectedRows.length, ...newSelected)
-        h.selectedRowIndices = this.mapRowsToIndices(newSelected, idxMap)
-        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: this.mkCtx() })
+
+    if (h._selectedRowIds.length > 0) {
+      const validIds = h._selectedRowIds.filter(id => newPkSet.has(id))
+      if (validIds.length !== h._selectedRowIds.length) {
+        h._selectedRowIds.splice(0, h._selectedRowIds.length, ...validIds)
+        this.emitStateChanged('selectedRows', { rows: h.selectedRows, context: this.mkCtx() })
       }
     }
+
     this.emitStateChanged('rows')
   }
 }

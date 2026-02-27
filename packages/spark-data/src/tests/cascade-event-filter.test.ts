@@ -63,7 +63,7 @@ describe('cascade event filter — no spurious child requests', () => {
 
     // 父已加载，currentRow 设为第一行
     setParentLoaded(pView, [{ id: 1 }, { id: 2 }])
-    pView.currentRow = pView.rows[0]!
+    pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[0]!) ?? null
 
     // 子视图 mock
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {
@@ -153,7 +153,7 @@ describe('cascade event filter — no spurious child requests', () => {
     const cView = ds.getView('Items', 'default')!
 
     setParentLoaded(pView, [{ id: 42 }])
-    pView.currentRow = pView.rows[0]!
+    pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[0]!) ?? null
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
       expect(params?.orderId).toBe(42)
@@ -242,7 +242,7 @@ describe('cascade reload — parent changes during child loading triggers immedi
     const cView = ds.getView('Items', 'default')!
 
     setParentLoaded(pView, [{ id: 1 }, { id: 2 }])
-    pView.currentRow = pView.rows[0]! // 初始选中 id=1
+    pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[0]!) ?? null // 初始选中 id=1
 
     const loadCallCount: number[] = []
 
@@ -262,7 +262,7 @@ describe('cascade reload — parent changes during child loading triggers immedi
     })
 
     // 此时子处于 Preparing（requestData 同步设置的），切换父 currentRow
-    pView.currentRow = pView.rows[1]!
+    pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[1]!) ?? null
     pView.events.emit('stateChanged', {
       tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[1]!,
       context: createEventContext('ui', { tableName: 'Orders', viewId: 'default' })
