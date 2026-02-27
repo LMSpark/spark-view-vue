@@ -92,8 +92,34 @@ export class DataView implements IDataSource {
 
   // ── 主键 ────────────────────────────────────
 
-  /** 主键字段名（支持单主键字符串或多主键数组），用于 SELECTION 能力的 ID 定位（默认 'id'） */
-  primaryKey: string | string[] = 'id'
+  /**
+   * 显式覆盖的主键字段名（undefined = 从 DataTable 列定义推导）。
+   * 通过 primaryKey getter/setter 访问；外部直接赋值会写入此字段。
+   */
+  private _primaryKeyOverride?: string | string[] | undefined
+
+  /**
+   * 主键字段名（支持单主键字符串或多主键数组）。
+   *
+   * 解析优先级：
+   * 1. 显式覆盖值（通过 `view.primaryKey = 'xxx'` 设置）
+   * 2. DataTable 列定义中 `isPrimaryKey: true` 的列名
+   * 3. 回退默认值 `'id'`
+   */
+  get primaryKey(): string | string[] {
+    if (this._primaryKeyOverride !== undefined) return this._primaryKeyOverride
+    // 从 DataTable 列定义自动推导
+    if (this.dataTable?.columns?.length) {
+      const pkCols = this.dataTable.columns.filter(c => c.isPrimaryKey)
+      if (pkCols.length === 1) return pkCols[0].name
+      if (pkCols.length > 1) return pkCols.map(c => c.name)
+    }
+    return 'id'
+  }
+
+  set primaryKey(value: string | string[]) {
+    this._primaryKeyOverride = value
+  }
   
   /** 主键生成器（可选，用于自动生成新记录的主键） */
   private primaryKeyGenerator?: PrimaryKeyGenerator | undefined

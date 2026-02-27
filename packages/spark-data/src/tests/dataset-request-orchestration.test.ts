@@ -87,7 +87,7 @@ describe('DataView.requestData orchestration', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'OrchDS3',
       tables: {
-        Parents: { tableName: 'Parents', columns: [{ name: 'uuid', type: 'string' }], rows: [] },
+        Parents: { tableName: 'Parents', columns: [{ name: 'uuid', type: 'string', isPrimaryKey: true }], rows: [] },
         Children: { tableName: 'Children', columns: [{ name: 'id', type: 'number' }, { name: 'parentUuid', type: 'string' }], rows: [] }
       },
       relations: [

@@ -205,8 +205,8 @@ describe('Event system', () => {
     // 通过 setCurrentRow 触发指定视图事件
     grid1View.setCurrentRow(grid1View.rows[0]!)
 
-    // 应该通知订阅者
-    expect(notifyCount).toBe(1)
+    // selectionFollowsCurrent=true（默认）→ setCurrentRow 触发 currentRow + selectedRows 共 2 事件
+    expect(notifyCount).toBe(2)
     
     // 但不应该修改视图行数据
     expect(grid1View.rows).toEqual([{ id: 2 }, { id: 3 }])

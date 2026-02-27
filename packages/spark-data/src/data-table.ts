@@ -95,7 +95,9 @@ export class DataTable {
     assertNoSeparator(tableName, 'tableName')
     this.tableName = tableName
     this.columns = columns
-    this.views['default'] = createReactiveView(tableName, 'default')
+    const defaultView = createReactiveView(tableName, 'default')
+    defaultView.dataTable = this   // 提前设置引用，使 view.primaryKey getter 可访问列定义
+    this.views['default'] = defaultView
     // 初始化数据校验器
     if (columns.length > 0) {
       this.validator = createValidator(createSchema(columns))
@@ -138,9 +140,10 @@ export class DataTable {
   getOrCreateView(viewId: string): DataView {
     if (!this.views[viewId]) {
       const view = createReactiveView(this.tableName, viewId)
-      // 视图管理职责：设置引用链并触发级联
+      // 始终设置 dataTable 引用（使 view.primaryKey getter 可访问列定义）
+      view.dataTable = this
+      // 视图管理职责：设置级联
       if (this.dataSet) {
-        view.dataTable = this
         view.setupCascade()
         // Phase 6 M2: 动态视图自动订阅——通知 DataSet 将活跃的 on/onAnyViewChange 绑定到新视图
         this.dataSet._subscribeNewView(view)

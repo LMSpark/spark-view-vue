@@ -73,7 +73,8 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
     deptView.events.on('stateChanged', handler)
     deptView.setCurrentRow(deptView.rows[0]!)
 
-    expect(handler).toHaveBeenCalledOnce()
+    // selectionFollowsCurrent=true（默认）→ setCurrentRow 触发 currentRow + selectedRows 共 2 事件
+    expect(handler).toHaveBeenCalledTimes(2)
     expect(handler).toHaveBeenCalledWith(
       expect.objectContaining({
         tableName: 'Departments',
@@ -145,9 +146,11 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
 
     const row = deptView.rows[0]!
     deptView.setCurrentRow(row)
+    const countAfterFirst = handler.mock.calls.length
     deptView.setCurrentRow(row) // 同一引用
 
-    expect(handler).toHaveBeenCalledTimes(1)
+    // 第二次调用应被幂等去重，不增加调用次数
+    expect(handler).toHaveBeenCalledTimes(countAfterFirst)
   })
 
   it('setSelectedRows 同样内容重复设置不触发状态变更（去重）', () => {
@@ -173,10 +176,12 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
     const deptView = ds.getView('Departments')!
     deptView.events.on('stateChanged', handler)
 
+    // selectionFollowsCurrent=true → setCurrentRow 触发 currentRow + selectedRows (2)
+    // setSelectedRows 触发 selectedRows (1)
     deptView.setCurrentRow(deptView.rows[0]!)
     deptView.setSelectedRows([deptView.rows[1]!])
 
-    expect(handler).toHaveBeenCalledTimes(2)
+    expect(handler).toHaveBeenCalledTimes(3)
   })
 
   it('events.off 取消监听', () => {
@@ -186,12 +191,14 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
     const deptView = ds.getView('Departments')!
     deptView.events.on('stateChanged', handler)
 
+    // selectionFollowsCurrent=true → 2 事件 (currentRow + selectedRows)
     deptView.setCurrentRow(deptView.rows[0]!)
-    expect(handler).toHaveBeenCalledOnce()
+    const countBeforeOff = handler.mock.calls.length
+    expect(countBeforeOff).toBeGreaterThan(0)
 
     deptView.events.off('stateChanged', handler)
     deptView.setCurrentRow(deptView.rows[1]!)
-    expect(handler).toHaveBeenCalledOnce() // 不再增加
+    expect(handler).toHaveBeenCalledTimes(countBeforeOff) // 取消后不再增加
   })
 })
 
@@ -205,11 +212,12 @@ describe('DataView events.on stateChanged（事件订阅）', () => {
     const deptView = ds.getView('Departments')!
     deptView.events.on('stateChanged', cb)
     deptView.setCurrentRow(deptView.rows[0]!)
-    expect(cb).toHaveBeenCalledOnce()
+    const countBeforeOff = cb.mock.calls.length
+    expect(countBeforeOff).toBeGreaterThan(0)
 
     deptView.events.off('stateChanged', cb)
     deptView.setCurrentRow(deptView.rows[1]!)
-    expect(cb).toHaveBeenCalledOnce() // 不再增加
+    expect(cb).toHaveBeenCalledTimes(countBeforeOff) // 取消后不再增加
   })
 
   it('setCurrentRow 自动触发 stateChanged 回调', () => {
@@ -220,7 +228,10 @@ describe('DataView events.on stateChanged（事件订阅）', () => {
 
     deptView.setCurrentRow(deptView.rows[0]!)
 
-    expect(cb).toHaveBeenCalledOnce()
+    // selectionFollowsCurrent=true → 触发 currentRow + selectedRows
+    expect(cb).toHaveBeenCalledTimes(2)
+    expect(cb).toHaveBeenCalledWith(expect.objectContaining({ changeType: 'currentRow' }))
+    expect(cb).toHaveBeenCalledWith(expect.objectContaining({ changeType: 'selectedRows' }))
   })
 })
 
@@ -279,5 +290,148 @@ describe('TreeManager 缓存操作', () => {
 
     expect(tree.getNode(1)).toBeUndefined()
     expect(tree.getRoots()).toHaveLength(0)
+  })
+})
+
+// ==================== DataView.primaryKey 自动推导测试 ====================
+
+describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
+  it('单主键：列定义 isPrimaryKey=true 时 primaryKey 自动使用该列名', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'PKTest',
+      tables: {
+        Items: {
+          tableName: 'Items',
+          columns: [
+            { name: 'itemId', type: 'number', isPrimaryKey: true },
+            { name: 'title', type: 'string' },
+          ],
+          rows: [
+            { itemId: 100, title: 'A' },
+            { itemId: 200, title: 'B' },
+          ],
+        },
+      },
+    })
+    const view = ds.getView('Items')!
+    // 自动从列定义推导 primaryKey，不是硬编码 'id'
+    expect(view.primaryKey).toBe('itemId')
+    // getPrimaryKeyValue 使用推导后的主键
+    expect(view.getPrimaryKeyValue(view.rows[0]!)).toBe(100)
+    expect(view.getPrimaryKeyValue(view.rows[1]!)).toBe(200)
+  })
+
+  it('复合主键：多列 isPrimaryKey=true 时 primaryKey 返回数组', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'CompositePK',
+      tables: {
+        OrderItems: {
+          tableName: 'OrderItems',
+          columns: [
+            { name: 'orderId', type: 'number', isPrimaryKey: true },
+            { name: 'productId', type: 'number', isPrimaryKey: true },
+            { name: 'quantity', type: 'number' },
+          ],
+          rows: [
+            { orderId: 1, productId: 10, quantity: 2 },
+            { orderId: 1, productId: 20, quantity: 5 },
+          ],
+        },
+      },
+    })
+    const view = ds.getView('OrderItems')!
+    expect(view.primaryKey).toEqual(['orderId', 'productId'])
+    // 复合主键值：连接字符串
+    expect(view.getPrimaryKeyValue(view.rows[0]!)).toBe('1:10')
+    expect(view.getPrimaryKeyValue(view.rows[1]!)).toBe('1:20')
+  })
+
+  it('无 isPrimaryKey 标记时降级为默认 id', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'NoPK',
+      tables: {
+        Logs: {
+          tableName: 'Logs',
+          columns: [
+            { name: 'message', type: 'string' },
+            { name: 'level', type: 'string' },
+          ],
+          rows: [{ id: 1, message: 'hello', level: 'info' }],
+        },
+      },
+    })
+    const view = ds.getView('Logs')!
+    // 无 isPrimaryKey 列，降级到 'id'
+    expect(view.primaryKey).toBe('id')
+  })
+
+  it('显式覆盖 primaryKey 优先于列定义', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'OverridePK',
+      tables: {
+        Items: {
+          tableName: 'Items',
+          columns: [
+            { name: 'itemId', type: 'number', isPrimaryKey: true },
+            { name: 'uuid', type: 'string' },
+          ],
+          rows: [{ itemId: 1, uuid: 'abc-123' }],
+        },
+      },
+    })
+    const view = ds.getView('Items')!
+    expect(view.primaryKey).toBe('itemId') // 从列推导
+
+    // 显式覆盖
+    view.primaryKey = 'uuid'
+    expect(view.primaryKey).toBe('uuid')
+    expect(view.getPrimaryKeyValue(view.rows[0]!)).toBe('abc-123')
+  })
+
+  it('动态创建视图也继承列定义的主键', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'DynView',
+      tables: {
+        Items: {
+          tableName: 'Items',
+          columns: [
+            { name: 'code', type: 'string', isPrimaryKey: true },
+            { name: 'name', type: 'string' },
+          ],
+          rows: [],
+        },
+      },
+    })
+    // 动态创建命名视图
+    const gridView = ds.getTable('Items')!.getOrCreateView('grid')
+    expect(gridView.primaryKey).toBe('code')
+  })
+
+  it('setCurrentRow 使用列定义推导的主键正确匹配', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'SelectPK',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'userId', type: 'number', isPrimaryKey: true },
+            { name: 'name', type: 'string' },
+          ],
+          rows: [
+            { userId: 10, name: 'Alice' },
+            { userId: 20, name: 'Bob' },
+          ],
+          autoCurrentFirst: false,
+          autoSelectFirst: false,
+        },
+      },
+    })
+    const view = ds.getView('Users')!
+    expect(view.primaryKey).toBe('userId')
+    expect(view.currentRow).toBeNull()
+
+    view.setCurrentRow(view.rows[1]!) // Bob
+    expect(view._currentRowId).toBe(20)
+    expect(view.currentRow).toEqual({ userId: 20, name: 'Bob' })
   })
 })
