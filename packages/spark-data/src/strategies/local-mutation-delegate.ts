@@ -85,14 +85,8 @@ export class LocalMutationDelegate {
       h.rowIndexMap.set(newRow, idx)
     }
 
-    // 主键未变，_currentRowId / _selectedRowIds 仍有效；只需通知 UI 重新从 getter 获取最新对象
-    if (h._currentRowId === id) {
-      this.emitStateChanged('currentRow', { row: h.currentRow })
-    }
-    if (h._selectedRowIds.includes(id)) {
-      this.emitStateChanged('selectedRows', { rows: h.selectedRows })
-    }
-
+    // 主键未变，_currentRowId / _selectedRowIds 仍有效。
+    // Phase 4 M5: 仅发射 rows 事件，订阅方从 getter 获取最新行对象引用。
     this.emitStateChanged('rows')
     return true
   }
@@ -109,16 +103,17 @@ export class LocalMutationDelegate {
     h.rows.splice(idx, 1)
     h.rowIndexMap = undefined  // 行集合已变，缓存失效
 
+    // Phase 4 M5: 先更新内部状态，再统一发射 rows 事件（防抖 16ms）。
+    // 不单独发射 currentRow/selectedRows 事件——订阅方从 rows 事件回调重新读取 getter 即可
+    // 获得最新状态，避免即时事件先于防抖 rows 事件到达导致的时序反转。
     if (h._currentRowId === id) {
       h._currentRowId = null
-      this.emitStateChanged('currentRow', { row: null })
     }
 
     if (h._selectedRowIds.length > 0) {
       const newIds = h._selectedRowIds.filter(sid => sid !== id)
       if (newIds.length !== h._selectedRowIds.length) {
         h._selectedRowIds.splice(0, h._selectedRowIds.length, ...newIds)
-        this.emitStateChanged('selectedRows', { rows: h.selectedRows })
       }
     }
 
@@ -139,16 +134,16 @@ export class LocalMutationDelegate {
       if (pk !== undefined) newPkSet.add(pk)
     }
 
+    // Phase 4 M5: 内部状态静默更新，仅发射 rows 事件（防抖 16ms）。
+    // 订阅方从 rows 回调中重新读取 currentRow/selectedRows getter 获取最新值。
     if (h._currentRowId !== null && !newPkSet.has(h._currentRowId)) {
       h._currentRowId = null
-      this.emitStateChanged('currentRow', { row: null })
     }
 
     if (h._selectedRowIds.length > 0) {
       const validIds = h._selectedRowIds.filter(id => newPkSet.has(id))
       if (validIds.length !== h._selectedRowIds.length) {
         h._selectedRowIds.splice(0, h._selectedRowIds.length, ...validIds)
-        this.emitStateChanged('selectedRows', { rows: h.selectedRows })
       }
     }
 
