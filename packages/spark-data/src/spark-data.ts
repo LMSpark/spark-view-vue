@@ -64,20 +64,20 @@ export namespace SparkData {
 
   /**
    * 创建树管理器实例
-   * @param config 树配置
+   * @param config 树结构字段配置
    * @param initialNodes 初始节点
    * @returns 树管理器实例
    */
   export function createTreeManager(config: {
     idField?: string
     parentIdField?: string
-    childrenField?: string
-    rootId?: string | number | null
+    textField?: string
+    depthLimit?: number
+    lazy?: boolean
+    /** 树视图模式（默认 'flat'）：flat 返回平铺节点列表，nested 返回嵌套树结构 */
+    treeMode?: 'flat' | 'nested'
   }, initialNodes?: FlatTreeNode[]): TreeManager {
-    return new TreeManager({
-      mode: 'flat',
-      ...config
-    }, initialNodes)
+    return new TreeManager({ ...config }, undefined, initialNodes)
   }
 
   // ===== DataTable 工厂方法 =====
@@ -125,10 +125,13 @@ export namespace SparkData {
     autoCurrentFirst?: boolean
     /** 请求成功后自动将 selectedRows 设为第一行，见 {@link DataView.autoSelectFirst} */
     autoSelectFirst?: boolean
+    /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
+    treeConfig?: import('./types').TreeConfig
   }): DataView {
     const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
     if (config.autoCurrentFirst !== undefined) view.autoCurrentFirst = config.autoCurrentFirst
     if (config.autoSelectFirst !== undefined) view.autoSelectFirst = config.autoSelectFirst
+    if (config.treeConfig !== undefined) view.treeConfig = config.treeConfig
     return view
   }
 

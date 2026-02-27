@@ -262,9 +262,8 @@ describe('TreeManager 缓存操作', () => {
       { id: 1, parentId: null, name: 'Root' }
     ])
 
-    const cache = tree.getCache()
-    expect(cache[1]).toBeDefined()
-    expect(cache[1]!.name).toBe('Root')
+    expect(tree.getNode(1)).toBeDefined()
+    expect(tree.getNode(1)!.name).toBe('Root')
   })
 
   it('clear 清空缓存', () => {
@@ -278,7 +277,7 @@ describe('TreeManager 缓存操作', () => {
     ])
     tree.clear()
 
-    const cache = tree.getCache()
-    expect(Object.keys(cache)).toHaveLength(0)
+    expect(tree.getNode(1)).toBeUndefined()
+    expect(tree.getRoots()).toHaveLength(0)
   })
 })

@@ -1,19 +1,20 @@
 /**
  * 树管理器
- * 负责自引用树的懒加载、差量补齐和层级构建
- * 关联到 DataView（视图层）而非 DataTable（结构层）
+ * 统一入口：内存缓存 + HTTP 调用（含 flat/nested 双模式接口族）
+ * 依赖方向：DataView → TreeManager（单向）
  */
 
 import type {
   TreeConfig,
+  TreeApi,
+  HttpEndpoint,
   FlatTreeNode,
   NestedTreeNode,
+  NestedTreeSearchResult,
   TreePath
 } from './types'
 
-type FlatTreeCache = Record<string | number, FlatTreeNode>
-import { Logger } from '@spark-view/spark-utils'
-import type { DataView } from './data-view'
+import { Logger, createRequest } from '@spark-view/spark-utils'
 
 /**
  * 树管理器类
@@ -26,10 +27,13 @@ export class TreeManager {
   private config: TreeConfig
 
   /** 节点缓存 */
-  private cache: FlatTreeCache = {}
+  private cache: Record<string | number, FlatTreeNode> = {}
 
-  /** 关联的数据视图 */
-  private dataView?: DataView
+  /** 树 HTTP 接口族配置（来自 DataTable.treeApi，可选） */
+  private api?: TreeApi
+
+  /** HTTP 客户端（懒初始化） */
+  private _http?: ReturnType<typeof createRequest>
 
   /** 日志记录器 */
   private logger = Logger()
@@ -42,7 +46,7 @@ export class TreeManager {
    * @param initialNodes 初始节点
    * @param dataView 关联的数据视图
    */
-  constructor(config: TreeConfig, initialNodes?: FlatTreeNode[], dataView?: DataView) {
+  constructor(config: TreeConfig, api?: TreeApi, initialNodes?: FlatTreeNode[]) {
     this.config = {
       idField: 'id',
       parentIdField: 'parentId',
@@ -50,30 +54,37 @@ export class TreeManager {
       lazy: true,
       ...config
     }
-    if (dataView) {
-      this.dataView = dataView
-    }
+    if (api) this.api = api
     if (initialNodes) {
       this.addNodesToCache(initialNodes)
     }
   }
 
-  // ===== DataView 关联 =====
+  // ===== HTTP 辅助 =====
 
-  /**
-   * 设置关联的数据视图
-   * @param dataView 数据视图实例
-   */
-  setDataView(dataView: DataView): void {
-    this.dataView = dataView
+  private _getHttp(): ReturnType<typeof createRequest> {
+    this._http ??= createRequest()
+    return this._http
   }
 
   /**
-   * 获取关联的数据视图
-   * @returns 数据视图实例
+   * 调用树端点（自动替换 URL 路径参数，剩余参数作为 query/body）
    */
-  getDataView(): DataView | undefined {
-    return this.dataView
+  private _callEndpoint<T>(endpoint: HttpEndpoint, params: Record<string, unknown> = {}): Promise<T> {
+    const usedKeys = new Set<string>()
+    const url = endpoint.url.replace(/\{(\w+)\}/g, (_, key: string) => {
+      usedKeys.add(key)
+      return String(params[key] ?? '')
+    })
+    const query: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(params)) {
+      if (!usedKeys.has(k) && v !== undefined) query[k] = v
+    }
+    const http = this._getHttp()
+    const method = endpoint.method ?? 'GET'
+    const config = endpoint.headers ? { headers: endpoint.headers } : {}
+    if (method === 'GET') return http.get<T>(url, query, config)
+    return http.post<T>(url, params, config)
   }
 
   // ===== 配置和缓存访问 =====
@@ -84,14 +95,6 @@ export class TreeManager {
    */
   getConfig(): TreeConfig {
     return { ...this.config }
-  }
-
-  /**
-   * 获取节点缓存
-   * @returns 缓存副本
-   */
-  getCache(): FlatTreeCache {
-    return { ...this.cache }
   }
 
   // ===== 缓存管理 =====
@@ -143,45 +146,75 @@ export class TreeManager {
     return this.getChildren(null)
   }
 
-  // ===== 树展开和补齐 =====
+  // ===== HTTP 树操作（需配置 api） =====
 
   /**
-   * 展开到目标节点（差量补齐）
-   * @param targetId 目标节点ID
-   * @param loadPathFn 加载路径的函数
-   * @param loadSubTreeFn 加载子树的函数
+   * 拉取直接子节点并写入缓存（对应 /tree/children）
    */
-  async expandToNode(
-    targetId: string | number,
-    loadPathFn: (targetId: string | number) => Promise<TreePath>,
-    loadSubTreeFn: (fromId: string | number | null, toId: string | number) => Promise<FlatTreeNode[]>
-  ): Promise<void> {
-    // 1. 获取目标节点的祖先链 ID
-    const path = await loadPathFn(targetId)
-    const { pathIds } = path
+  async fetchChildren(parentId: string | number | null, limit?: number): Promise<FlatTreeNode[]> {
+    const endpoint = this.api?.children
+    if (!endpoint) throw new Error('[TreeManager] api.children 未配置')
+    const params: Record<string, unknown> = { parentId: parentId ?? '' }
+    const effectiveLimit = limit ?? endpoint.limit
+    if (effectiveLimit !== undefined) params['limit'] = effectiveLimit
+    const nodes = await this._callEndpoint<FlatTreeNode[]>(endpoint, params)
+    this.addNodesToCache(nodes)
+    return nodes
+  }
 
-    // 2. 对比缓存，找出缺失的节点
+  /**
+   * 获取节点祖先链 ID（对应 /tree/path）
+   */
+  async fetchPath(id: string | number): Promise<TreePath> {
+    const endpoint = this.api?.path
+    if (!endpoint) throw new Error('[TreeManager] api.path 未配置')
+    const result = await this._callEndpoint<{ pathIds: Array<string | number> }>(endpoint, { id })
+    return { pathIds: result.pathIds }
+  }
+
+  /**
+   * 展开到目标节点（差量补齐缓存，对应 /tree/path + /tree/subtree）
+   */
+  async expandToNode(targetId: string | number): Promise<void> {
+    // 1. 获取祖先链
+    const { pathIds } = await this.fetchPath(targetId)
+
+    // 2. 找出缓存缺失节点
     const missing = pathIds.filter(id => !this.cache[id])
-
     if (missing.length === 0) {
-      this.logger.info(`路径已完整缓存，无需补齐`)
+      this.logger.info('路径已完整缓存，无需补齐')
       return
     }
 
-    // 3. 找到第一个缺失节点的父节点
+    // 3. 确定补齐起点
     const firstMissing = missing[0]
-    if (firstMissing === undefined) {
-      return
-    }
+    if (firstMissing === undefined) return
     const firstMissingIndex = pathIds.indexOf(firstMissing)
     const fromId = firstMissingIndex > 0 ? pathIds[firstMissingIndex - 1] ?? null : null
 
-    // 4. 一次性拉取缺失区间
+    // 4. 拉取缺失区间
+    const subtreeEndpoint = this.api?.subtree
+    if (!subtreeEndpoint) throw new Error('[TreeManager] api.subtree 未配置')
     this.logger.info(`差量补齐: 从 ${fromId} 到 ${targetId}`)
-    const nodes = await loadSubTreeFn(fromId, targetId)
+    const params: Record<string, unknown> = {
+      toId: targetId,
+      includeTargetChildren: subtreeEndpoint.includeTargetChildren ?? true,
+    }
+    if (fromId !== null) params['fromId'] = fromId
+    const result = await this._callEndpoint<Record<string, FlatTreeNode>>(subtreeEndpoint, params)
+    this.addNodesToCache(Object.values(result))
+  }
 
-    // 5. 更新缓存
-    this.addNodesToCache(nodes)
+  /**
+   * 嵌套模式远端搜索，返回匹配节点 + 祖先链（对应 /tree/nested/search）
+   */
+  async fetchNestedSearch(keyword: string, limit?: number): Promise<NestedTreeSearchResult[]> {
+    const endpoint = this.api?.nestedSearch
+    if (!endpoint) throw new Error('[TreeManager] api.nestedSearch 未配置')
+    const params: Record<string, unknown> = { keyword }
+    const effectiveLimit = limit ?? endpoint.limit
+    if (effectiveLimit !== undefined) params['limit'] = effectiveLimit
+    return this._callEndpoint<NestedTreeSearchResult[]>(endpoint, params)
   }
 
   // ===== 搜索功能 =====
@@ -202,6 +235,32 @@ export class TreeManager {
     const matcher = matchFn ?? defaultMatchFn
 
     return Object.values(this.cache).filter(node => matcher(node, keyword))
+  }
+
+  /**
+   * 嵌套树搜索（层次模式）
+   * 对应 /tree/nested/search 接口
+   * 返回匹配节点及其祖先链，前端可直接展开定位
+   * @param keyword 搜索关键词
+   * @param matchFn 自定义匹配函数（默认匹配 textField）
+   * @param limit 最大返回结果数（默认不限制）
+   * @returns 匹配节点 + 从根到该节点的祖先链数组
+   */
+  searchNested(
+    keyword: string,
+    matchFn?: (node: FlatTreeNode, keyword: string) => boolean,
+    limit?: number
+  ): NestedTreeSearchResult[] {
+    const hits = this.searchNodes(keyword, matchFn)
+    const limited = limit !== undefined ? hits.slice(0, limit) : hits
+
+    return limited.map(node => {
+      const { pathNodes } = this.getNodePath(node.id)
+      return {
+        node,
+        path: pathNodes ?? [node]
+      }
+    })
   }
 
   // ===== 路径和层级 =====
@@ -232,16 +291,6 @@ export class TreeManager {
     }
 
     return { pathIds, pathNodes }
-  }
-
-  /**
-   * 计算节点层级
-   * @param nodeId 节点ID
-   * @returns 节点层级
-   */
-  calculateLevel(nodeId: string | number): number {
-    const path = this.getNodePath(nodeId)
-    return path.pathIds.length - 1
   }
 
   // ===== 树构建 =====
@@ -294,69 +343,5 @@ export class TreeManager {
     return nestedNode
   }
 
-  // ===== 节点属性管理 =====
-
-  /**
-   * 标记节点是否有子节点
-   * @param nodeId 节点ID
-   */
-  markHasChildren(nodeId: string | number): void {
-    const node = this.cache[nodeId]
-    if (!node) return
-
-    const children = this.getChildren(nodeId)
-    if (node) {
-      node.hasChildren = children.length > 0
-    }
-  }
-
-  /**
-   * 批量标记所有节点的 hasChildren 和 level
-   */
-  enrichNodes(): void {
-    for (const id of Object.keys(this.cache)) {
-      const node = this.cache[id]
-      if (node) {
-        node.level = this.calculateLevel(node.id)
-        this.markHasChildren(node.id)
-      }
-    }
-  }
-
-  // ===== 序列化 =====
-
-  /**
-   * 导出为JSON字符串
-   * @returns JSON字符串
-   */
-  toJSON(): string {
-    return JSON.stringify({
-      config: this.config,
-      cache: this.cache
-    }, null, 2)
-  }
-
-  // ===== 反序列化工厂方法 =====
-
-  /**
-   * 从JSON字符串创建树管理器实例
-   * @param json JSON字符串
-   * @param dataView 关联的数据视图
-   * @returns 树管理器实例
-   */
-  static fromJSON(json: string, dataView?: DataView): TreeManager {
-    const data = JSON.parse(json) as { config: TreeConfig; cache: FlatTreeNode[] | Record<string | number, FlatTreeNode> }
-    const manager = new TreeManager(data.config, undefined, dataView)
-    // 兼容数组格式和对象格式（toJSON 序列化为对象）
-    if (Array.isArray(data.cache)) {
-      for (const node of data.cache) {
-        manager.cache[node.id] = node
-      }
-    } else if (data.cache && typeof data.cache === 'object') {
-      for (const node of Object.values(data.cache)) {
-        manager.cache[node.id] = node
-      }
-    }
-    return manager
-  }
 }
+

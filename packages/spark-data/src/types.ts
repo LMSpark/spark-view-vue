@@ -169,8 +169,8 @@ export interface DataColumn {
   computeExpression?: unknown
 }
 
-/** CRUD API配置 */
-export interface CrudApi {
+/** CRUD API配置（继承 TreeApi，树接口族直接平铺在此） */
+export interface CrudApi extends TreeApi {
   create?: HttpEndpoint
   retrieve?: HttpEndpoint
   update?: HttpEndpoint
@@ -222,6 +222,8 @@ export interface IViewMetadata {
   autoSelectFirst?: boolean
   page?: number
   pageSize?: number
+  /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode），属于视图层关注点 */
+  treeConfig?: TreeConfig
 }
 
 /** 数据表元数据 */
@@ -300,15 +302,77 @@ export interface DataRelation {
 
 // ===== 树类型 =====
 
-/** 树配置 */
+/**
+ * 树端点 API 配置
+ * 对应博文接口族（flat/nested 双模式成套）
+ * 每个端点继承 HttpEndpoint，`url` 中可用 `{id}`、`{parentId}` 等路径占位符
+ */
+export interface TreeApi {
+  /**
+   * /tree/node — 获取单节点详情
+   * params: id
+   */
+  node?: HttpEndpoint
+  /**
+   * /tree/children — 获取直接子节点列表
+   * params: parentId, limit?
+   */
+  children?: HttpEndpoint & {
+    /** 最大返回子节点数，防止宽度爆炸 */
+    limit?: number
+  }
+  /**
+   * /tree/path — 获取祖先链 ID 列表
+   * params: id
+   * response: { pathIds: string[] }
+   */
+  path?: HttpEndpoint
+  /**
+   * /tree/subtree — 差量补齐路径区间（expandToNode 使用）
+   * params: fromId, toId, includeTargetChildren?
+   * response: Record<string, FlatTreeNode>
+   */
+  subtree?: HttpEndpoint & {
+    /** 是否包含目标节点的直接子节点（默认 true） */
+    includeTargetChildren?: boolean
+  }
+  /**
+   * /tree/search — 扁平模式搜索（返回匹配节点 + pathIds）
+   * params: keyword, limit?
+   */
+  search?: HttpEndpoint & {
+    limit?: number
+  }
+  /**
+   * /tree/nested — 获取嵌套层级树
+   * params: rootId?, depthLimit?, limit?
+   * response: NestedTreeNode[]
+   */
+  nested?: HttpEndpoint & {
+    depthLimit?: number
+    limit?: number
+  }
+  /**
+   * /tree/nested/search — 层次模式搜索（返回匹配节点 + 嵌套祖先链）
+   * params: keyword, limit?
+   * response: NestedTreeSearchResult[]
+   */
+  nestedSearch?: HttpEndpoint & {
+    limit?: number
+  }
+}
+
+/** 树结构字段配置（属于视图层，固化在 DataView）
+ * 注：HTTP 接口族配置在 CrudApi，模型始终存储平铺数据
+ */
 export interface TreeConfig {
-  mode: 'flat' | 'nested'
-  tableName?: string
   idField?: string
   parentIdField?: string
   textField?: string
   depthLimit?: number
   lazy?: boolean
+  /** 树视图模式（默认 'flat'）：模型层始终存储平铺数据，视图层选择返回 flat 还是 nested 组织方式 */
+  treeMode?: 'flat' | 'nested'
 }
 
 /** 平面树节点 */
@@ -331,6 +395,18 @@ export interface NestedTreeNode extends FlatTreeNode {
 export interface TreePath {
   pathIds: Array<string | number>
   pathNodes?: FlatTreeNode[]
+}
+
+/**
+ * 嵌套树搜索结果
+ * 对应 /tree/nested/search 接口返回格式
+ * 匹配节点 + 从根到该节点的祖先链（含自身），前端可直接展开定位
+ */
+export interface NestedTreeSearchResult {
+  /** 匹配的节点 */
+  node: FlatTreeNode
+  /** 从根到该节点的祖先链（含自身，顺序为根→叶） */
+  path: FlatTreeNode[]
 }
 
 // ===== 请求状态 =====
