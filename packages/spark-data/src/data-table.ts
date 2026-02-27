@@ -246,8 +246,8 @@ export class DataTable {
     const def = t.getOrCreateView('default')
     if (data.rows) def.rows = [...data.rows]
 
-    // views.default（若存在）优先于表级字段；ITableMetadata extends IViewMetadata，
-    // 所以两条路径字段名完全一致，可以用同一段代码处理。
+    // views.default（若存在）优先于表级字段；ITableMetadata = ITableOwnMetadata & IViewMetadata，
+    // 两条路径（default 视图 vs 扁平化表级字段）字段名完全一致，可以用同一段代码处理。
     const vc: IViewMetadata = data.views?.['default'] ?? data
     if (vc.filterExpression !== undefined) def.filterExpression = vc.filterExpression
     if (vc.sortExpression !== undefined) def.sortExpression = vc.sortExpression

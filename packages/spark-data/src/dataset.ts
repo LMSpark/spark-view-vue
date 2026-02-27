@@ -39,7 +39,10 @@ export class DataSet implements IDataSet {
   /** 数据关系定义 */
   relations: DataRelation[] | undefined
 
-  /** 版本号 */
+  /** Schema 格式版本（默认 1） */
+  schemaVersion: number
+
+  /** 业务数据版本号（乐观锁） */
   version: number | undefined
 
   /** 页面ID */
@@ -79,12 +82,14 @@ export class DataSet implements IDataSet {
   constructor(config: {
     dataSetName: string
     tables: Record<string, ITableMetadata>
+    schemaVersion?: number | undefined
     relations?: DataRelation[] | undefined
     version?: number | undefined
     pageId?: string | undefined
   }) {
     assertNoSeparator(config.dataSetName, 'dataSetName')
     this.dataSetName = config.dataSetName
+    this.schemaVersion = config.schemaVersion ?? 1
     this.relations = config.relations
     this.version = config.version
     this.pageId = config.pageId
@@ -314,6 +319,7 @@ export class DataSet implements IDataSet {
       tables[n] = t.toData()
     }
     return {
+      schemaVersion: this.schemaVersion,
       dataSetName: this.dataSetName,
       tables,
       relations: this.relations,
