@@ -13,6 +13,7 @@ import type {
   NestedTreeSearchResult,
   TreePath
 } from './types'
+import { resolveUrlTemplate } from './core/url-template'
 
 import { Logger, createRequest } from '@spark-view/spark-utils'
 
@@ -71,19 +72,11 @@ export class TreeManager {
    * 调用树端点（自动替换 URL 路径参数，剩余参数作为 query/body）
    */
   private _callEndpoint<T>(endpoint: HttpEndpoint, params: Record<string, unknown> = {}): Promise<T> {
-    const usedKeys = new Set<string>()
-    const url = endpoint.url.replace(/\{(\w+)\}/g, (_, key: string) => {
-      usedKeys.add(key)
-      return String(params[key] ?? '')
-    })
-    const query: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(params)) {
-      if (!usedKeys.has(k) && v !== undefined) query[k] = v
-    }
+    const { url, rest } = resolveUrlTemplate(endpoint.url, params)
     const http = this._getHttp()
     const method = endpoint.method ?? 'GET'
     const config = endpoint.headers ? { headers: endpoint.headers } : {}
-    if (method === 'GET') return http.get<T>(url, query, config)
+    if (method === 'GET') return http.get<T>(url, rest, config)
     return http.post<T>(url, params, config)
   }
 

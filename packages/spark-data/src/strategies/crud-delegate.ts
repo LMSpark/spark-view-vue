@@ -229,8 +229,8 @@ export class CrudDelegate {
     })
   }
 
-  /** 批量更新 */
-  async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
+  /** 批量更新（items 中必须包含主键字段，主键名由 host.primaryKey 决定） */
+  async batchUpdateRecords(items: Array<Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchUpdate', items)) return this.cancelledResult('batchUpdate')
 
     const validationErrors = this.collectBatchValidationErrors(items)
@@ -249,8 +249,8 @@ export class CrudDelegate {
         for (const r of result.data.results) {
           if (r.success && r.data) {
             const record = r.data as IDataRow
-            const id = (record as { id?: unknown }).id
-            if (id !== undefined) this.host.updateRowById(id as string | number, record)  // updateRowById 内部已发射
+            const id = this.host.getPrimaryKeyValue(record)
+            if (id !== undefined) this.host.updateRowById(id, record)  // updateRowById 内部已发射
           }
         }
       }

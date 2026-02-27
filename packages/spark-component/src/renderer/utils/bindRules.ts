@@ -361,17 +361,20 @@ function injectTableEvents(
       return
     }
 
-    // form-create 会污染原始对象（添加 $f/api/rule 属性），原始数据保存在 row.args[0]
+    // form-create 会污染原始对象（添加 $f/api/rule 属性），通过 PK 查找原始行对象
     let cleanRow: IDataRow | null = null
-    if ('args' in currentRow && Array.isArray((currentRow as { args: unknown }).args)) {
+
+    // 优先方案：通过主键从 view.rows 查找（通用、不依赖 form-create 内部结构）
+    const pk = view.getPrimaryKeyValue(currentRow)
+    if (pk !== undefined) cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === pk) ?? null
+
+    // 回退方案：form-create 特定——从 args[0] 提取原始数据（仅在 PK 查不到时使用）
+    if (!cleanRow && 'args' in currentRow && Array.isArray((currentRow as { args: unknown }).args)) {
       const maybeRow = (currentRow as { args: unknown[] }).args[0]
       if (maybeRow && typeof maybeRow === 'object') cleanRow = maybeRow as IDataRow
     }
-    if (!cleanRow) {
-      const pk = view.getPrimaryKeyValue(currentRow)
-      if (pk !== undefined) cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === pk) ?? null
-    }
-    if (cleanRow) view.setCurrentRow(cleanRow, bindingId)
+
+    view.setCurrentRow(cleanRow ?? currentRow, bindingId)
   }
 
   // 注入 selectionChange 事件（多选变化）

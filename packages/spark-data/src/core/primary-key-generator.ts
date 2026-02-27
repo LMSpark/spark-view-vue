@@ -140,11 +140,16 @@ class SnowflakeIdGenerator {
 
   /**
    * 等待到下一毫秒
+   *
+   * 注意：浏览器主线程不应使用 busy-wait；
+   * 如果单毫秒内序列号已溢出（>4096 次调用/ms），直接抛错。
    */
   private waitNextMillis(lastTimestamp: bigint): bigint {
-    let timestamp = this.nowRelative()
-    while (timestamp <= lastTimestamp) {
-      timestamp = this.nowRelative()
+    const timestamp = this.nowRelative()
+    if (timestamp <= lastTimestamp) {
+      throw new Error(
+        `Snowflake 序列号溢出：同一毫秒内生成超过 ${this.maxSequence + 1n} 个 ID，请降低调用频率`
+      )
     }
     return timestamp
   }
