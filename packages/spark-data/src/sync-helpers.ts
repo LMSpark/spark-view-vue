@@ -70,49 +70,26 @@ export function createTableSyncHandlers(
         return
       }
       
-      // ✅ 修复：form-create 污染了原始对象（添加了 $f, api, rule 等内部属性）
-      // 原始数据被保存在 row.args[0] 中
+      // 通过主键从 view.rows 查找原始行对象（避免外部框架污染对象的干扰）
+      const rowPk = view.getPrimaryKeyValue(row)
       let cleanRow: IDataRow | null = null
       
-      // 优先方案：从 args[0] 提取原始数据（污染检测）
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-      if ('args' in row && Array.isArray((row as any).args)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        const originalRow = (row as any).args[0]
-        if (originalRow && typeof originalRow === 'object') {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          cleanRow = originalRow
-          logger.debug('从 args[0] 提取原始数据', {
+      if (rowPk !== undefined) {
+        cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === rowPk) ?? null
+        if (cleanRow) {
+          logger.debug('通过主键查找到原始数据', { tableName, viewId, pk: view.primaryKey, id: rowPk })
+        } else {
+          logger.warn('在 view.rows 中找不到匹配行', {
             tableName,
             viewId,
-            id: cleanRow ? view.getPrimaryKeyValue(cleanRow) : null
+            pk: view.primaryKey,
+            id: rowPk
           })
         }
       }
       
-      // 回退方案：通过主键从 view.rows 查找
-      if (!cleanRow) {
-        const rowPk = view.getPrimaryKeyValue(row)
-        
-        if (rowPk !== undefined) {
-          cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === rowPk) ?? null
-          if (cleanRow) {
-            logger.debug('通过主键查找到原始数据', { tableName, viewId, pk: view.primaryKey, id: rowPk })
-          } else {
-            logger.warn('在 view.rows 中找不到匹配行', {
-              tableName,
-              viewId,
-              pk: view.primaryKey,
-              id: rowPk
-            })
-          }
-        }
-      }
-      
-      // 设置干净的行对象
-      if (cleanRow) {
-        view.setCurrentRow(cleanRow, bindingId)
-      }
+      // 设置干净的行对象（找不到时直接用传入对象）
+      view.setCurrentRow(cleanRow ?? row, bindingId)
     },
 
     onSelectionChange(rows: IDataRow[]) {

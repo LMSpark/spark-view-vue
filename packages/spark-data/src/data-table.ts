@@ -111,6 +111,15 @@ export class DataTable {
   // ===== 视图管理 =====
 
   /**
+   * 获取已存在的视图（不会创建新视图）
+   * @param viewId - 视图 ID
+   * @returns 对应的 DataView 实例，不存在时返回 undefined
+   */
+  getView(viewId: string): DataView | undefined {
+    return this.views[viewId]
+  }
+
+  /**
    * 获取或创建视图
    * @param viewId - 视图 ID（'default' 为主视图）
    * @returns 对应的 DataView 实例

@@ -669,8 +669,8 @@ export class DataView implements IDataSource {
     return this.crudDelegate.batchCreateRecords(items)
   }
 
-  /** 批量更新 */
-  async batchUpdateRecords(items: Array<{ id: string | number } & Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
+  /** 批量更新（items 中必须包含主键字段，主键名由 primaryKey 配置决定） */
+  async batchUpdateRecords(items: Array<Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
     return this.crudDelegate.batchUpdateRecords(items)
   }
 

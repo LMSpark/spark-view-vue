@@ -251,12 +251,11 @@ describe('DataKey 统一解析器', () => {
       expect(resolveDataKey(dk, dataSet)).toBeUndefined()
     })
 
-    it('命名视图自动创建', () => {
+    it('不存在的视图返回 undefined（不会自动创建）', () => {
       const dk = parseDataKey('TestDS@Users@grid@rows')!
       const result = resolveDataKey(dk, dataSet)
-      // getOrCreateView 会创建空视图
-      expect(Array.isArray(result)).toBe(true)
-      expect((result as unknown[]).length).toBe(0)
+      // getView 不会创建不存在的视图，返回 undefined
+      expect(result).toBeUndefined()
     })
 
     it('旧格式不再支持，使用新格式解析', () => {

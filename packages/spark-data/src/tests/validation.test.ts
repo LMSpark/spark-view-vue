@@ -171,7 +171,7 @@ describe('DataView - CRUD 校验集成', () => {
     const items = [
       { id: 1, name: 'Alice' },
       { id: 2, age: 'invalid' } // 类型错误
-    ] as unknown as Array<{ id: string | number } & Partial<IDataRow>>
+    ] as unknown as Array<Partial<IDataRow>>
     
     const result = await view.batchUpdateRecords(items)
     

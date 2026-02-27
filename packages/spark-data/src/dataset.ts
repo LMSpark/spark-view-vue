@@ -223,12 +223,12 @@ export class DataSet implements IDataSet {
   }
 
   /**
-   * 获取数据视图（委托到 DataTable）
+   * 获取已存在的数据视图（不会创建新视图）
    */
   getView(tableName: string, viewId = 'default'): SparkDataView | undefined {
     const t = this.getTable(tableName)
     if (!t) return undefined
-    return t.getOrCreateView(viewId)
+    return t.getView(viewId)
   }
 
   // ===== 序列化 =====

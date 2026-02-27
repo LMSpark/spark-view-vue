@@ -147,7 +147,7 @@ export function resolveDataKey(
   const table = dataSet.getTable(descriptor.tableName)
   if (!table) return undefined
 
-  const view = table.getOrCreateView(descriptor.viewId)
+  const view = table.getView(descriptor.viewId)
   if (!view) return undefined
 
   let value: IDataRow[] | IDataRow | null | undefined
@@ -165,7 +165,7 @@ export function resolveDataKey(
     let current: unknown = value
     
     for (const part of pathParts) {
-      if (current && typeof current === 'object' && part in current) {
+      if (current && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, part)) {
         current = (current as Record<string, unknown>)[part]
       } else {
         return undefined
@@ -192,7 +192,7 @@ export function resolveDataKeyAsSource(
   const table = dataSet.getTable(descriptor.tableName)
   if (!table) return undefined
 
-  const view = table.getOrCreateView(descriptor.viewId)
+  const view = table.getView(descriptor.viewId)
   if (!view) return undefined
 
   let value: DataView | IDataRow | IDataRow[] | null | undefined
@@ -210,7 +210,7 @@ export function resolveDataKeyAsSource(
     let current: unknown = value
     
     for (const part of pathParts) {
-      if (current && typeof current === 'object' && part in current) {
+      if (current && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, part)) {
         current = (current as Record<string, unknown>)[part]
       } else {
         return undefined
@@ -273,7 +273,7 @@ export type DataKeyBinding =
 /**
  * 解析 DataKey 为渲染绑定描述符（渲染层入口）
  *
- * 封装了 isDataKey → parseDataKey → getOrCreateView 全链路；
+ * 封装了 isDataKey → parseDataKey → getView 全链路；
  * 返回判别联合，渲染层无需 `instanceof DataView` 判断。
  *
  * @returns 绑定描述符，键无效或未找到返回 `null`
@@ -287,7 +287,7 @@ export function resolveDataKeyBinding(
   if (!dk) return null
   const table = dataSet.getTable(dk.tableName)
   if (!table) return null
-  const view = table.getOrCreateView(dk.viewId)
+  const view = table.getView(dk.viewId)
   if (!view) return null
   if (dk.field === 'rows') return { kind: 'view', source: view }
   const value = dk.field === 'currentRow' ? view.currentRow : view.selectedRows

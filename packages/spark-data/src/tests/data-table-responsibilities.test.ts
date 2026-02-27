@@ -67,7 +67,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
     expect(dsNotified).toBe(true)
   })
 
-  it('DataSet.getView 应返回指定视图的 DataView（包含 default）', () => {
+  it('DataSet.getView 应返回已存在的视图，不存在时返回 undefined', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
@@ -81,11 +81,17 @@ describe('DataTable responsibilities (refactor verification)', () => {
 
     const table = ds.getTable('Users')!
     const ctxDefault = ds.getView('Users', 'default')
-    const ctxNamed = ds.getView('Users', 'grid1')
 
+    // default 视图在构造函数中创建，应始终存在
     expect(ctxDefault).toBeDefined()
     expect(ctxDefault).toBe(table.getOrCreateView('default'))
-    expect(ctxNamed).toBe(table.getOrCreateView('grid1'))
+
+    // 不存在的视图返回 undefined（不会自动创建）
+    expect(ds.getView('Users', 'grid1')).toBeUndefined()
+
+    // 通过 getOrCreateView 显式创建后，getView 应能找到
+    const grid1 = table.getOrCreateView('grid1')
+    expect(ds.getView('Users', 'grid1')).toBe(grid1)
   })
 
   it('命名视图独立且 CRUD 操作影响 default view', async () => {

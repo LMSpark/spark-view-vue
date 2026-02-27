@@ -23,6 +23,7 @@ import {
   INSTANCE_PERMISSION_FIELD,
   MODEL_PERMISSION_FIELD
 } from './types'
+import { resolveUrlTemplate } from './core/url-template'
 
 // ===== 接口定义 =====
 
@@ -226,12 +227,12 @@ export class CrudService {
 
   /**
    * 批量更新
-   * @param items 包含ID的更新数据数组
+   * @param items 更新数据数组（必须包含主键字段）
    * @param config CRUD操作配置（包含权限快照）
    * @returns 批量操作结果
    */
   async batchUpdate<T = IDataRow>(
-    items: Array<{ id: string | number } & Partial<T>>,
+    items: Array<Partial<T>>,
     config?: CrudOperationConfig
   ): Promise<CrudResult<BatchResult>> {
     if (!this.api.batch?.update) {
@@ -240,10 +241,7 @@ export class CrudService {
 
     try {
       const requestConfig = this.buildRequestConfig(config)
-      const sanitizedItems = items.map(item => ({
-        ...this.sanitizeDataForUpload(item),
-        id: item.id // 保留ID字段
-      }))
+      const sanitizedItems = items.map(item => this.sanitizeDataForUpload(item as Record<string, unknown>))
       const results = await this.executeBatch(this.api.batch.update, sanitizedItems, requestConfig)
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量更新完成', { total: items.length, success: successCount })
@@ -506,18 +504,19 @@ export class CrudService {
     endpoint: HttpEndpoint,
     data?: unknown
   ): { url: string; params?: Record<string, unknown>; headers?: Record<string, string> } {
-    let url = endpoint.url
     const params: Record<string, unknown> = { ...endpoint.params }
     const headers = { ...endpoint.headers }
 
-    // 处理路径参数（如 /users/:id）
+    // 使用统一的 URL 模板解析（支持 :param 和 {param} 两种风格）
+    let url = endpoint.url
     if (endpoint.pathParams && data && typeof data === 'object') {
+      const pathData: Record<string, unknown> = {}
       for (const param of endpoint.pathParams) {
         const value = (data as Record<string, unknown>)[param]
-        if (value !== undefined) {
-          url = url.replace(`:${param}`, String(value))
-        }
+        if (value !== undefined) pathData[param] = value
       }
+      const resolved = resolveUrlTemplate(url, pathData)
+      url = resolved.url
     }
 
     return { url, params, headers }
