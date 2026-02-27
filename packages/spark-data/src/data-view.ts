@@ -349,15 +349,16 @@ export class DataView implements IDataSource {
 
   /** ICascadeHost：向上访问 DataSet，供 CascadeDelegate 解析父子关系 */
   get dataSet() {
+    this.checkDestroyed()
     return this.dataTable.dataSet
   }
 
   /** ICrudHost：CrudService 实例（DataTable 持有并缓存；未配置 API 时为 undefined） */
-  get crudService(): CrudService | undefined { return this.dataTable.crudService }
+  get crudService(): CrudService | undefined { this.checkDestroyed(); return this.dataTable.crudService }
   /** ICrudHost：CRUD 操作全局配置（超时、重试等） */
-  get crudConfig(): CrudOperationConfig | undefined { return this.dataTable.crudConfig }
+  get crudConfig(): CrudOperationConfig | undefined { this.checkDestroyed(); return this.dataTable.crudConfig }
   /** ICrudHost：数据校验器 */
-  get validator(): DataValidator | undefined { return this.dataTable.validator }
+  get validator(): DataValidator | undefined { this.checkDestroyed(); return this.dataTable.validator }
 
   // ─────────────────────────────────────────────
   // 主键辅助方法
@@ -542,8 +543,8 @@ export class DataView implements IDataSource {
       }
 
       const parentRows = getParentRows(pView, rel.dependencyType)
-      // 用 rows.length 而非 requestState===Loaded 判断就绪，兼容父视图处于 Loaded/Idle 两种终态
-      const parentReady = pView.requestState === RequestState.Loading || pView.rows.length > 0
+      // Phase 4 S2: Loading 不视为就绪（可能持有上轮旧数据），必须 Loaded 或有实际行数据
+      const parentReady = pView.requestState === RequestState.Loaded || pView.rows.length > 0
       if (!parentReady || parentRows.length === 0) {
         this.requestState = RequestState.Failed
         this.emitStateChanged('requestState')
@@ -979,10 +980,9 @@ export class DataView implements IDataSource {
     // 6. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
     this.treeManager = undefined
     
-    // 7. 清除 DataTable 引用（打破循环引用，防止内存泄漏）
-    // 作为 DataView 生命周期的最终清理步骤，需要在运行时断开与 DataTable 的关联。
-    // 类型声明维持严格契约（dataTable!: DataTable），此转换仅在 destroy() 内部使用。
-    ;(this as unknown as { dataTable: DataTable | undefined }).dataTable = undefined
+    // 7. 保留 DataTable 引用（现代 JS GC 能正确处理循环引用）。
+    // Phase 4 M6: 不再 undefined dataTable，避免销毁后访问 getter（dataSet/crudService 等）
+    // 抛出不明确的 "Cannot read property of undefined" 而非清晰的 "已销毁" 错误。
     
     // 8. 标记为已销毁
     this._isDestroyed = true
