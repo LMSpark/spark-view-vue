@@ -17,6 +17,9 @@ import type { ComponentRegistry } from '../../core/types.js'
 
 const pageLogger = Logger('PageRenderer')
 
+/** 每次调用 useRuleBinding 生成唯一 instanceId，用于 originatorId 事件回路防护 */
+let _bindingIdCounter = 0
+
 // ─── el-table 命令式接口（Element Plus 原生，无响应式绑定）───────────────────
 
 /** ElementPlus el-table 实例需要命令式驱动选中行，因为它没有 v-model:selection。 */
@@ -123,6 +126,7 @@ export interface UseRuleBindingReturn {
 
 export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingReturn {
   const { originalRules, pageData, pageFunctions, dataSet, formApi, registry } = options
+  const instanceId = `binding-${++_bindingIdCounter}`
   const boundRules = ref<unknown[]>([])
   let cleanupSync: (() => void) | null = null
 
@@ -142,6 +146,7 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       pageData,
       pageFunctions: pageFunctions.value,
       dataSet: dataSet.value,
+      bindingId: instanceId,
       ...(registry !== undefined ? { registry } : {})
     }) as unknown[]
 
@@ -155,7 +160,8 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       // 订阅此 DataSet 内所有视图的状态变化，驱动 el-table UI 同步（DataSet → UI 方向）
       // source='ui' 表示事件源自 UI 操作，无需反向同步回 UI（防止死循环）
       cleanupSync = dataSet.value.onAnyViewChange((evt) => {
-        if (evt.context.source === 'ui') return
+        // 只跳过本实例自身触发的 UI 事件（originatorId 精确匹配），兄弟实例仍正常同步
+        if (evt.context.source === 'ui' && evt.context.originatorId === instanceId) return
         if (evt.changeType === 'currentRow') {
           syncCurrentRowToTable(evt.tableName, evt.viewId, evt.row ?? null, formApi.value)
         } else if (evt.changeType === 'selectedRows') {

@@ -47,7 +47,15 @@ export interface TableSyncHandlers {
 export function createTableSyncHandlers(
   dataSet: IDataSet,
   tableName: string,
-  viewId: string
+  viewId: string,
+  /**
+   * 当前 useRuleBinding 实例的唯一标识。
+   *
+   * 注入后，setCurrentRow/setSelectedRows 会将其写入 EventContext.originatorId，
+   * useRuleBinding 的 onAnyViewChange 过滤逻辑可据此只跳过本实例的回写，
+   * 同一 DataView 上的其他 binding 实例仍会收到通知并执行 DataSet→UI 同步。
+   */
+  bindingId?: string
 ): TableSyncHandlers {
   return {
     onCurrentChange(row: IDataRow | null) {
@@ -57,7 +65,7 @@ export function createTableSyncHandlers(
       const view = table.getOrCreateView(viewId)
       
       if (row === null) {
-        view.setCurrentRow(null, 'ui')
+        view.setCurrentRow(null, 'ui', bindingId !== undefined ? { originatorId: bindingId } : undefined)
         logger.debug('清空 currentRow', { tableName, viewId })
         return
       }
@@ -103,7 +111,7 @@ export function createTableSyncHandlers(
       
       // 设置干净的行对象
       if (cleanRow) {
-        view.setCurrentRow(cleanRow, 'ui')
+        view.setCurrentRow(cleanRow, 'ui', bindingId !== undefined ? { originatorId: bindingId } : undefined)
       }
     },
 
@@ -113,7 +121,7 @@ export function createTableSyncHandlers(
         const view = table.getOrCreateView(viewId)
         // ✅ 修复：el-table selectionChange 事件可能传入非数组参数，做防御性检查
         const validRows = Array.isArray(rows) ? rows : []
-        view.setSelectedRows(validRows, 'ui')
+        view.setSelectedRows(validRows, 'ui', bindingId)
         logger.debug('同步 selectedRows', { tableName, viewId, count: validRows.length })
       } else {
         logger.warn('表不存在', { tableName })

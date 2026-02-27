@@ -117,10 +117,12 @@ export class SelectionDelegate {
    * @param row    - 要设置的行（null 表示清空）
    * @param source - 事件来源标签（默认 'program'）。
    *                 eventId 始终在内部独立生成，调用方不能也不应控制事件的唯一标识。
-   * @param opts.skipSync - 跳过 selectionFollowsCurrent 同步（applyAutoFirst 内部用，
-   *                        避免干扰 autoSelectFirst 独立配置）
+   * @param opts.skipSync    - 跳过 selectionFollowsCurrent 同步（applyAutoFirst 内部用）
+   * @param opts.originatorId - UI 操作来源实例 ID（由 createTableSyncHandlers 注入）；
+   *                            useRuleBinding 用此字段识别"自己发出的事件"并跳过回写，
+   *                            其他同级 binding 实例仍正常同步。
    */
-  setCurrentRow(row: IDataRow | null, source?: EventSource, opts?: { skipSync?: boolean }): void {
+  setCurrentRow(row: IDataRow | null, source?: EventSource, opts?: { skipSync?: boolean; originatorId?: string }): void {
     const host = this.host
     if (host.currentRow === row) return
 
@@ -131,25 +133,29 @@ export class SelectionDelegate {
       : (host.rowIndexMap?.get(row) ?? host.rows.indexOf(row))
     if (host.currentRowIndex === -1) host.currentRowIndex = null
 
-    // 每次 emit 独立生成 eventId，source 仅作来源标签
-    const ctx = createEventContext(source ?? 'program', { tableName: host.tableName, viewId: host.viewId })
+    // 每次 emit 独立生成 eventId，source 仅作来源标签；originatorId 用于对端过滤
+    const ctx = createEventContext(source ?? 'program', {
+      tableName: host.tableName,
+      viewId: host.viewId,
+      ...(opts?.originatorId !== undefined ? { originatorId: opts.originatorId } : {}),
+    })
     this.emitStateChanged('currentRow', { row, context: ctx })
 
-    // selectionFollowsCurrent 副作用：传 source 不传 ctx，setSelectedRows 内部生成自己的 eventId
+    // selectionFollowsCurrent 副作用：传 source + originatorId，setSelectedRows 内部生成自己的 eventId
     // applyAutoFirst 传入 skipSync=true，selectedRows 由 autoSelectFirst 独立控制
     if (!opts?.skipSync && host.selectionFollowsCurrent) {
-      this.setSelectedRows(row !== null ? [row] : [], source)
+      this.setSelectedRows(row !== null ? [row] : [], source, opts?.originatorId)
     }
   }
 
   /**
    * 设置多选行（幂等：内容不变时跳过）
    *
-   * @param rows   - 要设置的行数组
-   * @param source - 事件来源标签（默认 'program'）。
-   *                 eventId 始终在内部独立生成，调用方不能也不应控制事件的唯一标识。
+   * @param rows       - 要设置的行数组
+   * @param source     - 事件来源标签（默认 'program'）
+   * @param originatorId - UI 操作来源实例 ID（可选，同 setCurrentRow）
    */
-  setSelectedRows(rows: IDataRow[], source?: EventSource): void {
+  setSelectedRows(rows: IDataRow[], source?: EventSource, originatorId?: string): void {
     const host = this.host
     // 防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
     if (!Array.isArray(rows)) {
@@ -166,8 +172,12 @@ export class SelectionDelegate {
     const rowMap = host.rowIndexMap ??= this.buildRowIndexMap(host.rows)
     host.selectedRowIndices = this.mapRowsToIndices(rows, rowMap)
 
-    // 每次 emit 独立生成 eventId，source 仅作来源标签
-    const ctx = createEventContext(source ?? 'program', { tableName: host.tableName, viewId: host.viewId })
+    // 每次 emit 独立生成 eventId，source 仅作来源标签；originatorId 用于对端过滤
+    const ctx = createEventContext(source ?? 'program', {
+      tableName: host.tableName,
+      viewId: host.viewId,
+      ...(originatorId !== undefined ? { originatorId } : {}),
+    })
     this.emitStateChanged('selectedRows', { rows: [...rows], context: ctx })
   }
 

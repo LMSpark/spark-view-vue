@@ -301,6 +301,14 @@ export interface RuleBindingOptions {
   dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
   /** 组件注册表（可选）——用于查询 dataKey 行为元数据，替代硬编码的组件白名单 */
   registry?: ComponentRegistry
+  /**
+   * 当前 useRuleBinding 实例的唯一标识（可选）。
+   *
+   * 注入后，injectTableEvents 会将其写入 EventContext.originatorId，
+   * useRuleBinding 的 onAnyViewChange 过滤逻辑可据此只跳过本实例的回写，
+   * 同一 DataView 的其他 binding 实例仍会收到通知并同步 UI。
+   */
+  bindingId?: string
 }
 
 /**

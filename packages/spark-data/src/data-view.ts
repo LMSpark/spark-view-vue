@@ -660,13 +660,16 @@ export class DataView implements IDataSource {
    * @param source - 事件来源标签（默认 'program'）。
    *   eventId 由内部独立生成，调用方只需说明"谁发起了这次操作"，
    *   不能也不应控制事件的唯一标识。
+   * @param opts.originatorId - UI 实例标识（由 createTableSyncHandlers 注入）；
+   *   同一 DataView 的其余 binding 实例仍会收到事件并更新，只有 originatorId 匹配的
+   *   binding 实例跳过回写（避免重复 setCurrentRow → currentChange → setCurrentRow 循环）。
    */
-  setCurrentRow(row: IDataRow | null, source?: EventSource): void {
-    this.selectionDelegate.setCurrentRow(row, source)
+  setCurrentRow(row: IDataRow | null, source?: EventSource, opts?: { originatorId?: string }): void {
+    this.selectionDelegate.setCurrentRow(row, source, opts)
   }
 
-  setSelectedRows(rows: IDataRow[], source?: EventSource): void {
-    this.selectionDelegate.setSelectedRows(rows, source)
+  setSelectedRows(rows: IDataRow[], source?: EventSource, originatorId?: string): void {
+    this.selectionDelegate.setSelectedRows(rows, source, originatorId)
   }
 
   setCurrentRowById(id: string | number, source?: EventSource): boolean {
