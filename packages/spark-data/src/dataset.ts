@@ -10,6 +10,7 @@ import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRel
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import { DataTable } from './data-table'
+import { assertNoSeparator } from './core/utils'
 
 /** @internal 从未知值推断列类型 */
 function inferColumnType(v: unknown): string {
@@ -44,6 +45,29 @@ export class DataSet implements IDataSet {
   /** 页面ID */
   pageId: string | undefined
 
+  // ===== 动态视图订阅追踪 =====
+
+  /**
+   * 活跃的 onAnyViewChange 订阅（handler + 每个视图的清理函数）。
+   * 当 DataTable.getOrCreateView() 创建新视图时，
+   * DataSet._subscribeNewView() 自动为所有活跃订阅追加监听。
+   * @internal
+   */
+  _activeViewSubs: Array<{
+    handler: (evt: ViewStateEvent) => void
+    unsubs: Array<() => void>
+  }> = []
+
+  /**
+   * 活跃的 on('loadSuccess'|'loadError') 订阅追踪。
+   * @internal
+   */
+  _activeOnSubs: Array<{
+    event: 'loadSuccess' | 'loadError'
+    handler: (payload: { tableName: string; viewId: string; error?: Error }) => void
+    unsubs: Array<() => void>
+  }> = []
+
 
 
   // ===== 构造函数 =====
@@ -59,6 +83,7 @@ export class DataSet implements IDataSet {
     version?: number | undefined
     pageId?: string | undefined
   }) {
+    assertNoSeparator(config.dataSetName, 'dataSetName')
     this.dataSetName = config.dataSetName
     this.relations = config.relations
     this.version = config.version
@@ -105,53 +130,98 @@ export class DataSet implements IDataSet {
     event: 'loadSuccess' | 'loadError',
     handler: (payload: { tableName: string; viewId: string; error?: Error }) => void
   ): () => void {
-    const unsubscribers: (() => void)[] = []
+    const entry: (typeof this._activeOnSubs)[number] = { event, handler, unsubs: [] }
+    this._activeOnSubs.push(entry)
+
+    // 订阅当前已存在的所有视图
     for (const table of Object.values(this.tables)) {
       for (const view of Object.values(table.views)) {
-        // 根据 event 类型创建专用 handler，消除每次回调内的永久死分支
-        let h: (evt: ViewStateEvent) => void
-        if (event === 'loadSuccess') {
-          h = (evt: ViewStateEvent) => {
-            // requestState 事件仅在 loadFromServer 成功时（Loaded 转换）发射，
-            // appendRow/replaceRows 等本地操作不发射 requestState → 无误触发
-            if (evt.changeType === 'requestState' && view.requestState === RequestState.Loaded) {
-              handler({ tableName: evt.tableName, viewId: evt.viewId })
-            }
-          }
-        } else {
-          h = (evt: ViewStateEvent) => {
-            // view.loadingError !== null 用于区分「真实网络错误」与「父依赖未满足」：
-            // 父依赖不满足时 requestState=Failed 但 loadingError===null，不应触发 loadError
-            if (evt.changeType === 'requestState'
-              && view.requestState === RequestState.Failed
-              && view.loadingError !== null) {
-              handler({ tableName: evt.tableName, viewId: evt.viewId, error: view.loadingError })
-            }
-          }
-        }
-        view.events.on('stateChanged', h)
-        unsubscribers.push(() => view.events.off('stateChanged', h))
+        this._subscribeOnView(entry, view)
       }
     }
-    return () => { for (const u of unsubscribers) u() }
+
+    return () => {
+      for (const u of entry.unsubs) u()
+      entry.unsubs.length = 0
+      const idx = this._activeOnSubs.indexOf(entry)
+      if (idx >= 0) this._activeOnSubs.splice(idx, 1)
+    }
   }
 
   /**
    * 订阅此 DataSet 内任意视图的状态变化（替代全局 event-bus）。
    *
-   * 遍历当前所有表的所有视图，分别绑定 stateChanged 处理器。
+   * 自动追踪：后续通过 getOrCreateView() 动态创建的视图也会被订阅。
    * 作用域严格限定于本实例，不同页面的 DataSet 相互隔离。
    */
   onAnyViewChange(handler: (evt: ViewStateEvent) => void): () => void {
-    const unsubscribers: (() => void)[] = []
+    const entry: (typeof this._activeViewSubs)[number] = { handler, unsubs: [] }
+    this._activeViewSubs.push(entry)
+
+    // 订阅当前已存在的所有视图
     for (const table of Object.values(this.tables)) {
       for (const view of Object.values(table.views)) {
-        const h = (evt: ViewStateEvent) => handler(evt)
-        view.events.on('stateChanged', h)
-        unsubscribers.push(() => view.events.off('stateChanged', h))
+        this._subscribeViewChange(entry, view)
       }
     }
-    return () => { for (const u of unsubscribers) u() }
+
+    return () => {
+      for (const u of entry.unsubs) u()
+      entry.unsubs.length = 0
+      const idx = this._activeViewSubs.indexOf(entry)
+      if (idx >= 0) this._activeViewSubs.splice(idx, 1)
+    }
+  }
+
+  // ===== 动态视图订阅内部方法 =====
+
+  /** @internal 为单个视图订阅 stateChanged（onAnyViewChange 用） */
+  private _subscribeViewChange(
+    entry: (typeof this._activeViewSubs)[number],
+    view: import('./data-view').DataView,
+  ): void {
+    const h = (evt: ViewStateEvent) => entry.handler(evt)
+    view.events.on('stateChanged', h)
+    entry.unsubs.push(() => view.events.off('stateChanged', h))
+  }
+
+  /** @internal 为单个视图订阅 loadSuccess/loadError（on() 用） */
+  private _subscribeOnView(
+    entry: (typeof this._activeOnSubs)[number],
+    view: import('./data-view').DataView,
+  ): void {
+    let h: (evt: ViewStateEvent) => void
+    if (entry.event === 'loadSuccess') {
+      h = (evt: ViewStateEvent) => {
+        if (evt.changeType === 'requestState' && view.requestState === RequestState.Loaded) {
+          entry.handler({ tableName: evt.tableName, viewId: evt.viewId })
+        }
+      }
+    } else {
+      h = (evt: ViewStateEvent) => {
+        if (evt.changeType === 'requestState'
+          && view.requestState === RequestState.Failed
+          && view.loadingError !== null) {
+          entry.handler({ tableName: evt.tableName, viewId: evt.viewId, error: view.loadingError })
+        }
+      }
+    }
+    view.events.on('stateChanged', h)
+    entry.unsubs.push(() => view.events.off('stateChanged', h))
+  }
+
+  /**
+   * 将动态创建的视图注册到所有活跃订阅中。
+   * 由 DataTable.getOrCreateView() 在创建新视图时调用。
+   * @internal
+   */
+  _subscribeNewView(view: import('./data-view').DataView): void {
+    for (const entry of this._activeViewSubs) {
+      this._subscribeViewChange(entry, view)
+    }
+    for (const entry of this._activeOnSubs) {
+      this._subscribeOnView(entry, view)
+    }
   }
 
   // ===== 关系图查询（网状关系，非树形） =====

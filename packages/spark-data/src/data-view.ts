@@ -37,7 +37,7 @@ import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
 import { Logger, createEventEmitter } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
-import { isSameRow, getParentRows } from './core/utils'
+import { isSameRow, getParentRows, assertNoSeparator } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
 import { SelectionDelegate } from './strategies/selection-delegate'
@@ -338,6 +338,8 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   constructor(tableName: string, viewId: string = 'default') {
+    assertNoSeparator(tableName, 'tableName')
+    assertNoSeparator(viewId, 'viewId')
     this.tableName = tableName
     this.viewId = viewId
   }
