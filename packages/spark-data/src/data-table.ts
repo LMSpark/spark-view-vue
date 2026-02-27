@@ -258,8 +258,7 @@ export class DataTable {
     def.pageSize = vc.pageSize ?? 20
 
     // 静态数据初始化：通过正式 setter 写入，同时触发 this.events 和全局 bus。
-    // 注意：此时 def.dataTable 尚未赋值（由外部 setDataSet 完成），
-    // 但 setCurrentRow / setSelectedRows 不访问 dataTable，可以安全调用。
+    // def.dataTable 已在 getOrCreateView 中设置（view.primaryKey getter 可正常访问列定义）。
     const firstRow = def.rows[0] ?? null
     if (def.autoCurrentFirst !== false && firstRow) {
       def.setCurrentRow(firstRow)
@@ -272,7 +271,9 @@ export class DataTable {
     if (data.views) {
       for (const [cid, cd] of Object.entries(data.views)) {
         if (cid === 'default') continue
-        t.views[cid] = reactive(DataView.fromData(cd, t.tableName, cid)) as DataView
+        const namedView = reactive(DataView.fromData(cd, t.tableName, cid)) as DataView
+        namedView.dataTable = t   // 确保 primaryKey getter 可访问列定义
+        t.views[cid] = namedView
       }
     }
     return t

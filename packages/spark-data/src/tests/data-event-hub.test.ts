@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData, DataTable } from '@spark-view/spark-data'
 import type { ViewStateEvent } from '@spark-view/spark-data'
 
 
@@ -433,5 +433,102 @@ describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
     view.setCurrentRow(view.rows[1]!) // Bob
     expect(view._currentRowId).toBe(20)
     expect(view.currentRow).toEqual({ userId: 20, name: 'Bob' })
+  })
+})
+
+// ==================== DataView.primaryKey 边缘用例 ====================
+
+describe('DataView.primaryKey 边缘用例', () => {
+  it('DataView.fromData()（无 DataTable）primaryKey 回退为 id', () => {
+    // fromData 创建的独立视图没有 dataTable 引用
+    const v = SparkData.createDataView({ tableName: 'Standalone', viewId: 'default' })
+    // 无 dataTable → 无法访问列定义 → 回退 'id'
+    expect(v.primaryKey).toBe('id')
+  })
+
+  it('fromTableData 命名视图正确继承列定义主键', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'FromTableDS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'orderId', type: 'number', isPrimaryKey: true },
+            { name: 'amount', type: 'number' },
+          ],
+          rows: [],
+        },
+      },
+    })
+    // 通过 getOrCreateView 创建命名视图
+    const table = ds.getTable('Orders')!
+    const reportView = table.getOrCreateView('report')
+    // 命名视图也应从列定义推导主键
+    expect(reportView.primaryKey).toBe('orderId')
+  })
+
+  it('resetPrimaryKey() 清除覆盖后恢复列推导', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'ResetDS',
+      tables: {
+        Items: {
+          tableName: 'Items',
+          columns: [{ name: 'itemId', type: 'number', isPrimaryKey: true }],
+          rows: [{ itemId: 100 }, { itemId: 200 }],
+        },
+      },
+    })
+    const view = ds.getView('Items')!
+
+    // 初始：列推导
+    expect(view.primaryKey).toBe('itemId')
+
+    // 显式覆盖
+    view.primaryKey = 'customField'
+    expect(view.primaryKey).toBe('customField')
+
+    // 清除覆盖 → 恢复列推导
+    view.resetPrimaryKey()
+    expect(view.primaryKey).toBe('itemId')
+  })
+
+  it('无 isPrimaryKey 列时回退 id、显式覆盖优先于回退', () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'NoPKDS',
+      tables: {
+        Logs: {
+          tableName: 'Logs',
+          columns: [
+            { name: 'message', type: 'string' },
+          ],
+          rows: [{ id: 1, message: 'test' }],
+        },
+      },
+    })
+    const view = ds.getView('Logs')!
+
+    // 无 isPrimaryKey → 回退
+    expect(view.primaryKey).toBe('id')
+
+    // 显式覆盖
+    view.primaryKey = 'message'
+    expect(view.primaryKey).toBe('message')
+  })
+
+  it('DataTable.fromTableData 命名视图有正确 primaryKey', () => {
+    const table = DataTable.fromTableData({
+      tableName: 'Products',
+      columns: [{ name: 'sku', type: 'string', isPrimaryKey: true }],
+      rows: [],
+      api: undefined,
+      views: {
+        grid: { tableName: 'Products', viewId: 'grid', rows: [], page: 1, pageSize: 20 },
+      },
+      loading: undefined,
+      error: undefined,
+    })
+    const gridView = table.getView('grid')!
+    // 命名视图通过 fromTableData 创建，dataTable 已设置
+    expect(gridView.primaryKey).toBe('sku')
   })
 })
