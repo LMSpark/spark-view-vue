@@ -5,6 +5,20 @@
 import type { IDataRow, DependencyType } from '../types'
 import type { DataView } from '../data-view'
 
+/** DataKey 分隔符，名称中禁止包含 */
+const SEPARATOR = '@'
+
+/**
+ * 校验名称中不含 DataKey 分隔符 '@'
+ * @throws 如果名称含 '@'
+ * @internal
+ */
+export function assertNoSeparator(value: string, label: string): void {
+  if (value.includes(SEPARATOR)) {
+    throw new Error(`${label} 不允许包含 '${SEPARATOR}' 分隔符: "${value}"`)
+  }
+}
+
 /**
  * 通过主键或引用比较判断两行是否相同
  * 

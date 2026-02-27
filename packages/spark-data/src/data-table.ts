@@ -22,6 +22,15 @@ import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationC
 import type { DataSet } from './dataset'
 import { DataValidator, createValidator, createSchema } from './validation'
 import { CrudService, createCrudService } from './crud-service'
+import { assertNoSeparator } from './core/utils'
+
+/**
+ * 创建响应式 DataView（统一 reactive 包装，所有视图创建走此入口）
+ * @internal
+ */
+function createReactiveView(tableName: string, viewId: string): DataView {
+  return reactive(new DataView(tableName, viewId)) as DataView
+}
 
 /**
  * DataTable - 管理单表的结构定义与配置
@@ -83,9 +92,10 @@ export class DataTable {
    * - 自动创建 `default` DataView
    */
   constructor(tableName: string, columns: DataColumn[] = []) {
+    assertNoSeparator(tableName, 'tableName')
     this.tableName = tableName
     this.columns = columns
-    this.views['default'] = reactive(new DataView(tableName, 'default')) as DataView
+    this.views['default'] = createReactiveView(tableName, 'default')
     // 初始化数据校验器
     if (columns.length > 0) {
       this.validator = createValidator(createSchema(columns))
@@ -127,11 +137,13 @@ export class DataTable {
    */
   getOrCreateView(viewId: string): DataView {
     if (!this.views[viewId]) {
-      const view = reactive(new DataView(this.tableName, viewId)) as DataView
+      const view = createReactiveView(this.tableName, viewId)
       // 视图管理职责：设置引用链并触发级联
       if (this.dataSet) {
         view.dataTable = this
         view.setupCascade()
+        // Phase 6 M2: 动态视图自动订阅——通知 DataSet 将活跃的 on/onAnyViewChange 绑定到新视图
+        this.dataSet._subscribeNewView(view)
       }
       this.views[viewId] = view
     }

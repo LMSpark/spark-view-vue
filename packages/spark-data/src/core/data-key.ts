@@ -184,6 +184,8 @@ export function resolveDataKey(
  * 与 `resolveDataKey` 的区别：`rows` 字段返回 **DataView 实例**（实现了 `IDataSource`），
  * 而非 `view.rows` 数组，更适合绑定到需要完整 DataSource 接口的组件
  * （如 `el-table`、`r-table` 等）。
+ *
+ * @internal 内部实现——外部调用方请使用 resolveRawKey 或 resolveDataKeyBinding
  */
 export function resolveDataKeyAsSource(
   descriptor: DataKeyDescriptor,
