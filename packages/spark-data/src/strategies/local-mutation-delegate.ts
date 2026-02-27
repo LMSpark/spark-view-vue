@@ -98,17 +98,17 @@ export class LocalMutationDelegate {
       h.rowIndexMap.set(newRow, idx)
     }
 
-    const ctx = this.mkCtx()
+    // 每次 emit 独立调用 mkCtx()，确保 currentRow 与 selectedRows 事件各有唯一 eventId
     if (h.currentRow && isSameRow(h.currentRow, oldRow, h.primaryKey)) {
       h.currentRow = newRow
-      this.emitStateChanged('currentRow', { row: newRow, context: ctx })
+      this.emitStateChanged('currentRow', { row: newRow, context: this.mkCtx() })
     }
 
     if (h.selectedRows.length > 0) {
       const selectedIdx = h.selectedRows.findIndex(r => isSameRow(r, oldRow, h.primaryKey))
       if (selectedIdx !== -1) {
         h.selectedRows[selectedIdx] = newRow
-        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: ctx })
+        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: this.mkCtx() })
       }
     }
 
@@ -133,21 +133,20 @@ export class LocalMutationDelegate {
     const postDeleteMap = this.buildRowIndexMap(h.rows)
     h.rowIndexMap = postDeleteMap
 
-    const ctx = this.mkCtx()
-    // 被删行是当前行 → 清空并立即通知
+    // 被删行是当前行 → 清空并立即通知（独立 eventId）
     if (h.currentRow && isSameRow(h.currentRow, deletedRow, h.primaryKey)) {
       h.currentRow = null
       h.currentRowIndex = null
-      this.emitStateChanged('currentRow', { row: null, context: ctx })
+      this.emitStateChanged('currentRow', { row: null, context: this.mkCtx() })
     }
 
-    // 被删行在多选中 → 移除并立即通知
+    // 被删行在多选中 → 移除并立即通知（独立 eventId）
     if (h.selectedRows.length > 0) {
       const newSelected = h.selectedRows.filter(r => !isSameRow(r, deletedRow, h.primaryKey))
       if (newSelected.length !== h.selectedRows.length) {
         h.selectedRows.splice(0, h.selectedRows.length, ...newSelected)
         h.selectedRowIndices = this.mapRowsToIndices(newSelected, postDeleteMap)
-        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: ctx })
+        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: this.mkCtx() })
       }
     }
 
@@ -163,19 +162,18 @@ export class LocalMutationDelegate {
     const idxMap = this.buildRowIndexMap(rows)
     h.rowIndexMap = idxMap
 
-    const ctx = this.mkCtx()
     const rowSet = new Set(rows)
     if (h.currentRow && !rowSet.has(h.currentRow)) {
       h.currentRow = null
       h.currentRowIndex = null
-      this.emitStateChanged('currentRow', { row: null, context: ctx })
+      this.emitStateChanged('currentRow', { row: null, context: this.mkCtx() })
     }
     if (h.selectedRows.length > 0) {
       const newSelected = h.selectedRows.filter(r => rowSet.has(r))
       if (newSelected.length !== h.selectedRows.length) {
         h.selectedRows.splice(0, h.selectedRows.length, ...newSelected)
         h.selectedRowIndices = this.mapRowsToIndices(newSelected, idxMap)
-        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: ctx })
+        this.emitStateChanged('selectedRows', { rows: [...h.selectedRows], context: this.mkCtx() })
       }
     }
     this.emitStateChanged('rows')
