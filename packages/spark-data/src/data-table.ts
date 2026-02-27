@@ -238,10 +238,10 @@ export class DataTable {
     // 但 setCurrentRow / setSelectedRows 不访问 dataTable，可以安全调用。
     const firstRow = def.rows[0] ?? null
     if (def.autoCurrentFirst !== false && firstRow) {
-      def.setCurrentRow(firstRow, 'auto')
+      def.setCurrentRow(firstRow)
     }
     if (def.autoSelectFirst !== false && firstRow) {
-      def.setSelectedRows([firstRow], 'auto')
+      def.setSelectedRows([firstRow])
     }
 
     // 处理命名视图（非 default）
