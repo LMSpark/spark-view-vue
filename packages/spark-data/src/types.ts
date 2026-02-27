@@ -220,6 +220,17 @@ export interface IViewMetadata {
   autoCurrentFirst?: boolean
   /** 请求成功后自动将 selectedRows 设为第一行 */
   autoSelectFirst?: boolean
+  /**
+   * setCurrentRow 时是否自动将 selectedRows 同步替换为 [row]（默认 true）
+   *
+   * - `true`（默认）：selectedRows 跟随 currentRow，两者始终包含关系（常规表格模式）
+   * - `false`：currentRow 与 selectedRows 完全独立，selectedRows 类似购物车，
+   *            点击行只改变焦点行，不影响已勾选集合
+   *
+   * 注意：此属性仅影响运行时的 setCurrentRow 调用；
+   * 服务端数据加载后的自动首选行为仍由 autoCurrentFirst / autoSelectFirst 独立控制。
+   */
+  selectionFollowsCurrent?: boolean
   page?: number
   pageSize?: number
   /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode），属于视图层关注点 */

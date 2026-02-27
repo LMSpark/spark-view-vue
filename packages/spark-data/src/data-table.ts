@@ -17,7 +17,6 @@
 
 import { DataView } from './data-view'
 import { RequestState } from './types'
-import { createEventContext } from './core/event-id'
 import { reactive } from 'vue'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { DataSet } from './dataset'
@@ -238,12 +237,11 @@ export class DataTable {
     // 注意：此时 def.dataTable 尚未赋值（由外部 setDataSet 完成），
     // 但 setCurrentRow / setSelectedRows 不访问 dataTable，可以安全调用。
     const firstRow = def.rows[0] ?? null
-    const autoCtx = createEventContext('auto', { tableName: def.tableName, viewId: def.viewId })
     if (def.autoCurrentFirst !== false && firstRow) {
-      def.setCurrentRow(firstRow, autoCtx)
+      def.setCurrentRow(firstRow, 'auto')
     }
     if (def.autoSelectFirst !== false && firstRow) {
-      def.setSelectedRows([firstRow], autoCtx)
+      def.setSelectedRows([firstRow], 'auto')
     }
 
     // 处理命名视图（非 default）

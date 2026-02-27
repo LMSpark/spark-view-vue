@@ -193,6 +193,7 @@ export class DataSet implements IDataSet {
       api?: CrudApi
       autoCurrentFirst?: boolean
       autoSelectFirst?: boolean
+      selectionFollowsCurrent?: boolean
       views?: Record<string, IViewMetadata>
     }>
     relations?: DataRelation[]
