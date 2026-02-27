@@ -37,7 +37,7 @@ function __init__() {
   if (usersView) {
     usersView.events.on('stateChanged', (event) => {
       if (event.changeType === 'currentRow' && event.tableName === 'Users') {
-        const currentIndex = usersView.currentRowIndex
+        const currentIndex = usersView.rows.indexOf(usersView.currentRow)
         
         // 🔍 验证事件触发时 $api 状态
         console.log('🔍 [stateChanged] $api 状态验证:', {
