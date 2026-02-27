@@ -34,8 +34,8 @@ export type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
  * SelectionDelegate 所需的宿主能力（ISP 最小子集）
  *
  * DataView 实现此接口，SelectionDelegate 仅通过此接口访问宿主状态。
- * 可写字段（currentRow / selectedRows 等）由委托直接修改——
- * 与 DataView 字段同引用，无需回调。
+ * 选中状态以主键值存储，委托写入 _currentRowId / _selectedRowIds；
+ * currentRow / selectedRows 是宿主 DataView 上的 getter（按需从 rows 解析），委托只读。
  */
 export interface ISelectionHost {
   // ── 只读配置 ──────────────────────────────
@@ -47,12 +47,13 @@ export interface ISelectionHost {
   readonly autoSelectFirst: boolean
   readonly selectionFollowsCurrent: boolean
 
-  // ── 选中状态（委托直接写入，DataView 读同变更） ──
-  currentRow: IDataRow | null
-  currentRowIndex: number | null
-  selectedRows: IDataRow[]          // 委托通过 splice 操作，保持数组引用稳定（Vue 响应式友好）
-  selectedRowIndices: number[]
-  rowIndexMap?: Map<IDataRow, number> | undefined  // 索引缓存，委托负责懒建与失效
+  // ── 主键存储（委托直接写入）──────────────
+  _currentRowId: string | number | null
+  _selectedRowIds: Array<string | number>
+
+  // ── 派生只读（宿主 getter，委托只读）──────
+  readonly currentRow: IDataRow | null
+  readonly selectedRows: IDataRow[]
 
   // ── 工具方法 ──────────────────────────────
   getPrimaryKeyValue(row: IDataRow): string | number | undefined
@@ -67,7 +68,7 @@ export interface ISelectionHost {
  * LocalMutationDelegate 所需的宿主能力（ISP 最小子集）
  *
  * 涵盖本地行数据写入所需的所有可变字段及辅助方法。
- * 可写字段由委托直接修改，与 DataView 同引用，Vue 响应式兼容。
+ * 选中状态以主键值存储，委托写入 _currentRowId / _selectedRowIds。
  */
 export interface ILocalMutationHost {
   // ── 行数据（委托直接 splice） ───────────────
@@ -81,11 +82,15 @@ export interface ILocalMutationHost {
   page: number
   pageSize: number
 
-  // ── 选中状态（updateRowById/deleteRowById/replaceRows 同步引用） ──
-  currentRow: IDataRow | null
-  currentRowIndex: number | null
-  selectedRows: IDataRow[]
-  selectedRowIndices: number[]
+  // ── 选中状态（主键存储）──────────────────
+  _currentRowId: string | number | null
+  _selectedRowIds: Array<string | number>
+
+  // ── 派生只读（宿主 getter，委托只读）──────
+  readonly currentRow: IDataRow | null
+  readonly selectedRows: IDataRow[]
+
+  // ── 行索引缓存（updateRowById 行对象替换时原地更新）──
   rowIndexMap?: Map<IDataRow, number> | undefined
 
   // ── 工具方法 ──────────────────────────────

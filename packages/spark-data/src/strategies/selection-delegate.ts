@@ -38,24 +38,6 @@ export class SelectionDelegate {
     }
   }
 
-  /** 构建 row → index 映射（O(n)），供 setSelectedRows / cleanupInvalidSelections 复用 */
-  private buildRowIndexMap(rows: IDataRow[]): Map<IDataRow, number> {
-    const m = new Map<IDataRow, number>()
-    let i = 0
-    for (const row of rows) m.set(row, i++)
-    return m
-  }
-
-  /** 将行数组映射为索引数组（单次遍历，无 -1 占位，替代 .map(get ?? -1).filter(≠-1)）*/
-  private mapRowsToIndices(rows: IDataRow[], map: Map<IDataRow, number>): number[] {
-    const result: number[] = []
-    for (const r of rows) {
-      const idx = map.get(r)
-      if (idx !== undefined) result.push(idx)
-    }
-    return result
-  }
-
   /** 构建 pk → row 映射（O(n)），供 setSelectedRowsById / addSelectedRowsById 共用 */
   private buildIdToRowMap(): Map<string | number, IDataRow> {
     const m = new Map<string | number, IDataRow>()
@@ -79,29 +61,22 @@ export class SelectionDelegate {
    */
   applyAutoFirst(): void {
     const host = this.host
-    const prevCurrentRow = host.currentRow
-    const prevHadSelected = host.selectedRows.length > 0
-    host.currentRow = null
-    host.currentRowIndex = null
-    host.selectedRows.splice(0, host.selectedRows.length)
-    host.selectedRowIndices = []
-    // rowIndexMap 已由 updateFromServer() 清零（updateFromServer 总在本方法之前被调用），无需重复清零
+    const prevHadCurrent = host._currentRowId !== null
+    const prevHadSelected = host._selectedRowIds.length > 0
+    host._currentRowId = null
+    host._selectedRowIds.splice(0, host._selectedRowIds.length)
 
     const firstRow = host.rows[0] ?? null
-    // 每次调用各自创建独立 eventId：currentRow 与 selectedRows 是两个独立的状态变更事件
     const mkAutoCtx = () => createEventContext('auto', { tableName: host.tableName, viewId: host.viewId })
 
     if (host.autoCurrentFirst !== false && firstRow) {
-      // skipSync=true：autoSelectFirst 由下方独立控制，不走 selectionFollowsCurrent 联动
       this.setCurrentRow(firstRow, 'auto', { skipSync: true })
-    } else if (prevCurrentRow !== null) {
-      // autoCurrentFirst=false 或无数据：直接 emit，生成独立 eventId
+    } else if (prevHadCurrent) {
       this.emitStateChanged('currentRow', { row: null, context: mkAutoCtx() })
     }
     if (host.autoSelectFirst !== false && firstRow) {
       this.setSelectedRows([firstRow], 'auto')
     } else if (prevHadSelected) {
-      // autoSelectFirst=false 或无数据：直接 emit，生成独立 eventId
       this.emitStateChanged('selectedRows', { rows: [], context: mkAutoCtx() })
     }
   }
@@ -124,25 +99,25 @@ export class SelectionDelegate {
    */
   setCurrentRow(row: IDataRow | null, source?: EventSource, opts?: { skipSync?: boolean; originatorId?: string }): void {
     const host = this.host
-    if (host.currentRow === row) return
+    const newId = row !== null ? (host.getPrimaryKeyValue(row) ?? null) : null
 
-    host.currentRow = row
-    // rowIndexMap 已构建时 O(1) 查找，未构建时回退到 O(n) indexOf
-    host.currentRowIndex = row === null
-      ? null
-      : (host.rowIndexMap?.get(row) ?? host.rows.indexOf(row))
-    if (host.currentRowIndex === -1) host.currentRowIndex = null
+    // 幂等守卫：主键相同则不触发事件
+    if (newId === host._currentRowId) return
+    if (row !== null && newId === null) {
+      logger.warn('setCurrentRow: 行缺少主键，无法存储', { tableName: host.tableName, viewId: host.viewId })
+      return
+    }
 
-    // 每次 emit 独立生成 eventId，source 仅作来源标签；originatorId 用于对端过滤
+    host._currentRowId = newId
+
     const ctx = createEventContext(source ?? 'program', {
       tableName: host.tableName,
       viewId: host.viewId,
       ...(opts?.originatorId !== undefined ? { originatorId: opts.originatorId } : {}),
     })
-    this.emitStateChanged('currentRow', { row, context: ctx })
+    // event row 从 getter 解析（此时 _currentRowId 已更新，getter 返回正确对象）
+    this.emitStateChanged('currentRow', { row: host.currentRow, context: ctx })
 
-    // selectionFollowsCurrent 副作用：传 source + originatorId，setSelectedRows 内部生成自己的 eventId
-    // applyAutoFirst 传入 skipSync=true，selectedRows 由 autoSelectFirst 独立控制
     if (!opts?.skipSync && host.selectionFollowsCurrent) {
       this.setSelectedRows(row !== null ? [row] : [], source, opts?.originatorId)
     }
@@ -157,28 +132,31 @@ export class SelectionDelegate {
    */
   setSelectedRows(rows: IDataRow[], source?: EventSource, originatorId?: string): void {
     const host = this.host
-    // 防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
     if (!Array.isArray(rows)) {
       logger.warn('setSelectedRows 收到非数组参数', { rows, tableName: host.tableName, viewId: host.viewId })
       return
     }
 
-    const cur = host.selectedRows
-    if (cur.length === rows.length && cur.every((r, i) => r === rows[i])) return
+    // 提取 PK，过滤掉无 PK 的行
+    const newIds: Array<string | number> = []
+    for (const r of rows) {
+      const pk = host.getPrimaryKeyValue(r)
+      if (pk !== undefined) newIds.push(pk)
+    }
 
-    host.selectedRows.splice(0, host.selectedRows.length, ...rows)
+    // 幂等守卫：PK 序列相同则不触发事件
+    const oldIds = host._selectedRowIds
+    if (oldIds.length === newIds.length && oldIds.every((id, i) => id === newIds[i])) return
 
-    // 使用 Map 加速索引查找（O(n) 而非 O(n²)）
-    const rowMap = host.rowIndexMap ??= this.buildRowIndexMap(host.rows)
-    host.selectedRowIndices = this.mapRowsToIndices(rows, rowMap)
+    host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
 
-    // 每次 emit 独立生成 eventId，source 仅作来源标签；originatorId 用于对端过滤
     const ctx = createEventContext(source ?? 'program', {
       tableName: host.tableName,
       viewId: host.viewId,
       ...(originatorId !== undefined ? { originatorId } : {}),
     })
-    this.emitStateChanged('selectedRows', { rows: [...rows], context: ctx })
+    // event rows 从 getter 解析（保证与 _selectedRowIds 同步）
+    this.emitStateChanged('selectedRows', { rows: host.selectedRows, context: ctx })
   }
 
   // ─────────────────────────────────────────────
@@ -306,26 +284,20 @@ export class SelectionDelegate {
       logger.warn('addSelectedRows 收到非数组参数', { rows, tableName: host.tableName, viewId: host.viewId })
       return 0
     }
-
     if (rows.length === 0) return 0
 
-    // 构建现有选中行的主键 Set（单次遍历）
-    const selectedSet = new Set<string | number>()
-    for (const r of host.selectedRows) {
+    const selectedSet = new Set(host._selectedRowIds)
+    const toAddIds: Array<string | number> = []
+    for (const r of rows) {
       const pk = host.getPrimaryKeyValue(r)
-      if (pk !== undefined) selectedSet.add(pk)
+      if (pk !== undefined && !selectedSet.has(pk)) toAddIds.push(pk)
     }
+    if (toAddIds.length === 0) return 0
 
-    const toAdd = rows.filter(r => {
-      const pk = host.getPrimaryKeyValue(r)
-      return pk !== undefined && !selectedSet.has(pk)
-    })
-
-    if (toAdd.length === 0) return 0
-
-    const newSelection = [...host.selectedRows, ...toAdd]
-    this.setSelectedRows(newSelection, source)
-    return toAdd.length
+    host._selectedRowIds.push(...toAddIds)
+    const ctx = createEventContext(source ?? 'program', { tableName: host.tableName, viewId: host.viewId })
+    this.emitStateChanged('selectedRows', { rows: host.selectedRows, context: ctx })
+    return toAddIds.length
   }
 
   /**
@@ -344,27 +316,22 @@ export class SelectionDelegate {
       logger.warn('removeSelectedRows 收到非数组参数', { rows, tableName: host.tableName, viewId: host.viewId })
       return 0
     }
-
-    if (rows.length === 0 || host.selectedRows.length === 0) return 0
+    if (rows.length === 0 || host._selectedRowIds.length === 0) return 0
 
     const toRemoveSet = new Set<string | number>()
     for (const r of rows) {
       const pk = host.getPrimaryKeyValue(r)
       if (pk !== undefined) toRemoveSet.add(pk)
     }
-
     if (toRemoveSet.size === 0) return 0
 
-    const newSelection = host.selectedRows.filter(r => {
-      const pk = host.getPrimaryKeyValue(r)
-      return pk === undefined || !toRemoveSet.has(pk)
-    })
-
-    const removedCount = host.selectedRows.length - newSelection.length
+    const newIds = host._selectedRowIds.filter(id => !toRemoveSet.has(id))
+    const removedCount = host._selectedRowIds.length - newIds.length
     if (removedCount > 0) {
-      this.setSelectedRows(newSelection, source)
+      host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
+      const ctx = createEventContext(source ?? 'program', { tableName: host.tableName, viewId: host.viewId })
+      this.emitStateChanged('selectedRows', { rows: host.selectedRows, context: ctx })
     }
-
     return removedCount
   }
 
@@ -386,65 +353,36 @@ export class SelectionDelegate {
       logger.warn('addSelectedRowsById 收到非数组参数', { ids, tableName: host.tableName, viewId: host.viewId })
       return 0
     }
-
     if (ids.length === 0) return 0
 
     const idToRow = this.buildIdToRowMap()
-
-    const selectedSet = new Set<string | number>()
-    for (const r of host.selectedRows) {
-      const pk = host.getPrimaryKeyValue(r)
-      if (pk !== undefined) selectedSet.add(pk)
-    }
-
-    const toAdd: IDataRow[] = []
+    const selectedSet = new Set(host._selectedRowIds)
+    const toAddIds: Array<string | number> = []
     const notFoundIds: Array<string | number> = []
-    const alreadySelectedIds: Array<string | number> = []
 
     for (const id of ids) {
-      if (selectedSet.has(id)) {
-        alreadySelectedIds.push(id)
-        continue
-      }
-      const row = idToRow.get(id)
-      if (row) {
-        toAdd.push(row)
+      if (selectedSet.has(id)) continue
+      if (idToRow.has(id)) {
+        toAddIds.push(id)
       } else {
         notFoundIds.push(id)
       }
     }
 
     if (options?.strict && notFoundIds.length > 0) {
-      const error = new Error(
-        `addSelectedRowsById (strict): 有 ${notFoundIds.length} 个 ID 找不到对应行`
-      )
-      logger.error('addSelectedRowsById: 严格模式下有 ID 找不到', {
-        tableName: host.tableName,
-        viewId: host.viewId,
-        primaryKey: host.primaryKey,
-        notFoundIds,
-        totalRows: host.rows.length
-      })
-      throw error
+      throw new Error(`addSelectedRowsById (strict): 有 ${notFoundIds.length} 个 ID 找不到对应行`)
     }
-
     if (notFoundIds.length > 0) {
       logger.warn('addSelectedRowsById: 部分 ID 找不到对应行', {
-        tableName: host.tableName,
-        viewId: host.viewId,
-        primaryKey: host.primaryKey,
-        notFoundIds,
-        foundCount: toAdd.length,
-        alreadySelected: alreadySelectedIds.length,
-        totalRows: host.rows.length
+        tableName: host.tableName, viewId: host.viewId, notFoundIds, foundCount: toAddIds.length,
       })
     }
+    if (toAddIds.length === 0) return 0
 
-    if (toAdd.length > 0) {
-      return this.addSelectedRows(toAdd, source)
-    }
-
-    return 0
+    host._selectedRowIds.push(...toAddIds)
+    const ctx = createEventContext(source ?? 'program', { tableName: host.tableName, viewId: host.viewId })
+    this.emitStateChanged('selectedRows', { rows: host.selectedRows, context: ctx })
+    return toAddIds.length
   }
 
   /**
@@ -463,21 +401,16 @@ export class SelectionDelegate {
       logger.warn('removeSelectedRowsById 收到非数组参数', { ids, tableName: host.tableName, viewId: host.viewId })
       return 0
     }
-
-    if (ids.length === 0 || host.selectedRows.length === 0) return 0
+    if (ids.length === 0 || host._selectedRowIds.length === 0) return 0
 
     const toRemoveSet = new Set(ids)
-
-    const newSelection = host.selectedRows.filter(r => {
-      const pk = host.getPrimaryKeyValue(r)
-      return pk === undefined || !toRemoveSet.has(pk)
-    })
-
-    const removedCount = host.selectedRows.length - newSelection.length
+    const newIds = host._selectedRowIds.filter(id => !toRemoveSet.has(id))
+    const removedCount = host._selectedRowIds.length - newIds.length
     if (removedCount > 0) {
-      this.setSelectedRows(newSelection, source)
+      host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
+      const ctx = createEventContext(source ?? 'program', { tableName: host.tableName, viewId: host.viewId })
+      this.emitStateChanged('selectedRows', { rows: host.selectedRows, context: ctx })
     }
-
     return removedCount
   }
 
@@ -495,32 +428,25 @@ export class SelectionDelegate {
     const host = this.host
     let cleaned = false
 
-    // O(n) 单次遍历构建主键 Set，避免双重遍历
     const rowPkSet = new Set<string | number>()
     for (const r of host.rows) {
       const pk = host.getPrimaryKeyValue(r)
       if (pk !== undefined) rowPkSet.add(pk)
     }
 
-    const currentRow = host.currentRow
-    if (currentRow) {
-      const pk = host.getPrimaryKeyValue(currentRow)
-      if (pk === undefined || !rowPkSet.has(pk)) {
-        host.currentRow = null
-        host.currentRowIndex = null
-        cleaned = true
-      }
+    if (host._currentRowId !== null && !rowPkSet.has(host._currentRowId)) {
+      host._currentRowId = null
+      const ctx = createEventContext('program', { tableName: host.tableName, viewId: host.viewId })
+      this.emitStateChanged('currentRow', { row: null, context: ctx })
+      cleaned = true
     }
 
-    if (host.selectedRows.length > 0) {
-      const valid = host.selectedRows.filter(sr => {
-        const pk = host.getPrimaryKeyValue(sr)
-        return pk !== undefined && rowPkSet.has(pk)
-      })
-      if (valid.length !== host.selectedRows.length) {
-        host.selectedRows.splice(0, host.selectedRows.length, ...valid)
-        const rowMap = host.rowIndexMap ??= this.buildRowIndexMap(host.rows)
-        host.selectedRowIndices = this.mapRowsToIndices(valid, rowMap)
+    if (host._selectedRowIds.length > 0) {
+      const validIds = host._selectedRowIds.filter(id => rowPkSet.has(id))
+      if (validIds.length !== host._selectedRowIds.length) {
+        host._selectedRowIds.splice(0, host._selectedRowIds.length, ...validIds)
+        const ctx = createEventContext('program', { tableName: host.tableName, viewId: host.viewId })
+        this.emitStateChanged('selectedRows', { rows: host.selectedRows, context: ctx })
         cleaned = true
       }
     }
