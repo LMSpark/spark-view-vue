@@ -28,10 +28,12 @@ import type {
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
   EventContext,
+  FlatTreeNode, TreePath, NestedTreeSearchResult,
+  TreeConfig,
 } from './types'
 import { RequestState } from './types'
 import { createEventContext } from './core/event-id'
-import type { TreeManager } from './tree-manager'
+import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
@@ -137,7 +139,12 @@ export class DataView implements IDataSource {
    * - `false`：清空 selectedRows
    */
   autoSelectFirst: boolean = true
-  
+  /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
+  treeConfig?: TreeConfig | undefined
+
+  /** 树视图模式，代理到 treeConfig.treeMode（默认 'flat'） */
+  get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
+  set treeMode(v: 'flat' | 'nested') { (this.treeConfig ??= {}).treeMode = v }
 
   // ── 关联对象 ────────────────────────────────
 
@@ -716,16 +723,36 @@ export class DataView implements IDataSource {
   }
 
   // ─────────────────────────────────────────────
-  // 树管理器
+  // 树操作（委托给 TreeManager）
   // ─────────────────────────────────────────────
 
-  setTreeManager(tm: TreeManager): void {
-    this.treeManager = tm
-    if (typeof tm.setDataView === 'function') tm.setDataView(this)
+  /** 懒初始化 TreeManager（传入 treeConfig 字段映射 + DataTable.treeApi 接口族） */
+  private _ensureTreeManager(): TreeManager {
+    if (!this.treeManager) {
+      const cfg = this.treeConfig ?? {}
+      this.treeManager = new TreeManager(cfg, this.dataTable?.api)
+    }
+    return this.treeManager
   }
 
-  getTreeManager(): TreeManager | undefined {
-    return this.treeManager
+  /** 拉取直接子节点并写入缓存（对应 /tree/children） */
+  loadTreeChildren(parentId: string | number | null, limit?: number): Promise<FlatTreeNode[]> {
+    return this._ensureTreeManager().fetchChildren(parentId, limit)
+  }
+
+  /** 获取节点祖先链 ID（对应 /tree/path） */
+  loadTreePath(id: string | number): Promise<TreePath> {
+    return this._ensureTreeManager().fetchPath(id)
+  }
+
+  /** 展开到目标节点，差量补齐缓存（对应 /tree/path + /tree/subtree） */
+  expandTreeToNode(targetId: string | number): Promise<void> {
+    return this._ensureTreeManager().expandToNode(targetId)
+  }
+
+  /** 嵌套模式远端搜索（对应 /tree/nested/search） */
+  searchTreeNested(keyword: string, limit?: number): Promise<NestedTreeSearchResult[]> {
+    return this._ensureTreeManager().fetchNestedSearch(keyword, limit)
   }
 
   // ─────────────────────────────────────────────
@@ -808,7 +835,7 @@ export class DataView implements IDataSource {
     // 5. 清空数据
     this.resetState()
     
-    // 6. 清除 TreeManager 引用
+    // 6. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
     this.treeManager = undefined
     
     // 7. 清除 DataTable 引用（打破循环引用，防止内存泄漏）
@@ -872,16 +899,19 @@ export class DataView implements IDataSource {
     // 只在非默认值时序列化（减少 JSON 体积）
     if (this.autoCurrentFirst !== true) result.autoCurrentFirst = this.autoCurrentFirst
     if (this.autoSelectFirst !== true) result.autoSelectFirst = this.autoSelectFirst
+    if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     return result
   }
 
   static fromData(data: IViewMetadata, tableName: string, viewId: string): DataView {
     const v = new DataView(tableName, viewId)
+    if (data.rows !== undefined) v.rows = [...data.rows]
     if (data.filterExpression !== undefined) v.filterExpression = data.filterExpression
     if (data.sortExpression !== undefined) v.sortExpression = data.sortExpression
     // autoCurrentFirst 和 autoSelectFirst 默认为 true，只在显式指定时覆盖
     if (data.autoCurrentFirst !== undefined) v.autoCurrentFirst = data.autoCurrentFirst
     if (data.autoSelectFirst !== undefined) v.autoSelectFirst = data.autoSelectFirst
+    if (data.treeConfig !== undefined) v.treeConfig = data.treeConfig
     v.page = data.page ?? 1
     v.pageSize = data.pageSize ?? 20
     return v

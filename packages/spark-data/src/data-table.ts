@@ -20,7 +20,6 @@ import { RequestState } from './types'
 import { createEventContext } from './core/event-id'
 import { reactive } from 'vue'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
-import type { TreeManager } from './tree-manager'
 import type { DataSet } from './dataset'
 import { DataValidator, createValidator, createSchema } from './validation'
 import { CrudService, createCrudService } from './crud-service'
@@ -45,7 +44,7 @@ export class DataTable {
   /** 列定义 */
   columns: DataColumn[]
 
-  /** CRUD API配置 */
+  /** CRUD API配置（含 tree 子字段存放树接口族） */
   api?: CrudApi
 
   /** CRUD 操作配置（全局默认配置） */
@@ -131,16 +130,6 @@ export class DataTable {
     return this.views[viewId]
   }
 
-  /**
-   * 将 TreeManager 委托给 `default` 视图（常用于自引用树场景）
-   * @param tm - TreeManager 实例
-   */
-  setTreeManager(tm: TreeManager): void { this.getOrCreateView('default').setTreeManager(tm) }
-  /**
-   * 返回绑定到 `default` 视图的 TreeManager（如有）
-   */
-  getTreeManager(): TreeManager | undefined { return this.getOrCreateView('default').getTreeManager() }
-
   // ===== 配置管理 =====
 
   /**
@@ -191,6 +180,7 @@ export class DataTable {
     if (def.autoSelectFirst !== undefined) result.autoSelectFirst = def.autoSelectFirst
     if (def.page !== undefined) result.page = def.page
     if (def.pageSize !== undefined) result.pageSize = def.pageSize
+    if (def.treeConfig !== undefined) result.treeConfig = def.treeConfig
     return result
   }
 
@@ -240,6 +230,7 @@ export class DataTable {
     if (vc.sortExpression !== undefined) def.sortExpression = vc.sortExpression
     if (vc.autoCurrentFirst !== undefined) def.autoCurrentFirst = vc.autoCurrentFirst
     if (vc.autoSelectFirst !== undefined) def.autoSelectFirst = vc.autoSelectFirst
+    if (vc.treeConfig !== undefined) def.treeConfig = vc.treeConfig
     def.page = vc.page ?? 1
     def.pageSize = vc.pageSize ?? 20
 
