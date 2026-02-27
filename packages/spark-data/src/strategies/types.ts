@@ -45,6 +45,7 @@ export interface ISelectionHost {
   readonly primaryKey: string | string[]
   readonly autoCurrentFirst: boolean
   readonly autoSelectFirst: boolean
+  readonly selectionFollowsCurrent: boolean
 
   // ── 选中状态（委托直接写入，DataView 读同变更） ──
   currentRow: IDataRow | null

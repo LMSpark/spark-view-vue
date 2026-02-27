@@ -125,12 +125,15 @@ export namespace SparkData {
     autoCurrentFirst?: boolean
     /** 请求成功后自动将 selectedRows 设为第一行，见 {@link DataView.autoSelectFirst} */
     autoSelectFirst?: boolean
+    /** setCurrentRow 时是否同步 selectedRows，见 {@link DataView.selectionFollowsCurrent} */
+    selectionFollowsCurrent?: boolean
     /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
     treeConfig?: import('./types').TreeConfig
   }): DataView {
     const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
     if (config.autoCurrentFirst !== undefined) view.autoCurrentFirst = config.autoCurrentFirst
     if (config.autoSelectFirst !== undefined) view.autoSelectFirst = config.autoSelectFirst
+    if (config.selectionFollowsCurrent !== undefined) view.selectionFollowsCurrent = config.selectionFollowsCurrent
     if (config.treeConfig !== undefined) view.treeConfig = config.treeConfig
     return view
   }

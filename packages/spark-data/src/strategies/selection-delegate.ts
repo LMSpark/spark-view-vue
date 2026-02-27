@@ -14,7 +14,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { IDataRow, EventContext } from '../types'
+import type { IDataRow, EventSource } from '../types'
 import { createEventContext } from '../core/event-id'
 import type { ISelectionHost, EmitStateChangedFn } from './types'
 
@@ -25,7 +25,6 @@ export class SelectionDelegate {
   constructor(
     private host: ISelectionHost,
     private emitStateChanged: EmitStateChangedFn,
-    private mkCtx: () => EventContext,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -89,19 +88,21 @@ export class SelectionDelegate {
     // rowIndexMap 已由 updateFromServer() 清零（updateFromServer 总在本方法之前被调用），无需重复清零
 
     const firstRow = host.rows[0] ?? null
-    const autoCtx = createEventContext('auto', { tableName: host.tableName, viewId: host.viewId })
+    // 每次调用各自创建独立 eventId：currentRow 与 selectedRows 是两个独立的状态变更事件
+    const mkAutoCtx = () => createEventContext('auto', { tableName: host.tableName, viewId: host.viewId })
 
     if (host.autoCurrentFirst !== false && firstRow) {
-      this.setCurrentRow(firstRow, autoCtx)   // guard: null !== firstRow → always fires
+      // skipSync=true：autoSelectFirst 由下方独立控制，不走 selectionFollowsCurrent 联动
+      this.setCurrentRow(firstRow, 'auto', { skipSync: true })
     } else if (prevCurrentRow !== null) {
-      // autoCurrentFirst=false 或无数据：当前行被强制清零，stateChanged 通知订阅者
-      this.emitStateChanged('currentRow', { row: null, context: autoCtx })
+      // autoCurrentFirst=false 或无数据：直接 emit，生成独立 eventId
+      this.emitStateChanged('currentRow', { row: null, context: mkAutoCtx() })
     }
     if (host.autoSelectFirst !== false && firstRow) {
-      this.setSelectedRows([firstRow], autoCtx)  // guard: [] !== [firstRow] → always fires
+      this.setSelectedRows([firstRow], 'auto')
     } else if (prevHadSelected) {
-      // autoSelectFirst=false 或无数据：已选行被强制清零，stateChanged 通知订阅者
-      this.emitStateChanged('selectedRows', { rows: [], context: autoCtx })
+      // autoSelectFirst=false 或无数据：直接 emit，生成独立 eventId
+      this.emitStateChanged('selectedRows', { rows: [], context: mkAutoCtx() })
     }
   }
 
@@ -113,9 +114,13 @@ export class SelectionDelegate {
    * 设置当前行
    * 状态变更 → 发射 stateChanged → UI + 子视图级联均通过 events 接收
    *
-   * @param row - 要设置的行（null 表示清空）
+   * @param row    - 要设置的行（null 表示清空）
+   * @param source - 事件来源标签（默认 'program'）。
+   *                 eventId 始终在内部独立生成，调用方不能也不应控制事件的唯一标识。
+   * @param opts.skipSync - 跳过 selectionFollowsCurrent 同步（applyAutoFirst 内部用，
+   *                        避免干扰 autoSelectFirst 独立配置）
    */
-  setCurrentRow(row: IDataRow | null, context?: EventContext): void {
+  setCurrentRow(row: IDataRow | null, source?: EventSource, opts?: { skipSync?: boolean }): void {
     const host = this.host
     if (host.currentRow === row) return
 
@@ -126,16 +131,25 @@ export class SelectionDelegate {
       : (host.rowIndexMap?.get(row) ?? host.rows.indexOf(row))
     if (host.currentRowIndex === -1) host.currentRowIndex = null
 
-    const eventContext = context ?? this.mkCtx()
-    this.emitStateChanged('currentRow', { row, context: eventContext })
+    // 每次 emit 独立生成 eventId，source 仅作来源标签
+    const ctx = createEventContext(source ?? 'program', { tableName: host.tableName, viewId: host.viewId })
+    this.emitStateChanged('currentRow', { row, context: ctx })
+
+    // selectionFollowsCurrent 副作用：传 source 不传 ctx，setSelectedRows 内部生成自己的 eventId
+    // applyAutoFirst 传入 skipSync=true，selectedRows 由 autoSelectFirst 独立控制
+    if (!opts?.skipSync && host.selectionFollowsCurrent) {
+      this.setSelectedRows(row !== null ? [row] : [], source)
+    }
   }
 
   /**
    * 设置多选行（幂等：内容不变时跳过）
    *
-   * @param rows - 要设置的行数组
+   * @param rows   - 要设置的行数组
+   * @param source - 事件来源标签（默认 'program'）。
+   *                 eventId 始终在内部独立生成，调用方不能也不应控制事件的唯一标识。
    */
-  setSelectedRows(rows: IDataRow[], context?: EventContext): void {
+  setSelectedRows(rows: IDataRow[], source?: EventSource): void {
     const host = this.host
     // 防御性检查，确保 rows 是有效数组（el-table 事件可能传入非数组）
     if (!Array.isArray(rows)) {
@@ -152,8 +166,9 @@ export class SelectionDelegate {
     const rowMap = host.rowIndexMap ??= this.buildRowIndexMap(host.rows)
     host.selectedRowIndices = this.mapRowsToIndices(rows, rowMap)
 
-    const eventContext = context ?? this.mkCtx()
-    this.emitStateChanged('selectedRows', { rows: [...rows], context: eventContext })
+    // 每次 emit 独立生成 eventId，source 仅作来源标签
+    const ctx = createEventContext(source ?? 'program', { tableName: host.tableName, viewId: host.viewId })
+    this.emitStateChanged('selectedRows', { rows: [...rows], context: ctx })
   }
 
   // ─────────────────────────────────────────────
@@ -168,7 +183,7 @@ export class SelectionDelegate {
    */
   setCurrentRowById(
     id: string | number,
-    context?: EventContext
+    source?: EventSource
   ): boolean {
     this.checkDestroyed()
     const host = this.host
@@ -186,7 +201,7 @@ export class SelectionDelegate {
       return false
     }
 
-    this.setCurrentRow(row, context)
+    this.setCurrentRow(row, source)
     return true
   }
 
@@ -200,7 +215,7 @@ export class SelectionDelegate {
    */
   setSelectedRowsById(
     ids: Array<string | number>,
-    context?: EventContext,
+    source?: EventSource,
     options?: { strict?: boolean }
   ): number {
     this.checkDestroyed()
@@ -212,7 +227,7 @@ export class SelectionDelegate {
     }
 
     if (ids.length === 0) {
-      this.setSelectedRows([], context)
+      this.setSelectedRows([], source)
       return 0
     }
 
@@ -254,15 +269,15 @@ export class SelectionDelegate {
       })
     }
 
-    this.setSelectedRows(foundRows, context)
+    this.setSelectedRows(foundRows, source)
     return foundRows.length
   }
 
   /**
    * 清空选中行
    */
-  clearSelectedRows(context?: EventContext): void {
-    this.setSelectedRows([], context)
+  clearSelectedRows(source?: EventSource): void {
+    this.setSelectedRows([], source)
   }
 
   /**
@@ -272,7 +287,7 @@ export class SelectionDelegate {
    */
   addSelectedRows(
     rows: IDataRow[],
-    context?: EventContext
+    source?: EventSource
   ): number {
     this.checkDestroyed()
     const host = this.host
@@ -299,7 +314,7 @@ export class SelectionDelegate {
     if (toAdd.length === 0) return 0
 
     const newSelection = [...host.selectedRows, ...toAdd]
-    this.setSelectedRows(newSelection, context)
+    this.setSelectedRows(newSelection, source)
     return toAdd.length
   }
 
@@ -310,7 +325,7 @@ export class SelectionDelegate {
    */
   removeSelectedRows(
     rows: IDataRow[],
-    context?: EventContext
+    source?: EventSource
   ): number {
     this.checkDestroyed()
     const host = this.host
@@ -337,7 +352,7 @@ export class SelectionDelegate {
 
     const removedCount = host.selectedRows.length - newSelection.length
     if (removedCount > 0) {
-      this.setSelectedRows(newSelection, context)
+      this.setSelectedRows(newSelection, source)
     }
 
     return removedCount
@@ -351,7 +366,7 @@ export class SelectionDelegate {
    */
   addSelectedRowsById(
     ids: Array<string | number>,
-    context?: EventContext,
+    source?: EventSource,
     options?: { strict?: boolean }
   ): number {
     this.checkDestroyed()
@@ -416,7 +431,7 @@ export class SelectionDelegate {
     }
 
     if (toAdd.length > 0) {
-      return this.addSelectedRows(toAdd, context)
+      return this.addSelectedRows(toAdd, source)
     }
 
     return 0
@@ -429,7 +444,7 @@ export class SelectionDelegate {
    */
   removeSelectedRowsById(
     ids: Array<string | number>,
-    context?: EventContext
+    source?: EventSource
   ): number {
     this.checkDestroyed()
     const host = this.host
@@ -450,7 +465,7 @@ export class SelectionDelegate {
 
     const removedCount = host.selectedRows.length - newSelection.length
     if (removedCount > 0) {
-      this.setSelectedRows(newSelection, context)
+      this.setSelectedRows(newSelection, source)
     }
 
     return removedCount

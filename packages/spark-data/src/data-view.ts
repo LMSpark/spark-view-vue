@@ -27,7 +27,7 @@ import type {
   ViewStateEvent, QueryParams,
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
-  EventContext,
+  EventSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
   TreeConfig,
 } from './types'
@@ -139,6 +139,19 @@ export class DataView implements IDataSource {
    * - `false`：清空 selectedRows
    */
   autoSelectFirst: boolean = true
+  /**
+   * setCurrentRow 时是否自动同步 selectedRows（默认 true）
+   *
+   * - `true`（默认）：常规表格模式——selectedRows 始终包含 currentRow。
+   *            调用 setCurrentRow(row) 时，selectedRows 自动替换为 [row]；
+   *            清空当前行时 selectedRows 同步清空。
+   * - `false`：购物车模式——currentRow 与 selectedRows 完全独立。
+   *            点击行只改变焦点 / 高亮，selectedRows 仅通过 checkbox 手动管理。
+   *
+   * 注意：此属性不影响服务端加载后的自动首选行为，
+   * 那部分仍由 autoCurrentFirst / autoSelectFirst 独立控制。
+   */
+  selectionFollowsCurrent: boolean = true
   /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
   treeConfig?: TreeConfig | undefined
 
@@ -209,7 +222,6 @@ export class DataView implements IDataSource {
     this._selectionDelegate ??= new SelectionDelegate(
       this,
       (changeType, extra) => this.emitStateChanged(changeType, extra),
-      () => this._mkCtx(),
     )
     return this._selectionDelegate
   }
@@ -644,48 +656,53 @@ export class DataView implements IDataSource {
   // 选中状态（委托给 SelectionDelegate）
   // ─────────────────────────────────────────────
 
-  setCurrentRow(row: IDataRow | null, context?: EventContext): void {
-    this.selectionDelegate.setCurrentRow(row, context)
+  /**
+   * @param source - 事件来源标签（默认 'program'）。
+   *   eventId 由内部独立生成，调用方只需说明"谁发起了这次操作"，
+   *   不能也不应控制事件的唯一标识。
+   */
+  setCurrentRow(row: IDataRow | null, source?: EventSource): void {
+    this.selectionDelegate.setCurrentRow(row, source)
   }
 
-  setSelectedRows(rows: IDataRow[], context?: EventContext): void {
-    this.selectionDelegate.setSelectedRows(rows, context)
+  setSelectedRows(rows: IDataRow[], source?: EventSource): void {
+    this.selectionDelegate.setSelectedRows(rows, source)
   }
 
-  setCurrentRowById(id: string | number, context?: EventContext): boolean {
-    return this.selectionDelegate.setCurrentRowById(id, context)
+  setCurrentRowById(id: string | number, source?: EventSource): boolean {
+    return this.selectionDelegate.setCurrentRowById(id, source)
   }
 
   setSelectedRowsById(
     ids: Array<string | number>,
-    context?: EventContext,
+    source?: EventSource,
     options?: { strict?: boolean }
   ): number {
-    return this.selectionDelegate.setSelectedRowsById(ids, context, options)
+    return this.selectionDelegate.setSelectedRowsById(ids, source, options)
   }
 
-  clearSelectedRows(context?: EventContext): void {
-    this.selectionDelegate.clearSelectedRows(context)
+  clearSelectedRows(source?: EventSource): void {
+    this.selectionDelegate.clearSelectedRows(source)
   }
 
-  addSelectedRows(rows: IDataRow[], context?: EventContext): number {
-    return this.selectionDelegate.addSelectedRows(rows, context)
+  addSelectedRows(rows: IDataRow[], source?: EventSource): number {
+    return this.selectionDelegate.addSelectedRows(rows, source)
   }
 
-  removeSelectedRows(rows: IDataRow[], context?: EventContext): number {
-    return this.selectionDelegate.removeSelectedRows(rows, context)
+  removeSelectedRows(rows: IDataRow[], source?: EventSource): number {
+    return this.selectionDelegate.removeSelectedRows(rows, source)
   }
 
   addSelectedRowsById(
     ids: Array<string | number>,
-    context?: EventContext,
+    source?: EventSource,
     options?: { strict?: boolean }
   ): number {
-    return this.selectionDelegate.addSelectedRowsById(ids, context, options)
+    return this.selectionDelegate.addSelectedRowsById(ids, source, options)
   }
 
-  removeSelectedRowsById(ids: Array<string | number>, context?: EventContext): number {
-    return this.selectionDelegate.removeSelectedRowsById(ids, context)
+  removeSelectedRowsById(ids: Array<string | number>, source?: EventSource): number {
+    return this.selectionDelegate.removeSelectedRowsById(ids, source)
   }
 
   // ─────────────────────────────────────────────
@@ -899,6 +916,7 @@ export class DataView implements IDataSource {
     // 只在非默认值时序列化（减少 JSON 体积）
     if (this.autoCurrentFirst !== true) result.autoCurrentFirst = this.autoCurrentFirst
     if (this.autoSelectFirst !== true) result.autoSelectFirst = this.autoSelectFirst
+    if (this.selectionFollowsCurrent !== true) result.selectionFollowsCurrent = this.selectionFollowsCurrent
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     return result
   }
@@ -908,9 +926,10 @@ export class DataView implements IDataSource {
     if (data.rows !== undefined) v.rows = [...data.rows]
     if (data.filterExpression !== undefined) v.filterExpression = data.filterExpression
     if (data.sortExpression !== undefined) v.sortExpression = data.sortExpression
-    // autoCurrentFirst 和 autoSelectFirst 默认为 true，只在显式指定时覆盖
+    // autoCurrentFirst / autoSelectFirst / selectionFollowsCurrent 默认为 true，只在显式指定时覆盖
     if (data.autoCurrentFirst !== undefined) v.autoCurrentFirst = data.autoCurrentFirst
     if (data.autoSelectFirst !== undefined) v.autoSelectFirst = data.autoSelectFirst
+    if (data.selectionFollowsCurrent !== undefined) v.selectionFollowsCurrent = data.selectionFollowsCurrent
     if (data.treeConfig !== undefined) v.treeConfig = data.treeConfig
     v.page = data.page ?? 1
     v.pageSize = data.pageSize ?? 20
