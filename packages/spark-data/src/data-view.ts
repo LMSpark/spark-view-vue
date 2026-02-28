@@ -149,12 +149,12 @@ export class DataView implements IDataSource {
   /** 多选行主键值列表。通过 selectedRows getter 取对应行对象数组 */
   _selectedRowIds: Array<string | number> = []
 
-  // ── 选中值序列化配置（多选下拉 / DataGrid 通用）────
+  // ── 选中值序列化配置（单选 / 多选通用）────
 
   /**
-   * 标签显示字段名（用于 selectedLabels / currentLabel getter，渲染多选 tag 时使用）。
+   * 标签显示字段名（用于 labels / label getter，渲染 tag 时使用）。
    * 未指定时回退到主键值字符串。
-   * 示例：labelField = 'name' → selectedLabels 返回各选中行的 name 字段值。
+   * 示例：labelField = 'name' → labels 返回各选中行的 name 字段值。
    */
   labelField?: string
   /**
@@ -192,19 +192,19 @@ export class DataView implements IDataSource {
     })
   }
 
-  // ── 选中值序列化层（下拉多选 / DataGrid 通用）────
+  // ── 值序列化层（单选 / 多选通用）────
 
   /**
-   * 已选主键序列化字符串（供表单字段 v-model 或 API 传值使用）。
+   * 值的序列化字符串（供表单字段 v-model 或 API 传值使用）。
    *
-   * - **多选模式**：各主键值以 {@link selectionDelimiter} 连接，如 `"1,2,3"`
+   * - **多选模式**（`selectionDelimiter !== ''`）：各主键值以分隔符连接，如 `"1,2,3"`
    * - **单选模式**（`selectionDelimiter === ''`）：返回首个选中值，如 `"1"`
    * - 未选中任何行时返回空字符串 `""`
    *
-   * 搭配 {@link setSelectedValue} 使用，构成完整的序列化/反序列化回路。
-   * 搭配 {@link selectedLabels} 使用，完成 tag 渲染。
+   * 搭配 {@link setValue} 使用，构成完整的序列化/反序列化回路。
+   * 搭配 {@link labels} 使用，完成 tag 渲染。
    */
-  get selectedValue(): string {
+  get value(): string {
     if (!this.selectionDelimiter) {
       // 单选模式：返回首个选中值
       return this._selectedRowIds.length > 0 ? String(this._selectedRowIds[0]) : ''
@@ -212,16 +212,16 @@ export class DataView implements IDataSource {
     return this._selectedRowIds.join(this.selectionDelimiter)
   }
 
-  /**
-   * 当前行主键值（供单选表单字段 v-model 使用）。
-   * 语义化别名，与 `_currentRowId` 等价。
-   */
+  /** @deprecated 使用 {@link value} 代替 */
+  get selectedValue(): string { return this.value }
+
+  /** @deprecated 使用 {@link value} 代替（单选时 value 已覆盖此场景） */
   get currentValue(): string | number | null {
     return this._currentRowId
   }
 
   /**
-   * 多选已选行的显示标签数组（供渲染 tag 使用）。
+   * 选中行的显示标签数组（供渲染 tag 使用）。
    *
    * - 有 {@link labelField} 配置时：取各选中行的 `labelField` 字段值
    * - 无 {@link labelField} 配置时：回退到主键值字符串
@@ -229,9 +229,9 @@ export class DataView implements IDataSource {
    *
    * @example
    * view.labelField = 'name'
-   * view.selectedLabels // → ["Alice", "Bob"]
+   * view.labels // → ["Alice", "Bob"]
    */
-  get selectedLabels(): string[] {
+  get labels(): string[] {
     if (!this.labelField) {
       return this._selectedRowIds.map(id => String(id))
     }
@@ -247,6 +247,9 @@ export class DataView implements IDataSource {
     })
   }
 
+  /** @deprecated 使用 {@link labels} 代替 */
+  get selectedLabels(): string[] { return this.labels }
+
   /**
    * 当前行的显示标签（供渲染单选 tag 或面包屑使用）。
    *
@@ -254,7 +257,7 @@ export class DataView implements IDataSource {
    * - 无 {@link labelField} 配置时：回退到主键值字符串
    * - 无当前行时：返回 null
    */
-  get currentLabel(): string | null {
+  get label(): string | null {
     if (this._currentRowId === null) return null
     if (!this.labelField) return String(this._currentRowId)
     const row = this.currentRow
@@ -262,6 +265,9 @@ export class DataView implements IDataSource {
     const v = row[this.labelField]
     return v !== undefined && v !== null ? String(v) : String(this._currentRowId)
   }
+
+  /** @deprecated 使用 {@link label} 代替 */
+  get currentLabel(): string | null { return this.label }
 
   // ── 分页 ────────────────────────────────────
 
@@ -897,20 +903,22 @@ export class DataView implements IDataSource {
   }
 
   /**
-   * 通过序列化字符串设置多选（与 {@link selectedValue} getter 构成序列化回路）。
+   * 通过序列化字符串设置值（与 {@link value} getter 构成序列化回路）。
    *
-   * - 自动按 {@link selectionDelimiter} 分割，每段尝试解析为数字，失败则保留字符串
-   * - 空字符串 / null / undefined → 清空多选
-   * - 解析完成后调用 `setSelectedRowsById`，若 rows 尚未加载则仅写入 `_selectedRowIds`，
-   *   待 rows 加载后 selectedRows / selectedLabels getter 自动反映新数据
+   * - **单选模式**（`selectionDelimiter === ''`）：整个值作为一个 ID，不拆分
+   * - **多选模式**：自动按 {@link selectionDelimiter} 分割
+   * - 空字符串 / null / undefined → 清空
+   * - 若 rows 尚未加载，仅写入 `_selectedRowIds`，
+   *   待 rows 加载后 getter 自动反映新数据
    *
-   * @param value - 以 {@link selectionDelimiter} 连接的主键字符串，如 `"1,2,3"`
+   * @param value - 主键值字符串，多选时以分隔符连接，如 `"1,2,3"`
    *
    * @example
-   * view.setSelectedValue("1,2,3")   // → selectedRows = [row1, row2, row3]
-   * view.setSelectedValue(null)      // → selectedRows = []
+   * view.setValue("1,2,3")   // 多选 → [row1, row2, row3]
+   * view.setValue("1")       // 单选 → [row1]
+   * view.setValue(null)      // 清空
    */
-  setSelectedValue(value: string | null | undefined): void {
+  setValue(value: string | null | undefined): void {
     if (!value) {
       this.selectionDelegate.clearSelectedRows()
       return
@@ -947,6 +955,9 @@ export class DataView implements IDataSource {
 
     this.selectionDelegate.setSelectedRowsById(ids)
   }
+
+  /** @deprecated 使用 {@link setValue} 代替 */
+  setSelectedValue(value: string | null | undefined): void { this.setValue(value) }
 
   clearSelectedRows(): void {
     this.selectionDelegate.clearSelectedRows()

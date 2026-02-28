@@ -190,16 +190,16 @@ export interface IViewMetadata {
   /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode），属于视图层关注点 */
   treeConfig?: TreeConfig
   /**
-   * 标签显示字段名（用于 selectedLabels / currentLabel getter，渲染多选 tag 时使用）。
+   * 标签显示字段名（用于 labels / label getter，渲染 tag 时使用）。
    * 未指定时回退到主键值字符串。
-   * 示例：labelField = 'name' → selectedLabels 返回各选中行的 name 字段值。
+   * 示例：labelField = 'name' → labels 返回各选中行的 name 字段值。
    */
   labelField?: string
   /**
    * 值序列化分隔符（默认 ','）。
    *
-   * - **非空字符串**（`','` / `'|'` / `';'` 等）：多选模式，selectedValue 以此分隔多个主键值
-   * - **空字符串 `''`**：单选模式，selectedValue 仅保留一个值，setSelectedValue 不拆分
+   * - **非空字符串**（`','` / `'|'` / `';'` 等）：多选模式，value 以此分隔多个主键值
+   * - **空字符串 `''`**：单选模式，value 仅保留一个值，setValue 不拆分
    *
    * 通过 `isMultiSelect` getter 可读取当前模式。
    */
