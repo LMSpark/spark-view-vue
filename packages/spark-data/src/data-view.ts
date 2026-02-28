@@ -92,11 +92,12 @@ export class DataView implements IDataSource {
   /** 内部存储的 DataTable 引用 */
   private _dataTable!: DataTable
 
-  /** 所属 DataTable（赋值时自动编译 columns 中的 computeExpression） */
+  /** 所属 DataTable（赋值时自动编译 columns 中的 computeExpression，不求值） */
   get dataTable(): DataTable { return this._dataTable }
   set dataTable(table: DataTable) {
     this._dataTable = table
-    // DataTable 是列配置的所有者；attach 后立即编译 computeExpression
+    // 编译是 DataTable 的事：attach 后立即编译 computeExpression（不求值）
+    this._compileCacheKey = undefined   // DataSet 可能已变更
     this._syncComputedFromConfig()
   }
 
@@ -329,32 +330,36 @@ export class DataView implements IDataSource {
    */
   setComputedContext(ctx: ComputedColumnContext): void {
     this._computedContext = ctx
-    this._syncComputedFromConfig()   // ctx 变更 → 重新编译配置列闭包
+    this._compileCacheKey = undefined   // 失效缓存，强制重编译
+    this._syncComputedFromConfig()      // ctx 变更 → 重新编译配置列闭包
     this._applyComputedColumns(this.rows)
   }
 
-  /** 移除计算列定义。（历史已求值的行数据保留，后续不再写入该字段） */
-  removeComputedColumn(name: string): void {
-    this._computedDelegate.remove(name)
+  /**
+   * 手动触发全量计算列重新求值（使用已编译的缓存函数）。
+   *
+   * 常规行操作（appendRow / updateRowById / replaceRows / updateFromServer）
+   * 已自动触发求值。此方法用于：
+   * - 子表行变更后通知父表重新计算聚合
+   * - 直接修改 rows 后手动重算
+   */
+  recomputeColumns(): void {
+    this._applyComputedColumns(this.rows)
   }
 
-  /** 已注册的计算列名集合（CrudDelegate 用于提交前剥离） */
+  /** @internal 已注册的计算列名集合（CrudDelegate 用于提交前剥离） */
   get computedColumnNames(): ReadonlySet<string> {
     return this._computedDelegate.names
   }
 
-  /**
-   * 从 DataTable 列定义中提取 computeExpression 并编译注册（手动触发入口）。
-   * DataTable attach 时已自动执行，通常无需手动调用。
-   */
-  initComputedColumnsFromConfig(): void {
-    this._syncComputedFromConfig()
-    this._applyComputedColumns(this.rows)
-  }
-
-  /** 从数据对象中移除计算列字段，返回浅拷贝；无计算列时返回原对象。 */
+  /** @internal 从数据对象中移除计算列字段，返回浅拷贝；无计算列时返回原对象。 */
   stripComputedColumns(data: Partial<IDataRow>): Partial<IDataRow> {
     return this._computedDelegate.strip(data)
+  }
+
+  /** @internal 失效编译缓存，下次 _syncComputedFromConfig 将强制重编译。 */
+  _invalidateCompiledCache(): void {
+    this._compileCacheKey = undefined
   }
 
   /** 对行集合执行计算列求值（就地写入）——供 DataView 内部调用。 */
@@ -364,13 +369,25 @@ export class DataView implements IDataSource {
 
   /**
    * 从 DataTable 列定义（`DataColumn.computeExpression`）编译并注册到委托。
+   * 内置编译缓存：列指纹 + ctx 引用不变时跳过重编译。
    *
    * **职责分工**：DataTable 是列配置的所有者；DataView 持有 context 与聚合解析器
    * （需要 tableName / viewId / primaryKey 视角 + DataSet 关系信息）。
    */
+  private _compileCacheKey: string | undefined
   private _syncComputedFromConfig(): void {
     const columns = this._dataTable?.columns
     if (!columns?.length) return
+
+    // 编译缓存：列表达式指纹 + ctx 对象引用
+    const exprFingerprint = columns
+      .filter(c => c.computeExpression)
+      .map(c => `${c.name}:${c.computeExpression}`)
+      .join('|')
+    const cacheKey = `${exprFingerprint}@@${this._computedContext ? JSON.stringify(this._computedContext) : ''}`
+    if (cacheKey === this._compileCacheKey) return   // 缓存命中，跳过编译
+    this._compileCacheKey = cacheKey
+
     const compiled = compileColumnsExpressions(
       columns,
       this._computedContext,
@@ -440,8 +457,8 @@ export class DataView implements IDataSource {
 
   /** 计算列委托（立即初始化，因 dataTable setter 可能在第一次懒访问之前触发） */
   private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate()
-  /** 计算列表达式共享上下文（表达式中以 `ctx` 引用） */
-  private _computedContext?: ComputedColumnContext
+  /** 计算列表达式共享上下文（表达式中以 `ctx` 引用），默认空对象 */
+  private _computedContext: ComputedColumnContext = {}
   /** CRUD 操作委托（懒初始化） */
   private _crudDelegate?: CrudDelegate | undefined
   /** 级联订阅委托（懒初始化） */
@@ -1511,7 +1528,8 @@ export class DataView implements IDataSource {
     
     // 6. 清除计算列委托及上下文
     this._computedDelegate.destroy()
-    delete this._computedContext
+    this._computedContext = {}
+    this._compileCacheKey = undefined
 
     // 7. 清除脏追踪委托
     this._dirtyTrackingDelegate?.destroy()

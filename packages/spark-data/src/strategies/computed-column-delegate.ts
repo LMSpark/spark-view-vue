@@ -72,21 +72,26 @@ export function compileExpression(
   ctx?: ComputedColumnContext,
   resolver?: AggregateResolver,
 ): ComputedColumnFn {
-  const frozenCtx = ctx ? Object.freeze({ ...ctx }) : undefined
+  const frozenCtx = Object.freeze({ ...(ctx ?? {}) })
   const hasAgg = resolver !== undefined && AGG_PATTERN.test(expression)
+
+  // 判断表达式是否为多语句函数体（包含 return 关键字）
+  const isBlock = /\breturn\b/.test(expression)
+  const body = isBlock
+    ? `with(__row) { ${expression} }`
+    : `with(__row) { return (${expression}) }`
 
   if (!hasAgg) {
     // 快速路径：无聚合函数
-    const compiled = new Function('__row', 'ctx',
-      `with(__row) { return (${expression}) }`,
-    ) as (row: IDataRow, ctx: ComputedColumnContext | undefined) => unknown
+    const compiled = new Function('__row', 'ctx', body,
+    ) as (row: IDataRow, ctx: ComputedColumnContext) => unknown
     return (row: IDataRow) => compiled(row, frozenCtx)
   }
 
   // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join
   const compiled = new Function(
     '__row', '$sum', '$count', '$avg', '$min', '$max', '$list', '$join', 'ctx',
-    `with(__row) { return (${expression}) }`,
+    body,
   ) as (
     row: IDataRow,
     $sum: (t: string, f: string) => number,
@@ -96,7 +101,7 @@ export function compileExpression(
     $max: (t: string, f: string) => number | undefined,
     $list: (t: string, f: string) => unknown[],
     $join: (t: string, f: string, sep?: string) => string,
-    ctx: ComputedColumnContext | undefined,
+    ctx: ComputedColumnContext,
   ) => unknown
 
   // 可变引用——逐行切换，避免每行创建新函数
