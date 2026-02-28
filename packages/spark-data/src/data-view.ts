@@ -158,10 +158,23 @@ export class DataView implements IDataSource {
    */
   labelField?: string
   /**
-   * 多选值序列化分隔符（默认 ','）。
-   * 用于 selectedValue getter（行对象 → 字符串）和 setSelectedValue（字符串 → 行对象）两端互转。
+   * 值序列化分隔符（默认 ','）。
+   *
+   * - **非空字符串**（`','` / `'|'` / `';'` 等）：多选模式，selectedValue 以此分隔多个主键值
+   * - **空字符串 `''`**：单选模式，selectedValue 仅保留一个值，setSelectedValue 不拆分
+   *
+   * 通过 {@link isMultiSelect} getter 可读取当前模式。
    */
   selectionDelimiter: string = ','
+
+  /**
+   * 是否为多选模式（selectionDelimiter 非空时为多选，空字符串为单选）。
+   *
+   * @example
+   * view.selectionDelimiter = ','  // isMultiSelect → true
+   * view.selectionDelimiter = ''   // isMultiSelect → false（单选）
+   */
+  get isMultiSelect(): boolean { return this.selectionDelimiter !== '' }
 
   /** 当前行（getter：从 rows 中按主键查找；rows 刷新后自动指向新对象） */
   get currentRow(): IDataRow | null {
@@ -182,15 +195,20 @@ export class DataView implements IDataSource {
   // ── 选中值序列化层（下拉多选 / DataGrid 通用）────
 
   /**
-   * 多选已选主键序列化字符串（供表单字段 v-model 或 API 传值使用）。
+   * 已选主键序列化字符串（供表单字段 v-model 或 API 传值使用）。
    *
-   * - 格式：各主键值以 {@link selectionDelimiter} 连接，如 `"1,2,3"` 或 `"a|b|c"`
+   * - **多选模式**：各主键值以 {@link selectionDelimiter} 连接，如 `"1,2,3"`
+   * - **单选模式**（`selectionDelimiter === ''`）：返回首个选中值，如 `"1"`
    * - 未选中任何行时返回空字符串 `""`
    *
    * 搭配 {@link setSelectedValue} 使用，构成完整的序列化/反序列化回路。
    * 搭配 {@link selectedLabels} 使用，完成 tag 渲染。
    */
   get selectedValue(): string {
+    if (!this.selectionDelimiter) {
+      // 单选模式：返回首个选中值
+      return this._selectedRowIds.length > 0 ? String(this._selectedRowIds[0]) : ''
+    }
     return this._selectedRowIds.join(this.selectionDelimiter)
   }
 
@@ -897,7 +915,22 @@ export class DataView implements IDataSource {
       this.selectionDelegate.clearSelectedRows()
       return
     }
-    // Phase 3 S3: 按 primaryKey 实际存储类型决定转换策略，避免 string PK 被误转为 number
+
+    // 单选模式：整个值作为一个 ID，不拆分
+    if (!this.selectionDelimiter) {
+      const trimmed = value.trim()
+      if (!trimmed) { this.selectionDelegate.clearSelectedRows(); return }
+      const samplePkType = this.rows.length > 0
+        ? typeof this.getPrimaryKeyValue(this.rows[0])
+        : 'string'
+      const id: string | number = samplePkType === 'number'
+        ? (Number.isFinite(Number(trimmed)) ? Number(trimmed) : trimmed)
+        : trimmed
+      this.selectionDelegate.setSelectedRowsById([id])
+      return
+    }
+
+    // 多选模式：按分隔符拆分
     const rawTokens = value
       .split(this.selectionDelimiter)
       .map(s => s.trim())
