@@ -142,14 +142,35 @@ describe('compileExpression — 基础编译器', () => {
 // 2. ComputedColumnDelegate 单元测试（通过 DataView 公共 API 间接测试）
 // ─────────────────────────────────────────────────────────────────────────────
 describe('DataView — setComputedColumn / setComputedColumnExpression', () => {
-  it('setComputedColumn 函数式 — 注册后立即对现有 rows 求值', () => {
+  it('setComputedColumn 函数式 — 使用闭包捕获外部查找表', () => {
+    // setComputedColumn 的典型优势：可引用闭包变量（字符串表达式做不到）
+    const categoryLabel = new Map([
+      ['A', '高级'],
+      ['B', '中级'],
+      ['C', '入门'],
+    ])
     const view = makeView(
-      [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'price' }, { name: 'qty' }],
-      [{ id: 1, price: 10, qty: 3 }, { id: 2, price: 5, qty: 4 }],
+      [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'category', type: 'string' }],
+      [{ id: 1, category: 'A' }, { id: 2, category: 'C' }, { id: 3, category: 'X' }],
     )
-    view.setComputedColumn('total', row => Number(row['price']) * Number(row['qty']))
-    expect(f(view.rows[0], 'total')).toBe(30)
-    expect(f(view.rows[1], 'total')).toBe(20)
+    view.setComputedColumn('label', row =>
+      categoryLabel.get(String(row['category'])) ?? '未知',
+    )
+    expect(f(view.rows[0], 'label')).toBe('高级')
+    expect(f(view.rows[1], 'label')).toBe('入门')
+    expect(f(view.rows[2], 'label')).toBe('未知')
+  })
+
+  it('setComputedColumn 函数式 — 调用外部工具函数格式化字段', () => {
+    // 外部 formatter（字符串表达式无法调用任意函数）
+    const fmt = (v: unknown) => `CNY ${Number(v).toFixed(2)}`
+    const view = makeView(
+      [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'price', type: 'number' }],
+      [{ id: 1, price: 9.9 }, { id: 2, price: 1234.5 }],
+    )
+    view.setComputedColumn('displayPrice', row => fmt(row['price']))
+    expect(f(view.rows[0], 'displayPrice')).toBe('CNY 9.90')
+    expect(f(view.rows[1], 'displayPrice')).toBe('CNY 1234.50')
   })
 
   it('setComputedColumnExpression 字符串表达式 — 注册后立即求值', () => {
@@ -161,20 +182,24 @@ describe('DataView — setComputedColumn / setComputedColumnExpression', () => {
     expect(f(view.rows[0], 'total')).toBe(40)
   })
 
-  it('链式计算列：先算 subtotal 再算 tax', () => {
+  it('链式：setComputedColumn 的函数结果可被后续字符串表达式引用', () => {
+    // 先用函数列做复杂格式化，后续表达式列再引用其结果
     const view = makeView(
-      [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'price', type: 'number' }, { name: 'qty', type: 'number' }],
-      [{ id: 1, price: 100, qty: 2 }],
+      [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'score', type: 'number' }],
+      [{ id: 1, score: 88 }],
     )
-    // 注意：apply 是单遍扫描，第一次 subtotal 写入后，同行 tax 才能读到 subtotal
-    // → 注册顺序很重要，先注册先求值
-    view.setComputedColumn('subtotal', row => Number(row['price']) * Number(row['qty']))
-    // tax 表达式引用 subtotal，需在 subtotal 已写入后才能正确求值
-    // 因为 apply 对每行按注册顺序遍历，这里应正确
-    view.setComputedColumnExpression('tax', 'subtotal * 0.1')
-    // subtotal = 200, tax = 20
-    expect(f(view.rows[0], 'subtotal')).toBe(200)
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(20)
+    // 函数列：将分数映射为等级字符（无法用简单算术表达式实现）
+    view.setComputedColumn('grade', row => {
+      const s = Number(row['score'])
+      if (s >= 90) return 'A'
+      if (s >= 80) return 'B'
+      if (s >= 60) return 'C'
+      return 'D'
+    })
+    // 表达式列引用 grade（字符串拼接）
+    view.setComputedColumnExpression('summary', "score + '分 → ' + grade")
+    expect(f(view.rows[0], 'grade')).toBe('B')
+    expect(f(view.rows[0], 'summary')).toBe('88分 → B')
   })
 
   it('computedColumnNames 返回所有已注册名称', () => {
@@ -187,22 +212,23 @@ describe('DataView — setComputedColumn / setComputedColumnExpression', () => {
   })
 
   it('removeComputedColumn — 移除后停止更新，历史值保留', () => {
+    const fmt = (v: unknown) => `#${v}`
     const view = makeView(
-      [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'x', type: 'number' }],
-      [{ id: 1, x: 10 }],
+      [{ name: 'id', type: 'number', isPrimaryKey: true }],
+      [{ id: 1 }],
     )
-    view.setComputedColumn('double', row => Number(row['x']) * 2)
-    expect(f(view.rows[0], 'double')).toBe(20)
+    view.setComputedColumn('tag', row => fmt(row['id']))
+    expect(f(view.rows[0], 'tag')).toBe('#1')
 
-    view.removeComputedColumn('double')
-    expect(view.computedColumnNames.has('double')).toBe(false)
+    view.removeComputedColumn('tag')
+    expect(view.computedColumnNames.has('tag')).toBe(false)
 
-    // 移除后 appendRow 不再填充 double
-    view.appendRow({ id: 2, x: 5 })
-    expect(f(view.rows[1], 'double')).toBeUndefined()
+    // 移除后 appendRow 不再填充 tag
+    view.appendRow({ id: 2 })
+    expect(f(view.rows[1], 'tag')).toBeUndefined()
 
-    // 历史行的 double 保留（未被清除）
-    expect(f(view.rows[0], 'double')).toBe(20)
+    // 历史行的 tag 保留（未被清除）
+    expect(f(view.rows[0], 'tag')).toBe('#1')
   })
 })
 
