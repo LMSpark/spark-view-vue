@@ -212,14 +212,6 @@ export class DataView implements IDataSource {
     return this._selectedRowIds.join(this.selectionDelimiter)
   }
 
-  /** @deprecated 使用 {@link value} 代替 */
-  get selectedValue(): string { return this.value }
-
-  /** @deprecated 使用 {@link value} 代替（单选时 value 已覆盖此场景） */
-  get currentValue(): string | number | null {
-    return this._currentRowId
-  }
-
   /**
    * 选中行的显示标签数组（供渲染 tag 使用）。
    *
@@ -247,9 +239,6 @@ export class DataView implements IDataSource {
     })
   }
 
-  /** @deprecated 使用 {@link labels} 代替 */
-  get selectedLabels(): string[] { return this.labels }
-
   /**
    * 当前行的显示标签（供渲染单选 tag 或面包屑使用）。
    *
@@ -265,9 +254,6 @@ export class DataView implements IDataSource {
     const v = row[this.labelField]
     return v !== undefined && v !== null ? String(v) : String(this._currentRowId)
   }
-
-  /** @deprecated 使用 {@link label} 代替 */
-  get currentLabel(): string | null { return this.label }
 
   // ── 分页 ────────────────────────────────────
 
@@ -955,9 +941,6 @@ export class DataView implements IDataSource {
 
     this.selectionDelegate.setSelectedRowsById(ids)
   }
-
-  /** @deprecated 使用 {@link setValue} 代替 */
-  setSelectedValue(value: string | null | undefined): void { this.setValue(value) }
 
   clearSelectedRows(): void {
     this.selectionDelegate.clearSelectedRows()
