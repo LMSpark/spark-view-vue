@@ -162,13 +162,11 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       cleanupSync = dataSet.value.onAnyViewChange((evt) => {
         // 跳过由本实例自身发起的事件（无论 source 类型），避免 UI→DataSet→UI 回环
         if (evt.originatorId === instanceId) return
-        if (evt.changeType === 'currentRow') {
-          syncCurrentRowToTable(evt.tableName, evt.viewId, evt.row, formApi.value)
-        } else if (evt.changeType === 'selectedRows') {
-          syncSelectedRowsToTable(evt.tableName, evt.viewId, evt.rows, formApi.value)
-        } else if (evt.changeType === 'cleared') {
-          syncCurrentRowToTable(evt.tableName, evt.viewId, null, formApi.value)
-          syncSelectedRowsToTable(evt.tableName, evt.viewId, [], formApi.value)
+        if (evt.changeType === 'currentRow' || evt.changeType === 'cleared') {
+          syncCurrentRowToTable(evt.tableName, evt.viewId, evt.currentRow, formApi.value)
+        }
+        if (evt.changeType === 'selectedRows' || evt.changeType === 'cleared') {
+          syncSelectedRowsToTable(evt.tableName, evt.viewId, evt.selectedRows, formApi.value)
         }
       })
     }

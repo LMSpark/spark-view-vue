@@ -163,7 +163,8 @@ describe('DataView.requestData orchestration', () => {
         tableName: 'A', 
         viewId: 'default', 
         changeType: 'rows', 
-        rows: aView.rows
+        currentRow: aView.currentRow,
+        selectedRows: aView.selectedRows,
       })
       return { success: true, data: aView.rows } as any
     })
@@ -177,7 +178,8 @@ describe('DataView.requestData orchestration', () => {
         tableName: 'B', 
         viewId: 'default', 
         changeType: 'rows', 
-        rows: bView.rows
+        currentRow: bView.currentRow,
+        selectedRows: bView.selectedRows,
       })
       return { success: true, data: bView.rows } as any
     })

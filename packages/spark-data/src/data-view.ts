@@ -974,29 +974,39 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /**
-   * 统一发射 stateChanged 事件
+   * 统一发射 stateChanged 事件（状态快照模式）
    *
-   * - rows：防抖 16ms（合并批量更新，减少重绘）；只有同类事件才取消前一次防抖，
-   *   立即事件（currentRow 等）不会意外取消正在等待的 rows 通知。
-   * - 其余事件：立即触发（cleared / requestState / mutating / currentRow / selectedRows）。
+   * 每次事件自动携带 `currentRow` + `selectedRows` 快照，
+   * 消费端直接读取即可，无需按 changeType 收窄。
+   *
+   * - rows：防抖 16ms（合并批量更新，减少重绘），快照在触发时捕获（延迟求值更准确）
+   * - 其余事件：立即触发，快照在调用时捕获
    */
-  private emitStateChanged(changeType: 'currentRow', extra: { row: IDataRow | null; originatorId?: string }): void
-  private emitStateChanged(changeType: 'selectedRows', extra: { rows: IDataRow[]; originatorId?: string }): void
-  private emitStateChanged(changeType: 'rows' | 'cleared' | 'requestState' | 'mutating'): void
-  private emitStateChanged(changeType: ViewStateChangeType, extra?: Record<string, unknown>): void {
-    const event = { ...extra, tableName: this.tableName, viewId: this.viewId, changeType } as ViewStateEvent
-
+  private emitStateChanged(changeType: ViewStateChangeType, originatorId?: string): void {
     if (changeType === 'rows') {
       // Only rows uses debounce; cancel only a previous rows debounce (not immediate events)
       if (this.stateChangedDebouncer) {
         clearTimeout(this.stateChangedDebouncer)
       }
       this.stateChangedDebouncer = setTimeout(() => {
-        this.events.emit('stateChanged', event)
+        // 延迟求值：防抖期间可能有更多状态变更，触发时捕获最新快照
+        this.events.emit('stateChanged', this._buildStateEvent('rows', originatorId))
         this.stateChangedDebouncer = undefined
       }, 16)
     } else {
-      this.events.emit('stateChanged', event)
+      this.events.emit('stateChanged', this._buildStateEvent(changeType, originatorId))
+    }
+  }
+
+  /** 构建 stateChanged 事件对象（从当前视图状态捕获快照） */
+  private _buildStateEvent(changeType: ViewStateChangeType, originatorId?: string): ViewStateEvent {
+    return {
+      tableName: this.tableName,
+      viewId: this.viewId,
+      changeType,
+      currentRow: this.currentRow,
+      selectedRows: this.selectedRows,
+      ...(originatorId !== undefined ? { originatorId } : {}),
     }
   }
 

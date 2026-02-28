@@ -7,16 +7,41 @@
 import type { DataTable } from './data-table'
 import type { DataView as SparkDataView } from './data-view'
 
-// ===== 视图状态事件（判别联合） =====
+// ===== 视图状态事件（状态快照模式） =====
+
+/** 视图状态变化类型 */
+export type ViewStateChangeType =
+  | 'currentRow'     // 当前行变化
+  | 'selectedRows'   // 选中行变化
+  | 'rows'           // 行数据批量变化（防抖 16ms）
+  | 'cleared'        // 数据已清空
+  | 'requestState'   // 请求状态变化（Idle→Loading→Loaded/Failed）
+  | 'mutating'       // CRUD 变更状态变化
 
 /**
- * 视图状态事件基础字段
+ * 视图状态变化事件（状态快照模式）
  *
- * 所有 ViewStateEvent 变体共享 tableName + viewId + originatorId。
+ * 每次 stateChanged 事件都携带 `currentRow` 和 `selectedRows` 的状态快照，
+ * 消费端无需按 changeType 收窄即可直接读取，极大简化了订阅端的代码。
+ *
+ * `changeType` 仍可用于过滤不相关的事件类型：
+ * ```ts
+ * view.events.on('stateChanged', (evt) => {
+ *   if (evt.changeType === 'currentRow' || evt.changeType === 'cleared') {
+ *     updateUI(evt.currentRow, evt.selectedRows) // 始终可用
+ *   }
+ * })
+ * ```
  */
-export interface ViewStateEventBase {
+export interface ViewStateEvent {
   tableName: string
   viewId: string
+  changeType: ViewStateChangeType
+
+  /** 当前行快照（事件发射时的最新值；null 表示无当前行） */
+  currentRow: IDataRow | null
+  /** 选中行快照（事件发射时的最新值；空数组表示无选中） */
+  selectedRows: IDataRow[]
 
   /**
    * 发起方实例标识（可选）
@@ -30,61 +55,6 @@ export interface ViewStateEventBase {
    */
   originatorId?: string
 }
-
-/** 当前行变化事件 */
-export interface CurrentRowEvent extends ViewStateEventBase {
-  changeType: 'currentRow'
-  /** 变化后的当前行（null 表示清空） */
-  row: IDataRow | null
-}
-
-/** 多选行变化事件 */
-export interface SelectedRowsEvent extends ViewStateEventBase {
-  changeType: 'selectedRows'
-  /** 变化后的选中行列表 */
-  rows: IDataRow[]
-}
-
-/** 行数据批量变化事件（数据刷新 / 重载） */
-export interface RowsChangedEvent extends ViewStateEventBase {
-  changeType: 'rows'
-}
-
-/** 数据已清空事件 */
-export interface ClearedEvent extends ViewStateEventBase {
-  changeType: 'cleared'
-}
-
-/** 请求状态变化事件（Idle → Loading → Loaded / Failed） */
-export interface RequestStateEvent extends ViewStateEventBase {
-  changeType: 'requestState'
-}
-
-/** 变更中状态变化事件（CRUD 进行中） */
-export interface MutatingEvent extends ViewStateEventBase {
-  changeType: 'mutating'
-}
-
-/**
- * 视图状态变化事件（判别联合）
- *
- * 通过 `changeType` 字段作为判别标识，每个变体仅携带与该变化类型相关的字段：
- * - `currentRow`    → `row: IDataRow | null`
- * - `selectedRows`  → `rows: IDataRow[]`
- * - `rows` / `cleared` / `requestState` / `mutating` → 无额外字段
- *
- * 使用 `if (evt.changeType === 'currentRow')` 即可自动缩窄到 `CurrentRowEvent`。
- */
-export type ViewStateEvent =
-  | CurrentRowEvent
-  | SelectedRowsEvent
-  | RowsChangedEvent
-  | ClearedEvent
-  | RequestStateEvent
-  | MutatingEvent
-
-/** 视图状态变化类型（`ViewStateEvent.changeType` 的所有可能值） */
-export type ViewStateChangeType = ViewStateEvent['changeType']
 
 // ===== 权限类型 =====
 

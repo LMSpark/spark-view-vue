@@ -128,9 +128,9 @@ export interface ViewStateChangeCallback {
  * @example
  * ```typescript
  * const unsub = subscribeViewStateChanges(dataSet, (tableName, viewId, event) => {
- *   if (event.changeType === 'selectedRows') {
- *     // event 自动缩窄为 SelectedRowsEvent，event.rows 不再是 optional
- *     syncSelectedRowsToUI(tableName, viewId, event.rows)
+ *   // event 始终携带 currentRow / selectedRows 快照，无需按 changeType 收窄
+ *   if (event.changeType === 'selectedRows' || event.changeType === 'cleared') {
+ *     syncSelectedRowsToUI(tableName, viewId, event.selectedRows)
  *   }
  * })
  *
