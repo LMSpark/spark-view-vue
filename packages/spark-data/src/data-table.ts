@@ -22,7 +22,7 @@ import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationC
 import type { DataSet } from './dataset'
 import { DataValidator, createValidator, createSchema } from './validation'
 import { CrudService, createCrudService } from './crud-service'
-import { assertNoSeparator, expandApiShorthand } from './core/utils'
+import { assertNoSeparator, resolveApi } from './core/utils'
 
 /**
  * 创建响应式 DataView（统一 reactive 包装，所有视图创建走此入口）
@@ -163,7 +163,7 @@ export class DataTable {
    * @remarks 配置变更时自动清除 CrudService 缓存，下次访问时重建
    */
   setApi(api: CrudApi | string | boolean): void {
-    this.api = expandApiShorthand(api, this.tableName)
+    this.api = resolveApi(api, this.tableName)
     this._crudService = undefined
   }
 
@@ -244,7 +244,7 @@ export class DataTable {
   static fromTableData(data: ITableMetadata): DataTable {
     const t = new DataTable(data.tableName, data.columns ?? [])
     // P2: API 简写展开（字符串 / true → CrudApi 对象）
-    if (data.api !== undefined) t.api = expandApiShorthand(data.api, data.tableName)
+    if (data.api !== undefined) t.api = resolveApi(data.api, data.tableName)
 
     const def = t.getOrCreateView('default')
     if (data.rows) def.rows = [...data.rows]
