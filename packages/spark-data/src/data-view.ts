@@ -30,6 +30,7 @@ import type {
   FlatTreeNode, TreePath, NestedTreeSearchResult,
   TreeConfig,
   DataRelation,
+  AggregateType,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -333,6 +334,7 @@ export class DataView implements IDataSource {
     this._compileCacheKey = undefined   // 失效缓存，强制重编译
     this._syncComputedFromConfig()      // ctx 变更 → 重新编译配置列闭包
     this._applyComputedColumns(this.rows)
+    this._recomputeSummary()
   }
 
   /**
@@ -345,6 +347,7 @@ export class DataView implements IDataSource {
    */
   recomputeColumns(): void {
     this._applyComputedColumns(this.rows)
+    this._recomputeSummary()
   }
 
   /** @internal 已注册的计算列名集合（CrudDelegate 用于提交前剥离） */
@@ -365,6 +368,193 @@ export class DataView implements IDataSource {
   /** 对行集合执行计算列求值（就地写入）——供 DataView 内部调用。 */
   private _applyComputedColumns(rows: IDataRow[]): void {
     this._computedDelegate.apply(rows)
+  }
+
+  // ── summaryRow 列级聚合 ────────────────────────────
+
+  /** 列级聚合缓存行（行变更后自动重算） */
+  private _summaryRow: IDataRow = {}
+  /** 选中行聚合缓存行（选中/数据变更后自动重算） */
+  private _selectionSummaryRow: IDataRow = {}
+
+  /**
+   * 列级聚合汇总行——根据 DataColumn.aggregate 配置自动计算。
+   *
+   * 行变更（append / update / delete / replace / updateFromServer）后自动重算，
+   * 无需手动触发。计算列字段也可配置 aggregate，先逐行求值再整列聚合。
+   *
+   * @example
+   * // DataColumn 配置
+   * { name: 'amount', type: 'number', aggregate: 'sum' }
+   * { name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }
+   *
+   * // UI 绑定
+   * view.summaryRow.amount   // 所有行 amount 之和
+   * view.summaryRow.total    // 所有行计算后 total 之和
+   */
+  get summaryRow(): Readonly<IDataRow> {
+    return this._summaryRow
+  }
+
+  /**
+   * 选中行聚合汇总行——与 summaryRow 相同的聚合逻辑，但仅对 selectedRows 执行。
+   *
+   * 选中行变更、行数据变更后自动重算。无选中行时返回空对象。
+   *
+   * @example
+   * view.selectionSummaryRow.amount   // 选中行 amount 之和
+   */
+  get selectionSummaryRow(): Readonly<IDataRow> {
+    return this._selectionSummaryRow
+  }
+
+  /**
+   * 重新计算 summaryRow（根据 DataTable 列定义中的 aggregate 配置）。
+   *
+   * 时序保证：必须在 `_applyComputedColumns()` 之后调用，
+   * 这样计算列的值已就位，聚合结果正确。
+   */
+  private _recomputeSummary(): void {
+    const columns = this._dataTable?.columns
+    if (!columns?.length) { this._summaryRow = {}; return }
+
+    // 收集带 aggregate 的列
+    const aggCols: Array<{ name: string; aggregate: AggregateType }> = []
+    for (const col of columns) {
+      if (col.aggregate) aggCols.push({ name: col.name, aggregate: col.aggregate })
+    }
+    if (aggCols.length === 0) { this._summaryRow = {}; return }
+
+    const rows = this.rows
+    const result: IDataRow = {}
+
+    for (const { name, aggregate } of aggCols) {
+      switch (aggregate) {
+        case 'sum': {
+          let s = 0
+          for (const r of rows) s += Number(r[name] ?? 0)
+          result[name] = s
+          break
+        }
+        case 'count': {
+          let c = 0
+          for (const r of rows) if (r[name] !== null && r[name] !== undefined) c++
+          result[name] = c
+          break
+        }
+        case 'avg': {
+          if (rows.length === 0) { result[name] = 0; break }
+          let s = 0
+          for (const r of rows) s += Number(r[name] ?? 0)
+          result[name] = s / rows.length
+          break
+        }
+        case 'min': {
+          if (rows.length === 0) { result[name] = undefined; break }
+          let m = Infinity
+          for (const r of rows) {
+            const v = Number(r[name])
+            if (!isNaN(v) && v < m) m = v
+          }
+          result[name] = m === Infinity ? undefined : m
+          break
+        }
+        case 'max': {
+          if (rows.length === 0) { result[name] = undefined; break }
+          let m = -Infinity
+          for (const r of rows) {
+            const v = Number(r[name])
+            if (!isNaN(v) && v > m) m = v
+          }
+          result[name] = m === -Infinity ? undefined : m
+          break
+        }
+        case 'join': {
+          const parts: string[] = []
+          for (const r of rows) {
+            const v = r[name]
+            if (v !== null && v !== undefined && v !== '') parts.push(String(v))
+          }
+          result[name] = parts.join(',')
+          break
+        }
+      }
+    }
+
+    this._summaryRow = result
+    // 行数据变更时，选中行的值也可能变化，需同步重算
+    this._recomputeSelectionSummary()
+  }
+
+  /**
+   * 重新计算 selectionSummaryRow（与 _recomputeSummary 相同逻辑，但仅对 selectedRows）。
+   */
+  private _recomputeSelectionSummary(): void {
+    const columns = this._dataTable?.columns
+    if (!columns?.length) { this._selectionSummaryRow = {}; return }
+
+    const aggCols: Array<{ name: string; aggregate: AggregateType }> = []
+    for (const col of columns) {
+      if (col.aggregate) aggCols.push({ name: col.name, aggregate: col.aggregate })
+    }
+    if (aggCols.length === 0) { this._selectionSummaryRow = {}; return }
+
+    const rows = this.selectedRows
+    if (rows.length === 0) { this._selectionSummaryRow = {}; return }
+
+    const result: IDataRow = {}
+
+    for (const { name, aggregate } of aggCols) {
+      switch (aggregate) {
+        case 'sum': {
+          let s = 0
+          for (const r of rows) s += Number(r[name] ?? 0)
+          result[name] = s
+          break
+        }
+        case 'count': {
+          let c = 0
+          for (const r of rows) if (r[name] !== null && r[name] !== undefined) c++
+          result[name] = c
+          break
+        }
+        case 'avg': {
+          let s = 0
+          for (const r of rows) s += Number(r[name] ?? 0)
+          result[name] = s / rows.length
+          break
+        }
+        case 'min': {
+          let m = Infinity
+          for (const r of rows) {
+            const v = Number(r[name])
+            if (!isNaN(v) && v < m) m = v
+          }
+          result[name] = m === Infinity ? undefined : m
+          break
+        }
+        case 'max': {
+          let m = -Infinity
+          for (const r of rows) {
+            const v = Number(r[name])
+            if (!isNaN(v) && v > m) m = v
+          }
+          result[name] = m === -Infinity ? undefined : m
+          break
+        }
+        case 'join': {
+          const parts: string[] = []
+          for (const r of rows) {
+            const v = r[name]
+            if (v !== null && v !== undefined && v !== '') parts.push(String(v))
+          }
+          result[name] = parts.join(',')
+          break
+        }
+      }
+    }
+
+    this._selectionSummaryRow = result
   }
 
   /**
@@ -397,17 +587,18 @@ export class DataView implements IDataSource {
   }
 
   /**
-   * 构建子视图聚合解析器。
+   * 构建聚合解析器——子表行解析 + 跨表 summaryRow 访问。
    *
-   * DataTable 持有 DataSet（关系定义）；DataView 提供 tableName / viewId / primaryKey
-   * 视角——两者结合才能确定"谁是父、谁是子"。
+   * - 子表行解析：需要 DataRelation 配置，用于 `$sum/$count/$avg/$min/$max/$list/$join`
+   * - 跨表聚合：仅需 DataSet 存在，用于 `$summary/$selectionSummary`
    */
   private _createAggregateResolver(): AggregateResolver | undefined {
     const ds = this._dataTable?.dataSet
-    if (!ds?.relations?.length) return undefined
+    if (!ds) return undefined
 
-    const relations = ds.getChildRelations(this.tableName, this.viewId)
-    if (relations.length === 0) return undefined
+    const relations = ds.relations?.length
+      ? ds.getChildRelations(this.tableName, this.viewId)
+      : []
 
     // 双重索引：精确键 "childTable@childViewId" + 短键 "childTable"（取第一匹配）
     const relMap = new Map<string, DataRelation>()
@@ -432,6 +623,20 @@ export class DataView implements IDataSource {
         const childField = rel.childField
         if (!childField) return []
         return childView.rows.filter(r => r[childField] === parentValue)
+      },
+      resolveSummary: (viewRef: string, field: string): unknown => {
+        const at = viewRef.indexOf('@')
+        const tableName = at >= 0 ? viewRef.slice(0, at) : viewRef
+        const viewId = at >= 0 ? viewRef.slice(at + 1) : 'default'
+        const view = ds.getView(tableName, viewId)
+        return view?.summaryRow[field]
+      },
+      resolveSelectionSummary: (viewRef: string, field: string): unknown => {
+        const at = viewRef.indexOf('@')
+        const tableName = at >= 0 ? viewRef.slice(0, at) : viewRef
+        const viewId = at >= 0 ? viewRef.slice(at + 1) : 'default'
+        const view = ds.getView(tableName, viewId)
+        return view?.selectionSummaryRow[field]
       },
     }
   }
@@ -965,12 +1170,14 @@ export class DataView implements IDataSource {
   updateFromServer(data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[]): void {
     this.localMutationDelegate.updateFromServer(data)
     this._applyComputedColumns(this.rows)
+    this._recomputeSummary()
   }
 
   /** 本地追加一行，发射 rowsChanged */
   appendRow(row: IDataRow): void {
     this.localMutationDelegate.appendRow(row)
     this._applyComputedColumns([row])
+    this._recomputeSummary()
   }
 
   /** 本地按主键部分更新一行，发射 rowsChanged；返回是否成功（行不存在时 false） */
@@ -980,19 +1187,23 @@ export class DataView implements IDataSource {
       // 更新成功，对受影响的行重新求值计算列
       const row = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
       if (row) this._applyComputedColumns([row])
+      this._recomputeSummary()
     }
     return result
   }
 
   /** 本地按主键删除一行，清理选中引用，发射 rowsChanged；返回是否成功（行不存在时 false） */
   deleteRowById(id: string | number): boolean {
-    return this.localMutationDelegate.deleteRowById(id)
+    const result = this.localMutationDelegate.deleteRowById(id)
+    if (result) this._recomputeSummary()
+    return result
   }
 
   /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 rowsChanged */
   replaceRows(rows: IDataRow[]): void {
     this.localMutationDelegate.replaceRows(rows)
     this._applyComputedColumns(this.rows)
+    this._recomputeSummary()
   }
 
   // ─────────────────────────────────────────────
@@ -1405,6 +1616,7 @@ export class DataView implements IDataSource {
 
   /** 发射 selectedRowsChanged 事件（立即） */
   private emitSelectedRowsChanged(originatorId?: string): void {
+    this._recomputeSelectionSummary()
     this.events.emit('selectedRowsChanged', this.selectedRows, originatorId)
   }
 

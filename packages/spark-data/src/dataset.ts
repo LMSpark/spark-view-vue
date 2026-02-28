@@ -163,13 +163,18 @@ export class DataSet implements IDataSet {
     // 后置重算：聚合表达式需要完整 DataSet（所有表 + 规范化关系），
     // 构造过程中各 view 的 set dataTable 只编译了无聚合部分（因为 relations 尚未就绪）。
     // 现在关系已规范化，需要失效缓存 → 重编译（含聚合 resolver）→ 求值。
+    // 同时处理 DataColumn.aggregate 列级聚合（summaryRow 初始化）。
     for (const table of Object.values(this.tables)) {
+      const hasAgg = table.columns.some(c => c.aggregate)
       for (const view of Object.values(table.views)) {
         if (view.computedColumnNames.size > 0) {
-          // 失效缓存 → 重编译含聚合 resolver → 求值
+          // 失效缓存 → 重编译含聚合 resolver → 求值 + summaryRow
           view._invalidateCompiledCache()
           view.dataTable = table  // 重编译
-          if (view.rows.length > 0) view.recomputeColumns()  // 求值
+        }
+        // 求值（含 summaryRow 重算）：有计算列或有 aggregate 列时触发
+        if (view.computedColumnNames.size > 0 || hasAgg) {
+          view.recomputeColumns()
         }
       }
     }

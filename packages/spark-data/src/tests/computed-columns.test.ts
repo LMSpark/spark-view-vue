@@ -4,18 +4,15 @@
  * 所有计算列均通过 DataColumn.computeExpression 列配置声明。
  * 编译归 DataTable（set dataTable 触发），求值归 DataView（行操作自动触发）。
  *
+ * 全部测试共享一个 makeTestDS 工厂：Orders（父）→ Items（子），
+ * 调用方只传入需要测试的计算列 + 可选行数据覆盖。
+ *
  * 覆盖范围：
- * 1. 基础表达式（算术、字符串拼接、三元条件、0/null 边界）
- * 2. 多语句函数体（if/else、变量声明、for 循环）
- * 3. 链式计算列（后序列引用前序列结果）
- * 4. ctx 上下文（setComputedContext 动态切换）
- * 5. 动态行操作自动求值（replaceRows / appendRow / updateRowById / editRowById / updateFromServer）
- * 6. 聚合函数 — DataSet 关联（$sum / $count / $avg / $min / $max / $list / $join）
- * 7. 混合表达式（算术 + 聚合 + ctx 组合）
- * 8. 聚合 — 动态行编辑后 recomputeColumns 重算
- * 9. CRUD 提交前剥离（stripComputedColumns 内部）
- * 10. 运行时错误降级为 undefined
- * 11. 边界条件（编译缓存、fromConfig 自动求值、空 rows 安全）
+ *  1. 基础表达式        2. 多语句函数体      3. 链式计算列
+ *  4. ctx 上下文        5. 动态行操作        6. 聚合函数
+ *  7. 混合表达式        8. 聚合动态编辑      9. stripComputedColumns
+ * 10. 运行时错误降级   11. 边界条件         12. 字符串内函数定义
+ * 13. summaryRow 列级聚合  14. $summary/$selectionSummary 跨表聚合引用
  */
 
 import { describe, it, expect, vi } from 'vitest'
@@ -23,809 +20,553 @@ import { DataTable, DataSet } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 工具函数
+// 共享工具
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * 创建绑定 DataTable 的 DataView。
- * 通过 replaceRows 填充初始行（自动触发计算列求值）。
- */
-function makeView(
-  columns: Array<{ name: string; type?: string; isPrimaryKey?: boolean; computeExpression?: string }>,
-  rows: IDataRow[] = [],
-) {
-  const table = new DataTable('T', columns.map(c => {
-    const col: { name: string; type: string; isPrimaryKey?: boolean; computeExpression?: string } = {
-      name: c.name,
-      type: c.type ?? 'string',
-    }
-    if (c.isPrimaryKey !== undefined) col.isPrimaryKey = c.isPrimaryKey
-    if (c.computeExpression !== undefined) col.computeExpression = c.computeExpression
-    return col
-  }))
-  const view = table.getOrCreateView('default')
-  if (rows.length > 0) view.replaceRows(rows)
-  return view
-}
-
-/** 读取行字段（绕过索引签名 noPropertyAccessFromIndexSignature） */
+/** 读取行字段（绕过 noPropertyAccessFromIndexSignature） */
 const f = (row: IDataRow | undefined, field: string): unknown => row?.[field]
+
+/**
+ * 默认测试数据（Orders + Items 主子关系）
+ *
+ *   Order 1 ── Item A(100), B(200), C(50)  → sum=350, count=3, avg≈116.67, min=50, max=200
+ *   Order 2 ── Item X(80)                  → sum=80,  count=1
+ *   Order 3 ── (无子行)                     → sum=0,   count=0
+ */
+const DEFAULT_ORDERS: IDataRow[] = [
+  { id: 1, price: 100, qty: 6, score: 95, firstName: '张', lastName: '三', amount: 1500, n: 5, w: 65, h: 1.75, a: 5, b: 6, x: 4, obj: null, items: 'apple, banana, cherry' },
+  { id: 2, price: 50,  qty: 2, score: 72, firstName: '李', lastName: '四', amount: 300,  n: 0, w: 90, h: 1.70, a: 3, b: 7, x: 8, obj: null, items: 'x, y' },
+  { id: 3, price: 0,   qty: 99, score: 45, firstName: '王', lastName: '五', amount: 800,  n: 1, w: 50, h: 1.60, a: 0, b: 0, x: 0, obj: null, items: '' },
+]
+
+const DEFAULT_ITEMS: IDataRow[] = [
+  { id: 101, orderId: 1, name: 'A', amount: 100 },
+  { id: 102, orderId: 1, name: 'B', amount: 200 },
+  { id: 103, orderId: 1, name: 'C', amount: 50 },
+  { id: 104, orderId: 2, name: 'X', amount: 80 },
+]
+
+/**
+ * 构建 Orders → Items 主子 DataSet。
+ *
+ * @param computedCols Orders 表追加的额外列（计算列 / 聚合列 / 两者组合）
+ * @param orderRows    自定义 Orders 行数据（默认 DEFAULT_ORDERS）
+ * @param itemRows     自定义 Items 行数据（默认 DEFAULT_ITEMS）
+ * @param aggregateMap 为基础列追加聚合（如 `{ price: 'sum', score: 'avg' }`）
+ */
+function makeTestDS(
+  computedCols: Array<{ name: string; type?: string; computeExpression?: string; aggregate?: 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join' }> = [],
+  orderRows?: IDataRow[],
+  itemRows?: IDataRow[],
+  aggregateMap?: Record<string, 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join'>,
+) {
+  // 将 aggregateMap 应用到基础列
+  const withAgg = (col: Record<string, unknown>) => {
+    const a = aggregateMap?.[(col.name as string)]
+    return a ? { ...col, aggregate: a } : col
+  }
+
+  const ds = DataSet.fromConfig({
+    dataSetName: 'TestDS',
+    tables: {
+      Orders: {
+        tableName: 'Orders',
+        columns: [
+          withAgg({ name: 'id', type: 'number', isPrimaryKey: true }),
+          withAgg({ name: 'price', type: 'number' }),
+          withAgg({ name: 'qty', type: 'number' }),
+          withAgg({ name: 'score', type: 'number' }),
+          withAgg({ name: 'firstName', type: 'string' }),
+          withAgg({ name: 'lastName', type: 'string' }),
+          withAgg({ name: 'amount', type: 'number' }),
+          withAgg({ name: 'n', type: 'number' }),
+          withAgg({ name: 'w', type: 'number' }),
+          withAgg({ name: 'h', type: 'number' }),
+          withAgg({ name: 'a', type: 'number' }),
+          withAgg({ name: 'b', type: 'number' }),
+          withAgg({ name: 'x', type: 'number' }),
+          withAgg({ name: 'obj', type: 'string' }),
+          withAgg({ name: 'items', type: 'string' }),
+          ...computedCols.map(c => ({
+            name: c.name,
+            type: c.type ?? 'string',
+            ...(c.computeExpression ? { computeExpression: c.computeExpression } : {}),
+            ...(c.aggregate ? { aggregate: c.aggregate } : {}),
+          })),
+        ] as Array<Record<string, unknown>>,
+        rows: orderRows ?? DEFAULT_ORDERS,
+      },
+      Items: {
+        tableName: 'Items',
+        columns: [
+          { name: 'id', type: 'number', isPrimaryKey: true },
+          { name: 'orderId', type: 'number' },
+          { name: 'name', type: 'string' },
+          { name: 'amount', type: 'number' },
+        ],
+        rows: itemRows ?? DEFAULT_ITEMS,
+      },
+    },
+    relations: [{
+      parentTable: 'Orders',
+      childTable: 'Items',
+      childField: 'orderId',
+      dependencyType: 'currentRow',
+    }],
+  })
+  return {
+    ds,
+    orders: ds.getView('Orders', 'default')!,
+    items: ds.getView('Items', 'default')!,
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. 基础表达式
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 基础表达式', () => {
+describe('基础表达式', () => {
   it('算术：price * qty', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'price', type: 'number' },
-        { name: 'qty', type: 'number' },
-        { name: 'total', type: 'number', computeExpression: 'price * qty' },
-      ],
-      [{ id: 1, price: 10, qty: 3 }, { id: 2, price: 5.5, qty: 2 }],
-    )
-    expect(f(view.rows[0], 'total')).toBe(30)
-    expect(f(view.rows[1], 'total')).toBe(11)
+    const { orders } = makeTestDS([{ name: 'total', type: 'number', computeExpression: 'price * qty' }])
+    expect(f(orders.rows[0], 'total')).toBe(600)  // 100 * 6
+    expect(f(orders.rows[1], 'total')).toBe(100)  // 50 * 2
   })
 
   it('字符串拼接：firstName + lastName', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'firstName', type: 'string' },
-        { name: 'lastName', type: 'string' },
-        { name: 'fullName', type: 'string', computeExpression: "firstName + ' ' + lastName" },
-      ],
-      [{ id: 1, firstName: '张', lastName: '三' }],
-    )
-    expect(f(view.rows[0], 'fullName')).toBe('张 三')
+    const { orders } = makeTestDS([{ name: 'fullName', computeExpression: "firstName + ' ' + lastName" }])
+    expect(f(orders.rows[0], 'fullName')).toBe('张 三')
   })
 
   it('三元条件：score >= 60', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'score', type: 'number' },
-        { name: 'result', type: 'string', computeExpression: "score >= 60 ? '及格' : '不及格'" },
-      ],
-      [{ id: 1, score: 80 }, { id: 2, score: 50 }],
-    )
-    expect(f(view.rows[0], 'result')).toBe('及格')
-    expect(f(view.rows[1], 'result')).toBe('不及格')
+    const { orders } = makeTestDS([{ name: 'result', computeExpression: "score >= 60 ? '及格' : '不及格'" }])
+    expect(f(orders.rows[0], 'result')).toBe('及格')    // 95
+    expect(f(orders.rows[2], 'result')).toBe('不及格')  // 45
   })
 
   it('字段值为 0 / null 时表达式正常处理', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'price', type: 'number' },
-        { name: 'qty', type: 'number' },
-        { name: 'total', type: 'number', computeExpression: 'price * qty' },
-      ],
-      [
-        { id: 1, price: 0, qty: 99 },
-        { id: 2, price: null, qty: 3 },
-      ],
+    const { orders } = makeTestDS(
+      [{ name: 'total', type: 'number', computeExpression: 'price * qty' }],
+      [{ id: 1, price: 0, qty: 99 }, { id: 2, price: null, qty: 3 }],
     )
-    expect(f(view.rows[0], 'total')).toBe(0)
-    expect(f(view.rows[1], 'total')).toBe(0)  // null * 3 = 0（JS 强转）
+    expect(f(orders.rows[0], 'total')).toBe(0)   // 0 * 99
+    expect(f(orders.rows[1], 'total')).toBe(0)   // null * 3 = 0（JS 强转）
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. 多语句函数体（支持任意 JS 逻辑）
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 多语句函数体', () => {
+describe('多语句函数体', () => {
   it('if/else 分支', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'score', type: 'number' },
-        {
-          name: 'grade', type: 'string',
-          computeExpression: `
-            if (score >= 90) return 'A';
-            else if (score >= 80) return 'B';
-            else if (score >= 60) return 'C';
-            else return 'D';
-          `,
-        },
-      ],
-      [{ id: 1, score: 95 }, { id: 2, score: 72 }, { id: 3, score: 45 }],
-    )
-    expect(f(view.rows[0], 'grade')).toBe('A')
-    expect(f(view.rows[1], 'grade')).toBe('C')
-    expect(f(view.rows[2], 'grade')).toBe('D')
+    const { orders } = makeTestDS([{
+      name: 'grade',
+      computeExpression: `
+        if (score >= 90) return 'A';
+        else if (score >= 80) return 'B';
+        else if (score >= 60) return 'C';
+        else return 'D';
+      `,
+    }])
+    expect(f(orders.rows[0], 'grade')).toBe('A')  // 95
+    expect(f(orders.rows[1], 'grade')).toBe('C')  // 72
+    expect(f(orders.rows[2], 'grade')).toBe('D')  // 45
   })
 
-  it('变量声明 + 复合计算', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'price', type: 'number' },
-        { name: 'qty', type: 'number' },
-        {
-          name: 'finalPrice', type: 'number',
-          computeExpression: `
-            var subtotal = price * qty;
-            var discount = subtotal > 500 ? 0.9 : 1.0;
-            return subtotal * discount;
-          `,
-        },
-      ],
-      [{ id: 1, price: 100, qty: 6 }, { id: 2, price: 100, qty: 3 }],
-    )
-    // id=1: 600 * 0.9 = 540; id=2: 300 * 1.0 = 300
-    expect(f(view.rows[0], 'finalPrice')).toBe(540)
-    expect(f(view.rows[1], 'finalPrice')).toBe(300)
+  it('变量声明 + 折扣计算', () => {
+    const { orders } = makeTestDS([{
+      name: 'finalPrice', type: 'number',
+      computeExpression: `
+        var subtotal = price * qty;
+        var discount = subtotal > 500 ? 0.9 : 1.0;
+        return subtotal * discount;
+      `,
+    }])
+    // row1: 600 * 0.9 = 540; row2: 100 * 1.0 = 100
+    expect(f(orders.rows[0], 'finalPrice')).toBe(540)
+    expect(f(orders.rows[1], 'finalPrice')).toBe(100)
   })
 
-  it('for 循环累加', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'n', type: 'number' },
-        {
-          name: 'factorial', type: 'number',
-          computeExpression: `
-            var result = 1;
-            for (var i = 2; i <= n; i++) result *= i;
-            return result;
-          `,
-        },
-      ],
-      [{ id: 1, n: 5 }, { id: 2, n: 0 }, { id: 3, n: 1 }],
-    )
-    expect(f(view.rows[0], 'factorial')).toBe(120)
-    expect(f(view.rows[1], 'factorial')).toBe(1)
-    expect(f(view.rows[2], 'factorial')).toBe(1)
+  it('for 循环累加（阶乘）', () => {
+    const { orders } = makeTestDS([{
+      name: 'factorial', type: 'number',
+      computeExpression: `
+        var result = 1;
+        for (var i = 2; i <= n; i++) result *= i;
+        return result;
+      `,
+    }])
+    expect(f(orders.rows[0], 'factorial')).toBe(120) // 5!
+    expect(f(orders.rows[1], 'factorial')).toBe(1)   // 0!
+    expect(f(orders.rows[2], 'factorial')).toBe(1)   // 1!
   })
 
   it('函数体 + ctx 联合', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'amount', type: 'number' },
-        {
-          name: 'tier', type: 'string',
-          computeExpression: `
-            var threshold = ctx.vipThreshold || 1000;
-            if (amount >= threshold) return 'VIP';
-            return '普通';
-          `,
-        },
-      ],
-      [{ id: 1, amount: 1500 }, { id: 2, amount: 300 }],
-    )
-    view.setComputedContext({ vipThreshold: 1000 })
-    expect(f(view.rows[0], 'tier')).toBe('VIP')
-    expect(f(view.rows[1], 'tier')).toBe('普通')
+    const { orders } = makeTestDS([{
+      name: 'tier',
+      computeExpression: `
+        var threshold = ctx.vipThreshold || 1000;
+        if (amount >= threshold) return 'VIP';
+        return '普通';
+      `,
+    }])
+    orders.setComputedContext({ vipThreshold: 1000 })
+    expect(f(orders.rows[0], 'tier')).toBe('VIP')  // 1500
+    expect(f(orders.rows[1], 'tier')).toBe('普通') // 300
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. 链式计算列
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 链式计算列', () => {
-  it('前序列 subtotal 被后序列 tax 引用', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'price', type: 'number' },
-        { name: 'qty', type: 'number' },
-        { name: 'subtotal', type: 'number', computeExpression: 'price * qty' },
-        { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.1' },
-      ],
-      [{ id: 1, price: 100, qty: 2 }],
-    )
-    expect(f(view.rows[0], 'subtotal')).toBe(200)
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(20)
+describe('链式计算列', () => {
+  it('subtotal → tax（两级链）', () => {
+    const { orders } = makeTestDS([
+      { name: 'subtotal', type: 'number', computeExpression: 'price * qty' },
+      { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.1' },
+    ])
+    expect(f(orders.rows[0], 'subtotal')).toBe(600)
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(60)
   })
 
-  it('三级链：price*qty → subtotal → tax → grandTotal', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'price', type: 'number' },
-        { name: 'qty', type: 'number' },
-        { name: 'subtotal', type: 'number', computeExpression: 'price * qty' },
-        { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.08' },
-        { name: 'grandTotal', type: 'number', computeExpression: 'subtotal + tax' },
-      ],
-      [{ id: 1, price: 100, qty: 5 }],
-    )
-    expect(f(view.rows[0], 'subtotal')).toBe(500)
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(40)
-    expect(f(view.rows[0], 'grandTotal') as number).toBeCloseTo(540)
+  it('subtotal → tax → grandTotal（三级链）', () => {
+    const { orders } = makeTestDS([
+      { name: 'subtotal', type: 'number', computeExpression: 'price * qty' },
+      { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.08' },
+      { name: 'grandTotal', type: 'number', computeExpression: 'subtotal + tax' },
+    ])
+    expect(f(orders.rows[0], 'subtotal')).toBe(600)
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(48)
+    expect(f(orders.rows[0], 'grandTotal') as number).toBeCloseTo(648)
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. ctx 上下文 — setComputedContext 动态切换
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — ctx 上下文', () => {
+describe('ctx 上下文', () => {
   it('ctx.taxRate 驱动税率计算', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'amount', type: 'number' },
-        { name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate' },
-      ],
-      [{ id: 1, amount: 1000 }],
-    )
-    view.setComputedContext({ taxRate: 0.1 })
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(100)
+    const { orders } = makeTestDS([{ name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate' }])
+    orders.setComputedContext({ taxRate: 0.1 })
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(150) // 1500 * 0.1
   })
 
-  it('setComputedContext 切换后自动重编译、全量重算', () => {
-    const table = new DataTable('Sales', [
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'amount', type: 'number' },
-      { name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate' },
-    ])
-    const view = table.getOrCreateView('default')
-    view.replaceRows([{ id: 1, amount: 500 }])
+  it('setComputedContext 切换后自动重算', () => {
+    const { orders } = makeTestDS([{ name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate' }])
+    orders.setComputedContext({ taxRate: 0.05 })
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(75)   // 1500 * 0.05
 
-    view.setComputedContext({ taxRate: 0.05 })
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(25)
-
-    // 切换税率 → 自动重编译 + 全量重算
-    view.setComputedContext({ taxRate: 0.15 })
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(75)
+    orders.setComputedContext({ taxRate: 0.15 })
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(225)  // 1500 * 0.15
   })
 
-  it('ctx 多字段：discount + taxRate 联合计算', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'amount', type: 'number' },
-        { name: 'final', type: 'number', computeExpression: 'amount * (1 - ctx.discount) * (1 + ctx.taxRate)' },
-      ],
-      [{ id: 1, amount: 1000 }],
-    )
-    view.setComputedContext({ discount: 0.2, taxRate: 0.08 })
-    // 1000 * 0.8 * 1.08 = 864
-    expect(f(view.rows[0], 'final') as number).toBeCloseTo(864)
+  it('ctx 多字段联合计算', () => {
+    const { orders } = makeTestDS([{
+      name: 'final', type: 'number',
+      computeExpression: 'amount * (1 - ctx.discount) * (1 + ctx.taxRate)',
+    }])
+    orders.setComputedContext({ discount: 0.2, taxRate: 0.08 })
+    // 1500 * 0.8 * 1.08 = 1296
+    expect(f(orders.rows[0], 'final') as number).toBeCloseTo(1296)
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 5. 动态行操作自动求值
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 动态行操作自动求值', () => {
-  function makeOrderView(rows: IDataRow[] = []) {
-    return makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'price', type: 'number' },
-        { name: 'qty', type: 'number' },
-        { name: 'total', type: 'number', computeExpression: 'price * qty' },
-      ],
-      rows,
-    )
-  }
+describe('动态行操作自动求值', () => {
+  const TOTAL_COL = [{ name: 'total', type: 'number', computeExpression: 'price * qty' }]
 
   it('replaceRows — 全量替换后自动求值', () => {
-    const view = makeOrderView()
-    view.replaceRows([{ id: 1, price: 8, qty: 5 }])
-    expect(f(view.rows[0], 'total')).toBe(40)
+    const { orders } = makeTestDS(TOTAL_COL, [])
+    orders.replaceRows([{ id: 1, price: 8, qty: 5 }])
+    expect(f(orders.rows[0], 'total')).toBe(40)
   })
 
   it('appendRow — 新行自动带计算列值', () => {
-    const view = makeOrderView([{ id: 1, price: 10, qty: 2 }])
-    view.appendRow({ id: 2, price: 7, qty: 3 })
-    expect(f(view.rows[1], 'total')).toBe(21)
+    const { orders } = makeTestDS(TOTAL_COL, [{ id: 1, price: 10, qty: 2 }])
+    orders.appendRow({ id: 2, price: 7, qty: 3 })
+    expect(f(orders.rows[1], 'total')).toBe(21)
   })
 
   it('updateRowById — 源字段变更后计算列自动重算', () => {
-    const view = makeOrderView([{ id: 1, price: 10, qty: 3 }])
-    expect(f(view.rows[0], 'total')).toBe(30)
+    const { orders } = makeTestDS(TOTAL_COL, [{ id: 1, price: 10, qty: 3 }])
+    expect(f(orders.rows[0], 'total')).toBe(30)
 
-    view.updateRowById(1, { price: 20 })
-    expect(f(view.rows[0], 'total')).toBe(60)
+    orders.updateRowById(1, { price: 20 })
+    expect(f(orders.rows[0], 'total')).toBe(60)
 
-    view.updateRowById(1, { qty: 1 })
-    expect(f(view.rows[0], 'total')).toBe(20)
+    orders.updateRowById(1, { qty: 1 })
+    expect(f(orders.rows[0], 'total')).toBe(20)
   })
 
   it('replaceRows — 批量替换全部自动求值', () => {
-    const view = makeView([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'v', type: 'number' },
-      { name: 'sq', type: 'number', computeExpression: 'v * v' },
-    ])
-    view.replaceRows([{ id: 1, v: 3 }, { id: 2, v: 4 }, { id: 3, v: 5 }])
-    expect(view.rows.map(r => r['sq'])).toEqual([9, 16, 25])
+    const { orders } = makeTestDS([{ name: 'sq', type: 'number', computeExpression: 'x * x' }], [])
+    orders.replaceRows([{ id: 1, x: 3 }, { id: 2, x: 4 }, { id: 3, x: 5 }])
+    expect(orders.rows.map(r => r['sq'])).toEqual([9, 16, 25])
   })
 
   it('editRowById — 编辑后计算列动态重算', async () => {
-    const view = makeOrderView([{ id: 1, price: 5, qty: 4 }])
-    expect(f(view.rows[0], 'total')).toBe(20)
+    const { orders } = makeTestDS(TOTAL_COL, [{ id: 1, price: 5, qty: 4 }])
+    expect(f(orders.rows[0], 'total')).toBe(20)
 
-    await view.editRowById(1, { price: 10 })
-    expect(f(view.rows[0], 'total')).toBe(40)
+    await orders.editRowById(1, { price: 10 })
+    expect(f(orders.rows[0], 'total')).toBe(40)
   })
 
   it('updateFromServer — 服务端响应后自动求值', () => {
-    const view = makeView([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'n', type: 'number' },
-      { name: 'half', type: 'number', computeExpression: 'n / 2' },
-    ])
-    view.updateFromServer({ rows: [{ id: 1, n: 10 }, { id: 2, n: 20 }] })
-    expect(f(view.rows[0], 'half')).toBe(5)
-    expect(f(view.rows[1], 'half')).toBe(10)
+    const { orders } = makeTestDS([{ name: 'half', type: 'number', computeExpression: 'n / 2' }], [])
+    orders.updateFromServer({ rows: [{ id: 1, n: 10 }, { id: 2, n: 20 }] })
+    expect(f(orders.rows[0], 'half')).toBe(5)
+    expect(f(orders.rows[1], 'half')).toBe(10)
   })
 
   it('多次连续 updateRowById — 每次都反映最新值', () => {
-    const view = makeOrderView([{ id: 1, price: 10, qty: 2 }])
+    const { orders } = makeTestDS(TOTAL_COL, [{ id: 1, price: 10, qty: 2 }])
 
-    view.updateRowById(1, { price: 20 })
-    expect(f(view.rows[0], 'total')).toBe(40)
+    orders.updateRowById(1, { price: 20 })
+    expect(f(orders.rows[0], 'total')).toBe(40)
 
-    view.updateRowById(1, { qty: 5 })
-    expect(f(view.rows[0], 'total')).toBe(100)
+    orders.updateRowById(1, { qty: 5 })
+    expect(f(orders.rows[0], 'total')).toBe(100)
 
-    view.updateRowById(1, { price: 1, qty: 1 })
-    expect(f(view.rows[0], 'total')).toBe(1)
+    orders.updateRowById(1, { price: 1, qty: 1 })
+    expect(f(orders.rows[0], 'total')).toBe(1)
   })
 
   it('recomputeColumns — 直接修改行后手动重算', () => {
-    const view = makeOrderView([{ id: 1, price: 8, qty: 5 }])
-    expect(f(view.rows[0], 'total')).toBe(40)
+    const { orders } = makeTestDS(TOTAL_COL, [{ id: 1, price: 8, qty: 5 }])
+    expect(f(orders.rows[0], 'total')).toBe(40)
 
-    // 直接修改行字段（绕过 API），手动重触发
-    view.rows[0]!['price'] = 10
-    view.recomputeColumns()
-    expect(f(view.rows[0], 'total')).toBe(50)
+    orders.rows[0]!['price'] = 10
+    orders.recomputeColumns()
+    expect(f(orders.rows[0], 'total')).toBe(50)
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 6. 聚合函数 — DataSet 关联
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 聚合函数', () => {
-  function makeOrdersDS() {
-    return DataSet.fromConfig({
-      dataSetName: 'Shop',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'totalAmount', type: 'number', computeExpression: "$sum('Items', 'amount')" },
-            { name: 'itemCount',   type: 'number', computeExpression: "$count('Items')" },
-            { name: 'avgAmount',   type: 'number', computeExpression: "$avg('Items', 'amount')" },
-            { name: 'minAmount',   type: 'number', computeExpression: "$min('Items', 'amount')" },
-            { name: 'maxAmount',   type: 'number', computeExpression: "$max('Items', 'amount')" },
-            { name: 'nameList',    type: 'string', computeExpression: "$join('Items', 'name')" },
-            { name: 'names',       type: 'string', computeExpression: "$list('Items', 'name')" },
-          ],
-          rows: [{ id: 1 }, { id: 2 }],
-        },
-        Items: {
-          tableName: 'Items',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'orderId', type: 'number' },
-            { name: 'name', type: 'string' },
-            { name: 'amount', type: 'number' },
-          ],
-          rows: [
-            { id: 101, orderId: 1, name: 'A', amount: 100 },
-            { id: 102, orderId: 1, name: 'B', amount: 200 },
-            { id: 103, orderId: 1, name: 'C', amount: 50 },
-            { id: 104, orderId: 2, name: 'X', amount: 80 },
-          ],
-        },
-      },
-      relations: [{
-        parentTable: 'Orders',
-        childTable: 'Items',
-        childField: 'orderId',
-        dependencyType: 'currentRow',
-      }],
-    })
-  }
-
-  it('$sum — 累计子行字段（DataSet.fromConfig 自动求值）', () => {
-    const ds = makeOrdersDS()
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'totalAmount')).toBe(350)
-    expect(f(view.rows[1], 'totalAmount')).toBe(80)
+describe('聚合函数', () => {
+  it('$sum — 累计子行字段', () => {
+    const { orders } = makeTestDS([{ name: 'total', type: 'number', computeExpression: "$sum('Items', 'amount')" }])
+    expect(f(orders.rows[0], 'total')).toBe(350) // 100+200+50
+    expect(f(orders.rows[1], 'total')).toBe(80)
   })
 
   it('$count — 子行数量', () => {
-    const ds = makeOrdersDS()
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'itemCount')).toBe(3)
-    expect(f(view.rows[1], 'itemCount')).toBe(1)
+    const { orders } = makeTestDS([{ name: 'cnt', type: 'number', computeExpression: "$count('Items')" }])
+    expect(f(orders.rows[0], 'cnt')).toBe(3)
+    expect(f(orders.rows[1], 'cnt')).toBe(1)
   })
 
   it('$avg — 子行均值', () => {
-    const ds = makeOrdersDS()
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'avgAmount') as number).toBeCloseTo(116.67, 1)
+    const { orders } = makeTestDS([{ name: 'avg', type: 'number', computeExpression: "$avg('Items', 'amount')" }])
+    expect(f(orders.rows[0], 'avg') as number).toBeCloseTo(116.67, 1)
   })
 
   it('$min / $max — 子行极值', () => {
-    const ds = makeOrdersDS()
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'minAmount')).toBe(50)
-    expect(f(view.rows[0], 'maxAmount')).toBe(200)
+    const { orders } = makeTestDS([
+      { name: 'mn', type: 'number', computeExpression: "$min('Items', 'amount')" },
+      { name: 'mx', type: 'number', computeExpression: "$max('Items', 'amount')" },
+    ])
+    expect(f(orders.rows[0], 'mn')).toBe(50)
+    expect(f(orders.rows[0], 'mx')).toBe(200)
   })
 
-  it('$list — 返回子行字段数组', () => {
-    const ds = makeOrdersDS()
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'names')).toEqual(['A', 'B', 'C'])
-    expect(f(view.rows[1], 'names')).toEqual(['X'])
+  it('$list — 子行字段数组', () => {
+    const { orders } = makeTestDS([{ name: 'names', computeExpression: "$list('Items', 'name')" }])
+    expect(f(orders.rows[0], 'names')).toEqual(['A', 'B', 'C'])
+    expect(f(orders.rows[1], 'names')).toEqual(['X'])
   })
 
-  it('$join — 子行字段连接字符串（默认分隔符）', () => {
-    const ds = makeOrdersDS()
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'nameList')).toBe('A, B, C')
+  it('$join — 默认分隔符', () => {
+    const { orders } = makeTestDS([{ name: 'joined', computeExpression: "$join('Items', 'name')" }])
+    expect(f(orders.rows[0], 'joined')).toBe('A, B, C')
   })
 
   it('$join — 自定义分隔符', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        P: {
-          tableName: 'P',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'tags', type: 'string', computeExpression: "$join('C', 'tag', ' | ')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-        C: {
-          tableName: 'C',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'parentId', type: 'number' },
-            { name: 'tag', type: 'string' },
-          ],
-          rows: [
-            { id: 1, parentId: 1, tag: 'foo' },
-            { id: 2, parentId: 1, tag: 'bar' },
-          ],
-        },
-      },
-      relations: [{
-        parentTable: 'P',
-        childTable: 'C',
-        childField: 'parentId',
-        dependencyType: 'currentRow',
-      }],
-    })
-    expect(f(ds.getView('P', 'default')!.rows[0], 'tags')).toBe('foo | bar')
+    const { orders } = makeTestDS([{ name: 'tags', computeExpression: "$join('Items', 'name', ' | ')" }])
+    expect(f(orders.rows[0], 'tags')).toBe('A | B | C')
   })
 
   it('子行为空时聚合边界值正确', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'EmptyDS',
-      tables: {
-        P: {
-          tableName: 'P',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'total', type: 'number', computeExpression: "$sum('C', 'v')" },
-            { name: 'cnt',   type: 'number', computeExpression: "$count('C')" },
-            { name: 'avg',   type: 'number', computeExpression: "$avg('C', 'v')" },
-            { name: 'mn',    type: 'number', computeExpression: "$min('C', 'v')" },
-            { name: 'mx',    type: 'number', computeExpression: "$max('C', 'v')" },
-            { name: 'lst',   type: 'string', computeExpression: "$list('C', 'v')" },
-            { name: 'jn',    type: 'string', computeExpression: "$join('C', 'v')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-        C: {
-          tableName: 'C',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'parentId', type: 'number' },
-            { name: 'v', type: 'number' },
-          ],
-          rows: [],
-        },
-      },
-      relations: [{
-        parentTable: 'P',
-        childTable: 'C',
-        childField: 'parentId',
-        dependencyType: 'currentRow',
-      }],
-    })
-    const view = ds.getView('P', 'default')!
-    expect(f(view.rows[0], 'total')).toBe(0)
-    expect(f(view.rows[0], 'cnt')).toBe(0)
-    expect(f(view.rows[0], 'avg')).toBe(0)
-    expect(f(view.rows[0], 'mn')).toBeUndefined()
-    expect(f(view.rows[0], 'mx')).toBeUndefined()
-    expect(f(view.rows[0], 'lst')).toEqual([])
-    expect(f(view.rows[0], 'jn')).toBe('')
+    const { orders } = makeTestDS(
+      [
+        { name: 'total', type: 'number', computeExpression: "$sum('Items', 'amount')" },
+        { name: 'cnt',   type: 'number', computeExpression: "$count('Items')" },
+        { name: 'avg',   type: 'number', computeExpression: "$avg('Items', 'amount')" },
+        { name: 'mn',    type: 'number', computeExpression: "$min('Items', 'amount')" },
+        { name: 'mx',    type: 'number', computeExpression: "$max('Items', 'amount')" },
+        { name: 'lst',   computeExpression: "$list('Items', 'amount')" },
+        { name: 'jn',    computeExpression: "$join('Items', 'amount')" },
+      ],
+      undefined,
+      [],  // 空子行
+    )
+    expect(f(orders.rows[0], 'total')).toBe(0)
+    expect(f(orders.rows[0], 'cnt')).toBe(0)
+    expect(f(orders.rows[0], 'avg')).toBe(0)
+    expect(f(orders.rows[0], 'mn')).toBeUndefined()
+    expect(f(orders.rows[0], 'mx')).toBeUndefined()
+    expect(f(orders.rows[0], 'lst')).toEqual([])
+    expect(f(orders.rows[0], 'jn')).toBe('')
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 7. 混合表达式 — 算术 + 聚合 + ctx 组合
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 混合表达式', () => {
-  function makeMixedDS(
-    parentColumns: Array<{ name: string; type: string; isPrimaryKey?: boolean; computeExpression?: string }>,
-  ) {
-    return DataSet.fromConfig({
-      dataSetName: 'Mixed',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: parentColumns,
-          rows: [{ id: 1 }, { id: 2 }],
-        },
-        Items: {
-          tableName: 'Items',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'orderId', type: 'number' },
-            { name: 'amount', type: 'number' },
-            { name: 'name', type: 'string' },
-          ],
-          rows: [
-            { id: 1, orderId: 1, amount: 100, name: 'A' },
-            { id: 2, orderId: 1, amount: 200, name: 'B' },
-            { id: 3, orderId: 2, amount: 50,  name: 'C' },
-          ],
-        },
-      },
-      relations: [{
-        parentTable: 'Orders',
-        childTable: 'Items',
-        childField: 'orderId',
-        dependencyType: 'currentRow',
-      }],
-    })
-  }
-
-  it('聚合 + 算术：$sum * 1.08（含税总额）', () => {
-    const ds = makeMixedDS([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'taxTotal', type: 'number', computeExpression: "$sum('Items', 'amount') * 1.08" },
-    ])
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'taxTotal') as number).toBeCloseTo(324)
-    expect(f(view.rows[1], 'taxTotal') as number).toBeCloseTo(54)
+describe('混合表达式', () => {
+  it('聚合 + 算术：$sum * 1.08', () => {
+    const { orders } = makeTestDS([{ name: 'taxTotal', type: 'number', computeExpression: "$sum('Items', 'amount') * 1.08" }])
+    expect(f(orders.rows[0], 'taxTotal') as number).toBeCloseTo(378)   // 350 * 1.08
+    expect(f(orders.rows[1], 'taxTotal') as number).toBeCloseTo(86.4)  // 80 * 1.08
   })
 
   it('聚合 + ctx：$sum * ctx.taxRate', () => {
-    const ds = makeMixedDS([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'tax', type: 'number', computeExpression: "$sum('Items', 'amount') * ctx.taxRate" },
-    ])
-    const view = ds.getView('Orders', 'default')!
-    view.setComputedContext({ taxRate: 0.1 })
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(30)
-    // 切换 ctx → 自动重算
-    view.setComputedContext({ taxRate: 0.2 })
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(60)
+    const { orders } = makeTestDS([{ name: 'tax', type: 'number', computeExpression: "$sum('Items', 'amount') * ctx.taxRate" }])
+    orders.setComputedContext({ taxRate: 0.1 })
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(35)  // 350 * 0.1
+
+    orders.setComputedContext({ taxRate: 0.2 })
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(70)  // 350 * 0.2
   })
 
   it('聚合 + 三元：$count > 0 ? $avg : 0', () => {
-    const ds = makeMixedDS([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'safeAvg', type: 'number', computeExpression: "$count('Items') > 0 ? $avg('Items', 'amount') : 0" },
-    ])
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'safeAvg') as number).toBeCloseTo(150)
+    const { orders } = makeTestDS([{
+      name: 'safeAvg', type: 'number',
+      computeExpression: "$count('Items') > 0 ? $avg('Items', 'amount') : 0",
+    }])
+    expect(f(orders.rows[0], 'safeAvg') as number).toBeCloseTo(116.67, 1)
   })
 
   it('聚合 + 字符串拼接', () => {
-    const ds = makeMixedDS([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'summary', type: 'string', computeExpression: "'订单' + id + '：' + $count('Items') + '项，合计' + $sum('Items', 'amount')" },
-    ])
-    const view = ds.getView('Orders', 'default')!
-    expect(f(view.rows[0], 'summary')).toBe('订单1：2项，合计300')
-    expect(f(view.rows[1], 'summary')).toBe('订单2：1项，合计50')
+    const { orders } = makeTestDS([{
+      name: 'summary',
+      computeExpression: "'订单' + id + '：' + $count('Items') + '项，合计' + $sum('Items', 'amount')",
+    }])
+    expect(f(orders.rows[0], 'summary')).toBe('订单1：3项，合计350')
+    expect(f(orders.rows[1], 'summary')).toBe('订单2：1项，合计80')
   })
 
   it('链式 + 聚合 + ctx', () => {
-    const ds = makeMixedDS([
-      { name: 'id', type: 'number', isPrimaryKey: true },
+    const { orders } = makeTestDS([
       { name: 'subtotal', type: 'number', computeExpression: "$sum('Items', 'amount')" },
       { name: 'tax', type: 'number', computeExpression: 'subtotal * ctx.taxRate' },
       { name: 'grandTotal', type: 'number', computeExpression: 'subtotal + tax' },
     ])
-    const view = ds.getView('Orders', 'default')!
-    view.setComputedContext({ taxRate: 0.1 })
-    expect(f(view.rows[0], 'subtotal')).toBe(300)
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(30)
-    expect(f(view.rows[0], 'grandTotal') as number).toBeCloseTo(330)
+    orders.setComputedContext({ taxRate: 0.1 })
+    expect(f(orders.rows[0], 'subtotal')).toBe(350)
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(35)
+    expect(f(orders.rows[0], 'grandTotal') as number).toBeCloseTo(385)
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 8. 聚合 — 子表行编辑后 recomputeColumns
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 聚合动态行编辑', () => {
-  function makeParentChildDS() {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'Agg',
-      tables: {
-        Parent: {
-          tableName: 'Parent',
-          columns: [
-            { name: 'id',    type: 'number', isPrimaryKey: true },
-            { name: 'total', type: 'number', computeExpression: "$sum('Child', 'v')" },
-            { name: 'cnt',   type: 'number', computeExpression: "$count('Child')" },
-          ],
-          rows: [{ id: 1 }, { id: 2 }],
-        },
-        Child: {
-          tableName: 'Child',
-          columns: [
-            { name: 'id',       type: 'number', isPrimaryKey: true },
-            { name: 'parentId', type: 'number' },
-            { name: 'v',        type: 'number' },
-          ],
-          rows: [
-            { id: 1, parentId: 1, v: 10 },
-            { id: 2, parentId: 1, v: 20 },
-            { id: 3, parentId: 2, v: 5 },
-          ],
-        },
-      },
-      relations: [{
-        parentTable: 'Parent',
-        childTable: 'Child',
-        childField: 'parentId',
-        dependencyType: 'currentRow',
-      }],
-    })
-    const parentView = ds.getView('Parent', 'default')!
-    const childView  = ds.getView('Child',  'default')!
-    return { ds, parentView, childView }
-  }
+describe('聚合动态行编辑', () => {
+  const AGG_COLS = [
+    { name: 'total', type: 'number', computeExpression: "$sum('Items', 'amount')" },
+    { name: 'cnt',   type: 'number', computeExpression: "$count('Items')" },
+  ]
 
-  it('DataSet.fromConfig 后聚合即已求值', () => {
-    const { parentView } = makeParentChildDS()
-    expect(f(parentView.rows[0], 'total')).toBe(30)
-    expect(f(parentView.rows[0], 'cnt')).toBe(2)
-    expect(f(parentView.rows[1], 'total')).toBe(5)
-    expect(f(parentView.rows[1], 'cnt')).toBe(1)
+  it('fromConfig 后聚合即已求值', () => {
+    const { orders } = makeTestDS(AGG_COLS)
+    expect(f(orders.rows[0], 'total')).toBe(350)
+    expect(f(orders.rows[0], 'cnt')).toBe(3)
+    expect(f(orders.rows[1], 'total')).toBe(80)
+    expect(f(orders.rows[1], 'cnt')).toBe(1)
   })
 
   it('子表 appendRow → recomputeColumns → 聚合更新', () => {
-    const { parentView, childView } = makeParentChildDS()
-    childView.appendRow({ id: 10, parentId: 1, v: 30 })
+    const { orders, items } = makeTestDS(AGG_COLS)
+    items.appendRow({ id: 200, orderId: 1, amount: 50 })
 
-    parentView.recomputeColumns()
-    expect(f(parentView.rows[0], 'total')).toBe(60)
-    expect(f(parentView.rows[0], 'cnt')).toBe(3)
-    expect(f(parentView.rows[1], 'total')).toBe(5)
+    orders.recomputeColumns()
+    expect(f(orders.rows[0], 'total')).toBe(400) // 350 + 50
+    expect(f(orders.rows[0], 'cnt')).toBe(4)
+    expect(f(orders.rows[1], 'total')).toBe(80)  // unchanged
   })
 
   it('子表 updateRowById → recomputeColumns → 聚合更新', () => {
-    const { parentView, childView } = makeParentChildDS()
-    childView.updateRowById(1, { v: 100 })
+    const { orders, items } = makeTestDS(AGG_COLS)
+    items.updateRowById(101, { amount: 500 })
 
-    parentView.recomputeColumns()
-    expect(f(parentView.rows[0], 'total')).toBe(120)
-    expect(f(parentView.rows[0], 'cnt')).toBe(2)
+    orders.recomputeColumns()
+    expect(f(orders.rows[0], 'total')).toBe(750) // 500+200+50
+    expect(f(orders.rows[0], 'cnt')).toBe(3)
   })
 
   it('子表 replaceRows → recomputeColumns → 聚合更新', () => {
-    const { parentView, childView } = makeParentChildDS()
-    childView.replaceRows([
-      { id: 1, parentId: 1, v: 7 },
-      { id: 2, parentId: 1, v: 3 },
-      { id: 3, parentId: 2, v: 50 },
-      { id: 4, parentId: 2, v: 50 },
+    const { orders, items } = makeTestDS(AGG_COLS)
+    items.replaceRows([
+      { id: 101, orderId: 1, amount: 7 },
+      { id: 102, orderId: 1, amount: 3 },
+      { id: 103, orderId: 2, amount: 50 },
+      { id: 104, orderId: 2, amount: 50 },
     ])
 
-    parentView.recomputeColumns()
-    expect(f(parentView.rows[0], 'total')).toBe(10)
-    expect(f(parentView.rows[1], 'total')).toBe(100)
+    orders.recomputeColumns()
+    expect(f(orders.rows[0], 'total')).toBe(10)
+    expect(f(orders.rows[1], 'total')).toBe(100)
   })
 
   it('子表删除行 → recomputeColumns → 聚合缩减', () => {
-    const { parentView, childView } = makeParentChildDS()
-    childView.replaceRows(childView.rows.filter(r => r['id'] !== 1))
+    const { orders, items } = makeTestDS(AGG_COLS)
+    items.replaceRows(items.rows.filter(r => r['id'] !== 101))
 
-    parentView.recomputeColumns()
-    expect(f(parentView.rows[0], 'total')).toBe(20)
-    expect(f(parentView.rows[0], 'cnt')).toBe(1)
+    orders.recomputeColumns()
+    expect(f(orders.rows[0], 'total')).toBe(250) // 200+50
+    expect(f(orders.rows[0], 'cnt')).toBe(2)
   })
 
   it('父表 appendRow — 新父行聚合基于当前子表快照', () => {
-    const { parentView, childView } = makeParentChildDS()
-    childView.appendRow({ id: 99, parentId: 3, v: 42 })
-    parentView.appendRow({ id: 3 })
+    const { orders, items } = makeTestDS(AGG_COLS)
+    items.appendRow({ id: 200, orderId: 4, amount: 42 })
+    orders.appendRow({ id: 4 })
 
-    expect(f(parentView.rows[2], 'total')).toBe(42)
-    expect(f(parentView.rows[2], 'cnt')).toBe(1)
+    expect(f(orders.rows[3], 'total')).toBe(42)
+    expect(f(orders.rows[3], 'cnt')).toBe(1)
   })
 
   it('父表 updateRowById — 聚合值不受非关联字段更新影响', () => {
-    const { parentView } = makeParentChildDS()
-    parentView.updateRowById(1, { note: 'updated' })
+    const { orders } = makeTestDS(AGG_COLS)
+    orders.updateRowById(1, { note: 'updated' })
 
-    expect(f(parentView.rows[0], 'total')).toBe(30)
-    expect(f(parentView.rows[0], 'cnt')).toBe(2)
+    expect(f(orders.rows[0], 'total')).toBe(350)
+    expect(f(orders.rows[0], 'cnt')).toBe(3)
   })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 9. CRUD 提交前剥离（内部由 CrudDelegate 调用）
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — stripComputedColumns', () => {
+describe('stripComputedColumns', () => {
   it('剥离计算字段，返回浅拷贝', () => {
-    const view = makeView([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'price', type: 'number' },
-      { name: 'qty', type: 'number' },
-      { name: 'total', type: 'number', computeExpression: 'price * qty' },
-    ])
+    const { orders } = makeTestDS([{ name: 'total', type: 'number', computeExpression: 'price * qty' }])
     const row = { id: 1, price: 10, qty: 5, total: 50 }
-    const stripped = view.stripComputedColumns(row)
+    const stripped = orders.stripComputedColumns(row)
     expect('total' in stripped).toBe(false)
     expect(stripped['price']).toBe(10)
     expect(stripped['qty']).toBe(5)
   })
 
   it('无计算列时返回原对象引用（零拷贝）', () => {
-    const view = makeView([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'name', type: 'string' },
-    ])
+    const { orders } = makeTestDS([])
     const row = { id: 1, name: 'A' }
-    expect(view.stripComputedColumns(row)).toBe(row)
+    expect(orders.stripComputedColumns(row)).toBe(row)
   })
 
   it('strip 不影响原始行对象', () => {
-    const view = makeView([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'x', type: 'number' },
-      { name: 'tag', type: 'string', computeExpression: "'#' + x" },
-    ])
+    const { orders } = makeTestDS([{ name: 'tag', computeExpression: "'#' + x" }])
     const row = { id: 1, x: 10, tag: '#10' }
-    view.stripComputedColumns(row)
+    orders.stripComputedColumns(row)
     expect(row['tag']).toBe('#10')
   })
 
   it('聚合计算列也被正确剥离', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        P: {
-          tableName: 'P',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'total', type: 'number', computeExpression: "$sum('C', 'v')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-        C: {
-          tableName: 'C',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'parentId', type: 'number' },
-            { name: 'v', type: 'number' },
-          ],
-          rows: [{ id: 1, parentId: 1, v: 100 }],
-        },
-      },
-      relations: [{
-        parentTable: 'P',
-        childTable: 'C',
-        childField: 'parentId',
-        dependencyType: 'currentRow',
-      }],
-    })
-    const view = ds.getView('P', 'default')!
-    const stripped = view.stripComputedColumns(view.rows[0]!)
+    const { orders } = makeTestDS([{ name: 'total', type: 'number', computeExpression: "$sum('Items', 'amount')" }])
+    const stripped = orders.stripComputedColumns(orders.rows[0]!)
     expect('total' in stripped).toBe(false)
     expect(stripped['id']).toBe(1)
   })
@@ -834,37 +575,32 @@ describe('列配置 — stripComputedColumns', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // 10. 运行时错误降级
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 运行时错误降级', () => {
+describe('运行时错误降级', () => {
   it('表达式求值抛出时写入 undefined，不影响其他计算列', () => {
-    const view = makeView(
+    const { orders } = makeTestDS(
       [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'obj', type: 'string' },
-        { name: 'broken', type: 'string', computeExpression: 'obj.x.y' },
-        { name: 'safe', type: 'string', computeExpression: "id + '!'" },
+        { name: 'broken', computeExpression: 'obj.x.y' },
+        { name: 'safe', computeExpression: "id + '!'" },
       ],
-      [],
+      [{ id: 1, obj: null }],
     )
-    view.appendRow({ id: 1, obj: null })
-    expect(f(view.rows[0], 'broken')).toBeUndefined()
-    expect(f(view.rows[0], 'safe')).toBe('1!')
+    expect(f(orders.rows[0], 'broken')).toBeUndefined()
+    expect(f(orders.rows[0], 'safe')).toBe('1!')
   })
 
   it('编译失败的列跳过，其余计算列正常工作', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const view = makeView(
+    const { orders } = makeTestDS(
       [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'x', type: 'number' },
         { name: 'good', type: 'number', computeExpression: 'x + 1' },
         { name: 'bad', type: 'number', computeExpression: '??invalid!!' },
         { name: 'also_good', type: 'number', computeExpression: 'x * 2' },
       ],
       [{ id: 1, x: 4 }],
     )
-    expect(f(view.rows[0], 'good')).toBe(5)
-    expect(f(view.rows[0], 'also_good')).toBe(8)
-    expect(view.computedColumnNames.has('bad')).toBe(false)
+    expect(f(orders.rows[0], 'good')).toBe(5)
+    expect(f(orders.rows[0], 'also_good')).toBe(8)
+    expect(orders.computedColumnNames.has('bad')).toBe(false)
     warnSpy.mockRestore()
   })
 })
@@ -872,34 +608,15 @@ describe('列配置 — 运行时错误降级', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // 11. 边界条件
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 边界条件', () => {
+describe('边界条件', () => {
   it('DataSet.fromConfig 自动编译 + 求值（无需手动触发）', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Items: {
-          tableName: 'Items',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'price', type: 'number' },
-            { name: 'qty', type: 'number' },
-            { name: 'total', type: 'number', computeExpression: 'price * qty' },
-          ],
-          rows: [
-            { id: 1, price: 20, qty: 3 },
-            { id: 2, price: 15, qty: 4 },
-          ],
-        },
-      },
-    })
-    const view = ds.getView('Items', 'default')!
-    // 无需 initComputedColumnsFromConfig / recomputeColumns
-    expect(f(view.rows[0], 'total')).toBe(60)
-    expect(f(view.rows[1], 'total')).toBe(60)
+    const { orders } = makeTestDS([{ name: 'total', type: 'number', computeExpression: 'price * qty' }])
+    expect(f(orders.rows[0], 'total')).toBe(600) // 100*6
+    expect(f(orders.rows[1], 'total')).toBe(100) // 50*2
   })
 
   it('DataTable attach 时自动注册计算列（空 rows 安全）', () => {
-    const table = new DataTable('Products', [
+    const table = new DataTable('T', [
       { name: 'id', type: 'number', isPrimaryKey: true },
       { name: 'price', type: 'number' },
       { name: 'total', type: 'number', computeExpression: 'price * 2' },
@@ -910,29 +627,23 @@ describe('列配置 — 边界条件', () => {
   })
 
   it('编译缓存命中 — 相同 ctx 不重编译', () => {
-    const view = makeView([
-      { name: 'id', type: 'number', isPrimaryKey: true },
-      { name: 'x', type: 'number' },
-      { name: 'result', type: 'number', computeExpression: 'x + ctx.offset' },
-    ])
-    view.setComputedContext({ offset: 10 })
-    view.replaceRows([{ id: 1, x: 5 }])
-    expect(f(view.rows[0], 'result')).toBe(15)
+    const { orders } = makeTestDS([{ name: 'result', type: 'number', computeExpression: 'x + ctx.offset' }])
+    orders.setComputedContext({ offset: 10 })
+    expect(f(orders.rows[0], 'result')).toBe(14)  // x=4 + 10
 
     // 再次设置相同 ctx → 不应重编译，结果仍正确
-    view.setComputedContext({ offset: 10 })
-    expect(f(view.rows[0], 'result')).toBe(15)
+    orders.setComputedContext({ offset: 10 })
+    expect(f(orders.rows[0], 'result')).toBe(14)
   })
 
   it('新增 DataTable 后 replaceRows 自动触发计算', () => {
-    const table = new DataTable('Calc', [
+    const table = new DataTable('T', [
       { name: 'id', type: 'number', isPrimaryKey: true },
       { name: 'a', type: 'number' },
       { name: 'b', type: 'number' },
       { name: 'sum', type: 'number', computeExpression: 'a + b' },
     ])
     const view = table.getOrCreateView('default')
-    // 无需任何初始化，replaceRows 自动求值
     view.replaceRows([{ id: 1, a: 3, b: 7 }])
     expect(f(view.rows[0], 'sum')).toBe(10)
   })
@@ -941,129 +652,563 @@ describe('列配置 — 边界条件', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // 12. 字符串内函数定义（表达式支持任意 JS 逻辑）
 // ─────────────────────────────────────────────────────────────────────────────
-describe('列配置 — 字符串内函数定义', () => {
+describe('字符串内函数定义', () => {
   it('基础函数定义 + 调用', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'a', type: 'number' },
-        { name: 'b', type: 'number' },
-        { name: 'sum', type: 'number', computeExpression: 'function add(x,y){ return x+y; }; return add(a, b);' },
-      ],
-      [{ id: 1, a: 5, b: 6 }],
+    const { orders } = makeTestDS(
+      [{ name: 'sum', type: 'number', computeExpression: 'function add(x,y){ return x+y; }; return add(a, b);' }],
     )
-    expect(f(view.rows[0], 'sum')).toBe(11)
+    expect(f(orders.rows[0], 'sum')).toBe(11) // a=5, b=6
   })
 
-  it('工具函数 + 多次调用', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'price', type: 'number' },
-        { name: 'qty', type: 'number' },
-        {
-          name: 'formatted', type: 'string',
-          computeExpression: `
-            function fmt(n) { return '￥' + n.toFixed(2); }
-            var total = price * qty;
-            return fmt(total);
-          `,
-        },
-      ],
-      [{ id: 1, price: 99.5, qty: 3 }],
-    )
-    expect(f(view.rows[0], 'formatted')).toBe('￥298.50')
+  it('工具函数 + 格式化', () => {
+    const { orders } = makeTestDS([{
+      name: 'formatted',
+      computeExpression: `
+        function fmt(n) { return '￥' + n.toFixed(2); }
+        var total = price * qty;
+        return fmt(total);
+      `,
+    }])
+    expect(f(orders.rows[0], 'formatted')).toBe('￥600.00') // 100*6
   })
 
   it('递归函数（斐波那契）', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'n', type: 'number' },
-        {
-          name: 'fib', type: 'number',
-          computeExpression: `
-            function fib(x) {
-              if (x <= 1) return x;
-              return fib(x - 1) + fib(x - 2);
-            }
-            return fib(n);
-          `,
-        },
-      ],
-      [{ id: 1, n: 10 }, { id: 2, n: 0 }, { id: 3, n: 6 }],
-    )
-    expect(f(view.rows[0], 'fib')).toBe(55)
-    expect(f(view.rows[1], 'fib')).toBe(0)
-    expect(f(view.rows[2], 'fib')).toBe(8)
+    const { orders } = makeTestDS([{
+      name: 'fib', type: 'number',
+      computeExpression: `
+        function fib(x) {
+          if (x <= 1) return x;
+          return fib(x - 1) + fib(x - 2);
+        }
+        return fib(n);
+      `,
+    }])
+    expect(f(orders.rows[0], 'fib')).toBe(5) // fib(5)
+    expect(f(orders.rows[1], 'fib')).toBe(0) // fib(0)
+    expect(f(orders.rows[2], 'fib')).toBe(1) // fib(1)
   })
 
   it('函数引用 ctx 上下文', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'amount', type: 'number' },
-        {
-          name: 'tax', type: 'number',
-          computeExpression: `
-            function calcTax(val, rate) { return val * rate; }
-            return calcTax(amount, ctx.taxRate);
-          `,
-        },
-      ],
-      [{ id: 1, amount: 1000 }],
-    )
-    view.setComputedContext({ taxRate: 0.13 })
-    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(130)
+    const { orders } = makeTestDS([{
+      name: 'tax', type: 'number',
+      computeExpression: `
+        function calcTax(val, rate) { return val * rate; }
+        return calcTax(amount, ctx.taxRate);
+      `,
+    }])
+    orders.setComputedContext({ taxRate: 0.13 })
+    expect(f(orders.rows[0], 'tax') as number).toBeCloseTo(195) // 1500*0.13
   })
 
   it('数组处理函数', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'items', type: 'string' },
-        {
-          name: 'parsed', type: 'string',
-          computeExpression: `
-            function parse(str) {
-              var arr = str.split(',');
-              return arr.map(function(s){ return s.trim().toUpperCase(); }).join(' | ');
-            }
-            return parse(items);
-          `,
-        },
-      ],
-      [{ id: 1, items: 'apple, banana, cherry' }],
-    )
-    expect(f(view.rows[0], 'parsed')).toBe('APPLE | BANANA | CHERRY')
+    const { orders } = makeTestDS([{
+      name: 'parsed',
+      computeExpression: `
+        function parse(str) {
+          var arr = str.split(',');
+          return arr.map(function(s){ return s.trim().toUpperCase(); }).join(' | ');
+        }
+        return parse(items);
+      `,
+    }])
+    expect(f(orders.rows[0], 'parsed')).toBe('APPLE | BANANA | CHERRY')
   })
 
-  it('多个函数定义协作', () => {
-    const view = makeView(
-      [
-        { name: 'id', type: 'number', isPrimaryKey: true },
-        { name: 'w', type: 'number' },
-        { name: 'h', type: 'number' },
-        {
-          name: 'bmi', type: 'string',
-          computeExpression: `
-            function calcBMI(weight, height) { return weight / (height * height); }
-            function classify(bmi) {
-              if (bmi < 18.5) return '偏瘦';
-              if (bmi < 24) return '正常';
-              if (bmi < 28) return '偏胖';
-              return '肥胖';
-            }
-            return classify(calcBMI(w, h));
-          `,
-        },
-      ],
-      [
-        { id: 1, w: 65, h: 1.75 },  // BMI ≈ 21.2 → 正常
-        { id: 2, w: 90, h: 1.70 },  // BMI ≈ 31.1 → 肥胖
-      ],
+  it('多个函数定义协作（BMI 分类）', () => {
+    const { orders } = makeTestDS([{
+      name: 'bmi',
+      computeExpression: `
+        function calcBMI(weight, height) { return weight / (height * height); }
+        function classify(bmi) {
+          if (bmi < 18.5) return '偏瘦';
+          if (bmi < 24) return '正常';
+          if (bmi < 28) return '偏胖';
+          return '肥胖';
+        }
+        return classify(calcBMI(w, h));
+      `,
+    }])
+    expect(f(orders.rows[0], 'bmi')).toBe('正常')  // 65/1.75²≈21.2
+    expect(f(orders.rows[1], 'bmi')).toBe('肥胖')  // 90/1.70²≈31.1
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 13. summaryRow — 列级聚合
+// ─────────────────────────────────────────────────────────────────────────────
+describe('summaryRow 列级聚合', () => {
+  it('sum — 所有行求和', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { price: 'sum' })
+    expect(orders.summaryRow['price']).toBe(150)  // 100+50+0
+  })
+
+  it('count — 非 null/undefined 值计数', () => {
+    const { orders } = makeTestDS([],
+      [{ id: 1, score: 95 }, { id: 2, score: null }, { id: 3, score: 45 }],
+      undefined, { score: 'count' },
     )
-    expect(f(view.rows[0], 'bmi')).toBe('正常')
-    expect(f(view.rows[1], 'bmi')).toBe('肥胖')
+    expect(orders.summaryRow['score']).toBe(2)  // null 不计
+  })
+
+  it('avg — 算术平均', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { price: 'avg' })
+    expect(orders.summaryRow['price']).toBe(50)  // (100+50+0)/3
+  })
+
+  it('min / max — 极值', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { price: 'min', qty: 'max' })
+    expect(orders.summaryRow['price']).toBe(0)
+    expect(orders.summaryRow['qty']).toBe(99)
+  })
+
+  it('空行时聚合边界值正确', () => {
+    const { orders } = makeTestDS([], [], undefined,
+      { price: 'sum', qty: 'avg', score: 'min' },
+    )
+    expect(orders.summaryRow['price']).toBe(0)          // sum 空集 = 0
+    expect(orders.summaryRow['qty']).toBe(0)             // avg 空集 = 0
+    expect(orders.summaryRow['score']).toBeUndefined()   // min 空集 = undefined
+  })
+
+  it('多列混合聚合类型', () => {
+    const { orders } = makeTestDS([], undefined, undefined,
+      { amount: 'sum', score: 'avg', price: 'min', qty: 'max', firstName: 'count' },
+    )
+    expect(orders.summaryRow['amount']).toBe(2600)          // 1500+300+800
+    expect(orders.summaryRow['score']).toBeCloseTo(70.67, 1) // (95+72+45)/3
+    expect(orders.summaryRow['price']).toBe(0)
+    expect(orders.summaryRow['qty']).toBe(99)
+    expect(orders.summaryRow['firstName']).toBe(3)           // 张、李、王
+  })
+
+  it('无 aggregate 列时 summaryRow 为空对象', () => {
+    const { orders } = makeTestDS([])
+    expect(orders.summaryRow).toEqual({})
+  })
+
+  // 计算列 + aggregate 联合
+
+  it('计算列 sum — 先逐行求值再整列聚合', () => {
+    const { orders } = makeTestDS([
+      { name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' },
+    ])
+    expect(f(orders.rows[0], 'total')).toBe(600)  // 100*6
+    expect(f(orders.rows[1], 'total')).toBe(100)  // 50*2
+    expect(f(orders.rows[2], 'total')).toBe(0)    // 0*99
+    expect(orders.summaryRow['total']).toBe(700)   // 600+100+0
+  })
+
+  it('计算列 avg — 复杂表达式后聚合', () => {
+    const { orders } = makeTestDS([
+      { name: 'unitPrice', type: 'number', computeExpression: 'amount / (qty || 1)', aggregate: 'avg' },
+    ])
+    // row1: 1500/6=250, row2: 300/2=150, row3: 800/99≈8.08
+    expect(orders.summaryRow['unitPrice'] as number).toBeCloseTo(136.03, 1)
+  })
+
+  it('计算列 min/max — 三元 + 聚合', () => {
+    const { orders } = makeTestDS([
+      { name: 'grade', type: 'number', computeExpression: "score >= 60 ? 1 : 0", aggregate: 'sum' },
+    ])
+    // row1: 95>=60→1, row2: 72>=60→1, row3: 45<60→0
+    expect(orders.summaryRow['grade']).toBe(2)
+  })
+
+  it('计算列 + 基础列同时聚合', () => {
+    const { orders } = makeTestDS(
+      [{ name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }],
+      undefined, undefined, { amount: 'sum', score: 'avg' },
+    )
+    expect(orders.summaryRow['total']).toBe(700)            // 计算列聚合
+    expect(orders.summaryRow['amount']).toBe(2600)          // 基础列聚合
+    expect(orders.summaryRow['score']).toBeCloseTo(70.67, 1)
+  })
+
+  it('链式计算列 + aggregate', () => {
+    const { orders } = makeTestDS([
+      { name: 'subtotal', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' },
+      { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.1', aggregate: 'sum' },
+    ])
+    // subtotal: 600+100+0=700; tax: 60+10+0=70
+    expect(orders.summaryRow['subtotal']).toBe(700)
+    expect(orders.summaryRow['tax'] as number).toBeCloseTo(70)
+  })
+
+  it('函数体计算列 + aggregate', () => {
+    const { orders } = makeTestDS([{
+      name: 'tier', type: 'number',
+      computeExpression: 'if (amount >= 1000) return 3; if (amount >= 500) return 2; return 1;',
+      aggregate: 'sum',
+    }])
+    // row1: 1500→3, row2: 300→1, row3: 800→2 → sum=6
+    expect(orders.summaryRow['tier']).toBe(6)
+  })
+
+  // 动态操作后 summaryRow 自动更新
+
+  it('appendRow 后 summaryRow 自动更新', () => {
+    const { orders } = makeTestDS(
+      [{ name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }],
+      [{ id: 1, price: 10, qty: 5 }],
+    )
+    expect(orders.summaryRow['total']).toBe(50)
+
+    orders.appendRow({ id: 2, price: 20, qty: 3 })
+    expect(orders.summaryRow['total']).toBe(110)  // 50+60
+  })
+
+  it('updateRowById 后 summaryRow 自动更新', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    expect(orders.summaryRow['amount']).toBe(2600)
+
+    orders.updateRowById(1, { amount: 100 })
+    expect(orders.summaryRow['amount']).toBe(1200)  // 100+300+800
+  })
+
+  it('deleteRowById 后 summaryRow 自动更新', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    expect(orders.summaryRow['amount']).toBe(2600)
+
+    orders.deleteRowById(1)
+    expect(orders.summaryRow['amount']).toBe(1100)  // 300+800
+  })
+
+  it('replaceRows 后 summaryRow 自动更新', () => {
+    const { orders } = makeTestDS(
+      [{ name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }],
+      [{ id: 1, price: 10, qty: 5 }],
+      undefined, { score: 'max' },
+    )
+    expect(orders.summaryRow['total']).toBe(50)
+
+    orders.replaceRows([
+      { id: 1, price: 10, qty: 2, score: 60 },
+      { id: 2, price: 20, qty: 3, score: 95 },
+    ])
+    expect(orders.summaryRow['total']).toBe(80)   // 20+60
+    expect(orders.summaryRow['score']).toBe(95)
+  })
+
+  it('setComputedContext 后计算列聚合自动重算', () => {
+    const { orders } = makeTestDS([
+      { name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate', aggregate: 'sum' },
+    ])
+    orders.setComputedContext({ taxRate: 0.1 })
+    // 1500*0.1 + 300*0.1 + 800*0.1 = 260
+    expect(orders.summaryRow['tax'] as number).toBeCloseTo(260)
+
+    orders.setComputedContext({ taxRate: 0.2 })
+    expect(orders.summaryRow['tax'] as number).toBeCloseTo(520)
+  })
+
+  it('子表聚合 + 列级聚合联合', () => {
+    const { orders } = makeTestDS([
+      { name: 'itemTotal', type: 'number', computeExpression: "$sum('Items', 'amount')", aggregate: 'sum' },
+    ])
+    // row1: 350, row2: 80, row3: 0 → sum=430
+    expect(orders.summaryRow['itemTotal']).toBe(430)
+  })
+
+  // join 聚合
+
+  it('join — 基础列字符串拼接', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { firstName: 'join' })
+    expect(orders.summaryRow['firstName']).toBe('张,李,王')
+  })
+
+  it('join — 跳过 null/undefined/空串', () => {
+    const { orders } = makeTestDS([],
+      [{ id: 1, firstName: 'A' }, { id: 2, firstName: null }, { id: 3, firstName: '' }, { id: 4, firstName: 'B' }],
+      undefined, { firstName: 'join' },
+    )
+    expect(orders.summaryRow['firstName']).toBe('A,B')
+  })
+
+  it('join — 空行时返回空字符串', () => {
+    const { orders } = makeTestDS([], [], undefined, { firstName: 'join' })
+    expect(orders.summaryRow['firstName']).toBe('')
+  })
+
+  it('join — 计算列 + join 联合', () => {
+    const { orders } = makeTestDS([
+      { name: 'fullName', type: 'string', computeExpression: "firstName + lastName", aggregate: 'join' },
+    ])
+    expect(orders.summaryRow['fullName']).toBe('张三,李四,王五')
+  })
+
+  // selectionSummaryRow — 选中行聚合
+
+  it('selectionSummaryRow — 清空选中后为空对象', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { price: 'sum' })
+    orders.clearSelectedRows()
+    expect(orders.selectionSummaryRow).toEqual({})
+  })
+
+  it('selectionSummaryRow — 选中部分行后仅聚合选中行', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { price: 'sum', score: 'avg' })
+    // 选中 row1(price=100,score=95) + row3(price=0,score=45)
+    orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])
+    expect(orders.selectionSummaryRow['price']).toBe(100)           // 100+0
+    expect(orders.selectionSummaryRow['score']).toBeCloseTo(70)     // (95+45)/2
+  })
+
+  it('selectionSummaryRow — 选中全部行等于 summaryRow', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    orders.setSelectedRows([...orders.rows])
+    expect(orders.selectionSummaryRow['amount']).toBe(orders.summaryRow['amount'])
+  })
+
+  it('selectionSummaryRow — 切换选中后自动重算', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    orders.setSelectedRows([orders.rows[0]!])               // row1: 1500
+    expect(orders.selectionSummaryRow['amount']).toBe(1500)
+
+    orders.setSelectedRows([orders.rows[1]!, orders.rows[2]!]) // row2: 300, row3: 800
+    expect(orders.selectionSummaryRow['amount']).toBe(1100)
+
+    orders.clearSelectedRows()
+    expect(orders.selectionSummaryRow).toEqual({})
+  })
+
+  it('selectionSummaryRow — 计算列 + aggregate 选中聚合', () => {
+    const { orders } = makeTestDS([
+      { name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' },
+    ])
+    // row1: total=600, row2: total=100, row3: total=0
+    orders.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
+    expect(orders.selectionSummaryRow['total']).toBe(700)   // 600+100
+  })
+
+  it('selectionSummaryRow — 行数据变更后自动重算', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    orders.setSelectedRows([orders.rows[0]!])             // row1: 1500
+    expect(orders.selectionSummaryRow['amount']).toBe(1500)
+
+    orders.updateRowById(1, { amount: 200 })
+    expect(orders.selectionSummaryRow['amount']).toBe(200)
+  })
+
+  it('selectionSummaryRow — join 聚合选中行', () => {
+    const { orders } = makeTestDS([], undefined, undefined, { firstName: 'join' })
+    orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
+    expect(orders.selectionSummaryRow['firstName']).toBe('张,王')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 14. $summary / $selectionSummary — 跨表聚合引用
+// ─────────────────────────────────────────────────────────────────────────────
+describe('$summary / $selectionSummary — 跨表聚合引用', () => {
+  it('$summary — 引用其他表的 summaryRow', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'price', type: 'number', aggregate: 'sum' },
+          ],
+          rows: [{ id: 1, price: 100 }, { id: 2, price: 50 }],
+        },
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'label', type: 'string' },
+            { name: 'orderTotal', type: 'number', computeExpression: "$summary('Orders', 'price')" },
+          ],
+          rows: [{ id: 1, label: '汇总' }],
+        },
+      },
+    })
+    const report = ds.getView('Report', 'default')!
+    expect(f(report.rows[0], 'orderTotal')).toBe(150)  // 100+50
+  })
+
+  it('$summary — 源表行变更后 recompute 获取最新值', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'price', type: 'number', aggregate: 'sum' },
+          ],
+          rows: [{ id: 1, price: 100 }, { id: 2, price: 50 }],
+        },
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'total', type: 'number', computeExpression: "$summary('Orders', 'price')" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const orders = ds.getView('Orders', 'default')!
+    const report = ds.getView('Report', 'default')!
+    expect(f(report.rows[0], 'total')).toBe(150)
+
+    orders.appendRow({ id: 3, price: 50 })
+    report.recomputeColumns()
+    expect(f(report.rows[0], 'total')).toBe(200)  // 100+50+50
+  })
+
+  it('$selectionSummary — 引用其他表的选中行聚合', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'amount', type: 'number', aggregate: 'sum' },
+          ],
+          rows: [{ id: 1, amount: 100 }, { id: 2, amount: 200 }, { id: 3, amount: 300 }],
+        },
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'selTotal', type: 'number', computeExpression: "$selectionSummary('Orders', 'amount')" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const orders = ds.getView('Orders', 'default')!
+    const report = ds.getView('Report', 'default')!
+
+    orders.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
+    report.recomputeColumns()
+    expect(f(report.rows[0], 'selTotal')).toBe(300)  // 100+200
+  })
+
+  it('$selectionSummary — 选中切换后 recompute 自动反映', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'amount', type: 'number', aggregate: 'sum' },
+          ],
+          rows: [{ id: 1, amount: 100 }, { id: 2, amount: 200 }, { id: 3, amount: 300 }],
+        },
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'selTotal', type: 'number', computeExpression: "$selectionSummary('Orders', 'amount')" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const orders = ds.getView('Orders', 'default')!
+    const report = ds.getView('Report', 'default')!
+
+    orders.setSelectedRows([orders.rows[0]!])
+    report.recomputeColumns()
+    expect(f(report.rows[0], 'selTotal')).toBe(100)
+
+    orders.setSelectedRows([orders.rows[1]!, orders.rows[2]!])
+    report.recomputeColumns()
+    expect(f(report.rows[0], 'selTotal')).toBe(500)  // 200+300
+
+    orders.clearSelectedRows()
+    report.recomputeColumns()
+    expect(f(report.rows[0], 'selTotal')).toBeUndefined()  // 空选中 → selectionSummaryRow={}
+  })
+
+  it('$summary — 与算术 + ctx 混合使用', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'amount', type: 'number', aggregate: 'sum' },
+          ],
+          rows: [{ id: 1, amount: 1000 }, { id: 2, amount: 500 }],
+        },
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'taxTotal', type: 'number', computeExpression: "$summary('Orders', 'amount') * ctx.taxRate" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const report = ds.getView('Report', 'default')!
+    report.setComputedContext({ taxRate: 0.1 })
+    expect(f(report.rows[0], 'taxTotal') as number).toBeCloseTo(150)  // 1500 * 0.1
+  })
+
+  it('$summary — 读取 join 聚合结果', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'customer', type: 'string', aggregate: 'join' },
+          ],
+          rows: [{ id: 1, customer: '张' }, { id: 2, customer: '李' }],
+        },
+        Labels: {
+          tableName: 'Labels',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'allCustomers', type: 'string', computeExpression: "$summary('Orders', 'customer')" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const labels = ds.getView('Labels', 'default')!
+    expect(f(labels.rows[0], 'allCustomers')).toBe('张,李')
+  })
+
+  it('$selectionSummary — 跨表获取选中行的 join 聚合', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'firstName', type: 'string', aggregate: 'join' },
+          ],
+          rows: [
+            { id: 1, firstName: '张' },
+            { id: 2, firstName: '李' },
+            { id: 3, firstName: '王' },
+          ],
+        },
+        Detail: {
+          tableName: 'Detail',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'selectedNames', type: 'string', computeExpression: "$selectionSummary('Orders', 'firstName')" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const orders = ds.getView('Orders', 'default')!
+    const detail = ds.getView('Detail', 'default')!
+
+    orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
+    detail.recomputeColumns()
+    expect(f(detail.rows[0], 'selectedNames')).toBe('张,王')
   })
 })
