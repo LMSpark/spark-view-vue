@@ -181,7 +181,7 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'rows', rows: pView.rows
+      tableName: 'Orders', viewId: 'default', changeType: 'rows'
     })
     await new Promise(r => setTimeout(r, 50))
 
@@ -204,7 +204,7 @@ describe('cascade event filter — no spurious child requests', () => {
     setParentLoaded(pView, [{ id: 1 }])
     // rows 事件 → 子应清空（parentRows 为空，因为 currentRow=null）
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'rows', rows: pView.rows
+      tableName: 'Orders', viewId: 'default', changeType: 'rows'
     })
     await new Promise(r => setTimeout(r, 30))
 

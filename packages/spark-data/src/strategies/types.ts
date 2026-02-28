@@ -5,7 +5,7 @@
  * 遵循 ISP 原则：Delegate 只依赖自己需要的方法。
  */
 
-import type { IDataRow, IDataSet, ViewStateEvent, CrudResult, CrudOperationConfig } from '../types'
+import type { IDataRow, IDataSet, CrudResult, CrudOperationConfig } from '../types'
 import type { CrudService } from '../crud-service'
 import type { DataValidator } from '../validation'
 
@@ -13,11 +13,19 @@ import type { DataValidator } from '../validation'
 // 共享类型
 // ─────────────────────────────────────────────
 
-/** Delegate 向宿主发射 stateChanged 事件的回调签名 */
-export type EmitStateChangedFn = (
-  changeType: ViewStateEvent['changeType'],
-  extra?: Partial<ViewStateEvent>
-) => void
+/**
+ * Delegate 向宿主发射 stateChanged 事件的回调签名
+ *
+ * 使用函数重载与 ViewStateEvent 判别联合对齐：
+ * - `currentRow`   → 必须传 `{ row }`
+ * - `selectedRows` → 必须传 `{ rows }`
+ * - 其余变化类型   → 无额外字段
+ */
+export interface EmitStateChangedFn {
+  (changeType: 'currentRow', extra: { row: IDataRow | null; originatorId?: string }): void
+  (changeType: 'selectedRows', extra: { rows: IDataRow[]; originatorId?: string }): void
+  (changeType: 'rows' | 'cleared' | 'requestState' | 'mutating'): void
+}
 
 /**
  * CrudDelegate 向宿主汇报 mutating 状态变化的回调签名

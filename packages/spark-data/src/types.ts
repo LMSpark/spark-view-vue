@@ -7,15 +7,16 @@
 import type { DataTable } from './data-table'
 import type { DataView as SparkDataView } from './data-view'
 
-// ===== 视图状态事件 =====
+// ===== 视图状态事件（判别联合） =====
 
-/** 视图状态变化事件 */
-export interface ViewStateEvent {
+/**
+ * 视图状态事件基础字段
+ *
+ * 所有 ViewStateEvent 变体共享 tableName + viewId + originatorId。
+ */
+export interface ViewStateEventBase {
   tableName: string
   viewId: string
-  changeType: 'currentRow' | 'selectedRows' | 'cleared' | 'rows' | 'requestState' | 'mutating'
-  row?: IDataRow | null
-  rows?: IDataRow[]
 
   /**
    * 发起方实例标识（可选）
@@ -29,6 +30,61 @@ export interface ViewStateEvent {
    */
   originatorId?: string
 }
+
+/** 当前行变化事件 */
+export interface CurrentRowEvent extends ViewStateEventBase {
+  changeType: 'currentRow'
+  /** 变化后的当前行（null 表示清空） */
+  row: IDataRow | null
+}
+
+/** 多选行变化事件 */
+export interface SelectedRowsEvent extends ViewStateEventBase {
+  changeType: 'selectedRows'
+  /** 变化后的选中行列表 */
+  rows: IDataRow[]
+}
+
+/** 行数据批量变化事件（数据刷新 / 重载） */
+export interface RowsChangedEvent extends ViewStateEventBase {
+  changeType: 'rows'
+}
+
+/** 数据已清空事件 */
+export interface ClearedEvent extends ViewStateEventBase {
+  changeType: 'cleared'
+}
+
+/** 请求状态变化事件（Idle → Loading → Loaded / Failed） */
+export interface RequestStateEvent extends ViewStateEventBase {
+  changeType: 'requestState'
+}
+
+/** 变更中状态变化事件（CRUD 进行中） */
+export interface MutatingEvent extends ViewStateEventBase {
+  changeType: 'mutating'
+}
+
+/**
+ * 视图状态变化事件（判别联合）
+ *
+ * 通过 `changeType` 字段作为判别标识，每个变体仅携带与该变化类型相关的字段：
+ * - `currentRow`    → `row: IDataRow | null`
+ * - `selectedRows`  → `rows: IDataRow[]`
+ * - `rows` / `cleared` / `requestState` / `mutating` → 无额外字段
+ *
+ * 使用 `if (evt.changeType === 'currentRow')` 即可自动缩窄到 `CurrentRowEvent`。
+ */
+export type ViewStateEvent =
+  | CurrentRowEvent
+  | SelectedRowsEvent
+  | RowsChangedEvent
+  | ClearedEvent
+  | RequestStateEvent
+  | MutatingEvent
+
+/** 视图状态变化类型（`ViewStateEvent.changeType` 的所有可能值） */
+export type ViewStateChangeType = ViewStateEvent['changeType']
 
 // ===== 权限类型 =====
 
