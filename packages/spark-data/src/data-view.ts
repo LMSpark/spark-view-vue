@@ -29,7 +29,6 @@ import type {
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
   TreeConfig,
-  ComputedColumnFn,
   DataRelation,
 } from './types'
 import { RequestState } from './types'
@@ -47,7 +46,7 @@ import { LocalMutationDelegate } from './strategies/local-mutation-delegate'
 import type { CrudLifecycleEvent } from './strategies/types'
 import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from './core/primary-key-generator'
 import { createPrimaryKeyGenerator } from './core/primary-key-generator'
-import { ComputedColumnDelegate, compileExpression, compileColumnsExpressions } from './strategies/computed-column-delegate'
+import { ComputedColumnDelegate, compileColumnsExpressions } from './strategies/computed-column-delegate'
 import type { ComputedColumnContext, AggregateResolver } from './strategies/computed-column-delegate'
 import { DirtyTrackingDelegate } from './strategies/dirty-tracking-delegate'
 import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-delegate'
@@ -331,34 +330,6 @@ export class DataView implements IDataSource {
   setComputedContext(ctx: ComputedColumnContext): void {
     this._computedContext = ctx
     this._syncComputedFromConfig()   // ctx 变更 → 重新编译配置列闭包
-    this._applyComputedColumns(this.rows)
-  }
-
-  /**
-   * 注册计算列（函数式）。注册后对现有 rows 立即求值。
-   *
-   * @example
-   * view.setComputedColumn('fullName', row => `${row.firstName} ${row.lastName}`)
-   */
-  setComputedColumn(name: string, compute: ComputedColumnFn): void {
-    this._computedDelegate.register(name, compute)
-    this._applyComputedColumns(this.rows)
-  }
-
-  /**
-   * 注册计算列（表达式字符串）。
-   * 行字段直接引用，上下文通过 `ctx`，子视图聚合通过 `$sum` 等函数。
-   *
-   * @example
-   * view.setComputedColumnExpression('total', 'price * qty')
-   * view.setComputedColumnExpression('tax', 'amount * ctx.taxRate')
-   * view.setComputedColumnExpression('orderTotal', "$sum('OrderItems', 'amount')")
-   */
-  setComputedColumnExpression(name: string, expression: string): void {
-    this._computedDelegate.register(
-      name,
-      compileExpression(expression, this._computedContext, this._createAggregateResolver()),
-    )
     this._applyComputedColumns(this.rows)
   }
 
