@@ -232,8 +232,7 @@ packages/
 │       ├── dataset.ts        # DataSet（事件驱动协调器）
 │       ├── data-table.ts     # DataTable
 │       ├── data-view.ts      # DataView（IDataSource 实现）
-│       ├── tree-manager.ts   # TreeManager
-│       └── sync-helpers.ts   # createTableSyncHandlers（UI↔DataSet 桥接）
+│       └── tree-manager.ts   # TreeManager
 ├── spark-page-config/   # 页面配置加载器（ConfigLoader, SparkPageConfig）
 └── spark-utils/         # 共享基础设施
     └── src/
