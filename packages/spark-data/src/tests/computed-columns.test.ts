@@ -99,6 +99,43 @@ describe('compileExpression — 基础编译器', () => {
     // 快速路径不调用 resolver
     expect(resolver.resolveChildRows).not.toHaveBeenCalled()
   })
+
+  it('同一编译函数多次调用，每次读取传入行对象的当前值', () => {
+    const fn = compileExpression('price * qty')
+    // 不同行对象传入，每次独立求值
+    expect(fn({ price: 10, qty: 3 } as IDataRow)).toBe(30)
+    expect(fn({ price: 20, qty: 3 } as IDataRow)).toBe(60)
+    expect(fn({ price: 10, qty: 5 } as IDataRow)).toBe(50)
+  })
+
+  it('行对象字段被就地修改后，再次调用反映新值', () => {
+    const fn = compileExpression('price * qty')
+    const row = { price: 10, qty: 3 } as IDataRow
+    expect(fn(row)).toBe(30)
+
+    row['price'] = 20
+    expect(fn(row)).toBe(60)   // 同一行对象，price 已变
+
+    row['qty'] = 1
+    expect(fn(row)).toBe(20)   // qty 也变
+  })
+
+  it('ctx 就地修改不影响已冻结的编译结果（ctx 在 compileExpression 时 freeze）', () => {
+    const ctx = { taxRate: 0.1 }
+    const fn = compileExpression('amount * ctx.taxRate', ctx)
+
+    expect(fn({ amount: 100 } as IDataRow)).toBeCloseTo(10)
+
+    // 修改原始 ctx 对象——编译器已做 Object.freeze，不应影响结果
+    ctx.taxRate = 0.9
+    expect(fn({ amount: 100 } as IDataRow)).toBeCloseTo(10)  // 仍是旧值
+  })
+
+  it('字段值为 0 / null / undefined 时表达式正常处理', () => {
+    const fn = compileExpression('price * qty')
+    expect(fn({ price: 0, qty: 99 } as IDataRow)).toBe(0)
+    expect(fn({ price: null as unknown as number, qty: 3 } as IDataRow)).toBe(0) // null * 3 = 0（JS 强转）
+  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
