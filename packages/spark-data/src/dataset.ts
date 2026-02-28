@@ -217,20 +217,14 @@ export class DataSet implements IDataSet {
     entry: (typeof this._activeOnSubs)[number],
     view: import('./data-view').DataView,
   ): void {
-    let h: (evt: ViewStateEvent) => void
-    if (entry.event === 'loadSuccess') {
-      h = (evt: ViewStateEvent) => {
-        if (evt.changeType === 'requestState' && view.requestState === RequestState.Loaded) {
-          entry.handler({ tableName: evt.tableName, viewId: evt.viewId })
-        }
-      }
-    } else {
-      h = (evt: ViewStateEvent) => {
-        if (evt.changeType === 'requestState'
-          && view.requestState === RequestState.Failed
-          && view.loadingError !== null) {
-          entry.handler({ tableName: evt.tableName, viewId: evt.viewId, error: view.loadingError })
-        }
+    const h = (evt: ViewStateEvent) => {
+      if (evt.changeType !== 'requestState') return
+      if (entry.event === 'loadSuccess' && view.requestState === RequestState.Loaded) {
+        entry.handler({ tableName: evt.tableName, viewId: evt.viewId })
+      } else if (entry.event === 'loadError'
+        && view.requestState === RequestState.Failed
+        && view.loadingError !== null) {
+        entry.handler({ tableName: evt.tableName, viewId: evt.viewId, error: view.loadingError })
       }
     }
     view.events.on('stateChanged', h)

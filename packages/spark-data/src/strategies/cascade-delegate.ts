@@ -11,7 +11,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { DataRelation, ViewStateEvent, IDataRow } from '../types'
+import type { DataRelation, ViewStateEvent, ViewStateChangeType } from '../types'
 import type { DataView } from '../data-view'
 import { getParentRows } from '../core/utils'
 import type { ICascadeHost, EmitStateChangedFn } from './types'
@@ -89,7 +89,7 @@ export class CascadeDelegate {
    *   dep=unknown      → fallback：同 currentRow 规则
    */
   private respondToParentChange(rel: DataRelation, parentView: DataView, evt: ViewStateEvent): void {
-    if (evt.changeType === 'requestState') return
+    if (evt.changeType === 'requestState' || evt.changeType === 'mutating') return
     if (!this.isRelevantChangeType(rel.dependencyType, evt.changeType)) return
 
     // 取消待处理的级联请求
@@ -99,7 +99,7 @@ export class CascadeDelegate {
       this.pendingCascadeRequest = undefined
     }
 
-    const parentRows: IDataRow[] = getParentRows(parentView, rel.dependencyType)
+    const parentRows = getParentRows(parentView, rel.dependencyType)
 
     if (!parentRows.length) {
       this.host.resetState()
@@ -136,7 +136,7 @@ export class CascadeDelegate {
   /**
    * 判断 changeType 是否与 dependencyType 相关
    */
-  private isRelevantChangeType(dep: string, changeType: ViewStateEvent['changeType']): boolean {
+  private isRelevantChangeType(dep: string, changeType: ViewStateChangeType): boolean {
     if (changeType === 'rows' || changeType === 'cleared') return true
     switch (dep) {
       case 'currentRow':   return changeType === 'currentRow'

@@ -129,7 +129,8 @@ export interface ViewStateChangeCallback {
  * ```typescript
  * const unsub = subscribeViewStateChanges(dataSet, (tableName, viewId, event) => {
  *   if (event.changeType === 'selectedRows') {
- *     syncSelectedRowsToUI(tableName, viewId, event.rows ?? [])
+ *     // event 自动缩窄为 SelectedRowsEvent，event.rows 不再是 optional
+ *     syncSelectedRowsToUI(tableName, viewId, event.rows)
  *   }
  * })
  *
