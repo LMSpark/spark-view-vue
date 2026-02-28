@@ -29,6 +29,7 @@ import type {
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
   TreeConfig,
+  ComputedColumnFn,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -45,6 +46,8 @@ import { LocalMutationDelegate } from './strategies/local-mutation-delegate'
 import type { CrudLifecycleEvent } from './strategies/types'
 import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from './core/primary-key-generator'
 import { createPrimaryKeyGenerator } from './core/primary-key-generator'
+import { ComputedColumnDelegate } from './strategies/computed-column-delegate'
+import type { ComputedColumnContext } from './strategies/computed-column-delegate'
 
 // ─────────────────────────────────────────────
 // 事件类型映射
@@ -84,8 +87,23 @@ export class DataView implements IDataSource {
 
   // ── DataTable 引用（运行时注入，由 DataTable 在 attach 时赋值）────────
 
-  /** 所属 DataTable */
-  dataTable!: DataTable
+  /** 内部存储的 DataTable 引用 */
+  private _dataTable!: DataTable
+
+  /** 所属 DataTable（赋值时自动编译 columns 中的 computeExpression） */
+  get dataTable(): DataTable { return this._dataTable }
+  set dataTable(table: DataTable) {
+    this._dataTable = table
+    // DataTable attach → 自动编译列定义中的 computeExpression
+    this._computedDelegate?.syncFromConfig()
+  }
+
+  // ── IComputedHost 实现（为委托提供最小上下文，不对外暴露）────
+
+  /** DataTable 列定义（DataTable 未 attach 时为 undefined）@internal */
+  get tableColumns() { return this._dataTable?.columns }
+  /** DataSet 引用（聚合解析器使用）@internal */
+  get tableDataSet() { return this._dataTable?.dataSet }
 
   // ── 标识 ────────────────────────────────────
 
@@ -117,7 +135,10 @@ export class DataView implements IDataSource {
     // 从 DataTable 列定义自动推导
     if (this.dataTable?.columns?.length) {
       const pkCols = this.dataTable.columns.filter(c => c.isPrimaryKey)
-      if (pkCols.length === 1) return pkCols[0].name
+      if (pkCols.length === 1) {
+        const col = pkCols[0]
+        if (col) return col.name
+      }
       if (pkCols.length > 1) return pkCols.map(c => c.name)
     }
     return 'id'
@@ -154,9 +175,11 @@ export class DataView implements IDataSource {
   /**
    * 值字段名（用于 value getter/setter 序列化）。
    * 未指定时回退到主键字段。
-   * 示例：valueField = 'code' → value 返回各选中行的 code 字段值。
+   *
+   * - 单字段：`'code'` → value 返回各选中行的 code 字段值
+   * - 多字段（复合值）：`['code', 'region']` → value 以 `:` 连接各字段，如 `'A:US'`
    */
-  valueField?: string
+  valueField?: string | string[]
   /**
    * 标签显示字段名（用于 labels / label getter，渲染 tag 时使用）。
    * 未指定时回退到主键值字符串。
@@ -204,14 +227,14 @@ export class DataView implements IDataSource {
    * 值的序列化字符串（供表单字段 v-model 或 API 传值使用）。
    *
    * **读取（get）**：
-   * - 有 {@link valueField} 时：从选中行提取该字段值
+   * - 有 {@link valueField} 时：从选中行提取该字段值（多字段以 `:` 连接）
    * - 无 {@link valueField} 时：直接使用主键值（快速路径）
-   * - **多选模式**（`selectionDelimiter !== ''`）：以分隔符连接，如 `"1,2,3"`
-   * - **单选模式**（`selectionDelimiter === ''`）：返回首个值，如 `"1"`
+   * - **多选模式**（`selectionDelimiter !== ''`）：以分隔符连接，如 `"1,2,3"` 或 `"A:US,B:EU"`
+   * - **单选模式**（`selectionDelimiter === ''`）：返回首个值，如 `"1"` 或 `"A:US"`
    * - 未选中任何行时返回空字符串 `""`
    *
    * **写入（set）**：
-   * - 有 {@link valueField} 时：按字段值匹配行 → 存储其主键
+   * - 有 {@link valueField} 时：按字段值匹配行 → 存储其主键（多字段以 `:` 分隔解析）
    * - 无 {@link valueField} 时：直接作为主键值存储
    * - 空字符串 / null / undefined → 清空
    *
@@ -225,15 +248,34 @@ export class DataView implements IDataSource {
    */
   get value(): string {
     if (this.valueField) {
-      // 自定义值字段：从选中行提取
-      const field = this.valueField
       const rows = this.selectedRows
-      const values = rows.map(r => {
+      if (Array.isArray(this.valueField)) {
+        // 复合值字段：多字段以 `:` 连接
+        const fields = this.valueField
+        const values: string[] = []
+        for (const r of rows) {
+          const parts = fields.map(f => {
+            const v = r[f]
+            return v !== undefined && v !== null ? String(v) : ''
+          })
+          if (parts.some(p => p !== '')) {
+            values.push(parts.join(':'))
+          }
+        }
+        if (!this.selectionDelimiter) {
+          return values[0] ?? ''
+        }
+        return values.join(this.selectionDelimiter)
+      }
+      // 单值字段：直接取字段值
+      const field = this.valueField
+      const values: string[] = []
+      for (const r of rows) {
         const v = r[field]
-        return v !== undefined && v !== null ? String(v) : ''
-      }).filter(v => v !== '')
+        if (v !== undefined && v !== null) values.push(String(v))
+      }
       if (!this.selectionDelimiter) {
-        return values.length > 0 ? values[0] : ''
+        return values[0] ?? ''
       }
       return values.join(this.selectionDelimiter)
     }
@@ -257,7 +299,25 @@ export class DataView implements IDataSource {
     if (tokens.length === 0) { this.selectionDelegate.clearSelectedRows(); return }
 
     if (this.valueField) {
-      // 自定义值字段：按字段值匹配行 → 存储其主键
+      if (Array.isArray(this.valueField)) {
+        // 复合值字段：按 `:` 拆分各段逐字段匹配行
+        const fields = this.valueField
+        const tokenSet = new Set(tokens)
+        const matchedPks: Array<string | number> = []
+        for (const row of this.rows) {
+          const parts = fields.map(f => {
+            const v = row[f]
+            return v !== undefined && v !== null ? String(v) : ''
+          })
+          if (tokenSet.has(parts.join(':'))) {
+            const pk = this.getPrimaryKeyValue(row)
+            if (pk !== undefined) matchedPks.push(pk)
+          }
+        }
+        this.selectionDelegate.setSelectedRowsById(matchedPks)
+        return
+      }
+      // 单值字段：按字段值直接匹配
       const field = this.valueField
       const tokenSet = new Set(tokens)
       const matchedPks: Array<string | number> = []
@@ -273,8 +333,9 @@ export class DataView implements IDataSource {
     }
 
     // 默认：treat tokens as PK values
-    const samplePkType = this.rows.length > 0
-      ? typeof this.getPrimaryKeyValue(this.rows[0])
+    const firstRow = this.rows[0]
+    const samplePkType = firstRow
+      ? typeof this.getPrimaryKeyValue(firstRow)
       : 'string'
 
     const ids: Array<string | number> = samplePkType === 'number'
@@ -394,6 +455,72 @@ export class DataView implements IDataSource {
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
   set treeMode(v: 'flat' | 'nested') { (this.treeConfig ??= {}).treeMode = v }
 
+  // ── 计算列（委托至 ComputedColumnDelegate）──────────────
+
+  /**
+   * 设置计算列共享上下文（表达式中通过 `ctx` 引用）。
+   * 设置后重新编译所有配置驱动的计算列并对现有 rows 求值。
+   *
+   * @example
+   * view.setComputedContext({ taxRate: 0.13, discountMap: { VIP: 0.9 } })
+   */
+  setComputedContext(ctx: ComputedColumnContext): void {
+    this._computedDelegate.setContext(ctx)
+  }
+
+  /**
+   * 注册计算列（函数式）。注册后对现有 rows 立即求值。
+   *
+   * @example
+   * view.setComputedColumn('fullName', row => `${row.firstName} ${row.lastName}`)
+   */
+  setComputedColumn(name: string, compute: ComputedColumnFn): void {
+    this._computedDelegate.setColumn(name, compute)
+  }
+
+  /**
+   * 注册计算列（表达式字符串）。
+   * 行字段直接引用，上下文通过 `ctx`，子视图聚合通过 `$sum` 等函数。
+   *
+   * @example
+   * view.setComputedColumnExpression('total', 'price * qty')
+   * view.setComputedColumnExpression('tax', 'amount * ctx.taxRate')
+   * view.setComputedColumnExpression('orderTotal', "$sum('OrderItems', 'amount')")
+   */
+  setComputedColumnExpression(name: string, expression: string): void {
+    this._computedDelegate.setExpression(name, expression)
+  }
+
+  /**
+   * 移除计算列定义。（历史已求值的行数据保留，后续不再写入该字段）
+   */
+  removeComputedColumn(name: string): void {
+    this._computedDelegate.remove(name)
+  }
+
+  /** 已注册的计算列名集合（CrudDelegate 用于提交前剥离） */
+  get computedColumnNames(): ReadonlySet<string> {
+    return this._computedDelegate.names
+  }
+
+  /**
+   * 从 DataTable 列定义中提取 computeExpression 并编译注册（手动触发入口）。
+   * DataTable attach 时已自动执行，通常无需手动调用。
+   */
+  initComputedColumnsFromConfig(): void {
+    this._computedDelegate.initFromConfig()
+  }
+
+  /** 从数据对象中移除计算列字段，返回浅拷贝；无计算列时返回原对象。 */
+  stripComputedColumns(data: Partial<IDataRow>): Partial<IDataRow> {
+    return this._computedDelegate.strip(data)
+  }
+
+  /** 对行集合执行计算列求值（就地写入）——供 DataView 内部调用。 */
+  private _applyComputedColumns(rows: IDataRow[]): void {
+    this._computedDelegate.apply(rows)
+  }
+
   // ── 关联对象 ────────────────────────────────
 
   treeManager?: TreeManager | undefined
@@ -413,6 +540,8 @@ export class DataView implements IDataSource {
 
   // ── 委托 ─────────────────────────────────────
 
+  /** 计算列委托（立即初始化，因 dataTable setter 可能在第一次懒访问之前触发） */
+  private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate(this)
   /** CRUD 操作委托（懒初始化） */
   private _crudDelegate?: CrudDelegate | undefined
   /** 级联订阅委托（懒初始化） */
@@ -721,7 +850,7 @@ export class DataView implements IDataSource {
         void pView.requestData()
       }
 
-      const parentRows = getParentRows(pView, rel.dependencyType)
+      const parentRows = getParentRows(pView, rel.dependencyType ?? 'currentRow')
       // Phase 4 S2: Loading 不视为就绪（可能持有上轮旧数据），必须 Loaded 或有实际行数据
       const parentReady = pView.requestState === RequestState.Loaded || pView.rows.length > 0
       if (!parentReady || parentRows.length === 0) {
@@ -901,16 +1030,24 @@ export class DataView implements IDataSource {
   /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定，对 Vue 响应式友好 */
   updateFromServer(data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[]): void {
     this.localMutationDelegate.updateFromServer(data)
+    this._applyComputedColumns(this.rows)
   }
 
   /** 本地追加一行，发射 rowsChanged */
   appendRow(row: IDataRow): void {
     this.localMutationDelegate.appendRow(row)
+    this._applyComputedColumns([row])
   }
 
   /** 本地按主键部分更新一行，发射 rowsChanged；返回是否成功（行不存在时 false） */
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
-    return this.localMutationDelegate.updateRowById(id, data)
+    const result = this.localMutationDelegate.updateRowById(id, data)
+    if (result) {
+      // 更新成功，对受影响的行重新求值计算列
+      const row = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+      if (row) this._applyComputedColumns([row])
+    }
+    return result
   }
 
   /** 本地按主键删除一行，清理选中引用，发射 rowsChanged；返回是否成功（行不存在时 false） */
@@ -921,6 +1058,7 @@ export class DataView implements IDataSource {
   /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 rowsChanged */
   replaceRows(rows: IDataRow[]): void {
     this.localMutationDelegate.replaceRows(rows)
+    this._applyComputedColumns(this.rows)
   }
 
   // ─────────────────────────────────────────────
@@ -1181,14 +1319,17 @@ export class DataView implements IDataSource {
     // 5. 清空数据
     this.resetState()
     
-    // 6. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
+    // 6. 清除计算列委托
+    this._computedDelegate.destroy()
+    
+    // 7. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
     this.treeManager = undefined
     
-    // 7. 保留 DataTable 引用（现代 JS GC 能正确处理循环引用）。
+    // 8. 保留 DataTable 引用（现代 JS GC 能正确处理循环引用）。
     // Phase 4 M6: 不再 undefined dataTable，避免销毁后访问 getter（dataSet/crudService 等）
     // 抛出不明确的 "Cannot read property of undefined" 而非清晰的 "已销毁" 错误。
     
-    // 8. 标记为已销毁
+    // 9. 标记为已销毁
     this._isDestroyed = true
   }
 

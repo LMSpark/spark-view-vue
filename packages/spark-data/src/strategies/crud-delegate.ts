@@ -78,6 +78,17 @@ export class CrudDelegate {
     return this.host.crudConfig
   }
 
+  /** 从数据中剥离计算列字段（提交前调用） */
+  private stripComputed(data: Partial<IDataRow>): Partial<IDataRow> {
+    return this.host.stripComputedColumns(data)
+  }
+
+  /** 批量剥离计算列 */
+  private stripComputedBatch(items: Partial<IDataRow>[]): Partial<IDataRow>[] {
+    if (this.host.computedColumnNames.size === 0) return items
+    return items.map(item => this.host.stripComputedColumns(item))
+  }
+
   /** 校验数据行 */
   private validateRow(row: IDataRow): ValidationResult | null {
     if (!this.host.validator) return null
@@ -148,14 +159,15 @@ export class CrudDelegate {
   async createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
     if (!this.fireBefore('create', data)) return this.cancelledResult('create')
 
-    const validationResult = this.validateRow(data as IDataRow)
+    const cleanData = this.stripComputed(data)
+    const validationResult = this.validateRow(cleanData as IDataRow)
     if (validationResult && !validationResult.valid) {
       return this.validationFailedResult(validationResult.errors)
     }
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.create<IDataRow>(data, this.getCrudConfig())
+      const result = await svc.create<IDataRow>(cleanData, this.getCrudConfig())
       if (result.success && result.data) {
         this.host.appendRow(result.data)   // appendRow 内部已发射 stateChanged('rows')
       }
@@ -168,14 +180,15 @@ export class CrudDelegate {
   async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
     if (!this.fireBefore('update', { id, ...data })) return this.cancelledResult('update')
 
-    const validationResult = this.validateRow(data as IDataRow)
+    const cleanData = this.stripComputed(data)
+    const validationResult = this.validateRow(cleanData as IDataRow)
     if (validationResult && !validationResult.valid) {
       return this.validationFailedResult(validationResult.errors)
     }
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.update<IDataRow>(id, data, this.getCrudConfig())
+      const result = await svc.update<IDataRow>(id, cleanData, this.getCrudConfig())
       if (result.success && result.data) {
         this.host.updateRowById(id, result.data)   // updateRowById 内部已发射 stateChanged('rows')
       }
@@ -207,7 +220,8 @@ export class CrudDelegate {
   async batchCreateRecords(items: Partial<IDataRow>[]): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchCreate', items)) return this.cancelledResult('batchCreate')
 
-    const validationErrors = this.collectBatchValidationErrors(items)
+    const cleanItems = this.stripComputedBatch(items)
+    const validationErrors = this.collectBatchValidationErrors(cleanItems)
     if (validationErrors.length > 0) {
       return {
         success: false,
@@ -218,7 +232,7 @@ export class CrudDelegate {
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.batchCreate<IDataRow>(items, this.getCrudConfig())
+      const result = await svc.batchCreate<IDataRow>(cleanItems, this.getCrudConfig())
       if (result.success && result.data) {
         for (const r of result.data.results) {
           if (r.success && r.data) this.host.appendRow(r.data as IDataRow)  // 每行 appendRow 内部已发射（防抖合并）
@@ -233,7 +247,8 @@ export class CrudDelegate {
   async batchUpdateRecords(items: Array<Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchUpdate', items)) return this.cancelledResult('batchUpdate')
 
-    const validationErrors = this.collectBatchValidationErrors(items)
+    const cleanItems = this.stripComputedBatch(items)
+    const validationErrors = this.collectBatchValidationErrors(cleanItems)
     if (validationErrors.length > 0) {
       return {
         success: false,
@@ -244,7 +259,7 @@ export class CrudDelegate {
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.batchUpdate<IDataRow>(items, this.getCrudConfig())
+      const result = await svc.batchUpdate<IDataRow>(cleanItems, this.getCrudConfig())
       if (result.success && result.data) {
         for (const r of result.data.results) {
           if (r.success && r.data) {
