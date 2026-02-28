@@ -42,15 +42,15 @@ export type EventSource =
   | 'auto'      // 自动触发（如 autoCurrentFirst）
   | 'crud'      // CRUD 操作触发
 
-// ✅ 新的事件定义 - 携带来源信息
-interface ViewStateEvent {
-  tableName: string
-  viewId: string
-  changeType: 'currentRow' | 'selectedRows' | ...
-  row?: IDataRow | null
-  rows?: IDataRow[]
-  source?: EventSource  // 🎯 事件来源标识
-}
+// ✅ 判别联合（discriminated union）— 按 changeType 收窄
+type ViewStateEvent =
+  | CurrentRowEvent      // changeType: 'currentRow', row: IDataRow | null
+  | SelectedRowsEvent    // changeType: 'selectedRows', rows: IDataRow[]
+  | RowsChangedEvent     // changeType: 'rows'
+  | ClearedEvent         // changeType: 'cleared'
+  | RequestStateEvent    // changeType: 'requestState'
+  | MutatingEvent        // changeType: 'mutating'
+// 所有变体共享 ViewStateEventBase { tableName, viewId, source? }
 ```
 
 ---
@@ -71,27 +71,21 @@ interface ViewStateEvent {
  */
 export type EventSource = 'ui' | 'program' | 'sync' | 'cascade' | 'auto' | 'crud'
 
-/** 视图状态变化事件 */
-export interface ViewStateEvent {
+/** 视图状态变化事件基类 */
+export interface ViewStateEventBase {
   tableName: string
   viewId: string
-  changeType: 'currentRow' | 'selectedRows' | 'cleared' | 'rows' | 'requestState' | 'mutating'
-  row?: IDataRow | null
-  rows?: IDataRow[]
-  /**
-   * 事件来源标识（用于防止循环同步）
-   * 
-   * 用途：
-   * - UI 组件订阅时可根据 source 决定是否需要反向同步
-   * - source='sync' 的事件应跳过 UI→DataSet 反向同步（避免循环）
-   * - source='ui' 的事件应跳过 DataSet→UI 同步（已经是最新状态）
-   * 
-   * 缺省值处理：
-   * - 未指定时默认为 'program'（向后兼容旧代码）
-   * - 关键路径（UI、sync）必须明确指定
-   */
   source?: EventSource
 }
+
+/** 判别联合：按 changeType 收窄后直接访问 row / rows，无需可选链 */
+export type ViewStateEvent =
+  | CurrentRowEvent      // { changeType: 'currentRow', row: IDataRow | null }
+  | SelectedRowsEvent    // { changeType: 'selectedRows', rows: IDataRow[] }
+  | RowsChangedEvent     // { changeType: 'rows' }
+  | ClearedEvent         // { changeType: 'cleared' }
+  | RequestStateEvent    // { changeType: 'requestState' }
+  | MutatingEvent        // { changeType: 'mutating' }
 ```
 
 ### 2. DataView 方法签名 (`packages/spark-data/src/data-view.ts`)

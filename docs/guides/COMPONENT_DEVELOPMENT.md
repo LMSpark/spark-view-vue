@@ -296,19 +296,27 @@ import type { ViewStateEvent } from '@spark-view/spark-data'
 onMounted(() => dataSource?.events.on('stateChanged', handleStateChange))
 onUnmounted(() => dataSource?.events.off('stateChanged', handleStateChange))
 
+// ViewStateEvent 是判别联合（discriminated union），switch 后自动收窄类型
 function handleStateChange(event: ViewStateEvent) {
   switch (event.changeType) {
-    case 'rows':         // 行数据变化（16ms 防抖后触发）
-    case 'currentRow':   // 当前行变化（立即触发）— event.row
-    case 'selectedRows': // 选中变化（立即触发）— event.rows
-    case 'requestState': // 加载状态变化
-    case 'cleared':      // 数据已清空
-    case 'mutating':     // CRUD 请求进行中/完成
+    case 'currentRow':   // CurrentRowEvent — event.row: IDataRow | null
+      console.log('当前行:', event.row)
+      break
+    case 'selectedRows': // SelectedRowsEvent — event.rows: IDataRow[]
+      console.log('选中行:', event.rows.length)
+      break
+    case 'rows':         // RowsChangedEvent — 行数据变化（16ms 防抖后触发）
+      break
+    case 'requestState': // RequestStateEvent — 加载状态变化
+    case 'cleared':      // ClearedEvent — 数据已清空
+    case 'mutating':     // MutatingEvent — CRUD 请求进行中/完成
+      break
   }
 }
 ```
 
 `changeType === 'rows'` 有 16ms 防抖（批量合并），其余事件立即触发。
+`currentRow` / `selectedRows` 变体的 `row` / `rows` 字段是 **必需属性**（非可选），通过 `switch` 收窄后直接访问无需 `??` 兜底。
 
 ### 5.4 提供 DATA_SOURCE（容器组件模式）
 
