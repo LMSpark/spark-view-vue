@@ -580,7 +580,146 @@ describe('聚合函数 — DataSet 关联', () => {
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 9. compileColumnsExpressions 批量编译
+// 9. 聚合函数 — 动态行编辑正确性
+//    验证子表行变化后重触发父视图求值时聚合结果是否正确
+// ─────────────────────────────────────────────────────────────────────────────
+describe('聚合函数 — 动态行编辑正确性', () => {
+  /** 构建一个最小父子 DataSet，返回 { ds, parentView, childView } */
+  function makeParentChildDS() {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'Agg',
+      tables: {
+        Parent: {
+          tableName: 'Parent',
+          columns: [
+            { name: 'id',    type: 'number', isPrimaryKey: true },
+            { name: 'total', type: 'number', computeExpression: "$sum('Child', 'v')" },
+            { name: 'cnt',   type: 'number', computeExpression: "$count('Child')" },
+          ],
+          rows: [{ id: 1 }, { id: 2 }],
+        },
+        Child: {
+          tableName: 'Child',
+          columns: [
+            { name: 'id',       type: 'number', isPrimaryKey: true },
+            { name: 'parentId', type: 'number' },
+            { name: 'v',        type: 'number' },
+          ],
+          rows: [
+            { id: 1, parentId: 1, v: 10 },
+            { id: 2, parentId: 1, v: 20 },
+            { id: 3, parentId: 2, v: 5 },
+          ],
+        },
+      },
+      relations: [{
+        parentTable: 'Parent',
+        childTable: 'Child',
+        childField: 'parentId',
+        dependencyType: 'currentRow',
+      }],
+    })
+    const parentView = ds.getView('Parent', 'default')!
+    const childView  = ds.getView('Child',  'default')!
+    parentView.initComputedColumnsFromConfig()
+    return { ds, parentView, childView }
+  }
+
+  it('初始聚合正确', () => {
+    const { parentView } = makeParentChildDS()
+    expect(f(parentView.rows[0], 'total')).toBe(30)   // 10+20
+    expect(f(parentView.rows[0], 'cnt')).toBe(2)
+    expect(f(parentView.rows[1], 'total')).toBe(5)
+    expect(f(parentView.rows[1], 'cnt')).toBe(1)
+  })
+
+  it('子表 appendRow 后，重触发父视图求值，聚合结果更新', () => {
+    const { parentView, childView } = makeParentChildDS()
+
+    // 子表新增一行 parentId=1
+    childView.appendRow({ id: 10, parentId: 1, v: 30 })
+
+    // 子行已变化，但父视图尚未重算——旧快照
+    expect(f(parentView.rows[0], 'total')).toBe(30)
+
+    // 重触发父视图聚合求值
+    parentView.initComputedColumnsFromConfig()
+    expect(f(parentView.rows[0], 'total')).toBe(60)   // 10+20+30
+    expect(f(parentView.rows[0], 'cnt')).toBe(3)
+    // parentId=2 未变
+    expect(f(parentView.rows[1], 'total')).toBe(5)
+  })
+
+  it('子表 updateRowById 后，重触发父视图，聚合结果更新', () => {
+    const { parentView, childView } = makeParentChildDS()
+
+    childView.updateRowById(1, { v: 100 })   // id=1 v: 10 → 100
+
+    parentView.initComputedColumnsFromConfig()
+    expect(f(parentView.rows[0], 'total')).toBe(120)  // 100+20
+    expect(f(parentView.rows[0], 'cnt')).toBe(2)
+  })
+
+  it('子表 replaceRows 后，重触发父视图，聚合结果更新', () => {
+    const { parentView, childView } = makeParentChildDS()
+
+    // 完全替换子表行
+    childView.replaceRows([
+      { id: 1, parentId: 1, v: 7 },
+      { id: 2, parentId: 1, v: 3 },
+      { id: 3, parentId: 2, v: 50 },
+      { id: 4, parentId: 2, v: 50 },
+    ])
+
+    parentView.initComputedColumnsFromConfig()
+    expect(f(parentView.rows[0], 'total')).toBe(10)   // 7+3
+    expect(f(parentView.rows[0], 'cnt')).toBe(2)
+    expect(f(parentView.rows[1], 'total')).toBe(100)  // 50+50
+    expect(f(parentView.rows[1], 'cnt')).toBe(2)
+  })
+
+  it('子表删除行后（通过 replaceRows 模拟），重触发父视图，聚合缩减', () => {
+    const { parentView, childView } = makeParentChildDS()
+
+    // 删除 parentId=1 的一行（保留 id=2 v=20）
+    childView.replaceRows(
+      childView.rows.filter(r => r['id'] !== 1)
+    )
+
+    parentView.initComputedColumnsFromConfig()
+    expect(f(parentView.rows[0], 'total')).toBe(20)   // 只剩 v=20
+    expect(f(parentView.rows[0], 'cnt')).toBe(1)
+  })
+
+  it('父表 appendRow — 新父行聚合基于当前子表快照', () => {
+    const { parentView, childView } = makeParentChildDS()
+
+    // 先给子表加一行属于 parentId=3 的数据
+    childView.appendRow({ id: 99, parentId: 3, v: 42 })
+
+    // 父表新增 id=3 的行，appendRow 会立即触发 _applyComputedColumns
+    parentView.appendRow({ id: 3 })
+
+    // 聚合在 appendRow 时已计算
+    expect(f(parentView.rows[2], 'total')).toBe(42)
+    expect(f(parentView.rows[2], 'cnt')).toBe(1)
+  })
+
+  it('父表 updateRowById — 已有父行重算无副作用', () => {
+    const { parentView } = makeParentChildDS()
+
+    // 更新父行的非聚合字段（若父表有 label 之类）
+    // 这里用不存在字段更新来单纯触发 _applyComputedColumns
+    parentView.updateRowById(1, { note: 'updated' })
+
+    // 聚合值应保持不变
+    expect(f(parentView.rows[0], 'total')).toBe(30)
+    expect(f(parentView.rows[0], 'cnt')).toBe(2)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 10. compileColumnsExpressions 批量编译
 // ─────────────────────────────────────────────────────────────────────────────
 describe('compileColumnsExpressions', () => {
   it('只编译含 computeExpression 的列', () => {
