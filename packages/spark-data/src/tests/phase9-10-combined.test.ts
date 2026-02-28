@@ -7,7 +7,6 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import { DataSet } from '../dataset'
-import { DataTable } from '../data-table'
 import { DataView } from '../data-view'
 import { CrudService, createCrudService } from '../crud-service'
 import { SelectionDelegate } from '../strategies/selection-delegate'
@@ -142,7 +141,7 @@ describe('S1: DataView public delegate accessors', () => {
     const view = new DataView('TestTable', 'default')
     view.rows = [{ id: 1, name: 'A' }]
     // Use pass-through method to trigger selection
-    view.setCurrentRow(view.rows[0])
+    view.setCurrentRow(view.rows[0] ?? null)
     expect(view.currentRow).toEqual({ id: 1, name: 'A' })
     // The delegate should see the same state
     expect(view.selection).toBeDefined()

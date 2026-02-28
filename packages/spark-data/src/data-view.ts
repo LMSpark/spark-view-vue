@@ -215,172 +215,31 @@ export class DataView implements IDataSource {
     })
   }
 
-  // ── 值序列化层（单选 / 多选通用）────
+  // ── 值序列化层（委托给 SelectionDelegate）────
 
   /**
-   * 值的序列化字符串（供表单字段 v-model 或 API 传值使用）。
-   *
-   * **读取（get）**：
-   * - 有 {@link valueField} 时：从选中行提取该字段值（多字段以 `:` 连接）
-   * - 无 {@link valueField} 时：直接使用主键值（快速路径）
-   * - **多选模式**（`selectionDelimiter !== ''`）：以分隔符连接，如 `"1,2,3"` 或 `"A:US,B:EU"`
-   * - **单选模式**（`selectionDelimiter === ''`）：返回首个值，如 `"1"` 或 `"A:US"`
-   * - 未选中任何行时返回空字符串 `""`
-   *
-   * **写入（set）**：
-   * - 有 {@link valueField} 时：按字段值匹配行 → 存储其主键（多字段以 `:` 分隔解析）
-   * - 无 {@link valueField} 时：直接作为主键值存储
-   * - 空字符串 / null / undefined → 清空
-   *
-   * 搭配 {@link labels} 使用，完成 tag 渲染。
+   * 选中行的序列化字符串（供表单 v-model / API 传值使用）。
+   * 完整逻辑见 {@link SelectionDelegate.value}。
    *
    * @example
    * view.value = '1,2,3'  // 多选 → [row1, row2, row3]
    * view.value = '1'      // 单选 → [row1]
    * view.value = ''       // 清空
-   * const v = view.value  // → "1,2,3"
    */
-  get value(): string {
-    if (this.valueField) {
-      const rows = this.selectedRows
-      if (Array.isArray(this.valueField)) {
-        // 复合值字段：多字段以 `:` 连接
-        const fields = this.valueField
-        const values: string[] = []
-        for (const r of rows) {
-          const parts = fields.map(f => {
-            const v = r[f]
-            return v !== undefined && v !== null ? String(v) : ''
-          })
-          if (parts.some(p => p !== '')) {
-            values.push(parts.join(':'))
-          }
-        }
-        if (!this.selectionDelimiter) {
-          return values[0] ?? ''
-        }
-        return values.join(this.selectionDelimiter)
-      }
-      // 单值字段：直接取字段值
-      const field = this.valueField
-      const values: string[] = []
-      for (const r of rows) {
-        const v = r[field]
-        if (v !== undefined && v !== null) values.push(String(v))
-      }
-      if (!this.selectionDelimiter) {
-        return values[0] ?? ''
-      }
-      return values.join(this.selectionDelimiter)
-    }
-    // 默认：使用主键值（快速路径，无需查行）
-    if (!this.selectionDelimiter) {
-      return this._selectedRowIds.length > 0 ? String(this._selectedRowIds[0]) : ''
-    }
-    return this._selectedRowIds.join(this.selectionDelimiter)
-  }
-
-  set value(value: string | null | undefined) {
-    if (!value) {
-      this.selectionDelegate.clearSelectedRows()
-      return
-    }
-
-    // 解析 token 列表
-    const tokens = this.selectionDelimiter
-      ? value.split(this.selectionDelimiter).map(s => s.trim()).filter(s => s !== '')
-      : [value.trim()].filter(s => s !== '')
-    if (tokens.length === 0) { this.selectionDelegate.clearSelectedRows(); return }
-
-    if (this.valueField) {
-      if (Array.isArray(this.valueField)) {
-        // 复合值字段：按 `:` 拆分各段逐字段匹配行
-        const fields = this.valueField
-        const tokenSet = new Set(tokens)
-        const matchedPks: Array<string | number> = []
-        for (const row of this.rows) {
-          const parts = fields.map(f => {
-            const v = row[f]
-            return v !== undefined && v !== null ? String(v) : ''
-          })
-          if (tokenSet.has(parts.join(':'))) {
-            const pk = this.getPrimaryKeyValue(row)
-            if (pk !== undefined) matchedPks.push(pk)
-          }
-        }
-        this.selectionDelegate.setSelectedRowsById(matchedPks)
-        return
-      }
-      // 单值字段：按字段值直接匹配
-      const field = this.valueField
-      const tokenSet = new Set(tokens)
-      const matchedPks: Array<string | number> = []
-      for (const row of this.rows) {
-        const fv = row[field]
-        if (fv !== undefined && fv !== null && tokenSet.has(String(fv))) {
-          const pk = this.getPrimaryKeyValue(row)
-          if (pk !== undefined) matchedPks.push(pk)
-        }
-      }
-      this.selectionDelegate.setSelectedRowsById(matchedPks)
-      return
-    }
-
-    // 默认：treat tokens as PK values
-    const firstRow = this.rows[0]
-    const samplePkType = firstRow
-      ? typeof this.getPrimaryKeyValue(firstRow)
-      : 'string'
-
-    const ids: Array<string | number> = samplePkType === 'number'
-      ? tokens.map(s => { const n = Number(s); return Number.isFinite(n) ? n : s })
-      : tokens
-
-    this.selectionDelegate.setSelectedRowsById(ids)
-  }
+  get value(): string { return this.selectionDelegate.value }
+  set value(v: string | null | undefined) { this.selectionDelegate.value = v }
 
   /**
    * 选中行的显示标签数组（供渲染 tag 使用）。
-   *
-   * - 有 {@link labelField} 配置时：取各选中行的 `labelField` 字段值
-   * - 无 {@link labelField} 配置时：回退到主键值字符串
-   * - 行找不到（options 尚未加载）时：回退到主键值字符串
-   *
-   * @example
-   * view.labelField = 'name'
-   * view.labels // → ["Alice", "Bob"]
+   * 有 {@link labelField} 时取字段值；否则回退到主键字符串。
    */
-  get labels(): string[] {
-    if (!this.labelField) {
-      return this._selectedRowIds.map(id => String(id))
-    }
-    const field = this.labelField
-    const rowMap = new Map(
-      this.rows.map(r => [this.getPrimaryKeyValue(r), r])
-    )
-    return this._selectedRowIds.map(id => {
-      const row = rowMap.get(id)
-      if (!row) return String(id)
-      const v = row[field]
-      return v !== undefined && v !== null ? String(v) : String(id)
-    })
-  }
+  get labels(): string[] { return this.selectionDelegate.labels }
 
   /**
-   * 当前行的显示标签（供渲染单选 tag 或面包屑使用）。
-   *
-   * - 有 {@link labelField} 配置时：取 currentRow[labelField]
-   * - 无 {@link labelField} 配置时：回退到主键值字符串
-   * - 无当前行时：返回 null
+   * 当前行的显示标签（供单选 tag / 面包屑使用）。
+   * 无当前行时返回 null。
    */
-  get label(): string | null {
-    if (this._currentRowId === null) return null
-    if (!this.labelField) return String(this._currentRowId)
-    const row = this.currentRow
-    if (!row) return String(this._currentRowId)
-    const v = row[this.labelField]
-    return v !== undefined && v !== null ? String(v) : String(this._currentRowId)
-  }
+  get label(): string | null { return this.selectionDelegate.label }
 
   // ── 分页 ────────────────────────────────────
 
@@ -1380,7 +1239,7 @@ export class DataView implements IDataSource {
     
     // 6. 清除计算列委托及上下文
     this._computedDelegate.destroy()
-    this._computedContext = undefined
+    delete this._computedContext
     
     // 7. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
     this.treeManager = undefined

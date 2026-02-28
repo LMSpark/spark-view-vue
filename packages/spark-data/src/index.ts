@@ -56,6 +56,9 @@ export type {
   ViewChangeHandlers,
   DependencyType,
   ComputedColumnFn,
+  ColumnType,
+  ColumnTypeMap,
+  InferColumnValue,
 } from './types'
 
 // ===== 主键生成器 =====

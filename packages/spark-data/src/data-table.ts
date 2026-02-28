@@ -163,7 +163,9 @@ export class DataTable {
    * @remarks 配置变更时自动清除 CrudService 缓存，下次访问时重建
    */
   setApi(api: CrudApi | string | boolean): void {
-    this.api = resolveApi(api, this.tableName)
+    const resolved = resolveApi(api, this.tableName)
+    if (resolved !== undefined) this.api = resolved
+    else delete this.api
     this._crudService = undefined
   }
 
@@ -244,7 +246,10 @@ export class DataTable {
   static fromTableData(data: ITableMetadata): DataTable {
     const t = new DataTable(data.tableName, data.columns ?? [])
     // P2: API 简写展开（字符串 / true → CrudApi 对象）
-    if (data.api !== undefined) t.api = resolveApi(data.api, data.tableName)
+    if (data.api !== undefined) {
+      const resolved = resolveApi(data.api, data.tableName)
+      if (resolved !== undefined) t.api = resolved
+    }
 
     const def = t.getOrCreateView('default')
     if (data.rows) def.rows = [...data.rows]

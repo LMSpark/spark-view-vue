@@ -407,4 +407,130 @@ export class SelectionDelegate {
 
     return currentRowPruned || selectedRowsPruned
   }
+
+  // ─────────────────────────────────────────────
+  // 值序列化层（value / labels / label）
+  // ─────────────────────────────────────────────
+
+  /**
+   * 选中行的序列化字符串（供表单 v-model / API 传值使用）。
+   *
+   * 读取：按 valueField → 主键值 → 分隔符拼接。
+   * 写入：按分隔符拆分 token → 匹配行 → setSelectedRowsById。
+   */
+  get value(): string {
+    const host = this.host
+    if (host.valueField) {
+      const rows = host.selectedRows
+      if (Array.isArray(host.valueField)) {
+        const fields = host.valueField
+        const values: string[] = []
+        for (const r of rows) {
+          const parts = fields.map(f => {
+            const v: unknown = (r as Record<string, unknown>)[f]
+            return v !== undefined && v !== null ? String(v) : ''
+          })
+          if (parts.some(p => p !== '')) values.push(parts.join(':'))
+        }
+        return host.selectionDelimiter ? values.join(host.selectionDelimiter) : (values[0] ?? '')
+      }
+      const field = host.valueField
+      const values: string[] = []
+      for (const r of rows) {
+        const v: unknown = (r as Record<string, unknown>)[field]
+        if (v !== undefined && v !== null) values.push(String(v))
+      }
+      return host.selectionDelimiter ? values.join(host.selectionDelimiter) : (values[0] ?? '')
+    }
+    // 默认：主键快速路径
+    if (!host.selectionDelimiter) {
+      return host._selectedRowIds.length > 0 ? String(host._selectedRowIds[0]) : ''
+    }
+    return host._selectedRowIds.join(host.selectionDelimiter)
+  }
+
+  set value(value: string | null | undefined) {
+    const host = this.host
+    if (!value) { this.clearSelectedRows(); return }
+
+    const tokens = host.selectionDelimiter
+      ? value.split(host.selectionDelimiter).map(s => s.trim()).filter(s => s !== '')
+      : [value.trim()].filter(s => s !== '')
+    if (tokens.length === 0) { this.clearSelectedRows(); return }
+
+    if (host.valueField) {
+      if (Array.isArray(host.valueField)) {
+        const fields = host.valueField
+        const tokenSet = new Set(tokens)
+        const matchedPks: Array<string | number> = []
+        for (const row of host.rows) {
+          const parts = fields.map(f => {
+            const v: unknown = (row as Record<string, unknown>)[f]
+            return v !== undefined && v !== null ? String(v) : ''
+          })
+          if (tokenSet.has(parts.join(':'))) {
+            const pk = host.getPrimaryKeyValue(row)
+            if (pk !== undefined) matchedPks.push(pk)
+          }
+        }
+        this.setSelectedRowsById(matchedPks)
+        return
+      }
+      const field = host.valueField
+      const tokenSet = new Set(tokens)
+      const matchedPks: Array<string | number> = []
+      for (const row of host.rows) {
+        const fv: unknown = (row as Record<string, unknown>)[field]
+        if (fv !== undefined && fv !== null && tokenSet.has(String(fv))) {
+          const pk = host.getPrimaryKeyValue(row)
+          if (pk !== undefined) matchedPks.push(pk)
+        }
+      }
+      this.setSelectedRowsById(matchedPks)
+      return
+    }
+
+    // 默认：token 作为主键值，类型与首行主键保持一致
+    const firstRow = host.rows[0]
+    const samplePkType = firstRow ? typeof host.getPrimaryKeyValue(firstRow) : 'string'
+    const ids: Array<string | number> = samplePkType === 'number'
+      ? tokens.map(s => { const n = Number(s); return Number.isFinite(n) ? n : s })
+      : tokens
+    this.setSelectedRowsById(ids)
+  }
+
+  /**
+   * 选中行的显示标签数组（供渲染 tag 使用）。
+   *
+   * 有 labelField 时取对应字段值；否则回退到主键字符串。
+   */
+  get labels(): string[] {
+    const host = this.host
+    if (!host.labelField) {
+      return host._selectedRowIds.map(id => String(id))
+    }
+    const field = host.labelField
+    const rowMap = new Map(host.rows.map(r => [host.getPrimaryKeyValue(r), r]))
+    return host._selectedRowIds.map(id => {
+      const row = rowMap.get(id)
+      if (!row) return String(id)
+      const v: unknown = (row as Record<string, unknown>)[field]
+      return v !== undefined && v !== null ? String(v) : String(id)
+    })
+  }
+
+  /**
+   * 当前行的显示标签（供单选 tag / 面包屑使用）。
+   *
+   * 有 labelField 时取 currentRow[labelField]；否则回退到主键字符串；无当前行返回 null。
+   */
+  get label(): string | null {
+    const host = this.host
+    if (host._currentRowId === null) return null
+    if (!host.labelField) return String(host._currentRowId)
+    const row = host.currentRow
+    if (!row) return String(host._currentRowId)
+    const v: unknown = (row as Record<string, unknown>)[host.labelField]
+    return v !== undefined && v !== null ? String(v) : String(host._currentRowId)
+  }
 }
