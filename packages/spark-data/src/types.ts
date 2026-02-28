@@ -196,9 +196,12 @@ export interface IViewMetadata {
    */
   labelField?: string
   /**
-   * 多选值序列化分隔符（默认 ','）。
-   * 用于 selectedValue getter（行对象 → 字符串）和 setSelectedValue（字符串 → 行对象）两端互转。
-   * 当主键值本身包含逗号时可改用其他分隔符，如 '|' 或 ';'。
+   * 值序列化分隔符（默认 ','）。
+   *
+   * - **非空字符串**（`','` / `'|'` / `';'` 等）：多选模式，selectedValue 以此分隔多个主键值
+   * - **空字符串 `''`**：单选模式，selectedValue 仅保留一个值，setSelectedValue 不拆分
+   *
+   * 通过 `isMultiSelect` getter 可读取当前模式。
    */
   selectionDelimiter?: string
   /**
