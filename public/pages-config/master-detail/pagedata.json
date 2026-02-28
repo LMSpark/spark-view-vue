@@ -4,10 +4,7 @@
   "dataset": {
     "tables": {
       "Users": {
-        "tableName": "Users",
         "componentID": "Users_main",
-        "currentRow": null,
-        "selectedRows": [],
         "columns": [
           {
             "name": "id",
@@ -44,10 +41,7 @@
         ]
       },
       "Orders": {
-        "tableName": "Orders",
         "componentID": "Orders_detail",
-        "currentRow": null,
-        "selectedRows": [],
         "columns": [
           {
             "name": "id",
@@ -69,21 +63,15 @@
             "type": "number",
             "label": "金额"
           }
-        ],
-        "rows": []
+        ]
       }
     },
     "relations": [
       {
         "parentTable": "Users",
         "childTable": "Orders",
-        "dependencyType": "currentRow",
+        "childField": "userId",
         "autoLoad": true,
-        "filterExpression": {
-          "field": "userId",
-          "op": "==",
-          "value": "$.parentRow.id"
-        },
         "cascadeDelete": true
       }
     ]

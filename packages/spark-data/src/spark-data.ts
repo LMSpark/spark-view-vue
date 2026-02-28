@@ -9,7 +9,7 @@ import { DataView } from './data-view'
 import { reactive } from 'vue'
 import { CrudService } from './crud-service'
 import { parseDataKey as _parseDataKey, resolveDataKey as _resolveDataKey, isDataKey as _isDataKey, buildDataKey as _buildDataKey, getViewKey as _getViewKey, resolveDataKeyBinding as _resolveDataKeyBinding } from './core/data-key'
-import type { DataColumn, CrudApi, DataRelation, FlatTreeNode, IDataRow } from './types'
+import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, IDataRow } from './types'
 
 // ===== SparkData 命名空间 API =====
 
@@ -25,10 +25,10 @@ export namespace SparkData {
   export function createDataSet(config: {
     dataSetName: string
     tables: Record<string, {
-      tableName: string
+      tableName?: string
       columns: DataColumn[]
       rows?: IDataRow[]
-      api?: CrudApi
+      api?: CrudApi | string | boolean
       autoCurrentFirst?: boolean
       autoSelectFirst?: boolean
     }>
@@ -90,11 +90,11 @@ export namespace SparkData {
   export function createDataTable(config: {
     tableName: string
     columns: DataColumn[]
-    api?: CrudApi
+    api?: CrudApi | string | boolean
   }): DataTable {
     const table = new DataTable(config.tableName, config.columns)
     if (config.api) {
-      table.api = config.api
+      table.setApi(config.api)
     }
     return table
   }
@@ -129,13 +129,43 @@ export namespace SparkData {
     selectionFollowsCurrent?: boolean
     /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
     treeConfig?: import('./types').TreeConfig
+    /** 初始化后自动加载（默认 false），见 {@link DataView.autoLoad} */
+    autoLoad?: boolean
   }): DataView {
     const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
     if (config.autoCurrentFirst !== undefined) view.autoCurrentFirst = config.autoCurrentFirst
     if (config.autoSelectFirst !== undefined) view.autoSelectFirst = config.autoSelectFirst
     if (config.selectionFollowsCurrent !== undefined) view.selectionFollowsCurrent = config.selectionFollowsCurrent
     if (config.treeConfig !== undefined) view.treeConfig = config.treeConfig
+    if (config.autoLoad !== undefined) view.autoLoad = config.autoLoad
     return view
+  }
+
+  // ===== 关系快捷创建 =====
+
+  /**
+   * 创建简写关系定义（规范化由 DataSet 构造函数自动完成）
+   *
+   * @example
+   * ```ts
+   * SparkData.createRelation('Users', 'Orders', 'userId')
+   * // → { parentTable: 'Users', childTable: 'Orders', childField: 'userId' }
+   * ```
+   */
+  export function createRelation(
+    parentTable: string,
+    childTable: string,
+    childField: string,
+    options?: { parentField?: string; dependencyType?: DependencyType; autoLoad?: boolean },
+  ): DataRelation {
+    return {
+      parentTable,
+      childTable,
+      childField,
+      ...(options?.parentField ? { parentField: options.parentField } : {}),
+      ...(options?.dependencyType ? { dependencyType: options.dependencyType } : {}),
+      ...(options?.autoLoad !== undefined ? { autoLoad: options.autoLoad } : {}),
+    }
   }
 
   // ===== DataKey 统一解析 =====

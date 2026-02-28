@@ -293,6 +293,12 @@ export class DataView implements IDataSource {
   /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
   treeConfig?: TreeConfig | undefined
 
+  /**
+   * 是否在 DataSet 初始化后自动加载数据（默认 false）。
+   * 渲染层在构建 DataSet 后检查此标志，对 default 视图自动调用 requestData()。
+   */
+  autoLoad: boolean = false
+
   /** 树视图模式，代理到 treeConfig.treeMode（默认 'flat'） */
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
   set treeMode(v: 'flat' | 'nested') { (this.treeConfig ??= {}).treeMode = v }
@@ -602,6 +608,9 @@ export class DataView implements IDataSource {
    * 3. 所有父满足后，按各关系的 filterExpression 组装查询参数
    *    → 调用 loadFromServer()（进入 Loading；成功置 Loaded，失败置 Failed）
    * 4. 子视图级联由 rowsChanged 事件驱动（子订阅父，父不知子），无需主动推
+   *
+   * @internal 外部应使用 `refresh()`（强制刷新）或 `loadFromServer()`（自定义参数）。
+   *           `requestData()` 为框架内部编排方法（级联、autoLoad 等场景使用）。
    */
   async requestData(): Promise<void> {
     if (this.requestState !== RequestState.Idle) return
@@ -1192,6 +1201,7 @@ export class DataView implements IDataSource {
     if (this.autoSelectFirst !== true) result.autoSelectFirst = this.autoSelectFirst
     if (this.selectionFollowsCurrent !== true) result.selectionFollowsCurrent = this.selectionFollowsCurrent
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
+    if (this.autoLoad !== false) result.autoLoad = this.autoLoad
     if (this.labelField !== undefined) result.labelField = this.labelField
     if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter
     return result
@@ -1207,6 +1217,7 @@ export class DataView implements IDataSource {
     if (data.autoSelectFirst !== undefined) v.autoSelectFirst = data.autoSelectFirst
     if (data.selectionFollowsCurrent !== undefined) v.selectionFollowsCurrent = data.selectionFollowsCurrent
     if (data.treeConfig !== undefined) v.treeConfig = data.treeConfig
+    if (data.autoLoad !== undefined) v.autoLoad = data.autoLoad
     if (data.labelField !== undefined) v.labelField = data.labelField
     if (data.selectionDelimiter !== undefined) v.selectionDelimiter = data.selectionDelimiter
     v.page = data.page ?? 1

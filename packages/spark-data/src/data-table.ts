@@ -22,7 +22,7 @@ import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationC
 import type { DataSet } from './dataset'
 import { DataValidator, createValidator, createSchema } from './validation'
 import { CrudService, createCrudService } from './crud-service'
-import { assertNoSeparator } from './core/utils'
+import { assertNoSeparator, expandApiShorthand } from './core/utils'
 
 /**
  * 创建响应式 DataView（统一 reactive 包装，所有视图创建走此入口）
@@ -158,12 +158,12 @@ export class DataTable {
   // ===== 配置管理 =====
 
   /**
-   * 设置 CRUD API 配置
-   * @param api - CRUD 端点配置
+   * 设置 CRUD API 配置（支持字符串简写和 `true` 约定模式）
+   * @param api - CRUD 端点配置（完整对象 / 字符串基础路径 / `true` 约定）
    * @remarks 配置变更时自动清除 CrudService 缓存，下次访问时重建
    */
-  setApi(api: CrudApi): void {
-    this.api = api
+  setApi(api: CrudApi | string | boolean): void {
+    this.api = expandApiShorthand(api, this.tableName)
     this._crudService = undefined
   }
 
@@ -243,7 +243,8 @@ export class DataTable {
    */
   static fromTableData(data: ITableMetadata): DataTable {
     const t = new DataTable(data.tableName, data.columns ?? [])
-    if (data.api !== undefined) t.api = data.api
+    // P2: API 简写展开（字符串 / true → CrudApi 对象）
+    if (data.api !== undefined) t.api = expandApiShorthand(data.api, data.tableName)
 
     const def = t.getOrCreateView('default')
     if (data.rows) def.rows = [...data.rows]
@@ -256,6 +257,7 @@ export class DataTable {
     if (vc.autoCurrentFirst !== undefined) def.autoCurrentFirst = vc.autoCurrentFirst
     if (vc.autoSelectFirst !== undefined) def.autoSelectFirst = vc.autoSelectFirst
     if (vc.treeConfig !== undefined) def.treeConfig = vc.treeConfig
+    if (vc.autoLoad !== undefined) def.autoLoad = vc.autoLoad
     def.page = vc.page ?? 1
     def.pageSize = vc.pageSize ?? 20
 
