@@ -31,12 +31,15 @@ function toKebabCase(str: string): string {
 }
 
 /**
- * 将 API 简写形式展开为完整的 CrudApi 对象（含 Tree 端点）。
- *
- * 支持三种形式：
- * - **字符串** `"/api/users"` → RESTful CRUD + Tree 端点
- * - **`true`** → 从 tableName 按约定生成路径 `/api/${kebab(tableName)}`
- * - **CrudApi 对象** → 原样返回
+ * tableName → 约定 API 基础路径（`/api/${kebab-case}`）
+ * @internal
+ */
+export function toApiBasePath(tableName: string): string {
+  return `/api/${toKebabCase(tableName)}`
+}
+
+/**
+ * 从基础路径展开为完整的 CrudApi 对象（CRUD + Tree 端点）。
  *
  * 生成的端点布局（以 `/api/users` 为例）：
  * ```
@@ -56,19 +59,11 @@ function toKebabCase(str: string): string {
  *   nestedSearch GET  /api/users/tree/nested/search
  * ```
  *
- * @param api  配置中的 api 字段值
- * @param tableName  表名（用于 `api: true` 约定路径生成）
- * @returns 完整的 CrudApi 对象，或 undefined（api 为 falsy 时）
+ * @param base  RESTful 基础路径，如 `"/api/users"`
+ * @returns 完整的 CrudApi 对象
  * @internal
  */
-export function expandApiShorthand(
-  api: CrudApi | string | boolean | undefined,
-  tableName: string,
-): CrudApi | undefined {
-  if (!api) return undefined
-  if (typeof api === 'object') return api
-
-  const base = typeof api === 'string' ? api : `/api/${toKebabCase(tableName)}`
+export function expandApiShorthand(base: string): CrudApi {
   const tree = `${base}/tree`
   return {
     // CRUD
@@ -86,6 +81,28 @@ export function expandApiShorthand(
     nested:       { url: `${tree}/nested`, method: 'GET' },
     nestedSearch: { url: `${tree}/nested/search`, method: 'GET' },
   }
+}
+
+/**
+ * 解析 api 配置字段为 CrudApi 对象。
+ *
+ * 支持三种形式：
+ * - **CrudApi 对象** → 原样返回
+ * - **字符串** `"/api/users"` → {@link expandApiShorthand} 展开
+ * - **`true`** → 从 tableName 按约定生成路径后展开
+ *
+ * @param api  配置中的 api 字段值
+ * @param tableName  表名（仅 `api: true` 时使用）
+ * @returns CrudApi 对象，或 undefined（api 为 falsy 时）
+ * @internal
+ */
+export function resolveApi(
+  api: CrudApi | string | boolean | undefined,
+  tableName: string,
+): CrudApi | undefined {
+  if (!api) return undefined
+  if (typeof api === 'object') return api
+  return expandApiShorthand(typeof api === 'string' ? api : toApiBasePath(tableName))
 }
 
 /**
