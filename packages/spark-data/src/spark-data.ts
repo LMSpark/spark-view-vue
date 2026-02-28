@@ -131,6 +131,8 @@ export namespace SparkData {
     treeConfig?: import('./types').TreeConfig
     /** 初始化后自动加载（默认 false），见 {@link DataView.autoLoad} */
     autoLoad?: boolean
+    /** 设置分页/排序/过滤后自动刷新（默认 false），见 {@link DataView.autoRefresh} */
+    autoRefresh?: boolean
   }): DataView {
     const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
     if (config.autoCurrentFirst !== undefined) view.autoCurrentFirst = config.autoCurrentFirst
@@ -138,6 +140,7 @@ export namespace SparkData {
     if (config.selectionFollowsCurrent !== undefined) view.selectionFollowsCurrent = config.selectionFollowsCurrent
     if (config.treeConfig !== undefined) view.treeConfig = config.treeConfig
     if (config.autoLoad !== undefined) view.autoLoad = config.autoLoad
+    if (config.autoRefresh !== undefined) view.autoRefresh = config.autoRefresh
     return view
   }
 

@@ -299,6 +299,15 @@ export class DataView implements IDataSource {
    */
   autoLoad: boolean = false
 
+  /**
+   * 设置分页、排序、过滤等参数后是否自动刷新数据（默认 false）。
+   *
+   * 设为 `true` 时，调用 `setPage()` / `setPageSize()` / `setSort()` / `setFilter()`
+   * 会在修改参数后自动调用 `refresh()`，消费层无需手动触发刷新。
+   * 设为 `false` 时，上述方法仅修改参数，消费层需手动调用 `refresh()`。
+   */
+  autoRefresh: boolean = false
+
   /** 树视图模式，代理到 treeConfig.treeMode（默认 'flat'） */
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
   set treeMode(v: 'flat' | 'nested') { (this.treeConfig ??= {}).treeMode = v }
@@ -1037,37 +1046,45 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /**
-   * 设置当前页并重新请求数据
+   * 设置当前页（`autoRefresh=true` 时自动刷新）
    */
   async setPage(page: number): Promise<void> {
     this.page = page
-    await this.refresh()
+    if (this.autoRefresh) await this.refresh()
   }
 
   /**
-   * 设置每页条数并重新请求数据（页码重置为 1）
+   * 设置每页条数并重置页码为 1（`autoRefresh=true` 时自动刷新）
    */
   async setPageSize(pageSize: number): Promise<void> {
     this.pageSize = pageSize
     this.page = 1
-    await this.refresh()
+    if (this.autoRefresh) await this.refresh()
   }
 
   /**
-   * 设置排序表达式并重新请求数据
+   * 设置排序表达式（`autoRefresh=true` 时自动刷新）
    */
   async setSort(sort: SortExpression | undefined): Promise<void> {
-    this.sortExpression = sort
-    await this.refresh()
+    if (sort === undefined) {
+      delete this.sortExpression
+    } else {
+      this.sortExpression = sort
+    }
+    if (this.autoRefresh) await this.refresh()
   }
 
   /**
-   * 设置过滤表达式并重新请求数据（页码重置为 1）
+   * 设置过滤表达式并重置页码为 1（`autoRefresh=true` 时自动刷新）
    */
   async setFilter(filter: FilterExpression | undefined): Promise<void> {
-    this.filterExpression = filter
+    if (filter === undefined) {
+      delete this.filterExpression
+    } else {
+      this.filterExpression = filter
+    }
     this.page = 1
-    await this.refresh()
+    if (this.autoRefresh) await this.refresh()
   }
 
   // ─────────────────────────────────────────────
@@ -1202,6 +1219,7 @@ export class DataView implements IDataSource {
     if (this.selectionFollowsCurrent !== true) result.selectionFollowsCurrent = this.selectionFollowsCurrent
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     if (this.autoLoad !== false) result.autoLoad = this.autoLoad
+    if (this.autoRefresh !== false) result.autoRefresh = this.autoRefresh
     if (this.labelField !== undefined) result.labelField = this.labelField
     if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter
     return result
@@ -1218,6 +1236,7 @@ export class DataView implements IDataSource {
     if (data.selectionFollowsCurrent !== undefined) v.selectionFollowsCurrent = data.selectionFollowsCurrent
     if (data.treeConfig !== undefined) v.treeConfig = data.treeConfig
     if (data.autoLoad !== undefined) v.autoLoad = data.autoLoad
+    if (data.autoRefresh !== undefined) v.autoRefresh = data.autoRefresh
     if (data.labelField !== undefined) v.labelField = data.labelField
     if (data.selectionDelimiter !== undefined) v.selectionDelimiter = data.selectionDelimiter
     v.page = data.page ?? 1
