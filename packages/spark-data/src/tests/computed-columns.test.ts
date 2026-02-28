@@ -937,3 +937,133 @@ describe('列配置 — 边界条件', () => {
     expect(f(view.rows[0], 'sum')).toBe(10)
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 12. 字符串内函数定义（表达式支持任意 JS 逻辑）
+// ─────────────────────────────────────────────────────────────────────────────
+describe('列配置 — 字符串内函数定义', () => {
+  it('基础函数定义 + 调用', () => {
+    const view = makeView(
+      [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+        { name: 'a', type: 'number' },
+        { name: 'b', type: 'number' },
+        { name: 'sum', type: 'number', computeExpression: 'function add(x,y){ return x+y; }; return add(a, b);' },
+      ],
+      [{ id: 1, a: 5, b: 6 }],
+    )
+    expect(f(view.rows[0], 'sum')).toBe(11)
+  })
+
+  it('工具函数 + 多次调用', () => {
+    const view = makeView(
+      [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+        { name: 'price', type: 'number' },
+        { name: 'qty', type: 'number' },
+        {
+          name: 'formatted', type: 'string',
+          computeExpression: `
+            function fmt(n) { return '￥' + n.toFixed(2); }
+            var total = price * qty;
+            return fmt(total);
+          `,
+        },
+      ],
+      [{ id: 1, price: 99.5, qty: 3 }],
+    )
+    expect(f(view.rows[0], 'formatted')).toBe('￥298.50')
+  })
+
+  it('递归函数（斐波那契）', () => {
+    const view = makeView(
+      [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+        { name: 'n', type: 'number' },
+        {
+          name: 'fib', type: 'number',
+          computeExpression: `
+            function fib(x) {
+              if (x <= 1) return x;
+              return fib(x - 1) + fib(x - 2);
+            }
+            return fib(n);
+          `,
+        },
+      ],
+      [{ id: 1, n: 10 }, { id: 2, n: 0 }, { id: 3, n: 6 }],
+    )
+    expect(f(view.rows[0], 'fib')).toBe(55)
+    expect(f(view.rows[1], 'fib')).toBe(0)
+    expect(f(view.rows[2], 'fib')).toBe(8)
+  })
+
+  it('函数引用 ctx 上下文', () => {
+    const view = makeView(
+      [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+        { name: 'amount', type: 'number' },
+        {
+          name: 'tax', type: 'number',
+          computeExpression: `
+            function calcTax(val, rate) { return val * rate; }
+            return calcTax(amount, ctx.taxRate);
+          `,
+        },
+      ],
+      [{ id: 1, amount: 1000 }],
+    )
+    view.setComputedContext({ taxRate: 0.13 })
+    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(130)
+  })
+
+  it('数组处理函数', () => {
+    const view = makeView(
+      [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+        { name: 'items', type: 'string' },
+        {
+          name: 'parsed', type: 'string',
+          computeExpression: `
+            function parse(str) {
+              var arr = str.split(',');
+              return arr.map(function(s){ return s.trim().toUpperCase(); }).join(' | ');
+            }
+            return parse(items);
+          `,
+        },
+      ],
+      [{ id: 1, items: 'apple, banana, cherry' }],
+    )
+    expect(f(view.rows[0], 'parsed')).toBe('APPLE | BANANA | CHERRY')
+  })
+
+  it('多个函数定义协作', () => {
+    const view = makeView(
+      [
+        { name: 'id', type: 'number', isPrimaryKey: true },
+        { name: 'w', type: 'number' },
+        { name: 'h', type: 'number' },
+        {
+          name: 'bmi', type: 'string',
+          computeExpression: `
+            function calcBMI(weight, height) { return weight / (height * height); }
+            function classify(bmi) {
+              if (bmi < 18.5) return '偏瘦';
+              if (bmi < 24) return '正常';
+              if (bmi < 28) return '偏胖';
+              return '肥胖';
+            }
+            return classify(calcBMI(w, h));
+          `,
+        },
+      ],
+      [
+        { id: 1, w: 65, h: 1.75 },  // BMI ≈ 21.2 → 正常
+        { id: 2, w: 90, h: 1.70 },  // BMI ≈ 31.1 → 肥胖
+      ],
+    )
+    expect(f(view.rows[0], 'bmi')).toBe('正常')
+    expect(f(view.rows[1], 'bmi')).toBe('肥胖')
+  })
+})
