@@ -12,15 +12,8 @@
 
 **原有机制的缺陷**:
 ```typescript
-// ❌ 旧的事件定义 - 没有来源标识
-interface ViewStateEvent {
-  tableName: string
-  viewId: string
-  changeType: 'currentRow' | 'selectedRows' | ...
-  row?: IDataRow | null
-  rows?: IDataRow[]
-  // ⚠️ 无法识别谁触发了这个事件
-}
+// ❌ 旧的统一事件定义 - 需要按 changeType switch 分派
+// 已移除，改为独立事件通道
 ```
 
 **导致的问题**:
@@ -33,24 +26,18 @@ interface ViewStateEvent {
 
 **新的事件定义**:
 ```typescript
-// ✅ 新的事件类型
-export type EventSource = 
-  | 'ui'        // UI 组件触发（用户交互）
-  | 'program'   // 程序代码直接调用
-  | 'sync'      // DataSet→UI 同步触发
-  | 'cascade'   // 级联更新触发
-  | 'auto'      // 自动触发（如 autoCurrentFirst）
-  | 'crud'      // CRUD 操作触发
-
-// ✅ 状态快照模式 — 每个事件都携带 currentRow + selectedRows 快照
-interface ViewStateEvent {
-  tableName: string
-  viewId: string
-  changeType: ViewStateChangeType
-  currentRow: IDataRow | null       // 当前行快照（始终可用）
-  selectedRows: IDataRow[]          // 选中行快照（始终可用）
-  originatorId?: string             // 发起方实例 ID（防循环同步）
+// ✅ 新的独立事件模型（DataViewEventMap）
+// 每种状态变化使用独立事件通道，无需 switch 分派
+interface DataViewEventMap {
+  currentRowChanged: [currentRow: IDataRow | null, originatorId?: string]
+  selectedRowsChanged: [selectedRows: IDataRow[], originatorId?: string]
+  rowsChanged: []
+  cleared: []
+  requestStateChanged: [requestState: RequestState]
+  mutatingChanged: [mutating: boolean]
 }
+
+// originatorId 用于防循环同步（发起方实例 ID）
 ```
 
 ---
@@ -71,19 +58,29 @@ interface ViewStateEvent {
  */
 export type EventSource = 'ui' | 'program' | 'sync' | 'cascade' | 'auto' | 'crud'
 
-/** 视图状态变化类型 */
-export type ViewStateChangeType =
-  | 'currentRow' | 'selectedRows' | 'rows'
-  | 'cleared' | 'requestState' | 'mutating'
+/**
+ * DataView 独立事件映射（取代旧的统一 ViewStateEvent）
+ * 每种状态变化对应独立事件通道，无需 changeType + switch 分派
+ */
+interface DataViewEventMap {
+  currentRowChanged: [currentRow: IDataRow | null, originatorId?: string]
+  selectedRowsChanged: [selectedRows: IDataRow[], originatorId?: string]
+  rowsChanged: []           // 16ms 防抖
+  cleared: []
+  requestStateChanged: [requestState: RequestState]
+  mutatingChanged: [mutating: boolean]
+}
 
-/** 状态快照模式：每个事件都携带 currentRow + selectedRows，无需按 changeType 收窄 */
-export interface ViewStateEvent {
-  tableName: string
-  viewId: string
-  changeType: ViewStateChangeType
-  currentRow: IDataRow | null
-  selectedRows: IDataRow[]
-  originatorId?: string
+/**
+ * DataSet 级订阅处理器映射（用于 onAnyViewChange）
+ */
+export interface ViewChangeHandlers {
+  currentRowChanged?: (tableName: string, viewId: string, currentRow: IDataRow | null, originatorId?: string) => void
+  selectedRowsChanged?: (tableName: string, viewId: string, selectedRows: IDataRow[], originatorId?: string) => void
+  rowsChanged?: (tableName: string, viewId: string) => void
+  cleared?: (tableName: string, viewId: string) => void
+  requestStateChanged?: (tableName: string, viewId: string, requestState: RequestState) => void
+  mutatingChanged?: (tableName: string, viewId: string, mutating: boolean) => void
 }
 ```
 
@@ -176,25 +173,21 @@ export function createTableSyncHandlers(...): TableSyncHandlers {
 
 ```typescript
 if (dataSet.value) {
-  cleanupSync = subscribeViewStateChanges(
-    dataSet.value,
-    (tableName, viewId, event) => {
-      // ✅ 检查事件来源，跳过 UI 触发的事件（已经是最新状态）
-      if (event.source === 'ui') {
-        pageLogger.debug('⏭️ [防循环] 跳过 UI 触发的事件', { 
-          tableName, viewId, changeType: event.changeType 
-        })
-        return
-      }
-      
-      // 其他来源的事件需要同步到 UI
-      if (event.changeType === 'currentRow') {
-        syncCurrentRowToTable(tableName, viewId, event.row ?? null, formApi.value)
-      } else if (event.changeType === 'selectedRows') {
-        syncSelectedRowsToTable(tableName, viewId, event.rows ?? [], formApi.value)
-      }
-    }
-  )
+  cleanupSync = dataSet.value.onAnyViewChange({
+    currentRowChanged(tableName, viewId, currentRow, originatorId) {
+      // ✅ 跳过本实例触发的事件（防循环同步）
+      if (originatorId === instanceId) return
+      syncCurrentRowToTable(tableName, viewId, currentRow, formApi.value)
+    },
+    selectedRowsChanged(tableName, viewId, selectedRows, originatorId) {
+      if (originatorId === instanceId) return
+      syncSelectedRowsToTable(tableName, viewId, selectedRows, formApi.value)
+    },
+    cleared(tableName, viewId) {
+      syncCurrentRowToTable(tableName, viewId, null, formApi.value)
+      syncSelectedRowsToTable(tableName, viewId, [], formApi.value)
+    },
+  })
 }
 ```
 
@@ -218,8 +211,8 @@ if (this.autoSelectFirst !== false && firstRow) {
 ```typescript
 export type {
   // ... 其他类型 ...
-  ViewStateEvent,
-  EventSource,  // ✅ 新增导出
+  ViewChangeHandlers,  // ✅ DataSet 级订阅处理器映射
+  EventSource,         // ✅ 事件来源标识
   // ...
 } from './types'
 ```
@@ -239,13 +232,13 @@ bindRules: onCurrentChange
   ↓
 sync.onCurrentChange(A)
   ↓
-DataView.setCurrentRow(A, { source: 'ui' })  ← ✅ 标记来源
+DataView.setCurrentRow(A, originatorId)  ← ✅ 携带实例 ID
   ↓
-emit('stateChanged', { source: 'ui' })
+emit('currentRowChanged', A, originatorId)
   ↓
-useRuleBinding 订阅回调
+useRuleBinding onAnyViewChange.currentRowChanged 回调
   ↓
-检查 event.source === 'ui'  ← ✅ 跳过同步
+检查 originatorId === instanceId  ← ✅ 跳过本实例
   ↓
 ✅ 不会触发 DataSet→UI 同步，避免循环
 ```
@@ -255,13 +248,13 @@ useRuleBinding 订阅回调
 ```
 __init__ 中调用
   ↓
-DataView.setCurrentRow(row, { source: 'program' })  ← ✅ 标记来源
+DataView.setCurrentRow(row)  ← ✅ 无 originatorId
   ↓
-emit('stateChanged', { source: 'program' })
+emit('currentRowChanged', row, undefined)
   ↓
-useRuleBinding 订阅回调
+useRuleBinding onAnyViewChange.currentRowChanged 回调
   ↓
-检查 event.source !== 'ui'  ← ✅ 需要同步
+检查 originatorId !== instanceId  ← ✅ 需要同步
   ↓
 syncCurrentRowToTable(row)
   ↓
@@ -281,13 +274,13 @@ loadFromServer 成功
   ↓
 autoCurrentFirst 处理
   ↓
-DataView.setCurrentRow(row, { source: 'auto' })  ← ✅ 标记来源
+DataView.setCurrentRow(row)  ← ✅ 内部调用，无 originatorId
   ↓
-emit('stateChanged', { source: 'auto' })
+emit('currentRowChanged', row, undefined)
   ↓
-useRuleBinding 订阅回调
+useRuleBinding onAnyViewChange.currentRowChanged 回调
   ↓
-检查 event.source !== 'ui'  ← ✅ 需要同步
+检查 originatorId !== instanceId  ← ✅ 需要同步
   ↓
 syncCurrentRowToTable(row)
   ↓
@@ -298,18 +291,20 @@ el-table 高亮首行，用户可见
 
 ## 🛡️ 防循环机制（双重保障）
 
-### 主要机制: event.source 检查
+### 主要机制: originatorId 检查
 
 ```typescript
-// useRuleBinding.ts - 订阅 DataSet 事件
-subscribeViewStateChanges(dataSet, (tableName, viewId, event) => {
-  // ✅ 主要防护：检查事件来源
-  if (event.source === 'ui') {
-    return  // UI 触发的事件不需要反向同步
-  }
-  
-  // 其他来源需要同步到 UI
-  syncCurrentRowToTable(...)
+// useRuleBinding.ts - 订阅 DataSet 事件（handler map 模式）
+dataSet.onAnyViewChange({
+  currentRowChanged(tableName, viewId, currentRow, originatorId) {
+    // ✅ 主要防护：检查发起方 ID
+    if (originatorId === instanceId) return  // 本实例触发，跳过
+    syncCurrentRowToTable(tableName, viewId, currentRow, formApi)
+  },
+  selectedRowsChanged(tableName, viewId, selectedRows, originatorId) {
+    if (originatorId === instanceId) return
+    syncSelectedRowsToTable(tableName, viewId, selectedRows, formApi)
+  },
 })
 ```
 
@@ -410,27 +405,30 @@ if (event.source === 'ui') return  // 准确判断
 ### 1. 单元测试
 
 ```typescript
-describe('事件来源标识', () => {
-  it('UI 触发的事件应标记 source=ui', () => {
+describe('独立事件与 originatorId', () => {
+  it('setCurrentRow 应触发 currentRowChanged 事件', () => {
     const view = createDataView()
-    const spy = vi.spyOn(view.events, 'emit')
+    const spy = vi.fn()
+    view.events.on('currentRowChanged', spy)
     
-    // 模拟 UI 事件
-    sync.onCurrentChange(row)
+    view.setCurrentRow(row)
     
-    expect(spy).toHaveBeenCalledWith('stateChanged', 
-      expect.objectContaining({ source: 'ui' })
-    )
+    expect(spy).toHaveBeenCalledWith(row, undefined)
   })
   
-  it('source=ui 的事件应跳过 UI 同步', () => {
-    // 订阅事件
-    subscribeViewStateChanges(dataSet, callback)
+  it('originatorId 相同时应跳过 UI 同步', () => {
+    // 订阅事件（handler map 模式）
+    dataSet.onAnyViewChange({
+      currentRowChanged(tn, vid, cr, originatorId) {
+        if (originatorId === instanceId) return
+        syncCurrentRowToTable(tn, vid, cr, formApi)
+      },
+    })
     
-    // 触发 UI 事件
-    view.setCurrentRow(row, { source: 'ui' })
+    // 触发带 originatorId 的事件
+    view.setCurrentRow(row, instanceId)
     
-    // callback 应该被调用，但内部跳过同步
+    // 同一 instanceId → 应跳过同步
     expect(syncCurrentRowToTable).not.toHaveBeenCalled()
   })
 })
@@ -449,10 +447,6 @@ describe('防循环完整流程', () => {
     
     // DataView.setCurrentRow 应该只调用一次
     expect(setCurrentRowSpy).toHaveBeenCalledTimes(1)
-    expect(setCurrentRowSpy).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ source: 'ui' })
-    )
   })
 })
 ```

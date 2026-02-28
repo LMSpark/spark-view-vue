@@ -56,8 +56,7 @@ export type {
   CrudApi,
   DataColumn,
   DataRelation,
-  ViewStateEvent,
-  ViewStateChangeType,
+  ViewChangeHandlers,
   DependencyType
 } from './types'
 

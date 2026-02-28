@@ -5,7 +5,7 @@
  * 遵循 ISP 原则：Delegate 只依赖自己需要的方法。
  */
 
-import type { IDataRow, IDataSet, CrudResult, CrudOperationConfig, ViewStateChangeType } from '../types'
+import type { IDataRow, IDataSet, CrudResult, CrudOperationConfig } from '../types'
 import type { CrudService } from '../crud-service'
 import type { DataValidator } from '../validation'
 
@@ -13,13 +13,17 @@ import type { DataValidator } from '../validation'
 // 共享类型
 // ─────────────────────────────────────────────
 
-/**
- * Delegate 向宿主发射 stateChanged 事件的回调签名
- *
- * 宿主（DataView）自动从当前状态构建快照，
- * Delegate 只需传入 changeType 和可选的 originatorId。
- */
-export type EmitStateChangedFn = (changeType: ViewStateChangeType, originatorId?: string) => void
+/** SelectionDelegate 向宿主发射 currentRow 变更的回调签名 */
+export type EmitCurrentRowChangedFn = (originatorId?: string) => void
+
+/** SelectionDelegate 向宿主发射 selectedRows 变更的回调签名 */
+export type EmitSelectedRowsChangedFn = (originatorId?: string) => void
+
+/** LocalMutationDelegate 向宿主发射 rows 变更的回调签名 */
+export type EmitRowsChangedFn = () => void
+
+/** CascadeDelegate 向宿主发射 cleared 事件的回调签名 */
+export type EmitClearedFn = () => void
 
 /**
  * CrudDelegate 向宿主汇报 mutating 状态变化的回调签名

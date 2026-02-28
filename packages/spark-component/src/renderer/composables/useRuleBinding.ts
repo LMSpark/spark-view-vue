@@ -155,19 +155,22 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
     pageLogger.debug('Rules 重新绑定', { rulesCount: originalRules.value.length })
 
     // injectTableEvents 已在上方 bindDataToRules 中为每个 el-table 创建 DataView；
-    // 现在订阅所有视图的 stateChanged，驱动 DataSet → el-table UI 方向。
+    // 现在订阅所有视图的独立事件，驱动 DataSet → el-table UI 方向。
     if (dataSet.value) {
       // 订阅此 DataSet 内所有视图的状态变化，驱动 el-table UI 同步（DataSet → UI 方向）
-      // source='ui' 表示事件源自 UI 操作，无需反向同步回 UI（防止死循环）
-      cleanupSync = dataSet.value.onAnyViewChange((evt) => {
-        // 跳过由本实例自身发起的事件（无论 source 类型），避免 UI→DataSet→UI 回环
-        if (evt.originatorId === instanceId) return
-        if (evt.changeType === 'currentRow' || evt.changeType === 'cleared') {
-          syncCurrentRowToTable(evt.tableName, evt.viewId, evt.currentRow, formApi.value)
-        }
-        if (evt.changeType === 'selectedRows' || evt.changeType === 'cleared') {
-          syncSelectedRowsToTable(evt.tableName, evt.viewId, evt.selectedRows, formApi.value)
-        }
+      cleanupSync = dataSet.value.onAnyViewChange({
+        currentRowChanged(tableName, viewId, currentRow, originatorId) {
+          if (originatorId === instanceId) return
+          syncCurrentRowToTable(tableName, viewId, currentRow, formApi.value)
+        },
+        selectedRowsChanged(tableName, viewId, selectedRows, originatorId) {
+          if (originatorId === instanceId) return
+          syncSelectedRowsToTable(tableName, viewId, selectedRows, formApi.value)
+        },
+        cleared(tableName, viewId) {
+          syncCurrentRowToTable(tableName, viewId, null, formApi.value)
+          syncSelectedRowsToTable(tableName, viewId, [], formApi.value)
+        },
       })
     }
   }

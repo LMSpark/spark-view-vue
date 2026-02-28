@@ -48,9 +48,9 @@ export interface ICapabilityContext {
  * emitter.on('click', (x, y) => { ... })
  *
  * // 带事件映射——handler 参数自动推断
- * type Events = { stateChanged: [ViewStateEvent] }
+ * type Events = { rowsChanged: [], currentRowChanged: [row: IDataRow | null] }
  * const emitter: IEventEmitter<Events> = createEventEmitter()
- * emitter.on('stateChanged', (evt) => { // evt: ViewStateEvent })
+ * emitter.on('currentRowChanged', (row) => { // row: IDataRow | null })
  * ```
  */
 // Note: any[] 在此处是合理的泛型约束

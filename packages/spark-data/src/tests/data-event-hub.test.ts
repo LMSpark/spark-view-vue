@@ -1,8 +1,8 @@
 /**
- * 能力体系通信测试（DataView 事件 + subscribe 模式）
+ * 能力体系通信测试（DataView 独立事件 + subscribe 模式）
  *
  * 覆盖：
- * - DataView.events.on('stateChanged') 状态监听
+ * - DataView.events.on('currentRowChanged') / ('selectedRowsChanged') / ('cleared') 状态监听
  * - DataView.setCurrentRow / setSelectedRows / clearAll 触发状态变更
  * - events.on / events.off 事件订阅
  * - TreeManager 缓存操作（无事件）
@@ -10,12 +10,11 @@
  * 【设计原则】DataView 是与 UI 交互的唯一通道。
  * 所有 UI 状态操作（setCurrentRow, setSelectedRows, clearAll）
  * 必须通过 DataView，不通过 DataTable。
- * 状态监听直接订阅 DataView.events，不经过 DataSet。
+ * 状态监听直接订阅 DataView.events 的独立事件，不经过 DataSet。
  */
 
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData, DataTable } from '@spark-view/spark-data'
-import type { ViewStateEvent } from '@spark-view/spark-data'
 
 
 // ==================== 工具函数 ====================
@@ -62,87 +61,67 @@ function createTestDataSet() {
   })
 }
 
-// ==================== DataView.events stateChanged 测试 ====================
+// ==================== DataView 独立事件测试 ====================
 
-describe('DataView.events.on stateChanged（视图状态监听）', () => {
-  it('setCurrentRow 触发 currentRow 状态变更', () => {
-    const ds = createTestDataSet()
-    const handler = vi.fn<(evt: ViewStateEvent) => void>()
-
-    const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', handler)
-    deptView.setCurrentRow(deptView.rows[0]!)
-
-    // selectionFollowsCurrent=true（默认）→ setCurrentRow 触发 currentRow + selectedRows 共 2 事件
-    expect(handler).toHaveBeenCalledTimes(2)
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tableName: 'Departments',
-        viewId: 'default',
-        changeType: 'currentRow',
-        currentRow: deptView.rows[0]
-      })
-    )
-  })
-
-  it('setCurrentRow(null) 触发 currentRow 状态变更', () => {
-    const ds = createTestDataSet()
-    const deptView = ds.getView('Departments')!
-    deptView.setCurrentRow(deptView.rows[0]!)
-
-    const handler = vi.fn<(evt: ViewStateEvent) => void>()
-    deptView.events.on('stateChanged', handler)
-    deptView.setCurrentRow(null)
-
-    expect(handler).toHaveBeenCalled()
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({ changeType: 'currentRow', currentRow: null })
-    )
-  })
-
-  it('setSelectedRows 触发 selectedRows 状态变更', () => {
-    const ds = createTestDataSet()
-    const handler = vi.fn<(evt: ViewStateEvent) => void>()
-
-    const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', handler)
-    deptView.setSelectedRows([deptView.rows[0]!, deptView.rows[1]!])
-
-    expect(handler).toHaveBeenCalled()
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tableName: 'Departments',
-        viewId: 'default',
-        changeType: 'selectedRows'
-      })
-    )
-  })
-
-  it('clearAll 触发 cleared 状态变更', () => {
-    const ds = createTestDataSet()
-    const deptView = ds.getView('Departments')!
-    deptView.setCurrentRow(deptView.rows[0]!)
-
-    const handler = vi.fn<(evt: ViewStateEvent) => void>()
-    deptView.events.on('stateChanged', handler)
-    deptView.clearAll()
-
-    expect(handler).toHaveBeenCalled()
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tableName: 'Departments',
-        viewId: 'default',
-        changeType: 'cleared'
-      })
-    )
-  })
-
-  it('setCurrentRow 同一行重复设置不触发状态变更（去重）', () => {
+describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged / cleared）', () => {
+  it('setCurrentRow 触发 currentRowChanged 事件', () => {
     const ds = createTestDataSet()
     const handler = vi.fn()
 
     const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', handler)
+    deptView.events.on('currentRowChanged', handler)
+    deptView.setCurrentRow(deptView.rows[0]!)
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(handler).toHaveBeenCalledWith(deptView.rows[0], undefined)
+  })
+
+  it('setCurrentRow(null) 触发 currentRowChanged 事件', () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    deptView.setCurrentRow(deptView.rows[0]!)
+
+    const handler = vi.fn()
+    deptView.events.on('currentRowChanged', handler)
+    deptView.setCurrentRow(null)
+
+    expect(handler).toHaveBeenCalled()
+    expect(handler).toHaveBeenCalledWith(null, undefined)
+  })
+
+  it('setSelectedRows 触发 selectedRowsChanged 事件', () => {
+    const ds = createTestDataSet()
+    const handler = vi.fn()
+
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('selectedRowsChanged', handler)
+    deptView.setSelectedRows([deptView.rows[0]!, deptView.rows[1]!])
+
+    expect(handler).toHaveBeenCalled()
+    expect(handler).toHaveBeenCalledWith(
+      [deptView.rows[0]!, deptView.rows[1]!],
+      undefined
+    )
+  })
+
+  it('clearAll 触发 cleared 事件', () => {
+    const ds = createTestDataSet()
+    const deptView = ds.getView('Departments')!
+    deptView.setCurrentRow(deptView.rows[0]!)
+
+    const handler = vi.fn()
+    deptView.events.on('cleared', handler)
+    deptView.clearAll()
+
+    expect(handler).toHaveBeenCalled()
+  })
+
+  it('setCurrentRow 同一行重复设置不触发事件（去重）', () => {
+    const ds = createTestDataSet()
+    const handler = vi.fn()
+
+    const deptView = ds.getView('Departments')!
+    deptView.events.on('currentRowChanged', handler)
 
     const row = deptView.rows[0]!
     deptView.setCurrentRow(row)
@@ -153,12 +132,12 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
     expect(handler).toHaveBeenCalledTimes(countAfterFirst)
   })
 
-  it('setSelectedRows 同样内容重复设置不触发状态变更（去重）', () => {
+  it('setSelectedRows 同样内容重复设置不触发事件（去重）', () => {
     const ds = createTestDataSet()
     const handler = vi.fn()
 
     const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', handler)
+    deptView.events.on('selectedRowsChanged', handler)
 
     const rows = [deptView.rows[0]!, deptView.rows[1]!]
     deptView.setSelectedRows(rows)
@@ -169,19 +148,22 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
     expect(handler.mock.calls.length).toBe(countAfterFirst)
   })
 
-  it('每次视图状态变化都触发 stateChanged', () => {
+  it('每次视图状态变化都触发对应的独立事件', () => {
     const ds = createTestDataSet()
-    const handler = vi.fn()
+    const currentRowHandler = vi.fn()
+    const selectedRowsHandler = vi.fn()
 
     const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', handler)
+    deptView.events.on('currentRowChanged', currentRowHandler)
+    deptView.events.on('selectedRowsChanged', selectedRowsHandler)
 
-    // selectionFollowsCurrent=true → setCurrentRow 触发 currentRow + selectedRows (2)
-    // setSelectedRows 触发 selectedRows (1)
+    // selectionFollowsCurrent=true → setCurrentRow 触发 currentRowChanged (1) + selectedRowsChanged (1)
+    // setSelectedRows 触发 selectedRowsChanged (1)
     deptView.setCurrentRow(deptView.rows[0]!)
     deptView.setSelectedRows([deptView.rows[1]!])
 
-    expect(handler).toHaveBeenCalledTimes(3)
+    expect(currentRowHandler).toHaveBeenCalledTimes(1)
+    expect(selectedRowsHandler).toHaveBeenCalledTimes(2) // 1 from follow + 1 from setSelectedRows
   })
 
   it('events.off 取消监听', () => {
@@ -189,14 +171,13 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
     const handler = vi.fn()
 
     const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', handler)
+    deptView.events.on('currentRowChanged', handler)
 
-    // selectionFollowsCurrent=true → 2 事件 (currentRow + selectedRows)
     deptView.setCurrentRow(deptView.rows[0]!)
     const countBeforeOff = handler.mock.calls.length
     expect(countBeforeOff).toBeGreaterThan(0)
 
-    deptView.events.off('stateChanged', handler)
+    deptView.events.off('currentRowChanged', handler)
     deptView.setCurrentRow(deptView.rows[1]!)
     expect(handler).toHaveBeenCalledTimes(countBeforeOff) // 取消后不再增加
   })
@@ -204,34 +185,35 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
 
 // ==================== events.on / events.off 测试 ====================
 
-describe('DataView events.on stateChanged（事件订阅）', () => {
+describe('DataView 独立事件 events.on / events.off（事件订阅）', () => {
   it('events.off 取消监听', () => {
     const ds = createTestDataSet()
     const cb = vi.fn()
 
     const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', cb)
+    deptView.events.on('currentRowChanged', cb)
     deptView.setCurrentRow(deptView.rows[0]!)
     const countBeforeOff = cb.mock.calls.length
     expect(countBeforeOff).toBeGreaterThan(0)
 
-    deptView.events.off('stateChanged', cb)
+    deptView.events.off('currentRowChanged', cb)
     deptView.setCurrentRow(deptView.rows[1]!)
     expect(cb).toHaveBeenCalledTimes(countBeforeOff) // 取消后不再增加
   })
 
-  it('setCurrentRow 自动触发 stateChanged 回调', () => {
+  it('setCurrentRow 自动触发 currentRowChanged + selectedRowsChanged 回调', () => {
     const ds = createTestDataSet()
-    const cb = vi.fn()
+    const currentRowCb = vi.fn()
+    const selectedRowsCb = vi.fn()
     const deptView = ds.getView('Departments')!
-    deptView.events.on('stateChanged', cb)
+    deptView.events.on('currentRowChanged', currentRowCb)
+    deptView.events.on('selectedRowsChanged', selectedRowsCb)
 
     deptView.setCurrentRow(deptView.rows[0]!)
 
-    // selectionFollowsCurrent=true → 触发 currentRow + selectedRows
-    expect(cb).toHaveBeenCalledTimes(2)
-    expect(cb).toHaveBeenCalledWith(expect.objectContaining({ changeType: 'currentRow' }))
-    expect(cb).toHaveBeenCalledWith(expect.objectContaining({ changeType: 'selectedRows' }))
+    // selectionFollowsCurrent=true → 触发 currentRowChanged + selectedRowsChanged
+    expect(currentRowCb).toHaveBeenCalledTimes(1)
+    expect(selectedRowsCb).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -244,19 +226,17 @@ describe('能力流端到端', () => {
 
     const deptView = ds.getView('Departments')!
 
-    // 直接订阅视图的 stateChanged 事件（DataView 是状态变更的归属者）
-    deptView.events.on('stateChanged', (...args: unknown[]) => {
-      const event = args[0] as ViewStateEvent
-      events.push(`stateChange:${event.changeType}`)
-    })
+    // 订阅独立事件
+    deptView.events.on('currentRowChanged', () => events.push('currentRowChanged'))
+    deptView.events.on('selectedRowsChanged', () => events.push('selectedRowsChanged'))
     // 第二个监听器也应收到同一事件
-    deptView.events.on('stateChanged', () => events.push('listener2:Departments.default'))
+    deptView.events.on('currentRowChanged', () => events.push('listener2:Departments.default'))
 
     deptView.setCurrentRow(deptView.rows[0]!)
 
     // 验证能力流：两个监听器都被触发
     expect(events).toContain('listener2:Departments.default')
-    expect(events).toContain('stateChange:currentRow')
+    expect(events).toContain('currentRowChanged')
   })
 })
 

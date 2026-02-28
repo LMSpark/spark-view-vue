@@ -2,8 +2,8 @@
  * CascadeDelegate — 级联订阅委托
  *
  * 从 DataView 提取的级联职责：
- * - 订阅父视图 stateChanged 事件
- * - 按 dependencyType 过滤不相关事件
+ * - 订阅父视图独立事件（currentRowChanged / selectedRowsChanged / rowsChanged / cleared）
+ * - 按 dependencyType 选择订阅哪些事件
  * - 响应父数据变化：清空 or 重新请求
  * - 可取消的级联请求管理
  *
@@ -11,10 +11,10 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { DataRelation, ViewStateEvent, ViewStateChangeType } from '../types'
+import type { DataRelation } from '../types'
 import type { DataView } from '../data-view'
 import { getParentRows } from '../core/utils'
-import type { ICascadeHost, EmitStateChangedFn } from './types'
+import type { ICascadeHost, EmitClearedFn } from './types'
 
 const logger = Logger('DataView:Cascade')
 
@@ -31,7 +31,7 @@ export class CascadeDelegate {
 
   constructor(
     private host: ICascadeHost,
-    private emit: EmitStateChangedFn,
+    private emitCleared: EmitClearedFn,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -44,6 +44,12 @@ export class CascadeDelegate {
    * 沿 parent 链找到 DataSet → 查询以本视图为 child 的关系 →
    * 订阅每个父视图的 stateChanged 事件。
    */
+  /**
+   * 建立级联监听
+   *
+   * 沿 parent 链找到 DataSet → 查询以本视图为 child 的关系 →
+   * 按 dependencyType 订阅对应的父视图独立事件。
+   */
   setupCascade(): void {
     this.teardownCascade()
 
@@ -54,9 +60,27 @@ export class CascadeDelegate {
       const parentView = dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!parentView) throw new Error(`父视图 ${rel.parentTable}:${rel.parentViewId ?? 'default'} 不存在，请检查 DataSet 关系配置`)
 
-      const handler = (evt: ViewStateEvent) => this.respondToParentChange(rel, parentView, evt)
-      parentView.events.on('stateChanged', handler)
-      this.cascadeUnsubscribers.push(() => parentView.events.off('stateChanged', handler))
+      const handler = () => this.respondToParentChange(rel, parentView)
+
+      // 根据 dependencyType 订阅对应事件
+      // rowsChanged + cleared 对所有 dep 类型都相关
+      parentView.events.on('rowsChanged', handler)
+      parentView.events.on('cleared', handler)
+      this.cascadeUnsubscribers.push(
+        () => parentView.events.off('rowsChanged', handler),
+        () => parentView.events.off('cleared', handler),
+      )
+
+      // 按 dep 类型额外订阅具体选中事件
+      const dep = rel.dependencyType ?? 'currentRow'
+      if (dep === 'currentRow') {
+        parentView.events.on('currentRowChanged', handler)
+        this.cascadeUnsubscribers.push(() => parentView.events.off('currentRowChanged', handler))
+      } else if (dep === 'selectedRows') {
+        parentView.events.on('selectedRowsChanged', handler)
+        this.cascadeUnsubscribers.push(() => parentView.events.off('selectedRowsChanged', handler))
+      }
+      // allRows / pagedRows: 只响应 rowsChanged + cleared（已订阅）
     }
   }
 
@@ -81,17 +105,10 @@ export class CascadeDelegate {
   /**
    * 响应父视图状态变化
    *
-   * 事件过滤规则（dependencyType 与 changeType 对应关系）:
-   *   dep=currentRow   → 响应 ['rows','cleared','currentRow']
-   *   dep=selectedRows → 响应 ['rows','cleared','selectedRows']
-   *   dep=allRows      → 响应 ['rows','cleared']
-   *   dep=pagedRows    → 响应 ['rows','cleared']
-   *   dep=unknown      → fallback：同 currentRow 规则
+   * 由 setupCascade 中按 dependencyType 订阅的具体事件触发，
+   * 无需再做 changeType 过滤——订阅时已完成了过滤。
    */
-  private respondToParentChange(rel: DataRelation, parentView: DataView, evt: ViewStateEvent): void {
-    if (evt.changeType === 'requestState' || evt.changeType === 'mutating') return
-    if (!this.isRelevantChangeType(rel.dependencyType, evt.changeType)) return
-
+  private respondToParentChange(rel: DataRelation, parentView: DataView): void {
     // 取消待处理的级联请求
     if (this.pendingCascadeRequest) {
       this.pendingCascadeRequest.cancel()
@@ -103,7 +120,7 @@ export class CascadeDelegate {
 
     if (!parentRows.length) {
       this.host.resetState()
-      this.emit('cleared')
+      this.emitCleared()
       return
     }
 
@@ -130,20 +147,6 @@ export class CascadeDelegate {
         requestId,
         cancel: () => { cancelled = true }
       }
-    }
-  }
-
-  /**
-   * 判断 changeType 是否与 dependencyType 相关
-   */
-  private isRelevantChangeType(dep: string, changeType: ViewStateChangeType): boolean {
-    if (changeType === 'rows' || changeType === 'cleared') return true
-    switch (dep) {
-      case 'currentRow':   return changeType === 'currentRow'
-      case 'selectedRows': return changeType === 'selectedRows'
-      case 'allRows':
-      case 'pagedRows':    return false
-      default:             return changeType === 'currentRow'
     }
   }
 

@@ -287,33 +287,40 @@ const currentRow = computed(() => dataSource?.currentRow ?? null)
 
 ### 5.3 订阅数据变化
 
-DataView 通过 `events.on('stateChanged', handler)` 通知所有订阅者：
+DataView 通过独立事件通知所有订阅者：
 
 ```typescript
 import { onMounted, onUnmounted } from 'vue'
-import type { ViewStateEvent } from '@spark-view/spark-data'
 
-onMounted(() => dataSource?.events.on('stateChanged', handleStateChange))
-onUnmounted(() => dataSource?.events.off('stateChanged', handleStateChange))
+onMounted(() => {
+  dataSource?.events.on('currentRowChanged', handleCurrentRowChanged)
+  dataSource?.events.on('selectedRowsChanged', handleSelectedRowsChanged)
+  dataSource?.events.on('cleared', handleCleared)
+})
+onUnmounted(() => {
+  dataSource?.events.off('currentRowChanged', handleCurrentRowChanged)
+  dataSource?.events.off('selectedRowsChanged', handleSelectedRowsChanged)
+  dataSource?.events.off('cleared', handleCleared)
+})
 
-// ViewStateEvent 携带状态快照（currentRow + selectedRows），无需按 changeType 收窄
-function handleStateChange(event: ViewStateEvent) {
-  // 每个事件都携带完整快照，直接读取即可
-  console.log('当前行:', event.currentRow)       // IDataRow | null — 始终可用
-  console.log('选中行:', event.selectedRows)     // IDataRow[] — 始终可用
+function handleCurrentRowChanged(currentRow: IDataRow | null, originatorId?: string) {
+  console.log('当前行:', currentRow)
+  updateCurrentRowUI(currentRow)
+}
 
-  // changeType 用于过滤不相关的事件类型
-  if (event.changeType === 'currentRow' || event.changeType === 'cleared') {
-    updateCurrentRowUI(event.currentRow)
-  }
-  if (event.changeType === 'selectedRows' || event.changeType === 'cleared') {
-    updateSelectedRowsUI(event.selectedRows)
-  }
+function handleSelectedRowsChanged(selectedRows: IDataRow[], originatorId?: string) {
+  console.log('选中行:', selectedRows)
+  updateSelectedRowsUI(selectedRows)
+}
+
+function handleCleared() {
+  updateCurrentRowUI(null)
+  updateSelectedRowsUI([])
 }
 ```
 
-`changeType === 'rows'` 有 16ms 防抖（批量合并），其余事件立即触发。
-`currentRow` 和 `selectedRows` 是 **必需属性**，每个事件都携带快照，无需 `switch` 收窄或 `??` 兜底。
+`rowsChanged` 有 16ms 防抖（批量合并），其余事件立即触发。
+每个事件只携带自身相关的参数，无需 `switch` 或 `changeType` 判断。
 
 ### 5.4 提供 DATA_SOURCE（容器组件模式）
 

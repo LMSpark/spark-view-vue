@@ -10,7 +10,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { IDataSet, IDataRow, ViewStateEvent } from './types'
+import type { IDataSet, IDataRow, ViewChangeHandlers } from './types'
 
 const logger = Logger('SparkData:Sync')
 
@@ -51,7 +51,7 @@ export function createTableSyncHandlers(
   /**
    * 当前 useRuleBinding 实例的唯一标识。
    *
-   * 注入后，setCurrentRow/setSelectedRows 会将其写入 ViewStateEvent.originatorId，
+   * 注入后，setCurrentRow/setSelectedRows 会将 originatorId 传递给事件回调，
    * useRuleBinding 的 onAnyViewChange 过滤逻辑可据此只跳过本实例的回写，
    * 同一 DataView 上的其他 binding 实例仍会收到通知并执行 DataSet→UI 同步。
    */
@@ -111,27 +111,25 @@ export function createTableSyncHandlers(
 // DataSet → UI 方向：事件订阅
 // ─────────────────────────────────────────────
 
-export interface ViewStateChangeCallback {
-  (tableName: string, viewId: string, event: ViewStateEvent): void
-}
-
 /**
- * 订阅 DataSet 中所有已存在视图的 stateChanged 事件
+ * 订阅 DataSet 中所有已存在视图的独立事件
  *
- * 遍历 DataSet 的所有表和视图，为每个视图订阅 stateChanged 事件。
+ * 遍历 DataSet 的所有表和视图，为每个视图订阅指定的事件。
  * 返回清理函数，调用后取消所有订阅（用于组件卸载或 DataSet 重建场景）。
  *
  * @param dataSet - DataSet 实例
- * @param callback - 状态变化回调（接收 tableName、viewId 和事件对象）
+ * @param handlers - 视图变更处理器映射，按需注册感兴趣的事件类型
  * @returns 清理函数，调用后取消所有订阅
  *
  * @example
  * ```typescript
- * const unsub = subscribeViewStateChanges(dataSet, (tableName, viewId, event) => {
- *   // event 始终携带 currentRow / selectedRows 快照，无需按 changeType 收窄
- *   if (event.changeType === 'selectedRows' || event.changeType === 'cleared') {
- *     syncSelectedRowsToUI(tableName, viewId, event.selectedRows)
- *   }
+ * const unsub = subscribeViewStateChanges(dataSet, {
+ *   currentRowChanged(tableName, viewId, currentRow) {
+ *     syncCurrentRowToUI(tableName, viewId, currentRow)
+ *   },
+ *   cleared(tableName, viewId) {
+ *     clearUI(tableName, viewId)
+ *   },
  * })
  *
  * // 组件卸载时清理
@@ -140,18 +138,50 @@ export interface ViewStateChangeCallback {
  */
 export function subscribeViewStateChanges(
   dataSet: IDataSet,
-  callback: ViewStateChangeCallback
+  handlers: ViewChangeHandlers
 ): () => void {
   const cleanupFns: Array<() => void> = []
 
   for (const table of Object.values(dataSet.tables)) {
     for (const [viewId, view] of Object.entries(table.views)) {
-      const handler = (event: ViewStateEvent) => {
-        callback(table.tableName, viewId, event)
+      const tn = table.tableName
+      if (handlers.currentRowChanged) {
+        const handler = handlers.currentRowChanged
+        const fn = (currentRow: IDataRow | null, originatorId?: string) => handler(tn, viewId, currentRow, originatorId)
+        view.events.on('currentRowChanged', fn)
+        cleanupFns.push(() => view.events.off('currentRowChanged', fn))
       }
-      view.events.on('stateChanged', handler)
-      cleanupFns.push(() => view.events.off('stateChanged', handler))
-      logger.debug('已订阅视图', { tableName: table.tableName, viewId })
+      if (handlers.selectedRowsChanged) {
+        const handler = handlers.selectedRowsChanged
+        const fn = (selectedRows: IDataRow[], originatorId?: string) => handler(tn, viewId, selectedRows, originatorId)
+        view.events.on('selectedRowsChanged', fn)
+        cleanupFns.push(() => view.events.off('selectedRowsChanged', fn))
+      }
+      if (handlers.rowsChanged) {
+        const handler = handlers.rowsChanged
+        const fn = () => handler(tn, viewId)
+        view.events.on('rowsChanged', fn)
+        cleanupFns.push(() => view.events.off('rowsChanged', fn))
+      }
+      if (handlers.cleared) {
+        const handler = handlers.cleared
+        const fn = () => handler(tn, viewId)
+        view.events.on('cleared', fn)
+        cleanupFns.push(() => view.events.off('cleared', fn))
+      }
+      if (handlers.requestStateChanged) {
+        const handler = handlers.requestStateChanged
+        const fn = (requestState: import('./types').RequestState) => handler(tn, viewId, requestState)
+        view.events.on('requestStateChanged', fn)
+        cleanupFns.push(() => view.events.off('requestStateChanged', fn))
+      }
+      if (handlers.mutatingChanged) {
+        const handler = handlers.mutatingChanged
+        const fn = (mutating: boolean) => handler(tn, viewId, mutating)
+        view.events.on('mutatingChanged', fn)
+        cleanupFns.push(() => view.events.off('mutatingChanged', fn))
+      }
+      logger.debug('已订阅视图', { tableName: tn, viewId })
     }
   }
 

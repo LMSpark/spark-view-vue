@@ -167,7 +167,7 @@ view.setCurrentRow(rowB, 'program')
 | 文件 | 职责 |
 |------|------|
 | `spark-data/src/core/event-id.ts` | `createEventContext` / `generateEventId` 实现 |
-| `spark-data/src/types.ts` | `EventContext`, `EventSource`, `ViewStateEvent` 类型定义 |
+| `spark-data/src/types.ts` | `EventContext`, `EventSource`, `ViewChangeHandlers` 类型定义 |
 | `spark-data/src/strategies/selection-delegate.ts` | setter 前独立生成 ctx |
 | `spark-data/src/strategies/local-mutation-delegate.ts` | 每次 emit 独立 ctx |
 | `spark-data/src/sync-helpers.ts` | UI→DataSet，传 `'ui'` source |

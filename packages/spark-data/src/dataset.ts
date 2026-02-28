@@ -6,7 +6,7 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewStateEvent } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewChangeHandlers } from './types'
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { Request } from '@spark-view/spark-utils'
@@ -65,7 +65,7 @@ export class DataSet implements IDataSet {
    * @internal
    */
   _activeViewSubs: Array<{
-    handler: (evt: ViewStateEvent) => void
+    handlers: ViewChangeHandlers
     unsubs: Array<() => void>
   }> = []
 
@@ -178,11 +178,21 @@ export class DataSet implements IDataSet {
   /**
    * 订阅此 DataSet 内任意视图的状态变化（替代全局 event-bus）。
    *
+   * 接收 ViewChangeHandlers 映射，按需注册感兴趣的事件类型。
    * 自动追踪：后续通过 getOrCreateView() 动态创建的视图也会被订阅。
    * 作用域严格限定于本实例，不同页面的 DataSet 相互隔离。
+   *
+   * @example
+   * ```ts
+   * const off = dataSet.onAnyViewChange({
+   *   currentRowChanged(tableName, viewId, currentRow) { ... },
+   *   selectedRowsChanged(tableName, viewId, selectedRows) { ... },
+   *   cleared(tableName, viewId) { ... },
+   * })
+   * ```
    */
-  onAnyViewChange(handler: (evt: ViewStateEvent) => void): () => void {
-    const entry: (typeof this._activeViewSubs)[number] = { handler, unsubs: [] }
+  onAnyViewChange(handlers: ViewChangeHandlers): () => void {
+    const entry: (typeof this._activeViewSubs)[number] = { handlers, unsubs: [] }
     this._activeViewSubs.push(entry)
 
     // 订阅当前已存在的所有视图
@@ -202,14 +212,51 @@ export class DataSet implements IDataSet {
 
   // ===== 动态视图订阅内部方法 =====
 
-  /** @internal 为单个视图订阅 stateChanged（onAnyViewChange 用） */
+  /** @internal 为单个视图订阅独立事件（onAnyViewChange 用） */
   private _subscribeViewChange(
     entry: (typeof this._activeViewSubs)[number],
     view: import('./data-view').DataView,
   ): void {
-    const h = (evt: ViewStateEvent) => entry.handler(evt)
-    view.events.on('stateChanged', h)
-    entry.unsubs.push(() => view.events.off('stateChanged', h))
+    const tn = view.tableName
+    const vid = view.viewId
+    const h = entry.handlers
+
+    if (h.currentRowChanged) {
+      const handler = h.currentRowChanged
+      const fn = (currentRow: import('./types').IDataRow | null, originatorId?: string) => handler(tn, vid, currentRow, originatorId)
+      view.events.on('currentRowChanged', fn)
+      entry.unsubs.push(() => view.events.off('currentRowChanged', fn))
+    }
+    if (h.selectedRowsChanged) {
+      const handler = h.selectedRowsChanged
+      const fn = (selectedRows: import('./types').IDataRow[], originatorId?: string) => handler(tn, vid, selectedRows, originatorId)
+      view.events.on('selectedRowsChanged', fn)
+      entry.unsubs.push(() => view.events.off('selectedRowsChanged', fn))
+    }
+    if (h.rowsChanged) {
+      const handler = h.rowsChanged
+      const fn = () => handler(tn, vid)
+      view.events.on('rowsChanged', fn)
+      entry.unsubs.push(() => view.events.off('rowsChanged', fn))
+    }
+    if (h.cleared) {
+      const handler = h.cleared
+      const fn = () => handler(tn, vid)
+      view.events.on('cleared', fn)
+      entry.unsubs.push(() => view.events.off('cleared', fn))
+    }
+    if (h.requestStateChanged) {
+      const handler = h.requestStateChanged
+      const fn = (requestState: import('./types').RequestState) => handler(tn, vid, requestState)
+      view.events.on('requestStateChanged', fn)
+      entry.unsubs.push(() => view.events.off('requestStateChanged', fn))
+    }
+    if (h.mutatingChanged) {
+      const handler = h.mutatingChanged
+      const fn = (mutating: boolean) => handler(tn, vid, mutating)
+      view.events.on('mutatingChanged', fn)
+      entry.unsubs.push(() => view.events.off('mutatingChanged', fn))
+    }
   }
 
   /** @internal 为单个视图订阅 loadSuccess/loadError（on() 用） */
@@ -217,18 +264,17 @@ export class DataSet implements IDataSet {
     entry: (typeof this._activeOnSubs)[number],
     view: import('./data-view').DataView,
   ): void {
-    const h = (evt: ViewStateEvent) => {
-      if (evt.changeType !== 'requestState') return
-      if (entry.event === 'loadSuccess' && view.requestState === RequestState.Loaded) {
-        entry.handler({ tableName: evt.tableName, viewId: evt.viewId })
+    const h = (requestState: import('./types').RequestState) => {
+      if (entry.event === 'loadSuccess' && requestState === RequestState.Loaded) {
+        entry.handler({ tableName: view.tableName, viewId: view.viewId })
       } else if (entry.event === 'loadError'
-        && view.requestState === RequestState.Failed
+        && requestState === RequestState.Failed
         && view.loadingError !== null) {
-        entry.handler({ tableName: evt.tableName, viewId: evt.viewId, error: view.loadingError })
+        entry.handler({ tableName: view.tableName, viewId: view.viewId, error: view.loadingError })
       }
     }
-    view.events.on('stateChanged', h)
-    entry.unsubs.push(() => view.events.off('stateChanged', h))
+    view.events.on('requestStateChanged', h)
+    entry.unsubs.push(() => view.events.off('requestStateChanged', h))
   }
 
   /**

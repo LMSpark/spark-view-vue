@@ -30,7 +30,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
     expect(typeof def.setCurrentRow).toBe('function')
     expect(typeof def.setSelectedRows).toBe('function')
     expect(typeof def.clearAll).toBe('function')
-    // subscribe 已移除，统一使用 events.on('stateChanged', handler)
+    // subscribe 已移除，统一使用 events.on('currentRowChanged', handler) 等独立事件
     expect(typeof def.events.on).toBe('function')
   })
 
@@ -52,12 +52,12 @@ describe('DataTable responsibilities (refactor verification)', () => {
     let parentNotified = false
     let dsNotified = false
 
-    // UI/组件直接订阅父视图的 stateChanged 事件
-    parent.events.on('stateChanged', () => { parentNotified = true })
+    // UI/组件直接订阅父视图的 currentRowChanged 事件
+    parent.events.on('currentRowChanged', () => { parentNotified = true })
 
     // 单独获取视图并订阅（语义等价）
     const parentView2 = ds.getView('Departments', 'default')!
-    parentView2.events.on('stateChanged', () => { dsNotified = true })
+    parentView2.events.on('currentRowChanged', () => { dsNotified = true })
 
     // 触发父视图状态变化（先 clear，避免 DataSet 构造时 auto-setCurrentRow 导致 row 相同被跳过）
     parent.setCurrentRow(null)
@@ -139,7 +139,7 @@ describe('DataTable responsibilities (refactor verification)', () => {
 // ===== 事件系统测试 =====
 
 describe('Event system', () => {
-  it('DataView.events.on stateChanged 通知 UI', () => {
+  it('DataView.events.on cleared 通知 UI', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
@@ -149,7 +149,7 @@ describe('Event system', () => {
 
     const view = ds.getView('Orders', 'default')!
     let notified = false
-    view.events.on('stateChanged', () => { notified = true })
+    view.events.on('cleared', () => { notified = true })
 
     // 通过 clearAll 触发事件
     view.rows.push({ id: 1 })
@@ -157,7 +157,7 @@ describe('Event system', () => {
     expect(notified).toBe(true)
   })
 
-  it('DataView.setCurrentRow 触发状态观察（stateChanged 事件）', () => {
+  it('DataView.setCurrentRow 触发状态观察（currentRowChanged 事件）', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
@@ -170,11 +170,10 @@ describe('Event system', () => {
     })
 
     const stateEvents: string[] = []
-    // 直接订阅 DataView 的 stateChanged 事件（状态变更归属于 DataView）
+    // 直接订阅 DataView 的 currentRowChanged 事件
     const deptView = ds.getView('Departments', 'default')!
-    deptView.events.on('stateChanged', (...args: unknown[]) => {
-      const e = args[0] as { tableName: string; changeType: string }
-      stateEvents.push(`${e.tableName}:${e.changeType}`)
+    deptView.events.on('currentRowChanged', () => {
+      stateEvents.push(`Departments:currentRow`)
     })
 
     // rows[0] 已被 autoCurrentFirst 自动选为 currentRow；使用 rows[1] 触发真实变更
@@ -183,7 +182,7 @@ describe('Event system', () => {
     expect(stateEvents).toContain('Departments:currentRow')
   })
 
-  it('命名视图独立接收 stateChanged 事件', () => {
+  it('命名视图独立接收 currentRowChanged 事件', () => {
     const ds = DataSet.fromConfig({
       dataSetName: 'S',
       tables: {
@@ -200,13 +199,13 @@ describe('Event system', () => {
     grid1View.rows = [{ id: 2 }, { id: 3 }]
 
     let notifyCount = 0
-    grid1View.events.on('stateChanged', () => { notifyCount++ })
+    grid1View.events.on('currentRowChanged', () => { notifyCount++ })
 
     // 通过 setCurrentRow 触发指定视图事件
     grid1View.setCurrentRow(grid1View.rows[0]!)
 
-    // selectionFollowsCurrent=true（默认）→ setCurrentRow 触发 currentRow + selectedRows 共 2 事件
-    expect(notifyCount).toBe(2)
+    // currentRowChanged 触发 1 次
+    expect(notifyCount).toBe(1)
     
     // 但不应该修改视图行数据
     expect(grid1View.rows).toEqual([{ id: 2 }, { id: 3 }])
