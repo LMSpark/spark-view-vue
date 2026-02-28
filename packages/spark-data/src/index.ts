@@ -55,7 +55,6 @@ export type {
   DataRelation,
   ViewChangeHandlers,
   DependencyType,
-  ComputedColumnFn,
   ColumnType,
   ColumnTypeMap,
   InferColumnValue,
@@ -72,10 +71,6 @@ export type {
   PrimaryKeyGeneratorConfig 
 } from './core/primary-key-generator'
 
-// ===== 计算列表达式 =====
-
-export { compileExpression, compileColumnsExpressions } from './strategies/computed-column-delegate'
-export type { ComputedColumnContext, AggregateResolver } from './strategies/computed-column-delegate'
 
 // ===== 手工编辑脏追踪 =====
 
