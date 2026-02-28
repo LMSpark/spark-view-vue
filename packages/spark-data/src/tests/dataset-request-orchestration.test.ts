@@ -105,7 +105,7 @@ describe('DataView.requestData orchestration', () => {
 
     const pSpy = vi.spyOn(pView, 'loadFromServer').mockImplementation(async () => {
       pView.rows.splice(0, pView.rows.length, { uuid: 'p-1' })
-      // 直接写 _currentRowId，避免 setCurrentRow 触发 stateChanged 干扰编排
+      // 直接写 _currentRowId，避免 setCurrentRow 触发 currentRowChanged 干扰编排
       pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[0]!) ?? null
       pView.requestState = RequestState.Loaded
       return { success: true, data: pView.rows } as any
@@ -159,13 +159,7 @@ describe('DataView.requestData orchestration', () => {
     const aSpy = vi.spyOn(aView, 'loadFromServer').mockImplementation(async () => {
       aView.rows.splice(0, aView.rows.length, { id: 1 })
       aView.requestState = RequestState.Loaded
-      aView.events.emit('stateChanged', { 
-        tableName: 'A', 
-        viewId: 'default', 
-        changeType: 'rows', 
-        currentRow: aView.currentRow,
-        selectedRows: aView.selectedRows,
-      })
+      aView.events.emit('rowsChanged')
       return { success: true, data: aView.rows } as any
     })
 
@@ -174,13 +168,7 @@ describe('DataView.requestData orchestration', () => {
       expect(params.aId).toBe(1)
       bView.rows.splice(0, bView.rows.length, { id: 10, aId: 1 })
       bView.requestState = RequestState.Loaded
-      bView.events.emit('stateChanged', { 
-        tableName: 'B', 
-        viewId: 'default', 
-        changeType: 'rows', 
-        currentRow: bView.currentRow,
-        selectedRows: bView.selectedRows,
-      })
+      bView.events.emit('rowsChanged')
       return { success: true, data: bView.rows } as any
     })
 

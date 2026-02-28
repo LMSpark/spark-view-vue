@@ -7,53 +7,33 @@
 import type { DataTable } from './data-table'
 import type { DataView as SparkDataView } from './data-view'
 
-// ===== 视图状态事件（状态快照模式） =====
-
-/** 视图状态变化类型 */
-export type ViewStateChangeType =
-  | 'currentRow'     // 当前行变化
-  | 'selectedRows'   // 选中行变化
-  | 'rows'           // 行数据批量变化（防抖 16ms）
-  | 'cleared'        // 数据已清空
-  | 'requestState'   // 请求状态变化（Idle→Loading→Loaded/Failed）
-  | 'mutating'       // CRUD 变更状态变化
+// ===== 视图变更事件（独立事件模型） =====
 
 /**
- * 视图状态变化事件（状态快照模式）
+ * DataSet 级视图变更处理器映射
  *
- * 每次 stateChanged 事件都携带 `currentRow` 和 `selectedRows` 的状态快照，
- * 消费端无需按 changeType 收窄即可直接读取，极大简化了订阅端的代码。
+ * 用于 `DataSet.onAnyViewChange()` 和 `subscribeViewStateChanges()`：
+ * 订阅者按需注册感兴趣的事件类型，每个回调接收 `(tableName, viewId, ...payload)`。
  *
- * `changeType` 仍可用于过滤不相关的事件类型：
+ * @example
  * ```ts
- * view.events.on('stateChanged', (evt) => {
- *   if (evt.changeType === 'currentRow' || evt.changeType === 'cleared') {
- *     updateUI(evt.currentRow, evt.selectedRows) // 始终可用
- *   }
+ * dataSet.onAnyViewChange({
+ *   currentRowChanged(tableName, viewId, currentRow, originatorId) {
+ *     syncCurrentRowToUI(tableName, viewId, currentRow)
+ *   },
+ *   cleared(tableName, viewId) {
+ *     clearUI(tableName, viewId)
+ *   },
  * })
  * ```
  */
-export interface ViewStateEvent {
-  tableName: string
-  viewId: string
-  changeType: ViewStateChangeType
-
-  /** 当前行快照（事件发射时的最新值；null 表示无当前行） */
-  currentRow: IDataRow | null
-  /** 选中行快照（事件发射时的最新值；空数组表示无选中） */
-  selectedRows: IDataRow[]
-
-  /**
-   * 发起方实例标识（可选）
-   *
-   * 用于网状订阅场景：同一个 DataView 被多个 UI 实例（useRuleBinding）绑定时，
-   * DataSet→UI 同步应跳过"事件来自该实例"的那一方，但其余同级实例仍应更新。
-   *
-   * 约定：
-   * - UI 操作时由 createTableSyncHandlers 注入（值为 useRuleBinding 的 instanceId）
-   * - 程序操作不设置此字段，所有订阅方均更新
-   */
-  originatorId?: string
+export interface ViewChangeHandlers {
+  currentRowChanged?: (tableName: string, viewId: string, currentRow: IDataRow | null, originatorId?: string) => void
+  selectedRowsChanged?: (tableName: string, viewId: string, selectedRows: IDataRow[], originatorId?: string) => void
+  rowsChanged?: (tableName: string, viewId: string) => void
+  cleared?: (tableName: string, viewId: string) => void
+  requestStateChanged?: (tableName: string, viewId: string, requestState: RequestState) => void
+  mutatingChanged?: (tableName: string, viewId: string, mutating: boolean) => void
 }
 
 // ===== 权限类型 =====
@@ -501,7 +481,7 @@ export interface IDataSet {
    *
    * @returns 取消订阅函数（组件卸载时调用）
    */
-  onAnyViewChange(handler: (evt: ViewStateEvent) => void): () => void
+  onAnyViewChange(handlers: ViewChangeHandlers): () => void
 }
 
 // ===== CRUD服务相关类型 =====

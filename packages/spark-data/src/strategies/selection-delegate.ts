@@ -15,7 +15,7 @@
 
 import { Logger } from '@spark-view/spark-utils'
 import type { IDataRow } from '../types'
-import type { ISelectionHost, EmitStateChangedFn } from './types'
+import type { ISelectionHost, EmitCurrentRowChangedFn, EmitSelectedRowsChangedFn } from './types'
 import { buildPkSet, pruneInvalidSelections } from '../core/utils'
 
 const logger = Logger('DataView:Selection')
@@ -24,7 +24,8 @@ export class SelectionDelegate {
 
   constructor(
     private host: ISelectionHost,
-    private emitStateChanged: EmitStateChangedFn,
+    private emitCurrentRowChanged: EmitCurrentRowChangedFn,
+    private emitSelectedRowsChanged: EmitSelectedRowsChangedFn,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -71,12 +72,12 @@ export class SelectionDelegate {
     if (host.autoCurrentFirst !== false && firstRow) {
       this.setCurrentRow(firstRow, { skipSync: true })
     } else if (prevHadCurrent) {
-      this.emitStateChanged('currentRow')
+      this.emitCurrentRowChanged()
     }
     if (host.autoSelectFirst !== false && firstRow) {
       this.setSelectedRows([firstRow])
     } else if (prevHadSelected) {
-      this.emitStateChanged('selectedRows')
+      this.emitSelectedRowsChanged()
     }
   }
 
@@ -108,7 +109,7 @@ export class SelectionDelegate {
     host._currentRowId = newId
 
     // 快照由宿主自动构建（此时 _currentRowId 已更新，getter 返回正确对象）
-    this.emitStateChanged('currentRow', opts?.originatorId)
+    this.emitCurrentRowChanged(opts?.originatorId)
 
     if (!opts?.skipSync && host.selectionFollowsCurrent) {
       this.setSelectedRows(row !== null ? [row] : [], opts?.originatorId)
@@ -142,7 +143,7 @@ export class SelectionDelegate {
     host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
 
     // 快照由宿主自动构建（保证与 _selectedRowIds 同步）
-    this.emitStateChanged('selectedRows', originatorId)
+    this.emitSelectedRowsChanged(originatorId)
   }
 
   // ─────────────────────────────────────────────
@@ -274,7 +275,7 @@ export class SelectionDelegate {
     if (toAddIds.length === 0) return 0
 
     host._selectedRowIds.push(...toAddIds)
-    this.emitStateChanged('selectedRows')
+    this.emitSelectedRowsChanged()
     return toAddIds.length
   }
 
@@ -304,7 +305,7 @@ export class SelectionDelegate {
     const removedCount = host._selectedRowIds.length - newIds.length
     if (removedCount > 0) {
       host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
-      this.emitStateChanged('selectedRows')
+      this.emitSelectedRowsChanged()
     }
     return removedCount
   }
@@ -353,7 +354,7 @@ export class SelectionDelegate {
     if (toAddIds.length === 0) return 0
 
     host._selectedRowIds.push(...toAddIds)
-    this.emitStateChanged('selectedRows')
+    this.emitSelectedRowsChanged()
     return toAddIds.length
   }
 
@@ -377,7 +378,7 @@ export class SelectionDelegate {
     const removedCount = host._selectedRowIds.length - newIds.length
     if (removedCount > 0) {
       host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
-      this.emitStateChanged('selectedRows')
+      this.emitSelectedRowsChanged()
     }
     return removedCount
   }
@@ -398,10 +399,10 @@ export class SelectionDelegate {
     const { currentRowPruned, selectedRowsPruned } = pruneInvalidSelections(host, rowPkSet)
 
     if (currentRowPruned) {
-      this.emitStateChanged('currentRow')
+      this.emitCurrentRowChanged()
     }
     if (selectedRowsPruned) {
-      this.emitStateChanged('selectedRows')
+      this.emitSelectedRowsChanged()
     }
 
     return currentRowPruned || selectedRowsPruned

@@ -8,13 +8,13 @@
  *   向委托层暴露所需属性，实现 ICrudHost / ICascadeHost 接口。
  *
  * ## 级联加载（SOLID：子订阅父，父不知子）
- *   子视图通过 setupCascade() 订阅父视图的 stateChanged 事件，
+ *   子视图通过 setupCascade() 订阅父视图的独立事件（currentRowChanged / rowsChanged 等），
  *   父状态变化时子视图自行决定：清空 or 重新请求。
  *
  * ## 请求编排
  *   requestData()   —— 上行入口（幂等、非阻塞）：解析父依赖 → 调用 loadFromServer → 子视图级联
  *   refresh()       —— 下行入口（强制、非阻塞）：重置 Idle → 调用 requestData()
- *   两者均立即返回，结果通过 stateChanged 事件通知；loadFromServer() 可 await（有返回值）
+ *   两者均立即返回，结果通过独立事件通知；loadFromServer() 可 await（有返回值）
  *   requestState    —— 唯一状态源（RequestState 枚举），禁止另设布尔别名
  *
  * ## 委托分工
@@ -24,7 +24,7 @@
 
 import type {
   IDataRow, IViewMetadata, FilterExpression, SortExpression,
-  ViewStateEvent, ViewStateChangeType, QueryParams,
+  QueryParams,
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
@@ -52,11 +52,24 @@ import { createPrimaryKeyGenerator } from './core/primary-key-generator'
 
 /**
  * DataView 事件映射（用于 events 事件总线类型约束）
+ *
+ * 独立事件模型：每种变化对应独立事件名，消费端按需订阅。
  */
 // Note: any[] 在此处是合理的泛型约束（与 IEventEmitter 接口保持一致）
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DataViewEventMap extends Record<string, any[]> {
-  stateChanged: [ViewStateEvent]
+  /** 当前行变化 */
+  currentRowChanged: [currentRow: IDataRow | null, originatorId?: string]
+  /** 选中行变化 */
+  selectedRowsChanged: [selectedRows: IDataRow[], originatorId?: string]
+  /** 行数据批量变化（防抖 16ms） */
+  rowsChanged: []
+  /** 数据已清空 */
+  cleared: []
+  /** 请求状态变化（Idle→Loading→Loaded/Failed） */
+  requestStateChanged: [requestState: RequestState]
+  /** CRUD 变更状态变化 */
+  mutatingChanged: [mutating: boolean]
   /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */
   'crud:before': [CrudLifecycleEvent]
   /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */
@@ -305,7 +318,7 @@ export class DataView implements IDataSource {
   private _isDestroyed = false
   /** 行索引缓存（用于加速 updateRowById 行对象替换）——由 LocalMutationDelegate 管理，内部状态勿直接操作 */
   rowIndexMap?: Map<IDataRow, number> | undefined
-  /** stateChanged 事件防抖定时器 */
+  /** rowsChanged 事件防抖定时器 */
   private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
 
   // ── 委托 ─────────────────────────────────────
@@ -336,7 +349,7 @@ export class DataView implements IDataSource {
   private get cascadeDelegate(): CascadeDelegate {
     this._cascadeDelegate ??= new CascadeDelegate(
       this,
-      (changeType, extra) => this.emitStateChanged(changeType, extra)
+      () => this.events.emit('cleared'),
     )
     return this._cascadeDelegate
   }
@@ -345,7 +358,8 @@ export class DataView implements IDataSource {
   private get selectionDelegate(): SelectionDelegate {
     this._selectionDelegate ??= new SelectionDelegate(
       this,
-      (changeType, extra) => this.emitStateChanged(changeType, extra),
+      (originatorId?) => this.emitCurrentRowChanged(originatorId),
+      (originatorId?) => this.emitSelectedRowsChanged(originatorId),
     )
     return this._selectionDelegate
   }
@@ -354,7 +368,7 @@ export class DataView implements IDataSource {
   private get localMutationDelegate(): LocalMutationDelegate {
     this._localMutationDelegate ??= new LocalMutationDelegate(
       this,
-      (changeType, extra) => this.emitStateChanged(changeType, extra),
+      () => this.emitRowsChanged(),
     )
     return this._localMutationDelegate
   }
@@ -388,10 +402,15 @@ export class DataView implements IDataSource {
   // ── 公共内部对象 ─────────────────────────
 
   /**
-   * stateChanged 事件总线——唯一通知通道
+   * 事件总线——独立事件模型
    *
-   * UI 组件、子视图级联、外部监听者均通过此总线接收变更事件。
-   * UI 组件、子视图级联、外部监听者均通过 `events.on('stateChanged', handler)` 订阅。
+   * UI 组件、子视图级联、外部监听者按需订阅：
+   * - `events.on('currentRowChanged', handler)` — 当前行变化
+   * - `events.on('selectedRowsChanged', handler)` — 选中行变化
+   * - `events.on('rowsChanged', handler)` — 行数据变化（防抖 16ms）
+   * - `events.on('cleared', handler)` — 数据清空
+   * - `events.on('requestStateChanged', handler)` — 请求状态变化
+   * - `events.on('mutatingChanged', handler)` — CRUD 变更状态
    */
   readonly events: IEventEmitter<DataViewEventMap> = createEventEmitter()
 
@@ -589,7 +608,7 @@ export class DataView implements IDataSource {
    *    父 requestState∉{Loaded,Loading} 或无数据 → 置 requestState=Failed 中止
    * 3. 所有父满足后，按各关系的 filterExpression 组装查询参数
    *    → 调用 loadFromServer()（进入 Loading；成功置 Loaded，失败置 Failed）
-   * 4. 子视图级联由 stateChanged('rows') 事件驱动（子订阅父，父不知子），无需主动推
+   * 4. 子视图级联由 rowsChanged 事件驱动（子订阅父，父不知子），无需主动推
    */
   async requestData(): Promise<void> {
     if (this.requestState !== RequestState.Idle) return
@@ -614,7 +633,7 @@ export class DataView implements IDataSource {
       const parentReady = pView.requestState === RequestState.Loaded || pView.rows.length > 0
       if (!parentReady || parentRows.length === 0) {
         this.requestState = RequestState.Failed
-        this.emitStateChanged('requestState')
+        this.events.emit('requestStateChanged', this.requestState)
         return
       }
       resolvedParents.push({ rel, pView, rows: parentRows })
@@ -651,6 +670,12 @@ export class DataView implements IDataSource {
       }
     }
 
+    // 注入视图自身的分页/排序/过滤参数
+    if (this.page !== undefined) params.page = this.page
+    if (this.pageSize !== undefined) params.pageSize = this.pageSize
+    if (this.sortExpression !== undefined) params.sort = this._serializeSort(this.sortExpression)
+    if (this.filterExpression !== undefined) params.filter = this.filterExpression
+
     try {
       const result = await this.loadFromServer(params)
       if (!result.success) return
@@ -658,7 +683,7 @@ export class DataView implements IDataSource {
       return
     }
 
-    // 子视图级联由 stateChanged('rows') 事件驱动（respondToParentChange），无需主动推
+    // 子视图级联由 rowsChanged 事件驱动（respondToParentChange），无需主动推
   }
 
   /**
@@ -667,8 +692,8 @@ export class DataView implements IDataSource {
    * 通常由 `requestData()` 内部调用；也可直接调用以跳过父依赖编排。
    *
    * - 成功：updateFromServer() 写入行数据，处理 autoCurrentFirst/autoSelectFirst，
-   *         requestState=Loaded，发射 stateChanged('rows')
-   * - 失败：requestState=Failed，发射 stateChanged('requestState')，重新抛出异常
+   *         requestState=Loaded，发射 rowsChanged
+   * - 失败：requestState=Failed，发射 requestStateChanged，重新抛出异常
    * - 竞态：requestId 不匹配时静默丢弃（旧请求晚于新请求到达）
    */
   async loadFromServer(params?: QueryParams): Promise<CrudResult> {
@@ -692,11 +717,11 @@ export class DataView implements IDataSource {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         this.selectionDelegate.applyAutoFirst()
         this.requestState = RequestState.Loaded
-        this.emitStateChanged('requestState')   // 通知 Idle→Loading→Loaded 转换（DataSet.on('loadSuccess') 依赖此事件）
-        this.emitStateChanged('rows')
+        this.events.emit('requestStateChanged', this.requestState)   // 通知 Idle→Loading→Loaded 转换（DataSet.on('loadSuccess') 依赖此事件）
+        this.emitRowsChanged()
       } else {
         this.requestState = RequestState.Failed
-        this.emitStateChanged('requestState')
+        this.events.emit('requestStateChanged', this.requestState)
       }
       return result
     } catch (error) {
@@ -707,7 +732,7 @@ export class DataView implements IDataSource {
       
       this.loadingError = error as Error
       this.requestState = RequestState.Failed
-      this.emitStateChanged('requestState')
+      this.events.emit('requestStateChanged', this.requestState)
       throw error
     }
   }
@@ -777,7 +802,7 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
   // 本地 CRUD（内存同步，不触发网络请求）
   // 可独立调用；CrudDelegate 也通过这些方法写入数据，
-  // 两者均发射 stateChanged('rows')，因防抖合并为单次通知
+  // 两者均发射 rowsChanged，因防抖合并为单次通知
   // ─────────────────────────────────────────────
 
   /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定，对 Vue 响应式友好 */
@@ -785,22 +810,22 @@ export class DataView implements IDataSource {
     this.localMutationDelegate.updateFromServer(data)
   }
 
-  /** 本地追加一行，发射 stateChanged('rows') */
+  /** 本地追加一行，发射 rowsChanged */
   appendRow(row: IDataRow): void {
     this.localMutationDelegate.appendRow(row)
   }
 
-  /** 本地按主键部分更新一行，发射 stateChanged('rows')；返回是否成功（行不存在时 false） */
+  /** 本地按主键部分更新一行，发射 rowsChanged；返回是否成功（行不存在时 false） */
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
     return this.localMutationDelegate.updateRowById(id, data)
   }
 
-  /** 本地按主键删除一行，清理选中引用，发射 stateChanged('rows')；返回是否成功（行不存在时 false） */
+  /** 本地按主键删除一行，清理选中引用，发射 rowsChanged；返回是否成功（行不存在时 false） */
   deleteRowById(id: string | number): boolean {
     return this.localMutationDelegate.deleteRowById(id)
   }
 
-  /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 stateChanged('rows') */
+  /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 rowsChanged */
   replaceRows(rows: IDataRow[]): void {
     this.localMutationDelegate.replaceRows(rows)
   }
@@ -911,8 +936,7 @@ export class DataView implements IDataSource {
     const had = this.rows.length > 0 || this.currentRow !== null || this.selectedRows.length > 0
     this.resetState()
     if (had) {
-      // stateChanged('cleared') 通知 DataSet.onAnyViewChange 订阅者清除 UI 高亮
-      this.emitStateChanged('cleared')
+      this.events.emit('cleared')
     }
   }
 
@@ -970,44 +994,89 @@ export class DataView implements IDataSource {
   }
 
   // ─────────────────────────────────────────────
-  // 事件通知（统一通道）
+  // 事件通知（独立事件模型）
+  // ─────────────────────────────────────────────
+
+  /** 发射 currentRowChanged 事件（立即） */
+  private emitCurrentRowChanged(originatorId?: string): void {
+    this.events.emit('currentRowChanged', this.currentRow, originatorId)
+  }
+
+  /** 发射 selectedRowsChanged 事件（立即） */
+  private emitSelectedRowsChanged(originatorId?: string): void {
+    this.events.emit('selectedRowsChanged', this.selectedRows, originatorId)
+  }
+
+  /**
+   * 发射 rowsChanged 事件（防抖 16ms）
+   *
+   * 合并批量更新，减少重绘。防抖期间可能有更多状态变更，触发时读取最新状态。
+   */
+  private emitRowsChanged(): void {
+    if (this.stateChangedDebouncer) {
+      clearTimeout(this.stateChangedDebouncer)
+    }
+    this.stateChangedDebouncer = setTimeout(() => {
+      this.events.emit('rowsChanged')
+      this.stateChangedDebouncer = undefined
+    }, 16)
+  }
+
+  /** 将 SortExpression 序列化为查询字符串格式（如 `name:asc` 或 `name:asc,age:desc`） */
+  private _serializeSort(sort: SortExpression): string {
+    if ('fields' in sort) {
+      return sort.fields.map(f => `${f.field}:${f.direction.toLowerCase()}`).join(',')
+    }
+    return `${sort.field}:${sort.direction.toLowerCase()}`
+  }
+
+  // ─────────────────────────────────────────────
+  // 请求参数便捷方法
   // ─────────────────────────────────────────────
 
   /**
-   * 统一发射 stateChanged 事件（状态快照模式）
-   *
-   * 每次事件自动携带 `currentRow` + `selectedRows` 快照，
-   * 消费端直接读取即可，无需按 changeType 收窄。
-   *
-   * - rows：防抖 16ms（合并批量更新，减少重绘），快照在触发时捕获（延迟求值更准确）
-   * - 其余事件：立即触发，快照在调用时捕获
+   * 设置当前页并重新请求数据
    */
-  private emitStateChanged(changeType: ViewStateChangeType, originatorId?: string): void {
-    if (changeType === 'rows') {
-      // Only rows uses debounce; cancel only a previous rows debounce (not immediate events)
-      if (this.stateChangedDebouncer) {
-        clearTimeout(this.stateChangedDebouncer)
-      }
-      this.stateChangedDebouncer = setTimeout(() => {
-        // 延迟求值：防抖期间可能有更多状态变更，触发时捕获最新快照
-        this.events.emit('stateChanged', this._buildStateEvent('rows', originatorId))
-        this.stateChangedDebouncer = undefined
-      }, 16)
-    } else {
-      this.events.emit('stateChanged', this._buildStateEvent(changeType, originatorId))
-    }
+  async setPage(page: number): Promise<void> {
+    this.page = page
+    await this.reload()
   }
 
-  /** 构建 stateChanged 事件对象（从当前视图状态捕获快照） */
-  private _buildStateEvent(changeType: ViewStateChangeType, originatorId?: string): ViewStateEvent {
-    return {
-      tableName: this.tableName,
-      viewId: this.viewId,
-      changeType,
-      currentRow: this.currentRow,
-      selectedRows: this.selectedRows,
-      ...(originatorId !== undefined ? { originatorId } : {}),
-    }
+  /**
+   * 设置每页条数并重新请求数据（页码重置为 1）
+   */
+  async setPageSize(pageSize: number): Promise<void> {
+    this.pageSize = pageSize
+    this.page = 1
+    await this.reload()
+  }
+
+  /**
+   * 设置排序表达式并重新请求数据
+   */
+  async setSort(sort: SortExpression | undefined): Promise<void> {
+    this.sortExpression = sort
+    await this.reload()
+  }
+
+  /**
+   * 设置过滤表达式并重新请求数据（页码重置为 1）
+   */
+  async setFilter(filter: FilterExpression | undefined): Promise<void> {
+    this.filterExpression = filter
+    this.page = 1
+    await this.reload()
+  }
+
+  /**
+   * 重新加载数据（保留当前分页/排序/过滤参数）
+   *
+   * 与 refresh() 的区别：reload() 语义为"用户主动刷新"，
+   * refresh() 语义为"级联下行触发"——行为相同但语义不同。
+   */
+  async reload(): Promise<void> {
+    this.requestState = RequestState.Idle
+    return this.requestData()
   }
 
   // ─────────────────────────────────────────────
@@ -1119,7 +1188,7 @@ export class DataView implements IDataSource {
     } else {
       if (error) this.mutatingError = error
     }
-    this.emitStateChanged('mutating')
+    this.events.emit('mutatingChanged', this.mutating)
   }
 
   // ─────────────────────────────────────────────

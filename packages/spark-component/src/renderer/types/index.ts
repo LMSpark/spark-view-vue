@@ -304,7 +304,7 @@ export interface RuleBindingOptions {
   /**
    * 当前 useRuleBinding 实例的唯一标识（可选）。
    *
-   * 注入后，setCurrentRow/setSelectedRows 会将其写入 ViewStateEvent.originatorId，
+   * 注入后，setCurrentRow/setSelectedRows 会将 originatorId 传递给事件回调，
    * useRuleBinding 的 onAnyViewChange 过滤逻辑可据此只跳过本实例的回写，
    * 同一 DataView 的其他 binding 实例仍会收到通知并同步 UI。
    */
