@@ -221,41 +221,18 @@ export class DataSet implements IDataSet {
     const vid = view.viewId
     const h = entry.handlers
 
-    if (h.currentRowChanged) {
-      const handler = h.currentRowChanged
-      const fn = (currentRow: import('./types').IDataRow | null, originatorId?: string) => handler(tn, vid, currentRow, originatorId)
-      view.events.on('currentRowChanged', fn)
-      entry.unsubs.push(() => view.events.off('currentRowChanged', fn))
-    }
-    if (h.selectedRowsChanged) {
-      const handler = h.selectedRowsChanged
-      const fn = (selectedRows: import('./types').IDataRow[], originatorId?: string) => handler(tn, vid, selectedRows, originatorId)
-      view.events.on('selectedRowsChanged', fn)
-      entry.unsubs.push(() => view.events.off('selectedRowsChanged', fn))
-    }
-    if (h.rowsChanged) {
-      const handler = h.rowsChanged
-      const fn = () => handler(tn, vid)
-      view.events.on('rowsChanged', fn)
-      entry.unsubs.push(() => view.events.off('rowsChanged', fn))
-    }
-    if (h.cleared) {
-      const handler = h.cleared
-      const fn = () => handler(tn, vid)
-      view.events.on('cleared', fn)
-      entry.unsubs.push(() => view.events.off('cleared', fn))
-    }
-    if (h.requestStateChanged) {
-      const handler = h.requestStateChanged
-      const fn = (requestState: import('./types').RequestState) => handler(tn, vid, requestState)
-      view.events.on('requestStateChanged', fn)
-      entry.unsubs.push(() => view.events.off('requestStateChanged', fn))
-    }
-    if (h.mutatingChanged) {
-      const handler = h.mutatingChanged
-      const fn = (mutating: boolean) => handler(tn, vid, mutating)
-      view.events.on('mutatingChanged', fn)
-      entry.unsubs.push(() => view.events.off('mutatingChanged', fn))
+    // 数据驱动注册：每种事件统一 wrap (tableName, viewId, ...args)
+    const eventKeys = [
+      'currentRowChanged', 'selectedRowsChanged', 'rowsChanged',
+      'cleared', 'requestStateChanged', 'mutatingChanged',
+    ] as const
+    for (const key of eventKeys) {
+      const handler = h[key]
+      if (!handler) continue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fn = (...args: any[]) => (handler as (...a: any[]) => void)(tn, vid, ...args)
+      view.events.on(key, fn)
+      entry.unsubs.push(() => view.events.off(key, fn))
     }
   }
 

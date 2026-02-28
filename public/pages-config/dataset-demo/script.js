@@ -88,80 +88,18 @@ function handleOrderSelect(selection) {
 
 /**
  * 显示 SQL 查询
+ * TODO: FilterParser 尚未实现
  */
 function showSQLQuery() {
-  const dataSet = $dataSet;
-  if (!dataSet) {
-    ElMessage.warning('DataSet 未初始化')
-    return
-  }
-  
-  const relations = dataSet.getDataSet().relations || []
-  
-  if (relations.length === 0) {
-    ElMessage.info('没有关系配置')
-    return
-  }
-  
-  const sqlQueries = relations.map(relation => {
-    const result = SparkData.FilterParser.toSQL(relation.filterExpression)
-    return {
-      relation: `${relation.parentTable} -> ${relation.childTable}`,
-      sql: `SELECT * FROM ${relation.childTable} WHERE ${result.sql}`,
-      params: result.params
-    }
-  })
-  
-  console.log('🔍 SQL 查询:', sqlQueries)
-  
-  ElMessage.success({
-    message: 'SQL 查询已输出到控制台',
-    duration: 2000
-  })
-  
-  // 显示第一个查询
-  if (sqlQueries.length > 0) {
-    alert(`SQL 查询示例:\n\n${sqlQueries[0].sql}\n\n完整信息请查看控制台`)
-  }
+  ElMessage.info('FilterParser 尚未实现，此功能待开发')
 }
 
 /**
  * 显示 MongoDB 查询
+ * TODO: FilterParser 尚未实现
  */
 function showMongoQuery() {
-  const dataSet = $dataSet;
-  if (!dataSet) {
-    ElMessage.warning('DataSet 未初始化')
-    return
-  }
-  
-  const relations = dataSet.getDataSet().relations || []
-  
-  if (relations.length === 0) {
-    ElMessage.info('没有关系配置')
-    return
-  }
-  
-  const mongoQueries = relations.map(relation => {
-    const query = SparkData.FilterParser.toMongoDB(relation.filterExpression)
-    return {
-      relation: `${relation.parentTable} -> ${relation.childTable}`,
-      collection: relation.childTable,
-      query: query
-    }
-  })
-  
-  console.log('🍃 MongoDB 查询:', mongoQueries)
-  
-  ElMessage.success({
-    message: 'MongoDB 查询已输出到控制台',
-    duration: 2000
-  })
-  
-  // 显示第一个查询
-  if (mongoQueries.length > 0) {
-    alert(`MongoDB 查询示例:\n\ndb.${mongoQueries[0].collection}.find(${JSON.stringify(mongoQueries[0].query, null, 2)})\n\n完整信息请查看控制台`)
-  }
+  ElMessage.info('FilterParser 尚未实现，此功能待开发')
 }
 
 /**
