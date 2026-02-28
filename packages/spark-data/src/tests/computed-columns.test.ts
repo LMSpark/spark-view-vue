@@ -34,16 +34,22 @@ function makeView(
   columns: Array<{ name: string; type?: string; isPrimaryKey?: boolean; computeExpression?: string }>,
   rows: IDataRow[] = [],
 ): DataView {
-  const table = new DataTable('T', columns.map(c => ({
-    name: c.name,
-    type: c.type ?? 'string',
-    isPrimaryKey: c.isPrimaryKey,
-    computeExpression: c.computeExpression,
-  })))
+  const table = new DataTable('T', columns.map(c => {
+    const col: { name: string; type: string; isPrimaryKey?: boolean; computeExpression?: string } = {
+      name: c.name,
+      type: c.type ?? 'string',
+    }
+    if (c.isPrimaryKey !== undefined) col.isPrimaryKey = c.isPrimaryKey
+    if (c.computeExpression !== undefined) col.computeExpression = c.computeExpression
+    return col
+  }))
   const view = table.getOrCreateView('default')
   view.rows.splice(0, view.rows.length, ...rows)
   return view
 }
+
+/** 读取行字段（绕过索引签名 noPropertyAccessFromIndexSignature） */
+const f = (row: IDataRow | undefined, field: string): unknown => row?.[field]
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. compileExpression — 低级编译器单元测试
@@ -104,9 +110,9 @@ describe('DataView — setComputedColumn / setComputedColumnExpression', () => {
       [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'price' }, { name: 'qty' }],
       [{ id: 1, price: 10, qty: 3 }, { id: 2, price: 5, qty: 4 }],
     )
-    view.setComputedColumn('total', row => Number(row.price) * Number(row.qty))
-    expect(view.rows[0].total).toBe(30)
-    expect(view.rows[1].total).toBe(20)
+    view.setComputedColumn('total', row => Number(row['price']) * Number(row['qty']))
+    expect(f(view.rows[0], 'total')).toBe(30)
+    expect(f(view.rows[1], 'total')).toBe(20)
   })
 
   it('setComputedColumnExpression 字符串表达式 — 注册后立即求值', () => {
@@ -115,7 +121,7 @@ describe('DataView — setComputedColumn / setComputedColumnExpression', () => {
       [{ id: 1, price: 8, qty: 5 }],
     )
     view.setComputedColumnExpression('total', 'price * qty')
-    expect(view.rows[0].total).toBe(40)
+    expect(f(view.rows[0], 'total')).toBe(40)
   })
 
   it('链式计算列：先算 subtotal 再算 tax', () => {
@@ -125,13 +131,13 @@ describe('DataView — setComputedColumn / setComputedColumnExpression', () => {
     )
     // 注意：apply 是单遍扫描，第一次 subtotal 写入后，同行 tax 才能读到 subtotal
     // → 注册顺序很重要，先注册先求值
-    view.setComputedColumn('subtotal', row => Number(row.price) * Number(row.qty))
+    view.setComputedColumn('subtotal', row => Number(row['price']) * Number(row['qty']))
     // tax 表达式引用 subtotal，需在 subtotal 已写入后才能正确求值
     // 因为 apply 对每行按注册顺序遍历，这里应正确
     view.setComputedColumnExpression('tax', 'subtotal * 0.1')
     // subtotal = 200, tax = 20
-    expect(view.rows[0].subtotal).toBe(200)
-    expect(view.rows[0].tax).toBeCloseTo(20)
+    expect(f(view.rows[0], 'subtotal')).toBe(200)
+    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(20)
   })
 
   it('computedColumnNames 返回所有已注册名称', () => {
@@ -148,18 +154,18 @@ describe('DataView — setComputedColumn / setComputedColumnExpression', () => {
       [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'x', type: 'number' }],
       [{ id: 1, x: 10 }],
     )
-    view.setComputedColumn('double', row => Number(row.x) * 2)
-    expect(view.rows[0].double).toBe(20)
+    view.setComputedColumn('double', row => Number(row['x']) * 2)
+    expect(f(view.rows[0], 'double')).toBe(20)
 
     view.removeComputedColumn('double')
     expect(view.computedColumnNames.has('double')).toBe(false)
 
     // 移除后 appendRow 不再填充 double
     view.appendRow({ id: 2, x: 5 })
-    expect(view.rows[1].double).toBeUndefined()
+    expect(f(view.rows[1], 'double')).toBeUndefined()
 
     // 历史行的 double 保留（未被清除）
-    expect(view.rows[0].double).toBe(20)
+    expect(f(view.rows[0], 'double')).toBe(20)
   })
 })
 
@@ -175,12 +181,12 @@ describe('DataView.setComputedContext', () => {
     view.setComputedContext({ taxRate: 0.1 })
     // 手动注册的表达式：ctx 在编译时被 freeze，不随 setComputedContext 更新
     view.setComputedColumnExpression('tax', 'amount * ctx.taxRate')
-    expect(view.rows[0].tax).toBeCloseTo(100)
+    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(100)
 
     // 要使用新 ctx，需要重新注册表达式（手动注册行为，非 DataTable 配置列）
     view.setComputedContext({ taxRate: 0.2 })
     view.setComputedColumnExpression('tax', 'amount * ctx.taxRate')  // 重新注册以应用新 ctx
-    expect(view.rows[0].tax).toBeCloseTo(200)
+    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(200)
   })
 
   it('context 变更时重新编译 DataTable 配置列', () => {
@@ -193,10 +199,10 @@ describe('DataView.setComputedContext', () => {
     view.rows.splice(0, 0, { id: 1, amount: 500 })
 
     view.setComputedContext({ taxRate: 0.05 })
-    expect(view.rows[0].tax).toBeCloseTo(25)
+    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(25)
 
     view.setComputedContext({ taxRate: 0.15 })
-    expect(view.rows[0].tax).toBeCloseTo(75)
+    expect(f(view.rows[0], 'tax') as number).toBeCloseTo(75)
   })
 })
 
@@ -239,8 +245,8 @@ describe('DataTable.columns[].computeExpression — 自动编译', () => {
     const view = ds.getView('Items', 'default')!
     // 手动触发初始计算列求值
     view.initComputedColumnsFromConfig()
-    expect(view.rows[0].total).toBe(60)
-    expect(view.rows[1].total).toBe(60)
+    expect(f(view.rows[0], 'total')).toBe(60)
+    expect(f(view.rows[1], 'total')).toBe(60)
   })
 
   it('编译失败的列跳过，其余列正常（compileColumnsExpressions 容错）', () => {
@@ -269,12 +275,13 @@ describe('DataTable.columns[].computeExpression — 自动编译', () => {
     )
     // makeView 中直接 splice/设置 rows（绕过 replaceRows），需手动初始化
     view.initComputedColumnsFromConfig()
-    expect(view.rows[0].total).toBe(40)
+    expect(f(view.rows[0], 'total')).toBe(40)
 
     // 模拟列配置变更后重建场景：修改行字段再重触发
-    view.rows[0].price = 10
+    const row0 = view.rows[0]!
+    row0['price'] = 10
     view.initComputedColumnsFromConfig()
-    expect(view.rows[0].total).toBe(50)
+    expect(f(view.rows[0], 'total')).toBe(50)
   })
 })
 
@@ -287,9 +294,9 @@ describe('行操作自动重求值', () => {
       [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'x', type: 'number' }],
       [{ id: 1, x: 2 }],
     )
-    view.setComputedColumn('double', row => Number(row.x) * 2)
+    view.setComputedColumn('double', row => Number(row['x']) * 2)
     view.appendRow({ id: 2, x: 7 })
-    expect(view.rows[1].double).toBe(14)
+    expect(f(view.rows[1], 'double')).toBe(14)
   })
 
   it('updateRowById — 更新字段后计算列重算', () => {
@@ -298,29 +305,29 @@ describe('行操作自动重求值', () => {
       [{ id: 1, price: 10, qty: 3 }],
     )
     view.setComputedColumnExpression('total', 'price * qty')
-    expect(view.rows[0].total).toBe(30)
+    expect(f(view.rows[0], 'total')).toBe(30)
 
     view.updateRowById(1, { price: 20 })
-    expect(view.rows[0].total).toBe(60)
+    expect(f(view.rows[0], 'total')).toBe(60)
   })
 
   it('replaceRows — 全量替换后所有新行有计算列值', () => {
     const view = makeView(
       [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'v', type: 'number' }],
     )
-    view.setComputedColumn('sq', row => Number(row.v) ** 2)
+    view.setComputedColumn('sq', row => Number(row['v']) ** 2)
     view.replaceRows([{ id: 1, v: 3 }, { id: 2, v: 4 }, { id: 3, v: 5 }])
-    expect(view.rows.map(r => r.sq)).toEqual([9, 16, 25])
+    expect(view.rows.map(row => row['sq'])).toEqual([9, 16, 25])
   })
 
   it('updateFromServer — 服务端响应后重算', () => {
     const view = makeView(
       [{ name: 'id', type: 'number', isPrimaryKey: true }, { name: 'n', type: 'number' }],
     )
-    view.setComputedColumn('half', row => Number(row.n) / 2)
+    view.setComputedColumn('half', row => Number(row['n']) / 2)
     view.updateFromServer({ rows: [{ id: 1, n: 10 }, { id: 2, n: 20 }] })
-    expect(view.rows[0].half).toBe(5)
-    expect(view.rows[1].half).toBe(10)
+    expect(f(view.rows[0], 'half')).toBe(5)
+    expect(f(view.rows[1], 'half')).toBe(10)
   })
 
   it('editRowById — 手工编辑后计算列也重算', async () => {
@@ -329,10 +336,10 @@ describe('行操作自动重求值', () => {
       [{ id: 1, price: 5, qty: 4 }],
     )
     view.setComputedColumnExpression('total', 'price * qty')
-    expect(view.rows[0].total).toBe(20)
+    expect(f(view.rows[0], 'total')).toBe(20)
 
     await view.editRowById(1, { price: 10 })
-    expect(view.rows[0].total).toBe(40)
+    expect(f(view.rows[0], 'total')).toBe(40)
   })
 })
 
@@ -346,12 +353,12 @@ describe('stripComputedColumns', () => {
       { name: 'price', type: 'number' },
       { name: 'qty', type: 'number' },
     ])
-    view.setComputedColumn('total', row => Number(row.price) * Number(row.qty))
+    view.setComputedColumn('total', row => Number(row['price']) * Number(row['qty']))
     const row = { id: 1, price: 10, qty: 5, total: 50 }
     const stripped = view.stripComputedColumns(row)
     expect('total' in stripped).toBe(false)
-    expect(stripped.price).toBe(10)
-    expect(stripped.qty).toBe(5)
+    expect(stripped['price']).toBe(10)
+    expect(stripped['qty']).toBe(5)
   })
 
   it('无计算列时返回原对象（零拷贝）', () => {
@@ -365,7 +372,7 @@ describe('stripComputedColumns', () => {
     view.setComputedColumn('tag', () => 'x')
     const row = { id: 1, tag: 'x', name: 'A' }
     view.stripComputedColumns(row)
-    expect(row.tag).toBe('x')   // 原始对象未被修改
+    expect(row['tag']).toBe('x')   // 原始对象未被修改
   })
 })
 
@@ -379,12 +386,12 @@ describe('运行时错误降级', () => {
       [],
     )
     // 访问 null.x 会 throw
-    view.setComputedColumn('broken', row => (row.obj as any).x)
-    view.setComputedColumn('safe', row => String(row.id) + '!')
+    view.setComputedColumn('broken', row => (row['obj'] as { x: unknown } | null)!.x)
+    view.setComputedColumn('safe', row => String(row['id']) + '!')
 
     view.appendRow({ id: 1, obj: null })
-    expect(view.rows[0].broken).toBeUndefined()
-    expect(view.rows[0].safe).toBe('1!')
+    expect(f(view.rows[0], 'broken')).toBeUndefined()
+    expect(f(view.rows[0], 'safe')).toBe('1!')
   })
 })
 
@@ -408,7 +415,7 @@ describe('聚合函数 — DataSet 关联', () => {
             { name: 'minAmount',   type: 'number', computeExpression: "$min('Items', 'amount')" },
             { name: 'maxAmount',   type: 'number', computeExpression: "$max('Items', 'amount')" },
             { name: 'nameList',    type: 'string', computeExpression: "$join('Items', 'name')" },
-            { name: 'names',                       computeExpression: "$list('Items', 'name')" },
+            { name: 'names',    type: 'string',     computeExpression: "$list('Items', 'name')" },
           ],
           rows: [
             { id: 1, customerId: 10 },
@@ -446,16 +453,16 @@ describe('聚合函数 — DataSet 关联', () => {
     const ds = makeOrdersDS()
     const ordersView = ds.getView('Orders', 'default')!
     ordersView.initComputedColumnsFromConfig()
-    expect(ordersView.rows[0].totalAmount).toBe(350)  // 100+200+50
-    expect(ordersView.rows[1].totalAmount).toBe(80)
+    expect(f(ordersView.rows[0], 'totalAmount')).toBe(350)  // 100+200+50
+    expect(f(ordersView.rows[1], 'totalAmount')).toBe(80)
   })
 
   it('$count — 子行数量', () => {
     const ds = makeOrdersDS()
     const view = ds.getView('Orders', 'default')!
     view.initComputedColumnsFromConfig()
-    expect(view.rows[0].itemCount).toBe(3)
-    expect(view.rows[1].itemCount).toBe(1)
+    expect(f(view.rows[0], 'itemCount')).toBe(3)
+    expect(f(view.rows[1], 'itemCount')).toBe(1)
   })
 
   it('$avg — 子行均值', () => {
@@ -463,30 +470,30 @@ describe('聚合函数 — DataSet 关联', () => {
     const view = ds.getView('Orders', 'default')!
     view.initComputedColumnsFromConfig()
     // order 1: (100+200+50)/3 ≈ 116.67
-    expect(view.rows[0].avgAmount).toBeCloseTo(116.67, 1)
+    expect(f(view.rows[0], 'avgAmount') as number).toBeCloseTo(116.67, 1)
   })
 
   it('$min / $max — 子行极值', () => {
     const ds = makeOrdersDS()
     const view = ds.getView('Orders', 'default')!
     view.initComputedColumnsFromConfig()
-    expect(view.rows[0].minAmount).toBe(50)
-    expect(view.rows[0].maxAmount).toBe(200)
+    expect(f(view.rows[0], 'minAmount')).toBe(50)
+    expect(f(view.rows[0], 'maxAmount')).toBe(200)
   })
 
   it('$list — 返回子行字段数组', () => {
     const ds = makeOrdersDS()
     const view = ds.getView('Orders', 'default')!
     view.initComputedColumnsFromConfig()
-    expect(view.rows[0].names).toEqual(['A', 'B', 'C'])
-    expect(view.rows[1].names).toEqual(['X'])
+    expect(f(view.rows[0], 'names')).toEqual(['A', 'B', 'C'])
+    expect(f(view.rows[1], 'names')).toEqual(['X'])
   })
 
   it('$join — 子行字段连接字符串', () => {
     const ds = makeOrdersDS()
     const view = ds.getView('Orders', 'default')!
     view.initComputedColumnsFromConfig()
-    expect(view.rows[0].nameList).toBe('A, B, C')
+    expect(f(view.rows[0], 'nameList')).toBe('A, B, C')
   })
 
   it('$join 自定义分隔符', () => {
@@ -522,7 +529,7 @@ describe('聚合函数 — DataSet 关联', () => {
       }],
     })
     ds.getView('Parents', 'default')!.initComputedColumnsFromConfig()
-    expect(ds.getView('Parents', 'default')!.rows[0].tags).toBe('foo | bar')
+    expect(f(ds.getView('Parents', 'default')!.rows[0], 'tags')).toBe('foo | bar')
   })
 
   it('子行为空时 $sum=0, $count=0, $avg=0, $min=undefined, $max=undefined, $list=[], $join=""', () => {
@@ -536,9 +543,9 @@ describe('聚合函数 — DataSet 关联', () => {
             { name: 'total', type: 'number', computeExpression: "$sum('C', 'v')" },
             { name: 'cnt',   type: 'number', computeExpression: "$count('C')" },
             { name: 'avg',   type: 'number', computeExpression: "$avg('C', 'v')" },
-            { name: 'mn',                    computeExpression: "$min('C', 'v')" },
-            { name: 'mx',                    computeExpression: "$max('C', 'v')" },
-            { name: 'lst',                   computeExpression: "$list('C', 'v')" },
+            { name: 'mn',   type: 'number',  computeExpression: "$min('C', 'v')" },
+            { name: 'mx',   type: 'number',  computeExpression: "$max('C', 'v')" },
+            { name: 'lst',  type: 'string',  computeExpression: "$list('C', 'v')" },
             { name: 'jn',   type: 'string',  computeExpression: "$join('C', 'v')" },
           ],
           rows: [{ id: 1 }],
@@ -562,13 +569,13 @@ describe('聚合函数 — DataSet 关联', () => {
     })
     const view = ds.getView('P', 'default')!
     view.initComputedColumnsFromConfig()
-    expect(view.rows[0].total).toBe(0)
-    expect(view.rows[0].cnt).toBe(0)
-    expect(view.rows[0].avg).toBe(0)
-    expect(view.rows[0].mn).toBeUndefined()
-    expect(view.rows[0].mx).toBeUndefined()
-    expect(view.rows[0].lst).toEqual([])
-    expect(view.rows[0].jn).toBe('')
+    expect(f(view.rows[0], 'total')).toBe(0)
+    expect(f(view.rows[0], 'cnt')).toBe(0)
+    expect(f(view.rows[0], 'avg')).toBe(0)
+    expect(f(view.rows[0], 'mn')).toBeUndefined()
+    expect(f(view.rows[0], 'mx')).toBeUndefined()
+    expect(f(view.rows[0], 'lst')).toEqual([])
+    expect(f(view.rows[0], 'jn')).toBe('')
   })
 })
 
