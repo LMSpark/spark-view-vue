@@ -152,6 +152,12 @@ export class DataView implements IDataSource {
   // ── 选中值序列化配置（单选 / 多选通用）────
 
   /**
+   * 值字段名（用于 value getter/setter 序列化）。
+   * 未指定时回退到主键字段。
+   * 示例：valueField = 'code' → value 返回各选中行的 code 字段值。
+   */
+  valueField?: string
+  /**
    * 标签显示字段名（用于 labels / label getter，渲染 tag 时使用）。
    * 未指定时回退到主键值字符串。
    * 示例：labelField = 'name' → labels 返回各选中行的 name 字段值。
@@ -198,15 +204,16 @@ export class DataView implements IDataSource {
    * 值的序列化字符串（供表单字段 v-model 或 API 传值使用）。
    *
    * **读取（get）**：
-   * - **多选模式**（`selectionDelimiter !== ''`）：各主键值以分隔符连接，如 `"1,2,3"`
-   * - **单选模式**（`selectionDelimiter === ''`）：返回首个选中值，如 `"1"`
+   * - 有 {@link valueField} 时：从选中行提取该字段值
+   * - 无 {@link valueField} 时：直接使用主键值（快速路径）
+   * - **多选模式**（`selectionDelimiter !== ''`）：以分隔符连接，如 `"1,2,3"`
+   * - **单选模式**（`selectionDelimiter === ''`）：返回首个值，如 `"1"`
    * - 未选中任何行时返回空字符串 `""`
    *
    * **写入（set）**：
-   * - **单选模式**（`selectionDelimiter === ''`）：整个值作为一个 ID，不拆分
-   * - **多选模式**：自动按 {@link selectionDelimiter} 分割
+   * - 有 {@link valueField} 时：按字段值匹配行 → 存储其主键
+   * - 无 {@link valueField} 时：直接作为主键值存储
    * - 空字符串 / null / undefined → 清空
-   * - 若 rows 尚未加载，仅写入 `_selectedRowIds`，待 rows 加载后 getter 自动反映新数据
    *
    * 搭配 {@link labels} 使用，完成 tag 渲染。
    *
@@ -217,8 +224,21 @@ export class DataView implements IDataSource {
    * const v = view.value  // → "1,2,3"
    */
   get value(): string {
+    if (this.valueField) {
+      // 自定义值字段：从选中行提取
+      const field = this.valueField
+      const rows = this.selectedRows
+      const values = rows.map(r => {
+        const v = r[field]
+        return v !== undefined && v !== null ? String(v) : ''
+      }).filter(v => v !== '')
+      if (!this.selectionDelimiter) {
+        return values.length > 0 ? values[0] : ''
+      }
+      return values.join(this.selectionDelimiter)
+    }
+    // 默认：使用主键值（快速路径，无需查行）
     if (!this.selectionDelimiter) {
-      // 单选模式：返回首个选中值
       return this._selectedRowIds.length > 0 ? String(this._selectedRowIds[0]) : ''
     }
     return this._selectedRowIds.join(this.selectionDelimiter)
@@ -230,34 +250,36 @@ export class DataView implements IDataSource {
       return
     }
 
-    // 单选模式：整个值作为一个 ID，不拆分
-    if (!this.selectionDelimiter) {
-      const trimmed = value.trim()
-      if (!trimmed) { this.selectionDelegate.clearSelectedRows(); return }
-      const samplePkType = this.rows.length > 0
-        ? typeof this.getPrimaryKeyValue(this.rows[0])
-        : 'string'
-      const id: string | number = samplePkType === 'number'
-        ? (Number.isFinite(Number(trimmed)) ? Number(trimmed) : trimmed)
-        : trimmed
-      this.selectionDelegate.setSelectedRowsById([id])
+    // 解析 token 列表
+    const tokens = this.selectionDelimiter
+      ? value.split(this.selectionDelimiter).map(s => s.trim()).filter(s => s !== '')
+      : [value.trim()].filter(s => s !== '')
+    if (tokens.length === 0) { this.selectionDelegate.clearSelectedRows(); return }
+
+    if (this.valueField) {
+      // 自定义值字段：按字段值匹配行 → 存储其主键
+      const field = this.valueField
+      const tokenSet = new Set(tokens)
+      const matchedPks: Array<string | number> = []
+      for (const row of this.rows) {
+        const fv = row[field]
+        if (fv !== undefined && fv !== null && tokenSet.has(String(fv))) {
+          const pk = this.getPrimaryKeyValue(row)
+          if (pk !== undefined) matchedPks.push(pk)
+        }
+      }
+      this.selectionDelegate.setSelectedRowsById(matchedPks)
       return
     }
 
-    // 多选模式：按分隔符拆分
-    const rawTokens = value
-      .split(this.selectionDelimiter)
-      .map(s => s.trim())
-      .filter(s => s !== '')
-
-    // 采样 rows 中首行的 PK 值类型；rows 为空时保持字符串（后续 getter 惰性匹配）
+    // 默认：treat tokens as PK values
     const samplePkType = this.rows.length > 0
       ? typeof this.getPrimaryKeyValue(this.rows[0])
       : 'string'
 
     const ids: Array<string | number> = samplePkType === 'number'
-      ? rawTokens.map(s => { const n = Number(s); return Number.isFinite(n) ? n : s })
-      : rawTokens
+      ? tokens.map(s => { const n = Number(s); return Number.isFinite(n) ? n : s })
+      : tokens
 
     this.selectionDelegate.setSelectedRowsById(ids)
   }
@@ -938,11 +960,6 @@ export class DataView implements IDataSource {
     return this.selectionDelegate.setSelectedRowsById(ids, options)
   }
 
-  /** @deprecated 使用 `view.value = '...'` 代替 */
-  setValue(value: string | null | undefined): void {
-    this.value = value
-  }
-
   clearSelectedRows(): void {
     this.selectionDelegate.clearSelectedRows()
   }
@@ -1248,6 +1265,7 @@ export class DataView implements IDataSource {
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     if (this.autoLoad !== false) result.autoLoad = this.autoLoad
     if (this.autoRefresh !== false) result.autoRefresh = this.autoRefresh
+    if (this.valueField !== undefined) result.valueField = this.valueField
     if (this.labelField !== undefined) result.labelField = this.labelField
     if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter
     return result
@@ -1265,6 +1283,7 @@ export class DataView implements IDataSource {
     if (data.treeConfig !== undefined) v.treeConfig = data.treeConfig
     if (data.autoLoad !== undefined) v.autoLoad = data.autoLoad
     if (data.autoRefresh !== undefined) v.autoRefresh = data.autoRefresh
+    if (data.valueField !== undefined) v.valueField = data.valueField
     if (data.labelField !== undefined) v.labelField = data.labelField
     if (data.selectionDelimiter !== undefined) v.selectionDelimiter = data.selectionDelimiter
     v.page = data.page ?? 1

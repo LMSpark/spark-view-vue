@@ -190,6 +190,12 @@ export interface IViewMetadata {
   /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode），属于视图层关注点 */
   treeConfig?: TreeConfig
   /**
+   * 值字段名（用于 value getter/setter 序列化）。
+   * 未指定时回退到主键字段。
+   * 示例：valueField = 'code' → value 返回各选中行的 code 字段值。
+   */
+  valueField?: string
+  /**
    * 标签显示字段名（用于 labels / label getter，渲染 tag 时使用）。
    * 未指定时回退到主键值字符串。
    * 示例：labelField = 'name' → labels 返回各选中行的 name 字段值。

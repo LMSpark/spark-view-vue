@@ -133,6 +133,10 @@ export namespace SparkData {
     autoLoad?: boolean
     /** 设置分页/排序/过滤后自动刷新（默认 false），见 {@link DataView.autoRefresh} */
     autoRefresh?: boolean
+    /** 值字段名（默认主键字段），见 {@link DataView.valueField} */
+    valueField?: string
+    /** 标签显示字段名，见 {@link DataView.labelField} */
+    labelField?: string
   }): DataView {
     const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
     if (config.autoCurrentFirst !== undefined) view.autoCurrentFirst = config.autoCurrentFirst
@@ -141,6 +145,8 @@ export namespace SparkData {
     if (config.treeConfig !== undefined) view.treeConfig = config.treeConfig
     if (config.autoLoad !== undefined) view.autoLoad = config.autoLoad
     if (config.autoRefresh !== undefined) view.autoRefresh = config.autoRefresh
+    if (config.valueField !== undefined) view.valueField = config.valueField
+    if (config.labelField !== undefined) view.labelField = config.labelField
     return view
   }
 
