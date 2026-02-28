@@ -1,13 +1,6 @@
 /**
  * @spark-view/spark-data
  * SPARK 数据空间 — 数据模型 + 权限系统
- *
- * L1: 按职责分组，支持子路径按需导入。
- * 主入口保持全导出（向后兼容），高级消费者可使用：
- *   - @spark-view/spark-data/permission
- *   - @spark-view/spark-data/validation
- *   - @spark-view/spark-data/data-key
- *   - @spark-view/spark-data/utils
  */
 
 // ===== 命名空间 API =====
@@ -45,7 +38,9 @@ export type {
   IDataSetMetadata,
   IViewMetadata,
   FilterExpression,
+  FilterOperator,
   SortExpression,
+  SortDirection,
   TreeConfig,
   TreeApi,
   FlatTreeNode,

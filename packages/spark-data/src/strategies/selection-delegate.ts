@@ -91,7 +91,7 @@ export class SelectionDelegate {
    *
    * @param row  - 要设置的行（null 表示清空）
    * @param opts.skipSync    - 跳过 selectionFollowsCurrent 同步（applyAutoFirst 内部用）
-   * @param opts.originatorId - UI 操作来源实例 ID（由 createTableSyncHandlers 注入）；
+   * @param opts.originatorId - UI 操作来源实例 ID；
    *                            useRuleBinding 用此字段识别"自己发出的事件"并跳过回写，
    *                            其他同级 binding 实例仍正常同步。
    */

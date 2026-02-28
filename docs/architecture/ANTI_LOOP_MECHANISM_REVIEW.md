@@ -1,5 +1,8 @@
 # UI ↔ DataSet 防循环机制完善性审阅
 
+> **ℹ️ 更新说明 (Phase 16)**: `sync-helpers.ts` 已删除（零消费者，功能已由 `DataSet.onAnyViewChange()` + `useRuleBinding.ts` 替代）。
+> 本文档保留作为历史设计审阅参考，其中对 `createTableSyncHandlers` / `subscribeViewStateChanges` 的引用仅描述旧架构。
+
 **审阅日期**: 2026-02-23  
 **审阅人**: AI Code Review  
 **版本**: v0.2.0

@@ -12,7 +12,7 @@ import type { DataView as SparkDataView } from './data-view'
 /**
  * DataSet 级视图变更处理器映射
  *
- * 用于 `DataSet.onAnyViewChange()` 和 `subscribeViewStateChanges()`：
+ * 用于 `DataSet.onAnyViewChange()`：
  * 订阅者按需注册感兴趣的事件类型，每个回调接收 `(tableName, viewId, ...payload)`。
  *
  * @example
