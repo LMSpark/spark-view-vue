@@ -58,6 +58,7 @@ export type {
   ColumnType,
   ColumnTypeMap,
   InferColumnValue,
+  AggregateType,
 } from './types'
 
 // ===== 主键生成器 =====

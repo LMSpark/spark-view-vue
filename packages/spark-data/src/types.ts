@@ -103,12 +103,33 @@ export interface IDataSource {
   total?: number
   page?: number
   pageSize?: number
+  /** 列级聚合汇总行（由 aggregate 列配置驱动，行变更后自动重算） */
+  summaryRow?: Readonly<IDataRow>
+  /** 选中行聚合汇总行（仅对 selectedRows 执行聚合，选中/数据变更后自动重算） */
+  selectionSummaryRow?: Readonly<IDataRow>
 }
 
 // ===== 数据模型类型 =====
 
 /** 计算列函数签名：接收当前行，返回计算值 */
 export type ComputedColumnFn = (row: IDataRow) => unknown
+
+// ===== 聚合类型 =====
+
+/**
+ * 列级聚合函数类型。
+ *
+ * 配置在 DataColumn.aggregate 上，DataView 自动对当前 rows 计算汇总值，
+ * 结果写入 `view.summaryRow[columnName]`。
+ *
+ * - `sum`   — 求和（非数字视为 0）
+ * - `count` — 非 null/undefined 值计数
+ * - `avg`   — 算术平均（空集 → 0）
+ * - `min`   — 最小值（空集 → undefined）
+ * - `max`   — 最大值（空集 → undefined）
+ * - `join`  — 字符串拼接（逗号分隔，跳过 null/undefined/空串；空集 → ''）
+ */
+export type AggregateType = 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join'
 
 // ===== 列类型系统 =====
 
@@ -208,6 +229,19 @@ export interface DataColumn {
    * `"$count('OrderItems')"` 
    */
   computeExpression?: string
+
+  // ===== 聚合属性 =====
+
+  /**
+   * 列级聚合函数——对 DataView 当前 rows 全量聚合，结果写入 `view.summaryRow[name]`。
+   *
+   * 与 computeExpression 可共存：先逐行求值计算列，再整列聚合。
+   *
+   * @example
+   * `{ name: 'amount', type: 'number', aggregate: 'sum' }`
+   * `{ name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }`
+   */
+  aggregate?: AggregateType
 }
 
 /** CRUD API配置（继承 TreeApi，树接口族直接平铺在此） */

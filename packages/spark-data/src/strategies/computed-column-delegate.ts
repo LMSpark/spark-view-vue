@@ -22,6 +22,10 @@
  * "$max('Bids', 'price')"
  * "$list('Tags', 'name').join(', ')"
  * "$join('Tags', 'name', ' | ')"    // 字符串连接，第三参数为分隔符（默认 ', '）
+ *
+ * // 跨表聚合引用（读取同 DataSet 内任意视图的 summaryRow / selectionSummaryRow）
+ * "$summary('Orders', 'price')"               // Orders 视图的 summaryRow.price
+ * "$selectionSummary('Orders', 'firstName')"  // Orders 视图的 selectionSummaryRow.firstName
  * ```
  */
 
@@ -38,20 +42,25 @@ const logger = Logger('DataView:Computed')
 export type ComputedColumnContext = Record<string, unknown>
 
 /**
- * 聚合解析器——将 "子表引用 + 父行" 映射为匹配的子行集合。
+ * 聚合解析器——提供子表行解析 + 跨表 summaryRow 访问。
  *
- * 子表引用格式：`'子表名'` 或 `'子表名@视图ID'`
+ * 视图引用格式：`'表名'` 或 `'表名@视图ID'`
  */
 export interface AggregateResolver {
+  /** 解析子表匹配行（$sum/$count/$avg/$min/$max/$list/$join） */
   resolveChildRows(childRef: string, parentRow: IDataRow): IDataRow[]
+  /** 读取指定视图的 summaryRow 字段（$summary） */
+  resolveSummary?(viewRef: string, field: string): unknown
+  /** 读取指定视图的 selectionSummaryRow 字段（$selectionSummary） */
+  resolveSelectionSummary?(viewRef: string, field: string): unknown
 }
 
 // ─────────────────────────────────────────────
 // 表达式编译器
 // ─────────────────────────────────────────────
 
-/** 检测表达式中是否含有聚合函数调用（子表引用类）*/
-const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
+/** 检测表达式中是否含有聚合/跨表函数调用 */
+const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join|summary|selectionSummary)\s*\(/
 
 /**
  * 将表达式字符串编译为 ComputedColumnFn。
@@ -66,6 +75,7 @@ const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
  * compileExpression('price * qty')
  * compileExpression('amount * ctx.taxRate', { taxRate: 0.13 })
  * compileExpression("$sum('Items', 'amount')", undefined, resolver)
+ * compileExpression("$summary('Orders', 'price')", undefined, resolver)
  */
 export function compileExpression(
   expression: string,
@@ -88,9 +98,10 @@ export function compileExpression(
     return (row: IDataRow) => compiled(row, _ctx)
   }
 
-  // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join
+  // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join + $summary/$selectionSummary
   const compiled = new Function(
-    '__row', '$sum', '$count', '$avg', '$min', '$max', '$list', '$join', 'ctx',
+    '__row', '$sum', '$count', '$avg', '$min', '$max', '$list', '$join',
+    '$summary', '$selectionSummary', 'ctx',
     body,
   ) as (
     row: IDataRow,
@@ -101,6 +112,8 @@ export function compileExpression(
     $max: (t: string, f: string) => number | undefined,
     $list: (t: string, f: string) => unknown[],
     $join: (t: string, f: string, sep?: string) => string,
+    $summary: (t: string, f: string) => unknown,
+    $selectionSummary: (t: string, f: string) => unknown,
     ctx: ComputedColumnContext,
   ) => unknown
 
@@ -135,10 +148,13 @@ export function compileExpression(
   const $join  = (t: string, f: string, sep = ', '): string =>
     getChildRows(t).map(r => String(r[f] ?? '')).join(sep)
 
+  const $summary = (t: string, f: string): unknown => resolver.resolveSummary?.(t, f)
+  const $selectionSummary = (t: string, f: string): unknown => resolver.resolveSelectionSummary?.(t, f)
+
   return (row: IDataRow) => {
     _row = row
     _cache.clear()
-    return compiled(row, $sum, $count, $avg, $min, $max, $list, $join, _ctx)
+    return compiled(row, $sum, $count, $avg, $min, $max, $list, $join, $summary, $selectionSummary, _ctx)
   }
 }
 

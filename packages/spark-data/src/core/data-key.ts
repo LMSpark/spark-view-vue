@@ -31,7 +31,7 @@ import type { IDataRow, IDataSource } from '../types'
 // ===== 类型定义 =====
 
 /** DataKey 可绑定的字段类型 */
-export type DataKeyField = 'rows' | 'currentRow' | 'selectedRows'
+export type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'summaryRow' | 'selectionSummaryRow'
 
 /** DataKey 解析后的描述符 */
 export interface DataKeyDescriptor {
@@ -55,7 +55,7 @@ export interface DataKeyDescriptor {
 const SEPARATOR = '@'
 
 /** 合法字段名集合 */
-const VALID_FIELDS = new Set<string>(['rows', 'currentRow', 'selectedRows'])
+const VALID_FIELDS = new Set<string>(['rows', 'currentRow', 'selectedRows', 'summaryRow', 'selectionSummaryRow'])
 
 
 // ===== 内部辅助 =====
@@ -156,6 +156,8 @@ export function resolveDataKey(
     case 'rows':         value = view.rows; break
     case 'currentRow':   value = view.currentRow; break
     case 'selectedRows': value = view.selectedRows; break
+    case 'summaryRow':   value = view.summaryRow as IDataRow; break
+    case 'selectionSummaryRow': value = view.selectionSummaryRow as IDataRow; break
     default:             return undefined
   }
   
@@ -203,6 +205,8 @@ export function resolveDataKeyAsSource(
     case 'rows':         value = view; break             // DataView 实现 IDataSource，适合整表绑定
     case 'currentRow':   value = view.currentRow; break
     case 'selectedRows': value = view.selectedRows; break
+    case 'summaryRow':   value = view.summaryRow as IDataRow; break
+    case 'selectionSummaryRow': value = view.selectionSummaryRow as IDataRow; break
     default:             return undefined
   }
   
@@ -292,6 +296,8 @@ export function resolveDataKeyBinding(
   const view = table.getView(dk.viewId)
   if (!view) return null
   if (dk.field === 'rows') return { kind: 'view', source: view }
+  if (dk.field === 'summaryRow') return { kind: 'value', value: view.summaryRow }
+  if (dk.field === 'selectionSummaryRow') return { kind: 'value', value: view.selectionSummaryRow }
   const value = dk.field === 'currentRow' ? view.currentRow : view.selectedRows
   return { kind: 'value', value }
 }
