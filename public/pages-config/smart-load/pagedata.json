@@ -4,23 +4,53 @@
     "tables": {
       "Categories": {
         "columns": [
-          { "name": "id", "type": "number", "isPrimaryKey": true },
-          { "name": "name", "type": "string" }
+          {
+            "name": "id",
+            "type": "number",
+            "isPrimaryKey": true
+          },
+          {
+            "name": "name",
+            "type": "string"
+          }
         ]
       },
       "Products": {
         "columns": [
-          { "name": "id", "type": "number", "isPrimaryKey": true },
-          { "name": "categoryId", "type": "number" },
-          { "name": "name", "type": "string" },
-          { "name": "price", "type": "number" }
+          {
+            "name": "id",
+            "type": "number",
+            "isPrimaryKey": true
+          },
+          {
+            "name": "categoryId",
+            "type": "number"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "type": "number"
+          }
         ]
       },
       "OrderDetails": {
         "columns": [
-          { "name": "id", "type": "number", "isPrimaryKey": true },
-          { "name": "productId", "type": "number" },
-          { "name": "quantity", "type": "number" }
+          {
+            "name": "id",
+            "type": "number",
+            "isPrimaryKey": true
+          },
+          {
+            "name": "productId",
+            "type": "number"
+          },
+          {
+            "name": "quantity",
+            "type": "number"
+          }
         ]
       }
     },

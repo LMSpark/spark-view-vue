@@ -31,12 +31,30 @@ function toKebabCase(str: string): string {
 }
 
 /**
- * 将 API 简写形式展开为完整的 CrudApi 对象。
+ * 将 API 简写形式展开为完整的 CrudApi 对象（含 Tree 端点）。
  *
  * 支持三种形式：
- * - **字符串** `"/api/users"` → RESTful CRUD 端点（list/create/retrieve/update/delete）
+ * - **字符串** `"/api/users"` → RESTful CRUD + Tree 端点
  * - **`true`** → 从 tableName 按约定生成路径 `/api/${kebab(tableName)}`
  * - **CrudApi 对象** → 原样返回
+ *
+ * 生成的端点布局（以 `/api/users` 为例）：
+ * ```
+ * CRUD:
+ *   list       GET    /api/users
+ *   create     POST   /api/users
+ *   retrieve   GET    /api/users/{id}
+ *   update     PUT    /api/users/{id}
+ *   delete     DELETE /api/users/{id}
+ * Tree:
+ *   node       GET    /api/users/tree/node
+ *   children   GET    /api/users/tree/children
+ *   path       GET    /api/users/tree/path
+ *   subtree    GET    /api/users/tree/subtree
+ *   search     GET    /api/users/tree/search
+ *   nested     GET    /api/users/tree/nested
+ *   nestedSearch GET  /api/users/tree/nested/search
+ * ```
  *
  * @param api  配置中的 api 字段值
  * @param tableName  表名（用于 `api: true` 约定路径生成）
@@ -51,12 +69,22 @@ export function expandApiShorthand(
   if (typeof api === 'object') return api
 
   const base = typeof api === 'string' ? api : `/api/${toKebabCase(tableName)}`
+  const tree = `${base}/tree`
   return {
+    // CRUD
     list:     { url: base, method: 'GET' },
     create:   { url: base, method: 'POST' },
     retrieve: { url: `${base}/{id}`, method: 'GET' },
     update:   { url: `${base}/{id}`, method: 'PUT' },
     delete:   { url: `${base}/{id}`, method: 'DELETE' },
+    // Tree
+    node:         { url: `${tree}/node`, method: 'GET' },
+    children:     { url: `${tree}/children`, method: 'GET' },
+    path:         { url: `${tree}/path`, method: 'GET' },
+    subtree:      { url: `${tree}/subtree`, method: 'GET' },
+    search:       { url: `${tree}/search`, method: 'GET' },
+    nested:       { url: `${tree}/nested`, method: 'GET' },
+    nestedSearch: { url: `${tree}/nested/search`, method: 'GET' },
   }
 }
 

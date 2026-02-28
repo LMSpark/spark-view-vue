@@ -4,41 +4,127 @@
     "tables": {
       "Users": {
         "columns": [
-          { "name": "id", "type": "number", "isPrimaryKey": true },
-          { "name": "name", "type": "string" },
-          { "name": "email", "type": "string" }
+          {
+            "name": "id",
+            "type": "number",
+            "isPrimaryKey": true
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "type": "string"
+          }
         ],
         "rows": [
-          { "id": 1, "name": "张三", "email": "zhangsan@example.com" },
-          { "id": 2, "name": "李四", "email": "lisi@example.com" }
+          {
+            "id": 1,
+            "name": "张三",
+            "email": "zhangsan@example.com"
+          },
+          {
+            "id": 2,
+            "name": "李四",
+            "email": "lisi@example.com"
+          }
         ]
       },
       "Orders": {
         "columns": [
-          { "name": "id", "type": "number", "isPrimaryKey": true },
-          { "name": "userId", "type": "number" },
-          { "name": "orderNo", "type": "string" },
-          { "name": "amount", "type": "number" }
+          {
+            "name": "id",
+            "type": "number",
+            "isPrimaryKey": true
+          },
+          {
+            "name": "userId",
+            "type": "number"
+          },
+          {
+            "name": "orderNo",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "number"
+          }
         ],
         "rows": [
-          { "id": 101, "userId": 1, "orderNo": "ORD-2023001", "amount": 299.99 },
-          { "id": 102, "userId": 1, "orderNo": "ORD-2023002", "amount": 149.25 },
-          { "id": 103, "userId": 2, "orderNo": "ORD-2023003", "amount": 599.00 }
+          {
+            "id": 101,
+            "userId": 1,
+            "orderNo": "ORD-2023001",
+            "amount": 299.99
+          },
+          {
+            "id": 102,
+            "userId": 1,
+            "orderNo": "ORD-2023002",
+            "amount": 149.25
+          },
+          {
+            "id": 103,
+            "userId": 2,
+            "orderNo": "ORD-2023003",
+            "amount": 599.00
+          }
         ]
       },
       "OrderItems": {
         "columns": [
-          { "name": "id", "type": "number", "isPrimaryKey": true },
-          { "name": "orderId", "type": "number" },
-          { "name": "productName", "type": "string" },
-          { "name": "quantity", "type": "number" },
-          { "name": "price", "type": "number" }
+          {
+            "name": "id",
+            "type": "number",
+            "isPrimaryKey": true
+          },
+          {
+            "name": "orderId",
+            "type": "number"
+          },
+          {
+            "name": "productName",
+            "type": "string"
+          },
+          {
+            "name": "quantity",
+            "type": "number"
+          },
+          {
+            "name": "price",
+            "type": "number"
+          }
         ],
         "rows": [
-          { "id": 1001, "orderId": 101, "productName": "笔记本电脑", "quantity": 1, "price": 299.99 },
-          { "id": 1002, "orderId": 102, "productName": "鼠标", "quantity": 2, "price": 49.75 },
-          { "id": 1003, "orderId": 102, "productName": "键盘", "quantity": 1, "price": 99.50 },
-          { "id": 1004, "orderId": 103, "productName": "显示器", "quantity": 1, "price": 599.00 }
+          {
+            "id": 1001,
+            "orderId": 101,
+            "productName": "笔记本电脑",
+            "quantity": 1,
+            "price": 299.99
+          },
+          {
+            "id": 1002,
+            "orderId": 102,
+            "productName": "鼠标",
+            "quantity": 2,
+            "price": 49.75
+          },
+          {
+            "id": 1003,
+            "orderId": 102,
+            "productName": "键盘",
+            "quantity": 1,
+            "price": 99.50
+          },
+          {
+            "id": 1004,
+            "orderId": 103,
+            "productName": "显示器",
+            "quantity": 1,
+            "price": 599.00
+          }
         ]
       }
     },
