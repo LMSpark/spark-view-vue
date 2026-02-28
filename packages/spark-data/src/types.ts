@@ -199,7 +199,7 @@ export interface IViewMetadata {
    * 值序列化分隔符（默认 ','）。
    *
    * - **非空字符串**（`','` / `'|'` / `';'` 等）：多选模式，value 以此分隔多个主键值
-   * - **空字符串 `''`**：单选模式，value 仅保留一个值，setValue 不拆分
+   * - **空字符串 `''`**：单选模式，value 仅保留一个值，赋值时不拆分
    *
    * 通过 `isMultiSelect` getter 可读取当前模式。
    */

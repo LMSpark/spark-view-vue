@@ -197,12 +197,24 @@ export class DataView implements IDataSource {
   /**
    * 值的序列化字符串（供表单字段 v-model 或 API 传值使用）。
    *
+   * **读取（get）**：
    * - **多选模式**（`selectionDelimiter !== ''`）：各主键值以分隔符连接，如 `"1,2,3"`
    * - **单选模式**（`selectionDelimiter === ''`）：返回首个选中值，如 `"1"`
    * - 未选中任何行时返回空字符串 `""`
    *
-   * 搭配 {@link setValue} 使用，构成完整的序列化/反序列化回路。
+   * **写入（set）**：
+   * - **单选模式**（`selectionDelimiter === ''`）：整个值作为一个 ID，不拆分
+   * - **多选模式**：自动按 {@link selectionDelimiter} 分割
+   * - 空字符串 / null / undefined → 清空
+   * - 若 rows 尚未加载，仅写入 `_selectedRowIds`，待 rows 加载后 getter 自动反映新数据
+   *
    * 搭配 {@link labels} 使用，完成 tag 渲染。
+   *
+   * @example
+   * view.value = '1,2,3'  // 多选 → [row1, row2, row3]
+   * view.value = '1'      // 单选 → [row1]
+   * view.value = ''       // 清空
+   * const v = view.value  // → "1,2,3"
    */
   get value(): string {
     if (!this.selectionDelimiter) {
@@ -210,6 +222,44 @@ export class DataView implements IDataSource {
       return this._selectedRowIds.length > 0 ? String(this._selectedRowIds[0]) : ''
     }
     return this._selectedRowIds.join(this.selectionDelimiter)
+  }
+
+  set value(value: string | null | undefined) {
+    if (!value) {
+      this.selectionDelegate.clearSelectedRows()
+      return
+    }
+
+    // 单选模式：整个值作为一个 ID，不拆分
+    if (!this.selectionDelimiter) {
+      const trimmed = value.trim()
+      if (!trimmed) { this.selectionDelegate.clearSelectedRows(); return }
+      const samplePkType = this.rows.length > 0
+        ? typeof this.getPrimaryKeyValue(this.rows[0])
+        : 'string'
+      const id: string | number = samplePkType === 'number'
+        ? (Number.isFinite(Number(trimmed)) ? Number(trimmed) : trimmed)
+        : trimmed
+      this.selectionDelegate.setSelectedRowsById([id])
+      return
+    }
+
+    // 多选模式：按分隔符拆分
+    const rawTokens = value
+      .split(this.selectionDelimiter)
+      .map(s => s.trim())
+      .filter(s => s !== '')
+
+    // 采样 rows 中首行的 PK 值类型；rows 为空时保持字符串（后续 getter 惰性匹配）
+    const samplePkType = this.rows.length > 0
+      ? typeof this.getPrimaryKeyValue(this.rows[0])
+      : 'string'
+
+    const ids: Array<string | number> = samplePkType === 'number'
+      ? rawTokens.map(s => { const n = Number(s); return Number.isFinite(n) ? n : s })
+      : rawTokens
+
+    this.selectionDelegate.setSelectedRowsById(ids)
   }
 
   /**
@@ -888,58 +938,9 @@ export class DataView implements IDataSource {
     return this.selectionDelegate.setSelectedRowsById(ids, options)
   }
 
-  /**
-   * 通过序列化字符串设置值（与 {@link value} getter 构成序列化回路）。
-   *
-   * - **单选模式**（`selectionDelimiter === ''`）：整个值作为一个 ID，不拆分
-   * - **多选模式**：自动按 {@link selectionDelimiter} 分割
-   * - 空字符串 / null / undefined → 清空
-   * - 若 rows 尚未加载，仅写入 `_selectedRowIds`，
-   *   待 rows 加载后 getter 自动反映新数据
-   *
-   * @param value - 主键值字符串，多选时以分隔符连接，如 `"1,2,3"`
-   *
-   * @example
-   * view.setValue("1,2,3")   // 多选 → [row1, row2, row3]
-   * view.setValue("1")       // 单选 → [row1]
-   * view.setValue(null)      // 清空
-   */
+  /** @deprecated 使用 `view.value = '...'` 代替 */
   setValue(value: string | null | undefined): void {
-    if (!value) {
-      this.selectionDelegate.clearSelectedRows()
-      return
-    }
-
-    // 单选模式：整个值作为一个 ID，不拆分
-    if (!this.selectionDelimiter) {
-      const trimmed = value.trim()
-      if (!trimmed) { this.selectionDelegate.clearSelectedRows(); return }
-      const samplePkType = this.rows.length > 0
-        ? typeof this.getPrimaryKeyValue(this.rows[0])
-        : 'string'
-      const id: string | number = samplePkType === 'number'
-        ? (Number.isFinite(Number(trimmed)) ? Number(trimmed) : trimmed)
-        : trimmed
-      this.selectionDelegate.setSelectedRowsById([id])
-      return
-    }
-
-    // 多选模式：按分隔符拆分
-    const rawTokens = value
-      .split(this.selectionDelimiter)
-      .map(s => s.trim())
-      .filter(s => s !== '')
-
-    // 采样 rows 中首行的 PK 值类型；rows 为空时保持字符串（后续 getter 惰性匹配）
-    const samplePkType = this.rows.length > 0
-      ? typeof this.getPrimaryKeyValue(this.rows[0])
-      : 'string'
-
-    const ids: Array<string | number> = samplePkType === 'number'
-      ? rawTokens.map(s => { const n = Number(s); return Number.isFinite(n) ? n : s })
-      : rawTokens
-
-    this.selectionDelegate.setSelectedRowsById(ids)
+    this.value = value
   }
 
   clearSelectedRows(): void {
