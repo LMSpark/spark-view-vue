@@ -42,15 +42,15 @@ export type EventSource =
   | 'auto'      // 自动触发（如 autoCurrentFirst）
   | 'crud'      // CRUD 操作触发
 
-// ✅ 判别联合（discriminated union）— 按 changeType 收窄
-type ViewStateEvent =
-  | CurrentRowEvent      // changeType: 'currentRow', row: IDataRow | null
-  | SelectedRowsEvent    // changeType: 'selectedRows', rows: IDataRow[]
-  | RowsChangedEvent     // changeType: 'rows'
-  | ClearedEvent         // changeType: 'cleared'
-  | RequestStateEvent    // changeType: 'requestState'
-  | MutatingEvent        // changeType: 'mutating'
-// 所有变体共享 ViewStateEventBase { tableName, viewId, source? }
+// ✅ 状态快照模式 — 每个事件都携带 currentRow + selectedRows 快照
+interface ViewStateEvent {
+  tableName: string
+  viewId: string
+  changeType: ViewStateChangeType
+  currentRow: IDataRow | null       // 当前行快照（始终可用）
+  selectedRows: IDataRow[]          // 选中行快照（始终可用）
+  originatorId?: string             // 发起方实例 ID（防循环同步）
+}
 ```
 
 ---
@@ -71,21 +71,20 @@ type ViewStateEvent =
  */
 export type EventSource = 'ui' | 'program' | 'sync' | 'cascade' | 'auto' | 'crud'
 
-/** 视图状态变化事件基类 */
-export interface ViewStateEventBase {
+/** 视图状态变化类型 */
+export type ViewStateChangeType =
+  | 'currentRow' | 'selectedRows' | 'rows'
+  | 'cleared' | 'requestState' | 'mutating'
+
+/** 状态快照模式：每个事件都携带 currentRow + selectedRows，无需按 changeType 收窄 */
+export interface ViewStateEvent {
   tableName: string
   viewId: string
-  source?: EventSource
+  changeType: ViewStateChangeType
+  currentRow: IDataRow | null
+  selectedRows: IDataRow[]
+  originatorId?: string
 }
-
-/** 判别联合：按 changeType 收窄后直接访问 row / rows，无需可选链 */
-export type ViewStateEvent =
-  | CurrentRowEvent      // { changeType: 'currentRow', row: IDataRow | null }
-  | SelectedRowsEvent    // { changeType: 'selectedRows', rows: IDataRow[] }
-  | RowsChangedEvent     // { changeType: 'rows' }
-  | ClearedEvent         // { changeType: 'cleared' }
-  | RequestStateEvent    // { changeType: 'requestState' }
-  | MutatingEvent        // { changeType: 'mutating' }
 ```
 
 ### 2. DataView 方法签名 (`packages/spark-data/src/data-view.ts`)

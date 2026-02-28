@@ -296,27 +296,24 @@ import type { ViewStateEvent } from '@spark-view/spark-data'
 onMounted(() => dataSource?.events.on('stateChanged', handleStateChange))
 onUnmounted(() => dataSource?.events.off('stateChanged', handleStateChange))
 
-// ViewStateEvent 是判别联合（discriminated union），switch 后自动收窄类型
+// ViewStateEvent 携带状态快照（currentRow + selectedRows），无需按 changeType 收窄
 function handleStateChange(event: ViewStateEvent) {
-  switch (event.changeType) {
-    case 'currentRow':   // CurrentRowEvent — event.row: IDataRow | null
-      console.log('当前行:', event.row)
-      break
-    case 'selectedRows': // SelectedRowsEvent — event.rows: IDataRow[]
-      console.log('选中行:', event.rows.length)
-      break
-    case 'rows':         // RowsChangedEvent — 行数据变化（16ms 防抖后触发）
-      break
-    case 'requestState': // RequestStateEvent — 加载状态变化
-    case 'cleared':      // ClearedEvent — 数据已清空
-    case 'mutating':     // MutatingEvent — CRUD 请求进行中/完成
-      break
+  // 每个事件都携带完整快照，直接读取即可
+  console.log('当前行:', event.currentRow)       // IDataRow | null — 始终可用
+  console.log('选中行:', event.selectedRows)     // IDataRow[] — 始终可用
+
+  // changeType 用于过滤不相关的事件类型
+  if (event.changeType === 'currentRow' || event.changeType === 'cleared') {
+    updateCurrentRowUI(event.currentRow)
+  }
+  if (event.changeType === 'selectedRows' || event.changeType === 'cleared') {
+    updateSelectedRowsUI(event.selectedRows)
   }
 }
 ```
 
 `changeType === 'rows'` 有 16ms 防抖（批量合并），其余事件立即触发。
-`currentRow` / `selectedRows` 变体的 `row` / `rows` 字段是 **必需属性**（非可选），通过 `switch` 收窄后直接访问无需 `??` 兜底。
+`currentRow` 和 `selectedRows` 是 **必需属性**，每个事件都携带快照，无需 `switch` 收窄或 `??` 兜底。
 
 ### 5.4 提供 DATA_SOURCE（容器组件模式）
 

@@ -71,12 +71,12 @@ export class SelectionDelegate {
     if (host.autoCurrentFirst !== false && firstRow) {
       this.setCurrentRow(firstRow, { skipSync: true })
     } else if (prevHadCurrent) {
-      this.emitStateChanged('currentRow', { row: null })
+      this.emitStateChanged('currentRow')
     }
     if (host.autoSelectFirst !== false && firstRow) {
       this.setSelectedRows([firstRow])
     } else if (prevHadSelected) {
-      this.emitStateChanged('selectedRows', { rows: [] })
+      this.emitStateChanged('selectedRows')
     }
   }
 
@@ -107,11 +107,8 @@ export class SelectionDelegate {
 
     host._currentRowId = newId
 
-    // event row 从 getter 解析（此时 _currentRowId 已更新，getter 返回正确对象）
-    this.emitStateChanged('currentRow', {
-      row: host.currentRow,
-      ...(opts?.originatorId !== undefined ? { originatorId: opts.originatorId } : {}),
-    })
+    // 快照由宿主自动构建（此时 _currentRowId 已更新，getter 返回正确对象）
+    this.emitStateChanged('currentRow', opts?.originatorId)
 
     if (!opts?.skipSync && host.selectionFollowsCurrent) {
       this.setSelectedRows(row !== null ? [row] : [], opts?.originatorId)
@@ -144,11 +141,8 @@ export class SelectionDelegate {
 
     host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
 
-    // event rows 从 getter 解析（保证与 _selectedRowIds 同步）
-    this.emitStateChanged('selectedRows', {
-      rows: host.selectedRows,
-      ...(originatorId !== undefined ? { originatorId } : {}),
-    })
+    // 快照由宿主自动构建（保证与 _selectedRowIds 同步）
+    this.emitStateChanged('selectedRows', originatorId)
   }
 
   // ─────────────────────────────────────────────
@@ -280,7 +274,7 @@ export class SelectionDelegate {
     if (toAddIds.length === 0) return 0
 
     host._selectedRowIds.push(...toAddIds)
-    this.emitStateChanged('selectedRows', { rows: host.selectedRows })
+    this.emitStateChanged('selectedRows')
     return toAddIds.length
   }
 
@@ -310,7 +304,7 @@ export class SelectionDelegate {
     const removedCount = host._selectedRowIds.length - newIds.length
     if (removedCount > 0) {
       host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
-      this.emitStateChanged('selectedRows', { rows: host.selectedRows })
+      this.emitStateChanged('selectedRows')
     }
     return removedCount
   }
@@ -359,7 +353,7 @@ export class SelectionDelegate {
     if (toAddIds.length === 0) return 0
 
     host._selectedRowIds.push(...toAddIds)
-    this.emitStateChanged('selectedRows', { rows: host.selectedRows })
+    this.emitStateChanged('selectedRows')
     return toAddIds.length
   }
 
@@ -383,7 +377,7 @@ export class SelectionDelegate {
     const removedCount = host._selectedRowIds.length - newIds.length
     if (removedCount > 0) {
       host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
-      this.emitStateChanged('selectedRows', { rows: host.selectedRows })
+      this.emitStateChanged('selectedRows')
     }
     return removedCount
   }
@@ -404,10 +398,10 @@ export class SelectionDelegate {
     const { currentRowPruned, selectedRowsPruned } = pruneInvalidSelections(host, rowPkSet)
 
     if (currentRowPruned) {
-      this.emitStateChanged('currentRow', { row: null })
+      this.emitStateChanged('currentRow')
     }
     if (selectedRowsPruned) {
-      this.emitStateChanged('selectedRows', { rows: host.selectedRows })
+      this.emitStateChanged('selectedRows')
     }
 
     return currentRowPruned || selectedRowsPruned

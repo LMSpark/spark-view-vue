@@ -8,7 +8,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData, RequestState } from '@spark-view/spark-data'
-import type { SelectedRowsEvent, CurrentRowEvent, IDataRow } from '@spark-view/spark-data'
+import type { ViewStateEvent, IDataRow } from '@spark-view/spark-data'
 
 // ─── 通用测试 DataSet 工厂 ─────────────────────────────────────
 
@@ -72,11 +72,12 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     // 父仅发出 selectedRows 事件（用户多选，但子视图 dep=currentRow，与之无关）
-    const evt: SelectedRowsEvent = {
+    const evt: ViewStateEvent = {
       tableName: 'Orders',
       viewId: 'default',
       changeType: 'selectedRows',
-      rows: [pView.rows[0]!, pView.rows[1]!],
+      currentRow: pView.currentRow,
+      selectedRows: [pView.rows[0]!, pView.rows[1]!],
     }
     pView.events.emit('stateChanged', evt)
     await new Promise(r => setTimeout(r, 30))
@@ -102,11 +103,12 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     // 父仅发出 currentRow 事件（用户点选某行，但子视图 dep=selectedRows，与之无关）
-    const evt: CurrentRowEvent = {
+    const evt: ViewStateEvent = {
       tableName: 'Orders',
       viewId: 'default',
       changeType: 'currentRow',
-      row: pView.rows[1]!,
+      currentRow: pView.rows[1]!,
+      selectedRows: pView.selectedRows,
     }
     pView.events.emit('stateChanged', evt)
     await new Promise(r => setTimeout(r, 30))
@@ -130,11 +132,13 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[0]!
-    } satisfies CurrentRowEvent)
+      tableName: 'Orders', viewId: 'default', changeType: 'currentRow',
+      currentRow: pView.rows[0]!, selectedRows: pView.selectedRows,
+    } satisfies ViewStateEvent)
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'selectedRows', rows: [pView.rows[0]!]
-    } satisfies SelectedRowsEvent)
+      tableName: 'Orders', viewId: 'default', changeType: 'selectedRows',
+      currentRow: pView.currentRow, selectedRows: [pView.rows[0]!],
+    } satisfies ViewStateEvent)
     await new Promise(r => setTimeout(r, 30))
 
     expect(cSpy).not.toHaveBeenCalled()
@@ -158,8 +162,9 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.currentRow
-    } satisfies CurrentRowEvent)
+      tableName: 'Orders', viewId: 'default', changeType: 'currentRow',
+      currentRow: pView.currentRow, selectedRows: pView.selectedRows,
+    } satisfies ViewStateEvent)
     await new Promise(r => setTimeout(r, 30))
 
     expect(cSpy).toHaveBeenCalledOnce()
@@ -181,7 +186,8 @@ describe('cascade event filter — no spurious child requests', () => {
     })
 
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'rows'
+      tableName: 'Orders', viewId: 'default', changeType: 'rows',
+      currentRow: pView.currentRow, selectedRows: pView.selectedRows,
     })
     await new Promise(r => setTimeout(r, 50))
 
@@ -204,7 +210,8 @@ describe('cascade event filter — no spurious child requests', () => {
     setParentLoaded(pView, [{ id: 1 }])
     // rows 事件 → 子应清空（parentRows 为空，因为 currentRow=null）
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'rows'
+      tableName: 'Orders', viewId: 'default', changeType: 'rows',
+      currentRow: pView.currentRow, selectedRows: pView.selectedRows,
     })
     await new Promise(r => setTimeout(r, 30))
 
@@ -250,14 +257,16 @@ describe('cascade reload — parent changes during child loading triggers immedi
 
     // 启动第一次加载（dep=currentRow, currentRow=id=1）
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[0]!
-    } satisfies CurrentRowEvent)
+      tableName: 'Orders', viewId: 'default', changeType: 'currentRow',
+      currentRow: pView.currentRow, selectedRows: pView.selectedRows,
+    } satisfies ViewStateEvent)
 
     // 此时子处于 Preparing（requestData 同步设置的），切换父 currentRow
     pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[1]!) ?? null
     pView.events.emit('stateChanged', {
-      tableName: 'Orders', viewId: 'default', changeType: 'currentRow', row: pView.rows[1]!
-    } satisfies CurrentRowEvent)
+      tableName: 'Orders', viewId: 'default', changeType: 'currentRow',
+      currentRow: pView.currentRow, selectedRows: pView.selectedRows,
+    } satisfies ViewStateEvent)
 
     // 等待所有微任务完成
     await new Promise(r => setTimeout(r, 30))

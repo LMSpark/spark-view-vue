@@ -80,7 +80,7 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
         tableName: 'Departments',
         viewId: 'default',
         changeType: 'currentRow',
-        row: deptView.rows[0]
+        currentRow: deptView.rows[0]
       })
     )
   })
@@ -96,7 +96,7 @@ describe('DataView.events.on stateChanged（视图状态监听）', () => {
 
     expect(handler).toHaveBeenCalled()
     expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({ changeType: 'currentRow', row: null })
+      expect.objectContaining({ changeType: 'currentRow', currentRow: null })
     )
   })
 
