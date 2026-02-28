@@ -72,7 +72,7 @@ export function compileExpression(
   ctx?: ComputedColumnContext,
   resolver?: AggregateResolver,
 ): ComputedColumnFn {
-  const frozenCtx = Object.freeze({ ...(ctx ?? {}) })
+  const _ctx = ctx ?? {}
   const hasAgg = resolver !== undefined && AGG_PATTERN.test(expression)
 
   // 判断表达式是否为多语句函数体（包含 return 关键字）
@@ -85,7 +85,7 @@ export function compileExpression(
     // 快速路径：无聚合函数
     const compiled = new Function('__row', 'ctx', body,
     ) as (row: IDataRow, ctx: ComputedColumnContext) => unknown
-    return (row: IDataRow) => compiled(row, frozenCtx)
+    return (row: IDataRow) => compiled(row, _ctx)
   }
 
   // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join
@@ -138,7 +138,7 @@ export function compileExpression(
   return (row: IDataRow) => {
     _row = row
     _cache.clear()
-    return compiled(row, $sum, $count, $avg, $min, $max, $list, $join, frozenCtx)
+    return compiled(row, $sum, $count, $avg, $min, $max, $list, $join, _ctx)
   }
 }
 
