@@ -107,6 +107,9 @@ export interface IDataSource {
 
 // ===== 数据模型类型 =====
 
+/** 计算列函数签名：接收当前行，返回计算值 */
+export type ComputedColumnFn = (row: IDataRow) => unknown
+
 /** 数据列定义 */
 export interface DataColumn {
   name: string
@@ -119,8 +122,21 @@ export interface DataColumn {
 
   // ===== 计算字段属性 =====
 
-  /** 计算表达式（JSON格式，如 {"op": "+", "left": "field1", "right": "field2"}） */
-  computeExpression?: unknown
+  /**
+   * 计算列表达式（JS 表达式字符串）。
+   *
+   * 行字段直接引用（无需前缀），外部上下文通过 `ctx` 对象引用，
+   * 子视图聚合通过 `$sum` / `$count` / `$avg` / `$min` / `$max` / `$list` 函数。
+   *
+   * @example
+   * `"price * qty"`
+   * `"firstName + ' ' + lastName"`
+   * `"ctx.taxRate ? amount * ctx.taxRate : amount"`
+   * `"$sum('OrderItems', 'amount')"`
+   * `"$sum('OrderItems@grid', 'amount')"`
+   * `"$count('OrderItems')"` 
+   */
+  computeExpression?: string
 }
 
 /** CRUD API配置（继承 TreeApi，树接口族直接平铺在此） */
@@ -192,9 +208,11 @@ export interface IViewMetadata {
   /**
    * 值字段名（用于 value getter/setter 序列化）。
    * 未指定时回退到主键字段。
-   * 示例：valueField = 'code' → value 返回各选中行的 code 字段值。
+   *
+   * - 单字段：`'code'` → value 返回各选中行的 code 字段值
+   * - 多字段（复合值）：`['code', 'region']` → value 以 `:` 连接各字段，如 `'A:US'`
    */
-  valueField?: string
+  valueField?: string | string[]
   /**
    * 标签显示字段名（用于 labels / label getter，渲染 tag 时使用）。
    * 未指定时回退到主键值字符串。

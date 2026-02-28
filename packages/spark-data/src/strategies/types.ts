@@ -132,6 +132,11 @@ export interface ICrudHost extends IRowStore {
   /** 数据校验器 */
   readonly validator: DataValidator | undefined
 
+  /** 已注册计算列名集合（提交前剥离） */
+  readonly computedColumnNames: ReadonlySet<string>
+  /** 从数据对象中移除计算列字段（浅拷贝，无计算列时返回原对象） */
+  stripComputedColumns(data: Partial<IDataRow>): Partial<IDataRow>
+
   /** 追加一行到 rows */
   appendRow(row: IDataRow): void
   /** 按主键更新一行 */

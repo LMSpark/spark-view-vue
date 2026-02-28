@@ -54,7 +54,8 @@ export type {
   DataColumn,
   DataRelation,
   ViewChangeHandlers,
-  DependencyType
+  DependencyType,
+  ComputedColumnFn,
 } from './types'
 
 // ===== 主键生成器 =====
@@ -67,6 +68,11 @@ export type {
   PrimaryKeyStrategy, 
   PrimaryKeyGeneratorConfig 
 } from './core/primary-key-generator'
+
+// ===== 计算列表达式 =====
+
+export { compileExpression, compileColumnsExpressions } from './strategies/computed-column-delegate'
+export type { ComputedColumnContext, AggregateResolver } from './strategies/computed-column-delegate'
 
 // ===== DataKey 统一解析 =====
 

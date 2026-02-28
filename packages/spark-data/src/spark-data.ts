@@ -134,7 +134,7 @@ export namespace SparkData {
     /** 设置分页/排序/过滤后自动刷新（默认 false），见 {@link DataView.autoRefresh} */
     autoRefresh?: boolean
     /** 值字段名（默认主键字段），见 {@link DataView.valueField} */
-    valueField?: string
+    valueField?: string | string[]
     /** 标签显示字段名，见 {@link DataView.labelField} */
     labelField?: string
   }): DataView {
