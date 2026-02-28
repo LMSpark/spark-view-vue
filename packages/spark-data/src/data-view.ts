@@ -30,6 +30,7 @@ import type {
   FlatTreeNode, TreePath, NestedTreeSearchResult,
   TreeConfig,
   ComputedColumnFn,
+  DataRelation,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -46,8 +47,8 @@ import { LocalMutationDelegate } from './strategies/local-mutation-delegate'
 import type { CrudLifecycleEvent } from './strategies/types'
 import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from './core/primary-key-generator'
 import { createPrimaryKeyGenerator } from './core/primary-key-generator'
-import { ComputedColumnDelegate } from './strategies/computed-column-delegate'
-import type { ComputedColumnContext } from './strategies/computed-column-delegate'
+import { ComputedColumnDelegate, compileExpression, compileColumnsExpressions } from './strategies/computed-column-delegate'
+import type { ComputedColumnContext, AggregateResolver } from './strategies/computed-column-delegate'
 
 // ─────────────────────────────────────────────
 // 事件类型映射
@@ -94,16 +95,9 @@ export class DataView implements IDataSource {
   get dataTable(): DataTable { return this._dataTable }
   set dataTable(table: DataTable) {
     this._dataTable = table
-    // DataTable attach → 自动编译列定义中的 computeExpression
-    this._computedDelegate?.syncFromConfig()
+    // DataTable 是列配置的所有者；attach 后立即编译 computeExpression
+    this._syncComputedFromConfig()
   }
-
-  // ── IComputedHost 实现（为委托提供最小上下文，不对外暴露）────
-
-  /** DataTable 列定义（DataTable 未 attach 时为 undefined）@internal */
-  get tableColumns() { return this._dataTable?.columns }
-  /** DataSet 引用（聚合解析器使用）@internal */
-  get tableDataSet() { return this._dataTable?.dataSet }
 
   // ── 标识 ────────────────────────────────────
 
@@ -455,7 +449,7 @@ export class DataView implements IDataSource {
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
   set treeMode(v: 'flat' | 'nested') { (this.treeConfig ??= {}).treeMode = v }
 
-  // ── 计算列（委托至 ComputedColumnDelegate）──────────────
+  // ── 计算列 ────────────────────────────────────────────
 
   /**
    * 设置计算列共享上下文（表达式中通过 `ctx` 引用）。
@@ -465,7 +459,9 @@ export class DataView implements IDataSource {
    * view.setComputedContext({ taxRate: 0.13, discountMap: { VIP: 0.9 } })
    */
   setComputedContext(ctx: ComputedColumnContext): void {
-    this._computedDelegate.setContext(ctx)
+    this._computedContext = ctx
+    this._syncComputedFromConfig()   // ctx 变更 → 重新编译配置列闭包
+    this._applyComputedColumns(this.rows)
   }
 
   /**
@@ -475,7 +471,8 @@ export class DataView implements IDataSource {
    * view.setComputedColumn('fullName', row => `${row.firstName} ${row.lastName}`)
    */
   setComputedColumn(name: string, compute: ComputedColumnFn): void {
-    this._computedDelegate.setColumn(name, compute)
+    this._computedDelegate.register(name, compute)
+    this._applyComputedColumns(this.rows)
   }
 
   /**
@@ -488,12 +485,14 @@ export class DataView implements IDataSource {
    * view.setComputedColumnExpression('orderTotal', "$sum('OrderItems', 'amount')")
    */
   setComputedColumnExpression(name: string, expression: string): void {
-    this._computedDelegate.setExpression(name, expression)
+    this._computedDelegate.register(
+      name,
+      compileExpression(expression, this._computedContext, this._createAggregateResolver()),
+    )
+    this._applyComputedColumns(this.rows)
   }
 
-  /**
-   * 移除计算列定义。（历史已求值的行数据保留，后续不再写入该字段）
-   */
+  /** 移除计算列定义。（历史已求值的行数据保留，后续不再写入该字段） */
   removeComputedColumn(name: string): void {
     this._computedDelegate.remove(name)
   }
@@ -508,7 +507,8 @@ export class DataView implements IDataSource {
    * DataTable attach 时已自动执行，通常无需手动调用。
    */
   initComputedColumnsFromConfig(): void {
-    this._computedDelegate.initFromConfig()
+    this._syncComputedFromConfig()
+    this._applyComputedColumns(this.rows)
   }
 
   /** 从数据对象中移除计算列字段，返回浅拷贝；无计算列时返回原对象。 */
@@ -519,6 +519,63 @@ export class DataView implements IDataSource {
   /** 对行集合执行计算列求值（就地写入）——供 DataView 内部调用。 */
   private _applyComputedColumns(rows: IDataRow[]): void {
     this._computedDelegate.apply(rows)
+  }
+
+  /**
+   * 从 DataTable 列定义（`DataColumn.computeExpression`）编译并注册到委托。
+   *
+   * **职责分工**：DataTable 是列配置的所有者；DataView 持有 context 与聚合解析器
+   * （需要 tableName / viewId / primaryKey 视角 + DataSet 关系信息）。
+   */
+  private _syncComputedFromConfig(): void {
+    const columns = this._dataTable?.columns
+    if (!columns?.length) return
+    const compiled = compileColumnsExpressions(
+      columns,
+      this._computedContext,
+      this._createAggregateResolver(),
+    )
+    for (const [name, fn] of compiled) this._computedDelegate.register(name, fn)
+  }
+
+  /**
+   * 构建子视图聚合解析器。
+   *
+   * DataTable 持有 DataSet（关系定义）；DataView 提供 tableName / viewId / primaryKey
+   * 视角——两者结合才能确定"谁是父、谁是子"。
+   */
+  private _createAggregateResolver(): AggregateResolver | undefined {
+    const ds = this._dataTable?.dataSet
+    if (!ds?.relations?.length) return undefined
+
+    const relations = ds.getChildRelations(this.tableName, this.viewId)
+    if (relations.length === 0) return undefined
+
+    // 双重索引：精确键 "childTable@childViewId" + 短键 "childTable"（取第一匹配）
+    const relMap = new Map<string, DataRelation>()
+    for (const r of relations) {
+      const vid = r.childViewId ?? 'default'
+      relMap.set(`${r.childTable}@${vid}`, r)
+      if (!relMap.has(r.childTable)) relMap.set(r.childTable, r)
+    }
+
+    const pk = this.primaryKey
+    const defaultParentField = typeof pk === 'string' ? pk : (pk[0] ?? 'id')
+
+    return {
+      resolveChildRows: (childRef: string, parentRow: IDataRow): IDataRow[] => {
+        const rel = relMap.get(childRef)
+        if (!rel) return []
+        const parentField = rel.parentField ?? defaultParentField
+        const parentValue = parentRow[parentField]
+        if (parentValue === null || parentValue === undefined) return []
+        const childView = ds.getView(rel.childTable, rel.childViewId ?? 'default')
+        if (!childView) return []
+        const childField = rel.childField
+        if (!childField) return []
+        return childView.rows.filter(r => r[childField] === parentValue)
+      },
+    }
   }
 
   // ── 关联对象 ────────────────────────────────
@@ -541,7 +598,9 @@ export class DataView implements IDataSource {
   // ── 委托 ─────────────────────────────────────
 
   /** 计算列委托（立即初始化，因 dataTable setter 可能在第一次懒访问之前触发） */
-  private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate(this)
+  private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate()
+  /** 计算列表达式共享上下文（表达式中以 `ctx` 引用） */
+  private _computedContext?: ComputedColumnContext
   /** CRUD 操作委托（懒初始化） */
   private _crudDelegate?: CrudDelegate | undefined
   /** 级联订阅委托（懒初始化） */
@@ -1319,8 +1378,9 @@ export class DataView implements IDataSource {
     // 5. 清空数据
     this.resetState()
     
-    // 6. 清除计算列委托
+    // 6. 清除计算列委托及上下文
     this._computedDelegate.destroy()
+    this._computedContext = undefined
     
     // 7. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
     this.treeManager = undefined
