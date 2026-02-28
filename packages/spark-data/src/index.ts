@@ -9,7 +9,10 @@ export { SparkData } from './spark-data'
 
 // ===== 核心类导出 =====
 
-export { DataSet, DataTable, DataView, TreeManager } from './spark-data'
+export { DataSet } from './dataset'
+export { DataTable } from './data-table'
+export { DataView } from './data-view'
+export { TreeManager } from './tree-manager'
 
 // ===== 枚举 / 常量 =====
 
@@ -21,7 +24,6 @@ export { CrudService, createCrudService } from './crud-service'
 export { createCrudLifecycleEvent } from './strategies/types'
 export type { CrudResult, QueryParams, BatchResult, CrudOperationConfig } from './types'
 export type {
-  IViewIdentity, IRowStore, ISelectionState,
   CrudOperation, CrudLifecycleEvent
 } from './strategies/types'
 
@@ -59,8 +61,7 @@ export type {
 
 export { 
   PrimaryKeyGenerator, 
-  createPrimaryKeyGenerator, 
-  createSnowflakeGenerator 
+  createPrimaryKeyGenerator 
 } from './core/primary-key-generator'
 export type { 
   PrimaryKeyStrategy, 
@@ -69,7 +70,7 @@ export type {
 
 // ===== DataKey 统一解析 =====
 
-export { isDataKey, parseDataKey, resolveDataKey, resolveDataKeyAsSource, resolveDataKeyBinding, resolveRawKey, getViewFromRawKey, buildDataKey, getViewKey } from './core/data-key'
+export { isDataKey, parseDataKey, resolveDataKey, resolveDataKeyBinding, resolveRawKey, getViewFromRawKey, buildDataKey, getViewKey } from './core/data-key'
 export type { DataKeyDescriptor, DataKeyField, DataKeyBinding } from './core/data-key'
 
 // ===== 能力键 =====
@@ -112,12 +113,4 @@ export type {
 
 // ===== 工具函数 =====
 
-export { isSameRow, getParentRows, buildPkSet, pruneInvalidSelections } from './core/utils'
-export { resolveUrlTemplate } from './core/url-template'
-export type { ResolvedUrl } from './core/url-template'
-
-// ===== 委托类型导出（S1: 高级消费者通过 view.selection / view.mutation / view.crud 访问） =====
-
-export { SelectionDelegate } from './strategies/selection-delegate'
-export { LocalMutationDelegate } from './strategies/local-mutation-delegate'
-export { CrudDelegate } from './strategies/crud-delegate'
+export { isSameRow } from './core/utils'

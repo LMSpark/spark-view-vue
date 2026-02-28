@@ -178,10 +178,3 @@ export namespace SparkData {
    */
   export const getViewKey = _getViewKey
 }
-
-// ===== 类导出 =====
-
-export { DataSet } from './dataset'
-export { TreeManager } from './tree-manager'
-export { DataTable } from './data-table'
-export { DataView } from './data-view'

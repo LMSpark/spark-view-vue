@@ -77,13 +77,6 @@ interface DataViewEventMap extends Record<string, any[]> {
 }
 
 // ─────────────────────────────────────────────
-// 能力接口（避免循环引用，与类同文件定义）
-// ─────────────────────────────────────────────
-
-// RequestState 已移至 types.ts，此处重新导出以保持向后兼容
-export { RequestState } from './types'
-
-// ─────────────────────────────────────────────
 // DataView 类
 // ─────────────────────────────────────────────
 
@@ -1039,7 +1032,7 @@ export class DataView implements IDataSource {
    */
   async setPage(page: number): Promise<void> {
     this.page = page
-    await this.reload()
+    await this.refresh()
   }
 
   /**
@@ -1048,7 +1041,7 @@ export class DataView implements IDataSource {
   async setPageSize(pageSize: number): Promise<void> {
     this.pageSize = pageSize
     this.page = 1
-    await this.reload()
+    await this.refresh()
   }
 
   /**
@@ -1056,7 +1049,7 @@ export class DataView implements IDataSource {
    */
   async setSort(sort: SortExpression | undefined): Promise<void> {
     this.sortExpression = sort
-    await this.reload()
+    await this.refresh()
   }
 
   /**
@@ -1065,18 +1058,7 @@ export class DataView implements IDataSource {
   async setFilter(filter: FilterExpression | undefined): Promise<void> {
     this.filterExpression = filter
     this.page = 1
-    await this.reload()
-  }
-
-  /**
-   * 重新加载数据（保留当前分页/排序/过滤参数）
-   *
-   * 与 refresh() 的区别：reload() 语义为"用户主动刷新"，
-   * refresh() 语义为"级联下行触发"——行为相同但语义不同。
-   */
-  async reload(): Promise<void> {
-    this.requestState = RequestState.Idle
-    return this.requestData()
+    await this.refresh()
   }
 
   // ─────────────────────────────────────────────
