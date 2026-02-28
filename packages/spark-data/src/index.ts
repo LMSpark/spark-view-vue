@@ -77,6 +77,11 @@ export type {
 export { compileExpression, compileColumnsExpressions } from './strategies/computed-column-delegate'
 export type { ComputedColumnContext, AggregateResolver } from './strategies/computed-column-delegate'
 
+// ===== 手工编辑脏追踪 =====
+
+export { DirtyTrackingDelegate } from './strategies/dirty-tracking-delegate'
+export type { FieldChange, RowDiff, SaveChangesData } from './strategies/dirty-tracking-delegate'
+
 // ===== DataKey 统一解析 =====
 
 export { isDataKey, parseDataKey, resolveDataKey, resolveDataKeyBinding, resolveRawKey, getViewFromRawKey, buildDataKey, getViewKey } from './core/data-key'

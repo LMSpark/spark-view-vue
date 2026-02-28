@@ -49,6 +49,8 @@ import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from './core/prim
 import { createPrimaryKeyGenerator } from './core/primary-key-generator'
 import { ComputedColumnDelegate, compileExpression, compileColumnsExpressions } from './strategies/computed-column-delegate'
 import type { ComputedColumnContext, AggregateResolver } from './strategies/computed-column-delegate'
+import { DirtyTrackingDelegate } from './strategies/dirty-tracking-delegate'
+import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-delegate'
 
 // ─────────────────────────────────────────────
 // 事件类型映射
@@ -304,6 +306,15 @@ export class DataView implements IDataSource {
    */
   autoRefresh: boolean = false
 
+  /**
+   * 增删改是否自动提交到服务端（默认 `false`）。
+   *
+   * - `false`（默认）：`addRow` / `editRowById` / `removeRow` 仅修改内存，
+   *   需调用 `saveChanges()` 批量提交。
+   * - `true`：每次 `addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD 方法。
+   */
+  autoCommit: boolean = false
+
   /** 树视图模式，代理到 treeConfig.treeMode（默认 'flat'） */
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
   set treeMode(v: 'flat' | 'nested') { (this.treeConfig ??= {}).treeMode = v }
@@ -468,6 +479,8 @@ export class DataView implements IDataSource {
   private _selectionDelegate?: SelectionDelegate | undefined
   /** 本地内存变更委托（懒初始化） */
   private _localMutationDelegate?: LocalMutationDelegate | undefined
+  /** 手工编辑追踪委托（懒初始化） */
+  private _dirtyTrackingDelegate?: DirtyTrackingDelegate | undefined
 
   /** 获取 CRUD 委托（懒初始化） */
   private get crudDelegate(): CrudDelegate {
@@ -509,6 +522,12 @@ export class DataView implements IDataSource {
     )
     return this._localMutationDelegate
   }
+
+  /** 获取手工编辑追踪委托（懒初始化） */
+  private get dirtyTrackingDelegate(): DirtyTrackingDelegate {
+    this._dirtyTrackingDelegate ??= new DirtyTrackingDelegate()
+    return this._dirtyTrackingDelegate
+  }
   
   // ── 公共委托访问器（S1: 高级消费者可直接访问委托实例）────────
 
@@ -535,6 +554,15 @@ export class DataView implements IDataSource {
    * DataView 上的同名方法是简化的委托透传入口。
    */
   get crud(): CrudDelegate { return this.crudDelegate }
+
+  /**
+   * 手工编辑追踪委托（只读访问）。
+   *
+   * 提供细粒度 dirty 追踪 API：isDirty、getOriginal、getDiff、dirtyRowIds。
+   * DataView 上的 editRowById / isDirty / dirtyRows / getDirtyChanges / clearDirty
+   * 是常用操作的便捷入口。
+   */
+  get dirtyTracking(): DirtyTrackingDelegate { return this.dirtyTrackingDelegate }
 
   // ── 公共内部对象 ─────────────────────────
 
@@ -980,6 +1008,279 @@ export class DataView implements IDataSource {
   }
 
   // ─────────────────────────────────────────────
+  // 手工编辑（带脏追踪）
+  // ─────────────────────────────────────────────
+
+  /**
+   * **本地新增行**，并登记为待新增（`autoCommit=false`）或立即提交（`autoCommit=true`）。
+   *
+   * - `autoCommit=false`（默认）：将行追加到 `rows`，标记为 pending-create，
+   *   调用 `saveChanges()` 时统一提交。
+   * - `autoCommit=true`：直接调用 `createRecord`，由 CRUD 生命周期处理后回写。
+   *
+   * @param data 行数据。若配置了 `primaryKeyGenerator` 且行中缺少主键，则自动补充。
+   * @returns `autoCommit=false` 时返回追加后的行对象；`autoCommit=true` 时返回 `CrudResult<IDataRow>`
+   */
+  async addRow(data: Partial<IDataRow>): Promise<IDataRow | CrudResult<IDataRow>> {
+    this.checkDestroyed()
+    const row = this.ensurePrimaryKey(data)
+    if (this.autoCommit) {
+      return this.crudDelegate.createRecord(row)
+    }
+    this.appendRow(row)
+    const id = this.getPrimaryKeyValue(row)
+    if (id !== undefined) {
+      this.dirtyTrackingDelegate.trackCreate(id, row)
+    }
+    return row
+  }
+
+  /**
+   * **本地删除行**，并登记为待删除（`autoCommit=false`）或立即提交（`autoCommit=true`）。
+   *
+   * - `autoCommit=false`（默认）：从 `rows` 中移除该行并标记为 pending-delete，
+   *   调用 `saveChanges()` 时统一提交。
+   * - `autoCommit=true`：直接调用 `deleteRecord`，由 CRUD 生命周期处理。
+   *
+   * @param id 行主键
+   * @returns `autoCommit=false` 时返回是否删除成功的布尔值；`autoCommit=true` 时返回 `CrudResult<boolean>`
+   */
+  async removeRow(id: string | number): Promise<boolean | CrudResult<boolean>> {
+    this.checkDestroyed()
+    if (this.autoCommit) {
+      return this.crudDelegate.deleteRecord(id)
+    }
+    const snapshot = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+    if (!snapshot) return false
+    const result = this.deleteRowById(id)
+    if (result) {
+      this.dirtyTrackingDelegate.trackDelete(id, snapshot)
+    }
+    return result
+  }
+
+  /**
+   * **手工编辑**指定行的字段值，并将该行标注为脏（有未保存变更）。
+   *
+   * 与 `updateRowById` 的区别：
+   * - `updateRowById` —— 服务端写入路径（CRUD 响应回写），**不**标脏
+   * - `editRowById`   —— 用户手工编辑路径（表格内联编辑、表单回写等），**标脏**
+   *
+   * 连续多次 editRowById 同一行只保留**首次**编辑前的快照，
+   * 确保 getDirtyChanges 始终对比原始服务端值。
+   *
+   * - `autoCommit=false`（默认）：仅更新内存并标脏，需调用 `saveChanges()` 提交。
+   * - `autoCommit=true`：立即调用 `updateRecord`，成功后自动清除脏标记。
+   *
+   * @param id   行主键
+   * @param data 变更字段（Partial，不含主键字段）
+   * @returns `autoCommit=false` 时返回布尔值；`autoCommit=true` 时返回 `CrudResult<IDataRow>`
+   *
+   * @example
+   * view.editRowById(row.id, { name: '李四', age: 31 })
+   * view.isDirty(row.id)         // true
+   * view.getDirtyChanges(row.id) // { name: { from: '张三', to: '李四' }, age: { from: 30, to: 31 } }
+   */
+  async editRowById(
+    id: string | number,
+    data: Partial<IDataRow>,
+  ): Promise<boolean | CrudResult<IDataRow>> {
+    this.checkDestroyed()
+    if (this.autoCommit) {
+      return this.crudDelegate.updateRecord(id, data)
+    }
+    // 先获取编辑前快照（updateRowById 会替换行对象，必须在之前取）
+    const original = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+    if (!original) return false
+
+    const result = this.updateRowById(id, data)
+    if (result) {
+      this.dirtyTrackingDelegate.markDirty(id, original)
+    }
+    return result
+  }
+
+  /**
+   * 查询是否有任何本地未提交变更（新增、编辑、删除）。
+   *
+   * @param id 不传 → 整个视图是否有任意待提交（含 dirty/pending-create/pending-delete）；
+   *           传入 id → 指定行是否有待提交变更
+   */
+  hasPendingChanges(id?: string | number): boolean {
+    return this.dirtyTrackingDelegate.hasPendingChanges(id)
+  }
+
+  /**
+   * 查询是否有手工未保存变更。
+   *
+   * @param id 不传 → 整个视图是否有任意脏行；传入 id → 指定行是否脏
+   */
+  isDirty(id?: string | number): boolean {
+    return this.dirtyTrackingDelegate.isDirty(id)
+  }
+
+  /**
+   * 当前所有脏行的行对象数组（按 rows 中的顺序）。
+   *
+   * 可用于批量预览变更、表格行高亮等场景。
+   */
+  get dirtyRows(): IDataRow[] {
+    const ids = this.dirtyTrackingDelegate.dirtyRowIds
+    if (ids.size === 0) return []
+    return this.rows.filter(r => {
+      const pk = this.getPrimaryKeyValue(r)
+      return pk !== undefined && ids.has(pk)
+    })
+  }
+
+  /**
+   * 获取指定行的字段级变更明细。
+   *
+   * @param id 行主键
+   * @returns 字段名 → `{ from（原始值）, to（当前值）}`；行不脏时返回 `{}`
+   */
+  getDirtyChanges(id: string | number): RowDiff {
+    const current = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+    if (!current) return {}
+    return this.dirtyTrackingDelegate.getDiff(id, current)
+  }
+
+  /**
+   * 清除指定行（或全部）的脏标记。
+   *
+   * 通常由 `saveChanges()` 在成功后自动调用；
+   * 也可手动调用（如"放弃修改"时先还原数据再调用此方法）。
+   *
+   * @param id 不传则清除全部
+   */
+  clearDirty(id?: string | number): void {
+    this.dirtyTrackingDelegate.clearDirty(id)
+  }
+
+  /**
+   * 将本地所有待提交变更（新增 / 手工编辑 / 删除）逐条保存到服务端。
+   *
+   * 提交顺序：**新增 → 更新 → 删除**（依赖关系最少）
+   *
+   * - **新增**：调用 `createRecord`；成功后用服务端返回的行替换本地行，取消 pending-create 标记。
+   * - **更新**：调用 `updateRecord`；成功后清除 dirty 标记。
+   * - **删除**：调用 `deleteRecord`；成功后取消 pending-delete 标记（行已在 `removeRow` 时移出 rows）。
+   *
+   * 任意单行失败**不中断**后续行，方便精准重试；失败行保留对应追踪状态。
+   *
+   * @param ids 指定要保存的行主键列表；不传则保存**全部**待提交变更。
+   *            传入的 id 会自动按所属状态分配到对应操作。
+   * @returns `CrudResult<SaveChangesData>`，`success: true` 表示全部提交成功
+   *
+   * @example
+   * const result = await view.saveChanges()
+   * if (!result.success) {
+   *   console.warn('部分行保存失败', result.data?.failedIds)
+   * }
+   */
+  async saveChanges(ids?: Array<string | number>): Promise<CrudResult<SaveChangesData>> {
+    this.checkDestroyed()
+    const delegate = this.dirtyTrackingDelegate
+    const filterByIds = ids !== undefined ? new Set(ids) : undefined
+
+    const allPending = filterByIds === undefined && !delegate.hasPendingChanges()
+    if (allPending) {
+      return {
+        success: true,
+        message: '没有待提交的变更',
+        data: { createdCount: 0, savedCount: 0, deletedCount: 0, failedCount: 0, failedIds: [] },
+      }
+    }
+
+    let createdCount = 0
+    let savedCount = 0
+    let deletedCount = 0
+    const failedIds: Array<string | number> = []
+
+    // ── 1. 新增 ──────────────────────────────────────────────
+    const createIds = filterByIds
+      ? [...delegate.pendingCreateIds].filter(id => filterByIds.has(id))
+      : [...delegate.pendingCreateIds]
+
+    for (const tempId of createIds) {
+      const row = this.rows.find(r => this.getPrimaryKeyValue(r) === tempId)
+      if (!row) {
+        delegate.cancelCreate(tempId)
+        continue
+      }
+      try {
+        const result = await this.crudDelegate.createRecord(this.stripComputedColumns({ ...row }))
+        if (result.success) {
+          delegate.cancelCreate(tempId)
+          // 用服务端返回的行替换本地临时行（服务端可能分配新主键）
+          if (result.data) {
+            this.deleteRowById(tempId)
+            this.appendRow(result.data)
+          }
+          createdCount++
+        } else {
+          failedIds.push(tempId)
+        }
+      } catch {
+        failedIds.push(tempId)
+      }
+    }
+
+    // ── 2. 更新 ──────────────────────────────────────────────
+    const updateIds = filterByIds
+      ? [...delegate.dirtyRowIds].filter(id => filterByIds.has(id))
+      : [...delegate.dirtyRowIds]
+
+    for (const id of updateIds) {
+      const row = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+      if (!row) {
+        delegate.clearDirty(id)
+        continue
+      }
+      try {
+        const result = await this.crudDelegate.updateRecord(id, this.stripComputedColumns({ ...row }))
+        if (result.success) {
+          delegate.clearDirty(id)
+          savedCount++
+        } else {
+          failedIds.push(id)
+        }
+      } catch {
+        failedIds.push(id)
+      }
+    }
+
+    // ── 3. 删除 ──────────────────────────────────────────────
+    const deleteIds = filterByIds
+      ? [...delegate.pendingDeleteIds].filter(id => filterByIds.has(id))
+      : [...delegate.pendingDeleteIds]
+
+    for (const id of deleteIds) {
+      try {
+        const result = await this.crudDelegate.deleteRecord(id)
+        if (result.success) {
+          delegate.cancelDelete(id)
+          deletedCount++
+        } else {
+          failedIds.push(id)
+        }
+      } catch {
+        failedIds.push(id)
+      }
+    }
+
+    const failedCount = failedIds.length
+    return {
+      success: failedCount === 0,
+      message: failedCount === 0
+        ? `新增 ${createdCount} 行，更新 ${savedCount} 行，删除 ${deletedCount} 行`
+        : `成功：新增 ${createdCount}，更新 ${savedCount}，删除 ${deletedCount}；失败 ${failedCount} 行`,
+      data: { createdCount, savedCount, deletedCount, failedCount, failedIds },
+    }
+  }
+
+
+  // ─────────────────────────────────────────────
   // 选中状态（委托给 SelectionDelegate）
   // ─────────────────────────────────────────────
 
@@ -1240,8 +1541,12 @@ export class DataView implements IDataSource {
     // 6. 清除计算列委托及上下文
     this._computedDelegate.destroy()
     delete this._computedContext
-    
-    // 7. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
+
+    // 7. 清除脏追踪委托
+    this._dirtyTrackingDelegate?.destroy()
+    this._dirtyTrackingDelegate = undefined
+
+    // 8. 清除 TreeManager 引用（_treeHttp 随 DataView GC 自动释放，无需显式清除）
     this.treeManager = undefined
     
     // 8. 保留 DataTable 引用（现代 JS GC 能正确处理循环引用）。
@@ -1325,6 +1630,7 @@ export class DataView implements IDataSource {
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     if (this.autoLoad !== false) result.autoLoad = this.autoLoad
     if (this.autoRefresh !== false) result.autoRefresh = this.autoRefresh
+    if (this.autoCommit !== false) result.autoCommit = this.autoCommit
     if (this.valueField !== undefined) result.valueField = this.valueField
     if (this.labelField !== undefined) result.labelField = this.labelField
     if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter
@@ -1343,6 +1649,7 @@ export class DataView implements IDataSource {
     if (data.treeConfig !== undefined) v.treeConfig = data.treeConfig
     if (data.autoLoad !== undefined) v.autoLoad = data.autoLoad
     if (data.autoRefresh !== undefined) v.autoRefresh = data.autoRefresh
+    if (data.autoCommit !== undefined) v.autoCommit = data.autoCommit
     if (data.valueField !== undefined) v.valueField = data.valueField
     if (data.labelField !== undefined) v.labelField = data.labelField
     if (data.selectionDelimiter !== undefined) v.selectionDelimiter = data.selectionDelimiter

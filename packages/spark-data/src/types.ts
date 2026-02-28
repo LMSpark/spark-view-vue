@@ -314,6 +314,14 @@ export interface IViewMetadata {
    * 会在修改参数后自动调用 `refresh()`，消费层无需手动触发刷新。
    */
   autoRefresh?: boolean
+  /**
+   * 增删改是否自动提交到服务端（默认 `false`）。
+   *
+   * - `false`（默认）：`addRow` / `editRowById` / `removeRow` 仅修改内存，
+   *   需调用 `saveChanges()` 批量提交。
+   * - `true`：每次 `addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD 方法。
+   */
+  autoCommit?: boolean
 }
 
 /**
