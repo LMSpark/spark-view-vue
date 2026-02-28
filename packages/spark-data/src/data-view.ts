@@ -24,7 +24,7 @@
 
 import type {
   IDataRow, IViewMetadata, FilterExpression, SortExpression,
-  ViewStateEvent, QueryParams,
+  ViewStateEvent, ViewStateChangeType, QueryParams,
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
@@ -980,8 +980,11 @@ export class DataView implements IDataSource {
    *   立即事件（currentRow 等）不会意外取消正在等待的 rows 通知。
    * - 其余事件：立即触发（cleared / requestState / mutating / currentRow / selectedRows）。
    */
-  private emitStateChanged(changeType: ViewStateEvent['changeType'], extra?: Partial<ViewStateEvent>): void {
-    const event: ViewStateEvent = { ...extra, tableName: this.tableName, viewId: this.viewId, changeType }
+  private emitStateChanged(changeType: 'currentRow', extra: { row: IDataRow | null; originatorId?: string }): void
+  private emitStateChanged(changeType: 'selectedRows', extra: { rows: IDataRow[]; originatorId?: string }): void
+  private emitStateChanged(changeType: 'rows' | 'cleared' | 'requestState' | 'mutating'): void
+  private emitStateChanged(changeType: ViewStateChangeType, extra?: Record<string, unknown>): void {
+    const event = { ...extra, tableName: this.tableName, viewId: this.viewId, changeType } as ViewStateEvent
 
     if (changeType === 'rows') {
       // Only rows uses debounce; cancel only a previous rows debounce (not immediate events)

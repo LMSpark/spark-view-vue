@@ -57,7 +57,17 @@ export type {
   DataColumn,
   DataRelation,
   ViewStateEvent,
+  ViewStateChangeType,
   DependencyType
+} from './types'
+export type {
+  ViewStateEventBase,
+  CurrentRowEvent,
+  SelectedRowsEvent,
+  RowsChangedEvent,
+  ClearedEvent,
+  RequestStateEvent,
+  MutatingEvent,
 } from './types'
 
 // ===== 主键生成器 =====
