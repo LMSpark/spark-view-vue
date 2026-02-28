@@ -201,6 +201,14 @@ export interface IViewMetadata {
    * 当主键值本身包含逗号时可改用其他分隔符，如 '|' 或 ';'。
    */
   selectionDelimiter?: string
+  /**
+   * 是否在 DataSet 初始化后自动加载数据（默认 false）。
+   *
+   * 设为 `true` 时，渲染层（如 usePageDataSet）在构建 DataSet 后自动调用 `view.requestData()`，
+   * 业务脚本无需在 `__init__` 中手动编写加载代码。
+   * 仅对有配置 `api` 且为 default 视图的主表有意义。
+   */
+  autoLoad?: boolean
 }
 
 /**
@@ -212,7 +220,13 @@ export interface IViewMetadata {
 export interface ITableOwnMetadata {
   tableName: string
   columns: DataColumn[]
-  api: CrudApi | undefined
+  /**
+   * CRUD API 配置。支持三种形式：
+   * - 完整对象 `CrudApi`
+   * - 字符串简写（RESTful 基础路径）：`"/api/users"` → 自动展开为完整 CRUD 端点
+   * - `true`：从 tableName 按约定生成路径（`/api/${kebab-case(tableName)}`）
+   */
+  api: CrudApi | string | boolean | undefined
   views: Record<string, IViewMetadata> | undefined
   loading: boolean | undefined
   error: string | undefined
@@ -278,18 +292,38 @@ export type FilterExpression =
 
 // ===== 关系类型 =====
 
-/** 数据关系定义 */
+/**
+ * 数据关系定义
+ *
+ * 简写模式：只需 `parentTable` + `childTable` + `childField`，框架自动推导其余字段。
+ * ```json
+ * { "parentTable": "Users", "childTable": "Orders", "childField": "userId" }
+ * ```
+ * 等价于完整写法：
+ * ```json
+ * {
+ *   "parentTable": "Users", "childTable": "Orders",
+ *   "dependencyType": "currentRow",
+ *   "filterExpression": { "field": "userId", "op": "==", "value": { "func": "FIELD", "args": ["id"] } }
+ * }
+ * ```
+ */
 export interface DataRelation {
   parentTable: string
   parentViewId?: string
   childTable: string
   childViewId?: string
-  /** 指定父表中用于匹配的字段（默认为 'id'） */
+  /** 父表中用于匹配的字段（默认取父视图 primaryKey，通常为 'id'） */
   parentField?: string
-  /** 指定子表中用于匹配的字段（如果未指定，使用 filterExpression.field） */
+  /** 子表中用于匹配的字段——简写模式必填；完整模式不填时从 filterExpression.field 推断 */
   childField?: string
-  dependencyType: DependencyType
-  filterExpression: FilterExpression
+  /** 依赖类型（默认 'currentRow'） */
+  dependencyType?: DependencyType
+  /**
+   * 过滤表达式——完整模式手动指定；简写模式可省略，框架根据 childField/parentField 自动生成。
+   * 规范化后此字段一定存在（DataSet 构造函数保证）。
+   */
+  filterExpression?: FilterExpression
   cascadeUpdate?: boolean
   cascadeDelete?: boolean
   /** 父变化时是否自动级联加载子视图（默认 true——仅 `false` 时跳过） */
@@ -482,6 +516,11 @@ export interface IDataSet {
    * @returns 取消订阅函数（组件卸载时调用）
    */
   onAnyViewChange(handlers: ViewChangeHandlers): () => void
+  /**
+   * 触发所有标记了 `autoLoad: true` 的 default 视图自动加载。
+   * 渲染层构建 DataSet 后调用；业务脚本无需手动编写加载代码。
+   */
+  triggerAutoLoad(): void
 }
 
 // ===== CRUD服务相关类型 =====

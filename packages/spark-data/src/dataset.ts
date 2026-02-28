@@ -27,6 +27,46 @@ function inferColumnsFromRecord(obj: Record<string, unknown>): DataColumn[] {
   return Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n })) as DataColumn[]
 }
 
+/**
+ * @internal 关系规范化——填充默认值 + 根据 childField/parentField 自动生成 filterExpression
+ *
+ * 简写模式只需 `{ parentTable, childTable, childField }` 即可：
+ * - `dependencyType` 默认 `'currentRow'`
+ * - `parentViewId` / `childViewId` 默认 `'default'`
+ * - `parentField` 默认取父视图 primaryKey（通常为 `'id'`）
+ * - `filterExpression` 由框架根据 childField + parentField 自动生成
+ */
+function normalizeRelation(r: DataRelation, ds: DataSet): DataRelation {
+  const norm = {
+    ...r,
+    dependencyType: r.dependencyType ?? 'currentRow',
+    parentViewId: r.parentViewId ?? 'default',
+    childViewId: r.childViewId ?? 'default',
+  } as DataRelation
+
+  // 自动生成 filterExpression（简写模式：childField 存在但 filterExpression 缺失）
+  if (!norm.filterExpression && norm.childField) {
+    // parentField 回退到父视图 primaryKey（与 data-view.ts requestData 逻辑对齐）
+    let parentKey = norm.parentField
+    if (!parentKey) {
+      const parentView = ds.getView(norm.parentTable, norm.parentViewId)
+      if (parentView) {
+        const pk = parentView.primaryKey
+        parentKey = typeof pk === 'string' ? pk : pk[0]
+      }
+      parentKey = parentKey ?? 'id'
+    }
+    norm.parentField = parentKey
+    norm.filterExpression = {
+      field: norm.childField,
+      op: '==',
+      value: { func: 'FIELD', args: [parentKey] },
+    }
+  }
+
+  return norm
+}
+
 export class DataSet implements IDataSet {
 
   // ===== 属性定义 =====
@@ -106,18 +146,18 @@ export class DataSet implements IDataSet {
     this.tables = {}
     const tableDefs = config.tables ?? {}
     for (const [name, td] of Object.entries(tableDefs)) {
+      // P1-1: tableName 从对象 key 推断（用户可省略冗余的 tableName 字段）
+      if (!td.tableName) {
+        (td as { tableName: string }).tableName = name
+      }
       const table = DataTable.fromTableData(td)
       table.setDataSet(this)  // 设置 table.dataSet = this, view.dataTable = table
       this.tables[name] = table
     }
 
-    // 关系默认 viewId（Phase 3 M8: 浅拷贝避免 mutate 调用方原始对象）
+    // 关系规范化（浅拷贝 + 默认值填充 + filterExpression 自动生成）
     if (this.relations) {
-      this.relations = this.relations.map(r => ({
-        ...r,
-        parentViewId: r.parentViewId ?? 'default',
-        childViewId: r.childViewId ?? 'default',
-      }))
+      this.relations = this.relations.map(r => normalizeRelation(r, this))
     }
   }
 
@@ -268,6 +308,23 @@ export class DataSet implements IDataSet {
     }
   }
 
+  /**
+   * 触发所有标记了 `autoLoad: true` 的 default 视图自动加载。
+   *
+   * 渲染层（如 usePageDataSet）在构建 DataSet 后调用此方法；
+   * 业务脚本不再需要在 `__init__` 中手动写 `view.loadFromServer()`。
+   *
+   * 仅处理 default 视图——命名视图和从表通常由级联机制驱动。
+   */
+  triggerAutoLoad(): void {
+    for (const table of Object.values(this.tables)) {
+      const defaultView = table.getView('default')
+      if (defaultView?.autoLoad && defaultView.requestState === RequestState.Idle) {
+        void defaultView.requestData()
+      }
+    }
+  }
+
   // ===== 关系图查询（网状关系，非树形） =====
 
   /**
@@ -302,10 +359,10 @@ export class DataSet implements IDataSet {
   static fromConfig(config: {
     dataSetName: string
     tables: Record<string, {
-      tableName: string
+      tableName?: string
       columns: DataColumn[]
       rows?: IDataRow[]
-      api?: CrudApi
+      api?: CrudApi | string | boolean
       autoCurrentFirst?: boolean
       autoSelectFirst?: boolean
       selectionFollowsCurrent?: boolean
@@ -316,7 +373,7 @@ export class DataSet implements IDataSet {
     const tables: Record<string, ITableMetadata> = {}
 
     for (const [key, tableConfig] of Object.entries(config.tables)) {
-      tables[key] = { ...tableConfig } as ITableMetadata
+      tables[key] = { ...tableConfig, tableName: tableConfig.tableName ?? key } as ITableMetadata
     }
 
     return new DataSet({

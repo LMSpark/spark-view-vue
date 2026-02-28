@@ -1,10 +1,8 @@
 {
   "dataset": {
     "dataSetName": "CascadeDemo",
-    "version": 1,
     "tables": {
       "Users": {
-        "tableName": "Users",
         "columns": [
           { "name": "id", "type": "number", "isPrimaryKey": true },
           { "name": "name", "type": "string" },
@@ -16,7 +14,6 @@
         ]
       },
       "Orders": {
-        "tableName": "Orders",
         "columns": [
           { "name": "id", "type": "number", "isPrimaryKey": true },
           { "name": "userId", "type": "number" },
@@ -30,7 +27,6 @@
         ]
       },
       "OrderItems": {
-        "tableName": "OrderItems",
         "columns": [
           { "name": "id", "type": "number", "isPrimaryKey": true },
           { "name": "orderId", "type": "number" },
@@ -50,12 +46,8 @@
       {
         "parentTable": "Users",
         "childTable": "Orders",
+        "childField": "userId",
         "dependencyType": "allRows",
-        "filterExpression": {
-          "field": "userId",
-          "op": "==",
-          "value": { "func": "FIELD", "args": ["id"] }
-        },
         "cascadeUpdate": true,
         "cascadeDelete": true,
         "relationName": "UserOrders"
@@ -63,12 +55,8 @@
       {
         "parentTable": "Orders",
         "childTable": "OrderItems",
+        "childField": "orderId",
         "dependencyType": "allRows",
-        "filterExpression": {
-          "field": "orderId",
-          "op": "==",
-          "value": { "func": "FIELD", "args": ["id"] }
-        },
         "cascadeDelete": true,
         "relationName": "OrderItems"
       }

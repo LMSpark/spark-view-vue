@@ -1,46 +1,35 @@
 {
   "dataset": {
     "dataSetName": "SmartLoadDemo",
-    "version": 1,
     "tables": {
       "Categories": {
-        "tableName": "Categories",
         "columns": [
           { "name": "id", "type": "number", "isPrimaryKey": true },
           { "name": "name", "type": "string" }
-        ],
-        "rows": []
+        ]
       },
       "Products": {
-        "tableName": "Products",
         "columns": [
           { "name": "id", "type": "number", "isPrimaryKey": true },
           { "name": "categoryId", "type": "number" },
           { "name": "name", "type": "string" },
           { "name": "price", "type": "number" }
-        ],
-        "rows": []
+        ]
       },
       "OrderDetails": {
-        "tableName": "OrderDetails",
         "columns": [
           { "name": "id", "type": "number", "isPrimaryKey": true },
           { "name": "productId", "type": "number" },
           { "name": "quantity", "type": "number" }
-        ],
-        "rows": []
+        ]
       }
     },
     "relations": [
       {
         "parentTable": "Categories",
         "childTable": "Products",
+        "childField": "categoryId",
         "dependencyType": "allRows",
-        "filterExpression": {
-          "field": "categoryId",
-          "op": "==",
-          "value": { "func": "FIELD", "args": ["id"] }
-        },
         "autoLoad": true,
         "cascadeUpdate": true,
         "cascadeDelete": true,
@@ -49,12 +38,8 @@
       {
         "parentTable": "Products",
         "childTable": "OrderDetails",
+        "childField": "productId",
         "dependencyType": "allRows",
-        "filterExpression": {
-          "field": "productId",
-          "op": "==",
-          "value": { "func": "FIELD", "args": ["id"] }
-        },
         "autoLoad": true,
         "cascadeDelete": true,
         "relationName": "ProductOrders"

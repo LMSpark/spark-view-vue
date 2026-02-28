@@ -1,10 +1,8 @@
 ﻿{
   "dataset": {
     "dataSetName": "UserOrderDataSet",
-    "version": 1,
     "tables": {
       "Users": {
-        "tableName": "Users",
         "columns": [
           {
             "name": "id",
@@ -28,13 +26,10 @@
             "label": "状态"
           }
         ],
-        "rows": [],
-        "currentRow": null,
-        "selectedRows": [],
-        "autoSelectFirst": false
+        "autoSelectFirst": false,
+        "autoLoad": true
       },
       "Orders": {
-        "tableName": "Orders",
         "columns": [
           {
             "name": "id",
@@ -67,12 +62,9 @@
             "type": "string",
             "label": "日期"
           }
-        ],
-        "rows": [],
-        "selectedRows": []
+        ]
       },
       "OrderItems": {
-        "tableName": "OrderItems",
         "columns": [
           {
             "name": "id",
@@ -100,9 +92,7 @@
             "type": "number",
             "label": "单价"
           }
-        ],
-        "rows": [],
-        "selectedRows": []
+        ]
       }
     },
     "relations": [
@@ -110,34 +100,14 @@
         "relationName": "UserOrders",
         "parentTable": "Users",
         "childTable": "Orders",
-        "dependencyType": "currentRow",
-        "filterExpression": {
-          "field": "userId",
-          "op": "==",
-          "value": {
-            "func": "FIELD",
-            "args": [
-              "id"
-            ]
-          }
-        }
+        "childField": "userId"
       },
       {
         "relationName": "OrderItems",
         "parentTable": "Orders",
         "childTable": "OrderItems",
-        "dependencyType": "currentRow",
-        "autoLoad": true,
-        "filterExpression": {
-          "field": "orderId",
-          "op": "==",
-          "value": {
-            "func": "FIELD",
-            "args": [
-              "id"
-            ]
-          }
-        }
+        "childField": "orderId",
+        "autoLoad": true
       }
     ]
   },

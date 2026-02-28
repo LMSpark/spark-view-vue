@@ -2,7 +2,7 @@
  * spark-data 内部工具函数
  */
 
-import type { IDataRow, DependencyType } from '../types'
+import type { IDataRow, DependencyType, CrudApi } from '../types'
 import type { DataView } from '../data-view'
 
 /** DataKey 分隔符，名称中禁止包含 */
@@ -16,6 +16,47 @@ const SEPARATOR = '@'
 export function assertNoSeparator(value: string, label: string): void {
   if (value.includes(SEPARATOR)) {
     throw new Error(`${label} 不允许包含 '${SEPARATOR}' 分隔符: "${value}"`)
+  }
+}
+
+/**
+ * PascalCase / camelCase → kebab-case（tableName → API 路径约定）
+ * @internal
+ */
+function toKebabCase(str: string): string {
+  return str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+    .toLowerCase()
+}
+
+/**
+ * 将 API 简写形式展开为完整的 CrudApi 对象。
+ *
+ * 支持三种形式：
+ * - **字符串** `"/api/users"` → RESTful CRUD 端点（list/create/retrieve/update/delete）
+ * - **`true`** → 从 tableName 按约定生成路径 `/api/${kebab(tableName)}`
+ * - **CrudApi 对象** → 原样返回
+ *
+ * @param api  配置中的 api 字段值
+ * @param tableName  表名（用于 `api: true` 约定路径生成）
+ * @returns 完整的 CrudApi 对象，或 undefined（api 为 falsy 时）
+ * @internal
+ */
+export function expandApiShorthand(
+  api: CrudApi | string | boolean | undefined,
+  tableName: string,
+): CrudApi | undefined {
+  if (!api) return undefined
+  if (typeof api === 'object') return api
+
+  const base = typeof api === 'string' ? api : `/api/${toKebabCase(tableName)}`
+  return {
+    list:     { url: base, method: 'GET' },
+    create:   { url: base, method: 'POST' },
+    retrieve: { url: `${base}/{id}`, method: 'GET' },
+    update:   { url: `${base}/{id}`, method: 'PUT' },
+    delete:   { url: `${base}/{id}`, method: 'DELETE' },
   }
 }
 
