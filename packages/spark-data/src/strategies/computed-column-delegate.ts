@@ -21,6 +21,7 @@
  * "$min('Bids', 'price')"
  * "$max('Bids', 'price')"
  * "$list('Tags', 'name').join(', ')"
+ * "$join('Tags', 'name', ' | ')"    // 字符串连接，第三参数为分隔符（默认 ', '）
  * ```
  */
 
@@ -49,8 +50,8 @@ export interface AggregateResolver {
 // 表达式编译器
 // ─────────────────────────────────────────────
 
-/** 检测表达式中是否含有聚合函数调用 */
-const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list)\s*\(/
+/** 检测表达式中是否含有聚合函数调用（子表引用类）*/
+const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
 
 /**
  * 将表达式字符串编译为 ComputedColumnFn。
@@ -76,15 +77,15 @@ export function compileExpression(
 
   if (!hasAgg) {
     // 快速路径：无聚合函数
-    const compiled = new Function('__row', 'ctx', `with(__row) { return (${expression}) }`) as (
-      row: IDataRow, ctx: ComputedColumnContext | undefined,
-    ) => unknown
+    const compiled = new Function('__row', 'ctx',
+      `with(__row) { return (${expression}) }`,
+    ) as (row: IDataRow, ctx: ComputedColumnContext | undefined) => unknown
     return (row: IDataRow) => compiled(row, frozenCtx)
   }
 
-  // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list
+  // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join
   const compiled = new Function(
-    '__row', '$sum', '$count', '$avg', '$min', '$max', '$list', 'ctx',
+    '__row', '$sum', '$count', '$avg', '$min', '$max', '$list', '$join', 'ctx',
     `with(__row) { return (${expression}) }`,
   ) as (
     row: IDataRow,
@@ -94,6 +95,7 @@ export function compileExpression(
     $min: (t: string, f: string) => number | undefined,
     $max: (t: string, f: string) => number | undefined,
     $list: (t: string, f: string) => unknown[],
+    $join: (t: string, f: string, sep?: string) => string,
     ctx: ComputedColumnContext | undefined,
   ) => unknown
 
@@ -125,11 +127,13 @@ export function compileExpression(
     return rows.length === 0 ? undefined : Math.max(...rows.map(r => Number(r[f])))
   }
   const $list  = (t: string, f: string): unknown[] => getChildRows(t).map(r => r[f])
+  const $join  = (t: string, f: string, sep = ', '): string =>
+    getChildRows(t).map(r => String(r[f] ?? '')).join(sep)
 
   return (row: IDataRow) => {
     _row = row
     _cache.clear()
-    return compiled(row, $sum, $count, $avg, $min, $max, $list, frozenCtx)
+    return compiled(row, $sum, $count, $avg, $min, $max, $list, $join, frozenCtx)
   }
 }
 

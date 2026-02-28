@@ -110,10 +110,81 @@ export interface IDataSource {
 /** 计算列函数签名：接收当前行，返回计算值 */
 export type ComputedColumnFn = (row: IDataRow) => unknown
 
+// ===== 列类型系统 =====
+
+/**
+ * 列类型字面量联合——涵盖 DataValidator 中所有已知类型。
+ *
+ * 末尾的 `(string & {})` 保持对自定义类型的开放性，同时不影响已知值的自动补全。
+ */
+export type ColumnType =
+  // 数字类
+  | 'number' | 'int' | 'integer' | 'decimal' | 'float' | 'double'
+  // 字符串类
+  | 'string' | 'varchar' | 'text'
+  // 布尔
+  | 'boolean' | 'bool'
+  // 日期
+  | 'date' | 'datetime' | 'time'
+  // 复合
+  | 'object' | 'array'
+  // 枚举
+  | 'enum'
+  // 自定义扩展（保留开放，不影响已知值提示）
+  | (string & {})
+
+/**
+ * ColumnType → TypeScript 类型映射表。
+ *
+ * 用于类型匹配、泛型推断，也可用 `declare module` 扩展自定义类型映射。
+ *
+ * @example
+ * ```ts
+ * declare module '@spark-view/spark-data' {
+ *   interface ColumnTypeMap {
+ *     json: Record<string, unknown>
+ *   }
+ * }
+ * ```
+ */
+export interface ColumnTypeMap {
+  // 数字类
+  number: number; int: number; integer: number
+  decimal: number; float: number; double: number
+  // 字符串类
+  string: string; varchar: string; text: string
+  // 布尔
+  boolean: boolean; bool: boolean
+  // 日期
+  date: Date | string; datetime: Date | string; time: string
+  // 复合
+  object: Record<string, unknown>; array: unknown[]
+  // 枚举
+  enum: string | number
+}
+
+/**
+ * 根据 ColumnType 字符串推断对应的 TypeScript 值类型。
+ *
+ * @example
+ * ```ts
+ * type T = InferColumnValue<'number'>  // number
+ * type S = InferColumnValue<'date'>    // Date | string
+ * type U = InferColumnValue<'json'>    // unknown（未注册到 ColumnTypeMap）
+ * ```
+ */
+export type InferColumnValue<T extends ColumnType> =
+  T extends keyof ColumnTypeMap ? ColumnTypeMap[T] : unknown
+
 /** 数据列定义 */
 export interface DataColumn {
   name: string
-  type: string
+  /**
+   * 列值类型。已知类型见 `ColumnType`，支持自定义扩展（通过 `ColumnTypeMap` 声明合并）。
+   *
+   * 常用值：`'string'` | `'number'` | `'boolean'` | `'date'` | `'datetime'`
+   */
+  type: ColumnType
   label?: string
   allowDBNull?: boolean
   defaultValue?: unknown

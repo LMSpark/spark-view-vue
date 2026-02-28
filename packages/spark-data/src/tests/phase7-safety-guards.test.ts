@@ -125,7 +125,7 @@ describe('L3: updateRowById rejects primary key mutation', () => {
     // 显式传入 id: 1（与原值相同）不应报错
     const ok = view.updateRowById(1, { id: 1, name: 'Updated' })
     expect(ok).toBe(true)
-    expect(view.rows.find(r => r.id === 1)?.name).toBe('Updated')
+    expect(view.rows.find(r => r['id'] === 1)?.['name']).toBe('Updated')
   })
 
   it('data without PK field passes through (no error)', () => {
@@ -133,7 +133,7 @@ describe('L3: updateRowById rejects primary key mutation', () => {
     const view = ds.getView('Items', 'default')!
     const ok = view.updateRowById(2, { name: 'Changed' })
     expect(ok).toBe(true)
-    expect(view.rows.find(r => r.id === 2)?.name).toBe('Changed')
+    expect(view.rows.find(r => r['id'] === 2)?.['name']).toBe('Changed')
   })
 
   it('data with different PK value throws', () => {
@@ -142,7 +142,7 @@ describe('L3: updateRowById rejects primary key mutation', () => {
     expect(() => view.updateRowById(1, { id: 999, name: 'Bad' }))
       .toThrow(/不允许修改主键字段/)
     // 原数据未被修改
-    expect(view.rows.find(r => r.id === 1)?.name).toBe('A')
+    expect(view.rows.find(r => r['id'] === 1)?.['name']).toBe('A')
   })
 
   it('multi-pk: rejects if any PK field changes', () => {
@@ -165,7 +165,7 @@ describe('L3: updateRowById rejects primary key mutation', () => {
     expect(() => view.updateRowById('A:1', { tenantId: 'B', name: 'Bad' }))
       .toThrow(/不允许修改主键字段 "tenantId"/)
     // 原数据未改
-    expect(view.rows[0].tenantId).toBe('A')
+    expect(view.rows[0]?.['tenantId']).toBe('A')
   })
 
   it('non-existent row returns false (no error)', () => {

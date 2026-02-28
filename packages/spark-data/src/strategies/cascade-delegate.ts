@@ -116,7 +116,7 @@ export class CascadeDelegate {
       this.pendingCascadeRequest = undefined
     }
 
-    const parentRows = getParentRows(parentView, rel.dependencyType)
+    const parentRows = getParentRows(parentView, rel.dependencyType ?? 'currentRow')
 
     if (!parentRows.length) {
       this.host.resetState()

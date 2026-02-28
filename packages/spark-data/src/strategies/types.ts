@@ -86,6 +86,12 @@ export interface ISelectionHost extends IViewIdentity, IRowStore, ISelectionStat
   readonly autoSelectFirst: boolean
   readonly selectionFollowsCurrent: boolean
   isDestroyed(): boolean
+
+  // ── 值序列化配置（value / labels / label 计算所需）──
+  readonly valueField?: string | string[]
+  readonly labelField?: string
+  readonly selectionDelimiter: string
+  readonly isMultiSelect: boolean
 }
 
 // ─────────────────────────────────────────────
