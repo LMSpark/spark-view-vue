@@ -209,6 +209,13 @@ export interface IViewMetadata {
    * 仅对有配置 `api` 且为 default 视图的主表有意义。
    */
   autoLoad?: boolean
+  /**
+   * 设置分页、排序、过滤等参数后是否自动刷新数据（默认 false）。
+   *
+   * 设为 `true` 时，调用 `setPage()` / `setPageSize()` / `setSort()` / `setFilter()`
+   * 会在修改参数后自动调用 `refresh()`，消费层无需手动触发刷新。
+   */
+  autoRefresh?: boolean
 }
 
 /**
