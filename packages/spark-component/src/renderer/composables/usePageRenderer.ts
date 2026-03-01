@@ -94,7 +94,7 @@ export interface UsePageRendererReturn {
   loadPageConfig: () => Promise<void>
   rebindRules: () => void
   pageContext: PageContext
-  dataSet: { value: DataSet | null }
+  dataSet: DataSet | null
 }
 
 // ─── Composable 实现 ──────────────────────────────────────────────────────────
@@ -390,6 +390,6 @@ export function usePageRenderer(
     loadPageConfig,
     rebindRules,
     pageContext,
-    dataSet,
+    get dataSet() { return dataSet.value },
   }
 }
