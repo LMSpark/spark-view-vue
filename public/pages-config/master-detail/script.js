@@ -8,15 +8,6 @@
 function __init__() {
   const dataSet = $dataSet
   
-  // 🔍 验证新时序：$api 应该在脚本编译时就可用
-  console.log('🔍 [__init__] $api 状态验证（新时序）:', {
-    hasApi: !!$api,
-    apiType: typeof $api,
-    apiIsNull: $api === null,
-    canSetValue: $api && typeof $api.setValue === 'function',
-    apiMethods: $api ? Object.keys($api).filter(k => typeof $api[k] === 'function').slice(0, 5) : []
-  })
-  
   // 初始化 currentRowJson（防止 undefined）
   $data.currentRowJson = '未选择行'
   
@@ -24,19 +15,10 @@ function __init__() {
   const usersTable = dataSet.getTable('Users')
   const columns = usersTable?.columns || []
 
-  
-  // 监听 Users 视图状态变化（直接订阅 DataView 的事件）
   const usersView = dataSet.getView('Users', 'default')
   
-  console.log('📡 [Script] 获取 Users 视图', {
-    hasView: !!usersView,
-    currentRow: usersView?.currentRow,
-    rowsCount: usersView?.rows?.length ?? 0
-  })
-  
   if (usersView) {
-    // currentRowChanged(currentRow, originatorId?) — DataView 当前行变化事件
-    usersView.events.on('currentRowChanged', (currentRow) => {
+    const handleCurrentRowChange = (currentRow) => {
       if (currentRow !== null) {
         // 基于 columns 定义提取字段（过滤 _perm 等元数据）
         const pureData = {}
@@ -58,7 +40,11 @@ function __init__() {
           $data.currentRowJson = '未选择行'
         }
       }
-    })
+    }
+    // 订阅后续变化
+    usersView.events.on('currentRowChanged', handleCurrentRowChange)
+    // 立即同步：DataSet 创建时 autoCurrentFirst=true 已设好第一行，事件在订阅前已发出
+    handleCurrentRowChange(usersView.currentRow)
     // Users 视图 currentRowChanged 事件已订阅
   } else {
     console.warn('⚠️ [Script] 无法获取 Users 视图')
@@ -66,12 +52,10 @@ function __init__() {
   
   // 订阅 Orders 视图的 rowsChanged 事件
   const ordersView = dataSet.getView('Orders', 'default')
-  console.log('📡 [Script] 获取 Orders 视图', { hasView: !!ordersView })
   
   if (ordersView) {
     ordersView.events.on('rowsChanged', () => {
       const count = ordersView.rows?.length || 0
-      console.log('📥 [Script] Orders 视图行数据变化', { rowsCount: count })
       if (count > 0) {
         ElMessage.success(`✅ 订单数据加载完成！共 ${count} 条记录`)
       }
@@ -88,7 +72,7 @@ function __init__() {
 function RenderCurrentRow() {
   const { h } = window.Vue
   const dataSet = $dataSet
-  const currentRow = dataSet?.getTable('Users')?.currentRow
+  const currentRow = dataSet?.getView('Users', 'default')?.currentRow
   
   return h('pre', {
     style: {
