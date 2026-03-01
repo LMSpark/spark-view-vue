@@ -70,14 +70,23 @@ export class SelectionDelegate {
     const firstRow = host.rows[0] ?? null
 
     if (host.autoCurrentFirst !== false && firstRow) {
-      this.setCurrentRow(firstRow, { skipSync: true })
-    } else if (prevHadCurrent) {
-      this.emitCurrentRowChanged()
-    }
-    if (host.autoSelectFirst !== false && firstRow) {
-      this.setSelectedRows([firstRow])
-    } else if (prevHadSelected) {
-      this.emitSelectedRowsChanged()
+      // 当 selectionFollowsCurrent 开启时，让 setCurrentRow 内部统一处理 selection 同步，
+      // 避免事后再单独调 setSelectedRows 发出多余事件（会导致渲染层两次触碰 el-table）。
+      const skipSync = host.selectionFollowsCurrent === false
+      this.setCurrentRow(firstRow, { skipSync })
+      // selectionFollowsCurrent 已经处理了 selection，skipSync=true 时才需要显式调用
+      if (skipSync && host.autoSelectFirst !== false) {
+        this.setSelectedRows([firstRow])
+      } else if (skipSync && prevHadSelected) {
+        this.emitSelectedRowsChanged()
+      }
+    } else {
+      if (prevHadCurrent) this.emitCurrentRowChanged()
+      if (host.autoSelectFirst !== false && firstRow) {
+        this.setSelectedRows([firstRow])
+      } else if (prevHadSelected) {
+        this.emitSelectedRowsChanged()
+      }
     }
   }
 
