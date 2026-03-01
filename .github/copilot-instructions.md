@@ -22,7 +22,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
 - **Capability keys**: `packages/spark-utils/src/capability/symbols.ts` (APP_SERVICES, LOGGER 等), `packages/spark-data/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
 - **Tests**: `tests/` (重要: `capability-late-binding.test.ts`, `capability-system.test.ts`, `data-key.test.ts`)
-- **Computed column tests**: `packages/spark-data/src/tests/computed-columns.test.ts`（14 sections, 233+ cases）
+- **Computed column tests**: `packages/spark-data/src/tests/computed-columns.test.ts`（13 sections, 214+ cases）
 - **Expression compiler**: `packages/spark-data/src/strategies/computed-column-delegate.ts`
 
 ## Project conventions & patterns 📌
@@ -236,32 +236,26 @@ const cap = consume('app:my-service') // MyServiceCapability | null
 "$join('Items', 'name', ' | ')"    // 子行字段拼接（默认 ', '）
 ```
 
-**跨表聚合引用**（读同 DataSet 内任意视图的聚合行）：
-```jsonc
-// 读取 Orders 视图的 summaryRow（全部行聚合值）
-"$summary('Orders', 'totalAmount')"           
-// 读取 Orders 视图的 selectionSummaryRow（选中行聚合值）
-"$selectionSummary('Orders', 'amount')"       
-// 支持 '表名@视图ID' 格式
-"$summary('Orders@grid', 'price')"
-// 与算术/ctx 混合
-"$summary('Orders', 'amount') * ctx.taxRate"
-```
+### 视图级聚合（`IViewMetadata.aggregates`）
 
-### 列级聚合（`DataColumn.aggregate`）
-
-在列上声明 `aggregate` 即可自动维护 `summaryRow`（全部行）和 `selectionSummaryRow`（选中行）。
+在视图配置中声明 `aggregates` 即可自动维护 `summaryRow`（全部行）和 `selectionSummaryRow`（选中行）。
 
 **AggregateType**: `'sum' | 'count' | 'avg' | 'min' | 'max' | 'join'`
 
 ```jsonc
-// pagedata.json 列配置
-{ "name": "price", "type": "number", "aggregate": "sum" }
-{ "name": "score", "type": "number", "aggregate": "avg" }
-{ "name": "customer", "type": "string", "aggregate": "join" }
-// 计算列 + 聚合组合（先逐行求值，再整列聚合）
-{ "name": "total", "type": "number", "computeExpression": "price * qty", "aggregate": "sum" }
+// pagedata.json 视图配置（IViewMetadata / views.default）
+{
+  "aggregates": {
+    "price":    { "type": "sum" },
+    "score":    { "type": "avg" },
+    "customer": { "type": "join" },
+    "total":    { "type": "sum", "field": "total" }
+  }
+}
 ```
+
+> **注意**：聚合通过 `IViewMetadata.aggregates` 配置，而非 `DataColumn` 上的属性。
+> 列定义只负责 `computeExpression`（逐行计算），聚合是视图层整列汇总，两者职责分离。
 
 **零代码绑定**：UI 通过 DataKey 直接绑定到聚合行：
 ```jsonc
@@ -271,12 +265,10 @@ const cap = consume('app:my-service') // MyServiceCapability | null
 
 **自动重算触发点**：`appendRow`、`updateRowById`、`deleteRowById`、`replaceRows`、`updateFromServer`、`setComputedContext`、`recomputeColumns`、选中行变更（`setSelectedRows` / `clearSelectedRows`）。
 
-**跨表聚合自动推送（push 模式）**：当计算列使用 `$summary` / `$selectionSummary` 引用其他表时，框架自动订阅源视图的 `summaryChanged` / `selectionSummaryChanged` 事件，源表数据或选中变更后 **自动** `recomputeColumns()`——无需手动调用。内置防环守卫防止 A→B→A 死循环。
-
 ### 关键文件
 - 表达式编译器：`packages/spark-data/src/strategies/computed-column-delegate.ts`
-- DataView 聚合：`packages/spark-data/src/data-view.ts`（`_recomputeSummary` / `_recomputeSelectionSummary` / `_setupCrossTableSubscriptions`）
-- 测试：`packages/spark-data/src/tests/computed-columns.test.ts`（15 个 section，245+ cases）
+- DataView 聚合：`packages/spark-data/src/data-view.ts`（`_recomputeSummary` / `_recomputeSelectionSummary`）
+- 测试：`packages/spark-data/src/tests/computed-columns.test.ts`（13 个 section，226+ cases）
 
 ## Package structure 📦
 ```
@@ -387,21 +379,16 @@ const ds = SparkData.createDataSet({
     Orders: {
       tableName: 'Orders',
       columns: [
-        { name: 'price', type: 'number', aggregate: 'sum' },        // 列级聚合
-        { name: 'total', type: 'number',                            // 计算列 + 聚合
-          computeExpression: 'price * qty', aggregate: 'sum' },
+        { name: 'price', type: 'number' },
+        { name: 'qty', type: 'number' },
+        { name: 'total', type: 'number', computeExpression: 'price * qty' },
       ],
+      // 视图级聚合配置（IViewMetadata.aggregates）
+      aggregates: {
+        price: { type: 'sum' },
+        total: { type: 'sum' },
+      },
       rows: [...],
-    },
-    Report: {
-      tableName: 'Report',
-      columns: [
-        { name: 'orderTotal', type: 'number',                      // 跨表聚合引用
-          computeExpression: "$summary('Orders', 'price')" },
-        { name: 'selectionTotal', type: 'number',
-          computeExpression: "$selectionSummary('Orders', 'total')" },
-      ],
-      rows: [{ id: 1 }],
     },
   },
 })
@@ -409,8 +396,6 @@ const ds = SparkData.createDataSet({
 // 自动可用
 ds.getView('Orders', 'default')!.summaryRow           // { price: 总和, total: 总和 }
 ds.getView('Orders', 'default')!.selectionSummaryRow  // 仅选中行的聚合
-// 跨表引用：自动推送，无需手动 recomputeColumns()
-// Orders 数据/选中变更 → Report 自动 recomputeColumns()（内置防环守卫）
 ```
 
 **树结构（CrudApi extends TreeApi）**

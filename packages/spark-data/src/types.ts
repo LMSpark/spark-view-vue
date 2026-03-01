@@ -103,7 +103,7 @@ export interface IDataSource {
   total?: number
   page?: number
   pageSize?: number
-  /** 列级聚合汇总行（由 aggregate 列配置驱动，行变更后自动重算） */
+  /** 视图聚合汇总行（由 view.aggregates 配置驱动，行变更后自动重算） */
   summaryRow?: Readonly<IDataRow>
   /** 选中行聚合汇总行（仅对 selectedRows 执行聚合，选中/数据变更后自动重算） */
   selectionSummaryRow?: Readonly<IDataRow>
@@ -117,10 +117,10 @@ export type ComputedColumnFn = (row: IDataRow) => unknown
 // ===== 聚合类型 =====
 
 /**
- * 列级聚合函数类型。
+ * 视图聚合函数类型。
  *
- * 配置在 DataColumn.aggregate 上，DataView 自动对当前 rows 计算汇总值，
- * 结果写入 `view.summaryRow[columnName]`。
+ * 配置在 `IViewMetadata.aggregates`（`view.aggregates`）上，DataView 自动对当前 rows
+ * 计算汇总值，结果写入 `view.summaryRow[columnName]`。
  *
  * - `sum`   — 求和（非数字视为 0）
  * - `count` — 非 null/undefined 值计数
@@ -130,6 +130,30 @@ export type ComputedColumnFn = (row: IDataRow) => unknown
  * - `join`  — 字符串拼接（逗号分隔，跳过 null/undefined/空串；空集 → ''）
  */
 export type AggregateType = 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join'
+
+/**
+ * 单个聚合列配置。
+ *
+ * - `type`  — 聚合函数（sum / count / avg / min / max / join）
+ * - `field` — 源字段名（省略时默认与 key 同名）
+ * - `label` — 显示标题（UI 渲染表头 / 汇总标签使用）
+ *
+ * @example
+ * ```json
+ * {
+ *   "totalPrice": { "type": "sum", "field": "price", "label": "总价" },
+ *   "avgScore":   { "type": "avg", "field": "score", "label": "平均分" }
+ * }
+ * ```
+ */
+export interface AggregateColumnConfig {
+  /** 聚合函数类型 */
+  type: AggregateType
+  /** 源字段名（聚合哪个字段的值；省略时默认取与 key 同名的字段） */
+  field?: string
+  /** 显示标题（UI 渲染表头 / 汇总标签使用） */
+  label?: string
+}
 
 // ===== 列类型系统 =====
 
@@ -229,19 +253,6 @@ export interface DataColumn {
    * `"$count('OrderItems')"` 
    */
   computeExpression?: string
-
-  // ===== 聚合属性 =====
-
-  /**
-   * 列级聚合函数——对 DataView 当前 rows 全量聚合，结果写入 `view.summaryRow[name]`。
-   *
-   * 与 computeExpression 可共存：先逐行求值计算列，再整列聚合。
-   *
-   * @example
-   * `{ name: 'amount', type: 'number', aggregate: 'sum' }`
-   * `{ name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }`
-   */
-  aggregate?: AggregateType
 }
 
 /** CRUD API配置（继承 TreeApi，树接口族直接平铺在此） */
@@ -356,6 +367,24 @@ export interface IViewMetadata {
    * - `true`：每次 `addRow` / `editRowById` / `removeRow` 立即调用对应网络 CRUD 方法。
    */
   autoCommit?: boolean
+  /**
+   * 视图级聚合配置——输出名 → 聚合列配置。
+   *
+   * 结果写入 `view.summaryRow / selectionSummaryRow`，行变更后自动重算。
+   * 聚合配置与列定义（`DataColumn.computeExpression`）完全独立：
+   * 列负责逐行求值，聚合负责整列汇总。
+   *
+   * @example
+   * ```json
+   * {
+   *   "aggregates": {
+   *     "totalPrice": { "type": "sum", "field": "price", "label": "总价" },
+   *     "score":      { "type": "avg" }
+   *   }
+   * }
+   * ```
+   */
+  aggregates?: Record<string, AggregateColumnConfig>
 }
 
 /**
@@ -380,11 +409,25 @@ export interface ITableOwnMetadata {
 }
 
 /**
- * 数据表完整元数据
+ * 数据表完整元数据（配置 JSON 的扁平格式）
  *
- * 组合方式：表自有字段 + 默认视图字段（扁平化）。
- * 序列化时 default 视图的 rows / filter / sort 等直接挂在表级，
- * 保持 JSON 配置（pagedata.json）的向后兼容。
+ * = ITableOwnMetadata（表结构字段）& IViewMetadata（default 视图字段）
+ *
+ * **字段归属一览**
+ *
+ * 表结构字段（属于 DataTable，由 DataTable.fromTableData 消费）：
+ *   `tableName` `columns` `api` `views` `loading` `error`
+ *
+ * default 视图字段（属于 DataView，由 DataView.applyViewConfig 消费）：
+ *   `rows` `filterExpression` `sortExpression` `page` `pageSize`
+ *   `autoCurrentFirst` `autoSelectFirst` `selectionFollowsCurrent`
+ *   `autoLoad` `autoRefresh` `autoCommit`
+ *   `valueField` `labelField` `selectionDelimiter` `treeConfig` `aggregates`
+ *
+ * 扁平化原因：pagedata.json 惯例将 default 视图字段直接挂在表级，
+ * 避免配置中出现 `views.default.rows` 这种冗长路径。
+ * DataTable.fromTableData 通过 `data.views?.['default'] ?? data`
+ * 优先读取显式的 views.default，回退到扁平化表级字段，保持两者等价。
  */
 export type ITableMetadata = ITableOwnMetadata & IViewMetadata
 

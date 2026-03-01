@@ -28,9 +28,7 @@ import type {
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
-  TreeConfig,
-  DataRelation,
-  AggregateType,
+  TreeConfig, AggregateColumnConfig,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -47,8 +45,8 @@ import { LocalMutationDelegate } from './strategies/local-mutation-delegate'
 import type { CrudLifecycleEvent } from './strategies/types'
 import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from './core/primary-key-generator'
 import { createPrimaryKeyGenerator } from './core/primary-key-generator'
-import { ComputedColumnDelegate, compileColumnsExpressions } from './strategies/computed-column-delegate'
-import type { ComputedColumnContext, AggregateResolver } from './strategies/computed-column-delegate'
+import { ComputedColumnDelegate, computeAggregateRow } from './strategies/computed-column-delegate'
+import type { ComputedColumnContext } from './strategies/computed-column-delegate'
 import { DirtyTrackingDelegate } from './strategies/dirty-tracking-delegate'
 import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-delegate'
 
@@ -76,7 +74,7 @@ interface DataViewEventMap extends Record<string, any[]> {
   requestStateChanged: [requestState: RequestState]
   /** CRUD 变更状态变化 */
   mutatingChanged: [mutating: boolean]
-  /** summaryRow 已重算（含 selectionSummaryRow 同步更新）——跨表聚合推送依赖此事件 */
+  /** summaryRow 已重算 */
   summaryChanged: []
   /** selectionSummaryRow 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */
   selectionSummaryChanged: []
@@ -97,13 +95,14 @@ export class DataView implements IDataSource {
   /** 内部存储的 DataTable 引用 */
   private _dataTable!: DataTable
 
-  /** 所属 DataTable（赋值时自动编译 columns 中的 computeExpression，不求值） */
+  /** 所属 DataTable（赋值时自动失效编译缓存并重编译计算列，不求值） */
   get dataTable(): DataTable { return this._dataTable }
   set dataTable(table: DataTable) {
     this._dataTable = table
-    // 编译是 DataTable 的事：attach 后立即编译 computeExpression（不求值）
-    this._compileCacheKey = undefined   // DataSet 可能已变更
-    this._syncComputedFromConfig()
+    // DataView 负责在 dataTable attach 时编译 computeExpression（不求值）。
+    // DataSet 关系就绪后由 onDataSetRelationsReady() 触发含聚合 resolver 的重编译 + 求值。
+    this._computedDelegate.invalidateCache()
+    this._computedDelegate.syncFromConfig()
   }
 
   // ── 标识 ────────────────────────────────────
@@ -320,6 +319,16 @@ export class DataView implements IDataSource {
    */
   autoCommit: boolean = false
 
+  /**
+   * 视图级聚合配置——输出名 → 聚合列配置（type + field? + label?）。
+   * 行变更后自动重算 summaryRow / selectionSummaryRow。
+   * 仅由 `applyViewConfig()` 初始化，运行时不可变。
+   *
+   * key 为聚合结果写入 summaryRow 的字段名；
+   * `config.field`（可选）为源字段名，省略时默认与 key 同名。
+   */
+  readonly aggregates: Record<string, AggregateColumnConfig> = {}
+
   /** 树视图模式，代理到 treeConfig.treeMode（默认 'flat'） */
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
   set treeMode(v: 'flat' | 'nested') { (this.treeConfig ??= {}).treeMode = v }
@@ -334,10 +343,8 @@ export class DataView implements IDataSource {
    * view.setComputedContext({ taxRate: 0.13, discountMap: { VIP: 0.9 } })
    */
   setComputedContext(ctx: ComputedColumnContext): void {
-    this._computedContext = ctx
-    this._compileCacheKey = undefined   // 失效缓存，强制重编译
-    this._syncComputedFromConfig()      // ctx 变更 → 重新编译配置列闭包
-    this._applyComputedColumns(this.rows)
+    this._computedDelegate.setContext(ctx)
+    this._computedDelegate.apply(this.rows)
     this._recomputeSummary()
   }
 
@@ -350,7 +357,7 @@ export class DataView implements IDataSource {
    * - 直接修改 rows 后手动重算
    */
   recomputeColumns(): void {
-    this._applyComputedColumns(this.rows)
+    this._computedDelegate.apply(this.rows)
     this._recomputeSummary()
   }
 
@@ -364,15 +371,40 @@ export class DataView implements IDataSource {
     return this._computedDelegate.strip(data)
   }
 
-  /** @internal 失效编译缓存，下次 _syncComputedFromConfig 将强制重编译。 */
-  _invalidateCompiledCache(): void {
-    this._compileCacheKey = undefined
+  /**
+   * DataSet 关系规范化完成后由 DataTable 统一调用——失效计算列编译缓存并重算。
+   *
+   * 首次构建时 DataSet 关系尚未就绪，计算列表达式中的聚合函数（$sum 等）
+   * 将无法获取正确的 AggregateResolver。关系就绪后调用此方法触发重编译（含聚合 resolver）
+   * 并对当前行重新求值。
+   *
+   * @internal 通过 DataTable.onDataSetRelationsReady() 间接触发，外部勿直接调用
+   */
+  onDataSetRelationsReady(): void {
+    const hasComputedCols = this._computedDelegate.names.size > 0
+    const hasAgg = Object.keys(this.aggregates).length > 0
+    if (hasComputedCols) {
+      // 失效缓存 → 重编译（含完整 DataSet 聚合 resolver）
+      this._computedDelegate.invalidateCache()
+      this._computedDelegate.syncFromConfig()
+    }
+    if (hasComputedCols || hasAgg) {
+      this.recomputeColumns()
+    }
   }
 
   /** 对行集合执行计算列求值（就地写入）——供 DataView 内部调用。 */
   private _applyComputedColumns(rows: IDataRow[]): void {
     this._computedDelegate.apply(rows)
   }
+
+  // ── IComputedColumnHost 实现 ──────────────────
+
+  /** @internal 返回 DataTable 列定义（dataTable 未 attach 时返回 undefined） */
+  getColumns() { return this._dataTable?.columns }
+
+  /** @internal 返回 DataSet 实例（无 DataSet 上下文时返回 undefined） */
+  getDataSet() { return this._dataTable?.dataSet }
 
   // ── summaryRow 列级聚合 ────────────────────────────
 
@@ -382,15 +414,14 @@ export class DataView implements IDataSource {
   private _selectionSummaryRow: IDataRow = {}
 
   /**
-   * 列级聚合汇总行——根据 DataColumn.aggregate 配置自动计算。
+   * 视图聚合汇总行——根据 `view.aggregates` 配置自动计算。
    *
    * 行变更（append / update / delete / replace / updateFromServer）后自动重算，
-   * 无需手动触发。计算列字段也可配置 aggregate，先逐行求值再整列聚合。
+   * 无需手动触发。与计算列可组合：先逐行求值 computeExpression，再按 aggregates 整列聚合。
    *
    * @example
-   * // DataColumn 配置
-   * { name: 'amount', type: 'number', aggregate: 'sum' }
-   * { name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }
+   * // 视图配置（pagedata.json 或 createDataView）
+   * { aggregates: { amount: 'sum', total: 'sum', score: 'avg' } }
    *
    * // UI 绑定
    * view.summaryRow.amount   // 所有行 amount 之和
@@ -413,293 +444,27 @@ export class DataView implements IDataSource {
   }
 
   /**
-   * 重新计算 summaryRow（根据 DataTable 列定义中的 aggregate 配置）。
+   * 重新计算 summaryRow（根据 `this.aggregates` 视图配置）。
    *
    * 时序保证：必须在 `_applyComputedColumns()` 之后调用，
    * 这样计算列的值已就位，聚合结果正确。
    */
   private _recomputeSummary(): void {
-    const columns = this._dataTable?.columns
-    if (!columns?.length) { this._summaryRow = {}; return }
-
-    // 收集带 aggregate 的列
-    const aggCols: Array<{ name: string; aggregate: AggregateType }> = []
-    for (const col of columns) {
-      if (col.aggregate) aggCols.push({ name: col.name, aggregate: col.aggregate })
-    }
-    if (aggCols.length === 0) { this._summaryRow = {}; return }
-
-    const rows = this.rows
-    const result: IDataRow = {}
-
-    for (const { name, aggregate } of aggCols) {
-      switch (aggregate) {
-        case 'sum': {
-          let s = 0
-          for (const r of rows) s += Number(r[name] ?? 0)
-          result[name] = s
-          break
-        }
-        case 'count': {
-          let c = 0
-          for (const r of rows) if (r[name] !== null && r[name] !== undefined) c++
-          result[name] = c
-          break
-        }
-        case 'avg': {
-          if (rows.length === 0) { result[name] = 0; break }
-          let s = 0
-          for (const r of rows) s += Number(r[name] ?? 0)
-          result[name] = s / rows.length
-          break
-        }
-        case 'min': {
-          if (rows.length === 0) { result[name] = undefined; break }
-          let m = Infinity
-          for (const r of rows) {
-            const v = Number(r[name])
-            if (!isNaN(v) && v < m) m = v
-          }
-          result[name] = m === Infinity ? undefined : m
-          break
-        }
-        case 'max': {
-          if (rows.length === 0) { result[name] = undefined; break }
-          let m = -Infinity
-          for (const r of rows) {
-            const v = Number(r[name])
-            if (!isNaN(v) && v > m) m = v
-          }
-          result[name] = m === -Infinity ? undefined : m
-          break
-        }
-        case 'join': {
-          const parts: string[] = []
-          for (const r of rows) {
-            const v = r[name]
-            if (v !== null && v !== undefined && v !== '') parts.push(String(v))
-          }
-          result[name] = parts.join(',')
-          break
-        }
-      }
-    }
-
-    this._summaryRow = result
+    this._summaryRow = computeAggregateRow(this.aggregates, this.rows)
     // 行数据变更时，选中行的值也可能变化，需同步重算
     this._recomputeSelectionSummary()
-    // 通知跨表订阅方（summaryChanged 隐含 selectionSummaryRow 也已更新）
+    // 通知订阅方（summaryChanged 隐含 selectionSummaryRow 也已更新）
     this.events.emit('summaryChanged')
   }
 
   /**
-   * 重新计算 selectionSummaryRow（与 _recomputeSummary 相同逻辑，但仅对 selectedRows）。
+   * 重新计算 selectionSummaryRow（委托 computeAggregateRow，仅对 selectedRows）。
    */
   private _recomputeSelectionSummary(): void {
-    const columns = this._dataTable?.columns
-    if (!columns?.length) { this._selectionSummaryRow = {}; return }
-
-    const aggCols: Array<{ name: string; aggregate: AggregateType }> = []
-    for (const col of columns) {
-      if (col.aggregate) aggCols.push({ name: col.name, aggregate: col.aggregate })
-    }
-    if (aggCols.length === 0) { this._selectionSummaryRow = {}; return }
-
     const rows = this.selectedRows
-    if (rows.length === 0) { this._selectionSummaryRow = {}; return }
-
-    const result: IDataRow = {}
-
-    for (const { name, aggregate } of aggCols) {
-      switch (aggregate) {
-        case 'sum': {
-          let s = 0
-          for (const r of rows) s += Number(r[name] ?? 0)
-          result[name] = s
-          break
-        }
-        case 'count': {
-          let c = 0
-          for (const r of rows) if (r[name] !== null && r[name] !== undefined) c++
-          result[name] = c
-          break
-        }
-        case 'avg': {
-          let s = 0
-          for (const r of rows) s += Number(r[name] ?? 0)
-          result[name] = s / rows.length
-          break
-        }
-        case 'min': {
-          let m = Infinity
-          for (const r of rows) {
-            const v = Number(r[name])
-            if (!isNaN(v) && v < m) m = v
-          }
-          result[name] = m === Infinity ? undefined : m
-          break
-        }
-        case 'max': {
-          let m = -Infinity
-          for (const r of rows) {
-            const v = Number(r[name])
-            if (!isNaN(v) && v > m) m = v
-          }
-          result[name] = m === -Infinity ? undefined : m
-          break
-        }
-        case 'join': {
-          const parts: string[] = []
-          for (const r of rows) {
-            const v = r[name]
-            if (v !== null && v !== undefined && v !== '') parts.push(String(v))
-          }
-          result[name] = parts.join(',')
-          break
-        }
-      }
-    }
-
-    this._selectionSummaryRow = result
-  }
-
-  /**
-   * 从 DataTable 列定义（`DataColumn.computeExpression`）编译并注册到委托。
-   * 内置编译缓存：列指纹 + ctx 引用不变时跳过重编译。
-   *
-   * **职责分工**：DataTable 是列配置的所有者；DataView 持有 context 与聚合解析器
-   * （需要 tableName / viewId / primaryKey 视角 + DataSet 关系信息）。
-   */
-  private _compileCacheKey: string | undefined
-  private _syncComputedFromConfig(): void {
-    const columns = this._dataTable?.columns
-    if (!columns?.length) return
-
-    // 编译缓存：列表达式指纹 + ctx 对象引用
-    const exprFingerprint = columns
-      .filter(c => c.computeExpression)
-      .map(c => `${c.name}:${c.computeExpression}`)
-      .join('|')
-    const cacheKey = `${exprFingerprint}@@${this._computedContext ? JSON.stringify(this._computedContext) : ''}`
-    if (cacheKey === this._compileCacheKey) return   // 缓存命中，跳过编译
-    this._compileCacheKey = cacheKey
-
-    const compiled = compileColumnsExpressions(
-      columns,
-      this._computedContext,
-      this._createAggregateResolver(),
-    )
-    for (const [name, fn] of compiled) this._computedDelegate.register(name, fn)
-
-    // 跨表聚合推送：检测 $summary/$selectionSummary 引用并自动订阅源视图事件
-    this._setupCrossTableSubscriptions(columns)
-  }
-
-  /**
-   * 跨表聚合自动推送——解析 $summary/$selectionSummary 引用，订阅源视图事件。
-   *
-   * 当源视图的 summaryRow / selectionSummaryRow 变更时，自动触发本视图 recomputeColumns()。
-   * 内置防环守卫：防止 A→B→A 循环触发。
-   *
-   * @param columns DataTable 列配置（从中提取 computeExpression 引用）
-   */
-  private _setupCrossTableSubscriptions(columns: Array<{ name: string; computeExpression?: string }>): void {
-    // 清理旧订阅
-    for (const unsub of this._crossTableUnsubs) unsub()
-    this._crossTableUnsubs = []
-
-    const ds = this._dataTable?.dataSet
-    if (!ds) return
-
-    // 提取 $summary('TableName') / $selectionSummary('TableName@viewId') 引用
-    const refs = new Set<string>()
-    const CROSS_REF_RE = /\$(?:summary|selectionSummary)\s*\(\s*['"]([^'"]+)['"]/g
-    for (const col of columns) {
-      if (!col.computeExpression) continue
-      let match: RegExpExecArray | null
-      while ((match = CROSS_REF_RE.exec(col.computeExpression)) !== null) {
-        if (match[1]) refs.add(match[1])
-      }
-    }
-    if (refs.size === 0) return
-
-    // 订阅源视图的 summaryChanged / selectionSummaryChanged 事件
-    for (const ref of refs) {
-      const at = ref.indexOf('@')
-      const tableName = at >= 0 ? ref.slice(0, at) : ref
-      const viewId = at >= 0 ? ref.slice(at + 1) : 'default'
-      const sourceView = ds.getView(tableName, viewId)
-      if (!sourceView || sourceView === (this as unknown)) continue  // 跳过自引用
-
-      const handler = () => {
-        if (this._crossTableRecomputeGuard) return   // 防环
-        this._crossTableRecomputeGuard = true
-        try { this.recomputeColumns() }
-        finally { this._crossTableRecomputeGuard = false }
-      }
-
-      sourceView.events.on('summaryChanged', handler)
-      sourceView.events.on('selectionSummaryChanged', handler)
-      this._crossTableUnsubs.push(
-        () => sourceView.events.off('summaryChanged', handler),
-        () => sourceView.events.off('selectionSummaryChanged', handler),
-      )
-    }
-  }
-
-  /**
-   * 构建聚合解析器——子表行解析 + 跨表 summaryRow 访问。
-   *
-   * - 子表行解析：需要 DataRelation 配置，用于 `$sum/$count/$avg/$min/$max/$list/$join`
-   * - 跨表聚合：仅需 DataSet 存在，用于 `$summary/$selectionSummary`
-   */
-  private _createAggregateResolver(): AggregateResolver | undefined {
-    const ds = this._dataTable?.dataSet
-    if (!ds) return undefined
-
-    const relations = ds.relations?.length
-      ? ds.getChildRelations(this.tableName, this.viewId)
-      : []
-
-    // 双重索引：精确键 "childTable@childViewId" + 短键 "childTable"（取第一匹配）
-    const relMap = new Map<string, DataRelation>()
-    for (const r of relations) {
-      const vid = r.childViewId ?? 'default'
-      relMap.set(`${r.childTable}@${vid}`, r)
-      if (!relMap.has(r.childTable)) relMap.set(r.childTable, r)
-    }
-
-    const pk = this.primaryKey
-    const defaultParentField = typeof pk === 'string' ? pk : (pk[0] ?? 'id')
-
-    return {
-      resolveChildRows: (childRef: string, parentRow: IDataRow): IDataRow[] => {
-        const rel = relMap.get(childRef)
-        if (!rel) return []
-        const parentField = rel.parentField ?? defaultParentField
-        const parentValue = parentRow[parentField]
-        if (parentValue === null || parentValue === undefined) return []
-        const childView = ds.getView(rel.childTable, rel.childViewId ?? 'default')
-        if (!childView) return []
-        const childField = rel.childField
-        if (!childField) return []
-        return childView.rows.filter(r => r[childField] === parentValue)
-      },
-      resolveSummary: (viewRef: string, field: string): unknown => {
-        const at = viewRef.indexOf('@')
-        const tableName = at >= 0 ? viewRef.slice(0, at) : viewRef
-        const viewId = at >= 0 ? viewRef.slice(at + 1) : 'default'
-        const view = ds.getView(tableName, viewId)
-        return view?.summaryRow[field]
-      },
-      resolveSelectionSummary: (viewRef: string, field: string): unknown => {
-        const at = viewRef.indexOf('@')
-        const tableName = at >= 0 ? viewRef.slice(0, at) : viewRef
-        const viewId = at >= 0 ? viewRef.slice(at + 1) : 'default'
-        const view = ds.getView(tableName, viewId)
-        return view?.selectionSummaryRow[field]
-      },
-    }
+    this._selectionSummaryRow = rows.length > 0
+      ? computeAggregateRow(this.aggregates, rows)
+      : {}
   }
 
   // ── 关联对象 ────────────────────────────────
@@ -722,13 +487,7 @@ export class DataView implements IDataSource {
   // ── 委托 ─────────────────────────────────────
 
   /** 计算列委托（立即初始化，因 dataTable setter 可能在第一次懒访问之前触发） */
-  private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate()
-  /** 计算列表达式共享上下文（表达式中以 `ctx` 引用），默认空对象 */
-  private _computedContext: ComputedColumnContext = {}
-  /** 跨表聚合订阅取消函数列表（destroy / 重编译时清理） */
-  private _crossTableUnsubs: Array<() => void> = []
-  /** 跨表推送防环守卫——阻止 A→B→A 无限循环 */
-  private _crossTableRecomputeGuard = false
+  private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate(this)
   /** CRUD 操作委托（懒初始化） */
   private _crudDelegate?: CrudDelegate | undefined
   /** 级联订阅委托（懒初始化） */
@@ -1800,18 +1559,12 @@ export class DataView implements IDataSource {
     
     // 4. 清理事件监听器（Batch 2 已扩展 IEventEmitter.removeAllListeners）
     this.events.removeAllListeners()
-
-    // 4.5 清理跨表聚合订阅
-    for (const unsub of this._crossTableUnsubs) unsub()
-    this._crossTableUnsubs = []
     
     // 5. 清空数据
     this.resetState()
     
-    // 6. 清除计算列委托及上下文
+    // 6. 清除计算列委托（内部清理跨表订阅 + 缓存 + 上下文）
     this._computedDelegate.destroy()
-    this._computedContext = {}
-    this._compileCacheKey = undefined
 
     // 7. 清除脏追踪委托
     this._dirtyTrackingDelegate?.destroy()
@@ -1884,6 +1637,46 @@ export class DataView implements IDataSource {
   // 序列化 / 反序列化
   // ─────────────────────────────────────────────
 
+  /**
+   * 将 IViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。
+   *
+   * 集中所有视图配置字段赋值逻辑，供 `fromData()`（静态工厂）和
+   * `DataTable.fromTableData()`（恢复 default 视图）共同使用，
+   * 消除重复的字段赋值代码。
+   *
+   * - rows 字段由调用方负责（需要 [...rows] 拷贝或 reactive 处理）
+   * - page / pageSize 使用 `?? 1` / `?? 20` 确保始终有合理默认值
+   */
+  applyViewConfig(vc: Partial<IViewMetadata>): void {
+    if (vc.filterExpression !== undefined) this.filterExpression = vc.filterExpression
+    if (vc.sortExpression !== undefined) this.sortExpression = vc.sortExpression
+    if (vc.autoCurrentFirst !== undefined) this.autoCurrentFirst = vc.autoCurrentFirst
+    if (vc.autoSelectFirst !== undefined) this.autoSelectFirst = vc.autoSelectFirst
+    if (vc.selectionFollowsCurrent !== undefined) this.selectionFollowsCurrent = vc.selectionFollowsCurrent
+    if (vc.treeConfig !== undefined) this.treeConfig = vc.treeConfig
+    if (vc.autoLoad !== undefined) this.autoLoad = vc.autoLoad
+    if (vc.autoRefresh !== undefined) this.autoRefresh = vc.autoRefresh
+    if (vc.autoCommit !== undefined) this.autoCommit = vc.autoCommit
+    if (vc.valueField !== undefined) this.valueField = vc.valueField
+    if (vc.labelField !== undefined) this.labelField = vc.labelField
+    if (vc.selectionDelimiter !== undefined) this.selectionDelimiter = vc.selectionDelimiter
+    if (vc.aggregates !== undefined) (this as { aggregates: Record<string, AggregateColumnConfig> }).aggregates = vc.aggregates
+    this.page = vc.page ?? 1
+    this.pageSize = vc.pageSize ?? 20
+  }
+
+  /**
+   * 对已有 rows 应用 autoCurrentFirst / autoSelectFirst 初始化选中状态。
+   *
+   * 用于静态数据路径（从配置/快照恢复时），与服务端加载后的
+   * `selectionDelegate.applyAutoFirst()` 行为一致。
+   * DataTable.fromTableData 在 rows + applyViewConfig 就绪后调用此方法，
+   * 无需了解 autoCurrentFirst / setCurrentRow 等 DataView 内部细节。
+   */
+  initAutoSelection(): void {
+    this.selectionDelegate.applyAutoFirst()
+  }
+
   toData(): IViewMetadata {
     const result: IViewMetadata = {
       tableName: this.tableName,
@@ -1905,27 +1698,14 @@ export class DataView implements IDataSource {
     if (this.valueField !== undefined) result.valueField = this.valueField
     if (this.labelField !== undefined) result.labelField = this.labelField
     if (this.selectionDelimiter !== ',') result.selectionDelimiter = this.selectionDelimiter
+    if (Object.keys(this.aggregates).length > 0) result.aggregates = this.aggregates
     return result
   }
 
   static fromData(data: IViewMetadata, tableName: string, viewId: string): DataView {
     const v = new DataView(tableName, viewId)
     if (data.rows !== undefined) v.rows = [...data.rows]
-    if (data.filterExpression !== undefined) v.filterExpression = data.filterExpression
-    if (data.sortExpression !== undefined) v.sortExpression = data.sortExpression
-    // autoCurrentFirst / autoSelectFirst / selectionFollowsCurrent 默认为 true，只在显式指定时覆盖
-    if (data.autoCurrentFirst !== undefined) v.autoCurrentFirst = data.autoCurrentFirst
-    if (data.autoSelectFirst !== undefined) v.autoSelectFirst = data.autoSelectFirst
-    if (data.selectionFollowsCurrent !== undefined) v.selectionFollowsCurrent = data.selectionFollowsCurrent
-    if (data.treeConfig !== undefined) v.treeConfig = data.treeConfig
-    if (data.autoLoad !== undefined) v.autoLoad = data.autoLoad
-    if (data.autoRefresh !== undefined) v.autoRefresh = data.autoRefresh
-    if (data.autoCommit !== undefined) v.autoCommit = data.autoCommit
-    if (data.valueField !== undefined) v.valueField = data.valueField
-    if (data.labelField !== undefined) v.labelField = data.labelField
-    if (data.selectionDelimiter !== undefined) v.selectionDelimiter = data.selectionDelimiter
-    v.page = data.page ?? 1
-    v.pageSize = data.pageSize ?? 20
+    v.applyViewConfig(data)
     return v
   }
 }
