@@ -151,7 +151,26 @@ provide('app:context-data', { key: 'value' })
 | `GRID_EVENTS` | spark-utils | `IEventEmitter` | 表格事件总线 |
 | `ROW_EVENTS` | spark-utils | `IEventEmitter` | 行事件总线 |
 | `PAGE_DATASET` | spark-data | `IDataSet` | 页面级 DataSet（PageRenderer provide） |
-| `DATA_SOURCE` | spark-data | `IDataSource` | 组件级数据视图（容器组件 provide） |
+| `DATA_SOURCE` | spark-data | `IDataSource` | 组件级数据视图（容器组件 provide，DataView 实现此接口） |
+
+### IDataSource 接口（UI 消费契约）
+
+```typescript
+interface IDataSource {
+  rows?: IDataRow[]              // 当前视图数据行
+  currentRow?: IDataRow | null   // 当前聚焦行（UI 高亮 / 级联父行）
+  selectedRows?: IDataRow[]      // 当前选中行集合（勾选行 / 级联选中行）
+  page?: number                  // 当前页码
+  pageSize?: number              // 每页行数
+  total?: number                 // 总行数
+  summaryRow?: Readonly<IDataRow>          // 全部行聚合汇总（view.aggregates 驱动）
+  selectionSummaryRow?: Readonly<IDataRow> // 选中行聚合汇总
+  _modelPerm?: IModelPermission  // 模型级权限快照
+}
+```
+
+> `DataView` 实现 `IDataSource`，通过 `DATA_SOURCE` 能力键向子组件暴露。
+> `getParentRows()` / `CascadeDelegate` 等内部机制也依赖此接口，不直接依赖 `DataView` 类型。
 
 ### 标准调用链
 
