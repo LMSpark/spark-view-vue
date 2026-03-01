@@ -25,7 +25,6 @@
  */
 
 import type { DataSet } from '../dataset'
-import { DataView } from '../data-view'
 import type { IDataRow, IDataSource } from '../types'
 
 // ===== 类型定义 =====
@@ -211,7 +210,8 @@ export function resolveDataKeyAsSource(
   }
   
   // 如果有字段路径且值是行对象，提取字段值
-  if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof DataView)) {
+  // field='rows' 时 value 是 DataView 实例（IDataSource），不应当作普通行对象取字段路径
+  if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value) && !('viewId' in value)) {
     const pathParts = descriptor.fieldPath.split('.')
     let current: unknown = value
     

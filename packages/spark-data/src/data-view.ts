@@ -453,7 +453,11 @@ export class DataView implements IDataSource {
   private _recomputeSummary(): void {
     this._summaryRow = computeAggregateRow(this.aggregates, this.rows)
     // 行数据变更时，选中行的值也可能变化，需同步重算
-    this._recomputeSelectionSummary()
+    if (this._selectedRowIds.length > 0) {
+      this._recomputeSelectionSummary()
+    } else {
+      this._selectionSummaryRow = {}
+    }
     // 通知订阅方（summaryChanged 隐含 selectionSummaryRow 也已更新）
     this.events.emit('summaryChanged')
   }
@@ -1221,13 +1225,20 @@ export class DataView implements IDataSource {
     let deletedCount = 0
     const failedIds: Array<string | number> = []
 
+    // 构建 pk → row 索引，避免循环内 O(n) rows.find（整体从 O(n×m) → O(n+m)）
+    const pkToRow = new Map<string | number, IDataRow>()
+    for (const r of this.rows) {
+      const pk = this.getPrimaryKeyValue(r)
+      if (pk !== undefined) pkToRow.set(pk, r)
+    }
+
     // ── 1. 新增 ──────────────────────────────────────────────
     const createIds = filterByIds
       ? [...delegate.pendingCreateIds].filter(id => filterByIds.has(id))
       : [...delegate.pendingCreateIds]
 
     for (const tempId of createIds) {
-      const row = this.rows.find(r => this.getPrimaryKeyValue(r) === tempId)
+      const row = pkToRow.get(tempId)
       if (!row) {
         delegate.cancelCreate(tempId)
         continue
@@ -1256,7 +1267,7 @@ export class DataView implements IDataSource {
       : [...delegate.dirtyRowIds]
 
     for (const id of updateIds) {
-      const row = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+      const row = pkToRow.get(id)
       if (!row) {
         delegate.clearDirty(id)
         continue
