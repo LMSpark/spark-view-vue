@@ -2,7 +2,7 @@
  * spark-data 内部工具函数
  */
 
-import type { IDataRow, DependencyType, CrudApi } from '../types'
+import type { IDataRow, IDataSource, DependencyType, CrudApi } from '../types'
 
 /** DataKey 分隔符，名称中禁止包含 */
 const SEPARATOR = '@'
@@ -191,23 +191,11 @@ export function pruneInvalidSelections(
 
 /**
  * 根据依赖类型获取源视图的数据范围
- * @param sourceView 源视图
+ * @param sourceView 实现 IDataSource 的数据源（DataView 自然满足）
  * @param dep 依赖类型
  * @returns 数据行数组
  */
-/**
- * getParentRows 所需的最小视图状态（ISP：不依赖完整 DataView）。
- * DataView 自然满足此接口。
- */
-export interface IParentRowSource {
-  readonly currentRow: IDataRow | null
-  readonly selectedRows: IDataRow[]
-  readonly rows: IDataRow[]
-  readonly page: number
-  readonly pageSize: number
-}
-
-export function getParentRows(sourceView: IParentRowSource, dep: DependencyType): IDataRow[] {
+export function getParentRows(sourceView: IDataSource, dep: DependencyType): IDataRow[] {
   switch (dep) {
     case 'currentRow':   return sourceView.currentRow ? [sourceView.currentRow] : []
     case 'selectedRows': return sourceView.selectedRows ?? []
