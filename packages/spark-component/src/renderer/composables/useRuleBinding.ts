@@ -108,7 +108,7 @@ export interface UseRuleBindingOptions {
   originalRules: Ref<any[]>
   pageData: Record<string, unknown>
   pageFunctions: Ref<Record<string, (...args: unknown[]) => unknown>>
-  dataSet: { value: IDataSet | null }
+  getDataSet: () => IDataSet | null
   // Note: formApi 使用 any 类型以避免与 form-create 官方复杂类型定义冲突
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formApi: Ref<any>
@@ -125,7 +125,7 @@ export interface UseRuleBindingReturn {
 // ─── Composable ───────────────────────────────────────────────────────────────
 
 export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingReturn {
-  const { originalRules, pageData, pageFunctions, dataSet, formApi, registry } = options
+  const { originalRules, pageData, pageFunctions, getDataSet, formApi, registry } = options
   const instanceId = `binding-${++_bindingIdCounter}`
   const boundRules = ref<unknown[]>([])
   let cleanupSync: (() => void) | null = null
@@ -145,7 +145,7 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       rules: originalRules.value as unknown as Rule[],
       pageData,
       pageFunctions: pageFunctions.value,
-      dataSet: dataSet.value,
+      dataSet: getDataSet(),
       bindingId: instanceId,
       ...(registry !== undefined ? { registry } : {})
     }) as unknown[]
@@ -156,9 +156,10 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
 
     // injectTableEvents 已在上方 bindDataToRules 中为每个 el-table 创建 DataView；
     // 现在订阅所有视图的独立事件，驱动 DataSet → el-table UI 方向。
-    if (dataSet.value) {
+    const currentDataSet = getDataSet()
+    if (currentDataSet) {
       // 订阅此 DataSet 内所有视图的状态变化，驱动 el-table UI 同步（DataSet → UI 方向）
-      cleanupSync = dataSet.value.onAnyViewChange({
+      cleanupSync = currentDataSet.onAnyViewChange({
         currentRowChanged(tableName, viewId, currentRow, originatorId) {
           if (originatorId === instanceId) return
           syncCurrentRowToTable(tableName, viewId, currentRow, formApi.value)

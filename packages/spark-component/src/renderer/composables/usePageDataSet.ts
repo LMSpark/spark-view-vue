@@ -24,7 +24,8 @@ export interface UsePageDataSetOptions {
 
 /** DataSet 管理返回值接口 */
 export interface UsePageDataSetReturn {
-  dataSet: { value: DataSet | null }
+  /** 读取当前 DataSet 实例（无响应式，每次调用返回最新值） */
+  getDataSet: () => DataSet | null
   /** pagedata.json 原始对象 或 已编译的 DataSet 实例 → 初始化 DataSet
    * - 传入 DataSet 实例时：直接赋值，跳过归一化
    * - 传入原始对象时：就地归一化并构建 DataSet
@@ -127,7 +128,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
   })
 
   return {
-    dataSet,
+    getDataSet: () => dataSet.value,
     initDataSet,
     clearDataSet
   }
