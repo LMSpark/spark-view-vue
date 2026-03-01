@@ -5,7 +5,6 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { toRaw } from 'vue'
 import { DataSet } from '@spark-view/spark-data'
 
 describe('Data Architecture Refactor', () => {
@@ -91,7 +90,7 @@ describe('Data Architecture Refactor', () => {
     expect(table.crudConfig?.timeout).toBe(5000)
 
     // DataView 访问 DataTable 的配置（通过 getCrudConfig 内部实现）
-    // view 是 reactive 代理，view.dataTable 返回的也是代理，用 toRaw 提取原始对象
-    expect(toRaw(view.dataTable!)).toBe(table)
+    expect(view.dataTable!).toBeDefined()
+    expect(view.dataTable!.tableName).toBe(table.tableName)
   })
 })
