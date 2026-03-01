@@ -172,7 +172,7 @@ export function usePageRenderer(
       // __init__ 完成后触发 autoCurrentFirst / autoSelectFirst，
       // 确保脚本中的 currentRowChanged 订阅者能收到初始行事件。
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      getDataSet()?.initAutoSelection()
+      pds.dataSet?.initAutoSelection()
     },
   })
 
@@ -183,15 +183,16 @@ export function usePageRenderer(
     enableScope: props.enableCssScope ?? true,
   })
 
-  const { getDataSet, initDataSet } = usePageDataSet({
+  const pds = usePageDataSet({
     enableDataSet: props.enableDataSet ?? true,
   })
+  const { initDataSet } = pds
 
   const { boundRules, rebindRules } = useRuleBinding({
     originalRules,
     pageData,
     pageFunctions,
-    getDataSet,
+    get dataSet() { return pds.dataSet },
     formApi,
     ...(registry !== undefined ? { registry } : {}),
   })
@@ -202,7 +203,7 @@ export function usePageRenderer(
 
   const pageContext: PageContext = {
     get $api()     { return formApi.value as FormCreateAPI | null },
-    get $dataSet() { return getDataSet() },
+    get $dataSet() { return pds.dataSet },
 
     $route:    route,
     $data:     pageData,
@@ -338,7 +339,7 @@ export function usePageRenderer(
     if (config.css) setScopedCss(config.css)
 
     initDataSet(config.data)
-    const ds = getDataSet()
+    const ds = pds.dataSet
     if (ds) provideCapability(PAGE_DATASET, ds)
 
     executeScript(pageId, config.script ?? '')
@@ -391,6 +392,6 @@ export function usePageRenderer(
     loadPageConfig,
     rebindRules,
     pageContext,
-    get dataSet() { return getDataSet() },
+    get dataSet() { return pds.dataSet },
   }
 }

@@ -19,11 +19,11 @@ describe('usePageDataSet - pagedata -> dataset 归一化', () => {
       title: 'Async Demo' // primitive -> single-cell table
     }
 
-    const { getDataSet, initDataSet } = usePageDataSet({ enableDataSet: true })
-    initDataSet(pageData)
+    const pds = usePageDataSet({ enableDataSet: true })
+    pds.initDataSet(pageData)
 
-    expect(getDataSet()).not.toBeNull()
-    const ds = getDataSet()!
+    expect(pds.dataSet).not.toBeNull()
+    const ds = pds.dataSet!
 
     // 键名应与 pageData 的顶层键一致
     expect(Object.keys(ds.tables)).toEqual(expect.arrayContaining(['stats', 'recentOrders', 'title']))
