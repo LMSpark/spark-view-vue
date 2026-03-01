@@ -30,7 +30,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { IDataRow, ComputedColumnFn, AggregateColumnConfig, DataRelation } from '../types'
+import type { IDataRow, ComputedColumnFn, AggregateColumnConfig, AggregateType, DataRelation } from '../types'
 
 const logger = Logger('DataView:Computed')
 
@@ -213,6 +213,7 @@ export interface IComputedColumnDataSet {
  */
 export class ComputedColumnDelegate {
   private _columns = new Map<string, ComputedColumnFn>()
+  private _namesCache: ReadonlySet<string> | undefined
   private _host: IComputedColumnHost
   private _compileCacheKey: string | undefined
   private _ctx: ComputedColumnContext = {}
@@ -223,9 +224,9 @@ export class ComputedColumnDelegate {
 
   // ── 公共 API ─────────────────────────────────
 
-  /** 已注册的计算列名集合（CrudDelegate 用于提交前剥离）。 */
+  /** 已注册的计算列名集合（CrudDelegate 用于提交前剥离）。缓存，变更时失效。 */
   get names(): ReadonlySet<string> {
-    return new Set(this._columns.keys())
+    return (this._namesCache ??= new Set(this._columns.keys()))
   }
 
   /** 设置计算列共享上下文，失效缓存并触发重编译。 */
@@ -268,16 +269,19 @@ export class ComputedColumnDelegate {
       this._createAggregateResolver(),
     )
     for (const [name, fn] of compiled) this._columns.set(name, fn)
+    this._namesCache = undefined
   }
 
   /** 注册计算列（已编译函数）。 */
   register(name: string, fn: ComputedColumnFn): void {
     this._columns.set(name, fn)
+    this._namesCache = undefined
   }
 
   /** 移除计算列定义（已求值的历史数据保留）。 */
   remove(name: string): void {
     this._columns.delete(name)
+    this._namesCache = undefined
   }
 
   /** 对行集合就地写入所有计算列。无计算列时短路返回，零开销。 */
@@ -302,6 +306,7 @@ export class ComputedColumnDelegate {
   /** 清空所有状态（DataView.destroy 时调用）。 */
   destroy(): void {
     this._columns.clear()
+    this._namesCache = undefined
     this._ctx = {}
     this._compileCacheKey = undefined
   }
@@ -383,56 +388,39 @@ export function computeAggregateRow(
     return result
   }
 
-  const result: IDataRow = {}
+  // ── 单遍扫描：一次遍历 rows 更新所有聚合列的累加器 ──
+  type Acc = { type: AggregateType; field: string; name: string; n: number; s: number; m: number; parts: string[] }
+  const accs: Acc[] = aggCols.map(([name, config]) => ({
+    type: config.type, field: config.field ?? name, name,
+    n: 0,   // count / avg 计数
+    s: 0,   // sum / avg 累加
+    m: config.type === 'min' ? Infinity : config.type === 'max' ? -Infinity : 0,
+    parts: [],
+  }))
 
-  for (const [name, config] of aggCols) {
-    const field = config.field ?? name
-    switch (config.type) {
-      case 'sum': {
-        let s = 0
-        for (const r of rows) s += Number(r[field] ?? 0)
-        result[name] = s
-        break
+  for (const row of rows) {
+    for (const a of accs) {
+      const raw = row[a.field]
+      switch (a.type) {
+        case 'sum':   a.s += Number(raw ?? 0); break
+        case 'count': if (raw !== null && raw !== undefined) a.n++; break
+        case 'avg':   a.s += Number(raw ?? 0); break
+        case 'min': { const v = Number(raw); if (!isNaN(v) && v < a.m) a.m = v; break }
+        case 'max': { const v = Number(raw); if (!isNaN(v) && v > a.m) a.m = v; break }
+        case 'join':  if (raw !== null && raw !== undefined && raw !== '') a.parts.push(String(raw)); break
       }
-      case 'count': {
-        let c = 0
-        for (const r of rows) if (r[field] !== null && r[field] !== undefined) c++
-        result[name] = c
-        break
-      }
-      case 'avg': {
-        let s = 0
-        for (const r of rows) s += Number(r[field] ?? 0)
-        result[name] = s / rows.length
-        break
-      }
-      case 'min': {
-        let m = Infinity
-        for (const r of rows) {
-          const v = Number(r[field])
-          if (!isNaN(v) && v < m) m = v
-        }
-        result[name] = m === Infinity ? undefined : m
-        break
-      }
-      case 'max': {
-        let m = -Infinity
-        for (const r of rows) {
-          const v = Number(r[field])
-          if (!isNaN(v) && v > m) m = v
-        }
-        result[name] = m === -Infinity ? undefined : m
-        break
-      }
-      case 'join': {
-        const parts: string[] = []
-        for (const r of rows) {
-          const v = r[field]
-          if (v !== null && v !== undefined && v !== '') parts.push(String(v))
-        }
-        result[name] = parts.join(',')
-        break
-      }
+    }
+  }
+
+  const result: IDataRow = {}
+  for (const a of accs) {
+    switch (a.type) {
+      case 'sum':   result[a.name] = a.s; break
+      case 'count': result[a.name] = a.n; break
+      case 'avg':   result[a.name] = a.s / rows.length; break
+      case 'min':   result[a.name] = a.m === Infinity ? undefined : a.m; break
+      case 'max':   result[a.name] = a.m === -Infinity ? undefined : a.m; break
+      case 'join':  result[a.name] = a.parts.join(','); break
     }
   }
 

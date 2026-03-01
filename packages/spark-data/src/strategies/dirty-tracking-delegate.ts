@@ -74,6 +74,8 @@ export class DirtyTrackingDelegate {
   // ── pending creates ───────────────────────
   /** 待新增行数据（pk → row），行从未在服务端存在，强引用保留 */
   private _createRows = new Map<string | number, IDataRow>()
+  /** 待新增行主键集合（与 _createRows 同步维护，避免每次 getter 创建新 Set） */
+  private _createIds = new Set<string | number>()
 
   // ── dirty updates ─────────────────────────
   /** 被手工编辑的行主键集合 */
@@ -109,6 +111,7 @@ export class DirtyTrackingDelegate {
       return
     }
     this._createRows.set(id, row)
+    this._createIds.add(id)
   }
 
   /**
@@ -120,6 +123,7 @@ export class DirtyTrackingDelegate {
   cancelCreate(id: string | number): boolean {
     if (!this._createRows.has(id)) return false
     this._createRows.delete(id)
+    this._createIds.delete(id)
     return true
   }
 
@@ -208,6 +212,7 @@ export class DirtyTrackingDelegate {
    */
   clearAll(): void {
     this._createRows.clear()
+    this._createIds.clear()
     this._dirtyIds.clear()
     this._dirtySnapshots.clear()
     this._deleteIds.clear()
@@ -248,9 +253,9 @@ export class DirtyTrackingDelegate {
   /** 全部 dirty-update 行主键（ReadonlySet） */
   get dirtyRowIds(): ReadonlySet<string | number> { return this._dirtyIds }
 
-  /** 待新增行主键（ReadonlySet） */
+  /** 待新增行主键（ReadonlySet——与 _createRows 同步，零分配） */
   get pendingCreateIds(): ReadonlySet<string | number> {
-    return new Set(this._createRows.keys())
+    return this._createIds
   }
 
   /** 待新增行数组 */
