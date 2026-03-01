@@ -91,11 +91,11 @@ async function handleUpdateUserIdBatch() {
       }
     });
     
-    // 通知 UI 刷新（通过视图的 stateChanged 事件）
+    // 通知 UI 刷新：replaceRows([...rows]) 触发 rowsChanged 事件
     const usersView = dataSet.getView('Users', 'default');
     const ordersView = dataSet.getView('Orders', 'default');
-    usersView?.events.emit('stateChanged', { tableName: 'Users', viewId: 'default', changeType: 'rows' });
-    ordersView?.events.emit('stateChanged', { tableName: 'Orders', viewId: 'default', changeType: 'rows' });
+    usersView?.replaceRows([...userTable.rows]);
+    ordersView?.replaceRows([...ordersTable.rows]);
     
     ElMessage.success(`✅ 已批量更新 ${userTable.rows.length} 个用户ID，订单已手动级联更新`);
   } catch (error) {
@@ -159,10 +159,10 @@ async function handleDeleteSelectedUser() {
       // 4. 删除 User
       Users.rows.splice(index, 1);
       
-      // 5. 通知所有视图刷新
-      dataSet.getView('Users', 'default')?.events.emit('stateChanged', { tableName: 'Users', viewId: 'default', changeType: 'rows' });
-      dataSet.getView('Orders', 'default')?.events.emit('stateChanged', { tableName: 'Orders', viewId: 'default', changeType: 'rows' });
-      dataSet.getView('OrderItems', 'default')?.events.emit('stateChanged', { tableName: 'OrderItems', viewId: 'default', changeType: 'rows' });
+      // 5. 通知所有视图刷新：replaceRows 触发 rowsChanged 事件
+      dataSet.getView('Users', 'default')?.replaceRows([...Users.rows]);
+      dataSet.getView('Orders', 'default')?.replaceRows([...Orders.rows]);
+      dataSet.getView('OrderItems', 'default')?.replaceRows([...OrderItems.rows]);
       
       ElMessage.success(
         `✅ 用户删除成功！\n级联删除了 ${relatedOrders.length} 个订单和 ${relatedOrderItems.length} 个明细`
