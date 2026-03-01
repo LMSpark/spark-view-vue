@@ -13,6 +13,7 @@
  *  7. 混合表达式        8. 聚合动态编辑      9. stripComputedColumns
  * 10. 运行时错误降级   11. 边界条件         12. 字符串内函数定义
  * 13. summaryRow 列级聚合  14. $summary/$selectionSummary 跨表聚合引用
+ * 15. 跨表聚合自动推送（push 模式）
  */
 
 import { describe, it, expect, vi } from 'vitest'
@@ -1210,5 +1211,262 @@ describe('$summary / $selectionSummary — 跨表聚合引用', () => {
     orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
     detail.recomputeColumns()
     expect(f(detail.rows[0], 'selectedNames')).toBe('张,王')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 15. 跨表聚合自动推送（push 模式）
+// ─────────────────────────────────────────────────────────────────────────────
+describe('跨表聚合自动推送（push 模式）', () => {
+
+  /** 构建 Orders + Report 跨表聚合场景 */
+  function makeCrossTableDS(reportExpression: string, ordersAggregate: 'sum' | 'join' = 'sum') {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'amount', type: 'number', aggregate: ordersAggregate },
+          ],
+          rows: [{ id: 1, amount: 100 }, { id: 2, amount: 200 }, { id: 3, amount: 300 }],
+        },
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'total', type: 'number', computeExpression: reportExpression },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    return {
+      ds,
+      orders: ds.getView('Orders', 'default')!,
+      report: ds.getView('Report', 'default')!,
+    }
+  }
+
+  it('$summary — 源表 appendRow 后自动推送（无需手动 recompute）', () => {
+    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
+    expect(f(report.rows[0], 'total')).toBe(600)  // 100+200+300
+
+    orders.appendRow({ id: 4, amount: 400 })
+    // 自动推送！无需 report.recomputeColumns()
+    expect(f(report.rows[0], 'total')).toBe(1000)  // 600+400
+  })
+
+  it('$summary — 源表 updateRowById 后自动推送', () => {
+    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
+    expect(f(report.rows[0], 'total')).toBe(600)
+
+    orders.updateRowById(1, { amount: 500 })
+    expect(f(report.rows[0], 'total')).toBe(1000)  // 500+200+300
+  })
+
+  it('$summary — 源表 deleteRowById 后自动推送', () => {
+    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
+    expect(f(report.rows[0], 'total')).toBe(600)
+
+    orders.deleteRowById(3)
+    expect(f(report.rows[0], 'total')).toBe(300)  // 100+200
+  })
+
+  it('$summary — 源表 replaceRows 后自动推送', () => {
+    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
+    orders.replaceRows([{ id: 1, amount: 10 }, { id: 2, amount: 20 }])
+    expect(f(report.rows[0], 'total')).toBe(30)
+  })
+
+  it('$selectionSummary — 源表选中变更后自动推送', () => {
+    const { orders, report } = makeCrossTableDS("$selectionSummary('Orders', 'amount')")
+    // 初始状态：DataSet.fromConfig 自动选中首行
+    orders.clearSelectedRows()
+    report.recomputeColumns()  // 初始清空一次
+
+    orders.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
+    // 自动推送！
+    expect(f(report.rows[0], 'total')).toBe(300)  // 100+200
+
+    orders.setSelectedRows([orders.rows[2]!])
+    expect(f(report.rows[0], 'total')).toBe(300)  // 只有 row3: 300
+
+    orders.clearSelectedRows()
+    expect(f(report.rows[0], 'total')).toBeUndefined()  // 空选中
+  })
+
+  it('$selectionSummary — 源表数据变更后自动推送（summaryChanged 包含 selectionSummary 更新）', () => {
+    const { orders, report } = makeCrossTableDS("$selectionSummary('Orders', 'amount')")
+    orders.setSelectedRows([orders.rows[0]!])   // row1: amount=100
+    report.recomputeColumns()                    // 初始同步
+    expect(f(report.rows[0], 'total')).toBe(100)
+
+    // 更新选中行的数据 → summaryChanged 自动推送
+    orders.updateRowById(1, { amount: 999 })
+    expect(f(report.rows[0], 'total')).toBe(999)
+  })
+
+  it('混合引用 — $summary + $selectionSummary 同时推送', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'amount', type: 'number', aggregate: 'sum' },
+          ],
+          rows: [{ id: 1, amount: 100 }, { id: 2, amount: 200 }],
+        },
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'allTotal', type: 'number', computeExpression: "$summary('Orders', 'amount')" },
+            { name: 'selTotal', type: 'number', computeExpression: "$selectionSummary('Orders', 'amount')" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const orders = ds.getView('Orders', 'default')!
+    const report = ds.getView('Report', 'default')!
+
+    orders.setSelectedRows([orders.rows[0]!])
+    // selectionSummaryChanged 自动推送
+    expect(f(report.rows[0], 'selTotal')).toBe(100)
+    expect(f(report.rows[0], 'allTotal')).toBe(300)
+
+    orders.appendRow({ id: 3, amount: 50 })
+    // summaryChanged 自动推送（含 selectionSummary 同步更新）
+    expect(f(report.rows[0], 'allTotal')).toBe(350)
+    expect(f(report.rows[0], 'selTotal')).toBe(100)  // 选中行不变
+  })
+
+  it('防环保护 — 循环引用不死循环', () => {
+    // A 引用 B 的 summary，B 引用 A 的 summary
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        A: {
+          tableName: 'A',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'val', type: 'number', aggregate: 'sum' },
+            { name: 'fromB', type: 'number', computeExpression: "$summary('B', 'val')" },
+          ],
+          rows: [{ id: 1, val: 10 }],
+        },
+        B: {
+          tableName: 'B',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'val', type: 'number', aggregate: 'sum' },
+            { name: 'fromA', type: 'number', computeExpression: "$summary('A', 'val')" },
+          ],
+          rows: [{ id: 1, val: 20 }],
+        },
+      },
+    })
+    const viewA = ds.getView('A', 'default')!
+    const viewB = ds.getView('B', 'default')!
+
+    // 不应死循环，应正常返回
+    expect(f(viewA.rows[0], 'fromB')).toBe(20)
+    expect(f(viewB.rows[0], 'fromA')).toBe(10)
+
+    // 更新 A → A.summaryChanged → B.recompute → B.summaryChanged → A 已在 guard 内，跳过
+    viewA.appendRow({ id: 2, val: 5 })
+    expect(viewA.summaryRow['val']).toBe(15)  // 10+5
+    // B 应该自动收到 A 的更新
+    expect(f(viewB.rows[0], 'fromA')).toBe(15)
+  })
+
+  it('源表不存在时不报错（静默忽略）', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'total', type: 'number', computeExpression: "$summary('NonExistent', 'price')" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const report = ds.getView('Report', 'default')!
+    // 不抛错，值为 undefined
+    expect(f(report.rows[0], 'total')).toBeUndefined()
+  })
+
+  it('$summary — setComputedContext 触发 summaryChanged 自动推送', () => {
+    const ds = DataSet.fromConfig({
+      dataSetName: 'DS',
+      tables: {
+        Orders: {
+          tableName: 'Orders',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'price', type: 'number' },
+            { name: 'tax', type: 'number', computeExpression: 'price * ctx.taxRate', aggregate: 'sum' },
+          ],
+          rows: [{ id: 1, price: 100 }, { id: 2, price: 200 }],
+        },
+        Report: {
+          tableName: 'Report',
+          columns: [
+            { name: 'id', type: 'number', isPrimaryKey: true },
+            { name: 'totalTax', type: 'number', computeExpression: "$summary('Orders', 'tax')" },
+          ],
+          rows: [{ id: 1 }],
+        },
+      },
+    })
+    const orders = ds.getView('Orders', 'default')!
+    const report = ds.getView('Report', 'default')!
+
+    orders.setComputedContext({ taxRate: 0.1 })
+    // summaryChanged 自动推送到 Report
+    expect(f(report.rows[0], 'totalTax') as number).toBeCloseTo(30)  // (100+200)*0.1
+
+    orders.setComputedContext({ taxRate: 0.2 })
+    expect(f(report.rows[0], 'totalTax') as number).toBeCloseTo(60)  // (100+200)*0.2
+  })
+
+  it('events 正确发射 — summaryChanged / selectionSummaryChanged', () => {
+    const { orders } = makeCrossTableDS("$summary('Orders', 'amount')")
+    const summaryEvents: number[] = []
+    const selSummaryEvents: number[] = []
+
+    orders.events.on('summaryChanged', () => summaryEvents.push(1))
+    orders.events.on('selectionSummaryChanged', () => selSummaryEvents.push(1))
+
+    // 数据变更 → summaryChanged
+    orders.appendRow({ id: 4, amount: 50 })
+    expect(summaryEvents.length).toBe(1)
+
+    // 选中变更 → selectionSummaryChanged（先清空再选，避免幂等跳过）
+    orders.clearSelectedRows()
+    const baseSelEvents = selSummaryEvents.length
+    orders.setSelectedRows([orders.rows[0]!])
+    expect(selSummaryEvents.length).toBeGreaterThan(baseSelEvents)
+
+    // 再次数据变更
+    orders.updateRowById(1, { amount: 999 })
+    expect(summaryEvents.length).toBe(2)
+  })
+
+  it('destroy 后不再推送', () => {
+    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
+    expect(f(report.rows[0], 'total')).toBe(600)
+
+    report.destroy()
+    // 源表继续操作不应报错
+    orders.appendRow({ id: 4, amount: 100 })
+    // report 已销毁，其数据不再更新（但不报错）
   })
 })

@@ -76,6 +76,10 @@ interface DataViewEventMap extends Record<string, any[]> {
   requestStateChanged: [requestState: RequestState]
   /** CRUD 变更状态变化 */
   mutatingChanged: [mutating: boolean]
+  /** summaryRow 已重算（含 selectionSummaryRow 同步更新）——跨表聚合推送依赖此事件 */
+  summaryChanged: []
+  /** selectionSummaryRow 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */
+  selectionSummaryChanged: []
   /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */
   'crud:before': [CrudLifecycleEvent]
   /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */
@@ -484,6 +488,8 @@ export class DataView implements IDataSource {
     this._summaryRow = result
     // 行数据变更时，选中行的值也可能变化，需同步重算
     this._recomputeSelectionSummary()
+    // 通知跨表订阅方（summaryChanged 隐含 selectionSummaryRow 也已更新）
+    this.events.emit('summaryChanged')
   }
 
   /**
@@ -584,6 +590,61 @@ export class DataView implements IDataSource {
       this._createAggregateResolver(),
     )
     for (const [name, fn] of compiled) this._computedDelegate.register(name, fn)
+
+    // 跨表聚合推送：检测 $summary/$selectionSummary 引用并自动订阅源视图事件
+    this._setupCrossTableSubscriptions(columns)
+  }
+
+  /**
+   * 跨表聚合自动推送——解析 $summary/$selectionSummary 引用，订阅源视图事件。
+   *
+   * 当源视图的 summaryRow / selectionSummaryRow 变更时，自动触发本视图 recomputeColumns()。
+   * 内置防环守卫：防止 A→B→A 循环触发。
+   *
+   * @param columns DataTable 列配置（从中提取 computeExpression 引用）
+   */
+  private _setupCrossTableSubscriptions(columns: Array<{ name: string; computeExpression?: string }>): void {
+    // 清理旧订阅
+    for (const unsub of this._crossTableUnsubs) unsub()
+    this._crossTableUnsubs = []
+
+    const ds = this._dataTable?.dataSet
+    if (!ds) return
+
+    // 提取 $summary('TableName') / $selectionSummary('TableName@viewId') 引用
+    const refs = new Set<string>()
+    const CROSS_REF_RE = /\$(?:summary|selectionSummary)\s*\(\s*['"]([^'"]+)['"]/g
+    for (const col of columns) {
+      if (!col.computeExpression) continue
+      let match: RegExpExecArray | null
+      while ((match = CROSS_REF_RE.exec(col.computeExpression)) !== null) {
+        if (match[1]) refs.add(match[1])
+      }
+    }
+    if (refs.size === 0) return
+
+    // 订阅源视图的 summaryChanged / selectionSummaryChanged 事件
+    for (const ref of refs) {
+      const at = ref.indexOf('@')
+      const tableName = at >= 0 ? ref.slice(0, at) : ref
+      const viewId = at >= 0 ? ref.slice(at + 1) : 'default'
+      const sourceView = ds.getView(tableName, viewId)
+      if (!sourceView || sourceView === (this as unknown)) continue  // 跳过自引用
+
+      const handler = () => {
+        if (this._crossTableRecomputeGuard) return   // 防环
+        this._crossTableRecomputeGuard = true
+        try { this.recomputeColumns() }
+        finally { this._crossTableRecomputeGuard = false }
+      }
+
+      sourceView.events.on('summaryChanged', handler)
+      sourceView.events.on('selectionSummaryChanged', handler)
+      this._crossTableUnsubs.push(
+        () => sourceView.events.off('summaryChanged', handler),
+        () => sourceView.events.off('selectionSummaryChanged', handler),
+      )
+    }
   }
 
   /**
@@ -664,6 +725,10 @@ export class DataView implements IDataSource {
   private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate()
   /** 计算列表达式共享上下文（表达式中以 `ctx` 引用），默认空对象 */
   private _computedContext: ComputedColumnContext = {}
+  /** 跨表聚合订阅取消函数列表（destroy / 重编译时清理） */
+  private _crossTableUnsubs: Array<() => void> = []
+  /** 跨表推送防环守卫——阻止 A→B→A 无限循环 */
+  private _crossTableRecomputeGuard = false
   /** CRUD 操作委托（懒初始化） */
   private _crudDelegate?: CrudDelegate | undefined
   /** 级联订阅委托（懒初始化） */
@@ -1617,6 +1682,7 @@ export class DataView implements IDataSource {
   /** 发射 selectedRowsChanged 事件（立即） */
   private emitSelectedRowsChanged(originatorId?: string): void {
     this._recomputeSelectionSummary()
+    this.events.emit('selectionSummaryChanged')
     this.events.emit('selectedRowsChanged', this.selectedRows, originatorId)
   }
 
@@ -1734,6 +1800,10 @@ export class DataView implements IDataSource {
     
     // 4. 清理事件监听器（Batch 2 已扩展 IEventEmitter.removeAllListeners）
     this.events.removeAllListeners()
+
+    // 4.5 清理跨表聚合订阅
+    for (const unsub of this._crossTableUnsubs) unsub()
+    this._crossTableUnsubs = []
     
     // 5. 清空数据
     this.resetState()
