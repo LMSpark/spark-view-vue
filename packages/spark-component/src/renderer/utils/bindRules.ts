@@ -365,8 +365,8 @@ function injectTableEvents(
     let cleanRow: IDataRow | null = null
 
     // 优先方案：通过主键从 view.rows 查找（通用、不依赖 form-create 内部结构）
-    const pk = view.getPrimaryKeyValue(currentRow)
-    if (pk !== undefined) cleanRow = view.rows.find(r => view.getPrimaryKeyValue(r) === pk) ?? null
+    const pk = view.getPkKey(currentRow)
+    if (pk !== undefined) cleanRow = view.rows.find(r => view.getPkKey(r) === pk) ?? null
 
     // 回退方案：form-create 特定——从 args[0] 提取原始数据（仅在 PK 查不到时使用）
     if (!cleanRow && 'args' in currentRow && Array.isArray((currentRow as { args: unknown }).args)) {
