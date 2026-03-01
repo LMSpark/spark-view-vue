@@ -271,10 +271,12 @@ const cap = consume('app:my-service') // MyServiceCapability | null
 
 **自动重算触发点**：`appendRow`、`updateRowById`、`deleteRowById`、`replaceRows`、`updateFromServer`、`setComputedContext`、`recomputeColumns`、选中行变更（`setSelectedRows` / `clearSelectedRows`）。
 
+**跨表聚合自动推送（push 模式）**：当计算列使用 `$summary` / `$selectionSummary` 引用其他表时，框架自动订阅源视图的 `summaryChanged` / `selectionSummaryChanged` 事件，源表数据或选中变更后 **自动** `recomputeColumns()`——无需手动调用。内置防环守卫防止 A→B→A 死循环。
+
 ### 关键文件
 - 表达式编译器：`packages/spark-data/src/strategies/computed-column-delegate.ts`
-- DataView 聚合：`packages/spark-data/src/data-view.ts`（`_recomputeSummary` / `_recomputeSelectionSummary`）
-- 测试：`packages/spark-data/src/tests/computed-columns.test.ts`（14 个 section，233+ cases）
+- DataView 聚合：`packages/spark-data/src/data-view.ts`（`_recomputeSummary` / `_recomputeSelectionSummary` / `_setupCrossTableSubscriptions`）
+- 测试：`packages/spark-data/src/tests/computed-columns.test.ts`（15 个 section，245+ cases）
 
 ## Package structure 📦
 ```
@@ -407,8 +409,8 @@ const ds = SparkData.createDataSet({
 // 自动可用
 ds.getView('Orders', 'default')!.summaryRow           // { price: 总和, total: 总和 }
 ds.getView('Orders', 'default')!.selectionSummaryRow  // 仅选中行的聚合
-// 跨表引用：源表变更后手动触发
-ds.getView('Report', 'default')!.recomputeColumns()
+// 跨表引用：自动推送，无需手动 recomputeColumns()
+// Orders 数据/选中变更 → Report 自动 recomputeColumns()（内置防环守卫）
 ```
 
 **树结构（CrudApi extends TreeApi）**
