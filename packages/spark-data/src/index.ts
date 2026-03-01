@@ -60,12 +60,8 @@ export type {
   InferColumnValue,
   AggregateType,
   AggregateColumnConfig,
-  ScalarPkValue,
-  CompositePkValue,
   PkValue,
 } from './types'
-
-export { serializePkValue } from './types'
 
 // ===== 主键生成器 =====
 

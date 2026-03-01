@@ -79,7 +79,8 @@ export class LocalMutationDelegate {
     if (!oldRow) return false
 
     // L3: 拦截主键变更——data 中不允许修改主键字段值，否则选中状态指针悬空
-    const pkFields = typeof h.primaryKey === 'string' ? [h.primaryKey] : h.primaryKey
+    // 使用 effectivePkFields 而非 primaryKey，确保自动合成 _pk 时仍校验真实字段
+    const pkFields = h.effectivePkFields
     for (const field of pkFields) {
       if (Object.prototype.hasOwnProperty.call(data, field)) {
         const newVal = data[field]

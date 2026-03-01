@@ -296,12 +296,12 @@ describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
     const view = ds.getView('Items')!
     // 自动从列定义推导 primaryKey，不是硬编码 'id'
     expect(view.primaryKey).toBe('itemId')
-    // getPrimaryKeyValue 使用推导后的主键
-    expect(view.getPrimaryKeyValue(view.rows[0]!)).toBe(100)
-    expect(view.getPrimaryKeyValue(view.rows[1]!)).toBe(200)
+    // getPkKey 使用推导后的主键
+    expect(view.getPkKey(view.rows[0]!)).toBe(100)
+    expect(view.getPkKey(view.rows[1]!)).toBe(200)
   })
 
-  it('复合主键：多列 isPrimaryKey=true 时 primaryKey 返回数组', () => {
+  it('复合主键：多列 isPrimaryKey=true 时自动合成 _pk 计算列', () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'CompositePK',
       tables: {
@@ -320,10 +320,16 @@ describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
       },
     })
     const view = ds.getView('OrderItems')!
-    expect(view.primaryKey).toEqual(['orderId', 'productId'])
-    // 复合主键值：返回对象
-    expect(view.getPrimaryKeyValue(view.rows[0]!)).toEqual({ orderId: 1, productId: 10 })
-    expect(view.getPrimaryKeyValue(view.rows[1]!)).toEqual({ orderId: 1, productId: 20 })
+    // 复合主键自动合成单字符串主键 '_pk'
+    expect(view.primaryKey).toBe('_pk')
+    expect(view.rows[0]?.['_pk']).toBe('1+10')
+    expect(view.rows[1]?.['_pk']).toBe('1+20')
+    // getPkKey 返回单一标量主键值（合成 _pk 值）
+    expect(view.getPkKey(view.rows[0]!)).toBe('1+10')
+    expect(view.getPkKey(view.rows[1]!)).toBe('1+20')
+    // buildServerPk 返回真实 PK 字段对象（供 CRUD 接口传参）
+    expect(view.buildServerPk(view.rows[0]!)).toEqual({ orderId: 1, productId: 10 })
+    expect(view.buildServerPk(view.rows[1]!)).toEqual({ orderId: 1, productId: 20 })
   })
 
   it('无 isPrimaryKey 标记时降级为默认 id', () => {
@@ -365,7 +371,7 @@ describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
     // 显式覆盖
     view.primaryKey = 'uuid'
     expect(view.primaryKey).toBe('uuid')
-    expect(view.getPrimaryKeyValue(view.rows[0]!)).toBe('abc-123')
+    expect(view.getPkKey(view.rows[0]!)).toBe('abc-123')
   })
 
   it('动态创建视图也继承列定义的主键', () => {

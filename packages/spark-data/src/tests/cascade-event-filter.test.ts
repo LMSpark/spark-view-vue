@@ -63,7 +63,7 @@ describe('cascade event filter — no spurious child requests', () => {
 
     // 父已加载，currentRow 设为第一行
     setParentLoaded(pView, [{ id: 1 }, { id: 2 }])
-    pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[0]!) ?? null
+    pView._currentRowId = pView.getPkKey(pView.rows[0]!) ?? null
 
     // 子视图 mock
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {
@@ -88,7 +88,7 @@ describe('cascade event filter — no spurious child requests', () => {
 
     // 父已加载，selectedRows 设为第一行
     setParentLoaded(pView, [{ id: 1 }, { id: 2 }])
-    pView._selectedRowIds.splice(0, pView._selectedRowIds.length, pView.getPrimaryKeyValue(pView.rows[0]!) as string | number)
+    pView._selectedRowIds.splice(0, pView._selectedRowIds.length, pView.getPkKey(pView.rows[0]!) as string | number)
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {
       cView.requestState = RequestState.Loaded
@@ -133,7 +133,7 @@ describe('cascade event filter — no spurious child requests', () => {
     const cView = ds.getView('Items', 'default')!
 
     setParentLoaded(pView, [{ id: 42 }])
-    pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[0]!) ?? null
+    pView._currentRowId = pView.getPkKey(pView.rows[0]!) ?? null
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async (params?: any) => {
       expect(params?.orderId).toBe(42)
@@ -213,7 +213,7 @@ describe('cascade reload — parent changes during child loading triggers immedi
     const cView = ds.getView('Items', 'default')!
 
     setParentLoaded(pView, [{ id: 1 }, { id: 2 }])
-    pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[0]!) ?? null // 初始选中 id=1
+    pView._currentRowId = pView.getPkKey(pView.rows[0]!) ?? null // 初始选中 id=1
 
     const loadCallCount: number[] = []
 
@@ -230,7 +230,7 @@ describe('cascade reload — parent changes during child loading triggers immedi
     pView.events.emit('currentRowChanged', pView.currentRow)
 
     // 此时子处于 Preparing（requestData 同步设置的），切换父 currentRow
-    pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[1]!) ?? null
+    pView._currentRowId = pView.getPkKey(pView.rows[1]!) ?? null
     pView.events.emit('currentRowChanged', pView.currentRow)
 
     // 等待所有微任务完成

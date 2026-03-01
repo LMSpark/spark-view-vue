@@ -106,7 +106,7 @@ describe('DataView.requestData orchestration', () => {
     const pSpy = vi.spyOn(pView, 'loadFromServer').mockImplementation(async () => {
       pView.rows.splice(0, pView.rows.length, { uuid: 'p-1' })
       // 直接写 _currentRowId，避免 setCurrentRow 触发 currentRowChanged 干扰编排
-      pView._currentRowId = pView.getPrimaryKeyValue(pView.rows[0]!) ?? null
+      pView._currentRowId = pView.getPkKey(pView.rows[0]!) ?? null
       pView.requestState = RequestState.Loaded
       return { success: true, data: pView.rows } as any
     })

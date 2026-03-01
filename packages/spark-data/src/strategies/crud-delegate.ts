@@ -19,9 +19,7 @@ import type { CrudService } from '../crud-service'
 import type {
   IDataRow, CrudResult, BatchResult,
   CrudOperationConfig, QueryParams,
-  PkValue,
 } from '../types'
-import { serializePkValue } from '../types'
 import type { ValidationResult } from '../validation'
 import type { ICrudHost, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
 import { createCrudLifecycleEvent } from './types'
@@ -178,8 +176,17 @@ export class CrudDelegate {
     })
   }
 
-  /** 更新记录，成功后刷新对应行 */
-  async updateRecord(id: PkValue, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+  /**
+   * 更新记录，成功后刷新对应行
+   * @param id 本地主键值（用于本地 rows 更新）
+   * @param data 更新数据
+   * @param serverPk 服务端 PK payload（用于 HTTP 请求，可选，默认从 id 构建）
+   */
+  async updateRecord(
+    id: string | number,
+    data: Partial<IDataRow>,
+    serverPk?: Record<string, unknown>,
+  ): Promise<CrudResult<IDataRow>> {
     if (!this.fireBefore('update', { id, ...data })) return this.cancelledResult('update')
 
     const cleanData = this.stripComputed(data)
@@ -190,24 +197,33 @@ export class CrudDelegate {
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.update<IDataRow>(id, cleanData, this.getCrudConfig())
+      const pk = serverPk ?? { [this.host.primaryKey]: id }
+      const result = await svc.update<IDataRow>(pk, cleanData, this.getCrudConfig())
       if (result.success && result.data) {
-        this.host.updateRowById(serializePkValue(id), result.data)   // updateRowById 内部已发射 stateChanged('rows')
+        this.host.updateRowById(id, result.data)
       }
       this.fireAfter('update', { id, ...data }, result)
       return result
     })
   }
 
-  /** 删除记录，成功后从 rows 移除 */
-  async deleteRecord(id: PkValue): Promise<CrudResult<boolean>> {
+  /**
+   * 删除记录，成功后从 rows 移除
+   * @param id 本地主键值
+   * @param serverPk 服务端 PK payload（用于 HTTP 请求，可选，默认从 id 构建）
+   */
+  async deleteRecord(
+    id: string | number,
+    serverPk?: Record<string, unknown>,
+  ): Promise<CrudResult<boolean>> {
     if (!this.fireBefore('delete', { id })) return this.cancelledResult('delete')
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.delete(id, this.getCrudConfig())
+      const pk = serverPk ?? { [this.host.primaryKey]: id }
+      const result = await svc.delete(pk, this.getCrudConfig())
       if (result.success) {
-        this.host.deleteRowById(serializePkValue(id))   // deleteRowById 内部已发射 stateChanged('rows')
+        this.host.deleteRowById(id)
       }
       this.fireAfter('delete', { id }, result)
       return result
@@ -277,24 +293,26 @@ export class CrudDelegate {
   }
 
   /** 批量删除 */
-  async batchDeleteRecords(ids: Array<PkValue>): Promise<CrudResult<BatchResult>> {
+  async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchDelete', ids)) return this.cancelledResult('batchDelete')
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      const result = await svc.batchDelete(ids, this.getCrudConfig())
+      // 构建服务端 PK payload 数组
+      const pkPayloads = ids.map(id => this._buildServerPkFromId(id))
+      const result = await svc.batchDelete(pkPayloads, this.getCrudConfig())
 
       if (result.success && result.data) {
         const successIds = new Set<string | number>()
         for (const [i, r] of result.data.results.entries()) {
-          const pk = ids[i]
-          if (r.success && pk !== undefined) {
-            successIds.add(serializePkValue(pk))
+          const id = ids[i]
+          if (r.success && id !== undefined) {
+            successIds.add(id)
           }
         }
 
         for (const id of successIds) {
-          this.host.deleteRowById(id)   // deleteRowById 内部已发射（防抖合并）
+          this.host.deleteRowById(id)
         }
 
         if (result.data.failureCount > 0) {
@@ -308,6 +326,24 @@ export class CrudDelegate {
       this.fireAfter('batchDelete', ids, result)
       return result
     })
+  }
+
+  // ─────────────────────────────────────────────
+  // Server PK 构建辅助
+  // ─────────────────────────────────────────────
+
+  /**
+   * 从本地 ID 构建服务端 PK payload。
+   * 尝试从 rows 中查找行以提取真实 PK 字段，否则回退到单字段。
+   */
+  private _buildServerPkFromId(id: string | number): Record<string, unknown> {
+    const row = this.host.rows.find(r => this.host.getPkKey(r) === id)
+    if (row) {
+      const result: Record<string, unknown> = {}
+      for (const f of this.host.effectivePkFields) result[f] = row[f]
+      return result
+    }
+    return { [this.host.primaryKey]: id }
   }
 
   // ─────────────────────────────────────────────

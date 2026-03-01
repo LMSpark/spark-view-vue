@@ -5,7 +5,7 @@
  * 遵循 ISP 原则：Delegate 只依赖自己需要的方法。
  */
 
-import type { IDataRow, IDataSet, CrudResult, CrudOperationConfig, PkValue } from '../types'
+import type { IDataRow, IDataSet, CrudResult, CrudOperationConfig } from '../types'
 import type { CrudService } from '../crud-service'
 import type { DataValidator } from '../validation'
 
@@ -45,11 +45,12 @@ export interface IViewIdentity {
 /** 行存储 + 主键访问 */
 export interface IRowStore {
   readonly rows: IDataRow[]
-  readonly primaryKey: string | string[]
-  /** 结构化主键值（单PK=标量, 复合PK=对象） */
-  getPrimaryKeyValue(row: IDataRow): PkValue | undefined
-  /** 序列化主键 key（用于 Map/Set/=== 内部比较） */
+  /** 主键字段名（始终为单字符串；多列 PK 通过 _pk 合成列统一为标量） */
+  readonly primaryKey: string
+  /** 获取行的主键值（用于 Map/Set/=== 内部比较） */
   getPkKey(row: IDataRow): string | number | undefined
+  /** 实际生效的主键字段名列表（不含合成列 _pk），供委托校验/遍历真实字段 */
+  readonly effectivePkFields: string[]
 }
 
 /**
