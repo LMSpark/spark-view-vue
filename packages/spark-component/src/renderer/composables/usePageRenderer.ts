@@ -161,13 +161,17 @@ export function usePageRenderer(
     ...props.formCreateOptions,
     mounted: () => {
       const init = pageFunctions.value['__init__']
-      if (typeof init !== 'function') return
-      try {
-        init()
-        pageLogger.info('✅ __init__ 执行成功')
-      } catch (e) {
-        pageLogger.error('__init__ 执行失败', { error: e })
+      if (typeof init === 'function') {
+        try {
+          init()
+          pageLogger.info('✅ __init__ 执行成功')
+        } catch (e) {
+          pageLogger.error('__init__ 执行失败', { error: e })
+        }
       }
+      // __init__ 完成后触发 autoCurrentFirst / autoSelectFirst，
+      // 确保脚本中的 currentRowChanged 订阅者能收到初始行事件。
+      dataSet.value?.initAutoSelection()
     },
   })
 

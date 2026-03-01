@@ -274,8 +274,9 @@ export class DataTable {
     const vc: IViewMetadata = data.views?.['default'] ?? data
     def.applyViewConfig(vc)
 
-    // 静态数据初始化：DataView 自己决定如何初始化选中状态（DataTable 不关心内部细节）。
-    def.initAutoSelection()
+    // 注意：不在此处调用 initAutoSelection()。
+    // autoCurrentFirst / autoSelectFirst 的初始选中事件必须在消费者（如页面脚本）
+    // 完成订阅后再发射，由渲染层在 FC mounted 后调用 DataSet.initAutoSelection() 统一触发。
 
     // 处理命名视图（非 default）
     if (data.views) {

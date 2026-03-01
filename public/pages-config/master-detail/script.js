@@ -43,8 +43,7 @@ function __init__() {
     }
     // 订阅后续变化
     usersView.events.on('currentRowChanged', handleCurrentRowChange)
-    // 立即同步：DataSet 创建时 autoCurrentFirst=true 已设好第一行，事件在订阅前已发出
-    handleCurrentRowChange(usersView.currentRow)
+    // FC mounted 后由框架统一调用 dataSet.initAutoSelection() 触发初始事件
     // Users 视图 currentRowChanged 事件已订阅
   } else {
     console.warn('⚠️ [Script] 无法获取 Users 视图')
