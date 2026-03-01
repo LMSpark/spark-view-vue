@@ -108,7 +108,7 @@ export interface UseRuleBindingOptions {
   originalRules: Ref<any[]>
   pageData: Record<string, unknown>
   pageFunctions: Ref<Record<string, (...args: unknown[]) => unknown>>
-  dataSet: Ref<IDataSet | null>
+  dataSet: { value: IDataSet | null }
   // Note: formApi 使用 any 类型以避免与 form-create 官方复杂类型定义冲突
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formApi: Ref<any>
