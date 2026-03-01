@@ -169,6 +169,8 @@ export interface AggregateColumnConfig {
   field?: string
   /** 显示标题（UI 渲染表头 / 汇总标签使用） */
   label?: string
+  /** join 聚合分隔符（默认 ', '），仅 type='join' 时有效 */
+  separator?: string
 }
 
 // ===== 列类型系统 =====

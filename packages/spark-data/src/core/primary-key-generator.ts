@@ -14,6 +14,9 @@ import type { IDataRow } from '../types'
 // 类型定义
 // ─────────────────────────────────────────────
 
+/** timestamp 策略乘数（防止同毫秒碑撞，留出 4 位自增后缀空间） */
+const TIMESTAMP_MULTIPLIER = 10_000
+
 /**
  * 主键生成策略类型
  */
@@ -100,7 +103,7 @@ export class PrimaryKeyGenerator {
 
       case 'timestamp':
         // 附加自增后缀防止同毫秒碰撞（batch 场景）
-        return Date.now() * 10000 + (this.autoIncrementCounter++)
+        return Date.now() * TIMESTAMP_MULTIPLIER + (this.autoIncrementCounter++)
 
       case 'custom': {
         if (!this.config.generator) {

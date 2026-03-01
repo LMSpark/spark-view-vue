@@ -24,7 +24,7 @@
 
 import type {
   IDataRow, IViewMetadata, FilterExpression, SortExpression,
-  QueryParams,
+  QueryParams, DataColumn,
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
@@ -85,6 +85,9 @@ interface DataViewEventMap extends Record<string, any[]> {
   'crud:after': [CrudLifecycleEvent]
 }
 
+/** rowsChanged 事件防抖延迟（毫秒，约 1 帧） */
+const ROWS_CHANGED_DEBOUNCE_MS = 16
+
 // ─────────────────────────────────────────────
 // DataView 类
 // ─────────────────────────────────────────────
@@ -96,10 +99,14 @@ export class DataView implements IDataSource {
   /** 内部存储的 DataTable 引用 */
   private _dataTable!: DataTable
 
+  /** 列名→列定义缓存（dataTable 赋值时构建，_coercePkValue O(1) 查找） */
+  private _columnMap?: Map<string, DataColumn>
+
   /** 所属 DataTable（赋值时自动失效编译缓存并重编译计算列，不求值） */
   get dataTable(): DataTable { return this._dataTable }
   set dataTable(table: DataTable) {
     this._dataTable = markRaw(table)
+    this._columnMap = new Map(table.columns?.map(c => [c.name, c]) ?? [])
     // 多主键时提前合成 _pk（在 syncFromConfig 前注册，使其参与首次编译）
     if (!this._primaryKeyOverride) {
       const pkCols = table.columns?.filter(c => c.isPrimaryKey) ?? []
@@ -740,7 +747,7 @@ export class DataView implements IDataSource {
     // null / undefined 已在调用层排除，理论不会进入
     if (value === null || value === undefined) return undefined
 
-    const col = this._dataTable?.columns?.find(c => c.name === field)
+    const col = this._columnMap?.get(field)
 
     if (col) {
       // 数字类 → Number
@@ -784,16 +791,6 @@ export class DataView implements IDataSource {
    * 
    * @example
    * ```ts
-   * // 雪花ID生成器
-   * view.setPrimaryKeyGenerator({
-   *   strategy: 'snowflake',
-   *   fields: 'id',
-   *   snowflake: {
-   *     workerId: 1,
-   *     datacenterId: 1
-   *   }
-   * })
-   * 
    * // UUID生成器
    * view.setPrimaryKeyGenerator({
    *   strategy: 'uuid',
@@ -1562,7 +1559,7 @@ export class DataView implements IDataSource {
     this.stateChangedDebouncer = setTimeout(() => {
       this.events.emit('rowsChanged')
       this.stateChangedDebouncer = undefined
-    }, 16)
+    }, ROWS_CHANGED_DEBOUNCE_MS)
   }
 
   /** 将 SortExpression 序列化为查询字符串格式（如 `name:asc` 或 `name:asc,age:desc`） */

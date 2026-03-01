@@ -25,6 +25,7 @@
  */
 
 import type { DataSet } from '../dataset'
+import type { DataView as SparkDataView } from '../data-view'
 import type { IDataRow, IDataSource } from '../types'
 
 // ===== 类型定义 =====
@@ -132,6 +133,67 @@ export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
   return null
 }
 
+// ===== 内部共用解析核心 =====
+
+/**
+ * @internal 从行/行对象中提取字段路径的值（如 `currentRow.totalUsers` 中的 `totalUsers`）
+ */
+function extractFieldPath(value: unknown, fieldPath: string): unknown {
+  const pathParts = fieldPath.split('.')
+  let current: unknown = value
+
+  for (const part of pathParts) {
+    if (current && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, part)) {
+      current = (current as Record<string, unknown>)[part]
+    } else {
+      return undefined
+    }
+  }
+
+  return current
+}
+
+/**
+ * @internal 从 DataSet 中查找视图并按 field 提取值的共用逻辑
+ *
+ * @param descriptor 解析后的描述符
+ * @param dataSet 数据集
+ * @param rowsAsView 当 field='rows' 时，true 返回 DataView 实例，false 返回 view.rows 数组
+ * @returns 解析到的值（含 fieldPath 提取）
+ */
+function _resolveCore(
+  descriptor: DataKeyDescriptor,
+  dataSet: DataSet,
+  rowsAsView: boolean
+): SparkDataView | IDataRow[] | IDataRow | null | undefined | unknown {
+  const table = dataSet.getTable(descriptor.tableName)
+  if (!table) return undefined
+
+  const view = table.getView(descriptor.viewId)
+  if (!view) return undefined
+
+  let value: SparkDataView | IDataRow[] | IDataRow | null | undefined
+
+  switch (descriptor.field) {
+    case 'rows':                value = rowsAsView ? view : view.rows; break
+    case 'currentRow':          value = view.currentRow; break
+    case 'selectedRows':        value = view.selectedRows; break
+    case 'summaryRow':          value = view.summaryRow as IDataRow; break
+    case 'selectionSummaryRow': value = view.selectionSummaryRow as IDataRow; break
+    default:                    return undefined
+  }
+
+  // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
+  // field='rows' + rowsAsView=true → value 是 DataView 实例，不应作为行对象取字段路径
+  if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value) && !('viewId' in value)) {
+    return extractFieldPath(value, descriptor.fieldPath)
+  }
+
+  return value
+}
+
+// ===== 公共解析函数 =====
+
 /**
  * 从 DataSet 中解析数据键对应的值
  *
@@ -143,40 +205,7 @@ export function resolveDataKey(
   descriptor: DataKeyDescriptor,
   dataSet: DataSet
 ): IDataRow[] | IDataRow | null | undefined | unknown {
-  const table = dataSet.getTable(descriptor.tableName)
-  if (!table) return undefined
-
-  const view = table.getView(descriptor.viewId)
-  if (!view) return undefined
-
-  let value: IDataRow[] | IDataRow | null | undefined
-  
-  switch (descriptor.field) {
-    case 'rows':         value = view.rows; break
-    case 'currentRow':   value = view.currentRow; break
-    case 'selectedRows': value = view.selectedRows; break
-    case 'summaryRow':   value = view.summaryRow as IDataRow; break
-    case 'selectionSummaryRow': value = view.selectionSummaryRow as IDataRow; break
-    default:             return undefined
-  }
-  
-  // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
-  if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value)) {
-    const pathParts = descriptor.fieldPath.split('.')
-    let current: unknown = value
-    
-    for (const part of pathParts) {
-      if (current && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, part)) {
-        current = (current as Record<string, unknown>)[part]
-      } else {
-        return undefined
-      }
-    }
-    
-    return current
-  }
-  
-  return value
+  return _resolveCore(descriptor, dataSet, false)
 }
 
 /**
@@ -191,42 +220,8 @@ export function resolveDataKey(
 export function resolveDataKeyAsSource(
   descriptor: DataKeyDescriptor,
   dataSet: DataSet
-): DataView | IDataRow | IDataRow[] | null | undefined | unknown {
-  const table = dataSet.getTable(descriptor.tableName)
-  if (!table) return undefined
-
-  const view = table.getView(descriptor.viewId)
-  if (!view) return undefined
-
-  let value: DataView | IDataRow | IDataRow[] | null | undefined
-  
-  switch (descriptor.field) {
-    case 'rows':         value = view; break             // DataView 实现 IDataSource，适合整表绑定
-    case 'currentRow':   value = view.currentRow; break
-    case 'selectedRows': value = view.selectedRows; break
-    case 'summaryRow':   value = view.summaryRow as IDataRow; break
-    case 'selectionSummaryRow': value = view.selectionSummaryRow as IDataRow; break
-    default:             return undefined
-  }
-  
-  // 如果有字段路径且值是行对象，提取字段值
-  // field='rows' 时 value 是 DataView 实例（IDataSource），不应当作普通行对象取字段路径
-  if (descriptor.fieldPath && value && typeof value === 'object' && !Array.isArray(value) && !('viewId' in value)) {
-    const pathParts = descriptor.fieldPath.split('.')
-    let current: unknown = value
-    
-    for (const part of pathParts) {
-      if (current && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, part)) {
-        current = (current as Record<string, unknown>)[part]
-      } else {
-        return undefined
-      }
-    }
-    
-    return current
-  }
-  
-  return value
+): SparkDataView | IDataRow | IDataRow[] | null | undefined | unknown {
+  return _resolveCore(descriptor, dataSet, true)
 }
 
 // ===== 字符串入口（raw string → 数据）=====
@@ -241,11 +236,11 @@ export function resolveDataKeyAsSource(
 export function resolveRawKey(
   rawKey: string,
   dataSet: DataSet
-): DataView | IDataRow | IDataRow[] | null | undefined {
+): SparkDataView | IDataRow | IDataRow[] | null | undefined {
   if (!isDataKey(rawKey)) return undefined
   const dk = parseDataKey(rawKey)
   if (!dk) return undefined
-  return resolveDataKeyAsSource(dk, dataSet) as DataView | IDataRow | IDataRow[] | null | undefined
+  return resolveDataKeyAsSource(dk, dataSet) as SparkDataView | IDataRow | IDataRow[] | null | undefined
 }
 
 /**
@@ -257,7 +252,7 @@ export function resolveRawKey(
 export function getViewFromRawKey(
   rawKey: string,
   dataSet: DataSet
-): DataView | undefined {
+): SparkDataView | undefined {
   if (!isDataKey(rawKey)) return undefined
   const dk = parseDataKey(rawKey)
   if (!dk) return undefined
@@ -295,10 +290,25 @@ export function resolveDataKeyBinding(
   if (!table) return null
   const view = table.getView(dk.viewId)
   if (!view) return null
+
+  // rows → 返回 DataView（IDataSource），不支持 fieldPath
   if (dk.field === 'rows') return { kind: 'view', source: view }
-  if (dk.field === 'summaryRow') return { kind: 'value', value: view.summaryRow }
-  if (dk.field === 'selectionSummaryRow') return { kind: 'value', value: view.selectionSummaryRow }
-  const value = dk.field === 'currentRow' ? view.currentRow : view.selectedRows
+
+  // 其他字段 → 取原始值后按需提取 fieldPath
+  let value: unknown
+  switch (dk.field) {
+    case 'currentRow':          value = view.currentRow; break
+    case 'selectedRows':        value = view.selectedRows; break
+    case 'summaryRow':          value = view.summaryRow; break
+    case 'selectionSummaryRow': value = view.selectionSummaryRow; break
+    default:                    return null
+  }
+
+  // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
+  if (dk.fieldPath && value && typeof value === 'object' && !Array.isArray(value)) {
+    value = extractFieldPath(value, dk.fieldPath)
+  }
+
   return { kind: 'value', value }
 }
 

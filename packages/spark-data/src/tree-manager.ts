@@ -30,6 +30,9 @@ export class TreeManager {
   /** 节点缓存 */
   private cache: Record<string | number, FlatTreeNode> = {}
 
+  /** 父ID→子ID集合索引（getChildren O(1) 查找） */
+  private _parentIndex = new Map<string | number | null | undefined, Set<string | number>>()
+
   /** 树 HTTP 接口族配置（来自 DataTable.treeApi，可选） */
   private api?: TreeApi
 
@@ -78,7 +81,7 @@ export class TreeManager {
     const method = endpoint.method ?? 'GET'
     const config = endpoint.headers ? { headers: endpoint.headers } : {}
     if (method === 'GET') return http.get<T>(url, rest, config)
-    return http.post<T>(url, params, config)
+    return http.post<T>(url, rest, config)
   }
 
   // ===== 配置和缓存访问 =====
@@ -99,7 +102,16 @@ export class TreeManager {
    */
   addNodesToCache(nodes: FlatTreeNode[]): void {
     for (const node of nodes) {
+      // 如果节点已存在且 parentId 变化，先从旧索引移除
+      const existing = this.cache[node.id]
+      if (existing && existing.parentId !== node.parentId) {
+        this._parentIndex.get(existing.parentId)?.delete(node.id)
+      }
       this.cache[node.id] = node
+      // 维护父索引
+      let children = this._parentIndex.get(node.parentId)
+      if (!children) { children = new Set(); this._parentIndex.set(node.parentId, children) }
+      children.add(node.id)
     }
   }
 
@@ -108,6 +120,7 @@ export class TreeManager {
    */
   clear(): void {
     this.cache = {}
+    this._parentIndex.clear()
   }
 
   // ===== 节点查询 =====
@@ -127,9 +140,14 @@ export class TreeManager {
    * @returns 子节点数组
    */
   getChildren(parentId: string | number | null): FlatTreeNode[] {
-    return Object.values(this.cache).filter(
-      node => node.parentId === parentId
-    )
+    const childIds = this._parentIndex.get(parentId)
+    if (!childIds || childIds.size === 0) return []
+    const result: FlatTreeNode[] = []
+    for (const id of childIds) {
+      const node = this.cache[id]
+      if (node) result.push(node)
+    }
+    return result
   }
 
   /**

@@ -6,7 +6,7 @@
  * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
  */
 
-import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, CrudApi, ViewChangeHandlers } from './types'
+import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, ColumnType, CrudApi, ViewChangeHandlers } from './types'
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { Request } from '@spark-view/spark-utils'
@@ -14,7 +14,7 @@ import { DataTable } from './data-table'
 import { assertNoSeparator } from './core/utils'
 
 /** @internal 从未知值推断列类型 */
-function inferColumnType(v: unknown): string {
+function inferColumnType(v: unknown): ColumnType {
   if (typeof v === 'number') return 'number'
   if (typeof v === 'boolean') return 'boolean'
   if (v === null) return 'string'
@@ -24,7 +24,7 @@ function inferColumnType(v: unknown): string {
 
 /** @internal 从对象的键推断列配置（fromPageData 内部复用，避免两处重复 Object.keys.map） */
 function inferColumnsFromRecord(obj: Record<string, unknown>): DataColumn[] {
-  return Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n })) as DataColumn[]
+  return Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n }))
 }
 
 /**
@@ -271,8 +271,7 @@ export class DataSet implements IDataSet {
     for (const key of eventKeys) {
       const handler = h[key]
       if (!handler) continue
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fn = (...args: any[]) => (handler as (...a: any[]) => void)(tn, vid, ...args)
+      const fn = (...args: unknown[]) => (handler as (...a: unknown[]) => void)(tn, vid, ...args)
       view.events.on(key, fn)
       entry.unsubs.push(() => view.events.off(key, fn))
     }
