@@ -547,7 +547,10 @@ export class DataView implements IDataSource {
 
   /** 获取手工编辑追踪委托（懒初始化） */
   private get dirtyTrackingDelegate(): DirtyTrackingDelegate {
-    this._dirtyTrackingDelegate ??= markRaw(new DirtyTrackingDelegate())
+    this._dirtyTrackingDelegate ??= markRaw(new DirtyTrackingDelegate({
+      getColumns: () => this._dataTable?.columns,
+      getComputedColumnNames: () => this._computedDelegate.names,
+    }))
     return this._dirtyTrackingDelegate
   }
   
@@ -642,6 +645,8 @@ export class DataView implements IDataSource {
    * 
    * - 单主键：返回字段值（string | number）
    * - 多主键：返回连接字符串（格式："value1:value2:value3"）
+   * - 根据 DataTable 列定义的 type 自动类型强转（number/string），
+   *   避免 JSON 反序列化后 `'1' !== 1` 的不匹配问题
    * 
    * @param row 数据行
    * @returns 主键值，如果主键字段不存在则返回 undefined
@@ -650,8 +655,7 @@ export class DataView implements IDataSource {
     if (typeof this.primaryKey === 'string') {
       const value = row[this.primaryKey]
       if (value === undefined || value === null) return undefined
-      if (typeof value === 'string' || typeof value === 'number') return value
-      return undefined
+      return this._coercePkValue(this.primaryKey, value)
     }
     
     // 多主键：连接所有字段值
@@ -659,10 +663,36 @@ export class DataView implements IDataSource {
     for (const field of this.primaryKey) {
       const value = row[field]
       if (value === undefined || value === null) return undefined
-      if (typeof value !== 'string' && typeof value !== 'number') return undefined
-      values.push(value)
+      const coerced = this._coercePkValue(field, value)
+      if (coerced === undefined) return undefined
+      values.push(coerced)
     }
     return values.join(':')
+  }
+
+  /** 数字类列类型集合——主键值需要强转为 number */
+  private static _numericTypes = new Set(['number', 'int', 'integer', 'decimal', 'float', 'double'])
+
+  /**
+   * 根据 DataTable 列定义的 type 强转主键值。
+   *
+   * - 列 type 为数字类 → `Number(value)`（NaN → undefined）
+   * - 列 type 为字符串类 → `String(value)`
+   * - 无列定义或其他类型 → 保留原样（string | number）
+   */
+  private _coercePkValue(field: string, value: unknown): string | number | undefined {
+    if (typeof value === 'string' || typeof value === 'number') {
+      const col = this._dataTable?.columns?.find(c => c.name === field)
+      if (col && DataView._numericTypes.has(col.type)) {
+        const n = Number(value)
+        return isNaN(n) ? undefined : n
+      }
+      if (col && (col.type === 'string' || col.type === 'varchar' || col.type === 'text')) {
+        return String(value)
+      }
+      return value as string | number
+    }
+    return undefined
   }
 
   /**
