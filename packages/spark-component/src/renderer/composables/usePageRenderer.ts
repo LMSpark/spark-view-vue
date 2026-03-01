@@ -25,7 +25,7 @@ import {
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
-import type { IDataSet } from '@spark-view/spark-data'
+import type { DataSet } from '@spark-view/spark-data'
 import { SparkData, PAGE_DATASET } from '@spark-view/spark-data'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSparkComponent } from '../../composables/useSparkComponent'
@@ -94,7 +94,7 @@ export interface UsePageRendererReturn {
   loadPageConfig: () => Promise<void>
   rebindRules: () => void
   pageContext: PageContext
-  dataSet: Ref<IDataSet | null>
+  dataSet: { value: DataSet | null }
 }
 
 // ─── Composable 实现 ──────────────────────────────────────────────────────────

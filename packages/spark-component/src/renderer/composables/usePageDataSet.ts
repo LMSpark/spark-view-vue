@@ -1,14 +1,14 @@
 /**
  * DataSet 管理 Composable
  *
- * 位于 spark-component 渲染层，负责将 spark-data 的 DataSet
- * 与 Vue 响应式系统桥接（shallowRef + 生命周期管理）。
+ * 位于 spark-component 渲染层，负责 DataSet 实例的生命周期管理。
+ * DataSet 自身通过事件总线驱动 UI 更新，不需要 Vue 响应式包装。
  *
  * 职责单一：仅关注 DataSet 生命周期，不持有 UI/Rule 相关依赖。
  * DataSet ↔ el-table 的同步桥由 useRuleBinding 单独负责。
  */
 
-import { shallowRef, type Ref, onUnmounted } from 'vue'
+import { onUnmounted } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import { DataSet } from '@spark-view/spark-data'
 import type { IDataSetMetadata } from '@spark-view/spark-data'
@@ -24,7 +24,7 @@ export interface UsePageDataSetOptions {
 
 /** DataSet 管理返回值接口 */
 export interface UsePageDataSetReturn {
-  dataSet: Ref<DataSet | null>
+  dataSet: { value: DataSet | null }
   /** pagedata.json 原始对象 或 已编译的 DataSet 实例 → 初始化 DataSet
    * - 传入 DataSet 实例时：直接赋值，跳过归一化
    * - 传入原始对象时：就地归一化并构建 DataSet
@@ -45,7 +45,7 @@ export interface UsePageDataSetReturn {
 export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetReturn {
   const { enableDataSet = true } = options
 
-  const dataSet = shallowRef<DataSet | null>(null)
+  const dataSet: { value: DataSet | null } = { value: null }
   /** 当前 DataSet 对应的 pagedata._version，undefined = 无版本信息 */
   let currentDataVersion: unknown = undefined
 
