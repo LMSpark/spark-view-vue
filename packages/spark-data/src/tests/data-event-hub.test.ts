@@ -321,9 +321,9 @@ describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
     })
     const view = ds.getView('OrderItems')!
     expect(view.primaryKey).toEqual(['orderId', 'productId'])
-    // 复合主键值：连接字符串
-    expect(view.getPrimaryKeyValue(view.rows[0]!)).toBe('1:10')
-    expect(view.getPrimaryKeyValue(view.rows[1]!)).toBe('1:20')
+    // 复合主键值：返回对象
+    expect(view.getPrimaryKeyValue(view.rows[0]!)).toEqual({ orderId: 1, productId: 10 })
+    expect(view.getPrimaryKeyValue(view.rows[1]!)).toEqual({ orderId: 1, productId: 20 })
   })
 
   it('无 isPrimaryKey 标记时降级为默认 id', () => {

@@ -72,7 +72,7 @@ export class LocalMutationDelegate {
    */
   updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
     const h = this.host
-    const idx = h.rows.findIndex(r => h.getPrimaryKeyValue(r) === id)
+    const idx = h.rows.findIndex(r => h.getPkKey(r) === id)
     if (idx < 0) return false
 
     const oldRow = h.rows[idx]
@@ -113,7 +113,7 @@ export class LocalMutationDelegate {
    */
   deleteRowById(id: string | number): boolean {
     const h = this.host
-    const idx = h.rows.findIndex(r => h.getPrimaryKeyValue(r) === id)
+    const idx = h.rows.findIndex(r => h.getPkKey(r) === id)
     if (idx < 0) return false
 
     h.rows.splice(idx, 1)
@@ -144,7 +144,7 @@ export class LocalMutationDelegate {
     h.rowIndexMap = undefined  // 行集合已替换，缓存失效
 
     // Phase 5 M4: 委托 pruneInvalidSelections 清理已失效的选中状态（纯状态修改，不发事件）
-    const validPks = buildPkSet(rows, r => h.getPrimaryKeyValue(r))
+    const validPks = buildPkSet(rows, r => h.getPkKey(r))
     pruneInvalidSelections(h, validPks)
 
     this.emitRowsChanged()

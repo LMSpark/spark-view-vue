@@ -29,8 +29,9 @@ import type {
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
   TreeConfig, AggregateColumnConfig,
+  PkValue, CompositePkValue,
 } from './types'
-import { RequestState } from './types'
+import { RequestState, serializePkValue } from './types'
 import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
@@ -209,7 +210,7 @@ export class DataView implements IDataSource {
   /** 当前行（getter：从 rows 中按主键查找；rows 刷新后自动指向新对象） */
   get currentRow(): IDataRow | null {
     if (this._currentRowId === null) return null
-    return this.rows.find(r => this.getPrimaryKeyValue(r) === this._currentRowId) ?? null
+    return this.rows.find(r => this.getPkKey(r) === this._currentRowId) ?? null
   }
 
   /** 多选行数组（getter：从 rows 中按主键集合过滤；rows 刷新后自动指向新对象） */
@@ -217,7 +218,7 @@ export class DataView implements IDataSource {
     if (this._selectedRowIds.length === 0) return []
     const idSet = new Set(this._selectedRowIds)
     return this.rows.filter(r => {
-      const pk = this.getPrimaryKeyValue(r)
+      const pk = this.getPkKey(r)
       return pk !== undefined && idSet.has(pk)
     })
   }
@@ -645,33 +646,56 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /**
-   * 获取行的主键值（用于 Map/Set 键）
+   * 获取行的主键值（结构化）。
    * 
-   * - 单主键：返回字段值（string | number）
-   * - 多主键：返回连接字符串（格式："value1:value2:value3"）
-   * - 根据 DataTable 列定义的 type 自动类型强转（number/string），
-   *   避免 JSON 反序列化后 `'1' !== 1` 的不匹配问题
+   * - 单主键：返回标量值（`string | number`）
+   * - 复合主键：返回对象（`{ orderId: 1, productId: 'abc' }`）
+   * - 根据 DataTable 列定义的 type 自动类型强转
+   * 
+   * 用于对外暴露（CRUD 提交、事件参数等）。
+   * 内部 Map/Set/`===` 比较请使用 `getPkKey()`。
    * 
    * @param row 数据行
    * @returns 主键值，如果主键字段不存在则返回 undefined
    */
-  getPrimaryKeyValue(row: IDataRow): string | number | undefined {
+  getPrimaryKeyValue(row: IDataRow): PkValue | undefined {
     if (typeof this.primaryKey === 'string') {
       const value = row[this.primaryKey]
       if (value === undefined || value === null) return undefined
       return this._coercePkValue(this.primaryKey, value)
     }
     
-    // 多主键：连接所有字段值
-    const values: Array<string | number> = []
+    // 复合主键：返回对象 { field1: value1, field2: value2 }
+    const result: CompositePkValue = {}
     for (const field of this.primaryKey) {
       const value = row[field]
       if (value === undefined || value === null) return undefined
       const coerced = this._coercePkValue(field, value)
       if (coerced === undefined) return undefined
-      values.push(coerced)
+      result[field] = coerced
     }
-    return values.join(':')
+    return result
+  }
+
+  /**
+   * 获取行的序列化主键 key（用于 Map/Set/`===` 内部比较）。
+   *
+   * - 单主键：返回标量值（`string | number`，与旧 `getPrimaryKeyValue` 行为一致）
+   * - 复合主键：返回排序后 JSON 字符串
+   *
+   * 所有内部 Map/Set/`===` 比较均应使用此方法。
+   */
+  getPkKey(row: IDataRow): string | number | undefined {
+    if (typeof this.primaryKey === 'string') {
+      // 单主键：直接返回标量值，保持 number 不变（与 _currentRowId 等内部存储兼容）
+      const value = row[this.primaryKey]
+      if (value === undefined || value === null) return undefined
+      return this._coercePkValue(this.primaryKey, value)
+    }
+    // 复合主键：序列化为确定性 JSON 字符串
+    const pk = this.getPrimaryKeyValue(row)
+    if (!pk) return undefined
+    return serializePkValue(pk)
   }
 
   /** 数字类列类型集合——主键值需要强转为 number */
@@ -997,12 +1021,12 @@ export class DataView implements IDataSource {
   }
 
   /** 更新记录，成功后刷新对应行 */
-  async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+  async updateRecord(id: PkValue, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
     return this.crudDelegate.updateRecord(id, data)
   }
 
   /** 删除记录，成功后从 rows 移除 */
-  async deleteRecord(id: string | number): Promise<CrudResult<boolean>> {
+  async deleteRecord(id: PkValue): Promise<CrudResult<boolean>> {
     return this.crudDelegate.deleteRecord(id)
   }
 
@@ -1017,7 +1041,7 @@ export class DataView implements IDataSource {
   }
 
   /** 批量删除 */
-  async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
+  async batchDeleteRecords(ids: Array<PkValue>): Promise<CrudResult<BatchResult>> {
     return this.crudDelegate.batchDeleteRecords(ids)
   }
 
@@ -1069,11 +1093,12 @@ export class DataView implements IDataSource {
   }
 
   /** 本地按主键部分更新一行，发射 rowsChanged；返回是否成功（行不存在时 false） */
-  updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
-    const result = this.localMutationDelegate.updateRowById(id, data)
+  updateRowById(id: PkValue, data: Partial<IDataRow>): boolean {
+    const idKey = serializePkValue(id)
+    const result = this.localMutationDelegate.updateRowById(idKey, data)
     if (result) {
       // 更新成功，对受影响的行重新求值计算列
-      const row = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+      const row = this.rows.find(r => this.getPkKey(r) === idKey)
       if (row) this._applyComputedColumns([row])
       this._recomputeSummary()
     }
@@ -1081,8 +1106,8 @@ export class DataView implements IDataSource {
   }
 
   /** 本地按主键删除一行，清理选中引用，发射 rowsChanged；返回是否成功（行不存在时 false） */
-  deleteRowById(id: string | number): boolean {
-    const result = this.localMutationDelegate.deleteRowById(id)
+  deleteRowById(id: PkValue): boolean {
+    const result = this.localMutationDelegate.deleteRowById(serializePkValue(id))
     if (result) this._recomputeSummary()
     return result
   }
@@ -1115,9 +1140,9 @@ export class DataView implements IDataSource {
       return this.crudDelegate.createRecord(row)
     }
     this.appendRow(row)
-    const id = this.getPrimaryKeyValue(row)
-    if (id !== undefined) {
-      this.dirtyTrackingDelegate.trackCreate(id, row)
+    const pkKey = this.getPkKey(row)
+    if (pkKey !== undefined) {
+      this.dirtyTrackingDelegate.trackCreate(pkKey, row)
     }
     return row
   }
@@ -1132,16 +1157,17 @@ export class DataView implements IDataSource {
    * @param id 行主键
    * @returns `autoCommit=false` 时返回是否删除成功的布尔值；`autoCommit=true` 时返回 `CrudResult<boolean>`
    */
-  async removeRow(id: string | number): Promise<boolean | CrudResult<boolean>> {
+  async removeRow(id: PkValue): Promise<boolean | CrudResult<boolean>> {
     this.checkDestroyed()
     if (this.autoCommit) {
       return this.crudDelegate.deleteRecord(id)
     }
-    const snapshot = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+    const idKey = serializePkValue(id)
+    const snapshot = this.rows.find(r => this.getPkKey(r) === idKey)
     if (!snapshot) return false
     const result = this.deleteRowById(id)
     if (result) {
-      this.dirtyTrackingDelegate.trackDelete(id, snapshot)
+      this.dirtyTrackingDelegate.trackDelete(idKey, snapshot)
     }
     return result
   }
@@ -1169,7 +1195,7 @@ export class DataView implements IDataSource {
    * view.getDirtyChanges(row.id) // { name: { from: '张三', to: '李四' }, age: { from: 30, to: 31 } }
    */
   async editRowById(
-    id: string | number,
+    id: PkValue,
     data: Partial<IDataRow>,
   ): Promise<boolean | CrudResult<IDataRow>> {
     this.checkDestroyed()
@@ -1177,12 +1203,13 @@ export class DataView implements IDataSource {
       return this.crudDelegate.updateRecord(id, data)
     }
     // 先获取编辑前快照（updateRowById 会替换行对象，必须在之前取）
-    const original = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+    const idKey = serializePkValue(id)
+    const original = this.rows.find(r => this.getPkKey(r) === idKey)
     if (!original) return false
 
     const result = this.updateRowById(id, data)
     if (result) {
-      this.dirtyTrackingDelegate.markDirty(id, original)
+      this.dirtyTrackingDelegate.markDirty(idKey, original)
     }
     return result
   }
@@ -1193,8 +1220,10 @@ export class DataView implements IDataSource {
    * @param id 不传 → 整个视图是否有任意待提交（含 dirty/pending-create/pending-delete）；
    *           传入 id → 指定行是否有待提交变更
    */
-  hasPendingChanges(id?: string | number): boolean {
-    return this.dirtyTrackingDelegate.hasPendingChanges(id)
+  hasPendingChanges(id?: PkValue): boolean {
+    return this.dirtyTrackingDelegate.hasPendingChanges(
+      id !== undefined ? serializePkValue(id) : undefined,
+    )
   }
 
   /**
@@ -1202,8 +1231,10 @@ export class DataView implements IDataSource {
    *
    * @param id 不传 → 整个视图是否有任意脏行；传入 id → 指定行是否脏
    */
-  isDirty(id?: string | number): boolean {
-    return this.dirtyTrackingDelegate.isDirty(id)
+  isDirty(id?: PkValue): boolean {
+    return this.dirtyTrackingDelegate.isDirty(
+      id !== undefined ? serializePkValue(id) : undefined,
+    )
   }
 
   /**
@@ -1215,7 +1246,7 @@ export class DataView implements IDataSource {
     const ids = this.dirtyTrackingDelegate.dirtyRowIds
     if (ids.size === 0) return []
     return this.rows.filter(r => {
-      const pk = this.getPrimaryKeyValue(r)
+      const pk = this.getPkKey(r)
       return pk !== undefined && ids.has(pk)
     })
   }
@@ -1226,10 +1257,11 @@ export class DataView implements IDataSource {
    * @param id 行主键
    * @returns 字段名 → `{ from（原始值）, to（当前值）}`；行不脏时返回 `{}`
    */
-  getDirtyChanges(id: string | number): RowDiff {
-    const current = this.rows.find(r => this.getPrimaryKeyValue(r) === id)
+  getDirtyChanges(id: PkValue): RowDiff {
+    const idKey = serializePkValue(id)
+    const current = this.rows.find(r => this.getPkKey(r) === idKey)
     if (!current) return {}
-    return this.dirtyTrackingDelegate.getDiff(id, current)
+    return this.dirtyTrackingDelegate.getDiff(idKey, current)
   }
 
   /**
@@ -1240,8 +1272,10 @@ export class DataView implements IDataSource {
    *
    * @param id 不传则清除全部
    */
-  clearDirty(id?: string | number): void {
-    this.dirtyTrackingDelegate.clearDirty(id)
+  clearDirty(id?: PkValue): void {
+    this.dirtyTrackingDelegate.clearDirty(
+      id !== undefined ? serializePkValue(id) : undefined,
+    )
   }
 
   /**
@@ -1287,7 +1321,7 @@ export class DataView implements IDataSource {
     // 构建 pk → row 索引，避免循环内 O(n) rows.find（整体从 O(n×m) → O(n+m)）
     const pkToRow = new Map<string | number, IDataRow>()
     for (const r of this.rows) {
-      const pk = this.getPrimaryKeyValue(r)
+      const pk = this.getPkKey(r)
       if (pk !== undefined) pkToRow.set(pk, r)
     }
 
@@ -1332,7 +1366,9 @@ export class DataView implements IDataSource {
         continue
       }
       try {
-        const result = await this.crudDelegate.updateRecord(id, this.stripComputedColumns({ ...row }))
+        // 传真实 PkValue（可能是对象）给 CrudService
+        const pkValue = this.getPrimaryKeyValue(row) ?? id
+        const result = await this.crudDelegate.updateRecord(pkValue, this.stripComputedColumns({ ...row }))
         if (result.success) {
           delegate.clearDirty(id)
           savedCount++
@@ -1351,7 +1387,10 @@ export class DataView implements IDataSource {
 
     for (const id of deleteIds) {
       try {
-        const result = await this.crudDelegate.deleteRecord(id)
+        // 从删除快照重建真实 PkValue（可能是对象）
+        const snapshot = delegate.getPendingDeleteSnapshot(id)
+        const pkValue = snapshot ? (this.getPrimaryKeyValue(snapshot) ?? id) : id
+        const result = await this.crudDelegate.deleteRecord(pkValue)
         if (result.success) {
           delegate.cancelDelete(id)
           deletedCount++
@@ -1400,15 +1439,15 @@ export class DataView implements IDataSource {
     this.selectionDelegate.setSelectedRows(rows, originatorId)
   }
 
-  setCurrentRowById(id: string | number): boolean {
-    return this.selectionDelegate.setCurrentRowById(id)
+  setCurrentRowById(id: PkValue): boolean {
+    return this.selectionDelegate.setCurrentRowById(serializePkValue(id))
   }
 
   setSelectedRowsById(
-    ids: Array<string | number>,
+    ids: Array<PkValue>,
     options?: { strict?: boolean }
   ): number {
-    return this.selectionDelegate.setSelectedRowsById(ids, options)
+    return this.selectionDelegate.setSelectedRowsById(ids.map(serializePkValue), options)
   }
 
   clearSelectedRows(): void {
@@ -1424,14 +1463,14 @@ export class DataView implements IDataSource {
   }
 
   addSelectedRowsById(
-    ids: Array<string | number>,
+    ids: Array<PkValue>,
     options?: { strict?: boolean }
   ): number {
-    return this.selectionDelegate.addSelectedRowsById(ids, options)
+    return this.selectionDelegate.addSelectedRowsById(ids.map(serializePkValue), options)
   }
 
-  removeSelectedRowsById(ids: Array<string | number>): number {
-    return this.selectionDelegate.removeSelectedRowsById(ids)
+  removeSelectedRowsById(ids: Array<PkValue>): number {
+    return this.selectionDelegate.removeSelectedRowsById(ids.map(serializePkValue))
   }
 
   // ─────────────────────────────────────────────

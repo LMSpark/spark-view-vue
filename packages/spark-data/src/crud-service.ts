@@ -17,7 +17,8 @@ import type {
   CrudResult,
   QueryParams,
   BatchResult,
-  CrudOperationConfig
+  CrudOperationConfig,
+  PkValue,
 } from './types'
 import {
   INSTANCE_PERMISSION_FIELD,
@@ -99,12 +100,12 @@ export class CrudService {
 
   /**
    * 查询单条记录
-   * @param id 记录ID
+   * @param id 记录ID（单PK=标量，复PK=对象）
    * @param config CRUD操作配置（包含权限快照）
    * @returns CRUD操作结果
    */
   async retrieve<T = IDataRow>(
-    id: string | number,
+    id: PkValue,
     config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
     if (!this.api.retrieve) {
@@ -112,7 +113,8 @@ export class CrudService {
     }
 
     try {
-      const endpoint = this.resolveEndpoint(this.api.retrieve, { id })
+      const pkPayload = this.buildPkPayload(id)
+      const endpoint = this.resolveEndpoint(this.api.retrieve, pkPayload)
       const requestConfig = this.buildRequestConfig(config)
       const result = await this.http.get<T>(endpoint.url, endpoint.params, {
         ...requestConfig,
@@ -128,13 +130,13 @@ export class CrudService {
 
   /**
    * 更新记录
-   * @param id 记录ID
+   * @param id 记录ID（单PK=标量，复PK=对象）
    * @param data 更新数据
    * @param config CRUD操作配置（包含权限快照）
    * @returns CRUD操作结果
    */
   async update<T = IDataRow>(
-    id: string | number,
+    id: PkValue,
     data: Partial<T>,
     config?: CrudOperationConfig
   ): Promise<CrudResult<T>> {
@@ -145,7 +147,7 @@ export class CrudService {
     try {
       const requestConfig = this.buildRequestConfig(config)
       const sanitizedData = this.sanitizeDataForUpload(data)
-      const updateData = { ...sanitizedData, id }
+      const updateData = { ...sanitizedData, ...this.buildPkPayload(id) }
       const result = await this.executeEndpoint<T>(this.api.update, updateData, requestConfig)
       this.logger.info('记录更新成功', { id, data: result })
       return { success: true, data: result }
@@ -157,12 +159,12 @@ export class CrudService {
 
   /**
    * 删除记录
-   * @param id 记录ID
+   * @param id 记录ID（单PK=标量，复PK=对象）
    * @param config CRUD操作配置（包含权限快照）
    * @returns CRUD操作结果
    */
   async delete(
-    id: string | number,
+    id: PkValue,
     config?: CrudOperationConfig
   ): Promise<CrudResult<boolean>> {
     if (!this.api.delete) {
@@ -171,7 +173,7 @@ export class CrudService {
 
     try {
       const requestConfig = this.buildRequestConfig(config)
-      await this.executeEndpoint(this.api.delete, { id }, requestConfig)
+      await this.executeEndpoint(this.api.delete, this.buildPkPayload(id), requestConfig)
       this.logger.info('记录删除成功', { id })
       return { success: true, data: true }
     } catch (error) {
@@ -275,7 +277,7 @@ export class CrudService {
    * @returns 批量操作结果
    */
   async batchDelete(
-    ids: Array<string | number>,
+    ids: Array<PkValue>,
     config?: CrudOperationConfig
   ): Promise<CrudResult<BatchResult>> {
     if (!this.api.batch?.delete) {
@@ -283,7 +285,7 @@ export class CrudService {
     }
 
     try {
-      const items = ids.map(id => ({ id }))
+      const items = ids.map(id => this.buildPkPayload(id))
       // buildRequestConfig 将 CrudOperationConfig 转换为 Partial<RequestConfig>
       const requestConfig = this.buildRequestConfig(config)
       const results = await this.executeBatch(this.api.batch.delete, items, requestConfig)
@@ -608,6 +610,17 @@ export class CrudService {
       error: error ?? new Error(message),
       message
     }
+  }
+
+  /**
+   * 将 PkValue 转为可发送给服务端的 payload 对象。
+   *
+   * - 标量（单主键）：`{ id: value }`
+   * - 复合对象：直接展开 `{ orderId: 1, productId: 'abc' }`
+   */
+  private buildPkPayload(pk: PkValue): Record<string, unknown> {
+    if (typeof pk === 'object' && pk !== null) return { ...pk }
+    return { id: pk }
   }
 }
 
