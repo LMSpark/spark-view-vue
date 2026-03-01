@@ -161,8 +161,12 @@ describe('L3: updateRowById rejects primary key mutation', () => {
       },
     })
     const view = ds.getView('Items', 'default')!
-    // 复合主键：对象形式
-    expect(() => view.updateRowById({ tenantId: 'A', itemId: 1 }, { tenantId: 'B', name: 'Bad' }))
+    // 复合主键自动合成 _pk，getPkKey 返回 'A+1'
+    expect(view.primaryKey).toBe('_pk')
+    const pkKey = view.getPkKey(view.rows[0]!)
+    expect(pkKey).toBe('A+1')
+    // 尝试修改真实 PK 字段 tenantId
+    expect(() => view.updateRowById(pkKey!, { tenantId: 'B', name: 'Bad' }))
       .toThrow(/不允许修改主键字段 "tenantId"/)
     // 原数据未改
     expect(view.rows[0]?.['tenantId']).toBe('A')

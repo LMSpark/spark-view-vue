@@ -29,9 +29,8 @@ import type {
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
   TreeConfig, AggregateColumnConfig,
-  PkValue, CompositePkValue,
 } from './types'
-import { RequestState, serializePkValue } from './types'
+import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
@@ -101,8 +100,11 @@ export class DataView implements IDataSource {
   get dataTable(): DataTable { return this._dataTable }
   set dataTable(table: DataTable) {
     this._dataTable = markRaw(table)
-    // DataView 负责在 dataTable attach 时编译 computeExpression（不求值）。
-    // DataSet 关系就绪后由 onDataSetRelationsReady() 触发含聚合 resolver 的重编译 + 求值。
+    // 多主键时提前合成 _pk（在 syncFromConfig 前注册，使其参与首次编译）
+    if (!this._primaryKeyOverride) {
+      const pkCols = table.columns?.filter(c => c.isPrimaryKey) ?? []
+      if (pkCols.length > 1) this._ensureSyntheticPk(pkCols.map(c => c.name))
+    }
     this._computedDelegate.invalidateCache()
     this._computedDelegate.syncFromConfig()
   }
@@ -122,7 +124,31 @@ export class DataView implements IDataSource {
    * 显式覆盖的主键字段名（undefined = 从 DataTable 列定义推导）。
    * 通过 primaryKey getter/setter 访问；外部直接赋值会写入此字段。
    */
-  private _primaryKeyOverride?: string | string[] | undefined
+  private _primaryKeyOverride?: string | undefined
+
+  /**
+   * 自动合成的 _pk 计算列所用字段（幺等守卫）。
+   * 存了就不重复注册；字段变化时自动失效重生。
+   */
+  private _syntheticPkFields?: string[]
+
+  /**
+   * 多主键时自动合成 _pk 计算列（幺等）。
+   *
+   * 将各主键字段值用 '+' 拼接为单一字符串：
+   * `{ orderId: 1, lineNo: 'A' }` → `'1+A'`
+   *
+   * 幺等条件：字段列表与上次相同时直接返回，不重新注册。
+   */
+  private _ensureSyntheticPk(fields: string[]): void {
+    if (this._syntheticPkFields?.join('\x01') === fields.join('\x01')) return
+    this._syntheticPkFields = fields
+    this._computedDelegate.register('_pk', (row) =>
+      fields.map(f => String(row[f] ?? '')).join('+')
+    )
+    // 对已有行补计算
+    if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
+  }
 
   /**
    * 主键字段名（支持单主键字符串或多主键数组）。
@@ -132,7 +158,7 @@ export class DataView implements IDataSource {
    * 2. DataTable 列定义中 `isPrimaryKey: true` 的列名
    * 3. 回退默认值 `'id'`
    */
-  get primaryKey(): string | string[] {
+  get primaryKey(): string {
     if (this._primaryKeyOverride !== undefined) return this._primaryKeyOverride
     // 从 DataTable 列定义自动推导
     if (this.dataTable?.columns?.length) {
@@ -141,12 +167,16 @@ export class DataView implements IDataSource {
         const col = pkCols[0]
         if (col) return col.name
       }
-      if (pkCols.length > 1) return pkCols.map(c => c.name)
+      if (pkCols.length > 1) {
+        // 自动合成 _pk：从此走单主键快速路径
+        this._ensureSyntheticPk(pkCols.map(c => c.name))
+        return '_pk'
+      }
     }
     return 'id'
   }
 
-  set primaryKey(value: string | string[]) {
+  set primaryKey(value: string) {
     this._primaryKeyOverride = value
   }
 
@@ -155,11 +185,13 @@ export class DataView implements IDataSource {
    *
    * @example
    * view.primaryKey = 'uuid'        // 显式覆盖
-   * view.resetPrimaryKey()          // 恢复列推导
+   * view.resetPrimaryKey()          // 恒复列推导
    * view.primaryKey                 // → 推导自 isPrimaryKey 列，或回退 'id'
    */
   resetPrimaryKey(): void {
     this._primaryKeyOverride = undefined
+    // 清除合成主键幺等守卫，使其下次访问 primaryKey 时重新遇评合成
+    this._syntheticPkFields = undefined
   }
   
   /** 主键生成器（可选，用于自动生成新记录的主键） */
@@ -551,10 +583,7 @@ export class DataView implements IDataSource {
     this._dirtyTrackingDelegate ??= markRaw(new DirtyTrackingDelegate({
       getColumns: () => this._dataTable?.columns,
       getComputedColumnNames: () => this._computedDelegate.names,
-      getPrimaryKeyFields: () => {
-        const pk = this.primaryKey
-        return typeof pk === 'string' ? [pk] : pk
-      },
+      getPrimaryKeyFields: () => this.effectivePkFields,
     }))
     return this._dirtyTrackingDelegate
   }
@@ -646,56 +675,45 @@ export class DataView implements IDataSource {
   // ─────────────────────────────────────────────
 
   /**
-   * 获取行的主键值（结构化）。
-   * 
-   * - 单主键：返回标量值（`string | number`）
-   * - 复合主键：返回对象（`{ orderId: 1, productId: 'abc' }`）
-   * - 根据 DataTable 列定义的 type 自动类型强转
-   * 
-   * 用于对外暴露（CRUD 提交、事件参数等）。
-   * 内部 Map/Set/`===` 比较请使用 `getPkKey()`。
-   * 
-   * @param row 数据行
-   * @returns 主键值，如果主键字段不存在则返回 undefined
+   * 实际生效的主键字段名列表（不含合成列 `_pk`）。
+   *
+   * - 多列自动合成时返回原始字段列表（`_syntheticPkFields`）
+   * - 否则返回 `[primaryKey]`
+   *
+   * @internal 供委托（`LocalMutationDelegate` 等）校验/遍历真实字段
    */
-  getPrimaryKeyValue(row: IDataRow): PkValue | undefined {
-    if (typeof this.primaryKey === 'string') {
-      const value = row[this.primaryKey]
-      if (value === undefined || value === null) return undefined
-      return this._coercePkValue(this.primaryKey, value)
-    }
-    
-    // 复合主键：返回对象 { field1: value1, field2: value2 }
-    const result: CompositePkValue = {}
-    for (const field of this.primaryKey) {
-      const value = row[field]
-      if (value === undefined || value === null) return undefined
-      const coerced = this._coercePkValue(field, value)
-      if (coerced === undefined) return undefined
-      result[field] = coerced
-    }
-    return result
+  get effectivePkFields(): string[] {
+    return this._syntheticPkFields ?? [this.primaryKey]
   }
 
   /**
-   * 获取行的序列化主键 key（用于 Map/Set/`===` 内部比较）。
+   * 获取行的主键值（标量）。
    *
-   * - 单主键：返回标量值（`string | number`，与旧 `getPrimaryKeyValue` 行为一致）
-   * - 复合主键：返回排序后 JSON 字符串
+   * `primaryKey` 始终为单一字符串字段名（多列 PK 自动合成为 `_pk`），
+   * 因此返回值始终为 `string | number`。
    *
-   * 所有内部 Map/Set/`===` 比较均应使用此方法。
+   * 所有内部 Map/Set/`===` 比较均使用此方法。
    */
   getPkKey(row: IDataRow): string | number | undefined {
-    if (typeof this.primaryKey === 'string') {
-      // 单主键：直接返回标量值，保持 number 不变（与 _currentRowId 等内部存储兼容）
-      const value = row[this.primaryKey]
-      if (value === undefined || value === null) return undefined
-      return this._coercePkValue(this.primaryKey, value)
-    }
-    // 复合主键：序列化为确定性 JSON 字符串
-    const pk = this.getPrimaryKeyValue(row)
-    if (!pk) return undefined
-    return serializePkValue(pk)
+    const value = row[this.primaryKey]
+    if (value === undefined || value === null) return undefined
+    return this._coercePkValue(this.primaryKey, value)
+  }
+
+  /**
+   * 从行数据构建服务端 PK payload（用于 CRUD HTTP 请求）。
+   *
+   * 对于自动合成 _pk 的多列主键，返回原始字段的 Record：
+   *   `{ orderId: 1, productId: 10 }`
+   * 对于单列主键，返回单字段 Record：
+   *   `{ id: 42 }`
+   *
+   * @internal 供 saveChanges / CrudDelegate 等构建服务端请求使用
+   */
+  buildServerPk(row: IDataRow): Record<string, unknown> {
+    const result: Record<string, unknown> = {}
+    for (const f of this.effectivePkFields) result[f] = row[f]
+    return result
   }
 
   /** 数字类列类型集合——主键值需要强转为 number */
@@ -815,18 +833,7 @@ export class DataView implements IDataSource {
     }
     
     const pkValue = this.primaryKeyGenerator.generate(row, this.rows)
-    
-    // 单主键
-    if (typeof this.primaryKey === 'string') {
-      return { ...row, [this.primaryKey]: pkValue } as IDataRow
-    }
-    
-    // 复合主键
-    if (typeof pkValue === 'object' && pkValue !== null) {
-      return { ...row, ...pkValue } as IDataRow
-    }
-    
-    throw new Error('主键生成器返回值类型与配置不匹配')
+    return { ...row, [this.primaryKey]: pkValue } as IDataRow
   }
 
   /**
@@ -842,7 +849,7 @@ export class DataView implements IDataSource {
     }
     
     // 检查是否已有主键值
-    const fields = typeof this.primaryKey === 'string' ? [this.primaryKey] : this.primaryKey
+    const fields = this.effectivePkFields
     const hasPrimaryKey = fields.every(field => {
       const value = row[field]
       return value !== undefined && value !== null
@@ -925,16 +932,16 @@ export class DataView implements IDataSource {
         parentKey = pf
       } else {
         // 回退到父视图的 primaryKey 配置（Phase 3 S1: 消除硬编码 'id'）
-        parentKey = typeof pView.primaryKey === 'string' ? pView.primaryKey : pView.primaryKey[0]
+        parentKey = pView.primaryKey
       }
 
-      const values = parentRows.map(r => r[parentKey as string] ?? Object.values(r)[0])
+      const values = parentRows.map(r => r[parentKey] ?? Object.values(r)[0])
 
       let childKey: string
       const cf = rel.childField as unknown
       if (typeof cf === 'string') childKey = cf
       else if ('field' in expr) childKey = expr.field
-      else childKey = parentKey as string
+      else childKey = parentKey
 
       if ('op' in expr && 'field' in expr) {
         params[childKey] = expr.op === 'in' ? values : values[0]
@@ -1021,12 +1028,12 @@ export class DataView implements IDataSource {
   }
 
   /** 更新记录，成功后刷新对应行 */
-  async updateRecord(id: PkValue, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+  async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
     return this.crudDelegate.updateRecord(id, data)
   }
 
   /** 删除记录，成功后从 rows 移除 */
-  async deleteRecord(id: PkValue): Promise<CrudResult<boolean>> {
+  async deleteRecord(id: string | number): Promise<CrudResult<boolean>> {
     return this.crudDelegate.deleteRecord(id)
   }
 
@@ -1041,7 +1048,7 @@ export class DataView implements IDataSource {
   }
 
   /** 批量删除 */
-  async batchDeleteRecords(ids: Array<PkValue>): Promise<CrudResult<BatchResult>> {
+  async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
     return this.crudDelegate.batchDeleteRecords(ids)
   }
 
@@ -1093,12 +1100,11 @@ export class DataView implements IDataSource {
   }
 
   /** 本地按主键部分更新一行，发射 rowsChanged；返回是否成功（行不存在时 false） */
-  updateRowById(id: PkValue, data: Partial<IDataRow>): boolean {
-    const idKey = serializePkValue(id)
-    const result = this.localMutationDelegate.updateRowById(idKey, data)
+  updateRowById(id: string | number, data: Partial<IDataRow>): boolean {
+    const result = this.localMutationDelegate.updateRowById(id, data)
     if (result) {
       // 更新成功，对受影响的行重新求值计算列
-      const row = this.rows.find(r => this.getPkKey(r) === idKey)
+      const row = this.rows.find(r => this.getPkKey(r) === id)
       if (row) this._applyComputedColumns([row])
       this._recomputeSummary()
     }
@@ -1106,8 +1112,8 @@ export class DataView implements IDataSource {
   }
 
   /** 本地按主键删除一行，清理选中引用，发射 rowsChanged；返回是否成功（行不存在时 false） */
-  deleteRowById(id: PkValue): boolean {
-    const result = this.localMutationDelegate.deleteRowById(serializePkValue(id))
+  deleteRowById(id: string | number): boolean {
+    const result = this.localMutationDelegate.deleteRowById(id)
     if (result) this._recomputeSummary()
     return result
   }
@@ -1157,17 +1163,16 @@ export class DataView implements IDataSource {
    * @param id 行主键
    * @returns `autoCommit=false` 时返回是否删除成功的布尔值；`autoCommit=true` 时返回 `CrudResult<boolean>`
    */
-  async removeRow(id: PkValue): Promise<boolean | CrudResult<boolean>> {
+  async removeRow(id: string | number): Promise<boolean | CrudResult<boolean>> {
     this.checkDestroyed()
     if (this.autoCommit) {
       return this.crudDelegate.deleteRecord(id)
     }
-    const idKey = serializePkValue(id)
-    const snapshot = this.rows.find(r => this.getPkKey(r) === idKey)
+    const snapshot = this.rows.find(r => this.getPkKey(r) === id)
     if (!snapshot) return false
     const result = this.deleteRowById(id)
     if (result) {
-      this.dirtyTrackingDelegate.trackDelete(idKey, snapshot)
+      this.dirtyTrackingDelegate.trackDelete(id, snapshot)
     }
     return result
   }
@@ -1195,7 +1200,7 @@ export class DataView implements IDataSource {
    * view.getDirtyChanges(row.id) // { name: { from: '张三', to: '李四' }, age: { from: 30, to: 31 } }
    */
   async editRowById(
-    id: PkValue,
+    id: string | number,
     data: Partial<IDataRow>,
   ): Promise<boolean | CrudResult<IDataRow>> {
     this.checkDestroyed()
@@ -1203,13 +1208,12 @@ export class DataView implements IDataSource {
       return this.crudDelegate.updateRecord(id, data)
     }
     // 先获取编辑前快照（updateRowById 会替换行对象，必须在之前取）
-    const idKey = serializePkValue(id)
-    const original = this.rows.find(r => this.getPkKey(r) === idKey)
+    const original = this.rows.find(r => this.getPkKey(r) === id)
     if (!original) return false
 
     const result = this.updateRowById(id, data)
     if (result) {
-      this.dirtyTrackingDelegate.markDirty(idKey, original)
+      this.dirtyTrackingDelegate.markDirty(id, original)
     }
     return result
   }
@@ -1220,10 +1224,8 @@ export class DataView implements IDataSource {
    * @param id 不传 → 整个视图是否有任意待提交（含 dirty/pending-create/pending-delete）；
    *           传入 id → 指定行是否有待提交变更
    */
-  hasPendingChanges(id?: PkValue): boolean {
-    return this.dirtyTrackingDelegate.hasPendingChanges(
-      id !== undefined ? serializePkValue(id) : undefined,
-    )
+  hasPendingChanges(id?: string | number): boolean {
+    return this.dirtyTrackingDelegate.hasPendingChanges(id)
   }
 
   /**
@@ -1231,10 +1233,8 @@ export class DataView implements IDataSource {
    *
    * @param id 不传 → 整个视图是否有任意脏行；传入 id → 指定行是否脏
    */
-  isDirty(id?: PkValue): boolean {
-    return this.dirtyTrackingDelegate.isDirty(
-      id !== undefined ? serializePkValue(id) : undefined,
-    )
+  isDirty(id?: string | number): boolean {
+    return this.dirtyTrackingDelegate.isDirty(id)
   }
 
   /**
@@ -1257,11 +1257,10 @@ export class DataView implements IDataSource {
    * @param id 行主键
    * @returns 字段名 → `{ from（原始值）, to（当前值）}`；行不脏时返回 `{}`
    */
-  getDirtyChanges(id: PkValue): RowDiff {
-    const idKey = serializePkValue(id)
-    const current = this.rows.find(r => this.getPkKey(r) === idKey)
+  getDirtyChanges(id: string | number): RowDiff {
+    const current = this.rows.find(r => this.getPkKey(r) === id)
     if (!current) return {}
-    return this.dirtyTrackingDelegate.getDiff(idKey, current)
+    return this.dirtyTrackingDelegate.getDiff(id, current)
   }
 
   /**
@@ -1272,10 +1271,8 @@ export class DataView implements IDataSource {
    *
    * @param id 不传则清除全部
    */
-  clearDirty(id?: PkValue): void {
-    this.dirtyTrackingDelegate.clearDirty(
-      id !== undefined ? serializePkValue(id) : undefined,
-    )
+  clearDirty(id?: string | number): void {
+    this.dirtyTrackingDelegate.clearDirty(id)
   }
 
   /**
@@ -1366,9 +1363,9 @@ export class DataView implements IDataSource {
         continue
       }
       try {
-        // 传真实 PkValue（可能是对象）给 CrudService
-        const pkValue = this.getPrimaryKeyValue(row) ?? id
-        const result = await this.crudDelegate.updateRecord(pkValue, this.stripComputedColumns({ ...row }))
+        // 构建服务端 PK payload（真实字段）
+        const serverPk = this.buildServerPk(row)
+        const result = await this.crudDelegate.updateRecord(id, this.stripComputedColumns({ ...row }), serverPk)
         if (result.success) {
           delegate.clearDirty(id)
           savedCount++
@@ -1387,10 +1384,10 @@ export class DataView implements IDataSource {
 
     for (const id of deleteIds) {
       try {
-        // 从删除快照重建真实 PkValue（可能是对象）
+        // 从删除快照构建服务端 PK payload
         const snapshot = delegate.getPendingDeleteSnapshot(id)
-        const pkValue = snapshot ? (this.getPrimaryKeyValue(snapshot) ?? id) : id
-        const result = await this.crudDelegate.deleteRecord(pkValue)
+        const serverPk = snapshot ? this.buildServerPk(snapshot) : { [this.primaryKey]: id }
+        const result = await this.crudDelegate.deleteRecord(id, serverPk)
         if (result.success) {
           delegate.cancelDelete(id)
           deletedCount++
@@ -1439,15 +1436,15 @@ export class DataView implements IDataSource {
     this.selectionDelegate.setSelectedRows(rows, originatorId)
   }
 
-  setCurrentRowById(id: PkValue): boolean {
-    return this.selectionDelegate.setCurrentRowById(serializePkValue(id))
+  setCurrentRowById(id: string | number): boolean {
+    return this.selectionDelegate.setCurrentRowById(id)
   }
 
   setSelectedRowsById(
-    ids: Array<PkValue>,
+    ids: Array<string | number>,
     options?: { strict?: boolean }
   ): number {
-    return this.selectionDelegate.setSelectedRowsById(ids.map(serializePkValue), options)
+    return this.selectionDelegate.setSelectedRowsById(ids, options)
   }
 
   clearSelectedRows(): void {
@@ -1463,14 +1460,14 @@ export class DataView implements IDataSource {
   }
 
   addSelectedRowsById(
-    ids: Array<PkValue>,
+    ids: Array<string | number>,
     options?: { strict?: boolean }
   ): number {
-    return this.selectionDelegate.addSelectedRowsById(ids.map(serializePkValue), options)
+    return this.selectionDelegate.addSelectedRowsById(ids, options)
   }
 
-  removeSelectedRowsById(ids: Array<PkValue>): number {
-    return this.selectionDelegate.removeSelectedRowsById(ids.map(serializePkValue))
+  removeSelectedRowsById(ids: Array<string | number>): number {
+    return this.selectionDelegate.removeSelectedRowsById(ids)
   }
 
   // ─────────────────────────────────────────────

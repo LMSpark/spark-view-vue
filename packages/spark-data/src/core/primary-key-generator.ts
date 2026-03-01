@@ -24,8 +24,8 @@ export type PrimaryKeyStrategy =
 export interface PrimaryKeyGeneratorConfig {
   /** 生成策略 */
   strategy: PrimaryKeyStrategy
-  /** 主键字段名（单主键）或字段名数组（复合主键） */
-  fields: string | string[]
+  /** 主键字段名 */
+  fields: string
   /** 自定义生成函数（strategy='custom' 时必需） */
   generator?: (row: Partial<IDataRow>, existingRows: IDataRow[]) => string | number | Record<string, string | number>
   /** 雪花ID配置（strategy='snowflake' 时可选） */
@@ -216,20 +216,8 @@ export class PrimaryKeyGenerator {
   generate(
     row: Partial<IDataRow>,
     existingRows: IDataRow[] = []
-  ): string | number | Record<string, string | number> {
-    const { fields } = this.config
-    
-    // 单主键
-    if (typeof fields === 'string') {
-      return this.generateSingle(row, existingRows, fields)
-    }
-    
-    // 复合主键：为每个字段生成值
-    const result: Record<string, string | number> = {}
-    for (const field of fields) {
-      result[field] = this.generateSingle(row, existingRows, field)
-    }
-    return result
+  ): string | number {
+    return this.generateSingle(row, existingRows, this.config.fields)
   }
   
   /**

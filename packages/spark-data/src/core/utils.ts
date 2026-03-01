@@ -109,34 +109,20 @@ export function resolveApi(
  * 
  * @param row1 第一行数据
  * @param row2 第二行数据
- * @param idField 主键字段名（支持单主键字符串或多主键数组）
+ * @param idField 主键字段名
  * @returns 是否相同
  */
 export function isSameRow(
   row1: IDataRow | null, 
   row2: IDataRow | null, 
-  idField: string | string[]
+  idField: string
 ): boolean {
   if (row1 === row2) return true
   if (!row1 || !row2) return false
   
-  // 单主键比较
-  if (typeof idField === 'string') {
-    if (idField in row1 && idField in row2) {
-      return row1[idField] === row2[idField]
-    }
-    return false
+  if (idField in row1 && idField in row2) {
+    return row1[idField] === row2[idField]
   }
-  
-  // 多主键比较（所有主键字段值都相等才视为同一行）
-  if (Array.isArray(idField)) {
-    for (const field of idField) {
-      if (!(field in row1) || !(field in row2)) return false
-      if (row1[field] !== row2[field]) return false
-    }
-    return true
-  }
-  
   return false
 }
 

@@ -51,8 +51,7 @@ function normalizeRelation(r: DataRelation, ds: DataSet): DataRelation {
     if (!parentKey) {
       const parentView = ds.getView(norm.parentTable, norm.parentViewId)
       if (parentView) {
-        const pk = parentView.primaryKey
-        parentKey = typeof pk === 'string' ? pk : pk[0]
+        parentKey = parentView.primaryKey
       }
       parentKey = parentKey ?? 'id'
     }

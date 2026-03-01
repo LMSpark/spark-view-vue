@@ -181,7 +181,7 @@ export function compileColumnsExpressions(
 export interface IComputedColumnHost {
   readonly tableName: string
   readonly viewId: string
-  readonly primaryKey: string | string[]
+  readonly primaryKey: string
   /** 宿主的行数据 */
   readonly rows: IDataRow[]
   /** DataTable 列定义（可能为 undefined——dataTable 尚未 attach） */
@@ -332,8 +332,7 @@ export class ComputedColumnDelegate {
       if (!relMap.has(r.childTable)) relMap.set(r.childTable, r)
     }
 
-    const pk = this._host.primaryKey
-    const defaultParentField = typeof pk === 'string' ? pk : (pk[0] ?? 'id')
+    const defaultParentField = this._host.primaryKey
 
     return {
       resolveChildRows: (childRef: string, parentRow: IDataRow): IDataRow[] => {
