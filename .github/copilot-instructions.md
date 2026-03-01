@@ -104,6 +104,40 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 { "dataKey": "UserOrderDataSet@Users@default@rows" }
 ```
 
+## 权限架构（统一后端验证 + 前端权限渲染）🔐
+
+SPARK 采用 **统一后端验证** 架构，前端 **不做** 权限判定，仅负责根据服务端下发的权限数据自动渲染 UI。
+
+**核心流程**：
+1. 前端从服务端取数据时，响应中携带 **数据权限快照**（`IModelPermission` / `IInstancePermission`）+ **权限 Token**
+2. 前端将权限快照存储在 `IDataRow._perm`（行级）和 `IDataSource._modelPerm`（表级）
+3. `permission/` 模块根据权限快照自动计算字段可见性、可编辑性、脱敏规则，驱动 UI 渲染
+4. 数据回写时将权限 Token 回传服务端，服务端验证 Token 有效性（防篡改）
+
+**模块组成**（`packages/spark-data/src/permission/`）：
+- `PermissionChecker` — 模型级 / 实例级 / 字段级权限检查 + 字段脱敏（手机/身份证/邮箱/银行卡）
+- `PermissionFilter` — 批量行过滤（可删除行/可编辑行/可见字段）+ 批量脱敏
+- `FieldRenderHelper` — 结合字段配置 + 权限快照计算渲染状态（visible/editable/masked）
+
+**⚠️ 重要**：`permission/` 模块当前未被业务代码消费，但属于 **已规划的核心架构**，后续开发会接入。**禁止删除或标记为死代码**。
+
+```typescript
+// 权限类型定义见 types.ts
+interface IInstancePermission {   // 行级 — 存储在 row._perm
+  allowDelete?: boolean
+  editableFields?: string[]
+  hiddenFields?: string[]
+  maskedFields?: string[]
+  permissionToken?: string        // 回传服务端校验
+}
+interface IModelPermission {      // 表级 — 存储在 dataSource._modelPerm
+  allowCreate?: boolean
+  allowImport?: boolean
+  allowExport?: boolean
+  permissionToken?: string
+}
+```
+
 ## 能力体系 🔧
 
 ### DI 双轨（严格区分）
@@ -318,7 +352,11 @@ packages/
 │       ├── dataset.ts        # DataSet（事件驱动协调器）
 │       ├── data-table.ts     # DataTable
 │       ├── data-view.ts      # DataView（IDataSource 实现）
-│       └── tree-manager.ts   # TreeManager
+│       ├── tree-manager.ts   # TreeManager
+│       └── permission/       # 权限渲染（⚠️ 已规划，禁止删除）
+│           ├── PermissionChecker.ts  # 行级/字段级权限检查 + 脱敏
+│           ├── PermissionFilter.ts   # 批量行过滤 + 批量脱敏
+│           └── FieldRenderHelper.ts  # 字段渲染状态计算
 ├── spark-page-config/   # 页面配置加载器（ConfigLoader, SparkPageConfig）
 └── spark-utils/         # 共享基础设施
     └── src/

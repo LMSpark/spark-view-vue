@@ -927,9 +927,8 @@ export class DataView implements IDataSource {
       if (!expr) continue
 
       let parentKey: string | undefined
-      const pf = rel.parentField as unknown
-      if (typeof pf === 'string') {
-        parentKey = pf
+      if (typeof rel.parentField === 'string') {
+        parentKey = rel.parentField
       } else {
         // 回退到父视图的 primaryKey 配置（Phase 3 S1: 消除硬编码 'id'）
         parentKey = pView.primaryKey
@@ -938,8 +937,7 @@ export class DataView implements IDataSource {
       const values = parentRows.map(r => r[parentKey] ?? Object.values(r)[0])
 
       let childKey: string
-      const cf = rel.childField as unknown
-      if (typeof cf === 'string') childKey = cf
+      if (typeof rel.childField === 'string') childKey = rel.childField
       else if ('field' in expr) childKey = expr.field
       else childKey = parentKey
 

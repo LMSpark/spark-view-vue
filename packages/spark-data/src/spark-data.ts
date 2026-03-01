@@ -7,7 +7,7 @@ import { TreeManager } from './tree-manager'
 import { DataTable } from './data-table'
 import { DataView } from './data-view'
 import { CrudService } from './crud-service'
-import { parseDataKey as _parseDataKey, resolveDataKey as _resolveDataKey, isDataKey as _isDataKey, buildDataKey as _buildDataKey, getViewKey as _getViewKey, resolveDataKeyBinding as _resolveDataKeyBinding } from './core/data-key'
+import * as DataKeyModule from './core/data-key'
 import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig } from './types'
 
 // ===== SparkData 命名空间 API =====
@@ -175,41 +175,21 @@ export namespace SparkData {
 
   // ===== DataKey 统一解析 =====
 
-  /**
-   * 判断 dataKey 是否为 DataSet 数据键
-   * @example isDataKey('MyApp@Users@default@rows') // true
-   */
-  export const isDataKey = _isDataKey
+  /** 判断 dataKey 是否为 DataSet 数据键 */
+  export const isDataKey = DataKeyModule.isDataKey
 
-  /**
-   * 解析 dataKey 为结构化描述符
-   * @example parseDataKey('MyApp@Users@default@rows')
-   * // { scope: 'MyApp', tableName: 'Users', viewId: 'default', field: 'rows' }
-   */
-  export const parseDataKey = _parseDataKey
+  /** 解析 dataKey 为结构化描述符 */
+  export const parseDataKey = DataKeyModule.parseDataKey
 
-  /**
-   * 从 DataSet 中解析数据键对应的值
-   * @example resolveDataKey(descriptor, dataSet) // → view.rows
-   */
-  export const resolveDataKey = _resolveDataKey
+  /** 从 DataSet 中解析数据键对应的值 */
+  export const resolveDataKey = DataKeyModule.resolveDataKey
 
-  /**
-   * 解析 DataKey 为渲染绑定描述符（判别联合，避免 instanceof DataView）
-   * @example resolveDataKeyBinding('DS@Users@rows', dataSet)
-   * // { kind: 'view', source: DataView }
-   */
-  export const resolveDataKeyBinding = _resolveDataKeyBinding
+  /** 解析 DataKey 为渲染绑定描述符（判别联合，避免 instanceof DataView） */
+  export const resolveDataKeyBinding = DataKeyModule.resolveDataKeyBinding
 
-  /**
-   * 构建标准化 DataKey 字符串
-   * @example buildDataKey('MyApp', 'Users', 'rows') // 'MyApp@Users@default@rows'
-   */
-  export const buildDataKey = _buildDataKey
+  /** 构建标准化 DataKey 字符串 */
+  export const buildDataKey = DataKeyModule.buildDataKey
 
-  /**
-   * 从描述符提取视图唯一键
-   * @example getViewKey(descriptor) // 'Users.default'
-   */
-  export const getViewKey = _getViewKey
+  /** 从描述符提取视图唯一键 */
+  export const getViewKey = DataKeyModule.getViewKey
 }

@@ -1,6 +1,6 @@
 /**
  * @spark-view/spark-data
- * SPARK 数据空间 — 数据模型 + 权限系统
+ * SPARK 数据空间 — 数据模型 + CRUD + 树结构 + 权限 + 验证  
  */
 
 // ===== 命名空间 API =====
@@ -21,7 +21,6 @@ export { RequestState } from './types'
 // ===== CRUD 服务 =====
 
 export { CrudService, createCrudService } from './crud-service'
-export { createCrudLifecycleEvent } from './strategies/types'
 export type { CrudResult, QueryParams, BatchResult, CrudOperationConfig } from './types'
 export type {
   CrudOperation, CrudLifecycleEvent
@@ -74,10 +73,8 @@ export type {
   PrimaryKeyGeneratorConfig 
 } from './core/primary-key-generator'
 
-
 // ===== 手工编辑脏追踪 =====
 
-export { DirtyTrackingDelegate } from './strategies/dirty-tracking-delegate'
 export type { FieldChange, RowDiff, SaveChangesData } from './strategies/dirty-tracking-delegate'
 
 // ===== DataKey 统一解析 =====
@@ -96,7 +93,7 @@ export {
   ComponentLevel
 } from './types'
 
-// ===== 权限系统 =====
+// ===== 权限系统（前端权限渲染，基于服务端下发的权限快照） =====
 
 export {
   PermissionChecker, createPermissionChecker, checkPermission,
@@ -104,7 +101,6 @@ export {
   FieldRenderHelper, createFieldRenderHelper,
   computeFieldState, computeFieldStates, filterVisibleFields
 } from './permission/index'
-
 export type {
   IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper
 } from './permission/index'
@@ -122,7 +118,3 @@ export type {
   RowValidator,
   DataSchema
 } from './validation'
-
-// ===== 工具函数 =====
-
-export { isSameRow } from './core/utils'
