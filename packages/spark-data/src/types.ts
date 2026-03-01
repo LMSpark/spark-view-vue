@@ -103,6 +103,10 @@ export interface IDataSource {
   total?: number
   page?: number
   pageSize?: number
+  /** 当前聚焦行（UI 高亮行 / 级联父行） */
+  currentRow?: IDataRow | null
+  /** 当前选中行集合（勾选行 / 级联选中行） */
+  selectedRows?: IDataRow[]
   /** 视图聚合汇总行（由 view.aggregates 配置驱动，行变更后自动重算） */
   summaryRow?: Readonly<IDataRow>
   /** 选中行聚合汇总行（仅对 selectedRows 执行聚合，选中/数据变更后自动重算） */
