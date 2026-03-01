@@ -912,7 +912,7 @@ describe('summaryRow 列级聚合', () => {
 
   it('join — 基础列字符串拼接', () => {
     const { orders } = makeTestDS([], undefined, undefined, { firstName: { type: 'join' } })
-    expect(orders.summaryRow['firstName']).toBe('张,李,王')
+    expect(orders.summaryRow['firstName']).toBe('张, 李, 王')
   })
 
   it('join — 跳过 null/undefined/空串', () => {
@@ -920,7 +920,7 @@ describe('summaryRow 列级聚合', () => {
       [{ id: 1, firstName: 'A' }, { id: 2, firstName: null }, { id: 3, firstName: '' }, { id: 4, firstName: 'B' }],
       undefined, { firstName: { type: 'join' } },
     )
-    expect(orders.summaryRow['firstName']).toBe('A,B')
+    expect(orders.summaryRow['firstName']).toBe('A, B')
   })
 
   it('join — 空行时返回空字符串', () => {
@@ -932,7 +932,7 @@ describe('summaryRow 列级聚合', () => {
     const { orders } = makeTestDS([
       { name: 'fullName', type: 'string', computeExpression: "firstName + lastName" },
     ], undefined, undefined, { fullName: { type: 'join' } })
-    expect(orders.summaryRow['fullName']).toBe('张三,李四,王五')
+    expect(orders.summaryRow['fullName']).toBe('张三, 李四, 王五')
   })
 
   // selectionSummaryRow — 选中行聚合
@@ -990,6 +990,6 @@ describe('summaryRow 列级聚合', () => {
   it('selectionSummaryRow — join 聚合选中行', () => {
     const { orders } = makeTestDS([], undefined, undefined, { firstName: { type: 'join' } })
     orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
-    expect(orders.selectionSummaryRow['firstName']).toBe('张,王')
+    expect(orders.selectionSummaryRow['firstName']).toBe('张, 王')
   })
 })

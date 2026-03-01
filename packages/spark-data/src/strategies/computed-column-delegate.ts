@@ -388,25 +388,30 @@ export function computeAggregateRow(
   }
 
   // ── 单遍扫描：一次遍历 rows 更新所有聚合列的累加器 ──
-  type Acc = { type: AggregateType; field: string; name: string; n: number; s: number; m: number; parts: string[] }
+  type Acc = { type: AggregateType; field: string; name: string; count: number; sum: number; extremum: number; separator: string; segments: string[] }
   const accs: Acc[] = aggCols.map(([name, config]) => ({
     type: config.type, field: config.field ?? name, name,
-    n: 0,   // count / avg 计数
-    s: 0,   // sum / avg 累加
-    m: config.type === 'min' ? Infinity : config.type === 'max' ? -Infinity : 0,
-    parts: [],
+    count: 0,       // count / avg 非空计数
+    sum: 0,         // sum / avg 累加
+    extremum: config.type === 'min' ? Infinity : config.type === 'max' ? -Infinity : 0,
+    separator: config.separator ?? ', ',
+    segments: [],
   }))
 
   for (const row of rows) {
     for (const a of accs) {
       const raw = row[a.field]
       switch (a.type) {
-        case 'sum':   a.s += Number(raw ?? 0); break
-        case 'count': if (raw !== null && raw !== undefined) a.n++; break
-        case 'avg':   a.s += Number(raw ?? 0); break
-        case 'min': { const v = Number(raw); if (!isNaN(v) && v < a.m) a.m = v; break }
-        case 'max': { const v = Number(raw); if (!isNaN(v) && v > a.m) a.m = v; break }
-        case 'join':  if (raw !== null && raw !== undefined && raw !== '') a.parts.push(String(raw)); break
+        case 'sum':   a.sum += Number(raw ?? 0); break
+        case 'count': if (raw !== null && raw !== undefined) a.count++; break
+        case 'avg': {
+          const v = Number(raw ?? NaN)
+          if (!isNaN(v)) { a.sum += v; a.count++ }
+          break
+        }
+        case 'min': { const v = Number(raw); if (!isNaN(v) && v < a.extremum) a.extremum = v; break }
+        case 'max': { const v = Number(raw); if (!isNaN(v) && v > a.extremum) a.extremum = v; break }
+        case 'join':  if (raw !== null && raw !== undefined && raw !== '') a.segments.push(String(raw)); break
       }
     }
   }
@@ -414,12 +419,12 @@ export function computeAggregateRow(
   const result: IDataRow = {}
   for (const a of accs) {
     switch (a.type) {
-      case 'sum':   result[a.name] = a.s; break
-      case 'count': result[a.name] = a.n; break
-      case 'avg':   result[a.name] = a.s / rows.length; break
-      case 'min':   result[a.name] = a.m === Infinity ? undefined : a.m; break
-      case 'max':   result[a.name] = a.m === -Infinity ? undefined : a.m; break
-      case 'join':  result[a.name] = a.parts.join(','); break
+      case 'sum':   result[a.name] = a.sum; break
+      case 'count': result[a.name] = a.count; break
+      case 'avg':   result[a.name] = a.count > 0 ? a.sum / a.count : 0; break
+      case 'min':   result[a.name] = a.extremum === Infinity ? undefined : a.extremum; break
+      case 'max':   result[a.name] = a.extremum === -Infinity ? undefined : a.extremum; break
+      case 'join':  result[a.name] = a.segments.join(a.separator); break
     }
   }
 

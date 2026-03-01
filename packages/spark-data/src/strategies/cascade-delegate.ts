@@ -11,6 +11,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
+import type { IEventEmitter } from '@spark-view/spark-utils'
 import type { DataRelation, IDataSource } from '../types'
 import { getParentRows } from '../core/utils'
 import type { ICascadeHost, EmitClearedFn } from './types'
@@ -107,7 +108,7 @@ export class CascadeDelegate {
    * 由 setupCascade 中按 dependencyType 订阅的具体事件触发，
    * 无需再做 changeType 过滤——订阅时已完成了过滤。
    */
-  private respondToParentChange(rel: DataRelation, parentView: IDataSource & { events: import('@spark-view/spark-utils').IEventEmitter }): void {
+  private respondToParentChange(rel: DataRelation, parentView: IDataSource & { events: IEventEmitter }): void {
     // 取消待处理的级联请求
     if (this.pendingCascadeRequest) {
       this.pendingCascadeRequest.cancel()
