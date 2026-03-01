@@ -12,13 +12,12 @@
  *  4. ctx 上下文        5. 动态行操作        6. 聚合函数
  *  7. 混合表达式        8. 聚合动态编辑      9. stripComputedColumns
  * 10. 运行时错误降级   11. 边界条件         12. 字符串内函数定义
- * 13. summaryRow 列级聚合  14. $summary/$selectionSummary 跨表聚合引用
- * 15. 跨表聚合自动推送（push 模式）
+ * 13. summaryRow 列级聚合
  */
 
 import { describe, it, expect, vi } from 'vitest'
 import { DataTable, DataSet } from '@spark-view/spark-data'
-import type { IDataRow } from '@spark-view/spark-data'
+import type { IDataRow, AggregateColumnConfig } from '@spark-view/spark-data'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 共享工具
@@ -50,21 +49,19 @@ const DEFAULT_ITEMS: IDataRow[] = [
 /**
  * 构建 Orders → Items 主子 DataSet。
  *
- * @param computedCols Orders 表追加的额外列（计算列 / 聚合列 / 两者组合）
+ * @param computedCols Orders 表追加的额外列（仅列定义 + 计算表达式）
  * @param orderRows    自定义 Orders 行数据（默认 DEFAULT_ORDERS）
  * @param itemRows     自定义 Items 行数据（默认 DEFAULT_ITEMS）
- * @param aggregateMap 为基础列追加聚合（如 `{ price: 'sum', score: 'avg' }`）
+ * @param aggregateMap 视图级聚合配置（如 `{ price: { type: 'sum' }, score: { type: 'avg' } }`）
  */
 function makeTestDS(
-  computedCols: Array<{ name: string; type?: string; computeExpression?: string; aggregate?: 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join' }> = [],
+  computedCols: Array<{ name: string; type?: string; computeExpression?: string }> = [],
   orderRows?: IDataRow[],
   itemRows?: IDataRow[],
-  aggregateMap?: Record<string, 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join'>,
+  aggregateMap?: Record<string, AggregateColumnConfig>,
 ) {
-  // 将 aggregateMap 应用到基础列
-  const withAgg = (col: Record<string, unknown>) => {
-    const a = aggregateMap?.[(col.name as string)]
-    return a ? { ...col, aggregate: a } : col
+  const aggregates: Record<string, AggregateColumnConfig> = {
+    ...aggregateMap,
   }
 
   const ds = DataSet.fromConfig({
@@ -73,29 +70,30 @@ function makeTestDS(
       Orders: {
         tableName: 'Orders',
         columns: [
-          withAgg({ name: 'id', type: 'number', isPrimaryKey: true }),
-          withAgg({ name: 'price', type: 'number' }),
-          withAgg({ name: 'qty', type: 'number' }),
-          withAgg({ name: 'score', type: 'number' }),
-          withAgg({ name: 'firstName', type: 'string' }),
-          withAgg({ name: 'lastName', type: 'string' }),
-          withAgg({ name: 'amount', type: 'number' }),
-          withAgg({ name: 'n', type: 'number' }),
-          withAgg({ name: 'w', type: 'number' }),
-          withAgg({ name: 'h', type: 'number' }),
-          withAgg({ name: 'a', type: 'number' }),
-          withAgg({ name: 'b', type: 'number' }),
-          withAgg({ name: 'x', type: 'number' }),
-          withAgg({ name: 'obj', type: 'string' }),
-          withAgg({ name: 'items', type: 'string' }),
+          { name: 'id', type: 'number', isPrimaryKey: true },
+          { name: 'price', type: 'number' },
+          { name: 'qty', type: 'number' },
+          { name: 'score', type: 'number' },
+          { name: 'firstName', type: 'string' },
+          { name: 'lastName', type: 'string' },
+          { name: 'amount', type: 'number' },
+          { name: 'n', type: 'number' },
+          { name: 'w', type: 'number' },
+          { name: 'h', type: 'number' },
+          { name: 'a', type: 'number' },
+          { name: 'b', type: 'number' },
+          { name: 'x', type: 'number' },
+          { name: 'obj', type: 'string' },
+          { name: 'items', type: 'string' },
           ...computedCols.map(c => ({
             name: c.name,
             type: c.type ?? 'string',
             ...(c.computeExpression ? { computeExpression: c.computeExpression } : {}),
-            ...(c.aggregate ? { aggregate: c.aggregate } : {}),
           })),
-        ] as Array<Record<string, unknown>>,
+        ],
         rows: orderRows ?? DEFAULT_ORDERS,
+        // 聚合配置属于视图层，挂在扁平化的 ITableMetadata（等价于 views.default.aggregates）
+        ...(Object.keys(aggregates).length > 0 ? { aggregates } : {}),
       },
       Items: {
         tableName: 'Items',
@@ -739,32 +737,32 @@ describe('字符串内函数定义', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 describe('summaryRow 列级聚合', () => {
   it('sum — 所有行求和', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { price: 'sum' })
+    const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'sum' } })
     expect(orders.summaryRow['price']).toBe(150)  // 100+50+0
   })
 
   it('count — 非 null/undefined 值计数', () => {
     const { orders } = makeTestDS([],
       [{ id: 1, score: 95 }, { id: 2, score: null }, { id: 3, score: 45 }],
-      undefined, { score: 'count' },
+      undefined, { score: { type: 'count' } },
     )
     expect(orders.summaryRow['score']).toBe(2)  // null 不计
   })
 
   it('avg — 算术平均', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { price: 'avg' })
+    const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'avg' } })
     expect(orders.summaryRow['price']).toBe(50)  // (100+50+0)/3
   })
 
   it('min / max — 极值', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { price: 'min', qty: 'max' })
+    const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'min' }, qty: { type: 'max' } })
     expect(orders.summaryRow['price']).toBe(0)
     expect(orders.summaryRow['qty']).toBe(99)
   })
 
   it('空行时聚合边界值正确', () => {
     const { orders } = makeTestDS([], [], undefined,
-      { price: 'sum', qty: 'avg', score: 'min' },
+      { price: { type: 'sum' }, qty: { type: 'avg' }, score: { type: 'min' } },
     )
     expect(orders.summaryRow['price']).toBe(0)          // sum 空集 = 0
     expect(orders.summaryRow['qty']).toBe(0)             // avg 空集 = 0
@@ -773,7 +771,7 @@ describe('summaryRow 列级聚合', () => {
 
   it('多列混合聚合类型', () => {
     const { orders } = makeTestDS([], undefined, undefined,
-      { amount: 'sum', score: 'avg', price: 'min', qty: 'max', firstName: 'count' },
+      { amount: { type: 'sum' }, score: { type: 'avg' }, price: { type: 'min' }, qty: { type: 'max' }, firstName: { type: 'count' } },
     )
     expect(orders.summaryRow['amount']).toBe(2600)          // 1500+300+800
     expect(orders.summaryRow['score']).toBeCloseTo(70.67, 1) // (95+72+45)/3
@@ -787,12 +785,12 @@ describe('summaryRow 列级聚合', () => {
     expect(orders.summaryRow).toEqual({})
   })
 
-  // 计算列 + aggregate 联合
+  // 计算列 + 视图聚合组合（列定义与聚合配置独立声明）
 
   it('计算列 sum — 先逐行求值再整列聚合', () => {
     const { orders } = makeTestDS([
-      { name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' },
-    ])
+      { name: 'total', type: 'number', computeExpression: 'price * qty' },
+    ], undefined, undefined, { total: { type: 'sum' } })
     expect(f(orders.rows[0], 'total')).toBe(600)  // 100*6
     expect(f(orders.rows[1], 'total')).toBe(100)  // 50*2
     expect(f(orders.rows[2], 'total')).toBe(0)    // 0*99
@@ -801,24 +799,24 @@ describe('summaryRow 列级聚合', () => {
 
   it('计算列 avg — 复杂表达式后聚合', () => {
     const { orders } = makeTestDS([
-      { name: 'unitPrice', type: 'number', computeExpression: 'amount / (qty || 1)', aggregate: 'avg' },
-    ])
+      { name: 'unitPrice', type: 'number', computeExpression: 'amount / (qty || 1)' },
+    ], undefined, undefined, { unitPrice: { type: 'avg' } })
     // row1: 1500/6=250, row2: 300/2=150, row3: 800/99≈8.08
     expect(orders.summaryRow['unitPrice'] as number).toBeCloseTo(136.03, 1)
   })
 
   it('计算列 min/max — 三元 + 聚合', () => {
     const { orders } = makeTestDS([
-      { name: 'grade', type: 'number', computeExpression: "score >= 60 ? 1 : 0", aggregate: 'sum' },
-    ])
+      { name: 'grade', type: 'number', computeExpression: "score >= 60 ? 1 : 0" },
+    ], undefined, undefined, { grade: { type: 'sum' } })
     // row1: 95>=60→1, row2: 72>=60→1, row3: 45<60→0
     expect(orders.summaryRow['grade']).toBe(2)
   })
 
   it('计算列 + 基础列同时聚合', () => {
     const { orders } = makeTestDS(
-      [{ name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }],
-      undefined, undefined, { amount: 'sum', score: 'avg' },
+      [{ name: 'total', type: 'number', computeExpression: 'price * qty' }],
+      undefined, undefined, { total: { type: 'sum' }, amount: { type: 'sum' }, score: { type: 'avg' } },
     )
     expect(orders.summaryRow['total']).toBe(700)            // 计算列聚合
     expect(orders.summaryRow['amount']).toBe(2600)          // 基础列聚合
@@ -827,9 +825,9 @@ describe('summaryRow 列级聚合', () => {
 
   it('链式计算列 + aggregate', () => {
     const { orders } = makeTestDS([
-      { name: 'subtotal', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' },
-      { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.1', aggregate: 'sum' },
-    ])
+      { name: 'subtotal', type: 'number', computeExpression: 'price * qty' },
+      { name: 'tax', type: 'number', computeExpression: 'subtotal * 0.1' },
+    ], undefined, undefined, { subtotal: { type: 'sum' }, tax: { type: 'sum' } })
     // subtotal: 600+100+0=700; tax: 60+10+0=70
     expect(orders.summaryRow['subtotal']).toBe(700)
     expect(orders.summaryRow['tax'] as number).toBeCloseTo(70)
@@ -839,8 +837,7 @@ describe('summaryRow 列级聚合', () => {
     const { orders } = makeTestDS([{
       name: 'tier', type: 'number',
       computeExpression: 'if (amount >= 1000) return 3; if (amount >= 500) return 2; return 1;',
-      aggregate: 'sum',
-    }])
+    }], undefined, undefined, { tier: { type: 'sum' } })
     // row1: 1500→3, row2: 300→1, row3: 800→2 → sum=6
     expect(orders.summaryRow['tier']).toBe(6)
   })
@@ -849,8 +846,9 @@ describe('summaryRow 列级聚合', () => {
 
   it('appendRow 后 summaryRow 自动更新', () => {
     const { orders } = makeTestDS(
-      [{ name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }],
+      [{ name: 'total', type: 'number', computeExpression: 'price * qty' }],
       [{ id: 1, price: 10, qty: 5 }],
+      undefined, { total: { type: 'sum' } },
     )
     expect(orders.summaryRow['total']).toBe(50)
 
@@ -859,7 +857,7 @@ describe('summaryRow 列级聚合', () => {
   })
 
   it('updateRowById 后 summaryRow 自动更新', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
     expect(orders.summaryRow['amount']).toBe(2600)
 
     orders.updateRowById(1, { amount: 100 })
@@ -867,7 +865,7 @@ describe('summaryRow 列级聚合', () => {
   })
 
   it('deleteRowById 后 summaryRow 自动更新', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
     expect(orders.summaryRow['amount']).toBe(2600)
 
     orders.deleteRowById(1)
@@ -876,9 +874,9 @@ describe('summaryRow 列级聚合', () => {
 
   it('replaceRows 后 summaryRow 自动更新', () => {
     const { orders } = makeTestDS(
-      [{ name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' }],
+      [{ name: 'total', type: 'number', computeExpression: 'price * qty' }],
       [{ id: 1, price: 10, qty: 5 }],
-      undefined, { score: 'max' },
+      undefined, { total: { type: 'sum' }, score: { type: 'max' } },
     )
     expect(orders.summaryRow['total']).toBe(50)
 
@@ -892,8 +890,8 @@ describe('summaryRow 列级聚合', () => {
 
   it('setComputedContext 后计算列聚合自动重算', () => {
     const { orders } = makeTestDS([
-      { name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate', aggregate: 'sum' },
-    ])
+      { name: 'tax', type: 'number', computeExpression: 'amount * ctx.taxRate' },
+    ], undefined, undefined, { tax: { type: 'sum' } })
     orders.setComputedContext({ taxRate: 0.1 })
     // 1500*0.1 + 300*0.1 + 800*0.1 = 260
     expect(orders.summaryRow['tax'] as number).toBeCloseTo(260)
@@ -904,8 +902,8 @@ describe('summaryRow 列级聚合', () => {
 
   it('子表聚合 + 列级聚合联合', () => {
     const { orders } = makeTestDS([
-      { name: 'itemTotal', type: 'number', computeExpression: "$sum('Items', 'amount')", aggregate: 'sum' },
-    ])
+      { name: 'itemTotal', type: 'number', computeExpression: "$sum('Items', 'amount')" },
+    ], undefined, undefined, { itemTotal: { type: 'sum' } })
     // row1: 350, row2: 80, row3: 0 → sum=430
     expect(orders.summaryRow['itemTotal']).toBe(430)
   })
@@ -913,40 +911,40 @@ describe('summaryRow 列级聚合', () => {
   // join 聚合
 
   it('join — 基础列字符串拼接', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { firstName: 'join' })
+    const { orders } = makeTestDS([], undefined, undefined, { firstName: { type: 'join' } })
     expect(orders.summaryRow['firstName']).toBe('张,李,王')
   })
 
   it('join — 跳过 null/undefined/空串', () => {
     const { orders } = makeTestDS([],
       [{ id: 1, firstName: 'A' }, { id: 2, firstName: null }, { id: 3, firstName: '' }, { id: 4, firstName: 'B' }],
-      undefined, { firstName: 'join' },
+      undefined, { firstName: { type: 'join' } },
     )
     expect(orders.summaryRow['firstName']).toBe('A,B')
   })
 
   it('join — 空行时返回空字符串', () => {
-    const { orders } = makeTestDS([], [], undefined, { firstName: 'join' })
+    const { orders } = makeTestDS([], [], undefined, { firstName: { type: 'join' } })
     expect(orders.summaryRow['firstName']).toBe('')
   })
 
   it('join — 计算列 + join 联合', () => {
     const { orders } = makeTestDS([
-      { name: 'fullName', type: 'string', computeExpression: "firstName + lastName", aggregate: 'join' },
-    ])
+      { name: 'fullName', type: 'string', computeExpression: "firstName + lastName" },
+    ], undefined, undefined, { fullName: { type: 'join' } })
     expect(orders.summaryRow['fullName']).toBe('张三,李四,王五')
   })
 
   // selectionSummaryRow — 选中行聚合
 
   it('selectionSummaryRow — 清空选中后为空对象', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { price: 'sum' })
+    const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'sum' } })
     orders.clearSelectedRows()
     expect(orders.selectionSummaryRow).toEqual({})
   })
 
   it('selectionSummaryRow — 选中部分行后仅聚合选中行', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { price: 'sum', score: 'avg' })
+    const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'sum' }, score: { type: 'avg' } })
     // 选中 row1(price=100,score=95) + row3(price=0,score=45)
     orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])
     expect(orders.selectionSummaryRow['price']).toBe(100)           // 100+0
@@ -954,13 +952,13 @@ describe('summaryRow 列级聚合', () => {
   })
 
   it('selectionSummaryRow — 选中全部行等于 summaryRow', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
     orders.setSelectedRows([...orders.rows])
     expect(orders.selectionSummaryRow['amount']).toBe(orders.summaryRow['amount'])
   })
 
   it('selectionSummaryRow — 切换选中后自动重算', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
     orders.setSelectedRows([orders.rows[0]!])               // row1: 1500
     expect(orders.selectionSummaryRow['amount']).toBe(1500)
 
@@ -973,15 +971,15 @@ describe('summaryRow 列级聚合', () => {
 
   it('selectionSummaryRow — 计算列 + aggregate 选中聚合', () => {
     const { orders } = makeTestDS([
-      { name: 'total', type: 'number', computeExpression: 'price * qty', aggregate: 'sum' },
-    ])
+      { name: 'total', type: 'number', computeExpression: 'price * qty' },
+    ], undefined, undefined, { total: { type: 'sum' } })
     // row1: total=600, row2: total=100, row3: total=0
     orders.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
     expect(orders.selectionSummaryRow['total']).toBe(700)   // 600+100
   })
 
   it('selectionSummaryRow — 行数据变更后自动重算', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { amount: 'sum' })
+    const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
     orders.setSelectedRows([orders.rows[0]!])             // row1: 1500
     expect(orders.selectionSummaryRow['amount']).toBe(1500)
 
@@ -990,483 +988,8 @@ describe('summaryRow 列级聚合', () => {
   })
 
   it('selectionSummaryRow — join 聚合选中行', () => {
-    const { orders } = makeTestDS([], undefined, undefined, { firstName: 'join' })
+    const { orders } = makeTestDS([], undefined, undefined, { firstName: { type: 'join' } })
     orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
     expect(orders.selectionSummaryRow['firstName']).toBe('张,王')
-  })
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 14. $summary / $selectionSummary — 跨表聚合引用
-// ─────────────────────────────────────────────────────────────────────────────
-describe('$summary / $selectionSummary — 跨表聚合引用', () => {
-  it('$summary — 引用其他表的 summaryRow', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'price', type: 'number', aggregate: 'sum' },
-          ],
-          rows: [{ id: 1, price: 100 }, { id: 2, price: 50 }],
-        },
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'label', type: 'string' },
-            { name: 'orderTotal', type: 'number', computeExpression: "$summary('Orders', 'price')" },
-          ],
-          rows: [{ id: 1, label: '汇总' }],
-        },
-      },
-    })
-    const report = ds.getView('Report', 'default')!
-    expect(f(report.rows[0], 'orderTotal')).toBe(150)  // 100+50
-  })
-
-  it('$summary — 源表行变更后 recompute 获取最新值', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'price', type: 'number', aggregate: 'sum' },
-          ],
-          rows: [{ id: 1, price: 100 }, { id: 2, price: 50 }],
-        },
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'total', type: 'number', computeExpression: "$summary('Orders', 'price')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const orders = ds.getView('Orders', 'default')!
-    const report = ds.getView('Report', 'default')!
-    expect(f(report.rows[0], 'total')).toBe(150)
-
-    orders.appendRow({ id: 3, price: 50 })
-    report.recomputeColumns()
-    expect(f(report.rows[0], 'total')).toBe(200)  // 100+50+50
-  })
-
-  it('$selectionSummary — 引用其他表的选中行聚合', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'amount', type: 'number', aggregate: 'sum' },
-          ],
-          rows: [{ id: 1, amount: 100 }, { id: 2, amount: 200 }, { id: 3, amount: 300 }],
-        },
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'selTotal', type: 'number', computeExpression: "$selectionSummary('Orders', 'amount')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const orders = ds.getView('Orders', 'default')!
-    const report = ds.getView('Report', 'default')!
-
-    orders.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
-    report.recomputeColumns()
-    expect(f(report.rows[0], 'selTotal')).toBe(300)  // 100+200
-  })
-
-  it('$selectionSummary — 选中切换后 recompute 自动反映', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'amount', type: 'number', aggregate: 'sum' },
-          ],
-          rows: [{ id: 1, amount: 100 }, { id: 2, amount: 200 }, { id: 3, amount: 300 }],
-        },
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'selTotal', type: 'number', computeExpression: "$selectionSummary('Orders', 'amount')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const orders = ds.getView('Orders', 'default')!
-    const report = ds.getView('Report', 'default')!
-
-    orders.setSelectedRows([orders.rows[0]!])
-    report.recomputeColumns()
-    expect(f(report.rows[0], 'selTotal')).toBe(100)
-
-    orders.setSelectedRows([orders.rows[1]!, orders.rows[2]!])
-    report.recomputeColumns()
-    expect(f(report.rows[0], 'selTotal')).toBe(500)  // 200+300
-
-    orders.clearSelectedRows()
-    report.recomputeColumns()
-    expect(f(report.rows[0], 'selTotal')).toBeUndefined()  // 空选中 → selectionSummaryRow={}
-  })
-
-  it('$summary — 与算术 + ctx 混合使用', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'amount', type: 'number', aggregate: 'sum' },
-          ],
-          rows: [{ id: 1, amount: 1000 }, { id: 2, amount: 500 }],
-        },
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'taxTotal', type: 'number', computeExpression: "$summary('Orders', 'amount') * ctx.taxRate" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const report = ds.getView('Report', 'default')!
-    report.setComputedContext({ taxRate: 0.1 })
-    expect(f(report.rows[0], 'taxTotal') as number).toBeCloseTo(150)  // 1500 * 0.1
-  })
-
-  it('$summary — 读取 join 聚合结果', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'customer', type: 'string', aggregate: 'join' },
-          ],
-          rows: [{ id: 1, customer: '张' }, { id: 2, customer: '李' }],
-        },
-        Labels: {
-          tableName: 'Labels',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'allCustomers', type: 'string', computeExpression: "$summary('Orders', 'customer')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const labels = ds.getView('Labels', 'default')!
-    expect(f(labels.rows[0], 'allCustomers')).toBe('张,李')
-  })
-
-  it('$selectionSummary — 跨表获取选中行的 join 聚合', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'firstName', type: 'string', aggregate: 'join' },
-          ],
-          rows: [
-            { id: 1, firstName: '张' },
-            { id: 2, firstName: '李' },
-            { id: 3, firstName: '王' },
-          ],
-        },
-        Detail: {
-          tableName: 'Detail',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'selectedNames', type: 'string', computeExpression: "$selectionSummary('Orders', 'firstName')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const orders = ds.getView('Orders', 'default')!
-    const detail = ds.getView('Detail', 'default')!
-
-    orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
-    detail.recomputeColumns()
-    expect(f(detail.rows[0], 'selectedNames')).toBe('张,王')
-  })
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 15. 跨表聚合自动推送（push 模式）
-// ─────────────────────────────────────────────────────────────────────────────
-describe('跨表聚合自动推送（push 模式）', () => {
-
-  /** 构建 Orders + Report 跨表聚合场景 */
-  function makeCrossTableDS(reportExpression: string, ordersAggregate: 'sum' | 'join' = 'sum') {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'amount', type: 'number', aggregate: ordersAggregate },
-          ],
-          rows: [{ id: 1, amount: 100 }, { id: 2, amount: 200 }, { id: 3, amount: 300 }],
-        },
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'total', type: 'number', computeExpression: reportExpression },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    return {
-      ds,
-      orders: ds.getView('Orders', 'default')!,
-      report: ds.getView('Report', 'default')!,
-    }
-  }
-
-  it('$summary — 源表 appendRow 后自动推送（无需手动 recompute）', () => {
-    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
-    expect(f(report.rows[0], 'total')).toBe(600)  // 100+200+300
-
-    orders.appendRow({ id: 4, amount: 400 })
-    // 自动推送！无需 report.recomputeColumns()
-    expect(f(report.rows[0], 'total')).toBe(1000)  // 600+400
-  })
-
-  it('$summary — 源表 updateRowById 后自动推送', () => {
-    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
-    expect(f(report.rows[0], 'total')).toBe(600)
-
-    orders.updateRowById(1, { amount: 500 })
-    expect(f(report.rows[0], 'total')).toBe(1000)  // 500+200+300
-  })
-
-  it('$summary — 源表 deleteRowById 后自动推送', () => {
-    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
-    expect(f(report.rows[0], 'total')).toBe(600)
-
-    orders.deleteRowById(3)
-    expect(f(report.rows[0], 'total')).toBe(300)  // 100+200
-  })
-
-  it('$summary — 源表 replaceRows 后自动推送', () => {
-    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
-    orders.replaceRows([{ id: 1, amount: 10 }, { id: 2, amount: 20 }])
-    expect(f(report.rows[0], 'total')).toBe(30)
-  })
-
-  it('$selectionSummary — 源表选中变更后自动推送', () => {
-    const { orders, report } = makeCrossTableDS("$selectionSummary('Orders', 'amount')")
-    // 初始状态：DataSet.fromConfig 自动选中首行
-    orders.clearSelectedRows()
-    report.recomputeColumns()  // 初始清空一次
-
-    orders.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
-    // 自动推送！
-    expect(f(report.rows[0], 'total')).toBe(300)  // 100+200
-
-    orders.setSelectedRows([orders.rows[2]!])
-    expect(f(report.rows[0], 'total')).toBe(300)  // 只有 row3: 300
-
-    orders.clearSelectedRows()
-    expect(f(report.rows[0], 'total')).toBeUndefined()  // 空选中
-  })
-
-  it('$selectionSummary — 源表数据变更后自动推送（summaryChanged 包含 selectionSummary 更新）', () => {
-    const { orders, report } = makeCrossTableDS("$selectionSummary('Orders', 'amount')")
-    orders.setSelectedRows([orders.rows[0]!])   // row1: amount=100
-    report.recomputeColumns()                    // 初始同步
-    expect(f(report.rows[0], 'total')).toBe(100)
-
-    // 更新选中行的数据 → summaryChanged 自动推送
-    orders.updateRowById(1, { amount: 999 })
-    expect(f(report.rows[0], 'total')).toBe(999)
-  })
-
-  it('混合引用 — $summary + $selectionSummary 同时推送', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'amount', type: 'number', aggregate: 'sum' },
-          ],
-          rows: [{ id: 1, amount: 100 }, { id: 2, amount: 200 }],
-        },
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'allTotal', type: 'number', computeExpression: "$summary('Orders', 'amount')" },
-            { name: 'selTotal', type: 'number', computeExpression: "$selectionSummary('Orders', 'amount')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const orders = ds.getView('Orders', 'default')!
-    const report = ds.getView('Report', 'default')!
-
-    orders.setSelectedRows([orders.rows[0]!])
-    // selectionSummaryChanged 自动推送
-    expect(f(report.rows[0], 'selTotal')).toBe(100)
-    expect(f(report.rows[0], 'allTotal')).toBe(300)
-
-    orders.appendRow({ id: 3, amount: 50 })
-    // summaryChanged 自动推送（含 selectionSummary 同步更新）
-    expect(f(report.rows[0], 'allTotal')).toBe(350)
-    expect(f(report.rows[0], 'selTotal')).toBe(100)  // 选中行不变
-  })
-
-  it('防环保护 — 循环引用不死循环', () => {
-    // A 引用 B 的 summary，B 引用 A 的 summary
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        A: {
-          tableName: 'A',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'val', type: 'number', aggregate: 'sum' },
-            { name: 'fromB', type: 'number', computeExpression: "$summary('B', 'val')" },
-          ],
-          rows: [{ id: 1, val: 10 }],
-        },
-        B: {
-          tableName: 'B',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'val', type: 'number', aggregate: 'sum' },
-            { name: 'fromA', type: 'number', computeExpression: "$summary('A', 'val')" },
-          ],
-          rows: [{ id: 1, val: 20 }],
-        },
-      },
-    })
-    const viewA = ds.getView('A', 'default')!
-    const viewB = ds.getView('B', 'default')!
-
-    // 不应死循环，应正常返回
-    expect(f(viewA.rows[0], 'fromB')).toBe(20)
-    expect(f(viewB.rows[0], 'fromA')).toBe(10)
-
-    // 更新 A → A.summaryChanged → B.recompute → B.summaryChanged → A 已在 guard 内，跳过
-    viewA.appendRow({ id: 2, val: 5 })
-    expect(viewA.summaryRow['val']).toBe(15)  // 10+5
-    // B 应该自动收到 A 的更新
-    expect(f(viewB.rows[0], 'fromA')).toBe(15)
-  })
-
-  it('源表不存在时不报错（静默忽略）', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'total', type: 'number', computeExpression: "$summary('NonExistent', 'price')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const report = ds.getView('Report', 'default')!
-    // 不抛错，值为 undefined
-    expect(f(report.rows[0], 'total')).toBeUndefined()
-  })
-
-  it('$summary — setComputedContext 触发 summaryChanged 自动推送', () => {
-    const ds = DataSet.fromConfig({
-      dataSetName: 'DS',
-      tables: {
-        Orders: {
-          tableName: 'Orders',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'price', type: 'number' },
-            { name: 'tax', type: 'number', computeExpression: 'price * ctx.taxRate', aggregate: 'sum' },
-          ],
-          rows: [{ id: 1, price: 100 }, { id: 2, price: 200 }],
-        },
-        Report: {
-          tableName: 'Report',
-          columns: [
-            { name: 'id', type: 'number', isPrimaryKey: true },
-            { name: 'totalTax', type: 'number', computeExpression: "$summary('Orders', 'tax')" },
-          ],
-          rows: [{ id: 1 }],
-        },
-      },
-    })
-    const orders = ds.getView('Orders', 'default')!
-    const report = ds.getView('Report', 'default')!
-
-    orders.setComputedContext({ taxRate: 0.1 })
-    // summaryChanged 自动推送到 Report
-    expect(f(report.rows[0], 'totalTax') as number).toBeCloseTo(30)  // (100+200)*0.1
-
-    orders.setComputedContext({ taxRate: 0.2 })
-    expect(f(report.rows[0], 'totalTax') as number).toBeCloseTo(60)  // (100+200)*0.2
-  })
-
-  it('events 正确发射 — summaryChanged / selectionSummaryChanged', () => {
-    const { orders } = makeCrossTableDS("$summary('Orders', 'amount')")
-    const summaryEvents: number[] = []
-    const selSummaryEvents: number[] = []
-
-    orders.events.on('summaryChanged', () => summaryEvents.push(1))
-    orders.events.on('selectionSummaryChanged', () => selSummaryEvents.push(1))
-
-    // 数据变更 → summaryChanged
-    orders.appendRow({ id: 4, amount: 50 })
-    expect(summaryEvents.length).toBe(1)
-
-    // 选中变更 → selectionSummaryChanged（先清空再选，避免幂等跳过）
-    orders.clearSelectedRows()
-    const baseSelEvents = selSummaryEvents.length
-    orders.setSelectedRows([orders.rows[0]!])
-    expect(selSummaryEvents.length).toBeGreaterThan(baseSelEvents)
-
-    // 再次数据变更
-    orders.updateRowById(1, { amount: 999 })
-    expect(summaryEvents.length).toBe(2)
-  })
-
-  it('destroy 后不再推送', () => {
-    const { orders, report } = makeCrossTableDS("$summary('Orders', 'amount')")
-    expect(f(report.rows[0], 'total')).toBe(600)
-
-    report.destroy()
-    // 源表继续操作不应报错
-    orders.appendRow({ id: 4, amount: 100 })
-    // report 已销毁，其数据不再更新（但不报错）
   })
 })

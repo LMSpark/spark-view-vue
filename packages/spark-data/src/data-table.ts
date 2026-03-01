@@ -109,16 +109,30 @@ export class DataTable {
   // ===== DataSet 关联（设置引用链） =====
 
   /**
-   * 将 DataTable 绑定到 DataSet（设置引用链）
-   * @param ds - DataSet 实例
-   * @remarks 为每个 DataView 设置 dataTable 引用并调用 setupCascade，使视图能响应父级变化
+   * 将 DataTable 绑定到 DataSet
+   *
+   * - 设置 `this.dataSet = ds`
+   * - 为已存在的所有视图建立级联订阅
+   *
+   * 注意：`view.dataTable` 在视图创建时（构造函数 / getOrCreateView / fromTableData）
+   * 已确保赋值，此处不重复赋值，避免触发冗余的 syncFromConfig()。
    */
   setDataSet(ds: DataSet): void {
     this.dataSet = ds
-    // 统一设置所有视图的引用链并建立级联订阅
     for (const view of Object.values(this.views)) {
-      view.dataTable = this
       view.setupCascade()
+    }
+  }
+
+  /**
+   * DataSet 关系规范化完成后调用——通知所有视图重编译含聚合的计算列并重算聚合行。
+   *
+   * 封装后置重算职责：DataSet 只需调用此方法，不直接触碰 view 内部。
+   * 遍历各视图委托给 view.onDataSetRelationsReady()，DataSet 不需要了解视图内部细节。
+   */
+  onDataSetRelationsReady(): void {
+    for (const view of Object.values(this.views)) {
+      view.onDataSetRelationsReady()
     }
   }
 
@@ -155,6 +169,16 @@ export class DataTable {
     return this.views[viewId]
   }
 
+  /**
+   * 遍历所有视图（包含 default 和命名视图）——DataSet 的内部实现岁选择此入口，
+   * 避免直接访问 `views` 属性（封装内部集合）。
+   */
+  forEachView(cb: (view: DataView) => void): void {
+    for (const view of Object.values(this.views)) {
+      cb(view)
+    }
+  }
+
   // ===== 配置管理 =====
 
   /**
@@ -187,9 +211,9 @@ export class DataTable {
       viewsData[id] = view.toData()
     }
 
-    // 'default' 视图始终在构造函数中创建，直接访问避免 getOrCreateView 的副作用；
-    // 使用 ?? 兜底以满足 TypeScript 类型检查（运行时不可能触发右侧）
-    const dv = this.views['default'] ?? this.getOrCreateView('default')
+    // 'default' 视图始终在构造函数中创建，直接访问即可
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- default view is guaranteed by constructor
+    const dv = this.views['default']!
     const def = dv.toData()
     const result: ITableMetadata = {
       tableName: this.tableName,
@@ -255,26 +279,12 @@ export class DataTable {
     if (data.rows) def.rows = [...data.rows]
 
     // views.default（若存在）优先于表级字段；ITableMetadata = ITableOwnMetadata & IViewMetadata，
-    // 两条路径（default 视图 vs 扁平化表级字段）字段名完全一致，可以用同一段代码处理。
+    // 两条路径（default 视图 vs 扁平化表级字段）字段名完全一致，统一委托给 applyViewConfig。
     const vc: IViewMetadata = data.views?.['default'] ?? data
-    if (vc.filterExpression !== undefined) def.filterExpression = vc.filterExpression
-    if (vc.sortExpression !== undefined) def.sortExpression = vc.sortExpression
-    if (vc.autoCurrentFirst !== undefined) def.autoCurrentFirst = vc.autoCurrentFirst
-    if (vc.autoSelectFirst !== undefined) def.autoSelectFirst = vc.autoSelectFirst
-    if (vc.treeConfig !== undefined) def.treeConfig = vc.treeConfig
-    if (vc.autoLoad !== undefined) def.autoLoad = vc.autoLoad
-    def.page = vc.page ?? 1
-    def.pageSize = vc.pageSize ?? 20
+    def.applyViewConfig(vc)
 
-    // 静态数据初始化：通过正式 setter 写入，同时触发 this.events 和全局 bus。
-    // def.dataTable 已在 getOrCreateView 中设置（view.primaryKey getter 可正常访问列定义）。
-    const firstRow = def.rows[0] ?? null
-    if (def.autoCurrentFirst !== false && firstRow) {
-      def.setCurrentRow(firstRow)
-    }
-    if (def.autoSelectFirst !== false && firstRow) {
-      def.setSelectedRows([firstRow])
-    }
+    // 静态数据初始化：DataView 自己决定如何初始化选中状态（DataTable 不关心内部细节）。
+    def.initAutoSelection()
 
     // 处理命名视图（非 default）
     if (data.views) {

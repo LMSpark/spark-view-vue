@@ -3,7 +3,6 @@
  */
 
 import type { IDataRow, DependencyType, CrudApi } from '../types'
-import type { DataView } from '../data-view'
 
 /** DataKey 分隔符，名称中禁止包含 */
 const SEPARATOR = '@'
@@ -196,7 +195,19 @@ export function pruneInvalidSelections(
  * @param dep 依赖类型
  * @returns 数据行数组
  */
-export function getParentRows(sourceView: DataView, dep: DependencyType): IDataRow[] {
+/**
+ * getParentRows 所需的最小视图状态（ISP：不依赖完整 DataView）。
+ * DataView 自然满足此接口。
+ */
+export interface IParentRowSource {
+  readonly currentRow: IDataRow | null
+  readonly selectedRows: IDataRow[]
+  readonly rows: IDataRow[]
+  readonly page: number
+  readonly pageSize: number
+}
+
+export function getParentRows(sourceView: IParentRowSource, dep: DependencyType): IDataRow[] {
   switch (dep) {
     case 'currentRow':   return sourceView.currentRow ? [sourceView.currentRow] : []
     case 'selectedRows': return sourceView.selectedRows ?? []

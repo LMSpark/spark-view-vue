@@ -9,7 +9,7 @@ import { DataView } from './data-view'
 import { reactive } from 'vue'
 import { CrudService } from './crud-service'
 import { parseDataKey as _parseDataKey, resolveDataKey as _resolveDataKey, isDataKey as _isDataKey, buildDataKey as _buildDataKey, getViewKey as _getViewKey, resolveDataKeyBinding as _resolveDataKeyBinding } from './core/data-key'
-import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, IDataRow } from './types'
+import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig } from './types'
 
 // ===== SparkData 命名空间 API =====
 
@@ -22,18 +22,7 @@ export namespace SparkData {
    * @param config 数据集配置
    * @returns 数据集实例
    */
-  export function createDataSet(config: {
-    dataSetName: string
-    tables: Record<string, {
-      tableName?: string
-      columns: DataColumn[]
-      rows?: IDataRow[]
-      api?: CrudApi | string | boolean
-      autoCurrentFirst?: boolean
-      autoSelectFirst?: boolean
-    }>
-    relations?: DataRelation[]
-  }): DataSet {
+  export function createDataSet(config: Parameters<typeof DataSet.fromConfig>[0]): DataSet {
     return DataSet.fromConfig(config)
   }
 
@@ -137,16 +126,24 @@ export namespace SparkData {
     valueField?: string | string[]
     /** 标签显示字段名，见 {@link DataView.labelField} */
     labelField?: string
+    /** 值序列化分隔符，见 {@link DataView.selectionDelimiter} */
+    selectionDelimiter?: string
+    /** 增删改自动提交，见 {@link DataView.autoCommit} */
+    autoCommit?: boolean
+    /** 视图级聚合配置，见 {@link DataView.aggregates} */
+    aggregates?: Record<string, AggregateColumnConfig>
+    /** 过滤表达式初始值 */
+    filterExpression?: import('./types').FilterExpression
+    /** 排序表达式初始值 */
+    sortExpression?: import('./types').SortExpression
+    /** 初始页码 */
+    page?: number
+    /** 每页条数 */
+    pageSize?: number
   }): DataView {
     const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
-    if (config.autoCurrentFirst !== undefined) view.autoCurrentFirst = config.autoCurrentFirst
-    if (config.autoSelectFirst !== undefined) view.autoSelectFirst = config.autoSelectFirst
-    if (config.selectionFollowsCurrent !== undefined) view.selectionFollowsCurrent = config.selectionFollowsCurrent
-    if (config.treeConfig !== undefined) view.treeConfig = config.treeConfig
-    if (config.autoLoad !== undefined) view.autoLoad = config.autoLoad
-    if (config.autoRefresh !== undefined) view.autoRefresh = config.autoRefresh
-    if (config.valueField !== undefined) view.valueField = config.valueField
-    if (config.labelField !== undefined) view.labelField = config.labelField
+    // 所有视图配置字段由 applyViewConfig 集中赋值，单一来源
+    view.applyViewConfig(config)
     return view
   }
 

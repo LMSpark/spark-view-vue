@@ -1,11 +1,15 @@
 /**
- * ComputedColumnDelegate — 计算列委托
+ * ComputedColumnDelegate — 计算列管理器
  *
- * 职责划分：
- * - **本文件**：表达式编译（`new Function` + `with` 沙箱）、聚合函数注入、
- *   已编译函数注册表（`ComputedColumnDelegate`）
- * - **DataView**：context 管理、聚合解析器构建（需要 tableName/viewId/DataSet 视角）、
- *   在 dataTable attach / context 变更时触发重编译
+ * 职责：
+ * - 表达式编译（`new Function` + `with` 沙箱）、子表聚合函数注入
+ * - 已编译函数注册表（`ComputedColumnDelegate`）
+ * - 编译缓存管理（列指纹 + ctx 变更检测）
+ * - 聚合解析器构建（通过 Host 接口访问 DataSet/DataRelation）
+ * - 列级聚合行计算（`computeAggregateRow` 纯函数）
+ *
+ * DataView 仅保留薄代理（setComputedContext / recomputeColumns / summaryRow getter），
+ * 所有编排逻辑委托到本文件。
  *
  * ## 表达式格式
  * ```
@@ -22,15 +26,11 @@
  * "$max('Bids', 'price')"
  * "$list('Tags', 'name').join(', ')"
  * "$join('Tags', 'name', ' | ')"    // 字符串连接，第三参数为分隔符（默认 ', '）
- *
- * // 跨表聚合引用（读取同 DataSet 内任意视图的 summaryRow / selectionSummaryRow）
- * "$summary('Orders', 'price')"               // Orders 视图的 summaryRow.price
- * "$selectionSummary('Orders', 'firstName')"  // Orders 视图的 selectionSummaryRow.firstName
  * ```
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { IDataRow, ComputedColumnFn } from '../types'
+import type { IDataRow, ComputedColumnFn, AggregateColumnConfig, DataRelation } from '../types'
 
 const logger = Logger('DataView:Computed')
 
@@ -42,25 +42,21 @@ const logger = Logger('DataView:Computed')
 export type ComputedColumnContext = Record<string, unknown>
 
 /**
- * 聚合解析器——提供子表行解析 + 跨表 summaryRow 访问。
+ * 聚合解析器——提供子表行解析（$sum/$count/$avg/$min/$max/$list/$join）。
  *
  * 视图引用格式：`'表名'` 或 `'表名@视图ID'`
  */
 export interface AggregateResolver {
   /** 解析子表匹配行（$sum/$count/$avg/$min/$max/$list/$join） */
   resolveChildRows(childRef: string, parentRow: IDataRow): IDataRow[]
-  /** 读取指定视图的 summaryRow 字段（$summary） */
-  resolveSummary?(viewRef: string, field: string): unknown
-  /** 读取指定视图的 selectionSummaryRow 字段（$selectionSummary） */
-  resolveSelectionSummary?(viewRef: string, field: string): unknown
 }
 
 // ─────────────────────────────────────────────
 // 表达式编译器
 // ─────────────────────────────────────────────
 
-/** 检测表达式中是否含有聚合/跨表函数调用 */
-const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join|summary|selectionSummary)\s*\(/
+/** 检测表达式中是否含有子表聚合函数调用 */
+const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
 
 /**
  * 将表达式字符串编译为 ComputedColumnFn。
@@ -75,7 +71,6 @@ const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join|summary|selectionSumma
  * compileExpression('price * qty')
  * compileExpression('amount * ctx.taxRate', { taxRate: 0.13 })
  * compileExpression("$sum('Items', 'amount')", undefined, resolver)
- * compileExpression("$summary('Orders', 'price')", undefined, resolver)
  */
 export function compileExpression(
   expression: string,
@@ -98,10 +93,9 @@ export function compileExpression(
     return (row: IDataRow) => compiled(row, _ctx)
   }
 
-  // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join + $summary/$selectionSummary
+  // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join
   const compiled = new Function(
-    '__row', '$sum', '$count', '$avg', '$min', '$max', '$list', '$join',
-    '$summary', '$selectionSummary', 'ctx',
+    '__row', '$sum', '$count', '$avg', '$min', '$max', '$list', '$join', 'ctx',
     body,
   ) as (
     row: IDataRow,
@@ -112,8 +106,6 @@ export function compileExpression(
     $max: (t: string, f: string) => number | undefined,
     $list: (t: string, f: string) => unknown[],
     $join: (t: string, f: string, sep?: string) => string,
-    $summary: (t: string, f: string) => unknown,
-    $selectionSummary: (t: string, f: string) => unknown,
     ctx: ComputedColumnContext,
   ) => unknown
 
@@ -148,13 +140,10 @@ export function compileExpression(
   const $join  = (t: string, f: string, sep = ', '): string =>
     getChildRows(t).map(r => String(r[f] ?? '')).join(sep)
 
-  const $summary = (t: string, f: string): unknown => resolver.resolveSummary?.(t, f)
-  const $selectionSummary = (t: string, f: string): unknown => resolver.resolveSelectionSummary?.(t, f)
-
   return (row: IDataRow) => {
     _row = row
     _cache.clear()
-    return compiled(row, $sum, $count, $avg, $min, $max, $list, $join, $summary, $selectionSummary, _ctx)
+    return compiled(row, $sum, $count, $avg, $min, $max, $list, $join, _ctx)
   }
 }
 
@@ -180,17 +169,106 @@ export function compileColumnsExpressions(
 }
 
 // ─────────────────────────────────────────────
+// Host 接口（ISP 最小子集）
+// ─────────────────────────────────────────────
+
+/**
+ * ComputedColumnDelegate 所需的宿主能力。
+ *
+ * DataView 实现此接口，delegate 仅通过此接口访问宿主状态。
+ * 遵循 ISP：只暴露计算列编排所需的最小属性集。
+ */
+export interface IComputedColumnHost {
+  readonly tableName: string
+  readonly viewId: string
+  readonly primaryKey: string | string[]
+  /** 宿主的行数据 */
+  readonly rows: IDataRow[]
+  /** DataTable 列定义（可能为 undefined——dataTable 尚未 attach） */
+  getColumns(): ReadonlyArray<{ name: string; computeExpression?: string }> | undefined
+  /** 获取 DataSet 实例（可能为 undefined——无 DataSet 上下文） */
+  getDataSet(): IComputedColumnDataSet | undefined
+}
+
+/**
+ * Delegate 所需的 DataSet 最小接口——避免导入完整 DataSet 类型。
+ */
+export interface IComputedColumnDataSet {
+  readonly relations: DataRelation[] | undefined
+  getChildRelations(parentTable: string, parentViewId: string): DataRelation[]
+  getView(tableName: string, viewId?: string): { readonly rows: IDataRow[] } | undefined
+}
+
+// ─────────────────────────────────────────────
 // ComputedColumnDelegate
 // ─────────────────────────────────────────────
 
 /**
- * 计算列委托——编译函数注册表。
+ * 计算列管理器——编译、求值、缓存的统一委托。
  *
- * 纯粹的函数 Map：存储已编译的 `ComputedColumnFn`，负责就地求值与 CRUD 剥离。
- * 不持有 DataTable / DataSet / context 引用——表达式编译和解析器构建由 DataView 负责。
+ * 通过 IComputedColumnHost 访问 DataView 状态，自身管理：
+ * - 已编译函数注册表（Map<name, fn>）
+ * - 编译缓存（列指纹 + ctx 变更检测）
+ * - 聚合解析器构建（DataRelation → 子行解析）
  */
 export class ComputedColumnDelegate {
   private _columns = new Map<string, ComputedColumnFn>()
+  private _host: IComputedColumnHost
+  private _compileCacheKey: string | undefined
+  private _ctx: ComputedColumnContext = {}
+
+  constructor(host: IComputedColumnHost) {
+    this._host = host
+  }
+
+  // ── 公共 API ─────────────────────────────────
+
+  /** 已注册的计算列名集合（CrudDelegate 用于提交前剥离）。 */
+  get names(): ReadonlySet<string> {
+    return new Set(this._columns.keys())
+  }
+
+  /** 设置计算列共享上下文，失效缓存并触发重编译。 */
+  setContext(ctx: ComputedColumnContext): void {
+    this._ctx = ctx
+    this._compileCacheKey = undefined
+    this.syncFromConfig()
+  }
+
+  /** 获取当前上下文（只读）。 */
+  get context(): ComputedColumnContext {
+    return this._ctx
+  }
+
+  /** @internal 失效编译缓存，下次 syncFromConfig 将强制重编译。 */
+  invalidateCache(): void {
+    this._compileCacheKey = undefined
+  }
+
+  /**
+   * 从宿主的 DataTable 列定义编译并注册计算列。
+   * 内置编译缓存：列指纹 + ctx 不变时跳过。
+   */
+  syncFromConfig(): void {
+    const columns = this._host.getColumns()
+    if (!columns?.length) return
+
+    // 编译缓存：列表达式指纹 + ctx 对象引用
+    const exprFingerprint = columns
+      .filter(c => c.computeExpression)
+      .map(c => `${c.name}:${c.computeExpression}`)
+      .join('|')
+    const cacheKey = `${exprFingerprint}@@${this._ctx ? JSON.stringify(this._ctx) : ''}`
+    if (cacheKey === this._compileCacheKey) return   // 缓存命中，跳过编译
+    this._compileCacheKey = cacheKey
+
+    const compiled = compileColumnsExpressions(
+      columns as Array<{ name: string; computeExpression?: string }>,
+      this._ctx,
+      this._createAggregateResolver(),
+    )
+    for (const [name, fn] of compiled) this._columns.set(name, fn)
+  }
 
   /** 注册计算列（已编译函数）。 */
   register(name: string, fn: ComputedColumnFn): void {
@@ -200,11 +278,6 @@ export class ComputedColumnDelegate {
   /** 移除计算列定义（已求值的历史数据保留）。 */
   remove(name: string): void {
     this._columns.delete(name)
-  }
-
-  /** 已注册的计算列名集合（CrudDelegate 用于提交前剥离）。 */
-  get names(): ReadonlySet<string> {
-    return new Set(this._columns.keys())
   }
 
   /** 对行集合就地写入所有计算列。无计算列时短路返回，零开销。 */
@@ -229,5 +302,139 @@ export class ComputedColumnDelegate {
   /** 清空所有状态（DataView.destroy 时调用）。 */
   destroy(): void {
     this._columns.clear()
+    this._ctx = {}
+    this._compileCacheKey = undefined
   }
+
+  // ── 内部：聚合解析器 ─────────────────────────
+
+  /**
+   * 构建聚合解析器——子表行解析。
+   */
+  private _createAggregateResolver(): AggregateResolver | undefined {
+    const ds = this._host.getDataSet()
+    if (!ds) return undefined
+
+    const relations = ds.relations?.length
+      ? ds.getChildRelations(this._host.tableName, this._host.viewId)
+      : []
+
+    // 双重索引：精确键 "childTable@childViewId" + 短键 "childTable"（取第一匹配）
+    const relMap = new Map<string, DataRelation>()
+    for (const r of relations) {
+      const vid = r.childViewId ?? 'default'
+      relMap.set(`${r.childTable}@${vid}`, r)
+      if (!relMap.has(r.childTable)) relMap.set(r.childTable, r)
+    }
+
+    const pk = this._host.primaryKey
+    const defaultParentField = typeof pk === 'string' ? pk : (pk[0] ?? 'id')
+
+    return {
+      resolveChildRows: (childRef: string, parentRow: IDataRow): IDataRow[] => {
+        const rel = relMap.get(childRef)
+        if (!rel) return []
+        const parentField = rel.parentField ?? defaultParentField
+        const parentValue = parentRow[parentField]
+        if (parentValue === null || parentValue === undefined) return []
+        const childView = ds.getView(rel.childTable, rel.childViewId ?? 'default')
+        if (!childView) return []
+        const childField = rel.childField
+        if (!childField) return []
+        return childView.rows.filter(r => r[childField] === parentValue)
+      },
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+// 聚合行计算（纯函数）
+// ─────────────────────────────────────────────
+
+/**
+ * 根据视图级聚合配置（`view.aggregates`）计算汇总行。
+ *
+ * **纯函数**——无副作用，不依赖 DataView/DataSet 实例，方便独立测试。
+ *
+ * @param aggregates 聚合配置：`{ outputName: AggregateColumnConfig }`
+ * @param rows       参与聚合的行集合
+ * @returns 汇总行对象；aggregates 为空或无行数据时返回空对象
+ */
+export function computeAggregateRow(
+  aggregates: Record<string, AggregateColumnConfig>,
+  rows: readonly IDataRow[],
+): IDataRow {
+  const aggCols = Object.entries(aggregates)
+  if (aggCols.length === 0) return {}
+
+  // 空行时提前返回每种聚合类型的默认零值
+  if (rows.length === 0) {
+    const result: IDataRow = {}
+    for (const [name, config] of aggCols) {
+      switch (config.type) {
+        case 'sum':   result[name] = 0; break
+        case 'count': result[name] = 0; break
+        case 'avg':   result[name] = 0; break
+        case 'min':   result[name] = undefined; break
+        case 'max':   result[name] = undefined; break
+        case 'join':  result[name] = ''; break
+      }
+    }
+    return result
+  }
+
+  const result: IDataRow = {}
+
+  for (const [name, config] of aggCols) {
+    const field = config.field ?? name
+    switch (config.type) {
+      case 'sum': {
+        let s = 0
+        for (const r of rows) s += Number(r[field] ?? 0)
+        result[name] = s
+        break
+      }
+      case 'count': {
+        let c = 0
+        for (const r of rows) if (r[field] !== null && r[field] !== undefined) c++
+        result[name] = c
+        break
+      }
+      case 'avg': {
+        let s = 0
+        for (const r of rows) s += Number(r[field] ?? 0)
+        result[name] = s / rows.length
+        break
+      }
+      case 'min': {
+        let m = Infinity
+        for (const r of rows) {
+          const v = Number(r[field])
+          if (!isNaN(v) && v < m) m = v
+        }
+        result[name] = m === Infinity ? undefined : m
+        break
+      }
+      case 'max': {
+        let m = -Infinity
+        for (const r of rows) {
+          const v = Number(r[field])
+          if (!isNaN(v) && v > m) m = v
+        }
+        result[name] = m === -Infinity ? undefined : m
+        break
+      }
+      case 'join': {
+        const parts: string[] = []
+        for (const r of rows) {
+          const v = r[field]
+          if (v !== null && v !== undefined && v !== '') parts.push(String(v))
+        }
+        result[name] = parts.join(',')
+        break
+      }
+    }
+  }
+
+  return result
 }
