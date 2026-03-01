@@ -161,8 +161,8 @@ describe('L3: updateRowById rejects primary key mutation', () => {
       },
     })
     const view = ds.getView('Items', 'default')!
-    // 复合主键：'A:1'
-    expect(() => view.updateRowById('A:1', { tenantId: 'B', name: 'Bad' }))
+    // 复合主键：对象形式
+    expect(() => view.updateRowById({ tenantId: 'A', itemId: 1 }, { tenantId: 'B', name: 'Bad' }))
       .toThrow(/不允许修改主键字段 "tenantId"/)
     // 原数据未改
     expect(view.rows[0]?.['tenantId']).toBe('A')

@@ -91,6 +91,53 @@ export enum ComponentLevel {
 
 // ===== 基础数据类型 =====
 
+// ── 主键值类型 ─────────────────────────────
+
+/**
+ * 标量主键值（单字段主键的实际值）。
+ *
+ * 通常来自 `row[pkField]`，经列 type 强转后为 `string` 或 `number`。
+ */
+export type ScalarPkValue = string | number
+
+/**
+ * 复合主键值（多字段主键的实际值）。
+ *
+ * 键为字段名，值为该字段经列 type 强转后的标量值。
+ * @example `{ orderId: 1, productId: 'abc' }`
+ */
+export type CompositePkValue = Record<string, ScalarPkValue>
+
+/**
+ * 主键值联合类型——单字段返回标量，多字段返回对象。
+ *
+ * - `getPrimaryKeyValue(row)`：单 PK → `ScalarPkValue`，复合 PK → `CompositePkValue`
+ * - 需要 Map/Set 索引键时，使用 `serializePkValue(pk)` 转为字符串。
+ */
+export type PkValue = ScalarPkValue | CompositePkValue
+
+/**
+ * 将任意 PkValue 序列化为可用于 Map key / `===` 比较的键。
+ *
+ * - 标量：原样返回（保持 `number` / `string` 类型不变，与 `getPkKey()` 输出一致）
+ * - 复合对象：按字段名排序后 JSON 序列化（确定性 key）
+ *
+ * @example
+ * serializePkValue(42)                          // 42   (number)
+ * serializePkValue('abc')                       // 'abc' (string)
+ * serializePkValue({ orderId: 1, pid: 'x' })   // '{"orderId":1,"pid":"x"}'
+ */
+export function serializePkValue(pk: PkValue): string | number {
+  if (typeof pk === 'string' || typeof pk === 'number') return pk
+  // 复合主键：按 key 排序保证确定性
+  const sorted = Object.keys(pk).sort()
+  const obj: Record<string, ScalarPkValue> = {}
+  for (const k of sorted) obj[k] = pk[k] as ScalarPkValue
+  return JSON.stringify(obj)
+}
+
+// ── 数据行 ──────────────────────────────────
+
 /** 数据行（带权限） */
 export type IDataRow = Record<string, unknown> & {
   _perm?: IInstancePermission

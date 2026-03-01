@@ -19,7 +19,9 @@ import type { CrudService } from '../crud-service'
 import type {
   IDataRow, CrudResult, BatchResult,
   CrudOperationConfig, QueryParams,
+  PkValue,
 } from '../types'
+import { serializePkValue } from '../types'
 import type { ValidationResult } from '../validation'
 import type { ICrudHost, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
 import { createCrudLifecycleEvent } from './types'
@@ -177,7 +179,7 @@ export class CrudDelegate {
   }
 
   /** 更新记录，成功后刷新对应行 */
-  async updateRecord(id: string | number, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
+  async updateRecord(id: PkValue, data: Partial<IDataRow>): Promise<CrudResult<IDataRow>> {
     if (!this.fireBefore('update', { id, ...data })) return this.cancelledResult('update')
 
     const cleanData = this.stripComputed(data)
@@ -190,7 +192,7 @@ export class CrudDelegate {
       const svc = this.ensureCrudService()
       const result = await svc.update<IDataRow>(id, cleanData, this.getCrudConfig())
       if (result.success && result.data) {
-        this.host.updateRowById(id, result.data)   // updateRowById 内部已发射 stateChanged('rows')
+        this.host.updateRowById(serializePkValue(id), result.data)   // updateRowById 内部已发射 stateChanged('rows')
       }
       this.fireAfter('update', { id, ...data }, result)
       return result
@@ -198,14 +200,14 @@ export class CrudDelegate {
   }
 
   /** 删除记录，成功后从 rows 移除 */
-  async deleteRecord(id: string | number): Promise<CrudResult<boolean>> {
+  async deleteRecord(id: PkValue): Promise<CrudResult<boolean>> {
     if (!this.fireBefore('delete', { id })) return this.cancelledResult('delete')
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
       const result = await svc.delete(id, this.getCrudConfig())
       if (result.success) {
-        this.host.deleteRowById(id)   // deleteRowById 内部已发射 stateChanged('rows')
+        this.host.deleteRowById(serializePkValue(id))   // deleteRowById 内部已发射 stateChanged('rows')
       }
       this.fireAfter('delete', { id }, result)
       return result
@@ -264,7 +266,7 @@ export class CrudDelegate {
         for (const r of result.data.results) {
           if (r.success && r.data) {
             const record = r.data as IDataRow
-            const id = this.host.getPrimaryKeyValue(record)
+            const id = this.host.getPkKey(record)
             if (id !== undefined) this.host.updateRowById(id, record)  // updateRowById 内部已发射
           }
         }
@@ -275,7 +277,7 @@ export class CrudDelegate {
   }
 
   /** 批量删除 */
-  async batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>> {
+  async batchDeleteRecords(ids: Array<PkValue>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchDelete', ids)) return this.cancelledResult('batchDelete')
 
     return this.withMutating(async () => {
@@ -285,8 +287,10 @@ export class CrudDelegate {
       if (result.success && result.data) {
         const successIds = new Set<string | number>()
         for (const [i, r] of result.data.results.entries()) {
-          const id = ids[i]
-          if (r.success && id !== undefined) successIds.add(id)
+          const pk = ids[i]
+          if (r.success && pk !== undefined) {
+            successIds.add(serializePkValue(pk))
+          }
         }
 
         for (const id of successIds) {

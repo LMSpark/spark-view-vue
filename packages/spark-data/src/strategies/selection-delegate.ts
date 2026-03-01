@@ -43,7 +43,7 @@ export class SelectionDelegate {
   private buildIdToRowMap(): Map<string | number, IDataRow> {
     const m = new Map<string | number, IDataRow>()
     for (const row of this.host.rows) {
-      const pk = this.host.getPrimaryKeyValue(row)
+      const pk = this.host.getPkKey(row)
       if (pk !== undefined) m.set(pk, row)
     }
     return m
@@ -97,7 +97,7 @@ export class SelectionDelegate {
    */
   setCurrentRow(row: IDataRow | null, opts?: { skipSync?: boolean; originatorId?: string }): void {
     const host = this.host
-    const newId = row !== null ? (host.getPrimaryKeyValue(row) ?? null) : null
+    const newId = row !== null ? (host.getPkKey(row) ?? null) : null
 
     // 幂等守卫：主键相同则不触发事件
     if (newId === host._currentRowId) return
@@ -132,7 +132,7 @@ export class SelectionDelegate {
     // 提取 PK，过滤掉无 PK 的行
     const newIds: Array<string | number> = []
     for (const r of rows) {
-      const pk = host.getPrimaryKeyValue(r)
+      const pk = host.getPkKey(r)
       if (pk !== undefined) newIds.push(pk)
     }
 
@@ -160,7 +160,7 @@ export class SelectionDelegate {
     this.checkDestroyed()
     const host = this.host
 
-    const row = host.rows.find(r => host.getPrimaryKeyValue(r) === id)
+    const row = host.rows.find(r => host.getPkKey(r) === id)
 
     if (!row) {
       logger.warn('setCurrentRowById: 行不存在', {
@@ -269,7 +269,7 @@ export class SelectionDelegate {
     const selectedSet = new Set(host._selectedRowIds)
     const toAddIds: Array<string | number> = []
     for (const r of rows) {
-      const pk = host.getPrimaryKeyValue(r)
+      const pk = host.getPkKey(r)
       if (pk !== undefined && !selectedSet.has(pk)) toAddIds.push(pk)
     }
     if (toAddIds.length === 0) return 0
@@ -296,7 +296,7 @@ export class SelectionDelegate {
 
     const toRemoveSet = new Set<string | number>()
     for (const r of rows) {
-      const pk = host.getPrimaryKeyValue(r)
+      const pk = host.getPkKey(r)
       if (pk !== undefined) toRemoveSet.add(pk)
     }
     if (toRemoveSet.size === 0) return 0
@@ -395,7 +395,7 @@ export class SelectionDelegate {
    */
   cleanupInvalidSelections(): boolean {
     const host = this.host
-    const rowPkSet = buildPkSet(host.rows, r => host.getPrimaryKeyValue(r))
+    const rowPkSet = buildPkSet(host.rows, r => host.getPkKey(r))
     const { currentRowPruned, selectedRowsPruned } = pruneInvalidSelections(host, rowPkSet)
 
     if (currentRowPruned) {
@@ -469,7 +469,7 @@ export class SelectionDelegate {
             return v !== undefined && v !== null ? String(v) : ''
           })
           if (tokenSet.has(parts.join(':'))) {
-            const pk = host.getPrimaryKeyValue(row)
+            const pk = host.getPkKey(row)
             if (pk !== undefined) matchedPks.push(pk)
           }
         }
@@ -482,7 +482,7 @@ export class SelectionDelegate {
       for (const row of host.rows) {
         const fv: unknown = (row as Record<string, unknown>)[field]
         if (fv !== undefined && fv !== null && tokenSet.has(String(fv))) {
-          const pk = host.getPrimaryKeyValue(row)
+          const pk = host.getPkKey(row)
           if (pk !== undefined) matchedPks.push(pk)
         }
       }
@@ -492,7 +492,7 @@ export class SelectionDelegate {
 
     // 默认：token 作为主键值，类型与首行主键保持一致
     const firstRow = host.rows[0]
-    const samplePkType = firstRow ? typeof host.getPrimaryKeyValue(firstRow) : 'string'
+    const samplePkType = firstRow ? typeof host.getPkKey(firstRow) : 'string'
     const ids: Array<string | number> = samplePkType === 'number'
       ? tokens.map(s => { const n = Number(s); return Number.isFinite(n) ? n : s })
       : tokens
@@ -510,7 +510,7 @@ export class SelectionDelegate {
       return host._selectedRowIds.map(id => String(id))
     }
     const field = host.labelField
-    const rowMap = new Map(host.rows.map(r => [host.getPrimaryKeyValue(r), r]))
+    const rowMap = new Map(host.rows.map(r => [host.getPkKey(r), r]))
     return host._selectedRowIds.map(id => {
       const row = rowMap.get(id)
       if (!row) return String(id)
