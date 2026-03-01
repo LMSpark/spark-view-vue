@@ -678,25 +678,50 @@ export class DataView implements IDataSource {
   private static _numericTypes = new Set(['number', 'int', 'integer', 'decimal', 'float', 'double'])
 
   /**
-   * 根据 DataTable 列定义的 type 强转主键值。
+   * 根据 DataTable 列定义的 type 强转主键值为 Map/Set 可用的 string | number。
    *
-   * - 列 type 为数字类 → `Number(value)`（NaN → undefined）
-   * - 列 type 为字符串类 → `String(value)`
-   * - 无列定义或其他类型 → 保留原样（string | number）
+   * 策略（按列 type 分支）：
+   * - **数字类** (`number`/`int`/`integer`/`decimal`/`float`/`double`)
+   *   → `Number(value)`（NaN → undefined）
+   * - **布尔类** (`boolean`/`bool`)
+   *   → `1` / `0`（可作为 number key，同时避免 `'true'`/`'false'` 的国际化差异）
+   * - **日期类** (`date`/`datetime`/`time`)
+   *   → ISO 字符串（Date 对象走 `toISOString()`；字符串保持原样）
+   * - **字符串/枚举/其他**
+   *   → `String(value)`（兜底：任何值都能转成唯一字符串 key）
+   *
+   * 无列定义时：
+   * - 已经是 string / number → 保持原样
+   * - 其他 → `String(value)`
    */
   private _coercePkValue(field: string, value: unknown): string | number | undefined {
-    if (typeof value === 'string' || typeof value === 'number') {
-      const col = this._dataTable?.columns?.find(c => c.name === field)
-      if (col && DataView._numericTypes.has(col.type)) {
+    // null / undefined 已在调用层排除，理论不会进入
+    if (value === null || value === undefined) return undefined
+
+    const col = this._dataTable?.columns?.find(c => c.name === field)
+
+    if (col) {
+      // 数字类 → Number
+      if (DataView._numericTypes.has(col.type)) {
         const n = Number(value)
         return isNaN(n) ? undefined : n
       }
-      if (col && (col.type === 'string' || col.type === 'varchar' || col.type === 'text')) {
+      // 布尔类 → 0 / 1（确定性数字 key）
+      if (col.type === 'boolean' || col.type === 'bool') {
+        return value ? 1 : 0
+      }
+      // 日期类 → ISO string
+      if (col.type === 'date' || col.type === 'datetime' || col.type === 'time') {
+        if (value instanceof Date) return value.toISOString()
         return String(value)
       }
-      return value
+      // 字符串 / 枚举 / object / array / 自定义 → String
+      return String(value)
     }
-    return undefined
+
+    // 无列定义：保留已知标量类型，其余 String 兜底
+    if (typeof value === 'string' || typeof value === 'number') return value
+    return String(value)
   }
 
   /**
