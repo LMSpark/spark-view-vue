@@ -32,7 +32,26 @@
  * - **pending delete 快照** (`_deleteSnapshots`)：强引用——提交失败可将行还原回 UI。
  */
 
-import type { IDataRow } from '../types'
+import type { IDataRow, DataColumn } from '../types'
+
+// ─────────────────────────────────────────────
+// Host 接口
+// ─────────────────────────────────────────────
+
+/**
+ * DirtyTrackingDelegate 的宿主接口——提供列元数据。
+ *
+ * 快照和 diff 只关心**可变业务列**：
+ * - 排除主键列（isPrimaryKey）
+ * - 排除计算列（computeExpression）
+ * - 排除权限元字段（_perm / _modelPerm）
+ */
+export interface IDirtyTrackingHost {
+  /** 返回 DataTable 列定义（未 attach 时可能返回 undefined） */
+  getColumns(): DataColumn[] | undefined
+  /** 返回计算列名集合（用于排除） */
+  getComputedColumnNames(): ReadonlySet<string>
+}
 
 // ─────────────────────────────────────────────
 // 导出类型
@@ -70,6 +89,35 @@ export interface SaveChangesData {
 // ─────────────────────────────────────────────
 
 export class DirtyTrackingDelegate {
+
+  private _host: IDirtyTrackingHost
+
+  constructor(host: IDirtyTrackingHost) {
+    this._host = host
+  }
+
+  // ── 列元数据辅助 ─────────────────────────
+
+  /**
+   * 获取"可变业务列"名集合（排除主键、计算列、权限元字段）。
+   *
+   * 快照和 diff 只关注这些字段，避免把主键变更、计算列中间值、
+   * `_perm` 权限快照混入脏数据对比。
+   *
+   * 无列定义时回退到 null（getDiff/snapshot 降级为全字段对比）。
+   */
+  private _getEditableFields(): Set<string> | null {
+    const columns = this._host.getColumns()
+    if (!columns?.length) return null
+    const computedNames = this._host.getComputedColumnNames()
+    const fields = new Set<string>()
+    for (const col of columns) {
+      if (col.isPrimaryKey) continue
+      if (col.computeExpression || computedNames.has(col.name)) continue
+      fields.add(col.name)
+    }
+    return fields.size > 0 ? fields : null
+  }
 
   // ── pending creates ───────────────────────
   /** 待新增行数据（pk → row），行从未在服务端存在，强引用保留 */
@@ -143,7 +191,15 @@ export class DirtyTrackingDelegate {
   markDirty(id: string | number, original: IDataRow): void {
     if (this._createRows.has(id)) return   // pending create 不需要 dirty 追踪
     if (!this._dirtyIds.has(id)) {
-      this._dirtySnapshots.set(id, new WeakRef({ ...original }))
+      // 只快照可变业务列（排除 pk、计算列、_perm）
+      const fields = this._getEditableFields()
+      if (fields) {
+        const snapshot: IDataRow = {}
+        for (const f of fields) snapshot[f] = original[f]
+        this._dirtySnapshots.set(id, new WeakRef(snapshot))
+      } else {
+        this._dirtySnapshots.set(id, new WeakRef({ ...original }))
+      }
     }
     this._dirtyIds.add(id)
   }
@@ -292,11 +348,21 @@ export class DirtyTrackingDelegate {
     if (!original) return {}
 
     const diff: RowDiff = {}
-    const allKeys = new Set([...Object.keys(original), ...Object.keys(current)])
-    for (const key of allKeys) {
-      const fromVal = (original as Record<string, unknown>)[key]
-      const toVal = (current as Record<string, unknown>)[key]
-      if (!Object.is(fromVal, toVal)) diff[key] = { from: fromVal, to: toVal }
+    // 优先按列定义的可变业务字段对比；无列定义时降级为全字段
+    const fields = this._getEditableFields()
+    if (fields) {
+      for (const key of fields) {
+        const fromVal = original[key]
+        const toVal = current[key]
+        if (!Object.is(fromVal, toVal)) diff[key] = { from: fromVal, to: toVal }
+      }
+    } else {
+      const allKeys = new Set([...Object.keys(original), ...Object.keys(current)])
+      for (const key of allKeys) {
+        const fromVal = (original as Record<string, unknown>)[key]
+        const toVal = (current as Record<string, unknown>)[key]
+        if (!Object.is(fromVal, toVal)) diff[key] = { from: fromVal, to: toVal }
+      }
     }
     return diff
   }
