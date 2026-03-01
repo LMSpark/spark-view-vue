@@ -15,7 +15,7 @@ function handleUserRowChange(currentRow) {
 }
 
 /**
- * 添加新用户 - 低代码：直接操作数组，UI自动更新
+ * 添加新用户
  */
 async function handleAddUser() {
   try {
@@ -33,16 +33,10 @@ async function handleAddUser() {
       inputErrorMessage: '请输入有效的邮箱地址'
     });
 
-    const dataSet = $dataSet;
-    const userTable = dataSet.getTable('Users');
-    
-    const maxId = Math.max(...userTable.rows.map(r => r.id), 0);
-    const newUser = { id: maxId + 1, name, email };
+    const usersView = $dataSet.getView('Users', 'default');
+    const maxId = Math.max(...usersView.rows.map(r => r.id), 0);
+    usersView.appendRow({ id: maxId + 1, name, email });
 
-    // 低代码：通过 DataView CRUD 操作，内核自动通知订阅者，UI 自动更新
-    const view = dataSet.getView('Users', 'default');
-    view.create(newUser);
-    
     ElMessage.success(`✅ 用户添加成功: ${name}`);
   } catch (error) {
     if (error !== 'cancel') {
@@ -53,7 +47,7 @@ async function handleAddUser() {
 }
 
 /**
- * 批量修改用户ID - 低代码：内核自动处理级联更新
+ * 批量修改用户ID（同时手动级联更新 Orders.userId）
  */
 async function handleUpdateUserIdBatch() {
   try {
@@ -69,35 +63,30 @@ async function handleUpdateUserIdBatch() {
     );
 
     const dataSet = $dataSet;
-    const userTable = dataSet.getTable('Users');
-    const ordersTable = dataSet.getTable('Orders');
-    const offsetNum = parseInt(offset);
-    
-    // 存储旧ID→新ID映射
-    const idMapping = new Map();
-    
-    // 低代码：先更新用户ID
-    userTable.rows.forEach(user => {
-      const oldId = user.id;
-      const newId = oldId + offsetNum;
-      idMapping.set(oldId, newId);
-      user.id = newId;
-    });
-    
-    // 手动级联：更新 Orders 中的 userId 外键引用
-    ordersTable.rows.forEach(order => {
-      if (idMapping.has(order.userId)) {
-        order.userId = idMapping.get(order.userId);
-      }
-    });
-    
-    // 通知 UI 刷新：replaceRows([...rows]) 触发 rowsChanged 事件
-    const usersView = dataSet.getView('Users', 'default');
+    const usersView  = dataSet.getView('Users',  'default');
     const ordersView = dataSet.getView('Orders', 'default');
-    usersView?.replaceRows([...userTable.rows]);
-    ordersView?.replaceRows([...ordersTable.rows]);
-    
-    ElMessage.success(`✅ 已批量更新 ${userTable.rows.length} 个用户ID，订单已手动级联更新`);
+    const offsetNum  = parseInt(offset);
+
+    // 构建旧ID→新ID映射，创建新行对象（不原地修改）
+    const idMapping = new Map();
+    const newUserRows = usersView.rows.map(user => {
+      const newId = user.id + offsetNum;
+      idMapping.set(user.id, newId);
+      return { ...user, id: newId };
+    });
+
+    // 级联更新 Orders.userId
+    const newOrderRows = ordersView.rows.map(order =>
+      idMapping.has(order.userId)
+        ? { ...order, userId: idMapping.get(order.userId) }
+        : order
+    );
+
+    // replaceRows 触发 rowsChanged 事件，UI 自动更新
+    usersView.replaceRows(newUserRows);
+    ordersView.replaceRows(newOrderRows);
+
+    ElMessage.success(`✅ 已批量更新 ${newUserRows.length} 个用户ID，订单已手动级联更新`);
   } catch (error) {
     if (error !== 'cancel') {
       console.error('批量更新失败:', error);
@@ -107,7 +96,7 @@ async function handleUpdateUserIdBatch() {
 }
 
 /**
- * 删除选中用户 - 低代码：内核自动处理级联删除
+ * 删除选中用户（手动级联删除子表数据）
  */
 async function handleDeleteSelectedUser() {
   if (!selectedUser) {
@@ -117,58 +106,30 @@ async function handleDeleteSelectedUser() {
 
   try {
     const dataSet = $dataSet;
-    const Users = dataSet.getTable('Users');
-    const Orders = dataSet.getTable('Orders');
-    const OrderItems = dataSet.getTable('OrderItems');
-    
+    const usersView      = dataSet.getView('Users',      'default');
+    const ordersView     = dataSet.getView('Orders',     'default');
+    const orderItemsView = dataSet.getView('OrderItems', 'default');
+
     // 统计关联数据（仅用于提示）
-    const relatedOrders = Orders.rows.filter(o => o.userId === selectedUser.id);
-    const relatedOrderIds = relatedOrders.map(o => o.id);
-    const relatedOrderItems = OrderItems.rows.filter(item => 
-      relatedOrderIds.includes(item.orderId)
-    );
+    const relatedOrders    = ordersView.rows.filter(o => o.userId === selectedUser.id);
+    const relatedOrderIds  = new Set(relatedOrders.map(o => o.id));
+    const relatedItemCount = orderItemsView.rows.filter(item => relatedOrderIds.has(item.orderId)).length;
 
     await ElMessageBox.confirm(
       `确定要删除用户 "${selectedUser.name}" 吗？\n\n⚠️ 这将会级联删除：\n` +
       `• ${relatedOrders.length} 个订单\n` +
-      `• ${relatedOrderItems.length} 个订单明细`,
+      `• ${relatedItemCount} 个订单明细`,
       '危险操作',
-      {
-        confirmButtonText: '确定删除',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
+      { confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning' }
     );
 
-    const index = Users.rows.findIndex(u => u.id === selectedUser.id);
-    
-    if (index !== -1) {
-      // 级联删除：手动处理子表（从最深层开始）
-      
-      // 1. 找到关联的 Order ID
-      const relatedOrderIds = Orders.rows.filter(o => o.userId === selectedUser.id).map(o => o.id);
-      
-      // 2. 删除 OrderItems（子表先删）
-      const remainingItems = OrderItems.rows.filter(item => !relatedOrderIds.includes(item.orderId));
-      OrderItems.rows.splice(0, OrderItems.rows.length, ...remainingItems);
-      
-      // 3. 删除 Orders
-      const remainingOrders = Orders.rows.filter(o => o.userId !== selectedUser.id);
-      Orders.rows.splice(0, Orders.rows.length, ...remainingOrders);
-      
-      // 4. 删除 User
-      Users.rows.splice(index, 1);
-      
-      // 5. 通知所有视图刷新：replaceRows 触发 rowsChanged 事件
-      dataSet.getView('Users', 'default')?.replaceRows([...Users.rows]);
-      dataSet.getView('Orders', 'default')?.replaceRows([...Orders.rows]);
-      dataSet.getView('OrderItems', 'default')?.replaceRows([...OrderItems.rows]);
-      
-      ElMessage.success(
-        `✅ 用户删除成功！\n级联删除了 ${relatedOrders.length} 个订单和 ${relatedOrderItems.length} 个明细`
-      );
-      selectedUser = null;
-    }
+    // 级联删除：从最深层开始，全部用 replaceRows 触发事件
+    orderItemsView.replaceRows(orderItemsView.rows.filter(item => !relatedOrderIds.has(item.orderId)));
+    ordersView.replaceRows(ordersView.rows.filter(o => o.userId !== selectedUser.id));
+    usersView.deleteRowById(selectedUser.id);
+
+    ElMessage.success(`✅ 用户删除成功！\n级联删除了 ${relatedOrders.length} 个订单和 ${relatedItemCount} 个明细`);
+    selectedUser = null;
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除失败:', error);
