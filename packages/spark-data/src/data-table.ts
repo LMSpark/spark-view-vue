@@ -17,20 +17,11 @@
 
 import { DataView } from './data-view'
 import { RequestState } from './types'
-import { reactive } from 'vue'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { DataSet } from './dataset'
 import { DataValidator, createValidator, createSchema } from './validation'
 import { CrudService, createCrudService } from './crud-service'
 import { assertNoSeparator, resolveApi } from './core/utils'
-
-/**
- * 创建响应式 DataView（统一 reactive 包装，所有视图创建走此入口）
- * @internal
- */
-function createReactiveView(tableName: string, viewId: string): DataView {
-  return reactive(new DataView(tableName, viewId)) as DataView
-}
 
 /**
  * DataTable - 管理单表的结构定义与配置
@@ -97,7 +88,7 @@ export class DataTable {
     assertNoSeparator(tableName, 'tableName')
     this.tableName = tableName
     this.columns = columns
-    const defaultView = createReactiveView(tableName, 'default')
+    const defaultView = DataView.create(tableName, 'default')
     defaultView.dataTable = this   // 提前设置引用，使 view.primaryKey getter 可访问列定义
     this.views['default'] = defaultView
     // 初始化数据校验器
@@ -155,7 +146,7 @@ export class DataTable {
    */
   getOrCreateView(viewId: string): DataView {
     if (!this.views[viewId]) {
-      const view = createReactiveView(this.tableName, viewId)
+      const view = DataView.create(this.tableName, viewId)
       // 始终设置 dataTable 引用（使 view.primaryKey getter 可访问列定义）
       view.dataTable = this
       // 视图管理职责：设置级联
@@ -290,7 +281,7 @@ export class DataTable {
     if (data.views) {
       for (const [cid, cd] of Object.entries(data.views)) {
         if (cid === 'default') continue
-        const namedView = reactive(DataView.fromData(cd, t.tableName, cid)) as DataView
+        const namedView = DataView.fromData(cd, t.tableName, cid)
         namedView.dataTable = t   // 确保 primaryKey getter 可访问列定义
         t.views[cid] = namedView
       }

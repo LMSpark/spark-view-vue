@@ -6,7 +6,6 @@ import { DataSet } from './dataset'
 import { TreeManager } from './tree-manager'
 import { DataTable } from './data-table'
 import { DataView } from './data-view'
-import { reactive } from 'vue'
 import { CrudService } from './crud-service'
 import { parseDataKey as _parseDataKey, resolveDataKey as _resolveDataKey, isDataKey as _isDataKey, buildDataKey as _buildDataKey, getViewKey as _getViewKey, resolveDataKeyBinding as _resolveDataKeyBinding } from './core/data-key'
 import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig } from './types'
@@ -141,7 +140,7 @@ export namespace SparkData {
     /** 每页条数 */
     pageSize?: number
   }): DataView {
-    const view = reactive(new DataView(config.tableName, config.viewId)) as DataView
+    const view = DataView.create(config.tableName, config.viewId)
     // 所有视图配置字段由 applyViewConfig 集中赋值，单一来源
     view.applyViewConfig(config)
     return view
