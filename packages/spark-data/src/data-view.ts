@@ -550,6 +550,10 @@ export class DataView implements IDataSource {
     this._dirtyTrackingDelegate ??= markRaw(new DirtyTrackingDelegate({
       getColumns: () => this._dataTable?.columns,
       getComputedColumnNames: () => this._computedDelegate.names,
+      getPrimaryKeyFields: () => {
+        const pk = this.primaryKey
+        return typeof pk === 'string' ? [pk] : pk
+      },
     }))
     return this._dirtyTrackingDelegate
   }
@@ -690,7 +694,7 @@ export class DataView implements IDataSource {
       if (col && (col.type === 'string' || col.type === 'varchar' || col.type === 'text')) {
         return String(value)
       }
-      return value as string | number
+      return value
     }
     return undefined
   }

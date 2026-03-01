@@ -51,6 +51,17 @@ export interface IDirtyTrackingHost {
   getColumns(): DataColumn[] | undefined
   /** 返回计算列名集合（用于排除） */
   getComputedColumnNames(): ReadonlySet<string>
+  /**
+   * 返回实际生效的主键字段名数组。
+   *
+   * 主键来源优先级（与 DataView.primaryKey getter 一致）：
+   * 1. 显式覆盖值（`view.primaryKey = ['orderId', 'productId']`）
+   * 2. 列定义 `isPrimaryKey: true`
+   * 3. 回退 `['id']`
+   *
+   * 返回数组而非 string | string[]，方便统一迭代。
+   */
+  getPrimaryKeyFields(): string[]
 }
 
 // ─────────────────────────────────────────────
@@ -109,10 +120,14 @@ export class DirtyTrackingDelegate {
   private _getEditableFields(): Set<string> | null {
     const columns = this._host.getColumns()
     if (!columns?.length) return null
+
+    // 实际生效的主键字段（可能来自 override 而非 col.isPrimaryKey）
+    const pkFields = new Set(this._host.getPrimaryKeyFields())
     const computedNames = this._host.getComputedColumnNames()
     const fields = new Set<string>()
     for (const col of columns) {
-      if (col.isPrimaryKey) continue
+      // 排除主键列——同时兼顾 col.isPrimaryKey 标记和实际 primaryKey 覆盖
+      if (col.isPrimaryKey || pkFields.has(col.name)) continue
       if (col.computeExpression || computedNames.has(col.name)) continue
       fields.add(col.name)
     }
