@@ -33,7 +33,7 @@ function toKebabCase(str: string): string {
  * tableName → 约定 API 基础路径（`/api/${kebab-case}`）
  * @internal
  */
-export function toApiBasePath(tableName: string): string {
+function toApiBasePath(tableName: string): string {
   return `/api/${toKebabCase(tableName)}`
 }
 
