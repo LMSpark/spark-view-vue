@@ -38,16 +38,16 @@ function handleUserSelect(row) {
   if (!dataSet || !row) return
   
   console.log('👤 选中用户:', row)
-  
-  // 通过视图设置当前行（内核会自动触发关系过滤）
-  const view = dataSet.getView('Users', 'default')
-  view?.setCurrentRow(row)
-  
-  // 检查子表视图是否已加载过数据（requestState: 0=Idle 表示未加载）
+
+  // ⚠️ 不要在此调用 view.setCurrentRow(row)！
+  // injectTableEvents（bindRules.ts）已在此回调之后通过 PK 查找干净行并调用 setCurrentRow。
+  // 此处拿到的 row 可能被 form-create 污染（加了 $f/api/rule 属性），直接传入会触发 WARN。
+  // 应用层只需处理业务逻辑（加载子表、更新 UI 状态），DataView 同步由框架负责。
+
+  // 检查子表视图是否已配置 API（演示环境内联数据，无需加载）
   const ordersView = dataSet.getView('Orders', 'default')
   const itemsView = dataSet.getView('OrderItems', 'default')
   
-  // 检查子表视图是否配置了 API（演示环境内联数据，无需加载）
   if (ordersView && ordersView.table?.api?.list && ordersView.requestState === 0) {
     console.log('🔄 检测到 Orders 有 API 且数据未加载，触发按需加载...')
     ordersView.loadFromServer()
