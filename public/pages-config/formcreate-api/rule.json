@@ -244,6 +244,7 @@
               "padding": "10px",
               "borderRadius": "4px"
             },
+            "props": { "id": "api-log-container" },
             "children": [
               {
                 "type": "RenderApiLog"

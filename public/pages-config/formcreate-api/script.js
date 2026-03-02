@@ -6,19 +6,38 @@
 // 沙箱注入的全局变量: 
 // - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
 
-// 模块级 UI 状态（非 DataSet 数据，不具备 Vue 响应式，变更后需调用 $rebindRules() 刷新）
+// 模块级 UI 状态
 let _pageState = {
   apiLog: [],       // API 调用日志列表
   showAdvanced: false  // 是否显示高级选项
 }
 
-// 添加日志
+// 日志颜色映射
+const _logColors = { info: '#409EFF', success: '#67C23A', warning: '#E6A23C', error: '#F56C6C' }
+
+// 添加日志（直接操作 DOM，不经 $rebindRules，避免表单值被重置）
 function addLog(message, type = 'info') {
   const timestamp = new Date().toLocaleTimeString()
   _pageState.apiLog.unshift({ time: timestamp, message, type })
   if (_pageState.apiLog.length > 50) _pageState.apiLog = _pageState.apiLog.slice(0, 50)
   console.log(`[${timestamp}] ${message}`)
-  $rebindRules()  // _pageState 非响应式，必须手动触发 RenderApiLog 重新执行
+  _flushLogDOM()
+}
+
+// 将 _pageState.apiLog 渲染到 #api-log-container（纯 DOM，不触发 form-create 规则重建）
+function _flushLogDOM() {
+  const el = $query('#api-log-container')
+  if (!el) return
+  if (_pageState.apiLog.length === 0) {
+    el.innerHTML = '<div style="color:#999;text-align:center;padding:20px">暂无日志</div>'
+    return
+  }
+  el.innerHTML = _pageState.apiLog.map(function (log) {
+    const c = _logColors[log.type] || _logColors.info
+    return '<div style="margin-bottom:8px;padding:8px;background:#fff;border-radius:4px;border-left:3px solid ' + c + '">' +
+      '<span style="color:#999;margin-right:10px">' + log.time + '</span>' +
+      '<span style="color:' + c + '">' + log.message + '</span></div>'
+  }).join('')
 }
 
 /**
@@ -193,31 +212,19 @@ function handleUserTypeChange(userType) {
  * 自定义渲染：API 调用日志
  */
 function RenderApiLog() {
+  // 初始渲染（首次挂载时由 form-create 调用）
+  // 后续更新由 _flushLogDOM() 直接操作 DOM，不经 form-create
   const logs = _pageState.apiLog || []
-  
   if (logs.length === 0) {
     return h('div', { style: 'color: #999; textAlign: center; padding: 20px' }, '暂无日志')
   }
-  
   return h('div', logs.map(log => {
-    const colors = {
-      info: '#409EFF',
-      success: '#67C23A',
-      warning: '#E6A23C',
-      error: '#F56C6C'
-    }
-    
+    const c = _logColors[log.type] || _logColors.info
     return h('div', {
-      style: {
-        marginBottom: '8px',
-        padding: '8px',
-        background: '#fff',
-        borderRadius: '4px',
-        borderLeft: `3px solid ${colors[log.type] || colors.info}`
-      }
+      style: { marginBottom: '8px', padding: '8px', background: '#fff', borderRadius: '4px', borderLeft: '3px solid ' + c }
     }, [
       h('span', { style: 'color: #999; marginRight: 10px' }, log.time),
-      h('span', { style: { color: colors[log.type] || colors.info } }, log.message)
+      h('span', { style: { color: c } }, log.message)
     ])
   }))
 }
