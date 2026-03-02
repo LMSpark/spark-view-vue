@@ -160,7 +160,23 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       cleanupSync = currentDataSet.onAnyViewChange({
         currentRowChanged(tableName, viewId, currentRow, originatorId) {
           if (originatorId === instanceId) return
-          syncCurrentRowToTable(tableName, viewId, currentRow, formApi.value)
+          if (currentRow === null) {
+            syncCurrentRowToTable(tableName, viewId, null, formApi.value)
+            return
+          }
+          // DataView.wrapInstance 使用 Vue reactive() 包装；el-table 的 :data 里存的是 reactive proxy。
+          // el-table.setCurrentRow() 用 === 比较，直接传原始对象（raw row）会找不到行，背景不变色。
+          // 通过 reactive DataView 的 rows 数组查找同 PK 的 reactive proxy 版本再传入。
+          const view = currentDataSet.getTable(tableName)?.getView(viewId)
+          if (view) {
+            const pk = view.getPkKey(currentRow)
+            const reactiveRow = pk !== undefined
+              ? view.rows.find(r => view.getPkKey(r) === pk) ?? currentRow
+              : currentRow
+            syncCurrentRowToTable(tableName, viewId, reactiveRow, formApi.value)
+          } else {
+            syncCurrentRowToTable(tableName, viewId, currentRow, formApi.value)
+          }
         },
         selectedRowsChanged(tableName, viewId, selectedRows, originatorId) {
           if (originatorId === instanceId) return
