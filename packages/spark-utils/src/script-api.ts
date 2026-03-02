@@ -86,37 +86,210 @@ export interface IFormAPI {
   on(event: string, callback: (...args: unknown[]) => void): void
 }
 
-// ==================== DataSet 最小接口 ====================
+// ==================== DataSet / DataView 脚本接口 ====================
 
 /**
- * DataSet 的最小可用接口（框架无关，不依赖 @spark-view/spark-data 包）。
+ * 数据行。键为字段名，值为任意类型。
+ * 与 spark-data 中 `IDataRow` 结构完全对齐，但定义在 spark-utils 层，
+ * 避免脚本层对 spark-data 产生包依赖。
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type IScriptDataRow = Record<string, any>
+
+/**
+ * DataView 事件映射——供脚本订阅 `view.events.on(...)` 时获得类型推断。
  *
- * 供 `IScriptContext.$dataSet` 类型使用，避免 spark-utils 对 spark-data 产生包依赖。
- * 渲染层（spark-component）会以更具体的 `IDataSet` 类型覆盖此声明。
+ * 与 `DataViewEventMap`（spark-data 内部）结构完全对齐。
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface IScriptDataViewEventMap extends Record<string, any[]> {
+  /** 当前行变化 */
+  currentRowChanged: [currentRow: IScriptDataRow | null, originatorId?: string]
+  /** 选中行变化 */
+  selectedRowsChanged: [selectedRows: IScriptDataRow[], originatorId?: string]
+  /** 行数据批量变化（防抖 16ms） */
+  rowsChanged: []
+  /** 数据已清空 */
+  cleared: []
+  /** 请求状态变化（'idle' | 'loading' | 'loaded' | 'failed'） */
+  requestStateChanged: [requestState: string]
+  /** CRUD 变更中状态变化 */
+  mutatingChanged: [mutating: boolean]
+  /** summaryRow 已重算 */
+  summaryChanged: []
+  /** selectionSummaryRow 已重算 */
+  selectionSummaryChanged: []
+}
+
+/**
+ * DataView 脚本可用接口。
  *
- * 脚本中的 `$dataSet` 会在运行时注入完整 `DataSet` 实例，
- * 具体方法见 `@spark-view/spark-data` 的 `IDataSet` 接口文档。
+ * 与 `DataView` 类（spark-data）暴露的公开 API 完全对齐，
+ * 定义在 spark-utils 层，无包循环依赖，享受完整 IDE 补全。
  *
- * @see IScriptContext.$dataSet
+ * @example
+ * ```js
+ * // script.js
+ * function __init__() {
+ *   const view = $dataSet?.getView('Orders', 'default')
+ *   if (!view) return
+ *
+ *   // 读取当前行
+ *   const row = view.currentRow
+ *
+ *   // 替换所有行
+ *   view.replaceRows([{ id: 1, name: '张三' }])
+ *
+ *   // 订阅行数据变化
+ *   view.events.on('rowsChanged', () => {
+ *     console.log('行数据已变化，当前数量：', view.rows.length)
+ *   })
+ *
+ *   // 订阅当前行变化
+ *   view.events.on('currentRowChanged', (row) => {
+ *     console.log('当前行：', row)
+ *   })
+ * }
+ * ```
+ */
+export interface IScriptDataView {
+  // ── 标识 ──────────────────────────────────────────────────────────────
+  /** 所属数据表名 */
+  readonly tableName: string
+  /** 视图 ID（默认为 `'default'`） */
+  readonly viewId: string
+
+  // ── 行数据（可直接读写，写操作推荐走对应方法以触发事件） ──────────────
+  /** 当前视图的全量行数据 */
+  rows: IScriptDataRow[]
+  /** 当前聚焦行（null = 未选中） */
+  readonly currentRow: IScriptDataRow | null
+  /** 当前多选行集合 */
+  readonly selectedRows: IScriptDataRow[]
+  /** 全部行聚合汇总行（由 aggregates 配置驱动，自动维护） */
+  readonly summaryRow: Readonly<IScriptDataRow>
+  /** 选中行聚合汇总行（仅选中行的聚合，自动维护） */
+  readonly selectionSummaryRow: Readonly<IScriptDataRow>
+
+  // ── 分页 ──────────────────────────────────────────────────────────────
+  /** 当前页码（1-based） */
+  page: number
+  /** 每页行数 */
+  pageSize: number
+  /** 总行数（服务端分页时表示全量总数） */
+  total: number
+
+  // ── 状态 ──────────────────────────────────────────────────────────────
+  /**
+   * 请求状态机：`'idle' | 'loading' | 'loaded' | 'failed'`。
+   * 可通过 `events.on('requestStateChanged', state => ...)` 监听变化。
+   */
+  requestState: string
+  /** CRUD 增删改批请求进行中（与 requestState 独立） */
+  mutating: boolean
+
+  // ── 事件总线 ──────────────────────────────────────────────────────────
+  /** 视图事件总线，用于订阅行变化、选择变化等（见 IScriptDataViewEventMap） */
+  events: IEventEmitterLike<IScriptDataViewEventMap>
+
+  // ── 行 CRUD ───────────────────────────────────────────────────────────
+  /** 替换全量行数据（触发 rowsChanged 事件，自动重算 summaryRow） */
+  replaceRows(rows: IScriptDataRow[]): void
+  /** 追加单行（触发 rowsChanged 事件，自动重算 summaryRow） */
+  appendRow(row: IScriptDataRow): void
+  /**
+   * 按主键更新单行的部分字段。
+   * @returns true=更新成功，false=指定 id 不存在
+   */
+  updateRowById(id: string | number, data: Partial<IScriptDataRow>): boolean
+  /**
+   * 按主键删除单行。
+   * @returns true=删除成功，false=指定 id 不存在
+   */
+  deleteRowById(id: string | number): boolean
+
+  // ── 选择操作 ──────────────────────────────────────────────────────────
+  /** 设置当前行（传 null 清空当前行，触发 currentRowChanged 事件） */
+  setCurrentRow(row: IScriptDataRow | null): void
+  /** 设置多选行集合（触发 selectedRowsChanged 事件，自动重算 selectionSummaryRow） */
+  setSelectedRows(rows: IScriptDataRow[]): void
+  /** 清空选中行（等效于 setSelectedRows([])） */
+  clearSelectedRows(): void
+
+  // ── 计算列 ────────────────────────────────────────────────────────────
+  /**
+   * 注入计算列上下文（对应 `ctx.xxx` 表达式）。
+   * `setComputedContext` 后自动重算所有计算列并触发 rowsChanged。
+   *
+   * @example view.setComputedContext({ taxRate: 0.13 })
+   */
+  setComputedContext(ctx: Record<string, unknown>): void
+  /** 强制重算所有计算列（通常无需手动调用，行操作后自动触发） */
+  recomputeColumns(): void
+
+  // ── 分页操作（服务端分页）──────────────────────────────────────────────
+  /** 跳转到指定页码（服务端分页时触发请求） */
+  setPage(page: number): Promise<void>
+  /** 更新每页行数（服务端分页时触发请求） */
+  setPageSize(pageSize: number): Promise<void>
+}
+
+/**
+ * 最小事件总线接口（IEventEmitter 的结构子集），
+ * 供 `IScriptDataView.events` 字段使用，不引入 IEventEmitter 全部方法。
+ *
+ * 运行时注入的是完整 `IEventEmitter<DataViewEventMap>` 实例，
+ * 结构类型兼容无需强转。
+ */
+export interface IEventEmitterLike<TMap extends Record<string, unknown[]>> {
+  on<K extends string & keyof TMap>(event: K, handler: (...args: TMap[K]) => void): void
+  off<K extends string & keyof TMap>(event: K, handler: (...args: TMap[K]) => void): void
+}
+
+/**
+ * DataSet 脚本可用接口（框架无关，不依赖 @spark-view/spark-data 包）。
+ *
+ * 与 `IDataSet`（spark-data）公开 API 完全对齐，`getView()` 返回
+ * `IScriptDataView`（完整视图接口），为脚本提供完善的 IDE 补全与类型安全。
+ *
+ * @example
+ * ```js
+ * // script.js
+ * const view = $dataSet?.getView('Orders', 'default')
+ * const rows = view?.rows                         // IScriptDataRow[]
+ * await $dataSet?.getView('Orders')?.setPage(2)  // 翻页
+ * ```
  */
 export interface IDataSetLike {
   /** 数据集名称 */
   readonly dataSetName: string
-  /** 获取数据表（返回类型由实现层决定） */
-  getTable(name: string): unknown
   /**
    * 获取数据视图（DataView）。
-   * 视图提供 `rows / currentRow / selectedRows / summaryRow` 等字段绑定。
+   *
+   * 视图提供行数据读写、选择操作、事件订阅等完整 API（见 `IScriptDataView`）。
+   * @param tableName 数据表名
+   * @param viewId    视图 ID（缺省 `'default'`）
    */
-  getView(tableName: string, viewId?: string): unknown
+  getView(tableName: string, viewId?: string): IScriptDataView | undefined
   /**
-   * 订阅 DataSet 级别事件。
+   * 订阅 DataSet 级别的加载事件（覆盖所有已注册表的所有视图）。
    * @returns 取消订阅函数（组件卸载时调用）
    */
   on(
     event: 'loadSuccess' | 'loadError',
     handler: (payload: { tableName: string; viewId: string; error?: Error }) => void
   ): () => void
+  /**
+   * 订阅此 DataSet 内任意视图的状态变化。
+   * @returns 取消订阅函数（组件卸载时调用）
+   */
+  onAnyViewChange(handlers: {
+    currentRowChanged?: (tableName: string, viewId: string, currentRow: IScriptDataRow | null) => void
+    selectedRowsChanged?: (tableName: string, viewId: string, selectedRows: IScriptDataRow[]) => void
+    rowsChanged?: (tableName: string, viewId: string) => void
+    cleared?: (tableName: string, viewId: string) => void
+    requestStateChanged?: (tableName: string, viewId: string, state: string) => void
+  }): () => void
   /** 触发所有 `autoLoad: true` 视图自动加载（渲染层已自动调用，脚本无需手动触发） */
   triggerAutoLoad(): void
 }
@@ -154,7 +327,12 @@ export interface IDataSetLike {
  * const id = $route.params.id
  *
  * // 访问数据
- * const rows = $dataSet?.getView('Orders', 'default')?.rows
+ * const view = $dataSet?.getView('Orders', 'default')
+ * const rows = view?.rows               // IScriptDataRow[]
+ * const current = view?.currentRow      // IScriptDataRow | null
+ *
+ * // 订阅事件
+ * view?.events.on('rowsChanged', () => { console.log('数据已刷新') })
  *
  * // UI 交互（框架无关）
  * await $page.showConfirm('是否确认提交？')
@@ -199,12 +377,16 @@ export interface IScriptContext {
 
   /**
    * 页面级 DataSet 实例（数据唯一入口）。
-   * 通过 DataKey（如 `OrderDS@Orders@default@rows`）绑定到 UI 组件。
    *
-   * 运行时类型为完整 `DataSet`（实现 `IDataSet` 接口），
-   * 此处声明为 `IDataSetLike` 仅为避免 spark-utils → spark-data 包依赖。
+   * `getView(tableName, viewId?)` 返回 `IScriptDataView`，提供：
+   * - `rows / currentRow / selectedRows / summaryRow / selectionSummaryRow`
+   * - `replaceRows / appendRow / updateRowById / deleteRowById`
+   * - `setCurrentRow / setSelectedRows / clearSelectedRows`
+   * - `setPage / setPageSize`（服务端分页）
+   * - `events.on('rowsChanged' | 'currentRowChanged' | ...)`
    *
-   * @see https://spark-view/docs/data-key - DataKey 规范
+   * @see IScriptDataView — 视图完整 API
+   * @see IDataSetLike — DataSet 完整 API
    */
   $dataSet: IDataSetLike | null
 
