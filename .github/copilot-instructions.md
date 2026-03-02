@@ -146,6 +146,79 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 { "dataKey": "UserOrderDataSet@Users@default@rows" }
 ```
 
+## 页面脚本 (script.js) 沙箱规范 📜
+
+`public/pages-config/**/script.js` 在 `with (__ctx)` 沙箱内执行，**可直接使用**以下注入变量：
+
+| 变量 | 类型 | 说明 |
+|------|------|------|
+| `$api` | FormCreate API | 读写表单字段值（`$api.getValue / setValue`） |
+| `$route` | `RouteLocationNormalizedLoaded` | 当前路由 |
+| `$el` | `() => HTMLElement \| null` | 页面容器元素 |
+| `$query` | `(sel) => HTMLElement \| null` | DOM 单元素查询 |
+| `$queryAll` | `(sel) => NodeListOf<Element>` | DOM 多元素查询 |
+| `$dataSet` | `IDataSet \| null` | **页面级 DataSet**（数据唯一入口） |
+| `$rebindRules` | `() => void` | 触发 form-create 重建规则（谨慎调用，会重置展开状态等） |
+| `$refreshData` | `(key?) => Promise<void>` | 刷新数据（可选指定表名） |
+| `$page` | `IPageServiceCapability` | UI 消息、导航 |
+| `ElMessage` | Element Plus | 消息提示（直接调用） |
+| `ElMessageBox` | Element Plus | 确认框（直接调用） |
+| `SparkData` | SparkData 命名空间 | `createTreeManager` 等工具 |
+| `h` | Vue `h` 函数 | 渲染函数（直接使用，无需解构） |
+
+### ❗ 脚本禁止事项
+
+| 禁止 | 原因 | 替代方案 |
+|------|------|---------|
+| `$data` | 已移除 | `$dataSet`（数据）/ `_pageState`（UI 状态） |
+| `window.xxx = function` | 沙箱内变量无需挂 window | 直接用 `function xxx() {}` 声明 |
+| `window.Vue` | `h` 已直接注入 | 直接用 `h(...)` |
+| `$data._imports.ElMessage` | legacy hack | 直接用 `ElMessage`（已注入） |
+| `import` 语句 | 沙箱不支持 ESM | 所有依赖通过沙箱注入 |
+
+### UI 状态存储模式
+
+脚本需要跨函数共享的 UI 状态（非 DataSet 数据）用**模块级闭包变量**代替原来的 `$data`：
+
+```javascript
+// ✅ 正确：模块顶部声明闭包状态
+let _pageState = { currentUser: '', tableData: [], selectedNode: null }
+
+function handleSelect(node) {
+  _pageState.selectedNode = node     // 写入闭包变量
+  $rebindRules()                     // 如果渲染函数读取该状态，需手动触发重绑
+}
+
+// 渲染函数通过 _pageState 读值（每次 $rebindRules() 时重新执行）
+function RenderNodeInfo() {
+  const node = _pageState.selectedNode
+  return h('div', node?.name ?? '未选择')
+}
+```
+
+> **注意**：`_pageState` 是普通 JS 对象，**不具备 Vue 响应式**。变更后若需 UI 刷新，
+> 必须调用 `$rebindRules()`（form-create 重建规则），或通过 `$dataSet` 的 DataView
+> 方法（如 `view.replaceRows()`）驱动——DataView 事件会自动更新订阅了该视图的组件，
+> 无需 `$rebindRules()`。
+
+### 数据访问模式
+
+```javascript
+// ✅ 读取行数据
+const rows = $dataSet?.getView('Orders', 'default')?.rows
+
+// ✅ 订阅数据变化（在 __init__ 中注册）
+function __init__() {
+  const view = $dataSet?.getView('Orders', 'default')
+  view?.events.on('rowsChanged', () => {
+    ElMessage.success(`加载了 ${view.rows.length} 条`)
+  })
+}
+
+// ✅ 操作数据（无需 $rebindRules）
+$dataSet?.getView('Items', 'default')?.replaceRows(newRows)
+```
+
 ## 权限架构（统一后端验证 + 前端权限渲染）🔐
 
 SPARK 采用 **统一后端验证** 架构，前端 **不做** 权限判定，仅负责根据服务端下发的权限数据自动渲染 UI。
