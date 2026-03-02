@@ -24,7 +24,8 @@ import {
   type App, type Ref, type Component, type ShallowRef,
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability, type IPageRoute, type IFormAPI } from '@spark-view/spark-utils'
+import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IPageRoute, IFormAPI } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../capability-keys'

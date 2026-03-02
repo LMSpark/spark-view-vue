@@ -14,7 +14,8 @@
 import type { Component, h } from 'vue'
 import type { IDataSet, SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
-import type { IPageServiceCapability, IScriptContext } from '@spark-view/spark-utils'
+import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IScriptContext } from '@spark-view/spark-page-config'
 import type { ComponentRegistry } from '../../core/types.js'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
