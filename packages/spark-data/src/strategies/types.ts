@@ -5,7 +5,7 @@
  * 遵循 ISP 原则：Delegate 只依赖自己需要的方法。
  */
 
-import type { IDataRow, IDataSet, CrudResult, CrudOperationConfig } from '../types'
+import type { IDataRow, IDataSet, CrudResult, CrudOperationConfig, RequestState } from '../types'
 import type { CrudService } from '../crud-service'
 import type { DataValidator } from '../validation'
 
@@ -170,7 +170,7 @@ export interface ICascadeHost extends IViewIdentity {
   /** DataSet（沿 parent 链向上访问） */
   readonly dataSet: IDataSet
   /** 只读，级联时检查状态 */
-  readonly requestState: import('../types').RequestState
+  readonly requestState: RequestState
   /** 静默重置状态（requestState→Idle，清空行和选中） */
   resetState(): void
   /**

@@ -7,6 +7,9 @@
  * 日志级别（从 spark-utils 统一导入）
  */
 import type { LogLevel } from '@spark-view/spark-utils'
+import type { App } from 'vue'
+import type { Router } from 'vue-router'
+import type { AuthConfig } from '../auth'
 export type { LogLevel }
 
 /**
@@ -109,9 +112,9 @@ export interface AppConfig {
  */
 export interface BootstrapContext extends AppContext {
   /** Vue 应用实例 */
-  app: import('vue').App
+  app: App
   /** Vue Router 实例 */
-  router: import('vue-router').Router
+  router: Router
 }
 
 /**
@@ -119,13 +122,13 @@ export interface BootstrapContext extends AppContext {
  */
 export interface BootstrapOptions {
   /** Vue 应用实例 */
-  app: import('vue').App
+  app: App
   /** Vue Router 实例 */
-  router: import('vue-router').Router
+  router: Router
   /** 应用配置 */
   config: AppConfig
   /** 认证配置（可选，不提供则使用 authenticate 函数） */
-  auth?: import('../auth').AuthConfig
+  auth?: AuthConfig
   /** 挂载目标元素选择器（默认 '#app'） */
   mountTarget?: string
   /** 挂载前钩子 */

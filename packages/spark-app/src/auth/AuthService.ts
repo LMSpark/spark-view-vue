@@ -613,6 +613,7 @@ export class AuthService implements IAuthService {
    * @private
    * @returns Mock 认证结果
    */
+  // eslint-disable-next-line @typescript-eslint/require-await -- implements async interface contract; mock returns synchronously
   private async mockCheckAuth(): Promise<AuthResult> {
     authLogger.debug('🎭 [Mock] 模拟认证检查')
 

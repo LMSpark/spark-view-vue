@@ -468,11 +468,11 @@ export interface IDataSetMetadata {
 
 /** 依赖类型 */
 export type DependencyType =
+  | (string & {})
   | 'currentRow'
   | 'selectedRows'
   | 'allRows'
   | 'pagedRows'
-  | string
 
 /** 排序方向 */
 export type SortDirection = 'asc' | 'desc' | 'ASC' | 'DESC'

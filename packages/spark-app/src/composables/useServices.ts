@@ -27,9 +27,7 @@
 
 import { inject } from 'vue'
 import { SPARK_REGISTRY_KEY } from '../constants'
-
-// 外部类型（从相应包导入）
-type SparkRegistry = import('@spark-view/spark-component').ComponentRegistry
+import type { ComponentRegistry as SparkRegistry } from '@spark-view/spark-component'
 
 // ============================================================================
 // 核心基础设施 Composables（仅保留 SPARK 组件系统必需）

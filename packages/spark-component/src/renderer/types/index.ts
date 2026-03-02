@@ -11,8 +11,10 @@
  * 3. 绑定和渲染使用 Rule[]（FormCreate 标准格式）
  */
 
-import type { Component } from 'vue'
+import type { Component, h } from 'vue'
 import type { IDataSet } from '@spark-view/spark-data'
+import type { ElMessage, ElMessageBox } from 'element-plus'
+import type { SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
@@ -76,10 +78,10 @@ export interface PageContext {
   $page: IPageServiceCapability  // PAGE_SERVICE 能力快捷访问（showMessage/showConfirm/navigate）
 
   // 沙箱全局变量
-  ElMessage: typeof import('element-plus')['ElMessage']  // Element Plus 消息提示
-  ElMessageBox: typeof import('element-plus')['ElMessageBox']  // Element Plus 消息框
-  SparkData: typeof import('@spark-view/spark-data')['SparkData']  // SPARK 数据空间命名空间
-  h: typeof import('vue')['h']  // Vue h 函数
+  ElMessage: ElMessage  // Element Plus 消息提示
+  ElMessageBox: ElMessageBox  // Element Plus 消息框
+  SparkData: SparkData  // SPARK 数据空间命名空间
+  h: h  // Vue h 函数
 }
 
 /**

@@ -19,8 +19,8 @@ import { DataView } from './data-view'
 import { RequestState } from './types'
 import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { DataSet } from './dataset'
-import { DataValidator, createValidator, createSchema } from './validation'
-import { CrudService, createCrudService } from './crud-service'
+import { type DataValidator, createValidator, createSchema } from './validation'
+import { type CrudService, createCrudService } from './crud-service'
 import { assertNoSeparator, resolveApi } from './core/utils'
 
 /**

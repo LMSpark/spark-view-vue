@@ -103,6 +103,7 @@ export const Spark = {
    * Spark.register('user-grid', UserGrid)
    * Spark.register('user-grid', () => import('./UserGrid.vue'))
    */
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- documents accepted types even though ComponentLoader ⊆ unknown
   register(type: string, component: unknown | ComponentLoader, meta?: Record<string, unknown>): void {
     getGlobalRegistry().register(type, resolveComponent(component), meta)
   },
@@ -116,6 +117,7 @@ export const Spark = {
    *   'user-row': './UserRow.vue'
    * }, import.meta.glob('./*.vue'))
    */
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- documents accepted types even though ComponentLoader ⊆ unknown
   registerAll(components: Record<string, unknown | ComponentLoader>, modules?: GlobModules): void {
     const reg = getGlobalRegistry()
     for (const [type, component] of Object.entries(components)) {

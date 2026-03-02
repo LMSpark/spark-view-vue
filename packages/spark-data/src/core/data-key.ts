@@ -164,7 +164,7 @@ function _resolveCore(
   descriptor: DataKeyDescriptor,
   dataSet: IDataSet,
   rowsAsView: boolean
-): SparkDataView | IDataRow[] | IDataRow | null | undefined | unknown {
+): unknown {
   const table = dataSet.getTable(descriptor.tableName)
   if (!table) return undefined
 
@@ -203,7 +203,7 @@ function _resolveCore(
 export function resolveDataKey(
   descriptor: DataKeyDescriptor,
   dataSet: IDataSet
-): IDataRow[] | IDataRow | null | undefined | unknown {
+): unknown {
   return _resolveCore(descriptor, dataSet, false)
 }
 
@@ -218,7 +218,7 @@ export function resolveDataKey(
 function resolveDataKeyAsSource(
   descriptor: DataKeyDescriptor,
   dataSet: IDataSet
-): SparkDataView | IDataRow | IDataRow[] | null | undefined | unknown {
+): unknown {
   return _resolveCore(descriptor, dataSet, true)
 }
 

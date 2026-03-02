@@ -159,7 +159,7 @@ async function startApp() {
       // === 生命周期钩子 ===
       
       // 启动前钩子
-      onBeforeStart: async () => {
+      onBeforeStart: () => {
         startupLogger.info('🚀 SPARK 应用启动中...')
       },
       
@@ -196,7 +196,7 @@ async function startApp() {
         // 或者 `beforeMount` 钩子里，SparkApp.start 会在此之后进行
         // 路由/页面配置等初始化。
         const { setupAutoRegister } = await import('@spark-view/spark-app')
-        await setupAutoRegister(app, {
+        setupAutoRegister(app, {
           // patterns: ['./src/components/**/*.vue'],
           // exclude: ['**/demo/**']
         })
@@ -304,7 +304,7 @@ async function startApp() {
       },
       
       // 挂载后钩子
-      afterMount: async (context) => {
+      afterMount: (context) => {
         startupLogger.info('✅ 应用启动完成')
         
         // 统计路由信息
@@ -324,7 +324,7 @@ async function startApp() {
       },
       
       // === 错误处理 ===
-      onStartError: async (error) => {
+      onStartError: (error) => {
         startupLogger.error('❌ 应用启动失败', error instanceof Error ? error : { error })
         
         // TODO: 错误上报到监控系统
