@@ -196,7 +196,7 @@ async function startApp() {
         // 或者 `beforeMount` 钩子里，SparkApp.start 会在此之后进行
         // 路由/页面配置等初始化。
         const { setupAutoRegister } = await import('@spark-view/spark-app')
-        setupAutoRegister(app, {
+        await setupAutoRegister(app, {
           // patterns: ['./src/components/**/*.vue'],
           // exclude: ['**/demo/**']
         })

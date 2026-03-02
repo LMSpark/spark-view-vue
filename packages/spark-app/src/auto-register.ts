@@ -3,10 +3,12 @@
  *
  * 此模块属于 spark-app 包，可在任意项目中直接安装使用，
  * 并支持通过参数配置 glob 模式与排除项。
+ *
+ * 注意：使用动态 import() 加载 @spark-view/spark-component，
+ * 避免 spark-app 对 spark-component 产生静态硬依赖。
  */
 
 import type { App } from 'vue'
-import { Spark } from '@spark-view/spark-component'
 import { Logger } from '@spark-view/spark-utils'
 
 const logger = Logger('AutoRegister')
@@ -33,8 +35,10 @@ const DEFAULT_EXCLUDE = [
  *
  * 可用于经典模式启动，或在运行时动态追加组件时调用。
  */
-export function setupAutoRegister(app: App, options: AutoRegisterOptions = {}) {
+export async function setupAutoRegister(app: App, options: AutoRegisterOptions = {}) {
   void app // 预留参数
+
+  const { Spark } = await import('@spark-view/spark-component')
 
   const exclude = options.exclude ?? DEFAULT_EXCLUDE
 
