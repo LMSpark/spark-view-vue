@@ -51,6 +51,29 @@ pagedata.json (JSON 字符串)
 - **`pageData` / `$data` 已删除**——所有数据必须通过 DataSet 流转，渲染层不再保留 `reactive({})` 旁路
 - **禁止在任何新代码中对 `initDataSet` 添加字符串检测、元数据嵌套、版本缓存等多分支逻辑**
 
+### usePageDataSet API
+
+```typescript
+// 选项
+interface UsePageDataSetOptions {
+  enableDataSet?: boolean  // 默认 true；false 时 initDataSet 无效（用于条件禁用）
+}
+
+// 返回值
+interface UsePageDataSetReturn {
+  readonly dataSet: DataSet | null  // 非响应式 getter，每次访问返回最新值
+  initDataSet(ds: DataSet): void    // 写入实例；enableDataSet=false 时为空操作
+  clearDataSet(): void              // 清空实例（onUnmounted 自动调用）
+}
+
+// 使用示例
+const { dataSet, initDataSet } = usePageDataSet({ enableDataSet: true })
+initDataSet(compiledDataSet)        // compiledDataSet 须来自 parsePageData()
+provide(PAGE_DATASET, dataSet!)     // 向子组件暴露 DataSet
+```
+
+**实现说明**：`dataSet` 以闭包变量（`let dataSet: DataSet | null`）存储，**不** 包裹 Vue `ref`/`reactive`——DataSet 自身通过事件总线驱动 UI 更新，响应式包装反而会引入不必要的代理开销。
+
 ## useSparkComponent 返回值接口
 
 ```typescript
