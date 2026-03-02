@@ -90,16 +90,12 @@ export interface IFormAPI {
 
 /**
  * 数据行。键为字段名，值为任意类型。
- * 与 spark-data 中 `IDataRow` 结构完全对齐，但定义在 spark-utils 层，
- * 避免脚本层对 spark-data 产生包依赖。
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IScriptDataRow = Record<string, any>
 
 /**
  * DataView 事件映射——供脚本订阅 `view.events.on(...)` 时获得类型推断。
- *
- * 与 `DataViewEventMap`（spark-data 内部）结构完全对齐。
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface IScriptDataViewEventMap extends Record<string, any[]> {
@@ -122,10 +118,7 @@ export interface IScriptDataViewEventMap extends Record<string, any[]> {
 }
 
 /**
- * DataView 脚本可用接口。
- *
- * 与 `DataView` 类（spark-data）暴露的公开 API 完全对齐，
- * 定义在 spark-utils 层，无包循环依赖，享受完整 IDE 补全。
+ * DataView 脚本可用接口，享受完整 IDE 补全。
  *
  * @example
  * ```js
@@ -184,8 +177,7 @@ export interface IScriptDataView {
    * 请求状态机（数值）：
    * `0=Idle / 1=Preparing / 2=Loading / 3=Loaded / 4=Failed`
    *
-   * 对应 spark-data 的 `RequestState` 枚举值，可通过
-   * `events.on('requestStateChanged', state => ...)` 监听变化。
+   * 可通过 `events.on('requestStateChanged', state => ...)` 监听变化。
    */
   requestState: number
   /** CRUD 增删改批请求进行中（与 requestState 独立） */
@@ -250,9 +242,7 @@ export interface IEventEmitterLike<TMap extends Record<string, unknown[]>> {
 }
 
 /**
- * DataSet 脚本可用接口（框架无关，不依赖 @spark-view/spark-data 包）。
- *
- * 与 `IDataSet`（spark-data）公开 API 完全对齐，`getView()` 返回
+ * DataSet 脚本可用接口。`getView()` 返回
  * `IScriptDataView`（完整视图接口），为脚本提供完善的 IDE 补全与类型安全。
  *
  * @example
@@ -299,9 +289,6 @@ export interface IDataSetLike {
 
 /**
  * DataSet 脚本接口（`IDataSetLike` 的规范名称别名）。
- *
- * 等价于 `IDataSetLike`，提供面向脚本的完整 DataSet API 而不引入 spark-data 包依赖。
- * 渲染层以 spark-data 的 `IDataSet`（结构超集）覆盖，两者通过结构化类型兼容。
  */
 export type IDataSet = IDataSetLike
 
