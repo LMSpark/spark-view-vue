@@ -49,7 +49,7 @@ import { ComputedColumnDelegate, computeAggregateRow } from './strategies/comput
 import type { ComputedColumnContext } from './strategies/computed-column-delegate'
 import { DirtyTrackingDelegate } from './strategies/dirty-tracking-delegate'
 import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-delegate'
-import { reactive, markRaw } from 'vue'
+
 
 // ─────────────────────────────────────────────
 // 事件类型映射
@@ -105,7 +105,7 @@ export class DataView implements IDataSource {
   /** 所属 DataTable（赋值时自动失效编译缓存并重编译计算列，不求值） */
   get dataTable(): DataTable { return this._dataTable }
   set dataTable(table: DataTable) {
-    this._dataTable = markRaw(table)
+    this._dataTable = table
     this._columnMap = new Map(table.columns?.map(c => [c.name, c]) ?? [])
     // 多主键时提前合成 _pk（在 syncFromConfig 前注册，使其参与首次编译）
     if (!this._primaryKeyOverride) {
@@ -137,7 +137,7 @@ export class DataView implements IDataSource {
    * 自动合成的 _pk 计算列所用字段（幺等守卫）。
    * 存了就不重复注册；字段变化时自动失效重生。
    */
-  private _syntheticPkFields?: string[]
+  private _syntheticPkFields: string[] | undefined
 
   /**
    * 多主键时自动合成 _pk 计算列（幺等）。
@@ -532,7 +532,7 @@ export class DataView implements IDataSource {
   // ── 委托 ─────────────────────────────────────
 
   /** 计算列委托（立即初始化，因 dataTable setter 可能在第一次懒访问之前触发） */
-  private _computedDelegate: ComputedColumnDelegate = markRaw(new ComputedColumnDelegate(this))
+  private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate(this)
   /** CRUD 操作委托（懒初始化） */
   private _crudDelegate?: CrudDelegate | undefined
   /** 级联订阅委托（懒初始化） */
@@ -546,52 +546,52 @@ export class DataView implements IDataSource {
 
   /** 获取 CRUD 委托（懒初始化） */
   private get crudDelegate(): CrudDelegate {
-    this._crudDelegate ??= markRaw(new CrudDelegate(
+    this._crudDelegate ??= new CrudDelegate(
       this,
       (event) => this.events.emit(
         event.phase === 'before' ? 'crud:before' : 'crud:after',
         event,
       ),
       (delta, error) => this._trackMutating(delta, error),
-    ))
+    )
     return this._crudDelegate
   }
 
   /** 获取级联委托（懒初始化） */
   private get cascadeDelegate(): CascadeDelegate {
-    this._cascadeDelegate ??= markRaw(new CascadeDelegate(
+    this._cascadeDelegate ??= new CascadeDelegate(
       this,
       () => this.events.emit('cleared'),
-    ))
+    )
     return this._cascadeDelegate
   }
 
   /** 获取选中状态委托（懒初始化） */
   private get selectionDelegate(): SelectionDelegate {
-    this._selectionDelegate ??= markRaw(new SelectionDelegate(
+    this._selectionDelegate ??= new SelectionDelegate(
       this,
       (originatorId?) => this.emitCurrentRowChanged(originatorId),
       (originatorId?) => this.emitSelectedRowsChanged(originatorId),
-    ))
+    )
     return this._selectionDelegate
   }
 
   /** 获取本地变更委托（懒初始化） */
   private get localMutationDelegate(): LocalMutationDelegate {
-    this._localMutationDelegate ??= markRaw(new LocalMutationDelegate(
+    this._localMutationDelegate ??= new LocalMutationDelegate(
       this,
       () => this.emitRowsChanged(),
-    ))
+    )
     return this._localMutationDelegate
   }
 
   /** 获取手工编辑追踪委托（懒初始化） */
   private get dirtyTrackingDelegate(): DirtyTrackingDelegate {
-    this._dirtyTrackingDelegate ??= markRaw(new DirtyTrackingDelegate({
+    this._dirtyTrackingDelegate ??= new DirtyTrackingDelegate({
       getColumns: () => this._dataTable?.columns,
       getComputedColumnNames: () => this._computedDelegate.names,
       getPrimaryKeyFields: () => this.effectivePkFields,
-    }))
+    })
     return this._dirtyTrackingDelegate
   }
   
@@ -643,9 +643,9 @@ export class DataView implements IDataSource {
    * - `events.on('requestStateChanged', handler)` — 请求状态变化
    * - `events.on('mutatingChanged', handler)` — CRUD 变更状态
    */
-  readonly events: IEventEmitter<DataViewEventMap> = markRaw(createEventEmitter())
+  readonly events: IEventEmitter<DataViewEventMap> = createEventEmitter()
 
-  protected logger = markRaw(Logger('DataView'))
+  protected logger = Logger('DataView')
 
   // ─────────────────────────────────────────────
   // 构造
@@ -885,7 +885,7 @@ export class DataView implements IDataSource {
    * 4. 子视图级联由 rowsChanged 事件驱动（子订阅父，父不知子），无需主动推
    *
    * @internal 外部应使用 `refresh()`（强制刷新）或 `loadFromServer()`（自定义参数）。
-   *           `requestData()` 为框架内部编排方法（级联、autoLoad 等场景使用）。
+   *           `requestData()` 为内部编排方法（级联、autoLoad 等场景使用）。
    */
   async requestData(): Promise<void> {
     if (this.requestState !== RequestState.Idle) return
@@ -1080,7 +1080,7 @@ export class DataView implements IDataSource {
   // 两者均发射 rowsChanged，因防抖合并为单次通知
   // ─────────────────────────────────────────────
 
-  /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定，对 Vue 响应式友好 */
+  /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定 */
   updateFromServer(data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[]): void {
     this.localMutationDelegate.updateFromServer(data)
     this._applyComputedColumns(this.rows)
@@ -1113,7 +1113,7 @@ export class DataView implements IDataSource {
     return result
   }
 
-  /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 rowsChanged */
+  /** 本地整批替换所有行，清理无效选中引用，发射 rowsChanged */
   replaceRows(rows: IDataRow[]): void {
     this.localMutationDelegate.replaceRows(rows)
     this._applyComputedColumns(this.rows)
@@ -1506,7 +1506,7 @@ export class DataView implements IDataSource {
       const cfg = this.treeConfig ?? {}
       // S3: 将 CrudService 的 HTTP 客户端传递给 TreeManager，共享拦截器/认证/配置
       const httpClient = this.dataTable?.crudService?.getHttpClient()
-      this.treeManager = markRaw(new TreeManager(cfg, this.dataTable?.api, undefined, httpClient))
+      this.treeManager = new TreeManager(cfg, this.dataTable?.api, undefined, httpClient)
     }
     return this.treeManager
   }
@@ -1637,7 +1637,7 @@ export class DataView implements IDataSource {
   /**
    * 销毁视图，释放所有订阅、委托和外部引用
    *
-   * 应在组件 `onUnmounted` 时调用，防止内存泄漏。
+   * 应在资源释放时调用，防止内存泄漏。
    * 销毁顺序：级联委托 → CRUD 委托 → 防抖定时器 → 事件总线 → 行数据 → TreeManager → DataTable 引用
    */
   destroy(): void {
@@ -1746,7 +1746,7 @@ export class DataView implements IDataSource {
    * `DataTable.fromTableData()`（恢复 default 视图）共同使用，
    * 消除重复的字段赋值代码。
    *
-   * - rows 字段由调用方负责（需要 [...rows] 拷贝或 reactive 处理）
+   * - rows 字段由调用方负责（需要 [...rows] 拷贝）
    * - page / pageSize 使用 `?? 1` / `?? 20` 确保始终有合理默认值
    */
   applyViewConfig(vc: Partial<IViewMetadata>): void {
@@ -1812,12 +1812,16 @@ export class DataView implements IDataSource {
   }
 
   /**
-   * 创建响应式 DataView 实例。
-   *
-   * Vue 响应式包装统一在此入口，外部代码无需导入 Vue。
+   * 实例包装钩子——集成层可覆盖以添加自定义包装（如响应式代理）。
+   * 默认返回原始实例。
+   */
+  static wrapInstance: (instance: DataView) => DataView = (v) => v
+
+  /**
+   * 创建 DataView 实例（通过 wrapInstance 钩子可选包装）。
    * @internal
    */
   static create(tableName: string, viewId: string = 'default'): DataView {
-    return reactive(new DataView(tableName, viewId)) as DataView
+    return DataView.wrapInstance(new DataView(tableName, viewId))
   }
 }

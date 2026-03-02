@@ -236,8 +236,8 @@ r-row 或 r-cell context
 | `ROW_DATA` | `spark-utils` | `IRowDataCapability` | 行组件 | 单元格 |
 | `GRID_EVENTS` | `spark-utils` | `IEventEmitter` | 表容器 | 操作按钮 |
 | `ROW_EVENTS` | `spark-utils` | `IEventEmitter` | 行组件 | 单元格 |
-| `PAGE_DATASET` | `spark-data` | `IDataSet` | PageRenderer | 表容器 |
-| `DATA_SOURCE` | `spark-data` | `IDataSource` | 表容器 | 行/单元格 |
+| `PAGE_DATASET` | `spark-component` | `IDataSet` | PageRenderer | 表容器 |
+| `DATA_SOURCE` | `spark-component` | `IDataSource` | 表容器 | 行/单元格 |
 
 > `LOGGER` 的优先级由 `useSparkComponent` 内部处理：  
 > `lookup(ctx, LOGGER)` → `lookup(ctx, APP_SERVICES).logger` → `fallback console`

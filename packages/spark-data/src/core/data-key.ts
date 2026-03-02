@@ -24,9 +24,8 @@
  * ```
  */
 
-import type { DataSet } from '../dataset'
 import type { DataView as SparkDataView } from '../data-view'
-import type { IDataRow, IDataSource } from '../types'
+import type { IDataRow, IDataSet, IDataSource } from '../types'
 
 // ===== 类型定义 =====
 
@@ -163,7 +162,7 @@ function extractFieldPath(value: unknown, fieldPath: string): unknown {
  */
 function _resolveCore(
   descriptor: DataKeyDescriptor,
-  dataSet: DataSet,
+  dataSet: IDataSet,
   rowsAsView: boolean
 ): SparkDataView | IDataRow[] | IDataRow | null | undefined | unknown {
   const table = dataSet.getTable(descriptor.tableName)
@@ -203,7 +202,7 @@ function _resolveCore(
  */
 export function resolveDataKey(
   descriptor: DataKeyDescriptor,
-  dataSet: DataSet
+  dataSet: IDataSet
 ): IDataRow[] | IDataRow | null | undefined | unknown {
   return _resolveCore(descriptor, dataSet, false)
 }
@@ -212,14 +211,13 @@ export function resolveDataKey(
  * 解析 DataKey → 绑定友好的值（rows → DataView 实例，其他字段 → 原始值）
  *
  * 与 `resolveDataKey` 的区别：`rows` 字段返回 **DataView 实例**（实现了 `IDataSource`），
- * 而非 `view.rows` 数组，更适合绑定到需要完整 DataSource 接口的组件
- * （如 `el-table`、`r-table` 等）。
+ * 而非 `view.rows` 数组，更适合绑定到需要完整 DataSource 接口的数据容器组件。
  *
  * @internal 内部实现——外部调用方请使用 resolveRawKey 或 resolveDataKeyBinding
  */
-export function resolveDataKeyAsSource(
+function resolveDataKeyAsSource(
   descriptor: DataKeyDescriptor,
-  dataSet: DataSet
+  dataSet: IDataSet
 ): SparkDataView | IDataRow | IDataRow[] | null | undefined | unknown {
   return _resolveCore(descriptor, dataSet, true)
 }
@@ -235,7 +233,7 @@ export function resolveDataKeyAsSource(
  */
 export function resolveRawKey(
   rawKey: string,
-  dataSet: DataSet
+  dataSet: IDataSet
 ): SparkDataView | IDataRow | IDataRow[] | null | undefined {
   if (!isDataKey(rawKey)) return undefined
   const dk = parseDataKey(rawKey)
@@ -251,7 +249,7 @@ export function resolveRawKey(
  */
 export function getViewFromRawKey(
   rawKey: string,
-  dataSet: DataSet
+  dataSet: IDataSet
 ): SparkDataView | undefined {
   if (!isDataKey(rawKey)) return undefined
   const dk = parseDataKey(rawKey)
@@ -281,7 +279,7 @@ export type DataKeyBinding =
  */
 export function resolveDataKeyBinding(
   rawKey: string,
-  dataSet: DataSet
+  dataSet: IDataSet
 ): DataKeyBinding | null {
   if (!isDataKey(rawKey)) return null
   const dk = parseDataKey(rawKey)

@@ -3,7 +3,7 @@
  *
  * 承载 DataView 的本地行数据同步逻辑：
  *   - updateFromServer : 将服务端响应同步到 rows / total / page / pageSize
- *   - appendRow        : 追加单行（响应式安全）
+ *   - appendRow        : 追加单行
  *   - updateRowById    : 按主键就地更新行，同步选中状态引用
  *   - deleteRowById    : 按主键删除行，清理选中状态
  *   - replaceRows      : 整批替换行，清理无效选中引用
@@ -40,7 +40,7 @@ export class LocalMutationDelegate {
 
   /**
    * 将服务端响应同步到本地字段（rows / total / page / pageSize）
-   * splice 保持数组引用稳定，对 Vue 响应式友好
+   * splice 保持数组引用稳定
    */
   updateFromServer(
     data: { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[],
@@ -138,7 +138,7 @@ export class LocalMutationDelegate {
     return true
   }
 
-  /** 本地整批替换所有行（响应式安全），清理无效选中引用，发射 stateChanged('rows') */
+  /** 本地整批替换所有行，清理无效选中引用，发射 stateChanged('rows') */
   replaceRows(rows: IDataRow[]): void {
     const h = this.host
     h.rows.splice(0, h.rows.length, ...rows)

@@ -14,7 +14,7 @@
     
     <!-- 渲染页面内容 -->
     <div ref="pageContainer" :data-page="currentPageId" class="spark-page-container">
-      <slot name="content" :rules="(boundRules as Rule[])" :page-data="pageData">
+      <slot name="content" :rules="(boundRules as Rule[])">
         <form-create
           v-if="boundRules.length > 0"
           v-model:api="formApi"
@@ -53,7 +53,6 @@ const {
   currentPageId,
   scopedCss,
   boundRules,
-  pageData,
   formApi,
   formCreateOptions,
   loadPageConfig,

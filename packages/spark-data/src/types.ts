@@ -420,8 +420,8 @@ export interface ITableOwnMetadata {
    * - 字符串简写（RESTful 基础路径）：`"/api/users"` → 自动展开为完整 CRUD 端点
    * - `true`：从 tableName 按约定生成路径（`/api/${kebab-case(tableName)}`）
    */
-  api: CrudApi | string | boolean | undefined
-  views: Record<string, IViewMetadata> | undefined
+  api?: CrudApi | string | boolean | undefined
+  views?: Record<string, IViewMetadata> | undefined
   loading: boolean | undefined
   error: string | undefined
 }
@@ -503,7 +503,7 @@ export type FilterExpression =
 /**
  * 数据关系定义
  *
- * 简写模式：只需 `parentTable` + `childTable` + `childField`，框架自动推导其余字段。
+ * 简写模式：只需 `parentTable` + `childTable` + `childField`，系统自动推导其余字段。
  * ```json
  * { "parentTable": "Users", "childTable": "Orders", "childField": "userId" }
  * ```
@@ -528,7 +528,7 @@ export interface DataRelation {
   /** 依赖类型（默认 'currentRow'） */
   dependencyType?: DependencyType
   /**
-   * 过滤表达式——完整模式手动指定；简写模式可省略，框架根据 childField/parentField 自动生成。
+   * 过滤表达式——完整模式手动指定；简写模式可省略，系统根据 childField/parentField 自动生成。
    * 规范化后此字段一定存在（DataSet 构造函数保证）。
    */
   filterExpression?: FilterExpression
@@ -718,7 +718,7 @@ export interface IDataSet {
   /**
    * 订阅此 DataSet 内任意视图的状态变化。
    *
-   * 严格作用于本 DataSet 实例，多个 PageRenderer 并存时互不干扰（替代全局 event-bus）。
+   * 严格作用于本 DataSet 实例，多实例并存时互不干扰（替代全局 event-bus）。
    * 订阅时遍历当前已存在的所有视图；如需监听后续动态创建的视图，可在创建后重新订阅。
    *
    * @returns 取消订阅函数（组件卸载时调用）

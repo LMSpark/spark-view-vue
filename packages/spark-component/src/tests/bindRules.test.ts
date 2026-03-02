@@ -1,9 +1,14 @@
-import { describe, it, expect } from 'vitest'
-import { isReactive } from 'vue'
+import { describe, it, expect, beforeAll } from 'vitest'
+import { isReactive, reactive } from 'vue'
 import { bindDataToRules } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData, DataView } from '@spark-view/spark-data'
 
 describe('bindRules - DataKey rows -> IDataSource binding', () => {
+  // 配置 Vue reactive 包装（与 SparkPlugin 一致）
+  beforeAll(() => {
+    DataView.wrapInstance = (dv) => reactive(dv) as DataView
+  })
+
   it('el-table 应仅绑定 props.dataSource（DataView / IDataSource）', () => {
     const dataSet = SparkData.createDataSet({
       dataSetName: 'TestDS',
@@ -20,7 +25,7 @@ describe('bindRules - DataKey rows -> IDataSource binding', () => {
       { type: 'el-table', dataKey: 'TestDS@Users@default@rows' }
     ] as any[]
 
-    const bound = bindDataToRules({ rules, pageData: {}, pageFunctions: {}, dataSet })
+    const bound = bindDataToRules({ rules, pageFunctions: {}, dataSet })
     expect(bound).toHaveLength(1)
 
     const r = bound[0]!

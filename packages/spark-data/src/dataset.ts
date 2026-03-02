@@ -34,7 +34,7 @@ function inferColumnsFromRecord(obj: Record<string, unknown>): DataColumn[] {
  * - `dependencyType` 默认 `'currentRow'`
  * - `parentViewId` / `childViewId` 默认 `'default'`
  * - `parentField` 默认取父视图 primaryKey（通常为 `'id'`）
- * - `filterExpression` 由框架根据 childField + parentField 自动生成
+ * - `filterExpression` 根据 childField + parentField 自动生成
  */
 function normalizeRelation(r: DataRelation, ds: DataSet): DataRelation {
   const norm = {
@@ -211,7 +211,7 @@ export class DataSet implements IDataSet {
    * const off = dataSet.on('loadSuccess', ({ tableName }) => {
    *   ElMessage.success(`${tableName} 加载完成`)
    * })
-   * // onUnmounted: off()
+   * // 资源释放时: off()
    * ```
    */
   on(
@@ -485,7 +485,7 @@ export class DataSet implements IDataSet {
       }
       return DataSet.fromConfig({
         dataSetName: rd.dataSetName ?? 'PageDataSet',
-        tables: rd.tables ?? {},
+        tables: (rd.tables ?? {}) as Record<string, Omit<ITableMetadata, 'tableName' | 'loading' | 'error'> & { tableName?: string }>,
         ...(rd.relations ? { relations: rd.relations } : {}),
       })
     }
@@ -536,7 +536,7 @@ export class DataSet implements IDataSet {
     }
 
     // 构造函数会自动设置单行表的 currentRow
-    return DataSet.fromConfig({ dataSetName: 'PageDataSet', tables })
+    return DataSet.fromConfig({ dataSetName: 'PageDataSet', tables } as Parameters<typeof DataSet.fromConfig>[0])
   }
 }
 

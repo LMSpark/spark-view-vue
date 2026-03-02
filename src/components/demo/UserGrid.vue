@@ -34,7 +34,7 @@ defineOptions({ inheritAttrs: false })
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES, SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
-import { DATA_SOURCE } from '@spark-view/spark-data'
+import { DATA_SOURCE } from '@spark-view/spark-component'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { ISelectionCapability } from '@spark-view/spark-utils'

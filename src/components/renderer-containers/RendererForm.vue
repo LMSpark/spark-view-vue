@@ -20,7 +20,8 @@
 import { reactive, computed, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { PAGE_DATASET, parseDataKey, resolveDataKey } from '@spark-view/spark-data'
+import { parseDataKey, resolveDataKey } from '@spark-view/spark-data'
+import { PAGE_DATASET } from '@spark-view/spark-component'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
 
 interface Props {

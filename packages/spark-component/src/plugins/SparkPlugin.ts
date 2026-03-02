@@ -8,11 +8,12 @@
  */
 
 import type { App, Plugin } from 'vue'
-import { markRaw } from 'vue'
+import { markRaw, reactive } from 'vue'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
 import type { ComponentContext, ComponentRegistry } from '../core/types.js'
 import type { CapabilityName } from '@spark-view/spark-utils'
 import { getGlobalRegistry } from '../registry/ComponentRegistry.js'
+import { DataView } from '@spark-view/spark-data'
 
 export interface SparkPluginOptions {
   /** 自定义注册表（测试/隔离场景用） */
@@ -24,6 +25,9 @@ export function createSparkPlugin(options?: SparkPluginOptions): Plugin {
     install(app: App) {
       // 默认使用全局 registry，确保 Spark.register() 注册的组件可被找到
       const registry = options?.registry ?? getGlobalRegistry()
+
+      // 配置 DataView 使用 Vue reactive 包装（spark-data 本身无框架依赖）
+      DataView.wrapInstance = (dv) => reactive(dv) as DataView
 
       // 创建应用级根上下文（capabilities / children markRaw：不需要响应式）
       const rootContext: ComponentContext = {

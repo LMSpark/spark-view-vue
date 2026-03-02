@@ -2,7 +2,7 @@
  * Rule 绑定 + DataSet → el-table UI 同步 Composable
  *
  * 职责：
- *  - 规则绑定：originalRules + pageData/pageFunctions/dataSet → boundRules
+ *  - 规则绑定：originalRules + pageFunctions/dataSet → boundRules
  *  - DataSet → UI：rebindRules 后订阅 DataView.stateChanged，驱动 el-table 选中 UI
  *  - UI → DataSet 方向由 bindRules.injectTableEvents 在规则绑定时完成（单向持有）
  */
@@ -106,7 +106,6 @@ export interface UseRuleBindingOptions {
   // Note: form-create 的 Rule 类型过于复杂，使用 unknown[] 避免类型冲突
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   originalRules: Ref<any[]>
-  pageData: Record<string, unknown>
   pageFunctions: Ref<Record<string, (...args: unknown[]) => unknown>>
   dataSet: IDataSet | null
   // Note: formApi 使用 any 类型以避免与 form-create 官方复杂类型定义冲突
@@ -125,7 +124,7 @@ export interface UseRuleBindingReturn {
 // ─── Composable ───────────────────────────────────────────────────────────────
 
 export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingReturn {
-  const { originalRules, pageData, pageFunctions, formApi, registry } = options
+  const { originalRules, pageFunctions, formApi, registry } = options
   const instanceId = `binding-${++_bindingIdCounter}`
   const boundRules = ref<unknown[]>([])
   let cleanupSync: (() => void) | null = null
@@ -143,7 +142,6 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
     // Note: form-create 的 Rule 类型系统过于复杂，此处使用类型断言
     const newBoundRules = bindDataToRules({
       rules: originalRules.value as unknown as Rule[],
-      pageData,
       pageFunctions: pageFunctions.value,
       dataSet: options.dataSet,
       bindingId: instanceId,

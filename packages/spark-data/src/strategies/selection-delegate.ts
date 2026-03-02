@@ -71,7 +71,7 @@ export class SelectionDelegate {
 
     if (host.autoCurrentFirst !== false && firstRow) {
       // 当 selectionFollowsCurrent 开启时，让 setCurrentRow 内部统一处理 selection 同步，
-      // 避免事后再单独调 setSelectedRows 发出多余事件（会导致渲染层两次触碰 el-table）。
+      // 避免事后再单独调 setSelectedRows 发出多余事件（会导致 UI 组件收到两次更新）。
       const skipSync = host.selectionFollowsCurrent === false
       this.setCurrentRow(firstRow, { skipSync })
       // selectionFollowsCurrent 已经处理了 selection，skipSync=true 时才需要显式调用

@@ -59,7 +59,7 @@ export interface IRowStore {
  * 可变契约：委托（SelectionDelegate / LocalMutationDelegate）
  * 通过此接口直接写入宿主的选中状态字段。
  * 这是有意设计——性能优先（避免 setter 层开销）且
- * 保持与 Vue reactive() 包装后的响应式追踪兼容。
+ * 确保直接属性写入可被外部包装层（如 Proxy）正确追踪。
  *
  * @internal 仅供 spark-data 内部委托使用，外部不应直接操作这些字段。
  */

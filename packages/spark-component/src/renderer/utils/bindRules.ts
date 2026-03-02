@@ -39,30 +39,6 @@ function isDataKeyHandledType(type: string, registry?: ComponentRegistry): boole
 }
 
 /**
- * 类型安全的嵌套值获取函数
- * @param obj - 源对象
- * @param path - 路径数组（如 ['dataset', 'tables', 'Users', 'rows']）
- * @returns 获取的值，如果路径无效则返回 undefined
- */
-function getNestedValue<T = unknown>(
-  obj: Record<string, unknown>,
-  path: string[]
-): T | undefined {
-  let current: unknown = obj
-  
-  for (const key of path) {
-    if (current && typeof current === 'object' && key in current) {
-      current = (current as Record<string, unknown>)[key]
-    } else {
-      return undefined
-    }
-  }
-  
-  // 最终结果无法静态验证类型，需要运行时断言
-  return current as T
-}
-
-/**
  * 解析 DataKey 字符串 → 绑定值（渲染层薄包装，负责 warn 日志）
  *
  * 数据解析逻辑完全委托给 spark-data 的 `resolveRawKey`。
@@ -74,7 +50,7 @@ function resolveRuleDataKey(
   if (!isDataKey(rawKey)) {
     pageLogger.warn(
       `dataKey "${rawKey}" 不是有效的 DataKey 格式（缺少 @），已跳过绑定。` +
-      '请使用 scope@tableName@viewId@field 格式，或将值写入 $data 后通过 dataSource/currentKey 绑定。'
+      '请使用 scope@tableName@viewId@field 格式。'
     )
     return undefined
   }
@@ -112,7 +88,7 @@ function attachDataViewIfDataKey(
 // Note: form-create 的 Rule 类型过于复杂，使用 any[] 作为返回类型避免类型冲突
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function bindDataToRules(options: RuleBindingOptions): any[] {
-  const { rules, pageData, pageFunctions, dataSet, registry } = options
+  const { rules, pageFunctions, dataSet, registry } = options
   
   // 创建统一的函数调用包装器
   const callFunc = createFunctionCaller(pageFunctions)
@@ -153,28 +129,10 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
       }
     }
     
-    // 🎯 处理 dataSource 绑定（r-table, r-tree 共用 —— 脚本写入 pageData 的值）
-    if ((newRule.type === 'r-table' || newRule.type === 'r-tree') && newRule['dataSource']) {
-      const dataSource = pageData[newRule['dataSource'] as string]
-      if (dataSource !== undefined) {
-        // 强制绑定为 dataSource（不再向后兼容 props.data）
-        setRuleProp(newRule, 'dataSource', dataSource)
-      }
-    }
-
     // 🎯 将 dataKey 透传到 props — r-table/r-form/r-detail/r-tree 自行 consume(PAGE_DATASET) 解析
     // el-table 保持旧的外部注入模式（原生组件无法使用 useSparkComponent）
     if (newRule['dataKey'] && isSelfResolvingType(newRule.type as string, registry)) {
       setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
-    }
-
-    // 🎯 处理 r-tree 的 currentKey 绑定（用于 current-key 高亮）
-    if (newRule.type === 'r-tree' && newRule['currentKey']) {
-      const keys = (newRule['currentKey'] as string).split('.')
-      const value = getNestedValue<string | number>(pageData, keys)
-      if (value !== undefined) {
-        setRuleProp(newRule, 'current-key', value)
-      }
     }
 
     // 🎯 处理 props 中的事件处理函数（针对自定义组件，如 r-tree）
@@ -217,10 +175,6 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
         resolved = resolveRuleDataKey(rawKey, dataSet)
         // 注入 DataView（若 dataKey 指向 DataSet）
         attachDataViewIfDataKey(rawKey, dataSet, newRule)
-      } else {
-        // $data 路径（dot 格式，如 currentUser.label）：从 pageData 中按路径取值
-        const keys = rawKey.split('.')
-        resolved = getNestedValue(pageData, keys)
       }
 
       // 如果有值，根据元素类型决定绑定方式
@@ -261,7 +215,6 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         newRule.children = bindDataToRules({
           rules: childRules,
-          pageData,
           pageFunctions,
           dataSet,
           ...(registry !== undefined ? { registry } : {})
