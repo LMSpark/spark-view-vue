@@ -42,3 +42,19 @@ export {
 
 // 命名空间 API
 export { SparkPageConfig } from './namespace'
+
+// ==================== 业务脚本 API 契约 ====================
+// 框架无关的业务脚本类型：IPageRoute、IFormAPI、IScriptContext
+// IDataSetLike/IDataSet、IScriptDataView 等视图接口、IPageServiceInScript
+export type {
+  IPageRoute,
+  IFormAPI,
+  IScriptDataRow,
+  IScriptDataViewEventMap,
+  IScriptDataView,
+  IEventEmitterLike,
+  IDataSetLike,
+  IDataSet,
+  IScriptContext,
+  IPageServiceInScript,
+} from './script-api'
