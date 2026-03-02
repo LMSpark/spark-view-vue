@@ -327,7 +327,15 @@ function injectTableEvents(
       if (maybeRow && typeof maybeRow === 'object') cleanRow = maybeRow as IDataRow
     }
 
-    view.setCurrentRow(cleanRow ?? currentRow, bindingId)
+    // 如果 cleanRow 已找到，直接使用；
+    // 若 pk 存在但 view.rows 中未找到（行刚被替换），回退到原始 currentRow；
+    // 若 pk 完全缺失（el-table 内部 stale 对象，如 watch.immediate 重渲染时），静默跳过。
+    if (cleanRow !== null) {
+      view.setCurrentRow(cleanRow, bindingId)
+    } else if (pk !== undefined) {
+      view.setCurrentRow(currentRow, bindingId)
+    }
+    // pk === undefined: 行无主键（el-table 内部触发的虚假 currentChange），静默忽略
   }
 
   // 注入 selectionChange 事件（多选变化）
