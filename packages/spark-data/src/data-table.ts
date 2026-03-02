@@ -17,7 +17,7 @@
 
 import { DataView } from './data-view'
 import { RequestState } from './types'
-import type { DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
+import type { IDataRow, DataColumn, CrudApi, ITableMetadata, IViewMetadata, CrudOperationConfig } from './types'
 import type { DataSet } from './dataset'
 import { type DataValidator, createValidator, createSchema } from './validation'
 import { type CrudService, createCrudService } from './crud-service'
@@ -74,6 +74,15 @@ export class DataTable {
   validator?: DataValidator
 
   // ===== 视图容器 =====
+
+  /**
+   * 内联静态行（来自 pagedata.json 配置）——级联内存过滤的 source of truth。
+   *
+   * 与 DataView.rows 不同：DataView.rows 是当前视图（可能已过滤）的行；
+   * 此字段存储全量原始行，供无 API 的内存级联过滤重复使用。
+   * 有 API 的表此字段保持空数组（数据由服务端提供）。
+   */
+  rows: IDataRow[] = []
 
   /** 视图集合（包含 'default'） */
   views: Record<string, DataView> = {}
@@ -267,7 +276,12 @@ export class DataTable {
     }
 
     const def = t.getOrCreateView('default')
-    if (data.rows) def.rows = [...data.rows]
+    if (data.rows) {
+      // 存入 DataTable.rows（内联静态数据 source of truth，供无 API 内存级联过滤使用）
+      t.rows = [...data.rows]
+      // 同时初始化 default 视图的初始数据（渲染层可直接展示，无需 loadFromServer）
+      def.rows = [...data.rows]
+    }
 
     // views.default（若存在）优先于表级字段；ITableMetadata = ITableOwnMetadata & IViewMetadata，
     // 两条路径（default 视图 vs 扁平化表级字段）字段名完全一致，统一委托给 applyViewConfig。
