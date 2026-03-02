@@ -171,15 +171,15 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 | `ROW_DATA` | `spark-utils` | `IRowDataCapability` — 行数据访问 | 行组件 |
 | `GRID_EVENTS` | `spark-utils` | `IEventEmitter` — 表格事件总线 | 表格组件 |
 | `ROW_EVENTS` | `spark-utils` | `IEventEmitter` — 行事件总线 | 行组件 |
-| `PAGE_DATASET` | `spark-data` | `IDataSet` — 页面级 DataSet | PageRenderer |
-| `DATA_SOURCE` | `spark-data` | `IDataSource` — 组件级数据视图 | 容器组件 |
+| `PAGE_DATASET` | `spark-component` | `IDataSet` — 页面级 DataSet | PageRenderer |
+| `DATA_SOURCE` | `spark-component` | `IDataSource` — 组件级数据视图 | 容器组件 |
 
 ### 4.2 消费内置能力
 
 ```typescript
 import { useSparkComponent } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE, SELECTION } from '@spark-view/spark-utils'
-import { PAGE_DATASET } from '@spark-view/spark-data'
+import { PAGE_DATASET } from '@spark-view/spark-component'
 
 const { consume } = useSparkComponent(props.config)
 
@@ -266,7 +266,7 @@ SPARK 以统一的 DataKey 字符串描述数据来源：
 ### 5.2 解析 DataKey → 数据视图
 
 ```typescript
-import { PAGE_DATASET } from '@spark-view/spark-data'
+import { PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 
 const { consume } = useSparkComponent(props.config)
@@ -327,7 +327,7 @@ function handleCleared() {
 容器组件（如表格）解析 DataKey 后将 `DataView` 向下提供，子组件通过 `consume(DATA_SOURCE)` 获取：
 
 ```typescript
-import { DATA_SOURCE, PAGE_DATASET } from '@spark-view/spark-data'
+import { DATA_SOURCE, PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 
 const { provide, consume } = useSparkComponent(props.config)
@@ -778,7 +778,7 @@ function onRowClick(row: any) {
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { PAGE_DATASET } from '@spark-view/spark-data'
+import { PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { ComponentConfig } from '@spark-view/spark-component'
 

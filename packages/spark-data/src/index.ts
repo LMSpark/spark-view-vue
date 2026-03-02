@@ -82,10 +82,6 @@ export type { FieldChange, RowDiff, SaveChangesData } from './strategies/dirty-t
 export { isDataKey, parseDataKey, resolveDataKey, resolveDataKeyBinding, resolveRawKey, getViewFromRawKey, buildDataKey, getViewKey } from './core/data-key'
 export type { DataKeyDescriptor, DataKeyField, DataKeyBinding } from './core/data-key'
 
-// ===== 能力键 =====
-
-export { PAGE_DATASET, DATA_SOURCE } from './capability-keys'
-
 export {
   INSTANCE_PERMISSION_FIELD,
   MODEL_PERMISSION_FIELD,

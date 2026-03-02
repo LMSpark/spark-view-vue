@@ -62,7 +62,7 @@ function toApiBasePath(tableName: string): string {
  * @returns 完整的 CrudApi 对象
  * @internal
  */
-export function expandApiShorthand(base: string): CrudApi {
+function expandApiShorthand(base: string): CrudApi {
   const tree = `${base}/tree`
   return {
     // CRUD

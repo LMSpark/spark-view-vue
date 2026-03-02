@@ -74,15 +74,15 @@ export function validateRuleConfig(config: RuleConfig): ValidationError[] {
 }
 
 /**
- * 验证页面数据配置
+ * 验证页面数据配置（DataSet 实例）
  */
 export function validatePageDataConfig(config: PageDataConfig): ValidationError[] {
   const errors: ValidationError[] = []
 
-  if (typeof config !== 'object' || config === null) {
+  if (!config || typeof config !== 'object') {
     errors.push({
       field: 'root',
-      message: '页面数据必须是对象',
+      message: '页面数据必须是 DataSet 实例',
       value: config
     })
   }

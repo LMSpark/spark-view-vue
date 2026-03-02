@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import RendererTable from '../src/components/renderer-containers/RendererTable.vue'
 import { SparkData } from '@spark-view/spark-data'
+import type { IDataRow } from '@spark-view/spark-data'
 import { nextTick } from 'vue'
 
 describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
@@ -11,8 +12,8 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
       tables: {
         Users: {
           tableName: 'Users',
-          columns: [{ name: 'id', type: 'number' }],
-          rows: [{ id: 1 }, { id: 2 }]
+          columns: [{ name: 'id', type: 'number' as const }],
+          rows: [{ id: 1 }, { id: 2 }] as IDataRow[]
         }
       }
     })
@@ -40,8 +41,8 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
       tables: {
         Users: {
           tableName: 'Users',
-          columns: [{ name: 'id', type: 'number' }],
-          rows: []
+          columns: [{ name: 'id', type: 'number' as const }],
+          rows: [] as IDataRow[]
         }
       }
     })
@@ -67,8 +68,8 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
       tables: {
         Nodes: {
           tableName: 'Nodes',
-          columns: [{ name: 'id', type: 'number' }],
-          rows: []
+          columns: [{ name: 'id', type: 'number' as const }],
+          rows: [] as IDataRow[]
         }
       }
     })

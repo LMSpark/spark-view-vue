@@ -257,7 +257,7 @@ export const ROW_EVENTS = defineCapability<IEventEmitter>('spark:capability:row-
  *
  * @example
  * ```ts
- * // packages/spark-data/src/capability-keys.ts
+ * // packages/spark-component/src/capability-keys.ts
  * declare module '@spark-view/spark-utils' {
  *   interface CapabilityTypeMap {
  *     'spark:capability:page-dataset': IDataSet

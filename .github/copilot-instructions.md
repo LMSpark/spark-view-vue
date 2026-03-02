@@ -19,8 +19,9 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **Pages config**: `public/pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
 - **Example components**: `features/spark-ej2/components/SparkEJ2Grid.vue`, `features/spark-ej2/components/SparkEJ2Column.vue`
 - **Key composable**: `packages/spark-component/src/composables/useSparkComponent.ts`
+- **DataSet 生命周期**: `packages/spark-component/src/renderer/composables/usePageDataSet.ts`（仅存储 DataSet，不转换）
 - **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
-- **Capability keys**: `packages/spark-utils/src/capability/symbols.ts` (APP_SERVICES, LOGGER 等), `packages/spark-data/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
+- **Capability keys**: `packages/spark-utils/src/capability/symbols.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
 - **Tests**: `tests/` (重要: `capability-late-binding.test.ts`, `capability-system.test.ts`, `data-key.test.ts`)
 - **Computed column tests**: `packages/spark-data/src/tests/computed-columns.test.ts`（13 sections, 214+ cases）
 - **Expression compiler**: `packages/spark-data/src/strategies/computed-column-delegate.ts`
@@ -31,6 +32,24 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **批量注册**: `Spark.createRegister(import.meta.glob('./*.vue')).registerAll({ 'type': './Comp.vue' })`
 - App 安装插件: `app.use(Spark.createPlugin())`（Symbol-based DI，自动创建 rootContext）
 - 组件内使用 `useSparkComponent(config)` 获取 SPARK 上下文
+
+### ❗ 单一 DataSet 框架（核心约束）
+
+**所有页面数据必须且只能通过 DataSet 流转**，禁止在渲染层对原始 JSON 做归一化/类型判断。
+
+```
+pagedata.json (JSON 字符串)
+  ↓ parsePageData()         ← spark-page-config：唯一转换点
+  DataSet 实例
+  ↓ initDataSet(ds)          ← usePageDataSet：仅存储，不转换
+  ↓ provide(PAGE_DATASET, ds)
+  ↓ DataKey 解析 → DataView → UI
+```
+
+- `PageDataConfig = DataSet`（不再联合 `Record<string, unknown>`）
+- `usePageDataSet.initDataSet()` 只接受 `DataSet` 实例，不做任何归一化
+- **`pageData` / `$data` 已删除**——所有数据必须通过 DataSet 流转，渲染层不再保留 `reactive({})` 旁路
+- **禁止在任何新代码中对 `initDataSet` 添加字符串检测、元数据嵌套、版本缓存等多分支逻辑**
 
 ## useSparkComponent 返回值接口
 
@@ -152,7 +171,7 @@ interface IModelPermission {      // 表级 — 存储在 dataSource._modelPerm
 ### 能力键类型扩展（CapabilityTypeMap）
 
 能力键支持两种形式：
-- **Symbol 键**（向后兼容）：`import { DATA_SOURCE } from '@spark-view/spark-data'`
+- **Symbol 键**（向后兼容）：`import { DATA_SOURCE } from '@spark-view/spark-component'`
 - **字符串键**（可扩展）：`consume('spark:capability:page-dataset')` — 通过 `CapabilityTypeMap` 声明合并提供类型推断
 
 `normalizeKey(name)` 内部将字符串转换为 `Symbol.for(name)`，与 Symbol 键等价。
@@ -184,8 +203,8 @@ provide('app:context-data', { key: 'value' })
 | `ROW_DATA` | spark-utils | `IRowDataCapability` | 行数据访问 |
 | `GRID_EVENTS` | spark-utils | `IEventEmitter` | 表格事件总线 |
 | `ROW_EVENTS` | spark-utils | `IEventEmitter` | 行事件总线 |
-| `PAGE_DATASET` | spark-data | `IDataSet` | 页面级 DataSet（PageRenderer provide） |
-| `DATA_SOURCE` | spark-data | `IDataSource` | 组件级数据视图（容器组件 provide，DataView 实现此接口） |
+| `PAGE_DATASET` | spark-component | `IDataSet` | 页面级 DataSet（PageRenderer provide） |
+| `DATA_SOURCE` | spark-component | `IDataSource` | 组件级数据视图（容器组件 provide，DataView 实现此接口） |
 
 ### IDataSource 接口（UI 消费契约）
 
@@ -337,6 +356,7 @@ packages/
 ├── spark-component/     # 组件系统（Spark 命名空间、能力系统）
 │   └── src/
 │       ├── spark.ts          # Spark 命名空间（唯一入口）
+│       ├── capability-keys.ts # PAGE_DATASET, DATA_SOURCE（数据能力键）
 │       ├── core/types.ts     # ComponentConfig, ComponentContext, ComponentRegistry
 │       ├── registry/         # ComponentRegistry 实现
 │       ├── composables/      # useSparkComponent
@@ -347,7 +367,6 @@ packages/
 ├── spark-data/          # 数据空间
 │   └── src/
 │       ├── core/data-key.ts  # DataKey 解析（resolveDataKeyBinding 等）
-│       ├── capability-keys.ts # PAGE_DATASET, DATA_SOURCE
 │       ├── spark-data.ts     # SparkData 命名空间（推荐 API）
 │       ├── dataset.ts        # DataSet（事件驱动协调器）
 │       ├── data-table.ts     # DataTable
@@ -530,6 +549,7 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
 - ⚠️ **`tsconfig.build.json` 注意**：每个子包的 `tsconfig.build.json` 中 `"paths"` 必须保留依赖包的 dist 路径别名（不能设为 `{}`），否则 `tsc` 无法追踪 pnpm 软链中的 `.js` 重导出链，导致编译时找不到新增导出成员（如 `normalizeKey`、`CapabilityTypeMap`）
 
 ## Performance notes ⚡
+- **`spark-data` 无框架依赖**——DataView 通过 `DataView.wrapInstance` 静态钩子让框架层注入包装（SparkPlugin 中设为 `reactive()`）
 - `useSparkComponent` 使用 `shallowReactive`（顶层响应式）+ `markRaw(capabilities)`、`markRaw(children)`，大幅减少 Vue 响应系统开销
 - logger 解析带缓存（`_loggerCache`），`provide(LOGGER/APP_SERVICES, ...)` 时自动失效
 - 组件 ID 使用全局单调计数器（`spark-${++_idCounter}`），比 `Date.now()+random` 更快且 SSR 友好

@@ -67,7 +67,6 @@ export interface PageContext {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   $api: any
   $route: RouteLocationNormalizedLoaded
-  $data: Record<string, unknown>
   $el: () => HTMLElement | null
   $query: (selector: string) => HTMLElement | null
   $queryAll: (selector: string) => NodeListOf<Element>
@@ -292,11 +291,6 @@ export interface PageRendererOptions {
  */
 export interface RuleBindingOptions {
   rules: Rule[]
-  /**
-   * 脚本运行时状态（PageContext.$data）——仅由脚本写入，不再用于 pagedata.json 数据。
-   * pagedata.json 数据统一通过 DataSet + DataKey（`scope@tableName@viewId@field`）访问。
-   */
-  pageData: Record<string, unknown>
   pageFunctions: Record<string, (...args: unknown[]) => unknown>
   dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
   /** 组件注册表（可选）——用于查询 dataKey 行为元数据，替代硬编码的组件白名单 */

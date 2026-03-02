@@ -24,8 +24,9 @@
 import { computed, onMounted, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { PAGE_DATASET, DATA_SOURCE, parseDataKey } from '@spark-view/spark-data'
+import { parseDataKey } from '@spark-view/spark-data'
 import type { IDataSource, DataView } from '@spark-view/spark-data'
+import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
 
 interface Props {

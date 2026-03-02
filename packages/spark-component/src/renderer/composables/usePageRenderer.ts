@@ -19,14 +19,15 @@
  */
 
 import {
-  ref, reactive, shallowRef, onMounted, watch, nextTick,
+  ref, shallowRef, onMounted, watch, nextTick,
   h, inject, defineComponent, markRaw,
   type App, type Ref, type Component, type ShallowRef,
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
 import type { DataSet } from '@spark-view/spark-data'
-import { SparkData, PAGE_DATASET } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
+import { PAGE_DATASET } from '../../capability-keys'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSparkComponent } from '../../composables/useSparkComponent'
 import { SPARK_REGISTRY_KEY } from '../../core/types.js'
@@ -86,7 +87,6 @@ export interface UsePageRendererReturn {
   currentPageId: Ref<string>
   scopedCss: Ref<string>
   boundRules: Ref<unknown[]>
-  pageData: Record<string, unknown>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formApi: Ref<any>
   formCreateOptions: Ref<Record<string, unknown>>
@@ -148,7 +148,6 @@ export function usePageRenderer(
   const formApi       = ref<any>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const originalRules = ref<any[]>([])
-  const pageData      = reactive<Record<string, unknown>>({})
   /** 脚本沙箱编译后的函数表；`__init__` 由 form-create mounted 钩子调用 */
   const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
 
@@ -171,7 +170,6 @@ export function usePageRenderer(
       }
       // __init__ 完成后触发 autoCurrentFirst / autoSelectFirst，
       // 确保脚本中的 currentRowChanged 订阅者能收到初始行事件。
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       pds.dataSet?.initAutoSelection()
     },
   })
@@ -190,7 +188,6 @@ export function usePageRenderer(
 
   const { boundRules, rebindRules } = useRuleBinding({
     originalRules,
-    pageData,
     pageFunctions,
     get dataSet() { return pds.dataSet },
     formApi,
@@ -198,7 +195,7 @@ export function usePageRenderer(
   })
 
   // ── 脚本沙箱上下文（pageContext） ────────────────────────────────────────────
-  // 通过 `with (__ctx)` 注入给业务脚本，脚本中可直接使用 $api / $data / h 等。
+  // 通过 `with (__ctx)` 注入给业务脚本，脚本中可直接使用 $api / $dataSet / h 等。
   // $api / $dataSet 使用 getter，保证脚本每次访问都拿到最新值。
 
   const pageContext: PageContext = {
@@ -206,7 +203,6 @@ export function usePageRenderer(
     get $dataSet() { return pds.dataSet },
 
     $route:    route,
-    $data:     pageData,
     $el:       () => pageContainer.value,
     $query:    (selector: string) => pageContainer.value?.querySelector(selector) ?? null,
     $queryAll: (selector: string) => {
@@ -282,7 +278,7 @@ export function usePageRenderer(
    *
    * **重复注册策略**：组件对每个 app 只注册一次（避免 Vue 的 "already registered" warn）。
    * 页面重新加载时，通过更新 `ShallowRef` 替换 render fn；
-   * shallowRef 的响应性会自动触发组件重渲染，同时保持对 `pageData` 的正常依赖追踪。
+   * shallowRef 的响应性会自动触发组件重渲染。
    *
    * PascalCase + camelCase 均注册，兼容 form-create 内部的 toCase 转换。
    */
@@ -313,7 +309,7 @@ export function usePageRenderer(
           name,
           // render fn 通过 fnRef 间接调用：
           //   - fnRef.value 变化（页面重载）→ shallowRef 响应性触发重渲染
-          //   - fnRef.value() 内部访问 pageData.xxx → reactive 依赖追踪正常工作
+          //   - fnRef.value() 内部访问响应式数据 → reactive 依赖追踪正常工作
           setup: () => () => fnRef.value?.(),
         }))
         vueApp.component(name, comp)
@@ -326,7 +322,7 @@ export function usePageRenderer(
    * 将配置应用到渲染状态，触发 form-create 挂载。
    *
    * 时序：
-   * 1. rules / CSS / pageData 写入
+   * 1. rules / CSS 写入
    * 2. DataSet 初始化 + PAGE_DATASET 能力注入
    * 3. 脚本编译（不执行 __init__）
    * 4. Render* 函数注册为全局 Vue 组件
@@ -335,7 +331,6 @@ export function usePageRenderer(
    */
   async function applyConfig(pageId: string, config: PageConfig): Promise<void> {
     originalRules.value = (config.rule ?? []) as unknown as Rule[]
-    Object.assign(pageData, config.data)
     if (config.css) setScopedCss(config.css)
 
     initDataSet(config.data)
@@ -386,7 +381,6 @@ export function usePageRenderer(
     currentPageId,
     scopedCss,
     boundRules,
-    pageData,
     formApi,
     formCreateOptions,
     loadPageConfig,

@@ -53,7 +53,7 @@ describe('S2: checkDataTableAttached guard', () => {
       },
     })
     const view = ds.getView('Users', 'default')!
-    // 不应抛错；dataSet 可能被 reactive 包装，只检查 dataSetName 等价
+    // 不应抛错；dataSet 可能被外部代理包装，只检查 dataSetName 等价
     expect(view.dataSet.dataSetName).toBe('Test')
     expect(view.crudService).toBeUndefined()  // 未配置 api
     expect(view.crudConfig).toBeUndefined()

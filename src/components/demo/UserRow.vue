@@ -56,7 +56,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS } from '@spark-view/spark-utils'
-import { DATA_SOURCE } from '@spark-view/spark-data'
+import { DATA_SOURCE } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 
 interface Props {
