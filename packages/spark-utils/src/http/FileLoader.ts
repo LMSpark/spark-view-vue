@@ -153,7 +153,8 @@ export class FileLoader {
 
         // 获取新内容
         if (!result.content || !result.timestamp) {
-          throw new Error('响应格式错误：缺少 content 或 timestamp')
+          // 文件不存在或响应体为空（如可选的 style.css）——静默返回，不抛异常避免 logger.error
+          return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false }
         }
 
         // 执行 transform 并缓存结果（不缓存原始文件）
@@ -304,7 +305,8 @@ export class FileLoader {
       }
 
       if (!result.content || !result.timestamp) {
-        throw new Error('响应格式错误：缺少 content 或 timestamp')
+        // 文件不存在或响应体为空（如可选的 style.css）——静默返回，不抛异常避免 logger.error
+        return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false }
       }
 
       this.writeEntry<string>(fileName, result.content, result.timestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
