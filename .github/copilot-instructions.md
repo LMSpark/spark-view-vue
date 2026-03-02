@@ -152,8 +152,8 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 
 | 变量 | 类型 | 说明 |
 |------|------|------|
-| `$api` | FormCreate API | 读写表单字段值（`$api.getValue / setValue`） |
-| `$route` | `RouteLocationNormalizedLoaded` | 当前路由 |
+| `$api` | `IFormAPI \| null` | 表单操作（`getValue / setValue / hidden / disabled` 等），框架无关接口 |
+| `$route` | `IPageRoute` | 当前路由快照（`path, params, query, name`），框架无关接口 |
 | `$el` | `() => HTMLElement \| null` | 页面容器元素 |
 | `$query` | `(sel) => HTMLElement \| null` | DOM 单元素查询 |
 | `$queryAll` | `(sel) => NodeListOf<Element>` | DOM 多元素查询 |
@@ -161,10 +161,8 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 | `$rebindRules` | `() => void` | 触发 form-create 重建规则（谨慎调用，会重置展开状态等） |
 | `$refreshData` | `(key?) => Promise<void>` | 刷新数据（可选指定表名） |
 | `$page` | `IPageServiceCapability` | ✅ **推荐** UI 消息、确认、输入、导航（框架无关） |
-| `ElMessage` | Element Plus | ⚠️ 仅用于 `h(...)` 渲染函数内，业务逻辑请用 `$page` |
-| `ElMessageBox` | Element Plus | ⚠️ 同上，业务逻辑请用 `$page` |
 | `SparkData` | SparkData 命名空间 | `createTreeManager` 等工具 |
-| `h` | Vue `h` 函数 | 渲染函数（直接使用，无需解构） |
+| `h` | Vue `h` 函数 | 渲染函数专用（`Render*` 函数内使用） |
 
 ### ❗ 脚本禁止事项
 
@@ -173,9 +171,9 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 | `$data` | 已移除 | `$dataSet`（数据）/ `_pageState`（UI 状态） |
 | `window.xxx = function` | 沙箱内变量无需挂 window | 直接用 `function xxx() {}` 声明 |
 | `window.Vue` | `h` 已直接注入 | 直接用 `h(...)` |
-| `$data._imports.ElMessage` | legacy hack | 直接用 `$page.showMessage(...)` |
-| `ElMessage.xxx(...)` 用于业务逻辑 | 耦合 Element Plus | `$page.showMessage / showConfirm / showPrompt / showAlert` |
-| `ElMessageBox.xxx(...)` 用于业务逻辑 | 耦合 Element Plus | `$page.showConfirm / showPrompt / showAlert` |
+| `ElMessage.xxx(...)` | **已从沙箱移除** | `$page.showMessage / showConfirm / showPrompt / showAlert` |
+| `ElMessageBox.xxx(...)` | **已从沙箱移除** | `$page.showConfirm / showPrompt / showAlert` |
+| Vue Router / FormCreate 直接 import | 沙箱不支持 ESM | `$route`（IPageRoute）/ `$api`（IFormAPI）已注入 |
 | `import` 语句 | 沙箱不支持 ESM | 所有依赖通过沙箱注入 |
 
 ### UI 状态存储模式
