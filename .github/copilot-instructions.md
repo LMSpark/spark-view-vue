@@ -48,11 +48,8 @@ SPARK 的核心设计目标是**让业务需求尽量通过配置表达，最大
 - **减少配置噪音**：合理设定默认值，让最常见场景"零配置即可工作"
 - 任何让 `script.js` 变得更短、或把样板代码移入框架的 PR，都符合本项目长期方向
 
-- Component `type` 使用 **kebab-case**（如 `spark-ej2-grid`），通过 `Spark.register()` 注册
-- **Dynamic Import** ⚡: `Spark.register('type', () => import('./Component.vue'))` 懒加载
-- **批量注册**: `Spark.createRegister(import.meta.glob('./*.vue')).registerAll({ 'type': './Comp.vue' })`
-- App 安装插件: `app.use(Spark.createPlugin())`（Symbol-based DI，自动创建 rootContext）
-- 组件内使用 `useSparkComponent(config)` 获取 SPARK 上下文
+- Component `type` 使用 **kebab-case**（如 `spark-ej2-grid`），通过 `Spark.register()` 注册（注册 API 详见 [Spark 命名空间 API](#spark-命名空间-api)）
+- App 安装插件: `app.use(Spark.createPlugin())`，组件内使用 `useSparkComponent(config)` 获取 SPARK 上下文
 
 ### ❗ 单一 DataSet 框架（核心约束）
 
@@ -360,22 +357,7 @@ interface IModelPermission {      // 表级 — 存储在 dataSource._modelPerm
 - **Symbol 键**（向后兼容）：`import { DATA_SOURCE } from '@spark-view/spark-component'`
 - **字符串键**（可扩展）：`consume('spark:capability:page-dataset')` — 通过 `CapabilityTypeMap` 声明合并提供类型推断
 
-`normalizeKey(name)` 内部将字符串转换为 `Symbol.for(name)`，与 Symbol 键等价。
-
-**扩展自定义能力键（declaration merging）：**
-```typescript
-// 在项目自己的 capability-keys.ts 中
-declare module '@spark-view/spark-utils' {
-  interface CapabilityTypeMap {
-    'app:field-context': FieldContext
-    'app:context-data': Record<string, unknown>
-  }
-}
-
-// 之后即可直接用字符串调用，有完整类型推断
-const ctx = consume('app:field-context')  // FieldContext | null（自动类型）
-provide('app:context-data', { key: 'value' })
-```
+`normalizeKey(name)` 内部将字符串转换为 `Symbol.for(name)`，与 Symbol 键等价。扩展自定义能力键的完整示例见下方「[新增自定义能力 → 方式二](#新增自定义能力)」。
 
 ### 能力键一览
 
