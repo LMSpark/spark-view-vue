@@ -24,7 +24,7 @@ import {
   type App, type Ref, type Component, type ShallowRef,
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability, type IPageRoute } from '@spark-view/spark-utils'
+import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability, type IPageRoute, type IFormAPI } from '@spark-view/spark-utils'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../capability-keys'
@@ -32,7 +32,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSparkComponent } from '../../composables/useSparkComponent'
 import { SPARK_REGISTRY_KEY } from '../../core/types.js'
 import { usePageDataSet } from './usePageDataSet'
-import type { PageRendererOptions, PageContext, Rule, FormCreateAPI, PageConfig } from '../types'
+import type { PageRendererOptions, PageContext, Rule, PageConfig } from '../types'
 import { useCssScope } from './useCssScope'
 import { useRuleBinding } from './useRuleBinding'
 import { compileFunctions } from '../utils/createSandbox'
@@ -134,35 +134,41 @@ export function usePageRenderer(
       if (typeof fn === 'function') { fn(message); return }
       ElMessage({ message, type })
     },
-    showConfirm: async (message, title, options) => {
+    showConfirm: async (message: string, title?: string, options?: { confirmText?: string; cancelText?: string; type?: 'warning' | 'info' | 'error' | 'success' }) => {
       if (props.confirmService) {
         await props.confirmService.confirm(message, title)
         return true
       }
       try {
+        const confirmText: string = options?.confirmText ?? '确定'
+        const cancelText: string  = options?.cancelText  ?? '取消'
+        const confirmType          = options?.type ?? 'warning'
         await ElMessageBox.confirm(message, title ?? '确认', {
-          confirmButtonText: options?.confirmText ?? '确定',
-          cancelButtonText:  options?.cancelText  ?? '取消',
-          type: options?.type ?? 'warning',
+          confirmButtonText: confirmText,
+          cancelButtonText:  cancelText,
+          type: confirmType,
         })
         return true
       } catch { return false }
     },
-    showPrompt: async (message, title, options) => {
+    showPrompt: async (message: string, title?: string, options?: { placeholder?: string; defaultValue?: string }) => {
       try {
-        const { value } = await ElMessageBox.prompt(message, title ?? '请输入', {
+        const placeholder: string  = options?.placeholder  ?? ''
+        const defaultValue: string = options?.defaultValue ?? ''
+        const result = await ElMessageBox.prompt(message, title ?? '请输入', {
           confirmButtonText: '确定',
           cancelButtonText:  '取消',
-          inputPlaceholder:  options?.placeholder ?? '',
-          inputValue:        options?.defaultValue ?? '',
+          inputPlaceholder:  placeholder,
+          inputValue:        defaultValue,
         })
-        return value
+        return (result as { value: string }).value
       } catch { return null }
     },
-    showAlert: async (message, title, options) => {
+    showAlert: async (message: string, title?: string, options?: { type?: 'warning' | 'info' | 'error' | 'success' }) => {
+      const alertType = options?.type ?? 'info'
       await ElMessageBox.alert(message, title ?? '提示', {
         confirmButtonText: '确定',
-        type: options?.type ?? 'info',
+        type: alertType,
       })
     },
     showLoading: (_show, _text) => { /* 待实现：接入全局加载遮罩服务 */ },
@@ -232,7 +238,7 @@ export function usePageRenderer(
   // $api / $dataSet 使用 getter，保证脚本每次访问都拿到最新值。
 
   const pageContext: PageContext = {
-    get $api()     { return formApi.value as import('@spark-view/spark-utils').IFormAPI | null },
+    get $api()     { return formApi.value as IFormAPI | null },
     get $dataSet() { return pds.dataSet },
 
     $route:    pageRoute,

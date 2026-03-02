@@ -19,6 +19,11 @@ export * from './http/index.js'
 
 export * from './capability/index.js'
 
+// ==================== 业务脚本 API 契约 ====================
+// IPageRoute, IFormAPI, IDataSetLike, IScriptContext, IPageServiceInScript
+// 权威定义在 script-api.ts，capability/symbols.ts 以重导出形式保持向后兼容
+export * from './script-api.js'
+
 // ==================== 共享错误码 ====================
 
 export { SharedErrorCodes, getSharedErrorMessage } from './error-codes'

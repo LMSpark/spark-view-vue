@@ -14,7 +14,7 @@
 import type { Component, h } from 'vue'
 import type { IDataSet, SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
-import type { IPageServiceCapability, IPageRoute, IFormAPI } from '@spark-view/spark-utils'
+import type { IPageServiceCapability, IScriptContext } from '@spark-view/spark-utils'
 import type { ComponentRegistry } from '../../core/types.js'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
@@ -41,44 +41,37 @@ export type Rule = FormCreateRule
 export type FormCreateAPI = FormCreateApi
 
 /**
- * 页面脚本运行时上下文接口
- * 
- * 作用域：单个动态视图（页面配置）的脚本执行环境
- * 生命周期：页面加载时创建，卸载时销毁
- * 
- * 用途：
- * - 为页面脚本（script.js）提供框架能力访问接口
- * - 支持脚本访问 FormCreate API、路由、数据集等
- * - 提供 DOM 查询、数据刷新等常用操作
- * 
- * 注意：
- * - 此 Context 是"页面配置"级别，非"应用页面"级别
- * - 在 SPA 架构中，多个 PageContext 可能同时存在（如 KeepAlive 场景）
- * - 遵循 DIP 原则：依赖接口（IDataSet）而非具体类型（DataSet）
- * 
- * 典型使用场景：
- * - 页面脚本中通过 window.__pageContext 访问
- * - 事件处理函数中访问当前页面的数据和 API
+ * 页面脚本运行时上下文接口（完整沙箱 API）。
+ *
+ * 继承 `IScriptContext`（spark-utils 中的框架无关核心契约），
+ * 在渲染层用具体类型覆盖泛型字段，并附加 `SparkData` / `h` 两个渲染层专有注入。
+ *
+ * **稳定 API（继承自 IScriptContext）**：
+ * `$api` / `$route` / `$el` / `$query` / `$queryAll` /
+ * `$rebindRules` / `$refreshData` / `$dataSet` / `$page`
+ *
+ * **渲染层附加（非脚本 API 核心契约）**：
+ * `SparkData`（数据工具命名空间）/ `h`（Vue 渲染函数，仅 Render* 函数使用）
  */
-export interface PageContext {
-  /** 表单操作 API（框架无关接口，底层 FormCreate 实现） */
-  $api: IFormAPI | null
-  /** 当前路由快照（框架无关接口，底层 Vue Router 实现） */
-  $route: IPageRoute
-  $el: () => HTMLElement | null
-  $query: (selector: string) => HTMLElement | null
-  $queryAll: (selector: string) => NodeListOf<Element>
-  $rebindRules: () => void
-  $refreshData: (key?: string) => Promise<void>
+export interface PageContext extends IScriptContext {
+  /**
+   * @override 覆盖 IScriptContext.$dataSet：从泛型 `IDataSetLike` 精化为 `IDataSet`。
+   * 渲染层注入完整 DataSet 实例，类型更具体，提供类型安全的表/视图访问。
+   */
   $dataSet: IDataSet | null
-  /** ✅ 框架无关 UI 服务（showMessage / showConfirm / showPrompt / showAlert / navigate） */
+
+  /**
+   * @override 覆盖 IScriptContext.$page：从结构等价的 `IPageServiceInScript` 精化为
+   * `IPageServiceCapability`（能力系统的官方接口，与 PAGE_SERVICE 能力键匹配）。
+   */
   $page: IPageServiceCapability
 
-  /** SPARK 数据空间命名空间（createTreeManager 等工具） */
+  /** SPARK 数据工具命名空间（`createTreeManager` 等工具），沙箱内直接可用 */
   SparkData: SparkData
+
   /**
-   * Vue h 函数 — 仅供 Render* 渲染函数使用，业务逻辑不应依赖。
-   * 如需显示消息/导航，请使用 $page。
+   * Vue `h` 函数 — 仅供 `Render*` 渲染函数使用，业务逻辑不应依赖。
+   * 如需显示消息/导航，请使用 `$page`。
    */
   h: h
 }
