@@ -55,10 +55,7 @@ export type FormCreateAPI = FormCreateApi
  * `SparkData`（数据工具命名空间）/ `h`（Vue 渲染函数，仅 Render* 函数使用）
  */
 export interface PageContext extends IScriptContext {
-  /**
-   * @override 覆盖 IScriptContext.$dataSet：从泛型 `IDataSetLike` 精化为 `IDataSet`。
-   * 渲染层注入完整 DataSet 实例，类型更具体，提供类型安全的表/视图访问。
-   */
+  /** 页面级 DataSet 实例（渲染层注入，类型来自 @spark-view/spark-data） */
   $dataSet: IDataSet | null
 
   /**

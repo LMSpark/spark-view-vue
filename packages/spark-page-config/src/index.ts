@@ -49,11 +49,6 @@ export { SparkPageConfig } from './namespace'
 export type {
   IPageRoute,
   IFormAPI,
-  IScriptDataRow,
-  IScriptDataViewEventMap,
-  IScriptDataView,
-  IEventEmitterLike,
-  IDataSetLike,
   IScriptContext,
   IPageServiceInScript,
 } from './script-api'
