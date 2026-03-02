@@ -125,6 +125,13 @@ export class CascadeDelegate {
     }
 
     if (rel.autoLoad !== false) {
+      // 无 API 配置（内联静态数据）→ 内存级联过滤，无需发起网络请求
+      if (!this.host.crudService) {
+        logger.debug(`内存级联过滤 ${this.host.tableName}:${this.host.viewId}（无 API 配置）`)
+        this.host.applyInMemoryCascade(rel, parentRows)
+        return
+      }
+
       // 使用 refresh()（下行刷新）而非 requestData()（上行请求）：
       // 父数据变化时子视图可能已处于 Loaded，必须强制重新请求
       // refresh() = resetState() + requestData()，无需此处手动修改 requestState

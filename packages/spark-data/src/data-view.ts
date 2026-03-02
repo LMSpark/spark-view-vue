@@ -24,7 +24,7 @@
 
 import type {
   IDataRow, IViewMetadata, FilterExpression, SortExpression,
-  QueryParams, DataColumn,
+  QueryParams, DataColumn, DataRelation,
   CrudResult, BatchResult, CrudOperationConfig,
   IDataSource,
   FlatTreeNode, TreePath, NestedTreeSearchResult,
@@ -1072,6 +1072,37 @@ export class DataView implements IDataSource {
   async refresh(): Promise<void> {
     this.requestState = RequestState.Idle
     return this.requestData()
+  }
+
+  /**
+   * 无 API 时的内存级联过滤（由 CascadeDelegate 在 crudService 未配置时调用）。
+   *
+   * 从 DataTable.rows（内联静态数据）按关系字段过滤，直接写入视图，
+   * 等效于一次无网络的 loadFromServer。
+   *
+   * - `rel.childField` 为子表过滤字段（如 `userId`）
+   * - `rel.parentField` 为父表匹配字段，未指定则回退 `'id'`
+   */
+  applyInMemoryCascade(rel: DataRelation, parentRows: IDataRow[]): void {
+    // 从 DataTable.rows 读取全量静态源数据（可在多次父行切换中反复过滤）
+    const srcRows: IDataRow[] = this._dataTable?.rows ?? []
+    const childField = typeof rel.childField === 'string' ? rel.childField : undefined
+    let filteredRows: IDataRow[]
+
+    if (childField && parentRows.length > 0) {
+      const pField = typeof rel.parentField === 'string' ? rel.parentField : 'id'
+      const parentValues = new Set<unknown>(parentRows.map((r: IDataRow) => r[pField]))
+      filteredRows = srcRows.filter((r: IDataRow) => parentValues.has(r[childField]))
+    } else {
+      // 无 childField：显示全部源行；无 parentRows 不该走到此处（已在 respondToParentChange 前置守卫）
+      filteredRows = srcRows.slice()
+    }
+
+    this.updateFromServer(filteredRows)
+    this.selectionDelegate.applyAutoFirst()
+    this.requestState = RequestState.Loaded
+    this.events.emit('requestStateChanged', this.requestState)
+    this.emitRowsChanged()
   }
 
   // ─────────────────────────────────────────────

@@ -5,7 +5,7 @@
  * 遵循 ISP 原则：Delegate 只依赖自己需要的方法。
  */
 
-import type { IDataRow, IDataSet, CrudResult, CrudOperationConfig, RequestState } from '../types'
+import type { IDataRow, IDataSet, DataRelation, CrudResult, CrudOperationConfig, RequestState } from '../types'
 import type { CrudService } from '../crud-service'
 import type { DataValidator } from '../validation'
 
@@ -171,6 +171,11 @@ export interface ICascadeHost extends IViewIdentity {
   readonly dataSet: IDataSet
   /** 只读，级联时检查状态 */
   readonly requestState: RequestState
+  /**
+   * CrudService 实例（未配置 API 时为 undefined）。
+   * CascadeDelegate 用此字段判断是走网络加载还是内存过滤。
+   */
+  readonly crudService: CrudService | undefined
   /** 静默重置状态（requestState→Idle，清空行和选中） */
   resetState(): void
   /**
@@ -183,6 +188,12 @@ export interface ICascadeHost extends IViewIdentity {
    * 下行触发（父数据变化→级联子视图）用此方法。非阻塞，结果经 stateChanged 事件通知。
    */
   refresh(): Promise<void>
+  /**
+   * 无 API 时的内存级联过滤。
+   * 从源 DataTable.rows 中按 rel.childField === parentRow[parentField|'id'] 过滤，
+   * 结果直接写入视图（相当于一次无网络的 loadFromServer）。
+   */
+  applyInMemoryCascade(rel: DataRelation, parentRows: IDataRow[]): void
 }
 
 // ─────────────────────────────────────────────
