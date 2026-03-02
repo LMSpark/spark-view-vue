@@ -4,13 +4,14 @@
 // 
 // 沙箱注入的全局变量:
 //   - $api: FormCreate API
-//   - $route: Vue Router 路由
+//   - $route: 当前路由快照 (IPageRoute)
 //   - $el: 页面容器元素 (() => HTMLElement)
 //   - $query: DOM 查询单个元素
 //   - $queryAll: DOM 查询所有元素
-//   - $dataSet: DataSet 实例
-//   - $rebindRules: 重新绑定规则
-//   - $refreshData: 刷新数据
+//   - $dataSet: 页面级 DataSet 实例
+//   - $rebindRules: 重新绑定规则（触发 form-create 重建）
+//   - $refreshData: 刷新数据 (key?) => Promise<void>
+//   - $page: UI 消息、确认框、导航（IPageServiceCapability）
 //   - SparkData: SPARK 数据空间命名空间
 //   - h: Vue h 函数
 //

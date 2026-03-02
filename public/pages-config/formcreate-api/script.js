@@ -4,7 +4,13 @@
  */
 
 // 沙箱注入的全局变量: 
-// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
+
+// 模块级 UI 状态（非 DataSet 数据，不具备 Vue 响应式，变更后需调用 $rebindRules() 刷新）
+let _pageState = {
+  apiLog: [],       // API 调用日志列表
+  showAdvanced: false  // 是否显示高级选项
+}
 
 // 添加日志
 function addLog(message, type = 'info') {
@@ -12,6 +18,7 @@ function addLog(message, type = 'info') {
   _pageState.apiLog.unshift({ time: timestamp, message, type })
   if (_pageState.apiLog.length > 50) _pageState.apiLog = _pageState.apiLog.slice(0, 50)
   console.log(`[${timestamp}] ${message}`)
+  $rebindRules()  // _pageState 非响应式，必须手动触发 RenderApiLog 重新执行
 }
 
 /**
@@ -97,6 +104,7 @@ function handleClearValidate() {
  */
 function handleToggleAdvanced() {
   _pageState.showAdvanced = !_pageState.showAdvanced
+  // addLog 内部已调用 $rebindRules()，此处无需重复调用
   addLog(`🔧 高级选项: ${_pageState.showAdvanced ? '显示' : '隐藏'}`, 'info')
   $page.showMessage(`高级选项已${_pageState.showAdvanced ? '显示' : '隐藏'}`, 'info')
 }

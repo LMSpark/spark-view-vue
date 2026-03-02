@@ -1,6 +1,6 @@
 ﻿// 页面脚本
 // 沙箱注入的全局变量: 
-// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
 
 // 页面初始化（直接使用沙箱变量）
 console.log('🚀 工作台页面已加载');
@@ -64,14 +64,14 @@ function testButtonClick() {
 
 function showAlert() {
     const now = new Date().toLocaleTimeString();
-    alert('🔔 当前时间: ' + now);
+    $page.showAlert('🔔 当前时间: ' + now, '提示');
 }
 
 function getFormData() {
     if ($api) {
         const data = $api.formData();
         console.log('📋 表单数据:', data);
-        alert('表单数据: ' + JSON.stringify(data, null, 2));
+        $page.showAlert('表单数据: ' + JSON.stringify(data, null, 2), '表单数据');
         return data;
     }
     console.warn('⚠️ 表单 API 未就绪');
