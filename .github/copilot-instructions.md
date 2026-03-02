@@ -27,6 +27,27 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **Expression compiler**: `packages/spark-data/src/strategies/computed-column-delegate.ts`
 
 ## Project conventions & patterns 📌
+
+### 🎯 长期使命：配置驱动，零代码，降低门槛
+
+SPARK 的核心设计目标是**让业务需求尽量通过配置表达，最大程度压缩 `script.js` 业务代码量**。
+
+| 层次 | 目标 | 实现路径 |
+|------|------|----------|
+| **数据绑定** | 零代码连接数据源 | `dataKey` → DataView → UI 自动双向 |
+| **派生字段** | 零代码计算列 | `computeExpression` 表达式列（纯配置） |
+| **汇总聚合** | 零代码汇总行 | `aggregates` 视图级配置 |
+| **父子级联** | 零代码联动 | `DataRelation` + 内存/API 自动路由 |
+| **权限渲染** | 零代码权限控制 | `_perm` 快照驱动字段可见/可编辑 |
+| **交互逻辑** | 最小化脚本量 | 仅事件响应/业务分支保留在 `script.js` |
+
+**指导原则**：
+- 优先通过 `rule.json` / `pagedata.json` 配置解决需求，配置无法表达时才写 `script.js`
+- `script.js` 只写**业务分支逻辑**（条件判断、数据变换、UI 反馈），不写框架/数据管理样板代码
+- 新增能力优先设计为**配置项**（而非命令式 API），降低使用门槛
+- **减少配置噪音**：合理设定默认值，让最常见场景"零配置即可工作"
+- 任何让 `script.js` 变得更短、或把样板代码移入框架的 PR，都符合本项目长期方向
+
 - Component `type` 使用 **kebab-case**（如 `spark-ej2-grid`），通过 `Spark.register()` 注册
 - **Dynamic Import** ⚡: `Spark.register('type', () => import('./Component.vue'))` 懒加载
 - **批量注册**: `Spark.createRegister(import.meta.glob('./*.vue')).registerAll({ 'type': './Comp.vue' })`
@@ -549,6 +570,34 @@ packages/
         ├── http/                  # Request, FileLoader
         └── lazy-loader.ts        # useSyncfusionLoader, useLazyLoader
 ```
+
+### 包依赖规则（禁止循环依赖）
+
+依赖方向严格**单向向上**，下层包**禁止**反向依赖上层包：
+
+```
+spark-utils          ← 零依赖（基础设施底层，纯 TS）
+    ↑
+spark-data           ← 仅依赖 spark-utils（纯 TS）
+    ↑
+spark-page-config    ← 仅依赖 spark-data + spark-utils（纯 TS）
+    ↑
+spark-component      ← 依赖 spark-data + spark-page-config + spark-utils
+                        （+ Vue / Element Plus peerDeps）
+    ↑
+spark-app            ← 依赖 spark-component + spark-page-config + spark-utils
+                        （+ Vue / vue-router peerDeps）
+    ↑
+主项目 src/          ← 可依赖所有包；features/ / public/pages-config/ 仅供主项目消费
+```
+
+**禁止的反向依赖**：
+- `spark-utils` 禁止 import `spark-data` / `spark-component` / `spark-app`
+- `spark-data` 禁止 import `spark-component` / `spark-app`
+- `spark-page-config` 禁止 import `spark-component` / `spark-app`
+- `spark-component` 禁止 import `spark-app`
+- 任何包禁止 import 主项目 `src/` 路径
+- 违反上述规则将引入循环依赖，导致构建失败或运行时初始化顺序错误
 
 ### ⚠️ 框架隔离约束（纯 JS 包）
 
