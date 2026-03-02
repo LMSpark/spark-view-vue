@@ -581,6 +581,18 @@ spark-app            ← 依赖 spark-component + spark-page-config + spark-util
 - 任何包禁止 import 主项目 `src/` 路径
 - 违反上述规则将引入循环依赖，导致构建失败或运行时初始化顺序错误
 
+**禁止跨包相对路径引用**：包内代码只能通过**包名**引用其他包，禁止使用相对路径穿越 `packages/` 边界：
+```typescript
+// ✅ 正确：通过包名引用
+import { DataSet } from '@spark-view/spark-data'
+import { APP_SERVICES } from '@spark-view/spark-utils'
+
+// ❌ 错误：相对路径跨包
+import { DataSet } from '../../spark-data/src/dataset'
+import { APP_SERVICES } from '../../../spark-utils/src/capability/symbols'
+```
+相对路径跨包引用会绕过 pnpm workspace 解析，破坏 dist 构建的类型声明链，导致发布后消费方出现类型错误。
+
 ### ⚠️ 框架隔离约束（纯 JS 包）
 
 **`spark-utils`、`spark-data`、`spark-page-config`** 三个包**零前端框架依赖**（Vue / React / Element Plus 等均不引入），属于纯 TypeScript/JavaScript 库：
