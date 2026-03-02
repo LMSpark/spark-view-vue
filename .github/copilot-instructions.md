@@ -200,7 +200,7 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 | `$query` | `(sel) => HTMLElement \| null` | DOM 单元素查询 |
 | `$queryAll` | `(sel) => NodeListOf<Element>` | DOM 多元素查询 |
 | `$dataSet` | `IDataSet \| null` | **页面级 DataSet**（数据唯一入口） |
-| `$rebindRules` | `() => void` | 触发 form-create 重建规则（谨慎调用，会重置展开状态等） |
+| `$rebindRules` | `() => void` | 触发 form-create **完整重建**规则（⚠️ **高危**：会折叠所有树节点、重置输入框、丢失滚动位置，尽量避免） |
 | `$refreshData` | `(key?) => Promise<void>` | 刷新数据（可选指定表名） |
 | `$page` | `IPageServiceCapability` | ✅ **推荐** UI 消息、确认、输入、导航（框架无关） |
 | `SparkData` | SparkData 命名空间 | `createTreeManager` 等工具 |
@@ -218,6 +218,7 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 | Vue Router / FormCreate 直接 import | 沙箱不支持 ESM | `$route`（IPageRoute）/ `$api`（IFormAPI）已注入 |
 | `import` 语句 | 沙箱不支持 ESM | 所有依赖通过沙箱注入 |
 | `view.setCurrentRow(row)` 在 `currentChange` 回调中 | `injectTableEvents`（bindRules.ts）已在回调后通过 PK 查干净行并调用；回调里的 row 被 form-create 污染（含 `$f/api/rule` 属性），直接传入会触发 `[WARN] 行缺少主键` | 只写业务逻辑，DataView 同步由框架负责 |
+| 在树节点事件（`onNodeClick` 等）内调用 `$rebindRules()` | 重建规则会折叠所有已展开节点，UX 破坏 | 用 `DataView.replaceRows()` + DOM 直写（见下方「避免 `$rebindRules()` 破坏树展开」）|
 
 ### UI 状态存储模式
 
@@ -243,6 +244,73 @@ function RenderNodeInfo() {
 > 必须调用 `$rebindRules()`（form-create 重建规则），或通过 `$dataSet` 的 DataView
 > 方法（如 `view.replaceRows()`）驱动——DataView 事件会自动更新订阅了该视图的组件，
 > 无需 `$rebindRules()`。
+
+### 避免 `$rebindRules()` 破坏树展开状态 🌲
+
+**核心原则**：凡是页面包含 `r-tree` / el-tree，任何交互都**不得**调用 `$rebindRules()`，否则树节点全部折叠。用以下两种模式替代：
+
+**模式 A — 纯 UI 状态（非 DataSet）→ DOM 直写**
+
+适用于节点信息面板、统计数字等只读展示区域：
+
+```javascript
+// rule.json 中给容器加 id/class：
+// { "type": "div", "class": "node-info", ... }
+
+// script.js 中直接写 innerHTML，不触发 form-create 规则重建
+function _flushNodeInfoDOM() {
+  const container = $query('.node-info')   // 或 $query('#my-panel')
+  if (!container) return
+  const node = _pageState.selectedNode
+  if (!node) {
+    container.innerHTML = '<p style="color:#909399">请选择节点</p>'
+    return
+  }
+  container.innerHTML = `<p>${node.name}（${node.type}）</p>`
+}
+
+function handleNodeClick(nodeData) {
+  _pageState.selectedNode = nodeData
+  _flushNodeInfoDOM()   // ✅ 不会触发树折叠
+}
+```
+
+**模式 B — 树数据变更（增/删节点）→ DataView.replaceRows()**
+
+r-tree 通过 DataKey 绑定到 `hierarchicalTreeData` 视图；修改树数据时重建嵌套结构写入 DataView，DataView 变更事件自动刷新树，展开状态由 el-tree 内部维护不受影响：
+
+```javascript
+// pagedata.json：声明空表（DataSet 须存在该表才能 getView）
+// { "hierarchicalTreeData": [] }
+
+// rule.json：r-tree 使用 DataKey，不要用裸字符串 dataSource
+// { "type": "r-tree", "dataKey": "PageDataSet@hierarchicalTreeData@default@rows", ... }
+
+// script.js __init__：初始化时写入
+function __init__() {
+  const nodes = /* 从 treeData 表读出的扁平节点 */ []
+  treeManager = SparkData.createTreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, nodes)
+  const nestedTree = treeManager.buildNestedTree()
+  $dataSet?.getView('hierarchicalTreeData', 'default')?.replaceRows(nestedTree)  // 驱动 r-tree
+  // ❌ 绝不调用 $rebindRules()
+}
+
+// 添加/删除节点后同样用 replaceRows
+function handleAddNode() {
+  treeManager.addNodesToCache([newNode])
+  const nestedTree = treeManager.buildNestedTree()
+  $dataSet?.getView('hierarchicalTreeData', 'default')?.replaceRows(nestedTree)  // ✅ 树自动刷新，展开状态保留
+}
+```
+
+**速查决策表**
+
+| 场景 | 错误做法 | 正确做法 |
+|------|---------|----------|
+| 节点点击 → 更新右侧面板 | `$rebindRules()` | `_flushXxxDOM()` |
+| 添加/删除节点 → 更新树 | `_pageState.xxx = tree; $rebindRules()` | `view.replaceRows(nestedTree)` |
+| 子表数据联动 | `$rebindRules()` | `childView.replaceRows(rows)` |
+| 渲染函数 `Render*` 初次渲染 | — | 正常，仅首次 form-create 构建时执行，之后靠 DOM 直写 |
 
 ### 数据访问模式
 
