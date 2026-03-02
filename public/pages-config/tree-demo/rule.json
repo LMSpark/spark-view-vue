@@ -131,9 +131,7 @@
                       {
                         "type": "r-tree",
                         "key": "organization-tree",
-                        "dataSource": "hierarchicalTreeData",
-                        "dataKey": "expandedKeys",
-                        "currentKey": "currentNodeKey",
+                        "dataKey": "PageDataSet@hierarchicalTreeData@default@rows",
                         "props": {
                           "node-key": "id",
                           "highlight-current": true,

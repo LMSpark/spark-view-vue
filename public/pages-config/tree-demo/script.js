@@ -62,16 +62,6 @@ function __init__() {
   }
   console.log('📦 treeConfig:', treeConfig, '节点数:', nodes.length)
 
-  // ── 从 DataSet 取出 hierarchicalTreeData 并写入 _pageState 供 r-tree 使用 ──
-  const hierarchTable = dataSet.getTable('hierarchicalTreeData')
-  if (hierarchTable) {
-    const rows = hierarchTable.views['default']?.rows
-    if (rows && rows.length > 0) {
-      pageData.hierarchicalTreeData = rows
-      console.log('🌲 hierarchicalTreeData 根节点数:', rows.length)
-    }
-  }
-
   // ── 创建 TreeManager ──
   treeManager = SparkData.createTreeManager(treeConfig, nodes)
   if (!treeManager) {
@@ -83,10 +73,17 @@ function __init__() {
     treeManager.enrichNodes()
   }
 
-  console.log('✅ TreeManager 初始化完成，扁平节点数:', nodes.length)
+  // ── 构建嵌套树并写入 DataSet → DataView 变更自动驱动 r-tree 更新 ──
+  const nestedTree = treeManager.buildNestedTree()
+  const hView = dataSet.getView('hierarchicalTreeData', 'default')
+  if (hView) {
+    hView.replaceRows(nestedTree)
+    console.log('🌲 hierarchicalTreeData 写入 DataSet，根节点数:', nestedTree.length)
+  } else {
+    console.error('❌ hierarchicalTreeData 视图未找到，请检查 pagedata.json')
+  }
 
-  // 写入 _pageState 后需要手动触发重绑，让 r-tree 拿到 hierarchicalTreeData
-  $rebindRules()
+  console.log('✅ TreeManager 初始化完成，扁平节点数:', nodes.length)
 }
 
 /**
