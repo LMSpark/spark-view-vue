@@ -7,6 +7,7 @@
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 import type { RouteConfig } from '@spark-view/spark-page-config'
+import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
@@ -230,15 +231,15 @@ export async function start(options: StartOptions): Promise<void> {
         startLogger.debug('✅ FCPageRenderer 已导入')
       }
       
-      const dynamicRouterOptions: import('@spark-view/spark-page-config').DynamicRouterOptions = {
+      const dynamicRouterOptions: DynamicRouterOptions = {
         router,
         configLoader,
         pageComponent, // FCPageRenderer 或用户提供的组件，if 块已确保非空
         ...(pageConfig.beforeRegister !== undefined && { beforeRegister: pageConfig.beforeRegister }),
         ...(pageConfig.afterRegister !== undefined && { afterRegister: pageConfig.afterRegister })
       }
-      
-      const dynamicRouter = SparkPageConfig.createDynamicRouter(dynamicRouterOptions)
+
+      const dynamicRouter = createDynamicRouter(dynamicRouterOptions)
       
       await dynamicRouter.registerRoutes()
       router.addRoute({ path: '/', redirect: pageConfig.homePath })
