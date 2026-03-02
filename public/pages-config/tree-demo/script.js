@@ -5,7 +5,6 @@
 // 沙箱注入的全局变量:
 //   - $api: FormCreate API
 //   - $route: Vue Router 路由
-//   - $data: 页面数据（reactive）
 //   - $el: 页面容器元素 (() => HTMLElement)
 //   - $query: DOM 查询单个元素
 //   - $queryAll: DOM 查询所有元素
@@ -24,6 +23,7 @@
 
 let treeManager = null
 let _initialized = false
+let _pageState = {}
 
 /**
  * 初始化树管理器
@@ -31,7 +31,7 @@ let _initialized = false
 function __init__() {
   if (_initialized) return   // 防止 $rebindRules() 触发重复初始化
   _initialized = true
-  const pageData = $data
+  const pageData = _pageState
   const dataSet = $dataSet
 
   // 初始化展开状态数组
@@ -63,7 +63,7 @@ function __init__() {
   }
   console.log('📦 treeConfig:', treeConfig, '节点数:', nodes.length)
 
-  // ── 从 DataSet 取出 hierarchicalTreeData 并写回 $data 供 r-tree 使用 ──
+  // ── 从 DataSet 取出 hierarchicalTreeData 并写入 _pageState 供 r-tree 使用 ──
   const hierarchTable = dataSet.getTable('hierarchicalTreeData')
   if (hierarchTable) {
     const rows = hierarchTable.views['default']?.rows
@@ -86,18 +86,18 @@ function __init__() {
 
   console.log('✅ TreeManager 初始化完成，扁平节点数:', nodes.length)
 
-  // 写入 $data 后需要手动触发重绑，让 r-tree 拿到 hierarchicalTreeData
+  // 写入 _pageState 后需要手动触发重绑，让 r-tree 拿到 hierarchicalTreeData
   $rebindRules()
 }
 
 /**
  * RenderNodeInfo — 响应式节点信息面板
- * 直接读取 $data.selectedNode / $data.selectedPathText，
+ * 直接读取 _pageState.selectedNode / _pageState.selectedPathText，
  * 依赖 Vue 响应式自动刷新，无需 $rebindRules()
  */
 function RenderNodeInfo() {
-  const node = $data.selectedNode
-  const pathText = $data.selectedPathText
+  const node = _pageState.selectedNode
+  const pathText = _pageState.selectedPathText
 
   if (!node) {
     return h('p', {
@@ -143,7 +143,7 @@ function RenderNodeInfo() {
  */
 function testNodeClick() {
   console.log('🧪 测试按钮被点击！')
-  console.log('🧪 $data:', $data)
+  console.log('🧪 _pageState:', _pageState)
   console.log('🧪 handleNodeClick 函数:', typeof handleNodeClick)
   
   // 模拟点击第一个节点
@@ -175,7 +175,7 @@ function handleNodeExpand(...args) {
   if (data && (data.$f || data.api)) {
     data = args[1]
   }
-  const pageData = $data
+  const pageData = _pageState
   console.log('🔽 展开节点:', data)
   
   // 初始化 expandedKeys（如果不存在）
@@ -205,7 +205,7 @@ function handleNodeCollapse(...args) {
   if (data && (data.$f || data.api)) {
     data = args[1]
   }
-  const pageData = $data
+  const pageData = _pageState
   console.log('🔼 收起节点:', data)
   
   // 初始化 expandedKeys（如果不存在）
@@ -228,7 +228,7 @@ function handleNodeCollapse(...args) {
  * 注意：FormCreate 会在第一个参数注入上下文（包含 $f, api 等），需要跳过
  */
 function handleNodeClick(...args) {
-  const pageData = $data
+  const pageData = _pageState
   
   // 跳过 FormCreate 注入的上下文参数（包含 $f 或 api 字段）
   let nodeData = args[0]
@@ -315,14 +315,15 @@ function handleNodeClick(...args) {
     console.error('级联更新子节点失败:', e3)
   }
 
-  console.log('📍 handleNodeClick 完成，节点信息已响应式更新')
+  console.log('📍 handleNodeClick 完成')
+  $rebindRules()
 }
 
 /**
  * 处理搜索输入变化
  */
 function handleSearchInput(value) {
-  const pageData = $data
+  const pageData = _pageState
   pageData.searchKeyword = value
   console.log('📝 搜索输入变化:', value)
   // ⚠️ 不调用 $rebindRules()，避免输入框被重置
@@ -333,7 +334,7 @@ function handleSearchInput(value) {
  */
 function handleSearch() {
   console.log('🎯 handleSearch 被调用！')
-  const pageData = $data
+  const pageData = _pageState
   
   // 🔑 从沙箱上下文获取 formApi
   const keyword = $api?.getValue('searchKeyword') || ''
@@ -391,7 +392,7 @@ function handleSearchKeyup(event) {
  * 清空搜索
  */
 function handleClearSearch() {
-  $data.searchKeyword = ''
+  _pageState.searchKeyword = ''
   const childView = $dataSet?.getView?.('childNodes')
   if (childView) childView.replaceRows([])
 }
@@ -400,7 +401,7 @@ function handleClearSearch() {
  * 定位到搜索结果
  */
 function handleLocateNode(row, column, event) {
-  const pageData = $data
+  const pageData = _pageState
   
   console.log('🎯 定位到节点 - row:', row)
   console.log('🎯 定位到节点 - column:', column)
@@ -436,7 +437,7 @@ function handleLocateNode(row, column, event) {
  * 切换树模式
  */
 function handleToggleMode() {
-  const pageData = $data
+  const pageData = _pageState
   const currentMode = pageData.treeData.config.mode
   const newMode = currentMode === 'flat' ? 'nested' : 'flat'
   
@@ -461,7 +462,7 @@ function handleToggleMode() {
  * 展开全部
  */
 function handleExpandAll() {
-  const pageData = $data
+  const pageData = _pageState
   console.log('🔽 展开全部节点')
   ElMessage?.success('展开全部功能需要 UI 组件支持')
 }
@@ -470,7 +471,7 @@ function handleExpandAll() {
  * 收起全部
  */
 function handleCollapseAll() {
-  const pageData = $data
+  const pageData = _pageState
   console.log('🔼 收起全部节点')
   ElMessage?.success('收起全部功能需要 UI 组件支持')
 }
@@ -479,7 +480,7 @@ function handleCollapseAll() {
  * 添加节点
  */
 async function handleAddNode() {
-  const pageData = $data
+  const pageData = _pageState
   
   if (!pageData.selectedNode) {
     ElMessage?.warning('请先选择父节点')
@@ -529,7 +530,7 @@ async function handleAddNode() {
  * 删除节点
  */
 async function handleDeleteNode() {
-  const pageData = $data
+  const pageData = _pageState
   
   if (!pageData.selectedNode) {
     ElMessage?.warning('请先选择要删除的节点')
@@ -573,7 +574,7 @@ async function handleDeleteNode() {
  * 导出树数据
  */
 function handleExport() {
-  const pageData = $data
+  const pageData = _pageState
   
   if (!treeManager) {
     ElMessage?.error('TreeManager 未初始化')
@@ -599,7 +600,7 @@ function handleExport() {
  * 查看节点详情
  */
 function handleViewDetails(node) {
-  const pageData = $data
+  const pageData = _pageState
   
   if (!treeManager) {
     ElMessage?.error('TreeManager 未初始化')

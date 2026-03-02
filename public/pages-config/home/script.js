@@ -1,11 +1,11 @@
 // 页面脚本
 // 沙箱注入的全局变量: 
-// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
 
 // 页面初始化（直接使用沙箱变量）
 console.log('🚀 工作台页面已加载');
-console.log('📦 页面数据:', $data);
+console.log('📦 DataSet:', $dataSet);
 console.log('🛣️ 当前路由:', $route?.path);
 console.log('📄 页面容器:', $el());
 

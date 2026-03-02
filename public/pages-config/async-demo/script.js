@@ -1,7 +1,6 @@
 // 沙箱注入的全局变量: 
 // - $api: FormCreate API
 // - $route: Vue Router 路由
-// - $data: 页面数据（响应式）
 // - $el: 页面容器元素 (() => HTMLElement)
 // - $query: DOM 查询单个元素
 // - $queryAll: DOM 查询所有元素
@@ -16,12 +15,12 @@
 /**
  * 刷新所有数据
  */
-window.refreshAllData = async function() {
+async function refreshAllData() {
   try {
     ElMessage.info('正在刷新数据...')
     await $refreshData()
     ElMessage.success('所有数据刷新成功！')
-    console.log('刷新后的数据:', $data)
+    console.log('刷新后的数据:', $dataSet)
   } catch (error) {
     ElMessage.error('刷新数据失败')
     console.error('刷新失败:', error)
@@ -31,12 +30,12 @@ window.refreshAllData = async function() {
 /**
  * 只刷新订单数据
  */
-window.refreshOrders = async function() {
+async function refreshOrders() {
   try {
     ElMessage.info('正在刷新订单数据...')
     await $refreshData('recentOrders')
     ElMessage.success('订单数据刷新成功！')
-    console.log('最新订单:', $data.recentOrders)
+    console.log('最新订单:', $dataSet?.getView?.('recentOrders', 'default')?.rows)
   } catch (error) {
     ElMessage.error('刷新订单数据失败')
     console.error('刷新失败:', error)

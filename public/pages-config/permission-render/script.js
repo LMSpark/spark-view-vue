@@ -4,15 +4,17 @@
  */
 
 // 沙箱注入的全局变量: 
-// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
+
+let _pageState = { currentUser: '', tableData: [], responseData: null }
 
 /**
  * 切换用户（on.change 会将新值作为第一个参数传入，直接使用最可靠）
  */
 function handleSwitchUser(newUserId) {
   console.log('[handleSwitchUser] 收到参数:', newUserId, '类型:', typeof newUserId);
-  const pageData = $data;
+  const pageData = _pageState;
   // change 事件参数是字符串时直接用；否则兜底读 pageData
   const userId = (typeof newUserId === 'string' && newUserId)
     || pageData.currentUser
@@ -58,13 +60,14 @@ function handleSwitchUser(newUserId) {
   pageData.tableData    = response.data;
   pageData.responseData = response;
   ElMessage.success(`✅ 已切换到 ${userId}，可见 ${response.data.length} 条数据`);
+  $rebindRules();
 }
 
 /**
  * 加载数据按钮点击
  */
 function handleLoadData() {
-  const pageData    = $data;
+  const pageData    = _pageState;
   const currentUser = pageData.currentUser || 'user1';
   console.log('[handleLoadData] currentUser:', currentUser);
   handleSwitchUser(currentUser);
@@ -114,7 +117,7 @@ function renderActions(row) {
  * 新增
  */
 function handleAdd() {
-  const pageData = $data;
+  const pageData = _pageState;
   if (!pageData.responseData?._modelPerm?.canAdd) {
     ElMessage.warning('无新增权限');
     return;
@@ -161,7 +164,7 @@ function __init__() {
  * 自定义组件：渲染新增按钮（使用原生元素，避免 h('el-*') 字符串不走 resolveComponent）
  */
 function RenderAddButton() {
-  const pageData = $data;
+  const pageData = _pageState;
   const canAdd = pageData.responseData?._modelPerm?.canAdd ?? false;
 
   return h('div', { style: 'padding:14px 16px;background:#fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px;' }, [
@@ -178,7 +181,7 @@ function RenderAddButton() {
  * 自定义组件：渲染数据表格（使用原生 table，避免 h('el-table') 字符串不走 resolveComponent）
  */
 function RenderTable() {
-  const pageData  = $data;
+  const pageData  = _pageState;
   const tableData = pageData.tableData || [];
 
   const wrapStyle = 'margin-top:16px;background:#fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;';
