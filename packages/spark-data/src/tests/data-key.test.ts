@@ -10,9 +10,8 @@ import {
   parseDataKey,
   resolveDataKey,
   isDataKey,
-  buildDataKey,
-  getViewKey
 } from '@spark-view/spark-data'
+import { buildDataKey, getViewKey } from '../core/data-key'
 
 describe('DataKey 统一解析器', () => {
   // ===== parseDataKey =====

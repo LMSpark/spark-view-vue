@@ -16,7 +16,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { DataTable, DataSet } from '@spark-view/spark-data'
+import { DataSet } from '@spark-view/spark-data'
+import { DataTable } from '../data-table'
 import type { IDataRow, AggregateColumnConfig } from '@spark-view/spark-data'
 
 // ─────────────────────────────────────────────────────────────────────────────

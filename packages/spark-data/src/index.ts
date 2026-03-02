@@ -1,116 +1,75 @@
 /**
  * @spark-view/spark-data
- * SPARK 数据空间 — 数据模型 + CRUD + 树结构 + 权限 + 验证  
+ * SPARK 数据空间 — 数据模型 + CRUD + 树结构 + 权限
+ *
+ * **推荐入口**：`SparkData` 命名空间（工厂方法 + 解析工具）
+ *
+ * 精简公共 API，只暴露外部消费者实际需要的最小集合：
+ * - 命名空间：`SparkData`
+ * - 核心类：`DataSet`（spark-page-config 直接使用）、`DataView`（框架层 wrapInstance 钩子）
+ * - DataKey 解析工具函数
+ * - 权限渲染常量
+ * - 数据配置所需的类型
  */
 
-// ===== 命名空间 API =====
+// ===== 命名空间 API（推荐入口）=====
 
 export { SparkData } from './spark-data'
 
-// ===== 核心类导出 =====
+// ===== 核心类（框架层必要直接引用）=====
 
 export { DataSet } from './dataset'
-export { DataTable } from './data-table'
 export { DataView } from './data-view'
-export { TreeManager } from './tree-manager'
 
-// ===== 枚举 / 常量 =====
+// ===== DataKey 统一解析 =====
 
-export { RequestState } from './types'
+export {
+  isDataKey,
+  parseDataKey,
+  resolveDataKey,
+  resolveDataKeyBinding,
+  resolveRawKey,
+  getViewFromRawKey,
+} from './core/data-key'
+export type { DataKeyBinding } from './core/data-key'
 
-// ===== CRUD 服务 =====
+// ===== 核心类型 =====
 
-export { CrudService, createCrudService } from './crud-service'
-export type { CrudResult, QueryParams, BatchResult, CrudOperationConfig } from './types'
 export type {
-  CrudOperation, CrudLifecycleEvent
-} from './strategies/types'
-
-// ===== 数据类型定义 =====
-
-export type {
+  // 基础数据行 / 数据源接口
   IDataRow,
   IDataSource,
-  IInstancePermission,
-  IModelPermission,
-  ITableOwnMetadata,
-  ITableMetadata,
   IDataSet,
-  IDataSetMetadata,
+
+  // DataSet 配置（createDataSet / fromConfig 参数类型）
+  DataColumn,
+  DataRelation,
+  CrudApi,
+  HttpEndpoint,
+
+  // 视图配置
   IViewMetadata,
   FilterExpression,
   FilterOperator,
   SortExpression,
   SortDirection,
   TreeConfig,
-  TreeApi,
-  FlatTreeNode,
-  NestedTreeNode,
-  NestedTreeSearchResult,
-  TreePath,
-  HttpEndpoint,
-  CrudApi,
-  DataColumn,
-  DataRelation,
-  ViewChangeHandlers,
-  DependencyType,
-  ColumnType,
-  ColumnTypeMap,
-  InferColumnValue,
   AggregateType,
   AggregateColumnConfig,
-  PkValue,
+
+  // 事件订阅
+  ViewChangeHandlers,
+
+  // 权限快照（存储在 IDataRow._perm / IDataSource._modelPerm）
+  IInstancePermission,
+  IModelPermission,
 } from './types'
 
-// ===== 主键生成器 =====
-
-export { 
-  PrimaryKeyGenerator, 
-  createPrimaryKeyGenerator 
-} from './core/primary-key-generator'
-export type { 
-  PrimaryKeyStrategy, 
-  PrimaryKeyGeneratorConfig 
-} from './core/primary-key-generator'
-
-// ===== 手工编辑脏追踪 =====
-
-export type { FieldChange, RowDiff, SaveChangesData } from './strategies/dirty-tracking-delegate'
-
-// ===== DataKey 统一解析 =====
-
-export { isDataKey, parseDataKey, resolveDataKey, resolveDataKeyBinding, resolveRawKey, getViewFromRawKey, buildDataKey, getViewKey } from './core/data-key'
-export type { DataKeyDescriptor, DataKeyField, DataKeyBinding } from './core/data-key'
+// ===== 权限渲染常量 =====
 
 export {
   INSTANCE_PERMISSION_FIELD,
   MODEL_PERMISSION_FIELD,
   FieldVisibility,
-  ComponentLevel
+  ComponentLevel,
 } from './types'
-
-// ===== 权限系统（前端权限渲染，基于服务端下发的权限快照） =====
-
-export {
-  PermissionChecker, createPermissionChecker, checkPermission,
-  PermissionFilter, createPermissionFilter, filterByPermission,
-  FieldRenderHelper, createFieldRenderHelper,
-  computeFieldState, computeFieldStates, filterVisibleFields
-} from './permission/index'
-export type {
-  IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper
-} from './permission/index'
-
-// ===== 验证系统 =====
-
-export {
-  DataValidator,
-  createValidator,
-  createSchema
-} from './validation'
-export type {
-  ValidationError,
-  ValidationResult,
-  RowValidator,
-  DataSchema
-} from './validation'

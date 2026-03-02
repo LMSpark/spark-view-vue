@@ -7,7 +7,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { SparkData, RequestState } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
+import { RequestState } from '../types'
 import type { IDataRow } from '@spark-view/spark-data'
 
 // ─── 通用测试 DataSet 工厂 ─────────────────────────────────────
