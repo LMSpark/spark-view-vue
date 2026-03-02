@@ -280,6 +280,14 @@ dataSet.on('loadSuccess', ({ tableName }) => {
 }
 ```
 
+### 🚧 script-api（长期规划任务）
+
+`script.js` 沙箱当前通过 `__ctx` 直接注入变量（见上表）。**`script-api`** 是规划中的长期架构任务，旨在将所有沙箱注入变量规范化为类型化接口，提供自动补全、类型检查与版本兼容性保障。
+
+- ⚠️ **当前阶段不实现**：任何以 `script-api` 命名的接口、类或模块均属未来规划，**禁止**在功能开发中以 `script-api` 作为实现依据
+- 现阶段脚本对接唯一规范来源是本文档的**沙箱注入变量表** + **禁止事项表**
+- 待 script-api 正式立项后，本节将替换为具体接口定义与迁移指南
+
 ## 权限架构（统一后端验证 + 前端权限渲染）🔐
 
 SPARK 采用 **统一后端验证** 架构，前端 **不做** 权限判定，仅负责根据服务端下发的权限数据自动渲染 UI。
@@ -541,6 +549,17 @@ packages/
         ├── http/                  # Request, FileLoader
         └── lazy-loader.ts        # useSyncfusionLoader, useLazyLoader
 ```
+
+### ⚠️ 框架隔离约束（纯 JS 包）
+
+**`spark-utils`、`spark-data`、`spark-page-config`** 三个包**零前端框架依赖**（Vue / React / Element Plus 等均不引入），属于纯 TypeScript/JavaScript 库：
+
+- **禁止**在这三个包中 `import` 任何 Vue composable、Vue 响应式 API（`ref / reactive / computed`）、Vue 组件或任何 UI 框架模块
+- **禁止**将 `vue`、`vue-router`、`element-plus`、`@form-create/*` 加入这三个包的 `dependencies` 或 `peerDependencies`
+- 如需在 `spark-data` 中注入框架响应式（如 `reactive()`），必须通过**静态钩子**（`DataView.wrapInstance`）由外部框架层注入，不能在包内直接 import Vue
+- 违反此约束将污染依赖图，导致下游 SSR / 非 Vue 环境无法使用这三个包
+
+框架依赖只允许存在于 `spark-component`（peerDep: vue, element-plus 等）和 `spark-app`（peerDep: vue, vue-router）。
 
 ## Plugin System (插件配置系统) 🔌
 
