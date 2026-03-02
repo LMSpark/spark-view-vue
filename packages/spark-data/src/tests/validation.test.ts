@@ -8,7 +8,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { DataTable, DataView, DataValidator, createValidator, createSchema } from '@spark-view/spark-data'
+import { DataView } from '@spark-view/spark-data'
+import { DataTable } from '../data-table'
+import { DataValidator, createValidator, createSchema } from '../validation'
 import type { DataColumn, IDataRow } from '@spark-view/spark-data'
 
 describe('DataValidator - 基础校验', () => {

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { SparkData, RequestState } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
+import { RequestState } from '../types'
 
 describe('DataView.requestData orchestration', () => {
   it('should load parents first then child and update requestState', async () => {

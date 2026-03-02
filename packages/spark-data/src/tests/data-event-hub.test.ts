@@ -14,7 +14,8 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { SparkData, DataTable } from '@spark-view/spark-data'
+import { SparkData } from '@spark-view/spark-data'
+import { DataTable } from '../data-table'
 
 
 // ==================== 工具函数 ====================

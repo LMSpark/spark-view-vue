@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { CrudService, INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
+import { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
+import { CrudService } from '../crud-service'
 
 describe('CrudService - Permission Data Sanitization', () => {
   it('should sanitize permission fields from data before upload', () => {
