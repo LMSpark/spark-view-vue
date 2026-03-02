@@ -29,6 +29,7 @@
     },
     "dependencies": {
         "@spark-view/spark-component": "^0.4.0",
+        "@spark-view/spark-page-config": "^0.3.1",
         "@spark-view/spark-utils": "^0.4.0"
     },
     "scripts": {
