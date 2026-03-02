@@ -287,11 +287,6 @@ export interface IDataSetLike {
   triggerAutoLoad(): void
 }
 
-/**
- * DataSet 脚本接口（`IDataSetLike` 的规范名称别名）。
- */
-export type IDataSet = IDataSetLike
-
 // ==================== 脚本沙箱上下文（核心契约）====================
 
 /**
@@ -384,9 +379,9 @@ export interface IScriptContext {
    * - `events.on('rowsChanged' | 'currentRowChanged' | ...)`
    *
    * @see IScriptDataView — 视图完整 API
-   * @see IDataSet — DataSet 完整 API
+   * @see IDataSetLike — DataSet 完整 API
    */
-  $dataSet: IDataSet | null
+  $dataSet: IDataSetLike | null
 
   /**
    * UI 交互服务（框架无关，替代 ElMessage / ElMessageBox）。

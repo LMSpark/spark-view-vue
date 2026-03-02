@@ -54,7 +54,6 @@ export type {
   IScriptDataView,
   IEventEmitterLike,
   IDataSetLike,
-  IDataSet,
   IScriptContext,
   IPageServiceInScript,
 } from './script-api'
