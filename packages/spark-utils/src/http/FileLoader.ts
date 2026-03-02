@@ -123,17 +123,20 @@ export class FileLoader {
     const transform = options?.transform
     const expirationLevel = options?.expirationLevel ?? this.opts.defaultExpirationLevel
 
-    // --- 1. 有 transform：只缓存 transform 结果，不缓存原始文件 ---
+    // --- 1. 有 transform：两阶段缓存（防止 DataSet 等不可序列化对象经 JSON 往返后丢失原型方法） ---
+    // rawKey:   存原始文件字符串 → localStorage（可序列化）
+    // xformKey: 存 transform 结果 → 仅 memCache（DataSet 实例等，刷新后由 rawKey 重算）
     if (transform) {
-      // 缓存键直接用文件路径，不加 transformKey 后缀
-      const cacheKey = fileName
+      const rawKey   = fileName + ':raw'
+      const xformKey = fileName + ':transform'
 
-      // 读取 transform 缓存（获取 sourceTimestamp）
-      const cachedEntry = forceRefresh ? null : this.readEntry<T>(cacheKey)
-      const knownTimestamp = cachedEntry?.sourceTimestamp ?? ''
+      // 同时读两层缓存
+      const xformEntry = forceRefresh ? null : this.readEntryMem<T>(xformKey)
+      const rawEntry   = forceRefresh ? null : this.readEntry<string>(rawKey)
+      // timestamp 优先用 raw（与 localStorage 同源），次用 xform
+      const knownTimestamp = rawEntry?.sourceTimestamp ?? xformEntry?.sourceTimestamp ?? ''
 
       try {
-        // 发起网络请求（带 timestamp 参数）
         const params = FileLoader.timestampParams(knownTimestamp)
 
         const response = await this.request.requestFull<FileResponse>({
@@ -143,34 +146,49 @@ export class FileLoader {
         })
         const result = response.data
 
-        // 如果服务器返回 notModified，使用缓存的 transform 结果
         if (result.notModified === true) {
-          if (cachedEntry) {
-            return { success: true, data: cachedEntry.data, timestamp: cachedEntry.sourceTimestamp, fromCache: true, notModified: true }
+          // 路径 1：内存命中 → 直接返回 DataSet 实例（最快）
+          if (xformEntry) {
+            return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, notModified: true }
+          }
+          // 路径 2：内存冷（页面刷新）+ localStorage raw 命中 → 重执行 transform，恢复原型
+          if (rawEntry) {
+            const transformed = await transform(rawEntry.data)
+            this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
+            return { success: true, data: transformed, timestamp: rawEntry.sourceTimestamp, fromCache: true, notModified: true }
           }
           return { success: false, error: 'notModified 但无本地缓存', fromCache: false }
         }
 
-        // 获取新内容
+        // 文件不存在或响应体为空（如可选的 style.css）——静默返回
         if (!result.content || !result.timestamp) {
-          // 文件不存在或响应体为空（如可选的 style.css）——静默返回，不抛异常避免 logger.error
           return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false }
         }
 
-        // 执行 transform 并缓存结果（不缓存原始文件）
+        // 新内容：raw 存 localStorage，transform 结果仅存内存
         const transformed = await transform(result.content)
-        this.store(cacheKey, transformed, result.timestamp, expirationLevel)
+        this.store(rawKey, result.content, result.timestamp, expirationLevel)
+        this.writeEntryMem(xformKey, transformed, result.timestamp, expirationLevel)
         return { success: true, data: transformed, timestamp: result.timestamp, fromCache: false }
 
       } catch (error) {
-        // 网络失败时降级使用缓存
-        if (this.opts.fallbackToCache && cachedEntry) {
-          const msg = error instanceof Error ? error.message : String(error)
-          logger.warn('网络失败，使用 transform 缓存', { fileName, error: msg })
-          return { success: true, data: cachedEntry.data, timestamp: cachedEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
+        // 网络失败降级：优先内存 transform 结果，再尝试从 raw 重算
+        if (this.opts.fallbackToCache) {
+          if (xformEntry) {
+            const msg = error instanceof Error ? error.message : String(error)
+            logger.warn('网络失败，使用 transform 缓存', { fileName, error: msg })
+            return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
+          }
+          if (rawEntry) {
+            try {
+              const transformed = await transform(rawEntry.data)
+              this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
+              const msg = error instanceof Error ? error.message : String(error)
+              logger.warn('网络失败，从 raw 缓存重执行 transform', { fileName, error: msg })
+              return { success: true, data: transformed, timestamp: rawEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
+            } catch { /* transform 失败，继续抛原始网络错误 */ }
+          }
         }
-
-        // transform 执行失败
         const msg = error instanceof Error ? error.message : String(error)
         logger.error('文件加载或 transform 失败', { fileName, error: msg })
         return { success: false, error: msg, fromCache: false }
@@ -254,6 +272,12 @@ export class FileLoader {
       const k = this.opts.cachePrefix + key
       this.memCache.delete(k)
       this.storageRemove(k)
+      // 同时清理 transform 路径产生的派生键（:raw 存 localStorage，:transform 存内存）
+      const rawK   = this.opts.cachePrefix + key + ':raw'
+      const xformK = this.opts.cachePrefix + key + ':transform'
+      this.memCache.delete(rawK)
+      this.storageRemove(rawK)
+      this.memCache.delete(xformK)
     } else {
       this.memCache.clear()
       this.storageClearPrefix()
@@ -379,6 +403,40 @@ export class FileLoader {
     this.enforceMaxCacheSize()
 
     this.writeEntryDirect(k, entry)
+  }
+
+  /** 只读内存缓存，跳过 localStorage（适用于 DataSet 等不可序列化的 transform 结果） */
+  private readEntryMem<T>(key: string): CacheEntry<T> | null {
+    const k = this.opts.cachePrefix + key
+    const entry = (this.memCache.get(k) as CacheEntry<T>) ?? null
+    if (!entry) return null
+
+    const now = Date.now()
+    const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
+    const maxAge = this.getMaxAgeForLevel(entry.expirationLevel ?? this.opts.defaultExpirationLevel)
+    if (maxAge !== Infinity && idleTime > maxAge) {
+      this.memCache.delete(k)
+      return null
+    }
+
+    entry.lastAccess = now
+    this.memCache.set(k, entry as CacheEntry<unknown>)
+    return entry
+  }
+
+  /** 只写内存缓存，跳过 localStorage（适用于 DataSet 等不可序列化的 transform 结果） */
+  private writeEntryMem<T>(key: string, data: T, sourceTimestamp: string, expirationLevel: number): void {
+    const k = this.opts.cachePrefix + key
+    const now = Date.now()
+    const entry: CacheEntry<T> = {
+      data,
+      sourceTimestamp,
+      cachedAt: now,
+      lastAccess: now,
+      expirationLevel
+    }
+    this.enforceMaxCacheSize()
+    this.memCache.set(k, entry as CacheEntry<unknown>)
   }
 
   /** 直接写入缓存（不检查限制，内部方法） */
