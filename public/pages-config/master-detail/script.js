@@ -1,6 +1,5 @@
 ﻿// 沙箱注入的全局变量: 
 // - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
-// - ElMessage, ElMessageBox, SparkData, h
 
 let _currentRowJson = '未选择行'
 
@@ -58,7 +57,7 @@ function __init__() {
     ordersView.events.on('rowsChanged', () => {
       const count = ordersView.rows?.length || 0
       if (count > 0) {
-        ElMessage.success(`✅ 订单数据加载完成！共 ${count} 条记录`)
+        $page.showMessage(`✅ 订单数据加载完成！共 ${count} 条记录`)
       }
     })
     // Orders 视图 rowsChanged 事件已订阅

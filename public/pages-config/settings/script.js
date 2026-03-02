@@ -1,7 +1,6 @@
-// 系统设置页面脚本
+﻿// 系统设置页面脚本
 // 沙箱注入的全局变量: 
 // - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
-// - ElMessage, ElMessageBox, SparkData, h
 
 // 页面初始化
 console.log('⚙️ 系统设置页面已加载');

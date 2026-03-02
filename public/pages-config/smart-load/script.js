@@ -1,6 +1,5 @@
 ﻿// 沙箱注入的全局变量: 
 // - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
-// - ElMessage, ElMessageBox, SparkData, h
 
 // 数据加载通过视图的 CRUD API 完成（loadFromServer）
 
@@ -11,14 +10,11 @@ function handleRequestOrderDetails() {
   const dataSet = $dataSet;
   
   if (!dataSet) {
-    ElMessage?.warning('DataSetManager 未初始化');
+    $page.showMessage('DataSetManager 未初始化', 'warning');
     return;
   }
   
-  ElMessage?.info({
-    message: '🔍 开始智能加载 OrderDetails...',
-    duration: 2000
-  });
+  $page.showMessage('🔍 开始智能加载 OrderDetails...', 'info');
   
   console.log('='.repeat(60));
   console.log('🚀 用户请求: OrderDetails 数据（非阻塞）');
@@ -77,7 +73,7 @@ function handleClearAll() {
     if (view) view.clearAll(); // clearAll 自动通知订阅者
   });
   
-  ElMessage?.success('🗑️ 所有数据已清空');
+  $page.showMessage('🗑️ 所有数据已清空');
 }
 
 /**
@@ -100,13 +96,13 @@ function __init__() {
       console.log('='.repeat(60));
       console.log(`✅ ${tableName} 加载完成！数据已自动更新到 UI`);
       console.log('='.repeat(60));
-      ElMessage?.success(`✅ ${tableName} 数据加载完成！`);
+      $page.showMessage(`✅ ${tableName} 数据加载完成！`);
     });
     
     // 监听加载失败事件
     dataSet.on('loadError', ({ tableName, error }) => {
       console.error(`❌ ${tableName} 加载失败:`, error);
-      ElMessage?.error(`❌ ${tableName} 数据加载失败`);
+      $page.showMessage(`❌ ${tableName} 数据加载失败`, 'error');
     });
   } else {
     console.warn('⚠️ DataSetManager 未初始化');

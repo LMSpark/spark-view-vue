@@ -1,6 +1,7 @@
-// 沙箱注入的全局变量: 
-// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
-// - ElMessage, ElMessageBox, SparkData, h
+﻿// 沙箱注入的全局变量: 
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page, SparkData, h
+
+let _pageState = { currentUser: null, selectedOrdersCount: 0 }
 
 /**
  * 初始化 DataSet - __init__ 生命周期
@@ -13,11 +14,11 @@ function __init__() {
     
     // 监听加载事件
     dataSet.on('loadSuccess', ({ tableName }) => {
-      ElMessage.success(`✅ ${tableName} 数据加载完成！`)
+      $page.showMessage(`✅ ${tableName} 数据加载完成！`, 'success')
     })
     
     dataSet.on('loadError', ({ tableName, error }) => {
-      ElMessage.error(`❌ ${tableName} 加载失败: ${error.message}`)
+      $page.showMessage(`❌ ${tableName} 加载失败: ${error.message}`, 'error')
     })
     
     // 🚀 页面启动时自动加载主表（Users）
@@ -55,15 +56,14 @@ function handleUserSelect(row) {
   }
   
   // 更新 UI 统计信息
-  const pageData = $data;
   const ordersTable = dataSet.getTable('Orders')
-  pageData.currentUser = {
+  _pageState.currentUser = {
     label: row.name,
     orderCount: ordersTable?.rows?.length || 0
   }
   
   // 清空级联状态
-  pageData.selectedOrdersCount = 0
+  _pageState.selectedOrdersCount = 0
   
   // ❌ 移除 $rebindRules() - 内核会自动通知订阅者更新 UI
   // 调用 $rebindRules() 会导致 el-table 重新渲染，复选框状态丢失
@@ -80,8 +80,7 @@ function handleOrderSelect(selection) {
   // ✅ 不需要手动设置 selectedRows - 自动注入的事件处理器已经完成了同步
   // ✅ 不需要调用 $rebindRules - 关联更新会自动通知子表（OrderItems）刷新
   // 这里只更新 UI 统计信息（不触发重绑）
-  const pageData = $data;
-  pageData.selectedOrdersCount = selection.length
+  _pageState.selectedOrdersCount = selection.length
   
   // ❌ 移除 $rebindRules() - 会导致 el-table 重新渲染，复选框状态丢失
 }
@@ -91,7 +90,7 @@ function handleOrderSelect(selection) {
  * TODO: FilterParser 尚未实现
  */
 function showSQLQuery() {
-  ElMessage.info('FilterParser 尚未实现，此功能待开发')
+  $page.showMessage('FilterParser 尚未实现，此功能待开发', 'info')
 }
 
 /**
@@ -99,7 +98,7 @@ function showSQLQuery() {
  * TODO: FilterParser 尚未实现
  */
 function showMongoQuery() {
-  ElMessage.info('FilterParser 尚未实现，此功能待开发')
+  $page.showMessage('FilterParser 尚未实现，此功能待开发', 'info')
 }
 
 /**
@@ -108,7 +107,7 @@ function showMongoQuery() {
 function exportDataSet() {
   const dataSet = $dataSet;
   if (!dataSet) {
-    ElMessage.warning('DataSet 未初始化')
+    $page.showMessage('DataSet 未初始化', 'warning')
     return
   }
   
@@ -124,7 +123,7 @@ function exportDataSet() {
   a.click()
   URL.revokeObjectURL(url)
   
-  ElMessage.success('DataSet 已导出')
+  $page.showMessage('DataSet 已导出', 'success')
 }
 
 

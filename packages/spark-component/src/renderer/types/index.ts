@@ -12,12 +12,9 @@
  */
 
 import type { Component, h } from 'vue'
-import type { IDataSet } from '@spark-view/spark-data'
-import type { ElMessage, ElMessageBox } from 'element-plus'
-import type { SparkData } from '@spark-view/spark-data'
+import type { IDataSet, SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IPageServiceCapability, IPageRoute, IFormAPI } from '@spark-view/spark-utils'
 import type { ComponentRegistry } from '../../core/types.js'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
@@ -64,26 +61,26 @@ export type FormCreateAPI = FormCreateApi
  * - 事件处理函数中访问当前页面的数据和 API
  */
 export interface PageContext {
-  // Note: form-create API 对象在运行时有动态属性，官方类型定义不完全兼容
-  // FormCreateAPI 类型只是部分定义，实际 API 对象有 index signature
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  $api: any
-  $route: RouteLocationNormalizedLoaded
+  /** 表单操作 API（框架无关接口，底层 FormCreate 实现） */
+  $api: IFormAPI | null
+  /** 当前路由快照（框架无关接口，底层 Vue Router 实现） */
+  $route: IPageRoute
   $el: () => HTMLElement | null
   $query: (selector: string) => HTMLElement | null
   $queryAll: (selector: string) => NodeListOf<Element>
   $rebindRules: () => void
   $refreshData: (key?: string) => Promise<void>
-  $dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
-  $page: IPageServiceCapability  // ✅ 框架无关 UI 服务（推荐所有脚本使用此入口）
-                                 //    showMessage / showConfirm / showPrompt / showAlert / showLoading / navigate
+  $dataSet: IDataSet | null
+  /** ✅ 框架无关 UI 服务（showMessage / showConfirm / showPrompt / showAlert / navigate） */
+  $page: IPageServiceCapability
 
-  // 以下为 Element Plus 直接引用，保留供渲染函数（h(...)）使用
-  // ⚠️ 业务逻辑（消息/确认/导航）请改用 $page，不要直接调用 ElMessage/ElMessageBox
-  ElMessage: ElMessage
-  ElMessageBox: ElMessageBox
-  SparkData: SparkData  // SPARK 数据空间命名空间
-  h: h  // Vue h 函数（渲染函数专用）
+  /** SPARK 数据空间命名空间（createTreeManager 等工具） */
+  SparkData: SparkData
+  /**
+   * Vue h 函数 — 仅供 Render* 渲染函数使用，业务逻辑不应依赖。
+   * 如需显示消息/导航，请使用 $page。
+   */
+  h: h
 }
 
 /**

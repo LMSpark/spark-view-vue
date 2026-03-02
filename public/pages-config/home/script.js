@@ -1,7 +1,6 @@
-// 页面脚本
+﻿// 页面脚本
 // 沙箱注入的全局变量: 
 // - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
-// - ElMessage, ElMessageBox, SparkData, h
 
 // 页面初始化（直接使用沙箱变量）
 console.log('🚀 工作台页面已加载');
@@ -17,7 +16,7 @@ function testButtonClick() {
     const container = $el()
     console.log('📦 容器元素:', container)
     if (!container) {
-        ElMessage.warning('页面容器未就绪，请稍后再试')
+        $page.showMessage('页面容器未就绪，请稍后再试', 'warning')
         return
     }
 
@@ -26,7 +25,7 @@ function testButtonClick() {
     console.log('🃏 找到统计卡片数:', cards.length)
 
     if (!cards || cards.length === 0) {
-        ElMessage.warning('找不到 .content-section 元素')
+        $page.showMessage('找不到 .content-section 元素', 'warning')
         return
     }
 
@@ -57,9 +56,9 @@ function testButtonClick() {
     })
 
     if (isActive) {
-        ElMessage.success('🎨 JS + CSS 已激活！卡片变为蓝紫渐变，切换到其他页面后样式自动消失')
+        $page.showMessage('🎨 JS + CSS 已激活！卡片变为蓝紫渐变，切换到其他页面后样式自动消失')
     } else {
-        ElMessage.info('🔄 已恢复原始样式')
+        $page.showMessage('🔄 已恢复原始样式', 'info')
     }
 }
 

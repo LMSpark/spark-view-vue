@@ -24,7 +24,7 @@ import {
   type App, type Ref, type Component, type ShallowRef,
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
+import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability, type IPageRoute } from '@spark-view/spark-utils'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../capability-keys'
@@ -111,6 +111,16 @@ export function usePageRenderer(
   const router = useRouter()
   const route  = useRoute()
   const { provide: provideCapability } = useSparkComponent({ type: 'page-renderer', id: 'page-renderer-root' })
+
+  // 框架无关路由快照（脚本只需读取此接口，无 Vue Router 依赖）
+  const pageRoute: IPageRoute = {
+    get path()     { return route.path },
+    get fullPath() { return route.fullPath },
+    get name()     { return route.name ?? null },
+    get params()   { return route.params as Record<string, string | string[]> },
+    get query()    { return route.query  as Record<string, string | string[] | null> },
+    get hash()     { return route.hash },
+  }
 
   // 组件注册表：供 useRuleBinding 查询 dataKey 行为元数据
   const registry = inject(SPARK_REGISTRY_KEY, undefined)
@@ -222,10 +232,10 @@ export function usePageRenderer(
   // $api / $dataSet 使用 getter，保证脚本每次访问都拿到最新值。
 
   const pageContext: PageContext = {
-    get $api()     { return formApi.value as FormCreateAPI | null },
+    get $api()     { return formApi.value as import('@spark-view/spark-utils').IFormAPI | null },
     get $dataSet() { return pds.dataSet },
 
-    $route:    route,
+    $route:    pageRoute,
     $el:       () => pageContainer.value,
     $query:    (selector: string) => pageContainer.value?.querySelector(selector) ?? null,
     $queryAll: (selector: string) => {
@@ -239,12 +249,8 @@ export function usePageRenderer(
     $rebindRules:  () => rebindRules(),
     $refreshData:  async () => {},
 
-    // PAGE_SERVICE 快捷访问（推荐脚本使用 $page.showMessage 替代直接调用 ElMessage）
+    // PAGE_SERVICE 快捷访问（脚本使用 $page.showMessage 替代直接调用 ElMessage）
     $page: pageService,
-
-    // 历史全局变量 — 兼容旧脚本，新脚本请改用 $page
-    ElMessage:    (props.messageService ?? ElMessage) as typeof ElMessage,
-    ElMessageBox: (props.confirmService ?? ElMessageBox) as typeof ElMessageBox,
 
     SparkData,
     h,
