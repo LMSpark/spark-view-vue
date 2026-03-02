@@ -1,4 +1,4 @@
-// Renderer Demo 页面脚本
+﻿// Renderer Demo 页面脚本
 // 演示如何使用 Renderer 架构
 
 function __init__() {

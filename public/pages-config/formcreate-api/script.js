@@ -1,31 +1,16 @@
-/**
+﻿/**
  * Form-Create API 实战演示
  * 展示 form-create 的各种 API 用法
  */
 
 // 沙箱注入的全局变量: 
 // - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
-// - ElMessage, ElMessageBox, SparkData, h
 
 // 添加日志
 function addLog(message, type = 'info') {
-  const pageData = $data || {}
   const timestamp = new Date().toLocaleTimeString()
-  
-  // ensure array exists (防止 ${pageData} 还未初始化时调用)
-  pageData.apiLog = pageData.apiLog || []
-  
-  pageData.apiLog.unshift({
-    time: timestamp,
-    message,
-    type
-  })
-  
-  // 限制日志条数
-  if (pageData.apiLog.length > 50) {
-    pageData.apiLog = pageData.apiLog.slice(0, 50)
-  }
-  
+  _pageState.apiLog.unshift({ time: timestamp, message, type })
+  if (_pageState.apiLog.length > 50) _pageState.apiLog = _pageState.apiLog.slice(0, 50)
   console.log(`[${timestamp}] ${message}`)
 }
 
@@ -35,13 +20,13 @@ function addLog(message, type = 'info') {
 function handleGetAllValues() {
   const api = $api
   if (!api) {
-    ElMessage.error('API 未初始化')
+    $page.showMessage('API 未初始化', 'error')
     return
   }
   
   const values = api.formData()
   addLog(`📊 获取所有值: ${JSON.stringify(values)}`, 'success')
-  ElMessage.success('已输出到控制台')
+  $page.showMessage('已输出到控制台')
   console.log('表单数据:', values)
 }
 
@@ -60,7 +45,7 @@ function handleSetValues() {
   })
   
   addLog('✏️ 批量设置值成功', 'success')
-  ElMessage.success('已批量设置表单值')
+  $page.showMessage('已批量设置表单值')
 }
 
 /**
@@ -75,10 +60,10 @@ function handleValidate() {
   api.validate((valid) => {
     if (valid) {
       addLog('✅ 表单验证通过', 'success')
-      ElMessage.success('表单验证通过')
+      $page.showMessage('表单验证通过')
     } else {
       addLog('❌ 表单验证失败', 'error')
-      ElMessage.error('表单验证失败')
+      $page.showMessage('表单验证失败', 'error')
     }
   })
 }
@@ -92,7 +77,7 @@ function handleReset() {
   
   api.resetFields()
   addLog('🔄 表单已重置', 'info')
-  ElMessage.success('表单已重置')
+  $page.showMessage('表单已重置')
 }
 
 /**
@@ -104,18 +89,16 @@ function handleClearValidate() {
   
   api.clearValidateState()
   addLog('🧹 验证状态已清除', 'info')
-  ElMessage.success('验证状态已清除')
+  $page.showMessage('验证状态已清除')
 }
 
 /**
  * 切换高级选项
  */
 function handleToggleAdvanced() {
-  const pageData = $data
-  pageData.showAdvanced = !pageData.showAdvanced
-  
-  addLog(`🔧 高级选项: ${pageData.showAdvanced ? '显示' : '隐藏'}`, 'info')
-  ElMessage.info(`高级选项已${pageData.showAdvanced ? '显示' : '隐藏'}`)
+  _pageState.showAdvanced = !_pageState.showAdvanced
+  addLog(`🔧 高级选项: ${_pageState.showAdvanced ? '显示' : '隐藏'}`, 'info')
+  $page.showMessage(`高级选项已${_pageState.showAdvanced ? '显示' : '隐藏'}`, 'info')
 }
 
 /**
@@ -137,7 +120,7 @@ function handleDisableEmail() {
   // })
   
   addLog(`🔒 邮箱字段: ${emailDisabled ? '已禁用' : '已启用'}`, 'warning')
-  ElMessage.info(`邮箱字段已${emailDisabled ? '禁用' : '启用'}`)
+  $page.showMessage(`邮箱字段已${emailDisabled ? '禁用' : '启用'}`, 'info')
 }
 
 /**
@@ -152,7 +135,7 @@ function handleHidePhone() {
   api.hidden(phoneHidden, 'phone')
   
   addLog(`👁️ 电话字段: ${phoneHidden ? '已隐藏' : '已显示'}`, 'warning')
-  ElMessage.info(`电话字段已${phoneHidden ? '隐藏' : '显示'}`)
+  $page.showMessage(`电话字段已${phoneHidden ? '隐藏' : '显示'}`, 'info')
 }
 
 /**
@@ -171,7 +154,7 @@ function handleUpdatePlaceholder() {
   })
   
   addLog(`📝 已更新用户名占位符: ${timestamp}`, 'success')
-  ElMessage.success('占位符已更新')
+  $page.showMessage('占位符已更新')
 }
 
 /**
@@ -202,8 +185,7 @@ function handleUserTypeChange(userType) {
  * 自定义渲染：API 调用日志
  */
 function RenderApiLog() {
-  const pageData = $data
-  const logs = pageData.apiLog || []
+  const logs = _pageState.apiLog || []
   
   if (logs.length === 0) {
     return h('div', { style: 'color: #999; textAlign: center; padding: 20px' }, '暂无日志')

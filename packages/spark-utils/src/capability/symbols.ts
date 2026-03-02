@@ -180,6 +180,56 @@ export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capa
  */
 export const LOGGER = defineCapability<LoggerApi>('spark:capability:logger')
 
+// ==================== 页面脚本沙箱接口（框架无关）====================
+
+/**
+ * 框架无关的路由信息快照（替代 Vue Router RouteLocationNormalizedLoaded）
+ * 业务脚本只读取此接口，无 Vue Router 依赖。
+ */
+export interface IPageRoute {
+  /** 当前路径，如 /users/123 */
+  path: string
+  /** 含 search/hash 的完整 URL，如 /users/123?tab=info#detail */
+  fullPath: string
+  /** 路由名称 */
+  name: string | null | symbol
+  /** 路径参数，如 { id: '123' } */
+  params: Record<string, string | string[]>
+  /** Query 参数，如 { tab: 'info' } */
+  query: Record<string, string | string[] | null>
+  /** Hash 片段，如 #detail */
+  hash: string
+}
+
+/**
+ * 框架无关的表单操作接口（替代直接使用 FormCreate API）
+ * 业务脚本只调用此接口，无 FormCreate 库依赖。
+ */
+export interface IFormAPI {
+  /** 读取单个字段值 */
+  getValue(field: string): unknown
+  /** 设置字段值（单字段或批量） */
+  setValue(field: string | Record<string, unknown>, value?: unknown): void
+  /** 获取全部表单数据 */
+  formData(): Record<string, unknown>
+  /** 校验表单 */
+  validate(callback: (valid: boolean) => void): void
+  /** 重置字段值 */
+  resetFields(fields?: string | string[]): void
+  /** 清除验证状态 */
+  clearValidateState(fields?: string | string[]): void
+  /** 启用/禁用字段 */
+  disabled(disabled: boolean, field?: string | string[]): void
+  /** 显示/隐藏字段 */
+  hidden(hidden: boolean, field?: string | string[]): void
+  /** 更新字段规则/属性 */
+  updateRule(field: string, rule: Record<string, unknown>): void
+  /** 获取字段 DOM 元素（UI 操作用，渲染函数环境） */
+  el(id: string): unknown
+  /** 监听表单事件 */
+  on(event: string, callback: (...args: unknown[]) => void): void
+}
+
 /** 页面服务能力（UI 交互） */
 export interface IPageServiceCapability {
   /** 消息提示（替代 ElMessage） */

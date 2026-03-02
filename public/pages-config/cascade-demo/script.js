@@ -1,6 +1,5 @@
 ﻿// 沙箱注入的全局变量: 
-// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
-// - ElMessage, ElMessageBox, SparkData, h
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page, SparkData, h
 
 let selectedUser = null;
 
@@ -18,31 +17,20 @@ function handleUserRowChange(currentRow) {
  * 添加新用户
  */
 async function handleAddUser() {
+  const name = await $page.showPrompt('请输入用户名', '添加用户')
+  if (name === null) return
+  const email = await $page.showPrompt('请输入邮箱', '添加用户')
+  if (email === null) return
+
   try {
-    const { value: name } = await ElMessageBox.prompt('请输入用户名', '添加用户', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      inputPattern: /.+/,
-      inputErrorMessage: '用户名不能为空'
-    });
-
-    const { value: email } = await ElMessageBox.prompt('请输入邮箱', '添加用户', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      inputPattern: /^.+@.+\..+$/,
-      inputErrorMessage: '请输入有效的邮箱地址'
-    });
-
     const usersView = $dataSet.getView('Users', 'default');
     const maxId = Math.max(...usersView.rows.map(r => r.id), 0);
     usersView.appendRow({ id: maxId + 1, name, email });
 
-    ElMessage.success(`✅ 用户添加成功: ${name}`);
+    $page.showMessage(`✅ 用户添加成功: ${name}`, 'success');
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('添加用户失败:', error);
-      ElMessage.error('添加用户失败');
-    }
+    console.error('添加用户失败:', error);
+    $page.showMessage('添加用户失败', 'error');
   }
 }
 
@@ -51,16 +39,12 @@ async function handleAddUser() {
  */
 async function handleUpdateUserIdBatch() {
   try {
-    const { value: offset } = await ElMessageBox.prompt(
+    const offset = await $page.showPrompt(
       '输入要增加的ID偏移量（例如：100），订单的userId会自动级联更新',
       '批量修改用户ID',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputPattern: /^\d+$/,
-        inputErrorMessage: '请输入正整数'
-      }
-    );
+      { placeholder: '请输入正整数' }
+    )
+    if (offset === null) return
 
     const dataSet = $dataSet;
     const usersView  = dataSet.getView('Users',  'default');
@@ -86,11 +70,11 @@ async function handleUpdateUserIdBatch() {
     usersView.replaceRows(newUserRows);
     ordersView.replaceRows(newOrderRows);
 
-    ElMessage.success(`✅ 已批量更新 ${newUserRows.length} 个用户ID，订单已手动级联更新`);
+    $page.showMessage(`✅ 已批量更新 ${newUserRows.length} 个用户ID，订单已手动级联更新`, 'success');
   } catch (error) {
     if (error !== 'cancel') {
       console.error('批量更新失败:', error);
-      ElMessage.error('批量更新失败');
+      $page.showMessage('批量更新失败', 'error');
     }
   }
 }
@@ -100,7 +84,7 @@ async function handleUpdateUserIdBatch() {
  */
 async function handleDeleteSelectedUser() {
   if (!selectedUser) {
-    ElMessage.warning('请先点击表格中的一行选择用户');
+    $page.showMessage('请先点击表格中的一行选择用户', 'warning');
     return;
   }
 
@@ -115,26 +99,25 @@ async function handleDeleteSelectedUser() {
     const relatedOrderIds  = new Set(relatedOrders.map(o => o.id));
     const relatedItemCount = orderItemsView.rows.filter(item => relatedOrderIds.has(item.orderId)).length;
 
-    await ElMessageBox.confirm(
+    const confirmed = await $page.showConfirm(
       `确定要删除用户 "${selectedUser.name}" 吗？\n\n⚠️ 这将会级联删除：\n` +
       `• ${relatedOrders.length} 个订单\n` +
       `• ${relatedItemCount} 个订单明细`,
       '危险操作',
-      { confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning' }
-    );
+      { confirmText: '确定删除', type: 'warning' }
+    )
+    if (!confirmed) return
 
     // 级联删除：从最深层开始，全部用 replaceRows 触发事件
     orderItemsView.replaceRows(orderItemsView.rows.filter(item => !relatedOrderIds.has(item.orderId)));
     ordersView.replaceRows(ordersView.rows.filter(o => o.userId !== selectedUser.id));
     usersView.deleteRowById(selectedUser.id);
 
-    ElMessage.success(`✅ 用户删除成功！\n级联删除了 ${relatedOrders.length} 个订单和 ${relatedItemCount} 个明细`);
+    $page.showMessage(`✅ 用户删除成功！\n级联删除了 ${relatedOrders.length} 个订单和 ${relatedItemCount} 个明细`, 'success');
     selectedUser = null;
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除失败:', error);
-      ElMessage.error('删除失败');
-    }
+    console.error('删除失败:', error);
+    $page.showMessage('删除失败', 'error');
   }
 }
 

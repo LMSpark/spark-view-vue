@@ -1,11 +1,10 @@
-/**
+﻿/**
  * 数据驱动 UI 渲染演示
  * 展示如何根据后端返回的权限字段控制 UI
  */
 
 // 沙箱注入的全局变量: 
 // - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
-// - ElMessage, ElMessageBox, SparkData, h
 
 let _pageState = { currentUser: '', tableData: [], responseData: null }
 
@@ -54,12 +53,12 @@ function handleSwitchUser(newUserId) {
   const response = users[userId];
   console.log('[handleSwitchUser] 找到数据:', response ? `${response.data.length} 条` : '未找到');
   if (!response) {
-    ElMessage.warning(`未知用户: ${userId}`);
+    $page.showMessage(`未知用户: ${userId}`, 'warning');
     return;
   }
   pageData.tableData    = response.data;
   pageData.responseData = response;
-  ElMessage.success(`✅ 已切换到 ${userId}，可见 ${response.data.length} 条数据`);
+  $page.showMessage(`✅ 已切换到 ${userId}，可见 ${response.data.length} 条数据`);
   $rebindRules();
 }
 
@@ -119,11 +118,11 @@ function renderActions(row) {
 function handleAdd() {
   const pageData = _pageState;
   if (!pageData.responseData?._modelPerm?.canAdd) {
-    ElMessage.warning('无新增权限');
+    $page.showMessage('无新增权限', 'warning');
     return;
   }
   
-  ElMessage.success('有新增权限，可以执行新增操作');
+  $page.showMessage('有新增权限，可以执行新增操作');
   console.log('新增操作');
 }
 
@@ -132,11 +131,11 @@ function handleAdd() {
  */
 function handleEdit(row) {
   if (!row._perm?.canEdit) {
-    ElMessage.warning('无编辑权限');
+    $page.showMessage('无编辑权限', 'warning');
     return;
   }
   
-  ElMessage.success(`可编辑字段: ${row._perm.editableFields.join(', ')}`);
+  $page.showMessage(`可编辑字段: ${row._perm.editableFields.join(', ')}`);
   console.log('编辑:', row);
 }
 
@@ -145,11 +144,11 @@ function handleEdit(row) {
  */
 function handleDelete(row) {
   if (!row._perm?.canDelete) {
-    ElMessage.warning('无删除权限');
+    $page.showMessage('无删除权限', 'warning');
     return;
   }
   
-  ElMessage.success('有删除权限，可以执行删除操作');
+  $page.showMessage('有删除权限，可以执行删除操作');
   console.log('删除:', row);
 }
 
