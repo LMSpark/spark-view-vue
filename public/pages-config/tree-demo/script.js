@@ -135,6 +135,41 @@ function RenderNodeInfo() {
 }
 
 /**
+ * 直接将节点信息刷入 DOM（避免 $rebindRules() 导致树折叠）
+ */
+function _flushNodeInfoDOM() {
+  const container = $query('.node-info')
+  if (!container) return
+
+  const node = _pageState.selectedNode
+  const pathText = _pageState.selectedPathText
+
+  if (!node) {
+    container.innerHTML = '<p style="color:#909399;text-align:center;padding:24px 0;margin:0">请点击左侧树节点查看详情</p>'
+    return
+  }
+
+  const rows = [
+    ['节点 ID',   node.id],
+    ['节点名称', node.name],
+    ['节点类型', node.type],
+    ['层级',     node.level],
+    ['父节点 ID', node.parentId ?? '-'],
+  ]
+  const td = 'padding:8px 12px;border-bottom:1px solid #ebeef5;'
+  const tableRows = rows.map(([label, value]) =>
+    `<tr><td style="${td}background:#fafafa;width:96px;color:#606266;font-weight:600">${label}</td>` +
+    `<td style="${td}color:#303133">${String(value ?? '-')}</td></tr>`
+  ).join('')
+  container.innerHTML =
+    `<table style="width:100%;border-collapse:collapse">${tableRows}</table>` +
+    `<div style="margin-top:16px">` +
+    `<h4 style="margin:0 0 8px 0;font-size:14px;color:#303133">节点路径:</h4>` +
+    `<div style="padding:10px 14px;background:#f5f7fa;border-radius:4px;color:#606266;font-size:13px;line-height:1.6">${pathText || '-'}</div>` +
+    `</div>`
+}
+
+/**
  * 测试点击函数
  */
 function testNodeClick() {
@@ -312,7 +347,7 @@ function handleNodeClick(...args) {
   }
 
   console.log('📍 handleNodeClick 完成')
-  $rebindRules()
+  _flushNodeInfoDOM()
 }
 
 /**
@@ -450,8 +485,6 @@ function handleToggleMode() {
   } else {
     $page.showMessage('已切换到扁平模式')
   }
-  
-  $rebindRules()
 }
 
 /**
@@ -505,18 +538,17 @@ async function handleAddNode() {
   // 添加到缓存
   treeManager.addNodesToCache([newNode])
   
-  // 🔑 关键：重新构建树形结构并更新 hierarchicalTreeData
+  // 🔑 关键：重新构建树形结构并写入 DataSet（DataView 事件自动驱动 r-tree，无需 $rebindRules）
   if (treeManager.buildNestedTree) {
     const nestedTree = treeManager.buildNestedTree()
-    pageData.hierarchicalTreeData = nestedTree
+    const hView = $dataSet?.getView?.('hierarchicalTreeData', 'default')
+    if (hView) hView.replaceRows(nestedTree)
   }
   
   // 更新父节点的 hasChildren
   if (treeManager.markHasChildren) {
     treeManager.markHasChildren(parentNode.id)
   }
-  
-  $rebindRules()
   
   $page.showMessage(`已添加子节点: ${newNode.name}`)
   console.log('✅ 添加节点:', newNode)
@@ -551,16 +583,16 @@ async function handleDeleteNode() {
   const cache = treeManager.getCache()
   delete cache[node.id]
   
-  // 🔑 关键：重新构建树形结构并更新 hierarchicalTreeData
+  // 🔑 关键：重新构建树形结构并写入 DataSet（DataView 事件自动驱动 r-tree，无需 $rebindRules）
   if (treeManager.buildNestedTree) {
     const nestedTree = treeManager.buildNestedTree()
-    pageData.hierarchicalTreeData = nestedTree
+    const hView = $dataSet?.getView?.('hierarchicalTreeData', 'default')
+    if (hView) hView.replaceRows(nestedTree)
   }
   
   pageData.selectedNode = null
   pageData.selectedPath = []
-  
-  $rebindRules()
+  _flushNodeInfoDOM()
   
   $page.showMessage(`已删除节点: ${node.name}`)
   console.log('🗑️ 删除节点:', node)
