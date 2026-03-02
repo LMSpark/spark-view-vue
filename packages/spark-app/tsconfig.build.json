@@ -5,7 +5,8 @@
     "outDir": "./dist",
     "paths": {
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
-      "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"]
+      "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"],
+      "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"]
     },
     "declarationDir": "./dist/types",
     "declaration": true,
