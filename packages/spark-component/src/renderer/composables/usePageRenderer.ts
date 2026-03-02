@@ -124,15 +124,38 @@ export function usePageRenderer(
       if (typeof fn === 'function') { fn(message); return }
       ElMessage({ message, type })
     },
-    showConfirm: async (message, title) => {
+    showConfirm: async (message, title, options) => {
       if (props.confirmService) {
         await props.confirmService.confirm(message, title)
         return true
       }
-      try { await ElMessageBox.confirm(message, title ?? '确认'); return true }
-      catch { return false }
+      try {
+        await ElMessageBox.confirm(message, title ?? '确认', {
+          confirmButtonText: options?.confirmText ?? '确定',
+          cancelButtonText:  options?.cancelText  ?? '取消',
+          type: options?.type ?? 'warning',
+        })
+        return true
+      } catch { return false }
     },
-    showLoading: (_show) => { /* 待实现：接入全局加载遮罩服务 */ },
+    showPrompt: async (message, title, options) => {
+      try {
+        const { value } = await ElMessageBox.prompt(message, title ?? '请输入', {
+          confirmButtonText: '确定',
+          cancelButtonText:  '取消',
+          inputPlaceholder:  options?.placeholder ?? '',
+          inputValue:        options?.defaultValue ?? '',
+        })
+        return value
+      } catch { return null }
+    },
+    showAlert: async (message, title, options) => {
+      await ElMessageBox.alert(message, title ?? '提示', {
+        confirmButtonText: '确定',
+        type: options?.type ?? 'info',
+      })
+    },
+    showLoading: (_show, _text) => { /* 待实现：接入全局加载遮罩服务 */ },
     navigate: (path, params) => {
       void router.push(params ? { path, query: params as Record<string, string> } : path)
     },

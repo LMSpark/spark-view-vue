@@ -75,13 +75,15 @@ export interface PageContext {
   $rebindRules: () => void
   $refreshData: (key?: string) => Promise<void>
   $dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
-  $page: IPageServiceCapability  // PAGE_SERVICE 能力快捷访问（showMessage/showConfirm/navigate）
+  $page: IPageServiceCapability  // ✅ 框架无关 UI 服务（推荐所有脚本使用此入口）
+                                 //    showMessage / showConfirm / showPrompt / showAlert / showLoading / navigate
 
-  // 沙箱全局变量
-  ElMessage: ElMessage  // Element Plus 消息提示
-  ElMessageBox: ElMessageBox  // Element Plus 消息框
+  // 以下为 Element Plus 直接引用，保留供渲染函数（h(...)）使用
+  // ⚠️ 业务逻辑（消息/确认/导航）请改用 $page，不要直接调用 ElMessage/ElMessageBox
+  ElMessage: ElMessage
+  ElMessageBox: ElMessageBox
   SparkData: SparkData  // SPARK 数据空间命名空间
-  h: h  // Vue h 函数
+  h: h  // Vue h 函数（渲染函数专用）
 }
 
 /**
