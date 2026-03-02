@@ -146,6 +146,30 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 { "dataKey": "UserOrderDataSet@Users@default@rows" }
 ```
 
+### el-table rule.json 配置规范 📋
+
+el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提供默认值：
+
+| prop | 说明 | 默认 |
+|------|------|------|
+| `highlightCurrentRow` | **当前行高亮背景**（必须显式加才会生效） | 无（不高亮） |
+| `stripe` | 斑马纹 | false |
+| `border` | 边框 | false |
+
+```json
+{
+  "type": "el-table",
+  "dataKey": "DS@Orders@default@rows",
+  "props": {
+    "border": true,
+    "stripe": true,
+    "highlightCurrentRow": true
+  }
+}
+```
+
+> ⚠️ **常见漏洞**：父表加了 `highlightCurrentRow`，子表/孙表忘加 → 级联切换后子表无高亮。**每个**需要高亮的 el-table 都要单独声明。
+
 ## 页面脚本 (script.js) 沙箱规范 📜
 
 `public/pages-config/**/script.js` 在 `with (__ctx)` 沙箱内执行，**可直接使用**以下注入变量：
@@ -175,6 +199,7 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 | `ElMessageBox.xxx(...)` | **已从沙箱移除** | `$page.showConfirm / showPrompt / showAlert` |
 | Vue Router / FormCreate 直接 import | 沙箱不支持 ESM | `$route`（IPageRoute）/ `$api`（IFormAPI）已注入 |
 | `import` 语句 | 沙箱不支持 ESM | 所有依赖通过沙箱注入 |
+| `view.setCurrentRow(row)` 在 `currentChange` 回调中 | `injectTableEvents`（bindRules.ts）已在回调后通过 PK 查干净行并调用；回调里的 row 被 form-create 污染（含 `$f/api/rule` 属性），直接传入会触发 `[WARN] 行缺少主键` | 只写业务逻辑，DataView 同步由框架负责 |
 
 ### UI 状态存储模式
 
@@ -211,12 +236,48 @@ const rows = $dataSet?.getView('Orders', 'default')?.rows
 function __init__() {
   const view = $dataSet?.getView('Orders', 'default')
   view?.events.on('rowsChanged', () => {
-    ElMessage.success(`加载了 ${view.rows.length} 条`)
+    console.log(`行数: ${view.rows.length}`)
   })
 }
 
 // ✅ 操作数据（无需 $rebindRules）
 $dataSet?.getView('Items', 'default')?.replaceRows(newRows)
+```
+
+### ❗ 加载事件守卫（内联数据表）
+
+`dataSet.on('loadSuccess')` / `dataSet.on('loadError')` 只会被**有 `api.list` 配置的表**触发。内联数据表和内存级联表**不触发**这两个事件。
+
+```javascript
+dataSet.on('loadSuccess', ({ tableName }) => {
+  const table = dataSet.getTable(tableName)
+  if (!table?.api?.list) return  // 内联数据表跳过
+  $page.showMessage(`✅ ${tableName} 加载完成`, 'success')
+})
+```
+
+### 内存级联（无 API 子表）
+
+当 `DataRelation` 配置了父子关系，但子表**没有 `api` 配置**时，框架自动走内存过滤路径（`applyInMemoryCascade`）：
+
+- 从 `DataTable.rows`（`pagedata.json` 内联静态行）过滤 → 写入 `DataView.rows`（UI 绑定）
+- **不**发起网络请求，**不**触发 `loadSuccess`/`loadError`
+- 父行切换时自动重新过滤，脚本无需手动触发
+- `DataTable.rows`（源数据，级联每次从此过滤）与 `DataView.rows`（当前显示结果，UI 绑定）职责不同
+
+```jsonc
+// pagedata.json 配置示例
+{
+  "dataSetName": "DS",
+  "tables": {
+    "Orders":     { "rows": [...] },
+    "OrderItems": { "rows": [...] }
+  },
+  "relations": [
+    { "parentTable": "Orders", "childTable": "OrderItems",
+      "parentField": "id", "childField": "orderId" }
+  ]
+}
 ```
 
 ## 权限架构（统一后端验证 + 前端权限渲染）🔐
@@ -643,6 +704,14 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
   - `@spark-view/spark-utils` → `./packages/spark-utils/src`
 - 每个子包 `tsconfig.json` 独立声明 `paths`（相对于包目录），IDE 类型解析正确
 - ⚠️ **`tsconfig.build.json` 注意**：每个子包的 `tsconfig.build.json` 中 `"paths"` 必须保留依赖包的 dist 路径别名（不能设为 `{}`），否则 `tsc` 无法追踪 pnpm 软链中的 `.js` 重导出链，导致编译时找不到新增导出成员（如 `normalizeKey`、`CapabilityTypeMap`）
+- ⚠️ **`PageContext`（renderer/types/index.ts）类型写法**：`SparkData` 是命名空间导出（`export namespace`），**不能直接当类型用**。必须用 `typeof` 和顶层 import alias：
+  ```typescript
+  import type { h as VueH } from 'vue'
+  import type { SparkData } from '@spark-view/spark-data'
+  // PageContext 内字段：
+  SparkData: typeof SparkData
+  h: typeof VueH
+  ```
 
 ## Performance notes ⚡
 - **`spark-data` 无框架依赖**——DataView 通过 `DataView.wrapInstance` 静态钩子让框架层注入包装（SparkPlugin 中设为 `reactive()`）
