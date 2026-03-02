@@ -4,6 +4,7 @@
  * 提供常用 UI 框架的插件加载器
  */
 
+import type { Plugin } from 'vue'
 import { PluginRegistry } from './registry'
 
 /**
@@ -19,7 +20,7 @@ export function registerBuiltinPlugins(): void {
     'element-plus': {
       name: 'Element Plus',
       module: 'element-plus',
-      loader: () => import('element-plus') as unknown as Promise<{ default: import('vue').Plugin }>,
+      loader: () => import('element-plus') as unknown as Promise<{ default: Plugin }>,
       description: 'Vue 3 UI 组件库',
       version: '^2.5.0',
       defaultOptions: {
@@ -31,7 +32,7 @@ export function registerBuiltinPlugins(): void {
     'vxe-table': {
       name: 'VXE Table',
       module: 'vxe-table',
-      loader: () => import('vxe-table') as unknown as Promise<{ default: import('vue').Plugin }>,
+      loader: () => import('vxe-table') as unknown as Promise<{ default: Plugin }>,
       description: '强大的 Vue 表格组件',
       version: '^4.17.0',
       defaultOptions: {}
@@ -44,7 +45,7 @@ export function registerBuiltinPlugins(): void {
         const formCreate = await import('@form-create/element-ui')
         // form-create 导出的是一个对象，需要包装为 Plugin
         return { 
-          default: (formCreate.default ?? formCreate) as unknown as import('vue').Plugin
+          default: (formCreate.default ?? formCreate) as unknown as Plugin
         }
       },
       description: '动态表单生成器',

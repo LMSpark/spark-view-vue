@@ -42,7 +42,7 @@ export function setupRouterGuards(
     typeof getAppContext === 'function' ? getAppContext() : getAppContext
 
   // 全局前置守卫（返回值式）
-  router.beforeEach(async (to, _from) => {
+  router.beforeEach((to, _from) => {
     // 登录页和公开页面跳过检查
     if (to.path === loginPath || to.meta['public'] === true) {
       return true

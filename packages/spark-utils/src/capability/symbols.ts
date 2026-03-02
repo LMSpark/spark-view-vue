@@ -156,8 +156,8 @@ export function createEventEmitter<TEventMap extends Record<string, any[]> = Rec
 /** APP Services 能力（应用全局服务聚合） */
 export interface IAppServicesCapability {
   router?: {
-    push(to: string | { path: string; query?: Record<string, unknown> }): Promise<void | unknown>
-    replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<void | unknown>
+    push(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
+    replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
     back(): void
     currentRoute: unknown
   }
@@ -194,9 +194,9 @@ export const PAGE_SERVICE = defineCapability<IPageServiceCapability>('spark:capa
 
 /** 当前行能力 */
 export interface ICurrentRowCapability {
-  getRow(): unknown | null
+  getRow(): unknown
   getIndex(): number | null
-  setRow(row: unknown | null): void
+  setRow(row: unknown): void
 }
 
 /**

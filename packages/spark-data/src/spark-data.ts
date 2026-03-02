@@ -8,7 +8,8 @@ import { DataTable } from './data-table'
 import { DataView } from './data-view'
 import { CrudService } from './crud-service'
 import * as DataKeyModule from './core/data-key'
-import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig } from './types'
+import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig, TreeConfig, FilterExpression, SortExpression } from './types'
+import type { RequestConfig } from '@spark-view/spark-utils'
 
 // ===== SparkData 命名空间 API =====
 
@@ -95,7 +96,7 @@ export namespace SparkData {
    * @param httpConfig HTTP配置
    * @returns CRUD服务实例
    */
-  export function createCrudService(api: CrudApi, httpConfig?: import('@spark-view/spark-utils').RequestConfig) {
+  export function createCrudService(api: CrudApi, httpConfig?: RequestConfig) {
     return new CrudService(api, httpConfig)
   }
 
@@ -116,7 +117,7 @@ export namespace SparkData {
     /** setCurrentRow 时是否同步 selectedRows，见 {@link DataView.selectionFollowsCurrent} */
     selectionFollowsCurrent?: boolean
     /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
-    treeConfig?: import('./types').TreeConfig
+    treeConfig?: TreeConfig
     /** 初始化后自动加载（默认 false），见 {@link DataView.autoLoad} */
     autoLoad?: boolean
     /** 设置分页/排序/过滤后自动刷新（默认 false），见 {@link DataView.autoRefresh} */
@@ -132,9 +133,9 @@ export namespace SparkData {
     /** 视图级聚合配置，见 {@link DataView.aggregates} */
     aggregates?: Record<string, AggregateColumnConfig>
     /** 过滤表达式初始值 */
-    filterExpression?: import('./types').FilterExpression
-    /** 排序表达式初始值 */
-    sortExpression?: import('./types').SortExpression
+    filterExpression?: FilterExpression
+    /** 排序表达式初始値 */
+    sortExpression?: SortExpression
     /** 初始页码 */
     page?: number
     /** 每页条数 */

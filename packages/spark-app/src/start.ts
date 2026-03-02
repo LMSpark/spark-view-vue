@@ -6,7 +6,7 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
-import type { RouteConfig } from '@spark-view/spark-page-config'
+import type { RouteConfig, ConfigLoaderOptions } from '@spark-view/spark-page-config'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
@@ -211,7 +211,7 @@ export async function start(options: StartOptions): Promise<void> {
       startLogger.debug('配置动态路由系统...')
       const { SparkPageConfig } = await import('@spark-view/spark-page-config')
       
-      const configLoaderOptions: Partial<import('@spark-view/spark-page-config').ConfigLoaderOptions> = {
+      const configLoaderOptions: Partial<ConfigLoaderOptions> = {
         source: pageConfig.source,
         apiBaseUrl: pageConfig.apiBaseUrl
       }

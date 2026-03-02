@@ -272,7 +272,7 @@ export class DataSet implements IDataSet {
   /** @internal 为单个视图订阅独立事件（onAnyViewChange 用） */
   private _subscribeViewChange(
     entry: (typeof this._activeViewSubs)[number],
-    view: import('./data-view').DataView,
+    view: SparkDataView,
   ): void {
     const tn = view.tableName
     const vid = view.viewId
@@ -295,9 +295,9 @@ export class DataSet implements IDataSet {
   /** @internal 为单个视图订阅 loadSuccess/loadError（on() 用） */
   private _subscribeOnView(
     entry: (typeof this._activeOnSubs)[number],
-    view: import('./data-view').DataView,
+    view: SparkDataView,
   ): void {
-    const h = (requestState: import('./types').RequestState) => {
+    const h = (requestState: RequestState) => {
       if (entry.event === 'loadSuccess' && requestState === RequestState.Loaded) {
         entry.handler({ tableName: view.tableName, viewId: view.viewId })
       } else if (entry.event === 'loadError'
@@ -315,7 +315,7 @@ export class DataSet implements IDataSet {
    * 由 DataTable.getOrCreateView() 在创建新视图时调用。
    * @internal
    */
-  _subscribeNewView(view: import('./data-view').DataView): void {
+  _subscribeNewView(view: SparkDataView): void {
     for (const entry of this._activeViewSubs) {
       this._subscribeViewChange(entry, view)
     }

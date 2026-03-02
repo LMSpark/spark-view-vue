@@ -33,7 +33,7 @@ const DEFAULT_EXCLUDE = [
  *
  * 可用于经典模式启动，或在运行时动态追加组件时调用。
  */
-export async function setupAutoRegister(app: App, options: AutoRegisterOptions = {}) {
+export function setupAutoRegister(app: App, options: AutoRegisterOptions = {}) {
   void app // 预留参数
 
   const exclude = options.exclude ?? DEFAULT_EXCLUDE

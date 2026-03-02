@@ -88,7 +88,7 @@ export class DynamicRouter {
     }
 
     for (const route of routes) {
-      await this.registerRoute(route)
+      this.registerRoute(route)
     }
 
     if (this.afterRegister) {
@@ -100,7 +100,7 @@ export class DynamicRouter {
   }
 
   /** 注册单个路由 */
-  async registerRoute(config: RouteConfig): Promise<void> {
+  registerRoute(config: RouteConfig): void {
     if (this.registeredRoutes.has(config.path)) {
       routerLogger.debug('路由已注册，跳过', { path: config.path })
       return

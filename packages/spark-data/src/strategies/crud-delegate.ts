@@ -20,7 +20,7 @@ import type {
   IDataRow, CrudResult, BatchResult,
   CrudOperationConfig, QueryParams,
 } from '../types'
-import type { ValidationResult } from '../validation'
+import type { ValidationResult, ValidationError } from '../validation'
 import type { ICrudHost, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
 import { createCrudLifecycleEvent } from './types'
 
@@ -121,7 +121,7 @@ export class CrudDelegate {
   }
 
   /** 创建校验失败结果（消除 createRecord/updateRecord 中的重复块） */
-  private validationFailedResult<T>(errors: import('../validation').ValidationError[]): CrudResult<T> {
+  private validationFailedResult<T>(errors: ValidationError[]): CrudResult<T> {
     const msg = errors[0]?.message ?? '数据校验失败'
     return {
       success: false,

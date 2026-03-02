@@ -5,7 +5,7 @@
  * 与 DataSet/DataTable 深度集成，支持权限和数据转换
  */
 
-import { Request, createRequest, Logger } from '@spark-view/spark-utils'
+import { type Request, createRequest, Logger } from '@spark-view/spark-utils'
 import type {
   RequestConfig
 } from '@spark-view/spark-utils'
@@ -449,7 +449,9 @@ export class CrudService {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
         })
-      default: // GET
+      case 'GET':
+      case undefined:
+      default:
         return this.http.get<T>(resolvedEndpoint.url, resolvedEndpoint.params, {
           ...config,
           headers: { ...resolvedEndpoint.headers, ...config?.headers }
