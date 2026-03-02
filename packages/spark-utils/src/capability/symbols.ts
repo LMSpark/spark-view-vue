@@ -182,9 +182,17 @@ export const LOGGER = defineCapability<LoggerApi>('spark:capability:logger')
 
 /** 页面服务能力（UI 交互） */
 export interface IPageServiceCapability {
+  /** 消息提示（替代 ElMessage） */
   showMessage(message: string, type?: 'success' | 'error' | 'warning' | 'info'): void
-  showConfirm(message: string, title?: string): Promise<boolean>
-  showLoading(show: boolean): void
+  /** 确认框，返回 true=确定 / false=取消（替代 ElMessageBox.confirm） */
+  showConfirm(message: string, title?: string, options?: { confirmText?: string; cancelText?: string; type?: 'warning' | 'info' | 'error' | 'success' }): Promise<boolean>
+  /** 输入框，返回输入值；取消返回 null（替代 ElMessageBox.prompt） */
+  showPrompt(message: string, title?: string, options?: { placeholder?: string; defaultValue?: string }): Promise<string | null>
+  /** 纯提示框，仅确定按钮（替代 ElMessageBox.alert） */
+  showAlert(message: string, title?: string, options?: { type?: 'warning' | 'info' | 'error' | 'success' }): Promise<void>
+  /** 全局加载遮罩 */
+  showLoading(show: boolean, text?: string): void
+  /** 路由导航 */
   navigate(path: string, params?: Record<string, unknown>): void
 }
 
