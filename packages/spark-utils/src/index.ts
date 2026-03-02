@@ -19,10 +19,6 @@ export * from './http/index.js'
 
 export * from './capability/index.js'
 
-// ==================== 智能加载器 ====================
-
-export { useSyncfusionLoader, useLazyLoader, preloader } from './lazy-loader'
-
 // ==================== 共享错误码 ====================
 
 export { SharedErrorCodes, getSharedErrorMessage } from './error-codes'
