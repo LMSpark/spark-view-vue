@@ -21,10 +21,12 @@ function __init__() {
 
     // 监听加载事件
     dataSet.on('loadSuccess', ({ tableName }) => {
+      console.log(`[dataset-demo] ✅ ${tableName} 加载完成`)
       $page.showMessage(`✅ ${tableName} 数据加载完成！`, 'success')
     })
-    
+
     dataSet.on('loadError', ({ tableName, error }) => {
+      console.error(`[dataset-demo] ❌ ${tableName} 加载失败`, error)
       $page.showMessage(`❌ ${tableName} 加载失败: ${error.message}`, 'error')
     })
   }
