@@ -9,9 +9,16 @@ let _pageState = { currentUser: null, selectedOrdersCount: 0 }
 function __init__() {
   const dataSet = $dataSet
   if (dataSet) {
-    // 数据加载通过视图的 CRUD API 完成，不再使用 dataLoader
-    console.log('✅ DataSet 初始化完成')
-    
+    // 数据已内联在 pagedata.json，无需 loadFromServer（演示环境无后端）
+    // 有 API 配置时才发起请求
+    const usersView = dataSet.getView('Users', 'default')
+    if (usersView && usersView.table?.api?.list) {
+      console.log('🚀 [autoLoad] Users 有 API，发起加载...')
+      usersView.loadFromServer()
+    } else {
+      console.log('✅ DataSet 初始化完成（使用内联数据）')
+    }
+
     // 监听加载事件
     dataSet.on('loadSuccess', ({ tableName }) => {
       $page.showMessage(`✅ ${tableName} 数据加载完成！`, 'success')
@@ -20,11 +27,6 @@ function __init__() {
     dataSet.on('loadError', ({ tableName, error }) => {
       $page.showMessage(`❌ ${tableName} 加载失败: ${error.message}`, 'error')
     })
-    
-    // 🚀 页面启动时自动加载主表（Users）
-    // 从表（Orders、OrderItems）只在依赖条件满足时才加载
-    console.log('🚀 [自动加载] 启动时加载主表: Users')
-    dataSet.getView('Users', 'default').loadFromServer()
   }
 }
 
@@ -45,13 +47,14 @@ function handleUserSelect(row) {
   const ordersView = dataSet.getView('Orders', 'default')
   const itemsView = dataSet.getView('OrderItems', 'default')
   
-  if (ordersView && ordersView.requestState === 0) {
-    console.log('🔄 检测到 Orders 数据未加载，触发按需加载...')
+  // 检查子表视图是否配置了 API（演示环境内联数据，无需加载）
+  if (ordersView && ordersView.table?.api?.list && ordersView.requestState === 0) {
+    console.log('🔄 检测到 Orders 有 API 且数据未加载，触发按需加载...')
     ordersView.loadFromServer()
   }
   
-  if (itemsView && itemsView.requestState === 0) {
-    console.log('🔄 检测到 OrderItems 数据未加载，触发按需加载...')
+  if (itemsView && itemsView.table?.api?.list && itemsView.requestState === 0) {
+    console.log('🔄 检测到 OrderItems 有 API 且数据未加载，触发按需加载...')
     itemsView.loadFromServer()
   }
   

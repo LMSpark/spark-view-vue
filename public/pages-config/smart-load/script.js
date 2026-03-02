@@ -13,17 +13,19 @@ function handleRequestOrderDetails() {
     $page.showMessage('DataSetManager 未初始化', 'warning');
     return;
   }
+
+  const view = dataSet.getView('OrderDetails', 'default');
+  if (!view?.table?.api?.list) {
+    $page.showMessage('演示环境无后端 API，展示已内联的静态数据', 'info');
+    console.log('❓ OrderDetails 没有 API 配置，跳过请求');
+    return;
+  }
   
   $page.showMessage('🔍 开始智能加载 OrderDetails...', 'info');
-  
   console.log('='.repeat(60));
   console.log('🚀 用户请求: OrderDetails 数据（非阻塞）');
   console.log('='.repeat(60));
-  
-  // 完全解耦：只发起请求，不等待
-  // DataSetManager 加载完成后会自动通知订阅者 → UI 自动更新
-  dataSet.getView('OrderDetails', 'default').loadFromServer();
-  
+  view.loadFromServer();
   console.log('✅ 请求已发起，等待数据加载...');
 }
 
@@ -32,12 +34,15 @@ function handleRequestOrderDetails() {
  */
 function handleRequestProducts() {
   const dataSet = $dataSet;
-  
+  const view = dataSet?.getView('Products', 'default');
+  if (!view?.table?.api?.list) {
+    $page.showMessage('演示环境无后端 API，展示已内联的静态数据', 'info');
+    return;
+  }
   console.log('='.repeat(60));
   console.log('🚀 用户请求: Products 数据（非阻塞）');
   console.log('='.repeat(60));
-  
-  dataSet.getView('Products', 'default').loadFromServer();
+  view.loadFromServer();
   console.log('✅ 请求已发起，等待数据加载...');
 }
 
@@ -46,12 +51,15 @@ function handleRequestProducts() {
  */
 function handleRequestCategories() {
   const dataSet = $dataSet;
-  
+  const view = dataSet?.getView('Categories', 'default');
+  if (!view?.table?.api?.list) {
+    $page.showMessage('演示环境无后端 API，展示已内联的静态数据', 'info');
+    return;
+  }
   console.log('='.repeat(60));
   console.log('🚀 用户请求: Categories 数据（非阻塞）');
   console.log('='.repeat(60));
-  
-  dataSet.getView('Categories', 'default').loadFromServer();
+  view.loadFromServer();
   console.log('✅ 请求已发起，等待数据加载...');
 }
 
