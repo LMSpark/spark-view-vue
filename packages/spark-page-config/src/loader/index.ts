@@ -1,6 +1,9 @@
 /**
  * 配置加载器 - 支持本地/远程/混合配置加载
  *
+ * 职责：**从哪里加载**（本地/远程/混合 + 缓存策略）。
+ * 编译函数（**如何解析**）拆分到 `../compiler/index.ts`。
+ *
  * ## 数据流
  * ```
  * loadRule(pageId)
@@ -33,7 +36,12 @@ import {
   createFileLoader
 } from '@spark-view/spark-utils'
 import type { FileLoader, DerivedLoader } from '@spark-view/spark-utils'
-import { DataSet } from '@spark-view/spark-data'
+
+// 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
+import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
+
+// re-export 编译函数，保持对外 API 兼容（消费方可继续从 './loader' 导入）
+export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '../compiler'
 
 const pageLogger = Logger('PageConfig')
 
@@ -42,108 +50,6 @@ const PAGES_CONFIG_FILE_BASE = '/api/pages-config'
 
 const ErrorCodes = SharedErrorCodes
 const getErrorMessage = getSharedErrorMessage
-
-// ── 编译函数（模块级，named 函数名即默认 transformKey）──────────────────────
-
-/**
- * rule.json 原始字符串 → 规范化 RuleConfig[]
- *
- * 规范化内容：
- * - 顶层确保是 Array（单对象自动包装）
- * - 每条规则：type 强制 string；props 缺省 {}；children null→undefined，递归规范化
- * - 后续可在此加：类型别名展开、dataKey 格式校验、props 默认值注入
- */
-export function compileRule(raw: string): RuleConfig[] {
-  const parsed: unknown = JSON.parse(raw)
-  const arr = Array.isArray(parsed) ? parsed : [parsed]
-  return arr.map(normalizeRuleNode)
-}
-
-export function normalizeRuleNode(node: unknown): RuleConfig {
-  if (typeof node === 'string') return { type: node }
-  if (!node || typeof node !== 'object') return { type: String(node) }
-  // 先把 children 从展开中排除，避免 null 被带入结果
-  const { children: rawChildren, ...rest } = node as Record<string, unknown>
-  const children =
-    rawChildren === null || rawChildren === undefined
-      ? undefined
-      : (rawChildren as unknown[]).map((c) =>
-          typeof c === 'string' ? c : normalizeRuleNode(c)
-        )
-  return {
-    ...rest,
-    type: String(rest['type'] ?? 'div'),
-    props: (rest['props'] as Record<string, unknown> | undefined) ?? {},
-    ...(children !== undefined && { children })
-  } as RuleConfig
-}
-
-/**
- * pagedata.json 原始字符串 → DataSet 实例
- *
- * 调用 DataSet.fromJSON() 构建完整实例：分配对象、建各表的 DataTable/DataView，
- * 建立 DataSet → DataTable → DataView 引用链。
- * 实例缓存在内存派生缓存中，timestamp 不变时直接复用，
- * 同一页面多次访问跳过重建，冷启动仍需跑一次（但无网络请求）。
- */
-export function parsePageData(raw: string): PageDataConfig {
-  // pagedata.json can be one of two shapes:
-  // 1. A full DataSet metadata string (the format used by tests and
-  //    by some server-side generators).  In this case we want to use
-  //    the fast path `DataSet.fromJSON` which simply parses and feeds
-  //    the object to the constructor.
-  // 2. An arbitrary key/value map produced by page authors.  We
-  //    normalise this into a DataSet using `DataSet.fromPageData`,
-  //    which knows how to convert arrays/objects/primitive values
-  //    into one-table-per-key.  The function also handles the
-  //    legacy nested `dataset` field.
-  //
-  // Previously we blindly delegated to `fromJSON`, which meant that
-  //  any pagedata not conforming to the metadata shape (e.g. the demo
-  //  pages that include `currentUser`/`responseData`) would produce
-  //  an object without a `tables` property.  The DataSet constructor
-  //  then attempted `Object.entries(config.tables)` and exploded with
-  //  “Cannot convert undefined or null to object” during runtime.
-  
-  const parsed: unknown = JSON.parse(raw)
-  if (parsed === null || parsed === undefined) {
-    return DataSet.fromConfig({ dataSetName: 'PageDataSet', tables: {} })
-  }
-  if (typeof parsed !== 'object') {
-    return DataSet.fromPageData({ value: parsed })
-  }
-  const obj = parsed as Record<string, unknown>
-  // metadata shape has top‑level `tables` key; keep the existing
-  // fast path for it so we preserve the name that may be carried by
-  // the JSON string itself.
-  if ('tables' in obj) {
-    // reuse the existing utility which already handles
-    // string→object→DataSet conversion and avoids a second parse.
-    return DataSet.fromJSON(raw)
-  }
-  // otherwise treat it as generic page data
-  return DataSet.fromPageData(obj)
-}
-
-/**
- * script.js 原始字符串 → PageScriptConfig（脚本文本）
- *
- * 当前：透传（占位）。
- * 后续可加：语法检查、沙箱包装、依赖提取、压缩。
- */
-export function parseScript(raw: string): PageScriptConfig {
-  return raw
-}
-
-/**
- * style.css 原始字符串 → PageCssConfig（样式文本）
- *
- * 当前：透传（占位）。
- * 后续可加：CSS 变量提取、作用域前缀注入、压缩。
- */
-export function parseCss(raw: string): PageCssConfig {
-  return raw
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
