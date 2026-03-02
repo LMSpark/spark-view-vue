@@ -59,7 +59,7 @@ const {
   rebindRules,
   pageContext,
   dataSet
-} = usePageRenderer(props as PageRendererOptions, { pageContainer, vueApp })
+} = usePageRenderer(props as PageRendererOptions, { pageContainer, ...(vueApp !== undefined ? { vueApp } : {}) })
 
 defineExpose({
   reload: loadPageConfig,
