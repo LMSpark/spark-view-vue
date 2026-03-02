@@ -183,7 +183,7 @@ export const LOGGER = defineCapability<LoggerApi>('spark:capability:logger')
 // ==================== 页面脚本沙箱接口（框架无关）====================
 // IPageRoute 和 IFormAPI 的权威定义已移至 ../script-api.ts
 // 此处重导出以保持向后兼容性。
-export type { IPageRoute, IFormAPI, IDataSetLike, IScriptContext, IPageServiceInScript } from '../script-api.js'
+export type { IPageRoute, IFormAPI, IDataSetLike, IDataSet, IScriptDataRow, IScriptDataView, IScriptDataViewEventMap, IEventEmitterLike, IScriptContext, IPageServiceInScript } from '../script-api.js'
 
 /** 页面服务能力（UI 交互） */
 export interface IPageServiceCapability {

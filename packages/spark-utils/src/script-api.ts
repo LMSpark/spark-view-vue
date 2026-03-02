@@ -111,8 +111,8 @@ export interface IScriptDataViewEventMap extends Record<string, any[]> {
   rowsChanged: []
   /** 数据已清空 */
   cleared: []
-  /** 请求状态变化（'idle' | 'loading' | 'loaded' | 'failed'） */
-  requestStateChanged: [requestState: string]
+  /** 请求状态变化（数值：0=Idle / 1=Preparing / 2=Loading / 3=Loaded / 4=Failed） */
+  requestStateChanged: [requestState: number]
   /** CRUD 变更中状态变化 */
   mutatingChanged: [mutating: boolean]
   /** summaryRow 已重算 */
@@ -181,10 +181,13 @@ export interface IScriptDataView {
 
   // ── 状态 ──────────────────────────────────────────────────────────────
   /**
-   * 请求状态机：`'idle' | 'loading' | 'loaded' | 'failed'`。
-   * 可通过 `events.on('requestStateChanged', state => ...)` 监听变化。
+   * 请求状态机（数值）：
+   * `0=Idle / 1=Preparing / 2=Loading / 3=Loaded / 4=Failed`
+   *
+   * 对应 spark-data 的 `RequestState` 枚举值，可通过
+   * `events.on('requestStateChanged', state => ...)` 监听变化。
    */
-  requestState: string
+  requestState: number
   /** CRUD 增删改批请求进行中（与 requestState 独立） */
   mutating: boolean
 
@@ -288,11 +291,19 @@ export interface IDataSetLike {
     selectedRowsChanged?: (tableName: string, viewId: string, selectedRows: IScriptDataRow[]) => void
     rowsChanged?: (tableName: string, viewId: string) => void
     cleared?: (tableName: string, viewId: string) => void
-    requestStateChanged?: (tableName: string, viewId: string, state: string) => void
+    requestStateChanged?: (tableName: string, viewId: string, state: number) => void
   }): () => void
   /** 触发所有 `autoLoad: true` 视图自动加载（渲染层已自动调用，脚本无需手动触发） */
   triggerAutoLoad(): void
 }
+
+/**
+ * DataSet 脚本接口（`IDataSetLike` 的规范名称别名）。
+ *
+ * 等价于 `IDataSetLike`，提供面向脚本的完整 DataSet API 而不引入 spark-data 包依赖。
+ * 渲染层以 spark-data 的 `IDataSet`（结构超集）覆盖，两者通过结构化类型兼容。
+ */
+export type IDataSet = IDataSetLike
 
 // ==================== 脚本沙箱上下文（核心契约）====================
 
@@ -386,9 +397,9 @@ export interface IScriptContext {
    * - `events.on('rowsChanged' | 'currentRowChanged' | ...)`
    *
    * @see IScriptDataView — 视图完整 API
-   * @see IDataSetLike — DataSet 完整 API
+   * @see IDataSet — DataSet 完整 API
    */
-  $dataSet: IDataSetLike | null
+  $dataSet: IDataSet | null
 
   /**
    * UI 交互服务（框架无关，替代 ElMessage / ElMessageBox）。
