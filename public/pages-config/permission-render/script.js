@@ -4,7 +4,7 @@
  */
 
 // 沙箱注入的全局变量: 
-// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
 
 let _pageState = { currentUser: '', tableData: [], responseData: null }
 
