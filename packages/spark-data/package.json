@@ -1,45 +1,45 @@
 {
-    "name": "@spark-view/spark-data",
-    "version": "0.5.0",
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/types/index.d.ts",
-    "private": false,
-    "files": [
-        "dist",
-        "README.md"
-    ],
-    "publishConfig": {
-        "registry": "https://registry.npmjs.org",
-        "access": "public"
-    },
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/types/index.d.ts"
-        }
-    },
-    "scripts": {
-        "build": "vite build && tsc -p tsconfig.build.json",
-        "typecheck": "tsc -p tsconfig.json --noEmit",
-        "test": "vitest",
-        "test:run": "vitest run",
-        "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
-        "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
-    },
-    "dependencies": {
-        "@spark-view/spark-utils": "^0.4.0",
-        "mitt": "^3.0.1"
-    },
-    "postcss": {},
-    "devDependencies": {
-        "@eslint/js": "^9.39.2",
-        "@types/node": "^18.19.130",
-        "@typescript-eslint/eslint-plugin": "^8.52.0",
-        "@typescript-eslint/parser": "^8.52.0",
-        "eslint": "^9.39.2",
-        "typescript": "~5.8.2",
-        "vite": "^7.3.1",
-        "vitest": "^2.1.8"
+  "name": "@spark-view/spark-data",
+  "version": "0.5.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "private": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/types/index.d.ts"
     }
+  },
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
+  },
+  "dependencies": {
+    "@spark-view/spark-utils": "^0.4.0",
+    "mitt": "^3.0.1"
+  },
+  "postcss": {},
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^18.19.130",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
+    "eslint": "^9.39.2",
+    "typescript": "~5.8.2",
+    "vite": "^7.3.1",
+    "vitest": "^2.1.8"
+  }
 }

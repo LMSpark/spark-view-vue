@@ -11,8 +11,10 @@
  * 3. 绑定和渲染使用 Rule[]（FormCreate 标准格式）
  */
 
-import type { Component, h } from 'vue'
-import type { IDataSet, SparkData } from '@spark-view/spark-data'
+import type { Component } from 'vue'
+import type { h as VueH } from 'vue'
+import type { IDataSet } from '@spark-view/spark-data'
+import type { SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
 import type { IScriptContext } from '@spark-view/spark-page-config'
@@ -65,13 +67,13 @@ export interface PageContext extends IScriptContext {
   $page: IPageServiceCapability
 
   /** SPARK 数据工具命名空间（`createTreeManager` 等工具），沙箱内直接可用 */
-  SparkData: SparkData
+  SparkData: typeof SparkData
 
   /**
    * Vue `h` 函数 — 仅供 `Render*` 渲染函数使用，业务逻辑不应依赖。
    * 如需显示消息/导航，请使用 `$page`。
    */
-  h: h
+  h: typeof VueH
 }
 
 /**

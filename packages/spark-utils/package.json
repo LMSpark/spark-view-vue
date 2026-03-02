@@ -1,48 +1,48 @@
 {
-    "name": "@spark-view/spark-utils",
-    "version": "0.4.0",
-    "type": "module",
-    "description": "SPARK 工具层 - 常量、符号、Logger 等基础设施",
-    "main": "./dist/index.js",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
-    "files": [
-        "dist"
-    ],
-    "publishConfig": {
-        "registry": "https://registry.npmjs.org",
-        "access": "public"
-    },
-    "scripts": {
-        "build": "vite build && tsc -p tsconfig.build.json",
-        "typecheck": "tsc --noEmit -p tsconfig.json",
-        "test": "vitest",
-        "test:run": "vitest run",
-        "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
-        "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
-    },
-    "devDependencies": {
-        "@eslint/js": "^9.39.2",
-        "@types/node": "^18.19.130",
-        "@typescript-eslint/eslint-plugin": "^8.52.0",
-        "@typescript-eslint/parser": "^8.52.0",
-        "eslint": "^9.39.2",
-        "typescript": "~5.8.2",
-        "vite": "^7.3.1",
-        "vitest": "^2.1.8"
-    },
-    "keywords": [
-        "spark",
-        "utils",
-        "logger",
-        "constants"
-    ],
-    "author": "",
-    "license": "MIT"
+  "name": "@spark-view/spark-utils",
+  "version": "0.4.1",
+  "type": "module",
+  "description": "SPARK 工具层 - 常量、符号、Logger 等基础设施",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^18.19.130",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
+    "eslint": "^9.39.2",
+    "typescript": "~5.8.2",
+    "vite": "^7.3.1",
+    "vitest": "^2.1.8"
+  },
+  "keywords": [
+    "spark",
+    "utils",
+    "logger",
+    "constants"
+  ],
+  "author": "",
+  "license": "MIT"
 }

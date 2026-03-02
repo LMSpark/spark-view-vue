@@ -1,56 +1,56 @@
 {
-    "name": "@spark-view/spark-component",
-    "version": "0.4.0",
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "private": false,
-    "description": "SPARK Component System - 组件核心（能力系统、组件管理器、组件注册表）",
-    "files": [
-        "dist",
-        "API.md",
-        "README.md"
-    ],
-    "publishConfig": {
-        "registry": "https://registry.npmjs.org",
-        "access": "public"
-    },
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
-    "scripts": {
-        "build": "vite build && vue-tsc -p tsconfig.build.json",
-        "typecheck": "vue-tsc -p tsconfig.json --noEmit",
-        "test": "vitest",
-        "test:run": "vitest run",
-        "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
-        "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
-    },
-    "dependencies": {
-        "@spark-view/spark-data": "^0.4.0",
-        "@spark-view/spark-page-config": "^0.3.1",
-        "@spark-view/spark-utils": "^0.4.0"
-    },
-    "peerDependencies": {
-        "@form-create/element-ui": ">=3.0.0",
-        "element-plus": ">=2.0.0",
-        "vue": "^3.5.27",
-        "vue-router": "^4.6.4"
-    },
-    "devDependencies": {
-        "@eslint/js": "^9.39.2",
-        "@types/node": "^18.19.130",
-        "@typescript-eslint/eslint-plugin": "^8.52.0",
-        "@typescript-eslint/parser": "^8.52.0",
-        "@vitejs/plugin-vue": "^6.0.4",
-        "eslint": "^9.39.2",
-        "typescript": "~5.8.2",
-        "undici-types": "^7.19.2",
-        "vite": "^7.3.1",
-        "vitest": "^2.1.8",
-        "vue": "^3.5.27"
+  "name": "@spark-view/spark-component",
+  "version": "0.4.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "private": false,
+  "description": "SPARK Component System - 组件核心（能力系统、组件管理器、组件注册表）",
+  "files": [
+    "dist",
+    "API.md",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
+  },
+  "scripts": {
+    "build": "vite build && vue-tsc -p tsconfig.build.json",
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
+  },
+  "dependencies": {
+    "@spark-view/spark-data": "^0.4.0",
+    "@spark-view/spark-page-config": "^0.3.1",
+    "@spark-view/spark-utils": "^0.4.0"
+  },
+  "peerDependencies": {
+    "@form-create/element-ui": ">=3.0.0",
+    "element-plus": ">=2.0.0",
+    "vue": "^3.5.27",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^18.19.130",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
+    "@vitejs/plugin-vue": "^6.0.4",
+    "eslint": "^9.39.2",
+    "typescript": "~5.8.2",
+    "undici-types": "^7.19.2",
+    "vite": "^7.3.1",
+    "vitest": "^2.1.8",
+    "vue": "^3.5.27"
+  }
 }
