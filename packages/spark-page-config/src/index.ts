@@ -16,7 +16,6 @@ export type {
   ConfigLoaderOptions,
   ConfigLoadResult,
   ConfigLoader,
-  DynamicRouterOptions,
   ValidationError,
   ConfigVersion
 } from './types'
@@ -31,13 +30,6 @@ export {
   parseScript,
   parseCss
 } from './loader'
-
-// 动态路由
-export {
-  DynamicRouter,
-  createDynamicRouter,
-  setupDynamicRoutes
-} from './router'
 
 // 验证器
 export {

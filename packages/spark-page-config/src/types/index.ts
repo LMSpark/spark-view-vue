@@ -3,7 +3,6 @@
  * L2 业务编排层 - 对应 4 个配置文件
  */
 
-import type { RouteRecordRaw } from 'vue-router'
 import type { DataSet } from '@spark-view/spark-data'
 
 /**
@@ -127,48 +126,6 @@ export interface ConfigLoadResult<T = unknown> {
   source?: 'local' | 'remote'
   timestamp?: number
   validationErrors?: ValidationError[]
-}
-
-/**
- * 动态路由注册选项
- */
-export interface DynamicRouterOptions {
-  /**
-   * Vue Router 实例
-   */
-  router: import('vue-router').Router
-  
-  /**
-   * 配置加载器
-   */
-  configLoader: ConfigLoader
-  
-  /**
-   * 动态页面组件（必需）
-   * 用于渲染配置化页面
-   * 
-   * @example
-   * ```typescript
-   * import { PageRenderer } from '@spark-view/spark-component'
-   * 
-   * const options = {
-   *   router,
-   *   configLoader,
-   *   pageComponent: PageRenderer
-   * }
-   * ```
-   */
-  pageComponent: import('vue').Component
-  
-  /**
-   * 路由注册前钩子
-   */
-  beforeRegister?: (routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>
-  
-  /**
-   * 路由注册后钩子
-   */
-  afterRegister?: (routes: RouteRecordRaw[]) => void
 }
 
 /**

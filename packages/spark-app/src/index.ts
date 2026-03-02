@@ -94,6 +94,10 @@ export {
 // Router Guards
 export { setupRouterGuards, setupLoadingGuard } from './router/guards'
 
+// 动态路由
+export { DynamicRouter, createDynamicRouter, setupDynamicRoutes } from './router/dynamic'
+export type { DynamicRouterOptions } from './router/dynamic'
+
 // Error Handler
 export { setupErrorHandler, createErrorBoundary } from './error/handler'
 
