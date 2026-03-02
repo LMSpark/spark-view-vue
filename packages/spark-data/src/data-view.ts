@@ -1100,8 +1100,10 @@ export class DataView implements IDataSource {
 
     this.updateFromServer(filteredRows)
     this.selectionDelegate.applyAutoFirst()
+    // 内存级联不走网络，不发 requestStateChanged（避免触发 DataSet.loadSuccess 事件，
+    // 进而导致 $page.showMessage 在同步渲染帧内触发 ElMessage 并使 el-table 产生
+    // 无主键的 currentChange 副作用）。requestState 保持 Loaded 以供幂等性检查。
     this.requestState = RequestState.Loaded
-    this.events.emit('requestStateChanged', this.requestState)
     this.emitRowsChanged()
   }
 

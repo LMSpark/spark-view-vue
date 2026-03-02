@@ -19,13 +19,17 @@ function __init__() {
       console.log('✅ DataSet 初始化完成（使用内联数据）')
     }
 
-    // 监听加载事件
+    // 监听加载事件（仅对有 API 的表有意义；内存级联不触发这些事件）
     dataSet.on('loadSuccess', ({ tableName }) => {
+      const table = dataSet.getTable(tableName)
+      if (!table?.api?.list) return  // 内联数据表跳过
       console.log(`[dataset-demo] ✅ ${tableName} 加载完成`)
       $page.showMessage(`✅ ${tableName} 数据加载完成！`, 'success')
     })
 
     dataSet.on('loadError', ({ tableName, error }) => {
+      const table = dataSet.getTable(tableName)
+      if (!table?.api?.list) return  // 内联数据表跳过
       console.error(`[dataset-demo] ❌ ${tableName} 加载失败`, error)
       $page.showMessage(`❌ ${tableName} 加载失败: ${error.message}`, 'error')
     })
