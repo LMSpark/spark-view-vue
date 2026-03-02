@@ -1,11 +1,11 @@
 // 系统设置页面脚本
 // 沙箱注入的全局变量: 
-// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
 
 // 页面初始化
 console.log('⚙️ 系统设置页面已加载');
-console.log('📦 页面数据:', $data);
+console.log('📦 DataSet:', $dataSet);
 
 // 示例：定义函数供页面使用
 function saveSettings() {

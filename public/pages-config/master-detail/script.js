@@ -1,6 +1,8 @@
 ﻿// 沙箱注入的全局变量: 
-// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
+
+let _currentRowJson = '未选择行'
 
 // 数据加载通过视图的 CRUD API 完成（loadFromServer）
 
@@ -9,7 +11,7 @@ function __init__() {
   const dataSet = $dataSet
   
   // 初始化 currentRowJson（防止 undefined）
-  $data.currentRowJson = '未选择行'
+  _currentRowJson = '未选择行'
   
   // 获取 Users 表的列定义（用于提取干净的数据对象）
   const usersTable = dataSet.getTable('Users')
@@ -31,13 +33,13 @@ function __init__() {
         if ($api) {
           $api.setValue('currentRowJson', jsonStr)
         } else {
-          $data.currentRowJson = jsonStr
+          _currentRowJson = jsonStr
         }
       } else {
         if ($api) {
           $api.setValue('currentRowJson', '未选择行')
         } else {
-          $data.currentRowJson = '未选择行'
+          _currentRowJson = '未选择行'
         }
       }
     }
@@ -69,7 +71,6 @@ function __init__() {
  * 自定义渲染函数：显示 currentRow
  */
 function RenderCurrentRow() {
-  const { h } = window.Vue
   const dataSet = $dataSet
   const currentRow = dataSet?.getView('Users', 'default')?.currentRow
   

@@ -1,5 +1,5 @@
 ﻿// 沙箱注入的全局变量: 
-// - $api, $route, $data, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
+// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData
 // - ElMessage, ElMessageBox, SparkData, h
 
 // 数据加载通过视图的 CRUD API 完成（loadFromServer）
@@ -8,8 +8,6 @@
  * 请求订单明细数据 - 完全解耦：发起请求不等待，数据加载完成后自动更新 UI
  */
 function handleRequestOrderDetails() {
-  const pageData = $data;
-  const { ElMessage } = pageData._imports || {};
   const dataSet = $dataSet;
   
   if (!dataSet) {
@@ -65,8 +63,6 @@ function handleRequestCategories() {
  * 清空所有数据
  */
 function handleClearAll() {
-  const pageData = $data;
-  const { ElMessage } = pageData._imports || {};
   const dataSet = $dataSet;
   
   console.log('='.repeat(60));
@@ -91,8 +87,6 @@ function handleClearAll() {
 function __init__() {
   console.log('📦 smart-load 脚本开始初始化...');
   
-  const pageData = $data;
-  const { ElMessage } = pageData._imports || {};
   const dataSet = $dataSet;
   
   if (dataSet) {
