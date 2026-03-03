@@ -72,22 +72,25 @@ import './style.css'
  */
 async function startApp() {
   try {
-    // 🔧 清除损坏的缓存（旧版 toJSON 问题导致）
+    // 🔧 清除损坏的缓存（旧版 toJSON 问题 / 前缀迁移兼容）
     if (typeof localStorage !== 'undefined') {
       const badKeys = Object.keys(localStorage).filter(k => {
-        if (!k.startsWith('spark_file_')) return false
+        // spark_page_ 是页面配置 FileLoader 的实际前缀；spark_file_ 是旧版误用的前缀
+        const isPageCache = k.startsWith('spark_page_') || k.startsWith('spark_file_')
+        if (!isPageCache) return false
         try {
           const cached = localStorage.getItem(k)
           if (!cached) return false
           const parsed = JSON.parse(cached) as { data?: unknown }
-          // 检测双重字符串化的情况（data 字段是字符串且看起来像 JSON）
-          if (parsed && typeof parsed.data === 'string') {
+          if (!parsed || typeof parsed !== 'object') return true  // 格式不合法
+          // :raw 槽位必须存字符串（原始文件内容），非字符串说明旧版把对象存进去了
+          if (k.endsWith(':raw') && typeof parsed.data !== 'string') return true
+          // 检测双重字符串化（data 是字符串且内容像 JSON）
+          if (typeof parsed.data === 'string') {
             const trimmed = parsed.data.trim()
-            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-              return true
-            }
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) return true
           }
-        } catch { /* ignore */ }
+        } catch { return true /* JSON.parse 失败 → 强制清除 */ }
         return false
       })
       

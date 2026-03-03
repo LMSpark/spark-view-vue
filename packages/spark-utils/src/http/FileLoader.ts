@@ -153,7 +153,8 @@ export class FileLoader {
             return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, notModified: true }
           }
           // 路径 2：内存冷（页面刷新）+ localStorage raw 命中 → 重执行 transform，恢复原型
-          if (rawEntry) {
+          // 守卫：rawEntry.data 必须是字符串（旧版可能错误存入对象）
+          if (rawEntry && typeof rawEntry.data === 'string') {
             const transformed = await transform(rawEntry.data)
             this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
             return { success: true, data: transformed, timestamp: rawEntry.sourceTimestamp, fromCache: true, notModified: true }
@@ -180,7 +181,7 @@ export class FileLoader {
             logger.warn('网络失败，使用 transform 缓存', { fileName, error: msg })
             return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
           }
-          if (rawEntry) {
+          if (rawEntry && typeof rawEntry.data === 'string') {
             try {
               const transformed = await transform(rawEntry.data)
               this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
