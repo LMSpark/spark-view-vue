@@ -1,0 +1,54 @@
+name: Architecture Validation
+
+on:
+  push:
+    paths:
+      - 'packages/**'
+      - 'tools/verify-architecture.mjs'
+  pull_request:
+    paths:
+      - 'packages/**'
+      - 'tools/verify-architecture.mjs'
+
+jobs:
+  validate-architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify package dependencies
+        run: node tools/verify-architecture.mjs
+
+      - name: Check for circular dependencies (madge)
+        run: |
+          npx madge --circular --extensions ts,js \
+            packages/spark-utils/src \
+            packages/spark-data/src \
+            packages/spark-page-config/src \
+            packages/spark-component/src \
+            packages/spark-app/src
+
+      - name: Validate workspace protocol
+        run: |
+          echo "Checking workspace:* protocol usage..."
+          for pkg in spark-utils spark-data spark-page-config spark-component spark-app; do
+            jq -e '.dependencies // {} | to_entries | map(select(.key | startswith("@spark-view/")) | select(.value | startswith("workspace:") | not)) | length == 0' \
+              "packages/$pkg/package.json" || {
+                echo "ERROR: $pkg has @spark-view/* dependencies not using workspace:* protocol"
+                exit 1
+              }
+          done
+          echo "✓ All internal dependencies use workspace:* protocol"
