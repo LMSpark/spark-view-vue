@@ -115,7 +115,7 @@ export class Request {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         if (attempt > 0) {
-          await this.delay(retryDelay * attempt)
+          await this.delay(retryDelay * attempt, merged.signal)
           logger.warn(`重试 ${attempt}/${maxRetries}`, { url: merged.url })
         }
         const res: AxiosResponse<T> = await this.ax.request(this.toAxios(merged))
@@ -134,15 +134,28 @@ export class Request {
     throw new Error('unreachable')
   }
 
-  /** 发起请求，返回包含 status / headers 的完整响应对象 */
+  /** 发起请求，返回包含 status / headers 的完整响应对象（支持 retry） */
   async requestFull<T = unknown>(config: RequestConfig): Promise<HttpResponse<T>> {
     const merged: RequestConfig = { ...this.defaults, ...config }
-    try {
-      const res: AxiosResponse<T> = await this.ax.request(this.toAxios(merged))
-      return this.toHttpResponse(res)
-    } catch (err) {
-      throw this.normalizeError(err, merged)
+    const maxRetries = merged.retry ?? 0
+    const retryDelay = merged.retryDelay ?? 1000
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          await this.delay(retryDelay * attempt, merged.signal)
+          logger.warn(`重试 ${attempt}/${maxRetries}`, { url: merged.url })
+        }
+        const res: AxiosResponse<T> = await this.ax.request(this.toAxios(merged))
+        return this.toHttpResponse(res)
+      } catch (err) {
+        const retryable = !axios.isAxiosError(err) || !err.response || err.response.status >= 500
+        if (attempt < maxRetries && retryable) continue
+        throw this.normalizeError(err, merged)
+      }
     }
+
+    throw new Error('unreachable')
   }
 
   // ==================== HTTP 快捷方法 ====================
@@ -289,8 +302,15 @@ export class Request {
     return `${c.method}:${c.url}${c.params ? '?' + JSON.stringify(c.params) : ''}`
   }
 
-  private delay(ms: number): Promise<void> {
-    return new Promise(r => setTimeout(r, ms))
+  private delay(ms: number, signal?: AbortSignal): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (signal?.aborted) { reject(signal.reason ?? new DOMException('Aborted', 'AbortError')); return }
+      const timer = setTimeout(resolve, ms)
+      signal?.addEventListener('abort', () => {
+        clearTimeout(timer)
+        reject(signal.reason ?? new DOMException('Aborted', 'AbortError'))
+      }, { once: true })
+    })
   }
 }
 

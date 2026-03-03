@@ -22,6 +22,7 @@ import type { AppEnvironment, EnvironmentInfo } from '../types'
 // ==================== 核心依赖 ====================
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
+import { toError } from '@spark-view/spark-utils'
 import { simpleEnvAdapter as envAdapter } from '../utils/simpleEnv'
 
 // =============================================================================
@@ -198,8 +199,8 @@ export class AuthService implements IAuthService {
       return result
 
     } catch (error) {
-      authLogger.error('❌ 登录失败', error as Error)
-      this.config.onAuthError?.(error as Error)
+      authLogger.error('❌ 登录失败', toError(error))
+      this.config.onAuthError?.(toError(error))
       throw error
     }
   }
@@ -238,7 +239,7 @@ export class AuthService implements IAuthService {
       authLogger.success('✅ 登出成功')
 
     } catch (error) {
-      authLogger.error('❌ 登出失败', error as Error)
+      authLogger.error('❌ 登出失败', toError(error))
       // 即使 API 调用失败，也要清除本地 Token
       this.clearToken()
       throw error
@@ -281,7 +282,7 @@ export class AuthService implements IAuthService {
       return result
 
     } catch (error) {
-      authLogger.error('❌ 认证检查失败', error as Error)
+      authLogger.error('❌ 认证检查失败', toError(error))
       this.clearToken()
       return null
     }
@@ -326,6 +327,27 @@ export class AuthService implements IAuthService {
   clearToken(): void {
     this.tokenManager.clearToken()
     authLogger.debug('🗑️ Token 已清除')
+  }
+
+  /**
+   * 销毁认证服务，释放所有资源
+   *
+   * - 清除 Token
+   * - 清除并发刷新锁
+   * - 移除所有生命周期钩子引用
+   * - 标记为未初始化（后续调用将静默返回或抛出）
+   */
+  destroy(): void {
+    this.clearToken()
+    this.refreshPromise = null
+    if (this.config) {
+      this.config.onLoginSuccess = undefined
+      this.config.onLogoutSuccess = undefined
+      this.config.onAuthError = undefined
+      this.config.onTokenRefresh = undefined
+    }
+    this.initialized = false
+    authLogger.info('🛑 认证服务已销毁')
   }
 
   /** 并发刷新锁：多个请求同时发现 token 过期时，共享同一个 refresh Promise */
@@ -387,7 +409,7 @@ export class AuthService implements IAuthService {
       return token
 
     } catch (error) {
-      authLogger.error('❌ Token 刷新失败', error as Error)
+      authLogger.error('❌ Token 刷新失败', toError(error))
       this.clearToken()
       throw error
     }

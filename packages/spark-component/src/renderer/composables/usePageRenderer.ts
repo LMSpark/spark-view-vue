@@ -440,10 +440,10 @@ export function usePageRenderer(
 
   watch(
     () => props.pageId ?? route.meta['pageId'] ?? route.params['id'] ?? route.name,
-    (newId, oldId) => { if (newId !== oldId) loadPageConfig().catch(() => {}) },
+    (newId, oldId) => { if (newId !== oldId) loadPageConfig().catch(e => pageLogger.error('loadPageConfig 未预期异常', e)) },
   )
 
-  onMounted(() => { loadPageConfig().catch(() => {}) })
+  onMounted(() => { loadPageConfig().catch(e => pageLogger.error('loadPageConfig 未预期异常', e)) })
 
   // ── 返回值 ───────────────────────────────────────────────────────────────────
 

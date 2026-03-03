@@ -154,4 +154,9 @@ export interface IAuthService {
    * 刷新 Token
    */
   refreshToken(): Promise<string>
+
+  /**
+   * 销毁认证服务，释放所有资源
+   */
+  destroy(): void
 }

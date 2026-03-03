@@ -209,7 +209,7 @@ export interface ICurrentRowCapability {
 
 /**
  * @reserved 为 r-row 组件预留，待 r-table→r-row 组件树实现后展开。
- * 目前无 provider 和 consumer。
+ * @internal 尚无 provider / consumer，外部代码请勿依赖。
  */
 export const CURRENT_ROW = defineCapability<ICurrentRowCapability>('spark:capability:current-row')
 
@@ -225,7 +225,7 @@ export interface ISelectionCapability {
 
 /**
  * @reserved 为 r-row 选择状态管理预留，待 r-table→r-row 组件树实现后展开。
- * 目前无 provider 和 consumer。
+ * @internal 尚无 provider / consumer，外部代码请勿依赖。
  */
 export const SELECTION = defineCapability<ISelectionCapability>('spark:capability:selection')
 
@@ -238,7 +238,7 @@ export interface IRowDataCapability {
 
 /**
  * @reserved 为 r-cell 组件预留，待 r-row→r-cell 组件树实现后展开。
- * 目前无 provider 和 consumer。
+ * @internal 尚无 provider / consumer，外部代码请勿依赖。
  */
 export const ROW_DATA = defineCapability<IRowDataCapability>('spark:capability:row-data')
 
@@ -246,13 +246,13 @@ export const ROW_DATA = defineCapability<IRowDataCapability>('spark:capability:r
 
 /**
  * @reserved 为 r-table 内部事件总线预留，待 r-table 实现内部子组件通信时展开。
- * 目前无 provider 和 consumer。
+ * @internal 尚无 provider / consumer，外部代码请勿依赖。
  */
 export const GRID_EVENTS = defineCapability<IEventEmitter>('spark:capability:grid-events')
 
 /**
  * @reserved 为 r-row 外向事件上报预留，待 r-row 实现内部子组件通信时展开。
- * 目前无 provider 和 consumer。
+ * @internal 尚无 provider / consumer，外部代码请勿依赖。
  */
 export const ROW_EVENTS = defineCapability<IEventEmitter>('spark:capability:row-events')
 
