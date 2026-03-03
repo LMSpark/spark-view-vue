@@ -232,6 +232,54 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 | `view.setCurrentRow(row)` 在 `currentChange` 回调中 | `injectTableEvents`（bindRules.ts）已在回调后通过 PK 查干净行并调用；回调里的 row 被 form-create 污染（含 `$f/api/rule` 属性），直接传入会触发 `[WARN] 行缺少主键` | 只写业务逻辑，DataView 同步由框架负责 |
 | 在树节点事件（`onNodeClick` 等）内调用 `$rebindRules()` | 重建规则会折叠所有已展开节点，UX 破坏 | 用 `DataView.replaceRows()` + DOM 直写（见下方「避免 `$rebindRules()` 破坏树展开」）|
 
+### `__init__` 页面加载事件 🚀
+
+`__init__` 是页面脚本的**入口函数**，相当于页面的 `onLoad` 事件。框架在 form-create 挂载完成后自动调用。
+
+**执行时序**（解决首次加载无数据问题）：
+```
+applyConfig
+  ├─ rebindRules()          ← 首次绑定（DataSet 尚未初始化，dataKey 解析为空）
+  └─ form-create 开始挂载
+       ↓
+form-create mounted 钩子
+  ├─ initDataSet()          ← DataSet 初始化（DataView 被 reactive() 包装）
+  ├─ rebindRules()          ← 二次绑定（dataKey 解析到真实数据）
+  ├─ __init__()             ← 页面脚本入口（$api / $dataSet 均已就绪）
+  └─ initAutoSelection()    ← 触发初始选中事件
+```
+
+**`__init__` 内可用资源**：
+- `$api`：form-create API 已就绪，可调用 `getValue / setValue / hidden` 等
+- `$dataSet`：DataSet 已初始化，可订阅事件、操作数据
+- `$route`：路由参数可用
+- `$page`：UI 服务可用
+
+**典型用法**：
+```javascript
+function __init__() {
+  // 1. 订阅数据变化
+  const view = $dataSet?.getView('Orders', 'default')
+  view?.events.on('currentRowChanged', (row) => {
+    console.log('当前行变化:', row)
+  })
+
+  // 2. 根据路由参数加载数据
+  const orderId = $route.query.id
+  if (orderId) {
+    view?.loadFromServer({ id: orderId })
+  }
+
+  // 3. 初始化 UI 状态
+  $api?.hidden('advancedPanel', true)
+}
+```
+
+**注意事项**：
+- `__init__` 只执行一次（页面首次加载时），页面内导航不会重复执行
+- 不要在 `__init__` 中调用 `$rebindRules()`——此时规则刚绑定完成
+- 数据订阅应在 `__init__` 中注册，确保能收到 `initAutoSelection()` 触发的初始事件
+
 ### UI 状态存储模式
 
 脚本需要跨函数共享的 UI 状态（非 DataSet 数据）用**模块级闭包变量**代替原来的 `$data`：
