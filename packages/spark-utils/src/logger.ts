@@ -41,7 +41,9 @@ export function Logger(context?: string | CapabilityHolder): LoggerApi {
     return consoleLogger(context ? `[${context}]` : undefined)
   }
 
-  const impl = context.capabilities?.get('logger') as Partial<LoggerApi> | undefined
+  // LOGGER 能力键经 normalizeKey / defineCapability 存储为 Symbol.for('spark:capability:logger')
+  // 直接使用 Symbol.for 匹配，避免引入 symbols 模块的循环依赖风险
+  const impl = context.capabilities?.get(Symbol.for('spark:capability:logger')) as Partial<LoggerApi> | undefined
   if (!impl) return consoleLogger()
 
   const fb = consoleLogger()

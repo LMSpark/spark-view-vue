@@ -36,12 +36,12 @@
   },
   "peerDependencies": {},
   "dependencies": {
-    "@spark-view/spark-data": "^0.5.1",
-    "@spark-view/spark-utils": "^0.4.1"
+    "@spark-view/spark-data": "workspace:*",
+    "@spark-view/spark-utils": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@types/node": "^18.19.130",
+    "@types/node": "^20.19.0",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
     "eslint": "^10.0.2",

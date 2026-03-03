@@ -62,7 +62,11 @@ const MAX_EXPRESSION_LENGTH = 2048
 const BLOCKED_KEYS = new Set<string | symbol>([
   '__proto__', 'constructor', 'prototype',
   'globalThis', 'window', 'self', 'eval', 'Function',
-  'process', 'require', 'module',
+  'process', 'require', 'module', 'exports', 'global',
+  'document', 'location', 'top', 'parent', 'frames',
+  'setTimeout', 'setInterval', 'setImmediate',
+  'fetch', 'XMLHttpRequest', 'WebSocket', 'importScripts',
+  'Proxy', 'Reflect',
 ])
 
 /**

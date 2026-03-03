@@ -848,21 +848,42 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
 
 发布使用 `node scripts/publish-packages.mjs`（自动按依赖顺序构建 + 发布所有子包）。
 
+### ⚠️ 内部依赖必须使用 `workspace:*`
+
+所有子包之间的 `@spark-view/*` 依赖**必须**声明为 `workspace:*`，不得使用版本范围（如 `^0.5.1`）：
+
+```jsonc
+// ✅ 正确 — pnpm 链接本地副本，publish 时自动替换为实际版本
+"dependencies": {
+  "@spark-view/spark-utils": "workspace:*"
+}
+
+// ❌ 错误 — pnpm 从 npm registry 安装旧版，导致 pnpm-lock.yaml 出现双重版本
+"dependencies": {
+  "@spark-view/spark-utils": "^0.4.1"
+}
+```
+
+pnpm 在执行 `pnpm publish` 时会自动将 `workspace:*` 替换为包的实际版本号（由 pnpm-workspace.yaml 解析）。
+
+**验证命令**：
+
+```powershell
+Get-ChildItem packages -Directory | ForEach-Object {
+  $n=$_.Name; $p=Get-Content "packages\$n\package.json"|ConvertFrom-Json
+  $bad = $p.dependencies.PSObject.Properties |
+    Where-Object { $_.Name -like '@spark-view/*' -and $_.Value -notmatch '^workspace:' }
+  if ($bad) { Write-Host "[WARN] $n has non-workspace @spark-view deps:"; $bad | ForEach-Object { Write-Host "  $($_.Name)=$($_.Value)" } }
+}
+```
+
 ### 发布前必查清单
 
 **1. 跨包依赖范围与实际版本对齐**
 
-每次升级某个包的版本后，**必须同步更新**所有依赖该包的 `package.json` 中的版本范围，使其能覆盖新版本：
+`pnpm publish` 将 `workspace:*` 替换为实际版本后，`package.json` 中所记录的版本范围须能被下游正确解析。本地开发使用 `workspace:*`，发布脚本自动转换，无需手动更新版本号。
 
-```
-spark-utils 升到 0.4.1  →  spark-data / spark-component / spark-app / spark-page-config 中
-                           "@spark-view/spark-utils" 须设为 "^0.4.1"（或包含该版本的范围）
-
-spark-data  升到 0.5.1  →  spark-component / spark-app / spark-page-config 中
-                           "@spark-view/spark-data" 须设为 "^0.5.1"
-```
-
-验证命令（所有版本应与本地 package.json 一致）：
+验证命令（确认所有内部引用均为 `workspace:*`）：
 
 ```powershell
 Get-ChildItem packages -Directory | ForEach-Object {
@@ -878,7 +899,19 @@ Get-ChildItem packages -Directory | ForEach-Object {
 
 建包或复制配置后立即核查，确保存在此行（参见"Integration & build notes"）。
 
-**3. Dry-run 验证 workspace:* 替换**
+**3. `@types/node` 版本须满足 vite / vitest peer 要求**
+
+vite 7 和 vitest 4 要求 `@types/node@^20.19.0 || >=22.12.0`。所有子包（及 features/ 目录下的包）中 `@types/node` 须使用 `^20.19.0`（或更高），**禁止**保留 `^18.x`。
+
+```powershell
+# 检查所有 @types/node 版本
+Get-ChildItem packages -Directory | ForEach-Object {
+  $p=Get-Content "packages\$($_.Name)\package.json"|ConvertFrom-Json
+  Write-Host "$($_.Name): $($p.devDependencies.'@types/node')"
+}
+```
+
+**4. Dry-run 验证 workspace:* 替换**
 
 ```bash
 node scripts/publish-packages.mjs --dry-run

@@ -93,6 +93,8 @@ export interface SaveChangesData {
   failedCount: number
   /** 失败的行主键列表（可用于精准重试或 UI 高亮） */
   failedIds: Array<string | number>
+  /** 失败行的错误详情映射（主键 → 错误消息，用于诊断和 UI 提示） */
+  failedErrors: Record<string | number, string>
 }
 
 // ─────────────────────────────────────────────
