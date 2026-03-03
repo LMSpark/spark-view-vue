@@ -23,14 +23,34 @@ const PORT = process.env.PORT || 3001
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 
-// 存储组件库的内存缓存
+// 简单内存限速（防止 POST 写文件接口被滥用）
+const _rateLimitMap = new Map()
+function rateLimit(maxRequests, windowMs) {
+  return (req, res, next) => {
+    const key = req.ip
+    const now = Date.now()
+    const entry = _rateLimitMap.get(key) ?? { count: 0, start: now }
+    if (now - entry.start > windowMs) {
+      entry.count = 1; entry.start = now
+    } else {
+      entry.count++
+    }
+    _rateLimitMap.set(key, entry)
+    if (entry.count > maxRequests) {
+      return res.status(429).json({ success: false, error: '请求过于频繁，请稍后再试' })
+    }
+    next()
+  }
+}
+
+// 服务端持久化数据文件（区别于 Vite 插件生成的 component-library.json 客户端目录）
 let componentLibrary = {}
-const LIBRARY_FILE = path.join(__dirname, '..', '..', '..', 'component-library-server.json')
+const SERVER_DATA_FILE = path.join(__dirname, '..', 'component-library-server.json')
 
 // 加载已有的组件库
 try {
-  if (fs.existsSync(LIBRARY_FILE)) {
-    const data = fs.readFileSync(LIBRARY_FILE, 'utf-8')
+  if (fs.existsSync(SERVER_DATA_FILE)) {
+    const data = fs.readFileSync(SERVER_DATA_FILE, 'utf-8')
     componentLibrary = JSON.parse(data)
     console.log(`📚 加载组件库: ${Object.keys(componentLibrary).length} 个组件`)
   }
@@ -44,7 +64,7 @@ try {
  * POST /api/component-library
  * 上传组件库
  */
-app.post('/api/component-library', (req, res) => {
+app.post('/api/component-library', rateLimit(30, 60_000), (req, res) => {
   try {
     const { data } = req.body
 
@@ -59,7 +79,7 @@ app.post('/api/component-library', (req, res) => {
     componentLibrary = { ...componentLibrary, ...data }
 
     // 保存到文件
-    fs.writeFileSync(LIBRARY_FILE, JSON.stringify(componentLibrary, null, 2))
+    fs.writeFileSync(SERVER_DATA_FILE, JSON.stringify(componentLibrary, null, 2))
 
     console.log(`📤 接收组件库更新: ${Object.keys(data).length} 个组件`)
 

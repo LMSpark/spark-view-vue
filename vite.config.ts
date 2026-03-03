@@ -328,7 +328,7 @@ export default registerComponents
 
         } catch (error) {
           console.warn('⚠️ 无法连接到组件库服务端，将使用本地文件')
-          console.warn('💡 请启动服务端: node component-library-server.js')
+          console.warn('💡 请启动服务端: node tools/component-library-server.js')
 
           // 如果服务端不可用，至少保存本地文件
           console.log(`💾 本地文件已保存: ${libraryPath}`)
