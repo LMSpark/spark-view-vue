@@ -42,7 +42,7 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
   const children =
     rawChildren === null || rawChildren === undefined
       ? undefined
-      : (rawChildren as unknown[]).map((c) =>
+      : (Array.isArray(rawChildren) ? rawChildren : [rawChildren]).map((c: unknown) =>
           typeof c === 'string' ? c : normalizeRuleNode(c)
         )
   return {

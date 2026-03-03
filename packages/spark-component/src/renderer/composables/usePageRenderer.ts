@@ -41,6 +41,12 @@ import { buildAppServices } from '../utils/provideAppServices'
 
 const pageLogger = Logger('PageRenderer')
 
+/** ElMessageBox 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常 */
+function isElCancelAction(e: unknown): boolean {
+  if (e === 'cancel') return true
+  return typeof e === 'object' && e !== null && (e as Record<string, unknown>)['action'] === 'cancel'
+}
+
 // ─── 模块级 Render* 组件注册表 ────────────────────────────────────────────────
 // 每个 Vue App 实例维护一张 name → ShallowRef<renderFn> 的映射。
 // 首次遇到某名称时创建组件并调用 app.component()（只注册一次，消除重复注册 warn）。
@@ -152,7 +158,7 @@ export function usePageRenderer(
         return true
       } catch (e) {
         // ElMessageBox 取消抛出 'cancel' 字符串或 { action: 'cancel' }，非取消异常记录日志
-        if (e !== 'cancel' && (e as Record<string, unknown>)?.['action'] !== 'cancel') {
+        if (!isElCancelAction(e)) {
           pageLogger.warn('showConfirm 异常', { error: e })
         }
         return false
@@ -168,10 +174,12 @@ export function usePageRenderer(
           inputPlaceholder:  placeholder,
           inputValue:        defaultValue,
         })
-        return (result as { value: string }).value
+        return typeof result === 'object' && result !== null && 'value' in result
+          ? (result as { value: string }).value
+          : null
       } catch (e) {
         // ElMessageBox 取消抛出 'cancel' 字符串或 { action: 'cancel' }，非取消异常记录日志
-        if (e !== 'cancel' && (e as Record<string, unknown>)?.['action'] !== 'cancel') {
+        if (!isElCancelAction(e)) {
           pageLogger.warn('showPrompt 异常', { error: e })
         }
         return null

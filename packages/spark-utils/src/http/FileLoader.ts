@@ -468,7 +468,7 @@ export class FileLoader {
 
   private storageRemove(key: string): void {
     if (this.opts.storage !== 'memory') {
-      try { this.storage?.removeItem(key) } catch { /* ignore */ }
+      try { this.storage?.removeItem(key) } catch (e) { logger.debug('缓存移除失败', { key, error: e }) }
     }
   }
 

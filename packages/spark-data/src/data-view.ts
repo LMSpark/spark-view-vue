@@ -35,7 +35,7 @@ import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
-import { Logger, createEventEmitter, toErrorMessage } from '@spark-view/spark-utils'
+import { Logger, createEventEmitter, toErrorMessage, toError } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows, assertNoSeparator } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
@@ -96,14 +96,17 @@ export class DataView implements IDataSource {
 
   // ── DataTable 引用（运行时注入，由 DataTable 在 attach 时赋值）────────
 
-  /** 内部存储的 DataTable 引用 */
-  private _dataTable!: DataTable
+  /** 内部存储的 DataTable 引用（运行时由 DataTable.attach 注入） */
+  private _dataTable: DataTable | null = null
 
   /** 列名→列定义缓存（dataTable 赋值时构建，_coercePkValue O(1) 查找） */
   private _columnMap?: Map<string, DataColumn>
 
   /** 所属 DataTable（赋值时自动失效编译缓存并重编译计算列，不求值） */
-  get dataTable(): DataTable { return this._dataTable }
+  get dataTable(): DataTable {
+    if (!this._dataTable) throw new Error(`DataView ${this.tableName}:${this.viewId} 尚未关联 DataTable`)
+    return this._dataTable
+  }
   set dataTable(table: DataTable) {
     this._dataTable = table
     this._columnMap = new Map(table.columns?.map(c => [c.name, c]) ?? [])
@@ -167,9 +170,9 @@ export class DataView implements IDataSource {
    */
   get primaryKey(): string {
     if (this._primaryKeyOverride !== undefined) return this._primaryKeyOverride
-    // 从 DataTable 列定义自动推导
-    if (this.dataTable?.columns?.length) {
-      const pkCols = this.dataTable.columns.filter(c => c.isPrimaryKey)
+    // 从 DataTable 列定义自动推导（standalone DataView 无 _dataTable，安全回退 'id'）
+    if (this._dataTable?.columns?.length) {
+      const pkCols = this._dataTable.columns.filter(c => c.isPrimaryKey)
       if (pkCols.length === 1) {
         const col = pkCols[0]
         if (col) return col.name
@@ -893,6 +896,7 @@ export class DataView implements IDataSource {
     // 如果已有进行中的请求，复用同一个 Promise（避免丢弃并发调用）
     if (this.requestState !== RequestState.Idle) {
       if (this._pendingRequestData) return this._pendingRequestData
+      this.logger.debug(`requestData 跳过（当前状态: ${this.requestState}），请使用 refresh() 强制刷新`)
       return
     }
 
@@ -1027,7 +1031,7 @@ export class DataView implements IDataSource {
         return { success: false, message: 'Request superseded' }
       }
       
-      this.loadingError = error as Error
+      this.loadingError = toError(error)
       this.requestState = RequestState.Failed
       this.events.emit('requestStateChanged', this.requestState)
       throw error
@@ -1567,8 +1571,8 @@ export class DataView implements IDataSource {
     if (!this.treeManager) {
       const cfg = this.treeConfig ?? {}
       // S3: 将 CrudService 的 HTTP 客户端传递给 TreeManager，共享拦截器/认证/配置
-      const httpClient = this.dataTable?.crudService?.getHttpClient()
-      this.treeManager = new TreeManager(cfg, this.dataTable?.api, undefined, httpClient)
+      const httpClient = this._dataTable?.crudService?.getHttpClient()
+      this.treeManager = new TreeManager(cfg, this._dataTable?.api, undefined, httpClient)
     }
     return this.treeManager
   }
@@ -1771,7 +1775,7 @@ export class DataView implements IDataSource {
    * @private 内部守卫，由依赖 dataTable 的 getter 调用
    */
   private checkDataTableAttached(): void {
-    if (!this.dataTable) {
+    if (!this._dataTable) {
       throw new Error(
         `DataView ${this.tableName}:${this.viewId} is not attached to a DataTable. ` +
         `Use DataTable.getOrCreateView() or DataSet.fromConfig() instead of standalone DataView construction.`

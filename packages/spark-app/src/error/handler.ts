@@ -7,6 +7,7 @@ import { type App, defineComponent } from 'vue'
 import type { ErrorHandlerOptions, ErrorContext } from '../types'
 import { ErrorType } from '../types'
 import { createLogger } from '../logger'
+import { toError } from '@spark-view/spark-utils'
 
 const errorLogger = createLogger('error')
 
@@ -21,7 +22,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
 
   // Vue 错误处理
   app.config.errorHandler = (err: unknown, instance, info) => {
-    const error = err as Error
+    const error = toError(err)
     const errorType = errorClassifier ? errorClassifier(error) : classifyError(error)
     
     const context: ErrorContext = {
