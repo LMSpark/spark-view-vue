@@ -25,7 +25,8 @@ function makeDs(dependencyType: string) {
       Items: {
         tableName: 'Items',
         columns: [{ name: 'id', type: 'number' }, { name: 'orderId', type: 'number' }],
-        rows: []
+        rows: [],
+        api: { list: { url: '/test/items', method: 'GET' } }
       }
     },
     relations: [

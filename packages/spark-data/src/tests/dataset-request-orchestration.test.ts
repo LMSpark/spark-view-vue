@@ -136,8 +136,8 @@ describe('DataView.requestData orchestration', () => {
       dataSetName: 'ThreeLevel',
       tables: {
         A: { tableName: 'A', columns: [{ name: 'id', type: 'number' }], rows: [] },
-        B: { tableName: 'B', columns: [{ name: 'id', type: 'number' }, { name: 'aId', type: 'number' }], rows: [] },
-        C: { tableName: 'C', columns: [{ name: 'id', type: 'number' }, { name: 'bId', type: 'number' }], rows: [] }
+        B: { tableName: 'B', columns: [{ name: 'id', type: 'number' }, { name: 'aId', type: 'number' }], rows: [], api: { list: { url: '/test/b', method: 'GET' } } },
+        C: { tableName: 'C', columns: [{ name: 'id', type: 'number' }, { name: 'bId', type: 'number' }], rows: [], api: { list: { url: '/test/c', method: 'GET' } } }
       },
       relations: [
         {

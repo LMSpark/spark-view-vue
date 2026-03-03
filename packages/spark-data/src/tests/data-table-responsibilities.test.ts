@@ -12,8 +12,10 @@ describe('DataTable responsibilities (refactor verification)', () => {
     expect(def).toBeInstanceOf(DataView)
     expect(def).toBe(t.views['default'])
 
-    // DataTable 不再有 rows 代理 —— 必须通过 views['default'] 访问
-    expect('rows' in t).toBe(false)
+    // DataTable.rows 是内联静态数据的 source of truth（用于无 API 内存级联过滤）；
+    // 它不是 DataView.rows 的代理——两者是完全独立的数组引用。
+    expect(Array.isArray(t.rows)).toBe(true)
+    expect(t.rows).not.toBe(def.rows)    // 不同引用
     expect(Array.isArray(def.rows)).toBe(true)
 
     // 通过 views['default'] 操作 rows

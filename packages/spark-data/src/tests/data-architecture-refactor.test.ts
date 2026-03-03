@@ -65,8 +65,10 @@ describe('Data Architecture Refactor', () => {
     expect(table.views['grid1']).toBe(view1)
     expect(table.views['grid2']).toBe(view2)
 
-    // 但 DataTable 不应该直接操作数据
-    expect((table as any).rows).toBeUndefined()
+    // DataTable.rows 是内联静态数据的 source of truth（用于无 API 内存级联过滤），
+    // 不是 DataView.rows 的代理，两者是不同的数组引用。
+    expect(Array.isArray(table.rows)).toBe(true)
+    expect(table.rows).not.toBe(view1.rows)   // 不是同一引用
   })
 
   it('DataView 从 DataTable 获取配置', () => {
