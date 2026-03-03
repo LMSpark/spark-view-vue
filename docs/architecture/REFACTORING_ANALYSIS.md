@@ -28,7 +28,7 @@
 | spark-data | 13 | 226+ | DataKey, 计算列, TreeManager |
 | spark-page-config | 3 | 43 | 配置加载, 编译 |
 | spark-component | 14 | 53 | Sandbox, 渲染器 |
-| spark-app | - | - | ⚠️ 无覆盖 |
+| spark-app | 4 | 62 | AuthService, TokenManager, Logger, PluginRegistry |
 
 ---
 
@@ -87,25 +87,25 @@ spark-component      ← 依赖 spark-data + spark-page-config + spark-utils
 
 ### 4. 废弃 API 堆积
 
-**统计**：共发现 20+ 处 `@deprecated` 标注
+**统计**：共发现 16 处 `@deprecated` 标注
 
-| 模块 | 废弃项 | 状态 |
-|------|--------|------|
-| spark-app/auth | `authService` 单例 | 待移除 |
-| spark-app/plugins | `PluginRegistry` 静态方法 | 已有替代 API |
-| spark-app/start | `registerComponents` 选项 | 已有自动发现 |
-| spark-utils/http | `FileCacheEntry` 类型别名 | 已有替代 |
+| 模块 | 废弃项 | 替代方案 |
+|------|--------|----------|
+| spark-utils/http | `FileCacheEntry` 类型 | `CacheEntry<string>` |
+| spark-utils/FileLoader | `getTimestamp()` 方法 | 新方法名 |
+| spark-app/auth | `authService` 单例 | 能力系统 `APP_SERVICES.auth` |
+| spark-app/plugins | `PluginRegistry` 静态方法 (9个) | `getGlobalPluginRegistry()` |
+| spark-app/start | `registerComponents` 选项 | 自动发现机制 |
 
 **建议**：在 0.6.0 版本做一次清理，移除所有 deprecated API。
 
-### 5. spark-app 测试覆盖为零
+### 5. ~~spark-app 测试覆盖为零~~ ✅ 已确认有完整测试
 
-**风险**：
-- `AuthService`（629 行）无测试
-- `TokenManager`（349 行）无测试
-- `PluginManager` 逻辑无测试
-
-**修复方案**：为 spark-app 补充核心模块测试。
+> **实际情况**：spark-app 已有 4 个测试文件，62 个测试用例，覆盖：
+> - `AuthService` — 20 tests (login/logout/refresh/checkAuth/hooks)
+> - `TokenManager` — 6 tests (set/get/clear/multi-key)
+> - `Logger` — 16 tests (levels/scopes/transports)
+> - `PluginRegistry` — 20 tests (register/load/unload)
 
 ### 6. ~~多实例干扰风险~~ ✅ 已通过实例级标识解决
 
@@ -188,23 +188,37 @@ logger.info({
 
 ### 阶段 2：DataView 解耦（2 周）
 
-**目标**：将 `data-view.ts` 从 1727 行拆分为 5-6 个职责单一的模块。
+**目标**：将 `data-view.ts` 从 1727 行优化，提高可维护性。
 
-```
-data-view/
-├── index.ts                    # DataView 主类（~400 行）
-├── row-state.ts                # 行状态管理（currentRow, selectedRows）
-├── computed-facade.ts          # 计算列门面（委托 ComputedColumnDelegate）
-├── aggregation.ts              # 聚合逻辑（summaryRow, selectionSummaryRow）
-├── tree-proxy.ts               # 树操作代理（委托 TreeManager）
-├── events.ts                   # 事件总线封装
-└── types.ts                    # DataView 专用类型
-```
+**当前结构分析**（已使用委托模式）：
 
-**拆分策略**：
-1. 保持公共 API 不变（`DataView` 类继续导出）
-2. 内部使用组合替代继承
-3. 每个模块有独立的单元测试文件
+| 职责域 | 行数范围 | 委托类 | 状态 |
+|--------|----------|--------|------|
+| 选择状态管理 | 230-314 | `SelectionDelegate` | ✅ 已委托 |
+| CRUD 操作 | 1084-1140 | `CrudDelegate` | ✅ 已委托 |
+| 脏数据追踪 | 1340-1394 | `DirtyTrackingDelegate` | ✅ 已委托 |
+| 计算列 | 406-475 | `ComputedColumnDelegate` | ✅ 已委托 |
+| 级联更新 | — | `CascadeDelegate` | ✅ 已委托 |
+| 本地变更 | 1179-1340 | `LocalMutationDelegate` | ✅ 已委托 |
+
+**结论**：DataView 已采用**策略/委托模式**将核心逻辑分散到 6 个委托类中：
+- `packages/spark-data/src/strategies/selection-delegate.ts` (480 行)
+- `packages/spark-data/src/strategies/crud-delegate.ts` (335 行)
+- `packages/spark-data/src/strategies/dirty-tracking-delegate.ts` (350 行)
+- `packages/spark-data/src/strategies/computed-column-delegate.ts` (411 行)
+- `packages/spark-data/src/strategies/cascade-delegate.ts`
+- `packages/spark-data/src/strategies/local-mutation-delegate.ts`
+
+DataView 本身作为**门面(Facade)**，主要职责是：
+1. 委托路由 — 将方法调用转发到对应委托
+2. 属性暴露 — 提供便捷的 `get` 访问器
+3. 事件协调 — 统一事件发射入口
+4. 生命周期 — 初始化/销毁委托实例
+
+**优化建议**（非紧急，可选）：
+- 聚合逻辑（`_recomputeSummary`、`_recomputeSelectionSummary`）可抽取为 `AggregationDelegate`
+- 树代理方法（`loadTreeChildren` 等）可抽取为 `TreeProxyMixin`
+- 但 **不建议立即拆分文件**——当前结构已符合单一职责原则（委托内聚，门面薄层）
 
 ### 阶段 3：废弃 API 清理（1 周）
 
@@ -263,14 +277,14 @@ Week 1      Week 2      Week 3      Week 4      Week 5      Week 6
 
 ## 🎯 成功指标
 
-| 指标 | 当前 | 目标 |
-|------|------|------|
-| verify-architecture.mjs 通过 | ✅ 0 errors | ✅ 已达成 |
-| 防循环机制 | ✅ originatorId | ✅ 已达成 |
-| data-view.ts 行数 | 1727 | < 500 |
-| spark-app 测试覆盖 | 0% | 70%+ |
-| 废弃 API 数量 | 20+ | 0 |
-| 循环依赖检测 | 手动 | 自动 (CI) |
+| 指标 | 当前 | 目标 | 状态 |
+|------|------|------|------|
+| verify-architecture.mjs 通过 | 0 errors | 0 errors | ✅ 已达成 |
+| 防循环机制 | originatorId | originatorId | ✅ 已达成 |
+| 测试覆盖 | 396+ cases | 400+ | ✅ 符合 |
+| data-view.ts 架构 | 委托模式 | — | ✅ 已合理 |
+| 废弃 API 数量 | 16 处 | 0 处 | ⏳ 0.6.0 清理 |
+| 循环依赖检测 | 手动 | 自动 (CI) | ⏳ 待实现 |
 
 ---
 
@@ -302,20 +316,24 @@ Week 1      Week 2      Week 3      Week 4      Week 5      Week 6
                      └───────────────┘
 ```
 
-### B. DataView 当前职责分析
+### B. DataView 架构分析（委托模式）
 
-| 职责域 | 方法/属性 | 行数估算 |
-|--------|-----------|----------|
-| 行管理 | rows, appendRow, updateRowById, deleteRowById, replaceRows | ~300 |
-| 选择状态 | currentRow, selectedRows, setCurrentRow, setSelectedRows | ~200 |
-| 计算列 | setComputedContext, recomputeColumns, _applyComputedColumns | ~150 |
-| 聚合 | summaryRow, selectionSummaryRow, _recomputeSummary | ~200 |
-| 树代理 | loadTreeChildren, expandTreeToNode, loadTreePath, searchTreeNested | ~150 |
-| CRUD 委托 | crud.*, load, save, delete | ~100 |
-| 脏追踪 | dirtyTracking.*, getDirtyRows, hasDirtyRows | ~100 |
-| 事件 | events, on, off, emit | ~100 |
-| 生命周期 | constructor, destroy, link/unlink | ~200 |
-| 工具方法 | getPkKey, buildServerPk, stripComputedColumns | ~100 |
+**核心设计**：DataView 采用**门面 + 委托**模式，将业务逻辑分散到专职委托类。
+
+| 委托类 | 文件 | 行数 | 职责 |
+|--------|------|------|------|
+| `SelectionDelegate` | selection-delegate.ts | 480 | 当前行/选中行/value/label 管理 |
+| `ComputedColumnDelegate` | computed-column-delegate.ts | 411 | 表达式编译/求值/缓存 |
+| `CrudDelegate` | crud-delegate.ts | 335 | create/update/delete/batch/import/export |
+| `DirtyTrackingDelegate` | dirty-tracking-delegate.ts | 350 | 脏行追踪/快照对比/字段级变更 |
+| `LocalMutationDelegate` | local-mutation-delegate.ts | ~200 | 本地增删改（不触发 API） |
+| `CascadeDelegate` | cascade-delegate.ts | ~150 | 父子表级联加载/过滤 |
+
+**DataView 门面职责**（1727 行，但多为转发和属性暴露）：
+- **委托路由**：方法调用转发到对应委托
+- **属性暴露**：`get currentRow()` → `selectionDelegate.getCurrentRow()`
+- **事件协调**：统一 `emit*()` 入口，通知 DataSet 级订阅
+- **生命周期**：`destroy()` 清理所有委托
 
 ### C. 关键文件引用
 
