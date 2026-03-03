@@ -94,12 +94,16 @@ for (const file of srcFiles) {
 }
 
 // ============================================================================
-// 规则 2: src/ 应该只使用包，不导入 features
+// 规则 2: src/ 应该只使用包，不导入 features（features 内部自引用除外）
 // ============================================================================
 
 console.log('📋 规则 2: src/ 不应该导入 features\n')
 
 for (const file of srcFiles) {
+  // features 目录内部的文件可以互相引用，跳过检查
+  const relativePath = relative(rootDir, file)
+  if (relativePath.includes('features')) continue
+  
   checkFile(file, [
     {
       pattern: /from\s+['"]@\/features/,
@@ -146,18 +150,30 @@ const packageNames = readdirSync(packagesDir).filter(name =>
   statSync(join(packagesDir, name)).isDirectory()
 )
 
-// 实际架构是网状依赖，不是严格分层
-// spark-utils 是底层工具包，所有包都可以依赖它
-// spark-app 是基础，其他包都可以依赖它
-// spark-renderer 作为渲染引擎，整合其他包的能力
+// 依赖方向严格单向向上（与 copilot-instructions.md 一致）
+//
+// spark-utils          ← 零依赖（基础设施底层，纯 TS）
+//     ↑
+// spark-data           ← 仅依赖 spark-utils（纯 TS）
+//     ↑
+// spark-page-config    ← 仅依赖 spark-data + spark-utils（纯 TS）
+//     ↑
+// spark-component      ← 依赖 spark-data + spark-page-config + spark-utils（+ Vue/Element Plus peerDeps）
+//     ↑
+// spark-app            ← 依赖 spark-component + spark-page-config + spark-utils（+ Vue/vue-router peerDeps）
+//
+// 禁止反向依赖：
+// - spark-utils 禁止 import spark-data / spark-component / spark-app
+// - spark-data 禁止 import spark-component / spark-app
+// - spark-page-config 禁止 import spark-component / spark-app
+// - spark-component 禁止 import spark-app
 
 const allowedDeps = {
-  'spark-utils': [],                                   // 工具层，零依赖
-  'spark-app': ['spark-utils', 'spark-page-config', 'spark-component'],   // 应用层基础设施，可访问组件系统（必需）
-  'spark-data': ['spark-utils', 'spark-app'],          // 可依赖 utils 和 app
-  'spark-component': ['spark-utils', 'spark-app'],     // 可依赖 utils 和 app
-  'spark-page-config': ['spark-utils', 'spark-app'],   // 可依赖 utils 和 app
-  'spark-renderer': ['spark-utils', 'spark-app', 'spark-data', 'spark-component', 'spark-page-config'] // 渲染引擎，整合所有
+  'spark-utils': [],                                             // 工具层，零依赖
+  'spark-data': ['spark-utils'],                                 // 仅依赖 utils
+  'spark-page-config': ['spark-utils', 'spark-data'],            // 依赖 utils + data
+  'spark-component': ['spark-utils', 'spark-data', 'spark-page-config'], // 依赖 utils + data + page-config
+  'spark-app': ['spark-utils', 'spark-page-config', 'spark-component'],  // 依赖 utils + page-config + component
 }
 
 for (const pkgName of packageNames) {
