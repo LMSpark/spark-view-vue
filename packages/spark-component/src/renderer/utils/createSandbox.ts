@@ -32,7 +32,7 @@ function createSafeProxy<T extends object>(target: T): T {
     get(t, key, receiver) {
       if (key === Symbol.unscopables) return undefined
       if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return undefined
-      return Reflect.get(t, key, receiver)
+      return Reflect.get(t, key, receiver) as unknown
     },
     set(t, key, value) {
       if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return false

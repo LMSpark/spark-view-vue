@@ -280,7 +280,8 @@ export class Request {
     const sortedEntries = [...this.cache.entries()]
       .sort((a, b) => a[1].timestamp - b[1].timestamp)
     for (let i = 0; i < evictCount && i < sortedEntries.length; i++) {
-      this.cache.delete(sortedEntries[i]![0])
+      const entry = sortedEntries[i]
+      if (entry) this.cache.delete(entry[0])
     }
   }
 

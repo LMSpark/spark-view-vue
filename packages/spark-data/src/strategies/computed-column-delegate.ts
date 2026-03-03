@@ -78,7 +78,7 @@ function createSafeRowProxy(row: IDataRow): IDataRow {
     get(t, key) {
       if (key === Symbol.unscopables) return undefined
       if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return undefined
-      return Reflect.get(t, key)
+      return Reflect.get(t, key) as unknown
     },
   })
 }
