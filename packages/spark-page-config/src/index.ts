@@ -44,11 +44,10 @@ export {
 export { SparkPageConfig } from './namespace'
 
 // ==================== 业务脚本 API 契约 ====================
-// 框架无关的业务脚本类型：IPageRoute、IFormAPI、IScriptContext
-// IDataSetLike/IDataSet、IScriptDataView 等视图接口、IPageServiceInScript
+// 框架无关的页面脚本上下文类型：IPageRoute、IFormAPI、IScriptContext
 export type {
   IPageRoute,
   IFormAPI,
   IScriptContext,
   IPageServiceInScript,
-} from './script-api'
+} from './script-context-types'

@@ -26,3 +26,5 @@ export type { SharedErrorCode } from './error-codes'
 // ==================== 错误工具 ====================
 
 export { toErrorMessage, toError } from './error-utils'
+
+export { SANDBOX_BLOCKED_KEYS, createSafeProxy } from './sandbox'
