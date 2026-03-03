@@ -21,5 +21,6 @@ dist/
 # Temporary files
 *.cache
 tsc-output.txt
+tmpclaude-*
 
 
