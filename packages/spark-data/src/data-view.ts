@@ -102,9 +102,15 @@ export class DataView implements IDataSource {
   /** 列名→列定义缓存（dataTable 赋值时构建，_coercePkValue O(1) 查找） */
   private _columnMap?: Map<string, DataColumn>
 
-  /** 所属 DataTable（赋值时自动失效编译缓存并重编译计算列，不求值） */
-  get dataTable(): DataTable {
-    if (!this._dataTable) throw new Error(`DataView ${this.tableName}:${this.viewId} 尚未关联 DataTable`)
+  /**
+   * 所属 DataTable（赋值时自动失效编译缓存并重编译计算列，不求值）。
+   *
+   * 返回 null 而非抛出：Vue 3 的 MutableReactiveHandler.set 在拦截赋值操作前
+   * 会读取旧值（`let oldValue = target[key]`），若 getter 抛出则在 DataTable
+   * 构造函数里 `defaultView.dataTable = this` 一行就会崩溃。
+   * 需要 null 守卫的消费者请使用 checkDataTableAttached()。
+   */
+  get dataTable(): DataTable | null {
     return this._dataTable
   }
   set dataTable(table: DataTable) {
