@@ -53,7 +53,9 @@ export class CascadeDelegate {
   setupCascade(): void {
     this.teardownCascade()
 
+    // DataTable 尚未绑定时 dataSet 为 undefined（如独立创建的 DataView），直接跳过
     const dataSet = this.host.dataSet
+    if (!dataSet) return
     const parentRels = dataSet.getParentRelations(this.host.tableName, this.host.viewId) ?? []
 
     for (const rel of parentRels) {

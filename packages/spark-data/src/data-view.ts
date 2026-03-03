@@ -671,16 +671,17 @@ export class DataView implements IDataSource {
   /** ICascadeHost：向上访问 DataSet，供 CascadeDelegate 解析父子关系 */
   get dataSet() {
     this.checkDestroyed()
-    this.checkDataTableAttached()
-    return this.dataTable.dataSet
+    // checkDataTableAttached() 返回 DataTable，避免通过抛出性 getter 二次检查
+    // （Vue reactive proxy 下两次 _dataTable 访问路径可能不一致，单次访问更安全）
+    return this.checkDataTableAttached().dataSet
   }
 
   /** ICrudHost：CrudService 实例（DataTable 持有并缓存；未配置 API 时为 undefined） */
-  get crudService(): CrudService | undefined { this.checkDestroyed(); this.checkDataTableAttached(); return this.dataTable.crudService }
+  get crudService(): CrudService | undefined { this.checkDestroyed(); return this.checkDataTableAttached().crudService }
   /** ICrudHost：CRUD 操作全局配置（超时、重试等） */
-  get crudConfig(): CrudOperationConfig | undefined { this.checkDestroyed(); this.checkDataTableAttached(); return this.dataTable.crudConfig }
+  get crudConfig(): CrudOperationConfig | undefined { this.checkDestroyed(); return this.checkDataTableAttached().crudConfig }
   /** ICrudHost：数据校验器 */
-  get validator(): DataValidator | undefined { this.checkDestroyed(); this.checkDataTableAttached(); return this.dataTable.validator }
+  get validator(): DataValidator | undefined { this.checkDestroyed(); return this.checkDataTableAttached().validator }
 
   // ─────────────────────────────────────────────
   // 主键辅助方法
@@ -1774,13 +1775,14 @@ export class DataView implements IDataSource {
    *
    * @private 内部守卫，由依赖 dataTable 的 getter 调用
    */
-  private checkDataTableAttached(): void {
+  private checkDataTableAttached(): DataTable {
     if (!this._dataTable) {
       throw new Error(
         `DataView ${this.tableName}:${this.viewId} 尚未关联 DataTable，` +
         `请通过 DataTable.getOrCreateView() 或 DataSet.fromConfig() 创建视图。`
       )
     }
+    return this._dataTable
   }
 
   /**
