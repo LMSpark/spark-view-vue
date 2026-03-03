@@ -192,7 +192,8 @@ export class FileLoader {
           }
         }
         const msg = toErrorMessage(error)
-        logger.error('文件加载或 transform 失败', { fileName, error: msg })
+        // 同时传入原始 error 对象，使浏览器控制台能展展完整 stack trace
+        logger.error('文件加载或 transform 失败', { fileName, error: msg }, error)
         return { success: false, error: msg, fromCache: false }
       }
     }

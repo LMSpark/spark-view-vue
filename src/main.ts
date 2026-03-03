@@ -85,11 +85,6 @@ async function startApp() {
           if (!parsed || typeof parsed !== 'object') return true  // 格式不合法
           // :raw 槽位必须存字符串（原始文件内容），非字符串说明旧版把对象存进去了
           if (k.endsWith(':raw') && typeof parsed.data !== 'string') return true
-          // 检测双重字符串化（data 是字符串且内容像 JSON）
-          if (typeof parsed.data === 'string') {
-            const trimmed = parsed.data.trim()
-            if (trimmed.startsWith('{') || trimmed.startsWith('[')) return true
-          }
         } catch { return true /* JSON.parse 失败 → 强制清除 */ }
         return false
       })
