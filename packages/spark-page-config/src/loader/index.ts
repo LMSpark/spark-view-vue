@@ -356,7 +356,7 @@ export class PageConfigLoader implements ConfigLoader {
           pageLogger.debug('远程加载成功', { url })
           return r['data'] as T
         }
-        const msg = (r['message'] as string) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED)
+        const msg = (typeof r['message'] === 'string' ? r['message'] : null) ?? getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED)
         pageLogger.error('API 返回错误', { url, code: r['code'], message: msg })
         throw new Error(msg)
       }

@@ -187,10 +187,16 @@ export function usePageRenderer(
     },
     showAlert: async (message: string, title?: string, options?: { type?: 'warning' | 'info' | 'error' | 'success' }) => {
       const alertType = options?.type ?? 'info'
-      await ElMessageBox.alert(message, title ?? '提示', {
-        confirmButtonText: '确定',
-        type: alertType,
-      })
+      try {
+        await ElMessageBox.alert(message, title ?? '提示', {
+          confirmButtonText: '确定',
+          type: alertType,
+        })
+      } catch (e) {
+        if (!isElCancelAction(e)) {
+          pageLogger.warn('showAlert 异常', { error: e })
+        }
+      }
     },
     showLoading: (_show, _text) => {
       if (import.meta.env.DEV) {

@@ -207,6 +207,10 @@ export class TokenManager {
       case 'memory':
         this.memoryStore.set(this.tokenKey, token)
         break
+
+      default:
+        if (import.meta.env.DEV) console.warn(`[TokenManager] 未知的存储类型: ${String(this.storage)}，token 未持久化`)
+        break
     }
   }
 
@@ -247,6 +251,10 @@ export class TokenManager {
 
       case 'memory':
         this.memoryStore.delete(this.tokenKey)
+        break
+
+      default:
+        if (import.meta.env.DEV) console.warn(`[TokenManager] 未知的存储类型: ${String(this.storage)}，无法清除 token`)
         break
     }
   }
@@ -369,7 +377,7 @@ export class TokenManager {
     const expires = new Date()
     expires.setDate(expires.getDate() + 30) // 30 天后过期
 
-    document.cookie = `${this.tokenKey}=${encodeURIComponent(token)}; expires=${expires.toUTCString()}; path=/; SameSite=Strict${location.protocol === 'https:' ? '; Secure' : ''}`
+    document.cookie = `${this.tokenKey}=${encodeURIComponent(token)}; expires=${expires.toUTCString()}; path=/; SameSite=Strict${typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : ''}`
   }
 
   /**
@@ -383,6 +391,6 @@ export class TokenManager {
     if (typeof document === 'undefined') return
 
     // 设置过期时间为过去的时间来删除 cookie
-    document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict${location.protocol === 'https:' ? '; Secure' : ''}`
+    document.cookie = `${this.tokenKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict${typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : ''}`
   }
 }
