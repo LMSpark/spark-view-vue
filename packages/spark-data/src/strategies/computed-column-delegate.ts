@@ -422,6 +422,7 @@ export function computeAggregateRow(
         case 'min':   result[name] = undefined; break
         case 'max':   result[name] = undefined; break
         case 'join':  result[name] = ''; break
+        default: break
       }
     }
     return result
@@ -452,6 +453,7 @@ export function computeAggregateRow(
         case 'min': { const v = Number(raw); if (!isNaN(v) && v < a.extremum) a.extremum = v; break }
         case 'max': { const v = Number(raw); if (!isNaN(v) && v > a.extremum) a.extremum = v; break }
         case 'join':  if (raw !== null && raw !== undefined && raw !== '') a.segments.push(String(raw)); break
+        default: break
       }
     }
   }
@@ -465,6 +467,7 @@ export function computeAggregateRow(
       case 'min':   result[a.name] = a.extremum === Infinity ? undefined : a.extremum; break
       case 'max':   result[a.name] = a.extremum === -Infinity ? undefined : a.extremum; break
       case 'join':  result[a.name] = a.segments.join(a.separator); break
+      default: break
     }
   }
 

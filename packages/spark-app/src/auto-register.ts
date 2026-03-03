@@ -67,7 +67,14 @@ export async function setupAutoRegister(app: App, options: AutoRegisterOptions =
     if (!fileName) continue
 
     // 排除过滤
-    if (exclude.some(pat => new RegExp(pat.replace(/\*/g, '.*')).test(fileName))) {
+    if (exclude.some(pat => {
+      try {
+        return new RegExp(pat.replace(/\*/g, '.*')).test(fileName)
+      } catch {
+        logger.warn(`排除模式 "${pat}" 不是有效的正则表达式，已跳过`)
+        return false
+      }
+    })) {
       continue
     }
 
