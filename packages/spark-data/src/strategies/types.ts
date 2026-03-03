@@ -167,8 +167,8 @@ export interface ICrudHost extends IRowStore {
  * CascadeDelegate 所需的宿主能力
  */
 export interface ICascadeHost extends IViewIdentity {
-  /** DataSet（沿 parent 链向上访问） */
-  readonly dataSet: IDataSet
+  /** DataSet（沿 parent 链向上访问；DataTable 尚未绑定时为 undefined） */
+  readonly dataSet: IDataSet | undefined
   /** 只读，级联时检查状态 */
   readonly requestState: RequestState
   /**
