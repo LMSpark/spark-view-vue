@@ -223,15 +223,32 @@ export function usePageRenderer(
   const originalRules = ref<any[]>([])
   /** 脚本沙箱编译后的函数表；`__init__` 由 form-create mounted 钩子调用 */
   const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
+  /** 待初始化的 DataSet 配置（由 applyConfig 保存，由 FC mounted 钩子消费） */
+  let pendingDataSetConfig: DataSet | null = null
 
   // ── form-create 配置 ─────────────────────────────────────────────────────────
-  // mounted 钩子是执行 __init__ 的时机：此时 $api 已就绪，DataSet 也已初始化。
+  // mounted 钩子时序（解决首次加载无数据问题）：
+  //   1. 初始化 DataSet（此时 form-create 已挂载，DataView.wrapInstance 已生效）
+  //   2. rebindRules()（重新绑定规则，dataKey 解析到真实数据）
+  //   3. 执行 __init__（$api 已就绪，$dataSet 可用）
+  //   4. initAutoSelection()（触发初始选中事件）
   // ⚠️ formData 双向绑定暂时禁用，会导致 DataSet 事件死循环。
 
   const formCreateOptions = ref({
     ...DEFAULT_FORM_CREATE_OPTIONS,
     ...props.formCreateOptions,
     mounted: () => {
+      // Step 1: 初始化 DataSet（消费 pendingDataSetConfig）
+      if (pendingDataSetConfig) {
+        initDataSet(pendingDataSetConfig)
+        const ds = pds.dataSet
+        if (ds) provideCapability(PAGE_DATASET, ds)
+        pendingDataSetConfig = null
+        // Step 2: 重新绑定规则（此时 dataKey 解析到真实数据）
+        rebindRules()
+      }
+
+      // Step 3: 执行 __init__
       const init = pageFunctions.value['__init__']
       if (typeof init === 'function') {
         try {
@@ -241,7 +258,7 @@ export function usePageRenderer(
           pageLogger.error('__init__ 执行失败', { error: e })
         }
       }
-      // __init__ 完成后触发 autoCurrentFirst / autoSelectFirst，
+      // Step 4: 触发 autoCurrentFirst / autoSelectFirst，
       // 确保脚本中的 currentRowChanged 订阅者能收到初始行事件。
       pds.dataSet?.initAutoSelection()
     },
@@ -413,24 +430,23 @@ export function usePageRenderer(
   /**
    * 将配置应用到渲染状态，触发 form-create 挂载。
    *
-   * 时序：
+   * 时序（解决首次加载无数据问题）：
    * 1. rules / CSS 写入
-   * 2. DataSet 初始化 + PAGE_DATASET 能力注入
-   * 3. 脚本编译（不执行 __init__）
-   * 4. Render* 函数注册为全局 Vue 组件
-   * 5. nextTick + rebindRules → form-create 开始挂载
-   * 6. form-create mounted 钩子 → 执行 __init__（$api 此时已就绪）
+   * 2. 脚本编译（不执行 __init__）
+   * 3. Render* 函数注册为全局 Vue 组件
+   * 4. 保存 DataSet 配置到 pendingDataSetConfig（延迟初始化）
+   * 5. nextTick + rebindRules → form-create 开始挂载（此时 dataSet 为 null）
+   * 6. form-create mounted 钩子 → initDataSet + rebindRules + __init__
    */
   async function applyConfig(pageId: string, config: PageConfig): Promise<void> {
     originalRules.value = config.rule as unknown as Rule[]
     if (config.css) setScopedCss(config.css)
 
-    initDataSet(config.data)
-    const ds = pds.dataSet
-    if (ds) provideCapability(PAGE_DATASET, ds)
-
     executeScript(pageId, config.script ?? '')
     registerRenderComponents()
+
+    // 保存 DataSet 配置，由 FC mounted 钩子消费（确保 DataView.wrapInstance 已生效）
+    pendingDataSetConfig = config.data
 
     await nextTick()
     rebindRules()
