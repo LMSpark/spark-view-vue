@@ -104,7 +104,8 @@ for (const pkg of packages) {
 
   console.log(`\n🚀 发布 ${pkg} (${pkgVersion}) ...`)
   // 使用 pnpm publish：自动将 dependencies 中的 workspace:* 替换为实际解析版本
-  run(`pnpm publish --access public --tag ${TAG} --no-git-checks`, pkgDir)
+  // 显式指定 registry 避免走 npmmirror 镜像
+  run(`pnpm publish --access public --tag ${TAG} --no-git-checks --registry https://registry.npmjs.org`, pkgDir)
 }
 
 console.log(DRY_RUN ? '\n✅ Dry-run 完成。' : '\n🎉 Done!')

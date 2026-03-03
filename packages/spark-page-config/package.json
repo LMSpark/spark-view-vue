@@ -1,6 +1,6 @@
 {
   "name": "@spark-view/spark-page-config",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "type": "module",
   "description": "SPARK 页面配置层 - 支持本地/远程配置加载、动态路由注册、配置缓存和验证",
   "keywords": [
