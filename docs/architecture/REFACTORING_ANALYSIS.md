@@ -2,9 +2,24 @@
 
 > **文档目的**：以高级架构师视野，系统性分析当前项目存在的架构问题，并制定分阶段重构方案
 >
-> **分析日期**：2026-03-04
+> **分析日期**：2026-03-04（第二轮深度审计）
 >
 > **分析范围**：5 个核心包 + 主项目
+
+---
+
+## 🏆 架构健康度评估
+
+### 综合评分：**A-**（优秀）
+
+| 维度 | 评分 | 说明 |
+|------|------|------|
+| 代码质量 | ⭐⭐⭐⭐⭐ | 无空 catch、无未处理 Promise、生产代码无 `as any` |
+| 类型安全 | ⭐⭐⭐⭐ | strictNullChecks 启用，少量测试代码使用 `as any` |
+| 测试覆盖 | ⭐⭐⭐⭐⭐ | 432 测试用例，所有包 100% 通过 |
+| 安全性 | ⭐⭐⭐⭐⭐ | 沙箱完善、无 innerHTML、密码不记录日志 |
+| API 一致性 | ⭐⭐⭐⭐ | 命名空间统一，废弃 API 有迁移路径 |
+| 架构清晰度 | ⭐⭐⭐⭐ | 委托模式解耦良好，依赖方向正确 |
 
 ---
 
@@ -20,19 +35,76 @@
 | spark-component | 0.4.3 | 33 | 3 | 4 | 442 行 (usePageRenderer) |
 | spark-app | 0.3.5 | 27 | 3 | 2 | 629 行 (AuthService) |
 
-### 测试覆盖情况
+### 测试覆盖情况（2026-03-04 实测）
 
-| 包 | 测试文件 | 测试用例 | 关键覆盖 |
-|---|---|---|---|
-| spark-utils | 2 | 16 | Logger, 类型测试 |
-| spark-data | 13 | 226+ | DataKey, 计算列, TreeManager |
-| spark-page-config | 3 | 43 | 配置加载, 编译 |
-| spark-component | 14 | 53 | Sandbox, 渲染器 |
-| spark-app | 4 | 62 | AuthService, TokenManager, Logger, PluginRegistry |
+| 包 | 测试文件 | 测试用例 | 通过率 | 关键覆盖 |
+|---|---|---|---|---|
+| spark-utils | 2 | **32** | 100% | Logger, FileLoader, 类型测试 |
+| spark-data | 13 | **226** | 100% | DataKey, 计算列, TreeManager, 级联 |
+| spark-page-config | 1 | **43** | 100% | 配置加载, 编译, 降级 |
+| spark-component | 14 | **53** | 100% | Sandbox, 渲染器, 能力系统 |
+| spark-app | 4 | **62** | 100% | AuthService, TokenManager, Logger, PluginRegistry |
+| 主项目 | 7 | **16** | 100% | EJ2Grid, 架构模式 |
+| **总计** | **41** | **432** | **100%** | — |
 
 ---
 
-## 🔴 P0 - 严重问题（需立即修复）
+## 🛡️ 安全审计结果
+
+### ✅ 已通过检查项
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| 沙箱逃逸防护 | ✅ | `SANDBOX_BLOCKED_KEYS` 拦截 20+ 危险属性 |
+| 原型链污染 | ✅ | `createSafeProxy` 阻断 `__proto__`/`constructor` |
+| XSS 注入 | ✅ | 无 `innerHTML`/`v-html` 直接操作 |
+| SQL 注入 | ✅ | 纯前端项目，无 SQL 拼接 |
+| 敏感数据日志 | ✅ | 日志仅记录 username，不记录 password |
+| 依赖注入安全 | ✅ | 能力系统通过 Symbol 键隔离 |
+
+### ⚠️ 观察项（非紧急）
+
+| 观察项 | 风险等级 | 建议 |
+|--------|---------|------|
+| `new Function()` 使用 | 低 | 已有沙箱保护，可考虑 CSP 白名单 |
+| Token 存储 | 低 | 默认 memory，可选 localStorage |
+
+---
+
+## � 代码质量深度审计
+
+### 类型安全分析
+
+| 指标 | 结果 | 说明 |
+|------|------|------|
+| 生产代码 `as any` | **0** | 仅 presets.ts 文档注释中有示例 |
+| 测试代码 `as any` | ~50 | 测试 mock 所需，可接受 |
+| 空 catch 块 | **0** | 所有异常都有处理 |
+| 未处理 Promise | **0** | 无孤立的 `.then()` 链 |
+| TODO/FIXME/HACK 标记 | **0** | 代码库干净 |
+
+### API 导出一致性
+
+| 包 | 命名空间 | 导出风格 | 一致性 |
+|---|---|---|---|
+| spark-utils | — | 分组导出 | ✅ |
+| spark-data | `SparkData` | 命名空间 + 类型 | ✅ |
+| spark-page-config | `SparkPageConfig` | 命名空间 | ✅ |
+| spark-component | `Spark` | 命名空间 + composables | ✅ |
+| spark-app | `SparkApp` | 命名空间 + start/bootstrap | ✅ |
+
+### 性能审计
+
+| 模式 | 使用情况 | 评估 |
+|------|---------|------|
+| 函数式数组方法 | `.map()/.filter()/.reduce()` | 正常使用，无过度嵌套 |
+| 响应式包装 | `shallowReactive` + `markRaw` | ✅ 优化正确 |
+| 缓存策略 | logger/能力解析有缓存 | ✅ |
+| 事件监听器清理 | `onUnmounted` 自动清理 | ✅ |
+
+---
+
+## �🔴 P0 - 严重问题（需立即修复）
 
 ### 1. 架构验证脚本与实际设计不一致
 
@@ -323,10 +395,65 @@ Week 1      Week 2      Week 3      Week 4      Week 5      Week 6
 |------|------|------|------|
 | verify-architecture.mjs 通过 | 0 errors | 0 errors | ✅ 已达成 |
 | 防循环机制 | originatorId | originatorId | ✅ 已达成 |
-| 测试覆盖 | 396+ cases | 400+ | ✅ 符合 |
+| 测试覆盖 | **432 cases** | 400+ | ✅ 已超额 |
+| 测试通过率 | 100% | 100% | ✅ 已达成 |
 | data-view.ts 架构 | 委托模式 | — | ✅ 已合理 |
+| 生产代码 `as any` | 0 | 0 | ✅ 已达成 |
+| 空 catch 块 | 0 | 0 | ✅ 已达成 |
+| TODO/FIXME 标记 | 0 | 0 | ✅ 已达成 |
+| CI 架构验证 | 手动 | 自动 | ✅ 已配置 |
+| 迁移指南 | 无 | 完整 | ✅ 已创建 |
 | 废弃 API 数量 | 16 处 | 0 处 | ⏳ 0.6.0 清理 |
-| 循环依赖检测 | 手动 | 自动 (CI) | ⏳ 待实现 |
+
+---
+
+## 🚀 后续优化建议（非紧急）
+
+### 1. 可观测性增强
+
+```typescript
+// 建议：结构化日志 + OpenTelemetry 集成
+logger.info({
+  event: 'currentRowChanged',
+  table: tableName,
+  viewId: viewId,
+  rowId: getPkKey(row),
+  source: originatorId,
+  durationMs: performance.now() - startTime,
+})
+```
+
+### 2. 错误处理标准化
+
+```typescript
+// 建议：定义 SparkError 基类
+class SparkError extends Error {
+  constructor(
+    public code: SharedErrorCode,
+    message: string,
+    public context?: Record<string, unknown>
+  ) {
+    super(message)
+  }
+}
+```
+
+### 3. 权限模块接入
+
+`permission/` 模块（PermissionChecker, PermissionFilter, FieldRenderHelper）已实现，
+建议在 r-table / r-form 组件中接入权限渲染逻辑。
+
+### 4. 泛型约束增强
+
+```typescript
+// 当前：宽松的 IDataRow
+interface IDataRow { [key: string]: unknown }
+
+// 建议：支持泛型约束
+interface IDataRow<T extends object = Record<string, unknown>> extends T {
+  _perm?: IInstancePermission
+}
+```
 
 ---
 
