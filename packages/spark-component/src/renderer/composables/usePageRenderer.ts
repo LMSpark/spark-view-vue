@@ -198,7 +198,8 @@ export function usePageRenderer(
       }
     },
     navigate: (path, params) => {
-      void router.push(params ? { path, query: params as Record<string, string> } : path)
+      router.push(params ? { path, query: params as Record<string, string> } : path)
+        .catch((err: unknown) => { pageLogger.warn('导航失败', { path, error: err }) })
     },
   }
   provideCapability(PAGE_SERVICE, pageService)

@@ -24,23 +24,23 @@ describe('S2: checkDataTableAttached guard', () => {
 
   it('standalone DataView — accessing dataSet throws descriptive error', () => {
     const view = new DataView('Users', 'default')
-    expect(() => view.dataSet).toThrow(/not attached to a DataTable/)
+    expect(() => view.dataSet).toThrow(/尚未关联 DataTable/)
     expect(() => view.dataSet).toThrow(/DataView Users:default/)
   })
 
   it('standalone DataView — accessing crudService throws descriptive error', () => {
     const view = new DataView('Users', 'default')
-    expect(() => view.crudService).toThrow(/not attached to a DataTable/)
+    expect(() => view.crudService).toThrow(/尚未关联 DataTable/)
   })
 
   it('standalone DataView — accessing crudConfig throws descriptive error', () => {
     const view = new DataView('Users', 'default')
-    expect(() => view.crudConfig).toThrow(/not attached to a DataTable/)
+    expect(() => view.crudConfig).toThrow(/尚未关联 DataTable/)
   })
 
   it('standalone DataView — accessing validator throws descriptive error', () => {
     const view = new DataView('Users', 'default')
-    expect(() => view.validator).toThrow(/not attached to a DataTable/)
+    expect(() => view.validator).toThrow(/尚未关联 DataTable/)
   })
 
   it('attached DataView — accessors work normally', () => {

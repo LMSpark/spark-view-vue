@@ -61,14 +61,14 @@ function syncCurrentRowToTable(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formApi: any
 ): void {
-  void nextTick(() => {
+  nextTick(() => {
     const table = getTableEl(tableName, viewId, formApi)
     if (!table) return
     
     // 直接同步，无需任何临时标志
     table.setCurrentRow?.(row)
     pageLogger.debug('✅ [DataSet→UI] 同步 currentRow 到 el-table', { tableName, viewId, hasRow: !!row })
-  })
+  }).catch(() => { /* nextTick 内部回调异常安全 */ })
 }
 
 /**
@@ -87,7 +87,7 @@ function syncSelectedRowsToTable(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formApi: any
 ): void {
-  void nextTick(() => {
+  nextTick(() => {
     const table = getTableEl(tableName, viewId, formApi)
     if (!table) return
     
@@ -98,7 +98,7 @@ function syncSelectedRowsToTable(
       table.clearSelection?.()
       for (const row of rows) table.toggleRowSelection?.(row, true)
     }
-  })
+  }).catch(() => { /* nextTick 内部回调异常安全 */ })
 }
 
 

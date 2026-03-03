@@ -336,7 +336,11 @@ export class DataSet implements IDataSet {
     for (const table of Object.values(this.tables)) {
       const defaultView = table.getView('default')
       if (defaultView?.autoLoad && defaultView.requestState === RequestState.Idle) {
-        void defaultView.requestData()
+        defaultView.requestData().catch((err: unknown) => {
+          if (import.meta.env.DEV) {
+            console.warn(`[DataSet] autoLoad 请求失败: ${table.tableName}`, err)
+          }
+        })
       }
     }
   }
@@ -496,7 +500,11 @@ export class DataSet implements IDataSet {
    * @returns 数据集实例
    */
   static fromJSON(json: string): DataSet {
-    return DataSet.fromData(JSON.parse(json) as IDataSetMetadata)
+    const parsed: unknown = JSON.parse(json)
+    if (typeof parsed !== 'object' || parsed === null) {
+      throw new Error('DataSet.fromJSON: 无效的 JSON 数据')
+    }
+    return DataSet.fromData(parsed as IDataSetMetadata)
   }
 
   /**

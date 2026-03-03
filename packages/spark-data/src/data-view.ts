@@ -1777,8 +1777,8 @@ export class DataView implements IDataSource {
   private checkDataTableAttached(): void {
     if (!this._dataTable) {
       throw new Error(
-        `DataView ${this.tableName}:${this.viewId} is not attached to a DataTable. ` +
-        `Use DataTable.getOrCreateView() or DataSet.fromConfig() instead of standalone DataView construction.`
+        `DataView ${this.tableName}:${this.viewId} 尚未关联 DataTable，` +
+        `请通过 DataTable.getOrCreateView() 或 DataSet.fromConfig() 创建视图。`
       )
     }
   }
