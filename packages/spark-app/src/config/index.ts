@@ -5,6 +5,7 @@
 
 import type { AppConfig } from '../types'
 import { createLogger } from '../logger'
+import { toErrorMessage } from '@spark-view/spark-utils'
 
 const configLogger = createLogger('config')
 
@@ -41,7 +42,7 @@ export async function loadConfig(envConfig?: Partial<AppConfig>): Promise<AppCon
       Object.assign(config, remoteConfig)
       configLogger.info('远程配置已加载', remoteConfig)
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorMessage = toErrorMessage(error)
       configLogger.debug('远程配置不可用，使用本地配置', { reason: errorMessage })
     }
   }
@@ -53,18 +54,26 @@ export async function loadConfig(envConfig?: Partial<AppConfig>): Promise<AppCon
  * 获取远程配置
  */
 async function fetchRemoteConfig(): Promise<Partial<AppConfig>> {
-  const response = await fetch('/api/config', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10_000)
+
+  try {
+    const response = await fetch('/api/config', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
     }
-  })
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`)
+    return await response.json() as Partial<AppConfig>
+  } finally {
+    clearTimeout(timeoutId)
   }
-
-  return await response.json() as Partial<AppConfig>
 }
 
 /**

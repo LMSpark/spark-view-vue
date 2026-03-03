@@ -25,6 +25,9 @@ import {
 } from './types'
 import { resolveUrlTemplate } from './core/url-template'
 
+/** 批量操作默认并发度 */
+const DEFAULT_BATCH_CONCURRENCY = 5
+
 // ===== 接口定义 =====
 
 // 接口已在 types.ts 中定义，此处不再重复
@@ -476,7 +479,7 @@ export class CrudService {
     endpoint: HttpEndpoint,
     items: T[],
     config?: Partial<RequestConfig>,
-    concurrency = 5,
+    concurrency = DEFAULT_BATCH_CONCURRENCY,
     onProgress?: (completed: number, total: number) => void
   ): Promise<CrudResult<T>[]> {
     const results: CrudResult<T>[] = new Array(items.length).fill(null) as CrudResult<T>[]

@@ -29,7 +29,7 @@
  * ```
  */
 
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, toErrorMessage } from '@spark-view/spark-utils'
 import type { IDataRow, ComputedColumnFn, AggregateColumnConfig, AggregateType, DataRelation } from '../types'
 
 const logger = Logger('DataView:Computed')
@@ -55,6 +55,34 @@ export interface AggregateResolver {
 // 表达式编译器
 // ─────────────────────────────────────────────
 
+/** 表达式最大长度限制（防止超长代码注入） */
+const MAX_EXPRESSION_LENGTH = 2048
+
+/** 拦截原型链访问的危险属性，防止 `with(__row)` 沙箱逃逸 */
+const BLOCKED_KEYS = new Set<string | symbol>([
+  '__proto__', 'constructor', 'prototype',
+  'globalThis', 'window', 'self', 'eval', 'Function',
+  'process', 'require', 'module',
+])
+
+/**
+ * 创建安全代理——拦截 `with(__row)` 中对原型链/全局环境的访问。
+ * has 仅对 BLOCKED_KEYS 和已有属性返回 true，安全内置对象（Math/Number 等）可正常回退到全局。
+ */
+function createSafeRowProxy(row: IDataRow): IDataRow {
+  return new Proxy(row, {
+    has(t, key) {
+      if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return true
+      return Reflect.has(t, key)
+    },
+    get(t, key) {
+      if (key === Symbol.unscopables) return undefined
+      if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return undefined
+      return Reflect.get(t, key)
+    },
+  })
+}
+
 /** 检测表达式中是否含有子表聚合函数调用 */
 const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
 
@@ -77,6 +105,9 @@ export function compileExpression(
   ctx?: ComputedColumnContext,
   resolver?: AggregateResolver,
 ): ComputedColumnFn {
+  if (expression.length > MAX_EXPRESSION_LENGTH) {
+    throw new Error(`表达式超长（${expression.length} > ${MAX_EXPRESSION_LENGTH}），已拒绝编译`)
+  }
   const _ctx = ctx ?? {}
   const hasAgg = resolver !== undefined && AGG_PATTERN.test(expression)
 
@@ -90,7 +121,7 @@ export function compileExpression(
     // 快速路径：无聚合函数
     const compiled = new Function('__row', 'ctx', body,
     ) as (row: IDataRow, ctx: ComputedColumnContext) => unknown
-    return (row: IDataRow) => compiled(row, _ctx)
+    return (row: IDataRow) => compiled(createSafeRowProxy(row), _ctx)
   }
 
   // 聚合路径：注入 $sum/$count/$avg/$min/$max/$list/$join
@@ -143,7 +174,7 @@ export function compileExpression(
   return (row: IDataRow) => {
     _row = row
     _cache.clear()
-    return compiled(row, $sum, $count, $avg, $min, $max, $list, $join, _ctx)
+    return compiled(createSafeRowProxy(row), $sum, $count, $avg, $min, $max, $list, $join, _ctx)
   }
 }
 
@@ -162,7 +193,7 @@ export function compileColumnsExpressions(
     try {
       result.set(col.name, compileExpression(col.computeExpression, ctx, resolver))
     } catch (error) {
-      logger.warn(`计算列 "${col.name}" 表达式编译失败: ${error instanceof Error ? error.message : String(error)}`)
+      logger.warn(`计算列 "${col.name}" 表达式编译失败: ${toErrorMessage(error)}`)
     }
   }
   return result
@@ -290,7 +321,12 @@ export class ComputedColumnDelegate {
     for (const row of rows) {
       for (const [name, fn] of this._columns) {
         try { row[name] = fn(row) }
-        catch { row[name] = undefined }
+        catch (e) {
+          row[name] = undefined
+          if (import.meta.env.DEV) {
+            logger.debug(`计算列 "${name}" 求值失败: ${toErrorMessage(e)}`)
+          }
+        }
       }
     }
   }

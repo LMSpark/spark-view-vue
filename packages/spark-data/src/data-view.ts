@@ -35,7 +35,7 @@ import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
 import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
-import { Logger, createEventEmitter } from '@spark-view/spark-utils'
+import { Logger, createEventEmitter, toErrorMessage } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 import { isSameRow, getParentRows, assertNoSeparator } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
@@ -524,6 +524,8 @@ export class DataView implements IDataSource {
   private _mutatingCount = 0
   /** 销毁状态标记 */
   private _isDestroyed = false
+  /** requestData() 进行中的 Promise（用于并发调用复用，避免丢弃后续请求） */
+  private _pendingRequestData: Promise<void> | null = null
   /** 行索引缓存（用于加速 updateRowById 行对象替换）——由 LocalMutationDelegate 管理，内部状态勿直接操作 */
   rowIndexMap?: Map<IDataRow, number> | undefined
   /** rowsChanged 事件防抖定时器 */
@@ -888,7 +890,22 @@ export class DataView implements IDataSource {
    *           `requestData()` 为内部编排方法（级联、autoLoad 等场景使用）。
    */
   async requestData(): Promise<void> {
-    if (this.requestState !== RequestState.Idle) return
+    // 如果已有进行中的请求，复用同一个 Promise（避免丢弃并发调用）
+    if (this.requestState !== RequestState.Idle) {
+      if (this._pendingRequestData) return this._pendingRequestData
+      return
+    }
+
+    this._pendingRequestData = this._doRequestData()
+    try {
+      await this._pendingRequestData
+    } finally {
+      this._pendingRequestData = null
+    }
+  }
+
+  /** requestData 的实际实现（由 requestData() 包装管理 _pendingRequestData） */
+  private async _doRequestData(): Promise<void> {
 
     this.requestState = RequestState.Preparing
 
@@ -954,7 +971,12 @@ export class DataView implements IDataSource {
     try {
       const result = await this.loadFromServer(params)
       if (!result.success) return
-    } catch {
+    } catch (error: unknown) {
+      // 不再静默吞异常：记录错误、设置失败状态、通知订阅方
+      this.logger.error(`requestData 失败 [${this.tableName}@${this.viewId}]: ${toErrorMessage(error)}`)
+      this.requestState = RequestState.Failed
+      this.loadingError = error instanceof Error ? error : new Error(toErrorMessage(error))
+      this.events.emit('requestStateChanged', this.requestState)
       return
     }
 

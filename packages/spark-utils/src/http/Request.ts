@@ -25,6 +25,12 @@ const DEFAULT_TIMEOUT = 10_000
 /** 缓存条目：存储数据、写入时间戳和过期时长（ms） */
 interface CacheItem { data: unknown; timestamp: number; expiry: number }
 
+/** 缓存最大条目数——超出后淘汰最旧 20% 条目（LRU-like） */
+const MAX_CACHE_SIZE = 500
+
+/** 缓存默认过期时间（5分钟） */
+const DEFAULT_CACHE_EXPIRY = 5 * 60 * 1000
+
 export class Request {
   private ax: AxiosInstance
   private cache = new Map<string, CacheItem>()
@@ -190,6 +196,7 @@ export class Request {
     if (config.params !== undefined) c.params = config.params
     if (config.data !== undefined) c.data = config.data
     if (config.headers) c.headers = config.headers
+    if (config.signal) c.signal = config.signal
     return c
   }
 
@@ -260,7 +267,21 @@ export class Request {
 
   private setCache(config: RequestConfig, data: unknown): void {
     const key = config.cacheKey ?? this.cacheKey(config)
-    this.cache.set(key, { data, timestamp: Date.now(), expiry: config.cacheExpiry ?? 300000 })
+    // 超出上限时淘汰最旧 20% 条目
+    if (this.cache.size >= MAX_CACHE_SIZE) {
+      this.evictOldestEntries()
+    }
+    this.cache.set(key, { data, timestamp: Date.now(), expiry: config.cacheExpiry ?? DEFAULT_CACHE_EXPIRY })
+  }
+
+  /** 淘汰最旧 20% 缓存条目 */
+  private evictOldestEntries(): void {
+    const evictCount = Math.max(1, Math.floor(this.cache.size * 0.2))
+    const sortedEntries = [...this.cache.entries()]
+      .sort((a, b) => a[1].timestamp - b[1].timestamp)
+    for (let i = 0; i < evictCount && i < sortedEntries.length; i++) {
+      this.cache.delete(sortedEntries[i]![0])
+    }
   }
 
   private cacheKey(c: RequestConfig): string {

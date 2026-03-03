@@ -176,7 +176,7 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   getCacheStats(): { size: number; keys: string[] } {
-    return { size: 0, keys: [] }
+    return this.fileLoader.getCacheStats()
   }
 
   /** 从失败的 ConfigLoadResult 构建错误响应（DRY）*/

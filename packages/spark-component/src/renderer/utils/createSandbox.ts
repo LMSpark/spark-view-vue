@@ -2,10 +2,44 @@
  * 脚本沙箱工具
  */
 
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, toErrorMessage } from '@spark-view/spark-utils'
 import type { PageContext } from '../types'
 
 const pageLogger = Logger('PageRenderer')
+
+/** 拦截原型链访问的危险属性，防止 `with()` 沙箱逃逸 */
+const BLOCKED_KEYS = new Set<string | symbol>([
+  '__proto__', 'constructor', 'prototype',
+  'globalThis', 'window', 'self', 'top', 'parent', 'frames',
+  'document', 'location', 'eval', 'Function',
+  'process', 'require', 'module', 'exports', 'global',
+])
+
+/**
+ * 创建安全的沙箱代理——拦截 `with(__ctx)` 中的属性查找。
+ * - `has` 对 BLOCKED_KEYS 返回 true（配合 get 返回 undefined），阻止原型链逃逸
+ * - `has` 对目标对象上存在的属性返回 true，正常解析上下文变量
+ * - `has` 对其他属性返回 false，允许 `with` 作用域链回退到全局（Error/Array/console 等安全内建对象）
+ */
+function createSafeProxy<T extends object>(target: T): T {
+  return new Proxy(target, {
+    has(t, key) {
+      // 危险键：拦截并通过 get 返回 undefined
+      if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return true
+      // 目标上存在的属性：正常解析
+      return Reflect.has(t, key)
+    },
+    get(t, key, receiver) {
+      if (key === Symbol.unscopables) return undefined
+      if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return undefined
+      return Reflect.get(t, key, receiver)
+    },
+    set(t, key, value) {
+      if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return false
+      return Reflect.set(t, key, value)
+    },
+  })
+}
 
 /**
  * 从脚本文本中提取所有顶层函数名
@@ -61,7 +95,8 @@ export function compileFunctions(
     const fullScript = `with (__ctx) { ${scriptText} }${returnStatement}`
 
     const func = new Function('__ctx', fullScript)
-    const result = (func as (ctx: PageContext) => Record<string, unknown>)(context)
+    const safeContext = createSafeProxy(context)
+    const result = (func as (ctx: PageContext) => Record<string, unknown>)(safeContext)
 
     // 过滤掉 undefined 的函数
     const filteredResult: Record<string, (...args: unknown[]) => unknown> = {}
@@ -75,7 +110,7 @@ export function compileFunctions(
 
     return filteredResult
   } catch (error: unknown) {
-    pageLogger.error('脚本执行错误', { error: error instanceof Error ? error.message : String(error) })
+    pageLogger.error('脚本执行错误', { error: toErrorMessage(error) })
     throw error
   }
 }

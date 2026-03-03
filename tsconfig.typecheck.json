@@ -33,10 +33,10 @@
     "useUnknownInCatchVariables": true,
     "paths": {
       "@/*": ["src/*"],
-      "@spark-view/spark-utils": ["./packages/spark-utils/dist/index.d.ts"],
-      "@spark-view/spark-component": ["./packages/spark-component/dist/index.d.ts"],
-      "@spark-view/spark-data": ["./packages/spark-data/dist/types/index.d.ts"],
-      "@spark-view/spark-page-config": ["./packages/spark-page-config/dist/index.d.ts"],
+      "@spark-view/spark-utils": ["./packages/spark-utils/src/index.ts"],
+      "@spark-view/spark-component": ["./packages/spark-component/src/index.ts"],
+      "@spark-view/spark-data": ["./packages/spark-data/src/index.ts"],
+      "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"],
       // during development we prefer to resolve to source so that new exports
       // (e.g. setupAutoRegister) are picked up without rebuilding the package
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],

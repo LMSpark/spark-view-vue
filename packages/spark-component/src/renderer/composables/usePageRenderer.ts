@@ -150,7 +150,13 @@ export function usePageRenderer(
           type: confirmType,
         })
         return true
-      } catch { return false }
+      } catch (e) {
+        // ElMessageBox 取消抛出 'cancel' 字符串或 { action: 'cancel' }，非取消异常记录日志
+        if (e !== 'cancel' && (e as Record<string, unknown>)?.['action'] !== 'cancel') {
+          pageLogger.warn('showConfirm 异常', { error: e })
+        }
+        return false
+      }
     },
     showPrompt: async (message: string, title?: string, options?: { placeholder?: string; defaultValue?: string }) => {
       try {
@@ -163,7 +169,13 @@ export function usePageRenderer(
           inputValue:        defaultValue,
         })
         return (result as { value: string }).value
-      } catch { return null }
+      } catch (e) {
+        // ElMessageBox 取消抛出 'cancel' 字符串或 { action: 'cancel' }，非取消异常记录日志
+        if (e !== 'cancel' && (e as Record<string, unknown>)?.['action'] !== 'cancel') {
+          pageLogger.warn('showPrompt 异常', { error: e })
+        }
+        return null
+      }
     },
     showAlert: async (message: string, title?: string, options?: { type?: 'warning' | 'info' | 'error' | 'success' }) => {
       const alertType = options?.type ?? 'info'
@@ -172,7 +184,11 @@ export function usePageRenderer(
         type: alertType,
       })
     },
-    showLoading: (_show, _text) => { /* 待实现：接入全局加载遮罩服务 */ },
+    showLoading: (_show, _text) => {
+      if (import.meta.env.DEV) {
+        console.warn('[PageRenderer] showLoading 尚未接入全局加载遮罩服务')
+      }
+    },
     navigate: (path, params) => {
       void router.push(params ? { path, query: params as Record<string, string> } : path)
     },
@@ -254,7 +270,27 @@ export function usePageRenderer(
     },
 
     $rebindRules:  () => rebindRules(),
-    $refreshData:  async () => {},
+    $refreshData:  async (tableName?: string) => {
+      const ds = pds.dataSet
+      if (!ds) return
+      if (tableName) {
+        // 刷新指定表的 default 视图
+        const view = ds.getView(tableName, 'default')
+        if (view?.crudService) {
+          await view.refresh()
+        }
+      } else {
+        // 刷新所有有 API 配置的表的 default 视图
+        const promises: Promise<void>[] = []
+        for (const table of Object.values(ds.tables)) {
+          const view = table.getView('default')
+          if (view?.crudService) {
+            promises.push(view.refresh())
+          }
+        }
+        await Promise.all(promises)
+      }
+    },
 
     // PAGE_SERVICE 快捷访问（脚本使用 $page.showMessage 替代直接调用 ElMessage）
     $page: pageService,
@@ -404,10 +440,10 @@ export function usePageRenderer(
 
   watch(
     () => props.pageId ?? route.meta['pageId'] ?? route.params['id'] ?? route.name,
-    (newId, oldId) => { if (newId !== oldId) void loadPageConfig() },
+    (newId, oldId) => { if (newId !== oldId) loadPageConfig().catch(() => {}) },
   )
 
-  onMounted(() => { void loadPageConfig() })
+  onMounted(() => { loadPageConfig().catch(() => {}) })
 
   // ── 返回值 ───────────────────────────────────────────────────────────────────
 

@@ -22,3 +22,7 @@ export * from './capability/index.js'
 
 export { SharedErrorCodes, getSharedErrorMessage } from './error-codes'
 export type { SharedErrorCode } from './error-codes'
+
+// ==================== 错误工具 ====================
+
+export { toErrorMessage, toError } from './error-utils'

@@ -27,6 +27,7 @@
  */
 
 import { Logger } from '../logger'
+import { toErrorMessage } from '../error-utils'
 import { Request } from './Request'
 import type { FileLoadOptions, CacheEntry, FileLoadResult, CacheExpirationTier } from './types'
 
@@ -175,7 +176,7 @@ export class FileLoader {
         // 网络失败降级：优先内存 transform 结果，再尝试从 raw 重算
         if (this.opts.fallbackToCache) {
           if (xformEntry) {
-            const msg = error instanceof Error ? error.message : String(error)
+            const msg = toErrorMessage(error)
             logger.warn('网络失败，使用 transform 缓存', { fileName, error: msg })
             return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
           }
@@ -183,13 +184,13 @@ export class FileLoader {
             try {
               const transformed = await transform(rawEntry.data)
               this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
-              const msg = error instanceof Error ? error.message : String(error)
+              const msg = toErrorMessage(error)
               logger.warn('网络失败，从 raw 缓存重执行 transform', { fileName, error: msg })
               return { success: true, data: transformed, timestamp: rawEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
             } catch { /* transform 失败，继续抛原始网络错误 */ }
           }
         }
-        const msg = error instanceof Error ? error.message : String(error)
+        const msg = toErrorMessage(error)
         logger.error('文件加载或 transform 失败', { fileName, error: msg })
         return { success: false, error: msg, fromCache: false }
       }
@@ -289,6 +290,15 @@ export class FileLoader {
     return this.readEntry(key) !== null
   }
 
+  /** 获取内存缓存统计信息 */
+  getCacheStats(): { size: number; keys: string[] } {
+    const prefix = this.opts.cachePrefix
+    const keys = Array.from(this.memCache.keys()).map(k =>
+      k.startsWith(prefix) ? k.slice(prefix.length) : k
+    )
+    return { size: this.memCache.size, keys }
+  }
+
   /** 获取缓存的 sourceTimestamp（不存在则返回 null） */
   getTimestamp(key: string): string | null {
     return this.readEntry(key)?.sourceTimestamp ?? null
@@ -340,12 +350,12 @@ export class FileLoader {
       if (this.opts.fallbackToCache) {
         const cached = this.readEntry<string>(fileName)
         if (cached) {
-          const msg = error instanceof Error ? error.message : String(error)
+          const msg = toErrorMessage(error)
           logger.warn('网络失败，使用缓存', { fileName, error: msg })
           return { success: true, data: cached.data, timestamp: cached.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
         }
       }
-      return { success: false, error: error instanceof Error ? error.message : String(error), fromCache: false }
+      return { success: false, error: toErrorMessage(error), fromCache: false }
     }
   }
 
@@ -359,7 +369,11 @@ export class FileLoader {
       try {
         const raw = this.storage?.getItem(k)
         entry = raw ? (JSON.parse(raw) as CacheEntry<T>) : null
-      } catch { return null }
+      } catch {
+        // 损坏的缓存项：清理后返回 null，避免反复 parse 失败
+        try { this.storage?.removeItem(k) } catch { /* ignore removeItem failure */ }
+        return null
+      }
     }
 
     if (!entry) return null
