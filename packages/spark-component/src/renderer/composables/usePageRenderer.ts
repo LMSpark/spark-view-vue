@@ -316,6 +316,9 @@ export function usePageRenderer(
 
   // ── 配置加载流水线 ────────────────────────────────────────────────────────────
 
+  /** 竞态保护：每次加载递增，async 完成时校验是否仍为当前请求 */
+  let _loadSequenceId = 0
+
   /** 从 props / route 推断当前页面 ID，无法确定时抛出。 */
   function resolvePageId(): string {
     const pageId =
@@ -433,20 +436,32 @@ export function usePageRenderer(
 
   /** 完整加载流程：beforeLoad → resolvePageId → fetchConfig → applyConfig → afterLoad。 */
   const loadPageConfig = async (): Promise<void> => {
+    const myLoadId = ++_loadSequenceId
     loading.value = true
     error.value   = ''
     try {
       const pageId = resolvePageId()
       currentPageId.value = pageId
       if (props.beforeLoad) await props.beforeLoad(pageId)
+      // 竞态保护：如果在 await 期间有新的加载请求，放弃当前结果
+      if (myLoadId !== _loadSequenceId) {
+        pageLogger.debug(`loadPageConfig 请求 ${myLoadId} 被更新的请求 ${_loadSequenceId} 替代，忽略响应`)
+        return
+      }
       const config = await fetchConfig(pageId)
+      if (myLoadId !== _loadSequenceId) {
+        pageLogger.debug(`loadPageConfig 请求 ${myLoadId} 被更新的请求 ${_loadSequenceId} 替代，忽略响应`)
+        return
+      }
       await applyConfig(pageId, config)
+      if (myLoadId !== _loadSequenceId) return
       if (props.afterLoad) await props.afterLoad(config)
     } catch (err) {
+      if (myLoadId !== _loadSequenceId) return  // 已被新请求取代，不更新错误状态
       error.value = err instanceof Error ? err.message : String(err)
       props.onError?.(err instanceof Error ? err : new Error(String(err)))
     } finally {
-      loading.value = false
+      if (myLoadId === _loadSequenceId) loading.value = false
     }
   }
 
