@@ -165,11 +165,17 @@ export function compileExpression(
   }
   const $min   = (t: string, f: string): number | undefined => {
     const rows = getChildRows(t)
-    return rows.length === 0 ? undefined : Math.min(...rows.map(r => Number(r[f])))
+    if (rows.length === 0) return undefined
+    let result = Infinity
+    for (const r of rows) { const v = Number(r[f]); if (v < result) result = v }
+    return result
   }
   const $max   = (t: string, f: string): number | undefined => {
     const rows = getChildRows(t)
-    return rows.length === 0 ? undefined : Math.max(...rows.map(r => Number(r[f])))
+    if (rows.length === 0) return undefined
+    let result = -Infinity
+    for (const r of rows) { const v = Number(r[f]); if (v > result) result = v }
+    return result
   }
   const $list  = (t: string, f: string): unknown[] => getChildRows(t).map(r => r[f])
   const $join  = (t: string, f: string, sep = ', '): string =>

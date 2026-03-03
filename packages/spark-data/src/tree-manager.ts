@@ -314,6 +314,7 @@ export class TreeManager {
    */
   buildNestedTree(rootId?: string | number | null): NestedTreeNode[] {
     const roots: NestedTreeNode[] = []
+    const visited = new Set<string | number>()
 
     // 获取根节点
     const rootNodes = rootId !== undefined && rootId !== null
@@ -322,7 +323,7 @@ export class TreeManager {
 
     for (const rootNode of rootNodes) {
       if (rootNode) {
-        const nestedRoot = this.buildSubTree(rootNode.id)
+        const nestedRoot = this._buildSubTreeSafe(rootNode.id, visited, 0)
         if (nestedRoot) {
           roots.push(nestedRoot)
         }
@@ -332,21 +333,46 @@ export class TreeManager {
     return roots
   }
 
+  /** 树递归最大深度（防止循环引用或超深树导致栈溢出） */
+  private static readonly MAX_TREE_DEPTH = 100
+
   /**
    * 局部构建子树（递归）
    * @param rootId 根节点ID
    * @returns 嵌套子树
    */
   buildSubTree(rootId: string | number): NestedTreeNode | null {
+    return this._buildSubTreeSafe(rootId, new Set(), 0)
+  }
+
+  /** @internal 带循环引用保护和深度限制的递归实现 */
+  private _buildSubTreeSafe(
+    rootId: string | number,
+    visited: Set<string | number>,
+    depth: number,
+  ): NestedTreeNode | null {
     const node = this.cache[rootId]
     if (!node) return null
 
+    // 循环引用保护：已访问过的节点不再递归
+    if (visited.has(rootId)) {
+      this.logger.warn(`检测到循环引用，跳过节点: ${String(rootId)}`)
+      return null
+    }
+
+    // 深度限制：防止超深树耗尽调用栈
+    if (depth >= TreeManager.MAX_TREE_DEPTH) {
+      this.logger.warn(`树深度超过 ${TreeManager.MAX_TREE_DEPTH} 层，截断节点: ${String(rootId)}`)
+      return { ...node, children: [] }
+    }
+
+    visited.add(rootId)
     const nestedNode: NestedTreeNode = { ...node, children: [] }
 
     // 递归构建子节点
     const children = this.getChildren(rootId)
     for (const child of children) {
-      const childTree = this.buildSubTree(child.id)
+      const childTree = this._buildSubTreeSafe(child.id, visited, depth + 1)
       if (childTree) {
         nestedNode.children.push(childTree)
       }
