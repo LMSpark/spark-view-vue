@@ -833,6 +833,7 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
   - `@spark-view/spark-data` → `./packages/spark-data/src`
   - `@spark-view/spark-utils` → `./packages/spark-utils/src`
 - 每个子包 `tsconfig.json` 独立声明 `paths`（相对于包目录），IDE 类型解析正确
+- ⚠️ **每个子包 `tsconfig.json` 必须包含 `"baseUrl": "."`**：`paths` 中的相对路径（如 `"../spark-utils/dist/index.d.ts"`）以 `baseUrl` 为基准解析。缺少此字段时，子包会继承根 `tsconfig.json` 的 `baseUrl`（整个 monorepo 根目录），导致 `tsc` 找不到 dist 类型文件并回退到 pnpm 存储的旧版本，产生莫名的"模块无此导出"错误。
 - ⚠️ **`tsconfig.build.json` 注意**：每个子包的 `tsconfig.build.json` 中 `"paths"` 必须保留依赖包的 dist 路径别名（不能设为 `{}`），否则 `tsc` 无法追踪 pnpm 软链中的 `.js` 重导出链，导致编译时找不到新增导出成员（如 `normalizeKey`、`CapabilityTypeMap`）
 - ⚠️ **`PageContext`（renderer/types/index.ts）类型写法**：`SparkData` 是命名空间导出（`export namespace`），**不能直接当类型用**。必须用 `typeof` 和顶层 import alias：
   ```typescript
@@ -842,6 +843,50 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
   SparkData: typeof SparkData
   h: typeof VueH
   ```
+
+## npm 发布规范 📦
+
+发布使用 `node scripts/publish-packages.mjs`（自动按依赖顺序构建 + 发布所有子包）。
+
+### 发布前必查清单
+
+**1. 跨包依赖范围与实际版本对齐**
+
+每次升级某个包的版本后，**必须同步更新**所有依赖该包的 `package.json` 中的版本范围，使其能覆盖新版本：
+
+```
+spark-utils 升到 0.4.1  →  spark-data / spark-component / spark-app / spark-page-config 中
+                           "@spark-view/spark-utils" 须设为 "^0.4.1"（或包含该版本的范围）
+
+spark-data  升到 0.5.1  →  spark-component / spark-app / spark-page-config 中
+                           "@spark-view/spark-data" 须设为 "^0.5.1"
+```
+
+验证命令（所有版本应与本地 package.json 一致）：
+
+```powershell
+Get-ChildItem packages -Directory | ForEach-Object {
+  $p = Get-Content "packages\$($_.Name)\package.json" | ConvertFrom-Json
+  "$($p.name)@$($p.version)"
+  $p.dependencies.PSObject.Properties |
+    Where-Object { $_.Name -like '@spark-view/*' } |
+    ForEach-Object { "  -> $($_.Name): $($_.Value)" }
+}
+```
+
+**2. 每个子包 `tsconfig.json` 必须有 `"baseUrl": "."`**
+
+建包或复制配置后立即核查，确保存在此行（参见"Integration & build notes"）。
+
+**3. Dry-run 验证 workspace:* 替换**
+
+```bash
+node scripts/publish-packages.mjs --dry-run
+```
+
+`pnpm publish` 会自动将 `workspace:*` 替换为实际解析版本；`npm publish` 不具备此能力，**禁止直接用 `npm publish`**。
+
+---
 
 ## Performance notes ⚡
 - **`spark-data` 无框架依赖**——DataView 通过 `DataView.wrapInstance` 静态钩子让框架层注入包装（SparkPlugin 中设为 `reactive()`）
