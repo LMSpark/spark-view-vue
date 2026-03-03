@@ -69,6 +69,9 @@ import { toErrorMessage, toError } from '@spark-view/spark-utils'
  */
 const bootstrapLogger = createLogger('bootstrap')
 
+/** 默认认证请求超时（毫秒） */
+const DEFAULT_AUTH_TIMEOUT_MS = 10_000
+
 /**
  * =============================================================================
  * 主要功能函数
@@ -311,7 +314,7 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
 
   // 生产环境：从后端 API 获取用户信息
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10_000)
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_AUTH_TIMEOUT_MS)
   try {
     const response = await fetch('/api/auth/me', { signal: controller.signal })
     if (response.ok) {

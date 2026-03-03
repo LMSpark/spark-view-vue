@@ -38,8 +38,11 @@ interface ElTableComponent extends HTMLElement {
 function getTableEl(tableName: string, viewId: string, formApi: any): ElTableComponent | null {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!formApi || typeof formApi.el !== 'function') return null
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-  return formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+  const el = formApi.el(`table_${tableName}_${viewId}`)
+  // duck-typing 守卫：确保返回的组件实例确实具有 el-table 命令式 API
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return el && typeof el.setCurrentRow === 'function' ? el as ElTableComponent : null
 }
 
 /**
@@ -64,8 +67,7 @@ function syncCurrentRowToTable(
     
     // 直接同步，无需任何临时标志
     table.setCurrentRow?.(row)
-    const rowId = row ? (row as Record<string, unknown>)['id'] : null
-    pageLogger.debug('✅ [DataSet→UI] 同步 currentRow 到 el-table', { tableName, viewId, rowId })
+    pageLogger.debug('✅ [DataSet→UI] 同步 currentRow 到 el-table', { tableName, viewId, hasRow: !!row })
   })
 }
 
@@ -134,7 +136,7 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
     cleanupSync?.()
     cleanupSync = null
 
-    if (!originalRules.value || originalRules.value.length === 0) {
+    if (!originalRules.value || !Array.isArray(originalRules.value) || originalRules.value.length === 0) {
       boundRules.value = []
       return
     }

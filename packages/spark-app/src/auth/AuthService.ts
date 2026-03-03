@@ -29,6 +29,9 @@ import { simpleEnvAdapter as envAdapter } from '../utils/simpleEnv'
 // 2. 常量和日志 (Constants & Logger)
 // =============================================================================
 
+/** Mock 模式默认网络延迟（毫秒） */
+const MOCK_DELAY_MS = 500
+
 /** 认证服务日志器 */
 const authLogger = createLogger('auth')
 
@@ -608,7 +611,7 @@ export class AuthService implements IAuthService {
     authLogger.debug('🎭 [Mock] 模拟登录', { username: credentials.username })
 
     // 模拟网络延迟
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, MOCK_DELAY_MS))
 
     return {
       user: this.config.mockUser ?? {
