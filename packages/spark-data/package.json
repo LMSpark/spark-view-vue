@@ -28,7 +28,7 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
   },
   "dependencies": {
-    "@spark-view/spark-utils": "^0.4.0"
+    "@spark-view/spark-utils": "^0.4.1"
   },
   "postcss": {},
   "devDependencies": {
