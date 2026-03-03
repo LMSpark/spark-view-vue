@@ -97,7 +97,16 @@ spark-component      ← 依赖 spark-data + spark-page-config + spark-utils
 | spark-app/plugins | `PluginRegistry` 静态方法 (9个) | `getGlobalPluginRegistry()` |
 | spark-app/start | `registerComponents` 选项 | 自动发现机制 |
 
-**建议**：在 0.6.0 版本做一次清理，移除所有 deprecated API。
+**消费者分析（2026-03-04）**：
+
+| 废弃项 | 主项目消费 | 包内部消费 | 可安全移除 |
+|--------|-----------|-----------|-----------|
+| `authService` | 无 | bootstrap/, README | ✅ 是 |
+| `PluginRegistry.*` | 无 | presets.ts, tests, README | ✅ 是（测试需更新）|
+| `registerComponents` | `main.example.ts` (示例) | vite-env.d.ts | ✅ 是（更新示例）|
+| `FileCacheEntry` | 无 | 类型声明 | ✅ 是 |
+
+**结论**：所有废弃 API 无外部消费者，可在 0.6.0 安全移除。
 
 ### 5. ~~spark-app 测试覆盖为零~~ ✅ 已确认有完整测试
 
@@ -228,15 +237,48 @@ DataView 本身作为**门面(Facade)**，主要职责是：
 - 移除 `registerComponents` 启动选项 → 自动发现
 - 移除 `FileCacheEntry` 类型别名
 
-**迁移指南模板**：
+**清理任务清单**：
+
+| 任务 | 文件 | 操作 |
+|------|------|------|
+| 移除 authService 导出 | spark-app/src/index.ts | 删除 deprecated export |
+| 更新 bootstrap | spark-app/src/bootstrap/index.ts | 使用实例方法 |
+| 更新 presets | spark-app/src/plugins/presets.ts | 改用 getGlobalPluginRegistry() |
+| 更新 registry 测试 | spark-app/src/plugins/__tests__/ | 使用新 API |
+| 更新 README | spark-app/src/plugins/README.md | 更新示例代码 |
+| 更新主项目示例 | src/main.example.ts | 移除 registerComponents |
+| 清理类型声明 | src/env.d.ts | 移除 registerComponents 类型 |
+
+**迁移指南**：
+
 ```typescript
-// ❌ 0.5.x（即将移除）
+// ========== authService ==========
+// ❌ 0.5.x（已废弃）
 import { authService } from '@spark-view/spark-app'
-authService.login(...)
+authService.login(credentials)
 
 // ✅ 0.6.x
 const services = consume(APP_SERVICES)
-services?.auth?.login(...)
+services?.auth?.login(credentials)
+
+// ========== PluginRegistry ==========
+// ❌ 0.5.x（已废弃）
+import { PluginRegistry } from '@spark-view/spark-app'
+PluginRegistry.register('my-plugin', loader)
+PluginRegistry.get('my-plugin')
+
+// ✅ 0.6.x
+import { getGlobalPluginRegistry } from '@spark-view/spark-app'
+const registry = getGlobalPluginRegistry()
+registry.register('my-plugin', loader)
+registry.get('my-plugin')
+
+// ========== registerComponents ==========
+// ❌ 0.5.x（已废弃）
+start({ registerComponents: (app) => {...} })
+
+// ✅ 0.6.x — 无需传递，框架自动发现
+start({ /* registerComponents 已移除 */ })
 ```
 
 ### 阶段 4：补充测试（2 周）
