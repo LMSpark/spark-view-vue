@@ -29,7 +29,7 @@
  * ```
  */
 
-import { Logger, toErrorMessage } from '@spark-view/spark-utils'
+import { Logger, toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
 import type { IDataRow, ComputedColumnFn, AggregateColumnConfig, AggregateType, DataRelation } from '../types'
 
 const logger = Logger('DataView:Computed')
@@ -58,34 +58,8 @@ export interface AggregateResolver {
 /** 表达式最大长度限制（防止超长代码注入） */
 const MAX_EXPRESSION_LENGTH = 2048
 
-/** 拦截原型链访问的危险属性，防止 `with(__row)` 沙箱逃逸 */
-const BLOCKED_KEYS = new Set<string | symbol>([
-  '__proto__', 'constructor', 'prototype',
-  'globalThis', 'window', 'self', 'eval', 'Function',
-  'process', 'require', 'module', 'exports', 'global',
-  'document', 'location', 'top', 'parent', 'frames',
-  'setTimeout', 'setInterval', 'setImmediate',
-  'fetch', 'XMLHttpRequest', 'WebSocket', 'importScripts',
-  'Proxy', 'Reflect',
-])
-
-/**
- * 创建安全代理——拦截 `with(__row)` 中对原型链/全局环境的访问。
- * has 仅对 BLOCKED_KEYS 和已有属性返回 true，安全内置对象（Math/Number 等）可正常回退到全局。
- */
-function createSafeRowProxy(row: IDataRow): IDataRow {
-  return new Proxy(row, {
-    has(t, key) {
-      if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return true
-      return Reflect.has(t, key)
-    },
-    get(t, key) {
-      if (key === Symbol.unscopables) return undefined
-      if (typeof key === 'string' && BLOCKED_KEYS.has(key)) return undefined
-      return Reflect.get(t, key) as unknown
-    },
-  })
-}
+/** 行数据安全代理（复用 spark-utils 共享沙箱策略） */
+const createSafeRowProxy = (row: IDataRow): IDataRow => createSafeProxy(row)
 
 /** 检测表达式中是否含有子表聚合函数调用 */
 const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
@@ -249,14 +223,17 @@ export interface IComputedColumnDataSet {
  *
  * 通过 IComputedColumnHost 访问 DataView 状态，自身管理：
  * - 已编译函数注册表（Map<name, fn>）
- * - 编译缓存（列指纹 + ctx 变更检测）
+ * - 编译缓存（列指纹字符串 + ctx 对象引用，=== 比较，零序列化开销）
  * - 聚合解析器构建（DataRelation → 子行解析）
  */
 export class ComputedColumnDelegate {
   private _columns = new Map<string, ComputedColumnFn>()
   private _namesCache: ReadonlySet<string> | undefined
   private _host: IComputedColumnHost
-  private _compileCacheKey: string | undefined
+  /** 上次编译时的列表达式指纹（用于检测列定义变更） */
+  private _compiledExprKey: string | undefined
+  /** 上次编译时传入的 ctx 对象引用（用于检测 ctx 切换，不做深比较） */
+  private _compiledCtxRef: ComputedColumnContext | undefined
   private _ctx: ComputedColumnContext = {}
 
   constructor(host: IComputedColumnHost) {
@@ -273,7 +250,8 @@ export class ComputedColumnDelegate {
   /** 设置计算列共享上下文，失效缓存并触发重编译。 */
   setContext(ctx: ComputedColumnContext): void {
     this._ctx = ctx
-    this._compileCacheKey = undefined
+    this._compiledExprKey = undefined
+    this._compiledCtxRef = undefined
     this.syncFromConfig()
   }
 
@@ -284,7 +262,8 @@ export class ComputedColumnDelegate {
 
   /** @internal 失效编译缓存，下次 syncFromConfig 将强制重编译。 */
   invalidateCache(): void {
-    this._compileCacheKey = undefined
+    this._compiledExprKey = undefined
+    this._compiledCtxRef = undefined
   }
 
   /**
@@ -295,14 +274,14 @@ export class ComputedColumnDelegate {
     const columns = this._host.getColumns()
     if (!columns?.length) return
 
-    // 编译缓存：列表达式指纹 + ctx 对象引用
+    // 编译缓存：列表达式指纹（字符串比较）+ ctx 对象引用（=== 比较，不做深序列化）
     const exprFingerprint = columns
       .filter(c => c.computeExpression)
       .map(c => `${c.name}:${c.computeExpression}`)
       .join('|')
-    const cacheKey = `${exprFingerprint}@@${this._ctx ? JSON.stringify(this._ctx) : ''}`
-    if (cacheKey === this._compileCacheKey) return   // 缓存命中，跳过编译
-    this._compileCacheKey = cacheKey
+    if (exprFingerprint === this._compiledExprKey && this._ctx === this._compiledCtxRef) return   // 缓存命中，跳过编译
+    this._compiledExprKey = exprFingerprint
+    this._compiledCtxRef = this._ctx
 
     const compiled = compileColumnsExpressions(
       columns as Array<{ name: string; computeExpression?: string }>,
@@ -354,7 +333,8 @@ export class ComputedColumnDelegate {
     this._columns.clear()
     this._namesCache = undefined
     this._ctx = {}
-    this._compileCacheKey = undefined
+    this._compiledExprKey = undefined
+    this._compiledCtxRef = undefined
   }
 
   // ── 内部：聚合解析器 ─────────────────────────

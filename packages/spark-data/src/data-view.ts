@@ -94,7 +94,9 @@ const ROWS_CHANGED_DEBOUNCE_MS = 16
 
 export class DataView implements IDataSource {
 
-  // ── DataTable 引用（运行时注入，由 DataTable 在 attach 时赋值）────────
+  // ─────────────────────────────────────────────
+  // DataTable 引用（运行时注入，由 DataTable 在 attach 时赋值）
+  // ─────────────────────────────────────────────
 
   /** 内部存储的 DataTable 引用（运行时由 DataTable.attach 注入） */
   private _dataTable: DataTable | null = null
@@ -125,16 +127,22 @@ export class DataView implements IDataSource {
     this._computedDelegate.syncFromConfig()
   }
 
-  // ── 标识 ────────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 标识
+  // ─────────────────────────────────────────────
 
   tableName: string
   viewId: string
 
-  // ── 行数据 ──────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 行数据
+  // ─────────────────────────────────────────────
 
   rows: IDataRow[] = []
 
-  // ── 主键 ────────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 主键
+  // ─────────────────────────────────────────────
 
   /**
    * 显式覆盖的主键字段名（undefined = 从 DataTable 列定义推导）。
@@ -213,14 +221,18 @@ export class DataView implements IDataSource {
   /** 主键生成器（可选，用于自动生成新记录的主键） */
   private primaryKeyGenerator?: PrimaryKeyGenerator | undefined
 
-  // ── 选中状态（主键存储，getter 按需解析）────
+  // ─────────────────────────────────────────────
+  // 选中状态（主键存储，getter 按需解析）
+  // ─────────────────────────────────────────────
 
   /** 当前行主键值（null 表示未选中）。通过 currentRow getter 取对应行对象 */
   _currentRowId: string | number | null = null
   /** 多选行主键值列表。通过 selectedRows getter 取对应行对象数组 */
   _selectedRowIds: Array<string | number> = []
 
-  // ── 选中值序列化配置（单选 / 多选通用）────
+  // ─────────────────────────────────────────────
+  // 选中值序列化配置（单选 / 多选通用）
+  // ─────────────────────────────────────────────
 
   /**
    * 值字段名（用于 value getter/setter 序列化）。
@@ -271,7 +283,9 @@ export class DataView implements IDataSource {
     })
   }
 
-  // ── 值序列化层（委托给 SelectionDelegate）────
+  // ─────────────────────────────────────────────
+  // 值序列化层（委托给 SelectionDelegate）
+  // ─────────────────────────────────────────────
 
   /**
    * 选中行的序列化字符串（供表单 v-model / API 传值使用）。
@@ -297,13 +311,17 @@ export class DataView implements IDataSource {
    */
   get label(): string | null { return this.selectionDelegate.label }
 
-  // ── 分页 ────────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 分页
+  // ─────────────────────────────────────────────
 
   total: number = 0
   page: number = 1
   pageSize: number = 20
 
-  // ── 加载状态 ────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 加载状态
+  // ─────────────────────────────────────────────
 
   loadingError: Error | null = null
   /** 请求状态机，见 {@link RequestState}。唯一状态源，勿另设布尔标志。 */
@@ -313,7 +331,9 @@ export class DataView implements IDataSource {
   /** 最近一次增删改批操作的错误；成功或未发起时为 null */
   mutatingError: Error | null = null
 
-  // ── 视图配置 ────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 视图配置
+  // ─────────────────────────────────────────────
 
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
@@ -383,7 +403,9 @@ export class DataView implements IDataSource {
   get treeMode(): 'flat' | 'nested' { return this.treeConfig?.treeMode ?? 'flat' }
   set treeMode(v: 'flat' | 'nested') { (this.treeConfig ??= {}).treeMode = v }
 
-  // ── 计算列 ────────────────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 计算列
+  // ─────────────────────────────────────────────
 
   /**
    * 设置计算列共享上下文（表达式中通过 `ctx` 引用）。
@@ -448,7 +470,9 @@ export class DataView implements IDataSource {
     this._computedDelegate.apply(rows)
   }
 
-  // ── IComputedColumnHost 实现 ──────────────────
+  // ─────────────────────────────────────────────
+  // 计算列宿主接口（getColumns / getDataSet）
+  // ─────────────────────────────────────────────
 
   /** @internal 返回 DataTable 列定义（dataTable 未 attach 时返回 undefined） */
   getColumns() { return this._dataTable?.columns }
@@ -456,7 +480,9 @@ export class DataView implements IDataSource {
   /** @internal 返回 DataSet 实例（无 DataSet 上下文时返回 undefined） */
   getDataSet() { return this._dataTable?.dataSet }
 
-  // ── summaryRow 列级聚合 ────────────────────────────
+  // ─────────────────────────────────────────────
+  // 视图聚合（summaryRow / selectionSummaryRow）
+  // ─────────────────────────────────────────────
 
   /** 列级聚合缓存行（行变更后自动重算） */
   private _summaryRow: IDataRow = {}
@@ -521,11 +547,15 @@ export class DataView implements IDataSource {
       : {}
   }
 
-  // ── 关联对象 ────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 关联对象
+  // ─────────────────────────────────────────────
 
   treeManager?: TreeManager | undefined
 
-  // ── 私有 ─────────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 私有状态
+  // ─────────────────────────────────────────────
 
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
@@ -540,7 +570,9 @@ export class DataView implements IDataSource {
   /** rowsChanged 事件防抖定时器 */
   private stateChangedDebouncer?: ReturnType<typeof setTimeout> | undefined
 
-  // ── 委托 ─────────────────────────────────────
+  // ─────────────────────────────────────────────
+  // 委托实例
+  // ─────────────────────────────────────────────
 
   /** 计算列委托（立即初始化，因 dataTable setter 可能在第一次懒访问之前触发） */
   private _computedDelegate: ComputedColumnDelegate = new ComputedColumnDelegate(this)
@@ -606,7 +638,9 @@ export class DataView implements IDataSource {
     return this._dirtyTrackingDelegate
   }
   
-  // ── 公共委托访问器（S1: 高级消费者可直接访问委托实例）────────
+  // ─────────────────────────────────────────────
+  // 公共委托访问器
+  // ─────────────────────────────────────────────
 
   /**
    * 选中状态委托（只读访问）。
@@ -641,7 +675,9 @@ export class DataView implements IDataSource {
    */
   get dirtyTracking(): DirtyTrackingDelegate { return this.dirtyTrackingDelegate }
 
-  // ── 公共内部对象 ─────────────────────────
+  // ─────────────────────────────────────────────
+  // 事件总线 & 日志器
+  // ─────────────────────────────────────────────
 
   /**
    * 事件总线——独立事件模型
@@ -1142,8 +1178,6 @@ export class DataView implements IDataSource {
 
   // ─────────────────────────────────────────────
   // 本地 CRUD（内存同步，不触发网络请求）
-  // 可独立调用；CrudDelegate 也通过这些方法写入数据，
-  // 两者均发射 rowsChanged，因防抖合并为单次通知
   // ─────────────────────────────────────────────
 
   /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定 */

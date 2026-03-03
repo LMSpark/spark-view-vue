@@ -284,12 +284,11 @@ describe('PageConfigLoader', () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: () => Promise.resolve('.app { color: blue }')
+        text: () => Promise.resolve('.app { color: blue }')
       }))
-      // remote loadCss → remoteResult → fetchFromRemote (JSON)
-      // 由于远程 CSS 经 fetchFromRemote 返回，此处期望 success:true
       const r = await loader.loadCss('my-page')
       expect(r.success).toBe(true)
+      expect(r.data).toBe('.app { color: blue }')
     })
   })
 

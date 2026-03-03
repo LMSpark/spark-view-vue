@@ -1,19 +1,23 @@
 /**
- * SPARK Business Script API — 业务脚本 API 权威定义
+ * SPARK 页面沙箱上下文类型
  * =====================================================
  *
- * 此文件是 `script.js` 业务脚本 **唯一**的 API 契约来源。
+ * ## 设计意图：跨前端框架的业务脚本层
  *
- * 设计原则：
+ * `script.js` 沙箱的核心目标是**让业务逻辑与具体前端框架解耦**：
+ * - 业务脚本只能看到此文件定义的**框架无关抽象接口**（`$page / $api / $route / $dataSet`）
+ * - 底层实现（Vue Router / form-create / Element Plus）由**渲染层**注入，脚本不感知
+ * - 同一份 `script.js` 理论上可在任何实现了 `IScriptContext` 的渲染层上运行
+ *
+ * 这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router、
+ * `$api` 替代 form-create 直接引用的根本原因——**接口是契约，实现可替换**。
+ *
+ * ## 约束
  * - ✅ 与前端框架完全无关：无 Vue / Element Plus / FormCreate / Vue Router 依赖
  * - ✅ 可独立测试：不依赖任何渲染层或 DOM 框架
  * - ✅ 稳定边界：变更此文件需同步更新脚本文档
  *
- * 注意：
- * - `IPageServiceCapability`（$page）定义在 `capability/symbols.ts`，因其同时是能力系统的一部分
- * - `SparkData` 命名空间 和 `h` 函数（Vue 渲染函数）是渲染层附加注入，不属于核心契约
- *
- * @module script-api
+ * ⚠️ **禁止将此文件改名为 `script-api.ts`**（见 copilot-instructions 规划节）
  */
 
 // ==================== 路由快照 ====================
@@ -174,7 +178,7 @@ export interface IScriptContext {
 /**
  * `$page` 的内联类型（结构与 `IPageServiceCapability` 完全等价）。
  *
- * 定义在此文件内，避免 `script-api.ts` 对 `capability/symbols.ts` 产生导入依赖。
+ * 定义在此文件内，避免对 `capability/symbols.ts` 产生导入依赖。
  * 渲染层以 `IPageServiceCapability` 作为实现类型；两者通过结构化类型兼容。
  */
 export interface IPageServiceInScript {

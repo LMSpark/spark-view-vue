@@ -190,6 +190,18 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 
 ## 页面脚本 (script.js) 沙箱规范 📜
 
+### 设计意图：跨前端框架的业务脚本层
+
+`script.js` 沙箱的核心设计目标是**让业务逻辑与具体前端框架解耦**：
+
+- 业务脚本只能看到 `IScriptContext` 定义的**框架无关抽象接口**（`$page / $api / $route / $dataSet`）
+- 底层实现（Vue Router / form-create / Element Plus）由**渲染层**注入，业务脚本不感知
+- 同一份 `script.js` 理论上可在任何实现了 `IScriptContext` 的渲染层上运行
+
+这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router、`$api` 替代 form-create 直接引用的根本原因——**接口是契约，实现可替换**。
+
+---
+
 `public/pages-config/**/script.js` 在 `with (__ctx)` 沙箱内执行，**可直接使用**以下注入变量：
 
 | 变量 | 类型 | 说明 |
@@ -370,7 +382,8 @@ dataSet.on('loadSuccess', ({ tableName }) => {
 
 `script.js` 沙箱当前通过 `__ctx` 直接注入变量（见上表）。**`script-api`** 是规划中的长期架构任务，旨在将所有沙箱注入变量规范化为类型化接口，提供自动补全、类型检查与版本兼容性保障。
 
-- ⚠️ **当前阶段不实现**：任何以 `script-api` 命名的接口、类或模块均属未来规划，**禁止**在功能开发中以 `script-api` 作为实现依据
+- ⚠️ **当前阶段不实现**：任何以 `script-api` 命名的接口、类、模块或**文件**均属未来规划，**禁止**在功能开发中以 `script-api` 作为实现依据
+- ⚠️ **禁止创建 `script-api.ts`**：当前沙箱上下文类型声明位于 `spark-page-config/src/script-context-types.ts`——该文件是合法的类型声明文件，**不是** script-api 的实现，**禁止**将其改名为 `script-api.ts`
 - 现阶段脚本对接唯一规范来源是本文档的**沙箱注入变量表** + **禁止事项表**
 - 待 script-api 正式立项后，本节将替换为具体接口定义与迁移指南
 
@@ -425,7 +438,7 @@ interface IModelPermission {      // 表级 — 存储在 dataSource._modelPerm
 - **Symbol 键**（向后兼容）：`import { DATA_SOURCE } from '@spark-view/spark-component'`
 - **字符串键**（可扩展）：`consume('spark:capability:page-dataset')` — 通过 `CapabilityTypeMap` 声明合并提供类型推断
 
-`normalizeKey(name)` 内部将字符串转换为 `Symbol.for(name)`，与 Symbol 键等价。扩展自定义能力键的完整示例见下方「[新增自定义能力 → 方式二](#新增自定义能力)」。
+`normalizeKey(name)` 内部将字符串转换为 `Symbol.for(name)`，与 Symbol 键等价。扩展自定义能力键的完整示例见下方「新增自定义能力 → 方式二」章节。
 
 ### 能力键一览
 
@@ -613,9 +626,15 @@ packages/
 │           ├── PermissionFilter.ts   # 批量行过滤 + 批量脱敏
 │           └── FieldRenderHelper.ts  # 字段渲染状态计算
 ├── spark-page-config/   # 页面配置加载器（ConfigLoader, SparkPageConfig）
+│   └── src/
+│       ├── namespace.ts          # SparkPageConfig 命名空间
+│       ├── script-context-types.ts # 沙箱上下文类型声明（IPageRoute/IFormAPI/IScriptContext 等）
+│       │                           # ⚠️ 禁止改名为 script-api.ts → 见「script-api 规划任务」节
+│       └── tests/
 └── spark-utils/         # 共享基础设施
     └── src/
         ├── capability/symbols.ts  # 所有能力键定义 + provide/lookup/defineCapability
+        ├── sandbox.ts             # 统一沙箱代理（SANDBOX_BLOCKED_KEYS / createSafeProxy）
         ├── logger.ts              # Logger 工厂
         ├── http/                  # Request, FileLoader
         └── lazy-loader.ts        # useSyncfusionLoader, useLazyLoader
