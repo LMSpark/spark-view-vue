@@ -57,8 +57,8 @@ describe('createSandbox — compileFunctions', () => {
     const fns = compileFunctions(script, createMockContext())
     expect(fns).toHaveProperty('greet')
     expect(fns).toHaveProperty('add')
-    expect(fns.greet!('World')).toBe('Hello World')
-    expect(fns.add!(2, 3)).toBe(5)
+    expect(fns['greet']!('World')).toBe('Hello World')
+    expect(fns['add']!(2, 3)).toBe(5)
   })
 
   it('应正确提取 async function（注意：with() 内 async function 是块级作用域）', () => {
@@ -81,8 +81,8 @@ describe('createSandbox — compileFunctions', () => {
     const fns = compileFunctions(script, createMockContext())
     expect(fns).toHaveProperty('multiply')
     expect(fns).toHaveProperty('square')
-    expect(fns.multiply!(3, 4)).toBe(12)
-    expect(fns.square!(5)).toBe(25)
+    expect(fns['multiply']!(3, 4)).toBe(12)
+    expect(fns['square']!(5)).toBe(25)
   })
 
   // ── __init__ ────────────────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ describe('createSandbox — compileFunctions', () => {
     `
     const fns = compileFunctions(script, createMockContext())
     expect(fns).toHaveProperty('__init__')
-    expect(fns.__init__!()).toBe('initialized')
+    expect(fns['__init__']!()).toBe('initialized')
   })
 
   it('未定义 __init__ 时不应出现在结果中', () => {
@@ -113,7 +113,7 @@ describe('createSandbox — compileFunctions', () => {
       function quadruple(x) { return double(double(x)) }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(fns.quadruple!(3)).toBe(12)
+    expect(fns['quadruple']!(3)).toBe(12)
   })
 
   // ── 沙箱上下文访问 ─────────────────────────────────────────────────────────
@@ -125,8 +125,8 @@ describe('createSandbox — compileFunctions', () => {
       function callPage() { $page.showMessage('hi', 'info'); return true }
     `
     const fns = compileFunctions(script, ctx)
-    expect(fns.getDataSet!()).toBeNull()
-    expect(fns.callPage!()).toBe(true)
+    expect(fns['getDataSet']!()).toBeNull()
+    expect(fns['callPage']!()).toBe(true)
     expect(ctx.$page.showMessage).toHaveBeenCalledWith('hi', 'info')
   })
 
@@ -137,7 +137,7 @@ describe('createSandbox — compileFunctions', () => {
       function getProto() { return __proto__ }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(fns.getProto!()).toBeUndefined()
+    expect(fns['getProto']!()).toBeUndefined()
   })
 
   it('应拦截 constructor 访问', () => {
@@ -145,7 +145,7 @@ describe('createSandbox — compileFunctions', () => {
       function getCtor() { return constructor }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(fns.getCtor!()).toBeUndefined()
+    expect(fns['getCtor']!()).toBeUndefined()
   })
 
   it('应拦截 globalThis 访问', () => {
@@ -153,7 +153,7 @@ describe('createSandbox — compileFunctions', () => {
       function getGlobal() { return globalThis }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(fns.getGlobal!()).toBeUndefined()
+    expect(fns['getGlobal']!()).toBeUndefined()
   })
 
   it('应拦截 window 访问', () => {
@@ -161,7 +161,7 @@ describe('createSandbox — compileFunctions', () => {
       function getWindow() { return window }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(fns.getWindow!()).toBeUndefined()
+    expect(fns['getWindow']!()).toBeUndefined()
   })
 
   it('应拦截 eval 访问', () => {
@@ -169,7 +169,7 @@ describe('createSandbox — compileFunctions', () => {
       function getEval() { return eval }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(fns.getEval!()).toBeUndefined()
+    expect(fns['getEval']!()).toBeUndefined()
   })
 
   it('应拦截 Function 构造函数访问', () => {
@@ -177,7 +177,7 @@ describe('createSandbox — compileFunctions', () => {
       function getFunc() { return Function }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(fns.getFunc!()).toBeUndefined()
+    expect(fns['getFunc']!()).toBeUndefined()
   })
 
   it('应拦截 process/require 访问（Node.js 环境逃逸）', () => {
@@ -186,8 +186,8 @@ describe('createSandbox — compileFunctions', () => {
       function getRequire() { return require }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(fns.getProcess!()).toBeUndefined()
-    expect(fns.getRequire!()).toBeUndefined()
+    expect(fns['getProcess']!()).toBeUndefined()
+    expect(fns['getRequire']!()).toBeUndefined()
   })
 
   // ── 错误处理 ────────────────────────────────────────────────────────────────
@@ -202,7 +202,7 @@ describe('createSandbox — compileFunctions', () => {
       function willFail() { throw new Error('boom') }
     `
     const fns = compileFunctions(script, createMockContext())
-    expect(() => fns.willFail!()).toThrow('boom')
+    expect(() => fns['willFail']!()).toThrow('boom')
   })
 
   // ── with() 块级作用域限制文档 ─────────────────────────────────────────────
