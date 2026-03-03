@@ -84,5 +84,6 @@ async function fetchRemoteConfig(): Promise<Partial<AppConfig>> {
  * 获取功能开关
  */
 export function isFeatureEnabled(config: AppConfig, feature: keyof AppConfig['features']): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- features 可选，?. 结果可能为 undefined
   return config.features?.[feature] ?? false
 }

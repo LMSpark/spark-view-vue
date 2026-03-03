@@ -44,8 +44,10 @@ export function registerBuiltinPlugins(): void {
       loader: async () => {
         const formCreate = await import('@form-create/element-ui')
         // form-create 导出的是一个对象，需要包装为 Plugin
+        // form-create 可能导出 default 或直接导出插件
+        const plugin = 'default' in formCreate ? formCreate.default : formCreate
         return { 
-          default: (formCreate.default ?? formCreate) as unknown as Plugin
+          default: plugin as unknown as Plugin
         }
       },
       description: '动态表单生成器',

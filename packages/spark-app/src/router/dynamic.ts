@@ -59,7 +59,8 @@ export class DynamicRouter {
     this.router = options.router
     this.configLoader = options.configLoader
 
-    if (!options.pageComponent) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- pageComponent 结构可缺失
+    if (options.pageComponent === undefined || options.pageComponent === null) {
       throw new Error('DynamicRouter: pageComponent 是必需的，请提供有效的 Vue 组件')
     }
 
@@ -134,7 +135,7 @@ export class DynamicRouter {
 
     for (const path of this.registeredRoutes) {
       const route = this.router.getRoutes().find(r => r.path === path)
-      if (route?.name) {
+      if (route?.name !== undefined) {
         this.router.removeRoute(route.name)
       }
     }

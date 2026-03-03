@@ -343,12 +343,11 @@ export class AuthService implements IAuthService {
   destroy(): void {
     this.clearToken()
     this.refreshPromise = null
-    if (this.config) {
-      this.config.onLoginSuccess = undefined
+    // config 已通过 definite assignment assertion 保证存在
+    this.config.onLoginSuccess = undefined
       this.config.onLogoutSuccess = undefined
       this.config.onAuthError = undefined
-      this.config.onTokenRefresh = undefined
-    }
+    this.config.onTokenRefresh = undefined
     this.initialized = false
     authLogger.info('🛑 认证服务已销毁')
   }

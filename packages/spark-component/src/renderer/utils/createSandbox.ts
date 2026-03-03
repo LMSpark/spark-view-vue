@@ -66,11 +66,9 @@ export function compileFunctions(
 
     // 过滤掉 undefined 的函数
     const filteredResult: Record<string, (...args: unknown[]) => unknown> = {}
-    if (result) {
-      for (const key of Object.keys(result)) {
-        if (result[key] !== undefined) {
-          filteredResult[key] = result[key] as (...args: unknown[]) => unknown
-        }
+    for (const key of Object.keys(result)) {
+      if (result[key] !== undefined) {
+        filteredResult[key] = result[key] as (...args: unknown[]) => unknown
       }
     }
 

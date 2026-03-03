@@ -185,6 +185,7 @@ export async function injectServices(config: SparkEJ2GridConfig): Promise<void> 
 
     // 获取 Grid 类并注入服务
     const { Grid } = await import('@syncfusion/ej2-grids')
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Syncfusion Grid.Inject 接受 rest 参数，服务类型无法静态检查
     Grid.Inject(...loadedServices)
 
     console.info(`[Syncfusion] Injected services: ${requiredServices.join(', ')}`)
@@ -229,6 +230,7 @@ export async function injectServicePreset(preset: keyof typeof SERVICE_PRESETS):
     const loadedServices = await Promise.all(servicePromises)
 
     const { Grid } = await import('@syncfusion/ej2-grids')
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Syncfusion Grid.Inject 接受 rest 参数
     Grid.Inject(...loadedServices)
 
     console.info(`[Syncfusion] Injected preset '${preset}': ${services.join(', ')}`)

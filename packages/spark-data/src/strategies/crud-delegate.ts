@@ -251,9 +251,9 @@ export class CrudDelegate {
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
       const result = await svc.batchCreate<IDataRow>(cleanItems, this.getCrudConfig())
-      if (result.success && result.data) {
+      if (result.success && result.data !== undefined) {
         for (const r of result.data.results) {
-          if (r.success && r.data) this.host.appendRow(r.data as IDataRow)  // 每行 appendRow 内部已发射（防抖合并）
+          if (r.success && r.data !== undefined) this.host.appendRow(r.data as IDataRow)  // 每行 appendRow 内部已发射（防抖合并）
         }
       }
       this.fireAfter('batchCreate', items, result)
@@ -278,9 +278,9 @@ export class CrudDelegate {
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
       const result = await svc.batchUpdate<IDataRow>(cleanItems, this.getCrudConfig())
-      if (result.success && result.data) {
+      if (result.success && result.data !== undefined) {
         for (const r of result.data.results) {
-          if (r.success && r.data) {
+          if (r.success && r.data !== undefined) {
             const record = r.data as IDataRow
             const id = this.host.getPkKey(record)
             if (id !== undefined) this.host.updateRowById(id, record)  // updateRowById 内部已发射

@@ -320,7 +320,7 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
     if (response.ok) {
       const data = await response.json() as Record<string, unknown>
       // 运行时校验关键字段存在，防止后端返回非预期结构导致启动崩溃
-      if (!data || typeof data !== 'object' || !data['user'] || !data['tenant'] || !data['env']) {
+      if (data['user'] === undefined || data['tenant'] === undefined || data['env'] === undefined) {
         bootstrapLogger.error('认证响应缺少必需字段 (user/tenant/env)', { data })
         return null
       }

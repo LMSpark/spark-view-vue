@@ -144,7 +144,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     
     // 🎯 将 dataKey 透传到 props — r-table/r-form/r-detail/r-tree 自行 consume(PAGE_DATASET) 解析
     // el-table 保持旧的外部注入模式（原生组件无法使用 useSparkComponent）
-    if (newRule['dataKey'] && isSelfResolvingType(newRule.type as string, registry)) {
+    if (newRule['dataKey'] !== undefined && isSelfResolvingType(newRule.type as string, registry)) {
       setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
     }
 
@@ -160,7 +160,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     }
     
     // 🎯 处理 el-table 的 dataKey 绑定
-    if (newRule.type === 'el-table' && newRule['dataKey']) {
+    if (newRule.type === 'el-table' && newRule['dataKey'] !== undefined) {
       const binding = dataSet
         ? resolveDataKeyBinding(newRule['dataKey'] as string, dataSet)
         : null
@@ -178,7 +178,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
     
     // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定或表单值绑定）
     // 排除已有专门处理逻辑的容器组件，以及 select/radio（其 dataKey 已由上方 options 注入块处理）
-    if (newRule['dataKey'] && !isDataKeyHandledType(newRule.type as string, registry)
+    if (newRule['dataKey'] !== undefined && !isDataKeyHandledType(newRule.type as string, registry)
         && newRule.type !== 'select' && newRule.type !== 'radio') {
       const rawKey = newRule['dataKey'] as string
       let resolved: unknown
@@ -322,9 +322,9 @@ function injectTableEvents(
     if (pk !== undefined) cleanRow = view.rows.find(r => view.getPkKey(r) === pk) ?? null
 
     // 回退方案：form-create 特定——从 args[0] 提取原始数据（仅在 PK 查不到时使用）
-    if (!cleanRow && 'args' in currentRow && Array.isArray((currentRow as { args: unknown }).args)) {
+    if (cleanRow === null && 'args' in currentRow && Array.isArray((currentRow as { args: unknown }).args)) {
       const maybeRow = (currentRow as { args: unknown[] }).args[0]
-      if (maybeRow && typeof maybeRow === 'object') cleanRow = maybeRow as IDataRow
+      if (maybeRow !== null && maybeRow !== undefined && typeof maybeRow === 'object') cleanRow = maybeRow as IDataRow
     }
 
     // 如果 cleanRow 已找到，直接使用；

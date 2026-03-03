@@ -28,6 +28,7 @@ export class ConfigLoader {
    * 获取单例实例
    */
   static getInstance(): ConfigLoader {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/no-unnecessary-condition -- static property 可为 undefined
     if (!ConfigLoader.instance) {
       ConfigLoader.instance = new ConfigLoader()
     }
@@ -105,7 +106,7 @@ export class ConfigLoader {
           configLogger.warn('Failed to load default config from API', { error: String(error) })
           
           // 如果是 remote 模式且没有降级，抛出错误
-          if (this.configSource?.type === 'remote' && !this.configSource?.fallback?.enabled) {
+          if (this.configSource.type === 'remote' && !this.configSource.fallback?.enabled) {
             throw error
           }
         }
@@ -142,7 +143,7 @@ export class ConfigLoader {
       // 尝试从 API 加载
       if (this.configSource?.type === 'remote' || this.configSource?.type === 'hybrid') {
         try {
-          const apiEndpoint = this.configSource.api?.tenantConfigEndpoint?.replace('{tenantId}', tenantId)
+          const apiEndpoint = this.configSource.api?.tenantConfigEndpoint.replace('{tenantId}', tenantId)
           const timeout = this.configSource.api?.timeout ?? 5000
           
           if (apiEndpoint) {
@@ -154,16 +155,18 @@ export class ConfigLoader {
           configLogger.warn(`Failed to load tenant config from API for ${tenantId}`, { error: String(error) })
           
           // 如果是 remote 模式且没有降级，返回 null
-          if (this.configSource?.type === 'remote' && !this.configSource?.fallback?.enabled) {
+          if (this.configSource.type === 'remote' && !this.configSource.fallback?.enabled) {
             return null
           }
         }
       }
       
       // 降级到本地文件
-      if (!config && this.configSource?.fallback?.useLocal) {
-        const localPath = this.configSource.local?.tenantConfigTemplate?.replace('{tenantId}', tenantId)
-          ?? `/config/tenants/tenant-${tenantId}.json`
+      if (!config && this.configSource?.fallback?.useLocal === true) {
+        const template = this.configSource.local?.tenantConfigTemplate
+        const localPath = template !== undefined
+          ? template.replace('{tenantId}', tenantId)
+          : `/config/tenants/tenant-${tenantId}.json`
         
         configLogger.info(`Loading tenant config from local: ${localPath}`)
         try {
@@ -270,9 +273,9 @@ export class ConfigLoader {
     }
     
     // 支持环境变量覆盖 API 地址
-    if (env['VITE_API_BASE_URL']) {
-      config.config.apiBaseUrl = env['VITE_API_BASE_URL'] as string
-      config.pageConfig.apiBaseUrl = env['VITE_API_BASE_URL'] as string
+    if (typeof env['VITE_API_BASE_URL'] === 'string' && env['VITE_API_BASE_URL'] !== '') {
+      config.config.apiBaseUrl = env['VITE_API_BASE_URL']
+      config.pageConfig.apiBaseUrl = env['VITE_API_BASE_URL']
     }
     
     return config

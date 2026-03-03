@@ -36,12 +36,12 @@ interface ElTableComponent extends HTMLElement {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getTableEl(tableName: string, viewId: string, formApi: any): ElTableComponent | null {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/strict-boolean-expressions
   if (!formApi || typeof formApi.el !== 'function') return null
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
   const el = formApi.el(`table_${tableName}_${viewId}`)
-  // duck-typing 守卫：确保返回的组件实例确实具有 el-table 命令式 API
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  // duck-typing 守卒：确保返回的组件实例确实具有 el-table 命令式 API
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/strict-boolean-expressions
   return el && typeof el.setCurrentRow === 'function' ? el as ElTableComponent : null
 }
 
@@ -136,7 +136,7 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
     cleanupSync?.()
     cleanupSync = null
 
-    if (!originalRules.value || !Array.isArray(originalRules.value) || originalRules.value.length === 0) {
+    if (originalRules.value.length === 0) {
       boundRules.value = []
       return
     }

@@ -80,11 +80,12 @@ async function startApp() {
         if (!isPageCache) return false
         try {
           const cached = localStorage.getItem(k)
-          if (!cached) return false
-          const parsed = JSON.parse(cached) as { data?: unknown }
-          if (!parsed || typeof parsed !== 'object') return true  // 格式不合法
+          if (cached === null) return false
+          const parsed: unknown = JSON.parse(cached)
+          if (parsed === null || typeof parsed !== 'object') return true  // 格式不合法
+          const obj = parsed as { data?: unknown }
           // :raw 槽位必须存字符串（原始文件内容），非字符串说明旧版把对象存进去了
-          if (k.endsWith(':raw') && typeof parsed.data !== 'string') return true
+          if (k.endsWith(':raw') && typeof obj.data !== 'string') return true
         } catch { return true /* JSON.parse 失败 → 强制清除 */ }
         return false
       })
@@ -118,10 +119,12 @@ async function startApp() {
     const plugins = pluginInstances.map(p => p.plugin)
     
     // 加载插件样式
-    if (appConfig.plugins['element-plus']) {
+    const epConfig = appConfig.plugins['element-plus']
+    if (epConfig === true || (typeof epConfig === 'object' && epConfig.enabled === true)) {
       await import('element-plus/dist/index.css')
     }
-    if (appConfig.plugins['vxe-table']) {
+    const vxeConfig = appConfig.plugins['vxe-table']
+    if (vxeConfig === true || (typeof vxeConfig === 'object' && vxeConfig.enabled === true)) {
       await import('vxe-table/lib/style.css')
     }
     
@@ -220,6 +223,7 @@ async function startApp() {
         }
         
         for (const [name, component] of Object.entries(components)) {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/strict-boolean-expressions -- 防御性检查：确保动态导入成功
           if (!component) {
             startupLogger.error(`❌ 组件导入失败: ${name}`)
             throw new Error(`组件导入失败: ${name}`)
@@ -307,8 +311,8 @@ async function startApp() {
         
         // 统计路由信息
         const allRoutes = context.router.getRoutes()
-        const vueRoutes = allRoutes.filter(r => r.meta?.['type'] === 'vue-component')
-        const configRoutes = allRoutes.filter(r => r.meta?.['type'] !== 'vue-component')
+        const vueRoutes = allRoutes.filter(r => r.meta['type'] === 'vue-component')
+        const configRoutes = allRoutes.filter(r => r.meta['type'] !== 'vue-component')
         
         startupLogger.info('📊 路由统计', {
           总路由数: allRoutes.length,

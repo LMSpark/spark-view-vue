@@ -81,14 +81,16 @@ export function setupRouterGuards(
   // 全局后置守卫
   router.afterEach((to) => {
     // 更新页面标题
-    if (to.meta['title'] && typeof document !== 'undefined') {
-      document.title = `${to.meta['title']} - SPARK`
+    const title = to.meta['title']
+    if (title !== undefined && typeof document !== 'undefined') {
+      document.title = `${String(title)} - SPARK`
     }
   })
 
   // 路由错误处理
-  router.onError((error) => {
-    routerLogger.error('路由错误', error)
+  router.onError((error: unknown) => {
+    const logError = error instanceof Error ? error : { error: String(error) }
+    routerLogger.error('路由错误', logError)
   })
 
   routerLogger.info('路由守卫已设置', options as Record<string, unknown>)

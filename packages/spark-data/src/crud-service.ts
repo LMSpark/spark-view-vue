@@ -530,7 +530,7 @@ export class CrudService {
 
     // 使用统一的 URL 模板解析（支持 :param 和 {param} 两种风格）
     let url = endpoint.url
-    if (endpoint.pathParams && data && typeof data === 'object') {
+    if (endpoint.pathParams !== undefined && data !== null && data !== undefined && typeof data === 'object') {
       const pathData: Record<string, unknown> = {}
       for (const param of endpoint.pathParams) {
         const value = (data as Record<string, unknown>)[param]
@@ -572,7 +572,7 @@ export class CrudService {
    * @returns 数据项数量
    */
   private getResultCount(result: unknown): number {
-    if (result && typeof result === 'object' && 'rows' in result) {
+    if (result !== null && result !== undefined && typeof result === 'object' && 'rows' in result) {
       const rows = (result as { rows?: unknown[] }).rows
       return Array.isArray(rows) ? rows.length : 0
     }

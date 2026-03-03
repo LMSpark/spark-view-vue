@@ -82,7 +82,7 @@ export namespace SparkData {
     api?: CrudApi | string | boolean
   }): DataTable {
     const table = new DataTable(config.tableName, config.columns)
-    if (config.api) {
+    if (config.api !== undefined && config.api !== false) {
       table.setApi(config.api)
     }
     return table
@@ -168,8 +168,8 @@ export namespace SparkData {
       parentTable,
       childTable,
       childField,
-      ...(options?.parentField ? { parentField: options.parentField } : {}),
-      ...(options?.dependencyType ? { dependencyType: options.dependencyType } : {}),
+      ...(options?.parentField !== undefined ? { parentField: options.parentField } : {}),
+      ...(options?.dependencyType !== undefined ? { dependencyType: options.dependencyType } : {}),
       ...(options?.autoLoad !== undefined ? { autoLoad: options.autoLoad } : {}),
     }
   }

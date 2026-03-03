@@ -79,7 +79,8 @@ export function validateRuleConfig(config: RuleConfig): ValidationError[] {
 export function validatePageDataConfig(config: PageDataConfig): ValidationError[] {
   const errors: ValidationError[] = []
 
-  if (!config || typeof config !== 'object') {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (config === null || typeof config !== 'object') {
     errors.push({
       field: 'root',
       message: '页面数据必须是 DataSet 实例',
