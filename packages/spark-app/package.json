@@ -28,9 +28,9 @@
     }
   },
   "dependencies": {
-    "@spark-view/spark-component": "^0.4.2",
-    "@spark-view/spark-page-config": "^0.3.3",
-    "@spark-view/spark-utils": "^0.4.1"
+    "@spark-view/spark-component": "workspace:*",
+    "@spark-view/spark-page-config": "workspace:*",
+    "@spark-view/spark-utils": "workspace:*"
   },
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@types/node": "^18.19.130",
+    "@types/node": "^20.19.0",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
     "eslint": "^10.0.2",

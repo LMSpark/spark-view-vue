@@ -116,9 +116,10 @@ export class PageConfigLoader implements ConfigLoader {
     if (this.opts.source === 'local') {
       return this.localCssResult(pageId)
     }
-    // remote 或 hybrid: 先尝试远程
+    // remote 或 hybrid: 先尝试远程（CSS 是纯文本，使用 text 模式加载）
     try {
-      return await this.remoteResult<PageCssConfig>(`/page/${pageId}/css`)
+      const css = await this.remoteCss(pageId)
+      return { success: true, data: css, source: 'remote', timestamp: Date.now() }
     } catch (e) {
       if (this.opts.source === 'remote') throw e
       pageLogger.debug('远程样式不可用，降级到本地', { pageId })
@@ -302,6 +303,23 @@ export class PageConfigLoader implements ConfigLoader {
 
     const text = await response.text()
     pageLogger.debug('远程脚本加载成功', { pageId, size: text.length })
+    return text
+  }
+
+  /** 从远程加载 CSS 文本（失败时抛出）。CSS 是纯文本，不走 JSON 解析。 */
+  private async remoteCss(pageId: string): Promise<PageCssConfig> {
+    const url = `${this.opts.apiBaseUrl}/page/${pageId}/css`
+    pageLogger.debug('加载远程样式', { pageId, url })
+
+    const response = await globalThis.fetch(url)
+    if (!response.ok) {
+      const msg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
+      pageLogger.error('远程样式加载失败', { pageId, status: response.status })
+      throw new Error(`${msg}: ${url}`)
+    }
+
+    const text = await response.text()
+    pageLogger.debug('远程样式加载成功', { pageId, size: text.length })
     return text
   }
 

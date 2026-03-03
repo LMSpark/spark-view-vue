@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿ 
 import { describe, it, expect } from 'vitest'
 import { createComponentRegistry, createSparkPlugin, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
 

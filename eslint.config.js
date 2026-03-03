@@ -11,14 +11,6 @@ export default [
       'packages/**/*.d.ts',
       'packages/**/dist/**',  // 排除所有dist目录
       'API_SIMPLIFICATION_EXAMPLE.ts',
-      'packages/spark-component/tests/**',
-      'packages/**/tests/**',
-      'packages/**/src/tests/**',
-      'tests/**',
-      '**/*.test.ts',          // 文件名兜底：任意目录下的测试文件
-      '**/*.spec.ts',
-      '**/*.stories.ts',       // Storybook stories 非产品代码
-      '**/*.stories.tsx',
       'tools/**',
       'examples/**',
       '**/*.example.ts',
@@ -185,7 +177,13 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off'
+      '@typescript-eslint/no-unsafe-return': 'off',
+      // 测试中 mock resolver 常为 async 但不含 await
+      '@typescript-eslint/require-await': 'off',
+      // 测试中 import 既用作值又用作类型很常见
+      '@typescript-eslint/consistent-type-imports': 'off',
+      // 测试代码可读性优先
+      '@typescript-eslint/prefer-optional-chain': 'off',
     }
   },
   // ─── Stories 文件宽松规则（必须在 TypeScript files 块之后） ──────────────────
@@ -194,7 +192,8 @@ export default [
     rules: {
       'no-restricted-imports': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off'
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
     }
   }
 ]

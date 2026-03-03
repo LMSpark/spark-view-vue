@@ -1356,7 +1356,7 @@ export class DataView implements IDataSource {
       return {
         success: true,
         message: '没有待提交的变更',
-        data: { createdCount: 0, savedCount: 0, deletedCount: 0, failedCount: 0, failedIds: [] },
+        data: { createdCount: 0, savedCount: 0, deletedCount: 0, failedCount: 0, failedIds: [], failedErrors: {} },
       }
     }
 
@@ -1364,6 +1364,7 @@ export class DataView implements IDataSource {
     let savedCount = 0
     let deletedCount = 0
     const failedIds: Array<string | number> = []
+    const failedErrors: Record<string | number, string> = {}
 
     // 构建 pk → row 索引，避免循环内 O(n) rows.find（整体从 O(n×m) → O(n+m)）
     const pkToRow = new Map<string | number, IDataRow>()
@@ -1395,9 +1396,11 @@ export class DataView implements IDataSource {
           createdCount++
         } else {
           failedIds.push(tempId)
+          failedErrors[tempId] = result.message ?? '创建失败'
         }
-      } catch {
+      } catch (err) {
         failedIds.push(tempId)
+        failedErrors[tempId] = err instanceof Error ? err.message : String(err)
       }
     }
 
@@ -1421,9 +1424,11 @@ export class DataView implements IDataSource {
           savedCount++
         } else {
           failedIds.push(id)
+          failedErrors[id] = result.message ?? '更新失败'
         }
-      } catch {
+      } catch (err) {
         failedIds.push(id)
+        failedErrors[id] = err instanceof Error ? err.message : String(err)
       }
     }
 
@@ -1443,9 +1448,11 @@ export class DataView implements IDataSource {
           deletedCount++
         } else {
           failedIds.push(id)
+          failedErrors[id] = result.message ?? '删除失败'
         }
-      } catch {
+      } catch (err) {
         failedIds.push(id)
+        failedErrors[id] = err instanceof Error ? err.message : String(err)
       }
     }
 
@@ -1455,7 +1462,7 @@ export class DataView implements IDataSource {
       message: failedCount === 0
         ? `新增 ${createdCount} 行，更新 ${savedCount} 行，删除 ${deletedCount} 行`
         : `成功：新增 ${createdCount}，更新 ${savedCount}，删除 ${deletedCount}；失败 ${failedCount} 行`,
-      data: { createdCount, savedCount, deletedCount, failedCount, failedIds },
+      data: { createdCount, savedCount, deletedCount, failedCount, failedIds, failedErrors },
     }
   }
 

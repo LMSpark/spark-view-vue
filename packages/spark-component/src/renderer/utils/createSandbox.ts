@@ -13,6 +13,9 @@ const BLOCKED_KEYS = new Set<string | symbol>([
   'globalThis', 'window', 'self', 'top', 'parent', 'frames',
   'document', 'location', 'eval', 'Function',
   'process', 'require', 'module', 'exports', 'global',
+  'setTimeout', 'setInterval', 'setImmediate',
+  'fetch', 'XMLHttpRequest', 'WebSocket', 'importScripts',
+  'Proxy', 'Reflect',
 ])
 
 /**
