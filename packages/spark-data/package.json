@@ -28,8 +28,7 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
   },
   "dependencies": {
-    "@spark-view/spark-utils": "^0.4.0",
-    "mitt": "^3.0.1"
+    "@spark-view/spark-utils": "^0.4.0"
   },
   "postcss": {},
   "devDependencies": {
@@ -37,9 +36,9 @@
     "@types/node": "^18.19.130",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
-    "eslint": "^9.39.2",
-    "typescript": "~5.8.2",
+    "eslint": "^10.0.2",
+    "typescript": "~5.9.3",
     "vite": "^7.3.1",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.18"
   }
 }

@@ -33,6 +33,9 @@ export interface RequestConfig {
   /** 重试延迟（ms，默认 1000） */
   retryDelay?: number
 
+  /** AbortSignal —— 用于取消请求（组件卸载时中止在途请求） */
+  signal?: AbortSignal
+
   /** 自定义元数据（透传给拦截器） */
   meta?: Record<string, unknown>
 }

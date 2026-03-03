@@ -169,14 +169,14 @@ async function loadConfigFromUrl(url: string, options: JsonRendererOptions): Pro
   // ==================== 生命周期 ====================
 
   onMounted(() => {
-    void loadConfig()
+    loadConfig().catch(() => {})
   })
 
   // 监听 props 变化，重新加载
   watch(
     () => [props.configUrl, props.config] as const,
     () => {
-      void loadConfig()
+      loadConfig().catch(() => {})
     },
     { deep: true }
   )

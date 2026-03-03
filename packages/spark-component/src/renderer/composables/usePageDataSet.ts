@@ -50,6 +50,9 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
   }
 
   const clearDataSet = () => {
+    if (dataSet) {
+      dataSet.destroy()
+    }
     dataSet = null
   }
 

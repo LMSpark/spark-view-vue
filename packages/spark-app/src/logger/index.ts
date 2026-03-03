@@ -213,7 +213,10 @@ class AppLogger {
     const formattedMessage = this.formatMessage(message, EMOJI_ICONS['success'])
     const args = meta ? [formattedMessage, meta] : [formattedMessage]
     console.info(...args)
-    for (const t of this.transports) void t.send('info', message, meta)
+    for (const t of this.transports) {
+      try { void t.send('info', message, meta) }
+      catch (error) { console.error('日志传输失败', error) }
+    }
   }
 }
 

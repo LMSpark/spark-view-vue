@@ -1,4 +1,4 @@
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, toErrorMessage } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding } from '@spark-view/spark-data'
@@ -9,10 +9,23 @@ const pageLogger = Logger('PageRenderer')
 /**
  * dataKey 自解析组件类型回退默认列表
  *
- * 当组件没有在注册表中声明 meta.dataKey 时，回退到此硬编码列表。
- * 尶内置 SPARK r-* 组件实现后，将在注册时明硬声明 meta.dataKey: 'self-resolve'，则可移除此列表。
+ * **技术债（临时桥梁）**：当组件没有在注册表中声明 `meta.dataKey` 时，回退到此硬编码列表。
+ * 待内置 SPARK r-* 组件实现后，将在注册时声明 `meta.dataKey: 'self-resolve'`，届时可移除此列表。
+ *
+ * ⚠️ 同步约束：此 Set 必须与实际内置组件列表同步。新增 r-* 组件时：
+ * 1. 优先在组件注册时声明 `meta: { dataKey: 'self-resolve' }`
+ * 2. 若组件尚未实现注册逻辑，在此 Set 中添加条目作为过渡
+ *
+ * @see isSelfResolvingType — 查询逻辑（注册表优先，此 Set 为后备）
  */
 const _SELF_RESOLVING_FALLBACK = new Set(['r-table', 'r-form', 'r-detail', 'r-tree'])
+
+/** 表单元素类型集合（持有 modelValue 的组件）——新增表单组件时在此添加 */
+const FORM_ELEMENT_TYPES = new Set([
+  'el-input', 'el-textarea', 'el-input-number', 'el-select',
+  'el-radio-group', 'el-checkbox-group', 'el-switch', 'el-slider',
+  'el-rate', 'el-date-picker', 'el-time-picker', 'el-color-picker',
+])
 
 /**
  * 检查组件是否为自解析类型（优先查询注册表 meta，回退到核心列表）
@@ -182,20 +195,7 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
         // 表单元素（持有 modelValue 的组件）：绑定到 props.modelValue
         // 注意：el-radio-group / el-checkbox-group / el-select 等如果绑定到 children 会破坏子节点结构
         const isFormElement =
-          typeof newRule.type === 'string' && (
-            newRule.type === 'el-input' ||
-            newRule.type === 'el-textarea' ||
-            newRule.type === 'el-input-number' ||
-            newRule.type === 'el-select' ||
-            newRule.type === 'el-radio-group' ||
-            newRule.type === 'el-checkbox-group' ||
-            newRule.type === 'el-switch' ||
-            newRule.type === 'el-slider' ||
-            newRule.type === 'el-rate' ||
-            newRule.type === 'el-date-picker' ||
-            newRule.type === 'el-time-picker' ||
-            newRule.type === 'el-color-picker'
-          )
+          typeof newRule.type === 'string' && FORM_ELEMENT_TYPES.has(newRule.type)
         if (isFormElement) {
           setRuleProp(newRule, 'modelValue', resolved)
         } else {
@@ -263,7 +263,7 @@ function createFunctionCaller(
       pageLogger.error('函数执行错误', { 
         functionName, 
         args, 
-        error: error instanceof Error ? error.message : String(error)
+        error: toErrorMessage(error)
       })
       throw error
     }

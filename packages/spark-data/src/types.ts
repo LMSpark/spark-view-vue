@@ -729,6 +729,13 @@ export interface IDataSet {
    * 渲染层构建 DataSet 后调用；业务脚本无需手动编写加载代码。
    */
   triggerAutoLoad(): void
+  /**
+   * 销毁 DataSet 及其所有 DataTable/DataView 的资源。
+   * 清理所有事件订阅、委托、共享 HTTP 客户端引用。
+   */
+  destroy(): void
+  /** 数据集是否已被销毁 */
+  readonly destroyed: boolean
 }
 
 // ===== CRUD服务相关类型 =====

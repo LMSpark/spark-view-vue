@@ -13,7 +13,7 @@
     "sourceMap": true,
     "noEmit": false,
     "emitDeclarationOnly": true,
-    "noEmitOnError": false,
+    "noEmitOnError": true,
     "removeComments": false
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],

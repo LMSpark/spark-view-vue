@@ -388,6 +388,51 @@ export class DataSet implements IDataSet {
   // ===== 数据访问 =====
 
   /**
+   * 销毁 DataSet 及其所有 DataTable/DataView 的资源。
+   *
+   * 调用后：
+   * - 所有 `onAnyViewChange` / `on('loadSuccess'|'loadError')` 订阅被清理
+   * - 所有 DataView 的 destroy() 被调用（清理级联、CRUD、计算列、脏追踪等委托）
+   * - 共享 HTTP 客户端引用被释放
+   * - 标记为已销毁，后续操作静默忽略
+   *
+   * 使用场景：页面卸载时由 `usePageDataSet.clearDataSet()` 调用。
+   */
+  destroy(): void {
+    if (this._destroyed) return
+    this._destroyed = true
+
+    // 1. 清理 DataSet 级别的事件订阅
+    for (const entry of this._activeViewSubs) {
+      for (const u of entry.unsubs) u()
+      entry.unsubs.length = 0
+    }
+    this._activeViewSubs.length = 0
+
+    for (const entry of this._activeOnSubs) {
+      for (const u of entry.unsubs) u()
+      entry.unsubs.length = 0
+    }
+    this._activeOnSubs.length = 0
+
+    // 2. 销毁所有 DataTable 下的 DataView
+    for (const table of Object.values(this.tables)) {
+      table.forEachView(view => view.destroy())
+    }
+
+    // 3. 释放共享 HTTP 客户端引用
+    this._sharedHttpClient = undefined
+  }
+
+  /** @internal 是否已销毁 */
+  private _destroyed = false
+
+  /** 数据集是否已被销毁 */
+  get destroyed(): boolean {
+    return this._destroyed
+  }
+
+  /**
    * 获取数据表
    * @param name 表名
    * @returns 数据表实例

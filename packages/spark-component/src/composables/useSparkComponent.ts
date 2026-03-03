@@ -195,6 +195,10 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     return emitter
   }
 
+  // ── 事件订阅追踪（防止内存泄漏） ──
+
+  const _eventSubscriptions: Array<{ emitter: IEventEmitter; event: string; handler: (...args: unknown[]) => void }> = []
+
   // ── 能力消费 ──
 
   function consume(name: string | symbol): unknown {
@@ -214,6 +218,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
     if (emitter) {
       for (const [event, handler] of Object.entries(handlers)) {
         emitter.on(event, handler)
+        _eventSubscriptions.push({ emitter, event, handler })
       }
       return emitter
     }
@@ -250,6 +255,12 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   }
 
   const destroy = () => {
+    // 清理所有通过 consumeEvents 注册的事件监听（防止内存泄漏）
+    for (const sub of _eventSubscriptions) {
+      sub.emitter.off(sub.event, sub.handler)
+    }
+    _eventSubscriptions.length = 0
+
     if (parentContext?.children) {
       const idx = parentContext.children.indexOf(context)
       if (idx !== -1) parentContext.children.splice(idx, 1)

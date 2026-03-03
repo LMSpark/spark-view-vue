@@ -413,7 +413,7 @@ export class AuthService implements IAuthService {
    */
   private ensureInitialized(): void {
     if (!this.initialized) {
-      // 自动初始化使用默认配置
+      // 自动初始化：initialize() 内部会对每个字段应用 ?? 默认值
       this.initialize({
         apiEndpoints: undefined,
         tokenStorage: undefined,
@@ -428,7 +428,7 @@ export class AuthService implements IAuthService {
         onLoginSuccess: undefined,
         onLogoutSuccess: undefined,
         onAuthError: undefined,
-        onTokenRefresh: undefined
+        onTokenRefresh: undefined,
       })
     }
   }

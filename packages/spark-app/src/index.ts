@@ -18,6 +18,7 @@ export { bootstrap } from './bootstrap'
 export type { BootstrapOptions } from './types'
 
 // 插件管理系统
+/** @deprecated 使用 `createPluginRegistry()` 或 `getGlobalPluginRegistry()` 替代直接使用 PluginRegistry 类 */
 export {
   PluginRegistry,
   PluginManager,
@@ -37,6 +38,11 @@ export type {
 } from './plugins'
 
 // 认证模块
+/**
+ * @deprecated `authService` 单例将在未来版本移除。
+ * 推荐通过 `bootstrap({ authenticate })` 注入认证逻辑，
+ * 或在 `APP_SERVICES` 能力中提供自定义 auth 接口。
+ */
 export {
   AuthService,
   authService,

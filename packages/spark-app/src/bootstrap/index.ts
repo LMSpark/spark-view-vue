@@ -55,6 +55,7 @@ import { createLogger } from '../logger'
 import { loadConfig } from '../config'
 import { AuthService } from '../auth'
 import type { AuthConfig } from '../auth/types'
+import { toErrorMessage } from '@spark-view/spark-utils'
 
 /**
  * =============================================================================
@@ -309,13 +310,17 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
   }
 
   // 生产环境：从后端 API 获取用户信息
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10_000)
   try {
-    const response = await fetch('/api/auth/me')
+    const response = await fetch('/api/auth/me', { signal: controller.signal })
     if (response.ok) {
       return await response.json() as AppContext
     }
-  } catch {
-    // 网络错误或认证失败，静默处理
+  } catch (error) {
+    bootstrapLogger.warn('认证请求失败', { error: toErrorMessage(error) })
+  } finally {
+    clearTimeout(timeoutId)
   }
 
   return null
