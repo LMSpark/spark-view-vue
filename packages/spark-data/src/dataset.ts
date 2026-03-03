@@ -143,7 +143,7 @@ export class DataSet implements IDataSet {
 
     // 构建表实例并建立引用链（DataSet → DataTable → DataView）
     this.tables = {}
-    const tableDefs = config.tables ?? {}
+    const tableDefs = config.tables
     for (const [name, td] of Object.entries(tableDefs)) {
       // P1-1: tableName 从对象 key 推断（用户可省略冗余的 tableName 字段）
       if (!td.tableName) {
@@ -521,7 +521,8 @@ export class DataSet implements IDataSet {
     // 情形 1：rawPageData.dataset.tables 存在 → 标准 DataSet 配置，直接透传
     const datasetCandidate = rawPageData['dataset']
     if (
-      datasetCandidate &&
+      datasetCandidate !== null &&
+      datasetCandidate !== undefined &&
       typeof datasetCandidate === 'object' &&
       'tables' in (datasetCandidate as Record<string, unknown>)
     ) {
@@ -572,7 +573,7 @@ export class DataSet implements IDataSet {
       }
 
       // 对象 → 单行表
-      if (val && typeof val === 'object') {
+      if (val !== null && val !== undefined && typeof val === 'object') {
         const obj = val as Record<string, unknown>
         const columns = inferColumnsFromRecord(obj)
         const row = obj as IDataRow

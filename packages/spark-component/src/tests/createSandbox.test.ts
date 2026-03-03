@@ -19,7 +19,7 @@ import type { PageContext } from '../renderer/types'
 function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
   return {
     $api: null,
-    $route: { path: '/', params: {}, query: {}, name: '' },
+    $route: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
     $el: () => null,
     $query: () => null,
     $queryAll: () => document.querySelectorAll('.noop'),

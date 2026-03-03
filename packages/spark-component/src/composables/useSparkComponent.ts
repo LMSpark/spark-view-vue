@@ -239,7 +239,8 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
   function getComponent(type: string): unknown {
     if (!registry) return undefined
     const def = registry.get(type)
-    return def?.component ? markRaw(def.component) : undefined
+    if (def?.component === undefined || def.component === null) return undefined
+    return typeof def.component === 'object' ? markRaw(def.component) : def.component
   }
 
   function isComponentRegistered(type: string): boolean {

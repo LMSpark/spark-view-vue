@@ -219,7 +219,7 @@ export class PluginManager {
           priority: normalized.priority ?? 100
         }
       })
-      .filter(item => item.config.enabled && item.loader)
+      .filter(item => item.config.enabled === true && item.loader !== undefined)
       .sort((a, b) => a.priority - b.priority)
     
     // 2. 并行加载插件（按优先级分批）

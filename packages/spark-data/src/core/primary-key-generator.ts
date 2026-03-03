@@ -50,7 +50,7 @@ export interface PrimaryKeyGeneratorConfig {
  */
 function generateUUID(): string {
   // 优先使用原生 crypto.randomUUID()（浏览器 + Node.js 19+）
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID()
   }
 
@@ -111,6 +111,7 @@ export class PrimaryKeyGenerator {
         }
         const result = this.config.generator(row, existingRows)
         // 如果返回对象，提取对应字段
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (typeof result === 'object' && result !== null) {
           return result[field] ?? this.autoIncrementCounter++
         }

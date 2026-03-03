@@ -174,6 +174,8 @@ export function usePageRenderer(
           inputPlaceholder:  placeholder,
           inputValue:        defaultValue,
         })
+        // ElMessageBox.prompt 结果类型是 MessageBoxData，需要运行时检查
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return typeof result === 'object' && result !== null && 'value' in result
           ? (result as { value: string }).value
           : null
@@ -420,7 +422,7 @@ export function usePageRenderer(
    * 6. form-create mounted 钩子 → 执行 __init__（$api 此时已就绪）
    */
   async function applyConfig(pageId: string, config: PageConfig): Promise<void> {
-    originalRules.value = (config.rule ?? []) as unknown as Rule[]
+    originalRules.value = config.rule as unknown as Rule[]
     if (config.css) setScopedCss(config.css)
 
     initDataSet(config.data)

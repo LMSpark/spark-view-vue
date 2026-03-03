@@ -99,7 +99,7 @@ export function resolveApi(
   api: CrudApi | string | boolean | undefined,
   tableName: string,
 ): CrudApi | undefined {
-  if (!api) return undefined
+  if (api === undefined || api === false || api === '') return undefined
   if (typeof api === 'object') return api
   return expandApiShorthand(typeof api === 'string' ? api : toApiBasePath(tableName))
 }

@@ -429,7 +429,7 @@ export class SelectionDelegate {
    */
   get value(): string {
     const host = this.host
-    if (host.valueField) {
+    if (host.valueField !== undefined) {
       const rows = host.selectedRows
       if (Array.isArray(host.valueField)) {
         const fields = host.valueField
@@ -467,7 +467,7 @@ export class SelectionDelegate {
       : [value.trim()].filter(s => s !== '')
     if (tokens.length === 0) { this.clearSelectedRows(); return }
 
-    if (host.valueField) {
+    if (host.valueField !== undefined) {
       if (Array.isArray(host.valueField)) {
         const fields = host.valueField
         const tokenSet = new Set(tokens)

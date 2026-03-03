@@ -60,9 +60,9 @@ export class DataTable {
    * CrudService 属于模型层（DataTable），多个 DataView 共享同一实例。
    */
   get crudService(): CrudService | undefined {
-    if (!this._crudService && this.api) {
+    if (this._crudService === undefined && this.api !== undefined) {
       // M5: 若 DataSet 提供共享 httpClient，所有表的 CrudService 复用同一 Request 实例
-      const sharedClient = this.dataSet?._sharedHttpClient
+      const sharedClient = this.dataSet._sharedHttpClient
       this._crudService = createCrudService(this.api, sharedClient)
     }
     return this._crudService
@@ -159,11 +159,9 @@ export class DataTable {
       // 始终设置 dataTable 引用（使 view.primaryKey getter 可访问列定义）
       view.dataTable = this
       // 视图管理职责：设置级联
-      if (this.dataSet) {
-        view.setupCascade()
-        // Phase 6 M2: 动态视图自动订阅——通知 DataSet 将活跃的 on/onAnyViewChange 绑定到新视图
-        this.dataSet._subscribeNewView(view)
-      }
+      view.setupCascade()
+      // Phase 6 M2: 动态视图自动订阅——通知 DataSet 将活跃的 on/onAnyViewChange 绑定到新视图
+      this.dataSet._subscribeNewView(view)
       this.views[viewId] = view
     }
     return this.views[viewId]
@@ -268,7 +266,7 @@ export class DataTable {
    * 从 ITableMetadata 恢复 DataTable（重建 default 视图状态和命名视图）
    */
   static fromTableData(data: ITableMetadata): DataTable {
-    const t = new DataTable(data.tableName, data.columns ?? [])
+    const t = new DataTable(data.tableName, data.columns)
     // P2: API 简写展开（字符串 / true → CrudApi 对象）
     if (data.api !== undefined) {
       const resolved = resolveApi(data.api, data.tableName)

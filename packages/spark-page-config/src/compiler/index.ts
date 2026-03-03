@@ -36,7 +36,7 @@ export function compileRule(raw: string): RuleConfig[] {
 
 export function normalizeRuleNode(node: unknown): RuleConfig {
   if (typeof node === 'string') return { type: node }
-  if (!node || typeof node !== 'object') return { type: String(node) }
+  if (node === null || node === undefined || typeof node !== 'object') return { type: String(node) }
   // 先把 children 从展开中排除，避免 null 被带入结果
   const { children: rawChildren, ...rest } = node as Record<string, unknown>
   const children =

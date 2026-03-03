@@ -30,7 +30,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
       timestamp: Date.now()
     }
     
-    if (instance?.$options?.name !== undefined) {
+    if (instance?.$options.name !== undefined) {
       context.source = instance.$options.name
     }
 
@@ -55,7 +55,9 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
   // Promise 未捕获错误
   if (typeof window !== 'undefined') {
     const rejectionHandler = (event: PromiseRejectionEvent) => {
-      errorLogger.error('[Unhandled Promise]', event.reason)
+      // event.reason 类型为 any，转为 Error 或字符串记录
+      const reason = event.reason instanceof Error ? event.reason : { reason: String(event.reason) }
+      errorLogger.error('[Unhandled Promise]', reason)
       event.preventDefault()
       
       if (onError) {
@@ -152,8 +154,8 @@ export function createErrorBoundary(fallbackRender?: (error: Error) => unknown) 
       if (this.error) {
         return fallbackRender
           ? fallbackRender(this.error)
-          : this.$slots['fallback']
-          ? this.$slots['fallback']?.()
+          : this.$slots['fallback'] !== undefined
+          ? this.$slots['fallback']()
           : null
       }
       return this.$slots['default']?.()

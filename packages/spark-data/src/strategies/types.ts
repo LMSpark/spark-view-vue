@@ -230,7 +230,7 @@ export function createCrudLifecycleEvent(
   operation: CrudOperation,
   phase: 'before' | 'after',
   data: unknown,
-  result?: CrudResult | undefined,
+  result?: CrudResult,
 ): CrudLifecycleEvent {
   const event: CrudLifecycleEvent = {
     operation,

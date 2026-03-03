@@ -366,7 +366,8 @@ export class FileLoader {
     let entry: CacheEntry<T> | null = null
 
     if (this.opts.storage === 'memory') {
-      entry = (this.memCache.get(k) as CacheEntry<T>) ?? null
+      const cached = this.memCache.get(k) as CacheEntry<T> | undefined
+      entry = cached ?? null
     } else {
       try {
         const raw = this.storage?.getItem(k)
@@ -383,7 +384,7 @@ export class FileLoader {
     // 滑动过期：基于 expirationLevel 检查闲置时间
     const now = Date.now()
     const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
-    const maxAge = this.getMaxAgeForLevel(entry.expirationLevel ?? this.opts.defaultExpirationLevel)
+    const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
     
     if (maxAge !== Infinity && idleTime > maxAge) {
       const tier = this.opts.expirationTiers.find(t => t.level === entry.expirationLevel)
@@ -424,12 +425,13 @@ export class FileLoader {
   /** 只读内存缓存，跳过 localStorage（适用于 DataSet 等不可序列化的 transform 结果） */
   private readEntryMem<T>(key: string): CacheEntry<T> | null {
     const k = this.opts.cachePrefix + key
-    const entry = (this.memCache.get(k) as CacheEntry<T>) ?? null
-    if (!entry) return null
+    const cached = this.memCache.get(k) as CacheEntry<T> | undefined
+    const entry = cached ?? null
+    if (entry === null) return null
 
     const now = Date.now()
     const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
-    const maxAge = this.getMaxAgeForLevel(entry.expirationLevel ?? this.opts.defaultExpirationLevel)
+    const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
     if (maxAge !== Infinity && idleTime > maxAge) {
       this.memCache.delete(k)
       return null
@@ -484,7 +486,7 @@ export class FileLoader {
       for (const [key, entry] of this.memCache.entries()) {
         if (!key.startsWith(prefix)) continue
         const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
-        const maxAge = this.getMaxAgeForLevel(entry.expirationLevel ?? this.opts.defaultExpirationLevel)
+        const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
         if (maxAge !== Infinity && idleTime > maxAge) {
           this.memCache.delete(key)
           cleaned++
@@ -501,7 +503,7 @@ export class FileLoader {
           if (!raw) continue
           const entry = JSON.parse(raw) as CacheEntry<unknown>
           const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
-          const maxAge = this.getMaxAgeForLevel(entry.expirationLevel ?? this.opts.defaultExpirationLevel)
+          const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
           if (maxAge !== Infinity && idleTime > maxAge) {
             storage.removeItem(key)
             cleaned++

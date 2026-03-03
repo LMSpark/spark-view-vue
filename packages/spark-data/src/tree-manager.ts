@@ -322,7 +322,8 @@ export class TreeManager {
       : this.getRoots()
 
     for (const rootNode of rootNodes) {
-      if (rootNode) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- rootNode 可能为 undefined（当 cache[rootId] 不存在时）
+      if (rootNode !== undefined) {
         const nestedRoot = this._buildSubTreeSafe(rootNode.id, visited, 0)
         if (nestedRoot) {
           roots.push(nestedRoot)

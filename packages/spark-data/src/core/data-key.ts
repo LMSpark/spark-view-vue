@@ -142,7 +142,7 @@ function extractFieldPath(value: unknown, fieldPath: string): unknown {
   let current: unknown = value
 
   for (const part of pathParts) {
-    if (current && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, part)) {
+    if (current !== null && current !== undefined && typeof current === 'object' && Object.prototype.hasOwnProperty.call(current, part)) {
       current = (current as Record<string, unknown>)[part]
     } else {
       return undefined
@@ -303,7 +303,7 @@ export function resolveDataKeyBinding(
   }
 
   // 如果有字段路径（如 currentRow.totalUsers），从行对象中提取字段值
-  if (dk.fieldPath && value && typeof value === 'object' && !Array.isArray(value)) {
+  if (dk.fieldPath !== undefined && value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)) {
     value = extractFieldPath(value, dk.fieldPath)
   }
 

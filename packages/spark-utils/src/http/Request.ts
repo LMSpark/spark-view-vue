@@ -236,6 +236,7 @@ export class Request {
 
   private toHttpResponse<T>(res: AxiosResponse<T>): HttpResponse<T> {
     const headers: Record<string, string> = {}
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/strict-boolean-expressions -- axios headers 可能为任意结构
     if (res.headers && typeof res.headers === 'object') {
       for (const [k, v] of Object.entries(res.headers)) {
         if (typeof v === 'string') headers[k] = v

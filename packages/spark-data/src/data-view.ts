@@ -117,10 +117,10 @@ export class DataView implements IDataSource {
   }
   set dataTable(table: DataTable) {
     this._dataTable = table
-    this._columnMap = new Map(table.columns?.map(c => [c.name, c]) ?? [])
+    this._columnMap = new Map(table.columns.map(c => [c.name, c]))
     // 多主键时提前合成 _pk（在 syncFromConfig 前注册，使其参与首次编译）
     if (!this._primaryKeyOverride) {
-      const pkCols = table.columns?.filter(c => c.isPrimaryKey) ?? []
+      const pkCols = table.columns.filter(c => c.isPrimaryKey)
       if (pkCols.length > 1) this._ensureSyntheticPk(pkCols.map(c => c.name))
     }
     this._computedDelegate.invalidateCache()
@@ -185,7 +185,7 @@ export class DataView implements IDataSource {
   get primaryKey(): string {
     if (this._primaryKeyOverride !== undefined) return this._primaryKeyOverride
     // 从 DataTable 列定义自动推导（standalone DataView 无 _dataTable，安全回退 'id'）
-    if (this._dataTable?.columns?.length) {
+    if (this._dataTable !== null && this._dataTable.columns.length > 0) {
       const pkCols = this._dataTable.columns.filter(c => c.isPrimaryKey)
       if (pkCols.length === 1) {
         const col = pkCols[0]
@@ -797,7 +797,7 @@ export class DataView implements IDataSource {
 
     const col = this._columnMap?.get(field)
 
-    if (col) {
+    if (col !== undefined) {
       // 数字类 → Number
       if (DataView._numericTypes.has(col.type)) {
         const n = Number(value)
@@ -805,6 +805,7 @@ export class DataView implements IDataSource {
       }
       // 布尔类 → 0 / 1（确定性数字 key）
       if (col.type === 'boolean' || col.type === 'bool') {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/no-unnecessary-condition -- value 可为 0/''/'false' 等空值
         return value ? 1 : 0
       }
       // 日期类 → ISO string
@@ -957,7 +958,7 @@ export class DataView implements IDataSource {
     this.requestState = RequestState.Preparing
 
     // 逐个父视图检查依赖是否满足
-    const parents = this.dataSet.getParentRelations(this.tableName, this.viewId) ?? []
+    const parents = this.dataSet.getParentRelations(this.tableName, this.viewId)
 
     // 合并两轮循环：检查父依赖就绪度的同时缓存视图和行数据，避免 getView/getParentRows 二次调用
     const resolvedParents: Array<{ rel: (typeof parents)[number]; pView: DataView; rows: IDataRow[] }> = []
@@ -1010,8 +1011,8 @@ export class DataView implements IDataSource {
     }
 
     // 注入视图自身的分页/排序/过滤参数
-    if (this.page !== undefined) params.page = this.page
-    if (this.pageSize !== undefined) params.pageSize = this.pageSize
+    params.page = this.page
+    params.pageSize = this.pageSize
     if (this.sortExpression !== undefined) params.sort = this._serializeSort(this.sortExpression)
     if (this.filterExpression !== undefined) params.filter = this.filterExpression
 
@@ -1057,7 +1058,7 @@ export class DataView implements IDataSource {
         return { success: false, message: 'Request superseded' }
       }
       
-      if (result.success && result.data) {
+      if (result.success && result.data !== undefined) {
         this.updateFromServer(result.data as { rows?: IDataRow[]; total?: number; page?: number; pageSize?: number } | IDataRow[])
         this.selectionDelegate.applyAutoFirst()
         this.requestState = RequestState.Loaded

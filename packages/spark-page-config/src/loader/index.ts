@@ -78,7 +78,7 @@ export class PageConfigLoader implements ConfigLoader {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
     this.fileLoader = createFileLoader({
       baseUrl: PAGES_CONFIG_FILE_BASE,
-      storage: this.opts.fileStorage ?? 'localStorage',
+      storage: this.opts.fileStorage,
       cachePrefix: 'spark_page_',
       fallbackToCache: true,
       timeout: this.opts.timeout,
