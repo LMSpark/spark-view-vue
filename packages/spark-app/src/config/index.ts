@@ -70,7 +70,11 @@ async function fetchRemoteConfig(): Promise<Partial<AppConfig>> {
       throw new Error(`HTTP ${response.status}`)
     }
 
-    return await response.json() as Partial<AppConfig>
+    const body: unknown = await response.json()
+    if (typeof body !== 'object' || body === null) {
+      throw new Error('配置接口返回了非对象数据')
+    }
+    return body as Partial<AppConfig>
   } finally {
     clearTimeout(timeoutId)
   }

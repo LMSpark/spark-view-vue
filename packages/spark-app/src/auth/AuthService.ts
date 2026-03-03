@@ -402,7 +402,13 @@ export class AuthService implements IAuthService {
         throw new Error(`Token 刷新失败: ${response.statusText}`)
       }
 
-      const { token } = await response.json() as { token: string }
+      const body: unknown = await response.json()
+      const token = (typeof body === 'object' && body !== null && 'token' in body && typeof (body as Record<string, unknown>)['token'] === 'string')
+        ? (body as Record<string, unknown>)['token'] as string
+        : undefined
+      if (!token) {
+        throw new Error('Token 刷新响应缺少有效的 token 字段')
+      }
       this.setToken(token)
 
       // 触发 Token 刷新钩子
@@ -548,7 +554,11 @@ export class AuthService implements IAuthService {
       throw new Error(`登录失败: ${response.statusText}`)
     }
 
-    return await response.json() as AuthResult
+    const body: unknown = await response.json()
+    if (typeof body !== 'object' || body === null || !('user' in body)) {
+      throw new Error('登录响应格式异常')
+    }
+    return body as AuthResult
   }
 
   /**
@@ -593,7 +603,11 @@ export class AuthService implements IAuthService {
       throw new Error(`认证检查失败: ${response.statusText}`)
     }
 
-    return await response.json() as AuthResult
+    const body: unknown = await response.json()
+    if (typeof body !== 'object' || body === null || !('user' in body)) {
+      throw new Error('认证检查响应格式异常')
+    }
+    return body as AuthResult
   }
 
   // =============================================================================

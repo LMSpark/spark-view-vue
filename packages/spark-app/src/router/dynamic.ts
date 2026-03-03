@@ -5,7 +5,7 @@
  * spark-page-config 只保留纯 TS 的配置加载/解析能力。
  */
 
-import type { Router, RouteRecordRaw } from 'vue-router'
+import type { Router, RouteRecordRaw, RouteRecordNormalized } from 'vue-router'
 import type { Component } from 'vue'
 import type { RouteConfig, ConfigLoader } from '@spark-view/spark-page-config'
 import { Logger, SharedErrorCodes, getSharedErrorMessage } from '@spark-view/spark-utils'
@@ -41,7 +41,7 @@ export interface DynamicRouterOptions {
   beforeRegister?: (routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>
 
   /** 路由注册后钩子（仅通知） */
-  afterRegister?: (routes: RouteRecordRaw[]) => void
+  afterRegister?: (routes: RouteRecordNormalized[]) => void
 }
 
 /**
@@ -93,7 +93,7 @@ export class DynamicRouter {
 
     if (this.afterRegister) {
       routerLogger.debug('执行 afterRegister 钩子')
-      this.afterRegister(this.router.getRoutes() as RouteRecordRaw[])
+      this.afterRegister(this.router.getRoutes())
     }
 
     routerLogger.info('动态路由注册完成', { count: routes.length })

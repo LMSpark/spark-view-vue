@@ -167,9 +167,10 @@ class AppLogger {
     // 触发所有传输器
     for (const transport of this.transports) {
       try {
-        void transport.send(level, message, meta ?? {})
+        Promise.resolve(transport.send(level, message, meta ?? {})).catch((err: unknown) => {
+          console.error('日志传输失败（异步）', err)
+        })
       } catch (error) {
-        // Fallback to console when logger transport fails
         console.error('日志传输失败', error)
       }
     }
@@ -214,7 +215,7 @@ class AppLogger {
     const args = meta ? [formattedMessage, meta] : [formattedMessage]
     console.info(...args)
     for (const t of this.transports) {
-      try { void t.send('info', message, meta) }
+      try { Promise.resolve(t.send('info', message, meta)).catch((err: unknown) => { console.error('日志传输失败（异步）', err) }) }
       catch (error) { console.error('日志传输失败', error) }
     }
   }

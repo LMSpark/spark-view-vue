@@ -5,7 +5,7 @@
  */
 
 import { createApp, type Component, type Plugin } from 'vue'
-import { createRouter, createWebHistory, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory, type RouteRecordNormalized } from 'vue-router'
 import type { RouteConfig, ConfigLoaderOptions } from '@spark-view/spark-page-config'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
@@ -56,7 +56,7 @@ export interface PageConfigOptions {
   /** 注册前钩子（可以转换路由） */
   beforeRegister?: ((routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>) | undefined
   /** 注册后钩子（仅通知） */
-  afterRegister?: ((routes: RouteRecordRaw[]) => void) | undefined
+  afterRegister?: ((routes: RouteRecordNormalized[]) => void) | undefined
 }
 
 /**
