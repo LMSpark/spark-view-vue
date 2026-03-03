@@ -359,7 +359,10 @@ export class CrudDelegate {
       const result = await svc.importData(file)
       if (result.success) {
         this.host.resetState()
-        this.host.requestData()   // fire-and-forget，结果经 stateChanged 事件通知
+        // fire-and-forget：结果经 stateChanged 事件通知；捕获异常防止 unhandled rejection
+        Promise.resolve(this.host.requestData()).catch((e: unknown) =>
+          logger.error('importData 后 requestData 失败', e)
+        )
       }
       this.fireAfter('import', file, result)
       return result

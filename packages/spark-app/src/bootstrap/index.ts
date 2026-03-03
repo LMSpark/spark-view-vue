@@ -55,7 +55,7 @@ import { createLogger } from '../logger'
 import { loadConfig } from '../config'
 import { AuthService } from '../auth'
 import type { AuthConfig } from '../auth/types'
-import { toErrorMessage } from '@spark-view/spark-utils'
+import { toErrorMessage, toError } from '@spark-view/spark-utils'
 
 /**
  * =============================================================================
@@ -261,7 +261,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       tenant: appContext.tenant.tenantName
     })
   } catch (error) {
-    bootstrapLogger.error('应用启动失败', error as Error)
+    bootstrapLogger.error('应用启动失败', toError(error))
     // 不在框架层处理错误展示，由调用方（start.ts 或 main.ts）决定如何处理
     throw error
   }
@@ -315,7 +315,13 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
   try {
     const response = await fetch('/api/auth/me', { signal: controller.signal })
     if (response.ok) {
-      return await response.json() as AppContext
+      const data = await response.json() as Record<string, unknown>
+      // 运行时校验关键字段存在，防止后端返回非预期结构导致启动崩溃
+      if (!data || typeof data !== 'object' || !data['user'] || !data['tenant'] || !data['env']) {
+        bootstrapLogger.error('认证响应缺少必需字段 (user/tenant/env)', { data })
+        return null
+      }
+      return data as unknown as AppContext
     }
   } catch (error) {
     bootstrapLogger.warn('认证请求失败', { error: toErrorMessage(error) })

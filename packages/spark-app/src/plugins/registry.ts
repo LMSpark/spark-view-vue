@@ -7,6 +7,7 @@
 
 import type { Plugin } from 'vue'
 import { createLogger } from '../logger'
+import { toError } from '@spark-view/spark-utils'
 
 const pluginLogger = createLogger('plugins')
 
@@ -235,7 +236,7 @@ export class PluginManager {
         
         pluginLogger.info(`Plugin loaded: ${loader.name}`)
       } catch (error) {
-        pluginLogger.error(`Failed to load plugin "${id}"`, error as Error)
+        pluginLogger.error(`Failed to load plugin "${id}"`, toError(error))
       }
     }
     
@@ -272,7 +273,7 @@ export class PluginManager {
       pluginLogger.info(`Loading plugin: ${loader.name}`)
       return await PluginManager.createInstance(loader, normalized.options)
     } catch (error) {
-      pluginLogger.error(`Failed to load plugin "${id}"`, error as Error)
+      pluginLogger.error(`Failed to load plugin "${id}"`, toError(error))
       return null
     }
   }

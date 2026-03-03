@@ -11,6 +11,7 @@ import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
+import { toError } from '@spark-view/spark-utils'
 
 const startLogger = createLogger('start')
 
@@ -192,7 +193,7 @@ export async function start(options: StartOptions): Promise<void> {
             startLogger.warn('virtual:spark-components 未导出 registerComponents 函数（可能使用 classic 模式）')
           }
         } catch (error) {
-          const err = error as Error
+          const err = toError(error)
           startLogger.warn('无法导入 virtual:spark-components', { error: err.message })
           startLogger.info('可能原因：未配置 sparkComponentsPlugin 或使用 classic 模式')
         }
@@ -256,7 +257,7 @@ export async function start(options: StartOptions): Promise<void> {
 
     startLogger.success('应用启动成功')
   } catch (error) {
-    const err = error as Error
+    const err = toError(error)
     startLogger.error('应用启动失败', err)
 
     // 启动失败钩子

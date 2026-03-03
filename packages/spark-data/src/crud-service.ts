@@ -5,7 +5,7 @@
  * 与 DataSet/DataTable 深度集成，支持权限和数据转换
  */
 
-import { type Request, createRequest, Logger } from '@spark-view/spark-utils'
+import { type Request, createRequest, Logger, toError } from '@spark-view/spark-utils'
 import type {
   RequestConfig
 } from '@spark-view/spark-utils'
@@ -96,7 +96,7 @@ export class CrudService {
       return { success: true, data: result }
     } catch (error) {
       this.logger.error('记录创建失败', error)
-      return this.errorResult('Create failed', error as Error)
+      return this.errorResult('Create failed', error)
     }
   }
 
@@ -125,7 +125,7 @@ export class CrudService {
       return { success: true, data: result }
     } catch (error) {
       this.logger.error('记录查询失败', { pk }, error)
-      return this.errorResult('Retrieve failed', error as Error)
+      return this.errorResult('Retrieve failed', error)
     }
   }
 
@@ -154,7 +154,7 @@ export class CrudService {
       return { success: true, data: result }
     } catch (error) {
       this.logger.error('记录更新失败', { pk }, error)
-      return this.errorResult('Update failed', error as Error)
+      return this.errorResult('Update failed', error)
     }
   }
 
@@ -179,7 +179,7 @@ export class CrudService {
       return { success: true, data: true }
     } catch (error) {
       this.logger.error('记录删除失败', { pk }, error)
-      return this.errorResult('Delete failed', error as Error)
+      return this.errorResult('Delete failed', error)
     }
   }
 
@@ -211,7 +211,7 @@ export class CrudService {
       return { success: true, data: result }
     } catch (error) {
       this.logger.error('列表查询失败', { params }, error)
-      return this.errorResult('List failed', error as Error)
+      return this.errorResult('List failed', error)
     }
   }
 
@@ -240,7 +240,7 @@ export class CrudService {
       return this.buildBatchResult(results, successCount)
     } catch (error) {
       this.logger.error('批量创建失败', error)
-      return this.errorResult('Batch create failed', error as Error)
+      return this.errorResult('Batch create failed', error)
     }
   }
 
@@ -267,7 +267,7 @@ export class CrudService {
       return this.buildBatchResult(results, successCount)
     } catch (error) {
       this.logger.error('批量更新失败', error)
-      return this.errorResult('Batch update failed', error as Error)
+      return this.errorResult('Batch update failed', error)
     }
   }
 
@@ -293,7 +293,7 @@ export class CrudService {
       return this.buildBatchResult(results, successCount)
     } catch (error) {
       this.logger.error('批量删除失败', error)
-      return this.errorResult('Batch delete failed', error as Error)
+      return this.errorResult('Batch delete failed', error)
     }
   }
 
@@ -329,7 +329,7 @@ export class CrudService {
       return { success: true, data: result as { imported: number; failed: number } }
     } catch (error) {
       this.logger.error('数据导入失败', error)
-      return this.errorResult('Import failed', error as Error)
+      return this.errorResult('Import failed', error)
     }
   }
 
@@ -365,7 +365,7 @@ export class CrudService {
       return { success: true, data: result.data as Blob }
     } catch (error) {
       this.logger.error('数据导出失败', error)
-      return this.errorResult('Export failed', error as Error)
+      return this.errorResult('Export failed', error)
     }
   }
 
@@ -497,7 +497,7 @@ export class CrudService {
           results[i] = { success: true, data: result }
         } catch (error) {
           this.logger.error(`批量操作项 ${i} 失败`, error)
-          results[i] = this.errorResult('Batch item failed', error as Error)
+          results[i] = this.errorResult('Batch item failed', error)
         } finally {
           completed++
           onProgress?.(completed, items.length)
@@ -600,15 +600,15 @@ export class CrudService {
   }
 
   /**
-   * 创建错误结果
+   * 创建错误结果（类型安全：接受 unknown 错误值）
    * @param message 错误消息
-   * @param error 错误对象
+   * @param error 错误对象（unknown，自动归一化为 Error）
    * @returns 错误结果
    */
-  private errorResult<T>(message: string, error?: Error): CrudResult<T> {
+  private errorResult<T>(message: string, error?: unknown): CrudResult<T> {
     return {
       success: false,
-      error: error ?? new Error(message),
+      error: error !== undefined ? toError(error) : new Error(message),
       message
     }
   }
