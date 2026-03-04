@@ -10,7 +10,7 @@
  */
 
 import type { Rule } from '../types'
-import type { IDataRow, IDataSet, SortExpression } from '@spark-view/spark-data'
+import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { parseDataKey, resolveDataKeyBinding, RequestState } from '@spark-view/spark-data'
 import { setRuleProp, pageLogger } from './bind-helpers'
 
@@ -134,9 +134,8 @@ function injectTableEvents(
     if (!sortInfo.prop || sortInfo.order === null) {
       void view.setSort(undefined)
     } else {
-      const direction = sortInfo.order === 'descending' ? 'desc' : 'asc'
-      const sort: SortExpression = { field: sortInfo.prop, direction }
-      void view.setSort(sort)
+      const direction = sortInfo.order === 'descending' ? 'desc' : 'asc' as const
+      void view.setSort([{ field: sortInfo.prop, direction }])
     }
   }
 
