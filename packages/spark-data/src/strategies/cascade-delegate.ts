@@ -20,7 +20,7 @@ const logger = Logger('DataView:Cascade')
 
 export class CascadeDelegate {
   /** 级联取消订阅句柄 */
-  private cascadeUnsubscribers: (() => void)[] = []
+  private cascadeUnsubscribers: Array<() => void> = []
   /** 待处理的级联请求 */
   private pendingCascadeRequest?: {
     requestId: number

@@ -224,7 +224,7 @@ export class CrudService {
    * @returns 批量操作结果
    */
   async batchCreate<T = IDataRow>(
-    items: Partial<T>[],
+    items: Array<Partial<T>>,
     config?: CrudOperationConfig
   ): Promise<CrudResult<BatchResult>> {
     if (!this.api.batch?.create) {
@@ -377,9 +377,7 @@ export class CrudService {
    * @returns 清理后的数据（不含权限字段）
    */
   private sanitizeDataForUpload<T extends Record<string, unknown>>(data: T): Omit<T, typeof INSTANCE_PERMISSION_FIELD | typeof MODEL_PERMISSION_FIELD> {
-    const sanitized = { ...data }
-    delete sanitized[INSTANCE_PERMISSION_FIELD]
-    delete sanitized[MODEL_PERMISSION_FIELD]
+    const { [INSTANCE_PERMISSION_FIELD]: _, [MODEL_PERMISSION_FIELD]: __, ...sanitized } = data
     return sanitized
   }
 
@@ -481,8 +479,8 @@ export class CrudService {
     config?: Partial<RequestConfig>,
     concurrency = DEFAULT_BATCH_CONCURRENCY,
     onProgress?: (completed: number, total: number) => void
-  ): Promise<CrudResult<T>[]> {
-    const results: CrudResult<T>[] = new Array(items.length).fill(null) as CrudResult<T>[]
+  ): Promise<Array<CrudResult<T>>> {
+    const results: Array<CrudResult<T>> = new Array(items.length).fill(null) as Array<CrudResult<T>>
     let nextIndex = 0
     let completed = 0
 
@@ -583,7 +581,7 @@ export class CrudService {
   }
 
   /** 构建批量操作结果（单次遍历收集 errors）*/
-  private buildBatchResult<T>(results: CrudResult<T>[], successCount: number): CrudResult<BatchResult> {
+  private buildBatchResult<T>(results: Array<CrudResult<T>>, successCount: number): CrudResult<BatchResult> {
     const errors: Error[] = []
     for (const r of results) {
       if (!r.success) errors.push(r.error ?? new Error('Batch operation failed'))

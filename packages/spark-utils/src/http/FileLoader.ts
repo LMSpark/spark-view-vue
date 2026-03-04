@@ -128,8 +128,8 @@ export class FileLoader {
     // rawKey:   存原始文件字符串 → localStorage（可序列化）
     // xformKey: 存 transform 结果 → 仅 memCache（DataSet 实例等，刷新后由 rawKey 重算）
     if (transform) {
-      const rawKey   = fileName + ':raw'
-      const xformKey = fileName + ':transform'
+      const rawKey   = `${fileName  }:raw`
+      const xformKey = `${fileName  }:transform`
 
       // 同时读两层缓存
       const xformEntry = forceRefresh ? null : this.readEntryMem<T>(xformKey)
@@ -276,8 +276,8 @@ export class FileLoader {
       this.memCache.delete(k)
       this.storageRemove(k)
       // 同时清理 transform 路径产生的派生键（:raw 存 localStorage，:transform 存内存）
-      const rawK   = this.opts.cachePrefix + key + ':raw'
-      const xformK = this.opts.cachePrefix + key + ':transform'
+      const rawK   = `${this.opts.cachePrefix + key  }:raw`
+      const xformK = `${this.opts.cachePrefix + key  }:transform`
       this.memCache.delete(rawK)
       this.storageRemove(rawK)
       this.memCache.delete(xformK)

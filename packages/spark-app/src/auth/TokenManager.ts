@@ -111,7 +111,7 @@ export class TokenManager {
    * const customManager = new TokenManager('cookie', 'my_app_token')
    * ```
    */
-  constructor(storage: TokenStorage = 'localStorage', tokenKey: string = 'spark_token') {
+  constructor(storage: TokenStorage = 'localStorage', tokenKey = 'spark_token') {
     this.storage = storage
     this.tokenKey = tokenKey
   }

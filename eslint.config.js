@@ -151,6 +151,29 @@ export default [
       '@typescript-eslint/strict-boolean-expressions': ['error', { allowNullableBoolean: true, allowNullableString: true, allowNullableNumber: true }],
       '@typescript-eslint/prefer-as-const': 'error',
       '@typescript-eslint/no-duplicate-type-constituents': 'error',
+      // ── 产品级新增规则 ──
+      '@typescript-eslint/no-shadow': 'error',
+      '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
+      '@typescript-eslint/no-import-type-side-effects': 'error',
+      '@typescript-eslint/no-inferrable-types': 'error',
+      '@typescript-eslint/no-dynamic-delete': 'error',
+      '@typescript-eslint/unified-signatures': 'error',
+      '@typescript-eslint/no-useless-constructor': 'error',
+      '@typescript-eslint/prefer-for-of': 'error',
+      '@typescript-eslint/prefer-includes': 'error',
+      '@typescript-eslint/prefer-string-starts-ends-with': 'error',
+      '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-wrappers': 'error',
+      'no-return-assign': 'error',
+      'no-sequences': 'error',
+      'no-template-curly-in-string': 'warn',
+      'no-self-compare': 'error',
+      'no-useless-rename': 'error',
+      'object-shorthand': ['error', 'always'],
+      'prefer-template': 'error',
+      // ── 基础规则 ──
       'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
       'no-debugger': 'error',
       'prefer-const': 'error',
@@ -196,6 +219,11 @@ export default [
       '@typescript-eslint/consistent-type-exports': 'off',
       // 测试代码可读性优先
       '@typescript-eslint/prefer-optional-chain': 'off',
+      // 产品级新增规则在测试中放宽
+      '@typescript-eslint/no-shadow': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/no-dynamic-delete': 'off',
+      'no-self-compare': 'off',
     }
   },
   // ─── Stories 文件宽松规则（必须在 TypeScript files 块之后） ──────────────────

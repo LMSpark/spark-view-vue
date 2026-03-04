@@ -137,7 +137,7 @@ export class DataView implements IDataSource {
   /** 标签显示字段名（用于 labels/label getter），未指定时回退到主键值字符串 */
   labelField?: string
   /** 值序列化分隔符（默认 ','）。非空=多选，空字符串=单选 */
-  selectionDelimiter: string = ','
+  selectionDelimiter = ','
 
   /** 是否为多选模式（selectionDelimiter 非空时为多选） */
   get isMultiSelect(): boolean { return this.selectionDelimiter !== '' }
@@ -176,15 +176,15 @@ export class DataView implements IDataSource {
   // 分页 & 加载状态
   // ─────────────────────────────────────────────
 
-  total: number = 0
-  page: number = 1
-  pageSize: number = 20
+  total = 0
+  page = 1
+  pageSize = 20
 
   loadingError: Error | null = null
   /** 请求状态机，见 {@link RequestState}。唯一状态源，勿另设布尔标志。 */
   requestState: RequestState = RequestState.Idle
   /** 增删改批网络请求进行中（与 requestState 独立，可同时为 true） */
-  mutating: boolean = false
+  mutating = false
   /** 最近一次增删改批操作的错误；成功或未发起时为 null */
   mutatingError: Error | null = null
 
@@ -195,22 +195,22 @@ export class DataView implements IDataSource {
   filterExpression?: FilterExpression
   sortExpression?: SortExpression
   /** 请求成功后是否自动 currentRow = rows[0]（默认 true） */
-  autoCurrentFirst: boolean = true
+  autoCurrentFirst = true
   /** 请求成功后是否自动 selectedRows = [rows[0]]（默认 true） */
-  autoSelectFirst: boolean = true
+  autoSelectFirst = true
   /** setCurrentRow 时是否自动同步 selectedRows（默认 true）。false=购物车模式 */
-  selectionFollowsCurrent: boolean = true
+  selectionFollowsCurrent = true
   /** 树结构字段配置 */
   treeConfig?: TreeConfig | undefined
 
   /** DataSet 初始化后是否自动加载数据（默认 false） */
-  autoLoad: boolean = false
+  autoLoad = false
 
   /** 设置分页/排序/过滤后是否自动 refresh()（默认 false） */
-  autoRefresh: boolean = false
+  autoRefresh = false
 
   /** 增删改是否自动提交到服务端（默认 false）。true=每次 addRow/editRowById/removeRow 立即调对应网络 CRUD */
-  autoCommit: boolean = false
+  autoCommit = false
 
   /** 视图级聚合配置——行变更后自动重算 summaryRow / selectionSummaryRow。仅由 applyViewConfig() 初始化 */
   readonly aggregates: Record<string, AggregateColumnConfig> = {}
@@ -420,7 +420,7 @@ export class DataView implements IDataSource {
 
   protected logger = Logger('DataView')
 
-  constructor(tableName: string, viewId: string = 'default') {
+  constructor(tableName: string, viewId = 'default') {
     assertNoSeparator(tableName, 'tableName')
     assertNoSeparator(viewId, 'viewId')
     this.tableName = tableName
@@ -1037,7 +1037,7 @@ export class DataView implements IDataSource {
   static wrapInstance: (instance: DataView) => DataView = (v) => v
 
   /** @internal 创建 DataView 实例（通过 wrapInstance 钩子可选包装） */
-  static create(tableName: string, viewId: string = 'default'): DataView {
+  static create(tableName: string, viewId = 'default'): DataView {
     return DataView.wrapInstance(new DataView(tableName, viewId))
   }
 }

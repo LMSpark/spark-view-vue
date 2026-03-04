@@ -12,7 +12,7 @@ import { nextTick } from 'vue'
 import { Logger } from '@spark-view/spark-utils'
 import type { IDataSet, IDataRow } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
-import type { Rule } from '../types'
+import type { Rule, FormCreateAPI } from '../types'
 import type { ComponentRegistry } from '../../core/types.js'
 
 const pageLogger = Logger('PageRenderer')
@@ -34,15 +34,11 @@ interface ElTableComponent extends HTMLElement {
 /**
  * 通过 formApi 查找指定表格的 el-table 实例（命令式 API 共享入口）。
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getTableEl(tableName: string, viewId: string, formApi: any): ElTableComponent | null {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/strict-boolean-expressions
+function getTableEl(tableName: string, viewId: string, formApi: FormCreateAPI | null): ElTableComponent | null {
   if (!formApi || typeof formApi.el !== 'function') return null
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-  const el = formApi.el(`table_${tableName}_${viewId}`)
+  const el = formApi.el(`table_${tableName}_${viewId}`) as ElTableComponent | null
   // duck-typing 守卒：确保返回的组件实例确实具有 el-table 命令式 API
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/strict-boolean-expressions
-  return el && typeof el.setCurrentRow === 'function' ? el as ElTableComponent : null
+  return el && typeof el.setCurrentRow === 'function' ? el : null
 }
 
 /**
@@ -58,8 +54,7 @@ function syncCurrentRowToTable(
   tableName: string,
   viewId: string,
   row: IDataRow | null,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formApi: any
+  formApi: FormCreateAPI | null
 ): void {
   nextTick(() => {
     const table = getTableEl(tableName, viewId, formApi)
@@ -84,8 +79,7 @@ function syncSelectedRowsToTable(
   tableName: string,
   viewId: string,
   rows: IDataRow[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formApi: any
+  formApi: FormCreateAPI | null
 ): void {
   nextTick(() => {
     const table = getTableEl(tableName, viewId, formApi)
@@ -105,14 +99,11 @@ function syncSelectedRowsToTable(
 // ─── 公共接口 ─────────────────────────────────────────────────────────────────
 
 export interface UseRuleBindingOptions {
-  // Note: form-create 的 Rule 类型过于复杂，使用 unknown[] 避免类型冲突
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  originalRules: Ref<any[]>
+  /** form-create 规则（JSON 解析后的未类型化数据，传入 bindDataToRules 时转为 Rule[]） */
+  originalRules: Ref<unknown[]>
   pageFunctions: Ref<Record<string, (...args: unknown[]) => unknown>>
   dataSet: IDataSet | null
-  // Note: formApi 使用 any 类型以避免与 form-create 官方复杂类型定义冲突
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formApi: Ref<any>
+  formApi: Ref<FormCreateAPI | null>
   /** 组件注册表（可选）——用于 dataKey 行为查询，替代硬编码的内置组件白名单 */
   registry?: ComponentRegistry
 }
@@ -141,14 +132,13 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       return
     }
 
-    // Note: form-create 的 Rule 类型系统过于复杂，此处使用类型断言
     const newBoundRules = bindDataToRules({
-      rules: originalRules.value as unknown as Rule[],
+      rules: originalRules.value as Rule[],
       pageFunctions: pageFunctions.value,
       dataSet: options.dataSet,
       bindingId: instanceId,
       ...(registry !== undefined ? { registry } : {})
-    }) as unknown[]
+    })
 
     // 创建新数组强制触发响应式更新
     boundRules.value = [...newBoundRules]

@@ -24,24 +24,56 @@ import type { ComponentRegistry } from '../../core/types.js'
 export type { PageConfig }
 
 // 导入 FormCreate 官方类型
-import type { Rule as FormCreateRule, Api as FormCreateApi } from '@form-create/element-ui'
+import type { Rule as FormCreateRule } from '@form-create/element-ui'
 
 /**
  * 页面规则类型（使用 FormCreate 官方类型）
- * 用于运行时的规则绑定和渲染
- * 
- * 注意：虽然配置文件使用 RuleConfig，但由于结构兼容，
- * FormCreate 能够正确识别和处理我们的配置格式。
+ *
+ * 使用 `interface extends` 而非 `type =`，创建名义类型边界：
+ * form-create 的 Rule 泛型包含递归子类型（Rule → Creator → Rule），
+ * `type` 别名是透明的，vue-tsc 会在每个引用点展开底层泛型导致指数级膨胀；
+ * `interface extends` 让 TypeScript 使用接口名称匹配，跳过结构展开。
  */
-export type Rule = FormCreateRule
+ 
+export interface Rule extends FormCreateRule {}
 
 /**
- * FormCreate API 接口（使用官方 Api 类型）
- * 
- * 说明：直接使用 @form-create/element-ui 的 Api 类型
- * 官方文档：https://www.form-create.com/v3/instance/
+ * FormCreate API 精简接口
+ *
+ * form-create 官方 `Api<OptionAttrs, CreatorAttrs, RuleAttrs, ApiAttrs>` 包含
+ * 深度递归泛型（Rule → Creator → Rule），直接使用会导致 vue-tsc 在 `Ref<Api>`
+ * 结构检查时触发指数级类型展开（~116KB 错误输出）。
+ *
+ * 本接口仅声明项目中实际用到的 11 个方法，完全规避递归泛型；
+ * 运行时 form-create 注入的完整 Api 对象天然满足此子集约束。
+ *
+ * @see IFormAPI — 沙箱侧更窄的接口（script-context-types.ts）
+ * @see https://www.form-create.com/v3/instance/
  */
-export type FormCreateAPI = FormCreateApi
+export interface FormCreateAPI {
+  /** 获取指定 field 的组件实例 / DOM 元素 */
+  el(id: string): unknown
+  /** 获取单个字段值 */
+  getValue(field: string): unknown
+  /** 设置字段值（单字段或批量对象） */
+  setValue(field: string | Record<string, unknown>, value?: unknown): void
+  /** 获取全部表单数据 */
+  formData(): Record<string, unknown>
+  /** 表单校验 */
+  validate(callback: (valid: boolean) => void): void
+  /** 重置字段 */
+  resetFields(fields?: string | string[]): void
+  /** 清除校验状态 */
+  clearValidateState(fields?: string | string[]): void
+  /** 启用 / 禁用字段 */
+  disabled(disabled: boolean, field?: string | string[]): void
+  /** 显示 / 隐藏字段 */
+  hidden(hidden: boolean, field?: string | string[]): void
+  /** 更新字段规则 */
+  updateRule(field: string, rule: Record<string, unknown>): void
+  /** 监听表单事件 */
+  on(event: string, callback: (...args: unknown[]) => void): void
+}
 
 /**
  * 页面脚本运行时上下文接口（完整沙箱 API）。

@@ -220,7 +220,7 @@ export interface ISelectionCapability {
   isSelected(id: number | string): boolean
   selectAll?(): void
   clearSelection(): void
-  getSelected(): (number | string)[]
+  getSelected(): Array<number | string>
 }
 
 /**

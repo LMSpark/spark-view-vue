@@ -244,7 +244,8 @@ export class DataTable {
     const view = this.views[viewId]
     if (view) {
       view.destroy()
-      delete this.views[viewId]
+      const { [viewId]: _, ...rest } = this.views
+      this.views = rest
     }
   }
 

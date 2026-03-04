@@ -98,9 +98,7 @@ function attachDataViewIfDataKey(
 /**
  * 递归替换 rule 中的数据占位符和事件处理器
  */
-// Note: form-create 的 Rule 类型过于复杂，使用 any[] 作为返回类型避免类型冲突
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function bindDataToRules(options: RuleBindingOptions): any[] {
+export function bindDataToRules(options: RuleBindingOptions): Rule[] {
   const { rules, pageFunctions, dataSet, registry } = options
   
   // 创建统一的函数调用包装器
@@ -211,8 +209,6 @@ export function bindDataToRules(options: RuleBindingOptions): any[] {
         (child: unknown): child is Rule => typeof child !== 'string'
       )
       if (childRules.length > 0) {
-        // Note: bindDataToRules 返回 any[] 类型（form-create 类型系统限制）
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         newRule.children = bindDataToRules({
           rules: childRules,
           pageFunctions,

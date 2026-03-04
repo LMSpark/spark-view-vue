@@ -76,12 +76,13 @@ export class PermissionFilter {
    * @returns 脱敏后的数据行
    */
   applyFieldMasking(row: IDataRow): IDataRow {
-    const masked: IDataRow = { ...row }
+    const masked: IDataRow = {}
     for (const [field, value] of Object.entries(row)) {
-      if (field.startsWith('_')) continue
+      if (field.startsWith('_')) { masked[field] = value; continue }
       const vis = this.checker.getFieldVisibility(field, row)
-      if (vis === FieldVisibility.Hidden) delete masked[field]
+      if (vis === FieldVisibility.Hidden) continue
       else if (vis === FieldVisibility.Masked) masked[field] = this.checker.maskFieldValue(field, value, row)
+      else masked[field] = value
     }
     return masked
   }

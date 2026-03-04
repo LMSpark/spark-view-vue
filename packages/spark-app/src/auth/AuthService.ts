@@ -641,7 +641,7 @@ export class AuthService implements IAuthService {
         config: {}
       },
       env: this.buildMockEnv(),
-      token: 'mock-token-' + Date.now()
+      token: `mock-token-${  Date.now()}`
     }
   }
 

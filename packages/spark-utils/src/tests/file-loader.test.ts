@@ -472,7 +472,7 @@ describe('FileLoader', () => {
       let callCount = 0
       function countedTransform(raw: string): string {
         callCount++
-        return raw + '-transformed'
+        return `${raw  }-transformed`
       }
 
       await loader.load<string>('cached-transform.json', {
@@ -580,14 +580,14 @@ describe('FileLoader', () => {
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
 
-      const loaderA = loader.withTransform((r) => r + '-A')
-      const loaderB = loader.withTransform((r) => r + '-B')
+      const loaderA = loader.withTransform((r) => `${r  }-A`)
+      const loaderB = loader.withTransform((r) => `${r  }-B`)
 
       const ra = await loaderA.load('shared.json')
       const rb = await loaderB.load('shared.json')
 
-      expect(ra.data).toBe(baseContent + '-A')
-      expect(rb.data).toBe(baseContent + '-B')
+      expect(ra.data).toBe(`${baseContent  }-A`)
+      expect(rb.data).toBe(`${baseContent  }-B`)
     })
   })
 

@@ -30,7 +30,7 @@ export interface RouteConfig {
 export interface RuleConfig {
   type: string // 组件类型，如 'div', 'el-button', 'spark-ej2-grid'
   props?: Record<string, unknown>
-  children?: (RuleConfig | string)[]
+  children?: Array<RuleConfig | string>
   style?: Record<string, string | number>
   class?: string | string[]
   on?: Record<string, string> // 事件名 -> 脚本函数名
