@@ -18,6 +18,10 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
   - `packages/spark-app/` — 应用层（start, bootstrap, logger, auth, plugins）
 - **Pages config**: `public/pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
 - **Example components**: `features/spark-ej2/components/SparkEJ2Grid.vue`, `features/spark-ej2/components/SparkEJ2Column.vue`
+- **Renderer containers**: `src/components/renderer-containers/` — RendererTable / RendererForm / RendererDetail（DataView-first 容器）
+- **Renderer capability keys**: `src/components/capability-keys.ts`（FIELD_CONTEXT, CONTEXT_DATA）
+- **bindRules（规则绑定引擎）**: `packages/spark-component/src/renderer/utils/bindRules.ts`
+- **SparkComponentRenderer**: `packages/spark-component/src/renderer/spark/SparkComponentRenderer.vue`
 - **Key composable**: `packages/spark-component/src/composables/useSparkComponent.ts`
 - **DataSet 生命周期**: `packages/spark-component/src/renderer/composables/usePageDataSet.ts`（仅存储 DataSet，不转换）
 - **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
@@ -605,6 +609,157 @@ r-row / r-cell
   consume(DATA_SOURCE)  → DataView (IDataSource)
   consume(SELECTION)
 ```
+
+## Renderer 容器组件架构（DataView-first + sparkChildren）🏗️
+
+### 核心模式：DataView-first
+
+所有 `r-*` 容器组件（`r-table` / `r-form` / `r-detail`）遵循统一的 **DataView-first** 模式——DataView 是容器与子组件之间**唯一的数据中介**：
+
+```
+rule.json
+  { type: "r-table", dataKey: "Users@rows", children: [...] }
+    ↓ bindRules()
+  sparkChildren 注入 + dataKey 透传
+    ↓
+RendererTable.vue
+  consume(PAGE_DATASET) → parseDataKey → DataView
+  provide(DATA_SOURCE, dataView)   ← 子组件通过 consume 获取
+  provide(FIELD_CONTEXT, 'table')  ← 子组件感知父容器类型
+    ↓
+子组件（r-text / r-number / el-table-column 等）
+  consume(DATA_SOURCE)  → DataView
+  consume(FIELD_CONTEXT) → 'table' | 'form' | 'detail'
+```
+
+### ❗ sparkChildren 注入机制（关键，必读）
+
+**问题**：form-create 的 slot 机制会用内部包装组件包裹子元素，破坏 `el-table` 对 `el-table-column` 的**直接子级检测**。如果让 form-create 自然渲染 `r-table` 的 children，表格列不会出现。
+
+**解决方案**：`bindRules` 将 `r-*` 容器的 `children` 提取到 `props.sparkChildren`，容器组件自行用 `SparkComponentRenderer` 递归渲染：
+
+```typescript
+// bindRules.ts 核心逻辑（简化）
+if (isSelfResolvingType(ruleType, registry)) {
+  const sparkKids = newRule.children.filter(isObject)
+  if (sparkKids.length > 0) {
+    setRuleProp(newRule, 'sparkChildren', sparkKids)  // 移入 props
+    newRule.children = []                              // 清空原 children
+  }
+}
+```
+
+容器组件模板中：
+```vue
+<template>
+  <el-table :data="tableData" v-bind="$attrs">
+    <SparkComponentRenderer
+      v-for="(child, i) in mergedChildren"
+      :key="child.id ?? `r-table-child-${i}`"
+      :config="child"
+    />
+  </el-table>
+</template>
+
+<script setup>
+const mergedChildren = computed(() =>
+  props.config?.children ?? props.sparkChildren ?? []
+)
+</script>
+```
+
+**为什么 sparkChildren 而不是 slot？**
+- form-create 的 slot 包装层破坏 el-table → el-table-column 的父子关系
+- `SparkComponentRenderer` 直接在 `<el-table>` 内部渲染，el-table-column 成为直接子级
+- 渲染器是**透明路由层**（不创建自己的 ComponentContext），能力链不受影响
+
+### ❗ 自解析组件（Self-Resolving）
+
+`isSelfResolvingType()` 判断组件是否自行解析 dataKey：
+- `r-table`、`r-form`、`r-detail`、`r-tree` 默认为自解析
+- 组件注册时可声明 `meta: { dataKey: 'self-resolve' }` 标记
+- 自解析组件：bindRules 透传 `dataKey` 到 props，由组件自行 `consume(PAGE_DATASET)` 解析
+- 非自解析组件：bindRules 在规则绑定阶段直接解析 dataKey 并注入数据
+
+### ❗ name 透传（form-create 不自动传）
+
+form-create 的 `rule.name` 是表单字段标识符，**不会**自动作为 Vue prop 传给自定义组件。`bindRules` 显式将 `rule.name` 复制到 `props.name`：
+
+```typescript
+// bindRules.ts
+if (ruleType.startsWith('r-') && newRule.name !== undefined) {
+  setRuleProp(newRule, 'name', newRule.name)
+}
+```
+
+**name vs label 分离**：
+- `config.name`（= `rule.name`）= **字段绑定名**，映射到 DataView 行的字段（如 `"age"`）
+- `props.label` = **显示标签**，UI 上展示的文字（如 `"年龄"`）
+- 两者**必须分开声明**，不要混用
+
+```jsonc
+// rule.json 正确写法
+{ "type": "r-text", "name": "userName", "props": { "label": "用户名" } }
+
+// ❌ 错误：name 当 label 用（字段绑定会失败）
+{ "type": "r-text", "name": "用户名" }
+```
+
+### ❗ SparkComponentRenderer 的 v-bind 展开
+
+`SparkComponentRenderer` 同时传递 `:config="config"` 和 `v-bind="config.props"`，让子组件可以两种方式接收参数：
+
+```vue
+<!-- SparkComponentRenderer.vue -->
+<component :is="resolvedComponent" :config="config" v-bind="config.props" />
+```
+
+- 容器组件通过 `props.config` 读取完整配置（children / dataKey / type 等）
+- 字段组件可直接声明 `props: { name, label, sparkChildren }` 按名接收
+- 两种方式共存，逐步从 config 包读取迁移到独立 props
+
+### ❗ tryAutoLoad 仅对有 API 配置的表触发
+
+内联数据表（pagedata.json 中直接写 rows）**没有 `api` 配置**，不需要远程加载：
+
+```typescript
+function tryAutoLoad(view: DataView | null) {
+  if (!view) return
+  if (!view.dataTable?.api) return  // ← 关键：跳过内联数据表
+  void view.requestData().catch(...)
+}
+```
+
+**常见错误**：忘加 `api` 判断 → 控制台报 `Table xxx has no API configuration`。
+
+### 容器组件能力键（Renderer 层）
+
+| 能力键 | 定义 | Provider | Consumer | 说明 |
+|--------|------|----------|----------|----- |
+| `FIELD_CONTEXT` | `src/components/capability-keys.ts` | r-table / r-form / r-detail | 字段组件 | 渲染上下文：`'table' \| 'form' \| 'detail' \| 'tree'` |
+| `CONTEXT_DATA` | `src/components/capability-keys.ts` | r-form / r-detail | 字段组件 | 可写响应式数据对象（`reactive({})` 同步自 currentRow） |
+| `DATA_SOURCE` | `packages/spark-component` | r-table / r-form / r-detail | 字段组件 | DataView 实例（`IDataSource` 接口） |
+| `PAGE_DATASET` | `packages/spark-component` | PageRenderer | 容器组件 | 页面级 DataSet |
+
+### 三种容器的数据策略对比
+
+| 容器 | 主数据源 | 子组件数据 | 特殊行为 |
+|------|---------|-----------|----------|
+| **r-table** | `DataView.rows` → `el-table :data` | `DATA_SOURCE`（DataView） | `currentChange` / `selectionChange` 同步到 DataView.selection |
+| **r-form** | `DataView.currentRow` → `reactive(formModel)` | `CONTEXT_DATA`（formModel） | 字段组件可读写 formModel 实现双向绑定 |
+| **r-detail** | `DataView.currentRow` → `reactive(detailData)` | `CONTEXT_DATA`（detailData） | 只读展示，同 form 结构但无写回 |
+
+### 常见踩坑速查 🚨
+
+| 症状 | 原因 | 解决 |
+|------|------|------|
+| el-table 列不显示 | form-create slot 包装破坏父子关系 | 确保 bindRules 走 sparkChildren 注入，容器用 SparkComponentRenderer 渲染 |
+| `Table xxx has no API configuration` | tryAutoLoad 未判断 api 存在 | `if (!view.dataTable?.api) return` |
+| 字段组件读不到 name | form-create 不传 rule.name 给自定义组件 | bindRules 已显式 `setRuleProp(newRule, 'name', newRule.name)` |
+| 子组件 consume(DATA_SOURCE) 返回 null | 父容器未 provide | 确认 r-table/form/detail 的 `watch(resolvedView)` 正确 `sparkProvide(DATA_SOURCE, view)` |
+| 表格渲染但无数据 | dataKey 写错 / pageDataSet 为 null | 检查 pagedata.json 表名、rule.json dataKey 格式、PageRenderer 是否 provide(PAGE_DATASET) |
+| `console.error` 调试日志泄漏到生产 | 忘记删除或忘加 `import.meta.env.DEV` 守卫 | 所有诊断日志必须包裹 `if (import.meta.env.DEV)` |
+| 同步注册问题（el-table 找不到列组件） | `defineAsyncComponent` 异步加载 | el-table 内的列组件必须**同步注册**（`Spark.register('r-col', Component)` 而非懒加载） |
 
 ### 新增自定义能力
 
