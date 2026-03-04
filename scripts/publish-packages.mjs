@@ -29,6 +29,8 @@ const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
 const tagIdx = args.indexOf('--tag')
 const TAG = tagIdx !== -1 ? args[tagIdx + 1] : 'latest'
+const otpIdx = args.indexOf('--otp')
+const OTP = otpIdx !== -1 ? args[otpIdx + 1] : null
 
 const run = (cmd, cwd = ROOT) => execSync(cmd, { cwd, stdio: 'inherit' })
 
@@ -90,10 +92,10 @@ for (const pkg of packages) {
     continue
   }
 
-  // 检查版本是否已在 npm 发布，若已发布则跳过
+  // 检查版本是否已在 npm 发布，若已发布则跳过（显式查 npmjs.org，避免走镜像源延迟）
   let alreadyPublished = false
   try {
-    const result = execSync(`npm view ${pkgName}@${pkgVersion} version`, { cwd: pkgDir, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
+    const result = execSync(`npm view ${pkgName}@${pkgVersion} version --registry https://registry.npmjs.org`, { cwd: pkgDir, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
     if (result === pkgVersion) alreadyPublished = true
   } catch (_) { /* 未发布 */ }
 
@@ -105,7 +107,13 @@ for (const pkg of packages) {
   console.log(`\n🚀 发布 ${pkg} (${pkgVersion}) ...`)
   // 使用 pnpm publish：自动将 dependencies 中的 workspace:* 替换为实际解析版本
   // 显式指定 registry 避免走 npmmirror 镜像
-  run(`pnpm publish --access public --tag ${TAG} --no-git-checks --registry https://registry.npmjs.org`, pkgDir)
+  const otpFlag = OTP ? ` --otp ${OTP}` : ''
+  try {
+    run(`pnpm publish --access public --tag ${TAG} --no-git-checks --registry https://registry.npmjs.org${otpFlag}`, pkgDir)
+  } catch (e) {
+    console.error(`\n❌ 发布 ${pkgName}@${pkgVersion} 失败: ${e.message}`)
+    process.exitCode = 1
+  }
 }
 
 console.log(DRY_RUN ? '\n✅ Dry-run 完成。' : '\n🎉 Done!')
