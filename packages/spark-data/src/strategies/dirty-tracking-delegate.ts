@@ -32,7 +32,8 @@
  * - **pending delete 快照** (`_deleteSnapshots`)：强引用——提交失败可将行还原回 UI。
  */
 
-import type { IDataRow, DataColumn } from '../types'
+import type { IDataRow, DataColumn, CrudResult } from '../types'
+import type { ISaveChangesHost, ICrudNetworkOps } from './types'
 
 // ─────────────────────────────────────────────
 // Host 接口
@@ -382,6 +383,132 @@ export class DirtyTrackingDelegate {
       }
     }
     return diff
+  }
+
+  // ─────────────────────────────────────────────
+  // 批量保存（三阶段提交）
+  // ─────────────────────────────────────────────
+
+  /**
+   * 将所有待提交变更（新增 / 手工编辑 / 删除）逐条保存到服务端。
+   *
+   * 提交顺序：**新增 → 更新 → 删除**（依赖关系最少）。
+   * 任意单行失败**不中断**后续行；失败行保留对应追踪状态。
+   *
+   * @param host 提供行数据读写的宿主（DataView 实现此接口）
+   * @param crud CRUD 网络操作接口（通常为 CrudDelegate）
+   * @param ids  指定要保存的行主键列表；不传则保存全部待提交变更
+   */
+  async executeChanges(
+    host: ISaveChangesHost,
+    crud: ICrudNetworkOps,
+    ids?: Array<string | number>,
+  ): Promise<CrudResult<SaveChangesData>> {
+    const filterByIds = ids !== undefined ? new Set(ids) : undefined
+
+    if (filterByIds === undefined && !this.hasPendingChanges()) {
+      return {
+        success: true,
+        message: '没有待提交的变更',
+        data: { createdCount: 0, savedCount: 0, deletedCount: 0, failedCount: 0, failedIds: [], failedErrors: {} },
+      }
+    }
+
+    let createdCount = 0
+    let savedCount = 0
+    let deletedCount = 0
+    const failedIds: Array<string | number> = []
+    const failedErrors: Record<string | number, string> = {}
+
+    // O(n) 构建 pk→row 索引，避免循环内 O(n) rows.find
+    const pkToRow = new Map<string | number, IDataRow>()
+    for (const r of host.rows) {
+      const pk = host.getPkKey(r)
+      if (pk !== undefined) pkToRow.set(pk, r)
+    }
+
+    // ── 1. 新增 ──────────────────────────────────────────────
+    const createIds = filterByIds
+      ? [...this.pendingCreateIds].filter(id => filterByIds.has(id))
+      : [...this.pendingCreateIds]
+
+    for (const tempId of createIds) {
+      const row = pkToRow.get(tempId)
+      if (!row) { this.cancelCreate(tempId); continue }
+      try {
+        const result = await crud.createRecord(host.stripComputedColumns({ ...row }))
+        if (result.success) {
+          this.cancelCreate(tempId)
+          if (result.data) {
+            host.deleteRowById(tempId)
+            host.appendRow(result.data)
+          }
+          createdCount++
+        } else {
+          failedIds.push(tempId)
+          failedErrors[tempId] = result.message ?? '创建失败'
+        }
+      } catch (err) {
+        failedIds.push(tempId)
+        failedErrors[tempId] = err instanceof Error ? err.message : String(err)
+      }
+    }
+
+    // ── 2. 更新 ──────────────────────────────────────────────
+    const updateIds = filterByIds
+      ? [...this.dirtyRowIds].filter(id => filterByIds.has(id))
+      : [...this.dirtyRowIds]
+
+    for (const id of updateIds) {
+      const row = pkToRow.get(id)
+      if (!row) { this.clearDirty(id); continue }
+      try {
+        const serverPk = host.buildServerPk(row)
+        const result = await crud.updateRecord(id, host.stripComputedColumns({ ...row }), serverPk)
+        if (result.success) {
+          this.clearDirty(id)
+          savedCount++
+        } else {
+          failedIds.push(id)
+          failedErrors[id] = result.message ?? '更新失败'
+        }
+      } catch (err) {
+        failedIds.push(id)
+        failedErrors[id] = err instanceof Error ? err.message : String(err)
+      }
+    }
+
+    // ── 3. 删除 ──────────────────────────────────────────────
+    const deleteIds = filterByIds
+      ? [...this.pendingDeleteIds].filter(id => filterByIds.has(id))
+      : [...this.pendingDeleteIds]
+
+    for (const id of deleteIds) {
+      try {
+        const snapshot = this.getPendingDeleteSnapshot(id)
+        const serverPk = snapshot ? host.buildServerPk(snapshot) : { [host.primaryKey]: id }
+        const result = await crud.deleteRecord(id, serverPk)
+        if (result.success) {
+          this.cancelDelete(id)
+          deletedCount++
+        } else {
+          failedIds.push(id)
+          failedErrors[id] = result.message ?? '删除失败'
+        }
+      } catch (err) {
+        failedIds.push(id)
+        failedErrors[id] = err instanceof Error ? err.message : String(err)
+      }
+    }
+
+    const failedCount = failedIds.length
+    return {
+      success: failedCount === 0,
+      message: failedCount === 0
+        ? `新增 ${createdCount} 行，更新 ${savedCount} 行，删除 ${deletedCount} 行`
+        : `成功：新增 ${createdCount}，更新 ${savedCount}，删除 ${deletedCount}；失败 ${failedCount} 行`,
+      data: { createdCount, savedCount, deletedCount, failedCount, failedIds, failedErrors },
+    }
   }
 
   // ─────────────────────────────────────────────

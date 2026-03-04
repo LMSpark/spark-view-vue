@@ -29,9 +29,9 @@ describe('DataTable responsibilities (refactor verification)', () => {
     expect('clearAll' in t).toBe(false)
     expect('subscribe' in t).toBe(false)
 
-    // 这些方法应在 DataView 上可用
-    expect(typeof def.setCurrentRow).toBe('function')
-    expect(typeof def.setSelectedRows).toBe('function')
+    // 这些方法应在 DataView.selection 上可用
+    expect(typeof def.selection.setCurrentRow).toBe('function')
+    expect(typeof def.selection.setSelectedRows).toBe('function')
     expect(typeof def.clearAll).toBe('function')
     // subscribe 已移除，统一使用 events.on('currentRowChanged', handler) 等独立事件
     expect(typeof def.events.on).toBe('function')
@@ -63,8 +63,8 @@ describe('DataTable responsibilities (refactor verification)', () => {
     parentView2.events.on('currentRowChanged', () => { dsNotified = true })
 
     // 触发父视图状态变化（先 clear，避免 DataSet 构造时 auto-setCurrentRow 导致 row 相同被跳过）
-    parent.setCurrentRow(null)
-    parent.setCurrentRow(parent.rows[0]!)
+    parent.selection.setCurrentRow(null)
+    parent.selection.setCurrentRow(parent.rows[0]!)
 
     expect(parentNotified).toBe(true)
     expect(dsNotified).toBe(true)
@@ -180,7 +180,7 @@ describe('Event system', () => {
     })
 
     // rows[0] 已被 autoCurrentFirst 自动选为 currentRow；使用 rows[1] 触发真实变更
-    deptView.setCurrentRow(deptView.rows[1]!)
+    deptView.selection.setCurrentRow(deptView.rows[1]!)
 
     expect(stateEvents).toContain('Departments:currentRow')
   })
@@ -205,7 +205,7 @@ describe('Event system', () => {
     grid1View.events.on('currentRowChanged', () => { notifyCount++ })
 
     // 通过 setCurrentRow 触发指定视图事件
-    grid1View.setCurrentRow(grid1View.rows[0]!)
+    grid1View.selection.setCurrentRow(grid1View.rows[0]!)
 
     // currentRowChanged 触发 1 次
     expect(notifyCount).toBe(1)

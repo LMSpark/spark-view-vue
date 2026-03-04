@@ -310,7 +310,7 @@ function injectTableEvents(
     }
 
     if (currentRow === null) {
-      view.setCurrentRow(null, bindingId)
+      view.selection.setCurrentRow(null, bindingId ? { originatorId: bindingId } : undefined)
       return
     }
 
@@ -331,9 +331,9 @@ function injectTableEvents(
     // 若 pk 存在但 view.rows 中未找到（行刚被替换），回退到原始 currentRow；
     // 若 pk 完全缺失（el-table 内部 stale 对象，如 watch.immediate 重渲染时），静默跳过。
     if (cleanRow !== null) {
-      view.setCurrentRow(cleanRow, bindingId)
+      view.selection.setCurrentRow(cleanRow, bindingId ? { originatorId: bindingId } : undefined)
     } else if (pk !== undefined) {
-      view.setCurrentRow(currentRow, bindingId)
+      view.selection.setCurrentRow(currentRow, bindingId ? { originatorId: bindingId } : undefined)
     }
     // pk === undefined: 行无主键（el-table 内部触发的虚假 currentChange），静默忽略
   }
@@ -348,6 +348,6 @@ function injectTableEvents(
     }
 
     const valid = Array.isArray(selection) ? selection : []
-    view.setSelectedRows(valid, bindingId)
+    view.selection.setSelectedRows(valid, bindingId)
   }
 }

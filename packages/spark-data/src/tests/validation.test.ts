@@ -141,7 +141,7 @@ describe('DataView - CRUD 校验集成', () => {
   })
 
   it('createRecord 应校验必填字段', async () => {
-    const result = await view.createRecord({ id: 1 } as IDataRow) // name 缺失
+    const result = await view.crud.createRecord({ id: 1 } as IDataRow) // name 缺失
     
     expect(result.success).toBe(false)
     expect(result.message).toContain('数据校验失败')
@@ -149,7 +149,7 @@ describe('DataView - CRUD 校验集成', () => {
   })
 
   it('updateRecord 应校验字段类型', async () => {
-    const result = await view.updateRecord(1, { name: 123 } as unknown as IDataRow)
+    const result = await view.crud.updateRecord(1, { name: 123 } as unknown as IDataRow)
     
     expect(result.success).toBe(false)
     expect(result.message).toContain('数据校验失败')
@@ -162,7 +162,7 @@ describe('DataView - CRUD 校验集成', () => {
       { id: 3, name: 'Bob' }
     ] as IDataRow[]
     
-    const result = await view.batchCreateRecords(items)
+    const result = await view.crud.batchCreateRecords(items)
     
     expect(result.success).toBe(false)
     expect(result.message).toContain('批量数据校验失败')
@@ -175,7 +175,7 @@ describe('DataView - CRUD 校验集成', () => {
       { id: 2, age: 'invalid' } // 类型错误
     ] as unknown as Array<Partial<IDataRow>>
     
-    const result = await view.batchUpdateRecords(items)
+    const result = await view.crud.batchUpdateRecords(items)
     
     expect(result.success).toBe(false)
     expect(result.message).toContain('批量数据校验失败')
@@ -187,7 +187,7 @@ describe('DataView - CRUD 校验集成', () => {
     const validData = { id: 1, name: 'Alice', age: 25 } as IDataRow
     
     try {
-      await view.createRecord(validData)
+      await view.crud.createRecord(validData)
     } catch (error) {
       // API 未配置会抛出错误，但应该是在执行 CRUD 时，而非校验阶段
       expect((error as Error).message).not.toContain('数据校验失败')
@@ -204,7 +204,7 @@ describe('DataView - 无 Validator 时的行为', () => {
     
     // 应该不会被校验拦截（但会因为缺少 API 配置失败）
     try {
-      await view.createRecord({ anything: 'goes' } as IDataRow)
+      await view.crud.createRecord({ anything: 'goes' } as IDataRow)
     } catch (error) {
       expect((error as Error).message).not.toContain('校验')
     }

@@ -37,9 +37,9 @@ describe('Data Architecture Refactor', () => {
     expect(view.rows).toBeDefined()
     expect(view.rows.length).toBe(1)
     expect(typeof view.loadFromServer).toBe('function')
-    expect(typeof view.createRecord).toBe('function')
-    expect(typeof view.updateRecord).toBe('function')
-    expect(typeof view.deleteRecord).toBe('function')
+    expect(typeof view.crud.createRecord).toBe('function')
+    expect(typeof view.crud.updateRecord).toBe('function')
+    expect(typeof view.crud.deleteRecord).toBe('function')
   })
 
   it('DataTable 管理视图容器，不操作数据', () => {

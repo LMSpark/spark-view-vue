@@ -940,33 +940,33 @@ describe('summaryRow 列级聚合', () => {
 
   it('selectionSummaryRow — 清空选中后为空对象', () => {
     const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'sum' } })
-    orders.clearSelectedRows()
+    orders.selection.clearSelectedRows()
     expect(orders.selectionSummaryRow).toEqual({})
   })
 
   it('selectionSummaryRow — 选中部分行后仅聚合选中行', () => {
     const { orders } = makeTestDS([], undefined, undefined, { price: { type: 'sum' }, score: { type: 'avg' } })
     // 选中 row1(price=100,score=95) + row3(price=0,score=45)
-    orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])
+    orders.selection.setSelectedRows([orders.rows[0]!, orders.rows[2]!])
     expect(orders.selectionSummaryRow['price']).toBe(100)           // 100+0
     expect(orders.selectionSummaryRow['score']).toBeCloseTo(70)     // (95+45)/2
   })
 
   it('selectionSummaryRow — 选中全部行等于 summaryRow', () => {
     const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
-    orders.setSelectedRows([...orders.rows])
+    orders.selection.setSelectedRows([...orders.rows])
     expect(orders.selectionSummaryRow['amount']).toBe(orders.summaryRow['amount'])
   })
 
   it('selectionSummaryRow — 切换选中后自动重算', () => {
     const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
-    orders.setSelectedRows([orders.rows[0]!])               // row1: 1500
+    orders.selection.setSelectedRows([orders.rows[0]!])               // row1: 1500
     expect(orders.selectionSummaryRow['amount']).toBe(1500)
 
-    orders.setSelectedRows([orders.rows[1]!, orders.rows[2]!]) // row2: 300, row3: 800
+    orders.selection.setSelectedRows([orders.rows[1]!, orders.rows[2]!]) // row2: 300, row3: 800
     expect(orders.selectionSummaryRow['amount']).toBe(1100)
 
-    orders.clearSelectedRows()
+    orders.selection.clearSelectedRows()
     expect(orders.selectionSummaryRow).toEqual({})
   })
 
@@ -975,13 +975,13 @@ describe('summaryRow 列级聚合', () => {
       { name: 'total', type: 'number', computeExpression: 'price * qty' },
     ], undefined, undefined, { total: { type: 'sum' } })
     // row1: total=600, row2: total=100, row3: total=0
-    orders.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
+    orders.selection.setSelectedRows([orders.rows[0]!, orders.rows[1]!])
     expect(orders.selectionSummaryRow['total']).toBe(700)   // 600+100
   })
 
   it('selectionSummaryRow — 行数据变更后自动重算', () => {
     const { orders } = makeTestDS([], undefined, undefined, { amount: { type: 'sum' } })
-    orders.setSelectedRows([orders.rows[0]!])             // row1: 1500
+    orders.selection.setSelectedRows([orders.rows[0]!])             // row1: 1500
     expect(orders.selectionSummaryRow['amount']).toBe(1500)
 
     orders.updateRowById(1, { amount: 200 })
@@ -990,7 +990,7 @@ describe('summaryRow 列级聚合', () => {
 
   it('selectionSummaryRow — join 聚合选中行', () => {
     const { orders } = makeTestDS([], undefined, undefined, { firstName: { type: 'join' } })
-    orders.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
+    orders.selection.setSelectedRows([orders.rows[0]!, orders.rows[2]!])  // 张, 王
     expect(orders.selectionSummaryRow['firstName']).toBe('张, 王')
   })
 })

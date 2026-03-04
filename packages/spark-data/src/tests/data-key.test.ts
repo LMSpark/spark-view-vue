@@ -228,7 +228,7 @@ describe('DataKey 统一解析器', () => {
 
     it('解析 currentRow（设置后）', () => {
       const view = dataSet.getView('Users', 'default')!
-      view.setCurrentRow({ id: 1, name: '张三' })
+      view.selection.setCurrentRow({ id: 1, name: '张三' })
       
       const dk = parseDataKey('TestDS@Users@currentRow')!
       const value = resolveDataKey(dk, dataSet)
@@ -237,7 +237,7 @@ describe('DataKey 统一解析器', () => {
 
     it('解析 selectedRows', () => {
       const view = dataSet.getView('Users', 'default')!
-      view.setSelectedRows([{ id: 1, name: '张三' }])
+      view.selection.setSelectedRows([{ id: 1, name: '张三' }])
       
       const dk = parseDataKey('TestDS@Users@selectedRows')!
       const value = resolveDataKey(dk, dataSet)

@@ -22,6 +22,16 @@ export type EmitSelectedRowsChangedFn = (originatorId?: string) => void
 /** LocalMutationDelegate 向宿主发射 rows 变更的回调签名 */
 export type EmitRowsChangedFn = () => void
 
+/**
+ * LocalMutationDelegate 变更后的后处理回调（计算列求值 + 聚合重算）。
+ * 在 emitRowsChanged 之前、同步调用。
+ *
+ * - `IDataRow[]`：仅对这些行重新求值计算列，再重算聚合
+ * - `'all'`：全量行重新求值计算列，再重算聚合
+ * - `null`：跳过计算列求值（删除行场景），只重算聚合
+ */
+export type PostMutationFn = (affectedRows: IDataRow[] | 'all' | null) => void
+
 /** CascadeDelegate 向宿主发射 cleared 事件的回调签名 */
 export type EmitClearedFn = () => void
 
@@ -160,8 +170,44 @@ export interface ICrudHost extends IRowStore {
 }
 
 // ─────────────────────────────────────────────
-// CascadeDelegate Host 接口
+// SaveChanges 宿主接口（saveChanges 执行上下文）
 // ─────────────────────────────────────────────
+
+/**
+ * DirtyTrackingDelegate.executeChanges() 所需的宿主能力（ISP 最小子集）。
+ *
+ * DataView 实现此接口，executeChanges 通过此接口完成三阶段提交
+ * （pending create → dirty update → pending delete）。
+ */
+export interface ISaveChangesHost {
+  readonly rows: IDataRow[]
+  /** 主键字段名（fallback PK payload 所用） */
+  readonly primaryKey: string
+  /** 获取行的标量主键值 */
+  getPkKey(row: IDataRow): string | number | undefined
+  /** 从行构建服务端 PK payload（用于 CRUD HTTP 请求） */
+  buildServerPk(row: IDataRow): Record<string, unknown>
+  /** 从数据对象中移除计算列字段（浅拷贝） */
+  stripComputedColumns(data: Partial<IDataRow>): Partial<IDataRow>
+  /** 按主键删除一行 */
+  deleteRowById(id: string | number): boolean
+  /** 追加一行到 rows */
+  appendRow(row: IDataRow): void
+}
+
+/**
+ * saveChanges 批量提交所需的 CRUD 网络操作接口（ISP 最小子集）。
+ *
+ * DirtyTrackingDelegate.executeChanges() 通过此接口提交数据，
+ * 解耦 DataView facade 方法与 CRUD 网络层。
+ */
+export interface ICrudNetworkOps {
+  createRecord(data: Partial<IDataRow>): Promise<CrudResult<IDataRow>>
+  updateRecord(id: string | number, data: Partial<IDataRow>, serverPk?: Record<string, unknown>): Promise<CrudResult<IDataRow>>
+  deleteRecord(id: string | number, serverPk?: Record<string, unknown>): Promise<CrudResult<boolean>>
+}
+
+
 
 /**
  * CascadeDelegate 所需的宿主能力
