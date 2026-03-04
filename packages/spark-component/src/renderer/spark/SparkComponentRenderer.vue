@@ -1,9 +1,11 @@
 <template>
   <!-- 已注册：动态渲染组件，子组件通过 Vue DI 自动获取父上下文 -->
+  <!-- config 整体传递 + config.props 展开为独立 props（字段组件可直接接收） -->
   <component
     v-if="resolvedComponent"
     :is="resolvedComponent"
     :config="config"
+    v-bind="config.props"
   />
 
   <!-- 未注册：降级渲染，继续递归子组件树，不中断渲染 -->

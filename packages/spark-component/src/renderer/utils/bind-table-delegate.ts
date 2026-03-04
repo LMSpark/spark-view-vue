@@ -134,7 +134,7 @@ function injectTableEvents(
     if (!sortInfo.prop || sortInfo.order === null) {
       void view.setSort(undefined)
     } else {
-      const direction = sortInfo.order === 'descending' ? 'desc' : 'asc' as const
+      const direction = sortInfo.order === 'descending' ? 'desc' as const : 'asc' as const
       void view.setSort([{ field: sortInfo.prop, direction }])
     }
   }
