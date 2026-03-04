@@ -4,24 +4,22 @@
       "id": 1,
       "name": "张三",
       "age": 28,
-      "createTime": "2024-01-15"
+      "createTime": "2024-01-15",
+      "selectDate": "2024-06-01"
     },
     {
       "id": 2,
       "name": "李四",
       "age": 32,
-      "createTime": "2024-02-20"
+      "createTime": "2024-02-20",
+      "selectDate": "2024-07-15"
     },
     {
       "id": 3,
       "name": "王五",
       "age": 25,
-      "createTime": "2024-03-10"
+      "createTime": "2024-03-10",
+      "selectDate": "2024-08-20"
     }
-  ],
-  "formData": {
-    "name": "测试用户",
-    "age": 30,
-    "createTime": "2024-01-01"
-  }
+  ]
 }

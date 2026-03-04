@@ -1,141 +1,119 @@
 [
   {
     "type": "div",
-    "class": "renderer-demo-page",
+    "style": "padding: 20px;",
     "children": [
       {
-        "type": "h1",
+        "type": "h2",
         "children": [
-          "Renderer 架构演示"
+          "表格渲染示例"
         ]
       },
       {
-        "type": "div",
-        "class": "demo-section",
+        "type": "r-table",
+        "dataKey": "users@rows",
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true
+        },
         "children": [
           {
-            "type": "h2",
-            "children": [
-              "表格渲染示例"
-            ]
+            "type": "r-text",
+            "name": "name",
+            "props": {
+              "label": "姓名",
+              "width": 120
+            }
           },
           {
-            "type": "r-table",
-            "dataSource": "users",
+            "type": "r-number",
+            "name": "age",
             "props": {
-              "border": true,
-              "stripe": true
-            },
-            "children": [
-              {
-                "type": "r-text",
-                "props": {
-                  "name": "姓名",
-                  "value": "name",
-                  "width": 150
-                }
-              },
-              {
-                "type": "r-number",
-                "props": {
-                  "name": "年龄",
-                  "value": "age",
-                  "width": 100
-                }
-              },
-              {
-                "type": "r-date",
-                "props": {
-                  "name": "创建时间",
-                  "value": "createTime",
-                  "width": 150
-                }
-              }
-            ]
+              "label": "年龄",
+              "width": 100
+            }
+          },
+          {
+            "type": "r-date",
+            "name": "createTime",
+            "props": {
+              "label": "创建时间",
+              "width": 150
+            }
           }
         ]
       },
       {
-        "type": "div",
-        "class": "demo-section",
+        "type": "h2",
+        "style": "margin-top: 24px;",
+        "children": [
+          "行级表单（绑定 currentRow）"
+        ]
+      },
+      {
+        "type": "r-form",
+        "dataKey": "users@currentRow",
+        "props": {
+          "labelWidth": "100px"
+        },
         "children": [
           {
-            "type": "h2",
-            "children": [
-              "表单渲染示例"
-            ]
+            "type": "r-text",
+            "name": "name",
+            "props": {
+              "label": "姓名"
+            }
           },
           {
-            "type": "r-form",
-            "dataKey": "formData",
+            "type": "r-number",
+            "name": "age",
             "props": {
-              "labelWidth": "100px"
-            },
-            "children": [
-              {
-                "type": "r-text",
-                "props": {
-                  "name": "姓名",
-                  "value": "name"
-                }
-              },
-              {
-                "type": "r-number",
-                "props": {
-                  "name": "年龄",
-                  "value": "age",
-                  "min": 0,
-                  "max": 150
-                }
-              },
-              {
-                "type": "r-date",
-                "props": {
-                  "name": "创建时间",
-                  "value": "createTime"
-                }
-              }
-            ]
+              "label": "年龄",
+              "min": 0,
+              "max": 150
+            }
+          },
+          {
+            "type": "r-date",
+            "name": "createTime",
+            "props": {
+              "label": "创建时间"
+            }
           }
         ]
       },
       {
-        "type": "div",
-        "class": "demo-section",
+        "type": "h2",
+        "style": "margin-top: 24px;",
+        "children": [
+          "详情展示示例"
+        ]
+      },
+      {
+        "type": "r-detail",
+        "dataKey": "users@currentRow",
         "children": [
           {
-            "type": "h2",
-            "children": [
-              "详情展示示例"
-            ]
+            "type": "r-text",
+            "name": "name",
+            "props": {
+              "label": "姓名"
+            }
           },
           {
-            "type": "r-detail",
-            "dataKey": "formData",
-            "class": "detail-container",
-            "children": [
-              {
-                "type": "r-text",
-                "props": {
-                  "name": "姓名",
-                  "value": "name"
-                }
-              },
-              {
-                "type": "r-number",
-                "props": {
-                  "name": "年龄",
-                  "value": "age"
-                }
-              },
-              {
-                "type": "r-date",
-                "props": {
-                  "name": "创建时间",
-                  "value": "createTime"
-                }
-              }
-            ]
+            "type": "r-number",
+            "name": "age",
+            "props": {
+              "label": "年龄"
+            }
+          },
+          {
+            "type": "r-date",
+            "name": "createTime",
+            "props": {
+              "label": "创建时间"
+            }
           }
         ]
       }

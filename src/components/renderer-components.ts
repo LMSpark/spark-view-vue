@@ -22,12 +22,16 @@ export { default as RendererDetail } from './renderer-containers/RendererDetail.
 export { default as RendererTree } from './renderer-containers/RendererTree.vue'
 
 // 字段组件
-export { default as FieldText } from './renderer-fields/FieldText.vue'
-export { default as FieldNumber } from './renderer-fields/FieldNumber.vue'
-export { default as FieldDate } from './renderer-fields/FieldDate.vue'
+import FieldTextComp from './renderer-fields/FieldText.vue'
+import FieldNumberComp from './renderer-fields/FieldNumber.vue'
+import FieldDateComp from './renderer-fields/FieldDate.vue'
+export { FieldTextComp as FieldText }
+export { FieldNumberComp as FieldNumber }
+export { FieldDateComp as FieldDate }
 
-// ── SPARK 注册（懒加载，Vite 代码分割）──
+// ── SPARK 注册 ──
 
+// 容器组件：懒加载（体积大，不一定全部使用）
 const containerReg = Spark.createRegister(
   import.meta.glob('./renderer-containers/*.vue') as GlobModules
 )
@@ -38,13 +42,8 @@ containerReg.registerAll({
   'r-tree':   './renderer-containers/RendererTree.vue',
 })
 
-const fieldReg = Spark.createRegister(
-  import.meta.glob('./renderer-fields/*.vue') as GlobModules
-)
-// 使用与 Vue 全局注册一致的 type 名（r-text / r-number / r-date），
-// 保证 JSON 配置与模板直接使用时的 type 名统一
-fieldReg.registerAll({
-  'r-text':   './renderer-fields/FieldText.vue',
-  'r-number': './renderer-fields/FieldNumber.vue',
-  'r-date':   './renderer-fields/FieldDate.vue',
-})
+// 字段组件：同步注册（体积小，且 el-table 要求 el-table-column 同步就绪）
+// 避免 defineAsyncComponent 导致 el-table 初次渲染时找不到 el-table-column
+Spark.register('r-text', FieldTextComp)
+Spark.register('r-number', FieldNumberComp)
+Spark.register('r-date', FieldDateComp)

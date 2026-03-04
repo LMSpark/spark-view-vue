@@ -5,8 +5,8 @@ import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { nextTick } from 'vue'
 
-describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
-  it('should bind only props.dataSource and react to DataView changes', async () => {
+describe('RendererTable - DataView as single data intermediary', () => {
+  it('should bind dataView prop and react to DataView changes', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS',
       tables: {
@@ -20,10 +20,10 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
 
     const dv = ds.getView('Users', 'default')!
     const wrapper = mount(RendererTable as any, {
-      props: { dataSource: dv }
+      props: { dataView: dv }
     })
 
-    // component's computed tableData should come from dataSource.rows
+    // component's computed tableData should come from DataView.rows
     const vm = wrapper.vm as any
     expect(vm.tableData).toBeDefined()
     expect(vm.tableData).toEqual(dv.rows)
@@ -35,7 +35,7 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
     expect(vm.tableData[2].id).toBe(3)
   })
 
-  it('should call dataSource.loadFromServer() on mount when rows empty', async () => {
+  it('should call requestData() on mount when table has API and rows empty', async () => {
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS2',
       tables: {
@@ -47,15 +47,42 @@ describe('RendererTable - prefer dataSource (DataView as IDataSource)', () => {
       }
     })
 
-    const dv = ds.getView('Users', 'default')!
-    // spy on loadFromServer (do not perform real network calls)
-    const spy = vi.spyOn(dv, 'loadFromServer').mockResolvedValue({ success: true, data: [] } as any)
+    // tryAutoLoad only fires when table has API config
+    ds.getTable('Users')!.setApi({ list: { url: '/api/users', method: 'GET' } })
 
-    mount(RendererTable as any, { props: { dataSource: dv } })
+    const dv = ds.getView('Users', 'default')!
+    // spy on requestData (tryAutoLoad calls this)
+    const spy = vi.spyOn(dv, 'requestData').mockResolvedValue(undefined)
+
+    mount(RendererTable as any, { props: { dataView: dv } })
     // allow lifecycle to run
     await nextTick()
 
     expect(spy).toHaveBeenCalled()
+
+    spy.mockRestore()
+  })
+
+  it('should NOT call requestData() for inline data tables (no API)', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS2b',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'id', type: 'number' as const }],
+          rows: [{ id: 1 }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const spy = vi.spyOn(dv, 'requestData').mockResolvedValue(undefined)
+
+    mount(RendererTable as any, { props: { dataView: dv } })
+    await nextTick()
+
+    // 内联数据表无 API，tryAutoLoad 应跳过
+    expect(spy).not.toHaveBeenCalled()
 
     spy.mockRestore()
   })

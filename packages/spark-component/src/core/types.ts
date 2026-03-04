@@ -84,6 +84,8 @@ export interface ComponentConfig {
   type: string
   /** 实例 ID（可选，运行时自动生成） */
   id?: string
+  /** 字段名（与父组件 dataKey 叠加，子组件通过 name 定位数据字段） */
+  name?: string
   /** 组件属性 */
   props?: Record<string, unknown>
   /** 子组件配置（递归） */

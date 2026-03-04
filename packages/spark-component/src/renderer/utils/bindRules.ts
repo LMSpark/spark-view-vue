@@ -124,9 +124,19 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
       }
     }
 
-    // ── r-* 自定义组件：透传 dataKey → props（组件自行 consume PAGE_DATASET 解析） ──
-    if (newRule['dataKey'] !== undefined && isSelfResolvingType(newRule.type as string, registry)) {
-      setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
+    // ── r-* 自定义组件：透传 dataKey / name → props ──
+    // 容器组件（self-resolving）：透传 dataKey（组件自行 consume PAGE_DATASET 解析）
+    // 所有 r-* 组件：透传 name（字段名，与父组件 dataKey 叠加定位数据）
+    const ruleType = newRule.type as string
+    if (isSelfResolvingType(ruleType, registry)) {
+      if (newRule['dataKey'] !== undefined) {
+        setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
+      }
+    }
+    // name 透传：form-create 不会把 rule.name 自动作为 Vue prop 传入，
+    // 所有 r-* 字段/容器组件都需要通过 props.name 接收字段名
+    if (ruleType.startsWith('r-') && newRule.name !== undefined) {
+      setRuleProp(newRule, 'name', newRule.name)
     }
 
     // ── el-table ──
@@ -180,6 +190,22 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
           { ...options, rules: childRules },
           childContext
         )
+      }
+    }
+
+    // ── r-* 容器组件：children → sparkChildren prop ──
+    // form-create 的 slot 机制会用内部包装组件包裹子元素，
+    // 破坏 el-table 对 el-table-column 的直接子级检测。
+    // 将已递归处理的 children 移入 sparkChildren prop，
+    // 由容器组件自行通过 SparkComponentRenderer 渲染。
+    if (isSelfResolvingType(ruleType, registry)) {
+      const sparkKids = Array.isArray(newRule.children) ? newRule.children.filter(
+        (child: unknown): child is Rule => typeof child === 'object' && child !== null
+      ) : []
+      if (sparkKids.length > 0) {
+        if (import.meta.env.DEV) pageLogger.info('sparkChildren 注入', { type: ruleType, count: sparkKids.length })
+        setRuleProp(newRule, 'sparkChildren', sparkKids)
+        newRule.children = []
       }
     }
 
