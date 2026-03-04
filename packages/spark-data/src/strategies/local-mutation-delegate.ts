@@ -13,13 +13,14 @@
  */
 
 import type { IDataRow } from '../types'
-import type { EmitRowsChangedFn, ILocalMutationHost } from './types'
+import type { EmitRowsChangedFn, ILocalMutationHost, PostMutationFn } from './types'
 import { buildPkSet, pruneInvalidSelections } from '../core/utils'
 
 export class LocalMutationDelegate {
   constructor(
     private readonly host: ILocalMutationHost,
     private readonly emitRowsChanged: EmitRowsChangedFn,
+    private readonly postMutation?: PostMutationFn,
   ) {}
 
   // ─────────────────────────────────────────────
@@ -56,12 +57,14 @@ export class LocalMutationDelegate {
     }
     // 清除索引缓存（行数据变更后缓存失效）
     h.rowIndexMap = undefined
+    this.postMutation?.('all')
   }
 
   /** 本地追加一行，发射 stateChanged('rows') */
   appendRow(row: IDataRow): void {
     this.host.rows.push(row)
     this.host.rowIndexMap = undefined   // 新行未加入缓存，直接失效
+    this.postMutation?.([row])
     this.emitRowsChanged()
   }
 
@@ -104,6 +107,7 @@ export class LocalMutationDelegate {
 
     // 主键未变，_currentRowId / _selectedRowIds 仍有效。
     // Phase 4 M5: 仅发射 rows 事件，订阅方从 getter 获取最新行对象引用。
+    this.postMutation?.([newRow])
     this.emitRowsChanged()
     return true
   }
@@ -134,6 +138,7 @@ export class LocalMutationDelegate {
       }
     }
 
+    this.postMutation?.(null)
     this.emitRowsChanged()
     return true
   }
@@ -148,6 +153,7 @@ export class LocalMutationDelegate {
     const validPks = buildPkSet(rows, r => h.getPkKey(r))
     pruneInvalidSelections(h, validPks)
 
+    this.postMutation?.('all')
     this.emitRowsChanged()
   }
 }

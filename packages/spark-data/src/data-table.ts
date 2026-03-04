@@ -120,7 +120,7 @@ export class DataTable {
   setDataSet(ds: DataSet): void {
     this.dataSet = ds
     for (const view of Object.values(this.views)) {
-      view.setupCascade()
+      view.cascade.setupCascade()
     }
   }
 
@@ -159,7 +159,7 @@ export class DataTable {
       // 始终设置 dataTable 引用（使 view.primaryKey getter 可访问列定义）
       view.dataTable = this
       // 视图管理职责：设置级联
-      view.setupCascade()
+      view.cascade.setupCascade()
       // Phase 6 M2: 动态视图自动订阅——通知 DataSet 将活跃的 on/onAnyViewChange 绑定到新视图
       this.dataSet._subscribeNewView(view)
       this.views[viewId] = view

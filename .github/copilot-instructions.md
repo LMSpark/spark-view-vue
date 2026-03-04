@@ -58,8 +58,8 @@ SPARK 的核心设计目标是**让业务需求尽量通过配置表达，最大
 ```
 pagedata.json (JSON 字符串)
   ↓ parsePageData()         ← spark-page-config：唯一转换点
-  DataSet 实例
-  ↓ initDataSet(ds)          ← usePageDataSet：仅存储，不转换
+  DataSet 实例               ← ⚠️ 被 FileLoader memCache 缓存，同 pageId 复用同一实例
+  ↓ initDataSet(ds)          ← usePageDataSet：仅存储引用，不转换，不 destroy
   ↓ provide(PAGE_DATASET, ds)
   ↓ DataKey 解析 → DataView → UI
 ```
@@ -81,7 +81,7 @@ interface UsePageDataSetOptions {
 interface UsePageDataSetReturn {
   readonly dataSet: DataSet | null  // 非响应式 getter，每次访问返回最新值
   initDataSet(ds: DataSet): void    // 写入实例；enableDataSet=false 时为空操作
-  clearDataSet(): void              // 清空实例（onUnmounted 自动调用）
+  clearDataSet(): void              // 仅释放引用（onUnmounted 自动调用）⚠️ 不调用 destroy()
 }
 
 // 使用示例
@@ -91,6 +91,15 @@ provide(PAGE_DATASET, dataSet!)     // 向子组件暴露 DataSet
 ```
 
 **实现说明**：`dataSet` 以闭包变量（`let dataSet: DataSet | null`）存储，**不** 包裹 Vue `ref`/`reactive`——DataSet 自身通过事件总线驱动 UI 更新，响应式包装反而会引入不必要的代理开销。
+
+> **⚠️ 缓存所有权约束（禁止在 clearDataSet 中调用 destroy）**
+>
+> DataSet 实例由 `PageConfigLoader` 的 `FileLoader.withTransform(parsePageData)` 创建并缓存于 **memCache**（内存级，`fileName:transform` 键）。同一 `pageId` 的多次进入共享同一个 DataSet 对象。
+>
+> `clearDataSet()` **仅释放引用**（`dataSet = null`），**禁止调用 `DataSet.destroy()`**。
+> 若调用 destroy，所有 DataView 被销毁、事件清空；下次导航回同一页面时 memCache 返回已销毁的 DataSet，导致表格无数据。
+>
+> DataSet 的真正销毁由缓存策略（`FileLoader.clearCache()`）或页面刷新触发。
 
 ## useSparkComponent 返回值接口
 
@@ -236,18 +245,24 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 
 `__init__` 是页面脚本的**入口函数**，相当于页面的 `onLoad` 事件。框架在 form-create 挂载完成后自动调用。
 
-**执行时序**（解决首次加载无数据问题）：
+**执行时序**：
 ```
-applyConfig
-  ├─ rebindRules()          ← 首次绑定（DataSet 尚未初始化，dataKey 解析为空）
-  └─ form-create 开始挂载
+applyConfig（async）
+  ├─ executeScript()        ← 编译脚本，生成 pageFunctions
+  ├─ registerRenderComponents() ← 注册 Render* Vue 组件
+  ├─ initDataSet(config.data) ← DataSet 直接初始化（wrapInstance 在 SparkPlugin.install 时已设定）
+  ├─ provide(PAGE_DATASET)  ← 向子组件暴露 DataSet
+  ├─ await nextTick()
+  └─ rebindRules()          ← dataKey 解析到真实数据
+       ↓
+loading = false → form-create 开始挂载
        ↓
 form-create mounted 钩子
-  ├─ initDataSet()          ← DataSet 初始化（DataView 被 reactive() 包装）
-  ├─ rebindRules()          ← 二次绑定（dataKey 解析到真实数据）
   ├─ __init__()             ← 页面脚本入口（$api / $dataSet 均已就绪）
   └─ initAutoSelection()    ← 触发初始选中事件
 ```
+
+> **设计要点**：DataSet 在 `rebindRules()` 之前初始化，使 dataKey 一次绑定即解析到真实数据，无需先空绑再二次绑定。`mounted` 每次都会触发（`loading` toggle 导致 form-create 销毁/重建），但其时机晚于 `rebindRules`，不适合放 DataSet 初始化。
 
 **`__init__` 内可用资源**：
 - `$api`：form-create API 已就绪，可调用 `getValue / setValue / hidden` 等

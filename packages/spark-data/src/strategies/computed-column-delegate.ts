@@ -6,7 +6,6 @@
  * - 已编译函数注册表（`ComputedColumnDelegate`）
  * - 编译缓存管理（列指纹 + ctx 变更检测）
  * - 聚合解析器构建（通过 Host 接口访问 DataSet/DataRelation）
- * - 列级聚合行计算（`computeAggregateRow` 纯函数）
  *
  * DataView 仅保留薄代理（setComputedContext / recomputeColumns / summaryRow getter），
  * 所有编排逻辑委托到本文件。
@@ -30,7 +29,7 @@
  */
 
 import { Logger, toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
-import type { IDataRow, ComputedColumnFn, AggregateColumnConfig, AggregateType, DataRelation } from '../types'
+import type { IDataRow, ComputedColumnFn, DataRelation } from '../types'
 
 const logger = Logger('DataView:Computed')
 
@@ -375,87 +374,4 @@ export class ComputedColumnDelegate {
       },
     }
   }
-}
-
-// ─────────────────────────────────────────────
-// 聚合行计算（纯函数）
-// ─────────────────────────────────────────────
-
-/**
- * 根据视图级聚合配置（`view.aggregates`）计算汇总行。
- *
- * **纯函数**——无副作用，不依赖 DataView/DataSet 实例，方便独立测试。
- *
- * @param aggregates 聚合配置：`{ outputName: AggregateColumnConfig }`
- * @param rows       参与聚合的行集合
- * @returns 汇总行对象；aggregates 为空或无行数据时返回空对象
- */
-export function computeAggregateRow(
-  aggregates: Record<string, AggregateColumnConfig>,
-  rows: readonly IDataRow[],
-): IDataRow {
-  const aggCols = Object.entries(aggregates)
-  if (aggCols.length === 0) return {}
-
-  // 空行时提前返回每种聚合类型的默认零值
-  if (rows.length === 0) {
-    const result: IDataRow = {}
-    for (const [name, config] of aggCols) {
-      switch (config.type) {
-        case 'sum':   result[name] = 0; break
-        case 'count': result[name] = 0; break
-        case 'avg':   result[name] = 0; break
-        case 'min':   result[name] = undefined; break
-        case 'max':   result[name] = undefined; break
-        case 'join':  result[name] = ''; break
-        default: break
-      }
-    }
-    return result
-  }
-
-  // ── 单遍扫描：一次遍历 rows 更新所有聚合列的累加器 ──
-  type Acc = { type: AggregateType; field: string; name: string; count: number; sum: number; extremum: number; separator: string; segments: string[] }
-  const accs: Acc[] = aggCols.map(([name, config]) => ({
-    type: config.type, field: config.field ?? name, name,
-    count: 0,       // count / avg 非空计数
-    sum: 0,         // sum / avg 累加
-    extremum: config.type === 'min' ? Infinity : config.type === 'max' ? -Infinity : 0,
-    separator: config.separator ?? ', ',
-    segments: [],
-  }))
-
-  for (const row of rows) {
-    for (const a of accs) {
-      const raw = row[a.field]
-      switch (a.type) {
-        case 'sum':   a.sum += Number(raw ?? 0); break
-        case 'count': if (raw !== null && raw !== undefined) a.count++; break
-        case 'avg': {
-          const v = Number(raw ?? NaN)
-          if (!isNaN(v)) { a.sum += v; a.count++ }
-          break
-        }
-        case 'min': { const v = Number(raw); if (!isNaN(v) && v < a.extremum) a.extremum = v; break }
-        case 'max': { const v = Number(raw); if (!isNaN(v) && v > a.extremum) a.extremum = v; break }
-        case 'join':  if (raw !== null && raw !== undefined && raw !== '') a.segments.push(String(raw)); break
-        default: break
-      }
-    }
-  }
-
-  const result: IDataRow = {}
-  for (const a of accs) {
-    switch (a.type) {
-      case 'sum':   result[a.name] = a.sum; break
-      case 'count': result[a.name] = a.count; break
-      case 'avg':   result[a.name] = a.count > 0 ? a.sum / a.count : 0; break
-      case 'min':   result[a.name] = a.extremum === Infinity ? undefined : a.extremum; break
-      case 'max':   result[a.name] = a.extremum === -Infinity ? undefined : a.extremum; break
-      case 'join':  result[a.name] = a.segments.join(a.separator); break
-      default: break
-    }
-  }
-
-  return result
 }

@@ -71,7 +71,7 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
 
     const deptView = ds.getView('Departments')!
     deptView.events.on('currentRowChanged', handler)
-    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.selection.setCurrentRow(deptView.rows[0]!)
 
     expect(handler).toHaveBeenCalledTimes(1)
     expect(handler).toHaveBeenCalledWith(deptView.rows[0], undefined)
@@ -80,11 +80,11 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
   it('setCurrentRow(null) 触发 currentRowChanged 事件', () => {
     const ds = createTestDataSet()
     const deptView = ds.getView('Departments')!
-    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.selection.setCurrentRow(deptView.rows[0]!)
 
     const handler = vi.fn()
     deptView.events.on('currentRowChanged', handler)
-    deptView.setCurrentRow(null)
+    deptView.selection.setCurrentRow(null)
 
     expect(handler).toHaveBeenCalled()
     expect(handler).toHaveBeenCalledWith(null, undefined)
@@ -96,7 +96,7 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
 
     const deptView = ds.getView('Departments')!
     deptView.events.on('selectedRowsChanged', handler)
-    deptView.setSelectedRows([deptView.rows[0]!, deptView.rows[1]!])
+    deptView.selection.setSelectedRows([deptView.rows[0]!, deptView.rows[1]!])
 
     expect(handler).toHaveBeenCalled()
     expect(handler).toHaveBeenCalledWith(
@@ -108,7 +108,7 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
   it('clearAll 触发 cleared 事件', () => {
     const ds = createTestDataSet()
     const deptView = ds.getView('Departments')!
-    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.selection.setCurrentRow(deptView.rows[0]!)
 
     const handler = vi.fn()
     deptView.events.on('cleared', handler)
@@ -125,9 +125,9 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
     deptView.events.on('currentRowChanged', handler)
 
     const row = deptView.rows[0]!
-    deptView.setCurrentRow(row)
+    deptView.selection.setCurrentRow(row)
     const countAfterFirst = handler.mock.calls.length
-    deptView.setCurrentRow(row) // 同一引用
+    deptView.selection.setCurrentRow(row) // 同一引用
 
     // 第二次调用应被幂等去重，不增加调用次数
     expect(handler).toHaveBeenCalledTimes(countAfterFirst)
@@ -141,9 +141,9 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
     deptView.events.on('selectedRowsChanged', handler)
 
     const rows = [deptView.rows[0]!, deptView.rows[1]!]
-    deptView.setSelectedRows(rows)
+    deptView.selection.setSelectedRows(rows)
     const countAfterFirst = handler.mock.calls.length
-    deptView.setSelectedRows(rows) // 内容相同
+    deptView.selection.setSelectedRows(rows) // 内容相同
 
     // 第二次调用应被去重，不增加调用次数
     expect(handler.mock.calls.length).toBe(countAfterFirst)
@@ -160,8 +160,8 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
 
     // selectionFollowsCurrent=true → setCurrentRow 触发 currentRowChanged (1) + selectedRowsChanged (1)
     // setSelectedRows 触发 selectedRowsChanged (1)
-    deptView.setCurrentRow(deptView.rows[0]!)
-    deptView.setSelectedRows([deptView.rows[1]!])
+    deptView.selection.setCurrentRow(deptView.rows[0]!)
+    deptView.selection.setSelectedRows([deptView.rows[1]!])
 
     expect(currentRowHandler).toHaveBeenCalledTimes(1)
     expect(selectedRowsHandler).toHaveBeenCalledTimes(2) // 1 from follow + 1 from setSelectedRows
@@ -174,12 +174,12 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
     const deptView = ds.getView('Departments')!
     deptView.events.on('currentRowChanged', handler)
 
-    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.selection.setCurrentRow(deptView.rows[0]!)
     const countBeforeOff = handler.mock.calls.length
     expect(countBeforeOff).toBeGreaterThan(0)
 
     deptView.events.off('currentRowChanged', handler)
-    deptView.setCurrentRow(deptView.rows[1]!)
+    deptView.selection.setCurrentRow(deptView.rows[1]!)
     expect(handler).toHaveBeenCalledTimes(countBeforeOff) // 取消后不再增加
   })
 })
@@ -193,12 +193,12 @@ describe('DataView 独立事件 events.on / events.off（事件订阅）', () =>
 
     const deptView = ds.getView('Departments')!
     deptView.events.on('currentRowChanged', cb)
-    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.selection.setCurrentRow(deptView.rows[0]!)
     const countBeforeOff = cb.mock.calls.length
     expect(countBeforeOff).toBeGreaterThan(0)
 
     deptView.events.off('currentRowChanged', cb)
-    deptView.setCurrentRow(deptView.rows[1]!)
+    deptView.selection.setCurrentRow(deptView.rows[1]!)
     expect(cb).toHaveBeenCalledTimes(countBeforeOff) // 取消后不再增加
   })
 
@@ -210,7 +210,7 @@ describe('DataView 独立事件 events.on / events.off（事件订阅）', () =>
     deptView.events.on('currentRowChanged', currentRowCb)
     deptView.events.on('selectedRowsChanged', selectedRowsCb)
 
-    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.selection.setCurrentRow(deptView.rows[0]!)
 
     // selectionFollowsCurrent=true → 触发 currentRowChanged + selectedRowsChanged
     expect(currentRowCb).toHaveBeenCalledTimes(1)
@@ -233,7 +233,7 @@ describe('能力流端到端', () => {
     // 第二个监听器也应收到同一事件
     deptView.events.on('currentRowChanged', () => events.push('listener2:Departments.default'))
 
-    deptView.setCurrentRow(deptView.rows[0]!)
+    deptView.selection.setCurrentRow(deptView.rows[0]!)
 
     // 验证能力流：两个监听器都被触发
     expect(events).toContain('listener2:Departments.default')
@@ -417,7 +417,7 @@ describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
     expect(view.primaryKey).toBe('userId')
     expect(view.currentRow).toBeNull()
 
-    view.setCurrentRow(view.rows[1]!) // Bob
+    view.selection.setCurrentRow(view.rows[1]!) // Bob
     expect(view._currentRowId).toBe(20)
     expect(view.currentRow).toEqual({ userId: 20, name: 'Bob' })
   })
