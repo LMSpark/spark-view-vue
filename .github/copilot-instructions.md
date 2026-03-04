@@ -599,15 +599,28 @@ const cap = consume('app:my-service') // MyServiceCapability | null
 
 **表达式沙箱**——行字段直接引用（`with` 自动解构），还可用 `ctx` 外部上下文：
 ```jsonc
-// 简单算术
+// 简单算术（单表达式，框架自动包裹 return）
 { "name": "total", "type": "number", "computeExpression": "price * qty" }
 // 字符串拼接
 { "name": "fullName", "computeExpression": "firstName + ' ' + lastName" }
 // ctx 上下文（运行时通过 view.setComputedContext({ taxRate: 0.1 }) 注入）
 { "name": "tax", "type": "number", "computeExpression": "amount * ctx.taxRate" }
-// 多语句函数体（含 return）
+// 多语句函数体（含 return）——⚠️ 每条分支最终必须 return
 { "name": "grade", "computeExpression": "if (score >= 90) return 'A'; if (score >= 60) return 'B'; return 'C';" }
 ```
+
+> **⚠️ 返回值规则（关键）**
+>
+> - **单表达式**（不含 `return`）：框架自动包裹为 `return (expression)`，无需手写 `return`
+> - **多语句函数体**（含 `return`）：编译为 `with(__row) { ...原文... }`，**必须确保所有代码路径都有 `return`**，否则结果为 `undefined`
+>
+> ```jsonc
+> // ✅ 正确：所有分支都 return
+> "if (score >= 90) return 'A'; if (score >= 60) return 'B'; return 'C';"
+>
+> // ❌ 错误：缺少最终 return，score < 60 时结果为 undefined
+> "if (score >= 90) return 'A'; if (score >= 60) return 'B';"
+> ```
 
 **子表聚合函数**（需配置 `DataRelation`）：
 ```jsonc
