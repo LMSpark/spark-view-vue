@@ -117,7 +117,7 @@
                   "fontWeight": "bold",
                   "marginTop": "10px"
                 },
-                "dataKey": "PageDataSet@stats@default@currentRow.totalUsers",
+                "dataKey": "stats@currentRow.totalUsers",
                 "children": [
                   ""
                 ]
@@ -146,7 +146,7 @@
                   "marginTop": "10px",
                   "color": "#67c23a"
                 },
-                "dataKey": "PageDataSet@stats@default@currentRow.todayOrders",
+                "dataKey": "stats@currentRow.todayOrders",
                 "children": [
                   ""
                 ]
@@ -174,7 +174,7 @@
                   "fontWeight": "bold",
                   "marginTop": "10px"
                 },
-                "dataKey": "PageDataSet@stats@default@currentRow.revenue",
+                "dataKey": "stats@currentRow.revenue",
                 "children": [
                   ""
                 ]
@@ -203,7 +203,7 @@
                   "marginTop": "10px",
                   "color": "#e6a23c"
                 },
-                "dataKey": "PageDataSet@stats@default@currentRow.pending",
+                "dataKey": "stats@currentRow.pending",
                 "children": [
                   ""
                 ]
@@ -227,7 +227,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "PageDataSet@tableData@default@rows",
+            "dataKey": "tableData@rows",
             "props": {
               "data": [],
               "stripe": true,
@@ -332,7 +332,7 @@
             "field": "status",
             "title": "状态",
             "value": "激活",
-            "dataKey": "PageDataSet@formOptions@default@currentRow.statusOptions",
+            "dataKey": "formOptions@currentRow.statusOptions",
             "options": []
           },
           {
@@ -340,7 +340,7 @@
             "field": "gender",
             "title": "性别",
             "value": "男",
-            "dataKey": "PageDataSet@formOptions@default@currentRow.genderOptions",
+            "dataKey": "formOptions@currentRow.genderOptions",
             "options": []
           },
           {

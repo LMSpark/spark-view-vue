@@ -86,7 +86,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "CascadeDemo@Users@default@rows",
+            "dataKey": "Users@rows",
             "props": {
               "border": true,
               "stripe": true,
@@ -135,7 +135,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "CascadeDemo@Orders@default@rows",
+            "dataKey": "Orders@rows",
             "props": {
               "border": true,
               "stripe": true
@@ -188,7 +188,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "CascadeDemo@OrderItems@default@rows",
+            "dataKey": "OrderItems@rows",
             "props": {
               "border": true,
               "stripe": true

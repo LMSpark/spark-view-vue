@@ -108,7 +108,7 @@ export type IDataRow = Record<string, unknown> & {
   _perm?: IInstancePermission
 }
 
-/** 数据源（带权限和分页） */
+/** 数据源（带权限、分页和元数据） */
 export interface IDataSource {
   rows?: IDataRow[]
   _modelPerm?: IModelPermission
@@ -123,6 +123,27 @@ export interface IDataSource {
   summaryRow?: Readonly<IDataRow>
   /** 选中行聚合汇总行（仅对 selectedRows 执行聚合，选中/数据变更后自动重算） */
   selectionSummaryRow?: Readonly<IDataRow>
+
+  // ===== 表元数据（列定义、表名）=====
+
+  /** 列定义数组（只读，来自 DataTable.columns）。UI 组件据此渲染表头 / 表单标签 */
+  columns?: readonly DataColumn[]
+  /** 表名（来自 DataView.tableName） */
+  tableName?: string
+
+  // ===== 选中值序列化（el-select / el-radio-group 等值型组件消费） =====
+
+  /** 选中行序列化值（按 valueField + selectionDelimiter 拼接，可 v-model 绑定） */
+  value?: string
+  /** 当前行显示标签（按 labelField 或主键回退） */
+  label?: string | null
+  /** 选中行标签数组 */
+  labels?: string[]
+
+  // ===== 请求状态（加载指示器消费） =====
+
+  /** 数据加载状态（Idle / Loading / Loaded / Failed） */
+  requestState?: RequestState
 }
 
 // ===== 数据模型类型 =====
@@ -239,7 +260,16 @@ export interface ColumnTypeMap {
 export type InferColumnValue<T extends ColumnType> =
   T extends keyof ColumnTypeMap ? ColumnTypeMap[T] : unknown
 
-/** 数据列定义 */
+/**
+ * 数据列定义
+ *
+ * 分为两个部分：
+ * - **数据属性**（name, type, isPrimaryKey, ...）：描述数据结构，供校验 / 计算列 / CRUD 使用
+ * - **渲染属性**（label, visible, editable, ...）：描述 UI 呈现方式，供表格 / 表单组件消费
+ *
+ * 渲染属性均为可选，不影响纯数据层使用。
+ * UI 组件通过 `IDataSource.columns` 或 `DataView.columns` 读取列元数据。
+ */
 export interface DataColumn {
   name: string
   /**
@@ -248,6 +278,7 @@ export interface DataColumn {
    * 常用值：`'string'` | `'number'` | `'boolean'` | `'date'` | `'datetime'`
    */
   type: ColumnType
+  /** 列标题（UI 表头 / 表单标签 / 描述列标题）。未设置时 UI 回退到 `name` */
   label?: string
   allowDBNull?: boolean
   defaultValue?: unknown
@@ -271,6 +302,34 @@ export interface DataColumn {
    * `"$count('OrderItems')"` 
    */
   computeExpression?: string
+
+  // ===== 渲染属性（UI 组件消费） =====
+
+  /** 是否可见（默认 true）。false 时 UI 不渲染该列 / 字段 */
+  visible?: boolean
+  /** 是否可编辑（默认 true；computeExpression 列自动 false）。false 时 UI 渲染为只读 */
+  editable?: boolean
+  /** 是否可排序（默认 undefined，由 UI 组件决定） */
+  sortable?: boolean
+  /** 对齐方式（默认 undefined，由 UI 组件根据 type 自动判断） */
+  align?: 'left' | 'center' | 'right'
+  /** 固定列位置（el-table fixed） */
+  fixed?: 'left' | 'right' | boolean
+  /** 列宽度（像素数或 CSS 字符串） */
+  width?: number | string
+  /** 最小列宽度 */
+  minWidth?: number | string
+  /**
+   * 显示格式化模式字符串（框架无关）。
+   *
+   * - 日期列：`'yyyy-MM-dd'`, `'yyyy-MM-dd HH:mm:ss'`
+   * - 数字列：`'#,##0.00'`, `'0.0%'`
+   *
+   * 具体解析由 UI 组件 / 渲染层实现。
+   */
+  formatter?: string
+  /** 占位提示文本（输入组件使用） */
+  placeholder?: string
 }
 
 /** CRUD API配置（继承 TreeApi，树接口族直接平铺在此） */

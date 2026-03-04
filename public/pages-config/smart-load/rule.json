@@ -89,7 +89,7 @@
                 "children": [
                   {
                     "type": "el-table",
-                    "dataKey": "SmartLoadDemo@Categories@default@rows",
+                    "dataKey": "Categories@rows",
                     "props": {
                       "border": true,
                       "size": "small"
@@ -130,7 +130,7 @@
                 "children": [
                   {
                     "type": "el-table",
-                    "dataKey": "SmartLoadDemo@Products@default@rows",
+                    "dataKey": "Products@rows",
                     "props": {
                       "border": true,
                       "size": "small"
@@ -187,7 +187,7 @@
                 "children": [
                   {
                     "type": "el-table",
-                    "dataKey": "SmartLoadDemo@OrderDetails@default@rows",
+                    "dataKey": "OrderDetails@rows",
                     "props": {
                       "border": true,
                       "size": "small"

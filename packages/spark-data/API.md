@@ -353,14 +353,22 @@ scope@tableName@field            # 简写（viewId 默认 'default'）
 
 解析 DataKey 字符串为结构化描述符。非 DataKey 格式返回 `null`。
 
+统一格式（`@` 分隔符，无 scope 前缀，SPA 单 DataSet）：
+
+| 段数 | 格式 | 示例 |
+|------|------|------|
+| 2 段 | `table@field`（viewId 默认 `default`） | `Users@rows` |
+| 3 段 | `table@viewId@field` | `Users@grid@rows` |
+| 4 段 | `scope@table@viewId@field`（旧格式，向后兼容，scope 被忽略） | — |
+
 ```typescript
 import { parseDataKey } from '@spark-view/spark-data'
 
-parseDataKey('MyApp@Users@grid@rows')
-// → { scope: 'MyApp', tableName: 'Users', viewId: 'grid', field: 'rows', raw: '...' }
+parseDataKey('Users@rows')
+// → { tableName: 'Users', viewId: 'default', field: 'rows', raw: 'Users@rows' }
 
-parseDataKey('MyApp@Users@rows')
-// → { scope: 'MyApp', tableName: 'Users', viewId: 'default', field: 'rows', raw: '...' }
+parseDataKey('Users@grid@rows')
+// → { tableName: 'Users', viewId: 'grid', field: 'rows', raw: 'Users@grid@rows' }
 
 parseDataKey('settings.siteName')
 // → null（非 DataKey，回落到 pageData 路径）
@@ -371,17 +379,26 @@ parseDataKey('settings.siteName')
 从 DataSet 中解析数据键对应的值。
 
 ```typescript
-const dk = parseDataKey('MyApp@Users@default@rows')!
+const dk = parseDataKey('Users@rows')!
 const rows = resolveDataKey(dk, dataSet)  // → DataView.rows
 ```
 
-#### `buildDataKey(scope, tableName, field, viewId?): string`
+#### `buildDataKey(tableName, field, viewId?): string`
 
-构建标准化 DataKey 字符串。
+构建标准化 DataKey 字符串。viewId 为 `'default'` 时省略（输出 2 段格式）。
 
 ```typescript
-buildDataKey('MyApp', 'Users', 'rows')           // → 'MyApp@Users@default@rows'
-buildDataKey('MyApp', 'Users', 'rows', 'grid')   // → 'MyApp@Users@grid@rows'
+buildDataKey('Users', 'rows')           // → 'Users@rows'
+buildDataKey('Users', 'rows', 'grid')   // → 'Users@grid@rows'
+```
+
+#### `normalizeDataKey(rawKey: string): string`
+
+将旧 4 段格式（带 scope）剥离 scope 前缀，转为新格式。2/3 段格式原样返回。
+
+```typescript
+normalizeDataKey('MyApp@Users@default@rows')  // → 'Users@default@rows'
+normalizeDataKey('Users@rows')                 // → 'Users@rows'（不变）
 ```
 
 #### `getViewKey(descriptor: DataKeyDescriptor): string`
@@ -391,13 +408,14 @@ buildDataKey('MyApp', 'Users', 'rows', 'grid')   // → 'MyApp@Users@grid@rows'
 ### 类型
 
 ```typescript
-type DataKeyField = 'rows' | 'currentRow' | 'selectedRows'
+type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'summaryRow' | 'selectionSummaryRow'
 
 interface DataKeyDescriptor {
-  scope: string
+  scope?: string        // 仅旧 4 段格式保留，新格式无此字段
   tableName: string
   viewId: string
   field: DataKeyField
+  fieldPath?: string    // 如 'currentRow.totalUsers' → fieldPath = 'totalUsers'
   raw: string
 }
 ```
@@ -407,7 +425,7 @@ interface DataKeyDescriptor {
 ```json
 {
   "type": "el-table",
-  "dataKey": "MyApp@Users@default@rows",
+  "dataKey": "Users@rows",
   "props": { "border": true, "highlightCurrentRow": true }
 }
 ```

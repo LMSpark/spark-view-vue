@@ -28,7 +28,8 @@ export {
   normalizeRuleNode,
   parsePageData,
   parseScript,
-  parseCss
+  parseCss,
+  injectDataKeyScope
 } from './loader'
 
 // 验证器

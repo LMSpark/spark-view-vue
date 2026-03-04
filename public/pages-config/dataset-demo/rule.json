@@ -32,7 +32,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "UserOrderDataSet@Users@default@rows",
+            "dataKey": "Users@rows",
             "props": {
               "border": true,
               "stripe": true,
@@ -115,7 +115,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "UserOrderDataSet@Orders@default@rows",
+            "dataKey": "Orders@rows",
             "props": {
               "border": true,
               "stripe": true
@@ -197,7 +197,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "UserOrderDataSet@OrderItems@default@rows",
+            "dataKey": "OrderItems@rows",
             "props": {
               "border": true,
               "stripe": true

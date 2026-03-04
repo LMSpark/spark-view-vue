@@ -115,18 +115,17 @@ DataSet 不持有 DataView 引用，不直接操控 DataView 状态。
 
 ### DataKey 绑定键
 
-统一格式：`scope@tableName@viewId@field`
+统一格式（无 scope，SPA 单 DataSet）：`tableName@viewId@field`
 
 ```typescript
-// 4段（完整）
-'UserDS@Users@grid@rows'
-// 3段（viewId 默认 'default'）
-'UserDS@Users@rows'
+// 3段（完整）
+'Users@grid@rows'
+// 2段（viewId 默认 'default'）
+'Users@rows'
 ```
 
 | 段 | 含义 | 示例 |
 |----|------|------|
-| `scope` | DataSet.dataSetName 或页面 ID | `UserDS` |
 | `tableName` | DataTable 的键名 | `Users` |
 | `viewId` | DataView 的 viewId | `grid`、`default` |
 | `field` | 绑定字段 | `rows`、`currentRow`、`selectedRows` |
@@ -135,14 +134,14 @@ DataSet 不持有 DataView 引用，不直接操控 DataView 状态。
 import { SparkData } from '@spark-view/spark-data'
 
 // 解析（渲染层首选）
-const binding = SparkData.resolveDataKeyBinding('UserDS@Users@grid@rows', dataSet)
+const binding = SparkData.resolveDataKeyBinding('Users@grid@rows', dataSet)
 if (binding?.kind === 'view') {
   const dataSource: IDataSource = binding.source
 }
 
 // 构建
-const key = SparkData.buildDataKey('UserDS', 'Users', 'rows', 'grid')
-// → 'UserDS@Users@grid@rows'
+const key = SparkData.buildDataKey('Users', 'rows', 'grid')
+// → 'Users@grid@rows'
 ```
 
 ### DataView 请求状态机

@@ -19,7 +19,7 @@
 - 渲染器（`RendererTable` / `RendererTree`）— 仅接收 `props.dataSource`（若空则调用 `dataSource.loadFromServer()`）。
 
 ## 3. DataKey 与绑定规则 🔗
-- 规范格式：`scope@tableName@viewId@field`（工具：`isDataKey()` / `parseDataKey()` / `resolveDataKey()`）。
+- 规范格式：`tableName@viewId@field` 或 `tableName@field`（工具：`isDataKey()` / `parseDataKey()` / `resolveDataKey()`）。
 - 解析行为：
   - `field === 'rows'` → 返回 `DataView`（`DataView` 实现 `IDataSource`）。
   - 渲染器会把 `DataView` 注入到 `props.dataSource` 和 `props.dataView`。

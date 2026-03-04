@@ -152,25 +152,73 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 ```
 
 ## DataKey 数据绑定键 🔗
-统一格式（`@` 分隔符）：`{scope}@{tableName}@{viewId}@{field}`
+统一格式（`@` 分隔符，无 scope 前缀，SPA 单 DataSet）：`{tableName}@{viewId}@{field}`
 
 | 段数 | 格式 | 示例 |
 |------|------|------|
-| 4 段 | `scope@table@viewId@field` | `UserDS@Users@grid@rows` |
-| 3 段 | `scope@table@field`（viewId 默认 `default`） | `UserDS@Users@rows` |
+| 2 段 | `table@field`（viewId 默认 `default`） | `Users@rows` |
+| 3 段 | `table@viewId@field` | `Users@grid@rows` |
+
+**跨页面共享数据**（`#scope` 前缀，显式指定 DataSet scope）：
+
+| 段数 | 格式 | 示例 |
+|------|------|------|
+| `#scope` + 2 段 | `#scope@table@field` | `#SharedDS@Orders@rows` |
+| `#scope` + 3 段 | `#scope@table@viewId@field` | `#SharedDS@Orders@grid@rows` |
 
 - `field` 可选值：`rows`、`currentRow`、`selectedRows`、`summaryRow`、`selectionSummaryRow`
-- ⚠️ 旧格式 `dataset.tables.X.rows` **已移除**，不再支持
+- 支持字段路径：`table@field.path`（如 `stats@currentRow.totalUsers`）
+- `#scope` 用于跨页面引用其他 DataSet 的数据，`parseDataKey` 返回 `{ scope, crossPage: true }`
+- ⚠️ 旧 4 段格式 `scope@table@viewId@field` 仍可解析（向后兼容，scope 保留在描述符中）
+- ⚠️ 旧点号格式 `dataset.tables.X.rows` **已移除**，不再支持
 - API（`packages/spark-data/src/core/data-key.ts`）：
   - `isDataKey(key)` — 格式校验
   - `parseDataKey(key)` — 解析为 `DataKeyDescriptor`
   - `resolveDataKey(descriptor, dataSet)` — 解析数据值
   - `resolveDataKeyBinding(key, dataSet)` — 返回 `DataKeyBinding` 判别联合（渲染层首选）
-  - `buildDataKey(scope, table, field, viewId?)` — 构建 key 字符串
+  - `buildDataKey(table, field, viewId?, scope?)` — 构建 key 字符串（传 scope 时输出 `#scope@...`）
+  - `normalizeDataKey(rawKey)` — 将旧 4 段格式剥离 scope → 新格式；`#scope` 原样保留
 
 ```json
 // rule.json 示例
-{ "dataKey": "UserOrderDataSet@Users@default@rows" }
+{ "dataKey": "Users@rows" }
+{ "dataKey": "stats@currentRow.totalUsers" }
+{ "dataKey": "Users@grid@rows" }
+{ "dataKey": "#SharedDS@Orders@rows" }
+```
+
+### 跨页面 `#scope` 共享数据
+
+当页面需要访问其他 DataSet 的数据时，使用 `#scope` 前缀显式指定目标 scope：
+
+```jsonc
+// ✅ 页面内数据（99% 场景，无 scope）
+{ "type": "el-table",  "dataKey": "Users@rows" }
+{ "type": "el-table",  "dataKey": "Orders@rows" }
+
+// ✅ 跨页面共享数据（#scope 前缀）
+{ "type": "el-table",  "dataKey": "#SharedDS@GlobalUsers@rows" }
+```
+
+`parseDataKey('#SharedDS@Orders@rows')` 返回：
+```typescript
+{
+  scope: 'SharedDS',
+  tableName: 'Orders',
+  viewId: 'default',
+  field: 'rows',
+  crossPage: true,
+  raw: '#SharedDS@Orders@rows'
+}
+```
+
+### 旧格式向后兼容
+
+旧 4 段格式（`scope@table@viewId@field`）仍可被 `parseDataKey` 解析，scope 会被保留在描述符中但不影响数据解析。`normalizeDataKey()` 可将旧格式自动剥离 scope。`PageConfigLoader.loadPageConfig()` 在配置加载阶段自动调用 `injectDataKeyScope()` 规范化所有 dataKey；`bindDataToRules` 在规则绑定前再次调用 `normalizeDataKey` 作为安全兜底。
+
+```jsonc
+// ⚠️ 旧写法（仍可工作，scope 被自动剥离）
+{ "type": "el-table",  "dataKey": "CascadeDemo@Users@default@rows" }
 ```
 
 ### el-table rule.json 配置规范 📋
@@ -186,7 +234,7 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 ```json
 {
   "type": "el-table",
-  "dataKey": "DS@Orders@default@rows",
+  "dataKey": "Orders@rows",
   "props": {
     "border": true,
     "stripe": true,
@@ -359,7 +407,7 @@ r-tree 通过 DataKey 绑定到 `hierarchicalTreeData` 视图；修改树数据�
 // { "hierarchicalTreeData": [] }
 
 // rule.json：r-tree 使用 DataKey，不要用裸字符串 dataSource
-// { "type": "r-tree", "dataKey": "PageDataSet@hierarchicalTreeData@default@rows", ... }
+// { "type": "r-tree", "dataKey": "hierarchicalTreeData@rows", ... }
 
 // script.js __init__：初始化时写入
 function __init__() {
@@ -656,8 +704,8 @@ const cap = consume('app:my-service') // MyServiceCapability | null
 
 **零代码绑定**：UI 通过 DataKey 直接绑定到聚合行：
 ```jsonc
-{ "dataKey": "OrderDS@Orders@default@summaryRow" }          // 全部行聚合
-{ "dataKey": "OrderDS@Orders@default@selectionSummaryRow" } // 选中行聚合
+{ "dataKey": "Orders@summaryRow" }          // 全部行聚合
+{ "dataKey": "Orders@selectionSummaryRow" } // 选中行聚合
 ```
 
 **自动重算触发点**：`appendRow`、`updateRowById`、`deleteRowById`、`replaceRows`、`updateFromServer`、`setComputedContext`、`recomputeColumns`、选中行变更（`setSelectedRows` / `clearSelectedRows`）。
@@ -821,11 +869,11 @@ const dataSet = SparkData.createDataSet({
 })
 
 // DataKey 绑定解析（渲染层）
-const binding = SparkData.resolveDataKeyBinding('MyData@Users@rows', dataSet)
+const binding = SparkData.resolveDataKeyBinding('Users@rows', dataSet)
 if (binding?.kind === 'view') { /* binding.source: IDataSource */ }
 
 // summaryRow / selectionSummaryRow 绑定
-const summaryBinding = SparkData.resolveDataKeyBinding('MyData@Users@summaryRow', dataSet)
+const summaryBinding = SparkData.resolveDataKeyBinding('Users@summaryRow', dataSet)
 if (summaryBinding?.kind === 'value') { /* summaryBinding.value: IDataRow */ }
 ```
 

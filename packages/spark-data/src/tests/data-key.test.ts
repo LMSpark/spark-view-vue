@@ -1,7 +1,13 @@
-/**
+﻿/**
  * DataKey 统一解析器测试
  *
- * 验证 parseDataKey / resolveDataKey / isDataKey / buildDataKey 的正确性
+ * 验证 parseDataKey / resolveDataKey / isDataKey / buildDataKey / normalizeDataKey 的正确性
+ *
+ * 新格式（无 scope）：
+ *   - 2 段：tableName@field（viewId 默认 'default'）
+ *   - 3 段：tableName@viewId@field
+ *   - 跨页面：#scope@tableName@field 或 #scope@tableName@viewId@field
+ *   - 4 段旧格式（scope@table@viewId@field）向后兼容，scope 保留
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -10,14 +16,114 @@ import {
   parseDataKey,
   resolveDataKey,
   isDataKey,
+  normalizeDataKey,
 } from '@spark-view/spark-data'
 import { buildDataKey, getViewKey } from '../core/data-key'
 
 describe('DataKey 统一解析器', () => {
-  // ===== parseDataKey =====
+  // ===== parseDataKey — 2 段简写 =====
 
-  describe('parseDataKey — 新格式（@ 分隔）', () => {
-    it('4 段完整格式：scope@tableName@viewId@field', () => {
+  describe('parseDataKey — 2 段简写（table@field）', () => {
+    it('table@rows', () => {
+      const dk = parseDataKey('Users@rows')
+      expect(dk).toEqual({
+        tableName: 'Users',
+        viewId: 'default',
+        field: 'rows',
+        raw: 'Users@rows'
+      })
+    })
+
+    it('table@currentRow', () => {
+      const dk = parseDataKey('Orders@currentRow')
+      expect(dk).toEqual({
+        tableName: 'Orders',
+        viewId: 'default',
+        field: 'currentRow',
+        raw: 'Orders@currentRow'
+      })
+    })
+
+    it('table@selectedRows', () => {
+      const dk = parseDataKey('Users@selectedRows')
+      expect(dk).toEqual({
+        tableName: 'Users',
+        viewId: 'default',
+        field: 'selectedRows',
+        raw: 'Users@selectedRows'
+      })
+    })
+
+    it('table@summaryRow', () => {
+      const dk = parseDataKey('Orders@summaryRow')
+      expect(dk!.field).toBe('summaryRow')
+      expect(dk!.viewId).toBe('default')
+    })
+
+    it('table@selectionSummaryRow', () => {
+      const dk = parseDataKey('Items@selectionSummaryRow')
+      expect(dk!.field).toBe('selectionSummaryRow')
+    })
+
+    it('带字段路径 table@field.path', () => {
+      const dk = parseDataKey('stats@currentRow.totalUsers')
+      expect(dk).toEqual({
+        tableName: 'stats',
+        viewId: 'default',
+        field: 'currentRow',
+        fieldPath: 'totalUsers',
+        raw: 'stats@currentRow.totalUsers'
+      })
+    })
+
+    it('非法字段名返回 null', () => {
+      expect(parseDataKey('Users@invalidField')).toBeNull()
+    })
+  })
+
+  // ===== parseDataKey — 3 段完整 =====
+
+  describe('parseDataKey — 3 段完整（table@viewId@field）', () => {
+    it('table@viewId@rows', () => {
+      const dk = parseDataKey('Users@grid@rows')
+      expect(dk).toEqual({
+        tableName: 'Users',
+        viewId: 'grid',
+        field: 'rows',
+        raw: 'Users@grid@rows'
+      })
+    })
+
+    it('table@default@currentRow', () => {
+      const dk = parseDataKey('Orders@default@currentRow')
+      expect(dk).toEqual({
+        tableName: 'Orders',
+        viewId: 'default',
+        field: 'currentRow',
+        raw: 'Orders@default@currentRow'
+      })
+    })
+
+    it('带字段路径 table@viewId@field.path', () => {
+      const dk = parseDataKey('stats@default@currentRow.totalUsers')
+      expect(dk).toEqual({
+        tableName: 'stats',
+        viewId: 'default',
+        field: 'currentRow',
+        fieldPath: 'totalUsers',
+        raw: 'stats@default@currentRow.totalUsers'
+      })
+    })
+
+    it('非法字段名返回 null', () => {
+      expect(parseDataKey('Users@grid@invalidField')).toBeNull()
+    })
+  })
+
+  // ===== parseDataKey — 4 段旧格式 =====
+
+  describe('parseDataKey — 4 段旧格式（scope@table@viewId@field，向后兼容）', () => {
+    it('4 段完整格式', () => {
       const dk = parseDataKey('MyApp@Users@grid@rows')
       expect(dk).toEqual({
         scope: 'MyApp',
@@ -50,39 +156,102 @@ describe('DataKey 统一解析器', () => {
       })
     })
 
-    it('3 段简写格式：scope@tableName@field → viewId 默认 default', () => {
-      const dk = parseDataKey('MyApp@Users@rows')
+    it('4 段带字段路径', () => {
+      const dk = parseDataKey('DS@Users@default@currentRow.name')
       expect(dk).toEqual({
-        scope: 'MyApp',
+        scope: 'DS',
         tableName: 'Users',
         viewId: 'default',
-        field: 'rows',
-        raw: 'MyApp@Users@rows'
+        field: 'currentRow',
+        fieldPath: 'name',
+        raw: 'DS@Users@default@currentRow.name'
       })
-    })
-
-    it('3 段 currentRow', () => {
-      const dk = parseDataKey('MyApp@Orders@currentRow')
-      expect(dk!.field).toBe('currentRow')
-      expect(dk!.viewId).toBe('default')
     })
 
     it('非法字段名返回 null', () => {
       expect(parseDataKey('MyApp@Users@default@invalidField')).toBeNull()
     })
 
-    it('段数不对返回 null', () => {
-      expect(parseDataKey('A@B')).toBeNull()
+    it('5 段返回 null', () => {
       expect(parseDataKey('A@B@C@D@E')).toBeNull()
     })
 
     it('空段返回 null', () => {
-      expect(parseDataKey('@Users@rows')).toBeNull()
-      expect(parseDataKey('DS@@rows')).toBeNull()
+      expect(parseDataKey('@Users@default@rows')).toBeNull()
+      expect(parseDataKey('DS@Users@@rows')).toBeNull()
     })
   })
 
-  describe('parseDataKey — 旧格式（不再支持）', () => {
+  // ===== parseDataKey — 跨页面 #scope =====
+
+  describe('parseDataKey — 跨页面 #scope 前缀', () => {
+    it('#scope@table@field（3 段，viewId 默认 default）', () => {
+      const dk = parseDataKey('#SharedDS@Orders@rows')
+      expect(dk).toEqual({
+        scope: 'SharedDS',
+        tableName: 'Orders',
+        viewId: 'default',
+        field: 'rows',
+        raw: '#SharedDS@Orders@rows',
+        crossPage: true
+      })
+    })
+
+    it('#scope@table@viewId@field（4 段完整）', () => {
+      const dk = parseDataKey('#SharedDS@Orders@grid@rows')
+      expect(dk).toEqual({
+        scope: 'SharedDS',
+        tableName: 'Orders',
+        viewId: 'grid',
+        field: 'rows',
+        raw: '#SharedDS@Orders@grid@rows',
+        crossPage: true
+      })
+    })
+
+    it('#scope@table@field.path 带字段路径', () => {
+      const dk = parseDataKey('#SharedDS@stats@currentRow.revenue')
+      expect(dk).toEqual({
+        scope: 'SharedDS',
+        tableName: 'stats',
+        viewId: 'default',
+        field: 'currentRow',
+        fieldPath: 'revenue',
+        raw: '#SharedDS@stats@currentRow.revenue',
+        crossPage: true
+      })
+    })
+
+    it('#scope@table@viewId@field.path 带字段路径', () => {
+      const dk = parseDataKey('#SharedDS@stats@main@currentRow.revenue')
+      expect(dk).toEqual({
+        scope: 'SharedDS',
+        tableName: 'stats',
+        viewId: 'main',
+        field: 'currentRow',
+        fieldPath: 'revenue',
+        raw: '#SharedDS@stats@main@currentRow.revenue',
+        crossPage: true
+      })
+    })
+
+    it('#scope 非法字段名返回 null', () => {
+      expect(parseDataKey('#DS@Users@invalidField')).toBeNull()
+    })
+
+    it('#scope 段数不足返回 null', () => {
+      expect(parseDataKey('#DS@Users')).toBeNull()
+    })
+
+    it('#scope 空段返回 null', () => {
+      expect(parseDataKey('#@Users@rows')).toBeNull()
+      expect(parseDataKey('#DS@@rows')).toBeNull()
+    })
+  })
+
+  // ===== parseDataKey — 旧点号格式 =====
+
+  describe('parseDataKey — 旧点号格式（不再支持）', () => {
     it('dataset.tables.{tableName}.rows 返回 null', () => {
       expect(parseDataKey('dataset.tables.Users.rows')).toBeNull()
     })
@@ -93,10 +262,6 @@ describe('DataKey 统一解析器', () => {
 
     it('dataset.tables.{tableName}.currentRow 返回 null', () => {
       expect(parseDataKey('dataset.tables.Users.currentRow')).toBeNull()
-    })
-
-    it('dataset.tables.{tableName}.selectedRows 返回 null', () => {
-      expect(parseDataKey('dataset.tables.Users.selectedRows')).toBeNull()
     })
 
     it('dataset.tables.{tableName}.columns 返回 null', () => {
@@ -120,14 +285,24 @@ describe('DataKey 统一解析器', () => {
   // ===== isDataKey =====
 
   describe('isDataKey', () => {
-    it('新格式返回 true', () => {
-      expect(isDataKey('MyApp@Users@rows')).toBe(true)
+    it('2 段新格式返回 true', () => {
+      expect(isDataKey('Users@rows')).toBe(true)
+    })
+
+    it('3 段新格式返回 true', () => {
+      expect(isDataKey('Users@grid@rows')).toBe(true)
+    })
+
+    it('4 段旧格式返回 true', () => {
       expect(isDataKey('DS@Orders@grid@currentRow')).toBe(true)
     })
 
-    it('旧格式不再识别', () => {
+    it('#scope 跨页面格式返回 true', () => {
+      expect(isDataKey('#SharedDS@Orders@rows')).toBe(true)
+    })
+
+    it('旧点号格式不再识别', () => {
       expect(isDataKey('dataset.tables.Users.rows')).toBe(false)
-      expect(isDataKey('dataset.tables.Orders.views.grid.rows')).toBe(false)
     })
 
     it('普通 pageData 路径返回 false', () => {
@@ -140,27 +315,47 @@ describe('DataKey 统一解析器', () => {
   // ===== buildDataKey =====
 
   describe('buildDataKey', () => {
-    it('构建完整 4 段 dataKey', () => {
-      expect(buildDataKey('MyApp', 'Users', 'rows', 'grid')).toBe('MyApp@Users@grid@rows')
+    it('2 段简写（省略 viewId）', () => {
+      expect(buildDataKey('Users', 'rows')).toBe('Users@rows')
     })
 
-    it('省略 viewId 默认 default', () => {
-      expect(buildDataKey('MyApp', 'Users', 'rows')).toBe('MyApp@Users@default@rows')
+    it('3 段完整（指定 viewId）', () => {
+      expect(buildDataKey('Users', 'rows', 'grid')).toBe('Users@grid@rows')
     })
 
-    it('构建 currentRow 键', () => {
-      expect(buildDataKey('DS', 'Orders', 'currentRow')).toBe('DS@Orders@default@currentRow')
+    it('viewId=default 时输出 2 段', () => {
+      expect(buildDataKey('Orders', 'currentRow', 'default')).toBe('Orders@currentRow')
+    })
+
+    it('#scope 跨页面 2 段', () => {
+      expect(buildDataKey('Orders', 'rows', 'default', 'SharedDS')).toBe('#SharedDS@Orders@rows')
+    })
+
+    it('#scope 跨页面 3 段', () => {
+      expect(buildDataKey('Orders', 'rows', 'grid', 'SharedDS')).toBe('#SharedDS@Orders@grid@rows')
     })
 
     it('构建的键可以被 parseDataKey 解析回来', () => {
-      const key = buildDataKey('TestDS', 'Products', 'selectedRows', 'grid2')
+      const key = buildDataKey('Products', 'selectedRows', 'grid2')
       const dk = parseDataKey(key)
       expect(dk).toEqual({
-        scope: 'TestDS',
         tableName: 'Products',
         viewId: 'grid2',
         field: 'selectedRows',
         raw: key
+      })
+    })
+
+    it('#scope 构建的键可以被 parseDataKey 解析回来', () => {
+      const key = buildDataKey('Products', 'selectedRows', 'grid2', 'SharedDS')
+      const dk = parseDataKey(key)
+      expect(dk).toEqual({
+        scope: 'SharedDS',
+        tableName: 'Products',
+        viewId: 'grid2',
+        field: 'selectedRows',
+        raw: key,
+        crossPage: true
       })
     })
   })
@@ -169,13 +364,54 @@ describe('DataKey 统一解析器', () => {
 
   describe('getViewKey', () => {
     it('返回 tableName.viewId 格式', () => {
-      const dk = parseDataKey('MyApp@Users@grid@rows')!
+      const dk = parseDataKey('Users@grid@rows')!
       expect(getViewKey(dk)).toBe('Users.grid')
     })
 
-    it('默认视图', () => {
-      const dk = parseDataKey('MyApp@Users@rows')!
+    it('2 段默认视图', () => {
+      const dk = parseDataKey('Users@rows')!
       expect(getViewKey(dk)).toBe('Users.default')
+    })
+
+    it('#scope 跨页面键', () => {
+      const dk = parseDataKey('#SharedDS@Users@grid@rows')!
+      expect(getViewKey(dk)).toBe('Users.grid')
+    })
+  })
+
+  // ===== normalizeDataKey =====
+
+  describe('normalizeDataKey — 规范化', () => {
+    it('2 段新格式原样返回', () => {
+      expect(normalizeDataKey('Orders@rows')).toBe('Orders@rows')
+    })
+
+    it('3 段新格式原样返回', () => {
+      expect(normalizeDataKey('Orders@default@rows')).toBe('Orders@default@rows')
+    })
+
+    it('4 段旧格式剥离 scope', () => {
+      expect(normalizeDataKey('DS@Orders@default@rows')).toBe('Orders@default@rows')
+    })
+
+    it('4 段旧格式带 fieldPath 剥离 scope', () => {
+      expect(normalizeDataKey('DS@Users@default@currentRow.name')).toBe('Users@default@currentRow.name')
+    })
+
+    it('#scope 跨页面原样保留', () => {
+      expect(normalizeDataKey('#SharedDS@Orders@rows')).toBe('#SharedDS@Orders@rows')
+    })
+
+    it('#scope 跨页面 4 段原样保留', () => {
+      expect(normalizeDataKey('#SharedDS@Orders@grid@rows')).toBe('#SharedDS@Orders@grid@rows')
+    })
+
+    it('空字符串原样返回', () => {
+      expect(normalizeDataKey('')).toBe('')
+    })
+
+    it('非 DataKey 原样返回', () => {
+      expect(normalizeDataKey('formData')).toBe('formData')
     })
   })
 
@@ -213,7 +449,21 @@ describe('DataKey 统一解析器', () => {
       })
     })
 
-    it('解析 rows', () => {
+    it('2 段新格式解析 rows', () => {
+      const dk = parseDataKey('Users@rows')!
+      const rows = resolveDataKey(dk, dataSet)
+      expect(Array.isArray(rows)).toBe(true)
+      expect((rows as unknown[]).length).toBe(2)
+    })
+
+    it('3 段新格式解析 rows', () => {
+      const dk = parseDataKey('Users@default@rows')!
+      const rows = resolveDataKey(dk, dataSet)
+      expect(Array.isArray(rows)).toBe(true)
+      expect((rows as unknown[]).length).toBe(2)
+    })
+
+    it('4 段旧格式解析 rows（scope 用于向后兼容）', () => {
       const dk = parseDataKey('TestDS@Users@default@rows')!
       const rows = resolveDataKey(dk, dataSet)
       expect(Array.isArray(rows)).toBe(true)
@@ -221,7 +471,7 @@ describe('DataKey 统一解析器', () => {
     })
 
     it('解析 currentRow（初始为 null）', () => {
-      const dk = parseDataKey('TestDS@Users@default@currentRow')!
+      const dk = parseDataKey('Users@currentRow')!
       const value = resolveDataKey(dk, dataSet)
       expect(value).toBeNull()
     })
@@ -229,8 +479,8 @@ describe('DataKey 统一解析器', () => {
     it('解析 currentRow（设置后）', () => {
       const view = dataSet.getView('Users', 'default')!
       view.selection.setCurrentRow({ id: 1, name: '张三' })
-      
-      const dk = parseDataKey('TestDS@Users@currentRow')!
+
+      const dk = parseDataKey('Users@currentRow')!
       const value = resolveDataKey(dk, dataSet)
       expect(value).toEqual({ id: 1, name: '张三' })
     })
@@ -238,31 +488,22 @@ describe('DataKey 统一解析器', () => {
     it('解析 selectedRows', () => {
       const view = dataSet.getView('Users', 'default')!
       view.selection.setSelectedRows([{ id: 1, name: '张三' }])
-      
-      const dk = parseDataKey('TestDS@Users@selectedRows')!
+
+      const dk = parseDataKey('Users@selectedRows')!
       const value = resolveDataKey(dk, dataSet)
       expect(Array.isArray(value)).toBe(true)
       expect((value as unknown[]).length).toBe(1)
     })
 
     it('不存在的表返回 undefined', () => {
-      const dk = parseDataKey('TestDS@NonExistent@rows')!
+      const dk = parseDataKey('NonExistent@rows')!
       expect(resolveDataKey(dk, dataSet)).toBeUndefined()
     })
 
-    it('不存在的视图返回 undefined（不会自动创建）', () => {
-      const dk = parseDataKey('TestDS@Users@grid@rows')!
+    it('不存在的视图返回 undefined', () => {
+      const dk = parseDataKey('Users@grid@rows')!
       const result = resolveDataKey(dk, dataSet)
-      // getView 不会创建不存在的视图，返回 undefined
       expect(result).toBeUndefined()
-    })
-
-    it('旧格式不再支持，使用新格式解析', () => {
-      // 旧格式已废弃，使用 @ 格式
-      const dk = parseDataKey('TestDS@Users@default@rows')!
-      const rows = resolveDataKey(dk, dataSet)
-      expect(Array.isArray(rows)).toBe(true)
-      expect((rows as unknown[]).length).toBe(2)
     })
   })
 })
