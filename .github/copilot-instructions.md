@@ -4,7 +4,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 
 ## Quick facts ✅
 - Dev: `pnpm run dev` (Vite, port 5173)
-- Build: `pnpm run build` (runs `vue-tsc` then `vite build`)
+- Build: `pnpm run build` (仅 `vite build`); `pnpm run build:check` (含 `vue-tsc` + `vite build`)
 - Typecheck: `pnpm run typecheck` (uses `tsconfig.typecheck.json`)
 - Tests: `pnpm run test` (Vitest + jsdom + @vue/test-utils); single test: `pnpm run test -- -t "capability-late-binding"`
 - Lint & hooks: `pnpm run lint`; Husky pre-commit runs `lint` + `typecheck`
@@ -23,7 +23,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
 - **Capability keys**: `packages/spark-utils/src/capability/symbols.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
 - **Tests**: `tests/` (重要: `capability-late-binding.test.ts`, `capability-system.test.ts`, `data-key.test.ts`)
-- **Computed column tests**: `packages/spark-data/src/tests/computed-columns.test.ts`（13 sections, 214+ cases）
+- **Computed column tests**: `packages/spark-data/src/tests/computed-columns.test.ts`（13 sections, 87 cases）
 - **Expression compiler**: `packages/spark-data/src/strategies/computed-column-delegate.ts`
 
 ## Project conventions & patterns 📌
@@ -223,7 +223,7 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 | `$dataSet` | `IDataSet \| null` | **页面级 DataSet**（数据唯一入口） |
 | `$rebindRules` | `() => void` | 触发 form-create **完整重建**规则（⚠️ **高危**：会折叠所有树节点、重置输入框、丢失滚动位置，尽量避免） |
 | `$refreshData` | `(key?) => Promise<void>` | 刷新数据（可选指定表名） |
-| `$page` | `IPageServiceCapability` | ✅ **推荐** UI 消息、确认、输入、导航（框架无关） |
+| `$page` | `IPageServiceCapability` | ✅ **推荐** UI 消息、确认、输入、导航、加载遮罩（框架无关） |
 | `SparkData` | SparkData 命名空间 | `createTreeManager` 等工具 |
 | `h` | Vue `h` 函数 | 渲染函数专用（`Render*` 函数内使用） |
 
@@ -510,11 +510,11 @@ interface IModelPermission {      // 表级 — 存储在 dataSource._modelPerm
 | `APP_SERVICES` | spark-utils | `IAppServicesCapability` | 路由、logger、租户等应用服务 |
 | `LOGGER` | spark-utils | `LoggerApi` | 组件级自定义 logger 覆盖 |
 | `PAGE_SERVICE` | spark-utils | `IPageServiceCapability` | UI 消息、确认框、导航 |
-| `SELECTION` | spark-utils | `ISelectionCapability` | 选择状态管理 |
-| `CURRENT_ROW` | spark-utils | `ICurrentRowCapability` | 当前行管理 |
-| `ROW_DATA` | spark-utils | `IRowDataCapability` | 行数据访问 |
-| `GRID_EVENTS` | spark-utils | `IEventEmitter` | 表格事件总线 |
-| `ROW_EVENTS` | spark-utils | `IEventEmitter` | 行事件总线 |
+| `SELECTION` | spark-utils | `ISelectionCapability` | 选择状态管理 ⚠️ `@reserved` 尚无 provider |
+| `CURRENT_ROW` | spark-utils | `ICurrentRowCapability` | 当前行管理 ⚠️ `@reserved` 尚无 provider |
+| `ROW_DATA` | spark-utils | `IRowDataCapability` | 行数据访问 ⚠️ `@reserved` 尚无 provider |
+| `GRID_EVENTS` | spark-utils | `IEventEmitter` | 表格事件总线 ⚠️ `@reserved` 尚无 provider |
+| `ROW_EVENTS` | spark-utils | `IEventEmitter` | 行事件总线 ⚠️ `@reserved` 尚无 provider |
 | `PAGE_DATASET` | spark-component | `IDataSet` | 页面级 DataSet（PageRenderer provide） |
 | `DATA_SOURCE` | spark-component | `IDataSource` | 组件级数据视图（容器组件 provide，DataView 实现此接口） |
 
@@ -665,7 +665,7 @@ const cap = consume('app:my-service') // MyServiceCapability | null
 ### 关键文件
 - 表达式编译器：`packages/spark-data/src/strategies/computed-column-delegate.ts`
 - DataView 聚合：`packages/spark-data/src/data-view.ts`（`_recomputeSummary` / `_recomputeSelectionSummary`）
-- 测试：`packages/spark-data/src/tests/computed-columns.test.ts`（13 个 section，226+ cases）
+- 测试：`packages/spark-data/src/tests/computed-columns.test.ts`（13 个 section，87 cases）
 
 ## Package structure 📦
 ```
@@ -938,15 +938,19 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
 **类型安全**：
 - `no-explicit-any` — 禁止 `any`
 - `no-unsafe-*`（assignment / member-access / call / return / argument） — 阻止 `any` 传播
-- `no-unnecessary-type-assertion` / `no-redundant-type-constituents`
+- `no-unnecessary-type-assertion` / `no-redundant-type-constituents` / `no-duplicate-type-constituents`
 - `strict-boolean-expressions` — 禁止隐式布尔转换（允许 nullable）
 - `no-unnecessary-condition` — 禁止恒真/恒假条件
 - `switch-exhaustiveness-check` — switch 必须覆盖所有分支
+- `prefer-optional-chain` / `prefer-nullish-coalescing` — 强制 `?.` 和 `??`
+- `no-floating-promises` / `no-misused-promises` / `await-thenable` / `require-await` — Promise 安全
+- `prefer-as-const` — 强制 `as const`
 
 **代码质量** ★：
 - `no-shadow` — 禁止变量遮蔽（含 TypeScript 枚举）
 - `no-confusing-void-expression` — 禁止在表达式位置使用 void 返回值
 - `no-dynamic-delete` — 禁止 `delete obj[key]`（见替代模式）
+- `no-import-type-side-effects` — 禁止 type import 副作用
 - `unified-signatures` — 合并可选参数签名
 - `no-useless-constructor` — 禁止空构造函数
 - `no-inferrable-types` — 禁止冗余类型标注（`const x: number = 1`）
@@ -955,6 +959,8 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
 
 **安全**：
 - `no-eval` / `no-implied-eval` / `no-new-wrappers` / `no-return-assign` / `no-sequences`
+- `no-self-compare` — 禁止 `x === x`
+- `no-template-curly-in-string` (warn) — 疑似模板字面量拼写错误
 
 **风格强制（auto-fix）**：
 - `prefer-template` — 字符串拼接用模板字面量
@@ -1025,10 +1031,11 @@ export interface FormCreateAPI {
 ### 测试文件放宽规则
 
 `*.test.ts` / `tests/` 目录中以下规则关闭：
-- `no-explicit-any` / `no-unsafe-*` — 测试 mock 需要灵活类型
-- `no-shadow` / `no-dynamic-delete` / `no-confusing-void-expression`
-- `strict-boolean-expressions` / `no-unnecessary-condition`
-- `require-await` / `consistent-type-imports`
+- `no-explicit-any` / `no-unsafe-*` / `no-non-null-assertion` — 测试 mock 需要灵活类型
+- `no-shadow` / `no-dynamic-delete` / `no-confusing-void-expression` / `no-self-compare`
+- `strict-boolean-expressions` / `no-unnecessary-condition` / `no-unnecessary-type-assertion`
+- `require-await` / `consistent-type-imports` / `consistent-type-exports`
+- `prefer-optional-chain` / `prefer-nullish-coalescing` / `no-floating-promises` / `no-misused-promises`
 
 ### 业务脚本（script.js）ESLint 豁免
 
@@ -1046,10 +1053,13 @@ export interface FormCreateAPI {
 
 ## Integration & build notes 🔧
 - Vite 识别 `e-*` 为自定义元素；SSR 通过 `ssr.noExternal` 处理 element-plus
-- TypeScript path aliases（根 `tsconfig.json`）:
-  - `@spark-view/spark-component` → `./packages/spark-component/src`
-  - `@spark-view/spark-data` → `./packages/spark-data/src`
+- TypeScript path aliases（`tsconfig.typecheck.json`，类型检查时解析到源码）:
   - `@spark-view/spark-utils` → `./packages/spark-utils/src`
+  - `@spark-view/spark-data` → `./packages/spark-data/src`
+  - `@spark-view/spark-component` → `./packages/spark-component/src`
+  - `@spark-view/spark-page-config` → `./packages/spark-page-config/src`
+  - `@spark-view/spark-app` → `./packages/spark-app/src`
+  - `@spark-view/spark-renderer` → `./packages/spark-component/dist`（别名，等同 spark-component）
 - 每个子包 `tsconfig.json` 独立声明 `paths`（相对于包目录），IDE 类型解析正确
 - ⚠️ **每个子包 `tsconfig.json` 必须包含 `"baseUrl": "."`**：`paths` 中的相对路径（如 `"../spark-utils/dist/index.d.ts"`）以 `baseUrl` 为基准解析。缺少此字段时，子包会继承根 `tsconfig.json` 的 `baseUrl`（整个 monorepo 根目录），导致 `tsc` 找不到 dist 类型文件并回退到 pnpm 存储的旧版本，产生莫名的"模块无此导出"错误。
 - ⚠️ **`tsconfig.build.json` 注意**：每个子包的 `tsconfig.build.json` 中 `"paths"` 必须保留依赖包的 dist 路径别名（不能设为 `{}`），否则 `tsc` 无法追踪 pnpm 软链中的 `.js` 重导出链，导致编译时找不到新增导出成员（如 `normalizeKey`、`CapabilityTypeMap`）
