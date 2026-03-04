@@ -930,6 +930,59 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
 
 发布使用 `node scripts/publish-packages.mjs`（自动按依赖顺序构建 + 发布所有子包）。
 
+### 完整发布流程（照做即可）
+
+```powershell
+# ── Step 1: 确保测试通过 ──
+pnpm run test
+
+# ── Step 2: 升版本号（所有 5 个包统一升 patch） ──
+# 手动编辑每个 packages/*/package.json 的 version 字段
+# 或用脚本批量升：
+Get-ChildItem packages -Directory | ForEach-Object {
+  $f = "packages\$($_.Name)\package.json"
+  $j = Get-Content $f -Raw | ConvertFrom-Json
+  $v = [version]$j.version
+  $j.version = "$($v.Major).$($v.Minor).$($v.Build + 1)"
+  $j | ConvertTo-Json -Depth 10 | Set-Content $f -Encoding UTF8
+  Write-Host "$($j.name) -> $($j.version)"
+}
+
+# ── Step 3: 确认 npm 身份（必须是 spark_view） ──
+npm whoami --registry https://registry.npmjs.org
+# 如未登录或 token 过期：
+#   npm login --registry https://registry.npmjs.org
+
+# ── Step 4: 确认 auth-type 为 legacy（避免每次弹浏览器认证） ──
+npm config set auth-type legacy
+
+# ── Step 5: 发布（自动构建 + 跳过已发版的包） ──
+node scripts/publish-packages.mjs
+
+# ── Step 6: 验证发布结果 ──
+@('spark-utils','spark-data','spark-page-config','spark-component','spark-app') |
+  ForEach-Object { $v = npm view "@spark-view/$_" version --registry https://registry.npmjs.org 2>$null; Write-Host "$_ = $v" }
+
+# ── Step 7: 提交 + 推送 ──
+git add -A
+git commit -m "chore(deps): bump all packages to vX.Y.Z"
+git push
+```
+
+### 常见问题速查
+
+| 症状 | 原因 | 解决 |
+|------|------|------|
+| `EOTP` / 弹浏览器认证 | `auth-type` 不是 legacy | `npm config set auth-type legacy` |
+| `Access token expired or revoked` | token 过期 | `npm login --registry https://registry.npmjs.org` |
+| `You cannot publish over previously published versions` | 版本已存在 | 脚本会自动跳过，不影响后续包 |
+| 版本检查误判（已发但脚本不跳过） | 走了镜像源，同步延迟 | 脚本已修复：显式查 `registry.npmjs.org` |
+| `npm whoami` 返回错误 | 未登录 | `npm login --registry https://registry.npmjs.org` |
+
+> **⚠️ Token 类型说明**：npmjs.com 的 token 分为 **Publish**（每次 publish 需浏览器/OTP 确认）和 **Automation**（免交互）。
+> 当前项目使用 Publish token + `auth-type=legacy` 组合，免浏览器弹窗。
+> 如需在 CI 中无人值守发布，需到 npmjs.com → Access Tokens → Generate New Token → **Granular Access Token**（选 Automation 权限级别）。
+
 ### ⚠️ 内部依赖必须使用 `workspace:*`
 
 所有子包之间的 `@spark-view/*` 依赖**必须**声明为 `workspace:*`，不得使用版本范围（如 `^0.5.1`）：
