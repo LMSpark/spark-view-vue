@@ -14,6 +14,7 @@ export default [
       'tools/**',
       'examples/**',
       '**/*.example.ts',
+      'public/pages-config/**',  // 沙箱业务脚本（with(__ctx) 执行，非构建源码）
       'docs/examples/**',
       'dist/**',
       'node_modules/**',

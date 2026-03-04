@@ -1017,6 +1017,13 @@ export interface FormCreateAPI {
 - `strict-boolean-expressions` / `no-unnecessary-condition`
 - `require-await` / `consistent-type-imports`
 
+### 业务脚本（script.js）ESLint 豁免
+
+`public/pages-config/**/script.js` 在 ESLint `ignores` 中**整体排除**，不参与任何规则检查。原因：
+- 运行在 `with(__ctx)` 沙箱中，所有变量（`$api`, `$dataSet`, `$page` 等）由沙箱注入，ESLint 无法识别
+- 不支持 ES Module（`import`/`export`），无法通过 `sourceType: 'module'` 解析
+- 非构建源码——Vite 不编译、不打包这些文件
+
 ## Testing & common pitfalls 🧪
 - 测试使用 Vitest + jsdom；外部 EJ2（`e-*` 标签）需在单元测试中 stub/mock
 - 测试挂载时通过 `Spark.createPlugin()` 注入 `sparkManager`
