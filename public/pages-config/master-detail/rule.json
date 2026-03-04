@@ -37,7 +37,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "MasterDetail@Users@default@rows",
+            "dataKey": "Users@rows",
             "props": {
               "border": true,
               "stripe": true,
@@ -147,7 +147,7 @@
           },
           {
             "type": "el-table",
-            "dataKey": "MasterDetail@Orders@default@rows",
+            "dataKey": "Orders@rows",
             "props": {
               "border": true,
               "stripe": true,

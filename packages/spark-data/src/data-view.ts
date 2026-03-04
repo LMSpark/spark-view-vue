@@ -265,7 +265,43 @@ export class DataView implements IDataSource {
     this._computedDelegate.apply(rows)
   }
 
-  /** @internal 返回 DataTable 列定义 */
+  // ─────────────────────────────────────────────
+  // 表元数据暴露（IDataSource.columns 实现）
+  // ─────────────────────────────────────────────
+
+  /**
+   * 列定义数组（只读，来自 DataTable.columns）。
+   *
+   * UI 组件通过此属性获取列名、标题、类型、可见性、可编辑性等元数据，
+   * 无需直接访问 DataTable。
+   *
+   * @returns DataTable 的列定义数组；DataTable 未关联时返回空数组
+   */
+  get columns(): readonly DataColumn[] {
+    return this._dataTable?.columns ?? []
+  }
+
+  /**
+   * 按名称获取单个列定义
+   *
+   * @param name 列名（精确匹配）
+   * @returns 对应的列定义，不存在时返回 undefined
+   *
+   * @example
+   * ```ts
+   * const col = view.getColumn('price')
+   * if (col) {
+   *   console.log(col.label)   // '单价'
+   *   console.log(col.type)    // 'number'
+   *   console.log(col.editable) // true
+   * }
+   * ```
+   */
+  getColumn(name: string): DataColumn | undefined {
+    return this._columnMap?.get(name)
+  }
+
+  /** @internal 返回 DataTable 列定义（已弃用，请使用 `columns` getter） */
   getColumns() { return this._dataTable?.columns }
 
   /** @internal 返回 DataSet 实例 */

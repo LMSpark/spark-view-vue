@@ -38,10 +38,10 @@ import {
 import type { FileLoader, DerivedLoader } from '@spark-view/spark-utils'
 
 // 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
-import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
+import { compileRule, parsePageData, parseScript, parseCss, injectDataKeyScope } from '../compiler'
 
 // re-export 编译函数，保持对外 API 兼容（消费方可继续从 './loader' 导入）
-export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '../compiler'
+export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss, injectDataKeyScope } from '../compiler'
 
 const pageLogger = Logger('PageConfig')
 
@@ -157,12 +157,15 @@ export class PageConfigLoader implements ConfigLoader {
     if (!ruleResult.success) return this.failFrom(ruleResult.error)
     if (!dataResult.success) return this.failFrom(dataResult.error)
 
+    // ── dataKey 规范化：旧格式（4 段带 scope）→ 新格式（2-3 段无 scope）──
+    const rules = ruleResult.data ?? []
+    injectDataKeyScope(rules)
+
     return {
       success: true,
       data: {
         pageId,
-        rule: ruleResult.data ?? [],
-        // dataResult.success 已验证，data 必定存在
+        rule: rules,
         data: dataResult.data as PageDataConfig,
         script: scriptResult.data,
         css: cssResult.data

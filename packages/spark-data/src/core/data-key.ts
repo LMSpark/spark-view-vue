@@ -1,14 +1,20 @@
 /**
  * DataKey — 统一数据绑定键解析器
  *
- * 统一格式：`scope@tableName@viewId@field`
- *   - scope: 页面ID 或 数据空间名称（DataSet.dataSetName）
- *   - tableName: 表名
- *   - viewId: 视图名称（省略时默认 'default'）
- *   - field: rows | currentRow | selectedRows
+ * 统一格式（无 scope，SPA 单 DataSet）：
+ *   - `tableName@viewId@field`    — 3 段完整格式
+ *   - `tableName@field`           — 2 段简写（viewId 默认 'default'）
  *
- * 支持简写：
- *   - `scope@tableName@field` → viewId 默认 'default'
+ * 跨页面共享数据（`#scope` 前缀）：
+ *   - `#scope@tableName@field`           — 显式指定 scope（viewId 默认 'default'）
+ *   - `#scope@tableName@viewId@field`    — 显式指定 scope + viewId
+ *
+ * 字段路径（可选）：
+ *   - `tableName@viewId@field.path`  → 如 `stats@default@currentRow.totalUsers`
+ *   - `tableName@field.path`         → 如 `stats@currentRow.totalUsers`
+ *
+ * 旧格式兼容（4 段带 scope，自动剥离 scope）：
+ *   - `scope@tableName@viewId@field` → 等价于 `tableName@viewId@field`
  *
  * 非 DataSet 键（如 `settings.siteName`、`formData`）返回 null。
  *
@@ -16,8 +22,13 @@
  * ```ts
  * import { parseDataKey, resolveDataKey } from '@spark-view/spark-data'
  *
- * const dk = parseDataKey('MyApp@Users@default@rows')
- * // { scope: 'MyApp', tableName: 'Users', viewId: 'default', field: 'rows' }
+ * // 页面内数据（无 scope）
+ * const dk = parseDataKey('Users@default@rows')
+ * // { tableName: 'Users', viewId: 'default', field: 'rows' }
+ *
+ * // 跨页面共享数据（#scope）
+ * const dk2 = parseDataKey('#SharedDS@Orders@rows')
+ * // { scope: 'SharedDS', tableName: 'Orders', viewId: 'default', field: 'rows' }
  *
  * const data = resolveDataKey(dk, dataSet)
  * // → DataView.rows
@@ -34,8 +45,8 @@ export type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'summaryRow'
 
 /** DataKey 解析后的描述符 */
 export interface DataKeyDescriptor {
-  /** 数据空间名称或页面ID */
-  scope: string
+  /** 数据集 scope（仅跨页面 `#scope` 或旧 4 段格式存在） */
+  scope?: string
   /** 表名 */
   tableName: string
   /** 视图ID */
@@ -46,6 +57,8 @@ export interface DataKeyDescriptor {
   fieldPath?: string
   /** 原始 dataKey 字符串 */
   raw: string
+  /** 是否为跨页面数据引用（`#scope` 前缀） */
+  crossPage?: boolean
 }
 
 // ===== 常量 =====
@@ -55,6 +68,9 @@ const SEPARATOR = '@'
 
 /** 合法字段名集合 */
 const VALID_FIELDS = new Set<string>(['rows', 'currentRow', 'selectedRows', 'summaryRow', 'selectionSummaryRow'])
+
+/** 跨页面数据引用前缀 */
+const CROSS_PAGE_PREFIX = '#'
 
 
 // ===== 内部辅助 =====
@@ -79,6 +95,39 @@ function parseFieldPart(fieldPart: string): { field: DataKeyField; fieldPath?: s
   return result
 }
 
+/**
+ * @internal 解析 #scope@table@[viewId@]field 跨页面数据键
+ */
+function parseCrossPageKey(dataKey: string): DataKeyDescriptor | null {
+  // strip leading '#'
+  const stripped = dataKey.substring(1)
+  const parts = stripped.split(SEPARATOR)
+
+  if (parts.length === 4) {
+    // #scope@table@viewId@field
+    const [scope, tableName, viewId, fieldPart] = parts
+    if (!scope || !tableName || !viewId || !fieldPart) return null
+    const fp = parseFieldPart(fieldPart)
+    if (!fp) return null
+    const result: DataKeyDescriptor = { scope, tableName, viewId, field: fp.field, raw: dataKey, crossPage: true }
+    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
+    return result
+  }
+
+  if (parts.length === 3) {
+    // #scope@table@field (viewId = 'default')
+    const [scope, tableName, fieldPart] = parts
+    if (!scope || !tableName || !fieldPart) return null
+    const fp = parseFieldPart(fieldPart)
+    if (!fp) return null
+    const result: DataKeyDescriptor = { scope, tableName, viewId: 'default', field: fp.field, raw: dataKey, crossPage: true }
+    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
+    return result
+  }
+
+  return null
+}
+
 // ===== 解析函数 =====
 
 /**
@@ -96,10 +145,12 @@ export function isDataKey(dataKey: string): boolean {
  * 解析 dataKey 字符串为结构化描述符
  *
  * 支持格式：
- *   - `scope@tableName@viewId@field`        → 完整 4 段
- *   - `scope@tableName@field`               → 省略 viewId，默认 'default'
- *   - `scope@tableName@viewId@field.path`   → 带字段路径（如 currentRow.totalUsers）
- *   - `scope@tableName@field.path`          → 简写 + 字段路径
+ *   - `tableName@field`                       → 2 段简写（viewId 默认 'default'）
+ *   - `tableName@viewId@field`                → 3 段完整格式（推荐）
+ *   - `#scope@tableName@field`                → 跨页面 2 段（viewId 默认 'default'）
+ *   - `#scope@tableName@viewId@field`         → 跨页面 3 段
+ *   - `scope@tableName@viewId@field`          → 4 段旧格式（scope 保留，向后兼容）
+ *   - 以上均支持 `field.path` 字段路径
  *
  * @param dataKey 原始 dataKey 字符串
  * @returns 解析后的描述符，非 DataSet 键返回 null
@@ -107,25 +158,45 @@ export function isDataKey(dataKey: string): boolean {
 export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
   if (!dataKey) return null
 
-  // 使用 @ 分隔符解析
+  // ── 跨页面 #scope 前缀 ──
+  if (dataKey.startsWith(CROSS_PAGE_PREFIX)) {
+    return parseCrossPageKey(dataKey)
+  }
+
+  // ── 标准格式 ──
   const parts = dataKey.split(SEPARATOR)
 
   if (parts.length === 4) {
-    // scope@tableName@viewId@field 或 scope@tableName@viewId@field.path
+    // 旧格式兼容：scope@tableName@viewId@field
     const [scope, tableName, viewId, fieldPart] = parts
     if (!scope || !tableName || !viewId || !fieldPart) return null
     const fp = parseFieldPart(fieldPart)
     if (!fp) return null
-    return { scope, tableName, viewId, field: fp.field, raw: dataKey, ...(fp.fieldPath !== undefined ? { fieldPath: fp.fieldPath } : {}) }
+    const result: DataKeyDescriptor = { scope, tableName, viewId, field: fp.field, raw: dataKey }
+    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
+    return result
   }
 
   if (parts.length === 3) {
-    // scope@tableName@field 或 scope@tableName@field.path → viewId = 'default'
-    const [scope, tableName, fieldPart] = parts
-    if (!scope || !tableName || !fieldPart) return null
+    // 新格式：tableName@viewId@field
+    const [tableName, viewId, fieldPart] = parts
+    if (!tableName || !viewId || !fieldPart) return null
     const fp = parseFieldPart(fieldPart)
     if (!fp) return null
-    return { scope, tableName, viewId: 'default', field: fp.field, raw: dataKey, ...(fp.fieldPath !== undefined ? { fieldPath: fp.fieldPath } : {}) }
+    const result: DataKeyDescriptor = { tableName, viewId, field: fp.field, raw: dataKey }
+    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
+    return result
+  }
+
+  if (parts.length === 2) {
+    // 新格式简写：tableName@field → viewId = 'default'
+    const [tableName, fieldPart] = parts
+    if (!tableName || !fieldPart) return null
+    const fp = parseFieldPart(fieldPart)
+    if (!fp) return null
+    const result: DataKeyDescriptor = { tableName, viewId: 'default', field: fp.field, raw: dataKey }
+    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
+    return result
   }
 
   // 段数不对或不含 @
@@ -313,19 +384,31 @@ export function resolveDataKeyBinding(
 /**
  * 构建标准化 DataKey 字符串
  *
- * @param scope 数据空间名称
  * @param tableName 表名
- * @param viewId 视图ID（默认 'default'）
  * @param field 绑定字段
+ * @param viewId 视图ID（默认 'default'，省略时输出 2 段简写）
+ * @param scope 跨页面 scope（传入时输出 `#scope@table@...` 格式）
  * @returns 格式化后的 dataKey 字符串
+ *
+ * @example
+ * ```ts
+ * buildDataKey('Orders', 'rows')                    // → 'Orders@rows'
+ * buildDataKey('Orders', 'rows', 'grid')             // → 'Orders@grid@rows'
+ * buildDataKey('Orders', 'rows', 'default', 'Shared') // → '#Shared@Orders@rows'
+ * buildDataKey('Orders', 'rows', 'grid', 'Shared')   // → '#Shared@Orders@grid@rows'
+ * ```
  */
 export function buildDataKey(
-  scope: string,
   tableName: string,
   field: DataKeyField,
-  viewId = 'default'
+  viewId = 'default',
+  scope?: string
 ): string {
-  return `${scope}${SEPARATOR}${tableName}${SEPARATOR}${viewId}${SEPARATOR}${field}`
+  const prefix = scope ? `${CROSS_PAGE_PREFIX}${scope}${SEPARATOR}` : ''
+  if (viewId === 'default') {
+    return `${prefix}${tableName}${SEPARATOR}${field}`
+  }
+  return `${prefix}${tableName}${SEPARATOR}${viewId}${SEPARATOR}${field}`
 }
 
 /**
@@ -336,4 +419,67 @@ export function buildDataKey(
  */
 export function getViewKey(descriptor: DataKeyDescriptor): string {
   return `${descriptor.tableName}.${descriptor.viewId}`
+}
+
+// ===== DataKey 规范化 =====
+
+/**
+ * 将旧格式（4 段带 scope）DataKey 规范化为新格式（2-3 段无 scope）
+ *
+ * 用于向后兼容：rule.json 中残留的旧格式 `scope@table@viewId@field` 会被自动
+ * 剥离 scope 前缀。新格式（2-3 段）和跨页面 `#scope` 前缀原样返回。
+ *
+ * 判定规则：
+ * - `#scope@...`：跨页面引用，原样保留
+ * - 4+ 段（≥3 个 `@`，无 `#`）：旧格式，剥离首段 scope → 返回 3 段
+ * - 3 段（2 个 `@`）：新完整格式 `table@viewId@field`，原样返回
+ * - 2 段（1 个 `@`）：新简写 `table@field`，原样返回
+ * - 其他（0 段 / 非标准）：原样返回
+ *
+ * @param rawKey 原始 dataKey 字符串
+ * @returns 规范化后的 dataKey
+ *
+ * @example
+ * ```ts
+ * normalizeDataKey('DS@Orders@default@rows')  // → 'Orders@default@rows'（剥离 scope）
+ * normalizeDataKey('Orders@default@rows')      // → 'Orders@default@rows'（原样）
+ * normalizeDataKey('Orders@rows')              // → 'Orders@rows'（原样）
+ * normalizeDataKey('#Shared@Orders@rows')      // → '#Shared@Orders@rows'（跨页面，保留）
+ * ```
+ */
+export function normalizeDataKey(rawKey: string): string {
+  if (!rawKey) return rawKey
+
+  // 跨页面 #scope 前缀：原样保留
+  if (rawKey.startsWith(CROSS_PAGE_PREFIX)) return rawKey
+
+  const separatorCount = countSeparators(rawKey)
+
+  // 4+ 段：旧格式，剥离首段 scope
+  if (separatorCount >= 3) {
+    const firstSep = rawKey.indexOf(SEPARATOR)
+    return rawKey.substring(firstSep + 1)
+  }
+
+  // 2-3 段或非标准：原样返回
+  return rawKey
+}
+
+/**
+ * @deprecated 使用 `normalizeDataKey` 代替。旧函数签名保留用于向后兼容，
+ * `inheritedScope` 参数已被忽略。
+ */
+export function resolveInheritedDataKey(rawKey: string, _inheritedScope?: string): string {
+  return normalizeDataKey(rawKey)
+}
+
+/**
+ * 统计字符串中 @ 分隔符的数量
+ */
+function countSeparators(str: string): number {
+  let count = 0
+  for (const ch of str) {
+    if (ch === SEPARATOR) count++
+  }
+  return count
 }

@@ -131,7 +131,7 @@
                       {
                         "type": "r-tree",
                         "key": "organization-tree",
-                        "dataKey": "PageDataSet@hierarchicalTreeData@default@rows",
+                        "dataKey": "hierarchicalTreeData@rows",
                         "props": {
                           "node-key": "id",
                           "highlight-current": true,
@@ -189,7 +189,7 @@
                       "highlightCurrentRow": true,
                       "rowKey": "id"
                     },
-                    "dataKey": "PageDataSet@childNodes@default@rows",
+                    "dataKey": "childNodes@rows",
                     "on": {
                       "rowClick": "handleLocateNode"
                     },

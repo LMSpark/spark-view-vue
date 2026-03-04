@@ -263,8 +263,8 @@ DataKey 格式：
 
 | 格式 | 示例 | viewId |
 |------|------|--------|
-| `scope@table@viewId@field` | `UserManagement@Users@grid@rows` | 显式指定 |
-| `scope@table@field` | `UserManagement@Users@rows` | 默认 `default` |
+| `table@viewId@field` | `Users@grid@rows` | 显式指定 |
+| `table@field` | `Users@rows` | 默认 `default` |
 
 ---
 

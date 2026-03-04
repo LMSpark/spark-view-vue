@@ -1,10 +1,36 @@
-import { Logger, toErrorMessage } from '@spark-view/spark-utils'
+/**
+ * 规则绑定主编排器
+ *
+ * 职责：递归遍历 rule 树，根据组件类型委托给对应的绑定委托：
+ *  - el-table        → bind-table-delegate（数据 + 事件 + 加载状态）
+ *  - el-pagination   → bind-pagination-delegate（分页双向绑定）
+ *  - 值型表单组件    → bind-form-delegate（选项映射 + 值绑定）
+ *  - 权限渲染        → bind-permission-delegate（跨组件统一：按钮 / 列 / 字段级）
+ *  - r-* 自定义组件  → 透传 dataKey 到 props（组件自行 consume 处理）
+ *
+ * 上下文传递：
+ *  每层递归维护 BindingContext（父组件类型 / DataSource / 字段名 / 模型权限），
+ *  子组件通过上下文继承数据源和权限信息，实现「依据父组件类型适应」的智能渲染。
+ *
+ * 数据流：rule.json → bindDataToRules() → form-create 可渲染的 Rule[]
+ */
+
+import { toErrorMessage } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
-import type { IDataRow, IDataSet } from '@spark-view/spark-data'
-import { parseDataKey, resolveRawKey, getViewFromRawKey, isDataKey, resolveDataKeyBinding } from '@spark-view/spark-data'
+import type { IDataSet } from '@spark-view/spark-data'
+import { isDataKey, resolveDataKeyBinding, getViewFromRawKey, normalizeDataKey } from '@spark-view/spark-data'
 import type { ComponentRegistry } from '../../core/types.js'
 
-const pageLogger = Logger('PageRenderer')
+// ── 委托模块 ──────────────────────────────────────────────────────────────
+
+import { resolveRuleDataKey, setRuleProp, pageLogger } from './bind-helpers'
+import { bindTableRule } from './bind-table-delegate'
+import { bindPaginationRule } from './bind-pagination-delegate'
+import { bindFormElementRule, FORM_ELEMENT_TYPES } from './bind-form-delegate'
+import { applyPermissions } from './bind-permission-delegate'
+import { type BindingContext, EMPTY_CONTEXT, buildChildContext, DATA_CONTAINER_TYPES } from './bind-context'
+
+// ── 组件分类常量 ──────────────────────────────────────────────────────────
 
 /**
  * dataKey 自解析组件类型回退默认列表
@@ -20,18 +46,13 @@ const pageLogger = Logger('PageRenderer')
  */
 const _SELF_RESOLVING_FALLBACK = new Set(['r-table', 'r-form', 'r-detail', 'r-tree'])
 
-/** 表单元素类型集合（持有 modelValue 的组件）——新增表单组件时在此添加 */
-const FORM_ELEMENT_TYPES = new Set([
-  'el-input', 'el-textarea', 'el-input-number', 'el-select',
-  'el-radio-group', 'el-checkbox-group', 'el-switch', 'el-slider',
-  'el-rate', 'el-date-picker', 'el-time-picker', 'el-color-picker',
-])
+/** 分页组件类型集合 */
+const PAGINATION_TYPES = new Set(['el-pagination'])
+
+// ── 类型判断 ──────────────────────────────────────────────────────────────
 
 /**
  * 检查组件是否为自解析类型（优先查询注册表 meta，回退到核心列表）
- *
- * - 注册表已有该组件且声明了 meta.dataKey 时：以 meta.dataKey 为准
- * - 如果未注册或无 meta.dataKey：回退到内置列表（兼容暂未实现的 r-* 组件）
  */
 function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolean {
   if (registry?.has(type)) {
@@ -44,83 +65,48 @@ function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolea
 /**
  * 检查组件 dataKey 是否已有专用处理逻辑（排除默认绑定逻辑）
  *
- * - el-table：始终有专用注入块（外部组件，不在注册表中）
- * - 自解析组件：自行解析 dataKey，无需默认绑定
+ * 包含：el-table / el-pagination / 全部值型表单组件 / r-* 自解析组件
  */
 function isDataKeyHandledType(type: string, registry?: ComponentRegistry): boolean {
-  return type === 'el-table' || isSelfResolvingType(type, registry)
+  return type === 'el-table'
+    || PAGINATION_TYPES.has(type)
+    || FORM_ELEMENT_TYPES.has(type)
+    || isSelfResolvingType(type, registry)
 }
 
-/**
- * 解析 DataKey 字符串 → 绑定值（渲染层薄包装，负责 warn 日志）
- *
- * 数据解析逻辑完全委托给 spark-data 的 `resolveRawKey`。
- */
-function resolveRuleDataKey(
-  rawKey: string,
-  dataSet: IDataSet | null
-): ReturnType<typeof resolveRawKey> {
-  if (!isDataKey(rawKey)) {
-    pageLogger.warn(
-      `dataKey "${rawKey}" 不是有效的 DataKey 格式（缺少 @），已跳过绑定。` +
-      '请使用 scope@tableName@viewId@field 格式。'
-    )
-    return undefined
-  }
-  if (!dataSet) return undefined
-  return resolveRawKey(rawKey, dataSet)
-}
+// ── 公共入口 ──────────────────────────────────────────────────────────────
 
 /**
- * 安全设置 rule.props（初始化后赋值，避免重复 ??=）
- */
-function setRuleProp(rule: Rule, key: string, value: unknown): void {
-  rule.props ??= {}
-  rule.props[key] = value
-}
-
-/**
- * 将 dataKey 对应的 DataView 注入到 rule.props.dataView（渲染层薄包装）
- *
- * 视图查找完全委托给 spark-data 的 `getViewFromRawKey`。
- */
-function attachDataViewIfDataKey(
-  rawKey: string | undefined,
-  dataSet: IDataSet | null,
-  rule: Rule
-): void {
-  if (!rawKey || !dataSet) return
-  const view = getViewFromRawKey(rawKey, dataSet)
-  if (!view) return
-  setRuleProp(rule, 'dataView', view)
-}
-
-/**
- * 递归替换 rule 中的数据占位符和事件处理器
+ * 递归替换 rule 中的数据占位符和事件处理器（公共 API）
  */
 export function bindDataToRules(options: RuleBindingOptions): Rule[] {
+  return bindRulesRecursive(options, EMPTY_CONTEXT)
+}
+
+// ── 递归编排 ──────────────────────────────────────────────────────────────
+
+function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingContext): Rule[] {
   const { rules, pageFunctions, dataSet, registry } = options
-  
-  // 创建统一的函数调用包装器
   const callFunc = createFunctionCaller(pageFunctions)
-  
+
   return rules.map(rule => {
     const newRule = { ...rule }
-    
-    // 🎯 处理自定义渲染函数（以 Render 开头的 type）
-    // Render* 组件已由 usePageRenderer 通过 app.component() 注册为响应式 Vue 组件
-    // 此处保持字符串 type 不变，form-create 会从 Vue 全局组件注册表中解析
+
+    // ── dataKey 规范化：旧 4 段格式自动剥离 scope 前缀 ──
+    if (typeof newRule['dataKey'] === 'string') {
+      newRule['dataKey'] = normalizeDataKey(newRule['dataKey'])
+    }
+
+    // ── Render* 组件：已由 usePageRenderer 注册为响应式 Vue 组件，保持原样 ──
     if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
       return newRule as Rule
     }
-    
 
-    // 处理事件处理器：通过 callFunc 包装
+    // ── 事件处理器：字符串函数名 → callFunc 包装 ──
     if (newRule.on && typeof newRule.on === 'object') {
       const newOn: Record<string, unknown> = {}
       for (const [eventName, handler] of Object.entries(newRule.on)) {
         if (typeof handler === 'string') {
-          // 使用 callFunc 包装，提供运行时检查和扩展能力
           newOn[eventName] = (...args: unknown[]) => callFunc(handler, ...args)
         } else {
           newOn[eventName] = handler
@@ -129,221 +115,133 @@ export function bindDataToRules(options: RuleBindingOptions): Rule[] {
       newRule.on = newOn as Record<string, Function | Function[]>
     }
 
-
-
-    // 🎯 select / radio 组件特殊处理：如果自身 dataKey 指向选项数组，则注入 rule.options
-    // form-create 读取的是 rule.options，不是 rule.props.options
-    if ((newRule.type === 'select' || newRule.type === 'radio') && isDataKey(newRule['dataKey'] as string)) {
-      const resolvedOptions = resolveRuleDataKey(newRule['dataKey'] as string, dataSet)
-      if (Array.isArray(resolvedOptions)) {
-        newRule.options = resolvedOptions as Rule[]
-      }
-    }
-    
-    // 🎯 将 dataKey 透传到 props — r-table/r-form/r-detail/r-tree 自行 consume(PAGE_DATASET) 解析
-    // el-table 保持旧的外部注入模式（原生组件无法使用 useSparkComponent）
-    if (newRule['dataKey'] !== undefined && isSelfResolvingType(newRule.type as string, registry)) {
-      setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
-    }
-
-    // 🎯 处理 props 中的事件处理函数（针对自定义组件，如 r-tree）
+    // ── props 中的 on* 函数名 → callFunc 包装（自定义组件，如 r-tree） ──
     if (newRule.props && typeof newRule.props === 'object') {
       for (const [propName, propValue] of Object.entries(newRule.props)) {
-        // 检测以 "on" 开头的 prop（如 onNodeClick）
         if (propName.startsWith('on') && typeof propValue === 'string') {
-          // 将字符串函数名转换为实际的函数调用
           newRule.props[propName] = (...args: unknown[]) => callFunc(propValue, ...args)
         }
       }
     }
-    
-    // 🎯 处理 el-table 的 dataKey 绑定
-    if (newRule.type === 'el-table' && newRule['dataKey'] !== undefined) {
-      const binding = dataSet
-        ? resolveDataKeyBinding(newRule['dataKey'] as string, dataSet)
-        : null
-      if (binding?.kind === 'view') {
-        setRuleProp(newRule, 'dataSource', binding.source)
-        setRuleProp(newRule, 'dataView', binding.source)
-        // Element Plus el-table 需要 data 属性（响应式数组）
-        setRuleProp(newRule, 'data', binding.source.rows)
-      }
-      // 如果有 dataSet，注入同步事件；传入 bindingId 用于 originatorId 回路防护
-      if (dataSet) {
-        injectTableEvents(newRule, dataSet, options.bindingId)
-      }
+
+    // ── r-* 自定义组件：透传 dataKey → props（组件自行 consume PAGE_DATASET 解析） ──
+    if (newRule['dataKey'] !== undefined && isSelfResolvingType(newRule.type as string, registry)) {
+      setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
     }
-    
-    // 🎯 处理普通元素的 dataKey 绑定（文本内容绑定或表单值绑定）
-    // 排除已有专门处理逻辑的容器组件，以及 select/radio（其 dataKey 已由上方 options 注入块处理）
-    if (newRule['dataKey'] !== undefined && !isDataKeyHandledType(newRule.type as string, registry)
-        && newRule.type !== 'select' && newRule.type !== 'radio') {
-      const rawKey = newRule['dataKey'] as string
-      let resolved: unknown
 
-      if (isDataKey(rawKey)) {
-        // DataSet 路径（@ 格式）：走 DataSet 解析，非法格式时打 warn
-        resolved = resolveRuleDataKey(rawKey, dataSet)
-        // 注入 DataView（若 dataKey 指向 DataSet）
-        attachDataViewIfDataKey(rawKey, dataSet, newRule)
-      }
+    // ── el-table ──
+    if (newRule.type === 'el-table' && newRule['dataKey'] !== undefined) {
+      bindTableRule(newRule, dataSet, options.bindingId)
+    }
 
-      // 如果有值，根据元素类型决定绑定方式
-      if (resolved !== undefined && resolved !== null) {
-        // 表单元素（持有 modelValue 的组件）：绑定到 props.modelValue
-        // 注意：el-radio-group / el-checkbox-group / el-select 等如果绑定到 children 会破坏子节点结构
-        const isFormElement =
-          typeof newRule.type === 'string' && FORM_ELEMENT_TYPES.has(newRule.type)
-        if (isFormElement) {
-          setRuleProp(newRule, 'modelValue', resolved)
-        } else {
-          // 普通元素：将值转换为字符串并设置为 children
-          newRule.children = [String(resolved)]
+    // ── el-pagination ──
+    if (PAGINATION_TYPES.has(newRule.type as string) && newRule['dataKey'] !== undefined) {
+      bindPaginationRule(newRule, dataSet)
+    }
+
+    // ── 值型表单组件（el-select / el-radio-group / el-input / el-switch 等全系列） ──
+    if (FORM_ELEMENT_TYPES.has(newRule.type as string) && newRule['dataKey'] !== undefined) {
+      bindFormElementRule(newRule, dataSet, parentContext, options.bindingId)
+    }
+
+    // ── 通用 dataKey → 文本内容 / DataView 注入（未被上述委托处理的组件） ──
+    if (newRule['dataKey'] !== undefined && !isDataKeyHandledType(newRule.type as string, registry)) {
+      bindGenericDataKey(newRule, dataSet)
+    }
+
+    // ── 权限渲染（跨组件统一：按钮可见性 / 列隐藏 / 表单字段 disabled） ──
+    applyPermissions(newRule, parentContext)
+
+    // ── 构建子级上下文（数据容器组件更新 dataSource，字段提供者更新 fieldName） ──
+    let resolvedDataSource = null
+    if (DATA_CONTAINER_TYPES.has(newRule.type as string)) {
+      const rawKey = newRule['dataKey'] as string | undefined
+      if (rawKey && dataSet) {
+        const binding = resolveDataKeyBinding(rawKey, dataSet)
+        if (binding?.kind === 'view') {
+          resolvedDataSource = binding.source
         }
       }
     }
-    
-    // 递归处理子元素
+    const childContext = buildChildContext(
+      newRule.type,
+      newRule.props as Record<string, unknown> | undefined,
+      parentContext,
+      resolvedDataSource
+    )
+
+    // ── 递归处理子元素（传递更新后的上下文） ──
     if (newRule.children && Array.isArray(newRule.children)) {
       const childRules = newRule.children.filter(
         (child: unknown): child is Rule => typeof child !== 'string'
       )
       if (childRules.length > 0) {
-        newRule.children = bindDataToRules({
-          rules: childRules,
-          pageFunctions,
-          dataSet,
-          ...(registry !== undefined ? { registry } : {})
-        })
+        newRule.children = bindRulesRecursive(
+          { ...options, rules: childRules },
+          childContext
+        )
       }
     }
-    
+
     return newRule
   })
 }
 
+// ── 通用 dataKey 绑定（回退逻辑） ──────────────────────────────────────────
+
+/**
+ * 未被类型特定委托处理的组件的 dataKey 回退绑定
+ *
+ * 普通 HTML 元素（div / span / el-tag 等）：将解析值转为字符串设置为 children
+ * 同时注入 DataView 到 props（如适用）
+ */
+function bindGenericDataKey(rule: Rule, dataSet: IDataSet | null): void {
+  const rawKey = rule['dataKey'] as string
+  if (!isDataKey(rawKey)) return
+
+  const resolved = resolveRuleDataKey(rawKey, dataSet)
+
+  // 注入 DataView（如 dataKey 指向 DataSet 路径）
+  if (dataSet) {
+    const view = getViewFromRawKey(rawKey, dataSet)
+    if (view) setRuleProp(rule, 'dataView', view)
+  }
+
+  if (resolved === undefined || resolved === null) return
+
+  // 普通元素：将值转换为字符串并设置为 children
+  rule.children = [String(resolved)]
+}
+
+// ── 函数调用器 ─────────────────────────────────────────────────────────────
+
 /**
  * 创建统一的函数调用器
- * 
- * 优势：
- * 1. 运行时检查函数是否存在
- * 2. 统一的错误处理和日志
- * 3. 可扩展：bind、拦截、性能监控等
- * 4. 调试友好：清晰的调用栈
+ *
+ * 优势：运行时检查 + 统一错误处理 + 可扩展（bind / 拦截 / 性能监控）
  */
 function createFunctionCaller(
   pageFunctions: Record<string, (...args: unknown[]) => unknown>
 ): (functionName: string, ...args: unknown[]) => unknown {
   return function callFunc(functionName: string, ...args: unknown[]): unknown {
     try {
-      // 检查函数是否存在
       const func = pageFunctions[functionName]
-      
       if (typeof func !== 'function') {
-        pageLogger.warn('函数未定义或不可调用', { 
+        pageLogger.warn('函数未定义或不可调用', {
           functionName,
           type: typeof func,
           available: Object.keys(pageFunctions)
         })
         return undefined
       }
-      
-      // 调用函数（可在此处添加：bind、拦截、性能监控等）
-      const result = (func as (...args: unknown[]) => unknown)(...args)
-      
-      // 可选：添加调试日志
-      // pageLogger.debug('函数调用', { functionName, args, result })
-      
-      return result
+      return (func as (...args: unknown[]) => unknown)(...args)
     } catch (error: unknown) {
-      pageLogger.error('函数执行错误', { 
-        functionName, 
-        args, 
+      pageLogger.error('函数执行错误', {
+        functionName,
+        args,
         error: toErrorMessage(error)
       })
       throw error
     }
-  }
-}
-
-/**
- * 为 el-table 注入 DataSet 同步事件（UI → DataSet 方向）
- *
- * 为表格的 currentChange 和 selectionChange 事件注入处理器，
- * 将 el-table UI 事件同步写入对应的 DataView。
- * 事件携带 originatorId，下游 useRuleBinding 仅跳过同一 bindingId 的回写，
- * 其他同级 binding 实例仍正常进行 DataSet→UI 同步。
- *
- * DataSet → UI 方向由 useRuleBinding 经 bus 单独负责。
- */
-function injectTableEvents(
-  rule: Rule,
-  dataSet: IDataSet,
-  bindingId?: string
-): void {
-  const rawKey = rule['dataKey'] as string | undefined
-  if (!rawKey) return
-
-  const dk = parseDataKey(rawKey)
-  if (!dk) return
-
-  const { tableName, viewId } = dk
-  rule.name ??= `table_${tableName}_${viewId}`
-  rule.on ??= {}
-
-  // 提前查找并缓存 view，避免两个事件处理器各自重复调用 getTable + getOrCreateView
-  const table = dataSet.getTable(tableName)
-  if (!table) return
-  const view = table.getOrCreateView(viewId)
-
-  // 注入 currentChange 事件（单选行变化）
-  const originalCurrentChange = rule.on['currentChange']
-  rule.on['currentChange'] = (currentRow: IDataRow | null, oldRow: IDataRow | null) => {
-    pageLogger.debug(`[TableEvent] currentChange`, { tableName, viewId })
-
-    if (typeof originalCurrentChange === 'function') {
-      (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
-    }
-
-    if (currentRow === null) {
-      view.selection.setCurrentRow(null, bindingId ? { originatorId: bindingId } : undefined)
-      return
-    }
-
-    // form-create 会污染原始对象（添加 $f/api/rule 属性），通过 PK 查找原始行对象
-    let cleanRow: IDataRow | null = null
-
-    // 优先方案：通过主键从 view.rows 查找（通用、不依赖 form-create 内部结构）
-    const pk = view.getPkKey(currentRow)
-    if (pk !== undefined) cleanRow = view.rows.find(r => view.getPkKey(r) === pk) ?? null
-
-    // 回退方案：form-create 特定——从 args[0] 提取原始数据（仅在 PK 查不到时使用）
-    if (cleanRow === null && 'args' in currentRow && Array.isArray((currentRow as { args: unknown }).args)) {
-      const maybeRow = (currentRow as { args: unknown[] }).args[0]
-      if (maybeRow !== null && maybeRow !== undefined && typeof maybeRow === 'object') cleanRow = maybeRow as IDataRow
-    }
-
-    // 如果 cleanRow 已找到，直接使用；
-    // 若 pk 存在但 view.rows 中未找到（行刚被替换），回退到原始 currentRow；
-    // 若 pk 完全缺失（el-table 内部 stale 对象，如 watch.immediate 重渲染时），静默跳过。
-    if (cleanRow !== null) {
-      view.selection.setCurrentRow(cleanRow, bindingId ? { originatorId: bindingId } : undefined)
-    } else if (pk !== undefined) {
-      view.selection.setCurrentRow(currentRow, bindingId ? { originatorId: bindingId } : undefined)
-    }
-    // pk === undefined: 行无主键（el-table 内部触发的虚假 currentChange），静默忽略
-  }
-
-  // 注入 selectionChange 事件（多选变化）
-  const originalSelectionChange = rule.on['selectionChange']
-  rule.on['selectionChange'] = (selection: IDataRow[]) => {
-    pageLogger.debug(`[TableEvent] selectionChange`, { tableName, viewId, count: selection.length })
-
-    if (typeof originalSelectionChange === 'function') {
-      (originalSelectionChange as (selection: unknown) => void)(selection)
-    }
-
-    const valid = Array.isArray(selection) ? selection : []
-    view.selection.setSelectedRows(valid, bindingId)
   }
 }

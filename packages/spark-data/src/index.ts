@@ -30,6 +30,8 @@ export {
   resolveDataKeyBinding,
   resolveRawKey,
   getViewFromRawKey,
+  normalizeDataKey,
+  resolveInheritedDataKey,
 } from './core/data-key'
 export type { DataKeyBinding } from './core/data-key'
 
@@ -65,11 +67,25 @@ export type {
   IModelPermission,
 } from './types'
 
-// ===== 权限渲染常量 =====
+// ===== 枚举 & 权限渲染常量 =====
 
 export {
+  RequestState,
   INSTANCE_PERMISSION_FIELD,
   MODEL_PERMISSION_FIELD,
   FieldVisibility,
   ComponentLevel,
 } from './types'
+
+// ===== 权限渲染模块 =====
+
+export {
+  PermissionChecker, createPermissionChecker, checkPermission,
+  PermissionFilter, createPermissionFilter, filterByPermission,
+  FieldRenderHelper, createFieldRenderHelper,
+  computeFieldState, computeFieldStates, filterVisibleFields,
+} from './permission'
+
+export type {
+  IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper,
+} from './permission'
