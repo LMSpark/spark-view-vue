@@ -293,7 +293,6 @@ export class DataView implements IDataSource {
    * if (col) {
    *   console.log(col.label)   // '单价'
    *   console.log(col.type)    // 'number'
-   *   console.log(col.editable) // true
    * }
    * ```
    */
@@ -875,10 +874,7 @@ export class DataView implements IDataSource {
 
   /** 将 SortExpression 序列化为查询字符串格式（如 `name:asc` 或 `name:asc,age:desc`） */
   private _serializeSort(sort: SortExpression): string {
-    if ('fields' in sort) {
-      return sort.fields.map(f => `${f.field}:${f.direction.toLowerCase()}`).join(',')
-    }
-    return `${sort.field}:${sort.direction.toLowerCase()}`
+    return sort.map(f => `${f.field}:${f.direction ?? 'asc'}`).join(',')
   }
 
   /** 设置当前页（autoRefresh=true 时自动刷新） */

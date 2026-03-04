@@ -55,6 +55,7 @@ export type {
   FilterOperator,
   SortExpression,
   SortDirection,
+  SortField,
   TreeConfig,
   AggregateType,
   AggregateColumnConfig,

@@ -302,34 +302,6 @@ export interface DataColumn {
    * `"$count('OrderItems')"` 
    */
   computeExpression?: string
-
-  // ===== 渲染属性（UI 组件消费） =====
-
-  /** 是否可见（默认 true）。false 时 UI 不渲染该列 / 字段 */
-  visible?: boolean
-  /** 是否可编辑（默认 true；computeExpression 列自动 false）。false 时 UI 渲染为只读 */
-  editable?: boolean
-  /** 是否可排序（默认 undefined，由 UI 组件决定） */
-  sortable?: boolean
-  /** 对齐方式（默认 undefined，由 UI 组件根据 type 自动判断） */
-  align?: 'left' | 'center' | 'right'
-  /** 固定列位置（el-table fixed） */
-  fixed?: 'left' | 'right' | boolean
-  /** 列宽度（像素数或 CSS 字符串） */
-  width?: number | string
-  /** 最小列宽度 */
-  minWidth?: number | string
-  /**
-   * 显示格式化模式字符串（框架无关）。
-   *
-   * - 日期列：`'yyyy-MM-dd'`, `'yyyy-MM-dd HH:mm:ss'`
-   * - 数字列：`'#,##0.00'`, `'0.0%'`
-   *
-   * 具体解析由 UI 组件 / 渲染层实现。
-   */
-  formatter?: string
-  /** 占位提示文本（输入组件使用） */
-  placeholder?: string
 }
 
 /** CRUD API配置（继承 TreeApi，树接口族直接平铺在此） */
@@ -533,13 +505,27 @@ export type DependencyType =
   | 'allRows'
   | 'pagedRows'
 
-/** 排序方向 */
-export type SortDirection = 'asc' | 'desc' | 'ASC' | 'DESC'
+/** 排序方向（小写） */
+export type SortDirection = 'asc' | 'desc'
 
-/** 排序表达式 */
-export type SortExpression =
-  | { field: string; direction: SortDirection }
-  | { fields: Array<{ field: string; direction: SortDirection }> }
+/** 排序规则项（direction 默认 'asc'） */
+export interface SortField {
+  field: string
+  direction?: SortDirection
+}
+
+/**
+ * 排序表达式——统一数组格式，UI 和服务端提交共用。
+ *
+ * @example
+ * ```ts
+ * // 单字段升序（direction 可省略，默认 'asc'）
+ * [{ field: 'name' }]
+ * // 多字段排序
+ * [{ field: 'age', direction: 'desc' }, { field: 'name' }]
+ * ```
+ */
+export type SortExpression = SortField[]
 
 /** 过滤操作符 */
 export type FilterOperator =
