@@ -901,6 +901,122 @@ logger.info('initialized')
 const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
 ```
 
+## 产品级 ESLint & TypeScript 规范 🛡️
+
+### 零 `any` 策略
+
+**生产代码（`packages/**`）中禁止一切 `any`**——ESLint 规则 `@typescript-eslint/no-explicit-any: 'error'` 全局启用。测试文件（`*.test.ts`、`tests/`）例外放宽。
+
+遇到第三方库类型含 `any` 时，优先用以下方式替代：
+
+| 场景 | 禁止写法 | 正确替代 |
+|------|---------|---------|
+| 未知数据 | `any` | `unknown` + 类型守卫 |
+| 回调参数 | `(...args: any[]) => void` | `(...args: unknown[]) => void` |
+| 容器/集合 | `Map<string, any>` | `Map<string, unknown>` 或泛型 `<T>` |
+| 第三方库返回值 | `const x: any = lib.foo()` | `const x: unknown = lib.foo()` |
+| form-create `Rule` | `any[]` | `Rule[]`（`renderer/types`） |
+| form-create `Api` | `any` | `FormCreateAPI`（精简接口） |
+
+### ESLint 产品级规则清单
+
+`eslint.config.js` 中对 `**/*.ts` 启用的关键规则（标 ★ 为产品级新增）：
+
+**类型安全**：
+- `no-explicit-any` — 禁止 `any`
+- `no-unsafe-*`（assignment / member-access / call / return / argument） — 阻止 `any` 传播
+- `no-unnecessary-type-assertion` / `no-redundant-type-constituents`
+- `strict-boolean-expressions` — 禁止隐式布尔转换（允许 nullable）
+- `no-unnecessary-condition` — 禁止恒真/恒假条件
+- `switch-exhaustiveness-check` — switch 必须覆盖所有分支
+
+**代码质量** ★：
+- `no-shadow` — 禁止变量遮蔽（含 TypeScript 枚举）
+- `no-confusing-void-expression` — 禁止在表达式位置使用 void 返回值
+- `no-dynamic-delete` — 禁止 `delete obj[key]`（见替代模式）
+- `unified-signatures` — 合并可选参数签名
+- `no-useless-constructor` — 禁止空构造函数
+- `no-inferrable-types` — 禁止冗余类型标注（`const x: number = 1`）
+- `prefer-for-of` / `prefer-includes` / `prefer-string-starts-ends-with`
+- `array-type: array-simple` — 简单类型用 `T[]`，复杂类型用 `Array<T>`
+
+**安全**：
+- `no-eval` / `no-implied-eval` / `no-new-wrappers` / `no-return-assign` / `no-sequences`
+
+**风格强制（auto-fix）**：
+- `prefer-template` — 字符串拼接用模板字面量
+- `object-shorthand` — 对象方法/属性简写
+- `no-useless-rename` — 禁止 `const { x: x } = ...`
+- `consistent-type-imports` — 强制 `import type { ... }`
+
+### `no-dynamic-delete` 替代模式
+
+```typescript
+// ❌ 禁止
+delete obj[key]
+
+// ✅ 模式 A：解构移除单个键
+const { [key]: _, ...rest } = obj
+return rest
+
+// ✅ 模式 B：解构移除多个固定键
+const { permField: _, modelField: __, ...sanitized } = data
+return sanitized
+
+// ✅ 模式 C：过滤保留（动态多键）
+return Object.fromEntries(
+  Object.entries(data).filter(([k]) => !keysToRemove.has(k))
+)
+
+// ✅ 模式 D：跳过式构建（遍历中跳过不需要的键）
+const result: Record<string, unknown> = {}
+for (const [k, v] of Object.entries(data)) {
+  if (shouldSkip(k)) continue
+  result[k] = v
+}
+```
+
+### ⚠️ FormCreateAPI 精简接口（vue-tsc 类型爆炸规避）
+
+form-create 官方 `Api<OptionAttrs, CreatorAttrs, RuleAttrs, ApiAttrs>` 和 `Rule` 类型包含**深度递归泛型**（Rule → Creator → Rule），直接用于 `Ref<Api>` 会触发 vue-tsc 指数级类型展开（~116KB 错误输出）。
+
+**解决方案**：`renderer/types/index.ts` 中定义精简接口，仅声明项目实际用到的 11 个方法：
+
+```typescript
+// ✅ Rule — 使用 interface extends 创建名义类型边界
+export interface Rule extends FormCreateRule {}
+
+// ✅ FormCreateAPI — 手写精简接口，不继承原始 Api 泛型
+export interface FormCreateAPI {
+  el(id: string): unknown
+  getValue(field: string): unknown
+  setValue(field: string | Record<string, unknown>, value?: unknown): void
+  formData(): Record<string, unknown>
+  validate(callback: (valid: boolean) => void): void
+  resetFields(fields?: string | string[]): void
+  clearValidateState(fields?: string | string[]): void
+  disabled(disabled: boolean, field?: string | string[]): void
+  hidden(hidden: boolean, field?: string | string[]): void
+  updateRule(field: string, rule: Record<string, unknown>): void
+  on(event: string, callback: (...args: unknown[]) => void): void
+}
+```
+
+**禁止**：
+- `type FormCreateAPI = Api` — 透明别名，vue-tsc 会展开底层泛型
+- `interface FormCreateAPI extends Api {}` — 仍触发结构检查
+- 在 `Ref<>` 泛型参数中直接使用 `Api` 原始类型
+
+**新增 form-create API 方法时**：在 `FormCreateAPI` 接口中补充签名即可，无需改回原始 `Api` 泛型。
+
+### 测试文件放宽规则
+
+`*.test.ts` / `tests/` 目录中以下规则关闭：
+- `no-explicit-any` / `no-unsafe-*` — 测试 mock 需要灵活类型
+- `no-shadow` / `no-dynamic-delete` / `no-confusing-void-expression`
+- `strict-boolean-expressions` / `no-unnecessary-condition`
+- `require-await` / `consistent-type-imports`
+
 ## Testing & common pitfalls 🧪
 - 测试使用 Vitest + jsdom；外部 EJ2（`e-*` 标签）需在单元测试中 stub/mock
 - 测试挂载时通过 `Spark.createPlugin()` 注入 `sparkManager`
