@@ -122,24 +122,24 @@ export class PermissionChecker {
 
     // 手机号：138****1234
     if ((f.includes('phone') || f.includes('mobile')) && str.length === 11) {
-      return str.substring(0, 3) + '****' + str.substring(7)
+      return `${str.substring(0, 3)  }****${  str.substring(7)}`
     }
     // 身份证：330***********1234
     if ((f.includes('idcard') || f.includes('idno')) && str.length === 18) {
-      return str.substring(0, 3) + '***********' + str.substring(14)
+      return `${str.substring(0, 3)  }***********${  str.substring(14)}`
     }
     // 邮箱：abc***@example.com
     if (f.includes('email')) {
       const at = str.indexOf('@')
-      if (at > 3) return str.substring(0, 3) + '***' + str.substring(at)
+      if (at > 3) return `${str.substring(0, 3)  }***${  str.substring(at)}`
     }
     // 银行卡：6222 **** **** 1234
     if ((f.includes('bank') || f.includes('card')) && str.length >= 16) {
-      return str.substring(0, 4) + ' **** **** ' + str.substring(str.length - 4)
+      return `${str.substring(0, 4)  } **** **** ${  str.substring(str.length - 4)}`
     }
     // 默认
     return str.length > 4
-      ? str.substring(0, 2) + '***' + str.substring(str.length - 2)
+      ? `${str.substring(0, 2)  }***${  str.substring(str.length - 2)}`
       : '***'
   }
 }

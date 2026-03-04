@@ -323,7 +323,7 @@ export function buildDataKey(
   scope: string,
   tableName: string,
   field: DataKeyField,
-  viewId: string = 'default'
+  viewId = 'default'
 ): string {
   return `${scope}${SEPARATOR}${tableName}${SEPARATOR}${viewId}${SEPARATOR}${field}`
 }

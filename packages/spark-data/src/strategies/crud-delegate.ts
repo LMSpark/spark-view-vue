@@ -84,7 +84,7 @@ export class CrudDelegate {
   }
 
   /** 批量剥离计算列 */
-  private stripComputedBatch(items: Partial<IDataRow>[]): Partial<IDataRow>[] {
+  private stripComputedBatch(items: Array<Partial<IDataRow>>): Array<Partial<IDataRow>> {
     if (this.host.computedColumnNames.size === 0) return items
     return items.map(item => this.host.stripComputedColumns(item))
   }
@@ -131,7 +131,7 @@ export class CrudDelegate {
   }
 
   /** 批量校验所有行，返回错误消息列表（消除 batchCreateRecords/batchUpdateRecords 中的重复循环） */
-  private collectBatchValidationErrors(items: Partial<IDataRow>[]): string[] {
+  private collectBatchValidationErrors(items: Array<Partial<IDataRow>>): string[] {
     const errors: string[] = []
     for (let i = 0; i < items.length; i++) {
       const result = this.validateRow(items[i] as IDataRow)
@@ -235,7 +235,7 @@ export class CrudDelegate {
   // ─────────────────────────────────────────────
 
   /** 批量新增 */
-  async batchCreateRecords(items: Partial<IDataRow>[]): Promise<CrudResult<BatchResult>> {
+  async batchCreateRecords(items: Array<Partial<IDataRow>>): Promise<CrudResult<BatchResult>> {
     if (!this.fireBefore('batchCreate', items)) return this.cancelledResult('batchCreate')
 
     const cleanItems = this.stripComputedBatch(items)
@@ -360,9 +360,9 @@ export class CrudDelegate {
       if (result.success) {
         this.host.resetState()
         // fire-and-forget：结果经 stateChanged 事件通知；捕获异常防止 unhandled rejection
-        Promise.resolve(this.host.requestData()).catch((e: unknown) =>
+        try { this.host.requestData() } catch (e: unknown) {
           logger.error('importData 后 requestData 失败', e)
-        )
+        }
       }
       this.fireAfter('import', file, result)
       return result

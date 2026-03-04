@@ -33,7 +33,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useSparkComponent } from '../../composables/useSparkComponent'
 import { SPARK_REGISTRY_KEY } from '../../core/types.js'
 import { usePageDataSet } from './usePageDataSet'
-import type { PageRendererOptions, PageContext, Rule, PageConfig } from '../types'
+import type { PageRendererOptions, PageContext, Rule, PageConfig, FormCreateAPI } from '../types'
 import { useCssScope } from './useCssScope'
 import { useRuleBinding } from './useRuleBinding'
 import { compileFunctions } from '../utils/createSandbox'
@@ -94,8 +94,8 @@ export interface UsePageRendererReturn {
   currentPageId: Ref<string>
   scopedCss: Ref<string>
   boundRules: Ref<unknown[]>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formApi: Ref<any>
+  /** form-create API（使用官方 Api 类型） */
+  formApi: Ref<FormCreateAPI | null>
   formCreateOptions: Ref<Record<string, unknown>>
   // ── 外部调用 ──
   loadPageConfig: () => Promise<void>
@@ -217,10 +217,8 @@ export function usePageRenderer(
   const loading       = ref(true)
   const error         = ref<string>('')
   const currentPageId = ref<string>('')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const formApi       = ref<any>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const originalRules = ref<any[]>([])
+  const formApi       = ref<FormCreateAPI | null>(null)
+  const originalRules = ref<unknown[]>([])
   /** 脚本沙箱编译后的函数表；`__init__` 由 form-create mounted 钩子调用 */
   const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
 
@@ -302,7 +300,7 @@ export function usePageRenderer(
         }
       } else {
         // 刷新所有有 API 配置的表的 default 视图
-        const promises: Promise<void>[] = []
+        const promises: Array<Promise<void>> = []
         for (const table of Object.values(ds.tables)) {
           const view = table.getView('default')
           if (view?.crudService) {

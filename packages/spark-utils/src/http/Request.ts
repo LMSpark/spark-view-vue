@@ -300,7 +300,7 @@ export class Request {
   }
 
   private cacheKey(c: RequestConfig): string {
-    return `${c.method}:${c.url}${c.params ? '?' + JSON.stringify(c.params) : ''}`
+    return `${c.method}:${c.url}${c.params ? `?${  JSON.stringify(c.params)}` : ''}`
   }
 
   private delay(ms: number, signal?: AbortSignal): Promise<void> {

@@ -322,9 +322,9 @@ export class ComputedColumnDelegate {
   /** 剥离计算列字段，返回浅拷贝；无计算列时返回原对象（零开销）。 */
   strip(data: Partial<IDataRow>): Partial<IDataRow> {
     if (this._columns.size === 0) return data
-    const cleaned = { ...data }
-    for (const name of this._columns.keys()) delete cleaned[name]
-    return cleaned
+    return Object.fromEntries(
+      Object.entries(data).filter(([key]) => !this._columns.has(key))
+    ) as Partial<IDataRow>
   }
 
   /** 清空所有状态（DataView.destroy 时调用）。 */
