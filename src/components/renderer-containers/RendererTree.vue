@@ -117,6 +117,8 @@ function tryAutoLoad(ds: IDataSource | undefined) {
   if (!ds) return
   const maybeDV = ds as DataView | undefined
   if (maybeDV && typeof maybeDV.requestData === 'function') {
+    // 内联数据表（无 api 配置）跳过，避免 "has no API configuration" 错误
+    if (!maybeDV.dataTable?.api) return
     void maybeDV.requestData().catch((e: unknown) => {
       logger.error('RendererTree: requestData() 失败', e)
     })

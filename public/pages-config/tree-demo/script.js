@@ -614,10 +614,18 @@ function handleExport() {
   // 创建下载链接
   const blob = new Blob([json], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
+  const doc = $el()?.ownerDocument
+  if (!doc) {
+    $page.showMessage('导出失败：无法访问页面 DOM', 'error')
+    URL.revokeObjectURL(url)
+    return
+  }
+  const a = doc.createElement('a')
   a.href = url
   a.download = 'tree-data.json'
+  doc.body.appendChild(a)
   a.click()
+  doc.body.removeChild(a)
   URL.revokeObjectURL(url)
   
   $page.showMessage('已导出树数据')
