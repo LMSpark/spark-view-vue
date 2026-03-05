@@ -24,60 +24,7 @@
         },
         "children": [
           {
-            "type": "h3",
-            "children": [
-              "用户切换"
-            ]
-          },
-          {
-            "type": "el-radio-group",
-            "field": "currentUser",
-            "value": "user1",
-            "on": {
-              "change": "handleSwitchUser"
-            },
-            "children": [
-              {
-                "type": "el-radio",
-                "props": {
-                  "value": "user1"
-                },
-                "children": [
-                  "员工（只看部分数据）"
-                ]
-              },
-              {
-                "type": "el-radio",
-                "props": {
-                  "value": "manager"
-                },
-                "children": [
-                  "经理（看更多数据）"
-                ]
-              },
-              {
-                "type": "el-radio",
-                "props": {
-                  "value": "admin"
-                },
-                "children": [
-                  "管理员（完整权限）"
-                ]
-              }
-            ]
-          },
-          {
-            "type": "el-button",
-            "props": {
-              "type": "primary",
-              "style": "margin-left: 20px"
-            },
-            "on": {
-              "click": "handleLoadData"
-            },
-            "children": [
-              "加载数据"
-            ]
+            "type": "RenderUserSwitch"
           }
         ]
       },

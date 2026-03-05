@@ -7,6 +7,7 @@
 // - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
 
 let _pageState = { currentUser: '', tableData: [], responseData: null }
+let _isInitialLoad = false
 
 /**
  * 切换用户（on.change 会将新值作为第一个参数传入，直接使用最可靠）
@@ -58,7 +59,9 @@ function handleSwitchUser(newUserId) {
   }
   pageData.tableData    = response.data;
   pageData.responseData = response;
-  $page.showMessage(`✅ 已切换到 ${userId}，可见 ${response.data.length} 条数据`);
+  if (!_isInitialLoad) {
+    $page.showMessage(`✅ 已切换到 ${userId}，可见 ${response.data.length} 条数据`);
+  }
   $rebindRules();
 }
 
@@ -156,7 +159,49 @@ function handleDelete(row) {
  * 页面初始化 —— form-create mounted 后自动调用
  */
 function __init__() {
+  _isInitialLoad = true;
   handleLoadData();
+  _isInitialLoad = false;
+}
+
+/**
+ * 自定义组件：用户切换区（原生 radio 组，从 _pageState 读取选中状态，避免 form-create
+ * 重建时把 el-radio-group 的 value 重置为 rule.json 默认值）
+ */
+function RenderUserSwitch() {
+  const current = _pageState.currentUser || 'user1';
+  const users = [
+    { value: 'user1',   label: '员工（只看部分数据）' },
+    { value: 'manager', label: '经理（看更多数据）'   },
+    { value: 'admin',   label: '管理员（完整权限）'   },
+  ];
+  const labelStyle =
+    'display:inline-flex;align-items:center;gap:6px;cursor:pointer;' +
+    'margin-right:20px;font-size:14px;color:#606266;user-select:none;';
+
+  return h('div', { style: 'padding:4px 0;' }, [
+    h('div', { style: 'display:flex;align-items:center;flex-wrap:wrap;gap:4px;' }, [
+      h('span', { style: 'font-weight:600;font-size:15px;margin-right:8px;color:#303133;' }, '用户切换'),
+      ...users.map(function(u) {
+        return h('label', { style: labelStyle }, [
+          h('input', {
+            type: 'radio',
+            name: 'perm-user-switch',
+            value: u.value,
+            checked: current === u.value,
+            onChange: function() { handleSwitchUser(u.value); },
+            style: 'cursor:pointer;accent-color:#409eff;width:14px;height:14px;',
+          }),
+          u.label,
+        ]);
+      }),
+      h('button', {
+        style: 'margin-left:16px;padding:6px 16px;border-radius:4px;font-size:14px;' +
+               'cursor:pointer;border:1px solid #409eff;background:#409eff;color:#fff;',
+        onClick: handleLoadData,
+      }, '加载数据'),
+    ]),
+  ]);
 }
 
 /**
