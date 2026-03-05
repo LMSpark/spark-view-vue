@@ -101,6 +101,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
+    // tryAutoLoad only fires when table has API config
+    ds.getTable('Nodes')!.setApi({ list: { url: '/api/nodes', method: 'GET' } })
+
     const dv = ds.getView('Nodes', 'default')!
     // RendererTree calls requestData() → loadFromServer(); spy on requestData directly
     const spy = vi.spyOn(dv, 'requestData').mockResolvedValue(undefined)
