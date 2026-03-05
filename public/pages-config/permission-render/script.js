@@ -1,264 +1,242 @@
-﻿/**
- * 数据驱动 UI 渲染演示
- * 展示如何根据后端返回的权限字段控制 UI
- */
-
-// 沙箱注入的全局变量: 
-// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
-
-let _pageState = { currentUser: '', tableData: [], responseData: null }
-let _isInitialLoad = false
-
 /**
- * 切换用户（on.change 会将新值作为第一个参数传入，直接使用最可靠）
+ * 权限驱动 UI 演示 ——「改权限不改代码」
+ *
+ * 核心理念：
+ *   后端在返回数据时附带权限快照（_perm / _modelPerm），
+ *   前端渲染层直接读取权限字段控制 UI，无需修改任何前端代码。
+ *
+ * 本演示中"切换角色"= 模拟后端返回不同的数据+权限组合。
+ * 下方所有 Render* 渲染函数是「固定的框架代码」——
+ *   权限数据变了，UI 自动变；前端代码，一行不动。
+ *
+ * 沙箱注入: $api $route $el $query $queryAll
+ *            $dataSet $rebindRules $refreshData $page
+ *            SparkData h
  */
-function handleSwitchUser(newUserId) {
-  console.log('[handleSwitchUser] 收到参数:', newUserId, '类型:', typeof newUserId);
-  const pageData = _pageState;
-  // change 事件参数是字符串时直接用；否则兜底读 pageData
-  const userId = (typeof newUserId === 'string' && newUserId)
-    || pageData.currentUser
-    || 'user1';
-  console.log('[handleSwitchUser] 最终 userId:', userId);
-  pageData.currentUser  = userId;
-  pageData.tableData    = [];
-  pageData.responseData = null;
 
-  const users = {
-    user1: {
-      _modelPerm: { canAdd: false },
-      data: [
-        { id: 1, name: '张***', email: 'zhang@example.com', department: '销售部', _perm: { canEdit: false, canDelete: false, editableFields: [] } },
-        { id: 2, name: '李***', email: 'li@example.com',   department: '销售部', _perm: { canEdit: true,  canDelete: false, editableFields: ['email'] } }
-      ]
-    },
-    manager: {
-      _modelPerm: { canAdd: true },
-      data: [
-        { id: 1, name: '张三', email: 'zhang@example.com', department: '销售部', _perm: { canEdit: true, canDelete: false, editableFields: ['name','email'] } },
-        { id: 2, name: '李四', email: 'li@example.com',   department: '销售部', _perm: { canEdit: true, canDelete: false, editableFields: ['name','email'] } },
-        { id: 3, name: '王五', email: 'wang@example.com', department: '市场部', _perm: { canEdit: true, canDelete: false, editableFields: ['name','email'] } }
-      ]
-    },
-    admin: {
-      _modelPerm: { canAdd: true },
-      data: [
-        { id: 1, name: '张三', email: 'zhang@example.com', department: '销售部', _perm: { canEdit: true, canDelete: true, editableFields: ['name','email','department'] } },
-        { id: 2, name: '李四', email: 'li@example.com',   department: '销售部', _perm: { canEdit: true, canDelete: true, editableFields: ['name','email','department'] } },
-        { id: 3, name: '王五', email: 'wang@example.com', department: '市场部', _perm: { canEdit: true, canDelete: true, editableFields: ['name','email','department'] } },
-        { id: 4, name: '赵六', email: 'zhao@example.com', department: '技术部', _perm: { canEdit: true, canDelete: true, editableFields: ['name','email','department'] } }
-      ]
-    }
-  };
+// ── 页面状态 ─────────────────────────────────────────────────────────────────
+let _pageState = {
+  currentUser: 'user1',
+  tableData:   [],
+  modelPerm:   null,
+}
 
-  const response = users[userId];
-  console.log('[handleSwitchUser] 找到数据:', response ? `${response.data.length} 条` : '未找到');
-  if (!response) {
-    $page.showMessage(`未知用户: ${userId}`, 'warning');
-    return;
+// ── 模拟后端响应（不同角色返回不同数据+权限快照）────────────────────────────
+// 真实场景：后端鉴权模块自动把 _perm/_modelPerm 注入响应体，前端代码感知不到。
+var MOCK_RESPONSES = {
+  user1: {
+    _modelPerm: { canAdd: false, canImport: false, canExport: false },
+    rows: [
+      { id: 1, name: '张***', email: 'zhang@example.com', department: '销售部',
+        _perm: { canEdit: false, canDelete: false, editableFields: [] } },
+      { id: 2, name: '李***', email: 'li@example.com',   department: '销售部',
+        _perm: { canEdit: true,  canDelete: false, editableFields: ['email'] } },
+    ]
+  },
+  manager: {
+    _modelPerm: { canAdd: true, canImport: false, canExport: true },
+    rows: [
+      { id: 1, name: '张三', email: 'zhang@example.com', department: '销售部',
+        _perm: { canEdit: true, canDelete: false, editableFields: ['name', 'email'] } },
+      { id: 2, name: '李四', email: 'li@example.com',   department: '销售部',
+        _perm: { canEdit: true, canDelete: false, editableFields: ['name', 'email'] } },
+      { id: 3, name: '王五', email: 'wang@example.com', department: '市场部',
+        _perm: { canEdit: true, canDelete: false, editableFields: ['name', 'email'] } },
+    ]
+  },
+  admin: {
+    _modelPerm: { canAdd: true, canImport: true, canExport: true },
+    rows: [
+      { id: 1, name: '张三', email: 'zhang@example.com', department: '销售部',
+        _perm: { canEdit: true, canDelete: true, editableFields: ['name', 'email', 'department'] } },
+      { id: 2, name: '李四', email: 'li@example.com',   department: '销售部',
+        _perm: { canEdit: true, canDelete: true, editableFields: ['name', 'email', 'department'] } },
+      { id: 3, name: '王五', email: 'wang@example.com', department: '市场部',
+        _perm: { canEdit: true, canDelete: true, editableFields: ['name', 'email', 'department'] } },
+      { id: 4, name: '赵六', email: 'zhao@example.com', department: '技术部',
+        _perm: { canEdit: true, canDelete: true, editableFields: ['name', 'email', 'department'] } },
+    ]
   }
-  pageData.tableData    = response.data;
-  pageData.responseData = response;
-  if (!_isInitialLoad) {
-    $page.showMessage(`✅ 已切换到 ${userId}，可见 ${response.data.length} 条数据`);
-  }
-  $rebindRules();
 }
 
-/**
- * 加载数据按钮点击
- */
-function handleLoadData() {
-  const pageData    = _pageState;
-  const currentUser = pageData.currentUser || 'user1';
-  console.log('[handleLoadData] currentUser:', currentUser);
-  handleSwitchUser(currentUser);
+// ── 事件处理（业务逻辑，最小化）───────────────────────────────────────────────
+
+function handleSwitchUser(userId) {
+  var resp = MOCK_RESPONSES[userId]
+  if (!resp) return
+  _pageState.currentUser = userId
+  _pageState.tableData   = resp.rows
+  _pageState.modelPerm   = resp._modelPerm
+  $rebindRules()
 }
 
-/**
- * 渲染权限信息
- */
-function renderPermInfo(row) {
-  if (!row._perm) return '无权限信息';
-  
-  return h('div', { style: 'font-size: 12px; color: #666;' }, [
-    h('div', `编辑: ${row._perm.canEdit ? '✅' : '❌'}`),
-    h('div', `删除: ${row._perm.canDelete ? '✅' : '❌'}`),
-    row._perm.editableFields?.length > 0 
-      ? h('div', `可编辑字段: ${row._perm.editableFields.join(', ')}`)
-      : null
-  ]);
-}
-
-/**
- * 渲染操作按钮（使用原生 button，避免 h('el-button') 字符串无法 resolveComponent）
- */
-function renderActions(row) {
-  const canEdit   = row._perm?.canEdit   ?? false;
-  const canDelete = row._perm?.canDelete ?? false;
-
-  const btnStyle = (active, color) =>
-    `margin-right:6px;padding:3px 10px;border-radius:3px;font-size:12px;cursor:${active ? 'pointer' : 'not-allowed'};` +
-    `border:1px solid ${active ? color : '#dcdfe6'};background:${active ? color : '#f5f7fa'};color:${active ? '#fff' : '#c0c4cc'};`;
-
-  return h('div', [
-    h('button', {
-      style: btnStyle(canEdit, '#409eff'),
-      disabled: !canEdit,
-      onClick: canEdit ? () => handleEdit(row) : undefined
-    }, '编辑'),
-    h('button', {
-      style: btnStyle(canDelete, '#f56c6c'),
-      disabled: !canDelete,
-      onClick: canDelete ? () => handleDelete(row) : undefined
-    }, '删除')
-  ]);
-}
-
-/**
- * 新增
- */
 function handleAdd() {
-  const pageData = _pageState;
-  if (!pageData.responseData?._modelPerm?.canAdd) {
-    $page.showMessage('无新增权限', 'warning');
-    return;
-  }
-  
-  $page.showMessage('有新增权限，可以执行新增操作');
-  console.log('新增操作');
+  $page.showMessage('✅ 新增（_modelPerm.canAdd = true）', 'success')
 }
 
-/**
- * 编辑
- */
 function handleEdit(row) {
-  if (!row._perm?.canEdit) {
-    $page.showMessage('无编辑权限', 'warning');
-    return;
-  }
-  
-  $page.showMessage(`可编辑字段: ${row._perm.editableFields.join(', ')}`);
-  console.log('编辑:', row);
+  $page.showMessage('编辑「' + row.name + '」可修改：' + (row._perm.editableFields.join('、') || '无'), 'info')
 }
 
-/**
- * 删除
- */
 function handleDelete(row) {
-  if (!row._perm?.canDelete) {
-    $page.showMessage('无删除权限', 'warning');
-    return;
-  }
-  
-  $page.showMessage('有删除权限，可以执行删除操作');
-  console.log('删除:', row);
+  $page.showConfirm('确认删除「' + row.name + '」？').then(function(ok) {
+    if (ok) $page.showMessage('「' + row.name + '」已删除', 'success')
+  })
 }
 
-/**
- * 页面初始化 —— form-create mounted 后自动调用
- */
 function __init__() {
-  _isInitialLoad = true;
-  handleLoadData();
-  _isInitialLoad = false;
+  handleSwitchUser('user1')
 }
 
+// ── Render* 渲染函数（固定框架代码；权限数据改了，UI 自动变）─────────────────
+
 /**
- * 自定义组件：用户切换区（原生 radio 组，从 _pageState 读取选中状态，避免 form-create
- * 重建时把 el-radio-group 的 value 重置为 rule.json 默认值）
+ * 角色选择——切换 = 模拟后端返回不同权限数据
  */
 function RenderUserSwitch() {
-  const current = _pageState.currentUser || 'user1';
-  const users = [
-    { value: 'user1',   label: '员工（只看部分数据）' },
-    { value: 'manager', label: '经理（看更多数据）'   },
-    { value: 'admin',   label: '管理员（完整权限）'   },
-  ];
-  const labelStyle =
-    'display:inline-flex;align-items:center;gap:6px;cursor:pointer;' +
-    'margin-right:20px;font-size:14px;color:#606266;user-select:none;';
-
-  return h('div', { style: 'padding:4px 0;' }, [
-    h('div', { style: 'display:flex;align-items:center;flex-wrap:wrap;gap:4px;' }, [
-      h('span', { style: 'font-weight:600;font-size:15px;margin-right:8px;color:#303133;' }, '用户切换'),
-      ...users.map(function(u) {
-        return h('label', { style: labelStyle }, [
-          h('input', {
-            type: 'radio',
-            name: 'perm-user-switch',
-            value: u.value,
-            checked: current === u.value,
-            onChange: function() { handleSwitchUser(u.value); },
-            style: 'cursor:pointer;accent-color:#409eff;width:14px;height:14px;',
-          }),
-          u.label,
-        ]);
-      }),
-      h('button', {
-        style: 'margin-left:16px;padding:6px 16px;border-radius:4px;font-size:14px;' +
-               'cursor:pointer;border:1px solid #409eff;background:#409eff;color:#fff;',
-        onClick: handleLoadData,
-      }, '加载数据'),
-    ]),
-  ]);
+  var current = _pageState.currentUser
+  var roles = [
+    { value: 'user1',   label: '员工',   desc: '脱敏·只读' },
+    { value: 'manager', label: '经理',   desc: '可编辑·不可删' },
+    { value: 'admin',   label: '管理员', desc: '完整权限' },
+  ]
+  return h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;' },
+    roles.map(function(r) {
+      var active = current === r.value
+      return h('label', {
+        style: 'display:flex;flex-direction:column;align-items:center;padding:8px 18px;' +
+               'border-radius:8px;cursor:pointer;user-select:none;min-width:88px;' +
+               'border:2px solid ' + (active ? '#409eff' : '#e4e7ed') + ';' +
+               'background:' + (active ? '#ecf5ff' : '#fff') + ';' +
+               'color:' + (active ? '#409eff' : '#909399') + ';transition:all .12s;',
+      }, [
+        h('input', {
+          type: 'radio', name: 'role-switch', value: r.value,
+          checked: active,
+          onChange: function() { handleSwitchUser(r.value) },
+          style: 'display:none;',
+        }),
+        h('span', { style: 'font-size:14px;font-weight:600;' }, r.label),
+        h('span', { style: 'font-size:11px;margin-top:2px;' }, r.desc),
+      ])
+    })
+  )
 }
 
 /**
- * 自定义组件：渲染新增按钮（使用原生元素，避免 h('el-*') 字符串不走 resolveComponent）
+ * 权限快照——实时展示"后端下发"的 _perm / _modelPerm
+ * 这块内容由数据驱动，代码固定不变
  */
-function RenderAddButton() {
-  const pageData = _pageState;
-  const canAdd = pageData.responseData?._modelPerm?.canAdd ?? false;
+function RenderPermSnapshot() {
+  var mp   = _pageState.modelPerm
+  var rows = _pageState.tableData
+  if (!mp) return h('div', { style: 'color:#c0c4cc;font-size:13px;' }, '切换角色后显示')
 
-  return h('div', { style: 'padding:14px 16px;background:#fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:16px;' }, [
-    h('button', {
-      style: `padding:7px 16px;border-radius:4px;font-size:14px;cursor:${canAdd ? 'pointer' : 'not-allowed'};` +
-             `border:1px solid ${canAdd ? '#67c23a' : '#dcdfe6'};background:${canAdd ? '#67c23a' : '#f5f7fa'};color:${canAdd ? '#fff' : '#c0c4cc'};`,
-      disabled: !canAdd,
-      onClick: canAdd ? handleAdd : undefined
-    }, `新增（模型级权限：_modelPerm.canAdd = ${canAdd}）`)
-  ]);
-}
-
-/**
- * 自定义组件：渲染数据表格（使用原生 table，避免 h('el-table') 字符串不走 resolveComponent）
- */
-function RenderTable() {
-  const pageData  = _pageState;
-  const tableData = pageData.tableData || [];
-
-  const wrapStyle = 'margin-top:16px;background:#fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;';
-  const thStyle   = 'padding:11px 12px;text-align:left;font-weight:600;font-size:13px;color:#606266;background:#f5f7fa;border-bottom:1px solid #ebeef5;';
-  const tdStyle   = 'padding:10px 12px;font-size:13px;color:#606266;border-bottom:1px solid #ebeef5;vertical-align:middle;';
-
-  const cols = [
-    { prop: 'id',         label: 'ID',   width: '60px'  },
-    { prop: 'name',       label: '姓名', width: '100px' },
-    { prop: 'email',      label: '邮箱', width: '180px' },
-    { prop: 'department', label: '部门', width: '100px' },
-  ];
-
-  if (tableData.length === 0) {
-    return h('div', { style: wrapStyle + 'padding:24px;text-align:center;color:#909399;' }, '暂无数据，请点击「加载数据」');
+  var tag = function(ok, label) {
+    return h('span', {
+      style: 'display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;' +
+             'margin:2px;border:1px solid ' + (ok ? '#b3e19d' : '#fab6b6') + ';' +
+             'background:' + (ok ? '#f0f9eb' : '#fef0f0') + ';' +
+             'color:' + (ok ? '#529b2e' : '#c45656') + ';',
+    }, (ok ? '✓ ' : '✗ ') + label)
   }
 
-  return h('div', { style: wrapStyle }, [
-    h('table', { style: 'width:100%;border-collapse:collapse;' }, [
-      h('thead', [
-        h('tr', [
-          ...cols.map(c => h('th', { style: thStyle + `width:${c.width};` }, c.label)),
-          h('th', { style: thStyle }, '权限信息'),
-          h('th', { style: thStyle + 'width:160px;' }, '操作'),
-        ])
-      ]),
-      h('tbody', tableData.map((row, i) =>
-        h('tr', { style: i % 2 === 0 ? '' : 'background:#fafafa;' }, [
-          ...cols.map(c => h('td', { style: tdStyle }, String(row[c.prop] ?? ''))),
-          h('td', { style: tdStyle }, [renderPermInfo(row)]),
-          h('td', { style: tdStyle }, [renderActions(row)]),
-        ])
-      ))
-    ])
-  ]);
+  return h('div', { style: 'font-size:13px;' }, [
+    // 模型级权限
+    h('div', { style: 'color:#606266;font-size:12px;font-weight:600;margin-bottom:6px;' }, '_modelPerm'),
+    h('div', { style: 'margin-bottom:12px;' }, [
+      tag(mp.canAdd,    '新增'),
+      tag(mp.canImport, '导入'),
+      tag(mp.canExport, '导出'),
+    ]),
+    // 行级权限
+    h('div', { style: 'color:#606266;font-size:12px;font-weight:600;margin-bottom:6px;' }, '每行 _perm'),
+    ...rows.map(function(row) {
+      return h('div', {
+        style: 'padding:6px 8px;margin-bottom:4px;background:#fafafa;' +
+               'border-radius:4px;border:1px solid #f0f2f5;',
+      }, [
+        h('div', { style: 'font-size:12px;font-weight:600;color:#303133;margin-bottom:3px;' },
+          '#' + row.id + '  ' + row.name),
+        h('div', [
+          tag(row._perm.canEdit,   '编辑'),
+          tag(row._perm.canDelete, '删除'),
+        ]),
+        row._perm.editableFields && row._perm.editableFields.length
+          ? h('div', { style: 'font-size:11px;color:#909399;margin-top:2px;' },
+              '可改字段：' + row._perm.editableFields.join('、'))
+          : h('div', { style: 'font-size:11px;color:#c0c4cc;margin-top:2px;' }, '只读，无可编辑字段'),
+      ])
+    }),
+  ])
 }
+
+/**
+ * 操作栏——新增按钮由 _modelPerm.canAdd 控制
+ * 代码固定：只改后端权限，按钮状态自动变
+ */
+function RenderAddButton() {
+  var mp     = _pageState.modelPerm || {}
+  var canAdd = mp.canAdd || false
+  return h('div', { style: 'display:flex;justify-content:flex-end;margin-bottom:10px;' }, [
+    h('button', {
+      disabled: !canAdd,
+      onClick: canAdd ? handleAdd : null,
+      style: 'padding:6px 16px;border-radius:4px;font-size:13px;' +
+             'cursor:' + (canAdd ? 'pointer' : 'not-allowed') + ';' +
+             'border:1px solid ' + (canAdd ? '#67c23a' : '#dcdfe6') + ';' +
+             'background:' + (canAdd ? '#67c23a' : '#f5f7fa') + ';' +
+             'color:' + (canAdd ? '#fff' : '#c0c4cc') + ';',
+    }, '＋ 新增'),
+  ])
+}
+
+/**
+ * 数据表格——编辑/删除按钮完全由行的 _perm 驱动
+ * 代码固定：只改后端权限数据，按钮可用性自动变
+ */
+function RenderTable() {
+  var rows = _pageState.tableData
+  if (!rows.length) {
+    return h('div', { style: 'text-align:center;color:#c0c4cc;padding:32px;' }, '请选择角色')
+  }
+
+  var thS = 'padding:9px 12px;text-align:left;font-size:12px;font-weight:600;' +
+            'color:#909399;background:#f5f7fa;border-bottom:1px solid #ebeef5;white-space:nowrap;'
+  var tdS = 'padding:9px 12px;font-size:13px;color:#606266;border-bottom:1px solid #f0f2f5;'
+
+  var actionBtn = function(ok, color, label, onClick) {
+    return h('button', {
+      disabled: !ok,
+      onClick: ok ? onClick : null,
+      style: 'padding:3px 10px;border-radius:3px;font-size:12px;margin-right:4px;' +
+             'cursor:' + (ok ? 'pointer' : 'not-allowed') + ';' +
+             'border:1px solid ' + (ok ? color : '#e4e7ed') + ';' +
+             'background:' + (ok ? color : '#f5f7fa') + ';' +
+             'color:' + (ok ? '#fff' : '#c0c4cc') + ';',
+    }, label)
+  }
+
+  return h('table', { style: 'width:100%;border-collapse:collapse;' }, [
+    h('thead', h('tr', [
+      h('th', { style: thS }, 'ID'),
+      h('th', { style: thS }, '姓名'),
+      h('th', { style: thS }, '邮箱'),
+      h('th', { style: thS }, '部门'),
+      h('th', { style: thS + 'width:130px;' }, '操作'),
+    ])),
+    h('tbody', rows.map(function(row, i) {
+      return h('tr', { style: i % 2 ? 'background:#fafafa;' : '' }, [
+        h('td', { style: tdS }, row.id),
+        h('td', { style: tdS }, row.name),
+        h('td', { style: tdS }, row.email),
+        h('td', { style: tdS }, row.department),
+        h('td', { style: tdS }, [
+          actionBtn(row._perm.canEdit,   '#409eff', '编辑', function() { handleEdit(row) }),
+          actionBtn(row._perm.canDelete, '#f56c6c', '删除', function() { handleDelete(row) }),
+        ]),
+      ])
+    })),
+  ])
+}
+
