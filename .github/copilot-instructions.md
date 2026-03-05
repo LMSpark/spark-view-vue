@@ -536,6 +536,118 @@ interface IModelPermission {      // 表级 — 存储在 dataSource._modelPerm
 }
 ```
 
+> **字段命名说明**：`IInstancePermission` / `IModelPermission` 是包内正式类型（`allowDelete`/`allowCreate`）。
+> 实际 script.js 演示页中使用更直观的简化字段名（`canEdit`/`canDelete`/`canAdd`/`canImport`/`canExport`/`editableFields`）——
+> 两者都合法，后端团队自行约定字段名即可，框架不强制要求。
+
+### 「改权限不改代码」实践模式（script.js）🎭
+
+**核心原则**：Render* 渲染函数是「固定框架代码」——权限数据变了，UI 自动变；前端代码一行不动。
+所有权限判断通过读取 `row._perm` / `_pageState.modelPerm` 完成，**永远不** 根据用户 ID 或角色字符串做 `if/switch` 判断。
+
+**参考实现**：`public/pages-config/permission-render/`（页面路由 `/permission-render`）
+
+**标准脚本结构**：
+
+```javascript
+// _pageState：仅存储后端返回的权限数据 + UI 状态
+let _pageState = {
+  currentUser: 'user1',
+  tableData:   [],
+  modelPerm:   null,          // 对应 _modelPerm（模型级权限快照）
+}
+
+// handleSwitchUser：切换角色 = 模拟后端返回不同 _perm 数据，触发 $rebindRules()
+function handleSwitchUser(userId) {
+  var resp = MOCK_RESPONSES[userId]
+  if (!resp) return
+  _pageState.currentUser = userId
+  _pageState.tableData   = resp.rows        // rows 内每行携带 _perm
+  _pageState.modelPerm   = resp._modelPerm
+  $rebindRules()
+}
+
+// RenderAddButton：从 _modelPerm.canAdd 读取模型级权限
+function RenderAddButton() {
+  var canAdd = (_pageState.modelPerm || {}).canAdd || false
+  return h('button', {
+    disabled: !canAdd,
+    onClick: canAdd ? handleAdd : null,
+    style: 'color:' + (canAdd ? '#fff' : '#c0c4cc') + ';...',
+  }, '＋ 新增')
+}
+
+// RenderTable：从 row._perm 读取行级权限，按钮状态自动响应
+function RenderTable() {
+  return h('tbody', _pageState.tableData.map(function(row) {
+    return h('tr', [
+      // ... 数据列 ...
+      h('td', [
+        actionBtn(row._perm.canEdit,   '#409eff', '编辑', function() { handleEdit(row) }),
+        actionBtn(row._perm.canDelete, '#f56c6c', '删除', function() { handleDelete(row) }),
+      ])
+    ])
+  }))
+}
+
+// RenderPermSnapshot（调试/演示用）：实时可视化后端下发的权限快照
+// 真实项目不必展示，但对理解权限架构很有帮助
+function RenderPermSnapshot() {
+  var mp = _pageState.modelPerm
+  if (!mp) return h('div', '切换角色后显示')
+  // ... 展示 _modelPerm 标签 + 每行 _perm 标签 ...
+}
+```
+
+**绑定到 rule.json 的惯用写法**（双栏布局）：
+
+```jsonc
+// rule.json
+{
+  "type": "div",
+  "style": { "display": "flex", "gap": "16px" },
+  "children": [
+    // 左栏：权限快照（调试/演示）
+    {
+      "type": "el-card",
+      "style": { "width": "280px", "flexShrink": "0" },
+      "children": [{ "type": "RenderPermSnapshot" }]
+    },
+    // 右栏：业务 UI（代码固定，由 _perm 驱动）
+    {
+      "type": "div",
+      "style": { "flex": "1" },
+      "children": [
+        { "type": "RenderAddButton" },
+        { "type": "RenderTable" }
+      ]
+    }
+  ]
+}
+```
+
+**⚠️ 角色切换组件不要用 `el-radio-group`**
+
+`el-radio-group` 的 `value` 在 `$rebindRules()` 后被 form-create 重置为 rule.json 默认值，导致选中状态脱同。
+标准做法是用 Render* 函数内嵌原生 `<input type="radio">`，从 `_pageState.currentUser` 读取 `checked` 状态：
+
+```javascript
+function RenderUserSwitch() {
+  var current = _pageState.currentUser
+  return h('div', roles.map(function(r) {
+    return h('label', [
+      h('input', {
+        type: 'radio', name: 'role-switch', value: r.value,
+        checked: current === r.value,
+        onChange: function() { handleSwitchUser(r.value) },
+        style: 'display:none;',   // 隐藏原生控件，用父 label 样式模拟卡片
+      }),
+      h('span', r.label),
+    ])
+  }))
+}
+```
+
 ## 能力体系 🔧
 
 ### DI 双轨（严格区分）
