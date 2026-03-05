@@ -1,13 +1,12 @@
 ﻿/**
  * DataKey 统一解析器测试
  *
- * 验证 parseDataKey / resolveDataKey / isDataKey / buildDataKey / normalizeDataKey 的正确性
+ * 验证 parseDataKey / resolveDataKey / isDataKey / buildDataKey 的正确性
  *
- * 新格式（无 scope）：
+ * 格式：
  *   - 2 段：tableName@field（viewId 默认 'default'）
  *   - 3 段：tableName@viewId@field
  *   - 跨页面：#scope@tableName@field 或 #scope@tableName@viewId@field
- *   - 4 段旧格式（scope@table@viewId@field）向后兼容，scope 保留
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -16,7 +15,6 @@ import {
   parseDataKey,
   resolveDataKey,
   isDataKey,
-  normalizeDataKey,
 } from '@spark-view/spark-data'
 import { buildDataKey, getViewKey } from '../core/data-key'
 
@@ -117,68 +115,6 @@ describe('DataKey 统一解析器', () => {
 
     it('非法字段名返回 null', () => {
       expect(parseDataKey('Users@grid@invalidField')).toBeNull()
-    })
-  })
-
-  // ===== parseDataKey — 4 段旧格式 =====
-
-  describe('parseDataKey — 4 段旧格式（scope@table@viewId@field，向后兼容）', () => {
-    it('4 段完整格式', () => {
-      const dk = parseDataKey('MyApp@Users@grid@rows')
-      expect(dk).toEqual({
-        scope: 'MyApp',
-        tableName: 'Users',
-        viewId: 'grid',
-        field: 'rows',
-        raw: 'MyApp@Users@grid@rows'
-      })
-    })
-
-    it('4 段 currentRow', () => {
-      const dk = parseDataKey('PageDS@Orders@default@currentRow')
-      expect(dk).toEqual({
-        scope: 'PageDS',
-        tableName: 'Orders',
-        viewId: 'default',
-        field: 'currentRow',
-        raw: 'PageDS@Orders@default@currentRow'
-      })
-    })
-
-    it('4 段 selectedRows', () => {
-      const dk = parseDataKey('DS@Users@main@selectedRows')
-      expect(dk).toEqual({
-        scope: 'DS',
-        tableName: 'Users',
-        viewId: 'main',
-        field: 'selectedRows',
-        raw: 'DS@Users@main@selectedRows'
-      })
-    })
-
-    it('4 段带字段路径', () => {
-      const dk = parseDataKey('DS@Users@default@currentRow.name')
-      expect(dk).toEqual({
-        scope: 'DS',
-        tableName: 'Users',
-        viewId: 'default',
-        field: 'currentRow',
-        fieldPath: 'name',
-        raw: 'DS@Users@default@currentRow.name'
-      })
-    })
-
-    it('非法字段名返回 null', () => {
-      expect(parseDataKey('MyApp@Users@default@invalidField')).toBeNull()
-    })
-
-    it('5 段返回 null', () => {
-      expect(parseDataKey('A@B@C@D@E')).toBeNull()
-    })
-
-    it('空段返回 null', () => {
-      expect(parseDataKey('@Users@default@rows')).toBeNull()
-      expect(parseDataKey('DS@Users@@rows')).toBeNull()
     })
   })
 
@@ -293,7 +229,7 @@ describe('DataKey 统一解析器', () => {
       expect(isDataKey('Users@grid@rows')).toBe(true)
     })
 
-    it('4 段旧格式返回 true', () => {
+    it('4 段格式 isDataKey 仍返回 true（仅检测 @ 存在）', () => {
       expect(isDataKey('DS@Orders@grid@currentRow')).toBe(true)
     })
 
@@ -379,42 +315,6 @@ describe('DataKey 统一解析器', () => {
     })
   })
 
-  // ===== normalizeDataKey =====
-
-  describe('normalizeDataKey — 规范化', () => {
-    it('2 段新格式原样返回', () => {
-      expect(normalizeDataKey('Orders@rows')).toBe('Orders@rows')
-    })
-
-    it('3 段新格式原样返回', () => {
-      expect(normalizeDataKey('Orders@default@rows')).toBe('Orders@default@rows')
-    })
-
-    it('4 段旧格式剥离 scope', () => {
-      expect(normalizeDataKey('DS@Orders@default@rows')).toBe('Orders@default@rows')
-    })
-
-    it('4 段旧格式带 fieldPath 剥离 scope', () => {
-      expect(normalizeDataKey('DS@Users@default@currentRow.name')).toBe('Users@default@currentRow.name')
-    })
-
-    it('#scope 跨页面原样保留', () => {
-      expect(normalizeDataKey('#SharedDS@Orders@rows')).toBe('#SharedDS@Orders@rows')
-    })
-
-    it('#scope 跨页面 4 段原样保留', () => {
-      expect(normalizeDataKey('#SharedDS@Orders@grid@rows')).toBe('#SharedDS@Orders@grid@rows')
-    })
-
-    it('空字符串原样返回', () => {
-      expect(normalizeDataKey('')).toBe('')
-    })
-
-    it('非 DataKey 原样返回', () => {
-      expect(normalizeDataKey('formData')).toBe('formData')
-    })
-  })
-
   // ===== resolveDataKey — 集成 DataSet =====
 
   describe('resolveDataKey — 从 DataSet 解析数据', () => {
@@ -463,11 +363,9 @@ describe('DataKey 统一解析器', () => {
       expect((rows as unknown[]).length).toBe(2)
     })
 
-    it('4 段旧格式解析 rows（scope 用于向后兼容）', () => {
-      const dk = parseDataKey('TestDS@Users@default@rows')!
-      const rows = resolveDataKey(dk, dataSet)
-      expect(Array.isArray(rows)).toBe(true)
-      expect((rows as unknown[]).length).toBe(2)
+    it('4 段旧格式不再支持，返回 null', () => {
+      const dk = parseDataKey('TestDS@Users@default@rows')
+      expect(dk).toBeNull()
     })
 
     it('解析 currentRow（初始为 null）', () => {

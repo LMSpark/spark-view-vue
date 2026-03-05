@@ -23,6 +23,7 @@ import type { Rule } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { parseDataKey } from '@spark-view/spark-data'
 import { setRuleProp, pageLogger } from './bind-helpers'
+import { wrapEvent } from './wrapEvent'
 
 /**
  * 为 el-pagination 注入 DataView 分页绑定（双向）
@@ -59,23 +60,14 @@ export function bindPaginationRule(
   rule.props['pageSizes'] ??= [10, 20, 50, 100]
 
   // ── 注入事件 ──
-  rule.on ??= {}
 
-  const originalCurrentChange = rule.on['currentChange']
-  rule.on['currentChange'] = (page: number) => {
+  wrapEvent(rule, 'currentChange', (page: unknown) => {
     pageLogger.debug(`[PaginationEvent] currentChange`, { tableName, viewId, page })
-    if (typeof originalCurrentChange === 'function') {
-      (originalCurrentChange as (p: number) => void)(page)
-    }
-    void view.setPage(page)
-  }
+    void view.setPage(page as number)
+  })
 
-  const originalSizeChange = rule.on['sizeChange']
-  rule.on['sizeChange'] = (size: number) => {
+  wrapEvent(rule, 'sizeChange', (size: unknown) => {
     pageLogger.debug(`[PaginationEvent] sizeChange`, { tableName, viewId, size })
-    if (typeof originalSizeChange === 'function') {
-      (originalSizeChange as (s: number) => void)(size)
-    }
-    void view.setPageSize(size)
-  }
+    void view.setPageSize(size as number)
+  })
 }

@@ -173,15 +173,14 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
 - `field` 可选值：`rows`、`currentRow`、`selectedRows`、`summaryRow`、`selectionSummaryRow`
 - 支持字段路径：`table@field.path`（如 `stats@currentRow.totalUsers`）
 - `#scope` 用于跨页面引用其他 DataSet 的数据，`parseDataKey` 返回 `{ scope, crossPage: true }`
-- ⚠️ 旧 4 段格式 `scope@table@viewId@field` 仍可解析（向后兼容，scope 保留在描述符中）
-- ⚠️ 旧点号格式 `dataset.tables.X.rows` **已移除**，不再支持
+- ⚗️ 旧点号格式 `dataset.tables.X.rows` **已移除**，不再支持
+- ⚗️ 旧 4 段格式 `scope@table@viewId@field` **已移除**，不再支持
 - API（`packages/spark-data/src/core/data-key.ts`）：
   - `isDataKey(key)` — 格式校验
   - `parseDataKey(key)` — 解析为 `DataKeyDescriptor`
   - `resolveDataKey(descriptor, dataSet)` — 解析数据值
   - `resolveDataKeyBinding(key, dataSet)` — 返回 `DataKeyBinding` 判别联合（渲染层首选）
   - `buildDataKey(table, field, viewId?, scope?)` — 构建 key 字符串（传 scope 时输出 `#scope@...`）
-  - `normalizeDataKey(rawKey)` — 将旧 4 段格式剥离 scope → 新格式；`#scope` 原样保留
 
 ```json
 // rule.json 示例
@@ -214,15 +213,6 @@ Spark.createSystem()                          // 测试专用: { registry, rootC
   crossPage: true,
   raw: '#SharedDS@Orders@rows'
 }
-```
-
-### 旧格式向后兼容
-
-旧 4 段格式（`scope@table@viewId@field`）仍可被 `parseDataKey` 解析，scope 会被保留在描述符中但不影响数据解析。`normalizeDataKey()` 可将旧格式自动剥离 scope。`PageConfigLoader.loadPageConfig()` 在配置加载阶段自动调用 `injectDataKeyScope()` 规范化所有 dataKey；`bindDataToRules` 在规则绑定前再次调用 `normalizeDataKey` 作为安全兜底。
-
-```jsonc
-// ⚠️ 旧写法（仍可工作，scope 被自动剥离）
-{ "type": "el-table",  "dataKey": "CascadeDemo@Users@default@rows" }
 ```
 
 ### el-table rule.json 配置规范 📋
@@ -1002,7 +992,7 @@ packages/
 │       ├── composables/      # useSparkComponent
 │       ├── plugins/          # SparkPlugin (Vue plugin)
 │       └── renderer/
-│           ├── composables/  # usePageRenderer, useJsonRenderer, useRuleBinding, useCssScope
+│           ├── composables/  # usePageRenderer, useRuleBinding, useCssScope
 │           └── utils/        # bindRules, createSandbox, provideAppServices, scopeCSS
 ├── spark-data/          # 数据空间
 │   └── src/

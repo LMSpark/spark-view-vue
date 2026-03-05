@@ -2,10 +2,10 @@
  * SPARK 页面渲染引擎 - 渲染器模块入口
  *
  * 提供纯渲染层能力：
- * - PageRenderer 页面渲染组件（基于 FormCreate）
- * - JsonRenderer JSON 配置渲染组件（通用配置驱动）
+ * - FCPageRenderer  FormCreate 技术路线页面渲染组件
+ * - SparkPageRenderer  SPARK 原生页面渲染组件（ComponentConfig 结构）
+ * - SparkComponentRenderer  递归组件引擎
  * - usePageRenderer 页面编排 Composable
- * - useJsonRenderer JSON 渲染 Composable
  * - 类型定义（Rule、FormCreateAPI、PageContext、PageConfig 等）
  *
  * 内部实现（不导出）：
@@ -30,10 +30,6 @@ export type { UsePageRendererReturn, UsePageRendererRefs } from './composables/u
 export { usePageDataSet } from './composables/usePageDataSet'
 export type { UsePageDataSetOptions, UsePageDataSetReturn } from './composables/usePageDataSet'
 
-// JSON 渲染 Composable
-export { useJsonRenderer } from './composables/useJsonRenderer'
-export type { UseJsonRendererReturn } from './composables/useJsonRenderer'
-
 // 类型
 export type {
   Rule,
@@ -42,7 +38,6 @@ export type {
   PageConfig,
   PageRendererOptions,
   RuleBindingOptions,
-  JsonRendererOptions
 } from './types/index'
 
 // 渲染工具（供测试及高级用例）

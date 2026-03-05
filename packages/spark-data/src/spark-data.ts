@@ -194,9 +194,4 @@ export namespace SparkData {
   /** 从描述符提取视图唯一键 */
   export const getViewKey = DataKeyModule.getViewKey
 
-  /** 规范化 DataKey：将旧 4 段格式剥离 scope，新格式原样返回 */
-  export const normalizeDataKey = DataKeyModule.normalizeDataKey
-
-  /** @deprecated 使用 normalizeDataKey 代替 */
-  export const resolveInheritedDataKey = DataKeyModule.resolveInheritedDataKey
 }

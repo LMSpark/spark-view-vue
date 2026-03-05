@@ -18,7 +18,7 @@
 import { toErrorMessage } from '@spark-view/spark-utils'
 import type { Rule, RuleBindingOptions } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
-import { isDataKey, resolveDataKeyBinding, getViewFromRawKey, normalizeDataKey } from '@spark-view/spark-data'
+import { isDataKey, resolveDataKeyBinding, getViewFromRawKey } from '@spark-view/spark-data'
 import type { ComponentRegistry } from '../../core/types.js'
 
 // ── 委托模块 ──────────────────────────────────────────────────────────────
@@ -91,11 +91,6 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
 
   return rules.map(rule => {
     const newRule = { ...rule }
-
-    // ── dataKey 规范化：旧 4 段格式自动剥离 scope 前缀 ──
-    if (typeof newRule['dataKey'] === 'string') {
-      newRule['dataKey'] = normalizeDataKey(newRule['dataKey'])
-    }
 
     // ── Render* 组件：已由 usePageRenderer 注册为响应式 Vue 组件，保持原样 ──
     if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {

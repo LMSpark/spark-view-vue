@@ -20,32 +20,24 @@
 
 import {
   ref, shallowRef, onMounted, watch, nextTick,
-  h, inject, defineComponent, markRaw,
+  inject, defineComponent, markRaw,
   type App, type Ref, type Component, type ShallowRef,
 } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Logger, APP_SERVICES, PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
-import type { IPageRoute, IFormAPI } from '@spark-view/spark-page-config'
+import { useRoute } from 'vue-router'
+import { PAGE_SERVICE } from '@spark-view/spark-utils'
+import type { IPageRoute } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
-import { SparkData } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../capability-keys'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { useSparkComponent } from '../../composables/useSparkComponent'
 import { SPARK_REGISTRY_KEY } from '../../core/types.js'
 import { usePageDataSet } from './usePageDataSet'
+import { useRendererSetup } from './useRendererSetup'
 import type { PageRendererOptions, PageContext, Rule, PageConfig, FormCreateAPI } from '../types'
 import { useCssScope } from './useCssScope'
 import { useRuleBinding } from './useRuleBinding'
 import { compileFunctions } from '../utils/createSandbox'
-import { buildAppServices } from '../utils/provideAppServices'
-
-const pageLogger = Logger('PageRenderer')
-
-/** ElMessageBox 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常 */
-function isElCancelAction(e: unknown): boolean {
-  if (e === 'cancel') return true
-  return typeof e === 'object' && e !== null && (e as Record<string, unknown>)['action'] === 'cancel'
-}
+import { buildPageService } from '../utils/buildPageService'
+import { buildPageContext } from '../utils/buildPageContext'
+import { pageLogger } from '../utils/bind-helpers'
 
 // ─── 模块级 Render* 组件注册表 ────────────────────────────────────────────────
 // 每个 Vue App 实例维护一张 name → ShallowRef<renderFn> 的映射。
@@ -112,12 +104,10 @@ export function usePageRenderer(
 ): UsePageRendererReturn {
   const { pageContainer, vueApp } = refs
 
-  // ── SPARK 能力上下文 ────────────────────────────────────────────────────────
-  // APP_SERVICES / PAGE_SERVICE 注入到组件树，供子组件通过 consume() 取用。
+  // ── 共享基础设施（SPARK 上下文 + 加载状态机 + 竞态保护） ──
+  const { router, provideCapability, loading, error, runLoad } = useRendererSetup('page-renderer', pageLogger)
 
-  const router = useRouter()
-  const route  = useRoute()
-  const { provide: provideCapability } = useSparkComponent({ type: 'page-renderer', id: 'page-renderer-root' })
+  const route = useRoute()
 
   // 框架无关路由快照（脚本只需读取此接口，无 Vue Router 依赖）
   const pageRoute: IPageRoute = {
@@ -132,90 +122,15 @@ export function usePageRenderer(
   // 组件注册表：供 useRuleBinding 查询 dataKey 行为元数据
   const registry = inject(SPARK_REGISTRY_KEY, undefined)
 
-  provideCapability(APP_SERVICES, buildAppServices(router, pageLogger))
-
-  // PAGE_SERVICE：优先使用 props 注入的 UI 服务（测试/Storybook），回退到 element-plus
-  const pageService: IPageServiceCapability = {
-    showMessage: (message, type = 'info') => {
-      const fn = props.messageService?.[type]
-      if (typeof fn === 'function') { fn(message); return }
-      ElMessage({ message, type })
-    },
-    showConfirm: async (message: string, title?: string, options?: { confirmText?: string; cancelText?: string; type?: 'warning' | 'info' | 'error' | 'success' }) => {
-      if (props.confirmService) {
-        await props.confirmService.confirm(message, title)
-        return true
-      }
-      try {
-        const confirmText: string = options?.confirmText ?? '确定'
-        const cancelText: string  = options?.cancelText  ?? '取消'
-        const confirmType          = options?.type ?? 'warning'
-        await ElMessageBox.confirm(message, title ?? '确认', {
-          confirmButtonText: confirmText,
-          cancelButtonText:  cancelText,
-          type: confirmType,
-        })
-        return true
-      } catch (e) {
-        // ElMessageBox 取消抛出 'cancel' 字符串或 { action: 'cancel' }，非取消异常记录日志
-        if (!isElCancelAction(e)) {
-          pageLogger.warn('showConfirm 异常', { error: e })
-        }
-        return false
-      }
-    },
-    showPrompt: async (message: string, title?: string, options?: { placeholder?: string; defaultValue?: string }) => {
-      try {
-        const placeholder: string  = options?.placeholder  ?? ''
-        const defaultValue: string = options?.defaultValue ?? ''
-        const result = await ElMessageBox.prompt(message, title ?? '请输入', {
-          confirmButtonText: '确定',
-          cancelButtonText:  '取消',
-          inputPlaceholder:  placeholder,
-          inputValue:        defaultValue,
-        })
-        // ElMessageBox.prompt 结果类型是 MessageBoxData，需要运行时检查
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return typeof result === 'object' && result !== null && 'value' in result
-          ? (result as { value: string }).value
-          : null
-      } catch (e) {
-        // ElMessageBox 取消抛出 'cancel' 字符串或 { action: 'cancel' }，非取消异常记录日志
-        if (!isElCancelAction(e)) {
-          pageLogger.warn('showPrompt 异常', { error: e })
-        }
-        return null
-      }
-    },
-    showAlert: async (message: string, title?: string, options?: { type?: 'warning' | 'info' | 'error' | 'success' }) => {
-      const alertType = options?.type ?? 'info'
-      try {
-        await ElMessageBox.alert(message, title ?? '提示', {
-          confirmButtonText: '确定',
-          type: alertType,
-        })
-      } catch (e) {
-        if (!isElCancelAction(e)) {
-          pageLogger.warn('showAlert 异常', { error: e })
-        }
-      }
-    },
-    showLoading: (_show, _text) => {
-      if (import.meta.env.DEV) {
-        console.warn('[PageRenderer] showLoading 尚未接入全局加载遮罩服务')
-      }
-    },
-    navigate: (path, params) => {
-      router.push(params ? { path, query: params as Record<string, string> } : path)
-        .catch((err: unknown) => { pageLogger.warn('导航失败', { path, error: err }) })
-    },
-  }
+  // PAGE_SERVICE：优先使用 props 注入的 UI 服务（测试/Storybook），回退到 Element Plus
+  const pageService = buildPageService(router, {
+    messageService: props.messageService,
+    confirmService: props.confirmService,
+  })
   provideCapability(PAGE_SERVICE, pageService)
 
   // ── 响应式状态 ───────────────────────────────────────────────────────────────
 
-  const loading       = ref(true)
-  const error         = ref<string>('')
   const currentPageId = ref<string>('')
   const formApi       = ref<FormCreateAPI | null>(null)
   const originalRules = ref<unknown[]>([])
@@ -271,57 +186,17 @@ export function usePageRenderer(
 
   // ── 脚本沙箱上下文（pageContext） ────────────────────────────────────────────
   // 通过 `with (__ctx)` 注入给业务脚本，脚本中可直接使用 $api / $dataSet / h 等。
-  // $api / $dataSet 使用 getter，保证脚本每次访问都拿到最新值。
 
-  const pageContext: PageContext = {
-    get $api()     { return formApi.value as IFormAPI | null },
-    get $dataSet() { return pds.dataSet },
-
-    $route:    pageRoute,
-    $el:       () => pageContainer.value,
-    $query:    (selector: string) => pageContainer.value?.querySelector(selector) ?? null,
-    $queryAll: (selector: string) => {
-      if (pageContainer.value?.querySelectorAll)
-        return pageContainer.value.querySelectorAll(selector)
-      if (typeof document !== 'undefined')
-        return document.querySelectorAll(selector)
-      return [] as unknown as NodeListOf<Element>
-    },
-
-    $rebindRules:  () => rebindRules(),
-    $refreshData:  async (tableName?: string) => {
-      const ds = pds.dataSet
-      if (!ds) return
-      if (tableName) {
-        // 刷新指定表的 default 视图
-        const view = ds.getView(tableName, 'default')
-        if (view?.crudService) {
-          await view.refresh()
-        }
-      } else {
-        // 刷新所有有 API 配置的表的 default 视图
-        const promises: Array<Promise<void>> = []
-        for (const table of Object.values(ds.tables)) {
-          const view = table.getView('default')
-          if (view?.crudService) {
-            promises.push(view.refresh())
-          }
-        }
-        await Promise.all(promises)
-      }
-    },
-
-    // PAGE_SERVICE 快捷访问（脚本使用 $page.showMessage 替代直接调用 ElMessage）
-    $page: pageService,
-
-    SparkData,
-    h,
-  }
+  const pageContext: PageContext = buildPageContext({
+    formApi,
+    getDataSet: () => pds.dataSet,
+    pageRoute,
+    pageContainer,
+    rebindRules,
+    pageService,
+  })
 
   // ── 配置加载流水线 ────────────────────────────────────────────────────────────
-
-  /** 竞态保护：每次加载递增，async 完成时校验是否仍为当前请求 */
-  let _loadSequenceId = 0
 
   /** 从 props / route 推断当前页面 ID，无法确定时抛出。 */
   function resolvePageId(): string {
@@ -444,33 +319,17 @@ export function usePageRenderer(
 
   /** 完整加载流程：beforeLoad → resolvePageId → fetchConfig → applyConfig → afterLoad。 */
   const loadPageConfig = async (): Promise<void> => {
-    const myLoadId = ++_loadSequenceId
-    loading.value = true
-    error.value   = ''
-    try {
+    await runLoad(async (isStale) => {
       const pageId = resolvePageId()
       currentPageId.value = pageId
       if (props.beforeLoad) await props.beforeLoad(pageId)
-      // 竞态保护：如果在 await 期间有新的加载请求，放弃当前结果
-      if (myLoadId !== _loadSequenceId) {
-        pageLogger.debug(`loadPageConfig 请求 ${myLoadId} 被更新的请求 ${_loadSequenceId} 替代，忽略响应`)
-        return
-      }
+      if (isStale()) return
       const config = await fetchConfig(pageId)
-      if (myLoadId !== _loadSequenceId) {
-        pageLogger.debug(`loadPageConfig 请求 ${myLoadId} 被更新的请求 ${_loadSequenceId} 替代，忽略响应`)
-        return
-      }
+      if (isStale()) return
       await applyConfig(pageId, config)
-      if (myLoadId !== _loadSequenceId) return
+      if (isStale()) return
       if (props.afterLoad) await props.afterLoad(config)
-    } catch (err) {
-      if (myLoadId !== _loadSequenceId) return  // 已被新请求取代，不更新错误状态
-      error.value = err instanceof Error ? err.message : String(err)
-      props.onError?.(err instanceof Error ? err : new Error(String(err)))
-    } finally {
-      if (myLoadId === _loadSequenceId) loading.value = false
-    }
+    }, props.onError)
   }
 
   // ── 生命周期 ─────────────────────────────────────────────────────────────────

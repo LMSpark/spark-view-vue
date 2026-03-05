@@ -21,7 +21,6 @@
       configUrl="/user-grid-demo.json"
       :component="UserGrid"
       :show-config-viewer="true"
-      :after-load="onAfterLoad"
       :on-error="onLoadError"
     >
       <!-- 自定义加载状态 -->
@@ -70,14 +69,6 @@ interface RendererInstance {
 
 /** 绑定渲染器实例，用于外部调用 reload / loadConfig */
 const rendererRef = ref<RendererInstance | null>(null)
-
-/**
- * 配置加载完成钩子
- * @param config - 远程加载的配置对象
- */
-function onAfterLoad(config: Record<string, unknown>): void {
-  console.info('[JsonRendererExample] 配置加载完成', { type: config['type'], id: config['id'] })
-}
 
 /**
  * 配置加载错误钩子

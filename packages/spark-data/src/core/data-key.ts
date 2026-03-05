@@ -13,9 +13,6 @@
  *   - `tableName@viewId@field.path`  → 如 `stats@default@currentRow.totalUsers`
  *   - `tableName@field.path`         → 如 `stats@currentRow.totalUsers`
  *
- * 旧格式兼容（4 段带 scope，自动剥离 scope）：
- *   - `scope@tableName@viewId@field` → 等价于 `tableName@viewId@field`
- *
  * 非 DataSet 键（如 `settings.siteName`、`formData`）返回 null。
  *
  * @example
@@ -45,7 +42,7 @@ export type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'summaryRow'
 
 /** DataKey 解析后的描述符 */
 export interface DataKeyDescriptor {
-  /** 数据集 scope（仅跨页面 `#scope` 或旧 4 段格式存在） */
+  /** 数据集 scope（仅跨页面 `#scope` 前缀存在） */
   scope?: string
   /** 表名 */
   tableName: string
@@ -149,7 +146,6 @@ export function isDataKey(dataKey: string): boolean {
  *   - `tableName@viewId@field`                → 3 段完整格式（推荐）
  *   - `#scope@tableName@field`                → 跨页面 2 段（viewId 默认 'default'）
  *   - `#scope@tableName@viewId@field`         → 跨页面 3 段
- *   - `scope@tableName@viewId@field`          → 4 段旧格式（scope 保留，向后兼容）
  *   - 以上均支持 `field.path` 字段路径
  *
  * @param dataKey 原始 dataKey 字符串
@@ -165,17 +161,6 @@ export function parseDataKey(dataKey: string): DataKeyDescriptor | null {
 
   // ── 标准格式 ──
   const parts = dataKey.split(SEPARATOR)
-
-  if (parts.length === 4) {
-    // 旧格式兼容：scope@tableName@viewId@field
-    const [scope, tableName, viewId, fieldPart] = parts
-    if (!scope || !tableName || !viewId || !fieldPart) return null
-    const fp = parseFieldPart(fieldPart)
-    if (!fp) return null
-    const result: DataKeyDescriptor = { scope, tableName, viewId, field: fp.field, raw: dataKey }
-    if (fp.fieldPath !== undefined) result.fieldPath = fp.fieldPath
-    return result
-  }
 
   if (parts.length === 3) {
     // 新格式：tableName@viewId@field
@@ -419,67 +404,4 @@ export function buildDataKey(
  */
 export function getViewKey(descriptor: DataKeyDescriptor): string {
   return `${descriptor.tableName}.${descriptor.viewId}`
-}
-
-// ===== DataKey 规范化 =====
-
-/**
- * 将旧格式（4 段带 scope）DataKey 规范化为新格式（2-3 段无 scope）
- *
- * 用于向后兼容：rule.json 中残留的旧格式 `scope@table@viewId@field` 会被自动
- * 剥离 scope 前缀。新格式（2-3 段）和跨页面 `#scope` 前缀原样返回。
- *
- * 判定规则：
- * - `#scope@...`：跨页面引用，原样保留
- * - 4+ 段（≥3 个 `@`，无 `#`）：旧格式，剥离首段 scope → 返回 3 段
- * - 3 段（2 个 `@`）：新完整格式 `table@viewId@field`，原样返回
- * - 2 段（1 个 `@`）：新简写 `table@field`，原样返回
- * - 其他（0 段 / 非标准）：原样返回
- *
- * @param rawKey 原始 dataKey 字符串
- * @returns 规范化后的 dataKey
- *
- * @example
- * ```ts
- * normalizeDataKey('DS@Orders@default@rows')  // → 'Orders@default@rows'（剥离 scope）
- * normalizeDataKey('Orders@default@rows')      // → 'Orders@default@rows'（原样）
- * normalizeDataKey('Orders@rows')              // → 'Orders@rows'（原样）
- * normalizeDataKey('#Shared@Orders@rows')      // → '#Shared@Orders@rows'（跨页面，保留）
- * ```
- */
-export function normalizeDataKey(rawKey: string): string {
-  if (!rawKey) return rawKey
-
-  // 跨页面 #scope 前缀：原样保留
-  if (rawKey.startsWith(CROSS_PAGE_PREFIX)) return rawKey
-
-  const separatorCount = countSeparators(rawKey)
-
-  // 4+ 段：旧格式，剥离首段 scope
-  if (separatorCount >= 3) {
-    const firstSep = rawKey.indexOf(SEPARATOR)
-    return rawKey.substring(firstSep + 1)
-  }
-
-  // 2-3 段或非标准：原样返回
-  return rawKey
-}
-
-/**
- * @deprecated 使用 `normalizeDataKey` 代替。旧函数签名保留用于向后兼容，
- * `inheritedScope` 参数已被忽略。
- */
-export function resolveInheritedDataKey(rawKey: string, _inheritedScope?: string): string {
-  return normalizeDataKey(rawKey)
-}
-
-/**
- * 统计字符串中 @ 分隔符的数量
- */
-function countSeparators(str: string): number {
-  let count = 0
-  for (const ch of str) {
-    if (ch === SEPARATOR) count++
-  }
-  return count
 }

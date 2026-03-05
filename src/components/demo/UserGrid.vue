@@ -96,19 +96,12 @@ import type { ISelectionCapability } from '@spark-view/spark-utils'
 interface Props {
   /**
    * 组件配置对象
-   * 必须包含 props.dataset.tables.Users 数据结构
+   * 必须包含 props.rows 数据数组
    * @example
    * {
    *   type: 'user-grid',
    *   props: {
-   *     dataset: {
-   *       tables: {
-   *         Users: {
-   *           columns: [{ name: 'id', type: 'number', label: 'ID' }],
-   *           rows: [{ id: 1, name: '张三' }]
-   *         }
-   *       }
-   *     }
+   *     rows: [{ id: 1, name: '张三' }]
    *   },
    *   children: [{ type: 'user-row', id: 'row-1' }]
    * }
@@ -147,17 +140,10 @@ const appRouter = computed(() => appServices?.router)
 // 数据获取（配置驱动，不耐合具体表名）
 // ============================================================
 
-// 从 config.props.rows 读取行数据（扩展层通过配置注入，父级不关心数据结构）
+// 从 config.props.rows 读取行数据
 const usersFromConfig = computed<IDataRow[]>(() => {
-  // 优先：config.props.rows（标准平面配置格式）
   const rows = props.config.props?.['rows']
   if (Array.isArray(rows)) return rows as IDataRow[]
-  // 备用：兼容旧格式 dataset.tables.{tableName}.rows（如果入口配置使用该结构）
-  const dataset = props.config.props?.['dataset'] as { tables?: Record<string, { rows?: unknown[] }> } | undefined
-  if (dataset?.tables) {
-    const firstTable = Object.values(dataset.tables)[0]
-    if (firstTable?.rows) return firstTable.rows as IDataRow[]
-  }
   return []
 })
 

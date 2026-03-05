@@ -13,11 +13,9 @@
  */
 
 import { nextTick } from 'vue'
-import { Logger } from '@spark-view/spark-utils'
 import type { IDataRow } from '@spark-view/spark-data'
+import { pageLogger } from './bind-helpers'
 import type { FormCreateAPI } from '../types'
-
-const pageLogger = Logger('PageRenderer')
 
 // ── el-table 命令式接口（Element Plus 原生，无响应式绑定） ─────────────────
 

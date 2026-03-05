@@ -11,7 +11,6 @@
  * 3. 绑定和渲染使用 Rule[]（FormCreate 标准格式）
  */
 
-import type { Component } from 'vue'
 import type { h as VueH } from 'vue'
 import type { IDataSet } from '@spark-view/spark-data'
 import type { SparkData } from '@spark-view/spark-data'
@@ -331,108 +330,4 @@ export interface RuleBindingOptions {
   bindingId?: string
 }
 
-/**
- * JsonRenderer 组件选项接口
- * 
- * 用于从 JSON 配置文件动态渲染 SPARK 组件的渲染器。
- * 支持远程加载配置、本地配置传入、自定义组件等场景。
- * 
- * @interface JsonRendererOptions
- * @example
- * ```vue
- * <!-- 远程加载配置 -->
- * <JsonRenderer configUrl="/api/config/user-grid.json" />
- * 
- * <!-- 直接传入配置 -->
- * <JsonRenderer :config="{ type: 'user-grid', props: {...} }" />
- * 
- * <!-- 自定义组件 -->
- * <JsonRenderer 
- *   :config="config" 
- *   :component="UserGrid" 
- * />
- * ```
- */
-export interface JsonRendererOptions {
-  /**
-   * 配置文件 URL（远程加载）
-   * 提供此选项时，组件会从远程加载 JSON 配置
-   * 
-   * @type {string}
-   * @optional
-   * @example '/user-grid-demo.json' | '/api/config/dashboard.json'
-   */
-  configUrl?: string | undefined
-  
-  /**
-   * 配置对象（直接传入，跳过加载）
-   * 提供此选项时，configUrl 将被忽略
-   * 
-   * @type {Record<string, unknown>}
-   * @optional
-   * @example
-   * ```typescript
-   * {
-   *   type: 'user-grid',
-   *   id: 'demo-grid',
-   *   props: {
-   *     dataset: { ... }
-   *   }
-   * }
-   * ```
-   */
-  config?: Record<string, unknown> | undefined
-  
-  /**
-   * 渲染组件（自定义组件）
-   * 如果不提供，将根据配置中的 type 字段从 SPARK 注册表查找组件
-   * 
-   * @type {Component}
-   * @optional
-   * @example import UserGrid from './UserGrid.vue'
-   */
-  component?: Component | undefined
-  
-  /**
-   * 是否显示配置查看器（调试用）
-   * 开启后，会显示一个可折叠面板，展示 JSON 配置内容
-   * 
-   * @type {boolean}
-   * @optional
-   * @default false
-   */
-  showConfigViewer?: boolean | undefined
-  
-  /**
-   * 配置加载前钩子函数
-   * 在开始加载配置之前调用，可用于权限检查、预处理等
-   * 
-   * @type {Function}
-   * @optional
-   * @param {string} url - 即将加载的配置 URL
-   * @returns {void | Promise<void>}
-   */
-  beforeLoad?: ((url: string) => void | Promise<void>) | undefined
-  
-  /**
-   * 配置加载后钩子函数
-   * 在配置加载完成后调用，可用于配置验证、转换等
-   * 
-   * @type {Function}
-   * @optional
-   * @param {Record<string, unknown>} config - 加载的配置对象
-   * @returns {void | Promise<void> | Record<string, unknown>}
-   */
-  afterLoad?: ((config: Record<string, unknown>) => void | Promise<void> | Record<string, unknown>) | undefined
-  
-  /**
-   * 错误处理函数
-   * 当配置加载或渲染过程中发生错误时调用
-   * 
-   * @type {Function}
-   * @optional
-   * @param {Error} error - 错误对象
-   * @returns {void}
-   */
-  onError?: ((error: Error) => void) | undefined
-}
+
