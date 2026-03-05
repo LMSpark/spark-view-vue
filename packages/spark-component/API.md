@@ -389,10 +389,12 @@ export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY }
 
 // 页面渲染引擎
 export {
-  PageRenderer,
+  FCPageRenderer,
+  SparkPageRenderer,
+  SparkComponentRenderer,
   usePageRenderer,
-  JsonRenderer,
-  useJsonRenderer,
+  usePageDataSet,
+  bindDataToRules,
 }
 export type {
   Rule,
@@ -401,9 +403,7 @@ export type {
   PageConfig,
   PageRendererOptions,
   RuleBindingOptions,
-  JsonRendererOptions,
   UsePageRendererReturn,
   UsePageRendererRefs,
-  UseJsonRendererReturn,
 }
 ```

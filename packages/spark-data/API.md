@@ -392,15 +392,6 @@ buildDataKey('Users', 'rows')           // → 'Users@rows'
 buildDataKey('Users', 'rows', 'grid')   // → 'Users@grid@rows'
 ```
 
-#### `normalizeDataKey(rawKey: string): string`
-
-将旧 4 段格式（带 scope）剥离 scope 前缀，转为新格式。2/3 段格式原样返回。
-
-```typescript
-normalizeDataKey('MyApp@Users@default@rows')  // → 'Users@default@rows'
-normalizeDataKey('Users@rows')                 // → 'Users@rows'（不变）
-```
-
 #### `getViewKey(descriptor: DataKeyDescriptor): string`
 
 从描述符提取视图唯一键（`tableName.viewId`），用于订阅去重。
@@ -411,7 +402,7 @@ normalizeDataKey('Users@rows')                 // → 'Users@rows'（不变）
 type DataKeyField = 'rows' | 'currentRow' | 'selectedRows' | 'summaryRow' | 'selectionSummaryRow'
 
 interface DataKeyDescriptor {
-  scope?: string        // 仅旧 4 段格式保留，新格式无此字段
+  scope?: string        // 仅跨页面 #scope 前缀存在
   tableName: string
   viewId: string
   field: DataKeyField

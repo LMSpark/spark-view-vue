@@ -46,7 +46,6 @@ export {
   usePageRenderer,
   usePageDataSet,
   SparkPageRenderer,
-  useJsonRenderer,
   SparkComponentRenderer,
   bindDataToRules
 } from './renderer/index.js'
@@ -56,7 +55,6 @@ export type {
   UsePageRendererRefs,
   UsePageDataSetOptions,
   UsePageDataSetReturn,
-  UseJsonRendererReturn
 } from './renderer/index.js'
 
 export type {
@@ -66,5 +64,4 @@ export type {
   PageConfig,
   PageRendererOptions,
   RuleBindingOptions,
-  JsonRendererOptions
 } from './renderer/index.js'

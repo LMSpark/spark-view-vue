@@ -29,7 +29,6 @@ export {
   parsePageData,
   parseScript,
   parseCss,
-  injectDataKeyScope
 } from './loader'
 
 // 验证器

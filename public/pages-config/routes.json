@@ -99,6 +99,15 @@
     }
   },
   {
+    "path": "/el-table-demo",
+    "name": "el-table-demo",
+    "pageId": "el-table-demo",
+    "meta": {
+      "title": "el-table 操作列演示",
+      "icon": "📋"
+    }
+  },
+  {
     "path": "/formcreate-api",
     "name": "formcreate-api",
     "pageId": "formcreate-api",

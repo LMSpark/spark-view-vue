@@ -31,6 +31,7 @@ import type { IDataSet } from '@spark-view/spark-data'
 import type { DataView } from '@spark-view/spark-data'
 import { isDataKey, getViewFromRawKey } from '@spark-view/spark-data'
 import { setRuleProp, resolveRuleDataKey, pageLogger } from './bind-helpers'
+import { wrapEvent } from './wrapEvent'
 import type { BindingContext } from './bind-context'
 
 // ── 组件分类 ──────────────────────────────────────────────────────────────
@@ -195,13 +196,7 @@ function injectValueBinding(rule: Rule, view: DataView, type: string): void {
   }
 
   // ── setter：change 事件 → DataView.value ──
-  rule.on ??= {}
-  const originalChange = rule.on['change']
-  rule.on['change'] = (val: unknown) => {
-    if (typeof originalChange === 'function') {
-      (originalChange as (v: unknown) => void)(val)
-    }
-
+  wrapEvent(rule, 'change', (val: unknown) => {
     if (MULTI_VALUE_TYPES.has(type) && Array.isArray(val)) {
       view.value = val.join(view.selectionDelimiter || ',')
     } else if (BOOLEAN_TYPES.has(type)) {
@@ -211,5 +206,5 @@ function injectValueBinding(rule: Rule, view: DataView, type: string): void {
     }
 
     pageLogger.debug('[FormEvent] change', { type, value: view.value })
-  }
+  })
 }

@@ -30,8 +30,6 @@ export {
   resolveDataKeyBinding,
   resolveRawKey,
   getViewFromRawKey,
-  normalizeDataKey,
-  resolveInheritedDataKey,
 } from './core/data-key'
 export type { DataKeyBinding } from './core/data-key'
 

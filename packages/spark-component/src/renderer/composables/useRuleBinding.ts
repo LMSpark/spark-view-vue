@@ -8,14 +8,12 @@
  */
 
 import { ref, type Ref, onUnmounted } from 'vue'
-import { Logger } from '@spark-view/spark-utils'
 import type { IDataSet } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
 import { syncCurrentRowToTable, syncSelectedRowsToTable } from '../utils/sync-table-delegate'
+import { pageLogger } from '../utils/bind-helpers'
 import type { Rule, FormCreateAPI } from '../types'
 import type { ComponentRegistry } from '../../core/types.js'
-
-const pageLogger = Logger('PageRenderer')
 
 /** 每次调用 useRuleBinding 生成唯一 instanceId，用于 originatorId 事件回路防护 */
 let _bindingIdCounter = 0

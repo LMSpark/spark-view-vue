@@ -16,7 +16,7 @@ import type {
   PageScriptConfig,
   PageCssConfig
 } from '../types'
-import { DataSet, normalizeDataKey } from '@spark-view/spark-data'
+import { DataSet } from '@spark-view/spark-data'
 
 // ── Rule 编译 ────────────────────────────────────────────────────────
 
@@ -98,45 +98,4 @@ export function parseScript(raw: string): PageScriptConfig {
  */
 export function parseCss(raw: string): PageCssConfig {
   return raw
-}
-
-// ── DataKey 规范化（配置加载层处理） ──────────────────────────────────
-
-/**
- * 递归遍历规则树，将所有 dataKey 规范化为新格式（无 scope）
- *
- * 在 PageConfigLoader.loadPageConfig() 中调用，确保旧格式（4 段带 scope）
- * 的 dataKey 在配置加载阶段即被剥离 scope，统一为 2-3 段新格式：
- *   - `scope@table@viewId@field` → `table@viewId@field`（剥离 scope）
- *   - `table@viewId@field`       → 原样保留（已是新格式）
- *   - `table@field`              → 原样保留（已是新格式简写）
- *
- * 这使得渲染层全程只需处理无 scope 的 2-3 段格式。
- *
- * @param rules  编译后的规则树
- * @returns 原地修改后的规则树（同一引用）
- */
-export function injectDataKeyScope(rules: RuleConfig[]): RuleConfig[] {
-  for (const rule of rules) {
-    _normalizeDataKeysRecursive(rule)
-  }
-  return rules
-}
-
-/** @internal 递归处理单条规则及其 children */
-function _normalizeDataKeysRecursive(rule: RuleConfig): void {
-  // 规范化当前规则的 dataKey
-  const dataKey = rule['dataKey']
-  if (typeof dataKey === 'string' && dataKey.length > 0) {
-    rule['dataKey'] = normalizeDataKey(dataKey)
-  }
-
-  // 递归处理 children
-  if (Array.isArray(rule.children)) {
-    for (const child of rule.children) {
-      if (typeof child !== 'string') {
-        _normalizeDataKeysRecursive(child)
-      }
-    }
-  }
 }

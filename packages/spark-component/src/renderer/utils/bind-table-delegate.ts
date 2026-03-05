@@ -13,6 +13,7 @@ import type { Rule } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { parseDataKey, resolveDataKeyBinding, RequestState } from '@spark-view/spark-data'
 import { setRuleProp, pageLogger } from './bind-helpers'
+import { wrapEvent } from './wrapEvent'
 
 /**
  * 为 el-table 绑定 dataKey → 数据属性 + 事件注入
@@ -109,35 +110,23 @@ function injectTableEvents(
   }
 
   // ── selectionChange（多选行变化）──
-  const originalSelectionChange = rule.on['selectionChange']
-  rule.on['selectionChange'] = (selection: IDataRow[]) => {
-    pageLogger.debug(`[TableEvent] selectionChange`, { tableName, viewId, count: selection.length })
-
-    if (typeof originalSelectionChange === 'function') {
-      (originalSelectionChange as (selection: unknown) => void)(selection)
-    }
-
-    const valid = Array.isArray(selection) ? selection : []
-    view.selection.setSelectedRows(valid, bindingId)
-  }
+  wrapEvent(rule, 'selectionChange', (selection: unknown) => {
+    const rows = Array.isArray(selection) ? selection as IDataRow[] : []
+    pageLogger.debug(`[TableEvent] selectionChange`, { tableName, viewId, count: rows.length })
+    view.selection.setSelectedRows(rows, bindingId)
+  })
 
   // ── sortChange（列排序变化 → DataView.setSort）──
-  const originalSortChange = rule.on['sortChange']
-  rule.on['sortChange'] = (sortInfo: { column: unknown; prop: string | null; order: string | null }) => {
+  wrapEvent(rule, 'sortChange', (sortInfoRaw: unknown) => {
+    const sortInfo = sortInfoRaw as { column: unknown; prop: string | null; order: string | null }
     pageLogger.debug(`[TableEvent] sortChange`, { tableName, viewId, prop: sortInfo.prop, order: sortInfo.order })
-
-    if (typeof originalSortChange === 'function') {
-      (originalSortChange as (info: unknown) => void)(sortInfo)
-    }
-
-    // Element Plus el-table: prop=列字段名, order='ascending'|'descending'|null
     if (!sortInfo.prop || sortInfo.order === null) {
       void view.setSort(undefined)
     } else {
       const direction = sortInfo.order === 'descending' ? 'desc' as const : 'asc' as const
       void view.setSort([{ field: sortInfo.prop, direction }])
     }
-  }
+  })
 
   // ── 加载状态指令（v-loading ← DataView.requestState）──
   // form-create Rule.directives 类型为 { [name: string]: Directive }
