@@ -551,10 +551,12 @@ describe('stripComputedColumns', () => {
     expect(stripped['qty']).toBe(5)
   })
 
-  it('无计算列时返回原对象引用（零拷贝）', () => {
+  it('仅含 _pk 计算列时，不含 _pk 的行返回剥离结果（_pk 始终注册为计算列）', () => {
     const { orders } = makeTestDS([])
     const row = { id: 1, name: 'A' }
-    expect(orders.stripComputedColumns(row)).toBe(row)
+    const stripped = orders.stripComputedColumns(row)
+    expect(stripped).toStrictEqual({ id: 1, name: 'A' })
+    // _pk 始终注册为计算列，strip 总会过滤
   })
 
   it('strip 不影响原始行对象', () => {

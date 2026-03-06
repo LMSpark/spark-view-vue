@@ -3,17 +3,74 @@
  *
  * 封装 DataView 中所有主键相关的状态和逻辑：
  * - 单列主键 / 多列合成主键（_pk）
- * - 主键值强转（_coercePkValue）
+ * - `_pk` 统一计算列：无论单列还是多列主键，所有行均自动计算 `_pk` 字段
+ * - 主键值强转（coercePkValue）
  * - 主键生成器（PrimaryKeyGenerator）
  *
- * DataView 通过构造函数注入三个轻量回调持有对 DataView 资源的引用，
+ * DataView 通过构造函数注入四个轻量回调持有对 DataView 资源的引用，
  * 避免循环依赖和双向耦合。
+ *
+ * ## `_pk` 统一计算列
+ *
+ * 所有 PK 配置（单列 / 多列 / 默认 'id'）均注册 `_pk` 计算列，由
+ * `ensurePkColumn()` 统一管理。`getPkKey(row)` 优先读取预计算的 `row._pk`，
+ * 避免每次调用时的类型强转开销。
+ *
+ * - 单列 PK：`_pk = coercePkValue(row[field], col)` — 预计算 + 类型强转
+ * - 多列 PK：`_pk = fields.map(f => String(row[f])).join('+')` — 拼接字符串
+ * - `primaryKey` getter 仍返回逻辑字段名（供级联、事件元数据等使用）
+ * - `_pk` 是保留字段名，业务表不应使用
  */
 
 import type { IDataRow, DataColumn } from '../types'
 import type { PrimaryKeyGenerator, PrimaryKeyGeneratorConfig } from '../core/primary-key-generator'
 import { createPrimaryKeyGenerator } from '../core/primary-key-generator'
 import { isSameRow } from '../core/utils'
+
+// ─────────────────────────────────────────────
+// 模块级工具函数
+// ─────────────────────────────────────────────
+
+/** 数字类列类型集合——主键值需要强转为 number */
+const NUMERIC_TYPES: ReadonlySet<string> = new Set([
+  'number', 'int', 'integer', 'decimal', 'float', 'double',
+])
+
+/**
+ * 根据 DataColumn 的 type 强转主键值为 Map/Set 可用的 `string | number`。
+ *
+ * 策略（按列 type 分支）：
+ * - **数字类** → `Number(value)`（NaN → undefined）
+ * - **布尔类** → `1` / `0`
+ * - **日期类** → ISO 字符串
+ * - **字符串/枚举/其他** → `String(value)`
+ * - **无列定义** → 保持原 string/number，其他 `String(value)`
+ */
+function coercePkValue(
+  value: unknown,
+  col: DataColumn | undefined,
+): string | number | undefined {
+  if (value === null || value === undefined) return undefined
+
+  if (col !== undefined) {
+    if (NUMERIC_TYPES.has(col.type)) {
+      const n = Number(value)
+      return isNaN(n) ? undefined : n
+    }
+    if (col.type === 'boolean' || col.type === 'bool') {
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/no-unnecessary-condition -- value 可为 0/''/'false' 等空值
+      return value ? 1 : 0
+    }
+    if (col.type === 'date' || col.type === 'datetime' || col.type === 'time') {
+      if (value instanceof Date) return value.toISOString()
+      return String(value)
+    }
+    return String(value)
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') return value
+  return String(value)
+}
 
 export class PrimaryKeyDelegate {
   /** 显式覆盖的主键字段名（undefined = 从 DataTable 列定义推导） */
@@ -24,6 +81,12 @@ export class PrimaryKeyDelegate {
    * 存了就不重复注册；字段变化时自动失效重生。
    */
   private _syntheticPkFields: string[] | undefined
+
+  /** 单列 PK 时 _pk 计算列绑定的源字段名（幺等守卫） */
+  private _singlePkField: string | undefined
+
+  /** _pk 计算列是否已注册（用于 getPkKey 快速路径判断） */
+  private _pkColumnRegistered = false
 
   /** 主键生成器（可选，用于自动生成新记录的主键） */
   private _primaryKeyGenerator?: PrimaryKeyGenerator | undefined
@@ -42,24 +105,85 @@ export class PrimaryKeyDelegate {
   ) {}
 
   // ─────────────────────────────────────────────
-  // 合成主键
+  // _pk 统一计算列
   // ─────────────────────────────────────────────
 
   /**
-   * 多主键时自动合成 _pk 计算列（幺等）。
+   * 统一注册 `_pk` 计算列——无论单列还是多列主键。
    *
-   * 将各主键字段值用 '+' 拼接为单一字符串：
-   * `{ orderId: 1, lineNo: 'A' }` → `'1+A'`
+   * 调用时机：
+   * - `dataTable` setter（列定义变更时）
+   * - `primaryKey` setter（显式覆盖时）
    *
-   * 幺等条件：字段列表与上次相同时直接返回，不重新注册。
-   * 补计算由调用方负责（DataView 的 dataTable setter）。
+   * 幺等：字段列表不变时跳过重新注册。
+   * 补计算（`_computedDelegate.apply(rows)`）由调用方负责。
    */
-  ensureSyntheticPk(fields: string[]): void {
+  ensurePkColumn(): void {
+    const fields = this._resolveRawPkFields()
+
+    if (fields.length === 1) {
+      const field = fields[0]
+      if (field !== undefined) this._ensureSinglePkColumn(field)
+    } else {
+      this._ensureCompositePkColumn(fields)
+    }
+  }
+
+  /**
+   * 推导实际的主键字段列表（不触发 _pk 注册副作用）。
+   *
+   * 优先级：显式覆盖 > isPrimaryKey 列 > 默认 'id'
+   */
+  private _resolveRawPkFields(): string[] {
+    if (this._primaryKeyOverride !== undefined) return [this._primaryKeyOverride]
+    const cols = this._getColumns()
+    if (cols.length > 0) {
+      const pkCols = cols.filter(c => c.isPrimaryKey)
+      if (pkCols.length >= 1) return pkCols.map(c => c.name)
+    }
+    return ['id']
+  }
+
+  /**
+   * 单列 PK：注册 `_pk = coercePkValue(row[field], col)`。
+   * 幺等：字段名不变时跳过。
+   */
+  private _ensureSinglePkColumn(field: string): void {
+    if (this._singlePkField === field) return
+    this._singlePkField = field
+    this._syntheticPkFields = undefined // 清除多列状态
+
+    const getColumnMap = this._getColumnMap
+    this._registerComputed('_pk', (row: IDataRow) => {
+      const value = row[field]
+      if (value === undefined || value === null) return undefined
+      return coercePkValue(value, getColumnMap()?.get(field))
+    })
+    this._pkColumnRegistered = true
+  }
+
+  /**
+   * 多列 PK：注册 `_pk = fields.map(f => String(row[f])).join('+')`。
+   *
+   * 幺等：字段列表不变时跳过。
+   * 与原 `ensureSyntheticPk` 逻辑一致。
+   */
+  private _ensureCompositePkColumn(fields: string[]): void {
     if (this._syntheticPkFields?.join('\x01') === fields.join('\x01')) return
     this._syntheticPkFields = fields
+    this._singlePkField = undefined // 清除单列状态
+
     this._registerComputed('_pk', (row) =>
       fields.map(f => String(row[f] ?? '')).join('+'),
     )
+    this._pkColumnRegistered = true
+  }
+
+  /**
+   * @deprecated 使用 `ensurePkColumn()` 替代。保留仅为兼容期过渡。
+   */
+  ensureSyntheticPk(fields: string[]): void {
+    this._ensureCompositePkColumn(fields)
   }
 
   /** 当前合成主键字段列表（用于 DataView 在 ensureSyntheticPk 后补计算） */
@@ -77,15 +201,15 @@ export class PrimaryKeyDelegate {
   }
 
   /**
-   * 主键字段名（支持单主键字符串或多主键数组）。
+   * 主键字段名（逻辑名称，用于级联、事件元数据等外部消费）。
    *
    * 解析优先级：
    * 1. 显式覆盖值（通过 `primaryKey = 'xxx'` 设置）
-   * 2. DataTable 列定义中 `isPrimaryKey: true` 的列名
+   * 2. DataTable 列定义中 `isPrimaryKey: true` 的列名（单列返回列名，多列返回 `'_pk'`）
    * 3. 回退默认值 `'id'`
    *
-   * 注意：此 getter 可能触发 ensureSyntheticPk（副作用：注册 _pk 计算列），
-   * 但不会主动触发行补计算，补计算由 DataView 的 dataTable setter 完成。
+   * 注意：此 getter 是纯函数（无副作用），不再触发计算列注册。
+   * `_pk` 计算列由 `ensurePkColumn()` 统一管理。
    */
   get primaryKey(): string {
     if (this._primaryKeyOverride !== undefined) return this._primaryKeyOverride
@@ -97,11 +221,7 @@ export class PrimaryKeyDelegate {
         const col = pkCols[0]
         if (col) return col.name
       }
-      if (pkCols.length > 1) {
-        // 自动合成 _pk：注册计算列，返回合成键名
-        this.ensureSyntheticPk(pkCols.map(c => c.name))
-        return '_pk'
-      }
+      if (pkCols.length > 1) return '_pk'
     }
     return 'id'
   }
@@ -112,6 +232,7 @@ export class PrimaryKeyDelegate {
 
   /**
    * 清除显式覆盖，恢复从 DataTable 列定义自动推导主键。
+   * 同时清除 `_pk` 计算列注册状态，下次 `ensurePkColumn()` 时重新注册。
    *
    * @example
    * view.primaryKey = 'uuid'  // 显式覆盖
@@ -119,8 +240,9 @@ export class PrimaryKeyDelegate {
    */
   resetPrimaryKey(): void {
     this._primaryKeyOverride = undefined
-    // 清除合成主键幺等守卫，使其下次访问 primaryKey 时重新计算
     this._syntheticPkFields = undefined
+    this._singlePkField = undefined
+    this._pkColumnRegistered = false
   }
 
   /**
@@ -142,15 +264,28 @@ export class PrimaryKeyDelegate {
   /**
    * 获取行的主键值（标量）。
    *
-   * `primaryKey` 始终为单一字符串字段名（多列 PK 自动合成为 `_pk`），
-   * 因此返回值始终为 `string | number`。
+   * **快速路径**：若 `_pk` 计算列已注册（`ensurePkColumn()` 已调用），
+   * 直接读取预计算的 `row._pk`——O(1) 字段读取，无类型强转。
+   *
+   * **兼容路径**：若 `_pk` 尚未注册（非托管行 / 初始化前调用），
+   * 回退到 `row[primaryKey]` + `coercePkValue` 运行时强转。
    *
    * 所有内部 Map/Set/`===` 比较均使用此方法。
    */
   getPkKey(row: IDataRow): string | number | undefined {
-    const value = row[this.primaryKey]
+    // 快速路径：_pk 计算列已注册，值已预计算
+    if (this._pkColumnRegistered) {
+      const pk = row['_pk']
+      if (pk !== undefined && pk !== null) return pk as string | number
+      // _pk 存在但为 undefined/null → 主键值缺失
+      if ('_pk' in row) return undefined
+    }
+
+    // 兼容路径：非托管行 / _pk 尚未注册
+    const field = this.primaryKey
+    const value = row[field]
     if (value === undefined || value === null) return undefined
-    return this._coercePkValue(this.primaryKey, value)
+    return coercePkValue(value, this._getColumnMap()?.get(field))
   }
 
   /**
@@ -170,60 +305,19 @@ export class PrimaryKeyDelegate {
   }
 
   /**
-   * 检查两行是否有相同的主键
+   * 检查两行是否有相同的主键。
+   *
+   * 优先使用 `_pk`（预计算）进行比较，否则回退到 `isSameRow`。
    */
   isSamePrimaryKey(row1: IDataRow, row2: IDataRow): boolean {
-    return isSameRow(row1, row2, this.primaryKey)
-  }
-
-  // ─────────────────────────────────────────────
-  // 主键值类型强转
-  // ─────────────────────────────────────────────
-
-  /** 数字类列类型集合——主键值需要强转为 number */
-  private static readonly _numericTypes = new Set(['number', 'int', 'integer', 'decimal', 'float', 'double'])
-
-  /**
-   * 根据 DataTable 列定义的 type 强转主键值为 Map/Set 可用的 string | number。
-   *
-   * 策略（按列 type 分支）：
-   * - **数字类** (`number`/`int`/`integer`/`decimal`/`float`/`double`)
-   *   → `Number(value)`（NaN → undefined）
-   * - **布尔类** (`boolean`/`bool`)
-   *   → `1` / `0`（可作为 number key，避免 `'true'`/`'false'` 的国际化差异）
-   * - **日期类** (`date`/`datetime`/`time`)
-   *   → ISO 字符串（Date 对象走 `toISOString()`；字符串保持原样）
-   * - **字符串/枚举/其他**
-   *   → `String(value)`（兜底：任何值都能转成唯一字符串 key）
-   *
-   * 无列定义时：
-   * - 已经是 string / number → 保持原样
-   * - 其他 → `String(value)`
-   */
-  private _coercePkValue(field: string, value: unknown): string | number | undefined {
-    // null / undefined 已在调用层排除
-    if (value === null || value === undefined) return undefined
-
-    const col = this._getColumnMap()?.get(field)
-
-    if (col !== undefined) {
-      if (PrimaryKeyDelegate._numericTypes.has(col.type)) {
-        const n = Number(value)
-        return isNaN(n) ? undefined : n
+    if (this._pkColumnRegistered) {
+      const pk1 = row1['_pk']
+      const pk2 = row2['_pk']
+      if (pk1 !== undefined && pk1 !== null && pk2 !== undefined && pk2 !== null) {
+        return pk1 === pk2
       }
-      if (col.type === 'boolean' || col.type === 'bool') {
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/no-unnecessary-condition -- value 可为 0/''/'false' 等空值
-        return value ? 1 : 0
-      }
-      if (col.type === 'date' || col.type === 'datetime' || col.type === 'time') {
-        if (value instanceof Date) return value.toISOString()
-        return String(value)
-      }
-      return String(value)
     }
-
-    if (typeof value === 'string' || typeof value === 'number') return value
-    return String(value)
+    return isSameRow(row1, row2, this.primaryKey)
   }
 
   // ─────────────────────────────────────────────

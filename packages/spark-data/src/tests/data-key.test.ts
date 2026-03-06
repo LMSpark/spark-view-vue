@@ -380,7 +380,7 @@ describe('DataKey 统一解析器', () => {
 
       const dk = parseDataKey('Users@currentRow')!
       const value = resolveDataKey(dk, dataSet)
-      expect(value).toEqual({ id: 1, name: '张三' })
+      expect(value).toEqual({ id: 1, name: '张三', _pk: 1 })
     })
 
     it('解析 selectedRows', () => {
