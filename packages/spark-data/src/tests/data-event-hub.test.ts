@@ -158,13 +158,13 @@ describe('DataView 独立事件监听（currentRowChanged / selectedRowsChanged 
     deptView.events.on('currentRowChanged', currentRowHandler)
     deptView.events.on('selectedRowsChanged', selectedRowsHandler)
 
-    // selectionFollowsCurrent=true → setCurrentRow 触发 currentRowChanged (1) + selectedRowsChanged (1)
-    // setSelectedRows 触发 selectedRowsChanged (1)
+    // 默认 selectionDelimiter=','（多选模式）→ setCurrentRow 不自动同步 selectedRows
+    // setCurrentRow → currentRowChanged (1)，setSelectedRows → selectedRowsChanged (1)
     deptView.selection.setCurrentRow(deptView.rows[0]!)
     deptView.selection.setSelectedRows([deptView.rows[1]!])
 
     expect(currentRowHandler).toHaveBeenCalledTimes(1)
-    expect(selectedRowsHandler).toHaveBeenCalledTimes(2) // 1 from follow + 1 from setSelectedRows
+    expect(selectedRowsHandler).toHaveBeenCalledTimes(1)
   })
 
   it('events.off 取消监听', () => {
@@ -212,9 +212,9 @@ describe('DataView 独立事件 events.on / events.off（事件订阅）', () =>
 
     deptView.selection.setCurrentRow(deptView.rows[0]!)
 
-    // selectionFollowsCurrent=true → 触发 currentRowChanged + selectedRowsChanged
+    // 默认 selectionDelimiter=','（多选模式）→ setCurrentRow 不自动同步 selectedRows
     expect(currentRowCb).toHaveBeenCalledTimes(1)
-    expect(selectedRowsCb).toHaveBeenCalledTimes(1)
+    expect(selectedRowsCb).toHaveBeenCalledTimes(0)
   })
 })
 

@@ -123,7 +123,7 @@ this.emitStateChanged('selectedRows', { rows: [...rows], context: ctx })
       ctx = createEventContext('ui', ...)   [eventId=42]
       emits stateChanged('currentRow', ctx)
         → useRuleBinding: source='ui' → return  ✅ 循环断开
-      selectionFollowsCurrent:
+      单选同步（!isMultiSelect）:
         setSelectedRows([rowA], 'ui')
           ctx = createEventContext('ui', ...)  [eventId=43，独立]
           emits stateChanged('selectedRows', ctx)

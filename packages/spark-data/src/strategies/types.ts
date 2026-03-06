@@ -98,7 +98,6 @@ export interface ISelectionState {
 export interface ISelectionHost extends IViewIdentity, IRowStore, ISelectionState {
   readonly autoCurrentFirst: boolean
   readonly autoSelectFirst: boolean
-  readonly selectionFollowsCurrent: boolean
   isDestroyed(): boolean
 
   // ── 值序列化配置（value / labels / label 计算所需）──

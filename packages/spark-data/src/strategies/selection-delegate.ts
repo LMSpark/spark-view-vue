@@ -22,7 +22,7 @@ const logger = Logger('DataView:Selection')
 
 export class SelectionDelegate {
 
-  /** @internal 抑制 selectionFollowsCurrent 同步（applyAutoFirst 内部用） */
+  /** @internal 抑制单选同步（applyAutoFirst 内部用） */
   private _suppressSelectionSync = false
 
   /** @internal version-cached pk→row Map: reused while host.rows reference is stable */
@@ -70,6 +70,10 @@ export class SelectionDelegate {
    * updateFromServer() 替换了全部行引用，旧的 currentRow/selectedRows 指针已失效。
    * 先强制清零（无事件），再通过正式 setter 写入新值；setter 发射 stateChanged 事件，
    * DataSet.onAnyViewChange 订阅者（如 useRuleBinding）因此能正确收到事件。
+   *
+   * autoCurrentFirst / autoSelectFirst 彼此独立，各自触发自己的事件。
+   * 单选模式下 setCurrentRow 内部会自动同步 selectedRows，这里用
+   * _suppressSelectionSync 抑制，让 autoSelectFirst 独立决定。
    */
   applyAutoFirst(): void {
     const host = this.host
@@ -80,26 +84,21 @@ export class SelectionDelegate {
 
     const firstRow = host.rows[0] ?? null
 
+    // ── autoCurrentFirst ──
     if (host.autoCurrentFirst !== false && firstRow) {
-      // 当 selectionFollowsCurrent 开启时，让 setCurrentRow 内部统一处理 selection 同步，
-      // 避免事后再单独调 setSelectedRows 发出多余事件（会导致 UI 组件收到两次更新）。
-      const needManualSelect = !host.selectionFollowsCurrent
-      this._suppressSelectionSync = needManualSelect
+      // 抑制单选同步，让 autoSelectFirst 独立控制
+      this._suppressSelectionSync = true
       this.setCurrentRow(firstRow)
       this._suppressSelectionSync = false
-      // selectionFollowsCurrent 已处理了 selection，独立模式时才需要显式调用
-      if (needManualSelect && host.autoSelectFirst !== false) {
-        this.setSelectedRows([firstRow])
-      } else if (needManualSelect && prevHadSelected) {
-        this.emitSelectedRowsChanged()
-      }
-    } else {
-      if (prevHadCurrent) this.emitCurrentRowChanged()
-      if (host.autoSelectFirst !== false && firstRow) {
-        this.setSelectedRows([firstRow])
-      } else if (prevHadSelected) {
-        this.emitSelectedRowsChanged()
-      }
+    } else if (prevHadCurrent) {
+      this.emitCurrentRowChanged()
+    }
+
+    // ── autoSelectFirst ──
+    if (host.autoSelectFirst !== false && firstRow) {
+      this.setSelectedRows([firstRow])
+    } else if (prevHadSelected) {
+      this.emitSelectedRowsChanged()
     }
   }
 
@@ -132,7 +131,7 @@ export class SelectionDelegate {
     // 快照由宿主自动构建（此时 _currentRowId 已更新，getter 返回正确对象）
     this.emitCurrentRowChanged(originatorId)
 
-    if (!this._suppressSelectionSync && host.selectionFollowsCurrent) {
+    if (!this._suppressSelectionSync && !host.isMultiSelect) {
       this.setSelectedRows(row !== null ? [row] : [], originatorId)
     }
   }
