@@ -12,16 +12,19 @@ import { pageLogger } from './bind-helpers'
  *        `const/let/var foo = () =>`、`const/let/var foo = function`、
  *        `const/let/var foo = async () =>`
  */
+/** 从文本中按正则分组 1 提取所有匹配名称 */
+function collectGroupMatches(text: string, pattern: RegExp, target: Set<string>): void {
+  for (const m of text.matchAll(pattern)) if (m[1]) target.add(m[1])
+}
+
 function extractNamesFromScript(scriptText: string): string[] {
   const names = new Set<string>()
 
   // 函数声明：function foo() / async function foo()
-  const fnDecl = /(?:^|\n)\s*(?:async\s+)?function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g
-  for (const m of scriptText.matchAll(fnDecl)) if (m[1]) names.add(m[1])
+  collectGroupMatches(scriptText, /(?:^|\n)\s*(?:async\s+)?function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, names)
 
   // 变量赋值函数：const/let/var foo = (...) => / function
-  const varFn = /(?:^|\n)\s*(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:async\s+)?(?:function|\(|[a-zA-Z_$][a-zA-Z0-9_$]*\s*=>)/g
-  for (const m of scriptText.matchAll(varFn)) if (m[1]) names.add(m[1])
+  collectGroupMatches(scriptText, /(?:^|\n)\s*(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:async\s+)?(?:function|\(|[a-zA-Z_$][a-zA-Z0-9_$]*\s*=>)/g, names)
 
   // 始终包含 __init__（即使脚本未定义，compileFunctions 会过滤掉 undefined）
   names.add('__init__')

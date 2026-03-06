@@ -22,7 +22,7 @@
 import type { BindRule } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { parseDataKey } from '@spark-view/spark-data'
-import { pageLogger } from './bind-helpers'
+import { pageLogger, definePropertyGetter } from './bind-helpers'
 import { wrapEvent } from './wrapEvent'
 
 /**
@@ -51,21 +51,9 @@ export function bindPaginationRule(
 
   // 响应式 getter — DataView 是 reactive proxy，每次读取返回最新值（与 bind-form-delegate 对齐）
   rule.props ??= {}
-  Object.defineProperty(rule.props, 'currentPage', {
-    get: () => view.page,
-    enumerable: true,
-    configurable: true,
-  })
-  Object.defineProperty(rule.props, 'pageSize', {
-    get: () => view.pageSize,
-    enumerable: true,
-    configurable: true,
-  })
-  Object.defineProperty(rule.props, 'total', {
-    get: () => view.total,
-    enumerable: true,
-    configurable: true,
-  })
+  definePropertyGetter(rule.props, 'currentPage', () => view.page)
+  definePropertyGetter(rule.props, 'pageSize', () => view.pageSize)
+  definePropertyGetter(rule.props, 'total', () => view.total)
 
   // 设置合理默认布局（用户配置覆盖）
   rule.props['layout'] ??= 'total, sizes, prev, pager, next'

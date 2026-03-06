@@ -21,6 +21,24 @@ export function setRuleProp(rule: BindRule, key: string, value: unknown): void {
 }
 
 /**
+ * 定义响应式 getter 属性（消除 Object.defineProperty 样板代码）
+ *
+ * 被 bind-form-delegate / bind-pagination-delegate 等委托共用，
+ * 让 form-create 每次渲染时通过 getter 读取 DataView 最新值。
+ */
+export function definePropertyGetter(
+  obj: Record<string, unknown>,
+  key: string,
+  getter: () => unknown
+): void {
+  Object.defineProperty(obj, key, {
+    get: getter,
+    enumerable: true,
+    configurable: true,
+  })
+}
+
+/**
  * 解析 DataKey 字符串 → 绑定值（渲染层薄包装，负责 warn 日志）
  *
  * 数据解析逻辑完全委托给 spark-data 的 `resolveRawKey`。
