@@ -285,6 +285,14 @@ export interface DataColumn {
   isPrimaryKey?: boolean
   autoIncrement?: boolean
 
+  /**
+   * 是否为框架计算列（如 `_pk`）。
+   *
+   * 计算列的值由框架自动维护，不参与序列化（`DataTable.toData()` 自动排除）。
+   * UI 组件可通过 `columns.filter(c => !c.isComputed)` 获取用户定义列。
+   */
+  isComputed?: boolean
+
   // ===== 计算字段属性 =====
 
   /**
