@@ -93,6 +93,8 @@ export class DataView implements IDataSource {
     this._columnMap = new Map(table.columns.map(c => [c.name, c]))
     // 统一注册 _pk 计算列（单列 / 多列 / 默认 'id' 均覆盖）
     this._primaryKeyDelegate.ensurePkColumn()
+    // 注入 _pk 列元数据（table.columns + _columnMap）
+    this._ensurePkColumnMeta(table)
     if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
     this._computedDelegate.invalidateCache()
     this._computedDelegate.syncFromConfig()
@@ -113,6 +115,7 @@ export class DataView implements IDataSource {
     this._primaryKeyDelegate.primaryKey = value
     // 重新注册 _pk 计算列（基于新的覆盖字段）
     this._primaryKeyDelegate.ensurePkColumn()
+    if (this._dataTable) this._ensurePkColumnMeta(this._dataTable)
     if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
   }
 
@@ -121,6 +124,7 @@ export class DataView implements IDataSource {
     this._primaryKeyDelegate.resetPrimaryKey()
     // 重新注册 _pk 计算列（基于列定义推导）
     this._primaryKeyDelegate.ensurePkColumn()
+    if (this._dataTable) this._ensurePkColumnMeta(this._dataTable)
     if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
   }
 
@@ -316,6 +320,23 @@ export class DataView implements IDataSource {
 
   /** @internal 返回 DataSet 实例 */
   getDataSet() { return this._dataTable?.dataSet }
+
+  /**
+   * 确保 `_pk` 列元数据存在于 `table.columns` 和 `_columnMap` 中。
+   *
+   * - 已存在时替换（PK 配置可能变化导致 type 不同）
+   * - `table.columns` 保证运行时元数据完整；`toData()` 通过 `isComputed` 过滤排除
+   */
+  private _ensurePkColumnMeta(table: DataTable): void {
+    const meta = this._primaryKeyDelegate.getPkColumnMeta()
+    const idx = table.columns.findIndex(c => c.name === '_pk')
+    if (idx >= 0) {
+      table.columns[idx] = meta
+    } else {
+      table.columns.push(meta)
+    }
+    this._columnMap?.set('_pk', meta)
+  }
 
   // ─────────────────────────────────────────────
   // 视图聚合（summaryRow / selectionSummaryRow）

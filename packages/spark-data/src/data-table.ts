@@ -97,12 +97,15 @@ export class DataTable {
     assertNoSeparator(tableName, 'tableName')
     this.tableName = tableName
     this.columns = columns
+    // 保存原始用户列数（dataTable setter 会注入 _pk 计算列变更 columns.length）
+    const hasUserColumns = columns.length > 0
     const defaultView = DataView.create(tableName, 'default')
     defaultView.dataTable = this   // 提前设置引用，使 view.primaryKey getter 可访问列定义
     this.views['default'] = defaultView
-    // 初始化数据校验器
-    if (columns.length > 0) {
-      this.validator = createValidator(createSchema(columns))
+    // 初始化数据校验器（仅对用户定义列创建，排除框架计算列）
+    if (hasUserColumns) {
+      const schemaColumns = this.columns.filter(c => !c.isComputed)
+      this.validator = createValidator(createSchema(schemaColumns))
     }
   }
 
@@ -215,7 +218,7 @@ export class DataTable {
     const def = dv.toData()
     const result: ITableMetadata = {
       tableName: this.tableName,
-      columns: this.columns,
+      columns: this.columns.filter(c => !c.isComputed),
       viewId: def.viewId ?? 'default',
       views: viewsData,
       api: this.api,

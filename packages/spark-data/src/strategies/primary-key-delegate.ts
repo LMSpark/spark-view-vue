@@ -191,6 +191,25 @@ export class PrimaryKeyDelegate {
     return this._syntheticPkFields
   }
 
+  /**
+   * 返回 `_pk` 列的元数据（DataColumn）。
+   *
+   * 类型推导规则：
+   * - 单列 PK 且有列定义 → 继承源列 type
+   * - 多列 PK / 无列定义 → `'string'`
+   */
+  getPkColumnMeta(): DataColumn {
+    const fields = this._resolveRawPkFields()
+    if (fields.length === 1) {
+      const field = fields[0]
+      if (field !== undefined) {
+        const col = this._getColumnMap()?.get(field)
+        return { name: '_pk', type: col?.type ?? 'string', isComputed: true }
+      }
+    }
+    return { name: '_pk', type: 'string', isComputed: true }
+  }
+
   // ─────────────────────────────────────────────
   // 主键字段名
   // ─────────────────────────────────────────────
