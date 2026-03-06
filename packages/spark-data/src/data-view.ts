@@ -142,20 +142,28 @@ export class DataView implements IDataSource {
   /** 是否为多选模式（selectionDelimiter 非空时为多选） */
   get isMultiSelect(): boolean { return this.selectionDelimiter !== '' }
 
-  /** 当前行（getter：从 rows 中按主键查找；rows 刷新后自动指向新对象） */
+  /** 当前行（getter：从 rows 中按主键查找，带缓存；rows 刷新后自动指向新对象） */
   get currentRow(): IDataRow | null {
     if (this._currentRowId === null) return null
-    return this.rows.find(r => this.getPkKey(r) === this._currentRowId) ?? null
+    const c = this._crCache
+    if (c.id === this._currentRowId && c.ver === this._rowsVersion) return c.row
+    const row = this.rows.find(r => this.getPkKey(r) === this._currentRowId) ?? null
+    this._crCache = { id: this._currentRowId, ver: this._rowsVersion, row }
+    return row
   }
 
-  /** 多选行数组（getter：从 rows 中按主键集合过滤；rows 刷新后自动指向新对象） */
+  /** 多选行数组（getter：从 rows 中按主键集合过滤，带缓存；rows 刷新后自动指向新对象） */
   get selectedRows(): IDataRow[] {
     if (this._selectedRowIds.length === 0) return []
+    const c = this._srCache
+    if (c.selVer === this._selectionIdsVersion && c.rowsVer === this._rowsVersion) return c.rows
     const idSet = new Set(this._selectedRowIds)
-    return this.rows.filter(r => {
+    const rows = this.rows.filter(r => {
       const pk = this.getPkKey(r)
       return pk !== undefined && idSet.has(pk)
     })
+    this._srCache = { selVer: this._selectionIdsVersion, rowsVer: this._rowsVersion, rows }
+    return rows
   }
 
   // ─────────────────────────────────────────────
@@ -326,6 +334,15 @@ export class DataView implements IDataSource {
   // 私有状态
   // ─────────────────────────────────────────────
 
+  /** 行数据版本号——每次 postMutation 后自增，用于 currentRow / selectedRows 缓存失效 */
+  private _rowsVersion = 0
+  /** 选中 ID 版本号——每次 emitSelectedRowsChanged 后自增 */
+  private _selectionIdsVersion = 0
+  /** currentRow getter 缓存 */
+  private _crCache: { id: string | number | null; ver: number; row: IDataRow | null } = { id: null, ver: -1, row: null }
+  /** selectedRows getter 缓存 */
+  private _srCache: { selVer: number; rowsVer: number; rows: IDataRow[] } = { selVer: -1, rowsVer: -1, rows: [] }
+
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
   /** 并发 CRUD 请求计数器（支持多操作同时在途） */
@@ -403,6 +420,7 @@ export class DataView implements IDataSource {
       this,
       () => this.emitRowsChanged(),
       (affectedRows) => {
+        this._rowsVersion++
         if (affectedRows === 'all') {
           this._applyComputedColumns(this.rows)
         } else if (affectedRows !== null) {
@@ -857,6 +875,7 @@ export class DataView implements IDataSource {
 
   /** 发射 selectedRowsChanged 事件（立即） */
   private emitSelectedRowsChanged(originatorId?: string): void {
+    this._selectionIdsVersion++
     this.aggregateDelegate.recomputeSelection(this.selectedRows)
     this.events.emit('selectedRowsChanged', this.selectedRows, originatorId)
   }
