@@ -419,7 +419,7 @@ describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {
 
     view.selection.setCurrentRow(view.rows[1]!) // Bob
     expect(view._currentRowId).toBe(20)
-    expect(view.currentRow).toEqual({ userId: 20, name: 'Bob' })
+    expect(view.currentRow).toEqual({ userId: 20, name: 'Bob', _pk: 20 })
   })
 })
 

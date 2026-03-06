@@ -91,14 +91,9 @@ export class DataView implements IDataSource {
   set dataTable(table: DataTable) {
     this._dataTable = table
     this._columnMap = new Map(table.columns.map(c => [c.name, c]))
-    // 多主键时提前合成 _pk（在 syncFromConfig 前注册，使其参与首次编译）
-    if (!this._primaryKeyDelegate.primaryKeyOverride) {
-      const pkCols = table.columns.filter(c => c.isPrimaryKey)
-      if (pkCols.length > 1) {
-        this._primaryKeyDelegate.ensureSyntheticPk(pkCols.map(c => c.name))
-        if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
-      }
-    }
+    // 统一注册 _pk 计算列（单列 / 多列 / 默认 'id' 均覆盖）
+    this._primaryKeyDelegate.ensurePkColumn()
+    if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
     this._computedDelegate.invalidateCache()
     this._computedDelegate.syncFromConfig()
   }
@@ -114,10 +109,20 @@ export class DataView implements IDataSource {
 
   /** 主键字段名 getter/setter（委托给 _primaryKeyDelegate） */
   get primaryKey(): string { return this._primaryKeyDelegate.primaryKey }
-  set primaryKey(value: string) { this._primaryKeyDelegate.primaryKey = value }
+  set primaryKey(value: string) {
+    this._primaryKeyDelegate.primaryKey = value
+    // 重新注册 _pk 计算列（基于新的覆盖字段）
+    this._primaryKeyDelegate.ensurePkColumn()
+    if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
+  }
 
   /** 清除显式覆盖，恢复从 DataTable 列定义自动推导主键 */
-  resetPrimaryKey(): void { this._primaryKeyDelegate.resetPrimaryKey() }
+  resetPrimaryKey(): void {
+    this._primaryKeyDelegate.resetPrimaryKey()
+    // 重新注册 _pk 计算列（基于列定义推导）
+    this._primaryKeyDelegate.ensurePkColumn()
+    if (this.rows.length > 0) this._computedDelegate.apply(this.rows)
+  }
 
   // ─────────────────────────────────────────────
   // 选中状态（主键存储，getter 按需解析）
