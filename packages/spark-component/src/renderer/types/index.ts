@@ -114,6 +114,12 @@ export interface PageContext {
   $page: IPageServiceCapability
   SparkData: typeof SparkData
   h: typeof VueH
+
+  // Timer APIs
+  setTimeout: (handler: (...args: unknown[]) => void, timeout?: number) => number
+  clearTimeout: (id?: number) => void
+  setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
+  clearInterval: (id?: number) => void
 }
 
 /**
