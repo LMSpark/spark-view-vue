@@ -22,6 +22,9 @@ const logger = Logger('DataView:Selection')
 
 export class SelectionDelegate {
 
+  /** @internal 抑制 selectionFollowsCurrent 同步（applyAutoFirst 内部用） */
+  private _suppressSelectionSync = false
+
   /** @internal version-cached pk→row Map: reused while host.rows reference is stable */
   private _cachedRows: IDataRow[] | undefined
   private _cachedIdToRowMap: Map<string | number, IDataRow> | undefined
@@ -80,12 +83,14 @@ export class SelectionDelegate {
     if (host.autoCurrentFirst !== false && firstRow) {
       // 当 selectionFollowsCurrent 开启时，让 setCurrentRow 内部统一处理 selection 同步，
       // 避免事后再单独调 setSelectedRows 发出多余事件（会导致 UI 组件收到两次更新）。
-      const skipSync = host.selectionFollowsCurrent === false
-      this.setCurrentRow(firstRow, { skipSync })
-      // selectionFollowsCurrent 已经处理了 selection，skipSync=true 时才需要显式调用
-      if (skipSync && host.autoSelectFirst !== false) {
+      const needManualSelect = !host.selectionFollowsCurrent
+      this._suppressSelectionSync = needManualSelect
+      this.setCurrentRow(firstRow)
+      this._suppressSelectionSync = false
+      // selectionFollowsCurrent 已处理了 selection，独立模式时才需要显式调用
+      if (needManualSelect && host.autoSelectFirst !== false) {
         this.setSelectedRows([firstRow])
-      } else if (skipSync && prevHadSelected) {
+      } else if (needManualSelect && prevHadSelected) {
         this.emitSelectedRowsChanged()
       }
     } else {
@@ -106,13 +111,12 @@ export class SelectionDelegate {
    * 设置当前行
    * 状态变更 → 发射 stateChanged → UI + 子视图级联均通过 events 接收
    *
-   * @param row  - 要设置的行（null 表示清空）
-   * @param opts.skipSync    - 跳过 selectionFollowsCurrent 同步（applyAutoFirst 内部用）
-   * @param opts.originatorId - UI 操作来源实例 ID；
-   *                            useRuleBinding 用此字段识别"自己发出的事件"并跳过回写，
-   *                            其他同级 binding 实例仍正常同步。
+   * @param row          - 要设置的行（null 表示清空）
+   * @param originatorId - UI 操作来源实例 ID（可选）；
+   *                       useRuleBinding 用此字段识别"自己发出的事件"并跳过回写，
+   *                       其他同级 binding 实例仍正常同步。
    */
-  setCurrentRow(row: IDataRow | null, opts?: { skipSync?: boolean; originatorId?: string }): void {
+  setCurrentRow(row: IDataRow | null, originatorId?: string): void {
     const host = this.host
     const newId = row !== null ? (host.getPkKey(row) ?? null) : null
 
@@ -126,10 +130,10 @@ export class SelectionDelegate {
     host._currentRowId = newId
 
     // 快照由宿主自动构建（此时 _currentRowId 已更新，getter 返回正确对象）
-    this.emitCurrentRowChanged(opts?.originatorId)
+    this.emitCurrentRowChanged(originatorId)
 
-    if (!opts?.skipSync && host.selectionFollowsCurrent) {
-      this.setSelectedRows(row !== null ? [row] : [], opts?.originatorId)
+    if (!this._suppressSelectionSync && host.selectionFollowsCurrent) {
+      this.setSelectedRows(row !== null ? [row] : [], originatorId)
     }
   }
 
