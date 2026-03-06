@@ -32,8 +32,8 @@ import { assertNoSeparator, resolveApi } from './core/utils'
 export class DataTable {
   // ===== DataSet 引用 =====
 
-  /** 所属 DataSet（由 DataSet 在构建时设置） */
-  dataSet!: DataSet
+  /** 所属 DataSet（由 DataSet 在构建时通过 setDataSet 设置，独立使用时为 undefined） */
+  dataSet: DataSet | undefined
 
   // ===== 表元数据 =====
 
@@ -62,7 +62,7 @@ export class DataTable {
   get crudService(): CrudService | undefined {
     if (this._crudService === undefined && this.api !== undefined) {
       // M5: 若 DataSet 提供共享 httpClient，所有表的 CrudService 复用同一 Request 实例
-      const sharedClient = this.dataSet._sharedHttpClient
+      const sharedClient = this.dataSet?._sharedHttpClient
       this._crudService = createCrudService(this.api, sharedClient)
     }
     return this._crudService
@@ -164,7 +164,7 @@ export class DataTable {
       // 视图管理职责：设置级联
       view.cascade.setupCascade()
       // Phase 6 M2: 动态视图自动订阅——通知 DataSet 将活跃的 on/onAnyViewChange 绑定到新视图
-      this.dataSet._subscribeNewView(view)
+      this.dataSet?._subscribeNewView(view)
       this.views[viewId] = view
     }
     return this.views[viewId]

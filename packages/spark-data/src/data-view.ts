@@ -17,6 +17,7 @@ import type {
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
+import type { DataSet } from './dataset'
 import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
 import { Logger, createEventEmitter, toErrorMessage, toError } from '@spark-view/spark-utils'
@@ -508,8 +509,8 @@ export class DataView implements IDataSource {
   // 接口实现 getter（ICrudHost / ICascadeHost）
   // ─────────────────────────────────────────────
 
-  /** ICascadeHost：向上访问 DataSet */
-  get dataSet() {
+  /** ICascadeHost：向上访问 DataSet（独立 DataTable 未关联 DataSet 时返回 undefined） */
+  get dataSet(): DataSet | undefined {
     this.checkDestroyed()
     return this.checkDataTableAttached().dataSet
   }
@@ -557,12 +558,13 @@ export class DataView implements IDataSource {
     this.requestState = RequestState.Preparing
 
     // 逐个父视图检查依赖是否满足
-    const parents = this.dataSet.getParentRelations(this.tableName, this.viewId)
+    const ds = this.dataSet
+    const parents = ds ? ds.getParentRelations(this.tableName, this.viewId) : []
 
     // 合并两轮循环：检查父依赖就绪度的同时缓存视图和行数据，避免 getView/getParentRows 二次调用
     const resolvedParents: Array<{ rel: (typeof parents)[number]; pView: DataView; rows: IDataRow[] }> = []
     for (const rel of parents) {
-      const pView = this.dataSet.getView(rel.parentTable, rel.parentViewId ?? 'default')
+      const pView = ds?.getView(rel.parentTable, rel.parentViewId ?? 'default')
       if (!pView) continue
 
       if (pView.requestState === RequestState.Idle) {
