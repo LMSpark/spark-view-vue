@@ -84,36 +84,29 @@ function injectTableEvents(
     }
 
     if (currentRow === null) {
-      view.selection.setCurrentRow(null, bindingId)
+      view.selection.setCurrentRowById(null, bindingId)
       return
     }
 
-    // form-create 会污染原始对象（添加 $f/api/rule 属性），通过 PK 查找原始行对象
-    let cleanRow: IDataRow | null = null
-
-    // 优先方案：通过主键从 view.rows 查找（通用、不依赖 form-create 内部结构）
+    // form-create 会污染原始对象（添加 $f/api/rule 属性），直接提取 PK 传给 ID-based API
     const pk = view.getPkKey(currentRow)
-    if (pk !== undefined) cleanRow = view.rows.find(r => view.getPkKey(r) === pk) ?? null
-
-    // 回退方案：form-create 特定——从 args[0] 提取原始数据（仅在 PK 查不到时使用）
-    if (cleanRow === null && 'args' in currentRow && Array.isArray((currentRow as { args: unknown }).args)) {
-      const maybeRow = (currentRow as { args: unknown[] }).args[0]
-      if (maybeRow !== null && maybeRow !== undefined && typeof maybeRow === 'object') cleanRow = maybeRow as IDataRow
+    if (pk !== undefined) {
+      view.selection.setCurrentRowById(pk, bindingId)
     }
-
-    // cleanRow 找到 → 直接使用；pk 存在但未找到 → 回退原始 currentRow；pk 缺失 → 静默跳过
-    if (cleanRow !== null) {
-      view.selection.setCurrentRow(cleanRow, bindingId)
-    } else if (pk !== undefined) {
-      view.selection.setCurrentRow(currentRow, bindingId)
-    }
+    // pk 缺失 → 静默跳过（行无主键，无法存储）
   }
 
   // ── selectionChange（多选行变化）──
   wrapEvent(rule, 'selectionChange', (selection: unknown) => {
     const rows = Array.isArray(selection) ? selection as IDataRow[] : []
     pageLogger.debug(`[TableEvent] selectionChange`, { tableName, viewId, count: rows.length })
-    view.selection.setSelectedRows(rows, bindingId)
+    // 提取 PK 数组，避免传入被 form-create 污染的行对象
+    const ids: Array<string | number> = []
+    for (const r of rows) {
+      const pk = view.getPkKey(r)
+      if (pk !== undefined) ids.push(pk)
+    }
+    view.selection.setSelectedRowsById(ids, bindingId)
   })
 
   // ── sortChange（列排序变化 → DataView.setSort）──
