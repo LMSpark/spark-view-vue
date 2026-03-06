@@ -12,7 +12,7 @@ import type { IDataSet } from '@spark-view/spark-data'
 import { bindDataToRules } from '../utils/bindRules'
 import { syncCurrentRowToTable, syncSelectedRowsToTable } from '../utils/sync-table-delegate'
 import { pageLogger } from '../utils/bind-helpers'
-import type { Rule, FormCreateAPI } from '../types'
+import type { BindRule, FormCreateAPI, RuleBindingOptions } from '../types'
 import type { ComponentRegistry } from '../../core/types.js'
 
 /** 每次调用 useRuleBinding 生成唯一 instanceId，用于 originatorId 事件回路防护 */
@@ -21,7 +21,7 @@ let _bindingIdCounter = 0
 // ─── 公共接口 ─────────────────────────────────────────────────────────────────
 
 export interface UseRuleBindingOptions {
-  /** form-create 规则（JSON 解析后的未类型化数据，传入 bindDataToRules 时转为 Rule[]） */
+  /** 页面规则（JSON 解析后的未类型化数据，传入 bindDataToRules 时转为 BindRule[]） */
   originalRules: Ref<unknown[]>
   pageFunctions: Ref<Record<string, (...args: unknown[]) => unknown>>
   dataSet: IDataSet | null
@@ -31,7 +31,7 @@ export interface UseRuleBindingOptions {
 }
 
 export interface UseRuleBindingReturn {
-  // FormCreate Rule 类型系统与 Vue Ref 类型不完全兼容，使用 unknown[] 避免类型断言
+  // BindRule 与 Vue Ref 泛型不完全兼容（FC 渲染线在边界转型），使用 unknown[] 避免断言
   boundRules: Ref<unknown[]>
   rebindRules: () => void
 }
@@ -54,13 +54,14 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
       return
     }
 
-    const newBoundRules = bindDataToRules({
-      rules: originalRules.value as Rule[],
+    const bindingOpts: RuleBindingOptions = {
+      rules: originalRules.value as BindRule[],
       pageFunctions: pageFunctions.value,
       dataSet: options.dataSet,
       bindingId: instanceId,
-      ...(registry !== undefined ? { registry } : {})
-    })
+    }
+    if (registry) bindingOpts.registry = registry
+    const newBoundRules = bindDataToRules(bindingOpts)
 
     // 创建新数组强制触发响应式更新
     boundRules.value = [...newBoundRules]

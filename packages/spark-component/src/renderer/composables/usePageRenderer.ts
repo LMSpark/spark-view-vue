@@ -19,31 +19,26 @@
  */
 
 import {
-  ref, shallowRef, onMounted, watch, nextTick,
-  inject, defineComponent, markRaw,
-  type App, type Ref, type Component, type ShallowRef,
+  ref, onMounted, watch, nextTick,
+  inject,
+  type App, type Ref, type Component,
 } from 'vue'
 import { useRoute } from 'vue-router'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import type { IPageRoute } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { PAGE_DATASET } from '../../capability-keys'
 import { SPARK_REGISTRY_KEY } from '../../core/types.js'
 import { usePageDataSet } from './usePageDataSet'
 import { useRendererSetup } from './useRendererSetup'
-import type { PageRendererOptions, PageContext, Rule, PageConfig, FormCreateAPI } from '../types'
+import type { PageRendererOptions, FCPageContext, BindRule, PageConfig, FormCreateAPI } from '../types'
 import { useCssScope } from './useCssScope'
 import { useRuleBinding } from './useRuleBinding'
 import { compileFunctions } from '../utils/createSandbox'
 import { buildPageService } from '../utils/buildPageService'
-import { buildPageContext } from '../utils/buildPageContext'
+import { buildFCPageContext } from '../utils/buildPageContext'
+import { buildPageRoute, resolvePageId } from '../utils/buildPageRoute'
+import { registerRenderFunctions } from '../utils/registerRenderFunctions'
 import { pageLogger } from '../utils/bind-helpers'
-
-// ─── 模块级 Render* 组件注册表 ────────────────────────────────────────────────
-// 每个 Vue App 实例维护一张 name → ShallowRef<renderFn> 的映射。
-// 首次遇到某名称时创建组件并调用 app.component()（只注册一次，消除重复注册 warn）。
-// 页面重新加载时只更新 ref.value，shallowRef 的响应性会自动触发组件重渲染。
-const _renderFnRegistry = new WeakMap<App, Map<string, ShallowRef<(() => unknown) | null>>>()
 
 // ─── 模块级常量 ──────────────────────────────────────────────────────────────
 // 与实例无关的 form-create 默认配置，提升到模块级避免每次调用重建。
@@ -92,7 +87,7 @@ export interface UsePageRendererReturn {
   // ── 外部调用 ──
   loadPageConfig: () => Promise<void>
   rebindRules: () => void
-  pageContext: PageContext
+  pageContext: FCPageContext
   dataSet: DataSet | null
 }
 
@@ -108,16 +103,7 @@ export function usePageRenderer(
   const { router, provideCapability, loading, error, runLoad } = useRendererSetup('page-renderer', pageLogger)
 
   const route = useRoute()
-
-  // 框架无关路由快照（脚本只需读取此接口，无 Vue Router 依赖）
-  const pageRoute: IPageRoute = {
-    get path()     { return route.path },
-    get fullPath() { return route.fullPath },
-    get name()     { return route.name ?? null },
-    get params()   { return route.params as Record<string, string | string[]> },
-    get query()    { return route.query  as Record<string, string | string[] | null> },
-    get hash()     { return route.hash },
-  }
+  const pageRoute = buildPageRoute(route)
 
   // 组件注册表：供 useRuleBinding 查询 dataKey 行为元数据
   const registry = inject(SPARK_REGISTRY_KEY, undefined)
@@ -167,7 +153,6 @@ export function usePageRenderer(
   // ── 子 Composables ───────────────────────────────────────────────────────────
 
   const { scopedCss, setScopedCss } = useCssScope({
-    pageId: currentPageId.value,
     enableScope: props.enableCssScope ?? true,
   })
 
@@ -187,7 +172,7 @@ export function usePageRenderer(
   // ── 脚本沙箱上下文（pageContext） ────────────────────────────────────────────
   // 通过 `with (__ctx)` 注入给业务脚本，脚本中可直接使用 $api / $dataSet / h 等。
 
-  const pageContext: PageContext = buildPageContext({
+  const pageContext: FCPageContext = buildFCPageContext({
     formApi,
     getDataSet: () => pds.dataSet,
     pageRoute,
@@ -197,21 +182,6 @@ export function usePageRenderer(
   })
 
   // ── 配置加载流水线 ────────────────────────────────────────────────────────────
-
-  /** 从 props / route 推断当前页面 ID，无法确定时抛出。 */
-  function resolvePageId(): string {
-    const pageId =
-      props.pageId ??
-      props.pageConfig?.pageId ??
-      (route.meta['pageId'] as string | undefined) ??
-      (route.params['id'] as string | undefined) ??
-      (route.name as string | undefined)
-    if (!pageId) {
-      pageLogger.error('无法确定页面ID', { route: route.fullPath })
-      throw new Error('配置无效: 无法确定页面ID')
-    }
-    return pageId
-  }
 
   /** 通过 props.pageConfig 直传或 configLoader 异步加载页面配置。 */
   async function fetchConfig(pageId: string): Promise<PageConfig> {
@@ -239,52 +209,9 @@ export function usePageRenderer(
     }
   }
 
-  /**
-   * 将脚本中所有 `Render*` 函数包装为 Vue 组件并注册到全局 app。
-   *
-   * form-create 对字符串 type 调用 Vue 原生 `resolveComponent()`，
-   * 必须通过 `app.component()` 注册，`formCreateOptions.global` 无效。
-   *
-   * **重复注册策略**：组件对每个 app 只注册一次（避免 Vue 的 "already registered" warn）。
-   * 页面重新加载时，通过更新 `ShallowRef` 替换 render fn；
-   * shallowRef 的响应性会自动触发组件重渲染。
-   *
-   * PascalCase + camelCase 均注册，兼容 form-create 内部的 toCase 转换。
-   */
+  /** 将脚本中所有 Render* 函数注册为 Vue 全局组件 */
   function registerRenderComponents(): void {
-    if (!vueApp) return
-
-    let fnMap = _renderFnRegistry.get(vueApp)
-    if (!fnMap) {
-      fnMap = new Map<string, ShallowRef<(() => unknown) | null>>()
-      _renderFnRegistry.set(vueApp, fnMap)
-    }
-
-    for (const [name, fn] of Object.entries(pageFunctions.value)) {
-      if (!name.startsWith('Render') || typeof fn !== 'function') continue
-      const camelName = name.charAt(0).toLowerCase() + name.slice(1)
-
-      if (fnMap.has(name)) {
-        // 已注册：只更新 ref，无需重新调用 app.component()
-        const existingRef = fnMap.get(name)
-        if (existingRef) existingRef.value = fn as () => unknown
-      } else {
-        // 首次注册：创建 ref，包装组件，注册到 app
-        const fnRef = shallowRef<(() => unknown) | null>(fn as () => unknown)
-        fnMap.set(name, fnRef)
-        fnMap.set(camelName, fnRef)  // 大驼峰与小驼峰共享同一个 ref
-
-        const comp = markRaw(defineComponent({
-          name,
-          // render fn 通过 fnRef 间接调用：
-          //   - fnRef.value 变化（页面重载）→ shallowRef 响应性触发重渲染
-          //   - fnRef.value() 内部访问响应式数据 → reactive 依赖追踪正常工作
-          setup: () => () => fnRef.value?.(),
-        }))
-        vueApp.component(name, comp)
-        vueApp.component(camelName, comp)
-      }
-    }
+    if (vueApp) registerRenderFunctions(vueApp, pageFunctions.value)
   }
 
   /**
@@ -301,8 +228,8 @@ export function usePageRenderer(
    * （mounted 每次必触发——loading toggle 销毁/重建 form-create——但时机晚于 rebindRules。）
    */
   async function applyConfig(pageId: string, config: PageConfig): Promise<void> {
-    originalRules.value = config.rule as unknown as Rule[]
-    if (config.css) setScopedCss(config.css)
+    originalRules.value = config.rule as unknown as BindRule[]
+    if (config.css) setScopedCss(pageId, config.css)
 
     executeScript(pageId, config.script ?? '')
     registerRenderComponents()
@@ -320,7 +247,7 @@ export function usePageRenderer(
   /** 完整加载流程：beforeLoad → resolvePageId → fetchConfig → applyConfig → afterLoad。 */
   const loadPageConfig = async (): Promise<void> => {
     await runLoad(async (isStale) => {
-      const pageId = resolvePageId()
+      const pageId = resolvePageId(route, props.pageId, props.pageConfig?.pageId)
       currentPageId.value = pageId
       if (props.beforeLoad) await props.beforeLoad(pageId)
       if (isStale()) return

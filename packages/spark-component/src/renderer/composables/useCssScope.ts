@@ -6,48 +6,52 @@ import { ref, onUnmounted } from 'vue'
 import { scopeCSS, removeScopedStyle } from '../utils/scopeCSS'
 
 export interface UseCssScopeOptions {
-  pageId: string
   enableScope?: boolean
 }
 
 /**
  * CSS 作用域隔离 Hook
- * 
+ *
+ * pageId 在 setScopedCss 调用时传入（而非初始化时），
+ * 因为 composable 创建时 pageId 通常尚未确定。
+ *
  * @example
  * ```vue
  * <script setup>
- * const { scopedCss, setScopedCss } = useCssScope({ pageId: 'home' })
- * 
+ * const { scopedCss, setScopedCss } = useCssScope()
+ *
  * onMounted(() => {
- *   setScopedCss('.button { color: red; }')
+ *   setScopedCss('home', '.button { color: red; }')
  * })
  * </script>
- * 
+ *
  * <template>
  *   <component :is="'style'" v-if="scopedCss">{{ scopedCss }}</component>
  * </template>
  * ```
  */
-export function useCssScope(options: UseCssScopeOptions) {
-  const { pageId, enableScope = true } = options
+export function useCssScope(options: UseCssScopeOptions = {}) {
+  const { enableScope = true } = options
   const scopedCss = ref<string>('')
-  
-  const setScopedCss = (css: string) => {
+  let lastPageId = ''
+
+  const setScopedCss = (pageId: string, css: string) => {
+    lastPageId = pageId
     if (!css) {
       scopedCss.value = ''
       return
     }
-    
-    scopedCss.value = enableScope 
+
+    scopedCss.value = enableScope
       ? scopeCSS({ pageId, css })
       : css
   }
-  
+
   // 组件卸载时清理样式
   onUnmounted(() => {
-    removeScopedStyle(pageId)
+    if (lastPageId) removeScopedStyle(lastPageId)
   })
-  
+
   return {
     scopedCss,
     setScopedCss

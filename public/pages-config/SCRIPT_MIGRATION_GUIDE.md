@@ -2,7 +2,7 @@
 
 ## 核心原则
 
-**脚本格式**：普通函数定义，通过 Function 构造器编译执行。
+**脚本格式**：普通函数定义，通过 Function 构造器在 `with (__ctx)` 沙箱内执行。
 
 **编译策略**："统一编译，按需返回"
 - 整个脚本统一编译（避免重复解析）
@@ -16,7 +16,7 @@
 
 **支持特性**：
 - ✅ 普通函数定义
-- ✅ 沙箱上下文变量（`$api`、`$data` 等）
+- ✅ 沙箱上下文变量（`$api`、`$dataSet`、`$page` 等）
 - ✅ 函数间互相调用
 - ✅ `__init__` 生命周期钩子
 
@@ -32,106 +32,109 @@ export function myFunction() {}
 
 ✅ **正确**：
 ```javascript
-// 从 pageData._imports 获取依赖
 function myFunction() {
-  const pageData = $data
-  const { ElMessage } = pageData._imports || {}
-  ElMessage?.success('成功')
+  $page.showMessage('成功', 'success')
 }
 ```
 
-### 2. $data() → $data
+### 2. `$data` 已移除 → 使用 `$dataSet` + `_pageState`
 
-沙箱变量是直接注入的对象，不是函数。
+`$data` 响应式对象已从沙箱中删除。所有数据必须通过 DataSet 流转，UI 状态使用模块级闭包变量。
 
 ❌ **错误**：
-```javascript
-const pageData = $data()
-```
-
-✅ **正确**：
 ```javascript
 const pageData = $data
-```
-
-### 3. FormCreate API 访问方式
-
-直接使用沙箱注入的 $api（通过 v-model:api 绑定）。
-
-❌ **错误**：
-```javascript
-const api = window.__formApi__  // 旧方式，已废弃
+pageData.selectedNode = node
 ```
 
 ✅ **正确**：
 ```javascript
-const api = $api  // 直接使用沙箱变量
-if (api) {
-  api.setValue('username', 'admin')
+// 模块顶部声明闭包状态
+let _pageState = { selectedNode: null }
+
+function handleSelect(node) {
+  _pageState.selectedNode = node
+}
+
+// 数据操作通过 DataSet
+function loadUsers() {
+  const view = $dataSet?.getView('Users', 'default')
+  view?.requestData()
 }
 ```
 
-**说明**：
-- PageRenderer 使用 `v-model:api="formApi"` 绑定（官方推荐方式）
-- 通过 PageContext 的 getter 动态获取最新 API 实例
-- 不再使用 `window.__formApi__` 全局变量
-
-### 4. $dataSet() → $dataSet
+### 3. `ElMessage` / `ElMessageBox` 已移除 → 使用 `$page`
 
 ❌ **错误**：
 ```javascript
-const dataSet = $dataSet()
+ElMessage.success('保存成功')
+ElMessageBox.confirm('确定删除？')
 ```
 
 ✅ **正确**：
 ```javascript
-const dataSet = $dataSet
+$page.showMessage('保存成功', 'success')
+$page.showConfirm('确定删除？').then(confirmed => {
+  if (confirmed) { /* ... */ }
+})
+```
+
+### 4. FormCreate API 访问方式
+
+直接使用沙箱注入的 `$api`。
+
+❌ **错误**：
+```javascript
+const api = window.__formApi__
+```
+
+✅ **正确**：
+```javascript
+if ($api) {
+  $api.setValue('username', 'admin')
+}
+```
+
+### 5. `h` 渲染函数已直接注入
+
+❌ **错误**：
+```javascript
+const { h } = $data._imports || {}
+```
+
+✅ **正确**：
+```javascript
+// h 已由沙箱直接注入
+function RenderButton() {
+  return h('button', { onClick: handleClick }, '点击')
+}
 ```
 
 ## 沙箱注入的变量
 
-所有页面脚本自动注入以下变量：
-
 | 变量 | 类型 | 说明 |
 |------|------|------|
-| `$api` | FormCreateAPI \| null | FormCreate API 实例 |
-| `$route` | RouteLocationNormalizedLoaded | Vue Router 当前路由 |
-| `$data` | reactive<Record> | 页面数据（响应式） |
-| `$el` | () => HTMLElement \| null | 页面容器元素（getter） |
-| `$query` | (selector) => Element \| null | 查询单个元素 |
-| `$queryAll` | (selector) => NodeListOf | 查询所有元素 |
-| `$dataSet` | IDataSet \| null | DataSet 实例 |
-| `$rebindRules` | () => void | 重新绑定规则 |
-| `$refreshData` | async () => void | 刷新数据 |
-
-## 外部依赖注入
-
-页面配置需要在 `data._imports` 中提供外部依赖：
-
-```javascript
-// pagedata.json
-{
-  "data": {
-    "_imports": {
-      "ElMessage": "需在运行时注入 element-plus 的 ElMessage",
-      "TreeManager": "需在运行时注入 @spark-view/spark-data 的 TreeManager",
-      "h": "需在运行时注入 vue 的 h 渲染函数"
-    },
-    // ... 其他页面数据
-  }
-}
-```
+| `$api` | IFormAPI \| null | 表单操作（框架无关接口） |
+| `$route` | IPageRoute | 当前路由快照（框架无关接口） |
+| `$el` | () => HTMLElement \| null | 页面容器元素 |
+| `$query` | (sel) => HTMLElement \| null | DOM 单元素查询 |
+| `$queryAll` | (sel) => NodeListOf\<Element\> | DOM 多元素查询 |
+| `$dataSet` | IDataSet \| null | **页面级 DataSet**（数据唯一入口） |
+| `$rebindRules` | () => void | 触发 form-create 完整重建规则（⚠️ 高危） |
+| `$refreshData` | (key?) => Promise\<void\> | 刷新数据（可选指定表名） |
+| `$page` | IPageServiceCapability | ✅ **推荐** UI 消息、确认、导航 |
+| `SparkData` | SparkData 命名空间 | `createTreeManager` 等工具 |
+| `h` | Vue `h` 函数 | 渲染函数专用 |
 
 ## 迁移示例
 
-### 示例 1：简单函数
+### 示例 1：用户提示
 
 **迁移前**：
 ```javascript
 import { ElMessage } from 'element-plus'
 
 export function handleClick() {
-  const data = $data()
   ElMessage.success('点击成功')
 }
 ```
@@ -139,9 +142,7 @@ export function handleClick() {
 **迁移后**：
 ```javascript
 function handleClick() {
-  const pageData = $data
-  const { ElMessage } = pageData._imports || {}
-  ElMessage?.success('点击成功')
+  $page.showMessage('点击成功', 'success')
 }
 ```
 
@@ -158,8 +159,8 @@ export function loadUsers() {
 **迁移后**：
 ```javascript
 function loadUsers() {
-  const dataSet = $dataSet
-  dataSet.requestTableData('Users')
+  const view = $dataSet?.getView('Users', 'default')
+  view?.requestData()
 }
 ```
 
@@ -168,51 +169,33 @@ function loadUsers() {
 **迁移前**：
 ```javascript
 import { h } from 'vue'
-import { ElButton } from 'element-plus'
 
-export function renderButton(row) {
-  return h(ElButton, {
-    onClick: () => handleClick(row)
-  }, '点击')
+export function renderInfo(row) {
+  return h('span', row.name)
 }
 ```
 
 **迁移后**：
 ```javascript
-function renderButton(row) {
-  const pageData = $data
-  const { h, ElButton } = pageData._imports || {}
-  
-  if (!h || !ElButton) {
-    return null
-  }
-  
-  return h(ElButton, {
-    onClick: () => handleClick(row)
-  }, '点击')
+// h 已由沙箱注入，直接使用
+function RenderInfo() {
+  const node = _pageState.selectedNode
+  return h('div', node?.name ?? '未选择')
 }
 ```
 
 ## 初始化函数
 
-`__init__` 函数会在页面加载时自动调用：
+`__init__` 在 form-create 挂载完成后自动调用，`$api` 和 `$dataSet` 均已就绪：
 
 ```javascript
 function __init__() {
-  console.log('页面初始化')
-  const pageData = $data
-  const { TreeManager, ElMessage } = pageData._imports || {}
-  
-  // 初始化逻辑
-  if (TreeManager) {
-    // ...
-  }
+  const view = $dataSet?.getView('Orders', 'default')
+  view?.events.on('currentRowChanged', (row) => {
+    console.log('当前行变化:', row)
+  })
 }
 ```
-
-## 待迁移文件清单
-
-- ✅ users/script.js - 已完成
 - ✅ settings/script.js - 已完成
 - ✅ renderer-demo/script.js - 已完成
 - ✅ tree-demo/script.js - 已完成

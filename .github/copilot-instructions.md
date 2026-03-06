@@ -8,7 +8,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - Typecheck: `pnpm run typecheck` (uses `tsconfig.typecheck.json`)
 - Tests: `pnpm run test` (Vitest + jsdom + @vue/test-utils); single test: `pnpm run test -- -t "capability-late-binding"`
 - Lint & hooks: `pnpm run lint`; Husky pre-commit runs `lint` + `typecheck`
-- Commit scope 必须是: `deps, docs, scripts, spark-data, spark-app, spark-component, spark-utils, spark-renderer, spark-page-config`
+- Commit scope 必须是: `deps, docs, scripts, spark-data, spark-app, spark-component, spark-utils, spark-page-config`
 
 ## Where to look (high value files) 🔎
 - **Packages**:
@@ -1018,7 +1018,7 @@ packages/
         ├── sandbox.ts             # 统一沙箱代理（SANDBOX_BLOCKED_KEYS / createSafeProxy）
         ├── logger.ts              # Logger 工厂
         ├── http/                  # Request, FileLoader
-        └── lazy-loader.ts        # useSyncfusionLoader, useLazyLoader
+        └── tests/
 ```
 
 ### 包依赖规则（禁止循环依赖）
@@ -1364,7 +1364,6 @@ export interface FormCreateAPI {
   - `@spark-view/spark-component` → `./packages/spark-component/src`
   - `@spark-view/spark-page-config` → `./packages/spark-page-config/src`
   - `@spark-view/spark-app` → `./packages/spark-app/src`
-  - `@spark-view/spark-renderer` → `./packages/spark-component/dist`（别名，等同 spark-component）
 - 每个子包 `tsconfig.json` 独立声明 `paths`（相对于包目录），IDE 类型解析正确
 - ⚠️ **每个子包 `tsconfig.json` 必须包含 `"baseUrl": "."`**：`paths` 中的相对路径（如 `"../spark-utils/dist/index.d.ts"`）以 `baseUrl` 为基准解析。缺少此字段时，子包会继承根 `tsconfig.json` 的 `baseUrl`（整个 monorepo 根目录），导致 `tsc` 找不到 dist 类型文件并回退到 pnpm 存储的旧版本，产生莫名的"模块无此导出"错误。
 - ⚠️ **`tsconfig.build.json` 注意**：每个子包的 `tsconfig.build.json` 中 `"paths"` 必须保留依赖包的 dist 路径别名（不能设为 `{}`），否则 `tsc` 无法追踪 pnpm 软链中的 `.js` 重导出链，导致编译时找不到新增导出成员（如 `normalizeKey`、`CapabilityTypeMap`）

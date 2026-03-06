@@ -2,10 +2,9 @@
  * 脚本沙箱工具
  */
 
-import { Logger, toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
+import { toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
 import type { PageContext } from '../types'
-
-const pageLogger = Logger('PageRenderer')
+import { pageLogger } from './bind-helpers'
 
 /**
  * 从脚本文本中提取所有顶层函数名
@@ -36,8 +35,8 @@ function extractNamesFromScript(scriptText: string): string[] {
  * 自动扫描脚本文本中所有顶层函数声明和箭头函数赋值，无需调用方预先提供函数名列表。
  * 所有函数都在同一作用域内编译（支持相互调用），只返回实际存在的函数。
  *
- * 沙箱通过单一 `__ctx` 参数传入 {@link PageContext}，扩展新变量只需更新
- * {@link SANDBOX_KEYS} 数组，无需同时修改函数参数和调用点。
+ * 沙箱通过单一 `__ctx` 参数传入 {@link PageContext}，
+ * 扩展新变量只需更新 PageContext 接口即可。
  *
  * @param scriptText - 业务脚本文本（纯函数定义）
  * @param context    - 页面上下文

@@ -84,13 +84,13 @@ const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undef
 // ── 组件解析 ──────────────────────────────────────────────────────────────────
 
 const resolvedComponent = computed(() => {
-  if (!registry?.has(props.config.type)) {
-    if (import.meta.env.DEV) {
-      console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${props.config.type}`)
-    }
-    return null
+  const def = registry?.get(props.config.type)
+  if (!def) {
+   if (import.meta.env.DEV) {
+     console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${props.config.type}`)
+   }
+   return null
   }
-  const def = registry.get(props.config.type)
-  return def?.component ? markRaw(def.component as object) : null
+  return def.component ? markRaw(def.component as object) : null
 })
 </script>

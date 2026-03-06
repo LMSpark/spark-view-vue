@@ -175,7 +175,7 @@ spark-component      ← 依赖 spark-data + spark-page-config + spark-utils
 |--------|-----------|-----------|-----------|
 | `authService` | 无 | bootstrap/, README | ✅ 是 |
 | `PluginRegistry.*` | 无 | presets.ts, tests, README | ✅ 是（测试需更新）|
-| `registerComponents` | `main.example.ts` (示例) | vite-env.d.ts | ✅ 是（更新示例）|
+| `registerComponents` | 无（`main.example.ts` 已删除）| vite-env.d.ts | ✅ 是 |
 | `FileCacheEntry` | 无 | 类型声明 | ✅ 是 |
 
 **结论**：所有废弃 API 无外部消费者，可在 0.6.0 安全移除。
@@ -318,7 +318,7 @@ DataView 本身作为**门面(Facade)**，主要职责是：
 | 更新 presets | spark-app/src/plugins/presets.ts | 改用 getGlobalPluginRegistry() |
 | 更新 registry 测试 | spark-app/src/plugins/__tests__/ | 使用新 API |
 | 更新 README | spark-app/src/plugins/README.md | 更新示例代码 |
-| 更新主项目示例 | src/main.example.ts | 移除 registerComponents |
+| ~~更新主项目示例~~ | ~~src/main.example.ts~~ | 已删除 |
 | 清理类型声明 | src/env.d.ts | 移除 registerComponents 类型 |
 
 **迁移指南**：

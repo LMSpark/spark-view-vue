@@ -29,7 +29,6 @@
         "preview": "vite preview --port 5173",
         "test": "vitest",
         "test:run": "vitest run",
-        "test:contract": "vitest run tests/contract",
         "test:all": "pnpm run build:packages && pnpm run test:run && pnpm run test:packages:run",
         "verify:arch": "node tools/verify-architecture.mjs",
         "verify": "pnpm run build:packages && pnpm run typecheck && pnpm run lint && pnpm run verify:arch",
@@ -47,19 +46,9 @@
         "changeset": "changeset",
         "version:packages": "changeset version",
         "release": "changeset publish",
-        "generate": "plop"
+        "generate": "plop",
+        "prepare": "husky"
     },
-    "husky": {
-        "hooks": {
-            "pre-commit": "npm run lint -- --max-warnings=100 && npm run typecheck"
-        }
-    },
-    "lint-staged": {
-        "**/*.{ts,vue,js}": [
-            "eslint --fix"
-        ]
-    },
-    "prepare": "husky install",
     "dependencies": {
         "@form-create/element-ui": "^3.2.37",
         "@spark-view/spark-app": "workspace:*",
@@ -72,7 +61,6 @@
         "axios": "^1.13.5",
         "element-plus": "^2.13.2",
         "vue": "^3.5.29",
-        "vue-docgen-api": "^4.79.2",
         "vue-router": "^5.0.3",
         "vxe-table": "^4.17.48"
     },
@@ -98,7 +86,6 @@
         "glob": "^13.0.6",
         "husky": "^9.1.7",
         "jsdom": "^28.1.0",
-        "lint-staged": "^16.2.7",
         "plop": "^4.0.5",
         "rollup-plugin-visualizer": "^7.0.0",
         "storybook": "^10.2.12",

@@ -24,7 +24,7 @@
  * 当 _modelPerm.allowCreate === false 时，按钮将被隐藏。
  */
 
-import type { Rule } from '../types'
+import type { BindRule } from '../types'
 import type { IModelPermission } from '@spark-view/spark-data'
 import { setRuleProp, pageLogger } from './bind-helpers'
 import { FORM_ELEMENT_TYPES } from './bind-form-delegate'
@@ -63,7 +63,7 @@ const COLUMN_LIKE_TYPES = new Set(['el-table-column', 'el-descriptions-item'])
  * @param rule    当前规则节点
  * @param context 绑定上下文（含 modelPerm / dataSource / fieldName）
  */
-export function applyPermissions(rule: Rule, context: BindingContext): void {
+export function applyPermissions(rule: BindRule, context: BindingContext): void {
   const type = rule.type
   if (!type) return
 
@@ -90,7 +90,7 @@ export function applyPermissions(rule: Rule, context: BindingContext): void {
  *
  * 当 _modelPerm 中对应的权限字段为 false 时，设置 `display: 'none'` 隐藏组件。
  */
-function applyButtonPermission(rule: Rule, context: BindingContext): void {
+function applyButtonPermission(rule: BindRule, context: BindingContext): void {
   const action = rule.props?.['permAction'] as string | undefined
   if (!action) return
 
@@ -105,9 +105,9 @@ function applyButtonPermission(rule: Rule, context: BindingContext): void {
   const modelPerm = context.modelPerm
   if (!modelPerm) return
 
-  // 权限字段明确为 false → 隐藏组件（form-create Rule.display 为 Boolean 类型）
+  // 权限字段明确为 false → 隐藏组件（display 为 Boolean 类型）
   if (modelPerm[permField] === false) {
-    rule.display = false
+    rule['display'] = false
     pageLogger.debug('[Permission] 操作按钮隐藏', { action, permField })
   }
 }
@@ -123,7 +123,7 @@ function applyButtonPermission(rule: Rule, context: BindingContext): void {
  * ⚠️ 这是一个「合理近似」：表格 per-row 权限可能不同，但列级隐藏只能一刀切。
  * 不同行有不同 hiddenFields 时，应使用 model 级权限控制。
  */
-function applyColumnPermission(rule: Rule, context: BindingContext): void {
+function applyColumnPermission(rule: BindRule, context: BindingContext): void {
   const field = rule.props?.['prop'] as string | undefined
   if (!field) return
 
@@ -133,14 +133,14 @@ function applyColumnPermission(rule: Rule, context: BindingContext): void {
   // 优先检查 currentRow 的隐藏字段（表单 / 详情上下文）
   const currentRow = dataSource.currentRow
   if (currentRow?._perm?.hiddenFields?.includes(field)) {
-    rule.display = false
+    rule['display'] = false
     return
   }
 
   // 回退检查首行（表格上下文 — 首行作为代表行判断列级可见性）
   const firstRow = dataSource.rows?.[0]
   if (firstRow?._perm?.hiddenFields?.includes(field)) {
-    rule.display = false
+    rule['display'] = false
   }
 }
 
@@ -156,7 +156,7 @@ function applyColumnPermission(rule: Rule, context: BindingContext): void {
  *
  * ⚠️ el-table 内的表单元素由 scoped slot 处理（per-row），此处跳过。
  */
-function applyFormFieldPermission(rule: Rule, context: BindingContext): void {
+function applyFormFieldPermission(rule: BindRule, context: BindingContext): void {
   const { fieldName, dataSource, parentType } = context
   if (!fieldName || !dataSource) return
 
@@ -170,7 +170,7 @@ function applyFormFieldPermission(rule: Rule, context: BindingContext): void {
 
   // 字段隐藏
   if (perm.hiddenFields?.includes(fieldName)) {
-    rule.display = false
+    rule['display'] = false
     return
   }
 

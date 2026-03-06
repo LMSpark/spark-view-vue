@@ -24,7 +24,7 @@ export function buildAppServices(
           push: (to) => router.push(to as Parameters<Router['push']>[0]),
           replace: (to) => router.replace(to as Parameters<Router['replace']>[0]),
           back: () => router.back(),
-          currentRoute: router.currentRoute.value
+          get currentRoute() { return router.currentRoute.value },
         }
       : {
           push: noop,

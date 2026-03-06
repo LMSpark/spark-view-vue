@@ -11,70 +11,30 @@
 | Bundle 大小 | 5MB | <2MB | Tree-shaking + 分割 📦 |
 | 内存占用 | 250MB | <100MB | 懒加载 + GC 💾 |
 
-## 📦 快速开始
+## 📦 当前方案
 
-### 1. 安装超高性能插件
+项目使用 `sparkComponentsPlugin`（`tools/vite-plugin-spark-components.ts`）实现组件自动扫描与注册：
 
 ```typescript
 // vite.config.ts
-import { sparkComponentsPluginUltra } from './tools/vite-plugin-spark-components-ultra'
+import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
 
 export default defineConfig({
   plugins: [
     vue(),
-    
-    // 替换原有的 sparkComponentsPlugin
-    sparkComponentsPluginUltra({
+    sparkComponentsPlugin({
       patterns: [
         './features/**/*.vue',
-        './src/components/**/*.vue',
-        './packages/**/components/**/*.vue'
+        './src/components/**/*.vue'
       ],
-      
-      // 核心组件（必须预加载，通常 5-10 个）
-      coreComponents: [
-        'PageRenderer',
-        'ErrorFallback',
-        'ErrorBoundary',
-        'LoadingSpinner',
-        'AppLayout'
-      ],
-      
-      // 文件大小阈值（KB）
-      sizeThreshold: 30,  // 更激进：30KB 以上异步
-      
-      // 启用智能预加载
-      enablePreload: true,
-      
-      // 启用路由分析
-      enableRouteAnalysis: true
+      syncComponents: ['PageRenderer', 'SparkComponentRenderer', 'ErrorFallback'],
+      sizeThreshold: 50  // KB，超过此大小的组件自动异步加载
     })
   ]
 })
 ```
 
-### 2. 更新主入口
-
-```typescript
-// src/main.ts
-import { SparkApp } from '@spark-view/spark-app'
-import App from './App.vue'
-
-// 使用超高性能虚拟模块
-const { registerComponents } = await import('virtual:spark-components-ultra')
-
-await SparkApp.start({
-  rootComponent: App,
-  
-  spark: {
-    enabled: true,
-    autoRegister: false,  // ⚠️ 禁用自动注册
-    registerComponents: registerComponents  // 使用 Ultra 注册器
-  },
-  
-  // ... 其他配置
-})
-```
+> 注：此前曾规划 `sparkComponentsPluginUltra`（零启动注册 + 智能预加载），该插件已移除。下方策略章节描述的是通用性能优化思路，可按需实施。
 
 ## ⚡ 核心优化策略
 
@@ -437,7 +397,7 @@ export default defineConfig({
 
 ### 优化前后对比（1000 组件）
 
-| 阶段 | 当前方案 | Ultra 方案 | 提升 |
+| 阶段 | 未优化 | 优化后 | 提升 |
 |------|---------|-----------|------|
 | **构建时间** | 45s | **12s** | 73% ⬇️ |
 | **Bundle 大小** | 5.2MB | **1.8MB** | 65% ⬇️ |
@@ -461,7 +421,7 @@ export default defineConfig({
 
 ### 阶段 1: 基础优化（1 天）
 
-- [x] 替换为 Ultra 插件
+- [x] 配置组件自动扫描插件
 - [x] 配置核心组件列表
 - [x] 启用懒加载
 

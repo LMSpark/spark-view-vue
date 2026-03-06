@@ -10,12 +10,9 @@ export default [
       'src/**/*.d.ts',
       'packages/**/*.d.ts',
       'packages/**/dist/**',  // 排除所有dist目录
-      'API_SIMPLIFICATION_EXAMPLE.ts',
       'tools/**',
-      'examples/**',
       '**/*.example.ts',
       'public/pages-config/**',  // 沙箱业务脚本（with(__ctx) 执行，非构建源码）
-      'docs/examples/**',
       'dist/**',
       'node_modules/**',
       'vite.config.ts',

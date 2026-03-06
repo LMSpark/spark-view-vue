@@ -23,10 +23,9 @@
 ```
 packages/
 ├── spark-app/           # 🏗️ 应用层基础设施（路由、认证、配置、插件系统）
-├── spark-component/     # ⚙️ 组件核心系统（注册表、能力管理、上下文）
+├── spark-component/     # ⚙️ 组件核心系统（注册表、能力管理、上下文、页面渲染器）
 ├── spark-data/          # 📊 数据空间（DataSet、TreeManager、关系引擎）
 ├── spark-page-config/   # 📄 页面配置系统（配置加载、路由集成）
-├── spark-renderer/      # 🎨 页面渲染器（字段组件、页面布局）
 └── spark-utils/         # 🛠️ 共享工具（Logger、HTTP 客户端、类型定义）
 ```
 
@@ -62,17 +61,17 @@ SPARK 采用声明式组件注册，支持三种注册方式：
 import { Spark } from '@spark-view/spark-component'
 
 // 1. 直接注册（同步加载）
-import UserGrid from './UserGrid.vue'
-Spark.register('user-grid', UserGrid)
+import MyComponent from './MyComponent.vue'
+Spark.register('my-component', MyComponent)
 
 // 2. 动态导入（代码分割）
-Spark.register('user-detail', () => import('./UserDetail.vue'))
+Spark.register('my-detail', () => import('./MyDetail.vue'))
 
 // 3. 路径注册（批量管理）
 const register = Spark.createRegister(import.meta.glob('./*.vue'))
 register.registerAll({
-  'user-grid': './UserGrid.vue',
-  'user-row': './UserRow.vue'
+  'spark-ej2-grid':   './SparkEJ2Grid.vue',
+  'spark-ej2-column': './SparkEJ2Column.vue'
 })
 ```
 
@@ -199,7 +198,7 @@ await SparkApp.start({
 3. 更新相关文档
 4. 提交前运行 `pnpm run typecheck && pnpm run lint && pnpm run test`
 5. 提交信息遵循 Conventional Commits（由 Husky + commitlint 强制校验），格式示例：`feat(spark-data): add X`。
-   - 允许的 scope：`deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-component`, `spark-utils`, `spark-renderer`。
+   - 允许的 scope：`deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-component`, `spark-utils`, `spark-page-config`。
    - 详情与示例见 `CONTRIBUTING.md`（新增）。
 
 ## 📄 许可证

@@ -82,11 +82,7 @@ export function syncSelectedRowsToTable(
   nextTick(() => {
     const table = getTableEl(tableName, viewId, formApi)
     if (!table) return
-    if (rows.length === 0) {
-      table.clearSelection?.()
-    } else {
-      table.clearSelection?.()
-      for (const row of rows) table.toggleRowSelection?.(row, true)
-    }
+    table.clearSelection?.()
+    for (const row of rows) table.toggleRowSelection?.(row, true)
   }).catch(() => { /* nextTick 内部回调异常安全 */ })
 }
