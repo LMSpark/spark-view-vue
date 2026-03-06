@@ -132,6 +132,7 @@ export class CrudDelegate {
 
   /** 批量校验所有行，返回错误消息列表（消除 batchCreateRecords/batchUpdateRecords 中的重复循环） */
   private collectBatchValidationErrors(items: Array<Partial<IDataRow>>): string[] {
+    if (!this.host.validator) return []
     const errors: string[] = []
     for (let i = 0; i < items.length; i++) {
       const result = this.validateRow(items[i] as IDataRow)
@@ -298,8 +299,13 @@ export class CrudDelegate {
 
     return this.withMutating(async () => {
       const svc = this.ensureCrudService()
-      // 构建服务端 PK payload 数组
-      const pkPayloads = ids.map(id => this._buildServerPkFromId(id))
+      // 构建 pk→row Map（O(n)），避免 _buildServerPkFromId 每次 O(n) find（O(n²) → O(n)）
+      const rowMap = new Map<string | number, IDataRow>()
+      for (const row of this.host.rows) {
+        const pk = this.host.getPkKey(row)
+        if (pk !== undefined) rowMap.set(pk, row)
+      }
+      const pkPayloads = ids.map(id => this._buildServerPkFromIdWithMap(id, rowMap))
       const result = await svc.batchDelete(pkPayloads, this.getCrudConfig())
 
       if (result.success && result.data) {
@@ -336,8 +342,13 @@ export class CrudDelegate {
    * 从本地 ID 构建服务端 PK payload。
    * 尝试从 rows 中查找行以提取真实 PK 字段，否则回退到单字段。
    */
-  private _buildServerPkFromId(id: string | number): Record<string, unknown> {
-    const row = this.host.rows.find(r => this.host.getPkKey(r) === id)
+  /** 使用预构建 Map 查找行（批量操作用，避免 O(n²)） */
+  private _buildServerPkFromIdWithMap(id: string | number, rowMap: Map<string | number, IDataRow>): Record<string, unknown> {
+    return this._extractPkPayload(id, rowMap.get(id))
+  }
+
+  /** 从行对象提取 PK payload，找不到行时回退到单字段 */
+  private _extractPkPayload(id: string | number, row: IDataRow | undefined): Record<string, unknown> {
     if (row) {
       const result: Record<string, unknown> = {}
       for (const f of this.host.effectivePkFields) result[f] = row[f]

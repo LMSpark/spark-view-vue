@@ -84,8 +84,9 @@ export function useRuleBinding(options: UseRuleBindingOptions): UseRuleBindingRe
           const view = currentDataSet.getTable(tableName)?.getView(viewId)
           if (view) {
             const pk = view.getPkKey(currentRow)
+            // 快速路径：currentRow 已在 rows 中（reactive proxy），跳过 O(n) find
             const reactiveRow = pk !== undefined
-              ? view.rows.find(r => view.getPkKey(r) === pk) ?? currentRow
+              ? (view.rows.includes(currentRow) ? currentRow : view.rows.find(r => view.getPkKey(r) === pk) ?? currentRow)
               : currentRow
             syncCurrentRowToTable(tableName, viewId, reactiveRow, formApi.value)
           } else {
