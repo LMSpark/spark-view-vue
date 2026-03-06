@@ -571,7 +571,7 @@ export class DataView implements IDataSource {
         parentKey = pView.primaryKey
       }
 
-      const values = parentRows.map(r => r[parentKey] ?? Object.values(r)[0])
+      const values = parentRows.map(r => r[parentKey])
 
       let childKey: string
       if (typeof rel.childField === 'string') childKey = rel.childField
