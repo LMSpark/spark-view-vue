@@ -67,18 +67,12 @@ export function applyPermissions(rule: BindRule, context: BindingContext): void 
   const type = rule.type
   if (!type) return
 
-  // ── 1. el-button / el-link：模型级操作权限 ──
+  // 组件类型互斥：一个组件只属于一种权限类别
   if (ACTION_TYPES.has(type)) {
     applyButtonPermission(rule, context)
-  }
-
-  // ── 2. el-table-column / el-descriptions-item：列级字段隐藏 ──
-  if (COLUMN_LIKE_TYPES.has(type)) {
+  } else if (COLUMN_LIKE_TYPES.has(type)) {
     applyColumnPermission(rule, context)
-  }
-
-  // ── 3. 表单元素：字段级 disabled / hidden（仅 el-form 上下文，非 el-table） ──
-  if (FORM_ELEMENT_TYPES.has(type)) {
+  } else if (FORM_ELEMENT_TYPES.has(type)) {
     applyFormFieldPermission(rule, context)
   }
 }

@@ -31,6 +31,10 @@ export function wrapEvent(
   rule.on[eventName] = (...args: unknown[]) => {
     if (typeof original === 'function') {
       (original as (...a: unknown[]) => void)(...args)
+    } else if (Array.isArray(original)) {
+      for (const fn of original) {
+        if (typeof fn === 'function') (fn as (...a: unknown[]) => void)(...args)
+      }
     }
     handler(...args)
   }

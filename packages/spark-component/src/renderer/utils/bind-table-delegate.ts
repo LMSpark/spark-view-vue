@@ -81,7 +81,7 @@ function injectTableEvents(
     pageLogger.debug(`[TableEvent] currentChange`, { tableName, viewId })
 
     if (typeof originalCurrentChange === 'function') {
-      (originalCurrentChange as (current: unknown, old: unknown) => void)(currentRow, oldRow)
+      (originalCurrentChange as (...a: unknown[]) => void)(currentRow, oldRow)
     }
 
     if (currentRow === null) {
