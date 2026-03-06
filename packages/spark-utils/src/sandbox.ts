@@ -33,7 +33,13 @@ export function createSafeProxy<T extends object>(target: T): T {
     },
     get(t, key, receiver) {
       if (key === Symbol.unscopables) return undefined
-      if (typeof key === 'string' && SANDBOX_BLOCKED_KEYS.has(key)) return undefined
+      if (typeof key === 'string' && SANDBOX_BLOCKED_KEYS.has(key)) {
+        // Allow explicit overrides on the context (e.g. safe timer wrappers)
+        if (Object.prototype.hasOwnProperty.call(t, key)) {
+          return Reflect.get(t, key, receiver) as unknown
+        }
+        return undefined
+      }
       return Reflect.get(t, key, receiver) as unknown
     },
     set(t, key, value) {
