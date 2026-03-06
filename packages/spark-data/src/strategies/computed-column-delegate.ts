@@ -274,10 +274,14 @@ export class ComputedColumnDelegate {
     if (!columns?.length) return
 
     // 编译缓存：列表达式指纹（字符串比较）+ ctx 对象引用（=== 比较，不做深序列化）
-    const exprFingerprint = columns
-      .filter(c => c.computeExpression)
-      .map(c => `${c.name}:${c.computeExpression}`)
-      .join('|')
+    // 单次遍历构建指纹，避免 filter+map+join 分配临时数组
+    let exprFingerprint = ''
+    for (const c of columns) {
+      if (c.computeExpression) {
+        if (exprFingerprint) exprFingerprint += '|'
+        exprFingerprint += `${c.name}:${c.computeExpression}`
+      }
+    }
     if (exprFingerprint === this._compiledExprKey && this._ctx === this._compiledCtxRef) return   // 缓存命中，跳过编译
     this._compiledExprKey = exprFingerprint
     this._compiledCtxRef = this._ctx

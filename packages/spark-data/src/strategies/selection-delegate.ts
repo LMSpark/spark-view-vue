@@ -22,6 +22,10 @@ const logger = Logger('DataView:Selection')
 
 export class SelectionDelegate {
 
+  /** @internal version-cached pk→row Map: reused while host.rows reference is stable */
+  private _cachedRows: IDataRow[] | undefined
+  private _cachedIdToRowMap: Map<string | number, IDataRow> | undefined
+
   constructor(
     private host: ISelectionHost,
     private emitCurrentRowChanged: EmitCurrentRowChangedFn,
@@ -39,13 +43,17 @@ export class SelectionDelegate {
     }
   }
 
-  /** 构建 pk → row 映射（O(n)），供 setSelectedRowsById / addSelectedRowsById 共用 */
-  private buildIdToRowMap(): Map<string | number, IDataRow> {
+  /** 获取 pk → row 映射（version-cached：行引用不变时复用） */
+  private getIdToRowMap(): Map<string | number, IDataRow> {
+    const rows = this.host.rows
+    if (rows === this._cachedRows && this._cachedIdToRowMap) return this._cachedIdToRowMap
     const m = new Map<string | number, IDataRow>()
-    for (const row of this.host.rows) {
+    for (const row of rows) {
       const pk = this.host.getPkKey(row)
       if (pk !== undefined) m.set(pk, row)
     }
+    this._cachedRows = rows
+    this._cachedIdToRowMap = m
     return m
   }
 
@@ -167,17 +175,16 @@ export class SelectionDelegate {
    */
   setCurrentRowById(id: string | number): boolean {
     this.checkDestroyed()
-    const host = this.host
 
-    const row = host.rows.find(r => host.getPkKey(r) === id)
+    const row = this.getIdToRowMap().get(id)
 
     if (!row) {
       logger.warn('setCurrentRowById: 行不存在', {
-        tableName: host.tableName,
-        viewId: host.viewId,
-        primaryKey: host.primaryKey,
+        tableName: this.host.tableName,
+        viewId: this.host.viewId,
+        primaryKey: this.host.primaryKey,
         id,
-        totalRows: host.rows.length
+        totalRows: this.host.rows.length
       })
       return false
     }
@@ -211,7 +218,7 @@ export class SelectionDelegate {
       return 0
     }
 
-    const idToRow = this.buildIdToRowMap()
+    const idToRow = this.getIdToRowMap()
     const foundRows: IDataRow[] = []
     const notFoundIds: Array<string | number> = []
 
@@ -338,7 +345,7 @@ export class SelectionDelegate {
     }
     if (ids.length === 0) return 0
 
-    const idToRow = this.buildIdToRowMap()
+    const idToRow = this.getIdToRowMap()
     const selectedSet = new Set(host._selectedRowIds)
     const toAddIds: Array<string | number> = []
     const notFoundIds: Array<string | number> = []

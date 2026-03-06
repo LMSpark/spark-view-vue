@@ -95,6 +95,11 @@ export class DataSet implements IDataSet {
    */
   _sharedHttpClient?: Request | undefined
 
+  /** @internal 关系索引：parentTable:parentViewId → children relations */
+  private _childRelIdx = new Map<string, DataRelation[]>()
+  /** @internal 关系索引：childTable:childViewId → parent relations */
+  private _parentRelIdx = new Map<string, DataRelation[]>()
+
   // ===== 动态视图订阅追踪 =====
 
   /**
@@ -141,6 +146,11 @@ export class DataSet implements IDataSet {
     this.version = config.version
     this.pageId = config.pageId
 
+    // 预构建关系索引（供 setDataSet → setupCascade 查询，此时关系尚未规范化但 ?? 'default' 能正确匹配）
+    if (this.relations) {
+      this._buildRelationIndex()
+    }
+
     // 构建表实例并建立引用链（DataSet → DataTable → DataView）
     this.tables = {}
     const tableDefs = config.tables
@@ -154,9 +164,10 @@ export class DataSet implements IDataSet {
       this.tables[name] = table
     }
 
-    // 关系规范化（浅拷贝 + 默认值填充 + filterExpression 自动生成）
+    // 关系规范化（浅拷贝 + 默认值填充 + filterExpression 自动生成）+ 索引构建
     if (this.relations) {
       this.relations = this.relations.map(r => normalizeRelation(r, this))
+      this._buildRelationIndex()
     }
 
     // 后置重算：聚合表达式需要完整 DataSet（所有表 + 规范化关系），
@@ -353,9 +364,7 @@ export class DataSet implements IDataSet {
    * @param parentViewId 父视图ID
    */
   getChildRelations(parentTable: string, parentViewId: string): DataRelation[] {
-    return (this.relations ?? []).filter(
-      r => r.parentTable === parentTable && (r.parentViewId ?? 'default') === parentViewId
-    )
+    return this._childRelIdx.get(`${parentTable}:${parentViewId}`) ?? []
   }
 
   /**
@@ -364,9 +373,23 @@ export class DataSet implements IDataSet {
    * @param childViewId 子视图ID
    */
   getParentRelations(childTable: string, childViewId: string): DataRelation[] {
-    return (this.relations ?? []).filter(
-      r => r.childTable === childTable && (r.childViewId ?? 'default') === childViewId
-    )
+    return this._parentRelIdx.get(`${childTable}:${childViewId}`) ?? []
+  }
+
+  /** @internal 构建关系双向索引 */
+  private _buildRelationIndex(): void {
+    this._childRelIdx.clear()
+    this._parentRelIdx.clear()
+    for (const r of this.relations ?? []) {
+      const pKey = `${r.parentTable}:${r.parentViewId ?? 'default'}`
+      const cKey = `${r.childTable}:${r.childViewId ?? 'default'}`
+      let pArr = this._childRelIdx.get(pKey)
+      if (!pArr) { pArr = []; this._childRelIdx.set(pKey, pArr) }
+      pArr.push(r)
+      let cArr = this._parentRelIdx.get(cKey)
+      if (!cArr) { cArr = []; this._parentRelIdx.set(cKey, cArr) }
+      cArr.push(r)
+    }
   }
 
   // ===== 工厂方法 =====
