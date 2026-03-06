@@ -30,7 +30,7 @@ import type { BindRule } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import type { DataView } from '@spark-view/spark-data'
 import { isDataKey, getViewFromRawKey } from '@spark-view/spark-data'
-import { setRuleProp, resolveRuleDataKey, pageLogger } from './bind-helpers'
+import { setRuleProp, resolveRuleDataKey, pageLogger, definePropertyGetter } from './bind-helpers'
 import { wrapEvent } from './wrapEvent'
 
 // ── 组件分类 ──────────────────────────────────────────────────────────────
@@ -167,24 +167,12 @@ function injectValueBinding(rule: BindRule, view: DataView, type: string): void 
 
   // ── getter：DataView.value → modelValue（响应式 getter，form-create 每次渲染时读取） ──
   if (BOOLEAN_TYPES.has(type)) {
-    Object.defineProperty(rule.props, 'modelValue', {
-      get: () => view.value === 'true' || view.value === '1',
-      enumerable: true,
-      configurable: true,
-    })
+    definePropertyGetter(rule.props, 'modelValue', () => view.value === 'true' || view.value === '1')
   } else if (MULTI_VALUE_TYPES.has(type)) {
     const delimiter = view.selectionDelimiter || ','
-    Object.defineProperty(rule.props, 'modelValue', {
-      get: () => (view.value ? view.value.split(delimiter) : []),
-      enumerable: true,
-      configurable: true,
-    })
+    definePropertyGetter(rule.props, 'modelValue', () => (view.value ? view.value.split(delimiter) : []))
   } else {
-    Object.defineProperty(rule.props, 'modelValue', {
-      get: () => view.value,
-      enumerable: true,
-      configurable: true,
-    })
+    definePropertyGetter(rule.props, 'modelValue', () => view.value)
   }
 
   // ── setter：change 事件 → DataView.value ──

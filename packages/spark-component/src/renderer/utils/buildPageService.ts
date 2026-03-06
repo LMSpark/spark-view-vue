@@ -27,6 +27,7 @@ export interface PageServiceOverrides {
   confirmService?: {
     confirm: (msg: string, title?: string) => Promise<unknown>
     alert: (msg: string, title?: string) => Promise<unknown>
+    prompt?: (msg: string, title?: string) => Promise<string | null>
   } | undefined
 }
 
@@ -42,8 +43,12 @@ export function buildPageService(
 ): IPageServiceCapability {
   return {
     showMessage: (message, type = 'info') => {
-      const fn = overrides?.messageService?.[type]
-      if (typeof fn === 'function') { fn(message); return }
+      try {
+        const fn = overrides?.messageService?.[type]
+        if (typeof fn === 'function') { fn(message); return }
+      } catch (e) {
+        pageLogger.warn('messageService 调用异常', { type, error: e })
+      }
       ElMessage({ message, type })
     },
 
@@ -80,6 +85,9 @@ export function buildPageService(
       options?: { placeholder?: string; defaultValue?: string }
     ) => {
       try {
+        if (overrides?.confirmService?.prompt) {
+          return await overrides.confirmService.prompt(message, title)
+        }
         const placeholder: string  = options?.placeholder  ?? ''
         const defaultValue: string = options?.defaultValue ?? ''
         const result = await ElMessageBox.prompt(message, title ?? '请输入', {
