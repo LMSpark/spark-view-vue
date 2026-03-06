@@ -12,6 +12,14 @@
 // - h: Vue h 函数
 
 /**
+ * 页面初始化 — initAutoSelection 已将 Stats 首行设为 currentRow，
+ * 触发 rebindRules 让 currentRow.xxx 数据键生效
+ */
+function __init__() {
+  $rebindRules()
+}
+
+/**
  * 刷新所有数据
  */
 async function refreshAllData() {
@@ -32,9 +40,9 @@ async function refreshAllData() {
 async function refreshOrders() {
   try {
     $page.showMessage('正在刷新订单数据...', 'info')
-    await $refreshData('recentOrders')
+    await $refreshData('RecentOrders')
     $page.showMessage('订单数据刷新成功！')
-    console.log('最新订单:', $dataSet?.getView?.('recentOrders', 'default')?.rows)
+    console.log('最新订单:', $dataSet?.getView?.('RecentOrders', 'default')?.rows)
   } catch (error) {
     $page.showMessage('刷新订单数据失败', 'error')
     console.error('刷新失败:', error)

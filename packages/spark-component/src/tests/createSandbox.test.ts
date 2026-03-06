@@ -203,24 +203,25 @@ describe('createSandbox — compileFunctions', () => {
     expect(() => fns['willFail']!()).toThrow('boom')
   })
 
-  // ── with() 块级作用域限制文档 ─────────────────────────────────────────────
+  // ── with() 块级作用域：return 在块内，声明均可导出 ─────────────────────
 
-  it('const/let 声明在 with() 内是块级作用域（不可导出）', () => {
+  it('const 箭头函数声明可正常导出', () => {
     const script = `
       const hidden = () => 42
     `
     const fns = compileFunctions(script, createMockContext())
-    // const 声明被 with 块限制，return 语句无法访问
-    expect(fns).not.toHaveProperty('hidden')
+    // return 语句在 with 块内部，const 声明可正常访问
+    expect(fns).toHaveProperty('hidden')
+    expect(fns['hidden']!()).toBe(42)
   })
 
-  it('async function 声明在 with() 内是块级作用域（不可导出）', () => {
+  it('async function 声明可正常导出', () => {
     const script = `
-      async function asyncHidden() { return 42 }
+      async function asyncFn() { return 42 }
     `
     const fns = compileFunctions(script, createMockContext())
-    // V8 中 async function 声明在块内是块级作用域
-    expect(fns).not.toHaveProperty('asyncHidden')
+    // return 在 with 块内，async function 声明可正常访问
+    expect(fns).toHaveProperty('asyncFn')
   })
 
   // ── SparkPageContext（无 form-create API）─────────────────────────────────
