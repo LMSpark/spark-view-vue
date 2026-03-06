@@ -83,64 +83,94 @@ export class SelectionDelegate {
     host._selectedRowIds.splice(0, host._selectedRowIds.length)
 
     const firstRow = host.rows[0] ?? null
+    const firstPk = firstRow !== null ? (host.getPkKey(firstRow) ?? null) : null
 
     // ── autoCurrentFirst ──
-    if (host.autoCurrentFirst !== false && firstRow) {
+    if (host.autoCurrentFirst !== false && firstPk !== null) {
       // 抑制单选同步，让 autoSelectFirst 独立控制
       this._suppressSelectionSync = true
-      this.setCurrentRow(firstRow)
+      this._setCurrentId(firstPk)
       this._suppressSelectionSync = false
     } else if (prevHadCurrent) {
       this.emitCurrentRowChanged()
     }
 
     // ── autoSelectFirst ──
-    if (host.autoSelectFirst !== false && firstRow) {
-      this.setSelectedRows([firstRow])
+    if (host.autoSelectFirst !== false && firstPk !== null) {
+      this._setSelectedIds([firstPk])
     } else if (prevHadSelected) {
       this.emitSelectedRowsChanged()
     }
   }
 
   // ─────────────────────────────────────────────
-  // 当前行 / 多选行 setter
+  // 底层 PK 操作（所有 setter 汇聚于此）
   // ─────────────────────────────────────────────
 
   /**
-   * 设置当前行
-   * 状态变更 → 发射 stateChanged → UI + 子视图级联均通过 events 接收
-   *
-   * @param row          - 要设置的行（null 表示清空）
-   * @param originatorId - UI 操作来源实例 ID（可选）；
-   *                       useRuleBinding 用此字段识别"自己发出的事件"并跳过回写，
-   *                       其他同级 binding 实例仍正常同步。
+   * 底层：按主键设置当前行（幂等 + 单选同步）
+   * @param id - 主键值，null 表示清空
    */
-  setCurrentRow(row: IDataRow | null, originatorId?: string): void {
+  private _setCurrentId(id: string | number | null, originatorId?: string): void {
     const host = this.host
-    const newId = row !== null ? (host.getPkKey(row) ?? null) : null
 
-    // 幂等守卫：主键相同则不触发事件
-    if (newId === host._currentRowId) return
-    if (row !== null && newId === null) {
-      logger.warn('setCurrentRow: 行缺少主键，无法存储', { tableName: host.tableName, viewId: host.viewId })
-      return
-    }
+    // 幂等守卫
+    if (id === host._currentRowId) return
 
-    host._currentRowId = newId
-
-    // 快照由宿主自动构建（此时 _currentRowId 已更新，getter 返回正确对象）
+    host._currentRowId = id
     this.emitCurrentRowChanged(originatorId)
 
     if (!this._suppressSelectionSync && !host.isMultiSelect) {
-      this.setSelectedRows(row !== null ? [row] : [], originatorId)
+      this._setSelectedIds(id !== null ? [id] : [], originatorId)
     }
   }
 
   /**
-   * 设置多选行（幂等：内容不变时跳过）
+   * 底层：按主键数组设置多选行（幂等：集合相同则跳过）
+   */
+  private _setSelectedIds(ids: Array<string | number>, originatorId?: string): void {
+    const host = this.host
+    const oldIds = host._selectedRowIds
+
+    // 幂等守卫：长度 + 集合比较（忽略顺序）
+    if (oldIds.length === ids.length) {
+      if (ids.length === 0) return
+      const oldSet = new Set(oldIds)
+      if (ids.every(id => oldSet.has(id))) return
+    }
+
+    host._selectedRowIds.splice(0, host._selectedRowIds.length, ...ids)
+    this.emitSelectedRowsChanged(originatorId)
+  }
+
+  // ─────────────────────────────────────────────
+  // 当前行 / 多选行 setter（行对象入口）
+  // ─────────────────────────────────────────────
+
+  /**
+   * 设置当前行（通过行对象）
    *
-   * @param rows         - 要设置的行数组
-   * @param originatorId - UI 操作来源实例 ID（可选，同 setCurrentRow）
+   * 内部提取 PK 后委托给 {@link _setCurrentId}。
+   * 外部 UI 层推荐使用 {@link setCurrentRowById}。
+   */
+  setCurrentRow(row: IDataRow | null, originatorId?: string): void {
+    if (row === null) {
+      this._setCurrentId(null, originatorId)
+      return
+    }
+    const pk = this.host.getPkKey(row) ?? null
+    if (pk === null) {
+      logger.warn('setCurrentRow: 行缺少主键，无法存储', { tableName: this.host.tableName, viewId: this.host.viewId })
+      return
+    }
+    this._setCurrentId(pk, originatorId)
+  }
+
+  /**
+   * 设置多选行（通过行对象数组）
+   *
+   * 内部提取 PK 后委托给 {@link _setSelectedIds}。
+   * 外部 UI 层推荐使用 {@link setSelectedRowsById}。
    */
   setSelectedRows(rows: IDataRow[], originatorId?: string): void {
     const host = this.host
@@ -148,22 +178,12 @@ export class SelectionDelegate {
       logger.warn('setSelectedRows 收到非数组参数', { rows, tableName: host.tableName, viewId: host.viewId })
       return
     }
-
-    // 提取 PK，过滤掉无 PK 的行
-    const newIds: Array<string | number> = []
+    const ids: Array<string | number> = []
     for (const r of rows) {
       const pk = host.getPkKey(r)
-      if (pk !== undefined) newIds.push(pk)
+      if (pk !== undefined) ids.push(pk)
     }
-
-    // 幂等守卫：PK 序列相同则不触发事件
-    const oldIds = host._selectedRowIds
-    if (oldIds.length === newIds.length && oldIds.every((id, i) => id === newIds[i])) return
-
-    host._selectedRowIds.splice(0, host._selectedRowIds.length, ...newIds)
-
-    // 快照由宿主自动构建（保证与 _selectedRowIds 同步）
-    this.emitSelectedRowsChanged(originatorId)
+    this._setSelectedIds(ids, originatorId)
   }
 
   // ─────────────────────────────────────────────
@@ -173,15 +193,18 @@ export class SelectionDelegate {
   /**
    * 根据主键设置当前行
    *
-   * @param id - 主键值
-   * @returns 是否成功（行不存在时返回 false）
+   * @param id - 主键值，null 表示清空
+   * @param originatorId - UI 操作来源实例 ID（可选）
+   * @returns 是否成功（行不存在时返回 false；null 始终返回 true）
    */
-  setCurrentRowById(id: string | number): boolean {
+  setCurrentRowById(id: string | number | null, originatorId?: string): boolean {
+    if (id === null) {
+      this._setCurrentId(null, originatorId)
+      return true
+    }
     this.checkDestroyed()
 
-    const row = this.getIdToRowMap().get(id)
-
-    if (!row) {
+    if (!this.getIdToRowMap().has(id)) {
       logger.warn('setCurrentRowById: 行不存在', {
         tableName: this.host.tableName,
         viewId: this.host.viewId,
@@ -192,7 +215,7 @@ export class SelectionDelegate {
       return false
     }
 
-    this.setCurrentRow(row)
+    this._setCurrentId(id, originatorId)
     return true
   }
 
@@ -200,13 +223,14 @@ export class SelectionDelegate {
    * 根据主键数组设置多选行
    *
    * @param ids - 主键值数组
-   * @param context - 事件上下文（可选）
+   * @param originatorId - UI 操作来源实例 ID（可选）
    * @param options.strict - 严格模式：任何 ID 找不到则抛错（默认 false）
    * @returns 成功找到的行数
    */
   setSelectedRowsById(
     ids: Array<string | number>,
-    options?: { strict?: boolean }
+    originatorId?: string,
+    options?: { strict?: boolean },
   ): number {
     this.checkDestroyed()
     const host = this.host
@@ -217,18 +241,17 @@ export class SelectionDelegate {
     }
 
     if (ids.length === 0) {
-      this.setSelectedRows([])
+      this._setSelectedIds([], originatorId)
       return 0
     }
 
     const idToRow = this.getIdToRowMap()
-    const foundRows: IDataRow[] = []
+    const validIds: Array<string | number> = []
     const notFoundIds: Array<string | number> = []
 
     for (const id of ids) {
-      const row = idToRow.get(id)
-      if (row) {
-        foundRows.push(row)
+      if (idToRow.has(id)) {
+        validIds.push(id)
       } else {
         notFoundIds.push(id)
       }
@@ -254,20 +277,20 @@ export class SelectionDelegate {
         viewId: host.viewId,
         primaryKey: host.primaryKey,
         notFoundIds,
-        foundCount: foundRows.length,
+        foundCount: validIds.length,
         totalRows: host.rows.length
       })
     }
 
-    this.setSelectedRows(foundRows)
-    return foundRows.length
+    this._setSelectedIds(validIds, originatorId)
+    return validIds.length
   }
 
   /**
    * 清空选中行
    */
   clearSelectedRows(): void {
-    this.setSelectedRows([])
+    this._setSelectedIds([])
   }
 
   /**
