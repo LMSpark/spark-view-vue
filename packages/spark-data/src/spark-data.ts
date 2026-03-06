@@ -114,8 +114,6 @@ export namespace SparkData {
     autoCurrentFirst?: boolean
     /** 请求成功后自动将 selectedRows 设为第一行，见 {@link DataView.autoSelectFirst} */
     autoSelectFirst?: boolean
-    /** setCurrentRow 时是否同步 selectedRows，见 {@link DataView.selectionFollowsCurrent} */
-    selectionFollowsCurrent?: boolean
     /** 树结构字段配置（idField/parentIdField/textField/depthLimit/lazy/treeMode） */
     treeConfig?: TreeConfig
     /** 初始化后自动加载（默认 false），见 {@link DataView.autoLoad} */

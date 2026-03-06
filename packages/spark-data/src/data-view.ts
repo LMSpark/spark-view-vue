@@ -206,8 +206,6 @@ export class DataView implements IDataSource {
   autoCurrentFirst = true
   /** 请求成功后是否自动 selectedRows = [rows[0]]（默认 true） */
   autoSelectFirst = true
-  /** setCurrentRow 时是否自动同步 selectedRows（默认 true）。false=购物车模式 */
-  selectionFollowsCurrent = true
   /** 树结构字段配置 */
   treeConfig?: TreeConfig | undefined
 
@@ -1034,7 +1032,6 @@ export class DataView implements IDataSource {
     if (vc.sortExpression !== undefined) this.sortExpression = vc.sortExpression
     if (vc.autoCurrentFirst !== undefined) this.autoCurrentFirst = vc.autoCurrentFirst
     if (vc.autoSelectFirst !== undefined) this.autoSelectFirst = vc.autoSelectFirst
-    if (vc.selectionFollowsCurrent !== undefined) this.selectionFollowsCurrent = vc.selectionFollowsCurrent
     if (vc.treeConfig !== undefined) this.treeConfig = vc.treeConfig
     if (vc.autoLoad !== undefined) this.autoLoad = vc.autoLoad
     if (vc.autoRefresh !== undefined) this.autoRefresh = vc.autoRefresh
@@ -1065,7 +1062,6 @@ export class DataView implements IDataSource {
     // 只在非默认值时序列化（减少 JSON 体积）
     if (this.autoCurrentFirst !== true) result.autoCurrentFirst = this.autoCurrentFirst
     if (this.autoSelectFirst !== true) result.autoSelectFirst = this.autoSelectFirst
-    if (this.selectionFollowsCurrent !== true) result.selectionFollowsCurrent = this.selectionFollowsCurrent
     if (this.treeConfig !== undefined) result.treeConfig = this.treeConfig
     if (this.autoLoad !== false) result.autoLoad = this.autoLoad
     if (this.autoRefresh !== false) result.autoRefresh = this.autoRefresh
