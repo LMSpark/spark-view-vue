@@ -126,6 +126,7 @@ export class AggregateDelegate {
    */
   recompute(rows: IDataRow[], selectedRows: IDataRow[]): void {
     const aggs = this.getAggregates()
+    if (Object.keys(aggs).length === 0) return
     this._summaryRow = computeAggregateRow(aggs, rows)
     this._selectionSummaryRow = selectedRows.length > 0
       ? computeAggregateRow(aggs, selectedRows)
@@ -139,8 +140,10 @@ export class AggregateDelegate {
    * @param selectedRows 当前选中行
    */
   recomputeSelection(selectedRows: IDataRow[]): void {
+    const aggs = this.getAggregates()
+    if (Object.keys(aggs).length === 0) return
     this._selectionSummaryRow = selectedRows.length > 0
-      ? computeAggregateRow(this.getAggregates(), selectedRows)
+      ? computeAggregateRow(aggs, selectedRows)
       : {}
     this.emitSelectionSummaryChanged()
   }
