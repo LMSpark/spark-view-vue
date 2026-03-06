@@ -73,7 +73,6 @@ function injectTableEvents(
   const table = dataSet.getTable(tableName)
   if (!table) return
   const view = table.getOrCreateView(viewId)
-  const originOpts = bindingId ? { originatorId: bindingId } : undefined
 
   // ── currentChange（单选行变化）──
   const originalCurrentChange = rule.on['currentChange']
@@ -85,7 +84,7 @@ function injectTableEvents(
     }
 
     if (currentRow === null) {
-      view.selection.setCurrentRow(null, originOpts)
+      view.selection.setCurrentRow(null, bindingId)
       return
     }
 
@@ -104,9 +103,9 @@ function injectTableEvents(
 
     // cleanRow 找到 → 直接使用；pk 存在但未找到 → 回退原始 currentRow；pk 缺失 → 静默跳过
     if (cleanRow !== null) {
-      view.selection.setCurrentRow(cleanRow, originOpts)
+      view.selection.setCurrentRow(cleanRow, bindingId)
     } else if (pk !== undefined) {
-      view.selection.setCurrentRow(currentRow, originOpts)
+      view.selection.setCurrentRow(currentRow, bindingId)
     }
   }
 
