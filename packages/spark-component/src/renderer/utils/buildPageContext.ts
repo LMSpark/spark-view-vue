@@ -65,7 +65,7 @@ export function buildPageContext(deps: PageContextDeps): PageContext {
     $query:       (selector: string) => pageContainer.value?.querySelector(selector) ?? null,
     $queryAll:    (selector: string) => {
       return pageContainer.value?.querySelectorAll(selector)
-        ?? ([] as unknown as NodeListOf<Element>)
+        ?? document.createDocumentFragment().querySelectorAll(selector)
     },
     $refreshData: createRefreshData(getDataSet),
 
