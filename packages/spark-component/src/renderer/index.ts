@@ -6,7 +6,7 @@
  * - SparkPageRenderer  SPARK 原生页面渲染组件（ComponentConfig 结构）
  * - SparkComponentRenderer  递归组件引擎
  * - usePageRenderer 页面编排 Composable
- * - 类型定义（Rule、FormCreateAPI、PageContext、PageConfig 等）
+ * - 类型定义（BindRule、Rule、FormCreateAPI、PageContext、PageConfig 等）
  *
  * 内部实现（不导出）：
  * - useCssScope、useRuleBinding — 由 usePageRenderer 组合调用
@@ -32,10 +32,14 @@ export type { UsePageDataSetOptions, UsePageDataSetReturn } from './composables/
 
 // 类型
 export type {
+  BindRule,
   Rule,
   FormCreateAPI,
   PageContext,
+  FCPageContext,
   PageConfig,
+  PageRendererProps,
+  FCPageRendererProps,
   PageRendererOptions,
   RuleBindingOptions,
 } from './types/index'

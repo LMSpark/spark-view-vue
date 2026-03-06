@@ -58,10 +58,14 @@ export type {
 } from './renderer/index.js'
 
 export type {
+  BindRule,
   Rule,
   FormCreateAPI,
   PageContext,
+  FCPageContext,
   PageConfig,
+  PageRendererProps,
+  FCPageRendererProps,
   PageRendererOptions,
   RuleBindingOptions,
 } from './renderer/index.js'

@@ -12,11 +12,11 @@
  *  每层递归维护 BindingContext（父组件类型 / DataSource / 字段名 / 模型权限），
  *  子组件通过上下文继承数据源和权限信息，实现「依据父组件类型适应」的智能渲染。
  *
- * 数据流：rule.json → bindDataToRules() → form-create 可渲染的 Rule[]
+ * 数据流：rule.json → bindDataToRules() → BindRule[]（框架无关运行时规则）
  */
 
 import { toErrorMessage } from '@spark-view/spark-utils'
-import type { Rule, RuleBindingOptions } from '../types'
+import type { BindRule, RuleBindingOptions } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { isDataKey, resolveDataKeyBinding, getViewFromRawKey } from '@spark-view/spark-data'
 import type { ComponentRegistry } from '../../core/types.js'
@@ -62,39 +62,31 @@ function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolea
   return _SELF_RESOLVING_FALLBACK.has(type)
 }
 
-/**
- * 检查组件 dataKey 是否已有专用处理逻辑（排除默认绑定逻辑）
- *
- * 包含：el-table / el-pagination / 全部值型表单组件 / r-* 自解析组件
- */
-function isDataKeyHandledType(type: string, registry?: ComponentRegistry): boolean {
-  return type === 'el-table'
-    || PAGINATION_TYPES.has(type)
-    || FORM_ELEMENT_TYPES.has(type)
-    || isSelfResolvingType(type, registry)
-}
-
 // ── 公共入口 ──────────────────────────────────────────────────────────────
 
 /**
  * 递归替换 rule 中的数据占位符和事件处理器（公共 API）
  */
-export function bindDataToRules(options: RuleBindingOptions): Rule[] {
-  return bindRulesRecursive(options, EMPTY_CONTEXT)
+export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
+  const callFunc = createFunctionCaller(options.pageFunctions)
+  return bindRulesRecursive(options, EMPTY_CONTEXT, callFunc)
 }
 
 // ── 递归编排 ──────────────────────────────────────────────────────────────
 
-function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingContext): Rule[] {
-  const { rules, pageFunctions, dataSet, registry } = options
-  const callFunc = createFunctionCaller(pageFunctions)
+function bindRulesRecursive(
+  options: RuleBindingOptions,
+  parentContext: BindingContext,
+  callFunc: (name: string, ...args: unknown[]) => unknown
+): BindRule[] {
+  const { rules, dataSet, registry } = options
 
   return rules.map(rule => {
     const newRule = { ...rule }
 
     // ── Render* 组件：已由 usePageRenderer 注册为响应式 Vue 组件，保持原样 ──
     if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
-      return newRule as Rule
+      return newRule as BindRule
     }
 
     // ── 事件处理器：字符串函数名 → callFunc 包装 ──
@@ -122,7 +114,7 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
     // ── r-* 自定义组件：透传 dataKey / name → props ──
     // 容器组件（self-resolving）：透传 dataKey（组件自行 consume PAGE_DATASET 解析）
     // 所有 r-* 组件：透传 name（字段名，与父组件 dataKey 叠加定位数据）
-    const ruleType = newRule.type as string
+    const ruleType = newRule.type
     if (isSelfResolvingType(ruleType, registry)) {
       if (newRule['dataKey'] !== undefined) {
         setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
@@ -134,24 +126,17 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
       setRuleProp(newRule, 'name', newRule.name)
     }
 
-    // ── el-table ──
-    if (newRule.type === 'el-table' && newRule['dataKey'] !== undefined) {
-      bindTableRule(newRule, dataSet, options.bindingId)
-    }
-
-    // ── el-pagination ──
-    if (PAGINATION_TYPES.has(newRule.type as string) && newRule['dataKey'] !== undefined) {
-      bindPaginationRule(newRule, dataSet)
-    }
-
-    // ── 值型表单组件（el-select / el-radio-group / el-input / el-switch 等全系列） ──
-    if (FORM_ELEMENT_TYPES.has(newRule.type as string) && newRule['dataKey'] !== undefined) {
-      bindFormElementRule(newRule, dataSet, parentContext, options.bindingId)
-    }
-
-    // ── 通用 dataKey → 文本内容 / DataView 注入（未被上述委托处理的组件） ──
-    if (newRule['dataKey'] !== undefined && !isDataKeyHandledType(newRule.type as string, registry)) {
-      bindGenericDataKey(newRule, dataSet)
+    // ── el-table / el-pagination / 表单组件 / 通用组件：dataKey 互斥委托 ──
+    if (newRule['dataKey'] !== undefined) {
+      if (ruleType === 'el-table') {
+        bindTableRule(newRule, dataSet, options.bindingId)
+      } else if (PAGINATION_TYPES.has(ruleType)) {
+        bindPaginationRule(newRule, dataSet)
+      } else if (FORM_ELEMENT_TYPES.has(ruleType)) {
+        bindFormElementRule(newRule, dataSet)
+      } else if (!isSelfResolvingType(ruleType, registry)) {
+        bindGenericDataKey(newRule, dataSet)
+      }
     }
 
     // ── 权限渲染（跨组件统一：按钮可见性 / 列隐藏 / 表单字段 disabled） ──
@@ -159,7 +144,7 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
 
     // ── 构建子级上下文（数据容器组件更新 dataSource，字段提供者更新 fieldName） ──
     let resolvedDataSource = null
-    if (DATA_CONTAINER_TYPES.has(newRule.type as string)) {
+    if (DATA_CONTAINER_TYPES.has(ruleType)) {
       const rawKey = newRule['dataKey'] as string | undefined
       if (rawKey && dataSet) {
         const binding = resolveDataKeyBinding(rawKey, dataSet)
@@ -170,7 +155,7 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
     }
     const childContext = buildChildContext(
       newRule.type,
-      newRule.props as Record<string, unknown> | undefined,
+      newRule.props,
       parentContext,
       resolvedDataSource
     )
@@ -178,12 +163,13 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
     // ── 递归处理子元素（传递更新后的上下文） ──
     if (newRule.children && Array.isArray(newRule.children)) {
       const childRules = newRule.children.filter(
-        (child: unknown): child is Rule => typeof child !== 'string'
+        (child: unknown): child is BindRule => typeof child !== 'string'
       )
       if (childRules.length > 0) {
         newRule.children = bindRulesRecursive(
           { ...options, rules: childRules },
-          childContext
+          childContext,
+          callFunc
         )
       }
     }
@@ -195,7 +181,7 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
     // 由容器组件自行通过 SparkComponentRenderer 渲染。
     if (isSelfResolvingType(ruleType, registry)) {
       const sparkKids = Array.isArray(newRule.children) ? newRule.children.filter(
-        (child: unknown): child is Rule => typeof child === 'object' && child !== null
+        (child: unknown): child is BindRule => typeof child === 'object' && child !== null
       ) : []
       if (sparkKids.length > 0) {
         if (import.meta.env.DEV) pageLogger.info('sparkChildren 注入', { type: ruleType, count: sparkKids.length })
@@ -216,7 +202,7 @@ function bindRulesRecursive(options: RuleBindingOptions, parentContext: BindingC
  * 普通 HTML 元素（div / span / el-tag 等）：将解析值转为字符串设置为 children
  * 同时注入 DataView 到 props（如适用）
  */
-function bindGenericDataKey(rule: Rule, dataSet: IDataSet | null): void {
+function bindGenericDataKey(rule: BindRule, dataSet: IDataSet | null): void {
   const rawKey = rule['dataKey'] as string
   if (!isDataKey(rawKey)) return
 

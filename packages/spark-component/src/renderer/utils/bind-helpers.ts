@@ -1,12 +1,12 @@
 /**
  * 规则绑定共享工具函数
  *
- * 被各组件委托（bind-table-delegate / bind-pagination-delegate / bind-select-delegate）
+ * 被各组件委托（bind-table-delegate / bind-pagination-delegate / bind-form-delegate）
  * 和主编排（bindRules.ts）共同引用。
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { Rule } from '../types'
+import type { BindRule } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { resolveRawKey, isDataKey } from '@spark-view/spark-data'
 
@@ -15,7 +15,7 @@ export const pageLogger = Logger('PageRenderer')
 /**
  * 安全设置 rule.props（初始化后赋值，避免重复 ??=）
  */
-export function setRuleProp(rule: Rule, key: string, value: unknown): void {
+export function setRuleProp(rule: BindRule, key: string, value: unknown): void {
   rule.props ??= {}
   rule.props[key] = value
 }

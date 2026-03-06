@@ -56,7 +56,7 @@ initializeSparkEJ2Components(registry)
 
 ```vue
 <script setup lang="ts">
-import { SparkComponentRenderer } from '@/features/spark/components'
+import { SparkComponentRenderer } from '@spark-view/spark-component'
 import type { SparkEJ2GridConfig } from '@/features/spark-ej2'
 
 const gridConfig: SparkEJ2GridConfig = {

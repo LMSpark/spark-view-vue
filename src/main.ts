@@ -209,7 +209,6 @@ async function startApp() {
         const About = (await import('./views/About.vue')).default
         const Settings = (await import('./views/Settings.vue')).default
         const CapabilityDemo = (await import('./views/CapabilityDemo.vue')).default
-        const ComponentRendererDemo = (await import('./views/ComponentRendererDemo.vue')).default
         const TenantConfigDemo = (await import('./views/TenantConfigDemo.vue')).default
         
         // 验证组件导入成功
@@ -218,7 +217,6 @@ async function startApp() {
           About,
           Settings,
           CapabilityDemo,
-          ComponentRendererDemo,
           TenantConfigDemo
         }
         
@@ -254,17 +252,6 @@ async function startApp() {
           meta: {
             title: '能力管理演示',
             icon: '🎯',
-            type: 'vue-component'
-          }
-        })
-        
-        router.addRoute({
-          path: '/component-renderer',
-          name: 'component-renderer',
-          component: ComponentRendererDemo,
-          meta: {
-            title: '组件渲染器演示',
-            icon: '🎨',
             type: 'vue-component'
           }
         })

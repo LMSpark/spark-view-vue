@@ -4,8 +4,8 @@
 
 ## 📋 前置要求
 
-- **Node.js** >= 18.0.0
-- **pnpm** >= 8.0.0
+- **Node.js** >= 20.0.0
+- **pnpm** >= 10.0.0
 - **TypeScript** >= 5.0 (推荐使用最新版本)
 
 ## 🚀 安装和运行
@@ -553,7 +553,7 @@ usersView?.events.on('stateChanged', () => {
 </template>
 
 <script setup lang="ts">
-import { PageRenderer } from '@spark-view/spark-renderer'
+import { FCPageRenderer } from '@spark-view/spark-component'
 
 const pageConfig = {
   pageId: 'home',
@@ -581,7 +581,6 @@ spark-view/
 │   ├── spark-component/    # 组件系统
 │   ├── spark-data/         # 数据管理
 │   ├── spark-page-config/  # 页面配置
-│   ├── spark-renderer/     # 页面渲染
 │   └── spark-utils/        # 工具函数
 ├── features/
 │   └── spark/              # SPARK 组件实现

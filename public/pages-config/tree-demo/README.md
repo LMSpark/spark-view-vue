@@ -98,7 +98,7 @@ RendererTree 需要**嵌套的层级结构**数据：
 ```javascript
 function handleNodeClick(data, node, component) {
   console.log('节点被点击:', data)
-  $data.selectedNode = data
+  _pageState.selectedNode = data
 }
 
 function handleNodeExpand(data, node, component) {

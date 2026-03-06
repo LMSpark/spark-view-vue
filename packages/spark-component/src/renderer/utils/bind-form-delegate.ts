@@ -18,7 +18,7 @@
  * ```json
  * {
  *   "type": "el-select",
- *   "dataKey": "DS@Categories@default@rows",
+ *   "dataKey": "Categories@rows",
  *   "props": { "valueField": "id", "labelField": "name" }
  * }
  * ```
@@ -26,13 +26,12 @@
  * 权限渲染由 bind-permission-delegate 负责（分离关注点）。
  */
 
-import type { Rule } from '../types'
+import type { BindRule } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import type { DataView } from '@spark-view/spark-data'
 import { isDataKey, getViewFromRawKey } from '@spark-view/spark-data'
 import { setRuleProp, resolveRuleDataKey, pageLogger } from './bind-helpers'
 import { wrapEvent } from './wrapEvent'
-import type { BindingContext } from './bind-context'
 
 // ── 组件分类 ──────────────────────────────────────────────────────────────
 
@@ -74,19 +73,12 @@ const BOOLEAN_TYPES = new Set(['el-switch'])
  *
  * 仅处理具有 dataKey 且在 FORM_ELEMENT_TYPES 中的组件。
  * 不具有 dataKey 的表单组件由 form-create 原生值系统管理。
- *
- * @param rule      当前规则节点
- * @param dataSet   页面级 DataSet
- * @param _context  父级绑定上下文（预留，当前未使用 — 权限由 permission delegate 负责）
- * @param _bindingId useRuleBinding 实例标识（预留扩展）
  */
 export function bindFormElementRule(
-  rule: Rule,
+  rule: BindRule,
   dataSet: IDataSet | null,
-  _context: BindingContext,
-  _bindingId?: string
 ): void {
-  const type = rule.type as string
+  const type = rule.type
   if (!FORM_ELEMENT_TYPES.has(type)) return
 
   const rawKey = rule['dataKey'] as string | undefined
@@ -101,7 +93,7 @@ export function bindFormElementRule(
       const options = mapOptionsFromView(view, rule)
       if (options) {
         // form-create 读取 rule.options，不是 rule.props.options
-        rule.options = options as Rule[]
+        rule['options'] = options
         mapped = true
       }
     }
@@ -109,7 +101,7 @@ export function bindFormElementRule(
     if (!mapped) {
       const resolved = resolveRuleDataKey(rawKey, dataSet)
       if (Array.isArray(resolved)) {
-        rule.options = resolved as Rule[]
+        rule['options'] = resolved
       }
     }
   }
@@ -135,7 +127,7 @@ export function bindFormElementRule(
  */
 function mapOptionsFromView(
   view: DataView,
-  rule: Rule
+  rule: BindRule
 ): Array<{ value: unknown; label: string }> | null {
   const rows = view.rows
   if (!Array.isArray(rows) || rows.length === 0) return null
@@ -170,7 +162,7 @@ function mapOptionsFromView(
  *  - el-checkbox-group / el-transfer → string[]（按 selectionDelimiter 拆分）
  *  - 其他 → string
  */
-function injectValueBinding(rule: Rule, view: DataView, type: string): void {
+function injectValueBinding(rule: BindRule, view: DataView, type: string): void {
   rule.props ??= {}
 
   // ── getter：DataView.value → modelValue（响应式 getter，form-create 每次渲染时读取） ──

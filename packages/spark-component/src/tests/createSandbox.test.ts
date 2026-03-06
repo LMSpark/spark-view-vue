@@ -18,13 +18,11 @@ import type { PageContext } from '../renderer/types'
 /** 创建最小化的 PageContext mock */
 function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
   return {
-    $api: null,
     $route: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
     $el: () => null,
     $query: () => null,
     $queryAll: () => document.querySelectorAll('.noop'),
     $dataSet: null,
-    $rebindRules: () => {},
     $refreshData: async () => {},
     $page: {
       showMessage: vi.fn(),
@@ -223,5 +221,29 @@ describe('createSandbox — compileFunctions', () => {
     const fns = compileFunctions(script, createMockContext())
     // V8 中 async function 声明在块内是块级作用域
     expect(fns).not.toHaveProperty('asyncHidden')
+  })
+
+  // ── SparkPageContext（无 form-create API）─────────────────────────────────
+
+  it('PageContext 不含 $api / $rebindRules，脚本仍可正常编译执行', () => {
+    const ctx = createMockContext()
+    const script = `
+      function getRoute() { return $route.path }
+      function callPage() { $page.showMessage('ok', 'success'); return true }
+    `
+    const fns = compileFunctions(script, ctx)
+    expect(fns['getRoute']!()).toBe('/')
+    expect(fns['callPage']!()).toBe(true)
+    expect(ctx.$page.showMessage).toHaveBeenCalledWith('ok', 'success')
+  })
+
+  it('PageContext 中访问 $api 返回 undefined（沙箱安全代理）', () => {
+    const ctx = createMockContext()
+    const script = `
+      function tryApi() { return typeof $api }
+    `
+    const fns = compileFunctions(script, ctx)
+    // $api 不在 PageContext 上，with 代理返回 undefined
+    expect(fns['tryApi']!()).toBe('undefined')
   })
 })

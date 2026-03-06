@@ -161,21 +161,18 @@ export const Spark = {
       registry,
       rootContext,
       createContext(config: Partial<ComponentContext> & { type: string }, parent?: ComponentContext): ComponentContext {
+        const parentCtx = parent ?? rootContext
         const ctx: ComponentContext = {
           id: config.id ?? `test-${++_testCounter}`,
           type: config.type,
-          parent: parent ?? rootContext,
+          parent: parentCtx,
           children: markRaw([] as ComponentContext[]),
           props: config.props ?? {},
           state: {},
           capabilities: markRaw(new Map<CapabilityName, unknown>())
         }
-        const p = ctx.parent
-        if (p && 'children' in p) {
-          const parentCtx = p as ComponentContext
-          if (parentCtx.children) parentCtx.children.push(ctx)
-          else parentCtx.children = markRaw([ctx])
-        }
+        parentCtx.children ??= markRaw([])
+        parentCtx.children.push(ctx)
         return ctx
       }
     }

@@ -3,12 +3,12 @@ name: Architecture Validation
 on:
   push:
     paths:
-      - 'packages/**'
-      - 'tools/verify-architecture.mjs'
+      - "packages/**"
+      - "tools/verify-architecture.mjs"
   pull_request:
     paths:
-      - 'packages/**'
-      - 'tools/verify-architecture.mjs'
+      - "packages/**"
+      - "tools/verify-architecture.mjs"
 
 jobs:
   validate-architecture:
@@ -19,12 +19,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

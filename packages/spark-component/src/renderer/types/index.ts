@@ -1,32 +1,56 @@
 /**
- * 渲染器类型定义 (SOLID原则应用)
- * 
- * 类型层次说明：
- * - RuleConfig: 配置文件中的规则格式（来自 @spark-view/spark-page-config）
- * - Rule: 运行时的规则格式（FormCreate 官方类型）
- * 
- * 转换流程：
- * 1. 配置加载器读取 rule.json → RuleConfig[]
- * 2. PageRenderer 接收 RuleConfig[] → 转换为 Rule[]
- * 3. 绑定和渲染使用 Rule[]（FormCreate 标准格式）
+ * 渲染器类型定义
+ *
+ * - BindRule: 框架无关的运行时规则类型（绑定管线 + SPARK 渲染线共用）
+ * - Rule: FormCreate 官方类型（仅 FC 渲染线的 form-create 边界使用）
+ * - FormCreateAPI: form-create API 精简接口
+ * - PageContext / FCPageContext: 脚本沙箱上下文
+ * - PageRendererOptions: FC 页面渲染器配置
+ * - RuleBindingOptions: 规则绑定配置
  */
 
 import type { h as VueH } from 'vue'
-import type { IDataSet } from '@spark-view/spark-data'
-import type { SparkData } from '@spark-view/spark-data'
-import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
+import type { IDataSet, SparkData } from '@spark-view/spark-data'
+import type { ConfigLoader, PageConfig, IPageRoute, IFormAPI } from '@spark-view/spark-page-config'
 import type { IPageServiceCapability } from '@spark-view/spark-utils'
-import type { IScriptContext } from '@spark-view/spark-page-config'
 import type { ComponentRegistry } from '../../core/types.js'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
 export type { PageConfig }
 
+// ── 框架无关的运行时规则类型 ───────────────────────────────────────────────────
+
+/**
+ * 框架无关的运行时规则类型（绑定管线使用）
+ *
+ * `RuleConfig`（JSON 配置输入）经过 `bindDataToRules` 处理后的运行时表示：
+ * - `on`: 字符串函数名 → 可调用函数
+ * - `props`: 注入 DataView / 响应式 getter 等运行时对象
+ * - `children`: 子规则递归处理后的运行时数组
+ *
+ * FC 渲染器在 form-create 边界将 `BindRule[]` 向下转型为 {@link Rule}。
+ * SPARK 渲染器将 `BindRule` 向下转型为 `ComponentConfig`。
+ */
+export interface BindRule {
+  type: string
+  name?: string
+  props?: Record<string, unknown>
+  children?: Array<BindRule | string>
+  on?: Record<string, unknown>
+  /** 索引签名覆盖 dataKey / display / options / style / class / slots 等动态属性 */
+  [key: string]: unknown
+}
+
+// ── FC 专用的 form-create 类型 ─────────────────────────────────────────────
+
 // 导入 FormCreate 官方类型
 import type { Rule as FormCreateRule } from '@form-create/element-ui'
 
 /**
- * 页面规则类型（使用 FormCreate 官方类型）
+ * FC 渲染线专用规则类型（form-create 官方类型）
+ *
+ * 仅在 form-create 边界使用（FCPageRenderer 模板中 `:rule` prop 向下转型）。
+ * 绑定管线（bindRules / bind-*-delegate）统一使用 {@link BindRule}。
  *
  * 使用 `interface extends` 而非 `type =`，创建名义类型边界：
  * form-create 的 Rule 泛型包含递归子类型（Rule → Creator → Rule），
@@ -75,247 +99,94 @@ export interface FormCreateAPI {
 }
 
 /**
- * 页面脚本运行时上下文接口（完整沙箱 API）。
+ * 页面脚本运行时上下文（两条渲染线共享基础）。
  *
- * 继承 `IScriptContext`（spark-utils 中的框架无关核心契约），
- * 在渲染层用具体类型覆盖泛型字段，并附加 `SparkData` / `h` 两个渲染层专有注入。
- *
- * **稳定 API（继承自 IScriptContext）**：
- * `$api` / `$route` / `$el` / `$query` / `$queryAll` /
- * `$rebindRules` / `$refreshData` / `$dataSet` / `$page`
- *
- * **渲染层附加（非脚本 API 核心契约）**：
- * `SparkData`（数据工具命名空间）/ `h`（Vue 渲染函数，仅 Render* 函数使用）
+ * 不含 form-create 特有的 `$api` / `$rebindRules`，
+ * SPARK 原生渲染线直接使用此类型，FC 渲染线通过 {@link FCPageContext} 扩展。
  */
-export interface PageContext extends IScriptContext {
-  /** 页面级 DataSet 实例（渲染层注入，类型来自 @spark-view/spark-data） */
+export interface PageContext {
   $dataSet: IDataSet | null
-
-  /**
-   * @override 覆盖 IScriptContext.$page：从结构等价的 `IPageServiceInScript` 精化为
-   * `IPageServiceCapability`（能力系统的官方接口，与 PAGE_SERVICE 能力键匹配）。
-   */
+  $route: IPageRoute
+  $el: () => HTMLElement | null
+  $query: (selector: string) => HTMLElement | null
+  $queryAll: (selector: string) => NodeListOf<Element>
+  $refreshData: (key?: string) => Promise<void>
   $page: IPageServiceCapability
-
-  /** SPARK 数据工具命名空间（`createTreeManager` 等工具），沙箱内直接可用 */
   SparkData: typeof SparkData
-
-  /**
-   * Vue `h` 函数 — 仅供 `Render*` 渲染函数使用，业务逻辑不应依赖。
-   * 如需显示消息/导航，请使用 `$page`。
-   */
   h: typeof VueH
 }
 
 /**
- * PageRenderer 组件选项接口
- * 
- * 用于配置页面渲染器的行为，包括配置加载、样式隔离、数据管理等功能。
- * 
- * @interface PageRendererOptions
+ * FC 渲染器脚本上下文（含 form-create API）。
+ *
+ * 扩展 {@link PageContext}，追加 `$api`（form-create 实例）和
+ * `$rebindRules`（触发 form-create 规则重建）。
  */
-export interface PageRendererOptions {
-  /**
-   * 配置加载器实例
-   * 用于从本地或远程加载页面配置（rule.json, pagedata.json, script.js）
-   * 
-   * @type {ConfigLoader}
-   * @optional
-   * @example
-   * ```typescript
-   * import { SparkPageConfig } from '@spark-view/spark-page-config'
-   * 
-   * const configLoader = SparkPageConfig.createLoader({
-   *   source: 'local',
-   *   apiBaseUrl: '/api/config'
-   * })
-   * ```
-   */
+export interface FCPageContext extends PageContext {
+  $api: IFormAPI | null
+  $rebindRules: () => void
+}
+
+/**
+ * 两条渲染线共享的页面渲染器 Props 基接口
+ *
+ * FC 渲染线通过 {@link FCPageRendererProps} 扩展（追加 formCreateOptions）。
+ * SPARK 渲染线直接使用此接口（与 FC 共享完整加载流水线）。
+ */
+export interface PageRendererProps {
+  /** 配置加载器实例 */
   configLoader?: ConfigLoader
-  
-  /**
-   * 页面唯一标识符（优先级最高）
-   * 如果提供，则直接使用此 ID 加载配置，忽略路由参数
-   * 
-   * @type {string}
-   * @optional
-   * @example 'user-list' | 'dashboard' | 'settings'
-   */
+  /** 页面唯一标识符（优先级最高） */
   pageId?: string
-  
-  /**
-   * 页面配置对象（直接传入，跳过加载）
-   * 提供此选项时，configLoader 和 pageId 将被忽略
-   * 
-   * @type {PageConfig}
-   * @optional
-   * @example
-   * ```typescript
-   * {
-   *   pageId: 'user-form',
-   *   rule: [...],
-   *   data: { users: [] },
-   *   style: '.user-form { padding: 20px; }',
-   *   script: 'console.log("Page loaded");'
-   * }
-   * ```
-   */
+  /** 页面配置对象（直接传入，跳过加载） */
   pageConfig?: PageConfig
-  
-  /**
-   * FormCreate 配置选项
-   * 传递给 form-create 的额外配置，用于自定义表单行为
-   * 
-   * @type {Record<string, unknown>}
-   * @optional
-   * @default {}
-   * @see https://www.form-create.com/v3/guide/global.html
-   * @example
-   * ```typescript
-   * {
-   *   form: { labelWidth: '120px', size: 'large' },
-   *   submitBtn: false,
-   *   resetBtn: false
-   * }
-   * ```
-   */
-  formCreateOptions?: Record<string, unknown>
-  
-  /**
-   * 是否启用 CSS 作用域隔离
-   * 开启后，页面样式会自动添加作用域前缀，避免全局污染
-   * 
-   * @type {boolean}
-   * @optional
-   * @default true
-   * @example true | false
-   */
+  /** 是否启用 CSS 作用域隔离 @default true */
   enableCssScope?: boolean
-  
-  /**
-   * 是否启用 DataSet 自动初始化
-   * 开启后，根据页面配置的 relations 自动创建 DataSet 实例
-   * 
-   * @type {boolean}
-   * @optional
-   * @default true
-   * @example true | false
-   */
+  /** 是否启用 DataSet 自动初始化 @default true */
   enableDataSet?: boolean
-  
-  /**
-   * UI 消息服务接口（可注入替代 ElementPlus）
-   * 用于显示成功、警告、错误等提示消息，便于测试和 UI 框架解耦
-   * 
-   * @type {Object}
-   * @optional
-   * @default ElementPlus Message
-   * @example
-   * ```typescript
-   * {
-   *   success: (msg) => console.log('✓', msg),
-   *   warning: (msg) => console.warn('⚠', msg),
-   *   error: (msg) => console.error('✗', msg),
-   *   info: (msg) => console.info('ℹ', msg)
-   * }
-   * ```
-   */
+  /** UI 消息服务接口（可注入替代 ElementPlus） */
   messageService?: {
     success: (msg: string) => void
     warning: (msg: string) => void
     error: (msg: string) => void
     info: (msg: string) => void
   }
-  
-  /**
-   * UI 确认对话框服务接口（可注入替代 ElementPlus）
-   * 用于显示确认和提示对话框，便于测试和 UI 框架解耦
-   * 
-   * @type {Object}
-   * @optional
-   * @default ElementPlus MessageBox
-   * @example
-   * ```typescript
-   * {
-   *   confirm: async (msg, title) => {
-   *     return window.confirm(`${title}: ${msg}`)
-   *   },
-   *   alert: async (msg, title) => {
-   *     window.alert(`${title}: ${msg}`)
-   *   }
-   * }
-   * ```
-   */
+  /** UI 确认对话框服务接口（可注入替代 ElementPlus） */
   confirmService?: {
     confirm: (msg: string, title?: string) => Promise<unknown>
     alert: (msg: string, title?: string) => Promise<unknown>
   }
-  
-  /**
-   * 页面加载前钩子函数
-   * 在开始加载页面配置之前调用，可用于权限检查、数据预加载等
-   * 
-   * @type {Function}
-   * @optional
-   * @param {string} pageId - 即将加载的页面 ID
-   * @returns {void | Promise<void>}
-   * @example
-   * ```typescript
-   * async (pageId) => {
-   *   console.log('Loading page:', pageId)
-   *   // 可以在这里做权限检查
-   *   if (!hasPermission(pageId)) {
-   *     throw new Error('No permission')
-   *   }
-   * }
-   * ```
-   */
+  /** 页面加载前钩子函数 */
   beforeLoad?: (pageId: string) => void | Promise<void>
-  
-  /**
-   * 页面加载后钩子函数
-   * 在页面配置加载完成、规则绑定完成后调用
-   * 
-   * @type {Function}
-   * @optional
-   * @param {PageConfig} config - 加载的页面配置对象
-   * @returns {void | Promise<void>}
-   * @example
-   * ```typescript
-   * async (config) => {
-   *   console.log('Page loaded:', config.pageId)
-   *   // 可以在这里做额外的初始化
-   *   await initializePageData(config.data)
-   * }
-   * ```
-   */
+  /** 页面加载后钩子函数 */
   afterLoad?: (config: PageConfig) => void | Promise<void>
-  
-  /**
-   * 错误处理函数
-   * 当页面加载或渲染过程中发生错误时调用
-   * 
-   * @type {Function}
-   * @optional
-   * @param {Error} error - 错误对象
-   * @returns {void}
-   * @example
-   * ```typescript
-   * (error) => {
-   *   console.error('Page error:', error)
-   *   // 可以上报错误到监控系统
-   *   reportError(error)
-   * }
-   * ```
-   */
+  /** 错误处理函数 */
   onError?: (error: Error) => void
 }
+
+/**
+ * FC 渲染线页面渲染器 Props（含 form-create 配置）
+ *
+ * 扩展 {@link PageRendererProps}，追加 `formCreateOptions`。
+ *
+ * @deprecated 请使用 {@link FCPageRendererProps}，`PageRendererOptions` 为旧名保留的别名。
+ */
+export interface FCPageRendererProps extends PageRendererProps {
+  /** FormCreate 配置选项 */
+  formCreateOptions?: Record<string, unknown>
+}
+
+/**
+ * 向后兼容别名 — 原 FC 渲染线 Props 类型
+ * @deprecated 使用 {@link FCPageRendererProps}
+ */
+export type PageRendererOptions = FCPageRendererProps
 
 /**
  * Rule 绑定选项
  */
 export interface RuleBindingOptions {
-  rules: Rule[]
+  rules: BindRule[]
   pageFunctions: Record<string, (...args: unknown[]) => unknown>
   dataSet: IDataSet | null  // DataSet 实例（依赖接口而非具体类）
   /** 组件注册表（可选）——用于查询 dataKey 行为元数据，替代硬编码的组件白名单 */

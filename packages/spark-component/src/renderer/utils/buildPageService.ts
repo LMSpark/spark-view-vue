@@ -52,11 +52,11 @@ export function buildPageService(
       title?: string,
       options?: { confirmText?: string; cancelText?: string; type?: 'warning' | 'info' | 'error' | 'success' }
     ) => {
-      if (overrides?.confirmService) {
-        await overrides.confirmService.confirm(message, title)
-        return true
-      }
       try {
+        if (overrides?.confirmService) {
+          await overrides.confirmService.confirm(message, title)
+          return true
+        }
         const confirmText: string = options?.confirmText ?? '确定'
         const cancelText: string  = options?.cancelText  ?? '取消'
         const confirmType          = options?.type ?? 'warning'
@@ -108,6 +108,10 @@ export function buildPageService(
     ) => {
       const alertType = options?.type ?? 'info'
       try {
+        if (overrides?.confirmService) {
+          await overrides.confirmService.alert(message, title)
+          return
+        }
         await ElMessageBox.alert(message, title ?? '提示', {
           confirmButtonText: '确定',
           type: alertType,

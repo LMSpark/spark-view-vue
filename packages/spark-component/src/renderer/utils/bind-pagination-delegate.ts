@@ -10,7 +10,7 @@
  * ```json
  * {
  *   "type": "el-pagination",
- *   "dataKey": "DS@Orders@default@rows",
+ *   "dataKey": "Orders@rows",
  *   "props": {
  *     "layout": "total, sizes, prev, pager, next",
  *     "pageSizes": [10, 20, 50, 100]
@@ -19,10 +19,10 @@
  * ```
  */
 
-import type { Rule } from '../types'
+import type { BindRule } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { parseDataKey } from '@spark-view/spark-data'
-import { setRuleProp, pageLogger } from './bind-helpers'
+import { pageLogger } from './bind-helpers'
 import { wrapEvent } from './wrapEvent'
 
 /**
@@ -32,7 +32,7 @@ import { wrapEvent } from './wrapEvent'
  * 事件方向：current-change / size-change → DataView.setPage / setPageSize
  */
 export function bindPaginationRule(
-  rule: Rule,
+  rule: BindRule,
   dataSet: IDataSet | null
 ): void {
   const rawKey = rule['dataKey'] as string | undefined
@@ -49,13 +49,25 @@ export function bindPaginationRule(
   // 给 pagination 一个 name 供 formApi 查找
   rule.name ??= `pagination_${tableName}_${viewId}`
 
-  // 绑定分页属性（DataView 是 reactive proxy，属性读取会创建 Vue 响应式依赖）
-  setRuleProp(rule, 'currentPage', view.page)
-  setRuleProp(rule, 'pageSize', view.pageSize)
-  setRuleProp(rule, 'total', view.total)
+  // 响应式 getter — DataView 是 reactive proxy，每次读取返回最新值（与 bind-form-delegate 对齐）
+  rule.props ??= {}
+  Object.defineProperty(rule.props, 'currentPage', {
+    get: () => view.page,
+    enumerable: true,
+    configurable: true,
+  })
+  Object.defineProperty(rule.props, 'pageSize', {
+    get: () => view.pageSize,
+    enumerable: true,
+    configurable: true,
+  })
+  Object.defineProperty(rule.props, 'total', {
+    get: () => view.total,
+    enumerable: true,
+    configurable: true,
+  })
 
   // 设置合理默认布局（用户配置覆盖）
-  rule.props ??= {}
   rule.props['layout'] ??= 'total, sizes, prev, pager, next'
   rule.props['pageSizes'] ??= [10, 20, 50, 100]
 

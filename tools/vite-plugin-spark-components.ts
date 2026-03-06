@@ -162,17 +162,13 @@ const DEFAULT_OPTIONS: Required<SparkComponentsPluginOptions> = {
   syncComponents: [
     'PageRenderer',
     'SparkComponentRenderer',
-    'ErrorFallback',
-    'UserGrid',
-    'UserRow',
-    'UserField'
+    'ErrorFallback'
   ],
   asyncComponents: [
     '*Demo',
     '*EJ2*',
     'Capability*',
-    'Tree*',
-    'JsonRenderer*'
+    'Tree*'
   ],
   sizeThreshold: 50,
   exclude: [
@@ -393,8 +389,7 @@ class ComponentAnalyzer {
    */
   generateCode(): string {
     // 确保在每次生成前都执行一次扫描，这样即便某些组件被删除或者
-    // HMR 未能触发也能保持最新状态。之前的问题就是删除 JsonRendererDemo
-    // 后虚拟模块未更新导致残留引用。
+    // HMR 未能触发也能保持最新状态。
     this.scan()
 
     const syncComponents = this.components.filter(c => c.strategy === 'sync')

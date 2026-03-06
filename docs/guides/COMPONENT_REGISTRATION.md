@@ -69,13 +69,13 @@ declare module 'virtual:spark-components' {
 
 ```typescript
 // virtual:spark-components (自动生成)
-import pageRenderer from './features/spark/components/PageRenderer.vue'
+import pageRenderer from './packages/spark-component/src/renderer/spark/SparkComponentRenderer.vue'
 const sparkEj2Grid = () => import('./features/spark-ej2/components/SparkEJ2Grid.vue')
 
 export function registerComponents() {
   const registry = Spark.getRegistry()
-  registry.register('page-renderer', pageRenderer)       // 同步
-  registry.register('spark-ej2-grid', sparkEj2Grid)      // 异步
+  registry.register('spark-component-renderer', pageRenderer)  // 同步
+  registry.register('spark-ej2-grid', sparkEj2Grid)            // 异步
   return { total: 2, sync: 1, async: 1 }
 }
 ```
@@ -99,8 +99,7 @@ app.use(Spark.createPlugin())
 const reg = Spark.createRegister(import.meta.glob('./features/**/*.vue'))
 reg.registerAll({
   'spark-ej2-grid':   './features/spark-ej2/components/SparkEJ2Grid.vue',
-  'spark-ej2-column': './features/spark-ej2/components/SparkEJ2Column.vue',
-  'page-renderer':    './features/spark/components/PageRenderer.vue'
+  'spark-ej2-column': './features/spark-ej2/components/SparkEJ2Column.vue'
 })
 
 app.mount('#app')

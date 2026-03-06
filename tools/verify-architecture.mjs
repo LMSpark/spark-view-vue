@@ -76,19 +76,19 @@ for (const file of srcFiles) {
   checkFile(file, [
     {
       pattern: /class\s+\w*Renderer/,
-      message: '不应该实现 Renderer 类（应使用 @spark-view/spark-renderer）'
+      message: '不应该实现 Renderer 类（应使用 @spark-view/spark-component）'
     },
     {
       pattern: /function\s+render[A-Z]\w*/,
-      message: '不应该实现 render* 函数（应使用 @spark-view/spark-renderer）'
+      message: '不应该实现 render* 函数（应使用 @spark-view/spark-component）'
     },
     {
       pattern: /function\s+compileTemplate/,
-      message: '不应该实现模板编译（应使用 @spark-view/spark-renderer）'
+      message: '不应该实现模板编译（应使用 @spark-view/spark-component）'
     },
     {
       pattern: /function\s+createSandbox/,
-      message: '不应该实现沙箱（应使用 @spark-view/spark-renderer）'
+      message: '不应该实现沙箱（应使用 @spark-view/spark-component）'
     }
   ])
 }
@@ -217,13 +217,12 @@ if (errors === 0) {
   console.log('  │')
   console.log('  ├─ spark-app (基础设施)')
   console.log('  ├── spark-data (数据管理)')
-  console.log('  ├── spark-component (组件系统 ⭐)')  
+  console.log('  ├── spark-component (组件系统 + 页面渲染引擎 ⭐)')
   console.log('  ├── spark-page-config (页面配置)')
-  console.log('  └── spark-renderer (页面渲染引擎 ⭐)')
-  console.log('       └─ 整合以上所有包的能力')
+  console.log('  └── spark-data (数据管理)')
   console.log('')
   console.log('主应用 (src/) 使用：')
-  console.log('  • PageRenderer from @spark-view/spark-renderer')
+  console.log('  • PageRenderer from @spark-view/spark-component')
   console.log('  • SparkApp from @spark-view/spark-app')
   console.log('')
   process.exit(0)

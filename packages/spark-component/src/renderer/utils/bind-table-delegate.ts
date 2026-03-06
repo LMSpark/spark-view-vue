@@ -9,7 +9,7 @@
  * DataSet → UI 方向由 sync-table-delegate 负责（useRuleBinding 调用）。
  */
 
-import type { Rule } from '../types'
+import type { BindRule } from '../types'
 import type { IDataRow, IDataSet } from '@spark-view/spark-data'
 import { parseDataKey, resolveDataKeyBinding, RequestState } from '@spark-view/spark-data'
 import { setRuleProp, pageLogger } from './bind-helpers'
@@ -23,7 +23,7 @@ import { wrapEvent } from './wrapEvent'
  * @param bindingId useRuleBinding 实例标识（originatorId 回路防护）
  */
 export function bindTableRule(
-  rule: Rule,
+  rule: BindRule,
   dataSet: IDataSet | null,
   bindingId?: string
 ): void {
@@ -58,7 +58,7 @@ export function bindTableRule(
  * 其他同级 binding 实例仍正常进行 DataSet→UI 同步。
  */
 function injectTableEvents(
-  rule: Rule,
+  rule: BindRule,
   dataSet: IDataSet,
   bindingId?: string
 ): void {
@@ -73,6 +73,7 @@ function injectTableEvents(
   const table = dataSet.getTable(tableName)
   if (!table) return
   const view = table.getOrCreateView(viewId)
+  const originOpts = bindingId ? { originatorId: bindingId } : undefined
 
   // ── currentChange（单选行变化）──
   const originalCurrentChange = rule.on['currentChange']
@@ -84,7 +85,7 @@ function injectTableEvents(
     }
 
     if (currentRow === null) {
-      view.selection.setCurrentRow(null, bindingId ? { originatorId: bindingId } : undefined)
+      view.selection.setCurrentRow(null, originOpts)
       return
     }
 
@@ -103,9 +104,9 @@ function injectTableEvents(
 
     // cleanRow 找到 → 直接使用；pk 存在但未找到 → 回退原始 currentRow；pk 缺失 → 静默跳过
     if (cleanRow !== null) {
-      view.selection.setCurrentRow(cleanRow, bindingId ? { originatorId: bindingId } : undefined)
+      view.selection.setCurrentRow(cleanRow, originOpts)
     } else if (pk !== undefined) {
-      view.selection.setCurrentRow(currentRow, bindingId ? { originatorId: bindingId } : undefined)
+      view.selection.setCurrentRow(currentRow, originOpts)
     }
   }
 
@@ -129,8 +130,8 @@ function injectTableEvents(
   })
 
   // ── 加载状态指令（v-loading ← DataView.requestState）──
-  // form-create Rule.directives 类型为 { [name: string]: Directive }
-  rule.directives ??= {}
+  // BindRule 索引签名允许 directives 属性注入
+  rule['directives'] ??= {}
   const loadingDirective = {
     mounted(el: HTMLElement) {
       // 初始加载状态由 el-table 的 v-loading 指令处理
@@ -146,5 +147,5 @@ function injectTableEvents(
       }
     },
   }
-  ;(rule.directives as Record<string, unknown>)['loading'] = loadingDirective
+  ;(rule['directives'] as Record<string, unknown>)['loading'] = loadingDirective
 }
