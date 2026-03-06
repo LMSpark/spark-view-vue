@@ -55,7 +55,7 @@ const PAGINATION_TYPES = new Set(['el-pagination'])
  * 检查组件是否为自解析类型（优先查询注册表 meta，回退到核心列表）
  */
 function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolean {
-  if (registry?.has(type)) {
+  if (registry) {
     const behavior = registry.get(type)?.meta?.['dataKey'] as string | undefined
     if (behavior !== undefined) return behavior === 'self-resolve'
   }
@@ -180,9 +180,8 @@ function bindRulesRecursive(
     // 将已递归处理的 children 移入 sparkChildren prop，
     // 由容器组件自行通过 SparkComponentRenderer 渲染。
     if (isSelfResolvingType(ruleType, registry)) {
-      const sparkKids = Array.isArray(newRule.children) ? newRule.children.filter(
-        (child: unknown): child is BindRule => typeof child === 'object' && child !== null
-      ) : []
+      // bindRulesRecursive 返回 BindRule[]（全为对象），无需二次类型过滤
+      const sparkKids = Array.isArray(newRule.children) ? newRule.children as BindRule[] : []
       if (sparkKids.length > 0) {
         if (import.meta.env.DEV) pageLogger.info('sparkChildren 注入', { type: ruleType, count: sparkKids.length })
         setRuleProp(newRule, 'sparkChildren', sparkKids)
