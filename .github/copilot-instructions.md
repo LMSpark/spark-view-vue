@@ -1453,8 +1453,9 @@ node scripts/publish-packages.mjs
   ForEach-Object { $v = npm view "@spark-view/$_" version --registry https://registry.npmjs.org 2>$null; Write-Host "$_ = $v" }
 
 # ── Step 5: 提交 + 推送 ──
+$ver = (Get-Content "packages\spark-utils\package.json" | ConvertFrom-Json).version
 git add -A
-git commit -m "chore: bump all packages to vX.Y.Z"
+git commit -m "chore: bump all packages to v$ver"
 git push
 ```
 

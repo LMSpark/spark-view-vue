@@ -98,10 +98,15 @@ node scripts/publish-packages.mjs
   }
 
 # ── Step 5: 提交 + 推送 ──
+# 先把版本号查出来，写进 commit message（替换 X.Y.Z）
+$ver = (Get-Content "packages\spark-utils\package.json" | ConvertFrom-Json).version
 git add -A
-git commit -m "chore: bump all packages to vX.Y.Z"
+git commit -m "chore: bump all packages to v$ver"
 git push
 ```
+
+> **Husky 废弃警告**：commit 时会看到 `husky - DEPRECATED` 提示，属正常现象，不影响提交。
+> pre-commit hook 会自动执行 `lint + typecheck`，通过后才会提交成功。
 
 ---
 
