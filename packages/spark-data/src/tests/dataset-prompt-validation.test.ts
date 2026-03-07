@@ -754,3 +754,191 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
     expect(codes2).toContain('P003')
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Case H：仓库库存管理（外部 AI 按 v1.9 提示词生成，结构验证基准）
+// 场景：Warehouses(1:N)Inventories，Warehouses(1:N)Inbounds，两条 relation
+// 覆盖：number/string/date 类型、多分支 computeExpression、aggregates 直接键名
+// ─────────────────────────────────────────────────────────────────────────────
+const CASE_H_JSON = {
+  dataset: {
+    dataSetName: 'WarehouseStockDataSet',
+    tables: {
+      Warehouses: {
+        columns: [
+          { name: 'id',      type: 'number', isPrimaryKey: true, label: '仓库ID'   },
+          { name: 'name',    type: 'string',                     label: '仓库名称' },
+          { name: 'city',    type: 'string',                     label: '城市'     },
+          { name: 'manager', type: 'string',                     label: '负责人'   },
+        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1, name: '华东仓', city: '上海', manager: '张伟' },
+              { id: 2, name: '华南仓', city: '广州', manager: '李强' },
+              { id: 3, name: '华北仓', city: '北京', manager: '王芳' },
+            ],
+          },
+        },
+      },
+      Inventories: {
+        columns: [
+          { name: 'id',          type: 'number', isPrimaryKey: true, label: '库存ID'         },
+          { name: 'warehouseId', type: 'number',                     label: '仓库ID'         },
+          { name: 'productName', type: 'string',                     label: '商品名称'       },
+          { name: 'sku',         type: 'string',                     label: 'SKU编号'        },
+          { name: 'quantity',    type: 'number',                     label: '当前库存数量'   },
+          { name: 'unit',        type: 'string',                     label: '单位'           },
+          { name: 'minQuantity', type: 'number',                     label: '最低库存预警值' },
+          {
+            name:              'status',
+            type:              'string',
+            label:             '库存状态',
+            computeExpression: "if (quantity <= minQuantity) return '预警'; return '正常';",
+          },
+        ],
+        views: {
+          default: {
+            rows: [
+              { id: 101, warehouseId: 1, productName: '智能手机',   sku: 'PHN-001', quantity: 50,  unit: '件', minQuantity: 20 },
+              { id: 102, warehouseId: 1, productName: '笔记本电脑', sku: 'NTB-002', quantity: 8,   unit: '件', minQuantity: 10 },
+              { id: 103, warehouseId: 2, productName: '平板电脑',   sku: 'TAB-003', quantity: 30,  unit: '件', minQuantity: 15 },
+              { id: 104, warehouseId: 2, productName: '充电器',     sku: 'CHG-004', quantity: 5,   unit: '箱', minQuantity: 5  },
+              { id: 105, warehouseId: 3, productName: '耳机',       sku: 'HPH-005', quantity: 100, unit: '件', minQuantity: 30 },
+            ],
+          },
+        },
+      },
+      Inbounds: {
+        columns: [
+          { name: 'id',          type: 'number', isPrimaryKey: true, label: '入库ID'   },
+          { name: 'warehouseId', type: 'number',                     label: '仓库ID'   },
+          { name: 'productName', type: 'string',                     label: '商品名称' },
+          { name: 'inQuantity',  type: 'number',                     label: '入库数量' },
+          { name: 'inDate',      type: 'date',                       label: '入库日期' },
+          { name: 'supplier',    type: 'string',                     label: '供应商'   },
+        ],
+        views: {
+          default: {
+            rows: [
+              { id: 101, warehouseId: 1, productName: '智能手机',   inQuantity: 100, inDate: '2024-03-01', supplier: '华为供应链' },
+              { id: 102, warehouseId: 1, productName: '笔记本电脑', inQuantity: 30,  inDate: '2024-03-05', supplier: '联想科技'   },
+              { id: 103, warehouseId: 2, productName: '平板电脑',   inQuantity: 50,  inDate: '2024-03-03', supplier: '苹果授权商' },
+              { id: 104, warehouseId: 3, productName: '耳机',       inQuantity: 200, inDate: '2024-03-10', supplier: '索尼代理'   },
+            ],
+            aggregates: {
+              inQuantity: { type: 'sum', label: '入库总数量' },
+            },
+          },
+        },
+      },
+    },
+    relations: [
+      {
+        relationName:   'WarehouseInventories',
+        parentTable:    'Warehouses',
+        childTable:     'Inventories',
+        childField:     'warehouseId',
+        dependencyType: 'currentRow',
+      },
+      {
+        relationName:   'WarehouseInbounds',
+        parentTable:    'Warehouses',
+        childTable:     'Inbounds',
+        childField:     'warehouseId',
+        dependencyType: 'currentRow',
+      },
+    ],
+  },
+}
+
+describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', () => {
+  it('H-1: fromPageData 成功实例化，三张表均存在', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    expect(ds).toBeTruthy()
+    expect(ds.getTable('Warehouses')).toBeTruthy()
+    expect(ds.getTable('Inventories')).toBeTruthy()
+    expect(ds.getTable('Inbounds')).toBeTruthy()
+  })
+
+  it('H-2: 各表行数正确（Warehouses=3, Inventories=5, Inbounds=4）', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    expect(ds.getView('Warehouses')!.rows).toHaveLength(3)
+    expect(ds.getView('Inventories')!.rows).toHaveLength(5)
+    expect(ds.getView('Inbounds')!.rows).toHaveLength(4)
+  })
+
+  it('H-3: 计算列 status 正确区分正常/预警', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    const rows = ds.getView('Inventories')!.rows
+    // quantity=50 > minQuantity=20 → 正常
+    expect(f(rows[0], 'status')).toBe('正常')
+    // quantity=8 <= minQuantity=10 → 预警
+    expect(f(rows[1], 'status')).toBe('预警')
+    // quantity=30 > minQuantity=15 → 正常
+    expect(f(rows[2], 'status')).toBe('正常')
+    // quantity=100 > minQuantity=30 → 正常
+    expect(f(rows[4], 'status')).toBe('正常')
+  })
+
+  it('H-4: status 边界值 quantity===minQuantity → 预警', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    const rows = ds.getView('Inventories')!.rows
+    // id=104: quantity=5, minQuantity=5 → 5<=5 → 预警
+    expect(f(rows[3], 'status')).toBe('预警')
+  })
+
+  it('H-5: 两条 relation 均已注册', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    const relations = ds.relations ?? []
+    const names = relations.map(r => r.relationName)
+    expect(names).toContain('WarehouseInventories')
+    expect(names).toContain('WarehouseInbounds')
+  })
+
+  it('H-6: 级联 WarehouseInventories - 选华东仓(id=1) 得 2 条库存', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    const warehouses  = ds.getView('Warehouses')!
+    const inventories = ds.getView('Inventories')!
+    warehouses.selection.setCurrentRow(warehouses.rows[0]!) // 华东仓 id=1
+    expect(inventories.rows).toHaveLength(2)
+    expect(inventories.rows.every(r => f(r, 'warehouseId') === 1)).toBe(true)
+  })
+
+  it('H-7: 级联 WarehouseInbounds - 选华南仓(id=2) 得 1 条入库', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    const warehouses = ds.getView('Warehouses')!
+    const inbounds   = ds.getView('Inbounds')!
+    warehouses.selection.setCurrentRow(warehouses.rows[1]!) // 华南仓 id=2
+    expect(inbounds.rows).toHaveLength(1)
+    expect(f(inbounds.rows[0], 'warehouseId')).toBe(2)
+    expect(f(inbounds.rows[0], 'productName')).toBe('平板电脑')
+  })
+
+  it('H-8: aggregates inQuantity sum 全量行 = 380', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    // 100 + 30 + 50 + 200 = 380
+    expect(f(ds.getView('Inbounds')!.summaryRow, 'inQuantity')).toBe(380)
+  })
+
+  it('H-9: 级联后 aggregates 只汇总过滤行 - 华东仓入库总量 = 130', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    const warehouses = ds.getView('Warehouses')!
+    const inbounds   = ds.getView('Inbounds')!
+    warehouses.selection.setCurrentRow(warehouses.rows[0]!) // 华东仓 id=1
+    // 100 + 30 = 130
+    expect(f(inbounds.summaryRow, 'inQuantity')).toBe(130)
+  })
+
+  it('H-10: 华北仓(id=3) 级联 - Inventories 1条，Inbounds 1条', () => {
+    const ds = fromPromptJson(CASE_H_JSON)
+    const warehouses  = ds.getView('Warehouses')!
+    const inventories = ds.getView('Inventories')!
+    const inbounds    = ds.getView('Inbounds')!
+    warehouses.selection.setCurrentRow(warehouses.rows[2]!) // 华北仓 id=3
+    expect(inventories.rows).toHaveLength(1)
+    expect(f(inventories.rows[0], 'productName')).toBe('耳机')
+    expect(inbounds.rows).toHaveLength(1)
+    expect(f(inbounds.rows[0], 'inQuantity')).toBe(200)
+  })
+})
