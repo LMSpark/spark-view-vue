@@ -942,3 +942,248 @@ describe('Case H：外部AI生成 - 仓库库存管理（v1.9 结构验证）', 
     expect(f(inbounds.rows[0], 'inQuantity')).toBe(200)
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Case I：物业管理系统（标准提示词模板自测）
+// 三级层次：Communities → Buildings → RepairOrders
+// 覆盖：三级 ID 编号、多层 $count/$sum/$join、多分支 computeExpression、aggregates
+// ─────────────────────────────────────────────────────────────────────────────
+const CASE_I_JSON = {
+  dataset: {
+    dataSetName: 'PropertyManagementDataSet',
+    tables: {
+      Communities: {
+        columns: [
+          { name: 'id',            type: 'number', isPrimaryKey: true, label: '小区ID'     },
+          { name: 'name',          type: 'string',                     label: '小区名称'   },
+          { name: 'address',       type: 'string',                     label: '地址'       },
+          { name: 'manager',       type: 'string',                     label: '物业经理'   },
+          { name: 'buildingCount', type: 'number',                     label: '楼栋数',
+            computeExpression: "$count('Buildings')" },
+          { name: 'totalUnits',    type: 'number',                     label: '总户数',
+            computeExpression: "$sum('Buildings', 'unitCount')" },
+        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1, name: '翠湖花园',   address: '翠湖路100号', manager: '张经理' },
+              { id: 2, name: '金色阳光城', address: '阳光大道88号', manager: '王经理' },
+              { id: 3, name: '碧水湾',     address: '滨江路66号',  manager: '李经理' },
+            ],
+          },
+        },
+      },
+      Buildings: {
+        columns: [
+          { name: 'id',          type: 'number', isPrimaryKey: true, label: '楼栋ID'   },
+          { name: 'communityId', type: 'number',                     label: '小区ID'   },
+          { name: 'buildingNo',  type: 'string',                     label: '楼栋号'   },
+          { name: 'floorCount',  type: 'number',                     label: '楼层数'   },
+          { name: 'unitCount',   type: 'number',                     label: '户数'     },
+          { name: 'repairCount', type: 'number',                     label: '报修数',
+            computeExpression: "$count('RepairOrders')" },
+          { name: 'repairTypes', type: 'string',                     label: '报修类型列表',
+            computeExpression: "$join('RepairOrders', 'repairType', ' / ')" },
+        ],
+        views: {
+          default: {
+            rows: [
+              { id: 101, communityId: 1, buildingNo: '1栋',  floorCount: 18, unitCount: 72 },
+              { id: 102, communityId: 1, buildingNo: '2栋',  floorCount: 22, unitCount: 88 },
+              { id: 103, communityId: 2, buildingNo: 'A栋', floorCount: 30, unitCount: 120 },
+              { id: 104, communityId: 3, buildingNo: '1栋',  floorCount: 12, unitCount: 48 },
+            ],
+          },
+        },
+      },
+      RepairOrders: {
+        columns: [
+          { name: 'id',          type: 'number', isPrimaryKey: true, label: '工单ID'   },
+          { name: 'buildingId',  type: 'number',                     label: '楼栋ID'   },
+          { name: 'reporter',    type: 'string',                     label: '报修人'   },
+          { name: 'phone',       type: 'string',                     label: '联系电话' },
+          { name: 'repairType',  type: 'string',                     label: '报修类型' },
+          { name: 'description', type: 'string',                     label: '问题描述' },
+          { name: 'reportDate',  type: 'date',                       label: '报修日期' },
+          { name: 'priority',    type: 'number',                     label: '优先级'   },
+          { name: 'status',      type: 'string',                     label: '状态',
+            computeExpression: "if (priority >= 3) return '紧急'; if (priority === 2) return '一般'; return '低优先';" },
+        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1001, buildingId: 101, reporter: '张三', phone: '13800001001', repairType: '水管漏水',   description: '厨房水管漏水严重',   reportDate: '2024-03-01', priority: 3 },
+              { id: 1002, buildingId: 101, reporter: '李四', phone: '13800001002', repairType: '电梯故障',   description: '电梯停在5楼不动',    reportDate: '2024-03-03', priority: 3 },
+              { id: 1003, buildingId: 102, reporter: '王五', phone: '13800001003', repairType: '门禁损坏',   description: '单元门禁刷卡无反应', reportDate: '2024-03-05', priority: 2 },
+              { id: 1004, buildingId: 103, reporter: '赵六', phone: '13800001004', repairType: '墙面脱落',   description: '走廊墙面涂料脱落',   reportDate: '2024-03-08', priority: 1 },
+              { id: 1005, buildingId: 104, reporter: '孙七', phone: '13800001005', repairType: '水管漏水',   description: '卫生间水管渗水',     reportDate: '2024-03-10', priority: 2 },
+            ],
+            aggregates: {
+              id:       { type: 'count', label: '报修总数' },
+              typeList: { type: 'join',  field: 'repairType', separator: ' | ', label: '报修类型汇总' },
+            },
+          },
+        },
+      },
+    },
+    relations: [
+      {
+        relationName:   'CommunityBuildings',
+        parentTable:    'Communities',
+        childTable:     'Buildings',
+        childField:     'communityId',
+        dependencyType: 'currentRow',
+      },
+      {
+        relationName:   'BuildingRepairOrders',
+        parentTable:    'Buildings',
+        childTable:     'RepairOrders',
+        childField:     'buildingId',
+        dependencyType: 'currentRow',
+      },
+    ],
+  },
+}
+
+describe('Case I：标准提示词模板自测 - 物业管理系统（三级层次）', () => {
+  it('I-1: fromPageData 成功实例化，三张表均存在', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    expect(ds).toBeTruthy()
+    expect(ds.getTable('Communities')).toBeTruthy()
+    expect(ds.getTable('Buildings')).toBeTruthy()
+    expect(ds.getTable('RepairOrders')).toBeTruthy()
+  })
+
+  it('I-2: 行数验证 Communities=3, Buildings=4, RepairOrders=5', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    expect(ds.getView('Communities')!.rows).toHaveLength(3)
+    expect(ds.getView('Buildings')!.rows).toHaveLength(4)
+    expect(ds.getView('RepairOrders')!.rows).toHaveLength(5)
+  })
+
+  it('I-3: 三级 ID 编号：顶级 1-3，二级 101-104，三级 1001-1005', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const cIds = ds.getView('Communities')!.rows.map(r => f(r, 'id'))
+    const bIds = ds.getView('Buildings')!.rows.map(r => f(r, 'id'))
+    const rIds = ds.getView('RepairOrders')!.rows.map(r => f(r, 'id'))
+    expect(cIds).toEqual([1, 2, 3])
+    expect(bIds).toEqual([101, 102, 103, 104])
+    expect(rIds).toEqual([1001, 1002, 1003, 1004, 1005])
+  })
+
+  it('I-4: 计算列 status 多分支 - 紧急/一般/低优先', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const rows = ds.getView('RepairOrders')!.rows
+    // priority=3 → 紧急
+    expect(f(rows[0], 'status')).toBe('紧急')
+    expect(f(rows[1], 'status')).toBe('紧急')
+    // priority=2 → 一般
+    expect(f(rows[2], 'status')).toBe('一般')
+    // priority=1 → 低优先
+    expect(f(rows[3], 'status')).toBe('低优先')
+    // priority=2 → 一般
+    expect(f(rows[4], 'status')).toBe('一般')
+  })
+
+  it('I-5: 两条 relation 均已注册', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const names = (ds.relations ?? []).map(r => r.relationName)
+    expect(names).toContain('CommunityBuildings')
+    expect(names).toContain('BuildingRepairOrders')
+  })
+
+  it('I-6: 一级级联 - 选翠湖花园(id=1) → Buildings 显示 2 栋', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const communities = ds.getView('Communities')!
+    const buildings   = ds.getView('Buildings')!
+    communities.selection.setCurrentRow(communities.rows[0]!) // 翠湖花园 id=1
+    expect(buildings.rows).toHaveLength(2)
+    expect(buildings.rows.every(r => f(r, 'communityId') === 1)).toBe(true)
+  })
+
+  it('I-7: 二级级联 - 选1栋(id=101) → RepairOrders 显示 2 条工单', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const communities   = ds.getView('Communities')!
+    const buildings     = ds.getView('Buildings')!
+    const repairOrders  = ds.getView('RepairOrders')!
+    communities.selection.setCurrentRow(communities.rows[0]!) // 翠湖花园
+    buildings.selection.setCurrentRow(buildings.rows[0]!)     // 1栋 id=101
+    expect(repairOrders.rows).toHaveLength(2)
+    expect(repairOrders.rows.every(r => f(r, 'buildingId') === 101)).toBe(true)
+  })
+
+  it('I-8: $count 计算列 - 翠湖花园 buildingCount=2', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const communities = ds.getView('Communities')!
+    expect(f(communities.rows[0], 'buildingCount')).toBe(2)
+    expect(f(communities.rows[1], 'buildingCount')).toBe(1) // 金色阳光城 1栋
+    expect(f(communities.rows[2], 'buildingCount')).toBe(1) // 碧水湾 1栋
+  })
+
+  it('I-9: $sum 计算列 - 翠湖花园 totalUnits=72+88=160', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const communities = ds.getView('Communities')!
+    expect(f(communities.rows[0], 'totalUnits')).toBe(160)  // 72+88
+    expect(f(communities.rows[1], 'totalUnits')).toBe(120)  // A栋 120
+    expect(f(communities.rows[2], 'totalUnits')).toBe(48)   // 1栋 48
+  })
+
+  it('I-10: $count 二级计算列 - 1栋(id=101) repairCount=2', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const communities = ds.getView('Communities')!
+    const buildings   = ds.getView('Buildings')!
+    communities.selection.setCurrentRow(communities.rows[0]!) // 翠湖花园
+    // 级联后 Buildings 只有 id=101, 102
+    expect(f(buildings.rows[0], 'repairCount')).toBe(2) // 1栋: 1001, 1002
+    expect(f(buildings.rows[1], 'repairCount')).toBe(1) // 2栋: 1003
+  })
+
+  it('I-11: $join 二级计算列 - 1栋(id=101) repairTypes', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const communities = ds.getView('Communities')!
+    const buildings   = ds.getView('Buildings')!
+    communities.selection.setCurrentRow(communities.rows[0]!)
+    expect(f(buildings.rows[0], 'repairTypes')).toBe('水管漏水 / 电梯故障')
+  })
+
+  it('I-12: aggregates count 全量 = 5', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    expect(f(ds.getView('RepairOrders')!.summaryRow, 'id')).toBe(5)
+  })
+
+  it('I-13: aggregates join (field 覆盖) 全量', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const typeList = f(ds.getView('RepairOrders')!.summaryRow, 'typeList') as string
+    expect(typeList).toContain('水管漏水')
+    expect(typeList).toContain('电梯故障')
+    expect(typeList).toContain('门禁损坏')
+    expect(typeList).toContain('墙面脱落')
+    expect(typeList.split(' | ')).toHaveLength(5)
+  })
+
+  it('I-14: 级联后 aggregates 只汇总过滤行', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const communities  = ds.getView('Communities')!
+    const buildings    = ds.getView('Buildings')!
+    const repairOrders = ds.getView('RepairOrders')!
+    communities.selection.setCurrentRow(communities.rows[0]!) // 翠湖花园
+    buildings.selection.setCurrentRow(buildings.rows[0]!)     // 1栋 101
+    // 过滤后只有 1001, 1002
+    expect(f(repairOrders.summaryRow, 'id')).toBe(2)
+    const typeList = f(repairOrders.summaryRow, 'typeList') as string
+    expect(typeList).toBe('水管漏水 | 电梯故障')
+  })
+
+  it('I-15: 切换到碧水湾(id=3) → Buildings 1条，RepairOrders 1条', () => {
+    const ds = fromPromptJson(CASE_I_JSON)
+    const communities  = ds.getView('Communities')!
+    const buildings    = ds.getView('Buildings')!
+    const repairOrders = ds.getView('RepairOrders')!
+    communities.selection.setCurrentRow(communities.rows[2]!) // 碧水湾 id=3
+    expect(buildings.rows).toHaveLength(1)
+    expect(f(buildings.rows[0], 'buildingNo')).toBe('1栋')
+    buildings.selection.setCurrentRow(buildings.rows[0]!) // 碧水湾1栋 id=104
+    expect(repairOrders.rows).toHaveLength(1)
+    expect(f(repairOrders.rows[0], 'reporter')).toBe('孙七')
+  })
+})

@@ -17,6 +17,8 @@
    - [案例 E：员工系统双视图（同父表不同视图驱动不同子表）](#案例-e员工系统双视图同一父表不同命名视图分别驱动不同子表)
    - [案例 F：供应商采购管理（三级层次 + API + 计算列 + 聚合）](#案例-f供应商采购管理三级层次--api--计算列--聚合)
    - [案例 G：仓库库存管理（v1.9 新特性：复合主键 + integer/decimal + $list + aggregates.field/separator）](#案例-g仓库库存管理v19-新特性复合主键--integerdecimal--list--aggregatesfieldseparator)
+   - [案例 H：仓库库存管理（外部 AI 验证：number/string/date + 多分支计算列 + 双 relation）](#案例-h仓库库存管理外部-ai-验证numberstringdate--多分支计算列--双-relation)
+   - [案例 I：物业管理系统（提示词模板自测：三级层次 + $count/$sum/$join + aggregates.field）](#案例-i物业管理系统提示词模板自测三级层次--countsumjoin--aggregatesfield)
 5. [JSON 自检清单](#5-json-自检清单)
 6. [配置参考速查](#6-配置参考速查)
 
@@ -1006,6 +1008,244 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 - ✅ 规则 10：无 api 字段（纯静态数据），级联走内存过滤路径
 - ✅ 外键完整性：StockItems.warehouseId ∈ {1, 2}，均在 Warehouses.rows 中存在
 - ✅ 计算列（totalStockValue / productCodes / productNames / totalValue）在 rows 中**均不填充值**
+
+---
+
+### 案例 H：仓库库存管理（外部 AI 验证：number/string/date + 多分支计算列 + 双 relation）✅ 已通过 DataSet 实例化测试
+
+**需求描述**：
+- 仓库表（Warehouses）：ID、名称、城市、负责人
+- 库存表（Inventories）：ID、仓库ID（外键）、商品名称、SKU、库存数量、单位、最低预警值；计算列：库存状态（quantity ≤ minQuantity → 预警，否则正常）
+- 入库记录表（Inbounds）：ID、仓库ID（外键）、商品名称、入库数量、入库日期、供应商；聚合：入库总数量 sum
+- 双 relation：Warehouses→Inventories，Warehouses→Inbounds（均 currentRow）
+- 纯静态数据，无后端 API
+- **来源**：外部 AI（非本项目 AI）按标准提示词模板生成，用于验证提示词对外部模型的引导效果
+
+**生成结果**：
+
+```json
+{
+  "dataset": {
+    "dataSetName": "WarehouseStockDataSet",
+    "tables": {
+      "Warehouses": {
+        "columns": [
+          { "name": "id",      "type": "number", "isPrimaryKey": true, "label": "仓库ID"   },
+          { "name": "name",    "type": "string",                       "label": "仓库名称" },
+          { "name": "city",    "type": "string",                       "label": "城市"     },
+          { "name": "manager", "type": "string",                       "label": "负责人"   }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "华东仓", "city": "上海", "manager": "张伟" },
+              { "id": 2, "name": "华南仓", "city": "广州", "manager": "李强" },
+              { "id": 3, "name": "华北仓", "city": "北京", "manager": "王芳" }
+            ]
+          }
+        }
+      },
+      "Inventories": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "库存ID"         },
+          { "name": "warehouseId", "type": "number",                       "label": "仓库ID"         },
+          { "name": "productName", "type": "string",                       "label": "商品名称"       },
+          { "name": "sku",         "type": "string",                       "label": "SKU编号"        },
+          { "name": "quantity",    "type": "number",                       "label": "当前库存数量"   },
+          { "name": "unit",        "type": "string",                       "label": "单位"           },
+          { "name": "minQuantity", "type": "number",                       "label": "最低库存预警值" },
+          { "name": "status",      "type": "string",                       "label": "库存状态",
+            "computeExpression": "if (quantity <= minQuantity) return '预警'; return '正常';" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 101, "warehouseId": 1, "productName": "智能手机",   "sku": "PHN-001", "quantity": 50,  "unit": "件", "minQuantity": 20 },
+              { "id": 102, "warehouseId": 1, "productName": "笔记本电脑", "sku": "NTB-002", "quantity": 8,   "unit": "件", "minQuantity": 10 },
+              { "id": 103, "warehouseId": 2, "productName": "平板电脑",   "sku": "TAB-003", "quantity": 30,  "unit": "件", "minQuantity": 15 },
+              { "id": 104, "warehouseId": 2, "productName": "充电器",     "sku": "CHG-004", "quantity": 5,   "unit": "箱", "minQuantity": 5  },
+              { "id": 105, "warehouseId": 3, "productName": "耳机",       "sku": "HPH-005", "quantity": 100, "unit": "件", "minQuantity": 30 }
+            ]
+          }
+        }
+      },
+      "Inbounds": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "入库ID"   },
+          { "name": "warehouseId", "type": "number",                       "label": "仓库ID"   },
+          { "name": "productName", "type": "string",                       "label": "商品名称" },
+          { "name": "inQuantity",  "type": "number",                       "label": "入库数量" },
+          { "name": "inDate",      "type": "date",                         "label": "入库日期" },
+          { "name": "supplier",    "type": "string",                       "label": "供应商"   }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 101, "warehouseId": 1, "productName": "智能手机",   "inQuantity": 100, "inDate": "2024-03-01", "supplier": "华为供应链" },
+              { "id": 102, "warehouseId": 1, "productName": "笔记本电脑", "inQuantity": 30,  "inDate": "2024-03-05", "supplier": "联想科技"   },
+              { "id": 103, "warehouseId": 2, "productName": "平板电脑",   "inQuantity": 50,  "inDate": "2024-03-03", "supplier": "苹果授权商" },
+              { "id": 104, "warehouseId": 3, "productName": "耳机",       "inQuantity": 200, "inDate": "2024-03-10", "supplier": "索尼代理"   }
+            ],
+            "aggregates": {
+              "inQuantity": { "type": "sum", "label": "入库总数量" }
+            }
+          }
+        }
+      }
+    },
+    "relations": [
+      {
+        "relationName":   "WarehouseInventories",
+        "parentTable":    "Warehouses",
+        "childTable":     "Inventories",
+        "childField":     "warehouseId",
+        "dependencyType": "currentRow"
+      },
+      {
+        "relationName":   "WarehouseInbounds",
+        "parentTable":    "Warehouses",
+        "childTable":     "Inbounds",
+        "childField":     "warehouseId",
+        "dependencyType": "currentRow"
+      }
+    ]
+  }
+}
+```
+
+**验证通过要点**：
+- ✅ 顶层 `{ "dataset": {...} }` 结构正确
+- ✅ `rows` 和 `aggregates` 均在 `views.default` 内（v1.9 核心结构要求）
+- ✅ 计算列 `status` 多分支逻辑正确（含边界值 quantity===minQuantity → 预警）
+- ✅ 两条 relation 均已声明（WarehouseInventories + WarehouseInbounds）
+- ✅ 外键完整性：warehouseId ∈ {1,2,3} 均在 Warehouses.rows 中存在
+- ✅ 无多余 api 字段（纯静态数据）
+- ✅ `aggregates.inQuantity` 直接使用列名作为键名（无需 field 覆盖）
+- ✅ 全量汇总 inQuantity sum = 380，级联后华东仓 = 130
+
+---
+
+### 案例 I：物业管理系统（提示词模板自测：三级层次 + $count/$sum/$join + aggregates.field）✅ 已通过 DataSet 实例化测试
+
+**需求描述**：
+- 小区表（Communities）：ID、名称、地址、物业经理；自动统计楼栋数（$count）、总户数（$sum）
+- 楼栋表（Buildings）：ID、小区ID（外键）、楼栋号、楼层数、户数；自动统计报修数（$count）、报修类型列表（$join）
+- 报修工单表（RepairOrders）：ID、楼栋ID（外键）、报修人、电话、类型、描述、日期、优先级；计算列：状态（优先级≥3 → 紧急，=2 → 一般，其他 → 低优先）
+- 三级关联：小区→楼栋→报修工单（两条 currentRow 关联）
+- 聚合：报修工单 count + 报修类型 join（field 覆盖）
+- 纯静态数据，无后端 API
+- **来源**：使用独立提示词模板文件自测，验证提示词模板的完整性和准确性
+
+**生成结果**：
+
+```json
+{
+  "dataset": {
+    "dataSetName": "PropertyManagementDataSet",
+    "tables": {
+      "Communities": {
+        "columns": [
+          { "name": "id",            "type": "number", "isPrimaryKey": true, "label": "小区ID"     },
+          { "name": "name",          "type": "string",                       "label": "小区名称"   },
+          { "name": "address",       "type": "string",                       "label": "地址"       },
+          { "name": "manager",       "type": "string",                       "label": "物业经理"   },
+          { "name": "buildingCount", "type": "number",                       "label": "楼栋数",
+            "computeExpression": "$count('Buildings')" },
+          { "name": "totalUnits",    "type": "number",                       "label": "总户数",
+            "computeExpression": "$sum('Buildings', 'unitCount')" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "翠湖花园",   "address": "翠湖路100号", "manager": "张经理" },
+              { "id": 2, "name": "金色阳光城", "address": "阳光大道88号", "manager": "王经理" },
+              { "id": 3, "name": "碧水湾",     "address": "滨江路66号",  "manager": "李经理" }
+            ]
+          }
+        }
+      },
+      "Buildings": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "楼栋ID"       },
+          { "name": "communityId", "type": "number",                       "label": "小区ID"       },
+          { "name": "buildingNo",  "type": "string",                       "label": "楼栋号"       },
+          { "name": "floorCount",  "type": "number",                       "label": "楼层数"       },
+          { "name": "unitCount",   "type": "number",                       "label": "户数"         },
+          { "name": "repairCount", "type": "number",                       "label": "报修数",
+            "computeExpression": "$count('RepairOrders')" },
+          { "name": "repairTypes", "type": "string",                       "label": "报修类型列表",
+            "computeExpression": "$join('RepairOrders', 'repairType', ' / ')" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 101, "communityId": 1, "buildingNo": "1栋",  "floorCount": 18, "unitCount": 72  },
+              { "id": 102, "communityId": 1, "buildingNo": "2栋",  "floorCount": 22, "unitCount": 88  },
+              { "id": 103, "communityId": 2, "buildingNo": "A栋", "floorCount": 30, "unitCount": 120 },
+              { "id": 104, "communityId": 3, "buildingNo": "1栋",  "floorCount": 12, "unitCount": 48  }
+            ]
+          }
+        }
+      },
+      "RepairOrders": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "工单ID"   },
+          { "name": "buildingId",  "type": "number",                       "label": "楼栋ID"   },
+          { "name": "reporter",    "type": "string",                       "label": "报修人"   },
+          { "name": "phone",       "type": "string",                       "label": "联系电话" },
+          { "name": "repairType",  "type": "string",                       "label": "报修类型" },
+          { "name": "description", "type": "string",                       "label": "问题描述" },
+          { "name": "reportDate",  "type": "date",                         "label": "报修日期" },
+          { "name": "priority",    "type": "number",                       "label": "优先级"   },
+          { "name": "status",      "type": "string",                       "label": "状态",
+            "computeExpression": "if (priority >= 3) return '紧急'; if (priority === 2) return '一般'; return '低优先';" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1001, "buildingId": 101, "reporter": "张三", "phone": "13800001001", "repairType": "水管漏水",   "description": "厨房水管漏水严重",   "reportDate": "2024-03-01", "priority": 3 },
+              { "id": 1002, "buildingId": 101, "reporter": "李四", "phone": "13800001002", "repairType": "电梯故障",   "description": "电梯停在5楼不动",    "reportDate": "2024-03-03", "priority": 3 },
+              { "id": 1003, "buildingId": 102, "reporter": "王五", "phone": "13800001003", "repairType": "门禁损坏",   "description": "单元门禁刷卡无反应", "reportDate": "2024-03-05", "priority": 2 },
+              { "id": 1004, "buildingId": 103, "reporter": "赵六", "phone": "13800001004", "repairType": "墙面脱落",   "description": "走廊墙面涂料脱落",   "reportDate": "2024-03-08", "priority": 1 },
+              { "id": 1005, "buildingId": 104, "reporter": "孙七", "phone": "13800001005", "repairType": "水管漏水",   "description": "卫生间水管渗水",     "reportDate": "2024-03-10", "priority": 2 }
+            ],
+            "aggregates": {
+              "id":       { "type": "count", "label": "报修总数" },
+              "typeList": { "type": "join",  "field": "repairType", "separator": " | ", "label": "报修类型汇总" }
+            }
+          }
+        }
+      }
+    },
+    "relations": [
+      {
+        "relationName":   "CommunityBuildings",
+        "parentTable":    "Communities",
+        "childTable":     "Buildings",
+        "childField":     "communityId",
+        "dependencyType": "currentRow"
+      },
+      {
+        "relationName":   "BuildingRepairOrders",
+        "parentTable":    "Buildings",
+        "childTable":     "RepairOrders",
+        "childField":     "buildingId",
+        "dependencyType": "currentRow"
+      }
+    ]
+  }
+}
+```
+
+**验证通过要点**：
+- ✅ 三级 ID 编号：小区 1-3，楼栋 101-104，工单 1001-1005
+- ✅ `$count('Buildings')` / `$sum('Buildings', 'unitCount')` 一级计算列正确（翠湖花园: 2栋, 160户）
+- ✅ `$count('RepairOrders')` / `$join('RepairOrders', 'repairType', ' / ')` 二级计算列正确
+- ✅ 计算列 `status` 三分支逻辑：priority≥3→紧急，=2→一般，其他→低优先
+- ✅ `aggregates.typeList.field = 'repairType'`：输出键名（typeList）与源字段名（repairType）不同（field 覆盖）
+- ✅ 三级外键完整性：communityId ∈ {1,2,3}，buildingId ∈ {101,102,103,104}
+- ✅ 级联后 aggregates 只汇总过滤行（翠湖花园→1栋: count=2, typeList="水管漏水 | 电梯故障"）
+- ✅ 所有计算列（buildingCount / totalUnits / repairCount / repairTypes / status）在 rows 中均不填充值
 
 ---
 
