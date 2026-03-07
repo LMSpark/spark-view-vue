@@ -1400,17 +1400,41 @@ if (id.includes('packages/spark-page-config'))return 'spark-config'
 
 ## npm 发布规范 📦
 
+> 完整操作文档见 `docs/guides/NPM_PUBLISH.md`，本节为速查摘要。
+
 发布使用 `node scripts/publish-packages.mjs`（自动按依赖顺序构建 + 发布所有子包）。
+
+### Token 配置（首次 / token 过期时执行）⚠️
+
+**必须使用 Granular Access Token**，缺少任一条件都会导致发布失败：
+
+| 必须满足 | 不满足时的报错 |
+|---------|--------------|
+| ✅ 勾选 **Bypass 2FA** | `EOTP` 或 auth 失败 |
+| ✅ `@spark-view` org **Read and write** | `E404 Not Found - not have permission` |
+
+**创建步骤**：npmjs.com → Settings → Access Tokens → Generate New Token → **Granular Access Token**
+- Name: `spark_view_MMDD`（日期命名，如 `spark_view_0307`）
+- 勾选 **Bypass two-factor authentication (2FA)**（必须！）
+- Organizations → spark-view → **Read and write**
+
+**写入配置**：
+```powershell
+npm config set //registry.npmjs.org/:_authToken <新token>
+npm config set auth-type legacy
+```
+
+> ⚠️ **禁止用 `npm login`**：web 登录获取的 session token 没有 org 写权限，发布必报 E404。
+> ⚠️ **`npm whoami` 返回 401 属正常**：Granular token 不支持 whoami，不代表 token 无效，直接发布验证。
+> ⚠️ **不要把 token 提交 git**：GitHub secret scanning 会自动检测并吊销泄露的 token。
 
 ### 完整发布流程（照做即可）
 
 ```powershell
-# ── Step 1: 确保测试通过 ──
-pnpm run test
+# ── Step 1: 确保 lint / typecheck / test 通过 ──
+pnpm run lint && pnpm run typecheck && pnpm run test
 
 # ── Step 2: 升版本号（所有 5 个包统一升 patch） ──
-# 手动编辑每个 packages/*/package.json 的 version 字段
-# 或用脚本批量升：
 Get-ChildItem packages -Directory | ForEach-Object {
   $f = "packages\$($_.Name)\package.json"
   $j = Get-Content $f -Raw | ConvertFrom-Json
@@ -1420,24 +1444,17 @@ Get-ChildItem packages -Directory | ForEach-Object {
   Write-Host "$($j.name) -> $($j.version)"
 }
 
-# ── Step 3: 确认 npm 身份（必须是 spark_view） ──
-npm whoami --registry https://registry.npmjs.org
-# 如未登录或 token 过期：
-#   npm login --registry https://registry.npmjs.org
-
-# ── Step 4: 确认 auth-type 为 legacy（避免每次弹浏览器认证） ──
-npm config set auth-type legacy
-
-# ── Step 5: 发布（自动构建 + 跳过已发版的包） ──
+# ── Step 3: 发布（自动构建 + 跳过已发版的包） ──
+# 无需 npm whoami（Granular token 返回 401 属正常，不影响发布）
 node scripts/publish-packages.mjs
 
-# ── Step 6: 验证发布结果 ──
+# ── Step 4: 验证发布结果 ──
 @('spark-utils','spark-data','spark-page-config','spark-component','spark-app') |
   ForEach-Object { $v = npm view "@spark-view/$_" version --registry https://registry.npmjs.org 2>$null; Write-Host "$_ = $v" }
 
-# ── Step 7: 提交 + 推送 ──
+# ── Step 5: 提交 + 推送 ──
 git add -A
-git commit -m "chore(deps): bump all packages to vX.Y.Z"
+git commit -m "chore: bump all packages to vX.Y.Z"
 git push
 ```
 
@@ -1445,15 +1462,12 @@ git push
 
 | 症状 | 原因 | 解决 |
 |------|------|------|
-| `EOTP` / 弹浏览器认证 | `auth-type` 不是 legacy | `npm config set auth-type legacy` |
-| `Access token expired or revoked` | token 过期 | `npm login --registry https://registry.npmjs.org` |
-| `You cannot publish over previously published versions` | 版本已存在 | 脚本会自动跳过，不影响后续包 |
-| 版本检查误判（已发但脚本不跳过） | 走了镜像源，同步延迟 | 脚本已修复：显式查 `registry.npmjs.org` |
-| `npm whoami` 返回错误 | 未登录 | `npm login --registry https://registry.npmjs.org` |
-
-> **⚠️ Token 类型说明**：npmjs.com 的 token 分为 **Publish**（每次 publish 需浏览器/OTP 确认）和 **Automation**（免交互）。
-> 当前项目使用 Publish token + `auth-type=legacy` 组合，免浏览器弹窗。
-> 如需在 CI 中无人值守发布，需到 npmjs.com → Access Tokens → Generate New Token → **Granular Access Token**（选 Automation 权限级别）。
+| `E401 Unauthorized` | Token 被吊销（如曾提交到 git）或已过期 | 重新生成 Granular Token（见上方步骤） |
+| `E404 Not found - not have permission` | Token 无 org 写权限，或用了 web-login token | 重新生成 Granular Token，确认勾选 org Read and Write |
+| `EOTP` / 弹浏览器认证 | Token 未勾选 Bypass 2FA | 重新生成 Granular Token，**必须勾选 Bypass 2FA** |
+| `npm whoami` 返回 401 | Granular token 不支持 whoami | **正常**，忽略，直接执行发布 |
+| `You cannot publish over previously published versions` | 版本已存在 | 脚本自动跳过，不影响后续包 |
+| commit 被 pre-commit 阻断 | lint/typecheck 有错误 | 修复错误后重新 commit，**不要用 `--no-verify`** |
 
 ### ⚠️ 内部依赖必须使用 `workspace:*`
 
