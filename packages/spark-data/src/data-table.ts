@@ -278,16 +278,19 @@ export class DataTable {
     }
 
     const def = t.getOrCreateView('default')
-    if (data.rows) {
+    const defaultViewCfg = data.views?.['default']
+    // 优先读取 views.default.rows（显式格式），回退到表级 rows（简写格式）
+    const sourceRows = defaultViewCfg?.rows ?? data.rows
+    if (sourceRows) {
       // 存入 DataTable.rows（内联静态数据 source of truth，供无 API 内存级联过滤使用）
-      t.rows = [...data.rows]
+      t.rows = [...sourceRows]
       // 同时初始化 default 视图的初始数据（渲染层可直接展示，无需 loadFromServer）
-      def.rows = [...data.rows]
+      def.rows = [...sourceRows]
     }
 
     // views.default（若存在）优先于表级字段；ITableMetadata = ITableOwnMetadata & IViewMetadata，
     // 两条路径（default 视图 vs 扁平化表级字段）字段名完全一致，统一委托给 applyViewConfig。
-    const vc: IViewMetadata = data.views?.['default'] ?? data
+    const vc: IViewMetadata = defaultViewCfg ?? data
     def.applyViewConfig(vc)
 
     // 注意：不在此处调用 initAutoSelection()。

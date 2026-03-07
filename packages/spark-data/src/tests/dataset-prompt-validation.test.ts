@@ -47,11 +47,15 @@ const CASE_A_JSON = {
           { name: 'phone',  type: 'string',                     label: '手机号'   },
           { name: 'status', type: 'string',                     label: '状态'     },
         ],
-        rows: [
-          { id: 1, name: '张三', cardNo: 'LIB-001', phone: '13800001001', status: 'active'    },
-          { id: 2, name: '李四', cardNo: 'LIB-002', phone: '13800001002', status: 'active'    },
-          { id: 3, name: '王五', cardNo: 'LIB-003', phone: '13800001003', status: 'suspended' },
-        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1, name: '张三', cardNo: 'LIB-001', phone: '13800001001', status: 'active'    },
+              { id: 2, name: '李四', cardNo: 'LIB-002', phone: '13800001002', status: 'active'    },
+              { id: 3, name: '王五', cardNo: 'LIB-003', phone: '13800001003', status: 'suspended' },
+            ],
+          },
+        },
       },
       BorrowRecords: {
         columns: [
@@ -63,12 +67,16 @@ const CASE_A_JSON = {
           { name: 'returnDate', type: 'date',   allowDBNull: true,  label: '实还日期' },
           { name: 'status',     type: 'string',                     label: '借阅状态' },
         ],
-        rows: [
-          { id: 1001, readerId: 1, bookTitle: 'JavaScript高级程序设计', borrowDate: '2024-03-01', dueDate: '2024-03-31', returnDate: '2024-03-20', status: 'returned' },
-          { id: 1002, readerId: 1, bookTitle: 'Vue.js设计与实现',       borrowDate: '2024-04-01', dueDate: '2024-04-30', returnDate: null,         status: 'borrowed' },
-          { id: 1003, readerId: 2, bookTitle: '算法导论',               borrowDate: '2024-04-05', dueDate: '2024-05-05', returnDate: '2024-04-28', status: 'returned' },
-          { id: 1004, readerId: 3, bookTitle: '三体',                   borrowDate: '2024-02-10', dueDate: '2024-03-10', returnDate: null,         status: 'overdue'  },
-        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1001, readerId: 1, bookTitle: 'JavaScript高级程序设计', borrowDate: '2024-03-01', dueDate: '2024-03-31', returnDate: '2024-03-20', status: 'returned' },
+              { id: 1002, readerId: 1, bookTitle: 'Vue.js设计与实现',       borrowDate: '2024-04-01', dueDate: '2024-04-30', returnDate: null,         status: 'borrowed' },
+              { id: 1003, readerId: 2, bookTitle: '算法导论',               borrowDate: '2024-04-05', dueDate: '2024-05-05', returnDate: '2024-04-28', status: 'returned' },
+              { id: 1004, readerId: 3, bookTitle: '三体',                   borrowDate: '2024-02-10', dueDate: '2024-03-10', returnDate: null,         status: 'overdue'  },
+            ],
+          },
+        },
       },
     },
     relations: [
@@ -170,11 +178,15 @@ const CASE_B_JSON = {
           { name: 'totalAmount',  type: 'number', label: '订单总额',
             computeExpression: "$sum('OrderItems', 'subtotal')" },
         ],
-        rows: [
-          { id: 1, orderNo: 'ORD-2024001', customerName: '张三', orderDate: '2024-04-01', status: 'completed' },
-          { id: 2, orderNo: 'ORD-2024002', customerName: '李四', orderDate: '2024-04-05', status: 'pending'   },
-          { id: 3, orderNo: 'ORD-2024003', customerName: '王五', orderDate: '2024-04-10', status: 'shipped'   },
-        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1, orderNo: 'ORD-2024001', customerName: '张三', orderDate: '2024-04-01', status: 'completed' },
+              { id: 2, orderNo: 'ORD-2024002', customerName: '李四', orderDate: '2024-04-05', status: 'pending'   },
+              { id: 3, orderNo: 'ORD-2024003', customerName: '王五', orderDate: '2024-04-10', status: 'shipped'   },
+            ],
+          },
+        },
       },
       OrderItems: {
         columns: [
@@ -186,17 +198,21 @@ const CASE_B_JSON = {
           { name: 'subtotal',    type: 'number', label: '小计',
             computeExpression: 'quantity * unitPrice' },
         ],
-        aggregates: {
-          quantity: { type: 'sum', label: '总数量'   },
-          subtotal: { type: 'sum', label: '合计金额' },
+        views: {
+          default: {
+            rows: [
+              { id: 1001, orderId: 1, productName: '无线鼠标',   quantity: 2, unitPrice: 99.99  },
+              { id: 1002, orderId: 1, productName: '机械键盘',   quantity: 1, unitPrice: 299.00 },
+              { id: 1003, orderId: 2, productName: 'USB集线器',  quantity: 3, unitPrice: 59.00  },
+              { id: 1004, orderId: 3, productName: '显示器支架', quantity: 1, unitPrice: 189.00 },
+              { id: 1005, orderId: 3, productName: '鼠标垫',     quantity: 2, unitPrice: 35.00  },
+            ],
+            aggregates: {
+              quantity: { type: 'sum', label: '总数量'   },
+              subtotal: { type: 'sum', label: '合计金额' },
+            },
+          },
         },
-        rows: [
-          { id: 1001, orderId: 1, productName: '无线鼠标',   quantity: 2, unitPrice: 99.99  },
-          { id: 1002, orderId: 1, productName: '机械键盘',   quantity: 1, unitPrice: 299.00 },
-          { id: 1003, orderId: 2, productName: 'USB集线器',  quantity: 3, unitPrice: 59.00  },
-          { id: 1004, orderId: 3, productName: '显示器支架', quantity: 1, unitPrice: 189.00 },
-          { id: 1005, orderId: 3, productName: '鼠标垫',     quantity: 2, unitPrice: 35.00  },
-        ],
       },
     },
     relations: [
@@ -305,11 +321,15 @@ const EXAMPLE_9_JSON = {
           { name: 'gradeAvg',  type: 'number',                     label: '平均分',
             computeExpression: "$avg('Grades', 'score')" },
         ],
-        rows: [
-          { id: 1, name: '张三', className: '高一(1)班' },
-          { id: 2, name: '李四', className: '高一(1)班' },
-          { id: 3, name: '王五', className: '高一(2)班' },
-        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1, name: '张三', className: '高一(1)班' },
+              { id: 2, name: '李四', className: '高一(1)班' },
+              { id: 3, name: '王五', className: '高一(2)班' },
+            ],
+          },
+        },
       },
       Grades: {
         columns: [
@@ -320,18 +340,22 @@ const EXAMPLE_9_JSON = {
           { name: 'grade',     type: 'string',                     label: '等级',
             computeExpression: "if (score >= 90) return 'A'; if (score >= 75) return 'B'; if (score >= 60) return 'C'; return 'D';" },
         ],
-        aggregates: {
-          score: { type: 'avg',   label: '平均分' },
-          id:    { type: 'count', label: '科目数' },
+        views: {
+          default: {
+            rows: [
+              { id: 1001, studentId: 1, subject: '数学', score: 95 },
+              { id: 1002, studentId: 1, subject: '语文', score: 82 },
+              { id: 1003, studentId: 2, subject: '数学', score: 76 },
+              { id: 1004, studentId: 2, subject: '语文', score: 68 },
+              { id: 1005, studentId: 3, subject: '数学', score: 55 },
+              { id: 1006, studentId: 3, subject: '语文', score: 70 },
+            ],
+            aggregates: {
+              score: { type: 'avg',   label: '平均分' },
+              id:    { type: 'count', label: '科目数' },
+            },
+          },
         },
-        rows: [
-          { id: 1001, studentId: 1, subject: '数学', score: 95 },
-          { id: 1002, studentId: 1, subject: '语文', score: 82 },
-          { id: 1003, studentId: 2, subject: '数学', score: 76 },
-          { id: 1004, studentId: 2, subject: '语文', score: 68 },
-          { id: 1005, studentId: 3, subject: '数学', score: 55 },
-          { id: 1006, studentId: 3, subject: '语文', score: 70 },
-        ],
       },
     },
     relations: [
@@ -426,13 +450,17 @@ const CASE_C_JSON = {
           { name: 'headcount', type: 'number',                     label: '人数',
             computeExpression: "$count('Employees')" },
         ],
-        api:      '/api/departments',
-        autoLoad: true,
-        rows: [
-          { id: 1, name: '技术部', managerId: 101  },
-          { id: 2, name: '产品部', managerId: 201  },
-          { id: 3, name: '市场部', managerId: null  },
-        ],
+        api: '/api/departments',
+        views: {
+          default: {
+            rows: [
+              { id: 1, name: '技术部', managerId: 101  },
+              { id: 2, name: '产品部', managerId: 201  },
+              { id: 3, name: '市场部', managerId: null  },
+            ],
+            autoLoad: true,
+          },
+        },
       },
       Employees: {
         columns: [
@@ -446,19 +474,23 @@ const CASE_C_JSON = {
           { name: 'level',    type: 'string',                     label: '薪资等级',
             computeExpression: "if (salary >= 30000) return 'S'; if (salary >= 20000) return 'A'; if (salary >= 10000) return 'B'; return 'C';" },
         ],
-        aggregates: {
-          salary: { type: 'avg',   label: '平均薪资' },
-          id:     { type: 'count', label: '人数'     },
+        api: '/api/employees',
+        views: {
+          default: {
+            rows: [
+              { id: 101, deptId: 1, name: '张工', gender: '男', position: '高级工程师', salary: 28000, hireDate: '2020-03-15' },
+              { id: 102, deptId: 1, name: '李工', gender: '女', position: '工程师',     salary: 18000, hireDate: '2021-07-01' },
+              { id: 201, deptId: 2, name: '王总', gender: '男', position: '产品总监',   salary: 35000, hireDate: '2019-05-20' },
+              { id: 202, deptId: 2, name: '赵妹', gender: '女', position: '产品经理',   salary: 22000, hireDate: '2022-01-10' },
+              { id: 301, deptId: 3, name: '孙明', gender: '男', position: '市场专员',   salary: 9500,  hireDate: '2023-06-01' },
+            ],
+            autoLoad: false,
+            aggregates: {
+              salary: { type: 'avg',   label: '平均薪资' },
+              id:     { type: 'count', label: '人数'     },
+            },
+          },
         },
-        api:      '/api/employees',
-        autoLoad: false,
-        rows: [
-          { id: 101, deptId: 1, name: '张工', gender: '男', position: '高级工程师', salary: 28000, hireDate: '2020-03-15' },
-          { id: 102, deptId: 1, name: '李工', gender: '女', position: '工程师',     salary: 18000, hireDate: '2021-07-01' },
-          { id: 201, deptId: 2, name: '王总', gender: '男', position: '产品总监',   salary: 35000, hireDate: '2019-05-20' },
-          { id: 202, deptId: 2, name: '赵妹', gender: '女', position: '产品经理',   salary: 22000, hireDate: '2022-01-10' },
-          { id: 301, deptId: 3, name: '孙明', gender: '男', position: '市场专员',   salary: 9500,  hireDate: '2023-06-01' },
-        ],
       },
     },
     relations: [
