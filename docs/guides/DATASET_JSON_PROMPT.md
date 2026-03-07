@@ -91,25 +91,28 @@ SPARK DataSet 规范的 pagedata.json 配置文件。仅输出完整的 JSON，�
 【2】DataView 架构与表（Table）配置结构
 ═══════════════════════════════════════════════════
 
-⚑ 数据只走 DataSet → DataView 一条线，DataView 是 UI 的唯一数据通道
+⚑ 从代码结构看两个类的关系（无继承，DataTable 是 DataView 的容器）
 
-  DataTable         —— 独立类（无继承）：仅存储表结构（columns 列定义 + api 端点）
-      ↑ 引用（组合）          DataTable 与 DataView 无继承关系
-  DataView          —— 独立类（implements IDataSource）：持有行数据 rows，通过
-                       内部 _dataTable 引用获取列结构和 API，是 UI 的唯一入口
-      ↓ DATA_SOURCE 能力
-  UI 组件           —— 只能通过 DataView 读写数据，不直接访问 DataTable
+  DataTable —— 独立类（无继承）
+    ├── columns    列结构定义（全视图共用）
+    ├── api        CRUD 端点配置（全视图共用）
+    ├── rows       内联静态源行（内存级联过滤的 source of truth，UI 不直接访问）
+    └── views      DataView 注册表（构造时自动创建 default 视图）
 
-rows 属于 DataView（IViewMetadata 层），不属于 DataTable：
-  - DataTable 层：columns（表结构）、api（CRUD 端点）—— 全视图共用
-  - DataView 层：rows（行数据）、aggregates、过滤/排序/分页/当前行/选中行 —— 每视图独立
+  DataView —— 独立类（implements IDataSource，持有 DataTable 的引用 _dataTable）
+    ├── rows       当前视图行数据（UI 消费的唯一来源，可能是过滤后的子集）
+    ├── currentRow / selectedRows / summaryRow 等交互状态
+    ├── CrudDelegate / CascadeDelegate / SelectionDelegate 等操作委托
+    └── _dataTable  ↗ 引用 DataTable（访问 columns 和 api）
 
-每张表自动拥有一个「默认视图」（viewId = 'default'）。pagedata.json 为方便书写，
-允许将 default 视图的字段（rows / aggregates / autoLoad 等）直接扁平写在表级，
-系统初始化时自动将它们读取并应用到 default 视图——这只是配置简写，
-概念上 rows 始终归属于视图层。
+  UI 组件 —— 只读写 DataView（通过 DATA_SOURCE 能力），从不直接访问 DataTable
 
-同一张表可以有多个命名视图（如 'grid'、'detail'），通过 views 键显式声明。
+DataTable.rows 与 DataView.rows 职责完全不同：
+  - DataTable.rows = 内联静态数据全量原始行（级联每次从此过滤，有 API 的表此字段为空）
+  - DataView.rows  = 当前视图行数据（UI 绑定，可能已被级联/过滤缩减为子集）
+
+每张表构造时自动创建一个 default DataView；同一张表可有多个命名视图（'grid'、'detail' 等），
+通过 views 注册表管理，彼此持有独立的 rows / currentRow / 过滤等状态。
 
 每张表的配置对象如下（键为 PascalCase 表名）：
 
