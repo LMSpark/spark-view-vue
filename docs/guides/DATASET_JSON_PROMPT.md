@@ -117,62 +117,36 @@ DataSet 是整个页面的数据容器，内部结构分三层：
 ✦ **每张表构造时自动拥有一个 "default" DataView**，无需在 JSON 中声明。
   所有表格 / 表单 / 详情页都通过 DataView（而非 DataTable）读写数据。
 
-─────────── JSON 简写规则（关键）───────────
+─────────── 显式声明 views.default（标准写法）───────────
 
-JSON 中直接写在表对象下的 rows / aggregates / autoLoad 等键，
-是 **"default" DataView 的简写配置**，框架自动映射到视图层：
+rows / aggregates / autoLoad / autoSelectFirst 等**视图级配置**必须写在
+`views.default` 内部，不要放在表对象顶层：
 
-  你写的 JSON 简写                     框架内部等价于
-  ─────────────────────────────────────────────────────
-  "OrderItems": {                      DataTable "OrderItems"
-    "columns": [...],                    └── columns: [...]   ← DataTable 层
-    "rows":    [...],          →         └── DataView "default"
-    "aggregates": {                            ├── rows: [...]
-      "quantity": { "type": "sum" }            └── aggregates: {
-    }                                                "quantity": { "type": "sum" }
-  }                                              }
-  ─────────────────────────────────────────────────────
+  "TableName": {
+    // ══ DataTable 层（全视图共用）══════════════
+    "columns":  [...],          // 必填：列定义（字段名、类型、主键、计算列）
+    "api":      "/api/...",     // 可选：有后端接口时填写
 
-  ⚠️ aggregates 只写一处（表级简写），不要同时出现在 views.default 中。
-
-─────────── 一张表多个视图（何时需要 views 键）───────────
-
-同一张表可以有多个命名视图，各自有独立的 rows / currentRow / aggregates。
-绝大多数页面只用 default 视图，不需要写 views 键。
-
-  ❌ 不需要（99% 场景）
-     所有 relation 都省略了 parentViewId / childViewId（即默认 default），
-     则完全不必写 views 键
-
-  ✅ 需要（某 relation 引用了非 default 的 viewId）
-     例：{ "parentTable": "Employees", "parentViewId": "detail", ... }
-     则 Employees 表必须在 views 中显式声明 "detail" 视图（哪怕空对象 {}）：
-       "views": { "detail": {} }
-
-  决策口诀：先不写 views → 检查 relations 有无非 default viewId
-            → 有则补 views 声明 → 无则跳过
-
-─────────── 完整表配置模板 ───────────
-
-"TableName": {
-  // ══ DataTable 层（全视图共用）══════════════════════════
-  "columns":  [...],      // 必填：列定义（字段名、类型、主键、计算列）
-  "api":      "/api/...", // 可选：有后端接口时填写
-
-  // ══ default DataView 层（整张表最常用的简写区）══════════
-  // 以下键属于 "default" 视图，框架自动将它们映射到 DataView "default"
-  "rows":            [...],   // 视图初始数据行（3-5 条测试行）
-  "autoLoad":        true,    // 可选：初始化后自动请求 api 加载数据
-  "autoSelectFirst": true,    // 可选：加载后自动选中第一行（驱动子级联）
-  "aggregates":      { ... }, // 可选：该视图的聚合规则（sum/avg/count 等）
-
-  // ══ 额外命名视图（仅relation 引用了非 default viewId 时才写）══
-  "views": {
-    "detail": {              // 命名视图，viewId = "detail"
-      "aggregates": { ... }  // 该视图独立的聚合（可选）
+    // ══ 视图集合══════════════════════════════════
+    "views": {
+      "default": {              // ← default DataView（每张表必须声明）
+        "rows":            [...],   // 视图初始数据行（3-5 条测试行）
+        "autoLoad":        true,    // 可选：初始化后自动请求 api 加载数据
+        "autoSelectFirst": true,    // 可选：加载后自动选中第一行（驱动子级联）
+        "aggregates":      { ... }  // 可选：该视图的聚合规则（sum/avg/count 等）
+      },
+      "detail": {}              // 仅当某 relation 使用了此 viewId 时才添加
     }
   }
-}
+
+─────────── 额外命名视图（通常不需要）───────────
+
+绝大多数页面只需要 `views.default`。
+仅当某条 relation 的 `parentViewId` 或 `childViewId` 不是 `"default"` 时，
+才在 `views` 中添加对应的命名视图（空对象 `{}` 即可）。
+
+  口诀：先写 views.default → 检查 relations 有无非 default viewId
+         → 有则追加该视图名称 → 无则只保留 default
 
 ═══════════════════════════════════════════════════
 【3】列（Column）定义
@@ -314,7 +288,7 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 1. 【主键规则】每张业务表必须有且仅有一列声明 "isPrimaryKey": true，通常为 id 列
 
-2. 【测试数据】每张表在 rows 中提供 3-5 条有代表性的测试数据
+2. 【测试数据】每张表在 `views.default.rows` 中提供 3-5 条有代表性的测试数据
 
 3. 【外键完整性】rows 中的外键值必须对应父表 rows 中存在的 id 值，不允许引用不存在的父行
 
@@ -324,12 +298,14 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 6. 【标签规范】所有面向用户展示的字段须添加 label 属性（中文），id/外键列按需添加
 
-7. 【关系最小字段 + 命名视图声明】relation 至少包含 parentTable、childTable、childField 三个字段；
-   parentViewId / childViewId 均默认 'default'，单视图页面可省略；系统自动生成 filterExpression。
-   ⚠️ 若 parentViewId 或 childViewId 不是 'default'，该表的 views 键中必须显式声明该视图
-   （值为 {} 或含配置的对象），否则 DataSet 初始化时视图不存在，级联将无法生效。
-   示例：relation 使用 parentViewId: "detail" → Employees 表须包含 "views": { "detail": {} }
-   口诀：先不写 views → 检查 relation 有无非 default viewId → 有则补声明
+7. 【views 声明规则】每张表必须显式声明 views，且 views.default 始终存在：
+   - rows / aggregates / autoLoad / autoSelectFirst 均写在 views.default 内部，不写在表对象顶层
+   - api 字段保留在表对象顶层（与 columns 同级）
+   - relation 的 parentViewId / childViewId 均默认 'default'，单视图页面可省略
+   ⚠️ 若 relation 使用了非 default 的 parentViewId / childViewId，该表的 views 中必须显式声明该视图
+   （值为 {} 或含配置的对象），否则级联将无法生效。
+   示例：relation 使用 parentViewId: "detail" → Employees.views 须包含 "detail": {}
+   口诀：先写 views.default → 检查 relation 有无非 default viewId → 有则追加该视图名 → 无则只保留 default
 
 8. 【命名规范】表名用 PascalCase（OrderItems），字段名用 camelCase（orderId），
    dataSetName 以 DataSet 结尾（UserOrderDataSet）
@@ -359,11 +335,15 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "gradeAvg",  "type": "number",                       "label": "平均分",
             "computeExpression": "$avg('Grades', 'score')" }
         ],
-        "rows": [
-          { "id": 1, "name": "张三", "className": "高一(1)班" },
-          { "id": 2, "name": "李四", "className": "高一(1)班" },
-          { "id": 3, "name": "王五", "className": "高一(2)班" }
-        ]
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "张三", "className": "高一(1)班" },
+              { "id": 2, "name": "李四", "className": "高一(1)班" },
+              { "id": 3, "name": "王五", "className": "高一(2)班" }
+            ]
+          }
+        }
       },
       "Grades": {
         "columns": [
@@ -374,17 +354,21 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "grade",     "type": "string",                       "label": "等级",
             "computeExpression": "if (score >= 90) return 'A'; if (score >= 75) return 'B'; if (score >= 60) return 'C'; return 'D';" }
         ],
-        "rows": [                 // ← default DataView 的初始行（表级 rows = views.default.rows 简写）
-          { "id": 1001, "studentId": 1, "subject": "数学", "score": 95 },
-          { "id": 1002, "studentId": 1, "subject": "语文", "score": 82 },
-          { "id": 1003, "studentId": 2, "subject": "数学", "score": 76 },
-          { "id": 1004, "studentId": 2, "subject": "语文", "score": 68 },
-          { "id": 1005, "studentId": 3, "subject": "数学", "score": 55 },
-          { "id": 1006, "studentId": 3, "subject": "语文", "score": 70 }
-        ],
-        "aggregates": {           // ← default DataView 的聚合（表级 aggregates = views.default.aggregates 简写）
-          "score": { "type": "avg",   "label": "平均分" },
-          "id":    { "type": "count", "label": "科目数" }
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1001, "studentId": 1, "subject": "数学", "score": 95 },
+              { "id": 1002, "studentId": 1, "subject": "语文", "score": 82 },
+              { "id": 1003, "studentId": 2, "subject": "数学", "score": 76 },
+              { "id": 1004, "studentId": 2, "subject": "语文", "score": 68 },
+              { "id": 1005, "studentId": 3, "subject": "数学", "score": 55 },
+              { "id": 1006, "studentId": 3, "subject": "语文", "score": 70 }
+            ],
+            "aggregates": {
+              "score": { "type": "avg",   "label": "平均分" },
+              "id":    { "type": "count", "label": "科目数" }
+            }
+          }
         }
       }
     },
@@ -438,11 +422,15 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "phone",  "type": "string",                       "label": "手机号"   },
           { "name": "status", "type": "string",                       "label": "状态"     }
         ],
-        "rows": [
-          { "id": 1, "name": "张三", "cardNo": "LIB-001", "phone": "13800001001", "status": "active"    },
-          { "id": 2, "name": "李四", "cardNo": "LIB-002", "phone": "13800001002", "status": "active"    },
-          { "id": 3, "name": "王五", "cardNo": "LIB-003", "phone": "13800001003", "status": "suspended" }
-        ]
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "张三", "cardNo": "LIB-001", "phone": "13800001001", "status": "active"    },
+              { "id": 2, "name": "李四", "cardNo": "LIB-002", "phone": "13800001002", "status": "active"    },
+              { "id": 3, "name": "王五", "cardNo": "LIB-003", "phone": "13800001003", "status": "suspended" }
+            ]
+          }
+        }
       },
       "BorrowRecords": {
         "columns": [
@@ -454,12 +442,16 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "returnDate", "type": "date",   "allowDBNull": true,  "label": "实还日期" },
           { "name": "status",     "type": "string",                       "label": "借阅状态" }
         ],
-        "rows": [
-          { "id": 1001, "readerId": 1, "bookTitle": "JavaScript高级程序设计", "borrowDate": "2024-03-01", "dueDate": "2024-03-31", "returnDate": "2024-03-20", "status": "returned" },
-          { "id": 1002, "readerId": 1, "bookTitle": "Vue.js设计与实现",       "borrowDate": "2024-04-01", "dueDate": "2024-04-30", "returnDate": null,         "status": "borrowed" },
-          { "id": 1003, "readerId": 2, "bookTitle": "算法导论",               "borrowDate": "2024-04-05", "dueDate": "2024-05-05", "returnDate": "2024-04-28", "status": "returned" },
-          { "id": 1004, "readerId": 3, "bookTitle": "三体",                   "borrowDate": "2024-02-10", "dueDate": "2024-03-10", "returnDate": null,         "status": "overdue"  }
-        ]
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1001, "readerId": 1, "bookTitle": "JavaScript高级程序设计", "borrowDate": "2024-03-01", "dueDate": "2024-03-31", "returnDate": "2024-03-20", "status": "returned" },
+              { "id": 1002, "readerId": 1, "bookTitle": "Vue.js设计与实现",       "borrowDate": "2024-04-01", "dueDate": "2024-04-30", "returnDate": null,         "status": "borrowed" },
+              { "id": 1003, "readerId": 2, "bookTitle": "算法导论",               "borrowDate": "2024-04-05", "dueDate": "2024-05-05", "returnDate": "2024-04-28", "status": "returned" },
+              { "id": 1004, "readerId": 3, "bookTitle": "三体",                   "borrowDate": "2024-02-10", "dueDate": "2024-03-10", "returnDate": null,         "status": "overdue"  }
+            ]
+          }
+        }
       }
     },
     "relations": [
@@ -514,11 +506,15 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "totalAmount",  "type": "number",                       "label": "订单总额",
             "computeExpression": "$sum('OrderItems', 'subtotal')" }
         ],
-        "rows": [
-          { "id": 1, "orderNo": "ORD-2024001", "customerName": "张三", "orderDate": "2024-04-01", "status": "completed" },
-          { "id": 2, "orderNo": "ORD-2024002", "customerName": "李四", "orderDate": "2024-04-05", "status": "pending"   },
-          { "id": 3, "orderNo": "ORD-2024003", "customerName": "王五", "orderDate": "2024-04-10", "status": "shipped"   }
-        ]
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "orderNo": "ORD-2024001", "customerName": "张三", "orderDate": "2024-04-01", "status": "completed" },
+              { "id": 2, "orderNo": "ORD-2024002", "customerName": "李四", "orderDate": "2024-04-05", "status": "pending"   },
+              { "id": 3, "orderNo": "ORD-2024003", "customerName": "王五", "orderDate": "2024-04-10", "status": "shipped"   }
+            ]
+          }
+        }
       },
       "OrderItems": {
         "columns": [
@@ -530,16 +526,20 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "subtotal",    "type": "number",                       "label": "小计",
             "computeExpression": "quantity * unitPrice" }
         ],
-        "rows": [
-          { "id": 1001, "orderId": 1, "productName": "无线鼠标",   "quantity": 2, "unitPrice": 99.99  },
-          { "id": 1002, "orderId": 1, "productName": "机械键盘",   "quantity": 1, "unitPrice": 299.00 },
-          { "id": 1003, "orderId": 2, "productName": "USB集线器", "quantity": 3, "unitPrice": 59.00  },
-          { "id": 1004, "orderId": 3, "productName": "显示器支架", "quantity": 1, "unitPrice": 189.00 },
-          { "id": 1005, "orderId": 3, "productName": "鼠标垫",     "quantity": 2, "unitPrice": 35.00  }
-        ],
-        "aggregates": {
-          "quantity": { "type": "sum", "label": "总数量"   },
-          "subtotal": { "type": "sum", "label": "合计金额" }
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1001, "orderId": 1, "productName": "无线鼠标",   "quantity": 2, "unitPrice": 99.99  },
+              { "id": 1002, "orderId": 1, "productName": "机械键盘",   "quantity": 1, "unitPrice": 299.00 },
+              { "id": 1003, "orderId": 2, "productName": "USB集线器", "quantity": 3, "unitPrice": 59.00  },
+              { "id": 1004, "orderId": 3, "productName": "显示器支架", "quantity": 1, "unitPrice": 189.00 },
+              { "id": 1005, "orderId": 3, "productName": "鼠标垫",     "quantity": 2, "unitPrice": 35.00  }
+            ],
+            "aggregates": {
+              "quantity": { "type": "sum", "label": "总数量"   },
+              "subtotal": { "type": "sum", "label": "合计金额" }
+            }
+          }
         }
       }
     },
@@ -590,12 +590,16 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
             "computeExpression": "$count('Employees')" }
         ],
         "api":      "/api/departments",
-        "rows": [
-          { "id": 1, "name": "技术部", "managerId": 101  },
-          { "id": 2, "name": "产品部", "managerId": 201  },
-          { "id": 3, "name": "市场部", "managerId": null }
-        ],
-        "autoLoad": true
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "技术部", "managerId": 101  },
+              { "id": 2, "name": "产品部", "managerId": 201  },
+              { "id": 3, "name": "市场部", "managerId": null }
+            ],
+            "autoLoad": true
+          }
+        }
       },
       "Employees": {
         "columns": [
@@ -610,17 +614,21 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
             "computeExpression": "if (salary >= 30000) return 'S'; if (salary >= 20000) return 'A'; if (salary >= 10000) return 'B'; return 'C';" }
         ],
         "api":      "/api/employees",
-        "rows": [
-          { "id": 101, "deptId": 1, "name": "张工", "gender": "男", "position": "高级工程师", "salary": 28000, "hireDate": "2020-03-15" },
-          { "id": 102, "deptId": 1, "name": "李工", "gender": "女", "position": "工程师",     "salary": 18000, "hireDate": "2021-07-01" },
-          { "id": 201, "deptId": 2, "name": "王总", "gender": "男", "position": "产品总监",   "salary": 35000, "hireDate": "2019-05-20" },
-          { "id": 202, "deptId": 2, "name": "赵妹", "gender": "女", "position": "产品经理",   "salary": 22000, "hireDate": "2022-01-10" },
-          { "id": 301, "deptId": 3, "name": "孙明", "gender": "男", "position": "市场专员",   "salary": 9500,  "hireDate": "2023-06-01" }
-        ],
-        "autoLoad": false,
-        "aggregates": {
-          "salary": { "type": "avg",   "label": "平均薪资" },
-          "id":     { "type": "count", "label": "人数"     }
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 101, "deptId": 1, "name": "张工", "gender": "男", "position": "高级工程师", "salary": 28000, "hireDate": "2020-03-15" },
+              { "id": 102, "deptId": 1, "name": "李工", "gender": "女", "position": "工程师",     "salary": 18000, "hireDate": "2021-07-01" },
+              { "id": 201, "deptId": 2, "name": "王总", "gender": "男", "position": "产品总监",   "salary": 35000, "hireDate": "2019-05-20" },
+              { "id": 202, "deptId": 2, "name": "赵妹", "gender": "女", "position": "产品经理",   "salary": 22000, "hireDate": "2022-01-10" },
+              { "id": 301, "deptId": 3, "name": "孙明", "gender": "男", "position": "市场专员",   "salary": 9500,  "hireDate": "2023-06-01" }
+            ],
+            "autoLoad": false,
+            "aggregates": {
+              "salary": { "type": "avg",   "label": "平均薪资" },
+              "id":     { "type": "count", "label": "人数"     }
+            }
+          }
         }
       }
     },
@@ -671,11 +679,15 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "doctorCount", "type": "number",                       "label": "医生数量",
             "computeExpression": "$count('Doctors')" }
         ],
-        "rows": [
-          { "id": 1, "name": "内科", "floor": 2 },
-          { "id": 2, "name": "外科", "floor": 3 },
-          { "id": 3, "name": "儿科", "floor": 4 }
-        ]
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "内科", "floor": 2 },
+              { "id": 2, "name": "外科", "floor": 3 },
+              { "id": 3, "name": "儿科", "floor": 4 }
+            ]
+          }
+        }
       },
       "Doctors": {
         "columns": [
@@ -687,12 +699,16 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "appointmentCount", "type": "number",                       "label": "预约数量",
             "computeExpression": "$count('Appointments')" }
         ],
-        "rows": [
-          { "id": 101, "departmentId": 1, "name": "张明", "title": "主任医师",   "fee": 100 },
-          { "id": 102, "departmentId": 1, "name": "李华", "title": "副主任医师", "fee": 80  },
-          { "id": 103, "departmentId": 2, "name": "王强", "title": "主治医师",   "fee": 60  },
-          { "id": 104, "departmentId": 3, "name": "赵芳", "title": "住院医师",   "fee": 50  }
-        ]
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 101, "departmentId": 1, "name": "张明", "title": "主任医师",   "fee": 100 },
+              { "id": 102, "departmentId": 1, "name": "李华", "title": "副主任医师", "fee": 80  },
+              { "id": 103, "departmentId": 2, "name": "王强", "title": "主治医师",   "fee": 60  },
+              { "id": 104, "departmentId": 3, "name": "赵芳", "title": "住院医师",   "fee": 50  }
+            ]
+          }
+        }
       },
       "Appointments": {
         "columns": [
@@ -702,14 +718,18 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "appointDate", "type": "date",                         "label": "预约日期" },
           { "name": "status",      "type": "string",                       "label": "状态"     }
         ],
-        "rows": [
-          { "id": 1001, "doctorId": 101, "patientName": "患者甲", "appointDate": "2024-03-01", "status": "已完成" },
-          { "id": 1002, "doctorId": 101, "patientName": "患者乙", "appointDate": "2024-03-05", "status": "待诊"   },
-          { "id": 1003, "doctorId": 102, "patientName": "患者丙", "appointDate": "2024-03-06", "status": "就诊中" },
-          { "id": 1004, "doctorId": 103, "patientName": "患者丁", "appointDate": "2024-03-07", "status": "待诊"   }
-        ],
-        "aggregates": {
-          "id": { "type": "count", "label": "预约总数" }
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1001, "doctorId": 101, "patientName": "患者甲", "appointDate": "2024-03-01", "status": "已完成" },
+              { "id": 1002, "doctorId": 101, "patientName": "患者乙", "appointDate": "2024-03-05", "status": "待诊"   },
+              { "id": 1003, "doctorId": 102, "patientName": "患者丙", "appointDate": "2024-03-06", "status": "就诊中" },
+              { "id": 1004, "doctorId": 103, "patientName": "患者丁", "appointDate": "2024-03-07", "status": "待诊"   }
+            ],
+            "aggregates": {
+              "id": { "type": "count", "label": "预约总数" }
+            }
+          }
         }
       }
     },
@@ -755,12 +775,14 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "department", "type": "string",                       "label": "部门"     },
           { "name": "hireDate",   "type": "date",                         "label": "入职日期" }
         ],
-        "rows": [
-          { "id": 1, "name": "张三", "department": "技术部", "hireDate": "2022-01-15" },
-          { "id": 2, "name": "李四", "department": "市场部", "hireDate": "2021-06-01" },
-          { "id": 3, "name": "王五", "department": "技术部", "hireDate": "2023-03-10" }
-        ],
         "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "张三", "department": "技术部", "hireDate": "2022-01-15" },
+              { "id": 2, "name": "李四", "department": "市场部", "hireDate": "2021-06-01" },
+              { "id": 3, "name": "王五", "department": "技术部", "hireDate": "2023-03-10" }
+            ]
+          },
           "detail": {}
         }
       },
@@ -771,11 +793,15 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "date",       "type": "date",                         "label": "日期"   },
           { "name": "status",     "type": "string",                       "label": "状态"   }
         ],
-        "rows": [
-          { "id": 101, "employeeId": 1, "date": "2024-03-01", "status": "正常" },
-          { "id": 102, "employeeId": 1, "date": "2024-03-04", "status": "迟到" },
-          { "id": 103, "employeeId": 2, "date": "2024-03-01", "status": "正常" }
-        ]
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 101, "employeeId": 1, "date": "2024-03-01", "status": "正常" },
+              { "id": 102, "employeeId": 1, "date": "2024-03-04", "status": "迟到" },
+              { "id": 103, "employeeId": 2, "date": "2024-03-01", "status": "正常" }
+            ]
+          }
+        }
       },
       "SalaryRecords": {
         "columns": [
@@ -787,13 +813,17 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "totalSalary", "type": "number",                       "label": "合计工资",
             "computeExpression": "baseSalary + bonus" }
         ],
-        "rows": [
-          { "id": 101, "employeeId": 1, "month": "2024-01", "baseSalary": 10000, "bonus": 2000 },
-          { "id": 102, "employeeId": 1, "month": "2024-02", "baseSalary": 10000, "bonus": 1500 },
-          { "id": 103, "employeeId": 2, "month": "2024-01", "baseSalary": 8000,  "bonus": 3000 }
-        ],
-        "aggregates": {
-          "totalSalary": { "type": "sum", "label": "工资总计" }
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 101, "employeeId": 1, "month": "2024-01", "baseSalary": 10000, "bonus": 2000 },
+              { "id": 102, "employeeId": 1, "month": "2024-02", "baseSalary": 10000, "bonus": 1500 },
+              { "id": 103, "employeeId": 2, "month": "2024-01", "baseSalary": 8000,  "bonus": 3000 }
+            ],
+            "aggregates": {
+              "totalSalary": { "type": "sum", "label": "工资总计" }
+            }
+          }
         }
       }
     },
@@ -850,14 +880,18 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "contact", "type": "string",                       "label": "联系人"     },
           { "name": "rating",  "type": "number",                       "label": "评级"       }
         ],
-        "api":             "/api/suppliers",
-        "rows": [
-          { "id": 1, "name": "供应商甲", "contact": "张经理", "rating": 5 },
-          { "id": 2, "name": "供应商乙", "contact": "李经理", "rating": 4 },
-          { "id": 3, "name": "供应商丙", "contact": "王经理", "rating": 3 }
-        ],
-        "autoLoad":        true,
-        "autoSelectFirst": true
+        "api": "/api/suppliers",
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "供应商甲", "contact": "张经理", "rating": 5 },
+              { "id": 2, "name": "供应商乙", "contact": "李经理", "rating": 4 },
+              { "id": 3, "name": "供应商丙", "contact": "王经理", "rating": 3 }
+            ],
+            "autoLoad":        true,
+            "autoSelectFirst": true
+          }
+        }
       },
       "PurchaseOrders": {
         "columns": [
@@ -868,11 +902,15 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
             "computeExpression": "$sum('PurchaseDetails', 'subTotal')" }
         ],
         "api": "/api/purchase-orders",
-        "rows": [
-          { "id": 101, "supplierId": 1, "orderDate": "2024-03-01" },
-          { "id": 102, "supplierId": 1, "orderDate": "2024-03-10" },
-          { "id": 103, "supplierId": 2, "orderDate": "2024-03-05" }
-        ]
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 101, "supplierId": 1, "orderDate": "2024-03-01" },
+              { "id": 102, "supplierId": 1, "orderDate": "2024-03-10" },
+              { "id": 103, "supplierId": 2, "orderDate": "2024-03-05" }
+            ]
+          }
+        }
       },
       "PurchaseDetails": {
         "columns": [
@@ -885,15 +923,19 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
             "computeExpression": "quantity * unitPrice" }
         ],
         "api": "/api/purchase-details",
-        "rows": [
-          { "id": 1001, "orderId": 101, "productName": "零件A", "quantity": 100, "unitPrice": 5.5  },
-          { "id": 1002, "orderId": 101, "productName": "零件B", "quantity":  50, "unitPrice": 12.0 },
-          { "id": 1003, "orderId": 103, "productName": "设备C", "quantity":   2, "unitPrice": 3500 },
-          { "id": 1004, "orderId": 102, "productName": "零件D", "quantity": 200, "unitPrice": 1.8  }
-        ],
-        "aggregates": {
-          "subTotal":  { "type": "sum", "label": "合计金额" },
-          "quantity":  { "type": "sum", "label": "合计数量" }
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1001, "orderId": 101, "productName": "零件A", "quantity": 100, "unitPrice": 5.5  },
+              { "id": 1002, "orderId": 101, "productName": "零件B", "quantity":  50, "unitPrice": 12.0 },
+              { "id": 1003, "orderId": 103, "productName": "设备C", "quantity":   2, "unitPrice": 3500 },
+              { "id": 1004, "orderId": 102, "productName": "零件D", "quantity": 200, "unitPrice": 1.8  }
+            ],
+            "aggregates": {
+              "subTotal":  { "type": "sum", "label": "合计金额" },
+              "quantity":  { "type": "sum", "label": "合计数量" }
+            }
+          }
         }
       }
     },
@@ -934,7 +976,7 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 ### 数据层面
 
-- [ ] 每张表有 3-5 条 `rows`
+- [ ] 每张表的 `views.default.rows` 中有 3-5 条数据
 - [ ] 有 `computeExpression` 的列，rows 中**不含该列的值**
 - [ ] 从表 rows 中的外键值在主表 rows 中**全部存在**（外键完整性）
 - [ ] 可空字段已设 `"allowDBNull": true`，且 rows 中允许出现 `null`
