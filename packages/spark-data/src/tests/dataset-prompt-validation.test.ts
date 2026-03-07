@@ -562,3 +562,195 @@ describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
     expect(employees.crudService).not.toBeNull()
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 案例 G：仓库库存管理
+// 验证 v1.9 提示词修正的所有新特性：
+//   - integer / decimal 类型
+//   - 复合主键（多列 isPrimaryKey: true → 自动合成 _pk）
+//   - $list 聚合函数
+//   - aggregates field 覆盖（输出名 ≠ 源字段名）
+//   - aggregates separator（join 分隔符）
+//   - parentField（父视图匹配字段）
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CASE_G_JSON = {
+  dataset: {
+    dataSetName: 'WarehouseInventoryDataSet',
+    tables: {
+      Warehouses: {
+        columns: [
+          { name: 'id',            type: 'integer', isPrimaryKey: true, label: '仓库ID'   },
+          { name: 'name',          type: 'varchar',                     label: '仓库名称' },
+          { name: 'city',          type: 'varchar',                     label: '所在城市' },
+          // $sum 子表聚合：聚合 StockItems.totalValue
+          { name: 'totalStockValue', type: 'decimal', label: '库存总值',
+            computeExpression: "$sum('StockItems', 'totalValue')" },
+          // $list → 返回产品编码数组（unknown[]）
+          { name: 'productCodes',  type: 'array',                       label: '产品编码列表',
+            computeExpression: "$list('StockItems', 'productCode')" },
+          // $join → 返回产品名称拼接字符串
+          { name: 'productNames',  type: 'string',                      label: '产品名称拼接',
+            computeExpression: "$join('StockItems', 'productName', ' / ')" },
+        ],
+        views: {
+          default: {
+            rows: [
+              { id: 1, name: '北京仓', city: '北京' },
+              { id: 2, name: '上海仓', city: '上海' },
+            ],
+          },
+        },
+      },
+      StockItems: {
+        columns: [
+          // 复合主键：两列同时标记 isPrimaryKey → 框架自动合成 _pk 计算列
+          { name: 'warehouseId',  type: 'integer', isPrimaryKey: true, label: '仓库ID'   },
+          { name: 'productCode',  type: 'varchar', isPrimaryKey: true, label: '产品编码' },
+          { name: 'productName',  type: 'varchar',                     label: '产品名称' },
+          { name: 'quantity',     type: 'integer',                     label: '库存数量' },
+          { name: 'unitPrice',    type: 'decimal',                     label: '单价'     },
+          // 计算列：数量 * 单价
+          { name: 'totalValue',   type: 'decimal',                     label: '库存价值',
+            computeExpression: 'quantity * unitPrice' },
+        ],
+        views: {
+          default: {
+            rows: [
+              { warehouseId: 1, productCode: 'P001', productName: '笔记本电脑', quantity: 10,  unitPrice: 5999.99 },
+              { warehouseId: 1, productCode: 'P002', productName: '无线鼠标',   quantity: 50,  unitPrice: 99.50   },
+              { warehouseId: 2, productCode: 'P001', productName: '笔记本电脑', quantity: 5,   unitPrice: 5999.99 },
+              { warehouseId: 2, productCode: 'P003', productName: '机械键盘',   quantity: 20,  unitPrice: 299.00  },
+            ],
+            aggregates: {
+              // field 覆盖：输出键 totalVal，源字段 totalValue
+              totalVal:    { type: 'sum',  field: 'totalValue', label: '库存总值'  },
+              // separator：join 类型使用自定义分隔符
+              productList: { type: 'join', field: 'productName', separator: ' | ', label: '产品列表' },
+            },
+          },
+        },
+      },
+    },
+    relations: [
+      {
+        relationName:   'WarehouseStock',
+        parentTable:    'Warehouses',
+        parentField:    'id',            // 显式声明 parentField（默认取主键，此处等价）
+        childTable:     'StockItems',
+        childField:     'warehouseId',
+        dependencyType: 'currentRow',
+      },
+    ],
+  },
+}
+
+describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', () => {
+  it('G-1: fromPageData 成功实例化', () => {
+    expect(() => fromPromptJson(CASE_G_JSON)).not.toThrow()
+  })
+
+  it('G-2: integer / decimal / varchar 类型被框架接受，rows 加载正确', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    expect(ds.getView('Warehouses')!.rows).toHaveLength(2)
+    expect(ds.getView('StockItems')!.rows).toHaveLength(4)
+  })
+
+  it('G-3: 复合主键 → primaryKey 变为 _pk，_pk 值已自动填充', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const items = ds.getView('StockItems')!
+    // 多列 isPrimaryKey 时框架注入 _pk 计算列（字段名合并）
+    expect(items.primaryKey).toBe('_pk')
+    // 每行都有 _pk 值
+    expect(items.rows.every(r => r['_pk'] !== undefined)).toBe(true)
+    // 前两行 warehouseId=1 但 productCode 不同，_pk 应不同
+    expect(items.rows[0]!['_pk']).not.toBe(items.rows[1]!['_pk'])
+  })
+
+  it('G-4: 计算列 totalValue = quantity * unitPrice（decimal 精度）', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const items = ds.getView('StockItems')!
+    // P001@仓库1: 10 * 5999.99 = 59999.9
+    expect(f(items.rows[0], 'totalValue') as number).toBeCloseTo(59999.9, 1)
+    // P002@仓库1: 50 * 99.50 = 4975
+    expect(f(items.rows[1], 'totalValue') as number).toBeCloseTo(4975, 1)
+    // P001@仓库2: 5 * 5999.99 = 29999.95
+    expect(f(items.rows[2], 'totalValue') as number).toBeCloseTo(29999.95, 1)
+    // P003@仓库2: 20 * 299.00 = 5980
+    expect(f(items.rows[3], 'totalValue') as number).toBeCloseTo(5980, 1)
+  })
+
+  it('G-5: $join 计算列 productNames 在 Warehouses 上正确聚合（级联前基于全量行）', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const warehouses = ds.getView('Warehouses')!
+    // 仓库1的 productNames: 笔记本电脑 / 无线鼠标（按 rows 顺序）
+    expect(f(warehouses.rows[0], 'productNames')).toBe('笔记本电脑 / 无线鼠标')
+    // 仓库2的 productNames: 笔记本电脑 / 机械键盘
+    expect(f(warehouses.rows[1], 'productNames')).toBe('笔记本电脑 / 机械键盘')
+  })
+
+  it('G-6: $sum 计算列 totalStockValue 在 Warehouses 上正确', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const warehouses = ds.getView('Warehouses')!
+    // 仓库1: 59999.9 + 4975 = 64974.9
+    expect(f(warehouses.rows[0], 'totalStockValue') as number).toBeCloseTo(64974.9, 0)
+    // 仓库2: 29999.95 + 5980 = 35979.95
+    expect(f(warehouses.rows[1], 'totalStockValue') as number).toBeCloseTo(35979.95, 0)
+  })
+
+  it('G-7: aggregates field 覆盖 — totalVal.field = totalValue', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const items = ds.getView('StockItems')!
+    // summaryRow 输出键是 totalVal（不是 totalValue）
+    // 全部 4 行: 59999.9 + 4975 + 29999.95 + 5980 = 100954.85
+    expect(f(items.summaryRow, 'totalVal') as number).toBeCloseTo(100954.85, 0)
+    // 原字段名 totalValue 不应出现在 summaryRow 中（键名覆盖）
+    expect(f(items.summaryRow, 'totalValue')).toBeUndefined()
+  })
+
+  it('G-8: aggregates separator — productList 使用 " | " 分隔', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const items = ds.getView('StockItems')!
+    // 全部 4 行产品名用 " | " 拼接
+    expect(f(items.summaryRow, 'productList')).toBe('笔记本电脑 | 无线鼠标 | 笔记本电脑 | 机械键盘')
+  })
+
+  it('G-9: 内存级联（parentField 显式声明）— 选中仓库 1 → StockItems 显示 2 条', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const warehouses = ds.getView('Warehouses')!
+    const items      = ds.getView('StockItems')!
+
+    warehouses.selection.setCurrentRow(warehouses.rows[0]!) // 北京仓 id=1
+    expect(items.rows).toHaveLength(2)
+    expect(items.rows.every(r => f(r, 'warehouseId') === 1)).toBe(true)
+  })
+
+  it('G-10: 级联后 aggregates 只汇总过滤行（field 覆盖 + separator 均有效）', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const warehouses = ds.getView('Warehouses')!
+    const items      = ds.getView('StockItems')!
+
+    warehouses.selection.setCurrentRow(warehouses.rows[0]!) // 北京仓：2 条
+    // totalVal = 59999.9 + 4975 = 64974.9
+    expect(f(items.summaryRow, 'totalVal') as number).toBeCloseTo(64974.9, 0)
+    // productList separator
+    expect(f(items.summaryRow, 'productList')).toBe('笔记本电脑 | 无线鼠标')
+  })
+
+  it('G-11: $list 计算列 productCodes 返回产品编码数组', () => {
+    const ds = fromPromptJson(CASE_G_JSON)
+    const warehouses = ds.getView('Warehouses')!
+    // 仓库1（北京仓）: P001, P002
+    const codes1 = f(warehouses.rows[0], 'productCodes') as unknown[]
+    expect(Array.isArray(codes1)).toBe(true)
+    expect(codes1).toHaveLength(2)
+    expect(codes1).toContain('P001')
+    expect(codes1).toContain('P002')
+    // 仓库2（上海仓）: P001, P003
+    const codes2 = f(warehouses.rows[1], 'productCodes') as unknown[]
+    expect(Array.isArray(codes2)).toBe(true)
+    expect(codes2).toHaveLength(2)
+    expect(codes2).toContain('P001')
+    expect(codes2).toContain('P003')
+  })
+})

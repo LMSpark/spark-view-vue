@@ -16,6 +16,7 @@
    - [案例 D：医院门诊管理（三级层次 + 多计算列）](#案例-d医院门诊管理三级层次--多计算列--聚合)
    - [案例 E：员工系统双视图（同父表不同视图驱动不同子表）](#案例-e员工系统双视图同一父表不同命名视图分别驱动不同子表)
    - [案例 F：供应商采购管理（三级层次 + API + 计算列 + 聚合）](#案例-f供应商采购管理三级层次--api--计算列--聚合)
+   - [案例 G：仓库库存管理（v1.9 新特性：复合主键 + integer/decimal + $list + aggregates.field/separator）](#案例-g仓库库存管理v19-新特性复合主键--integerdecimal--list--aggregatesfieldseparator)
 5. [JSON 自检清单](#5-json-自检清单)
 6. [配置参考速查](#6-配置参考速查)
 
@@ -916,6 +917,95 @@ true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /a
 - ✅ 三级外键完整性：supplierId ∈ {1,2,3}，orderId ∈ {101,102,103}
 - ✅ totalAmount 和 subTotal 均为计算列，rows 中均无这两个字段值
 - ✅ 三表均有 api 且同时有 rows（API 场景：rows 提供本地演示数据，api 用于生产请求，两者并存合法）
+
+---
+
+### 案例 G：仓库库存管理（v1.9 新特性：复合主键 + integer/decimal + $list + aggregates.field/separator）✅ 已通过 DataSet 实例化测试
+
+**需求描述**：
+- 仓库表（Warehouses）：ID（integer）、名称（varchar）、城市（varchar）；自动计算：库存总值（`$sum`）、产品编码列表（`$list`，返回数组）、产品名称拼接（`$join`，分隔符 ` / `）
+- 库存明细表（StockItems）：**复合主键**（warehouseId + productCode，两列同时标记 `isPrimaryKey: true`，框架自动合成 `_pk`）、产品名称（varchar）、数量（integer）、单价（decimal）；计算列：库存价值（数量 × 单价）；聚合：`totalVal`（sum，`field` 覆盖源字段 `totalValue`）、`productList`（join，`separator: " | "`）
+- 关联：点击仓库 → 显示该仓库的库存明细（`parentField` 显式声明）
+- 纯静态数据，无后端 API
+
+**生成结果**（按提示词规范生成，覆盖 v1.9 所有新特性）：
+
+```json
+{
+  "dataset": {
+    "dataSetName": "WarehouseInventoryDataSet",
+    "tables": {
+      "Warehouses": {
+        "columns": [
+          { "name": "id",              "type": "integer", "isPrimaryKey": true, "label": "仓库ID"       },
+          { "name": "name",            "type": "varchar",                       "label": "仓库名称"   },
+          { "name": "city",            "type": "varchar",                       "label": "所在城市"   },
+          { "name": "totalStockValue", "type": "decimal",                       "label": "库存总值",
+            "computeExpression": "$sum('StockItems', 'totalValue')" },
+          { "name": "productCodes",    "type": "array",                         "label": "产品编码列表",
+            "computeExpression": "$list('StockItems', 'productCode')" },
+          { "name": "productNames",    "type": "string",                        "label": "产品名称拼接",
+            "computeExpression": "$join('StockItems', 'productName', ' / ')" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "北京仓", "city": "北京" },
+              { "id": 2, "name": "上海仓", "city": "上海" }
+            ]
+          }
+        }
+      },
+      "StockItems": {
+        "columns": [
+          { "name": "warehouseId",  "type": "integer", "isPrimaryKey": true, "label": "仓库ID"   },
+          { "name": "productCode",  "type": "varchar", "isPrimaryKey": true, "label": "产品编码" },
+          { "name": "productName",  "type": "varchar",                       "label": "产品名称" },
+          { "name": "quantity",     "type": "integer",                       "label": "库存数量" },
+          { "name": "unitPrice",    "type": "decimal",                       "label": "单价"     },
+          { "name": "totalValue",   "type": "decimal",                       "label": "库存价值",
+            "computeExpression": "quantity * unitPrice" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "warehouseId": 1, "productCode": "P001", "productName": "笔记本电脑", "quantity": 10, "unitPrice": 5999.99 },
+              { "warehouseId": 1, "productCode": "P002", "productName": "无线鼠标",   "quantity": 50, "unitPrice": 99.50   },
+              { "warehouseId": 2, "productCode": "P001", "productName": "笔记本电脑", "quantity": 5,  "unitPrice": 5999.99 },
+              { "warehouseId": 2, "productCode": "P003", "productName": "机械键盘",   "quantity": 20, "unitPrice": 299.00  }
+            ],
+            "aggregates": {
+              "totalVal":    { "type": "sum",  "field": "totalValue",  "label": "库存总值"  },
+              "productList": { "type": "join", "field": "productName", "separator": " | ", "label": "产品列表" }
+            }
+          }
+        }
+      }
+    },
+    "relations": [
+      {
+        "relationName":   "WarehouseStock",
+        "parentTable":    "Warehouses",
+        "parentField":    "id",
+        "childTable":     "StockItems",
+        "childField":     "warehouseId",
+        "dependencyType": "currentRow"
+      }
+    ]
+  }
+}
+```
+
+**验证通过要点**：
+- ✅ `integer` / `decimal` / `varchar` / `array` 类型均可被框架解析（v1.9 补充类型）
+- ✅ `StockItems` 两列同时标记 `"isPrimaryKey": true` → 框架自动合成 `_pk` 计算列（复合主键）
+- ✅ `$list('StockItems', 'productCode')` 返回 `unknown[]` 数组（v1.9 新增函数），rows 中**不含 productCodes 值**
+- ✅ `aggregates.totalVal.field = 'totalValue'`：输出键名（totalVal）与源字段名（totalValue）不同（field 覆盖）
+- ✅ `aggregates.productList.separator = ' | '`：join 类型自定义分隔符（默认 ', '）
+- ✅ `relations[0].parentField = 'id'`：显式声明父视图匹配字段（v1.9 补充文档）
+- ✅ 规则 10：无 api 字段（纯静态数据），级联走内存过滤路径
+- ✅ 外键完整性：StockItems.warehouseId ∈ {1, 2}，均在 Warehouses.rows 中存在
+- ✅ 计算列（totalStockValue / productCodes / productNames / totalValue）在 rows 中**均不填充值**
 
 ---
 
