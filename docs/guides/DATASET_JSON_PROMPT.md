@@ -91,62 +91,36 @@ SPARK DataSet 规范的 pagedata.json 配置文件。仅输出完整的 JSON，�
 【2】三层结构：DataSet → 表（DataTable）→ 视图（DataView）
 ═══════════════════════════════════════════════════
 
-⚑ 必读：完整的三层层次结构
+每张表有两层：DataTable（列定义 + api）+ DataView（数据层，UI 唯一来源）：
 
-DataSet 是整个页面的数据容器，内部结构分三层：
+  DataSet
+    └── DataTable "Orders"
+          ├── columns: [...]        ← 列定义（与视图无关）
+          ├── api: "/api/..."       ← 可选
+          └── DataView "default"
+                ├── rows: [...]          ← 表格 / 表单绑定
+                ├── currentRow           ← 驱动 currentRow 依赖
+                ├── selectedRows: [...]  ← 驱动 selectedRows 依赖
+                ├── summaryRow           ← aggregates 全行汇总
+                ├── selectionSummaryRow  ← aggregates 选中行汇总
+                └── aggregates: {...}    ← 视图级聚合规则
 
-  DataSet                              ← 页面数据容器（仅一个）
-    ├── DataTable "Orders"             ← 第二层：表（结构层，全视图共用）
-    │     ├── columns: [...]           │   存放列定义 + api 端点，不含行数据
-    │     ├── api: "/api/orders"       │
-    │     │                            │
-    │     └── DataView "default"  ✦   ← 第三层：视图（数据层，UI 唯一来源）
-    │           ├── rows: [...]        │   ⬅ UI 表格 / 表单绑定的是这里
-    │           ├── currentRow         │   ⬅ 驱动子级联的状态在这里
-    │           ├── summaryRow         │   ⬅ aggregates 汇总结果在这里
-    │           └── aggregates: {...}  │
-    │
-    └── DataTable "OrderItems"
-          ├── columns: [...]
-          │
-          └── DataView "default"  ✦   ← 每张表自动创建，无需声明
-                ├── rows: [...]        （级联过滤后只显示当前订单的明细行）
-                ├── currentRow
-                └── aggregates: {...}
-
-✦ **每张表构造时自动拥有一个 "default" DataView**，无需在 JSON 中声明。
-  所有表格 / 表单 / 详情页都通过 DataView（而非 DataTable）读写数据。
-
-─────────── 显式声明 views.default（标准写法）───────────
-
-rows / aggregates / autoLoad / autoSelectFirst 等**视图级配置**必须写在
-`views.default` 内部，不要放在表对象顶层：
+每张表对象的标准写法（rows / aggregates / autoLoad 均在 views.default 内）：
 
   "TableName": {
-    // ══ DataTable 层（全视图共用）══════════════
-    "columns":  [...],          // 必填：列定义（字段名、类型、主键、计算列）
-    "api":      "/api/...",     // 可选：有后端接口时填写
-
-    // ══ 视图集合══════════════════════════════════
+    "columns": [...],                  // 必填
+    "api":     "/api/...",             // 可选：有后端接口时填写
     "views": {
-      "default": {              // ← default DataView（每张表必须声明）
-        "rows":            [...],   // 视图初始数据行（3-5 条测试行）
-        "autoLoad":        true,    // 可选：初始化后自动请求 api 加载数据
-        "autoSelectFirst": true,    // 可选：加载后自动选中第一行（驱动子级联）
-        "aggregates":      { ... }  // 可选：该视图的聚合规则（sum/avg/count 等）
+      "default": {                     // 必须显式声明
+        "rows":             [...],     // 3-5 条测试行
+        "autoLoad":         true,      // 可选：初始化后自动请求 api 加载数据
+        "autoCurrentFirst": true,      // 可选：加载后自动将第一行设为 currentRow（驱动 currentRow 级联）
+        "autoSelectFirst":  true,      // 可选：加载后自动将第一行加入 selectedRows（驱动 selectedRows 级联）
+        "aggregates":       { ... }    // 可选：聚合规则
       },
-      "detail": {}              // 仅当某 relation 使用了此 viewId 时才添加
+      "otherViewId": {}                // 仅当某 relation 使用了此 viewId 时才添加
     }
   }
-
-─────────── 额外命名视图（通常不需要）───────────
-
-绝大多数页面只需要 `views.default`。
-仅当某条 relation 的 `parentViewId` 或 `childViewId` 不是 `"default"` 时，
-才在 `views` 中添加对应的命名视图（空对象 `{}` 即可）。
-
-  口诀：先写 views.default → 检查 relations 有无非 default viewId
-         → 有则追加该视图名称 → 无则只保留 default
 
 ═══════════════════════════════════════════════════
 【3】列（Column）定义
@@ -158,7 +132,7 @@ rows / aggregates / autoLoad / autoSelectFirst 等**视图级配置**必须写�
   "name":              "fieldName",   // 必填：camelCase 字段名
   "type":              "string",      // 必填：见「数据类型」
   "label":             "字段标签",    // 推荐：UI 表头显示文字（中文）
-  "isPrimaryKey":      true,          // 主键列专用（每表仅一列）
+  "isPrimaryKey":      true,          // 标记主键列（多列同时标记 → 自动合成复合主键 _pk）
   "autoIncrement":     true,          // 可选：自增主键
   "allowDBNull":       false,         // 可选：是否允许空值
   "defaultValue":      null,          // 可选：字段默认值
@@ -166,27 +140,16 @@ rows / aggregates / autoLoad / autoSelectFirst 等**视图级配置**必须写�
 }
 
 数据类型（type）完整列表：
-number | int | string | varchar | text | boolean | bool |
+number | int | integer | decimal | float | double |
+string | varchar | text | boolean | bool |
 date | datetime | time | object | array | enum
 
 ═══════════════════════════════════════════════════
 【4】视图关联关系（Relations）
 ═══════════════════════════════════════════════════
 
-relations 定义的是**两个 DataView 之间的依赖关系**。回顾架构：UI 只能通过
-DataView 与数据交互，因此「父子关联」也是视图层面的概念，而非表结构关系。
-
-一条 relation = 将「父视图」的交互状态变化，映射为「子视图」的数据过滤：
-
-  父视图（parentTable + parentViewId）
-    -- 用户切换当前行 / 勾选行 -->
-  子视图（childTable + childViewId）自动重新过滤，只显示匹配父视图当前状态的行
-
-关键规则：
-- `parentTable + parentViewId`（默认 'default'）唯一标识父视图
-- `childTable  + childViewId` （默认 'default'）唯一标识子视图
-- 单张表可有多个命名视图，同一父表可与不同子视图建立多条独立关联
-- 绝大多数页面只有 default 视图，parentViewId / childViewId 可省略
+父视图的交互状态变化（切换当前行 / 勾选行）→ 子视图自动过滤匹配行。
+parentViewId / childViewId 默认均为 'default'，单视图页面可省略。
 
 relations 数组中每条关联：
 
@@ -195,11 +158,12 @@ relations 数组中每条关联：
   "parentViewId":   "default",       // 可选：父视图 ID（默认 'default'）
   "childTable":     "ChildName",     // 必填：子视图所在表名
   "childViewId":    "default",       // 可选：子视图 ID（默认 'default'）
+  "parentField":    "id",            // 可选：父视图匹配字段（默认取父表主键）
   "childField":     "parentId",      // 必填：子视图行中的外键字段名
   "dependencyType": "currentRow",    // 推荐填写：见选择规则
   "cascadeUpdate":  true,            // 可选：父视图行更新时级联刷新子视图
   "cascadeDelete":  true,            // 可选：父视图行删除时级联删除子视图匹配行
-  "autoLoad":       false,           // 可选：父视图行切换时自动请求子视图 api
+  "autoLoad":       false,           // 可选：父视图行切换时是否自动请求子视图 api（默认 true，设为 false 禁用）
   "relationName":   "ParentChild"    // 可选：关联命名（便于调试）
 }
 
@@ -241,7 +205,8 @@ c) 子表聚合函数（需要已定义对应 DataRelation，括号内为从表�
   "$avg('ChildTable', 'fieldName')"             // 子行字段均值
   "$min('ChildTable', 'fieldName')"             // 子行字段最小值
   "$max('ChildTable', 'fieldName')"             // 子行字段最大值
-  "$join('ChildTable', 'fieldName', ' | ')"     // 子行字段拼接
+  "$list('ChildTable', 'fieldName')"            // 子行字段值数组（返回 unknown[]）
+  "$join('ChildTable', 'fieldName', ' | ')"     // 子行字段拼接（第三参数为分隔符，默认 ', '）
 
 ═══════════════════════════════════════════════════
 【6】视图聚合（aggregates）
@@ -251,33 +216,36 @@ c) 子表聚合函数（需要已定义对应 DataRelation，括号内为从表�
 DataKey 绑定到 UI 汇总行。
 
 "aggregates": {
-  "amount":   { "type": "sum",   "label": "合计金额" },
-  "score":    { "type": "avg",   "label": "平均分"   },
-  "id":       { "type": "count", "label": "总记录数" },
-  "price":    { "type": "min",   "label": "最低价"   },
-  "price2":   { "type": "max",   "label": "最高价"   },
-  "tags":     { "type": "join",  "label": "标签列表" }
+  "amount":     { "type": "sum",   "label": "合计金额" },
+  "score":      { "type": "avg",   "label": "平均分"   },
+  "id":         { "type": "count", "label": "总记录数" },
+  "minPrice":   { "type": "min",   "field": "price", "label": "最低价" },
+  "maxPrice":   { "type": "max",   "field": "price", "label": "最高价" },
+  "tags":       { "type": "join",  "label": "标签列表", "separator": " | " }
 }
 
 支持类型：sum | count | avg | min | max | join
-键名必须与 columns 中已有列的 name 完全一致。
+- 键名 = summaryRow 中的输出字段名（可与列名不同）
+- field（可选）= 聚合哪个源字段；省略时默认取与键名同名的列
+- separator（可选）= 仅 join 类型有效，默认 ', '
 
 ═══════════════════════════════════════════════════
 【7】API 配置（有后端接口时使用）
 ═══════════════════════════════════════════════════
 
-字符串简写（自动展开为 list/create/update/delete 四端点）：
+字符串简写（自动展开为 CRUD 五端点 + Tree 端点族）：
   "api": "/api/users"
 
-true 简写（从表名自动生成路径，如 Users → /api/users）：
+true 简写（从表名按 kebab-case 约定生成路径，如 OrderItems → /api/order-items）：
   "api": true
 
-完整对象（自定义每个端点）：
+完整对象（自定义每个端点，URL 路径参数用 {id} 格式）：
   "api": {
-    "list":   { "url": "/api/users",     "method": "GET"    },
-    "create": { "url": "/api/users",     "method": "POST"   },
-    "update": { "url": "/api/users/:id", "method": "PUT"    },
-    "delete": { "url": "/api/users/:id", "method": "DELETE" }
+    "list":     { "url": "/api/users",      "method": "GET"    },
+    "create":   { "url": "/api/users",      "method": "POST"   },
+    "retrieve": { "url": "/api/users/{id}", "method": "GET"    },
+    "update":   { "url": "/api/users/{id}", "method": "PUT"    },
+    "delete":   { "url": "/api/users/{id}", "method": "DELETE" }
   }
 
 纯静态演示数据（仅 rows 内联）不要添加 api 字段。
@@ -286,7 +254,7 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 【8】生成规则（必须严格遵守）
 ═══════════════════════════════════════════════════
 
-1. 【主键规则】每张业务表必须有且仅有一列声明 "isPrimaryKey": true，通常为 id 列
+1. 【主键规则】每张业务表通常一列声明 "isPrimaryKey": true（id 列）；需要复合主键时可同时标记多列，框架自动合成 _pk 计算列作为唯一标识
 
 2. 【测试数据】每张表在 `views.default.rows` 中提供 3-5 条有代表性的测试数据
 
@@ -298,14 +266,9 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 6. 【标签规范】所有面向用户展示的字段须添加 label 属性（中文），id/外键列按需添加
 
-7. 【views 声明规则】每张表必须显式声明 views，且 views.default 始终存在：
-   - rows / aggregates / autoLoad / autoSelectFirst 均写在 views.default 内部，不写在表对象顶层
-   - api 字段保留在表对象顶层（与 columns 同级）
-   - relation 的 parentViewId / childViewId 均默认 'default'，单视图页面可省略
-   ⚠️ 若 relation 使用了非 default 的 parentViewId / childViewId，该表的 views 中必须显式声明该视图
-   （值为 {} 或含配置的对象），否则级联将无法生效。
-   示例：relation 使用 parentViewId: "detail" → Employees.views 须包含 "detail": {}
-   口诀：先写 views.default → 检查 relation 有无非 default viewId → 有则追加该视图名 → 无则只保留 default
+7. 【views 声明规则】每张表必须有 views.default（见【2】标准写法）。
+   ⚠️ 若某 relation 使用了非 default 的 parentViewId / childViewId，该表 views 中必须
+   显式声明该视图（如 "detail": {}），否则级联将无法生效。
 
 8. 【命名规范】表名用 PascalCase（OrderItems），字段名用 camelCase（orderId），
    dataSetName 以 DataSet 结尾（UserOrderDataSet）
@@ -470,7 +433,7 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 **验证通过要点**：
 - ✅ `dataset` 顶层包装
-- ✅ Readers / BorrowRecords 各有且仅有一个 `isPrimaryKey: true`
+- ✅ Readers / BorrowRecords 各有一列 `isPrimaryKey: true`
 - ✅ BorrowRecords.readerId 值（1, 1, 2, 3）均在 Readers.rows 中存在
 - ✅ 可空字段 `returnDate` 设置了 `allowDBNull: true`，rows 中可出现 `null`
 - ✅ relation 包含三个必填字段（parentTable / childTable / childField）
@@ -888,8 +851,8 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
               { "id": 2, "name": "供应商乙", "contact": "李经理", "rating": 4 },
               { "id": 3, "name": "供应商丙", "contact": "王经理", "rating": 3 }
             ],
-            "autoLoad":        true,
-            "autoSelectFirst": true
+            "autoLoad":         true,
+            "autoCurrentFirst": true
           }
         }
       },
@@ -970,7 +933,7 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 ### 表层面（每张表检查）
 
 - [ ] 有 `columns` 数组
-- [ ] 有且仅有一列 `"isPrimaryKey": true`
+- [ ] 至少一列标记了 `"isPrimaryKey": true`（复合主键可标记多列）
 - [ ] 每列有 `name`（camelCase）和 `type`
 - [ ] 面向用户展示的列已加 `label`
 
