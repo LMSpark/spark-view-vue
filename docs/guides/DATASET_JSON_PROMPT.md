@@ -374,10 +374,6 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "grade",     "type": "string",                       "label": "等级",
             "computeExpression": "if (score >= 90) return 'A'; if (score >= 75) return 'B'; if (score >= 60) return 'C'; return 'D';" }
         ],
-        "aggregates": {           // ← default DataView 的聚合（表级 aggregates = views.default.aggregates 简写）
-          "score": { "type": "avg",   "label": "平均分" },
-          "id":    { "type": "count", "label": "科目数" }
-        },
         "rows": [                 // ← default DataView 的初始行（表级 rows = views.default.rows 简写）
           { "id": 1001, "studentId": 1, "subject": "数学", "score": 95 },
           { "id": 1002, "studentId": 1, "subject": "语文", "score": 82 },
@@ -385,7 +381,11 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "id": 1004, "studentId": 2, "subject": "语文", "score": 68 },
           { "id": 1005, "studentId": 3, "subject": "数学", "score": 55 },
           { "id": 1006, "studentId": 3, "subject": "语文", "score": 70 }
-        ]
+        ],
+        "aggregates": {           // ← default DataView 的聚合（表级 aggregates = views.default.aggregates 简写）
+          "score": { "type": "avg",   "label": "平均分" },
+          "id":    { "type": "count", "label": "科目数" }
+        }
       }
     },
     "relations": [
@@ -530,17 +530,17 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "subtotal",    "type": "number",                       "label": "小计",
             "computeExpression": "quantity * unitPrice" }
         ],
-        "aggregates": {
-          "quantity": { "type": "sum", "label": "总数量"   },
-          "subtotal": { "type": "sum", "label": "合计金额" }
-        },
         "rows": [
           { "id": 1001, "orderId": 1, "productName": "无线鼠标",   "quantity": 2, "unitPrice": 99.99  },
           { "id": 1002, "orderId": 1, "productName": "机械键盘",   "quantity": 1, "unitPrice": 299.00 },
           { "id": 1003, "orderId": 2, "productName": "USB集线器", "quantity": 3, "unitPrice": 59.00  },
           { "id": 1004, "orderId": 3, "productName": "显示器支架", "quantity": 1, "unitPrice": 189.00 },
           { "id": 1005, "orderId": 3, "productName": "鼠标垫",     "quantity": 2, "unitPrice": 35.00  }
-        ]
+        ],
+        "aggregates": {
+          "quantity": { "type": "sum", "label": "总数量"   },
+          "subtotal": { "type": "sum", "label": "合计金额" }
+        }
       }
     },
     "relations": [
@@ -590,12 +590,12 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
             "computeExpression": "$count('Employees')" }
         ],
         "api":      "/api/departments",
-        "autoLoad": true,
         "rows": [
           { "id": 1, "name": "技术部", "managerId": 101  },
           { "id": 2, "name": "产品部", "managerId": 201  },
           { "id": 3, "name": "市场部", "managerId": null }
-        ]
+        ],
+        "autoLoad": true
       },
       "Employees": {
         "columns": [
@@ -609,19 +609,19 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "level",    "type": "string",                       "label": "薪资等级",
             "computeExpression": "if (salary >= 30000) return 'S'; if (salary >= 20000) return 'A'; if (salary >= 10000) return 'B'; return 'C';" }
         ],
-        "aggregates": {
-          "salary": { "type": "avg",   "label": "平均薪资" },
-          "id":     { "type": "count", "label": "人数"     }
-        },
         "api":      "/api/employees",
-        "autoLoad": false,
         "rows": [
           { "id": 101, "deptId": 1, "name": "张工", "gender": "男", "position": "高级工程师", "salary": 28000, "hireDate": "2020-03-15" },
           { "id": 102, "deptId": 1, "name": "李工", "gender": "女", "position": "工程师",     "salary": 18000, "hireDate": "2021-07-01" },
           { "id": 201, "deptId": 2, "name": "王总", "gender": "男", "position": "产品总监",   "salary": 35000, "hireDate": "2019-05-20" },
           { "id": 202, "deptId": 2, "name": "赵妹", "gender": "女", "position": "产品经理",   "salary": 22000, "hireDate": "2022-01-10" },
           { "id": 301, "deptId": 3, "name": "孙明", "gender": "男", "position": "市场专员",   "salary": 9500,  "hireDate": "2023-06-01" }
-        ]
+        ],
+        "autoLoad": false,
+        "aggregates": {
+          "salary": { "type": "avg",   "label": "平均薪资" },
+          "id":     { "type": "count", "label": "人数"     }
+        }
       }
     },
     "relations": [
@@ -702,15 +702,15 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "appointDate", "type": "date",                         "label": "预约日期" },
           { "name": "status",      "type": "string",                       "label": "状态"     }
         ],
-        "aggregates": {
-          "id": { "type": "count", "label": "预约总数" }
-        },
         "rows": [
           { "id": 1001, "doctorId": 101, "patientName": "患者甲", "appointDate": "2024-03-01", "status": "已完成" },
           { "id": 1002, "doctorId": 101, "patientName": "患者乙", "appointDate": "2024-03-05", "status": "待诊"   },
           { "id": 1003, "doctorId": 102, "patientName": "患者丙", "appointDate": "2024-03-06", "status": "就诊中" },
           { "id": 1004, "doctorId": 103, "patientName": "患者丁", "appointDate": "2024-03-07", "status": "待诊"   }
-        ]
+        ],
+        "aggregates": {
+          "id": { "type": "count", "label": "预约总数" }
+        }
       }
     },
     "relations": [
@@ -787,14 +787,14 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "totalSalary", "type": "number",                       "label": "合计工资",
             "computeExpression": "baseSalary + bonus" }
         ],
-        "aggregates": {
-          "totalSalary": { "type": "sum", "label": "工资总计" }
-        },
         "rows": [
           { "id": 101, "employeeId": 1, "month": "2024-01", "baseSalary": 10000, "bonus": 2000 },
           { "id": 102, "employeeId": 1, "month": "2024-02", "baseSalary": 10000, "bonus": 1500 },
           { "id": 103, "employeeId": 2, "month": "2024-01", "baseSalary": 8000,  "bonus": 3000 }
-        ]
+        ],
+        "aggregates": {
+          "totalSalary": { "type": "sum", "label": "工资总计" }
+        }
       }
     },
     "relations": [
@@ -851,13 +851,13 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "rating",  "type": "number",                       "label": "评级"       }
         ],
         "api":             "/api/suppliers",
-        "autoLoad":        true,
-        "autoSelectFirst": true,
         "rows": [
           { "id": 1, "name": "供应商甲", "contact": "张经理", "rating": 5 },
           { "id": 2, "name": "供应商乙", "contact": "李经理", "rating": 4 },
           { "id": 3, "name": "供应商丙", "contact": "王经理", "rating": 3 }
-        ]
+        ],
+        "autoLoad":        true,
+        "autoSelectFirst": true
       },
       "PurchaseOrders": {
         "columns": [
@@ -884,17 +884,17 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
           { "name": "subTotal",    "type": "number",                       "label": "小计",
             "computeExpression": "quantity * unitPrice" }
         ],
-        "aggregates": {
-          "subTotal":  { "type": "sum", "label": "合计金额" },
-          "quantity":  { "type": "sum", "label": "合计数量" }
-        },
         "api": "/api/purchase-details",
         "rows": [
           { "id": 1001, "orderId": 101, "productName": "零件A", "quantity": 100, "unitPrice": 5.5  },
           { "id": 1002, "orderId": 101, "productName": "零件B", "quantity":  50, "unitPrice": 12.0 },
           { "id": 1003, "orderId": 103, "productName": "设备C", "quantity":   2, "unitPrice": 3500 },
           { "id": 1004, "orderId": 102, "productName": "零件D", "quantity": 200, "unitPrice": 1.8  }
-        ]
+        ],
+        "aggregates": {
+          "subTotal":  { "type": "sum", "label": "合计金额" },
+          "quantity":  { "type": "sum", "label": "合计数量" }
+        }
       }
     },
     "relations": [
