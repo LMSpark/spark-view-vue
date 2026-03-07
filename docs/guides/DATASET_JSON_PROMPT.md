@@ -88,73 +88,88 @@ SPARK DataSet 规范的 pagedata.json 配置文件。仅输出完整的 JSON，�
 }
 
 ═══════════════════════════════════════════════════
-【2】表（Table）与视图（DataView）配置结构
+【2】三层结构：DataSet → 表（DataTable）→ 视图（DataView）
 ═══════════════════════════════════════════════════
 
-⚑ 核心概念（必读）
+⚑ 必读：完整的三层层次结构
 
-每张表构造时自动创建一个 **default DataView**，无需任何声明。
-DataView 是 UI 的唯一数据来源，所有表格 / 表单 / 详情页都通过 DataView 读写数据。
-列结构（columns）和 API 端点（api）属于 DataTable，全部视图共用；
-initial rows、聚合规则（aggregates）属于具体的 DataView，不同视图可以独立配置。
+DataSet 是整个页面的数据容器，内部结构分三层：
 
-  DataTable ─── 结构层（全视图共用）
-    ├── columns    列定义（字段名、类型、计算列等）
-    ├── api        后端 CRUD 端点（可选）
-    └── rows       静态内联源行（仅内存级联使用，UI 不直接访问）
+  DataSet                              ← 页面数据容器（仅一个）
+    ├── DataTable "Orders"             ← 第二层：表（结构层，全视图共用）
+    │     ├── columns: [...]           │   存放列定义 + api 端点，不含行数据
+    │     ├── api: "/api/orders"       │
+    │     │                            │
+    │     └── DataView "default"  ✦   ← 第三层：视图（数据层，UI 唯一来源）
+    │           ├── rows: [...]        │   ⬅ UI 表格 / 表单绑定的是这里
+    │           ├── currentRow         │   ⬅ 驱动子级联的状态在这里
+    │           ├── summaryRow         │   ⬅ aggregates 汇总结果在这里
+    │           └── aggregates: {...}  │
+    │
+    └── DataTable "OrderItems"
+          ├── columns: [...]
+          │
+          └── DataView "default"  ✦   ← 每张表自动创建，无需声明
+                ├── rows: [...]        （级联过滤后只显示当前订单的明细行）
+                ├── currentRow
+                └── aggregates: {...}
 
-  DataView ─── 数据层（UI 绑定的唯一来源）
-    ├── rows              当前视图行（可能是父级级联过滤后的子集）
-    ├── currentRow        当前选中行（驱动子级联）
-    ├── summaryRow        聚合汇总行（aggregates 驱动）
-    └── selectedRows      勾选行
+✦ **每张表构造时自动拥有一个 "default" DataView**，无需在 JSON 中声明。
+  所有表格 / 表单 / 详情页都通过 DataView（而非 DataTable）读写数据。
 
-─────────── 视图配置简写说明 ───────────
+─────────── JSON 简写规则（关键）───────────
 
-绝大多数表只有一个视图（default）。JSON 中表级直接写的
-rows / aggregates / autoLoad / autoSelectFirst
-都是 **default DataView 的简写配置**，框架自动映射：
+JSON 中直接写在表对象下的 rows / aggregates / autoLoad 等键，
+是 **"default" DataView 的简写配置**，框架自动映射到视图层：
 
-  ╔═══════════════════════════════════════════════════════════╗
-  ║  你在 JSON 中写的（简写）   →  框架内部理解为              ║
-  ║                                                           ║
-  ║  "Grades": {                  DataTable "Grades"         ║
-  ║    "columns": [...],          ├── columns: [...]         ║
-  ║    "rows":    [...],     →    └── DataView "default"     ║
-  ║    "aggregates": { ... }           ├── rows: [...]       ║
-  ║  }                                 └── aggregates: {...} ║
-  ╚═══════════════════════════════════════════════════════════╝
+  你写的 JSON 简写                     框架内部等价于
+  ─────────────────────────────────────────────────────
+  "OrderItems": {                      DataTable "OrderItems"
+    "columns": [...],                    └── columns: [...]   ← DataTable 层
+    "rows":    [...],          →         └── DataView "default"
+    "aggregates": {                            ├── rows: [...]
+      "quantity": { "type": "sum" }            └── aggregates: {
+    }                                                "quantity": { "type": "sum" }
+  }                                              }
+  ─────────────────────────────────────────────────────
 
-⚠️ 不要把 aggregates 同时写在表级 AND views.default 中——会冲突覆盖。
+  ⚠️ aggregates 只写一处（表级简写），不要同时出现在 views.default 中。
 
-─────────── 何时需要 views 键 ───────────
+─────────── 一张表多个视图（何时需要 views 键）───────────
 
-  ❌ 不需要（99% 场景）—— 所有 relation 的 parentViewId / childViewId
-     均省略或为 'default'，则完全不必写 views 键
+同一张表可以有多个命名视图，各自有独立的 rows / currentRow / aggregates。
+绝大多数页面只用 default 视图，不需要写 views 键。
 
-  ✅ 需要 —— 某条 relation 引用了非 default 的视图 ID，
-     则该表必须在 views 中显式声明该视图（哪怕空对象 {}）
+  ❌ 不需要（99% 场景）
+     所有 relation 都省略了 parentViewId / childViewId（即默认 default），
+     则完全不必写 views 键
 
-  决策口诀：先不写 views → 看 relations 有无非 default 的 viewId
+  ✅ 需要（某 relation 引用了非 default 的 viewId）
+     例：{ "parentTable": "Employees", "parentViewId": "detail", ... }
+     则 Employees 表必须在 views 中显式声明 "detail" 视图（哪怕空对象 {}）：
+       "views": { "detail": {} }
+
+  决策口诀：先不写 views → 检查 relations 有无非 default viewId
             → 有则补 views 声明 → 无则跳过
 
-─────────── 完整配置模板 ───────────
+─────────── 完整表配置模板 ───────────
 
 "TableName": {
-  // ── DataTable 层（全视图共用，与视图无关）──────────────
-  "columns":  [...],      // 必填：列定义数组
-  "api":      "/api/...", // 可选：有后端 API 时填写
+  // ══ DataTable 层（全视图共用）══════════════════════════
+  "columns":  [...],      // 必填：列定义（字段名、类型、主键、计算列）
+  "api":      "/api/...", // 可选：有后端接口时填写
 
-  // ── default DataView 的配置（简写到表级，无需写 views.default）──
-  "rows":            [...],   // default 视图的初始行数据（3-5 条测试行）
-  "autoLoad":        true,    // 可选：DataSet 初始化时自动请求 api
-  "autoSelectFirst": true,    // 可选：加载后自动选中第一行
-  "aggregates":      { ... }, // 可选：default 视图的聚合配置
+  // ══ default DataView 层（整张表最常用的简写区）══════════
+  // 以下键属于 "default" 视图，框架自动将它们映射到 DataView "default"
+  "rows":            [...],   // 视图初始数据行（3-5 条测试行）
+  "autoLoad":        true,    // 可选：初始化后自动请求 api 加载数据
+  "autoSelectFirst": true,    // 可选：加载后自动选中第一行（驱动子级联）
+  "aggregates":      { ... }, // 可选：该视图的聚合规则（sum/avg/count 等）
 
-  // ── 命名视图（仅当 relation 引用了非 default viewId 时才写）───
+  // ══ 额外命名视图（仅relation 引用了非 default viewId 时才写）══
   "views": {
-    "detail": {              // 命名视图 viewId = 'detail'
-      "aggregates": { ... }  // 该视图独立的聚合配置（可选）
+    "detail": {              // 命名视图，viewId = "detail"
+      "aggregates": { ... }  // 该视图独立的聚合（可选）
     }
   }
 }
