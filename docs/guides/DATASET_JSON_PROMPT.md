@@ -91,37 +91,43 @@ SPARK DataSet 规范的 pagedata.json 配置文件。仅输出完整的 JSON，�
 【2】DataView 架构与表（Table）配置结构
 ═══════════════════════════════════════════════════
 
-⚑ DataView 是 DataTable 与 UI 之间的唯一通道
+⚑ 数据只走 DataSet → DataView 一条线，DataView 是 UI 的唯一数据通道
 
-  DataTable  ←（存储原始数据：columns 结构 + rows 原始行数据 + api 端点）
-      ↓
-  DataView   ←（UI 的唯一交互通道：提供过滤/排序/分页/聚合/当前行/选中行）
-      ↓
-  UI 组件    ←（表格/表单/详情页，只能通过 DataView 读写数据）
+  DataTable         —— 独立类（无继承）：仅存储表结构（columns 列定义 + api 端点）
+      ↑ 引用（组合）          DataTable 与 DataView 无继承关系
+  DataView          —— 独立类（implements IDataSource）：持有行数据 rows，通过
+                       内部 _dataTable 引用获取列结构和 API，是 UI 的唯一入口
+      ↓ DATA_SOURCE 能力
+  UI 组件           —— 只能通过 DataView 读写数据，不直接访问 DataTable
 
-每张表自动拥有一个「默认视图」（viewId = 'default'）。pagedata.json 中表级
-扁平字段（rows / aggregates / autoLoad 等）即为该默认视图的配置，系统在
-初始化时将它们读取并应用到 default 视图，无需手写 views.default。
+rows 属于 DataView（IViewMetadata 层），不属于 DataTable：
+  - DataTable 层：columns（表结构）、api（CRUD 端点）—— 全视图共用
+  - DataView 层：rows（行数据）、aggregates、过滤/排序/分页/当前行/选中行 —— 每视图独立
 
-同一张表可以有多个命名视图（如 'grid'、'detail'），通过 views 键声明。
+每张表自动拥有一个「默认视图」（viewId = 'default'）。pagedata.json 为方便书写，
+允许将 default 视图的字段（rows / aggregates / autoLoad 等）直接扁平写在表级，
+系统初始化时自动将它们读取并应用到 default 视图——这只是配置简写，
+概念上 rows 始终归属于视图层。
+
+同一张表可以有多个命名视图（如 'grid'、'detail'），通过 views 键显式声明。
 
 每张表的配置对象如下（键为 PascalCase 表名）：
 
 "TableName": {
-  // ── 表结构字段（DataTable 层）────────────────────────
+  // ── DataTable 层（表结构，不含行数据）────────────────
   "columns":  [...],      // 必填：列定义数组（字段名 + 类型 + 主键等）
-  "api":      "/api/...", // 可选：有后端时填写
+  "api":      "/api/...", // 可选：有后端 API 时填写
 
-  // ── 以下均为「默认视图」（viewId='default'）的配置，扁平挂在表级 ──
-  "rows":            [...],   // 可选：默认视图初始数据（3-5条测试行）
+  // ── 以下是 default 视图（DataView）的配置，扁平简写在表级 ──
+  "rows":            [...],   // 默认视图的初始行数据（3-5条测试行）
   "autoLoad":        true,    // 可选：DataSet 初始化后自动加载（需要 api）
   "autoSelectFirst": true,    // 可选：加载后自动选中第一行
   "aggregates":      { ... }, // 可选：默认视图聚合配置
 
-  // ── 多视图（99% 场景不需要，单视图页面省略此键）────────
+  // ── 命名视图（99% 场景不需要，单视图页面省略此键）───
   "views": {
-    "summary": {             // viewId = 'summary'（命名视图）
-      "aggregates": { ... }
+    "detail": {              // viewId = 'detail'（命名视图，须在此处显式声明）
+      "aggregates": { ... }  // 该视图独立的配置
     }
   }
 }
