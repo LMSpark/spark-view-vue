@@ -85,18 +85,42 @@ SPARK DataSet 规范的 pagedata.json 配置文件。仅输出完整的 JSON，�
 }
 
 ═══════════════════════════════════════════════════
-【2】表（Table）配置结构
+【2】DataView 架构与表（Table）配置结构
 ═══════════════════════════════════════════════════
+
+⚑ DataView 是 DataTable 与 UI 之间的唯一通道
+
+  DataTable  ←（存储原始数据：columns 结构 + rows 原始行数据 + api 端点）
+      ↓
+  DataView   ←（UI 的唯一交互通道：提供过滤/排序/分页/聚合/当前行/选中行）
+      ↓
+  UI 组件    ←（表格/表单/详情页，只能通过 DataView 读写数据）
+
+每张表自动拥有一个「默认视图」（viewId = 'default'）。pagedata.json 中表级
+扁平字段（rows / aggregates / autoLoad 等）即为该默认视图的配置，系统在
+初始化时将它们读取并应用到 default 视图，无需手写 views.default。
+
+同一张表可以有多个命名视图（如 'grid'、'detail'），通过 views 键声明。
 
 每张表的配置对象如下（键为 PascalCase 表名）：
 
 "TableName": {
-  "columns":        [...],      // 必填：列定义数组
-  "rows":           [...],      // 可选：初始测试数据（3-5条）
-  "api":            "/api/...", // 可选：有后端时填写
-  "autoLoad":       true,       // 可选：是否自动加载（需要 api）
-  "autoSelectFirst": true,      // 可选：加载后自动选中第一行
-  "aggregates":     { ... }     // 可选：视图聚合配置
+  // ── 表结构字段（DataTable 层）────────────────────────
+  "columns":  [...],      // 必填：列定义数组（字段名 + 类型 + 主键等）
+  "api":      "/api/...", // 可选：有后端时填写
+
+  // ── 以下均为「默认视图」（viewId='default'）的配置，扁平挂在表级 ──
+  "rows":            [...],   // 可选：默认视图初始数据（3-5条测试行）
+  "autoLoad":        true,    // 可选：DataSet 初始化后自动加载（需要 api）
+  "autoSelectFirst": true,    // 可选：加载后自动选中第一行
+  "aggregates":      { ... }, // 可选：默认视图聚合配置
+
+  // ── 多视图（99% 场景不需要，单视图页面省略此键）────────
+  "views": {
+    "summary": {             // viewId = 'summary'（命名视图）
+      "aggregates": { ... }
+    }
+  }
 }
 
 ═══════════════════════════════════════════════════
@@ -124,13 +148,20 @@ date | datetime | time | object | array | enum
 【4】视图关联关系（Relations）
 ═══════════════════════════════════════════════════
 
-relations 定义的是**视图（DataView）之间的依赖关系**，而非表结构关系。
-每条关联绑定一个「父视图」和一个「子视图」：当父视图的选中状态（currentRow /
-selectedRows 等）发生变化时，框架自动按 filterExpression 过滤子视图的数据。
+relations 定义的是**两个 DataView 之间的依赖关系**。回顾架构：UI 只能通过
+DataView 与数据交互，因此「父子关联」也是视图层面的概念，而非表结构关系。
 
-- `parentTable` + `parentViewId`（默认 'default'）共同标识父视图
-- `childTable`  + `childViewId` （默认 'default'）共同标识子视图
-- 同一张表可有多个视图（如 'grid'、'detail'），可通过 viewId 区分不同关联
+一条 relation = 将「父视图」的交互状态变化，映射为「子视图」的数据过滤：
+
+  父视图（parentTable + parentViewId）
+    -- 用户切换当前行 / 勾选行 -->
+  子视图（childTable + childViewId）自动重新过滤，只显示匹配父视图当前状态的行
+
+关键规则：
+- `parentTable + parentViewId`（默认 'default'）唯一标识父视图
+- `childTable  + childViewId` （默认 'default'）唯一标识子视图
+- 单张表可有多个命名视图，同一父表可与不同子视图建立多条独立关联
+- 绝大多数页面只有 default 视图，parentViewId / childViewId 可省略
 
 relations 数组中每条关联：
 
