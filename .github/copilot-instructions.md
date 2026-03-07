@@ -1376,6 +1376,28 @@ export interface FormCreateAPI {
   h: typeof VueH
   ```
 
+### ⚠️ Vite `manualChunks` 必须与包依赖方向一致
+
+`vite.config.ts` 中的 `manualChunks` 为每个 SPARK 子包分配了独立 chunk。**所有子包必须分配独立 chunk，尤其是共享底层包**：
+
+```typescript
+// ⚠️ spark-utils 必须在 spark-data / spark-component 之前匹配
+// 否则 Rollup 可能将 spark-utils 模块分入上层 chunk，导致虚假循环依赖
+if (id.includes('packages/spark-utils'))      return 'spark-utils'
+if (id.includes('packages/spark-component'))  return 'spark-component'
+if (id.includes('packages/spark-data'))       return 'spark-data'
+if (id.includes('packages/spark-app'))        return 'spark-app'
+if (id.includes('packages/spark-page-config'))return 'spark-config'
+```
+
+**规则**：
+- 每个 SPARK 子包 **必须** 有对应的 `manualChunks` 规则，**禁止遗漏**
+- 匹配顺序必须**底层包优先**（`spark-utils` → `spark-data` → 其他），确保共享模块分入正确的底层 chunk
+- 新增 SPARK 子包时**必须同步添加** `manualChunks` 规则
+- 构建后 `Circular chunk` 警告视为 **CI 阻断级错误**，必须修复后才能合并
+
+**反例**（已修复）：`spark-utils` 未分配独立 chunk → Rollup 将其代码分入 `spark-component` chunk → `spark-data` chunk 为获取共享代码反向引用 `spark-component` chunk → 出现 `Circular chunk: spark-data -> spark-component -> spark-data` 虚假警告。
+
 ## npm 发布规范 📦
 
 发布使用 `node scripts/publish-packages.mjs`（自动按依赖顺序构建 + 发布所有子包）。

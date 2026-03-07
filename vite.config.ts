@@ -211,6 +211,12 @@ export default registerComponents
           // 基于文件路径进行更细粒度的分割，提高缓存命中率
 
           // SPARK packages - 按功能模块分割
+          // ⚠️ spark-utils 必须独立 chunk：它是 spark-data 和 spark-component 的共同依赖，
+          //    若不单独分配，Rollup 可能将 spark-utils 模块分入 spark-component chunk，
+          //    导致 spark-data chunk 反向引用 spark-component chunk（虚假循环依赖）。
+          if (id.includes('packages/spark-utils')) {
+            return 'spark-utils'
+          }
           if (id.includes('packages/spark-component')) {
             return 'spark-component'
           }
