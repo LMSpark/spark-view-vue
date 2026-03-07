@@ -13,6 +13,9 @@
    - [案例 A：图书馆管理（简单两表 + 主从关系）](#案例-a图书馆管理简单两表--主从关系)
    - [案例 B：电商订单管理（计算列 + 聚合）](#案例-b电商订单管理计算列--聚合)
    - [案例 C：HR 人员管理（API + 多计算列 + 聚合）](#案例-chr-人员管理api--多计算列--聚合)
+   - [案例 D：医院门诊管理（三级层次 + 多计算列）](#案例-d医院门诊管理三级层次--多计算列--聚合)
+   - [案例 E：员工系统双视图（同父表不同视图驱动不同子表）](#案例-e员工系统双视图同一父表不同命名视图分别驱动不同子表)
+   - [案例 F：供应商采购管理（三级层次 + API + 计算列 + 聚合）](#案例-f供应商采购管理三级层次--api--计算列--聚合)
 5. [JSON 自检清单](#5-json-自检清单)
 6. [配置参考速查](#6-配置参考速查)
 
@@ -273,8 +276,11 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 6. 【标签规范】所有面向用户展示的字段须添加 label 属性（中文），id/外键列按需添加
 
-7. 【关系最小字段】relation 至少包含 parentTable、childTable、childField 三个字段；
-   parentViewId / childViewId 均默认 'default'，单视图页面可省略；系统自动生成 filterExpression
+7. 【关系最小字段 + 命名视图声明】relation 至少包含 parentTable、childTable、childField 三个字段；
+   parentViewId / childViewId 均默认 'default'，单视图页面可省略；系统自动生成 filterExpression。
+   ⚠️ 若 parentViewId 或 childViewId 不是 'default'，该表的 views 键中必须显式声明该视图
+   （值为 {} 或含配置的对象），否则 DataSet 初始化时视图不存在，级联将无法生效。
+   示例：relation 使用 parentViewId: "detail" → Employees 表须包含 "views": { "detail": {} }
 
 8. 【命名规范】表名用 PascalCase（OrderItems），字段名用 camelCase（orderId），
    dataSetName 以 DataSet 结尾（UserOrderDataSet）
@@ -587,6 +593,273 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 ---
 
+### 案例 D：医院门诊管理（三级层次 + 多计算列 + 聚合）
+
+**需求描述**：
+- 科室表（Departments）：ID、名称、楼层；自动统计医生数（$count）
+- 医生表（Doctors）：ID、科室ID（外键）、姓名、职称、挂号费；自动统计预约数（$count）
+- 预约记录表（Appointments）：ID、医生ID（外键）、患者姓名、预约日期、状态；显示预约数量汇总
+- 三级关联：科室 → 医生 → 预约（两条 currentRow 关联）
+- 纯静态数据，无后端 API
+
+**生成结果**：
+
+```json
+{
+  "dataset": {
+    "dataSetName": "HospitalOutpatientDataSet",
+    "tables": {
+      "Departments": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "科室ID"   },
+          { "name": "name",        "type": "string",                       "label": "科室名称" },
+          { "name": "floor",       "type": "number",                       "label": "楼层"     },
+          { "name": "doctorCount", "type": "number",                       "label": "医生数量",
+            "computeExpression": "$count('Doctors')" }
+        ],
+        "rows": [
+          { "id": 1, "name": "内科", "floor": 2 },
+          { "id": 2, "name": "外科", "floor": 3 },
+          { "id": 3, "name": "儿科", "floor": 4 }
+        ]
+      },
+      "Doctors": {
+        "columns": [
+          { "name": "id",               "type": "number", "isPrimaryKey": true, "label": "医生ID"   },
+          { "name": "departmentId",     "type": "number",                       "label": "科室ID"   },
+          { "name": "name",             "type": "string",                       "label": "姓名"     },
+          { "name": "title",            "type": "string",                       "label": "职称"     },
+          { "name": "fee",              "type": "number",                       "label": "挂号费"   },
+          { "name": "appointmentCount", "type": "number",                       "label": "预约数量",
+            "computeExpression": "$count('Appointments')" }
+        ],
+        "rows": [
+          { "id": 101, "departmentId": 1, "name": "张明", "title": "主任医师",   "fee": 100 },
+          { "id": 102, "departmentId": 1, "name": "李华", "title": "副主任医师", "fee": 80  },
+          { "id": 103, "departmentId": 2, "name": "王强", "title": "主治医师",   "fee": 60  },
+          { "id": 104, "departmentId": 3, "name": "赵芳", "title": "住院医师",   "fee": 50  }
+        ]
+      },
+      "Appointments": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "预约ID"   },
+          { "name": "doctorId",    "type": "number",                       "label": "医生ID"   },
+          { "name": "patientName", "type": "string",                       "label": "患者姓名" },
+          { "name": "appointDate", "type": "date",                         "label": "预约日期" },
+          { "name": "status",      "type": "string",                       "label": "状态"     }
+        ],
+        "aggregates": {
+          "id": { "type": "count", "label": "预约总数" }
+        },
+        "rows": [
+          { "id": 1001, "doctorId": 101, "patientName": "患者甲", "appointDate": "2024-03-01", "status": "已完成" },
+          { "id": 1002, "doctorId": 101, "patientName": "患者乙", "appointDate": "2024-03-05", "status": "待诊"   },
+          { "id": 1003, "doctorId": 102, "patientName": "患者丙", "appointDate": "2024-03-06", "status": "就诊中" },
+          { "id": 1004, "doctorId": 103, "patientName": "患者丁", "appointDate": "2024-03-07", "status": "待诊"   }
+        ]
+      }
+    },
+    "relations": [
+      { "relationName": "DepartmentDoctors",  "parentTable": "Departments", "childTable": "Doctors",       "childField": "departmentId", "dependencyType": "currentRow" },
+      { "relationName": "DoctorAppointments", "parentTable": "Doctors",     "childTable": "Appointments",  "childField": "doctorId",     "dependencyType": "currentRow" }
+    ]
+  }
+}
+```
+
+**验证通过要点**：
+- ✅ 三级 ID 编号：科室 1-3，医生 101-104，预约 1001-1004
+- ✅ `$count('Doctors')` / `$count('Appointments')` 引用名与对应 relation.childTable 完全一致
+- ✅ 三级外键完整性：departmentId ∈ {1,2,3}，doctorId ∈ {101,102,103,104}
+- ✅ doctorCount / appointmentCount 这两个计算列在 rows 中均无值
+- ✅ aggregates 键名 `id` 与 Appointments.columns[0].name 匹配
+
+---
+
+### 案例 E：员工系统双视图（同一父表不同命名视图分别驱动不同子表）
+
+**需求描述**：
+- 员工表（Employees）：ID、姓名、部门、入职日期
+  - 需要两个视图：`default`（列表页使用）和 `detail`（详情页使用）
+- 考勤记录表（AttendanceRecords）：ID、员工ID（外键）、日期、状态
+  - 与 Employees **default 视图**关联（列表切换行时更新）
+- 薪资记录表（SalaryRecords）：ID、员工ID（外键）、月份、基本工资、绩效奖金、合计（计算列）；聚合：合计 sum
+  - 与 Employees **detail 视图**关联（详情页显示薪资历史）
+- 纯静态数据
+
+**生成结果**：
+
+```json
+{
+  "dataset": {
+    "dataSetName": "HRManagementDataSet",
+    "tables": {
+      "Employees": {
+        "columns": [
+          { "name": "id",         "type": "number", "isPrimaryKey": true, "label": "员工ID"   },
+          { "name": "name",       "type": "string",                       "label": "姓名"     },
+          { "name": "department", "type": "string",                       "label": "部门"     },
+          { "name": "hireDate",   "type": "date",                         "label": "入职日期" }
+        ],
+        "rows": [
+          { "id": 1, "name": "张三", "department": "技术部", "hireDate": "2022-01-15" },
+          { "id": 2, "name": "李四", "department": "市场部", "hireDate": "2021-06-01" },
+          { "id": 3, "name": "王五", "department": "技术部", "hireDate": "2023-03-10" }
+        ],
+        "views": {
+          "detail": {}
+        }
+      },
+      "AttendanceRecords": {
+        "columns": [
+          { "name": "id",         "type": "number", "isPrimaryKey": true, "label": "记录ID" },
+          { "name": "employeeId", "type": "number",                       "label": "员工ID" },
+          { "name": "date",       "type": "date",                         "label": "日期"   },
+          { "name": "status",     "type": "string",                       "label": "状态"   }
+        ],
+        "rows": [
+          { "id": 101, "employeeId": 1, "date": "2024-03-01", "status": "正常" },
+          { "id": 102, "employeeId": 1, "date": "2024-03-04", "status": "迟到" },
+          { "id": 103, "employeeId": 2, "date": "2024-03-01", "status": "正常" }
+        ]
+      },
+      "SalaryRecords": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "薪资ID"   },
+          { "name": "employeeId",  "type": "number",                       "label": "员工ID"   },
+          { "name": "month",       "type": "string",                       "label": "月份"     },
+          { "name": "baseSalary",  "type": "number",                       "label": "基本工资" },
+          { "name": "bonus",       "type": "number",                       "label": "绩效奖金" },
+          { "name": "totalSalary", "type": "number",                       "label": "合计工资",
+            "computeExpression": "baseSalary + bonus" }
+        ],
+        "aggregates": {
+          "totalSalary": { "type": "sum", "label": "工资总计" }
+        },
+        "rows": [
+          { "id": 101, "employeeId": 1, "month": "2024-01", "baseSalary": 10000, "bonus": 2000 },
+          { "id": 102, "employeeId": 1, "month": "2024-02", "baseSalary": 10000, "bonus": 1500 },
+          { "id": 103, "employeeId": 2, "month": "2024-01", "baseSalary": 8000,  "bonus": 3000 }
+        ]
+      }
+    },
+    "relations": [
+      {
+        "relationName": "EmployeeAttendance",
+        "parentTable": "Employees",
+        "childTable": "AttendanceRecords",
+        "childField": "employeeId",
+        "dependencyType": "currentRow"
+      },
+      {
+        "relationName":  "EmployeeDetailSalary",
+        "parentTable":   "Employees",
+        "parentViewId":  "detail",
+        "childTable":    "SalaryRecords",
+        "childField":    "employeeId",
+        "dependencyType": "currentRow"
+      }
+    ]
+  }
+}
+```
+
+**验证通过要点**：
+- ✅ Employees 在 `views` 中**显式声明了 `detail` 视图**（`"detail": {}`）
+  — 这是必须的：`fromTableData` 只处理 `data.views` 中已声明的视图，若漏写则 detail 视图在初始化时不存在，第二条 relation 的级联将失效
+- ✅ 第二条 relation 中 `parentViewId: "detail"` 绑定到 Employees.detail 视图
+- ✅ 两张子表各自都是二级子表，id 均从 101 开始（互不影响，不同表）
+- ✅ totalSalary 是计算列，rows 中无此字段值
+- ✅ aggregates 键 `totalSalary` 与 SalaryRecords.columns 中的 name 一致
+
+---
+
+### 案例 F：供应商采购管理（三级层次 + API + 计算列 + 聚合）
+
+**需求描述**：
+- 供应商（Suppliers）：ID、名称、联系人、评级；有 API，页面加载自动拉取并选中第一行
+- 采购单（PurchaseOrders）：ID、供应商ID（外键）、下单日期、总金额（子表小计之和，计算列）；有 API
+- 采购明细（PurchaseDetails）：ID、采购单ID（外键）、商品名、数量、单价、小计（计算列：数量×单价）；有 API；聚合：合计金额 sum、合计数量 sum
+- 三级关联：Suppliers → PurchaseOrders → PurchaseDetails（两条 currentRow 关联）
+
+**生成结果**：
+
+```json
+{
+  "dataset": {
+    "dataSetName": "ProcurementDataSet",
+    "tables": {
+      "Suppliers": {
+        "columns": [
+          { "name": "id",      "type": "number", "isPrimaryKey": true, "label": "供应商ID"   },
+          { "name": "name",    "type": "string",                       "label": "供应商名称" },
+          { "name": "contact", "type": "string",                       "label": "联系人"     },
+          { "name": "rating",  "type": "number",                       "label": "评级"       }
+        ],
+        "api":             "/api/suppliers",
+        "autoLoad":        true,
+        "autoSelectFirst": true,
+        "rows": [
+          { "id": 1, "name": "供应商甲", "contact": "张经理", "rating": 5 },
+          { "id": 2, "name": "供应商乙", "contact": "李经理", "rating": 4 },
+          { "id": 3, "name": "供应商丙", "contact": "王经理", "rating": 3 }
+        ]
+      },
+      "PurchaseOrders": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "采购单ID"   },
+          { "name": "supplierId",  "type": "number",                       "label": "供应商ID"   },
+          { "name": "orderDate",   "type": "date",                         "label": "下单日期"   },
+          { "name": "totalAmount", "type": "number",                       "label": "总金额",
+            "computeExpression": "$sum('PurchaseDetails', 'subTotal')" }
+        ],
+        "api": "/api/purchase-orders",
+        "rows": [
+          { "id": 101, "supplierId": 1, "orderDate": "2024-03-01" },
+          { "id": 102, "supplierId": 1, "orderDate": "2024-03-10" },
+          { "id": 103, "supplierId": 2, "orderDate": "2024-03-05" }
+        ]
+      },
+      "PurchaseDetails": {
+        "columns": [
+          { "name": "id",          "type": "number", "isPrimaryKey": true, "label": "明细ID"   },
+          { "name": "orderId",     "type": "number",                       "label": "采购单ID" },
+          { "name": "productName", "type": "string",                       "label": "商品名"   },
+          { "name": "quantity",    "type": "number",                       "label": "数量"     },
+          { "name": "unitPrice",   "type": "number",                       "label": "单价"     },
+          { "name": "subTotal",    "type": "number",                       "label": "小计",
+            "computeExpression": "quantity * unitPrice" }
+        ],
+        "aggregates": {
+          "subTotal":  { "type": "sum", "label": "合计金额" },
+          "quantity":  { "type": "sum", "label": "合计数量" }
+        },
+        "api": "/api/purchase-details",
+        "rows": [
+          { "id": 1001, "orderId": 101, "productName": "零件A", "quantity": 100, "unitPrice": 5.5  },
+          { "id": 1002, "orderId": 101, "productName": "零件B", "quantity":  50, "unitPrice": 12.0 },
+          { "id": 1003, "orderId": 103, "productName": "设备C", "quantity":   2, "unitPrice": 3500 },
+          { "id": 1004, "orderId": 102, "productName": "零件D", "quantity": 200, "unitPrice": 1.8  }
+        ]
+      }
+    },
+    "relations": [
+      { "relationName": "SupplierOrders", "parentTable": "Suppliers",      "childTable": "PurchaseOrders",  "childField": "supplierId", "dependencyType": "currentRow" },
+      { "relationName": "OrderDetails",   "parentTable": "PurchaseOrders", "childTable": "PurchaseDetails", "childField": "orderId",    "dependencyType": "currentRow" }
+    ]
+  }
+}
+```
+
+**验证通过要点**：
+- ✅ `$sum('PurchaseDetails', 'subTotal')` 表名与 relations[1].childTable 一致，字段名 `subTotal` 与列 name 一致
+- ✅ aggregates 键 `subTotal`、`quantity` 与 PurchaseDetails.columns 中已有列 name 完全匹配
+- ✅ 三级外键完整性：supplierId ∈ {1,2,3}，orderId ∈ {101,102,103}
+- ✅ totalAmount 和 subTotal 均为计算列，rows 中均无这两个字段值
+- ✅ 三表均有 api 且同时有 rows（API 场景：rows 提供本地演示数据，api 用于生产请求，两者并存合法）
+
+---
+
 ## 5. JSON 自检清单
 
 生成 JSON 后，按以下清单逐项检查：
@@ -618,6 +891,7 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 - [ ] `childField` 是**子视图所在表** columns 中已定义的字段名
 - [ ] `dependencyType` 选择正确（主从钻取用 `currentRow`，字典/全集用 `allRows`）
 - [ ] 同一张表有多个视图时，已正确填写 `parentViewId` / `childViewId`（默认均为 `'default'`）
+- [ ] 若使用了非 default 的 `parentViewId`，该表的 `views` 键中已显式声明该视图（哪怕是空对象 `{}`）
 
 ### 计算列 / 聚合层面
 
@@ -696,3 +970,5 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 | 版本 | 日期 | 说明 |
 |------|------|------|
 | v1.0 | 2025-06 | 初始版本，覆盖基础表/关系/计算列/聚合/API 配置 |
+| v1.1 | 2026-03 | 修正 DataView 架构描述：DataView 是唯一通道，每表默认视图，多视图通过 views 键声明 |
+| v1.2 | 2026-03 | 补充规则 7：非 default 命名视图必须在 views 中显式声明；新增验证案例 D/E/F |
