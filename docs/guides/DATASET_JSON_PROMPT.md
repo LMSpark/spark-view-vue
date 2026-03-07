@@ -121,36 +121,46 @@ number | int | string | varchar | text | boolean | bool |
 date | datetime | time | object | array | enum
 
 ═══════════════════════════════════════════════════
-【4】关联关系（Relation）配置
+【4】视图关联关系（Relations）
 ═══════════════════════════════════════════════════
+
+relations 定义的是**视图（DataView）之间的依赖关系**，而非表结构关系。
+每条关联绑定一个「父视图」和一个「子视图」：当父视图的选中状态（currentRow /
+selectedRows 等）发生变化时，框架自动按 filterExpression 过滤子视图的数据。
+
+- `parentTable` + `parentViewId`（默认 'default'）共同标识父视图
+- `childTable`  + `childViewId` （默认 'default'）共同标识子视图
+- 同一张表可有多个视图（如 'grid'、'detail'），可通过 viewId 区分不同关联
 
 relations 数组中每条关联：
 
 {
-  "parentTable":    "ParentName",    // 必填：主表名
-  "childTable":     "ChildName",     // 必填：从表名
-  "childField":     "parentId",      // 必填：从表的外键字段名
+  "parentTable":    "ParentName",    // 必填：父视图所在表名
+  "parentViewId":   "default",       // 可选：父视图 ID（默认 'default'）
+  "childTable":     "ChildName",     // 必填：子视图所在表名
+  "childViewId":    "default",       // 可选：子视图 ID（默认 'default'）
+  "childField":     "parentId",      // 必填：子视图行中的外键字段名
   "dependencyType": "currentRow",    // 推荐填写：见选择规则
-  "cascadeUpdate":  true,            // 可选：主表更新时级联刷新从表
-  "cascadeDelete":  true,            // 可选：主表删除行时级联删除从表匹配行
-  "autoLoad":       false,           // 可选：父行切换时自动请求从表 api
+  "cascadeUpdate":  true,            // 可选：父视图行更新时级联刷新子视图
+  "cascadeDelete":  true,            // 可选：父视图行删除时级联删除子视图匹配行
+  "autoLoad":       false,           // 可选：父视图行切换时自动请求子视图 api
   "relationName":   "ParentChild"    // 可选：关联命名（便于调试）
 }
 
-dependencyType 选择规则（重要）：
+dependencyType — 父视图的哪种状态变化会驱动子视图重新过滤（重要）：
 
 ┌──────────────────┬──────────────────────────────────────────────────────┐
 │ dependencyType   │ 使用场景                                             │
 ├──────────────────┼──────────────────────────────────────────────────────┤
-│ "currentRow"     │ 主从钻取：点击父行 → 从表只显示该行的关联数据        │
-│ (默认)           │ 例：点击订单 → 查看该订单的商品明细                  │
+│ "currentRow"     │ 主从钻取：父视图当前行变化 → 子视图只显示该行的关联数据│
+│ (默认)           │ 例：父视图点击订单 → 子视图显示该订单的商品明细      │
 ├──────────────────┼──────────────────────────────────────────────────────┤
-│ "allRows"        │ 字典/参考表：从表显示主表所有行的子数据（不随选择变化）│
+│ "allRows"        │ 字典/参考表：子视图显示父视图所有行的子数据           │
 │                  │ 例：加载所有分类下的产品，用于下拉选择器数据源       │
 ├──────────────────┼──────────────────────────────────────────────────────┤
-│ "selectedRows"   │ 批量操作：从表显示所有已勾选的父行的子数据           │
+│ "selectedRows"   │ 批量操作：父视图已勾选行变化 → 子视图显示这些行的子数据│
 ├──────────────────┼──────────────────────────────────────────────────────┤
-│ "pagedRows"      │ 分页模式：从表仅基于主表当前页数据过滤               │
+│ "pagedRows"      │ 分页模式：子视图仅基于父视图当前页行数据过滤         │
 └──────────────────┴──────────────────────────────────────────────────────┘
 
 ═══════════════════════════════════════════════════
@@ -232,8 +242,8 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 6. 【标签规范】所有面向用户展示的字段须添加 label 属性（中文），id/外键列按需添加
 
-7. 【关系最小字段】relation 至少包含 parentTable、childTable、childField 三个字段，系统
-   自动生成 filterExpression
+7. 【关系最小字段】relation 至少包含 parentTable、childTable、childField 三个字段；
+   parentViewId / childViewId 均默认 'default'，单视图页面可省略；系统自动生成 filterExpression
 
 8. 【命名规范】表名用 PascalCase（OrderItems），字段名用 camelCase（orderId），
    dataSetName 以 DataSet 结尾（UserOrderDataSet）
@@ -574,8 +584,9 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 ### 关联层面（每条 relation 检查）
 
 - [ ] 包含 `parentTable`、`childTable`、`childField`
-- [ ] `childField` 是从表 columns 中已定义的字段名
-- [ ] `dependencyType` 选择正确（主从钻取用 `currentRow`，字典表用 `allRows`）
+- [ ] `childField` 是**子视图所在表** columns 中已定义的字段名
+- [ ] `dependencyType` 选择正确（主从钻取用 `currentRow`，字典/全集用 `allRows`）
+- [ ] 同一张表有多个视图时，已正确填写 `parentViewId` / `childViewId`（默认均为 `'default'`）
 
 ### 计算列 / 聚合层面
 
@@ -611,12 +622,14 @@ true 简写（从表名自动生成路径，如 Users → /api/users）：
 
 ### dependencyType 选择指南
 
+`dependencyType` 描述**父视图的哪种状态变化**会触发子视图重新过滤：
+
 | 场景 | dependencyType | 示例 |
 |------|----------------|------|
-| 订单→明细，读者→借阅记录 | `currentRow` | 点击父行查看关联子数据 |
-| 分类→产品（用于下拉数据源）| `allRows` | 加载所有分类下的产品列表 |
-| 批量勾选订单→查看其明细 | `selectedRows` | 多选累计查看 |
-| 分页主表→子数据同步分页 | `pagedRows` | 大数据场景 |
+| 父视图当前行（单选）驱动子视图 | `currentRow` | 点击订单行 → 明细子视图更新 |
+| 父视图全部行驱动子视图（字典表）| `allRows` | 分类下拉数据源一次性加载 |
+| 父视图勾选行驱动子视图 | `selectedRows` | 批量勾选后汇总查看子数据 |
+| 父视图当前页驱动子视图 | `pagedRows` | 大数据分页场景 |
 
 ### computeExpression 常用模式
 
