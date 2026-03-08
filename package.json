@@ -16,6 +16,7 @@
         "build": "cross-env BUILD_MODE=smart vite build",
         "build:smart": "cross-env BUILD_MODE=smart vite build",
         "build:classic": "cross-env BUILD_MODE=classic vite build",
+        "build:deploy": "cross-env BUILD_MODE=smart vite build && node scripts/upload-component-metadata.mjs",
         "build:analyze": "cross-env ANALYZE=true BUILD_MODE=smart vite build",
         "build:analyze:classic": "cross-env ANALYZE=true BUILD_MODE=classic vite build",
         "build:check": "vue-tsc --noEmit --skipLibCheck && cross-env BUILD_MODE=smart vite build",

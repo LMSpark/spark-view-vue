@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.model.AiChatRequest;
 import com.spark.ai.model.AiResponse;
 import com.spark.ai.service.AiPageService;
+import com.spark.ai.service.ComponentMetadataService;
 import com.spark.ai.service.PageConfigService;
 import com.spark.ai.service.SseService;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ class ControllersTest {
 
     @MockBean
     AiPageService aiPageService;
+
+    @MockBean
+    ComponentMetadataService componentMetadataService;
 
     @MockBean
     PageConfigService pageConfigService;

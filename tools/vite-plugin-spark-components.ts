@@ -46,8 +46,8 @@
  */
 
 import type { Plugin, ResolvedConfig } from 'vite'
-import { readFileSync, existsSync, statSync } from 'node:fs'
-import { resolve, relative, dirname, basename } from 'node:path'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs'
+import { resolve, relative, dirname, basename, join } from 'node:path'
 import { globSync } from 'glob'
 
 /* -----------------------------------------------------------------------------
@@ -560,6 +560,97 @@ export default registerComponents
   }
 
   /**
+   * 生成组件元数据 JSON（用于构建时输出到 dist/ 并上传到服务端）
+   *
+   * 包含：组件注册表 + Skill 目录 + 预构建 prompt
+   */
+  generateMetadataJson(): string {
+    this.scan()
+
+    const skills = this.components
+      .filter(c => c.skillMeta !== null)
+      .map(c => c.skillMeta!)
+
+    const components = this.components.map(c => ({
+      type: c.name,
+      path: c.path,
+      size: c.size,
+      strategy: c.strategy,
+      hasSkill: c.skillMeta !== null,
+    }))
+
+    // 构建三种精度的 prompt
+    const indexPrompt = this.buildPromptMarkdown(skills, 'index')
+    const compactPrompt = this.buildPromptMarkdown(skills, 'compact')
+    const fullPrompt = this.buildPromptMarkdown(skills, 'full')
+
+    const metadata = {
+      version: '1.0.0',
+      buildTime: new Date().toISOString(),
+      componentCount: this.components.length,
+      skillCount: skills.length,
+      components,
+      skills,
+      skillPrompts: {
+        index: indexPrompt,
+        compact: compactPrompt,
+        full: fullPrompt,
+      },
+    }
+
+    return JSON.stringify(metadata, null, 2)
+  }
+
+  /**
+   * 纯服务端导出的 prompt 构建（不依赖运行时 JS 函数）
+   */
+  private buildPromptMarkdown(
+    skills: SkillMeta[],
+    mode: 'index' | 'compact' | 'full',
+  ): string {
+    const header = '## SPARK Skill 目录'
+    if (skills.length === 0) {
+      return header + '\n\n（暂无已标注 Skill 的组件）\n'
+    }
+
+    const lines: string[] = [header, '']
+
+    if (mode === 'index') {
+      lines.push('| type | 描述 |')
+      lines.push('|------|------|')
+      for (const skill of skills) {
+        lines.push(`| \`${skill.type}\` | ${skill.description ?? ''} |`)
+      }
+    } else {
+      lines.push('> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。', '')
+      for (const skill of skills) {
+        lines.push(`### \`${skill.type}\``)
+        if (skill.description) lines.push('> ' + skill.description)
+        if (skill.consumes.length > 0) {
+          lines.push('- **依赖能力（consumes）**: ' + skill.consumes.map(c => `\`${c}\``).join(', '))
+        }
+        if (skill.provides.length > 0) {
+          lines.push('- **提供能力（provides）**: ' + skill.provides.map(p => `\`${p}\``).join(', '))
+        }
+        if (mode === 'full') {
+          if (skill.inputSchema) {
+            lines.push(`- **输入参数**: \`${skill.inputSchema}\``)
+          }
+          if (skill.example) {
+            lines.push('- **调用示例**:')
+            lines.push('```json')
+            lines.push(skill.example)
+            lines.push('```')
+          }
+        }
+        lines.push('')
+      }
+    }
+
+    return lines.join('\n')
+  }
+
+  /**
    * 生成 Skill 目录虚拟模块代码
    *
    * 输出：virtual:spark-skill-catalog
@@ -604,16 +695,17 @@ export const skillCatalog = ${skillsJson}
  * - 'compact' : type + 描述 + provides/consumes（中等，适合多数场景）
  * - 'full'    : 全部字段含 example（最详细，单次调用前用）
  */
-export type SkillPromptMode = 'index' | 'compact' | 'full'
 
 /**
  * 按 type 关键词过滤 Skill
- * @param types 只输出这些 type 的 Skill（空数组 = 全量）
+ * @param {string} [header] - 段落标题
+ * @param {'index'|'compact'|'full'} [mode] - 输出精度
+ * @param {string[]} [types] - 只输出这些 type 的 Skill（空数组 = 全量）
  */
 export function buildSkillPrompt(
   header = '## 可用前端 Skill 目录',
-  mode: SkillPromptMode = 'compact',
-  types: string[] = [],
+  mode = 'compact',
+  types = [],
 ) {
   const list = types.length > 0
     ? skillCatalog.filter(s => types.includes(s.type))
@@ -773,7 +865,26 @@ export function sparkComponentsPlugin(
     },
 
     /**
-     * HMR 热更新
+     * 构建完成后输出组件元数据 JSON（仅生产构建）
+     */
+    writeBundle() {
+      if (!analyzer['viteConfig']) return
+      const outDir = analyzer['viteConfig'].build?.outDir ?? 'dist'
+      const root = analyzer['viteConfig'].root
+      const outputPath = resolve(root, outDir, 'spark-component-metadata.json')
+
+      try {
+        const metadataJson = analyzer.generateMetadataJson()
+        mkdirSync(dirname(outputPath), { recursive: true })
+        writeFileSync(outputPath, metadataJson, 'utf-8')
+        logger.info(`📦 组件元数据已输出: ${relative(root, outputPath)}`)
+      } catch (e) {
+        logger.error('❌ 输出组件元数据失败:', e)
+      }
+    },
+
+    /**
+     * HMR 热更新（仅开发模式）
      */
     handleHotUpdate({ file, server }) {
       // 如果是 Vue 组件文件变更/新增/删除，重新扫描

@@ -26,7 +26,7 @@ class AiPageServiceTest {
         String fakeResponse;
 
         TestableAiPageService(String fakeResponse) {
-            super(defaultProps(), new ObjectMapper());
+            super(defaultProps(), new ObjectMapper(), new ComponentMetadataService(new ObjectMapper()));
             this.fakeResponse = fakeResponse;
         }
 
