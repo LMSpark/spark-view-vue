@@ -13,9 +13,6 @@ dist/
 # Java / Maven build output
 spark-ai-server/target/
 
-# Java server managed data (seeded on first startup)
-spark-ai-server/data/pages-config/
-
 # VS and IDE
 .vs/
 *.user
