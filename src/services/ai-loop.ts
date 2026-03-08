@@ -29,6 +29,11 @@
  * ```
  */
 
+import { createRequest } from '@spark-view/spark-utils'
+
+/** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
+const http = createRequest({ timeout: 120_000 })
+
 // ─── 类型定义 ────────────────────────────────────────────────────────────────
 
 /** AI 闭环四文件 */
@@ -68,6 +73,8 @@ export interface AIPageLoopOptions {
   onError?: (error: Error) => void
   /** 日志收集等待时间 ms（文件写入后等待页面渲染产生日志，默认 3000） */
   logCollectDelay?: number
+  /** Skill Catalog Markdown（由 buildSkillPrompt 生成，附加到系统提示词） */
+  skillCatalog?: string | undefined
 }
 
 // ─── SSE 文件变更监听 ───────────────────────────────────────────────────────
@@ -86,8 +93,11 @@ export interface FileChangeEvent {
 export function onPageConfigChange(
   callback: (event: FileChangeEvent) => void
 ): () => void {
-  const es = new EventSource('/api/pages-config/__events')
+  let es: EventSource | null = new EventSource('/api/pages-config/__events')
+  let retryCount = 0
+  const MAX_RETRIES = 5
   const handler = (e: MessageEvent) => {
+    retryCount = 0 // 收到消息重置重连计数
     try {
       const data = JSON.parse(e.data as string) as Record<string, unknown>
       if ('pageId' in data && 'file' in data) {
@@ -96,10 +106,54 @@ export function onPageConfigChange(
     } catch { /* ignore malformed events */ }
   }
   es.addEventListener('message', handler)
-  return () => {
-    es.removeEventListener('message', handler)
-    es.close()
+  // 防止后端不可用时无限重连
+  es.onerror = () => {
+    retryCount++
+    if (retryCount > MAX_RETRIES && es) {
+      es.close()
+      es = null
+      if (import.meta.env.DEV) {
+        console.warn('[SSE] 已达最大重连次数，停止监听')
+      }
+    }
   }
+  return () => {
+    es?.removeEventListener('message', handler)
+    es?.close()
+    es = null
+  }
+}
+
+// ─── 自动迭代守卫 ────────────────────────────────────────────────────────────
+
+/**
+ * 自动迭代标志：为 true 时 setupHotReload 跳过 window.location.reload()
+ * 避免 SSE 文件变更事件在迭代循环中途杀死 Vue 应用状态
+ */
+let _autoIterating = false
+/** 安全超时定时器：防止 _autoIterating 永远为 true（AI 请求 hang 住的场景） */
+let _autoIteratingTimer: ReturnType<typeof setTimeout> | null = null
+const AUTO_ITERATE_TIMEOUT = 180_000 // 3 分钟硬上限
+
+/** 设置自动迭代标志（AiChatPanel 在循环前/后调用） */
+export function setAutoIterating(value: boolean): void {
+  _autoIterating = value
+  if (_autoIteratingTimer) {
+    clearTimeout(_autoIteratingTimer)
+    _autoIteratingTimer = null
+  }
+  if (value) {
+    // 安全网：超时后强制恢复，避免标志安正永远为 true
+    _autoIteratingTimer = setTimeout(() => {
+      _autoIterating = false
+      _autoIteratingTimer = null
+    }, AUTO_ITERATE_TIMEOUT)
+  }
+}
+
+/** 查询当前是否处于自动迭代中 */
+export function isAutoIterating(): boolean {
+  return _autoIterating
 }
 
 // ─── 页面缓存失效 ───────────────────────────────────────────────────────────
@@ -142,6 +196,9 @@ export function setupHotReload(
 ): () => void {
   return onPageConfigChange((event) => {
     clearPageCache(event.pageId)
+    // 自动迭代期间跳过 reload（否则 window.location.reload() 会杀死循环状态）
+    // 缓存已清，迭代循环自行通过路由切换触发页面刷新
+    if (_autoIterating) return
     if (getCurrentPageId() === event.pageId) {
       reload()
     }
@@ -154,16 +211,10 @@ export function setupHotReload(
  * 批量写入页面配置文件
  */
 export async function writePageFiles(pageId: string, files: PageFiles): Promise<string[]> {
-  const resp = await fetch(`/api/pages-config/${encodeURIComponent(pageId)}/__batch`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(files),
-  })
-  if (!resp.ok) {
-    const err = await resp.json() as { error?: string }
-    throw new Error(err.error ?? `写入失败: ${resp.status}`)
-  }
-  const result = await resp.json() as { written: string[] }
+  const result = await http.post<{ written: string[] }>(
+    `/api/pages-config/${encodeURIComponent(pageId)}/__batch`,
+    files,
+  )
   return result.written
 }
 
@@ -171,10 +222,14 @@ export async function writePageFiles(pageId: string, files: PageFiles): Promise<
  * 读取页面配置文件（当前内容）
  */
 export async function readPageFile(pageId: string, fileName: string): Promise<string | null> {
-  const resp = await fetch(`/api/pages-config/${encodeURIComponent(pageId)}/${fileName}`)
-  if (!resp.ok) return null
-  const result = await resp.json() as { content?: string; notModified?: boolean }
-  return result.content ?? null
+  try {
+    const result = await http.get<{ content?: string; notModified?: boolean }>(
+      `/api/pages-config/${encodeURIComponent(pageId)}/${fileName}`,
+    )
+    return result.content ?? null
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -251,8 +306,17 @@ export class PageLogCollector {
  *
  * 管理整个「提示词 → AI → 文件 → 渲染 → 日志 → AI」循环。
  */
+/** _callAI 内部使用的已解析配置 */
+interface ResolvedLoopOptions {
+  aiEndpoint: string
+  onFilesUpdated: (pageId: string, files: string[]) => void
+  onError: (error: Error) => void
+  logCollectDelay: number
+  skillCatalog: string | undefined
+}
+
 export class AIPageLoop {
-  private options: Required<AIPageLoopOptions>
+  private options: ResolvedLoopOptions
   readonly collector = new PageLogCollector()
   private _sessionId: string
 
@@ -260,8 +324,9 @@ export class AIPageLoop {
     this.options = {
       aiEndpoint: options.aiEndpoint,
       onFilesUpdated: options.onFilesUpdated ?? (() => {}),
-      onError: options.onError ?? ((e) => { console.error('[AIPageLoop]', e) }),
+      onError: options.onError ?? ((e) => { if (import.meta.env.DEV) console.error('[AIPageLoop]', e) }),
       logCollectDelay: options.logCollectDelay ?? 3000,
+      skillCatalog: options.skillCatalog ?? undefined,
     }
     this._sessionId = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   }
@@ -306,17 +371,11 @@ export class AIPageLoop {
    */
   private async _callAI(pageId: string, payload: Record<string, unknown>): Promise<AIResponse> {
     try {
-      const resp = await fetch(this.options.aiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      if (!resp.ok) {
-        throw new Error(`AI 后端返回 ${resp.status}: ${await resp.text()}`)
+      // 注入 Skill Catalog 到每个请求
+      if (this.options.skillCatalog !== undefined) {
+        payload['skillCatalog'] = this.options.skillCatalog
       }
-
-      const aiResp = await resp.json() as AIResponse
+      const aiResp = await http.post<AIResponse>(this.options.aiEndpoint, payload)
 
       // 写入文件
       if (Object.keys(aiResp.files).length > 0) {

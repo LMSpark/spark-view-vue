@@ -30,12 +30,21 @@
         </transition>
       </router-view>
     </main>
+
+    <!-- AI 聊天浮窗（仅配置启用时加载） -->
+    <AiChatPanel v-if="enableAI" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+/** 懒加载 AI 面板（enableAI=false 时零开销） */
+const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
+
+/** 读取应用配置中的 AI 开关（由远程配置或本地 JSON 决定） */
+const enableAI = Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI'])
 
 const router = useRouter()
 const isRoutesLoaded = ref(false)

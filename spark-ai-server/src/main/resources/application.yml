@@ -1,0 +1,49 @@
+server:
+  port: 8080
+
+spark:
+  pages:
+    # 服务端管理的 pages-config 目录（不再写入 public/pages-config）
+    # 通过环境变量 PAGES_CONFIG_DIR 覆盖
+    config-dir: ${PAGES_CONFIG_DIR:./data/pages-config}
+    # 种子数据目录（首次启动自动拷贝到 config-dir）
+    seed-dir: ${PAGES_CONFIG_SEED_DIR:../public/pages-config}
+
+  ai:
+    openai:
+      # ── LLM 服务地址 ────────────────────────────────────────────────────────
+      # OpenAI 官方:    https://api.openai.com
+      # Azure OpenAI:   https://{resource}.openai.azure.com
+      # 本地 Ollama:    http://localhost:11434
+      # 阿里通义:       https://dashscope.aliyuncs.com/compatible-mode
+      # DeepSeek:       https://api.deepseek.com
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+
+      # ── API Key（通过环境变量注入，不要硬编码到配置文件）────────────────────
+      # 设置方法：
+      #   Windows PowerShell: $env:OPENAI_API_KEY = "sk-..."
+      #   Linux/macOS:        export OPENAI_API_KEY="sk-..."
+      #   .env.java 文件:     见 README.md
+      api-key: ${OPENAI_API_KEY:your-api-key-here}
+
+      # ── 模型名称 ────────────────────────────────────────────────────────────
+      # OpenAI:   gpt-4o / gpt-4o-mini / gpt-3.5-turbo
+      # Ollama:   llama3.1 / qwen2.5:7b / deepseek-r1:7b
+      # DeepSeek: deepseek-chat / deepseek-reasoner
+      # 通义:     qwen-turbo / qwen-plus / qwen-max
+      model: ${AI_MODEL:gpt-4o}
+
+      # 生成温度（0 = 确定性, 1 = 最大随机）— 配置生成建议 0.2~0.4
+      temperature: 0.3
+
+      # 最大输出 token 数
+      max-tokens: 4096
+
+      # 是否启用 JSON 模式（response_format: json_object）
+      # OpenAI gpt-4o / gpt-3.5-turbo-1106+ 支持
+      # Ollama 本地模型通常不支持，需改为 false
+      json-mode: ${AI_JSON_MODE:true}
+
+logging:
+  level:
+    com.spark.ai: INFO
