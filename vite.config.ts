@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
-import fs from 'fs'
 import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
 import {
   COMPONENT_SCAN_PATTERNS,
@@ -43,7 +42,6 @@ export default defineConfig({
       '@spark-view/spark-app': process.env.NODE_ENV === 'production'
         ? path.resolve(__dirname, 'packages', 'spark-app', 'dist', 'index.js')
         : path.resolve(__dirname, 'packages', 'spark-app', 'src', 'index.ts'),
-      '/pages-config': path.resolve(__dirname, 'public', 'pages-config')
     }
   },
   optimizeDeps: {
@@ -55,29 +53,14 @@ export default defineConfig({
       allow: ['..', '../../src']
     },
     proxy: {
-      // ── Java 后端已启动时：所有 /api/* 统一转发到 Java ──────────────────
-      // 设置环境变量 AI_BACKEND_URL=http://localhost:8080 后，Vite 将
-      // 所有 API 请求转发到 Java 服务，包括 config / tenants / ai / pages-config。
-      // 未设置时 /api/config + /api/tenants 走 mock 服务器（port 3001），
-      // /api/ai + /api/pages-config 走 Vite 内置 mock。
+      // ── 页面配置和 AI 端点始终代理到 Java 后端 ──────────────────────────
+      // 页面配置（routes.json, rule.json 等）全部由 Java 后端管理，
+      // AI 端点同样由后端提供。
+      // 设置 AI_BACKEND_URL 指向 Java 后端（默认 http://localhost:8080）。
+      // 未设置时 /api/ai/chat 走 Vite 内置 mock。
       ...(process.env['AI_BACKEND_URL']
         ? {
-            '/api/config': {
-              target: process.env['AI_BACKEND_URL'],
-              changeOrigin: true,
-              secure: false,
-            },
-            '/api/tenants': {
-              target: process.env['AI_BACKEND_URL'],
-              changeOrigin: true,
-              secure: false,
-            },
-            '/api/ai': {
-              target: process.env['AI_BACKEND_URL'],
-              changeOrigin: true,
-              secure: false,
-            },
-            '/api/pages-config': {
+            '/api': {
               target: process.env['AI_BACKEND_URL'],
               changeOrigin: true,
               secure: false,
@@ -99,155 +82,24 @@ export default defineConfig({
     }
   },
   plugins: [
-    // ==================== pages-config 文件服务（FileLoader 协议） ====================
-    // 拦截 GET /api/pages-config/** 请求，从 public/pages-config/** 读取文件，
-    // 以 { content, timestamp } 格式响应，供 FileLoader 时间戳缓存协议使用。
-    // 同时提供 AI 闭环所需的写入 API 和 SSE 变更通知。
+    // ==================== pages-config: 始终由 Java 后端提供 ====================
+    // 页面配置（routes.json, rule.json, pagedata.json 等）全部由 Java 后端管理，
+    // 种子数据打包在 JAR 内（classpath:seed-pages-config/），服务端完全自包含。
+    // 
+    // 开发流程：先启动 Java 后端（mvn spring-boot:run），再启动 Vite dev server。
+    // Vite proxy 将 /api/* 全部转发到 Java 后端。
+    //
+    // 若未设置 AI_BACKEND_URL，仍保留 Mock AI 端点供独立前端调试。
     {
-      name: 'spark-pages-config-server',
+      name: 'spark-mock-ai',
       configureServer(server) {
-        // ── SSE 客户端列表（AI 闭环：文件变更通知） ──
-        type SseClient = import('http').ServerResponse
-        const sseClients: Set<SseClient> = new Set()
-        function broadcastChange(pageId: string, file: string): void {
-          const data = JSON.stringify({ pageId, file, timestamp: Date.now() })
-          for (const client of sseClients) {
-            try { client.write(`data: ${data}\n\n`) } catch { sseClients.delete(client) }
-          }
-        }
-
         server.middlewares.use(async (req, res, next) => {
-          // 当 Java 后端已启动（AI_BACKEND_URL 已设置），Vite 代理内已将 /api/pages-config 和 /api/ai
-          // 转发到 Java。此处的 middleware 层做安全退让，防止代理顺序问题导致重复处理。
-          if (process.env['AI_BACKEND_URL'] &&
-              (req.url?.startsWith('/api/pages-config/') || req.url?.startsWith('/api/ai/'))) {
+          // 有后端时全部走 proxy，不需要 mock
+          if (process.env['AI_BACKEND_URL']) {
             return next()
           }
 
-          // ── SSE 端点：GET /api/pages-config/__events ──
-          if (req.method === 'GET' && req.url === '/api/pages-config/__events') {
-            res.writeHead(200, {
-              'Content-Type': 'text/event-stream',
-              'Cache-Control': 'no-cache',
-              'Connection': 'keep-alive',
-              'Access-Control-Allow-Origin': '*'
-            })
-            res.write('data: {"type":"connected"}\n\n')
-            sseClients.add(res)
-            req.on('close', () => sseClients.delete(res))
-            return
-          }
-
-          // ── 写入 API：PUT /api/pages-config/{pageId}/{file} ──
-          // AI 闭环：AI 生成/修改页面配置文件后通过此端点写入磁盘
-          if (req.method === 'PUT' && req.url?.startsWith('/api/pages-config/')) {
-            const urlClean = req.url.split('?')[0]
-            const relPath = urlClean.slice('/api/pages-config/'.length)
-            // 安全校验：只允许写入合法的页面配置文件
-            const ALLOWED_FILES = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
-            const segments = relPath.split('/')
-            if (segments.length !== 2 || !ALLOWED_FILES.includes(segments[1])) {
-              res.writeHead(400, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: `只允许写入 ${ALLOWED_FILES.join(', ')}` }))
-              return
-            }
-            // 防止路径穿越
-            const pageId = segments[0]
-            if (pageId.includes('..') || pageId.includes('/') || pageId.includes('\\')) {
-              res.writeHead(400, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: '无效的 pageId' }))
-              return
-            }
-            const targetDir = path.resolve(__dirname, 'public', 'pages-config', pageId)
-            const targetFile = path.resolve(targetDir, segments[1])
-            // 确保路径在 pages-config 内
-            const pagesRoot = path.resolve(__dirname, 'public', 'pages-config')
-            if (!targetFile.startsWith(pagesRoot)) {
-              res.writeHead(403, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: '路径越界' }))
-              return
-            }
-
-            try {
-              // 读取请求体
-              const body = await new Promise<string>((resolve, reject) => {
-                let data = ''
-                req.on('data', (chunk: Buffer) => { data += chunk.toString() })
-                req.on('end', () => resolve(data))
-                req.on('error', reject)
-              })
-              // 确保目录存在
-              await fs.promises.mkdir(targetDir, { recursive: true })
-              await fs.promises.writeFile(targetFile, body, 'utf-8')
-              const stat = await fs.promises.stat(targetFile)
-              broadcastChange(pageId, segments[1])
-              res.writeHead(200, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ ok: true, timestamp: stat.mtime.toISOString() }))
-            } catch (err) {
-              res.writeHead(500, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: String(err) }))
-            }
-            return
-          }
-
-          // ── 批量写入：POST /api/pages-config/{pageId}/__batch ──
-          // AI 一次性写入 4 个文件
-          if (req.method === 'POST' && req.url?.match(/^\/api\/pages-config\/[^/]+\/__batch/)) {
-            const urlClean = req.url.split('?')[0]
-            const pageId = urlClean.split('/')[3]
-            if (!pageId || pageId.includes('..')) {
-              res.writeHead(400, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: '无效的 pageId' }))
-              return
-            }
-            try {
-              const body = await new Promise<string>((resolve, reject) => {
-                let data = ''
-                req.on('data', (chunk: Buffer) => { data += chunk.toString() })
-                req.on('end', () => resolve(data))
-                req.on('error', reject)
-              })
-              const files = JSON.parse(body) as Record<string, string>
-              const ALLOWED_FILES = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
-              const targetDir = path.resolve(__dirname, 'public', 'pages-config', pageId)
-              await fs.promises.mkdir(targetDir, { recursive: true })
-              const written: string[] = []
-              for (const [fileName, content] of Object.entries(files)) {
-                if (!ALLOWED_FILES.includes(fileName)) continue
-                if (typeof content !== 'string') continue
-                const targetFile = path.resolve(targetDir, fileName)
-                await fs.promises.writeFile(targetFile, content, 'utf-8')
-                written.push(fileName)
-              }
-              // 自动注册路由：新建页面时追加到 routes.json
-              const routesFile = path.resolve(__dirname, 'public', 'pages-config', 'routes.json')
-              try {
-                const routesRaw = await fs.promises.readFile(routesFile, 'utf-8')
-                const routes = JSON.parse(routesRaw) as Array<{ pageId?: string }>
-                const exists = routes.some(r => r.pageId === pageId)
-                if (!exists) {
-                  routes.push({
-                    path: `/${pageId}`,
-                    name: pageId,
-                    pageId,
-                    meta: { title: pageId, icon: '🤖' }
-                  })
-                  await fs.promises.writeFile(routesFile, JSON.stringify(routes, null, 2), 'utf-8')
-                }
-              } catch { /* routes.json 读写失败不阻断主流程 */ }
-
-              broadcastChange(pageId, '__batch')
-              res.writeHead(200, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ ok: true, pageId, written }))
-            } catch (err) {
-              res.writeHead(500, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: String(err) }))
-            }
-            return
-          }
-
-          // ── Mock AI 端点（开发环境）：POST /api/ai/chat ──
-          // 不连真实 AI 后端时，返回一个可运行的 SPARK 页面骨架
+          // ── Mock AI 端点（无后端时的开发模式）：POST /api/ai/chat ──
           if (req.method === 'POST' && req.url === '/api/ai/chat') {
             try {
               const body = await new Promise<string>((resolve, reject) => {
@@ -261,7 +113,6 @@ export default defineConfig({
               const prompt = payload.prompt ?? payload.feedback ?? ''
               const action = payload.action ?? 'generate'
 
-              // 构造一个能在 SPARK 中运行的最小页面
               const title = prompt.slice(0, 30) || pid
               const ruleJson = JSON.stringify([
                 { type: 'h2', children: [`${title}`] },
@@ -319,28 +170,7 @@ export default defineConfig({
             return
           }
 
-          // ── 读取 API（原有逻辑）：GET /api/pages-config/{path} ──
-          if (req.method !== 'GET' || !req.url?.startsWith('/api/pages-config/')) {
-            return next()
-          }
-          const urlClean = req.url.split('?')[0]
-          const relPath = urlClean.slice('/api/pages-config/'.length)
-          const filePath = path.resolve(__dirname, 'public', 'pages-config', relPath)
-          const clientTs = new URLSearchParams(req.url.includes('?') ? req.url.split('?')[1] : '').get('timestamp') ?? ''
-
-          try {
-            const stat = await fs.promises.stat(filePath)
-            const timestamp = stat.mtime.toISOString()
-            res.setHeader('Content-Type', 'application/json')
-            if (clientTs && clientTs === timestamp) {
-              res.end(JSON.stringify({ notModified: true, timestamp, content: '' }))
-              return
-            }
-            const content = await fs.promises.readFile(filePath, 'utf-8')
-            res.end(JSON.stringify({ content, timestamp }))
-          } catch {
-            next()
-          }
+          return next()
         })
       }
     },

@@ -1,0 +1,20 @@
+{
+  "_version": 1,
+  "pageTitle": "Form-Create API 实战演示",
+  "userType": "personal",
+  "showAdvanced": false,
+  "formData": {
+    "username": "",
+    "email": "",
+    "phone": "",
+    "userType": "personal",
+    "companyName": "",
+    "taxNumber": "",
+    "personalId": "",
+    "province": "",
+    "city": "",
+    "district": "",
+    "description": ""
+  },
+  "apiLog": []
+}

@@ -1,0 +1,378 @@
+{
+  "expandedKeys": [],
+  "currentNodeKey": null,
+  "childNodes": [],
+  "hierarchicalTreeData": [],
+  "treeData": {
+    "config": {
+      "mode": "flat",
+      "idField": "id",
+      "parentIdField": "parentId",
+      "textField": "name",
+      "lazy": false
+    },
+    "nodes": [
+      {
+        "id": 1,
+        "parentId": null,
+        "name": "武汉领码科技",
+        "type": "company",
+        "level": 0
+      },
+      {
+        "id": 2,
+        "parentId": 1,
+        "name": "研发中心",
+        "type": "department",
+        "level": 1
+      },
+      {
+        "id": 3,
+        "parentId": 1,
+        "name": "市场部",
+        "type": "department",
+        "level": 1
+      },
+      {
+        "id": 4,
+        "parentId": 1,
+        "name": "行政部",
+        "type": "department",
+        "level": 1
+      },
+      {
+        "id": 5,
+        "parentId": 2,
+        "name": "前端团队",
+        "type": "team",
+        "level": 2
+      },
+      {
+        "id": 6,
+        "parentId": 2,
+        "name": "后端团队",
+        "type": "team",
+        "level": 2
+      },
+      {
+        "id": 7,
+        "parentId": 2,
+        "name": "测试团队",
+        "type": "team",
+        "level": 2
+      },
+      {
+        "id": 8,
+        "parentId": 3,
+        "name": "品牌推广组",
+        "type": "team",
+        "level": 2
+      },
+      {
+        "id": 9,
+        "parentId": 3,
+        "name": "渠道销售组",
+        "type": "team",
+        "level": 2
+      },
+      {
+        "id": 10,
+        "parentId": 4,
+        "name": "人力资源组",
+        "type": "team",
+        "level": 2
+      },
+      {
+        "id": 11,
+        "parentId": 4,
+        "name": "财务组",
+        "type": "team",
+        "level": 2
+      },
+      {
+        "id": 12,
+        "parentId": 5,
+        "name": "张三",
+        "type": "employee",
+        "title": "高级前端工程师",
+        "level": 3
+      },
+      {
+        "id": 13,
+        "parentId": 5,
+        "name": "李四",
+        "type": "employee",
+        "title": "前端工程师",
+        "level": 3
+      },
+      {
+        "id": 14,
+        "parentId": 5,
+        "name": "王五",
+        "type": "employee",
+        "title": "前端实习生",
+        "level": 3
+      },
+      {
+        "id": 15,
+        "parentId": 6,
+        "name": "赵六",
+        "type": "employee",
+        "title": "架构师",
+        "level": 3
+      },
+      {
+        "id": 16,
+        "parentId": 6,
+        "name": "孙七",
+        "type": "employee",
+        "title": "后端工程师",
+        "level": 3
+      },
+      {
+        "id": 17,
+        "parentId": 7,
+        "name": "周八",
+        "type": "employee",
+        "title": "测试工程师",
+        "level": 3
+      },
+      {
+        "id": 18,
+        "parentId": 7,
+        "name": "吴九",
+        "type": "employee",
+        "title": "自动化测试",
+        "level": 3
+      },
+      {
+        "id": 19,
+        "parentId": 8,
+        "name": "郑十",
+        "type": "employee",
+        "title": "品牌经理",
+        "level": 3
+      },
+      {
+        "id": 20,
+        "parentId": 9,
+        "name": "钱十一",
+        "type": "employee",
+        "title": "销售经理",
+        "level": 3
+      },
+      {
+        "id": 21,
+        "parentId": 10,
+        "name": "陈十二",
+        "type": "employee",
+        "title": "HR专员",
+        "level": 3
+      },
+      {
+        "id": 22,
+        "parentId": 11,
+        "name": "林十三",
+        "type": "employee",
+        "title": "会计",
+        "level": 3
+      }
+    ]
+  },
+  "hierarchicalTreeData": [
+    {
+      "id": 1,
+      "name": "武汉领码科技",
+      "label": "武汉领码科技",
+      "type": "company",
+      "level": 0,
+      "children": [
+        {
+          "id": 2,
+          "name": "研发中心",
+          "label": "研发中心",
+          "type": "department",
+          "level": 1,
+          "children": [
+            {
+              "id": 5,
+              "name": "前端团队",
+              "label": "前端团队",
+              "type": "team",
+              "level": 2,
+              "children": [
+                {
+                  "id": 12,
+                  "name": "张三",
+                  "label": "张三",
+                  "type": "employee",
+                  "title": "高级前端工程师",
+                  "level": 3
+                },
+                {
+                  "id": 13,
+                  "name": "李四",
+                  "label": "李四",
+                  "type": "employee",
+                  "title": "前端工程师",
+                  "level": 3
+                },
+                {
+                  "id": 14,
+                  "name": "王五",
+                  "label": "王五",
+                  "type": "employee",
+                  "title": "前端实习生",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "id": 6,
+              "name": "后端团队",
+              "label": "后端团队",
+              "type": "team",
+              "level": 2,
+              "children": [
+                {
+                  "id": 15,
+                  "name": "赵六",
+                  "label": "赵六",
+                  "type": "employee",
+                  "title": "架构师",
+                  "level": 3
+                },
+                {
+                  "id": 16,
+                  "name": "孙七",
+                  "label": "孙七",
+                  "type": "employee",
+                  "title": "后端工程师",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "id": 7,
+              "name": "测试团队",
+              "label": "测试团队",
+              "type": "team",
+              "level": 2,
+              "children": [
+                {
+                  "id": 17,
+                  "name": "周八",
+                  "label": "周八",
+                  "type": "employee",
+                  "title": "测试工程师",
+                  "level": 3
+                },
+                {
+                  "id": 18,
+                  "name": "吴九",
+                  "label": "吴九",
+                  "type": "employee",
+                  "title": "自动化测试",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "市场部",
+          "label": "市场部",
+          "type": "department",
+          "level": 1,
+          "children": [
+            {
+              "id": 8,
+              "name": "品牌推广组",
+              "label": "品牌推广组",
+              "type": "team",
+              "level": 2,
+              "children": [
+                {
+                  "id": 19,
+                  "name": "郑十",
+                  "label": "郑十",
+                  "type": "employee",
+                  "title": "品牌经理",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "id": 9,
+              "name": "渠道销售组",
+              "label": "渠道销售组",
+              "type": "team",
+              "level": 2,
+              "children": [
+                {
+                  "id": 20,
+                  "name": "钱十一",
+                  "label": "钱十一",
+                  "type": "employee",
+                  "title": "销售经理",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "行政部",
+          "label": "行政部",
+          "type": "department",
+          "level": 1,
+          "children": [
+            {
+              "id": 10,
+              "name": "人力资源组",
+              "label": "人力资源组",
+              "type": "team",
+              "level": 2,
+              "children": [
+                {
+                  "id": 21,
+                  "name": "陈十二",
+                  "label": "陈十二",
+                  "type": "employee",
+                  "title": "HR专员",
+                  "level": 3
+                }
+              ]
+            },
+            {
+              "id": 11,
+              "name": "财务组",
+              "label": "财务组",
+              "type": "team",
+              "level": 2,
+              "children": [
+                {
+                  "id": 22,
+                  "name": "林十三",
+                  "label": "林十三",
+                  "type": "employee",
+                  "title": "会计",
+                  "level": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "searchKeyword": "",
+  "searchResults": [],
+  "selectedNode": null,
+  "selectedPath": [],
+  "selectedPathText": "",
+  "expandedKeys": [],
+  "currentNodeKey": null
+}
