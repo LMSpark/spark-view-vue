@@ -6,9 +6,9 @@
 
 // ==================== 日志系统 ====================
 
-export { Logger } from './logger'
+export { Logger, setLoggerHook } from './logger'
 
-export type { LogLevel, LoggerApi } from './logger'
+export type { LogLevel, LoggerApi, LoggerHook } from './logger'
 
 // ==================== HTTP 模块 ====================
 

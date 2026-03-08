@@ -70,12 +70,18 @@ export {
   pageLogger,
   apiLogger,
   routerLogger,
-  createHttpTransport
+  createHttpTransport,
+  createBatchHttpTransport,
+  configureRemoteLogger,
+  addGlobalTransport,
+  clearGlobalTransports,
+  getGlobalTransportCount
 } from './logger'
 
 export type {
   AppLoggerConfig,
-  LogTransport
+  LogTransport,
+  BatchTransportOptions
 } from './logger'
 
 // 类型导出

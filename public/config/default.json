@@ -52,6 +52,7 @@
         "version": "1.0.0",
         "features": {
             "enableAI": false,
+            "aiEndpoint": "/api/ai/chat",
             "enableExport": true,
             "enableOffline": false
         }
@@ -61,6 +62,9 @@
         "enableColors": true,
         "showTimestamp": true,
         "enableRemote": false,
-        "remoteEndpoint": "/api/logs"
+        "remoteEndpoint": "/api/logs",
+        "minRemoteLevel": "debug",
+        "batchSize": 50,
+        "flushInterval": 5000
     }
 }

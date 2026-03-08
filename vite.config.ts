@@ -72,10 +72,127 @@ export default defineConfig({
     // ==================== pages-config 文件服务（FileLoader 协议） ====================
     // 拦截 GET /api/pages-config/** 请求，从 public/pages-config/** 读取文件，
     // 以 { content, timestamp } 格式响应，供 FileLoader 时间戳缓存协议使用。
+    // 同时提供 AI 闭环所需的写入 API 和 SSE 变更通知。
     {
       name: 'spark-pages-config-server',
       configureServer(server) {
+        // ── SSE 客户端列表（AI 闭环：文件变更通知） ──
+        type SseClient = import('http').ServerResponse
+        const sseClients: Set<SseClient> = new Set()
+        function broadcastChange(pageId: string, file: string): void {
+          const data = JSON.stringify({ pageId, file, timestamp: Date.now() })
+          for (const client of sseClients) {
+            try { client.write(`data: ${data}\n\n`) } catch { sseClients.delete(client) }
+          }
+        }
+
         server.middlewares.use(async (req, res, next) => {
+          // ── SSE 端点：GET /api/pages-config/__events ──
+          if (req.method === 'GET' && req.url === '/api/pages-config/__events') {
+            res.writeHead(200, {
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive',
+              'Access-Control-Allow-Origin': '*'
+            })
+            res.write('data: {"type":"connected"}\n\n')
+            sseClients.add(res)
+            req.on('close', () => sseClients.delete(res))
+            return
+          }
+
+          // ── 写入 API：PUT /api/pages-config/{pageId}/{file} ──
+          // AI 闭环：AI 生成/修改页面配置文件后通过此端点写入磁盘
+          if (req.method === 'PUT' && req.url?.startsWith('/api/pages-config/')) {
+            const urlClean = req.url.split('?')[0]
+            const relPath = urlClean.slice('/api/pages-config/'.length)
+            // 安全校验：只允许写入合法的页面配置文件
+            const ALLOWED_FILES = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
+            const segments = relPath.split('/')
+            if (segments.length !== 2 || !ALLOWED_FILES.includes(segments[1])) {
+              res.writeHead(400, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: `只允许写入 ${ALLOWED_FILES.join(', ')}` }))
+              return
+            }
+            // 防止路径穿越
+            const pageId = segments[0]
+            if (pageId.includes('..') || pageId.includes('/') || pageId.includes('\\')) {
+              res.writeHead(400, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: '无效的 pageId' }))
+              return
+            }
+            const targetDir = path.resolve(__dirname, 'public', 'pages-config', pageId)
+            const targetFile = path.resolve(targetDir, segments[1])
+            // 确保路径在 pages-config 内
+            const pagesRoot = path.resolve(__dirname, 'public', 'pages-config')
+            if (!targetFile.startsWith(pagesRoot)) {
+              res.writeHead(403, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: '路径越界' }))
+              return
+            }
+
+            try {
+              // 读取请求体
+              const body = await new Promise<string>((resolve, reject) => {
+                let data = ''
+                req.on('data', (chunk: Buffer) => { data += chunk.toString() })
+                req.on('end', () => resolve(data))
+                req.on('error', reject)
+              })
+              // 确保目录存在
+              await fs.promises.mkdir(targetDir, { recursive: true })
+              await fs.promises.writeFile(targetFile, body, 'utf-8')
+              const stat = await fs.promises.stat(targetFile)
+              broadcastChange(pageId, segments[1])
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ ok: true, timestamp: stat.mtime.toISOString() }))
+            } catch (err) {
+              res.writeHead(500, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: String(err) }))
+            }
+            return
+          }
+
+          // ── 批量写入：POST /api/pages-config/{pageId}/__batch ──
+          // AI 一次性写入 4 个文件
+          if (req.method === 'POST' && req.url?.match(/^\/api\/pages-config\/[^/]+\/__batch/)) {
+            const urlClean = req.url.split('?')[0]
+            const pageId = urlClean.split('/')[3]
+            if (!pageId || pageId.includes('..')) {
+              res.writeHead(400, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: '无效的 pageId' }))
+              return
+            }
+            try {
+              const body = await new Promise<string>((resolve, reject) => {
+                let data = ''
+                req.on('data', (chunk: Buffer) => { data += chunk.toString() })
+                req.on('end', () => resolve(data))
+                req.on('error', reject)
+              })
+              const files = JSON.parse(body) as Record<string, string>
+              const ALLOWED_FILES = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
+              const targetDir = path.resolve(__dirname, 'public', 'pages-config', pageId)
+              await fs.promises.mkdir(targetDir, { recursive: true })
+              const written: string[] = []
+              for (const [fileName, content] of Object.entries(files)) {
+                if (!ALLOWED_FILES.includes(fileName)) continue
+                if (typeof content !== 'string') continue
+                const targetFile = path.resolve(targetDir, fileName)
+                await fs.promises.writeFile(targetFile, content, 'utf-8')
+                written.push(fileName)
+              }
+              broadcastChange(pageId, '__batch')
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ ok: true, pageId, written }))
+            } catch (err) {
+              res.writeHead(500, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: String(err) }))
+            }
+            return
+          }
+
+          // ── 读取 API（原有逻辑）：GET /api/pages-config/{path} ──
           if (req.method !== 'GET' || !req.url?.startsWith('/api/pages-config/')) {
             return next()
           }
