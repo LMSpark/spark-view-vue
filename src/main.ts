@@ -356,9 +356,19 @@ async function startApp() {
         
         // ── AI 闭环：初始化 AI Loop 服务（可选） ──
         if (appConfig.config.features.enableAI === true) {
-          import('./services/ai-loop').then(({ initAILoop, setupHotReload }) => {
+          // 暴露给 App.vue 的 AiChatPanel 条件渲染
+          ;(window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI'] = true
+
+          Promise.all([
+            import('./services/ai-loop'),
+            import('virtual:spark-skill-catalog').catch(() => null),
+          ]).then(([{ initAILoop, setupHotReload }, skillMod]) => {
+            // 生成 Skill Catalog Markdown（构建时从 @skill 注解采集）
+            const skillCatalog = skillMod?.buildSkillPrompt('## SPARK Skill 目录', 'compact')
+
             const loop = initAILoop({
               aiEndpoint: appConfig.config.features.aiEndpoint ?? '/api/ai/chat',
+              ...(skillCatalog !== undefined ? { skillCatalog } : {}),
               onFilesUpdated: (pageId) => {
                 startupLogger.info('AI 已更新页面文件', { pageId })
               },

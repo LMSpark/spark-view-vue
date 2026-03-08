@@ -10,6 +10,12 @@ node_modules
 *.runtimeconfig.json
 dist/
 
+# Java / Maven build output
+spark-ai-server/target/
+
+# Java server managed data (seeded on first startup)
+spark-ai-server/data/pages-config/
+
 # VS and IDE
 .vs/
 *.user
@@ -23,5 +29,8 @@ dist/
 tsc-output.txt
 tmpclaude-*
 
+# Local env overrides（不提交 API Key）
+.env.local
+.env.*.local
 
 

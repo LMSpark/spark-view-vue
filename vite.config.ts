@@ -55,17 +55,47 @@ export default defineConfig({
       allow: ['..', '../../src']
     },
     proxy: {
-      // 代理配置 API 请求到 mock 服务器
-      '/api/config': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false
-      },
-      '/api/tenants': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false
-      }
+      // ── Java 后端已启动时：所有 /api/* 统一转发到 Java ──────────────────
+      // 设置环境变量 AI_BACKEND_URL=http://localhost:8080 后，Vite 将
+      // 所有 API 请求转发到 Java 服务，包括 config / tenants / ai / pages-config。
+      // 未设置时 /api/config + /api/tenants 走 mock 服务器（port 3001），
+      // /api/ai + /api/pages-config 走 Vite 内置 mock。
+      ...(process.env['AI_BACKEND_URL']
+        ? {
+            '/api/config': {
+              target: process.env['AI_BACKEND_URL'],
+              changeOrigin: true,
+              secure: false,
+            },
+            '/api/tenants': {
+              target: process.env['AI_BACKEND_URL'],
+              changeOrigin: true,
+              secure: false,
+            },
+            '/api/ai': {
+              target: process.env['AI_BACKEND_URL'],
+              changeOrigin: true,
+              secure: false,
+            },
+            '/api/pages-config': {
+              target: process.env['AI_BACKEND_URL'],
+              changeOrigin: true,
+              secure: false,
+            },
+          }
+        : {
+            // fallback：mock 服务器处理 config/tenants
+            '/api/config': {
+              target: 'http://localhost:3001',
+              changeOrigin: true,
+              secure: false,
+            },
+            '/api/tenants': {
+              target: 'http://localhost:3001',
+              changeOrigin: true,
+              secure: false,
+            },
+          }),
     }
   },
   plugins: [
@@ -87,6 +117,13 @@ export default defineConfig({
         }
 
         server.middlewares.use(async (req, res, next) => {
+          // 当 Java 后端已启动（AI_BACKEND_URL 已设置），Vite 代理内已将 /api/pages-config 和 /api/ai
+          // 转发到 Java。此处的 middleware 层做安全退让，防止代理顺序问题导致重复处理。
+          if (process.env['AI_BACKEND_URL'] &&
+              (req.url?.startsWith('/api/pages-config/') || req.url?.startsWith('/api/ai/'))) {
+            return next()
+          }
+
           // ── SSE 端点：GET /api/pages-config/__events ──
           if (req.method === 'GET' && req.url === '/api/pages-config/__events') {
             res.writeHead(200, {

@@ -1,0 +1,79 @@
+package com.spark.ai.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 前端 AIPageLoop 发送的请求体。
+ *
+ * generate 动作：{ action, pageId, prompt, sessionId }
+ * iterate 动作：{ action, pageId, sessionId, feedback, currentFiles, logs }
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class AiChatRequest {
+
+    private String action;
+    private String pageId;
+    private String prompt;
+    private String sessionId;
+    private String feedback;
+
+    /** 前端 buildSkillPrompt() 生成的 Skill 目录（可选，追加到系统提示词） */
+    private String skillCatalog;
+
+    @JsonProperty("currentFiles")
+    private Map<String, String> currentFiles;
+
+    private List<LogSnapshot> logs;
+
+    // ── getters / setters ─────────────────────────────────────────────────
+
+    public String getAction() { return action; }
+    public void setAction(String action) { this.action = action; }
+
+    public String getPageId() { return pageId; }
+    public void setPageId(String pageId) { this.pageId = pageId; }
+
+    public String getPrompt() { return prompt; }
+    public void setPrompt(String prompt) { this.prompt = prompt; }
+
+    public String getSessionId() { return sessionId; }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+
+    public String getFeedback() { return feedback; }
+    public void setFeedback(String feedback) { this.feedback = feedback; }
+
+    public Map<String, String> getCurrentFiles() { return currentFiles; }
+    public void setCurrentFiles(Map<String, String> currentFiles) { this.currentFiles = currentFiles; }
+
+    public List<LogSnapshot> getLogs() { return logs; }
+    public void setLogs(List<LogSnapshot> logs) { this.logs = logs; }
+
+    public String getSkillCatalog() { return skillCatalog; }
+    public void setSkillCatalog(String skillCatalog) { this.skillCatalog = skillCatalog; }
+
+    // ── 嵌套类：运行时日志快照 ───────────────────────────────────────────────
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LogSnapshot {
+        private long timestamp;
+        private String level;
+        private String message;
+        private String componentType;
+
+        public long getTimestamp() { return timestamp; }
+        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+
+        public String getLevel() { return level; }
+        public void setLevel(String level) { this.level = level; }
+
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+
+        public String getComponentType() { return componentType; }
+        public void setComponentType(String componentType) { this.componentType = componentType; }
+    }
+}
