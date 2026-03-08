@@ -90,6 +90,8 @@ export interface AppFullConfig {
     version: string
     features: {
       enableAI?: boolean
+      /** AI 闭环后端端点（enableAI=true 时使用，默认 '/api/ai/chat'） */
+      aiEndpoint?: string
       enableExport?: boolean
       enableOffline?: boolean
     }

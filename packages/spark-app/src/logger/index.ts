@@ -1,13 +1,14 @@
 ﻿/**
  * Application Logger
  * 应用层日志系统（独立实现）
- * 
+ *
  * 职责：
  * 1. 应用级日志配置（级别、格式、颜色）
- * 2. 日志上报（生产环境发送到后端）
+ * 2. 日志上报（可配置发送到后端，支持批量上传）
  * 3. 日志聚合与格式化
  * 4. 作用域日志（page、api、router 等）
- * 
+ * 5. 全局传输器：所有 AppLogger 实例共享，main.ts 配置后全局生效
+ *
  * 注意：
  * - 这是独立的 Logger 实现，不依赖 spark-component
  * - spark-component 有自己的轻量级 Logger
@@ -21,7 +22,7 @@ import type { LogLevel } from '@spark-view/spark-utils'
 
 /**
  * 应用层 Logger API 接口
- * 
+ *
  * 与 spark-utils 的 LoggerApi 是不同的接口：
  * - spark-utils LoggerApi: 轻量级，(...args: unknown[]) => void
  * - AppLoggerApi: 结构化参数，(message: string, meta?) => void
@@ -50,6 +51,12 @@ export interface AppLoggerConfig {
   enableRemote?: boolean
   /** 远程日志端点 */
   remoteEndpoint?: string
+  /** 远程上报的最小日志级别（默认 'debug'，即上报所有级别） */
+  minRemoteLevel?: LogLevel
+  /** 批量上传：队列大小阈值（达到后立即 flush，默认 50） */
+  batchSize?: number
+  /** 批量上传：定时 flush 间隔（毫秒，默认 5000） */
+  flushInterval?: number
 }
 
 /**
@@ -57,6 +64,10 @@ export interface AppLoggerConfig {
  */
 export interface LogTransport {
   send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>
+  /** 立即刷新队列中的日志（批量传输器可选实现） */
+  flush?(): void
+  /** 销毁传输器，释放定时器等资源 */
+  destroy?(): void
 }
 
 /**
@@ -81,11 +92,195 @@ const EMOJI_ICONS: Record<string, string> = {
   loading: '⏳'
 }
 
+// ─── 全局传输器（所有 AppLogger 实例共享） ────────────────────────────────────
+
+/**
+ * 全局共享传输器列表。
+ * 通过 `addGlobalTransport()` / `configureRemoteLogger()` 注入，
+ * 所有 AppLogger 实例（含已创建的模块级单例）自动生效。
+ */
+const _globalTransports: LogTransport[] = []
+
+/**
+ * 添加全局传输器（对所有已创建和未来创建的 AppLogger 生效）
+ */
+export function addGlobalTransport(transport: LogTransport): void {
+  _globalTransports.push(transport)
+}
+
+/**
+ * 移除所有全局传输器（测试用）
+ */
+export function clearGlobalTransports(): void {
+  for (const t of _globalTransports) {
+    t.destroy?.()
+  }
+  _globalTransports.length = 0
+}
+
+/**
+ * 获取当前全局传输器数量（调试 / 测试用）
+ */
+export function getGlobalTransportCount(): number {
+  return _globalTransports.length
+}
+
+// ─── 批量 HTTP 传输器配置 ─────────────────────────────────────────────────────
+
+export interface BatchTransportOptions {
+  /** 远程端点 URL */
+  endpoint: string
+  /** 上报的最小日志级别（默认 'debug'） */
+  minLevel?: LogLevel
+  /** 队列大小阈值（默认 50） */
+  batchSize?: number
+  /** 定时 flush 间隔 ms（默认 5000） */
+  flushInterval?: number
+  /** 获取当前页面 ID（每条日志自动附带，用于 AI 闭环） */
+  getPageId?: () => string | undefined
+  /** 会话 ID（整个浏览器生命周期不变，用于 AI 闭环追踪） */
+  sessionId?: string
+}
+
+interface LogEntry {
+  level: LogLevel
+  message: string
+  meta?: Record<string, unknown> | undefined
+  timestamp: number
+  userAgent?: string | undefined
+  /** 当前页面 ID（AI 闭环：标识日志来源页面） */
+  pageId?: string | undefined
+  /** 会话 ID（AI 闭环：追踪一次对话的所有日志） */
+  sessionId?: string | undefined
+}
+
+/**
+ * 创建批量 HTTP 传输器
+ *
+ * - 日志先缓存在内存队列中
+ * - 达到 batchSize 或 flushInterval 到期时批量发送
+ * - 页面隐藏 / 卸载时用 `navigator.sendBeacon` 兜底
+ */
+export function createBatchHttpTransport(options: BatchTransportOptions): LogTransport {
+  const minLevelPriority = LOG_LEVELS[options.minLevel ?? 'debug']
+  const batchSize = options.batchSize ?? 50
+  const flushIntervalMs = options.flushInterval ?? 5000
+  const endpoint = options.endpoint
+  const getPageId = options.getPageId
+  const sessionId = options.sessionId
+
+  let queue: LogEntry[] = []
+  let timer: ReturnType<typeof setInterval> | null = null
+
+  function flush(): void {
+    if (queue.length === 0) return
+    const batch = queue
+    queue = []
+
+    const payload = JSON.stringify({ logs: batch })
+
+    // 优先 sendBeacon（页面卸载时更可靠），否则 fetch + keepalive
+    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+      const sent = navigator.sendBeacon(
+        endpoint,
+        new Blob([payload], { type: 'application/json' })
+      )
+      if (!sent) {
+        // sendBeacon 失败回退到 fetch
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true
+        }).catch(() => { /* 静默 */ })
+      }
+    } else {
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true
+      }).catch(() => { /* 静默 */ })
+    }
+  }
+
+  // 定时刷新
+  timer = setInterval(flush, flushIntervalMs)
+
+  // 页面隐藏 / 卸载时兜底刷新
+  function onVisibilityChange(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      flush()
+    }
+  }
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', onVisibilityChange)
+  }
+
+  return {
+    send(level: LogLevel, message: string, meta?: Record<string, unknown>): void {
+      if (LOG_LEVELS[level] < minLevelPriority) return
+      queue.push({
+        level,
+        message,
+        meta,
+        timestamp: Date.now(),
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+        pageId: getPageId?.(),
+        sessionId,
+      })
+      if (queue.length >= batchSize) {
+        flush()
+      }
+    },
+    flush,
+    destroy(): void {
+      if (timer !== null) {
+        clearInterval(timer)
+        timer = null
+      }
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibilityChange)
+      }
+      flush() // 销毁前把剩余日志发出
+    }
+  }
+}
+
+/**
+ * 一键配置远程日志上报（推荐在 main.ts 中调用）
+ *
+ * 内部创建 `createBatchHttpTransport` 并注入到全局传输器列表，
+ * 所有已创建的 AppLogger 实例（startupLogger / pageLogger 等）自动生效。
+ *
+ * @example
+ * ```ts
+ * import { configureRemoteLogger } from '@spark-view/spark-app'
+ *
+ * const appConfig = await loadAppConfig()
+ * if (appConfig.logger.enableRemote) {
+ *   configureRemoteLogger({
+ *     endpoint: appConfig.logger.remoteEndpoint ?? '/api/logs',
+ *     minLevel: appConfig.logger.minRemoteLevel,
+ *     batchSize: appConfig.logger.batchSize,
+ *     flushInterval: appConfig.logger.flushInterval,
+ *   })
+ * }
+ * ```
+ */
+export function configureRemoteLogger(options: BatchTransportOptions): LogTransport {
+  const transport = createBatchHttpTransport(options)
+  addGlobalTransport(transport)
+  return transport
+}
+
+// ─── AppLogger 实现 ──────────────────────────────────────────────────────────
+
 /**
  * 应用层 Logger 实现
  */
 class AppLogger {
-  private config: Required<AppLoggerConfig>
+  private config: Required<Pick<AppLoggerConfig, 'level' | 'enableColors' | 'showTimestamp' | 'prefix' | 'enableRemote' | 'remoteEndpoint'>>
   private transports: LogTransport[] = []
 
   constructor(config: AppLoggerConfig = {}) {
@@ -98,14 +293,14 @@ class AppLogger {
       remoteEndpoint: config.remoteEndpoint ?? '/api/logs'
     }
 
-    // 生产环境启用远程传输
+    // 实例级远程传输（向后兼容：当 AppLogger 直接配置 enableRemote 时）
     if (this.config.enableRemote) {
       this.addTransport(createHttpTransport(this.config.remoteEndpoint))
     }
   }
 
   /**
-   * 添加传输器
+   * 添加实例级传输器
    */
   addTransport(transport: LogTransport): void {
     this.transports.push(transport)
@@ -123,22 +318,38 @@ class AppLogger {
    */
   private formatMessage(message: string, emoji?: string): string {
     const parts: string[] = []
-    
+
     if (this.config.showTimestamp) {
       parts.push(`[${new Date().toISOString()}]`)
     }
-    
+
     if (this.config.prefix) {
       parts.push(`[${this.config.prefix}]`)
     }
-    
+
     if (emoji) {
       parts.push(emoji)
     }
-    
+
     parts.push(message)
-    
+
     return parts.join(' ')
+  }
+
+  /**
+   * 发送到所有传输器（实例级 + 全局）
+   */
+  private sendToTransports(level: LogLevel, message: string, meta?: Record<string, unknown>): void {
+    const allTransports = [...this.transports, ..._globalTransports]
+    for (const transport of allTransports) {
+      try {
+        Promise.resolve(transport.send(level, message, meta ?? {})).catch((err: unknown) => {
+          console.error('日志传输失败（异步）', err)
+        })
+      } catch (error) {
+        console.error('日志传输失败', error)
+      }
+    }
   }
 
   /**
@@ -157,23 +368,15 @@ class AppLogger {
                      level === 'info' ? console.info :
                      level === 'warn' ? console.warn :
                      console.error
-    
+
     if (meta) {
       consoleFn(formattedMessage, meta)
     } else {
       consoleFn(formattedMessage)
     }
 
-    // 触发所有传输器
-    for (const transport of this.transports) {
-      try {
-        Promise.resolve(transport.send(level, message, meta ?? {})).catch((err: unknown) => {
-          console.error('日志传输失败（异步）', err)
-        })
-      } catch (error) {
-        console.error('日志传输失败', error)
-      }
-    }
+    // 触发所有传输器（实例级 + 全局）
+    this.sendToTransports(level, message, meta)
   }
 
   /**
@@ -201,7 +404,7 @@ class AppLogger {
    * Error 日志
    */
   error(message: string, error?: Error | Record<string, unknown>): void {
-    const meta = error instanceof Error 
+    const meta = error instanceof Error
       ? { message: error.message, stack: error.stack }
       : error
     this.log('error', message, meta)
@@ -214,21 +417,20 @@ class AppLogger {
     const formattedMessage = this.formatMessage(message, EMOJI_ICONS['success'])
     const args = meta ? [formattedMessage, meta] : [formattedMessage]
     console.info(...args)
-    for (const t of this.transports) {
-      try { Promise.resolve(t.send('info', message, meta)).catch((err: unknown) => { console.error('日志传输失败（异步）', err) }) }
-      catch (error) { console.error('日志传输失败', error) }
-    }
+    this.sendToTransports('info', message, meta)
   }
 }
 
 /**
- * HTTP 传输器（发送到后端）
+ * HTTP 传输器（单条发送，向后兼容）
+ *
+ * 推荐使用 `createBatchHttpTransport` 或 `configureRemoteLogger` 替代。
  */
-export function createHttpTransport(endpoint: string): LogTransport {
+export function createHttpTransport(endpoint: string, options?: { minLevel?: LogLevel }): LogTransport {
+  const minLevelPriority = LOG_LEVELS[options?.minLevel ?? 'warn']
   return {
     async send(level: LogLevel, message: string, meta?: Record<string, unknown>) {
-      // 只上报 error 和 warn
-      if (level !== 'error' && level !== 'warn') return
+      if (LOG_LEVELS[level] < minLevelPriority) return
 
       try {
         await fetch(endpoint, {
