@@ -124,5 +124,32 @@
       "title": "系统设置",
       "icon": "⚙️"
     }
+  },
+  {
+    "path": "/test-order",
+    "name": "test-order",
+    "pageId": "test-order",
+    "meta": {
+      "title": "test-order",
+      "icon": "🤖"
+    }
+  },
+  {
+    "path": "/ai-studio",
+    "name": "ai-studio",
+    "pageId": "ai-studio",
+    "meta": {
+      "title": "AI Studio",
+      "icon": "🤖"
+    }
+  },
+  {
+    "path": "/my-page",
+    "name": "my-page",
+    "pageId": "my-page",
+    "meta": {
+      "title": "my-page",
+      "icon": "🤖"
+    }
   }
 ]

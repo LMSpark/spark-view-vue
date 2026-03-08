@@ -333,6 +333,13 @@ async function startApp() {
         })
         
         startupLogger.info('✅ 静态 Vue 组件路由注册完成')
+
+        // 🤖 注册 AI Studio 组件（SPARK registry + Vue 全局组件）
+        const { initAiStudio } = await import('./features/ai-studio/initialize')
+        initAiStudio()
+        const AiStudioPanel = (await import('./features/ai-studio/AiStudioPanel.vue')).default
+        app.component('ai-studio', AiStudioPanel)
+        startupLogger.info('✅ AI Studio 组件注册完成')
       },
       
       // 挂载后钩子

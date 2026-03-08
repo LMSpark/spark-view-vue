@@ -51,7 +51,7 @@
         "enableMock": true,
         "version": "1.0.0",
         "features": {
-            "enableAI": false,
+            "enableAI": true,
             "aiEndpoint": "/api/ai/chat",
             "enableExport": true,
             "enableOffline": false
@@ -61,7 +61,7 @@
         "level": "debug",
         "enableColors": true,
         "showTimestamp": true,
-        "enableRemote": false,
+        "enableRemote": true,
         "remoteEndpoint": "/api/logs",
         "minRemoteLevel": "debug",
         "batchSize": 50,
