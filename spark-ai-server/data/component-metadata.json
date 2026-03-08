@@ -1,0 +1,172 @@
+{
+  "version": "1.0.0",
+  "buildTime": "2026-03-08T18:33:03.397Z",
+  "componentCount": 14,
+  "skillCount": 5,
+  "components": [
+    {
+      "type": "about",
+      "path": "src\\views\\About.vue",
+      "size": 8.14,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
+      "type": "ai-chat-panel",
+      "path": "src\\components\\AiChatPanel.vue",
+      "size": 15.31,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
+      "type": "dashboard",
+      "path": "src\\views\\Dashboard.vue",
+      "size": 6.12,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
+      "type": "error-fallback",
+      "path": "src\\components\\ErrorFallback.vue",
+      "size": 3.71,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-date",
+      "path": "src\\components\\renderer-fields\\FieldDate.vue",
+      "size": 3.39,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
+      "type": "field-number",
+      "path": "src\\components\\renderer-fields\\FieldNumber.vue",
+      "size": 3.14,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
+      "type": "field-text",
+      "path": "src\\components\\renderer-fields\\FieldText.vue",
+      "size": 3.09,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
+      "type": "renderer-detail",
+      "path": "src\\components\\renderer-containers\\RendererDetail.vue",
+      "size": 2.96,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-form",
+      "path": "src\\components\\renderer-containers\\RendererForm.vue",
+      "size": 3.07,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-table",
+      "path": "src\\components\\renderer-containers\\RendererTable.vue",
+      "size": 4.36,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-tree",
+      "path": "src\\components\\renderer-containers\\RendererTree.vue",
+      "size": 5.86,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "settings",
+      "path": "src\\views\\Settings.vue",
+      "size": 11.18,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
+      "type": "capability-demo",
+      "path": "src\\views\\CapabilityDemo.vue",
+      "size": 16.53,
+      "strategy": "async",
+      "hasSkill": false
+    },
+    {
+      "type": "tenant-config-demo",
+      "path": "src\\views\\TenantConfigDemo.vue",
+      "size": 8.33,
+      "strategy": "async",
+      "hasSkill": false
+    }
+  ],
+  "skills": [
+    {
+      "type": "error-fallback",
+      "description": "* 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。",
+      "provides": [],
+      "consumes": [],
+      "example": "* ```vue"
+    },
+    {
+      "type": "r-detail",
+      "description": "只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写",
+      "provides": [
+        "DATA_SOURCE",
+        "CONTEXT_DATA",
+        "FIELD_CONTEXT"
+      ],
+      "consumes": [
+        "PAGE_DATASET"
+      ],
+      "inputSchema": "{ dataKey: string }",
+      "example": "{ \"type\": \"r-detail\", \"dataKey\": \"Users@currentRow\", \"children\": [] }"
+    },
+    {
+      "type": "r-form",
+      "description": "表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值",
+      "provides": [
+        "DATA_SOURCE",
+        "CONTEXT_DATA",
+        "FIELD_CONTEXT"
+      ],
+      "consumes": [
+        "PAGE_DATASET"
+      ],
+      "inputSchema": "{ dataKey: string }",
+      "example": "{ \"type\": \"r-form\", \"dataKey\": \"Users@currentRow\", \"children\": [] }"
+    },
+    {
+      "type": "r-table",
+      "description": "数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页",
+      "provides": [
+        "DATA_SOURCE"
+      ],
+      "consumes": [
+        "PAGE_DATASET"
+      ],
+      "inputSchema": "{ dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }",
+      "example": "{ \"type\": \"r-table\", \"dataKey\": \"Orders@rows\", \"props\": { \"border\": true, \"highlightCurrentRow\": true } }"
+    },
+    {
+      "type": "r-tree",
+      "description": "树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件",
+      "provides": [
+        "DATA_SOURCE"
+      ],
+      "consumes": [
+        "PAGE_DATASET"
+      ],
+      "inputSchema": "{ dataKey: string, props: { nodeKey?: string, lazy?: boolean } }",
+      "example": "{ \"type\": \"r-tree\", \"dataKey\": \"departments@rows\", \"props\": { \"nodeKey\": \"id\" } }"
+    }
+  ],
+  "skillPrompts": {
+    "index": "## SPARK Skill 目录\n\n| type | 描述 |\n|------|------|\n| `error-fallback` | * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。 |\n| `r-detail` | 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写 |\n| `r-form` | 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值 |\n| `r-table` | 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页 |\n| `r-tree` | 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件 |",
+    "compact": "## SPARK Skill 目录\n\n> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。\n\n### `error-fallback`\n> * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。\n\n### `r-detail`\n> 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n\n### `r-form`\n> 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n\n### `r-table`\n> 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n\n### `r-tree`\n> 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n",
+    "full": "## SPARK Skill 目录\n\n> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。\n\n### `error-fallback`\n> * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。\n- **调用示例**:\n```json\n* ```vue\n```\n\n### `r-detail`\n> 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n- **输入参数**: `{ dataKey: string }`\n- **调用示例**:\n```json\n{ \"type\": \"r-detail\", \"dataKey\": \"Users@currentRow\", \"children\": [] }\n```\n\n### `r-form`\n> 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n- **输入参数**: `{ dataKey: string }`\n- **调用示例**:\n```json\n{ \"type\": \"r-form\", \"dataKey\": \"Users@currentRow\", \"children\": [] }\n```\n\n### `r-table`\n> 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n- **输入参数**: `{ dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-table\", \"dataKey\": \"Orders@rows\", \"props\": { \"border\": true, \"highlightCurrentRow\": true } }\n```\n\n### `r-tree`\n> 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n- **输入参数**: `{ dataKey: string, props: { nodeKey?: string, lazy?: boolean } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-tree\", \"dataKey\": \"departments@rows\", \"props\": { \"nodeKey\": \"id\" } }\n```\n"
+  }
+}
