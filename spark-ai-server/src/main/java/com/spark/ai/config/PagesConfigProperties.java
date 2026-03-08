@@ -4,8 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * 页面配置文件目录配置。
- * spark.pages.config-dir 服务端独立管理的配置目录（默认 ./data/pages-config）。
- * 种子数据从 classpath:seed-pages-config/ 自动拷贝（打包在 JAR 内），无需外部目录。
+ * spark.pages.config-dir 指向 data/pages-config/（直接 git 跟踪，无需种子机制）。
  */
 @ConfigurationProperties(prefix = "spark.pages")
 public class PagesConfigProperties {

@@ -5,13 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.config.PagesConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -48,9 +45,6 @@ public class PageConfigService {
      */
     private final ConcurrentHashMap<String, CacheEntry> fileCache = new ConcurrentHashMap<>();
 
-    /** 种子资源在 classpath 中的基础路径 */
-    private static final String SEED_CLASSPATH = "seed-pages-config";
-
     private final Path configRoot;
     private final ObjectMapper objectMapper;
     private final SseService sseService;
@@ -65,46 +59,20 @@ public class PageConfigService {
     }
 
     /**
-     * 首次启动种子机制：若 configRoot 下没有 routes.json，从 classpath 种子资源拷贝初始数据。
-     * 种子数据打包在 JAR 内（src/main/resources/seed-pages-config/），服务端完全自包含。
+     * 启动检查：确认 configRoot 存在且包含 routes.json。
+     * 页面配置直接在 data/pages-config/ 目录中维护（git 跟踪），无需种子机制。
      */
     @PostConstruct
-    void seedIfEmpty() {
-        Path routesFile = configRoot.resolve("routes.json");
-        if (Files.exists(routesFile)) {
-            log.info("[PageConfig] 已有 routes.json，跳过种子");
+    void checkConfigDir() {
+        if (!Files.isDirectory(configRoot)) {
+            log.warn("[PageConfig] 配置目录不存在: {}，请确认 data/pages-config/ 已就绪", configRoot);
             return;
         }
-        log.info("[PageConfig] 首次启动，从 classpath 种子资源拷贝到: {}", configRoot);
-        try {
-            Files.createDirectories(configRoot);
-            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            Resource[] resources = resolver.getResources("classpath:" + SEED_CLASSPATH + "/**");
-            int count = 0;
-            for (Resource resource : resources) {
-                if (!resource.isReadable()) continue;
-                String uri = resource.getURI().toString();
-                // 从 URI 中提取相对路径：.../seed-pages-config/xxx/yyy
-                int idx = uri.indexOf(SEED_CLASSPATH + "/");
-                if (idx < 0) continue;
-                String relPath = uri.substring(idx + SEED_CLASSPATH.length() + 1);
-                Path target = configRoot.resolve(relPath).normalize();
-                if (!target.startsWith(configRoot)) continue; // 安全检查
-                Files.createDirectories(target.getParent());
-                try (InputStream is = resource.getInputStream()) {
-                    Files.write(target, is.readAllBytes());
-                    count++;
-                }
-            }
-            log.info("[PageConfig] 种子数据拷贝完成，共 {} 个文件", count);
-        } catch (IOException e) {
-            log.warn("[PageConfig] 种子拷贝失败: {}，创建空 routes.json", e.getMessage());
-            try {
-                Files.createDirectories(configRoot);
-                Files.writeString(routesFile, "[]", StandardCharsets.UTF_8);
-            } catch (IOException ex) {
-                log.warn("[PageConfig] 创建空 routes.json 失败: {}", ex.getMessage());
-            }
+        Path routesFile = configRoot.resolve("routes.json");
+        if (!Files.exists(routesFile)) {
+            log.warn("[PageConfig] routes.json 不存在: {}，页面路由将为空", routesFile);
+        } else {
+            log.info("[PageConfig] 配置目录就绪: {}", configRoot);
         }
     }
 

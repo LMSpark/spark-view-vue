@@ -12,7 +12,6 @@ export default [
       'packages/**/dist/**',  // 排除所有dist目录
       'tools/**',
       '**/*.example.ts',
-      'public/pages-config/**',  // 沙箱业务脚本（with(__ctx) 执行，非构建源码）
       'dist/**',
       'node_modules/**',
       'vite.config.ts',
