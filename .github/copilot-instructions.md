@@ -3,12 +3,15 @@
 Purpose: Quick, actionable guidance to make an AI coding agent productive in this mono-repo.
 
 ## Quick facts ✅
-- Dev: `pnpm run dev` (Vite, port 5173)
-- Build: `pnpm run build` (仅 `vite build`); `pnpm run build:check` (含 `vue-tsc` + `vite build`)
+- Dev: `pnpm run dev`（`scripts/start-dev.mjs`：自动启动 Java 后端 + Vite 前端）; `pnpm run dev:fe`（仅 Vite）
+- Build: `pnpm run build`（完整构建：JAR → Java 启动 → Vite → 元数据上传 → Java 关闭）; `pnpm run build:check` (含 `vue-tsc` + `vite build`)
+- Build variants: `pnpm run build:fe`（仅前端）; `pnpm run build:java`（仅 JAR）; `pnpm run build:no-upload`（跳过元数据上传）
 - Typecheck: `pnpm run typecheck` (uses `tsconfig.typecheck.json`)
-- Tests: `pnpm run test` (Vitest + jsdom + @vue/test-utils); single test: `pnpm run test -- -t "capability-late-binding"`
+- Tests (前端): `pnpm run test` (Vitest + jsdom + @vue/test-utils); single test: `pnpm run test -- -t "capability-late-binding"`
+- Tests (后端): `cd spark-ai-server && mvn test`（26 tests, JUnit 5 + MockMvc）
 - Lint & hooks: `pnpm run lint`; Husky pre-commit runs `lint` + `typecheck`
 - Commit scope 必须是: `deps, docs, scripts, spark-data, spark-app, spark-component, spark-utils, spark-page-config`
+- Java: 需要 JDK 17+（JAVA_HOME 指向 JDK 17 安装目录）
 
 ## Where to look (high value files) 🔎
 - **Packages**:
@@ -16,7 +19,14 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
   - `packages/spark-data/` — 数据空间（DataSet, DataTable, DataView, TreeManager）
   - `packages/spark-utils/` — 能力系统基础设施 + Logger（`src/capability/symbols.ts`）
   - `packages/spark-app/` — 应用层（start, bootstrap, logger, auth, plugins）
-- **Pages config**: `public/pages-config/` — 页面配置（rule.json, pagedata.json, script.js）
+- **Pages config**: `spark-ai-server/data/pages-config/` — 页面配置（rule.json, pagedata.json, script.js）⚠️ 已从 `public/pages-config/` 迁移到 Java 后端管理
+- **AI Server**: `spark-ai-server/` — Spring Boot 3.2.5 后端（AI 对话 + 页面配置文件管理 + 组件元数据）
+  - `src/main/java/com/spark/ai/controller/` — REST 控制器（AiChat, PageConfig, AppConfig）
+  - `src/main/java/com/spark/ai/service/` — 核心服务（AiPage, PageConfig, ComponentMetadata, SSE）
+  - `src/main/resources/prompts/system-prompt.txt` — AI 生成页面配置的系统提示词
+  - `data/pages-config/` — 页面配置文件存储（git-tracked）
+  - `data/component-metadata.json` — 组件元数据持久化（构建时自动生成）
+- **Build scripts**: `scripts/build-all.mjs`（完整构建管道）, `scripts/start-dev.mjs`（一键开发启动）
 - **Example components**: `features/spark-ej2/components/SparkEJ2Grid.vue`, `features/spark-ej2/components/SparkEJ2Column.vue`
 - **Renderer containers**: `src/components/renderer-containers/` — RendererTable / RendererForm / RendererDetail（DataView-first 容器）
 - **Renderer capability keys**: `src/components/capability-keys.ts`（FIELD_CONTEXT, CONTEXT_DATA）
@@ -1547,6 +1557,68 @@ node scripts/publish-packages.mjs --dry-run
 `pnpm publish` 会自动将 `workspace:*` 替换为实际解析版本；`npm publish` 不具备此能力，**禁止直接用 `npm publish`**。
 
 ---
+
+## AI Server (spark-ai-server) 🤖
+
+### 概述
+Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页面配置文件 CRUD、组件元数据存储。
+
+- **技术栈**: Java 17+ / Spring Boot 3.2.5 / Maven / 无数据库（文件 + 内存）
+- **入口**: `spark-ai-server/src/main/java/com/spark/ai/SparkAiApplication.java`
+- **26 个测试**: `cd spark-ai-server && mvn test`
+
+### 核心端点
+
+| 端点 | 用途 |
+|------|------|
+| `POST /api/ai/chat` | AI 页面生成（generate/iterate） |
+| `POST /api/ai/component-metadata` | 组件元数据上传（构建时自动调用） |
+| `GET /api/pages-config/{pageId}/{file}` | 读取页面配置（支持 timestamp 缓存） |
+| `PUT /api/pages-config/{pageId}/{file}` | 写入页面配置 |
+| `POST /api/pages-config/{pageId}/__batch` | 批量写入 + 自动注册路由 + SSE 通知 |
+| `GET /api/pages-config/__events` | SSE 事件流（热更新通知） |
+| `GET /api/config/default` | 默认应用配置 |
+| `GET /api/tenants` | 租户列表 |
+
+### 数据存储
+
+| 数据 | 位置 | 持久化 |
+|------|------|--------|
+| 页面配置 | `spark-ai-server/data/pages-config/` | ✅ 文件系统（git-tracked） |
+| 组件元数据 | `spark-ai-server/data/component-metadata.json` | ✅ 文件（构建时写入，启动时加载） |
+| 租户配置 | 内存 `ConcurrentHashMap` | ❌ 重启丢失 |
+
+### 环境变量
+
+| 变量 | 用途 | 默认值 |
+|------|------|--------|
+| `OPENAI_API_KEY` | LLM API Key | 必填 |
+| `OPENAI_BASE_URL` | LLM 端点 | `https://api.openai.com` |
+| `AI_MODEL` | 模型名 | `gpt-4o` |
+| `PAGES_CONFIG_DIR` | 页面配置目录 | `data/pages-config` |
+
+### 构建管道（scripts/build-all.mjs）
+
+```
+Step 1: mvn clean package -DskipTests     → JAR
+Step 2: 启动 Java 后端（后台）              → 等待就绪
+Step 3: vite build                          → dist/ + spark-component-metadata.json
+Step 4: POST 元数据到 /api/ai/component-metadata → 服务端持久化
+Step 5: taskkill /PID /T /F                → 关闭 Java
+```
+
+**⚠️ Windows 进程树**: `shell: true` spawn 创建 `cmd → mvn → java` 进程树，`process.kill()` 只杀顶层。必须用 `taskkill /PID /T /F`。
+
+### 开发启动（scripts/start-dev.mjs）
+
+`pnpm run dev` → 自动检测 JAVA_HOME → 启动 Java → 等待 8080 就绪 → 启动 Vite
+
+### ⚠️ 注意事项
+
+- `spark-ai-server/` 是独立 Maven 项目，**不是** pnpm workspace 成员
+- 页面配置已从 `public/pages-config/` 完全迁移到 `spark-ai-server/data/pages-config/`
+- `ComponentMetadataService` 启动时从 `data/component-metadata.json` 自动加载，无需每次构建
+- Vite `SparkComponentsPlugin`（`tools/vite-plugin-spark-components.ts`）构建时提取组件元数据到 `dist/spark-component-metadata.json`
 
 ## Performance notes ⚡
 - **`spark-data` 无框架依赖**——DataView 通过 `DataView.wrapInstance` 静态钩子让框架层注入包装（SparkPlugin 中设为 `reactive()`）
