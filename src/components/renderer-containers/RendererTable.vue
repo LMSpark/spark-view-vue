@@ -1,3 +1,13 @@
+<!--
+/**
+ * @skill r-table
+ * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页
+ * @provides DATA_SOURCE
+ * @consumes PAGE_DATASET
+ * @input { dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
+ * @example { "type": "r-table", "dataKey": "Orders@rows", "props": { "border": true, "highlightCurrentRow": true } }
+ */
+-->
 <template>
   <el-table
     :data="tableData"

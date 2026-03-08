@@ -76,6 +76,36 @@ const logger = createLogger('SparkComponentsPlugin')
 export type LoadStrategy = 'sync' | 'async'
 
 /**
+ * Skill 元数据（从 .vue 文件顶部 JSDoc 注释自动提取）
+ *
+ * 在 .vue 文件顶部添加如下注释即可被插件识别：
+ * ```
+ * /**
+ *  * @skill dept-tree
+ *  * @description 部门组织树，支持懒加载、拖拽、节点点击联动子表
+ *  * @provides spark:capability:data-source
+ *  * @provides spark:capability:field-context
+ *  * @consumes spark:capability:page-dataset
+ *  * @input { dataKey: string, nodeKey?: string, defaultExpandAll?: boolean }
+ *  * /
+ * ```
+ */
+export interface SkillMeta {
+  /** Skill 注册名（默认取 kebab-case 文件名，@skill 标签可覆盖） */
+  type: string
+  /** Skill 功能描述（@description 标签） */
+  description?: string
+  /** 该组件 provide 的能力键列表（@provides 标签，可多行） */
+  provides: string[]
+  /** 该组件 consume 的能力键列表（@consumes 标签，可多行） */
+  consumes: string[]
+  /** 输入参数 Schema 描述（@input 标签，JSON-like 格式字符串） */
+  inputSchema?: string
+  /** 调用示例（@example 标签，JSON 格式字符串） */
+  example?: string
+}
+
+/**
  * 组件元数据
  */
 export interface ComponentMetadata {
@@ -95,6 +125,8 @@ export interface ComponentMetadata {
   importStatement: string
   /** 注册语句 */
   registerStatement: string
+  /** Skill 元数据（从 JSDoc 注释提取，无 @skill/@description 时为 null） */
+  skillMeta: SkillMeta | null
 }
 
 /**
@@ -235,6 +267,59 @@ function generateImportStatement(
 }
 
 /**
+ * 从 .vue 文件顶部的 JSDoc 注释中提取 Skill 元数据
+ *
+ * 只读取文件前 50 行，避免全量读取大文件。
+ * 若没有 @skill 或 @description 标签，返回 null（视为普通组件，不进入 Skill 目录）。
+ */
+function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta | null {
+  let content: string
+  try {
+    // 只读前 60 行即可覆盖文件头部注释
+    const raw = readFileSync(absolutePath, 'utf-8')
+    content = raw.split('\n').slice(0, 60).join('\n')
+  } catch {
+    return null
+  }
+
+  // 提取第一个块注释（/** ... */）
+  const blockMatch = content.match(/\/\*\*([\s\S]*?)\*\//)
+  if (!blockMatch) return null
+  const block = blockMatch[1]
+
+  // 辅助：提取单值标签
+  const getTag = (tag: string): string | undefined => {
+    const m = block.match(new RegExp(`@${tag}\\s+(.+)`))
+    return m ? m[1].trim() : undefined
+  }
+
+  // 辅助：提取多值标签（可出现多次）
+  const getTagAll = (tag: string): string[] => {
+    const re = new RegExp(`@${tag}\\s+(.+)`, 'g')
+    const results: string[] = []
+    let m: RegExpExecArray | null
+    while ((m = re.exec(block)) !== null) {
+      results.push(m[1].trim())
+    }
+    return results
+  }
+
+  const description = getTag('description')
+  const skillType  = getTag('skill') ?? fallbackType
+  const provides   = getTagAll('provides')
+  const consumes   = getTagAll('consumes')
+  const inputSchema = getTag('input')
+  const example    = getTag('example')
+
+  // 没有任何 Skill 相关标签 → 普通组件，不列入 Skill 目录
+  if (!description && provides.length === 0 && consumes.length === 0) {
+    return null
+  }
+
+  return { type: skillType, description, provides, consumes, inputSchema, example }
+}
+
+/**
  * 生成注册语句
  */
 function generateRegisterStatement(componentName: string): string {
@@ -323,6 +408,9 @@ class ComponentAnalyzer {
         const importStatement = generateImportStatement(componentName, importPath, strategy)
         const registerStatement = generateRegisterStatement(componentName)
 
+        // 提取 Skill 元数据（同一次 I/O 顺带完成，无额外磁盘开销）
+        const skillMeta = parseSkillMeta(absolutePath, componentName)
+
         components.push({
           name: componentName,
           path: file,
@@ -331,7 +419,8 @@ class ComponentAnalyzer {
           size: Math.round(sizeKB * 100) / 100,
           strategy,
           importStatement,
-          registerStatement
+          registerStatement,
+          skillMeta,
         })
       }
     }
@@ -347,10 +436,11 @@ class ComponentAnalyzer {
     this.components = components
 
     // 统计信息
-    const syncCount = components.filter(c => c.strategy === 'sync').length
+    const syncCount  = components.filter(c => c.strategy === 'sync').length
     const asyncCount = components.filter(c => c.strategy === 'async').length
-    
-    logger.info(`✅ 扫描完成: ${components.length} 个组件 (同步: ${syncCount}, 异步: ${asyncCount})`)
+    const skillCount = components.filter(c => c.skillMeta !== null).length
+
+    logger.info(`✅ 扫描完成: ${components.length} 个组件 (同步: ${syncCount}, 异步: ${asyncCount}, Skill: ${skillCount})`)
 
     if (this.config.verbose) {
       components.forEach(c => {
@@ -470,6 +560,114 @@ export default registerComponents
   }
 
   /**
+   * 生成 Skill 目录虚拟模块代码
+   *
+   * 输出：virtual:spark-skill-catalog
+   * 仅包含携带 @skill / @description / @provides / @consumes 注释的组件。
+   */
+  generateSkillCatalog(): string {
+    // 确保数据最新
+    this.scan()
+
+    const skills = this.components
+      .filter(c => c.skillMeta !== null)
+      .map(c => c.skillMeta!)
+
+    const skillsJson = JSON.stringify(skills, null, 2)
+
+    return `/**
+ * SPARK Skill 目录
+ *
+ * ⚠️ 此文件由 vite-plugin-spark-components 自动生成，请勿手动修改
+ * 生成时间: ${new Date().toISOString()}
+ * Skill 总数: ${skills.length}
+ *
+ * 用法：
+ *   import { skillCatalog, buildSkillPrompt } from 'virtual:spark-skill-catalog'
+ *   // skillCatalog  — 完整 Skill 描述数组，可序列化为 JSON 发给 AI
+ *   // buildSkillPrompt() — 生成适合嵌入 LLM 系统提示词的 Markdown 文本
+ */
+
+/** @type {import('./tools/vite-plugin-spark-components').SkillMeta[]} */
+export const skillCatalog = ${skillsJson}
+
+/**
+ * 生成适合嵌入 AI 系统提示词的 Skill 目录 Markdown
+ *
+ * @param {string} [header] - 段落标题（默认："## 可用前端 Skill 目录"）
+ * @returns {string} Markdown 格式的 Skill 说明文本
+ */
+/**
+ * Skill 目录输出精度模式
+ *
+ * - 'index'   : 仅 type + 一行描述（最短，适合「先问 AI 用哪个 Skill」）
+ * - 'compact' : type + 描述 + provides/consumes（中等，适合多数场景）
+ * - 'full'    : 全部字段含 example（最详细，单次调用前用）
+ */
+export type SkillPromptMode = 'index' | 'compact' | 'full'
+
+/**
+ * 按 type 关键词过滤 Skill
+ * @param types 只输出这些 type 的 Skill（空数组 = 全量）
+ */
+export function buildSkillPrompt(
+  header = '## 可用前端 Skill 目录',
+  mode: SkillPromptMode = 'compact',
+  types: string[] = [],
+) {
+  const list = types.length > 0
+    ? skillCatalog.filter(s => types.includes(s.type))
+    : skillCatalog
+
+  if (list.length === 0) {
+    return header + '\\n\\n（暂无已标注 Skill 的组件）\\n'
+  }
+
+  const lines = [header, '']
+
+  if (mode === 'index') {
+    // 最精简：type 列表 + 单行描述，约 20 tokens/组件
+    lines.push('| type | 描述 |')
+    lines.push('|------|------|')
+    for (const skill of list) {
+      lines.push(\`| \\\`\${skill.type}\\\` | \${skill.description ?? ''} |\`)
+    }
+    lines.push('')
+    lines.push('> 需要某个 Skill 的详细用法时，指定 type 后再次调用 buildSkillPrompt(…, "full", [type])')
+  } else {
+    lines.push('> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。', '')
+    for (const skill of list) {
+      lines.push(\`### \\\`\${skill.type}\\\`\`)
+      if (skill.description) lines.push('> ' + skill.description)
+      if (skill.consumes.length > 0) {
+        lines.push('- **依赖能力（consumes）**: ' + skill.consumes.map(c => \`\\\`\${c}\\\`\`).join(', '))
+      }
+      if (skill.provides.length > 0) {
+        lines.push('- **提供能力（provides）**: ' + skill.provides.map(p => \`\\\`\${p}\\\`\`).join(', '))
+      }
+      if (mode === 'full') {
+        if (skill.inputSchema) {
+          lines.push(\`- **输入参数**: \\\`\${skill.inputSchema}\\\`\`)
+        }
+        if (skill.example) {
+          lines.push('- **调用示例**:')
+          lines.push('\`\`\`json')
+          lines.push(skill.example)
+          lines.push('\`\`\`')
+        }
+      }
+      lines.push('')
+    }
+  }
+
+  return lines.join('\\n')
+}
+
+export default skillCatalog
+`
+  }
+
+  /**
    * 生成类型定义
    */
   generateTypes(): string {
@@ -525,6 +723,10 @@ export function sparkComponentsPlugin(
   const resolvedVirtualModuleId = '\0' + virtualModuleId
   const resolvedVirtualTypeModuleId = '\0' + virtualModuleId + '.d.ts'
 
+  // Skill 目录虚拟模块（与组件注册模块同插件，同次扫描）
+  const skillCatalogModuleId = 'virtual:spark-skill-catalog'
+  const resolvedSkillCatalogModuleId = '\0' + skillCatalogModuleId
+
   return {
     name: 'vite-plugin-spark-components',
 
@@ -548,6 +750,9 @@ export function sparkComponentsPlugin(
       if (id === virtualModuleId + '.d.ts') {
         return resolvedVirtualTypeModuleId
       }
+      if (id === skillCatalogModuleId) {
+        return resolvedSkillCatalogModuleId
+      }
       return null
     },
 
@@ -560,6 +765,9 @@ export function sparkComponentsPlugin(
       }
       if (id === resolvedVirtualTypeModuleId && config.generateTypes) {
         return analyzer.generateTypes()
+      }
+      if (id === resolvedSkillCatalogModuleId) {
+        return analyzer.generateSkillCatalog()
       }
       return null
     },
@@ -575,14 +783,18 @@ export function sparkComponentsPlugin(
         logger.debug('🔄 检测到组件变更或删除，重新扫描...')
         analyzer.scan()
         
-        // 触发虚拟模块重新加载
-        const module = server.moduleGraph.getModuleById(resolvedVirtualModuleId)
-        if (module) {
-          server.moduleGraph.invalidateModule(module)
-          server.ws.send({
-            type: 'full-reload',
-            path: '*'
-          })
+        // 同时失效两个虚拟模块
+        const modules = [
+          server.moduleGraph.getModuleById(resolvedVirtualModuleId),
+          server.moduleGraph.getModuleById(resolvedSkillCatalogModuleId),
+        ].filter(Boolean)
+
+        for (const mod of modules) {
+          if (mod) server.moduleGraph.invalidateModule(mod)
+        }
+
+        if (modules.length > 0) {
+          server.ws.send({ type: 'full-reload', path: '*' })
         }
       }
     }

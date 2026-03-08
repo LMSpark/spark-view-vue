@@ -85,3 +85,45 @@ declare module 'virtual:spark-components' {
   export default registerComponents
 }
 
+/**
+ * 虚拟模块：SPARK Skill 目录
+ * 由 vite-plugin-spark-components 在构建时生成
+ * 包含所有带 @skill JSDoc 注解的组件 Skill 元数据
+ */
+declare module 'virtual:spark-skill-catalog' {
+  export interface SkillMeta {
+    /** Skill 类型名（对应组件注册名，如 'r-table'） */
+    type: string
+    /** 组件功能描述 */
+    description?: string
+    /** 该组件通过 provide() 提供的能力键列表 */
+    provides: string[]
+    /** 该组件通过 consume() 消费的能力键列表 */
+    consumes: string[]
+    /** 输入配置 schema（JSON 字符串，来自 @input 注解）*/
+    inputSchema?: string
+    /** rule.json 配置示例（来自 @example 注解）*/
+    example?: string
+  }
+
+  /** Skill 目录输出精度模式 */
+  export type SkillPromptMode = 'index' | 'compact' | 'full'
+
+  /** 所有带 @skill 注解的组件 Skill 元数据列表 */
+  export const skillCatalog: SkillMeta[]
+
+  /**
+   * 构建供 LLM 使用的 Skill 提示词字符串（Markdown 格式）
+   * @param header 可选的说明标题，默认为 "## 可用前端 Skill 目录"
+   * @param mode 输出精度：'index'（索引表）| 'compact'（默认，type+描述+能力）| 'full'（含 example）
+   * @param types 按 type 过滤，空数组 = 全量输出
+   */
+  export function buildSkillPrompt(
+    header?: string,
+    mode?: SkillPromptMode,
+    types?: string[],
+  ): string
+
+  export default skillCatalog
+}
+

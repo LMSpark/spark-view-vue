@@ -1,3 +1,15 @@
+<!--
+/**
+ * @skill r-form
+ * @description 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值
+ * @provides DATA_SOURCE
+ * @provides CONTEXT_DATA
+ * @provides FIELD_CONTEXT
+ * @consumes PAGE_DATASET
+ * @input { dataKey: string }
+ * @example { "type": "r-form", "dataKey": "Users@currentRow", "children": [] }
+ */
+-->
 <template>
   <el-form :model="formModel" v-bind="$attrs">
     <!-- Config 驱动 —— 通用递归渲染 config.children -->
