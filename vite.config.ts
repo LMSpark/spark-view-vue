@@ -182,9 +182,99 @@ export default defineConfig({
                 await fs.promises.writeFile(targetFile, content, 'utf-8')
                 written.push(fileName)
               }
+              // 自动注册路由：新建页面时追加到 routes.json
+              const routesFile = path.resolve(__dirname, 'public', 'pages-config', 'routes.json')
+              try {
+                const routesRaw = await fs.promises.readFile(routesFile, 'utf-8')
+                const routes = JSON.parse(routesRaw) as Array<{ pageId?: string }>
+                const exists = routes.some(r => r.pageId === pageId)
+                if (!exists) {
+                  routes.push({
+                    path: `/${pageId}`,
+                    name: pageId,
+                    pageId,
+                    meta: { title: pageId, icon: '🤖' }
+                  })
+                  await fs.promises.writeFile(routesFile, JSON.stringify(routes, null, 2), 'utf-8')
+                }
+              } catch { /* routes.json 读写失败不阻断主流程 */ }
+
               broadcastChange(pageId, '__batch')
               res.writeHead(200, { 'Content-Type': 'application/json' })
               res.end(JSON.stringify({ ok: true, pageId, written }))
+            } catch (err) {
+              res.writeHead(500, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: String(err) }))
+            }
+            return
+          }
+
+          // ── Mock AI 端点（开发环境）：POST /api/ai/chat ──
+          // 不连真实 AI 后端时，返回一个可运行的 SPARK 页面骨架
+          if (req.method === 'POST' && req.url === '/api/ai/chat') {
+            try {
+              const body = await new Promise<string>((resolve, reject) => {
+                let data = ''
+                req.on('data', (chunk: Buffer) => { data += chunk.toString() })
+                req.on('end', () => resolve(data))
+                req.on('error', reject)
+              })
+              const payload = JSON.parse(body) as { action?: string; pageId?: string; prompt?: string; feedback?: string; logs?: unknown[] }
+              const pid = payload.pageId ?? 'ai-page'
+              const prompt = payload.prompt ?? payload.feedback ?? ''
+              const action = payload.action ?? 'generate'
+
+              // 构造一个能在 SPARK 中运行的最小页面
+              const title = prompt.slice(0, 30) || pid
+              const ruleJson = JSON.stringify([
+                { type: 'h2', children: [`${title}`] },
+                { type: 'el-divider' },
+                { type: 'el-table', name: 'mainTable', dataKey: `${pid}@rows`,
+                  props: { border: true, stripe: true, highlightCurrentRow: true },
+                  children: [
+                    { type: 'el-table-column', props: { prop: 'id', label: 'ID', width: 80 } },
+                    { type: 'el-table-column', props: { prop: 'name', label: '名称' } },
+                    { type: 'el-table-column', props: { prop: 'status', label: '状态', width: 120 } }
+                  ]
+                },
+                { type: 'p', children: [`[mock] action=${action}, prompt="${prompt.slice(0, 60)}"`] }
+              ], null, 2)
+
+              const pagedataJson = JSON.stringify({
+                dataSetName: pid,
+                tables: {
+                  [pid]: {
+                    tableName: pid,
+                    columns: [
+                      { name: 'id', type: 'number' },
+                      { name: 'name', type: 'string' },
+                      { name: 'status', type: 'string' }
+                    ],
+                    rows: [
+                      { id: 1, name: '示例数据 A', status: '正常' },
+                      { id: 2, name: '示例数据 B', status: '待处理' },
+                      { id: 3, name: '示例数据 C', status: '已完成' }
+                    ]
+                  }
+                }
+              }, null, 2)
+
+              const scriptJs = `// AI 生成 (mock) — ${new Date().toISOString()}\nfunction __init__() {\n  console.log('[${pid}] 页面初始化完成')\n}\n`
+              const styleCss = `/* AI 生成 (mock) */\n`
+
+              const aiResp = {
+                files: {
+                  'rule.json': ruleJson,
+                  'pagedata.json': pagedataJson,
+                  'script.js': scriptJs,
+                  'style.css': styleCss,
+                },
+                explanation: `[Mock AI] 为 "${title}" 生成了包含表格的基础页面`,
+                needsIteration: false,
+              }
+
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify(aiResp))
             } catch (err) {
               res.writeHead(500, { 'Content-Type': 'application/json' })
               res.end(JSON.stringify({ error: String(err) }))

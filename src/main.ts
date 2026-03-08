@@ -380,6 +380,22 @@ async function startApp() {
               () => { window.location.reload() },
             )
 
+            // 浏览器控制台快捷入口：window.__aiLoop
+            if (import.meta.env.DEV) {
+              const w = window as unknown as Record<string, unknown>
+              w['__aiLoop'] = {
+                /** 生成新页面：__aiLoop.generate('my-page', '订单列表') */
+                generate: (pageId: string, prompt: string) => loop.generate(pageId, prompt),
+                /** 迭代修改：__aiLoop.iterate('my-page', '表格没数据') */
+                iterate: (pageId: string, feedback?: string) => loop.iterate(pageId, feedback),
+                /** 查看收集的日志 */
+                logs: (pageId?: string) => loop.collector.peek(pageId),
+                /** 当前会话 ID */
+                sessionId: loop.sessionId,
+              }
+              startupLogger.info('💡 控制台可用：window.__aiLoop.generate(pageId, prompt)')
+            }
+
             startupLogger.info('🤖 AI Loop 已初始化', { sessionId: loop.sessionId })
           }).catch((err: unknown) => {
             startupLogger.warn('AI Loop 加载失败', { error: String(err) })
