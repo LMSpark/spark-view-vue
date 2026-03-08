@@ -1,3 +1,15 @@
+<!--
+/**
+ * @skill r-detail
+ * @description 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写
+ * @provides DATA_SOURCE
+ * @provides CONTEXT_DATA
+ * @provides FIELD_CONTEXT
+ * @consumes PAGE_DATASET
+ * @input { dataKey: string }
+ * @example { "type": "r-detail", "dataKey": "Users@currentRow", "children": [] }
+ */
+-->
 <template>
   <div class="renderer-detail" v-bind="$attrs">
     <!-- Config 驱动 —— 通用递归渲染 config.children -->
