@@ -3,11 +3,10 @@ server:
 
 spark:
   pages:
-    # 服务端管理的 pages-config 目录（不再写入 public/pages-config）
+    # 服务端管理的 pages-config 目录（运行时数据全部在此）
     # 通过环境变量 PAGES_CONFIG_DIR 覆盖
     config-dir: ${PAGES_CONFIG_DIR:./data/pages-config}
-    # 种子数据目录（首次启动自动拷贝到 config-dir）
-    seed-dir: ${PAGES_CONFIG_SEED_DIR:../public/pages-config}
+    # 种子数据从 classpath:seed-pages-config/ 自动拷贝（打包在 JAR 内）
 
   ai:
     openai:

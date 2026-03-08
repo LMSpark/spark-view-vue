@@ -5,19 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.config.PagesConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,8 +48,10 @@ public class PageConfigService {
      */
     private final ConcurrentHashMap<String, CacheEntry> fileCache = new ConcurrentHashMap<>();
 
+    /** 种子资源在 classpath 中的基础路径 */
+    private static final String SEED_CLASSPATH = "seed-pages-config";
+
     private final Path configRoot;
-    private final Path seedRoot;
     private final ObjectMapper objectMapper;
     private final SseService sseService;
 
@@ -58,16 +59,14 @@ public class PageConfigService {
                               ObjectMapper objectMapper,
                               SseService sseService) {
         this.configRoot = Paths.get(props.getConfigDir()).toAbsolutePath().normalize();
-        this.seedRoot = Paths.get(props.getSeedDir()).toAbsolutePath().normalize();
         this.objectMapper = objectMapper;
         this.sseService = sseService;
         log.info("[PageConfig] 配置目录: {}", this.configRoot);
-        log.info("[PageConfig] 种子目录: {}", this.seedRoot);
     }
 
     /**
-     * 首次启动种子机制：若 configRoot 下没有 routes.json，从 seedRoot 拷贝初始数据。
-     * 生产环境 configDir 由运维预先准备或通过 AI 生成，种子仅开发环境生效。
+     * 首次启动种子机制：若 configRoot 下没有 routes.json，从 classpath 种子资源拷贝初始数据。
+     * 种子数据打包在 JAR 内（src/main/resources/seed-pages-config/），服务端完全自包含。
      */
     @PostConstruct
     void seedIfEmpty() {
@@ -76,35 +75,36 @@ public class PageConfigService {
             log.info("[PageConfig] 已有 routes.json，跳过种子");
             return;
         }
-        if (!Files.exists(seedRoot)) {
-            log.info("[PageConfig] 种子目录不存在: {}，创建空 routes.json", seedRoot);
+        log.info("[PageConfig] 首次启动，从 classpath 种子资源拷贝到: {}", configRoot);
+        try {
+            Files.createDirectories(configRoot);
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resolver.getResources("classpath:" + SEED_CLASSPATH + "/**");
+            int count = 0;
+            for (Resource resource : resources) {
+                if (!resource.isReadable()) continue;
+                String uri = resource.getURI().toString();
+                // 从 URI 中提取相对路径：.../seed-pages-config/xxx/yyy
+                int idx = uri.indexOf(SEED_CLASSPATH + "/");
+                if (idx < 0) continue;
+                String relPath = uri.substring(idx + SEED_CLASSPATH.length() + 1);
+                Path target = configRoot.resolve(relPath).normalize();
+                if (!target.startsWith(configRoot)) continue; // 安全检查
+                Files.createDirectories(target.getParent());
+                try (InputStream is = resource.getInputStream()) {
+                    Files.write(target, is.readAllBytes());
+                    count++;
+                }
+            }
+            log.info("[PageConfig] 种子数据拷贝完成，共 {} 个文件", count);
+        } catch (IOException e) {
+            log.warn("[PageConfig] 种子拷贝失败: {}，创建空 routes.json", e.getMessage());
             try {
                 Files.createDirectories(configRoot);
                 Files.writeString(routesFile, "[]", StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                log.warn("[PageConfig] 创建空 routes.json 失败: {}", e.getMessage());
+            } catch (IOException ex) {
+                log.warn("[PageConfig] 创建空 routes.json 失败: {}", ex.getMessage());
             }
-            return;
-        }
-        log.info("[PageConfig] 首次启动，从种子目录拷贝: {} → {}", seedRoot, configRoot);
-        try {
-            Files.walkFileTree(seedRoot, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    Path target = configRoot.resolve(seedRoot.relativize(dir));
-                    Files.createDirectories(target);
-                    return FileVisitResult.CONTINUE;
-                }
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Path target = configRoot.resolve(seedRoot.relativize(file));
-                    Files.copy(file, target, StandardCopyOption.REPLACE_EXISTING);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-            log.info("[PageConfig] 种子数据拷贝完成");
-        } catch (IOException e) {
-            log.warn("[PageConfig] 种子拷贝失败: {}", e.getMessage());
         }
     }
 

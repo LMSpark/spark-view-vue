@@ -1,0 +1,39 @@
+{
+  "dataSetName": "my-page",
+  "tables": {
+    "my-page": {
+      "tableName": "my-page",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "name": "示例数据 A",
+          "status": "正常"
+        },
+        {
+          "id": 2,
+          "name": "示例数据 B",
+          "status": "待处理"
+        },
+        {
+          "id": 3,
+          "name": "示例数据 C",
+          "status": "已完成"
+        }
+      ]
+    }
+  }
+}
