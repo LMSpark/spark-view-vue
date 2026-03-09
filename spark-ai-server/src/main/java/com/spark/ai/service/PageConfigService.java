@@ -250,6 +250,204 @@ public class PageConfigService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // 页面列表
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * 列出所有配置页面。
+     * 扫描 routes.json 获取路由信息，同时检查磁盘目录确认文件完整性。
+     *
+     * @return 页面列表，每项包含 pageId、path、title、icon、files（实际存在的文件列表）
+     */
+    public List<Map<String, Object>> listPages() throws IOException {
+        Path routesFile = configRoot.resolve("routes.json");
+        if (!Files.exists(routesFile)) {
+            return List.of();
+        }
+        String raw = Files.readString(routesFile, StandardCharsets.UTF_8);
+        List<Map<String, Object>> routes = objectMapper.readValue(raw,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        List<Map<String, Object>> pages = new ArrayList<>();
+        for (Map<String, Object> route : routes) {
+            String pageId = (String) route.get("pageId");
+            if (pageId == null) continue;
+
+            Map<String, Object> page = new LinkedHashMap<>();
+            page.put("pageId", pageId);
+            page.put("path", route.get("path"));
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> meta = (Map<String, Object>) route.getOrDefault("meta", Map.of());
+            page.put("title", meta.getOrDefault("title", pageId));
+            page.put("icon", meta.getOrDefault("icon", "📄"));
+
+            // 检查磁盘文件
+            Path pageDir = configRoot.resolve(pageId);
+            List<String> existingFiles = new ArrayList<>();
+            if (Files.isDirectory(pageDir)) {
+                for (String fname : ALLOWED_FILES) {
+                    if (Files.exists(pageDir.resolve(fname))) {
+                        existingFiles.add(fname);
+                    }
+                }
+            }
+            page.put("files", existingFiles);
+            page.put("hasDir", Files.isDirectory(pageDir));
+            pages.add(page);
+        }
+        return pages;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 创建页面
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * 创建空配置页面：生成目录 + 脚手架文件 + 注册路由。
+     */
+    public Map<String, Object> createPage(String pageId, String title,
+                                           String icon) throws IOException {
+        validatePageId(pageId);
+        Path pageDir = configRoot.resolve(pageId);
+
+        // 检查是否已存在
+        Path routesFile = configRoot.resolve("routes.json");
+        if (Files.exists(routesFile)) {
+            String raw = Files.readString(routesFile, StandardCharsets.UTF_8);
+            List<Map<String, Object>> routes = objectMapper.readValue(raw,
+                    new TypeReference<List<Map<String, Object>>>() {});
+            boolean exists = routes.stream().anyMatch(r -> pageId.equals(r.get("pageId")));
+            if (exists) {
+                throw new IllegalArgumentException("页面已存在: " + pageId);
+            }
+        }
+
+        Files.createDirectories(pageDir);
+
+        // 生成脚手架文件
+        String ruleJson = "[\n  {\n    \"type\": \"div\",\n    \"children\": [\n      {\n        \"type\": \"h2\",\n        \"children\": [\"" + title + "\"]\n      },\n      {\n        \"type\": \"p\",\n        \"children\": [\"页面配置就绪，请编辑 rule.json 设计页面布局。\"]\n      }\n    ]\n  }\n]";
+        String pageDataJson = "{}";
+        String scriptJs = "// " + title + " 页面脚本\nfunction __init__() {\n  console.log('" + pageId + " 页面已加载')\n}\n";
+        String styleCss = "/* " + title + " 页面样式 */\n";
+
+        Map<String, String> files = Map.of(
+                "rule.json", ruleJson,
+                "pagedata.json", pageDataJson,
+                "script.js", scriptJs,
+                "style.css", styleCss
+        );
+
+        List<String> written = new ArrayList<>();
+        for (Map.Entry<String, String> entry : files.entrySet()) {
+            Path target = pageDir.resolve(entry.getKey());
+            Files.writeString(target, entry.getValue(), StandardCharsets.UTF_8);
+            String mtime = Files.getLastModifiedTime(target).toInstant().toString();
+            fileCache.put(pageId + "/" + entry.getKey(), new CacheEntry(entry.getValue(), mtime));
+            written.add(entry.getKey());
+        }
+
+        // 注册路由
+        autoRegisterRouteWithMeta(pageId, title, icon);
+
+        sseService.broadcast(pageId, "__batch");
+        log.info("[PageConfig] 创建页面: pageId={}, title={}", pageId, title);
+        return Map.of("ok", true, "pageId", pageId, "written", written);
+    }
+
+    /**
+     * 注册路由并设置 title/icon 元数据。
+     */
+    private void autoRegisterRouteWithMeta(String pageId, String title, String icon) {
+        Path routesFile = configRoot.resolve("routes.json");
+        try {
+            List<Map<String, Object>> routes;
+            if (Files.exists(routesFile)) {
+                String raw = Files.readString(routesFile, StandardCharsets.UTF_8);
+                routes = objectMapper.readValue(raw, new TypeReference<>() {});
+            } else {
+                routes = new ArrayList<>();
+            }
+
+            boolean exists = routes.stream().anyMatch(r -> pageId.equals(r.get("pageId")));
+            if (!exists) {
+                Map<String, Object> newRoute = new LinkedHashMap<>();
+                newRoute.put("path", "/" + pageId);
+                newRoute.put("name", pageId);
+                newRoute.put("pageId", pageId);
+                newRoute.put("meta", Map.of(
+                        "title", (title != null && !title.isBlank()) ? title : pageId,
+                        "icon", (icon != null && !icon.isBlank()) ? icon : "📄"
+                ));
+                routes.add(newRoute);
+                String newContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(routes);
+                Files.writeString(routesFile, newContent, StandardCharsets.UTF_8);
+                String mtime = Files.getLastModifiedTime(routesFile).toInstant().toString();
+                fileCache.put("routes.json", new CacheEntry(newContent, mtime));
+                log.info("[PageConfig] 已注册路由: /{}", pageId);
+            }
+        } catch (Exception e) {
+            log.warn("[PageConfig] routes.json 更新失败: {}", e.getMessage());
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 删除页面
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * 删除配置页面：移除目录 + 从 routes.json 注销路由 + 清除缓存。
+     */
+    public Map<String, Object> deletePage(String pageId) throws IOException {
+        validatePageId(pageId);
+        Path pageDir = configRoot.resolve(pageId);
+        ensureInRoot(pageDir);
+
+        // 删除目录及其文件
+        List<String> deleted = new ArrayList<>();
+        if (Files.isDirectory(pageDir)) {
+            try (var entries = Files.list(pageDir)) {
+                for (Path file : entries.toList()) {
+                    Files.deleteIfExists(file);
+                    deleted.add(file.getFileName().toString());
+                    fileCache.remove(pageId + "/" + file.getFileName().toString());
+                }
+            }
+            Files.deleteIfExists(pageDir);
+        }
+
+        // 从 routes.json 移除
+        unregisterRoute(pageId);
+
+        sseService.broadcast(pageId, "__deleted");
+        log.info("[PageConfig] 删除页面: pageId={}, files={}", pageId, deleted);
+        return Map.of("ok", true, "pageId", pageId, "deleted", deleted);
+    }
+
+    /**
+     * 从 routes.json 中移除指定 pageId 的路由。
+     */
+    private void unregisterRoute(String pageId) {
+        Path routesFile = configRoot.resolve("routes.json");
+        try {
+            if (!Files.exists(routesFile)) return;
+            String raw = Files.readString(routesFile, StandardCharsets.UTF_8);
+            List<Map<String, Object>> routes = objectMapper.readValue(raw,
+                    new TypeReference<List<Map<String, Object>>>() {});
+            boolean removed = routes.removeIf(r -> pageId.equals(r.get("pageId")));
+            if (removed) {
+                String newContent = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(routes);
+                Files.writeString(routesFile, newContent, StandardCharsets.UTF_8);
+                String mtime = Files.getLastModifiedTime(routesFile).toInstant().toString();
+                fileCache.put("routes.json", new CacheEntry(newContent, mtime));
+                log.info("[PageConfig] 已注销路由: /{}", pageId);
+            }
+        } catch (Exception e) {
+            log.warn("[PageConfig] routes.json 更新失败: {}", e.getMessage());
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // 安全校验
     // ─────────────────────────────────────────────────────────────────────────
 

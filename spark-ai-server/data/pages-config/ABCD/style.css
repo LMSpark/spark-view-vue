@@ -1,0 +1,33 @@
+[data-page="ABCD"] .page-container {
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+
+[data-page="ABCD"] .el-table {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-page="ABCD"] .el-divider {
+  margin: 24px 0;
+}
+
+[data-page="ABCD"] .r-detail {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-page="ABCD"] .el-button {
+  transition: all 0.3s ease;
+}
+
+[data-page="ABCD"] .el-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+[data-page="ABCD"] .el-alert {
+  border: 1px solid #ebeef5;
+}

@@ -145,9 +145,26 @@ async function startApp() {
     let _loopCollector: { push(entry: BufferedLog): void } | null = null
     const _bufferedLogs: BufferedLog[] = []
 
+    /** 清除 meta 中不可序列化的值（Vue Proxy / 循环引用） */
+    function safeMeta(raw?: Record<string, unknown>): Record<string, unknown> | undefined {
+      if (raw === undefined) return undefined
+      try {
+        JSON.stringify(raw)
+        return raw
+      } catch {
+        const safe: Record<string, unknown> = {}
+        for (const [k, v] of Object.entries(raw)) {
+          if (v === undefined || v === null || typeof v !== 'object') { safe[k] = v; continue }
+          try { safe[k] = JSON.parse(JSON.stringify(v)) }
+          catch { safe[k] = '[circular]' }
+        }
+        return safe
+      }
+    }
+
     const collectorTransport: LogTransport & UtilsLogTransport = {
       send(level, message, meta) {
-        const entry: BufferedLog = { level, message, meta, timestamp: Date.now(), pageId: _currentPageId }
+        const entry: BufferedLog = { level, message, meta: safeMeta(meta), timestamp: Date.now(), pageId: _currentPageId }
         if (_loopCollector) {
           _loopCollector.push(entry)
         } else {
@@ -290,6 +307,7 @@ async function startApp() {
         const Settings = (await import('./views/Settings.vue')).default
         const CapabilityDemo = (await import('./views/CapabilityDemo.vue')).default
         const TenantConfigDemo = (await import('./views/TenantConfigDemo.vue')).default
+        const PageManager = (await import('./views/PageManager.vue')).default
         
         // 验证组件导入成功
         const components = {
@@ -297,7 +315,8 @@ async function startApp() {
           About,
           Settings,
           CapabilityDemo,
-          TenantConfigDemo
+          TenantConfigDemo,
+          PageManager
         }
         
         for (const [name, component] of Object.entries(components)) {
@@ -369,6 +388,17 @@ async function startApp() {
           }
         })
         
+        router.addRoute({
+          path: '/page-manager',
+          name: 'page-manager',
+          component: PageManager,
+          meta: {
+            title: '页面管理',
+            icon: '📑',
+            type: 'vue-component'
+          }
+        })
+        
         startupLogger.info('✅ 静态 Vue 组件路由注册完成')
 
         // 🤖 注册 AI Studio 组件（SPARK registry + Vue 全局组件）
@@ -396,7 +426,7 @@ async function startApp() {
           Promise.all([
             import('./services/ai-loop'),
             import('virtual:spark-skill-catalog').catch(() => null),
-          ]).then(([{ initAILoop, setupHotReload, setConfigLoader }, skillMod]) => {
+          ]).then(([{ initAILoop, setupHotReload, setConfigLoader, triggerPageRefresh }, skillMod]) => {
             // 生成 Skill Catalog Markdown（构建时从 @skill 注解采集）
             const skillCatalog = skillMod?.buildSkillPrompt('## SPARK Skill 目录', 'compact')
 
@@ -428,15 +458,11 @@ async function startApp() {
             _bufferedLogs.length = 0
             _loopCollector = loop.collector
 
-            // SSE 监听：AI 写入文件后自动清缓存 + 软重载当前页面
-            // 使用路由级软重载（/ → 原页面）替代 window.location.reload()，
-            // 避免全页刷新导致 AiChatPanel 状态丢失
+            // SSE 监听：AI 写入文件后自动清缓存 + 页面组件重建
+            // 通过 pageRefreshKey 递增让 router-view 内的组件重建，路由不变，AI 面板不受影响
             setupHotReload(
               () => _currentPageId ?? '',
-              () => {
-                const target = router.currentRoute.value.fullPath
-                void router.replace('/').then(() => router.replace(target))
-              },
+              () => { triggerPageRefresh() },
             )
 
             // 浏览器控制台快捷入口：window.__aiLoop

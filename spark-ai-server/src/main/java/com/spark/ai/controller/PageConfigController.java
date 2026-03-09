@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,6 +19,9 @@ import java.util.Map;
  *
  * <pre>
  *   GET  /api/pages-config/__events          → SSE 文件变更通知
+ *   GET  /api/pages-config/__list            → 页面列表
+ *   POST /api/pages-config/__create          → 创建空页面
+ *   DELETE /api/pages-config/{pageId}        → 删除页面
  *   GET  /api/pages-config/{pageId}/{file}   → 读取配置文件（支持时间戳协议）
  *   PUT  /api/pages-config/{pageId}/{file}   → 写入单个配置文件
  *   POST /api/pages-config/{pageId}/__batch  → 批量写入配置文件
@@ -44,6 +48,62 @@ public class PageConfigController {
     @GetMapping(value = "/pages-config/__events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter events() {
         return sseService.subscribe();
+    }
+
+    // ── 页面列表 ─────────────────────────────────────────────────────────────
+
+    /**
+     * GET /api/pages-config/__list
+     * 返回所有配置页面列表（含 pageId、title、icon、已存在的文件列表）。
+     */
+    @GetMapping("/pages-config/__list")
+    public ResponseEntity<?> listPages() {
+        try {
+            List<Map<String, Object>> pages = pageConfigService.listPages();
+            return ResponseEntity.ok(pages);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── 创建页面 ─────────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/pages-config/__create
+     * 创建空配置页面（脚手架文件 + 路由注册）。
+     * 请求体：{ "pageId": "xxx", "title": "页面标题", "icon": "📄" }
+     */
+    @PostMapping("/pages-config/__create")
+    public ResponseEntity<?> createPage(@RequestBody Map<String, String> body) {
+        try {
+            String pageId = body.get("pageId");
+            String title = body.getOrDefault("title", pageId);
+            String icon = body.getOrDefault("icon", "📄");
+            Map<String, Object> result = pageConfigService.createPage(pageId, title, icon);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── 删除页面 ─────────────────────────────────────────────────────────────
+
+    /**
+     * DELETE /api/pages-config/{pageId}
+     * 删除配置页面（目录 + 文件 + 路由注销）。
+     */
+    @DeleteMapping("/pages-config/{pageId}")
+    public ResponseEntity<?> deletePage(@PathVariable String pageId) {
+        try {
+            Map<String, Object> result = pageConfigService.deletePage(pageId);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // ── 读取根级配置文件（routes.json）─────────────────────────────────────────

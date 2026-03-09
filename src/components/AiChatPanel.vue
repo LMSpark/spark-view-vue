@@ -17,7 +17,8 @@
         <div class="ai-panel-body" ref="messagesRef">
           <div v-if="messages.length === 0" class="ai-empty">
             输入页面描述，AI 将自动生成 SPARK 页面配置。<br>
-            例如：「创建一个用户管理页面，包含表格和搜索」
+            例如：「创建一个用户管理页面，包含表格和搜索」<br><br>
+            💡 点击 <b>🐛 调试</b> 可将当前页面错误发送给 AI 自动修复
           </div>
           <div
             v-for="(msg, i) in messages"
@@ -49,6 +50,22 @@
           </div>
         </div>
 
+        <!-- 实时日志流 -->
+        <div v-if="isOpen && pageId.trim() && recentLogs.length > 0" class="ai-log-feed">
+          <div class="ai-log-header" @click="showLogs = !showLogs">
+            <span>📋 {{ recentLogs.length }} 条日志
+              <span v-if="errorLogCount > 0" class="ai-error-count">({{ errorLogCount }} 错误)</span>
+            </span>
+            <span class="ai-log-toggle">{{ showLogs ? '▼' : '▶' }}</span>
+          </div>
+          <div v-if="showLogs" class="ai-log-list">
+            <div v-for="(log, i) in recentLogs.slice(-30)" :key="i" class="ai-log-entry" :class="log.level">
+              <span class="ai-log-level">{{ levelEmoji(log.level) }}</span>
+              <span class="ai-log-msg">{{ log.message }}</span>
+            </div>
+          </div>
+        </div>
+
         <div class="ai-panel-footer">
           <input
             v-model="pageId"
@@ -66,6 +83,15 @@
             @keydown.enter.meta="handleSend"
           ></textarea>
           <div class="ai-actions">
+            <button class="ai-delete-btn" :disabled="loading || !pageId.trim()" @click="handleDelete" title="删除当前页面配置">
+              🗑️
+            </button>
+            <button class="ai-debug-btn" :disabled="loading || !pageId.trim()" @click="handleDebug" title="收集当前页面错误并发送给 AI 修复">
+              🐛 调试
+            </button>
+            <button v-if="loading" class="ai-cancel-btn" @click="handleCancel">
+              ⏹ 取消
+            </button>
             <button class="ai-send-btn" :disabled="loading || !prompt.trim() || !pageId.trim()" @click="handleSend">
               {{ loading ? '生成中...' : '发送' }}
             </button>
@@ -79,7 +105,7 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader } from '@/services/ai-loop'
+import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, logUpdateSignal } from '@/services/ai-loop'
 import type { AIResponse, LogSnapshot } from '@/services/ai-loop'
 import { createRequest } from '@spark-view/spark-utils'
 
@@ -127,6 +153,15 @@ watch(routePageId, (newId) => {
   }
 }, { immediate: true })
 
+// pageId 切换时清空旧页面的聊天记录和状态
+watch(pageId, () => {
+  if (!loading.value) {
+    messages.value = []
+    showLogs.value = false
+    updateStatus('idle')
+  }
+})
+
 // 加载结束后重新同步（路由可能在 loading 期间变更，watcher 被跳过）
 watch(loading, (isLoading) => {
   if (!isLoading && routePageId.value) {
@@ -136,9 +171,31 @@ watch(loading, (isLoading) => {
 const messages = ref<ChatMessage[]>([])
 const messagesRef = ref<HTMLElement>()
 const status = ref<'idle' | 'generating' | 'success' | 'error'>('idle')
+/** 取消标志：用户点击取消后置 true，迭代循环检测到后中断 */
+let _abortRequested = false
 
 const statusClass = ref('')
 const statusText = ref('就绪')
+const showLogs = ref(false)
+
+/** 当前页面的实时日志（响应式，logUpdateSignal 变化时自动刷新） */
+const recentLogs = computed(() => {
+  void logUpdateSignal.value // 建立响应式依赖
+  const pid = pageId.value.trim()
+  if (!pid) return [] as LogSnapshot[]
+  const loop = getAILoop()
+  if (!loop) return [] as LogSnapshot[]
+  return loop.collector.peek(pid)
+})
+
+const errorLogCount = computed(() =>
+  recentLogs.value.filter(l => l.level === 'error' || l.level === 'warn').length
+)
+
+function levelEmoji(level: string): string {
+  const map: Record<string, string> = { error: '❌', warn: '⚠️', info: 'ℹ️', debug: '🐛' }
+  return map[level] ?? '📝'
+}
 
 function updateStatus(s: 'idle' | 'generating' | 'success' | 'error') {
   status.value = s
@@ -148,6 +205,40 @@ function updateStatus(s: 'idle' | 'generating' | 'success' | 'error') {
 
 function togglePanel() {
   isOpen.value = !isOpen.value
+}
+
+/** 删除当前页面配置 */
+async function handleDelete() {
+  const pid = pageId.value.trim()
+  if (!pid || loading.value) return
+  if (!confirm(`确定删除页面 /${pid} 的所有配置文件？此操作不可撤销。`)) return
+
+  loading.value = true
+  updateStatus('generating')
+  try {
+    await http.delete(`/api/pages-config/${encodeURIComponent(pid)}`)
+    clearPageCache(pid)
+    messages.value.push({ role: 'assistant', text: `🗑️ 页面 /${pid} 已删除` })
+    // 如果当前路由就是被删页面，导航回首页
+    if (routePageId.value === pid) {
+      void router.push('/')
+    }
+    updateStatus('success')
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    messages.value.push({ role: 'assistant', text: `❌ 删除失败: ${msg}` })
+    updateStatus('error')
+  } finally {
+    loading.value = false
+    scrollToBottom()
+  }
+}
+
+/** 用户取消当前生成/调试操作 */
+function handleCancel() {
+  _abortRequested = true
+  messages.value.push({ role: 'assistant', text: '⏹ 用户已取消操作' })
+  scrollToBottom()
 }
 
 function scrollToBottom() {
@@ -219,6 +310,7 @@ async function handleSend() {
   messages.value.push({ role: 'user', text: `[${pid}] ${text}` })
   prompt.value = ''
   loading.value = true
+  _abortRequested = false
   updateStatus('generating')
   scrollToBottom()
 
@@ -226,16 +318,37 @@ async function handleSend() {
     const loop = getAILoop()
     let response: AIResponse
 
-    if (loop) {
-      response = await loop.generate(pid, text)
+    // 检查页面是否已存在：已有文件时走 iterate（附带当前 4 文件 + 修改需求），否则走 generate
+    const existingFiles = await readPageFiles(pid)
+    const hasExistingPage = Object.keys(existingFiles).length > 0
+
+    if (hasExistingPage) {
+      // 页面已存在 → 迭代模式，把用户输入作为修改反馈
+      if (loop) {
+        response = await loop.iterate(pid, text)
+      } else {
+        response = await http.post<AIResponse>('/api/ai/chat', {
+          action: 'iterate',
+          pageId: pid,
+          sessionId: `chat-${Date.now()}`,
+          feedback: text,
+          currentFiles: existingFiles,
+          skillCatalog: _skillCatalog,
+        })
+      }
     } else {
-      response = await http.post<AIResponse>('/api/ai/chat', {
-        action: 'generate',
-        pageId: pid,
-        prompt: text,
-        sessionId: `chat-${Date.now()}`,
-        skillCatalog: _skillCatalog,
-      })
+      // 新页面 → 生成模式
+      if (loop) {
+        response = await loop.generate(pid, text)
+      } else {
+        response = await http.post<AIResponse>('/api/ai/chat', {
+          action: 'generate',
+          pageId: pid,
+          prompt: text,
+          sessionId: `chat-${Date.now()}`,
+          skillCatalog: _skillCatalog,
+        })
+      }
     }
 
     const fileNames = Object.keys(response.files)
@@ -266,6 +379,7 @@ async function handleSend() {
     await router.push(`/${pid}`)
     try {
       for (let i = 1; i <= MAX_AUTO_ITERATIONS; i++) {
+        if (_abortRequested) break
         // 等待页面渲染，让 Logger 收集运行时日志
         updateStatus('generating')
         messages.value.push({
@@ -275,6 +389,7 @@ async function handleSend() {
         })
         scrollToBottom()
         await delay(LOG_COLLECT_DELAY)
+        if (_abortRequested) break
 
         // 检查日志（peek 不清空，iterate 内部 drain 会清空）
         const logs = loop
@@ -338,12 +453,10 @@ async function handleSend() {
         })
         scrollToBottom()
 
-        // 清除缓存 → 路由切换强制页面组件卸载/重建
+        // 清除缓存 → key 驱动页面组件重建（路由不变，AI 面板不受影响）
         clearPageCache(pid)
-        await router.push('/')
-        await delay(300)
-        ensureRouteExists(pid)
-        await router.push(`/${pid}`)
+        triggerPageRefresh()
+        await nextTick()
       }
     } finally {
       setAutoIterating(false)
@@ -364,9 +477,204 @@ async function handleSend() {
   }
 }
 
+/**
+ * 调试当前页面：收集运行时错误 + 当前文件，发送给 AI 自动修复
+ * 无需用户输入 prompt，自动从 PageLogCollector 获取错误上下文
+ */
+async function handleDebug() {
+  const pid = pageId.value.trim()
+  if (!pid || loading.value) return
+
+  const loop = getAILoop()
+  // 检查是否有可收集的错误
+  const logs = loop ? loop.collector.peek(pid) : []
+  const allLogs = loop ? loop.collector.peek() : []
+
+  // 合并当前 pageId 的日志 + 无 pageId 的全局错误
+  const relevantLogs = [
+    ...logs,
+    ...allLogs.filter(l => l.pageId === undefined && (l.level === 'error' || l.level === 'warn')),
+  ]
+
+  if (relevantLogs.length === 0) {
+    messages.value.push({
+      role: 'assistant',
+      text: '🔍 当前页面暂无收集到的错误日志。请先访问页面触发错误后再调试。',
+    })
+    scrollToBottom()
+    return
+  }
+
+  // 构建错误摘要
+  const errorLogs = relevantLogs.filter(l => l.level === 'error' || l.level === 'warn')
+  const errorSummary = errorLogs
+    .map(l => {
+      const metaStr = l.meta ? ` ${JSON.stringify(l.meta)}` : ''
+      return `[${l.level}] ${l.message}${metaStr}`
+    })
+    .slice(0, 20)
+    .join('\n')
+
+  messages.value.push({
+    role: 'user',
+    text: `[${pid}] 🐛 调试模式：修复页面运行时错误`,
+  })
+  messages.value.push({
+    role: 'assistant',
+    text: `🐛 检测到 ${errorLogs.length} 条错误/警告，读取当前文件并发送到 AI...\n\`\`\`\n${errorSummary}\n\`\`\``,
+  })
+  scrollToBottom()
+
+  loading.value = true
+  _abortRequested = false
+  updateStatus('generating')
+  setAutoIterating(true)
+
+  try {
+    // ── 第一轮：发送当前错误 + 文件给 AI ──
+    let iterResponse: AIResponse
+    if (loop) {
+      iterResponse = await loop.iterate(pid,
+        `页面 /${pid} 运行时出现以下错误，请根据当前文件内容修复：\n${errorSummary}`
+      )
+    } else {
+      const currentFiles = await readPageFiles(pid)
+      iterResponse = await http.post<AIResponse>('/api/ai/chat', {
+        action: 'iterate',
+        pageId: pid,
+        sessionId: `debug-${Date.now()}`,
+        feedback: `页面 /${pid} 运行时出现以下错误，请根据当前文件内容修复：\n${errorSummary}`,
+        currentFiles,
+        logs: errorLogs,
+        skillCatalog: _skillCatalog,
+      })
+      if (Object.keys(iterResponse.files).length > 0) {
+        const { writePageFiles } = await import('@/services/ai-loop')
+        await writePageFiles(pid, iterResponse.files)
+      }
+    }
+
+    const iterFiles = Object.keys(iterResponse.files)
+    messages.value.push({
+      role: 'assistant',
+      text: iterResponse.explanation ?? '🔧 AI 修复完成',
+      files: iterFiles,
+      pageId: pid,
+      iteration: 1,
+    })
+    scrollToBottom()
+
+    // 清缓存 → key 驱动页面组件重建
+    clearPageCache(pid)
+    triggerPageRefresh()
+    await nextTick()
+
+    // ── 后续自动迭代（最多 MAX_AUTO_ITERATIONS - 1 轮） ──
+    for (let i = 2; i <= MAX_AUTO_ITERATIONS; i++) {
+      if (_abortRequested) break
+      updateStatus('generating')
+      messages.value.push({
+        role: 'assistant',
+        text: `🔍 第 ${i} 轮检查：等待页面渲染并收集日志...`,
+        iteration: i,
+      })
+      scrollToBottom()
+      await delay(LOG_COLLECT_DELAY)
+      if (_abortRequested) break
+
+      const checkLogs = loop ? loop.collector.peek(pid) : []
+      if (!hasRenderErrors(checkLogs)) {
+        messages.value.push({
+          role: 'assistant',
+          text: `✅ 第 ${i} 轮检查通过，页面无渲染错误`,
+          iteration: i,
+        })
+        scrollToBottom()
+        break
+      }
+
+      const newErrorLogs = checkLogs.filter(l => l.level === 'error' || l.level === 'warn')
+      const newErrorSummary = newErrorLogs
+        .map(l => {
+          const metaStr = l.meta ? ` ${JSON.stringify(l.meta)}` : ''
+          return `[${l.level}] ${l.message}${metaStr}`
+        })
+        .slice(0, 20)
+        .join('\n')
+
+      messages.value.push({
+        role: 'assistant',
+        text: `⚠️ 第 ${i} 轮检测到 ${newErrorLogs.length} 条错误/警告，继续修复...\n\`\`\`\n${newErrorSummary}\n\`\`\``,
+        iteration: i,
+      })
+      scrollToBottom()
+
+      let nextResponse: AIResponse
+      if (loop) {
+        nextResponse = await loop.iterate(pid,
+          `页面渲染后仍有以下错误，请继续修复：\n${newErrorSummary}`
+        )
+      } else {
+        const currentFiles = await readPageFiles(pid)
+        nextResponse = await http.post<AIResponse>('/api/ai/chat', {
+          action: 'iterate',
+          pageId: pid,
+          sessionId: `debug-${Date.now()}`,
+          feedback: `页面渲染后仍有以下错误，请继续修复：\n${newErrorSummary}`,
+          currentFiles,
+          logs: newErrorLogs,
+          skillCatalog: _skillCatalog,
+        })
+        if (Object.keys(nextResponse.files).length > 0) {
+          const { writePageFiles } = await import('@/services/ai-loop')
+          await writePageFiles(pid, nextResponse.files)
+        }
+      }
+
+      messages.value.push({
+        role: 'assistant',
+        text: nextResponse.explanation ?? `🔧 第 ${i} 轮修复完成`,
+        files: Object.keys(nextResponse.files),
+        pageId: pid,
+        iteration: i,
+      })
+      scrollToBottom()
+
+      clearPageCache(pid)
+      triggerPageRefresh()
+      await nextTick()
+    }
+
+    updateStatus('success')
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    messages.value.push({
+      role: 'assistant',
+      text: `❌ 调试修复失败: ${msg}`,
+    })
+    updateStatus('error')
+  } finally {
+    setAutoIterating(false)
+    loading.value = false
+    scrollToBottom()
+  }
+}
+
 onMounted(() => {
-  // 初始化面板状态
   updateStatus('idle')
+})
+
+// 监听 aiDebug query 参数：从 PageManager 跳转过来时自动打开面板并触发调试
+watch(() => route.query['aiDebug'], async (val) => {
+  if (val === '1') {
+    isOpen.value = true
+    // 等待页面渲染产生日志
+    await delay(LOG_COLLECT_DELAY)
+    // 清除 query 参数（避免刷新后重复触发）
+    void router.replace({ path: route.path, query: {} })
+    // 自动触发调试
+    void handleDebug()
+  }
 })
 </script>
 
@@ -571,6 +879,57 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
+  gap: 8px;
+}
+
+.ai-delete-btn {
+  padding: 6px 10px;
+  background: transparent;
+  color: #f56c6c;
+  border: 1px solid #f56c6c;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.ai-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ai-delete-btn:not(:disabled):hover {
+  background: #fef0f0;
+}
+
+.ai-debug-btn {
+  padding: 6px 16px;
+  background: #e6a23c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.ai-debug-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ai-debug-btn:not(:disabled):hover {
+  background: #d4940f;
+}
+
+.ai-cancel-btn {
+  padding: 6px 16px;
+  background: #f56c6c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.ai-cancel-btn:hover {
+  background: #e04040;
 }
 
 .ai-send-btn {
@@ -589,6 +948,45 @@ onMounted(() => {
 }
 .ai-send-btn:not(:disabled):hover {
   opacity: 0.9;
+}
+
+/* 实时日志 */
+.ai-log-feed {
+  border-top: 1px solid #eee;
+  background: #fafbfc;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.ai-log-header {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.ai-log-header:hover { background: #f0f0f0; }
+.ai-error-count { color: #f56c6c; font-weight: 600; }
+.ai-log-toggle { font-size: 10px; color: #999; }
+.ai-log-list { padding: 0 12px 8px; }
+.ai-log-entry {
+  font-size: 11px;
+  font-family: 'Menlo', 'Consolas', monospace;
+  padding: 2px 0;
+  display: flex;
+  gap: 6px;
+  line-height: 1.4;
+  color: #555;
+}
+.ai-log-entry.error { color: #f56c6c; }
+.ai-log-entry.warn { color: #e6a23c; }
+.ai-log-level { flex-shrink: 0; }
+.ai-log-msg {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Slide transition */

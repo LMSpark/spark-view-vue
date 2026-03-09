@@ -166,4 +166,44 @@
     "icon" : "🤖",
     "title" : "125"
   }
+}, {
+  "path" : "/AAAA",
+  "name" : "AAAA",
+  "pageId" : "AAAA",
+  "meta" : {
+    "title" : "AAAA",
+    "icon" : "🤖"
+  }
+}, {
+  "path" : "/ABC",
+  "name" : "ABC",
+  "pageId" : "ABC",
+  "meta" : {
+    "title" : "ABC",
+    "icon" : "🤖"
+  }
+}, {
+  "path" : "/ABCD",
+  "name" : "ABCD",
+  "pageId" : "ABCD",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "ABCD"
+  }
+}, {
+  "path" : "/A",
+  "name" : "A",
+  "pageId" : "A",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "A"
+  }
+}, {
+  "path" : "/page-manager",
+  "name" : "page-manager",
+  "pageId" : "page-manager",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "page-manager"
+  }
 } ]

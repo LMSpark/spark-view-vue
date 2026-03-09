@@ -22,8 +22,8 @@ public class OpenAiProperties {
     /** 采样温度，0 = 确定性输出，1 = 最大随机 */
     private double temperature = 0.3;
 
-    /** 最大输出 token 数 */
-    private int maxTokens = 4096;
+    /** 最大输出 token 数（DeepSeek 上限 8192） */
+    private int maxTokens = 8192;
 
     /**
      * 是否启用 JSON 模式（response_format: json_object）。
