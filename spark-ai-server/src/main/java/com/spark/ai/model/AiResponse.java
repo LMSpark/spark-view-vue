@@ -19,12 +19,22 @@ public class AiResponse {
     /** 是否需要继续迭代 */
     private Boolean needsIteration;
 
+    /** 迭代轮次（1=首次生成，2+=自动迭代修正） */
+    private Integer iterationRound;
+
     public AiResponse() {}
 
     public AiResponse(Map<String, String> files, String explanation, Boolean needsIteration) {
         this.files = files;
         this.explanation = explanation;
         this.needsIteration = needsIteration;
+    }
+
+    public AiResponse(Map<String, String> files, String explanation, Boolean needsIteration, Integer iterationRound) {
+        this.files = files;
+        this.explanation = explanation;
+        this.needsIteration = needsIteration;
+        this.iterationRound = iterationRound;
     }
 
     public Map<String, String> getFiles() { return files; }
@@ -35,4 +45,7 @@ public class AiResponse {
 
     public Boolean getNeedsIteration() { return needsIteration; }
     public void setNeedsIteration(Boolean needsIteration) { this.needsIteration = needsIteration; }
+
+    public Integer getIterationRound() { return iterationRound; }
+    public void setIterationRound(Integer iterationRound) { this.iterationRound = iterationRound; }
 }

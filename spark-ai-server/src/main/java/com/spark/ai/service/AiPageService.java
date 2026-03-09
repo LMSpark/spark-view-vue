@@ -35,11 +35,15 @@ public class AiPageService {
 
     /** 每阶段最大重试次数 */
     private static final int MAX_RETRIES = 2;
-    /** Phase-1 必须包含的文件（结构层） */
-    private static final List<String> PHASE1_REQUIRED = List.of("rule.json", "pagedata.json");
+    /** 自动迭代最大轮次（含首次生成） */
+    private static final int MAX_ITERATIONS = 3;
+    /** Phase-1 必须包含的文件（UI 层：结构 + 样式） */
+    private static final List<String> PHASE1_REQUIRED = List.of("rule.json");
+    /** Phase-2 必须包含的文件（数据 + 行为层） */
+    private static final List<String> PHASE2_REQUIRED = List.of("pagedata.json");
 
     /** Phase 结果内部载体 */
-    private record PhaseResult(Map<String, String> files, String explanation) {}
+    private record PhaseResult(Map<String, String> files, String explanation, boolean needsIteration) {}
 
     private static final Logger log = LoggerFactory.getLogger(AiPageService.class);
 
@@ -71,52 +75,99 @@ public class AiPageService {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * 两阶段生成流程：
-     * Phase-1: rule.json + pagedata.json（结构层）
-     * Phase-2: script.js + style.css（行为层，使用 Phase-1 结果作为上下文）
-     * 每阶段独立重试，合并后返回完整结果。
+     * 两阶段生成 + 自动迭代流程：
+     * <p>
+     * 每轮包含 Phase-1（rule.json + style.css）和 Phase-2（pagedata.json + script.js）。
+     * Phase-2 若标记 needsIteration=true，自动以 iterate 模式重跑下一轮，
+     * 最多 {@link #MAX_ITERATIONS} 轮。前端通过 iterationRound 字段感知当前轮次。
      */
     public AiResponse processRequest(AiChatRequest request) {
         try {
             String systemPrompt = buildSystemPrompt(request.getSkillCatalog());
             String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
-            log.info("[SPARK-AI] action={} pageId={} (two-phase)", request.getAction(), pid);
 
-            // ── Phase 1: rule.json + pagedata.json ──
-            String phase1Msg = buildPhase1Message(request);
-            log.info("[SPARK-AI] Phase-1 start, msgLen={}", phase1Msg.length());
+            int round = 0;
+            Map<String, String> merged = null;
+            String explanation = "";
+            boolean needsIter = false;
+            AiChatRequest currentReq = request;
 
-            PhaseResult phase1 = callPhase(systemPrompt, phase1Msg, PHASE1_REQUIRED, "Phase-1");
-            if (phase1 == null) {
-                return buildErrorResponse(request, "结构层（rule.json + pagedata.json）生成失败，请重试");
+            do {
+                round++;
+                log.info("[SPARK-AI] ====== 迭代轮次 {}/{} action={} pageId={} ======",
+                         round, MAX_ITERATIONS, currentReq.getAction(), pid);
+
+                // ── Phase 1: rule.json + style.css（UI 层）──
+                String phase1Msg = buildPhase1Message(currentReq);
+                log.info("[SPARK-AI] R{}-Phase1 start, msgLen={}", round, phase1Msg.length());
+
+                PhaseResult phase1 = callPhase(systemPrompt, phase1Msg, PHASE1_REQUIRED,
+                                                "R" + round + "-Phase1");
+                if (phase1 == null) {
+                    return buildErrorResponse(request,
+                            "第" + round + "轮 UI 层（rule.json + style.css）生成失败，请重试");
+                }
+
+                // ── Phase 2: pagedata.json + script.js（数据 + 行为层）──
+                String phase2Msg = buildPhase2Message(currentReq, phase1.files());
+                log.info("[SPARK-AI] R{}-Phase2 start, msgLen={}", round, phase2Msg.length());
+
+                PhaseResult phase2 = callPhase(systemPrompt, phase2Msg, PHASE2_REQUIRED,
+                                                "R" + round + "-Phase2");
+
+                // ── Merge ──
+                merged = new LinkedHashMap<>(phase1.files());
+                if (phase2 != null) {
+                    merged.putAll(phase2.files());
+                }
+                merged.putIfAbsent("pagedata.json", "{}");
+                merged.putIfAbsent("style.css", "");
+                merged.putIfAbsent("script.js", "");
+
+                String roundExpl = phase1.explanation() != null ? phase1.explanation() : "";
+                if (phase2 != null && phase2.explanation() != null && !phase2.explanation().isBlank()) {
+                    roundExpl += "\n" + phase2.explanation();
+                }
+                explanation = roundExpl;
+
+                needsIter = (phase2 != null && phase2.needsIteration());
+
+                if (needsIter && round < MAX_ITERATIONS) {
+                    log.info("[SPARK-AI] 第{}轮 AI 标记 needsIteration=true，自动进入下一轮迭代", round);
+                    currentReq = buildIterateRequest(request, merged, roundExpl);
+                }
+
+            } while (needsIter && round < MAX_ITERATIONS);
+
+            if (needsIter) {
+                log.warn("[SPARK-AI] 达到最大迭代次数 {}，AI 仍标记 needsIteration=true", MAX_ITERATIONS);
             }
 
-            // ── Phase 2: script.js + style.css ──
-            String phase2Msg = buildPhase2Message(request, phase1.files());
-            log.info("[SPARK-AI] Phase-2 start, msgLen={}", phase2Msg.length());
-
-            PhaseResult phase2 = callPhase(systemPrompt, phase2Msg, List.of(), "Phase-2");
-
-            // ── Merge ──
-            Map<String, String> merged = new LinkedHashMap<>(phase1.files());
-            if (phase2 != null) {
-                merged.putAll(phase2.files());
-            }
-            merged.putIfAbsent("script.js", "");
-            merged.putIfAbsent("style.css", "");
-
-            String explanation = phase1.explanation() != null ? phase1.explanation() : "";
-            if (phase2 != null && phase2.explanation() != null && !phase2.explanation().isBlank()) {
-                explanation += "\n" + phase2.explanation();
-            }
-
-            log.info("[SPARK-AI] done files={}", merged.keySet());
-            return new AiResponse(merged, explanation, false);
+            log.info("[SPARK-AI] 完成 totalRounds={} files={} needsIteration={}",
+                     round, merged.keySet(), needsIter);
+            return new AiResponse(merged, explanation, needsIter, round);
 
         } catch (Exception e) {
             log.error("[SPARK-AI] error: {}", e.getMessage(), e);
             return buildErrorResponse(request, e.getMessage());
         }
+    }
+
+    /**
+     * 构建自动迭代请求：以上一轮的合并文件 + AI 自检说明作为 iterate 输入。
+     */
+    private AiChatRequest buildIterateRequest(AiChatRequest original,
+                                               Map<String, String> currentFiles,
+                                               String aiExplanation) {
+        AiChatRequest req = new AiChatRequest();
+        req.setAction("iterate");
+        req.setPageId(original.getPageId());
+        req.setPrompt(original.getPrompt());
+        req.setFeedback("AI 自检发现以下问题需要修正：\n" + aiExplanation);
+        req.setCurrentFiles(currentFiles);
+        req.setLogs(original.getLogs());
+        req.setSkillCatalog(original.getSkillCatalog());
+        return req;
     }
 
     /**
@@ -147,7 +198,8 @@ public class AiPageService {
                 }
 
                 log.info("[SPARK-AI] {} ok attempt={} files={}", phaseName, attempt, response.getFiles().keySet());
-                return new PhaseResult(response.getFiles(), response.getExplanation());
+                boolean iterFlag = Boolean.TRUE.equals(response.getNeedsIteration());
+                return new PhaseResult(response.getFiles(), response.getExplanation(), iterFlag);
 
             } catch (Exception e) {
                 failures.add("第" + attempt + "次异常: " + e.getMessage());
@@ -162,7 +214,7 @@ public class AiPageService {
     // 分阶段用户消息构建
     // ─────────────────────────────────────────────────────────────────────────
 
-    /** Phase-1：只请求 rule.json + pagedata.json */
+    /** Phase-1：请求 rule.json + style.css（UI 层：结构 + 样式） */
     private String buildPhase1Message(AiChatRequest request) {
         StringBuilder sb = new StringBuilder();
         String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
@@ -175,7 +227,7 @@ public class AiPageService {
             }
             if (request.getCurrentFiles() != null) {
                 appendFileBlock(sb, "当前 rule.json", "json", request.getCurrentFiles().get("rule.json"));
-                appendFileBlock(sb, "当前 pagedata.json", "json", request.getCurrentFiles().get("pagedata.json"));
+                appendFileBlock(sb, "当前 style.css", "css", request.getCurrentFiles().get("style.css"));
             }
             appendLogs(sb, request);
         } else {
@@ -184,45 +236,48 @@ public class AiPageService {
             appendLogs(sb, request);
         }
 
-        sb.append("⚠️ 【分步生成 - 第 1 轮】本轮只需生成 rule.json 和 pagedata.json。\n");
-        sb.append("返回的 JSON 中 files 对象只包含 \"rule.json\" 和 \"pagedata.json\" 两个键。\n");
-        sb.append("不要包含 script.js 和 style.css，它们将在下一轮生成。\n");
+        sb.append("⚠️ 【分步生成 - 第 1 轮】本轮只需生成 rule.json 和 style.css。\n");
+        sb.append("返回的 JSON 中 files 对象只包含 \"rule.json\" 和 \"style.css\" 两个键。\n");
+        sb.append("不要包含 pagedata.json 和 script.js，它们将在下一轮生成。\n");
         return sb.toString();
     }
 
-    /** Phase-2：以 Phase-1 结果为上下文，只请求 script.js + style.css */
+    /** Phase-2：以 Phase-1 结果为上下文，请求 pagedata.json + script.js（数据 + 行为层） */
     private String buildPhase2Message(AiChatRequest request, Map<String, String> phase1Files) {
         StringBuilder sb = new StringBuilder();
         String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
 
         if ("iterate".equals(request.getAction())) {
-            sb.append("请根据以下反馈修改页面 `").append(pid).append("` 的配置（第 2 轮：行为层）。\n\n");
+            sb.append("请根据以下反馈修改页面 `").append(pid).append("` 的配置（第 2 轮：数据 + 行为层）。\n\n");
             String feedback = request.getFeedback() != null ? request.getFeedback() : request.getPrompt();
             if (feedback != null && !feedback.isBlank()) {
                 sb.append("**用户反馈**：").append(feedback).append("\n\n");
             }
         } else {
-            sb.append("请为页面 `").append(pid).append("` 生成配置（第 2 轮：行为层）。\n\n");
+            sb.append("请为页面 `").append(pid).append("` 生成配置（第 2 轮：数据 + 行为层）。\n\n");
             sb.append("**用户需求**：").append(request.getPrompt() != null ? request.getPrompt() : "").append("\n\n");
         }
 
-        // Phase-1 已确定的结构文件
+        // Phase-1 已确定的 UI 层文件
         appendFileBlock(sb, "已确定的 rule.json", "json", phase1Files.get("rule.json"));
-        appendFileBlock(sb, "已确定的 pagedata.json", "json", phase1Files.get("pagedata.json"));
+        appendFileBlock(sb, "已确定的 style.css", "css", phase1Files.get("style.css"));
 
-        // iterate 模式下提供当前 script.js / style.css 作为参考
+        // iterate 模式下提供当前 pagedata.json / script.js 作为参考
         if ("iterate".equals(request.getAction()) && request.getCurrentFiles() != null) {
+            appendFileBlock(sb, "当前 pagedata.json", "json", request.getCurrentFiles().get("pagedata.json"));
             appendFileBlock(sb, "当前 script.js", "javascript", request.getCurrentFiles().get("script.js"));
-            appendFileBlock(sb, "当前 style.css", "css", request.getCurrentFiles().get("style.css"));
         }
 
         // 运行时日志（帮助 AI 定位 script.js 层面的错误）
         appendLogs(sb, request);
 
-        sb.append("⚠️ 【分步生成 - 第 2 轮】本轮只需生成 script.js 和 style.css。\n");
-        sb.append("返回的 JSON 中 files 对象只包含 \"script.js\" 和 \"style.css\" 两个键。\n");
-        sb.append("不要包含 rule.json 和 pagedata.json。\n");
-        sb.append("确保 script.js 中包含 rule.json 引用的所有事件处理函数（on 中的函数名）和 Render* 渲染函数。\n");
+        sb.append("⚠️ 【分步生成 - 第 2 轮】本轮必须生成 pagedata.json 和 script.js。\n");
+        sb.append("返回的 JSON 中 files 对象必须包含 \"pagedata.json\" 和 \"script.js\" 两个键。\n");
+        sb.append("确保 pagedata.json 的表名与 rule.json 中 dataKey 引用的表名一致。\n");
+        sb.append("确保 script.js 中包含 rule.json 引用的所有事件处理函数（on 中的函数名）和 Render* 渲染函数。\n\n");
+        sb.append("📌 如果你在生成 pagedata.json / script.js 过程中发现第 1 轮的 rule.json 或 style.css 有问题（如 dataKey 表名不合理、class 名遗漏、事件函数名需调整等），");
+        sb.append("可以在 files 中额外包含修正后的 \"rule.json\" 和/或 \"style.css\"，它们会覆盖第 1 轮的版本。\n");
+        sb.append("📌 如果你认为当前生成结果可能存在需要用户确认或进一步调整的问题，请设置 \"needsIteration\": true 并在 explanation 中说明原因。\n");
         return sb.toString();
     }
 

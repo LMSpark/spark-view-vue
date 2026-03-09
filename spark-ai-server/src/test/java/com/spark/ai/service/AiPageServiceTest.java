@@ -12,7 +12,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * AiPageService 单元测试 — 聚焦 buildUserMessage + parseResponse 逻辑。
+ * AiPageService 单元测试 — 聚焦 buildPhase1Message + parseResponse 逻辑。
  * 不实际调 LLM，而是反射/子类覆盖来测试可测路径。
  */
 class AiPageServiceTest {
@@ -152,12 +152,12 @@ class AiPageServiceTest {
         assertTrue(resp.getFiles().get("rule.json").contains("生成失败"));
     }
 
-    // ── buildUserMessage 通过反射测试 ───────────────────────────────────────
+    // ── buildPhase1Message 通过反射测试 ──────────────────────────────────────
 
     @Test
-    void buildUserMessage_generate() throws Exception {
+    void buildPhase1Message_generate() throws Exception {
         AiPageService service = new TestableAiPageService(null);
-        var method = AiPageService.class.getDeclaredMethod("buildUserMessage", AiChatRequest.class);
+        var method = AiPageService.class.getDeclaredMethod("buildPhase1Message", AiChatRequest.class);
         method.setAccessible(true);
 
         AiChatRequest req = new AiChatRequest();
@@ -172,16 +172,16 @@ class AiPageServiceTest {
     }
 
     @Test
-    void buildUserMessage_iterate() throws Exception {
+    void buildPhase1Message_iterate() throws Exception {
         AiPageService service = new TestableAiPageService(null);
-        var method = AiPageService.class.getDeclaredMethod("buildUserMessage", AiChatRequest.class);
+        var method = AiPageService.class.getDeclaredMethod("buildPhase1Message", AiChatRequest.class);
         method.setAccessible(true);
 
         AiChatRequest req = new AiChatRequest();
         req.setAction("iterate");
         req.setPageId("orders");
         req.setFeedback("加一列创建时间");
-        req.setCurrentFiles(Map.of("rule.json", "[]", "pagedata.json", "{}"));
+        req.setCurrentFiles(Map.of("rule.json", "[]", "style.css", ".container{}"));
         AiChatRequest.LogSnapshot log = new AiChatRequest.LogSnapshot();
         log.setLevel("error");
         log.setMessage("Column not found");
@@ -196,9 +196,9 @@ class AiPageServiceTest {
     }
 
     @Test
-    void buildUserMessage_defaultsPageId() throws Exception {
+    void buildPhase1Message_defaultsPageId() throws Exception {
         AiPageService service = new TestableAiPageService(null);
-        var method = AiPageService.class.getDeclaredMethod("buildUserMessage", AiChatRequest.class);
+        var method = AiPageService.class.getDeclaredMethod("buildPhase1Message", AiChatRequest.class);
         method.setAccessible(true);
 
         AiChatRequest req = new AiChatRequest();
@@ -207,5 +207,46 @@ class AiPageServiceTest {
 
         String msg = (String) method.invoke(service, req);
         assertTrue(msg.contains("ai-page"));
+    }
+
+    // ── buildIterateRequest 通过反射测试 ────────────────────────────────────
+
+    @Test
+    void buildIterateRequest_populatesFieldsCorrectly() throws Exception {
+        AiPageService service = new TestableAiPageService(null);
+        var method = AiPageService.class.getDeclaredMethod("buildIterateRequest",
+                AiChatRequest.class, Map.class, String.class);
+        method.setAccessible(true);
+
+        AiChatRequest original = new AiChatRequest();
+        original.setAction("generate");
+        original.setPageId("test-page");
+        original.setPrompt("原始需求");
+        original.setLogs(List.of());
+
+        Map<String, String> files = Map.of("rule.json", "[]", "style.css", ".x{}");
+        String explanation = "发现表名不一致";
+
+        AiChatRequest result = (AiChatRequest) method.invoke(service, original, files, explanation);
+
+        assertEquals("iterate", result.getAction());
+        assertEquals("test-page", result.getPageId());
+        assertEquals("原始需求", result.getPrompt());
+        assertTrue(result.getFeedback().contains("发现表名不一致"));
+        assertEquals(files, result.getCurrentFiles());
+        assertNotNull(result.getLogs());
+    }
+
+    // ── AiResponse iterationRound 字段测试 ──────────────────────────────────
+
+    @Test
+    void aiResponse_iterationRoundField() {
+        AiResponse resp = new AiResponse(Map.of("rule.json", "[]"), "说明", false, 2);
+        assertEquals(2, resp.getIterationRound());
+        assertFalse(resp.getNeedsIteration());
+
+        // 3-arg constructor 不设 iterationRound
+        AiResponse errResp = new AiResponse(Map.of(), "err", false);
+        assertNull(errResp.getIterationRound());
     }
 }

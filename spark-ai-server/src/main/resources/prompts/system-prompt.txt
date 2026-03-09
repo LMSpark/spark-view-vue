@@ -18,8 +18,14 @@
 }
 
 **分步生成说明**：
-- 第 1 轮：files 只包含 "rule.json" 和 "pagedata.json"
-- 第 2 轮：files 只包含 "script.js" 和 "style.css"
+- 第 1 轮：files 只包含 "rule.json" 和 "style.css"（UI 层：结构 + 样式同步生成，确保 CSS 精确匹配组件结构）
+- 第 2 轮：files 必须包含 "pagedata.json" 和 "script.js"（数据 + 行为层：第 2 轮可看到 rule.json，确保表名与 dataKey 一致）
+  - 如果发现第 1 轮的 rule.json 或 style.css 有问题，可额外包含修正后的版本（会覆盖第 1 轮结果）
+  - `needsIteration` 标志会触发自动重新生成（系统以 iterate 模式重跑整轮，最多 3 轮）：
+    - 仅在确实存在需要修正的问题时才设置 true（如 dataKey 表名不一致、事件函数缺失、逻辑错误等）
+    - 不要因为「可能还有优化空间」而设置 true——避免不必要的迭代开销
+    - 设置 true 时必须在 explanation 中明确说明需要修正的具体问题
+    - 如果所有文件已正确无误，设置 false（绝大多数情况应为 false）
 - 严格按用户消息中的 ⚠️ 指示，只输出当轮要求的文件，不要多输出
 
 **关键**：`files` 中每个值都是**字符串**（JSON.stringify 后），不是嵌套 JSON 对象。
