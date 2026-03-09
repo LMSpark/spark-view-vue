@@ -6,11 +6,29 @@
  *   r-form   → RendererForm
  *   r-detail → RendererDetail
  *   r-tree   → RendererTree
+ *   r-list   → RendererList
+ *   r-section / r-block → RendererSection
  *
  * 字段组件 type 映射（SPARK 与 Vue 全局保持一致）：
  *   r-text   → FieldText
  *   r-number → FieldNumber
  *   r-date   → FieldDate
+ *   r-select → FieldSelect
+ *   r-multi-select → FieldMultiSelect
+ *   r-radio  → FieldRadio
+ *   r-checkbox → FieldCheckbox
+ *   r-checkbox-group → FieldCheckboxGroup
+ *   r-switch → FieldSwitch
+ *   r-slider → FieldSlider
+ *   r-rate   → FieldRate
+ *   r-color  → FieldColor
+ *   r-icon   → FieldIcon
+ *   r-image  → FieldImage
+ *   r-file-path → FieldFilePath
+ *   r-upload → FieldUpload
+ *   r-cascader → FieldCascader
+ *   r-tree-select → FieldTreeSelect
+ *   r-transfer → FieldTransfer
  */
 import { Spark } from '@spark-view/spark-component'
 import type { GlobModules } from '@spark-view/spark-component'
@@ -20,14 +38,48 @@ export { default as RendererTable } from './renderer-containers/RendererTable.vu
 export { default as RendererForm } from './renderer-containers/RendererForm.vue'
 export { default as RendererDetail } from './renderer-containers/RendererDetail.vue'
 export { default as RendererTree } from './renderer-containers/RendererTree.vue'
+export { default as RendererList } from './renderer-containers/RendererList.vue'
+export { default as RendererSection } from './renderer-containers/RendererSection.vue'
 
 // 字段组件
 import FieldTextComp from './renderer-fields/FieldText.vue'
 import FieldNumberComp from './renderer-fields/FieldNumber.vue'
 import FieldDateComp from './renderer-fields/FieldDate.vue'
+import FieldSelectComp from './renderer-fields/FieldSelect.vue'
+import FieldMultiSelectComp from './renderer-fields/FieldMultiSelect.vue'
+import FieldRadioComp from './renderer-fields/FieldRadio.vue'
+import FieldCheckboxComp from './renderer-fields/FieldCheckbox.vue'
+import FieldCheckboxGroupComp from './renderer-fields/FieldCheckboxGroup.vue'
+import FieldSwitchComp from './renderer-fields/FieldSwitch.vue'
+import FieldSliderComp from './renderer-fields/FieldSlider.vue'
+import FieldRateComp from './renderer-fields/FieldRate.vue'
+import FieldColorComp from './renderer-fields/FieldColor.vue'
+import FieldIconComp from './renderer-fields/FieldIcon.vue'
+import FieldImageComp from './renderer-fields/FieldImage.vue'
+import FieldFilePathComp from './renderer-fields/FieldFilePath.vue'
+import FieldUploadComp from './renderer-fields/FieldUpload.vue'
+import FieldCascaderComp from './renderer-fields/FieldCascader.vue'
+import FieldTreeSelectComp from './renderer-fields/FieldTreeSelect.vue'
+import FieldTransferComp from './renderer-fields/FieldTransfer.vue'
 export { FieldTextComp as FieldText }
 export { FieldNumberComp as FieldNumber }
 export { FieldDateComp as FieldDate }
+export { FieldSelectComp as FieldSelect }
+export { FieldMultiSelectComp as FieldMultiSelect }
+export { FieldRadioComp as FieldRadio }
+export { FieldCheckboxComp as FieldCheckbox }
+export { FieldCheckboxGroupComp as FieldCheckboxGroup }
+export { FieldSwitchComp as FieldSwitch }
+export { FieldSliderComp as FieldSlider }
+export { FieldRateComp as FieldRate }
+export { FieldColorComp as FieldColor }
+export { FieldIconComp as FieldIcon }
+export { FieldImageComp as FieldImage }
+export { FieldFilePathComp as FieldFilePath }
+export { FieldUploadComp as FieldUpload }
+export { FieldCascaderComp as FieldCascader }
+export { FieldTreeSelectComp as FieldTreeSelect }
+export { FieldTransferComp as FieldTransfer }
 
 // ── SPARK 注册 ──
 
@@ -40,6 +92,9 @@ containerReg.registerAll({
   'r-form':   './renderer-containers/RendererForm.vue',
   'r-detail': './renderer-containers/RendererDetail.vue',
   'r-tree':   './renderer-containers/RendererTree.vue',
+  'r-list':   './renderer-containers/RendererList.vue',
+  'r-section': './renderer-containers/RendererSection.vue',
+  'r-block': './renderer-containers/RendererSection.vue',
 })
 
 // 字段组件：同步注册（体积小，且 el-table 要求 el-table-column 同步就绪）
@@ -47,3 +102,19 @@ containerReg.registerAll({
 Spark.register('r-text', FieldTextComp)
 Spark.register('r-number', FieldNumberComp)
 Spark.register('r-date', FieldDateComp)
+Spark.register('r-select', FieldSelectComp)
+Spark.register('r-multi-select', FieldMultiSelectComp)
+Spark.register('r-radio', FieldRadioComp)
+Spark.register('r-checkbox', FieldCheckboxComp)
+Spark.register('r-checkbox-group', FieldCheckboxGroupComp)
+Spark.register('r-switch', FieldSwitchComp)
+Spark.register('r-slider', FieldSliderComp)
+Spark.register('r-rate', FieldRateComp)
+Spark.register('r-color', FieldColorComp)
+Spark.register('r-icon', FieldIconComp)
+Spark.register('r-image', FieldImageComp)
+Spark.register('r-file-path', FieldFilePathComp)
+Spark.register('r-upload', FieldUploadComp)
+Spark.register('r-cascader', FieldCascaderComp)
+Spark.register('r-tree-select', FieldTreeSelectComp)
+Spark.register('r-transfer', FieldTransferComp)

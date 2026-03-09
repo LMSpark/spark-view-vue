@@ -107,10 +107,22 @@ div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
 
 | type | 用途 | dataKey 格式 | 子组件类型 |
 |------|------|-------------|-----------|
-| `r-table` | 数据表格容器 | `Table@rows` | r-text, r-number, r-date |
-| `r-form` | 表单容器 | `Table@currentRow` | r-text, r-number, r-date |
-| `r-detail` | 详情容器 | `Table@currentRow` | r-text, r-number, r-date |
+| `r-table` | 数据表格容器 | `Table@rows` | 已注册的 r-* 字段组件 |
+| `r-form` | 表单容器 | `Table@currentRow` | 已注册的 r-* 字段组件 |
+| `r-detail` | 详情容器 | `Table@currentRow` | 已注册的 r-* 字段组件 |
 | `r-tree` | 树容器 | `Table@rows` | — |
+| `r-list` | 列表/卡片容器 | `Table@rows` | 已注册的 r-* 字段组件 |
+| `r-section` / `r-block` | 分组块容器 | — | 已注册的 r-* 容器、已注册的 r-* 字段组件、Render* |
+
+### 块状容器网格规则
+
+- `r-form`、`r-detail`、`r-list`、`r-section`、`r-block` 内部默认使用 `CSS Grid` 的 24 列布局。
+- 默认水槽为 `0`，也就是组件之间不自动留白；如需间距，通过容器 props 的 `gridGap` 或组件自身样式控制。
+- 子组件默认占满 24 列；通过子组件 `props.colSpan` 可设置跨列数，例如 `12` 表示半行。
+- 子组件可通过 `props.rowSpan` 指定跨行数，例如 `2` 表示占两行网格高度。
+- 容器可选 props：`gridColumns`、`gridGap`、`gridAutoRows`；默认分别为 `24`、`0`、`minmax(32px, auto)`。
+- `r-list` 的外层重复项也使用 24 列；通过 `itemColSpan`、`itemRowSpan` 控制每个列表项占位。
+- `r-section` / `r-block` 可通过 `props.headerActions` 放置头部动作区；值为组件配置数组，常用于 `el-button`。
 
 **SPARK 字段组件**（在 r-* 容器内使用，通过 name 绑定行字段）
 
@@ -119,6 +131,33 @@ div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
 | `r-text` | 文本字段 | `label`；name 来自 rule.name |
 | `r-number` | 数字字段 | `label`；可加 `min, max` |
 | `r-date` | 日期字段 | `label` |
+| `r-select` | 单选下拉 | `label`；`options` |
+| `r-multi-select` | 多选下拉 | `label`；`options` |
+| `r-radio` | 单选组 | `label`；`options` |
+| `r-checkbox` | 单布尔勾选 | `label` |
+| `r-checkbox-group` | 多选组 | `label`；`options` |
+| `r-switch` | 开关布尔字段 | `label` |
+| `r-slider` | 滑块数值字段 | `label`；可加 `min, max, step` |
+| `r-rate` | 评分字段 | `label` |
+| `r-cascader` | 级联选择 | `label`；`options` |
+| `r-tree-select` | 树形选择 | `label`；`options` |
+| `r-transfer` | 穿梭框多选 | `label`；`options` |
+| `r-color` | 颜色字段 | `label` |
+| `r-icon` | 图标选择/显示 | `label`；建议配 `options` |
+| `r-image` | 图片地址展示 | `label` |
+| `r-file-path` | 文件路径字段 | `label` |
+| `r-upload` | 上传字段 | `label` |
+
+### 字段分组建议
+
+| 分组 | 推荐组件 |
+|------|---------|
+| 基础输入 | `r-text`, `r-number`, `r-date` |
+| 枚举选择 | `r-select`, `r-multi-select`, `r-radio`, `r-checkbox-group` |
+| 布尔状态 | `r-checkbox`, `r-switch` |
+| 数值交互 | `r-slider`, `r-rate` |
+| 树形/集合选择 | `r-cascader`, `r-tree-select`, `r-transfer` |
+| 资源展示/选择 | `r-color`, `r-icon`, `r-image`, `r-file-path`, `r-upload` |
 
 **Render* 组件**（script.js 中定义的渲染函数，函数名即 type）
 type = Render 开头的函数名，如 `RenderTable`, `RenderToolbar`, `RenderNodeInfo`
@@ -151,7 +190,10 @@ vxe-table, vxe-column 等（需已注册）
   "props": { "border": true, "stripe": true, "highlightCurrentRow": true },
   "children": [
     { "type": "r-text", "name": "name", "props": { "label": "姓名", "width": 120 } },
-    { "type": "r-number", "name": "age", "props": { "label": "年龄", "width": 100 } }
+    { "type": "r-number", "name": "age", "props": { "label": "年龄", "width": 100 } },
+    { "type": "r-select", "name": "status", "props": { "label": "状态", "width": 120, "options": [{ "label": "启用", "value": 1 }, { "label": "停用", "value": 0 }] } },
+    { "type": "r-switch", "name": "enabled", "props": { "label": "启用", "width": 100 } },
+    { "type": "r-tree-select", "name": "orgId", "props": { "label": "部门", "width": 160, "options": [{ "label": "总部", "value": 1, "children": [{ "label": "研发部", "value": 11 }] }] } }
   ]
 }
 ```
@@ -163,8 +205,55 @@ vxe-table, vxe-column 等（需已注册）
   "dataKey": "users@currentRow",
   "props": { "labelWidth": "100px" },
   "children": [
-    { "type": "r-text", "name": "name", "props": { "label": "姓名" } },
-    { "type": "r-number", "name": "age", "props": { "label": "年龄", "min": 0, "max": 150 } }
+    { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
+    { "type": "r-number", "name": "age", "props": { "label": "年龄", "min": 0, "max": 150, "colSpan": 12 } },
+    { "type": "r-date", "name": "birthday", "props": { "label": "生日" } },
+    { "type": "r-radio", "name": "gender", "props": { "label": "性别", "options": [{ "label": "男", "value": "M" }, { "label": "女", "value": "F" }] } },
+    { "type": "r-rate", "name": "score", "props": { "label": "评分", "colSpan": 8 } },
+    { "type": "r-cascader", "name": "region", "props": { "label": "地区", "colSpan": 16, "options": [{ "label": "华东", "value": "east", "children": [{ "label": "上海", "value": "sh" }] }] } },
+    { "type": "r-transfer", "name": "roleIds", "props": { "label": "角色", "options": [{ "label": "管理员", "value": 1 }, { "label": "审计员", "value": 2 }] } },
+    { "type": "r-upload", "name": "avatar", "props": { "label": "头像", "colSpan": 24, "rowSpan": 2 } }
+  ]
+}
+```
+
+**r-list 内部放 r-* 字段组件**：
+```json
+{
+  "type": "r-list",
+  "dataKey": "users@rows",
+  "props": { "useCard": true, "rowKey": "id", "gridColumns": 24, "gridGap": 0, "itemColSpan": 12, "itemRowSpan": 1 },
+  "children": [
+    { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
+    { "type": "r-number", "name": "age", "props": { "label": "年龄", "colSpan": 12 } },
+    { "type": "r-select", "name": "status", "props": { "label": "状态", "colSpan": 8, "options": [{ "label": "启用", "value": 1 }, { "label": "停用", "value": 0 }] } },
+    { "type": "r-upload", "name": "avatar", "props": { "label": "头像", "colSpan": 16, "rowSpan": 2 } }
+  ]
+}
+```
+
+**r-section / r-block 用于标题分组、折叠和块内网格**：
+```json
+{
+  "type": "r-section",
+  "props": {
+    "title": "基础信息",
+    "description": "用于编辑主档字段",
+    "collapsible": true,
+    "useCard": true,
+    "headerActions": [
+      { "type": "el-button", "props": { "type": "primary", "size": "small" }, "on": { "click": "handleSave" }, "children": ["保存"] },
+      { "type": "el-button", "props": { "size": "small" }, "on": { "click": "handlePreview" }, "children": ["预览"] }
+    ]
+  },
+  "children": [
+    { "type": "r-form", "dataKey": "Users@currentRow", "props": { "labelWidth": "88px", "colSpan": 16 }, "children": [
+      { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
+      { "type": "r-date", "name": "birthday", "props": { "label": "生日", "colSpan": 12 } }
+    ] },
+    { "type": "r-detail", "dataKey": "Users@currentRow", "props": { "colSpan": 8 }, "children": [
+      { "type": "r-upload", "name": "avatar", "props": { "label": "头像" } }
+    ] }
   ]
 }
 ```

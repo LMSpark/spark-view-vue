@@ -273,18 +273,55 @@ async function startApp() {
           RendererForm,
           RendererDetail,
           RendererTree,
+          RendererList,
+          RendererSection,
           FieldText,
           FieldNumber,
-          FieldDate
+          FieldDate,
+          FieldSelect,
+          FieldMultiSelect,
+          FieldRadio,
+          FieldCheckbox,
+          FieldCheckboxGroup,
+          FieldSwitch,
+          FieldSlider,
+          FieldRate,
+          FieldColor,
+          FieldIcon,
+          FieldImage,
+          FieldFilePath,
+          FieldUpload,
+          FieldCascader,
+          FieldTreeSelect,
+          FieldTransfer
         } = await import('./components/renderer-components')
         
         app.component('r-table', RendererTable)
         app.component('r-form', RendererForm)
         app.component('r-detail', RendererDetail)
         app.component('r-tree', RendererTree)
+        app.component('r-list', RendererList)
+        app.component('r-section', RendererSection)
+        app.component('r-block', RendererSection)
         app.component('r-text', FieldText)
         app.component('r-number', FieldNumber)
         app.component('r-date', FieldDate)
+        app.component('r-select', FieldSelect)
+        app.component('r-multi-select', FieldMultiSelect)
+        app.component('r-radio', FieldRadio)
+        app.component('r-checkbox', FieldCheckbox)
+        app.component('r-checkbox-group', FieldCheckboxGroup)
+        app.component('r-switch', FieldSwitch)
+        app.component('r-slider', FieldSlider)
+        app.component('r-rate', FieldRate)
+        app.component('r-color', FieldColor)
+        app.component('r-icon', FieldIcon)
+        app.component('r-image', FieldImage)
+        app.component('r-file-path', FieldFilePath)
+        app.component('r-upload', FieldUpload)
+        app.component('r-cascader', FieldCascader)
+        app.component('r-tree-select', FieldTreeSelect)
+        app.component('r-transfer', FieldTransfer)
         
         // 示例：使用包提供的运行时自动注册工具
         // 这段代码演示了在项目根的 `src/main.ts` 中直接调用

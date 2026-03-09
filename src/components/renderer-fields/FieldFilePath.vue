@@ -1,35 +1,28 @@
 <template>
-  <!-- 在 table 中：渲染为 el-table-column -->
   <template v-if="context === 'table'">
-    <el-table-column
-      :label="displayLabel"
-      :prop="fieldName"
-      :width="width"
-    >
+    <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
       <template #default="{ row }">
-        <span v-if="!isTableCellHidden(row)">{{ getTableCellDisplayValue(row) }}</span>
+        <span v-if="!isTableCellHidden(row)" class="file-path">{{ getTableCellDisplayValue(row) }}</span>
       </template>
     </el-table-column>
   </template>
 
-  <!-- 在 form 中：渲染为 el-form-item + el-input -->
   <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
     <el-input
-      :model-value="fieldValue as string"
+      :model-value="fieldValue"
       :disabled="!isCurrentFieldEditable"
+      placeholder="请输入文件路径"
       @update:model-value="handleChange"
     />
   </el-form-item>
 
-  <!-- 在 tree 中：渲染为树节点的文本内容 -->
   <template v-else-if="context === 'tree'">
-    <span v-if="!isCurrentFieldHidden" class="tree-node-text">{{ currentDisplayValue }}</span>
+    <span v-if="!isCurrentFieldHidden" class="file-path">{{ currentDisplayValue }}</span>
   </template>
 
-  <!-- 在 detail 或其他上下文中：只读展示 -->
   <div v-else-if="!isCurrentFieldHidden" class="field-display">
     <span class="field-label">{{ displayLabel }}：</span>
-    <span class="field-value">{{ currentDisplayValue }}</span>
+    <span class="field-value file-path">{{ currentDisplayValue }}</span>
   </div>
 </template>
 
@@ -39,9 +32,7 @@ import { useFieldPermission } from './useFieldPermission'
 
 interface Props {
   config?: ComponentConfig
-  /** 字段名（form-create 路径透传；SparkComponentRenderer 路径从 config.name 读取） */
   name?: string
-  /** 显示标签（可选，默认回退到 name） */
   label?: string
   width?: number
   modelValue?: string
@@ -66,13 +57,14 @@ const {
   syncValue,
 } = useFieldPermission<string>({
   props,
-  type: 'r-text',
+  type: 'r-file-path',
   fallbackValue: '',
+  formatDisplay: value => String(value ?? ''),
 })
 
-const handleChange = (val: string) => {
-  emit('update:modelValue', val)
-  syncValue(val)
+function handleChange(value: string): void {
+  emit('update:modelValue', value)
+  syncValue(value)
 }
 </script>
 
@@ -88,5 +80,9 @@ const handleChange = (val: string) => {
 }
 .field-value {
   color: #303133;
+}
+.file-path {
+  font-family: Consolas, 'Courier New', monospace;
+  word-break: break-all;
 }
 </style>

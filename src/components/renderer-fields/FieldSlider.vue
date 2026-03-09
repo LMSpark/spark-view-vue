@@ -1,34 +1,28 @@
 <template>
-  <!-- 在 table 中：渲染为 el-table-column -->
   <template v-if="context === 'table'">
-    <el-table-column
-      :label="displayLabel"
-      :prop="fieldName"
-      :width="width"
-    >
+    <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
       <template #default="{ row }">
         <span v-if="!isTableCellHidden(row)">{{ getTableCellDisplayValue(row) }}</span>
       </template>
     </el-table-column>
   </template>
 
-  <!-- 在 form 中：渲染为 el-form-item + el-input-number -->
   <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
-    <el-input-number
-      :model-value="fieldValue as number"
+    <el-slider
+      :model-value="fieldValue"
       :min="min"
       :max="max"
+      :step="step"
       :disabled="!isCurrentFieldEditable"
+      :show-input="showInput"
       @update:model-value="handleChange"
     />
   </el-form-item>
 
-  <!-- 在 tree 中：渲染为树节点的数字内容 -->
   <template v-else-if="context === 'tree'">
-    <span v-if="!isCurrentFieldHidden" class="tree-node-number">{{ currentDisplayValue }}</span>
+    <span v-if="!isCurrentFieldHidden" class="tree-node-text">{{ currentDisplayValue }}</span>
   </template>
 
-  <!-- 在 detail 或其他上下文中：只读展示 -->
   <div v-else-if="!isCurrentFieldHidden" class="field-display">
     <span class="field-label">{{ displayLabel }}：</span>
     <span class="field-value">{{ currentDisplayValue }}</span>
@@ -41,27 +35,26 @@ import { useFieldPermission } from './useFieldPermission'
 
 interface Props {
   config?: ComponentConfig
-  /** 字段名（form-create 路径透传；SparkComponentRenderer 路径从 config.name 读取） */
   name?: string
-  /** 显示标签（可选，默认回退到 name） */
   label?: string
   width?: number
   modelValue?: number
   min?: number
   max?: number
+  step?: number
+  showInput?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  min: 0,
+  max: 100,
+  step: 1,
+  showInput: false,
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: number]
 }>()
-
-function formatNumberValue(value: unknown): string {
-  if (typeof value === 'number') return String(value)
-  if (value === null || value === undefined || value === '') return '0'
-  return String(value)
-}
 
 const {
   fieldName,
@@ -76,15 +69,16 @@ const {
   syncValue,
 } = useFieldPermission<number>({
   props,
-  type: 'r-number',
+  type: 'r-slider',
   fallbackValue: 0,
-  formatDisplay: formatNumberValue,
+  formatDisplay: value => String(value ?? 0),
 })
 
-const handleChange = (val: number) => {
-  emit('update:modelValue', val)
-  syncValue(val)
+function handleChange(value: number): void {
+  emit('update:modelValue', value)
+  syncValue(value)
 }
+
 </script>
 
 <style scoped>

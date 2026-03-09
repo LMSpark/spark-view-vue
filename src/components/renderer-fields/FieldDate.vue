@@ -1,50 +1,43 @@
 <template>
   <!-- 在 table 中：渲染为 el-table-column -->
-  <el-table-column
-    v-if="context === 'table'"
-    :label="displayLabel"
-    :prop="fieldName"
-    :width="width"
-  />
+  <template v-if="context === 'table'">
+    <el-table-column
+      :label="displayLabel"
+      :prop="fieldName"
+      :width="width"
+    >
+      <template #default="{ row }">
+        <span v-if="!isTableCellHidden(row)">{{ getTableCellDisplayValue(row) }}</span>
+      </template>
+    </el-table-column>
+  </template>
 
   <!-- 在 form 中：渲染为 el-form-item + el-date-picker -->
-  <el-form-item v-else-if="context === 'form'" :label="displayLabel">
+  <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
     <el-date-picker
       :model-value="fieldValue as string | Date"
       type="date"
       placeholder="选择日期"
+      :disabled="!isCurrentFieldEditable"
       @update:model-value="handleChange"
     />
   </el-form-item>
 
   <!-- 在 tree 中：渲染为树节点的日期内容 -->
   <template v-else-if="context === 'tree'">
-    <span class="tree-node-date">{{ displayValue }}</span>
+    <span v-if="!isCurrentFieldHidden" class="tree-node-date">{{ currentDisplayValue }}</span>
   </template>
 
   <!-- 在 detail 或其他上下文中：只读展示 -->
-  <div v-else class="field-display">
+  <div v-else-if="!isCurrentFieldHidden" class="field-display">
     <span class="field-label">{{ displayLabel }}：</span>
-    <span class="field-value">{{ displayValue }}</span>
+    <span class="field-value">{{ currentDisplayValue }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
-/**
- * FieldDate - 智能日期字段组件
- *
- * config.name = 字段名（与父组件 dataKey 叠加定位数据）
- * config.props.label = 显示标签（可选，默认回退到 name）
- *
- * 根据父容器注入的 fieldContext 自动适配渲染方式：
- * - table → el-table-column（prop = name）
- * - form  → el-form-item + el-date-picker
- * - 其他  → 只读日期展示
- */
-import { computed } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
+import { useFieldPermission } from './useFieldPermission'
 
 interface Props {
   config?: ComponentConfig
@@ -62,37 +55,34 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | Date]
 }>()
 
-// 字段名：config.name（SparkComponentRenderer）> props.name（form-create bindRules 透传）
-const fieldName = computed(() => props.config?.name ?? props.name ?? '')
-// 显示标签：label > name
-const displayLabel = computed(() => props.label ?? fieldName.value)
+function formatDateValue(value: unknown): string {
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  if (value instanceof Date) return value.toLocaleDateString()
+  return String(value)
+}
 
-// 从 SPARK 能力链消费父容器提供的上下文
-const { consume } = useSparkComponent(props.config ?? { type: 'r-date' })
-const context = consume(FIELD_CONTEXT) ?? 'detail'
-const contextData = consume(CONTEXT_DATA) ?? {}
-
-// 字段值：优先 modelValue，其次从 contextData[name] 取
-const fieldValue = computed(() => {
-  if (props.modelValue !== undefined) return props.modelValue
-  if (contextData && fieldName.value) return contextData[fieldName.value] as string
-  return ''
-})
-
-// 显示值（detail 模式格式化）
-const displayValue = computed(() => {
-  const v = fieldValue.value
-  if (!v) return ''
-  if (typeof v === 'string') return v
-  if (v instanceof Date) return v.toLocaleDateString()
-  return String(v)
+const {
+  fieldName,
+  displayLabel,
+  context,
+  fieldValue,
+  isCurrentFieldHidden,
+  isCurrentFieldEditable,
+  currentDisplayValue,
+  isTableCellHidden,
+  getTableCellDisplayValue,
+  syncValue,
+} = useFieldPermission<string | Date>({
+  props,
+  type: 'r-date',
+  fallbackValue: '',
+  formatDisplay: formatDateValue,
 })
 
 const handleChange = (val: string | Date) => {
   emit('update:modelValue', val)
-  if (contextData && fieldName.value) {
-    contextData[fieldName.value] = val
-  }
+  syncValue(val)
 }
 </script>
 

@@ -1,32 +1,38 @@
 <template>
-  <!-- 在 table 中：渲染为 el-table-column -->
   <template v-if="context === 'table'">
-    <el-table-column
-      :label="displayLabel"
-      :prop="fieldName"
-      :width="width"
-    >
+    <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
       <template #default="{ row }">
         <span v-if="!isTableCellHidden(row)">{{ getTableCellDisplayValue(row) }}</span>
       </template>
     </el-table-column>
   </template>
 
-  <!-- 在 form 中：渲染为 el-form-item + el-input -->
   <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
-    <el-input
-      :model-value="fieldValue as string"
+    <el-select
+      :model-value="fieldValue"
+      :placeholder="placeholder"
+      :clearable="clearable"
+      :filterable="filterable"
       :disabled="!isCurrentFieldEditable"
+      multiple
+      collapse-tags
+      collapse-tags-tooltip
       @update:model-value="handleChange"
-    />
+    >
+      <el-option
+        v-for="option in options"
+        :key="String(option.value)"
+        :label="option.label"
+        :value="option.value"
+        :disabled="option.disabled"
+      />
+    </el-select>
   </el-form-item>
 
-  <!-- 在 tree 中：渲染为树节点的文本内容 -->
   <template v-else-if="context === 'tree'">
     <span v-if="!isCurrentFieldHidden" class="tree-node-text">{{ currentDisplayValue }}</span>
   </template>
 
-  <!-- 在 detail 或其他上下文中：只读展示 -->
   <div v-else-if="!isCurrentFieldHidden" class="field-display">
     <span class="field-label">{{ displayLabel }}：</span>
     <span class="field-value">{{ currentDisplayValue }}</span>
@@ -34,25 +40,37 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentConfig } from '@spark-view/spark-component'
 import { useFieldPermission } from './useFieldPermission'
+import { useFieldOptions } from './useFieldOptions'
+import type { ComponentConfig } from '@spark-view/spark-component'
+
+type MultiValue = Array<string | number | boolean>
 
 interface Props {
   config?: ComponentConfig
-  /** 字段名（form-create 路径透传；SparkComponentRenderer 路径从 config.name 读取） */
   name?: string
-  /** 显示标签（可选，默认回退到 name） */
   label?: string
   width?: number
-  modelValue?: string
+  modelValue?: MultiValue
+  options?: unknown[]
+  optionLabelField?: string
+  optionValueField?: string
+  placeholder?: string
+  clearable?: boolean
+  filterable?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  placeholder: '请选择',
+  clearable: true,
+  filterable: false,
+})
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  'update:modelValue': [value: MultiValue]
 }>()
 
+const { options, formatOptionValue } = useFieldOptions(props)
 const {
   fieldName,
   displayLabel,
@@ -64,16 +82,18 @@ const {
   isTableCellHidden,
   getTableCellDisplayValue,
   syncValue,
-} = useFieldPermission<string>({
+} = useFieldPermission<MultiValue>({
   props,
-  type: 'r-text',
-  fallbackValue: '',
+  type: 'r-multi-select',
+  fallbackValue: [],
+  formatDisplay: formatOptionValue,
 })
 
-const handleChange = (val: string) => {
-  emit('update:modelValue', val)
-  syncValue(val)
+function handleChange(value: MultiValue): void {
+  emit('update:modelValue', value)
+  syncValue(value)
 }
+
 </script>
 
 <style scoped>

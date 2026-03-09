@@ -11,6 +11,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,8 +34,10 @@ public class ComponentMetadataService {
     private final ObjectMapper objectMapper;
 
     private final AtomicReference<String> rawMetadata = new AtomicReference<>(null);
+    private final AtomicReference<String> skillPromptIndex = new AtomicReference<>(null);
     private final AtomicReference<String> skillPromptCompact = new AtomicReference<>(null);
     private final AtomicReference<String> skillPromptFull = new AtomicReference<>(null);
+    private final AtomicReference<Map<String, String>> skillPromptByType = new AtomicReference<>(Map.of());
     private final AtomicReference<String> buildTime = new AtomicReference<>(null);
 
     public ComponentMetadataService(ObjectMapper objectMapper) {
@@ -80,14 +86,30 @@ public class ComponentMetadataService {
             int skillCount = metadata.get("skillCount") instanceof Number n ? n.intValue() : 0;
 
             if (metadata.get("skillPrompts") instanceof Map<?, ?> prompts) {
+                Object index = prompts.get("index");
                 Object compact = prompts.get("compact");
                 Object full = prompts.get("full");
+                skillPromptIndex.set(index instanceof String s ? s : null);
                 if (compact instanceof String s) {
                     skillPromptCompact.set(s);
+                } else {
+                    skillPromptCompact.set(null);
                 }
                 if (full instanceof String s) {
                     skillPromptFull.set(s);
+                } else {
+                    skillPromptFull.set(null);
                 }
+            } else {
+                skillPromptIndex.set(null);
+                skillPromptCompact.set(null);
+                skillPromptFull.set(null);
+            }
+
+            if (metadata.get("skills") instanceof List<?> skills) {
+                skillPromptByType.set(buildSkillPromptByType(skills));
+            } else {
+                skillPromptByType.set(Map.of());
             }
 
             rawMetadata.set(json);
@@ -129,10 +151,54 @@ public class ComponentMetadataService {
     }
 
     /**
+     * 获取 Skill Prompt 索引（最短摘要）。
+     */
+    public String getSkillPromptIndex() {
+        return skillPromptIndex.get();
+    }
+
+    /**
      * 获取 Skill Prompt（full 模式）。
      */
     public String getSkillPromptFull() {
         return skillPromptFull.get();
+    }
+
+    /**
+     * 按 skill type 获取相关详情片段。
+     */
+    public String getSkillPromptForTypes(Collection<String> types) {
+        if (types == null || types.isEmpty()) {
+            return null;
+        }
+
+        Map<String, String> prompts = skillPromptByType.get();
+        if (prompts == null || prompts.isEmpty()) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder("## 本次需求相关 Skill 详情\n\n");
+        boolean appended = false;
+        LinkedHashSet<String> orderedTypes = new LinkedHashSet<>();
+        for (String type : types) {
+            if (type != null && !type.isBlank()) {
+                orderedTypes.add(type);
+            }
+        }
+
+        for (String type : orderedTypes) {
+            String prompt = prompts.get(type);
+            if (prompt == null || prompt.isBlank()) {
+                continue;
+            }
+            if (appended) {
+                sb.append("\n\n");
+            }
+            sb.append(prompt);
+            appended = true;
+        }
+
+        return appended ? sb.toString() : null;
     }
 
     /**
@@ -154,5 +220,89 @@ public class ComponentMetadataService {
      */
     public boolean hasMetadata() {
         return rawMetadata.get() != null;
+    }
+
+    private Map<String, String> buildSkillPromptByType(List<?> skills) {
+        Map<String, String> prompts = new LinkedHashMap<>();
+        for (Object entry : skills) {
+            if (!(entry instanceof Map<?, ?> skill)) {
+                continue;
+            }
+            Object rawType = skill.get("type");
+            if (!(rawType instanceof String type) || type.isBlank()) {
+                continue;
+            }
+            String prompt = buildSkillPrompt(type, skill);
+            if (!prompt.isBlank()) {
+                prompts.put(type, prompt);
+            }
+        }
+        return Map.copyOf(prompts);
+    }
+
+    private String buildSkillPrompt(String type, Map<?, ?> skill) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("### `").append(type).append("`\n");
+
+        String description = asTrimmedString(skill.get("description"));
+        if (!description.isBlank()) {
+            sb.append("> ").append(description).append("\n");
+        }
+
+        appendCapabilityLine(sb, "依赖能力（consumes）", toStringList(skill.get("consumes")));
+        appendCapabilityLine(sb, "提供能力（provides）", toStringList(skill.get("provides")));
+
+        String inputSchema = asTrimmedString(skill.get("inputSchema"));
+        if (!inputSchema.isBlank()) {
+            sb.append("- **输入参数**: `").append(inputSchema).append("`\n");
+        }
+
+        String example = asTrimmedString(skill.get("example"));
+        if (!example.isBlank()) {
+            if (looksLikeJson(example)) {
+                sb.append("- **调用示例**:\n```json\n")
+                  .append(example)
+                  .append("\n```\n");
+            } else {
+                sb.append("- **调用示例**: ").append(example).append("\n");
+            }
+        }
+
+        return sb.toString().trim();
+    }
+
+    private void appendCapabilityLine(StringBuilder sb, String label, List<String> values) {
+        if (values.isEmpty()) {
+            return;
+        }
+        sb.append("- **").append(label).append("**: ");
+        for (int index = 0; index < values.size(); index++) {
+            if (index > 0) {
+                sb.append(", ");
+            }
+            sb.append('`').append(values.get(index)).append('`');
+        }
+        sb.append("\n");
+    }
+
+    private List<String> toStringList(Object value) {
+        if (!(value instanceof List<?> list) || list.isEmpty()) {
+            return List.of();
+        }
+        return list.stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .toList();
+    }
+
+    private String asTrimmedString(Object value) {
+        return value instanceof String text ? text.trim() : "";
+    }
+
+    private boolean looksLikeJson(String value) {
+        String trimmed = value.trim();
+        return trimmed.startsWith("{") || trimmed.startsWith("[");
     }
 }

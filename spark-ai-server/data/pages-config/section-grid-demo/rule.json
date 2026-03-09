@@ -1,0 +1,350 @@
+[
+    {
+        "type": "div",
+        "class": "section-grid-demo",
+        "children": [
+            {
+                "type": "el-alert",
+                "props": {
+                    "title": "本页演示 r-section / r-block 的 headerActions，以及块状容器与 r-list 的 24 栅格跨度能力。",
+                    "type": "info",
+                    "closable": false,
+                    "showIcon": true
+                },
+                "style": {
+                    "marginBottom": "16px"
+                }
+            },
+            {
+                "type": "r-section",
+                "props": {
+                    "title": "当前成员档案",
+                    "description": "头部动作区和主体内容分离，块内子组件按 24 栅格自动排布。",
+                    "useCard": true,
+                    "cardShadow": "never",
+                    "headerActions": [
+                        {
+                            "type": "el-button",
+                            "props": {
+                                "type": "primary",
+                                "size": "small"
+                            },
+                            "on": {
+                                "click": "focusFirstProfile"
+                            },
+                            "children": [
+                                "定位首条"
+                            ]
+                        },
+                        {
+                            "type": "el-button",
+                            "props": {
+                                "size": "small"
+                            },
+                            "on": {
+                                "click": "showGridRules"
+                            },
+                            "children": [
+                                "布局说明"
+                            ]
+                        }
+                    ]
+                },
+                "children": [
+                    {
+                        "type": "el-alert",
+                        "props": {
+                            "title": "左侧表单占 16 列，右侧详情占 8 列。切换 currentRow 后，两边会同步刷新。",
+                            "type": "success",
+                            "closable": false,
+                            "showIcon": true,
+                            "colSpan": 24
+                        }
+                    },
+                    {
+                        "type": "r-form",
+                        "dataKey": "profiles@currentRow",
+                        "props": {
+                            "labelWidth": "88px",
+                            "colSpan": 16
+                        },
+                        "children": [
+                            {
+                                "type": "r-text",
+                                "name": "name",
+                                "props": {
+                                    "label": "姓名",
+                                    "colSpan": 8
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "name": "title",
+                                "props": {
+                                    "label": "岗位",
+                                    "colSpan": 8
+                                }
+                            },
+                            {
+                                "type": "r-date",
+                                "name": "joinDate",
+                                "props": {
+                                    "label": "入职日期",
+                                    "colSpan": 8
+                                }
+                            },
+                            {
+                                "type": "r-select",
+                                "name": "region",
+                                "props": {
+                                    "label": "区域",
+                                    "colSpan": 8,
+                                    "options": [
+                                        {
+                                            "label": "华东",
+                                            "value": "east"
+                                        },
+                                        {
+                                            "label": "华北",
+                                            "value": "north"
+                                        },
+                                        {
+                                            "label": "华南",
+                                            "value": "south"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "r-radio",
+                                "name": "level",
+                                "props": {
+                                    "label": "级别",
+                                    "colSpan": 8,
+                                    "buttonStyle": true,
+                                    "options": [
+                                        {
+                                            "label": "P5",
+                                            "value": "P5"
+                                        },
+                                        {
+                                            "label": "P6",
+                                            "value": "P6"
+                                        },
+                                        {
+                                            "label": "P7",
+                                            "value": "P7"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "r-switch",
+                                "name": "active",
+                                "props": {
+                                    "label": "状态",
+                                    "colSpan": 8,
+                                    "activeText": "在岗",
+                                    "inactiveText": "暂停"
+                                }
+                            },
+                            {
+                                "type": "r-rate",
+                                "name": "score",
+                                "props": {
+                                    "label": "评分",
+                                    "colSpan": 8,
+                                    "allowHalf": true
+                                }
+                            },
+                            {
+                                "type": "r-slider",
+                                "name": "load",
+                                "props": {
+                                    "label": "负载",
+                                    "colSpan": 16,
+                                    "showInput": true,
+                                    "min": 0,
+                                    "max": 100
+                                }
+                            },
+                            {
+                                "type": "r-checkbox",
+                                "name": "mentor",
+                                "props": {
+                                    "label": "导师职责",
+                                    "colSpan": 24,
+                                    "checkboxText": "承担新人带教"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "r-detail",
+                        "dataKey": "profiles@currentRow",
+                        "props": {
+                            "colSpan": 8,
+                            "rowSpan": 2
+                        },
+                        "children": [
+                            {
+                                "type": "r-image",
+                                "name": "avatar",
+                                "props": {
+                                    "label": "头像"
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "name": "summary",
+                                "props": {
+                                    "label": "简介"
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "name": "city",
+                                "props": {
+                                    "label": "城市"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "r-block",
+                "style": {
+                    "marginTop": "16px"
+                },
+                "props": {
+                    "title": "成员卡片墙",
+                    "description": "外层 item 通过 itemColSpan 控制占位，item 内部继续用字段级 colSpan / rowSpan。",
+                    "useCard": true,
+                    "cardShadow": "never",
+                    "headerActions": [
+                        {
+                            "type": "el-button",
+                            "props": {
+                                "type": "primary",
+                                "plain": true,
+                                "size": "small"
+                            },
+                            "on": {
+                                "click": "focusLastProfile"
+                            },
+                            "children": [
+                                "定位末条"
+                            ]
+                        },
+                        {
+                            "type": "el-button",
+                            "props": {
+                                "size": "small"
+                            },
+                            "on": {
+                                "click": "announceCurrentProfile"
+                            },
+                            "children": [
+                                "当前成员"
+                            ]
+                        }
+                    ]
+                },
+                "children": [
+                    {
+                        "type": "r-list",
+                        "dataKey": "profiles@rows",
+                        "props": {
+                            "colSpan": 24,
+                            "useCard": true,
+                            "cardShadow": "hover",
+                            "itemColSpan": 12,
+                            "itemRowSpan": 1,
+                            "gridColumns": 24,
+                            "gridGap": 0,
+                            "itemClass": "section-grid-demo__list-item"
+                        },
+                        "children": [
+                            {
+                                "type": "r-image",
+                                "name": "avatar",
+                                "props": {
+                                    "label": "头像",
+                                    "colSpan": 8,
+                                    "rowSpan": 2
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "name": "name",
+                                "props": {
+                                    "label": "姓名",
+                                    "colSpan": 8
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "name": "title",
+                                "props": {
+                                    "label": "岗位",
+                                    "colSpan": 8
+                                }
+                            },
+                            {
+                                "type": "r-select",
+                                "name": "region",
+                                "props": {
+                                    "label": "区域",
+                                    "colSpan": 8,
+                                    "options": [
+                                        {
+                                            "label": "华东",
+                                            "value": "east"
+                                        },
+                                        {
+                                            "label": "华北",
+                                            "value": "north"
+                                        },
+                                        {
+                                            "label": "华南",
+                                            "value": "south"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "r-rate",
+                                "name": "score",
+                                "props": {
+                                    "label": "评分",
+                                    "colSpan": 8,
+                                    "allowHalf": true
+                                }
+                            },
+                            {
+                                "type": "r-switch",
+                                "name": "active",
+                                "props": {
+                                    "label": "状态",
+                                    "colSpan": 8,
+                                    "activeText": "在岗",
+                                    "inactiveText": "暂停"
+                                }
+                            },
+                            {
+                                "type": "r-text",
+                                "name": "summary",
+                                "props": {
+                                    "label": "简介",
+                                    "colSpan": 16,
+                                    "rowSpan": 2
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

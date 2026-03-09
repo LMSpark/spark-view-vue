@@ -44,7 +44,8 @@ import { type BindingContext, EMPTY_CONTEXT, buildChildContext, DATA_CONTAINER_T
  *
  * @see isSelfResolvingType — 查询逻辑（注册表优先，此 Set 为后备）
  */
-const _SELF_RESOLVING_FALLBACK = new Set(['r-table', 'r-form', 'r-detail', 'r-tree'])
+const _SELF_RESOLVING_FALLBACK = new Set(['r-table', 'r-form', 'r-detail', 'r-tree', 'r-list', 'r-section', 'r-block'])
+const _COMPONENT_ARRAY_PROP_KEYS = new Set(['headerActions'])
 
 /** 分页组件类型集合 */
 const PAGINATION_TYPES = new Set(['el-pagination'])
@@ -159,6 +160,22 @@ function bindRulesRecursive(
       parentContext,
       resolvedDataSource
     )
+
+    if (newRule.props && typeof newRule.props === 'object') {
+      for (const key of _COMPONENT_ARRAY_PROP_KEYS) {
+        const rawValue = newRule.props[key]
+        if (!Array.isArray(rawValue)) continue
+        const nestedRules = rawValue.filter(
+          (item: unknown): item is BindRule => typeof item === 'object' && item !== null && 'type' in item
+        )
+        if (nestedRules.length === 0) continue
+        newRule.props[key] = bindRulesRecursive(
+          { ...options, rules: nestedRules },
+          childContext,
+          callFunc
+        )
+      }
+    }
 
     // ── 递归处理子元素（传递更新后的上下文） ──
     if (newRule.children && Array.isArray(newRule.children)) {

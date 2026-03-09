@@ -2,7 +2,7 @@
  * Renderer 组件层能力键定义
  *
  * 用 SPARK 能力系统替代 Vue provide/inject：
- * - FIELD_CONTEXT：容器告知字段组件当前渲染上下文（table/form/detail/tree）
+ * - FIELD_CONTEXT：容器告知字段组件当前渲染上下文（table/form/detail/tree/list）
  * - CONTEXT_DATA ：容器向字段组件提供可写的响应式数据对象
  *
  * @example
@@ -19,12 +19,12 @@
 import { defineCapability } from '@spark-view/spark-utils'
 
 /** 字段渲染上下文类型 */
-export type FieldContext = 'table' | 'form' | 'detail' | 'tree'
+export type FieldContext = 'table' | 'form' | 'detail' | 'tree' | 'list'
 
 // 将本层自定义能力合并到 CapabilityTypeMap，消费方按字符串名称即可得到精确类型。
 declare module '@spark-view/spark-utils' {
   interface CapabilityTypeMap {
-    /** 容器告知字段组件当前渲染上下文（table/form/detail/tree） */
+    /** 容器告知字段组件当前渲染上下文（table/form/detail/tree/list） */
     'app:field-context': FieldContext
     /** 容器向字段组件提供可写的响应式数据对象 */
     'app:context-data': Record<string, unknown>

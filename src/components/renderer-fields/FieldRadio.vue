@@ -1,32 +1,30 @@
 <template>
-  <!-- 在 table 中：渲染为 el-table-column -->
   <template v-if="context === 'table'">
-    <el-table-column
-      :label="displayLabel"
-      :prop="fieldName"
-      :width="width"
-    >
+    <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
       <template #default="{ row }">
         <span v-if="!isTableCellHidden(row)">{{ getTableCellDisplayValue(row) }}</span>
       </template>
     </el-table-column>
   </template>
 
-  <!-- 在 form 中：渲染为 el-form-item + el-input -->
   <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
-    <el-input
-      :model-value="fieldValue as string"
-      :disabled="!isCurrentFieldEditable"
-      @update:model-value="handleChange"
-    />
+    <el-radio-group :model-value="fieldValue" :disabled="!isCurrentFieldEditable" @update:model-value="handleChange">
+      <component
+        :is="buttonStyle ? 'el-radio-button' : 'el-radio'"
+        v-for="option in options"
+        :key="String(option.value)"
+        :label="option.value"
+        :disabled="option.disabled"
+      >
+        {{ option.label }}
+      </component>
+    </el-radio-group>
   </el-form-item>
 
-  <!-- 在 tree 中：渲染为树节点的文本内容 -->
   <template v-else-if="context === 'tree'">
     <span v-if="!isCurrentFieldHidden" class="tree-node-text">{{ currentDisplayValue }}</span>
   </template>
 
-  <!-- 在 detail 或其他上下文中：只读展示 -->
   <div v-else-if="!isCurrentFieldHidden" class="field-display">
     <span class="field-label">{{ displayLabel }}：</span>
     <span class="field-value">{{ currentDisplayValue }}</span>
@@ -34,25 +32,31 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentConfig } from '@spark-view/spark-component'
 import { useFieldPermission } from './useFieldPermission'
+import { useFieldOptions } from './useFieldOptions'
+import type { ComponentConfig } from '@spark-view/spark-component'
 
 interface Props {
   config?: ComponentConfig
-  /** 字段名（form-create 路径透传；SparkComponentRenderer 路径从 config.name 读取） */
   name?: string
-  /** 显示标签（可选，默认回退到 name） */
   label?: string
   width?: number
-  modelValue?: string
+  modelValue?: string | number | boolean
+  options?: unknown[]
+  optionLabelField?: string
+  optionValueField?: string
+  buttonStyle?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  buttonStyle: false,
+})
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  'update:modelValue': [value: string | number | boolean]
 }>()
 
+const { options, formatOptionValue } = useFieldOptions(props)
 const {
   fieldName,
   displayLabel,
@@ -64,16 +68,18 @@ const {
   isTableCellHidden,
   getTableCellDisplayValue,
   syncValue,
-} = useFieldPermission<string>({
+} = useFieldPermission<string | number | boolean>({
   props,
-  type: 'r-text',
+  type: 'r-radio',
   fallbackValue: '',
+  formatDisplay: formatOptionValue,
 })
 
-const handleChange = (val: string) => {
-  emit('update:modelValue', val)
-  syncValue(val)
+function handleChange(value: string | number | boolean): void {
+  emit('update:modelValue', value)
+  syncValue(value)
 }
+
 </script>
 
 <style scoped>
