@@ -86,6 +86,11 @@ public class AiPageService {
             String systemPrompt = buildSystemPrompt(request.getSkillCatalog());
             String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
 
+            // 多轮对话：所有阶段和迭代共享一条对话链
+            List<Map<String, String>> conversation = new ArrayList<>();
+            conversation.add(Map.of("role", "system", "content", systemPrompt));
+            log.info("[SPARK-AI] 多轮对话初始化 systemPromptLen={}", systemPrompt.length());
+
             int round = 0;
             Map<String, String> merged = null;
             String explanation = "";
@@ -101,7 +106,7 @@ public class AiPageService {
                 String phase1Msg = buildPhase1Message(currentReq);
                 log.info("[SPARK-AI] R{}-Phase1 start, msgLen={}", round, phase1Msg.length());
 
-                PhaseResult phase1 = callPhase(systemPrompt, phase1Msg, PHASE1_REQUIRED,
+                PhaseResult phase1 = callPhase(conversation, phase1Msg, PHASE1_REQUIRED,
                                                 "R" + round + "-Phase1");
                 if (phase1 == null) {
                     return buildErrorResponse(request,
@@ -112,7 +117,7 @@ public class AiPageService {
                 String phase2Msg = buildPhase2Message(currentReq, phase1.files());
                 log.info("[SPARK-AI] R{}-Phase2 start, msgLen={}", round, phase2Msg.length());
 
-                PhaseResult phase2 = callPhase(systemPrompt, phase2Msg, PHASE2_REQUIRED,
+                PhaseResult phase2 = callPhase(conversation, phase2Msg, PHASE2_REQUIRED,
                                                 "R" + round + "-Phase2");
 
                 // ── Merge ──
@@ -143,8 +148,8 @@ public class AiPageService {
                 log.warn("[SPARK-AI] 达到最大迭代次数 {}，AI 仍标记 needsIteration=true", MAX_ITERATIONS);
             }
 
-            log.info("[SPARK-AI] 完成 totalRounds={} files={} needsIteration={}",
-                     round, merged.keySet(), needsIter);
+            log.info("[SPARK-AI] 完成 totalRounds={} files={} needsIteration={} conversationMsgs={}",
+                     round, merged.keySet(), needsIter, conversation.size());
             return new AiResponse(merged, explanation, needsIter, round);
 
         } catch (Exception e) {
@@ -171,15 +176,19 @@ public class AiPageService {
     }
 
     /**
-     * 执行一个阶段的 LLM 调用，带重试和校验。
+     * 执行一个阶段的 LLM 调用（多轮对话），带重试和校验。
+     * <p>将 userMessage 追加到 conversation 末尾，成功后追加 assistant 响应。
+     * 全部失败时移除追加的 user 消息，保持 conversation 不变。
      * @return 成功返回 PhaseResult，全部失败返回 null
      */
-    private PhaseResult callPhase(String systemPrompt, String userMessage,
+    private PhaseResult callPhase(List<Map<String, String>> conversation, String userMessage,
                                    List<String> requiredFiles, String phaseName) {
+        conversation.add(Map.of("role", "user", "content", userMessage));
+
         List<String> failures = new ArrayList<>();
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
-                String llmContent = callLlm(systemPrompt, userMessage);
+                String llmContent = callLlm(conversation);
                 log.info("[SPARK-AI] {} attempt={} responseLen={}", phaseName, attempt, llmContent.length());
 
                 AiResponse response = parseResponse(llmContent);
@@ -198,6 +207,8 @@ public class AiPageService {
                 }
 
                 log.info("[SPARK-AI] {} ok attempt={} files={}", phaseName, attempt, response.getFiles().keySet());
+                // 多轮对话：追加 assistant 响应，后续阶段可看到前面完整对话
+                conversation.add(Map.of("role", "assistant", "content", llmContent));
                 boolean iterFlag = Boolean.TRUE.equals(response.getNeedsIteration());
                 return new PhaseResult(response.getFiles(), response.getExplanation(), iterFlag);
 
@@ -207,6 +218,8 @@ public class AiPageService {
             }
         }
         log.error("[SPARK-AI] {} 全部 {} 次尝试均失败: {}", phaseName, MAX_RETRIES, String.join("; ", failures));
+        // 全部失败：移除本阶段追加的 user 消息
+        conversation.remove(conversation.size() - 1);
         return null;
     }
 
@@ -310,11 +323,8 @@ public class AiPageService {
     // ─────────────────────────────────────────────────────────────────────────
 
     @SuppressWarnings("unchecked")
-    private String callLlm(String systemPrompt, String userMessage) throws Exception {
-        List<Map<String, String>> messages = List.of(
-                Map.of("role", "system", "content", systemPrompt),
-                Map.of("role", "user", "content", userMessage)
-        );
+    private String callLlm(List<Map<String, String>> messages) throws Exception {
+        log.info("[SPARK-AI] callLlm msgCount={}", messages.size());
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("model", props.getModel());

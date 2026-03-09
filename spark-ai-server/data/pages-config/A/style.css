@@ -106,3 +106,25 @@
 [data-page="A"] .date-column {
   text-align: center;
 }
+
+[data-page="A"] .toolbar .el-button.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+[data-page="A"] .toolbar .el-button.is-disabled:hover {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+  color: #fff;
+}
+
+[data-page="A"] .toolbar .el-button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+[data-page="A"] .toolbar .el-button[disabled]:hover {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+  color: #fff;
+}
