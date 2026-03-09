@@ -28,9 +28,18 @@ import java.util.regex.Pattern;
  * 核心服务：构建提示词 → 调用 LLM → 解析响应。
  *
  * 支持所有 OpenAI 兼容端点（OpenAI / Azure / Ollama / Qwen / DeepSeek 等）。
+ * 内置文件校验 + 重试机制：解析失败或 JSON 不合法时自动重试。
  */
 @Service
 public class AiPageService {
+
+    /** 每阶段最大重试次数 */
+    private static final int MAX_RETRIES = 2;
+    /** Phase-1 必须包含的文件（结构层） */
+    private static final List<String> PHASE1_REQUIRED = List.of("rule.json", "pagedata.json");
+
+    /** Phase 结果内部载体 */
+    private record PhaseResult(Map<String, String> files, String explanation) {}
 
     private static final Logger log = LoggerFactory.getLogger(AiPageService.class);
 
@@ -47,7 +56,7 @@ public class AiPageService {
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(10_000);   // 连接超时 10s
-        factory.setReadTimeout(60_000);      // 读取超时 60s（LLM 生成可能较慢）
+        factory.setReadTimeout(120_000);     // 读取超时 120s（两阶段生成，单次 LLM 可能较慢）
 
         this.restClient = RestClient.builder()
                 .requestFactory(factory)
@@ -61,20 +70,48 @@ public class AiPageService {
     // 公共入口
     // ─────────────────────────────────────────────────────────────────────────
 
+    /**
+     * 两阶段生成流程：
+     * Phase-1: rule.json + pagedata.json（结构层）
+     * Phase-2: script.js + style.css（行为层，使用 Phase-1 结果作为上下文）
+     * 每阶段独立重试，合并后返回完整结果。
+     */
     public AiResponse processRequest(AiChatRequest request) {
         try {
-            String userMessage = buildUserMessage(request);
-            // 拼接系统提示词：基础模板 + 前端传入的 Skill 目录
             String systemPrompt = buildSystemPrompt(request.getSkillCatalog());
-            log.info("[SPARK-AI] action={} pageId={} promptLen={} systemLen={}",
-                    request.getAction(), request.getPageId(),
-                    userMessage.length(), systemPrompt.length());
+            String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
+            log.info("[SPARK-AI] action={} pageId={} (two-phase)", request.getAction(), pid);
 
-            String llmContent = callLlm(systemPrompt, userMessage);
-            AiResponse response = parseResponse(llmContent);
-            log.info("[SPARK-AI] done, files={}", response.getFiles() != null
-                    ? response.getFiles().keySet() : "none");
-            return response;
+            // ── Phase 1: rule.json + pagedata.json ──
+            String phase1Msg = buildPhase1Message(request);
+            log.info("[SPARK-AI] Phase-1 start, msgLen={}", phase1Msg.length());
+
+            PhaseResult phase1 = callPhase(systemPrompt, phase1Msg, PHASE1_REQUIRED, "Phase-1");
+            if (phase1 == null) {
+                return buildErrorResponse(request, "结构层（rule.json + pagedata.json）生成失败，请重试");
+            }
+
+            // ── Phase 2: script.js + style.css ──
+            String phase2Msg = buildPhase2Message(request, phase1.files());
+            log.info("[SPARK-AI] Phase-2 start, msgLen={}", phase2Msg.length());
+
+            PhaseResult phase2 = callPhase(systemPrompt, phase2Msg, List.of(), "Phase-2");
+
+            // ── Merge ──
+            Map<String, String> merged = new LinkedHashMap<>(phase1.files());
+            if (phase2 != null) {
+                merged.putAll(phase2.files());
+            }
+            merged.putIfAbsent("script.js", "");
+            merged.putIfAbsent("style.css", "");
+
+            String explanation = phase1.explanation() != null ? phase1.explanation() : "";
+            if (phase2 != null && phase2.explanation() != null && !phase2.explanation().isBlank()) {
+                explanation += "\n" + phase2.explanation();
+            }
+
+            log.info("[SPARK-AI] done files={}", merged.keySet());
+            return new AiResponse(merged, explanation, false);
 
         } catch (Exception e) {
             log.error("[SPARK-AI] error: {}", e.getMessage(), e);
@@ -82,48 +119,124 @@ public class AiPageService {
         }
     }
 
+    /**
+     * 执行一个阶段的 LLM 调用，带重试和校验。
+     * @return 成功返回 PhaseResult，全部失败返回 null
+     */
+    private PhaseResult callPhase(String systemPrompt, String userMessage,
+                                   List<String> requiredFiles, String phaseName) {
+        List<String> failures = new ArrayList<>();
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                String llmContent = callLlm(systemPrompt, userMessage);
+                log.info("[SPARK-AI] {} attempt={} responseLen={}", phaseName, attempt, llmContent.length());
+
+                AiResponse response = parseResponse(llmContent);
+                if (response.getFiles() == null || response.getFiles().isEmpty()) {
+                    String reason = "JSON 解析失败（无 files 字段）";
+                    log.warn("[SPARK-AI] {} attempt={} {}", phaseName, attempt, reason);
+                    failures.add("第" + attempt + "次: " + reason);
+                    continue;
+                }
+
+                String err = validatePhaseFiles(response, requiredFiles);
+                if (err != null) {
+                    log.warn("[SPARK-AI] {} attempt={} validation: {}", phaseName, attempt, err);
+                    failures.add("第" + attempt + "次: " + err);
+                    continue;
+                }
+
+                log.info("[SPARK-AI] {} ok attempt={} files={}", phaseName, attempt, response.getFiles().keySet());
+                return new PhaseResult(response.getFiles(), response.getExplanation());
+
+            } catch (Exception e) {
+                failures.add("第" + attempt + "次异常: " + e.getMessage());
+                log.warn("[SPARK-AI] {} attempt={} error: {}", phaseName, attempt, e.getMessage());
+            }
+        }
+        log.error("[SPARK-AI] {} 全部 {} 次尝试均失败: {}", phaseName, MAX_RETRIES, String.join("; ", failures));
+        return null;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
-    // 构建用户消息
+    // 分阶段用户消息构建
     // ─────────────────────────────────────────────────────────────────────────
 
-    private String buildUserMessage(AiChatRequest request) {
+    /** Phase-1：只请求 rule.json + pagedata.json */
+    private String buildPhase1Message(AiChatRequest request) {
         StringBuilder sb = new StringBuilder();
         String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
 
         if ("iterate".equals(request.getAction())) {
             sb.append("请根据以下反馈修改页面 `").append(pid).append("` 的配置。\n\n");
-
-            String feedback = request.getFeedback() != null
-                    ? request.getFeedback()
-                    : request.getPrompt();
+            String feedback = request.getFeedback() != null ? request.getFeedback() : request.getPrompt();
             if (feedback != null && !feedback.isBlank()) {
                 sb.append("**用户反馈**：").append(feedback).append("\n\n");
             }
-
             if (request.getCurrentFiles() != null) {
-                String ruleJson = request.getCurrentFiles().getOrDefault("rule.json", "(空)");
-                String pagedataJson = request.getCurrentFiles().getOrDefault("pagedata.json", "(空)");
-                sb.append("**当前 rule.json**：\n```json\n").append(ruleJson).append("\n```\n\n");
-                sb.append("**当前 pagedata.json**：\n```json\n").append(pagedataJson).append("\n```\n\n");
+                appendFileBlock(sb, "当前 rule.json", "json", request.getCurrentFiles().get("rule.json"));
+                appendFileBlock(sb, "当前 pagedata.json", "json", request.getCurrentFiles().get("pagedata.json"));
             }
-
-            if (request.getLogs() != null && !request.getLogs().isEmpty()) {
-                sb.append("**运行时日志**（供你判断错误原因）：\n");
-                for (AiChatRequest.LogSnapshot l : request.getLogs()) {
-                    sb.append("  [").append(l.getLevel()).append("] ")
-                      .append(l.getMessage()).append("\n");
-                }
-                sb.append("\n");
-            }
-
+            appendLogs(sb, request);
         } else {
-            // generate（默认）
             sb.append("请为页面 `").append(pid).append("` 生成配置。\n\n");
-            String prompt = request.getPrompt() != null ? request.getPrompt() : "";
-            sb.append("**用户需求**：").append(prompt);
+            sb.append("**用户需求**：").append(request.getPrompt() != null ? request.getPrompt() : "").append("\n\n");
         }
 
+        sb.append("⚠️ 【分步生成 - 第 1 轮】本轮只需生成 rule.json 和 pagedata.json。\n");
+        sb.append("返回的 JSON 中 files 对象只包含 \"rule.json\" 和 \"pagedata.json\" 两个键。\n");
+        sb.append("不要包含 script.js 和 style.css，它们将在下一轮生成。\n");
         return sb.toString();
+    }
+
+    /** Phase-2：以 Phase-1 结果为上下文，只请求 script.js + style.css */
+    private String buildPhase2Message(AiChatRequest request, Map<String, String> phase1Files) {
+        StringBuilder sb = new StringBuilder();
+        String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
+
+        if ("iterate".equals(request.getAction())) {
+            sb.append("请根据以下反馈修改页面 `").append(pid).append("` 的配置（第 2 轮：行为层）。\n\n");
+            String feedback = request.getFeedback() != null ? request.getFeedback() : request.getPrompt();
+            if (feedback != null && !feedback.isBlank()) {
+                sb.append("**用户反馈**：").append(feedback).append("\n\n");
+            }
+        } else {
+            sb.append("请为页面 `").append(pid).append("` 生成配置（第 2 轮：行为层）。\n\n");
+            sb.append("**用户需求**：").append(request.getPrompt() != null ? request.getPrompt() : "").append("\n\n");
+        }
+
+        // Phase-1 已确定的结构文件
+        appendFileBlock(sb, "已确定的 rule.json", "json", phase1Files.get("rule.json"));
+        appendFileBlock(sb, "已确定的 pagedata.json", "json", phase1Files.get("pagedata.json"));
+
+        // iterate 模式下提供当前 script.js / style.css 作为参考
+        if ("iterate".equals(request.getAction()) && request.getCurrentFiles() != null) {
+            appendFileBlock(sb, "当前 script.js", "javascript", request.getCurrentFiles().get("script.js"));
+            appendFileBlock(sb, "当前 style.css", "css", request.getCurrentFiles().get("style.css"));
+        }
+
+        sb.append("⚠️ 【分步生成 - 第 2 轮】本轮只需生成 script.js 和 style.css。\n");
+        sb.append("返回的 JSON 中 files 对象只包含 \"script.js\" 和 \"style.css\" 两个键。\n");
+        sb.append("不要包含 rule.json 和 pagedata.json。\n");
+        sb.append("确保 script.js 中包含 rule.json 引用的所有事件处理函数（on 中的函数名）和 Render* 渲染函数。\n");
+        return sb.toString();
+    }
+
+    /** 向 StringBuilder 追加一个文件代码块 */
+    private void appendFileBlock(StringBuilder sb, String label, String lang, String content) {
+        if (content == null || content.isBlank()) return;
+        sb.append("**").append(label).append("**：\n```").append(lang).append("\n")
+          .append(content).append("\n```\n\n");
+    }
+
+    /** 追加运行时日志（如有） */
+    private void appendLogs(StringBuilder sb, AiChatRequest request) {
+        if (request.getLogs() == null || request.getLogs().isEmpty()) return;
+        sb.append("**运行时日志**（供你判断错误原因）：\n");
+        for (AiChatRequest.LogSnapshot l : request.getLogs()) {
+            sb.append("  [").append(l.getLevel()).append("] ").append(l.getMessage()).append("\n");
+        }
+        sb.append("\n");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -160,8 +273,18 @@ public class AiPageService {
         if (choices == null || choices.isEmpty()) {
             throw new RuntimeException("LLM choices 为空");
         }
-        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-        return (String) message.get("content");
+        Map<String, Object> firstChoice = choices.get(0);
+
+        // 检测 finish_reason：length 表示输出被 max_tokens 截断
+        String finishReason = firstChoice.get("finish_reason") instanceof String s ? s : "unknown";
+        if ("length".equals(finishReason)) {
+            log.warn("[SPARK-AI] ⚠️ 输出被 max_tokens 截断 (finish_reason=length)，响应可能不完整");
+        }
+
+        Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
+        String content = (String) message.get("content");
+        log.debug("[SPARK-AI] raw content length={} finish_reason={}", content.length(), finishReason);
+        return content;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -226,6 +349,60 @@ public class AiPageService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 文件校验
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * 校验某一阶段返回的文件内容完整性。
+     * @param requiredFiles 本阶段必须包含的文件列表
+     * @return null = 校验通过；非 null = 错误描述
+     */
+    private String validatePhaseFiles(AiResponse response, List<String> requiredFiles) {
+        Map<String, String> files = response.getFiles();
+
+        // 1. 检查必须文件
+        List<String> missing = new ArrayList<>();
+        for (String name : requiredFiles) {
+            if (!files.containsKey(name) || files.get(name) == null || files.get(name).isBlank()) {
+                missing.add(name);
+            }
+        }
+        if (!missing.isEmpty()) {
+            return "缺少必须文件: " + missing;
+        }
+
+        // 2. 校验 JSON 文件语法（仅检查本次响应中实际存在的 JSON 文件）
+        for (String jsonFile : List.of("rule.json", "pagedata.json")) {
+            String content = files.get(jsonFile);
+            if (content == null) continue;
+            String trimmed = content.trim();
+            if (!trimmed.isEmpty()) {
+                char last = trimmed.charAt(trimmed.length() - 1);
+                if (last != ']' && last != '}') {
+                    return jsonFile + " 内容被截断（未以 ]/} 结尾）";
+                }
+            }
+            try {
+                objectMapper.readTree(content);
+            } catch (Exception e) {
+                return jsonFile + " JSON 格式无效: " + e.getMessage();
+            }
+        }
+
+        // 3. 检查 script.js 花括号平衡
+        String scriptContent = files.get("script.js");
+        if (scriptContent != null && !scriptContent.isBlank()) {
+            long opens = scriptContent.chars().filter(c -> c == '{').count();
+            long closes = scriptContent.chars().filter(c -> c == '}').count();
+            if (opens > closes) {
+                return "script.js 可能被截断（花括号未闭合: { =" + opens + " } =" + closes + "）";
+            }
+        }
+
+        return null;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

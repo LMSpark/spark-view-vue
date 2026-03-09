@@ -26,7 +26,7 @@
     <main class="main-content">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
-          <component :is="Component" />
+          <component :is="Component" :key="route.fullPath + '_' + pageRefreshKey" />
         </transition>
       </router-view>
     </main>
@@ -38,7 +38,10 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { pageRefreshKey } from '@/services/ai-loop'
+
+const route = useRoute()
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))

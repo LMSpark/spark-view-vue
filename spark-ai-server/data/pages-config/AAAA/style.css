@@ -1,0 +1,11 @@
+[data-page="AAAA"] .page-container {
+  background-color: #f5f7fa;
+}
+[data-page="AAAA"] h2 {
+  color: #303133;
+  margin-bottom: 16px;
+}
+[data-page="AAAA"] h3 {
+  color: #606266;
+  margin-bottom: 12px;
+}

@@ -1,0 +1,274 @@
+[
+  {
+    "type": "div",
+    "class": "page-container",
+    "style": {
+      "padding": "20px"
+    },
+    "children": [
+      {
+        "type": "h2",
+        "children": ["学生成绩管理"]
+      },
+      {
+        "type": "el-alert",
+        "props": {
+          "title": "管理学生成绩信息，支持新增、编辑、删除和查询。",
+          "type": "info",
+          "closable": false,
+          "showIcon": true
+        },
+        "style": {
+          "marginBottom": "16px"
+        }
+      },
+      {
+        "type": "div",
+        "style": {
+          "marginBottom": "16px",
+          "display": "flex",
+          "gap": "8px"
+        },
+        "children": [
+          {
+            "type": "el-button",
+            "props": {
+              "type": "primary",
+              "size": "small"
+            },
+            "on": {
+              "click": "handleAdd"
+            },
+            "children": ["新增"]
+          },
+          {
+            "type": "el-button",
+            "props": {
+              "type": "danger",
+              "size": "small"
+            },
+            "on": {
+              "click": "handleDelete"
+            },
+            "children": ["删除"]
+          },
+          {
+            "type": "el-input",
+            "props": {
+              "placeholder": "输入学生姓名或学号搜索",
+              "clearable": true
+            },
+            "field": "searchKeyword",
+            "value": "",
+            "style": {
+              "width": "200px"
+            }
+          },
+          {
+            "type": "el-button",
+            "props": {
+              "type": "default",
+              "size": "small"
+            },
+            "on": {
+              "click": "handleSearch"
+            },
+            "children": ["搜索"]
+          }
+        ]
+      },
+      {
+        "type": "el-table",
+        "dataKey": "Students@rows",
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true
+        },
+        "on": {
+          "currentChange": "handleCurrentChange"
+        },
+        "children": [
+          {
+            "type": "el-table-column",
+            "props": {
+              "type": "selection",
+              "width": "55"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "id",
+              "label": "ID",
+              "width": "80"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "studentId",
+              "label": "学号",
+              "width": "120"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "name",
+              "label": "姓名",
+              "width": "100"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "className",
+              "label": "班级",
+              "width": "120"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "chinese",
+              "label": "语文",
+              "width": "80"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "math",
+              "label": "数学",
+              "width": "80"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "english",
+              "label": "英语",
+              "width": "80"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "total",
+              "label": "总分",
+              "width": "80"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "average",
+              "label": "平均分",
+              "width": "80"
+            }
+          }
+        ]
+      },
+      {
+        "type": "el-dialog",
+        "props": {
+          "title": "学生成绩详情",
+          "modelValue": false,
+          "width": "500px"
+        },
+        "field": "dialogVisible",
+        "value": false,
+        "children": [
+          {
+            "type": "r-form",
+            "dataKey": "Students@currentRow",
+            "props": {
+              "labelWidth": "100px"
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "name": "studentId",
+                "props": {
+                  "label": "学号"
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "name",
+                "props": {
+                  "label": "姓名"
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "className",
+                "props": {
+                  "label": "班级"
+                }
+              },
+              {
+                "type": "r-number",
+                "name": "chinese",
+                "props": {
+                  "label": "语文",
+                  "min": 0,
+                  "max": 100
+                }
+              },
+              {
+                "type": "r-number",
+                "name": "math",
+                "props": {
+                  "label": "数学",
+                  "min": 0,
+                  "max": 100
+                }
+              },
+              {
+                "type": "r-number",
+                "name": "english",
+                "props": {
+                  "label": "英语",
+                  "min": 0,
+                  "max": 100
+                }
+              }
+            ]
+          },
+          {
+            "type": "div",
+            "style": {
+              "marginTop": "20px",
+              "textAlign": "right"
+            },
+            "children": [
+              {
+                "type": "el-button",
+                "props": {
+                  "size": "small"
+                },
+                "on": {
+                  "click": "handleCancel"
+                },
+                "children": ["取消"]
+              },
+              {
+                "type": "el-button",
+                "props": {
+                  "type": "primary",
+                  "size": "small"
+                },
+                "on": {
+                  "click": "handleSave"
+                },
+                "children": ["保存"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

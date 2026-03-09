@@ -2,54 +2,44 @@ let _pageState = { selectedRow: null }
 
 function __init__() {
   const view = $dataSet?.getView('Users', 'default')
-  view?.events.on('currentRowChanged', (row) => {
-    _pageState.selectedRow = row
-    console.log('当前行已变更:', row)
-  })
+  if (view) {
+    view.events.on('currentRowChanged', (row) => {
+      _pageState.selectedRow = row
+      console.log('当前行已变更:', row)
+    })
+  }
 }
 
 function handleAdd() {
-  $page.showPrompt('请输入新用户信息', '新增用户').then((value) => {
-    if (value) {
-      const view = $dataSet?.getView('Users', 'default')
-      const newId = Math.max(...view.rows.map(r => r.id)) + 1
-      view.appendRow({ id: newId, name: value, age: 0, email: '', status: '在职' })
-      $page.showMessage('新增成功', 'success')
-    }
-  })
+  $page.showMessage('新增功能待实现', 'info')
 }
 
 function handleEdit() {
   if (!_pageState.selectedRow) {
-    $page.showMessage('请先选择一行', 'warning')
+    $page.showMessage('请先选择一行进行编辑', 'warning')
     return
   }
-  $page.showPrompt('请输入新姓名', '编辑用户', _pageState.selectedRow.name).then((value) => {
-    if (value) {
-      const view = $dataSet?.getView('Users', 'default')
-      view.updateRowById(_pageState.selectedRow.id, { name: value })
-      $page.showMessage('编辑成功', 'success')
-    }
-  })
+  $page.showMessage(`编辑用户: ${_pageState.selectedRow.name}`, 'info')
 }
 
 function handleDelete() {
   if (!_pageState.selectedRow) {
-    $page.showMessage('请先选择一行', 'warning')
+    $page.showMessage('请先选择一行进行删除', 'warning')
     return
   }
-  $page.showConfirm('确认删除该用户？').then((ok) => {
+  $page.showConfirm(`确认删除用户 ${_pageState.selectedRow.name} 吗？`).then((ok) => {
     if (ok) {
       const view = $dataSet?.getView('Users', 'default')
-      view.deleteRowById(_pageState.selectedRow.id)
-      _pageState.selectedRow = null
-      $page.showMessage('删除成功', 'success')
+      if (view) {
+        view.deleteRowById(_pageState.selectedRow.id)
+        $page.showMessage('删除成功', 'success')
+        _pageState.selectedRow = null
+      }
     }
   })
 }
 
-function handleCurrentChange(row) {
-  console.log('当前行变更事件:', row)
-  // 框架会自动同步 currentRow，此处只需处理业务逻辑
-  _pageState.selectedRow = row
+function handleCurrentChange(currentRow) {
+  // 框架已通过 bind-table-delegate 自动同步 currentRow，此处仅写业务逻辑
+  console.log('表格当前行变更:', currentRow)
 }

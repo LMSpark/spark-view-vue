@@ -130,12 +130,20 @@ interface CapabilityHolder {
   capabilities: Map<string | symbol, unknown>
 }
 
+/** Emoji per log level（与 spark-app AppLogger 一致） */
+const LEVEL_EMOJI: Record<LogLevel, string> = {
+  debug: '🐛',
+  info: 'ℹ️',
+  warn: '⚠️',
+  error: '❌',
+}
+
 function consoleLogger(prefix?: string): LoggerApi {
-  const fmt = (level: LogLevel, args: unknown[]) =>
-    [`[${new Date().toISOString()}]`, `[${level.toUpperCase()}]`, ...(prefix ? [prefix, ...args] : args)]
+  const fmt = (_level: LogLevel, args: unknown[]) =>
+    [...(prefix ? [prefix] : []), ...args]
 
   function withHook(level: LogLevel, consoleFn: (...a: unknown[]) => void, args: unknown[]): void {
-    consoleFn(...fmt(level, args))
+    consoleFn(LEVEL_EMOJI[level], ...fmt(level, args))
 
     // 结构化传输器（推荐路径：APP 层贯穿）
     if (_transports.length > 0) {

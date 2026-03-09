@@ -29,10 +29,14 @@
  * ```
  */
 
+import { ref } from 'vue'
 import { createRequest } from '@spark-view/spark-utils'
 
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
-const http = createRequest({ timeout: 120_000 })
+const http = createRequest({ timeout: 240_000 })
+
+/** 日志更新信号：每次新日志到达时递增，供 AiChatPanel 实时感知 */
+export const logUpdateSignal = ref(0)
 
 // ─── 类型定义 ────────────────────────────────────────────────────────────────
 
@@ -290,6 +294,7 @@ export class PageLogCollector {
     if (this.logs.length > this.maxSize) {
       this.logs = this.logs.slice(-this.maxSize)
     }
+    logUpdateSignal.value++
   }
 
   /** 获取指定 pageId 的日志快照并清空 */
@@ -408,6 +413,16 @@ export class AIPageLoop {
       throw error
     }
   }
+}
+
+// ─── 页面组件重建（key 驱动，无需路由跳转） ─────────────────────────────────
+
+/** 响应式 key，App.vue router-view 内的组件使用此 key 强制重建 */
+export const pageRefreshKey = ref(0)
+
+/** 递增 key 触发当前页面组件重建（不改变路由，AI 面板状态不受影响） */
+export function triggerPageRefresh(): void {
+  pageRefreshKey.value++
 }
 
 // ─── 全局单例（可选快捷入口） ────────────────────────────────────────────────
