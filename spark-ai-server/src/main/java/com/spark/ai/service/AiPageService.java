@@ -19,7 +19,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -83,7 +85,7 @@ public class AiPageService {
      */
     public AiResponse processRequest(AiChatRequest request) {
         try {
-            String systemPrompt = buildSystemPrompt(request.getSkillCatalog());
+            String systemPrompt = buildSystemPrompt(request);
             String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
 
             // 多轮对话：所有阶段和迭代共享一条对话链
@@ -529,21 +531,125 @@ public class AiPageService {
      * 2. 请求体中的 skillCatalog（前端运行时传入，作为 fallback）
      * 3. 无 Skill 信息时仅使用基础模板
      */
-    private String buildSystemPrompt(String requestSkillCatalog) {
-        // 优先使用服务端存储的元数据
-        String storedPrompt = metadataService.getSkillPromptCompact();
-        if (storedPrompt != null && !storedPrompt.isBlank()) {
-            log.debug("[SPARK-AI] 使用服务端存储的 Skill Prompt (buildTime={})",
+    private String buildSystemPrompt(AiChatRequest request) {
+        StringBuilder prompt = new StringBuilder(BASE_SYSTEM_PROMPT);
+
+        // 优先使用服务端存储的元数据索引，再按需附加相关 skill 详情
+        String storedIndexPrompt = metadataService.getSkillPromptIndex();
+        if (storedIndexPrompt != null && !storedIndexPrompt.isBlank()) {
+            appendPromptSection(prompt, storedIndexPrompt);
+
+            List<String> relevantSkills = detectRelevantSkillTypes(request);
+            String relevantSkillPrompt = metadataService.getSkillPromptForTypes(relevantSkills);
+            if (relevantSkillPrompt != null && !relevantSkillPrompt.isBlank()) {
+                appendPromptSection(prompt, relevantSkillPrompt);
+                log.debug("[SPARK-AI] 使用服务端 Skill Index + 定向 Skill 详情 skills={} buildTime={}",
+                        relevantSkills, metadataService.getBuildTime());
+            } else {
+                log.debug("[SPARK-AI] 使用服务端 Skill Index buildTime={}", metadataService.getBuildTime());
+            }
+            return prompt.toString();
+        }
+
+        String storedCompactPrompt = metadataService.getSkillPromptCompact();
+        if (storedCompactPrompt != null && !storedCompactPrompt.isBlank()) {
+            appendPromptSection(prompt, storedCompactPrompt);
+            log.debug("[SPARK-AI] 使用服务端存储的 Compact Skill Prompt (buildTime={})",
                     metadataService.getBuildTime());
-            return BASE_SYSTEM_PROMPT + "\n\n" + storedPrompt;
+            return prompt.toString();
         }
 
         // Fallback: 使用请求体传入的 skillCatalog
+        String requestSkillCatalog = request != null ? request.getSkillCatalog() : null;
         if (requestSkillCatalog != null && !requestSkillCatalog.isBlank()) {
+            appendPromptSection(prompt, requestSkillCatalog);
             log.debug("[SPARK-AI] 使用请求体传入的 Skill Catalog");
-            return BASE_SYSTEM_PROMPT + "\n\n" + requestSkillCatalog;
         }
 
-        return BASE_SYSTEM_PROMPT;
+        return prompt.toString();
+    }
+
+    private void appendPromptSection(StringBuilder prompt, String section) {
+        if (section == null || section.isBlank()) {
+            return;
+        }
+        prompt.append("\n\n").append(section.trim());
+    }
+
+    private List<String> detectRelevantSkillTypes(AiChatRequest request) {
+        if (request == null) {
+            return List.of();
+        }
+
+        String context = collectSkillDetectionContext(request).toLowerCase(Locale.ROOT);
+        if (context.isBlank()) {
+            return List.of();
+        }
+
+        LinkedHashSet<String> skillTypes = new LinkedHashSet<>();
+        if (containsAny(context,
+                "\"type\":\"r-tree\"", "\"type\": \"r-tree\"",
+                "r-tree", "renderer-tree", "树容器", "树形", "树节点", "nodeclick", "node-key", "lazy")) {
+            skillTypes.add("r-tree");
+        }
+        if (containsAny(context,
+                "\"type\":\"r-form\"", "\"type\": \"r-form\"",
+                "r-form", "renderer-form", "表单容器", "双向编辑", "currentrow 编辑", "context_data")) {
+            skillTypes.add("r-form");
+        }
+        if (containsAny(context,
+                "\"type\":\"r-detail\"", "\"type\": \"r-detail\"",
+                "r-detail", "renderer-detail", "详情容器", "只读详情", "只读展示", "信息面板")) {
+            skillTypes.add("r-detail");
+        }
+        if (containsAny(context,
+                "\"type\":\"r-table\"", "\"type\": \"r-table\"",
+                "r-table", "renderer-table", "表格容器", "datakey 绑定表格")) {
+            skillTypes.add("r-table");
+        }
+        return new ArrayList<>(skillTypes);
+    }
+
+    private String collectSkillDetectionContext(AiChatRequest request) {
+        StringBuilder context = new StringBuilder();
+        appendDetectionText(context, request.getPrompt());
+        appendDetectionText(context, request.getFeedback());
+
+        if (request.getCurrentFiles() != null) {
+            for (String content : request.getCurrentFiles().values()) {
+                appendDetectionText(context, content);
+            }
+        }
+
+        if (request.getLogs() != null) {
+            for (AiChatRequest.LogSnapshot logSnapshot : request.getLogs()) {
+                appendDetectionText(context, logSnapshot.getMessage());
+                appendDetectionText(context, logSnapshot.getComponentType());
+                if (logSnapshot.getMeta() != null && !logSnapshot.getMeta().isEmpty()) {
+                    appendDetectionText(context, String.valueOf(logSnapshot.getMeta()));
+                }
+            }
+        }
+
+        return context.toString();
+    }
+
+    private void appendDetectionText(StringBuilder context, String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        if (!context.isEmpty()) {
+            context.append('\n');
+        }
+        context.append(value);
+    }
+
+    private boolean containsAny(String text, String... needles) {
+        for (String needle : needles) {
+            if (needle != null && !needle.isBlank() && text.contains(needle.toLowerCase(Locale.ROOT))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

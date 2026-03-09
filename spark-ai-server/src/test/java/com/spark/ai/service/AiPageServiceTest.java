@@ -6,6 +6,7 @@ import com.spark.ai.model.AiChatRequest;
 import com.spark.ai.model.AiResponse;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -17,8 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class AiPageServiceTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     /**
      * 可测试子类：覆盖 callLlm，直接返回指定 JSON，避免真实网络调用。
      */
@@ -26,7 +25,11 @@ class AiPageServiceTest {
         String fakeResponse;
 
         TestableAiPageService(String fakeResponse) {
-            super(defaultProps(), new ObjectMapper(), new ComponentMetadataService(new ObjectMapper()));
+            this(fakeResponse, new ComponentMetadataService(new ObjectMapper()));
+        }
+
+        TestableAiPageService(String fakeResponse, ComponentMetadataService metadataService) {
+            super(defaultProps(), new ObjectMapper(), metadataService);
             this.fakeResponse = fakeResponse;
         }
 
@@ -44,6 +47,59 @@ class AiPageServiceTest {
             p.setBaseUrl("http://localhost:9999"); // won't be called
             p.setApiKey("test");
             return p;
+        }
+    }
+
+    static class StubComponentMetadataService extends ComponentMetadataService {
+        private final boolean hasMetadata;
+        private final String skillPromptIndex;
+        private final String skillPromptCompact;
+        private final Map<String, String> promptsByType;
+
+        StubComponentMetadataService(boolean hasMetadata,
+                                     String skillPromptIndex,
+                                     String skillPromptCompact,
+                                     Map<String, String> promptsByType) {
+            super(new ObjectMapper());
+            this.hasMetadata = hasMetadata;
+            this.skillPromptIndex = skillPromptIndex;
+            this.skillPromptCompact = skillPromptCompact;
+            this.promptsByType = promptsByType;
+        }
+
+        @Override
+        public boolean hasMetadata() {
+            return hasMetadata;
+        }
+
+        @Override
+        public String getSkillPromptIndex() {
+            return skillPromptIndex;
+        }
+
+        @Override
+        public String getSkillPromptCompact() {
+            return skillPromptCompact;
+        }
+
+        @Override
+        public String getSkillPromptForTypes(Collection<String> types) {
+            if (types == null || types.isEmpty()) {
+                return null;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for (String type : types) {
+                String prompt = promptsByType.get(type);
+                if (prompt == null || prompt.isBlank()) {
+                    continue;
+                }
+                if (!sb.isEmpty()) {
+                    sb.append("\n\n");
+                }
+                sb.append(prompt);
+            }
+            return sb.isEmpty() ? null : sb.toString();
         }
     }
 
@@ -248,5 +304,70 @@ class AiPageServiceTest {
         // 3-arg constructor 不设 iterationRound
         AiResponse errResp = new AiResponse(Map.of(), "err", false);
         assertNull(errResp.getIterationRound());
+    }
+
+    @Test
+    void buildSystemPrompt_usesSkillIndexByDefault() throws Exception {
+        ComponentMetadataService metadataService = new StubComponentMetadataService(
+                true,
+                "## Skill Index\n- r-table\n- r-tree",
+                "## Compact Prompt",
+                Map.of("r-tree", "### `r-tree`\n> 树形容器")
+        );
+        AiPageService service = new TestableAiPageService(null, metadataService);
+        var method = AiPageService.class.getDeclaredMethod("buildSystemPrompt", AiChatRequest.class);
+        method.setAccessible(true);
+
+        AiChatRequest req = new AiChatRequest();
+        req.setPrompt("生成一个首页概览");
+
+        String prompt = (String) method.invoke(service, req);
+        assertTrue(prompt.contains("## Skill Index"));
+        assertFalse(prompt.contains("## Compact Prompt"));
+        assertFalse(prompt.contains("### `r-tree`"));
+    }
+
+    @Test
+    void buildSystemPrompt_appendsRelevantSkillDetailsWhenDetected() throws Exception {
+        ComponentMetadataService metadataService = new StubComponentMetadataService(
+                true,
+                "## Skill Index\n- r-table\n- r-tree",
+                "## Compact Prompt",
+                Map.of(
+                        "r-tree", "### `r-tree`\n> 树形容器",
+                        "r-form", "### `r-form`\n> 表单容器"
+                )
+        );
+        AiPageService service = new TestableAiPageService(null, metadataService);
+        var method = AiPageService.class.getDeclaredMethod("buildSystemPrompt", AiChatRequest.class);
+        method.setAccessible(true);
+
+        AiChatRequest req = new AiChatRequest();
+        req.setPrompt("生成一个树形部门页面，支持树节点展开与懒加载");
+
+        String prompt = (String) method.invoke(service, req);
+        assertTrue(prompt.contains("## Skill Index"));
+        assertTrue(prompt.contains("### `r-tree`"));
+        assertFalse(prompt.contains("### `r-form`"));
+    }
+
+    @Test
+    void buildSystemPrompt_fallsBackToRequestSkillCatalogWithoutMetadata() throws Exception {
+        ComponentMetadataService metadataService = new StubComponentMetadataService(
+                false,
+                null,
+                null,
+                Map.of()
+        );
+        AiPageService service = new TestableAiPageService(null, metadataService);
+        var method = AiPageService.class.getDeclaredMethod("buildSystemPrompt", AiChatRequest.class);
+        method.setAccessible(true);
+
+        AiChatRequest req = new AiChatRequest();
+        req.setPrompt("生成一个页面");
+        req.setSkillCatalog("## Frontend Skill Catalog\n- el-table");
+
+        String prompt = (String) method.invoke(service, req);
+        assertTrue(prompt.contains("## Frontend Skill Catalog"));
     }
 }

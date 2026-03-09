@@ -5,7 +5,7 @@
     v-if="resolvedComponent"
     :is="resolvedComponent"
     :config="config"
-    v-bind="config.props"
+    v-bind="forwardedProps"
   />
 
   <!-- 未注册：降级渲染，继续递归子组件树，不中断渲染 -->
@@ -57,6 +57,8 @@ import { computed, inject, markRaw, provide as vueProvide } from 'vue'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../../core/types.js'
 import type { ComponentConfig, ComponentContext, ComponentRegistry } from '../../core/types.js'
 
+const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -92,5 +94,12 @@ const resolvedComponent = computed(() => {
    return null
   }
   return def.component ? markRaw(def.component as object) : null
+})
+
+const forwardedProps = computed(() => {
+  const rawProps = props.config.props ?? {}
+  return Object.fromEntries(
+    Object.entries(rawProps).filter(([key]) => !LAYOUT_ONLY_PROP_KEYS.has(key))
+  )
 })
 </script>

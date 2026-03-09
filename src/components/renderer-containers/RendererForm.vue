@@ -13,13 +13,16 @@
 <template>
   <el-form :model="formModel" v-bind="$attrs">
     <!-- Config 驱动 —— 通用递归渲染 config.children -->
-    <template v-if="configChildren.length">
-      <SparkComponentRenderer
-        v-for="(child, i) in configChildren"
+    <div v-if="gridChildren.length" class="renderer-form-grid" :style="gridStyle">
+      <div
+        v-for="(child, i) in gridChildren"
         :key="child.id ?? `r-form-child-${i}`"
-        :config="child"
-      />
-    </template>
+        class="renderer-form-grid-item"
+        :style="getChildGridStyle(child)"
+      >
+        <SparkComponentRenderer :config="child" />
+      </div>
+    </div>
     <!-- Template 驱动 —— 向后兼容 -->
     <slot v-else />
   </el-form>
@@ -36,6 +39,7 @@ import { parseDataKey } from '@spark-view/spark-data'
 import type { DataView } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
+import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
   config?: ComponentConfig
@@ -45,16 +49,28 @@ interface Props {
   /** 直接传入的 DataView（备用） */
   dataView?: DataView | undefined
   labelWidth?: string
+  gridColumns?: number
+  gridGap?: number | string
+  gridAutoRows?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  labelWidth: '100px'
+  labelWidth: '100px',
+  gridColumns: 24,
+  gridGap: 0,
+  gridAutoRows: 'minmax(32px, auto)',
 })
 
 const effectiveDataKey = computed(() =>
   (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
 )
 const configChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
+const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
+  children: configChildren,
+  columns: computed(() => props.gridColumns),
+  gap: computed(() => props.gridGap),
+  autoRows: computed(() => props.gridAutoRows),
+})
 
 const { consume, provide: sparkProvide } = useSparkComponent(
   props.config ?? { type: 'r-form' }
@@ -91,3 +107,9 @@ watch(resolvedView, (view) => {
 sparkProvide(FIELD_CONTEXT, 'form')
 sparkProvide(CONTEXT_DATA, formModel)
 </script>
+
+<style scoped>
+.renderer-form-grid-item {
+  min-width: 0;
+}
+</style>
