@@ -43,8 +43,20 @@ import { useRouter } from 'vue-router'
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
 
-/** 读取应用配置中的 AI 开关（由远程配置或本地 JSON 决定） */
-const enableAI = Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI'])
+/** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */
+const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))
+onMounted(() => {
+  if (!enableAI.value) {
+    const timer = setInterval(() => {
+      if ((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']) {
+        enableAI.value = true
+        clearInterval(timer)
+      }
+    }, 200)
+    // 5 秒后放弃
+    setTimeout(() => clearInterval(timer), 5000)
+  }
+})
 
 const router = useRouter()
 const isRoutesLoaded = ref(false)

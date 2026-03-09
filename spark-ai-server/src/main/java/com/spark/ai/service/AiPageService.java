@@ -7,6 +7,7 @@ import com.spark.ai.model.AiChatRequest;
 import com.spark.ai.model.AiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -145,18 +146,15 @@ public class AiPageService {
             body.put("response_format", Map.of("type", "json_object"));
         }
 
-        String responseJson = restClient.post()
+        Map<String, Object> responseMap = restClient.post()
                 .uri("/v1/chat/completions")
                 .body(body)
                 .retrieve()
-                .body(String.class);
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
-        if (responseJson == null) {
+        if (responseMap == null) {
             throw new RuntimeException("LLM 返回空响应");
         }
-
-        Map<String, Object> responseMap = objectMapper.readValue(responseJson,
-                new TypeReference<Map<String, Object>>() {});
         List<Map<String, Object>> choices =
                 (List<Map<String, Object>>) responseMap.get("choices");
         if (choices == null || choices.isEmpty()) {

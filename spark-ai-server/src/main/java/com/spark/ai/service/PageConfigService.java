@@ -82,7 +82,7 @@ public class PageConfigService {
 
     /**
      * 读取页面配置文件，支持 FileLoader 时间戳协议。
-     * 优先走内存缓存；缓存未命中时从磁盘读取并缓存。
+     * 优先走内存缓存；缓存未命中或磁盘 mtime 变化时从磁盘重读。
      *
      * @param clientTimestamp 客户端持有的上次修改时间（可为 null）
      * @return { content, timestamp } 或 { notModified: true, timestamp, content: '' }
@@ -95,26 +95,30 @@ public class PageConfigService {
         Path target = resolveAndCheck(pageId, filename);
         String cacheKey = pageId + "/" + filename;
 
+        // 读取磁盘 mtime（用于缓存校验 + 客户端 notModified 判断）
+        if (!Files.exists(target)) {
+            fileCache.remove(cacheKey);
+            throw new NoSuchFileException(target.toString());
+        }
+        String diskMtime = Files.getLastModifiedTime(target).toInstant().toString();
+
         CacheEntry cached = fileCache.get(cacheKey);
-        if (cached != null) {
+        if (cached != null && cached.timestamp().equals(diskMtime)) {
+            // 缓存有效：磁盘 mtime 未变
             if (clientTimestamp != null && clientTimestamp.equals(cached.timestamp())) {
                 return Map.of("notModified", true, "timestamp", cached.timestamp(), "content", "");
             }
             return Map.of("content", cached.content(), "timestamp", cached.timestamp());
         }
 
-        // 缓存未命中：从磁盘读取
-        if (!Files.exists(target)) {
-            throw new NoSuchFileException(target.toString());
-        }
-        String mtime = Files.getLastModifiedTime(target).toInstant().toString();
+        // 缓存未命中或 mtime 已变：从磁盘重读
         String content = Files.readString(target, StandardCharsets.UTF_8);
-        fileCache.put(cacheKey, new CacheEntry(content, mtime));
+        fileCache.put(cacheKey, new CacheEntry(content, diskMtime));
 
-        if (clientTimestamp != null && clientTimestamp.equals(mtime)) {
-            return Map.of("notModified", true, "timestamp", mtime, "content", "");
+        if (clientTimestamp != null && clientTimestamp.equals(diskMtime)) {
+            return Map.of("notModified", true, "timestamp", diskMtime, "content", "");
         }
-        return Map.of("content", content, "timestamp", mtime);
+        return Map.of("content", content, "timestamp", diskMtime);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

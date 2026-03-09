@@ -53,32 +53,14 @@ export default defineConfig({
       allow: ['..', '../../src']
     },
     proxy: {
-      // ── 页面配置和 AI 端点始终代理到 Java 后端 ──────────────────────────
-      // 页面配置（routes.json, rule.json 等）全部由 Java 后端管理，
-      // AI 端点同样由后端提供。
-      // 设置 AI_BACKEND_URL 指向 Java 后端（默认 http://localhost:8080）。
-      // 未设置时 /api/ai/chat 走 Vite 内置 mock。
-      ...(process.env['AI_BACKEND_URL']
-        ? {
-            '/api': {
-              target: process.env['AI_BACKEND_URL'],
-              changeOrigin: true,
-              secure: false,
-            },
-          }
-        : {
-            // fallback：mock 服务器处理 config/tenants
-            '/api/config': {
-              target: 'http://localhost:3001',
-              changeOrigin: true,
-              secure: false,
-            },
-            '/api/tenants': {
-              target: 'http://localhost:3001',
-              changeOrigin: true,
-              secure: false,
-            },
-          }),
+      // ── API 代理到 Java 后端 ──────────────────────────────────────────
+      // 页面配置（routes.json, rule.json 等）、AI 端点全部由 Java 后端管理。
+      // AI_BACKEND_URL 指定后端地址（默认 http://localhost:8080）。
+      '/api': {
+        target: process.env['AI_BACKEND_URL'] ?? 'http://127.0.0.1:8080',
+        changeOrigin: true,
+        secure: false,
+      },
     }
   },
   plugins: [
@@ -94,8 +76,8 @@ export default defineConfig({
       name: 'spark-mock-ai',
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
-          // 有后端时全部走 proxy，不需要 mock
-          if (process.env['AI_BACKEND_URL']) {
+          // 默认走 proxy 到 Java 后端，仅 MOCK_AI=true 时启用内置 mock
+          if (!process.env['MOCK_AI']) {
             return next()
           }
 

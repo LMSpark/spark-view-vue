@@ -1,0 +1,63 @@
+[
+    {
+        "type": "div",
+        "style": {
+            "padding": "20px",
+            "maxWidth": "900px"
+        },
+        "children": [
+            {
+                "type": "el-alert",
+                "props": {
+                    "title": "AI 迭代测试页",
+                    "type": "warning",
+                    "closable": false,
+                    "description": "这是一个简单的初始页面，等待 AI 迭代完善。"
+                },
+                "style": {
+                    "marginBottom": "16px"
+                }
+            },
+            {
+                "type": "el-card",
+                "children": [
+                    {
+                        "type": "el-table",
+                        "dataKey": "employees@rows",
+                        "props": {
+                            "border": true,
+                            "stripe": true,
+                            "highlightCurrentRow": true
+                        },
+                        "children": [
+                            {
+                                "type": "el-table-column",
+                                "props": {
+                                    "prop": "name",
+                                    "label": "姓名",
+                                    "width": "120"
+                                }
+                            },
+                            {
+                                "type": "el-table-column",
+                                "props": {
+                                    "prop": "department",
+                                    "label": "部门",
+                                    "width": "120"
+                                }
+                            },
+                            {
+                                "type": "el-table-column",
+                                "props": {
+                                    "prop": "salary",
+                                    "label": "薪资",
+                                    "width": "100"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

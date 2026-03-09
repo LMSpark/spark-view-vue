@@ -10,7 +10,7 @@
     <Transition name="slide">
       <div v-if="isOpen" class="ai-panel">
         <div class="ai-panel-header">
-          <span>🤖 AI 页面生成</span>
+          <span>🤖 AI · {{ routePageId ? `/${routePageId}` : '首页' }}</span>
           <span class="ai-status" :class="statusClass">{{ statusText }}</span>
         </div>
 
@@ -53,7 +53,7 @@
           <input
             v-model="pageId"
             class="ai-input-page"
-            placeholder="页面ID (如 order-list)"
+            placeholder="页面ID (同步当前路由)"
             @keydown.enter="handleSend"
           />
           <textarea
@@ -77,9 +77,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { getAILoop, clearPageCache, setAutoIterating } from '@/services/ai-loop'
+import { ref, nextTick, onMounted, watch, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader } from '@/services/ai-loop'
 import type { AIResponse, LogSnapshot } from '@/services/ai-loop'
 import { createRequest } from '@spark-view/spark-utils'
 
@@ -107,11 +107,32 @@ interface ChatMessage {
 }
 
 const router = useRouter()
+const route = useRoute()
 
 const isOpen = ref(false)
 const loading = ref(false)
 const prompt = ref('')
 const pageId = ref('')
+
+/** 当前路由对应的 pageId（去除前导 /） */
+const routePageId = computed(() => {
+  const trimmed = route.path.replace(/^\/+/, '')
+  return trimmed.length > 0 ? trimmed : ''
+})
+
+// 路由变化时自动同步 pageId（生成中不同步，防止迭代期间路由跳转覆盖）
+watch(routePageId, (newId) => {
+  if (!loading.value && newId) {
+    pageId.value = newId
+  }
+}, { immediate: true })
+
+// 加载结束后重新同步（路由可能在 loading 期间变更，watcher 被跳过）
+watch(loading, (isLoading) => {
+  if (!isLoading && routePageId.value) {
+    pageId.value = routePageId.value
+  }
+})
 const messages = ref<ChatMessage[]>([])
 const messagesRef = ref<HTMLElement>()
 const status = ref<'idle' | 'generating' | 'success' | 'error'>('idle')
@@ -147,10 +168,16 @@ function ensureRouteExists(pid: string) {
   if (configRoute) {
     const comp = configRoute.components?.['default']
     if (!comp) return
+    // 提取 configLoader：DynamicRouter 通过 props: { configLoader } 注入
+    const routeProps = configRoute.props?.['default'] as Record<string, unknown> | undefined
+    const configLoader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
+    // 注册 configLoader 到 ai-loop，使 clearPageCache 能同时清除 memCache
+    if (configLoader) setConfigLoader(configLoader)
     router.addRoute({
       path: `/${pid}`,
       name: `ai-${pid}`,
       component: comp,
+      ...(configLoader ? { props: { configLoader } } : {}),
       meta: { pageId: pid, title: pid, icon: '🤖' },
     })
   }
@@ -228,14 +255,15 @@ async function handleSend() {
     })
     scrollToBottom()
 
-    // 清除旧缓存 → 注册路由 → 导航到页面
-    clearPageCache(pid)
-    ensureRouteExists(pid)
-    await router.push(`/${pid}`)
-
-    // ── 自动迭代闭环：收集日志 → 检测错误 → 回传 AI 修复 ──
-    // 抑制 SSE 触发的 window.location.reload()，否则会杀死循环状态
+    // ── 自动迭代闭环 ──
+    // 必须在 generate 之前设置，因为 generate 内部 writePageFiles 会触发 SSE 事件，
+    // 如果 _autoIterating 为 false，setupHotReload 会触发页面重载，导致面板状态丢失
     setAutoIterating(true)
+
+    // 注册路由 → 清除旧缓存 → 导航到页面
+    ensureRouteExists(pid)
+    clearPageCache(pid)
+    await router.push(`/${pid}`)
     try {
       for (let i = 1; i <= MAX_AUTO_ITERATIONS; i++) {
         // 等待页面渲染，让 Logger 收集运行时日志
@@ -265,7 +293,10 @@ async function handleSend() {
         // 有错误 → 回传日志给 AI 自动修复
         const errorLogs = logs.filter(l => l.level === 'error' || l.level === 'warn')
         const errorSummary = errorLogs
-          .map(l => `[${l.level}] ${l.message}`)
+          .map(l => {
+            const metaStr = l.meta ? ` ${JSON.stringify(l.meta)}` : ''
+            return `[${l.level}] ${l.message}${metaStr}`
+          })
           .slice(0, 20)
           .join('\n')
 
