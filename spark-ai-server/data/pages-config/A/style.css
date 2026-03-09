@@ -13,6 +13,18 @@
   border-radius: 4px;
 }
 
+[data-page="A"] .toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+[data-page="A"] .toolbar .el-input {
+  flex: 1;
+  max-width: 300px;
+}
+
 [data-page="A"] .el-table {
   margin-top: 16px;
   border-radius: 4px;
@@ -34,83 +46,63 @@
   background-color: #f0f9ff !important;
 }
 
-[data-page="A"] .el-dialog {
-  border-radius: 8px;
-}
-
-[data-page="A"] .el-dialog .el-dialog__header {
-  border-bottom: 1px solid #e4e7ed;
-  padding: 16px 20px;
-}
-
-[data-page="A"] .el-dialog .el-dialog__body {
+[data-page="A"] .r-detail {
+  background-color: #fff;
   padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ebeef5;
 }
 
-[data-page="A"] .r-form {
-  padding: 10px 0;
-}
-
-[data-page="A"] .r-form .el-form-item {
+[data-page="A"] .r-detail .el-form-item {
   margin-bottom: 18px;
 }
 
-[data-page="A"] .r-form .el-form-item__label {
+[data-page="A"] .r-detail .el-form-item__label {
   color: #606266;
   font-weight: 500;
+  width: 100px;
 }
 
-[data-page="A"] .r-form .el-input,
-[data-page="A"] .r-form .el-input-number {
-  width: 100%;
-}
-
-[data-page="A"] .search-area {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-[data-page="A"] .search-area .el-input {
-  flex: 1;
-  max-width: 300px;
-}
-
-[data-page="A"] .button-group {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-[data-page="A"] .score-column {
+[data-page="A"] .status-column {
   text-align: center;
   font-weight: 500;
 }
 
-[data-page="A"] .score-column.high-score {
-  color: #67c23a;
-}
-
-[data-page="A"] .score-column.low-score {
-  color: #f56c6c;
-}
-
-[data-page="A"] .dialog-footer {
-  margin-top: 20px;
-  text-align: right;
-}
-
-[data-page="A"] .dialog-footer .el-button {
-  margin-left: 10px;
-}
-
-[data-page="A"] .total-score {
-  font-weight: 600;
+[data-page="A"] .status-column.进行中 {
   color: #409eff;
 }
 
-[data-page="A"] .average-score {
-  font-weight: 600;
+[data-page="A"] .status-column.已完成 {
+  color: #67c23a;
+}
+
+[data-page="A"] .status-column.规划中 {
+  color: #909399;
+}
+
+[data-page="A"] .status-column.暂停 {
   color: #e6a23c;
+}
+
+[data-page="A"] .progress-column {
+  text-align: center;
+}
+
+[data-page="A"] .progress-column.high-progress {
+  color: #67c23a;
+  font-weight: 600;
+}
+
+[data-page="A"] .progress-column.low-progress {
+  color: #f56c6c;
+  font-weight: 600;
+}
+
+[data-page="A"] .budget-column {
+  text-align: right;
+  font-weight: 500;
+}
+
+[data-page="A"] .date-column {
+  text-align: center;
 }

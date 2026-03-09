@@ -10,7 +10,9 @@
     <Transition name="slide">
       <div v-if="isOpen" class="ai-panel">
         <div class="ai-panel-header">
-          <span>🤖 AI · {{ routePageId ? `/${routePageId}` : '首页' }}</span>
+          <span>🤖 AI · {{ displayPageId ? `/${displayPageId}` : '首页' }}
+            <span v-if="loading && lockedPageId" class="ai-lock-badge" title="生成中，页面ID已锁定">🔒</span>
+          </span>
           <span class="ai-status" :class="statusClass">{{ statusText }}</span>
         </div>
 
@@ -71,6 +73,7 @@
             v-model="pageId"
             class="ai-input-page"
             placeholder="页面ID (同步当前路由)"
+            :disabled="loading"
             @keydown.enter="handleSend"
           />
           <textarea
@@ -140,6 +143,14 @@ const loading = ref(false)
 const prompt = ref('')
 const pageId = ref('')
 
+/** 生成期间锁定的 pageId — 一旦开始生成就固定，不随路由/输入变化 */
+const lockedPageId = ref('')
+
+/** 面板标题栏展示的 pageId：生成中显示锁定值，空闲时显示路由值 */
+const displayPageId = computed(() =>
+  loading.value && lockedPageId.value ? lockedPageId.value : (pageId.value || routePageId.value)
+)
+
 /** 当前路由对应的 pageId（去除前导 /） */
 const routePageId = computed(() => {
   const trimmed = route.path.replace(/^\/+/, '')
@@ -153,7 +164,7 @@ watch(routePageId, (newId) => {
   }
 }, { immediate: true })
 
-// pageId 切换时清空旧页面的聊天记录和状态
+// pageId 切换时清空旧页面的聊天记录和状态（生成中不响应）
 watch(pageId, () => {
   if (!loading.value) {
     messages.value = []
@@ -162,10 +173,13 @@ watch(pageId, () => {
   }
 })
 
-// 加载结束后重新同步（路由可能在 loading 期间变更，watcher 被跳过）
+// 加载结束后：清除锁定，重新同步到当前路由
 watch(loading, (isLoading) => {
-  if (!isLoading && routePageId.value) {
-    pageId.value = routePageId.value
+  if (!isLoading) {
+    lockedPageId.value = ''
+    if (routePageId.value) {
+      pageId.value = routePageId.value
+    }
   }
 })
 const messages = ref<ChatMessage[]>([])
@@ -310,6 +324,7 @@ async function handleSend() {
   messages.value.push({ role: 'user', text: `[${pid}] ${text}` })
   prompt.value = ''
   loading.value = true
+  lockedPageId.value = pid
   _abortRequested = false
   updateStatus('generating')
   scrollToBottom()
@@ -526,6 +541,7 @@ async function handleDebug() {
   scrollToBottom()
 
   loading.value = true
+  lockedPageId.value = pid
   _abortRequested = false
   updateStatus('generating')
   setAutoIterating(true)
@@ -744,6 +760,12 @@ watch(() => route.query['aiDebug'], async (val) => {
 .ai-status.generating { background: #e6a23c; color: #fff; }
 .ai-status.success { background: #67c23a; color: #fff; }
 .ai-status.error { background: #f56c6c; color: #fff; }
+
+.ai-lock-badge {
+  font-size: 11px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
 
 .ai-panel-body {
   flex: 1;
