@@ -24,6 +24,9 @@ function __init__() {
   if (view) {
     _pageState.originalRows = [...view.rows]
   }
+  
+  // 初始化删除按钮状态
+  updateDeleteButtonState()
 }
 
 // 新增项目按钮处理
@@ -47,9 +50,9 @@ function handleAddProject() {
     progress: 0
   }
   
-  // 追加新行并设置为当前行
+  // 追加新行
   view.appendRow(newRow)
-  view.setCurrentRow(newRow)
+  // 注意：框架会自动同步当前行，这里不需要调用 view.setCurrentRow(newRow)
   
   // 更新原始数据引用
   _pageState.originalRows = [...view.rows]
@@ -88,6 +91,9 @@ function handleDeleteProject() {
     
     // 更新原始数据引用
     _pageState.originalRows = [...view.rows]
+    
+    // 更新删除按钮状态
+    updateDeleteButtonState()
     
     $page.showMessage(`成功删除 ${deleteCount} 个项目`, 'success')
   })
@@ -138,4 +144,13 @@ function handleCurrentChange(currentRow) {
 function handleSelectionChange(selection) {
   // 确保 selection 是数组
   _pageState.selectedRows = Array.isArray(selection) ? selection : []
+  
+  // 更新删除按钮状态
+  updateDeleteButtonState()
+}
+
+// 更新删除按钮状态
+function updateDeleteButtonState() {
+  const hasSelection = _pageState.selectedRows.length > 0
+  $api.disabled('deleteBtn', !hasSelection)
 }

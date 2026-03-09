@@ -206,4 +206,12 @@
     "icon" : "🤖",
     "title" : "page-manager"
   }
+}, {
+  "path" : "/my-page-1",
+  "name" : "my-page-1",
+  "pageId" : "my-page-1",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "my-page-1"
+  }
 } ]

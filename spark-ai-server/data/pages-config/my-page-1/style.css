@@ -1,0 +1,24 @@
+[data-page="my-page-1"] {
+  background-color: #f5f7fa;
+}
+[data-page="my-page-1"] .page-container {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+[data-page="my-page-1"] .toolbar {
+  background-color: #f9f9f9;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid #ebeef5;
+}
+[data-page="my-page-1"] .el-table {
+  margin-top: 0;
+}
+[data-page="my-page-1"] .el-pagination {
+  padding: 12px 0;
+}
+[data-page="my-page-1"] .el-button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
