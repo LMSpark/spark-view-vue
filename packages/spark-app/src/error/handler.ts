@@ -52,6 +52,11 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
     }
   }
 
+  // Vue 警告处理（模板警告、prop 验证失败等 → 进入 Logger → AI 迭代闭环可检测）
+  app.config.warnHandler = (msg, _instance, trace) => {
+    errorLogger.warn('[Vue Warning]', { message: msg, trace })
+  }
+
   // Promise 未捕获错误
   if (typeof window !== 'undefined') {
     const rejectionHandler = (event: PromiseRejectionEvent) => {

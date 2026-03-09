@@ -43,8 +43,9 @@
 
 // SPARK 架构包
 import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger, addGlobalTransport } from '@spark-view/spark-app'
-import type { LogLevel as AppLogLevel, LogTransport } from '@spark-view/spark-app'
-import { setLoggerHook } from '@spark-view/spark-utils'
+import type { LogTransport } from '@spark-view/spark-app'
+import { addLogTransport } from '@spark-view/spark-utils'
+import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
 
 // 创建启动日志（临时用于启动流程）
 import { createLogger } from '@spark-view/spark-app'
@@ -127,7 +128,39 @@ async function startApp() {
       version: appConfig.config.version
     })
     
-    // 1.5 根据配置决定日志模式：本地 or 上传到服务端
+    // ━━ 1.5 全链路 Logger 贯穿（APP 层唯一注册点） ━━━━━━━━━━━━━━━━━━━━━━━
+    //
+    // 三条日志链路统一汇入同一组 transport：
+    //   A) spark-utils  Logger()  → addLogTransport()   — FileLoader / bindRules / PageRenderer
+    //   B) spark-app    AppLogger → addGlobalTransport() — error handler / warnHandler / startupLogger
+    //   C) APP_SERVICES.logger    → 实际是 Logger('PageRenderer')，走链路 A
+    //
+    // collectorTransport 同时注册到 A + B，确保无论走哪条链路都能被 AI Loop 收集。
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // ⚡ AI 闭环 collectorTransport — 在 SparkApp.start 之前同步注册
+    // 页面首次渲染（beforeMount 阶段注册路由后 router.isReady() 触发）产生的 JSON 解析错误等
+    // 必须在渲染发生前就能被捕获，所以 transport 注册越早越好。
+    interface BufferedLog { level: string; message: string; meta?: Record<string, unknown> | undefined; timestamp: number; pageId?: string | undefined }
+    let _loopCollector: { push(entry: BufferedLog): void } | null = null
+    const _bufferedLogs: BufferedLog[] = []
+
+    const collectorTransport: LogTransport & UtilsLogTransport = {
+      send(level, message, meta) {
+        const entry: BufferedLog = { level, message, meta, timestamp: Date.now(), pageId: _currentPageId }
+        if (_loopCollector) {
+          _loopCollector.push(entry)
+        } else {
+          _bufferedLogs.push(entry)
+        }
+      },
+    }
+
+    // 链路 A：spark-utils Logger（原生 transport，结构化 message+meta，无损传递）
+    addLogTransport(collectorTransport)
+    // 链路 B：spark-app AppLogger（error handler / warnHandler 等）
+    addGlobalTransport(collectorTransport)
+
     if (appConfig.logger.enableRemote === true) {
       const remoteTransport = configureRemoteLogger({
         endpoint: appConfig.logger.remoteEndpoint ?? '/api/logs',
@@ -137,13 +170,9 @@ async function startApp() {
         getPageId: () => _currentPageId,
         sessionId: _sessionId,
       })
-
-      // 收口 spark-utils Logger（如 pageLogger / configLogger 等）：
-      // 将其日志也转发到远程传输器，实现全链路覆盖。
-      setLoggerHook((level: AppLogLevel, prefix: string | undefined, args: unknown[]) => {
-        const message = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ')
-        void remoteTransport.send(level, prefix ? `${prefix} ${message}` : message)
-      })
+      // 远程日志同样双注册，确保全链路上报
+      addLogTransport(remoteTransport as unknown as UtilsLogTransport)
+      // remoteTransport 已通过 configureRemoteLogger 注册到 spark-app _globalTransports
 
       startupLogger.info('📡 远程日志已启用（全链路）', {
         endpoint: appConfig.logger.remoteEndpoint,
@@ -210,7 +239,15 @@ async function startApp() {
       // 挂载前钩子
       beforeMount: async (context) => {
         const { router, app } = context
-        
+
+        // ── AI 闭环：尽早注入 pageId 上下文 ──
+        // mount 阶段渲染页面时产生的错误需要正确的 pageId 标记，
+        // 必须在 app.mount() 之前设置，否则 collectorTransport 记录的 pageId 为 undefined
+        _currentPageId = extractPageId(router.currentRoute.value.path)
+        router.afterEach((to) => {
+          _currentPageId = extractPageId(to.path)
+        })
+
         startupLogger.info('✅ 应用准备挂载')
         
         // 🎨 注册 Renderer 智能组件
@@ -346,23 +383,20 @@ async function startApp() {
       afterMount: (context) => {
         startupLogger.info('✅ 应用启动完成')
         
-        // ── AI 闭环：注入 pageId 上下文 ──
-        // 路由切换时实时更新 _currentPageId，Logger 自动携带
+        // _currentPageId + router.afterEach 已在 beforeMount 中设置
         const { router } = context
-        _currentPageId = extractPageId(router.currentRoute.value.path)
-        router.afterEach((to) => {
-          _currentPageId = extractPageId(to.path)
-        })
         
         // ── AI 闭环：初始化 AI Loop 服务（可选） ──
         if (appConfig.config.features.enableAI === true) {
           // 暴露给 App.vue 的 AiChatPanel 条件渲染
           ;(window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI'] = true
 
+          // collectorTransport 已在 1.5 节提前注册到两个 Logger 体系，
+          // 此处只需异步加载 AI Loop 模块并连接缓冲区。
           Promise.all([
             import('./services/ai-loop'),
             import('virtual:spark-skill-catalog').catch(() => null),
-          ]).then(([{ initAILoop, setupHotReload }, skillMod]) => {
+          ]).then(([{ initAILoop, setupHotReload, setConfigLoader }, skillMod]) => {
             // 生成 Skill Catalog Markdown（构建时从 @skill 注解采集）
             const skillCatalog = skillMod?.buildSkillPrompt('## SPARK Skill 目录', 'compact')
 
@@ -377,24 +411,32 @@ async function startApp() {
               },
             })
 
-            // 将 AI Loop 的日志收集器注册为全局传输器消费端
-            const collectorTransport: LogTransport = {
-              send(level, message, meta) {
-                loop.collector.push({
-                  level,
-                  message,
-                  meta,
-                  timestamp: Date.now(),
-                  pageId: _currentPageId,
-                })
-              },
+            // 注册 configLoader 到 ai-loop（使 clearPageCache 能同时清除 memCache）
+            const configRoute = router.getRoutes().find(
+              r => r.meta['pageId'] !== null && r.meta['pageId'] !== undefined && r.meta['type'] !== 'vue-component'
+            )
+            if (configRoute) {
+              const routeProps = configRoute.props['default'] as Record<string, unknown> | undefined
+              const loader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
+              if (loader) setConfigLoader(loader)
             }
-            addGlobalTransport(collectorTransport)
 
-            // SSE 监听：AI 写入文件后自动清缓存 + 热重载当前页面
+            // 将缓冲区中的日志刷入 AI Loop collector，然后切换为直连
+            for (const entry of _bufferedLogs) {
+              loop.collector.push(entry)
+            }
+            _bufferedLogs.length = 0
+            _loopCollector = loop.collector
+
+            // SSE 监听：AI 写入文件后自动清缓存 + 软重载当前页面
+            // 使用路由级软重载（/ → 原页面）替代 window.location.reload()，
+            // 避免全页刷新导致 AiChatPanel 状态丢失
             setupHotReload(
               () => _currentPageId ?? '',
-              () => { window.location.reload() },
+              () => {
+                const target = router.currentRoute.value.fullPath
+                void router.replace('/').then(() => router.replace(target))
+              },
             )
 
             // 浏览器控制台快捷入口：window.__aiLoop

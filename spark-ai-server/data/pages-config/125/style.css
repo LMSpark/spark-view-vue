@@ -1,0 +1,10 @@
+[data-page="125"] .page-container {
+  background-color: #f5f7fa;
+  min-height: 100vh;
+}
+[data-page="125"] .el-table {
+  margin-top: 16px;
+}
+[data-page="125"] .el-button {
+  margin-right: 8px;
+}

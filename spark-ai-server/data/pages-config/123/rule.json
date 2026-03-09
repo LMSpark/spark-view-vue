@@ -1,0 +1,140 @@
+[
+    {
+        "type": "div",
+        "class": "page-container",
+        "style": {
+            "padding": "20px"
+        },
+        "children": [
+            {
+                "type": "h2",
+                "children": [
+                    "销售订单管理"
+                ]
+            },
+            {
+                "type": "el-alert",
+                "props": {
+                    "title": "管理销售订单，支持新增、编辑、删除操作。",
+                    "type": "info",
+                    "closable": false,
+                    "showIcon": true
+                },
+                "style": {
+                    "marginBottom": "16px"
+                }
+            },
+            {
+                "type": "div",
+                "style": {
+                    "marginBottom": "16px",
+                    "display": "flex",
+                    "gap": "8px"
+                },
+                "children": [
+                    {
+                        "type": "el-button",
+                        "props": {
+                            "type": "primary",
+                            "size": "small"
+                        },
+                        "on": {
+                            "click": "handleAdd"
+                        },
+                        "children": [
+                            "新增订单"
+                        ]
+                    },
+                    {
+                        "type": "el-button",
+                        "props": {
+                            "type": "success",
+                            "size": "small"
+                        },
+                        "on": {
+                            "click": "handleEdit"
+                        },
+                        "children": [
+                            "编辑订单"
+                        ]
+                    },
+                    {
+                        "type": "el-button",
+                        "props": {
+                            "type": "danger",
+                            "size": "small"
+                        },
+                        "on": {
+                            "click": "handleDelete"
+                        },
+                        "children": [
+                            "删除订单"
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "el-table",
+                "dataKey": "SalesOrders@rows",
+                "props": {
+                    "border": true,
+                    "stripe": true,
+                    "highlightCurrentRow": true
+                },
+                "on": {
+                    "currentChange": "handleCurrentChange"
+                },
+                "children": [
+                    {
+                        "type": "el-table-column",
+                        "props": {
+                            "prop": "id",
+                            "label": "订单ID",
+                            "width": "100"
+                        }
+                    },
+                    {
+                        "type": "el-table-column",
+                        "props": {
+                            "prop": "orderNo",
+                            "label": "订单号",
+                            "width": "150"
+                        }
+                    },
+                    {
+                        "type": "el-table-column",
+                        "props": {
+                            "prop": "customerName",
+                            "label": "客户名称",
+                            "width": "150"
+                        }
+                    },
+                    {
+                        "type": "el-table-column",
+                        "props": {
+                            "prop": "orderDate",
+                            "label": "订单日期",
+                            "width": "120"
+                        }
+                    },
+                    {
+                        "type": "el-table-column",
+                        "props": {
+                            "prop": "totalAmount",
+                            "label": "总金额",
+                            "width": "120"
+                        }
+                    },
+                    {
+                        "type": "el-table-column",
+                        "props": {
+                            "prop": "status",
+                            "label": "状态",
+                            "width": "100"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

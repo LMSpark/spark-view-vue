@@ -1,0 +1,59 @@
+{
+    "dataSetName": "EmployeeDS",
+    "tables": {
+        "employees": {
+            "tableName": "employees",
+            "primaryKey": "id",
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "number"
+                },
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "department",
+                    "type": "string"
+                },
+                {
+                    "name": "salary",
+                    "type": "number"
+                }
+            ],
+            "rows": [
+                {
+                    "id": 1,
+                    "name": "张三",
+                    "department": "技术部",
+                    "salary": 15000
+                },
+                {
+                    "id": 2,
+                    "name": "李四",
+                    "department": "产品部",
+                    "salary": 13000
+                },
+                {
+                    "id": 3,
+                    "name": "王五",
+                    "department": "技术部",
+                    "salary": 18000
+                },
+                {
+                    "id": 4,
+                    "name": "赵六",
+                    "department": "市场部",
+                    "salary": 12000
+                },
+                {
+                    "id": 5,
+                    "name": "孙七",
+                    "department": "技术部",
+                    "salary": 20000
+                }
+            ]
+        }
+    }
+}
