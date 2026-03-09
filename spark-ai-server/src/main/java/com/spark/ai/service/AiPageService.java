@@ -181,6 +181,7 @@ public class AiPageService {
         } else {
             sb.append("请为页面 `").append(pid).append("` 生成配置。\n\n");
             sb.append("**用户需求**：").append(request.getPrompt() != null ? request.getPrompt() : "").append("\n\n");
+            appendLogs(sb, request);
         }
 
         sb.append("⚠️ 【分步生成 - 第 1 轮】本轮只需生成 rule.json 和 pagedata.json。\n");
@@ -215,6 +216,9 @@ public class AiPageService {
             appendFileBlock(sb, "当前 style.css", "css", request.getCurrentFiles().get("style.css"));
         }
 
+        // 运行时日志（帮助 AI 定位 script.js 层面的错误）
+        appendLogs(sb, request);
+
         sb.append("⚠️ 【分步生成 - 第 2 轮】本轮只需生成 script.js 和 style.css。\n");
         sb.append("返回的 JSON 中 files 对象只包含 \"script.js\" 和 \"style.css\" 两个键。\n");
         sb.append("不要包含 rule.json 和 pagedata.json。\n");
@@ -234,7 +238,14 @@ public class AiPageService {
         if (request.getLogs() == null || request.getLogs().isEmpty()) return;
         sb.append("**运行时日志**（供你判断错误原因）：\n");
         for (AiChatRequest.LogSnapshot l : request.getLogs()) {
-            sb.append("  [").append(l.getLevel()).append("] ").append(l.getMessage()).append("\n");
+            sb.append("  [").append(l.getLevel()).append("] ").append(l.getMessage());
+            if (l.getComponentType() != null && !l.getComponentType().isBlank()) {
+                sb.append("  [组件: ").append(l.getComponentType()).append("]");
+            }
+            if (l.getMeta() != null && !l.getMeta().isEmpty()) {
+                sb.append("  meta: ").append(l.getMeta());
+            }
+            sb.append("\n");
         }
         sb.append("\n");
     }

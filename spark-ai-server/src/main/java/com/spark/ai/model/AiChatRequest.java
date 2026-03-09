@@ -63,6 +63,8 @@ public class AiChatRequest {
         private String level;
         private String message;
         private String componentType;
+        private String pageId;
+        private Map<String, Object> meta;
 
         public long getTimestamp() { return timestamp; }
         public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
@@ -75,5 +77,11 @@ public class AiChatRequest {
 
         public String getComponentType() { return componentType; }
         public void setComponentType(String componentType) { this.componentType = componentType; }
+
+        public String getPageId() { return pageId; }
+        public void setPageId(String pageId) { this.pageId = pageId; }
+
+        public Map<String, Object> getMeta() { return meta; }
+        public void setMeta(Map<String, Object> meta) { this.meta = meta; }
     }
 }
