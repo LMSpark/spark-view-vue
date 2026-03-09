@@ -226,25 +226,27 @@ public class PageConfigService {
         Path target = configRoot.resolve(filename).normalize();
         ensureInRoot(target);
 
+        if (!Files.exists(target)) {
+            fileCache.remove(filename);
+            throw new NoSuchFileException(target.toString());
+        }
+        String diskMtime = Files.getLastModifiedTime(target).toInstant().toString();
+
         CacheEntry cached = fileCache.get(filename);
-        if (cached != null) {
+        if (cached != null && cached.timestamp().equals(diskMtime)) {
             if (clientTimestamp != null && clientTimestamp.equals(cached.timestamp())) {
                 return Map.of("notModified", true, "timestamp", cached.timestamp(), "content", "");
             }
             return Map.of("content", cached.content(), "timestamp", cached.timestamp());
         }
 
-        if (!Files.exists(target)) {
-            throw new NoSuchFileException(target.toString());
-        }
-        String mtime = Files.getLastModifiedTime(target).toInstant().toString();
         String content = Files.readString(target, StandardCharsets.UTF_8);
-        fileCache.put(filename, new CacheEntry(content, mtime));
+        fileCache.put(filename, new CacheEntry(content, diskMtime));
 
-        if (clientTimestamp != null && clientTimestamp.equals(mtime)) {
-            return Map.of("notModified", true, "timestamp", mtime, "content", "");
+        if (clientTimestamp != null && clientTimestamp.equals(diskMtime)) {
+            return Map.of("notModified", true, "timestamp", diskMtime, "content", "");
         }
-        return Map.of("content", content, "timestamp", mtime);
+        return Map.of("content", content, "timestamp", diskMtime);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
