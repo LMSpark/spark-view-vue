@@ -3,6 +3,8 @@ import type { ComputedRef } from 'vue'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { DataView, FilterExpression, FilterOperator, IDataRow } from '@spark-view/spark-data'
 
+// ── 类型定义 ──────────────────────────────────────────────────────────────────
+
 interface LoggerLike {
   error(message: string, error?: unknown): void
 }
@@ -18,6 +20,8 @@ interface UseTableFiltersOptions {
   filterGridAutoRows: ComputedRef<string | undefined>
   logger: LoggerLike
 }
+
+// ── 规范化辅助函数 ───────────────────────────────────────────────────────────
 
 function normalizeFilterColumns(value: unknown): string[] {
   if (!Array.isArray(value)) return []
@@ -35,6 +39,8 @@ function isRangeFilterConfig(config: ComponentConfig): boolean {
   const filterMode = config.props?.['filterMode'] ?? config.props?.['filterVariant']
   return filterMode === 'range' || config.props?.['filterRange'] === true
 }
+
+// ── 过滤表达式构建 ───────────────────────────────────────────────────────────
 
 function inferFilterOperator(config: ComponentConfig, value: unknown): FilterOperator {
   const explicit = config.props?.['filterOp'] ?? config.props?.['filterOperator']
@@ -64,6 +70,8 @@ function buildCondition(config: ComponentConfig, value: unknown): FilterExpressi
     value,
   }
 }
+
+// ── 本地匹配辅助函数 ─────────────────────────────────────────────────────────
 
 function compareScalar(left: unknown, right: unknown): number {
   if (typeof left === 'number' && typeof right === 'number') return left - right
@@ -157,9 +165,13 @@ function matchesExpression(row: IDataRow, expr: FilterExpression): boolean {
   return true
 }
 
+// ── 组合式函数 ───────────────────────────────────────────────────────────────
+
 export function useTableFilters(options: UseTableFiltersOptions) {
+  // 过滤表单的可变输入模型，供动态生成的过滤控件双向绑定。
   const filterModel = reactive<Record<string, unknown>>({})
 
+  // 过滤区布局参数：显式传入优先，其次回退到容器配置。
   const filterColumnsValue = computed(() =>
     normalizeFilterColumns(options.filterColumns.value ?? options.config.value?.props?.['filterColumns'])
   )
@@ -176,6 +188,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     (options.config.value?.props?.['filterGridAutoRows'] as string | undefined) ?? options.filterGridAutoRows.value ?? 'minmax(32px, auto)'
   )
 
+  // 将过滤字段名解析回对应的字段组件配置。
   const filterConfigs = computed(() => {
     if (filterColumnsValue.value.length === 0) return []
     const configMap = new Map<string, ComponentConfig>()
@@ -189,6 +202,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
       .filter((config): config is ComponentConfig => config !== undefined)
   })
 
+  // 保持 filterModel 的键集合与当前启用的过滤字段一致。
   watch(filterConfigs, (configs) => {
     const nextKeys = new Set(configs.map(config => config.name).filter((name): name is string => typeof name === 'string'))
     for (const key of Object.keys(filterModel)) {
@@ -203,6 +217,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     }
   }, { immediate: true })
 
+  // 将当前所有过滤输入聚合成一个 DataView 可识别的表达式。
   const filterExpression = computed<FilterExpression | undefined>(() => {
     const conditions = filterConfigs.value
       .map(config => buildCondition(config, typeof config.name === 'string' ? filterModel[config.name] : undefined))
@@ -213,6 +228,10 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     return { type: 'and', children: conditions }
   })
 
+  // 首次同步时只设置过滤表达式，避免额外触发 refresh()。
+  let initialized = false
+
+  // DataView 切换时，把最新过滤表达式同步过去。
   watch(() => options.dataView.value, async (view) => {
     if (!view) return
     try {
@@ -223,7 +242,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     }
   }, { immediate: true })
 
-  let initialized = false
+  // 远程表在后续过滤变更时主动 refresh；本地表则在下方做内存过滤。
   watch(filterExpression, async (expr) => {
     const view = options.dataView.value
     if (!view) return
@@ -239,6 +258,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     }
   }, { deep: true })
 
+  // 纯本地数据直接基于当前 rows 计算过滤结果，不发请求。
   const filteredRows = computed(() => {
     const rows = options.dataView.value?.rows ?? []
     if (options.dataView.value?.dataTable?.api?.list) return rows
@@ -246,6 +266,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     return expr ? rows.filter(row => matchesExpression(row, expr)) : rows
   })
 
+  // 提供给 RendererTable 使用的公开返回值。
   return {
     filterModel,
     filterConfigs,

@@ -191,12 +191,16 @@ function bindRulesRecursive(
       }
     }
 
-    // ── r-* 容器组件：children → sparkChildren prop ──
+    // ── r-* 组件：children → sparkChildren prop ──
     // form-create 的 slot 机制会用内部包装组件包裹子元素，
     // 破坏 el-table 对 el-table-column 的直接子级检测。
     // 将已递归处理的 children 移入 sparkChildren prop，
-    // 由容器组件自行通过 SparkComponentRenderer 渲染。
-    if (isSelfResolvingType(ruleType, registry)) {
+    // 由组件自行通过 SparkComponentRenderer 渲染。
+    //
+    // 容器组件（r-table / r-form 等）：自行递归渲染 sparkChildren
+    // 字段组件（r-text / r-number 等）：在 table 上下文中，
+    //   有 sparkChildren 时渲染为分组列（多行表头），否则渲染为数据列
+    if (ruleType.startsWith('r-')) {
       // bindRulesRecursive 返回 BindRule[]（全为对象），无需二次类型过滤
       const sparkKids = Array.isArray(newRule.children) ? newRule.children as BindRule[] : []
       if (sparkKids.length > 0) {

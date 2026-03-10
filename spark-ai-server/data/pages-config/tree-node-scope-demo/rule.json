@@ -1,0 +1,48 @@
+[
+    {
+        "type": "r-section",
+        "props": {
+            "title": "RendererTreeNodeScope 演示",
+            "description": "下面这棵树的节点正文只写了字段组件，但每个节点都会显示自己的名称、类型标签和负责人标签。"
+        },
+        "children": [
+            {
+                "type": "r-tree",
+                "dataKey": "OrgTree@rows",
+                "props": {
+                    "node-key": "id",
+                    "highlight-current": true,
+                    "default-expand-all": true,
+                    "expand-on-click-node": false,
+                    "onNodeClick": "handleNodeClick"
+                },
+                "children": [
+                    {
+                        "type": "r-text",
+                        "name": "name"
+                    },
+                    {
+                        "type": "r-text",
+                        "name": "typeLabel"
+                    },
+                    {
+                        "type": "r-text",
+                        "name": "ownerLabel"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": "r-section",
+        "props": {
+            "title": "当前节点",
+            "description": "点击树节点后，这个区域会直接用 DOM 写入当前节点信息，不触发 $rebindRules。"
+        },
+        "children": [
+            {
+                "type": "RenderCurrentNodeInfo"
+            }
+        ]
+    }
+]

@@ -123,6 +123,7 @@ import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import { FIELD_CONTEXT } from '../capability-keys'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
+import { useContainerInput } from './useContainerInput'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerSlots } from './useContainerSlots'
 import { useContainerToolbar } from './useContainerToolbar'
@@ -184,25 +185,10 @@ const ElTableColumns = defineComponent({
 
 // ── 输入解析 ──────────────────────────────────────────────────────────────
 
-const effectiveDataKey = computed(() =>
-  (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
-)
-
-const resolvedSparkChildren = computed<ComponentConfig[]>(() => {
-  const directChildren = props.sparkChildren
-  if (Array.isArray(directChildren) && directChildren.length > 0) return directChildren
-
-  const configSparkChildren = props.config?.props?.['sparkChildren'] as ComponentConfig[] | undefined
-  if (Array.isArray(configSparkChildren) && configSparkChildren.length > 0) return configSparkChildren
-
-  return []
-})
-
-// 配置驱动模式下的子组件列表（优先真实 children；bindRules 注入场景从 props.sparkChildren 读取）
-const mergedChildren = computed<ComponentConfig[]>(() => {
-  const configChildren = props.config?.children
-  if (Array.isArray(configChildren) && configChildren.length > 0) return configChildren
-  return resolvedSparkChildren.value
+const { effectiveDataKey, mergedChildren } = useContainerInput({
+  config: computed(() => props.config),
+  dataKey: computed(() => props.dataKey),
+  sparkChildren: computed(() => props.sparkChildren),
 })
 
 const legacyRowActionConfigs = computed(() =>

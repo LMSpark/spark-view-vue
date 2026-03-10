@@ -93,6 +93,7 @@ import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
+import { useContainerInput } from './useContainerInput'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerSlots } from './useContainerSlots'
 import { useContainerToolbar } from './useContainerToolbar'
@@ -147,10 +148,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const slots = useSlots()
 
-const effectiveDataKey = computed(() =>
-  (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
-)
-const mergedChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
+const { effectiveDataKey, configChildren: mergedChildren } = useContainerInput({
+  config: computed(() => props.config),
+  dataKey: computed(() => props.dataKey),
+  sparkChildren: computed(() => props.sparkChildren),
+})
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { consume, provide: sparkProvide, logger } = useSparkComponent(

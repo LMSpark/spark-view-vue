@@ -89,11 +89,23 @@ const SparkColumnRendererStub = defineComponent({
         'r-date': TableDateFieldStub,
       }
       const component = componentMap[type]
-      if (!component) return null
-      return h(component as never, {
-        config,
-        ...((config['props'] as Record<string, unknown> | undefined) ?? {}),
-      })
+      if (component) {
+        return h(component as never, {
+          config,
+          ...((config['props'] as Record<string, unknown> | undefined) ?? {}),
+        })
+      }
+      // 非列组件回退为 action stub（toolbar / row-actions 等）
+      const onMap = config['on'] as Record<string, unknown> | undefined
+      const click = onMap?.['click']
+      return h('button', {
+        class: 'spark-action-stub',
+        'data-type': type,
+        'data-row-id': String((((config['props'] as Record<string, unknown> | undefined)?.['row'] as Record<string, unknown> | undefined)?.['id'] ?? '')),
+        'data-row-index': String((((config['props'] as Record<string, unknown> | undefined)?.['rowIndex'] as number | undefined) ?? '')),
+        'data-node-id': String((((config['props'] as Record<string, unknown> | undefined)?.['data'] as Record<string, unknown> | undefined)?.['id'] ?? '')),
+        onClick: () => { if (typeof click === 'function') click('evt') },
+      }, type)
     }
   }
 })
@@ -394,7 +406,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         stubs: {
           'el-table': ElTableStub,
           'el-table-column': ElTableColumnStub,
-          SparkComponentRenderer: SparkActionStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
         }
       }
     })
@@ -432,7 +444,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         stubs: {
           'el-table': ElTableStub,
           'el-table-column': ElTableColumnStub,
-          SparkComponentRenderer: SparkActionStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
         }
       }
     })

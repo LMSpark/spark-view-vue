@@ -41,6 +41,7 @@
  *   r-cascader → FieldCascader
  *   r-tree-select → FieldTreeSelect
  *   r-transfer → FieldTransfer
+ *   r-column-group → FieldColumnGroup
  */
 import { Spark } from '@spark-view/spark-component'
 import type { GlobModules } from '@spark-view/spark-component'
@@ -85,6 +86,7 @@ import FieldProductPickerComp from './renderer-fields/FieldProductPicker.vue'
 import FieldCascaderComp from './renderer-fields/FieldCascader.vue'
 import FieldTreeSelectComp from './renderer-fields/FieldTreeSelect.vue'
 import FieldTransferComp from './renderer-fields/FieldTransfer.vue'
+import FieldColumnGroupComp from './renderer-fields/FieldColumnGroup.vue'
 export { FieldTextComp as FieldText }
 export { FieldTextareaComp as FieldTextarea }
 export { FieldHtmlEditorComp as FieldHtmlEditor }
@@ -111,6 +113,7 @@ export { FieldProductPickerComp as FieldProductPicker }
 export { FieldCascaderComp as FieldCascader }
 export { FieldTreeSelectComp as FieldTreeSelect }
 export { FieldTransferComp as FieldTransfer }
+export { FieldColumnGroupComp as FieldColumnGroup }
 
 // ── SPARK 注册 ──
 
@@ -161,3 +164,4 @@ Spark.register('r-product-picker', FieldProductPickerComp)
 Spark.register('r-cascader', FieldCascaderComp)
 Spark.register('r-tree-select', FieldTreeSelectComp)
 Spark.register('r-transfer', FieldTransferComp)
+Spark.register('r-column-group', FieldColumnGroupComp)

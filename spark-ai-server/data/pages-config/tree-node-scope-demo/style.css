@@ -1,0 +1,60 @@
+[data-page="tree-node-scope-demo"] {
+  padding: 20px;
+}
+
+[data-page="tree-node-scope-demo"] .tree-node-scope-demo-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+[data-page="tree-node-scope-demo"] .demo-header {
+  padding-bottom: 16px;
+  border-bottom: 2px solid #67c23a;
+}
+
+[data-page="tree-node-scope-demo"] .demo-header h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  color: #303133;
+}
+
+[data-page="tree-node-scope-demo"] .demo-header p {
+  margin: 0;
+  color: #606266;
+  line-height: 1.6;
+}
+
+[data-page="tree-node-scope-demo"] .renderer-tree-node-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+[data-page="tree-node-scope-demo"] .renderer-tree-node-content .tree-node-text:first-child {
+  font-weight: 600;
+  color: #303133;
+}
+
+[data-page="tree-node-scope-demo"] .renderer-tree-node-content .tree-node-text:nth-child(2) {
+  color: #409eff;
+}
+
+[data-page="tree-node-scope-demo"] .renderer-tree-node-content .tree-node-text:nth-child(3) {
+  color: #909399;
+}
+
+[data-page="tree-node-scope-demo"] .current-node-info {
+  min-height: 72px;
+}
+
+[data-page="tree-node-scope-demo"] .node-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #f5f7fa;
+  color: #303133;
+}

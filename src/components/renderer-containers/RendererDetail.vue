@@ -43,25 +43,16 @@
 /**
  * RendererDetail - 详情展示容器组件
  */
-import { computed, useSlots } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
+import { SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import type { DataView, IDataSource } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
-import { useContainerGrid } from './useContainerGrid'
-import { useContainerDataSource } from './useContainerDataSource'
-import { useContainerContextData } from './useContainerContextData'
-import { useContainerToolbar } from './useContainerToolbar'
+import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
-import { createCurrentRowSlotScope } from './useContainerSlotScopes'
+import { useFormDetailContainer } from './useFormDetailContainer'
 
 interface Props {
   config?: ComponentConfig
   dataKey?: string
-  /** bindRules 从 rule.children 提取的子组件配置（form-create 路径） */
   sparkChildren?: ComponentConfig[]
-  /** 直接传入的 DataView（备用） */
   dataView?: DataView | undefined
   toolbar?: ComponentConfig[]
   toolbarPosition?: ToolbarPosition
@@ -78,73 +69,18 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
-const slots = useSlots()
-
-const effectiveDataKey = computed(() =>
-  (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
-)
-const configChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
-const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: configChildren,
-  columns: computed(() => props.gridColumns),
-  gap: computed(() => props.gridGap),
-  autoRows: computed(() => props.gridAutoRows),
-})
-
-const { consume, provide: sparkProvide, logger } = useSparkComponent(
-  props.config ?? { type: 'r-detail' }
-)
-const pageDataSet = consume(PAGE_DATASET)
-
-const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
-  dataKey: effectiveDataKey,
-  pageDataSet,
-  fallbackSource: computed(() => props.dataView ?? null),
-  mapView: view => view,
-  provideDataSource: view => sparkProvide(DATA_SOURCE, view),
-  logger,
-  logPrefix: 'RendererDetail',
-})
-
-const resolvedSource = computed<IDataSource | null>(() => resolvedView.value as IDataSource | null)
-const { contextData: detailData, modelPermission } = useContainerContextData({
-  source: resolvedSource,
-})
 
 const {
+  gridChildren,
+  gridStyle,
+  getChildGridStyle,
   toolbarPositionValue,
   toolbarClassValue,
   visibleToolbarConfigs,
   showToolbar,
-} = useContainerToolbar({
-  config: computed(() => props.config),
-  toolbar: computed(() => props.toolbar),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
-  modelPermission,
-  slots,
-})
-
-sparkProvide(FIELD_CONTEXT, 'detail')
-sparkProvide(CONTEXT_DATA, detailData)
-
-function getToolbarSlotScope() {
-  return createCurrentRowSlotScope({
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
-    row: detailData,
-    model: detailData,
-  })
-}
-
-function getDefaultSlotScope() {
-  return createCurrentRowSlotScope({
-    dataSource: resolvedView.value,
-    modelPermission: modelPermission.value,
-    row: detailData,
-    model: detailData,
-  })
-}
+  getToolbarSlotScope,
+  getDefaultSlotScope,
+} = useFormDetailContainer(props, 'detail')
 </script>
 
 <style scoped>
