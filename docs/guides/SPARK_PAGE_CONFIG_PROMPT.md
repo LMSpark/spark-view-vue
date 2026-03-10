@@ -112,16 +112,26 @@ div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
 | `r-detail` | 详情容器 | `Table@currentRow` | 已注册的 r-* 字段组件 |
 | `r-tree` | 树容器 | `Table@rows` | — |
 | `r-list` | 列表/卡片容器 | `Table@rows` | 已注册的 r-* 字段组件 |
+| `r-tabs` | 标签页容器 | — | `r-tab-pane` |
+| `r-collapse` | 折叠面板容器 | — | `r-collapse-item` |
+| `r-dialog` | 对话框容器 | — | 已注册的 r-* 容器、已注册的 r-* 字段组件、Render* |
+| `r-drawer` | 抽屉容器 | — | 已注册的 r-* 容器、已注册的 r-* 字段组件、Render* |
+| `r-steps` | 步骤容器 | — | `r-step` |
 | `r-section` / `r-block` | 分组块容器 | — | 已注册的 r-* 容器、已注册的 r-* 字段组件、Render* |
 
 ### 块状容器网格规则
 
 - `r-form`、`r-detail`、`r-list`、`r-section`、`r-block` 内部默认使用 `CSS Grid` 的 24 列布局。
+- `r-tab-pane`、`r-collapse-item` 的内容区域也默认使用 `CSS Grid` 的 24 列布局。
+- `r-dialog`、`r-drawer`、`r-step` 的内容区域也默认使用 `CSS Grid` 的 24 列布局。
 - 默认水槽为 `0`，也就是组件之间不自动留白；如需间距，通过容器 props 的 `gridGap` 或组件自身样式控制。
 - 子组件默认占满 24 列；通过子组件 `props.colSpan` 可设置跨列数，例如 `12` 表示半行。
 - 子组件可通过 `props.rowSpan` 指定跨行数，例如 `2` 表示占两行网格高度。
 - 容器可选 props：`gridColumns`、`gridGap`、`gridAutoRows`；默认分别为 `24`、`0`、`minmax(32px, auto)`。
 - `r-list` 的外层重复项也使用 24 列；通过 `itemColSpan`、`itemRowSpan` 控制每个列表项占位。
+- `r-list` 可通过 `props.toolbar` 声明列表级动作区，通过 `props.itemActions` 声明每个列表项的动作区。
+- `r-dialog` / `r-drawer` 可通过 `props.headerActions`、`props.footerActions` 声明头部/底部动作区。
+- `r-steps` 可通过 `props.toolbar` 声明步骤条上方动作区。
 - `r-section` / `r-block` 可通过 `props.headerActions` 放置头部动作区；值为组件配置数组，常用于 `el-button`。
 
 **SPARK 字段组件**（在 r-* 容器内使用，通过 name 绑定行字段）
@@ -129,6 +139,8 @@ div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
 | type | 用途 | 必填 props |
 |------|------|-----------|
 | `r-text` | 文本字段 | `label`；name 来自 rule.name |
+| `r-textarea` | 多行文本字段 | `label` |
+| `r-html-editor` | HTML 编辑字段 | `label` |
 | `r-number` | 数字字段 | `label`；可加 `min, max` |
 | `r-date` | 日期字段 | `label` |
 | `r-select` | 单选下拉 | `label`；`options` |
@@ -146,18 +158,20 @@ div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
 | `r-icon` | 图标选择/显示 | `label`；建议配 `options` |
 | `r-image` | 图片地址展示 | `label` |
 | `r-file-path` | 文件路径字段 | `label` |
+| `r-file-browser` | 文件浏览选择字段 | `label` |
 | `r-upload` | 上传字段 | `label` |
 
 ### 字段分组建议
 
 | 分组 | 推荐组件 |
 |------|---------|
-| 基础输入 | `r-text`, `r-number`, `r-date` |
+| 基础输入 | `r-text`, `r-textarea`, `r-number`, `r-date` |
+| 富文本 | `r-html-editor` |
 | 枚举选择 | `r-select`, `r-multi-select`, `r-radio`, `r-checkbox-group` |
 | 布尔状态 | `r-checkbox`, `r-switch` |
 | 数值交互 | `r-slider`, `r-rate` |
 | 树形/集合选择 | `r-cascader`, `r-tree-select`, `r-transfer` |
-| 资源展示/选择 | `r-color`, `r-icon`, `r-image`, `r-file-path`, `r-upload` |
+| 资源展示/选择 | `r-color`, `r-icon`, `r-image`, `r-file-path`, `r-file-browser`, `r-upload` |
 
 **Render* 组件**（script.js 中定义的渲染函数，函数名即 type）
 type = Render 开头的函数名，如 `RenderTable`, `RenderToolbar`, `RenderNodeInfo`
@@ -222,12 +236,153 @@ vxe-table, vxe-column 等（需已注册）
 {
   "type": "r-list",
   "dataKey": "users@rows",
-  "props": { "useCard": true, "rowKey": "id", "gridColumns": 24, "gridGap": 0, "itemColSpan": 12, "itemRowSpan": 1 },
+  "props": {
+    "useCard": true,
+    "rowKey": "id",
+    "gridColumns": 24,
+    "gridGap": 0,
+    "itemColSpan": 12,
+    "itemRowSpan": 1,
+    "toolbar": [
+      { "type": "el-button", "props": { "type": "primary", "size": "small" }, "children": ["新增"] }
+    ],
+    "itemActions": [
+      { "type": "el-button", "props": { "size": "small" }, "children": ["查看"] },
+      { "type": "el-button", "props": { "size": "small", "permAction": "delete" }, "children": ["删除"] }
+    ]
+  },
   "children": [
     { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
     { "type": "r-number", "name": "age", "props": { "label": "年龄", "colSpan": 12 } },
     { "type": "r-select", "name": "status", "props": { "label": "状态", "colSpan": 8, "options": [{ "label": "启用", "value": 1 }, { "label": "停用", "value": 0 }] } },
+    { "type": "r-file-browser", "name": "attachments", "props": { "label": "附件", "colSpan": 8 } },
     { "type": "r-upload", "name": "avatar", "props": { "label": "头像", "colSpan": 16, "rowSpan": 2 } }
+  ]
+}
+```
+
+**r-tabs 内部放 r-tab-pane，面板内容继续走 24 列 Grid**：
+```json
+{
+  "type": "r-tabs",
+  "props": {
+    "type": "border-card",
+    "toolbar": [
+      { "type": "el-button", "props": { "size": "small", "type": "primary" }, "children": ["保存"] }
+    ]
+  },
+  "children": [
+    {
+      "type": "r-tab-pane",
+      "props": { "label": "基本信息", "name": "base", "gridGap": 12 },
+      "children": [
+        { "type": "r-form", "dataKey": "Users@currentRow", "props": { "labelWidth": "88px", "colSpan": 16 }, "children": [
+          { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
+          { "type": "r-textarea", "name": "remark", "props": { "label": "备注", "colSpan": 24 } }
+        ] },
+        { "type": "r-detail", "dataKey": "Users@currentRow", "props": { "colSpan": 8 }, "children": [
+          { "type": "r-upload", "name": "avatar", "props": { "label": "头像" } }
+        ] }
+      ]
+    },
+    {
+      "type": "r-tab-pane",
+      "props": { "label": "附件", "name": "files" },
+      "children": [
+        { "type": "r-list", "dataKey": "Attachments@rows", "props": { "itemColSpan": 24 }, "children": [
+          { "type": "r-file-browser", "name": "fileName", "props": { "label": "文件" } }
+        ] }
+      ]
+    }
+  ]
+}
+```
+
+**r-collapse 内部放 r-collapse-item，折叠项内容继续走 24 列 Grid**：
+```json
+{
+  "type": "r-collapse",
+  "props": {
+    "accordion": true,
+    "toolbar": [
+      { "type": "el-button", "props": { "size": "small" }, "children": ["展开全部"] }
+    ]
+  },
+  "children": [
+    {
+      "type": "r-collapse-item",
+      "props": { "title": "基础信息", "name": "base", "gridGap": 12 },
+      "children": [
+        { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
+        { "type": "r-number", "name": "age", "props": { "label": "年龄", "colSpan": 12 } },
+        { "type": "r-html-editor", "name": "content", "props": { "label": "内容", "colSpan": 24, "rowSpan": 2 } }
+      ]
+    },
+    {
+      "type": "r-collapse-item",
+      "props": { "title": "明细列表", "name": "detail" },
+      "children": [
+        { "type": "r-table", "dataKey": "Orders@rows", "props": { "colSpan": 24, "border": true }, "children": [
+          { "type": "r-text", "name": "code", "props": { "label": "编码", "width": 120 } },
+          { "type": "r-number", "name": "amount", "props": { "label": "金额", "width": 120 } }
+        ] }
+      ]
+    }
+  ]
+}
+```
+
+**r-dialog / r-drawer 用于弹层编辑或详情展示，内容区继续走 24 列 Grid**：
+```json
+{
+  "type": "r-dialog",
+  "props": {
+    "title": "编辑用户",
+    "modelValue": true,
+    "width": "720px",
+    "headerActions": [
+      { "type": "el-button", "props": { "size": "small" }, "children": ["刷新"] }
+    ],
+    "footerActions": [
+      { "type": "el-button", "props": { "size": "small" }, "children": ["取消"] },
+      { "type": "el-button", "props": { "size": "small", "type": "primary" }, "children": ["保存"] }
+    ]
+  },
+  "children": [
+    { "type": "r-form", "dataKey": "Users@currentRow", "props": { "colSpan": 24 }, "children": [
+      { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
+      { "type": "r-textarea", "name": "remark", "props": { "label": "备注", "colSpan": 24 } }
+    ] }
+  ]
+}
+```
+
+**r-steps 内部放 r-step，当前步骤内容区继续走 24 列 Grid**：
+```json
+{
+  "type": "r-steps",
+  "props": {
+    "toolbar": [
+      { "type": "el-button", "props": { "size": "small" }, "children": ["上一步"] },
+      { "type": "el-button", "props": { "size": "small", "type": "primary" }, "children": ["下一步"] }
+    ]
+  },
+  "children": [
+    {
+      "type": "r-step",
+      "props": { "title": "基础信息", "name": "base", "gridGap": 12 },
+      "children": [
+        { "type": "r-text", "name": "name", "props": { "label": "姓名", "colSpan": 12 } },
+        { "type": "r-number", "name": "age", "props": { "label": "年龄", "colSpan": 12 } }
+      ]
+    },
+    {
+      "type": "r-step",
+      "props": { "title": "详细内容", "name": "detail" },
+      "children": [
+        { "type": "r-html-editor", "name": "content", "props": { "label": "内容", "colSpan": 24, "rowSpan": 2 } }
+      ]
+    }
   ]
 }
 ```
@@ -254,6 +409,22 @@ vxe-table, vxe-column 等（需已注册）
     { "type": "r-detail", "dataKey": "Users@currentRow", "props": { "colSpan": 8 }, "children": [
       { "type": "r-upload", "name": "avatar", "props": { "label": "头像" } }
     ] }
+  ]
+}
+```
+
+**r-tabs 内部只能放 r-tab-pane，r-collapse 内部只能放 r-collapse-item，r-steps 内部只能放 r-step**：
+```json
+{
+  "type": "r-tabs",
+  "children": [
+    {
+      "type": "r-tab-pane",
+      "props": { "label": "标签一", "name": "tab1" },
+      "children": [
+        { "type": "r-text", "name": "name", "props": { "label": "姓名" } }
+      ]
+    }
   ]
 }
 ```

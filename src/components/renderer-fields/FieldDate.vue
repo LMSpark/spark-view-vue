@@ -15,9 +15,12 @@
   <!-- 在 form 中：渲染为 el-form-item + el-date-picker -->
   <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
     <el-date-picker
-      :model-value="fieldValue as string | Date"
-      type="date"
-      placeholder="选择日期"
+      :model-value="fieldValue as string | Date | Array<string | Date>"
+      :type="isRangeFilter ? 'daterange' : 'date'"
+      :placeholder="isRangeFilter ? undefined : '选择日期'"
+      :start-placeholder="isRangeFilter ? '开始日期' : undefined"
+      :end-placeholder="isRangeFilter ? '结束日期' : undefined"
+      :range-separator="isRangeFilter ? '至' : undefined"
       :disabled="!isCurrentFieldEditable"
       @update:model-value="handleChange"
     />
@@ -46,21 +49,27 @@ interface Props {
   /** 显示标签（可选，默认回退到 name） */
   label?: string
   width?: number
-  modelValue?: string | Date
+  modelValue?: string | Date | Array<string | Date>
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | Date]
+  'update:modelValue': [value: string | Date | Array<string | Date>]
 }>()
 
 function formatDateValue(value: unknown): string {
   if (!value) return ''
+  if (Array.isArray(value)) return value.map(item => formatDateValue(item)).join(' ~ ')
   if (typeof value === 'string') return value
   if (value instanceof Date) return value.toLocaleDateString()
   return String(value)
 }
+
+const isRangeFilter =
+  props.config?.props?.['filterMode'] === 'range'
+  || props.config?.props?.['filterVariant'] === 'range'
+  || props.config?.props?.['filterRange'] === true
 
 const {
   fieldName,
@@ -73,14 +82,14 @@ const {
   isTableCellHidden,
   getTableCellDisplayValue,
   syncValue,
-} = useFieldPermission<string | Date>({
+} = useFieldPermission<string | Date | Array<string | Date>>({
   props,
   type: 'r-date',
   fallbackValue: '',
   formatDisplay: formatDateValue,
 })
 
-const handleChange = (val: string | Date) => {
+const handleChange = (val: string | Date | Array<string | Date>) => {
   emit('update:modelValue', val)
   syncValue(val)
 }

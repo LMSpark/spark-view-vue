@@ -20,6 +20,7 @@
             :key="action.id ?? `r-section-action-${index}`"
             :config="action"
           />
+          <slot name="header-actions" v-bind="getHeaderSlotScope()" />
           <button
             v-if="collapsible"
             type="button"
@@ -43,7 +44,7 @@
       >
         <SparkComponentRenderer :config="child" />
       </div>
-      <slot v-if="!gridChildren.length" />
+      <slot v-if="!gridChildren.length" v-bind="getDefaultSlotScope()" />
     </div>
   </el-card>
 
@@ -59,6 +60,7 @@
           :key="action.id ?? `r-section-action-${index}`"
           :config="action"
         />
+        <slot name="header-actions" v-bind="getHeaderSlotScope()" />
         <button
           v-if="collapsible"
           type="button"
@@ -81,13 +83,13 @@
       >
         <SparkComponentRenderer :config="child" />
       </div>
-      <slot v-if="!gridChildren.length" />
+      <slot v-if="!gridChildren.length" v-bind="getDefaultSlotScope()" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { useContainerGrid } from './useContainerGrid'
@@ -136,6 +138,7 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
+const slots = useSlots()
 
 useSparkComponent(props.config ?? { type: 'r-section' })
 
@@ -150,7 +153,7 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
 
 const collapsed = ref(props.defaultCollapsed)
 const hasHeader = computed(() => Boolean(props.title || props.description))
-const hasHeaderRight = computed(() => headerActionConfigs.value.length > 0 || props.collapsible)
+const hasHeaderRight = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined || props.collapsible)
 
 watch(() => props.defaultCollapsed, (value) => {
   collapsed.value = value
@@ -164,6 +167,24 @@ function handleHeaderClick(): void {
 function toggleCollapsed(): void {
   if (!props.collapsible) return
   collapsed.value = !collapsed.value
+}
+
+function getHeaderSlotScope() {
+  return {
+    title: props.title,
+    description: props.description,
+    collapsed: collapsed.value,
+    toggleCollapsed,
+  }
+}
+
+function getDefaultSlotScope() {
+  return {
+    title: props.title,
+    description: props.description,
+    collapsed: collapsed.value,
+    toggleCollapsed,
+  }
 }
 </script>
 

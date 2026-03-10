@@ -1,0 +1,286 @@
+<!--
+/**
+ * @skill r-tabs
+ * @description 标签页容器，内部使用 r-tab-pane 定义面板；每个面板内容默认采用 24 列 CSS Grid
+ * @input { props: { modelValue?: string|number, toolbar?: ComponentConfig[], toolbarPosition?: 'top'|'bottom'|'left'|'right' } }
+ * @example { "type": "r-tabs", "children": [{ "type": "r-tab-pane", "props": { "label": "基本信息", "name": "base" }, "children": [] }] }
+ */
+-->
+<template>
+  <div :class="['renderer-tabs-layout', `renderer-tabs-layout--${toolbarPositionValue}`]">
+    <div v-if="showToolbar" :class="['renderer-tabs-toolbar', toolbarClassValue]">
+      <SparkComponentRenderer
+        v-for="(action, index) in visibleToolbarConfigs"
+        :key="action.id ?? `r-tabs-toolbar-${index}`"
+        :config="action"
+      />
+      <slot name="toolbar" v-bind="getToolbarSlotScope()" />
+    </div>
+
+    <div class="renderer-tabs-main">
+      <el-tabs
+        v-bind="$attrs"
+        :model-value="currentActiveName"
+        @update:model-value="handleModelUpdate"
+        @tab-click="handleTabClick"
+        @tab-change="handleTabChange"
+      >
+        <template v-if="paneConfigs.length">
+          <el-tab-pane
+            v-for="(pane, index) in paneConfigs"
+            :key="getPaneKey(pane, index)"
+            :label="getPaneLabel(pane, index)"
+            :name="getPaneName(pane, index)"
+            :disabled="getPaneDisabled(pane)"
+            :lazy="getPaneLazy(pane)"
+            :closable="getPaneClosable(pane)"
+          >
+            <div :class="['renderer-tabs-pane-body', getPaneBodyClass(pane)]" :style="getPaneGridStyle(pane)">
+              <template v-if="getPaneChildren(pane).length">
+                <div
+                  v-for="(child, childIndex) in getPaneChildren(pane)"
+                  :key="child.id ?? `r-tab-pane-child-${childIndex}`"
+                  class="renderer-tabs-pane-grid-item"
+                  :style="getPaneChildGridStyle(child)"
+                >
+                  <SparkComponentRenderer :config="child" />
+                </div>
+              </template>
+              <slot
+                v-else
+                v-bind="getPaneSlotScope(pane, index)"
+              />
+            </div>
+          </el-tab-pane>
+        </template>
+        <slot v-else />
+      </el-tabs>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, useSlots, watch } from 'vue'
+import type { CSSProperties } from 'vue'
+import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
+import type { ComponentConfig } from '@spark-view/spark-component'
+import { useContainerToolbar } from './useContainerToolbar'
+import { createToolbarSlotScope } from './useContainerSlotScopes'
+
+interface TabsClickEvent {
+  paneName?: string | number
+  [key: string]: unknown
+}
+
+interface Props {
+  config?: ComponentConfig
+  sparkChildren?: ComponentConfig[]
+  toolbar?: ComponentConfig[]
+  toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
+  toolbarClass?: string
+  modelValue?: string | number
+  onTabChange?: (name: string | number) => void
+  onTabClick?: (pane: TabsClickEvent, event: Event) => void
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  toolbarPosition: 'top',
+  toolbarClass: '',
+})
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string | number]
+}>()
+
+const slots = useSlots()
+
+useSparkComponent(props.config ?? { type: 'r-tabs' })
+
+const paneConfigs = computed(() =>
+  (props.config?.children ?? props.sparkChildren ?? []).filter(child => child.type === 'r-tab-pane')
+)
+
+const currentActiveName = ref<string | number | undefined>(props.modelValue)
+
+watch(() => props.modelValue, (value) => {
+  currentActiveName.value = value
+}, { immediate: true })
+
+watch(paneConfigs, (panes) => {
+  if (currentActiveName.value !== undefined) return
+  const firstPane = panes[0]
+  if (!firstPane) return
+  currentActiveName.value = getPaneName(firstPane, 0)
+}, { immediate: true })
+
+const {
+  toolbarPositionValue,
+  toolbarClassValue,
+  visibleToolbarConfigs,
+  showToolbar,
+} = useContainerToolbar({
+  config: computed(() => props.config),
+  toolbar: computed(() => props.toolbar),
+  toolbarPosition: computed(() => props.toolbarPosition),
+  toolbarClass: computed(() => props.toolbarClass),
+  modelPermission: computed(() => undefined),
+  slots,
+})
+
+function normalizeGridGap(value: unknown): string {
+  if (typeof value === 'number') return `${value}px`
+  if (typeof value === 'string' && value.trim().length > 0) return value
+  return '0px'
+}
+
+function normalizeSpan(value: unknown, fallback: number): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.max(1, Math.trunc(value))
+  if (typeof value === 'string') {
+    const parsed = Number.parseInt(value, 10)
+    if (Number.isFinite(parsed)) return Math.max(1, parsed)
+  }
+  return fallback
+}
+
+function getPaneChildren(pane: ComponentConfig): ComponentConfig[] {
+  return pane.children ?? []
+}
+
+function getPaneName(pane: ComponentConfig, index: number): string | number {
+  const value = pane.props?.['name'] ?? pane.props?.['value'] ?? pane.id
+  return typeof value === 'string' || typeof value === 'number' ? value : `tab-${index}`
+}
+
+function getPaneKey(pane: ComponentConfig, index: number): string | number {
+  return pane.id ?? getPaneName(pane, index)
+}
+
+function getPaneLabel(pane: ComponentConfig, index: number): string {
+  const value = pane.props?.['label'] ?? pane.props?.['title']
+  return typeof value === 'string' && value.trim().length > 0 ? value : `标签页${index + 1}`
+}
+
+function getPaneDisabled(pane: ComponentConfig): boolean {
+  return pane.props?.['disabled'] === true
+}
+
+function getPaneLazy(pane: ComponentConfig): boolean {
+  return pane.props?.['lazy'] === true
+}
+
+function getPaneClosable(pane: ComponentConfig): boolean {
+  return pane.props?.['closable'] === true
+}
+
+function getPaneBodyClass(pane: ComponentConfig): string {
+  return typeof pane.props?.['bodyClass'] === 'string' ? pane.props['bodyClass'] as string : ''
+}
+
+function getPaneGridStyle(pane: ComponentConfig): CSSProperties {
+  const columns = normalizeSpan(pane.props?.['gridColumns'], 24)
+  const autoRows = typeof pane.props?.['gridAutoRows'] === 'string' && pane.props['gridAutoRows'].trim().length > 0
+    ? pane.props['gridAutoRows'] as string
+    : 'minmax(32px, auto)'
+
+  return {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+    gap: normalizeGridGap(pane.props?.['gridGap']),
+    gridAutoRows: autoRows,
+    alignItems: 'start',
+  }
+}
+
+function getPaneChildGridStyle(child: ComponentConfig): CSSProperties {
+  const colSpan = normalizeSpan(child.props?.['colSpan'] ?? child.props?.['gridColSpan'] ?? child.props?.['span'], 24)
+  const rowSpan = normalizeSpan(child.props?.['rowSpan'] ?? child.props?.['gridRowSpan'], 1)
+  return {
+    gridColumn: `span ${colSpan} / span ${colSpan}`,
+    gridRow: `span ${rowSpan} / span ${rowSpan}`,
+    minWidth: 0,
+  }
+}
+
+function handleModelUpdate(value: string | number): void {
+  currentActiveName.value = value
+  emit('update:modelValue', value)
+}
+
+function handleTabChange(value: string | number): void {
+  currentActiveName.value = value
+  props.onTabChange?.(value)
+}
+
+function handleTabClick(pane: TabsClickEvent, event: Event): void {
+  props.onTabClick?.(pane, event)
+}
+
+function getToolbarSlotScope() {
+  return createToolbarSlotScope({
+    dataSource: undefined,
+    modelPermission: undefined,
+  }, {
+    activeName: currentActiveName.value,
+    panes: paneConfigs.value,
+  })
+}
+
+function getPaneSlotScope(pane: ComponentConfig, index: number) {
+  return {
+    pane,
+    paneIndex: index,
+    paneName: getPaneName(pane, index),
+    paneLabel: getPaneLabel(pane, index),
+    activeName: currentActiveName.value,
+  }
+}
+</script>
+
+<style scoped>
+.renderer-tabs-layout {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.renderer-tabs-layout--top,
+.renderer-tabs-layout--bottom {
+  flex-direction: column;
+}
+
+.renderer-tabs-layout--bottom {
+  flex-direction: column-reverse;
+}
+
+.renderer-tabs-layout--right {
+  flex-direction: row-reverse;
+}
+
+.renderer-tabs-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.renderer-tabs-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.renderer-tabs-layout--left .renderer-tabs-toolbar,
+.renderer-tabs-layout--right .renderer-tabs-toolbar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.renderer-tabs-pane-body {
+  width: 100%;
+  min-width: 0;
+  padding-top: 8px;
+}
+
+.renderer-tabs-pane-grid-item {
+  min-width: 0;
+}
+</style>

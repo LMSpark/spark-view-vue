@@ -4,7 +4,6 @@ import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 import { isActionDisplayed, isModelActionAllowed, isRowActionAllowed } from './action-permission'
 
-export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 export type LateralActionPosition = 'left' | 'right'
 type ListenerMap = Record<string, unknown>
 type ListenerHandler = (...args: unknown[]) => unknown
@@ -12,9 +11,6 @@ export type ScopedComponentConfig = ComponentConfig & { on?: ListenerMap }
 
 interface UseContainerActionsOptions<TScope> {
   config: ComputedRef<ComponentConfig | undefined>
-  toolbar: ComputedRef<ComponentConfig[] | undefined>
-  toolbarPosition: ComputedRef<ToolbarPosition | undefined>
-  toolbarClass: ComputedRef<string | undefined>
   actionConfigs: ComputedRef<ComponentConfig[] | undefined>
   actionPosition: ComputedRef<LateralActionPosition | undefined>
   actionClass: ComputedRef<string | undefined>
@@ -46,17 +42,8 @@ function wrapScopedHandler(handler: unknown, scopedArgs: unknown[]): unknown {
 }
 
 export function useContainerActions<TScope>(options: UseContainerActionsOptions<TScope>) {
-  const toolbarConfigs = computed(() =>
-    options.toolbar.value ?? (options.config.value?.props?.['toolbar'] as ComponentConfig[] | undefined) ?? []
-  )
   const rawActionConfigs = computed(() =>
     options.actionConfigs.value ?? (options.config.value?.props?.[options.actionPropKey] as ComponentConfig[] | undefined) ?? []
-  )
-  const toolbarPositionValue = computed<ToolbarPosition>(() =>
-    (options.config.value?.props?.['toolbarPosition'] as ToolbarPosition | undefined) ?? options.toolbarPosition.value ?? 'top'
-  )
-  const toolbarClassValue = computed(() =>
-    (options.config.value?.props?.['toolbarClass'] as string | undefined) ?? options.toolbarClass.value ?? ''
   )
   const actionPositionValue = computed<LateralActionPosition>(() =>
     (options.config.value?.props?.[options.actionPositionPropKey] as LateralActionPosition | undefined) ?? options.actionPosition.value ?? 'right'
@@ -64,10 +51,6 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
   const actionClassValue = computed(() =>
     (options.config.value?.props?.[options.actionClassPropKey] as string | undefined) ?? options.actionClass.value ?? ''
   )
-  const visibleToolbarConfigs = computed(() =>
-    toolbarConfigs.value.filter(action => isActionDisplayed(action) && isModelActionAllowed(action, options.modelPermission.value))
-  )
-  const hasToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
   const showActionsLeft = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'left')
   const showActionsRight = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'right')
 
@@ -99,12 +82,8 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
   }
 
   return {
-    toolbarPositionValue,
-    toolbarClassValue,
     actionPositionValue,
     actionClassValue,
-    visibleToolbarConfigs,
-    hasToolbar,
     showActionsLeft,
     showActionsRight,
     getScopedActionConfigs,
