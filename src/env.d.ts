@@ -88,7 +88,7 @@ declare module 'virtual:spark-components' {
 /**
  * 虚拟模块：SPARK Skill 目录
  * 由 vite-plugin-spark-components 在构建时生成
- * 包含所有带 @skill JSDoc 注解的组件 Skill 元数据
+ * 包含所有生成 Skill 元数据的组件；JSDoc 注解可覆盖默认 type/description/能力声明
  */
 declare module 'virtual:spark-skill-catalog' {
   export interface SkillMeta {
@@ -109,7 +109,7 @@ declare module 'virtual:spark-skill-catalog' {
   /** Skill 目录输出精度模式 */
   export type SkillPromptMode = 'index' | 'compact' | 'full'
 
-  /** 所有带 @skill 注解的组件 Skill 元数据列表 */
+  /** 所有生成 Skill 元数据的组件 Skill 元数据列表 */
   export const skillCatalog: SkillMeta[]
 
   /**

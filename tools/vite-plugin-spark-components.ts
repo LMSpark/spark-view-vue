@@ -125,7 +125,7 @@ export interface ComponentMetadata {
   importStatement: string
   /** 注册语句 */
   registerStatement: string
-  /** Skill 元数据（从 JSDoc 注释提取，无 @skill/@description 时为 null） */
+  /** Skill 元数据（显式 JSDoc 注释优先，缺失时按组件路径自动补全） */
   skillMeta: SkillMeta | null
 }
 
@@ -266,11 +266,57 @@ function generateImportStatement(
   }
 }
 
+function normalizePath(filePath: string): string {
+  return filePath.replace(/\\/g, '/')
+}
+
+function inferSkillType(absolutePath: string, fallbackType: string): string | null {
+  const normalizedPath = normalizePath(absolutePath)
+  const fileName = basename(absolutePath, '.vue')
+
+  if (normalizedPath.includes('/src/components/renderer-fields/')) {
+    return `r-${toKebabCase(fileName.replace(/^Field/, ''))}`
+  }
+
+  if (normalizedPath.includes('/src/components/renderer-containers/')) {
+    if (/Scope$/.test(fileName)) return null
+    return `r-${toKebabCase(fileName.replace(/^Renderer/, ''))}`
+  }
+
+  return fallbackType
+}
+
+function buildImplicitSkillDescription(absolutePath: string, skillType: string): string {
+  const normalizedPath = normalizePath(absolutePath)
+
+  if (normalizedPath.includes('/src/components/renderer-fields/')) {
+    return `SPARK 字段组件，可在 rule.json 中通过 type="${skillType}" 使用。`
+  }
+
+  if (normalizedPath.includes('/src/components/renderer-containers/')) {
+    return `SPARK 容器组件，可在 rule.json 中通过 type="${skillType}" 组织子组件。`
+  }
+
+  if (normalizedPath.includes('/features/')) {
+    return `SPARK 业务组件，可在 rule.json 中通过 type="${skillType}" 使用。`
+  }
+
+  if (normalizedPath.includes('/packages/') && normalizedPath.includes('/src/components/')) {
+    return `SPARK 包组件，可在 rule.json 中通过 type="${skillType}" 使用。`
+  }
+
+  if (normalizedPath.includes('/src/views/')) {
+    return `SPARK 视图组件，可在注册表中通过 type="${skillType}" 引用。`
+  }
+
+  return `SPARK 组件，可在注册表中通过 type="${skillType}" 使用。`
+}
+
 /**
  * 从 .vue 文件顶部的 JSDoc 注释中提取 Skill 元数据
  *
- * 只读取文件前 50 行，避免全量读取大文件。
- * 若没有 @skill 或 @description 标签，返回 null（视为普通组件，不进入 Skill 目录）。
+ * 只读取文件前 60 行，避免全量读取大文件。
+ * 未显式标注时按组件路径自动生成默认 Skill 元数据。
  */
 function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta | null {
   let content: string
@@ -282,19 +328,23 @@ function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta |
     return null
   }
 
+  const inferredType = inferSkillType(absolutePath, fallbackType)
+  if (inferredType === null) return null
+
   // 提取第一个块注释（/** ... */）
   const blockMatch = content.match(/\/\*\*([\s\S]*?)\*\//)
-  if (!blockMatch) return null
-  const block = blockMatch[1]
+  const block = blockMatch?.[1]
 
   // 辅助：提取单值标签
   const getTag = (tag: string): string | undefined => {
+    if (!block) return undefined
     const m = block.match(new RegExp(`@${tag}\\s+(.+)`))
     return m ? m[1].trim() : undefined
   }
 
   // 辅助：提取多值标签（可出现多次）
   const getTagAll = (tag: string): string[] => {
+    if (!block) return []
     const re = new RegExp(`@${tag}\\s+(.+)`, 'g')
     const results: string[] = []
     let m: RegExpExecArray | null
@@ -304,19 +354,21 @@ function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta |
     return results
   }
 
-  const description = getTag('description')
-  const skillType  = getTag('skill') ?? fallbackType
+  const explicitDescription = getTag('description')
+  const skillType  = getTag('skill') ?? inferredType
   const provides   = getTagAll('provides')
   const consumes   = getTagAll('consumes')
   const inputSchema = getTag('input')
   const example    = getTag('example')
 
-  // 没有任何 Skill 相关标签 → 普通组件，不列入 Skill 目录
-  if (!description && provides.length === 0 && consumes.length === 0) {
-    return null
+  return {
+    type: skillType,
+    description: explicitDescription ?? buildImplicitSkillDescription(absolutePath, skillType),
+    provides,
+    consumes,
+    inputSchema,
+    example,
   }
-
-  return { type: skillType, description, provides, consumes, inputSchema, example }
 }
 
 /**
@@ -610,7 +662,7 @@ export default registerComponents
   ): string {
     const header = '## SPARK Skill 目录'
     if (skills.length === 0) {
-      return header + '\n\n（暂无已标注 Skill 的组件）\n'
+      return header + '\n\n（暂无可用 Skill）\n'
     }
 
     const lines: string[] = [header, '']
@@ -653,8 +705,8 @@ export default registerComponents
   /**
    * 生成 Skill 目录虚拟模块代码
    *
-   * 输出：virtual:spark-skill-catalog
-   * 仅包含携带 @skill / @description / @provides / @consumes 注释的组件。
+  * 输出：virtual:spark-skill-catalog
+  * 包含所有可生成 Skill 元数据的组件；JSDoc 注释用于覆盖默认 type/description/能力声明。
    */
   generateSkillCatalog(): string {
     // 确保数据最新
@@ -712,7 +764,7 @@ export function buildSkillPrompt(
     : skillCatalog
 
   if (list.length === 0) {
-    return header + '\\n\\n（暂无已标注 Skill 的组件）\\n'
+    return header + '\\n\\n（暂无可用 Skill）\\n'
   }
 
   const lines = [header, '']
