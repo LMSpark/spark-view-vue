@@ -48,6 +48,56 @@ const ElTableColumnStub = defineComponent({
   }
 })
 
+function createTableFieldStub(fallbackLabel: string) {
+  return defineComponent({
+    props: {
+      config: {
+        type: Object,
+        required: true,
+      },
+      label: String,
+    },
+    setup(props) {
+      return () => h(ElTableColumnStub, {
+        label: props.label
+          ?? String((((props.config as Record<string, unknown>)['props'] as Record<string, unknown> | undefined)?.['label'])
+            ?? ((props.config as Record<string, unknown>)['name'] as string | undefined)
+            ?? fallbackLabel),
+      })
+    },
+  })
+}
+
+const TableTextFieldStub = createTableFieldStub('r-text')
+const TableNumberFieldStub = createTableFieldStub('r-number')
+const TableDateFieldStub = createTableFieldStub('r-date')
+
+const SparkColumnRendererStub = defineComponent({
+  props: {
+    config: {
+      type: Object,
+      required: true,
+    },
+  },
+  setup(props) {
+    return () => {
+      const config = props.config as Record<string, unknown>
+      const type = String(config['type'] ?? '')
+      const componentMap: Record<string, unknown> = {
+        'r-text': TableTextFieldStub,
+        'r-number': TableNumberFieldStub,
+        'r-date': TableDateFieldStub,
+      }
+      const component = componentMap[type]
+      if (!component) return null
+      return h(component as never, {
+        config,
+        ...((config['props'] as Record<string, unknown> | undefined) ?? {}),
+      })
+    }
+  }
+})
+
 const ElTreeStub = defineComponent({
   setup(_, { slots }) {
     return () => h('div', { class: 'el-tree-stub' }, slots['default']?.({ node: { level: 1 }, data: { id: 'node-1', label: '节点 1' } }))
@@ -229,10 +279,15 @@ describe('RendererTable - DataView as single data intermediary', () => {
         rowActionsPosition: 'left',
       },
       global: {
+        components: {
+          'r-text': TableTextFieldStub,
+          'r-number': TableNumberFieldStub,
+          'r-date': TableDateFieldStub,
+        },
         stubs: {
           'el-table': ElTableStub,
           'el-table-column': ElTableColumnStub,
-          SparkComponentRenderer: SparkActionStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
         }
       }
     })
@@ -297,6 +352,45 @@ describe('RendererTable - DataView as single data intermediary', () => {
         }, 'biz-row-action'),
       },
       global: {
+        components: {
+          'r-text': TableTextFieldStub,
+          'r-number': TableNumberFieldStub,
+          'r-date': TableDateFieldStub,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        }
+      }
+    })
+
+    expect(wrapper.find('.biz-toolbar-button').attributes('data-row-count')).toBe('1')
+    expect(wrapper.find('.biz-row-action').attributes('data-row-id')).toBe('7')
+    expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
+  })
+
+  it('should render primitive field configs as direct table columns', () => {
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: {
+          rows: [{ id: 1, name: 'Alice', score: 95, joinedAt: '2026-03-10' }],
+        },
+        config: {
+          type: 'r-table',
+          children: [
+            { type: 'r-text', name: 'name', props: { label: '姓名' } },
+            { type: 'r-number', name: 'score', props: { label: '分数' } },
+            { type: 'r-date', name: 'joinedAt', props: { label: '入职日期' } },
+          ],
+        },
+      },
+      global: {
+        components: {
+          'r-text': TableTextFieldStub,
+          'r-number': TableNumberFieldStub,
+          'r-date': TableDateFieldStub,
+        },
         stubs: {
           'el-table': ElTableStub,
           'el-table-column': ElTableColumnStub,
@@ -305,9 +399,48 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
-    expect(wrapper.find('.biz-toolbar-button').attributes('data-row-count')).toBe('1')
-    expect(wrapper.find('.biz-row-action').attributes('data-row-id')).toBe('7')
-    expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
+    const columns = wrapper.findAll('.el-table-column-stub')
+    const labels = columns.map(column => column.attributes('data-label'))
+    expect(labels).toContain('姓名')
+    expect(labels).toContain('分数')
+    expect(labels).toContain('入职日期')
+  })
+
+  it('should render table columns from config.props.sparkChildren when config.children is empty', () => {
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: {
+          rows: [{ id: 1, name: 'Alice', score: 95 }],
+        },
+        config: {
+          type: 'r-table',
+          children: [],
+          props: {
+            sparkChildren: [
+              { type: 'r-text', name: 'name', props: { label: '姓名' } },
+              { type: 'r-number', name: 'score', props: { label: '分数' } },
+            ],
+          },
+        },
+      },
+      global: {
+        components: {
+          'r-text': TableTextFieldStub,
+          'r-number': TableNumberFieldStub,
+          'r-date': TableDateFieldStub,
+        },
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkActionStub,
+        }
+      }
+    })
+
+    const columns = wrapper.findAll('.el-table-column-stub')
+    const labels = columns.map(column => column.attributes('data-label'))
+    expect(labels).toContain('姓名')
+    expect(labels).toContain('分数')
   })
 
   it('should allow business slots to append tree toolbar node actions and content template', async () => {

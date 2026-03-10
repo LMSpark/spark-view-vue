@@ -56,3 +56,60 @@ test('SparkComponentRenderer forwards config.on listeners to rendered components
   await wrapper.find('.click-emitter').trigger('click')
   expect(clickSpy).toHaveBeenCalledWith('payload')
 })
+
+test('SparkComponentRenderer falls back to Vue global Render* components', () => {
+  const RenderSearchBar = defineComponent({
+    name: 'RenderSearchBar',
+    setup() {
+      return () => h('div', { class: 'render-search-bar' }, 'search')
+    }
+  })
+
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: { type: 'RenderSearchBar' },
+      parentContext: rootContext
+    },
+    global: {
+      components: {
+        RenderSearchBar
+      },
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
+      }
+    }
+  })
+
+  expect(wrapper.find('.render-search-bar').exists()).toBe(true)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
+})
+
+test('SparkComponentRenderer passes config props into Vue global Render* components', () => {
+  const RenderRowAction = defineComponent({
+    name: 'RenderRowAction',
+    inheritAttrs: false,
+    setup(_, { attrs }) {
+      const row = attrs['row'] as { name?: string } | undefined
+      return () => h('div', { class: 'render-row-action' }, row?.name ?? 'missing')
+    }
+  })
+
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: { type: 'RenderRowAction', props: { row: { name: '王晓明' } } },
+      parentContext: rootContext
+    },
+    global: {
+      components: {
+        RenderRowAction
+      },
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
+      }
+    }
+  })
+
+  expect(wrapper.find('.render-row-action').text()).toBe('王晓明')
+})

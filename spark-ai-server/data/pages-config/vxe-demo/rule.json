@@ -2,187 +2,201 @@
   {
     "type": "div",
     "class": "vxe-demo-page",
+    "style": {
+      "padding": "20px"
+    },
     "children": [
       {
-        "type": "section",
+        "type": "div",
         "class": "intro-section",
         "children": [
           {
             "type": "h1",
-            "children": ["VXE Table 示例"]
+            "children": [
+              "数据权限表格示例"
+            ]
           },
           {
             "type": "p",
             "class": "description",
             "children": [
-              "演示 VXE Table 在低代码内的基础使用，包括排序、过滤、多级表头等能力。"
+              "演示带数据权限控制的表格，包括基于角色、部门、数据范围的权限过滤。"
             ]
           }
         ]
       },
       {
-        "type": "section",
-        "class": "table-section",
+        "type": "r-section",
+        "class": "permission-control-section",
+        "props": {
+          "title": "权限控制区",
+          "headerActions": [
+            {
+              "type": "RenderPermissionFilter"
+            }
+          ]
+        },
         "children": [
           {
-            "type": "h2",
-            "children": ["基础表格"]
-          },
+            "type": "RenderFilterControls",
+            "props": {
+              "colSpan": 24
+            }
+          }
+        ]
+      },
+      {
+        "type": "r-section",
+        "class": "table-section",
+        "props": {
+          "title": "数据表格",
+          "headerActions": [
+            {
+              "type": "RenderTableToolbar"
+            }
+          ]
+        },
+        "children": [
           {
-            "type": "p",
-            "class": "section-tip",
-            "children": ["下表展示成员档案，可直接排序与单选过滤。"]
-          },
-          {
-            "type": "vxe-table",
-            "dataSource": "users",
-            "border": true,
-            "stripe": true,
-            "round": true,
-            "height": 360,
-            "columnConfig": {
-              "resizable": true,
-              "isCurrent": true
+            "type": "r-table",
+            "dataKey": "PermissionData@rows",
+            "props": {
+              "border": true,
+              "highlightCurrentRow": true,
+              "height": 400,
+              "rowActions": [
+                {
+                  "type": "RenderActions"
+                }
+              ],
+              "rowActionsWidth": 150,
+              "rowActionsFixed": "right",
+              "rowActionsLabel": "操作"
             },
-            "rowConfig": {
-              "isHover": true
-            },
-            "sortConfig": {
-              "remote": false,
-              "multiple": false
+            "on": {
+              "currentChange": "handleCurrentChange",
+              "selectionChange": "handleSelectionChange"
             },
             "children": [
               {
-                "type": "vxe-column",
-                "field": "id",
-                "title": "ID",
-                "width": 80,
-                "align": "center",
-                "sortable": true,
-                "fixed": "left"
+                "type": "r-text",
+                "name": "id",
+                "props": {
+                  "label": "ID",
+                  "width": 80
+                }
               },
               {
-                "type": "vxe-column",
-                "field": "name",
-                "title": "姓名",
-                "minWidth": 160
+                "type": "r-text",
+                "name": "name",
+                "props": {
+                  "label": "姓名",
+                  "width": 120
+                }
               },
               {
-                "type": "vxe-column",
-                "field": "role",
-                "title": "岗位",
-                "minWidth": 160,
-                "filters": [
-                  {
-                    "label": "研发",
-                    "value": "研发工程师"
-                  },
-                  {
-                    "label": "产品",
-                    "value": "产品经理"
-                  },
-                  {
-                    "label": "测试",
-                    "value": "测试工程师"
-                  }
-                ],
-                "filterMultiple": false
+                "type": "r-text",
+                "name": "deptName",
+                "props": {
+                  "label": "部门",
+                  "width": 120
+                }
               },
               {
-                "type": "vxe-column",
-                "field": "status",
-                "title": "状态",
-                "width": 120
+                "type": "r-text",
+                "name": "roleName",
+                "props": {
+                  "label": "角色",
+                  "width": 120
+                }
               },
               {
-                "type": "vxe-column",
-                "field": "joinDate",
-                "title": "入职日期",
-                "width": 140,
-                "sortable": true
+                "type": "r-number",
+                "name": "salary",
+                "props": {
+                  "label": "薪资",
+                  "width": 100
+                }
               },
               {
-                "type": "vxe-column",
-                "field": "salary",
-                "title": "年薪 (万元)",
-                "minWidth": 140,
-                "align": "right"
+                "type": "r-text",
+                "name": "status",
+                "props": {
+                  "label": "状态",
+                  "width": 100
+                }
+              },
+              {
+                "type": "r-date",
+                "name": "joinDate",
+                "props": {
+                  "label": "入职日期",
+                  "width": 120
+                }
               }
             ]
           }
         ]
       },
       {
-        "type": "section",
-        "class": "table-section",
+        "type": "r-section",
+        "class": "detail-section",
+        "props": {
+          "title": "详情"
+        },
         "children": [
           {
-            "type": "h2",
-            "children": ["多级表头"]
-          },
-          {
-            "type": "p",
-            "class": "section-tip",
-            "children": ["使用多级表头对季度销售数据进行分组展示。"]
-          },
-          {
-            "type": "vxe-table",
-            "dataSource": "quarterSales",
-            "border": "inner",
-            "stripe": true,
-            "showOverflow": "tooltip",
-            "height": 340,
-            "columnConfig": {
-              "resizable": true
-            },
+            "type": "r-detail",
+            "dataKey": "PermissionData@currentRow",
             "children": [
               {
-                "type": "vxe-column",
-                "field": "region",
-                "title": "区域",
-                "minWidth": 180,
-                "fixed": "left"
+                "type": "r-text",
+                "name": "name",
+                "props": {
+                  "label": "姓名",
+                  "colSpan": 12
+                }
               },
               {
-                "type": "vxe-column",
-                "title": "季度销售额 (万元)",
-                "children": [
-                  {
-                    "type": "vxe-column",
-                    "field": "q1",
-                    "title": "Q1",
-                    "width": 120,
-                    "align": "right"
-                  },
-                  {
-                    "type": "vxe-column",
-                    "field": "q2",
-                    "title": "Q2",
-                    "width": 120,
-                    "align": "right"
-                  },
-                  {
-                    "type": "vxe-column",
-                    "field": "q3",
-                    "title": "Q3",
-                    "width": 120,
-                    "align": "right"
-                  },
-                  {
-                    "type": "vxe-column",
-                    "field": "q4",
-                    "title": "Q4",
-                    "width": 120,
-                    "align": "right"
-                  }
-                ]
+                "type": "r-text",
+                "name": "deptName",
+                "props": {
+                  "label": "部门",
+                  "colSpan": 12
+                }
               },
               {
-                "type": "vxe-column",
-                "field": "year",
-                "title": "年度合计",
-                "width": 140,
-                "align": "right"
+                "type": "r-text",
+                "name": "roleName",
+                "props": {
+                  "label": "角色",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "salary",
+                "props": {
+                  "label": "薪资",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "email",
+                "props": {
+                  "label": "邮箱",
+                  "colSpan": 24
+                }
+              },
+              {
+                "type": "r-textarea",
+                "name": "remark",
+                "props": {
+                  "label": "备注",
+                  "colSpan": 24,
+                  "rows": 3
+                }
               }
             ]
           }

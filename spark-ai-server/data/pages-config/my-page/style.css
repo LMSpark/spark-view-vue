@@ -1,1 +1,19 @@
-/* AI 生成 (mock) */
+[data-page="my-page"] .my-page-container {
+  font-family: Arial, sans-serif;
+}
+
+[data-page="my-page"] .r-table {
+  margin-top: 16px;
+}
+
+[data-page="my-page"] .r-section {
+  margin-bottom: 24px;
+}
+
+[data-page="my-page"] .r-drawer .r-form {
+  padding: 20px;
+}
+
+[data-page="my-page"] .el-divider {
+  margin: 16px 0;
+}

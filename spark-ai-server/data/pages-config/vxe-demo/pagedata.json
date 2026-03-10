@@ -1,78 +1,150 @@
 {
-  "users": [
-    {
-      "id": 101,
-      "name": "王晓明",
-      "role": "研发工程师",
-      "status": "在岗",
-      "joinDate": "2022-05-18",
-      "salary": 28.6
+  "dataset": {
+    "dataSetName": "PageDataSet",
+    "tables": {
+      "PermissionData": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "number",
+            "label": "ID",
+            "isPrimaryKey": true
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "label": "姓名"
+          },
+          {
+            "name": "deptName",
+            "type": "string",
+            "label": "部门"
+          },
+          {
+            "name": "roleName",
+            "type": "string",
+            "label": "角色"
+          },
+          {
+            "name": "salary",
+            "type": "number",
+            "label": "薪资"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "label": "状态"
+          },
+          {
+            "name": "joinDate",
+            "type": "date",
+            "label": "入职日期"
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "label": "邮箱"
+          },
+          {
+            "name": "remark",
+            "type": "string",
+            "label": "备注"
+          },
+          {
+            "name": "deptId",
+            "type": "number",
+            "label": "部门ID"
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "label": "角色编码"
+          },
+          {
+            "name": "dataScope",
+            "type": "string",
+            "label": "数据范围"
+          }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              {
+                "id": 1,
+                "name": "王晓明",
+                "deptName": "研发部",
+                "deptId": 101,
+                "roleName": "管理员",
+                "role": "admin",
+                "salary": 28600,
+                "status": "在岗",
+                "joinDate": "2022-05-18",
+                "email": "wangxm@example.com",
+                "remark": "技术骨干，负责核心模块开发。",
+                "dataScope": "all"
+              },
+              {
+                "id": 2,
+                "name": "李文静",
+                "deptName": "产品部",
+                "deptId": 102,
+                "roleName": "部门经理",
+                "role": "manager",
+                "salary": 31200,
+                "status": "在岗",
+                "joinDate": "2021-11-02",
+                "email": "liwj@example.com",
+                "remark": "负责产品规划与设计。",
+                "dataScope": "deptAndSub"
+              },
+              {
+                "id": 3,
+                "name": "张建国",
+                "deptName": "测试部",
+                "deptId": 103,
+                "roleName": "普通员工",
+                "role": "employee",
+                "salary": 24400,
+                "status": "休假",
+                "joinDate": "2020-08-25",
+                "email": "zhangjg@example.com",
+                "remark": "测试工程师，擅长自动化测试。",
+                "dataScope": "deptOnly"
+              },
+              {
+                "id": 4,
+                "name": "刘慧",
+                "deptName": "研发部",
+                "deptId": 101,
+                "roleName": "普通员工",
+                "role": "employee",
+                "salary": 33500,
+                "status": "在岗",
+                "joinDate": "2019-03-12",
+                "email": "liuh@example.com",
+                "remark": "资深研发，多次获得创新奖。",
+                "dataScope": "self"
+              },
+              {
+                "id": 5,
+                "name": "赵磊",
+                "deptName": "研发部",
+                "deptId": 101,
+                "roleName": "普通员工",
+                "role": "employee",
+                "salary": 22800,
+                "status": "离职",
+                "joinDate": "2018-07-04",
+                "email": "zhaol@example.com",
+                "remark": "已离职，原负责前端开发。",
+                "dataScope": "self"
+              }
+            ],
+            "autoCurrentFirst": true
+          }
+        }
+      }
     },
-    {
-      "id": 102,
-      "name": "李文静",
-      "role": "产品经理",
-      "status": "在岗",
-      "joinDate": "2021-11-02",
-      "salary": 31.2
-    },
-    {
-      "id": 103,
-      "name": "张建国",
-      "role": "测试工程师",
-      "status": "休假",
-      "joinDate": "2020-08-25",
-      "salary": 24.4
-    },
-    {
-      "id": 104,
-      "name": "刘慧",
-      "role": "研发工程师",
-      "status": "在岗",
-      "joinDate": "2019-03-12",
-      "salary": 33.5
-    },
-    {
-      "id": 105,
-      "name": "赵磊",
-      "role": "研发工程师",
-      "status": "离职",
-      "joinDate": "2018-07-04",
-      "salary": 22.8
-    }
-  ],
-  "quarterSales": [
-    {
-      "region": "华北",
-      "q1": 168,
-      "q2": 192,
-      "q3": 205,
-      "q4": 214,
-      "year": 779
-    },
-    {
-      "region": "华东",
-      "q1": 214,
-      "q2": 238,
-      "q3": 256,
-      "q4": 268,
-      "year": 976
-    },
-    {
-      "region": "华南",
-      "q1": 189,
-      "q2": 204,
-      "q3": 223,
-      "q4": 231,
-      "year": 847
-    },
-    {
-      "region": "西南",
-      "q1": 132,
-      "q2": 148,
-      "q3": 165,
-      "q4": 172,
-      "year": 617
-    }
-  ]
+    "relations": []
+  }
 }

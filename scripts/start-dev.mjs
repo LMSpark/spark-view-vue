@@ -17,10 +17,14 @@ import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import http from 'node:http'
+import { loadLocalJavaEnv } from './load-java-env.mjs'
 
 const BACKEND_PORT = process.env['BACKEND_PORT'] || '8080'
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
-const SERVER_DIR = resolve(import.meta.dirname, '..', 'spark-ai-server')
+const ROOT_DIR = resolve(import.meta.dirname, '..')
+const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
+const { loadedFiles, env: mergedEnv } = loadLocalJavaEnv(ROOT_DIR)
+const existingPath = mergedEnv['PATH'] ?? mergedEnv['Path'] ?? process.env['PATH'] ?? process.env['Path'] ?? ''
 
 // ── 检测 JAVA_HOME ──────────────────────────────────────────────────────────
 const JAVA_HOME_CANDIDATES = [
@@ -71,12 +75,15 @@ function waitForBackend(timeoutMs = 120_000) {
 console.log(`\n🚀 启动 Java 后端 (port ${BACKEND_PORT})...`)
 console.log(`   JAVA_HOME: ${javaHome}`)
 console.log(`   目录: ${SERVER_DIR}\n`)
+if (loadedFiles.length > 0) {
+  console.log(`   本地环境文件: ${loadedFiles.join(', ')}`)
+}
 
 const mvnCmd = process.platform === 'win32' ? 'mvn.cmd' : 'mvn'
 const javaEnv = {
-  ...process.env,
+  ...mergedEnv,
   JAVA_HOME: javaHome,
-  PATH: `${resolve(javaHome, 'bin')}${process.platform === 'win32' ? ';' : ':'}${process.env['PATH']}`,
+  PATH: `${resolve(javaHome, 'bin')}${process.platform === 'win32' ? ';' : ':'}${existingPath}`,
 }
 
 const backend = spawn(mvnCmd, ['spring-boot:run', `-Dserver.port=${BACKEND_PORT}`], {
@@ -112,8 +119,8 @@ console.log(`\n✅ Java 后端就绪: ${BACKEND_URL}`)
 console.log(`🚀 启动 Vite 前端...\n`)
 
 const vite = spawn('npx', ['vite'], {
-  cwd: resolve(import.meta.dirname, '..'),
-  env: { ...process.env, AI_BACKEND_URL: BACKEND_URL },
+  cwd: ROOT_DIR,
+  env: { ...mergedEnv, AI_BACKEND_URL: BACKEND_URL },
   stdio: 'inherit',
   shell: true,
 })

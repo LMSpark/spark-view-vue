@@ -293,6 +293,32 @@ class AiPageServiceTest {
         assertNotNull(result.getLogs());
     }
 
+    @Test
+    void mergePhaseFiles_keepsPhase1UiFilesWhenPhase2ReturnsBlankOverrides() throws Exception {
+        AiPageService service = new TestableAiPageService(null);
+        var method = AiPageService.class.getDeclaredMethod("mergePhaseFiles", Map.class, Map.class);
+        method.setAccessible(true);
+
+        Map<String, String> phase1 = Map.of(
+                "rule.json", "[{\"type\":\"div\"}]",
+                "style.css", ".page { padding: 20px; }"
+        );
+        Map<String, String> phase2 = Map.of(
+                "rule.json", "",
+                "style.css", "   ",
+                "pagedata.json", "{}",
+                "script.js", "function __init__() {}"
+        );
+
+        @SuppressWarnings("unchecked")
+        Map<String, String> merged = (Map<String, String>) method.invoke(service, phase1, phase2);
+
+        assertEquals("[{\"type\":\"div\"}]", merged.get("rule.json"));
+        assertEquals(".page { padding: 20px; }", merged.get("style.css"));
+        assertEquals("{}", merged.get("pagedata.json"));
+        assertEquals("function __init__() {}", merged.get("script.js"));
+    }
+
     // ── AiResponse iterationRound 字段测试 ──────────────────────────────────
 
     @Test

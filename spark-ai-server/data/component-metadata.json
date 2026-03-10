@@ -1,29 +1,29 @@
 {
   "version": "1.0.0",
-  "buildTime": "2026-03-08T18:33:03.397Z",
-  "componentCount": 14,
-  "skillCount": 5,
+  "buildTime": "2026-03-10T08:26:43.811Z",
+  "componentCount": 47,
+  "skillCount": 45,
   "components": [
     {
       "type": "about",
       "path": "src\\views\\About.vue",
       "size": 8.14,
       "strategy": "sync",
-      "hasSkill": false
+      "hasSkill": true
     },
     {
       "type": "ai-chat-panel",
       "path": "src\\components\\AiChatPanel.vue",
-      "size": 15.31,
+      "size": 29.88,
       "strategy": "sync",
-      "hasSkill": false
+      "hasSkill": true
     },
     {
       "type": "dashboard",
       "path": "src\\views\\Dashboard.vue",
       "size": 6.12,
       "strategy": "sync",
-      "hasSkill": false
+      "hasSkill": true
     },
     {
       "type": "error-fallback",
@@ -33,51 +33,282 @@
       "hasSkill": true
     },
     {
-      "type": "field-date",
-      "path": "src\\components\\renderer-fields\\FieldDate.vue",
-      "size": 3.39,
-      "strategy": "sync",
-      "hasSkill": false
-    },
-    {
-      "type": "field-number",
-      "path": "src\\components\\renderer-fields\\FieldNumber.vue",
-      "size": 3.14,
-      "strategy": "sync",
-      "hasSkill": false
-    },
-    {
-      "type": "field-text",
-      "path": "src\\components\\renderer-fields\\FieldText.vue",
-      "size": 3.09,
-      "strategy": "sync",
-      "hasSkill": false
-    },
-    {
-      "type": "renderer-detail",
-      "path": "src\\components\\renderer-containers\\RendererDetail.vue",
-      "size": 2.96,
+      "type": "field-cascader",
+      "path": "src\\components\\renderer-fields\\FieldCascader.vue",
+      "size": 2.89,
       "strategy": "sync",
       "hasSkill": true
     },
     {
+      "type": "field-checkbox",
+      "path": "src\\components\\renderer-fields\\FieldCheckbox.vue",
+      "size": 2.33,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-checkbox-group",
+      "path": "src\\components\\renderer-fields\\FieldCheckboxGroup.vue",
+      "size": 2.43,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-color",
+      "path": "src\\components\\renderer-fields\\FieldColor.vue",
+      "size": 2.75,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-date",
+      "path": "src\\components\\renderer-fields\\FieldDate.vue",
+      "size": 3.32,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-dept-picker",
+      "path": "src\\components\\renderer-fields\\FieldDeptPicker.vue",
+      "size": 2.1,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-entity-picker",
+      "path": "src\\components\\renderer-fields\\FieldEntityPicker.vue",
+      "size": 4.95,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-file-browser",
+      "path": "src\\components\\renderer-fields\\FieldFileBrowser.vue",
+      "size": 3.63,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-file-path",
+      "path": "src\\components\\renderer-fields\\FieldFilePath.vue",
+      "size": 4.47,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-html-editor",
+      "path": "src\\components\\renderer-fields\\FieldHtmlEditor.vue",
+      "size": 5.34,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-icon",
+      "path": "src\\components\\renderer-fields\\FieldIcon.vue",
+      "size": 3.4,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-image",
+      "path": "src\\components\\renderer-fields\\FieldImage.vue",
+      "size": 5.47,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-multi-select",
+      "path": "src\\components\\renderer-fields\\FieldMultiSelect.vue",
+      "size": 2.61,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-number",
+      "path": "src\\components\\renderer-fields\\FieldNumber.vue",
+      "size": 4.3,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-product-picker",
+      "path": "src\\components\\renderer-fields\\FieldProductPicker.vue",
+      "size": 2.1,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-radio",
+      "path": "src\\components\\renderer-fields\\FieldRadio.vue",
+      "size": 2.42,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-rate",
+      "path": "src\\components\\renderer-fields\\FieldRate.vue",
+      "size": 2.11,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-select",
+      "path": "src\\components\\renderer-fields\\FieldSelect.vue",
+      "size": 2.55,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-slider",
+      "path": "src\\components\\renderer-fields\\FieldSlider.vue",
+      "size": 2.21,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-switch",
+      "path": "src\\components\\renderer-fields\\FieldSwitch.vue",
+      "size": 2.26,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-text",
+      "path": "src\\components\\renderer-fields\\FieldText.vue",
+      "size": 2.34,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-textarea",
+      "path": "src\\components\\renderer-fields\\FieldTextarea.vue",
+      "size": 2.49,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-transfer",
+      "path": "src\\components\\renderer-fields\\FieldTransfer.vue",
+      "size": 2.55,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-tree-select",
+      "path": "src\\components\\renderer-fields\\FieldTreeSelect.vue",
+      "size": 2.83,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-upload",
+      "path": "src\\components\\renderer-fields\\FieldUpload.vue",
+      "size": 4.82,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "field-user-picker",
+      "path": "src\\components\\renderer-fields\\FieldUserPicker.vue",
+      "size": 2.1,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "page-manager",
+      "path": "src\\views\\PageManager.vue",
+      "size": 10.24,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-collapse",
+      "path": "src\\components\\renderer-containers\\RendererCollapse.vue",
+      "size": 7.93,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-detail",
+      "path": "src\\components\\renderer-containers\\RendererDetail.vue",
+      "size": 5.59,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-dialog",
+      "path": "src\\components\\renderer-containers\\RendererDialog.vue",
+      "size": 5.74,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-drawer",
+      "path": "src\\components\\renderer-containers\\RendererDrawer.vue",
+      "size": 5.74,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-field-scope",
+      "path": "src\\components\\renderer-containers\\RendererFieldScope.vue",
+      "size": 2.05,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
       "type": "renderer-form",
       "path": "src\\components\\renderer-containers\\RendererForm.vue",
+      "size": 5.6,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-list",
+      "path": "src\\components\\renderer-containers\\RendererList.vue",
+      "size": 11.64,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-list-item-scope",
+      "path": "src\\components\\renderer-containers\\RendererListItemScope.vue",
       "size": 3.07,
+      "strategy": "sync",
+      "hasSkill": false
+    },
+    {
+      "type": "renderer-section",
+      "path": "src\\components\\renderer-containers\\RendererSection.vue",
+      "size": 7.82,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-steps",
+      "path": "src\\components\\renderer-containers\\RendererSteps.vue",
+      "size": 8.26,
       "strategy": "sync",
       "hasSkill": true
     },
     {
       "type": "renderer-table",
       "path": "src\\components\\renderer-containers\\RendererTable.vue",
-      "size": 4.36,
+      "size": 12.13,
+      "strategy": "sync",
+      "hasSkill": true
+    },
+    {
+      "type": "renderer-tabs",
+      "path": "src\\components\\renderer-containers\\RendererTabs.vue",
+      "size": 8.61,
       "strategy": "sync",
       "hasSkill": true
     },
     {
       "type": "renderer-tree",
       "path": "src\\components\\renderer-containers\\RendererTree.vue",
-      "size": 5.86,
+      "size": 10.61,
       "strategy": "sync",
       "hasSkill": true
     },
@@ -86,30 +317,218 @@
       "path": "src\\views\\Settings.vue",
       "size": 11.18,
       "strategy": "sync",
-      "hasSkill": false
+      "hasSkill": true
     },
     {
       "type": "capability-demo",
       "path": "src\\views\\CapabilityDemo.vue",
       "size": 16.53,
       "strategy": "async",
-      "hasSkill": false
+      "hasSkill": true
     },
     {
       "type": "tenant-config-demo",
       "path": "src\\views\\TenantConfigDemo.vue",
       "size": 8.33,
       "strategy": "async",
-      "hasSkill": false
+      "hasSkill": true
     }
   ],
   "skills": [
+    {
+      "type": "about",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "ai-chat-panel",
+      "description": "SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "dashboard",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。",
+      "provides": [],
+      "consumes": []
+    },
     {
       "type": "error-fallback",
       "description": "* 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。",
       "provides": [],
       "consumes": [],
       "example": "* ```vue"
+    },
+    {
+      "type": "r-cascader",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-checkbox",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-checkbox-group",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-color",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-date",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-dept-picker",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-entity-picker",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-file-browser",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-file-path",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-html-editor",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-icon",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-image",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-multi-select",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-number",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-product-picker",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-radio",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-rate",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-select",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-slider",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-switch",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-text",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-textarea",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-transfer",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-tree-select",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-upload",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-user-picker",
+      "description": "SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "page-manager",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"page-manager\" 引用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "r-collapse",
+      "description": "折叠面板容器，内部使用 r-collapse-item 定义分组；每个折叠项内容默认采用 24 列 CSS Grid",
+      "provides": [],
+      "consumes": [],
+      "inputSchema": "{ props: { modelValue?: string|number|Array<string|number>, toolbar?: ComponentConfig[] } }",
+      "example": "{ \"type\": \"r-collapse\", \"children\": [{ \"type\": \"r-collapse-item\", \"props\": { \"title\": \"基本信息\", \"name\": \"base\" }, \"children\": [] }] }"
     },
     {
       "type": "r-detail",
@@ -126,6 +545,22 @@
       "example": "{ \"type\": \"r-detail\", \"dataKey\": \"Users@currentRow\", \"children\": [] }"
     },
     {
+      "type": "r-dialog",
+      "description": "对话框容器，支持头部动作、底部动作和 24 列 Grid 内容区",
+      "provides": [],
+      "consumes": [],
+      "inputSchema": "{ props: { modelValue?: boolean, title?: string, headerActions?: ComponentConfig[], footerActions?: ComponentConfig[] } }",
+      "example": "{ \"type\": \"r-dialog\", \"props\": { \"title\": \"编辑\", \"modelValue\": true }, \"children\": [] }"
+    },
+    {
+      "type": "r-drawer",
+      "description": "抽屉容器，支持头部动作、底部动作和 24 列 Grid 内容区",
+      "provides": [],
+      "consumes": [],
+      "inputSchema": "{ props: { modelValue?: boolean, title?: string, headerActions?: ComponentConfig[], footerActions?: ComponentConfig[] } }",
+      "example": "{ \"type\": \"r-drawer\", \"props\": { \"title\": \"详情\", \"modelValue\": true }, \"children\": [] }"
+    },
+    {
       "type": "r-form",
       "description": "表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值",
       "provides": [
@@ -140,6 +575,34 @@
       "example": "{ \"type\": \"r-form\", \"dataKey\": \"Users@currentRow\", \"children\": [] }"
     },
     {
+      "type": "r-list",
+      "description": "列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件",
+      "provides": [
+        "DATA_SOURCE"
+      ],
+      "consumes": [
+        "PAGE_DATASET"
+      ],
+      "inputSchema": "{ dataKey: string, props: { columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string, toolbar?: ComponentConfig[], itemActions?: ComponentConfig[] } }",
+      "example": "{ \"type\": \"r-list\", \"dataKey\": \"Users@rows\", \"children\": [{ \"type\": \"r-text\", \"name\": \"name\" }] }"
+    },
+    {
+      "type": "r-section",
+      "description": "分组块容器，支持标题、描述、折叠和 24 列网格布局；r-block 为其别名",
+      "provides": [],
+      "consumes": [],
+      "inputSchema": "{ props: { title?: string, description?: string, collapsible?: boolean, defaultCollapsed?: boolean } }",
+      "example": "{ \"type\": \"r-section\", \"props\": { \"title\": \"基本信息\" }, \"children\": [] }"
+    },
+    {
+      "type": "r-steps",
+      "description": "步骤容器，内部使用 r-step 定义步骤；当前步骤内容区采用 24 列 CSS Grid",
+      "provides": [],
+      "consumes": [],
+      "inputSchema": "{ props: { modelValue?: string|number, toolbar?: ComponentConfig[] } }",
+      "example": "{ \"type\": \"r-steps\", \"children\": [{ \"type\": \"r-step\", \"props\": { \"title\": \"步骤一\", \"name\": \"s1\" }, \"children\": [] }] }"
+    },
+    {
       "type": "r-table",
       "description": "数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页",
       "provides": [
@@ -152,6 +615,14 @@
       "example": "{ \"type\": \"r-table\", \"dataKey\": \"Orders@rows\", \"props\": { \"border\": true, \"highlightCurrentRow\": true } }"
     },
     {
+      "type": "r-tabs",
+      "description": "标签页容器，内部使用 r-tab-pane 定义面板；每个面板内容默认采用 24 列 CSS Grid",
+      "provides": [],
+      "consumes": [],
+      "inputSchema": "{ props: { modelValue?: string|number, toolbar?: ComponentConfig[], toolbarPosition?: 'top'|'bottom'|'left'|'right' } }",
+      "example": "{ \"type\": \"r-tabs\", \"children\": [{ \"type\": \"r-tab-pane\", \"props\": { \"label\": \"基本信息\", \"name\": \"base\" }, \"children\": [] }] }"
+    },
+    {
       "type": "r-tree",
       "description": "树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件",
       "provides": [
@@ -162,11 +633,29 @@
       ],
       "inputSchema": "{ dataKey: string, props: { nodeKey?: string, lazy?: boolean } }",
       "example": "{ \"type\": \"r-tree\", \"dataKey\": \"departments@rows\", \"props\": { \"nodeKey\": \"id\" } }"
+    },
+    {
+      "type": "settings",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "capability-demo",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。",
+      "provides": [],
+      "consumes": []
+    },
+    {
+      "type": "tenant-config-demo",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"tenant-config-demo\" 引用。",
+      "provides": [],
+      "consumes": []
     }
   ],
   "skillPrompts": {
-    "index": "## SPARK Skill 目录\n\n| type | 描述 |\n|------|------|\n| `error-fallback` | * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。 |\n| `r-detail` | 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写 |\n| `r-form` | 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值 |\n| `r-table` | 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页 |\n| `r-tree` | 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件 |",
-    "compact": "## SPARK Skill 目录\n\n> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。\n\n### `error-fallback`\n> * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。\n\n### `r-detail`\n> 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n\n### `r-form`\n> 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n\n### `r-table`\n> 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n\n### `r-tree`\n> 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n",
-    "full": "## SPARK Skill 目录\n\n> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。\n\n### `error-fallback`\n> * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。\n- **调用示例**:\n```json\n* ```vue\n```\n\n### `r-detail`\n> 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n- **输入参数**: `{ dataKey: string }`\n- **调用示例**:\n```json\n{ \"type\": \"r-detail\", \"dataKey\": \"Users@currentRow\", \"children\": [] }\n```\n\n### `r-form`\n> 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n- **输入参数**: `{ dataKey: string }`\n- **调用示例**:\n```json\n{ \"type\": \"r-form\", \"dataKey\": \"Users@currentRow\", \"children\": [] }\n```\n\n### `r-table`\n> 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n- **输入参数**: `{ dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-table\", \"dataKey\": \"Orders@rows\", \"props\": { \"border\": true, \"highlightCurrentRow\": true } }\n```\n\n### `r-tree`\n> 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n- **输入参数**: `{ dataKey: string, props: { nodeKey?: string, lazy?: boolean } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-tree\", \"dataKey\": \"departments@rows\", \"props\": { \"nodeKey\": \"id\" } }\n```\n"
+    "index": "## SPARK Skill 目录\n\n| type | 描述 |\n|------|------|\n| `about` | SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。 |\n| `ai-chat-panel` | SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。 |\n| `dashboard` | SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。 |\n| `error-fallback` | * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。 |\n| `r-cascader` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。 |\n| `r-checkbox` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。 |\n| `r-checkbox-group` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。 |\n| `r-color` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。 |\n| `r-date` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。 |\n| `r-dept-picker` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。 |\n| `r-entity-picker` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。 |\n| `r-file-browser` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。 |\n| `r-file-path` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。 |\n| `r-html-editor` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。 |\n| `r-icon` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。 |\n| `r-image` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。 |\n| `r-multi-select` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。 |\n| `r-number` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。 |\n| `r-product-picker` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。 |\n| `r-radio` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。 |\n| `r-rate` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。 |\n| `r-select` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。 |\n| `r-slider` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。 |\n| `r-switch` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。 |\n| `r-text` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。 |\n| `r-textarea` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。 |\n| `r-transfer` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。 |\n| `r-tree-select` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。 |\n| `r-upload` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。 |\n| `r-user-picker` | SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。 |\n| `page-manager` | SPARK 视图组件，可在注册表中通过 type=\"page-manager\" 引用。 |\n| `r-collapse` | 折叠面板容器，内部使用 r-collapse-item 定义分组；每个折叠项内容默认采用 24 列 CSS Grid |\n| `r-detail` | 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写 |\n| `r-dialog` | 对话框容器，支持头部动作、底部动作和 24 列 Grid 内容区 |\n| `r-drawer` | 抽屉容器，支持头部动作、底部动作和 24 列 Grid 内容区 |\n| `r-form` | 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值 |\n| `r-list` | 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件 |\n| `r-section` | 分组块容器，支持标题、描述、折叠和 24 列网格布局；r-block 为其别名 |\n| `r-steps` | 步骤容器，内部使用 r-step 定义步骤；当前步骤内容区采用 24 列 CSS Grid |\n| `r-table` | 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页 |\n| `r-tabs` | 标签页容器，内部使用 r-tab-pane 定义面板；每个面板内容默认采用 24 列 CSS Grid |\n| `r-tree` | 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件 |\n| `settings` | SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。 |\n| `capability-demo` | SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。 |\n| `tenant-config-demo` | SPARK 视图组件，可在注册表中通过 type=\"tenant-config-demo\" 引用。 |",
+    "compact": "## SPARK Skill 目录\n\n> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。\n\n### `about`\n> SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。\n\n### `ai-chat-panel`\n> SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。\n\n### `dashboard`\n> SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。\n\n### `error-fallback`\n> * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。\n\n### `r-cascader`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。\n\n### `r-checkbox`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。\n\n### `r-checkbox-group`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。\n\n### `r-color`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。\n\n### `r-date`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。\n\n### `r-dept-picker`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。\n\n### `r-entity-picker`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。\n\n### `r-file-browser`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。\n\n### `r-file-path`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。\n\n### `r-html-editor`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。\n\n### `r-icon`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。\n\n### `r-image`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。\n\n### `r-multi-select`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。\n\n### `r-number`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。\n\n### `r-product-picker`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。\n\n### `r-radio`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。\n\n### `r-rate`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。\n\n### `r-select`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。\n\n### `r-slider`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。\n\n### `r-switch`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。\n\n### `r-text`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。\n\n### `r-textarea`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。\n\n### `r-transfer`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。\n\n### `r-tree-select`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。\n\n### `r-upload`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。\n\n### `r-user-picker`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。\n\n### `page-manager`\n> SPARK 视图组件，可在注册表中通过 type=\"page-manager\" 引用。\n\n### `r-collapse`\n> 折叠面板容器，内部使用 r-collapse-item 定义分组；每个折叠项内容默认采用 24 列 CSS Grid\n\n### `r-detail`\n> 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n\n### `r-dialog`\n> 对话框容器，支持头部动作、底部动作和 24 列 Grid 内容区\n\n### `r-drawer`\n> 抽屉容器，支持头部动作、底部动作和 24 列 Grid 内容区\n\n### `r-form`\n> 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n\n### `r-list`\n> 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n\n### `r-section`\n> 分组块容器，支持标题、描述、折叠和 24 列网格布局；r-block 为其别名\n\n### `r-steps`\n> 步骤容器，内部使用 r-step 定义步骤；当前步骤内容区采用 24 列 CSS Grid\n\n### `r-table`\n> 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n\n### `r-tabs`\n> 标签页容器，内部使用 r-tab-pane 定义面板；每个面板内容默认采用 24 列 CSS Grid\n\n### `r-tree`\n> 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n\n### `settings`\n> SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。\n\n### `capability-demo`\n> SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。\n\n### `tenant-config-demo`\n> SPARK 视图组件，可在注册表中通过 type=\"tenant-config-demo\" 引用。\n",
+    "full": "## SPARK Skill 目录\n\n> rule.json 的 type 字段只能使用以下值，每个值对应一个可调用的前端 Skill。\n\n### `about`\n> SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。\n\n### `ai-chat-panel`\n> SPARK 组件，可在注册表中通过 type=\"ai-chat-panel\" 使用。\n\n### `dashboard`\n> SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。\n\n### `error-fallback`\n> * 应用级错误边界组件，当应用初始化或运行时发生致命错误时显示友好的错误界面。\n- **调用示例**:\n```json\n* ```vue\n```\n\n### `r-cascader`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-cascader\" 使用。\n\n### `r-checkbox`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox\" 使用。\n\n### `r-checkbox-group`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-checkbox-group\" 使用。\n\n### `r-color`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-color\" 使用。\n\n### `r-date`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-date\" 使用。\n\n### `r-dept-picker`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-dept-picker\" 使用。\n\n### `r-entity-picker`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-entity-picker\" 使用。\n\n### `r-file-browser`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-browser\" 使用。\n\n### `r-file-path`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-file-path\" 使用。\n\n### `r-html-editor`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-html-editor\" 使用。\n\n### `r-icon`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-icon\" 使用。\n\n### `r-image`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-image\" 使用。\n\n### `r-multi-select`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-multi-select\" 使用。\n\n### `r-number`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-number\" 使用。\n\n### `r-product-picker`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-product-picker\" 使用。\n\n### `r-radio`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-radio\" 使用。\n\n### `r-rate`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-rate\" 使用。\n\n### `r-select`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-select\" 使用。\n\n### `r-slider`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-slider\" 使用。\n\n### `r-switch`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-switch\" 使用。\n\n### `r-text`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-text\" 使用。\n\n### `r-textarea`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-textarea\" 使用。\n\n### `r-transfer`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-transfer\" 使用。\n\n### `r-tree-select`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-tree-select\" 使用。\n\n### `r-upload`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-upload\" 使用。\n\n### `r-user-picker`\n> SPARK 字段组件，可在 rule.json 中通过 type=\"r-user-picker\" 使用。\n\n### `page-manager`\n> SPARK 视图组件，可在注册表中通过 type=\"page-manager\" 引用。\n\n### `r-collapse`\n> 折叠面板容器，内部使用 r-collapse-item 定义分组；每个折叠项内容默认采用 24 列 CSS Grid\n- **输入参数**: `{ props: { modelValue?: string|number|Array<string|number>, toolbar?: ComponentConfig[] } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-collapse\", \"children\": [{ \"type\": \"r-collapse-item\", \"props\": { \"title\": \"基本信息\", \"name\": \"base\" }, \"children\": [] }] }\n```\n\n### `r-detail`\n> 只读详情容器，绑定 DataView.currentRow 展示当前行字段，不支持编辑回写\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n- **输入参数**: `{ dataKey: string }`\n- **调用示例**:\n```json\n{ \"type\": \"r-detail\", \"dataKey\": \"Users@currentRow\", \"children\": [] }\n```\n\n### `r-dialog`\n> 对话框容器，支持头部动作、底部动作和 24 列 Grid 内容区\n- **输入参数**: `{ props: { modelValue?: boolean, title?: string, headerActions?: ComponentConfig[], footerActions?: ComponentConfig[] } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-dialog\", \"props\": { \"title\": \"编辑\", \"modelValue\": true }, \"children\": [] }\n```\n\n### `r-drawer`\n> 抽屉容器，支持头部动作、底部动作和 24 列 Grid 内容区\n- **输入参数**: `{ props: { modelValue?: boolean, title?: string, headerActions?: ComponentConfig[], footerActions?: ComponentConfig[] } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-drawer\", \"props\": { \"title\": \"详情\", \"modelValue\": true }, \"children\": [] }\n```\n\n### `r-form`\n> 表单容器，绑定 DataView.currentRow 实现双向编辑，子字段组件通过 CONTEXT_DATA 读写表单值\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`, `CONTEXT_DATA`, `FIELD_CONTEXT`\n- **输入参数**: `{ dataKey: string }`\n- **调用示例**:\n```json\n{ \"type\": \"r-form\", \"dataKey\": \"Users@currentRow\", \"children\": [] }\n```\n\n### `r-list`\n> 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n- **输入参数**: `{ dataKey: string, props: { columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string, toolbar?: ComponentConfig[], itemActions?: ComponentConfig[] } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-list\", \"dataKey\": \"Users@rows\", \"children\": [{ \"type\": \"r-text\", \"name\": \"name\" }] }\n```\n\n### `r-section`\n> 分组块容器，支持标题、描述、折叠和 24 列网格布局；r-block 为其别名\n- **输入参数**: `{ props: { title?: string, description?: string, collapsible?: boolean, defaultCollapsed?: boolean } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-section\", \"props\": { \"title\": \"基本信息\" }, \"children\": [] }\n```\n\n### `r-steps`\n> 步骤容器，内部使用 r-step 定义步骤；当前步骤内容区采用 24 列 CSS Grid\n- **输入参数**: `{ props: { modelValue?: string|number, toolbar?: ComponentConfig[] } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-steps\", \"children\": [{ \"type\": \"r-step\", \"props\": { \"title\": \"步骤一\", \"name\": \"s1\" }, \"children\": [] }] }\n```\n\n### `r-table`\n> 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n- **输入参数**: `{ dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-table\", \"dataKey\": \"Orders@rows\", \"props\": { \"border\": true, \"highlightCurrentRow\": true } }\n```\n\n### `r-tabs`\n> 标签页容器，内部使用 r-tab-pane 定义面板；每个面板内容默认采用 24 列 CSS Grid\n- **输入参数**: `{ props: { modelValue?: string|number, toolbar?: ComponentConfig[], toolbarPosition?: 'top'|'bottom'|'left'|'right' } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-tabs\", \"children\": [{ \"type\": \"r-tab-pane\", \"props\": { \"label\": \"基本信息\", \"name\": \"base\" }, \"children\": [] }] }\n```\n\n### `r-tree`\n> 树形数据容器，绑定 DataView 渲染嵌套树结构，支持懒加载、节点点击、展开/折叠事件\n- **依赖能力（consumes）**: `PAGE_DATASET`\n- **提供能力（provides）**: `DATA_SOURCE`\n- **输入参数**: `{ dataKey: string, props: { nodeKey?: string, lazy?: boolean } }`\n- **调用示例**:\n```json\n{ \"type\": \"r-tree\", \"dataKey\": \"departments@rows\", \"props\": { \"nodeKey\": \"id\" } }\n```\n\n### `settings`\n> SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。\n\n### `capability-demo`\n> SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。\n\n### `tenant-config-demo`\n> SPARK 视图组件，可在注册表中通过 type=\"tenant-config-demo\" 引用。\n"
   }
 }

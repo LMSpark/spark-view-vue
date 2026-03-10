@@ -29,5 +29,7 @@ tmpclaude-*
 # Local env overrides（不提交 API Key）
 .env.local
 .env.*.local
+.env.java
+spark-ai-server/.env.java
 
 

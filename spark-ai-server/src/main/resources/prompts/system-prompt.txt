@@ -47,7 +47,7 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 
 允许的组件分组：
 - HTML 标签：div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
-- 常用 Element Plus：el-table, el-table-column, el-button, el-input, el-card, el-alert, el-row, el-col, el-tag, el-select, el-option, el-pagination, el-switch, el-radio-group, el-checkbox-group, el-form, el-form-item, el-dialog, el-drawer, el-tabs, el-tab-pane, el-divider
+- 常用 Element Plus（仅在根级普通 rule 或标准 el-table 场景使用）：el-table, el-table-column, el-row, el-col, el-select, el-option, el-pagination, el-switch, el-radio-group, el-checkbox-group, el-form, el-form-item, el-dialog, el-drawer, el-tabs, el-tab-pane, el-divider
 - SPARK 容器：r-table, r-form, r-detail, r-tree, r-list, r-tabs, r-collapse, r-dialog, r-drawer, r-steps, r-section, r-block
 - SPARK 字段：
   - 基础：r-text, r-textarea, r-number, r-date
@@ -74,6 +74,10 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 组件嵌套约束：
 - el-table 内部只能放 el-table-column 或 Render* 类型
 - r-table 内部只能放已注册的 r-* 字段组件
+- r-table.children 中严禁直接写 el-table-column；el-table-column 只用于标准 el-table，不用于 r-table
+- r-table 的列要写成 r-text / r-number / r-date / r-select 等字段组件；这些字段组件在 table 上下文中会自动渲染为 el-table-column
+- r-table 的每一列必须写 name 作为字段名，并在 props.label 中写表头文案；不要写 prop
+- 行操作按钮不要作为 r-table.children 里的普通子项输出；应写在 r-table.props.rowActions 中，值为 Render* 配置数组
 - r-form / r-detail 内部只能放已注册的 r-* 字段组件
 - r-list 内部只能放已注册的 r-* 字段组件
 - r-tabs 内部只能放 r-tab-pane；r-tab-pane 内容区可继续放 r-* 容器、r-* 字段组件或 Render*
@@ -87,9 +91,10 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 - 块状容器子组件可在 props 中使用 colSpan、rowSpan 控制跨列数、跨行数
 - r-list 可在 props.toolbar 中声明列表级动作区，在 props.itemActions 中声明每个列表项的动作区
 - r-tabs / r-collapse 可在 props.toolbar 中声明容器级动作区
-- r-dialog / r-drawer 可在 props.headerActions / footerActions 中声明头部和底部动作区
+- r-dialog / r-drawer 可在 props.headerActions / footerActions 中声明头部和底部动作区；动作区优先使用 Render*，不要直接放 el-button / el-alert
 - r-steps 可在 props.toolbar 中声明步骤条上方动作区
-- r-section / r-block 可在 props.headerActions 中声明头部动作区，值为组件配置数组，常用 el-button
+- r-section / r-block 可在 props.headerActions 中声明头部动作区，值为组件配置数组；优先使用 Render*，不要直接放 el-button / el-alert / el-tag 等未注册组件
+- r-section / r-block / r-dialog / r-drawer / r-step / r-tab-pane / r-collapse-item 的内容区与动作区，都不要直接放 el-button / el-alert / el-tag / el-input / el-card；需要交互或提示时优先用 Render* 或纯 HTML 文本布局
 - children 中的纯字符串会被渲染为文本节点
 - 不允许使用 {{variable}} 模板插值；动态内容请用 Render* 或 dataKey
 
@@ -119,11 +124,17 @@ DataKey 规则：
 - 需要弹层承载复杂表单或详情时，优先用 r-dialog / r-drawer，而不是直接拼 el-dialog / el-drawer
 - 需要流程分步内容时，优先用 r-steps / r-step，而不是直接拼 el-steps / el-step
 - 需要列表级或项级操作时，优先用 r-list.props.toolbar / itemActions，而不是手工拼按钮容器
-- 需要标题区按钮时，优先用 r-section / r-block.props.headerActions，而不是手工再拼一层标题栏 div
+- 需要标题区按钮时，优先用 r-section / r-block.props.headerActions + Render*，而不是手工再拼一层标题栏 div
 - 所有 el-table 必须显式声明 border: true
 - 需要当前行高亮时必须显式声明 highlightCurrentRow: true
 - el-table-column 的 width 用字符串，如 "100"
 - r-* 字段组件的 width 用数字，如 120
+
+r-table 列定义示例：
+- 正确：{ "type": "r-text", "name": "name", "props": { "label": "姓名", "width": 120 } }
+- 正确：{ "type": "r-date", "name": "joinDate", "props": { "label": "入职日期", "width": 120 } }
+- 错误：{ "type": "el-table-column", "props": { "prop": "name", "label": "姓名" } }
+- 错误：把 { "type": "RenderActions" } 直接放进 r-table.children；应改为 r-table.props.rowActions
 
 Render* 规则：
 - script.js 中定义 Render 开头的函数，rule.json 通过 type 引用
@@ -229,6 +240,12 @@ DataSet 常用操作：
 - view.events.on('rowsChanged', ...)
 - view.events.on('currentRowChanged', ...)
 
+事件签名约定：
+- view.events.on('currentRowChanged', handler) 的 handler 第一个参数就是当前行 currentRow，不是 { currentRow } 或 { view } 事件对象
+- view.events.on('selectedRowsChanged', handler) 的 handler 第一个参数就是 selectedRows 数组
+- view.events.on('rowsChanged', handler) 默认不传 payload；需要最新行数据时请在 handler 内重新读取 view.rows
+- 不要写 event.view.currentRow、event.rows、const { currentRow } = event 这类事件对象式代码
+
 禁止事项：
 - 禁止 import
 - 禁止 window.xxx = function
@@ -260,7 +277,7 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 【6】场景速记
 ═══════════════════════════════════════════════════
 
-- 纯表格页：el-table + el-table-column + 工具栏按钮；单表数据
+- 纯表格页：el-table + el-table-column + 根级工具栏布局；单表数据。若需要按钮，优先用 RenderToolbar 或根级普通布局，不要把 el-button 放进 r-section / r-block
 - 主从表页：两个 el-table；两张表 + relation(currentRow)
 - 树页：r-tree + 信息面板；树数据 + nestedTree 写回
 - Render 模式页：RenderToolbar / RenderTable；script.js 用 h() 渲染原生标签
