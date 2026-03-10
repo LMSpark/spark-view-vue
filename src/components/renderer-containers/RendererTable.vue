@@ -9,23 +9,73 @@
  */
 -->
 <template>
-  <el-table
-    :data="tableData"
-    v-bind="$attrs"
-    @current-change="handleCurrentChange"
-    @selection-change="handleSelectionChange"
-  >
-    <!-- Config / sparkChildren 驱动 —— 通用递归渲染，父级不知道子级是谁 -->
-    <template v-if="mergedChildren.length">
+  <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
+    <div v-if="hasToolbar" :class="['renderer-table-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
-        v-for="(child, i) in mergedChildren"
-        :key="child.id ?? `r-table-child-${i}`"
-        :config="child"
+        v-for="(action, index) in visibleToolbarConfigs"
+        :key="action.id ?? `r-table-toolbar-${index}`"
+        :config="action"
       />
-    </template>
-    <!-- Template 驱动 —— 保留 <slot> 向后兼容 -->
-    <slot v-else />
-  </el-table>
+    </div>
+
+    <div class="renderer-table-main">
+      <el-table
+        :data="tableData"
+        v-bind="$attrs"
+        @current-change="handleCurrentChange"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column
+          v-if="showRowActionsLeft"
+          :label="rowActionsLabelValue"
+          :width="rowActionsWidthValue"
+          :fixed="rowActionsFixedValue"
+          :align="rowActionsAlignValue"
+          :class-name="rowActionsClassValue"
+        >
+          <template #default="{ row, $index }">
+            <div :class="['renderer-table-row-actions', rowActionsClassValue]">
+              <SparkComponentRenderer
+                v-for="(action, index) in getScopedRowActions({ row, index: $index })"
+                :key="action.id ?? `r-table-row-action-left-${index}`"
+                :config="action"
+              />
+            </div>
+          </template>
+        </el-table-column>
+
+        <!-- Config / sparkChildren 驱动 —— 通用递归渲染，父级不知道子级是谁 -->
+        <template v-if="mergedChildren.length">
+          <SparkComponentRenderer
+            v-for="(child, i) in mergedChildren"
+            :key="child.id ?? `r-table-child-${i}`"
+            :config="child"
+          />
+        </template>
+        <!-- Template 驱动 —— 保留 <slot> 向后兼容 -->
+        <slot v-else />
+
+        <el-table-column
+          v-if="showRowActionsRight"
+          :label="rowActionsLabelValue"
+          :width="rowActionsWidthValue"
+          :fixed="rowActionsFixedValue"
+          :align="rowActionsAlignValue"
+          :class-name="rowActionsClassValue"
+        >
+          <template #default="{ row, $index }">
+            <div :class="['renderer-table-row-actions', rowActionsClassValue]">
+              <SparkComponentRenderer
+                v-for="(action, index) in getScopedRowActions({ row, index: $index })"
+                :key="action.id ?? `r-table-row-action-right-${index}`"
+                :config="action"
+              />
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -36,13 +86,17 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, onMounted, watch } from 'vue'
+import { computed } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { parseDataKey } from '@spark-view/spark-data'
-import type { IDataRow, DataView } from '@spark-view/spark-data'
+import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import { FIELD_CONTEXT } from '../capability-keys'
+import { useContainerActions } from './useContainerActions'
+import type { ToolbarPosition, LateralActionPosition } from './useContainerActions'
+import { useContainerDataSource } from './useContainerDataSource'
+
+type RowActionsPosition = LateralActionPosition
 
 interface Props {
   /** SPARK 配置驱动（主入口）— dataKey / children 均从此取 */
@@ -53,9 +107,27 @@ interface Props {
   sparkChildren?: ComponentConfig[]
   /** 直接传入的 DataView（备用） */
   dataView?: DataView | undefined
+  toolbar?: ComponentConfig[]
+  toolbarPosition?: ToolbarPosition
+  toolbarClass?: string
+  rowActions?: ComponentConfig[]
+  rowActionsPosition?: RowActionsPosition
+  rowActionsLabel?: string
+  rowActionsWidth?: string | number
+  rowActionsAlign?: 'left' | 'center' | 'right'
+  rowActionsFixed?: boolean | 'left' | 'right'
+  rowActionsClass?: string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  toolbarPosition: 'top',
+  toolbarClass: '',
+  rowActionsPosition: 'right',
+  rowActionsLabel: '操作',
+  rowActionsWidth: 160,
+  rowActionsAlign: 'left',
+  rowActionsClass: '',
+})
 
 // 配置内容优先从 config.props 取，否则回退到平层 prop
 const effectiveDataKey = computed(() =>
@@ -64,6 +136,20 @@ const effectiveDataKey = computed(() =>
 
 // 配置驱动模式下的子组件列表（config.children > sparkChildren > 空）
 const mergedChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
+const rowActionsLabelValue = computed(() =>
+  (props.config?.props?.['rowActionsLabel'] as string | undefined) ?? props.rowActionsLabel
+)
+const rowActionsWidthValue = computed(() =>
+  (props.config?.props?.['rowActionsWidth'] as string | number | undefined) ?? props.rowActionsWidth
+)
+const rowActionsAlignValue = computed(() =>
+  (props.config?.props?.['rowActionsAlign'] as 'left' | 'center' | 'right' | undefined) ?? props.rowActionsAlign
+)
+const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
+  const explicit = (props.config?.props?.['rowActionsFixed'] as boolean | 'left' | 'right' | undefined) ?? props.rowActionsFixed
+  if (explicit !== undefined) return explicit
+  return rowActionsPositionValue.value
+})
 
 // 接入 SPARK 能力链
 const { consume, provide: sparkProvide, logger } = useSparkComponent(
@@ -71,28 +157,50 @@ const { consume, provide: sparkProvide, logger } = useSparkComponent(
 )
 const pageDataSet = consume(PAGE_DATASET)
 
-// ── 统一解析 DataView：所有数据交互的唯一中介 ──
-const resolvedView = computed<DataView | null>(() => {
-  if (effectiveDataKey.value && pageDataSet) {
-    const dk = parseDataKey(effectiveDataKey.value)
-    if (dk) return (pageDataSet.getView(dk.tableName, dk.viewId) as DataView) ?? null
-  }
-  return props.dataView ?? null
+const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
+  dataKey: effectiveDataKey,
+  pageDataSet,
+  fallbackSource: computed(() => props.dataView ?? null),
+  mapView: view => view,
+  provideDataSource: view => sparkProvide(DATA_SOURCE, view),
+  logger,
+  logPrefix: 'RendererTable',
 })
 
 // 表格行数据：始终从 DataView.rows 读取
 const tableData = computed(() => resolvedView.value?.rows ?? [])
+const modelPermission = computed<IModelPermission | undefined>(() =>
+  (resolvedView.value as IDataSource | null | undefined)?._modelPerm
+)
 
-function tryAutoLoad(view: DataView | null) {
-  if (!view) return
-  // 内联数据表（无 API 配置）不需要远程加载
-  if (!view.dataTable?.api) return
-  if (typeof view.requestData === 'function') {
-    void view.requestData().catch((e: unknown) => {
-      logger.error('RendererTable: requestData() 失败', e)
-    })
-  }
-}
+const {
+  toolbarPositionValue,
+  toolbarClassValue,
+  actionPositionValue: rowActionsPositionValue,
+  actionClassValue: rowActionsClassValue,
+  visibleToolbarConfigs,
+  hasToolbar,
+  showActionsLeft: showRowActionsLeft,
+  showActionsRight: showRowActionsRight,
+  getScopedActionConfigs: getScopedRowActions,
+} = useContainerActions<{ row: IDataRow, index: number }>({
+  config: computed(() => props.config),
+  toolbar: computed(() => props.toolbar),
+  toolbarPosition: computed(() => props.toolbarPosition),
+  toolbarClass: computed(() => props.toolbarClass),
+  actionConfigs: computed(() => props.rowActions),
+  actionPosition: computed(() => props.rowActionsPosition),
+  actionClass: computed(() => props.rowActionsClass),
+  actionPropKey: 'rowActions',
+  actionPositionPropKey: 'rowActionsPosition',
+  actionClassPropKey: 'rowActionsClass',
+  modelPermission,
+  resolveScope: ({ row, index }) => ({
+    row,
+    listenerArgs: [row, index],
+    scopedProps: { row, rowIndex: index, $index: index },
+  }),
+})
 
 // 向字段子组件提供渲染上下文
 sparkProvide(FIELD_CONTEXT, 'table')
@@ -107,12 +215,55 @@ function handleSelectionChange(selection: IDataRow[]) {
   resolvedView.value?.selection.setSelectedRows(Array.isArray(selection) ? selection : [])
 }
 
-// 统一 watcher：DataView → DATA_SOURCE 提供 + 自动加载
-watch(resolvedView, (view) => {
-  if (!view) return
-  sparkProvide(DATA_SOURCE, view)
-  tryAutoLoad(view)
-}, { immediate: true })
-
-onMounted(() => tryAutoLoad(resolvedView.value))
 </script>
+
+<style scoped>
+.renderer-table-layout {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.renderer-table-layout--top,
+.renderer-table-layout--bottom {
+  flex-direction: column;
+}
+
+.renderer-table-layout--bottom {
+  flex-direction: column-reverse;
+}
+
+.renderer-table-layout--left,
+.renderer-table-layout--right {
+  align-items: flex-start;
+}
+
+.renderer-table-layout--right {
+  flex-direction: row-reverse;
+}
+
+.renderer-table-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.renderer-table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.renderer-table-layout--left .renderer-table-toolbar,
+.renderer-table-layout--right .renderer-table-toolbar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.renderer-table-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+</style>

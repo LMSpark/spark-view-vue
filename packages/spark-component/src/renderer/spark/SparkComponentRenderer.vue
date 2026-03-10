@@ -58,6 +58,8 @@ import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../../core/types.j
 import type { ComponentConfig, ComponentContext, ComponentRegistry } from '../../core/types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
+type ComponentEventMap = Record<string, unknown>
+type RenderableComponentConfig = ComponentConfig & { on?: ComponentEventMap }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -96,10 +98,23 @@ const resolvedComponent = computed(() => {
   return def.component ? markRaw(def.component as object) : null
 })
 
+function toListenerPropName(eventName: string): string {
+  const normalized = eventName.replace(/[:\-]([a-zA-Z])/g, (_, char: string) => char.toUpperCase())
+  return `on${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`
+}
+
 const forwardedProps = computed(() => {
-  const rawProps = props.config.props ?? {}
-  return Object.fromEntries(
-    Object.entries(rawProps).filter(([key]) => !LAYOUT_ONLY_PROP_KEYS.has(key))
+  const config = props.config as RenderableComponentConfig
+  const rawProps = config.props ?? {}
+  const eventProps = Object.fromEntries(
+    Object.entries(config.on ?? {}).map(([eventName, handler]) => [toListenerPropName(eventName), handler])
   )
+
+  return {
+    ...Object.fromEntries(
+      Object.entries(rawProps).filter(([key]) => !LAYOUT_ONLY_PROP_KEYS.has(key))
+    ),
+    ...eventProps,
+  }
 })
 </script>

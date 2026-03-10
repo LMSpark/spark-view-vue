@@ -45,7 +45,7 @@ import { type BindingContext, EMPTY_CONTEXT, buildChildContext, DATA_CONTAINER_T
  * @see isSelfResolvingType — 查询逻辑（注册表优先，此 Set 为后备）
  */
 const _SELF_RESOLVING_FALLBACK = new Set(['r-table', 'r-form', 'r-detail', 'r-tree', 'r-list', 'r-section', 'r-block'])
-const _COMPONENT_ARRAY_PROP_KEYS = new Set(['headerActions'])
+const _COMPONENT_ARRAY_PROP_KEYS = new Set(['headerActions', 'toolbar', 'rowActions', 'nodeActions'])
 
 /** 分页组件类型集合 */
 const PAGINATION_TYPES = new Set(['el-pagination'])

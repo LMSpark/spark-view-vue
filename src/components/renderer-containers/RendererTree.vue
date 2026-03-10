@@ -9,30 +9,60 @@
  */
 -->
 <template>
-  <el-tree 
-    :data="treeData" 
-    v-bind="$attrs"
-    @node-click="handleNodeClick"
-    @node-expand="handleNodeExpand"
-    @node-collapse="handleNodeCollapse"
-  >
-    <template #default="slotProps">
-      <span class="custom-tree-node">
-        <!-- Config 驱动 —— 节点内容由 config.children 递归渲染 -->
-        <template v-if="configChildren.length">
-          <SparkComponentRenderer
-            v-for="(child, i) in configChildren"
-            :key="child.id ?? `r-tree-node-${i}`"
-            :config="{ ...child, props: { ...child.props, node: slotProps?.node, data: slotProps?.data } }"
-          />
+  <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
+    <div v-if="hasToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
+      <SparkComponentRenderer
+        v-for="(action, index) in visibleToolbarConfigs"
+        :key="action.id ?? `r-tree-toolbar-${index}`"
+        :config="action"
+      />
+    </div>
+
+    <div class="renderer-tree-main">
+      <el-tree 
+        :data="treeData" 
+        v-bind="$attrs"
+        @node-click="handleNodeClick"
+        @node-expand="handleNodeExpand"
+        @node-collapse="handleNodeCollapse"
+      >
+        <template #default="slotProps">
+          <span :class="['custom-tree-node', `custom-tree-node--${nodeActionsPositionValue}`]">
+            <span v-if="showNodeActionsLeft" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
+              <SparkComponentRenderer
+                v-for="(action, i) in getScopedNodeActions({ data: slotProps?.data, node: slotProps?.node })"
+                :key="action.id ?? `r-tree-node-action-left-${i}`"
+                :config="action"
+              />
+            </span>
+
+            <span class="renderer-tree-node-content">
+              <!-- Config 驱动 —— 节点内容由 config.children 递归渲染 -->
+              <template v-if="configChildren.length">
+                <SparkComponentRenderer
+                  v-for="(child, i) in configChildren"
+                  :key="child.id ?? `r-tree-node-${i}`"
+                  :config="{ ...child, props: { ...child.props, node: slotProps?.node, data: slotProps?.data } }"
+                />
+              </template>
+              <!-- Template 驱动 —— 向后兼容 -->
+              <slot v-else :node="slotProps?.node" :data="slotProps?.data">
+                <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
+              </slot>
+            </span>
+
+            <span v-if="showNodeActionsRight" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
+              <SparkComponentRenderer
+                v-for="(action, i) in getScopedNodeActions({ data: slotProps?.data, node: slotProps?.node })"
+                :key="action.id ?? `r-tree-node-action-right-${i}`"
+                :config="action"
+              />
+            </span>
+          </span>
         </template>
-        <!-- Template 驱动 —— 向后兼容 -->
-        <slot v-else :node="slotProps?.node" :data="slotProps?.data">
-          <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
-        </slot>
-      </span>
-    </template>
-  </el-tree>
+      </el-tree>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -42,13 +72,17 @@
  * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
-import { computed, onMounted, watch } from 'vue'
+import { computed } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { parseDataKey } from '@spark-view/spark-data'
-import type { IDataSource, DataView } from '@spark-view/spark-data'
+import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
+import { useContainerActions } from './useContainerActions'
+import type { ToolbarPosition, LateralActionPosition } from './useContainerActions'
+import { useContainerDataSource } from './useContainerDataSource'
+
+type NodeActionsPosition = LateralActionPosition
 
 interface TreeNode {
   id?: string | number
@@ -74,6 +108,12 @@ interface Props {
   dataKey?: string
   data?: TreeNode[]
   dataSource?: IDataSource | DataView | undefined
+  toolbar?: ComponentConfig[]
+  toolbarPosition?: ToolbarPosition
+  toolbarClass?: string
+  nodeActions?: ComponentConfig[]
+  nodeActionsPosition?: NodeActionsPosition
+  nodeActionsClass?: string
   onNodeClick?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
   onNodeExpand?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
   onNodeCollapse?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
@@ -99,16 +139,14 @@ const { consume, provide: sparkProvide, logger } = useSparkComponent(
 )
 const pageDataSet = consume(PAGE_DATASET)
 
-// 解析数据视图
-const resolvedDataSource = computed(() => {
-  if (effectiveDataKey.value && pageDataSet) {
-    const dk = parseDataKey(effectiveDataKey.value)
-    if (dk) {
-      const view = pageDataSet.getView(dk.tableName, dk.viewId)
-      if (view) return view as IDataSource
-    }
-  }
-  return props.dataSource as IDataSource | undefined
+const { resolvedDataSource } = useContainerDataSource<IDataSource>({
+  dataKey: effectiveDataKey,
+  pageDataSet,
+  fallbackSource: computed(() => props.dataSource ?? null),
+  mapView: view => view as IDataSource,
+  provideDataSource: source => sparkProvide(DATA_SOURCE, source),
+  logger,
+  logPrefix: 'RendererTree',
 })
 
 const treeData = computed(() => {
@@ -123,30 +161,40 @@ const treeData = computed(() => {
   return props.data ?? []
 })
 
-function tryAutoLoad(ds: IDataSource | undefined) {
-  if (!ds) return
-  const maybeDV = ds as DataView | undefined
-  if (maybeDV && typeof maybeDV.requestData === 'function') {
-    // 内联数据表（无 api 配置）跳过，避免 "has no API configuration" 错误
-    if (!maybeDV.dataTable?.api) return
-    void maybeDV.requestData().catch((e: unknown) => {
-      logger.error('RendererTree: requestData() 失败', e)
-    })
-  }
-}
+const modelPermission = computed<IModelPermission | undefined>(() => resolvedDataSource.value?._modelPerm)
+
+const {
+  toolbarPositionValue,
+  toolbarClassValue,
+  actionPositionValue: nodeActionsPositionValue,
+  actionClassValue: nodeActionsClassValue,
+  visibleToolbarConfigs,
+  hasToolbar,
+  showActionsLeft: showNodeActionsLeft,
+  showActionsRight: showNodeActionsRight,
+  getScopedActionConfigs: getScopedNodeActions,
+} = useContainerActions<{ data: unknown, node: unknown }>({
+  config: computed(() => props.config),
+  toolbar: computed(() => props.toolbar),
+  toolbarPosition: computed(() => props.toolbarPosition),
+  toolbarClass: computed(() => props.toolbarClass),
+  actionConfigs: computed(() => props.nodeActions),
+  actionPosition: computed(() => props.nodeActionsPosition),
+  actionClass: computed(() => props.nodeActionsClass),
+  actionPropKey: 'nodeActions',
+  actionPositionPropKey: 'nodeActionsPosition',
+  actionClassPropKey: 'nodeActionsClass',
+  modelPermission,
+  resolveScope: ({ data, node }) => ({
+    row: data as IDataRow | undefined,
+    listenerArgs: [data, node],
+    scopedProps: { data, node },
+  }),
+})
 
 // 向字段子组件提供渲染上下文（同步，先于 watcher）
 sparkProvide(FIELD_CONTEXT, 'tree')
 sparkProvide(CONTEXT_DATA, {} as Record<string, unknown>)
-
-// 统一 watcher：DATA_SOURCE 提供 + 自动加载
-watch(resolvedDataSource, (nv) => {
-  if (!nv) return
-  sparkProvide(DATA_SOURCE, nv)
-  tryAutoLoad(nv)
-}, { immediate: true })
-
-onMounted(() => tryAutoLoad(resolvedDataSource.value))
 
 // 事件处理器
 const handleNodeClick = (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
@@ -161,11 +209,69 @@ const handleNodeCollapse = (data: TreeNode, node: ElTreeNode, component: ElTreeC
 </script>
 
 <style scoped>
+.renderer-tree-layout {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.renderer-tree-layout--top,
+.renderer-tree-layout--bottom {
+  flex-direction: column;
+}
+
+.renderer-tree-layout--bottom {
+  flex-direction: column-reverse;
+}
+
+.renderer-tree-layout--right {
+  flex-direction: row-reverse;
+}
+
+.renderer-tree-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.renderer-tree-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.renderer-tree-layout--left .renderer-tree-toolbar,
+.renderer-tree-layout--right .renderer-tree-toolbar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .custom-tree-node {
   display: flex;
   align-items: center;
   flex: 1;
+  gap: 8px;
   padding-right: 8px;
+}
+
+.custom-tree-node--left {
+  flex-direction: row;
+}
+
+.custom-tree-node--right {
+  flex-direction: row;
+}
+
+.renderer-tree-node-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.renderer-tree-node-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .node-label {

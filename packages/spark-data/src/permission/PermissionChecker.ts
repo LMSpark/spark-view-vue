@@ -54,7 +54,8 @@ export class PermissionChecker {
    * @returns 是否允许编辑
    */
   canEdit(row: IDataRow): boolean {
-    return (row._perm?.editableFields?.length ?? 0) > 0
+    if (!row._perm?.editableFields) return true
+    return row._perm.editableFields.length > 0
   }
 
   // ===== 字段级权限 =====
