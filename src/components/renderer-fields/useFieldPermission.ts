@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { createPermissionChecker, FieldVisibility } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
+import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
@@ -28,6 +29,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const displayLabel = computed(() => props.label ?? fieldName.value)
   const context = consume(FIELD_CONTEXT) ?? 'detail'
   const contextData = consume(CONTEXT_DATA)
+  const pageService = consume(PAGE_SERVICE)
 
   const currentRow = computed<IDataRow | null>(() => {
     if (contextData === null || typeof contextData !== 'object') return null
@@ -99,6 +101,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     displayLabel,
     context,
     contextData,
+    pageService,
     currentRow,
     fieldValue,
     currentRawValue,

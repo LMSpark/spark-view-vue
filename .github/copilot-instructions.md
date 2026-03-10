@@ -275,7 +275,7 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 | `$dataSet` | `IDataSet \| null` | **页面级 DataSet**（数据唯一入口） |
 | `$rebindRules` | `() => void` | 触发 form-create **完整重建**规则（⚠️ **高危**：会折叠所有树节点、重置输入框、丢失滚动位置，尽量避免） |
 | `$refreshData` | `(key?) => Promise<void>` | 刷新数据（可选指定表名） |
-| `$page` | `IPageServiceCapability` | ✅ **推荐** UI 消息、确认、输入、导航、加载遮罩（框架无关） |
+| `$page` | `IPageServiceCapability` | ✅ **推荐** UI 消息、确认、输入、导航、加载遮罩、弹层、文件浏览、文件上传（框架无关） |
 | `SparkData` | SparkData 命名空间 | `createTreeManager` 等工具 |
 | `h` | Vue `h` 函数 | 渲染函数专用（`Render*` 函数内使用） |
 
@@ -286,8 +286,8 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 | `$data` | 已移除 | `$dataSet`（数据）/ `_pageState`（UI 状态） |
 | `window.xxx = function` | 沙箱内变量无需挂 window | 直接用 `function xxx() {}` 声明 |
 | `window.Vue` | `h` 已直接注入 | 直接用 `h(...)` |
-| `ElMessage.xxx(...)` | **已从沙箱移除** | `$page.showMessage / showConfirm / showPrompt / showAlert` |
-| `ElMessageBox.xxx(...)` | **已从沙箱移除** | `$page.showConfirm / showPrompt / showAlert` |
+| `ElMessage.xxx(...)` | **已从沙箱移除** | `$page.showMessage / showConfirm / showPrompt / showAlert / showDialog / selectEntities` |
+| `ElMessageBox.xxx(...)` | **已从沙箱移除** | `$page.showConfirm / showPrompt / showAlert / showDialog / selectEntities` |
 | Vue Router / FormCreate 直接 import | 沙箱不支持 ESM | `$route`（IPageRoute）/ `$api`（IFormAPI）已注入 |
 | `import` 语句 | 沙箱不支持 ESM | 所有依赖通过沙箱注入 |
 | `view.setCurrentRow(row)` 在 `currentChange` 回调中 | `injectTableEvents`（bindRules.ts）已在回调后通过 PK 查干净行并调用；回调里的 row 被 form-create 污染（含 `$f/api/rule` 属性），直接传入会触发 `[WARN] 行缺少主键` | 只写业务逻辑，DataView 同步由框架负责 |

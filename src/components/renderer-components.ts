@@ -34,6 +34,10 @@
  *   r-file-path → FieldFilePath
  *   r-file-browser → FieldFileBrowser
  *   r-upload → FieldUpload
+ *   r-entity-picker → FieldEntityPicker
+ *   r-user-picker → FieldUserPicker
+ *   r-dept-picker → FieldDeptPicker
+ *   r-product-picker → FieldProductPicker
  *   r-cascader → FieldCascader
  *   r-tree-select → FieldTreeSelect
  *   r-transfer → FieldTransfer
@@ -74,6 +78,10 @@ import FieldImageComp from './renderer-fields/FieldImage.vue'
 import FieldFilePathComp from './renderer-fields/FieldFilePath.vue'
 import FieldFileBrowserComp from './renderer-fields/FieldFileBrowser.vue'
 import FieldUploadComp from './renderer-fields/FieldUpload.vue'
+import FieldEntityPickerComp from './renderer-fields/FieldEntityPicker.vue'
+import FieldUserPickerComp from './renderer-fields/FieldUserPicker.vue'
+import FieldDeptPickerComp from './renderer-fields/FieldDeptPicker.vue'
+import FieldProductPickerComp from './renderer-fields/FieldProductPicker.vue'
 import FieldCascaderComp from './renderer-fields/FieldCascader.vue'
 import FieldTreeSelectComp from './renderer-fields/FieldTreeSelect.vue'
 import FieldTransferComp from './renderer-fields/FieldTransfer.vue'
@@ -96,6 +104,10 @@ export { FieldImageComp as FieldImage }
 export { FieldFilePathComp as FieldFilePath }
 export { FieldFileBrowserComp as FieldFileBrowser }
 export { FieldUploadComp as FieldUpload }
+export { FieldEntityPickerComp as FieldEntityPicker }
+export { FieldUserPickerComp as FieldUserPicker }
+export { FieldDeptPickerComp as FieldDeptPicker }
+export { FieldProductPickerComp as FieldProductPicker }
 export { FieldCascaderComp as FieldCascader }
 export { FieldTreeSelectComp as FieldTreeSelect }
 export { FieldTransferComp as FieldTransfer }
@@ -142,6 +154,10 @@ Spark.register('r-image', FieldImageComp)
 Spark.register('r-file-path', FieldFilePathComp)
 Spark.register('r-file-browser', FieldFileBrowserComp)
 Spark.register('r-upload', FieldUploadComp)
+Spark.register('r-entity-picker', FieldEntityPickerComp)
+Spark.register('r-user-picker', FieldUserPickerComp)
+Spark.register('r-dept-picker', FieldDeptPickerComp)
+Spark.register('r-product-picker', FieldProductPickerComp)
 Spark.register('r-cascader', FieldCascaderComp)
 Spark.register('r-tree-select', FieldTreeSelectComp)
 Spark.register('r-transfer', FieldTransferComp)

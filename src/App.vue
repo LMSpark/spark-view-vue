@@ -33,12 +33,16 @@
 
     <!-- AI 聊天浮窗（仅配置启用时加载） -->
     <AiChatPanel v-if="enableAI" />
+
+    <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
+    <AppPageUiHost />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import AppPageUiHost from '@/app-services/page-ui/AppPageUiHost.vue'
 import { pageRefreshKey } from '@/services/ai-loop'
 
 const route = useRoute()

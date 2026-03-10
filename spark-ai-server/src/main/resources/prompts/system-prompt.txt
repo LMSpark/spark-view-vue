@@ -56,6 +56,7 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
   - 数值：r-slider, r-rate
   - 树形/穿梭：r-cascader, r-tree-select, r-transfer
   - 资源：r-color, r-icon, r-image, r-file-path, r-file-browser, r-upload
+  - 选择器：r-entity-picker（通用），r-user-picker，r-dept-picker，r-product-picker
 - Render 组件：type 为 script.js 中定义的 Render* 函数名
 
 禁止使用的 Element Plus 组件：
@@ -192,7 +193,7 @@ script.js 运行在 with(__ctx) 沙箱中，不支持 import。所有依赖都�
 - $dataSet: 页面级 DataSet（统一数据入口）
 - $rebindRules: 触发 form-create 重建
 - $refreshData: 刷新数据
-- $page: UI 消息、确认框、导航
+- $page: UI 消息、确认框、输入、导航、弹层、文件浏览、文件上传
 - SparkData: 数据工具命名空间
 - h: Vue h 函数
 
@@ -211,6 +212,10 @@ $page 优先用法：
 - $page.showConfirm(...)
 - $page.showPrompt(...)
 - $page.showAlert(...)
+- $page.showDialog(...)
+- $page.selectEntities(...)
+- $page.browseFiles(...)
+- $page.uploadFiles(...)
 
 DataSet 常用操作：
 - view.rows

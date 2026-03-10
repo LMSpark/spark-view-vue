@@ -89,6 +89,7 @@ const vueApp = getCurrentInstance()?.appContext.app
 const pageService = buildPageService(router, {
   messageService: props.messageService,
   confirmService: props.confirmService,
+  pageService: props.pageService,
 })
 provideCapability(PAGE_SERVICE, pageService)
 

@@ -12,12 +12,15 @@
 
   <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
     <div class="image-field-form">
-      <el-input
-        :model-value="fieldValue"
-        :disabled="!isCurrentFieldEditable"
-        placeholder="图片地址或已上传图片路径"
-        @update:model-value="handleChange"
-      />
+      <div class="image-field-toolbar">
+        <el-input
+          :model-value="currentDisplayValue"
+          readonly
+          :placeholder="placeholder"
+        />
+        <el-button class="primary-action-button" type="primary" :disabled="!canPrimaryAction" @click="handlePrimaryAction">{{ primaryActionText }}</el-button>
+        <el-button v-if="showClearButton" class="clear-action-button" @click="clearValue">清空</el-button>
+      </div>
       <img v-if="showImage(currentRawStringValue)" :src="currentRawStringValue" class="image-preview" alt="image" />
     </div>
   </el-form-item>
@@ -39,8 +42,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { useFieldPermission } from './useFieldPermission'
+import { useFileFieldActions } from './useFileFieldActions'
 
 interface Props {
   config?: ComponentConfig
@@ -48,9 +53,26 @@ interface Props {
   label?: string
   width?: number
   modelValue?: string
+  action?: string
+  accept?: string
+  multiple?: boolean
+  separator?: string
+  placeholder?: string
+  buttonText?: string
+  readonlyButtonText?: string
+  clearable?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  action: '#',
+  accept: 'image/*',
+  multiple: false,
+  separator: ', ',
+  placeholder: '请选择图片',
+  buttonText: '上传图片',
+  readonlyButtonText: '浏览',
+  clearable: true,
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -60,7 +82,7 @@ const {
   fieldName,
   displayLabel,
   context,
-  fieldValue,
+  pageService,
   currentRawStringValue,
   isCurrentFieldHidden,
   isCurrentFieldEditable,
@@ -76,13 +98,58 @@ const {
   formatDisplay: value => String(value ?? ''),
 })
 
+const { hasBrowseCapability, hasUploadCapability, primaryAction, browseFiles, uploadFiles } = useFileFieldActions({
+  pageService,
+  isEditable: isCurrentFieldEditable,
+})
+
+const canUpload = computed(() => hasUploadCapability.value && props.action.trim().length > 0 && props.action !== '#')
+const canPrimaryAction = computed(() => (primaryAction.value === 'upload' ? canUpload.value : hasBrowseCapability.value))
+const primaryActionText = computed(() => (primaryAction.value === 'upload' ? props.buttonText : props.readonlyButtonText))
+const showClearButton = computed(() => props.clearable && isCurrentFieldEditable.value && currentRawStringValue.value.length > 0)
+
 function showImage(value: string): boolean {
   return !!value && !value.includes('***')
 }
 
-function handleChange(value: string): void {
+function updateValue(value: string): void {
   emit('update:modelValue', value)
   syncValue(value)
+}
+
+function handleBrowse(): void {
+  void browseFiles({
+    title: displayLabel.value,
+    accept: props.accept,
+    multiple: props.multiple,
+    currentValue: currentRawStringValue.value,
+  })
+}
+
+function handleUpload(): void {
+  void uploadFiles({
+    action: props.action,
+    accept: props.accept,
+    multiple: props.multiple,
+    fieldName: fieldName.value || 'file',
+    currentValue: currentRawStringValue.value,
+  }).then((files) => {
+    if (files.length === 0) return
+    const nextValue = files.map(file => file.url ?? file.name).join(props.separator)
+    updateValue(nextValue)
+  })
+}
+
+function handlePrimaryAction(): void {
+  if (primaryAction.value === 'browse') {
+    handleBrowse()
+    return
+  }
+  handleUpload()
+}
+
+function clearValue(): void {
+  updateValue('')
 }
 </script>
 
@@ -103,6 +170,14 @@ function handleChange(value: string): void {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.image-field-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.image-field-toolbar :deep(.el-input) {
+  flex: 1;
 }
 .image-thumb {
   width: 32px;

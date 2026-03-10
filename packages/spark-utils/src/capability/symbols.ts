@@ -181,15 +181,94 @@ export const APP_SERVICES = defineCapability<IAppServicesCapability>('spark:capa
 export const LOGGER = defineCapability<LoggerApi>('spark:capability:logger')
 
 /** 页面服务能力（UI 交互） */
+export type PageMessageType = 'success' | 'error' | 'warning' | 'info'
+
+export type PageDialogResult = 'confirm' | 'cancel' | 'close'
+
+export type PageSelectableValue = string | number | boolean
+
+export interface IPageDialogOptions {
+  title?: string
+  message?: string
+  content?: string
+  confirmText?: string
+  cancelText?: string
+  showCancelButton?: boolean
+  dangerouslyUseHTMLString?: boolean
+  type?: PageMessageType
+  width?: string
+}
+
+export interface IPageBrowseFilesOptions {
+  title?: string
+  accept?: string
+  multiple?: boolean
+  currentValue?: string
+}
+
+export interface IPageSelectedFile {
+  name: string
+  size: number
+  type: string
+  lastModified: number
+  file: File
+}
+
+export interface IPageUploadFilesOptions extends IPageBrowseFilesOptions {
+  action: string
+  method?: 'POST' | 'PUT' | 'PATCH'
+  fieldName?: string
+  headers?: Record<string, string>
+  data?: Record<string, string | Blob>
+  withCredentials?: boolean
+  files?: File[]
+}
+
+export interface IPageUploadedFile extends IPageSelectedFile {
+  response: unknown
+  url?: string
+}
+
+export interface IPageSelectorOption {
+  label: string
+  value: PageSelectableValue
+  description?: string
+  disabled?: boolean
+  raw?: unknown
+}
+
+export interface IPageSelectEntitiesOptions {
+  title?: string
+  entityName?: string
+  placeholder?: string
+  multiple?: boolean
+  searchable?: boolean
+  confirmText?: string
+  cancelText?: string
+  emptyText?: string
+  currentValue?: PageSelectableValue | PageSelectableValue[] | string
+  options?: IPageSelectorOption[]
+}
+
+export interface IPageSelectedEntity extends IPageSelectorOption {}
+
 export interface IPageServiceCapability {
   /** 消息提示（替代 ElMessage） */
-  showMessage(message: string, type?: 'success' | 'error' | 'warning' | 'info'): void
+  showMessage(message: string, type?: PageMessageType): void
   /** 确认框，返回 true=确定 / false=取消（替代 ElMessageBox.confirm） */
-  showConfirm(message: string, title?: string, options?: { confirmText?: string; cancelText?: string; type?: 'warning' | 'info' | 'error' | 'success' }): Promise<boolean>
+  showConfirm(message: string, title?: string, options?: { confirmText?: string; cancelText?: string; type?: PageMessageType }): Promise<boolean>
   /** 输入框，返回输入值；取消返回 null（替代 ElMessageBox.prompt） */
   showPrompt(message: string, title?: string, options?: { placeholder?: string; defaultValue?: string }): Promise<string | null>
   /** 纯提示框，仅确定按钮（替代 ElMessageBox.alert） */
-  showAlert(message: string, title?: string, options?: { type?: 'warning' | 'info' | 'error' | 'success' }): Promise<void>
+  showAlert(message: string, title?: string, options?: { type?: PageMessageType }): Promise<void>
+  /** 通用弹层（APP 层承载，页面层通过 service 调用） */
+  showDialog(options: IPageDialogOptions): Promise<PageDialogResult>
+  /** 打开通用实体选择器（APP 层承载，可用于选人/选部门/选商品等） */
+  selectEntities(options: IPageSelectEntitiesOptions): Promise<IPageSelectedEntity[]>
+  /** 打开文件浏览选择器（APP 层承载） */
+  browseFiles(options?: IPageBrowseFilesOptions): Promise<IPageSelectedFile[]>
+  /** 选择文件并上传（APP 层承载） */
+  uploadFiles(options: IPageUploadFilesOptions): Promise<IPageUploadedFile[]>
   /** 全局加载遮罩 */
   showLoading(show: boolean, text?: string): void
   /** 路由导航 */

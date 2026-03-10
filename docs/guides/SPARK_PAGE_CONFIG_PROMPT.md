@@ -771,7 +771,23 @@ $page.showMessage('操作成功', 'success')           // success | warning | er
 $page.showConfirm('确认删除？').then(ok => { ... }) // 返回 Promise<boolean>
 $page.showPrompt('请输入名称', '标题')               // 返回 Promise<string|null>
 $page.showAlert('详情内容', '标题')                  // 信息弹窗
+$page.showDialog({ title: '提示', content: '自定义弹层内容' })
+$page.selectEntities({
+  entityName: '人员',
+  options: [
+    { label: '张三', value: 'user-1' },
+    { label: '李四', value: 'user-2' }
+  ]
+})
+$page.browseFiles({ accept: '.xlsx,.csv', multiple: true })
+$page.uploadFiles({ action: '/api/upload', accept: '.png,.jpg' })
 ```
+
+选择器字段建议：
+- 通用场景优先用 r-entity-picker
+- 选人可用 r-user-picker
+- 选部门可用 r-dept-picker
+- 选商品可用 r-product-picker
 
 ───────────────────────────────────────────────────
 3.4  DataSet 数据操作
