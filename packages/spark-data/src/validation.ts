@@ -106,8 +106,9 @@ export class DataValidator {
     const errors: ValidationError[] = []
     const label = col.label ?? col.name
 
-    // 1. 必填校验
-    if (!col.allowDBNull && (value === null || value === undefined || value === '')) {
+    // 1. 必填校验（required 优先，回退到 allowDBNull）
+    const isRequired = col.required === true || (col.required === undefined && !col.allowDBNull)
+    if (isRequired && (value === null || value === undefined || value === '')) {
       errors.push({
         field: col.name,
         message: `${label} 不能为空`,
@@ -122,6 +123,34 @@ export class DataValidator {
       const typeError = this.validateType(col, value, label)
       if (typeError) {
         errors.push(typeError)
+      }
+
+      // 3. 字符串长度校验
+      if (typeof value === 'string') {
+        if (col.minLength !== undefined && value.length < col.minLength) {
+          errors.push({ field: col.name, message: `${label} 至少${col.minLength}个字符`, code: 'MIN_LENGTH', value })
+        }
+        if (col.maxLength !== undefined && value.length > col.maxLength) {
+          errors.push({ field: col.name, message: `${label} 最多${col.maxLength}个字符`, code: 'MAX_LENGTH', value })
+        }
+      }
+
+      // 4. 数值范围校验
+      if (typeof value === 'number' && !isNaN(value)) {
+        if (col.min !== undefined && value < col.min) {
+          errors.push({ field: col.name, message: `${label} 不能小于${col.min}`, code: 'MIN_VALUE', value })
+        }
+        if (col.max !== undefined && value > col.max) {
+          errors.push({ field: col.name, message: `${label} 不能大于${col.max}`, code: 'MAX_VALUE', value })
+        }
+      }
+
+      // 5. 正则校验
+      if (col.pattern && typeof value === 'string') {
+        const regex = new RegExp(col.pattern)
+        if (!regex.test(value)) {
+          errors.push({ field: col.name, message: col.patternMessage ?? `${label} 格式不正确`, code: 'PATTERN', value })
+        }
       }
     }
 

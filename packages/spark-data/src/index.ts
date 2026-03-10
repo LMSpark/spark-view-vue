@@ -88,3 +88,8 @@ export {
 export type {
   IFieldRenderConfig, IFieldRenderState, IFieldRenderHelper,
 } from './permission'
+
+// ===== 列验证规则 =====
+
+export { extractColumnRules, isColumnRequired } from './column-validation'
+export type { ColumnValidationRule, ValidationRuleType } from './column-validation'

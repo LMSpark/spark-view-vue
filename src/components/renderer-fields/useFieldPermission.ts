@@ -2,9 +2,11 @@ import { computed } from 'vue'
 import { createPermissionChecker, FieldVisibility } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { useSparkComponent } from '@spark-view/spark-component'
+import { useSparkComponent, DATA_SOURCE } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
+import { columnToFormRules } from './columnFormRules'
+import type { FormItemRule } from './columnFormRules'
 
 export interface FieldPermissionProps<TValue> {
   config?: ComponentConfig | undefined
@@ -30,6 +32,15 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const context = consume(FIELD_CONTEXT) ?? 'detail'
   const contextData = consume(CONTEXT_DATA)
   const pageService = consume(PAGE_SERVICE)
+  const dataSource = consume(DATA_SOURCE)
+
+  // 从 DataView.columns 提取当前字段的验证规则
+  const validationRules = computed<FormItemRule[]>(() => {
+    if (!fieldName.value || !dataSource?.columns) return []
+    const column = dataSource.columns.find(c => c.name === fieldName.value)
+    if (!column) return []
+    return columnToFormRules(column)
+  })
 
   const currentRow = computed<IDataRow | null>(() => {
     if (contextData === null || typeof contextData !== 'object') return null
@@ -114,5 +125,6 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     getRowRawStringValue,
     getTableCellDisplayValue,
     syncValue,
+    validationRules,
   }
 }

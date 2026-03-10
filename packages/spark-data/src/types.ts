@@ -293,6 +293,42 @@ export interface DataColumn {
    */
   isComputed?: boolean
 
+  // ===== 验证属性 =====
+  // 字段级验证元数据，UI 层通过 DataView.columns 读取并自动生成表单验证规则。
+  // spark-data 保持框架无关，验证规则到 Element Plus FormItemRule 的转换由渲染层完成。
+
+  /**
+   * UI 必填标记。
+   *
+   * - `true`：表单中必填（生成 required 验证规则）
+   * - 未设置时回退到 `!allowDBNull`（allowDBNull 显式为 false 也视为必填）
+   *
+   * @example `{ "name": "email", "type": "string", "required": true }`
+   */
+  required?: boolean
+
+  /** 字符串最小长度（仅 type 为 string 系列时生效） */
+  minLength?: number
+
+  /** 字符串最大长度（仅 type 为 string 系列时生效） */
+  maxLength?: number
+
+  /** 数值最小值（仅 type 为 number 系列时生效） */
+  min?: number
+
+  /** 数值最大值（仅 type 为 number 系列时生效） */
+  max?: number
+
+  /**
+   * 正则校验模式（字符串形式，运行时编译为 RegExp）。
+   *
+   * @example `"^[\\w.-]+@[\\w.-]+\\.\\w+$"`
+   */
+  pattern?: string
+
+  /** 正则校验失败时的自定义提示消息。未设置时使用默认提示 */
+  patternMessage?: string
+
   // ===== 计算字段属性 =====
 
   /**
