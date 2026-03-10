@@ -66,6 +66,3 @@ function handleChange(value: string | number | boolean): void {
   syncValue(value)
 }
 </script>
-
-}
-</style>
