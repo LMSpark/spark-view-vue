@@ -41,6 +41,8 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     }
     return fallbackValue
   })
+  const currentRawValue = computed(() => fieldValue.value)
+  const currentRawStringValue = computed(() => String(currentRawValue.value ?? ''))
 
   const isCurrentFieldHidden = computed(() => {
     if (!fieldName.value || !currentRow.value) return false
@@ -72,9 +74,18 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     return permissionChecker.getFieldVisibility(fieldName.value, row) === FieldVisibility.Hidden
   }
 
+  function getRowRawValue(row: IDataRow): unknown {
+    if (!fieldName.value) return fallbackValue
+    return row[fieldName.value]
+  }
+
+  function getRowRawStringValue(row: IDataRow): string {
+    return String(getRowRawValue(row) ?? '')
+  }
+
   function getTableCellDisplayValue(row: IDataRow): string {
     if (!fieldName.value) return formatValue(fallbackValue)
-    return getMaskedOrFormattedValue(row, row[fieldName.value])
+    return getMaskedOrFormattedValue(row, getRowRawValue(row))
   }
 
   function syncValue(value: TValue): void {
@@ -90,10 +101,14 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     contextData,
     currentRow,
     fieldValue,
+    currentRawValue,
+    currentRawStringValue,
     isCurrentFieldHidden,
     isCurrentFieldEditable,
     currentDisplayValue,
     isTableCellHidden,
+    getRowRawValue,
+    getRowRawStringValue,
     getTableCellDisplayValue,
     syncValue,
   }

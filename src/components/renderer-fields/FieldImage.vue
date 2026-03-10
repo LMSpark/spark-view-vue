@@ -3,7 +3,7 @@
     <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
       <template #default="{ row }">
         <template v-if="!isTableCellHidden(row)">
-          <img v-if="showImage(getRawImage(row))" :src="getRawImage(row)" class="image-thumb" alt="image" />
+          <img v-if="showImage(getRowRawStringValue(row))" :src="getRowRawStringValue(row)" class="image-thumb" alt="image" />
           <span v-else>{{ getTableCellDisplayValue(row) }}</span>
         </template>
       </template>
@@ -18,13 +18,13 @@
         placeholder="图片地址或已上传图片路径"
         @update:model-value="handleChange"
       />
-      <img v-if="showImage(currentRawImage)" :src="currentRawImage" class="image-preview" alt="image" />
+      <img v-if="showImage(currentRawStringValue)" :src="currentRawStringValue" class="image-preview" alt="image" />
     </div>
   </el-form-item>
 
   <template v-else-if="context === 'tree'">
     <span v-if="!isCurrentFieldHidden" class="tree-node-image">
-      <img v-if="showImage(currentRawImage)" :src="currentRawImage" class="image-thumb" alt="image" />
+      <img v-if="showImage(currentRawStringValue)" :src="currentRawStringValue" class="image-thumb" alt="image" />
       <span v-else>{{ currentDisplayValue }}</span>
     </span>
   </template>
@@ -32,15 +32,13 @@
   <div v-else-if="!isCurrentFieldHidden" class="field-display">
     <span class="field-label">{{ displayLabel }}：</span>
     <span class="field-value">
-      <img v-if="showImage(currentRawImage)" :src="currentRawImage" class="image-preview" alt="image" />
+      <img v-if="showImage(currentRawStringValue)" :src="currentRawStringValue" class="image-preview" alt="image" />
       <span v-else>{{ currentDisplayValue }}</span>
     </span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { useFieldPermission } from './useFieldPermission'
 
@@ -63,10 +61,12 @@ const {
   displayLabel,
   context,
   fieldValue,
+  currentRawStringValue,
   isCurrentFieldHidden,
   isCurrentFieldEditable,
   currentDisplayValue,
   isTableCellHidden,
+  getRowRawStringValue,
   getTableCellDisplayValue,
   syncValue,
 } = useFieldPermission<string>({
@@ -76,15 +76,8 @@ const {
   formatDisplay: value => String(value ?? ''),
 })
 
-const currentRawImage = computed(() => String(fieldValue.value ?? ''))
-
 function showImage(value: string): boolean {
   return !!value && !value.includes('***')
-}
-
-function getRawImage(row: IDataRow): string {
-  if (!fieldName.value) return ''
-  return String(row[fieldName.value] ?? '')
 }
 
 function handleChange(value: string): void {

@@ -3,7 +3,7 @@
     <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
       <template #default="{ row }">
         <span v-if="!isTableCellHidden(row)" class="icon-cell">
-          <i v-if="getRawIcon(row)" :class="iconClass(getRawIcon(row))"></i>
+          <i v-if="getRowRawStringValue(row)" :class="iconClass(getRowRawStringValue(row))"></i>
           <span>{{ getTableCellDisplayValue(row) }}</span>
         </span>
       </template>
@@ -36,7 +36,7 @@
 
   <template v-else-if="context === 'tree'">
     <span v-if="!isCurrentFieldHidden" class="icon-cell">
-      <i v-if="currentRawIcon" :class="iconClass(currentRawIcon)"></i>
+      <i v-if="currentRawStringValue" :class="iconClass(currentRawStringValue)"></i>
       <span>{{ currentDisplayValue }}</span>
     </span>
   </template>
@@ -44,18 +44,15 @@
   <div v-else-if="!isCurrentFieldHidden" class="field-display">
     <span class="field-label">{{ displayLabel }}：</span>
     <span class="icon-cell">
-      <i v-if="currentRawIcon" :class="iconClass(currentRawIcon)"></i>
+      <i v-if="currentRawStringValue" :class="iconClass(currentRawStringValue)"></i>
       <span class="field-value">{{ currentDisplayValue }}</span>
     </span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { useFieldPermission } from './useFieldPermission'
-import { useFieldOptions } from './useFieldOptions'
+import { useOptionField } from './useFieldOptions'
 
 interface Props {
   config?: ComponentConfig
@@ -83,34 +80,28 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const { options, formatOptionValue } = useFieldOptions(props)
 const {
+  options,
   fieldName,
   displayLabel,
   context,
   fieldValue,
+  currentRawStringValue,
   isCurrentFieldHidden,
   isCurrentFieldEditable,
   currentDisplayValue,
   isTableCellHidden,
+  getRowRawStringValue,
   getTableCellDisplayValue,
   syncValue,
-} = useFieldPermission<string>({
+} = useOptionField<string>({
   props,
   type: 'r-icon',
   fallbackValue: '',
-  formatDisplay: formatOptionValue,
 })
-
-const currentRawIcon = computed(() => String(fieldValue.value ?? ''))
 
 function iconClass(value: string): string {
   return props.classPrefix ? `${props.classPrefix}${value}` : value
-}
-
-function getRawIcon(row: IDataRow): string {
-  if (!fieldName.value) return ''
-  return String(row[fieldName.value] ?? '')
 }
 
 function handleChange(value: string | number | boolean): void {
@@ -118,8 +109,6 @@ function handleChange(value: string | number | boolean): void {
   emit('update:modelValue', next)
   syncValue(next)
 }
-
-void options
 </script>
 
 <style scoped>

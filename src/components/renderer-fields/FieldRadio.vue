@@ -32,8 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFieldPermission } from './useFieldPermission'
-import { useFieldOptions } from './useFieldOptions'
+import { useOptionField } from './useFieldOptions'
 import type { ComponentConfig } from '@spark-view/spark-component'
 
 interface Props {
@@ -56,8 +55,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | number | boolean]
 }>()
 
-const { options, formatOptionValue } = useFieldOptions(props)
 const {
+  options,
   fieldName,
   displayLabel,
   context,
@@ -68,11 +67,10 @@ const {
   isTableCellHidden,
   getTableCellDisplayValue,
   syncValue,
-} = useFieldPermission<string | number | boolean>({
+} = useOptionField<string | number | boolean>({
   props,
   type: 'r-radio',
   fallbackValue: '',
-  formatDisplay: formatOptionValue,
 })
 
 function handleChange(value: string | number | boolean): void {
