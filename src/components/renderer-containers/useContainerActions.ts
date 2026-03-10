@@ -4,6 +4,8 @@ import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 import { isActionDisplayed, isModelActionAllowed, isRowActionAllowed } from './action-permission'
 
+// ── 类型定义 ──────────────────────────────────────────────────────────────────
+
 export type LateralActionPosition = 'left' | 'right'
 type ListenerMap = Record<string, unknown>
 type ListenerHandler = (...args: unknown[]) => unknown
@@ -25,6 +27,8 @@ interface UseContainerActionsOptions<TScope> {
   }
 }
 
+// ── 辅助函数 ──────────────────────────────────────────────────────────────────
+
 function wrapScopedHandler(handler: unknown, scopedArgs: unknown[]): unknown {
   if (typeof handler === 'function') {
     return (...args: unknown[]) => (handler as ListenerHandler)(...scopedArgs, ...args)
@@ -41,7 +45,10 @@ function wrapScopedHandler(handler: unknown, scopedArgs: unknown[]): unknown {
   return handler
 }
 
+// ── 组合式函数 ───────────────────────────────────────────────────────────────
+
 export function useContainerActions<TScope>(options: UseContainerActionsOptions<TScope>) {
+  // 解析原始动作配置，以及左右位置、样式类等共享展示参数。
   const rawActionConfigs = computed(() =>
     options.actionConfigs.value ?? (options.config.value?.props?.[options.actionPropKey] as ComponentConfig[] | undefined) ?? []
   )
@@ -51,9 +58,12 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
   const actionClassValue = computed(() =>
     (options.config.value?.props?.[options.actionClassPropKey] as string | undefined) ?? options.actionClass.value ?? ''
   )
+
+  // 预先判断动作区应该显示在左侧还是右侧。
   const showActionsLeft = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'left')
   const showActionsRight = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'right')
 
+  // 结合权限过滤动作，并注入作用域 props 与带上下文参数的事件处理器。
   function getScopedActionConfigs(scope: TScope): ScopedComponentConfig[] {
     const resolved = options.resolveScope(scope)
     return rawActionConfigs.value

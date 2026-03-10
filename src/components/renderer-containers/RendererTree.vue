@@ -23,8 +23,8 @@
     </div>
 
     <div class="renderer-tree-main">
-      <el-tree 
-        :data="treeData" 
+      <el-tree
+        :data="treeData"
         v-bind="$attrs"
         @node-click="handleNodeClick"
         @node-expand="handleNodeExpand"
@@ -46,17 +46,27 @@
 
             <span class="renderer-tree-node-content">
               <!-- Config 驱动 —— 节点内容由 config.children 递归渲染 -->
-              <template v-if="configChildren.length">
-                <SparkComponentRenderer
-                  v-for="(child, i) in configChildren"
+              <template v-if="nodeContentChildren.length">
+                <RendererTreeNodeScope
+                  v-for="(child, i) in nodeContentChildren"
                   :key="child.id ?? `r-tree-node-${i}`"
-                  :config="{ ...child, props: { ...child.props, node: slotProps?.node, data: slotProps?.data } }"
+                  :config="child"
+                  :data="getNodeDataRecord(slotProps?.data)"
+                  :node="slotProps?.node"
+                  :data-source="resolvedDataSource"
                 />
               </template>
               <!-- Template 驱动 —— 向后兼容 -->
-              <slot v-else :node="slotProps?.node" :data="slotProps?.data">
-                <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
-              </slot>
+              <RendererTreeNodeScope
+                v-else
+                :data="getNodeDataRecord(slotProps?.data)"
+                :node="slotProps?.node"
+                :data-source="resolvedDataSource"
+              >
+                <slot :node="slotProps?.node" :data="slotProps?.data">
+                  <span class="node-label">{{ getNodeLabel(slotProps?.data) }}</span>
+                </slot>
+              </RendererTreeNodeScope>
             </span>
 
             <span v-if="showNodeActionsRightValue" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
@@ -92,11 +102,13 @@ import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
+import { useContainerInput } from './useContainerInput'
 import { useContainerDataSource } from './useContainerDataSource'
 import { useContainerSlots } from './useContainerSlots'
 import { useContainerToolbar } from './useContainerToolbar'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { createNodeActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
+import RendererTreeNodeScope from './RendererTreeNodeScope.vue'
 
 type NodeActionsPosition = LateralActionPosition
 
@@ -122,6 +134,8 @@ interface Props {
   config?: ComponentConfig
   /** DataKey 格式：scope@tableName@viewId@field （优先） */
   dataKey?: string
+  /** bindRules 从 rule.children 提取的子组件配置（form-create 路径） */
+  sparkChildren?: ComponentConfig[]
   data?: TreeNode[]
   dataSource?: IDataSource | DataView | undefined
   toolbar?: ComponentConfig[]
@@ -139,15 +153,23 @@ interface Props {
 const props = defineProps<Props>()
 const slots = useSlots()
 
-const effectiveDataKey = computed(() =>
-  (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
-)
-const configChildren = computed(() => props.config?.children ?? [])
+const { effectiveDataKey, mergedChildren } = useContainerInput({
+  config: computed(() => props.config),
+  dataKey: computed(() => props.dataKey),
+  sparkChildren: computed(() => props.sparkChildren),
+})
+
+const nodeContentChildren = computed<ComponentConfig[]>(() => mergedChildren.value)
 
 /** 提取树节点显示文本，避免模板中使用 as any */
 function getNodeLabel(data: unknown): string {
   const node = data as TreeNode | undefined
   return node?.label ?? (node?.['name'] as string | undefined) ?? (node?.['title'] as string | undefined) ?? '节点'
+}
+
+function getNodeDataRecord(data: unknown): Record<string, unknown> {
+  if (data !== null && typeof data === 'object') return data as Record<string, unknown>
+  return {}
 }
 
 // 接入 SPARK 能力链

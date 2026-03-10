@@ -1,9 +1,13 @@
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 
+// ── 通用作用域结构 ───────────────────────────────────────────────────────────
+
 interface BaseSlotScope<TSource> {
   dataSource: TSource | null | undefined
   modelPermission: IModelPermission | undefined
 }
+
+// ── 作用域构建辅助函数 ───────────────────────────────────────────────────────
 
 function withBaseScope<TSource, TExtra extends Record<string, unknown>>(
   base: BaseSlotScope<TSource>,
@@ -15,6 +19,8 @@ function withBaseScope<TSource, TExtra extends Record<string, unknown>>(
     ...extra,
   }
 }
+
+// ── 插槽作用域工厂 ───────────────────────────────────────────────────────────
 
 export function createToolbarSlotScope<TSource>(
   base: BaseSlotScope<TSource>,

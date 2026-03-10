@@ -39,10 +39,12 @@ function RenderAddButton() {
 }
 
 function RenderDeleteButton() {
+  const view = $dataSet.getView('Permissions', 'default')
+  const selectedRows = view.selection ? view.selection.selectedRows : []
   return h('button', {
     class: 'el-button el-button--danger',
     onClick: handleDeleteSelected,
-    disabled: !$dataSet.getView('Permissions', 'default').selection.selectedRows.length
+    disabled: selectedRows.length === 0
   }, '删除选中')
 }
 
@@ -149,7 +151,7 @@ function handleDelete(row) {
 
 function handleDeleteSelected() {
   const view = $dataSet.getView('Permissions', 'default')
-  const selectedRows = view.selection.selectedRows
+  const selectedRows = view.selection ? view.selection.selectedRows : []
   
   if (selectedRows.length === 0) {
     $page.showMessage('请先选择要删除的权限', 'warning')
@@ -190,13 +192,7 @@ function handleSavePermission() {
     return
   }
   
-  // 如果是用户类型，需要目标用户
-  if (currentRow.type === 'user' && !currentRow.target) {
-    $page.showMessage('用户权限需要选择目标用户', 'error')
-    return
-  }
-  
-  // 保存逻辑（这里只是更新内存数据，实际应用中可能需要调用API）
+  // 保存逻辑
   view.updateRowById(currentRow.id, currentRow)
   
   _pageState.drawerVisible = false

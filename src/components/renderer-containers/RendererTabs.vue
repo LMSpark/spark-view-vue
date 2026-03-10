@@ -66,6 +66,7 @@ import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-com
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
+import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 
 interface TabsClickEvent {
   paneName?: string | number
@@ -126,21 +127,6 @@ const {
   modelPermission: computed(() => undefined),
   slots,
 })
-
-function normalizeGridGap(value: unknown): string {
-  if (typeof value === 'number') return `${value}px`
-  if (typeof value === 'string' && value.trim().length > 0) return value
-  return '0px'
-}
-
-function normalizeSpan(value: unknown, fallback: number): number {
-  if (typeof value === 'number' && Number.isFinite(value)) return Math.max(1, Math.trunc(value))
-  if (typeof value === 'string') {
-    const parsed = Number.parseInt(value, 10)
-    if (Number.isFinite(parsed)) return Math.max(1, parsed)
-  }
-  return fallback
-}
 
 function getPaneChildren(pane: ComponentConfig): ComponentConfig[] {
   return pane.children ?? []

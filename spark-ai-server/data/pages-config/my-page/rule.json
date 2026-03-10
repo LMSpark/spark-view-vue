@@ -177,12 +177,11 @@
                 }
               },
               {
-                "type": "r-user-picker",
+                "type": "r-text",
                 "name": "target",
                 "props": {
-                  "label": "目标用户",
-                  "colSpan": 12,
-                  "visible": "{{type === 'user'}}"
+                  "label": "目标对象",
+                  "colSpan": 12
                 }
               },
               {

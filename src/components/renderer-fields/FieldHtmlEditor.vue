@@ -1,53 +1,50 @@
 <template>
-  <template v-if="context === 'table'">
-    <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
-      <template #default="{ row }">
-        <span v-if="!isTableCellHidden(row)" class="html-editor-text">{{ getPlainTableValue(row) }}</span>
-      </template>
-    </el-table-column>
-  </template>
+  <FieldContextRenderer v-bind="fieldCtx">
+    <template #table-cell="{ row }">
+      <span class="html-editor-text">{{ getPlainTableValue(row) }}</span>
+    </template>
+    <template #form>
+      <div class="html-editor" :class="{ 'is-disabled': !isCurrentFieldEditable }">
+        <div class="html-editor-toolbar">
+          <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('bold')">B</el-button>
+          <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('italic')">I</el-button>
+          <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('underline')">U</el-button>
+          <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('insertUnorderedList')">• List</el-button>
+          <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('insertOrderedList')">1. List</el-button>
+          <el-button size="small" class="toggle-source" :disabled="!isCurrentFieldEditable" @click="toggleSourceMode">
+            {{ sourceMode ? '预览' : 'HTML' }}
+          </el-button>
+        </div>
 
-  <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
-    <div class="html-editor" :class="{ 'is-disabled': !isCurrentFieldEditable }">
-      <div class="html-editor-toolbar">
-        <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('bold')">B</el-button>
-        <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('italic')">I</el-button>
-        <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('underline')">U</el-button>
-        <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('insertUnorderedList')">• List</el-button>
-        <el-button size="small" :disabled="!isCurrentFieldEditable || sourceMode" @click="applyCommand('insertOrderedList')">1. List</el-button>
-        <el-button size="small" class="toggle-source" :disabled="!isCurrentFieldEditable" @click="toggleSourceMode">
-          {{ sourceMode ? '预览' : 'HTML' }}
-        </el-button>
+        <el-input
+          v-if="sourceMode"
+          :model-value="htmlValue"
+          type="textarea"
+          :rows="rows"
+          :disabled="!isCurrentFieldEditable"
+          placeholder="请输入 HTML 内容"
+          @update:model-value="handleSourceChange"
+        />
+
+        <div
+          v-else
+          ref="editorRef"
+          class="html-editor-surface"
+          :contenteditable="isCurrentFieldEditable"
+          @input="handleSurfaceInput"
+        />
       </div>
-
-      <el-input
-        v-if="sourceMode"
-        :model-value="htmlValue"
-        type="textarea"
-        :rows="rows"
-        :disabled="!isCurrentFieldEditable"
-        placeholder="请输入 HTML 内容"
-        @update:model-value="handleSourceChange"
-      />
-
-      <div
-        v-else
-        ref="editorRef"
-        class="html-editor-surface"
-        :contenteditable="isCurrentFieldEditable"
-        @input="handleSurfaceInput"
-      />
-    </div>
-  </el-form-item>
-
-  <template v-else-if="context === 'tree'">
-    <span v-if="!isCurrentFieldHidden" class="html-editor-text">{{ plainValue }}</span>
-  </template>
-
-  <div v-else-if="!isCurrentFieldHidden" class="field-display html-editor-preview">
-    <span class="field-label">{{ displayLabel }}：</span>
-    <div class="field-value" v-html="htmlValue"></div>
-  </div>
+    </template>
+    <template #tree>
+      <span class="html-editor-text">{{ plainValue }}</span>
+    </template>
+    <template #detail>
+      <div class="field-display html-editor-preview">
+        <span class="field-label">{{ fieldCtx.displayLabel }}：</span>
+        <div class="field-value" v-html="htmlValue"></div>
+      </div>
+    </template>
+  </FieldContextRenderer>
 </template>
 
 <script setup lang="ts">
@@ -55,12 +52,15 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useFieldPermission } from './useFieldPermission'
+import { useFieldContext } from './useFieldContext'
+import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
   config?: ComponentConfig
   name?: string
   label?: string
   width?: number
+  sparkChildren?: ComponentConfig[]
   modelValue?: string
   rows?: number
 }
@@ -77,22 +77,21 @@ function stripHtml(value: unknown): string {
   return String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
-const {
-  fieldName,
-  displayLabel,
-  context,
-  fieldValue,
-  isCurrentFieldHidden,
-  isCurrentFieldEditable,
-  isTableCellHidden,
-  syncValue,
-  getRowRawValue,
-} = useFieldPermission<string>({
+const permission = useFieldPermission<string>({
   props,
   type: 'r-html-editor',
   fallbackValue: '',
   formatDisplay: stripHtml,
 })
+
+const {
+  fieldValue,
+  isCurrentFieldEditable,
+  syncValue,
+  getRowRawValue,
+} = permission
+
+const fieldCtx = useFieldContext(props, permission)
 
 const editorRef = ref<HTMLElement | null>(null)
 const sourceMode = ref(false)
@@ -148,21 +147,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.field-display {
-  margin-bottom: 12px;
-  line-height: 32px;
-}
-
-.field-label {
-  color: #606266;
-  font-weight: 500;
-  margin-right: 8px;
-}
-
-.field-value {
-  color: #303133;
-}
-
 .html-editor {
   width: 100%;
   border: 1px solid #dcdfe6;

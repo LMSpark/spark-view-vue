@@ -90,6 +90,24 @@
     }
   },
   {
+    "path": "/treetable-demo",
+    "name": "treetable-demo",
+    "pageId": "treetable-demo",
+    "meta": {
+      "title": "TreeTable 演示",
+      "icon": "🌲"
+    }
+  },
+  {
+    "path": "/tree-node-scope-demo",
+    "name": "tree-node-scope-demo",
+    "pageId": "tree-node-scope-demo",
+    "meta": {
+      "title": "Tree Node Scope 演示",
+      "icon": "🌿"
+    }
+  },
+  {
     "path": "/users",
     "name": "users",
     "pageId": "users",

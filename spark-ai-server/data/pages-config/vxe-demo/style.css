@@ -1,13 +1,12 @@
 [data-page="vxe-demo"] .vxe-demo-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   padding: 20px;
   background: var(--fc-page-bg, #f5f7fa);
 }
 
 [data-page="vxe-demo"] .intro-section,
-[data-page="vxe-demo"] .permission-control-section,
 [data-page="vxe-demo"] .table-section,
 [data-page="vxe-demo"] .detail-section {
   background: #ffffff;
@@ -25,99 +24,12 @@
   margin: 0;
 }
 
-[data-page="vxe-demo"] .permission-control-section .r-select,
-[data-page="vxe-demo"] .permission-control-section .r-dept-picker {
-  margin-bottom: 12px;
-}
-
-[data-page="vxe-demo"] .permission-filter-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-[data-page="vxe-demo"] .filter-summary-text {
-  color: #606266;
-  font-size: 13px;
-}
-
-[data-page="vxe-demo"] .filter-controls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-[data-page="vxe-demo"] .filter-control {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-[data-page="vxe-demo"] .filter-label {
-  font-size: 13px;
-  color: #606266;
-}
-
-[data-page="vxe-demo"] .filter-select {
-  height: 36px;
-  padding: 0 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #303133;
-}
-
-[data-page="vxe-demo"] .toolbar-actions,
-[data-page="vxe-demo"] .row-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-[data-page="vxe-demo"] .filter-reset-btn,
-[data-page="vxe-demo"] .toolbar-button,
-[data-page="vxe-demo"] .row-action-button {
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-[data-page="vxe-demo"] .filter-reset-btn,
-[data-page="vxe-demo"] .toolbar-button {
-  padding: 8px 12px;
-}
-
-[data-page="vxe-demo"] .row-action-button {
-  padding: 4px 10px;
-}
-
-[data-page="vxe-demo"] .filter-reset-btn,
-[data-page="vxe-demo"] .toolbar-button-primary,
-[data-page="vxe-demo"] .row-action-view {
-  background: #409eff;
-}
-
-[data-page="vxe-demo"] .toolbar-button-warning {
-  background: #e6a23c;
-}
-
-[data-page="vxe-demo"] .toolbar-button-muted {
-  background: #909399;
-}
-
-[data-page="vxe-demo"] .row-action-edit {
-  background: #67c23a;
-}
-
-[data-page="vxe-demo"] .row-action-delete {
-  background: #f56c6c;
-}
-
 [data-page="vxe-demo"] .table-section .r-table {
   margin-top: 12px;
+}
+
+[data-page="vxe-demo"] .renderer-table-filters {
+  margin-bottom: 12px;
 }
 
 [data-page="vxe-demo"] .detail-section .r-detail {

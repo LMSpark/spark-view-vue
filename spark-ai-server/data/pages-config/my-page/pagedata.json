@@ -40,12 +40,6 @@
             "name": "description",
             "type": "string",
             "label": "描述"
-          },
-          {
-            "name": "fullInfo",
-            "type": "string",
-            "label": "完整信息",
-            "computeExpression": "name + ' (' + type + ')'"
           }
         ],
         "views": {
@@ -97,17 +91,7 @@
                 "description": "允许审批角色变更请求"
               }
             ],
-            "autoCurrentFirst": true,
-            "aggregates": {
-              "totalCount": {
-                "type": "count"
-              },
-              "activeCount": {
-                "type": "count",
-                "field": "status",
-                "filter": "value === 'active'"
-              }
-            }
+            "autoCurrentFirst": true
           }
         }
       }

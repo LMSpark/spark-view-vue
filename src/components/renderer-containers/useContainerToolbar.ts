@@ -4,8 +4,10 @@ import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IModelPermission } from '@spark-view/spark-data'
 import { isActionDisplayed, isModelActionAllowed } from './action-permission'
 
-export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
+// ── 类型定义 ──────────────────────────────────────────────────────────────────
 
+export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
+// 注意：工具栏的展示权限通常只受模型权限控制，不涉及行权限，因为它们一般不直接作用于某一行数据。
 interface UseContainerToolbarOptions {
   config: ComputedRef<ComponentConfig | undefined>
   toolbar: ComputedRef<ComponentConfig[] | undefined>
@@ -15,7 +17,10 @@ interface UseContainerToolbarOptions {
   slots?: Slots
 }
 
+// ── 组合式函数 ───────────────────────────────────────────────────────────────
+
 export function useContainerToolbar(options: UseContainerToolbarOptions) {
+  // 先读取显式传入的工具栏配置与展示参数，未传时再回退到容器配置。
   const toolbarConfigs = computed(() =>
     options.toolbar.value ?? (options.config.value?.props?.['toolbar'] as ComponentConfig[] | undefined) ?? []
   )
@@ -25,9 +30,13 @@ export function useContainerToolbar(options: UseContainerToolbarOptions) {
   const toolbarClassValue = computed(() =>
     (options.config.value?.props?.['toolbarClass'] as string | undefined) ?? options.toolbarClass.value ?? ''
   )
+
+  // 仅保留“显示上可见”且“模型权限允许”的工具栏动作。
   const visibleToolbarConfigs = computed(() =>
     toolbarConfigs.value.filter(action => isActionDisplayed(action) && isModelActionAllowed(action, options.modelPermission.value))
   )
+
+  // 即使没有配置动作，只要存在 toolbar 插槽，也应视为工具栏可见。
   const hasToolbar = computed(() => visibleToolbarConfigs.value.length > 0)
   const hasToolbarSlot = computed(() => options.slots?.['toolbar'] !== undefined)
   const showToolbar = computed(() => hasToolbar.value || hasToolbarSlot.value)

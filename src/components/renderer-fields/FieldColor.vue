@@ -1,50 +1,48 @@
 <template>
-  <template v-if="context === 'table'">
-    <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
-      <template #default="{ row }">
-        <template v-if="!isTableCellHidden(row)">
-          <span class="color-cell">
-            <span class="color-chip" :style="{ backgroundColor: getRowRawStringValue(row) || '#ffffff' }"></span>
-            <span>{{ getTableCellDisplayValue(row) }}</span>
-          </span>
-        </template>
-      </template>
-    </el-table-column>
-  </template>
-
-  <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
-    <el-color-picker
-      :model-value="fieldValue"
-      :disabled="!isCurrentFieldEditable"
-      @update:model-value="handleChange"
-    />
-  </el-form-item>
-
-  <template v-else-if="context === 'tree'">
-    <span v-if="!isCurrentFieldHidden" class="color-cell">
-      <span class="color-chip" :style="{ backgroundColor: currentRawStringValue || '#ffffff' }"></span>
-      <span>{{ currentDisplayValue }}</span>
-    </span>
-  </template>
-
-  <div v-else-if="!isCurrentFieldHidden" class="field-display">
-    <span class="field-label">{{ displayLabel }}：</span>
-    <span class="color-cell">
-      <span class="color-chip" :style="{ backgroundColor: currentRawStringValue || '#ffffff' }"></span>
-      <span class="field-value">{{ currentDisplayValue }}</span>
-    </span>
-  </div>
+  <FieldContextRenderer v-bind="fieldCtx">
+    <template #table-cell="{ row, value }">
+      <span class="color-cell">
+        <span class="color-chip" :style="{ backgroundColor: getRowRawStringValue(row) || '#ffffff' }"></span>
+        <span>{{ value }}</span>
+      </span>
+    </template>
+    <template #form>
+      <el-color-picker
+        :model-value="fieldValue"
+        :disabled="!isCurrentFieldEditable"
+        @update:model-value="handleChange"
+      />
+    </template>
+    <template #tree>
+      <span class="color-cell">
+        <span class="color-chip" :style="{ backgroundColor: currentRawStringValue || '#ffffff' }"></span>
+        <span>{{ currentDisplayValue }}</span>
+      </span>
+    </template>
+    <template #detail>
+      <div class="field-display">
+        <span class="field-label">{{ fieldCtx.displayLabel }}：</span>
+        <span class="color-cell">
+          <span class="color-chip" :style="{ backgroundColor: currentRawStringValue || '#ffffff' }"></span>
+          <span class="field-value">{{ currentDisplayValue }}</span>
+        </span>
+      </div>
+    </template>
+  </FieldContextRenderer>
 </template>
 
 <script setup lang="ts">
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { useFieldPermission } from './useFieldPermission'
+import { useFieldContext } from './useFieldContext'
+import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
   config?: ComponentConfig
   name?: string
   label?: string
   width?: number
+  sparkChildren?: ComponentConfig[]
   modelValue?: string
 }
 
@@ -54,25 +52,23 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const {
-  fieldName,
-  displayLabel,
-  context,
-  fieldValue,
-  currentRawStringValue,
-  isCurrentFieldHidden,
-  isCurrentFieldEditable,
-  currentDisplayValue,
-  isTableCellHidden,
-  getRowRawStringValue,
-  getTableCellDisplayValue,
-  syncValue,
-} = useFieldPermission<string>({
+const permission = useFieldPermission<string>({
   props,
   type: 'r-color',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
 })
+
+const {
+  fieldValue,
+  currentRawStringValue,
+  isCurrentFieldEditable,
+  currentDisplayValue,
+  getRowRawStringValue,
+  syncValue,
+} = permission
+
+const fieldCtx = useFieldContext(props, permission)
 
 function handleChange(value: string | null): void {
   const next = value ?? ''
@@ -82,18 +78,6 @@ function handleChange(value: string | null): void {
 </script>
 
 <style scoped>
-.field-display {
-  margin-bottom: 12px;
-  line-height: 32px;
-}
-.field-label {
-  color: #606266;
-  font-weight: 500;
-  margin-right: 8px;
-}
-.field-value {
-  color: #303133;
-}
 .color-cell {
   display: inline-flex;
   align-items: center;

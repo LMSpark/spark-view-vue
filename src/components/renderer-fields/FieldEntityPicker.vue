@@ -1,6 +1,15 @@
 <template>
   <template v-if="context === 'table'">
-    <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
+    <!-- 分组列（多行表头） -->
+    <el-table-column v-if="mergedChildren.length > 0" :label="displayLabel" :width="width">
+      <SparkComponentRenderer
+        v-for="(child, i) in mergedChildren"
+        :key="child.id ?? `field-child-${i}`"
+        :config="child"
+      />
+    </el-table-column>
+    <!-- 数据列 -->
+    <el-table-column v-else :label="displayLabel" :prop="fieldName" :width="width">
       <template #default="{ row }">
         <span v-if="!isTableCellHidden(row)">{{ getTableCellDisplayValue(row) }}</span>
       </template>
@@ -43,6 +52,7 @@ interface Props {
   name?: string
   label?: string
   width?: number
+  sparkChildren?: ComponentConfig[]
   modelValue?: EntityPickerValue
   options?: unknown[]
   optionLabelField?: string
@@ -69,6 +79,9 @@ const props = withDefaults(defineProps<Props>(), {
   valueMode: 'auto',
   entityName: '项目',
 })
+
+
+const mergedChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
 
 const emit = defineEmits<{
   'update:modelValue': [value: EntityPickerValue]

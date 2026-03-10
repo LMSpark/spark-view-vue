@@ -1,32 +1,29 @@
 <template>
-  <template v-if="context === 'table'">
-    <el-table-column :label="displayLabel" :prop="fieldName" :width="width">
-      <template #default="{ row }">
-        <span v-if="!isTableCellHidden(row)" class="file-browser-value">{{ getTableCellDisplayValue(row) }}</span>
-      </template>
-    </el-table-column>
-  </template>
-
-  <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
-    <div class="file-browser-field">
-      <el-input
-        :model-value="fieldValue"
-        readonly
-        :placeholder="placeholder"
-      />
-      <el-button class="browse-action-button" :disabled="!hasBrowseCapability" @click="openFileDialog">{{ buttonText }}</el-button>
-      <el-button v-if="showClearButton" class="clear-action-button" @click="clearValue">清空</el-button>
-    </div>
-  </el-form-item>
-
-  <template v-else-if="context === 'tree'">
-    <span v-if="!isCurrentFieldHidden" class="file-browser-value">{{ currentDisplayValue }}</span>
-  </template>
-
-  <div v-else-if="!isCurrentFieldHidden" class="field-display">
-    <span class="field-label">{{ displayLabel }}：</span>
-    <span class="field-value file-browser-value">{{ currentDisplayValue }}</span>
-  </div>
+  <FieldContextRenderer v-bind="fieldCtx">
+    <template #table-cell="{ value }">
+      <span class="file-browser-value">{{ value }}</span>
+    </template>
+    <template #form>
+      <div class="file-browser-field">
+        <el-input
+          :model-value="fieldValue"
+          readonly
+          :placeholder="placeholder"
+        />
+        <el-button class="browse-action-button" :disabled="!hasBrowseCapability" @click="openFileDialog">{{ buttonText }}</el-button>
+        <el-button v-if="showClearButton" class="clear-action-button" @click="clearValue">清空</el-button>
+      </div>
+    </template>
+    <template #tree>
+      <span class="file-browser-value">{{ currentDisplayValue }}</span>
+    </template>
+    <template #detail>
+      <div class="field-display">
+        <span class="field-label">{{ fieldCtx.displayLabel }}：</span>
+        <span class="field-value file-browser-value">{{ currentDisplayValue }}</span>
+      </div>
+    </template>
+  </FieldContextRenderer>
 </template>
 
 <script setup lang="ts">
@@ -34,12 +31,15 @@ import { computed } from 'vue'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { useFieldPermission } from './useFieldPermission'
 import { useFileFieldActions } from './useFileFieldActions'
+import { useFieldContext } from './useFieldContext'
+import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
   config?: ComponentConfig
   name?: string
   label?: string
   width?: number
+  sparkChildren?: ComponentConfig[]
   modelValue?: string
   accept?: string
   multiple?: boolean
@@ -62,25 +62,24 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const {
-  fieldName,
-  displayLabel,
-  context,
-  pageService,
-  fieldValue,
-  currentRawStringValue,
-  isCurrentFieldHidden,
-  isCurrentFieldEditable,
-  currentDisplayValue,
-  isTableCellHidden,
-  getTableCellDisplayValue,
-  syncValue,
-} = useFieldPermission<string>({
+const permission = useFieldPermission<string>({
   props,
   type: 'r-file-browser',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
 })
+
+const {
+  displayLabel,
+  pageService,
+  fieldValue,
+  currentRawStringValue,
+  isCurrentFieldEditable,
+  currentDisplayValue,
+  syncValue,
+} = permission
+
+const fieldCtx = useFieldContext(props, permission)
 
 const { hasBrowseCapability, browseFiles } = useFileFieldActions({
   pageService,
@@ -115,21 +114,6 @@ function clearValue(): void {
 </script>
 
 <style scoped>
-.field-display {
-  margin-bottom: 12px;
-  line-height: 32px;
-}
-
-.field-label {
-  color: #606266;
-  font-weight: 500;
-  margin-right: 8px;
-}
-
-.field-value {
-  color: #303133;
-}
-
 .file-browser-field {
   display: flex;
   align-items: center;

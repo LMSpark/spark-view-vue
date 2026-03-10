@@ -20,28 +20,8 @@
             "type": "p",
             "class": "description",
             "children": [
-              "演示带数据权限控制的表格，包括基于角色、部门、数据范围的权限过滤。"
+              "最小化配置示例：用 r-table 内建过滤和 r-detail 当前行绑定完成表格浏览，不额外编写命令式过滤脚本。"
             ]
-          }
-        ]
-      },
-      {
-        "type": "r-section",
-        "class": "permission-control-section",
-        "props": {
-          "title": "权限控制区",
-          "headerActions": [
-            {
-              "type": "RenderPermissionFilter"
-            }
-          ]
-        },
-        "children": [
-          {
-            "type": "RenderFilterControls",
-            "props": {
-              "colSpan": 24
-            }
           }
         ]
       },
@@ -50,11 +30,7 @@
         "class": "table-section",
         "props": {
           "title": "数据表格",
-          "headerActions": [
-            {
-              "type": "RenderTableToolbar"
-            }
-          ]
+          "description": "筛选字段直接来自列配置，点击行即可联动下方详情。"
         },
         "children": [
           {
@@ -62,20 +38,15 @@
             "dataKey": "PermissionData@rows",
             "props": {
               "border": true,
+              "stripe": true,
               "highlightCurrentRow": true,
               "height": 400,
-              "rowActions": [
-                {
-                  "type": "RenderActions"
-                }
-              ],
-              "rowActionsWidth": 150,
-              "rowActionsFixed": "right",
-              "rowActionsLabel": "操作"
-            },
-            "on": {
-              "currentChange": "handleCurrentChange",
-              "selectionChange": "handleSelectionChange"
+              "filterColumns": [
+                "name",
+                "deptName",
+                "roleName",
+                "status"
+              ]
             },
             "children": [
               {
@@ -174,10 +145,26 @@
                 }
               },
               {
-                "type": "r-text",
+                "type": "r-number",
                 "name": "salary",
                 "props": {
                   "label": "薪资",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "status",
+                "props": {
+                  "label": "状态",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-date",
+                "name": "joinDate",
+                "props": {
+                  "label": "入职日期",
                   "colSpan": 12
                 }
               },
