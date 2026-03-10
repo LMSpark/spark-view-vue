@@ -123,10 +123,7 @@ public class AiPageService {
                                                 "R" + round + "-Phase2");
 
                 // ── Merge ──
-                merged = new LinkedHashMap<>(phase1.files());
-                if (phase2 != null) {
-                    merged.putAll(phase2.files());
-                }
+                merged = mergePhaseFiles(phase1.files(), phase2 != null ? phase2.files() : null);
                 merged.putIfAbsent("pagedata.json", "{}");
                 merged.putIfAbsent("style.css", "");
                 merged.putIfAbsent("script.js", "");
@@ -481,6 +478,28 @@ public class AiPageService {
         }
 
         return null;
+    }
+
+    private Map<String, String> mergePhaseFiles(Map<String, String> phase1Files,
+                                                Map<String, String> phase2Files) {
+        Map<String, String> mergedFiles = new LinkedHashMap<>(phase1Files);
+        if (phase2Files == null || phase2Files.isEmpty()) {
+            return mergedFiles;
+        }
+
+        for (Map.Entry<String, String> entry : phase2Files.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            // Phase-2 允许额外修正 Phase-1 文件，但空字符串不应抹掉已生成结果。
+            if (("rule.json".equals(key) || "style.css".equals(key))
+                    && (value == null || value.isBlank())) {
+                continue;
+            }
+            mergedFiles.put(key, value);
+        }
+
+        return mergedFiles;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

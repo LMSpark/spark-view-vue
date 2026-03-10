@@ -22,6 +22,20 @@ $env:OPENAI_API_KEY = "sk-xxxxxxxxxxxxxxxx"
 export OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxx"
 ```
 
+**推荐：本地 `.env.java` 文件（不会提交到 git）**
+
+在仓库根目录创建 `.env.java`，或放在 `spark-ai-server/.env.java`：
+
+```ini
+OPENAI_BASE_URL=https://api.deepseek.com
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
+AI_MODEL=deepseek-chat
+# AI_JSON_MODE=true
+```
+
+项目已提供示例文件 [\.env.java.example](..%2F.env.java.example)。
+`scripts/start-dev.mjs` 和 `scripts/build-all.mjs` 会自动读取该文件，且进程级环境变量优先级更高。
+
 ### 2. 编译并运行
 
 ```bash

@@ -40,6 +40,9 @@
         @current-change="handleCurrentChange"
         @selection-change="handleSelectionChange"
       >
+        <el-table-columns>
+          <!-- 行操作列（左） -->
+
         <el-table-column
           v-if="showRowActionsLeftValue"
           :label="rowActionsLabelValue"
@@ -63,14 +66,13 @@
           </template>
         </el-table-column>
 
-        <!-- Config / sparkChildren 驱动 —— 通用递归渲染，父级不知道子级是谁 -->
-        <template v-if="mergedChildren.length">
-          <SparkComponentRenderer
-            v-for="(child, i) in mergedChildren"
-            :key="child.id ?? `r-table-child-${i}`"
-            :config="child"
-          />
-        </template>
+          <template v-if="sparkChildren.length">
+            <SparkComponentRenderer
+              v-for="(child, i) in sparkChildren"
+              :key="child.id ?? `r-table-child-${i}`"
+              :config="child"
+            />
+          </template>
         <!-- Template 驱动 —— 保留 <slot> 向后兼容 -->
         <slot v-else />
 
@@ -95,7 +97,8 @@
               />
             </div>
           </template>
-        </el-table-column>
+          </el-table-column>
+        </el-table-columns>
       </el-table>
     </div>
   </div>
@@ -109,7 +112,7 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, useSlots } from 'vue'
+import { computed, defineComponent, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
@@ -169,13 +172,40 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const slots = useSlots()
 
+const ElTableColumns = defineComponent({
+  name: 'ElTableColumns',
+  setup(_, { slots: componentSlots }) {
+    return () => componentSlots['default']?.() ?? []
+  },
+})
+
 // 配置内容优先从 config.props 取，否则回退到平层 prop
 const effectiveDataKey = computed(() =>
   (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
 )
 
-// 配置驱动模式下的子组件列表（config.children > sparkChildren > 空）
-const mergedChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
+const resolvedSparkChildren = computed<ComponentConfig[]>(() => {
+  const directChildren = props.sparkChildren
+  if (Array.isArray(directChildren) && directChildren.length > 0) return directChildren
+
+  const configSparkChildren = props.config?.props?.['sparkChildren'] as ComponentConfig[] | undefined
+  if (Array.isArray(configSparkChildren) && configSparkChildren.length > 0) return configSparkChildren
+
+  return []
+})
+
+// 配置驱动模式下的子组件列表（优先真实 children；bindRules 注入场景从 props.sparkChildren 读取）
+const mergedChildren = computed<ComponentConfig[]>(() => {
+  const configChildren = props.config?.children
+  if (Array.isArray(configChildren) && configChildren.length > 0) return configChildren
+  return resolvedSparkChildren.value
+})
+const legacyRowActionConfigs = computed(() =>
+  mergedChildren.value.filter(child => /^Render[A-Z]/.test(child.type))
+)
+const sparkChildren = computed(() =>
+  mergedChildren.value.filter(child => isCollectedTableColumn(child))
+)
 const rowActionsLabelValue = computed(() =>
   (props.config?.props?.['rowActionsLabel'] as string | undefined) ?? props.rowActionsLabel
 )
@@ -238,7 +268,7 @@ const {
   hasFilters,
 } = useTableFilters({
   config: computed(() => props.config),
-  children: mergedChildren,
+  children: sparkChildren,
   dataView: resolvedView,
   filterColumns: computed(() => props.filterColumns),
   filterClass: computed(() => props.filterClass),
@@ -258,7 +288,10 @@ const {
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   config: computed(() => props.config),
-  actionConfigs: computed(() => props.rowActions),
+  actionConfigs: computed(() => {
+    const explicit = (props.config?.props?.['rowActions'] as ComponentConfig[] | undefined) ?? props.rowActions ?? []
+    return [...legacyRowActionConfigs.value, ...explicit]
+  }),
   actionPosition: computed(() => props.rowActionsPosition),
   actionClass: computed(() => props.rowActionsClass),
   actionPropKey: 'rowActions',
@@ -298,6 +331,12 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
     row,
     index,
   })
+}
+
+function isCollectedTableColumn(config: ComponentConfig): boolean {
+  if (/^Render[A-Z]/.test(config.type)) return false
+  if (config.type === 'el-table-column') return true
+  return config.type.startsWith('r-') && typeof config.name === 'string' && config.name.length > 0
 }
 
 // 向字段子组件提供渲染上下文

@@ -1,52 +1,221 @@
 [
   {
-    "type": "h2",
-    "children": [
-      "qqqq"
-    ]
-  },
-  {
-    "type": "el-divider"
-  },
-  {
-    "type": "el-table",
-    "name": "mainTable",
-    "dataKey": "my-page@rows",
-    "props": {
-      "border": true,
-      "stripe": true,
-      "highlightCurrentRow": true
+    "type": "div",
+    "class": "my-page-container",
+    "style": {
+      "padding": "20px"
     },
     "children": [
       {
-        "type": "el-table-column",
-        "props": {
-          "prop": "id",
-          "label": "ID",
-          "width": 80
-        }
+        "type": "h2",
+        "children": [
+          "数据权限管理"
+        ]
       },
       {
-        "type": "el-table-column",
-        "props": {
-          "prop": "name",
-          "label": "名称"
-        }
+        "type": "el-divider"
       },
       {
-        "type": "el-table-column",
+        "type": "r-section",
         "props": {
-          "prop": "status",
-          "label": "状态",
-          "width": 120
-        }
+          "title": "权限列表",
+          "description": "管理用户或角色的数据访问权限",
+          "headerActions": [
+            {
+              "type": "RenderAddButton"
+            },
+            {
+              "type": "RenderDeleteButton"
+            },
+            {
+              "type": "RenderRefreshButton"
+            }
+          ]
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "dataKey": "Permissions@rows",
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "toolbar": [
+                {
+                  "type": "RenderSearchBar"
+                }
+              ]
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "name": "id",
+                "props": {
+                  "label": "ID",
+                  "width": 80
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "name",
+                "props": {
+                  "label": "权限名称"
+                }
+              },
+              {
+                "type": "r-select",
+                "name": "type",
+                "props": {
+                  "label": "权限类型",
+                  "width": 120,
+                  "options": [
+                    {
+                      "label": "用户权限",
+                      "value": "user"
+                    },
+                    {
+                      "label": "角色权限",
+                      "value": "role"
+                    },
+                    {
+                      "label": "部门权限",
+                      "value": "dept"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "target",
+                "props": {
+                  "label": "目标对象",
+                  "width": 150
+                }
+              },
+              {
+                "type": "r-select",
+                "name": "status",
+                "props": {
+                  "label": "状态",
+                  "width": 100,
+                  "options": [
+                    {
+                      "label": "启用",
+                      "value": "active"
+                    },
+                    {
+                      "label": "禁用",
+                      "value": "inactive"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-date",
+                "name": "createdAt",
+                "props": {
+                  "label": "创建时间",
+                  "width": 150
+                }
+              },
+              {
+                "type": "RenderActions"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-drawer",
+        "props": {
+          "title": "权限详情",
+          "size": "40%",
+          "headerActions": [
+            {
+              "type": "RenderSaveButton"
+            },
+            {
+              "type": "RenderCancelButton"
+            }
+          ]
+        },
+        "children": [
+          {
+            "type": "r-form",
+            "dataKey": "Permissions@currentRow",
+            "children": [
+              {
+                "type": "r-text",
+                "name": "name",
+                "props": {
+                  "label": "权限名称",
+                  "colSpan": 24,
+                  "required": true
+                }
+              },
+              {
+                "type": "r-select",
+                "name": "type",
+                "props": {
+                  "label": "权限类型",
+                  "colSpan": 12,
+                  "required": true,
+                  "options": [
+                    {
+                      "label": "用户权限",
+                      "value": "user"
+                    },
+                    {
+                      "label": "角色权限",
+                      "value": "role"
+                    },
+                    {
+                      "label": "部门权限",
+                      "value": "dept"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-user-picker",
+                "name": "target",
+                "props": {
+                  "label": "目标用户",
+                  "colSpan": 12,
+                  "visible": "{{type === 'user'}}"
+                }
+              },
+              {
+                "type": "r-select",
+                "name": "status",
+                "props": {
+                  "label": "状态",
+                  "colSpan": 12,
+                  "options": [
+                    {
+                      "label": "启用",
+                      "value": "active"
+                    },
+                    {
+                      "label": "禁用",
+                      "value": "inactive"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "r-textarea",
+                "name": "description",
+                "props": {
+                  "label": "描述",
+                  "colSpan": 24,
+                  "rows": 3
+                }
+              }
+            ]
+          }
+        ]
       }
-    ]
-  },
-  {
-    "type": "p",
-    "children": [
-      "[mock] action=generate, prompt=\"qqqq\""
     ]
   }
 ]

@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Controller 层集成测试 — MockMvc + 模拟 Service。
  */
-@WebMvcTest({ AiChatController.class, PageConfigController.class })
+@WebMvcTest({ AiChatController.class, PageConfigController.class, AppConfigController.class })
 class ControllersTest {
 
     @Autowired

@@ -53,7 +53,7 @@
  * <SparkComponentRenderer :config="config" :parent-context="rootContext" />
  * ```
  */
-import { computed, inject, markRaw, provide as vueProvide } from 'vue'
+import { computed, inject, markRaw, provide as vueProvide, getCurrentInstance } from 'vue'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../../core/types.js'
 import type { ComponentConfig, ComponentContext, ComponentRegistry } from '../../core/types.js'
 
@@ -84,18 +84,25 @@ if (props.parentContext !== undefined) {
 
 // ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────
 const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
+const appComponents = getCurrentInstance()?.appContext.components
 
 // ── 组件解析 ──────────────────────────────────────────────────────────────────
 
 const resolvedComponent = computed(() => {
   const def = registry?.get(props.config.type)
-  if (!def) {
-   if (import.meta.env.DEV) {
-     console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${props.config.type}`)
-   }
-   return null
+  if (def) {
+    return def.component ? markRaw(def.component as object) : null
   }
-  return def.component ? markRaw(def.component as object) : null
+
+  const appComponent = appComponents?.[props.config.type]
+  if (appComponent) {
+    return markRaw(appComponent as object)
+  }
+
+  if (import.meta.env.DEV) {
+    console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${props.config.type}`)
+  }
+  return null
 })
 
 function toListenerPropName(eventName: string): string {

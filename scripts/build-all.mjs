@@ -26,6 +26,7 @@ import { spawn, execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import http from 'node:http'
+import { loadLocalJavaEnv } from './load-java-env.mjs'
 
 const args = process.argv.slice(2)
 const skipJava = process.env['SKIP_JAVA'] === 'true'
@@ -36,10 +37,12 @@ const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
+const { loadedFiles, env: mergedEnv } = loadLocalJavaEnv(ROOT_DIR)
+const existingPath = mergedEnv['PATH'] ?? mergedEnv['Path'] ?? process.env['PATH'] ?? process.env['Path'] ?? ''
 
 // ── 检测 JAVA_HOME ──────────────────────────────────────────────────────────
 const JAVA_HOME_CANDIDATES = [
-  process.env['JAVA_HOME'],
+  mergedEnv['JAVA_HOME'],
   'C:\\Program Files\\Microsoft\\jdk-17.0.16.8-hotspot',
   'C:\\Program Files\\Eclipse Adoptium\\jdk-17',
   'C:\\Program Files\\Java\\jdk-17',
@@ -51,11 +54,11 @@ const javaHome = JAVA_HOME_CANDIDATES.find(
 const mvnCmd = process.platform === 'win32' ? 'mvn.cmd' : 'mvn'
 const javaEnv = javaHome
   ? {
-      ...process.env,
+      ...mergedEnv,
       JAVA_HOME: javaHome,
-      PATH: `${resolve(javaHome, 'bin')}${process.platform === 'win32' ? ';' : ':'}${process.env['PATH']}`,
+      PATH: `${resolve(javaHome, 'bin')}${process.platform === 'win32' ? ';' : ':'}${existingPath}`,
     }
-  : process.env
+  : mergedEnv
 
 function run(cmd, opts = {}) {
   console.log(`\n> ${cmd}\n`)
@@ -151,6 +154,10 @@ process.on('SIGTERM', () => { killBackend(); process.exit(1) })
 // ══════════════════════════════════════════════════════════════════════════════
 
 try {
+  if (loadedFiles.length > 0) {
+    console.log(`📝 加载本地环境文件: ${loadedFiles.join(', ')}`)
+  }
+
   // ── 1. Java 后端构建 ──────────────────────────────────────────────────────
   if (skipJava) {
     console.log('\n⏭️  跳过 Java 构建')

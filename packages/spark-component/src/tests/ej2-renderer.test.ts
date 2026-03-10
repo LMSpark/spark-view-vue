@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkComponentRenderer } from '@spark-view/spark-component'
 import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
-import { h } from 'vue'
+import { defineComponent, h } from 'vue'
 import type { DefineComponent } from 'vue'
 
 describe('EJ2 SparkComponentRenderer (registry-driven)', () => {
@@ -66,5 +66,34 @@ describe('EJ2 SparkComponentRenderer (registry-driven)', () => {
 
     expect(wrapper.find('.spark-component-unregistered').exists()).toBe(true)
     expect(wrapper.text()).toContain('not-found')
+  })
+
+  it('renders Vue global Render* component when not present in SPARK registry', () => {
+    const { registry, rootContext } = Spark.createSystem()
+    const RenderSearchBar = defineComponent({
+      name: 'RenderSearchBar',
+      setup() {
+        return () => h('div', { class: 'render-search-bar' }, 'search')
+      }
+    })
+
+    const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+      props: {
+        config: { type: 'RenderSearchBar' },
+        parentContext: rootContext
+      },
+      global: {
+        components: {
+          RenderSearchBar,
+        },
+        provide: {
+          [SPARK_REGISTRY_KEY as symbol]: registry,
+          [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
+        }
+      }
+    })
+
+    expect(wrapper.find('.render-search-bar').exists()).toBe(true)
+    expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
   })
 })

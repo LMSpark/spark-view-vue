@@ -14,7 +14,7 @@
 import { shallowRef, defineComponent, markRaw, type App, type ShallowRef } from 'vue'
 
 /** 每个 App 维护独立的 Render* 注册表，避免跨 App 污染 */
-const _renderFnRegistry = new WeakMap<App, Map<string, ShallowRef<(() => unknown) | null>>>()
+const _renderFnRegistry = new WeakMap<App, Map<string, ShallowRef<((props?: Record<string, unknown>) => unknown) | null>>>()
 
 /**
  * 将 pageFunctions 中所有 `Render*` 函数注册为 Vue 全局组件
@@ -39,10 +39,10 @@ export function registerRenderFunctions(
     if (fnMap.has(name)) {
       // 已注册：只更新 ref，无需重新调用 app.component()
       const existingRef = fnMap.get(name)
-      if (existingRef) existingRef.value = fn as () => unknown
+      if (existingRef) existingRef.value = fn as (props?: Record<string, unknown>) => unknown
     } else {
       // 首次注册：创建 ref，包装组件，注册到 app
-      const fnRef = shallowRef<(() => unknown) | null>(fn as () => unknown)
+      const fnRef = shallowRef<((props?: Record<string, unknown>) => unknown) | null>(fn as (props?: Record<string, unknown>) => unknown)
       fnMap.set(name, fnRef)
       fnMap.set(camelName, fnRef) // 大驼峰与小驼峰共享同一个 ref
 
@@ -50,8 +50,9 @@ export function registerRenderFunctions(
         name,
         // render fn 通过 fnRef 间接调用：
         //   - fnRef.value 变化（页面重载）→ shallowRef 响应性触发重渲染
-        //   - fnRef.value() 内部访问响应式数据 → reactive 依赖追踪正常工作
-        setup: () => () => fnRef.value?.(),
+        //   - 运行时 props / attrs 透传给脚本函数，支持 RenderActions(props) 这类用法
+        //   - fnRef.value(...) 内部访问响应式数据 → reactive 依赖追踪正常工作
+        setup: (_, { attrs }) => () => fnRef.value?.({ ...attrs }),
       }))
       app.component(name, comp)
       app.component(camelName, comp)
