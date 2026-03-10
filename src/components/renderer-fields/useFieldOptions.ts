@@ -1,5 +1,8 @@
 import { computed } from 'vue'
+import type { ComputedRef } from 'vue'
 import type { ComponentConfig } from '@spark-view/spark-component'
+import { useFieldPermission } from './useFieldPermission'
+import type { FieldPermissionProps } from './useFieldPermission'
 
 export type FieldOptionValue = string | number | boolean
 
@@ -22,6 +25,22 @@ export interface FieldOptionProps {
   optionLabelField?: string | undefined
   optionValueField?: string | undefined
   optionChildrenField?: string | undefined
+}
+
+export interface UseFieldOptionsReturn {
+  options: ComputedRef<FieldOption[]>
+  flatOptions: ComputedRef<FieldOption[]>
+  findOptionLabel: (value: unknown) => string
+  formatOptionValue: (value: unknown) => string
+  formatCascaderValue: (value: unknown) => string
+  transferData: ComputedRef<FieldTransferOption[]>
+}
+
+export interface UseOptionFieldOptions<TValue> {
+  props: FieldOptionProps & FieldPermissionProps<TValue>
+  type: string
+  fallbackValue: TValue
+  formatDisplay?: (value: unknown, helpers: UseFieldOptionsReturn) => string
 }
 
 function normalizeOption(
@@ -82,7 +101,7 @@ function flattenOptions(source: FieldOption[]): FieldOption[] {
   return result
 }
 
-export function useFieldOptions(props: FieldOptionProps) {
+export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn {
   const optionLabelField = computed(() => props.optionLabelField ?? 'label')
   const optionValueField = computed(() => props.optionValueField ?? 'value')
   const optionChildrenField = computed(() => props.optionChildrenField ?? 'children')
@@ -137,12 +156,31 @@ export function useFieldOptions(props: FieldOptionProps) {
     })
   }
 
+  const transferData = computed(() => toTransferData())
+
   return {
     options,
     flatOptions,
     findOptionLabel,
     formatOptionValue,
     formatCascaderValue,
-    transferData: computed(() => toTransferData()),
+    transferData,
+  }
+}
+
+export function useOptionField<TValue>(options: UseOptionFieldOptions<TValue>) {
+  const optionHelpers = useFieldOptions(options.props)
+  const permissionHelpers = useFieldPermission<TValue>({
+    props: options.props,
+    type: options.type,
+    fallbackValue: options.fallbackValue,
+    formatDisplay: (value: unknown) => options.formatDisplay
+      ? options.formatDisplay(value, optionHelpers)
+      : optionHelpers.formatOptionValue(value),
+  })
+
+  return {
+    ...optionHelpers,
+    ...permissionHelpers,
   }
 }

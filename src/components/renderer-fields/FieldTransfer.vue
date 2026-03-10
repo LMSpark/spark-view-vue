@@ -31,8 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFieldPermission } from './useFieldPermission'
-import { useFieldOptions } from './useFieldOptions'
+import { useOptionField } from './useFieldOptions'
 import type { ComponentConfig } from '@spark-view/spark-component'
 
 type TransferValue = Array<string | number>
@@ -63,8 +62,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: TransferValue]
 }>()
 
-const { formatOptionValue, transferData } = useFieldOptions(props)
 const {
+  transferData,
   fieldName,
   displayLabel,
   context,
@@ -75,11 +74,10 @@ const {
   isTableCellHidden,
   getTableCellDisplayValue,
   syncValue,
-} = useFieldPermission<TransferValue>({
+} = useOptionField<TransferValue>({
   props,
   type: 'r-transfer',
   fallbackValue: [],
-  formatDisplay: formatOptionValue,
 })
 
 function handleChange(value: TransferValue): void {

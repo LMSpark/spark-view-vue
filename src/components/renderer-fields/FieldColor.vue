@@ -4,7 +4,7 @@
       <template #default="{ row }">
         <template v-if="!isTableCellHidden(row)">
           <span class="color-cell">
-            <span class="color-chip" :style="{ backgroundColor: getRawColor(row) || '#ffffff' }"></span>
+            <span class="color-chip" :style="{ backgroundColor: getRowRawStringValue(row) || '#ffffff' }"></span>
             <span>{{ getTableCellDisplayValue(row) }}</span>
           </span>
         </template>
@@ -22,7 +22,7 @@
 
   <template v-else-if="context === 'tree'">
     <span v-if="!isCurrentFieldHidden" class="color-cell">
-      <span class="color-chip" :style="{ backgroundColor: currentRawColor || '#ffffff' }"></span>
+      <span class="color-chip" :style="{ backgroundColor: currentRawStringValue || '#ffffff' }"></span>
       <span>{{ currentDisplayValue }}</span>
     </span>
   </template>
@@ -30,15 +30,13 @@
   <div v-else-if="!isCurrentFieldHidden" class="field-display">
     <span class="field-label">{{ displayLabel }}：</span>
     <span class="color-cell">
-      <span class="color-chip" :style="{ backgroundColor: currentRawColor || '#ffffff' }"></span>
+      <span class="color-chip" :style="{ backgroundColor: currentRawStringValue || '#ffffff' }"></span>
       <span class="field-value">{{ currentDisplayValue }}</span>
     </span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { IDataRow } from '@spark-view/spark-data'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { useFieldPermission } from './useFieldPermission'
 
@@ -61,10 +59,12 @@ const {
   displayLabel,
   context,
   fieldValue,
+  currentRawStringValue,
   isCurrentFieldHidden,
   isCurrentFieldEditable,
   currentDisplayValue,
   isTableCellHidden,
+  getRowRawStringValue,
   getTableCellDisplayValue,
   syncValue,
 } = useFieldPermission<string>({
@@ -73,13 +73,6 @@ const {
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
 })
-
-const currentRawColor = computed(() => String(fieldValue.value ?? ''))
-
-function getRawColor(row: IDataRow): string {
-  if (!fieldName.value) return ''
-  return String(row[fieldName.value] ?? '')
-}
 
 function handleChange(value: string | null): void {
   const next = value ?? ''

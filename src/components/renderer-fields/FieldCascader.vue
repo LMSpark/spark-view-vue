@@ -32,8 +32,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useFieldPermission } from './useFieldPermission'
-import { useFieldOptions } from './useFieldOptions'
+import { useOptionField } from './useFieldOptions'
 import type { ComponentConfig } from '@spark-view/spark-component'
 
 type FieldPrimitive = string | number | boolean
@@ -71,8 +70,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: CascaderValue]
 }>()
 
-const { options, formatCascaderValue } = useFieldOptions(props)
 const {
+  options,
   fieldName,
   displayLabel,
   context,
@@ -83,11 +82,11 @@ const {
   isTableCellHidden,
   getTableCellDisplayValue,
   syncValue,
-} = useFieldPermission<CascaderValue>({
+} = useOptionField<CascaderValue>({
   props,
   type: 'r-cascader',
   fallbackValue: [],
-  formatDisplay: formatCascaderValue,
+  formatDisplay: (value, helpers) => helpers.formatCascaderValue(value),
 })
 
 const cascaderProps = computed(() => ({
