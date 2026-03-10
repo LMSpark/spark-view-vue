@@ -161,7 +161,10 @@ export interface PageRendererProps {
   confirmService?: {
     confirm: (msg: string, title?: string) => Promise<unknown>
     alert: (msg: string, title?: string) => Promise<unknown>
+    prompt?: (msg: string, title?: string) => Promise<string | null>
   }
+  /** APP 层注入的页面服务扩展（弹层/文件能力等） */
+  pageService?: Partial<IPageServiceCapability>
   /** 页面加载前钩子函数 */
   beforeLoad?: (pageId: string) => void | Promise<void>
   /** 页面加载后钩子函数 */

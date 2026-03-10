@@ -221,6 +221,7 @@ async function startApp() {
     
     // 4. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
+    const AppPageRendererBridge = (await import('./app-services/page-ui/AppPageRendererBridge.vue')).default
     
     await SparkApp.start({
       // === 应用根组件 ===
@@ -241,7 +242,10 @@ async function startApp() {
       },
       
       // === 页面配置系统（从 JSON 加载）===
-      pageConfig: appConfig.pageConfig,
+      pageConfig: {
+        ...appConfig.pageConfig,
+        pageComponent: AppPageRendererBridge,
+      },
       
       // === 应用基础配置（从 JSON 加载）===
       config: appConfig.config,
@@ -299,6 +303,10 @@ async function startApp() {
           FieldFilePath,
           FieldFileBrowser,
           FieldUpload,
+          FieldEntityPicker,
+          FieldUserPicker,
+          FieldDeptPicker,
+          FieldProductPicker,
           FieldCascader,
           FieldTreeSelect,
           FieldTransfer
@@ -335,6 +343,10 @@ async function startApp() {
         app.component('r-file-path', FieldFilePath)
         app.component('r-file-browser', FieldFileBrowser)
         app.component('r-upload', FieldUpload)
+        app.component('r-entity-picker', FieldEntityPicker)
+        app.component('r-user-picker', FieldUserPicker)
+        app.component('r-dept-picker', FieldDeptPicker)
+        app.component('r-product-picker', FieldProductPicker)
         app.component('r-cascader', FieldCascader)
         app.component('r-tree-select', FieldTreeSelect)
         app.component('r-transfer', FieldTransfer)

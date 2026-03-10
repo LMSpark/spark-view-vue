@@ -182,6 +182,14 @@ export interface IScriptContext {
  * 渲染层以 `IPageServiceCapability` 作为实现类型；两者通过结构化类型兼容。
  */
 export interface IPageServiceInScript {
+  /** 通用弹层（APP 层承载，页面层通过 service 调用） */
+  showDialog(options: IPageDialogOptionsInScript): Promise<PageDialogResultInScript>
+  /** 打开通用实体选择器（APP 层承载，可用于选人/选部门/选商品等） */
+  selectEntities(options: IPageSelectEntitiesOptionsInScript): Promise<IPageSelectedEntityInScript[]>
+  /** 打开文件浏览选择器（APP 层承载） */
+  browseFiles(options?: IPageBrowseFilesOptionsInScript): Promise<IPageSelectedFileInScript[]>
+  /** 选择文件并上传（APP 层承载） */
+  uploadFiles(options: IPageUploadFilesOptionsInScript): Promise<IPageUploadedFileInScript[]>
   /** 消息提示（替代 ElMessage） */
   showMessage(message: string, type?: 'success' | 'error' | 'warning' | 'info'): void
   /** 确认框，返回 true=确定 / false=取消（替代 ElMessageBox.confirm） */
@@ -206,4 +214,73 @@ export interface IPageServiceInScript {
   showLoading(show: boolean, text?: string): void
   /** 路由导航 */
   navigate(path: string, params?: Record<string, unknown>): void
+}
+
+export type PageDialogResultInScript = 'confirm' | 'cancel' | 'close'
+
+export interface IPageDialogOptionsInScript {
+  title?: string
+  message?: string
+  content?: string
+  confirmText?: string
+  cancelText?: string
+  showCancelButton?: boolean
+  dangerouslyUseHTMLString?: boolean
+  type?: 'success' | 'error' | 'warning' | 'info'
+  width?: string
+}
+
+export type PageSelectableValueInScript = string | number | boolean
+
+export interface IPageSelectorOptionInScript {
+  label: string
+  value: PageSelectableValueInScript
+  description?: string
+  disabled?: boolean
+  raw?: unknown
+}
+
+export interface IPageSelectEntitiesOptionsInScript {
+  title?: string
+  entityName?: string
+  placeholder?: string
+  multiple?: boolean
+  searchable?: boolean
+  confirmText?: string
+  cancelText?: string
+  emptyText?: string
+  currentValue?: PageSelectableValueInScript | PageSelectableValueInScript[] | string
+  options?: IPageSelectorOptionInScript[]
+}
+
+export interface IPageSelectedEntityInScript extends IPageSelectorOptionInScript {}
+
+export interface IPageBrowseFilesOptionsInScript {
+  title?: string
+  accept?: string
+  multiple?: boolean
+  currentValue?: string
+}
+
+export interface IPageSelectedFileInScript {
+  name: string
+  size: number
+  type: string
+  lastModified: number
+  file: File
+}
+
+export interface IPageUploadFilesOptionsInScript extends IPageBrowseFilesOptionsInScript {
+  action: string
+  method?: 'POST' | 'PUT' | 'PATCH'
+  fieldName?: string
+  headers?: Record<string, string>
+  data?: Record<string, string | Blob>
+  withCredentials?: boolean
+  files?: File[]
+}
+
+export interface IPageUploadedFileInScript extends IPageSelectedFileInScript {
+  response: unknown
+  url?: string
 }

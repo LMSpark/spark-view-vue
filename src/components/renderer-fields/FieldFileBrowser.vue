@@ -13,18 +13,9 @@
         :model-value="fieldValue"
         readonly
         :placeholder="placeholder"
-        :disabled="!isCurrentFieldEditable"
       />
-      <el-button :disabled="!isCurrentFieldEditable" @click="openFileDialog">{{ buttonText }}</el-button>
-      <el-button v-if="clearable" :disabled="!isCurrentFieldEditable" @click="clearValue">清空</el-button>
-      <input
-        ref="fileInputRef"
-        class="file-browser-input"
-        type="file"
-        :accept="accept"
-        :multiple="multiple"
-        @change="handleFileChange"
-      >
+      <el-button class="browse-action-button" :disabled="!hasBrowseCapability" @click="openFileDialog">{{ buttonText }}</el-button>
+      <el-button v-if="showClearButton" class="clear-action-button" @click="clearValue">清空</el-button>
     </div>
   </el-form-item>
 
@@ -39,9 +30,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import { useFieldPermission } from './useFieldPermission'
+import { useFileFieldActions } from './useFileFieldActions'
 
 interface Props {
   config?: ComponentConfig
@@ -70,13 +62,13 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const fileInputRef = ref<HTMLInputElement | null>(null)
-
 const {
   fieldName,
   displayLabel,
   context,
+  pageService,
   fieldValue,
+  currentRawStringValue,
   isCurrentFieldHidden,
   isCurrentFieldEditable,
   currentDisplayValue,
@@ -90,28 +82,35 @@ const {
   formatDisplay: value => String(value ?? ''),
 })
 
+const { hasBrowseCapability, browseFiles } = useFileFieldActions({
+  pageService,
+  isEditable: isCurrentFieldEditable,
+})
+
+const showClearButton = computed(() => props.clearable && isCurrentFieldEditable.value && currentRawStringValue.value.length > 0)
+
 function updateValue(value: string): void {
   emit('update:modelValue', value)
   syncValue(value)
 }
 
 function openFileDialog(): void {
-  fileInputRef.value?.click()
+  void browseFiles({
+    title: displayLabel.value,
+    accept: props.accept,
+    multiple: props.multiple,
+    currentValue: currentRawStringValue.value,
+  }).then((files) => {
+    if (!isCurrentFieldEditable.value) return
+    const nextValue = files.map(file => file.name).join(props.separator)
+    if (nextValue.length > 0) {
+      updateValue(nextValue)
+    }
+  })
 }
 
 function clearValue(): void {
   updateValue('')
-  if (fileInputRef.value) {
-    fileInputRef.value.value = ''
-  }
-}
-
-function handleFileChange(event: Event): void {
-  const target = event.target as HTMLInputElement
-  const files = Array.from(target.files ?? [])
-  const nextValue = files.map(file => file.name).join(props.separator)
-  updateValue(nextValue)
-  target.value = ''
 }
 </script>
 
@@ -140,10 +139,6 @@ function handleFileChange(event: Event): void {
 
 .file-browser-field :deep(.el-input) {
   flex: 1;
-}
-
-.file-browser-input {
-  display: none;
 }
 
 .file-browser-value {

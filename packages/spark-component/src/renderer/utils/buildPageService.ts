@@ -7,7 +7,17 @@
 
 import type { Router } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type {
+  IPageBrowseFilesOptions,
+  IPageDialogOptions,
+  IPageSelectedEntity,
+  IPageSelectEntitiesOptions,
+  IPageServiceCapability,
+  IPageSelectedFile,
+  IPageUploadFilesOptions,
+  IPageUploadedFile,
+  PageDialogResult,
+} from '@spark-view/spark-utils'
 import { pageLogger } from './bind-helpers'
 
 /** ElMessageBox 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常 */
@@ -29,6 +39,155 @@ export interface PageServiceOverrides {
     alert: (msg: string, title?: string) => Promise<unknown>
     prompt?: (msg: string, title?: string) => Promise<string | null>
   } | undefined
+  pageService?: Partial<IPageServiceCapability> | undefined
+}
+
+function mapFile(file: File): IPageSelectedFile {
+  return {
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    lastModified: file.lastModified,
+    file,
+  }
+}
+
+function extractUploadedUrl(response: unknown): string | undefined {
+  if (typeof response !== 'object' || response === null) return undefined
+  const record = response as Record<string, unknown>
+  const candidate = record['url'] ?? record['path'] ?? record['filePath'] ?? record['data']
+  if (typeof candidate === 'string') return candidate
+  if (typeof candidate === 'object' && candidate !== null) {
+    const nested = candidate as Record<string, unknown>
+    const nestedCandidate = nested['url'] ?? nested['path'] ?? nested['filePath']
+    return typeof nestedCandidate === 'string' ? nestedCandidate : undefined
+  }
+  return undefined
+}
+
+async function readResponseData(response: Response): Promise<unknown> {
+  try {
+    return await response.json() as unknown
+  } catch {
+    return await response.text()
+  }
+}
+
+function createFilePicker(options?: IPageBrowseFilesOptions): Promise<IPageSelectedFile[]> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.style.display = 'none'
+    input.accept = options?.accept ?? ''
+    input.multiple = options?.multiple === true
+    input.onchange = () => {
+      const files = Array.from(input.files ?? []).map(mapFile)
+      input.remove()
+      resolve(files)
+    }
+    input.oncancel = () => {
+      input.remove()
+      resolve([])
+    }
+    document.body.appendChild(input)
+    input.click()
+  })
+}
+
+function normalizeSelectorKeys(value: IPageSelectEntitiesOptions['currentValue'] | undefined): string[] {
+  if (Array.isArray(value)) return value.map(item => String(item))
+  if (typeof value === 'string') {
+    if (!value.trim()) return []
+    return value.split(',').map(item => item.trim()).filter(Boolean)
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return [String(value)]
+  return []
+}
+
+function selectFallbackEntities(options: IPageSelectEntitiesOptions): IPageSelectedEntity[] {
+  const candidates = options.options?.filter(option => option.disabled !== true) ?? []
+  if (candidates.length === 0) return []
+  if (typeof window === 'undefined' || typeof window.prompt !== 'function') return []
+
+  const title = options.title ?? `选择${options.entityName ?? '项目'}`
+  const defaultValue = normalizeSelectorKeys(options.currentValue).join(', ')
+  const message = [
+    title,
+    candidates.map(option => `${option.label} (${String(option.value)})`).join('\n'),
+    options.multiple ? '请输入 value，多个用逗号分隔' : '请输入 value',
+  ].join('\n\n')
+
+  const input = window.prompt(message, defaultValue)
+  if (input === null) return []
+
+  const selectedKeys = normalizeSelectorKeys(input)
+  const matched = candidates.filter(option => selectedKeys.includes(String(option.value)))
+  if (options.multiple === true) return matched
+  const firstMatch = matched[0]
+  return firstMatch ? [firstMatch] : []
+}
+
+async function uploadSelectedFiles(options: IPageUploadFilesOptions): Promise<IPageUploadedFile[]> {
+  const selectedFiles = options.files ?? (await createFilePicker(options)).map(item => item.file)
+  if (selectedFiles.length === 0) return []
+
+  const results: IPageUploadedFile[] = []
+  for (const file of selectedFiles) {
+    const formData = new FormData()
+    formData.append(options.fieldName ?? 'file', file)
+    const extraData = options.data ?? {}
+    for (const [key, value] of Object.entries(extraData)) {
+      formData.append(key, value)
+    }
+
+    const requestInit: RequestInit = {
+      method: options.method ?? 'POST',
+      body: formData,
+      credentials: options.withCredentials ? 'include' : 'same-origin',
+    }
+    if (options.headers !== undefined) {
+      requestInit.headers = options.headers
+    }
+
+    const response = await fetch(options.action, requestInit)
+    const responseData = await readResponseData(response)
+    const uploadedUrl = extractUploadedUrl(responseData)
+    results.push({
+      ...mapFile(file),
+      response: responseData,
+      ...(uploadedUrl !== undefined ? { url: uploadedUrl } : {}),
+    })
+  }
+
+  return results
+}
+
+async function showFallbackDialog(options: IPageDialogOptions): Promise<PageDialogResult> {
+  const title = options.title ?? '提示'
+  const message = options.content ?? options.message ?? ''
+  try {
+    const sharedOptions = {
+      confirmButtonText: options.confirmText ?? '确定',
+      cancelButtonText: options.cancelText ?? '取消',
+      dangerouslyUseHTMLString: options.dangerouslyUseHTMLString === true,
+      type: options.type ?? 'info',
+      ...(options.width ? { customStyle: { width: options.width } } : {}),
+    }
+    if (options.showCancelButton === true) {
+      await ElMessageBox.confirm(message, title, {
+        ...sharedOptions,
+        distinguishCancelAndClose: true,
+      })
+    } else {
+      await ElMessageBox.alert(message, title, sharedOptions)
+    }
+    return 'confirm'
+  } catch (error) {
+    if (error === 'cancel') return 'cancel'
+    if (error === 'close' || isElCancelAction(error)) return 'close'
+    pageLogger.warn('showDialog 异常', { error })
+    return 'close'
+  }
 }
 
 /**
@@ -41,6 +200,8 @@ export function buildPageService(
   router: Router,
   overrides?: PageServiceOverrides
 ): IPageServiceCapability {
+  const extension = overrides?.pageService
+
   return {
     showMessage: (message, type = 'info') => {
       try {
@@ -129,6 +290,34 @@ export function buildPageService(
           pageLogger.warn('showAlert 异常', { error: e })
         }
       }
+    },
+
+    showDialog: async (options) => {
+      if (typeof extension?.showDialog === 'function') {
+        return await extension.showDialog(options)
+      }
+      return await showFallbackDialog(options)
+    },
+
+    selectEntities: async (options) => {
+      if (typeof extension?.selectEntities === 'function') {
+        return await extension.selectEntities(options)
+      }
+      return selectFallbackEntities(options)
+    },
+
+    browseFiles: async (options) => {
+      if (typeof extension?.browseFiles === 'function') {
+        return await extension.browseFiles(options)
+      }
+      return await createFilePicker(options)
+    },
+
+    uploadFiles: async (options) => {
+      if (typeof extension?.uploadFiles === 'function') {
+        return await extension.uploadFiles(options)
+      }
+      return await uploadSelectedFiles(options)
     },
 
     showLoading: (_show, _text) => {
