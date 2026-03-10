@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import RendererTable from '../src/components/renderer-containers/RendererTable.vue'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
@@ -65,6 +65,38 @@ const ElTableColumnDeniedStub = defineComponent({
       'data-label': props.label,
       'data-fixed': String(props.fixed ?? ''),
     }, slots['default']?.({ row: { id: 8, name: 'Bob', _perm: { allowDelete: false } }, $index: 1 }))
+  }
+})
+
+const RendererFieldScopeStub = defineComponent({
+  props: {
+    model: {
+      type: Object,
+      required: true,
+    },
+    configs: {
+      type: Array,
+      required: true,
+    },
+  },
+  setup(props) {
+    return () => h('div', { class: 'renderer-field-scope-stub' },
+      ((props.configs as unknown[]) as Array<Record<string, unknown>>).map((config) => {
+        const fieldName = String(config['name'] ?? '')
+        const model = props.model as Record<string, unknown>
+        return h('input', {
+          key: fieldName,
+          class: 'renderer-filter-input',
+          'data-name': fieldName,
+          'data-type': String(config['type'] ?? ''),
+          value: String(model[fieldName] ?? ''),
+          onInput: (event: Event) => {
+            const target = event.target as HTMLInputElement
+            model[fieldName] = target.value
+          },
+        })
+      })
+    )
   }
 })
 
@@ -247,6 +279,71 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(nodeActionSpy).toHaveBeenCalledWith({ id: 'node-1', label: '节点 1' }, { level: 1 }, 'evt')
   })
 
+  it('should allow business slots to append table toolbar and row actions', () => {
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: { rows: [{ id: 1 }] },
+        rowActionsPosition: 'right',
+      },
+      slots: {
+        toolbar: ({ rows }: Record<string, unknown>) => h('button', {
+          class: 'biz-toolbar-button',
+          'data-row-count': String(Array.isArray(rows) ? rows.length : 0),
+        }, 'biz-toolbar'),
+        'row-actions': ({ row, rowIndex }: Record<string, unknown>) => h('button', {
+          class: 'biz-row-action',
+          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
+          'data-row-index': String(rowIndex ?? ''),
+        }, 'biz-row-action'),
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          SparkComponentRenderer: SparkActionStub,
+        }
+      }
+    })
+
+    expect(wrapper.find('.biz-toolbar-button').attributes('data-row-count')).toBe('1')
+    expect(wrapper.find('.biz-row-action').attributes('data-row-id')).toBe('7')
+    expect(wrapper.find('.biz-row-action').attributes('data-row-index')).toBe('2')
+  })
+
+  it('should allow business slots to append tree toolbar node actions and content template', async () => {
+    const { default: RendererTree } = await import('../src/components/renderer-containers/RendererTree.vue')
+    const wrapper = mount(RendererTree as any, {
+      props: {
+        dataSource: { rows: [{ id: 'node-1', label: '节点 1' }] },
+        nodeActionsPosition: 'right',
+      },
+      slots: {
+        toolbar: ({ rows }: Record<string, unknown>) => h('button', {
+          class: 'biz-tree-toolbar',
+          'data-node-count': String(Array.isArray(rows) ? rows.length : 0),
+        }, 'biz-tree-toolbar'),
+        default: ({ data }: Record<string, unknown>) => h('span', {
+          class: 'biz-node-template',
+          'data-node-label': String((data as Record<string, unknown>)['label'] ?? ''),
+        }, 'biz-node-template'),
+        'node-actions': ({ data }: Record<string, unknown>) => h('button', {
+          class: 'biz-node-action',
+          'data-node-id': String((data as Record<string, unknown>)['id'] ?? ''),
+        }, 'biz-node-action'),
+      },
+      global: {
+        stubs: {
+          'el-tree': ElTreeStub,
+          SparkComponentRenderer: SparkActionStub,
+        }
+      }
+    })
+
+    expect(wrapper.find('.biz-tree-toolbar').attributes('data-node-count')).toBe('1')
+    expect(wrapper.find('.biz-node-template').attributes('data-node-label')).toBe('节点 1')
+    expect(wrapper.find('.biz-node-action').attributes('data-node-id')).toBe('node-1')
+  })
+
   it('should hide toolbar actions by model permission and row actions by instance permission', async () => {
     const wrapper = mount(RendererTable as any, {
       props: {
@@ -316,5 +413,162 @@ describe('RendererTable - DataView as single data intermediary', () => {
     expect(wrapper.find('.spark-action-stub[data-type="export-tree"]').exists()).toBe(true)
     expect(wrapper.find('.spark-action-stub[data-type="delete-node"]').exists()).toBe(false)
     expect(wrapper.find('.spark-action-stub[data-type="plain-node"]').exists()).toBe(true)
+  })
+
+  it('should reuse column configs as filter items and filter inline rows locally', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Filter-Local',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'name', type: 'string' as const }],
+          rows: [
+            { id: 1, name: 'Alice' },
+            { id: 2, name: 'Bob' },
+            { id: 3, name: 'Alicia' },
+          ] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        filterColumns: ['name'],
+        config: {
+          type: 'r-table',
+          children: [
+            { type: 'r-text', name: 'name', props: { label: '姓名' } },
+            { type: 'r-number', name: 'age', props: { label: '年龄' } },
+          ],
+        },
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          SparkComponentRenderer: SparkActionStub,
+          RendererFieldScope: RendererFieldScopeStub,
+        },
+      },
+    })
+
+    const filterInput = wrapper.find('.renderer-filter-input[data-name="name"]')
+    expect(filterInput.exists()).toBe(true)
+    expect(filterInput.attributes('data-type')).toBe('r-text')
+    expect(wrapper.find('.renderer-filter-input[data-name="age"]').exists()).toBe(false)
+
+    await filterInput.setValue('Ali')
+    await nextTick()
+
+    const vm = wrapper.vm as unknown as { tableData: IDataRow[] }
+    expect(vm.tableData).toHaveLength(2)
+    expect(vm.tableData.map(row => row['name'])).toEqual(['Alice', 'Alicia'])
+  })
+
+  it('should sync filter expression to data view and refresh remote tables', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Filter-Remote',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'name', type: 'string' as const }],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+        }
+      }
+    })
+
+    ds.getTable('Users')!.setApi({ list: { url: '/api/users', method: 'GET' } })
+    const dv = ds.getView('Users', 'default')!
+    const requestDataSpy = vi.spyOn(dv, 'requestData').mockResolvedValue(undefined)
+    const setFilterSpy = vi.spyOn(dv, 'setFilter').mockResolvedValue(undefined)
+    const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
+
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        filterColumns: ['name'],
+        config: {
+          type: 'r-table',
+          children: [
+            { type: 'r-text', name: 'name', props: { label: '姓名' } },
+          ],
+        },
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          SparkComponentRenderer: SparkActionStub,
+          RendererFieldScope: RendererFieldScopeStub,
+        },
+      },
+    })
+
+    await nextTick()
+    setFilterSpy.mockClear()
+    refreshSpy.mockClear()
+
+    await wrapper.find('.renderer-filter-input[data-name="name"]').setValue('Ali')
+    await flushPromises()
+
+    expect(setFilterSpy).toHaveBeenCalledWith({ field: 'name', op: 'contains', value: 'Ali' })
+    expect(refreshSpy).toHaveBeenCalled()
+
+    requestDataSpy.mockRestore()
+    setFilterSpy.mockRestore()
+    refreshSpy.mockRestore()
+  })
+
+  it('should infer between for range filters and in for multi-select filters', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Filter-Infer',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'score', type: 'number' as const },
+            { name: 'status', type: 'string' as const },
+          ],
+          rows: [
+            { id: 1, score: 10, status: 'draft' },
+            { id: 2, score: 20, status: 'done' },
+            { id: 3, score: 30, status: 'archived' },
+          ] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        filterColumns: ['score', 'status'],
+        config: {
+          type: 'r-table',
+          children: [
+            { type: 'r-number', name: 'score', props: { label: '分数', filterMode: 'range' } },
+            { type: 'r-multi-select', name: 'status', props: { label: '状态' } },
+          ],
+        },
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          SparkComponentRenderer: SparkActionStub,
+          RendererFieldScope: RendererFieldScopeStub,
+        },
+      },
+    })
+
+    const vm = wrapper.vm as unknown as { filterModel: Record<string, unknown>; tableData: IDataRow[] }
+    vm.filterModel['score'] = [15, 25]
+    await nextTick()
+    expect(vm.tableData).toHaveLength(1)
+    expect(vm.tableData[0]?.['score']).toBe(20)
+
+    vm.filterModel['status'] = ['done', 'archived']
+    await nextTick()
+    expect(vm.tableData).toHaveLength(1)
+    expect(vm.tableData[0]?.['status']).toBe('done')
   })
 })

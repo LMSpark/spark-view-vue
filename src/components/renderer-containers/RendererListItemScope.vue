@@ -1,7 +1,23 @@
 <template>
   <div :class="itemClass" :style="itemStyle">
     <el-card v-if="useCard" :shadow="cardShadow" class="renderer-list-card">
-      <div class="renderer-list-item-body" :style="gridStyle">
+      <div class="renderer-list-item-body" :style="itemBodyStyle">
+        <template v-if="gridChildren.length">
+          <div
+            v-for="(child, i) in gridChildren"
+            :key="child.id ?? `r-list-item-child-${i}`"
+            class="renderer-list-grid-item"
+            :style="getChildGridStyle(child)"
+          >
+            <SparkComponentRenderer :config="child" />
+          </div>
+        </template>
+        <slot v-else />
+      </div>
+    </el-card>
+
+    <div v-else class="renderer-list-item-body" :style="itemBodyStyle">
+      <template v-if="gridChildren.length">
         <div
           v-for="(child, i) in gridChildren"
           :key="child.id ?? `r-list-item-child-${i}`"
@@ -10,24 +26,14 @@
         >
           <SparkComponentRenderer :config="child" />
         </div>
-      </div>
-    </el-card>
-
-    <div v-else class="renderer-list-item-body" :style="gridStyle">
-      <div
-        v-for="(child, i) in gridChildren"
-        :key="child.id ?? `r-list-item-child-${i}`"
-        class="renderer-list-grid-item"
-        :style="getChildGridStyle(child)"
-      >
-        <SparkComponentRenderer :config="child" />
-      </div>
+      </template>
+      <slot v-else />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { toRef, watch } from 'vue'
+import { computed, toRef, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
@@ -70,6 +76,10 @@ const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   gap: toRef(props, 'gridGap'),
   autoRows: toRef(props, 'gridAutoRows'),
 })
+
+const itemBodyStyle = computed(() =>
+  gridChildren.value.length > 0 ? gridStyle.value : undefined
+)
 
 sparkProvide(FIELD_CONTEXT, 'list')
 

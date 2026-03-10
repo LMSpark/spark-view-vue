@@ -10,11 +10,15 @@
 -->
 <template>
   <div :class="['renderer-tree-layout', `renderer-tree-layout--${toolbarPositionValue}`]">
-    <div v-if="hasToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
+    <div v-if="showToolbar" :class="['renderer-tree-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
         :key="action.id ?? `r-tree-toolbar-${index}`"
         :config="action"
+      />
+      <slot
+        name="toolbar"
+        v-bind="getToolbarSlotScope()"
       />
     </div>
 
@@ -28,11 +32,15 @@
       >
         <template #default="slotProps">
           <span :class="['custom-tree-node', `custom-tree-node--${nodeActionsPositionValue}`]">
-            <span v-if="showNodeActionsLeft" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
+            <span v-if="showNodeActionsLeftValue" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
               <SparkComponentRenderer
                 v-for="(action, i) in getScopedNodeActions({ data: slotProps?.data, node: slotProps?.node })"
                 :key="action.id ?? `r-tree-node-action-left-${i}`"
                 :config="action"
+              />
+              <slot
+                name="node-actions"
+                v-bind="getNodeActionSlotScope(slotProps?.data, slotProps?.node)"
               />
             </span>
 
@@ -51,11 +59,15 @@
               </slot>
             </span>
 
-            <span v-if="showNodeActionsRight" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
+            <span v-if="showNodeActionsRightValue" :class="['renderer-tree-node-actions', nodeActionsClassValue]">
               <SparkComponentRenderer
                 v-for="(action, i) in getScopedNodeActions({ data: slotProps?.data, node: slotProps?.node })"
                 :key="action.id ?? `r-tree-node-action-right-${i}`"
                 :config="action"
+              />
+              <slot
+                name="node-actions"
+                v-bind="getNodeActionSlotScope(slotProps?.data, slotProps?.node)"
               />
             </span>
           </span>
@@ -72,15 +84,19 @@
  * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
 import { useContainerActions } from './useContainerActions'
-import type { ToolbarPosition, LateralActionPosition } from './useContainerActions'
+import type { LateralActionPosition } from './useContainerActions'
 import { useContainerDataSource } from './useContainerDataSource'
+import { useContainerSlots } from './useContainerSlots'
+import { useContainerToolbar } from './useContainerToolbar'
+import type { ToolbarPosition } from './useContainerToolbar'
+import { createNodeActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
 
 type NodeActionsPosition = LateralActionPosition
 
@@ -121,6 +137,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const slots = useSlots()
 
 const effectiveDataKey = computed(() =>
   (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
@@ -166,18 +183,25 @@ const modelPermission = computed<IModelPermission | undefined>(() => resolvedDat
 const {
   toolbarPositionValue,
   toolbarClassValue,
+  visibleToolbarConfigs,
+  showToolbar,
+} = useContainerToolbar({
+  config: computed(() => props.config),
+  toolbar: computed(() => props.toolbar),
+  toolbarPosition: computed(() => props.toolbarPosition),
+  toolbarClass: computed(() => props.toolbarClass),
+  modelPermission,
+  slots,
+})
+
+const {
   actionPositionValue: nodeActionsPositionValue,
   actionClassValue: nodeActionsClassValue,
-  visibleToolbarConfigs,
-  hasToolbar,
   showActionsLeft: showNodeActionsLeft,
   showActionsRight: showNodeActionsRight,
   getScopedActionConfigs: getScopedNodeActions,
 } = useContainerActions<{ data: unknown, node: unknown }>({
   config: computed(() => props.config),
-  toolbar: computed(() => props.toolbar),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
   actionConfigs: computed(() => props.nodeActions),
   actionPosition: computed(() => props.nodeActionsPosition),
   actionClass: computed(() => props.nodeActionsClass),
@@ -191,6 +215,34 @@ const {
     scopedProps: { data, node },
   }),
 })
+const {
+  showActionsLeftValue: showNodeActionsLeftValue,
+  showActionsRightValue: showNodeActionsRightValue,
+} = useContainerSlots({
+  slots,
+  actionSlotName: 'node-actions',
+  actionPosition: nodeActionsPositionValue,
+  showActionsLeft: showNodeActionsLeft,
+  showActionsRight: showNodeActionsRight,
+})
+
+function getToolbarSlotScope() {
+  return createToolbarSlotScope({
+    dataSource: resolvedDataSource.value,
+    modelPermission: modelPermission.value,
+  }, {
+    rows: treeData.value,
+  })
+}
+
+function getNodeActionSlotScope(data: unknown, node: unknown) {
+  return createNodeActionSlotScope({
+    dataSource: resolvedDataSource.value,
+    modelPermission: modelPermission.value,
+    data,
+    node,
+  })
+}
 
 // 向字段子组件提供渲染上下文（同步，先于 watcher）
 sparkProvide(FIELD_CONTEXT, 'tree')

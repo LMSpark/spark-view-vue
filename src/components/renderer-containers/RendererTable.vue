@@ -10,11 +10,26 @@
 -->
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
-    <div v-if="hasToolbar" :class="['renderer-table-toolbar', toolbarClassValue]">
+    <div v-if="showToolbar" :class="['renderer-table-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
         :key="action.id ?? `r-table-toolbar-${index}`"
         :config="action"
+      />
+      <slot
+        name="toolbar"
+        v-bind="getToolbarSlotScope()"
+      />
+    </div>
+
+    <div v-if="hasFilters" :class="['renderer-table-filters', filterClassValue]">
+      <RendererFieldScope
+        :model="filterModel"
+        :configs="filterConfigs"
+        :data-source="resolvedView"
+        :grid-columns="filterGridColumnsValue"
+        :grid-gap="filterGridGapValue"
+        :grid-auto-rows="filterGridAutoRowsValue"
       />
     </div>
 
@@ -26,7 +41,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column
-          v-if="showRowActionsLeft"
+          v-if="showRowActionsLeftValue"
           :label="rowActionsLabelValue"
           :width="rowActionsWidthValue"
           :fixed="rowActionsFixedValue"
@@ -39,6 +54,10 @@
                 v-for="(action, index) in getScopedRowActions({ row, index: $index })"
                 :key="action.id ?? `r-table-row-action-left-${index}`"
                 :config="action"
+              />
+              <slot
+                name="row-actions"
+                v-bind="getRowActionSlotScope(row, $index)"
               />
             </div>
           </template>
@@ -56,7 +75,7 @@
         <slot v-else />
 
         <el-table-column
-          v-if="showRowActionsRight"
+          v-if="showRowActionsRightValue"
           :label="rowActionsLabelValue"
           :width="rowActionsWidthValue"
           :fixed="rowActionsFixedValue"
@@ -69,6 +88,10 @@
                 v-for="(action, index) in getScopedRowActions({ row, index: $index })"
                 :key="action.id ?? `r-table-row-action-right-${index}`"
                 :config="action"
+              />
+              <slot
+                name="row-actions"
+                v-bind="getRowActionSlotScope(row, $index)"
               />
             </div>
           </template>
@@ -86,15 +109,21 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
 import { FIELD_CONTEXT } from '../capability-keys'
 import { useContainerActions } from './useContainerActions'
-import type { ToolbarPosition, LateralActionPosition } from './useContainerActions'
+import type { LateralActionPosition } from './useContainerActions'
 import { useContainerDataSource } from './useContainerDataSource'
+import { useContainerSlots } from './useContainerSlots'
+import { useContainerToolbar } from './useContainerToolbar'
+import type { ToolbarPosition } from './useContainerToolbar'
+import { createRowActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
+import RendererFieldScope from './RendererFieldScope.vue'
+import { useTableFilters } from './useTableFilters'
 
 type RowActionsPosition = LateralActionPosition
 
@@ -110,6 +139,11 @@ interface Props {
   toolbar?: ComponentConfig[]
   toolbarPosition?: ToolbarPosition
   toolbarClass?: string
+  filterColumns?: string[]
+  filterClass?: string
+  filterGridColumns?: number
+  filterGridGap?: number | string
+  filterGridAutoRows?: string
   rowActions?: ComponentConfig[]
   rowActionsPosition?: RowActionsPosition
   rowActionsLabel?: string
@@ -122,12 +156,18 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   toolbarPosition: 'top',
   toolbarClass: '',
+  filterColumns: () => [],
+  filterClass: '',
+  filterGridColumns: 24,
+  filterGridGap: 12,
+  filterGridAutoRows: 'minmax(32px, auto)',
   rowActionsPosition: 'right',
   rowActionsLabel: '操作',
   rowActionsWidth: 160,
   rowActionsAlign: 'left',
   rowActionsClass: '',
 })
+const slots = useSlots()
 
 // 配置内容优先从 config.props 取，否则回退到平层 prop
 const effectiveDataKey = computed(() =>
@@ -168,7 +208,7 @@ const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
 })
 
 // 表格行数据：始终从 DataView.rows 读取
-const tableData = computed(() => resolvedView.value?.rows ?? [])
+const tableRows = computed(() => resolvedView.value?.rows ?? [])
 const modelPermission = computed<IModelPermission | undefined>(() =>
   (resolvedView.value as IDataSource | null | undefined)?._modelPerm
 )
@@ -176,18 +216,48 @@ const modelPermission = computed<IModelPermission | undefined>(() =>
 const {
   toolbarPositionValue,
   toolbarClassValue,
+  visibleToolbarConfigs,
+  showToolbar,
+} = useContainerToolbar({
+  config: computed(() => props.config),
+  toolbar: computed(() => props.toolbar),
+  toolbarPosition: computed(() => props.toolbarPosition),
+  toolbarClass: computed(() => props.toolbarClass),
+  modelPermission,
+  slots,
+})
+
+const {
+  filterModel,
+  filterConfigs,
+  filterClassValue,
+  filterGridColumnsValue,
+  filterGridGapValue,
+  filterGridAutoRowsValue,
+  filteredRows,
+  hasFilters,
+} = useTableFilters({
+  config: computed(() => props.config),
+  children: mergedChildren,
+  dataView: resolvedView,
+  filterColumns: computed(() => props.filterColumns),
+  filterClass: computed(() => props.filterClass),
+  filterGridColumns: computed(() => props.filterGridColumns),
+  filterGridGap: computed(() => props.filterGridGap),
+  filterGridAutoRows: computed(() => props.filterGridAutoRows),
+  logger,
+})
+
+const tableData = computed(() => filteredRows.value ?? tableRows.value)
+
+const {
   actionPositionValue: rowActionsPositionValue,
   actionClassValue: rowActionsClassValue,
-  visibleToolbarConfigs,
-  hasToolbar,
   showActionsLeft: showRowActionsLeft,
   showActionsRight: showRowActionsRight,
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
   config: computed(() => props.config),
-  toolbar: computed(() => props.toolbar),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
   actionConfigs: computed(() => props.rowActions),
   actionPosition: computed(() => props.rowActionsPosition),
   actionClass: computed(() => props.rowActionsClass),
@@ -201,6 +271,34 @@ const {
     scopedProps: { row, rowIndex: index, $index: index },
   }),
 })
+const {
+  showActionsLeftValue: showRowActionsLeftValue,
+  showActionsRightValue: showRowActionsRightValue,
+} = useContainerSlots({
+  slots,
+  actionSlotName: 'row-actions',
+  actionPosition: rowActionsPositionValue,
+  showActionsLeft: showRowActionsLeft,
+  showActionsRight: showRowActionsRight,
+})
+
+function getToolbarSlotScope() {
+  return createToolbarSlotScope({
+    dataSource: resolvedView.value,
+    modelPermission: modelPermission.value,
+  }, {
+    rows: tableRows.value,
+  })
+}
+
+function getRowActionSlotScope(row: IDataRow, index: number) {
+  return createRowActionSlotScope({
+    dataSource: resolvedView.value,
+    modelPermission: modelPermission.value,
+    row,
+    index,
+  })
+}
 
 // 向字段子组件提供渲染上下文
 sparkProvide(FIELD_CONTEXT, 'table')
@@ -245,6 +343,10 @@ function handleSelectionChange(selection: IDataRow[]) {
 .renderer-table-main {
   min-width: 0;
   flex: 1;
+}
+
+.renderer-table-filters {
+  width: 100%;
 }
 
 .renderer-table-toolbar {

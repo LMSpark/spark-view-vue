@@ -71,6 +71,83 @@ await view.loadFromServer({ page: 1 })
 - 当 `props.dataSource.rows` 为空时，组件会调用 `dataSource.loadFromServer()`（不直接调用 `DataLoader`）。
 - 表的 `currentChange` / `selectionChange` 由 `bindRules.injectTableEvents()` 注入并同步回 `DataView`（调用 `setCurrentRow()` / `setSelectedRows()`）。
 
+## 6.1 r-table 统一过滤器（列即过滤项）
+- `r-table` 支持在表级容器直接声明 `filterColumns`，只写要过滤的列名即可。
+- 过滤项直接复用同名列配置，不需要再维护单独的 filter schema。
+- 远端表：过滤值会同步到 `DataView.filterExpression` 并触发 `refresh()`。
+- 内联数据表：容器会按同一份过滤表达式做本地过滤。
+
+示例：
+
+```json
+{
+  "type": "r-table",
+  "dataKey": "Users@rows",
+  "props": {
+    "border": true,
+    "highlightCurrentRow": true,
+    "filterColumns": ["name", "status", "score", "createdAt"],
+    "filterGridColumns": 24,
+    "filterGridGap": 12
+  },
+  "children": [
+    {
+      "type": "r-text",
+      "name": "name",
+      "props": { "label": "姓名" }
+    },
+    {
+      "type": "r-multi-select",
+      "name": "status",
+      "props": {
+        "label": "状态",
+        "options": [
+          { "label": "草稿", "value": "draft" },
+          { "label": "完成", "value": "done" },
+          { "label": "归档", "value": "archived" }
+        ]
+      }
+    },
+    {
+      "type": "r-number",
+      "name": "score",
+      "props": {
+        "label": "分数",
+        "filterMode": "range"
+      }
+    },
+    {
+      "type": "r-date",
+      "name": "createdAt",
+      "props": {
+        "label": "创建日期",
+        "filterMode": "range"
+      }
+    }
+  ]
+}
+```
+
+默认操作符推断：
+- `r-text` → `contains`
+- `r-multi-select` → `in`
+- `r-number` + `filterMode: "range"` → `between`
+- `r-date` + `filterMode: "range"` → `between`
+- 其他类型默认 `==`
+
+需要覆盖默认行为时，可在列配置上显式声明：
+
+```json
+{
+  "type": "r-text",
+  "name": "code",
+  "props": {
+    "label": "编码",
+    "filterOp": "startsWith"
+  }
+}
+```
+
 ## 7. 关系自动加载（autoLoad）
 - 在 `relations` 中设置 `autoLoad: true`，当父视图有数据时，`RelationEngine` 会触发子视图的 `loadFromServer()`。
 - 如果希望 DataSet 统一协调（例如预取根视图）使用 `dataSet.requestTableData()`。

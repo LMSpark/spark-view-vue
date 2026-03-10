@@ -14,7 +14,25 @@
 
   <!-- 在 form 中：渲染为 el-form-item + el-input-number -->
   <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
+    <div v-if="isRangeFilter" class="field-number-range">
+      <el-input-number
+        :model-value="rangeStart"
+        :min="min"
+        :max="max"
+        :disabled="!isCurrentFieldEditable"
+        @update:model-value="handleRangeStartChange"
+      />
+      <span class="field-number-range-separator">至</span>
+      <el-input-number
+        :model-value="rangeEnd"
+        :min="min"
+        :max="max"
+        :disabled="!isCurrentFieldEditable"
+        @update:model-value="handleRangeEndChange"
+      />
+    </div>
     <el-input-number
+      v-else
       :model-value="fieldValue as number"
       :min="min"
       :max="max"
@@ -46,7 +64,7 @@ interface Props {
   /** 显示标签（可选，默认回退到 name） */
   label?: string
   width?: number
-  modelValue?: number
+  modelValue?: number | [number | undefined, number | undefined]
   min?: number
   max?: number
 }
@@ -54,14 +72,20 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: number]
+  'update:modelValue': [value: number | [number | undefined, number | undefined]]
 }>()
 
 function formatNumberValue(value: unknown): string {
+  if (Array.isArray(value)) return value.map(item => formatNumberValue(item)).join(' ~ ')
   if (typeof value === 'number') return String(value)
   if (value === null || value === undefined || value === '') return '0'
   return String(value)
 }
+
+const isRangeFilter =
+  props.config?.props?.['filterMode'] === 'range'
+  || props.config?.props?.['filterVariant'] === 'range'
+  || props.config?.props?.['filterRange'] === true
 
 const {
   fieldName,
@@ -74,20 +98,45 @@ const {
   isTableCellHidden,
   getTableCellDisplayValue,
   syncValue,
-} = useFieldPermission<number>({
+} = useFieldPermission<number | [number | undefined, number | undefined]>({
   props,
   type: 'r-number',
   fallbackValue: 0,
   formatDisplay: formatNumberValue,
 })
 
+const rangeStart = Array.isArray(fieldValue.value) ? fieldValue.value[0] : undefined
+const rangeEnd = Array.isArray(fieldValue.value) ? fieldValue.value[1] : undefined
+
 const handleChange = (val: number) => {
   emit('update:modelValue', val)
   syncValue(val)
 }
+
+const handleRangeStartChange = (val: number | undefined) => {
+  const next: [number | undefined, number | undefined] = [val, rangeEnd]
+  emit('update:modelValue', next)
+  syncValue(next)
+}
+
+const handleRangeEndChange = (val: number | undefined) => {
+  const next: [number | undefined, number | undefined] = [rangeStart, val]
+  emit('update:modelValue', next)
+  syncValue(next)
+}
 </script>
 
 <style scoped>
+.field-number-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-number-range-separator {
+  color: #606266;
+}
+
 .field-display {
   margin-bottom: 12px;
   line-height: 32px;

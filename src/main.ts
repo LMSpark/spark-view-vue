@@ -274,7 +274,14 @@ async function startApp() {
           RendererDetail,
           RendererTree,
           RendererList,
+          RendererTabs,
+          RendererCollapse,
+          RendererDialog,
+          RendererDrawer,
+          RendererSteps,
           RendererSection,
+          FieldTextarea,
+          FieldHtmlEditor,
           FieldText,
           FieldNumber,
           FieldDate,
@@ -290,6 +297,7 @@ async function startApp() {
           FieldIcon,
           FieldImage,
           FieldFilePath,
+          FieldFileBrowser,
           FieldUpload,
           FieldCascader,
           FieldTreeSelect,
@@ -301,9 +309,16 @@ async function startApp() {
         app.component('r-detail', RendererDetail)
         app.component('r-tree', RendererTree)
         app.component('r-list', RendererList)
+        app.component('r-tabs', RendererTabs)
+        app.component('r-collapse', RendererCollapse)
+        app.component('r-dialog', RendererDialog)
+        app.component('r-drawer', RendererDrawer)
+        app.component('r-steps', RendererSteps)
         app.component('r-section', RendererSection)
         app.component('r-block', RendererSection)
         app.component('r-text', FieldText)
+        app.component('r-textarea', FieldTextarea)
+        app.component('r-html-editor', FieldHtmlEditor)
         app.component('r-number', FieldNumber)
         app.component('r-date', FieldDate)
         app.component('r-select', FieldSelect)
@@ -318,6 +333,7 @@ async function startApp() {
         app.component('r-icon', FieldIcon)
         app.component('r-image', FieldImage)
         app.component('r-file-path', FieldFilePath)
+        app.component('r-file-browser', FieldFileBrowser)
         app.component('r-upload', FieldUpload)
         app.component('r-cascader', FieldCascader)
         app.component('r-tree-select', FieldTreeSelect)

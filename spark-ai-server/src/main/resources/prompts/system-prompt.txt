@@ -47,14 +47,15 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 
 允许的组件分组：
 - HTML 标签：div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
-- 常用 Element Plus：el-table, el-table-column, el-button, el-input, el-card, el-alert, el-row, el-col, el-tag, el-select, el-option, el-pagination, el-switch, el-radio-group, el-checkbox-group, el-form, el-form-item, el-dialog, el-tabs, el-tab-pane, el-divider
-- SPARK 容器：r-table, r-form, r-detail, r-tree, r-list, r-section, r-block
+- 常用 Element Plus：el-table, el-table-column, el-button, el-input, el-card, el-alert, el-row, el-col, el-tag, el-select, el-option, el-pagination, el-switch, el-radio-group, el-checkbox-group, el-form, el-form-item, el-dialog, el-drawer, el-tabs, el-tab-pane, el-divider
+- SPARK 容器：r-table, r-form, r-detail, r-tree, r-list, r-tabs, r-collapse, r-dialog, r-drawer, r-steps, r-section, r-block
 - SPARK 字段：
-  - 基础：r-text, r-number, r-date
+  - 基础：r-text, r-textarea, r-number, r-date
+  - 富文本：r-html-editor
   - 选项：r-select, r-multi-select, r-radio, r-checkbox, r-checkbox-group, r-switch
   - 数值：r-slider, r-rate
   - 树形/穿梭：r-cascader, r-tree-select, r-transfer
-  - 资源：r-color, r-icon, r-image, r-file-path, r-upload
+  - 资源：r-color, r-icon, r-image, r-file-path, r-file-browser, r-upload
 - Render 组件：type 为 script.js 中定义的 Render* 函数名
 
 禁止使用的 Element Plus 组件：
@@ -74,9 +75,19 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 - r-table 内部只能放已注册的 r-* 字段组件
 - r-form / r-detail 内部只能放已注册的 r-* 字段组件
 - r-list 内部只能放已注册的 r-* 字段组件
+- r-tabs 内部只能放 r-tab-pane；r-tab-pane 内容区可继续放 r-* 容器、r-* 字段组件或 Render*
+- r-collapse 内部只能放 r-collapse-item；r-collapse-item 内容区可继续放 r-* 容器、r-* 字段组件或 Render*
+- r-dialog / r-drawer 内容区可继续放 r-* 容器、r-* 字段组件或 Render*
+- r-steps 内部只能放 r-step；当前 r-step 内容区可继续放 r-* 容器、r-* 字段组件或 Render*
 - r-section / r-block 可作为分组块容器，内部可继续放 r-* 容器、r-* 字段组件或 Render*
 - r-form / r-detail / r-list / r-section / r-block 这类块状容器默认使用 CSS Grid 24 列、0 水槽
+- r-tab-pane / r-collapse-item 内容区默认也使用 CSS Grid 24 列、0 水槽
+- r-dialog / r-drawer / r-step 内容区默认也使用 CSS Grid 24 列、0 水槽
 - 块状容器子组件可在 props 中使用 colSpan、rowSpan 控制跨列数、跨行数
+- r-list 可在 props.toolbar 中声明列表级动作区，在 props.itemActions 中声明每个列表项的动作区
+- r-tabs / r-collapse 可在 props.toolbar 中声明容器级动作区
+- r-dialog / r-drawer 可在 props.headerActions / footerActions 中声明头部和底部动作区
+- r-steps 可在 props.toolbar 中声明步骤条上方动作区
 - r-section / r-block 可在 props.headerActions 中声明头部动作区，值为组件配置数组，常用 el-button
 - children 中的纯字符串会被渲染为文本节点
 - 不允许使用 {{variable}} 模板插值；动态内容请用 Render* 或 dataKey
@@ -102,6 +113,11 @@ DataKey 规则：
 - 块状容器内字段默认独占 24 列；需要并排时给字段 props.colSpan 赋值，如 12 表示半行
 - 高块可用 props.rowSpan，如 2 表示占两行网格高度
 - r-list 的外层重复项默认也按 24 列栅格排布；用容器 props.itemColSpan、itemRowSpan 控制每个 item 占位
+- 需要标签页分组时，优先用 r-tabs / r-tab-pane，而不是直接拼 el-tabs / el-tab-pane
+- 需要折叠分组时，优先用 r-collapse / r-collapse-item，而不是直接拼 el-collapse / el-collapse-item
+- 需要弹层承载复杂表单或详情时，优先用 r-dialog / r-drawer，而不是直接拼 el-dialog / el-drawer
+- 需要流程分步内容时，优先用 r-steps / r-step，而不是直接拼 el-steps / el-step
+- 需要列表级或项级操作时，优先用 r-list.props.toolbar / itemActions，而不是手工拼按钮容器
 - 需要标题区按钮时，优先用 r-section / r-block.props.headerActions，而不是手工再拼一层标题栏 div
 - 所有 el-table 必须显式声明 border: true
 - 需要当前行高亮时必须显式声明 highlightCurrentRow: true
