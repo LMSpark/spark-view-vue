@@ -10,6 +10,7 @@
 -->
 <template>
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">
+    <!-- 工具栏 -->
     <div v-if="showToolbar" :class="['renderer-table-toolbar', toolbarClassValue]">
       <SparkComponentRenderer
         v-for="(action, index) in visibleToolbarConfigs"
@@ -22,6 +23,7 @@
       />
     </div>
 
+    <!-- 过滤区 -->
     <div v-if="hasFilters" :class="['renderer-table-filters', filterClassValue]">
       <RendererFieldScope
         :model="filterModel"
@@ -42,30 +44,30 @@
       >
         <el-table-columns>
           <!-- 行操作列（左） -->
+          <el-table-column
+            v-if="showRowActionsLeftValue"
+            :label="rowActionsLabelValue"
+            :width="rowActionsWidthValue"
+            :fixed="rowActionsFixedValue"
+            :align="rowActionsAlignValue"
+            :class-name="rowActionsClassValue"
+          >
+            <template #default="{ row, $index }">
+              <div :class="['renderer-table-row-actions', rowActionsClassValue]">
+                <SparkComponentRenderer
+                  v-for="(action, index) in getScopedRowActions({ row, index: $index })"
+                  :key="action.id ?? `r-table-row-action-left-${index}`"
+                  :config="action"
+                />
+                <slot
+                  name="row-actions"
+                  v-bind="getRowActionSlotScope(row, $index)"
+                />
+              </div>
+            </template>
+          </el-table-column>
 
-        <el-table-column
-          v-if="showRowActionsLeftValue"
-          :label="rowActionsLabelValue"
-          :width="rowActionsWidthValue"
-          :fixed="rowActionsFixedValue"
-          :align="rowActionsAlignValue"
-          :class-name="rowActionsClassValue"
-        >
-          <template #default="{ row, $index }">
-            <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-              <SparkComponentRenderer
-                v-for="(action, index) in getScopedRowActions({ row, index: $index })"
-                :key="action.id ?? `r-table-row-action-left-${index}`"
-                :config="action"
-              />
-              <slot
-                name="row-actions"
-                v-bind="getRowActionSlotScope(row, $index)"
-              />
-            </div>
-          </template>
-        </el-table-column>
-
+          <!-- 主数据列 -->
           <template v-if="sparkChildren.length">
             <SparkComponentRenderer
               v-for="(child, i) in sparkChildren"
@@ -73,30 +75,31 @@
               :config="child"
             />
           </template>
-        <!-- Template 驱动 —— 保留 <slot> 向后兼容 -->
-        <slot v-else />
+          <!-- Template 驱动 —— 保留 <slot> 向后兼容 -->
+          <slot v-else />
 
-        <el-table-column
-          v-if="showRowActionsRightValue"
-          :label="rowActionsLabelValue"
-          :width="rowActionsWidthValue"
-          :fixed="rowActionsFixedValue"
-          :align="rowActionsAlignValue"
-          :class-name="rowActionsClassValue"
-        >
-          <template #default="{ row, $index }">
-            <div :class="['renderer-table-row-actions', rowActionsClassValue]">
-              <SparkComponentRenderer
-                v-for="(action, index) in getScopedRowActions({ row, index: $index })"
-                :key="action.id ?? `r-table-row-action-right-${index}`"
-                :config="action"
-              />
-              <slot
-                name="row-actions"
-                v-bind="getRowActionSlotScope(row, $index)"
-              />
-            </div>
-          </template>
+          <!-- 行操作列（右） -->
+          <el-table-column
+            v-if="showRowActionsRightValue"
+            :label="rowActionsLabelValue"
+            :width="rowActionsWidthValue"
+            :fixed="rowActionsFixedValue"
+            :align="rowActionsAlignValue"
+            :class-name="rowActionsClassValue"
+          >
+            <template #default="{ row, $index }">
+              <div :class="['renderer-table-row-actions', rowActionsClassValue]">
+                <SparkComponentRenderer
+                  v-for="(action, index) in getScopedRowActions({ row, index: $index })"
+                  :key="action.id ?? `r-table-row-action-right-${index}`"
+                  :config="action"
+                />
+                <slot
+                  name="row-actions"
+                  v-bind="getRowActionSlotScope(row, $index)"
+                />
+              </div>
+            </template>
           </el-table-column>
         </el-table-columns>
       </el-table>
@@ -179,7 +182,8 @@ const ElTableColumns = defineComponent({
   },
 })
 
-// 配置内容优先从 config.props 取，否则回退到平层 prop
+// ── 输入解析 ──────────────────────────────────────────────────────────────
+
 const effectiveDataKey = computed(() =>
   (props.config?.props?.['dataKey'] as string | undefined) ?? props.dataKey
 )
@@ -200,31 +204,21 @@ const mergedChildren = computed<ComponentConfig[]>(() => {
   if (Array.isArray(configChildren) && configChildren.length > 0) return configChildren
   return resolvedSparkChildren.value
 })
+
 const legacyRowActionConfigs = computed(() =>
   mergedChildren.value.filter(child => /^Render[A-Z]/.test(child.type))
 )
+
 const sparkChildren = computed(() =>
   mergedChildren.value.filter(child => isCollectedTableColumn(child))
 )
-const rowActionsLabelValue = computed(() =>
-  (props.config?.props?.['rowActionsLabel'] as string | undefined) ?? props.rowActionsLabel
-)
-const rowActionsWidthValue = computed(() =>
-  (props.config?.props?.['rowActionsWidth'] as string | number | undefined) ?? props.rowActionsWidth
-)
-const rowActionsAlignValue = computed(() =>
-  (props.config?.props?.['rowActionsAlign'] as 'left' | 'center' | 'right' | undefined) ?? props.rowActionsAlign
-)
-const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
-  const explicit = (props.config?.props?.['rowActionsFixed'] as boolean | 'left' | 'right' | undefined) ?? props.rowActionsFixed
-  if (explicit !== undefined) return explicit
-  return rowActionsPositionValue.value
-})
 
-// 接入 SPARK 能力链
+// ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
+
 const { consume, provide: sparkProvide, logger } = useSparkComponent(
   props.config ?? { type: 'r-table' }
 )
+
 const pageDataSet = consume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
@@ -237,11 +231,14 @@ const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   logPrefix: 'RendererTable',
 })
 
-// 表格行数据：始终从 DataView.rows 读取
+// ── 视图状态 ──────────────────────────────────────────────────────────────
+
 const tableRows = computed(() => resolvedView.value?.rows ?? [])
 const modelPermission = computed<IModelPermission | undefined>(() =>
   (resolvedView.value as IDataSource | null | undefined)?._modelPerm
 )
+
+// ── 工具栏 ────────────────────────────────────────────────────────────────
 
 const {
   toolbarPositionValue,
@@ -256,6 +253,8 @@ const {
   modelPermission,
   slots,
 })
+
+// ── 过滤区与表格数据 ──────────────────────────────────────────────────────
 
 const {
   filterModel,
@@ -279,6 +278,8 @@ const {
 })
 
 const tableData = computed(() => filteredRows.value ?? tableRows.value)
+
+// ── 行操作区 ──────────────────────────────────────────────────────────────
 
 const {
   actionPositionValue: rowActionsPositionValue,
@@ -304,6 +305,7 @@ const {
     scopedProps: { row, rowIndex: index, $index: index },
   }),
 })
+
 const {
   showActionsLeftValue: showRowActionsLeftValue,
   showActionsRightValue: showRowActionsRightValue,
@@ -314,6 +316,26 @@ const {
   showActionsLeft: showRowActionsLeft,
   showActionsRight: showRowActionsRight,
 })
+
+const rowActionsLabelValue = computed(() =>
+  (props.config?.props?.['rowActionsLabel'] as string | undefined) ?? props.rowActionsLabel
+)
+
+const rowActionsWidthValue = computed(() =>
+  (props.config?.props?.['rowActionsWidth'] as string | number | undefined) ?? props.rowActionsWidth
+)
+
+const rowActionsAlignValue = computed(() =>
+  (props.config?.props?.['rowActionsAlign'] as 'left' | 'center' | 'right' | undefined) ?? props.rowActionsAlign
+)
+
+const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
+  const explicit = (props.config?.props?.['rowActionsFixed'] as boolean | 'left' | 'right' | undefined) ?? props.rowActionsFixed
+  if (explicit !== undefined) return explicit
+  return rowActionsPositionValue.value
+})
+
+// ── 槽位作用域 ────────────────────────────────────────────────────────────
 
 function getToolbarSlotScope() {
   return createToolbarSlotScope({
@@ -333,21 +355,22 @@ function getRowActionSlotScope(row: IDataRow, index: number) {
   })
 }
 
+// ── 子节点分类 ────────────────────────────────────────────────────────────
+
 function isCollectedTableColumn(config: ComponentConfig): boolean {
   if (/^Render[A-Z]/.test(config.type)) return false
   if (config.type === 'el-table-column') return true
   return config.type.startsWith('r-') && typeof config.name === 'string' && config.name.length > 0
 }
 
-// 向字段子组件提供渲染上下文
+// ── 字段上下文与事件桥接 ──────────────────────────────────────────────────
+
 sparkProvide(FIELD_CONTEXT, 'table')
 
-// ── el-table currentChange → DataView.selection.setCurrentRow ──
 function handleCurrentChange(currentRow: IDataRow | null) {
   resolvedView.value?.selection.setCurrentRow(currentRow ?? null)
 }
 
-// ── el-table selectionChange → DataView.selection.setSelectedRows ──
 function handleSelectionChange(selection: IDataRow[]) {
   resolvedView.value?.selection.setSelectedRows(Array.isArray(selection) ? selection : [])
 }
