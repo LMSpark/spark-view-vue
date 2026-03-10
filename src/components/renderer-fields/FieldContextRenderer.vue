@@ -21,8 +21,13 @@
     </el-table-column>
   </template>
 
-  <!-- form 上下文：el-form-item -->
-  <el-form-item v-else-if="context === 'form' && !isCurrentFieldHidden" :label="displayLabel">
+  <!-- form 上下文：el-form-item（携带列级验证规则） -->
+  <el-form-item
+    v-else-if="context === 'form' && !isCurrentFieldHidden"
+    :label="displayLabel"
+    :prop="fieldName"
+    :rules="validationRules"
+  >
     <slot name="form" />
   </el-form-item>
 
@@ -52,6 +57,7 @@
 import { SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataRow } from '@spark-view/spark-data'
+import type { FormItemRule } from './columnFormRules'
 
 interface Props {
   context: string
@@ -63,6 +69,7 @@ interface Props {
   currentDisplayValue: string
   isTableCellHidden: (row: IDataRow) => boolean
   getTableCellDisplayValue: (row: IDataRow) => string
+  validationRules: FormItemRule[]
 }
 
 defineProps<Props>()

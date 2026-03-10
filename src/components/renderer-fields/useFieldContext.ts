@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataRow } from '@spark-view/spark-data'
+import type { FormItemRule } from './columnFormRules'
 
 export interface FieldContextProps {
   context: string
@@ -13,6 +14,7 @@ export interface FieldContextProps {
   currentDisplayValue: string
   isTableCellHidden: (row: IDataRow) => boolean
   getTableCellDisplayValue: (row: IDataRow) => string
+  validationRules: FormItemRule[]
 }
 
 /** useFieldPermission / useOptionField 返回值中 FieldContextRenderer 所需的子集 */
@@ -24,6 +26,7 @@ interface FieldPermissionForContext {
   currentDisplayValue: ComputedRef<string>
   isTableCellHidden: (row: IDataRow) => boolean
   getTableCellDisplayValue: (row: IDataRow) => string
+  validationRules: ComputedRef<FormItemRule[]>
 }
 
 /**
@@ -46,5 +49,6 @@ export function useFieldContext(
     currentDisplayValue: permission.currentDisplayValue.value,
     isTableCellHidden: permission.isTableCellHidden,
     getTableCellDisplayValue: permission.getTableCellDisplayValue,
+    validationRules: permission.validationRules.value,
   }))
 }

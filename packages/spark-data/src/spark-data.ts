@@ -8,6 +8,7 @@ import { DataTable } from './data-table'
 import { DataView } from './data-view'
 import { CrudService } from './crud-service'
 import * as DataKeyModule from './core/data-key'
+import * as ColumnValidationModule from './column-validation'
 import type { DataColumn, CrudApi, DataRelation, DependencyType, FlatTreeNode, AggregateColumnConfig, TreeConfig, FilterExpression, SortExpression } from './types'
 import type { RequestConfig } from '@spark-view/spark-utils'
 
@@ -191,5 +192,13 @@ export namespace SparkData {
 
   /** 从描述符提取视图唯一键 */
   export const getViewKey = DataKeyModule.getViewKey
+
+  // ===== 列验证规则提取 =====
+
+  /** 从 DataColumn 提取框架无关的验证规则描述符 */
+  export const extractColumnRules = ColumnValidationModule.extractColumnRules
+
+  /** 判断列是否为必填 */
+  export const isColumnRequired = ColumnValidationModule.isColumnRequired
 
 }
