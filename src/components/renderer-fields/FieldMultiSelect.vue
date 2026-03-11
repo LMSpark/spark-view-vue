@@ -7,9 +7,10 @@
         :clearable="clearable"
         :filterable="filterable"
         :disabled="!isCurrentFieldEditable"
+        :collapse-tags="collapseTags"
+        :collapse-tags-tooltip="collapseTagsTooltip"
+        :max-collapse-tags="maxCollapseTags"
         multiple
-        collapse-tags
-        collapse-tags-tooltip
         @update:model-value="handleChange"
       >
         <el-option
@@ -45,12 +46,18 @@ interface Props {
   placeholder?: string
   clearable?: boolean
   filterable?: boolean
+  collapseTags?: boolean
+  collapseTagsTooltip?: boolean
+  maxCollapseTags?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: '请选择',
   clearable: true,
   filterable: false,
+  collapseTags: false,
+  collapseTagsTooltip: false,
+  maxCollapseTags: 1,
 })
 
 const emit = defineEmits<{

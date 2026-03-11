@@ -211,6 +211,8 @@ async function startApp() {
     const epConfig = appConfig.plugins['element-plus']
     if (epConfig === true || (typeof epConfig === 'object' && epConfig.enabled === true)) {
       await import('element-plus/dist/index.css')
+      // Element Plus 暗黑模式 CSS 变量（html.dark 时自动覆盖）
+      await import('element-plus/theme-chalk/dark/css-vars.css')
     }
     const vxeConfig = appConfig.plugins['vxe-table']
     if (vxeConfig === true || (typeof vxeConfig === 'object' && vxeConfig.enabled === true)) {
@@ -233,6 +235,9 @@ async function startApp() {
       
       // === UI 插件（动态加载）===
       plugins,
+
+      // === CSS 主题（light / dark / auto 三模式） ===
+      theme: true,
       
       // === SPARK 组件系统配置（从iSON 加载）===
       spark: {

@@ -192,8 +192,14 @@ export class FileLoader {
           }
         }
         const msg = toErrorMessage(error)
-        // 同时传入原始 error 对象，使浏览器控制台能展展完整 stack trace
-        logger.error('文件加载或 transform 失败', { fileName, error: msg }, error)
+        // 404 是可选文件（如 style.css）的正常情况，降级为 debug 避免控制台红色错误
+        const status = (error as { status?: number }).status
+        if (status === 404) {
+          logger.debug('文件不存在（可选）', { fileName, status })
+        } else {
+          // 同时传入原始 error 对象，使浏览器控制台能展展完整 stack trace
+          logger.error('文件加载或 transform 失败', { fileName, error: msg }, error)
+        }
         return { success: false, error: msg, fromCache: false }
       }
     }

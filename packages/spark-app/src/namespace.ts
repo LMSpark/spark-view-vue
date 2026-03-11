@@ -19,6 +19,7 @@ import { createDynamicRouter, setupDynamicRoutes } from './router/dynamic'
 import { setupErrorHandler } from './error/handler'
 import { loadConfig } from './config'
 import { createAppContext } from './context/AppContext'
+import { createThemeService } from './theme'
 
 /**
  * SparkApp 命名空间
@@ -122,7 +123,21 @@ export const SparkApp = {
    * 
    * @see useAppContext from '@spark-view/spark-app/composables' - 组件中使用
    */
-  createAppContext
+  createAppContext,
+
+  /**
+   * 创建主题服务
+   *
+   * 基于 @vueuse/core useColorMode，支持 light / dark / auto 三模式。
+   * Element Plus 暗黑模式通过 html.dark class 自动切换。
+   *
+   * @example
+   * ```ts
+   * const theme = SparkApp.createThemeService({ initialMode: 'auto' })
+   * theme.setMode('dark')
+   * ```
+   */
+  createThemeService
 }
 
 export default SparkApp

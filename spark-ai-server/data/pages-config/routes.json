@@ -1,272 +1,249 @@
-[
-  {
-    "path": "/",
-    "name": "home",
-    "pageId": "home",
-    "meta": {
-      "title": "工作台",
-      "icon": "📊"
-    }
-  },
-  {
-    "path": "/vxe-demo",
-    "name": "vxe-demo",
-    "pageId": "vxe-demo",
-    "meta": {
-      "title": "VXE 表格演示",
-      "icon": "📈"
-    }
-  },
-  {
-    "path": "/async-demo",
-    "name": "async-demo",
-    "pageId": "async-demo",
-    "meta": {
-      "title": "异步数据演示",
-      "icon": "🔄"
-    }
-  },
-  {
-    "path": "/renderer-demo",
-    "name": "renderer-demo",
-    "pageId": "renderer-demo",
-    "meta": {
-      "title": "Renderer 架构演示",
-      "icon": "🎨"
-    }
-  },
-  {
-    "path": "/section-grid-demo",
-    "name": "section-grid-demo",
-    "pageId": "section-grid-demo",
-    "meta": {
-      "title": "Section 栅格演示",
-      "icon": "🧩"
-    }
-  },
-  {
-    "path": "/dataset-demo",
-    "name": "dataset-demo",
-    "pageId": "dataset-demo",
-    "meta": {
-      "title": "DataSet 主从表",
-      "icon": "🔗"
-    }
-  },
-  {
-    "path": "/cascade-demo",
-    "name": "cascade-demo",
-    "pageId": "cascade-demo",
-    "meta": {
-      "title": "级联操作演示",
-      "icon": "⚡"
-    }
-  },
-  {
-    "path": "/smart-load",
-    "name": "smart-load",
-    "pageId": "smart-load",
-    "meta": {
-      "title": "智能依赖加载",
-      "icon": "🧠"
-    }
-  },
-  {
-    "path": "/master-detail",
-    "name": "master-detail",
-    "pageId": "master-detail",
-    "meta": {
-      "title": "Master-Detail 演示",
-      "icon": "🔗"
-    }
-  },
-  {
-    "path": "/tree-demo",
-    "name": "tree-demo",
-    "pageId": "tree-demo",
-    "meta": {
-      "title": "树形结构演示",
-      "icon": "🌳"
-    }
-  },
-  {
-    "path": "/treetable-demo",
-    "name": "treetable-demo",
-    "pageId": "treetable-demo",
-    "meta": {
-      "title": "TreeTable 演示",
-      "icon": "🌲"
-    }
-  },
-  {
-    "path": "/tree-node-scope-demo",
-    "name": "tree-node-scope-demo",
-    "pageId": "tree-node-scope-demo",
-    "meta": {
-      "title": "Tree Node Scope 演示",
-      "icon": "🌿"
-    }
-  },
-  {
-    "path": "/users",
-    "name": "users",
-    "pageId": "users",
-    "meta": {
-      "title": "用户管理",
-      "icon": "👥"
-    }
-  },
-  {
-    "path": "/permission-render",
-    "name": "permission-render",
-    "pageId": "permission-render",
-    "meta": {
-      "title": "数据驱动 UI 渲染",
-      "icon": "🎨"
-    }
-  },
-  {
-    "path": "/el-table-demo",
-    "name": "el-table-demo",
-    "pageId": "el-table-demo",
-    "meta": {
-      "title": "el-table 操作列演示",
-      "icon": "📋"
-    }
-  },
-  {
-    "path": "/formcreate-api",
-    "name": "formcreate-api",
-    "pageId": "formcreate-api",
-    "meta": {
-      "title": "Form-Create API",
-      "icon": "🔧"
-    }
-  },
-  {
-    "path": "/settings",
-    "name": "settings",
-    "pageId": "settings",
-    "meta": {
-      "title": "系统设置",
-      "icon": "⚙️"
-    }
-  },
-  {
-    "path": "/test-order",
-    "name": "test-order",
-    "pageId": "test-order",
-    "meta": {
-      "title": "test-order",
-      "icon": "🤖"
-    }
-  },
-  {
-    "path": "/ai-studio",
-    "name": "ai-studio",
-    "pageId": "ai-studio",
-    "meta": {
-      "title": "AI Studio",
-      "icon": "🤖"
-    }
-  },
-  {
-    "path": "/my-page",
-    "name": "my-page",
-    "pageId": "my-page",
-    "meta": {
-      "title": "my-page",
-      "icon": "🤖"
-    }
-  },
-  {
-    "path": "/ai-test",
-    "name": "ai-test",
-    "pageId": "ai-test",
-    "meta": {
-      "title": "AI 迭代测试",
-      "icon": "🧪"
-    }
-  },
-  {
-    "path": "/123",
-    "name": "123",
-    "pageId": "123",
-    "meta": {
-      "icon": "🤖",
-      "title": "123"
-    }
-  },
-  {
-    "path": "/1234",
-    "name": "1234",
-    "pageId": "1234",
-    "meta": {
-      "icon": "🤖",
-      "title": "1234"
-    }
-  },
-  {
-    "path": "/125",
-    "name": "125",
-    "pageId": "125",
-    "meta": {
-      "icon": "🤖",
-      "title": "125"
-    }
-  },
-  {
-    "path": "/AAAA",
-    "name": "AAAA",
-    "pageId": "AAAA",
-    "meta": {
-      "title": "AAAA",
-      "icon": "🤖"
-    }
-  },
-  {
-    "path": "/ABC",
-    "name": "ABC",
-    "pageId": "ABC",
-    "meta": {
-      "title": "ABC",
-      "icon": "🤖"
-    }
-  },
-  {
-    "path": "/ABCD",
-    "name": "ABCD",
-    "pageId": "ABCD",
-    "meta": {
-      "icon": "🤖",
-      "title": "ABCD"
-    }
-  },
-  {
-    "path": "/A",
-    "name": "A",
-    "pageId": "A",
-    "meta": {
-      "icon": "🤖",
-      "title": "A"
-    }
-  },
-  {
-    "path": "/page-manager",
-    "name": "page-manager",
-    "pageId": "page-manager",
-    "meta": {
-      "icon": "🤖",
-      "title": "page-manager"
-    }
-  },
-  {
-    "path": "/my-page-1",
-    "name": "my-page-1",
-    "pageId": "my-page-1",
-    "meta": {
-      "icon": "🤖",
-      "title": "my-page-1"
-    }
+[ {
+  "path" : "/",
+  "name" : "home",
+  "pageId" : "home",
+  "meta" : {
+    "title" : "工作台",
+    "icon" : "📊"
   }
-]
+}, {
+  "path" : "/vxe-demo",
+  "name" : "vxe-demo",
+  "pageId" : "vxe-demo",
+  "meta" : {
+    "title" : "VXE 表格演示",
+    "icon" : "📈"
+  }
+}, {
+  "path" : "/async-demo",
+  "name" : "async-demo",
+  "pageId" : "async-demo",
+  "meta" : {
+    "title" : "异步数据演示",
+    "icon" : "🔄"
+  }
+}, {
+  "path" : "/renderer-demo",
+  "name" : "renderer-demo",
+  "pageId" : "renderer-demo",
+  "meta" : {
+    "title" : "Renderer 架构演示",
+    "icon" : "🎨"
+  }
+}, {
+  "path" : "/section-grid-demo",
+  "name" : "section-grid-demo",
+  "pageId" : "section-grid-demo",
+  "meta" : {
+    "title" : "Section 栅格演示",
+    "icon" : "🧩"
+  }
+}, {
+  "path" : "/dataset-demo",
+  "name" : "dataset-demo",
+  "pageId" : "dataset-demo",
+  "meta" : {
+    "title" : "DataSet 主从表",
+    "icon" : "🔗"
+  }
+}, {
+  "path" : "/cascade-demo",
+  "name" : "cascade-demo",
+  "pageId" : "cascade-demo",
+  "meta" : {
+    "title" : "级联操作演示",
+    "icon" : "⚡"
+  }
+}, {
+  "path" : "/smart-load",
+  "name" : "smart-load",
+  "pageId" : "smart-load",
+  "meta" : {
+    "title" : "智能依赖加载",
+    "icon" : "🧠"
+  }
+}, {
+  "path" : "/master-detail",
+  "name" : "master-detail",
+  "pageId" : "master-detail",
+  "meta" : {
+    "title" : "Master-Detail 演示",
+    "icon" : "🔗"
+  }
+}, {
+  "path" : "/tree-demo",
+  "name" : "tree-demo",
+  "pageId" : "tree-demo",
+  "meta" : {
+    "title" : "树形结构演示",
+    "icon" : "🌳"
+  }
+}, {
+  "path" : "/treetable-demo",
+  "name" : "treetable-demo",
+  "pageId" : "treetable-demo",
+  "meta" : {
+    "title" : "TreeTable 演示",
+    "icon" : "🌲"
+  }
+}, {
+  "path" : "/tree-node-scope-demo",
+  "name" : "tree-node-scope-demo",
+  "pageId" : "tree-node-scope-demo",
+  "meta" : {
+    "title" : "Tree Node Scope 演示",
+    "icon" : "🌿"
+  }
+}, {
+  "path" : "/users",
+  "name" : "users",
+  "pageId" : "users",
+  "meta" : {
+    "title" : "用户管理",
+    "icon" : "👥"
+  }
+}, {
+  "path" : "/permission-render",
+  "name" : "permission-render",
+  "pageId" : "permission-render",
+  "meta" : {
+    "title" : "数据驱动 UI 渲染",
+    "icon" : "🎨"
+  }
+}, {
+  "path" : "/el-table-demo",
+  "name" : "el-table-demo",
+  "pageId" : "el-table-demo",
+  "meta" : {
+    "title" : "el-table 操作列演示",
+    "icon" : "📋"
+  }
+}, {
+  "path" : "/formcreate-api",
+  "name" : "formcreate-api",
+  "pageId" : "formcreate-api",
+  "meta" : {
+    "title" : "Form-Create API",
+    "icon" : "🔧"
+  }
+}, {
+  "path" : "/settings",
+  "name" : "settings",
+  "pageId" : "settings",
+  "meta" : {
+    "title" : "系统设置",
+    "icon" : "⚙️"
+  }
+}, {
+  "path" : "/test-order",
+  "name" : "test-order",
+  "pageId" : "test-order",
+  "meta" : {
+    "title" : "test-order",
+    "icon" : "🤖"
+  }
+}, {
+  "path" : "/ai-studio",
+  "name" : "ai-studio",
+  "pageId" : "ai-studio",
+  "meta" : {
+    "title" : "AI Studio",
+    "icon" : "🤖"
+  }
+}, {
+  "path" : "/my-page",
+  "name" : "my-page",
+  "pageId" : "my-page",
+  "meta" : {
+    "title" : "my-page",
+    "icon" : "🤖"
+  }
+}, {
+  "path" : "/ai-test",
+  "name" : "ai-test",
+  "pageId" : "ai-test",
+  "meta" : {
+    "title" : "AI 迭代测试",
+    "icon" : "🧪"
+  }
+}, {
+  "path" : "/123",
+  "name" : "123",
+  "pageId" : "123",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "123"
+  }
+}, {
+  "path" : "/1234",
+  "name" : "1234",
+  "pageId" : "1234",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "1234"
+  }
+}, {
+  "path" : "/125",
+  "name" : "125",
+  "pageId" : "125",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "125"
+  }
+}, {
+  "path" : "/AAAA",
+  "name" : "AAAA",
+  "pageId" : "AAAA",
+  "meta" : {
+    "title" : "AAAA",
+    "icon" : "🤖"
+  }
+}, {
+  "path" : "/ABC",
+  "name" : "ABC",
+  "pageId" : "ABC",
+  "meta" : {
+    "title" : "ABC",
+    "icon" : "🤖"
+  }
+}, {
+  "path" : "/ABCD",
+  "name" : "ABCD",
+  "pageId" : "ABCD",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "ABCD"
+  }
+}, {
+  "path" : "/A",
+  "name" : "A",
+  "pageId" : "A",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "A"
+  }
+}, {
+  "path" : "/page-manager",
+  "name" : "page-manager",
+  "pageId" : "page-manager",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "page-manager"
+  }
+}, {
+  "path" : "/my-page-1",
+  "name" : "my-page-1",
+  "pageId" : "my-page-1",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "my-page-1"
+  }
+}, {
+  "path" : "/filter-demo",
+  "name" : "filter-demo",
+  "pageId" : "filter-demo",
+  "meta" : {
+    "icon" : "🤖",
+    "title" : "filter-demo"
+  }
+} ]

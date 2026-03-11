@@ -6,7 +6,7 @@
 /**
  * 日志级别（从 spark-utils 统一导入）
  */
-import type { LogLevel } from '@spark-view/spark-utils'
+import type { LogLevel, IThemeCapability } from '@spark-view/spark-utils'
 import type { App } from 'vue'
 import type { Router } from 'vue-router'
 import type { AuthConfig } from '../auth'
@@ -115,6 +115,8 @@ export interface BootstrapContext extends AppContext {
   app: App
   /** Vue Router 实例 */
   router: Router
+  /** 主题服务（仅在启用 theme 选项时存在） */
+  theme?: IThemeCapability
 }
 
 /**
@@ -131,6 +133,8 @@ export interface BootstrapOptions {
   auth?: AuthConfig
   /** 挂载目标元素选择器（默认 '#app'） */
   mountTarget?: string
+  /** 主题服务实例（由 start() 创建并传入，或手动传入） */
+  themeService?: IThemeCapability
   /** 挂载前钩子 */
   beforeMount?: (context: BootstrapContext) => void | Promise<void>
   /** 挂载后钩子 */

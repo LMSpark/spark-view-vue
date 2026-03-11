@@ -33,7 +33,7 @@ interface Props {
   label?: string
   width?: number
   sparkChildren?: ComponentConfig[]
-  modelValue?: string | number | boolean
+  modelValue?: string | number
   options?: unknown[]
   optionLabelField?: string
   optionValueField?: string
@@ -49,10 +49,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | number | boolean]
+  'update:modelValue': [value: string | number]
 }>()
 
-const optionResult = useOptionField<string | number | boolean>({
+const optionResult = useOptionField<string | number>({
   props,
   type: 'r-select',
   fallbackValue: '',
@@ -61,7 +61,7 @@ const optionResult = useOptionField<string | number | boolean>({
 const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
 const fieldCtx = useFieldContext(props, optionResult)
 
-function handleChange(value: string | number | boolean): void {
+function handleChange(value: string | number): void {
   emit('update:modelValue', value)
   syncValue(value)
 }

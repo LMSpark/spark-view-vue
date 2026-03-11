@@ -140,9 +140,21 @@ const RendererFieldScopeStub = defineComponent({
       type: Array,
       required: true,
     },
+    autoFitMinWidth: {
+      type: String,
+      default: '',
+    },
+    defaultColSpan: {
+      type: Number,
+      default: 24,
+    },
   },
   setup(props) {
-    return () => h('div', { class: 'renderer-field-scope-stub' },
+    return () => h('div', {
+      class: 'renderer-field-scope-stub',
+      'data-auto-fit-min-width': props.autoFitMinWidth,
+      'data-default-col-span': String(props.defaultColSpan),
+    },
       ((props.configs as unknown[]) as Array<Record<string, unknown>>).map((config) => {
         const fieldName = String(config['name'] ?? '')
         const model = props.model as Record<string, unknown>
@@ -599,8 +611,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const filterInput = wrapper.find('.renderer-filter-input[data-name="name"]')
+    const filterScope = wrapper.find('.renderer-field-scope-stub')
     expect(filterInput.exists()).toBe(true)
     expect(filterInput.attributes('data-type')).toBe('r-text')
+    expect(filterScope.attributes('data-auto-fit-min-width')).toBe('220px')
+    expect(filterScope.attributes('data-default-col-span')).toBe('1')
     expect(wrapper.find('.renderer-filter-input[data-name="age"]').exists()).toBe(false)
 
     await filterInput.setValue('Ali')
@@ -715,5 +730,61 @@ describe('RendererTable - DataView as single data intermediary', () => {
     await nextTick()
     expect(vm.tableData).toHaveLength(1)
     expect(vm.tableData[0]?.['status']).toBe('done')
+  })
+
+  it('should support collapsible filter panel and default collapsed state', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Filter-Collapsible',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'name', type: 'string' as const }],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        filterColumns: ['name'],
+        filterCollapsible: true,
+        filterDefaultCollapsed: true,
+        config: {
+          type: 'r-table',
+          children: [
+            { type: 'r-text', name: 'name', props: { label: '姓名' } },
+          ],
+        },
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-tag': defineComponent({
+            setup(_, { slots }) {
+              return () => h('span', { class: 'el-tag-stub' }, slots['default']?.())
+            },
+          }),
+          SparkComponentRenderer: SparkActionStub,
+          RendererFieldScope: RendererFieldScopeStub,
+        },
+      },
+    })
+
+    const toggle = wrapper.find('.renderer-table-filters__toggle')
+    expect(toggle.exists()).toBe(true)
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+    const filterContent = wrapper.find('.renderer-table-filters__content')
+    expect(filterContent.exists()).toBe(true)
+    expect((filterContent.element as HTMLElement).style.display).toBe('none')
+
+    await toggle.trigger('click')
+    await nextTick()
+
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    expect((filterContent.element as HTMLElement).style.display).not.toBe('none')
+    expect(wrapper.find('.renderer-field-scope-stub').exists()).toBe(true)
+    expect(wrapper.find('.renderer-filter-input[data-name="name"]').exists()).toBe(true)
   })
 })

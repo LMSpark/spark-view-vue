@@ -197,11 +197,14 @@
  * @author SPARK Team
  * @since 1.0.0
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useTheme } from '@spark-view/spark-app'
+import type { ThemeMode } from '@spark-view/spark-app'
 
 const router = useRouter()
+const theme = useTheme()
 
 // 设置数据
 const settings = ref({
@@ -301,6 +304,17 @@ onMounted(() => {
     } catch (e) {
       console.warn('加载保存的设置失败:', e)
     }
+  }
+  // 同步主题服务当前状态到 UI
+  if (theme) {
+    settings.value.theme = theme.mode
+  }
+})
+
+// 主题模式变更时实时同步到 ThemeService
+watch(() => settings.value.theme, (newMode) => {
+  if (theme && newMode) {
+    theme.setMode(newMode as ThemeMode)
   }
 })
 </script>

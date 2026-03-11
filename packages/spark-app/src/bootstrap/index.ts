@@ -49,6 +49,7 @@
 import type { App as _App } from 'vue'
 import type { Router as _Router } from 'vue-router'
 import type { BootstrapOptions, AppContext, AppConfig } from '../types'
+import { THEME_INJECTION_KEY } from '../theme'
 import { setupRouterGuards } from '../router/guards'
 import { setupErrorHandler } from '../error/handler'
 import { createLogger } from '../logger'
@@ -218,6 +219,11 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
 
     logPhase('SERVICES', 'SPARK 能力系统服务已就绪')
 
+    // 注册主题服务到 Vue DI（供非 SPARK 组件使用 useTheme()）
+    if (options.themeService) {
+      app.provide(THEME_INJECTION_KEY, options.themeService)
+    }
+
     // =========================================================================
     // 阶段 5: 设置路由守卫
     // =========================================================================
@@ -236,7 +242,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // 阶段 6: 挂载前钩子
     // =========================================================================
     // 构建扩展的 Bootstrap Context（包含 app 和 router 实例），供前后挂载钩子共用
-    const bootstrapContext = { ...appContext, app, router }
+    const bootstrapContext = { ...appContext, app, router, ...(options.themeService ? { theme: options.themeService } : {}) }
     if (beforeMount) {
       await beforeMount(bootstrapContext)
     }

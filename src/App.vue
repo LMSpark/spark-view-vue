@@ -1,51 +1,145 @@
 <template>
-  <div class="app-container">
+  <AppLayout
+    :header-first="headerFirst"
+    :show-header="true"
+    :show-breadcrumb="mode === 'single'"
+    :show-tab-bar="mode === 'multi'"
+    :show-footer="showFooter"
+    :show-sidebar="nav.regionVisibility.value.sidebar"
+    :show-right-sidebar="false"
+    :collapsed="sidebarCollapsed"
+  >
     <!-- 左侧边栏 -->
-    <aside class="sidebar">
-      <h2 class="sidebar-title">SPARK 管理后台</h2>
-      <el-menu
-        :default-active="$route.path"
-        background-color="#001529"
-        text-color="#fff"
-        active-text-color="#1890ff"
-        router
+    <template #sidebar>
+      <AppSidebar
+        :title="'SPARK'"
+        :collapsed="sidebarCollapsed"
+        :items="nav.regionItems.value.sidebar"
+      />
+    </template>
+
+    <!-- 顶部首 -->
+    <template #header>
+      <AppHeader
+        title="SPARK 管理后台"
+        :is-dark="isDark"
+        :collapsed="sidebarCollapsed"
+        :collapsible="nav.regionVisibility.value.sidebar"
+        :notification-count="notificationCount"
+        username="管理员"
+        @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
+        @toggle-theme="toggleTheme"
+        @user-command="handleUserCommand"
       >
-        <el-menu-item 
-          v-for="route in menuRoutes" 
-          :key="route.path"
-          :index="route.path"
-        >
-          <template #default>
-            <span>{{ route.meta?.['icon'] }} {{ route.meta?.['title'] }}</span>
-          </template>
-        </el-menu-item>
-      </el-menu>
-    </aside>
+        <template #nav>
+          <NavHeaderBar
+            v-if="nav.regionVisibility.value.header"
+            :items="nav.regionItems.value.header"
+          />
+        </template>
+      </AppHeader>
+    </template>
+
+    <!-- 面包屑（单页模式） -->
+    <template #breadcrumb>
+      <AppBreadcrumb>
+        <template v-if="nav.moduleContext.value" #trailing>
+          <NavContextSelector :state="nav.moduleContext.value" />
+        </template>
+      </AppBreadcrumb>
+    </template>
+
+    <!-- 标签栏（多页模式） -->
+    <template #tab-bar>
+      <AppTabBar>
+        <template v-if="nav.moduleContext.value" #trailing>
+          <NavContextSelector :state="nav.moduleContext.value" />
+        </template>
+      </AppTabBar>
+    </template>
 
     <!-- 主内容区 -->
-    <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" :key="route.fullPath + '_' + pageRefreshKey" />
-        </transition>
-      </router-view>
-    </main>
+    <router-view v-slot="{ Component }">
+      <keep-alive v-if="mode === 'multi'" :max="10">
+        <component :is="Component" :key="route.path" />
+      </keep-alive>
+      <transition v-else name="fade" mode="out-in">
+        <component :is="Component" :key="route.fullPath + '_' + pageRefreshKey" />
+      </transition>
+    </router-view>
 
-    <!-- AI 聊天浮窗（仅配置启用时加载） -->
-    <AiChatPanel v-if="enableAI" />
+    <!-- 底部脚 -->
+    <template #footer>
+      <AppFooter />
+    </template>
+  </AppLayout>
 
-    <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
-    <AppPageUiHost />
-  </div>
+  <!-- AI 聊天浮窗（仅配置启用时加载） -->
+  <AiChatPanel v-if="enableAI" />
+
+  <!-- 主题配置抽屉 -->
+  <ThemeConfigurator
+    v-model="showConfigurator"
+    v-model:header-first="headerFirst"
+    v-model:collapsed="sidebarCollapsed"
+    v-model:show-footer="showFooter"
+    :mode="mode"
+    @update:mode="setMode"
+  />
+
+  <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
+  <AppPageUiHost />
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
+import { useTheme } from '@spark-view/spark-app'
 import AppPageUiHost from '@/app-services/page-ui/AppPageUiHost.vue'
 import { pageRefreshKey } from '@/services/ai-loop'
+import AppLayout from '@/layout/AppLayout.vue'
+import AppHeader from '@/layout/AppHeader.vue'
+import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
+import AppFooter from '@/layout/AppFooter.vue'
+import AppSidebar from '@/layout/AppSidebar.vue'
+import AppTabBar from '@/layout/AppTabBar.vue'
+import NavHeaderBar from '@/layout/NavHeaderBar.vue'
+import NavContextSelector from '@/layout/NavContextSelector.vue'
+import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
+import { useTabPages } from '@/layout/useTabPages'
+import { useColorScheme } from '@/layout/useColorScheme'
+import { useNavigation } from '@/layout/useNavigation'
+import { demoNavRoot } from '@/layout/demo-nav'
 
 const route = useRoute()
+const theme = useTheme()
+const isDark = computed(() => theme?.isDark ?? false)
+const toggleTheme = () => theme?.toggle()
+const sidebarCollapsed = ref(false)
+const headerFirst = ref(false)
+const showFooter = ref(true)
+const showConfigurator = ref(false)
+
+const { mode, setMode } = useTabPages()
+useColorScheme()
+
+/* ── 导航模型 ── */
+const nav = useNavigation(demoNavRoot)
+
+/* ── 通知（示例数据） ── */
+const notificationCount = ref(5)
+
+/* ── 用户菜单命令 ── */
+function handleUserCommand(command: string) {
+  switch (command) {
+    case 'settings':
+      showConfigurator.value = true
+      break
+    case 'logout':
+      // TODO: 接入真实登出
+      break
+  }
+}
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
@@ -64,57 +158,9 @@ onMounted(() => {
     setTimeout(() => clearInterval(timer), 5000)
   }
 })
-
-const router = useRouter()
-const isRoutesLoaded = ref(false)
-
-// 等待路由加载完成
-onMounted(() => {
-  setTimeout(() => {
-    isRoutesLoaded.value = true
-  }, 100)
-})
-
-// 从路由中获取菜单列表
-const menuRoutes = computed(() => {
-  if (!isRoutesLoaded.value) return []
-  
-  return router.getRoutes()
-    .filter(route => route.meta?.['title'] && route.path !== '/')
-    .sort((a, b) => a.path.localeCompare(b.path))
-})
 </script>
 
 <style scoped>
-.app-container {
-  display: flex;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 240px;
-  background: #001529;
-  color: #fff;
-  padding: 20px;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-}
-
-.sidebar-title {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 24px 0;
-  padding: 0 0 16px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.main-content {
-  flex: 1;
-  padding: 24px;
-  background: #f0f2f5;
-  overflow: auto;
-}
-
 /* 页面切换动画 */
 .fade-enter-active,
 .fade-leave-active {

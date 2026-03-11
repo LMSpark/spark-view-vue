@@ -335,7 +335,28 @@ export const GRID_EVENTS = defineCapability<IEventEmitter>('spark:capability:gri
  */
 export const ROW_EVENTS = defineCapability<IEventEmitter>('spark:capability:row-events')
 
-// ==================== 能力类型映射表（可扩展） ====================
+// ==================== 主题 ====================
+
+/** 主题模式 */
+export type ThemeMode = 'light' | 'dark' | 'auto'
+
+/** 主题能力接口 */
+export interface IThemeCapability {
+  /** 当前实际主题（resolved：auto 根据系统偏好解析为 light 或 dark） */
+  readonly current: 'light' | 'dark'
+  /** 用户设置的模式（可能是 auto） */
+  readonly mode: ThemeMode
+  /** 设置主题模式 */
+  setMode(mode: ThemeMode): void
+  /** 当前是否为暗色主题 */
+  readonly isDark: boolean
+  /** 切换亮/暗（auto 下切换为 dark↔light） */
+  toggle(): void
+}
+
+export const THEME = defineCapability<IThemeCapability>('spark:capability:theme')
+
+// ==================== 能力类型映射表（可扩展） ==
 
 /**
  * 能力名称 → 实现类型的映射表。
@@ -365,6 +386,7 @@ export interface CapabilityTypeMap {
   'spark:capability:row-data':     IRowDataCapability
   'spark:capability:grid-events':  IEventEmitter
   'spark:capability:row-events':   IEventEmitter
+  'spark:capability:theme':        IThemeCapability
 }
 
 // === 业务能力扩展点（plop spark-capability 生成的自定义能力在此追加） ===
