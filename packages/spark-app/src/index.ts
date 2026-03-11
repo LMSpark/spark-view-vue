@@ -145,3 +145,58 @@ export type { AutoRegisterOptions } from './auto-register'
 export {
   useSparkRegistry
 } from './composables/useServices'
+
+// ── Navigation Model ──
+export {
+  useNav,
+  useNavigation,
+} from './navigation/useNavigation'
+export { useTabPages } from './navigation/useTabPages'
+export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from './navigation/useColorScheme'
+export { NAV_KEY } from './navigation/nav-types'
+export type {
+  NavNode,
+  NavRoot,
+  NavContextState,
+  NavigationContext,
+  NavContextItem,
+  NavContextConfig,
+  NavContextInput,
+  NavContextRemoteSource,
+  RegionItems,
+  RegionVisibility,
+  ChildPlacement,
+  NavNodeType,
+} from './navigation/nav-types'
+export type { TabPage, PageMode } from './navigation/useTabPages'
+export type { PrimaryPreset, NavPreset, NavColorSet } from './navigation/useColorScheme'
+
+// ── AI Page Loop ──
+export {
+  logUpdateSignal,
+  onPageConfigChange,
+  setAutoIterating,
+  isAutoIterating,
+  setConfigLoader,
+  clearPageCache,
+  setupHotReload,
+  writePageFiles,
+  readPageFile,
+  readPageFiles,
+  PageLogCollector,
+  AIPageLoop,
+  pageRefreshKey,
+  triggerPageRefresh,
+  initAILoop,
+  getAILoop,
+} from './ai/ai-loop'
+export type {
+  PageFiles,
+  AIResponse,
+  LogSnapshot,
+  AIPageLoopOptions,
+  FileChangeEvent,
+} from './ai/ai-loop'
+
+// ── Page UI Host Component ──
+export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'
