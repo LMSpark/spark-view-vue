@@ -45,6 +45,7 @@ interface Props {
   modelValue?: number | [number | undefined, number | undefined]
   min?: number
   max?: number
+  filterMode?: string
 }
 
 const props = defineProps<Props>()
@@ -61,7 +62,8 @@ function formatNumberValue(value: unknown): string {
 }
 
 const isRangeFilter =
-  props.config?.props?.['filterMode'] === 'range'
+  props.filterMode === 'range'
+  || props.config?.props?.['filterMode'] === 'range'
   || props.config?.props?.['filterVariant'] === 'range'
   || props.config?.props?.['filterRange'] === true
 

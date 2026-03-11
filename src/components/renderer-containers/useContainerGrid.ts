@@ -43,6 +43,8 @@ export interface UseContainerGridOptions {
   columns?: Ref<number>
   gap?: Ref<number | string>
   autoRows?: Ref<string>
+  autoFitMinWidth?: Ref<string>
+  defaultColSpan?: Ref<number>
 }
 
 // ── 组合式函数 ───────────────────────────────────────────────────────────────
@@ -52,11 +54,15 @@ export function useContainerGrid(options: UseContainerGridOptions) {
   const columns = options.columns ?? computed(() => DEFAULT_GRID_COLUMNS)
   const gap = options.gap ?? computed(() => DEFAULT_GRID_GAP)
   const autoRows = options.autoRows ?? computed(() => DEFAULT_AUTO_ROWS)
+  const autoFitMinWidth = options.autoFitMinWidth ?? computed(() => '')
+  const defaultColSpan = options.defaultColSpan ?? computed(() => DEFAULT_GRID_COLUMNS)
 
   // 容器内容区共用的 grid 布局样式。
   const gridStyle = computed<CSSProperties>(() => ({
     display: 'grid',
-    gridTemplateColumns: `repeat(${Math.max(columns.value, 1)}, minmax(0, 1fr))`,
+    gridTemplateColumns: autoFitMinWidth.value.trim().length > 0
+      ? `repeat(auto-fit, minmax(${autoFitMinWidth.value}, 1fr))`
+      : `repeat(${Math.max(columns.value, 1)}, minmax(0, 1fr))`,
     gap: normalizeGridGap(gap.value),
     gridAutoRows: autoRows.value || DEFAULT_AUTO_ROWS,
     alignItems: 'start',
@@ -64,7 +70,7 @@ export function useContainerGrid(options: UseContainerGridOptions) {
 
   // 子项可通过布局 props 覆盖默认的跨列 / 跨行占位。
   function getChildGridStyle(child: ComponentConfig): CSSProperties {
-    const colSpan = getSpanValue(child, ['colSpan', 'gridColSpan', 'span'], 24)
+    const colSpan = getSpanValue(child, ['colSpan', 'gridColSpan', 'span'], defaultColSpan.value)
     const rowSpan = getSpanValue(child, ['rowSpan', 'gridRowSpan'], 1)
 
     return {

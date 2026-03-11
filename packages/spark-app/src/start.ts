@@ -11,6 +11,7 @@ import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
+import { createThemeService, type ThemeServiceOptions, type ThemeServiceReactive } from './theme'
 import { toError } from '@spark-view/spark-utils'
 
 const startLogger = createLogger('start')
@@ -81,6 +82,15 @@ export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
   /** UI 插件列表 */
   plugins?: Plugin[]
   
+  /**
+   * CSS 主题配置
+   * 
+   * - `true` — 启用主题（默认 auto 跟随系统）
+   * - `ThemeServiceOptions` — 自定义初始模式 / 存储键
+   * - `false` / 不传 — 不启用主题服务
+   */
+  theme?: boolean | ThemeServiceOptions
+  
   /** 启动前钩子 */
   onBeforeStart?: () => void | Promise<void>
   
@@ -124,11 +134,15 @@ export async function start(options: StartOptions): Promise<void> {
     spark,
     pageConfig,
     plugins,
+    theme,
     onBeforeStart,
     onStartError,
     fallbackComponent,
     ...bootstrapOptions
   } = options
+
+  /** 主题服务实例（启用后通过 context 暴露给钩子） */
+  let themeService: ThemeServiceReactive | undefined
 
   try {
     // 启动前钩子
@@ -140,6 +154,13 @@ export async function start(options: StartOptions): Promise<void> {
     // 1. 创建 Vue 应用实例
     startLogger.debug('创建 Vue 应用...')
     const app = createApp(rootComponent)
+
+    // 1.5 初始化主题服务（尽早创建，避免首屏闪烁）
+    if (theme !== false && theme !== undefined) {
+      const themeOpts = typeof theme === 'boolean' ? {} : theme
+      themeService = createThemeService(themeOpts)
+      startLogger.debug('主题服务已初始化', { mode: themeService.mode })
+    }
 
     // 过滤 form-create + Element Plus 的已知兼容性警告
     app.config.warnHandler = (msg) => {
@@ -252,7 +273,8 @@ export async function start(options: StartOptions): Promise<void> {
       ...bootstrapOptions,
       mountTarget,
       app,
-      router
+      router,
+      ...(themeService ? { themeService } : {}),
     })
 
     startLogger.success('应用启动成功')

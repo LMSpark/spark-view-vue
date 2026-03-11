@@ -84,6 +84,10 @@ export type {
   BatchTransportOptions
 } from './logger'
 
+// 主题服务
+export { createThemeService, useTheme, THEME_INJECTION_KEY } from './theme'
+export type { ThemeMode, ThemeServiceOptions, ThemeServiceReactive } from './theme'
+
 // 类型导出
 export type {
   AppContext,

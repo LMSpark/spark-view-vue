@@ -266,6 +266,34 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     return expr ? rows.filter(row => matchesExpression(row, expr)) : rows
   })
 
+  // 当前有值的过滤字段数量。
+  const activeFilterCount = computed(() => {
+    let count = 0
+    for (const config of filterConfigs.value) {
+      if (typeof config.name === 'string' && !isEmptyFilterValue(filterModel[config.name])) {
+        count++
+      }
+    }
+    return count
+  })
+
+  // 重置所有过滤输入。
+  async function resetFilters(): Promise<void> {
+    for (const key of Object.keys(filterModel)) {
+      filterModel[key] = undefined
+    }
+    const view = options.dataView.value
+    if (!view) return
+    try {
+      await view.setFilter(undefined)
+      if (view.dataTable?.api?.list) {
+        await view.refresh()
+      }
+    } catch (error) {
+      options.logger.error('RendererTable: 重置过滤失败', error)
+    }
+  }
+
   // 提供给 RendererTable 使用的公开返回值。
   return {
     filterModel,
@@ -277,5 +305,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     filterExpression,
     filteredRows,
     hasFilters: computed(() => filterConfigs.value.length > 0),
+    activeFilterCount,
+    resetFilters,
   }
 }

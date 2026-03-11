@@ -25,14 +25,54 @@
 
     <!-- 过滤区 -->
     <div v-if="hasFilters" :class="['renderer-table-filters', filterClassValue]">
-      <RendererFieldScope
-        :model="filterModel"
-        :configs="filterConfigs"
-        :data-source="resolvedView"
-        :grid-columns="filterGridColumnsValue"
-        :grid-gap="filterGridGapValue"
-        :grid-auto-rows="filterGridAutoRowsValue"
-      />
+      <div v-if="filterCollapsibleValue" class="renderer-table-filters__header">
+        <div class="renderer-table-filters__heading">
+          <span class="renderer-table-filters__title">筛选条件</span>
+          <el-tag
+            v-if="activeFilterCount > 0"
+            size="small"
+            type="info"
+            class="renderer-table-filters__count"
+          >{{ activeFilterCount }} 项筛选</el-tag>
+        </div>
+        <button
+          type="button"
+          class="renderer-table-filters__toggle"
+          :aria-expanded="!filtersCollapsed"
+          @click="toggleFiltersCollapsed"
+        >
+          <span class="renderer-table-filters__toggle-icon">{{ filtersCollapsed ? '>' : 'v' }}</span>
+          <span>{{ filtersCollapsed ? '展开筛选' : '收起筛选' }}</span>
+        </button>
+      </div>
+
+      <div v-show="!filtersCollapsed" class="renderer-table-filters__content">
+      <div class="renderer-table-filters__body">
+        <RendererFieldScope
+          :model="filterModel"
+          :configs="filterConfigs"
+          :data-source="resolvedView"
+          :grid-columns="filterGridColumnsValue"
+          :grid-gap="filterGridGapValue"
+          :grid-auto-rows="filterGridAutoRowsValue"
+          :auto-fit-min-width="filterAutoFitMinWidthValue"
+          :default-col-span="filterItemSpanValue"
+          label-position="left"
+          label-width="auto"
+          compact
+        />
+      </div>
+      <div class="renderer-table-filters__actions">
+        <el-button type="primary" size="small" @click="handleFilterSearch">查询</el-button>
+        <el-button size="small" @click="handleFilterReset">重置</el-button>
+        <el-tag
+          v-if="activeFilterCount > 0 && !filterCollapsibleValue"
+          size="small"
+          type="info"
+          class="renderer-table-filters__count"
+        >{{ activeFilterCount }} 项筛选</el-tag>
+      </div>
+      </div>
     </div>
 
     <div class="renderer-table-main">
@@ -115,7 +155,7 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, defineComponent, useSlots } from 'vue'
+import { computed, defineComponent, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
@@ -148,6 +188,10 @@ interface Props {
   toolbarClass?: string
   filterColumns?: string[]
   filterClass?: string
+  filterCollapsible?: boolean
+  filterDefaultCollapsed?: boolean
+  filterAutoFitMinWidth?: string
+  filterItemSpan?: number
   filterGridColumns?: number
   filterGridGap?: number | string
   filterGridAutoRows?: string
@@ -165,6 +209,10 @@ const props = withDefaults(defineProps<Props>(), {
   toolbarClass: '',
   filterColumns: () => [],
   filterClass: '',
+  filterCollapsible: false,
+  filterDefaultCollapsed: false,
+  filterAutoFitMinWidth: '220px',
+  filterItemSpan: 1,
   filterGridColumns: 24,
   filterGridGap: 12,
   filterGridAutoRows: 'minmax(32px, auto)',
@@ -251,6 +299,8 @@ const {
   filterGridAutoRowsValue,
   filteredRows,
   hasFilters,
+  activeFilterCount,
+  resetFilters,
 } = useTableFilters({
   config: computed(() => props.config),
   children: sparkChildren,
@@ -262,6 +312,28 @@ const {
   filterGridAutoRows: computed(() => props.filterGridAutoRows),
   logger,
 })
+
+const filterCollapsibleValue = computed(() =>
+  (props.config?.props?.['filterCollapsible'] as boolean | undefined) ?? props.filterCollapsible
+)
+
+const filterDefaultCollapsedValue = computed(() =>
+  (props.config?.props?.['filterDefaultCollapsed'] as boolean | undefined) ?? props.filterDefaultCollapsed
+)
+
+const filterAutoFitMinWidthValue = computed(() =>
+  (props.config?.props?.['filterAutoFitMinWidth'] as string | undefined) ?? props.filterAutoFitMinWidth
+)
+
+const filterItemSpanValue = computed(() =>
+  (props.config?.props?.['filterItemSpan'] as number | undefined) ?? props.filterItemSpan
+)
+
+const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
+
+watch(filterDefaultCollapsedValue, (value) => {
+  filtersCollapsed.value = value
+}, { immediate: true })
 
 const tableData = computed(() => filteredRows.value ?? tableRows.value)
 
@@ -349,6 +421,25 @@ function isCollectedTableColumn(config: ComponentConfig): boolean {
   return config.type.startsWith('r-') && typeof config.name === 'string' && config.name.length > 0
 }
 
+// ── 过滤操作 ──────────────────────────────────────────────────────────────
+
+function handleFilterSearch() {
+  // 对远程表触发 refresh()；本地表 filteredRows 已是 computed 实时过滤
+  const view = resolvedView.value
+  if (view?.dataTable?.api?.list) {
+    void view.refresh().catch(() => { /* 已在 useTableFilters watch 中处理 */ })
+  }
+}
+
+function handleFilterReset() {
+  resetFilters()
+}
+
+function toggleFiltersCollapsed() {
+  if (!filterCollapsibleValue.value) return
+  filtersCollapsed.value = !filtersCollapsed.value
+}
+
 // ── 字段上下文与事件桥接 ──────────────────────────────────────────────────
 
 sparkProvide(FIELD_CONTEXT, 'table')
@@ -395,6 +486,70 @@ function handleSelectionChange(selection: IDataRow[]) {
 
 .renderer-table-filters {
   width: 100%;
+  background: var(--el-fill-color-lighter, #f5f7fa);
+  border: 1px solid var(--el-border-color-lighter, #e4e7ed);
+  border-radius: 4px;
+  padding: 12px 16px;
+}
+
+.renderer-table-filters__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.renderer-table-filters__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.renderer-table-filters__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-primary, #303133);
+}
+
+.renderer-table-filters__toggle {
+  border: 0;
+  background: transparent;
+  color: var(--el-color-primary, #409eff);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  line-height: 1.5;
+}
+
+.renderer-table-filters__toggle-icon {
+  display: inline-block;
+  width: 10px;
+}
+
+.renderer-table-filters__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.renderer-table-filters__content {
+  min-width: 0;
+}
+
+.renderer-table-filters__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--el-border-color-extra-light, #f0f2f5);
+}
+
+.renderer-table-filters__count {
+  margin-left: 4px;
 }
 
 .renderer-table-toolbar {

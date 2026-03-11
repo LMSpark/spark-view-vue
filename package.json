@@ -54,6 +54,7 @@
         "prepare": "husky"
     },
     "dependencies": {
+        "@element-plus/icons-vue": "^2.3.2",
         "@form-create/element-ui": "^3.2.37",
         "@spark-view/spark-app": "workspace:*",
         "@spark-view/spark-component": "workspace:*",
@@ -62,6 +63,7 @@
         "@syncfusion/ej2-base": "^32.2.6",
         "@syncfusion/ej2-grids": "^32.2.7",
         "@syncfusion/ej2-vue-grids": "^32.2.7",
+        "@vueuse/core": "^14.2.1",
         "axios": "^1.13.5",
         "element-plus": "^2.13.2",
         "vue": "^3.5.29",

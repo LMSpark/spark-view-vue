@@ -1,0 +1,117 @@
+[
+    {
+        "type": "div",
+        "style": "padding: 20px;",
+        "children": [
+            {
+                "type": "h2",
+                "style": "margin-bottom: 16px;",
+                "children": [
+                    "过滤面板演示"
+                ]
+            },
+            {
+                "type": "p",
+                "style": "color: #909399; margin-bottom: 20px;",
+                "children": [
+                    "配置 filterColumns 即可启用表格过滤面板，支持文本、数字、下拉、多选、日期等字段类型。"
+                ]
+            },
+            {
+                "type": "r-table",
+                "dataKey": "Employees@rows",
+                "props": {
+                    "border": true,
+                    "stripe": true,
+                    "highlightCurrentRow": true,
+                    "filterCollapsible": true,
+                    "filterColumns": [
+                        "name",
+                        "department",
+                        "status",
+                        "salary"
+                    ]
+                },
+                "children": [
+                    {
+                        "type": "r-text",
+                        "name": "name",
+                        "props": {
+                            "label": "姓名",
+                            "width": 100
+                        }
+                    },
+                    {
+                        "type": "r-select",
+                        "name": "department",
+                        "props": {
+                            "label": "部门",
+                            "width": 120,
+                            "options": [
+                                {
+                                    "label": "技术部",
+                                    "value": "技术部"
+                                },
+                                {
+                                    "label": "产品部",
+                                    "value": "产品部"
+                                },
+                                {
+                                    "label": "设计部",
+                                    "value": "设计部"
+                                },
+                                {
+                                    "label": "市场部",
+                                    "value": "市场部"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "r-text",
+                        "name": "position",
+                        "props": {
+                            "label": "职位",
+                            "width": 130
+                        }
+                    },
+                    {
+                        "type": "r-number",
+                        "name": "salary",
+                        "props": {
+                            "label": "薪资",
+                            "width": 100,
+                            "filterMode": "range"
+                        }
+                    },
+                    {
+                        "type": "r-multi-select",
+                        "name": "status",
+                        "props": {
+                            "label": "状态",
+                            "width": 100,
+                            "options": [
+                                {
+                                    "label": "在职",
+                                    "value": "在职"
+                                },
+                                {
+                                    "label": "离职",
+                                    "value": "离职"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "r-date",
+                        "name": "hireDate",
+                        "props": {
+                            "label": "入职日期",
+                            "width": 130
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]
