@@ -33,13 +33,51 @@
       </el-tooltip>
 
       <!-- 通知 -->
-      <el-tooltip content="通知" placement="bottom" :show-after="300">
-        <button class="header-btn" @click="$emit('notification-click')">
-          <el-badge :value="notificationCount" :hidden="!notificationCount" :max="99">
-            <el-icon :size="18"><Bell /></el-icon>
-          </el-badge>
-        </button>
-      </el-tooltip>
+      <el-popover
+        placement="bottom-end"
+        :width="360"
+        trigger="click"
+        :show-arrow="false"
+        popper-class="notification-popover"
+      >
+        <template #reference>
+          <button class="header-btn">
+            <el-badge :value="unreadCount" :hidden="!unreadCount" :max="99">
+              <el-icon :size="18"><Bell /></el-icon>
+            </el-badge>
+          </button>
+        </template>
+        <div class="notification-panel">
+          <div class="notification-panel__header">
+            <span class="notification-panel__title">通知</span>
+            <div class="notification-panel__actions">
+              <button v-if="unreadCount > 0" class="notification-panel__action" @click="markAllRead">全部已读</button>
+              <button v-if="notifications.length > 0" class="notification-panel__action" @click="clearAll">清空</button>
+            </div>
+          </div>
+          <div class="notification-panel__body">
+            <div v-if="notifications.length === 0" class="notification-panel__empty">
+              <el-icon :size="40" style="color: var(--el-text-color-placeholder)"><Bell /></el-icon>
+              <p>暂无通知</p>
+            </div>
+            <div
+              v-for="item in notifications"
+              :key="item.id"
+              class="notification-item"
+              :class="{ 'notification-item--unread': !item.read }"
+              @click="markRead(item.id)"
+            >
+              <div class="notification-item__dot" v-if="!item.read" />
+              <div class="notification-item__content">
+                <div class="notification-item__title">{{ item.title }}</div>
+                <div class="notification-item__message">{{ item.message }}</div>
+                <div class="notification-item__time">{{ formatTime(item.time) }}</div>
+              </div>
+              <button class="notification-item__close" @click.stop="removeItem(item.id)">&times;</button>
+            </div>
+          </div>
+        </div>
+      </el-popover>
 
       <!-- 主题切换 -->
       <el-tooltip :content="isDark ? '浅色模式' : '深色模式'" placement="bottom" :show-after="300">
@@ -84,6 +122,7 @@ import {
   Fold, Expand, Search, FullScreen, Bell, Sunny, Moon,
   User, Setting, SwitchButton, ArrowDown,
 } from '@element-plus/icons-vue'
+import { useNotifications } from '@/composables/useNotifications'
 
 const props = withDefaults(defineProps<{
   title?: string
@@ -92,7 +131,6 @@ const props = withDefaults(defineProps<{
   collapsible?: boolean
   username?: string
   avatar?: string
-  notificationCount?: number
 }>(), {
   title: 'SPARK 管理后台',
   isDark: false,
@@ -100,16 +138,25 @@ const props = withDefaults(defineProps<{
   collapsible: true,
   username: '管理员',
   avatar: '',
-  notificationCount: 0,
 })
 
 const emit = defineEmits<{
   'toggle-collapse': []
   'toggle-theme': []
   'search': []
-  'notification-click': []
   'user-command': [command: string]
 }>()
+
+/* 通知（SSE 实时驱动） */
+const { notifications, unreadCount, markRead, markAllRead, clearAll, removeItem } = useNotifications()
+
+function formatTime(ts: number): string {
+  const d = new Date(ts)
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `${hh}:${mm}:${ss}`
+}
 
 /* 用户头像文字（取用户名首字） */
 const avatarText = computed(() => props.username.charAt(0))
@@ -235,6 +282,128 @@ function handleUserCommand(command: string | number | object) {
 /* el-badge 样式微调 */
 :deep(.el-badge__content) {
   border: none;
+}
+
+/* ── 通知面板 ── */
+.notification-panel {
+  margin: -12px;
+}
+
+.notification-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.notification-panel__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.notification-panel__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notification-panel__action {
+  background: none;
+  border: none;
+  color: var(--el-color-primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.notification-panel__action:hover {
+  background: var(--el-fill-color-light);
+}
+
+.notification-panel__body {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notification-panel__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 0;
+  color: var(--el-text-color-placeholder);
+  font-size: 13px;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.notification-item:hover {
+  background: var(--el-fill-color-light);
+}
+
+.notification-item--unread {
+  background: var(--el-color-primary-light-9);
+}
+
+.notification-item__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--el-color-primary);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.notification-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-item__title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+  margin-bottom: 2px;
+}
+
+.notification-item__message {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-item__time {
+  font-size: 11px;
+  color: var(--el-text-color-placeholder);
+  margin-top: 4px;
+}
+
+.notification-item__close {
+  background: none;
+  border: none;
+  color: var(--el-text-color-placeholder);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  visibility: hidden;
+}
+
+.notification-item:hover .notification-item__close {
+  visibility: visible;
 }
 
 /* 小屏隐藏用户名 */

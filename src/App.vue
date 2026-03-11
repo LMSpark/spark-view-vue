@@ -25,7 +25,6 @@
         :is-dark="isDark"
         :collapsed="sidebarCollapsed"
         :collapsible="nav.regionVisibility.value.sidebar"
-        :notification-count="notificationCount"
         username="管理员"
         @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
         @toggle-theme="toggleTheme"
@@ -137,9 +136,6 @@ onMounted(async () => {
     }
   } catch { /* 保持 demoNavRoot 作为 fallback */ }
 })
-
-/* ── 通知（示例数据） ── */
-const notificationCount = ref(5)
 
 /* ── 用户菜单命令 ── */
 function handleUserCommand(command: string) {
