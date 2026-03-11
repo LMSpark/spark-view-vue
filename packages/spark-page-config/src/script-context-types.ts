@@ -194,7 +194,7 @@ export interface IScriptContext {
 /**
  * `$page` 的内联类型（结构与 `IPageServiceCapability` 完全等价）。
  *
- * 定义在此文件内，避免对 `capability/symbols.ts` 产生导入依赖。
+ * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
  * 渲染层以 `IPageServiceCapability` 作为实现类型；两者通过结构化类型兼容。
  */
 export interface IPageServiceInScript {
@@ -312,7 +312,7 @@ export interface IModuleContextItemInScript {
 /**
  * `$moduleContext` 的内联类型（结构与 `IModuleContext` 完全等价）。
  *
- * 定义在此文件内，避免对 `capability/symbols.ts` 产生导入依赖。
+ * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
  * 渲染层以 `IModuleContext` 作为实现类型；两者通过结构化类型兼容。
  */
 export interface IModuleContextInScript {

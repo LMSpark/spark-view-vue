@@ -51,7 +51,7 @@ Vue 应用常见通信方式：props 向下、emit 向上、Pinia 横向、`prov
 
 ### 2.2 SPARK 能力系统：按名查找，就近原则
 
-SPARK 能力系统（`packages/spark-utils/src/capability/symbols.ts`）引入了一种更优雅的抽象——**ComponentContext 链上的局部依赖注入**：
+SPARK 能力系统（`packages/spark-utils/src/capability/index.ts`）引入了一种更优雅的抽象——**ComponentContext 链上的局部依赖注入**：
 
 ```
 组件树（ComponentContext 链）
@@ -662,7 +662,7 @@ SPARK 在这条路上，已经走出了一个清晰的技术范式。
 >
 > | 模块 | 路径 |
 > |------|------|
-> | 能力系统 | `packages/spark-utils/src/capability/symbols.ts` |
+> | 能力系统 | `packages/spark-utils/src/capability/index.ts` |
 > | AI 闭环服务 | `src/services/ai-loop.ts` |
 > | 数据流核心 | `packages/spark-data/src/` |
 > | 页面渲染器 | `packages/spark-component/src/renderer/` |

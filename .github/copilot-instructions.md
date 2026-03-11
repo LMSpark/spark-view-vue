@@ -17,7 +17,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **Packages**:
   - `packages/spark-component/` — 组件系统（API docs: `packages/spark-component/API.md`）
   - `packages/spark-data/` — 数据空间（DataSet, DataTable, DataView, TreeManager）
-  - `packages/spark-utils/` — 能力系统基础设施 + Logger（`src/capability/symbols.ts`）
+  - `packages/spark-utils/` — 能力系统基础设施 + Logger（`src/capability/`）
   - `packages/spark-app/` — 应用层（start, bootstrap, logger, auth, plugins）
 - **Pages config**: `spark-ai-server/data/pages-config/` — 页面配置（rule.json, pagedata.json, script.js）⚠️ 已从 `public/pages-config/` 迁移到 Java 后端管理
 - **AI Server**: `spark-ai-server/` — Spring Boot 3.2.5 后端（AI 对话 + 页面配置文件管理 + 组件元数据）
@@ -35,7 +35,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **Key composable**: `packages/spark-component/src/composables/useSparkComponent.ts`
 - **DataSet 生命周期**: `packages/spark-component/src/renderer/composables/usePageDataSet.ts`（仅存储 DataSet，不转换）
 - **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
-- **Capability keys**: `packages/spark-utils/src/capability/symbols.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
+- **Capability keys**: `packages/spark-utils/src/capability/index.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
 - **Tests**: `tests/` (重要: `capability-late-binding.test.ts`, `capability-system.test.ts`, `data-key.test.ts`)
 - **Computed column tests**: `packages/spark-data/src/tests/computed-columns.test.ts`（13 sections, 87 cases）
 - **Expression compiler**: `packages/spark-data/src/strategies/computed-column-delegate.ts`
@@ -1029,7 +1029,7 @@ packages/
 │       └── tests/
 └── spark-utils/         # 共享基础设施
     └── src/
-        ├── capability/symbols.ts  # 所有能力键定义 + provide/lookup/defineCapability
+        ├── capability/index.ts    # 所有能力键定义 + provide/lookup/defineCapability
         ├── sandbox.ts             # 统一沙箱代理（SANDBOX_BLOCKED_KEYS / createSafeProxy）
         ├── logger.ts              # Logger 工厂
         ├── http/                  # Request, FileLoader
@@ -1072,7 +1072,7 @@ import { APP_SERVICES } from '@spark-view/spark-utils'
 
 // ❌ 错误：相对路径跨包
 import { DataSet } from '../../spark-data/src/dataset'
-import { APP_SERVICES } from '../../../spark-utils/src/capability/symbols'
+import { APP_SERVICES } from '../../../spark-utils/src/capability'
 ```
 相对路径跨包引用会绕过 pnpm workspace 解析，破坏 dist 构建的类型声明链，导致发布后消费方出现类型错误。
 
