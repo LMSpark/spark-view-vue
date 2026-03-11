@@ -12,6 +12,10 @@
         "children": [
           {
             "type": "h1",
+            "style": {
+              "color": "#303133",
+              "marginBottom": "8px"
+            },
             "children": [
               "数据权限表格示例"
             ]
@@ -26,164 +30,181 @@
         ]
       },
       {
-        "type": "r-section",
-        "class": "table-section",
-        "props": {
-          "title": "数据表格",
-          "description": "筛选字段直接来自列配置，点击行即可联动下方详情。"
-        },
+        "type": "el-row",
+        "class": "main-layout",
         "children": [
           {
-            "type": "r-table",
-            "dataKey": "PermissionData@rows",
+            "type": "el-col",
             "props": {
-              "border": true,
-              "stripe": true,
-              "highlightCurrentRow": true,
-              "height": 400,
-              "filterColumns": [
-                "name",
-                "deptName",
-                "roleName",
-                "status"
-              ]
+              "span": 16
             },
             "children": [
               {
-                "type": "r-text",
-                "name": "id",
+                "type": "r-section",
+                "class": "table-section",
                 "props": {
-                  "label": "ID",
-                  "width": 80
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "name",
-                "props": {
-                  "label": "姓名",
-                  "width": 120
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "deptName",
-                "props": {
-                  "label": "部门",
-                  "width": 120
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "roleName",
-                "props": {
-                  "label": "角色",
-                  "width": 120
-                }
-              },
-              {
-                "type": "r-number",
-                "name": "salary",
-                "props": {
-                  "label": "薪资",
-                  "width": 100
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "status",
-                "props": {
-                  "label": "状态",
-                  "width": 100
-                }
-              },
-              {
-                "type": "r-date",
-                "name": "joinDate",
-                "props": {
-                  "label": "入职日期",
-                  "width": 120
-                }
+                  "title": "数据表格",
+                  "description": "筛选字段直接来自列配置，点击行即可联动右侧详情。"
+                },
+                "children": [
+                  {
+                    "type": "r-table",
+                    "dataKey": "PermissionData@rows",
+                    "props": {
+                      "border": true,
+                      "stripe": true,
+                      "highlightCurrentRow": true,
+                      "height": 400
+                    },
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "name": "id",
+                        "props": {
+                          "label": "ID",
+                          "width": 80
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "name": "name",
+                        "props": {
+                          "label": "姓名",
+                          "width": 120
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "name": "deptName",
+                        "props": {
+                          "label": "部门",
+                          "width": 120
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "name": "roleName",
+                        "props": {
+                          "label": "角色",
+                          "width": 120
+                        }
+                      },
+                      {
+                        "type": "r-number",
+                        "name": "salary",
+                        "props": {
+                          "label": "薪资",
+                          "width": 100
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "name": "status",
+                        "props": {
+                          "label": "状态",
+                          "width": 100
+                        }
+                      },
+                      {
+                        "type": "r-date",
+                        "name": "joinDate",
+                        "props": {
+                          "label": "入职日期",
+                          "width": 120
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             ]
-          }
-        ]
-      },
-      {
-        "type": "r-section",
-        "class": "detail-section",
-        "props": {
-          "title": "详情"
-        },
-        "children": [
+          },
           {
-            "type": "r-detail",
-            "dataKey": "PermissionData@currentRow",
+            "type": "el-col",
+            "props": {
+              "span": 8
+            },
             "children": [
               {
-                "type": "r-text",
-                "name": "name",
+                "type": "r-section",
+                "class": "detail-section",
                 "props": {
-                  "label": "姓名",
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "deptName",
-                "props": {
-                  "label": "部门",
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "roleName",
-                "props": {
-                  "label": "角色",
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-number",
-                "name": "salary",
-                "props": {
-                  "label": "薪资",
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "status",
-                "props": {
-                  "label": "状态",
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-date",
-                "name": "joinDate",
-                "props": {
-                  "label": "入职日期",
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "email",
-                "props": {
-                  "label": "邮箱",
-                  "colSpan": 24
-                }
-              },
-              {
-                "type": "r-textarea",
-                "name": "remark",
-                "props": {
-                  "label": "备注",
-                  "colSpan": 24,
-                  "rows": 3
-                }
+                  "title": "详情",
+                  "description": "当前选中行的详细信息"
+                },
+                "children": [
+                  {
+                    "type": "r-detail",
+                    "dataKey": "PermissionData@currentRow",
+                    "children": [
+                      {
+                        "type": "r-text",
+                        "name": "name",
+                        "props": {
+                          "label": "姓名",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "name": "deptName",
+                        "props": {
+                          "label": "部门",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "name": "roleName",
+                        "props": {
+                          "label": "角色",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-number",
+                        "name": "salary",
+                        "props": {
+                          "label": "薪资",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "name": "status",
+                        "props": {
+                          "label": "状态",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-date",
+                        "name": "joinDate",
+                        "props": {
+                          "label": "入职日期",
+                          "colSpan": 12
+                        }
+                      },
+                      {
+                        "type": "r-text",
+                        "name": "email",
+                        "props": {
+                          "label": "邮箱",
+                          "colSpan": 24
+                        }
+                      },
+                      {
+                        "type": "r-textarea",
+                        "name": "remark",
+                        "props": {
+                          "label": "备注",
+                          "colSpan": 24,
+                          "rows": 3
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           }

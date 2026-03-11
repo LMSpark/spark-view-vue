@@ -123,7 +123,7 @@ const http = createRequest({ timeout: 120_000 })
 /** 最大自动迭代次数（防止无限循环） */
 const MAX_AUTO_ITERATIONS = 3
 /** 渲染后等待日志收集的时间 ms */
-const LOG_COLLECT_DELAY = 4000
+const LOG_COLLECT_DELAY = 5000
 /** pageId 合法字符：字母、数字、短横线 */
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
 
@@ -293,17 +293,25 @@ function navigateTo(pid: string) {
   void router.push(`/${pid}`)
 }
 
-/** 判断日志中是否包含需要修复的错误 */
+/** 判断日志中是否包含需要修复的渲染错误
+ * 只对 error 级和结构性 warn （未注册组件、数据绑定失败等）触发迭代；
+ * 功能性 warn（性能提示、ResizeObserver 等）不触发
+ */
 function hasRenderErrors(logs: LogSnapshot[]): boolean {
-  return logs.some(l =>
-    l.level === 'error' || l.level === 'warn' ||
-    (typeof l.message === 'string' && (
-      l.message.includes('未注册') ||
-      l.message.includes('not found') ||
-      l.message.includes('Component') ||
-      l.message.includes('失败')
-    ))
-  )
+  return logs.some(l => {
+    if (l.level === 'error') return true
+    if (l.level !== 'warn') return false
+    const msg = typeof l.message === 'string' ? l.message : ''
+    return (
+      msg.includes('未注册') ||
+      msg.includes('not found') ||
+      msg.includes('无法解析') ||
+      msg.includes('dataKey') ||
+      msg.includes('DataView') ||
+      msg.includes('缺少必需') ||
+      msg.includes('字段缺失')
+    )
+  })
 }
 
 /** 等待指定时间 */

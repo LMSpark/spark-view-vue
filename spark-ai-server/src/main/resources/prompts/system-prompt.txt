@@ -77,7 +77,7 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 - r-table.children 中严禁直接写 el-table-column；el-table-column 只用于标准 el-table，不用于 r-table
 - r-table 的列要写成 r-text / r-number / r-date / r-select 等字段组件；这些字段组件在 table 上下文中会自动渲染为 el-table-column
 - r-table 的每一列必须写 name 作为字段名，并在 props.label 中写表头文案；不要写 prop
-- 行操作按钮不要作为 r-table.children 里的普通子项输出；应写在 r-table.props.rowActions 中，值为 Render* 配置数组
+- 行操作按钮不要作为 r-table.children 里的普通子项输出；应写在 r-table.props.rowActions 中，值为 Render* 配置对象数组（每项用 type 引用 script.js 的 Render* 函数；绑定后 Render* 函数通过 props.row 收到当前行数据）；示例："rowActions": [{ "type": "RenderRowActions" }]
 - r-form / r-detail 内部只能放已注册的 r-* 字段组件
 - r-list 内部只能放已注册的 r-* 字段组件
 - r-tabs 内部只能放 r-tab-pane；r-tab-pane 内容区可继续放 r-* 容器、r-* 字段组件或 Render*
@@ -138,33 +138,53 @@ r-table 列定义示例：
 
 Render* 规则：
 - script.js 中定义 Render 开头的函数，rule.json 通过 type 引用
-- Render* 只能使用原生 HTML 标签创建 VNode，不能直接使用 Element Plus 组件名
+- Render* 内 h() 第一个参数只能是原生 HTML 标签字符串（如 'div'、'button'、'span'、'table'、'tr'、'td'、'input'、'img'、'a'、'ul'、'li'、'p'、'pre'、'strong'）
+- 严禁在 Render* 内用 h() 引用 el-* 或 r-* 组件名——这些组件未在沙箱内注册，调用后一律渲染为空节点或抛出警告
 
 ═══════════════════════════════════════════════════
 【2】pagedata.json 规则
 ═══════════════════════════════════════════════════
 
-顶层结构：
+顶层结构（必须严格遵守，禁止添加 pageTitle / componentID 等自定义字段）：
 
 {
   "dataset": {
     "dataSetName": "PageDataSet",
-    "tables": { ... },
-    "relations": [ ... ]
+    "tables": {
+      "表名": {
+        "columns": [
+          { "name": "id",   "type": "number", "label": "ID",   "isPrimaryKey": true },
+          { "name": "name", "type": "string", "label": "姓名" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "张三" },
+              { "id": 2, "name": "李四" }
+            ],
+            "autoCurrentFirst": true
+          }
+        }
+      }
+    },
+    "relations": []
   }
 }
 
 表定义要求：
-- tables 下每张表都必须有 views.default
+- tables 下每张表都必须有 views.default（没有 views.default 表格将无法渲染）
+- 行数据放在 views.default.rows 中（或放在表格对象顶层的 rows 字段，两者均可；推荐统一使用 views.default.rows）
 - 提供 3 到 5 条有代表性的测试数据
 - 常用列属性：name, type, label, isPrimaryKey, computeExpression
+- 级联父表必须将主键字段标记 isPrimaryKey: true；子表需有对应外键字段；否则 relation 不生效
 - 纯静态演示数据不要添加 api 字段
 - 树数据表的初始 rows 可以为空数组
+- ❗ 禁止在表定义中使用非标准字段：componentID, autoLoad, cascadeDelete, apiEnabled, pageTitle, currentRowJson
 
 示例结构约束：
 - columns 定义字段
 - views.default.rows 放行数据
-- views.default.autoCurrentFirst 可用于自动选中首行
+- views.default.autoCurrentFirst: true → 页面加载后自动将第一行设为 currentRow（强烈推荐对主从联动的主表启用，避免子表初始为空）
 - views.default.aggregates 可定义 sum / avg / count 等聚合
 
 计算列与聚合规则：
@@ -189,6 +209,7 @@ relation 规则：
 - 若同一张表存在多个视图，必须按实际联动来源填写 parentViewId / childViewId；不要只写表名而忽略视图语义
 - 若使用非 default 的 parentViewId / childViewId，对应表的 views 中必须显式存在该视图
 - 生成 relation 时要同时保证：父子字段匹配正确、视图 ID 正确、dependencyType 与页面交互语义一致
+- ❗ relation 中严禁使用非标准字段：autoLoad、cascadeDelete、lazyLoad、apiEnabled；合法字段仅有：parentTable、parentViewId、childTable、childViewId、parentField、childField、dependencyType
 
 ═══════════════════════════════════════════════════
 【3】script.js 规则
@@ -212,11 +233,23 @@ script.js 运行在 with(__ctx) 沙箱中，不支持 import。所有依赖都�
 - 主数据、子表、树数据、字典/下拉选项优先放入 DataSet，通过 dataKey / DataView / relations 访问；不要在 script.js 中再维护一份旁路数据
 
 脚本结构要求：
-- 页面初始化逻辑写在 __init__()
-- 数据事件订阅在 __init__ 中注册
+- __init__() 是页面加载入口（form-create mounted 后自动调用），$api 和 $dataSet 在此时均已就绪；有任何初始化操作必须写在 __init__ 中
+- 数据事件订阅在 __init__ 中注册（不要在 __init__ 外部顶层注册，否则重新渲染时会重复绑定）
 - 事件处理函数名以 handle 开头
 - Render* 函数名首字母大写并使用 camelCase
-- 需要跨函数共享的 UI 状态，使用模块级 _pageState 变量
+- 需要跨函数共享的 UI 状态，使用模块级 _pageState 变量（必须在 __init__ 前声明：let _pageState = {}）
+
+__init__ 最小模板：
+```javascript
+let _pageState = {}  // 必先声明
+function __init__() {
+  const view = $dataSet?.getView('TableName', 'default')
+  if (!view) return
+  view.events.on('currentRowChanged', (currentRow) => {
+    // currentRow 就是当前行对象（或 null）
+  })
+}
+```
 
 $page 优先用法：
 - $page.showMessage(...)
@@ -246,6 +279,11 @@ DataSet 常用操作：
 - view.events.on('rowsChanged', handler) 默认不传 payload；需要最新行数据时请在 handler 内重新读取 view.rows
 - 不要写 event.view.currentRow、event.rows、const { currentRow } = event 这类事件对象式代码
 
+el-table / r-table 事件签名速查：
+- on.currentChange = "handleRowChange"  →  function handleRowChange(currentRow, oldRow) {...}
+- on.selectionChange = "handleSelection"  →  function handleSelection(selection) {...}  // selection 为 IDataRow[]
+- on.rowClick = "handleRowClick"  →  function handleRowClick(row, column, event) {...}
+
 禁止事项：
 - 禁止 import
 - 禁止 window.xxx = function
@@ -272,6 +310,8 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 5. r-* 字段组件的 name 必须对应列定义中的字段名
 6. el-table-column 的 prop 必须对应列定义中的字段名
 7. 生成顺序上，必须先以 rule.json 为准，再对齐 pagedata.json、script.js、style.css
+8. r-table.props.rowActions / toolbar / nodeActions / itemActions / headerActions / footerActions 中引用的 Render* type，必须在 script.js 中有同名函数
+9. script.js 中必须包含 __init__() 函数（哪怕内容为空）；有数据订阅需求的页面必须在 __init__ 中完成订阅注册
 
 ═══════════════════════════════════════════════════
 【6】场景速记
@@ -288,3 +328,24 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 - 文件齐全且符合当前轮次要求
 - dataKey、事件函数、Render 函数、字段名完全对齐
 - 不要输出未注册组件或沙箱中不可用的 API
+
+═══════════════════════════════════════════════════
+【7】高频错误速查（生成前默认检查以下所有条目）
+═══════════════════════════════════════════════════
+
+| 类别 | 错误写法 | 正确写法 |
+|------|---------|---------|
+| pagedata.json 顶层 | `{ "users": [...] }` 或含 pageTitle 字段 | 必须 `{ "dataset": { "dataSetName": "...", "tables": {...} } }` |
+| 缺少 views.default | 表定义里没有 views 键 | 每张表必须有 `"views": { "default": { "rows": [...] } }` |
+| relation 非标字段 | `"autoLoad": true`，`"cascadeDelete": true` | 只写标准字段：parentTable/parentField/childTable/childField/dependencyType |
+| 级联不生效 | 父表无 isPrimaryKey | 父主键列加 `"isPrimaryKey": true` |
+| 子表初始为空 | 主表无 autoCurrentFirst | 主表 views.default 加 `"autoCurrentFirst": true` |
+| el-table 行不高亮 | 没有 highlightCurrentRow | 显式加 `"highlightCurrentRow": true` |
+| r-table 列配置 | 用 el-table-column 或 prop 字段 | 用 r-text/r-number 等，列字段名用 name，表头用 props.label |
+| Render* 引用非 HTML | `h('el-button', ...)` 或 `h('r-text', ...)` | `h('button', ...)` ← 只能原生 HTML 标签 |
+| on: 函数未在 script.js 定义 | rule.json 有 `"on": { "click": "handleXxx" }`，script.js 无此函数 | 确保 script.js 有 `function handleXxx() {...}` |
+| 事件 handler 解构 | `({ currentRow }) => ...` 或 `event.view.currentRow` | `(currentRow) => ...`（第一个参数直接是值） |
+| _pageState 顶层直接赋值 | `_pageState.xxx = 1`（在函数外顶层） | 顶层只声明 `let _pageState = {}`，赋值在 __init__ 内 |
+| script.js 缺少 __init__ | 没有定义 __init__ 函数 | 必须定义 `function __init__() {...}` |
+| dataKey 大小写不一致 | `"dataKey": "users@rows"`，表名定义为 `"Users"` | 大小写必须与 pagedata.json tables 键完全相同 |
+| 树场景调用 $rebindRules | 树节点事件内调用 `$rebindRules()` | 改用 `view.replaceRows()` + DOM 直写，禁止 $rebindRules |
