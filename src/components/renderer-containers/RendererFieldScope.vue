@@ -31,9 +31,8 @@ import { toRef, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
-import { DATA_SOURCE } from '@spark-view/spark-component'
-import { CONTEXT_DATA, FIELD_CONTEXT } from '../capability-keys'
-import type { FieldContext } from '../capability-keys'
+import { DATA_SOURCE, CONTEXT_DATA, FIELD_CONTEXT } from '@spark-view/spark-component'
+import type { FieldContext } from '@spark-view/spark-component'
 import { useContainerGrid } from './useContainerGrid'
 
 interface Props {

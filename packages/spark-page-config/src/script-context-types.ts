@@ -173,6 +173,22 @@ export interface IScriptContext {
    * 为保持此文件对 capability 系统无依赖，此处使用结构等价的内联类型。
    */
   $page: IPageServiceInScript
+
+  /**
+   * 模块级上下文（导航系统注入，当前模块无上下文时为 `null`）。
+   *
+   * 提供当前模块选择器的选中值和可选项，脚本可据此实现按项目/租户/环境加载数据等逻辑。
+   *
+   * @example
+   * ```js
+   * // script.js
+   * const projectId = $moduleContext?.selected
+   * if (projectId) {
+   *   view?.loadFromServer({ projectId })
+   * }
+   * ```
+   */
+  $moduleContext: IModuleContextInScript | null
 }
 
 /**
@@ -283,4 +299,27 @@ export interface IPageUploadFilesOptionsInScript extends IPageBrowseFilesOptions
 export interface IPageUploadedFileInScript extends IPageSelectedFileInScript {
   response: unknown
   url?: string
+}
+
+// ==================== 模块上下文（内联类型）====================
+
+/** 模块上下文选项（结构与 `IModuleContextItem` 等价） */
+export interface IModuleContextItemInScript {
+  id: string | number
+  title: string
+}
+
+/**
+ * `$moduleContext` 的内联类型（结构与 `IModuleContext` 完全等价）。
+ *
+ * 定义在此文件内，避免对 `capability/symbols.ts` 产生导入依赖。
+ * 渲染层以 `IModuleContext` 作为实现类型；两者通过结构化类型兼容。
+ */
+export interface IModuleContextInScript {
+  /** 当前选中值 */
+  selected: string | number | null
+  /** 可选项列表 */
+  items: readonly IModuleContextItemInScript[]
+  /** 上下文所属导航节点 ID */
+  nodeId: string
 }

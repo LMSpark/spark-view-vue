@@ -180,6 +180,7 @@ export function usePageRenderer(
     pageContainer,
     rebindRules,
     pageService,
+    getModuleContext: () => props.moduleContext ?? null,
   })
 
   // ── 配置加载流水线 ────────────────────────────────────────────────────────────

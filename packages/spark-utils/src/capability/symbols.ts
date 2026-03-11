@@ -356,6 +356,36 @@ export interface IThemeCapability {
 
 export const THEME = defineCapability<IThemeCapability>('spark:capability:theme')
 
+// ==================== 模块上下文 ====================
+
+/** 模块上下文选项 */
+export interface IModuleContextItem {
+  id: string | number
+  title: string
+}
+
+/**
+ * 模块级上下文快照（框架无关）
+ *
+ * 由导航系统提供，渲染层通过 props 传递给页面渲染器，
+ * 脚本沙箱内通过 `$moduleContext` 访问。
+ *
+ * @example
+ * ```js
+ * // script.js
+ * const projectId = $moduleContext?.selected
+ * const items = $moduleContext?.items
+ * ```
+ */
+export interface IModuleContext {
+  /** 当前选中值 */
+  selected: string | number | null
+  /** 可选项列表 */
+  items: readonly IModuleContextItem[]
+  /** 上下文所属导航节点 ID */
+  nodeId: string
+}
+
 // ==================== 能力类型映射表（可扩展） ==
 
 /**

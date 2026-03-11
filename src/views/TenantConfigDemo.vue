@@ -174,10 +174,10 @@
  * @since 1.0.0
  */
 import { ref, onMounted } from 'vue'
-import { TenantResolver, ConfigLoader } from '@/config/loader'
-import type { AppFullConfig, TenantInfo } from '@/config/types'
+import { TenantResolver, ConfigLoader } from '@spark-view/spark-app'
+import type { AppFullConfig, FullTenantInfo } from '@spark-view/spark-app'
 
-const tenantInfo = ref<TenantInfo | null>(null)
+const tenantInfo = ref<FullTenantInfo | null>(null)
 const config = ref<AppFullConfig['config']>({
   apiBaseUrl: '/api',
   logLevel: 'debug',

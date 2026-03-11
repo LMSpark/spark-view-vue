@@ -111,7 +111,7 @@ import {
   closeAppSelector,
   confirmAppDialog,
   confirmAppSelector,
-} from './pageUiService'
+} from '@spark-view/spark-app'
 
 const filteredSelectorOptions = computed(() => {
   const keyword = appPageUiState.selector.searchKeyword.trim().toLowerCase()

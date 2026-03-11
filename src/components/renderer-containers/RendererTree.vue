@@ -99,7 +99,7 @@ import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-com
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-component'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
+import { FIELD_CONTEXT, CONTEXT_DATA } from '@spark-view/spark-component'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
 import { useContainerInput } from './useContainerInput'

@@ -12,7 +12,7 @@
 import type { h as VueH } from 'vue'
 import type { IDataSet, SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig, IPageRoute, IFormAPI } from '@spark-view/spark-page-config'
-import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
 import type { ComponentRegistry } from '../../core/types.js'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
@@ -107,6 +107,7 @@ export interface FormCreateAPI {
 export interface PageContext {
   $dataSet: IDataSet | null
   $route: IPageRoute
+  $moduleContext: IModuleContext | null
   $el: () => HTMLElement | null
   $query: (selector: string) => HTMLElement | null
   $queryAll: (selector: string) => NodeListOf<Element>
@@ -165,6 +166,8 @@ export interface PageRendererProps {
   }
   /** APP 层注入的页面服务扩展（弹层/文件能力等） */
   pageService?: Partial<IPageServiceCapability>
+  /** 模块级上下文（导航系统提供，注入沙箱 $moduleContext） */
+  moduleContext?: IModuleContext | null
   /** 页面加载前钩子函数 */
   beforeLoad?: (pageId: string) => void | Promise<void>
   /** 页面加载后钩子函数 */

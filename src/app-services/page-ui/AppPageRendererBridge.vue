@@ -1,16 +1,30 @@
 <template>
-  <FCPageRenderer v-bind="forwardedProps" :page-service="mergedPageService" />
+  <FCPageRenderer v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import { FCPageRenderer } from '@spark-view/spark-component'
 import type { PageRendererOptions } from '@spark-view/spark-component'
-import { appPageUiService } from './pageUiService'
+import type { IModuleContext } from '@spark-view/spark-utils'
+import { appPageUiService } from '@spark-view/spark-app'
+import { NAV_KEY } from '@/layout/nav-types'
 
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,
   enableDataSet: true,
+})
+
+const nav = inject(NAV_KEY, undefined)
+
+const moduleContext = computed<IModuleContext | null>(() => {
+  const state = nav?.moduleContext.value
+  if (!state) return null
+  return {
+    selected: state.selected,
+    items: state.items,
+    nodeId: state.nodeId,
+  }
 })
 
 const mergedPageService = computed(() => ({

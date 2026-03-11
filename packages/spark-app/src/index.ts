@@ -118,7 +118,20 @@ export type { DynamicRouterOptions } from './router/dynamic'
 export { setupErrorHandler, createErrorBoundary } from './error/handler'
 
 // Config
-export { loadConfig, isFeatureEnabled } from './config'
+export { loadConfig, isFeatureEnabled, ConfigLoader, TenantResolver, loadAppConfig } from './config'
+export type { AppFullConfig, TenantConfig, ConfigSourceOptions, FullTenantInfo } from './config'
+
+// Page UI Service
+export {
+  appPageUiState,
+  appPageUiService,
+  confirmAppDialog,
+  cancelAppDialog,
+  closeAppDialog,
+  confirmAppSelector,
+  cancelAppSelector,
+  closeAppSelector,
+} from './page-ui/pageUiService'
 
 // 运行时组件注册辅助（可选，经典模式使用）
 export { setupAutoRegister } from './auto-register'
