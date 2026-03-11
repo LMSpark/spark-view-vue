@@ -84,6 +84,7 @@ export const demoNavRoot: NavRoot = {
       children: [
         { id: 'users', title: '用户管理', icon: '👥', path: '/users' },
         { id: 'permission-render', title: '权限渲染', icon: '🎨', path: '/permission-render' },
+        { id: 'dev-system', title: '开发系统', icon: '⚡', path: '/dev' },
         {
           id: 'system-settings',
           title: '系统设置',

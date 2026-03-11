@@ -1,0 +1,215 @@
+import { ref } from 'vue'
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface FileAttachment {
+  fileId: string
+  name: string
+  size: number
+  mimeType: string
+}
+
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  /** DeepSeek-reasoner 的推理思考过程（reasoning_content） */
+  reasoning?: string
+  attachments?: FileAttachment[]
+  timestamp: Date
+  /** true 表示 AI 仍在流式输出中 */
+  streaming?: boolean
+  /** token 用量统计（流完成后填入） */
+  usage?: TokenUsage
+}
+
+export interface TokenUsage {
+  promptTokens?: number
+  completionTokens?: number
+  totalTokens?: number
+  /** DeepSeek 上下文缓存命中 token 数 */
+  promptCacheHitTokens?: number
+  promptCacheMissTokens?: number
+}
+
+export type ChatMode = 'multi' | 'single'
+
+// ── Composable ───────────────────────────────────────────────────────────────
+
+export function useAiChat(options?: {
+  mode?: ChatMode
+  systemPrompt?: string | undefined
+}) {
+  const mode = options?.mode ?? 'multi'
+  const systemPrompt = options?.systemPrompt
+
+  const messages = ref<ChatMessage[]>([])
+  const isStreaming = ref(false)
+  const error = ref<string | null>(null)
+
+  // ── 发送文本消息（可携带附件） ────────────────────────────────────────────
+
+  async function send(text: string, attachments?: FileAttachment[]) {
+    const trimmed = text.trim()
+    if (!trimmed && !attachments?.length) return
+    if (isStreaming.value) return
+
+    error.value = null
+
+    // 添加用户消息
+    const userMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: trimmed,
+      ...(attachments !== undefined ? { attachments } : {}),
+      timestamp: new Date(),
+    }
+    messages.value.push(userMsg)
+
+    // 准备 AI 回复占位
+    const assistantMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      streaming: true,
+    }
+    messages.value.push(assistantMsg)
+    isStreaming.value = true
+
+    try {
+      // 多轮模式：把所有历史（除最后一条助手占位）发给后端
+      // 单轮模式：只发当前用户消息
+      const historyMsgs: Array<{ role: string; content: string }> =
+        mode === 'multi'
+          ? messages.value
+              .slice(0, -1) // 去掉刚插入的助手占位
+              .map((m) => ({ role: m.role, content: m.content }))
+          : [{ role: 'user', content: trimmed }]
+
+      // 附件信息拼接到最后一条用户消息内容（文本化描述，LLM 无法理解二进制附件）
+      if (attachments !== undefined && attachments.length > 0) {
+        const lastUserIdx = historyMsgs.length - 1
+        const last = historyMsgs[lastUserIdx]
+        if (last !== undefined) {
+          const attachDesc = attachments.map((a) => `[附件: ${a.name}]`).join(' ')
+          historyMsgs[lastUserIdx] = {
+            ...last,
+            content: `${last.content}\n${attachDesc}`,
+          }
+        }
+      }
+
+      const response = await fetch('/api/ai/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: historyMsgs,
+          mode,
+          systemPrompt,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      if (!response.body) {
+        throw new Error('响应体为空，不支持流式读取')
+      }
+
+      await readStream(response.body, assistantMsg)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '请求失败'
+      error.value = msg
+      assistantMsg.content = `⚠️ ${msg}`
+    } finally {
+      assistantMsg.streaming = false
+      isStreaming.value = false
+    }
+  }
+
+  // ── 读取 SSE 流（支持 delta / reasoning / usage 事件） ─────────────────
+
+  async function readStream(body: ReadableStream<Uint8Array>, target: ChatMessage) {
+    const reader = body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+
+      for (const line of lines) {
+        // 解析 SSE 事件名（event: xxx）
+        if (line.startsWith('event: ')) continue // 事件名行跳过，数据在 data: 行
+
+        if (!line.startsWith('data: ')) continue
+        const data = line.slice('data: '.length).trim()
+        if (data === '[DONE]') return
+
+        try {
+          const parsed = JSON.parse(data) as Record<string, unknown>
+          if (parsed['done'] === true) return
+
+          // DeepSeek-reasoner: 推理过程增量
+          const reasoning = parsed['reasoning']
+          if (typeof reasoning === 'string' && reasoning) {
+            target.reasoning = (target.reasoning ?? '') + reasoning
+          }
+
+          // 正文内容增量
+          const delta = parsed['delta']
+          if (typeof delta === 'string' && delta) {
+            target.content += delta
+          }
+
+          // token 用量统计（DeepSeek stream_options.include_usage）
+          const usageRaw = parsed['usage']
+          if (usageRaw !== null && typeof usageRaw === 'object') {
+            const u = usageRaw as Record<string, unknown>
+            const usage: TokenUsage = {}
+            if (typeof u['prompt_tokens'] === 'number') usage.promptTokens = u['prompt_tokens']
+            if (typeof u['completion_tokens'] === 'number') usage.completionTokens = u['completion_tokens']
+            if (typeof u['total_tokens'] === 'number') usage.totalTokens = u['total_tokens']
+            if (typeof u['prompt_cache_hit_tokens'] === 'number') usage.promptCacheHitTokens = u['prompt_cache_hit_tokens']
+            if (typeof u['prompt_cache_miss_tokens'] === 'number') usage.promptCacheMissTokens = u['prompt_cache_miss_tokens']
+            target.usage = usage
+          }
+        } catch {
+          // 跳过非 JSON 行
+        }
+      }
+    }
+  }
+
+  // ── 文件上传 ─────────────────────────────────────────────────────────────
+
+  async function uploadFile(file: File): Promise<FileAttachment> {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/ai/upload', { method: 'POST', body: fd })
+    if (!res.ok) throw new Error(`上传失败: HTTP ${res.status}`)
+    return (await res.json()) as FileAttachment
+  }
+
+  // ── 清空会话 ─────────────────────────────────────────────────────────────
+
+  function clear() {
+    messages.value = []
+    error.value = null
+    isStreaming.value = false
+  }
+
+  return {
+    messages,
+    isStreaming,
+    error,
+    send,
+    uploadFile,
+    clear,
+  }
+}

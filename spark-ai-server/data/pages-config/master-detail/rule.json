@@ -36,7 +36,7 @@
             ]
           },
           {
-            "type": "el-table",
+            "type": "r-table",
             "dataKey": "Users@rows",
             "props": {
               "border": true,
@@ -45,25 +45,25 @@
             },
             "children": [
               {
-                "type": "el-table-column",
+                "type": "r-text",
+                "name": "id",
                 "props": {
-                  "prop": "id",
                   "label": "用户ID",
-                  "width": "100"
+                  "width": 100
                 }
               },
               {
-                "type": "el-table-column",
+                "type": "r-text",
+                "name": "name",
                 "props": {
-                  "prop": "name",
                   "label": "姓名",
-                  "width": "150"
+                  "width": 150
                 }
               },
               {
-                "type": "el-table-column",
+                "type": "r-text",
+                "name": "email",
                 "props": {
-                  "prop": "email",
                   "label": "邮箱"
                 }
               }
@@ -85,41 +85,32 @@
             ]
           },
           {
-            "type": "el-card",
-            "props": {
-              "shadow": "hover"
-            },
+            "type": "r-detail",
+            "dataKey": "Users@currentRow",
             "children": [
               {
-                "type": "div",
-                "children": [
-                  {
-                    "type": "p",
-                    "children": [
-                      {
-                        "type": "strong",
-                        "children": [
-                          "dataKey: "
-                        ]
-                      },
-                      "dataset.tables.Users.currentRow"
-                    ]
-                  },
-                  {
-                    "type": "el-input",
-                    "field": "currentRowJson",
-                    "props": {
-                      "type": "textarea",
-                      "readonly": true,
-                      "rows": 12,
-                      "placeholder": "请点击用户行查看详情",
-                      "style": {
-                        "fontFamily": "monospace",
-                        "fontSize": "14px"
-                      }
-                    }
-                  }
-                ]
+                "type": "r-text",
+                "name": "id",
+                "props": {
+                  "label": "用户ID",
+                  "colSpan": 8
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "name",
+                "props": {
+                  "label": "姓名",
+                  "colSpan": 8
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "email",
+                "props": {
+                  "label": "邮箱",
+                  "colSpan": 8
+                }
               }
             ]
           }
@@ -146,7 +137,7 @@
             ]
           },
           {
-            "type": "el-table",
+            "type": "r-table",
             "dataKey": "Orders@rows",
             "props": {
               "border": true,
@@ -155,27 +146,27 @@
             },
             "children": [
               {
-                "type": "el-table-column",
+                "type": "r-text",
+                "name": "id",
                 "props": {
-                  "prop": "id",
                   "label": "订单ID",
-                  "width": "100"
+                  "width": 100
                 }
               },
               {
-                "type": "el-table-column",
+                "type": "r-text",
+                "name": "product",
                 "props": {
-                  "prop": "product",
                   "label": "产品",
-                  "width": "200"
+                  "width": 200
                 }
               },
               {
-                "type": "el-table-column",
+                "type": "r-number",
+                "name": "amount",
                 "props": {
-                  "prop": "amount",
                   "label": "金额",
-                  "width": "120"
+                  "width": 120
                 }
               }
             ]

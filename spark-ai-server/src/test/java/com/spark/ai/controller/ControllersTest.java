@@ -7,6 +7,7 @@ import com.spark.ai.service.AiPageService;
 import com.spark.ai.service.ComponentMetadataService;
 import com.spark.ai.service.PageConfigService;
 import com.spark.ai.service.SseService;
+import com.spark.ai.service.TenantService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -45,6 +46,9 @@ class ControllersTest {
 
     @MockBean
     SseService sseService;
+
+    @MockBean
+    TenantService tenantService;
 
     // ── AiChatController ──────────────────────────────────────────────────
 
