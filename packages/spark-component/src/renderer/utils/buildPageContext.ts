@@ -10,7 +10,7 @@
  */
 
 import { h, type Ref } from 'vue'
-import type { IPageServiceCapability } from '@spark-view/spark-utils'
+import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
 import type { IPageRoute, IFormAPI } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
@@ -49,6 +49,8 @@ export interface PageContextDeps {
   pageRoute: IPageRoute
   pageContainer: Ref<HTMLElement | null>
   pageService: IPageServiceCapability
+  /** 模块上下文 getter（可选，每次调用返回最新快照） */
+  getModuleContext?: () => IModuleContext | null
 }
 
 /**
@@ -59,6 +61,7 @@ export function buildPageContext(deps: PageContextDeps): PageContext {
 
   return {
     get $dataSet() { return getDataSet() },
+    get $moduleContext() { return deps.getModuleContext?.() ?? null },
 
     $route:       pageRoute,
     $el:          () => pageContainer.value,
@@ -99,6 +102,7 @@ export function buildFCPageContext(deps: FCPageContextDeps): FCPageContext {
     ...buildPageContext(deps),
     // 重新定义 getter（spread 会将 getter 求值为静态快照，故需覆盖）
     get $dataSet() { return getDataSet() },
+    get $moduleContext() { return deps.getModuleContext?.() ?? null },
     get $api()     { return formApi.value as IFormAPI | null },
     $rebindRules:  () => rebindRules(),
   }

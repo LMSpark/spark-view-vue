@@ -58,7 +58,7 @@ let _currentPageId: string | undefined
 const _sessionId = `s-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 // 配置加载器
-import { loadAppConfig } from './config/loader'
+import { loadAppConfig } from '@spark-view/spark-app'
 
 // 主应用组件
 import { createApp } from 'vue'

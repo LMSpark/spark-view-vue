@@ -50,4 +50,6 @@ export type {
   IFormAPI,
   IScriptContext,
   IPageServiceInScript,
+  IModuleContextInScript,
+  IModuleContextItemInScript,
 } from './script-context-types'

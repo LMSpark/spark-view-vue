@@ -1,11 +1,15 @@
 ﻿/**
  * Configuration Manager
- * 配置管理（环境变量 + 远程配置）
+ * 配置管理（环境变量 + 远程配置 + 多租户）
  */
 
 import type { AppConfig } from '../types'
 import { createLogger } from '../logger'
 import { toErrorMessage } from '@spark-view/spark-utils'
+
+// ── 多租户配置系统（从 loader.ts 导出） ──
+export { ConfigLoader, TenantResolver, loadAppConfig } from './loader'
+export type { AppFullConfig, TenantConfig, ConfigSourceOptions, FullTenantInfo } from './types'
 
 const configLogger = createLogger('config')
 

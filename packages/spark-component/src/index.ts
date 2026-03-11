@@ -37,8 +37,9 @@ export type {
 // ── 6. DI Keys ──
 export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './core/types.js'
 
-// ── 6b. 数据能力键 ──
-export { PAGE_DATASET, DATA_SOURCE } from './capability-keys.js'
+// ── 6b. 数据 + Renderer 能力键 ──
+export { PAGE_DATASET, DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA } from './capability-keys.js'
+export type { FieldContext } from './capability-keys.js'
 
 // ── 7. 页面渲染引擎 ──
 export {

@@ -4,7 +4,7 @@ import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useSparkComponent, DATA_SOURCE } from '@spark-view/spark-component'
 import type { ComponentConfig } from '@spark-view/spark-component'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
+import { FIELD_CONTEXT, CONTEXT_DATA } from '@spark-view/spark-component'
 import { columnToFormRules } from './columnFormRules'
 import type { FormItemRule } from './columnFormRules'
 

@@ -9,7 +9,7 @@ import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-com
 import type { ComponentConfig } from '@spark-view/spark-component'
 import type { IDataSource } from '@spark-view/spark-data'
 import { DATA_SOURCE } from '@spark-view/spark-component'
-import { FIELD_CONTEXT, CONTEXT_DATA } from '../capability-keys'
+import { FIELD_CONTEXT, CONTEXT_DATA } from '@spark-view/spark-component'
 
 interface Props {
   config?: ComponentConfig
