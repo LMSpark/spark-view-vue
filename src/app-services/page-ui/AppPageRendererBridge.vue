@@ -8,7 +8,7 @@ import { FCPageRenderer } from '@spark-view/spark-component'
 import type { PageRendererOptions } from '@spark-view/spark-component'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import { appPageUiService } from '@spark-view/spark-app'
-import { NAV_KEY } from '@/layout/nav-types'
+import { NAV_KEY } from '@spark-view/spark-app'
 
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,

@@ -1,157 +1,18 @@
-import type { ComputedRef, InjectionKey } from 'vue'
-
-/* ══════════════════════════════════════════════════════════
- * 导航模型类型定义
- * ══════════════════════════════════════════════════════════ */
-
-/** 子项存放位置 */
-export type ChildPlacement = 'header' | 'sidebar' | 'parent' | 'flat'
-
-/** 导航节点类型 */
-export type NavNodeType = 'item' | 'group' | 'divider'
-
-/* ── 上下文选择器 ── */
-
-/** 上下文选项（固定 id + title） */
-export interface NavContextItem {
-  /** 唯一标识 */
-  id: string | number
-  /** 显示标题 */
-  title: string
-}
-
-/** 远程数据源（高级配置，仅当默认 GET + 直接返回数组不满足时使用） */
-export interface NavContextRemoteSource {
-  /** 请求 URL */
-  url: string
-  /** HTTP 方法（默认 GET） */
-  method?: string
-  /** URL 查询参数 */
-  params?: Record<string, string>
-  /** 请求头 */
-  headers?: Record<string, string>
-  /** 请求体（仅 POST/PUT，自动 JSON.stringify） */
-  body?: unknown
-  /** 响应数据路径（如 'data.items'，按 . 逐级取值；缺省取整个响应体） */
-  dataPath?: string
-}
-
-/** 上下文选择器完整配置 */
-export interface NavContextConfig {
-  /** 数据来源：URL 字符串 | 静态数组 | 远程详细配置 */
-  source: string | NavContextItem[] | NavContextRemoteSource
-  /** 占位文本（默认 '请选择'） */
-  placeholder?: string
-  /** 默认值 */
-  defaultValue?: string | number
-  /** URL query 参数名（选中值同步到 route.query；缺省不同步） */
-  paramName?: string
-  /** 是否缓存远程数据（默认 true） */
-  cacheable?: boolean
-}
-
 /**
- * 上下文选择器输入（约定优先简写）
- *
- * - `string`             → URL 简写（GET，响应 = NavContextItem[]）
- * - `NavContextItem[]`   → 静态列表
- * - `NavContextConfig`   → 完整配置
+ * @deprecated 已迁移到 @spark-view/spark-app — 本文件为兼容桥接
  */
-export type NavContextInput = string | NavContextItem[] | NavContextConfig
-
-/* ── 导航节点 ── */
-
-export interface NavNode {
-  /** 唯一标识 */
-  id: string
-  /** 节点类型（默认 'item'） */
-  type?: NavNodeType
-  /** 显示标题 */
-  title: string
-  /** 图标 */
-  icon?: string
-  /** 路由路径（叶子节点） */
-  path?: string
-  /** 页面配置 ID */
-  pageId?: string
-  /** 点击重定向路径（组节点使用） */
-  redirect?: string
-  /** 外部链接（新窗口打开） */
-  externalUrl?: string
-  /** 子项存放位置 */
-  childPlacement?: ChildPlacement
-  /** 上下文选择器（字符串=URL / 数组=静态列表 / 对象=完整配置） */
-  context?: NavContextInput
-  /** 子节点 */
-  children?: NavNode[]
-  /** 排序权重（默认 0，升序） */
-  order?: number
-  /** 隐藏（不显示在菜单，但参与活动路径计算） */
-  hidden?: boolean
-  /** 禁用（灰色不可交互） */
-  disabled?: boolean
-  /** 角标 */
-  badge?: string | number
-  /** 权限标识 */
-  permissions?: string[]
-  /** 固定到标签栏（不可关闭） */
-  affix?: boolean
-  /** 扩展元数据 */
-  meta?: Record<string, unknown>
-}
-
-/** 导航根配置（根节点只允许 header / sidebar 两种放置位置） */
-export interface NavRoot {
-  /** 顶层子项存放位置 */
-  childPlacement: 'header' | 'sidebar'
-  /** 顶层子节点 */
-  children: NavNode[]
-}
-
-/* ── 派生类型（useNavigation 使用） ── */
-
-/** 区域对应的导航项集合 */
-export interface RegionItems {
-  header: NavNode[]
-  sidebar: NavNode[]
-}
-
-/** 区域可见性 */
-export interface RegionVisibility {
-  header: boolean
-  sidebar: boolean
-}
-
-/** 上下文选择器运行时状态 */
-export interface NavContextState {
-  config: NavContextConfig
-  nodeId: string
-  selected: string | number | null
-  items: NavContextItem[]
-  loading: boolean
-  error: string | null
-}
-
-/* ── 注入上下文 ── */
-
-export interface NavigationContext {
-  /** 从根到当前叶子的节点路径 */
-  activePath: ComputedRef<NavNode[]>
-  /** 各区域的导航项 */
-  regionItems: ComputedRef<RegionItems>
-  /** 各区域是否可见（有项为 true） */
-  regionVisibility: ComputedRef<RegionVisibility>
-  /** 当前模块的上下文选择器状态（null = 当前模块无上下文；作用域：模块下全部页面） */
-  moduleContext: ComputedRef<NavContextState | null>
-  /** 导航到指定节点（处理外部链接、重定向、首个叶子等） */
-  navigateTo: (node: NavNode) => void
-  /** 设置当前模块上下文选择器的值 */
-  setContextValue: (value: string | number | null) => void
-  /** 判断节点是否在活动路径上 */
-  isNodeActive: (node: NavNode) => boolean
-  /** 获取节点的角标 */
-  getBadge: (nodeId: string) => string | number | undefined
-}
-
-/** Vue 注入键 */
-export const NAV_KEY: InjectionKey<NavigationContext> = Symbol('spark-navigation')
+export { NAV_KEY } from '@spark-view/spark-app'
+export type {
+  ChildPlacement,
+  NavNodeType,
+  NavContextItem,
+  NavContextRemoteSource,
+  NavContextConfig,
+  NavContextInput,
+  NavNode,
+  NavRoot,
+  RegionItems,
+  RegionVisibility,
+  NavContextState,
+  NavigationContext,
+} from '@spark-view/spark-app'

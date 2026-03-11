@@ -94,8 +94,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { useTheme } from '@spark-view/spark-app'
-import AppPageUiHost from '@/app-services/page-ui/AppPageUiHost.vue'
+import { useTheme, AppPageUiHost } from '@spark-view/spark-app'
 import { pageRefreshKey } from '@/services/ai-loop'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
