@@ -223,7 +223,7 @@ async function startApp() {
     
     // 4. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
-    const AppPageRendererBridge = (await import('./app-services/page-ui/AppPageRendererBridge.vue')).default
+    const AppPageRendererBridge = (await import('./AppPageRendererBridge.vue')).default
     
     await SparkApp.start({
       // === 应用根组件 ===
