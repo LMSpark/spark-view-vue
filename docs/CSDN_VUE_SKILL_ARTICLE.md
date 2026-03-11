@@ -90,7 +90,7 @@ emit('row-click', row)  ← 事件输出           ❌ 无结构化描述
 
 ## 三、SPARK 能力系统：Skill 的运行时基础设施
 
-SPARK 框架的能力系统（`packages/spark-utils/src/capability/symbols.ts`）不是偶然为之，它从架构上就为 Skill 化奠定了基础。
+SPARK 框架的能力系统（`packages/spark-utils/src/capability/index.ts`）不是偶然为之，它从架构上就为 Skill 化奠定了基础。
 
 ### 3.1 能力键（Capability Key）= Skill 接口的类型标签
 
@@ -871,7 +871,7 @@ const approval = consume('my-org:skill:approval-flow')
 >
 > | 模块 | 路径 |
 > |------|------|
-> | 能力系统定义 | `packages/spark-utils/src/capability/symbols.ts` |
+> | 能力系统定义 | `packages/spark-utils/src/capability/index.ts` |
 > | 组件注册表 | `packages/spark-component/src/registry/ComponentRegistry.ts` |
 > | Spark 命名空间 | `packages/spark-component/src/spark.ts` |
 > | useSparkComponent | `packages/spark-component/src/composables/useSparkComponent.ts` |
