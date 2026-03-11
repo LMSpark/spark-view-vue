@@ -36,3 +36,4 @@ tmpclaude-*
 spark-ai-server/.env.java
 
 
+data/sparkdb.mv.db

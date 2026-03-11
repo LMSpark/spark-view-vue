@@ -3,6 +3,8 @@
  */
 export {
   logUpdateSignal,
+  onServerEvent,
+  ServerEventType,
   onPageConfigChange,
   setAutoIterating,
   isAutoIterating,
@@ -25,4 +27,5 @@ export type {
   LogSnapshot,
   AIPageLoopOptions,
   FileChangeEvent,
+  ServerEventTypeName,
 } from '@spark-view/spark-app'

@@ -174,6 +174,8 @@ export type { PrimaryPreset, NavPreset, NavColorSet } from './navigation/useColo
 // ── AI Page Loop ──
 export {
   logUpdateSignal,
+  onServerEvent,
+  ServerEventType,
   onPageConfigChange,
   setAutoIterating,
   isAutoIterating,
@@ -196,6 +198,7 @@ export type {
   LogSnapshot,
   AIPageLoopOptions,
   FileChangeEvent,
+  ServerEventTypeName,
 } from './ai/ai-loop'
 
 // ── Page UI Host Component ──

@@ -13,13 +13,24 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Server-Sent Events 广播服务。
- * 管理所有活跃的 SSE 连接，文件变更时推送通知给前端 FileLoader。
+ * 统一 Server-Sent Events 广播服务。
+ * <p>
+ * 管理所有活跃的 SSE 连接，通过 {@code event:} 字段区分事件类型，
+ * 前端单个 EventSource 即可监听所有服务端推送。
+ * <p>
+ * 事件类型约定：
+ * <ul>
+ *   <li>{@code page-config} — 页面配置文件变更（pageId, file, timestamp）</li>
+ *   <li>后续可扩展：{@code notification}, {@code data-change} 等</li>
+ * </ul>
  */
 @Service
 public class SseService {
 
     private static final Logger log = LoggerFactory.getLogger(SseService.class);
+
+    /** 事件类型常量 */
+    public static final String EVENT_PAGE_CONFIG = "page-config";
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
@@ -38,7 +49,7 @@ public class SseService {
     }
 
     /**
-     * 广播文件变更事件到所有活跃的 SSE 客户端。
+     * 广播页面配置变更事件（语义快捷方法）。
      * 与 Vite 插件的 broadcastChange 格式保持一致：{ pageId, file, timestamp }
      */
     public void broadcast(String pageId, String file) {
@@ -47,10 +58,24 @@ public class SseService {
                 "file", file,
                 "timestamp", String.valueOf(Instant.now().toEpochMilli())
         );
+        emit(EVENT_PAGE_CONFIG, payload);
+    }
+
+    /**
+     * 向所有客户端发送带类型的 SSE 事件。
+     *
+     * @param eventType SSE event 名称（前端通过 addEventListener(eventType) 监听）
+     * @param payload   JSON 序列化的数据载荷
+     */
+    public void emit(String eventType, Object payload) {
         List<SseEmitter> dead = new ArrayList<>();
         for (SseEmitter emitter : emitters) {
             try {
-                emitter.send(SseEmitter.event().data(payload, MediaType.APPLICATION_JSON));
+                emitter.send(
+                        SseEmitter.event()
+                                .name(eventType)
+                                .data(payload, MediaType.APPLICATION_JSON)
+                );
             } catch (Exception e) {
                 dead.add(emitter);
             }
@@ -59,6 +84,6 @@ public class SseService {
             emitters.removeAll(dead);
             log.debug("[SSE] 移除断开连接: {}", dead.size());
         }
-        log.debug("[SSE] 已广播变更: pageId={}, file={}, 活跃连接={}", pageId, file, emitters.size());
+        log.debug("[SSE] 已广播事件: type={}, 活跃连接={}", eventType, emitters.size());
     }
 }
