@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
-import RendererList from '../src/components/renderer-containers/RendererList.vue'
-import RendererSection from '../src/components/renderer-containers/RendererSection.vue'
+import { RendererList, RendererSection } from '@spark-view/spark-component'
 
 const SparkActionStub = defineComponent({
   props: {

@@ -274,11 +274,11 @@ function inferSkillType(absolutePath: string, fallbackType: string): string | nu
   const normalizedPath = normalizePath(absolutePath)
   const fileName = basename(absolutePath, '.vue')
 
-  if (normalizedPath.includes('/src/components/renderer-fields/')) {
+  if (normalizedPath.includes('/renderer/fields/')) {
     return `r-${toKebabCase(fileName.replace(/^Field/, ''))}`
   }
 
-  if (normalizedPath.includes('/src/components/renderer-containers/')) {
+  if (normalizedPath.includes('/renderer/containers/')) {
     if (/Scope$/.test(fileName)) return null
     return `r-${toKebabCase(fileName.replace(/^Renderer/, ''))}`
   }
@@ -289,11 +289,11 @@ function inferSkillType(absolutePath: string, fallbackType: string): string | nu
 function buildImplicitSkillDescription(absolutePath: string, skillType: string): string {
   const normalizedPath = normalizePath(absolutePath)
 
-  if (normalizedPath.includes('/src/components/renderer-fields/')) {
+  if (normalizedPath.includes('/renderer/fields/')) {
     return `SPARK 字段组件，可在 rule.json 中通过 type="${skillType}" 使用。`
   }
 
-  if (normalizedPath.includes('/src/components/renderer-containers/')) {
+  if (normalizedPath.includes('/renderer/containers/')) {
     return `SPARK 容器组件，可在 rule.json 中通过 type="${skillType}" 组织子组件。`
   }
 

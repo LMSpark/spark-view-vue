@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import RendererTable from '../src/components/renderer-containers/RendererTable.vue'
+import { RendererTable } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
@@ -257,7 +257,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
   })
 
   it('RendererTree should call dataSource.loadFromServer() on mount when rows empty', async () => {
-    const { default: RendererTree } = await import('../src/components/renderer-containers/RendererTree.vue')
+    const { RendererTree } = await import('@spark-view/spark-component')
 
     const ds = SparkData.createDataSet({
       dataSetName: 'RTDS3',
@@ -330,7 +330,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
   it('should render tree toolbar and scoped node actions with position props', async () => {
     const nodeActionSpy = vi.fn()
 
-    const { default: RendererTree } = await import('../src/components/renderer-containers/RendererTree.vue')
+    const { RendererTree } = await import('@spark-view/spark-component')
     const wrapper = mount(RendererTree as any, {
       props: {
         data: [{ id: 'node-1', label: '节点 1' }],
@@ -468,7 +468,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
   })
 
   it('should allow business slots to append tree toolbar node actions and content template', async () => {
-    const { default: RendererTree } = await import('../src/components/renderer-containers/RendererTree.vue')
+    const { RendererTree } = await import('@spark-view/spark-component')
     const wrapper = mount(RendererTree as any, {
       props: {
         dataSource: { rows: [{ id: 'node-1', label: '节点 1' }] },
@@ -533,7 +533,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
   })
 
   it('should hide tree toolbar actions by model permission and node actions by instance permission', async () => {
-    const { default: RendererTree } = await import('../src/components/renderer-containers/RendererTree.vue')
+    const { RendererTree } = await import('@spark-view/spark-component')
     const DeniedTreeStub = defineComponent({
       setup(_, { slots }) {
         return () => h('div', { class: 'el-tree-stub denied' }, slots['default']?.({

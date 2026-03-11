@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import RendererTabs from '../src/components/renderer-containers/RendererTabs.vue'
-import RendererCollapse from '../src/components/renderer-containers/RendererCollapse.vue'
+import { RendererTabs, RendererCollapse } from '@spark-view/spark-component'
 
 const SparkActionStub = defineComponent({
   props: {
