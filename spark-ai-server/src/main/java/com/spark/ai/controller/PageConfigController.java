@@ -39,11 +39,23 @@ public class PageConfigController {
         this.sseService = sseService;
     }
 
-    // ── SSE：文件变更通知 ──────────────────────────────────────────────────────
+    // ── SSE：统一事件流 ─────────────────────────────────────────────────────────
+
+    /**
+     * GET /api/events
+     * 统一 SSE 端点。前端单个 EventSource 监听所有事件类型。
+     * 事件通过 SSE {@code event:} 字段区分（page-config, notification 等）。
+     */
+    @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter unifiedEvents() {
+        return sseService.subscribe();
+    }
+
+    // ── SSE：文件变更通知（兼容旧端点）────────────────────────────────────────
 
     /**
      * GET /api/pages-config/__events
-     * 前端 setupHotReload 通过此 SSE 流监听文件变更并自动重载页面。
+     * @deprecated 使用 /api/events 统一端点代替
      */
     @GetMapping(value = "/pages-config/__events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter events() {

@@ -81,7 +81,17 @@ export interface AIPageLoopOptions {
   skillCatalog?: string | undefined
 }
 
-// ─── SSE 文件变更监听 ───────────────────────────────────────────────────────
+// ─── 统一 SSE 事件总线（单例，按事件类型分发） ──────────────────────────────
+
+/**
+ * 服务端 SSE 事件类型常量
+ * 与后端 SseService.EVENT_* 保持一致
+ */
+export const ServerEventType = {
+  PAGE_CONFIG: 'page-config',
+} as const
+
+export type ServerEventTypeName = (typeof ServerEventType)[keyof typeof ServerEventType]
 
 export interface FileChangeEvent {
   pageId: string
@@ -89,43 +99,110 @@ export interface FileChangeEvent {
   timestamp: number
 }
 
-/**
- * 监听页面配置文件变更（SSE 长连接）
- *
- * @returns 取消订阅函数
- */
-export function onPageConfigChange(
-  callback: (event: FileChangeEvent) => void
-): () => void {
-  let es: EventSource | null = new EventSource('/api/pages-config/__events')
-  let retryCount = 0
-  const MAX_RETRIES = 5
-  const handler = (e: MessageEvent) => {
-    retryCount = 0 // 收到消息重置重连计数
-    try {
-      const data = JSON.parse(e.data as string) as Record<string, unknown>
-      if ('pageId' in data && 'file' in data) {
-        callback(data as unknown as FileChangeEvent)
-      }
-    } catch { /* ignore malformed events */ }
+/** 按事件类型存储的订阅回调集合 */
+const _eventSubscribers = new Map<string, Set<(data: unknown) => void>>()
+let _sharedEs: EventSource | null = null
+let _retryCount = 0
+const _MAX_RETRIES = 5
+
+function _totalSubscribers(): number {
+  let count = 0
+  for (const set of _eventSubscribers.values()) {
+    count += set.size
   }
-  es.addEventListener('message', handler)
-  // 防止后端不可用时无限重连
+  return count
+}
+
+function _ensureConnection(): void {
+  if (_sharedEs) return
+  _retryCount = 0
+  const es = new EventSource('/api/events')
+  _sharedEs = es
+
+  // 为已有订阅的事件类型注册 listener
+  for (const eventType of _eventSubscribers.keys()) {
+    _addEsListener(es, eventType)
+  }
+
   es.onerror = () => {
-    retryCount++
-    if (retryCount > MAX_RETRIES && es) {
-      es.close()
-      es = null
+    _retryCount++
+    if (_retryCount > _MAX_RETRIES) {
+      _teardown()
       if (import.meta.env.DEV) {
         console.warn('[SSE] 已达最大重连次数，停止监听')
       }
     }
   }
-  return () => {
-    es?.removeEventListener('message', handler)
-    es?.close()
-    es = null
+}
+
+function _addEsListener(es: EventSource, eventType: string): void {
+  es.addEventListener(eventType, ((e: MessageEvent) => {
+    _retryCount = 0
+    try {
+      const data: unknown = JSON.parse(e.data as string)
+      const subs = _eventSubscribers.get(eventType)
+      if (subs) {
+        for (const cb of subs) {
+          cb(data)
+        }
+      }
+    } catch { /* ignore malformed events */ }
+  }) as EventListener)
+}
+
+function _teardown(): void {
+  _sharedEs?.close()
+  _sharedEs = null
+}
+
+/**
+ * 监听服务端 SSE 事件（统一事件总线，单例共享连接）
+ *
+ * 所有消费者共享同一个 EventSource（连接 /api/events），
+ * 通过 SSE event: 字段按类型分发。
+ *
+ * @param eventType 事件类型（如 'page-config'）
+ * @param callback  事件回调
+ * @returns 取消订阅函数
+ */
+export function onServerEvent<T = unknown>(
+  eventType: string,
+  callback: (data: T) => void,
+): () => void {
+  let subs = _eventSubscribers.get(eventType)
+  if (!subs) {
+    subs = new Set()
+    _eventSubscribers.set(eventType, subs)
+    // 如果 EventSource 已存在，动态追加 listener
+    if (_sharedEs) {
+      _addEsListener(_sharedEs, eventType)
+    }
   }
+  subs.add(callback as (data: unknown) => void)
+  _ensureConnection()
+
+  return () => {
+    subs.delete(callback as (data: unknown) => void)
+    if (subs.size === 0) {
+      _eventSubscribers.delete(eventType)
+    }
+    if (_totalSubscribers() === 0) {
+      _teardown()
+    }
+  }
+}
+
+/**
+ * 监听页面配置文件变更（语义快捷方法）
+ *
+ * 等价于 {@code onServerEvent('page-config', callback)}
+ *
+ * @returns 取消订阅函数
+ */
+export function onPageConfigChange(
+  callback: (event: FileChangeEvent) => void,
+): () => void {
+  return onServerEvent<FileChangeEvent>(ServerEventType.PAGE_CONFIG, callback)
 }
 
 // ─── 自动迭代守卫 ────────────────────────────────────────────────────────────
