@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import RendererDialog from '../src/components/renderer-containers/RendererDialog.vue'
-import RendererDrawer from '../src/components/renderer-containers/RendererDrawer.vue'
-import RendererSteps from '../src/components/renderer-containers/RendererSteps.vue'
+import { RendererDialog, RendererDrawer, RendererSteps } from '@spark-view/spark-component'
 
 const SparkActionStub = defineComponent({
   props: {

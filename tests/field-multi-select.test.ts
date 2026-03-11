@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, reactive } from 'vue'
-import { Spark, SPARK_PARENT_CONTEXT_KEY, SPARK_REGISTRY_KEY, useSparkComponent } from '@spark-view/spark-component'
-import { CONTEXT_DATA, FIELD_CONTEXT } from '../src/components/capability-keys'
-import FieldMultiSelect from '../src/components/renderer-fields/FieldMultiSelect.vue'
+import { Spark, SPARK_PARENT_CONTEXT_KEY, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, FIELD_CONTEXT, FieldMultiSelect } from '@spark-view/spark-component'
 
 const { registry, rootContext } = Spark.createSystem()
 

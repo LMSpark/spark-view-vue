@@ -2,18 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, reactive } from 'vue'
 import { PAGE_SERVICE, type IPageServiceCapability } from '@spark-view/spark-utils'
-import { Spark, SPARK_PARENT_CONTEXT_KEY, SPARK_REGISTRY_KEY, useSparkComponent } from '@spark-view/spark-component'
-import { CONTEXT_DATA, FIELD_CONTEXT } from '../src/components/capability-keys'
-import FieldTextarea from '../src/components/renderer-fields/FieldTextarea.vue'
-import FieldHtmlEditor from '../src/components/renderer-fields/FieldHtmlEditor.vue'
-import FieldFileBrowser from '../src/components/renderer-fields/FieldFileBrowser.vue'
-import FieldUpload from '../src/components/renderer-fields/FieldUpload.vue'
-import FieldFilePath from '../src/components/renderer-fields/FieldFilePath.vue'
-import FieldImage from '../src/components/renderer-fields/FieldImage.vue'
-import FieldEntityPicker from '../src/components/renderer-fields/FieldEntityPicker.vue'
-import FieldUserPicker from '../src/components/renderer-fields/FieldUserPicker.vue'
-import FieldDeptPicker from '../src/components/renderer-fields/FieldDeptPicker.vue'
-import FieldProductPicker from '../src/components/renderer-fields/FieldProductPicker.vue'
+import {
+  Spark, SPARK_PARENT_CONTEXT_KEY, SPARK_REGISTRY_KEY, useSparkComponent,
+  CONTEXT_DATA, FIELD_CONTEXT,
+  FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,
+  FieldFilePath, FieldImage, FieldEntityPicker, FieldUserPicker,
+  FieldDeptPicker, FieldProductPicker,
+} from '@spark-view/spark-component'
 
 const { registry, rootContext } = Spark.createSystem()
 

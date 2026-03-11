@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import RendererForm from '../src/components/renderer-containers/RendererForm.vue'
-import RendererDetail from '../src/components/renderer-containers/RendererDetail.vue'
+import { RendererForm, RendererDetail } from '@spark-view/spark-component'
 
 const SparkActionStub = defineComponent({
   props: {

@@ -14,10 +14,11 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, './src'),
       '@/features/spark-ej2': resolve(__dirname, './src/features/spark-ej2'),
-      // 安装方式：根测试环境通过 dist 解析 @spark-view/*（不引用 src/）
+      // spark-component → 源码解析（含 Vue SFC，dist 不适合测试直接引用组件源码）
+      '@spark-view/spark-component': resolve(__dirname, './packages/spark-component/src/index.ts'),
+      // 纯 TS 包 → dist 解析
       '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/dist/index.js'),
       '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/dist/index.js'),
-      '@spark-view/spark-component': resolve(__dirname, './packages/spark-component/dist/index.js'),
       '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/dist/index.js'),
       '@spark-view/spark-app': resolve(__dirname, './packages/spark-app/dist/index.js')
     }
