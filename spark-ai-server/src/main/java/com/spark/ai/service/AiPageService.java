@@ -62,7 +62,8 @@ public class AiPageService {
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(10_000);   // 连接超时 10s
-        factory.setReadTimeout(120_000);     // 读取超时 120s（两阶段生成，单次 LLM 可能较慢）
+        // DeepSeek-reasoner 思考阶段可能较长，延长读取超时
+        factory.setReadTimeout(props.isReasonerModel() ? 300_000 : 120_000);
 
         this.restClient = RestClient.builder()
                 .requestFactory(factory)
@@ -70,6 +71,11 @@ public class AiPageService {
                 .defaultHeader("Authorization", "Bearer " + props.getApiKey())
                 .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .build();
+
+        if (props.isDeepSeek()) {
+            log.info("[SPARK-AI] DeepSeek 模式已激活 model={} reasoner={} jsonMode={}",
+                    props.getModel(), props.isReasonerModel(), props.isEffectiveJsonMode());
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -327,19 +333,40 @@ public class AiPageService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 调用 LLM（OpenAI 兼容 API）
+    // 调用 LLM（OpenAI 兼容 API，DeepSeek 深度适配）
     // ─────────────────────────────────────────────────────────────────────────
 
     @SuppressWarnings("unchecked")
     private String callLlm(List<Map<String, String>> messages) throws Exception {
-        log.info("[SPARK-AI] callLlm msgCount={}", messages.size());
+        log.info("[SPARK-AI] callLlm msgCount={} model={} deepseek={} reasoner={}",
+                messages.size(), props.getModel(), props.isDeepSeek(), props.isReasonerModel());
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("model", props.getModel());
         body.put("messages", messages);
-        body.put("temperature", props.getTemperature());
-        body.put("max_tokens", props.getMaxTokens());
-        if (props.isJsonMode()) {
+        body.put("max_tokens", props.getEffectiveMaxTokens());
+
+        // temperature / top_p — DeepSeek-reasoner 不支持
+        Double effectiveTemp = props.getEffectiveTemperature();
+        if (effectiveTemp != null) {
+            body.put("temperature", effectiveTemp);
+        }
+        if (!props.isReasonerModel() && props.getTopP() != null) {
+            body.put("top_p", props.getTopP());
+        }
+
+        // frequency_penalty / presence_penalty — DeepSeek-reasoner 不支持
+        if (!props.isReasonerModel()) {
+            if (props.getFrequencyPenalty() != null) {
+                body.put("frequency_penalty", props.getFrequencyPenalty());
+            }
+            if (props.getPresencePenalty() != null) {
+                body.put("presence_penalty", props.getPresencePenalty());
+            }
+        }
+
+        // json_mode — 使用智能判断（DeepSeek-reasoner 自动禁用）
+        if (props.isEffectiveJsonMode()) {
             body.put("response_format", Map.of("type", "json_object"));
         }
 
@@ -366,6 +393,29 @@ public class AiPageService {
         }
 
         Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
+
+        // DeepSeek-reasoner：记录推理过程（reasoning_content）
+        Object reasoningContent = message.get("reasoning_content");
+        if (reasoningContent instanceof String rc && !rc.isEmpty()) {
+            log.info("[SPARK-AI] DeepSeek reasoning_content length={}", rc.length());
+            log.debug("[SPARK-AI] reasoning: {}", rc.substring(0, Math.min(500, rc.length())));
+        }
+
+        // DeepSeek: 记录 token 用量（含缓存命中率）
+        Object usageObj = responseMap.get("usage");
+        if (usageObj instanceof Map<?, ?> usage) {
+            Object cacheHit = usage.get("prompt_cache_hit_tokens");
+            if (cacheHit != null) {
+                log.info("[SPARK-AI] usage: prompt={} completion={} total={} cacheHit={} cacheMiss={}",
+                        usage.get("prompt_tokens"), usage.get("completion_tokens"),
+                        usage.get("total_tokens"), cacheHit, usage.get("prompt_cache_miss_tokens"));
+            } else {
+                log.info("[SPARK-AI] usage: prompt={} completion={} total={}",
+                        usage.get("prompt_tokens"), usage.get("completion_tokens"),
+                        usage.get("total_tokens"));
+            }
+        }
+
         String content = (String) message.get("content");
         log.debug("[SPARK-AI] raw content length={} finish_reason={}", content.length(), finishReason);
         return content;

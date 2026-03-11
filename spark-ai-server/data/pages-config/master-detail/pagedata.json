@@ -1,15 +1,14 @@
 {
-  "pageTitle": "Master-Detail 演示",
-  "currentRowJson": "",
   "dataset": {
+    "dataSetName": "PageDataSet",
     "tables": {
       "Users": {
-        "componentID": "Users_main",
         "columns": [
           {
             "name": "id",
             "type": "number",
-            "label": "用户ID"
+            "label": "用户ID",
+            "isPrimaryKey": true
           },
           {
             "name": "name",
@@ -22,31 +21,36 @@
             "label": "邮箱"
           }
         ],
-        "rows": [
-          {
-            "id": 1,
-            "name": "张三",
-            "email": "zhang@example.com"
-          },
-          {
-            "id": 2,
-            "name": "李四",
-            "email": "li@example.com"
-          },
-          {
-            "id": 3,
-            "name": "王五",
-            "email": "wang@example.com"
+        "views": {
+          "default": {
+            "rows": [
+              {
+                "id": 1,
+                "name": "张三",
+                "email": "zhang@example.com"
+              },
+              {
+                "id": 2,
+                "name": "李四",
+                "email": "li@example.com"
+              },
+              {
+                "id": 3,
+                "name": "王五",
+                "email": "wang@example.com"
+              }
+            ],
+            "autoCurrentFirst": true
           }
-        ]
+        }
       },
       "Orders": {
-        "componentID": "Orders_detail",
         "columns": [
           {
             "name": "id",
             "type": "number",
-            "label": "订单ID"
+            "label": "订单ID",
+            "isPrimaryKey": true
           },
           {
             "name": "userId",
@@ -63,16 +67,48 @@
             "type": "number",
             "label": "金额"
           }
-        ]
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              {
+                "id": 101,
+                "userId": 1,
+                "product": "笔记本电脑",
+                "amount": 5000
+              },
+              {
+                "id": 102,
+                "userId": 1,
+                "product": "鼠标",
+                "amount": 100
+              },
+              {
+                "id": 103,
+                "userId": 2,
+                "product": "键盘",
+                "amount": 200
+              },
+              {
+                "id": 104,
+                "userId": 3,
+                "product": "显示器",
+                "amount": 1500
+              }
+            ]
+          }
+        }
       }
     },
     "relations": [
       {
         "parentTable": "Users",
+        "parentViewId": "default",
         "childTable": "Orders",
+        "childViewId": "default",
+        "parentField": "id",
         "childField": "userId",
-        "autoLoad": true,
-        "cascadeDelete": true
+        "dependencyType": "currentRow"
       }
     ]
   }

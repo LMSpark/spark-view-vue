@@ -1,47 +1,50 @@
 package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spark.ai.config.PagesConfigProperties;
+import com.spark.ai.entity.PageConfigEntity;
+import com.spark.ai.entity.PageFileEntity;
+import com.spark.ai.repository.PageConfigRepository;
+import com.spark.ai.repository.PageFileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * PageConfigService 单元测试 — 使用临时目录，不依赖 Spring 容器。
+ * PageConfigService 单元测试 — 使用 H2 内嵌数据库。
  */
+@DataJpaTest
 class PageConfigServiceTest {
 
-    @TempDir
-    Path tempDir;
+    @Autowired
+    PageConfigRepository pageRepo;
+
+    @Autowired
+    PageFileRepository fileRepo;
 
     private PageConfigService service;
     private SseService sseService;
 
     @BeforeEach
     void setUp() {
-        PagesConfigProperties props = new PagesConfigProperties();
-        props.setConfigDir(tempDir.toString());
         sseService = new SseService();
-        service = new PageConfigService(props, new ObjectMapper(), sseService);
+        service = new PageConfigService(pageRepo, fileRepo, new ObjectMapper(), sseService);
     }
 
     // ── readFile ──────────────────────────────────────────────────────────
 
     @Test
     void readFile_returnsContentAndTimestamp() throws IOException {
-        Path dir = tempDir.resolve("test-page");
-        Files.createDirectories(dir);
-        Files.writeString(dir.resolve("rule.json"), "[{\"type\":\"div\"}]", StandardCharsets.UTF_8);
+        seedPage("test-page");
+        seedFile("test-page", "rule.json", "[{\"type\":\"div\"}]");
 
         Map<String, Object> result = service.readFile("test-page", "rule.json", null);
 
@@ -52,13 +55,14 @@ class PageConfigServiceTest {
 
     @Test
     void readFile_notModifiedWhenTimestampMatches() throws IOException {
-        Path dir = tempDir.resolve("test-page");
-        Files.createDirectories(dir);
-        Path file = dir.resolve("rule.json");
-        Files.writeString(file, "[]", StandardCharsets.UTF_8);
-        String mtime = Files.getLastModifiedTime(file).toInstant().toString();
+        seedPage("test-page");
+        seedFile("test-page", "rule.json", "[]");
 
-        Map<String, Object> result = service.readFile("test-page", "rule.json", mtime);
+        // 先读一次获取 timestamp
+        Map<String, Object> first = service.readFile("test-page", "rule.json", null);
+        String timestamp = (String) first.get("timestamp");
+
+        Map<String, Object> result = service.readFile("test-page", "rule.json", timestamp);
 
         assertEquals(true, result.get("notModified"));
         assertEquals("", result.get("content"));
@@ -96,8 +100,10 @@ class PageConfigServiceTest {
 
         assertEquals(true, result.get("ok"));
         assertNotNull(result.get("timestamp"));
-        String written = Files.readString(tempDir.resolve("new-page/rule.json"), StandardCharsets.UTF_8);
-        assertEquals("[{\"type\":\"h1\"}]", written);
+
+        // 验证可以读回
+        Map<String, Object> read = service.readFile("new-page", "rule.json", null);
+        assertEquals("[{\"type\":\"h1\"}]", read.get("content"));
     }
 
     @Test
@@ -120,40 +126,51 @@ class PageConfigServiceTest {
 
         assertEquals(true, result.get("ok"));
         assertEquals("batch-page", result.get("pageId"));
-        assertTrue(Files.exists(tempDir.resolve("batch-page/rule.json")));
-        assertTrue(Files.exists(tempDir.resolve("batch-page/pagedata.json")));
-        assertTrue(Files.exists(tempDir.resolve("batch-page/script.js")));
-        assertFalse(Files.exists(tempDir.resolve("batch-page/evil.exe")));
+
+        @SuppressWarnings("unchecked")
+        List<String> written = (List<String>) result.get("written");
+        assertTrue(written.contains("rule.json"));
+        assertTrue(written.contains("pagedata.json"));
+        assertTrue(written.contains("script.js"));
+        assertFalse(written.contains("evil.exe"));
     }
 
     @Test
-    void writeBatch_autoRegistersRoute() throws IOException {
-        // 预先创建 routes.json
-        Files.writeString(tempDir.resolve("routes.json"), "[]", StandardCharsets.UTF_8);
-
+    void writeBatch_autoRegistersPageConfig() throws IOException {
         service.writeBatch("auto-route", Map.of("rule.json", "[]"));
 
-        String routesRaw = Files.readString(tempDir.resolve("routes.json"), StandardCharsets.UTF_8);
-        assertTrue(routesRaw.contains("\"pageId\" : \"auto-route\""));
-        assertTrue(routesRaw.contains("\"/auto-route\""));
-    }
+        // 验证 page_config 记录被自动创建
+        assertTrue(pageRepo.existsById("auto-route"));
 
-    @Test
-    void writeBatch_doesNotDuplicateRoute() throws IOException {
-        Files.writeString(tempDir.resolve("routes.json"),
-                "[{\"pageId\":\"existing\",\"path\":\"/existing\"}]", StandardCharsets.UTF_8);
-
-        service.writeBatch("existing", Map.of("rule.json", "[]"));
-
-        String routesRaw = Files.readString(tempDir.resolve("routes.json"), StandardCharsets.UTF_8);
-        // 只应出现一次
-        assertEquals(1, routesRaw.split("\"existing\"").length - 1 > 0 ? 1 : 0,
-                "existing 路由不应重复");
+        // routes.json 动态生成，应包含新页面
+        Map<String, Object> routes = service.readRootFile("routes.json", null);
+        String content = (String) routes.get("content");
+        assertTrue(content.contains("auto-route"));
     }
 
     @Test
     void writeBatch_rejectsInvalidPageId() {
         assertThrows(IllegalArgumentException.class, () ->
                 service.writeBatch("../escape", Map.of("rule.json", "[]")));
+    }
+
+    // ── Helper ────────────────────────────────────────────────────────────
+
+    private void seedPage(String pageId) {
+        PageConfigEntity page = new PageConfigEntity();
+        page.setPageId(pageId);
+        page.setTitle(pageId);
+        page.setIcon("📄");
+        page.setPath("/" + pageId);
+        page.setRouteName(pageId);
+        pageRepo.save(page);
+    }
+
+    private void seedFile(String pageId, String filename, String content) {
+        PageFileEntity file = new PageFileEntity();
+        file.setPageId(pageId);
+        file.setFilename(filename);
+        file.setContent(content);
+        fileRepo.save(file);
     }
 }

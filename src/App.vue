@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme, AppPageUiHost } from '@spark-view/spark-app'
 import { pageRefreshKey } from '@/services/ai-loop'
@@ -122,8 +122,21 @@ const showConfigurator = ref(false)
 const { mode, setMode } = useTabPages()
 useColorScheme()
 
-/* ── 导航模型 ── */
-const nav = useNavigation(demoNavRoot)
+/* ── 导航模型（从 API 动态加载，demoNavRoot 作为初始占位） ── */
+const _navRoot = reactive({ ...demoNavRoot })
+const nav = useNavigation(_navRoot)
+onMounted(async () => {
+  try {
+    const resp = await fetch('/api/navigation')
+    if (resp.ok) {
+      const data = await resp.json() as { childPlacement?: string; children?: unknown[] }
+      if (Array.isArray(data.children) && data.children.length > 0) {
+        _navRoot.childPlacement = (data.childPlacement as 'header' | 'sidebar') ?? 'header'
+        _navRoot.children = data.children as typeof demoNavRoot.children
+      }
+    }
+  } catch { /* 保持 demoNavRoot 作为 fallback */ }
+})
 
 /* ── 通知（示例数据） ── */
 const notificationCount = ref(5)

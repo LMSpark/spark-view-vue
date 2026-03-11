@@ -58,12 +58,8 @@ public class PageConfigController {
      */
     @GetMapping("/pages-config/__list")
     public ResponseEntity<?> listPages() {
-        try {
-            List<Map<String, Object>> pages = pageConfigService.listPages();
-            return ResponseEntity.ok(pages);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
-        }
+        List<Map<String, Object>> pages = pageConfigService.listPages();
+        return ResponseEntity.ok(pages);
     }
 
     // ── 创建页面 ─────────────────────────────────────────────────────────────
@@ -83,8 +79,6 @@ public class PageConfigController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -101,8 +95,6 @@ public class PageConfigController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
     }
 

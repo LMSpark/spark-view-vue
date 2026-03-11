@@ -13,6 +13,9 @@ dist/
 # Java / Maven build output
 spark-ai-server/target/
 
+# H2 数据库运行时文件（不提交）
+spark-ai-server/data/sparkdb*.db
+
 # VS and IDE
 .vs/
 *.user

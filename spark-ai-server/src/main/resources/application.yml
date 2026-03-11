@@ -1,10 +1,26 @@
 server:
   port: 8080
 
+# ── H2 嵌入式数据库 ────────────────────────────────────────────────────────
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/sparkdb;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
 spark:
   pages:
-    # 页面配置目录（直接在 data/pages-config/ 维护，git 跟踪）
-    # 通过环境变量 PAGES_CONFIG_DIR 覆盖
+    # 页面配置目录（仅用于 DataInitializer 首次迁移）
     config-dir: ${PAGES_CONFIG_DIR:./data/pages-config}
 
   ai:
@@ -28,19 +44,48 @@ spark:
       # OpenAI:   gpt-4o / gpt-4o-mini / gpt-3.5-turbo
       # Ollama:   llama3.1 / qwen2.5:7b / deepseek-r1:7b
       # DeepSeek: deepseek-chat / deepseek-reasoner
+      #   - deepseek-chat:     通用对话，支持 json-mode/temperature/top_p
+      #   - deepseek-reasoner: 推理模型，自动禁用 temperature/top_p/json-mode，
+      #                        流式输出含 reasoning_content（思考过程）
       # 通义:     qwen-turbo / qwen-plus / qwen-max
       model: ${AI_MODEL:gpt-4o}
 
       # 生成温度（0 = 确定性, 1 = 最大随机）— 配置生成建议 0.2~0.4
+      # ⚠️ DeepSeek-reasoner 不支持此参数（自动忽略）
       temperature: 0.3
 
-      # 最大输出 token 数（DeepSeek max_tokens 上限 8192）
+      # 最大输出 token 数
+      # DeepSeek-chat 上限 8192，DeepSeek-reasoner 上限 16384
       max-tokens: 8192
 
       # 是否启用 JSON 模式（response_format: json_object）
-      # OpenAI gpt-4o / gpt-3.5-turbo-1106+ 支持
+      # OpenAI gpt-4o / gpt-3.5-turbo-1106+ / DeepSeek-chat 支持
+      # DeepSeek-reasoner 不支持（自动禁用）
       # Ollama 本地模型通常不支持，需改为 false
       json-mode: ${AI_JSON_MODE:true}
+
+      # ── 可选采样参数 ──────────────────────────────────────────────────────
+      # frequency-penalty: 0.0    # -2.0 ~ 2.0，DeepSeek 在线搜索建议 ≥0.6
+      # presence-penalty: 0.0     # -2.0 ~ 2.0
+      # top-p: 1.0                # 0 ~ 1，⚠️ DeepSeek-reasoner 不支持
+
+      # ────────────────────────────────────────────────────────────────────────
+      # DeepSeek 快速配置示例（取消注释即可使用）：
+      #
+      # deepseek-chat（通用对话）：
+      #   base-url: https://api.deepseek.com
+      #   model: deepseek-chat
+      #   temperature: 0.3
+      #   max-tokens: 8192
+      #   json-mode: true
+      #
+      # deepseek-reasoner（深度推理）：
+      #   base-url: https://api.deepseek.com
+      #   model: deepseek-reasoner
+      #   max-tokens: 16384
+      #   json-mode: false          # reasoner 不支持，也会自动禁用
+      #   # temperature / top-p / frequency-penalty / presence-penalty 自动忽略
+      # ────────────────────────────────────────────────────────────────────────
 
 logging:
   level:

@@ -1,11 +1,12 @@
 package com.spark.ai.controller;
 
+import com.spark.ai.service.TenantService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 应用配置 & 租户管理端点。
@@ -23,11 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @RestController
 public class AppConfigController {
 
-    /** 模拟租户数据库（内存，重启丢失） */
-    private final ConcurrentHashMap<String, Map<String, Object>> tenantDatabase = new ConcurrentHashMap<>();
+    private final TenantService tenantService;
 
-    public AppConfigController() {
-        initMockTenants();
+    public AppConfigController(TenantService tenantService) {
+        this.tenantService = tenantService;
     }
 
     // ── 默认配置 ──────────────────────────────────────────────────────────────
@@ -64,8 +64,8 @@ public class AppConfigController {
     // ── 租户配置 CRUD ─────────────────────────────────────────────────────────
 
     @GetMapping("/api/config/tenant/{tenantId}")
-    public ResponseEntity<?> getTenantConfig(@PathVariable String tenantId) {
-        Map<String, Object> config = tenantDatabase.get(tenantId);
+    public ResponseEntity<?> getTenantConfig(@PathVariable String tenantId) throws IOException {
+        Map<String, Object> config = tenantService.getTenantConfig(tenantId);
         if (config == null) {
             return ResponseEntity.status(404).body(Map.of(
                 "error", "TENANT_NOT_FOUND",
@@ -79,8 +79,8 @@ public class AppConfigController {
     @PostMapping("/api/config/tenant/{tenantId}")
     public ResponseEntity<Map<String, Object>> updateTenantConfig(
             @PathVariable String tenantId,
-            @RequestBody Map<String, Object> config) {
-        tenantDatabase.put(tenantId, config);
+            @RequestBody Map<String, Object> config) throws IOException {
+        tenantService.saveTenantConfig(tenantId, config);
         return ResponseEntity.ok(Map.of(
             "success", true,
             "message", "Configuration updated for tenant: " + tenantId
@@ -89,14 +89,13 @@ public class AppConfigController {
 
     @DeleteMapping("/api/config/tenant/{tenantId}")
     public ResponseEntity<?> deleteTenantConfig(@PathVariable String tenantId) {
-        if (!tenantDatabase.containsKey(tenantId)) {
+        if (!tenantService.deleteTenantConfig(tenantId)) {
             return ResponseEntity.status(404).body(Map.of(
                 "error", "TENANT_NOT_FOUND",
                 "message", "Tenant '" + tenantId + "' not found",
                 "code", 404
             ));
         }
-        tenantDatabase.remove(tenantId);
         return ResponseEntity.ok(Map.of(
             "success", true,
             "message", "Configuration deleted for tenant: " + tenantId
@@ -105,20 +104,9 @@ public class AppConfigController {
 
     // ── 租户列表 ──────────────────────────────────────────────────────────────
 
-    @SuppressWarnings("unchecked")
     @GetMapping("/api/tenants")
     public ResponseEntity<List<Map<String, Object>>> listTenants() {
-        List<Map<String, Object>> tenants = tenantDatabase.entrySet().stream()
-            .map(entry -> {
-                Map<String, Object> tenant = (Map<String, Object>) entry.getValue().get("tenant");
-                return Map.<String, Object>of(
-                    "tenantId",   entry.getKey(),
-                    "tenantName", tenant != null ? tenant.getOrDefault("tenantName", "") : "",
-                    "tenantCode", tenant != null ? tenant.getOrDefault("tenantCode", "") : ""
-                );
-            })
-            .toList();
-        return ResponseEntity.ok(tenants);
+        return ResponseEntity.ok(tenantService.listTenants());
     }
 
     // ── 健康检查 ──────────────────────────────────────────────────────────────
@@ -128,61 +116,7 @@ public class AppConfigController {
         return ResponseEntity.ok(Map.of(
             "status", "ok",
             "timestamp", java.time.Instant.now().toString(),
-            "tenants", tenantDatabase.size()
-        ));
-    }
-
-    // ── 初始化模拟数据 ────────────────────────────────────────────────────────
-
-    private void initMockTenants() {
-        tenantDatabase.put("demo", Map.of(
-            "tenant", Map.of(
-                "tenantId", "demo",
-                "tenantName", "Demo Company",
-                "tenantCode", "DEMO001",
-                "logo", "https://via.placeholder.com/150/1890ff/ffffff?text=Demo",
-                "theme", Map.of("primaryColor", "#1890ff", "borderRadius", "4px")
-            ),
-            "config", Map.of(
-                "apiBaseUrl", "https://demo-api.example.com",
-                "logLevel", "debug",
-                "features", Map.of("enableAI", false, "enableExport", true, "enableOffline", true)
-            ),
-            "pageConfig", Map.of("homePath", "/demo-home"),
-            "logger", Map.of("level", "debug", "enableRemote", true, "remoteEndpoint", "https://demo-api.example.com/logs")
-        ));
-
-        tenantDatabase.put("enterprise", Map.of(
-            "tenant", Map.of(
-                "tenantId", "enterprise",
-                "tenantName", "Enterprise Corporation",
-                "tenantCode", "ENT001",
-                "logo", "https://via.placeholder.com/150/722ed1/ffffff?text=Enterprise",
-                "theme", Map.of("primaryColor", "#722ed1", "borderRadius", "8px")
-            ),
-            "config", Map.of(
-                "apiBaseUrl", "https://enterprise-api.example.com",
-                "logLevel", "info",
-                "features", Map.of("enableAI", true, "enableExport", true, "enableOffline", false)
-            ),
-            "pageConfig", Map.of("source", "remote", "homePath", "/enterprise-dashboard"),
-            "logger", Map.of("level", "info", "enableRemote", true, "remoteEndpoint", "https://enterprise-api.example.com/logs")
-        ));
-
-        tenantDatabase.put("test", Map.of(
-            "tenant", Map.of(
-                "tenantId", "test",
-                "tenantName", "Test Tenant",
-                "tenantCode", "TEST001",
-                "logo", "https://via.placeholder.com/150/52c41a/ffffff?text=Test",
-                "theme", Map.of("primaryColor", "#52c41a")
-            ),
-            "config", Map.of(
-                "apiBaseUrl", "https://test-api.example.com",
-                "logLevel", "debug",
-                "enableMock", true,
-                "features", Map.of("enableAI", false, "enableExport", true, "enableOffline", true)
-            )
+            "tenants", tenantService.count()
         ));
     }
 }

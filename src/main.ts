@@ -378,6 +378,7 @@ async function startApp() {
         const CapabilityDemo = (await import('./views/CapabilityDemo.vue')).default
         const TenantConfigDemo = (await import('./views/TenantConfigDemo.vue')).default
         const PageManager = (await import('./views/PageManager.vue')).default
+        const DevSystem = (await import('./views/dev-system/DevSystem.vue')).default
         
         // 验证组件导入成功
         const components = {
@@ -386,7 +387,8 @@ async function startApp() {
           Settings,
           CapabilityDemo,
           TenantConfigDemo,
-          PageManager
+          PageManager,
+          DevSystem
         }
         
         for (const [name, component] of Object.entries(components)) {
@@ -465,6 +467,17 @@ async function startApp() {
           meta: {
             title: '页面管理',
             icon: '📑',
+            type: 'vue-component'
+          }
+        })
+        
+        router.addRoute({
+          path: '/dev',
+          name: 'dev-system',
+          component: DevSystem,
+          meta: {
+            title: '开发系统',
+            icon: '⚡',
             type: 'vue-component'
           }
         })
