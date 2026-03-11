@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 public class AiPageService {
 
     /** 每阶段最大重试次数 */
-    private static final int MAX_RETRIES = 2;
+    private static final int MAX_RETRIES = 3;
     /** 自动迭代最大轮次（含首次生成） */
     private static final int MAX_ITERATIONS = 3;
     /** Phase-1 必须包含的文件（UI 层：结构 + 样式） */
@@ -287,6 +287,15 @@ public class AiPageService {
         sb.append("返回的 JSON 中 files 对象必须包含 \"pagedata.json\" 和 \"script.js\" 两个键。\n");
         sb.append("确保 pagedata.json 的表名与 rule.json 中 dataKey 引用的表名一致。\n");
         sb.append("确保 script.js 中包含 rule.json 引用的所有事件处理函数（on 中的函数名）和 Render* 渲染函数。\n\n");
+        sb.append("📌 生成前必需自检（按项逐一确认）：\n");
+        sb.append("1. pagedata.json 顶层结构是否为 { \"dataset\": { \"dataSetName\": \"...\", \"tables\": {...}, \"relations\": [...] } }？\n");
+        sb.append("2. 每张表是否都有 views.default（缺少则表格无法渲染）？\n");
+        sb.append("3. 如有 relation，父表主键字歗是否标记 isPrimaryKey: true？关联得 dependencyType 是否正确？\n");
+        sb.append("4. script.js 中是否包含 __init__() 函数（必需）？\n");
+        sb.append("5. rule.json on: 引用的所有函数名，script.js 中是否全部定义？\n");
+        sb.append("6. rule.json Render* type 引用的函数，script.js 中是否全部定义？\n");
+        sb.append("7. Render* 函数中 h() 第一个参数是否都是原生 HTML 标签（不得用 el-*/r-* 组件名）？\n");
+        sb.append("8. pagedata.json 中是否存在 autoLoad、cascadeDelete 等非标准字段（如有请删除）？\n");
         sb.append("📌 如果你在生成 pagedata.json / script.js 过程中发现第 1 轮的 rule.json 或 style.css 有问题（如 dataKey 表名不合理、class 名遗漏、事件函数名需调整等），");
         sb.append("可以在 files 中额外包含修正后的 \"rule.json\" 和/或 \"style.css\"，它们会覆盖第 1 轮的版本。\n");
         sb.append("📌 如果你认为当前生成结果可能存在需要用户确认或进一步调整的问题，请设置 \"needsIteration\": true 并在 explanation 中说明原因。\n");
@@ -467,13 +476,17 @@ public class AiPageService {
             }
         }
 
-        // 3. 检查 script.js 花括号平衡
+        // 3. 检查 script.js 花括号平衡 + __init__ 存在性
         String scriptContent = files.get("script.js");
         if (scriptContent != null && !scriptContent.isBlank()) {
             long opens = scriptContent.chars().filter(c -> c == '{').count();
             long closes = scriptContent.chars().filter(c -> c == '}').count();
             if (opens > closes) {
                 return "script.js 可能被截断（花括号未闭合: { =" + opens + " } =" + closes + "）";
+            }
+            // 要求 script.js 中必须定义 __init__ 函数
+            if (!scriptContent.contains("__init__")) {
+                return "script.js 缺少 __init__() 函数（页面加载入口，必须定义）";
             }
         }
 
