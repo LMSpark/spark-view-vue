@@ -21,13 +21,20 @@ export const demoNavRoot: NavRoot = {
       affix: true,
     },
 
-    /* ── 数据演示模块 → sidebar ── */
+    /* ── 数据演示模块 → sidebar + 模块级上下文选项 ── */
     {
       id: 'data-demos',
       title: '数据管理',
       icon: '🔗',
       childPlacement: 'sidebar',
       redirect: '/dataset-demo',
+      // 模块级上下文选项（NavContextInput 静态列表简写）
+      // 进入该模块的任意子页面时，Header/Sidebar 尾部会显示选择器
+      context: [
+        { id: 'proj-a', title: '项目 A — 电商平台' },
+        { id: 'proj-b', title: '项目 B — 内部 OA' },
+        { id: 'proj-c', title: '项目 C — 数据中台' },
+      ],
       children: [
         { id: 'dataset-demo', title: 'DataSet 主从表', icon: '🔗', path: '/dataset-demo' },
         { id: 'cascade-demo', title: '级联操作', icon: '⚡', path: '/cascade-demo' },
