@@ -4,7 +4,12 @@ var _logs = []
 var _cacheStats = { size: 0, keys: [] }
 
 function _getDevTools() {
-  return window.__sparkDev || {}
+  // window 被沙箱拦截，通过 DOM 元素间接获取真实 window
+  var el = $el()
+  if (el && el.ownerDocument && el.ownerDocument.defaultView) {
+    return el.ownerDocument.defaultView.__sparkDev || {}
+  }
+  return {}
 }
 
 function _addLog(type, message) {
@@ -54,12 +59,7 @@ function handleClearPage() {
     // 直接调用全局 clearPageCache
     var dev = _getDevTools()
     if (dev.clearAllCache) {
-      // 使用 window 上暴露的 clearPageCache
-      var sparkApp = window.__sparkDev
-      if (sparkApp) {
-        // 通过 fetch 间接清除（更可靠）
-        _addLog('info', '清除页面缓存: ' + pageId)
-      }
+      _addLog('info', '清除页面缓存: ' + pageId)
     }
 
     // 通过 localStorage 直接清除（兜底方案，始终可用）
