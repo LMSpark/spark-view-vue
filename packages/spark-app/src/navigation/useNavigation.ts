@@ -63,6 +63,9 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
   // ── 模块上下文（单一状态，作用域 = 模块下全部页面） ──
   const _moduleContext = ref<NavContextState | null>(null)
 
+  /** 模块节点缓存（key = moduleId），避免切换子页面时重建 */
+  const _contextByModule = new Map<string, NavContextState>()
+
   // ── 路由变化 → 重算活动路径 + 模块上下文 ──
   watch(
     () => route.path,
@@ -152,9 +155,6 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
   /* ────────────────────────────────────────────
    * 模块上下文管理（父级 = 模块 ID，作用域 = 模块下全部页面）
    * ──────────────────────────────────────────── */
-
-  /** 模块节点缓存（key = moduleId），避免切换子页面时重建 */
-  const _contextByModule = new Map<string, NavContextState>()
 
   function syncModuleContext() {
     // 模块 = activePath 中的第一个节点（根的直接子节点）
