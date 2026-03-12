@@ -75,6 +75,8 @@ export function useAiChat(options?: {
       streaming: true,
     }
     messages.value.push(assistantMsg)
+    // 从 reactive 数组取回 proxy 引用，确保后续属性修改触发 Vue 响应式更新
+    const reactiveMsg = messages.value[messages.value.length - 1] as ChatMessage
     isStreaming.value = true
 
     try {
@@ -117,13 +119,13 @@ export function useAiChat(options?: {
         throw new Error('响应体为空，不支持流式读取')
       }
 
-      await readStream(response.body, assistantMsg)
+      await readStream(response.body, reactiveMsg)
     } catch (e) {
       const msg = e instanceof Error ? e.message : '请求失败'
       error.value = msg
-      assistantMsg.content = `⚠️ ${msg}`
+      reactiveMsg.content = `⚠️ ${msg}`
     } finally {
-      assistantMsg.streaming = false
+      reactiveMsg.streaming = false
       isStreaming.value = false
     }
   }
@@ -144,11 +146,12 @@ export function useAiChat(options?: {
       buffer = lines.pop() ?? ''
 
       for (const line of lines) {
-        // 解析 SSE 事件名（event: xxx）
-        if (line.startsWith('event: ')) continue // 事件名行跳过，数据在 data: 行
+        // 跳过空行和 SSE 事件名行（兼容 "event: xxx" 和 "event:xxx"）
+        if (line.startsWith('event:')) continue
 
-        if (!line.startsWith('data: ')) continue
-        const data = line.slice('data: '.length).trim()
+        // 解析 data 行（兼容 "data: xxx" 和 "data:xxx"）
+        if (!line.startsWith('data:')) continue
+        const data = line.slice(line.startsWith('data: ') ? 6 : 5).trim()
         if (data === '[DONE]') return
 
         try {

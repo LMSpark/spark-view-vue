@@ -60,6 +60,8 @@ export const demoNavRoot: NavRoot = {
         { id: 'vxe-demo', title: 'VXE 表格', icon: '📈', path: '/vxe-demo' },
         { id: 'formcreate-api', title: 'Form-Create API', icon: '🔧', path: '/formcreate-api' },
         { id: 'filter-demo', title: '过滤面板', icon: '🔍', path: '/filter-demo' },
+        { id: 'capability-demo', title: '能力管理演示', icon: '🎯', path: '/capability-demo', pageType: 'vue-component' },
+        { id: 'tenant-config', title: '多租户配置', icon: '🏢', path: '/tenant-config', pageType: 'vue-component' },
       ],
     },
 
@@ -89,7 +91,11 @@ export const demoNavRoot: NavRoot = {
         { id: 'permission-render', title: '权限渲染', icon: '🎨', path: '/permission-render' },
         { id: 'page-manager', title: '页面管理', icon: '📄', path: '/page-manager', pageType: 'vue-component' },
         { id: 'dev-system', title: '开发系统', icon: '⚡', path: '/dev', pageType: 'vue-component' },
-        { id: 'dev-cache', title: '缓存管理', icon: '🗑️', path: '/dev-cache' },
+        { id: 'cache-manager', title: '缓存管理', icon: '🗄️', path: '/cache-manager', pageType: 'vue-component' },
+        { id: 'nav-manager', title: '导航模块管理', icon: '🧭', path: '/nav-manager', pageType: 'vue-component' },
+        { id: 'site-manager', title: '站点管理', icon: '🏗️', path: '/site-manager', pageType: 'vue-component' },
+        { id: 'dashboard', title: '管理仪表板', icon: '🏠', path: '/dashboard', pageType: 'vue-component' },
+        { id: 'about', title: '关于系统', icon: 'ℹ️', path: '/about', pageType: 'vue-component' },
         {
           id: 'system-settings',
           title: '系统设置',
