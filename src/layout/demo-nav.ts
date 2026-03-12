@@ -41,6 +41,7 @@ export const demoNavRoot: NavRoot = {
         { id: 'async-demo', title: '异步数据', icon: '🔄', path: '/async-demo' },
         { id: 'smart-load', title: '智能依赖加载', icon: '🧠', path: '/smart-load' },
         { id: 'master-detail', title: 'Master-Detail', icon: '🔗', path: '/master-detail' },
+        { id: 'test-order', title: '订单测试', icon: '📦', path: '/test-order' },
       ],
     },
 
@@ -57,6 +58,7 @@ export const demoNavRoot: NavRoot = {
         { id: 'el-table-demo', title: 'el-table 操作列', icon: '📋', path: '/el-table-demo' },
         { id: 'vxe-demo', title: 'VXE 表格', icon: '📈', path: '/vxe-demo' },
         { id: 'formcreate-api', title: 'Form-Create API', icon: '🔧', path: '/formcreate-api' },
+        { id: 'filter-demo', title: '过滤面板', icon: '🔍', path: '/filter-demo' },
       ],
     },
 
@@ -84,6 +86,7 @@ export const demoNavRoot: NavRoot = {
       children: [
         { id: 'users', title: '用户管理', icon: '👥', path: '/users' },
         { id: 'permission-render', title: '权限渲染', icon: '🎨', path: '/permission-render' },
+        { id: 'page-manager', title: '页面管理', icon: '📄', path: '/page-manager' },
         { id: 'dev-system', title: '开发系统', icon: '⚡', path: '/dev' },
         {
           id: 'system-settings',
@@ -103,6 +106,14 @@ export const demoNavRoot: NavRoot = {
       title: 'AI Studio',
       icon: '🤖',
       path: '/ai-studio',
+    },
+
+    /* ── AI 迭代测试 ── */
+    {
+      id: 'ai-test',
+      title: 'AI 迭代测试',
+      icon: '🧪',
+      path: '/ai-test',
     },
   ],
 }
