@@ -58,6 +58,12 @@
                     "title": "Master-Detail",
                     "icon": "🔗",
                     "path": "/master-detail"
+                },
+                {
+                    "id": "test-order",
+                    "title": "订单测试",
+                    "icon": "📦",
+                    "path": "/test-order"
                 }
             ]
         },
@@ -97,6 +103,12 @@
                     "title": "Form-Create API",
                     "icon": "🔧",
                     "path": "/formcreate-api"
+                },
+                {
+                    "id": "filter-demo",
+                    "title": "过滤面板",
+                    "icon": "🔍",
+                    "path": "/filter-demo"
                 }
             ]
         },
@@ -147,6 +159,12 @@
                     "path": "/permission-render"
                 },
                 {
+                    "id": "page-manager",
+                    "title": "页面管理",
+                    "icon": "📄",
+                    "path": "/page-manager"
+                },
+                {
                     "id": "dev-system",
                     "title": "开发系统",
                     "icon": "⚡",
@@ -173,6 +191,12 @@
             "title": "AI Studio",
             "icon": "🤖",
             "path": "/ai-studio"
+        },
+        {
+            "id": "ai-test",
+            "title": "AI 迭代测试",
+            "icon": "🧪",
+            "path": "/ai-test"
         }
     ]
 }
