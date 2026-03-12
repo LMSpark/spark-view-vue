@@ -171,6 +171,12 @@
                     "path": "/dev"
                 },
                 {
+                    "id": "dev-cache",
+                    "title": "缓存管理",
+                    "icon": "🗑️",
+                    "path": "/dev-cache"
+                },
+                {
                     "id": "system-settings",
                     "title": "系统设置",
                     "icon": "⚙️",
