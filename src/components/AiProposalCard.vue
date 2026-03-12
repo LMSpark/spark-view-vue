@@ -1,0 +1,154 @@
+<template>
+  <div class="proposal-card" :class="[`type-${proposal.type}`, `status-${proposal.status}`]">
+    <div class="proposal-header">
+      <span class="proposal-icon">{{ icon }}</span>
+      <span class="proposal-title">{{ proposal.title }}</span>
+      <span v-if="proposal.status === 'accepted'" class="status-badge accepted">✅ 已采纳</span>
+      <span v-else-if="proposal.status === 'rejected'" class="status-badge rejected">⏭️ 已跳过</span>
+    </div>
+    <details class="proposal-details">
+      <summary>查看内容</summary>
+      <pre class="proposal-content"><code>{{ proposal.content }}</code></pre>
+    </details>
+    <div v-if="proposal.status === 'pending'" class="proposal-actions">
+      <button class="btn-accept" @click="$emit('accept', proposal.id)" title="采纳此设计决策">
+        ✅ 采纳
+      </button>
+      <button class="btn-reject" @click="$emit('reject', proposal.id)" title="跳过此提案">
+        ⏭️ 跳过
+      </button>
+      <button class="btn-discuss" @click="$emit('discuss', proposal)" title="继续讨论此提案">
+        💬 讨论
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { typeIcon } from '../composables/useDesignSession'
+import type { DesignProposal } from '../composables/useDesignSession'
+
+const props = defineProps<{
+  proposal: DesignProposal
+}>()
+
+defineEmits<{
+  accept: [id: string]
+  reject: [id: string]
+  discuss: [proposal: DesignProposal]
+}>()
+
+const icon = computed(() => typeIcon(props.proposal.type))
+</script>
+
+<style scoped>
+.proposal-card {
+  margin: 8px 0;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  background: #fafbfc;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.proposal-card.status-accepted {
+  border-color: #67c23a;
+  background: #f0f9eb;
+}
+
+.proposal-card.status-rejected {
+  border-color: #c0c4cc;
+  background: #f5f5f5;
+  opacity: 0.6;
+}
+
+.proposal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.proposal-icon {
+  font-size: 16px;
+}
+
+.proposal-title {
+  flex: 1;
+  color: #303133;
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 400;
+  color: #909399;
+}
+
+.status-badge.accepted {
+  color: #67c23a;
+}
+
+.proposal-details {
+  padding: 0 12px;
+}
+
+.proposal-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #909399;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.proposal-content {
+  margin: 4px 0 8px;
+  padding: 8px 10px;
+  background: #282c34;
+  color: #abb2bf;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.proposal-actions {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid #ebeef5;
+}
+
+.proposal-actions button {
+  flex: 1;
+  padding: 6px 0;
+  font-size: 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-accept:hover {
+  border-color: #67c23a;
+  color: #67c23a;
+  background: #f0f9eb;
+}
+
+.btn-reject:hover {
+  border-color: #909399;
+  color: #606266;
+  background: #f5f7fa;
+}
+
+.btn-discuss:hover {
+  border-color: #409eff;
+  color: #409eff;
+  background: #ecf5ff;
+}
+</style>
