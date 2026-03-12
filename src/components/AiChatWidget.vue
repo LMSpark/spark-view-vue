@@ -46,9 +46,10 @@
               💭 思考过程
               <span v-if="msg.streaming === true && msg.content === ''" class="reasoning-status">思考中...</span>
             </summary>
-            <div class="reasoning-content" v-text="msg.reasoning" />
+            <div class="reasoning-content"><VueMarkdown :source="msg.reasoning ?? ''" /></div>
           </details>
-          <div class="msg-content" v-text="msg.content" />
+          <div v-if="msg.role === 'user'" class="msg-content" v-text="msg.content" />
+          <div v-else class="msg-content msg-markdown"><VueMarkdown :source="msg.content ?? ''" /></div>
           <span v-if="msg.streaming === true" class="streaming-cursor" />
           <!-- token 用量（流完成后显示） -->
           <div v-if="msg.usage !== undefined && msg.streaming !== true" class="msg-usage">
@@ -134,6 +135,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, watch } from 'vue'
+import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
 import type { ChatMode, FileAttachment, TokenUsage } from '../composables/useAiChat'
 
@@ -416,6 +418,127 @@ function resetTextareaHeight() {
   background: #f0f2f5;
   color: #303133;
   border-radius: 12px 12px 12px 2px;
+}
+
+/* ── Markdown 渲染样式（assistant 消息）─────────────────────────────── */
+
+.msg-markdown {
+  white-space: normal;
+}
+
+.msg-markdown :deep(p) {
+  margin: 0 0 8px 0;
+}
+
+.msg-markdown :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.msg-markdown :deep(pre) {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.msg-markdown :deep(code) {
+  background: #e8eaed;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.msg-markdown :deep(pre code) {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+.msg-markdown :deep(ul),
+.msg-markdown :deep(ol) {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.msg-markdown :deep(li) {
+  margin-bottom: 2px;
+}
+
+.msg-markdown :deep(blockquote) {
+  margin: 8px 0;
+  padding: 4px 12px;
+  border-left: 3px solid #409eff;
+  color: #606266;
+  background: #f9f9fb;
+  border-radius: 0 4px 4px 0;
+}
+
+.msg-markdown :deep(table) {
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 13px;
+  width: 100%;
+}
+
+.msg-markdown :deep(th),
+.msg-markdown :deep(td) {
+  border: 1px solid #dcdfe6;
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.msg-markdown :deep(th) {
+  background: #f5f7fa;
+  font-weight: 600;
+}
+
+.msg-markdown :deep(h1),
+.msg-markdown :deep(h2),
+.msg-markdown :deep(h3),
+.msg-markdown :deep(h4) {
+  margin: 8px 0 4px;
+  line-height: 1.4;
+}
+
+.msg-markdown :deep(h1) { font-size: 1.3em; }
+.msg-markdown :deep(h2) { font-size: 1.15em; }
+.msg-markdown :deep(h3) { font-size: 1.05em; }
+
+.msg-markdown :deep(hr) {
+  border: none;
+  border-top: 1px solid #e4e7ed;
+  margin: 8px 0;
+}
+
+.msg-markdown :deep(a) {
+  color: #409eff;
+  text-decoration: none;
+}
+
+.msg-markdown :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.msg-markdown :deep(img) {
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+/* ── Reasoning 区域 Markdown ─────────────────────────────────────────── */
+
+.reasoning-content :deep(p) {
+  margin: 0 0 6px 0;
+}
+
+.reasoning-content :deep(p:last-child) {
+  margin-bottom: 0;
 }
 
 .msg-attachments {

@@ -6,6 +6,7 @@
             "title": "工作台",
             "icon": "📊",
             "path": "/",
+            "pageType": "vue-component",
             "affix": true
         },
         {
@@ -109,6 +110,20 @@
                     "title": "过滤面板",
                     "icon": "🔍",
                     "path": "/filter-demo"
+                },
+                {
+                    "id": "capability-demo",
+                    "title": "能力管理演示",
+                    "icon": "🎯",
+                    "path": "/capability-demo",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "tenant-config",
+                    "title": "多租户配置",
+                    "icon": "🏢",
+                    "path": "/tenant-config",
+                    "pageType": "vue-component"
                 }
             ]
         },
@@ -162,19 +177,50 @@
                     "id": "page-manager",
                     "title": "页面管理",
                     "icon": "📄",
-                    "path": "/page-manager"
+                    "path": "/page-manager",
+                    "pageType": "vue-component"
                 },
                 {
                     "id": "dev-system",
                     "title": "开发系统",
                     "icon": "⚡",
-                    "path": "/dev"
+                    "path": "/dev",
+                    "pageType": "vue-component"
                 },
                 {
-                    "id": "dev-cache",
+                    "id": "cache-manager",
                     "title": "缓存管理",
-                    "icon": "🗑️",
-                    "path": "/dev-cache"
+                    "icon": "🗄️",
+                    "path": "/cache-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "nav-manager",
+                    "title": "导航模块管理",
+                    "icon": "🧭",
+                    "path": "/nav-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "site-manager",
+                    "title": "站点管理",
+                    "icon": "🏗️",
+                    "path": "/site-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "dashboard",
+                    "title": "管理仪表板",
+                    "icon": "🏠",
+                    "path": "/dashboard",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "about",
+                    "title": "关于系统",
+                    "icon": "ℹ️",
+                    "path": "/about",
+                    "pageType": "vue-component"
                 },
                 {
                     "id": "system-settings",
@@ -186,7 +232,8 @@
                             "id": "settings",
                             "title": "基本设置",
                             "icon": "⚙️",
-                            "path": "/settings"
+                            "path": "/settings",
+                            "pageType": "vue-component"
                         }
                     ]
                 }
@@ -196,13 +243,15 @@
             "id": "ai-studio",
             "title": "AI Studio",
             "icon": "🤖",
-            "path": "/ai-studio"
+            "path": "/ai-studio",
+            "pageType": "vue-component"
         },
         {
             "id": "ai-test",
             "title": "AI 迭代测试",
             "icon": "🧪",
-            "path": "/ai-test"
+            "path": "/ai-test",
+            "pageType": "vue-component"
         }
     ]
 }

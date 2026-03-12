@@ -17,7 +17,11 @@
             </div>
           </div>
         </template>
+        <el-empty v-if="navEmpty" description="后端导航数据为空">
+          <el-button type="primary" @click="initSeedNavigation">🚀 初始化种子导航数据</el-button>
+        </el-empty>
         <el-tree
+          v-else
           ref="treeRef"
           :data="treeData"
           node-key="id"
@@ -195,7 +199,6 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { NavNode, NavRoot, NavContextItem } from '@spark-view/spark-app'
-import { demoNavRoot } from '@/layout/demo-nav'
 
 // ── 树数据 ──
 const treeRef = ref()
@@ -246,6 +249,8 @@ const previewJson = computed(() => {
 const API_BASE = '/api/navigation'
 const loading = ref(false)
 
+const navEmpty = ref(false)
+
 async function loadFromServer() {
   loading.value = true
   try {
@@ -254,14 +259,33 @@ async function loadFromServer() {
     const config = await resp.json() as { childPlacement?: string; children?: NavNode[] }
     if (config.children && config.children.length > 0) {
       treeData.value = config.children
+      navEmpty.value = false
     } else {
-      treeData.value = deepClone(demoNavRoot.children)
+      treeData.value = []
+      navEmpty.value = true
     }
   } catch {
-    // 后端未启动时退回演示数据
-    treeData.value = deepClone(demoNavRoot.children)
+    treeData.value = []
+    navEmpty.value = true
   } finally {
     loading.value = false
+  }
+}
+
+/** 将种子导航数据写入后端并重新加载 */
+async function initSeedNavigation() {
+  try {
+    const { demoNavRoot } = await import('@/layout/demo-nav')
+    const resp = await fetch(API_BASE, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(demoNavRoot),
+    })
+    if (!resp.ok) throw new Error(await resp.text())
+    await loadFromServer()
+    ElMessage.success('种子导航数据已初始化')
+  } catch (e) {
+    ElMessage.error('初始化失败: ' + String(e))
   }
 }
 
@@ -513,19 +537,9 @@ async function resetToDemo() {
   } catch {
     return
   }
-  treeData.value = deepClone(demoNavRoot.children)
+  await initSeedNavigation()
   selectedNode.value = null
   dirty.value = false
-  // 同步清除服务端存储
-  const root: NavRoot = { childPlacement: 'header', children: treeData.value }
-  try {
-    await fetch(API_BASE, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(root),
-    })
-  } catch { /* 忽略 */ }
-  ElMessage.success('已重置为演示数据')
 }
 
 function copyJson() {
@@ -534,10 +548,7 @@ function copyJson() {
   })
 }
 
-// ── 工具 ──
-function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj)) as T
-}
+
 </script>
 
 <style scoped>

@@ -13,11 +13,16 @@
           <span>🤖 AI · {{ displayPageId ? `/${displayPageId}` : '首页' }}
             <span v-if="loading && lockedPageId" class="ai-lock-badge" title="生成中，页面ID已锁定">🔒</span>
           </span>
-          <span class="ai-status" :class="statusClass">{{ statusText }}</span>
+          <span class="ai-status" :class="isVueComponentPage ? 'blocked' : statusClass">{{ isVueComponentPage ? '非配置页' : statusText }}</span>
         </div>
 
         <div class="ai-panel-body" ref="messagesRef">
-          <div v-if="messages.length === 0" class="ai-empty">
+          <div v-if="isVueComponentPage" class="ai-empty ai-blocked">
+            ⚠️ 当前页面 <b>/{{ routePageId }}</b> 是 Vue 组件页面，不是配置驱动页面。<br><br>
+            AI 仅支持生成和修改<b>配置驱动页面</b>（rule.json + pagedata.json + script.js）。<br>
+            Vue 组件页面请在源码中直接修改。
+          </div>
+          <div v-else-if="messages.length === 0" class="ai-empty">
             输入页面描述，AI 将自动生成 SPARK 页面配置。<br>
             例如：「创建一个用户管理页面，包含表格和搜索」<br><br>
             💡 点击 <b>🐛 调试</b> 可将当前页面错误发送给 AI 自动修复
@@ -73,29 +78,29 @@
             v-model="pageId"
             class="ai-input-page"
             placeholder="页面ID (同步当前路由)"
-            :disabled="loading"
+            :disabled="loading || isVueComponentPage"
             @keydown.enter="handleSend"
           />
           <textarea
             v-model="prompt"
             class="ai-input"
-            placeholder="描述你想要的页面..."
+            :placeholder="isVueComponentPage ? 'Vue 组件页面，不支持 AI 配置生成' : '描述你想要的页面...'"
             rows="2"
-            :disabled="loading"
+            :disabled="loading || isVueComponentPage"
             @keydown.enter.ctrl="handleSend"
             @keydown.enter.meta="handleSend"
           ></textarea>
           <div class="ai-actions">
-            <button class="ai-delete-btn" :disabled="loading || !pageId.trim()" @click="handleDelete" title="删除当前页面配置">
+            <button class="ai-delete-btn" :disabled="loading || !pageId.trim() || isVueComponentPage" @click="handleDelete" title="删除当前页面配置">
               🗑️
             </button>
-            <button class="ai-debug-btn" :disabled="loading || !pageId.trim()" @click="handleDebug" title="收集当前页面错误并发送给 AI 修复">
+            <button class="ai-debug-btn" :disabled="loading || !pageId.trim() || isVueComponentPage" @click="handleDebug" title="收集当前页面错误并发送给 AI 修复">
               🐛 调试
             </button>
             <button v-if="loading" class="ai-cancel-btn" @click="handleCancel">
               ⏹ 取消
             </button>
-            <button class="ai-send-btn" :disabled="loading || !prompt.trim() || !pageId.trim()" @click="handleSend">
+            <button class="ai-send-btn" :disabled="loading || !prompt.trim() || !pageId.trim() || isVueComponentPage" @click="handleSend">
               {{ loading ? '生成中...' : '发送' }}
             </button>
           </div>
@@ -156,6 +161,9 @@ const routePageId = computed(() => {
   const trimmed = route.path.replace(/^\/+/, '')
   return trimmed.length > 0 ? trimmed : ''
 })
+
+/** 当前路由是否为 Vue 组件页面（非配置驱动页面，禁止 AI 修改） */
+const isVueComponentPage = computed(() => route.meta['type'] === 'vue-component')
 
 // 路由变化时自动同步 pageId（生成中不同步，防止迭代期间路由跳转覆盖）
 watch(routePageId, (newId) => {
@@ -768,6 +776,14 @@ watch(() => route.query['aiDebug'], async (val) => {
 .ai-status.generating { background: #e6a23c; color: #fff; }
 .ai-status.success { background: #67c23a; color: #fff; }
 .ai-status.error { background: #f56c6c; color: #fff; }
+.ai-status.blocked { background: #909399; color: #fff; }
+
+.ai-blocked {
+  color: #909399;
+  background: #f4f4f5;
+  border-radius: 8px;
+  padding: 16px;
+}
 
 .ai-lock-badge {
   font-size: 11px;

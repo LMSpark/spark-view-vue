@@ -36,6 +36,26 @@
             :items="nav.regionItems.value.header"
           />
         </template>
+        <template v-if="enableAI" #actions>
+          <el-popover
+            :visible="showAiChat"
+            placement="bottom-end"
+            :width="420"
+            :show-arrow="false"
+            popper-class="ai-chat-popover"
+          >
+            <template #reference>
+              <button class="header-btn" title="AI 对话" @click="showAiChat = !showAiChat">
+                💬
+              </button>
+            </template>
+            <AiChatWidget
+              title="AI 助手"
+              placeholder="输入消息，支持上传文件..."
+              compact
+            />
+          </el-popover>
+        </template>
       </AppHeader>
     </template>
 
@@ -107,7 +127,7 @@ import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { useTabPages } from '@/layout/useTabPages'
 import { useColorScheme } from '@/layout/useColorScheme'
 import { useNavigation } from '@/layout/useNavigation'
-import { demoNavRoot } from '@/layout/demo-nav'
+import type { NavNode } from '@/layout/nav-types'
 import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
 
 const route = useRoute()
@@ -118,12 +138,13 @@ const sidebarCollapsed = ref(false)
 const headerFirst = ref(false)
 const showFooter = ref(true)
 const showConfigurator = ref(false)
+const navEmpty = ref(false)
 
 const { mode, setMode } = useTabPages()
 useColorScheme()
 
-/* ── 导航模型（从 API 动态加载，demoNavRoot 作为初始占位） ── */
-const _navRoot = reactive({ ...demoNavRoot })
+/* ── 导航模型（纯后端加载，无本地 fallback） ── */
+const _navRoot = reactive({ childPlacement: 'header' as const, children: [] as NavNode[] })
 const nav = useNavigation(_navRoot)
 
 async function reloadNavigation(): Promise<void> {
@@ -131,25 +152,44 @@ async function reloadNavigation(): Promise<void> {
   if (resp.ok) {
     const data = await resp.json() as { childPlacement?: string; children?: unknown[] }
     if (Array.isArray(data.children) && data.children.length > 0) {
-      _navRoot.childPlacement = (data.childPlacement as 'header' | 'sidebar') ?? 'header'
-      _navRoot.children = data.children as typeof demoNavRoot.children
+      _navRoot.childPlacement = ((data.childPlacement ?? 'header') as typeof _navRoot.childPlacement)
+      _navRoot.children = data.children as NavNode[]
+      navEmpty.value = false
       if (import.meta.env.DEV) console.log(`[Nav] ✅ 已从后端加载导航 (${data.children.length} 个节点)`)
+    } else {
+      navEmpty.value = true
+      if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 后端导航数据为空，请通过导航管理页面初始化')
     }
-  } else if (import.meta.env.DEV) {
-    console.warn(`[Nav] ⚠️ 导航 API 返回 ${resp.status}，使用本地 fallback`)
+  } else {
+    navEmpty.value = true
+    if (import.meta.env.DEV) console.warn(`[Nav] ⚠️ 导航 API 返回 ${resp.status}`)
+  }
+}
+
+/** 将种子导航数据写入后端（可随时调用） */
+async function syncSeedNavigation(): Promise<void> {
+  const { demoNavRoot } = await import('@/layout/demo-nav')
+  const resp = await fetch('/api/navigation', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(demoNavRoot),
+  })
+  if (resp.ok) {
+    await reloadNavigation()
   }
 }
 
 onMounted(async () => {
   try {
     await reloadNavigation()
-  } catch (e) {
-    if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 导航加载失败，使用本地 fallback', e)
+  } catch {
+    navEmpty.value = true
+    if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 导航加载失败')
   }
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   const w = window as unknown as Record<string, unknown>
-  w['__sparkDev'] = { reloadNavigation, clearAllCache, getCacheStats, refreshRoutes }
+  w['__sparkDev'] = { reloadNavigation, syncSeedNavigation, clearAllCache, getCacheStats, refreshRoutes }
 })
 
 /* ── 用户菜单命令 ── */
@@ -166,6 +206,8 @@ function handleUserCommand(command: string) {
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
+const AiChatWidget = defineAsyncComponent(() => import('@/components/AiChatWidget.vue'))
+const showAiChat = ref(false)
 
 /** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */
 const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))
@@ -195,5 +237,16 @@ onMounted(() => {
   opacity: 0;
 }
 
+</style>
+
+<!-- AI 聊天弹窗全局样式（popper 脱离 scoped DOM） -->
+<style>
+.ai-chat-popover {
+  padding: 0 !important;
+  max-height: 560px;
+}
+.ai-chat-popover .ai-chat-widget {
+  height: 520px;
+}
 </style>
 
