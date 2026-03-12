@@ -10,6 +10,9 @@ export type ChildPlacement = 'header' | 'sidebar' | 'parent' | 'flat'
 /** 导航节点类型 */
 export type NavNodeType = 'item' | 'group' | 'divider'
 
+/** 页面类型：配置驱动 or Vue 组件 */
+export type NavPageType = 'config' | 'vue-component'
+
 /* ── 上下文选择器 ── */
 
 /** 上下文选项（固定 id + title） */
@@ -72,6 +75,8 @@ export interface NavNode {
   icon?: string
   /** 路由路径（叶子节点） */
   path?: string
+  /** 页面类型：'config'（配置驱动）| 'vue-component'（Vue 组件），默认 'config' */
+  pageType?: NavPageType
   /** 页面配置 ID */
   pageId?: string
   /** 点击重定向路径（组节点使用） */

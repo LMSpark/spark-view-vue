@@ -32,6 +32,10 @@ public class PageConfigEntity {
     @Column(length = 128)
     private String routeName;
 
+    /** 页面类型：config（配置驱动）或 vue-component（静态 Vue 组件） */
+    @Column(name = "page_type", length = 32)
+    private String pageType = "config";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -66,6 +70,9 @@ public class PageConfigEntity {
 
     public String getRouteName() { return routeName; }
     public void setRouteName(String routeName) { this.routeName = routeName; }
+
+    public String getPageType() { return pageType; }
+    public void setPageType(String pageType) { this.pageType = pageType; }
 
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

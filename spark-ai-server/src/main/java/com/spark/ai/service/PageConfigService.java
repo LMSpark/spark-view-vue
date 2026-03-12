@@ -172,6 +172,7 @@ public class PageConfigService {
 
             List<PageFileEntity> files = fileRepo.findByPageId(page.getPageId());
             List<String> existingFiles = files.stream().map(PageFileEntity::getFilename).toList();
+            item.put("pageType", page.getPageType() != null ? page.getPageType() : "config");
             item.put("files", existingFiles);
             item.put("hasDir", !existingFiles.isEmpty());
             result.add(item);
@@ -276,10 +277,12 @@ public class PageConfigService {
             route.put("path", p.getPath() != null ? p.getPath() : "/" + p.getPageId());
             route.put("name", p.getRouteName() != null ? p.getRouteName() : p.getPageId());
             route.put("pageId", p.getPageId());
-            route.put("meta", Map.of(
-                    "title", p.getTitle() != null ? p.getTitle() : p.getPageId(),
-                    "icon", p.getIcon() != null ? p.getIcon() : "📄"
-            ));
+            String pageType = p.getPageType() != null ? p.getPageType() : "config";
+            Map<String, Object> meta = new LinkedHashMap<>();
+            meta.put("title", p.getTitle() != null ? p.getTitle() : p.getPageId());
+            meta.put("icon", p.getIcon() != null ? p.getIcon() : "📄");
+            meta.put("pageType", pageType);
+            route.put("meta", meta);
             routes.add(route);
         }
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(routes);
@@ -297,6 +300,63 @@ public class PageConfigService {
             throw new IllegalArgumentException(
                     "不允许写入文件 \"" + filename + "\"（只允许: " + ALLOWED_FILES + "）");
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 静态路由同步
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * 批量同步静态 Vue 组件路由到数据库（幂等）。
+     * 前端启动时调用，将 vue-component 类型的路由元数据写入 page_config 表，
+     * 使后端成为路由信息的单一来源。
+     *
+     * @param routes 路由列表，每项需包含 path, name, pageId, title, icon
+     * @return 同步结果统计
+     */
+    @Transactional
+    public Map<String, Object> syncStaticRoutes(List<Map<String, String>> routes) {
+        int created = 0;
+        int updated = 0;
+        List<String> synced = new ArrayList<>();
+
+        for (Map<String, String> r : routes) {
+            String pageId = r.get("pageId");
+            if (pageId == null || pageId.isBlank()) continue;
+            validatePageId(pageId);
+
+            String path = r.getOrDefault("path", "/" + pageId);
+            String name = r.getOrDefault("name", pageId);
+            String title = r.getOrDefault("title", pageId);
+            String icon = r.getOrDefault("icon", "📄");
+
+            Optional<PageConfigEntity> existing = pageRepo.findById(pageId);
+            if (existing.isPresent()) {
+                PageConfigEntity page = existing.get();
+                page.setTitle(title);
+                page.setIcon(icon);
+                page.setPath(path);
+                page.setRouteName(name);
+                page.setPageType("vue-component");
+                pageRepo.save(page);
+                updated++;
+            } else {
+                PageConfigEntity page = new PageConfigEntity();
+                page.setPageId(pageId);
+                page.setTitle(title);
+                page.setIcon(icon);
+                page.setPath(path);
+                page.setRouteName(name);
+                page.setPageType("vue-component");
+                pageRepo.save(page);
+                created++;
+            }
+            synced.add(pageId);
+        }
+
+        log.info("[PageConfig] 静态路由同步完成: created={}, updated={}, total={}",
+                created, updated, synced.size());
+        return Map.of("ok", true, "created", created, "updated", updated, "synced", synced);
     }
 
     /** 简单 JSON 字符串转义（用于脚手架模板） */

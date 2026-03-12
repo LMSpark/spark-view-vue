@@ -47,7 +47,7 @@
 
 import type { Plugin, ResolvedConfig } from 'vite'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs'
-import { resolve, relative, dirname, basename, join } from 'node:path'
+import { resolve, relative, dirname, basename } from 'node:path'
 import { globSync } from 'glob'
 
 /* -----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ export interface SparkComponentsPluginOptions {
   
   /**
    * 排除的组件（支持通配符）
-   * @default ['App.vue', '**/node_modules/**']
+   * @default `['App.vue', '**​/node_modules/**']`
    */
   exclude?: string[]
   
@@ -339,7 +339,7 @@ function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta |
   const getTag = (tag: string): string | undefined => {
     if (!block) return undefined
     const m = block.match(new RegExp(`@${tag}\\s+(.+)`))
-    return m ? m[1].trim() : undefined
+    return m?.[1]?.trim()
   }
 
   // 辅助：提取多值标签（可出现多次）
@@ -349,7 +349,8 @@ function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta |
     const results: string[] = []
     let m: RegExpExecArray | null
     while ((m = re.exec(block)) !== null) {
-      results.push(m[1].trim())
+      const val = m[1]
+      if (val) results.push(val.trim())
     }
     return results
   }
@@ -361,14 +362,15 @@ function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta |
   const inputSchema = getTag('input')
   const example    = getTag('example')
 
-  return {
+  const meta: SkillMeta = {
     type: skillType,
     description: explicitDescription ?? buildImplicitSkillDescription(absolutePath, skillType),
     provides,
     consumes,
-    inputSchema,
-    example,
   }
+  if (inputSchema !== undefined) meta.inputSchema = inputSchema
+  if (example !== undefined) meta.example = example
+  return meta
 }
 
 /**

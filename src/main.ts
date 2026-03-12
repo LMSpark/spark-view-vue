@@ -43,7 +43,7 @@
 
 // SPARK 架构包
 import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger, addGlobalTransport } from '@spark-view/spark-app'
-import type { LogTransport } from '@spark-view/spark-app'
+import type { LogTransport, StaticRouteDeclaration } from '@spark-view/spark-app'
 import { addLogTransport } from '@spark-view/spark-utils'
 import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
 
@@ -221,7 +221,47 @@ async function startApp() {
     
     startupLogger.info(`✅ 已加载 ${plugins.length} 个插件`)
     
-    // 4. 启动 SPARK 应用
+    // 4. 导入静态 Vue 组件页面 + 构建路由声明
+    startupLogger.info('📄 导入静态 Vue 组件页面...')
+    const [
+      { default: Dashboard },
+      { default: About },
+      { default: Settings },
+      { default: CapabilityDemo },
+      { default: TenantConfigDemo },
+      { default: PageManager },
+      { default: DevSystem },
+      { default: NavModuleManager },
+      { default: SiteManager },
+      { default: CacheManager },
+    ] = await Promise.all([
+      import('./views/Dashboard.vue'),
+      import('./views/About.vue'),
+      import('./views/Settings.vue'),
+      import('./views/CapabilityDemo.vue'),
+      import('./views/TenantConfigDemo.vue'),
+      import('./views/PageManager.vue'),
+      import('./views/dev-system/DevSystem.vue'),
+      import('./views/NavModuleManager.vue'),
+      import('./views/SiteManager.vue'),
+      import('./views/CacheManager.vue'),
+    ])
+
+    const staticRoutes: StaticRouteDeclaration[] = [
+      { path: '/dashboard',       name: 'dashboard',       pageId: 'dashboard',       title: '管理仪表板',   icon: '🏠', component: Dashboard },
+      { path: '/capability-demo', name: 'capability-demo', pageId: 'capability-demo', title: '能力管理演示', icon: '🎯', component: CapabilityDemo },
+      { path: '/tenant-config',   name: 'tenant-config',   pageId: 'tenant-config',   title: '多租户配置',   icon: '🏢', component: TenantConfigDemo },
+      { path: '/about',           name: 'about',           pageId: 'about',           title: '关于系统',     icon: 'ℹ️', component: About },
+      { path: '/settings',        name: 'settings',        pageId: 'settings',        title: '系统设置',     icon: '⚙️', component: Settings },
+      { path: '/page-manager',    name: 'page-manager',    pageId: 'page-manager',    title: '页面管理',     icon: '📑', component: PageManager },
+      { path: '/dev',             name: 'dev-system',      pageId: 'dev',             title: '开发系统',     icon: '⚡', component: DevSystem },
+      { path: '/nav-manager',     name: 'nav-manager',     pageId: 'nav-manager',     title: '导航模块管理', icon: '🧭', component: NavModuleManager },
+      { path: '/site-manager',    name: 'site-manager',    pageId: 'site-manager',    title: '站点管理',     icon: '🏗️', component: SiteManager },
+      { path: '/cache-manager',   name: 'cache-manager',   pageId: 'cache-manager',   title: '缓存管理',     icon: '🗄️', component: CacheManager },
+    ]
+    startupLogger.info(`✅ 已声明 ${staticRoutes.length} 个静态 Vue 组件路由`)
+    
+    // 5. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
     const AppPageRendererBridge = (await import('./AppPageRendererBridge.vue')).default
     
@@ -250,6 +290,7 @@ async function startApp() {
       pageConfig: {
         ...appConfig.pageConfig,
         pageComponent: AppPageRendererBridge,
+        staticRoutes,
       },
       
       // === 应用基础配置（从 JSON 加载）===
@@ -369,120 +410,8 @@ async function startApp() {
           // exclude: ['**/demo/**']
         })
 
-        // 注册静态 Vue 组件路由（非配置页面）
-        
-        // 导入 Vue 组件页面
-        const Dashboard = (await import('./views/Dashboard.vue')).default
-        const About = (await import('./views/About.vue')).default
-        const Settings = (await import('./views/Settings.vue')).default
-        const CapabilityDemo = (await import('./views/CapabilityDemo.vue')).default
-        const TenantConfigDemo = (await import('./views/TenantConfigDemo.vue')).default
-        const PageManager = (await import('./views/PageManager.vue')).default
-        const DevSystem = (await import('./views/dev-system/DevSystem.vue')).default
-        
-        // 验证组件导入成功
-        const components = {
-          Dashboard,
-          About,
-          Settings,
-          CapabilityDemo,
-          TenantConfigDemo,
-          PageManager,
-          DevSystem
-        }
-        
-        for (const [name, component] of Object.entries(components)) {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/strict-boolean-expressions -- 防御性检查：确保动态导入成功
-          if (!component) {
-            startupLogger.error(`❌ 组件导入失败: ${name}`)
-            throw new Error(`组件导入失败: ${name}`)
-          }
-        }
-        
-        startupLogger.info('✅ 所有静态组件导入成功')
-        
-        // 注册能力演示组件（SparkApp 已自动处理编译时注册）
-        // 如果需要运行时动态注册，可在此处添加
-        
-        // 注册静态路由
-        router.addRoute({
-          path: '/dashboard',
-          name: 'dashboard',
-          component: Dashboard,
-          meta: {
-            title: '管理仪表板',
-            icon: '🏠',
-            type: 'vue-component'
-          }
-        })
-        
-        router.addRoute({
-          path: '/capability-demo',
-          name: 'capability-demo',
-          component: CapabilityDemo,
-          meta: {
-            title: '能力管理演示',
-            icon: '🎯',
-            type: 'vue-component'
-          }
-        })
-        
-        router.addRoute({
-          path: '/tenant-config',
-          name: 'tenant-config',
-          component: TenantConfigDemo,
-          meta: {
-            title: '多租户配置',
-            icon: '🏢',
-            type: 'vue-component'
-          }
-        })
-        
-        router.addRoute({
-          path: '/about', 
-          name: 'about',
-          component: About,
-          meta: {
-            title: '关于系统',
-            icon: 'ℹ️',
-            type: 'vue-component'
-          }
-        })
-        
-        router.addRoute({
-          path: '/settings',
-          name: 'settings', 
-          component: Settings,
-          meta: {
-            title: '系统设置',
-            icon: '⚙️',
-            type: 'vue-component'
-          }
-        })
-        
-        router.addRoute({
-          path: '/page-manager',
-          name: 'page-manager',
-          component: PageManager,
-          meta: {
-            title: '页面管理',
-            icon: '📑',
-            type: 'vue-component'
-          }
-        })
-        
-        router.addRoute({
-          path: '/dev',
-          name: 'dev-system',
-          component: DevSystem,
-          meta: {
-            title: '开发系统',
-            icon: '⚡',
-            type: 'vue-component'
-          }
-        })
-        
-        startupLogger.info('✅ 静态 Vue 组件路由注册完成')
+        // 静态 Vue 组件路由由 DynamicRouter 统一管理（pageConfig.staticRoutes）
+        // 启动时自动同步到后端 + 从后端加载所有路由
 
         // 🤖 注册 AI Studio 组件（SPARK registry + Vue 全局组件）
         const { initAiStudio } = await import('./features/ai-studio/initialize')
