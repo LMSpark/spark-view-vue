@@ -7,7 +7,7 @@
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory, type RouteRecordNormalized } from 'vue-router'
 import type { RouteConfig, ConfigLoaderOptions } from '@spark-view/spark-page-config'
-import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
+import { createDynamicRouter, type DynamicRouterOptions, type StaticRouteDeclaration } from './router/dynamic'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
@@ -54,6 +54,11 @@ export interface PageConfigOptions {
   pageComponent?: Component
   /** 首页路径 */
   homePath: string
+  /**
+   * 静态 Vue 组件路由声明。
+   * 启动时同步到后端数据库，并在 routes.json 加载后用对应组件注册路由。
+   */
+  staticRoutes?: StaticRouteDeclaration[]
   /** 注册前钩子（可以转换路由） */
   beforeRegister?: ((routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>) | undefined
   /** 注册后钩子（仅通知） */
@@ -257,12 +262,16 @@ export async function start(options: StartOptions): Promise<void> {
         router,
         configLoader,
         pageComponent, // FCPageRenderer 或用户提供的组件，if 块已确保非空
+        ...(pageConfig.staticRoutes !== undefined && { staticRoutes: pageConfig.staticRoutes }),
+        apiBaseUrl: pageConfig.apiBaseUrl,
         ...(pageConfig.beforeRegister !== undefined && { beforeRegister: pageConfig.beforeRegister }),
         ...(pageConfig.afterRegister !== undefined && { afterRegister: pageConfig.afterRegister })
       }
 
       const dynamicRouter = createDynamicRouter(dynamicRouterOptions)
       
+      // 先同步静态路由到后端，再从后端加载所有路由（单一来源）
+      await dynamicRouter.syncStaticRoutesToBackend()
       await dynamicRouter.registerRoutes()
       router.addRoute({ path: '/', redirect: pageConfig.homePath })
 

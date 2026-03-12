@@ -107,6 +107,8 @@ onBeforeUnmount(() => document.removeEventListener('click', hideCtxMenu))
 
 .app-tab-bar__trailing {
   flex-shrink: 0;
+  flex-grow: 0;
+  min-width: fit-content;
   padding: 0 8px;
 }
 

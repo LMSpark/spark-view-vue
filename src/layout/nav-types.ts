@@ -5,6 +5,7 @@ export { NAV_KEY } from '@spark-view/spark-app'
 export type {
   ChildPlacement,
   NavNodeType,
+  NavPageType,
   NavContextItem,
   NavContextRemoteSource,
   NavContextConfig,

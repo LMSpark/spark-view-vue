@@ -16,6 +16,24 @@ const ErrorCodes = SharedErrorCodes
 const getErrorMessage = getSharedErrorMessage
 
 /**
+ * 静态 Vue 组件路由声明
+ */
+export interface StaticRouteDeclaration {
+  /** 路由路径 */
+  path: string
+  /** 路由名称 */
+  name: string
+  /** pageId（用于后端注册） */
+  pageId: string
+  /** 页面标题 */
+  title: string
+  /** 页面图标 */
+  icon: string
+  /** Vue 组件 */
+  component: Component
+}
+
+/**
  * 动态路由注册选项
  */
 export interface DynamicRouterOptions {
@@ -37,6 +55,17 @@ export interface DynamicRouterOptions {
    */
   pageComponent: Component
 
+  /**
+   * 静态 Vue 组件路由声明列表。
+   * 声明后 DynamicRouter 会：
+   * 1. 将元数据同步到后端（syncStaticRoutesToBackend）
+   * 2. 从后端加载路由时，vue-component 类型使用此处的组件
+   */
+  staticRoutes?: StaticRouteDeclaration[]
+
+  /** 后端 API 基础路径（默认空字符串，用于同步静态路由） */
+  apiBaseUrl?: string
+
   /** 路由注册前钩子（可转换/过滤路由） */
   beforeRegister?: (routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>
 
@@ -52,6 +81,11 @@ export class DynamicRouter {
   private configLoader: ConfigLoader
   private pageComponent: Component
   private registeredRoutes: Set<string> = new Set()
+  /** path → Component 映射（vue-component 路由使用） */
+  private staticComponentMap: Map<string, Component> = new Map()
+  /** 静态路由声明（用于同步到后端） */
+  private staticDeclarations: StaticRouteDeclaration[]
+  private apiBaseUrl: string
   private beforeRegister?: DynamicRouterOptions['beforeRegister']
   private afterRegister?: DynamicRouterOptions['afterRegister']
 
@@ -65,8 +99,15 @@ export class DynamicRouter {
     }
 
     this.pageComponent = options.pageComponent
+    this.staticDeclarations = options.staticRoutes ?? []
+    this.apiBaseUrl = options.apiBaseUrl ?? ''
     this.beforeRegister = options.beforeRegister
     this.afterRegister = options.afterRegister
+
+    // 构建 path → Component 映射
+    for (const decl of this.staticDeclarations) {
+      this.staticComponentMap.set(decl.path, decl.component)
+    }
   }
 
   /** 注册所有路由 */
@@ -100,13 +141,35 @@ export class DynamicRouter {
     routerLogger.info('动态路由注册完成', { count: routes.length })
   }
 
-  /** 注册单个路由 */
+  /** 注册单个路由（根据 meta.pageType 选择 Vue 组件或 PageRenderer） */
   registerRoute(config: RouteConfig): void {
     if (this.registeredRoutes.has(config.path)) {
       routerLogger.debug('路由已注册，跳过', { path: config.path })
       return
     }
 
+    const pageType = config.meta?.['pageType'] as string | undefined
+
+    // vue-component 路由：使用预注册的 Vue 组件
+    if (pageType === 'vue-component') {
+      const component = this.staticComponentMap.get(config.path)
+      if (!component) {
+        routerLogger.warn('vue-component 路由缺少组件映射，跳过', { path: config.path })
+        return
+      }
+      const route: RouteRecordRaw = {
+        path: config.path,
+        name: config.name,
+        component,
+        meta: { ...config.meta, pageId: config.pageId, type: 'vue-component' }
+      }
+      this.router.addRoute(route)
+      this.registeredRoutes.add(config.path)
+      routerLogger.debug('Vue 组件路由已注册', { path: config.path, name: config.name })
+      return
+    }
+
+    // config 路由：使用 PageRenderer
     const route: RouteRecordRaw = {
       path: config.path,
       name: config.name,
@@ -117,7 +180,47 @@ export class DynamicRouter {
 
     this.router.addRoute(route)
     this.registeredRoutes.add(config.path)
-    routerLogger.debug('路由已注册', { path: config.path, name: config.name })
+    routerLogger.debug('配置页面路由已注册', { path: config.path, name: config.name })
+  }
+
+  /**
+   * 同步静态路由到后端数据库（幂等）。
+   * 将 staticRoutes 声明推送到 POST {apiBaseUrl}/pages-config/__sync-routes，
+   * 使后端成为路由信息的单一来源。
+   */
+  async syncStaticRoutesToBackend(): Promise<void> {
+    if (this.staticDeclarations.length === 0) return
+
+    const payload = this.staticDeclarations.map(d => ({
+      pageId: d.pageId,
+      path: d.path,
+      name: d.name,
+      title: d.title,
+      icon: d.icon,
+    }))
+
+    try {
+      const response = await globalThis.fetch(
+        `${this.apiBaseUrl}/pages-config/__sync-routes`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${String(response.status)}`)
+      }
+
+      const result = await response.json() as Record<string, unknown>
+      routerLogger.info('静态路由已同步到后端', {
+        created: result['created'],
+        updated: result['updated'],
+      })
+    } catch (e) {
+      routerLogger.warn('静态路由同步失败（不影响路由注册）', { error: String(e) })
+    }
   }
 
   /** 移除路由 */
@@ -127,7 +230,7 @@ export class DynamicRouter {
     routerLogger.debug('路由已移除', { name })
   }
 
-  /** 刷新路由（重新加载配置） */
+  /** 刷新路由（重新加载配置，保留静态组件映射） */
   async refreshRoutes(): Promise<void> {
     routerLogger.info('刷新动态路由')
 

@@ -110,6 +110,24 @@ public class PageConfigController {
         }
     }
 
+    // ── 静态路由同步 ─────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/pages-config/__sync-routes
+     * 前端启动时调用，将静态 Vue 组件路由元数据同步到数据库。
+     * 幂等操作：已存在的路由会被更新，不存在的会被创建。
+     * 请求体：[{ "pageId": "dev", "path": "/dev", "name": "dev-system", "title": "开发系统", "icon": "⚡" }, ...]
+     */
+    @PostMapping("/pages-config/__sync-routes")
+    public ResponseEntity<?> syncRoutes(@RequestBody List<Map<String, String>> routes) {
+        try {
+            Map<String, Object> result = pageConfigService.syncStaticRoutes(routes);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // ── 读取根级配置文件（routes.json）─────────────────────────────────────────
 
     /**

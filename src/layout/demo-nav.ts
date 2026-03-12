@@ -18,6 +18,7 @@ export const demoNavRoot: NavRoot = {
       title: '工作台',
       icon: '📊',
       path: '/',
+      pageType: 'vue-component',
       affix: true,
     },
 
@@ -86,8 +87,8 @@ export const demoNavRoot: NavRoot = {
       children: [
         { id: 'users', title: '用户管理', icon: '👥', path: '/users' },
         { id: 'permission-render', title: '权限渲染', icon: '🎨', path: '/permission-render' },
-        { id: 'page-manager', title: '页面管理', icon: '📄', path: '/page-manager' },
-        { id: 'dev-system', title: '开发系统', icon: '⚡', path: '/dev' },
+        { id: 'page-manager', title: '页面管理', icon: '📄', path: '/page-manager', pageType: 'vue-component' },
+        { id: 'dev-system', title: '开发系统', icon: '⚡', path: '/dev', pageType: 'vue-component' },
         { id: 'dev-cache', title: '缓存管理', icon: '🗑️', path: '/dev-cache' },
         {
           id: 'system-settings',
@@ -95,7 +96,7 @@ export const demoNavRoot: NavRoot = {
           icon: '⚙️',
           childPlacement: 'parent',
           children: [
-            { id: 'settings', title: '基本设置', icon: '⚙️', path: '/settings' },
+            { id: 'settings', title: '基本设置', icon: '⚙️', path: '/settings', pageType: 'vue-component' },
           ],
         },
       ],
@@ -107,6 +108,7 @@ export const demoNavRoot: NavRoot = {
       title: 'AI Studio',
       icon: '🤖',
       path: '/ai-studio',
+      pageType: 'vue-component',
     },
 
     /* ── AI 迭代测试 ── */
@@ -115,6 +117,7 @@ export const demoNavRoot: NavRoot = {
       title: 'AI 迭代测试',
       icon: '🧪',
       path: '/ai-test',
+      pageType: 'vue-component',
     },
   ],
 }

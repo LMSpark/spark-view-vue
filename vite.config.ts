@@ -16,7 +16,7 @@ import {
  * - smart: 智能编译时注册（默认，性能最优）
  * - classic: 经典运行时注册（兼容模式）
  */
-const BUILD_MODE = process.env.BUILD_MODE || 'smart'
+const BUILD_MODE = process.env['BUILD_MODE'] || 'smart'
 const isSmartMode = BUILD_MODE === 'smart'
 
 console.log(`🔧 构建模式: ${BUILD_MODE === 'smart' ? '智能编译时注册 ⚡' : '经典运行时注册 🔄'}`)
@@ -25,23 +25,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      // 开发环境直接指向 src 源码，改动即时生效无需重新构建；生产环境用 dist
-      '@spark-view/spark-component': process.env.NODE_ENV === 'production'
-        ? path.resolve(__dirname, 'packages', 'spark-component', 'dist', 'index.js')
-        : path.resolve(__dirname, 'packages', 'spark-component', 'src', 'index.ts'),
-      '@spark-view/spark-data': process.env.NODE_ENV === 'production'
-        ? path.resolve(__dirname, 'packages', 'spark-data', 'dist', 'index.js')
-        : path.resolve(__dirname, 'packages', 'spark-data', 'src', 'index.ts'),
-      '@spark-view/spark-utils': process.env.NODE_ENV === 'production'
-        ? path.resolve(__dirname, 'packages', 'spark-utils', 'dist', 'index.js')
-        : path.resolve(__dirname, 'packages', 'spark-utils', 'src', 'index.ts'),
-      '@spark-view/spark-page-config': process.env.NODE_ENV === 'production'
-        ? path.resolve(__dirname, 'packages', 'spark-page-config', 'dist', 'index.js')
-        : path.resolve(__dirname, 'packages', 'spark-page-config', 'src', 'index.ts'),
-      // spark-app 同样开发走 src
-      '@spark-view/spark-app': process.env.NODE_ENV === 'production'
-        ? path.resolve(__dirname, 'packages', 'spark-app', 'dist', 'index.js')
-        : path.resolve(__dirname, 'packages', 'spark-app', 'src', 'index.ts'),
+      // monorepo 内始终指向 src 源码——Vite 直接编译 TS，无需预构建 dist JS
+      // dist 仅包含 .d.ts 类型声明，供外部 npm 消费者使用
+      '@spark-view/spark-component': path.resolve(__dirname, 'packages', 'spark-component', 'src', 'index.ts'),
+      '@spark-view/spark-data': path.resolve(__dirname, 'packages', 'spark-data', 'src', 'index.ts'),
+      '@spark-view/spark-utils': path.resolve(__dirname, 'packages', 'spark-utils', 'src', 'index.ts'),
+      '@spark-view/spark-page-config': path.resolve(__dirname, 'packages', 'spark-page-config', 'src', 'index.ts'),
+      '@spark-view/spark-app': path.resolve(__dirname, 'packages', 'spark-app', 'src', 'index.ts'),
     }
   },
   optimizeDeps: {
@@ -177,13 +167,14 @@ export default defineConfig({
         sizeThreshold: SIZE_THRESHOLD,
         exclude: [...COMPONENT_EXCLUDE_PATTERNS],
         verbose: false
-      })
+      } satisfies Parameters<typeof sparkComponentsPlugin>[0])
     ] : [
       // Classic 模式：提供空的 virtual:spark-components 占位模块
       {
         name: 'spark-components-fallback',
         resolveId(id: string) {
           if (id === 'virtual:spark-components') return '\0virtual:spark-components'
+          return undefined
         },
         load(id: string) {
           if (id === '\0virtual:spark-components') {
@@ -193,16 +184,17 @@ export function getComponentMetadata() { return [] }
 export default registerComponents
 `
           }
+          return undefined
         }
       }
     ]),
     
-    ...(process.env.ANALYZE ? [visualizer({
+    ...(process.env['ANALYZE'] ? [visualizer({
       open: true,
       filename: 'dist/stats.html',
       gzipSize: true,
       brotliSize: true
-    })] : [])
+    }) as unknown as import('vite').Plugin] : [])
   ],
   build: {
     rollupOptions: {
@@ -308,6 +300,8 @@ export default registerComponents
           if (id.includes('node_modules')) {
             return 'vendor'
           }
+
+          return undefined
         }
       }
     },

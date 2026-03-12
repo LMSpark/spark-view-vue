@@ -222,6 +222,19 @@ public class ComponentMetadataService {
         return rawMetadata.get() != null;
     }
 
+    /**
+     * 清除所有内存缓存。下次 AI 请求将读取空值，直到重新上传或调用 loadFromFile。
+     */
+    public void clearInMemoryCache() {
+        rawMetadata.set(null);
+        skillPromptIndex.set(null);
+        skillPromptCompact.set(null);
+        skillPromptFull.set(null);
+        skillPromptByType.set(Map.of());
+        buildTime.set(null);
+        log.info("[ComponentMetadata] 内存缓存已清除");
+    }
+
     private Map<String, String> buildSkillPromptByType(List<?> skills) {
         Map<String, String> prompts = new LinkedHashMap<>();
         for (Object entry : skills) {
