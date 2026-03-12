@@ -265,6 +265,11 @@ export async function start(options: StartOptions): Promise<void> {
       
       await dynamicRouter.registerRoutes()
       router.addRoute({ path: '/', redirect: pageConfig.homePath })
+
+      // 注入到全局缓存管理（清缓存页面 + AI 热重载需要）
+      const { setConfigLoader, setDynamicRouter } = await import('./ai/ai-loop')
+      setConfigLoader(configLoader)
+      setDynamicRouter(dynamicRouter)
     }
 
     // 6. 执行 Bootstrap 流程

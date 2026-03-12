@@ -108,6 +108,7 @@ import { useTabPages } from '@/layout/useTabPages'
 import { useColorScheme } from '@/layout/useColorScheme'
 import { useNavigation } from '@/layout/useNavigation'
 import { demoNavRoot } from '@/layout/demo-nav'
+import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
 
 const route = useRoute()
 const theme = useTheme()
@@ -124,17 +125,24 @@ useColorScheme()
 /* ── 导航模型（从 API 动态加载，demoNavRoot 作为初始占位） ── */
 const _navRoot = reactive({ ...demoNavRoot })
 const nav = useNavigation(_navRoot)
-onMounted(async () => {
-  try {
-    const resp = await fetch('/api/navigation')
-    if (resp.ok) {
-      const data = await resp.json() as { childPlacement?: string; children?: unknown[] }
-      if (Array.isArray(data.children) && data.children.length > 0) {
-        _navRoot.childPlacement = (data.childPlacement as 'header' | 'sidebar') ?? 'header'
-        _navRoot.children = data.children as typeof demoNavRoot.children
-      }
+
+async function reloadNavigation(): Promise<void> {
+  const resp = await fetch('/api/navigation')
+  if (resp.ok) {
+    const data = await resp.json() as { childPlacement?: string; children?: unknown[] }
+    if (Array.isArray(data.children) && data.children.length > 0) {
+      _navRoot.childPlacement = (data.childPlacement as 'header' | 'sidebar') ?? 'header'
+      _navRoot.children = data.children as typeof demoNavRoot.children
     }
-  } catch { /* 保持 demoNavRoot 作为 fallback */ }
+  }
+}
+
+onMounted(async () => {
+  try { await reloadNavigation() } catch { /* 保持 demoNavRoot 作为 fallback */ }
+
+  // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
+  const w = window as unknown as Record<string, unknown>
+  w['__sparkDev'] = { reloadNavigation, clearAllCache, getCacheStats, refreshRoutes }
 })
 
 /* ── 用户菜单命令 ── */
