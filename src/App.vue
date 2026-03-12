@@ -133,12 +133,19 @@ async function reloadNavigation(): Promise<void> {
     if (Array.isArray(data.children) && data.children.length > 0) {
       _navRoot.childPlacement = (data.childPlacement as 'header' | 'sidebar') ?? 'header'
       _navRoot.children = data.children as typeof demoNavRoot.children
+      if (import.meta.env.DEV) console.log(`[Nav] ✅ 已从后端加载导航 (${data.children.length} 个节点)`)
     }
+  } else if (import.meta.env.DEV) {
+    console.warn(`[Nav] ⚠️ 导航 API 返回 ${resp.status}，使用本地 fallback`)
   }
 }
 
 onMounted(async () => {
-  try { await reloadNavigation() } catch { /* 保持 demoNavRoot 作为 fallback */ }
+  try {
+    await reloadNavigation()
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 导航加载失败，使用本地 fallback', e)
+  }
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   const w = window as unknown as Record<string, unknown>
