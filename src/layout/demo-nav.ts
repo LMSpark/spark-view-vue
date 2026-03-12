@@ -88,6 +88,7 @@ export const demoNavRoot: NavRoot = {
         { id: 'permission-render', title: '权限渲染', icon: '🎨', path: '/permission-render' },
         { id: 'page-manager', title: '页面管理', icon: '📄', path: '/page-manager' },
         { id: 'dev-system', title: '开发系统', icon: '⚡', path: '/dev' },
+        { id: 'dev-cache', title: '缓存管理', icon: '🗑️', path: '/dev-cache' },
         {
           id: 'system-settings',
           title: '系统设置',
