@@ -237,14 +237,32 @@ export function isAutoIterating(): boolean {
   return _autoIterating
 }
 
-// ─── ConfigLoader 引用（缓存失效需要） ────────────────────────────────────────
+// ─── ConfigLoader / DynamicRouter 引用（缓存失效 + 路由刷新需要） ──────────────
+
+interface ConfigLoaderRef {
+  clearCache(key?: string): void
+  getCacheStats?(): { size: number; keys: string[] }
+}
+
+interface DynamicRouterRef {
+  refreshRoutes(): Promise<void>
+  getRegisteredRoutes(): string[]
+}
 
 /** ConfigLoader 实例引用，需由启动代码通过 setConfigLoader 注入 */
-let _configLoader: { clearCache(key?: string): void } | null = null
+let _configLoader: ConfigLoaderRef | null = null
+
+/** DynamicRouter 实例引用，需由启动代码通过 setDynamicRouter 注入 */
+let _dynamicRouter: DynamicRouterRef | null = null
 
 /** 注册 ConfigLoader 实例（start.ts / AiChatPanel 中调用） */
-export function setConfigLoader(loader: { clearCache(key?: string): void }): void {
+export function setConfigLoader(loader: ConfigLoaderRef): void {
   _configLoader = loader
+}
+
+/** 注册 DynamicRouter 实例（start.ts 中调用） */
+export function setDynamicRouter(router: DynamicRouterRef): void {
+  _dynamicRouter = router
 }
 
 // ─── 页面缓存失效 ───────────────────────────────────────────────────────────
@@ -276,6 +294,39 @@ export function clearPageCache(pageId: string): void {
     localStorage.removeItem(`${base}:raw`)
     localStorage.removeItem(`${base}:transform`)
   }
+}
+
+/**
+ * 清除所有页面配置缓存（memCache + localStorage）
+ * @returns 清除前的缓存统计
+ */
+export function clearAllCache(): { size: number; keys: string[] } {
+  const stats = _configLoader?.getCacheStats?.() ?? { size: 0, keys: [] }
+  if (_configLoader) {
+    _configLoader.clearCache()
+  }
+  // 降级：清除 localStorage 前缀匹配项
+  if (typeof localStorage !== 'undefined') {
+    const toRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith(CACHE_PREFIX)) toRemove.push(key)
+    }
+    for (const key of toRemove) localStorage.removeItem(key)
+  }
+  return stats
+}
+
+/** 获取当前缓存统计 */
+export function getCacheStats(): { size: number; keys: string[] } {
+  return _configLoader?.getCacheStats?.() ?? { size: 0, keys: [] }
+}
+
+/** 刷新动态路由（清缓存 + 重新注册） */
+export async function refreshRoutes(): Promise<string[]> {
+  if (!_dynamicRouter) return []
+  await _dynamicRouter.refreshRoutes()
+  return _dynamicRouter.getRegisteredRoutes()
 }
 
 /**
