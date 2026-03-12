@@ -37,6 +37,9 @@
           />
         </template>
         <template v-if="enableAI" #actions>
+          <button class="header-btn" title="AI 协同设计" @click="showDesignStudio = true">
+            🎨
+          </button>
           <el-popover
             :visible="showAiChat"
             placement="bottom-end"
@@ -95,6 +98,9 @@
 
   <!-- AI 聊天浮窗（仅配置启用时加载） -->
   <AiChatPanel v-if="enableAI" />
+
+  <!-- AI 协同设计抽屉 -->
+  <AiDesignStudio v-if="enableAI" v-model="showDesignStudio" />
 
   <!-- 主题配置抽屉 -->
   <ThemeConfigurator
@@ -207,7 +213,9 @@ function handleUserCommand(command: string) {
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
 const AiChatWidget = defineAsyncComponent(() => import('@/components/AiChatWidget.vue'))
+const AiDesignStudio = defineAsyncComponent(() => import('@/components/AiDesignStudio.vue'))
 const showAiChat = ref(false)
+const showDesignStudio = ref(false)
 
 /** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */
 const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))
