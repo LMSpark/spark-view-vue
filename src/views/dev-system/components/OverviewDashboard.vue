@@ -1,6 +1,6 @@
 <template>
   <div class="overview-dashboard">
-    <h2 class="editor-title">项目总览</h2>
+    <h2 class="editor-title">📋 项目总览</h2>
 
     <!-- 统计卡片 -->
     <div class="stats-row">
@@ -46,44 +46,13 @@
       </el-form>
     </section>
 
-    <!-- 需求列表 -->
-    <section v-if="project.state.requirements.length" class="editor-section">
-      <h3>📋 需求列表（点击编辑）</h3>
-      <div class="item-list">
-        <div
-          v-for="req in project.state.requirements"
-          :key="req.id"
-          class="item-row clickable"
-          @click="project.setFocus({ view: 'requirement', requirementId: req.id })"
-        >
-          <span class="item-title">{{ req.title }}</span>
-          <el-tag size="small" :type="statusType(req.status)">{{ req.status }}</el-tag>
-        </div>
-      </div>
-    </section>
-
-    <!-- 模块概览 -->
-    <section v-if="project.state.modules.length" class="editor-section">
-      <h3>📦 功能模块</h3>
-      <div class="item-list">
-        <div
-          v-for="mod in project.state.modules"
-          :key="mod.id"
-          class="item-row clickable"
-          @click="project.setFocus({ view: 'module', moduleId: mod.id })"
-        >
-          <span class="item-title">{{ mod.icon || '📦' }} {{ mod.name }}</span>
-          <el-tag size="small" type="info">{{ mod.pages.length }} 页</el-tag>
-        </div>
-      </div>
-    </section>
+    <p class="hint-text">从左侧树选择需求或模块开始编辑</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useProject } from '../composables/useProjectInject'
-import type { RequirementStatus } from '../composables/types'
 
 const project = useProject()
 
@@ -100,16 +69,6 @@ const generatedPages = computed(() =>
   ),
 )
 
-function statusType(status: RequirementStatus) {
-  const map: Record<RequirementStatus, 'success' | 'info' | 'warning' | 'danger'> = {
-    draft: 'info',
-    analyzed: 'warning',
-    planned: 'success',
-    completed: 'success',
-  }
-  return map[status]
-}
-
 function handleAddReq() {
   const title = newTitle.value.trim()
   if (!title) return
@@ -122,9 +81,7 @@ function handleAddReq() {
 
 <style scoped>
 .overview-dashboard {
-  padding: 20px 24px;
-  overflow: auto;
-  height: 100%;
+  max-width: 600px;
 }
 
 .editor-title {
@@ -135,13 +92,13 @@ function handleAddReq() {
 
 .stats-row {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
 .stat-card {
   flex: 1;
-  padding: 16px;
+  padding: 14px;
   background: var(--el-fill-color-lighter);
   border-radius: 8px;
   text-align: center;
@@ -152,7 +109,7 @@ function handleAddReq() {
 }
 
 .stat-value {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--el-text-color-primary);
 }
@@ -164,7 +121,7 @@ function handleAddReq() {
 }
 
 .editor-section {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .editor-section h3 {
@@ -177,33 +134,8 @@ function handleAddReq() {
   margin-bottom: 12px;
 }
 
-.item-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.item-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-
-.item-row.clickable {
-  cursor: pointer;
-}
-
-.item-row.clickable:hover {
-  background: var(--el-fill-color-light);
-}
-
-.item-title {
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.hint-text {
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
 }
 </style>
