@@ -1,17 +1,20 @@
 package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spark.ai.config.PagesConfigProperties;
 import com.spark.ai.entity.PageConfigEntity;
-import com.spark.ai.entity.PageFileEntity;
 import com.spark.ai.repository.PageConfigRepository;
-import com.spark.ai.repository.PageFileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +22,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * PageConfigService 单元测试 — 使用 H2 内嵌数据库。
+ * PageConfigService 单元测试 — 文件系统存储 + H2 内嵌数据库（页面元数据）。
  */
 @DataJpaTest
 class PageConfigServiceTest {
@@ -27,8 +30,8 @@ class PageConfigServiceTest {
     @Autowired
     PageConfigRepository pageRepo;
 
-    @Autowired
-    PageFileRepository fileRepo;
+    @TempDir
+    Path tempDir;
 
     private PageConfigService service;
     private SseService sseService;
@@ -39,7 +42,9 @@ class PageConfigServiceTest {
     @BeforeEach
     void setUp() {
         sseService = new SseService();
-        service = new PageConfigService(pageRepo, fileRepo, new ObjectMapper(), sseService);
+        PagesConfigProperties props = new PagesConfigProperties();
+        props.setConfigDir(tempDir.toString());
+        service = new PageConfigService(pageRepo, new ObjectMapper(), sseService, props);
     }
 
     // ── readFile ──────────────────────────────────────────────────────────
@@ -103,6 +108,12 @@ class PageConfigServiceTest {
         assertEquals(true, result.get("ok"));
         assertNotNull(result.get("timestamp"));
 
+        // 验证文件系统上真实写入
+        Path fp = tempDir.resolve(T).resolve(P).resolve("new-page").resolve("rule.json");
+        assertTrue(Files.isRegularFile(fp));
+        assertEquals("[{\"type\":\"h1\"}]", Files.readString(fp));
+
+        // 通过 service 读回
         Map<String, Object> read = service.readFile(T, P, "new-page", "rule.json", null);
         assertEquals("[{\"type\":\"h1\"}]", read.get("content"));
     }
@@ -134,6 +145,11 @@ class PageConfigServiceTest {
         assertTrue(written.contains("pagedata.json"));
         assertTrue(written.contains("script.js"));
         assertFalse(written.contains("evil.exe"));
+
+        // 验证文件系统
+        Path dir = tempDir.resolve(T).resolve(P).resolve("batch-page");
+        assertTrue(Files.isRegularFile(dir.resolve("rule.json")));
+        assertFalse(Files.exists(dir.resolve("evil.exe")));
     }
 
     @Test
@@ -167,14 +183,11 @@ class PageConfigServiceTest {
         pageRepo.save(page);
     }
 
+    /** 在临时文件系统目录中写入测试文件 */
     private void seedFile(String tenantId, String projectId, String pageId,
-                           String filename, String content) {
-        PageFileEntity file = new PageFileEntity();
-        file.setTenantId(tenantId);
-        file.setProjectId(projectId);
-        file.setPageId(pageId);
-        file.setFilename(filename);
-        file.setContent(content);
-        fileRepo.save(file);
+                           String filename, String content) throws IOException {
+        Path dir = tempDir.resolve(tenantId).resolve(projectId).resolve(pageId);
+        Files.createDirectories(dir);
+        Files.writeString(dir.resolve(filename), content, StandardCharsets.UTF_8);
     }
 }

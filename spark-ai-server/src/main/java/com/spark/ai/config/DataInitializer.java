@@ -3,11 +3,9 @@ package com.spark.ai.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.entity.NavigationConfigEntity;
 import com.spark.ai.entity.PageConfigEntity;
-import com.spark.ai.entity.PageFileEntity;
 import com.spark.ai.entity.TenantConfigEntity;
 import com.spark.ai.repository.NavigationConfigRepository;
 import com.spark.ai.repository.PageConfigRepository;
-import com.spark.ai.repository.PageFileRepository;
 import com.spark.ai.repository.TenantConfigRepository;
 import com.spark.ai.service.ProjectService;
 import org.slf4j.Logger;
@@ -28,7 +26,8 @@ import java.util.Set;
 /**
  * 应用启动时数据初始化：
  * 1. 种子租户数据（仅当 tenant_config 表为空时）
- * 2. 迁移现有文件系统页面配置到数据库（仅当 page_config 表为空且文件目录存在时）
+ * 2. 迁移现有文件系统页面配置：从扁平 {configDir}/{pageId}/ 目录
+ *    重组为 {configDir}/{tenantId}/{projectId}/{pageId}/ 结构，并注册页面元数据到数据库
  * 3. 初始化默认导航配置（仅当 navigation_config 表为空时，从 classpath 读取默认值）
  */
 @Component
@@ -41,7 +40,6 @@ public class DataInitializer implements CommandLineRunner {
 
     private final TenantConfigRepository tenantRepo;
     private final PageConfigRepository pageRepo;
-    private final PageFileRepository fileRepo;
     private final NavigationConfigRepository navRepo;
     private final ProjectService projectService;
     private final PagesConfigProperties pagesProps;
@@ -52,14 +50,12 @@ public class DataInitializer implements CommandLineRunner {
 
     public DataInitializer(TenantConfigRepository tenantRepo,
                             PageConfigRepository pageRepo,
-                            PageFileRepository fileRepo,
                             NavigationConfigRepository navRepo,
                             ProjectService projectService,
                             PagesConfigProperties pagesProps,
                             ObjectMapper objectMapper) {
         this.tenantRepo = tenantRepo;
         this.pageRepo = pageRepo;
-        this.fileRepo = fileRepo;
         this.navRepo = navRepo;
         this.projectService = projectService;
         this.pagesProps = pagesProps;
@@ -110,8 +106,15 @@ public class DataInitializer implements CommandLineRunner {
         tenantRepo.save(entity);
     }
 
-    // ── 迁移文件系统页面配置 ──────────────────────────────────────────────────
+    // ── 迁移文件系统页面配置（扁平 → 租户/项目嵌套目录）──────────────────────
 
+    /**
+     * 将旧版扁平目录 {configDir}/{pageId}/ 下的页面配置文件迁移到
+     * {configDir}/{tenantId}/{projectId}/{pageId}/ 嵌套结构。
+     *
+     * <p>同时在数据库中注册页面元数据。如果数据库 page_config 表已有数据则跳过。
+     * <p>迁移采用 **文件复制** 而非移动，以确保即使中途失败也不丢数据。
+     */
     private void migratePageConfigs() {
         if (pageRepo.count() > 0) {
             log.info("[DataInit] 页面配置已存在于数据库，跳过文件迁移");
@@ -124,15 +127,30 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
+        Path targetBase = configDir.resolve(DEFAULT_TENANT).resolve(HOMEPAGE_PROJECT);
         int pageCount = 0;
         int fileCount = 0;
 
         try (DirectoryStream<Path> dirs = Files.newDirectoryStream(configDir, Files::isDirectory)) {
             for (Path pageDir : dirs) {
-                String pageId = pageDir.getFileName().toString();
-                if (pageId.startsWith(".") || pageId.startsWith("_")) continue;
+                String dirName = pageDir.getFileName().toString();
+                // 跳过已有租户目录（防止重复迁移）和以 . 或 _ 开头的隐藏目录
+                if (dirName.startsWith(".") || dirName.startsWith("_")
+                        || dirName.equals(DEFAULT_TENANT)) continue;
 
-                // 创建页面元数据
+                // 检查该目录是否包含页面配置文件（排除非页面目录如 README.md 同级文件夹）
+                boolean hasPageFile = false;
+                for (String fname : PAGE_FILE_NAMES) {
+                    if (Files.isRegularFile(pageDir.resolve(fname))) {
+                        hasPageFile = true;
+                        break;
+                    }
+                }
+                if (!hasPageFile) continue;
+
+                String pageId = dirName;
+
+                // 在数据库注册页面元数据
                 PageConfigEntity page = new PageConfigEntity();
                 page.setTenantId(DEFAULT_TENANT);
                 page.setProjectId(HOMEPAGE_PROJECT);
@@ -144,18 +162,14 @@ public class DataInitializer implements CommandLineRunner {
                 pageRepo.save(page);
                 pageCount++;
 
-                // 迁移页面文件
+                // 复制文件到嵌套目录
+                Path targetDir = targetBase.resolve(pageId);
+                Files.createDirectories(targetDir);
                 for (String filename : PAGE_FILE_NAMES) {
-                    Path filePath = pageDir.resolve(filename);
-                    if (Files.isRegularFile(filePath)) {
-                        String content = Files.readString(filePath, StandardCharsets.UTF_8);
-                        PageFileEntity file = new PageFileEntity();
-                        file.setTenantId(DEFAULT_TENANT);
-                        file.setProjectId(HOMEPAGE_PROJECT);
-                        file.setPageId(pageId);
-                        file.setFilename(filename);
-                        file.setContent(content);
-                        fileRepo.save(file);
+                    Path src = pageDir.resolve(filename);
+                    if (Files.isRegularFile(src)) {
+                        Files.copy(src, targetDir.resolve(filename),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
                         fileCount++;
                     }
                 }
@@ -165,7 +179,7 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        log.info("[DataInit] 页面配置迁移完成: {} pages, {} files", pageCount, fileCount);
+        log.info("[DataInit] 页面配置迁移完成: {} pages, {} files → {}", pageCount, fileCount, targetBase);
     }
 
     // ── 初始化默认导航配置（从 classpath 资源）────────────────────────────────

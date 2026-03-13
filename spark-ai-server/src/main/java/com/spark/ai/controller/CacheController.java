@@ -1,7 +1,6 @@
 package com.spark.ai.controller;
 
 import com.spark.ai.repository.PageConfigRepository;
-import com.spark.ai.repository.PageFileRepository;
 import com.spark.ai.service.ComponentMetadataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,15 +23,12 @@ public class CacheController {
 
     private final ComponentMetadataService metadataService;
     private final PageConfigRepository pageConfigRepo;
-    private final PageFileRepository pageFileRepo;
 
     public CacheController(
             ComponentMetadataService metadataService,
-            PageConfigRepository pageConfigRepo,
-            PageFileRepository pageFileRepo) {
+            PageConfigRepository pageConfigRepo) {
         this.metadataService = metadataService;
         this.pageConfigRepo = pageConfigRepo;
-        this.pageFileRepo = pageFileRepo;
     }
 
     /**
@@ -55,7 +51,6 @@ public class CacheController {
         // 数据库统计
         Map<String, Object> db = new LinkedHashMap<>();
         db.put("pageCount", pageConfigRepo.count());
-        db.put("fileCount", pageFileRepo.count());
         result.put("database", db);
 
         return ResponseEntity.ok(result);
