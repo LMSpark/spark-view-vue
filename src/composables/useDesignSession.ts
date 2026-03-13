@@ -11,6 +11,8 @@ export type ProposalType =
   | 'api-config'
   | 'db-schema'
   | 'dict-entry'
+  | 'function-plan'
+  | 'navigation'
 
 export type ProposalStatus = 'pending' | 'accepted' | 'rejected'
 
@@ -79,6 +81,8 @@ const TYPE_LABELS: Record<ProposalType, string> = {
   'api-config': '🔌 API 配置',
   'db-schema': '🗄️ 数据库变更',
   'dict-entry': '📖 字典变更',
+  'function-plan': '🏗️ 功能规划',
+  'navigation': '🌐 导航结构',
 }
 
 const TYPE_ICONS: Record<ProposalType, string> = {
@@ -89,6 +93,8 @@ const TYPE_ICONS: Record<ProposalType, string> = {
   'api-config': '🔌',
   'db-schema': '🗄️',
   'dict-entry': '📖',
+  'function-plan': '🏗️',
+  'navigation': '🌐',
 }
 
 export function typeLabel(type: ProposalType): string {
@@ -122,7 +128,7 @@ export function extractBlocks(text: string): ProtocolBlock[] {
 
 const VALID_TYPES = new Set<ProposalType>([
   'data-model', 'ui-structure', 'interaction', 'style', 'api-config',
-  'db-schema', 'dict-entry',
+  'db-schema', 'dict-entry', 'function-plan', 'navigation',
 ])
 
 /**
