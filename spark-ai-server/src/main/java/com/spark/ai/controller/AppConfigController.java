@@ -43,7 +43,7 @@ public class AppConfigController {
                 "form-create",  Map.of("enabled", true,  "priority", 3)
             )),
             Map.entry("spark", Map.of("enabled", true)),
-            Map.entry("pageConfig", Map.of("source", "local", "apiBaseUrl", "/api", "homePath", "/home")),
+            Map.entry("pageConfig", Map.of("source", "local", "apiBaseUrl", "/api/tenants/lmspark/projects/homepage", "homePath", "/home")),
             Map.entry("config", Map.of(
                 "apiBaseUrl", "/api",
                 "logLevel", "info",

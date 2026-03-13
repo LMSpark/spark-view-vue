@@ -114,6 +114,7 @@ public class DataInitializer implements CommandLineRunner {
      *
      * <p>同时在数据库中注册页面元数据。如果数据库 page_config 表已有数据则跳过。
      * <p>迁移采用 **文件复制** 而非移动，以确保即使中途失败也不丢数据。
+     * <p>如果扁平迁移未发现任何页面（文件已在嵌套目录），则扫描嵌套目录注册页面到数据库。
      */
     private void migratePageConfigs() {
         if (pageRepo.count() > 0) {
@@ -131,6 +132,7 @@ public class DataInitializer implements CommandLineRunner {
         int pageCount = 0;
         int fileCount = 0;
 
+        // Phase 1: 扁平目录迁移（旧版 {configDir}/{pageId}/ → 嵌套结构）
         try (DirectoryStream<Path> dirs = Files.newDirectoryStream(configDir, Files::isDirectory)) {
             for (Path pageDir : dirs) {
                 String dirName = pageDir.getFileName().toString();
@@ -151,15 +153,7 @@ public class DataInitializer implements CommandLineRunner {
                 String pageId = dirName;
 
                 // 在数据库注册页面元数据
-                PageConfigEntity page = new PageConfigEntity();
-                page.setTenantId(DEFAULT_TENANT);
-                page.setProjectId(HOMEPAGE_PROJECT);
-                page.setPageId(pageId);
-                page.setTitle(pageId);
-                page.setIcon("📄");
-                page.setPath("/" + pageId);
-                page.setRouteName(pageId);
-                pageRepo.save(page);
+                registerPage(pageId);
                 pageCount++;
 
                 // 复制文件到嵌套目录
@@ -175,11 +169,64 @@ public class DataInitializer implements CommandLineRunner {
                 }
             }
         } catch (IOException e) {
-            log.error("[DataInit] 页面配置迁移失败", e);
+            log.error("[DataInit] 页面配置扁平迁移失败", e);
             return;
         }
 
-        log.info("[DataInit] 页面配置迁移完成: {} pages, {} files → {}", pageCount, fileCount, targetBase);
+        if (pageCount > 0) {
+            log.info("[DataInit] 扁平迁移完成: {} pages, {} files → {}", pageCount, fileCount, targetBase);
+            return;
+        }
+
+        // Phase 2: 文件已在嵌套目录，仅需注册到数据库
+        pageCount = registerNestedPages(targetBase);
+        if (pageCount > 0) {
+            log.info("[DataInit] 从嵌套目录注册 {} 个页面到数据库", pageCount);
+        } else {
+            log.info("[DataInit] 未发现任何页面配置文件");
+        }
+    }
+
+    /**
+     * 扫描 {tenantId}/{projectId}/ 下的子目录，将包含页面文件的目录注册为页面。
+     */
+    private int registerNestedPages(Path projectDir) {
+        if (!Files.isDirectory(projectDir)) return 0;
+        int count = 0;
+        try (DirectoryStream<Path> dirs = Files.newDirectoryStream(projectDir, Files::isDirectory)) {
+            for (Path pageDir : dirs) {
+                String pageId = pageDir.getFileName().toString();
+                if (pageId.startsWith(".") || pageId.startsWith("_")) continue;
+
+                boolean hasPageFile = false;
+                for (String fname : PAGE_FILE_NAMES) {
+                    if (Files.isRegularFile(pageDir.resolve(fname))) {
+                        hasPageFile = true;
+                        break;
+                    }
+                }
+                if (!hasPageFile) continue;
+
+                registerPage(pageId);
+                count++;
+            }
+        } catch (IOException e) {
+            log.error("[DataInit] 扫描嵌套页面目录失败: {}", projectDir, e);
+        }
+        return count;
+    }
+
+    /** 在数据库注册页面元数据 */
+    private void registerPage(String pageId) {
+        PageConfigEntity page = new PageConfigEntity();
+        page.setTenantId(DEFAULT_TENANT);
+        page.setProjectId(HOMEPAGE_PROJECT);
+        page.setPageId(pageId);
+        page.setTitle(pageId);
+        page.setIcon("📄");
+        page.setPath("/" + pageId);
+        page.setRouteName(pageId);
+        pageRepo.save(page);
     }
 
     // ── 初始化默认导航配置（从 classpath 资源）────────────────────────────────
