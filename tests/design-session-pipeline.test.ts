@@ -103,34 +103,14 @@ describe('extractProposals', () => {
     expect(cleanContent).toContain('这是我的建议')
   })
 
-  it('falls back to XML format', () => {
+  it('returns empty for text without @@ blocks', () => {
     const text = `说明文字
-<proposal type="ui-structure" title="用户列表" stage="ui-design">
+<proposal type="ui-structure" title="用户列表">
 [{"type": "r-table"}]
 </proposal>`
 
     const { proposals } = extractProposals(text, 'msg-2')
-    expect(proposals).toHaveLength(1)
-    expect(proposals[0]?.type).toBe('ui-structure')
-    expect(proposals[0]?.title).toBe('用户列表')
-    expect(proposals[0]?.stage).toBe('ui-design')
-  })
-
-  it('uses @@ protocol when both formats present', () => {
-    const text = `
-@@proposal:data-model
-# We use @@ now
-{"test": true}
-@@end
-
-<proposal type="interaction" title="old style">
-old code
-</proposal>`
-
-    const { proposals } = extractProposals(text, 'msg-3')
-    // Should prefer @@ blocks when they exist
-    expect(proposals).toHaveLength(1)
-    expect(proposals[0]?.type).toBe('data-model')
+    expect(proposals).toHaveLength(0)
   })
 
   it('defaults to ui-structure for unknown type', () => {
@@ -171,10 +151,10 @@ r-table, r-form, r-select
     expect(queries).toEqual(['r-table', 'r-form', 'r-select'])
   })
 
-  it('falls back to XML query', () => {
+  it('ignores XML query tags', () => {
     const text = `<query type="component-props">r-table, r-form</query>`
     const queries = extractComponentQueries(text)
-    expect(queries).toEqual(['r-table', 'r-form'])
+    expect(queries).toEqual([])
   })
 
   it('returns empty for no queries', () => {
@@ -209,10 +189,11 @@ World`
     expect(result).toContain('World')
   })
 
-  it('strips XML tags', () => {
+  it('preserves XML tags in output (no longer stripped)', () => {
     const text = `Hello <proposal type="data-model" title="x">content</proposal> World`
     const result = stripProposalTags(text)
-    expect(result).not.toContain('<proposal')
+    // XML is not stripped anymore, only @@ blocks are
+    expect(result).toContain('<proposal')
     expect(result).toContain('Hello')
   })
 
