@@ -16,21 +16,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 导航配置持久化服务 — H2 数据库版。
- * 将导航树以 JSON 字符串存储在 navigation_config 表中。
- *
- * <p>支持两种保存模式：
- * <ul>
- *   <li>整树覆盖：{@link #saveNavConfig(Map)}</li>
- *   <li>节点级 CRUD：{@link #addNode}、{@link #updateNode}、
- *       {@link #deleteNode}、{@link #moveNode}</li>
- * </ul>
+ * 导航配置持久化服务 — 按 (tenantId, projectId) 隔离。
  */
 @Service
 public class NavigationService {
 
     private static final Logger log = LoggerFactory.getLogger(NavigationService.class);
-    private static final String DEFAULT_KEY = "default";
 
     private final NavigationConfigRepository navRepo;
     private final ObjectMapper objectMapper;
@@ -39,7 +30,6 @@ public class NavigationService {
                               ObjectMapper objectMapper) {
         this.navRepo = navRepo;
         this.objectMapper = objectMapper;
-        log.info("[Navigation] 使用 H2 嵌入式数据库存储");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -48,16 +38,15 @@ public class NavigationService {
 
     /**
      * 读取导航配置（完整树）。
-     * 若不存在返回 null。
      */
-    public Map<String, Object> getNavConfig() throws IOException {
-        return navRepo.findById(DEFAULT_KEY)
+    public Map<String, Object> getNavConfig(String tenantId, String projectId) throws IOException {
+        return navRepo.findByTenantIdAndProjectId(tenantId, projectId)
                 .map(entity -> {
                     try {
                         return objectMapper.readValue(entity.getConfigJson(),
                                 new TypeReference<Map<String, Object>>() {});
                     } catch (IOException e) {
-                        log.error("[Navigation] JSON 解析失败", e);
+                        log.error("[Navigation] JSON 解析失败 tenant={} project={}", tenantId, projectId, e);
                         return null;
                     }
                 })
@@ -68,10 +57,11 @@ public class NavigationService {
      * 保存导航配置（完整覆盖）。
      */
     @Transactional
-    public void saveNavConfig(Map<String, Object> navRoot) throws IOException {
+    public void saveNavConfig(String tenantId, String projectId,
+                               Map<String, Object> navRoot) throws IOException {
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(navRoot);
-        persistJson(json);
-        log.info("[Navigation] 整树保存 ({} bytes)", json.length());
+        persistJson(tenantId, projectId, json);
+        log.info("[Navigation] 整树保存 tenant={} project={} ({} bytes)", tenantId, projectId, json.length());
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -87,10 +77,11 @@ public class NavigationService {
      * @throws IllegalArgumentException 若 id 已存在或父节点不存在
      */
     @Transactional
-    public Map<String, Object> addNode(String parentId,
+    public Map<String, Object> addNode(String tenantId, String projectId,
+                                        String parentId,
                                         Map<String, Object> node,
                                         int index) throws IOException {
-        Map<String, Object> root = loadOrInit();
+        Map<String, Object> root = loadOrInit(tenantId, projectId);
         List<Map<String, Object>> rootChildren = getChildren(root);
 
         // 校验：id 不能重复
@@ -121,22 +112,16 @@ public class NavigationService {
             targetList.add(index, node);
         }
 
-        persistTree(root);
-        log.info("[Navigation] 新增节点 id={} parentId={}", newId, parentId);
+        persistTree(tenantId, projectId, root);
+        log.info("[Navigation] 新增节点 id={} tenant={} project={}", newId, tenantId, projectId);
         return node;
     }
 
-    /**
-     * 更新节点属性（局部合并 patch，不覆盖 children）。
-     *
-     * @param id    目标节点 id
-     * @param patch 要更新的字段键值对
-     * @throws IllegalArgumentException 若节点不存在
-     */
     @Transactional
-    public Map<String, Object> updateNode(String id,
+    public Map<String, Object> updateNode(String tenantId, String projectId,
+                                           String id,
                                            Map<String, Object> patch) throws IOException {
-        Map<String, Object> root = loadOrInit();
+        Map<String, Object> root = loadOrInit(tenantId, projectId);
         Map<String, Object> node = findById(getChildren(root), id);
         if (node == null) throw new IllegalArgumentException("节点不存在: " + id);
 
@@ -147,45 +132,31 @@ public class NavigationService {
             }
         }
 
-        persistTree(root);
-        log.info("[Navigation] 更新节点 id={}", id);
+        persistTree(tenantId, projectId, root);
+        log.info("[Navigation] 更新节点 id={} tenant={} project={}", id, tenantId, projectId);
         return node;
     }
 
-    /**
-     * 删除节点（同时删除其所有子孙节点）。
-     *
-     * @param id 目标节点 id
-     * @return 被删除的节点
-     * @throws IllegalArgumentException 若节点不存在
-     */
     @Transactional
-    public Map<String, Object> deleteNode(String id) throws IOException {
-        Map<String, Object> root = loadOrInit();
+    public Map<String, Object> deleteNode(String tenantId, String projectId,
+                                           String id) throws IOException {
+        Map<String, Object> root = loadOrInit(tenantId, projectId);
         List<Map<String, Object>> rootChildren = getChildren(root);
         Map<String, Object>[] result = new Map[]{null};
 
         boolean removed = removeById(rootChildren, id, result);
         if (!removed) throw new IllegalArgumentException("节点不存在: " + id);
 
-        persistTree(root);
-        log.info("[Navigation] 删除节点 id={}", id);
+        persistTree(tenantId, projectId, root);
+        log.info("[Navigation] 删除节点 id={} tenant={} project={}", id, tenantId, projectId);
         return result[0];
     }
 
-    /**
-     * 移动节点到新父节点下的指定位置。
-     *
-     * @param id          要移动的节点 id
-     * @param newParentId 新父节点 id（null 表示移动到根）
-     * @param index       目标位置（-1 表示追加到末尾）
-     * @throws IllegalArgumentException 若节点不存在或形成循环
-     */
     @Transactional
-    public Map<String, Object> moveNode(String id,
-                                         String newParentId,
+    public Map<String, Object> moveNode(String tenantId, String projectId,
+                                         String id, String newParentId,
                                          int index) throws IOException {
-        Map<String, Object> root = loadOrInit();
+        Map<String, Object> root = loadOrInit(tenantId, projectId);
         List<Map<String, Object>> rootChildren = getChildren(root);
 
         // 防止移动到自身的子孙节点下
@@ -226,20 +197,17 @@ public class NavigationService {
             targetList.add(index, node);
         }
 
-        persistTree(root);
-        log.info("[Navigation] 移动节点 id={} newParentId={} index={}", id, newParentId, index);
+        persistTree(tenantId, projectId, root);
+        log.info("[Navigation] 移动节点 id={} tenant={} project={}", id, tenantId, projectId);
         return node;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 扁平化列表（管理/搜索用）
+    // 扁平化列表
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * 获取导航节点列表（扁平化）。
-     */
-    public List<Map<String, Object>> listNodes() throws IOException {
-        Map<String, Object> config = getNavConfig();
+    public List<Map<String, Object>> listNodes(String tenantId, String projectId) throws IOException {
+        Map<String, Object> config = getNavConfig(tenantId, projectId);
         if (config == null) return List.of();
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> children = (List<Map<String, Object>>) config.get("children");
@@ -250,9 +218,8 @@ public class NavigationService {
     // 私有工具方法
     // ─────────────────────────────────────────────────────────────────────────
 
-    /** 加载现有配置或初始化空树。 */
-    private Map<String, Object> loadOrInit() throws IOException {
-        Map<String, Object> root = getNavConfig();
+    private Map<String, Object> loadOrInit(String tenantId, String projectId) throws IOException {
+        Map<String, Object> root = getNavConfig(tenantId, projectId);
         if (root == null) {
             root = new LinkedHashMap<>();
             root.put("childPlacement", "header");
@@ -343,16 +310,18 @@ public class NavigationService {
         return result;
     }
 
-    /** 持久化整树到 DB。 */
-    private void persistTree(Map<String, Object> root) throws IOException {
-        persistJson(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root));
+    private void persistTree(String tenantId, String projectId,
+                              Map<String, Object> root) throws IOException {
+        persistJson(tenantId, projectId,
+                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root));
     }
 
-    private void persistJson(String json) {
-        NavigationConfigEntity entity = navRepo.findById(DEFAULT_KEY)
+    private void persistJson(String tenantId, String projectId, String json) {
+        NavigationConfigEntity entity = navRepo.findByTenantIdAndProjectId(tenantId, projectId)
                 .orElseGet(() -> {
                     NavigationConfigEntity e = new NavigationConfigEntity();
-                    e.setConfigKey(DEFAULT_KEY);
+                    e.setTenantId(tenantId);
+                    e.setProjectId(projectId);
                     return e;
                 });
         entity.setConfigJson(json);

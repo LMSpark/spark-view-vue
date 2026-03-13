@@ -4,33 +4,33 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 /**
- * 通用数据行实体 — 为任意逻辑表提供行级持久化。
- *
- * <p>一条记录对应某逻辑表（tableName）中的一行（rowId），
- * 行的完整字段以 JSON 字符串（dataJson）存储。
- *
- * <p>表名：{@code table_data}
+ * 通用数据行实体 — 按 (tenantId, projectId, tableName) 隔离。
  */
 @Entity
 @Table(name = "table_data", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_table_row", columnNames = {"table_name", "row_id"})
+    @UniqueConstraint(name = "uk_row_scope", columnNames = {"tenant_id", "project_id", "table_name", "row_id"})
 })
 public class TableRowEntity {
 
-    /** 自增主键（内部使用） */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** 逻辑表名（如 "Users"、"Orders"） */
+    @Column(name = "tenant_id", nullable = false, length = 64)
+    private String tenantId;
+
+    @Column(name = "project_id", nullable = false, length = 64)
+    private String projectId;
+
+    /** 逻辑表名 */
     @Column(name = "table_name", nullable = false, length = 128)
     private String tableName;
 
-    /** 业务行 ID（字符串，由调用方提供或自动生成 UUID） */
+    /** 业务行 ID */
     @Column(name = "row_id", nullable = false, length = 128)
     private String rowId;
 
-    /** 行数据（JSON 对象，不含 id 字段） */
+    /** 行数据 JSON */
     @Lob
     @Column(name = "data_json", columnDefinition = "CLOB")
     private String dataJson;
@@ -56,6 +56,12 @@ public class TableRowEntity {
     // ── Getters & Setters ──
 
     public Long getId() { return id; }
+
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+
+    public String getProjectId() { return projectId; }
+    public void setProjectId(String projectId) { this.projectId = projectId; }
 
     public String getTableName() { return tableName; }
     public void setTableName(String tableName) { this.tableName = tableName; }

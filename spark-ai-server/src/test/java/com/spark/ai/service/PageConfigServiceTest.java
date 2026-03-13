@@ -33,6 +33,9 @@ class PageConfigServiceTest {
     private PageConfigService service;
     private SseService sseService;
 
+    private static final String T = "test-tenant";
+    private static final String P = "test-project";
+
     @BeforeEach
     void setUp() {
         sseService = new SseService();
@@ -43,10 +46,10 @@ class PageConfigServiceTest {
 
     @Test
     void readFile_returnsContentAndTimestamp() throws IOException {
-        seedPage("test-page");
-        seedFile("test-page", "rule.json", "[{\"type\":\"div\"}]");
+        seedPage(T, P, "test-page");
+        seedFile(T, P, "test-page", "rule.json", "[{\"type\":\"div\"}]");
 
-        Map<String, Object> result = service.readFile("test-page", "rule.json", null);
+        Map<String, Object> result = service.readFile(T, P, "test-page", "rule.json", null);
 
         assertEquals("[{\"type\":\"div\"}]", result.get("content"));
         assertNotNull(result.get("timestamp"));
@@ -55,14 +58,13 @@ class PageConfigServiceTest {
 
     @Test
     void readFile_notModifiedWhenTimestampMatches() throws IOException {
-        seedPage("test-page");
-        seedFile("test-page", "rule.json", "[]");
+        seedPage(T, P, "test-page");
+        seedFile(T, P, "test-page", "rule.json", "[]");
 
-        // 先读一次获取 timestamp
-        Map<String, Object> first = service.readFile("test-page", "rule.json", null);
+        Map<String, Object> first = service.readFile(T, P, "test-page", "rule.json", null);
         String timestamp = (String) first.get("timestamp");
 
-        Map<String, Object> result = service.readFile("test-page", "rule.json", timestamp);
+        Map<String, Object> result = service.readFile(T, P, "test-page", "rule.json", timestamp);
 
         assertEquals(true, result.get("notModified"));
         assertEquals("", result.get("content"));
@@ -71,45 +73,44 @@ class PageConfigServiceTest {
     @Test
     void readFile_throwsOnMissingFile() {
         assertThrows(NoSuchFileException.class, () ->
-                service.readFile("nonexistent", "rule.json", null));
+                service.readFile(T, P, "nonexistent", "rule.json", null));
     }
 
     @Test
     void readFile_rejectsInvalidPageId() {
         assertThrows(IllegalArgumentException.class, () ->
-                service.readFile("..", "rule.json", null));
+                service.readFile(T, P, "..", "rule.json", null));
         assertThrows(IllegalArgumentException.class, () ->
-                service.readFile("a/b", "rule.json", null));
+                service.readFile(T, P, "a/b", "rule.json", null));
         assertThrows(IllegalArgumentException.class, () ->
-                service.readFile("a\\b", "rule.json", null));
+                service.readFile(T, P, "a\\b", "rule.json", null));
         assertThrows(IllegalArgumentException.class, () ->
-                service.readFile("", "rule.json", null));
+                service.readFile(T, P, "", "rule.json", null));
     }
 
     @Test
     void readFile_rejectsDisallowedFilename() {
         assertThrows(IllegalArgumentException.class, () ->
-                service.readFile("page1", "hack.exe", null));
+                service.readFile(T, P, "page1", "hack.exe", null));
     }
 
     // ── writeFile ──────────────────────────────────────────────────────────
 
     @Test
     void writeFile_createsFileAndReturnsTimestamp() throws IOException {
-        Map<String, Object> result = service.writeFile("new-page", "rule.json", "[{\"type\":\"h1\"}]");
+        Map<String, Object> result = service.writeFile(T, P, "new-page", "rule.json", "[{\"type\":\"h1\"}]");
 
         assertEquals(true, result.get("ok"));
         assertNotNull(result.get("timestamp"));
 
-        // 验证可以读回
-        Map<String, Object> read = service.readFile("new-page", "rule.json", null);
+        Map<String, Object> read = service.readFile(T, P, "new-page", "rule.json", null);
         assertEquals("[{\"type\":\"h1\"}]", read.get("content"));
     }
 
     @Test
     void writeFile_rejectsDisallowedFilename() {
         assertThrows(IllegalArgumentException.class, () ->
-                service.writeFile("page1", "malware.js", "bad"));
+                service.writeFile(T, P, "page1", "malware.js", "bad"));
     }
 
     // ── writeBatch ────────────────────────────────────────────────────────
@@ -120,9 +121,9 @@ class PageConfigServiceTest {
         files.put("rule.json", "[]");
         files.put("pagedata.json", "{}");
         files.put("script.js", "// init");
-        files.put("evil.exe", "bad"); // should be silently skipped
+        files.put("evil.exe", "bad");
 
-        Map<String, Object> result = service.writeBatch("batch-page", files);
+        Map<String, Object> result = service.writeBatch(T, P, "batch-page", files);
 
         assertEquals(true, result.get("ok"));
         assertEquals("batch-page", result.get("pageId"));
@@ -137,13 +138,11 @@ class PageConfigServiceTest {
 
     @Test
     void writeBatch_autoRegistersPageConfig() throws IOException {
-        service.writeBatch("auto-route", Map.of("rule.json", "[]"));
+        service.writeBatch(T, P, "auto-route", Map.of("rule.json", "[]"));
 
-        // 验证 page_config 记录被自动创建
-        assertTrue(pageRepo.existsById("auto-route"));
+        assertTrue(pageRepo.existsByTenantIdAndProjectIdAndPageId(T, P, "auto-route"));
 
-        // routes.json 动态生成，应包含新页面
-        Map<String, Object> routes = service.readRootFile("routes.json", null);
+        Map<String, Object> routes = service.readRootFile(T, P, "routes.json", null);
         String content = (String) routes.get("content");
         assertTrue(content.contains("auto-route"));
     }
@@ -151,13 +150,15 @@ class PageConfigServiceTest {
     @Test
     void writeBatch_rejectsInvalidPageId() {
         assertThrows(IllegalArgumentException.class, () ->
-                service.writeBatch("../escape", Map.of("rule.json", "[]")));
+                service.writeBatch(T, P, "../escape", Map.of("rule.json", "[]")));
     }
 
     // ── Helper ────────────────────────────────────────────────────────────
 
-    private void seedPage(String pageId) {
+    private void seedPage(String tenantId, String projectId, String pageId) {
         PageConfigEntity page = new PageConfigEntity();
+        page.setTenantId(tenantId);
+        page.setProjectId(projectId);
         page.setPageId(pageId);
         page.setTitle(pageId);
         page.setIcon("📄");
@@ -166,8 +167,11 @@ class PageConfigServiceTest {
         pageRepo.save(page);
     }
 
-    private void seedFile(String pageId, String filename, String content) {
+    private void seedFile(String tenantId, String projectId, String pageId,
+                           String filename, String content) {
         PageFileEntity file = new PageFileEntity();
+        file.setTenantId(tenantId);
+        file.setProjectId(projectId);
         file.setPageId(pageId);
         file.setFilename(filename);
         file.setContent(content);

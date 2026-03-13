@@ -82,10 +82,10 @@ class ControllersTest {
 
     @Test
     void getFile_returnsContentAndTimestamp() throws Exception {
-        when(pageConfigService.readFile("my-page", "rule.json", null))
+        when(pageConfigService.readFile("t1", "p1", "my-page", "rule.json", null))
                 .thenReturn(Map.of("content", "[]", "timestamp", "2024-01-01T00:00:00Z"));
 
-        mockMvc.perform(get("/api/pages-config/my-page/rule.json"))
+        mockMvc.perform(get("/api/tenants/t1/projects/p1/pages-config/my-page/rule.json"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("[]"))
                 .andExpect(jsonPath("$.timestamp").exists());
@@ -93,19 +93,19 @@ class ControllersTest {
 
     @Test
     void getFile_returns404WhenNotFound() throws Exception {
-        when(pageConfigService.readFile("missing", "rule.json", null))
+        when(pageConfigService.readFile("t1", "p1", "missing", "rule.json", null))
                 .thenThrow(new NoSuchFileException("not found"));
 
-        mockMvc.perform(get("/api/pages-config/missing/rule.json"))
+        mockMvc.perform(get("/api/tenants/t1/projects/p1/pages-config/missing/rule.json"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getFile_returns400OnInvalidPageId() throws Exception {
-        when(pageConfigService.readFile(eq(".."), anyString(), any()))
+        when(pageConfigService.readFile(eq("t1"), eq("p1"), eq(".."), anyString(), any()))
                 .thenThrow(new IllegalArgumentException("无效的 pageId: .."));
 
-        mockMvc.perform(get("/api/pages-config/../rule.json"))
+        mockMvc.perform(get("/api/tenants/t1/projects/p1/pages-config/../rule.json"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -113,10 +113,10 @@ class ControllersTest {
 
     @Test
     void putFile_writesAndReturnsOk() throws Exception {
-        when(pageConfigService.writeFile("pg", "rule.json", "[{\"type\":\"h1\"}]"))
+        when(pageConfigService.writeFile("t1", "p1", "pg", "rule.json", "[{\"type\":\"h1\"}]"))
                 .thenReturn(Map.of("ok", true, "timestamp", "2024-01-01T00:00:00Z"));
 
-        mockMvc.perform(put("/api/pages-config/pg/rule.json")
+        mockMvc.perform(put("/api/tenants/t1/projects/p1/pages-config/pg/rule.json")
                         .contentType(MediaType.TEXT_PLAIN)
                         .content("[{\"type\":\"h1\"}]"))
                 .andExpect(status().isOk())
@@ -127,7 +127,7 @@ class ControllersTest {
 
     @Test
     void batch_writesMultipleFiles() throws Exception {
-        when(pageConfigService.writeBatch(eq("new-pg"), any()))
+        when(pageConfigService.writeBatch(eq("t1"), eq("p1"), eq("new-pg"), any()))
                 .thenReturn(Map.of("ok", true, "pageId", "new-pg",
                         "written", java.util.List.of("rule.json", "pagedata.json")));
 
@@ -135,7 +135,7 @@ class ControllersTest {
                 {"rule.json":"[]","pagedata.json":"{}"}
                 """;
 
-        mockMvc.perform(post("/api/pages-config/new-pg/__batch")
+        mockMvc.perform(post("/api/tenants/t1/projects/p1/pages-config/new-pg/__batch")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(filesJson))
                 .andExpect(status().isOk())
@@ -150,7 +150,7 @@ class ControllersTest {
         when(sseService.subscribe()).thenReturn(
                 new org.springframework.web.servlet.mvc.method.annotation.SseEmitter(0L));
 
-        mockMvc.perform(get("/api/pages-config/__events")
+        mockMvc.perform(get("/api/events")
                         .accept(MediaType.TEXT_EVENT_STREAM))
                 .andExpect(status().isOk());
     }

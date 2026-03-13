@@ -15,8 +15,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 /**
- * 页面配置文件 CRUD 服务 — H2 数据库版。
- * 替代原有的文件系统存储，保持 REST API 契约不变。
+ * 页面配置文件 CRUD 服务 — 按 (tenantId, projectId) 隔离。
  */
 @Service
 public class PageConfigService {
@@ -40,7 +39,6 @@ public class PageConfigService {
         this.fileRepo = fileRepo;
         this.objectMapper = objectMapper;
         this.sseService = sseService;
-        log.info("[PageConfig] 使用 H2 嵌入式数据库存储");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -51,12 +49,14 @@ public class PageConfigService {
      * 读取页面配置文件。
      * 保持 FileLoader 时间戳协议兼容（timestamp 基于 updatedAt）。
      */
-    public Map<String, Object> readFile(String pageId, String filename,
+    public Map<String, Object> readFile(String tenantId, String projectId,
+                                         String pageId, String filename,
                                          String clientTimestamp) throws IOException {
         validatePageId(pageId);
         validateFilename(filename);
 
-        PageFileEntity file = fileRepo.findByPageIdAndFilename(pageId, filename)
+        PageFileEntity file = fileRepo.findByTenantIdAndProjectIdAndPageIdAndFilename(
+                        tenantId, projectId, pageId, filename)
                 .orElseThrow(() -> new NoSuchFileException(pageId + "/" + filename));
 
         String serverTimestamp = file.getUpdatedAt().toString();
@@ -73,17 +73,20 @@ public class PageConfigService {
     // ─────────────────────────────────────────────────────────────────────────
 
     @Transactional
-    public Map<String, Object> writeFile(String pageId, String filename,
+    public Map<String, Object> writeFile(String tenantId, String projectId,
+                                          String pageId, String filename,
                                           String content) throws IOException {
         validatePageId(pageId);
         validateFilename(filename);
 
-        // 确保页面元数据存在
-        ensurePageConfig(pageId);
+        ensurePageConfig(tenantId, projectId, pageId);
 
-        PageFileEntity file = fileRepo.findByPageIdAndFilename(pageId, filename)
+        PageFileEntity file = fileRepo.findByTenantIdAndProjectIdAndPageIdAndFilename(
+                        tenantId, projectId, pageId, filename)
                 .orElseGet(() -> {
                     PageFileEntity f = new PageFileEntity();
+                    f.setTenantId(tenantId);
+                    f.setProjectId(projectId);
                     f.setPageId(pageId);
                     f.setFilename(filename);
                     return f;
@@ -101,12 +104,12 @@ public class PageConfigService {
     // ─────────────────────────────────────────────────────────────────────────
 
     @Transactional
-    public Map<String, Object> writeBatch(String pageId,
+    public Map<String, Object> writeBatch(String tenantId, String projectId,
+                                           String pageId,
                                            Map<String, String> files) throws IOException {
         validatePageId(pageId);
 
-        // 确保页面元数据存在（自动注册路由）
-        ensurePageConfig(pageId);
+        ensurePageConfig(tenantId, projectId, pageId);
 
         List<String> written = new ArrayList<>();
         for (Map.Entry<String, String> entry : files.entrySet()) {
@@ -114,9 +117,12 @@ public class PageConfigService {
             String content = entry.getValue();
             if (!ALLOWED_FILES.contains(filename) || content == null) continue;
 
-            PageFileEntity file = fileRepo.findByPageIdAndFilename(pageId, filename)
+            PageFileEntity file = fileRepo.findByTenantIdAndProjectIdAndPageIdAndFilename(
+                            tenantId, projectId, pageId, filename)
                     .orElseGet(() -> {
                         PageFileEntity f = new PageFileEntity();
+                        f.setTenantId(tenantId);
+                        f.setProjectId(projectId);
                         f.setPageId(pageId);
                         f.setFilename(filename);
                         return f;
@@ -139,13 +145,14 @@ public class PageConfigService {
      * 读取根级配置文件（routes.json — 从 page_config 表动态生成）。
      * 保持与 FileLoader 时间戳协议的兼容。
      */
-    public Map<String, Object> readRootFile(String filename,
+    public Map<String, Object> readRootFile(String tenantId, String projectId,
+                                             String filename,
                                              String clientTimestamp) throws IOException {
         if (!"routes.json".equals(filename)) {
             throw new IllegalArgumentException("不允许读取根级文件: " + filename);
         }
 
-        String content = generateRoutesJson();
+        String content = generateRoutesJson(tenantId, projectId);
         // 使用内容哈希作为 timestamp（无文件系统 mtime）
         String timestamp = String.valueOf(content.hashCode());
 
@@ -159,8 +166,9 @@ public class PageConfigService {
     // 页面列表
     // ─────────────────────────────────────────────────────────────────────────
 
-    public List<Map<String, Object>> listPages() {
-        List<PageConfigEntity> pages = pageRepo.findAllByOrderByCreatedAtAsc();
+    public List<Map<String, Object>> listPages(String tenantId, String projectId) {
+        List<PageConfigEntity> pages = pageRepo.findByTenantIdAndProjectIdOrderByCreatedAtAsc(
+                tenantId, projectId);
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (PageConfigEntity page : pages) {
@@ -170,7 +178,8 @@ public class PageConfigService {
             item.put("title", page.getTitle() != null ? page.getTitle() : page.getPageId());
             item.put("icon", page.getIcon() != null ? page.getIcon() : "📄");
 
-            List<PageFileEntity> files = fileRepo.findByPageId(page.getPageId());
+            List<PageFileEntity> files = fileRepo.findByTenantIdAndProjectIdAndPageId(
+                    tenantId, projectId, page.getPageId());
             List<String> existingFiles = files.stream().map(PageFileEntity::getFilename).toList();
             item.put("pageType", page.getPageType() != null ? page.getPageType() : "config");
             item.put("files", existingFiles);
@@ -185,16 +194,18 @@ public class PageConfigService {
     // ─────────────────────────────────────────────────────────────────────────
 
     @Transactional
-    public Map<String, Object> createPage(String pageId, String title,
+    public Map<String, Object> createPage(String tenantId, String projectId,
+                                           String pageId, String title,
                                            String icon) {
         validatePageId(pageId);
 
-        if (pageRepo.existsById(pageId)) {
+        if (pageRepo.existsByTenantIdAndProjectIdAndPageId(tenantId, projectId, pageId)) {
             throw new IllegalArgumentException("页面已存在: " + pageId);
         }
 
-        // 创建页面元数据
         PageConfigEntity page = new PageConfigEntity();
+        page.setTenantId(tenantId);
+        page.setProjectId(projectId);
         page.setPageId(pageId);
         page.setTitle(title != null && !title.isBlank() ? title : pageId);
         page.setIcon(icon != null && !icon.isBlank() ? icon : "📄");
@@ -219,6 +230,8 @@ public class PageConfigService {
         List<String> written = new ArrayList<>();
         for (Map.Entry<String, String> entry : scaffold.entrySet()) {
             PageFileEntity file = new PageFileEntity();
+            file.setTenantId(tenantId);
+            file.setProjectId(projectId);
             file.setPageId(pageId);
             file.setFilename(entry.getKey());
             file.setContent(entry.getValue());
@@ -236,14 +249,16 @@ public class PageConfigService {
     // ─────────────────────────────────────────────────────────────────────────
 
     @Transactional
-    public Map<String, Object> deletePage(String pageId) {
+    public Map<String, Object> deletePage(String tenantId, String projectId,
+                                           String pageId) {
         validatePageId(pageId);
 
-        List<PageFileEntity> files = fileRepo.findByPageId(pageId);
+        List<PageFileEntity> files = fileRepo.findByTenantIdAndProjectIdAndPageId(
+                tenantId, projectId, pageId);
         List<String> deleted = files.stream().map(PageFileEntity::getFilename).toList();
 
-        fileRepo.deleteByPageId(pageId);
-        pageRepo.deleteById(pageId);
+        fileRepo.deleteByTenantIdAndProjectIdAndPageId(tenantId, projectId, pageId);
+        pageRepo.deleteByTenantIdAndProjectIdAndPageId(tenantId, projectId, pageId);
 
         sseService.broadcast(pageId, "__deleted");
         log.info("[PageConfig] 删除页面: pageId={}, files={}", pageId, deleted);
@@ -254,10 +269,11 @@ public class PageConfigService {
     // 辅助方法
     // ─────────────────────────────────────────────────────────────────────────
 
-    /** 确保 pageId 对应的 PageConfigEntity 存在（writeBatch 场景下自动创建） */
-    private void ensurePageConfig(String pageId) {
-        if (!pageRepo.existsById(pageId)) {
+    private void ensurePageConfig(String tenantId, String projectId, String pageId) {
+        if (!pageRepo.existsByTenantIdAndProjectIdAndPageId(tenantId, projectId, pageId)) {
             PageConfigEntity page = new PageConfigEntity();
+            page.setTenantId(tenantId);
+            page.setProjectId(projectId);
             page.setPageId(pageId);
             page.setTitle(pageId);
             page.setIcon("🤖");
@@ -268,9 +284,9 @@ public class PageConfigService {
         }
     }
 
-    /** 从 page_config 表动态生成 routes.json 内容 */
-    private String generateRoutesJson() throws IOException {
-        List<PageConfigEntity> pages = pageRepo.findAllByOrderByCreatedAtAsc();
+    private String generateRoutesJson(String tenantId, String projectId) throws IOException {
+        List<PageConfigEntity> pages = pageRepo.findByTenantIdAndProjectIdOrderByCreatedAtAsc(
+                tenantId, projectId);
         List<Map<String, Object>> routes = new ArrayList<>();
         for (PageConfigEntity p : pages) {
             Map<String, Object> route = new LinkedHashMap<>();
@@ -315,7 +331,8 @@ public class PageConfigService {
      * @return 同步结果统计
      */
     @Transactional
-    public Map<String, Object> syncStaticRoutes(List<Map<String, String>> routes) {
+    public Map<String, Object> syncStaticRoutes(String tenantId, String projectId,
+                                                 List<Map<String, String>> routes) {
         int created = 0;
         int updated = 0;
         List<String> synced = new ArrayList<>();
@@ -330,7 +347,8 @@ public class PageConfigService {
             String title = r.getOrDefault("title", pageId);
             String icon = r.getOrDefault("icon", "📄");
 
-            Optional<PageConfigEntity> existing = pageRepo.findById(pageId);
+            Optional<PageConfigEntity> existing = pageRepo.findByTenantIdAndProjectIdAndPageId(
+                    tenantId, projectId, pageId);
             if (existing.isPresent()) {
                 PageConfigEntity page = existing.get();
                 page.setTitle(title);
@@ -342,6 +360,8 @@ public class PageConfigService {
                 updated++;
             } else {
                 PageConfigEntity page = new PageConfigEntity();
+                page.setTenantId(tenantId);
+                page.setProjectId(projectId);
                 page.setPageId(pageId);
                 page.setTitle(title);
                 page.setIcon(icon);

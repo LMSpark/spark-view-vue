@@ -46,8 +46,7 @@ export interface DevContextConfig {
 export const PAGE_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
 export type PageFileName = typeof PAGE_FILE_NAMES[number]
 
-const PAGE_API = '/api/pages-config'
-const NAV_API = '/api/navigation'
+import { PAGE_API, NAV_API } from '@/services/api-paths'
 
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂 — 每个 DevSystem 实例一份

@@ -26,8 +26,9 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 
+import { PAGE_API } from '@/services/api-paths'
+
 const FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
-const PAGE_API = '/api/pages-config'
 
 const props = defineProps<{
   pageId: string

@@ -245,8 +245,10 @@ const previewJson = computed(() => {
   return JSON.stringify(root, null, 2)
 })
 
+import { NAV_API } from '@/services/api-paths'
+
 // ── API ──
-const API_BASE = '/api/navigation'
+const API_BASE = NAV_API
 const loading = ref(false)
 
 const navEmpty = ref(false)

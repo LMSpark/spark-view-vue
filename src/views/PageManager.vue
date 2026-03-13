@@ -136,8 +136,10 @@ const filteredPages = computed(() => {
   )
 })
 
+import { PAGE_API } from '@/services/api-paths'
+
 // ── API ──
-const API_BASE = '/api/pages-config'
+const API_BASE = PAGE_API
 
 async function loadPages() {
   loading.value = true

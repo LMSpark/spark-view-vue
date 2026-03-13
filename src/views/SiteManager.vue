@@ -357,8 +357,7 @@ const fileLoaded = ref(false) // 当前节点的文件是否已加载
 
 const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
 
-const PAGE_API = '/api/pages-config'
-const NAV_API = '/api/navigation'
+import { PAGE_API, NAV_API } from '@/services/api-paths'
 
 // ════════════════════════════════════════════════
 // 加载

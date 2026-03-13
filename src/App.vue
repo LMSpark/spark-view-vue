@@ -135,6 +135,7 @@ import { useColorScheme } from '@/layout/useColorScheme'
 import { useNavigation } from '@/layout/useNavigation'
 import type { NavNode } from '@/layout/nav-types'
 import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
+import { NAV_API } from '@/services/api-paths'
 
 const route = useRoute()
 const theme = useTheme()
@@ -154,7 +155,7 @@ const _navRoot = reactive({ childPlacement: 'header' as const, children: [] as N
 const nav = useNavigation(_navRoot)
 
 async function reloadNavigation(): Promise<void> {
-  const resp = await fetch('/api/navigation')
+  const resp = await fetch(NAV_API)
   if (resp.ok) {
     const data = await resp.json() as { childPlacement?: string; children?: unknown[] }
     if (Array.isArray(data.children) && data.children.length > 0) {
@@ -175,7 +176,7 @@ async function reloadNavigation(): Promise<void> {
 /** 将种子导航数据写入后端（可随时调用） */
 async function syncSeedNavigation(): Promise<void> {
   const { demoNavRoot } = await import('@/layout/demo-nav')
-  const resp = await fetch('/api/navigation', {
+  const resp = await fetch(NAV_API, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(demoNavRoot),

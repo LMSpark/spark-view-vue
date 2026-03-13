@@ -4,16 +4,27 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 /**
- * 页面配置元数据实体 — 替代 routes.json。
+ * 页面配置元数据实体 — 按 (tenantId, projectId) 隔离。
  * 存储每个配置页面的 ID、标题、图标、路由路径等信息。
  */
 @Entity
-@Table(name = "page_config")
+@Table(name = "page_config", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_page_tenant_project", columnNames = {"tenant_id", "project_id", "page_id"})
+})
 public class PageConfigEntity {
 
-    /** 页面唯一标识（如 "order-list"） */
     @Id
-    @Column(name = "page_id", length = 128)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "tenant_id", nullable = false, length = 64)
+    private String tenantId;
+
+    @Column(name = "project_id", nullable = false, length = 64)
+    private String projectId;
+
+    /** 页面唯一标识（如 "order-list"，在项目内唯一） */
+    @Column(name = "page_id", nullable = false, length = 128)
     private String pageId;
 
     /** 页面标题 */
@@ -55,6 +66,14 @@ public class PageConfigEntity {
     }
 
     // ── Getters & Setters ──
+
+    public Long getId() { return id; }
+
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+
+    public String getProjectId() { return projectId; }
+    public void setProjectId(String projectId) { this.projectId = projectId; }
 
     public String getPageId() { return pageId; }
     public void setPageId(String pageId) { this.pageId = pageId; }

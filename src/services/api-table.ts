@@ -20,7 +20,9 @@
  * // await tableApi('Users').remove('1')
  */
 
-const BASE = '/api/data'
+import { DATA_API } from './api-paths'
+
+const BASE = DATA_API
 
 // ── 类型 ──────────────────────────────────────────────────────────────────────
 

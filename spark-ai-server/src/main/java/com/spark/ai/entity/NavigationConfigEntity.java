@@ -4,17 +4,24 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 /**
- * 导航配置实体 — 替代 data/navigation.json 文件。
- * 存储完整的导航树 JSON（单行记录，configKey = "default"）。
+ * 导航配置实体 — 按 (tenantId, projectId) 隔离的导航树。
+ * 每个项目拥有独立的导航配置。
  */
 @Entity
-@Table(name = "navigation_config")
+@Table(name = "navigation_config", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_nav_tenant_project", columnNames = {"tenant_id", "project_id"})
+})
 public class NavigationConfigEntity {
 
-    /** 配置键（默认 "default"，预留多租户扩展） */
     @Id
-    @Column(name = "config_key", length = 64)
-    private String configKey;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "tenant_id", nullable = false, length = 64)
+    private String tenantId;
+
+    @Column(name = "project_id", nullable = false, length = 64)
+    private String projectId;
 
     /** 导航树完整 JSON */
     @Lob
@@ -36,8 +43,13 @@ public class NavigationConfigEntity {
 
     // ── Getters & Setters ──
 
-    public String getConfigKey() { return configKey; }
-    public void setConfigKey(String configKey) { this.configKey = configKey; }
+    public Long getId() { return id; }
+
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+
+    public String getProjectId() { return projectId; }
+    public void setProjectId(String projectId) { this.projectId = projectId; }
 
     public String getConfigJson() { return configJson; }
     public void setConfigJson(String configJson) { this.configJson = configJson; }
