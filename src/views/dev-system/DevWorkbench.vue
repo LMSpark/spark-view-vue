@@ -7,6 +7,7 @@
         <span class="wb-header__title">SPARK 开发工作台</span>
         <StageProgressBar
           :current-stage="project.state.currentStage"
+          :project-state="project.state"
           @jump="handleStageJump"
         />
       </div>
@@ -113,11 +114,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { STAGE_META } from './composables/types'
 import type { ProjectStage } from './composables/types'
 import { useProjectState } from './composables/useProjectState'
-import { isFirstStage, isLastStage, canJumpTo, prevStage } from './composables/useStageFlow'
+import { isFirstStage, isLastStage, canJumpTo, prevStage, nextStage } from './composables/useStageFlow'
 import StageProgressBar from './components/StageProgressBar.vue'
 import ProjectTree from './components/ProjectTree.vue'
 import WorkspacePanel from './components/WorkspacePanel.vue'
@@ -135,8 +136,9 @@ function handleStageChange(stage: ProjectStage) {
   const result = canJumpTo(project.state.currentStage, stage, project.state)
   if (result.allowed) {
     project.goToStage(stage)
-  } else {
-    ElMessage.warning(result.reason)
+    if (result.hint) {
+      ElMessage.info(result.hint)
+    }
   }
 }
 
@@ -145,28 +147,16 @@ function handleStageJump(stage: ProjectStage) {
 }
 
 function handleNext() {
-  const result = project.tryAdvance()
-  if (!result.success && result.reason) {
-    ElMessage.warning(result.reason)
+  const next = nextStage(project.state.currentStage)
+  if (next) {
+    handleStageChange(next)
   }
 }
 
-async function handlePrev() {
-  const result = project.tryRegress()
-  if (!result.success) {
-    if (result.needsConfirm && result.reason) {
-      try {
-        await ElMessageBox.confirm(result.reason, '确认回退', { type: 'warning' })
-        const target = prevStage(project.state.currentStage)
-        if (target) {
-          project.forceRegress(target)
-        }
-      } catch {
-        // cancelled
-      }
-    } else if (result.reason) {
-      ElMessage.warning(result.reason)
-    }
+function handlePrev() {
+  const prev = prevStage(project.state.currentStage)
+  if (prev) {
+    handleStageChange(prev)
   }
 }
 

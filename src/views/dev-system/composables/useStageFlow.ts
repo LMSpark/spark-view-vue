@@ -33,44 +33,32 @@ export function prevStage(stage: ProjectStage): ProjectStage | null {
 // ── 前进守卫 ──────────────────────────────────────────────────
 
 /**
- * 判断是否可以从当前阶段前进到下一阶段。
+ * 检查当前阶段是否建议完成某些工作（软提示，不阻断跳转）。
  *
- * 规则：
- * - requirements → functions: 至少有一个 status='analyzed' 的需求
- * - functions → navigation: 至少有一个带页面的模块
- * - navigation → page-design: navDirty 必须为 false（已保存）
- * - page-design → verification: 当前页面至少有一个已采纳的 proposal
+ * 返回 hint 字段供 UI 展示引导信息，但 allowed 始终为 true。
  */
 export function canAdvance(from: ProjectStage, state: ProjectState): AdvanceResult {
   switch (from) {
     case 'requirements':
       if (!state.requirements.some(r => r.status === 'analyzed')) {
-        return { allowed: false, reason: '请先让 AI 分析并确认至少一个需求' }
+        return { allowed: true, hint: '建议先让 AI 分析并确认至少一个需求' }
       }
       return { allowed: true }
 
     case 'functions':
       if (!state.modules.some(m => m.pages.length > 0)) {
-        return { allowed: false, reason: '请先规划至少一个包含页面的功能模块' }
+        return { allowed: true, hint: '建议先规划至少一个包含页面的功能模块' }
       }
       return { allowed: true }
 
     case 'navigation':
       if (state.navDirty) {
-        return { allowed: false, reason: '请先保存导航结构到后端' }
+        return { allowed: true, hint: '导航结构尚未保存，之后记得保存' }
       }
       return { allowed: true }
 
-    case 'page-design': {
-      const ps = state.pageDesignStates.get(state.activePageId ?? '')
-      if (!ps?.proposals.some(p => p.status === 'accepted')) {
-        return { allowed: false, reason: '请先采纳至少一个设计提案' }
-      }
-      return { allowed: true }
-    }
-
+    case 'page-design':
     case 'verification':
-      // 最后一个阶段，无需前进
       return { allowed: true }
 
     default:
@@ -83,10 +71,7 @@ export function canAdvance(from: ProjectStage, state: ProjectState): AdvanceResu
 /**
  * 判断是否可以回退到指定阶段。
  *
- * 规则：
- * - 回退到 requirements 或 functions 时，如果已有下游数据，
- *   返回 allowed: false + 警告原因（由 UI 层弹确认框后强制放行）。
- * - 其他回退自由允许。
+ * 始终允许回退（迭代修改），但如果已有下游数据则附带提示。
  */
 export function canRegress(to: ProjectStage, state: ProjectState): AdvanceResult {
   if (to === 'requirements' || to === 'functions') {
@@ -95,8 +80,8 @@ export function canRegress(to: ProjectStage, state: ProjectState): AdvanceResult
       state.pageDesignStates.size > 0
     if (hasDownstreamData) {
       return {
-        allowed: false,
-        reason: '修改模块规划可能使已有的导航结构和页面设计失效，是否继续？',
+        allowed: true,
+        hint: '修改早期阶段可能使已有的导航结构和页面设计需要同步调整',
       }
     }
   }
@@ -106,34 +91,42 @@ export function canRegress(to: ProjectStage, state: ProjectState): AdvanceResult
 // ── 跳转校验 ──────────────────────────────────────────────────
 
 /**
- * 检查是否允许从当前阶段跳转到目标阶段。
+ * 检查从当前阶段跳转到目标阶段的引导信息。
  *
- * 规则：
- * - 相邻前进：canAdvance
- * - 跳跃前进：禁止（必须逐步完成）
- * - 任意回退：canRegress
- * - 同阶段：允许
+ * 迭代式工作流：任意阶段之间自由跳转，仅提供软提示。
  */
 export function canJumpTo(
   from: ProjectStage,
   to: ProjectStage,
   state: ProjectState,
 ): AdvanceResult {
-  const fromIdx = stageIndex(from)
-  const toIdx = stageIndex(to)
-
-  if (fromIdx === toIdx) {
+  if (stageIndex(from) === stageIndex(to)) {
     return { allowed: true }
   }
 
-  if (toIdx > fromIdx) {
-    // 前进：只允许相邻
-    if (toIdx - fromIdx > 1) {
-      return { allowed: false, reason: '必须逐步完成各阶段，不能跳跃前进' }
-    }
+  if (stageIndex(to) > stageIndex(from)) {
     return canAdvance(from, state)
   }
 
-  // 回退
   return canRegress(to, state)
+}
+
+/**
+ * 判断指定阶段是否已有内容（用于 UI 区分已编辑/空白阶段）。
+ */
+export function hasStageContent(stage: ProjectStage, state: ProjectState): boolean {
+  switch (stage) {
+    case 'requirements':
+      return state.requirements.length > 0
+    case 'functions':
+      return state.modules.length > 0
+    case 'navigation':
+      return state.navRoot.children.length > 0
+    case 'page-design':
+      return state.pageDesignStates.size > 0
+    case 'verification':
+      return false
+    default:
+      return false
+  }
 }

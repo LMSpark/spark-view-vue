@@ -182,5 +182,5 @@ export interface PersistedProject {
 // ── 阶段流转 ──────────────────────────────────────────────────
 
 export type AdvanceResult =
-  | { allowed: true }
+  | { allowed: true; hint?: string }
   | { allowed: false; reason: string }
