@@ -1,6 +1,7 @@
 # SPARK 开发系统工程链重构设计文档
 
-> **文档状态**：设计讨论稿（待确认后实施）  
+> **文档状态**：实施中（Phase 0-1 已完成）  
+> **版本**：v0.2.0 · 2026-03-13  
 > **分支**：`feat/ai-server-config-management`  
 > **约束**：后端 Java 代码不修改，所有改动限于前端
 
@@ -1319,21 +1320,22 @@ src/views/dev-system/DevAiPanel.vue ← 替换为 WorkbenchAiPanel.vue
 
 ## 8. 实施计划
 
-### Phase 0: 基础设施（预计 1 个 PR）
+### Phase 0: 基础设施 ✅（`23a34404`）
 
-- [ ] 创建 `composables/useProjectState.ts`（核心状态管理）
-- [ ] 创建 `composables/useStageFlow.ts`（阶段流转）
-- [ ] 创建 `composables/useAiWorkContext.ts`（AI 上下文）
-- [ ] 增加 localStorage 持久化逻辑
-- [ ] 单元测试覆盖阶段流转守卫
+- [x] 创建 `composables/useProjectState.ts`（核心状态管理）
+- [x] 创建 `composables/useStageFlow.ts`（阶段流转）
+- [x] 创建 `composables/useAiWorkContext.ts`（AI 上下文）
+- [x] 增加 localStorage 持久化逻辑
+- [x] 单元测试覆盖阶段流转守卫（20 tests）
+- [x] 扩展 `useDesignSession.ts` ProposalType（`function-plan` / `navigation`）
 
-### Phase 1: UI 骨架（预计 1 个 PR）
+### Phase 1: UI 骨架 ✅（`13eec332`）
 
-- [ ] 创建 `DevWorkbench.vue`（三栏布局骨架）
-- [ ] 创建 `ProjectTree.vue`（需求 + 模块 + 导航 混合树）
-- [ ] 创建 `WorkspacePanel.vue`（工作区视图路由）
-- [ ] 创建 `StageProgressBar.vue`（进度指示器）
-- [ ] 路由注册 `/dev`
+- [x] 创建 `DevWorkbench.vue`（三栏布局骨架）
+- [x] 创建 `ProjectTree.vue`（需求 + 模块 + 导航 混合树）
+- [x] 创建 `WorkspacePanel.vue`（工作区视图路由）
+- [x] 创建 `StageProgressBar.vue`（进度指示器）
+- [x] 路由注册 `/dev`（替换 DevSystem → DevWorkbench）
 
 ### Phase 2: 需求 → 功能链（预计 1 个 PR）
 
@@ -1450,3 +1452,13 @@ src/views/dev-system/DevAiPanel.vue ← 替换为 WorkbenchAiPanel.vue
 | **导航结构** (NavRoot) | SPARK 标准导航模型 JSON |
 | **设计提案** (Proposal) | AI 在页面设计阶段提出的结构化方案 |
 | **工作台** (Workbench) | DevSystem 升级后的统一开发界面 |
+
+---
+
+## 附录 B：版本历史
+
+| 版本 | 日期 | 提交 | 变更概要 |
+|------|------|------|----------|
+| v0.1.0 | 2026-03-12 | `23a34404` | 初版设计文档 + Phase 0 基础设施（types / useProjectState / useStageFlow / useAiWorkContext / 20 个单元测试）|
+| v0.1.1 | 2026-03-12 | `e87d2e42` | 移除 XML 向后兼容，仅保留 `@@` 协议 |
+| v0.2.0 | 2026-03-13 | `13eec332` | Phase 1 UI 骨架（DevWorkbench 三栏布局 / StageProgressBar / ProjectTree / WorkspacePanel）+ 路由切换 |
