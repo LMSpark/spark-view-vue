@@ -46,7 +46,6 @@ export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } 
 const pageLogger = Logger('PageConfig')
 
 const REQUEST_TIMEOUT = 10_000
-const PAGES_CONFIG_FILE_BASE = '/api/tenants/lmspark/projects/homepage/pages-config'
 
 const ErrorCodes = SharedErrorCodes
 const getErrorMessage = getSharedErrorMessage
@@ -64,6 +63,7 @@ const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
 export class PageConfigLoader implements ConfigLoader {
   private opts: Required<ConfigLoaderOptions>
   private fileLoader: FileLoader
+  private readonly pagesConfigBase: string
 
   /**
    * 派生加载器：各自对应一种文件类型的编译产物缓存。
@@ -76,8 +76,9 @@ export class PageConfigLoader implements ConfigLoader {
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
+    this.pagesConfigBase = `${this.opts.apiBaseUrl}/pages-config`
     this.fileLoader = createFileLoader({
-      baseUrl: PAGES_CONFIG_FILE_BASE,
+      baseUrl: this.pagesConfigBase,
       storage: this.opts.fileStorage,
       cachePrefix: 'spark_page_',
       fallbackToCache: true,
@@ -230,7 +231,7 @@ export class PageConfigLoader implements ConfigLoader {
       pageLogger.error('本地配置加载失败', { path, error: r.error })
       return {
         success: false,
-        error: `${PAGES_CONFIG_FILE_BASE}${path}: ${r.error ?? ''}`,
+        error: `${this.pagesConfigBase}${path}: ${r.error ?? ''}`,
         timestamp: Date.now()
       }
     }
