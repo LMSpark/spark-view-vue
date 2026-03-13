@@ -377,6 +377,27 @@ export function useProjectState() {
     }
   }
 
+  function removePageFromModule(moduleId: string, pageId: string) {
+    const mod = state.modules.find(m => m.id === moduleId)
+    if (mod) {
+      const idx = mod.pages.findIndex(p => p.pageId === pageId)
+      if (idx >= 0) {
+        mod.pages.splice(idx, 1)
+        state.pageDesignStates.delete(pageId)
+      }
+    }
+  }
+
+  function updatePageInModule(moduleId: string, pageId: string, patch: Partial<PagePlan>) {
+    const mod = state.modules.find(m => m.id === moduleId)
+    if (mod) {
+      const page = mod.pages.find(p => p.pageId === pageId)
+      if (page) {
+        Object.assign(page, patch)
+      }
+    }
+  }
+
   // ── 导航管理（后端权威 → 内存副本）────────────────────────
 
   const NAV_API = '/api/navigation'
@@ -542,6 +563,8 @@ export function useProjectState() {
     updateModule,
     removeModule,
     addPageToModule,
+    removePageFromModule,
+    updatePageInModule,
     // 导航
     loadNavFromBackend,
     setNavRoot,
@@ -567,6 +590,7 @@ export function useProjectState() {
 }
 
 export type ProjectStateReturn = ReturnType<typeof useProjectState>
+export type ProjectAPI = ProjectStateReturn
 
 // ── 辅助：清理最旧对话历史（localStorage 容量超限时） ───────────
 
