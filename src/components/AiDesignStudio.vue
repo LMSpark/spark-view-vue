@@ -41,7 +41,15 @@
                   <div class="reasoning-content"><VueMarkdown :source="msg.reasoning" /></div>
                 </details>
                 <!-- 消息内容 -->
-                <div v-if="msg.role === 'user'" class="msg-content" v-text="msg.content" />
+                <template v-if="msg.role === 'user'">
+                  <div v-if="isAutoQuery(msg)" class="msg-content auto-query-msg">
+                    <details class="auto-query-details">
+                      <summary>{{ autoQuerySummary(msg.content) }}</summary>
+                      <pre class="auto-query-body">{{ autoQueryBody(msg.content) }}</pre>
+                    </details>
+                  </div>
+                  <div v-else class="msg-content" v-text="msg.content" />
+                </template>
                 <div v-else class="msg-content msg-markdown">
                   <VueMarkdown :source="displayContent(msg)" />
                 </div>
@@ -181,10 +189,13 @@ import { useAiChat } from '../composables/useAiChat'
 import {
   useDesignSession,
   extractProposals,
+  extractComponentQueries,
+  resolveComponentQuery,
   stripProposalTags,
   buildGenerationPrompt,
   typeLabel,
   DESIGN_SYSTEM_PROMPT,
+  AUTO_QUERY_PREFIX,
 } from '../composables/useDesignSession'
 import type { ProposalType, DesignProposal } from '../composables/useDesignSession'
 import type { TokenUsage } from '../composables/useAiChat'
@@ -197,7 +208,7 @@ import {
 } from '@/services/ai-loop'
 import type { AIResponse } from '@/services/ai-loop'
 
-const PROPOSAL_TYPES: ProposalType[] = ['data-model', 'ui-structure', 'interaction', 'style']
+const PROPOSAL_TYPES: ProposalType[] = ['data-model', 'ui-structure', 'interaction', 'api-config', 'style']
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
 
 const http = createRequest({ timeout: 240_000 })
@@ -248,11 +259,25 @@ function getMessageProposals(messageId: string): DesignProposal[] {
   return session.proposalsByMessage.value.get(messageId) ?? []
 }
 
+// ── 组件 Props 自动查询 ─────────────────────────────────────────────────────
+
+function isAutoQuery(msg: { role: string; content: string }): boolean {
+  return msg.role === 'user' && msg.content.startsWith(AUTO_QUERY_PREFIX)
+}
+
+function autoQuerySummary(content: string): string {
+  return content.split('\n')[0] ?? ''
+}
+
+function autoQueryBody(content: string): string {
+  return content.split('\n').slice(2).join('\n').trim()
+}
+
 function getAcceptedByType(type: ProposalType): DesignProposal[] {
   return session.acceptedByType.value.get(type) ?? []
 }
 
-// 监听流式结束 → 提取提案
+// 监听流式结束 → 提取提案 + 自动查询组件 Props
 watch(isStreaming, (streaming, wasStreaming) => {
   if (wasStreaming && !streaming) {
     const lastMsg = messages.value[messages.value.length - 1]
@@ -266,6 +291,20 @@ watch(isStreaming, (streaming, wasStreaming) => {
         const firstUser = messages.value.find((m) => m.role === 'user')
         if (firstUser) {
           session.userGoal.value = firstUser.content
+        }
+      }
+      // 组件 Props 自动查询：AI 输出 <query> 标签时自动注入 Props 信息
+      const queries = extractComponentQueries(lastMsg.content)
+      if (queries.length > 0) {
+        const lastUserMsg = [...messages.value].reverse().find((m) => m.role === 'user')
+        // 防重入：如果上一条用户消息已经是自动查询响应，不再触发
+        if (!lastUserMsg?.content.startsWith(AUTO_QUERY_PREFIX)) {
+          const resolved = resolveComponentQuery(queries)
+          if (resolved) {
+            void send(
+              `${AUTO_QUERY_PREFIX} ${queries.join(', ')}\n\n${resolved}\n\n请基于以上组件 Props 信息继续你的设计。`,
+            )
+          }
         }
       }
     }
@@ -924,6 +963,33 @@ function formatUsage(usage: TokenUsage): string {
 .reset-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── 自动查询消息 ─────────────────────────────────────────────────────────── */
+
+.auto-query-msg {
+  background: #e8f4fd !important;
+  color: #606266 !important;
+  font-size: 12px;
+  border: 1px dashed #b3d8ff;
+}
+
+.auto-query-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #409eff;
+  user-select: none;
+}
+
+.auto-query-body {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #909399;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow-y: auto;
 }
 </style>
 
