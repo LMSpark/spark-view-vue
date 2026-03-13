@@ -273,6 +273,21 @@ export async function start(options: StartOptions): Promise<void> {
       // 先同步静态路由到后端，再从后端加载所有路由（单一来源）
       await dynamicRouter.syncStaticRoutesToBackend()
       await dynamicRouter.registerRoutes()
+
+      // 兜底：确保 staticRoutes 中的路由一定被注册（即便后端/缓存未返回）
+      if (pageConfig.staticRoutes) {
+        for (const sr of pageConfig.staticRoutes) {
+          if (!router.hasRoute(sr.name)) {
+            router.addRoute({
+              path: sr.path,
+              name: sr.name,
+              component: sr.component,
+              meta: { pageId: sr.pageId, type: 'vue-component', title: sr.title, icon: sr.icon },
+            })
+          }
+        }
+      }
+
       router.addRoute({ path: '/', redirect: pageConfig.homePath })
 
       // 注入到全局缓存管理（清缓存页面 + AI 热重载需要）

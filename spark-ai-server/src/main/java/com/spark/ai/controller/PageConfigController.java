@@ -2,6 +2,7 @@ package com.spark.ai.controller;
 
 import com.spark.ai.service.PageConfigService;
 import com.spark.ai.service.SseService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -172,5 +173,96 @@ public class PageConfigController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 扁平兼容路由（/api/pages-config/**）
+    // 前端 PageConfigLoader 使用这些路由，租户 / 项目从请求头推断
+    // ══════════════════════════════════════════════════════════════════════════
+
+    private static final ResponseEntity<?> MISSING_CONTEXT = ResponseEntity.badRequest().body(
+        Map.of("error", "MISSING_CONTEXT",
+               "message", "请求头缺少 X-Tenant-Id 或 X-Project-Id，请先登录"));
+
+    /**
+     * 从请求头解析租户 + 项目上下文。
+     *
+     * @return [tenantId, projectId]，任一缺失时返回 null
+     */
+    private String[] resolveContext(HttpServletRequest request) {
+        String tenant = request.getHeader("X-Tenant-Id");
+        String project = request.getHeader("X-Project-Id");
+        if (tenant == null || tenant.isBlank() || project == null || project.isBlank()) {
+            return null;
+        }
+        return new String[] { tenant, project };
+    }
+
+    @PostMapping("/pages-config/__sync-routes")
+    public ResponseEntity<?> syncRoutesFlat(HttpServletRequest request,
+                                             @RequestBody List<Map<String, String>> routes) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return syncRoutes(ctx[0], ctx[1], routes);
+    }
+
+    @GetMapping("/pages-config/routes.json")
+    public ResponseEntity<?> getRoutesFlat(HttpServletRequest request,
+                                            @RequestParam(required = false) String timestamp) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return getRoutes(ctx[0], ctx[1], timestamp);
+    }
+
+    @GetMapping("/pages-config/{pageId}/{filename}")
+    public ResponseEntity<?> getFileFlat(HttpServletRequest request,
+                                          @PathVariable String pageId,
+                                          @PathVariable String filename,
+                                          @RequestParam(required = false) String timestamp) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return getFile(ctx[0], ctx[1], pageId, filename, timestamp);
+    }
+
+    @PutMapping("/pages-config/{pageId}/{filename}")
+    public ResponseEntity<?> putFileFlat(HttpServletRequest request,
+                                          @PathVariable String pageId,
+                                          @PathVariable String filename,
+                                          @RequestBody String content) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return putFile(ctx[0], ctx[1], pageId, filename, content);
+    }
+
+    @PostMapping("/pages-config/{pageId}/__batch")
+    public ResponseEntity<?> batchFlat(HttpServletRequest request,
+                                        @PathVariable String pageId,
+                                        @RequestBody Map<String, String> files) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return batch(ctx[0], ctx[1], pageId, files);
+    }
+
+    @GetMapping("/pages-config/__list")
+    public ResponseEntity<?> listPagesFlat(HttpServletRequest request) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return listPages(ctx[0], ctx[1]);
+    }
+
+    @PostMapping("/pages-config/__create")
+    public ResponseEntity<?> createPageFlat(HttpServletRequest request,
+                                             @RequestBody Map<String, String> body) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return createPage(ctx[0], ctx[1], body);
+    }
+
+    @DeleteMapping("/pages-config/{pageId}")
+    public ResponseEntity<?> deletePageFlat(HttpServletRequest request,
+                                             @PathVariable String pageId) {
+        String[] ctx = resolveContext(request);
+        if (ctx == null) return MISSING_CONTEXT;
+        return deletePage(ctx[0], ctx[1], pageId);
     }
 }

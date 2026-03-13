@@ -234,6 +234,7 @@ async function startApp() {
       { default: NavModuleManager },
       { default: SiteManager },
       { default: CacheManager },
+      { default: LoginView },
     ] = await Promise.all([
       import('./views/Dashboard.vue'),
       import('./views/About.vue'),
@@ -245,9 +246,11 @@ async function startApp() {
       import('./views/NavModuleManager.vue'),
       import('./views/SiteManager.vue'),
       import('./views/CacheManager.vue'),
+      import('./views/LoginView.vue'),
     ])
 
     const staticRoutes: StaticRouteDeclaration[] = [
+      { path: '/login',           name: 'login',           pageId: 'login',           title: '登录',         icon: '🔐', component: LoginView },
       { path: '/dashboard',       name: 'dashboard',       pageId: 'dashboard',       title: '管理仪表板',   icon: '🏠', component: Dashboard },
       { path: '/capability-demo', name: 'capability-demo', pageId: 'capability-demo', title: '能力管理演示', icon: '🎯', component: CapabilityDemo },
       { path: '/tenant-config',   name: 'tenant-config',   pageId: 'tenant-config',   title: '多租户配置',   icon: '🏢', component: TenantConfigDemo },
@@ -261,7 +264,11 @@ async function startApp() {
     ]
     startupLogger.info(`✅ 已声明 ${staticRoutes.length} 个静态 Vue 组件路由`)
     
-    // 5. 启动 SPARK 应用
+    // 5. 安装 Fetch 拦截器（在 SparkApp.start 之前，确保动态路由 API 请求携带 Token）
+    const { installFetchInterceptor } = await import('./services/auth')
+    installFetchInterceptor()
+
+    // 6. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
     const AppPageRendererBridge = (await import('./AppPageRendererBridge.vue')).default
     
@@ -313,6 +320,18 @@ async function startApp() {
         _currentPageId = extractPageId(router.currentRoute.value.path)
         router.afterEach((to) => {
           _currentPageId = extractPageId(to.path)
+        })
+
+        // ── 认证路由守卫 ──
+        const { isAuthenticated } = await import('./services/auth')
+        router.beforeEach((to) => {
+          if (to.path !== '/login' && !isAuthenticated()) {
+            return '/login'
+          }
+          if (to.path === '/login' && isAuthenticated()) {
+            return '/'
+          }
+          return undefined
         })
 
         startupLogger.info('✅ 应用准备挂载')

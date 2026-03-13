@@ -7,6 +7,7 @@ import com.spark.ai.entity.TenantConfigEntity;
 import com.spark.ai.repository.NavigationConfigRepository;
 import com.spark.ai.repository.PageConfigRepository;
 import com.spark.ai.repository.TenantConfigRepository;
+import com.spark.ai.service.AuthService;
 import com.spark.ai.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PageConfigRepository pageRepo;
     private final NavigationConfigRepository navRepo;
     private final ProjectService projectService;
+    private final AuthService authService;
     private final PagesConfigProperties pagesProps;
     private final ObjectMapper objectMapper;
 
@@ -52,12 +54,14 @@ public class DataInitializer implements CommandLineRunner {
                             PageConfigRepository pageRepo,
                             NavigationConfigRepository navRepo,
                             ProjectService projectService,
+                            AuthService authService,
                             PagesConfigProperties pagesProps,
                             ObjectMapper objectMapper) {
         this.tenantRepo = tenantRepo;
         this.pageRepo = pageRepo;
         this.navRepo = navRepo;
         this.projectService = projectService;
+        this.authService = authService;
         this.pagesProps = pagesProps;
         this.objectMapper = objectMapper;
     }
@@ -95,6 +99,7 @@ public class DataInitializer implements CommandLineRunner {
                 "pageConfig", Map.of("homePath", "/")
         ));
         projectService.ensureHomepage(DEFAULT_TENANT);
+        authService.ensureAdminUser(DEFAULT_TENANT, "admin", "admin123");
 
         log.info("[DataInit] 种子租户数据已写入: 领码SPARK ({})", DEFAULT_TENANT);
     }

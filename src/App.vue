@@ -1,4 +1,9 @@
 <template>
+  <!-- 登录页：无布局框架 -->
+  <router-view v-if="isLoginPage" />
+
+  <!-- 业务页：完整布局 -->
+  <template v-else>
   <AppLayout
     :header-first="headerFirst"
     :show-header="true"
@@ -25,8 +30,7 @@
         :is-dark="isDark"
         :collapsed="sidebarCollapsed"
         :collapsible="nav.regionVisibility.value.sidebar"
-        username="管理员"
-        @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
+        :username="currentUsername"        @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
         @toggle-theme="toggleTheme"
         @user-command="handleUserCommand"
       >
@@ -114,13 +118,15 @@
 
   <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
   <AppPageUiHost />
+  </template>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost } from '@spark-view/spark-app'
 import { pageRefreshKey } from '@/services/ai-loop'
+import { getUser, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
 import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
@@ -138,6 +144,9 @@ import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
 import { NAV_API } from '@/services/api-paths'
 
 const route = useRoute()
+const router = useRouter()
+const isLoginPage = computed(() => route.path === '/login')
+const currentUsername = computed(() => getUser()?.displayName ?? getUser()?.username ?? '管理员')
 const theme = useTheme()
 const isDark = computed(() => theme?.isDark ?? false)
 const toggleTheme = () => theme?.toggle()
@@ -206,7 +215,8 @@ function handleUserCommand(command: string) {
       showConfigurator.value = true
       break
     case 'logout':
-      // TODO: 接入真实登出
+      logout()
+      void router.replace('/login')
       break
   }
 }
