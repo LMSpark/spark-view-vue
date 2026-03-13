@@ -57,7 +57,15 @@ export function canAdvance(from: ProjectStage, state: ProjectState): AdvanceResu
       }
       return { allowed: true }
 
-    case 'page-design':
+    case 'page-design': {
+      const activeState = state.activePageId !== null
+        ? state.pageDesignStates.get(state.activePageId)
+        : undefined
+      if (activeState !== undefined && !activeState.proposals.some(p => p.status === 'accepted')) {
+        return { allowed: true, hint: '建议先确认至少一个设计方案' }
+      }
+      return { allowed: true }
+    }
     case 'verification':
       return { allowed: true }
 

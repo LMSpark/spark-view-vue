@@ -38,7 +38,8 @@
       <!-- 中栏：工作区 -->
       <div class="wb-body__workspace">
         <WorkspacePanel
-          :current-stage="project.state.currentStage"
+          :work-focus="project.state.workFocus"
+          :project-state="project.state"
         />
       </div>
 
@@ -132,10 +133,29 @@ const isLastStageFlag = computed(() => isLastStage(project.state.currentStage))
 
 // ── 阶段导航 ────────────────────────────────────────────────
 
+/** 阶段跳转时设置该阶段的默认焦点 */
+function focusForStage(stage: ProjectStage): void {
+  const focusMap: Record<ProjectStage, () => void> = {
+    'requirements': () => project.setFocus({ view: 'overview' }),
+    'functions':    () => project.setFocus({ view: 'functions' }),
+    'navigation':   () => project.setFocus({ view: 'navigation' }),
+    'page-design':  () => {
+      const pageId = project.state.activePageId
+      if (pageId) {
+        project.setFocus({ view: 'page-design', pageId })
+      } else {
+        project.setFocus({ view: 'overview' })
+      }
+    },
+    'verification': () => project.setFocus({ view: 'verification' }),
+  }
+  focusMap[stage]()
+}
+
 function handleStageChange(stage: ProjectStage) {
   const result = canJumpTo(project.state.currentStage, stage, project.state)
   if (result.allowed) {
-    project.goToStage(stage)
+    focusForStage(stage)
     if (result.hint) {
       ElMessage.info(result.hint)
     }
@@ -164,20 +184,36 @@ function handlePrev() {
 
 function handleTreeNodeClick(event: ProjectTreeNodeClickEvent) {
   switch (event.kind) {
+    case 'section':
+      // 区段头点击 → 对应全局视图
+      if (event.sourceId === 'section-requirements') {
+        project.setFocus({ view: 'overview' })
+      } else if (event.sourceId === 'section-modules') {
+        project.setFocus({ view: 'functions' })
+      } else if (event.sourceId === 'section-navigation') {
+        project.setFocus({ view: 'navigation' })
+      }
+      break
     case 'requirement':
-      project.state.activeRequirementId = event.sourceId ?? null
-      project.goToStage('requirements')
+      if (event.sourceId) {
+        project.setFocus({ view: 'requirement', requirementId: event.sourceId })
+      }
       break
     case 'module':
-      project.goToStage('functions')
+      if (event.sourceId) {
+        project.setFocus({ view: 'module', moduleId: event.sourceId })
+      } else {
+        project.setFocus({ view: 'functions' })
+      }
       break
     case 'page':
-      project.state.activePageId = event.sourceId ?? null
-      project.goToStage('page-design')
+      if (event.sourceId) {
+        project.setFocus({ view: 'page-design', pageId: event.sourceId })
+      }
       break
     case 'nav-group':
     case 'nav-page':
-      project.goToStage('navigation')
+      project.setFocus({ view: 'navigation' })
       break
   }
 }

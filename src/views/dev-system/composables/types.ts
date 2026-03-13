@@ -36,6 +36,29 @@ export const STAGE_META: Record<ProjectStage, { label: string; icon: string }> =
   'verification':  { label: '验证部署', icon: '✅' },
 }
 
+// ── 工作焦点（决定工作区显示内容）─────────────────────────────
+
+/** 工作焦点 — 由树节点点击或手动切换驱动，决定中栏内容 */
+export type WorkFocus =
+  | { view: 'overview' }
+  | { view: 'requirement'; requirementId: string }
+  | { view: 'functions' }
+  | { view: 'module'; moduleId: string }
+  | { view: 'navigation' }
+  | { view: 'page-design'; pageId: string }
+  | { view: 'verification' }
+
+/** 焦点视图 → 对应的阶段映射（用于 AI 上下文） */
+export const FOCUS_TO_STAGE: Record<WorkFocus['view'], ProjectStage> = {
+  'overview':     'requirements',
+  'requirement':  'requirements',
+  'functions':    'functions',
+  'module':       'functions',
+  'navigation':   'navigation',
+  'page-design':  'page-design',
+  'verification': 'verification',
+}
+
 // ── 需求 ──────────────────────────────────────────────────────
 
 export type RequirementStatus = 'draft' | 'analyzed' | 'planned' | 'completed'
@@ -116,6 +139,8 @@ export interface AiWorkContext {
 /** 工程链项目总状态 */
 export interface ProjectState {
   currentStage: ProjectStage
+  /** 工作焦点（决定中栏显示内容） */
+  workFocus: WorkFocus
   requirements: Requirement[]
   activeRequirementId: string | null
   modules: FunctionModule[]
@@ -172,6 +197,7 @@ export interface PersistedProject {
   requirements: Requirement[]
   modules: FunctionModule[]
   currentStage: ProjectStage
+  workFocus?: WorkFocus
   activeRequirementId: string | null
   activePageId: string | null
   pageDesignStates: Record<string, SerializedPageDesignState>

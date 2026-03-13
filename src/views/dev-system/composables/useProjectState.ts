@@ -16,6 +16,7 @@ import type { DesignProposal, ProposalStatus } from '@/composables/useDesignSess
 import type {
   ProjectState,
   ProjectStage,
+  WorkFocus,
   Requirement,
   FunctionModule,
   PagePlan,
@@ -28,6 +29,7 @@ import type {
 import {
   STORAGE_KEY,
   STORAGE_VERSION,
+  FOCUS_TO_STAGE,
 } from './types'
 import { buildAiWorkContext } from './useAiWorkContext'
 import { canAdvance, canRegress, nextStage, prevStage } from './useStageFlow'
@@ -179,6 +181,7 @@ function loadFromStorage(): Partial<ProjectState> | null {
 function deserializePersistedProject(data: PersistedProject): Partial<ProjectState> {
   return {
     currentStage: data.currentStage,
+    workFocus: data.workFocus ?? { view: 'overview' },
     requirements: data.requirements,
     activeRequirementId: data.activeRequirementId,
     modules: data.modules,
@@ -194,6 +197,7 @@ function deserializePersistedProject(data: PersistedProject): Partial<ProjectSta
 function createDefaultState(): ProjectState {
   return {
     currentStage: 'requirements',
+    workFocus: { view: 'overview' },
     requirements: [],
     activeRequirementId: null,
     modules: [],
@@ -245,6 +249,7 @@ export function useProjectState() {
       requirements: toRaw(state.requirements),
       modules: toRaw(state.modules),
       currentStage: state.currentStage,
+      workFocus: toRaw(state.workFocus),
       activeRequirementId: state.activeRequirementId,
       activePageId: state.activePageId,
       pageDesignStates: serializePageStates(state.pageDesignStates),
@@ -280,6 +285,7 @@ export function useProjectState() {
   watch(
     () => [
       state.currentStage,
+      state.workFocus,
       state.requirements,
       state.modules,
       state.activeRequirementId,
@@ -425,7 +431,19 @@ export function useProjectState() {
     return ps
   }
 
-  // ── 阶段切换 ──────────────────────────────────────────────
+  // ── 工作焦点 & 阶段切换 ────────────────────────────────────
+
+  function setFocus(focus: WorkFocus) {
+    state.workFocus = focus
+    state.currentStage = FOCUS_TO_STAGE[focus.view]
+    // 同步 active IDs
+    if (focus.view === 'requirement') {
+      state.activeRequirementId = focus.requirementId
+    } else if (focus.view === 'page-design') {
+      state.activePageId = focus.pageId
+    }
+    state.aiContext = buildAiWorkContext(state)
+  }
 
   function goToStage(stage: ProjectStage) {
     state.currentStage = stage
@@ -532,6 +550,7 @@ export function useProjectState() {
     getOrCreatePageDesignState,
     // 阶段流转
     goToStage,
+    setFocus,
     tryAdvance,
     tryRegress,
     forceRegress,
