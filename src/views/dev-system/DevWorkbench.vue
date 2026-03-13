@@ -39,7 +39,6 @@
       <div class="wb-body__workspace">
         <WorkspacePanel
           :work-focus="project.state.workFocus"
-          :project-state="project.state"
         />
       </div>
 
@@ -119,6 +118,7 @@ import { ElMessage } from 'element-plus'
 import { STAGE_META } from './composables/types'
 import type { ProjectStage } from './composables/types'
 import { useProjectState } from './composables/useProjectState'
+import { provideProject } from './composables/useProjectInject'
 import { isFirstStage, isLastStage, canJumpTo, prevStage, nextStage } from './composables/useStageFlow'
 import StageProgressBar from './components/StageProgressBar.vue'
 import ProjectTree from './components/ProjectTree.vue'
@@ -126,6 +126,7 @@ import WorkspacePanel from './components/WorkspacePanel.vue'
 import type { ProjectTreeNodeClickEvent } from './components/ProjectTree.vue'
 
 const project = useProjectState()
+provideProject(project)
 
 const currentStageMeta = computed(() => STAGE_META[project.state.currentStage])
 const isFirstStageFlag = computed(() => isFirstStage(project.state.currentStage))
