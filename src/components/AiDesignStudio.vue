@@ -188,9 +188,6 @@ import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
 import {
   useDesignSession,
-  extractProposals,
-  extractComponentQueries,
-  resolveComponentQuery,
   stripProposalTags,
   buildGenerationPrompt,
   typeLabel,
@@ -198,6 +195,14 @@ import {
   AUTO_QUERY_PREFIX,
 } from '../composables/useDesignSession'
 import type { ProposalType, DesignProposal } from '../composables/useDesignSession'
+import {
+  ResponsePipeline,
+  BlockExtractorProcessor,
+  ProposalValidatorProcessor,
+  SchemaCheckerProcessor,
+  QueryResolverProcessor,
+  AutoResponderProcessor,
+} from '../composables/responsePipeline'
 import type { TokenUsage } from '../composables/useAiChat'
 import AiProposalCard from './AiProposalCard.vue'
 import { createRequest } from '@spark-view/spark-utils'
@@ -208,7 +213,7 @@ import {
 } from '@/services/ai-loop'
 import type { AIResponse } from '@/services/ai-loop'
 
-const PROPOSAL_TYPES: ProposalType[] = ['data-model', 'ui-structure', 'interaction', 'api-config', 'style']
+const PROPOSAL_TYPES: ProposalType[] = ['data-model', 'ui-structure', 'interaction', 'api-config', 'style', 'db-schema', 'dict-entry']
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
 
 const http = createRequest({ timeout: 240_000 })
@@ -277,36 +282,42 @@ function getAcceptedByType(type: ProposalType): DesignProposal[] {
   return session.acceptedByType.value.get(type) ?? []
 }
 
-// 监听流式结束 → 提取提案 + 自动查询组件 Props
+// ── ResponsePipeline 实例 ─────────────────────────────────────────────────
+
+const pipeline = new ResponsePipeline()
+  .use(new BlockExtractorProcessor())
+  .use(new ProposalValidatorProcessor())
+  .use(new SchemaCheckerProcessor())
+  .use(new QueryResolverProcessor())
+  .use(new AutoResponderProcessor())
+
+// 监听流式结束 → 管线处理（提取提案 + 校验 + 自动查询）
 watch(isStreaming, (streaming, wasStreaming) => {
   if (wasStreaming && !streaming) {
     const lastMsg = messages.value[messages.value.length - 1]
     if (lastMsg?.role === 'assistant' && lastMsg.content) {
-      const { proposals } = extractProposals(lastMsg.content, lastMsg.id)
-      if (proposals.length > 0) {
-        session.addProposals(proposals)
-      }
-      // 记录用户目标（取自第一条用户消息）
-      if (!session.userGoal.value) {
-        const firstUser = messages.value.find((m) => m.role === 'user')
-        if (firstUser) {
-          session.userGoal.value = firstUser.content
+      void pipeline.execute(lastMsg.content, lastMsg.id).then((ctx) => {
+        // 添加提案
+        if (ctx.proposals.length > 0) {
+          session.addProposals(ctx.proposals)
         }
-      }
-      // 组件 Props 自动查询：AI 输出 <query> 标签时自动注入 Props 信息
-      const queries = extractComponentQueries(lastMsg.content)
-      if (queries.length > 0) {
-        const lastUserMsg = [...messages.value].reverse().find((m) => m.role === 'user')
-        // 防重入：如果上一条用户消息已经是自动查询响应，不再触发
-        if (!lastUserMsg?.content.startsWith(AUTO_QUERY_PREFIX)) {
-          const resolved = resolveComponentQuery(queries)
-          if (resolved) {
-            void send(
-              `${AUTO_QUERY_PREFIX} ${queries.join(', ')}\n\n${resolved}\n\n请基于以上组件 Props 信息继续你的设计。`,
-            )
+        // 记录用户目标（取自第一条用户消息）
+        if (!session.userGoal.value) {
+          const firstUser = messages.value.find((m) => m.role === 'user')
+          if (firstUser) {
+            session.userGoal.value = firstUser.content
           }
         }
-      }
+        // 发送自动回复（Props 注入 / 验证反馈）
+        for (const auto of ctx.autoMessages) {
+          // 防重入：如果上一条用户消息已经是自动查询响应，不再触发 props-injection
+          if (auto.type === 'props-injection') {
+            const lastUserMsg = [...messages.value].reverse().find((m) => m.role === 'user')
+            if (lastUserMsg?.content.startsWith(AUTO_QUERY_PREFIX)) continue
+          }
+          void send(auto.content)
+        }
+      })
     }
   }
 })
