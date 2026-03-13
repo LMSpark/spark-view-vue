@@ -118,10 +118,8 @@ export function extractBlocks(text: string): ProtocolBlock[] {
   return blocks
 }
 
-// ── 提案提取（@@ 协议优先，XML 标签兼容） ────────────────────────────────────
+// ── 提案提取 ─────────────────────────────────────────────────────────────────
 
-/** 旧 XML 格式匹配（向后兼容） */
-const PROPOSAL_RE = /<proposal\s+type="([^"]+)"\s+title="([^"]*)"(?:\s+stage="([^"]*)")?\s*>([\s\S]*?)<\/proposal>/gi
 const VALID_TYPES = new Set<ProposalType>([
   'data-model', 'ui-structure', 'interaction', 'style', 'api-config',
   'db-schema', 'dict-entry',
@@ -162,110 +160,52 @@ function proposalsFromBlocks(blocks: ProtocolBlock[], messageId: string): Design
 }
 
 /**
- * 从旧 XML 标签提取 proposal（兼容模式）
- */
-function proposalsFromXml(content: string, messageId: string): DesignProposal[] {
-  const proposals: DesignProposal[] = []
-  PROPOSAL_RE.lastIndex = 0
-  let match: RegExpExecArray | null = PROPOSAL_RE.exec(content)
-  while (match !== null) {
-    const rawType = (match[1] ?? '').toLowerCase()
-    const type: ProposalType = VALID_TYPES.has(rawType as ProposalType)
-      ? (rawType as ProposalType)
-      : 'ui-structure'
-    proposals.push({
-      id: crypto.randomUUID(),
-      type,
-      title: (match[2] ?? '') || typeLabel(type),
-      content: (match[4] ?? '').trim(),
-      status: 'pending',
-      messageId,
-      stage: (match[3] ?? '').trim(),
-      timestamp: new Date(),
-    })
-    match = PROPOSAL_RE.exec(content)
-  }
-  return proposals
-}
-
-/**
- * 从 AI 回复中提取结构化提案（@@ 协议优先，XML 兼容）
+ * 从 AI 回复中提取结构化提案（@@ 协议）
  */
 export function extractProposals(
   content: string,
   messageId: string,
 ): { cleanContent: string; proposals: DesignProposal[] } {
   const blocks = extractBlocks(content)
-  let proposals: DesignProposal[]
-
-  if (blocks.length > 0) {
-    // @@ 协议模式
-    proposals = proposalsFromBlocks(blocks, messageId)
-  } else {
-    // XML 兼容模式
-    proposals = proposalsFromXml(content, messageId)
-  }
-
+  const proposals = proposalsFromBlocks(blocks, messageId)
   const cleanContent = stripProtocolBlocks(content)
   return { cleanContent, proposals }
 }
 
 /**
- * 从显示内容中去除 @@ 定界块和旧 XML 标记（用于流式渲染期间的实时清理）
+ * 从显示内容中去除 @@ 定界块（用于流式渲染期间的实时清理）
  */
 export function stripProposalTags(content: string): string {
   return stripProtocolBlocks(content)
 }
 
-/** 内部：清理所有协议标记 */
+/** 内部：清理 @@ 协议标记 */
 function stripProtocolBlocks(content: string): string {
   return content
     // @@ 协议块（完整）
     .replace(BLOCK_RE, '')
     // @@ 协议块（流式中途，未闭合）
     .replace(/^@@\w+:[\w-]+\s*$[\s\S]*$/m, '')
-    // 旧 XML 标签（完整）
-    .replace(/<proposal[\s\S]*?<\/proposal>/gi, '')
-    .replace(/<query[\s\S]*?<\/query>/gi, '')
-    // 旧 XML 标签（流式中途）
-    .replace(/<proposal[^>]*>[\s\S]*/i, '')
-    .replace(/<query[^>]*>[\s\S]*/i, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
 
-// ── 查询提取（@@ 协议优先，XML 兼容） ────────────────────────────────────────
-
-/** 旧 XML query 格式 */
-const QUERY_RE = /<query\s+type="component-props"\s*>([\s\S]*?)<\/query>/gi
+// ── 查询提取 ─────────────────────────────────────────────────────────────────
 
 /** 自动查询消息的固定前缀（用于 UI 识别和防重入） */
 export const AUTO_QUERY_PREFIX = '🔧 [组件 Props 查询结果]'
 
 /**
- * 从 AI 回复中提取组件 Props 查询请求（@@ 协议 + XML 兼容）
+ * 从 AI 回复中提取组件 Props 查询请求（@@ 协议）
  */
 export function extractComponentQueries(content: string): string[] {
   const components: string[] = []
 
-  // @@ 协议模式
   const blocks = extractBlocks(content)
   for (const b of blocks) {
     if (b.type === 'query' && b.name === 'component-props') {
       const items = b.payload.split(/[,，\s]+/).map((s) => s.trim()).filter(Boolean)
       components.push(...items)
-    }
-  }
-
-  // XML 兼容模式（仅当 @@ 未匹配到 query 时）
-  if (components.length === 0) {
-    QUERY_RE.lastIndex = 0
-    let match = QUERY_RE.exec(content)
-    while (match !== null) {
-      const raw = match[1] ?? ''
-      const items = raw.split(/[,，\s]+/).map((s) => s.trim()).filter(Boolean)
-      components.push(...items)
-      match = QUERY_RE.exec(content)
     }
   }
 
