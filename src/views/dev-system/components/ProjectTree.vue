@@ -135,27 +135,22 @@ function buildNavNodes(state: ProjectState): TreeNodeData[] {
       _kind: 'nav-group' as const,
     }]
   }
-  return state.navRoot.children.map((node, i) => {
+  return buildNavChildren(state.navRoot.children, '')
+}
+
+function buildNavChildren(nodes: import('@spark-view/spark-app').NavNode[], prefix: string): TreeNodeData[] {
+  return nodes.map((node, i) => {
+    const hasChildren = Boolean(node.children?.length)
     const result: TreeNodeData = {
-      _treeId: `nav-${node.id ?? String(i)}`,
+      _treeId: `nav-${prefix}${node.id ?? String(i)}`,
       _label: node.title,
-      _icon: node.icon ?? '🔖',
-      _kind: 'nav-group' as const,
+      _icon: node.icon ?? (hasChildren ? '📁' : '📄'),
+      _kind: hasChildren ? 'nav-group' as const : 'nav-page' as const,
       _sourceId: node.id,
     }
     if (node.path) result._tag = node.path
-    if (node.children) {
-      result.children = node.children.map((child, j) => {
-        const childNode: TreeNodeData = {
-          _treeId: `nav-${child.id ?? `${i}-${j}`}`,
-          _label: child.title,
-          _icon: child.icon ?? '📄',
-          _kind: 'nav-page' as const,
-          _sourceId: child.id,
-        }
-        if (child.path) childNode._tag = child.path
-        return childNode
-      })
+    if (node.children?.length) {
+      result.children = buildNavChildren(node.children, `${prefix}${node.id ?? String(i)}-`)
     }
     return result
   })

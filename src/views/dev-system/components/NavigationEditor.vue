@@ -10,126 +10,112 @@
       </div>
     </div>
 
-    <div class="nav-editor-body">
-      <!-- 左侧：导航树 -->
-      <div class="nav-tree-panel">
-        <el-tree
-          ref="treeRef"
-          :data="navTree"
-          node-key="_id"
-          default-expand-all
-          highlight-current
-          draggable
-          :allow-drop="allowDrop"
-          @node-click="selectNode"
-          @node-drop="handleDrop"
-        >
-          <template #default="{ data }">
-            <span class="nav-tree-node">
-              <span>{{ data.icon ?? '📄' }} {{ data.title }}</span>
-              <span v-if="data.path" class="nav-path-badge">{{ data.path }}</span>
-            </span>
-          </template>
-        </el-tree>
-        <div v-if="!navTree.length" class="nav-empty-hint">
-          暂无导航节点，点击右上角「+ 添加分组」开始
-        </div>
-      </div>
+    <!-- 有选中节点 → 编辑面板 -->
+    <template v-if="selected">
+      <div class="node-editor-card">
+        <el-form label-position="top" class="editor-form">
+          <el-form-item label="标题">
+            <el-input v-model="selected.title" @input="markDirty" />
+          </el-form-item>
+          <el-form-item label="路由路径">
+            <el-input v-model="editPath" @input="onPathInput" placeholder="如：/orders" />
+          </el-form-item>
+          <el-form-item label="页面 ID">
+            <el-input v-model="editPageId" @input="onPageIdInput" placeholder="如：order-list" />
+          </el-form-item>
+          <el-form-item label="图标">
+            <el-input v-model="editIcon" @input="onIconInput" placeholder="如：📦" style="width: 160px" />
+          </el-form-item>
+          <el-form-item label="节点类型">
+            <el-select v-model="editType" @change="onTypeChange" style="width: 200px">
+              <el-option value="item" label="菜单项（item）" />
+              <el-option value="group" label="分组（group）" />
+            </el-select>
+          </el-form-item>
+        </el-form>
 
-      <!-- 右侧：选中节点编辑 -->
-      <div class="nav-detail-panel">
-        <template v-if="selected">
-          <h3>编辑节点</h3>
-          <el-form label-position="top" class="editor-form">
-            <el-form-item label="标题">
-              <el-input v-model="selected.title" @input="markDirty" />
-            </el-form-item>
-            <el-form-item label="路由路径">
-              <el-input v-model="selectedPath" @input="onPathInput" placeholder="如：/orders" />
-            </el-form-item>
-            <el-form-item label="页面 ID">
-              <el-input v-model="selectedPageId" @input="onPageIdInput" placeholder="如：order-list" />
-            </el-form-item>
-            <el-form-item label="图标">
-              <el-input v-model="selectedIcon" @input="onIconInput" style="width: 120px" />
-            </el-form-item>
-            <el-form-item label="节点类型">
-              <el-select v-model="selectedType" @change="onTypeChange" style="width: 100%">
-                <el-option value="item" label="菜单项（item）" />
-                <el-option value="group" label="分组（group）" />
-              </el-select>
-            </el-form-item>
-            <el-divider />
-            <div class="node-actions">
-              <el-button size="small" @click="addChildToSelected">+ 添加子节点</el-button>
-              <el-popconfirm title="确认删除此节点及子节点？" @confirm="removeSelected">
-                <template #reference>
-                  <el-button size="small" type="danger">删除节点</el-button>
-                </template>
-              </el-popconfirm>
-            </div>
-          </el-form>
-        </template>
-        <div v-else class="select-hint">
-          <p>👈 在左侧选择一个节点进行编辑</p>
-          <p class="hint-sub">支持拖拽排序</p>
+        <el-divider />
+
+        <div class="node-actions">
+          <el-button size="small" @click="addChildToSelected">+ 添加子节点</el-button>
+          <el-popconfirm title="确认删除此节点及子节点？" @confirm="removeSelected">
+            <template #reference>
+              <el-button size="small" type="danger">删除节点</el-button>
+            </template>
+          </el-popconfirm>
         </div>
       </div>
-    </div>
+    </template>
+
+    <!-- 无选中节点 → 概览列表 -->
+    <template v-else>
+      <div class="nav-overview">
+        <div v-if="project.state.navRoot.children.length" class="nav-summary">
+          <p class="summary-text">
+            共 <strong>{{ totalNodeCount }}</strong> 个导航节点，
+            <strong>{{ project.state.navRoot.children.length }}</strong> 个顶级分组
+          </p>
+          <div class="summary-list">
+            <div
+              v-for="node in project.state.navRoot.children"
+              :key="node.id"
+              class="summary-item"
+              @click="selectNavNode(node.id)"
+            >
+              <span class="summary-icon">{{ node.icon ?? '📁' }}</span>
+              <span class="summary-label">{{ node.title }}</span>
+              <el-tag v-if="node.path" size="small" type="info">{{ node.path }}</el-tag>
+              <el-tag v-if="node.children?.length" size="small">{{ node.children.length }} 子项</el-tag>
+            </div>
+          </div>
+        </div>
+        <div v-else class="nav-empty">
+          <p>暂无导航节点</p>
+          <p class="hint-sub">点击上方「+ 添加分组」创建第一个导航分组，或从左侧树选择节点编辑</p>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { NavNode } from '@spark-view/spark-app'
 import { ElMessage } from 'element-plus'
 import { useProject } from '../composables/useProjectInject'
 
+const props = defineProps<{
+  nodeId?: string
+}>()
+
 const project = useProject()
-const treeRef = ref()
 
-// ── 导航树数据（el-tree 需要稳定 node-key）──────────────────
-
-/** 给每个节点补上 _id 用于 el-tree node-key */
-interface NavTreeNode extends NavNode {
-  _id: string
-  children?: NavTreeNode[]
-}
-
-let idCounter = 0
-
-function assignIds(nodes: NavNode[]): NavTreeNode[] {
-  return nodes.map(n => {
-    const { children, ...rest } = n
-    const node: NavTreeNode = { ...rest, _id: n.id ?? `nav-tmp-${++idCounter}` }
-    if (children?.length) {
-      node.children = assignIds(children)
-    }
-    return node
-  })
-}
-
-const navTree = computed<NavTreeNode[]>(() => assignIds(project.state.navRoot.children))
-
-// ── 选中节点编辑 ────────────────────────────────────────────
+// ── 选中节点 ────────────────────────────────────────────────
 
 const selected = ref<NavNode | null>(null)
-const selectedPath = ref('')
-const selectedPageId = ref('')
-const selectedIcon = ref('')
-const selectedType = ref<'item' | 'group'>('item')
+const editPath = ref('')
+const editPageId = ref('')
+const editIcon = ref('')
+const editType = ref<'item' | 'group'>('item')
 
-function selectNode(data: NavTreeNode) {
-  // 找到真实引用（直接修改 reactive 状态）
-  const real = findNodeById(project.state.navRoot.children, data._id)
-  if (real) {
-    selected.value = real
-    selectedPath.value = real.path ?? ''
-    selectedPageId.value = real.pageId ?? ''
-    selectedIcon.value = real.icon ?? ''
-    selectedType.value = real.type === 'group' ? 'group' : 'item'
-  }
-}
+watch(
+  () => props.nodeId,
+  (id) => {
+    if (id) {
+      const node = findNodeById(project.state.navRoot.children, id)
+      if (node) {
+        selected.value = node
+        editPath.value = node.path ?? ''
+        editPageId.value = node.pageId ?? ''
+        editIcon.value = node.icon ?? ''
+        editType.value = node.type === 'group' ? 'group' : 'item'
+        return
+      }
+    }
+    selected.value = null
+  },
+  { immediate: true },
+)
 
 function findNodeById(nodes: NavNode[], id: string): NavNode | null {
   for (const n of nodes) {
@@ -142,34 +128,40 @@ function findNodeById(nodes: NavNode[], id: string): NavNode | null {
   return null
 }
 
+function selectNavNode(id: string) {
+  project.setFocus({ view: 'navigation', nodeId: id })
+}
+
+// ── 编辑 ────────────────────────────────────────────────────
+
 function markDirty() {
   project.state.navDirty = true
 }
 
 function onPathInput() {
   if (selected.value) {
-    selected.value.path = selectedPath.value
+    selected.value.path = editPath.value
     markDirty()
   }
 }
 
 function onPageIdInput() {
   if (selected.value) {
-    selected.value.pageId = selectedPageId.value
+    selected.value.pageId = editPageId.value
     markDirty()
   }
 }
 
 function onIconInput() {
   if (selected.value) {
-    selected.value.icon = selectedIcon.value
+    selected.value.icon = editIcon.value
     markDirty()
   }
 }
 
 function onTypeChange() {
   if (selected.value) {
-    selected.value.type = selectedType.value
+    selected.value.type = editType.value
     markDirty()
   }
 }
@@ -186,6 +178,8 @@ function addGroup() {
   }
   project.state.navRoot.children.push(node)
   markDirty()
+  // 自动聚焦到新节点
+  project.setFocus({ view: 'navigation', nodeId: node.id })
 }
 
 function addChildToSelected() {
@@ -203,14 +197,16 @@ function addChildToSelected() {
   }
   selected.value.children.push(child)
   markDirty()
+  // 聚焦到新子节点
+  project.setFocus({ view: 'navigation', nodeId: child.id })
 }
 
 function removeSelected() {
   if (!selected.value) return
   const targetId = selected.value.id
   removeFromTree(project.state.navRoot.children, targetId)
-  selected.value = null
   markDirty()
+  project.setFocus({ view: 'navigation' })
 }
 
 function removeFromTree(nodes: NavNode[], id: string): boolean {
@@ -225,40 +221,17 @@ function removeFromTree(nodes: NavNode[], id: string): boolean {
   return false
 }
 
-// ── 拖拽 ────────────────────────────────────────────────────
+// ── 统计 ────────────────────────────────────────────────────
 
-function allowDrop(_dragging: unknown, _drop: unknown, type: string) {
-  return type !== 'none'
+function countNodes(nodes: NavNode[]): number {
+  let count = nodes.length
+  for (const n of nodes) {
+    if (n.children) count += countNodes(n.children)
+  }
+  return count
 }
 
-function handleDrop() {
-  // el-tree drag 已经修改了树结构，只需同步回 navRoot
-  syncTreeToNavRoot()
-  markDirty()
-}
-
-function syncTreeToNavRoot() {
-  // el-tree 的 data 是 computed 从 navRoot 派生的，
-  // 拖拽后 el-tree 内部改的是 navTree 的临时副本，
-  // 需要从 el-tree 重新提取结构写回 navRoot
-  const root = treeRef.value
-  if (!root) return
-  const treeStore = root.store
-  if (!treeStore) return
-  const rootNodes = treeStore.root.childNodes
-  project.state.navRoot.children = extractNavNodes(rootNodes)
-}
-
-function extractNavNodes(elNodes: Array<{ data: NavTreeNode; childNodes: unknown[] }>): NavNode[] {
-  return elNodes.map((n) => {
-    const { _id: _, children: __, ...rest } = n.data
-    const node: NavNode = { ...rest }
-    if (n.childNodes?.length) {
-      node.children = extractNavNodes(n.childNodes as Array<{ data: NavTreeNode; childNodes: unknown[] }>)
-    }
-    return node
-  })
-}
+const totalNodeCount = computed(() => countNodes(project.state.navRoot.children))
 
 // ── 保存 ────────────────────────────────────────────────────
 
@@ -274,8 +247,6 @@ async function handleSave() {
 
 <style scoped>
 .navigation-editor {
-  padding: 20px 24px;
-  overflow: hidden;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -300,69 +271,70 @@ async function handleSave() {
   gap: 8px;
 }
 
-.nav-editor-body {
-  flex: 1;
-  display: flex;
-  gap: 16px;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.nav-tree-panel {
-  flex: 1;
+.node-editor-card {
+  background: var(--el-bg-color);
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 8px;
-  padding: 8px;
-  overflow: auto;
-}
-
-.nav-detail-panel {
-  width: 320px;
-  flex-shrink: 0;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
-  padding: 16px;
-  overflow: auto;
-}
-
-.nav-detail-panel h3 {
-  margin: 0 0 12px;
-  font-size: 15px;
-  font-weight: 600;
+  padding: 20px;
+  max-width: 560px;
 }
 
 .editor-form :deep(.el-form-item) {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
-.nav-tree-node {
+.node-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-overview {
+  flex: 1;
+}
+
+.summary-text {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
+  margin: 0 0 12px;
+}
+
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  padding: 8px 12px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.nav-path-badge {
-  font-size: 11px;
-  color: var(--el-text-color-placeholder);
+.summary-item:hover {
   background: var(--el-fill-color-lighter);
-  padding: 1px 6px;
-  border-radius: 3px;
 }
 
-.nav-empty-hint {
-  padding: 24px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--el-text-color-placeholder);
+.summary-icon {
+  font-size: 16px;
 }
 
-.select-hint {
+.summary-label {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.nav-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  min-height: 200px;
   color: var(--el-text-color-secondary);
   text-align: center;
 }
@@ -370,10 +342,5 @@ async function handleSave() {
 .hint-sub {
   font-size: 12px;
   color: var(--el-text-color-placeholder);
-}
-
-.node-actions {
-  display: flex;
-  gap: 8px;
 }
 </style>
