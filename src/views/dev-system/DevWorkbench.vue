@@ -214,7 +214,11 @@ function handleTreeNodeClick(event: ProjectTreeNodeClickEvent) {
       break
     case 'nav-group':
     case 'nav-page':
-      project.setFocus({ view: 'navigation' })
+      if (event.sourceId) {
+        project.setFocus({ view: 'navigation', nodeId: event.sourceId })
+      } else {
+        project.setFocus({ view: 'navigation' })
+      }
       break
   }
 }

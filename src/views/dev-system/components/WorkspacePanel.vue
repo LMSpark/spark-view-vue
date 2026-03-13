@@ -10,7 +10,10 @@
       v-else-if="workFocus.view === 'module'"
       :module-id="workFocus.moduleId"
     />
-    <NavigationEditor v-else-if="workFocus.view === 'navigation'" />
+    <NavigationEditor
+      v-else-if="workFocus.view === 'navigation'"
+      v-bind="workFocus.nodeId != null ? { nodeId: workFocus.nodeId } : {}"
+    />
     <PageDesigner
       v-else-if="workFocus.view === 'page-design'"
       :page-id="workFocus.pageId"

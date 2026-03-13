@@ -44,7 +44,7 @@ export type WorkFocus =
   | { view: 'requirement'; requirementId: string }
   | { view: 'functions' }
   | { view: 'module'; moduleId: string }
-  | { view: 'navigation' }
+  | { view: 'navigation'; nodeId?: string }
   | { view: 'page-design'; pageId: string }
   | { view: 'verification' }
 
