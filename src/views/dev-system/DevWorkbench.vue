@@ -5,15 +5,15 @@
       <div class="wb-header__left">
         <span class="wb-header__logo">⚡</span>
         <span class="wb-header__title">SPARK 开发工作台</span>
-        <StageProgressBar
-          :current-stage="project.state.currentStage"
-          :project-state="project.state"
-          @jump="handleStageJump"
+        <el-input
+          v-model="project.state.projectName"
+          size="small"
+          style="width: 180px"
         />
       </div>
       <div class="wb-header__right">
-        <el-button size="small" @click="handleExport" title="导出项目">📤 导出</el-button>
-        <el-button size="small" @click="handleImport" title="导入项目">📥 导入</el-button>
+        <el-button size="small" @click="handleExport">📤 导出</el-button>
+        <el-button size="small" @click="handleImport">📥 导入</el-button>
         <el-divider direction="vertical" />
         <el-button
           size="small"
@@ -25,37 +25,32 @@
       </div>
     </div>
 
-    <!-- ═══ 主体三栏布局 ═══ -->
+    <!-- ═══ 主体布局 ═══ -->
     <div class="wb-body">
-      <!-- 左栏：项目树 -->
+      <!-- 左栏：WBS 树 -->
       <div class="wb-body__tree">
         <ProjectTree
           :state="project.state"
-          @node-click="handleTreeNodeClick"
+          @node-click="handleNodeClick"
+          @add-group="handleAddRootGroup"
+          @add-page="handleAddRootPage"
         />
       </div>
 
-      <!-- 中栏：工作区 -->
+      <!-- 中栏：节点编辑器 -->
       <div class="wb-body__workspace">
-        <WorkspacePanel
-          :work-focus="project.state.workFocus"
-        />
+        <WorkspacePanel :node-id="project.state.selectedNodeId" />
       </div>
 
       <!-- 右栏：AI 助手 (可折叠) -->
       <transition name="slide-right">
         <div v-if="project.state.aiPanelVisible" class="wb-body__ai">
           <div class="ai-panel-header">
-            <span>🤖 AI 助手 · {{ currentStageMeta.label }}</span>
-            <el-button
-              size="small"
-              link
-              @click="project.state.aiPanelVisible = false"
-            >✕</el-button>
+            <span>🤖 AI 助手</span>
+            <el-button size="small" link @click="project.state.aiPanelVisible = false">✕</el-button>
           </div>
           <div class="ai-panel-placeholder">
-            <p>{{ currentStageMeta.icon }} {{ currentStageMeta.label }}</p>
-            <p class="ai-panel-hint">AI 面板将在后续阶段实现</p>
+            <p>AI 面板将在后续阶段实现</p>
           </div>
         </div>
       </transition>
@@ -63,36 +58,9 @@
 
     <!-- ═══ 底部状态栏 ═══ -->
     <div class="wb-status-bar">
-      <div class="wb-status__left">
-        <span class="status-stage">
-          {{ currentStageMeta.icon }} {{ currentStageMeta.label }}
-        </span>
-        <el-tag v-if="project.state.navDirty" type="warning" size="small">导航未保存</el-tag>
-      </div>
-      <div class="wb-status__center">
-        <el-button
-          text
-          size="small"
-          :disabled="isFirstStageFlag"
-          @click="handlePrev"
-        >
-          ◀ 上一阶段
-        </el-button>
-        <el-button
-          text
-          size="small"
-          type="primary"
-          :disabled="isLastStageFlag"
-          @click="handleNext"
-        >
-          下一阶段 ▶
-        </el-button>
-      </div>
-      <div class="wb-status__right">
-        <span class="status-info">
-          📋 {{ project.state.requirements.length }} 需求 · 📦 {{ project.state.modules.length }} 模块
-        </span>
-      </div>
+      <span class="status-info">
+        {{ project.state.projectName }} · {{ nodeCount }} 个节点
+      </span>
     </div>
 
     <!-- 导入对话框 -->
@@ -113,125 +81,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { STAGE_META } from './composables/types'
-import type { ProjectStage } from './composables/types'
+import type { WbsNode } from './composables/types'
 import { useProjectState } from './composables/useProjectState'
 import { provideProject } from './composables/useProjectInject'
-import { isFirstStage, isLastStage, canJumpTo, prevStage, nextStage } from './composables/useStageFlow'
-import StageProgressBar from './components/StageProgressBar.vue'
 import ProjectTree from './components/ProjectTree.vue'
 import WorkspacePanel from './components/WorkspacePanel.vue'
-import type { ProjectTreeNodeClickEvent } from './components/ProjectTree.vue'
 
 const project = useProjectState()
 provideProject(project)
 
-const currentStageMeta = computed(() => STAGE_META[project.state.currentStage])
-const isFirstStageFlag = computed(() => isFirstStage(project.state.currentStage))
-const isLastStageFlag = computed(() => isLastStage(project.state.currentStage))
+// ── 节点计数 ────────────────────────────────────────────────
 
-// ── 阶段导航 ────────────────────────────────────────────────
-
-/** 阶段跳转时设置该阶段的默认焦点 */
-function focusForStage(stage: ProjectStage): void {
-  const focusMap: Record<ProjectStage, () => void> = {
-    'requirements': () => project.setFocus({ view: 'overview' }),
-    'functions':    () => project.setFocus({ view: 'functions' }),
-    'navigation':   () => project.setFocus({ view: 'navigation' }),
-    'page-design':  () => {
-      const pageId = project.state.activePageId
-      if (pageId) {
-        project.setFocus({ view: 'page-design', pageId })
-      } else {
-        project.setFocus({ view: 'overview' })
-      }
-    },
-    'verification': () => project.setFocus({ view: 'verification' }),
-  }
-  focusMap[stage]()
+function countNodes(nodes: WbsNode[]): number {
+  let c = nodes.length
+  for (const n of nodes) c += countNodes(n.children)
+  return c
 }
 
-function handleStageChange(stage: ProjectStage) {
-  const result = canJumpTo(project.state.currentStage, stage, project.state)
-  if (result.allowed) {
-    focusForStage(stage)
-    if (result.hint) {
-      ElMessage.info(result.hint)
-    }
-  }
+const nodeCount = computed(() => countNodes(project.state.wbsRoot))
+
+// ── 树操作 ──────────────────────────────────────────────────
+
+function handleNodeClick(nodeId: string) {
+  project.selectNode(nodeId)
 }
 
-function handleStageJump(stage: ProjectStage) {
-  handleStageChange(stage)
+function handleAddRootGroup() {
+  project.createGroup(null, '新分组')
 }
 
-function handleNext() {
-  const next = nextStage(project.state.currentStage)
-  if (next) {
-    handleStageChange(next)
-  }
-}
-
-function handlePrev() {
-  const prev = prevStage(project.state.currentStage)
-  if (prev) {
-    handleStageChange(prev)
-  }
-}
-
-// ── 项目树节点点击 ──────────────────────────────────────────
-
-function handleTreeNodeClick(event: ProjectTreeNodeClickEvent) {
-  switch (event.kind) {
-    case 'section':
-      // 区段头点击 → 对应全局视图
-      if (event.sourceId === 'section-requirements') {
-        project.setFocus({ view: 'overview' })
-      } else if (event.sourceId === 'section-modules') {
-        project.setFocus({ view: 'functions' })
-      } else if (event.sourceId === 'section-navigation') {
-        project.setFocus({ view: 'navigation' })
-      }
-      break
-    case 'requirement':
-      if (event.sourceId) {
-        project.setFocus({ view: 'requirement', requirementId: event.sourceId })
-      }
-      break
-    case 'module':
-      if (event.sourceId) {
-        project.setFocus({ view: 'module', moduleId: event.sourceId })
-      } else {
-        project.setFocus({ view: 'functions' })
-      }
-      break
-    case 'page':
-      if (event.sourceId) {
-        project.setFocus({ view: 'page-design', pageId: event.sourceId })
-      }
-      break
-    case 'nav-group':
-    case 'nav-page':
-      if (event.sourceId) {
-        project.setFocus({ view: 'navigation', nodeId: event.sourceId })
-      } else {
-        project.setFocus({ view: 'navigation' })
-      }
-      break
-  }
+function handleAddRootPage() {
+  const id = Date.now().toString(36)
+  project.createPage(null, '新页面', `page-${id}`)
 }
 
 // ── 导出/导入 ───────────────────────────────────────────────
 
 function handleExport() {
   const json = project.exportProject()
-  if (json) {
-    void navigator.clipboard.writeText(json).then(() => {
-      ElMessage.success('项目数据已复制到剪贴板')
-    })
-  }
+  void navigator.clipboard.writeText(json).then(() => {
+    ElMessage.success('项目数据已复制到剪贴板')
+  })
 }
 
 const importVisible = ref(false)
@@ -247,8 +139,8 @@ function doImport() {
     ElMessage.warning('请粘贴 JSON 数据')
     return
   }
-  const success = project.importProject(importJson.value)
-  if (success) {
+  const ok = project.importProject(importJson.value)
+  if (ok) {
     ElMessage.success('导入成功')
     importVisible.value = false
   } else {
@@ -257,10 +149,6 @@ function doImport() {
 }
 
 // ── 生命周期 ────────────────────────────────────────────────
-
-onMounted(() => {
-  void project.loadNavFromBackend()
-})
 
 onUnmounted(() => {
   project.dispose()
@@ -313,7 +201,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-/* ═══ 主体三栏 ═══ */
+/* ═══ 主体 ═══ */
 .wb-body {
   flex: 1;
   display: flex;
@@ -365,59 +253,31 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  font-size: 16px;
   color: var(--el-text-color-secondary);
-}
-
-.ai-panel-hint {
-  font-size: 12px;
-  color: var(--el-text-color-placeholder);
+  font-size: 14px;
 }
 
 /* ═══ 底部状态栏 ═══ */
 .wb-status-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 4px 16px;
   background: var(--el-bg-color);
   border-top: 1px solid var(--el-border-color);
   font-size: 12px;
+  color: var(--el-text-color-secondary);
   flex-shrink: 0;
 }
 
-.wb-status__left,
-.wb-status__center,
-.wb-status__right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.wb-status__center {
-  gap: 4px;
-}
-
-.status-stage {
-  font-weight: 600;
-  color: var(--el-color-primary);
-}
-
-.status-info {
-  color: var(--el-text-color-secondary);
-}
-
-/* ═══ AI 面板滑入动画 ═══ */
+/* ═══ AI 面板过渡 ═══ */
 .slide-right-enter-active,
 .slide-right-leave-active {
-  transition: all 0.25s ease;
+  transition: width 0.2s ease, opacity 0.2s ease;
 }
 
 .slide-right-enter-from,
 .slide-right-leave-to {
   width: 0;
   opacity: 0;
-  overflow: hidden;
 }
 </style>

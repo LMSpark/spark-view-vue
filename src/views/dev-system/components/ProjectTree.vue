@@ -10,23 +10,23 @@
         style="flex: 1"
       />
       <el-dropdown size="small" trigger="click">
-        <el-button size="small">⋯</el-button>
+        <el-button size="small">＋</el-button>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click="expandAll">展开全部</el-dropdown-item>
-            <el-dropdown-item @click="collapseAll">折叠全部</el-dropdown-item>
+            <el-dropdown-item @click="emit('addGroup')">新建分组</el-dropdown-item>
+            <el-dropdown-item @click="emit('addPage')">新建页面</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
     </div>
 
-    <!-- 混合树 -->
+    <!-- WBS 树 -->
     <el-tree
       ref="treeRef"
-      :data="treeData"
-      node-key="_treeId"
-      :props="treeProps"
-      :default-expand-all="true"
+      :data="state.wbsRoot"
+      node-key="id"
+      :props="{ label: 'title', children: 'children' }"
+      default-expand-all
       :filter-node-method="filterNode"
       :expand-on-click-node="false"
       highlight-current
@@ -34,10 +34,10 @@
     >
       <template #default="{ data }">
         <span class="tree-node">
-          <span class="node-icon">{{ data._icon }}</span>
-          <span class="node-label">{{ data._label }}</span>
-          <el-tag v-if="data._tag" size="small" :type="data._tagType ?? 'info'" class="node-tag">
-            {{ data._tag }}
+          <span class="node-icon">{{ data.icon }}</span>
+          <span class="node-label">{{ data.title }}</span>
+          <el-tag size="small" :type="statusTagType(data)">
+            {{ data.type === 'group' ? '分组' : (data.pageType ?? '页面') }}
           </el-tag>
         </span>
       </template>
@@ -46,165 +46,54 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import type { ProjectState, Requirement, FunctionModule, PagePlan } from '../composables/types'
-
-export interface TreeNodeData {
-  _treeId: string
-  _label: string
-  _icon: string
-  _tag?: string
-  _tagType?: 'success' | 'info' | 'warning' | 'danger'
-  _kind: 'section' | 'requirement' | 'module' | 'page' | 'nav-group' | 'nav-page'
-  _sourceId?: string
-  children?: TreeNodeData[]
-}
-
-export type ProjectTreeNodeClickEvent = {
-  kind: TreeNodeData['_kind']
-  sourceId: string | undefined
-}
+import { ref, watch } from 'vue'
+import type { ProjectState, WbsNode, WbsNodeStatus } from '../composables/types'
 
 const props = defineProps<{
   state: ProjectState
 }>()
 
 const emit = defineEmits<{
-  nodeClick: [event: ProjectTreeNodeClickEvent]
+  nodeClick: [nodeId: string]
+  addGroup: []
+  addPage: []
 }>()
 
 const treeRef = ref()
 const filterText = ref('')
 
-const treeProps = {
-  label: '_label',
-  children: 'children',
-}
-
 watch(filterText, (val) => {
   treeRef.value?.filter(val)
 })
 
-function filterNode(value: string, data: TreeNodeData) {
+// 外部选中变化时同步树高亮
+watch(() => props.state.selectedNodeId, (id) => {
+  if (id) {
+    treeRef.value?.setCurrentKey(id)
+  } else {
+    treeRef.value?.setCurrentKey(null)
+  }
+})
+
+const STATUS_TAG: Record<WbsNodeStatus, '' | 'success' | 'info' | 'warning' | 'danger'> = {
+  planned: 'info',
+  designing: 'warning',
+  generated: '',
+  verified: 'success',
+}
+
+function filterNode(value: string | number, data: WbsNode) {
   if (!value) return true
-  const v = value.toLowerCase()
-  return data._label.toLowerCase().includes(v)
+  return data.title.toLowerCase().includes(String(value).toLowerCase())
 }
 
-// ── 构建混合树数据 ──────────────────────────────────────────
-
-function buildRequirementNodes(requirements: Requirement[]): TreeNodeData[] {
-  return requirements.map(r => ({
-    _treeId: `req-${r.id}`,
-    _label: r.title,
-    _icon: '📝',
-    _tag: r.status,
-    _tagType: r.status === 'analyzed' ? 'success' as const : 'info' as const,
-    _kind: 'requirement' as const,
-    _sourceId: r.id,
-  }))
+function statusTagType(data: WbsNode): '' | 'success' | 'info' | 'warning' | 'danger' {
+  if (data.type === 'group') return 'info'
+  return STATUS_TAG[data.status]
 }
 
-function buildModuleNodes(modules: FunctionModule[]): TreeNodeData[] {
-  return modules.map(m => ({
-    _treeId: `mod-${m.id}`,
-    _label: m.name,
-    _icon: m.icon || '📦',
-    _tag: `${m.pages.length} 页`,
-    _tagType: 'info' as const,
-    _kind: 'module' as const,
-    _sourceId: m.id,
-    children: m.pages.map((p: PagePlan) => ({
-      _treeId: `page-${p.pageId}`,
-      _label: `${p.title} (${p.pageId})`,
-      _icon: '📄',
-      _tag: p.status,
-      _tagType: p.status === 'generated' ? 'success' as const : 'info' as const,
-      _kind: 'page' as const,
-      _sourceId: p.pageId,
-    })),
-  }))
-}
-
-function buildNavNodes(state: ProjectState): TreeNodeData[] {
-  if (!state.navRoot.children?.length) {
-    return [{
-      _treeId: 'nav-empty',
-      _label: '（空导航）',
-      _icon: '💤',
-      _kind: 'nav-group' as const,
-    }]
-  }
-  return buildNavChildren(state.navRoot.children, '')
-}
-
-function buildNavChildren(nodes: import('@spark-view/spark-app').NavNode[], prefix: string): TreeNodeData[] {
-  return nodes.map((node, i) => {
-    const hasChildren = Boolean(node.children?.length)
-    const result: TreeNodeData = {
-      _treeId: `nav-${prefix}${node.id ?? String(i)}`,
-      _label: node.title,
-      _icon: node.icon ?? (hasChildren ? '📁' : '📄'),
-      _kind: hasChildren ? 'nav-group' as const : 'nav-page' as const,
-      _sourceId: node.id,
-    }
-    if (node.path) result._tag = node.path
-    if (node.children?.length) {
-      result.children = buildNavChildren(node.children, `${prefix}${node.id ?? String(i)}-`)
-    }
-    return result
-  })
-}
-
-const treeData = computed<TreeNodeData[]>(() => [
-  {
-    _treeId: 'section-requirements',
-    _label: '需求',
-    _icon: '📋',
-    _kind: 'section' as const,
-    _sourceId: 'section-requirements',
-    children: buildRequirementNodes(props.state.requirements),
-  },
-  {
-    _treeId: 'section-modules',
-    _label: '功能模块',
-    _icon: '🏗️',
-    _kind: 'section' as const,
-    _sourceId: 'section-modules',
-    children: buildModuleNodes(props.state.modules),
-  },
-  {
-    _treeId: 'section-navigation',
-    _label: '导航结构',
-    _icon: '🌐',
-    _kind: 'section' as const,
-    _sourceId: 'section-navigation',
-    children: buildNavNodes(props.state),
-  },
-])
-
-// ── 操作 ────────────────────────────────────────────────────
-
-function handleNodeClick(data: TreeNodeData) {
-  emit('nodeClick', { kind: data._kind, sourceId: data._sourceId })
-}
-
-function expandAll() {
-  const tree = treeRef.value
-  if (!tree) return
-  for (const key of ['section-requirements', 'section-modules', 'section-navigation']) {
-    const node = tree.getNode(key)
-    if (node) node.expanded = true
-  }
-}
-
-function collapseAll() {
-  const tree = treeRef.value
-  if (!tree) return
-  for (const key of ['section-requirements', 'section-modules', 'section-navigation']) {
-    const node = tree.getNode(key)
-    if (node) node.expanded = false
-  }
+function handleNodeClick(data: WbsNode) {
+  emit('nodeClick', data.id)
 }
 </script>
 
@@ -248,11 +137,5 @@ function collapseAll() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.node-tag {
-  flex-shrink: 0;
-  font-size: 10px;
-  margin-left: 4px;
 }
 </style>

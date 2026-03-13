@@ -1,39 +1,17 @@
 <template>
   <div class="workspace-panel">
-    <OverviewDashboard v-if="workFocus.view === 'overview'" />
-    <RequirementEditor
-      v-else-if="workFocus.view === 'requirement'"
-      :requirement-id="workFocus.requirementId"
-    />
-    <ModulePlanner v-else-if="workFocus.view === 'functions'" />
-    <ModuleEditor
-      v-else-if="workFocus.view === 'module'"
-      :module-id="workFocus.moduleId"
-    />
-    <NavigationEditor
-      v-else-if="workFocus.view === 'navigation'"
-      v-bind="workFocus.nodeId != null ? { nodeId: workFocus.nodeId } : {}"
-    />
-    <PageDesigner
-      v-else-if="workFocus.view === 'page-design'"
-      :page-id="workFocus.pageId"
-    />
-    <VerificationPanel v-else-if="workFocus.view === 'verification'" />
+    <WbsNodeEditor v-if="nodeId" :node-id="nodeId" />
+    <div v-else class="workspace-panel__empty">
+      <p>👈 请在左侧树中选择一个节点</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { WorkFocus } from '../composables/types'
-import OverviewDashboard from './OverviewDashboard.vue'
-import RequirementEditor from './RequirementEditor.vue'
-import ModulePlanner from './ModulePlanner.vue'
-import ModuleEditor from './ModuleEditor.vue'
-import NavigationEditor from './NavigationEditor.vue'
-import PageDesigner from './PageDesigner.vue'
-import VerificationPanel from './VerificationPanel.vue'
+import WbsNodeEditor from './WbsNodeEditor.vue'
 
 defineProps<{
-  workFocus: WorkFocus
+  nodeId: string | null
 }>()
 </script>
 
@@ -42,7 +20,15 @@ defineProps<{
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: auto;
-  padding: 16px 20px;
+  overflow: hidden;
+}
+
+.workspace-panel__empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--el-text-color-placeholder);
+  font-size: 14px;
 }
 </style>
