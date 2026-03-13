@@ -47,7 +47,7 @@
       </div>
     </template>
 
-    <!-- 无选中节点 → 概览列表 -->
+    <!-- 无选中节点 → 简要概览 -->
     <template v-else>
       <div class="nav-overview">
         <div v-if="project.state.navRoot.children.length" class="nav-summary">
@@ -55,23 +55,11 @@
             共 <strong>{{ totalNodeCount }}</strong> 个导航节点，
             <strong>{{ project.state.navRoot.children.length }}</strong> 个顶级分组
           </p>
-          <div class="summary-list">
-            <div
-              v-for="node in project.state.navRoot.children"
-              :key="node.id"
-              class="summary-item"
-              @click="selectNavNode(node.id)"
-            >
-              <span class="summary-icon">{{ node.icon ?? '📁' }}</span>
-              <span class="summary-label">{{ node.title }}</span>
-              <el-tag v-if="node.path" size="small" type="info">{{ node.path }}</el-tag>
-              <el-tag v-if="node.children?.length" size="small">{{ node.children.length }} 子项</el-tag>
-            </div>
-          </div>
+          <p class="hint-text">从左侧树选择导航节点进行编辑</p>
         </div>
         <div v-else class="nav-empty">
           <p>暂无导航节点</p>
-          <p class="hint-sub">点击上方「+ 添加分组」创建第一个导航分组，或从左侧树选择节点编辑</p>
+          <p class="hint-sub">点击上方「+ 添加分组」创建第一个导航分组</p>
         </div>
       </div>
     </template>
@@ -126,10 +114,6 @@ function findNodeById(nodes: NavNode[], id: string): NavNode | null {
     }
   }
   return null
-}
-
-function selectNavNode(id: string) {
-  project.setFocus({ view: 'navigation', nodeId: id })
 }
 
 // ── 编辑 ────────────────────────────────────────────────────
@@ -295,38 +279,12 @@ async function handleSave() {
 .summary-text {
   font-size: 14px;
   color: var(--el-text-color-secondary);
-  margin: 0 0 12px;
+  margin: 0 0 8px;
 }
 
-.summary-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.summary-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.summary-item:hover {
-  background: var(--el-fill-color-lighter);
-}
-
-.summary-icon {
-  font-size: 16px;
-}
-
-.summary-label {
-  font-size: 14px;
-  font-weight: 500;
-  flex: 1;
+.hint-text {
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
 }
 
 .nav-empty {

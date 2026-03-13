@@ -3,6 +3,7 @@
     <div class="editor-header">
       <h2 class="editor-title">{{ mod?.icon }} {{ mod?.name ?? '未知模块' }}</h2>
       <div class="editor-actions">
+        <el-button size="small" type="primary" @click="showAddPage = true">+ 添加页面</el-button>
         <el-button size="small" @click="goBack">← 返回</el-button>
         <el-popconfirm title="确认删除此模块及其所有页面？" @confirm="handleDelete">
           <template #reference>
@@ -13,7 +14,6 @@
     </div>
 
     <template v-if="mod">
-      <!-- 模块基本信息 -->
       <el-form label-position="top" class="editor-form">
         <el-row :gutter="16">
           <el-col :span="3">
@@ -42,46 +42,9 @@
         </el-form-item>
       </el-form>
 
-      <!-- 页面列表 -->
-      <section class="pages-section">
-        <div class="section-header">
-          <h3>📄 页面列表</h3>
-          <el-button size="small" type="primary" @click="showAddPage = true">+ 添加页面</el-button>
-        </div>
-
-        <el-table v-if="mod.pages.length" :data="mod.pages" stripe size="small" class="pages-table">
-          <el-table-column prop="title" label="标题" min-width="150">
-            <template #default="{ row }">
-              <span class="clickable-cell" @click="gotoPage(row.pageId)">{{ row.title }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="pageId" label="页面 ID" width="160" />
-          <el-table-column prop="pageType" label="类型" width="100">
-            <template #default="{ row }">
-              <el-tag size="small" type="info">{{ row.pageType }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
-            <template #default="{ row }">
-              <el-tag size="small" :type="pageStatusType(row.status)">{{ row.status }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="140" fixed="right">
-            <template #default="{ row }">
-              <el-button size="small" text type="primary" @click="gotoPage(row.pageId)">设计</el-button>
-              <el-popconfirm title="确认删除此页面？" @confirm="removePage(row.pageId)">
-                <template #reference>
-                  <el-button size="small" text type="danger">删除</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <el-empty v-else description="暂无页面" :image-size="60">
-          <el-button type="primary" size="small" @click="showAddPage = true">添加第一个页面</el-button>
-        </el-empty>
-      </section>
+      <p class="hint-text">
+        {{ mod.pages.length }} 个页面 — 从左侧树选择页面进行编辑
+      </p>
     </template>
 
     <el-empty v-else description="未找到该模块" />
@@ -167,14 +130,6 @@ function goBack() {
   project.setFocus({ view: 'functions' })
 }
 
-function gotoPage(pageId: string) {
-  project.setFocus({ view: 'page-design', pageId })
-}
-
-function removePage(pageId: string) {
-  project.removePageFromModule(props.moduleId, pageId)
-}
-
 // ── 添加页面 ────────────────────────────────────────────────
 
 const showAddPage = ref(false)
@@ -205,19 +160,11 @@ function handleAddPage() {
   showAddPage.value = false
   resetPageForm()
 }
-
-function pageStatusType(status: string) {
-  if (status === 'generated' || status === 'verified') return 'success' as const
-  if (status === 'designing') return 'warning' as const
-  return 'info' as const
-}
 </script>
 
 <style scoped>
 .module-editor {
-  padding: 20px 24px;
-  overflow: auto;
-  height: 100%;
+  max-width: 600px;
 }
 
 .editor-header {
@@ -243,33 +190,9 @@ function pageStatusType(status: string) {
   margin-bottom: 14px;
 }
 
-.pages-section {
-  margin-top: 24px;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.pages-table {
-  width: 100%;
-}
-
-.clickable-cell {
-  cursor: pointer;
-  color: var(--el-color-primary);
-}
-
-.clickable-cell:hover {
-  text-decoration: underline;
+.hint-text {
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
+  margin-top: 8px;
 }
 </style>
