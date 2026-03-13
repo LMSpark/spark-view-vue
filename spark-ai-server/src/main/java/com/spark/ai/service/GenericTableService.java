@@ -53,9 +53,8 @@ public class GenericTableService {
     // 表列表
     // ─────────────────────────────────────────────────────────────────────────
 
-    /** 列出所有逻辑表名及行数。 */
-    public List<Map<String, Object>> listTables() {
-        List<Object[]> summary = rowRepo.findTableSummary();
+    public List<Map<String, Object>> listTables(String tenantId, String projectId) {
+        List<Object[]> summary = rowRepo.findTableSummary(tenantId, projectId);
         List<Map<String, Object>> result = new ArrayList<>();
         for (Object[] row : summary) {
             Map<String, Object> item = new LinkedHashMap<>();
@@ -80,7 +79,8 @@ public class GenericTableService {
      * @param order     "asc" 或 "desc"
      * @param keyword   全文搜索关键词（匹配 dataJson）
      */
-    public Map<String, Object> listRows(String tableName, int page, int pageSize,
+    public Map<String, Object> listRows(String tenantId, String projectId,
+                                         String tableName, int page, int pageSize,
                                          String sort, String order, String keyword)
             throws IOException {
         validateTableName(tableName);
@@ -95,9 +95,10 @@ public class GenericTableService {
 
         Page<TableRowEntity> pageResult;
         if (keyword != null && !keyword.isBlank()) {
-            pageResult = rowRepo.searchByTableNameAndKeyword(tableName, keyword, pageable);
+            pageResult = rowRepo.searchByKeyword(tenantId, projectId, tableName, keyword, pageable);
         } else {
-            pageResult = rowRepo.findByTableName(tableName, pageable);
+            pageResult = rowRepo.findByTenantIdAndProjectIdAndTableName(
+                    tenantId, projectId, tableName, pageable);
         }
 
         List<Map<String, Object>> rows = new ArrayList<>();
@@ -123,9 +124,11 @@ public class GenericTableService {
      *
      * @throws NoSuchElementException 若行不存在
      */
-    public Map<String, Object> getRow(String tableName, String rowId) throws IOException {
+    public Map<String, Object> getRow(String tenantId, String projectId,
+                                      String tableName, String rowId) throws IOException {
         validateTableName(tableName);
-        TableRowEntity entity = rowRepo.findByTableNameAndRowId(tableName, rowId)
+        TableRowEntity entity = rowRepo.findByTenantIdAndProjectIdAndTableNameAndRowId(
+                        tenantId, projectId, tableName, rowId)
                 .orElseThrow(() -> new NoSuchElementException(
                         "Row not found: " + tableName + "/" + rowId));
         return entityToMap(entity);
@@ -144,12 +147,14 @@ public class GenericTableService {
      * @throws IllegalArgumentException 若 rowId 已存在
      */
     @Transactional
-    public Map<String, Object> createRow(String tableName,
+    public Map<String, Object> createRow(String tenantId, String projectId,
+                                          String tableName,
                                           Map<String, Object> body) throws IOException {
         validateTableName(tableName);
 
         String rowId = extractRowId(body);
-        if (rowRepo.existsByTableNameAndRowId(tableName, rowId)) {
+        if (rowRepo.existsByTenantIdAndProjectIdAndTableNameAndRowId(
+                tenantId, projectId, tableName, rowId)) {
             throw new IllegalArgumentException("行 id 已存在: " + rowId);
         }
 
@@ -158,6 +163,8 @@ public class GenericTableService {
         data.remove("id");
 
         TableRowEntity entity = new TableRowEntity();
+        entity.setTenantId(tenantId);
+        entity.setProjectId(projectId);
         entity.setTableName(tableName);
         entity.setRowId(rowId);
         entity.setDataJson(objectMapper.writeValueAsString(data));
@@ -177,10 +184,12 @@ public class GenericTableService {
      * @throws NoSuchElementException 若行不存在
      */
     @Transactional
-    public Map<String, Object> replaceRow(String tableName, String rowId,
+    public Map<String, Object> replaceRow(String tenantId, String projectId,
+                                           String tableName, String rowId,
                                            Map<String, Object> body) throws IOException {
         validateTableName(tableName);
-        TableRowEntity entity = rowRepo.findByTableNameAndRowId(tableName, rowId)
+        TableRowEntity entity = rowRepo.findByTenantIdAndProjectIdAndTableNameAndRowId(
+                        tenantId, projectId, tableName, rowId)
                 .orElseThrow(() -> new NoSuchElementException(
                         "Row not found: " + tableName + "/" + rowId));
 
@@ -203,10 +212,12 @@ public class GenericTableService {
      * @throws NoSuchElementException 若行不存在
      */
     @Transactional
-    public Map<String, Object> patchRow(String tableName, String rowId,
+    public Map<String, Object> patchRow(String tenantId, String projectId,
+                                         String tableName, String rowId,
                                          Map<String, Object> patch) throws IOException {
         validateTableName(tableName);
-        TableRowEntity entity = rowRepo.findByTableNameAndRowId(tableName, rowId)
+        TableRowEntity entity = rowRepo.findByTenantIdAndProjectIdAndTableNameAndRowId(
+                        tenantId, projectId, tableName, rowId)
                 .orElseThrow(() -> new NoSuchElementException(
                         "Row not found: " + tableName + "/" + rowId));
 
@@ -235,12 +246,15 @@ public class GenericTableService {
      * @throws NoSuchElementException 若行不存在
      */
     @Transactional
-    public void deleteRow(String tableName, String rowId) {
+    public void deleteRow(String tenantId, String projectId,
+                          String tableName, String rowId) {
         validateTableName(tableName);
-        if (!rowRepo.existsByTableNameAndRowId(tableName, rowId)) {
+        if (!rowRepo.existsByTenantIdAndProjectIdAndTableNameAndRowId(
+                tenantId, projectId, tableName, rowId)) {
             throw new NoSuchElementException("Row not found: " + tableName + "/" + rowId);
         }
-        rowRepo.deleteByTableNameAndRowId(tableName, rowId);
+        rowRepo.deleteByTenantIdAndProjectIdAndTableNameAndRowId(
+                tenantId, projectId, tableName, rowId);
         log.info("[GenericTable] 删除行 {}/{}", tableName, rowId);
     }
 
@@ -248,10 +262,13 @@ public class GenericTableService {
      * 清空整个逻辑表（删除所有行）。
      */
     @Transactional
-    public long truncateTable(String tableName) {
+    public long truncateTable(String tenantId, String projectId,
+                              String tableName) {
         validateTableName(tableName);
-        long count = rowRepo.countByTableName(tableName);
-        rowRepo.deleteByTableName(tableName);
+        long count = rowRepo.countByTenantIdAndProjectIdAndTableName(
+                tenantId, projectId, tableName);
+        rowRepo.deleteByTenantIdAndProjectIdAndTableName(
+                tenantId, projectId, tableName);
         log.info("[GenericTable] 清空表 {} ({} 行)", tableName, count);
         return count;
     }
@@ -268,7 +285,9 @@ public class GenericTableService {
      * @return upserted 行数
      */
     @Transactional
-    public int batchUpsert(String tableName, List<Map<String, Object>> rows) throws IOException {
+    public int batchUpsert(String tenantId, String projectId,
+                           String tableName,
+                           List<Map<String, Object>> rows) throws IOException {
         validateTableName(tableName);
         int count = 0;
         for (Map<String, Object> row : rows) {
@@ -277,13 +296,16 @@ public class GenericTableService {
             data.remove("id");
             String json = objectMapper.writeValueAsString(data);
 
-            Optional<TableRowEntity> opt = rowRepo.findByTableNameAndRowId(tableName, rowId);
+            Optional<TableRowEntity> opt = rowRepo.findByTenantIdAndProjectIdAndTableNameAndRowId(
+                    tenantId, projectId, tableName, rowId);
             if (opt.isPresent()) {
                 TableRowEntity entity = opt.get();
                 entity.setDataJson(json);
                 rowRepo.save(entity);
             } else {
                 TableRowEntity entity = new TableRowEntity();
+                entity.setTenantId(tenantId);
+                entity.setProjectId(projectId);
                 entity.setTableName(tableName);
                 entity.setRowId(rowId);
                 entity.setDataJson(json);

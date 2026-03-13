@@ -46,7 +46,7 @@ export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } 
 const pageLogger = Logger('PageConfig')
 
 const REQUEST_TIMEOUT = 10_000
-const PAGES_CONFIG_FILE_BASE = '/api/pages-config'
+const PAGES_CONFIG_FILE_BASE = '/api/tenants/lmspark/projects/homepage/pages-config'
 
 const ErrorCodes = SharedErrorCodes
 const getErrorMessage = getSharedErrorMessage

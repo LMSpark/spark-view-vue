@@ -4,29 +4,26 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 /**
- * 通用逻辑表 Schema（表结构定义）实体。
- *
- * <p>存储逻辑表的元数据：标题、描述、列定义（JSON 数组）等。
- * 列定义以 JSON 数组存储，格式示例：
- * <pre>
- * [
- *   { "name": "id",    "type": "string",  "label": "ID",   "required": true },
- *   { "name": "name",  "type": "string",  "label": "姓名", "searchable": true },
- *   { "name": "age",   "type": "number",  "label": "年龄" },
- *   { "name": "role",  "type": "enum",    "label": "角色",
- *     "options": [{"value":"admin","label":"管理员"},{"value":"user","label":"用户"}] }
- * ]
- * </pre>
- *
- * <p>表名：{@code table_schema}
+ * 通用逻辑表 Schema — 按 (tenantId, projectId) 隔离。
  */
 @Entity
-@Table(name = "table_schema")
+@Table(name = "table_schema", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_schema_scope", columnNames = {"tenant_id", "project_id", "table_name"})
+})
 public class TableSchemaEntity {
 
-    /** 逻辑表名（唯一键，如 "Users"、"Orders"） */
     @Id
-    @Column(name = "table_name", length = 128)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "tenant_id", nullable = false, length = 64)
+    private String tenantId;
+
+    @Column(name = "project_id", nullable = false, length = 64)
+    private String projectId;
+
+    /** 逻辑表名（在项目内唯一） */
+    @Column(name = "table_name", nullable = false, length = 128)
     private String tableName;
 
     /** 显示标题 */
@@ -37,11 +34,7 @@ public class TableSchemaEntity {
     @Column(length = 1024)
     private String description;
 
-    /**
-     * 列定义 JSON 数组（CLOB）。
-     * 每个元素为 ColumnDef 对象：
-     * name, type, label, required, defaultValue, hidden, sortable, searchable, options
-     */
+    /** 列定义 JSON 数组（CLOB） */
     @Lob
     @Column(name = "columns_json", columnDefinition = "CLOB")
     private String columnsJson;
@@ -65,6 +58,14 @@ public class TableSchemaEntity {
     }
 
     // ── Getters & Setters ──
+
+    public Long getId() { return id; }
+
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+
+    public String getProjectId() { return projectId; }
+    public void setProjectId(String projectId) { this.projectId = projectId; }
 
     public String getTableName() { return tableName; }
     public void setTableName(String tableName) { this.tableName = tableName; }

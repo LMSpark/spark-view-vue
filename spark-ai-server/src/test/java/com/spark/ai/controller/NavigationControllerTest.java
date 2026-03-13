@@ -34,9 +34,9 @@ class NavigationControllerTest {
 
     @Test
     void getNavConfig_returnsEmptyDefault_whenNoFile() throws Exception {
-        when(navigationService.getNavConfig()).thenReturn(null);
+        when(navigationService.getNavConfig("t1", "p1")).thenReturn(null);
 
-        mockMvc.perform(get("/api/navigation"))
+        mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.childPlacement").value("header"))
                 .andExpect(jsonPath("$.children").isArray())
@@ -51,9 +51,9 @@ class NavigationControllerTest {
                         Map.of("id", "home", "title", "首页", "path", "/")
                 )
         );
-        when(navigationService.getNavConfig()).thenReturn(config);
+        when(navigationService.getNavConfig("t1", "p1")).thenReturn(config);
 
-        mockMvc.perform(get("/api/navigation"))
+        mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.childPlacement").value("header"))
                 .andExpect(jsonPath("$.children[0].id").value("home"));
@@ -66,18 +66,18 @@ class NavigationControllerTest {
                 "children", List.of(Map.of("id", "mod1", "title", "模块1"))
         );
 
-        mockMvc.perform(put("/api/navigation")
+        mockMvc.perform(put("/api/tenants/t1/projects/p1/navigation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(nav)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
-        verify(navigationService).saveNavConfig(any());
+        verify(navigationService).saveNavConfig(eq("t1"), eq("p1"), any());
     }
 
     @Test
     void saveNavConfig_rejectsMissingChildren() throws Exception {
-        mockMvc.perform(put("/api/navigation")
+        mockMvc.perform(put("/api/tenants/t1/projects/p1/navigation")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"childPlacement\":\"header\"}"))
                 .andExpect(status().isBadRequest())
@@ -92,9 +92,9 @@ class NavigationControllerTest {
                 Map.of("id", "data", "title", "数据管理", "icon", "🔗",
                         "path", "", "hasChildren", true)
         );
-        when(navigationService.listNodes()).thenReturn(nodes);
+        when(navigationService.listNodes("t1", "p1")).thenReturn(nodes);
 
-        mockMvc.perform(get("/api/navigation/nodes"))
+        mockMvc.perform(get("/api/tenants/t1/projects/p1/navigation/nodes"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value("home"))
                 .andExpect(jsonPath("$[1].hasChildren").value(true));

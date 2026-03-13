@@ -12,27 +12,42 @@ import java.util.Optional;
 
 public interface TableRowRepository extends JpaRepository<TableRowEntity, Long> {
 
-    Optional<TableRowEntity> findByTableNameAndRowId(String tableName, String rowId);
+    Optional<TableRowEntity> findByTenantIdAndProjectIdAndTableNameAndRowId(
+            String tenantId, String projectId, String tableName, String rowId);
 
-    Page<TableRowEntity> findByTableName(String tableName, Pageable pageable);
+    Page<TableRowEntity> findByTenantIdAndProjectIdAndTableName(
+            String tenantId, String projectId, String tableName, Pageable pageable);
 
-    List<TableRowEntity> findByTableName(String tableName);
+    List<TableRowEntity> findByTenantIdAndProjectIdAndTableName(
+            String tenantId, String projectId, String tableName);
 
-    long countByTableName(String tableName);
+    long countByTenantIdAndProjectIdAndTableName(
+            String tenantId, String projectId, String tableName);
 
-    void deleteByTableNameAndRowId(String tableName, String rowId);
+    void deleteByTenantIdAndProjectIdAndTableNameAndRowId(
+            String tenantId, String projectId, String tableName, String rowId);
 
-    void deleteByTableName(String tableName);
+    void deleteByTenantIdAndProjectIdAndTableName(
+            String tenantId, String projectId, String tableName);
 
-    boolean existsByTableNameAndRowId(String tableName, String rowId);
+    boolean existsByTenantIdAndProjectIdAndTableNameAndRowId(
+            String tenantId, String projectId, String tableName, String rowId);
 
-    /** 列出所有不重复的逻辑表名及行数 */
-    @Query("SELECT e.tableName, COUNT(e) FROM TableRowEntity e GROUP BY e.tableName ORDER BY e.tableName")
-    List<Object[]> findTableSummary();
+    /** 列出指定项目下所有不重复的逻辑表名及行数 */
+    @Query("SELECT e.tableName, COUNT(e) FROM TableRowEntity e " +
+           "WHERE e.tenantId = :tenantId AND e.projectId = :projectId " +
+           "GROUP BY e.tableName ORDER BY e.tableName")
+    List<Object[]> findTableSummary(
+            @Param("tenantId") String tenantId,
+            @Param("projectId") String projectId);
 
-    /** keyword 模糊搜索（搜索 dataJson 内容） */
-    @Query("SELECT e FROM TableRowEntity e WHERE e.tableName = :tableName AND e.dataJson LIKE %:keyword%")
-    Page<TableRowEntity> searchByTableNameAndKeyword(
+    /** keyword 模糊搜索 */
+    @Query("SELECT e FROM TableRowEntity e " +
+           "WHERE e.tenantId = :tenantId AND e.projectId = :projectId " +
+           "AND e.tableName = :tableName AND e.dataJson LIKE %:keyword%")
+    Page<TableRowEntity> searchByKeyword(
+            @Param("tenantId") String tenantId,
+            @Param("projectId") String projectId,
             @Param("tableName") String tableName,
             @Param("keyword") String keyword,
             Pageable pageable);

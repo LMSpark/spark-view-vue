@@ -9,6 +9,7 @@ import com.spark.ai.repository.NavigationConfigRepository;
 import com.spark.ai.repository.PageConfigRepository;
 import com.spark.ai.repository.PageFileRepository;
 import com.spark.ai.repository.TenantConfigRepository;
+import com.spark.ai.service.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -42,19 +43,25 @@ public class DataInitializer implements CommandLineRunner {
     private final PageConfigRepository pageRepo;
     private final PageFileRepository fileRepo;
     private final NavigationConfigRepository navRepo;
+    private final ProjectService projectService;
     private final PagesConfigProperties pagesProps;
     private final ObjectMapper objectMapper;
+
+    private static final String DEFAULT_TENANT = "lmspark";
+    private static final String HOMEPAGE_PROJECT = "homepage";
 
     public DataInitializer(TenantConfigRepository tenantRepo,
                             PageConfigRepository pageRepo,
                             PageFileRepository fileRepo,
                             NavigationConfigRepository navRepo,
+                            ProjectService projectService,
                             PagesConfigProperties pagesProps,
                             ObjectMapper objectMapper) {
         this.tenantRepo = tenantRepo;
         this.pageRepo = pageRepo;
         this.fileRepo = fileRepo;
         this.navRepo = navRepo;
+        this.projectService = projectService;
         this.pagesProps = pagesProps;
         this.objectMapper = objectMapper;
     }
@@ -76,57 +83,24 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        saveTenant("demo", Map.of(
+        saveTenant(DEFAULT_TENANT, Map.of(
                 "tenant", mapOf(
-                        "tenantId", "demo",
-                        "tenantName", "Demo Company",
-                        "tenantCode", "DEMO001",
-                        "logo", "https://via.placeholder.com/150/1890ff/ffffff?text=Demo",
-                        "theme", mapOf("primaryColor", "#1890ff", "borderRadius", "4px")
+                        "tenantId", DEFAULT_TENANT,
+                        "tenantName", "领码SPARK",
+                        "tenantCode", "LMSPARK",
+                        "logo", "",
+                        "theme", mapOf("primaryColor", "#409eff", "borderRadius", "4px")
                 ),
                 "config", mapOf(
-                        "apiBaseUrl", "https://demo-api.example.com",
+                        "apiBaseUrl", "/api",
                         "logLevel", "debug",
-                        "features", mapOf("enableAI", false, "enableExport", true, "enableOffline", true)
-                ),
-                "pageConfig", Map.of("homePath", "/demo-home"),
-                "logger", mapOf("level", "debug", "enableRemote", true, "remoteEndpoint", "https://demo-api.example.com/logs")
-        ));
-
-        saveTenant("enterprise", Map.of(
-                "tenant", mapOf(
-                        "tenantId", "enterprise",
-                        "tenantName", "Enterprise Corporation",
-                        "tenantCode", "ENT001",
-                        "logo", "https://via.placeholder.com/150/722ed1/ffffff?text=Enterprise",
-                        "theme", mapOf("primaryColor", "#722ed1", "borderRadius", "8px")
-                ),
-                "config", mapOf(
-                        "apiBaseUrl", "https://enterprise-api.example.com",
-                        "logLevel", "info",
                         "features", mapOf("enableAI", true, "enableExport", true, "enableOffline", false)
                 ),
-                "pageConfig", mapOf("source", "remote", "homePath", "/enterprise-dashboard"),
-                "logger", mapOf("level", "info", "enableRemote", true, "remoteEndpoint", "https://enterprise-api.example.com/logs")
+                "pageConfig", Map.of("homePath", "/")
         ));
+        projectService.ensureHomepage(DEFAULT_TENANT);
 
-        saveTenant("test", Map.of(
-                "tenant", mapOf(
-                        "tenantId", "test",
-                        "tenantName", "Test Tenant",
-                        "tenantCode", "TEST001",
-                        "logo", "https://via.placeholder.com/150/52c41a/ffffff?text=Test",
-                        "theme", mapOf("primaryColor", "#52c41a")
-                ),
-                "config", mapOf(
-                        "apiBaseUrl", "https://test-api.example.com",
-                        "logLevel", "debug",
-                        "enableMock", true,
-                        "features", mapOf("enableAI", false, "enableExport", true, "enableOffline", true)
-                )
-        ));
-
-        log.info("[DataInit] 种子租户数据已写入 (3 tenants)");
+        log.info("[DataInit] 种子租户数据已写入: 领码SPARK ({})", DEFAULT_TENANT);
     }
 
     private void saveTenant(String tenantId, Map<String, Object> config) throws IOException {
@@ -160,6 +134,8 @@ public class DataInitializer implements CommandLineRunner {
 
                 // 创建页面元数据
                 PageConfigEntity page = new PageConfigEntity();
+                page.setTenantId(DEFAULT_TENANT);
+                page.setProjectId(HOMEPAGE_PROJECT);
                 page.setPageId(pageId);
                 page.setTitle(pageId);
                 page.setIcon("📄");
@@ -174,6 +150,8 @@ public class DataInitializer implements CommandLineRunner {
                     if (Files.isRegularFile(filePath)) {
                         String content = Files.readString(filePath, StandardCharsets.UTF_8);
                         PageFileEntity file = new PageFileEntity();
+                        file.setTenantId(DEFAULT_TENANT);
+                        file.setProjectId(HOMEPAGE_PROJECT);
                         file.setPageId(pageId);
                         file.setFilename(filename);
                         file.setContent(content);
@@ -205,7 +183,8 @@ public class DataInitializer implements CommandLineRunner {
             }
             String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
             NavigationConfigEntity entity = new NavigationConfigEntity();
-            entity.setConfigKey("default");
+            entity.setTenantId(DEFAULT_TENANT);
+            entity.setProjectId(HOMEPAGE_PROJECT);
             entity.setConfigJson(json);
             navRepo.save(entity);
             log.info("[DataInit] 默认导航配置已写入数据库");
@@ -218,7 +197,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @SuppressWarnings("unchecked")
     private void patchNavigationIfMissing() {
-        navRepo.findById("default").ifPresent(entity -> {
+        navRepo.findByTenantIdAndProjectId(DEFAULT_TENANT, HOMEPAGE_PROJECT).ifPresent(entity -> {
             try {
                 // 加载 classpath 默认导航
                 try (var stream = getClass().getResourceAsStream("/navigation-default.json")) {

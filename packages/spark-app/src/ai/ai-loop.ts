@@ -357,12 +357,14 @@ export function setupHotReload(
 
 // ─── 文件写入 API ────────────────────────────────────────────────────────────
 
+const PAGE_API = '/api/tenants/lmspark/projects/homepage/pages-config'
+
 /**
  * 批量写入页面配置文件
  */
 export async function writePageFiles(pageId: string, files: PageFiles): Promise<string[]> {
   const result = await http.post<{ written: string[] }>(
-    `/api/pages-config/${encodeURIComponent(pageId)}/__batch`,
+    `${PAGE_API}/${encodeURIComponent(pageId)}/__batch`,
     files,
   )
   return result.written
@@ -374,7 +376,7 @@ export async function writePageFiles(pageId: string, files: PageFiles): Promise<
 export async function readPageFile(pageId: string, fileName: string): Promise<string | null> {
   try {
     const result = await http.get<{ content?: string; notModified?: boolean }>(
-      `/api/pages-config/${encodeURIComponent(pageId)}/${fileName}`,
+      `${PAGE_API}/${encodeURIComponent(pageId)}/${fileName}`,
     )
     return result.content ?? null
   } catch {

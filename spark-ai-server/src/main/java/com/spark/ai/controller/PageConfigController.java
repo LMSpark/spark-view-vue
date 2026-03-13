@@ -13,19 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 页面配置文件 REST 端点。
- * 完全对齐 Vite 插件 spark-pages-config-server 的行为，
- * 使 Java 后端可完整接管 /api/pages-config/** 路由。
- *
- * <pre>
- *   GET  /api/pages-config/__events          → SSE 文件变更通知
- *   GET  /api/pages-config/__list            → 页面列表
- *   POST /api/pages-config/__create          → 创建空页面
- *   DELETE /api/pages-config/{pageId}        → 删除页面
- *   GET  /api/pages-config/{pageId}/{file}   → 读取配置文件（支持时间戳协议）
- *   PUT  /api/pages-config/{pageId}/{file}   → 写入单个配置文件
- *   POST /api/pages-config/{pageId}/__batch  → 批量写入配置文件
- * </pre>
+ * 页面配置文件 REST 端点 — 按 (tenantId, projectId) 隔离。
+ * SSE 事件流保持全局（/api/events）。
  */
 @RestController
 @RequestMapping("/api")
@@ -39,55 +28,34 @@ public class PageConfigController {
         this.sseService = sseService;
     }
 
-    // ── SSE：统一事件流 ─────────────────────────────────────────────────────────
+    // ── SSE：统一事件流（全局） ──────────────────────────────────────────────
 
-    /**
-     * GET /api/events
-     * 统一 SSE 端点。前端单个 EventSource 监听所有事件类型。
-     * 事件通过 SSE {@code event:} 字段区分（page-config, notification 等）。
-     */
     @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter unifiedEvents() {
         return sseService.subscribe();
     }
 
-    // ── SSE：文件变更通知（兼容旧端点）────────────────────────────────────────
-
-    /**
-     * GET /api/pages-config/__events
-     * @deprecated 使用 /api/events 统一端点代替
-     */
-    @GetMapping(value = "/pages-config/__events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter events() {
-        return sseService.subscribe();
-    }
-
     // ── 页面列表 ─────────────────────────────────────────────────────────────
 
-    /**
-     * GET /api/pages-config/__list
-     * 返回所有配置页面列表（含 pageId、title、icon、已存在的文件列表）。
-     */
-    @GetMapping("/pages-config/__list")
-    public ResponseEntity<?> listPages() {
-        List<Map<String, Object>> pages = pageConfigService.listPages();
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/__list")
+    public ResponseEntity<?> listPages(@PathVariable String tenantId,
+                                        @PathVariable String projectId) {
+        List<Map<String, Object>> pages = pageConfigService.listPages(tenantId, projectId);
         return ResponseEntity.ok(pages);
     }
 
     // ── 创建页面 ─────────────────────────────────────────────────────────────
 
-    /**
-     * POST /api/pages-config/__create
-     * 创建空配置页面（脚手架文件 + 路由注册）。
-     * 请求体：{ "pageId": "xxx", "title": "页面标题", "icon": "📄" }
-     */
-    @PostMapping("/pages-config/__create")
-    public ResponseEntity<?> createPage(@RequestBody Map<String, String> body) {
+    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/__create")
+    public ResponseEntity<?> createPage(@PathVariable String tenantId,
+                                         @PathVariable String projectId,
+                                         @RequestBody Map<String, String> body) {
         try {
             String pageId = body.get("pageId");
             String title = body.getOrDefault("title", pageId);
             String icon = body.getOrDefault("icon", "📄");
-            Map<String, Object> result = pageConfigService.createPage(pageId, title, icon);
+            Map<String, Object> result = pageConfigService.createPage(
+                    tenantId, projectId, pageId, title, icon);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -96,14 +64,13 @@ public class PageConfigController {
 
     // ── 删除页面 ─────────────────────────────────────────────────────────────
 
-    /**
-     * DELETE /api/pages-config/{pageId}
-     * 删除配置页面（目录 + 文件 + 路由注销）。
-     */
-    @DeleteMapping("/pages-config/{pageId}")
-    public ResponseEntity<?> deletePage(@PathVariable String pageId) {
+    @DeleteMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}")
+    public ResponseEntity<?> deletePage(@PathVariable String tenantId,
+                                         @PathVariable String projectId,
+                                         @PathVariable String pageId) {
         try {
-            Map<String, Object> result = pageConfigService.deletePage(pageId);
+            Map<String, Object> result = pageConfigService.deletePage(
+                    tenantId, projectId, pageId);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -112,16 +79,13 @@ public class PageConfigController {
 
     // ── 静态路由同步 ─────────────────────────────────────────────────────────
 
-    /**
-     * POST /api/pages-config/__sync-routes
-     * 前端启动时调用，将静态 Vue 组件路由元数据同步到数据库。
-     * 幂等操作：已存在的路由会被更新，不存在的会被创建。
-     * 请求体：[{ "pageId": "dev", "path": "/dev", "name": "dev-system", "title": "开发系统", "icon": "⚡" }, ...]
-     */
-    @PostMapping("/pages-config/__sync-routes")
-    public ResponseEntity<?> syncRoutes(@RequestBody List<Map<String, String>> routes) {
+    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/__sync-routes")
+    public ResponseEntity<?> syncRoutes(@PathVariable String tenantId,
+                                         @PathVariable String projectId,
+                                         @RequestBody List<Map<String, String>> routes) {
         try {
-            Map<String, Object> result = pageConfigService.syncStaticRoutes(routes);
+            Map<String, Object> result = pageConfigService.syncStaticRoutes(
+                    tenantId, projectId, routes);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -130,14 +94,13 @@ public class PageConfigController {
 
     // ── 读取根级配置文件（routes.json）─────────────────────────────────────────
 
-    /**
-     * GET /api/pages-config/routes.json?timestamp={iso}
-     * 根级配置文件（不在任何 pageId 目录下），遵循 FileLoader 时间戳缓存协议。
-     */
-    @GetMapping("/pages-config/routes.json")
-    public ResponseEntity<?> getRoutes(@RequestParam(required = false) String timestamp) {
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/routes.json")
+    public ResponseEntity<?> getRoutes(@PathVariable String tenantId,
+                                        @PathVariable String projectId,
+                                        @RequestParam(required = false) String timestamp) {
         try {
-            Map<String, Object> result = pageConfigService.readRootFile("routes.json", timestamp);
+            Map<String, Object> result = pageConfigService.readRootFile(
+                    tenantId, projectId, "routes.json", timestamp);
             return ResponseEntity.ok(result);
         } catch (java.nio.file.NoSuchFileException e) {
             return ResponseEntity.notFound().build();
@@ -148,18 +111,16 @@ public class PageConfigController {
 
     // ── 读取配置文件 ──────────────────────────────────────────────────────────
 
-    /**
-     * GET /api/pages-config/{pageId}/{filename}?timestamp={iso}
-     * 响应格式与 FileLoader 时间戳缓存协议对齐：
-     *   { content, timestamp } 或 { notModified: true, timestamp, content: '' }
-     */
-    @GetMapping("/pages-config/{pageId}/{filename}")
+    @GetMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}")
     public ResponseEntity<?> getFile(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
             @PathVariable String pageId,
             @PathVariable String filename,
             @RequestParam(required = false) String timestamp) {
         try {
-            Map<String, Object> result = pageConfigService.readFile(pageId, filename, timestamp);
+            Map<String, Object> result = pageConfigService.readFile(
+                    tenantId, projectId, pageId, filename, timestamp);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -172,17 +133,16 @@ public class PageConfigController {
 
     // ── 写入单个文件 ──────────────────────────────────────────────────────────
 
-    /**
-     * PUT /api/pages-config/{pageId}/{filename}
-     * 写入单个配置文件，请求体为文件的原始文本内容。
-     */
-    @PutMapping("/pages-config/{pageId}/{filename}")
+    @PutMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/{filename}")
     public ResponseEntity<?> putFile(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
             @PathVariable String pageId,
             @PathVariable String filename,
             @RequestBody String content) {
         try {
-            Map<String, Object> result = pageConfigService.writeFile(pageId, filename, content);
+            Map<String, Object> result = pageConfigService.writeFile(
+                    tenantId, projectId, pageId, filename, content);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -191,19 +151,17 @@ public class PageConfigController {
         }
     }
 
-    // ── 批量写入（AI 闭环核心路径）────────────────────────────────────────────
+    // ── 批量写入 ──────────────────────────────────────────────────────────────
 
-    /**
-     * POST /api/pages-config/{pageId}/__batch
-     * AI 生成页面后一次性写入 rule.json / pagedata.json / script.js / style.css，
-     * 并自动在 routes.json 注册新页面路由，最后广播 SSE 触发热重载。
-     */
-    @PostMapping("/pages-config/{pageId}/__batch")
+    @PostMapping("/tenants/{tenantId}/projects/{projectId}/pages-config/{pageId}/__batch")
     public ResponseEntity<?> batch(
+            @PathVariable String tenantId,
+            @PathVariable String projectId,
             @PathVariable String pageId,
             @RequestBody Map<String, String> files) {
         try {
-            Map<String, Object> result = pageConfigService.writeBatch(pageId, files);
+            Map<String, Object> result = pageConfigService.writeBatch(
+                    tenantId, projectId, pageId, files);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

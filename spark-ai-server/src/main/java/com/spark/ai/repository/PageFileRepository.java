@@ -8,9 +8,12 @@ import java.util.Optional;
 
 public interface PageFileRepository extends JpaRepository<PageFileEntity, Long> {
 
-    Optional<PageFileEntity> findByPageIdAndFilename(String pageId, String filename);
+    Optional<PageFileEntity> findByTenantIdAndProjectIdAndPageIdAndFilename(
+            String tenantId, String projectId, String pageId, String filename);
 
-    List<PageFileEntity> findByPageId(String pageId);
+    List<PageFileEntity> findByTenantIdAndProjectIdAndPageId(
+            String tenantId, String projectId, String pageId);
 
-    void deleteByPageId(String pageId);
+    void deleteByTenantIdAndProjectIdAndPageId(
+            String tenantId, String projectId, String pageId);
 }

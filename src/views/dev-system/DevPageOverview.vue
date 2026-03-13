@@ -66,7 +66,7 @@ const emit = defineEmits<{ createPage: []; locateNode: [pageId: string]; editPag
 const router = useRouter()
 
 const searchText = ref('')
-const PAGE_API = '/api/pages-config'
+import { PAGE_API } from '@/services/api-paths'
 
 const filteredPages = computed(() => {
   const q = searchText.value.toLowerCase()
