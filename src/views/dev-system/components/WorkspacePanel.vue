@@ -1,44 +1,21 @@
 <template>
   <div class="workspace-panel">
-    <!-- 阶段标签页 -->
-    <el-tabs
-      :model-value="currentStage"
-      type="border-card"
-      class="workspace-tabs"
-      @tab-change="handleTabChange"
-    >
-      <el-tab-pane
-        v-for="stage in STAGE_ORDER"
-        :key="stage"
-        :name="stage"
-        :label="`${STAGE_META[stage].icon} ${STAGE_META[stage].label}`"
-      >
-        <!-- 阶段占位视图（Phase 2+ 替换为真实组件） -->
-        <div class="stage-placeholder">
-          <div class="stage-placeholder__icon">{{ STAGE_META[stage].icon }}</div>
-          <div class="stage-placeholder__title">{{ STAGE_META[stage].label }}</div>
-          <div class="stage-placeholder__desc">{{ stageDescription(stage) }}</div>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+    <!-- 当前阶段视图（Phase 2+ 替换为真实组件） -->
+    <div class="stage-placeholder">
+      <div class="stage-placeholder__icon">{{ STAGE_META[currentStage].icon }}</div>
+      <div class="stage-placeholder__title">{{ STAGE_META[currentStage].label }}</div>
+      <div class="stage-placeholder__desc">{{ stageDescription(currentStage) }}</div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ProjectStage } from '../composables/types'
-import { STAGE_ORDER, STAGE_META } from '../composables/types'
+import { STAGE_META } from '../composables/types'
 
 defineProps<{
   currentStage: ProjectStage
 }>()
-
-const emit = defineEmits<{
-  'stage-change': [stage: ProjectStage]
-}>()
-
-function handleTabChange(name: string | number) {
-  emit('stage-change', name as ProjectStage)
-}
 
 function stageDescription(stage: ProjectStage): string {
   const desc: Record<ProjectStage, string> = {
@@ -57,25 +34,9 @@ function stageDescription(stage: ProjectStage): string {
   height: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-}
-
-.workspace-tabs {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.workspace-tabs :deep(.el-tabs__content) {
-  flex: 1;
-  overflow: auto;
-  padding: 0;
-}
-
-.workspace-tabs :deep(.el-tab-pane) {
-  height: 100%;
-  overflow: auto;
 }
 
 .stage-placeholder {
