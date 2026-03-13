@@ -38,7 +38,6 @@
       <div class="wb-body__workspace">
         <WorkspacePanel
           :current-stage="project.state.currentStage"
-          @stage-change="handleStageChange"
         />
       </div>
 
