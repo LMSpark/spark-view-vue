@@ -1,21 +1,27 @@
 package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spark.ai.config.PagesConfigProperties;
 import com.spark.ai.entity.PageConfigEntity;
-import com.spark.ai.entity.PageFileEntity;
 import com.spark.ai.repository.PageConfigRepository;
-import com.spark.ai.repository.PageFileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.*;
 
 /**
  * 页面配置文件 CRUD 服务 — 按 (tenantId, projectId) 隔离。
+ *
+ * <p>页面元数据（title/icon/path/routeName）存储在数据库 page_config 表。
+ * <p>页面配置文件（rule.json / pagedata.json / script.js / style.css）存储在文件系统：
+ * <pre>
+ *   {configDir}/{tenantId}/{projectId}/{pageId}/{filename}
+ * </pre>
  */
 @Service
 public class PageConfigService {
@@ -27,18 +33,32 @@ public class PageConfigService {
             Set.of("rule.json", "pagedata.json", "script.js", "style.css");
 
     private final PageConfigRepository pageRepo;
-    private final PageFileRepository fileRepo;
     private final ObjectMapper objectMapper;
     private final SseService sseService;
+    private final Path configRoot;
 
     public PageConfigService(PageConfigRepository pageRepo,
-                              PageFileRepository fileRepo,
                               ObjectMapper objectMapper,
-                              SseService sseService) {
+                              SseService sseService,
+                              PagesConfigProperties pagesProps) {
         this.pageRepo = pageRepo;
-        this.fileRepo = fileRepo;
         this.objectMapper = objectMapper;
         this.sseService = sseService;
+        this.configRoot = Path.of(pagesProps.getConfigDir());
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 文件系统路径
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** 返回页面目录路径：{configRoot}/{tenantId}/{projectId}/{pageId} */
+    private Path pageDir(String tenantId, String projectId, String pageId) {
+        return configRoot.resolve(tenantId).resolve(projectId).resolve(pageId);
+    }
+
+    /** 返回文件路径：{configRoot}/{tenantId}/{projectId}/{pageId}/{filename} */
+    private Path filePath(String tenantId, String projectId, String pageId, String filename) {
+        return pageDir(tenantId, projectId, pageId).resolve(filename);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -47,7 +67,7 @@ public class PageConfigService {
 
     /**
      * 读取页面配置文件。
-     * 保持 FileLoader 时间戳协议兼容（timestamp 基于 updatedAt）。
+     * 保持 FileLoader 时间戳协议兼容（timestamp 基于文件 lastModified）。
      */
     public Map<String, Object> readFile(String tenantId, String projectId,
                                          String pageId, String filename,
@@ -55,17 +75,18 @@ public class PageConfigService {
         validatePageId(pageId);
         validateFilename(filename);
 
-        PageFileEntity file = fileRepo.findByTenantIdAndProjectIdAndPageIdAndFilename(
-                        tenantId, projectId, pageId, filename)
-                .orElseThrow(() -> new NoSuchFileException(pageId + "/" + filename));
+        Path fp = filePath(tenantId, projectId, pageId, filename);
+        if (!Files.isRegularFile(fp)) {
+            throw new NoSuchFileException(pageId + "/" + filename);
+        }
 
-        String serverTimestamp = file.getUpdatedAt().toString();
+        String serverTimestamp = String.valueOf(Files.getLastModifiedTime(fp).toMillis());
 
         if (clientTimestamp != null && clientTimestamp.equals(serverTimestamp)) {
             return Map.of("notModified", true, "timestamp", serverTimestamp, "content", "");
         }
-        return Map.of("content", file.getContent() != null ? file.getContent() : "",
-                       "timestamp", serverTimestamp);
+        String content = Files.readString(fp, StandardCharsets.UTF_8);
+        return Map.of("content", content, "timestamp", serverTimestamp);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -81,22 +102,14 @@ public class PageConfigService {
 
         ensurePageConfig(tenantId, projectId, pageId);
 
-        PageFileEntity file = fileRepo.findByTenantIdAndProjectIdAndPageIdAndFilename(
-                        tenantId, projectId, pageId, filename)
-                .orElseGet(() -> {
-                    PageFileEntity f = new PageFileEntity();
-                    f.setTenantId(tenantId);
-                    f.setProjectId(projectId);
-                    f.setPageId(pageId);
-                    f.setFilename(filename);
-                    return f;
-                });
-        file.setContent(content);
-        file = fileRepo.save(file);
+        Path fp = filePath(tenantId, projectId, pageId, filename);
+        Files.createDirectories(fp.getParent());
+        Files.writeString(fp, content, StandardCharsets.UTF_8);
 
+        String timestamp = String.valueOf(Files.getLastModifiedTime(fp).toMillis());
         sseService.broadcast(pageId, filename);
         log.info("[PageConfig] 写入文件: {}/{}", pageId, filename);
-        return Map.of("ok", true, "timestamp", file.getUpdatedAt().toString());
+        return Map.of("ok", true, "timestamp", timestamp);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -111,24 +124,16 @@ public class PageConfigService {
 
         ensurePageConfig(tenantId, projectId, pageId);
 
+        Path dir = pageDir(tenantId, projectId, pageId);
+        Files.createDirectories(dir);
+
         List<String> written = new ArrayList<>();
         for (Map.Entry<String, String> entry : files.entrySet()) {
             String filename = entry.getKey();
             String content = entry.getValue();
             if (!ALLOWED_FILES.contains(filename) || content == null) continue;
 
-            PageFileEntity file = fileRepo.findByTenantIdAndProjectIdAndPageIdAndFilename(
-                            tenantId, projectId, pageId, filename)
-                    .orElseGet(() -> {
-                        PageFileEntity f = new PageFileEntity();
-                        f.setTenantId(tenantId);
-                        f.setProjectId(projectId);
-                        f.setPageId(pageId);
-                        f.setFilename(filename);
-                        return f;
-                    });
-            file.setContent(content);
-            fileRepo.save(file);
+            Files.writeString(dir.resolve(filename), content, StandardCharsets.UTF_8);
             written.add(filename);
         }
 
@@ -153,7 +158,6 @@ public class PageConfigService {
         }
 
         String content = generateRoutesJson(tenantId, projectId);
-        // 使用内容哈希作为 timestamp（无文件系统 mtime）
         String timestamp = String.valueOf(content.hashCode());
 
         if (clientTimestamp != null && clientTimestamp.equals(timestamp)) {
@@ -178,9 +182,16 @@ public class PageConfigService {
             item.put("title", page.getTitle() != null ? page.getTitle() : page.getPageId());
             item.put("icon", page.getIcon() != null ? page.getIcon() : "📄");
 
-            List<PageFileEntity> files = fileRepo.findByTenantIdAndProjectIdAndPageId(
-                    tenantId, projectId, page.getPageId());
-            List<String> existingFiles = files.stream().map(PageFileEntity::getFilename).toList();
+            // 从文件系统扫描已有文件
+            Path dir = pageDir(tenantId, projectId, page.getPageId());
+            List<String> existingFiles = new ArrayList<>();
+            if (Files.isDirectory(dir)) {
+                for (String fname : ALLOWED_FILES) {
+                    if (Files.isRegularFile(dir.resolve(fname))) {
+                        existingFiles.add(fname);
+                    }
+                }
+            }
             item.put("pageType", page.getPageType() != null ? page.getPageType() : "config");
             item.put("files", existingFiles);
             item.put("hasDir", !existingFiles.isEmpty());
@@ -196,7 +207,7 @@ public class PageConfigService {
     @Transactional
     public Map<String, Object> createPage(String tenantId, String projectId,
                                            String pageId, String title,
-                                           String icon) {
+                                           String icon) throws IOException {
         validatePageId(pageId);
 
         if (pageRepo.existsByTenantIdAndProjectIdAndPageId(tenantId, projectId, pageId)) {
@@ -213,7 +224,7 @@ public class PageConfigService {
         page.setRouteName(pageId);
         pageRepo.save(page);
 
-        // 生成脚手架文件
+        // 生成脚手架文件到文件系统
         String safeTitle = escapeJson(title != null ? title : pageId);
         String ruleJson = "[\n  {\n    \"type\": \"div\",\n    \"children\": [\n      {\n        \"type\": \"h2\",\n        \"children\": [\"" + safeTitle + "\"]\n      },\n      {\n        \"type\": \"p\",\n        \"children\": [\"页面配置就绪，请编辑 rule.json 设计页面布局。\"]\n      }\n    ]\n  }\n]";
         String pageDataJson = "{}";
@@ -227,15 +238,12 @@ public class PageConfigService {
                 "style.css", styleCss
         );
 
+        Path dir = pageDir(tenantId, projectId, pageId);
+        Files.createDirectories(dir);
+
         List<String> written = new ArrayList<>();
         for (Map.Entry<String, String> entry : scaffold.entrySet()) {
-            PageFileEntity file = new PageFileEntity();
-            file.setTenantId(tenantId);
-            file.setProjectId(projectId);
-            file.setPageId(pageId);
-            file.setFilename(entry.getKey());
-            file.setContent(entry.getValue());
-            fileRepo.save(file);
+            Files.writeString(dir.resolve(entry.getKey()), entry.getValue(), StandardCharsets.UTF_8);
             written.add(entry.getKey());
         }
 
@@ -250,14 +258,23 @@ public class PageConfigService {
 
     @Transactional
     public Map<String, Object> deletePage(String tenantId, String projectId,
-                                           String pageId) {
+                                           String pageId) throws IOException {
         validatePageId(pageId);
 
-        List<PageFileEntity> files = fileRepo.findByTenantIdAndProjectIdAndPageId(
-                tenantId, projectId, pageId);
-        List<String> deleted = files.stream().map(PageFileEntity::getFilename).toList();
+        // 删除文件系统上的页面目录
+        Path dir = pageDir(tenantId, projectId, pageId);
+        List<String> deleted = new ArrayList<>();
+        if (Files.isDirectory(dir)) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+                for (Path f : stream) {
+                    deleted.add(f.getFileName().toString());
+                    Files.deleteIfExists(f);
+                }
+            }
+            Files.deleteIfExists(dir);
+        }
 
-        fileRepo.deleteByTenantIdAndProjectIdAndPageId(tenantId, projectId, pageId);
+        // 删除数据库元数据
         pageRepo.deleteByTenantIdAndProjectIdAndPageId(tenantId, projectId, pageId);
 
         sseService.broadcast(pageId, "__deleted");
@@ -350,25 +367,25 @@ public class PageConfigService {
             Optional<PageConfigEntity> existing = pageRepo.findByTenantIdAndProjectIdAndPageId(
                     tenantId, projectId, pageId);
             if (existing.isPresent()) {
-                PageConfigEntity page = existing.get();
-                page.setTitle(title);
-                page.setIcon(icon);
-                page.setPath(path);
-                page.setRouteName(name);
-                page.setPageType("vue-component");
-                pageRepo.save(page);
+                PageConfigEntity p = existing.get();
+                p.setTitle(title);
+                p.setIcon(icon);
+                p.setPath(path);
+                p.setRouteName(name);
+                p.setPageType("vue-component");
+                pageRepo.save(p);
                 updated++;
             } else {
-                PageConfigEntity page = new PageConfigEntity();
-                page.setTenantId(tenantId);
-                page.setProjectId(projectId);
-                page.setPageId(pageId);
-                page.setTitle(title);
-                page.setIcon(icon);
-                page.setPath(path);
-                page.setRouteName(name);
-                page.setPageType("vue-component");
-                pageRepo.save(page);
+                PageConfigEntity p = new PageConfigEntity();
+                p.setTenantId(tenantId);
+                p.setProjectId(projectId);
+                p.setPageId(pageId);
+                p.setTitle(title);
+                p.setIcon(icon);
+                p.setPath(path);
+                p.setRouteName(name);
+                p.setPageType("vue-component");
+                pageRepo.save(p);
                 created++;
             }
             synced.add(pageId);

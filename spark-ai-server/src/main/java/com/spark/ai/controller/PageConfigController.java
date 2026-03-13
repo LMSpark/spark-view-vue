@@ -59,6 +59,8 @@ public class PageConfigController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (java.io.IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "文件系统错误: " + e.getMessage()));
         }
     }
 
@@ -74,6 +76,8 @@ public class PageConfigController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | SecurityException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (java.io.IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "文件系统错误: " + e.getMessage()));
         }
     }
 
