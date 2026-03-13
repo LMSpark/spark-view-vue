@@ -167,6 +167,7 @@ const treeData = computed<TreeNodeData[]>(() => [
     _label: '需求',
     _icon: '📋',
     _kind: 'section' as const,
+    _sourceId: 'section-requirements',
     children: buildRequirementNodes(props.state.requirements),
   },
   {
@@ -174,6 +175,7 @@ const treeData = computed<TreeNodeData[]>(() => [
     _label: '功能模块',
     _icon: '🏗️',
     _kind: 'section' as const,
+    _sourceId: 'section-modules',
     children: buildModuleNodes(props.state.modules),
   },
   {
@@ -181,6 +183,7 @@ const treeData = computed<TreeNodeData[]>(() => [
     _label: '导航结构',
     _icon: '🌐',
     _kind: 'section' as const,
+    _sourceId: 'section-navigation',
     children: buildNavNodes(props.state),
   },
 ])
@@ -188,7 +191,6 @@ const treeData = computed<TreeNodeData[]>(() => [
 // ── 操作 ────────────────────────────────────────────────────
 
 function handleNodeClick(data: TreeNodeData) {
-  if (data._kind === 'section') return
   emit('nodeClick', { kind: data._kind, sourceId: data._sourceId })
 }
 

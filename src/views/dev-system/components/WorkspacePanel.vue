@@ -1,32 +1,89 @@
 <template>
   <div class="workspace-panel">
-    <!-- 当前阶段视图（Phase 2+ 替换为真实组件） -->
-    <div class="stage-placeholder">
-      <div class="stage-placeholder__icon">{{ STAGE_META[currentStage].icon }}</div>
-      <div class="stage-placeholder__title">{{ STAGE_META[currentStage].label }}</div>
-      <div class="stage-placeholder__desc">{{ stageDescription(currentStage) }}</div>
+    <!-- 项目总览 -->
+    <div v-if="workFocus.view === 'overview'" class="focus-placeholder">
+      <div class="focus-placeholder__icon">⚡</div>
+      <div class="focus-placeholder__title">项目总览</div>
+      <div class="focus-placeholder__desc">从左侧项目树选择一个需求、模块或页面开始工作，或点击顶部阶段切换全局视图</div>
+    </div>
+
+    <!-- 需求编辑 -->
+    <div v-else-if="workFocus.view === 'requirement'" class="focus-placeholder">
+      <div class="focus-placeholder__icon">📝</div>
+      <div class="focus-placeholder__title">需求 · {{ activeRequirementTitle }}</div>
+      <div class="focus-placeholder__desc">编辑需求详情，AI 助手将帮助理清需求细节</div>
+    </div>
+
+    <!-- 全局功能规划 -->
+    <div v-else-if="workFocus.view === 'functions'" class="focus-placeholder">
+      <div class="focus-placeholder__icon">🏗️</div>
+      <div class="focus-placeholder__title">功能规划（全局）</div>
+      <div class="focus-placeholder__desc">整体规划功能模块和页面清单，AI 可根据需求自动生成规划</div>
+    </div>
+
+    <!-- 模块功能规划 -->
+    <div v-else-if="workFocus.view === 'module'" class="focus-placeholder">
+      <div class="focus-placeholder__icon">📦</div>
+      <div class="focus-placeholder__title">模块 · {{ activeModuleTitle }}</div>
+      <div class="focus-placeholder__desc">管理此模块的页面规划，可新增、调整或删除页面</div>
+    </div>
+
+    <!-- 导航设计 -->
+    <div v-else-if="workFocus.view === 'navigation'" class="focus-placeholder">
+      <div class="focus-placeholder__icon">🌐</div>
+      <div class="focus-placeholder__title">导航设计</div>
+      <div class="focus-placeholder__desc">设计站点导航结构，组织页面层级</div>
+    </div>
+
+    <!-- 页面设计 -->
+    <div v-else-if="workFocus.view === 'page-design'" class="focus-placeholder">
+      <div class="focus-placeholder__icon">📄</div>
+      <div class="focus-placeholder__title">页面 · {{ activePageTitle }}</div>
+      <div class="focus-placeholder__desc">逐页设计：数据模型、UI 布局、交互逻辑</div>
+    </div>
+
+    <!-- 验证部署 -->
+    <div v-else-if="workFocus.view === 'verification'" class="focus-placeholder">
+      <div class="focus-placeholder__icon">✅</div>
+      <div class="focus-placeholder__title">验证部署</div>
+      <div class="focus-placeholder__desc">预览页面效果，查看日志，AI 自动纠错</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ProjectStage } from '../composables/types'
-import { STAGE_META } from '../composables/types'
+import { computed } from 'vue'
+import type { WorkFocus, ProjectState } from '../composables/types'
 
-defineProps<{
-  currentStage: ProjectStage
+const props = defineProps<{
+  workFocus: WorkFocus
+  projectState: ProjectState
 }>()
 
-function stageDescription(stage: ProjectStage): string {
-  const desc: Record<ProjectStage, string> = {
-    'requirements':  '描述项目需求，AI 助手将帮助理清需求细节',
-    'functions':     '根据需求拆解功能模块和页面清单',
-    'navigation':    '设计站点导航结构，组织页面层级',
-    'page-design':   '逐页设计：数据模型、UI 布局、交互逻辑',
-    'verification':  '预览页面效果，查看日志，AI 自动纠错',
+const activeRequirementTitle = computed(() => {
+  const focus = props.workFocus
+  if (focus.view !== 'requirement') return ''
+  const req = props.projectState.requirements.find(r => r.id === focus.requirementId)
+  return req?.title ?? focus.requirementId
+})
+
+const activeModuleTitle = computed(() => {
+  const focus = props.workFocus
+  if (focus.view !== 'module') return ''
+  const mod = props.projectState.modules.find(m => m.id === focus.moduleId)
+  return mod?.name ?? focus.moduleId
+})
+
+const activePageTitle = computed(() => {
+  const focus = props.workFocus
+  if (focus.view !== 'page-design') return ''
+  const pageId = focus.pageId
+  for (const mod of props.projectState.modules) {
+    const page = mod.pages.find(p => p.pageId === pageId)
+    if (page) return `${page.title} (${pageId})`
   }
-  return desc[stage]
-}
+  return pageId
+})
 </script>
 
 <style scoped>
@@ -34,12 +91,10 @@ function stageDescription(stage: ProjectStage): string {
   height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
 
-.stage-placeholder {
+.focus-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,18 +105,18 @@ function stageDescription(stage: ProjectStage): string {
   color: var(--el-text-color-secondary);
 }
 
-.stage-placeholder__icon {
+.focus-placeholder__icon {
   font-size: 48px;
   opacity: 0.6;
 }
 
-.stage-placeholder__title {
+.focus-placeholder__title {
   font-size: 20px;
   font-weight: 600;
   color: var(--el-text-color-primary);
 }
 
-.stage-placeholder__desc {
+.focus-placeholder__desc {
   font-size: 14px;
   max-width: 400px;
   text-align: center;
