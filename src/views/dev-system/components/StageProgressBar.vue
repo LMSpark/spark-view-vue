@@ -6,8 +6,8 @@
       class="stage-item"
       :class="{
         'stage-item--active': stage === currentStage,
-        'stage-item--done': idx < currentIndex,
-        'stage-item--future': idx > currentIndex,
+        'stage-item--has-content': stage !== currentStage && stageHasContent(stage),
+        'stage-item--empty': stage !== currentStage && !stageHasContent(stage),
       }"
       @click="handleClick(stage)"
     >
@@ -19,20 +19,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ProjectStage } from '../composables/types'
+import type { ProjectStage, ProjectState } from '../composables/types'
 import { STAGE_ORDER, STAGE_META } from '../composables/types'
-import { stageIndex } from '../composables/useStageFlow'
+import { hasStageContent } from '../composables/useStageFlow'
 
 const props = defineProps<{
   currentStage: ProjectStage
+  projectState: ProjectState
 }>()
 
 const emit = defineEmits<{
   jump: [stage: ProjectStage]
 }>()
 
-const currentIndex = computed(() => stageIndex(props.currentStage))
+function stageHasContent(stage: ProjectStage): boolean {
+  return hasStageContent(stage, props.projectState)
+}
 
 function handleClick(stage: ProjectStage) {
   if (stage !== props.currentStage) {
@@ -72,11 +74,11 @@ function handleClick(stage: ProjectStage) {
   font-weight: 600;
 }
 
-.stage-item--done {
+.stage-item--has-content {
   color: var(--el-color-success);
 }
 
-.stage-item--future {
+.stage-item--empty {
   color: var(--el-text-color-placeholder);
 }
 
