@@ -9,10 +9,22 @@ export type ProposalType =
   | 'interaction'
   | 'style'
   | 'api-config'
+  | 'db-schema'
+  | 'dict-entry'
 
 export type ProposalStatus = 'pending' | 'accepted' | 'rejected'
 
-export type SessionPhase = 'discussing' | 'generating' | 'applied'
+export type SessionPhase =
+  | 'discussing'
+  | 'validating'
+  | 'correcting'
+  | 'ready'
+  | 'reviewing'
+  | 'generating'
+  | 'verifying'
+  | 'iterating'
+  | 'applied'
+  | 'failed'
 
 export interface DesignProposal {
   id: string
@@ -28,6 +40,35 @@ export interface DesignProposal {
   timestamp: Date
 }
 
+/** @@ 协议提取的原始块 */
+export interface ProtocolBlock {
+  type: string   // 'proposal' | 'query' | 'review' | 'error'
+  name: string   // kebab-case: 'data-model' | 'component-props' | ...
+  payload: string
+}
+
+/** 验证反馈（结构化） */
+export interface ValidationFeedback {
+  severity: 'error' | 'warning' | 'info'
+  proposalName: string
+  checkType: 'json-syntax' | 'datakey-format' | 'table-reference'
+            | 'component-type' | 'script-reference' | 'schema'
+  message: string
+  suggestion?: string
+}
+
+/** 审核清单条目 */
+export interface ReviewChecklistItem {
+  id: string
+  category: 'db-change' | 'dict-change' | 'naming' | 'security' | 'consistency' | 'ux'
+  severity: 'blocker' | 'warning' | 'info'
+  description: string
+  status: 'pending' | 'approved' | 'rejected' | 'auto-passed'
+  feedback?: string
+  relatedProposalId?: string
+  autoFixSuggestion?: string
+}
+
 // ── 工具函数 ─────────────────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<ProposalType, string> = {
@@ -36,6 +77,8 @@ const TYPE_LABELS: Record<ProposalType, string> = {
   'interaction': '⚡ 交互逻辑',
   'style': '🎭 样式',
   'api-config': '🔌 API 配置',
+  'db-schema': '🗄️ 数据库变更',
+  'dict-entry': '📖 字典变更',
 }
 
 const TYPE_ICONS: Record<ProposalType, string> = {
@@ -44,6 +87,8 @@ const TYPE_ICONS: Record<ProposalType, string> = {
   'interaction': '⚡',
   'style': '🎭',
   'api-config': '🔌',
+  'db-schema': '🗄️',
+  'dict-entry': '📖',
 }
 
 export function typeLabel(type: ProposalType): string {
@@ -54,35 +99,80 @@ export function typeIcon(type: ProposalType): string {
   return TYPE_ICONS[type]
 }
 
-// ── 提案提取 ─────────────────────────────────────────────────────────────────
+// ── @@ 定界符协议解析 ────────────────────────────────────────────────────────
 
-/** 匹配 <proposal type="..." title="..." stage="...?">...</proposal>，stage 可选 */
+/** 匹配 @@type:name ... @@end 定界块（多行模式） */
+const BLOCK_RE = /^@@(\w+):([\w-]+)\s*$([\s\S]*?)^@@end\s*$/gm
+
+/**
+ * 从文本中提取所有 @@ 协议块
+ */
+export function extractBlocks(text: string): ProtocolBlock[] {
+  const blocks: ProtocolBlock[] = []
+  BLOCK_RE.lastIndex = 0
+  let m: RegExpExecArray | null = BLOCK_RE.exec(text)
+  while (m !== null) {
+    blocks.push({ type: m[1] ?? '', name: m[2] ?? '', payload: (m[3] ?? '').trim() })
+    m = BLOCK_RE.exec(text)
+  }
+  return blocks
+}
+
+// ── 提案提取（@@ 协议优先，XML 标签兼容） ────────────────────────────────────
+
+/** 旧 XML 格式匹配（向后兼容） */
 const PROPOSAL_RE = /<proposal\s+type="([^"]+)"\s+title="([^"]*)"(?:\s+stage="([^"]*)")?\s*>([\s\S]*?)<\/proposal>/gi
 const VALID_TYPES = new Set<ProposalType>([
   'data-model', 'ui-structure', 'interaction', 'style', 'api-config',
+  'db-schema', 'dict-entry',
 ])
 
 /**
- * 从 AI 回复中提取结构化提案
- *
- * AI 被指示用 `<proposal type="..." title="..." stage="...">...</proposal>` 包裹设计决策。
- * 返回清理后的显示内容（去除 XML 标记）和解析出的提案列表。
+ * 从 @@ 协议块提取 proposal，payload 第一行 `# title` 作为标题
  */
-export function extractProposals(
-  content: string,
-  messageId: string,
-): { cleanContent: string; proposals: DesignProposal[] } {
-  const proposals: DesignProposal[] = []
+function proposalsFromBlocks(blocks: ProtocolBlock[], messageId: string): DesignProposal[] {
+  return blocks
+    .filter((b) => b.type === 'proposal')
+    .map((b) => {
+      const rawType = b.name.toLowerCase()
+      const type: ProposalType = VALID_TYPES.has(rawType as ProposalType)
+        ? (rawType as ProposalType)
+        : 'ui-structure'
 
+      // 第一行 `# xxx` 作为标题，其余为内容
+      const lines = b.payload.split('\n')
+      let title = ''
+      let content = b.payload
+      if (lines[0]?.startsWith('# ')) {
+        title = lines[0].slice(2).trim()
+        content = lines.slice(1).join('\n').trim()
+      }
+
+      return {
+        id: crypto.randomUUID(),
+        type,
+        title: title || typeLabel(type),
+        content,
+        status: 'pending' as ProposalStatus,
+        messageId,
+        stage: '',
+        timestamp: new Date(),
+      }
+    })
+}
+
+/**
+ * 从旧 XML 标签提取 proposal（兼容模式）
+ */
+function proposalsFromXml(content: string, messageId: string): DesignProposal[] {
+  const proposals: DesignProposal[] = []
   PROPOSAL_RE.lastIndex = 0
   let match: RegExpExecArray | null = PROPOSAL_RE.exec(content)
-
   while (match !== null) {
     const rawType = (match[1] ?? '').toLowerCase()
     const type: ProposalType = VALID_TYPES.has(rawType as ProposalType)
       ? (rawType as ProposalType)
       : 'ui-structure'
-
     proposals.push({
       id: crypto.randomUUID(),
       type,
@@ -93,54 +183,92 @@ export function extractProposals(
       stage: (match[3] ?? '').trim(),
       timestamp: new Date(),
     })
-
     match = PROPOSAL_RE.exec(content)
   }
+  return proposals
+}
 
-  const cleanContent = content
-    .replace(PROPOSAL_RE, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+/**
+ * 从 AI 回复中提取结构化提案（@@ 协议优先，XML 兼容）
+ */
+export function extractProposals(
+  content: string,
+  messageId: string,
+): { cleanContent: string; proposals: DesignProposal[] } {
+  const blocks = extractBlocks(content)
+  let proposals: DesignProposal[]
 
+  if (blocks.length > 0) {
+    // @@ 协议模式
+    proposals = proposalsFromBlocks(blocks, messageId)
+  } else {
+    // XML 兼容模式
+    proposals = proposalsFromXml(content, messageId)
+  }
+
+  const cleanContent = stripProtocolBlocks(content)
   return { cleanContent, proposals }
 }
 
 /**
- * 从显示内容中去除 proposal XML 标记（用于流式渲染期间的实时清理）
+ * 从显示内容中去除 @@ 定界块和旧 XML 标记（用于流式渲染期间的实时清理）
  */
 export function stripProposalTags(content: string): string {
+  return stripProtocolBlocks(content)
+}
+
+/** 内部：清理所有协议标记 */
+function stripProtocolBlocks(content: string): string {
   return content
+    // @@ 协议块（完整）
+    .replace(BLOCK_RE, '')
+    // @@ 协议块（流式中途，未闭合）
+    .replace(/^@@\w+:[\w-]+\s*$[\s\S]*$/m, '')
+    // 旧 XML 标签（完整）
     .replace(/<proposal[\s\S]*?<\/proposal>/gi, '')
-    .replace(/<proposal[^>]*>[\s\S]*/i, '') // 处理尚未闭合的标签（流式中途）
     .replace(/<query[\s\S]*?<\/query>/gi, '')
-    .replace(/<query[^>]*>[\s\S]*/i, '') // 处理尚未闭合的 query 标签
+    // 旧 XML 标签（流式中途）
+    .replace(/<proposal[^>]*>[\s\S]*/i, '')
+    .replace(/<query[^>]*>[\s\S]*/i, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
 
-// ── 组件 Props 查询提取 ──────────────────────────────────────────────────────
+// ── 查询提取（@@ 协议优先，XML 兼容） ────────────────────────────────────────
 
+/** 旧 XML query 格式 */
 const QUERY_RE = /<query\s+type="component-props"\s*>([\s\S]*?)<\/query>/gi
 
 /** 自动查询消息的固定前缀（用于 UI 识别和防重入） */
 export const AUTO_QUERY_PREFIX = '🔧 [组件 Props 查询结果]'
 
 /**
- * 从 AI 回复中提取组件 Props 查询请求
- *
- * AI 通过 `<query type="component-props">r-table, r-form</query>` 标签请求组件 Props。
- * 返回去重后的组件类型列表。
+ * 从 AI 回复中提取组件 Props 查询请求（@@ 协议 + XML 兼容）
  */
 export function extractComponentQueries(content: string): string[] {
   const components: string[] = []
-  QUERY_RE.lastIndex = 0
-  let match = QUERY_RE.exec(content)
-  while (match !== null) {
-    const raw = match[1] ?? ''
-    const items = raw.split(/[,，\s]+/).map((s) => s.trim()).filter(Boolean)
-    components.push(...items)
-    match = QUERY_RE.exec(content)
+
+  // @@ 协议模式
+  const blocks = extractBlocks(content)
+  for (const b of blocks) {
+    if (b.type === 'query' && b.name === 'component-props') {
+      const items = b.payload.split(/[,，\s]+/).map((s) => s.trim()).filter(Boolean)
+      components.push(...items)
+    }
   }
+
+  // XML 兼容模式（仅当 @@ 未匹配到 query 时）
+  if (components.length === 0) {
+    QUERY_RE.lastIndex = 0
+    let match = QUERY_RE.exec(content)
+    while (match !== null) {
+      const raw = match[1] ?? ''
+      const items = raw.split(/[,，\s]+/).map((s) => s.trim()).filter(Boolean)
+      components.push(...items)
+      match = QUERY_RE.exec(content)
+    }
+  }
+
   return [...new Set(components)]
 }
 
@@ -217,7 +345,7 @@ export const DESIGN_SYSTEM_PROMPT = `# 层-1 核心宪法（不可违反）
 ## 硬规则
 
 1. **分步提案**：禁止一次性输出完整方案。每轮对话围绕 1-3 个设计决策展开，等用户反馈后再推进。
-2. **提案即决策**：所有可落地的设计决策**必须**包裹在 \`<proposal>\` 标签中。标签外只写解释性 Markdown 文字。
+2. **提案即决策**：所有可落地的设计决策**必须**用 \`@@proposal:type-name ... @@end\` 定界块包裹。块外只写解释性 Markdown 文字。
 3. **不确定即追问**：需求模糊时主动追问，不猜测用户意图，不编造数据。
 4. **拒绝 → 替代**：用户拒绝提案后，必须询问修改方向，再出替代方案。禁止重复提交相同内容。
 5. **中文沟通**，代码/JSON 保持英文。
@@ -249,25 +377,37 @@ export const DESIGN_SYSTEM_PROMPT = `# 层-1 核心宪法（不可违反）
 
 # 层-3 输出协议
 
-## 消息结构
+## 消息结构（@@ 定界协议）
 
-正常用 Markdown 解释设计思路。每个设计决策用 XML 标签包裹：
+正常用 Markdown 解释设计思路。每个设计决策用 \`@@proposal:name\` 定界块包裹：
 
-\`\`\`xml
-<proposal type="类型" title="简短标题" stage="当前阶段">
-提案内容（JSON 或代码）
-</proposal>
+\`\`\`
+@@proposal:data-model
+# 订单主表结构
+{
+  "tableName": "Orders",
+  "columns": [...]
+}
+@@end
 \`\`\`
 
-## 类型标识（type 字段，必填）
+**格式规则**：
+- \`@@proposal:name\` 单独占一行（name 使用 kebab-case，取自下方类型标识表）
+- payload 第一行 \`# 标题\` 作为提案标题（必填）
+- payload 其余部分为提案内容（JSON 或代码）
+- \`@@end\` 单独占一行，结束当前块
 
-| type | 内容格式 | 说明 |
+## 类型标识（name 字段，必填）
+
+| name | 内容格式 | 说明 |
 |------|---------|------|
 | \`data-model\` | pagedata.json 中 tables 片段（JSON） | 表结构、字段、列定义、关系 |
 | \`ui-structure\` | rule.json 片段（JSON 数组） | 组件树、布局方案 |
 | \`interaction\` | script.js 代码 | 事件处理、数据操作逻辑 |
 | \`api-config\` | 表的 api 配置（JSON） | 远程数据端点配置 |
 | \`style\` | CSS 代码 | 视觉样式 |
+| \`db-schema\` | DDL 或迁移脚本 | 数据库表变更 |
+| \`dict-entry\` | 字典 JSON | 字典/枚举变更 |
 
 ## stage 字段（标记当前工作阶段）
 
@@ -275,16 +415,18 @@ export const DESIGN_SYSTEM_PROMPT = `# 层-1 核心宪法（不可违反）
 
 ## 组件 Props 查询协议
 
-你**不需要记住**所有 SPARK 组件的 Props。当你需要查看某个组件的详细 Props 时，输出查询标签：
+你**不需要记住**所有 SPARK 组件的 Props。当你需要查看某个组件的详细 Props 时，输出查询块：
 
-\`\`\`xml
-<query type="component-props">r-table, r-form, r-select</query>
+\`\`\`
+@@query:component-props
+r-table, r-form, r-select
+@@end
 \`\`\`
 
 系统会自动返回这些组件的完整 Props 定义，你再基于真实 Props 继续设计。
 
 **使用时机**：进入 UI 设计阶段（阶段 3+），需要确认容器或字段组件的可用 Props 时。
-**限制**：一次最多查询 5 个组件；查询标签独立成段，不要嵌入 \`<proposal>\` 标签内。
+**限制**：一次最多查询 5 个组件；查询块独立成段，不要嵌入 \`@@proposal:*\` 块内。
 
 ---
 

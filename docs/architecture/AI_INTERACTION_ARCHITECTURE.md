@@ -14,7 +14,7 @@
 4. [ResponsePipeline（响应处理管线）](#4-responsepipeline响应处理管线)
 5. [语义验证层（5 级递进）](#5-语义验证层5-级递进)
 6. [企业数据资源审核层](#6-企业数据资源审核层)
-7. [扩展查询协议](#7-扩展查询协议)
+7. [交互定界符协议（`@@type:name`）](#7-交互定界符协议typename)
 8. [状态机扩展](#8-状态机扩展)
 9. [实施路线图](#9-实施路线图)
 10. [关键文件索引](#10-关键文件索引)
@@ -31,7 +31,7 @@
 | **后端服务** | `AiPageService`（二阶段生成 + 验证 + 重试） | `AiStreamService`（纯透传，零验证） |
 | **前端入口** | `AiChatPanel.vue` + `ai-loop.ts`（AIPageLoop） | `AiDesignStudio.vue` + `useDesignSession.ts` |
 | **自动迭代** | ✅ 3 轮，5s 日志收集延迟 | ❌ 一次性生成，无错误反馈循环 |
-| **验证机制** | 后端：JSON 语法 + 截断检测 + 括号平衡 + `__init__` | 前端：仅 `<proposal>` 标签提取 |
+| **验证机制** | 后端：JSON 语法 + 截断检测 + 括号平衡 + `__init__` | 前端：仅 `@@proposal:name` 块提取 |
 
 ### 1.2 AiChatPanel 生成流程
 
@@ -68,8 +68,8 @@ useAiChat.send() → POST /api/ai/chat/stream（SSE）
 AiStreamService.doStream() — 纯透传，零验证
   ↓
 前端流式接收 → watch(isStreaming) 结束后
-  ├─ extractProposals() — <proposal> 标签提取
-  ├─ extractComponentQueries() — <query> 标签提取
+  ├─ extractBlocks() — @@proposal / @@query 块提取
+  ├─ resolveQueries() — 解析 @@query 块
   └─ resolveComponentQuery() → 自动注入 Props 信息（AUTO_QUERY_PREFIX 防递归）
   ↓
 用户 Accept/Reject 各 Proposal
@@ -172,12 +172,12 @@ Copilot 生成的自由格式代码无法做到这种低成本、高覆盖的自
 ```
 AI 原始响应
   ↓
-┌──────────────┐
-│ TagExtractor │ → 提取 <proposal> / <query> / <review> 标签
-└──────┬───────┘
+┌────────────────┐
+│ BlockExtractor  │ → 提取 @@proposal / @@query / @@review 定界块
+└──────┬─────────┘
        ↓
 ┌──────────────────┐
-│ ProposalValidator │ → JSON 语法校验（proposal 内容若为 JSON）
+│ ProposalValidator │ → JSON 语法校验（proposal payload 若为 JSON）
 └──────┬───────────┘
        ↓
 ┌──────────────┐
@@ -185,7 +185,7 @@ AI 原始响应
 └──────┬───────┘
        ↓
 ┌──────────────┐
-│ QueryResolver │ → 解析 <query> 标签，查目录返回组件/数据信息
+│ QueryResolver │ → 解析 @@query 块，查目录返回组件/数据信息
 └──────┬───────┘
        ↓
 ┌──────────────┐
@@ -277,7 +277,7 @@ class ResponsePipeline {
 
 // 使用示例
 const pipeline = new ResponsePipeline()
-  .use(new TagExtractorProcessor())
+  .use(new BlockExtractorProcessor())
   .use(new ProposalValidatorProcessor())
   .use(new SchemaCheckerProcessor(enterpriseCatalog))
   .use(new QueryResolverProcessor(componentCatalog, enterpriseCatalog))
@@ -458,8 +458,8 @@ type ProposalType =
 ```
 AI 输出 Proposal（data-model / db-schema / ui-structure / ...）
   ↓
-ResponsePipeline 处理
-  ↓ TagExtractor → ProposalValidator → SchemaChecker
+ResponsePipeline 处理（基于 @@type:name 定界符协议）
+  ↓ BlockExtractor → ProposalValidator → SchemaChecker
   ↓
 自动生成 ReviewChecklistItem[]
   ↓
@@ -621,8 +621,8 @@ applied
 **范围**: ResponsePipeline 核心 + JSON/DataKey/组件类型 验证
 
 - [ ] `ResponsePipeline` 类实现
-- [ ] `TagExtractorProcessor`（复用现有 `extractProposals` + `extractComponentQueries`）
-- [ ] `ProposalValidatorProcessor`（JSON.parse 校验 proposal 中的 JSON 内容）
+- [ ] `BlockExtractorProcessor`（基于 `@@type:name ... @@end` 定界符协议，替换旧 XML 标签提取）
+- [ ] `ProposalValidatorProcessor`（JSON.parse 校验 proposal payload 中的 JSON 内容）
 - [ ] `SchemaCheckerProcessor`（L2 DataKey 格式 + L4 组件类型校验）
 - [ ] `AutoResponderProcessor`（组装 ValidationFeedback → 自动消息）
 - [ ] `StateUpdaterProcessor`（更新 phase / proposals）
@@ -807,3 +807,35 @@ rule.json                         pagedata.json
                                 │ .custom-class { ... } │
                                 └──────────────────────┘
 ```
+
+## 附录 D: `@@type:name` 协议 vs XML 标签 vs 裸 JSON 对比
+
+### 为什么不用 XML 标签？
+
+| 问题 | XML `<proposal>` | `@@` 定界符 |
+|------|-----------------|------------|
+| LLM 闭合错误 | `</proposal>` 须匹配标签名，LLM 偶尔写成 `</Proposal>` 或 `</table>` | `@@end` 固定字符串，**零拼写风险** |
+| payload 转义 | JSON 中 `<` `>` 需要 `&lt;` `&gt;`，LLM 经常忘记 | payload 原样保留，**零转义** |
+| Markdown 冲突 | `<proposal>` 可能被 Markdown 渲染器误认为 HTML 标签吞掉 | `@@` 前缀不被任何渲染器误解 |
+| 属性解析 | `<proposal type="..." title="..." stage="...">` 属性顺序/引号不稳定 | `@@type:name` 固定二段式，无属性 |
+| 解析器复杂度 | 需处理属性提取、自闭合、嵌套、命名空间 | 一个正则 `/^@@(\w+):([\w-]+)\s*$([\s\S]*?)^@@end\s*$/gm` 搞定 |
+| 流式边界检测 | 需维护标签栈匹配开闭标签 | 行首 `@@` / `@@end` 检测，无需栈 |
+
+### 为什么不用裸 JSON？
+
+| 问题 | 裸 JSON | `@@` 定界符 |
+|------|---------|------------|
+| 多提案分隔 | 多个 JSON 对象靠括号深度追踪分隔，错误率高 | 每个块有显式开/闭定界符 |
+| 非 JSON payload | 不支持（script.js 是 JavaScript，style.css 是 CSS） | payload 可以是任意格式 |
+| 块类型标记 | 需在 JSON 内部约定 `{ "type": "proposal", ... }` | type 在定界符上，payload 纯净 |
+
+### 为什么不迁移 rule.json / pagedata.json 为 XML？
+
+详见内部评估（2026-03-13），核心结论：
+
+1. **LLM Token 效率**：JSON 约为 XML 的 65-80%（SPARK 对 Copilot 的 token 优势从 1:4~1:5 缩减到 1:3~1:4）
+2. **pagedata.json 反模式**：XML 不区分数据类型（所有属性值为字符串），`total: 100`(number) 变成 `total="100"`(string)
+3. **迁移成本极高**：涉及 bindRules / parsePageData / AiPageService / system-prompt / 所有页面配置 / 全部测试
+4. **现有验证链重写**：JSON.parse + 括号平衡已稳定运行，XML parser + DTD/XSD 从零开始
+
+**最终决策**：页面配置保持 JSON，AI 交互协议使用 `@@type:name` 定界符（两者互补）。
