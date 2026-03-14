@@ -9,9 +9,18 @@
   └── 租户 (Tenant) ← X-Tenant-Id 隔离
         ├── 用户 (User) ← JWT 认证，tenantId claim
         └── 项目 (Project) ← X-Project-Id
-              ├── 导航树 (NavigationConfig) ← 一棵 per project
-              ├── 页面配置 (PageConfig) ← rule.json / pagedata.json / script.js
-              └── 数据表 (TableSchema + TableRow) ← 通用 CRUD
+              │
+              ├── 🏠 企业主页 (homepage)             ← 系统保留，随租户自动创建，不可删除
+              │     projectType="homepage", sortOrder=0
+              │     登录后默认落地项目（defaultProjectId）
+              │
+              ├── 📦 业务应用 (app) × N               ← 用户自建，sortOrder=100
+              │     projectType="app"
+              │
+              └── 每个项目独立拥有：
+                    ├── 导航树 (NavigationConfig) ← 一棵 per project
+                    ├── 页面配置 (PageConfig) ← rule.json / pagedata.json / script.js
+                    └── 数据表 (TableSchema + TableRow) ← 通用 CRUD
 ```
 
 ### 1.1 平台 vs 租户
@@ -23,16 +32,37 @@
 | 数据隔离 | 无数据 | 所有业务数据按 tenantId 隔离 |
 | 路由 | 仅 `/` 和 `/login` | 所有 `/t/:tenantId/*` 下的路由 |
 
-### 1.2 租户 vs 项目
+### 1.2 租户 vs 项目（企业主应用）
 
-每个租户有 N 个项目（Project），其中 `homepage` 项目自动创建且不可删除：
+每个租户拥有 **1 个系统保留主应用 + N 个用户自建应用**，二者均以 `ProjectEntity` 建模：
 
-| 项目类型 | projectId | 说明 |
-|---------|-----------|------|
-| `homepage` | `"homepage"` | 自动创建，sortOrder=0，不可删除，作为默认工作空间 |
-| `app` | 自定义 ID | 用户创建的应用项目 |
+| 项目类型 | projectType | projectId | sortOrder | 说明 |
+|---------|-------------|-----------|-----------|------|
+| **企业主页** | `"homepage"` | `"homepage"` | 0 | 随租户自动创建，**不可删除**，登录后默认落地 |
+| **业务应用** | `"app"` | 自定义 ID | 100 | 用户按需创建的独立应用工作空间 |
 
-**注册新租户时自动创建**：`AuthController.registerTenant()` → `ProjectService.ensureHomepage(tenantId)`
+> **「企业主应用」设计意图**：每个租户注册后即有一个开箱即用的工作空间（导航、页面、数据表），
+> 无需先「创建项目」再「进入项目」。用户登录后 `defaultProjectId = "homepage"` 自动生效，
+> 所有 API 请求（`X-Project-Id: homepage`）和路由（`/t/{tenantId}/*`）默认指向此项目。
+
+**生命周期**：
+
+```
+注册租户
+  → AuthController.registerTenant()
+    → ProjectService.ensureHomepage(tenantId)   ← 幂等，已存在则跳过
+      → INSERT ProjectEntity { projectId="homepage", projectType="homepage",
+                                name="企业主页", icon="🏠", sortOrder=0 }
+
+登录
+  → JWT { tenantId, defaultProjectId: "homepage" }
+  → 前端 getUser().defaultProjectId → api-paths.ts → 所有 API 自动路由到 homepage 项目
+
+切换项目（未来）
+  → 更新 defaultProjectId → API 路径自动切换到目标项目
+```
+
+**保护机制**：`ProjectService.deleteProject()` 遇到 `projectType == "homepage"` 抛异常，防止误删。
 
 ### 1.3 项目 vs 导航/路由
 
