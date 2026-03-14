@@ -5,9 +5,69 @@
             "id": "home",
             "title": "工作台",
             "icon": "📊",
-            "path": "/",
+            "path": "/dashboard",
             "pageType": "vue-component",
             "affix": true
+        },
+        {
+            "id": "app-management",
+            "title": "应用管理",
+            "icon": "📱",
+            "childPlacement": "sidebar",
+            "redirect": "/site-manager",
+            "children": [
+                {
+                    "id": "site-manager",
+                    "title": "站点管理",
+                    "icon": "🏗️",
+                    "path": "/site-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "page-manager",
+                    "title": "页面管理",
+                    "icon": "📄",
+                    "path": "/page-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "nav-manager",
+                    "title": "导航管理",
+                    "icon": "🧭",
+                    "path": "/nav-manager",
+                    "pageType": "vue-component"
+                }
+            ]
+        },
+        {
+            "id": "dev-tools",
+            "title": "开发工具",
+            "icon": "⚡",
+            "childPlacement": "sidebar",
+            "redirect": "/dev",
+            "children": [
+                {
+                    "id": "dev-system",
+                    "title": "开发工作台",
+                    "icon": "⚡",
+                    "path": "/dev",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "ai-studio",
+                    "title": "AI Studio",
+                    "icon": "🤖",
+                    "path": "/ai-studio",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "ai-test",
+                    "title": "AI 迭代测试",
+                    "icon": "🧪",
+                    "path": "/ai-test",
+                    "pageType": "vue-component"
+                }
+            ]
         },
         {
             "id": "data-demos",
@@ -15,20 +75,6 @@
             "icon": "🔗",
             "childPlacement": "sidebar",
             "redirect": "/dataset-demo",
-            "context": [
-                {
-                    "id": "proj-a",
-                    "title": "项目 A — 电商平台"
-                },
-                {
-                    "id": "proj-b",
-                    "title": "项目 B — 内部 OA"
-                },
-                {
-                    "id": "proj-c",
-                    "title": "项目 C — 数据中台"
-                }
-            ],
             "children": [
                 {
                     "id": "dataset-demo",
@@ -174,38 +220,10 @@
                     "path": "/permission-render"
                 },
                 {
-                    "id": "page-manager",
-                    "title": "页面管理",
-                    "icon": "📄",
-                    "path": "/page-manager",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "dev-system",
-                    "title": "开发系统",
-                    "icon": "⚡",
-                    "path": "/dev",
-                    "pageType": "vue-component"
-                },
-                {
                     "id": "cache-manager",
                     "title": "缓存管理",
                     "icon": "🗄️",
                     "path": "/cache-manager",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "nav-manager",
-                    "title": "导航模块管理",
-                    "icon": "🧭",
-                    "path": "/nav-manager",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "site-manager",
-                    "title": "站点管理",
-                    "icon": "🏗️",
-                    "path": "/site-manager",
                     "pageType": "vue-component"
                 },
                 {
@@ -238,20 +256,6 @@
                     ]
                 }
             ]
-        },
-        {
-            "id": "ai-studio",
-            "title": "AI Studio",
-            "icon": "🤖",
-            "path": "/ai-studio",
-            "pageType": "vue-component"
-        },
-        {
-            "id": "ai-test",
-            "title": "AI 迭代测试",
-            "icon": "🧪",
-            "path": "/ai-test",
-            "pageType": "vue-component"
         }
     ]
 }
