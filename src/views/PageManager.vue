@@ -276,8 +276,8 @@ async function doSave() {
 }
 
 // ── 工具函数 ──
-function fileTagType(f: string): '' | 'success' | 'warning' | 'info' {
-  if (f === 'rule.json') return ''
+function fileTagType(f: string): 'success' | 'warning' | 'info' | undefined {
+  if (f === 'rule.json') return undefined
   if (f === 'pagedata.json') return 'success'
   if (f === 'script.js') return 'warning'
   return 'info'

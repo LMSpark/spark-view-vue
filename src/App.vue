@@ -26,7 +26,7 @@
     <!-- 顶部首 -->
     <template #header>
       <AppHeader
-        title="SPARK 管理后台"
+        :title="headerTitle"
         :is-dark="isDark"
         :collapsed="sidebarCollapsed"
         :collapsible="nav.regionVisibility.value.sidebar"
@@ -122,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost } from '@spark-view/spark-app'
 import { pageRefreshKey } from '@/services/ai-loop'
@@ -143,11 +143,18 @@ import type { NavNode } from '@/layout/nav-types'
 import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
 import { getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'
+import { switchProject } from '@/services/auth'
+import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
+import type { ProjectSwitchService } from '@/services/project-switch'
 
 const route = useRoute()
 const router = useRouter()
 const isLoginPage = computed(() => route.path === '/login' || route.path === '/')
 const currentUsername = computed(() => getUser()?.displayName ?? getUser()?.username ?? '管理员')
+const activeProjectId = ref(getUser()?.defaultProjectId ?? 'homepage')
+const headerTitle = computed(() =>
+  activeProjectId.value === 'homepage' ? 'SPARK 管理后台' : `SPARK · ${activeProjectId.value}`
+)
 const theme = useTheme()
 const isDark = computed(() => theme?.isDark ?? false)
 const toggleTheme = () => theme?.toggle()
@@ -159,6 +166,17 @@ const navEmpty = ref(false)
 
 const { mode, setMode } = useTabPages()
 useColorScheme()
+
+/* ── 项目切换服务（供子组件注入） ── */
+const projectSwitchService: ProjectSwitchService = {
+  async switchAndReload(projectId: string) {
+    switchProject(projectId)
+    activeProjectId.value = projectId
+    await reloadNavigation()
+    await refreshRoutes()
+  },
+}
+provide(PROJECT_SWITCH_KEY, projectSwitchService)
 
 /* ── 导航模型（纯后端加载，无本地 fallback） ── */
 const _navRoot = reactive({ childPlacement: 'header' as const, children: [] as NavNode[] })
@@ -204,18 +222,40 @@ onMounted(async () => {
   w['__sparkDev'] = { reloadNavigation, syncSeedNavigation, clearAllCache, getCacheStats, refreshRoutes }
 })
 
+// ── 登录后自动重载导航 + 动态路由 ──
+watch(isLoginPage, async (isLogin, wasLogin) => {
+  if (wasLogin && !isLogin && isAuthenticated()) {
+    try {
+      await reloadNavigation()
+      await refreshRoutes()
+    } catch {
+      navEmpty.value = true
+    }
+  }
+})
+
 /* ── 用户菜单命令 ── */
 function handleUserCommand(command: string) {
   switch (command) {
     case 'settings':
       showConfigurator.value = true
       break
-    case 'home':
-      void router.push('/')
+    case 'home': {
+      const user = getUser()
+      if (user && user.defaultProjectId !== 'homepage') {
+        void projectSwitchService.switchAndReload('homepage').then(() => {
+          void router.push(`/t/${user.tenantId}/dashboard`)
+        })
+      } else if (user) {
+        void router.push(`/t/${user.tenantId}/dashboard`)
+      } else {
+        void router.push('/')
+      }
       break
+    }
     case 'logout':
       logout()
-      void router.replace('/login')
+      void router.replace('/')
       break
   }
 }

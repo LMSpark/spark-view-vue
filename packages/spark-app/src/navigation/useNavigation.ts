@@ -68,10 +68,18 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
   const _contextByModule = new Map<string, NavContextState>()
 
   // ── 路由变化 → 重算活动路径 + 模块上下文 ──
+
+  /** 从实际路由路径中剥离租户前缀（/t/:tenantId/xxx → /xxx） */
+  function stripTenantPrefix(path: string): string {
+    const match = /^\/t\/[^/]+(.*)$/.exec(path)
+    return match ? (match[1] ?? '/') : path
+  }
+
   watch(
     () => route.path,
     (path) => {
-      _activePath.value = findActivePath(navRoot.children, path)
+      const shortPath = stripTenantPrefix(path)
+      _activePath.value = findActivePath(navRoot.children, shortPath)
       syncModuleContext()
     },
     { immediate: true },

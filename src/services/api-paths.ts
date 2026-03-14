@@ -29,3 +29,10 @@ export function getPageApi(): string {
 export function getDataApi(): string {
   return `${getScopePath()}/data`
 }
+
+/** 项目管理 API 基础路径 — `/api/tenants/{tenantId}/projects` */
+export function getProjectApi(): string {
+  const user = getUser()
+  const tenantId = user?.tenantId ?? 'default'
+  return `/api/tenants/${tenantId}/projects`
+}

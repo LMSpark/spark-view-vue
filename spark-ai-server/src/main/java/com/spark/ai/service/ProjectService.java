@@ -1,12 +1,18 @@
 package com.spark.ai.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.entity.ProjectEntity;
 import com.spark.ai.repository.ProjectRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -24,9 +30,13 @@ public class ProjectService {
     public static final String APP_PROJECT_TYPE = "app";
 
     private final ProjectRepository projectRepo;
+    private final NavigationService navigationService;
+    private final ObjectMapper objectMapper;
 
-    public ProjectService(ProjectRepository projectRepo) {
+    public ProjectService(ProjectRepository projectRepo, NavigationService navigationService, ObjectMapper objectMapper) {
         this.projectRepo = projectRepo;
+        this.navigationService = navigationService;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -69,6 +79,9 @@ public class ProjectService {
         entity.setDescription(description != null ? description : "");
         entity.setSortOrder(100);
         projectRepo.save(entity);
+
+        // 从 classpath 模板初始化应用默认导航
+        initAppNavigation(tenantId, projectId);
 
         log.info("[Project] 创建项目: tenant={}, project={}", tenantId, projectId);
         return toMap(entity);
@@ -129,6 +142,24 @@ public class ProjectService {
         homepage.setSortOrder(0);
         projectRepo.save(homepage);
         log.info("[Project] 自动创建企业管理平台: tenant={}", tenantId);
+    }
+
+    /**
+     * 从 classpath 模板初始化应用默认导航（工作台 + 系统设置）。
+     */
+    private void initAppNavigation(String tenantId, String projectId) {
+        try {
+            ClassPathResource resource = new ClassPathResource("navigation-app-default.json");
+            try (InputStream stream = resource.getInputStream()) {
+                String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                Map<String, Object> navRoot = objectMapper.readValue(json,
+                        new TypeReference<Map<String, Object>>() {});
+                navigationService.saveNavConfig(tenantId, projectId, navRoot);
+                log.info("[Project] 已初始化应用导航: tenant={}, project={}", tenantId, projectId);
+            }
+        } catch (IOException e) {
+            log.warn("[Project] 应用导航模板初始化失败（不影响项目创建）: tenant={}, project={}", tenantId, projectId, e);
+        }
     }
 
     private Map<String, Object> toMap(ProjectEntity p) {
