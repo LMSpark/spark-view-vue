@@ -66,7 +66,7 @@ const emit = defineEmits<{ createPage: []; locateNode: [pageId: string]; editPag
 const router = useRouter()
 
 const searchText = ref('')
-import { PAGE_API } from '@/services/api-paths'
+import { getPageApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
 const filteredPages = computed(() => {
@@ -112,7 +112,7 @@ async function deletePage(row: Record<string, unknown>) {
     await ElMessageBox.confirm(`确定删除页面 "${pageId}"？`, '确认删除', { type: 'warning' })
   } catch { return }
   try {
-    await http.delete(`${PAGE_API}/${encodeURIComponent(pageId)}`)
+    await http.delete(`${getPageApi()}/${encodeURIComponent(pageId)}`)
     ElMessage.success(`页面 ${pageId} 已删除`)
     await props.state.loadPages()
   } catch (e) {

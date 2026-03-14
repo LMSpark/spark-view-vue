@@ -46,7 +46,7 @@ export interface DevContextConfig {
 export const PAGE_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
 export type PageFileName = typeof PAGE_FILE_NAMES[number]
 
-import { PAGE_API, NAV_API } from '@/services/api-paths'
+import { getPageApi, getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
 // ═══════════════════════════════════════════════════════════
@@ -121,7 +121,7 @@ export function useDevState() {
   async function loadNavConfig() {
     navLoading.value = true
     try {
-      const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(NAV_API)
+      const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(getNavApi())
       treeData.value = config.children?.length
         ? config.children
         : deepClone(demoNavRoot.children)
@@ -136,7 +136,7 @@ export function useDevState() {
 
   async function loadPages() {
     try {
-      pageList.value = await http.get<Array<Record<string, unknown>>>(`${PAGE_API}/__list`)
+      pageList.value = await http.get<Array<Record<string, unknown>>>(`${getPageApi()}/__list`)
     } catch { /* ignore */ }
   }
 
@@ -149,7 +149,7 @@ export function useDevState() {
     }
     for (const fname of PAGE_FILE_NAMES) {
       try {
-        const data = await http.get<Record<string, string>>(`${PAGE_API}/${encodeURIComponent(pageId)}/${fname}`)
+        const data = await http.get<Record<string, string>>(`${getPageApi()}/${encodeURIComponent(pageId)}/${fname}`)
         editFiles[fname] = data['content'] ?? ''
       } catch {
         editFiles[fname] = ''
@@ -275,7 +275,7 @@ export function useDevState() {
     navSaving.value = true
     const root: NavRoot = { childPlacement: 'header', children: treeData.value }
     try {
-      await http.put(NAV_API, root)
+      await http.put(getNavApi(), root)
       navDirty.value = false
       addStatus('导航配置已保存', 'success')
     } catch (e) {
@@ -294,7 +294,7 @@ export function useDevState() {
     const node = selectedNode.value
     const { children: _children, ...patch } = node
     try {
-      await http.put(`${NAV_API}/nodes/${encodeURIComponent(node.id)}`, patch)
+      await http.put(`${getNavApi()}/nodes/${encodeURIComponent(node.id)}`, patch)
       navDirty.value = false
       addStatus(`节点 ${node.title} 已保存`, 'success')
     } catch (e) {
@@ -312,7 +312,7 @@ export function useDevState() {
     if (!pageId) return
     fileSaving.value = true
     try {
-      await http.post(`${PAGE_API}/${encodeURIComponent(pageId)}/__batch`, editFiles)
+      await http.post(`${getPageApi()}/${encodeURIComponent(pageId)}/__batch`, editFiles)
       for (const k of PAGE_FILE_NAMES) fileDirty[k] = false
       addStatus(`页面 ${pageId} 已保存`, 'success')
       await loadPages()
@@ -363,7 +363,7 @@ export function useDevState() {
     const id = `module-${Date.now()}`
     const node: NavNode = { id, title: '新模块', icon: '📁', childPlacement: 'sidebar', children: [] }
     treeData.value.push(node)
-    void http.post(`${NAV_API}/nodes`, { node }).then(
+    void http.post(`${getNavApi()}/nodes`, { node }).then(
       () => addStatus('已添加根模块', 'info'),
       (e: unknown) => addStatus(`添加模块失败: ${String(e)}`, 'error'),
     )
@@ -373,7 +373,7 @@ export function useDevState() {
     const id = `page-${Date.now()}`
     const node: NavNode = { id, title: '新页面', icon: '📄', path: `/${id}` }
     ;(parent.children ??= []).push(node)
-    void http.post(`${NAV_API}/nodes`, { parentId: parent.id, node }).then(
+    void http.post(`${getNavApi()}/nodes`, { parentId: parent.id, node }).then(
       () => addStatus(`已在 ${parent.title} 下添加子节点`, 'info'),
       (e: unknown) => addStatus(`添加节点失败: ${String(e)}`, 'error'),
     )
@@ -393,7 +393,7 @@ export function useDevState() {
       clearFiles()
     }
     // 即时持久化
-    void http.delete(`${NAV_API}/nodes/${encodeURIComponent(data.id)}`).then(
+    void http.delete(`${getNavApi()}/nodes/${encodeURIComponent(data.id)}`).then(
       () => addStatus(`已删除 ${data.title}`, 'info'),
       (e: unknown) => addStatus(`删除节点失败: ${String(e)}`, 'error'),
     )
@@ -423,7 +423,7 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   async function createPage(pageId: string, title: string, icon: string, linkToNav: boolean) {
-    await http.post(`${PAGE_API}/__create`, { pageId, title, icon })
+    await http.post(`${getPageApi()}/__create`, { pageId, title, icon })
 
     if (linkToNav && selectedNode.value) {
       editForm.pageId = pageId

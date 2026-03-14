@@ -137,15 +137,14 @@ const filteredPages = computed(() => {
   )
 })
 
-import { PAGE_API } from '@/services/api-paths'
+import { getPageApi } from '@/services/api-paths'
 
 // ── API ──
-const API_BASE = PAGE_API
 
 async function loadPages() {
   loading.value = true
   try {
-    pages.value = await http.get<Array<Record<string, unknown>>>(`${API_BASE}/__list`)
+    pages.value = await http.get<Array<Record<string, unknown>>>(`${getPageApi()}/__list`)
   } catch (e) {
     ElMessage.error('加载页面列表失败: ' + String(e))
   } finally {
@@ -181,7 +180,7 @@ async function doCreate() {
   }
   creating.value = true
   try {
-    await http.post(`${API_BASE}/__create`, createForm)
+    await http.post(`${getPageApi()}/__create`, createForm)
     ElMessage.success(`页面 ${createForm.pageId} 创建成功`)
     createVisible.value = false
     await loadPages()
@@ -208,7 +207,7 @@ async function confirmDelete(row: Record<string, unknown>) {
     return
   }
   try {
-    await http.delete(`${API_BASE}/${pageId}`)
+    await http.delete(`${getPageApi()}/${pageId}`)
     ElMessage.success(`页面 ${pageId} 已删除`)
     await loadPages()
   } catch (e) {
@@ -253,7 +252,7 @@ async function showEditDialog(row: Record<string, unknown>) {
   const fileNames = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
   for (const fname of fileNames) {
     try {
-      const data = await http.get<Record<string, string>>(`${API_BASE}/${pageId}/${fname}`)
+      const data = await http.get<Record<string, string>>(`${getPageApi()}/${pageId}/${fname}`)
       editFiles[fname] = data['content'] ?? ''
     } catch {
       editFiles[fname] = ''
@@ -265,7 +264,7 @@ async function showEditDialog(row: Record<string, unknown>) {
 async function doSave() {
   saving.value = true
   try {
-    await http.post(`${API_BASE}/${editPageId.value}/__batch`, editFiles)
+    await http.post(`${getPageApi()}/${editPageId.value}/__batch`, editFiles)
     ElMessage.success('保存成功')
     editVisible.value = false
     await loadPages()

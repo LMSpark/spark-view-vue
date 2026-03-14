@@ -24,6 +24,7 @@ export {
   triggerPageRefresh,
   initAILoop,
   getAILoop,
+  configureAILoopHttp,
 } from '@spark-view/spark-app'
 export type {
   PageFiles,

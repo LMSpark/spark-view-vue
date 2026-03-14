@@ -35,6 +35,38 @@ import { createRequest } from '@spark-view/spark-utils'
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
 const http = createRequest({ timeout: 240_000 })
 
+/** 动态 Page API 基础路径解析器（由应用层注入） */
+let _getPageApiUrl: (() => string) | null = null
+
+/**
+ * 配置 AI Loop 的 HTTP 客户端和 API 路径。
+ * 应在应用启动时调用一次，注入认证头和租户作用域路径。
+ */
+export function configureAILoopHttp(options: {
+  getHeaders?: () => Record<string, string>
+  getPageApiUrl?: () => string
+}): void {
+  if (options.getHeaders) {
+    const getHeaders = options.getHeaders
+    http.interceptors.request.use({
+      onRequest: (config) => {
+        config.headers = { ...config.headers, ...getHeaders() }
+        return config
+      }
+    })
+  }
+  if (options.getPageApiUrl) {
+    _getPageApiUrl = options.getPageApiUrl
+  }
+}
+
+/** 获取当前 Page API 基础路径（带租户作用域） */
+function getPageApiUrl(): string {
+  if (_getPageApiUrl) return _getPageApiUrl()
+  // 兜底：使用扁平兼容路由（依赖 X-Tenant-Id / X-Project-Id 请求头）
+  return '/api/pages-config'
+}
+
 /** 日志更新信号：每次新日志到达时递增，供 AiChatPanel 实时感知 */
 export const logUpdateSignal = ref(0)
 
@@ -357,14 +389,12 @@ export function setupHotReload(
 
 // ─── 文件写入 API ────────────────────────────────────────────────────────────
 
-const PAGE_API = '/api/tenants/lmspark/projects/homepage/pages-config'
-
 /**
  * 批量写入页面配置文件
  */
 export async function writePageFiles(pageId: string, files: PageFiles): Promise<string[]> {
   const result = await http.post<{ written: string[] }>(
-    `${PAGE_API}/${encodeURIComponent(pageId)}/__batch`,
+    `${getPageApiUrl()}/${encodeURIComponent(pageId)}/__batch`,
     files,
   )
   return result.written
@@ -376,7 +406,7 @@ export async function writePageFiles(pageId: string, files: PageFiles): Promise<
 export async function readPageFile(pageId: string, fileName: string): Promise<string | null> {
   try {
     const result = await http.get<{ content?: string; notModified?: boolean }>(
-      `${PAGE_API}/${encodeURIComponent(pageId)}/${fileName}`,
+      `${getPageApiUrl()}/${encodeURIComponent(pageId)}/${fileName}`,
     )
     return result.content ?? null
   } catch {

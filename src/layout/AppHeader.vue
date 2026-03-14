@@ -106,7 +106,10 @@
             <el-dropdown-item command="settings">
               <el-icon><Setting /></el-icon>系统设置
             </el-dropdown-item>
-            <el-dropdown-item divided command="logout">
+            <el-dropdown-item divided command="home">
+              <el-icon><HomeFilled /></el-icon>平台主页
+            </el-dropdown-item>
+            <el-dropdown-item command="logout">
               <el-icon><SwitchButton /></el-icon>退出登录
             </el-dropdown-item>
           </el-dropdown-menu>
@@ -120,7 +123,7 @@
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import {
   Fold, Expand, Search, FullScreen, Bell, Sunny, Moon,
-  User, Setting, SwitchButton, ArrowDown,
+  User, Setting, SwitchButton, ArrowDown, HomeFilled,
 } from '@element-plus/icons-vue'
 import { useNotifications } from '@/composables/useNotifications'
 

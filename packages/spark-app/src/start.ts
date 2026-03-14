@@ -52,6 +52,8 @@ export interface PageConfigOptions {
   timeout?: number
   /** 动态请求头回调（每次请求时调用，注入租户上下文） */
   getHeaders?: () => Record<string, string>
+  /** 认证状态检查（未登录时跳过动态路由同步/加载，仅注册静态路由） */
+  isAuthenticated?: () => boolean
   /** 页面组件（默认使用 PageRenderer） */
   pageComponent?: Component
   /** 首页路径 */
@@ -65,6 +67,11 @@ export interface PageConfigOptions {
   beforeRegister?: ((routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>) | undefined
   /** 注册后钩子（仅通知） */
   afterRegister?: ((routes: RouteRecordNormalized[]) => void) | undefined
+  /**
+   * 租户路径前缀（如 '/t/:tenantId'）。
+   * 设置后，config 页面路由自动加此前缀。
+   */
+  tenantPathPrefix?: string
 }
 
 /**
@@ -269,14 +276,21 @@ export async function start(options: StartOptions): Promise<void> {
         apiBaseUrl: pageConfig.apiBaseUrl,
         ...(pageConfig.getHeaders !== undefined && { getHeaders: pageConfig.getHeaders }),
         ...(pageConfig.beforeRegister !== undefined && { beforeRegister: pageConfig.beforeRegister }),
-        ...(pageConfig.afterRegister !== undefined && { afterRegister: pageConfig.afterRegister })
+        ...(pageConfig.afterRegister !== undefined && { afterRegister: pageConfig.afterRegister }),
+        ...(pageConfig.tenantPathPrefix !== undefined && { tenantPathPrefix: pageConfig.tenantPathPrefix })
       }
 
       const dynamicRouter = createDynamicRouter(dynamicRouterOptions)
-      
-      // 先同步静态路由到后端，再从后端加载所有路由（单一来源）
-      await dynamicRouter.syncStaticRoutesToBackend()
-      await dynamicRouter.registerRoutes()
+
+      // 仅在已登录时执行动态路由同步/加载（未登录时静态路由兜底即可）
+      const authenticated = pageConfig.isAuthenticated?.() ?? true
+      if (authenticated) {
+        // 先同步静态路由到后端，再从后端加载所有路由（单一来源）
+        await dynamicRouter.syncStaticRoutesToBackend()
+        await dynamicRouter.registerRoutes()
+      } else {
+        startLogger.info('用户未登录，跳过动态路由加载')
+      }
 
       // 兜底：确保 staticRoutes 中的路由一定被注册（即便后端/缓存未返回）
       if (pageConfig.staticRoutes) {

@@ -128,7 +128,9 @@ import { login, register, registerTenant } from '@/services/auth'
 import type { FormInstance, FormRules } from 'element-plus'
 
 const router = useRouter()
-const activeTab = ref('login')
+const savedTab = sessionStorage.getItem('spark_login_tab')
+const activeTab = ref(savedTab ?? 'login')
+if (savedTab) sessionStorage.removeItem('spark_login_tab')
 const loading = ref(false)
 const errorMsg = ref('')
 
@@ -148,8 +150,8 @@ async function handleLogin() {
   loading.value = true
   errorMsg.value = ''
   try {
-    await login(loginForm)
-    await router.replace('/')
+    const user = await login(loginForm)
+    await router.replace(`/t/${user.tenantId}/dashboard`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '登录失败'
   } finally {
@@ -183,8 +185,8 @@ async function handleRegister() {
   loading.value = true
   errorMsg.value = ''
   try {
-    await register(regForm)
-    await router.replace('/')
+    const user = await register(regForm)
+    await router.replace(`/t/${user.tenantId}/dashboard`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '注册失败'
   } finally {
@@ -212,8 +214,8 @@ async function handleRegisterTenant() {
   loading.value = true
   errorMsg.value = ''
   try {
-    await registerTenant(tenantForm)
-    await router.replace('/')
+    const user = await registerTenant(tenantForm)
+    await router.replace(`/t/${user.tenantId}/dashboard`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '租户注册失败'
   } finally {
