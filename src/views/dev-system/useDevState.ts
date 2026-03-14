@@ -25,16 +25,24 @@ export interface DevEditForm {
   title: string
   icon: string
   type: string
+  description: string
   path: string
-  pageId: string
+  pageType: string
   redirect: string
   externalUrl: string
+  action: string
   childPlacement: string
   order: number
   hidden: boolean
   disabled: boolean
-  affix: boolean
-  badge: string
+}
+
+export interface ToolbarEditItem {
+  id: string
+  title: string
+  icon: string
+  action: string
+  hidden: boolean
 }
 
 export interface DevContextConfig {
@@ -64,9 +72,11 @@ export function useDevState() {
   // ── 节点编辑表单 ──
   const editForm = reactive<DevEditForm>({
     id: '', title: '', icon: '', type: '',
-    path: '', pageId: '', redirect: '', externalUrl: '',
+    description: '',
+    path: '', pageType: '', redirect: '', externalUrl: '',
+    action: '',
     childPlacement: '', order: 0,
-    hidden: false, disabled: false, affix: false, badge: '',
+    hidden: false, disabled: false,
   })
   const hasContext = ref(false)
   const contextItems = ref<Array<{ id: string; title: string }>>([])
@@ -85,6 +95,12 @@ export function useDevState() {
   const fileSaving = ref(false)
   const fileLoaded = ref(false)
 
+  // ── 工具栏管理 ──
+  const toolbarItems = ref<ToolbarEditItem[]>([])
+
+  // ── 空导航状态 ──
+  const navEmpty = ref(false)
+
   // ── 页面列表 ──
   const pageList = ref<Array<Record<string, unknown>>>([])
 
@@ -97,9 +113,11 @@ export function useDevState() {
   // ── 计算属性 ──
   const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
-  const previewJson = computed(() =>
-    JSON.stringify({ childPlacement: 'header', children: treeData.value } satisfies NavRoot, null, 2),
-  )
+  const previewJson = computed(() => {
+    const root: NavRoot = { childPlacement: 'header', children: treeData.value }
+    if (toolbarItems.value.length > 0) root.toolbar = toolbarItemsToNavNodes()
+    return JSON.stringify(root, null, 2)
+  })
 
   // ═══════════════════════════════════════════════════════════
   // 状态消息
@@ -121,16 +139,36 @@ export function useDevState() {
   async function loadNavConfig() {
     navLoading.value = true
     try {
-      const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(getNavApi())
-      treeData.value = config.children?.length
-        ? config.children
-        : deepClone(demoNavRoot.children)
+      const config = await http.get<{ childPlacement?: string; children?: NavNode[]; toolbar?: NavNode[] }>(getNavApi())
+      if (config.children?.length) {
+        treeData.value = config.children
+        navEmpty.value = false
+      } else {
+        treeData.value = []
+        navEmpty.value = true
+      }
+      toolbarItems.value = (config.toolbar ?? []).map(n => ({
+        id: n.id, title: n.title, icon: n.icon ?? '',
+        action: n.action ?? '', hidden: n.hidden ?? false,
+      }))
       addStatus('导航配置已加载', 'success')
     } catch {
       treeData.value = deepClone(demoNavRoot.children)
+      navEmpty.value = false
+      toolbarItems.value = []
       addStatus('导航加载失败，使用演示数据', 'warning')
     } finally {
       navLoading.value = false
+    }
+  }
+
+  async function initSeedNavigation() {
+    try {
+      await http.put(getNavApi(), demoNavRoot)
+      await loadNavConfig()
+      addStatus('种子导航数据已初始化', 'success')
+    } catch (e) {
+      addStatus(`初始化失败: ${String(e)}`, 'error')
     }
   }
 
@@ -176,17 +214,17 @@ export function useDevState() {
     editForm.id = node.id
     editForm.title = node.title
     editForm.icon = node.icon ?? ''
-    editForm.type = node.type ?? ''
+    editForm.type = node.type
+    editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
-    editForm.pageId = node.pageId ?? ''
+    editForm.pageType = node.pageType ?? ''
     editForm.redirect = node.redirect ?? ''
     editForm.externalUrl = node.externalUrl ?? ''
+    editForm.action = node.action ?? ''
     editForm.childPlacement = node.childPlacement ?? ''
     editForm.order = node.order ?? 0
     editForm.hidden = node.hidden ?? false
     editForm.disabled = node.disabled ?? false
-    editForm.affix = node.affix ?? false
-    editForm.badge = node.badge !== undefined ? String(node.badge) : ''
 
     if (node.context !== undefined) {
       hasContext.value = true
@@ -225,17 +263,17 @@ export function useDevState() {
     const patch: Record<string, unknown> = { id: editForm.id, title: editForm.title }
 
     if (editForm.icon) patch['icon'] = editForm.icon
-    if (editForm.type) patch['type'] = editForm.type
+    patch['type'] = editForm.type
+    if (editForm.description) patch['description'] = editForm.description
     if (editForm.path) patch['path'] = editForm.path
-    if (editForm.pageId) patch['pageId'] = editForm.pageId
+    if (editForm.pageType) patch['pageType'] = editForm.pageType
     if (editForm.redirect) patch['redirect'] = editForm.redirect
     if (editForm.externalUrl) patch['externalUrl'] = editForm.externalUrl
+    if (editForm.action) patch['action'] = editForm.action
     if (editForm.childPlacement) patch['childPlacement'] = editForm.childPlacement
-    if (editForm.order) patch['order'] = editForm.order
-    if (editForm.hidden) patch['hidden'] = editForm.hidden
-    if (editForm.disabled) patch['disabled'] = editForm.disabled
-    if (editForm.affix) patch['affix'] = editForm.affix
-    if (editForm.badge) patch['badge'] = editForm.badge
+    if (editForm.order !== 0) patch['order'] = editForm.order
+    if (editForm.hidden !== false) patch['hidden'] = editForm.hidden
+    if (editForm.disabled !== false) patch['disabled'] = editForm.disabled
 
     if (hasContext.value && contextItems.value.length > 0) {
       const items = contextItems.value.filter(i => i.id && i.title)
@@ -250,9 +288,10 @@ export function useDevState() {
       }
     }
 
+    // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
-      'icon', 'type', 'path', 'pageId', 'redirect', 'externalUrl',
-      'childPlacement', 'order', 'hidden', 'disabled', 'affix', 'badge', 'context',
+      'icon', 'description', 'path', 'pageType', 'redirect', 'externalUrl', 'action',
+      'childPlacement', 'order', 'hidden', 'disabled', 'context',
     ]
     for (const k of optKeys) {
       if (!(k in patch)) {
@@ -274,6 +313,7 @@ export function useDevState() {
     if (navDirty.value) applyNavChanges()
     navSaving.value = true
     const root: NavRoot = { childPlacement: 'header', children: treeData.value }
+    if (toolbarItems.value.length > 0) root.toolbar = toolbarItemsToNavNodes()
     try {
       await http.put(getNavApi(), root)
       navDirty.value = false
@@ -339,17 +379,19 @@ export function useDevState() {
     if (navDirty.value && selectedNode.value) applyNavChanges()
     selectedNode.value = node
     loadNodeToForm(node)
-    if (node.pageId) {
-      void loadPageFiles(node.pageId)
+    const pageId = node.path ? node.path.replace(/^\/+/, '') : ''
+    if (pageId) {
+      void loadPageFiles(pageId)
     } else {
       clearFiles()
     }
   }
 
-  function handlePageIdChange(val: string) {
+  function handlePathChange(val: string) {
     markNavDirty()
-    if (val) {
-      void loadPageFiles(val)
+    const pageId = val ? val.replace(/^\/+/, '') : ''
+    if (pageId) {
+      void loadPageFiles(pageId)
     } else {
       clearFiles()
     }
@@ -361,7 +403,7 @@ export function useDevState() {
 
   function addRootNode() {
     const id = `module-${Date.now()}`
-    const node: NavNode = { id, title: '新模块', icon: '📁', childPlacement: 'sidebar', children: [] }
+    const node: NavNode = { id, type: 'group', title: '新模块', icon: '📁', childPlacement: 'sidebar', children: [] }
     treeData.value.push(node)
     void http.post(`${getNavApi()}/nodes`, { node }).then(
       () => addStatus('已添加根模块', 'info'),
@@ -371,7 +413,7 @@ export function useDevState() {
 
   function addChildNode(parent: NavNode) {
     const id = `page-${Date.now()}`
-    const node: NavNode = { id, title: '新页面', icon: '📄', path: `/${id}` }
+    const node: NavNode = { id, type: 'item', title: '新页面', icon: '📄', path: `/${id}` }
     ;(parent.children ??= []).push(node)
     void http.post(`${getNavApi()}/nodes`, { parentId: parent.id, node }).then(
       () => addStatus(`已在 ${parent.title} 下添加子节点`, 'info'),
@@ -401,10 +443,36 @@ export function useDevState() {
 
   function resetToDemo() {
     treeData.value = deepClone(demoNavRoot.children)
+    toolbarItems.value = []
+    navEmpty.value = false
     selectedNode.value = null
     navDirty.value = false
     clearFiles()
     addStatus('已重置为演示数据', 'info')
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 工具栏管理
+  // ═══════════════════════════════════════════════════════════
+
+  function toolbarItemsToNavNodes(): NavNode[] {
+    return toolbarItems.value.map(item => {
+      const node: NavNode = { id: item.id, type: 'item', title: item.title }
+      if (item.icon) node.icon = item.icon
+      if (item.hidden) node.hidden = true
+      if (item.action) node.action = item.action
+      return node
+    })
+  }
+
+  function addToolbarItem() {
+    toolbarItems.value.push({ id: `tb-${Date.now()}`, title: '', icon: '', action: '', hidden: false })
+    markNavDirty()
+  }
+
+  function removeToolbarItem(idx: number) {
+    toolbarItems.value.splice(idx, 1)
+    markNavDirty()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -426,7 +494,7 @@ export function useDevState() {
     await http.post(`${getPageApi()}/__create`, { pageId, title, icon })
 
     if (linkToNav && selectedNode.value) {
-      editForm.pageId = pageId
+      editForm.path = `/${pageId}`
       markNavDirty()
       applyNavChanges()
       await saveNavConfig()
@@ -444,32 +512,8 @@ export function useDevState() {
   // 初始化
   // ═══════════════════════════════════════════════════════════
 
-  /** 根据 path 或 id 推导 pageId：匹配已知配置页列表 → 自动回填 */
-  function backfillPageIds() {
-    const knownIds = new Set(pageList.value.map(p => String(p['pageId'] ?? '')))
-    if (knownIds.size === 0) return
-
-    function walk(nodes: NavNode[]) {
-      for (const node of nodes) {
-        if (!node.pageId) {
-          // 优先从 path 推导（"/section-grid-demo" → "section-grid-demo"）
-          const fromPath = node.path ? node.path.replace(/^\/+/, '') : ''
-          if (fromPath && knownIds.has(fromPath)) {
-            node.pageId = fromPath
-          } else if (knownIds.has(node.id)) {
-            // fallback: id 直接匹配（如 home 节点 path="/" 但 id="home"）
-            node.pageId = node.id
-          }
-        }
-        if (node.children) walk(node.children)
-      }
-    }
-    walk(treeData.value)
-  }
-
   async function initialize() {
     await Promise.all([loadNavConfig(), loadPages()])
-    backfillPageIds()
   }
 
   return {
@@ -485,7 +529,11 @@ export function useDevState() {
     hasContext,
     contextItems,
     contextConfig,
+    // 工具栏
+    toolbarItems,
 
+    // 空导航状态
+    navEmpty,
     // 文件编辑
     activePageId,
     editFiles,
@@ -520,11 +568,15 @@ export function useDevState() {
     savePageFiles,
     saveAll,
     selectNode,
-    handlePageIdChange,
+    handlePathChange,
     addRootNode,
     addChildNode,
     removeNodeFromTree,
     resetToDemo,
+    initSeedNavigation,
+    toolbarItemsToNavNodes,
+    addToolbarItem,
+    removeToolbarItem,
     toggleContext,
     addContextItem,
     removeContextItem,

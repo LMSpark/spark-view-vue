@@ -3,14 +3,16 @@
     "children": [
         {
             "id": "home",
+            "type": "item",
             "title": "工作台",
+            "description": "个人工作台仪表板",
             "icon": "📊",
             "path": "/dashboard",
-            "pageType": "vue-component",
-            "affix": true
+            "pageType": "vue-component"
         },
         {
             "id": "back-to-homepage",
+            "type": "item",
             "title": "返回管理平台",
             "icon": "🏠",
             "path": "/app-list",
@@ -18,34 +20,16 @@
         },
         {
             "id": "system-settings",
+            "type": "group",
             "title": "系统设置",
+            "description": "页面、导航、站点等系统配置管理",
             "icon": "⚙️",
             "childPlacement": "sidebar",
-            "redirect": "/page-manager",
+            "redirect": "/dev",
             "children": [
                 {
-                    "id": "page-manager",
-                    "title": "页面管理",
-                    "icon": "📑",
-                    "path": "/page-manager",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "nav-manager",
-                    "title": "导航管理",
-                    "icon": "🧭",
-                    "path": "/nav-manager",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "site-manager",
-                    "title": "站点管理",
-                    "icon": "🏗️",
-                    "path": "/site-manager",
-                    "pageType": "vue-component"
-                },
-                {
                     "id": "dev-workbench",
+                    "type": "item",
                     "title": "开发工作台",
                     "icon": "⚡",
                     "path": "/dev",
@@ -53,6 +37,7 @@
                 },
                 {
                     "id": "cache-manager",
+                    "type": "item",
                     "title": "缓存管理",
                     "icon": "🗄️",
                     "path": "/cache-manager",

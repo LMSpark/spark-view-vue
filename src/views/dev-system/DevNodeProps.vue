@@ -10,34 +10,45 @@
         <el-input v-model="state.editForm.title" placeholder="显示名称" @change="state.markNavDirty" />
       </el-form-item>
       <el-form-item label="图标">
-        <el-input v-model="state.editForm.icon" placeholder="📄" style="width: 80px" @change="state.markNavDirty" />
+        <EmojiPicker v-model="state.editForm.icon" placeholder="📄" @update:model-value="state.markNavDirty" />
       </el-form-item>
       <el-form-item label="类型">
-        <el-select v-model="state.editForm.type" placeholder="默认 item" clearable @change="state.markNavDirty">
+        <el-select v-model="state.editForm.type" placeholder="节点类型" @change="state.markNavDirty">
           <el-option value="item" label="item（普通节点）" />
           <el-option value="group" label="group（分组标题）" />
           <el-option value="divider" label="divider（分隔线）" />
         </el-select>
       </el-form-item>
+      <el-form-item label="描述">
+        <el-input v-model="state.editForm.description" placeholder="节点描述（AI 语义 + tooltip）" @change="state.markNavDirty" />
+      </el-form-item>
 
       <!-- 路由 & 关联页面 -->
       <el-divider content-position="left">路由 & 关联页面</el-divider>
       <el-form-item label="路由路径">
-        <el-input v-model="state.editForm.path" placeholder="/xxx" @change="state.markNavDirty" />
+        <el-input v-model="state.editForm.path" placeholder="/xxx" @change="state.handlePathChange" />
       </el-form-item>
-      <el-form-item label="配置路径">
-        <el-input
-          v-model="state.editForm.pageId"
-          placeholder="文件夹名称，如 order-list"
-          clearable
-          @change="state.handlePageIdChange"
-        />
+      <el-form-item label="页面类型">
+        <el-select v-model="state.editForm.pageType" placeholder="默认 config" clearable @change="state.markNavDirty">
+          <el-option value="config" label="config（配置驱动）" />
+          <el-option value="vue-component" label="vue-component（Vue 组件）" />
+        </el-select>
       </el-form-item>
       <el-form-item label="重定向">
         <el-input v-model="state.editForm.redirect" placeholder="组节点默认跳转路径" @change="state.markNavDirty" />
       </el-form-item>
       <el-form-item label="外部链接">
         <el-input v-model="state.editForm.externalUrl" placeholder="https://..." @change="state.markNavDirty" />
+      </el-form-item>
+      <el-form-item label="动作">
+        <el-select v-model="state.editForm.action" placeholder="工具栏动作（toolbar 节点用）" clearable @change="state.markNavDirty">
+          <el-option value="ai-design" label="AI 协同设计" />
+          <el-option value="ai-chat" label="AI 对话" />
+          <el-option value="search" label="搜索" />
+          <el-option value="fullscreen" label="全屏" />
+          <el-option value="notifications" label="通知" />
+          <el-option value="theme-toggle" label="主题切换" />
+        </el-select>
       </el-form-item>
 
       <!-- 布局配置 -->
@@ -62,12 +73,6 @@
       </el-form-item>
       <el-form-item label="禁用">
         <el-switch v-model="state.editForm.disabled" @change="state.markNavDirty" />
-      </el-form-item>
-      <el-form-item label="标签固定">
-        <el-switch v-model="state.editForm.affix" @change="state.markNavDirty" />
-      </el-form-item>
-      <el-form-item label="徽标">
-        <el-input v-model="state.editForm.badge" placeholder="数字或文字" style="width: 120px" @change="state.markNavDirty" />
       </el-form-item>
 
       <!-- 模块上下文 -->
@@ -104,6 +109,7 @@
 
 <script setup lang="ts">
 import type { DevState } from './useDevState'
+import EmojiPicker from '@/components/EmojiPicker.vue'
 
 defineProps<{ state: DevState }>()
 defineEmits<{ createPage: [] }>()

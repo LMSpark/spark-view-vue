@@ -91,8 +91,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { NavNode } from './nav-types'
-import { useNav } from './useNavigation'
+import type { NavNode } from '@spark-view/spark-app'
+import { useNav } from '@spark-view/spark-app'
 
 const props = withDefaults(defineProps<{
   title?: string

@@ -36,8 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import type { NavNode } from './nav-types'
-import { useNav } from './useNavigation'
+import type { NavNode } from '@spark-view/spark-app'
+import { useNav } from '@spark-view/spark-app'
 
 defineProps<{
   items: NavNode[]

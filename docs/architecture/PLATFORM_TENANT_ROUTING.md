@@ -317,7 +317,7 @@ getPageApi()  → /api/tenants/{tenantId}/projects/{projectId}/pages-config
 getDataApi()  → /api/tenants/{tenantId}/projects/{projectId}/data
 ```
 
-> 所有管理界面（PageManager、NavModuleManager、SiteManager、DevWorkbench）通过这些函数获取正确的 API 路径。
+> 所有管理界面（DevWorkbench）通过这些函数获取正确的 API 路径（原 PageManager、NavModuleManager、SiteManager 已合并到 DevSystem）。
 > http.ts 拦截器额外注入 X-Tenant-Id/X-Project-Id 请求头（双重保险，URL + Header 一致）。
 
 ## 5. 数据流全景图

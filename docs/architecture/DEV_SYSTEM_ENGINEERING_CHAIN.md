@@ -4,6 +4,9 @@
 > **版本**：v0.2.0 · 2026-03-13  
 > **分支**：`feat/ai-server-config-management`  
 > **约束**：后端 Java 代码不修改，所有改动限于前端
+>
+> **⚠️ 更新**：`SiteManager.vue`、`NavModuleManager.vue`、`PageManager.vue` 已删除，所有功能已合并到 DevSystem 套件。  
+> 遗留路由 `/site-manager`、`/nav-manager`、`/page-manager` 均重定向到 DevWorkbench (`/dev`)。
 
 ---
 
@@ -118,8 +121,8 @@
 | **useDesignSession.ts** | 核心保留（协议解析 + Proposal 管理） | 微调 |
 | **responsePipeline.ts** | 直接复用 | 不变 |
 | **useAiChat.ts** | 直接复用（SSE 流式聊天核心） | 不变 |
-| **SiteManager.vue** | 导航编辑能力合并到工作台 | 废弃 |
-| **NavModuleManager.vue** | 导航编辑能力合并到工作台 | 废弃 |
+| **SiteManager.vue** | 导航编辑能力合并到工作台 | ✅ 已删除 |
+| **NavModuleManager.vue** | 导航编辑能力合并到工作台 | ✅ 已删除 |
 | **AiChatPanel.vue** | 保留为轻量快捷入口（App.vue 浮窗） | 不变 |
 | **AiChatWidget.vue** | 保留为通用问答入口 | 不变 |
 | **AiStudioPanel.vue** | 保留为嵌入式组件（外部使用） | 不变 |

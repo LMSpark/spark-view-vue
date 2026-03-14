@@ -189,30 +189,39 @@ export class DynamicRouter {
 
     const pageType = config.meta?.['pageType'] as string | undefined
 
+    // 统一计算注册路径（含租户前缀）
+    let routePath = config.path
+    if (this.tenantPathPrefix && !routePath.startsWith(this.tenantPathPrefix)) {
+      routePath = this.tenantPathPrefix + routePath
+    }
+
+    // componentMap 始终以相对路径为 key（如 /dev），
+    // 而后端 config.path 可能带租户前缀（如 /t/:tenantId/dev）或不带，
+    // 因此需要剥离前缀后再查找。
+    const relativePath = this.tenantPathPrefix && config.path.startsWith(this.tenantPathPrefix)
+      ? config.path.slice(this.tenantPathPrefix.length)
+      : config.path
+
     // vue-component 路由：使用预注册的 Vue 组件
-    if (pageType === 'vue-component') {
-      const component = this.staticComponentMap.get(config.path)
+    // 前端 componentMap 为权威来源——即使后端 pageType 未标记 'vue-component'，
+    // 只要 componentMap 中有该路径的组件映射，就按 vue-component 处理。
+    const hasComponent = this.staticComponentMap.has(relativePath)
+    if (pageType === 'vue-component' || hasComponent) {
+      const component = this.staticComponentMap.get(relativePath)
       if (!component) {
         routerLogger.warn('vue-component 路由缺少组件映射，跳过', { path: config.path })
         return
       }
       const route: RouteRecordRaw = {
-        path: config.path,
+        path: routePath,
         name: config.name,
         component,
         meta: { ...config.meta, pageId: config.pageId, type: 'vue-component' }
       }
       this.router.addRoute(route)
       this.registeredRoutes.add(config.path)
-      routerLogger.debug('Vue 组件路由已注册', { path: config.path, name: config.name })
+      routerLogger.debug('Vue 组件路由已注册', { path: routePath, name: config.name })
       return
-    }
-
-    // config 路由：使用 PageRenderer
-    // 如果配置了租户路径前缀且路径尚未包含该前缀，自动加前缀
-    let routePath = config.path
-    if (this.tenantPathPrefix && !routePath.startsWith(this.tenantPathPrefix)) {
-      routePath = this.tenantPathPrefix + routePath
     }
     const route: RouteRecordRaw = {
       path: routePath,

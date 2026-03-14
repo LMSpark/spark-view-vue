@@ -41,8 +41,8 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { useTabPages } from './useTabPages'
-import type { TabPage } from './useTabPages'
+import { useTabPages } from '@spark-view/spark-app'
+import type { TabPage } from '@spark-view/spark-app'
 
 const { tabs, activeTab, closeTab, closeOthers, closeAll, switchTo } = useTabPages()
 

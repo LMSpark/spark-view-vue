@@ -30,7 +30,9 @@
         :is-dark="isDark"
         :collapsed="sidebarCollapsed"
         :collapsible="nav.regionVisibility.value.sidebar"
-        :username="currentUsername"        @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
+        :username="currentUsername"
+        :toolbar-items="nav.regionItems.value.toolbar"
+        @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
         @toggle-theme="toggleTheme"
         @user-command="handleUserCommand"
       >
@@ -40,11 +42,12 @@
             :items="nav.regionItems.value.header"
           />
         </template>
-        <template v-if="enableAI" #actions>
-          <button class="header-btn" title="AI 协同设计" @click="showDesignStudio = true">
+        <template v-if="enableAI && hasToolbarAction('ai-design', 'ai-chat')" #actions>
+          <button v-if="hasToolbarAction('ai-design')" class="header-btn" title="AI 协同设计" @click="showDesignStudio = true">
             🎨
           </button>
           <el-popover
+            v-if="hasToolbarAction('ai-chat')"
             :visible="showAiChat"
             placement="bottom-end"
             :width="420"
@@ -124,7 +127,8 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, onMounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTheme, AppPageUiHost } from '@spark-view/spark-app'
+import { useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
+import type { NavNode } from '@spark-view/spark-app'
 import { pageRefreshKey } from '@/services/ai-loop'
 import { getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
@@ -136,10 +140,6 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
-import { useTabPages } from '@/layout/useTabPages'
-import { useColorScheme } from '@/layout/useColorScheme'
-import { useNavigation } from '@/layout/useNavigation'
-import type { NavNode } from '@/layout/nav-types'
 import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
 import { getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'
@@ -167,6 +167,15 @@ const navEmpty = ref(false)
 const { mode, setMode } = useTabPages()
 useColorScheme()
 
+/** 检查工具栏配置中是否包含指定 action（无配置时默认全部显示） */
+function hasToolbarAction(...actions: string[]): boolean {
+  const items = nav.regionItems.value.toolbar
+  if (!items.length) return true
+  return actions.some(action =>
+    items.some(item => item.action === action)
+  )
+}
+
 /* ── 项目切换服务（供子组件注入） ── */
 const projectSwitchService: ProjectSwitchService = {
   async switchAndReload(projectId: string) {
@@ -179,15 +188,16 @@ const projectSwitchService: ProjectSwitchService = {
 provide(PROJECT_SWITCH_KEY, projectSwitchService)
 
 /* ── 导航模型（纯后端加载，无本地 fallback） ── */
-const _navRoot = reactive({ childPlacement: 'header' as const, children: [] as NavNode[] })
+const _navRoot = reactive({ childPlacement: 'header' as const, children: [] as NavNode[], toolbar: [] as NavNode[] })
 const nav = useNavigation(_navRoot)
 
 async function reloadNavigation(): Promise<void> {
   try {
-    const data = await http.get<{ childPlacement?: string; children?: unknown[] }>(getNavApi())
+    const data = await http.get<{ childPlacement?: string; children?: unknown[]; toolbar?: unknown[] }>(getNavApi())
     if (Array.isArray(data.children) && data.children.length > 0) {
       _navRoot.childPlacement = ((data.childPlacement ?? 'header') as typeof _navRoot.childPlacement)
       _navRoot.children = data.children as NavNode[]
+      _navRoot.toolbar = (data.toolbar ?? []) as NavNode[]
       navEmpty.value = false
       if (import.meta.env.DEV) console.log(`[Nav] ✅ 已从后端加载导航 (${data.children.length} 个节点)`)
     } else {

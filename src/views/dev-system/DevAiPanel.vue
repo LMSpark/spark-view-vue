@@ -136,9 +136,10 @@ const loop = computed(() => getAILoop())
 const sessionId = computed(() => loop.value?.sessionId ?? '(未初始化)')
 const hasFiles = computed(() => Object.keys(files.value).length > 0)
 
-// 当选中节点有 pageId 时，自动同步到 AI 面板
-watch(() => props.state.editForm.pageId, (val) => {
-  if (val) pageId.value = val
+// 当选中节点有 path 时，自动同步到 AI 面板
+watch(() => props.state.editForm.path, (val) => {
+  const derived = val ? val.replace(/^\/+/, '') : ''
+  if (derived) pageId.value = derived
 })
 
 // SSE 监听文件变更
@@ -150,7 +151,8 @@ onMounted(() => {
       props.state.addStatus(`文件变更: ${event.file}`, 'info')
       void refreshFiles()
       // 同步刷新工作区文件编辑器
-      if (props.state.editForm.pageId === pageId.value) {
+      const currentPageId = props.state.editForm.path?.replace(/^\/+/, '') ?? ''
+      if (currentPageId === pageId.value) {
         void props.state.loadPageFiles(pageId.value)
       }
     }
@@ -176,7 +178,8 @@ async function handleGenerate() {
     explanation.value = resp.explanation ?? ''
     props.state.addStatus(`✅ 生成完成，写入 ${Object.keys(resp.files).length} 个文件`, 'success')
     // 同步刷新工作区
-    if (props.state.editForm.pageId === pageId.value.trim()) {
+    const formPageId = props.state.editForm.path?.replace(/^\/+/, '') ?? ''
+    if (formPageId === pageId.value.trim()) {
       void props.state.loadPageFiles(pageId.value.trim())
     }
     void props.state.loadPages()
@@ -207,7 +210,8 @@ async function handleIterate() {
     explanation.value = resp.explanation ?? ''
     props.state.addStatus(`✅ 迭代完成，修改 ${Object.keys(resp.files).length} 个文件`, 'success')
     feedback.value = ''
-    if (props.state.editForm.pageId === pageId.value.trim()) {
+    const iterFormPageId = props.state.editForm.path?.replace(/^\/+/, '') ?? ''
+    if (iterFormPageId === pageId.value.trim()) {
       void props.state.loadPageFiles(pageId.value.trim())
     }
   } catch (err) {

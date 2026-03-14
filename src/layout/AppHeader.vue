@@ -13,20 +13,20 @@
       <slot name="nav" />
     </div>
 
-    <!-- 右侧：操作区 -->
+    <!-- 右侧：操作区（工具栏配置驱动） -->
     <div class="app-header__right">
-      <!-- 自定义操作槽位 -->
+      <!-- 自定义操作槽位（AI 按钮等，仅当导航配置中存在对应 action 时显示） -->
       <slot name="actions" />
 
       <!-- 搜索 -->
-      <el-tooltip content="搜索" placement="bottom" :show-after="300">
+      <el-tooltip v-if="hasAction('search')" content="搜索" placement="bottom" :show-after="300">
         <button class="header-btn" @click="$emit('search')">
           <el-icon :size="18"><Search /></el-icon>
         </button>
       </el-tooltip>
 
       <!-- 全屏 -->
-      <el-tooltip :content="isFullscreen ? '退出全屏' : '全屏'" placement="bottom" :show-after="300">
+      <el-tooltip v-if="hasAction('fullscreen')" :content="isFullscreen ? '退出全屏' : '全屏'" placement="bottom" :show-after="300">
         <button class="header-btn" @click="toggleFullscreen">
           <el-icon :size="18"><FullScreen /></el-icon>
         </button>
@@ -34,6 +34,7 @@
 
       <!-- 通知 -->
       <el-popover
+        v-if="hasAction('notifications')"
         placement="bottom-end"
         :width="360"
         trigger="click"
@@ -80,7 +81,7 @@
       </el-popover>
 
       <!-- 主题切换 -->
-      <el-tooltip :content="isDark ? '浅色模式' : '深色模式'" placement="bottom" :show-after="300">
+      <el-tooltip v-if="hasAction('theme-toggle')" :content="isDark ? '浅色模式' : '深色模式'" placement="bottom" :show-after="300">
         <button class="header-btn" @click="$emit('toggle-theme')">
           <el-icon :size="18"><Sunny v-if="isDark" /><Moon v-else /></el-icon>
         </button>
@@ -126,6 +127,7 @@ import {
   User, Setting, SwitchButton, ArrowDown, HomeFilled,
 } from '@element-plus/icons-vue'
 import { useNotifications } from '@/composables/useNotifications'
+import type { NavNode } from '@spark-view/spark-app'
 
 const props = withDefaults(defineProps<{
   title?: string
@@ -134,6 +136,8 @@ const props = withDefaults(defineProps<{
   collapsible?: boolean
   username?: string
   avatar?: string
+  /** 工具栏导航项（由导航配置驱动，action 匹配内置按钮） */
+  toolbarItems?: NavNode[]
 }>(), {
   title: 'SPARK 管理后台',
   isDark: false,
@@ -141,6 +145,7 @@ const props = withDefaults(defineProps<{
   collapsible: true,
   username: '管理员',
   avatar: '',
+  toolbarItems: () => [],
 })
 
 const emit = defineEmits<{
@@ -150,6 +155,12 @@ const emit = defineEmits<{
   'user-command': [command: string]
 }>()
 
+/** 检查导航配置中是否包含指定 action 的工具栏项 */
+function hasAction(action: string): boolean {
+  // 无工具栏配置时默认全部显示（向后兼容）
+  if (!props.toolbarItems.length) return true
+  return props.toolbarItems.some(item => item.action === action)
+}
 /* 通知（SSE 实时驱动） */
 const { notifications, unreadCount, markRead, markAllRead, clearAll, removeItem } = useNotifications()
 
