@@ -196,6 +196,7 @@ export {
   triggerPageRefresh,
   initAILoop,
   getAILoop,
+  configureAILoopHttp,
 } from './ai/ai-loop'
 export type {
   PageFiles,

@@ -51,6 +51,12 @@ export function clearAuth(): void {
   localStorage.removeItem(USER_KEY)
 }
 
+/** 获取当前租户的首页路径（/t/{tenantId}/dashboard） */
+export function getTenantHomePath(): string {
+  const user = getUser()
+  return user?.tenantId ? `/t/${user.tenantId}/dashboard` : '/login'
+}
+
 // ── API 调用 ────────────────────────────────────────────────────────────────
 
 async function authFetch(url: string, body: Record<string, string>): Promise<Record<string, unknown>> {

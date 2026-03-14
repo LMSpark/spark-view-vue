@@ -1,19 +1,31 @@
 /**
  * 集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。
  *
- * 当前硬编码 lmspark / homepage，后续可从运行时配置或路由参数动态获取。
+ * 动态读取当前登录用户的 tenantId / defaultProjectId，
+ * 生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。
  */
 
-const TENANT_ID = 'lmspark'
-const PROJECT_ID = 'homepage'
+import { getUser } from './auth'
 
-const SCOPE = `/api/tenants/${TENANT_ID}/projects/${PROJECT_ID}`
+/** 获取当前用户的租户作用域路径前缀 */
+function getScopePath(): string {
+  const user = getUser()
+  const tenantId = user?.tenantId ?? 'default'
+  const projectId = user?.defaultProjectId ?? 'homepage'
+  return `/api/tenants/${tenantId}/projects/${projectId}`
+}
 
-/** 导航 API 基础路径 — `/api/tenants/lmspark/projects/homepage/navigation` */
-export const NAV_API = `${SCOPE}/navigation`
+/** 导航 API 基础路径 — `/api/tenants/{tenantId}/projects/{projectId}/navigation` */
+export function getNavApi(): string {
+  return `${getScopePath()}/navigation`
+}
 
-/** 页面配置 API 基础路径 — `/api/tenants/lmspark/projects/homepage/pages-config` */
-export const PAGE_API = `${SCOPE}/pages-config`
+/** 页面配置 API 基础路径 — `/api/tenants/{tenantId}/projects/{projectId}/pages-config` */
+export function getPageApi(): string {
+  return `${getScopePath()}/pages-config`
+}
 
-/** 通用表数据 API 基础路径 — `/api/tenants/lmspark/projects/homepage/data` */
-export const DATA_API = `${SCOPE}/data`
+/** 通用表数据 API 基础路径 — `/api/tenants/{tenantId}/projects/{projectId}/data` */
+export function getDataApi(): string {
+  return `${getScopePath()}/data`
+}

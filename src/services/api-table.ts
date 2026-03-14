@@ -20,11 +20,9 @@
  * // await tableApi('Users').remove('1')
  */
 
-import { DATA_API } from './api-paths'
+import { getDataApi } from './api-paths'
 import { http } from './http'
 import type { RequestConfig } from '@spark-view/spark-utils'
-
-const BASE = DATA_API
 
 // ── 类型 ──────────────────────────────────────────────────────────────────────
 
@@ -100,7 +98,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
  * 列出所有逻辑表及行数。
  */
 export async function listTables(): Promise<TableSummary[]> {
-  const result = await request<{ tables: TableSummary[] }>(`${BASE}`)
+  const result = await request<{ tables: TableSummary[] }>(getDataApi())
   return result.tables
 }
 
@@ -117,7 +115,7 @@ export async function listTables(): Promise<TableSummary[]> {
  * await api.remove(row.id)
  */
 export function tableApi(tableName: string) {
-  const base = `${BASE}/${encodeURIComponent(tableName)}`
+  const base = `${getDataApi()}/${encodeURIComponent(tableName)}`
 
   return {
     /** 分页查询行 */

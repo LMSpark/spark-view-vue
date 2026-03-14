@@ -116,7 +116,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, logUpdateSignal } from '@/services/ai-loop'
 import type { AIResponse, LogSnapshot } from '@/services/ai-loop'
 import { createRequest } from '@spark-view/spark-utils'
-import { PAGE_API } from '@/services/api-paths'
+import { getPageApi } from '@/services/api-paths'
 
 // Skill Catalog（构建时生成的虚拟模块，可能不可用）
 let _skillCatalog: string | undefined
@@ -239,7 +239,7 @@ async function handleDelete() {
   loading.value = true
   updateStatus('generating')
   try {
-    await http.delete(`${PAGE_API}/${encodeURIComponent(pid)}`)
+    await http.delete(`${getPageApi()}/${encodeURIComponent(pid)}`)
     clearPageCache(pid)
     messages.value.push({ role: 'assistant', text: `🗑️ 页面 /${pid} 已删除` })
     // 如果当前路由就是被删页面，导航回首页

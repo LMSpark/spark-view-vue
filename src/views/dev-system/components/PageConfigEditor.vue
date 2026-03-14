@@ -26,7 +26,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 
-import { PAGE_API } from '@/services/api-paths'
+import { getPageApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
 const FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
@@ -62,7 +62,7 @@ async function loadFiles() {
   try {
     await Promise.all(FILE_NAMES.map(async (fname) => {
       try {
-        const data = await http.get<Record<string, string>>(`${PAGE_API}/${encodeURIComponent(props.pageId)}/${fname}`)
+        const data = await http.get<Record<string, string>>(`${getPageApi()}/${encodeURIComponent(props.pageId)}/${fname}`)
         files[fname] = data['content'] ?? ''
       } catch { /* ignore single file failure */ }
     }))
@@ -77,7 +77,7 @@ async function handleSave() {
   try {
     const body: Record<string, string> = {}
     for (const fname of FILE_NAMES) body[fname] = files[fname] ?? ''
-    await http.post(`${PAGE_API}/${encodeURIComponent(props.pageId)}/__batch`, body)
+    await http.post(`${getPageApi()}/${encodeURIComponent(props.pageId)}/__batch`, body)
     for (const fname of FILE_NAMES) dirty[fname] = false
     ElMessage.success('配置文件已保存')
   } catch (e) {

@@ -8,13 +8,10 @@
 import type { Router, RouteRecordRaw, RouteRecordNormalized } from 'vue-router'
 import type { Component } from 'vue'
 import type { RouteConfig, ConfigLoader } from '@spark-view/spark-page-config'
-import { Logger, SharedErrorCodes, getSharedErrorMessage, createRequest } from '@spark-view/spark-utils'
+import { Logger, createRequest } from '@spark-view/spark-utils'
 import type { Request } from '@spark-view/spark-utils'
 
 const routerLogger = Logger('SparkApp:DynamicRouter')
-
-const ErrorCodes = SharedErrorCodes
-const getErrorMessage = getSharedErrorMessage
 
 /**
  * 静态 Vue 组件路由声明
@@ -75,6 +72,13 @@ export interface DynamicRouterOptions {
 
   /** 动态请求头回调（每次请求时调用，注入 auth/tenant headers） */
   getHeaders?: () => Record<string, string>
+
+  /**
+   * 租户路径前缀（如 '/t/:tenantId'）。
+   * 设置后，config 页面路由自动加此前缀，使所有业务路由统一在租户 URL 下。
+   * vue-component 路由不受影响（已由 staticRoutes 声明路径）。
+   */
+  tenantPathPrefix?: string
 }
 
 /**
@@ -94,6 +98,8 @@ export class DynamicRouter {
   private request: Request
   private beforeRegister?: DynamicRouterOptions['beforeRegister']
   private afterRegister?: DynamicRouterOptions['afterRegister']
+  /** 租户路径前缀（如 '/t/:tenantId'），config 路由自动加此前缀 */
+  private tenantPathPrefix: string
 
   constructor(options: DynamicRouterOptions) {
     this.router = options.router
@@ -109,6 +115,7 @@ export class DynamicRouter {
     this.apiBaseUrl = options.apiBaseUrl ?? ''
     this.beforeRegister = options.beforeRegister
     this.afterRegister = options.afterRegister
+    this.tenantPathPrefix = options.tenantPathPrefix ?? ''
 
     // 创建共享 Request 实例（同步路由等 API 调用的统一 axios 通道）
     this.request = createRequest({
@@ -138,9 +145,8 @@ export class DynamicRouter {
     const result = await this.configLoader.loadRoutes()
 
     if (!result.success || !result.data) {
-      const errorMsg = getErrorMessage(ErrorCodes.ROUTE_INVALID)
-      routerLogger.error('路由加载失败', { error: result.error })
-      throw new Error(`${errorMsg}: ${result.error}`)
+      routerLogger.warn('动态路由加载失败，将使用静态路由兜底', { error: result.error })
+      return
     }
 
     let routes = result.data
@@ -191,8 +197,13 @@ export class DynamicRouter {
     }
 
     // config 路由：使用 PageRenderer
+    // 如果配置了租户路径前缀且路径尚未包含该前缀，自动加前缀
+    let routePath = config.path
+    if (this.tenantPathPrefix && !routePath.startsWith(this.tenantPathPrefix)) {
+      routePath = this.tenantPathPrefix + routePath
+    }
     const route: RouteRecordRaw = {
-      path: config.path,
+      path: routePath,
       name: config.name,
       component: this.pageComponent,
       props: { configLoader: this.configLoader },
@@ -201,7 +212,7 @@ export class DynamicRouter {
 
     this.router.addRoute(route)
     this.registeredRoutes.add(config.path)
-    routerLogger.debug('配置页面路由已注册', { path: config.path, name: config.name })
+    routerLogger.debug('配置页面路由已注册', { path: routePath, name: config.name })
   }
 
   /**

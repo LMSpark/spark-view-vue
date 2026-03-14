@@ -126,7 +126,7 @@ import { computed, defineAsyncComponent, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost } from '@spark-view/spark-app'
 import { pageRefreshKey } from '@/services/ai-loop'
-import { getUser, logout } from '@/services/auth'
+import { getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
 import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
@@ -141,12 +141,12 @@ import { useColorScheme } from '@/layout/useColorScheme'
 import { useNavigation } from '@/layout/useNavigation'
 import type { NavNode } from '@/layout/nav-types'
 import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
-import { NAV_API } from '@/services/api-paths'
+import { getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
 const route = useRoute()
 const router = useRouter()
-const isLoginPage = computed(() => route.path === '/login')
+const isLoginPage = computed(() => route.path === '/login' || route.path === '/')
 const currentUsername = computed(() => getUser()?.displayName ?? getUser()?.username ?? '管理员')
 const theme = useTheme()
 const isDark = computed(() => theme?.isDark ?? false)
@@ -166,7 +166,7 @@ const nav = useNavigation(_navRoot)
 
 async function reloadNavigation(): Promise<void> {
   try {
-    const data = await http.get<{ childPlacement?: string; children?: unknown[] }>(NAV_API)
+    const data = await http.get<{ childPlacement?: string; children?: unknown[] }>(getNavApi())
     if (Array.isArray(data.children) && data.children.length > 0) {
       _navRoot.childPlacement = ((data.childPlacement ?? 'header') as typeof _navRoot.childPlacement)
       _navRoot.children = data.children as NavNode[]
@@ -185,16 +185,18 @@ async function reloadNavigation(): Promise<void> {
 /** 将种子导航数据写入后端（可随时调用） */
 async function syncSeedNavigation(): Promise<void> {
   const { demoNavRoot } = await import('@/layout/demo-nav')
-  await http.put(NAV_API, demoNavRoot)
+  await http.put(getNavApi(), demoNavRoot)
   await reloadNavigation()
 }
 
 onMounted(async () => {
-  try {
-    await reloadNavigation()
-  } catch {
-    navEmpty.value = true
-    if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 导航加载失败')
+  if (isAuthenticated()) {
+    try {
+      await reloadNavigation()
+    } catch {
+      navEmpty.value = true
+      if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 导航加载失败')
+    }
   }
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
@@ -207,6 +209,9 @@ function handleUserCommand(command: string) {
   switch (command) {
     case 'settings':
       showConfigurator.value = true
+      break
+    case 'home':
+      void router.push('/')
       break
     case 'logout':
       logout()

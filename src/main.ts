@@ -235,6 +235,7 @@ async function startApp() {
       { default: SiteManager },
       { default: CacheManager },
       { default: LoginView },
+      { default: HomePage },
     ] = await Promise.all([
       import('./views/Dashboard.vue'),
       import('./views/About.vue'),
@@ -247,25 +248,29 @@ async function startApp() {
       import('./views/SiteManager.vue'),
       import('./views/CacheManager.vue'),
       import('./views/LoginView.vue'),
+      import('./views/HomePage.vue'),
     ])
 
     const staticRoutes: StaticRouteDeclaration[] = [
-      { path: '/login',           name: 'login',           pageId: 'login',           title: '登录',         icon: '🔐', component: LoginView },
-      { path: '/dashboard',       name: 'dashboard',       pageId: 'dashboard',       title: '管理仪表板',   icon: '🏠', component: Dashboard },
-      { path: '/capability-demo', name: 'capability-demo', pageId: 'capability-demo', title: '能力管理演示', icon: '🎯', component: CapabilityDemo },
-      { path: '/tenant-config',   name: 'tenant-config',   pageId: 'tenant-config',   title: '多租户配置',   icon: '🏢', component: TenantConfigDemo },
-      { path: '/about',           name: 'about',           pageId: 'about',           title: '关于系统',     icon: 'ℹ️', component: About },
-      { path: '/settings',        name: 'settings',        pageId: 'settings',        title: '系统设置',     icon: '⚙️', component: Settings },
-      { path: '/page-manager',    name: 'page-manager',    pageId: 'page-manager',    title: '页面管理',     icon: '📑', component: PageManager },
-      { path: '/dev',             name: 'dev-system',      pageId: 'dev',             title: '开发工作台',   icon: '⚡', component: DevWorkbench },
-      { path: '/nav-manager',     name: 'nav-manager',     pageId: 'nav-manager',     title: '导航模块管理', icon: '🧭', component: NavModuleManager },
-      { path: '/site-manager',    name: 'site-manager',    pageId: 'site-manager',    title: '站点管理',     icon: '🏗️', component: SiteManager },
-      { path: '/cache-manager',   name: 'cache-manager',   pageId: 'cache-manager',   title: '缓存管理',     icon: '🗄️', component: CacheManager },
+      { path: '/',                            name: 'home',            pageId: 'home',            title: '首页',         icon: '🏠', component: HomePage },
+      { path: '/login',                       name: 'login',           pageId: 'login',           title: '登录',         icon: '🔐', component: LoginView },
+      { path: '/t/:tenantId/dashboard',       name: 'dashboard',       pageId: 'dashboard',       title: '管理仪表板',   icon: '📊', component: Dashboard },
+      { path: '/t/:tenantId/capability-demo', name: 'capability-demo', pageId: 'capability-demo', title: '能力管理演示', icon: '🎯', component: CapabilityDemo },
+      { path: '/t/:tenantId/tenant-config',   name: 'tenant-config',   pageId: 'tenant-config',   title: '多租户配置',   icon: '🏢', component: TenantConfigDemo },
+      { path: '/t/:tenantId/about',           name: 'about',           pageId: 'about',           title: '关于系统',     icon: 'ℹ️', component: About },
+      { path: '/t/:tenantId/settings',        name: 'settings',        pageId: 'settings',        title: '系统设置',     icon: '⚙️', component: Settings },
+      { path: '/t/:tenantId/page-manager',    name: 'page-manager',    pageId: 'page-manager',    title: '页面管理',     icon: '📑', component: PageManager },
+      { path: '/t/:tenantId/dev',             name: 'dev-system',      pageId: 'dev',             title: '开发工作台',   icon: '⚡', component: DevWorkbench },
+      { path: '/t/:tenantId/nav-manager',     name: 'nav-manager',     pageId: 'nav-manager',     title: '导航模块管理', icon: '🧭', component: NavModuleManager },
+      { path: '/t/:tenantId/site-manager',    name: 'site-manager',    pageId: 'site-manager',    title: '站点管理',     icon: '🏗️', component: SiteManager },
+      { path: '/t/:tenantId/cache-manager',   name: 'cache-manager',   pageId: 'cache-manager',   title: '缓存管理',     icon: '🗄️', component: CacheManager },
     ]
     startupLogger.info(`✅ 已声明 ${staticRoutes.length} 个静态 Vue 组件路由`)
     
     // 5. 导入 auth 工具（getToken/getUser 用于 getHeaders 回调注入 axios 统一通道）
-    const { getToken, getUser } = await import('./services/auth')
+    const { getToken, getUser, isAuthenticated } = await import('./services/auth')
+    const { createAuthHeaders } = await import('./services/http')
+    const { getPageApi } = await import('./services/api-paths')
 
     // 6. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
@@ -307,6 +312,8 @@ async function startApp() {
           if (user?.defaultProjectId) headers['X-Project-Id'] = user.defaultProjectId
           return headers
         },
+        isAuthenticated,
+        tenantPathPrefix: '/t/:tenantId',
       },
       
       // === 应用基础配置（从 JSON 加载）===
@@ -331,14 +338,23 @@ async function startApp() {
           _currentPageId = extractPageId(to.path)
         })
 
-        // ── 认证路由守卫 ──
-        const { isAuthenticated } = await import('./services/auth')
+        // ── 认证路由守卫（租户隔离） ──
+        // 复用外层已导入的 isAuthenticated / getUser（避免 no-shadow）
+        const publicPaths = new Set(['/', '/login'])
         router.beforeEach((to) => {
-          if (to.path !== '/login' && !isAuthenticated()) {
+          // 未登录访问受保护页面 → 跳登录
+          if (!publicPaths.has(to.path) && !isAuthenticated()) {
             return '/login'
           }
+          // 已登录访问 /login → 跳租户首页
           if (to.path === '/login' && isAuthenticated()) {
-            return '/'
+            const u = getUser()
+            return `/t/${u?.tenantId ?? 'default'}/dashboard`
+          }
+          // 已登录访问旧的无租户前缀路径 → 重定向到租户路径
+          if (isAuthenticated() && !to.path.startsWith('/t/') && !publicPaths.has(to.path)) {
+            const u = getUser()
+            if (u?.tenantId) return `/t/${u.tenantId}${to.path}`
           }
           return undefined
         })
@@ -466,9 +482,15 @@ async function startApp() {
           Promise.all([
             import('./services/ai-loop'),
             import('virtual:spark-skill-catalog').catch(() => null),
-          ]).then(([{ initAILoop, setupHotReload, setConfigLoader, triggerPageRefresh }, skillMod]) => {
+          ]).then(([{ initAILoop, setupHotReload, setConfigLoader, triggerPageRefresh, configureAILoopHttp }, skillMod]) => {
             // 生成 Skill Catalog Markdown（构建时从 @skill 注解采集）
             const skillCatalog = skillMod?.buildSkillPrompt('## SPARK Skill 目录', 'compact')
+
+            // 配置 AI Loop HTTP 客户端的认证头和租户作用域
+            configureAILoopHttp({
+              getHeaders: createAuthHeaders,
+              getPageApiUrl: getPageApi,
+            })
 
             const loop = initAILoop({
               aiEndpoint: appConfig.config.features.aiEndpoint ?? '/api/ai/chat',

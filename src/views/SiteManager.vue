@@ -357,7 +357,7 @@ const fileLoaded = ref(false) // 当前节点的文件是否已加载
 
 const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
 
-import { PAGE_API, NAV_API } from '@/services/api-paths'
+import { getPageApi, getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
 // ════════════════════════════════════════════════
@@ -366,7 +366,7 @@ import { http } from '@/services/http'
 async function loadNavConfig() {
   navLoading.value = true
   try {
-    const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(NAV_API)
+    const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(getNavApi())
     treeData.value = config.children?.length ? config.children : deepClone(demoNavRoot.children)
   } catch {
     treeData.value = deepClone(demoNavRoot.children)
@@ -383,7 +383,7 @@ async function loadPageFiles(pageId: string) {
   }
   for (const fname of PAGE_FILE_NAMES) {
     try {
-      const data = await http.get<Record<string, string>>(`${PAGE_API}/${pageId}/${fname}`)
+      const data = await http.get<Record<string, string>>(`${getPageApi()}/${pageId}/${fname}`)
       editFiles[fname] = data['content'] ?? ''
     } catch {
       editFiles[fname] = ''
@@ -400,7 +400,7 @@ async function saveNavConfig() {
   navSaving.value = true
   const root: NavRoot = { childPlacement: 'header', children: treeData.value }
   try {
-    await http.put(NAV_API, root)
+    await http.put(getNavApi(), root)
     navDirty.value = false
     ElMessage.success('导航配置已保存')
   } catch (e) {
@@ -415,7 +415,7 @@ async function savePageFiles() {
   if (!pageId) return
   fileSaving.value = true
   try {
-    await http.post(`${PAGE_API}/${pageId}/__batch`, editFiles)
+    await http.post(`${getPageApi()}/${pageId}/__batch`, editFiles)
     for (const k of PAGE_FILE_NAMES) fileDirty[k] = false
     ElMessage.success(`页面 ${pageId} 配置文件已保存`)
   } catch (e) {
@@ -623,7 +623,7 @@ async function doCreate() {
   if (!valid) return
   creating.value = true
   try {
-    await http.post(`${PAGE_API}/__create`, { pageId: createForm.pageId, title: createForm.title, icon: createForm.icon })
+    await http.post(`${getPageApi()}/__create`, { pageId: createForm.pageId, title: createForm.title, icon: createForm.icon })
 
     // 整合：同步将 pageId 写入当前节点
     if (createForm.linkToNav && selectedNode.value) {
