@@ -14,57 +14,48 @@
             "title": "应用管理",
             "icon": "📱",
             "childPlacement": "sidebar",
-            "redirect": "/site-manager",
+            "redirect": "/app-list",
             "children": [
                 {
-                    "id": "site-manager",
-                    "title": "站点管理",
-                    "icon": "🏗️",
-                    "path": "/site-manager",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "page-manager",
-                    "title": "页面管理",
-                    "icon": "📄",
-                    "path": "/page-manager",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "nav-manager",
-                    "title": "导航管理",
-                    "icon": "🧭",
-                    "path": "/nav-manager",
+                    "id": "app-list",
+                    "title": "应用列表",
+                    "icon": "📋",
+                    "path": "/app-list",
                     "pageType": "vue-component"
                 }
             ]
         },
         {
-            "id": "dev-tools",
-            "title": "开发工具",
-            "icon": "⚡",
+            "id": "system",
+            "title": "系统管理",
+            "icon": "⚙️",
             "childPlacement": "sidebar",
-            "redirect": "/dev",
+            "redirect": "/users",
             "children": [
                 {
-                    "id": "dev-system",
-                    "title": "开发工作台",
-                    "icon": "⚡",
-                    "path": "/dev",
+                    "id": "users",
+                    "title": "用户管理",
+                    "icon": "👥",
+                    "path": "/users"
+                },
+                {
+                    "id": "permission-render",
+                    "title": "权限渲染",
+                    "icon": "🎨",
+                    "path": "/permission-render"
+                },
+                {
+                    "id": "about",
+                    "title": "关于系统",
+                    "icon": "ℹ️",
+                    "path": "/about",
                     "pageType": "vue-component"
                 },
                 {
-                    "id": "ai-studio",
-                    "title": "AI Studio",
-                    "icon": "🤖",
-                    "path": "/ai-studio",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "ai-test",
-                    "title": "AI 迭代测试",
-                    "icon": "🧪",
-                    "path": "/ai-test",
+                    "id": "settings",
+                    "title": "平台设置",
+                    "icon": "⚙️",
+                    "path": "/settings",
                     "pageType": "vue-component"
                 }
             ]
@@ -197,63 +188,6 @@
                     "title": "Node Scope",
                     "icon": "🌿",
                     "path": "/tree-node-scope-demo"
-                }
-            ]
-        },
-        {
-            "id": "system",
-            "title": "系统管理",
-            "icon": "⚙️",
-            "childPlacement": "sidebar",
-            "redirect": "/users",
-            "children": [
-                {
-                    "id": "users",
-                    "title": "用户管理",
-                    "icon": "👥",
-                    "path": "/users"
-                },
-                {
-                    "id": "permission-render",
-                    "title": "权限渲染",
-                    "icon": "🎨",
-                    "path": "/permission-render"
-                },
-                {
-                    "id": "cache-manager",
-                    "title": "缓存管理",
-                    "icon": "🗄️",
-                    "path": "/cache-manager",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "dashboard",
-                    "title": "管理仪表板",
-                    "icon": "🏠",
-                    "path": "/dashboard",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "about",
-                    "title": "关于系统",
-                    "icon": "ℹ️",
-                    "path": "/about",
-                    "pageType": "vue-component"
-                },
-                {
-                    "id": "system-settings",
-                    "title": "系统设置",
-                    "icon": "⚙️",
-                    "childPlacement": "parent",
-                    "children": [
-                        {
-                            "id": "settings",
-                            "title": "基本设置",
-                            "icon": "⚙️",
-                            "path": "/settings",
-                            "pageType": "vue-component"
-                        }
-                    ]
                 }
             ]
         }
