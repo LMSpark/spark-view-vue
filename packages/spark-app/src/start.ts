@@ -59,10 +59,15 @@ export interface PageConfigOptions {
   /** 首页路径 */
   homePath: string
   /**
-   * 静态 Vue 组件路由声明。
-   * 启动时同步到后端数据库，并在 routes.json 加载后用对应组件注册路由。
+   * @deprecated 使用 componentMap 替代。
+   * 旧版静态路由声明，会同步到后端 + 注册兆底路由。
    */
   staticRoutes?: StaticRouteDeclaration[]
+  /**
+   * vue-component 路径 → Vue 组件映射。
+   * 路由元数据完全由后端 DB 管理，前端只提供组件解析映射。
+   */
+  componentMap?: Record<string, Component>
   /** 注册前钩子（可以转换路由） */
   beforeRegister?: ((routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>) | undefined
   /** 注册后钩子（仅通知） */
@@ -272,6 +277,7 @@ export async function start(options: StartOptions): Promise<void> {
         router,
         configLoader,
         pageComponent, // FCPageRenderer 或用户提供的组件，if 块已确保非空
+        ...(pageConfig.componentMap !== undefined && { componentMap: pageConfig.componentMap }),
         ...(pageConfig.staticRoutes !== undefined && { staticRoutes: pageConfig.staticRoutes }),
         apiBaseUrl: pageConfig.apiBaseUrl,
         ...(pageConfig.getHeaders !== undefined && { getHeaders: pageConfig.getHeaders }),
@@ -282,18 +288,20 @@ export async function start(options: StartOptions): Promise<void> {
 
       const dynamicRouter = createDynamicRouter(dynamicRouterOptions)
 
-      // 仅在已登录时执行动态路由同步/加载（未登录时静态路由兜底即可）
+      // 仅在已登录时执行动态路由加载
       const authenticated = pageConfig.isAuthenticated?.() ?? true
       if (authenticated) {
-        // 先同步静态路由到后端，再从后端加载所有路由（单一来源）
-        await dynamicRouter.syncStaticRoutesToBackend()
+        // 兼容旧版：仅当 staticRoutes 存在且无 componentMap 时才同步
+        if (pageConfig.staticRoutes?.length && !pageConfig.componentMap) {
+          await dynamicRouter.syncStaticRoutesToBackend()
+        }
         await dynamicRouter.registerRoutes()
       } else {
         startLogger.info('用户未登录，跳过动态路由加载')
       }
 
-      // 兜底：确保 staticRoutes 中的路由一定被注册（即便后端/缓存未返回）
-      if (pageConfig.staticRoutes) {
+      // 兼容兜底：仅当旧版 staticRoutes 存在且无 componentMap 时
+      if (pageConfig.staticRoutes && !pageConfig.componentMap) {
         for (const sr of pageConfig.staticRoutes) {
           if (!router.hasRoute(sr.name)) {
             router.addRoute({
@@ -306,7 +314,11 @@ export async function start(options: StartOptions): Promise<void> {
         }
       }
 
-      router.addRoute({ path: '/', redirect: pageConfig.homePath })
+      // 兼容旧版：仅当无 componentMap 时才添加 / → homePath 重定向
+      // componentMap 模式下，/ 由 preAuthRoutes（main.ts）直接指向 HomePage 组件
+      if (!pageConfig.componentMap) {
+        router.addRoute({ path: '/', redirect: pageConfig.homePath })
+      }
 
       // 注入到全局缓存管理（清缓存页面 + AI 热重载需要）
       const { setConfigLoader, setDynamicRouter } = await import('./ai/ai-loop')

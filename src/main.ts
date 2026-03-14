@@ -43,7 +43,7 @@
 
 // SPARK 架构包
 import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger, addGlobalTransport } from '@spark-view/spark-app'
-import type { LogTransport, StaticRouteDeclaration } from '@spark-view/spark-app'
+import type { LogTransport } from '@spark-view/spark-app'
 import { addLogTransport } from '@spark-view/spark-utils'
 import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
 
@@ -61,7 +61,7 @@ const _sessionId = `s-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 import { loadAppConfig } from '@spark-view/spark-app'
 
 // 主应用组件
-import { createApp } from 'vue'
+import { createApp, type Component } from 'vue'
 import App from './App.vue'
 import ErrorFallback from './components/ErrorFallback.vue'
 import './style.css'
@@ -221,8 +221,8 @@ async function startApp() {
     
     startupLogger.info(`✅ 已加载 ${plugins.length} 个插件`)
     
-    // 4. 导入静态 Vue 组件页面 + 构建路由声明
-    startupLogger.info('📄 导入静态 Vue 组件页面...')
+    // 4. 导入 Vue 组件页面（用于 componentMap，路由信息从 DB 动态加载）
+    startupLogger.info('📄 导入 Vue 组件页面...')
     const [
       { default: Dashboard },
       { default: About },
@@ -236,6 +236,7 @@ async function startApp() {
       { default: CacheManager },
       { default: LoginView },
       { default: HomePage },
+      { default: AppList },
     ] = await Promise.all([
       import('./views/Dashboard.vue'),
       import('./views/About.vue'),
@@ -249,23 +250,30 @@ async function startApp() {
       import('./views/CacheManager.vue'),
       import('./views/LoginView.vue'),
       import('./views/HomePage.vue'),
+      import('./views/AppList.vue'),
     ])
 
-    const staticRoutes: StaticRouteDeclaration[] = [
-      { path: '/',                            name: 'home',            pageId: 'home',            title: '首页',         icon: '🏠', component: HomePage },
-      { path: '/login',                       name: 'login',           pageId: 'login',           title: '登录',         icon: '🔐', component: LoginView },
-      { path: '/t/:tenantId/dashboard',       name: 'dashboard',       pageId: 'dashboard',       title: '管理仪表板',   icon: '📊', component: Dashboard },
-      { path: '/t/:tenantId/capability-demo', name: 'capability-demo', pageId: 'capability-demo', title: '能力管理演示', icon: '🎯', component: CapabilityDemo },
-      { path: '/t/:tenantId/tenant-config',   name: 'tenant-config',   pageId: 'tenant-config',   title: '多租户配置',   icon: '🏢', component: TenantConfigDemo },
-      { path: '/t/:tenantId/about',           name: 'about',           pageId: 'about',           title: '关于系统',     icon: 'ℹ️', component: About },
-      { path: '/t/:tenantId/settings',        name: 'settings',        pageId: 'settings',        title: '系统设置',     icon: '⚙️', component: Settings },
-      { path: '/t/:tenantId/page-manager',    name: 'page-manager',    pageId: 'page-manager',    title: '页面管理',     icon: '📑', component: PageManager },
-      { path: '/t/:tenantId/dev',             name: 'dev-system',      pageId: 'dev',             title: '开发工作台',   icon: '⚡', component: DevWorkbench },
-      { path: '/t/:tenantId/nav-manager',     name: 'nav-manager',     pageId: 'nav-manager',     title: '导航模块管理', icon: '🧭', component: NavModuleManager },
-      { path: '/t/:tenantId/site-manager',    name: 'site-manager',    pageId: 'site-manager',    title: '站点管理',     icon: '🏗️', component: SiteManager },
-      { path: '/t/:tenantId/cache-manager',   name: 'cache-manager',   pageId: 'cache-manager',   title: '缓存管理',     icon: '🗄️', component: CacheManager },
+    // vue-component 路径 → 组件映射（路由元数据从 DB 动态加载，前端只负责组件解析）
+    const componentMap: Record<string, Component> = {
+      '/t/:tenantId/dashboard':       Dashboard,
+      '/t/:tenantId/capability-demo': CapabilityDemo,
+      '/t/:tenantId/tenant-config':   TenantConfigDemo,
+      '/t/:tenantId/about':           About,
+      '/t/:tenantId/settings':        Settings,
+      '/t/:tenantId/page-manager':    PageManager,
+      '/t/:tenantId/dev':             DevWorkbench,
+      '/t/:tenantId/nav-manager':     NavModuleManager,
+      '/t/:tenantId/site-manager':    SiteManager,
+      '/t/:tenantId/cache-manager':   CacheManager,
+      '/t/:tenantId/app-list':        AppList,
+    }
+
+    // 认证前必需路由（登录前可用，不依赖 DB）
+    const preAuthRoutes: Array<{ path: string; name: string; component: Component; meta?: Record<string, unknown> }> = [
+      { path: '/',      name: 'home',  component: HomePage,  meta: { title: '首页' } },
+      { path: '/login', name: 'login', component: LoginView, meta: { title: '登录' } },
     ]
-    startupLogger.info(`✅ 已声明 ${staticRoutes.length} 个静态 Vue 组件路由`)
+    startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuth: ${preAuthRoutes.length} 个路由`)
     
     // 5. 导入 auth 工具（getToken/getUser 用于 getHeaders 回调注入 axios 统一通道）
     const { getToken, getUser, isAuthenticated } = await import('./services/auth')
@@ -297,11 +305,11 @@ async function startApp() {
         // 不需要手动传递 registerComponents
       },
       
-      // === 页面配置系统（从 JSON 加载）===
+      // === 页面配置系统（路由从 DB 动态加载）===
       pageConfig: {
         ...appConfig.pageConfig,
         pageComponent: AppPageRendererBridge,
-        staticRoutes,
+        componentMap,
         // 动态注入认证 / 租户请求头（FileLoader 使用 axios，不经过 fetch 拦截器）
         getHeaders: () => {
           const headers: Record<string, string> = {}
@@ -330,6 +338,13 @@ async function startApp() {
       beforeMount: async (context) => {
         const { router, app } = context
 
+        // ── 注册认证前必需路由（登录/首页，不依赖 DB） ──
+        for (const r of preAuthRoutes) {
+          if (!router.hasRoute(r.name)) {
+            router.addRoute(r)
+          }
+        }
+
         // ── AI 闭环：尽早注入 pageId 上下文 ──
         // mount 阶段渲染页面时产生的错误需要正确的 pageId 标记，
         // 必须在 app.mount() 之前设置，否则 collectorTransport 记录的 pageId 为 undefined
@@ -342,9 +357,9 @@ async function startApp() {
         // 复用外层已导入的 isAuthenticated / getUser（避免 no-shadow）
         const publicPaths = new Set(['/', '/login'])
         router.beforeEach((to) => {
-          // 未登录访问受保护页面 → 跳登录
+          // 未登录访问受保护页面 → 跳平台主页
           if (!publicPaths.has(to.path) && !isAuthenticated()) {
-            return '/login'
+            return '/'
           }
           // 已登录访问 /login → 跳租户首页
           if (to.path === '/login' && isAuthenticated()) {

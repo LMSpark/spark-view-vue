@@ -30,7 +30,10 @@
               </el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" class="login-btn" :loading="loading" @click="handleLogin">登 录</el-button>
+              <div class="btn-group">
+                <el-button type="primary" class="login-btn" :loading="loading" @click="handleLogin">登 录</el-button>
+                <el-button class="cancel-btn" @click="goHome">取 消</el-button>
+              </div>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -75,7 +78,10 @@
               </el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" class="login-btn" :loading="loading" @click="handleRegister">注 册</el-button>
+              <div class="btn-group">
+                <el-button type="primary" class="login-btn" :loading="loading" @click="handleRegister">注 册</el-button>
+                <el-button class="cancel-btn" @click="goHome">取 消</el-button>
+              </div>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -110,7 +116,10 @@
               </el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" class="login-btn" :loading="loading" @click="handleRegisterTenant">注册租户</el-button>
+              <div class="btn-group">
+                <el-button type="primary" class="login-btn" :loading="loading" @click="handleRegisterTenant">注册租户</el-button>
+                <el-button class="cancel-btn" @click="goHome">取 消</el-button>
+              </div>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -133,6 +142,10 @@ const activeTab = ref(savedTab ?? 'login')
 if (savedTab) sessionStorage.removeItem('spark_login_tab')
 const loading = ref(false)
 const errorMsg = ref('')
+
+function goHome() {
+  void router.replace('/')
+}
 
 // ── 登录表单 ────────────────────────────────────────────────────────────────
 
@@ -262,6 +275,21 @@ async function handleRegisterTenant() {
 
 .login-btn {
   width: 100%;
+  height: 42px;
+  font-size: 16px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.btn-group .login-btn {
+  flex: 1;
+}
+
+.cancel-btn {
   height: 42px;
   font-size: 16px;
 }

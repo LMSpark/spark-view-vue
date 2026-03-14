@@ -1,0 +1,64 @@
+{
+    "childPlacement": "header",
+    "children": [
+        {
+            "id": "home",
+            "title": "工作台",
+            "icon": "📊",
+            "path": "/dashboard",
+            "pageType": "vue-component",
+            "affix": true
+        },
+        {
+            "id": "back-to-homepage",
+            "title": "返回管理平台",
+            "icon": "🏠",
+            "path": "/app-list",
+            "pageType": "vue-component"
+        },
+        {
+            "id": "system-settings",
+            "title": "系统设置",
+            "icon": "⚙️",
+            "childPlacement": "sidebar",
+            "redirect": "/page-manager",
+            "children": [
+                {
+                    "id": "page-manager",
+                    "title": "页面管理",
+                    "icon": "📑",
+                    "path": "/page-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "nav-manager",
+                    "title": "导航管理",
+                    "icon": "🧭",
+                    "path": "/nav-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "site-manager",
+                    "title": "站点管理",
+                    "icon": "🏗️",
+                    "path": "/site-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "dev-workbench",
+                    "title": "开发工作台",
+                    "icon": "⚡",
+                    "path": "/dev",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "cache-manager",
+                    "title": "缓存管理",
+                    "icon": "🗄️",
+                    "path": "/cache-manager",
+                    "pageType": "vue-component"
+                }
+            ]
+        }
+    ]
+}

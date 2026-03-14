@@ -45,6 +45,48 @@
                     "path": "/permission-render"
                 },
                 {
+                    "id": "page-manager",
+                    "title": "页面管理",
+                    "icon": "📄",
+                    "path": "/page-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "dev-workbench",
+                    "title": "开发工作台",
+                    "icon": "⚡",
+                    "path": "/dev",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "cache-manager",
+                    "title": "缓存管理",
+                    "icon": "🗄️",
+                    "path": "/cache-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "nav-manager",
+                    "title": "导航管理",
+                    "icon": "🧭",
+                    "path": "/nav-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "site-manager",
+                    "title": "站点管理",
+                    "icon": "🏗️",
+                    "path": "/site-manager",
+                    "pageType": "vue-component"
+                },
+                {
+                    "id": "dashboard",
+                    "title": "管理仪表板",
+                    "icon": "🏠",
+                    "path": "/dashboard",
+                    "pageType": "vue-component"
+                },
+                {
                     "id": "about",
                     "title": "关于系统",
                     "icon": "ℹ️",

@@ -1,0 +1,217 @@
+<template>
+  <div class="app-list-page">
+    <el-page-header content="应用管理" @back="$router.go(-1)">
+      <template #icon>
+        <span style="font-size: 20px">📱</span>
+      </template>
+      <template #extra>
+        <el-button type="primary" @click="showCreateDialog = true">
+          ➕ 创建应用
+        </el-button>
+      </template>
+    </el-page-header>
+
+    <div class="app-list-content">
+      <el-row :gutter="20">
+        <el-col v-for="project in projects" :key="project.projectId" :xs="24" :sm="12" :md="8" :lg="6">
+          <el-card
+            class="app-card"
+            :class="{ 'is-active': project.projectId === currentProjectId }"
+            shadow="hover"
+          >
+            <div class="app-card-header">
+              <span class="app-icon">{{ project.icon }}</span>
+              <el-tag v-if="project.projectType === 'homepage'" type="warning" size="small">管理平台</el-tag>
+              <el-tag v-else type="info" size="small">应用</el-tag>
+            </div>
+            <h3 class="app-name">{{ project.name }}</h3>
+            <p class="app-desc">{{ project.description || '暂无描述' }}</p>
+            <div class="app-actions">
+              <el-button
+                v-if="project.projectId !== currentProjectId"
+                type="primary"
+                size="small"
+                @click="handleSwitch(project)"
+              >
+                进入应用
+              </el-button>
+              <el-tag v-else type="success" size="small">当前应用</el-tag>
+              <el-button
+                v-if="project.projectType !== 'homepage'"
+                type="danger"
+                size="small"
+                text
+                @click="handleDelete(project)"
+              >
+                删除
+              </el-button>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
+
+    <!-- 创建应用弹窗 -->
+    <el-dialog v-model="showCreateDialog" title="创建应用" width="480px">
+      <el-form :model="createForm" label-width="80px">
+        <el-form-item label="应用 ID">
+          <el-input v-model="createForm.projectId" placeholder="英文标识，如 my-app" />
+        </el-form-item>
+        <el-form-item label="应用名称">
+          <el-input v-model="createForm.name" placeholder="显示名称" />
+        </el-form-item>
+        <el-form-item label="图标">
+          <el-input v-model="createForm.icon" placeholder="Emoji 图标" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input v-model="createForm.description" type="textarea" :rows="3" placeholder="应用描述" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showCreateDialog = false">取消</el-button>
+        <el-button type="primary" :loading="creating" @click="handleCreate">创建</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, computed, inject } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { http } from '@/services/http'
+import { getProjectApi } from '@/services/api-paths'
+import { getUser } from '@/services/auth'
+import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
+
+interface ProjectItem {
+  projectId: string
+  name: string
+  projectType: string
+  icon: string
+  description: string
+  sortOrder: number
+}
+
+const router = useRouter()
+const projectSwitch = inject(PROJECT_SWITCH_KEY)
+const projects = ref<ProjectItem[]>([])
+const showCreateDialog = ref(false)
+const creating = ref(false)
+
+const currentProjectId = computed(() => getUser()?.defaultProjectId ?? 'homepage')
+
+const createForm = ref({
+  projectId: '',
+  name: '',
+  icon: '📦',
+  description: '',
+})
+
+async function loadProjects() {
+  const data = await http.get<ProjectItem[]>(getProjectApi())
+  projects.value = data
+}
+
+async function handleCreate() {
+  const { projectId, name, icon, description } = createForm.value
+  if (!projectId.trim()) {
+    ElMessage.warning('请输入应用 ID')
+    return
+  }
+  creating.value = true
+  try {
+    await http.post(getProjectApi(), { projectId, name, icon, description })
+    ElMessage.success('应用创建成功')
+    showCreateDialog.value = false
+    createForm.value = { projectId: '', name: '', icon: '📦', description: '' }
+    await loadProjects()
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '创建失败'
+    ElMessage.error(msg)
+  } finally {
+    creating.value = false
+  }
+}
+
+async function handleSwitch(project: ProjectItem) {
+  await projectSwitch?.switchAndReload(project.projectId)
+  ElMessage.success(`已切换到「${project.name}」`)
+  const user = getUser()
+  if (user) {
+    void router.push(`/t/${user.tenantId}/dashboard`)
+  }
+}
+
+async function handleDelete(project: ProjectItem) {
+  try {
+    await ElMessageBox.confirm(`确定删除应用「${project.name}」？此操作不可恢复。`, '删除确认', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+    })
+    await http.delete(`${getProjectApi()}/${project.projectId}`)
+    ElMessage.success('已删除')
+    await loadProjects()
+  } catch {
+    // 用户取消或请求失败
+  }
+}
+
+onMounted(async () => {
+  // 应用列表始终在 homepage 上下文中运行
+  const user = getUser()
+  if (user && user.defaultProjectId !== 'homepage') {
+    await projectSwitch?.switchAndReload('homepage')
+  }
+  await loadProjects()
+})
+</script>
+
+<style scoped>
+.app-list-page {
+  padding: 20px;
+}
+
+.app-list-content {
+  margin-top: 20px;
+}
+
+.app-card {
+  margin-bottom: 20px;
+  transition: border-color 0.3s;
+}
+
+.app-card.is-active {
+  border-color: var(--el-color-primary);
+}
+
+.app-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.app-icon {
+  font-size: 32px;
+}
+
+.app-name {
+  margin: 8px 0 4px;
+  font-size: 16px;
+}
+
+.app-desc {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  margin-bottom: 12px;
+  min-height: 36px;
+}
+
+.app-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>

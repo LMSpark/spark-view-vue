@@ -51,6 +51,17 @@ export function clearAuth(): void {
   localStorage.removeItem(USER_KEY)
 }
 
+/**
+ * 切换当前项目上下文。
+ * 更新 localStorage 中 user.defaultProjectId，后续所有 API 调用自动路由到新项目。
+ */
+export function switchProject(projectId: string): void {
+  const user = getUser()
+  if (!user) return
+  user.defaultProjectId = projectId
+  localStorage.setItem(USER_KEY, JSON.stringify(user))
+}
+
 /** 获取当前租户的首页路径（/t/{tenantId}/dashboard） */
 export function getTenantHomePath(): string {
   const user = getUser()

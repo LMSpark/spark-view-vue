@@ -54,14 +54,19 @@ export interface DynamicRouterOptions {
   pageComponent: Component
 
   /**
-   * 静态 Vue 组件路由声明列表。
-   * 声明后 DynamicRouter 会：
-   * 1. 将元数据同步到后端（syncStaticRoutesToBackend）
-   * 2. 从后端加载路由时，vue-component 类型使用此处的组件
+   * @deprecated 使用 componentMap 替代。staticRoutes 会同步路由到后端，
+   * 新架构中路由完全由后端 DB 管理，前端只需 componentMap 解析 vue-component。
    */
   staticRoutes?: StaticRouteDeclaration[]
 
-  /** 后端 API 基础路径（默认空字符串，用于同步静态路由） */
+  /**
+   * vue-component 路径 → Vue 组件映射。
+   * 当 DB 返回 pageType='vue-component' 的路由时，使用此映射解析组件。
+   * 路由元数据（path/name/title/icon）完全由后端 DB 管理，前端不同步。
+   */
+  componentMap?: Record<string, Component>
+
+  /** 后端 API 基础路径（默认空字符串） */
   apiBaseUrl?: string
 
   /** 路由注册前钩子（可转换/过滤路由） */
@@ -76,7 +81,7 @@ export interface DynamicRouterOptions {
   /**
    * 租户路径前缀（如 '/t/:tenantId'）。
    * 设置后，config 页面路由自动加此前缀，使所有业务路由统一在租户 URL 下。
-   * vue-component 路由不受影响（已由 staticRoutes 声明路径）。
+   * vue-component 路由不受影响（DB 中已含完整路径）。
    */
   tenantPathPrefix?: string
 }
@@ -117,7 +122,7 @@ export class DynamicRouter {
     this.afterRegister = options.afterRegister
     this.tenantPathPrefix = options.tenantPathPrefix ?? ''
 
-    // 创建共享 Request 实例（同步路由等 API 调用的统一 axios 通道）
+    // 创建共享 Request 实例（统一 axios 通道）
     this.request = createRequest({
       baseURL: this.apiBaseUrl,
       timeout: 10_000,
@@ -132,9 +137,16 @@ export class DynamicRouter {
       })
     }
 
-    // 构建 path → Component 映射
+    // 构建 path → Component 映射（componentMap 优先，兼容旧 staticRoutes）
+    if (options.componentMap) {
+      for (const [path, comp] of Object.entries(options.componentMap)) {
+        this.staticComponentMap.set(path, comp)
+      }
+    }
     for (const decl of this.staticDeclarations) {
-      this.staticComponentMap.set(decl.path, decl.component)
+      if (!this.staticComponentMap.has(decl.path)) {
+        this.staticComponentMap.set(decl.path, decl.component)
+      }
     }
   }
 
