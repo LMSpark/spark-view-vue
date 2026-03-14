@@ -102,7 +102,7 @@ public class ProjectService {
                 .orElseThrow(() -> new NoSuchElementException("项目不存在: " + projectId));
 
         if (HOMEPAGE_PROJECT_TYPE.equals(entity.getProjectType())) {
-            throw new IllegalStateException("企业主页项目不可删除");
+            throw new IllegalStateException("企业管理平台不可删除");
         }
 
         projectRepo.deleteByTenantIdAndProjectId(tenantId, projectId);
@@ -122,13 +122,13 @@ public class ProjectService {
         ProjectEntity homepage = new ProjectEntity();
         homepage.setTenantId(tenantId);
         homepage.setProjectId(HOMEPAGE_PROJECT_ID);
-        homepage.setName("企业主页");
+        homepage.setName("企业管理平台");
         homepage.setProjectType(HOMEPAGE_PROJECT_TYPE);
-        homepage.setIcon("🏠");
-        homepage.setDescription("企业主页 — 展示所有可用项目");
+        homepage.setIcon("🏗️");
+        homepage.setDescription("企业级开发管理平台 — 创建和管理业务应用");
         homepage.setSortOrder(0);
         projectRepo.save(homepage);
-        log.info("[Project] 自动创建企业主页: tenant={}", tenantId);
+        log.info("[Project] 自动创建企业管理平台: tenant={}", tenantId);
     }
 
     private Map<String, Object> toMap(ProjectEntity p) {
