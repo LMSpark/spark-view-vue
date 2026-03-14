@@ -358,6 +358,7 @@ const fileLoaded = ref(false) // 当前节点的文件是否已加载
 const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
 
 import { PAGE_API, NAV_API } from '@/services/api-paths'
+import { http } from '@/services/http'
 
 // ════════════════════════════════════════════════
 // 加载
@@ -365,9 +366,7 @@ import { PAGE_API, NAV_API } from '@/services/api-paths'
 async function loadNavConfig() {
   navLoading.value = true
   try {
-    const resp = await fetch(NAV_API)
-    if (!resp.ok) throw new Error()
-    const config = await resp.json() as { childPlacement?: string; children?: NavNode[] }
+    const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(NAV_API)
     treeData.value = config.children?.length ? config.children : deepClone(demoNavRoot.children)
   } catch {
     treeData.value = deepClone(demoNavRoot.children)
@@ -384,10 +383,8 @@ async function loadPageFiles(pageId: string) {
   }
   for (const fname of PAGE_FILE_NAMES) {
     try {
-      const resp = await fetch(`${PAGE_API}/${pageId}/${fname}`)
-      editFiles[fname] = resp.ok
-        ? ((await resp.json() as Record<string, string>)['content'] ?? '')
-        : ''
+      const data = await http.get<Record<string, string>>(`${PAGE_API}/${pageId}/${fname}`)
+      editFiles[fname] = data['content'] ?? ''
     } catch {
       editFiles[fname] = ''
     }
@@ -403,12 +400,7 @@ async function saveNavConfig() {
   navSaving.value = true
   const root: NavRoot = { childPlacement: 'header', children: treeData.value }
   try {
-    const resp = await fetch(NAV_API, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(root),
-    })
-    if (!resp.ok) throw new Error(await resp.text())
+    await http.put(NAV_API, root)
     navDirty.value = false
     ElMessage.success('导航配置已保存')
   } catch (e) {
@@ -423,12 +415,7 @@ async function savePageFiles() {
   if (!pageId) return
   fileSaving.value = true
   try {
-    const resp = await fetch(`${PAGE_API}/${pageId}/__batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editFiles),
-    })
-    if (!resp.ok) throw new Error(await resp.text())
+    await http.post(`${PAGE_API}/${pageId}/__batch`, editFiles)
     for (const k of PAGE_FILE_NAMES) fileDirty[k] = false
     ElMessage.success(`页面 ${pageId} 配置文件已保存`)
   } catch (e) {
@@ -636,15 +623,7 @@ async function doCreate() {
   if (!valid) return
   creating.value = true
   try {
-    const resp = await fetch(`${PAGE_API}/__create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pageId: createForm.pageId, title: createForm.title, icon: createForm.icon }),
-    })
-    if (!resp.ok) {
-      const err = await resp.json() as Record<string, string>
-      throw new Error(err['error'] ?? '创建失败')
-    }
+    await http.post(`${PAGE_API}/__create`, { pageId: createForm.pageId, title: createForm.title, icon: createForm.icon })
 
     // 整合：同步将 pageId 写入当前节点
     if (createForm.linkToNav && selectedNode.value) {

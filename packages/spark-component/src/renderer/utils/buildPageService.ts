@@ -17,7 +17,9 @@ import type {
   IPageUploadFilesOptions,
   IPageUploadedFile,
   PageDialogResult,
+  RequestError,
 } from '@spark-view/spark-utils'
+import { createRequest } from '@spark-view/spark-utils'
 import { pageLogger } from './bind-helpers'
 
 /** ElMessageBox 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常 */
@@ -63,14 +65,6 @@ function extractUploadedUrl(response: unknown): string | undefined {
     return typeof nestedCandidate === 'string' ? nestedCandidate : undefined
   }
   return undefined
-}
-
-async function readResponseData(response: Response): Promise<unknown> {
-  try {
-    return await response.json() as unknown
-  } catch {
-    return await response.text()
-  }
 }
 
 function createFilePicker(options?: IPageBrowseFilesOptions): Promise<IPageSelectedFile[]> {
@@ -140,17 +134,21 @@ async function uploadSelectedFiles(options: IPageUploadFilesOptions): Promise<IP
       formData.append(key, value)
     }
 
-    const requestInit: RequestInit = {
-      method: options.method ?? 'POST',
-      body: formData,
-      credentials: options.withCredentials ? 'include' : 'same-origin',
-    }
+    const client = createRequest()
+    const headers: Record<string, string> = {}
     if (options.headers !== undefined) {
-      requestInit.headers = options.headers
+      Object.assign(headers, options.headers)
     }
 
-    const response = await fetch(options.action, requestInit)
-    const responseData = await readResponseData(response)
+    let responseData: unknown
+    try {
+      responseData = await client.post<unknown>(options.action, formData, {
+        ...(Object.keys(headers).length > 0 ? { headers } : {}),
+        ...(options.withCredentials === true ? { withCredentials: true } : {}),
+      })
+    } catch (err) {
+      responseData = (err as RequestError).response
+    }
     const uploadedUrl = extractUploadedUrl(responseData)
     results.push({
       ...mapFile(file),

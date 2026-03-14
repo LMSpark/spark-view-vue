@@ -22,7 +22,8 @@ import type { AppEnvironment, EnvironmentInfo } from '../types'
 // ==================== 核心依赖 ====================
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
-import { toError } from '@spark-view/spark-utils'
+import { toError, createRequest } from '@spark-view/spark-utils'
+import type { Request as HttpRequest, RequestConfig, RequestError } from '@spark-view/spark-utils'
 import { simpleEnvAdapter as envAdapter } from '../utils/simpleEnv'
 
 // =============================================================================
@@ -59,6 +60,9 @@ export class AuthService implements IAuthService {
 
   /** Token 管理器 */
   private tokenManager!: TokenManager
+
+  /** HTTP 客户端（延迟初始化） */
+  private httpClient: HttpRequest | null = null
 
   /** 初始化状态 */
   private initialized = false
@@ -392,7 +396,7 @@ export class AuthService implements IAuthService {
         {
           method: 'POST',
           headers: this.getAuthHeaders(),
-          credentials: 'include'
+          withCredentials: true
         },
         this.callTimeout
       )
@@ -469,8 +473,8 @@ export class AuthService implements IAuthService {
    * @private
    * @returns 请求头对象
    */
-  private getAuthHeaders(): HeadersInit {
-    const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  private getAuthHeaders(): Record<string, string> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     const token = this.getToken()
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
@@ -509,21 +513,46 @@ export class AuthService implements IAuthService {
 
   private async fetchWithTimeout(
     url: string,
-    options: RequestInit,
+    options: { method?: string; headers?: Record<string, string>; data?: unknown; withCredentials?: boolean },
     timeout: number
-  ): Promise<Response> {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
+  ): Promise<{ ok: boolean; status: number; statusText: string; json: () => Promise<unknown> }> {
+    const client = this.getOrCreateClient(timeout)
+    const method = (options.method?.toUpperCase() ?? 'GET') as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+    const config: RequestConfig = {
+      url,
+      method,
+      timeout,
+    }
+    if (options.withCredentials === true) config.withCredentials = true
+    if (options.headers) config.headers = options.headers
+    if (options.data !== undefined) config.data = options.data
 
     try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal
-      })
-      return response
-    } finally {
-      clearTimeout(timeoutId)
+      const resp = await client.requestFull<unknown>(config)
+      return {
+        ok: resp.status >= 200 && resp.status < 300,
+        status: resp.status,
+        statusText: resp.statusText,
+        json: () => Promise.resolve(resp.data),
+      }
+    } catch (err) {
+      const reqErr = err as RequestError
+      if (reqErr.status !== undefined) {
+        return {
+          ok: false,
+          status: reqErr.status,
+          statusText: reqErr.message,
+          json: () => Promise.resolve(reqErr.response),
+        }
+      }
+      throw err
     }
+  }
+
+  /** 获取或创建 HTTP 客户端（懒初始化） */
+  private getOrCreateClient(timeout?: number): HttpRequest {
+    this.httpClient ??= createRequest({ timeout: timeout ?? this.callTimeout })
+    return this.httpClient
   }
 
   // =============================================================================
@@ -543,8 +572,8 @@ export class AuthService implements IAuthService {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-        credentials: 'include'
+        data: credentials,
+        withCredentials: true
       },
       this.callTimeout
     )
@@ -571,7 +600,7 @@ export class AuthService implements IAuthService {
       {
         method: 'POST',
         headers: this.getAuthHeaders(),
-        credentials: 'include'
+        withCredentials: true
       },
       this.callTimeout
     )
@@ -593,7 +622,7 @@ export class AuthService implements IAuthService {
       {
         method: 'GET',
         headers: this.getAuthHeaders(),
-        credentials: 'include'
+        withCredentials: true
       },
       this.callTimeout
     )

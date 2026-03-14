@@ -56,7 +56,7 @@ import { createLogger } from '../logger'
 import { loadConfig } from '../config'
 import { AuthService } from '../auth'
 import type { AuthConfig } from '../auth/types'
-import { toErrorMessage, toError } from '@spark-view/spark-utils'
+import { toErrorMessage, toError, createRequest } from '@spark-view/spark-utils'
 
 /**
  * =============================================================================
@@ -322,16 +322,18 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_AUTH_TIMEOUT_MS)
   try {
-    const response = await fetch('/api/auth/me', { signal: controller.signal })
-    if (response.ok) {
-      const data = await response.json() as Record<string, unknown>
-      // 运行时校验关键字段存在，防止后端返回非预期结构导致启动崩溃
-      if (data['user'] === undefined || data['tenant'] === undefined || data['env'] === undefined) {
-        bootstrapLogger.error('认证响应缺少必需字段 (user/tenant/env)', { data })
-        return null
-      }
-      return data as unknown as AppContext
+    const client = createRequest({ timeout: DEFAULT_AUTH_TIMEOUT_MS })
+    const resp = await client.requestFull<Record<string, unknown>>({
+      url: '/api/auth/me',
+      signal: controller.signal,
+    })
+    const data = resp.data
+    // 运行时校验关键字段存在，防止后端返回非预期结构导致启动崩溃
+    if (data['user'] === undefined || data['tenant'] === undefined || data['env'] === undefined) {
+      bootstrapLogger.error('认证响应缺少必需字段 (user/tenant/env)', { data })
+      return null
     }
+    return data as unknown as AppContext
   } catch (error) {
     bootstrapLogger.warn('认证请求失败', { error: toErrorMessage(error) })
   } finally {

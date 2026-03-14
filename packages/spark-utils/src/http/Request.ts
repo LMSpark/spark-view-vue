@@ -210,6 +210,7 @@ export class Request {
     if (config.data !== undefined) c.data = config.data
     if (config.headers) c.headers = config.headers
     if (config.signal) c.signal = config.signal
+    if (config.withCredentials) c.withCredentials = true
     return c
   }
 

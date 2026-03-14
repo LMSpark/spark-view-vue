@@ -119,6 +119,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { http } from '@/services/http'
 
 const router = useRouter()
 
@@ -144,9 +145,7 @@ const API_BASE = PAGE_API
 async function loadPages() {
   loading.value = true
   try {
-    const resp = await fetch(`${API_BASE}/__list`)
-    if (!resp.ok) throw new Error(await resp.text())
-    pages.value = await resp.json() as Array<Record<string, unknown>>
+    pages.value = await http.get<Array<Record<string, unknown>>>(`${API_BASE}/__list`)
   } catch (e) {
     ElMessage.error('加载页面列表失败: ' + String(e))
   } finally {
@@ -182,20 +181,15 @@ async function doCreate() {
   }
   creating.value = true
   try {
-    const resp = await fetch(`${API_BASE}/__create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(createForm)
-    })
-    if (!resp.ok) {
-      const err = await resp.json() as Record<string, string>
-      throw new Error(err['error'] ?? '创建失败')
-    }
+    await http.post(`${API_BASE}/__create`, createForm)
     ElMessage.success(`页面 ${createForm.pageId} 创建成功`)
     createVisible.value = false
     await loadPages()
   } catch (e) {
-    ElMessage.error(String(e))
+    const errMsg = (e instanceof Error && 'response' in e)
+      ? ((e as { response?: unknown }).response as Record<string, string> | undefined)?.['error'] ?? e.message
+      : String(e)
+    ElMessage.error(errMsg)
   } finally {
     creating.value = false
   }
@@ -214,15 +208,14 @@ async function confirmDelete(row: Record<string, unknown>) {
     return
   }
   try {
-    const resp = await fetch(`${API_BASE}/${pageId}`, { method: 'DELETE' })
-    if (!resp.ok) {
-      const err = await resp.json() as Record<string, string>
-      throw new Error(err['error'] ?? '删除失败')
-    }
+    await http.delete(`${API_BASE}/${pageId}`)
     ElMessage.success(`页面 ${pageId} 已删除`)
     await loadPages()
   } catch (e) {
-    ElMessage.error(String(e))
+    const errMsg = (e instanceof Error && 'response' in e)
+      ? ((e as { response?: unknown }).response as Record<string, string> | undefined)?.['error'] ?? e.message
+      : String(e)
+    ElMessage.error(errMsg)
   }
 }
 
@@ -260,13 +253,8 @@ async function showEditDialog(row: Record<string, unknown>) {
   const fileNames = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
   for (const fname of fileNames) {
     try {
-      const resp = await fetch(`${API_BASE}/${pageId}/${fname}`)
-      if (resp.ok) {
-        const data = await resp.json() as Record<string, string>
-        editFiles[fname] = data['content'] ?? ''
-      } else {
-        editFiles[fname] = ''
-      }
+      const data = await http.get<Record<string, string>>(`${API_BASE}/${pageId}/${fname}`)
+      editFiles[fname] = data['content'] ?? ''
     } catch {
       editFiles[fname] = ''
     }
@@ -277,12 +265,7 @@ async function showEditDialog(row: Record<string, unknown>) {
 async function doSave() {
   saving.value = true
   try {
-    const resp = await fetch(`${API_BASE}/${editPageId.value}/__batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editFiles)
-    })
-    if (!resp.ok) throw new Error(await resp.text())
+    await http.post(`${API_BASE}/${editPageId.value}/__batch`, editFiles)
     ElMessage.success('保存成功')
     editVisible.value = false
     await loadPages()

@@ -27,6 +27,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 
 import { PAGE_API } from '@/services/api-paths'
+import { http } from '@/services/http'
 
 const FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
 
@@ -61,11 +62,8 @@ async function loadFiles() {
   try {
     await Promise.all(FILE_NAMES.map(async (fname) => {
       try {
-        const resp = await fetch(`${PAGE_API}/${encodeURIComponent(props.pageId)}/${fname}`)
-        if (resp.ok) {
-          const data = await resp.json() as Record<string, string>
-          files[fname] = data['content'] ?? ''
-        }
+        const data = await http.get<Record<string, string>>(`${PAGE_API}/${encodeURIComponent(props.pageId)}/${fname}`)
+        files[fname] = data['content'] ?? ''
       } catch { /* ignore single file failure */ }
     }))
   } finally {
@@ -79,12 +77,7 @@ async function handleSave() {
   try {
     const body: Record<string, string> = {}
     for (const fname of FILE_NAMES) body[fname] = files[fname] ?? ''
-    const resp = await fetch(`${PAGE_API}/${encodeURIComponent(props.pageId)}/__batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    if (!resp.ok) throw new Error(await resp.text())
+    await http.post(`${PAGE_API}/${encodeURIComponent(props.pageId)}/__batch`, body)
     for (const fname of FILE_NAMES) dirty[fname] = false
     ElMessage.success('配置文件已保存')
   } catch (e) {

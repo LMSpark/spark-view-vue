@@ -142,6 +142,7 @@ import { useNavigation } from '@/layout/useNavigation'
 import type { NavNode } from '@/layout/nav-types'
 import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
 import { NAV_API } from '@/services/api-paths'
+import { http } from '@/services/http'
 
 const route = useRoute()
 const router = useRouter()
@@ -164,9 +165,8 @@ const _navRoot = reactive({ childPlacement: 'header' as const, children: [] as N
 const nav = useNavigation(_navRoot)
 
 async function reloadNavigation(): Promise<void> {
-  const resp = await fetch(NAV_API)
-  if (resp.ok) {
-    const data = await resp.json() as { childPlacement?: string; children?: unknown[] }
+  try {
+    const data = await http.get<{ childPlacement?: string; children?: unknown[] }>(NAV_API)
     if (Array.isArray(data.children) && data.children.length > 0) {
       _navRoot.childPlacement = ((data.childPlacement ?? 'header') as typeof _navRoot.childPlacement)
       _navRoot.children = data.children as NavNode[]
@@ -176,23 +176,17 @@ async function reloadNavigation(): Promise<void> {
       navEmpty.value = true
       if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 后端导航数据为空，请通过导航管理页面初始化')
     }
-  } else {
+  } catch {
     navEmpty.value = true
-    if (import.meta.env.DEV) console.warn(`[Nav] ⚠️ 导航 API 返回 ${resp.status}`)
+    if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 导航 API 请求失败')
   }
 }
 
 /** 将种子导航数据写入后端（可随时调用） */
 async function syncSeedNavigation(): Promise<void> {
   const { demoNavRoot } = await import('@/layout/demo-nav')
-  const resp = await fetch(NAV_API, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(demoNavRoot),
-  })
-  if (resp.ok) {
-    await reloadNavigation()
-  }
+  await http.put(NAV_API, demoNavRoot)
+  await reloadNavigation()
 }
 
 onMounted(async () => {

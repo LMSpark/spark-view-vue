@@ -1,4 +1,6 @@
 import { ref } from 'vue'
+import { http } from '@/services/http'
+import { createAuthHeaders } from '@/services/http'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -104,7 +106,7 @@ export function useAiChat(options?: {
 
       const response = await fetch('/api/ai/chat/stream', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...createAuthHeaders() },
         body: JSON.stringify({
           messages: historyMsgs,
           mode,
@@ -194,9 +196,7 @@ export function useAiChat(options?: {
   async function uploadFile(file: File): Promise<FileAttachment> {
     const fd = new FormData()
     fd.append('file', file)
-    const res = await fetch('/api/ai/upload', { method: 'POST', body: fd })
-    if (!res.ok) throw new Error(`上传失败: HTTP ${res.status}`)
-    return (await res.json()) as FileAttachment
+    return await http.post<FileAttachment>('/api/ai/upload', fd)
   }
 
   // ── 清空会话 ─────────────────────────────────────────────────────────────

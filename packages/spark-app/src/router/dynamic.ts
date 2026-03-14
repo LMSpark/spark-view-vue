@@ -8,7 +8,8 @@
 import type { Router, RouteRecordRaw, RouteRecordNormalized } from 'vue-router'
 import type { Component } from 'vue'
 import type { RouteConfig, ConfigLoader } from '@spark-view/spark-page-config'
-import { Logger, SharedErrorCodes, getSharedErrorMessage } from '@spark-view/spark-utils'
+import { Logger, SharedErrorCodes, getSharedErrorMessage, createRequest } from '@spark-view/spark-utils'
+import type { Request } from '@spark-view/spark-utils'
 
 const routerLogger = Logger('SparkApp:DynamicRouter')
 
@@ -71,6 +72,9 @@ export interface DynamicRouterOptions {
 
   /** 路由注册后钩子（仅通知） */
   afterRegister?: (routes: RouteRecordNormalized[]) => void
+
+  /** 动态请求头回调（每次请求时调用，注入 auth/tenant headers） */
+  getHeaders?: () => Record<string, string>
 }
 
 /**
@@ -86,6 +90,8 @@ export class DynamicRouter {
   /** 静态路由声明（用于同步到后端） */
   private staticDeclarations: StaticRouteDeclaration[]
   private apiBaseUrl: string
+  /** 共享 axios 请求实例（统一通道，自动注入 auth/tenant headers） */
+  private request: Request
   private beforeRegister?: DynamicRouterOptions['beforeRegister']
   private afterRegister?: DynamicRouterOptions['afterRegister']
 
@@ -103,6 +109,21 @@ export class DynamicRouter {
     this.apiBaseUrl = options.apiBaseUrl ?? ''
     this.beforeRegister = options.beforeRegister
     this.afterRegister = options.afterRegister
+
+    // 创建共享 Request 实例（同步路由等 API 调用的统一 axios 通道）
+    this.request = createRequest({
+      baseURL: this.apiBaseUrl,
+      timeout: 10_000,
+    })
+    if (options.getHeaders) {
+      const getHeaders = options.getHeaders
+      this.request.interceptors.request.use({
+        onRequest: (config) => {
+          config.headers = { ...config.headers, ...getHeaders() }
+          return config
+        }
+      })
+    }
 
     // 构建 path → Component 映射
     for (const decl of this.staticDeclarations) {
@@ -200,20 +221,10 @@ export class DynamicRouter {
     }))
 
     try {
-      const response = await globalThis.fetch(
-        `${this.apiBaseUrl}/pages-config/__sync-routes`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }
+      const result = await this.request.post<Record<string, unknown>>(
+        '/pages-config/__sync-routes',
+        payload,
       )
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${String(response.status)}`)
-      }
-
-      const result = await response.json() as Record<string, unknown>
       routerLogger.info('静态路由已同步到后端', {
         created: result['created'],
         updated: result['updated'],
