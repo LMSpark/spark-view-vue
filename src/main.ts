@@ -264,9 +264,8 @@ async function startApp() {
     ]
     startupLogger.info(`✅ 已声明 ${staticRoutes.length} 个静态 Vue 组件路由`)
     
-    // 5. 安装 Fetch 拦截器（在 SparkApp.start 之前，确保动态路由 API 请求携带 Token）
-    const { installFetchInterceptor } = await import('./services/auth')
-    installFetchInterceptor()
+    // 5. 导入 auth 工具（getToken/getUser 用于 getHeaders 回调注入 axios 统一通道）
+    const { getToken, getUser } = await import('./services/auth')
 
     // 6. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
@@ -298,6 +297,16 @@ async function startApp() {
         ...appConfig.pageConfig,
         pageComponent: AppPageRendererBridge,
         staticRoutes,
+        // 动态注入认证 / 租户请求头（FileLoader 使用 axios，不经过 fetch 拦截器）
+        getHeaders: () => {
+          const headers: Record<string, string> = {}
+          const token = getToken()
+          const user = getUser()
+          if (token) headers['Authorization'] = `Bearer ${token}`
+          if (user?.tenantId) headers['X-Tenant-Id'] = user.tenantId
+          if (user?.defaultProjectId) headers['X-Project-Id'] = user.defaultProjectId
+          return headers
+        },
       },
       
       // === 应用基础配置（从 JSON 加载）===

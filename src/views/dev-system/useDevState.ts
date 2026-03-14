@@ -47,6 +47,7 @@ export const PAGE_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'styl
 export type PageFileName = typeof PAGE_FILE_NAMES[number]
 
 import { PAGE_API, NAV_API } from '@/services/api-paths'
+import { http } from '@/services/http'
 
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂 — 每个 DevSystem 实例一份
@@ -120,9 +121,7 @@ export function useDevState() {
   async function loadNavConfig() {
     navLoading.value = true
     try {
-      const resp = await fetch(NAV_API)
-      if (!resp.ok) throw new Error()
-      const config = await resp.json() as { childPlacement?: string; children?: NavNode[] }
+      const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(NAV_API)
       treeData.value = config.children?.length
         ? config.children
         : deepClone(demoNavRoot.children)
@@ -137,9 +136,7 @@ export function useDevState() {
 
   async function loadPages() {
     try {
-      const resp = await fetch(`${PAGE_API}/__list`)
-      if (!resp.ok) return
-      pageList.value = await resp.json() as Array<Record<string, unknown>>
+      pageList.value = await http.get<Array<Record<string, unknown>>>(`${PAGE_API}/__list`)
     } catch { /* ignore */ }
   }
 
@@ -152,10 +149,8 @@ export function useDevState() {
     }
     for (const fname of PAGE_FILE_NAMES) {
       try {
-        const resp = await fetch(`${PAGE_API}/${encodeURIComponent(pageId)}/${fname}`)
-        editFiles[fname] = resp.ok
-          ? ((await resp.json() as Record<string, string>)['content'] ?? '')
-          : ''
+        const data = await http.get<Record<string, string>>(`${PAGE_API}/${encodeURIComponent(pageId)}/${fname}`)
+        editFiles[fname] = data['content'] ?? ''
       } catch {
         editFiles[fname] = ''
       }
@@ -280,12 +275,7 @@ export function useDevState() {
     navSaving.value = true
     const root: NavRoot = { childPlacement: 'header', children: treeData.value }
     try {
-      const resp = await fetch(NAV_API, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(root),
-      })
-      if (!resp.ok) throw new Error(await resp.text())
+      await http.put(NAV_API, root)
       navDirty.value = false
       addStatus('导航配置已保存', 'success')
     } catch (e) {
@@ -302,15 +292,9 @@ export function useDevState() {
     applyNavChanges()
     if (!selectedNode.value) return
     const node = selectedNode.value
-    const patch = { ...node } as Record<string, unknown>
-    delete (patch)['children']
+    const { children: _children, ...patch } = node
     try {
-      const resp = await fetch(`${NAV_API}/nodes/${encodeURIComponent(node.id)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      })
-      if (!resp.ok) throw new Error(await resp.text())
+      await http.put(`${NAV_API}/nodes/${encodeURIComponent(node.id)}`, patch)
       navDirty.value = false
       addStatus(`节点 ${node.title} 已保存`, 'success')
     } catch (e) {
@@ -328,12 +312,7 @@ export function useDevState() {
     if (!pageId) return
     fileSaving.value = true
     try {
-      const resp = await fetch(`${PAGE_API}/${encodeURIComponent(pageId)}/__batch`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editFiles),
-      })
-      if (!resp.ok) throw new Error(await resp.text())
+      await http.post(`${PAGE_API}/${encodeURIComponent(pageId)}/__batch`, editFiles)
       for (const k of PAGE_FILE_NAMES) fileDirty[k] = false
       addStatus(`页面 ${pageId} 已保存`, 'success')
       await loadPages()
@@ -384,14 +363,9 @@ export function useDevState() {
     const id = `module-${Date.now()}`
     const node: NavNode = { id, title: '新模块', icon: '📁', childPlacement: 'sidebar', children: [] }
     treeData.value.push(node)
-    // 即时持久化
-    void fetch(`${NAV_API}/nodes`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ node }),
-    }).then(r => r.ok
-      ? addStatus('已添加根模块', 'info')
-      : r.text().then(t => addStatus(`添加模块失败: ${t}`, 'error')),
+    void http.post(`${NAV_API}/nodes`, { node }).then(
+      () => addStatus('已添加根模块', 'info'),
+      (e: unknown) => addStatus(`添加模块失败: ${String(e)}`, 'error'),
     )
   }
 
@@ -399,14 +373,9 @@ export function useDevState() {
     const id = `page-${Date.now()}`
     const node: NavNode = { id, title: '新页面', icon: '📄', path: `/${id}` }
     ;(parent.children ??= []).push(node)
-    // 即时持久化
-    void fetch(`${NAV_API}/nodes`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ parentId: parent.id, node }),
-    }).then(r => r.ok
-      ? addStatus(`已在 ${parent.title} 下添加子节点`, 'info')
-      : r.text().then(t => addStatus(`添加节点失败: ${t}`, 'error')),
+    void http.post(`${NAV_API}/nodes`, { parentId: parent.id, node }).then(
+      () => addStatus(`已在 ${parent.title} 下添加子节点`, 'info'),
+      (e: unknown) => addStatus(`添加节点失败: ${String(e)}`, 'error'),
     )
   }
 
@@ -424,11 +393,10 @@ export function useDevState() {
       clearFiles()
     }
     // 即时持久化
-    void fetch(`${NAV_API}/nodes/${encodeURIComponent(data.id)}`, { method: 'DELETE' })
-      .then(r => r.ok
-        ? addStatus(`已删除 ${data.title}`, 'info')
-        : r.text().then(t => addStatus(`删除节点失败: ${t}`, 'error')),
-      )
+    void http.delete(`${NAV_API}/nodes/${encodeURIComponent(data.id)}`).then(
+      () => addStatus(`已删除 ${data.title}`, 'info'),
+      (e: unknown) => addStatus(`删除节点失败: ${String(e)}`, 'error'),
+    )
   }
 
   function resetToDemo() {
@@ -455,15 +423,7 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   async function createPage(pageId: string, title: string, icon: string, linkToNav: boolean) {
-    const resp = await fetch(`${PAGE_API}/__create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pageId, title, icon }),
-    })
-    if (!resp.ok) {
-      const err = await resp.json() as Record<string, string>
-      throw new Error(err['error'] ?? '创建失败')
-    }
+    await http.post(`${PAGE_API}/__create`, { pageId, title, icon })
 
     if (linkToNav && selectedNode.value) {
       editForm.pageId = pageId

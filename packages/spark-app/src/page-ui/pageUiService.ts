@@ -1,4 +1,6 @@
 import { reactive } from 'vue'
+import { createRequest } from '@spark-view/spark-utils'
+import type { RequestError } from '@spark-view/spark-utils'
 import type {
   IPageBrowseFilesOptions,
   IPageDialogOptions,
@@ -87,14 +89,6 @@ function extractUploadedUrl(response: unknown): string | undefined {
   return undefined
 }
 
-async function readResponseData(response: Response): Promise<unknown> {
-  try {
-    return await response.json() as unknown
-  } catch {
-    return await response.text()
-  }
-}
-
 function normalizeSelectorKeys(value: IPageSelectEntitiesOptions['currentValue'] | undefined): string[] {
   if (Array.isArray(value)) return value.map(item => String(item))
   if (typeof value === 'string') {
@@ -161,17 +155,21 @@ async function uploadFiles(options: IPageUploadFilesOptions): Promise<IPageUploa
       formData.append(key, value)
     }
 
-    const requestInit: RequestInit = {
-      method: options.method ?? 'POST',
-      body: formData,
-      credentials: options.withCredentials ? 'include' : 'same-origin',
-    }
+    const client = createRequest()
+    const headers: Record<string, string> = {}
     if (options.headers !== undefined) {
-      requestInit.headers = options.headers
+      Object.assign(headers, options.headers)
     }
 
-    const response = await fetch(options.action, requestInit)
-    const responseData = await readResponseData(response)
+    let responseData: unknown
+    try {
+      responseData = await client.post<unknown>(options.action, formData, {
+        ...(Object.keys(headers).length > 0 ? { headers } : {}),
+        ...(options.withCredentials === true ? { withCredentials: true } : {}),
+      })
+    } catch (err) {
+      responseData = (err as RequestError).response
+    }
     const uploadedUrl = extractUploadedUrl(responseData)
     results.push({
       ...mapFile(file),

@@ -33,9 +33,10 @@ import {
   Logger,
   SharedErrorCodes,
   getSharedErrorMessage,
-  createFileLoader
+  createFileLoader,
+  createRequest
 } from '@spark-view/spark-utils'
-import type { FileLoader, DerivedLoader } from '@spark-view/spark-utils'
+import type { FileLoader, DerivedLoader, Request } from '@spark-view/spark-utils'
 
 // 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
@@ -52,17 +53,20 @@ const getErrorMessage = getSharedErrorMessage
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DEFAULT_OPTIONS: Required<ConfigLoaderOptions> = {
-  source: 'hybrid',
+/** 必填字段默认值（getHeaders 可选，不在此列） */
+const DEFAULT_OPTIONS = {
+  source: 'hybrid' as const,
   apiBaseUrl: '/api',
-  fileStorage: 'localStorage',
+  fileStorage: 'localStorage' as const,
   enableValidation: false,
-  timeout: REQUEST_TIMEOUT
-}
+  timeout: REQUEST_TIMEOUT,
+} satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders'>
 
 export class PageConfigLoader implements ConfigLoader {
-  private opts: Required<ConfigLoaderOptions>
+  private opts: Required<Omit<ConfigLoaderOptions, 'getHeaders'>> & Pick<ConfigLoaderOptions, 'getHeaders'>
   private fileLoader: FileLoader
+  /** 共享 axios 请求实例（远程 API 调用统一通道，自动注入 auth/tenant headers） */
+  private request: Request
   private readonly pagesConfigBase: string
 
   /**
@@ -77,12 +81,31 @@ export class PageConfigLoader implements ConfigLoader {
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
     this.pagesConfigBase = `${this.opts.apiBaseUrl}/pages-config`
+
+    // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
+    this.request = createRequest({
+      baseURL: this.opts.apiBaseUrl,
+      timeout: this.opts.timeout,
+    })
+    // 动态请求头注入（auth / tenant headers）
+    if (this.opts.getHeaders) {
+      const getHeaders = this.opts.getHeaders
+      this.request.interceptors.request.use({
+        onRequest: (config) => {
+          config.headers = { ...config.headers, ...getHeaders() }
+          return config
+        }
+      })
+    }
+
     this.fileLoader = createFileLoader({
       baseUrl: this.pagesConfigBase,
       storage: this.opts.fileStorage,
       cachePrefix: 'spark_page_',
       fallbackToCache: true,
       timeout: this.opts.timeout,
+      // 动态请求头（认证 / 租户上下文）
+      ...(this.opts.getHeaders && { getHeaders: this.opts.getHeaders }),
       // 分级过期策略配置（可选，使用默认值）
       defaultExpirationLevel: 3,  // 默认15天
       maxCacheSize: 50             // 最多缓存 50 个页面配置
@@ -293,36 +316,34 @@ export class PageConfigLoader implements ConfigLoader {
 
   /** 从远程加载脚本文本（失败时抛出） */
   private async remoteScript(pageId: string): Promise<PageScriptConfig> {
-    const url = `${this.opts.apiBaseUrl}/page/${pageId}/script`
+    const url = `/page/${pageId}/script`
     pageLogger.debug('加载远程脚本', { pageId, url })
 
-    const response = await globalThis.fetch(url)
-    if (!response.ok) {
+    try {
+      const text = await this.request.get<string>(url, undefined, { responseType: 'text' })
+      pageLogger.debug('远程脚本加载成功', { pageId, size: text.length })
+      return text
+    } catch (err) {
       const msg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
-      pageLogger.error('远程脚本加载失败', { pageId, status: response.status })
-      throw new Error(`${msg}: ${url}`)
+      pageLogger.error('远程脚本加载失败', { pageId, error: String(err) })
+      throw new Error(`${msg}: ${this.opts.apiBaseUrl}${url}`)
     }
-
-    const text = await response.text()
-    pageLogger.debug('远程脚本加载成功', { pageId, size: text.length })
-    return text
   }
 
   /** 从远程加载 CSS 文本（失败时抛出）。CSS 是纯文本，不走 JSON 解析。 */
   private async remoteCss(pageId: string): Promise<PageCssConfig> {
-    const url = `${this.opts.apiBaseUrl}/page/${pageId}/css`
+    const url = `/page/${pageId}/css`
     pageLogger.debug('加载远程样式', { pageId, url })
 
-    const response = await globalThis.fetch(url)
-    if (!response.ok) {
+    try {
+      const text = await this.request.get<string>(url, undefined, { responseType: 'text' })
+      pageLogger.debug('远程样式加载成功', { pageId, size: text.length })
+      return text
+    } catch (err) {
       const msg = getErrorMessage(ErrorCodes.CONFIG_LOAD_FAILED)
-      pageLogger.error('远程样式加载失败', { pageId, status: response.status })
-      throw new Error(`${msg}: ${url}`)
+      pageLogger.error('远程样式加载失败', { pageId, error: String(err) })
+      throw new Error(`${msg}: ${this.opts.apiBaseUrl}${url}`)
     }
-
-    const text = await response.text()
-    pageLogger.debug('远程样式加载成功', { pageId, size: text.length })
-    return text
   }
 
   /**
@@ -331,25 +352,15 @@ export class PageConfigLoader implements ConfigLoader {
    * 失败时抛出，由调用方（hybridLoad / remoteResult）处理或透传。
    */
   private async fetchFromRemote<T>(path: string): Promise<T> {
-    const url = `${this.opts.apiBaseUrl}${path}`
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), this.opts.timeout)
+    const url = path
+    pageLogger.debug('发送远程请求', { url: `${this.opts.apiBaseUrl}${path}` })
 
     try {
-      pageLogger.debug('发送远程请求', { url })
-
-      const response = await globalThis.fetch(url, {
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' }
+      const result = await this.request.request<unknown>({
+        url,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
       })
-
-      if (!response.ok) {
-        const msg = getErrorMessage(ErrorCodes.NETWORK_REQUEST_FAILED)
-        pageLogger.error('远程请求失败', { url, status: response.status })
-        throw new Error(`${msg}: HTTP ${response.status}`)
-      }
-
-      const result = await response.json() as unknown
 
       // 标准 API 封装格式 { code, data, message }
       if (typeof result === 'object' && result !== null && 'code' in result) {
@@ -369,11 +380,9 @@ export class PageConfigLoader implements ConfigLoader {
       if (err instanceof Error && err.name === 'AbortError') {
         const msg = getErrorMessage(ErrorCodes.NETWORK_TIMEOUT)
         pageLogger.error('请求超时', { url, timeout: this.opts.timeout })
-        throw new Error(`${msg}: ${url}`)
+        throw new Error(`${msg}: ${this.opts.apiBaseUrl}${url}`)
       }
       throw err
-    } finally {
-      clearTimeout(timeoutId)
     }
   }
 }

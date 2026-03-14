@@ -1,5 +1,6 @@
 import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { createRequest } from '@spark-view/spark-utils'
 import type {
   ChildPlacement,
   NavContextConfig,
@@ -216,19 +217,20 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
       }
 
       const method = remote.method ?? 'GET'
-      const init: RequestInit = { method }
-      if (remote.headers) {
-        init.headers = remote.headers
-      }
+      const client = createRequest()
+      const headers: Record<string, string> = { ...remote.headers }
+      let reqData: unknown
       if (remote.body !== undefined && method !== 'GET') {
-        init.body = JSON.stringify(remote.body)
-        init.headers = { 'Content-Type': 'application/json', ...remote.headers }
+        headers['Content-Type'] = 'application/json'
+        reqData = remote.body
       }
 
-      const resp = await fetch(fetchUrl, init)
-      if (!resp.ok) throw new Error(`HTTP ${String(resp.status)}`)
-
-      let data: unknown = await resp.json()
+      let data: unknown = await client.request<unknown>({
+        url: fetchUrl,
+        method: method as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+        headers,
+        data: reqData,
+      })
 
       // 按 dataPath 逐级取值
       if (remote.dataPath) {

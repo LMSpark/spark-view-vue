@@ -50,6 +50,8 @@ export interface PageConfigOptions {
   apiBaseUrl: string
   /** 请求超时时间 */
   timeout?: number
+  /** 动态请求头回调（每次请求时调用，注入租户上下文） */
+  getHeaders?: () => Record<string, string>
   /** 页面组件（默认使用 PageRenderer） */
   pageComponent?: Component
   /** 首页路径 */
@@ -244,6 +246,7 @@ export async function start(options: StartOptions): Promise<void> {
       }
       
       if (pageConfig.timeout !== undefined) configLoaderOptions.timeout = pageConfig.timeout
+      if (pageConfig.getHeaders) configLoaderOptions.getHeaders = pageConfig.getHeaders
       
       const configLoader = SparkPageConfig.createConfigLoader(configLoaderOptions)
       
@@ -264,6 +267,7 @@ export async function start(options: StartOptions): Promise<void> {
         pageComponent, // FCPageRenderer 或用户提供的组件，if 块已确保非空
         ...(pageConfig.staticRoutes !== undefined && { staticRoutes: pageConfig.staticRoutes }),
         apiBaseUrl: pageConfig.apiBaseUrl,
+        ...(pageConfig.getHeaders !== undefined && { getHeaders: pageConfig.getHeaders }),
         ...(pageConfig.beforeRegister !== undefined && { beforeRegister: pageConfig.beforeRegister }),
         ...(pageConfig.afterRegister !== undefined && { afterRegister: pageConfig.afterRegister })
       }

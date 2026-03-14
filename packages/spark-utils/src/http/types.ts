@@ -36,6 +36,9 @@ export interface RequestConfig {
   /** AbortSignal —— 用于取消请求（组件卸载时中止在途请求） */
   signal?: AbortSignal
 
+  /** 跨域请求携带 cookie（对应 axios withCredentials / fetch credentials:'include'） */
+  withCredentials?: boolean
+
   /** 自定义元数据（透传给拦截器） */
   meta?: Record<string, unknown>
 }
@@ -103,8 +106,10 @@ export interface FileLoadOptions {
   cachePrefix?: string
   /** 超时（ms） */
   timeout?: number
-  /** 自定义请求头 */
+  /** 自定义请求头（静态） */
   headers?: Record<string, string>
+  /** 动态请求头回调（每次请求时调用，优先级高于 headers） */
+  getHeaders?: () => Record<string, string>
   /** 网络失败时降级到缓存 */
   fallbackToCache?: boolean
   /** 

@@ -67,6 +67,7 @@ const router = useRouter()
 
 const searchText = ref('')
 import { PAGE_API } from '@/services/api-paths'
+import { http } from '@/services/http'
 
 const filteredPages = computed(() => {
   const q = searchText.value.toLowerCase()
@@ -111,8 +112,7 @@ async function deletePage(row: Record<string, unknown>) {
     await ElMessageBox.confirm(`确定删除页面 "${pageId}"？`, '确认删除', { type: 'warning' })
   } catch { return }
   try {
-    const resp = await fetch(`${PAGE_API}/${encodeURIComponent(pageId)}`, { method: 'DELETE' })
-    if (!resp.ok) throw new Error(await resp.text())
+    await http.delete(`${PAGE_API}/${encodeURIComponent(pageId)}`)
     ElMessage.success(`页面 ${pageId} 已删除`)
     await props.state.loadPages()
   } catch (e) {

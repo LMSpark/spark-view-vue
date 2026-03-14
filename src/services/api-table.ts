@@ -21,6 +21,8 @@
  */
 
 import { DATA_API } from './api-paths'
+import { http } from './http'
+import type { RequestConfig } from '@spark-view/spark-utils'
 
 const BASE = DATA_API
 
@@ -70,19 +72,26 @@ export class ApiError extends Error {
 // ── 内部请求工具 ──────────────────────────────────────────────────────────────
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const resp = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
-    ...init,
-  })
-  if (resp.status === 204 || resp.headers.get('content-length') === '0') {
-    return undefined as T
+  const method = (init?.method?.toUpperCase() ?? 'GET') as RequestConfig['method']
+  try {
+    // 解析 body（fetch 用 string，axios 用 object）
+    let data: unknown
+    if (init?.body !== undefined && init.body !== null && typeof init.body === 'string') {
+      try { data = JSON.parse(init.body) } catch { data = init.body }
+    }
+    const resp = await http.requestFull<T>({ url, method: method ?? 'GET', data })
+    if (resp.status === 204 || resp.data === undefined || resp.data === null) {
+      return undefined as T
+    }
+    return resp.data
+  } catch (e) {
+    if (e instanceof Error && 'status' in e) {
+      const reqErr = e as Error & { status?: number; response?: unknown }
+      const msg = (reqErr.response as Record<string, string> | null)?.['error'] ?? `HTTP ${reqErr.status ?? 'unknown'}`
+      throw new ApiError(msg, reqErr.status ?? 0, reqErr.response)
+    }
+    throw e
   }
-  const data: unknown = await resp.json()
-  if (!resp.ok) {
-    const msg = (data as Record<string, string> | null)?.['error'] ?? `HTTP ${resp.status}`
-    throw new ApiError(msg, resp.status, data)
-  }
-  return data as T
 }
 
 // ── 表列表 ────────────────────────────────────────────────────────────────────

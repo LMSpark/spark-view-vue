@@ -5,7 +5,7 @@
 
 import type { AppConfig } from '../types'
 import { createLogger } from '../logger'
-import { toErrorMessage } from '@spark-view/spark-utils'
+import { toErrorMessage, createRequest } from '@spark-view/spark-utils'
 
 // ── 多租户配置系统（从 loader.ts 导出） ──
 export { ConfigLoader, TenantResolver, loadAppConfig } from './loader'
@@ -58,29 +58,15 @@ export async function loadConfig(envConfig?: Partial<AppConfig>): Promise<AppCon
  * 获取远程配置
  */
 async function fetchRemoteConfig(): Promise<Partial<AppConfig>> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10_000)
-
   try {
-    const response = await fetch('/api/config', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      signal: controller.signal
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-
-    const body: unknown = await response.json()
+    const client = createRequest({ timeout: 10_000 })
+    const body = await client.get<unknown>('/api/config')
     if (typeof body !== 'object' || body === null) {
       throw new Error('配置接口返回了非对象数据')
     }
     return body as Partial<AppConfig>
-  } finally {
-    clearTimeout(timeoutId)
+  } catch (error) {
+    throw error
   }
 }
 

@@ -105,6 +105,12 @@ export interface ConfigLoaderOptions {
    * 加载超时（毫秒）
    */
   timeout?: number
+
+  /**
+   * 动态请求头回调（每次请求时调用）。
+   * 用于注入认证 / 租户上下文头（如 X-Tenant-Id、X-Project-Id）。
+   */
+  getHeaders?: () => Record<string, string>
 }
 
 /**

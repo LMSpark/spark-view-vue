@@ -70,7 +70,7 @@ export interface DerivedLoader<T> {
 }
 
 export class FileLoader {
-  private opts: Required<FileLoadOptions>
+  private opts: Required<Omit<FileLoadOptions, 'getHeaders'>> & Pick<FileLoadOptions, 'getHeaders'>
   private memCache = new Map<string, CacheEntry<unknown>>()
   private request: Request
   private storage: Storage | null
@@ -92,6 +92,17 @@ export class FileLoader {
       timeout: this.opts.timeout,
       headers: this.opts.headers
     })
+    // 动态 headers 回调：每次请求前注入（如 auth tenant headers）
+    if (options.getHeaders) {
+      const getHeaders = options.getHeaders
+      this.request.interceptors.request.use({
+        onRequest: (config) => {
+          const dynamicHeaders = getHeaders()
+          config.headers = { ...config.headers, ...dynamicHeaders }
+          return config
+        }
+      })
+    }
     this.storage = this.opts.storage === 'localStorage' 
       ? localStorage 
       : this.opts.storage === 'sessionStorage' 

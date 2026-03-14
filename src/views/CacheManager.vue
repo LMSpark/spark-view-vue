@@ -122,6 +122,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { clearAllCache, getCacheStats } from '@spark-view/spark-app'
+import { http } from '@/services/http'
 
 // ── 前端缓存状态 ──────────────────────────────────────────
 const activeTab = ref('frontend')
@@ -247,9 +248,7 @@ const beStats = ref<BackendStats | null>(null)
 async function loadBackendStats() {
   beLoading.value = true
   try {
-    const resp = await fetch('/api/cache/stats')
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-    beStats.value = await resp.json() as BackendStats
+    beStats.value = await http.get<BackendStats>('/api/cache/stats')
   } catch (e) {
     ElMessage.error(`加载后端统计失败: ${e instanceof Error ? e.message : String(e)}`)
   } finally {
@@ -264,8 +263,7 @@ async function handleClearMetadata() {
       '清除元数据缓存',
       { type: 'warning', confirmButtonText: '清除', cancelButtonText: '取消' },
     )
-    const resp = await fetch('/api/cache/clear-metadata', { method: 'POST' })
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+    await http.post('/api/cache/clear-metadata')
     ElMessage.success('组件元数据内存缓存已清除')
     await loadBackendStats()
   } catch (e) {

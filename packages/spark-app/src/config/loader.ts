@@ -11,6 +11,7 @@
 
 import type { AppFullConfig, TenantConfig, ConfigSourceOptions } from './types'
 import { createLogger } from '../logger'
+import { createRequest } from '@spark-view/spark-utils'
 
 const configLogger = createLogger('config')
 
@@ -39,36 +40,17 @@ export class ConfigLoader {
    * 从远程 API 获取配置
    */
   private async fetchFromAPI(url: string, timeout = 5000): Promise<unknown> {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: this.configSource?.api?.headers ?? {}
-      })
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`)
-      }
-
-      return await response.json()
-    } catch (error) {
-      clearTimeout(timeoutId)
-      throw error
-    }
+    const client = createRequest({ timeout })
+    const headers = this.configSource?.api?.headers ?? {}
+    return await client.get<unknown>(url, undefined, { headers })
   }
 
   /**
    * 从本地文件获取配置
    */
   private async fetchFromLocal(path: string): Promise<unknown> {
-    const response = await fetch(path)
-    if (!response.ok) {
-      throw new Error(`Failed to load local config: ${response.statusText}`)
-    }
-    return await response.json()
+    const client = createRequest()
+    return await client.get<unknown>(path)
   }
 
   /**

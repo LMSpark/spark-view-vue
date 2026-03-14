@@ -246,6 +246,7 @@ const previewJson = computed(() => {
 })
 
 import { NAV_API } from '@/services/api-paths'
+import { http } from '@/services/http'
 
 // ── API ──
 const API_BASE = NAV_API
@@ -256,9 +257,7 @@ const navEmpty = ref(false)
 async function loadFromServer() {
   loading.value = true
   try {
-    const resp = await fetch(API_BASE)
-    if (!resp.ok) throw new Error(await resp.text())
-    const config = await resp.json() as { childPlacement?: string; children?: NavNode[] }
+    const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(API_BASE)
     if (config.children && config.children.length > 0) {
       treeData.value = config.children
       navEmpty.value = false
@@ -278,12 +277,7 @@ async function loadFromServer() {
 async function initSeedNavigation() {
   try {
     const { demoNavRoot } = await import('@/layout/demo-nav')
-    const resp = await fetch(API_BASE, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(demoNavRoot),
-    })
-    if (!resp.ok) throw new Error(await resp.text())
+    await http.put(API_BASE, demoNavRoot)
     await loadFromServer()
     ElMessage.success('种子导航数据已初始化')
   } catch (e) {
@@ -518,15 +512,7 @@ async function saveNavConfig() {
   }
   const root: NavRoot = { childPlacement: 'header', children: treeData.value }
   try {
-    const resp = await fetch(API_BASE, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(root),
-    })
-    if (!resp.ok) {
-      const err = await resp.json() as Record<string, string>
-      throw new Error(err['error'] ?? '保存失败')
-    }
+    await http.put(API_BASE, root)
     ElMessage.success('导航配置已保存到服务端')
   } catch (e) {
     ElMessage.error('保存失败: ' + String(e))
