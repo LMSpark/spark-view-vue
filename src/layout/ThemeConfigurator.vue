@@ -151,8 +151,8 @@
 import { computed } from 'vue'
 import { useTheme } from '@spark-view/spark-app'
 import type { ThemeMode } from '@spark-view/spark-app'
-import type { PageMode } from './useTabPages'
-import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from './useColorScheme'
+import type { PageMode } from '@spark-view/spark-app'
+import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from '@spark-view/spark-app'
 
 defineProps<{
   modelValue: boolean

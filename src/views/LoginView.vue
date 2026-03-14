@@ -134,6 +134,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login, register, registerTenant } from '@/services/auth'
+import { refreshRoutes } from '@/services/ai-loop'
 import type { FormInstance, FormRules } from 'element-plus'
 
 const router = useRouter()
@@ -164,6 +165,7 @@ async function handleLogin() {
   errorMsg.value = ''
   try {
     const user = await login(loginForm)
+    await refreshRoutes()
     await router.replace(`/t/${user.tenantId}/dashboard`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '登录失败'

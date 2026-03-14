@@ -697,7 +697,7 @@ onMounted(() => {
   updateStatus('idle')
 })
 
-// 监听 aiDebug query 参数：从 PageManager 跳转过来时自动打开面板并触发调试
+// 监听 aiDebug query 参数：从页面管理跳转过来时自动打开面板并触发调试
 watch(() => route.query['aiDebug'], async (val) => {
   if (val === '1') {
     isOpen.value = true

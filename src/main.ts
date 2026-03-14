@@ -229,10 +229,7 @@ async function startApp() {
       { default: Settings },
       { default: CapabilityDemo },
       { default: TenantConfigDemo },
-      { default: PageManager },
       { default: DevWorkbench },
-      { default: NavModuleManager },
-      { default: SiteManager },
       { default: CacheManager },
       { default: LoginView },
       { default: HomePage },
@@ -243,10 +240,7 @@ async function startApp() {
       import('./views/Settings.vue'),
       import('./views/CapabilityDemo.vue'),
       import('./views/TenantConfigDemo.vue'),
-      import('./views/PageManager.vue'),
       import('./views/dev-system/DevWorkbench.vue'),
-      import('./views/NavModuleManager.vue'),
-      import('./views/SiteManager.vue'),
       import('./views/CacheManager.vue'),
       import('./views/LoginView.vue'),
       import('./views/HomePage.vue'),
@@ -254,18 +248,22 @@ async function startApp() {
     ])
 
     // vue-component 路径 → 组件映射（路由元数据从 DB 动态加载，前端只负责组件解析）
+    // vue-component 相对路径 → 组件映射
+    // 租户前缀由 DynamicRouter.registerRoute() 统一拼接，此处只写相对路径
     const componentMap: Record<string, Component> = {
-      '/t/:tenantId/dashboard':       Dashboard,
-      '/t/:tenantId/capability-demo': CapabilityDemo,
-      '/t/:tenantId/tenant-config':   TenantConfigDemo,
-      '/t/:tenantId/about':           About,
-      '/t/:tenantId/settings':        Settings,
-      '/t/:tenantId/page-manager':    PageManager,
-      '/t/:tenantId/dev':             DevWorkbench,
-      '/t/:tenantId/nav-manager':     NavModuleManager,
-      '/t/:tenantId/site-manager':    SiteManager,
-      '/t/:tenantId/cache-manager':   CacheManager,
-      '/t/:tenantId/app-list':        AppList,
+      '/':                HomePage,
+      '/login':           LoginView,
+      '/dashboard':       Dashboard,
+      '/capability-demo': CapabilityDemo,
+      '/tenant-config':   TenantConfigDemo,
+      '/about':           About,
+      '/settings':        Settings,
+      '/page-manager':    DevWorkbench,  // 页面管理已合并到开发系统
+      '/dev':             DevWorkbench,
+      '/nav-manager':     DevWorkbench,  // 导航管理已合并到开发系统
+      '/site-manager':    DevWorkbench,  // 站点管理已合并到开发系统
+      '/cache-manager':   CacheManager,
+      '/app-list':        AppList,
     }
 
     // 认证前必需路由（登录前可用，不依赖 DB）

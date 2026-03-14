@@ -6,7 +6,6 @@ import type {
   NavContextConfig,
   NavContextInput,
   NavContextItem,
-  NavContextRemoteSource,
   NavContextState,
   NavNode,
   NavRoot,
@@ -40,20 +39,18 @@ function normalizeContextConfig(input: NavContextInput): NavContextConfig {
   return input
 }
 
-/** 将 source 解析为远程配置对象（字符串 → { url }） */
-function resolveRemoteSource(source: string | NavContextRemoteSource): NavContextRemoteSource {
-  return typeof source === 'string' ? { url: source } : source
+/** 将 source 解析为远程 URL（字符串直接作为 url） */
+function resolveRemoteSource(source: string): { url: string } {
+  return { url: source }
 }
 
 interface UseNavigationOptions {
-  /** 权限检查函数（返回 true 表示有权限） */
-  hasPermission?: (perms: string[]) => boolean
+  // reserved for future options
 }
 
-export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions): NavigationContext {
+export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions): NavigationContext {
   const route = useRoute()
   const router = useRouter()
-  const hasPermission = options?.hasPermission ?? (() => true)
 
   // ── 活动路径（从根到当前叶子） ──
   const _activePath = ref<NavNode[]>([])
@@ -75,6 +72,17 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
     return match ? (match[1] ?? '/') : path
   }
 
+  /** 为裸路径添加当前租户前缀（/xxx → /t/{tenantId}/xxx） */
+  function addTenantPrefix(path: string): string {
+    // 已有租户前缀或为根路径 / 登录路径 → 不转换
+    if (path.startsWith('/t/')) return path
+    const tenantId = route.params['tenantId']
+    if (typeof tenantId === 'string' && tenantId) {
+      return `/t/${tenantId}${path}`
+    }
+    return path
+  }
+
   watch(
     () => route.path,
     (path) => {
@@ -94,11 +102,7 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
   }
 
   function filterVisible(nodes: NavNode[]): NavNode[] {
-    return sortNodes(nodes).filter((n) => {
-      if (n.hidden) return false
-      if (n.permissions?.length && !hasPermission(n.permissions)) return false
-      return true
-    })
+    return sortNodes(nodes).filter((n) => !n.hidden)
   }
 
   /* ────────────────────────────────────────────
@@ -121,10 +125,15 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
    * ──────────────────────────────────────────── */
 
   const regionItems = computed<RegionItems>(() => {
-    const regions: RegionItems = { header: [], sidebar: [] }
+    const regions: RegionItems = { header: [], sidebar: [], toolbar: [] }
 
     // 根级子项放入指定区域
     regions[navRoot.childPlacement] = filterVisible(navRoot.children)
+
+    // 工具栏项（始终可见，与活动路径无关）
+    if (navRoot.toolbar?.length) {
+      regions.toolbar = filterVisible(navRoot.toolbar)
+    }
 
     // 沿活动路径，每个有子节点的非叶节点根据 childPlacement 放入对应区域
     for (const node of _activePath.value) {
@@ -141,6 +150,7 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
   const regionVisibility = computed<RegionVisibility>(() => ({
     header: regionItems.value.header.length > 0,
     sidebar: regionItems.value.sidebar.length > 0,
+    toolbar: regionItems.value.toolbar.length > 0,
   }))
 
   /** 解析 childPlacement（'parent' 向上追溯到祖先的非 parent 值） */
@@ -197,7 +207,7 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
   }
 
   async function loadContextItems(state: NavContextState) {
-    const { source, cacheable } = state.config
+    const { source } = state.config
 
     // 静态数据
     if (Array.isArray(source)) {
@@ -209,7 +219,7 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
     const remote = resolveRemoteSource(source)
 
     // 缓存命中
-    if (cacheable !== false && _contextCache.has(state.nodeId)) {
+    if (_contextCache.has(state.nodeId)) {
       state.items = _contextCache.get(state.nodeId) ?? []
       return
     }
@@ -218,45 +228,15 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
     state.loading = true
     state.error = null
     try {
-      let fetchUrl = remote.url
-      if (remote.params) {
-        const qs = new URLSearchParams(remote.params).toString()
-        fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + qs
-      }
-
-      const method = remote.method ?? 'GET'
       const client = createRequest()
-      const headers: Record<string, string> = { ...remote.headers }
-      let reqData: unknown
-      if (remote.body !== undefined && method !== 'GET') {
-        headers['Content-Type'] = 'application/json'
-        reqData = remote.body
-      }
-
-      let data: unknown = await client.request<unknown>({
-        url: fetchUrl,
-        method: method as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-        headers,
-        data: reqData,
+      const data = await client.request<unknown>({
+        url: remote.url,
+        method: 'GET',
       })
-
-      // 按 dataPath 逐级取值
-      if (remote.dataPath) {
-        for (const seg of remote.dataPath.split('.')) {
-          if (data !== null && data !== undefined && typeof data === 'object') {
-            data = (data as Record<string, unknown>)[seg]
-          } else {
-            data = undefined
-            break
-          }
-        }
-      }
 
       const items = (Array.isArray(data) ? data : []) as NavContextItem[]
       state.items = items
-      if (cacheable !== false) {
-        _contextCache.set(state.nodeId, items)
-      }
+      _contextCache.set(state.nodeId, items)
     } catch (e) {
       state.error = e instanceof Error ? e.message : String(e)
     } finally {
@@ -328,13 +308,13 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
 
     // 重定向
     if (node.redirect) {
-      void router.push(node.redirect)
+      void router.push(addTenantPrefix(node.redirect))
       return
     }
 
     // 叶子节点
     if (node.path) {
-      void router.push(node.path)
+      void router.push(addTenantPrefix(node.path))
       return
     }
 
@@ -342,7 +322,7 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
     if (node.children?.length) {
       const leaf = findFirstLeaf(node.children)
       if (leaf?.path) {
-        void router.push(leaf.path)
+        void router.push(addTenantPrefix(leaf.path))
       }
     }
   }
@@ -364,22 +344,11 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
    * ──────────────────────────────────────────── */
 
   function getBadge(nodeId: string): string | number | undefined {
-    return _badges[nodeId] ?? findNodeById(navRoot.children, nodeId)?.badge
+    return _badges[nodeId]
   }
 
-  /* ────────────────────────────────────────────
-   * 节点查找
-   * ──────────────────────────────────────────── */
-
-  function findNodeById(nodes: NavNode[], id: string): NavNode | undefined {
-    for (const node of nodes) {
-      if (node.id === id) return node
-      if (node.children) {
-        const found = findNodeById(node.children, id)
-        if (found) return found
-      }
-    }
-    return undefined
+  function setBadge(nodeId: string, value: string | number | undefined) {
+    _badges[nodeId] = value
   }
 
   /* ────────────────────────────────────────────
@@ -401,6 +370,7 @@ export function useNavigation(navRoot: NavRoot, options?: UseNavigationOptions):
     setContextValue,
     isNodeActive,
     getBadge,
+    setBadge,
   }
 
   provide(NAV_KEY, context)

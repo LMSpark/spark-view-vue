@@ -7,12 +7,12 @@ export { default as AppTabBar } from './AppTabBar.vue'
 export { default as NavHeaderBar } from './NavHeaderBar.vue'
 export { default as NavContextSelector } from './NavContextSelector.vue'
 export { default as ThemeConfigurator } from './ThemeConfigurator.vue'
-export { useTabPages } from './useTabPages'
-export type { TabPage, PageMode } from './useTabPages'
-export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from './useColorScheme'
-export type { PrimaryPreset, NavPreset, NavColorSet } from './useColorScheme'
-export { useNavigation, useNav } from './useNavigation'
-export { NAV_KEY } from './nav-types'
+export { useTabPages } from '@spark-view/spark-app'
+export type { TabPage, PageMode } from '@spark-view/spark-app'
+export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from '@spark-view/spark-app'
+export type { PrimaryPreset, NavPreset, NavColorSet } from '@spark-view/spark-app'
+export { useNavigation, useNav } from '@spark-view/spark-app'
+export { NAV_KEY } from '@spark-view/spark-app'
 export type {
   NavNode,
   NavRoot,
@@ -20,10 +20,9 @@ export type {
   ChildPlacement,
   NavContextConfig,
   NavContextInput,
-  NavContextRemoteSource,
   NavContextItem,
   NavContextState,
   RegionItems,
   RegionVisibility,
   NavigationContext,
-} from './nav-types'
+} from '@spark-view/spark-app'

@@ -23,34 +23,16 @@ export interface NavContextItem {
   title: string
 }
 
-/** 远程数据源（高级配置，仅当默认 GET + 直接返回数组不满足时使用） */
-export interface NavContextRemoteSource {
-  /** 请求 URL */
-  url: string
-  /** HTTP 方法（默认 GET） */
-  method?: string
-  /** URL 查询参数 */
-  params?: Record<string, string>
-  /** 请求头 */
-  headers?: Record<string, string>
-  /** 请求体（仅 POST/PUT，自动 JSON.stringify） */
-  body?: unknown
-  /** 响应数据路径（如 'data.items'，按 . 逐级取值；缺省取整个响应体） */
-  dataPath?: string
-}
-
 /** 上下文选择器完整配置 */
 export interface NavContextConfig {
-  /** 数据来源：URL 字符串 | 静态数组 | 远程详细配置 */
-  source: string | NavContextItem[] | NavContextRemoteSource
+  /** 数据来源：URL 字符串（GET，响应 = NavContextItem[]） | 静态数组 */
+  source: string | NavContextItem[]
   /** 占位文本（默认 '请选择'） */
   placeholder?: string
   /** 默认值 */
   defaultValue?: string | number
   /** URL query 参数名（选中值同步到 route.query；缺省不同步） */
   paramName?: string
-  /** 是否缓存远程数据（默认 true） */
-  cacheable?: boolean
 }
 
 /**
@@ -67,42 +49,36 @@ export type NavContextInput = string | NavContextItem[] | NavContextConfig
 export interface NavNode {
   /** 唯一标识 */
   id: string
-  /** 节点类型（默认 'item'） */
-  type?: NavNodeType
+  /** 节点类型 */
+  type: NavNodeType
   /** 显示标题 */
   title: string
+  /** 节点用途描述（AI 理解语义 + UI tooltip） */
+  description?: string
   /** 图标 */
   icon?: string
-  /** 路由路径（叶子节点） */
+  /** 路由路径（item 节点） */
   path?: string
-  /** 页面类型：'config'（配置驱动）| 'vue-component'（Vue 组件），默认 'config' */
-  pageType?: NavPageType
-  /** 页面配置 ID */
-  pageId?: string
-  /** 点击重定向路径（组节点使用） */
-  redirect?: string
   /** 外部链接（新窗口打开） */
   externalUrl?: string
-  /** 子项存放位置 */
+  /** 页面类型：'config'（配置驱动）| 'vue-component'（Vue 组件），默认 'config' */
+  pageType?: NavPageType
+  /** 子节点（group 节点） */
+  children?: NavNode[]
+  /** 子项存放位置（group 节点） */
   childPlacement?: ChildPlacement
+  /** 默认重定向路径（group 节点） */
+  redirect?: string
   /** 上下文选择器（字符串=URL / 数组=静态列表 / 对象=完整配置） */
   context?: NavContextInput
-  /** 子节点 */
-  children?: NavNode[]
   /** 排序权重（默认 0，升序） */
   order?: number
   /** 隐藏（不显示在菜单，但参与活动路径计算） */
   hidden?: boolean
   /** 禁用（灰色不可交互） */
   disabled?: boolean
-  /** 角标 */
-  badge?: string | number
-  /** 权限标识 */
-  permissions?: string[]
-  /** 固定到标签栏（不可关闭） */
-  affix?: boolean
-  /** 扩展元数据 */
-  meta?: Record<string, unknown>
+  /** 工具栏动作标识符（toolbar 节点，匹配内置按钮） */
+  action?: string
 }
 
 /** 导航根配置（根节点只允许 header / sidebar 两种放置位置） */
@@ -111,6 +87,8 @@ export interface NavRoot {
   childPlacement: 'header' | 'sidebar'
   /** 顶层子节点 */
   children: NavNode[]
+  /** 工具栏项（右上角操作按钮，按 action 匹配内置组件） */
+  toolbar?: NavNode[]
 }
 
 /* ── 派生类型（useNavigation 使用） ── */
@@ -119,12 +97,14 @@ export interface NavRoot {
 export interface RegionItems {
   header: NavNode[]
   sidebar: NavNode[]
+  toolbar: NavNode[]
 }
 
 /** 区域可见性 */
 export interface RegionVisibility {
   header: boolean
   sidebar: boolean
+  toolbar: boolean
 }
 
 /** 上下文选择器运行时状态 */
@@ -154,8 +134,10 @@ export interface NavigationContext {
   setContextValue: (value: string | number | null) => void
   /** 判断节点是否在活动路径上 */
   isNodeActive: (node: NavNode) => boolean
-  /** 获取节点的角标 */
+  /** 获取节点的角标（运行时动态设定） */
   getBadge: (nodeId: string) => string | number | undefined
+  /** 设置节点的角标（运行时 API） */
+  setBadge: (nodeId: string, value: string | number | undefined) => void
 }
 
 /** Vue 注入键 */

@@ -41,14 +41,43 @@
 
       <!-- 中栏：工作区 -->
       <div class="dev-body__workspace">
-        <!-- 选中了节点 -->
-        <template v-if="state.selectedNode.value">
-          <el-tabs v-model="workTab" type="border-card" class="workspace-tabs">
-            <!-- � 节点属性（始终可用） -->
-            <el-tab-pane label="🔧 节点属性" name="props">
+        <el-tabs v-model="workTab" type="border-card" class="workspace-tabs">
+          <!-- 🔧 节点属性（选中节点时可用） -->
+          <el-tab-pane label="🔧 节点属性" name="props" :disabled="!state.selectedNode.value">
+            <template v-if="state.selectedNode.value">
               <DevNodeProps :state="state" @create-page="showCreateDialogLinked" />
+            </template>
+            <el-empty v-else description="👈 在左侧树中选择节点开始编辑" />
+          </el-tab-pane>
+          <!-- 🔧 工具栏配置（始终可用，站点级） -->
+          <el-tab-pane label="🔧 工具栏" name="toolbar">
+              <div class="toolbar-panel-inner">
+                <div class="toolbar-panel-header">
+                  <span>右上角按钮配置</span>
+                  <el-button size="small" type="primary" @click="state.addToolbarItem()">➕ 新增按钮</el-button>
+                </div>
+                <div v-if="!state.toolbarItems.value.length" class="toolbar-empty">
+                  无工具栏配置（默认显示全部内置按钮）
+                </div>
+                <div v-else class="toolbar-items">
+                  <div v-for="(item, idx) in state.toolbarItems.value" :key="item.id" class="toolbar-item-row">
+                    <el-input v-model="item.id" placeholder="ID" style="width: 120px" @change="state.markNavDirty" />
+                    <el-input v-model="item.title" placeholder="标题" style="width: 120px" @change="state.markNavDirty" />
+                    <EmojiPicker v-model="item.icon" placeholder="图标" @update:model-value="state.markNavDirty" />
+                    <el-select v-model="item.action" placeholder="动作" style="width: 150px" @change="state.markNavDirty">
+                      <el-option value="ai-design" label="AI 协同设计" />
+                      <el-option value="ai-chat" label="AI 对话" />
+                      <el-option value="search" label="搜索" />
+                      <el-option value="fullscreen" label="全屏" />
+                      <el-option value="notifications" label="通知" />
+                      <el-option value="theme-toggle" label="主题切换" />
+                    </el-select>
+                    <el-switch v-model="item.hidden" active-text="隐藏" @change="state.markNavDirty" />
+                    <el-button size="small" link type="danger" @click="state.removeToolbarItem(idx)">🗑️</el-button>
+                  </div>
+                </div>
+              </div>
             </el-tab-pane>
-
             <!-- 4 个配置文件 tab（配置页面时） -->
             <template v-if="state.activePageId.value">
               <el-tab-pane v-for="fname in PAGE_FILE_NAMES" :key="fname" :name="fname">
@@ -82,12 +111,6 @@
               </el-tab-pane>
             </template>
           </el-tabs>
-        </template>
-
-        <!-- 未选中节点 -->
-        <div v-else class="workspace-empty">
-          <el-empty description="👈 在左侧树中选择节点开始编辑" />
-        </div>
 
         <!-- 工作区底栏 -->
         <div class="workspace-footer">
@@ -200,6 +223,7 @@ import { useDevState, PAGE_FILE_NAMES } from './useDevState'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevAiPanel from './DevAiPanel.vue'
+import EmojiPicker from '@/components/EmojiPicker.vue'
 
 const router = useRouter()
 const state = useDevState()
@@ -519,5 +543,34 @@ onMounted(() => { void state.initialize() })
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ═══ 工具栏配置面板 ═══ */
+.toolbar-panel-inner {
+  padding: 12px 8px;
+}
+.toolbar-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.toolbar-empty {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  padding: 8px 0;
+}
+.toolbar-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toolbar-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 </style>

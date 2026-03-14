@@ -20,7 +20,11 @@
         </template>
       </el-dropdown>
     </div>
+    <el-empty v-if="state.navEmpty.value" description="后端导航数据为空">
+      <el-button type="primary" @click="state.initSeedNavigation()">🚀 初始化种子导航数据</el-button>
+    </el-empty>
     <el-tree
+      v-else
       ref="treeRef"
       :data="state.treeData.value"
       node-key="id"
@@ -38,10 +42,11 @@
           <span class="node-icon">{{ data.icon ?? '📄' }}</span>
           <span class="node-label">{{ data.title }}</span>
           <span v-if="data.path" class="node-path">{{ data.path }}</span>
-          <el-tag v-if="data.pageId" size="small" type="success" class="node-tag"
-                  :title="`关联: ${String(data.pageId)}`">📑</el-tag>
           <el-tag v-if="data.childPlacement" size="small" type="info" class="node-tag">
             {{ data.childPlacement }}
+          </el-tag>
+          <el-tag v-if="data.context" size="small" type="warning" class="node-tag">
+            context
           </el-tag>
           <span class="node-actions">
             <el-button size="small" link type="primary" @click.stop="state.addChildNode(data)">➕</el-button>
@@ -72,8 +77,7 @@ function filterNode(value: string, data: NavNode) {
   const v = value.toLowerCase()
   return data.title.toLowerCase().includes(v) ||
     data.id.toLowerCase().includes(v) ||
-    (data.path?.toLowerCase().includes(v) ?? false) ||
-    (data.pageId?.toLowerCase().includes(v) ?? false)
+    (data.path?.toLowerCase().includes(v) ?? false)
 }
 
 function handleNodeClick(data: NavNode) {

@@ -1,4 +1,4 @@
-import type { NavRoot } from './nav-types'
+import type { NavRoot } from '@spark-view/spark-app'
 
 /**
  * 演示导航树 — 将 routes.json 中的扁平路由组织为模块化导航。
@@ -11,98 +11,112 @@ import type { NavRoot } from './nav-types'
  */
 export const demoNavRoot: NavRoot = {
   childPlacement: 'header',
+  toolbar: [
+    { id: 'tb-ai-design', type: 'item', title: 'AI 协同设计', icon: '🎨', action: 'ai-design' },
+    { id: 'tb-ai-chat', type: 'item', title: 'AI 对话', icon: '💬', action: 'ai-chat' },
+    { id: 'tb-search', type: 'item', title: '搜索', icon: '🔍', action: 'search' },
+    { id: 'tb-fullscreen', type: 'item', title: '全屏', icon: '⛶', action: 'fullscreen' },
+    { id: 'tb-notifications', type: 'item', title: '通知', icon: '🔔', action: 'notifications' },
+    { id: 'tb-theme', type: 'item', title: '主题切换', icon: '🌙', action: 'theme-toggle' },
+  ],
   children: [
-    /* ── 首页（叶子，固定标签） ── */
+    /* ── 首页（叶子） ── */
     {
       id: 'home',
+      type: 'item',
       title: '工作台',
+      description: '个人工作台仪表板，汇总待办与统计',
       icon: '📊',
       path: '/',
       pageType: 'vue-component',
-      affix: true,
     },
 
     /* ── 数据演示模块 → sidebar + 模块级上下文选项 ── */
     {
       id: 'data-demos',
+      type: 'group',
       title: '数据管理',
+      description: '数据绑定、级联、异步加载等数据层演示',
       icon: '🔗',
       childPlacement: 'sidebar',
       redirect: '/dataset-demo',
-      // 模块级上下文选项（NavContextInput 静态列表简写）
-      // 进入该模块的任意子页面时，Header/Sidebar 尾部会显示选择器
       context: [
         { id: 'proj-a', title: '项目 A — 电商平台' },
         { id: 'proj-b', title: '项目 B — 内部 OA' },
         { id: 'proj-c', title: '项目 C — 数据中台' },
       ],
       children: [
-        { id: 'dataset-demo', title: 'DataSet 主从表', icon: '🔗', path: '/dataset-demo' },
-        { id: 'cascade-demo', title: '级联操作', icon: '⚡', path: '/cascade-demo' },
-        { id: 'async-demo', title: '异步数据', icon: '🔄', path: '/async-demo' },
-        { id: 'smart-load', title: '智能依赖加载', icon: '🧠', path: '/smart-load' },
-        { id: 'master-detail', title: 'Master-Detail', icon: '🔗', path: '/master-detail' },
-        { id: 'test-order', title: '订单测试', icon: '📦', path: '/test-order' },
+        { id: 'dataset-demo', type: 'item', title: 'DataSet 主从表', icon: '🔗', path: '/dataset-demo' },
+        { id: 'cascade-demo', type: 'item', title: '级联操作', icon: '⚡', path: '/cascade-demo' },
+        { id: 'async-demo', type: 'item', title: '异步数据', icon: '🔄', path: '/async-demo' },
+        { id: 'smart-load', type: 'item', title: '智能依赖加载', icon: '🧠', path: '/smart-load' },
+        { id: 'master-detail', type: 'item', title: 'Master-Detail', icon: '🔗', path: '/master-detail' },
+        { id: 'test-order', type: 'item', title: '订单测试', icon: '📦', path: '/test-order' },
       ],
     },
 
     /* ── 组件演示模块 → sidebar ── */
     {
       id: 'component-demos',
+      type: 'group',
       title: '组件演示',
+      description: '渲染器容器、表格、表单、栅格等 UI 组件演示',
       icon: '🧩',
       childPlacement: 'sidebar',
       redirect: '/renderer-demo',
       children: [
-        { id: 'renderer-demo', title: 'Renderer 架构', icon: '🎨', path: '/renderer-demo' },
-        { id: 'section-grid', title: 'Section 栅格', icon: '🧩', path: '/section-grid-demo' },
-        { id: 'el-table-demo', title: 'el-table 操作列', icon: '📋', path: '/el-table-demo' },
-        { id: 'vxe-demo', title: 'VXE 表格', icon: '📈', path: '/vxe-demo' },
-        { id: 'formcreate-api', title: 'Form-Create API', icon: '🔧', path: '/formcreate-api' },
-        { id: 'filter-demo', title: '过滤面板', icon: '🔍', path: '/filter-demo' },
-        { id: 'capability-demo', title: '能力管理演示', icon: '🎯', path: '/capability-demo', pageType: 'vue-component' },
-        { id: 'tenant-config', title: '多租户配置', icon: '🏢', path: '/tenant-config', pageType: 'vue-component' },
+        { id: 'renderer-demo', type: 'item', title: 'Renderer 架构', icon: '🎨', path: '/renderer-demo' },
+        { id: 'section-grid', type: 'item', title: 'Section 栅格', icon: '🧩', path: '/section-grid-demo' },
+        { id: 'el-table-demo', type: 'item', title: 'el-table 操作列', icon: '📋', path: '/el-table-demo' },
+        { id: 'vxe-demo', type: 'item', title: 'VXE 表格', icon: '📈', path: '/vxe-demo' },
+        { id: 'formcreate-api', type: 'item', title: 'Form-Create API', icon: '🔧', path: '/formcreate-api' },
+        { id: 'filter-demo', type: 'item', title: '过滤面板', icon: '🔍', path: '/filter-demo' },
+        { id: 'capability-demo', type: 'item', title: '能力管理演示', icon: '🎯', path: '/capability-demo', pageType: 'vue-component' },
+        { id: 'tenant-config', type: 'item', title: '多租户配置', icon: '🏢', path: '/tenant-config', pageType: 'vue-component' },
       ],
     },
 
-    /* ── 树形结构模块 → sidebar（含 parent 嵌套） ── */
+    /* ── 树形结构模块 → sidebar ── */
     {
       id: 'tree-demos',
+      type: 'group',
       title: '树形结构',
+      description: '树组件、TreeTable、Node Scope 等树形结构演示',
       icon: '🌳',
       childPlacement: 'sidebar',
       redirect: '/tree-demo',
       children: [
-        { id: 'tree-demo', title: '树形结构演示', icon: '🌳', path: '/tree-demo' },
-        { id: 'treetable-demo', title: 'TreeTable 演示', icon: '🌲', path: '/treetable-demo' },
-        { id: 'tree-node-scope', title: 'Node Scope', icon: '🌿', path: '/tree-node-scope-demo' },
+        { id: 'tree-demo', type: 'item', title: '树形结构演示', icon: '🌳', path: '/tree-demo' },
+        { id: 'treetable-demo', type: 'item', title: 'TreeTable 演示', icon: '🌲', path: '/treetable-demo' },
+        { id: 'tree-node-scope', type: 'item', title: 'Node Scope', icon: '🌿', path: '/tree-node-scope-demo' },
       ],
     },
 
     /* ── 系统管理模块 → sidebar（含 parent 子菜单） ── */
     {
       id: 'system',
+      type: 'group',
       title: '系统管理',
+      description: '平台级管理功能：用户、权限、导航、缓存、页面配置',
       icon: '⚙️',
       childPlacement: 'sidebar',
       redirect: '/users',
       children: [
-        { id: 'users', title: '用户管理', icon: '👥', path: '/users' },
-        { id: 'permission-render', title: '权限渲染', icon: '🎨', path: '/permission-render' },
-        { id: 'page-manager', title: '页面管理', icon: '📄', path: '/page-manager', pageType: 'vue-component' },
-        { id: 'dev-system', title: '开发系统', icon: '⚡', path: '/dev', pageType: 'vue-component' },
-        { id: 'cache-manager', title: '缓存管理', icon: '🗄️', path: '/cache-manager', pageType: 'vue-component' },
-        { id: 'nav-manager', title: '导航模块管理', icon: '🧭', path: '/nav-manager', pageType: 'vue-component' },
-        { id: 'site-manager', title: '站点管理', icon: '🏗️', path: '/site-manager', pageType: 'vue-component' },
-        { id: 'dashboard', title: '管理仪表板', icon: '🏠', path: '/dashboard', pageType: 'vue-component' },
-        { id: 'about', title: '关于系统', icon: 'ℹ️', path: '/about', pageType: 'vue-component' },
+        { id: 'users', type: 'item', title: '用户管理', icon: '👥', path: '/users' },
+        { id: 'permission-render', type: 'item', title: '权限渲染', icon: '🎨', path: '/permission-render' },
+        { id: 'dev-system', type: 'item', title: '开发系统', icon: '⚡', path: '/dev', pageType: 'vue-component' },
+        { id: 'cache-manager', type: 'item', title: '缓存管理', icon: '🗄️', path: '/cache-manager', pageType: 'vue-component' },
+        { id: 'dashboard', type: 'item', title: '管理仪表板', icon: '🏠', path: '/dashboard', pageType: 'vue-component' },
+        { id: 'about', type: 'item', title: '关于系统', icon: 'ℹ️', path: '/about', pageType: 'vue-component' },
         {
           id: 'system-settings',
+          type: 'group',
           title: '系统设置',
+          description: '平台基本设置与参数配置',
           icon: '⚙️',
           childPlacement: 'parent',
           children: [
-            { id: 'settings', title: '基本设置', icon: '⚙️', path: '/settings', pageType: 'vue-component' },
+            { id: 'settings', type: 'item', title: '基本设置', icon: '⚙️', path: '/settings', pageType: 'vue-component' },
           ],
         },
       ],
@@ -111,7 +125,9 @@ export const demoNavRoot: NavRoot = {
     /* ── AI Studio（独立叶子） ── */
     {
       id: 'ai-studio',
+      type: 'item',
       title: 'AI Studio',
+      description: 'AI 驱动的可视化页面设计工作室',
       icon: '🤖',
       path: '/ai-studio',
       pageType: 'vue-component',
@@ -120,7 +136,9 @@ export const demoNavRoot: NavRoot = {
     /* ── AI 迭代测试 ── */
     {
       id: 'ai-test',
+      type: 'item',
       title: 'AI 迭代测试',
+      description: 'AI 页面生成与迭代优化的测试场',
       icon: '🧪',
       path: '/ai-test',
       pageType: 'vue-component',

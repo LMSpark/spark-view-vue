@@ -162,7 +162,6 @@ export type {
   NavContextItem,
   NavContextConfig,
   NavContextInput,
-  NavContextRemoteSource,
   RegionItems,
   RegionVisibility,
   ChildPlacement,
