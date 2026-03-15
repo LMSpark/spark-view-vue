@@ -1,8 +1,12 @@
 /**
- * DynamicRouter 导航访问模块
+ * DynamicRouter 导航访问模块（基础设施层）
  *
- * 提供对 DynamicRouter 实例的模块级访问，将导航基础设施从 AI 循环模块中解耦。
+ * 提供对 DynamicRouter 实例的模块级同步访问，用于非组件上下文（路由守卫、登录跳转等）。
  * start.ts 在启动时通过 setDynamicRouter() 注入实例，后续通过导出函数读取。
+ *
+ * 与 useNavigation.ts 的关系：
+ * - nav-access：同步、无 Vue 依赖、用于基础设施层（main.ts 路由守卫、LoginView 跳转）
+ * - useNavigation：响应式 Vue composable、用于组件树内 UI 渲染和导航操作
  */
 import type { NavRoot } from './nav-types'
 

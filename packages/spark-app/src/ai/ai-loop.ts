@@ -31,6 +31,13 @@
 
 import { ref } from 'vue'
 import { createRequest } from '@spark-view/spark-utils'
+import { clearPageCache } from './page-cache'
+import { onPageConfigChange } from './sse-events'
+
+// 重导出：保持 index.ts 导入路径不变
+export { ServerEventType, onServerEvent, onPageConfigChange } from './sse-events'
+export type { ServerEventTypeName, FileChangeEvent } from './sse-events'
+export { setConfigLoader, clearPageCache, clearAllCache, getCacheStats } from './page-cache'
 
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
 const http = createRequest({ timeout: 240_000 })
@@ -113,130 +120,6 @@ export interface AIPageLoopOptions {
   skillCatalog?: string | undefined
 }
 
-// ─── 统一 SSE 事件总线（单例，按事件类型分发） ──────────────────────────────
-
-/**
- * 服务端 SSE 事件类型常量
- * 与后端 SseService.EVENT_* 保持一致
- */
-export const ServerEventType = {
-  PAGE_CONFIG: 'page-config',
-} as const
-
-export type ServerEventTypeName = (typeof ServerEventType)[keyof typeof ServerEventType]
-
-export interface FileChangeEvent {
-  pageId: string
-  file: string
-  timestamp: number
-}
-
-/** 按事件类型存储的订阅回调集合 */
-const _eventSubscribers = new Map<string, Set<(data: unknown) => void>>()
-let _sharedEs: EventSource | null = null
-let _retryCount = 0
-const _MAX_RETRIES = 5
-
-function _totalSubscribers(): number {
-  let count = 0
-  for (const set of _eventSubscribers.values()) {
-    count += set.size
-  }
-  return count
-}
-
-function _ensureConnection(): void {
-  if (_sharedEs) return
-  _retryCount = 0
-  const es = new EventSource('/api/events')
-  _sharedEs = es
-
-  // 为已有订阅的事件类型注册 listener
-  for (const eventType of _eventSubscribers.keys()) {
-    _addEsListener(es, eventType)
-  }
-
-  es.onerror = () => {
-    _retryCount++
-    if (_retryCount > _MAX_RETRIES) {
-      _teardown()
-      if (import.meta.env.DEV) {
-        console.warn('[SSE] 已达最大重连次数，停止监听')
-      }
-    }
-  }
-}
-
-function _addEsListener(es: EventSource, eventType: string): void {
-  es.addEventListener(eventType, ((e: MessageEvent) => {
-    _retryCount = 0
-    try {
-      const data: unknown = JSON.parse(e.data as string)
-      const subs = _eventSubscribers.get(eventType)
-      if (subs) {
-        for (const cb of subs) {
-          cb(data)
-        }
-      }
-    } catch { /* ignore malformed events */ }
-  }) as EventListener)
-}
-
-function _teardown(): void {
-  _sharedEs?.close()
-  _sharedEs = null
-}
-
-/**
- * 监听服务端 SSE 事件（统一事件总线，单例共享连接）
- *
- * 所有消费者共享同一个 EventSource（连接 /api/events），
- * 通过 SSE event: 字段按类型分发。
- *
- * @param eventType 事件类型（如 'page-config'）
- * @param callback  事件回调
- * @returns 取消订阅函数
- */
-export function onServerEvent<T = unknown>(
-  eventType: string,
-  callback: (data: T) => void,
-): () => void {
-  let subs = _eventSubscribers.get(eventType)
-  if (!subs) {
-    subs = new Set()
-    _eventSubscribers.set(eventType, subs)
-    // 如果 EventSource 已存在，动态追加 listener
-    if (_sharedEs) {
-      _addEsListener(_sharedEs, eventType)
-    }
-  }
-  subs.add(callback as (data: unknown) => void)
-  _ensureConnection()
-
-  return () => {
-    subs.delete(callback as (data: unknown) => void)
-    if (subs.size === 0) {
-      _eventSubscribers.delete(eventType)
-    }
-    if (_totalSubscribers() === 0) {
-      _teardown()
-    }
-  }
-}
-
-/**
- * 监听页面配置文件变更（语义快捷方法）
- *
- * 等价于 {@code onServerEvent('page-config', callback)}
- *
- * @returns 取消订阅函数
- */
-export function onPageConfigChange(
-  callback: (event: FileChangeEvent) => void,
-): () => void {
-  return onServerEvent<FileChangeEvent>(ServerEventType.PAGE_CONFIG, callback)
-}
-
 // ─── 自动迭代守卫 ────────────────────────────────────────────────────────────
 
 /**
@@ -267,78 +150,6 @@ export function setAutoIterating(value: boolean): void {
 /** 查询当前是否处于自动迭代中 */
 export function isAutoIterating(): boolean {
   return _autoIterating
-}
-
-// ─── ConfigLoader 引用（缓存失效需要） ────────────────────────────────────────
-
-interface ConfigLoaderRef {
-  clearCache(key?: string): void
-  getCacheStats?(): { size: number; keys: string[] }
-}
-
-/** ConfigLoader 实例引用，需由启动代码通过 setConfigLoader 注入 */
-let _configLoader: ConfigLoaderRef | null = null
-
-/** 注册 ConfigLoader 实例（start.ts / AiChatPanel 中调用） */
-export function setConfigLoader(loader: ConfigLoaderRef): void {
-  _configLoader = loader
-}
-
-// ─── 页面缓存失效 ───────────────────────────────────────────────────────────
-
-/** FileLoader 使用的 localStorage 缓存前缀 */
-const CACHE_PREFIX = 'spark_page_'
-/** 页面 4 文件 */
-const PAGE_FILES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
-
-/**
- * 清除指定页面的全部缓存（memCache + localStorage）
- *
- * 优先使用注入的 configLoader.clearCache()（同时清除 memCache 和 localStorage），
- * 降级为直接清除 localStorage 键。
- */
-export function clearPageCache(pageId: string): void {
-  if (_configLoader) {
-    // 通过 FileLoader.clearCache 同时清除 memCache + localStorage
-    for (const file of PAGE_FILES) {
-      _configLoader.clearCache(`/${pageId}/${file}`)
-    }
-    return
-  }
-  // 降级：未注入 configLoader 时仅清除 localStorage
-  if (typeof localStorage === 'undefined') return
-  for (const file of PAGE_FILES) {
-    const base = `${CACHE_PREFIX}/${pageId}/${file}`
-    localStorage.removeItem(base)
-    localStorage.removeItem(`${base}:raw`)
-    localStorage.removeItem(`${base}:transform`)
-  }
-}
-
-/**
- * 清除所有页面配置缓存（memCache + localStorage）
- * @returns 清除前的缓存统计
- */
-export function clearAllCache(): { size: number; keys: string[] } {
-  const stats = _configLoader?.getCacheStats?.() ?? { size: 0, keys: [] }
-  if (_configLoader) {
-    _configLoader.clearCache()
-  }
-  // 降级：清除 localStorage 前缀匹配项
-  if (typeof localStorage !== 'undefined') {
-    const toRemove: string[] = []
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key?.startsWith(CACHE_PREFIX)) toRemove.push(key)
-    }
-    for (const key of toRemove) localStorage.removeItem(key)
-  }
-  return stats
-}
-
-/** 获取当前缓存统计 */
-export function getCacheStats(): { size: number; keys: string[] } {
-  return _configLoader?.getCacheStats?.() ?? { size: 0, keys: [] }
 }
 
 /**
