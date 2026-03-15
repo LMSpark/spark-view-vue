@@ -22,6 +22,7 @@ export {
   ServerEventType,
   onServerEvent,
   onPageConfigChange,
+  configureSseUrl,
 } from './sse-events'
 export type { ServerEventTypeName, FileChangeEvent } from './sse-events'
 

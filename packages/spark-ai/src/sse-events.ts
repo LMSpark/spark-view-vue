@@ -32,6 +32,18 @@ const _eventSubscribers = new Map<string, Set<(data: unknown) => void>>()
 let _sharedEs: EventSource | null = null
 let _retryCount = 0
 const _MAX_RETRIES = 5
+let _sseUrl = '/api/events'
+
+/**
+ * 配置 SSE 端点 URL（在建立连接前调用）。
+ * 默认值为 '/api/events'。
+ */
+export function configureSseUrl(url: string): void {
+  if (_sharedEs) {
+    _teardown()
+  }
+  _sseUrl = url
+}
 
 function _totalSubscribers(): number {
   let count = 0
@@ -44,7 +56,7 @@ function _totalSubscribers(): number {
 function _ensureConnection(): void {
   if (_sharedEs) return
   _retryCount = 0
-  const es = new EventSource('/api/events')
+  const es = new EventSource(_sseUrl)
   _sharedEs = es
 
   // 为已有订阅的事件类型注册 listener
