@@ -69,7 +69,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
   /** 从实际路由路径中剥离租户前缀（/t/:tenantId/:projectId/xxx → /xxx） */
   function stripTenantPrefix(path: string): string {
     const match = /^\/t\/[^/]+\/[^/]+(.*)$/.exec(path)
-    return match ? (match[1] || '/') : path
+    return match ? (match[1] ?? '/') : path
   }
 
   function normalizePath(path: string): string {

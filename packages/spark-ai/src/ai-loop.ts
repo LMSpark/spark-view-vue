@@ -327,8 +327,8 @@ async function consumeSSEStream(
   let currentEvent = 'message'
   let currentData = ''
 
-  function dispatchEvent(eventName: string, data: string): void {
-    if (!data) return
+  function dispatchEvent(eventName: string, data: string): AIResponse | null {
+    if (!data) return null
     try {
       const parsed = JSON.parse(data) as Record<string, unknown>
       switch (eventName) {
@@ -349,8 +349,7 @@ async function consumeSSEStream(
           callbacks?.onUsage?.(parsed['usage'] as Record<string, unknown>)
           break
         case 'result':
-          finalResult = parsed as unknown as AIResponse
-          break
+          return parsed as unknown as AIResponse
         case 'error':
           callbacks?.onError?.(parsed['error'] as string)
           break
@@ -358,6 +357,7 @@ async function consumeSSEStream(
     } catch {
       // 跳过非 JSON
     }
+    return null
   }
 
   try {
@@ -372,7 +372,10 @@ async function consumeSSEStream(
       for (const line of lines) {
         if (line === '' || line === '\r') {
           // 空行 → 分发当前事件
-          dispatchEvent(currentEvent, currentData)
+          const maybeResult = dispatchEvent(currentEvent, currentData)
+          if (maybeResult !== null) {
+            finalResult = maybeResult
+          }
           currentEvent = 'message'
           currentData = ''
         } else if (line.startsWith('event:')) {
@@ -380,20 +383,23 @@ async function consumeSSEStream(
         } else if (line.startsWith('data:')) {
           const payload = line.slice(5).trim()
           if (payload === '[DONE]') continue
-          currentData = currentData ? currentData + '\n' + payload : payload
+          currentData = currentData ? `${currentData}\n${payload}` : payload
         }
         // 忽略 id: / retry: / 注释行
       }
     }
     // 流结束后分发残余事件
-    if (currentData) {
-      dispatchEvent(currentEvent, currentData)
+    if (currentData !== '') {
+      const maybeResult = dispatchEvent(currentEvent, currentData)
+      if (maybeResult !== null) {
+        finalResult = maybeResult
+      }
     }
   } finally {
     reader.releaseLock()
   }
 
-  if (!finalResult) {
+  if (finalResult === null) {
     throw new Error('SSE 流结束但未收到 result 事件')
   }
   return finalResult
@@ -553,7 +559,7 @@ export class AIPageLoop {
       const aiResp = await consumeSSEStream(response, callbacks)
 
       // 写入文件
-      if (aiResp.files && Object.keys(aiResp.files).length > 0) {
+      if (Object.keys(aiResp.files).length > 0) {
         const written = await writePageFiles(pageId, aiResp.files)
         this.options.onFilesUpdated(pageId, written)
       }
