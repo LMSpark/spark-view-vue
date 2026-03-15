@@ -2,6 +2,8 @@
   <FCPageRenderer v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
   <!-- AI 聊天浮窗（仅配置页面渲染时加载，从 App.vue 下沉至此） -->
   <AiChatPanel v-if="enableAI" />
+  <!-- SAP 工具助手浮窗（独立于 AI 页面生成面板） -->
+  <SapChatPanel v-if="enableAI" />
 </template>
 
 <script setup lang="ts">
@@ -13,6 +15,7 @@ import { appPageUiService } from '@spark-view/spark-app'
 import { NAV_KEY } from '@spark-view/spark-app'
 
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
+const SapChatPanel = defineAsyncComponent(() => import('@/components/SapChatPanel.vue'))
 
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,
