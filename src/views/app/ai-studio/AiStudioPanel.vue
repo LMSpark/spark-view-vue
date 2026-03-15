@@ -18,7 +18,7 @@ import {
   type PageFiles,
   type LogSnapshot,
   type FileChangeEvent,
-} from '@/services/ai-loop'
+} from '@spark-view/spark-app'
 
 // ─── 状态 ──────────────────────────────────────────────────────────────────
 

@@ -453,7 +453,7 @@ async function startApp() {
           // collectorTransport 已在 1.5 节提前注册到两个 Logger 体系，
           // 此处只需异步加载 AI Loop 模块并连接缓冲区。
           Promise.all([
-            import('./services/ai-loop'),
+            import('@spark-view/spark-app'),
             import('virtual:spark-skill-catalog').catch(() => null),
           ]).then(([{ initAILoop, setupHotReload, setConfigLoader, triggerPageRefresh, configureAILoopHttp }, skillMod]) => {
             // 生成 Skill Catalog Markdown（构建时从 @skill 注解采集）
