@@ -34,11 +34,6 @@ import { createRequest } from '@spark-view/spark-utils'
 import { clearPageCache } from './page-cache'
 import { onPageConfigChange } from './sse-events'
 
-// 重导出：保持 index.ts 导入路径不变
-export { ServerEventType, onServerEvent, onPageConfigChange } from './sse-events'
-export type { ServerEventTypeName, FileChangeEvent } from './sse-events'
-export { setConfigLoader, clearPageCache, clearAllCache, getCacheStats } from './page-cache'
-
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
 const http = createRequest({ timeout: 240_000 })
 
