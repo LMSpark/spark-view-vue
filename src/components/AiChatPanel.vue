@@ -115,8 +115,8 @@ import { ref, nextTick, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getNavHomePath } from '@spark-view/spark-app'
 import { getUser } from '@/services/auth'
-import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, logUpdateSignal } from '@/services/ai-loop'
-import type { AIResponse, LogSnapshot } from '@/services/ai-loop'
+import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, logUpdateSignal } from '@spark-view/spark-app'
+import type { AIResponse, LogSnapshot } from '@spark-view/spark-app'
 import { createRequest } from '@spark-view/spark-utils'
 import { getPageApi } from '@/services/api-paths'
 
@@ -401,7 +401,7 @@ async function handleSend() {
 
     // fallback 模式：loop 不可用时手动写入文件
     if (!loop && fileNames.length > 0) {
-      const { writePageFiles } = await import('@/services/ai-loop')
+      const { writePageFiles } = await import('@spark-view/spark-app')
       await writePageFiles(pid, response.files)
     }
 
@@ -483,7 +483,7 @@ async function handleSend() {
             skillCatalog: _skillCatalog,
           })
           if (Object.keys(iterResponse.files).length > 0) {
-            const { writePageFiles } = await import('@/services/ai-loop')
+            const { writePageFiles } = await import('@spark-view/spark-app')
             await writePageFiles(pid, iterResponse.files)
           }
         }
@@ -595,7 +595,7 @@ async function handleDebug() {
         skillCatalog: _skillCatalog,
       })
       if (Object.keys(iterResponse.files).length > 0) {
-        const { writePageFiles } = await import('@/services/ai-loop')
+        const { writePageFiles } = await import('@spark-view/spark-app')
         await writePageFiles(pid, iterResponse.files)
       }
     }
@@ -672,7 +672,7 @@ async function handleDebug() {
           skillCatalog: _skillCatalog,
         })
         if (Object.keys(nextResponse.files).length > 0) {
-          const { writePageFiles } = await import('@/services/ai-loop')
+          const { writePageFiles } = await import('@spark-view/spark-app')
           await writePageFiles(pid, nextResponse.files)
         }
       }

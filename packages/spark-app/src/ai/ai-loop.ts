@@ -13,7 +13,7 @@
  *
  * 使用示例：
  * ```ts
- * import { AIPageLoop } from '@/services/ai-loop'
+ * import { AIPageLoop } from '@spark-view/spark-app'
  *
  * const loop = new AIPageLoop({
  *   aiEndpoint: '/api/ai/chat',

@@ -1,6 +1,6 @@
 import { computed, reactive, onBeforeUnmount } from 'vue'
-import { onPageConfigChange } from '@/services/ai-loop'
-import type { FileChangeEvent } from '@/services/ai-loop'
+import { onPageConfigChange } from '@spark-view/spark-app'
+import type { FileChangeEvent } from '@spark-view/spark-app'
 
 export interface NotificationItem {
   id: number

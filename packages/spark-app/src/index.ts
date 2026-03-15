@@ -171,8 +171,7 @@ export type {
 export type { TabPage, PageMode } from './navigation/useTabPages'
 export type { PrimaryPreset, NavPreset, NavColorSet } from './navigation/useColorScheme'
 
-// ── AI Page Loop ──
-// ── Navigation Access ──
+// ── Navigation Access（DynamicRouter 同步读取接口） ──
 export {
   setDynamicRouter,
   refreshRoutes,
