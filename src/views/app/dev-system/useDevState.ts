@@ -37,14 +37,6 @@ export interface DevEditForm {
   disabled: boolean
 }
 
-export interface ToolbarEditItem {
-  id: string
-  title: string
-  icon: string
-  action: string
-  hidden: boolean
-}
-
 export interface DevContextConfig {
   placeholder: string
   defaultValue: string
@@ -95,9 +87,6 @@ export function useDevState() {
   const fileSaving = ref(false)
   const fileLoaded = ref(false)
 
-  // ── 工具栏管理 ──
-  const toolbarItems = ref<ToolbarEditItem[]>([])
-
   // ── 空导航状态 ──
   const navEmpty = ref(false)
 
@@ -115,7 +104,6 @@ export function useDevState() {
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
   const previewJson = computed(() => {
     const root: NavRoot = { childPlacement: 'header', children: treeData.value }
-    if (toolbarItems.value.length > 0) root.toolbar = toolbarItemsToNavNodes()
     return JSON.stringify(root, null, 2)
   })
 
@@ -140,22 +128,28 @@ export function useDevState() {
     navLoading.value = true
     try {
       const config = await http.get<{ childPlacement?: string; children?: NavNode[]; toolbar?: NavNode[] }>(getNavApi())
-      if (config.children?.length) {
-        treeData.value = config.children
+      let children = config.children ?? []
+      // 向后兼容：旧格式 toolbar[] 迁移为 childPlacement='toolbar' 分组
+      if (Array.isArray(config.toolbar) && config.toolbar.length > 0) {
+        const hasToolbarGroup = children.some(c => c.childPlacement === 'toolbar')
+        if (!hasToolbarGroup) {
+          children = [
+            { id: '__toolbar__', type: 'group', title: '工具栏', icon: 'SetUp', childPlacement: 'toolbar', children: config.toolbar } as NavNode,
+            ...children,
+          ]
+        }
+      }
+      if (children.length > 0) {
+        treeData.value = children
         navEmpty.value = false
       } else {
         treeData.value = []
         navEmpty.value = true
       }
-      toolbarItems.value = (config.toolbar ?? []).map(n => ({
-        id: n.id, title: n.title, icon: n.icon ?? '',
-        action: n.action ?? '', hidden: n.hidden ?? false,
-      }))
       addStatus('导航配置已加载', 'success')
     } catch {
       treeData.value = deepClone(demoNavRoot.children)
       navEmpty.value = false
-      toolbarItems.value = []
       addStatus('导航加载失败，使用演示数据', 'warning')
     } finally {
       navLoading.value = false
@@ -313,7 +307,6 @@ export function useDevState() {
     if (navDirty.value) applyNavChanges()
     navSaving.value = true
     const root: NavRoot = { childPlacement: 'header', children: treeData.value }
-    if (toolbarItems.value.length > 0) root.toolbar = toolbarItemsToNavNodes()
     try {
       await http.put(getNavApi(), root)
       navDirty.value = false
@@ -403,7 +396,7 @@ export function useDevState() {
 
   function addRootNode() {
     const id = `module-${Date.now()}`
-    const node: NavNode = { id, type: 'group', title: '新模块', icon: '📁', childPlacement: 'sidebar', children: [] }
+    const node: NavNode = { id, type: 'group', title: '新模块', icon: 'FolderOpened', childPlacement: 'sidebar', children: [] }
     treeData.value.push(node)
     void http.post(`${getNavApi()}/nodes`, { node }).then(
       () => addStatus('已添加根模块', 'info'),
@@ -413,7 +406,7 @@ export function useDevState() {
 
   function addChildNode(parent: NavNode) {
     const id = `page-${Date.now()}`
-    const node: NavNode = { id, type: 'item', title: '新页面', icon: '📄', path: `/${id}` }
+    const node: NavNode = { id, type: 'item', title: '新页面', icon: 'Document', path: `/${id}` }
     ;(parent.children ??= []).push(node)
     void http.post(`${getNavApi()}/nodes`, { parentId: parent.id, node }).then(
       () => addStatus(`已在 ${parent.title} 下添加子节点`, 'info'),
@@ -443,36 +436,11 @@ export function useDevState() {
 
   function resetToDemo() {
     treeData.value = deepClone(demoNavRoot.children)
-    toolbarItems.value = []
     navEmpty.value = false
     selectedNode.value = null
     navDirty.value = false
     clearFiles()
     addStatus('已重置为演示数据', 'info')
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // 工具栏管理
-  // ═══════════════════════════════════════════════════════════
-
-  function toolbarItemsToNavNodes(): NavNode[] {
-    return toolbarItems.value.map(item => {
-      const node: NavNode = { id: item.id, type: 'item', title: item.title }
-      if (item.icon) node.icon = item.icon
-      if (item.hidden) node.hidden = true
-      if (item.action) node.action = item.action
-      return node
-    })
-  }
-
-  function addToolbarItem() {
-    toolbarItems.value.push({ id: `tb-${Date.now()}`, title: '', icon: '', action: '', hidden: false })
-    markNavDirty()
-  }
-
-  function removeToolbarItem(idx: number) {
-    toolbarItems.value.splice(idx, 1)
-    markNavDirty()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -529,8 +497,6 @@ export function useDevState() {
     hasContext,
     contextItems,
     contextConfig,
-    // 工具栏
-    toolbarItems,
 
     // 空导航状态
     navEmpty,
@@ -574,9 +540,6 @@ export function useDevState() {
     removeNodeFromTree,
     resetToDemo,
     initSeedNavigation,
-    toolbarItemsToNavNodes,
-    addToolbarItem,
-    removeToolbarItem,
     toggleContext,
     addContextItem,
     removeContextItem,

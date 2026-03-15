@@ -3,40 +3,10 @@
  */
 
 import type {
-  RouteConfig,
   RuleConfig,
   PageDataConfig,
   ValidationError
 } from '../types'
-
-/**
- * 验证路由配置
- */
-export function validateRouteConfig(config: RouteConfig): ValidationError[] {
-  const errors: ValidationError[] = []
-
-  if (!config.path) {
-    errors.push({ field: 'path', message: '路由路径不能为空' })
-  }
-
-  if (!config.name) {
-    errors.push({ field: 'name', message: '路由名称不能为空' })
-  }
-
-  if (!config.pageId) {
-    errors.push({ field: 'pageId', message: '页面ID不能为空' })
-  }
-
-  if (config.path && !config.path.startsWith('/')) {
-    errors.push({
-      field: 'path',
-      message: '路由路径必须以 / 开头',
-      value: config.path
-    })
-  }
-
-  return errors
-}
 
 /**
  * 验证规则配置
@@ -89,22 +59,6 @@ export function validatePageDataConfig(config: PageDataConfig): ValidationError[
   }
 
   return errors
-}
-
-/**
- * 批量验证路由配置
- */
-export function validateRoutes(routes: RouteConfig[]): Map<string, ValidationError[]> {
-  const errorMap = new Map<string, ValidationError[]>()
-
-  for (const route of routes) {
-    const errors = validateRouteConfig(route)
-    if (errors.length > 0) {
-      errorMap.set(route.path || 'unknown', errors)
-    }
-  }
-
-  return errorMap
 }
 
 /**

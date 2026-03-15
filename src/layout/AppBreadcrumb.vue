@@ -1,7 +1,7 @@
 <template>
   <nav class="app-breadcrumb">
     <div class="app-breadcrumb__crumbs">
-      <span class="app-breadcrumb__home" @click="$router.push('/')">🏠</span>
+      <span class="app-breadcrumb__home" @click="goHome"><NavIcon name="HomeFilled" /></span>
       <template v-for="(item, index) in crumbs" :key="item.id ?? item.path">
         <span class="app-breadcrumb__separator">/</span>
         <span
@@ -9,7 +9,7 @@
           :class="{ 'app-breadcrumb__item--active': index === crumbs.length - 1 }"
           @click="index < crumbs.length - 1 && onCrumbClick(item)"
         >
-          <span v-if="item.icon" class="app-breadcrumb__item-icon">{{ item.icon }}</span>
+          <span v-if="item.icon" class="app-breadcrumb__item-icon"><NavIcon :name="item.icon" /></span>
           {{ item.title }}
         </span>
       </template>
@@ -24,7 +24,8 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { NavNode } from '@spark-view/spark-app'
-import { useNav } from '@spark-view/spark-app'
+import { getNavHomePath, useNav } from '@spark-view/spark-app'
+import NavIcon from '@/components/NavIcon.vue'
 
 interface BreadcrumbItem {
   id?: string
@@ -36,6 +37,14 @@ interface BreadcrumbItem {
 const route = useRoute()
 const router = useRouter()
 const nav = useNav()
+
+function goHome() {
+  if (nav) {
+    nav.navigateToPath(getNavHomePath())
+  } else {
+    void router.push('/')
+  }
+}
 
 const crumbs = computed<BreadcrumbItem[]>(() => {
   // 优先使用导航模型的 activePath

@@ -7,7 +7,6 @@
 
 // 类型导出
 export type {
-  RouteConfig,
   RuleConfig,
   PageDataConfig,
   PageScriptConfig,
@@ -33,10 +32,8 @@ export {
 
 // 验证器
 export {
-  validateRouteConfig,
   validateRuleConfig,
   validatePageDataConfig,
-  validateRoutes,
   validateRules
 } from './validator'
 

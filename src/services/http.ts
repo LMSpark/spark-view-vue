@@ -63,8 +63,8 @@ export function getHttpClient(): Request {
     onResponseError: (error) => {
       if (error.status === 401 && !error.config.url.includes('/api/auth/')) {
         clearAuth()
-        if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
-          window.location.href = '/login'
+        if (window.location.pathname !== '/') {
+          window.location.href = '/'   // 跳平台首页，由路由守卫统一处理未登录重定向
         }
       }
       throw error

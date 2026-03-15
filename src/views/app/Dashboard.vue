@@ -132,8 +132,10 @@
  */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useNav } from '@spark-view/spark-app'
 
 const router = useRouter()
+const nav = useNav()
 
 // 页面类型对比数据
 const pageTypes = ref([
@@ -156,15 +158,15 @@ const pageTypes = ref([
 
 // 快捷操作
 const goToConfigPage = () => {
-  router.push('/')
+  nav ? nav.navigateToPath('/') : void router.push('/')
 }
 
 const goToVueComponent = () => {
-  router.push('/about')
+  nav ? nav.navigateToPath('/about') : void router.push('/about')
 }
 
 const goToSettings = () => {
-  router.push('/settings')
+  nav ? nav.navigateToPath('/settings') : void router.push('/settings')
 }
 </script>
 

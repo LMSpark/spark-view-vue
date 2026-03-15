@@ -24,7 +24,7 @@
         <div ref="messagesRef" class="chat-messages">
           <!-- 引导文字 -->
           <div v-if="messages.length === 0" class="chat-empty">
-            <div class="empty-icon">🎨</div>
+            <div class="empty-icon"><NavIcon name="Brush" :size="32" /></div>
             <p><b>AI 协同设计模式</b></p>
             <p>描述你的页面需求，AI 会在讨论中提出结构化设计方案。</p>
             <p>你可以对每个方案选择 <b>采纳</b> 或 <b>跳过</b>，全部确认后一键生成页面。</p>
@@ -116,7 +116,7 @@
           <div v-for="type in PROPOSAL_TYPES" :key="type" class="decision-group">
             <template v-if="getAcceptedByType(type).length > 0">
               <div class="group-header">
-                {{ typeLabel(type) }}
+                <NavIcon :name="typeIcon(type)" /> {{ typeLabel(type) }}
                 <span class="group-count">{{ getAcceptedByType(type).length }}</span>
               </div>
               <div
@@ -191,10 +191,12 @@ import {
   stripProposalTags,
   buildGenerationPrompt,
   typeLabel,
+  typeIcon,
   DESIGN_SYSTEM_PROMPT,
   AUTO_QUERY_PREFIX,
 } from '../composables/useDesignSession'
 import type { ProposalType, DesignProposal } from '../composables/useDesignSession'
+import NavIcon from './NavIcon.vue'
 import {
   ResponsePipeline,
   BlockExtractorProcessor,
@@ -401,7 +403,7 @@ function ensureRouteExists(pid: string) {
       name: `design-${pid}`,
       component: comp,
       ...(configLoader ? { props: { configLoader } } : {}),
-      meta: { pageId: pid, title: pid, icon: '🎨' },
+      meta: { pageId: pid, title: pid, icon: 'Brush' },
     })
   }
 }

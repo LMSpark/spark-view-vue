@@ -113,6 +113,8 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { getNavHomePath } from '@spark-view/spark-app'
+import { getUser } from '@/services/auth'
 import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, logUpdateSignal } from '@/services/ai-loop'
 import type { AIResponse, LogSnapshot } from '@/services/ai-loop'
 import { createRequest } from '@spark-view/spark-utils'
@@ -193,7 +195,6 @@ watch(loading, (isLoading) => {
 })
 const messages = ref<ChatMessage[]>([])
 const messagesRef = ref<HTMLElement>()
-const status = ref<'idle' | 'generating' | 'success' | 'error'>('idle')
 /** 取消标志：用户点击取消后置 true，迭代循环检测到后中断 */
 let _abortRequested = false
 
@@ -221,7 +222,6 @@ function levelEmoji(level: string): string {
 }
 
 function updateStatus(s: 'idle' | 'generating' | 'success' | 'error') {
-  status.value = s
   statusClass.value = s
   statusText.value = { idle: '就绪', generating: '生成中...', success: '完成', error: '失败' }[s]
 }
@@ -244,7 +244,12 @@ async function handleDelete() {
     messages.value.push({ role: 'assistant', text: `🗑️ 页面 /${pid} 已删除` })
     // 如果当前路由就是被删页面，导航回首页
     if (routePageId.value === pid) {
-      void router.push('/')
+      const user = getUser()
+      if (user) {
+        void router.push(`/t/${user.tenantId}${getNavHomePath()}`)
+      } else {
+        void router.push('/')
+      }
     }
     updateStatus('success')
   } catch (err) {
@@ -272,8 +277,16 @@ function scrollToBottom() {
   })
 }
 
+/** 构建当前用户的租户前缀路径 */
+function tenantPath(relativePath: string): string {
+  const user = getUser()
+  return user ? `/t/${user.tenantId}${relativePath}` : relativePath
+}
+
 function ensureRouteExists(pid: string) {
-  const exists = router.getRoutes().some(r => r.path === `/${pid}`)
+  // 检查是否已有租户前缀路由（DynamicRouter 注册的 /t/:tenantId/xxx 模式）
+  const tenantPrefixed = `/t/:tenantId/${pid}`
+  const exists = router.getRoutes().some(r => r.path === tenantPrefixed)
   if (exists) return
   // 从已注册的配置页面路由中克隆组件和 configLoader
   const configRoute = router.getRoutes().find(
@@ -288,18 +301,18 @@ function ensureRouteExists(pid: string) {
     // 注册 configLoader 到 ai-loop，使 clearPageCache 能同时清除 memCache
     if (configLoader) setConfigLoader(configLoader)
     router.addRoute({
-      path: `/${pid}`,
+      path: tenantPrefixed,
       name: `ai-${pid}`,
       component: comp,
       ...(configLoader ? { props: { configLoader } } : {}),
-      meta: { pageId: pid, title: pid, icon: '🤖' },
+      meta: { pageId: pid, title: pid, icon: 'MagicStick' },
     })
   }
 }
 
 function navigateTo(pid: string) {
   ensureRouteExists(pid)
-  void router.push(`/${pid}`)
+  void router.push(tenantPath(`/${pid}`))
 }
 
 /** 判断日志中是否包含需要修复的渲染错误
@@ -408,7 +421,7 @@ async function handleSend() {
     // 注册路由 → 清除旧缓存 → 导航到页面
     ensureRouteExists(pid)
     clearPageCache(pid)
-    await router.push(`/${pid}`)
+    await router.push(tenantPath(`/${pid}`))
     try {
       for (let i = 1; i <= MAX_AUTO_ITERATIONS; i++) {
         if (_abortRequested) break

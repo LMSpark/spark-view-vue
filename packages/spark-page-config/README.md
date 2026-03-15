@@ -8,7 +8,6 @@
 ## 特性
 
 - **多源加载** - 本地（SPA）/远程（API）/混合模式
-- **动态路由** - 运行时注册路由，支持懒加载
 - **配置缓存** - 内存缓存，可配置过期时间
 - **配置验证** - Schema 验证，确保配置正确
 - **脚本沙箱** - 安全执行页面脚本
@@ -26,31 +25,13 @@ pnpm add @spark-view/spark-page-config
 
 ```
 public/pages-config/
-  routes.json           # 路由配置
   <pageId>/
       rule.json         # 页面规则（组件树）
       pagedata.json     # 页面数据
       script.js         # 页面脚本（可选）
 ```
 
-### 2. 路由配置 (routes.json)
-
-```json
-[
-  {
-    "path": "/home",
-    "name": "home",
-    "pageId": "home",
-    "meta": {
-      "title": "首页",
-      "icon": "",
-      "requiresAuth": true
-    }
-  }
-]
-```
-
-### 3. 页面规则 (rule.json)
+### 2. 页面规则 (rule.json)
 
 ```json
 {
@@ -68,7 +49,7 @@ public/pages-config/
 }
 ```
 
-### 4. 使用配置加载器
+### 3. 使用配置加载器
 
 ```typescript
 import { createConfigLoader } from '@spark-view/spark-page-config'
@@ -79,24 +60,8 @@ const loader = createConfigLoader({
   fileStorage: 'localStorage'  // 'localStorage' | 'sessionStorage' | 'memory'
 })
 
-// 加载路由配置
-const routes = await loader.loadRoutes()
-
 // 加载页面配置
 const pageConfig = await loader.loadPageConfig('home')
-```
-
-### 5. 动态路由注册
-
-```typescript
-import { setupDynamicRoutes } from '@spark-view/spark-page-config'
-import { PageRenderer } from '@spark-view/spark-component'
-import { createRouter } from 'vue-router'
-
-const router = createRouter({ ... })
-
-// 注册动态路由
-await setupDynamicRoutes(router, loader, PageRenderer)
 ```
 
 ## 核心 API
@@ -113,7 +78,6 @@ const loader = createConfigLoader({
 })
 
 // 加载方法
-await loader.loadRoutes()                    // 加载路由
 await loader.loadPageConfig(pageId)          // 加载页面配置（rule + data + script + css）
 await loader.loadRule(pageId)               // 加载页面规则
 await loader.loadPageData(pageId)            // 加载页面数据
@@ -128,15 +92,9 @@ loader.getCacheStats()                       // 缓存统计
 ### 配置验证
 
 ```typescript
-import { validateRouteConfig, validateRuleConfig } from '@spark-view/spark-page-config'
+import { validateRuleConfig } from '@spark-view/spark-page-config'
 
-// 验证路由配置（返回错误数组，空数组表示有效）
-const routeErrors = validateRouteConfig(routeConfig)
-if (routeErrors.length > 0) {
-  console.error('路由配置无效:', routeErrors)
-}
-
-// 验证页面规则
+// 验证页面规则（返回错误数组，空数组表示有效）
 const ruleErrors = validateRuleConfig(ruleConfig)
 if (ruleErrors.length > 0) {
   console.error('规则配置无效:', ruleErrors)

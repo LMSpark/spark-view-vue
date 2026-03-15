@@ -32,6 +32,7 @@
         :collapsible="nav.regionVisibility.value.sidebar"
         :username="currentUsername"
         :toolbar-items="nav.regionItems.value.toolbar"
+        :user-menu-items="nav.regionItems.value.userMenu"
         @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
         @toggle-theme="toggleTheme"
         @user-command="handleUserCommand"
@@ -128,7 +129,7 @@
 import { computed, defineAsyncComponent, onMounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
-import type { NavNode } from '@spark-view/spark-app'
+import type { NavNode, NavRoot } from '@spark-view/spark-app'
 import { pageRefreshKey } from '@/services/ai-loop'
 import { getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
@@ -140,7 +141,8 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
-import { clearAllCache, getCacheStats, refreshRoutes } from '@/services/ai-loop'
+import { clearAllCache, getCacheStats } from '@/services/ai-loop'
+import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { getNavApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 import { switchProject } from '@/services/auth'
@@ -162,7 +164,6 @@ const sidebarCollapsed = ref(false)
 const headerFirst = ref(false)
 const showFooter = ref(true)
 const showConfigurator = ref(false)
-const navEmpty = ref(false)
 
 const { mode, setMode } = useTabPages()
 useColorScheme()
@@ -181,33 +182,33 @@ const projectSwitchService: ProjectSwitchService = {
   async switchAndReload(projectId: string) {
     switchProject(projectId)
     activeProjectId.value = projectId
-    await reloadNavigation()
-    await refreshRoutes()
+    try {
+      await reloadNavigation()
+    } catch (e) {
+      if (import.meta.env.DEV) console.error('[Nav] 导航加载失败', e)
+    }
   },
 }
 provide(PROJECT_SWITCH_KEY, projectSwitchService)
 
-/* ── 导航模型（纯后端加载，无本地 fallback） ── */
-const _navRoot = reactive({ childPlacement: 'header' as const, children: [] as NavNode[], toolbar: [] as NavNode[] })
+/* ── 导航模型（预认证时使用 preAuthNavTree，登录后使用远程导航树） ── */
+const _navRoot = reactive({ childPlacement: 'header' as NavRoot['childPlacement'], children: [] as NavNode[] })
 const nav = useNavigation(_navRoot)
 
-async function reloadNavigation(): Promise<void> {
-  try {
-    const data = await http.get<{ childPlacement?: string; children?: unknown[]; toolbar?: unknown[] }>(getNavApi())
-    if (Array.isArray(data.children) && data.children.length > 0) {
-      _navRoot.childPlacement = ((data.childPlacement ?? 'header') as typeof _navRoot.childPlacement)
-      _navRoot.children = data.children as NavNode[]
-      _navRoot.toolbar = (data.toolbar ?? []) as NavNode[]
-      navEmpty.value = false
-      if (import.meta.env.DEV) console.log(`[Nav] ✅ 已从后端加载导航 (${data.children.length} 个节点)`)
-    } else {
-      navEmpty.value = true
-      if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 后端导航数据为空，请通过导航管理页面初始化')
-    }
-  } catch {
-    navEmpty.value = true
-    if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 导航 API 请求失败')
+/** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
+function applyNavTree(navData: NavRoot | null): void {
+  if (navData && navData.children.length > 0) {
+    _navRoot.childPlacement = navData.childPlacement
+    _navRoot.children = navData.children
+    if (import.meta.env.DEV) console.log(`[Nav] ✅ 导航已同步 (${navData.children.length} 个节点)`)
+  } else if (import.meta.env.DEV) {
+    console.warn('[Nav] ⚠️ 导航树为空')
   }
+}
+
+async function reloadNavigation(): Promise<void> {
+  const navTree = await refreshRoutes()
+  applyNavTree(navTree)
 }
 
 /** 将种子导航数据写入后端（可随时调用） */
@@ -217,36 +218,30 @@ async function syncSeedNavigation(): Promise<void> {
   await reloadNavigation()
 }
 
-onMounted(async () => {
-  if (isAuthenticated()) {
-    try {
-      await reloadNavigation()
-    } catch {
-      navEmpty.value = true
-      if (import.meta.env.DEV) console.warn('[Nav] ⚠️ 导航加载失败')
-    }
-  }
+onMounted(() => {
+  // start.ts 已在 mount 前调用 registerRoutes() 注册路由 + 加载导航树
+  // 此处同步读取已加载的导航树并写入 _navRoot，不发起重复 HTTP 请求
+  applyNavTree(getNavTree())
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   const w = window as unknown as Record<string, unknown>
   w['__sparkDev'] = { reloadNavigation, syncSeedNavigation, clearAllCache, getCacheStats, refreshRoutes }
 })
 
-// ── 登录后自动重载导航 + 动态路由 ──
-watch(isLoginPage, async (isLogin, wasLogin) => {
+// ── 登录后自动同步导航 UI ──
+watch(isLoginPage, (isLogin, wasLogin) => {
   if (wasLogin && !isLogin && isAuthenticated()) {
-    try {
-      await reloadNavigation()
-      await refreshRoutes()
-    } catch {
-      navEmpty.value = true
-    }
+    // LoginView 已在跳转前调用 refreshRoutes() 加载导航树，此处同步读取并写入 _navRoot
+    applyNavTree(getNavTree())
   }
 })
 
 /* ── 用户菜单命令 ── */
 function handleUserCommand(command: string) {
   switch (command) {
+    case 'profile':
+      // TODO: 个人中心页面
+      break
     case 'settings':
       showConfigurator.value = true
       break
@@ -254,10 +249,10 @@ function handleUserCommand(command: string) {
       const user = getUser()
       if (user && user.defaultProjectId !== 'homepage') {
         void projectSwitchService.switchAndReload('homepage').then(() => {
-          void router.push(`/t/${user.tenantId}/dashboard`)
+          void router.push(`/t/${user.tenantId}${getNavHomePath()}`)
         })
       } else if (user) {
-        void router.push(`/t/${user.tenantId}/dashboard`)
+        void router.push(`/t/${user.tenantId}${getNavHomePath()}`)
       } else {
         void router.push('/')
       }
@@ -266,6 +261,12 @@ function handleUserCommand(command: string) {
     case 'logout':
       logout()
       void router.replace('/')
+      break
+    default:
+      // 路径类命令（用户菜单项配置了 path/redirect）→ 路由导航
+      if (command.startsWith('/')) {
+        nav.navigateToPath(command)
+      }
       break
   }
 }

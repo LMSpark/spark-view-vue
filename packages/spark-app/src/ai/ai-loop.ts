@@ -269,32 +269,19 @@ export function isAutoIterating(): boolean {
   return _autoIterating
 }
 
-// ─── ConfigLoader / DynamicRouter 引用（缓存失效 + 路由刷新需要） ──────────────
+// ─── ConfigLoader 引用（缓存失效需要） ────────────────────────────────────────
 
 interface ConfigLoaderRef {
   clearCache(key?: string): void
   getCacheStats?(): { size: number; keys: string[] }
 }
 
-interface DynamicRouterRef {
-  refreshRoutes(): Promise<void>
-  getRegisteredRoutes(): string[]
-}
-
 /** ConfigLoader 实例引用，需由启动代码通过 setConfigLoader 注入 */
 let _configLoader: ConfigLoaderRef | null = null
-
-/** DynamicRouter 实例引用，需由启动代码通过 setDynamicRouter 注入 */
-let _dynamicRouter: DynamicRouterRef | null = null
 
 /** 注册 ConfigLoader 实例（start.ts / AiChatPanel 中调用） */
 export function setConfigLoader(loader: ConfigLoaderRef): void {
   _configLoader = loader
-}
-
-/** 注册 DynamicRouter 实例（start.ts 中调用） */
-export function setDynamicRouter(router: DynamicRouterRef): void {
-  _dynamicRouter = router
 }
 
 // ─── 页面缓存失效 ───────────────────────────────────────────────────────────
@@ -352,13 +339,6 @@ export function clearAllCache(): { size: number; keys: string[] } {
 /** 获取当前缓存统计 */
 export function getCacheStats(): { size: number; keys: string[] } {
   return _configLoader?.getCacheStats?.() ?? { size: 0, keys: [] }
-}
-
-/** 刷新动态路由（清缓存 + 重新注册） */
-export async function refreshRoutes(): Promise<string[]> {
-  if (!_dynamicRouter) return []
-  await _dynamicRouter.refreshRoutes()
-  return _dynamicRouter.getRegisteredRoutes()
 }
 
 /**

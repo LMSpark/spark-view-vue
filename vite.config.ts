@@ -39,6 +39,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    strictPort: true,
     fs: {
       allow: ['..', '../../src']
     },
@@ -299,11 +300,11 @@ export default registerComponents
           // 将大型页面组件分组，便于按需加载
 
           // 数据密集型页面（包含大量图表/表格）
-          if (id.includes('views/Dashboard') || id.includes('views/CapabilityDemo')) {
+          if (id.includes('views/app/Dashboard') || id.includes('views/app/CapabilityDemo')) {
             return 'pages-data-heavy'
           }
           // 配置管理页面
-          if (id.includes('views/Settings') || id.includes('views/TenantConfigDemo')) {
+          if (id.includes('views/tenant/Settings') || id.includes('views/tenant/TenantConfig')) {
             return 'pages-config'
           }
           // ── 第三方库智能分组 ──

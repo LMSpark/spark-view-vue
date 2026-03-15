@@ -28,10 +28,6 @@
  *   app: createApp(App),
  *   router: createRouter(routes),
  *   config: { apiBaseUrl: '/api', enableMock: true },
- *   auth: {
- *     loginComponent: LoginView,
- *     loginPath: '/auth/login'
- *   },
  *   beforeMount: async (context) => {
  *     console.log('应用即将挂载', context.user)
  *   },
@@ -228,10 +224,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // 阶段 5: 设置路由守卫
     // =========================================================================
     logPhase('ROUTER', '配置路由守卫')
-    setupRouterGuards(router, {
-      loginPath: auth?.loginPath ?? '/login',
-      forbiddenPath: '/forbidden'
-    }, appContext)
+    setupRouterGuards(router, {}, appContext)
 
     // 设置全局错误处理
     setupErrorHandler(app, {

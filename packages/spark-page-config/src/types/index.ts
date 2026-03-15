@@ -6,24 +6,6 @@
 import type { DataSet } from '@spark-view/spark-data'
 
 /**
- * 路由配置（routes.json）
- */
-export interface RouteConfig {
-  path: string
-  name: string
-  pageId: string
-  meta?: {
-    title?: string
-    icon?: string
-    requiresAuth?: boolean
-    permissions?: string[]
-    roles?: string[]
-    preloadModels?: string[]
-    [key: string]: unknown
-  }
-}
-
-/**
  * 页面规则配置（rule.json）
  * 组件树结构，描述页面如何渲染
  */
@@ -138,11 +120,6 @@ export interface ConfigLoadResult<T = unknown> {
  * 配置加载器接口
  */
 export interface ConfigLoader {
-  /**
-   * 加载路由配置
-   */
-  loadRoutes(): Promise<ConfigLoadResult<RouteConfig[]>>
-  
   /**
    * 加载页面配置
    */

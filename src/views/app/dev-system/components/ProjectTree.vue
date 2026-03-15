@@ -34,7 +34,7 @@
     >
       <template #default="{ data }">
         <span class="tree-node">
-          <span class="node-icon">{{ data.icon }}</span>
+          <span class="node-icon"><NavIcon :name="data.icon" /></span>
           <span class="node-label">{{ data.title }}</span>
           <el-tag size="small" :type="statusTagType(data)">
             {{ data.type === 'group' ? '分组' : (data.pageType ?? '页面') }}
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { ProjectState, WbsNode, WbsNodeStatus } from '../composables/types'
+import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{
   state: ProjectState

@@ -4,19 +4,18 @@
 
 ## 📍 位置说明
 
-**为什么在 public/ 下？**
+**为什么在 `spark-ai-server/data/pages-config/` 下？**
 
-- ✅ **静态资源** - 页面配置是运行时加载的 JSON/CSS/JS，不参与构建
-- ✅ **直接访问** - 可通过 `/pages-config/xxx` HTTP 路径访问
-- ✅ **标准实践** - public/ 文件直接复制到 dist/，符合 Vite 惯例
-- ✅ **清晰分离** - 配置数据与源码分离，职责明确
+- ✅ **后端管理** - 页面配置由 Java 后端提供 RESTful CRUD API
+- ✅ **Git 跟踪** - 配置文件纳入版本控制，可追溯变更历史
+- ✅ **租户隔离** - 目录按 `{tenantId}/{projectId}/{pageId}/` 组织
+- ✅ **清晰分离** - 配置数据与前端源码分离
 
 ## 目录结构
 
 ```
-public/pages-config/
-├── routes.json                 # 路由配置（所有页面）
-└── {page-id}/                  # 页面目录
+spark-ai-server/data/pages-config/
+└── {tenantId}/{projectId}/{pageId}/
     ├── rule.json               # form-create 规则（必需）
     ├── pagedata.json           # 页面数据配置（必需）
     ├── style.css               # 页面样式（可选）
@@ -25,22 +24,9 @@ public/pages-config/
 
 ## 文件说明
 
-### routes.json - 路由配置
-定义所有可用页面的路由信息：
-
-```json
-[
-  {
-    "path": "/users",
-    "name": "users",
-    "pageId": "users",
-    "meta": {
-      "title": "用户管理",
-      "icon": "User"
-    }
-  }
-]
-```
+### 路由注册
+页面路由由**导航配置**（`navigation_config` 数据库表）统一管理，不再使用独立的 `routes.json`。
+导航节点的 `path` 字段即为页面路由路径，框架自动注册动态路由。
 
 ### rule.json - 表单规则
 基于 [form-create](http://www.form-create.com/) 的表单配置：
@@ -81,124 +67,43 @@ public/pages-config/
 可选的页面级 CSS，自动添加作用域隔离。
 
 ### script.js - 页面脚本
-可选的页面级 JavaScript，导出函数供页面使用：
+可选的页面级 JavaScript，在 `with(__ctx)` 沙箱内执行：
 
 ```javascript
-export const handleClick = () => {
-  console.log('Button clicked')
-}
-
-export const __init__ = () => {
+function __init__() {
+  // 页面初始化入口（form-create 挂载后自动调用）
   console.log('Page initialized')
 }
+
+function handleClick() {
+  $page.showMessage('Button clicked', 'info')
+}
 ```
+
+> 详见项目根目录 `copilot-instructions.md` 中的「页面脚本沙箱规范」章节。
 
 ## 使用方式
 
-### 应用代码中加载
+页面配置通过 Java 后端 RESTful API 加载，前端无需直接引用文件路径：
 
-```typescript
-// src/services/page-config.ts
-import { getPageConfig } from '@/services/page-config'
-
-const config = await getPageConfig('users')
-// config 包含 rule 和 data
 ```
-
-### 路径别名配置
-
-**Vite** (vite.config.ts):
-```typescript
-alias: {
-  '/pages-config': path.resolve(__dirname, 'public', 'pages-config')
-}
-```
-
-**TypeScript** (tsconfig.typecheck.json):
-```json
-{
-  "paths": {
-    "/pages-config/*": ["./public/pages-config/*"]
-  }
-}
-```
-
-### 动态导入示例
-
-```typescript
-// 导入路由配置
-import routes from '/pages-config/routes.json'
-
-// 动态导入页面配置
-const rule = await import(`/pages-config/${pageId}/rule.json`)
-const data = await import(`/pages-config/${pageId}/pagedata.json`)
-
-// Glob 导入所有脚本
-const scripts = import.meta.glob('/pages-config/*/script.js')
+GET  /api/pages-config/{pageId}/{file}     # 读取单个文件
+PUT  /api/pages-config/{pageId}/{file}     # 写入单个文件
+POST /api/pages-config/{pageId}/__batch    # 批量写入 + 自动注册路由
+GET  /api/pages-config/__list              # 列出所有页面
 ```
 
 ## 开发工作流
 
-### 1. 创建新页面
-
-```bash
-mkdir public/pages-config/my-page
-cd public/pages-config/my-page
-```
-
-### 2. 添加配置文件
-
-```bash
-touch rule.json pagedata.json style.css script.js
-```
-
-### 3. 注册路由
-
-在 `routes.json` 中添加路由条目。
-
-### 4. 访问页面
-
-开发环境：`http://localhost:5173/my-page`
-
-## 架构优势
-
-### 与 src/ 的关系
-
-```
-src/                    # 应用源码（参与构建）
-  services/             # API 服务层
-    page-config.ts      # 加载页面配置
-
-public/                 # 静态资源（直接复制）
-  pages-config/         # 页面配置数据
-    users/
-    settings/
-```
-
-- `src/services/page-config.ts` 负责加载配置
-- `public/pages-config/` 存储配置数据
-- 职责清晰，便于维护
+在 DevSystem (`/dev`) 中：
+1. 点击「➕ 新建页面」
+2. 填写 Page ID 和标题
+3. 在文件编辑 Tab 中编辑 rule.json / pagedata.json / script.js / style.css
+4. 保存后在导航节点的 `path` 字段关联即可访问
 
 ## 最佳实践
 
-### 文件组织
-- ✅ 每个页面一个目录
-- ✅ 使用 kebab-case 命名（users, user-settings）
-- ✅ 必需文件：rule.json, pagedata.json
-- ✅ 可选文件：style.css, script.js
-
-### 数据隔离
-- ✅ 每个页面独立的数据集
-- ✅ 避免跨页面数据依赖
-- ✅ 使用零代码配置自动加载数据
-
-### 性能优化
-- ✅ 使用动态导入（按需加载）
-- ✅ 避免在 rule.json 中嵌入大量数据
-- ✅ 大数据集使用 API 加载
-
-## 相关文档
-
-- [form-create 文档](http://www.form-create.com/)
-- [DataSet API 文档](../../packages/spark-data/README.md)
-- [零代码功能指南](../../docs/guides/DATA_MANAGEMENT.md)
+- ✅ 每个页面一个目录，kebab-case 命名
+- ✅ 必需：rule.json, pagedata.json；可选：style.css, script.js
+- ✅ 大数据集通过 `api.list` 配置远程加载，内联数据仅用于静态小表
+- ✅ 优先通过 `rule.json` / `pagedata.json` 配置解决需求，减少 script.js 代码量

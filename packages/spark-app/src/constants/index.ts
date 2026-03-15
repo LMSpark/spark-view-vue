@@ -97,11 +97,6 @@ export const DefaultConfig = {
   // 日志配置
   LOG_LEVEL: 'info',
   LOG_MAX_ENTRIES: 1000,
-  
-  // 路由配置
-  LOGIN_PATH: '/login',
-  HOME_PATH: '/',
-  NOT_FOUND_PATH: '/404'
 } as const
 
 /**

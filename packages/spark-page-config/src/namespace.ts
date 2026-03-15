@@ -4,10 +4,8 @@
 
 import { createConfigLoader } from './loader'
 import {
-  validateRouteConfig,
   validateRuleConfig,
   validatePageDataConfig,
-  validateRoutes,
   validateRules
 } from './validator'
 
@@ -27,10 +25,8 @@ export const SparkPageConfig = {
    * 验证器
    */
   validate: {
-    route: validateRouteConfig,
     rule: validateRuleConfig,
     pageData: validatePageDataConfig,
-    routes: validateRoutes,
     rules: validateRules
   }
 }

@@ -74,27 +74,27 @@ export interface ReviewChecklistItem {
 // ── 工具函数 ─────────────────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<ProposalType, string> = {
-  'data-model': '📊 数据模型',
-  'ui-structure': '🎨 UI 结构',
-  'interaction': '⚡ 交互逻辑',
-  'style': '🎭 样式',
-  'api-config': '🔌 API 配置',
-  'db-schema': '🗄️ 数据库变更',
-  'dict-entry': '📖 字典变更',
-  'function-plan': '🏗️ 功能规划',
-  'navigation': '🌐 导航结构',
+  'data-model': '数据模型',
+  'ui-structure': 'UI 结构',
+  'interaction': '交互逻辑',
+  'style': '样式',
+  'api-config': 'API 配置',
+  'db-schema': '数据库变更',
+  'dict-entry': '字典变更',
+  'function-plan': '功能规划',
+  'navigation': '导航结构',
 }
 
 const TYPE_ICONS: Record<ProposalType, string> = {
-  'data-model': '📊',
-  'ui-structure': '🎨',
-  'interaction': '⚡',
-  'style': '🎭',
-  'api-config': '🔌',
-  'db-schema': '🗄️',
-  'dict-entry': '📖',
-  'function-plan': '🏗️',
-  'navigation': '🌐',
+  'data-model': 'DataBoard',
+  'ui-structure': 'Brush',
+  'interaction': 'Lightning',
+  'style': 'MagicStick',
+  'api-config': 'Connection',
+  'db-schema': 'Coin',
+  'dict-entry': 'Notebook',
+  'function-plan': 'SetUp',
+  'navigation': 'Globe',
 }
 
 export function typeLabel(type: ProposalType): string {

@@ -16,17 +16,17 @@
           >
             <el-form-item prop="tenantId">
               <el-input v-model="loginForm.tenantId" placeholder="租户 ID" prefix-icon="el-icon-office-building">
-                <template #prefix><span class="input-icon">🏢</span></template>
+                <template #prefix><el-icon><OfficeBuilding /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="username">
               <el-input v-model="loginForm.username" placeholder="用户名">
-                <template #prefix><span class="input-icon">👤</span></template>
+                <template #prefix><el-icon><User /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="password">
               <el-input v-model="loginForm.password" type="password" show-password placeholder="密码" @keyup.enter="handleLogin">
-                <template #prefix><span class="input-icon">🔒</span></template>
+                <template #prefix><el-icon><Lock /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item>
@@ -49,32 +49,32 @@
           >
             <el-form-item prop="tenantId">
               <el-input v-model="regForm.tenantId" placeholder="租户 ID">
-                <template #prefix><span class="input-icon">🏢</span></template>
+                <template #prefix><el-icon><OfficeBuilding /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="username">
               <el-input v-model="regForm.username" placeholder="用户名">
-                <template #prefix><span class="input-icon">👤</span></template>
+                <template #prefix><el-icon><User /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="displayName">
               <el-input v-model="regForm.displayName" placeholder="显示名称（选填）">
-                <template #prefix><span class="input-icon">📝</span></template>
+                <template #prefix><el-icon><Edit /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="email">
               <el-input v-model="regForm.email" placeholder="邮箱（选填）">
-                <template #prefix><span class="input-icon">📧</span></template>
+                <template #prefix><el-icon><Message /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="password">
               <el-input v-model="regForm.password" type="password" show-password placeholder="密码">
-                <template #prefix><span class="input-icon">🔒</span></template>
+                <template #prefix><el-icon><Lock /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="confirmPassword">
               <el-input v-model="regForm.confirmPassword" type="password" show-password placeholder="确认密码" @keyup.enter="handleRegister">
-                <template #prefix><span class="input-icon">🔒</span></template>
+                <template #prefix><el-icon><Lock /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item>
@@ -97,22 +97,22 @@
           >
             <el-form-item prop="tenantId">
               <el-input v-model="tenantForm.tenantId" placeholder="租户 ID（英文标识）">
-                <template #prefix><span class="input-icon">🆔</span></template>
+                <template #prefix><el-icon><Postcard /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="tenantName">
               <el-input v-model="tenantForm.tenantName" placeholder="租户名称">
-                <template #prefix><span class="input-icon">🏢</span></template>
+                <template #prefix><el-icon><OfficeBuilding /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="username">
               <el-input v-model="tenantForm.username" placeholder="管理员用户名">
-                <template #prefix><span class="input-icon">👤</span></template>
+                <template #prefix><el-icon><User /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item prop="password">
               <el-input v-model="tenantForm.password" type="password" show-password placeholder="管理员密码" @keyup.enter="handleRegisterTenant">
-                <template #prefix><span class="input-icon">🔒</span></template>
+                <template #prefix><el-icon><Lock /></el-icon></template>
               </el-input>
             </el-form-item>
             <el-form-item>
@@ -134,8 +134,9 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login, register, registerTenant } from '@/services/auth'
-import { refreshRoutes } from '@/services/ai-loop'
+import { refreshRoutes, getNavHomePath } from '@spark-view/spark-app'
 import type { FormInstance, FormRules } from 'element-plus'
+import { OfficeBuilding, User, Lock, Edit, Message, Postcard } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const savedTab = sessionStorage.getItem('spark_login_tab')
@@ -166,7 +167,7 @@ async function handleLogin() {
   try {
     const user = await login(loginForm)
     await refreshRoutes()
-    await router.replace(`/t/${user.tenantId}/dashboard`)
+    await router.replace(`/t/${user.tenantId}${getNavHomePath()}`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '登录失败'
   } finally {
@@ -201,7 +202,8 @@ async function handleRegister() {
   errorMsg.value = ''
   try {
     const user = await register(regForm)
-    await router.replace(`/t/${user.tenantId}/dashboard`)
+    await refreshRoutes()
+    await router.replace(`/t/${user.tenantId}${getNavHomePath()}`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '注册失败'
   } finally {
@@ -230,7 +232,8 @@ async function handleRegisterTenant() {
   errorMsg.value = ''
   try {
     const user = await registerTenant(tenantForm)
-    await router.replace(`/t/${user.tenantId}/dashboard`)
+    await refreshRoutes()
+    await router.replace(`/t/${user.tenantId}${getNavHomePath()}`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '租户注册失败'
   } finally {

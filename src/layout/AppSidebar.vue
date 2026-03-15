@@ -28,7 +28,7 @@
             @click="onItemClick(child)"
           >
             <template #default>
-              <span>{{ child.icon }} {{ collapsed ? '' : child.title }}</span>
+              <span><NavIcon :name="child.icon" /> {{ collapsed ? '' : child.title }}</span>
             </template>
           </el-menu-item>
         </el-menu-item-group>
@@ -36,7 +36,7 @@
         <!-- 带子菜单的节点（parent / flat） -->
         <el-sub-menu v-else-if="hasNestedChildren(item)" :index="item.id">
           <template #title>
-            <span>{{ item.icon }} {{ collapsed ? '' : item.title }}</span>
+            <span><NavIcon :name="item.icon" /> {{ collapsed ? '' : item.title }}</span>
           </template>
           <el-menu-item
             v-for="child in visibleChildren(item)"
@@ -46,7 +46,7 @@
             @click="onItemClick(child)"
           >
             <template #default>
-              <span>{{ child.icon }} {{ child.title }}</span>
+              <span><NavIcon :name="child.icon" /> {{ child.title }}</span>
             </template>
           </el-menu-item>
         </el-sub-menu>
@@ -59,7 +59,7 @@
           @click="onItemClick(item)"
         >
           <template #default>
-            <span>{{ item.icon }} {{ collapsed ? '' : item.title }}</span>
+            <span><NavIcon :name="item.icon" /> {{ collapsed ? '' : item.title }}</span>
           </template>
         </el-menu-item>
       </template>
@@ -81,7 +81,7 @@
         :index="item.path"
       >
         <template #default>
-          <span>{{ item.meta?.['icon'] }} {{ collapsed ? '' : item.meta?.['title'] }}</span>
+          <span><NavIcon :name="(item.meta?.['icon'] as string)" /> {{ collapsed ? '' : item.meta?.['title'] }}</span>
         </template>
       </el-menu-item>
     </el-menu>
@@ -93,6 +93,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { NavNode } from '@spark-view/spark-app'
 import { useNav } from '@spark-view/spark-app'
+import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
   title?: string

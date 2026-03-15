@@ -75,7 +75,7 @@
           <el-row :gutter="16">
             <el-col :span="8" v-for="feature in features" :key="feature.title">
               <div class="feature-item">
-                <div class="feature-icon">{{ feature.icon }}</div>
+                <div class="feature-icon"><NavIcon :name="feature.icon" :size="24" /></div>
                 <div class="feature-title">{{ feature.title }}</div>
                 <div class="feature-desc">{{ feature.description }}</div>
               </div>
@@ -92,7 +92,7 @@
               :type="nav.type"
               @click="$router.push(nav.path)"
             >
-              {{ nav.icon }} {{ nav.title }}
+              <NavIcon :name="nav.icon" /> {{ nav.title }}
             </el-button>
           </div>
         </el-card>
@@ -130,48 +130,48 @@
  * @since 1.0.0
  */
 import { ref } from 'vue'
+import NavIcon from '@/components/NavIcon.vue'
 
 // 核心特性
 const features = ref([
   {
-    icon: '🚀',
+    icon: 'Promotion',
     title: '快速启动',
     description: 'SparkApp.start() 一键启动，零配置开箱即用'
   },
   {
-    icon: '🎨',
+    icon: 'Brush',
     title: '混合渲染',
     description: '支持配置页面和 Vue 组件页面混合使用'
   },
   {
-    icon: '📱',
+    icon: 'Monitor',
     title: '响应式设计',
     description: '基于 Element Plus 的现代化 UI 界面'
   },
   {
-    icon: '🔧',
+    icon: 'SetUp',
     title: '类型安全',
     description: 'TypeScript 全栈支持，编译时错误检查'
   },
   {
-    icon: '⚡',
+    icon: 'Lightning',
     title: '高性能',
     description: 'Vue 3 + Vite 构建，极速开发体验'
   },
   {
-    icon: '🔌',
+    icon: 'Connection',
     title: '可扩展',
     description: '插件化架构，支持自定义组件和功能'
   }
 ])
 
 // 导航链接
-const navigations = ref([
-  { path: '/dashboard', title: '管理仪表板', icon: '🏠', type: 'primary' },
-  { path: '/', title: '工作台', icon: '📊', type: 'success' },
-  { path: '/vxe-demo', title: '表格演示', icon: '📈', type: 'warning' },
-  { path: '/settings', title: '系统设置', icon: '⚙️', type: 'info' }
-])
+const navigations = [
+  { path: '/', title: '工作台', icon: 'DataBoard', type: 'success' },
+  { path: '/vxe-demo', title: '表格演示', icon: 'TrendCharts', type: 'warning' },
+  { path: '/settings', title: '系统设置', icon: 'Setting', type: 'info' }
+]
 </script>
 
 <style scoped>

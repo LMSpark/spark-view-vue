@@ -31,12 +31,14 @@ function toTab(route: RouteLocationNormalizedGeneric): TabPage | null {
   if (!title) return null
   const icon = route.meta['icon'] as string | undefined
   const name = route.name as string | undefined
+  // pageId 由 DynamicRouter 从 NavNode.id 写入 route.meta
+  const pageId = route.meta['pageId'] as string | undefined
   return {
     path: route.path,
     title,
     ...(icon !== undefined ? { icon } : {}),
     ...(name !== undefined ? { name } : {}),
-    closable: route.path !== '/dashboard',
+    closable: pageId !== 'dashboard' && pageId !== 'home',
     fullPath: route.fullPath,
   }
 }

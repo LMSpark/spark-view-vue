@@ -3,7 +3,7 @@
     <!-- ═══ Header ═══ -->
     <div class="editor-header">
       <div class="editor-header__info">
-        <span class="editor-header__icon">{{ node.icon }}</span>
+        <span class="editor-header__icon"><NavIcon :name="node.icon" /></span>
         <span class="editor-header__title">{{ node.title }}</span>
         <el-tag size="small" :type="node.type === 'group' ? 'info' : ''">
           {{ node.type === 'group' ? '分组' : '页面' }}
@@ -108,6 +108,7 @@ import { ElMessage } from 'element-plus'
 import type { PageType } from '../composables/types'
 import { useProject } from '../composables/useProjectInject'
 import PageConfigEditor from './PageConfigEditor.vue'
+import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{
   nodeId: string

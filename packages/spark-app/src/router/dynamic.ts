@@ -5,31 +5,13 @@
  * spark-page-config 只保留纯 TS 的配置加载/解析能力。
  */
 
-import type { Router, RouteRecordRaw, RouteRecordNormalized } from 'vue-router'
+import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
-import type { RouteConfig, ConfigLoader } from '@spark-view/spark-page-config'
-import { Logger, createRequest } from '@spark-view/spark-utils'
-import type { Request } from '@spark-view/spark-utils'
+import type { ConfigLoader } from '@spark-view/spark-page-config'
+import { Logger } from '@spark-view/spark-utils'
+import type { NavNode, NavRoot } from '../navigation/nav-types'
 
 const routerLogger = Logger('SparkApp:DynamicRouter')
-
-/**
- * 静态 Vue 组件路由声明
- */
-export interface StaticRouteDeclaration {
-  /** 路由路径 */
-  path: string
-  /** 路由名称 */
-  name: string
-  /** pageId（用于后端注册） */
-  pageId: string
-  /** 页面标题 */
-  title: string
-  /** 页面图标 */
-  icon: string
-  /** Vue 组件 */
-  component: Component
-}
 
 /**
  * 动态路由注册选项
@@ -54,29 +36,10 @@ export interface DynamicRouterOptions {
   pageComponent: Component
 
   /**
-   * @deprecated 使用 componentMap 替代。staticRoutes 会同步路由到后端，
-   * 新架构中路由完全由后端 DB 管理，前端只需 componentMap 解析 vue-component。
-   */
-  staticRoutes?: StaticRouteDeclaration[]
-
-  /**
    * vue-component 路径 → Vue 组件映射。
-   * 当 DB 返回 pageType='vue-component' 的路由时，使用此映射解析组件。
-   * 路由元数据（path/name/title/icon）完全由后端 DB 管理，前端不同步。
+   * 导航节点 pageType='vue-component' 时，使用此映射解析组件。
    */
   componentMap?: Record<string, Component>
-
-  /** 后端 API 基础路径（默认空字符串） */
-  apiBaseUrl?: string
-
-  /** 路由注册前钩子（可转换/过滤路由） */
-  beforeRegister?: (routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>
-
-  /** 路由注册后钩子（仅通知） */
-  afterRegister?: (routes: RouteRecordNormalized[]) => void
-
-  /** 动态请求头回调（每次请求时调用，注入 auth/tenant headers） */
-  getHeaders?: () => Record<string, string>
 
   /**
    * 租户路径前缀（如 '/t/:tenantId'）。
@@ -84,6 +47,32 @@ export interface DynamicRouterOptions {
    * vue-component 路由不受影响（DB 中已含完整路径）。
    */
   tenantPathPrefix?: string
+
+  /**
+   * 导航数据加载函数 — 导航树作为路由的唯一来源。
+   *
+   * 已认证时 `registerRoutes()` 使用此函数加载远程导航树并派生路由。
+   * 返回的 NavRoot 对象同时用于 UI 渲染（侧栏/顶栏菜单）。
+   */
+  loadNavigation?: (() => Promise<NavRoot>) | undefined
+
+  /**
+   * 登录前本地导航树 — 未认证时使用的静态导航数据。
+   *
+   * 当 `registerRoutes()` 在未登录状态调用时（无法调用 loadNavigation），
+   * 使用此本地导航树注册路由（如 / 和 /login）。
+   * 登录后 `refreshRoutes()` 会用远程导航树替换。
+   */
+  preAuthNavTree?: NavRoot | undefined
+
+  /**
+   * 认证状态检查回调。
+   *
+   * `registerRoutes()` 在运行时通过此回调判断当前状态：
+   * - 已登录 → 使用 `loadNavigation` 加载远程导航树
+   * - 未登录 → 使用 `preAuthNavTree` 本地导航树
+   */
+  isAuthenticated?: (() => boolean) | undefined
 }
 
 /**
@@ -96,15 +85,20 @@ export class DynamicRouter {
   private registeredRoutes: Set<string> = new Set()
   /** path → Component 映射（vue-component 路由使用） */
   private staticComponentMap: Map<string, Component> = new Map()
-  /** 静态路由声明（用于同步到后端） */
-  private staticDeclarations: StaticRouteDeclaration[]
-  private apiBaseUrl: string
-  /** 共享 axios 请求实例（统一通道，自动注入 auth/tenant headers） */
-  private request: Request
-  private beforeRegister?: DynamicRouterOptions['beforeRegister']
-  private afterRegister?: DynamicRouterOptions['afterRegister']
   /** 租户路径前缀（如 '/t/:tenantId'），config 路由自动加此前缀 */
   private tenantPathPrefix: string
+  /** tenantPathPrefix 的实体路径匹配（如 '^/t/[^/]+'） */
+  private tenantPathRegex: RegExp | null
+  /** 导航数据加载函数（提供后从导航树派生路由） */
+  private _loadNavigation: (() => Promise<NavRoot>) | undefined
+  /** 登录前本地导航树 */
+  private _preAuthNavTree: NavRoot | null = null
+  /** 认证状态检查回调 */
+  private _isAuthenticated: () => boolean
+  /** 已加载的导航树（UI 侧栏/顶栏共享此数据） */
+  private _navTree: NavRoot | null = null
+  /** NavNode → 注册路由路径追踪（弱引用，导航树刷新后自动 GC） */
+  private _navRouteMap = new WeakMap<NavNode, string>()
 
   constructor(options: DynamicRouterOptions) {
     this.router = options.router
@@ -116,169 +110,146 @@ export class DynamicRouter {
     }
 
     this.pageComponent = options.pageComponent
-    this.staticDeclarations = options.staticRoutes ?? []
-    this.apiBaseUrl = options.apiBaseUrl ?? ''
-    this.beforeRegister = options.beforeRegister
-    this.afterRegister = options.afterRegister
     this.tenantPathPrefix = options.tenantPathPrefix ?? ''
+    this.tenantPathRegex = this.tenantPathPrefix
+      ? this.createTenantPathRegex(this.tenantPathPrefix)
+      : null
 
-    // 创建共享 Request 实例（统一 axios 通道）
-    this.request = createRequest({
-      baseURL: this.apiBaseUrl,
-      timeout: 10_000,
-    })
-    if (options.getHeaders) {
-      const getHeaders = options.getHeaders
-      this.request.interceptors.request.use({
-        onRequest: (config) => {
-          config.headers = { ...config.headers, ...getHeaders() }
-          return config
-        }
-      })
-    }
+    // 导航加载函数（统一数据源）
+    this._loadNavigation = options.loadNavigation
+    this._preAuthNavTree = options.preAuthNavTree ?? null
+    this._isAuthenticated = options.isAuthenticated ?? (() => true)
 
-    // 构建 path → Component 映射（componentMap 优先，兼容旧 staticRoutes）
+    // 构建 path → Component 映射
     if (options.componentMap) {
       for (const [path, comp] of Object.entries(options.componentMap)) {
-        this.staticComponentMap.set(path, comp)
-      }
-    }
-    for (const decl of this.staticDeclarations) {
-      if (!this.staticComponentMap.has(decl.path)) {
-        this.staticComponentMap.set(decl.path, decl.component)
+        this.staticComponentMap.set(this.normalizePath(path), comp)
       }
     }
   }
 
-  /** 注册所有路由 */
+  private normalizePath(path: string): string {
+    const trimmed = path.trim()
+    if (trimmed === '') return '/'
+    const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+    if (withLeadingSlash.length === 1) return withLeadingSlash
+    return withLeadingSlash.replace(/\/+$/, '')
+  }
+
+  private createTenantPathRegex(prefix: string): RegExp {
+    const escaped = prefix
+      .split('/')
+      .filter(Boolean)
+      .map(segment => segment.startsWith(':') ? '[^/]+' : segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('/')
+    return new RegExp(`^/${escaped}(?=/|$)`)
+  }
+
+  private addTenantPrefix(path: string): string {
+    const normalizedPath = this.normalizePath(path)
+    if (!this.tenantPathPrefix) return normalizedPath
+    if (normalizedPath.startsWith(this.tenantPathPrefix)) return normalizedPath
+    if (this.tenantPathRegex?.test(normalizedPath)) return normalizedPath
+    return this.normalizePath(`${this.tenantPathPrefix}${normalizedPath}`)
+  }
+
+  /** 注册所有路由（从导航树派生） */
   async registerRoutes(): Promise<void> {
     routerLogger.info('开始注册动态路由')
 
-    const result = await this.configLoader.loadRoutes()
-
-    if (!result.success || !result.data) {
-      routerLogger.warn('动态路由加载失败，将使用静态路由兜底', { error: result.error })
-      return
+    if (this._loadNavigation && this._isAuthenticated()) {
+      await this.loadAndRegisterFromNav()
+    } else if (this._preAuthNavTree) {
+      // 未登录状态：使用本地预认证导航树
+      this._navTree = this._preAuthNavTree
+      this._navRouteMap = new WeakMap()
+      this.registerRoutesFromNav(this._preAuthNavTree.children)
+      routerLogger.info('预认证导航树路由注册完成', { nodeCount: this._preAuthNavTree.children.length })
     }
 
-    let routes = result.data
-
-    if (this.beforeRegister) {
-      routerLogger.debug('执行 beforeRegister 钩子')
-      routes = await this.beforeRegister(routes)
-    }
-
-    for (const route of routes) {
-      this.registerRoute(route)
-    }
-
-    if (this.afterRegister) {
-      routerLogger.debug('执行 afterRegister 钩子')
-      this.afterRegister(this.router.getRoutes())
-    }
-
-    routerLogger.info('动态路由注册完成', { count: routes.length })
+    routerLogger.info('动态路由注册完成', { count: this.registeredRoutes.size })
   }
 
-  /** 注册单个路由（根据 meta.pageType 选择 Vue 组件或 PageRenderer） */
-  registerRoute(config: RouteConfig): void {
-    if (this.registeredRoutes.has(config.path)) {
-      routerLogger.debug('路由已注册，跳过', { path: config.path })
-      return
+  /** 从导航树加载并注册路由 */
+  private async loadAndRegisterFromNav(): Promise<void> {
+    if (!this._loadNavigation) {
+      throw new Error('[DynamicRouter] _loadNavigation not set')
     }
-
-    const pageType = config.meta?.['pageType'] as string | undefined
-
-    // 统一计算注册路径（含租户前缀）
-    let routePath = config.path
-    if (this.tenantPathPrefix && !routePath.startsWith(this.tenantPathPrefix)) {
-      routePath = this.tenantPathPrefix + routePath
-    }
-
-    // componentMap 始终以相对路径为 key（如 /dev），
-    // 而后端 config.path 可能带租户前缀（如 /t/:tenantId/dev）或不带，
-    // 因此需要剥离前缀后再查找。
-    const relativePath = this.tenantPathPrefix && config.path.startsWith(this.tenantPathPrefix)
-      ? config.path.slice(this.tenantPathPrefix.length)
-      : config.path
-
-    // vue-component 路由：使用预注册的 Vue 组件
-    // 前端 componentMap 为权威来源——即使后端 pageType 未标记 'vue-component'，
-    // 只要 componentMap 中有该路径的组件映射，就按 vue-component 处理。
-    const hasComponent = this.staticComponentMap.has(relativePath)
-    if (pageType === 'vue-component' || hasComponent) {
-      const component = this.staticComponentMap.get(relativePath)
-      if (!component) {
-        routerLogger.warn('vue-component 路由缺少组件映射，跳过', { path: config.path })
-        return
-      }
-      const route: RouteRecordRaw = {
-        path: routePath,
-        name: config.name,
-        component,
-        meta: { ...config.meta, pageId: config.pageId, type: 'vue-component' }
-      }
-      this.router.addRoute(route)
-      this.registeredRoutes.add(config.path)
-      routerLogger.debug('Vue 组件路由已注册', { path: routePath, name: config.name })
-      return
-    }
-    const route: RouteRecordRaw = {
-      path: routePath,
-      name: config.name,
-      component: this.pageComponent,
-      props: { configLoader: this.configLoader },
-      meta: { ...config.meta, pageId: config.pageId }
-    }
-
-    this.router.addRoute(route)
-    this.registeredRoutes.add(config.path)
-    routerLogger.debug('配置页面路由已注册', { path: routePath, name: config.name })
+    const navRoot = await this._loadNavigation()
+    this._navTree = navRoot
+    this._navRouteMap = new WeakMap()
+    this.registerRoutesFromNav(navRoot.children)
+    routerLogger.info('导航树路由注册完成', { nodeCount: navRoot.children.length })
   }
 
   /**
-   * 同步静态路由到后端数据库（幂等）。
-   * 将 staticRoutes 声明推送到 POST {apiBaseUrl}/pages-config/__sync-routes，
-   * 使后端成为路由信息的单一来源。
+   * 从导航节点树递归注册路由
+   * - pageType='vue-component' → componentMap 查找组件
+   * - pageType='config'（默认）→ pageComponent (PageRenderer)
    */
-  async syncStaticRoutesToBackend(): Promise<void> {
-    if (this.staticDeclarations.length === 0) return
+  private registerRoutesFromNav(nodes: NavNode[]): void {
+    for (const node of nodes) {
+      if (node.path) {
+        const pageType = node.pageType ?? 'config'
+        const pageId = node.pageId ?? node.id
+        const routePath = this.addTenantPrefix(node.path)
 
-    const payload = this.staticDeclarations.map(d => ({
-      pageId: d.pageId,
-      path: d.path,
-      name: d.name,
-      title: d.title,
-      icon: d.icon,
-    }))
+        if (this.registeredRoutes.has(routePath)) {
+          routerLogger.debug(`路由已注册，跳过: ${routePath}`)
+        } else if (pageType === 'vue-component') {
+          const relativePath = this.normalizePath(node.path)
+          const component = this.staticComponentMap.get(relativePath)
+          if (component) {
+            const route: RouteRecordRaw = {
+              path: routePath,
+              name: `nav-${node.id}`,
+              component,
+              meta: { type: 'vue-component', pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
+            }
+            this.router.addRoute(route)
+            this.registeredRoutes.add(routePath)
+            routerLogger.debug(`Vue 组件路由已注册(nav): ${routePath}`)
+          } else {
+            routerLogger.warn('vue-component 导航节点缺少组件映射，跳过', { path: node.path, nodeId: node.id })
+          }
+        } else {
+          // config 页面 → PageRenderer
+          const route: RouteRecordRaw = {
+            path: routePath,
+            name: `nav-${node.id}`,
+            component: this.pageComponent,
+            props: { configLoader: this.configLoader },
+            meta: { pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
+          }
+          this.router.addRoute(route)
+          this.registeredRoutes.add(routePath)
+          routerLogger.debug(`配置页面路由已注册(nav): ${routePath}`, { pageId })
+        }
 
-    try {
-      const result = await this.request.post<Record<string, unknown>>(
-        '/pages-config/__sync-routes',
-        payload,
-      )
-      routerLogger.info('静态路由已同步到后端', {
-        created: result['created'],
-        updated: result['updated'],
-      })
-    } catch (e) {
-      routerLogger.warn('静态路由同步失败（不影响路由注册）', { error: String(e) })
+        // WeakMap 追踪：导航节点 → 路由路径
+        this._navRouteMap.set(node, routePath)
+      }
+
+      // 递归子节点
+      if (node.children?.length) {
+        this.registerRoutesFromNav(node.children)
+      }
     }
   }
 
   /** 移除路由 */
   removeRoute(name: string): void {
+    const route = this.router.getRoutes().find(r => r.name === name)
+    if (route) this.registeredRoutes.delete(route.path)
     this.router.removeRoute(name)
-    this.registeredRoutes.delete(name)
     routerLogger.debug('路由已移除', { name })
   }
 
-  /** 刷新路由（重新加载配置，保留静态组件映射） */
-  async refreshRoutes(): Promise<void> {
+  /** 刷新路由（重新加载导航树，保留静态组件映射），返回加载后的导航树 */
+  async refreshRoutes(): Promise<NavRoot | null> {
     routerLogger.info('刷新动态路由')
 
-    this.configLoader.clearCache('routes')
-
+    // 移除旧路由
     for (const path of this.registeredRoutes) {
       const route = this.router.getRoutes().find(r => r.path === path)
       if (route?.name !== undefined) {
@@ -287,8 +258,25 @@ export class DynamicRouter {
     }
     this.registeredRoutes.clear()
 
-    await this.registerRoutes()
+    try {
+      await this.registerRoutes()
+    } catch (error) {
+      // 注册失败：回退到预认证导航树，确保至少有 login/home 路由可用
+      routerLogger.error('路由注册失败，回退到预认证导航树', { error: String(error) })
+      if (this._preAuthNavTree) {
+        this._navTree = this._preAuthNavTree
+        this._navRouteMap = new WeakMap()
+        this.registerRoutesFromNav(this._preAuthNavTree.children)
+      }
+      throw error
+    }
     routerLogger.info('路由刷新完成')
+    return this._navTree
+  }
+
+  /** 获取已加载的导航树（导航模式下可用） */
+  getNavTree(): NavRoot | null {
+    return this._navTree
   }
 
   /** 获取已注册路由列表 */
@@ -300,15 +288,4 @@ export class DynamicRouter {
 /** 创建动态路由管理器 */
 export function createDynamicRouter(options: DynamicRouterOptions): DynamicRouter {
   return new DynamicRouter(options)
-}
-
-/** 设置动态路由（便捷函数） */
-export async function setupDynamicRoutes(
-  router: Router,
-  configLoader: ConfigLoader,
-  pageComponent: Component
-): Promise<DynamicRouter> {
-  const dynamicRouter = createDynamicRouter({ router, configLoader, pageComponent })
-  await dynamicRouter.registerRoutes()
-  return dynamicRouter
 }

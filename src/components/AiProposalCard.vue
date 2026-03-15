@@ -1,7 +1,7 @@
 <template>
   <div class="proposal-card" :class="[`type-${proposal.type}`, `status-${proposal.status}`]">
     <div class="proposal-header">
-      <span class="proposal-icon">{{ icon }}</span>
+      <span class="proposal-icon"><NavIcon :name="icon" /></span>
       <span class="proposal-title">{{ proposal.title }}</span>
       <span v-if="proposal.status === 'accepted'" class="status-badge accepted">✅ 已采纳</span>
       <span v-else-if="proposal.status === 'rejected'" class="status-badge rejected">⏭️ 已跳过</span>
@@ -28,6 +28,7 @@
 import { computed } from 'vue'
 import { typeIcon } from '../composables/useDesignSession'
 import type { DesignProposal } from '../composables/useDesignSession'
+import NavIcon from './NavIcon.vue'
 
 const props = defineProps<{
   proposal: DesignProposal

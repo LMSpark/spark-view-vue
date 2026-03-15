@@ -24,7 +24,7 @@
     >
       <el-table-column prop="icon" label="" width="40" align="center">
         <template #default="{ row }">
-          <span>{{ row.icon }}</span>
+          <NavIcon :name="row.icon" />
         </template>
       </el-table-column>
       <el-table-column prop="pageId" label="Page ID" width="160" sortable />
@@ -60,6 +60,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { DevState } from './useDevState'
+import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{ state: DevState }>()
 const emit = defineEmits<{ createPage: []; locateNode: [pageId: string]; editPage: [pageId: string] }>()

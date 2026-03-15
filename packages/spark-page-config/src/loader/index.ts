@@ -22,7 +22,6 @@ import type {
   ConfigLoader,
   ConfigLoaderOptions,
   ConfigLoadResult,
-  RouteConfig,
   PageConfig,
   RuleConfig,
   PageDataConfig,
@@ -119,10 +118,6 @@ export class PageConfigLoader implements ConfigLoader {
 
   // ── 公开 API ──────────────────────────────────────────────────────
 
-  async loadRoutes(): Promise<ConfigLoadResult<RouteConfig[]>> {
-    pageLogger.info('加载路由配置', { source: this.opts.source })
-    return this.hybridLoad<RouteConfig[]>('/routes.json', '/routes')
-  }
 
   async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
     pageLogger.info('加载页面规则', { pageId, source: this.opts.source })

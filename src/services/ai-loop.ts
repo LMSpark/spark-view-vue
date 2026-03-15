@@ -1,5 +1,7 @@
 /**
  * @deprecated 已迁移到 @spark-view/spark-app — 本文件为兼容桥接
+ *
+ * 导航函数（refreshRoutes / getNavTree / getNavHomePath）请直接从 @spark-view/spark-app 导入。
  */
 export {
   logUpdateSignal,
@@ -9,11 +11,9 @@ export {
   setAutoIterating,
   isAutoIterating,
   setConfigLoader,
-  setDynamicRouter,
   clearPageCache,
   clearAllCache,
   getCacheStats,
-  refreshRoutes,
   setupHotReload,
   writePageFiles,
   readPageFile,
