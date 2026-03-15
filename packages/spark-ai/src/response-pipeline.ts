@@ -3,8 +3,8 @@ import {
   extractComponentQueries,
   resolveComponentQuery,
   AUTO_QUERY_PREFIX,
-} from './useDesignSession'
-import type { DesignProposal, ValidationFeedback } from './useDesignSession'
+} from './design-session'
+import type { DesignProposal, ValidationFeedback } from './design-session'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

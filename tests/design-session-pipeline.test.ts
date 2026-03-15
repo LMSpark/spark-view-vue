@@ -4,7 +4,7 @@ import {
   extractProposals,
   extractComponentQueries,
   stripProposalTags,
-} from '../src/composables/useDesignSession'
+} from '@spark-view/spark-ai'
 import {
   ResponsePipeline,
   BlockExtractorProcessor,
@@ -12,7 +12,7 @@ import {
   SchemaCheckerProcessor,
   QueryResolverProcessor,
   AutoResponderProcessor,
-} from '../src/composables/responsePipeline'
+} from '@spark-view/spark-ai'
 
 // ── extractBlocks ────────────────────────────────────────────────────────────
 

@@ -179,27 +179,15 @@ export {
   getNavHomePath,
 } from './navigation/nav-access'
 
-// ── SSE Event Bus（通用服务端事件总线） ──
+// ── AI (re-exported from @spark-view/spark-ai) ──
 export {
   onServerEvent,
   ServerEventType,
   onPageConfigChange,
-} from './ai/sse-events'
-export type {
-  FileChangeEvent,
-  ServerEventTypeName,
-} from './ai/sse-events'
-
-// ── Page Config Cache Management ──
-export {
   setConfigLoader,
   clearPageCache,
   clearAllCache,
   getCacheStats,
-} from './ai/page-cache'
-
-// ── AI Loop & File I/O ──
-export {
   logUpdateSignal,
   setAutoIterating,
   isAutoIterating,
@@ -214,13 +202,15 @@ export {
   initAILoop,
   getAILoop,
   configureAILoopHttp,
-} from './ai/ai-loop'
+} from '@spark-view/spark-ai'
 export type {
+  FileChangeEvent,
+  ServerEventTypeName,
   PageFiles,
   AIResponse,
   LogSnapshot,
   AIPageLoopOptions,
-} from './ai/ai-loop'
+} from '@spark-view/spark-ai'
 
 // ── Page UI Host Component ──
 export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'

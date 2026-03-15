@@ -26,8 +26,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { typeIcon } from '../composables/useDesignSession'
-import type { DesignProposal } from '../composables/useDesignSession'
+import { typeIcon } from '@spark-view/spark-ai'
+import type { DesignProposal } from '@spark-view/spark-ai'
 import NavIcon from './NavIcon.vue'
 
 const props = defineProps<{

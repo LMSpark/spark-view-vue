@@ -13,7 +13,7 @@
  *
  * 使用示例：
  * ```ts
- * import { AIPageLoop } from '@spark-view/spark-app'
+ * import { AIPageLoop } from '@spark-view/spark-ai'
  *
  * const loop = new AIPageLoop({
  *   aiEndpoint: '/api/ai/chat',
@@ -134,7 +134,7 @@ export function setAutoIterating(value: boolean): void {
     _autoIteratingTimer = null
   }
   if (value) {
-    // 安全网：超时后强制恢复，避免标志安正永远为 true
+    // 安全网：超时后强制恢复，避免标志永远为 true
     _autoIteratingTimer = setTimeout(() => {
       _autoIterating = false
       _autoIteratingTimer = null
@@ -270,11 +270,6 @@ export class PageLogCollector {
 
 // ─── AI 闭环协调器 ──────────────────────────────────────────────────────────
 
-/**
- * AI 页面配置闭环协调器
- *
- * 管理整个「提示词 → AI → 文件 → 渲染 → 日志 → AI」循环。
- */
 /** _callAI 内部使用的已解析配置 */
 interface ResolvedLoopOptions {
   aiEndpoint: string
@@ -284,6 +279,11 @@ interface ResolvedLoopOptions {
   skillCatalog: string | undefined
 }
 
+/**
+ * AI 页面配置闭环协调器
+ *
+ * 管理整个「提示词 → AI → 文件 → 渲染 → 日志 → AI」循环。
+ */
 export class AIPageLoop {
   private options: ResolvedLoopOptions
   readonly collector = new PageLogCollector()

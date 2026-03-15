@@ -276,7 +276,7 @@ export async function start(options: StartOptions): Promise<void> {
 
       // 注入到全局模块：导航访问 + 缓存管理（AI 热重载需要）
       const { setDynamicRouter } = await import('./navigation/nav-access')
-      const { setConfigLoader } = await import('./ai/page-cache')
+      const { setConfigLoader } = await import('@spark-view/spark-ai')
       setDynamicRouter(dynamicRouter)
       setConfigLoader(configLoader)
     }

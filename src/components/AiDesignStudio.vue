@@ -194,8 +194,8 @@ import {
   typeIcon,
   DESIGN_SYSTEM_PROMPT,
   AUTO_QUERY_PREFIX,
-} from '../composables/useDesignSession'
-import type { ProposalType, DesignProposal } from '../composables/useDesignSession'
+} from '@spark-view/spark-ai'
+import type { ProposalType, DesignProposal } from '@spark-view/spark-ai'
 import NavIcon from './NavIcon.vue'
 import {
   ResponsePipeline,
@@ -204,7 +204,7 @@ import {
   SchemaCheckerProcessor,
   QueryResolverProcessor,
   AutoResponderProcessor,
-} from '../composables/responsePipeline'
+} from '@spark-view/spark-ai'
 import type { TokenUsage } from '../composables/useAiChat'
 import AiProposalCard from './AiProposalCard.vue'
 import { createRequest } from '@spark-view/spark-utils'

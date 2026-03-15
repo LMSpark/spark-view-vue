@@ -20,7 +20,8 @@ export default defineConfig({
       '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/dist/index.js'),
       '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/dist/index.js'),
       '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/dist/index.js'),
-      '@spark-view/spark-app': resolve(__dirname, './packages/spark-app/dist/index.js')
+      '@spark-view/spark-app': resolve(__dirname, './packages/spark-app/dist/index.js'),
+      '@spark-view/spark-ai': resolve(__dirname, './packages/spark-ai/src/index.ts')
     }
   },
   esbuild: {

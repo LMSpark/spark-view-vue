@@ -32,6 +32,7 @@ export default defineConfig({
       '@spark-view/spark-utils': path.resolve(__dirname, 'packages', 'spark-utils', 'src', 'index.ts'),
       '@spark-view/spark-page-config': path.resolve(__dirname, 'packages', 'spark-page-config', 'src', 'index.ts'),
       '@spark-view/spark-app': path.resolve(__dirname, 'packages', 'spark-app', 'src', 'index.ts'),
+      '@spark-view/spark-ai': path.resolve(__dirname, 'packages', 'spark-ai', 'src', 'index.ts'),
     }
   },
   optimizeDeps: {
@@ -288,6 +289,9 @@ export default registerComponents
           }
           if (id.includes('packages/spark-data')) {
             return 'spark-data'
+          }
+          if (id.includes('packages/spark-ai')) {
+            return 'spark-ai'
           }
           if (id.includes('packages/spark-app')) {
             return 'spark-app'
