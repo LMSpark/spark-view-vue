@@ -28,8 +28,8 @@
 
 import { Logger } from '../logger'
 import { toErrorMessage } from '../error-utils'
-import { Request } from './Request'
-import type { FileLoadOptions, CacheEntry, FileLoadResult, CacheExpirationTier } from './types'
+import { createRequest } from './Request'
+import type { FileLoadOptions, CacheEntry, FileLoadResult, CacheExpirationTier, HttpClient } from './types'
 
 const logger = Logger('FileLoader')
 
@@ -72,7 +72,7 @@ export interface DerivedLoader<T> {
 export class FileLoader {
   private opts: Required<Omit<FileLoadOptions, 'getHeaders'>> & Pick<FileLoadOptions, 'getHeaders'>
   private memCache = new Map<string, CacheEntry<unknown>>()
-  private request: Request
+  private request: HttpClient
   private storage: Storage | null
 
   constructor(options: FileLoadOptions) {
@@ -87,7 +87,7 @@ export class FileLoader {
       maxCacheSize: 100,
       ...options
     }
-    this.request = new Request({
+    this.request = createRequest({
       baseURL: this.opts.baseUrl,
       timeout: this.opts.timeout,
       headers: this.opts.headers

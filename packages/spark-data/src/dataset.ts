@@ -9,7 +9,7 @@
 import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRelation, IDataRow, DataColumn, ColumnType, CrudApi, ViewChangeHandlers } from './types'
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
-import type { Request } from '@spark-view/spark-utils'
+import type { HttpClient } from '@spark-view/spark-utils'
 import { DataTable } from './data-table'
 import { assertNoSeparator } from './core/utils'
 
@@ -89,11 +89,11 @@ export class DataSet implements IDataSet {
   pageId: string | undefined
 
   /**
-   * M5: 共享 HTTP 客户端——所有 DataTable 的 CrudService 复用同一 Request 实例。
+    * M5: 共享 HTTP 客户端——所有 DataTable 的 CrudService 复用同一 HttpClient 实例。
    * 由外部通过 `setSharedHttpClient(client)` 注入。未设置时各 CrudService 各自 createRequest()。
    * @internal
    */
-  _sharedHttpClient?: Request | undefined
+    _sharedHttpClient?: HttpClient | undefined
 
   /** @internal 关系索引：parentTable:parentViewId → children relations */
   private _childRelIdx = new Map<string, DataRelation[]>()
@@ -199,11 +199,11 @@ export class DataSet implements IDataSet {
    * 注入共享 HTTP 客户端（M5）——所有 DataTable 的 CrudService 将复用该实例。
    *
    * 调用时机：DataSet 构建完成后、首次数据请求之前。
-   * 已创建的 CrudService 实例不受影响（它们保留初始化时的 Request）。
+  * 已创建的 CrudService 实例不受影响（它们保留初始化时的 HttpClient）。
    *
-   * @param client  Request 实例（通常由应用层 auth 模块创建，带统一拦截器）
+   * @param client  HttpClient 实例（通常由应用层 auth 模块创建，带统一拦截器）
    */
-  setSharedHttpClient(client: Request): void {
+  setSharedHttpClient(client: HttpClient): void {
     this._sharedHttpClient = client
   }
 

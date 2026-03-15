@@ -12,6 +12,12 @@ import type { ComponentRegistry, ComponentDefinition } from '../core/types.js'
 
 const logger = Logger('Spark:Registry')
 
+function shouldLogRegistryDetails(): boolean {
+  if (typeof globalThis === 'undefined') return false
+  const flag = (globalThis as Record<string, unknown>)['__SPARK_DEBUG_REGISTRY__']
+  return flag === true
+}
+
 /* -------------------------------------------------------------------------- */
 
 let _globalRegistry: ComponentRegistry | undefined
@@ -56,7 +62,7 @@ export function createComponentRegistry(): ComponentRegistry {
       if (!type) throw new Error('Component type is required')
       if (components.has(type) && !options?.silent) logger.warn(`Overwriting component: ${type}`)
       components.set(type, createDefinition(type, component, meta))
-      if (!options?.silent) logger.debug(`Registered: ${type}`)
+      if (!options?.silent && shouldLogRegistryDetails()) logger.debug(`Registered: ${type}`)
     },
 
     /**
@@ -66,7 +72,7 @@ export function createComponentRegistry(): ComponentRegistry {
     registerOnce(type: string, component: unknown, meta?: Record<string, unknown>): boolean {
       if (components.has(type)) return false
       components.set(type, createDefinition(type, component, meta))
-      logger.debug(`Registered: ${type}`)
+      if (shouldLogRegistryDetails()) logger.debug(`Registered: ${type}`)
       return true
     },
 
@@ -83,7 +89,7 @@ export function createComponentRegistry(): ComponentRegistry {
     /** 移除组件，返回是否存在（存在才移除）。 */
     unregister(type: string): boolean {
       const existed = components.delete(type)
-      if (existed) logger.debug(`Unregistered: ${type}`)
+      if (existed && shouldLogRegistryDetails()) logger.debug(`Unregistered: ${type}`)
       return existed
     },
 

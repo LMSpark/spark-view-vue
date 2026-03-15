@@ -38,6 +38,9 @@ const http = createRequest({ timeout: 240_000 })
 /** 动态 Page API 基础路径解析器（由应用层注入） */
 let _getPageApiUrl: (() => string) | null = null
 
+/** 动态请求头获取器（用于 fetch 流式请求，由应用层注入） */
+let _getStreamHeaders: (() => Record<string, string>) | null = null
+
 /**
  * 配置 AI Loop 的 HTTP 客户端和 API 路径。
  * 应在应用启动时调用一次，注入认证头和租户作用域路径。
@@ -48,6 +51,7 @@ export function configureAILoopHttp(options: {
 }): void {
   if (options.getHeaders) {
     const getHeaders = options.getHeaders
+    _getStreamHeaders = getHeaders
     http.interceptors.request.use({
       onRequest: (config) => {
         config.headers = { ...config.headers, ...getHeaders() }
@@ -109,6 +113,20 @@ export interface AIResponse {
   explanation?: string
   /** 是否需要继续迭代 */
   needsIteration?: boolean
+}
+
+/** SSE 流式事件回调 */
+export interface StreamCallbacks {
+  /** LLM 正文内容增量 */
+  onDelta?: (text: string) => void
+  /** DeepSeek 推理过程增量 */
+  onReasoning?: (text: string) => void
+  /** 阶段进度事件 */
+  onPhase?: (phase: number, status: string, message: string) => void
+  /** token 用量统计 */
+  onUsage?: (usage: Record<string, unknown>) => void
+  /** 错误事件 */
+  onError?: (error: string) => void
 }
 
 /** 日志条目（与 Logger 的 LogEntry 对齐） */
@@ -289,6 +307,98 @@ export class PageLogCollector {
 
 // ─── AI 闭环协调器 ──────────────────────────────────────────────────────────
 
+// ─── SSE 流消费 ─────────────────────────────────────────────────────────────
+
+/**
+ * 消费 SSE 响应流，解析事件并调用回调。
+ * 返回最终的 AIResponse（从 `result` 事件中提取）。
+ */
+async function consumeSSEStream(
+  response: Response,
+  callbacks?: StreamCallbacks,
+): Promise<AIResponse> {
+  const reader = response.body?.getReader()
+  if (!reader) throw new Error('响应体不可读')
+
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let finalResult: AIResponse | null = null
+  // SSE 事件累积（event: 和 data: 跨行配对）
+  let currentEvent = 'message'
+  let currentData = ''
+
+  function dispatchEvent(eventName: string, data: string): void {
+    if (!data) return
+    try {
+      const parsed = JSON.parse(data) as Record<string, unknown>
+      switch (eventName) {
+        case 'delta':
+          if (typeof parsed['delta'] === 'string') callbacks?.onDelta?.(parsed['delta'])
+          break
+        case 'reasoning':
+          if (typeof parsed['reasoning'] === 'string') callbacks?.onReasoning?.(parsed['reasoning'])
+          break
+        case 'phase':
+          callbacks?.onPhase?.(
+            parsed['phase'] as number,
+            parsed['status'] as string,
+            parsed['message'] as string,
+          )
+          break
+        case 'usage':
+          callbacks?.onUsage?.(parsed['usage'] as Record<string, unknown>)
+          break
+        case 'result':
+          finalResult = parsed as unknown as AIResponse
+          break
+        case 'error':
+          callbacks?.onError?.(parsed['error'] as string)
+          break
+      }
+    } catch {
+      // 跳过非 JSON
+    }
+  }
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+
+      for (const line of lines) {
+        if (line === '' || line === '\r') {
+          // 空行 → 分发当前事件
+          dispatchEvent(currentEvent, currentData)
+          currentEvent = 'message'
+          currentData = ''
+        } else if (line.startsWith('event:')) {
+          currentEvent = line.slice(6).trim()
+        } else if (line.startsWith('data:')) {
+          const payload = line.slice(5).trim()
+          if (payload === '[DONE]') continue
+          currentData = currentData ? currentData + '\n' + payload : payload
+        }
+        // 忽略 id: / retry: / 注释行
+      }
+    }
+    // 流结束后分发残余事件
+    if (currentData) {
+      dispatchEvent(currentEvent, currentData)
+    }
+  } finally {
+    reader.releaseLock()
+  }
+
+  if (!finalResult) {
+    throw new Error('SSE 流结束但未收到 result 事件')
+  }
+  return finalResult
+}
+
 /** _callAI 内部使用的已解析配置 */
 interface ResolvedLoopOptions {
   aiEndpoint: string
@@ -355,6 +465,35 @@ export class AIPageLoop {
   }
 
   /**
+   * 流式首次生成：SSE 逐 token 推送，通过回调接收中间事件
+   */
+  async generateStream(pageId: string, prompt: string, callbacks?: StreamCallbacks): Promise<AIResponse> {
+    return this._callAIStream(pageId, {
+      action: 'generate',
+      pageId,
+      prompt,
+      sessionId: this._sessionId,
+    }, callbacks)
+  }
+
+  /**
+   * 流式迭代修改：SSE 逐 token 推送，通过回调接收中间事件
+   */
+  async iterateStream(pageId: string, feedback?: string, callbacks?: StreamCallbacks): Promise<AIResponse> {
+    const logs = this.collector.drain(pageId)
+    const currentFiles = await readPageFiles(pageId)
+
+    return this._callAIStream(pageId, {
+      action: 'iterate',
+      pageId,
+      sessionId: this._sessionId,
+      feedback,
+      currentFiles,
+      logs,
+    }, callbacks)
+  }
+
+  /**
    * 调用 AI 后端并写入文件
    */
   private async _callAI(pageId: string, payload: Record<string, unknown>): Promise<AIResponse> {
@@ -367,6 +506,54 @@ export class AIPageLoop {
 
       // 写入文件
       if (Object.keys(aiResp.files).length > 0) {
+        const written = await writePageFiles(pageId, aiResp.files)
+        this.options.onFilesUpdated(pageId, written)
+      }
+
+      return aiResp
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      this.options.onError(error)
+      throw error
+    }
+  }
+
+  /**
+   * 流式调用 AI 后端（SSE），通过回调推送中间事件，最终写入文件并返回结果。
+   * 使用 fetch + ReadableStream 消费 SSE 事件流。
+   */
+  private async _callAIStream(
+    pageId: string,
+    payload: Record<string, unknown>,
+    callbacks?: StreamCallbacks,
+  ): Promise<AIResponse> {
+    try {
+      if (this.options.skillCatalog !== undefined) {
+        payload['skillCatalog'] = this.options.skillCatalog
+      }
+
+      // 构建请求头（复用 configureAILoopHttp 注入的 headers）
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      // 获取动态 headers（auth token 等）通过拦截器机制
+      // 这里直接用 fetch，需要手动获取 headers
+      const interceptorHeaders = _getStreamHeaders ? _getStreamHeaders() : {}
+      Object.assign(headers, interceptorHeaders)
+
+      const streamEndpoint = this.options.aiEndpoint.replace(/\/chat$/, '/chat/stream-page')
+      const response = await fetch(streamEndpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error(`SSE 请求失败: ${response.status} ${response.statusText}`)
+      }
+
+      const aiResp = await consumeSSEStream(response, callbacks)
+
+      // 写入文件
+      if (aiResp.files && Object.keys(aiResp.files).length > 0) {
         const written = await writePageFiles(pageId, aiResp.files)
         this.options.onFilesUpdated(pageId, written)
       }

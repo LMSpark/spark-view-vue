@@ -5,7 +5,7 @@
  * 与 DataSet/DataTable 深度集成，支持权限和数据转换
  */
 
-import { type Request, createRequest, Logger, toError } from '@spark-view/spark-utils'
+import { type HttpClient, createRequest, Logger, toError } from '@spark-view/spark-utils'
 import type {
   RequestConfig
 } from '@spark-view/spark-utils'
@@ -39,7 +39,7 @@ const DEFAULT_BATCH_CONCURRENCY = 5
  * 自动处理权限、数据转换、分页等业务逻辑
  */
 export class CrudService {
-  private http: Request
+  private http: HttpClient
   private logger = Logger('CrudService')
 
   // ===== 构造函数 =====
@@ -47,15 +47,15 @@ export class CrudService {
   /**
    * 创建CRUD服务实例
    * @param api CRUD API配置
-   * @param httpConfigOrClient 可选：HTTP 客户端配置对象 **或** 已有 Request 实例（共享 auth/拦截器）
+   * @param httpConfigOrClient 可选：HTTP 客户端配置对象 **或** 已有 HttpClient 实例（共享 auth/拦截器）
    */
   constructor(
     private api: CrudApi,
-    httpConfigOrClient?: Partial<RequestConfig> | Request
+    httpConfigOrClient?: Partial<RequestConfig> | HttpClient
   ) {
-    if (httpConfigOrClient && typeof (httpConfigOrClient as Request).get === 'function') {
-      // M5: 传入现有 Request 实例，跳过 createRequest（共享 auth/拦截器）
-      this.http = httpConfigOrClient as Request
+    if (httpConfigOrClient && typeof (httpConfigOrClient as HttpClient).get === 'function') {
+      // M5: 传入现有 HttpClient 实例，跳过 createRequest（共享 auth/拦截器）
+      this.http = httpConfigOrClient as HttpClient
     } else {
       this.http = httpConfigOrClient
         ? createRequest(httpConfigOrClient as Partial<RequestConfig>)
@@ -66,9 +66,9 @@ export class CrudService {
   /**
    * 获取内部 HTTP 客户端实例（供 TreeManager 等模块共享拦截器/认证/配置）
    *
-   * @returns Request 实例
+   * @returns HttpClient 实例
    */
-  getHttpClient(): Request {
+  getHttpClient(): HttpClient {
     return this.http
   }
 
@@ -618,12 +618,12 @@ export class CrudService {
 /**
  * 创建CRUD服务工厂函数
  * @param api CRUD API配置
- * @param httpConfigOrClient HTTP 客户端配置 **或** 已有 Request 实例（共享 auth/拦截器）
+ * @param httpConfigOrClient HTTP 客户端配置 **或** 已有 HttpClient 实例（共享 auth/拦截器）
  * @returns CrudService实例
  */
 export function createCrudService(
   api: CrudApi,
-  httpConfigOrClient?: Partial<RequestConfig> | Request
+  httpConfigOrClient?: Partial<RequestConfig> | HttpClient
 ): CrudService {
   return new CrudService(api, httpConfigOrClient)
 }

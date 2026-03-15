@@ -7,6 +7,9 @@
  * 所有 API 调用自动附带 X-Tenant-Id 头。
  */
 
+import { createFetchClient } from '@spark-view/spark-utils'
+import type { RequestError } from '@spark-view/spark-utils'
+
 // ── Token 管理 ──────────────────────────────────────────────────────────────
 
 const TOKEN_KEY = 'spark_token'
@@ -65,17 +68,16 @@ export function switchProject(projectId: string): void {
 
 // ── API 调用 ────────────────────────────────────────────────────────────────
 
+const authHttp = createFetchClient()
+
 async function authFetch(url: string, body: Record<string, string>): Promise<Record<string, unknown>> {
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  const data = (await resp.json()) as Record<string, unknown>
-  if (!resp.ok) {
-    throw new Error((data['message'] as string | undefined) ?? `请求失败 (${resp.status})`)
+  try {
+    return await authHttp.post<Record<string, unknown>>(url, body)
+  } catch (err) {
+    const reqErr = err as RequestError
+    const serverMsg = (reqErr.response as Record<string, unknown> | undefined)?.['message']
+    throw new Error(typeof serverMsg === 'string' ? serverMsg : `请求失败 (${reqErr.status ?? 0})`)
   }
-  return data
 }
 
 export interface LoginParams {

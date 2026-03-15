@@ -13,6 +13,12 @@ import type { NavNode, NavRoot } from '../navigation/nav-types'
 
 const routerLogger = Logger('SparkApp:DynamicRouter')
 
+function shouldLogDynamicRouteDetails(): boolean {
+  if (typeof globalThis === 'undefined') return false
+  const flag = (globalThis as Record<string, unknown>)['__SPARK_DEBUG_DYNAMIC_ROUTER__']
+  return flag === true
+}
+
 /**
  * 动态路由注册选项
  */
@@ -160,10 +166,10 @@ export class DynamicRouter {
     if (this._loadNavigation && this._isAuthenticated()) {
       await this.loadAndRegisterFromNav()
     } else if (this._preAuthNavTree) {
-      // 未登录状态：使用本地预认证导航树
+      // 未登录状态：使用本地预认证导航树（平台级路由，不加租户前缀）
       this._navTree = this._preAuthNavTree
       this._navRouteMap = new WeakMap()
-      this.registerRoutesFromNav(this._preAuthNavTree.children)
+      this.registerRoutesFromNav(this._preAuthNavTree.children, true)
       routerLogger.info('预认证导航树路由注册完成', { nodeCount: this._preAuthNavTree.children.length })
     }
 
@@ -186,16 +192,22 @@ export class DynamicRouter {
    * 从导航节点树递归注册路由
    * - pageType='vue-component' → componentMap 查找组件
    * - pageType='config'（默认）→ pageComponent (PageRenderer)
+   * @param skipTenantPrefix 平台级路由（preAuthNavTree）跳过租户前缀
    */
-  private registerRoutesFromNav(nodes: NavNode[]): void {
+  private registerRoutesFromNav(nodes: NavNode[], skipTenantPrefix = false): void {
     for (const node of nodes) {
       if (node.path) {
         const pageType = node.pageType ?? 'config'
         const pageId = node.pageId ?? node.id
-        const routePath = this.addTenantPrefix(node.path)
+        // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
+        const routePath = skipTenantPrefix
+          ? this.normalizePath(node.path)
+          : this.addTenantPrefix(node.path)
 
         if (this.registeredRoutes.has(routePath)) {
-          routerLogger.debug(`路由已注册，跳过: ${routePath}`)
+          if (shouldLogDynamicRouteDetails()) {
+            routerLogger.debug(`路由已注册，跳过: ${routePath}`)
+          }
         } else if (pageType === 'vue-component') {
           const relativePath = this.normalizePath(node.path)
           const component = this.staticComponentMap.get(relativePath)
@@ -208,7 +220,9 @@ export class DynamicRouter {
             }
             this.router.addRoute(route)
             this.registeredRoutes.add(routePath)
-            routerLogger.debug(`Vue 组件路由已注册(nav): ${routePath}`)
+            if (shouldLogDynamicRouteDetails()) {
+              routerLogger.debug(`Vue 组件路由已注册(nav): ${routePath}`)
+            }
           } else {
             routerLogger.warn('vue-component 导航节点缺少组件映射，跳过', { path: node.path, nodeId: node.id })
           }
@@ -223,7 +237,9 @@ export class DynamicRouter {
           }
           this.router.addRoute(route)
           this.registeredRoutes.add(routePath)
-          routerLogger.debug(`配置页面路由已注册(nav): ${routePath}`, { pageId })
+          if (shouldLogDynamicRouteDetails()) {
+            routerLogger.debug(`配置页面路由已注册(nav): ${routePath}`, { pageId })
+          }
         }
 
         // WeakMap 追踪：导航节点 → 路由路径
@@ -232,7 +248,7 @@ export class DynamicRouter {
 
       // 递归子节点
       if (node.children?.length) {
-        this.registerRoutesFromNav(node.children)
+        this.registerRoutesFromNav(node.children, skipTenantPrefix)
       }
     }
   }
@@ -242,7 +258,9 @@ export class DynamicRouter {
     const route = this.router.getRoutes().find(r => r.name === name)
     if (route) this.registeredRoutes.delete(route.path)
     this.router.removeRoute(name)
-    routerLogger.debug('路由已移除', { name })
+    if (shouldLogDynamicRouteDetails()) {
+      routerLogger.debug('路由已移除', { name })
+    }
   }
 
   /** 刷新路由（重新加载导航树，保留静态组件映射），返回加载后的导航树 */
@@ -266,7 +284,7 @@ export class DynamicRouter {
       if (this._preAuthNavTree) {
         this._navTree = this._preAuthNavTree
         this._navRouteMap = new WeakMap()
-        this.registerRoutesFromNav(this._preAuthNavTree.children)
+        this.registerRoutesFromNav(this._preAuthNavTree.children, true)
       }
       throw error
     }

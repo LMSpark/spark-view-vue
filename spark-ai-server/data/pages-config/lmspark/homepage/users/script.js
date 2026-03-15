@@ -1,23 +1,41 @@
-﻿// 用户管理页面脚本
-// 沙箱注入的全局变量: 
-// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
+let _pageState = {};
 
-// 页面初始化
-console.log('👥 用户管理页面已加载');
-console.log('📦 DataSet:', $dataSet);
+function __init__() {
+  const view = $dataSet?.getView('users', 'default');
+  if (!view) {
+    console.warn('users 视图未找到');
+    return;
+  }
+  console.log('👥 用户管理页面初始化完成，数据行数:', view.rows.length);
+  
+  view.events.on('currentRowChanged', (currentRow) => {
+    console.log('当前行变更:', currentRow);
+  });
+  
+  view.events.on('selectedRowsChanged', (selectedRows) => {
+    console.log('选中行变更:', selectedRows);
+  });
+}
 
-// 示例：定义函数供页面使用
+function handleRowChange(currentRow, oldRow) {
+  console.log('表格当前行变更:', currentRow, '旧行:', oldRow);
+}
+
+function handleSelection(selection) {
+  console.log('表格选中行变更:', selection);
+}
+
 function addUser() {
-    $page.showMessage('➕ 添加用户功能', 'info');
-    console.log('添加用户');
+  $page.showMessage('➕ 添加用户功能', 'info');
+  console.log('添加用户');
 }
 
 function deleteUser() {
-    $page.showMessage('🗑️ 删除用户功能', 'info');
-    console.log('删除用户');
+  $page.showMessage('🗑️ 删除用户功能', 'info');
+  console.log('删除用户');
 }
 
 function editUser() {
-    $page.showMessage('✏️ 编辑用户功能', 'info');
-    console.log('编辑用户');
+  $page.showMessage('✏️ 编辑用户功能', 'info');
+  console.log('编辑用户');
 }

@@ -1,0 +1,13 @@
+[data-page="users"] .page-container {
+  background-color: #fff;
+}
+
+[data-page="users"] .content-section {
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #f9f9f9;
+}
+
+[data-page="users"] .el-table {
+  width: 100%;
+}

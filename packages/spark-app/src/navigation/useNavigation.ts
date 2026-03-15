@@ -66,10 +66,10 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
 
   // ── 路由变化 → 重算活动路径 + 模块上下文 ──
 
-  /** 从实际路由路径中剥离租户前缀（/t/:tenantId/xxx → /xxx） */
+  /** 从实际路由路径中剥离租户前缀（/t/:tenantId/:projectId/xxx → /xxx） */
   function stripTenantPrefix(path: string): string {
-    const match = /^\/t\/[^/]+(.*)$/.exec(path)
-    return match ? (match[1] ?? '/') : path
+    const match = /^\/t\/[^/]+\/[^/]+(.*)$/.exec(path)
+    return match ? (match[1] || '/') : path
   }
 
   function normalizePath(path: string): string {
@@ -84,29 +84,36 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     return normalizePath(stripTenantPrefix(path))
   }
 
-  /** 为裸路径添加当前租户前缀（/xxx → /t/{tenantId}/xxx） */
+  /** 为裸路径添加当前租户+项目前缀（/xxx → /t/{tenantId}/{projectId}/xxx） */
   function addTenantPrefix(path: string): string {
     const normalized = normalizePath(path)
     const tenantId = route.params['tenantId']
+    const projectId = route.params['projectId']
 
-    // 兼容导航里写了 /t/:tenantId/xxx 的场景：替换为当前租户真实路径
+    // 兼容导航里写了模板路径的场景：替换为当前真实值
     if (normalized.startsWith('/t/:tenantId')) {
       const resolvedTenant = typeof tenantId === 'string' && tenantId ? tenantId : 'default'
-      return normalizePath(normalized.replace('/t/:tenantId', `/t/${resolvedTenant}`))
+      const resolvedProject = typeof projectId === 'string' && projectId ? projectId : 'homepage'
+      // 先替换完整模板 /t/:tenantId/:projectId，再兜底只有 :tenantId 的情况
+      const replaced = normalized.includes('/t/:tenantId/:projectId')
+        ? normalized.replace('/t/:tenantId/:projectId', `/t/${resolvedTenant}/${resolvedProject}`)
+        : normalized.replace('/t/:tenantId', `/t/${resolvedTenant}/${resolvedProject}`)
+      return normalizePath(replaced)
     }
 
     // 已有真实租户前缀 → 直接返回
     if (normalized.startsWith('/t/')) return normalized
 
     if (typeof tenantId === 'string' && tenantId) {
-      return normalizePath(`/t/${tenantId}${normalized}`)
+      const resolvedProject = typeof projectId === 'string' && projectId ? projectId : 'homepage'
+      return normalizePath(`/t/${tenantId}/${resolvedProject}${normalized}`)
     }
     return normalized
   }
 
   watch(
-    () => route.path,
-    (path) => {
+    [() => route.path, () => navRoot.children] as const,
+    ([path]) => {
       const shortPath = stripTenantPrefix(path)
       _activePath.value = findActivePath(navRoot.children, shortPath)
       syncModuleContext()
@@ -361,9 +368,13 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
 
     if (vueRoute?.name !== undefined) {
       const tenantId = route.params['tenantId']
+      const projectId = route.params['projectId']
       const params: Record<string, string> = {}
       if (typeof tenantId === 'string' && tenantId) {
         params['tenantId'] = tenantId
+      }
+      if (typeof projectId === 'string' && projectId) {
+        params['projectId'] = projectId
       }
       void router.push({
         name: vueRoute.name,

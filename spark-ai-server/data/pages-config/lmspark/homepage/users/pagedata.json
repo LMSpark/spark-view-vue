@@ -1,7 +1,29 @@
 {
-  "users": [
-    { "id": 1, "name": "admin", "role": "管理员", "status": "在线" },
-    { "id": 2, "name": "user1", "role": "普通用户", "status": "离线" },
-    { "id": 3, "name": "user2", "role": "普通用户", "status": "在线" }
-  ]
+  "dataset": {
+    "dataSetName": "PageDataSet",
+    "tables": {
+      "users": {
+        "columns": [
+          { "name": "id", "type": "number", "label": "ID", "isPrimaryKey": true },
+          { "name": "name", "type": "string", "label": "用户名" },
+          { "name": "gender", "type": "string", "label": "性别" },
+          { "name": "role", "type": "string", "label": "角色" },
+          { "name": "status", "type": "string", "label": "状态" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": 1, "name": "admin", "gender": "男", "role": "管理员", "status": "在线" },
+              { "id": 2, "name": "user1", "gender": "女", "role": "普通用户", "status": "离线" },
+              { "id": 3, "name": "user2", "gender": "男", "role": "普通用户", "status": "在线" },
+              { "id": 4, "name": "user3", "gender": "女", "role": "访客", "status": "在线" },
+              { "id": 5, "name": "user4", "gender": "男", "role": "编辑", "status": "离线" }
+            ],
+            "autoCurrentFirst": true
+          }
+        }
+      }
+    },
+    "relations": []
+  }
 }

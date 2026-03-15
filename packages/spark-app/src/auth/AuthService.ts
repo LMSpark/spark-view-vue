@@ -23,7 +23,7 @@ import type { AppEnvironment, EnvironmentInfo } from '../types'
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
 import { toError, createRequest } from '@spark-view/spark-utils'
-import type { Request as HttpRequest, RequestConfig, RequestError } from '@spark-view/spark-utils'
+import type { HttpClient, RequestConfig, RequestError } from '@spark-view/spark-utils'
 import { simpleEnvAdapter as envAdapter } from '../utils/simpleEnv'
 
 // =============================================================================
@@ -62,7 +62,7 @@ export class AuthService implements IAuthService {
   private tokenManager!: TokenManager
 
   /** HTTP 客户端（延迟初始化） */
-  private httpClient: HttpRequest | null = null
+  private httpClient: HttpClient | null = null
 
   /** 初始化状态 */
   private initialized = false
@@ -550,7 +550,7 @@ export class AuthService implements IAuthService {
   }
 
   /** 获取或创建 HTTP 客户端（懒初始化） */
-  private getOrCreateClient(timeout?: number): HttpRequest {
+  private getOrCreateClient(timeout?: number): HttpClient {
     this.httpClient ??= createRequest({ timeout: timeout ?? this.callTimeout })
     return this.httpClient
   }

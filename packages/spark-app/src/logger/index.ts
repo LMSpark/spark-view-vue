@@ -19,6 +19,7 @@
  */
 export type { LogLevel } from '@spark-view/spark-utils'
 import type { LogLevel } from '@spark-view/spark-utils'
+import { createFetchClient } from '@spark-view/spark-utils'
 
 /**
  * 应用层 Logger API 接口
@@ -171,37 +172,13 @@ export function createBatchHttpTransport(options: BatchTransportOptions): LogTra
 
   let queue: LogEntry[] = []
   let timer: ReturnType<typeof setInterval> | null = null
+  const beaconClient = createFetchClient()
 
   function flush(): void {
     if (queue.length === 0) return
     const batch = queue
     queue = []
-
-    const payload = JSON.stringify({ logs: batch })
-
-    // 优先 sendBeacon（页面卸载时更可靠），否则 fetch + keepalive
-    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
-      const sent = navigator.sendBeacon(
-        endpoint,
-        new Blob([payload], { type: 'application/json' })
-      )
-      if (!sent) {
-        // sendBeacon 失败回退到 fetch
-        fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: payload,
-          keepalive: true
-        }).catch(() => { /* 静默 */ })
-      }
-    } else {
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        keepalive: true
-      }).catch(() => { /* 静默 */ })
-    }
+    beaconClient.beacon(endpoint, { logs: batch })
   }
 
   // 定时刷新
@@ -428,21 +405,18 @@ class AppLogger {
  */
 export function createHttpTransport(endpoint: string, options?: { minLevel?: LogLevel }): LogTransport {
   const minLevelPriority = LOG_LEVELS[options?.minLevel ?? 'warn']
+  const httpClient = createFetchClient()
   return {
     async send(level: LogLevel, message: string, meta?: Record<string, unknown>) {
       if (LOG_LEVELS[level] < minLevelPriority) return
 
       try {
-        await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            level,
-            message,
-            meta,
-            timestamp: Date.now(),
-            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined
-          })
+        await httpClient.post(endpoint, {
+          level,
+          message,
+          meta,
+          timestamp: Date.now(),
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined
         })
       } catch {
         // 静默失败，不影响应用

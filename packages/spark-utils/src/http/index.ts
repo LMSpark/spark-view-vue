@@ -9,7 +9,28 @@
  * ```
  */
 
+export { HttpClientBase } from './HttpClientBase'
 export { Request, createRequest } from './Request'
+export { FetchClient, createFetchClient } from './FetchClient'
+export { createHttpClient } from './HttpClientFactory'
 export { FileLoader, createFileLoader } from './FileLoader'
 export type { LoadOptions, DerivedLoader } from './FileLoader'
-export type { RequestConfig, ApiResponse, FileLoadOptions, FileLoadResult, CacheEntry, RequestError, HttpResponse } from './types'
+export type {
+	RequestConfig,
+	Method,
+	ApiResponse,
+	FileLoadOptions,
+	FileLoadResult,
+	CacheEntry,
+	CacheExpirationTier,
+	RequestError,
+	RequestInterceptor,
+	ResponseInterceptor,
+	HttpResponse,
+	StreamResponse,
+	SSEEvent,
+	HttpClient,
+	FetchHttpClient,
+	HttpClientAdapter,
+	HttpClientFactoryOptions,
+} from './types'

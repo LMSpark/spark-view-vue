@@ -12,9 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +58,7 @@ public class AiPageService {
     private final ObjectMapper objectMapper;
     private final RestClient restClient;
     private final ComponentMetadataService metadataService;
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public AiPageService(OpenAiProperties props, ObjectMapper objectMapper,
                          ComponentMetadataService metadataService) {
@@ -161,6 +167,292 @@ public class AiPageService {
             log.error("[SPARK-AI] error: {}", e.getMessage(), e);
             return buildErrorResponse(request, e.getMessage());
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 流式页面生成入口（SSE）
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * 流式版两阶段生成：逐 token 推送 LLM 输出到 SseEmitter。
+     *
+     * <p>SSE 事件类型：
+     * <ul>
+     *   <li><b>phase</b>：阶段进度 {"phase":1,"status":"start","message":"..."}</li>
+     *   <li><b>delta</b>：LLM 正文内容增量 {"delta":"..."}</li>
+     *   <li><b>reasoning</b>：推理过程增量 {"reasoning":"..."}（仅 DeepSeek-reasoner）</li>
+     *   <li><b>result</b>：最终合并结果 {"files":{...},"explanation":"...","needsIteration":false,"iterationRound":1}</li>
+     *   <li><b>error</b>：错误 {"error":"..."}</li>
+     *   <li><b>done</b>：流结束 {"done":true}</li>
+     * </ul>
+     */
+    public SseEmitter processRequestStream(AiChatRequest request) {
+        long timeout = props.isReasonerModel() ? 600_000L : 300_000L;
+        SseEmitter emitter = new SseEmitter(timeout);
+        executor.execute(() -> doProcessRequestStream(request, emitter));
+        return emitter;
+    }
+
+    private void doProcessRequestStream(AiChatRequest request, SseEmitter emitter) {
+        try {
+            String systemPrompt = buildSystemPrompt(request);
+            String pid = request.getPageId() != null ? request.getPageId() : "ai-page";
+
+            List<Map<String, String>> conversation = new ArrayList<>();
+            conversation.add(Map.of("role", "system", "content", systemPrompt));
+
+            int round = 0;
+            Map<String, String> merged = null;
+            String explanation = "";
+            boolean needsIter = false;
+            AiChatRequest currentReq = request;
+
+            do {
+                round++;
+                log.info("[SPARK-AI][STREAM] ====== R{}/{} action={} pageId={} ======",
+                         round, MAX_ITERATIONS, currentReq.getAction(), pid);
+
+                // ── Phase 1 ──
+                sendPhaseEvent(emitter, 1, "start", "生成 UI 层（rule.json + style.css）...");
+                String phase1Msg = buildPhase1Message(currentReq);
+                PhaseResult phase1 = callPhaseStream(conversation, phase1Msg, PHASE1_REQUIRED,
+                                                      "R" + round + "-Phase1", emitter);
+                if (phase1 == null) {
+                    sendErrorEvent(emitter, "第" + round + "轮 UI 层生成失败，请重试");
+                    emitter.complete();
+                    return;
+                }
+                sendPhaseEvent(emitter, 1, "done", "UI 层生成完成");
+
+                // ── Phase 2 ──
+                sendPhaseEvent(emitter, 2, "start", "生成数据/行为层（pagedata.json + script.js）...");
+                String phase2Msg = buildPhase2Message(currentReq, phase1.files());
+                PhaseResult phase2 = callPhaseStream(conversation, phase2Msg, PHASE2_REQUIRED,
+                                                      "R" + round + "-Phase2", emitter);
+                sendPhaseEvent(emitter, 2, "done", "数据/行为层生成完成");
+
+                // ── Merge ──
+                merged = mergePhaseFiles(phase1.files(), phase2 != null ? phase2.files() : null);
+                merged.putIfAbsent("pagedata.json", "{}");
+                merged.putIfAbsent("style.css", "");
+                merged.putIfAbsent("script.js", "");
+
+                String roundExpl = phase1.explanation() != null ? phase1.explanation() : "";
+                if (phase2 != null && phase2.explanation() != null && !phase2.explanation().isBlank()) {
+                    roundExpl += "\n" + phase2.explanation();
+                }
+                explanation = roundExpl;
+
+                needsIter = (phase2 != null && phase2.needsIteration());
+                if (needsIter && round < MAX_ITERATIONS) {
+                    sendPhaseEvent(emitter, 0, "iterate",
+                            "AI 标记需迭代，进入第 " + (round + 1) + " 轮...");
+                    currentReq = buildIterateRequest(request, merged, roundExpl);
+                }
+            } while (needsIter && round < MAX_ITERATIONS);
+
+            // ── 发送最终结果 ──
+            AiResponse finalResult = new AiResponse(merged, explanation, needsIter, round);
+            String resultJson = objectMapper.writeValueAsString(finalResult);
+            emitter.send(SseEmitter.event().name("result").data(resultJson));
+            emitter.send(SseEmitter.event().name("done").data("{\"done\":true}"));
+            emitter.complete();
+
+            log.info("[SPARK-AI][STREAM] 完成 totalRounds={} files={}", round, merged.keySet());
+
+        } catch (Exception e) {
+            log.error("[SPARK-AI][STREAM] error: {}", e.getMessage(), e);
+            sendErrorEvent(emitter, e.getMessage());
+            emitter.completeWithError(e);
+        }
+    }
+
+    /**
+     * 流式版阶段调用：使用 callLlmStream 替代 callLlm。
+     */
+    private PhaseResult callPhaseStream(List<Map<String, String>> conversation, String userMessage,
+                                         List<String> requiredFiles, String phaseName, SseEmitter emitter) {
+        conversation.add(Map.of("role", "user", "content", userMessage));
+
+        List<String> failures = new ArrayList<>();
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                if (attempt > 1) {
+                    sendPhaseEvent(emitter, 0, "retry",
+                            phaseName + " 第 " + attempt + " 次重试...");
+                }
+
+                String llmContent = callLlmStream(conversation, emitter);
+                log.info("[SPARK-AI][STREAM] {} attempt={} responseLen={}", phaseName, attempt, llmContent.length());
+
+                AiResponse response = parseResponse(llmContent);
+                if (response.getFiles() == null || response.getFiles().isEmpty()) {
+                    String reason = "JSON 解析失败（无 files 字段）";
+                    log.warn("[SPARK-AI][STREAM] {} attempt={} {}", phaseName, attempt, reason);
+                    failures.add("第" + attempt + "次: " + reason);
+                    continue;
+                }
+
+                String err = validatePhaseFiles(response, requiredFiles);
+                if (err != null) {
+                    log.warn("[SPARK-AI][STREAM] {} attempt={} validation: {}", phaseName, attempt, err);
+                    failures.add("第" + attempt + "次: " + err);
+                    continue;
+                }
+
+                log.info("[SPARK-AI][STREAM] {} ok attempt={} files={}", phaseName, attempt, response.getFiles().keySet());
+                conversation.add(Map.of("role", "assistant", "content", llmContent));
+                boolean iterFlag = Boolean.TRUE.equals(response.getNeedsIteration());
+                return new PhaseResult(response.getFiles(), response.getExplanation(), iterFlag);
+
+            } catch (Exception e) {
+                failures.add("第" + attempt + "次异常: " + e.getMessage());
+                log.warn("[SPARK-AI][STREAM] {} attempt={} error: {}", phaseName, attempt, e.getMessage());
+            }
+        }
+
+        log.error("[SPARK-AI][STREAM] {} 全部 {} 次尝试均失败: {}", phaseName, MAX_RETRIES, String.join("; ", failures));
+        conversation.remove(conversation.size() - 1);
+        return null;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 流式 LLM 调用（stream: true）
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * 流式调用 LLM，逐 token 转发 delta/reasoning 到 SseEmitter，
+     * 同时累积完整内容并返回。
+     */
+    private String callLlmStream(List<Map<String, String>> messages, SseEmitter emitter) throws Exception {
+        log.info("[SPARK-AI][STREAM] callLlmStream msgCount={} model={}", messages.size(), props.getModel());
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("model", props.getModel());
+        body.put("messages", messages);
+        body.put("stream", true);
+        body.put("max_tokens", props.getEffectiveMaxTokens());
+
+        Double effectiveTemp = props.getEffectiveTemperature();
+        if (effectiveTemp != null) {
+            body.put("temperature", effectiveTemp);
+        }
+        if (!props.isReasonerModel() && props.getTopP() != null) {
+            body.put("top_p", props.getTopP());
+        }
+        if (!props.isReasonerModel()) {
+            if (props.getFrequencyPenalty() != null) {
+                body.put("frequency_penalty", props.getFrequencyPenalty());
+            }
+            if (props.getPresencePenalty() != null) {
+                body.put("presence_penalty", props.getPresencePenalty());
+            }
+        }
+        if (props.isDeepSeek()) {
+            body.put("stream_options", Map.of("include_usage", true));
+        }
+
+        String bodyJson = objectMapper.writeValueAsString(body);
+        StringBuilder contentBuffer = new StringBuilder();
+
+        restClient.post()
+                .uri("/v1/chat/completions")
+                .body(bodyJson)
+                .exchange((httpRequest, response) -> {
+                    try (BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
+                        processStreamLinesForPage(reader, emitter, contentBuffer);
+                    }
+                    return null;
+                }, false);
+
+        String content = contentBuffer.toString();
+        log.info("[SPARK-AI][STREAM] callLlmStream responseLen={}", content.length());
+        if (content.isEmpty()) {
+            throw new RuntimeException("LLM 流式响应累积内容为空");
+        }
+        return content;
+    }
+
+    /**
+     * 逐行解析 OpenAI 流式 SSE，转发 delta/reasoning 到客户端 emitter，
+     * 同时将 content 累积到 contentBuffer。
+     */
+    @SuppressWarnings("unchecked")
+    private void processStreamLinesForPage(BufferedReader reader, SseEmitter emitter,
+                                            StringBuilder contentBuffer) throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (!line.startsWith("data: ")) continue;
+            String data = line.substring("data: ".length()).trim();
+            if ("[DONE]".equals(data)) return;
+
+            try {
+                Map<String, Object> parsed = objectMapper.readValue(data, new TypeReference<>() {});
+
+                // reasoning_content（DeepSeek-reasoner 特有）
+                String reasoning = extractStreamField(parsed, "reasoning_content");
+                if (reasoning != null && !reasoning.isEmpty()) {
+                    String payload = "{\"reasoning\":" + objectMapper.writeValueAsString(reasoning) + "}";
+                    emitter.send(SseEmitter.event().name("reasoning").data(payload));
+                }
+
+                // delta.content
+                String delta = extractStreamField(parsed, "content");
+                if (delta != null && !delta.isEmpty()) {
+                    contentBuffer.append(delta);
+                    String payload = "{\"delta\":" + objectMapper.writeValueAsString(delta) + "}";
+                    emitter.send(SseEmitter.event().name("delta").data(payload));
+                }
+
+                // usage 统计
+                Object usageObj = parsed.get("usage");
+                if (usageObj instanceof Map<?, ?> usage && !usage.isEmpty()) {
+                    String usageJson = objectMapper.writeValueAsString(Map.of("usage", usage));
+                    emitter.send(SseEmitter.event().name("usage").data(usageJson));
+                }
+            } catch (Exception ignored) {
+                // 跳过非 JSON 行
+            }
+        }
+    }
+
+    /** 从 choices[0].delta 中提取指定字段 */
+    private String extractStreamField(Map<String, Object> parsed, String fieldName) {
+        Object choicesObj = parsed.get("choices");
+        if (!(choicesObj instanceof List<?> choices) || choices.isEmpty()) return null;
+        Object firstObj = choices.get(0);
+        if (!(firstObj instanceof Map<?, ?> first)) return null;
+        Object deltaObj = first.get("delta");
+        if (!(deltaObj instanceof Map<?, ?> delta)) return null;
+        Object value = delta.get(fieldName);
+        return value instanceof String s ? s : null;
+    }
+
+    /** 发送阶段进度 SSE 事件 */
+    private void sendPhaseEvent(SseEmitter emitter, int phase, String status, String message) {
+        try {
+            String json = String.format("{\"phase\":%d,\"status\":\"%s\",\"message\":\"%s\"}",
+                    phase, status, escapeJson(message));
+            emitter.send(SseEmitter.event().name("phase").data(json));
+        } catch (IOException e) {
+            log.warn("[SPARK-AI][STREAM] 发送 phase 事件失败: {}", e.getMessage());
+        }
+    }
+
+    /** 发送错误 SSE 事件 */
+    private void sendErrorEvent(SseEmitter emitter, String errorMessage) {
+        try {
+            emitter.send(SseEmitter.event().name("error")
+                    .data("{\"error\":\"" + escapeJson(errorMessage) + "\"}"));
+        } catch (IOException e) {
+            log.warn("[SPARK-AI][STREAM] 发送 error 事件失败: {}", e.getMessage());
+        }
+    }
+
+    private static String escapeJson(String s) {
+        if (s == null) return "unknown error";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
     }
 
     /**
