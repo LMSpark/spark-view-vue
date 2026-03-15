@@ -69,6 +69,25 @@ public class AiChatController {
     }
 
     /**
+     * POST /api/ai/chat/stream-page
+     * 流式版页面配置生成，以 SSE 逐 token 推送 LLM 输出。
+     *
+     * <p>SSE 事件类型：
+     * <ul>
+     *   <li><b>phase</b>：阶段进度（{"phase":1,"status":"start","message":"..."}）</li>
+     *   <li><b>delta</b>：LLM 正文增量（{"delta":"..."}）</li>
+     *   <li><b>reasoning</b>：推理过程增量（{"reasoning":"..."}，仅 DeepSeek）</li>
+     *   <li><b>result</b>：最终合并结果（{"files":{...},"explanation":"..."}）</li>
+     *   <li><b>done</b>：流结束（{"done":true}）</li>
+     *   <li><b>error</b>：错误（{"error":"..."}）</li>
+     * </ul>
+     */
+    @PostMapping(value = "/chat/stream-page", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter chatStreamPage(@RequestBody AiChatRequest request) {
+        return aiPageService.processRequestStream(request);
+    }
+
+    /**
      * POST /api/ai/component-metadata
      * 接收前端构建输出的组件元数据 JSON（组件注册表 + Skill 目录 + 预构建 prompt）。
      * 由 scripts/upload-component-metadata.mjs 在 vite build 后调用。

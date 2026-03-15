@@ -167,7 +167,7 @@ async function handleLogin() {
   try {
     const user = await login(loginForm)
     await refreshRoutes()
-    await router.replace(`/t/${user.tenantId}${getNavHomePath()}`)
+    await router.replace(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '登录失败'
   } finally {
@@ -203,7 +203,7 @@ async function handleRegister() {
   try {
     const user = await register(regForm)
     await refreshRoutes()
-    await router.replace(`/t/${user.tenantId}${getNavHomePath()}`)
+    await router.replace(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '注册失败'
   } finally {
@@ -233,7 +233,7 @@ async function handleRegisterTenant() {
   try {
     const user = await registerTenant(tenantForm)
     await refreshRoutes()
-    await router.replace(`/t/${user.tenantId}${getNavHomePath()}`)
+    await router.replace(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '租户注册失败'
   } finally {

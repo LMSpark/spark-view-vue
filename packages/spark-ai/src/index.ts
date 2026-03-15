@@ -15,7 +15,7 @@ export {
   initAILoop,
   getAILoop,
 } from './ai-loop'
-export type { PageFiles, AIResponse, LogSnapshot, AIPageLoopOptions } from './ai-loop'
+export type { PageFiles, AIResponse, LogSnapshot, AIPageLoopOptions, StreamCallbacks } from './ai-loop'
 
 // ── SSE Events (re-export from spark-utils) ─────────────────────────────────
 export {

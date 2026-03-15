@@ -104,8 +104,7 @@
     </template>
   </AppLayout>
 
-  <!-- AI 聊天浮窗（仅配置启用时加载） -->
-  <AiChatPanel v-if="enableAI" />
+  <!-- AI 聊天浮窗已下沉到 AppPageRendererBridge（仅配置页面渲染） -->
 
   <!-- AI 协同设计抽屉 -->
   <AiDesignStudio v-if="enableAI" v-model="showDesignStudio" />
@@ -254,10 +253,10 @@ function handleUserCommand(command: string) {
       const user = getUser()
       if (user && user.defaultProjectId !== 'homepage') {
         void projectSwitchService.switchAndReload('homepage').then(() => {
-          void router.push(`/t/${user.tenantId}${getNavHomePath()}`)
+          void router.push(`/t/${user.tenantId}/homepage${getNavHomePath()}`)
         })
       } else if (user) {
-        void router.push(`/t/${user.tenantId}${getNavHomePath()}`)
+        void router.push(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
       } else {
         void router.push('/')
       }
@@ -277,7 +276,6 @@ function handleUserCommand(command: string) {
 }
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
-const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
 const AiChatWidget = defineAsyncComponent(() => import('@/components/AiChatWidget.vue'))
 const AiDesignStudio = defineAsyncComponent(() => import('@/components/AiDesignStudio.vue'))
 const showAiChat = ref(false)

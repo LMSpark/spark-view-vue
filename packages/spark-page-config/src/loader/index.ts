@@ -35,7 +35,7 @@ import {
   createFileLoader,
   createRequest
 } from '@spark-view/spark-utils'
-import type { FileLoader, DerivedLoader, Request } from '@spark-view/spark-utils'
+import type { FileLoader, DerivedLoader, HttpClient } from '@spark-view/spark-utils'
 
 // 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
@@ -65,7 +65,7 @@ export class PageConfigLoader implements ConfigLoader {
   private opts: Required<Omit<ConfigLoaderOptions, 'getHeaders'>> & Pick<ConfigLoaderOptions, 'getHeaders'>
   private fileLoader: FileLoader
   /** 共享 axios 请求实例（远程 API 调用统一通道，自动注入 auth/tenant headers） */
-  private request: Request
+  private request: HttpClient
   private readonly pagesConfigBase: string
 
   /**

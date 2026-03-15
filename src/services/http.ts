@@ -26,7 +26,7 @@
  */
 
 import { createRequest } from '@spark-view/spark-utils'
-import type { Request } from '@spark-view/spark-utils'
+import type { HttpClient } from '@spark-view/spark-utils'
 import { getToken, getUser, clearAuth } from './auth'
 
 export function createAuthHeaders(): Record<string, string> {
@@ -39,12 +39,12 @@ export function createAuthHeaders(): Record<string, string> {
   return headers
 }
 
-let _instance: Request | null = null
+let _instance: HttpClient | null = null
 
 /**
  * 获取带认证拦截器的全局 Request 实例（懒初始化单例）
  */
-export function getHttpClient(): Request {
+export function getHttpClient(): HttpClient {
   if (_instance) return _instance
 
   _instance = createRequest({ timeout: 30_000 })
@@ -75,7 +75,7 @@ export function getHttpClient(): Request {
 }
 
 /** 全局 HTTP 客户端（带认证拦截器） */
-export const http: Request = new Proxy({} as Request, {
+export const http: HttpClient = new Proxy({} as HttpClient, {
   get(_target, prop, receiver): unknown {
     return Reflect.get(getHttpClient(), prop, receiver) as unknown
   },

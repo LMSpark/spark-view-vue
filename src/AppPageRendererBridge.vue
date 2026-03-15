@@ -1,14 +1,18 @@
 <template>
   <FCPageRenderer v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
+  <!-- AI 聊天浮窗（仅配置页面渲染时加载，从 App.vue 下沉至此） -->
+  <AiChatPanel v-if="enableAI" />
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { computed, ref, inject, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { FCPageRenderer } from '@spark-view/spark-component'
 import type { PageRendererOptions } from '@spark-view/spark-component'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import { appPageUiService } from '@spark-view/spark-app'
 import { NAV_KEY } from '@spark-view/spark-app'
+
+const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
 
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,
@@ -45,4 +49,18 @@ const forwardedProps = computed(() => ({
   enableCssScope: props.enableCssScope,
   enableDataSet: props.enableDataSet,
 }))
+
+// AI 开关：与 App.vue 逻辑一致，异步轮询 window.__SPARK_ENABLE_AI
+const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))
+onMounted(() => {
+  if (enableAI.value) return
+  const timer = setInterval(() => {
+    if ((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']) {
+      enableAI.value = true
+      clearInterval(timer)
+    }
+  }, 200)
+  const stopTimer = setTimeout(() => clearInterval(timer), 5000)
+  onUnmounted(() => { clearInterval(timer); clearTimeout(stopTimer) })
+})
 </script>

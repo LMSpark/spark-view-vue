@@ -271,7 +271,7 @@ async function startApp() {
         // 动态注入认证 / 租户请求头（FileLoader 使用 axios，不经过 fetch 拦截器）
         getHeaders: createAuthHeaders,
         isAuthenticated,
-        tenantPathPrefix: '/t/:tenantId',
+        tenantPathPrefix: '/t/:tenantId/:projectId',
         preAuthNavTree,
         // 导航树作为路由唯一来源 — DynamicRouter 从导航树派生路由
         loadNavigation: async () => {
@@ -310,24 +310,27 @@ async function startApp() {
         // ── 认证路由守卫（租户隔离） ──
         // platformPaths 从 VUE_PAGE_MAP scope='platform' 自动派生，消除硬编码
         router.beforeEach((to) => {
+          const platformHomePath = preAuthNavTree.homePath ?? '/'
           if (!isAuthenticated()) {
-            // 未登录：只允许平台页面（scope='platform'）
-            return platformPaths.has(to.path) ? undefined : '/'
+            // 未登录：停留在平台域（平台首页/登录页/平台公开页）
+            if (to.path.startsWith('/t/')) return platformHomePath
+            return platformPaths.has(to.path) ? undefined : platformHomePath
           }
           const u = getUser()
           const tenantId = u?.tenantId ?? 'default'
-          // 已登录：所有非租户前缀路径统一重定向到租户路径
-          if (!to.path.startsWith('/t/')) {
-            // /login 特殊处理：已登录不应回到登录页
-            if (to.path === '/login') return `/t/${tenantId}${getNavHomePath()}`
-            return `/t/${tenantId}${to.path}`
-          }
-          // 租户路径：验证 URL 中的 tenantId 与当前用户一致
-          const urlTenantMatch = /^\/t\/([^/]+)/.exec(to.path)
-          if (urlTenantMatch && urlTenantMatch[1] !== tenantId) {
-            // 替换为正确的租户 ID，保留后续路径
-            const rest = to.path.slice(`/t/${urlTenantMatch[1]}`.length)
-            return `/t/${tenantId}${rest}`
+          const projectId = u?.defaultProjectId ?? 'homepage'
+          const scopePrefix = `/t/${tenantId}/${projectId}`
+          // 已登录：进入租户主应用首页（平台域统一收口到首页）
+          if (!to.path.startsWith('/t/')) return `${scopePrefix}${getNavHomePath()}`
+
+          // 租户路径：验证 URL 中的 tenantId/projectId 与当前用户一致
+          const urlScopeMatch = /^\/t\/([^/]+)\/([^/]+)/.exec(to.path)
+          if (urlScopeMatch) {
+            if (urlScopeMatch[1] !== tenantId || urlScopeMatch[2] !== projectId) {
+              // scope 不匹配（可能是旧格式 URL），直接跳转到首页
+              const rest = to.path.slice(`/t/${urlScopeMatch[1]}/${urlScopeMatch[2]}`.length)
+              return `${scopePrefix}${rest || getNavHomePath()}`
+            }
           }
           return undefined
         })

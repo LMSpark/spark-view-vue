@@ -16,6 +16,18 @@ import { toError } from '@spark-view/spark-utils'
 
 const startLogger = createLogger('start')
 
+function shouldLogStartDetails(): boolean {
+  if (typeof globalThis === 'undefined') return false
+  const flag = (globalThis as Record<string, unknown>)['__SPARK_DEBUG_START__']
+  return flag === true
+}
+
+function logStartDebug(message: string, meta?: Record<string, unknown>): void {
+  if (shouldLogStartDetails()) {
+    startLogger.debug(message, meta)
+  }
+}
+
 /**
  * SPARK 组件系统配置
  */
@@ -160,19 +172,19 @@ export async function start(options: StartOptions): Promise<void> {
   try {
     // 启动前钩子
     if (onBeforeStart) {
-      startLogger.debug('执行启动前钩子...')
+      logStartDebug('执行启动前钩子...')
       await onBeforeStart()
     }
 
     // 1. 创建 Vue 应用实例
-    startLogger.debug('创建 Vue 应用...')
+    logStartDebug('创建 Vue 应用...')
     const app = createApp(rootComponent)
 
     // 1.5 初始化主题服务（尽早创建，避免首屏闪烁）
     if (theme !== false && theme !== undefined) {
       const themeOpts = typeof theme === 'boolean' ? {} : theme
       themeService = createThemeService(themeOpts)
-      startLogger.debug('主题服务已初始化', { mode: themeService.mode })
+      logStartDebug('主题服务已初始化', { mode: themeService.mode })
     }
 
     // 过滤 form-create + Element Plus 的已知兼容性警告
@@ -187,21 +199,37 @@ export async function start(options: StartOptions): Promise<void> {
     }
     // 2. 安装 UI 插件
     if (plugins && plugins.length > 0) {
-      startLogger.debug(`安装 ${plugins.length} 个 UI 插件...`)
+      logStartDebug(`安装 ${plugins.length} 个 UI 插件...`)
       for (const plugin of plugins) app.use(plugin)
     }
 
     // 3. 创建 Vue Router 实例
-    startLogger.debug('创建 Vue Router...')
+    logStartDebug('创建 Vue Router...')
     const history = routerMode === 'hash' 
       ? createWebHashHistory() 
       : createWebHistory()
-    const router = createRouter({ history, routes: [] })
+    const router = createRouter({
+      history,
+      routes: [
+        {
+          path: '/',
+          name: 'spark-bootstrap-root',
+          component: { render: () => null },
+          meta: { bootstrap: true },
+        },
+        {
+          path: '/login',
+          name: 'spark-bootstrap-login',
+          component: { render: () => null },
+          meta: { bootstrap: true },
+        },
+      ],
+    })
 
     // 4. 安装 SPARK 组件系统
     // 使用全局单例管理器，确保整个应用共享同一个组件实例集合
     if (spark?.enabled !== false) {
-      startLogger.debug('安装 SPARK 组件系统...')
+      logStartDebug('安装 SPARK 组件系统...')
       const { createSparkPlugin } = await import('@spark-view/spark-component')
       // 使用默认全局单例（不传参数）
       app.use(createSparkPlugin())
@@ -211,7 +239,7 @@ export async function start(options: StartOptions): Promise<void> {
       
       if (shouldAutoRegister) {
         try {
-          startLogger.debug('自动导入 virtual:spark-components...')
+          logStartDebug('自动导入 virtual:spark-components...')
           // 动态导入虚拟模块（由 vite-plugin-spark-components 生成）
           type RegisterFn = (app: ReturnType<typeof createApp>) => { total: number; sync: number; async: number }
           const virtualModule = await import('virtual:spark-components')
@@ -220,7 +248,7 @@ export async function start(options: StartOptions): Promise<void> {
           }
           
           if (typeof registerComponents === 'function') {
-            startLogger.debug('执行自动组件注册...')
+            logStartDebug('执行自动组件注册...')
             const stats = registerComponents(app)
             startLogger.info(`自动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
           } else {
@@ -236,7 +264,7 @@ export async function start(options: StartOptions): Promise<void> {
 
     // 5. 配置动态路由系统
     if (pageConfig) {
-      startLogger.debug('配置动态路由系统...')
+      logStartDebug('配置动态路由系统...')
       const { SparkPageConfig } = await import('@spark-view/spark-page-config')
       
       const configLoaderOptions: Partial<ConfigLoaderOptions> = {
@@ -254,10 +282,10 @@ export async function start(options: StartOptions): Promise<void> {
       
       // 如果未提供 pageComponent，自动导入 FCPageRenderer
       if (!pageComponent) {
-        startLogger.debug('未提供 pageComponent，自动导入 FCPageRenderer...')
+        logStartDebug('未提供 pageComponent，自动导入 FCPageRenderer...')
         const { FCPageRenderer } = await import('@spark-view/spark-component')
         pageComponent = FCPageRenderer
-        startLogger.debug('✅ FCPageRenderer 已导入')
+        logStartDebug('✅ FCPageRenderer 已导入')
       }
       
       const dynamicRouterOptions: DynamicRouterOptions = {
@@ -273,6 +301,11 @@ export async function start(options: StartOptions): Promise<void> {
 
       const dynamicRouter = createDynamicRouter(dynamicRouterOptions)
       await dynamicRouter.registerRoutes()
+
+      // 移除 bootstrap 占位路由 —— DynamicRouter 已注册真实路由，
+      // 占位路由若保留会因 Vue Router 先注册先匹配而遮盖真实组件（render: () => null）
+      router.removeRoute('spark-bootstrap-root')
+      router.removeRoute('spark-bootstrap-login')
 
       // 注入到全局模块：导航访问 + 缓存管理（AI 热重载需要）
       const { setDynamicRouter } = await import('./navigation/nav-access')

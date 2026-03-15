@@ -181,9 +181,11 @@ const users = await request.get('/users', {}, {
 })
 
 // 清除缓存
-request.clearCache('/users')      // 清除特定 URL
+request.clearCache('/users')      // 清除特定 URL（精确匹配）
 request.clearCache()              // 清除所有缓存
 ```
+
+> `clearCache(url)` 只按 URL 精确匹配（不含 query 参数部分），不会使用模糊包含匹配。
 
 ### 重试
 
@@ -226,6 +228,30 @@ const blob = await request.get<Blob>('/file.pdf', {}, {
   responseType: 'blob'
 })
 ```
+
+### Fetch 专属能力（stream / SSE / beacon）
+
+```typescript
+import { createFetchClient } from '@spark-view/spark-utils'
+
+const fetchClient = createFetchClient({ baseURL: '/api' })
+
+// SSE
+const events = await fetchClient.streamSSE({
+  url: '/ai/chat/stream',
+  method: 'POST',
+  data: { messages: [] },
+})
+
+for await (const event of events) {
+  if (event.data === '[DONE]') break
+}
+
+// 页面卸载期日志上报
+fetchClient.beacon('/logs/batch', { logs: [] })
+```
+
+> `stream()` / `streamSSE()` 为长连接场景，默认**不走自动重试循环**；如需断线重连，请在业务层实现重试策略。
 
 ### 文件上传
 

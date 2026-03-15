@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { http } from '@/services/http'
-import { createAuthHeaders } from '@/services/http'
+import { createFetchClient } from '@spark-view/spark-utils'
+import { http, createAuthHeaders } from '@/services/http'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -104,72 +104,31 @@ export function useAiChat(options?: {
         }
       }
 
-      const response = await fetch('/api/ai/chat/stream', {
+      const sseClient = createFetchClient()
+      const events = await sseClient.streamSSE({
+        url: '/api/ai/chat/stream',
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...createAuthHeaders() },
-        body: JSON.stringify({
-          messages: historyMsgs,
-          mode,
-          systemPrompt,
-        }),
+        data: { messages: historyMsgs, mode, systemPrompt },
       })
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      if (!response.body) {
-        throw new Error('响应体为空，不支持流式读取')
-      }
-
-      await readStream(response.body, reactiveMsg)
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : '请求失败'
-      error.value = msg
-      reactiveMsg.content = `⚠️ ${msg}`
-    } finally {
-      reactiveMsg.streaming = false
-      isStreaming.value = false
-    }
-  }
-
-  // ── 读取 SSE 流（支持 delta / reasoning / usage 事件） ─────────────────
-
-  async function readStream(body: ReadableStream<Uint8Array>, target: ChatMessage) {
-    const reader = body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-
-    for (;;) {
-      const { done, value } = await reader.read()
-      if (done) break
-
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
-
-      for (const line of lines) {
-        // 跳过空行和 SSE 事件名行（兼容 "event: xxx" 和 "event:xxx"）
-        if (line.startsWith('event:')) continue
-
-        // 解析 data 行（兼容 "data: xxx" 和 "data:xxx"）
-        if (!line.startsWith('data:')) continue
-        const data = line.slice(line.startsWith('data: ') ? 6 : 5).trim()
-        if (data === '[DONE]') return
+      for await (const event of events) {
+        if (event.data === '[DONE]') break
 
         try {
-          const parsed = JSON.parse(data) as Record<string, unknown>
-          if (parsed['done'] === true) return
+          const parsed = JSON.parse(event.data) as Record<string, unknown>
+          if (parsed['done'] === true) break
 
           // DeepSeek-reasoner: 推理过程增量
           const reasoning = parsed['reasoning']
           if (typeof reasoning === 'string' && reasoning) {
-            target.reasoning = (target.reasoning ?? '') + reasoning
+            reactiveMsg.reasoning = (reactiveMsg.reasoning ?? '') + reasoning
           }
 
           // 正文内容增量
           const delta = parsed['delta']
           if (typeof delta === 'string' && delta) {
-            target.content += delta
+            reactiveMsg.content += delta
           }
 
           // token 用量统计（DeepSeek stream_options.include_usage）
@@ -182,12 +141,19 @@ export function useAiChat(options?: {
             if (typeof u['total_tokens'] === 'number') usage.totalTokens = u['total_tokens']
             if (typeof u['prompt_cache_hit_tokens'] === 'number') usage.promptCacheHitTokens = u['prompt_cache_hit_tokens']
             if (typeof u['prompt_cache_miss_tokens'] === 'number') usage.promptCacheMissTokens = u['prompt_cache_miss_tokens']
-            target.usage = usage
+            reactiveMsg.usage = usage
           }
         } catch {
           // 跳过非 JSON 行
         }
       }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '请求失败'
+      error.value = msg
+      reactiveMsg.content = `⚠️ ${msg}`
+    } finally {
+      reactiveMsg.streaming = false
+      isStreaming.value = false
     }
   }
 

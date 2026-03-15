@@ -13,16 +13,11 @@
           <span>🤖 AI · {{ displayPageId ? `/${displayPageId}` : '首页' }}
             <span v-if="loading && lockedPageId" class="ai-lock-badge" title="生成中，页面ID已锁定">🔒</span>
           </span>
-          <span class="ai-status" :class="isVueComponentPage ? 'blocked' : statusClass">{{ isVueComponentPage ? '非配置页' : statusText }}</span>
+          <span class="ai-status" :class="statusClass">{{ statusText }}</span>
         </div>
 
         <div class="ai-panel-body" ref="messagesRef">
-          <div v-if="isVueComponentPage" class="ai-empty ai-blocked">
-            ⚠️ 当前页面 <b>/{{ routePageId }}</b> 是 Vue 组件页面，不是配置驱动页面。<br><br>
-            AI 仅支持生成和修改<b>配置驱动页面</b>（rule.json + pagedata.json + script.js）。<br>
-            Vue 组件页面请在源码中直接修改。
-          </div>
-          <div v-else-if="messages.length === 0" class="ai-empty">
+          <div v-if="messages.length === 0" class="ai-empty">
             输入页面描述，AI 将自动生成 SPARK 页面配置。<br>
             例如：「创建一个用户管理页面，包含表格和搜索」<br><br>
             💡 点击 <b>🐛 调试</b> 可将当前页面错误发送给 AI 自动修复
@@ -51,8 +46,12 @@
             </div>
           </div>
           <div v-if="loading" class="ai-message assistant">
-            <div class="ai-message-content ai-loading">
-              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <div class="ai-message-content ai-streaming">
+              <div v-if="phaseMessage" class="ai-phase-badge">{{ phaseMessage }}</div>
+              <div v-if="streamingText" class="ai-stream-text">{{ streamingText }}</div>
+              <div v-else class="ai-loading">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              </div>
             </div>
           </div>
         </div>
@@ -78,29 +77,29 @@
             v-model="pageId"
             class="ai-input-page"
             placeholder="页面ID (同步当前路由)"
-            :disabled="loading || isVueComponentPage"
+            :disabled="loading"
             @keydown.enter="handleSend"
           />
           <textarea
             v-model="prompt"
             class="ai-input"
-            :placeholder="isVueComponentPage ? 'Vue 组件页面，不支持 AI 配置生成' : '描述你想要的页面...'"
+            placeholder="描述你想要的页面..."
             rows="2"
-            :disabled="loading || isVueComponentPage"
+            :disabled="loading"
             @keydown.enter.ctrl="handleSend"
             @keydown.enter.meta="handleSend"
           ></textarea>
           <div class="ai-actions">
-            <button class="ai-delete-btn" :disabled="loading || !pageId.trim() || isVueComponentPage" @click="handleDelete" title="删除当前页面配置">
+            <button class="ai-delete-btn" :disabled="loading || !pageId.trim()" @click="handleDelete" title="删除当前页面配置">
               🗑️
             </button>
-            <button class="ai-debug-btn" :disabled="loading || !pageId.trim() || isVueComponentPage" @click="handleDebug" title="收集当前页面错误并发送给 AI 修复">
+            <button class="ai-debug-btn" :disabled="loading || !pageId.trim()" @click="handleDebug" title="收集当前页面错误并发送给 AI 修复">
               🐛 调试
             </button>
             <button v-if="loading" class="ai-cancel-btn" @click="handleCancel">
               ⏹ 取消
             </button>
-            <button class="ai-send-btn" :disabled="loading || !prompt.trim() || !pageId.trim() || isVueComponentPage" @click="handleSend">
+            <button class="ai-send-btn" :disabled="loading || !prompt.trim() || !pageId.trim()" @click="handleSend">
               {{ loading ? '生成中...' : '发送' }}
             </button>
           </div>
@@ -116,7 +115,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { getNavHomePath } from '@spark-view/spark-app'
 import { getUser } from '@/services/auth'
 import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
-import type { AIResponse, LogSnapshot } from '@spark-view/spark-ai'
+import type { AIResponse, LogSnapshot, StreamCallbacks } from '@spark-view/spark-ai'
 import { createRequest } from '@spark-view/spark-utils'
 import { getPageApi } from '@/services/api-paths'
 
@@ -159,14 +158,16 @@ const displayPageId = computed(() =>
   loading.value && lockedPageId.value ? lockedPageId.value : (pageId.value || routePageId.value)
 )
 
-/** 当前路由对应的 pageId（去除前导 /） */
+/** 当前路由对应的 pageId（剥离租户前缀 /t/:tenantId/:projectId/ 后取尾段） */
 const routePageId = computed(() => {
-  const trimmed = route.path.replace(/^\/+/, '')
+  const path = route.path
+  // 剥离租户前缀：/t/{tenantId}/{projectId}/xxx → /xxx
+  const match = /^\/t\/[^/]+\/[^/]+\/(.+)$/.exec(path)
+  if (match) return match[1]
+  // 无租户前缀时回退到去前导 /
+  const trimmed = path.replace(/^\/+/, '')
   return trimmed.length > 0 ? trimmed : ''
 })
-
-/** 当前路由是否为 Vue 组件页面（非配置驱动页面，禁止 AI 修改） */
-const isVueComponentPage = computed(() => route.meta['type'] === 'vue-component')
 
 // 路由变化时自动同步 pageId（生成中不同步，防止迭代期间路由跳转覆盖）
 watch(routePageId, (newId) => {
@@ -202,6 +203,11 @@ const statusClass = ref('')
 const statusText = ref('就绪')
 const showLogs = ref(false)
 
+/** 流式输出文本（SSE delta 累积） */
+const streamingText = ref('')
+/** 当前阶段进度描述 */
+const phaseMessage = ref('')
+
 /** 日志更新信号（本地响应式，由 onLogUpdate 驱动） */
 const _logTick = ref(0)
 const _unsubLog = onLogUpdate(() => { _logTick.value++ })
@@ -229,6 +235,32 @@ function levelEmoji(level: string): string {
 function updateStatus(s: 'idle' | 'generating' | 'success' | 'error') {
   statusClass.value = s
   statusText.value = { idle: '就绪', generating: '生成中...', success: '完成', error: '失败' }[s]
+}
+
+/** 创建 SSE 流式回调，累积 delta 文本并更新阶段进度 */
+function createStreamCallbacks(): StreamCallbacks {
+  return {
+    onDelta(text: string) {
+      streamingText.value += text
+      scrollToBottom()
+    },
+    onReasoning(text: string) {
+      streamingText.value += text
+      scrollToBottom()
+    },
+    onPhase(_phase: number, _status: string, message: string) {
+      phaseMessage.value = message
+    },
+    onError(error: string) {
+      if (import.meta.env.DEV) console.warn('[AiChatPanel] SSE error:', error)
+    },
+  }
+}
+
+/** 重置流式状态 */
+function resetStreamState(): void {
+  streamingText.value = ''
+  phaseMessage.value = ''
 }
 
 function togglePanel() {
@@ -362,6 +394,7 @@ async function handleSend() {
   lockedPageId.value = pid
   _abortRequested = false
   updateStatus('generating')
+  resetStreamState()
   scrollToBottom()
 
   try {
@@ -372,10 +405,12 @@ async function handleSend() {
     const existingFiles = await readPageFiles(pid)
     const hasExistingPage = Object.keys(existingFiles).length > 0
 
+    const callbacks = createStreamCallbacks()
+
     if (hasExistingPage) {
       // 页面已存在 → 迭代模式，把用户输入作为修改反馈
       if (loop) {
-        response = await loop.iterate(pid, text)
+        response = await loop.iterateStream(pid, text, callbacks)
       } else {
         response = await http.post<AIResponse>('/api/ai/chat', {
           action: 'iterate',
@@ -389,7 +424,7 @@ async function handleSend() {
     } else {
       // 新页面 → 生成模式
       if (loop) {
-        response = await loop.generate(pid, text)
+        response = await loop.generateStream(pid, text, callbacks)
       } else {
         response = await http.post<AIResponse>('/api/ai/chat', {
           action: 'generate',
@@ -475,8 +510,10 @@ async function handleSend() {
         // 调用 iterate 回传日志并写入修复后的文件
         let iterResponse: AIResponse
         if (loop) {
-          iterResponse = await loop.iterate(pid,
-            `页面渲染后出现以下错误，请修复：\n${errorSummary}`
+          resetStreamState()
+          iterResponse = await loop.iterateStream(pid,
+            `页面渲染后出现以下错误，请修复：\n${errorSummary}`,
+            createStreamCallbacks(),
           )
         } else {
           // fallback：直接 POST 迭代请求
@@ -580,13 +617,15 @@ async function handleDebug() {
   _abortRequested = false
   updateStatus('generating')
   setAutoIterating(true)
+  resetStreamState()
 
   try {
     // ── 第一轮：发送当前错误 + 文件给 AI ──
     let iterResponse: AIResponse
     if (loop) {
-      iterResponse = await loop.iterate(pid,
-        `页面 /${pid} 运行时出现以下错误，请根据当前文件内容修复：\n${errorSummary}`
+      iterResponse = await loop.iterateStream(pid,
+        `页面 /${pid} 运行时出现以下错误，请根据当前文件内容修复：\n${errorSummary}`,
+        createStreamCallbacks(),
       )
     } else {
       const currentFiles = await readPageFiles(pid)
@@ -662,8 +701,10 @@ async function handleDebug() {
 
       let nextResponse: AIResponse
       if (loop) {
-        nextResponse = await loop.iterate(pid,
-          `页面渲染后仍有以下错误，请继续修复：\n${newErrorSummary}`
+        resetStreamState()
+        nextResponse = await loop.iterateStream(pid,
+          `页面渲染后仍有以下错误，请继续修复：\n${newErrorSummary}`,
+          createStreamCallbacks(),
         )
       } else {
         const currentFiles = await readPageFiles(pid)
@@ -795,14 +836,6 @@ watch(() => route.query['aiDebug'], async (val) => {
 .ai-status.generating { background: #e6a23c; color: #fff; }
 .ai-status.success { background: #67c23a; color: #fff; }
 .ai-status.error { background: #f56c6c; color: #fff; }
-.ai-status.blocked { background: #909399; color: #fff; }
-
-.ai-blocked {
-  color: #909399;
-  background: #f4f4f5;
-  border-radius: 8px;
-  padding: 16px;
-}
 
 .ai-lock-badge {
   font-size: 11px;
@@ -903,6 +936,30 @@ watch(() => route.query['aiDebug'], async (val) => {
 @keyframes dot-bounce {
   0%, 80%, 100% { transform: scale(0); }
   40% { transform: scale(1); }
+}
+
+.ai-streaming {
+  min-height: 32px;
+}
+
+.ai-phase-badge {
+  font-size: 11px;
+  color: #667eea;
+  background: #eef0ff;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  display: inline-block;
+}
+
+.ai-stream-text {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: 'Menlo', 'Consolas', monospace;
 }
 
 .ai-panel-footer {
