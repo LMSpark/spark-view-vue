@@ -117,7 +117,7 @@ import {
   type PageFiles,
   type LogSnapshot,
   type FileChangeEvent,
-} from '@spark-view/spark-app'
+} from '@spark-view/spark-ai'
 import type { DevState } from './useDevState'
 
 const props = defineProps<{ state: DevState }>()

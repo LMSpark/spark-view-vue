@@ -212,8 +212,8 @@ import {
   writePageFiles,
   clearPageCache,
   setConfigLoader,
-} from '@spark-view/spark-app'
-import type { AIResponse } from '@spark-view/spark-app'
+} from '@spark-view/spark-ai'
+import type { AIResponse } from '@spark-view/spark-ai'
 
 const PROPOSAL_TYPES: ProposalType[] = ['data-model', 'ui-structure', 'interaction', 'api-config', 'style', 'db-schema', 'dict-entry']
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/

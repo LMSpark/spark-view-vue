@@ -179,38 +179,5 @@ export {
   getNavHomePath,
 } from './navigation/nav-access'
 
-// ── AI (re-exported from @spark-view/spark-ai) ──
-export {
-  onServerEvent,
-  ServerEventType,
-  onPageConfigChange,
-  setConfigLoader,
-  clearPageCache,
-  clearAllCache,
-  getCacheStats,
-  logUpdateSignal,
-  setAutoIterating,
-  isAutoIterating,
-  setupHotReload,
-  writePageFiles,
-  readPageFile,
-  readPageFiles,
-  PageLogCollector,
-  AIPageLoop,
-  pageRefreshKey,
-  triggerPageRefresh,
-  initAILoop,
-  getAILoop,
-  configureAILoopHttp,
-} from '@spark-view/spark-ai'
-export type {
-  FileChangeEvent,
-  ServerEventTypeName,
-  PageFiles,
-  AIResponse,
-  LogSnapshot,
-  AIPageLoopOptions,
-} from '@spark-view/spark-ai'
-
 // ── Page UI Host Component ──
 export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'
