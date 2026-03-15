@@ -276,7 +276,7 @@ export async function start(options: StartOptions): Promise<void> {
 
       // 注入到全局模块：导航访问 + 缓存管理（AI 热重载需要）
       const { setDynamicRouter } = await import('./navigation/nav-access')
-      const { setConfigLoader } = await import('./ai/ai-loop')
+      const { setConfigLoader } = await import('./ai/page-cache')
       setDynamicRouter(dynamicRouter)
       setConfigLoader(configLoader)
     }

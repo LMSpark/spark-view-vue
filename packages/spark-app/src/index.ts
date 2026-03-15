@@ -179,18 +179,30 @@ export {
   getNavHomePath,
 } from './navigation/nav-access'
 
-// ── AI Loop & Cache Management ──
+// ── SSE Event Bus（通用服务端事件总线） ──
 export {
-  logUpdateSignal,
   onServerEvent,
   ServerEventType,
   onPageConfigChange,
-  setAutoIterating,
-  isAutoIterating,
+} from './ai/sse-events'
+export type {
+  FileChangeEvent,
+  ServerEventTypeName,
+} from './ai/sse-events'
+
+// ── Page Config Cache Management ──
+export {
   setConfigLoader,
   clearPageCache,
   clearAllCache,
   getCacheStats,
+} from './ai/page-cache'
+
+// ── AI Loop & File I/O ──
+export {
+  logUpdateSignal,
+  setAutoIterating,
+  isAutoIterating,
   setupHotReload,
   writePageFiles,
   readPageFile,
@@ -208,8 +220,6 @@ export type {
   AIResponse,
   LogSnapshot,
   AIPageLoopOptions,
-  FileChangeEvent,
-  ServerEventTypeName,
 } from './ai/ai-loop'
 
 // ── Page UI Host Component ──
