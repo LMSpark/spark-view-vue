@@ -186,8 +186,8 @@ import { ref, watch, nextTick, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
+import { useDesignSession } from '../composables/useDesignSession'
 import {
-  useDesignSession,
   stripProposalTags,
   buildGenerationPrompt,
   typeLabel,

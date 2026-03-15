@@ -1,7 +1,8 @@
 // ── AI Loop (core engine) ────────────────────────────────────────────────────
 export {
   configureAILoopHttp,
-  logUpdateSignal,
+  onLogUpdate,
+  onPageRefresh,
   AIPageLoop,
   PageLogCollector,
   writePageFiles,
@@ -10,7 +11,6 @@ export {
   setupHotReload,
   setAutoIterating,
   isAutoIterating,
-  pageRefreshKey,
   triggerPageRefresh,
   initAILoop,
   getAILoop,
@@ -43,7 +43,6 @@ export {
   extractComponentQueries,
   resolveComponentQuery,
   buildGenerationPrompt,
-  useDesignSession,
   AUTO_QUERY_PREFIX,
   DESIGN_SYSTEM_PROMPT,
 } from './design-session'
