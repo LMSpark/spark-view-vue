@@ -878,7 +878,7 @@ const approval = consume('my-org:skill:approval-flow')
 > | 核心类型 | `packages/spark-component/src/core/types.ts` |
 > | **Vite Skill 插件** | **`tools/vite-plugin-spark-components.ts`**（`parseSkillMeta` / `generateSkillCatalog`） |
 > | **虚拟模块类型声明** | **`src/env.d.ts`**（`virtual:spark-skill-catalog`） |
-> | AI 闭环服务 | `src/services/ai-loop.ts` |
+> | AI 闭环服务 | `packages/spark-app/src/ai/ai-loop.ts` |
 > | 组件开发指南 | `docs/guides/COMPONENT_DEVELOPMENT.md` |
 > | 组件注册指南 | `docs/guides/COMPONENT_REGISTRATION.md` |
 
