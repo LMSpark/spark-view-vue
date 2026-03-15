@@ -17,14 +17,14 @@ export {
 } from './ai-loop'
 export type { PageFiles, AIResponse, LogSnapshot, AIPageLoopOptions } from './ai-loop'
 
-// ── SSE Events ───────────────────────────────────────────────────────────────
+// ── SSE Events (re-export from spark-utils) ─────────────────────────────────
 export {
   ServerEventType,
   onServerEvent,
   onPageConfigChange,
   configureSseUrl,
-} from './sse-events'
-export type { ServerEventTypeName, FileChangeEvent } from './sse-events'
+} from '@spark-view/spark-utils'
+export type { ServerEventTypeName, FileChangeEvent } from '@spark-view/spark-utils'
 
 // ── Page Cache ───────────────────────────────────────────────────────────────
 export {

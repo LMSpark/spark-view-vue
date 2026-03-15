@@ -113,11 +113,10 @@ import { useRouter } from 'vue-router'
 import {
   getAILoop,
   readPageFiles,
-  onPageConfigChange,
   type PageFiles,
   type LogSnapshot,
-  type FileChangeEvent,
 } from '@spark-view/spark-ai'
+import { onPageConfigChange, type FileChangeEvent } from '@spark-view/spark-utils'
 import type { DevState } from './useDevState'
 
 const props = defineProps<{ state: DevState }>()
