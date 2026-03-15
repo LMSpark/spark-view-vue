@@ -43,7 +43,8 @@ public class JwtAuthFilterConfig {
         "/api/config/default",
         "/api/events",
         "/api/logs",
-        "/api/pages-config/"
+        "/api/pages-config/",
+        "/api/sap/"
     );
 
     /** 不需要认证的完整路径 */
