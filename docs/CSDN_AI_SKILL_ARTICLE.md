@@ -226,7 +226,7 @@ el-table-column / r-text-col 等 ← consume(DATA_SOURCE) 取行数据
 
 ### 4.2 SPARK AI Page Loop：真正的闭环
 
-SPARK 的 `AIPageLoop`（`src/services/ai-loop.ts`）实现了一套完整的**自主迭代机制**：
+SPARK 的 `AIPageLoop`（`packages/spark-app/src/ai/ai-loop.ts`）实现了一套完整的**自主迭代机制**：
 
 ```
                 ┌──────────────────────────────────────────────────────┐
@@ -255,7 +255,7 @@ SPARK 的 `AIPageLoop`（`src/services/ai-loop.ts`）实现了一套完整的**�
 **完整流程用代码说话**：
 
 ```typescript
-import { AIPageLoop } from '@/services/ai-loop'
+import { AIPageLoop } from '@spark-view/spark-app'
 
 // 🚀 初始化闭环协调器
 const loop = new AIPageLoop({
@@ -541,7 +541,7 @@ script.js 在 `with(__ctx)` 沙箱中执行，AI 生成此文件时：
 ### Step 1：初始化 AI Loop（`main.ts`）
 
 ```typescript
-import { initAILoop, setupHotReload } from '@/services/ai-loop'
+import { initAILoop, setupHotReload } from '@spark-view/spark-app'
 
 const aiLoop = initAILoop({
   aiEndpoint: import.meta.env.VITE_AI_ENDPOINT ?? '/api/ai/chat',
@@ -593,7 +593,7 @@ SPARK 项目已内置高质量提示词模板（`docs/guides/SPARK_PAGE_CONFIG_P
 ### Step 4：接入日志收集（Logger 传输器）
 
 ```typescript
-import { getAILoop } from '@/services/ai-loop'
+import { getAILoop } from '@spark-view/spark-app'
 
 // 在 Logger 全局传输器中将日志推送给 AI Loop
 createLogger({
@@ -663,7 +663,7 @@ SPARK 在这条路上，已经走出了一个清晰的技术范式。
 > | 模块 | 路径 |
 > |------|------|
 > | 能力系统 | `packages/spark-utils/src/capability/index.ts` |
-> | AI 闭环服务 | `src/services/ai-loop.ts` |
+> | AI 闭环服务 | `packages/spark-app/src/ai/ai-loop.ts` |
 > | 数据流核心 | `packages/spark-data/src/` |
 > | 页面渲染器 | `packages/spark-component/src/renderer/` |
 > | 提示词模板 | `docs/guides/SPARK_PAGE_CONFIG_PROMPT.md` |
