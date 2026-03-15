@@ -29,7 +29,6 @@
  * ```
  */
 
-import { ref } from 'vue'
 import { createRequest } from '@spark-view/spark-utils'
 import { clearPageCache } from './page-cache'
 import { onPageConfigChange } from './sse-events'
@@ -69,8 +68,29 @@ function getPageApiUrl(): string {
   return '/api/pages-config'
 }
 
-/** 日志更新信号：每次新日志到达时递增，供 AiChatPanel 实时感知 */
-export const logUpdateSignal = ref(0)
+// ─── 信号订阅（框架无关） ────────────────────────────────────────────────────
+
+type SignalListener = () => void
+
+const _logListeners = new Set<SignalListener>()
+const _refreshListeners = new Set<SignalListener>()
+
+/** 订阅日志更新通知，返回取消订阅函数 */
+export function onLogUpdate(listener: SignalListener): () => void {
+  _logListeners.add(listener)
+  return () => { _logListeners.delete(listener) }
+}
+
+/** 内部：通知所有日志更新监听器 */
+function _notifyLogUpdate(): void {
+  for (const fn of _logListeners) fn()
+}
+
+/** 订阅页面刷新通知，返回取消订阅函数 */
+export function onPageRefresh(listener: SignalListener): () => void {
+  _refreshListeners.add(listener)
+  return () => { _refreshListeners.delete(listener) }
+}
 
 // ─── 类型定义 ────────────────────────────────────────────────────────────────
 
@@ -240,7 +260,7 @@ export class PageLogCollector {
     if (this.logs.length > this.maxSize) {
       this.logs = this.logs.slice(-this.maxSize)
     }
-    logUpdateSignal.value++
+    _notifyLogUpdate()
   }
 
   /** 获取指定 pageId 的日志快照并清空 */
@@ -363,12 +383,9 @@ export class AIPageLoop {
 
 // ─── 页面组件重建（key 驱动，无需路由跳转） ─────────────────────────────────
 
-/** 响应式 key，App.vue router-view 内的组件使用此 key 强制重建 */
-export const pageRefreshKey = ref(0)
-
-/** 递增 key 触发当前页面组件重建（不改变路由，AI 面板状态不受影响） */
+/** 响应式 key 递增触发当前页面组件重建（不改变路由，AI 面板状态不受影响） */
 export function triggerPageRefresh(): void {
-  pageRefreshKey.value++
+  for (const fn of _refreshListeners) fn()
 }
 
 // ─── 全局单例（可选快捷入口） ────────────────────────────────────────────────

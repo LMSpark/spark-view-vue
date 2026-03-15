@@ -38,9 +38,6 @@
     "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
   },
-  "peerDependencies": {
-    "vue": "^3.5.27"
-  },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/node": "^20.19.0",

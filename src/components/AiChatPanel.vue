@@ -111,11 +111,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, watch, computed } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getNavHomePath } from '@spark-view/spark-app'
 import { getUser } from '@/services/auth'
-import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, logUpdateSignal } from '@spark-view/spark-ai'
+import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
 import type { AIResponse, LogSnapshot } from '@spark-view/spark-ai'
 import { createRequest } from '@spark-view/spark-utils'
 import { getPageApi } from '@/services/api-paths'
@@ -202,9 +202,14 @@ const statusClass = ref('')
 const statusText = ref('就绪')
 const showLogs = ref(false)
 
-/** 当前页面的实时日志（响应式，logUpdateSignal 变化时自动刷新） */
+/** 日志更新信号（本地响应式，由 onLogUpdate 驱动） */
+const _logTick = ref(0)
+const _unsubLog = onLogUpdate(() => { _logTick.value++ })
+onUnmounted(() => { _unsubLog() })
+
+/** 当前页面的实时日志（响应式，_logTick 变化时自动刷新） */
 const recentLogs = computed(() => {
-  void logUpdateSignal.value // 建立响应式依赖
+  void _logTick.value // 建立响应式依赖
   const pid = pageId.value.trim()
   if (!pid) return [] as LogSnapshot[]
   const loop = getAILoop()

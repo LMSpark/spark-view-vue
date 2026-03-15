@@ -126,11 +126,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, provide, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
 import type { NavNode, NavRoot } from '@spark-view/spark-app'
-import { pageRefreshKey } from '@spark-view/spark-ai'
+import { onPageRefresh } from '@spark-view/spark-ai'
 import { getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
@@ -167,6 +167,11 @@ const showConfigurator = ref(false)
 
 const { mode, setMode } = useTabPages()
 useColorScheme()
+
+/** AI 页面刷新信号（纯事件驱动，本地 ref 响应化） */
+const pageRefreshKey = ref(0)
+const _unsubRefresh = onPageRefresh(() => { pageRefreshKey.value++ })
+onUnmounted(() => { _unsubRefresh() })
 
 /** 检查工具栏配置中是否包含指定 action（无配置时默认全部显示） */
 function hasToolbarAction(...actions: string[]): boolean {
