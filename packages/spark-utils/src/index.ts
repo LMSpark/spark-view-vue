@@ -28,3 +28,12 @@ export type { SharedErrorCode } from './error-codes'
 export { toErrorMessage, toError } from './error-utils'
 
 export { SANDBOX_BLOCKED_KEYS, createSafeProxy } from './sandbox'
+
+// ==================== SSE 事件总线 ====================
+export {
+  ServerEventType,
+  onServerEvent,
+  onPageConfigChange,
+  configureSseUrl,
+} from './sse-events'
+export type { ServerEventTypeName, FileChangeEvent } from './sse-events'
