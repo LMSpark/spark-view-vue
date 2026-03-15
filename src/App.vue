@@ -264,7 +264,8 @@ function handleUserCommand(command: string) {
     }
     case 'logout':
       logout()
-      void router.replace('/')
+      clearAllCache()
+      window.location.replace(router.resolve('/login').href)
       break
     default:
       // 路径类命令（用户菜单项配置了 path/redirect）→ 路由导航
