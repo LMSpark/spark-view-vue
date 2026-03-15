@@ -11,7 +11,7 @@
       }"
       @click="handleClick(item)"
     >
-      <span v-if="item.icon" class="nav-header-bar__icon">{{ item.icon }}</span>
+      <span v-if="item.icon" class="nav-header-bar__icon"><NavIcon :name="item.icon" /></span>
       <span class="nav-header-bar__title">{{ item.title }}</span>
       <span v-if="badge(item)" class="nav-header-bar__badge">{{ badge(item) }}</span>
 
@@ -27,7 +27,7 @@
           }"
           @click.stop="handleClick(child)"
         >
-          <span v-if="child.icon" class="nav-header-bar__dropdown-icon">{{ child.icon }}</span>
+          <span v-if="child.icon" class="nav-header-bar__dropdown-icon"><NavIcon :name="child.icon" /></span>
           <span>{{ child.title }}</span>
         </div>
       </div>
@@ -38,6 +38,7 @@
 <script setup lang="ts">
 import type { NavNode } from '@spark-view/spark-app'
 import { useNav } from '@spark-view/spark-app'
+import NavIcon from '@/components/NavIcon.vue'
 
 defineProps<{
   items: NavNode[]

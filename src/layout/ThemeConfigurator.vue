@@ -19,7 +19,7 @@
             :class="{ 'theme-card--active': currentTheme === opt.value }"
             @click="setThemeMode(opt.value)"
           >
-            <span class="theme-card__icon">{{ opt.icon }}</span>
+            <NavIcon :name="opt.icon" :size="22" />
             <span class="theme-card__label">{{ opt.label }}</span>
           </div>
         </div>
@@ -153,6 +153,7 @@ import { useTheme } from '@spark-view/spark-app'
 import type { ThemeMode } from '@spark-view/spark-app'
 import type { PageMode } from '@spark-view/spark-app'
 import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from '@spark-view/spark-app'
+import NavIcon from '@/components/NavIcon.vue'
 
 defineProps<{
   modelValue: boolean
@@ -177,9 +178,9 @@ const { primaryColor, navPresetIndex, currentNavPreset, setPrimaryColor, setNavP
 const navDisplayColor = computed(() => currentNavPreset.value.light.sidebarBg)
 
 const themeModes: { value: ThemeMode; label: string; icon: string }[] = [
-  { value: 'light', label: '浅色', icon: '☀️' },
-  { value: 'dark', label: '深色', icon: '🌙' },
-  { value: 'auto', label: '跟随系统', icon: '💻' },
+  { value: 'light', label: '浅色', icon: 'Sunny' },
+  { value: 'dark', label: '深色', icon: 'Moon' },
+  { value: 'auto', label: '跟随系统', icon: 'Monitor' },
 ]
 
 function setThemeMode(mode: ThemeMode) {

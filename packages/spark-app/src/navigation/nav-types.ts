@@ -5,7 +5,7 @@ import type { ComputedRef, InjectionKey } from 'vue'
  * ══════════════════════════════════════════════════════════ */
 
 /** 子项存放位置 */
-export type ChildPlacement = 'header' | 'sidebar' | 'parent' | 'flat'
+export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'
 
 /** 导航节点类型 */
 export type NavNodeType = 'item' | 'group' | 'divider'
@@ -61,6 +61,8 @@ export interface NavNode {
   path?: string
   /** 外部链接（新窗口打开） */
   externalUrl?: string
+  /** 页面配置 ID（config 类型页面加载 rule.json 时使用）。默认等于 id */
+  pageId?: string
   /** 页面类型：'config'（配置驱动）| 'vue-component'（Vue 组件），默认 'config' */
   pageType?: NavPageType
   /** 子节点（group 节点） */
@@ -85,10 +87,14 @@ export interface NavNode {
 export interface NavRoot {
   /** 顶层子项存放位置 */
   childPlacement: 'header' | 'sidebar'
-  /** 顶层子节点 */
+  /** 顶层子节点（含 childPlacement='toolbar' 的工具栏组） */
   children: NavNode[]
-  /** 工具栏项（右上角操作按钮，按 action 匹配内置组件） */
-  toolbar?: NavNode[]
+  /**
+   * 应用首页路径（登录后落地页）。
+   * 由业务系统导航数据声明，如 '/dashboard'。
+   * 未设置时消费方应自行回退。
+   */
+  homePath?: string
 }
 
 /* ── 派生类型（useNavigation 使用） ── */
@@ -98,6 +104,7 @@ export interface RegionItems {
   header: NavNode[]
   sidebar: NavNode[]
   toolbar: NavNode[]
+  userMenu: NavNode[]
 }
 
 /** 区域可见性 */
@@ -105,6 +112,7 @@ export interface RegionVisibility {
   header: boolean
   sidebar: boolean
   toolbar: boolean
+  userMenu: boolean
 }
 
 /** 上下文选择器运行时状态 */
@@ -130,6 +138,8 @@ export interface NavigationContext {
   moduleContext: ComputedRef<NavContextState | null>
   /** 导航到指定节点（处理外部链接、重定向、首个叶子等） */
   navigateTo: (node: NavNode) => void
+  /** 导航到指定路径（自动追加租户前缀） */
+  navigateToPath: (path: string) => void
   /** 设置当前模块上下文选择器的值 */
   setContextValue: (value: string | number | null) => void
   /** 判断节点是否在活动路径上 */

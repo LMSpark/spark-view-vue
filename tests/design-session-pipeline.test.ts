@@ -133,7 +133,7 @@ function handleClick() {}
 
     const { proposals } = extractProposals(text, 'msg-5')
     expect(proposals).toHaveLength(1)
-    expect(proposals[0]?.title).toBe('⚡ 交互逻辑')
+    expect(proposals[0]?.title).toBe('交互逻辑')
   })
 })
 

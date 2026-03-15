@@ -174,7 +174,7 @@ export function useProjectState() {
       title,
       description: '',
       type: 'group',
-      icon: '📁',
+      icon: 'FolderOpened',
       status: 'planned',
       children: [],
     }
@@ -189,7 +189,7 @@ export function useProjectState() {
       title,
       description: '',
       type: 'page',
-      icon: '📄',
+      icon: 'Document',
       status: 'planned',
       pageId,
       pageType: 'list',

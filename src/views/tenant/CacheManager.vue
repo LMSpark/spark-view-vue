@@ -1,16 +1,16 @@
 <template>
   <div class="cache-manager">
     <el-page-header content="缓存管理" @back="$router.go(-1)">
-      <template #icon><span style="font-size: 20px">🗄️</span></template>
+      <template #icon><el-icon :size="20"><Coin /></el-icon></template>
     </el-page-header>
 
     <el-tabs v-model="activeTab" type="border-card" style="margin-top: 16px">
       <!-- ── 前端缓存 ────────────────────────────────────── -->
-      <el-tab-pane label="🌐 前端缓存" name="frontend">
+      <el-tab-pane label="前端缓存" name="frontend">
         <div class="tab-toolbar">
-          <el-button type="primary" @click="loadFrontendCache">🔄 刷新</el-button>
-          <el-button type="danger" :disabled="feEntries.length === 0" @click="handleClearAllFrontend">
-            🗑️ 清除全部
+          <el-button type="primary" :icon="Refresh" @click="loadFrontendCache">刷新</el-button>
+          <el-button type="danger" :icon="Delete" :disabled="feEntries.length === 0" @click="handleClearAllFrontend">
+            清除全部
           </el-button>
           <span class="stats-text">
             共 {{ feEntries.length }} 条缓存，约 {{ feTotalSizeKB }} KB
@@ -57,21 +57,21 @@
       </el-tab-pane>
 
       <!-- ── 后端缓存 ────────────────────────────────────── -->
-      <el-tab-pane label="🖥️ 后端缓存" name="backend">
+      <el-tab-pane label="后端缓存" name="backend">
         <div class="tab-toolbar">
-          <el-button type="primary" @click="loadBackendStats">🔄 刷新</el-button>
+          <el-button type="primary" :icon="Refresh" @click="loadBackendStats">刷新</el-button>
           <el-button
             type="danger"
             :disabled="!beStats?.componentMetadata?.loaded"
             @click="handleClearMetadata"
           >
-            🗑️ 清除元数据缓存
+            清除元数据缓存
           </el-button>
         </div>
 
         <el-row :gutter="20" style="margin-top: 16px">
           <el-col :span="12">
-            <el-card header="📦 组件元数据缓存">
+            <el-card header="组件元数据缓存">
               <el-descriptions :column="1" border size="small" v-loading="beLoading">
                 <el-descriptions-item label="是否已加载">
                   <el-tag :type="beStats?.componentMetadata?.loaded ? 'success' : 'info'" size="small">
@@ -101,7 +101,7 @@
           </el-col>
 
           <el-col :span="12">
-            <el-card header="🗃️ 数据库统计">
+            <el-card header="数据库统计">
               <el-descriptions :column="1" border size="small" v-loading="beLoading">
                 <el-descriptions-item label="页面配置数">
                   {{ beStats?.database?.pageCount ?? '—' }}
@@ -121,6 +121,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Coin, Refresh, Delete } from '@element-plus/icons-vue'
 import { clearAllCache, getCacheStats } from '@spark-view/spark-app'
 import { http } from '@/services/http'
 

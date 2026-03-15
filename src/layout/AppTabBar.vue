@@ -9,7 +9,7 @@
         @click="switchTo(tab.path)"
         @contextmenu.prevent="onContextMenu($event, tab)"
       >
-        <span class="app-tab-bar__tab-icon" v-if="tab.icon">{{ tab.icon }}</span>
+        <span class="app-tab-bar__tab-icon" v-if="tab.icon"><NavIcon :name="tab.icon" /></span>
         <span class="app-tab-bar__tab-title">{{ tab.title }}</span>
         <span
           v-if="tab.closable"
@@ -43,6 +43,7 @@
 import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useTabPages } from '@spark-view/spark-app'
 import type { TabPage } from '@spark-view/spark-app'
+import NavIcon from '@/components/NavIcon.vue'
 
 const { tabs, activeTab, closeTab, closeOthers, closeAll, switchTo } = useTabPages()
 

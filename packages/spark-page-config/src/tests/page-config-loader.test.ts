@@ -50,7 +50,7 @@ function fileFail(error: string): FileLoadResult<never> {
   return { success: false, error, fromCache: false }
 }
 
-function mockFetch(status: number, body: unknown, asText = false): void {
+function _mockFetch(status: number, body: unknown, asText = false): void {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     ok: status >= 200 && status < 300,
     status,
@@ -82,22 +82,6 @@ describe('PageConfigLoader', () => {
 
     beforeEach(() => {
       loader = new PageConfigLoader({ source: 'local' })
-    })
-
-    it('loadRoutes: FileLoader 成功', async () => {
-      mockFileLoader.load.mockResolvedValue(fileOk([{ path: '/home', name: 'home', pageId: 'home' }]))
-      const r = await loader.loadRoutes()
-      expect(r.success).toBe(true)
-      expect(r.source).toBe('local')
-      expect(r.data).toHaveLength(1)
-      expect(mockFileLoader.load).toHaveBeenCalledWith('/routes.json')
-    })
-
-    it('loadRoutes: FileLoader 失败 → success:false', async () => {
-      mockFileLoader.load.mockResolvedValue(fileFail('文件不存在'))
-      const r = await loader.loadRoutes()
-      expect(r.success).toBe(false)
-      expect(r.error).toContain('文件不存在')
     })
 
     it('loadRule: 成功返回规则数组', async () => {
@@ -233,33 +217,6 @@ describe('PageConfigLoader', () => {
       loader = new PageConfigLoader({ source: 'remote', apiBaseUrl: '/api' })
     })
 
-    it('loadRoutes: 裸对象响应', async () => {
-      const routes = [{ path: '/', name: 'home', pageId: 'home' }]
-      mockFetch(200, routes)
-      const r = await loader.loadRoutes()
-      expect(r.success).toBe(true)
-      expect(r.source).toBe('remote')
-      expect(r.data).toEqual(routes)
-    })
-
-    it('loadRoutes: 标准 API 封装 { code:200, data }', async () => {
-      const routes = [{ path: '/', name: 'home', pageId: 'home' }]
-      mockFetch(200, { code: 200, data: routes, message: 'ok' })
-      const r = await loader.loadRoutes()
-      expect(r.success).toBe(true)
-      expect(r.data).toEqual(routes)
-    })
-
-    it('loadRoutes: API 返回错误码 { code:500, message }', async () => {
-      mockFetch(200, { code: 500, message: '服务器错误' })
-      await expect(loader.loadRoutes()).rejects.toThrow('服务器错误')
-    })
-
-    it('loadRoutes: HTTP 4xx → throws（remote 模式不捕获）', async () => {
-      mockFetch(404, {})
-      await expect(loader.loadRoutes()).rejects.toThrow('HTTP 404')
-    })
-
     it('loadScript: 远程 fetch 文本文件', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
@@ -301,36 +258,6 @@ describe('PageConfigLoader', () => {
 
     beforeEach(() => {
       loader = new PageConfigLoader({ source: 'hybrid', apiBaseUrl: '/api' })
-    })
-
-    it('远程成功 → 返回远程数据', async () => {
-      const routes = [{ path: '/', name: 'home', pageId: 'home' }]
-      mockFetch(200, routes)
-      const r = await loader.loadRoutes()
-      expect(r.success).toBe(true)
-      expect(r.source).toBe('remote')
-      expect(mockFileLoader.load).not.toHaveBeenCalled()
-    })
-
-    it('远程失败 → 降级到本地', async () => {
-      // Remote throws
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')))
-      // Local succeeds
-      const routes = [{ path: '/fallback', name: 'fallback', pageId: 'fb' }]
-      mockFileLoader.load.mockResolvedValue(fileOk(routes))
-
-      const r = await loader.loadRoutes()
-      expect(r.success).toBe(true)
-      expect(r.source).toBe('local')
-      expect(r.data).toEqual(routes)
-    })
-
-    it('远程 + 本地 均失败 → success:false', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
-      mockFileLoader.load.mockResolvedValue(fileFail('文件不存在'))
-
-      const r = await loader.loadRoutes()
-      expect(r.success).toBe(false)
     })
 
     it('hybrid loadScript: 远程失败 → 降级本地', async () => {

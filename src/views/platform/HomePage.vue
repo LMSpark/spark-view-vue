@@ -3,7 +3,7 @@
     <!-- ── Hero 区域 ── -->
     <header class="hero">
       <nav class="hero-nav">
-        <span class="hero-logo">⚡ SPARK View</span>
+        <span class="hero-logo"><NavIcon name="Lightning" :size="20" /> SPARK View</span>
         <div class="hero-nav-right">
           <router-link to="/login" class="nav-link">登录</router-link>
           <router-link to="/login" class="nav-link nav-link--primary" @click="setRegisterTab">
@@ -125,22 +125,22 @@
       <div class="loop-container">
         <div class="loop-track">
           <div class="loop-node">
-            <div class="loop-icon">🤖</div>
+            <div class="loop-icon"><NavIcon name="MagicStick" :size="28" /></div>
             <div class="loop-label">AI 生成 4 文件</div>
           </div>
           <div class="loop-arrow">→</div>
           <div class="loop-node">
-            <div class="loop-icon">📡</div>
+            <div class="loop-icon"><NavIcon name="Promotion" :size="28" /></div>
             <div class="loop-label">SSE 热更新渲染</div>
           </div>
           <div class="loop-arrow">→</div>
           <div class="loop-node">
-            <div class="loop-icon">📋</div>
+            <div class="loop-icon"><NavIcon name="Document" :size="28" /></div>
             <div class="loop-label">Logger 自动收集日志</div>
           </div>
           <div class="loop-arrow">→</div>
           <div class="loop-node">
-            <div class="loop-icon">🔄</div>
+            <div class="loop-icon"><NavIcon name="Refresh" :size="28" /></div>
             <div class="loop-label">日志回传 AI 精准修复</div>
           </div>
         </div>
@@ -164,32 +164,32 @@
       <p class="section-desc">从配置到上线，每一环都比传统方式更快、更准、更省</p>
       <div class="features-grid">
         <div class="feature-card">
-          <div class="feature-icon">📋</div>
+          <div class="feature-icon"><NavIcon name="Document" :size="32" /></div>
           <h3>配置驱动零代码</h3>
           <p>用 JSON 描述页面结构与数据绑定。表单、表格、树形组件自动渲染。同等页面 Token 消耗仅传统方式的 <strong>1/3</strong>。</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🌲</div>
+          <div class="feature-icon"><NavIcon name="Share" :size="32" /></div>
           <h3>父子级联零代码</h3>
           <p>配置一个 DataRelation 即可实现树→表联动。无需 watch、无需 API 调用、无需手动过滤——框架自动内存级联。</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🤖</div>
+          <div class="feature-icon"><NavIcon name="MagicStick" :size="32" /></div>
           <h3>AI 闭环迭代</h3>
           <p>Logger 自动收集渲染日志 → 打包回传 AI → 精准修复配置。AI 不是闭眼猜 bug，而是拿着调试器做诊断。</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">📊</div>
+          <div class="feature-icon"><NavIcon name="DataBoard" :size="32" /></div>
           <h3>聚合计算列</h3>
           <p>computeExpression 行级表达式 + aggregates 视图级聚合，sum / avg / count / join 全配置化，增删改行时自动重算。</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🔐</div>
+          <div class="feature-icon"><NavIcon name="Lock" :size="32" /></div>
           <h3>权限渲染</h3>
           <p>后端下发 _perm 权限快照驱动 UI。改权限不改代码——切换角色 = 切换数据，前端代码是不变量。</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🏢</div>
+          <div class="feature-icon"><NavIcon name="OfficeBuilding" :size="32" /></div>
           <h3>多租户隔离</h3>
           <p>每个租户独立数据空间与页面配置。统一平台管理，安全隔离互不干扰，开箱即用。</p>
         </div>
@@ -203,7 +203,7 @@
       <div class="scenario-list">
         <div class="scenario-card">
           <div class="scenario-header">
-            <span class="scenario-icon">⚡</span>
+            <span class="scenario-icon"><NavIcon name="Lightning" :size="20" /></span>
             <h3>极速原型</h3>
           </div>
           <div class="scenario-body">
@@ -219,7 +219,7 @@
         </div>
         <div class="scenario-card">
           <div class="scenario-header">
-            <span class="scenario-icon">🌲</span>
+            <span class="scenario-icon"><NavIcon name="Share" :size="20" /></span>
             <h3>树形主从联动</h3>
           </div>
           <div class="scenario-body">
@@ -235,7 +235,7 @@
         </div>
         <div class="scenario-card">
           <div class="scenario-header">
-            <span class="scenario-icon">🔐</span>
+            <span class="scenario-icon"><NavIcon name="Lock" :size="20" /></span>
             <h3>权限驱动渲染</h3>
           </div>
           <div class="scenario-body">
@@ -251,7 +251,7 @@
         </div>
         <div class="scenario-card">
           <div class="scenario-header">
-            <span class="scenario-icon">🤖</span>
+            <span class="scenario-icon"><NavIcon name="MagicStick" :size="20" /></span>
             <h3>AI 自动诊断</h3>
           </div>
           <div class="scenario-body">
@@ -459,6 +459,8 @@
 </template>
 
 <script setup lang="ts">
+import NavIcon from '@/components/NavIcon.vue'
+
 const year = new Date().getFullYear()
 
 function setRegisterTab() {

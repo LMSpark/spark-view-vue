@@ -1,54 +1,91 @@
 {
     "childPlacement": "header",
-    "toolbar": [
-        {
-            "id": "tb-ai-design",
-            "type": "item",
-            "title": "AI 协同设计",
-            "description": "启动 AI 辅助设计会话，支持页面配置自动生成与迭代优化",
-            "icon": "🎨",
-            "action": "ai-design"
-        },
-        {
-            "id": "tb-ai-chat",
-            "type": "item",
-            "title": "AI 对话",
-            "description": "AI 智能对话助手",
-            "icon": "💬",
-            "action": "ai-chat"
-        },
-        {
-            "id": "tb-search",
-            "type": "item",
-            "title": "搜索",
-            "description": "全局搜索页面、数据和配置",
-            "icon": "🔍",
-            "action": "search"
-        },
-        {
-            "id": "tb-fullscreen",
-            "type": "item",
-            "title": "全屏",
-            "icon": "⛶",
-            "action": "fullscreen"
-        },
-        {
-            "id": "tb-notifications",
-            "type": "item",
-            "title": "通知",
-            "description": "系统通知与消息",
-            "icon": "🔔",
-            "action": "notifications"
-        },
-        {
-            "id": "tb-theme",
-            "type": "item",
-            "title": "主题切换",
-            "icon": "🌙",
-            "action": "theme-toggle"
-        }
-    ],
     "children": [
+        {
+            "id": "__toolbar__",
+            "type": "group",
+            "title": "工具栏",
+            "icon": "🔧",
+            "childPlacement": "toolbar",
+            "children": [
+                {
+                    "id": "tb-ai-design",
+                    "type": "item",
+                    "title": "AI 协同设计",
+                    "description": "启动 AI 辅助设计会话，支持页面配置自动生成与迭代优化",
+                    "icon": "🎨",
+                    "action": "ai-design"
+                },
+                {
+                    "id": "tb-ai-chat",
+                    "type": "item",
+                    "title": "AI 对话",
+                    "description": "AI 智能对话助手",
+                    "icon": "💬",
+                    "action": "ai-chat"
+                },
+                {
+                    "id": "tb-search",
+                    "type": "item",
+                    "title": "搜索",
+                    "description": "全局搜索页面、数据和配置",
+                    "icon": "🔍",
+                    "action": "search"
+                },
+                {
+                    "id": "tb-fullscreen",
+                    "type": "item",
+                    "title": "全屏",
+                    "icon": "⛶",
+                    "action": "fullscreen"
+                },
+                {
+                    "id": "tb-notifications",
+                    "type": "item",
+                    "title": "通知",
+                    "description": "系统通知与消息",
+                    "icon": "🔔",
+                    "action": "notifications"
+                },
+                {
+                    "id": "tb-theme",
+                    "type": "item",
+                    "title": "主题切换",
+                    "icon": "🌙",
+                    "action": "theme-toggle"
+                }
+            ]
+        },
+        {
+            "id": "__user-menu__",
+            "type": "group",
+            "title": "用户菜单",
+            "icon": "👤",
+            "childPlacement": "user-menu",
+            "children": [
+                {
+                    "id": "um-profile",
+                    "type": "item",
+                    "title": "个人中心",
+                    "icon": "👤",
+                    "action": "profile"
+                },
+                {
+                    "id": "um-settings",
+                    "type": "item",
+                    "title": "系统设置",
+                    "icon": "⚙️",
+                    "action": "settings"
+                },
+                {
+                    "id": "um-home",
+                    "type": "item",
+                    "title": "平台主页",
+                    "icon": "🏠",
+                    "action": "home"
+                }
+            ]
+        },
         {
             "id": "home",
             "type": "item",

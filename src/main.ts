@@ -61,7 +61,7 @@ const _sessionId = `s-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 import { loadAppConfig } from '@spark-view/spark-app'
 
 // 主应用组件
-import { createApp, type Component } from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import ErrorFallback from './components/ErrorFallback.vue'
 import './style.css'
@@ -221,62 +221,22 @@ async function startApp() {
     
     startupLogger.info(`✅ 已加载 ${plugins.length} 个插件`)
     
-    // 4. 导入 Vue 组件页面（用于 componentMap，路由信息从 DB 动态加载）
-    startupLogger.info('📄 导入 Vue 组件页面...')
-    const [
-      { default: Dashboard },
-      { default: About },
-      { default: Settings },
-      { default: CapabilityDemo },
-      { default: TenantConfigDemo },
-      { default: DevWorkbench },
-      { default: CacheManager },
-      { default: LoginView },
-      { default: HomePage },
-      { default: AppList },
-    ] = await Promise.all([
-      import('./views/Dashboard.vue'),
-      import('./views/About.vue'),
-      import('./views/Settings.vue'),
-      import('./views/CapabilityDemo.vue'),
-      import('./views/TenantConfigDemo.vue'),
-      import('./views/dev-system/DevWorkbench.vue'),
-      import('./views/CacheManager.vue'),
-      import('./views/LoginView.vue'),
-      import('./views/HomePage.vue'),
-      import('./views/AppList.vue'),
-    ])
+    // 4. 构建 Vue 组件页面映射（统一定义在 vue-page-map.ts，单一维护点）
+    startupLogger.info('📄 构建 Vue 组件页面映射...')
+    const { buildComponentMap, buildPreAuthNavTree, getPlatformPaths } = await import('./config/vue-page-map')
+    const componentMap = await buildComponentMap()
 
-    // vue-component 路径 → 组件映射（路由元数据从 DB 动态加载，前端只负责组件解析）
-    // vue-component 相对路径 → 组件映射
-    // 租户前缀由 DynamicRouter.registerRoute() 统一拼接，此处只写相对路径
-    const componentMap: Record<string, Component> = {
-      '/':                HomePage,
-      '/login':           LoginView,
-      '/dashboard':       Dashboard,
-      '/capability-demo': CapabilityDemo,
-      '/tenant-config':   TenantConfigDemo,
-      '/about':           About,
-      '/settings':        Settings,
-      '/page-manager':    DevWorkbench,  // 页面管理已合并到开发系统
-      '/dev':             DevWorkbench,
-      '/nav-manager':     DevWorkbench,  // 导航管理已合并到开发系统
-      '/site-manager':    DevWorkbench,  // 站点管理已合并到开发系统
-      '/cache-manager':   CacheManager,
-      '/app-list':        AppList,
-    }
-
-    // 认证前必需路由（登录前可用，不依赖 DB）
-    const preAuthRoutes: Array<{ path: string; name: string; component: Component; meta?: Record<string, unknown> }> = [
-      { path: '/',      name: 'home',  component: HomePage,  meta: { title: '首页' } },
-      { path: '/login', name: 'login', component: LoginView, meta: { title: '登录' } },
-    ]
-    startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuth: ${preAuthRoutes.length} 个路由`)
+    // 登录前导航树 — 从 VUE_PAGE_MAP scope='platform' 自动派生
+    const preAuthNavTree = buildPreAuthNavTree()
+    // 平台级路径集合 — 路由守卫用（未登录时只允许这些路径）
+    const platformPaths = getPlatformPaths()
+    startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuthNav: ${preAuthNavTree.children.length} 个节点, platformPaths: ${platformPaths.size} 个`)
     
-    // 5. 导入 auth 工具（getToken/getUser 用于 getHeaders 回调注入 axios 统一通道）
-    const { getToken, getUser, isAuthenticated } = await import('./services/auth')
+    // 5. 导入 auth 工具
+    const { getUser, isAuthenticated } = await import('./services/auth')
     const { createAuthHeaders } = await import('./services/http')
-    const { getPageApi } = await import('./services/api-paths')
+    const { getPageApi, getNavApi } = await import('./services/api-paths')
+    const { getNavHomePath } = await import('@spark-view/spark-app')
 
     // 6. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
@@ -296,7 +256,7 @@ async function startApp() {
       // === CSS 主题（light / dark / auto 三模式） ===
       theme: true,
       
-      // === SPARK 组件系统配置（从iSON 加载）===
+      // === SPARK 组件系统配置（从 JSON 加载）===
       spark: {
         ...appConfig.spark
         // SparkApp 会自动导入 virtual:spark-components
@@ -309,17 +269,20 @@ async function startApp() {
         pageComponent: AppPageRendererBridge,
         componentMap,
         // 动态注入认证 / 租户请求头（FileLoader 使用 axios，不经过 fetch 拦截器）
-        getHeaders: () => {
-          const headers: Record<string, string> = {}
-          const token = getToken()
-          const user = getUser()
-          if (token) headers['Authorization'] = `Bearer ${token}`
-          if (user?.tenantId) headers['X-Tenant-Id'] = user.tenantId
-          if (user?.defaultProjectId) headers['X-Project-Id'] = user.defaultProjectId
-          return headers
-        },
+        getHeaders: createAuthHeaders,
         isAuthenticated,
         tenantPathPrefix: '/t/:tenantId',
+        preAuthNavTree,
+        // 导航树作为路由唯一来源 — DynamicRouter 从导航树派生路由
+        loadNavigation: async () => {
+          const { http: httpClient } = await import('./services/http')
+          const data = await httpClient.get<{ childPlacement?: string; children?: unknown[]; homePath?: string }>(getNavApi())
+          return {
+            childPlacement: (data.childPlacement ?? 'header') as 'header' | 'sidebar',
+            children: Array.isArray(data.children) ? data.children : [],
+            ...(data.homePath ? { homePath: data.homePath } : {}),
+          }
+        },
       },
       
       // === 应用基础配置（从 JSON 加载）===
@@ -336,13 +299,6 @@ async function startApp() {
       beforeMount: async (context) => {
         const { router, app } = context
 
-        // ── 注册认证前必需路由（登录/首页，不依赖 DB） ──
-        for (const r of preAuthRoutes) {
-          if (!router.hasRoute(r.name)) {
-            router.addRoute(r)
-          }
-        }
-
         // ── AI 闭环：尽早注入 pageId 上下文 ──
         // mount 阶段渲染页面时产生的错误需要正确的 pageId 标记，
         // 必须在 app.mount() 之前设置，否则 collectorTransport 记录的 pageId 为 undefined
@@ -352,22 +308,26 @@ async function startApp() {
         })
 
         // ── 认证路由守卫（租户隔离） ──
-        // 复用外层已导入的 isAuthenticated / getUser（避免 no-shadow）
-        const publicPaths = new Set(['/', '/login'])
+        // platformPaths 从 VUE_PAGE_MAP scope='platform' 自动派生，消除硬编码
         router.beforeEach((to) => {
-          // 未登录访问受保护页面 → 跳平台主页
-          if (!publicPaths.has(to.path) && !isAuthenticated()) {
-            return '/'
+          if (!isAuthenticated()) {
+            // 未登录：只允许平台页面（scope='platform'）
+            return platformPaths.has(to.path) ? undefined : '/'
           }
-          // 已登录访问 /login → 跳租户首页
-          if (to.path === '/login' && isAuthenticated()) {
-            const u = getUser()
-            return `/t/${u?.tenantId ?? 'default'}/dashboard`
+          const u = getUser()
+          const tenantId = u?.tenantId ?? 'default'
+          // 已登录：所有非租户前缀路径统一重定向到租户路径
+          if (!to.path.startsWith('/t/')) {
+            // /login 特殊处理：已登录不应回到登录页
+            if (to.path === '/login') return `/t/${tenantId}${getNavHomePath()}`
+            return `/t/${tenantId}${to.path}`
           }
-          // 已登录访问旧的无租户前缀路径 → 重定向到租户路径
-          if (isAuthenticated() && !to.path.startsWith('/t/') && !publicPaths.has(to.path)) {
-            const u = getUser()
-            if (u?.tenantId) return `/t/${u.tenantId}${to.path}`
+          // 租户路径：验证 URL 中的 tenantId 与当前用户一致
+          const urlTenantMatch = /^\/t\/([^/]+)/.exec(to.path)
+          if (urlTenantMatch && urlTenantMatch[1] !== tenantId) {
+            // 替换为正确的租户 ID，保留后续路径
+            const rest = to.path.slice(`/t/${urlTenantMatch[1]}`.length)
+            return `/t/${tenantId}${rest}`
           }
           return undefined
         })
@@ -467,13 +427,13 @@ async function startApp() {
           // exclude: ['**/demo/**']
         })
 
-        // 静态 Vue 组件路由由 DynamicRouter 统一管理（pageConfig.staticRoutes）
-        // 启动时自动同步到后端 + 从后端加载所有路由
+        // Vue 组件路由由 DynamicRouter 从导航树统一派生
+        // componentMap 映射 vue-component 路径 → 组件
 
         // 🤖 注册 AI Studio 组件（SPARK registry + Vue 全局组件）
-        const { initAiStudio } = await import('./features/ai-studio/initialize')
+        const { initAiStudio } = await import('./views/app/ai-studio/initialize')
         initAiStudio()
-        const AiStudioPanel = (await import('./features/ai-studio/AiStudioPanel.vue')).default
+        const AiStudioPanel = (await import('./views/app/ai-studio/AiStudioPanel.vue')).default
         app.component('ai-studio', AiStudioPanel)
         startupLogger.info('✅ AI Studio 组件注册完成')
       },

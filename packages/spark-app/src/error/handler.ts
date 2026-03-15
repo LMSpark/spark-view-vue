@@ -122,8 +122,8 @@ function classifyError(error: Error): ErrorType {
  *   onErrorByType: (type, error) => {
  *     switch (type) {
  *       case 'AUTH':
- *         // 重定向到登录页
- *         router.push('/login')
+ *         // 重定向到平台首页，由路由守卫统一处理
+ *         router.push('/')
  *         break
  *       case 'PERMISSION':
  *         ElMessage.error('权限不足')

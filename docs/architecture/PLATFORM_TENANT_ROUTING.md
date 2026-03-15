@@ -40,7 +40,7 @@
 | 访问路径 | `/`（公共首页） | `/t/{tenantId}/*` |
 | 认证要求 | 无需登录 | 需要 JWT + X-Tenant-Id |
 | 数据隔离 | 无数据 | 所有业务数据按 tenantId 隔离 |
-| 路由 | 仅 `/` 和 `/login` | 所有 `/t/:tenantId/*` 下的路由 |
+| 路由 | 仅 `/`（VUE_PAGE_MAP scope='platform'） | 所有 `/t/:tenantId/*` 下的路由 |
 
 ### 1.2 企业管理平台（homepage 项目）— 自举架构
 
@@ -290,7 +290,7 @@ X-Project-Id:   {user.defaultProjectId}  ← 默认 "homepage"
 
 | 路由类型 | 路径模式 | 组件 | 注册方式 | 所属项目 |
 |---------|---------|------|--------|----------|
-| 公共路由 | `/`, `/login` | HomePage, LoginView | 静态声明 | 无（平台级） |
+| 公共路由 | `/`、`/about`、`/login` 等 | Vue 组件 | VUE_PAGE_MAP scope='platform'（preAuthNavTree 自动派生） | 无（平台级） |
 | 管理页面路由 | `/t/:tenantId/dashboard` 等 | Vue 组件 | staticRoutes → 同步到 page_config → routes.json | homepage |
 | 配置页面路由 | `/t/:tenantId/{pageId}` | FCPageRenderer | DynamicRouter 从 routes.json 加载 | homepage 或 app |
 
@@ -302,8 +302,8 @@ X-Project-Id:   {user.defaultProjectId}  ← 默认 "homepage"
 ### 3.4 路由守卫规则
 
 ```
-1. 未登录 + 非公共路由 → /login
-2. 已登录 + /login → /t/{tenantId}/dashboard
+1. 未登录 + 非平台路由 → /（平台首页）
+2. 已登录 + /login → /t/{tenantId}{getNavHomePath()}
 3. 已登录 + 旧扁平路径 → /t/{tenantId}{path}
 ```
 
@@ -330,7 +330,7 @@ getDataApi()  → /api/tenants/{tenantId}/projects/{projectId}/data
 
 平台首页 (/)
   → 公共路由，无 API 调用
-  → 点击"开始使用" → /login
+  → 登录成功 → /t/{tenantId}{getNavHomePath()}
 
 进入企业管理平台 (/t/lmspark/dashboard)
   → App.vue onMounted

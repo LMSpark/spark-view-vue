@@ -39,7 +39,7 @@
     >
       <template #default="{ node, data }">
         <span class="tree-node">
-          <span class="node-icon">{{ data.icon ?? '📄' }}</span>
+          <span class="node-icon"><NavIcon :name="data.icon ?? 'Document'" /></span>
           <span class="node-label">{{ data.title }}</span>
           <span v-if="data.path" class="node-path">{{ data.path }}</span>
           <el-tag v-if="data.childPlacement" size="small" type="info" class="node-tag">
@@ -63,6 +63,7 @@ import { ref, watch } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import type { NavNode } from '@spark-view/spark-app'
 import type { DevState } from './useDevState'
+import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{ state: DevState }>()
 const state = props.state

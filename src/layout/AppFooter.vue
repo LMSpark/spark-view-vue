@@ -10,7 +10,7 @@
 withDefaults(defineProps<{
   text?: string
 }>(), {
-  text: '© 2025 SPARK View — Powered by spark-view',
+  text: `© ${new Date().getFullYear()} SPARK View — Powered by spark-view`,
 })
 </script>
 

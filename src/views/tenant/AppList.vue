@@ -20,7 +20,7 @@
             shadow="hover"
           >
             <div class="app-card-header">
-              <span class="app-icon">{{ project.icon }}</span>
+              <span class="app-icon"><NavIcon :name="project.icon" :size="32" /></span>
               <el-tag v-if="project.projectType === 'homepage'" type="warning" size="small">管理平台</el-tag>
               <el-tag v-else type="info" size="small">应用</el-tag>
             </div>
@@ -83,6 +83,8 @@ import { http } from '@/services/http'
 import { getProjectApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
+import NavIcon from '@/components/NavIcon.vue'
+import { getNavHomePath } from '@spark-view/spark-app'
 
 interface ProjectItem {
   projectId: string
@@ -104,7 +106,7 @@ const currentProjectId = computed(() => getUser()?.defaultProjectId ?? 'homepage
 const createForm = ref({
   projectId: '',
   name: '',
-  icon: '📦',
+  icon: 'Box',
   description: '',
 })
 
@@ -124,7 +126,7 @@ async function handleCreate() {
     await http.post(getProjectApi(), { projectId, name, icon, description })
     ElMessage.success('应用创建成功')
     showCreateDialog.value = false
-    createForm.value = { projectId: '', name: '', icon: '📦', description: '' }
+    createForm.value = { projectId: '', name: '', icon: 'Box', description: '' }
     await loadProjects()
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : '创建失败'
@@ -139,7 +141,7 @@ async function handleSwitch(project: ProjectItem) {
   ElMessage.success(`已切换到「${project.name}」`)
   const user = getUser()
   if (user) {
-    void router.push(`/t/${user.tenantId}/dashboard`)
+    void router.push(`/t/${user.tenantId}${getNavHomePath()}`)
   }
 }
 

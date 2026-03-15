@@ -111,8 +111,8 @@ export {
 export { setupRouterGuards, setupLoadingGuard } from './router/guards'
 
 // 动态路由
-export { DynamicRouter, createDynamicRouter, setupDynamicRoutes } from './router/dynamic'
-export type { DynamicRouterOptions, StaticRouteDeclaration } from './router/dynamic'
+export { DynamicRouter, createDynamicRouter } from './router/dynamic'
+export type { DynamicRouterOptions } from './router/dynamic'
 
 // Error Handler
 export { setupErrorHandler, createErrorBoundary } from './error/handler'
@@ -172,6 +172,15 @@ export type { TabPage, PageMode } from './navigation/useTabPages'
 export type { PrimaryPreset, NavPreset, NavColorSet } from './navigation/useColorScheme'
 
 // ── AI Page Loop ──
+// ── Navigation Access ──
+export {
+  setDynamicRouter,
+  refreshRoutes,
+  getNavTree,
+  getNavHomePath,
+} from './navigation/nav-access'
+
+// ── AI Loop & Cache Management ──
 export {
   logUpdateSignal,
   onServerEvent,
@@ -180,11 +189,9 @@ export {
   setAutoIterating,
   isAutoIterating,
   setConfigLoader,
-  setDynamicRouter,
   clearPageCache,
   clearAllCache,
   getCacheStats,
-  refreshRoutes,
   setupHotReload,
   writePageFiles,
   readPageFile,

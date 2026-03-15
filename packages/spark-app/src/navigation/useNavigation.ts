@@ -72,15 +72,36 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     return match ? (match[1] ?? '/') : path
   }
 
+  function normalizePath(path: string): string {
+    const trimmed = path.trim()
+    if (trimmed === '') return '/'
+    const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+    if (withLeadingSlash.length === 1) return withLeadingSlash
+    return withLeadingSlash.replace(/\/+$/, '')
+  }
+
+  function normalizeComparablePath(path: string): string {
+    return normalizePath(stripTenantPrefix(path))
+  }
+
   /** 为裸路径添加当前租户前缀（/xxx → /t/{tenantId}/xxx） */
   function addTenantPrefix(path: string): string {
-    // 已有租户前缀或为根路径 / 登录路径 → 不转换
-    if (path.startsWith('/t/')) return path
+    const normalized = normalizePath(path)
     const tenantId = route.params['tenantId']
-    if (typeof tenantId === 'string' && tenantId) {
-      return `/t/${tenantId}${path}`
+
+    // 兼容导航里写了 /t/:tenantId/xxx 的场景：替换为当前租户真实路径
+    if (normalized.startsWith('/t/:tenantId')) {
+      const resolvedTenant = typeof tenantId === 'string' && tenantId ? tenantId : 'default'
+      return normalizePath(normalized.replace('/t/:tenantId', `/t/${resolvedTenant}`))
     }
-    return path
+
+    // 已有真实租户前缀 → 直接返回
+    if (normalized.startsWith('/t/')) return normalized
+
+    if (typeof tenantId === 'string' && tenantId) {
+      return normalizePath(`/t/${tenantId}${normalized}`)
+    }
+    return normalized
   }
 
   watch(
@@ -110,8 +131,13 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
    * ──────────────────────────────────────────── */
 
   function findActivePath(nodes: NavNode[], targetPath: string): NavNode[] {
+    const normalizedTargetPath = normalizeComparablePath(targetPath)
+
     for (const node of sortNodes(nodes)) {
-      if (node.path === targetPath) return [node]
+      if (node.path !== undefined && node.path !== '') {
+        const normalizedNodePath = normalizeComparablePath(node.path)
+        if (normalizedNodePath === normalizedTargetPath) return [node]
+      }
       if (node.children?.length) {
         const sub = findActivePath(node.children, targetPath)
         if (sub.length > 0) return [node, ...sub]
@@ -125,23 +151,39 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
    * ──────────────────────────────────────────── */
 
   const regionItems = computed<RegionItems>(() => {
-    const regions: RegionItems = { header: [], sidebar: [], toolbar: [] }
+    const regions: RegionItems = { header: [], sidebar: [], toolbar: [], userMenu: [] }
 
-    // 根级子项放入指定区域
-    regions[navRoot.childPlacement] = filterVisible(navRoot.children)
-
-    // 工具栏项（始终可见，与活动路径无关）
-    if (navRoot.toolbar?.length) {
-      regions.toolbar = filterVisible(navRoot.toolbar)
+    // 根级子项：toolbar/user-menu 组提取到对应区域，其余放入 root childPlacement 指定区域
+    const rootVisible = filterVisible(navRoot.children)
+    const normalRoots: NavNode[] = []
+    for (const child of rootVisible) {
+      if (child.childPlacement === 'toolbar' && child.children?.length) {
+        regions.toolbar = filterVisible(child.children)
+      } else if (child.childPlacement === 'user-menu' && child.children?.length) {
+        regions.userMenu = filterVisible(child.children)
+      } else {
+        normalRoots.push(child)
+      }
     }
+    regions[navRoot.childPlacement] = normalRoots
 
     // 沿活动路径，每个有子节点的非叶节点根据 childPlacement 放入对应区域
     for (const node of _activePath.value) {
       if (!node.children?.length) continue
       const placement = resolveChildPlacement(node)
-      // parent / flat 不创建新区域，由渲染组件内联处理
-      if (placement === 'parent' || placement === 'flat') continue
+      // parent / flat / toolbar / user-menu 不创建新区域
+      if (placement === 'parent' || placement === 'flat' || placement === 'toolbar' || placement === 'user-menu') continue
       regions[placement] = filterVisible(node.children)
+    }
+
+    // 刷新兜底：当当前路径未命中活动节点时，给 sidebar 一个稳定分组，避免左侧菜单消失
+    if (regions.sidebar.length === 0) {
+      const fallbackGroup = normalRoots.find(
+        (node) => (node.children?.length ?? 0) > 0 && resolveChildPlacement(node) === 'sidebar'
+      )
+      if (fallbackGroup?.children !== undefined && fallbackGroup.children.length > 0) {
+        regions.sidebar = filterVisible(fallbackGroup.children)
+      }
     }
 
     return regions
@@ -151,6 +193,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     header: regionItems.value.header.length > 0,
     sidebar: regionItems.value.sidebar.length > 0,
     toolbar: regionItems.value.toolbar.length > 0,
+    userMenu: regionItems.value.userMenu.length > 0,
   }))
 
   /** 解析 childPlacement（'parent' 向上追溯到祖先的非 parent 值） */
@@ -297,6 +340,45 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
    * 导航操作
    * ──────────────────────────────────────────── */
 
+  /**
+   * 导航到指定路径 — 统一从路由表 meta.type 自动判定
+   *
+   * 如果该路径存在 vue-component 路由，优先按 name 跳转（精确匹配）；
+   * 否则降级为 router.push(path)。
+   * 不再依赖导航节点的 pageType 字段 —— 路由表是唯一权威。
+   */
+  function navigateByPath(path: string): void {
+    const targetPath = addTenantPrefix(path)
+    const targetComparablePath = normalizeComparablePath(targetPath)
+
+    // 从路由表查找 vue-component 路由（路由注册时由 DynamicRouter 写入 meta.type）
+    const vueRoute = router
+      .getRoutes()
+      .find((routeRecord) =>
+        routeRecord.meta['type'] === 'vue-component' &&
+        normalizeComparablePath(routeRecord.path) === targetComparablePath
+      )
+
+    if (vueRoute?.name !== undefined) {
+      const tenantId = route.params['tenantId']
+      const params: Record<string, string> = {}
+      if (typeof tenantId === 'string' && tenantId) {
+        params['tenantId'] = tenantId
+      }
+      void router.push({
+        name: vueRoute.name,
+        ...(Object.keys(params).length > 0 ? { params } : {}),
+      })
+      return
+    }
+
+    void router.push(targetPath)
+  }
+
+  function navigateToPath(path: string) {
+    navigateByPath(path)
+  }
+
   function navigateTo(node: NavNode) {
     if (node.disabled) return
 
@@ -308,13 +390,13 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
 
     // 重定向
     if (node.redirect) {
-      void router.push(addTenantPrefix(node.redirect))
+      navigateByPath(node.redirect)
       return
     }
 
     // 叶子节点
     if (node.path) {
-      void router.push(addTenantPrefix(node.path))
+      navigateByPath(node.path)
       return
     }
 
@@ -322,7 +404,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     if (node.children?.length) {
       const leaf = findFirstLeaf(node.children)
       if (leaf?.path) {
-        void router.push(addTenantPrefix(leaf.path))
+        navigateByPath(leaf.path)
       }
     }
   }
@@ -367,6 +449,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     regionVisibility,
     moduleContext: computed(() => _moduleContext.value),
     navigateTo,
+    navigateToPath,
     setContextValue,
     isNodeActive,
     getBadge,

@@ -93,7 +93,7 @@ request.interceptors.response.use({
   onResponseError: (error) => {
     if (error.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      window.location.href = '/'  // 跳平台首页，由路由守卫处理
     }
     return error
   }
@@ -161,7 +161,7 @@ request.interceptors.request.use({
 request.interceptors.response.use({
   name: 'Error',
   onResponseError: (error) => {
-    if (error.status === 401) window.location.href = '/login'
+    if (error.status === 401) window.location.href = '/'  // 由路由守卫处理
     return error
   }
 })

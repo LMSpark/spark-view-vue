@@ -10,7 +10,7 @@
         <el-input v-model="state.editForm.title" placeholder="显示名称" @change="state.markNavDirty" />
       </el-form-item>
       <el-form-item label="图标">
-        <EmojiPicker v-model="state.editForm.icon" placeholder="📄" @update:model-value="state.markNavDirty" />
+        <IconPicker v-model="state.editForm.icon" placeholder="选择图标" @update:model-value="state.markNavDirty" />
       </el-form-item>
       <el-form-item label="类型">
         <el-select v-model="state.editForm.type" placeholder="节点类型" @change="state.markNavDirty">
@@ -26,7 +26,28 @@
       <!-- 路由 & 关联页面 -->
       <el-divider content-position="left">路由 & 关联页面</el-divider>
       <el-form-item label="路由路径">
-        <el-input v-model="state.editForm.path" placeholder="/xxx" @change="state.handlePathChange" />
+        <el-select
+          v-if="state.editForm.pageType === 'vue-component'"
+          v-model="state.editForm.path"
+          filterable
+          allow-create
+          placeholder="选择或输入路径"
+          @change="state.handlePathChange"
+        >
+          <el-option
+            v-for="opt in vuePageOptions"
+            :key="opt.path"
+            :value="opt.path"
+            :label="`${opt.icon ?? ''} ${opt.title}（${opt.path}）`"
+          />
+        </el-select>
+        <el-input v-else v-model="state.editForm.path" placeholder="/xxx" @change="state.handlePathChange" />
+      </el-form-item>
+      <!-- 路径有效性提示 -->
+      <el-form-item v-if="pathStatus" label="">
+        <el-tag :type="pathStatus.type" size="small" disable-transitions>
+          {{ pathStatus.icon }} {{ pathStatus.text }}
+        </el-tag>
       </el-form-item>
       <el-form-item label="页面类型">
         <el-select v-model="state.editForm.pageType" placeholder="默认 config" clearable @change="state.markNavDirty">
@@ -108,11 +129,42 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { DevState } from './useDevState'
-import EmojiPicker from '@/components/EmojiPicker.vue'
+import IconPicker from '@/components/IconPicker.vue'
+import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
 
-defineProps<{ state: DevState }>()
+const props = defineProps<{ state: DevState }>()
 defineEmits<{ createPage: [] }>()
+
+const vuePageOptions = getVuePageOptions()
+
+/** 路径有效性状态：检查当前路径是否匹配 vue-component 映射或配置页面 */
+const pathStatus = computed(() => {
+  const path = props.state.editForm.path
+  if (!path) return null
+
+  const pageType = props.state.editForm.pageType || 'config'
+
+  if (pageType === 'vue-component') {
+    if (path in VUE_PAGE_MAP) {
+      const entry = VUE_PAGE_MAP[path]!
+      return { type: 'success' as const, icon: '✅', text: `匹配 Vue 组件：${entry.title}` }
+    }
+    return { type: 'warning' as const, icon: '⚠️', text: `路径 ${path} 未在 VUE_PAGE_MAP 中注册` }
+  }
+
+  // config 页面：检查 pageList 中是否存在对应的 pageId
+  const pageId = path.replace(/^\/+/, '')
+  if (!pageId) return null
+  const exists = props.state.pageList.value.some(
+    (p: Record<string, unknown>) => String(p['pageId'] ?? '') === pageId,
+  )
+  if (exists) {
+    return { type: 'success' as const, icon: '✅', text: `配置页面已存在：${pageId}` }
+  }
+  return { type: 'danger' as const, icon: '❌', text: `配置页面不存在：${pageId}（需先创建）` }
+})
 </script>
 
 <style scoped>

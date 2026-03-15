@@ -31,48 +31,38 @@ export function setupRouterGuards(
   options: RouterGuardOptions = {},
   getAppContext?: AppContext | (() => AppContext | undefined)
 ): void {
-  const {
-    loginPath = '/login',
-    forbiddenPath = '/forbidden',
-    checkPermission
-  } = options
+  const { checkPermission } = options
 
   /** 解析 appContext：支持函数或静态值，保证登录后路由守卫可取到最新上下文 */
   const resolveContext = (): AppContext | undefined =>
     typeof getAppContext === 'function' ? getAppContext() : getAppContext
 
-  // 全局前置守卫（返回值式）
+  // 全局前置守卫：页面级权限检查
+  // 认证守卫由 main.ts beforeMount 中的自定义 beforeEach 负责（租户隔离逻辑）
   router.beforeEach((to, _from) => {
-    // 登录页和公开页面跳过检查
-    if (to.path === loginPath || to.meta['public'] === true) {
+    // 公开页面跳过权限检查
+    if (to.meta['public'] === true) {
       return true
     }
 
-    // 每次导航时解析最新的 appContext（支持登录后状态更新）
-    const appContext = resolveContext()
-
-    // 未登录 - 重定向到登录页
-    if (!appContext) {
-      routerLogger.warn('未登录，重定向到登录页', { path: to.path })
-      return { path: loginPath, query: { redirect: to.fullPath } }
-    }
-
-    // 页面级权限检查
+    // 页面级权限检查（仅当 meta.permissions 声明时生效）
     const requiredPermissions = to.meta['permissions'] as string[] | undefined
-    
-    if (requiredPermissions?.length) {
-      const hasPermission = checkPermission
-        ? checkPermission(appContext.user.permissions, requiredPermissions)
-        : hasAnyPermission(appContext, requiredPermissions)
+    if (!requiredPermissions?.length) return true
 
-      if (!hasPermission) {
-        routerLogger.warn('无权限访问', {
-          path: to.path,
-          required: requiredPermissions,
-          userPermissions: appContext.user.permissions
-        })
-        return { path: forbiddenPath }
-      }
+    const appContext = resolveContext()
+    if (!appContext) return true  // 无上下文时放行，认证守卫另行处理
+
+    const hasPermission = checkPermission
+      ? checkPermission(appContext.user.permissions, requiredPermissions)
+      : hasAnyPermission(appContext, requiredPermissions)
+
+    if (!hasPermission) {
+      routerLogger.warn('无权限访问', {
+        path: to.path,
+        required: requiredPermissions,
+        userPermissions: appContext.user.permissions
+      })
+      return false
     }
 
     return true

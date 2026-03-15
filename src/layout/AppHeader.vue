@@ -101,16 +101,23 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="profile">
-              <el-icon><User /></el-icon>个人中心
-            </el-dropdown-item>
-            <el-dropdown-item command="settings">
-              <el-icon><Setting /></el-icon>系统设置
-            </el-dropdown-item>
-            <el-dropdown-item divided command="home">
-              <el-icon><HomeFilled /></el-icon>平台主页
-            </el-dropdown-item>
-            <el-dropdown-item command="logout">
+            <template v-if="userMenuItems.length">
+              <el-dropdown-item v-for="item in userMenuItems" :key="item.id" :command="item.action ?? item.path ?? item.redirect ?? item.id">
+                <span v-if="item.icon" style="margin-right: 4px"><NavIcon :name="item.icon" /></span>{{ item.title }}
+              </el-dropdown-item>
+            </template>
+            <template v-else>
+              <el-dropdown-item command="profile">
+                <el-icon><User /></el-icon>个人中心
+              </el-dropdown-item>
+              <el-dropdown-item command="settings">
+                <el-icon><Setting /></el-icon>系统设置
+              </el-dropdown-item>
+              <el-dropdown-item divided command="home">
+                <el-icon><HomeFilled /></el-icon>平台主页
+              </el-dropdown-item>
+            </template>
+            <el-dropdown-item divided command="logout">
               <el-icon><SwitchButton /></el-icon>退出登录
             </el-dropdown-item>
           </el-dropdown-menu>
@@ -128,6 +135,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useNotifications } from '@/composables/useNotifications'
 import type { NavNode } from '@spark-view/spark-app'
+import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
   title?: string
@@ -138,6 +146,8 @@ const props = withDefaults(defineProps<{
   avatar?: string
   /** 工具栏导航项（由导航配置驱动，action 匹配内置按钮） */
   toolbarItems?: NavNode[]
+  /** 用户菜单导航项（由导航配置驱动，action 匹配内置命令） */
+  userMenuItems?: NavNode[]
 }>(), {
   title: 'SPARK 管理后台',
   isDark: false,
@@ -146,6 +156,7 @@ const props = withDefaults(defineProps<{
   username: '管理员',
   avatar: '',
   toolbarItems: () => [],
+  userMenuItems: () => [],
 })
 
 const emit = defineEmits<{

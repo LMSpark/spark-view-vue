@@ -15,7 +15,7 @@
 import { bootstrap } from './bootstrap'
 import { start } from './start'
 import { setupRouterGuards } from './router/guards'
-import { createDynamicRouter, setupDynamicRoutes } from './router/dynamic'
+import { createDynamicRouter } from './router/dynamic'
 import { setupErrorHandler } from './error/handler'
 import { loadConfig } from './config'
 import { createAppContext } from './context/AppContext'
@@ -86,11 +86,6 @@ export const SparkApp = {
    * 根据 SparkPageConfig 配置加载器动态注册路由
    */
   createDynamicRouter,
-
-  /**
-   * 设置动态路由（便捷函数）
-   */
-  setupDynamicRoutes,
 
   /**
    * 设置错误处理

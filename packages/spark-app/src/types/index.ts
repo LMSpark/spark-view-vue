@@ -145,10 +145,6 @@ export interface BootstrapOptions {
  * 路由守卫选项
  */
 export interface RouterGuardOptions {
-  /** 登录页路径 */
-  loginPath?: string
-  /** 无权限页路径 */
-  forbiddenPath?: string
   /** 自定义权限检查 */
   checkPermission?: (permissions: string[], required: string[]) => boolean
 }

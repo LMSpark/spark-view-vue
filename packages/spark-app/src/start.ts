@@ -5,9 +5,9 @@
  */
 
 import { createApp, type Component, type Plugin } from 'vue'
-import { createRouter, createWebHistory, createWebHashHistory, type RouteRecordNormalized } from 'vue-router'
-import type { RouteConfig, ConfigLoaderOptions } from '@spark-view/spark-page-config'
-import { createDynamicRouter, type DynamicRouterOptions, type StaticRouteDeclaration } from './router/dynamic'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import type { ConfigLoaderOptions } from '@spark-view/spark-page-config'
+import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
 import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
@@ -30,14 +30,6 @@ export interface SparkOptions {
    * 设置为 false 可禁用自动注册（用于自定义注册流程）。
    */
   autoRegister?: boolean
-  
-  /** 
-   * @deprecated 不再需要手动传递 registerComponents
-   * SparkApp 会自动导入 virtual:spark-components
-   * 
-   * 保留此字段仅用于向后兼容，将在下一个大版本中移除
-   */
-  registerComponents?: (...args: unknown[]) => { total: number; sync: number; async: number }
 }
 
 /**
@@ -52,31 +44,34 @@ export interface PageConfigOptions {
   timeout?: number
   /** 动态请求头回调（每次请求时调用，注入租户上下文） */
   getHeaders?: () => Record<string, string>
-  /** 认证状态检查（未登录时跳过动态路由同步/加载，仅注册静态路由） */
+  /** 认证状态检查（DynamicRouter 据此决定使用远程导航树还是 preAuthNavTree） */
   isAuthenticated?: () => boolean
   /** 页面组件（默认使用 PageRenderer） */
   pageComponent?: Component
-  /** 首页路径 */
-  homePath: string
-  /**
-   * @deprecated 使用 componentMap 替代。
-   * 旧版静态路由声明，会同步到后端 + 注册兆底路由。
-   */
-  staticRoutes?: StaticRouteDeclaration[]
   /**
    * vue-component 路径 → Vue 组件映射。
    * 路由元数据完全由后端 DB 管理，前端只提供组件解析映射。
    */
   componentMap?: Record<string, Component>
-  /** 注册前钩子（可以转换路由） */
-  beforeRegister?: ((routes: RouteConfig[]) => RouteConfig[] | Promise<RouteConfig[]>) | undefined
-  /** 注册后钩子（仅通知） */
-  afterRegister?: ((routes: RouteRecordNormalized[]) => void) | undefined
   /**
    * 租户路径前缀（如 '/t/:tenantId'）。
    * 设置后，config 页面路由自动加此前缀。
    */
   tenantPathPrefix?: string
+  /**
+   * 导航数据加载函数 — 导航树作为路由的唯一来源。
+   *
+   * 已认证时 DynamicRouter 使用此函数加载远程导航树并派生路由。
+   * refreshRoutes() 返回加载后的导航树供 UI 直接消费。
+   */
+  loadNavigation?: () => Promise<{ childPlacement: 'header' | 'sidebar'; children: unknown[] }>
+  /**
+   * 登录前本地导航树 — 未认证时使用的静态导航数据。
+   *
+   * 当用户未登录时，`registerRoutes()` 使用此本地导航树注册路由（如 / 和 /login）。
+   * 登录后 `refreshRoutes()` 会用远程导航树替换。
+   */
+  preAuthNavTree?: { childPlacement: 'header' | 'sidebar'; children: unknown[] }
 }
 
 /**
@@ -138,7 +133,6 @@ export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
  * SparkApp.start({
  *   rootComponent: App,
  *   config: APP_CONFIG,
- *   auth: AUTH_CONFIG,
  *   beforeMount: async (context) => {
  *     console.log('准备挂载', context.user)
  *   }
@@ -238,13 +232,6 @@ export async function start(options: StartOptions): Promise<void> {
           startLogger.info('可能原因：未配置 sparkComponentsPlugin 或使用 classic 模式')
         }
       }
-      
-      // 向后兼容：如果手动传递了 registerComponents（已废弃）
-      if (spark?.registerComponents && !shouldAutoRegister) {
-        startLogger.debug('[DEPRECATED] 执行手动传递的组件注册函数...')
-        const stats = spark.registerComponents(app)
-        startLogger.info(`手动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
-      }
     }
 
     // 5. 配置动态路由系统
@@ -278,52 +265,20 @@ export async function start(options: StartOptions): Promise<void> {
         configLoader,
         pageComponent, // FCPageRenderer 或用户提供的组件，if 块已确保非空
         ...(pageConfig.componentMap !== undefined && { componentMap: pageConfig.componentMap }),
-        ...(pageConfig.staticRoutes !== undefined && { staticRoutes: pageConfig.staticRoutes }),
-        apiBaseUrl: pageConfig.apiBaseUrl,
-        ...(pageConfig.getHeaders !== undefined && { getHeaders: pageConfig.getHeaders }),
-        ...(pageConfig.beforeRegister !== undefined && { beforeRegister: pageConfig.beforeRegister }),
-        ...(pageConfig.afterRegister !== undefined && { afterRegister: pageConfig.afterRegister }),
-        ...(pageConfig.tenantPathPrefix !== undefined && { tenantPathPrefix: pageConfig.tenantPathPrefix })
+        ...(pageConfig.tenantPathPrefix !== undefined && { tenantPathPrefix: pageConfig.tenantPathPrefix }),
+        loadNavigation: pageConfig.loadNavigation as DynamicRouterOptions['loadNavigation'],
+        preAuthNavTree: pageConfig.preAuthNavTree as DynamicRouterOptions['preAuthNavTree'],
+        isAuthenticated: pageConfig.isAuthenticated,
       }
 
       const dynamicRouter = createDynamicRouter(dynamicRouterOptions)
+      await dynamicRouter.registerRoutes()
 
-      // 仅在已登录时执行动态路由加载
-      const authenticated = pageConfig.isAuthenticated?.() ?? true
-      if (authenticated) {
-        // 兼容旧版：仅当 staticRoutes 存在且无 componentMap 时才同步
-        if (pageConfig.staticRoutes?.length && !pageConfig.componentMap) {
-          await dynamicRouter.syncStaticRoutesToBackend()
-        }
-        await dynamicRouter.registerRoutes()
-      } else {
-        startLogger.info('用户未登录，跳过动态路由加载')
-      }
-
-      // 兼容兜底：仅当旧版 staticRoutes 存在且无 componentMap 时
-      if (pageConfig.staticRoutes && !pageConfig.componentMap) {
-        for (const sr of pageConfig.staticRoutes) {
-          if (!router.hasRoute(sr.name)) {
-            router.addRoute({
-              path: sr.path,
-              name: sr.name,
-              component: sr.component,
-              meta: { pageId: sr.pageId, type: 'vue-component', title: sr.title, icon: sr.icon },
-            })
-          }
-        }
-      }
-
-      // 兼容旧版：仅当无 componentMap 时才添加 / → homePath 重定向
-      // componentMap 模式下，/ 由 preAuthRoutes（main.ts）直接指向 HomePage 组件
-      if (!pageConfig.componentMap) {
-        router.addRoute({ path: '/', redirect: pageConfig.homePath })
-      }
-
-      // 注入到全局缓存管理（清缓存页面 + AI 热重载需要）
-      const { setConfigLoader, setDynamicRouter } = await import('./ai/ai-loop')
-      setConfigLoader(configLoader)
+      // 注入到全局模块：导航访问 + 缓存管理（AI 热重载需要）
+      const { setDynamicRouter } = await import('./navigation/nav-access')
+      const { setConfigLoader } = await import('./ai/ai-loop')
       setDynamicRouter(dynamicRouter)
+      setConfigLoader(configLoader)
     }
 
     // 6. 执行 Bootstrap 流程
