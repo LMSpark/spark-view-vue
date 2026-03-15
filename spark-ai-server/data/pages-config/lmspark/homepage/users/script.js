@@ -24,18 +24,3 @@ function handleRowChange(currentRow, oldRow) {
 function handleSelection(selection) {
   console.log('表格选中行变更:', selection);
 }
-
-function addUser() {
-  $page.showMessage('➕ 添加用户功能', 'info');
-  console.log('添加用户');
-}
-
-function deleteUser() {
-  $page.showMessage('🗑️ 删除用户功能', 'info');
-  console.log('删除用户');
-}
-
-function editUser() {
-  $page.showMessage('✏️ 编辑用户功能', 'info');
-  console.log('编辑用户');
-}

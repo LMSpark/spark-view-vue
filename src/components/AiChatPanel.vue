@@ -31,7 +31,9 @@
             <div class="ai-message-content">
               <template v-if="msg.role === 'user'">{{ msg.text }}</template>
               <template v-else>
-                <div class="ai-text">{{ msg.text }}</div>
+                <div class="ai-text ai-markdown">
+                  <VueMarkdown :source="msg.text" />
+                </div>
                 <div v-if="msg.files" class="ai-files">
                   <span v-for="f in msg.files" :key="f" class="ai-file-tag">{{ f }}</span>
                 </div>
@@ -48,7 +50,9 @@
           <div v-if="loading" class="ai-message assistant">
             <div class="ai-message-content ai-streaming">
               <div v-if="phaseMessage" class="ai-phase-badge">{{ phaseMessage }}</div>
-              <div v-if="streamingText" class="ai-stream-text">{{ streamingText }}</div>
+              <div v-if="streamingText" class="ai-stream-text ai-markdown">
+                <VueMarkdown :source="streamingText" />
+              </div>
               <div v-else class="ai-loading">
                 <span class="dot"></span><span class="dot"></span><span class="dot"></span>
               </div>
@@ -67,7 +71,15 @@
           <div v-if="showLogs" class="ai-log-list">
             <div v-for="(log, i) in recentLogs.slice(-30)" :key="i" class="ai-log-entry" :class="log.level">
               <span class="ai-log-level">{{ levelEmoji(log.level) }}</span>
-              <span class="ai-log-msg">{{ log.message }}</span>
+              <div class="ai-log-body">
+                <pre
+                  v-if="formatLogOutput(log.message).kind !== 'plain'"
+                  class="ai-log-code"
+                  :class="formatLogOutput(log.message).kind"
+                >{{ formatLogOutput(log.message).content }}</pre>
+                <span v-else class="ai-log-msg">{{ log.message }}</span>
+                <pre v-if="log.meta" class="ai-log-meta">{{ formatLogMeta(log.meta) }}</pre>
+              </div>
             </div>
           </div>
         </div>
@@ -112,6 +124,7 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import VueMarkdown from 'vue-markdown-render'
 import { getNavHomePath } from '@spark-view/spark-app'
 import { getUser } from '@/services/auth'
 import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
@@ -230,6 +243,78 @@ const errorLogCount = computed(() =>
 function levelEmoji(level: string): string {
   const map: Record<string, string> = { error: '❌', warn: '⚠️', info: 'ℹ️', debug: '🐛' }
   return map[level] ?? '📝'
+}
+
+type FormattedLogKind = 'plain' | 'json' | 'js'
+
+interface FormattedLogOutput {
+  kind: FormattedLogKind
+  content: string
+}
+
+function tryFormatJson(text: string): string | null {
+  const trimmed = text.trim()
+  if (trimmed === '') return null
+  if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) return null
+  if (!(trimmed.endsWith('}') || trimmed.endsWith(']'))) return null
+  try {
+    const parsed = JSON.parse(trimmed) as unknown
+    return JSON.stringify(parsed, null, 2)
+  } catch {
+    return null
+  }
+}
+
+function formatJavaScript(text: string): string {
+  const normalized = text
+    .replace(/\{\s*/g, '{\n')
+    .replace(/\}\s*/g, '}\n')
+    .replace(/;\s*/g, ';\n')
+  const lines = normalized
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '')
+
+  let indent = 0
+  const out: string[] = []
+  for (const line of lines) {
+    if (line.startsWith('}')) {
+      indent = Math.max(0, indent - 1)
+    }
+    out.push(`${'  '.repeat(indent)}${line}`)
+    if (line.endsWith('{')) {
+      indent += 1
+    }
+  }
+  return out.join('\n')
+}
+
+function tryFormatJavaScript(text: string): string | null {
+  const trimmed = text.trim()
+  if (trimmed === '') return null
+  const maybeJs = /(function\s+\w+\s*\(|\bconst\b|\blet\b|\bvar\b|=>|\breturn\b|\bif\s*\(|\bfor\s*\(|\bwhile\s*\()/u.test(trimmed)
+  if (!maybeJs) return null
+  return formatJavaScript(trimmed)
+}
+
+function formatLogOutput(message: string): FormattedLogOutput {
+  const asJson = tryFormatJson(message)
+  if (asJson !== null) {
+    return { kind: 'json', content: asJson }
+  }
+  const asJs = tryFormatJavaScript(message)
+  if (asJs !== null) {
+    return { kind: 'js', content: asJs }
+  }
+  return { kind: 'plain', content: message }
+}
+
+function formatLogMeta(meta: Record<string, unknown>): string {
+  try {
+    return JSON.stringify(meta, null, 2)
+  } catch {
+    return String(meta)
+  }
 }
 
 function updateStatus(s: 'idle' | 'generating' | 'success' | 'error') {
@@ -806,8 +891,8 @@ watch(() => route.query['aiDebug'], async (val) => {
   position: absolute;
   bottom: 64px;
   right: 0;
-  width: 420px;
-  max-height: 600px;
+  width: 25vw;
+  height: 75vh;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
@@ -847,8 +932,8 @@ watch(() => route.query['aiDebug'], async (val) => {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  min-height: 200px;
-  max-height: 360px;
+  min-height: 0;
+  max-height: none;
 }
 
 .ai-empty {
@@ -871,10 +956,10 @@ watch(() => route.query['aiDebug'], async (val) => {
 }
 
 .ai-message-content {
-  max-width: 85%;
+  max-width: 92%;
   padding: 10px 14px;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   word-break: break-word;
 }
@@ -953,13 +1038,82 @@ watch(() => route.query['aiDebug'], async (val) => {
 }
 
 .ai-stream-text {
-  font-size: 12px;
+  font-size: 14px;
   color: #555;
-  line-height: 1.5;
+  line-height: 1.6;
   white-space: pre-wrap;
-  max-height: 200px;
+  max-height: 260px;
   overflow-y: auto;
-  font-family: 'Menlo', 'Consolas', monospace;
+}
+
+.ai-markdown :deep(pre) {
+  background: #282c34;
+  color: #abb2bf;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.ai-markdown :deep(code) {
+  font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 13px;
+}
+
+.ai-markdown :deep(code:not(pre code)) {
+  background: #e8eaed;
+  color: #c7254e;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.ai-markdown :deep(table) {
+  border-collapse: collapse;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.ai-markdown :deep(th),
+.ai-markdown :deep(td) {
+  border: 1px solid #dcdfe6;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.ai-markdown :deep(th) {
+  background: #f5f7fa;
+  font-weight: 600;
+}
+
+.ai-markdown :deep(ul),
+.ai-markdown :deep(ol) {
+  padding-left: 20px;
+  margin: 6px 0;
+}
+
+.ai-markdown :deep(blockquote) {
+  border-left: 3px solid #409eff;
+  padding: 4px 12px;
+  margin: 8px 0;
+  color: #606266;
+  background: #f5f7fa;
+  border-radius: 0 4px 4px 0;
+}
+
+.ai-markdown :deep(h1),
+.ai-markdown :deep(h2),
+.ai-markdown :deep(h3) {
+  margin: 12px 0 6px;
+  font-weight: 600;
+}
+
+.ai-markdown :deep(h1) { font-size: 18px; }
+.ai-markdown :deep(h2) { font-size: 16px; }
+.ai-markdown :deep(h3) { font-size: 14px; }
+
+.ai-markdown :deep(p) {
+  margin: 6px 0;
 }
 
 .ai-panel-footer {
@@ -1099,16 +1253,53 @@ watch(() => route.query['aiDebug'], async (val) => {
   padding: 2px 0;
   display: flex;
   gap: 6px;
-  line-height: 1.4;
+  align-items: flex-start;
+  line-height: 1.5;
   color: #555;
 }
 .ai-log-entry.error { color: #f56c6c; }
 .ai-log-entry.warn { color: #e6a23c; }
 .ai-log-level { flex-shrink: 0; }
+
+.ai-log-body {
+  flex: 1;
+  min-width: 0;
+}
+
 .ai-log-msg {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ai-log-code {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+.ai-log-code.json {
+  background: #eef5ff;
+  color: #2c5aa0;
+}
+
+.ai-log-code.js {
+  background: #282c34;
+  color: #abb2bf;
+}
+
+.ai-log-meta {
+  margin: 4px 0 0;
+  padding: 6px 8px;
+  background: #f5f7fa;
+  color: #606266;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
 }
 
 /* Slide transition */
