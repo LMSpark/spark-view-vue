@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { COMPONENT_PROPS_CATALOG } from './componentPropsCatalog'
+import { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

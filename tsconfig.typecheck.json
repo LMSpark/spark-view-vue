@@ -40,6 +40,7 @@
       // during development we prefer to resolve to source so that new exports
       // (e.g. setupAutoRegister) are picked up without rebuilding the package
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
+      "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],
       "@/features/spark-ej2": ["./src/features/spark-ej2"]
     },
     "types": ["vite/client", "vitest/globals"]
@@ -49,7 +50,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/**/*.d.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "packages/spark-ai/src/**/*.ts"
   ],
   "exclude": [
     "node_modules",

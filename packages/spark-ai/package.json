@@ -1,17 +1,17 @@
 {
-  "name": "@spark-view/spark-app",
+  "name": "@spark-view/spark-ai",
   "version": "0.3.7",
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/index.d.ts",
   "private": false,
-  "description": "SPARK Application Layer - 应用层基础设施（AppContext、Router Guards、Error Boundary、Bootstrap）",
+  "description": "SPARK AI Layer - AI 闭环协调、SSE 事件总线、设计会话、响应管线",
   "keywords": [
     "spark",
-    "application",
-    "context",
-    "router",
-    "bootstrap"
+    "ai",
+    "sse",
+    "design-session",
+    "page-loop"
   ],
   "files": [
     "dist",
@@ -24,13 +24,10 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/index.d.ts"
     }
   },
   "dependencies": {
-    "@spark-view/spark-ai": "workspace:*",
-    "@spark-view/spark-component": "workspace:*",
-    "@spark-view/spark-page-config": "workspace:*",
     "@spark-view/spark-utils": "workspace:*"
   },
   "scripts": {
@@ -42,9 +39,7 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
   },
   "peerDependencies": {
-    "vue": "^3.5.27",
-    "vue-router": "^5.0.3",
-    "@vueuse/core": ">=10.0.0"
+    "vue": "^3.5.27"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

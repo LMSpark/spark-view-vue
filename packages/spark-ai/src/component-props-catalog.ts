@@ -1,7 +1,7 @@
 /**
  * SPARK 组件 Props 目录
  *
- * 用于 AI 设计会话的交互式查询——AI 通过 <query> 标签请求组件 Props，
+ * 用于 AI 设计会话的交互式查询——AI 通过 @@ 协议请求组件 Props，
  * 系统从此目录查找并注入到对话上下文中。
  */
 export const COMPONENT_PROPS_CATALOG: Record<string, string> = {

@@ -166,8 +166,45 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5(typescript@5.9.3)
 
+  packages/spark-ai:
+    dependencies:
+      '@spark-view/spark-utils':
+        specifier: workspace:*
+        version: link:../spark-utils
+      vue:
+        specifier: 3.5.29
+        version: 3.5.29(typescript@5.9.3)
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.39.2
+        version: 9.39.2
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.35
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.52.0
+        version: 8.56.1(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.52.0
+        version: 8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3)
+      eslint:
+        specifier: ^10.0.2
+        version: 10.0.2(jiti@2.6.1)
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@20.19.35)(jiti@2.6.1)(sass@1.98.0)(terser@5.46.0)(yaml@2.8.2)
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@20.19.35)(jiti@2.6.1)(jsdom@28.1.0)(sass@1.98.0)(terser@5.46.0)(yaml@2.8.2)
+
   packages/spark-app:
     dependencies:
+      '@spark-view/spark-ai':
+        specifier: workspace:*
+        version: link:../spark-ai
       '@spark-view/spark-component':
         specifier: workspace:*
         version: link:../spark-component
