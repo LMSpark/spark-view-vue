@@ -181,7 +181,8 @@ async function startApp() {
     // 链路 B：spark-app AppLogger（error handler / warnHandler 等）
     addGlobalTransport(collectorTransport)
 
-    if (appConfig.logger.enableRemote === true) {
+    const auditRemoteLogsEnabled = import.meta.env['VITE_AUDIT_REMOTE_LOGS'] === 'true'
+    if (appConfig.logger.enableRemote === true && auditRemoteLogsEnabled) {
       const remoteTransport = configureRemoteLogger({
         endpoint: appConfig.logger.remoteEndpoint ?? '/api/logs',
         minLevel: appConfig.logger.minRemoteLevel ?? 'debug',
@@ -199,7 +200,10 @@ async function startApp() {
         minLevel: appConfig.logger.minRemoteLevel ?? 'debug',
       })
     } else {
-      startupLogger.info('📋 日志模式：仅本地控制台')
+      startupLogger.info('📋 日志模式：本地诊断（远程审计未启用）', {
+        configEnableRemote: appConfig.logger.enableRemote === true,
+        auditFlag: auditRemoteLogsEnabled,
+      })
     }
     
     // 2. 注册内置插件加载器

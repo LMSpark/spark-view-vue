@@ -87,7 +87,21 @@ function bindRulesRecursive(
 
     // ── Render* 组件：已由 usePageRenderer 注册为响应式 Vue 组件，保持原样 ──
     if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
-      return newRule as BindRule
+      const renderType = newRule.type
+      const camelType = renderType.charAt(0).toLowerCase() + renderType.slice(1)
+      const renderFn = options.pageFunctions[renderType] ?? options.pageFunctions[camelType]
+      if (typeof renderFn === 'function') {
+        return newRule as BindRule
+      }
+      pageLogger.error('Render 函数未定义，已降级为占位节点', {
+        renderType,
+        availableRenderFns: Object.keys(options.pageFunctions).filter(name => name.startsWith('Render')),
+      })
+      return {
+        ...newRule,
+        type: 'div',
+        children: [`⚠️ 未定义渲染函数: ${renderType}`],
+      } as BindRule
     }
 
     // ── 事件处理器：字符串函数名 → callFunc 包装 ──

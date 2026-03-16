@@ -238,18 +238,19 @@ export class ConfigLoader {
    */
   private applyEnvironmentOverrides(config: AppFullConfig): AppFullConfig {
     const env = import.meta.env
+    const auditRemoteLogsEnabled = env['VITE_AUDIT_REMOTE_LOGS'] === 'true'
 
     // 根据环境调整配置
     if (env['PROD']) {
       config.logger.level = config.logger.level ?? 'info'
       config.logger.showTimestamp = false
-      config.logger.enableRemote = true
+      config.logger.enableRemote = auditRemoteLogsEnabled
       // 演示项目：不覆盖 enableMock（允许生产环境使用 Mock 数据）
       config.config.logLevel = 'info'
     } else {
       config.logger.level = config.logger.level ?? 'debug'
       config.logger.showTimestamp = true
-      config.logger.enableRemote = false
+      config.logger.enableRemote = auditRemoteLogsEnabled
       config.config.enableMock = config.config.enableMock ?? true
       config.config.logLevel = 'debug'
     }
@@ -296,7 +297,7 @@ export class ConfigLoader {
         level: import.meta.env['PROD'] ? 'info' : 'debug',
         enableColors: true,
         showTimestamp: !import.meta.env['PROD'],
-        enableRemote: import.meta.env['PROD'],
+        enableRemote: false,
         remoteEndpoint: '/api/logs'
       }
     }

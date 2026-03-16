@@ -136,6 +136,160 @@ export interface LogSnapshot {
   meta?: Record<string, unknown> | undefined
   timestamp: number
   pageId?: string | undefined
+  fingerprint?: string | undefined
+}
+
+export interface LogIssueSummary {
+  fingerprint: string
+  level: string
+  message: string
+  count: number
+  lastTimestamp: number
+  sampleMeta?: Record<string, unknown> | undefined
+}
+
+export interface LogBatchSummary {
+  totalLogs: number
+  errorCount: number
+  warnCount: number
+  infoCount: number
+  debugCount: number
+  duplicateCount: number
+  qualityScore: number
+  qualityLevel: 'high' | 'medium' | 'low'
+  signature: string
+  issues: LogIssueSummary[]
+  sampleLogs: LogSnapshot[]
+}
+
+export interface PageDiagnosticsReport extends LogBatchSummary {
+  pageId: string
+  sampledAt: number
+}
+
+interface SummarizeLogOptions {
+  maxIssues?: number
+  maxSamples?: number
+}
+
+function normalizeLogMessage(rawMessage: string): string {
+  return rawMessage
+    .trim()
+    .replace(/https?:\/\/\S+/g, '<url>')
+    .replace(/\b\d{5,}\b/g, '<num>')
+    .replace(/[0-9a-f]{8,}/gi, '<hex>')
+    .replace(/"[^"]{18,}"/g, '"<long>"')
+    .replace(/\s+/g, ' ')
+}
+
+function buildLogFingerprint(entry: LogSnapshot): string {
+  const normalizedMessage = normalizeLogMessage(entry.message)
+  return `${entry.level}::${normalizedMessage}`
+}
+
+function qualityFromSummary(summary: {
+  totalLogs: number
+  errorCount: number
+  warnCount: number
+  duplicateCount: number
+  issueCount: number
+}): { score: number; level: 'high' | 'medium' | 'low' } {
+  if (summary.totalLogs === 0) {
+    return { score: 20, level: 'low' }
+  }
+
+  const penalty =
+    summary.errorCount * 8 +
+    summary.warnCount * 3 +
+    summary.duplicateCount * 2 +
+    Math.max(0, summary.issueCount - 3) * 4
+
+  const score = Math.max(0, Math.min(100, 100 - penalty))
+  if (score >= 80) return { score, level: 'high' }
+  if (score >= 55) return { score, level: 'medium' }
+  return { score, level: 'low' }
+}
+
+export function summarizeLogBatch(logs: LogSnapshot[], options?: SummarizeLogOptions): LogBatchSummary {
+  const maxIssues = options?.maxIssues ?? 8
+  const maxSamples = options?.maxSamples ?? 24
+
+  const issueMap = new Map<string, LogIssueSummary>()
+  let errorCount = 0
+  let warnCount = 0
+  let infoCount = 0
+  let debugCount = 0
+
+  for (const rawLog of logs) {
+    const fingerprint = rawLog.fingerprint ?? buildLogFingerprint(rawLog)
+    const log: LogSnapshot = rawLog.fingerprint ? rawLog : { ...rawLog, fingerprint }
+
+    if (log.level === 'error') errorCount += 1
+    else if (log.level === 'warn') warnCount += 1
+    else if (log.level === 'info') infoCount += 1
+    else debugCount += 1
+
+    const existing = issueMap.get(fingerprint)
+    if (existing) {
+      existing.count += 1
+      if (log.timestamp > existing.lastTimestamp) {
+        existing.lastTimestamp = log.timestamp
+      }
+      continue
+    }
+
+    issueMap.set(fingerprint, {
+      fingerprint,
+      level: log.level,
+      message: normalizeLogMessage(log.message),
+      count: 1,
+      lastTimestamp: log.timestamp,
+      sampleMeta: log.meta,
+    })
+  }
+
+  const issues = [...issueMap.values()]
+    .sort((a, b) => {
+      const levelWeight = (value: string): number => {
+        if (value === 'error') return 3
+        if (value === 'warn') return 2
+        if (value === 'info') return 1
+        return 0
+      }
+      return levelWeight(b.level) - levelWeight(a.level) || b.count - a.count || b.lastTimestamp - a.lastTimestamp
+    })
+    .slice(0, maxIssues)
+
+  const fingerprints = new Set(issues.map(item => item.fingerprint))
+  const sampleLogs = logs
+    .filter(item => {
+      const fingerprint = item.fingerprint ?? buildLogFingerprint(item)
+      return fingerprints.has(fingerprint)
+    })
+    .slice(-maxSamples)
+
+  const duplicateCount = Math.max(0, logs.length - issueMap.size)
+  const quality = qualityFromSummary({
+    totalLogs: logs.length,
+    errorCount,
+    warnCount,
+    duplicateCount,
+    issueCount: issueMap.size,
+  })
+
+  return {
+    totalLogs: logs.length,
+    errorCount,
+    warnCount,
+    infoCount,
+    debugCount,
+    duplicateCount,
+    qualityScore: quality.score,
+    qualityLevel: quality.level,
+    signature: issues.map(item => `${item.fingerprint}:${item.count}`).join('|'),
+    issues,
+    sampleLogs,
+  }
 }
 
 /** AI Loop 配置 */
@@ -150,6 +304,8 @@ export interface AIPageLoopOptions {
   logCollectDelay?: number
   /** Skill Catalog Markdown（由 buildSkillPrompt 生成，附加到系统提示词） */
   skillCatalog?: string | undefined
+  /** 是否将全局 error/warn 合并进页面诊断样本（默认 true） */
+  includeGlobalDiagnostics?: boolean
 }
 
 // ─── 自动迭代守卫 ────────────────────────────────────────────────────────────
@@ -273,11 +429,33 @@ export class PageLogCollector {
 
   /** 记录一条日志 */
   push(entry: LogSnapshot): void {
-    this.logs.push(entry)
+    const normalizedEntry: LogSnapshot = {
+      ...entry,
+      fingerprint: entry.fingerprint ?? buildLogFingerprint(entry),
+    }
+    this.logs.push(normalizedEntry)
     if (this.logs.length > this.maxSize) {
       this.logs = this.logs.slice(-this.maxSize)
     }
     _notifyLogUpdate()
+  }
+
+  /**
+   * 采集并清空某页面诊断日志，同时返回去重摘要。
+   * 默认包含全局 error/warn，便于捕获未带 pageId 的运行时异常。
+   */
+  captureDiagnostics(pageId: string, options?: SummarizeLogOptions & { includeGlobal?: boolean }): PageDiagnosticsReport {
+    const includeGlobal = options?.includeGlobal ?? true
+    const pickedLogs = this.logs.filter(log =>
+      log.pageId === pageId || (includeGlobal && log.pageId === undefined && (log.level === 'error' || log.level === 'warn'))
+    )
+    this.logs = this.logs.filter(log => !pickedLogs.includes(log))
+    const summary = summarizeLogBatch(pickedLogs, options)
+    return {
+      pageId,
+      sampledAt: Date.now(),
+      ...summary,
+    }
   }
 
   /** 获取指定 pageId 的日志快照并清空 */
@@ -440,6 +618,7 @@ interface ResolvedLoopOptions {
   onError: (error: Error) => void
   logCollectDelay: number
   skillCatalog: string | undefined
+  includeGlobalDiagnostics: boolean
 }
 
 /**
@@ -459,6 +638,7 @@ export class AIPageLoop {
       onError: options.onError ?? ((e) => { if (import.meta.env.DEV) console.error('[AIPageLoop]', e) }),
       logCollectDelay: options.logCollectDelay ?? 3000,
       skillCatalog: options.skillCatalog ?? undefined,
+      includeGlobalDiagnostics: options.includeGlobalDiagnostics ?? true,
     }
     this._sessionId = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   }
@@ -483,8 +663,11 @@ export class AIPageLoop {
    * 迭代修改：基于日志反馈 + 用户追加指令修改文件
    */
   async iterate(pageId: string, feedback?: string): Promise<AIResponse> {
-    // 收集当前页面的日志
-    const logs = this.collector.drain(pageId)
+    const diagnostics = this.collector.captureDiagnostics(pageId, {
+      includeGlobal: this.options.includeGlobalDiagnostics,
+      maxIssues: 10,
+      maxSamples: 32,
+    })
     // 读取当前文件内容
     const currentFiles = await readPageFiles(pageId)
 
@@ -494,7 +677,8 @@ export class AIPageLoop {
       sessionId: this._sessionId,
       feedback,
       currentFiles,
-      logs,
+      logs: diagnostics.sampleLogs,
+      diagnostics,
     })
   }
 
@@ -514,7 +698,11 @@ export class AIPageLoop {
    * 流式迭代修改：SSE 逐 token 推送，通过回调接收中间事件
    */
   async iterateStream(pageId: string, feedback?: string, callbacks?: StreamCallbacks): Promise<AIResponse> {
-    const logs = this.collector.drain(pageId)
+    const diagnostics = this.collector.captureDiagnostics(pageId, {
+      includeGlobal: this.options.includeGlobalDiagnostics,
+      maxIssues: 10,
+      maxSamples: 32,
+    })
     const currentFiles = await readPageFiles(pageId)
 
     return this._callAIStream(pageId, {
@@ -523,7 +711,8 @@ export class AIPageLoop {
       sessionId: this._sessionId,
       feedback,
       currentFiles,
-      logs,
+      logs: diagnostics.sampleLogs,
+      diagnostics,
     }, callbacks)
   }
 
@@ -587,12 +776,6 @@ export class AIPageLoop {
         } catch {
           responseText = ''
         }
-
-        if (response.status >= 500) {
-          callbacks?.onError?.(`SSE ${response.status}，自动回退到非流式请求`)
-          return this._callAI(pageId, payload)
-        }
-
         const detail = responseText.trim()
         const suffix = detail.length > 0
           ? `, body=${detail.slice(0, 300)}`
