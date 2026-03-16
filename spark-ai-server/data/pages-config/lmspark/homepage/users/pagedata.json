@@ -6,6 +6,8 @@
         "columns": [
           { "name": "id", "type": "number", "label": "ID", "isPrimaryKey": true },
           { "name": "name", "type": "string", "label": "用户名" },
+          { "name": "gender", "type": "string", "label": "性别" },
+          { "name": "department", "type": "string", "label": "部门" },
           { "name": "age", "type": "number", "label": "年龄" },
           { "name": "role", "type": "string", "label": "角色" },
           { "name": "status", "type": "string", "label": "状态" }
@@ -13,11 +15,11 @@
         "views": {
           "default": {
             "rows": [
-              { "id": 1, "name": "admin", "age": 35, "role": "管理员", "status": "在线" },
-              { "id": 2, "name": "user1", "age": 28, "role": "普通用户", "status": "离线" },
-              { "id": 3, "name": "user2", "age": 42, "role": "普通用户", "status": "在线" },
-              { "id": 4, "name": "user3", "age": 25, "role": "访客", "status": "在线" },
-              { "id": 5, "name": "user4", "age": 31, "role": "编辑", "status": "离线" }
+              { "id": 1, "name": "张三", "gender": "male", "department": "技术部", "age": 35, "role": "admin", "status": "active" },
+              { "id": 2, "name": "李四", "gender": "female", "department": "市场部", "age": 28, "role": "user", "status": "active" },
+              { "id": 3, "name": "王五", "gender": "male", "department": "人事部", "age": 42, "role": "user", "status": "inactive" },
+              { "id": 4, "name": "赵六", "gender": "female", "department": "财务部", "age": 25, "role": "guest", "status": "active" },
+              { "id": 5, "name": "孙七", "gender": "male", "department": "运营部", "age": 31, "role": "user", "status": "active" }
             ],
             "autoCurrentFirst": true
           }
