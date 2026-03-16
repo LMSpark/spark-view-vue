@@ -1,5 +1,5 @@
 <template>
-  <FCPageRenderer v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
+  <FCPageRenderer :key="rendererRefreshKey" v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
   <!-- AI 聊天浮窗（仅配置页面渲染时加载，从 App.vue 下沉至此） -->
   <AiChatPanel v-if="enableAI" />
   <!-- SAP 工具助手浮窗（独立于 AI 页面生成面板） -->
@@ -13,6 +13,7 @@ import type { PageRendererOptions } from '@spark-view/spark-component'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import { appPageUiService } from '@spark-view/spark-app'
 import { NAV_KEY } from '@spark-view/spark-app'
+import { onPageRefresh } from '@spark-view/spark-ai'
 
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
 const SapChatPanel = defineAsyncComponent(() => import('@/components/SapChatPanel.vue'))
@@ -20,6 +21,25 @@ const SapChatPanel = defineAsyncComponent(() => import('@/components/SapChatPane
 const props = withDefaults(defineProps<PageRendererOptions>(), {
   enableCssScope: true,
   enableDataSet: true,
+})
+
+const rendererRefreshKey = ref(0)
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+const _unsubRefresh = onPageRefresh(() => {
+  if (refreshTimer !== null) {
+    clearTimeout(refreshTimer)
+  }
+  refreshTimer = setTimeout(() => {
+    rendererRefreshKey.value++
+    refreshTimer = null
+  }, 120)
+})
+onUnmounted(() => {
+  if (refreshTimer !== null) {
+    clearTimeout(refreshTimer)
+    refreshTimer = null
+  }
+  _unsubRefresh()
 })
 
 const nav = inject(NAV_KEY, undefined)

@@ -126,7 +126,6 @@ import { ref, nextTick, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import VueMarkdown from 'vue-markdown-render'
 import { getNavHomePath } from '@spark-view/spark-app'
-import { getUser } from '@/services/auth'
 import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
 import type { AIResponse, LogSnapshot, StreamCallbacks } from '@spark-view/spark-ai'
 import { createRequest } from '@spark-view/spark-utils'
@@ -233,7 +232,7 @@ const recentLogs = computed(() => {
   if (!pid) return [] as LogSnapshot[]
   const loop = getAILoop()
   if (!loop) return [] as LogSnapshot[]
-  return loop.collector.peek(pid)
+  return collectRelevantLogs(loop, pid)
 })
 
 const errorLogCount = computed(() =>
@@ -366,12 +365,7 @@ async function handleDelete() {
     messages.value.push({ role: 'assistant', text: `🗑️ 页面 /${pid} 已删除` })
     // 如果当前路由就是被删页面，导航回首页
     if (routePageId.value === pid) {
-      const user = getUser()
-      if (user) {
-        void router.push(`/t/${user.tenantId}${getNavHomePath()}`)
-      } else {
-        void router.push('/')
-      }
+      void router.push(tenantPath(getNavHomePath()))
     }
     updateStatus('success')
   } catch (err) {
@@ -401,8 +395,17 @@ function scrollToBottom() {
 
 /** 构建当前用户的租户前缀路径 */
 function tenantPath(relativePath: string): string {
-  const user = getUser()
-  return user ? `/t/${user.tenantId}${relativePath}` : relativePath
+  const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+  if (normalized.startsWith('/t/')) return normalized
+
+  const scopedMatch = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(route.path)
+  if (!scopedMatch) {
+    throw new Error(`tenantPath 仅支持租户作用域路由：期望 /t/{tenantId}/{projectId}，当前为 ${route.path}`)
+  }
+
+  const tenantId = scopedMatch[1]
+  const projectId = scopedMatch[2]
+  return `/t/${tenantId}/${projectId}${normalized}`
 }
 
 function ensureRouteExists(pid: string) {
@@ -446,16 +449,51 @@ function hasRenderErrors(logs: LogSnapshot[]): boolean {
     if (l.level === 'error') return true
     if (l.level !== 'warn') return false
     const msg = typeof l.message === 'string' ? l.message : ''
+    const metaMessage =
+      l.meta !== undefined && typeof l.meta['message'] === 'string'
+        ? l.meta['message']
+        : ''
+    const text = `${msg} ${metaMessage}`
     return (
-      msg.includes('未注册') ||
-      msg.includes('not found') ||
-      msg.includes('无法解析') ||
-      msg.includes('dataKey') ||
-      msg.includes('DataView') ||
-      msg.includes('缺少必需') ||
-      msg.includes('字段缺失')
+      text.includes('未注册') ||
+      text.includes('not found') ||
+      text.includes('无法解析') ||
+      text.includes('dataKey') ||
+      text.includes('DataView') ||
+      text.includes('缺少必需') ||
+      text.includes('字段缺失') ||
+      text.includes('Extraneous non-props attributes') ||
+      text.includes('non-props attributes')
     )
   })
+}
+
+function collectRelevantLogs(loop: ReturnType<typeof getAILoop>, pid: string): LogSnapshot[] {
+  if (!loop) return []
+  const pageLogs = loop.collector.peek(pid)
+  const globalErrors = loop.collector.peek().filter(
+    l => l.pageId === undefined && (l.level === 'error' || l.level === 'warn')
+  )
+  return [...pageLogs, ...globalErrors]
+}
+
+function detectAiFailure(response: AIResponse): string | null {
+  const explanation = response.explanation ?? ''
+  const ruleContent = response.files['rule.json'] ?? ''
+  const markers = [
+    'AI 生成失败',
+    '响应解析失败',
+    '未返回标准 JSON',
+    'UI 层生成失败',
+    '数据/行为层生成失败',
+  ]
+
+  const hit = markers.find(marker =>
+    explanation.includes(marker) || ruleContent.includes(marker)
+  )
+
+  if (!hit) return null
+  return explanation.trim() !== '' ? explanation : `AI 返回失败占位页面：${hit}`
 }
 
 /** 等待指定时间 */
@@ -480,6 +518,8 @@ async function handleSend() {
   _abortRequested = false
   updateStatus('generating')
   resetStreamState()
+  // 先开启自动迭代守卫：避免 generate/iterate 写文件期间触发热重载风暴
+  setAutoIterating(true)
   scrollToBottom()
 
   try {
@@ -538,15 +578,26 @@ async function handleSend() {
     })
     scrollToBottom()
 
-    // ── 自动迭代闭环 ──
-    // 必须在 generate 之前设置，因为 generate 内部 writePageFiles 会触发 SSE 事件，
-    // 如果 _autoIterating 为 false，setupHotReload 会触发页面重载，导致面板状态丢失
-    setAutoIterating(true)
+    const aiFailure = detectAiFailure(response)
+    if (aiFailure !== null) {
+      messages.value.push({
+        role: 'assistant',
+        text: `❌ 生成失败: ${aiFailure}`,
+      })
+      updateStatus('error')
+      setAutoIterating(false)
+      return
+    }
 
     // 注册路由 → 清除旧缓存 → 导航到页面
     ensureRouteExists(pid)
     clearPageCache(pid)
     await router.push(tenantPath(`/${pid}`))
+    // 关键：autoIterating=true 会抑制 setupHotReload；若是同路由 push，页面不会自动重建
+    // 这里主动触发一次重建，确保后续日志采集针对“新生成代码”而不是旧页面状态
+    triggerPageRefresh()
+    await nextTick()
+    let iterationFailed = false
     try {
       for (let i = 1; i <= MAX_AUTO_ITERATIONS; i++) {
         if (_abortRequested) break
@@ -562,9 +613,7 @@ async function handleSend() {
         if (_abortRequested) break
 
         // 检查日志（peek 不清空，iterate 内部 drain 会清空）
-        const logs = loop
-          ? loop.collector.peek(pid)
-          : [] // fallback 模式无日志收集，直接跳过迭代
+        const logs = collectRelevantLogs(loop, pid)
         if (!hasRenderErrors(logs)) {
           messages.value.push({
             role: 'assistant',
@@ -615,6 +664,19 @@ async function handleSend() {
           }
         }
 
+        const iterFailure = detectAiFailure(iterResponse)
+        if (iterFailure !== null) {
+          messages.value.push({
+            role: 'assistant',
+            text: `❌ 第 ${i} 轮修复失败: ${iterFailure}`,
+            iteration: i,
+          })
+          scrollToBottom()
+          updateStatus('error')
+          iterationFailed = true
+          break
+        }
+
         const iterFiles = Object.keys(iterResponse.files)
         messages.value.push({
           role: 'assistant',
@@ -633,6 +695,8 @@ async function handleSend() {
     } finally {
       setAutoIterating(false)
     }
+
+    if (iterationFailed) return
 
     updateStatus('success')
   } catch (err) {
@@ -757,7 +821,7 @@ async function handleDebug() {
       await delay(LOG_COLLECT_DELAY)
       if (_abortRequested) break
 
-      const checkLogs = loop ? loop.collector.peek(pid) : []
+      const checkLogs = collectRelevantLogs(loop, pid)
       if (!hasRenderErrors(checkLogs)) {
         messages.value.push({
           role: 'assistant',

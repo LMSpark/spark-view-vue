@@ -75,7 +75,10 @@ import './style.css'
  * 例：'/order-list' → 'order-list', '/admin/users' → 'admin/users'
  */
 function extractPageId(path: string): string | undefined {
-  const trimmed = path.replace(/^\/+/, '')
+  // 租户作用域路由：/t/{tenantId}/{projectId}/xxx -> xxx
+  const scopedMatch = /^\/t\/[^/]+\/[^/]+(?:\/(.+))?$/.exec(path)
+  const raw = scopedMatch ? (scopedMatch[1] ?? '') : path.replace(/^\/+/, '')
+  const trimmed = raw.replace(/^\/+/, '').replace(/\/+$/, '')
   return trimmed.length > 0 ? trimmed : undefined
 }
 

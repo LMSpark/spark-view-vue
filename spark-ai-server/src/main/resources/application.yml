@@ -56,7 +56,7 @@ spark:
 
       # 最大输出 token 数
       # DeepSeek-chat 上限 8192，DeepSeek-reasoner 上限 16384
-      max-tokens: 8192
+      max-tokens: 2048
 
       # 是否启用 JSON 模式（response_format: json_object）
       # OpenAI gpt-4o / gpt-3.5-turbo-1106+ / DeepSeek-chat 支持

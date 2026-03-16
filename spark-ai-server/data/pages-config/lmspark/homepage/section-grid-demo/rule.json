@@ -1,1 +1,183 @@
-[{"type":"h2","children":["⚠️ AI 生成失败"]},{"type":"p","children":["第1轮 UI 层（rule.json + style.css）生成失败，请重试"]},{"type":"p","children":["请检查控制台日志或 application.yml 配置"]}]
+[
+  {
+    "type": "div",
+    "class": "section-grid-demo",
+    "style": {
+      "padding": "20px"
+    },
+    "children": [
+      {
+        "type": "h1",
+        "children": ["r-table 完整示例"]
+      },
+      {
+        "type": "p",
+        "children": ["这是一个完整的 r-table 示例，展示了表格的基本功能：数据展示、当前行高亮、多选、分页、行操作等。"]
+      },
+      {
+        "type": "r-section",
+        "props": {
+          "title": "用户数据表格",
+          "description": "使用 r-table 展示用户列表，支持选择、查看详情、编辑和删除操作"
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "dataKey": "Users@rows",
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "rowActions": [
+                {
+                  "type": "RenderRowActions"
+                }
+              ]
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "name": "id",
+                "props": {
+                  "label": "ID",
+                  "width": 80
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "name",
+                "props": {
+                  "label": "姓名",
+                  "width": 120
+                }
+              },
+              {
+                "type": "r-select",
+                "name": "gender",
+                "props": {
+                  "label": "性别",
+                  "width": 100,
+                  "options": [
+                    {"label": "男", "value": "male"},
+                    {"label": "女", "value": "female"}
+                  ]
+                }
+              },
+              {
+                "type": "r-number",
+                "name": "age",
+                "props": {
+                  "label": "年龄",
+                  "width": 100
+                }
+              },
+              {
+                "type": "r-date",
+                "name": "joinDate",
+                "props": {
+                  "label": "入职日期",
+                  "width": 150
+                }
+              },
+              {
+                "type": "r-select",
+                "name": "department",
+                "props": {
+                  "label": "部门",
+                  "width": 150,
+                  "options": [
+                    {"label": "技术部", "value": "tech"},
+                    {"label": "市场部", "value": "market"},
+                    {"label": "人事部", "value": "hr"},
+                    {"label": "财务部", "value": "finance"}
+                  ]
+                }
+              },
+              {
+                "type": "r-switch",
+                "name": "active",
+                "props": {
+                  "label": "状态",
+                  "width": 100,
+                  "activeText": "启用",
+                  "inactiveText": "禁用"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "r-section",
+        "props": {
+          "title": "当前选中用户详情",
+          "description": "点击表格行查看用户详细信息"
+        },
+        "children": [
+          {
+            "type": "r-detail",
+            "dataKey": "Users@currentRow",
+            "children": [
+              {
+                "type": "r-text",
+                "name": "id",
+                "props": {
+                  "label": "用户ID",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-text",
+                "name": "name",
+                "props": {
+                  "label": "姓名",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-select",
+                "name": "gender",
+                "props": {
+                  "label": "性别",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-number",
+                "name": "age",
+                "props": {
+                  "label": "年龄",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-date",
+                "name": "joinDate",
+                "props": {
+                  "label": "入职日期",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-select",
+                "name": "department",
+                "props": {
+                  "label": "部门",
+                  "colSpan": 12
+                }
+              },
+              {
+                "type": "r-switch",
+                "name": "active",
+                "props": {
+                  "label": "状态",
+                  "colSpan": 24
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

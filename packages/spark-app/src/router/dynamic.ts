@@ -160,6 +160,27 @@ export class DynamicRouter {
     return this.normalizePath(`${this.tenantPathPrefix}${normalizedPath}`)
   }
 
+  private resolvePageId(node: NavNode, rawNodePath: string): string {
+    const explicitPageId = typeof node.pageId === 'string' ? node.pageId.trim() : ''
+    const hasCustomPageId = explicitPageId !== '' && explicitPageId !== node.id
+    if (hasCustomPageId) return explicitPageId
+
+    const normalizedPath = this.normalizePath(rawNodePath)
+    const slug = normalizedPath.replace(/^\/+/, '').replace(/\/+$/, '')
+    const isConfigLikeNode =
+      node.pageType !== 'vue-component' &&
+      node.nodeKind !== 'system-page' &&
+      node.nodeKind !== 'link'
+
+    if (isConfigLikeNode && slug !== '' && !slug.includes('/')) {
+      return slug
+    }
+
+    if (explicitPageId !== '') return explicitPageId
+
+    return node.id
+  }
+
   /** 注册所有路由（从导航树派生） */
   async registerRoutes(): Promise<void> {
     routerLogger.info('开始注册动态路由')
@@ -209,7 +230,7 @@ export class DynamicRouter {
         const relativePath = this.normalizePath(rawNodePath)
         const component = this.staticComponentMap.get(relativePath)
         const useStaticComponent = node.nodeKind === 'system-page' || component !== undefined
-        const pageId = node.pageId ?? node.id
+        const pageId = this.resolvePageId(node, rawNodePath)
         // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
         const routePath = skipTenantPrefix
           ? this.normalizePath(rawNodePath)
