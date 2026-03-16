@@ -1,52 +1,82 @@
 [
   {
-    "type": "h2",
-    "children": [
-      "增加一个价格列"
-    ]
-  },
-  {
-    "type": "el-divider"
-  },
-  {
-    "type": "el-table",
-    "name": "mainTable",
-    "dataKey": "test-order@rows",
-    "props": {
-      "border": true,
-      "stripe": true,
-      "highlightCurrentRow": true
+    "type": "div",
+    "class": "page-container",
+    "style": {
+      "padding": "20px"
     },
     "children": [
       {
-        "type": "el-table-column",
-        "props": {
-          "prop": "id",
-          "label": "ID",
-          "width": 80
-        }
+        "type": "h2",
+        "children": [
+          "测试订单"
+        ]
       },
       {
-        "type": "el-table-column",
-        "props": {
-          "prop": "name",
-          "label": "名称"
-        }
+        "type": "el-divider"
       },
       {
-        "type": "el-table-column",
+        "type": "r-table",
+        "dataKey": "test-order@rows",
         "props": {
-          "prop": "status",
-          "label": "状态",
-          "width": 120
-        }
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true
+        },
+        "children": [
+          {
+            "type": "r-text",
+            "name": "id",
+            "props": {
+              "label": "ID",
+              "width": 80
+            }
+          },
+          {
+            "type": "r-text",
+            "name": "name",
+            "props": {
+              "label": "名称"
+            }
+          },
+          {
+            "type": "r-select",
+            "name": "status",
+            "props": {
+              "label": "状态",
+              "width": 120,
+              "options": [
+                {
+                  "label": "待处理",
+                  "value": "pending"
+                },
+                {
+                  "label": "进行中",
+                  "value": "processing"
+                },
+                {
+                  "label": "已完成",
+                  "value": "completed"
+                },
+                {
+                  "label": "已取消",
+                  "value": "cancelled"
+                }
+              ]
+            }
+          },
+          {
+            "type": "r-number",
+            "name": "price",
+            "props": {
+              "label": "价格",
+              "width": 120,
+              "precision": 2,
+              "min": 0
+            }
+          }
+        ]
       }
-    ]
-  },
-  {
-    "type": "p",
-    "children": [
-      "[mock] action=iterate, prompt=\"增加一个价格列\""
     ]
   }
 ]

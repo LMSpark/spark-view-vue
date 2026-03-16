@@ -243,7 +243,9 @@ const recentLogs = computed(() => {
   if (!pid) return [] as LogSnapshot[]
   const loop = getAILoop()
   if (!loop) return [] as LogSnapshot[]
-  return collectRelevantLogs(loop, pid)
+  return collectRelevantLogs(loop, pid, {
+    includeGlobal: false,
+  })
 })
 
 const liveLogSummary = computed(() =>
@@ -376,19 +378,24 @@ function updateDiagnosticHint(summary: LogBatchSummary, timedOut: boolean): void
   diagnosticHint.value = `${qualityText(summary)} · 错误${summary.errorCount} 警告${summary.warnCount} 问题簇${summary.issues.length}${timeoutMark}`
 }
 
-async function waitForDiagnosticWindow(pid: string): Promise<{ logs: LogSnapshot[]; summary: LogBatchSummary; timedOut: boolean }> {
+async function waitForDiagnosticWindow(
+  pid: string,
+  options?: { includeGlobal?: boolean; sinceTimestamp?: number },
+): Promise<{ logs: LogSnapshot[]; summary: LogBatchSummary; timedOut: boolean }> {
   const loop = getAILoop()
   if (!loop) {
     throw new Error('AI Loop 未初始化，无法执行诊断')
   }
 
+  const includeGlobal = options?.includeGlobal ?? true
+  const sinceTimestamp = options?.sinceTimestamp ?? 0
   const startAt = Date.now()
   let lastChangeAt = startAt
   let lastCount = -1
 
   for (;;) {
     if (_abortRequested) {
-      const logs = collectRelevantLogs(loop, pid)
+      const logs = collectRelevantLogs(loop, pid, { includeGlobal, sinceTimestamp })
       const summary = summarizeLogBatch(logs, {
         maxIssues: MAX_ISSUES_PER_ROUND,
         maxSamples: MAX_LOG_SAMPLES_PER_ROUND,
@@ -397,7 +404,7 @@ async function waitForDiagnosticWindow(pid: string): Promise<{ logs: LogSnapshot
       return { logs, summary, timedOut: false }
     }
 
-    const logs = collectRelevantLogs(loop, pid)
+    const logs = collectRelevantLogs(loop, pid, { includeGlobal, sinceTimestamp })
     if (logs.length !== lastCount) {
       lastCount = logs.length
       lastChangeAt = Date.now()
@@ -547,13 +554,20 @@ function navigateTo(pid: string) {
   void router.push(tenantPath(`/${pid}`))
 }
 
-function collectRelevantLogs(loop: ReturnType<typeof getAILoop>, pid: string): LogSnapshot[] {
+function collectRelevantLogs(
+  loop: ReturnType<typeof getAILoop>,
+  pid: string,
+  options?: { includeGlobal?: boolean; sinceTimestamp?: number },
+): LogSnapshot[] {
   if (!loop) return []
-  const pageLogs = loop.collector.peek(pid)
-  const globalErrors = loop.collector.peek().filter(
-    l => l.pageId === undefined && (l.level === 'error' || l.level === 'warn')
-  )
-  return [...pageLogs, ...globalErrors]
+  const includeGlobal = options?.includeGlobal ?? true
+  const sinceTimestamp = options?.sinceTimestamp ?? 0
+  return loop.collector.peek().filter(log => {
+    if (log.timestamp < sinceTimestamp) return false
+    if (log.pageId === pid) return true
+    if (!includeGlobal) return false
+    return log.pageId === undefined && (log.level === 'error' || log.level === 'warn')
+  })
 }
 
 function detectAiFailure(response: AIResponse): string | null {
@@ -646,6 +660,7 @@ async function handleSend() {
     await router.push(tenantPath(`/${pid}`))
     // 关键：autoIterating=true 会抑制 setupHotReload；若是同路由 push，页面不会自动重建
     // 这里主动触发一次重建，确保后续日志采集针对“新生成代码”而不是旧页面状态
+    let diagnosticSince = Date.now()
     triggerPageRefresh()
     await nextTick()
     let iterationFailed = false
@@ -663,7 +678,10 @@ async function handleSend() {
         })
         scrollToBottom()
 
-        const stable = await waitForDiagnosticWindow(pid)
+        const stable = await waitForDiagnosticWindow(pid, {
+          includeGlobal: true,
+          sinceTimestamp: diagnosticSince,
+        })
         if (_abortRequested) break
 
         if (!hasBlockingIssues(stable.summary)) {
@@ -735,6 +753,7 @@ async function handleSend() {
 
         // 清除缓存 → key 驱动页面组件重建（路由不变，AI 面板不受影响）
         clearPageCache(pid)
+        diagnosticSince = Date.now()
         triggerPageRefresh()
         await nextTick()
       }
@@ -774,16 +793,15 @@ async function handleDebug() {
     return
   }
 
-  const logs = loop.collector.peek(pid)
-  const allLogs = loop.collector.peek()
+  const relevantLogs = collectRelevantLogs(loop, pid, {
+    includeGlobal: true,
+  })
 
-  // 合并当前 pageId 的日志 + 无 pageId 的全局错误
-  const relevantLogs = [
-    ...logs,
-    ...allLogs.filter(l => l.pageId === undefined && (l.level === 'error' || l.level === 'warn')),
-  ]
+  const debugLogs = relevantLogs.length > 0
+    ? relevantLogs
+    : collectRelevantLogs(loop, pid, { includeGlobal: true })
 
-  if (relevantLogs.length === 0) {
+  if (debugLogs.length === 0) {
     messages.value.push({
       role: 'assistant',
       text: '🔍 当前页面暂无收集到的错误日志。请先访问页面触发错误后再调试。',
@@ -792,7 +810,7 @@ async function handleDebug() {
     return
   }
 
-  const initialSummary = summarizeLogBatch(relevantLogs, {
+  const initialSummary = summarizeLogBatch(debugLogs, {
     maxIssues: MAX_ISSUES_PER_ROUND,
     maxSamples: MAX_LOG_SAMPLES_PER_ROUND,
   })
@@ -837,6 +855,7 @@ async function handleDebug() {
 
     // 清缓存 → key 驱动页面组件重建
     clearPageCache(pid)
+    let diagnosticSince = Date.now()
     triggerPageRefresh()
     await nextTick()
 
@@ -851,7 +870,10 @@ async function handleDebug() {
       })
       scrollToBottom()
 
-      const stable = await waitForDiagnosticWindow(pid)
+      const stable = await waitForDiagnosticWindow(pid, {
+        includeGlobal: true,
+        sinceTimestamp: diagnosticSince,
+      })
       if (_abortRequested) break
 
       if (!hasBlockingIssues(stable.summary)) {
@@ -907,6 +929,7 @@ async function handleDebug() {
       scrollToBottom()
 
       clearPageCache(pid)
+      diagnosticSince = Date.now()
       triggerPageRefresh()
       await nextTick()
     }
@@ -937,7 +960,9 @@ watch(() => route.query['aiDebug'], async (val) => {
     const pid = pageId.value.trim()
     if (pid) {
       try {
-        await waitForDiagnosticWindow(pid)
+        await waitForDiagnosticWindow(pid, {
+          includeGlobal: true,
+        })
       } catch {
         // ignore pre-debug warmup failure, handleDebug 会给出明确报错
       }
