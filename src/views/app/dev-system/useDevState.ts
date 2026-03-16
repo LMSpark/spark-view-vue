@@ -29,7 +29,6 @@ export interface DevEditForm {
   dividerAfter: boolean
   description: string
   path: string
-  pageType: string
   redirect: string
   externalUrl: string
   action: string
@@ -71,7 +70,7 @@ export function useDevState() {
     id: '', title: '', icon: '', nodeKind: 'page', type: '',
     dividerAfter: false,
     description: '',
-    path: '', pageType: '', redirect: '', externalUrl: '',
+    path: '', redirect: '', externalUrl: '',
     action: '', parentPageId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
@@ -117,8 +116,8 @@ export function useDevState() {
     return path ? path.replace(/^\/+/, '').trim() : ''
   }
 
-  function isConfigPageType(pageType: string | undefined | null): boolean {
-    return pageType !== 'vue-component'
+  function isConfigNodeKind(nodeKind: NavNodeKind): boolean {
+    return nodeKind === 'page' || nodeKind === 'sub-page'
   }
 
   function findPageMeta(pageId: string): Record<string, unknown> | undefined {
@@ -179,7 +178,6 @@ export function useDevState() {
       delete cloned.redirect
       delete cloned.externalUrl
       delete cloned.action
-      cloned.pageType = 'config'
     }
     if (Array.isArray(cloned.children)) {
       cloned.children = cloned.children.map(applyNodeKindToNode)
@@ -194,7 +192,6 @@ export function useDevState() {
       editForm.type = 'group'
       editForm.hidden = false
       editForm.path = ''
-      editForm.pageType = ''
       editForm.action = ''
       editForm.redirect = ''
       editForm.externalUrl = ''
@@ -206,7 +203,6 @@ export function useDevState() {
       editForm.type = 'group'
       editForm.hidden = false
       editForm.path = ''
-      editForm.pageType = ''
       editForm.action = ''
       editForm.externalUrl = ''
       editForm.parentPageId = ''
@@ -216,7 +212,6 @@ export function useDevState() {
     if (kind === 'system-page') {
       editForm.type = 'item'
       editForm.hidden = false
-      if (!editForm.pageType) editForm.pageType = 'vue-component'
       editForm.parentPageId = ''
       return
     }
@@ -224,7 +219,6 @@ export function useDevState() {
     if (kind === 'page') {
       editForm.type = 'item'
       editForm.hidden = false
-      editForm.pageType = 'config'
       editForm.action = ''
       editForm.parentPageId = ''
       return
@@ -232,7 +226,6 @@ export function useDevState() {
 
     editForm.type = 'item'
     editForm.hidden = true
-    editForm.pageType = 'config'
     editForm.path = ''
     editForm.redirect = ''
     editForm.externalUrl = ''
@@ -347,7 +340,6 @@ export function useDevState() {
     editForm.dividerAfter = node.dividerAfter ?? false
     editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
-    editForm.pageType = node.pageType ?? ''
     editForm.redirect = node.redirect ?? ''
     editForm.externalUrl = node.externalUrl ?? ''
     editForm.action = node.action ?? ''
@@ -412,7 +404,6 @@ export function useDevState() {
       editForm.redirect = ''
       editForm.externalUrl = ''
       editForm.action = ''
-      editForm.pageType = 'config'
     }
 
     if (editForm.icon) patch['icon'] = editForm.icon
@@ -420,7 +411,6 @@ export function useDevState() {
     if (editForm.dividerAfter) patch['dividerAfter'] = true
     if (editForm.description) patch['description'] = editForm.description
     if (editForm.path) patch['path'] = editForm.path
-    if (editForm.pageType) patch['pageType'] = editForm.pageType
     if (editForm.redirect) patch['redirect'] = editForm.redirect
     if (editForm.externalUrl) patch['externalUrl'] = editForm.externalUrl
     if (editForm.action) patch['action'] = editForm.action
@@ -445,7 +435,7 @@ export function useDevState() {
 
     // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
-      'icon', 'description', 'path', 'pageType', 'redirect', 'externalUrl', 'action',
+      'icon', 'description', 'path', 'redirect', 'externalUrl', 'action',
       'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
       'dividerAfter', 'nodeKind',
     ]
@@ -558,7 +548,7 @@ export function useDevState() {
     selectedNode.value = node
     loadNodeToForm(node)
     const pageId = normalizePageIdFromPath(node.path)
-    if (pageId && isConfigPageType(node.pageType ?? editForm.pageType)) {
+    if (pageId && isConfigNodeKind(inferNodeKind(node))) {
       void loadPageFiles(pageId)
     } else {
       clearFiles()
@@ -568,21 +558,7 @@ export function useDevState() {
   function handlePathChange(val: string) {
     markNavDirty()
     const pageId = normalizePageIdFromPath(val)
-    if (pageId && isConfigPageType(editForm.pageType)) {
-      void loadPageFiles(pageId)
-    } else {
-      clearFiles()
-    }
-  }
-
-  function handlePageTypeChange(pageType: string) {
-    markNavDirty()
-    const pageId = normalizePageIdFromPath(editForm.path)
-    if (!pageId) {
-      clearFiles()
-      return
-    }
-    if (isConfigPageType(pageType)) {
+    if (pageId && isConfigNodeKind(editForm.nodeKind)) {
       void loadPageFiles(pageId)
     } else {
       clearFiles()
@@ -600,7 +576,7 @@ export function useDevState() {
     applyNodeKindPreset(kind)
     markNavDirty()
     const pageId = normalizePageIdFromPath(editForm.path)
-    if (pageId && isConfigPageType(editForm.pageType)) {
+    if (pageId && isConfigNodeKind(editForm.nodeKind)) {
       void loadPageFiles(pageId)
     } else {
       clearFiles()
@@ -818,7 +794,6 @@ export function useDevState() {
     saveAll,
     selectNode,
     handlePathChange,
-    handlePageTypeChange,
     handleNodeKindChange,
     addRootNode,
     hasReservedRootGroup,
