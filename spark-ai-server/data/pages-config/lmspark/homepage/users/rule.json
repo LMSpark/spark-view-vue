@@ -10,39 +10,6 @@
       },
       {
         "type": "div",
-        "class": "toolbar-section",
-        "style": { "marginTop": "20px", "marginBottom": "16px", "display": "flex", "justifyContent": "space-between", "alignItems": "center" },
-        "children": [
-          {
-            "type": "div",
-            "class": "toolbar-left",
-            "children": [
-              {
-                "type": "RenderToolbarButtons"
-              }
-            ]
-          },
-          {
-            "type": "div",
-            "class": "toolbar-right",
-            "children": [
-              {
-                "type": "el-input",
-                "props": {
-                  "placeholder": "搜索用户",
-                  "clearable": true,
-                  "style": { "width": "200px" }
-                },
-                "on": {
-                  "input": "handleSearchInput"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "div",
         "class": "content-section",
         "style": { "marginTop": "20px" },
         "children": [
@@ -73,11 +40,7 @@
               },
               {
                 "type": "el-table-column",
-                "props": {
-                  "prop": "department",
-                  "label": "部门",
-                  "formatter": "formatDepartment"
-                }
+                "props": { "prop": "department", "label": "部门" }
               },
               {
                 "type": "el-table-column",
@@ -89,100 +52,7 @@
               },
               {
                 "type": "el-table-column",
-                "props": {
-                  "label": "操作",
-                  "width": "250",
-                  "fixed": "right"
-                },
-                "children": [
-                  {
-                    "type": "RenderRowActionsWithStatus"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "r-dialog",
-        "props": {
-          "title": "编辑用户",
-          "width": "600px",
-          "visible": "_pageState.editDialogVisible",
-          "onClose": "handleCloseEditDialog"
-        },
-        "children": [
-          {
-            "type": "r-form",
-            "dataKey": "users@currentRow",
-            "props": {
-              "labelWidth": "100px"
-            },
-            "children": [
-              {
-                "type": "r-text",
-                "name": "name",
-                "props": {
-                  "label": "用户名",
-                  "required": true,
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-select",
-                "name": "gender",
-                "props": {
-                  "label": "性别",
-                  "options": [
-                    { "label": "男", "value": "male" },
-                    { "label": "女", "value": "female" }
-                  ],
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-text",
-                "name": "department",
-                "props": {
-                  "label": "部门",
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-number",
-                "name": "age",
-                "props": {
-                  "label": "年龄",
-                  "min": 0,
-                  "max": 150,
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-select",
-                "name": "role",
-                "props": {
-                  "label": "角色",
-                  "options": [
-                    { "label": "管理员", "value": "admin" },
-                    { "label": "普通用户", "value": "user" },
-                    { "label": "访客", "value": "guest" }
-                  ],
-                  "colSpan": 12
-                }
-              },
-              {
-                "type": "r-select",
-                "name": "status",
-                "props": {
-                  "label": "状态",
-                  "options": [
-                    { "label": "启用", "value": "active" },
-                    { "label": "禁用", "value": "inactive" }
-                  ],
-                  "colSpan": 12
-                }
+                "props": { "prop": "status", "label": "状态" }
               }
             ]
           }
