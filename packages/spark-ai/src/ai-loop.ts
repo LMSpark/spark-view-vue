@@ -323,6 +323,13 @@ async function consumeSSEStream(
   const decoder = new TextDecoder()
   let buffer = ''
   let finalResult: AIResponse | null = null
+  const streamState: {
+    error: string | null
+    sawDoneEvent: boolean
+  } = {
+    error: null,
+    sawDoneEvent: false,
+  }
   // SSE 事件累积（event: 和 data: 跨行配对）
   let currentEvent = 'message'
   let currentData = ''
@@ -350,8 +357,20 @@ async function consumeSSEStream(
           break
         case 'result':
           return parsed as unknown as AIResponse
+        case 'done':
+          streamState.sawDoneEvent = true
+          break
         case 'error':
-          callbacks?.onError?.(parsed['error'] as string)
+          if (typeof parsed['error'] === 'string' && parsed['error'].trim() !== '') {
+            streamState.error = parsed['error']
+            callbacks?.onError?.(parsed['error'])
+          }
+          break
+        case 'message':
+        default:
+          if (parsed['files'] !== undefined && typeof parsed['files'] === 'object' && parsed['files'] !== null) {
+            return parsed as unknown as AIResponse
+          }
           break
       }
     } catch {
@@ -399,10 +418,19 @@ async function consumeSSEStream(
     reader.releaseLock()
   }
 
-  if (finalResult === null) {
-    throw new Error('SSE 流结束但未收到 result 事件')
+  if (finalResult !== null) {
+    return finalResult
   }
-  return finalResult
+
+  if (streamState.error !== null) {
+    throw new Error(streamState.error)
+  }
+
+  if (streamState.sawDoneEvent) {
+    throw new Error('SSE 流已结束（收到 done），但未返回 result 结果')
+  }
+
+  throw new Error('SSE 流结束但未收到 result 事件')
 }
 
 /** _callAI 内部使用的已解析配置 */
@@ -553,7 +581,23 @@ export class AIPageLoop {
       })
 
       if (!response.ok) {
-        throw new Error(`SSE 请求失败: ${response.status} ${response.statusText}`)
+        let responseText = ''
+        try {
+          responseText = await response.text()
+        } catch {
+          responseText = ''
+        }
+
+        if (response.status >= 500) {
+          callbacks?.onError?.(`SSE ${response.status}，自动回退到非流式请求`)
+          return this._callAI(pageId, payload)
+        }
+
+        const detail = responseText.trim()
+        const suffix = detail.length > 0
+          ? `, body=${detail.slice(0, 300)}`
+          : ''
+        throw new Error(`SSE 请求失败: ${response.status} ${response.statusText}${suffix}`)
       }
 
       const aiResp = await consumeSSEStream(response, callbacks)

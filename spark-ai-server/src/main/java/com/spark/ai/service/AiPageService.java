@@ -41,9 +41,9 @@ import java.util.regex.Pattern;
 public class AiPageService {
 
     /** 每阶段最大重试次数 */
-    private static final int MAX_RETRIES = 3;
+    private static final int MAX_RETRIES = 1;
     /** 自动迭代最大轮次（含首次生成） */
-    private static final int MAX_ITERATIONS = 3;
+    private static final int MAX_ITERATIONS = 1;
     /** Phase-1 必须包含的文件（UI 层：结构 + 样式） */
     private static final List<String> PHASE1_REQUIRED = List.of("rule.json");
     /** Phase-2 必须包含的文件（数据 + 行为层） */
@@ -215,10 +215,11 @@ public class AiPageService {
                 // ── Phase 1 ──
                 sendPhaseEvent(emitter, 1, "start", "生成 UI 层（rule.json + style.css）...");
                 String phase1Msg = buildPhase1Message(currentReq);
+                List<String> phase1Failures = new ArrayList<>();
                 PhaseResult phase1 = callPhaseStream(conversation, phase1Msg, PHASE1_REQUIRED,
-                                                      "R" + round + "-Phase1", emitter);
+                                                      "R" + round + "-Phase1", emitter, phase1Failures);
                 if (phase1 == null) {
-                    sendErrorEvent(emitter, "第" + round + "轮 UI 层生成失败，请重试");
+                    sendErrorEvent(emitter, "第" + round + "轮 UI 层生成失败: " + summarizePhaseFailures(phase1Failures));
                     emitter.complete();
                     return;
                 }
@@ -227,8 +228,9 @@ public class AiPageService {
                 // ── Phase 2 ──
                 sendPhaseEvent(emitter, 2, "start", "生成数据/行为层（pagedata.json + script.js）...");
                 String phase2Msg = buildPhase2Message(currentReq, phase1.files());
+                List<String> phase2Failures = new ArrayList<>();
                 PhaseResult phase2 = callPhaseStream(conversation, phase2Msg, PHASE2_REQUIRED,
-                                                      "R" + round + "-Phase2", emitter);
+                                                      "R" + round + "-Phase2", emitter, phase2Failures);
                 sendPhaseEvent(emitter, 2, "done", "数据/行为层生成完成");
 
                 // ── Merge ──
@@ -271,10 +273,14 @@ public class AiPageService {
      * 流式版阶段调用：使用 callLlmStream 替代 callLlm。
      */
     private PhaseResult callPhaseStream(List<Map<String, String>> conversation, String userMessage,
-                                         List<String> requiredFiles, String phaseName, SseEmitter emitter) {
+                                         List<String> requiredFiles, String phaseName, SseEmitter emitter,
+                                         List<String> failuresOut) {
         conversation.add(Map.of("role", "user", "content", userMessage));
 
         List<String> failures = new ArrayList<>();
+        if (failuresOut != null) {
+            failuresOut.clear();
+        }
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
                 if (attempt > 1) {
@@ -312,8 +318,22 @@ public class AiPageService {
         }
 
         log.error("[SPARK-AI][STREAM] {} 全部 {} 次尝试均失败: {}", phaseName, MAX_RETRIES, String.join("; ", failures));
+        if (failuresOut != null) {
+            failuresOut.addAll(failures);
+        }
         conversation.remove(conversation.size() - 1);
         return null;
+    }
+
+    private String summarizePhaseFailures(List<String> failures) {
+        if (failures == null || failures.isEmpty()) {
+            return "未知错误";
+        }
+        String joined = String.join("; ", failures);
+        if (joined.length() <= 600) {
+            return joined;
+        }
+        return joined.substring(0, 600) + "...";
     }
 
     // ─────────────────────────────────────────────────────────────────────────

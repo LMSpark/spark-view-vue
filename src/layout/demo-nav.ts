@@ -95,7 +95,7 @@ export const demoNavRoot: NavRoot = {
       redirect: '/renderer-demo',
       children: [
         { id: 'renderer-demo', type: 'item', nodeKind: 'page', title: 'Renderer 架构', icon: 'Brush', path: '/renderer-demo' },
-        { id: 'section-grid', type: 'item', nodeKind: 'page', title: 'Section 栅格', icon: 'Grid', path: '/section-grid-demo' },
+        { id: 'section-grid', type: 'item', nodeKind: 'page', title: 'Section 栅格', icon: 'Grid', path: '/section-grid-demo', pageId: 'section-grid-demo' },
         { id: 'el-table-demo', type: 'item', nodeKind: 'page', title: 'el-table 操作列', icon: 'List', path: '/el-table-demo' },
         { id: 'vxe-demo', type: 'item', nodeKind: 'page', title: 'VXE 表格', icon: 'TrendCharts', path: '/vxe-demo' },
         { id: 'formcreate-api', type: 'item', nodeKind: 'page', title: 'Form-Create API', icon: 'SetUp', path: '/formcreate-api' },

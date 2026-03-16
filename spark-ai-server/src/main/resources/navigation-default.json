@@ -255,7 +255,8 @@
                     "type": "item",
                     "title": "Section 栅格",
                     "icon": "Grid",
-                    "path": "/section-grid-demo"
+                    "path": "/section-grid-demo",
+                    "pageId": "section-grid-demo"
                 },
                 {
                     "id": "el-table-demo",
