@@ -8,20 +8,36 @@
         size="small"
         style="flex: 1"
       />
-      <el-button size="small" type="primary" @click="state.addRootNode()" title="新增模块">➕</el-button>
+      <el-button size="small" type="primary" @click="state.addRootNode()" title="新增模块">
+        <NavIcon name="Plus" :size="14" />
+      </el-button>
       <el-dropdown size="small" trigger="click">
-        <el-button size="small">⋯</el-button>
+        <el-button size="small">
+          <NavIcon name="MoreFilled" :size="14" />
+        </el-button>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item @click="expandAll">展开全部</el-dropdown-item>
             <el-dropdown-item @click="collapseAll">折叠全部</el-dropdown-item>
-            <el-dropdown-item divided @click="handleReset">🔄 重置演示</el-dropdown-item>
+            <el-dropdown-item
+              :disabled="state.hasReservedRootGroup('__toolbar__')"
+              @click="state.restoreReservedRootGroup('__toolbar__')"
+            >
+              恢复工具栏组
+            </el-dropdown-item>
+            <el-dropdown-item
+              :disabled="state.hasReservedRootGroup('__user-menu__')"
+              @click="state.restoreReservedRootGroup('__user-menu__')"
+            >
+              恢复用户菜单组
+            </el-dropdown-item>
+            <el-dropdown-item divided @click="handleReset">重置演示</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
     </div>
     <el-empty v-if="state.navEmpty.value" description="后端导航数据为空">
-      <el-button type="primary" @click="state.initSeedNavigation()">🚀 初始化种子导航数据</el-button>
+      <el-button type="primary" @click="state.initSeedNavigation()">初始化种子导航数据</el-button>
     </el-empty>
     <el-tree
       v-else
@@ -49,8 +65,12 @@
             context
           </el-tag>
           <span class="node-actions">
-            <el-button size="small" link type="primary" @click.stop="state.addChildNode(data)">➕</el-button>
-            <el-button size="small" link type="danger" @click.stop="handleRemove(node, data)">🗑️</el-button>
+            <el-button size="small" link type="primary" @click.stop="state.addChildNode(data)">
+              <NavIcon name="Plus" :size="12" />
+            </el-button>
+            <el-button size="small" link type="danger" @click.stop="handleRemove(node, data)">
+              <NavIcon name="Delete" :size="12" />
+            </el-button>
           </span>
         </span>
       </template>
@@ -131,25 +151,40 @@ defineExpose({ treeRef })
 .dev-tree__toolbar {
   display: flex;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 10px;
   border-bottom: 1px solid var(--el-border-color-lighter);
   flex-shrink: 0;
+  background: var(--el-fill-color-extra-light);
 }
 
 .dev-tree :deep(.el-tree) {
   flex: 1;
   overflow: auto;
   background: transparent;
-  padding: 4px;
+  padding: 8px;
+}
+
+.dev-tree :deep(.el-tree-node__content) {
+  border-radius: 8px;
+  margin-bottom: 2px;
+}
+
+.dev-tree :deep(.el-tree-node__content:hover) {
+  background: var(--el-fill-color-light);
 }
 
 .tree-node {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
   font-size: 13px;
   overflow: hidden;
+}
+.node-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--el-color-primary);
 }
 .node-label { flex-shrink: 0; font-weight: 500; }
 .node-path {
@@ -167,5 +202,11 @@ defineExpose({ treeRef })
   opacity: 0;
   transition: opacity .15s;
 }
+
+:deep(.node-actions .el-button) {
+  margin: 0;
+  min-width: 20px;
+}
+
 :deep(.el-tree-node__content:hover) .node-actions { opacity: 1; }
 </style>

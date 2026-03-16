@@ -1,31 +1,44 @@
 <template>
   <div class="dev-node-props">
-    <el-form :model="state.editForm" label-width="100px" size="default">
+    <el-form :model="state.editForm" label-width="100px" size="default" class="node-form">
       <!-- 基础信息 -->
       <el-divider content-position="left">基础信息</el-divider>
-      <el-form-item label="ID">
+      <el-form-item label="ID" class="fi fi--wide">
         <el-input v-model="state.editForm.id" placeholder="唯一标识" @change="state.markNavDirty" />
       </el-form-item>
-      <el-form-item label="标题">
+      <el-form-item label="标题" class="fi fi--wide">
         <el-input v-model="state.editForm.title" placeholder="显示名称" @change="state.markNavDirty" />
       </el-form-item>
-      <el-form-item label="图标">
-        <IconPicker v-model="state.editForm.icon" placeholder="选择图标" @update:model-value="state.markNavDirty" />
-      </el-form-item>
-      <el-form-item label="类型">
-        <el-select v-model="state.editForm.type" placeholder="节点类型" @change="state.markNavDirty">
-          <el-option value="item" label="item（普通节点）" />
-          <el-option value="group" label="group（分组标题）" />
-          <el-option value="divider" label="divider（分隔线）" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="描述">
-        <el-input v-model="state.editForm.description" placeholder="节点描述（AI 语义 + tooltip）" @change="state.markNavDirty" />
+      <div class="fi-inline-row">
+        <el-form-item label="图标" class="fi fi--narrow fi-inline-row__icon">
+          <IconPicker
+            v-model="state.editForm.icon"
+            class="icon-picker-compact"
+            placeholder="选择图标"
+            width="220"
+            @update:model-value="state.markNavDirty"
+          />
+        </el-form-item>
+        <el-form-item label="类型" class="fi fi--medium fi-inline-row__type">
+          <el-radio-group v-model="state.editForm.type" class="type-radio-group" @change="state.markNavDirty">
+            <el-radio-button value="item">item（普通节点）</el-radio-button>
+            <el-radio-button value="group">group（分组标题）</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+      </div>
+      <el-form-item label="描述" class="fi fi--wide">
+        <el-input
+          v-model="state.editForm.description"
+          type="textarea"
+          :autosize="{ minRows: 2, maxRows: 5 }"
+          placeholder="节点描述（AI 语义 + tooltip）"
+          @change="state.markNavDirty"
+        />
       </el-form-item>
 
       <!-- 路由 & 关联页面 -->
       <el-divider content-position="left">路由 & 关联页面</el-divider>
-      <el-form-item label="路由路径">
+      <el-form-item label="路由路径" class="fi fi--wide">
         <el-select
           v-if="state.editForm.pageType === 'vue-component'"
           v-model="state.editForm.path"
@@ -38,30 +51,44 @@
             v-for="opt in vuePageOptions"
             :key="opt.path"
             :value="opt.path"
-            :label="`${opt.icon ?? ''} ${opt.title}（${opt.path}）`"
+            :label="`${opt.displayTitle}（${opt.path}）${opt.extra ? ` · ${opt.extra}` : ''}`"
           />
         </el-select>
-        <el-input v-else v-model="state.editForm.path" placeholder="/xxx" @change="state.handlePathChange" />
+        <el-select
+          v-else
+          v-model="state.editForm.path"
+          filterable
+          allow-create
+          placeholder="选择或输入后端配置页路径"
+          @change="state.handlePathChange"
+        >
+          <el-option
+            v-for="opt in configPageOptions"
+            :key="opt.path"
+            :value="opt.path"
+            :label="`${opt.title}（${opt.path}）`"
+          />
+        </el-select>
       </el-form-item>
       <!-- 路径有效性提示 -->
-      <el-form-item v-if="pathStatus" label="">
+      <el-form-item v-if="pathStatus" label="" label-width="0" class="path-status-item">
         <el-tag :type="pathStatus.type" size="small" disable-transitions>
-          {{ pathStatus.icon }} {{ pathStatus.text }}
+          <NavIcon :name="pathStatus.icon" :size="12" /> {{ pathStatus.text }}
         </el-tag>
       </el-form-item>
-      <el-form-item label="页面类型">
-        <el-select v-model="state.editForm.pageType" placeholder="默认 config" clearable @change="state.markNavDirty">
+      <el-form-item label="页面类型" class="fi fi--medium">
+        <el-select v-model="state.editForm.pageType" placeholder="默认 config" clearable @change="state.handlePageTypeChange">
           <el-option value="config" label="config（配置驱动）" />
           <el-option value="vue-component" label="vue-component（Vue 组件）" />
         </el-select>
       </el-form-item>
-      <el-form-item label="重定向">
+      <el-form-item label="重定向" class="fi fi--wide">
         <el-input v-model="state.editForm.redirect" placeholder="组节点默认跳转路径" @change="state.markNavDirty" />
       </el-form-item>
-      <el-form-item label="外部链接">
+      <el-form-item label="外部链接" class="fi fi--wide">
         <el-input v-model="state.editForm.externalUrl" placeholder="https://..." @change="state.markNavDirty" />
       </el-form-item>
-      <el-form-item label="动作">
+      <el-form-item label="动作" class="fi fi--medium">
         <el-select v-model="state.editForm.action" placeholder="工具栏动作（toolbar 节点用）" clearable @change="state.markNavDirty">
           <el-option value="ai-design" label="AI 协同设计" />
           <el-option value="ai-chat" label="AI 对话" />
@@ -74,53 +101,64 @@
 
       <!-- 布局配置 -->
       <el-divider content-position="left">布局配置</el-divider>
-      <el-form-item label="子项布局">
+      <el-form-item label="子项布局" class="fi fi--wide">
         <el-radio-group v-model="state.editForm.childPlacement" @change="state.markNavDirty">
           <el-radio-button value="">默认</el-radio-button>
           <el-radio-button value="header">header</el-radio-button>
           <el-radio-button value="sidebar">sidebar</el-radio-button>
+          <el-radio-button value="toolbar">toolbar</el-radio-button>
+          <el-radio-button value="user-menu">user-menu</el-radio-button>
           <el-radio-button value="parent">parent</el-radio-button>
           <el-radio-button value="flat">flat</el-radio-button>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="排序号">
+      <el-form-item label="后置分割线" class="switch-item fi fi--medium">
+        <el-switch v-model="state.editForm.dividerAfter" @change="state.markNavDirty" />
+        <span class="switch-item__hint">在当前节点后显示分割线</span>
+      </el-form-item>
+      <el-form-item label="排序号" class="fi fi--narrow">
         <el-input-number v-model="state.editForm.order" :min="0" :max="999" @change="state.markNavDirty" />
       </el-form-item>
 
       <!-- 状态控制 -->
       <el-divider content-position="left">状态控制</el-divider>
-      <el-form-item label="隐藏">
+      <el-form-item label="隐藏" class="switch-item">
         <el-switch v-model="state.editForm.hidden" @change="state.markNavDirty" />
+        <span class="switch-item__hint">在导航中不展示该节点</span>
       </el-form-item>
-      <el-form-item label="禁用">
+      <el-form-item label="禁用" class="switch-item">
         <el-switch v-model="state.editForm.disabled" @change="state.markNavDirty" />
+        <span class="switch-item__hint">保留显示但不可点击</span>
       </el-form-item>
 
       <!-- 模块上下文 -->
       <el-divider content-position="left">模块上下文（Context）</el-divider>
-      <el-form-item label="启用上下文">
+      <el-form-item label="启用上下文" class="switch-item">
         <el-switch v-model="state.hasContext.value" @change="state.toggleContext" />
+        <span class="switch-item__hint">启用后可配置下拉上下文选项</span>
       </el-form-item>
       <template v-if="state.hasContext.value">
-        <el-form-item label="选项列表">
+        <el-form-item label="选项列表" class="fi fi--wide">
           <div class="context-items">
             <div v-for="(item, idx) in state.contextItems.value" :key="idx" class="context-item-row">
-              <el-input v-model="item.id" placeholder="ID" style="width: 120px" @change="state.markNavDirty" />
-              <el-input v-model="item.title" placeholder="显示名称" style="flex: 1" @change="state.markNavDirty" />
-              <el-button size="small" link type="danger" @click="state.removeContextItem(idx)">✕</el-button>
+              <el-input v-model="item.id" class="context-item-row__id" placeholder="ID" @change="state.markNavDirty" />
+              <el-input v-model="item.title" class="context-item-row__title" placeholder="显示名称" @change="state.markNavDirty" />
+              <el-button size="small" link type="danger" @click="state.removeContextItem(idx)">
+                <NavIcon name="CloseBold" :size="12" />
+              </el-button>
             </div>
             <el-button size="small" type="primary" link @click="state.addContextItem">
-              ➕ 新增选项
+              <NavIcon name="Plus" :size="12" /> 新增选项
             </el-button>
           </div>
         </el-form-item>
-        <el-form-item label="占位文字">
+        <el-form-item label="占位文字" class="fi fi--medium">
           <el-input v-model="state.contextConfig.placeholder" placeholder="请选择" @change="state.markNavDirty" />
         </el-form-item>
-        <el-form-item label="默认值">
+        <el-form-item label="默认值" class="fi fi--medium">
           <el-input v-model="state.contextConfig.defaultValue" placeholder="默认选中的 ID" @change="state.markNavDirty" />
         </el-form-item>
-        <el-form-item label="URL 参数名">
+        <el-form-item label="URL 参数名" class="fi fi--medium">
           <el-input v-model="state.contextConfig.paramName" placeholder="同步到 route.query 的键名" @change="state.markNavDirty" />
         </el-form-item>
       </template>
@@ -130,14 +168,65 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { NavNode } from '@spark-view/spark-app'
 import type { DevState } from './useDevState'
 import IconPicker from '@/components/IconPicker.vue'
+import NavIcon from '@/components/NavIcon.vue'
 import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
 
 const props = defineProps<{ state: DevState }>()
 defineEmits<{ createPage: [] }>()
 
-const vuePageOptions = getVuePageOptions()
+interface VuePathOption {
+  path: string
+  title: string
+  displayTitle: string
+  extra: string
+}
+
+function collectPathTitles(nodes: NavNode[], map: Map<string, string>) {
+  for (const node of nodes) {
+    const path = node.path ?? ''
+    const title = node.title ?? ''
+    if (path && title && !map.has(path)) {
+      map.set(path, title)
+    }
+    if (Array.isArray(node.children)) {
+      collectPathTitles(node.children, map)
+    }
+  }
+}
+
+const navPathTitleMap = computed(() => {
+  const map = new Map<string, string>()
+  collectPathTitles(props.state.treeData.value, map)
+  return map
+})
+
+const vuePageOptions = computed<VuePathOption[]>(() => {
+  return getVuePageOptions().map((opt) => {
+    const navTitle = navPathTitleMap.value.get(opt.path)
+    const displayTitle = navTitle ?? opt.title
+    const extra = navTitle && navTitle !== opt.title ? `组件: ${opt.title}` : ''
+    return {
+      path: opt.path,
+      title: opt.title,
+      displayTitle,
+      extra,
+    }
+  })
+})
+
+const configPageOptions = computed(() => {
+  return props.state.pageList.value
+    .filter((p) => String(p['pageType'] ?? 'config') !== 'vue-component')
+    .map((p) => {
+      const pageId = String(p['pageId'] ?? '')
+      const path = String(p['path'] ?? `/${pageId}`)
+      const title = String(p['title'] ?? pageId)
+      return { path, title }
+    })
+})
 
 /** 路径有效性状态：检查当前路径是否匹配 vue-component 映射或配置页面 */
 const pathStatus = computed(() => {
@@ -149,9 +238,17 @@ const pathStatus = computed(() => {
   if (pageType === 'vue-component') {
     if (path in VUE_PAGE_MAP) {
       const entry = VUE_PAGE_MAP[path]!
-      return { type: 'success' as const, icon: '✅', text: `匹配 Vue 组件：${entry.title}` }
+      const nodeTitle = props.state.editForm.title.trim()
+      if (nodeTitle && nodeTitle !== entry.title) {
+        return {
+          type: 'info' as const,
+          icon: 'InfoFilled',
+          text: `组件页为「${entry.title}」，当前导航标题为「${nodeTitle}」（允许不同）`,
+        }
+      }
+      return { type: 'success' as const, icon: 'SuccessFilled', text: `匹配 Vue 组件：${entry.title}` }
     }
-    return { type: 'warning' as const, icon: '⚠️', text: `路径 ${path} 未在 VUE_PAGE_MAP 中注册` }
+    return { type: 'warning' as const, icon: 'WarningFilled', text: `路径 ${path} 未在 VUE_PAGE_MAP 中注册` }
   }
 
   // config 页面：检查 pageList 中是否存在对应的 pageId
@@ -161,27 +258,197 @@ const pathStatus = computed(() => {
     (p: Record<string, unknown>) => String(p['pageId'] ?? '') === pageId,
   )
   if (exists) {
-    return { type: 'success' as const, icon: '✅', text: `配置页面已存在：${pageId}` }
+    return { type: 'success' as const, icon: 'SuccessFilled', text: `配置页面已存在：${pageId}` }
   }
-  return { type: 'danger' as const, icon: '❌', text: `配置页面不存在：${pageId}（需先创建）` }
+  return { type: 'danger' as const, icon: 'CircleCloseFilled', text: `配置页面不存在：${pageId}（需先创建）` }
 })
 </script>
 
 <style scoped>
 .dev-node-props {
-  padding: 8px 0;
+  padding: 12px 16px 20px;
   overflow: auto;
   height: 100%;
+  background: var(--el-bg-color);
 }
+
+.node-form {
+  max-width: 960px;
+  --fi-wide: 100%;
+  --fi-medium: 520px;
+  --fi-narrow: 240px;
+}
+
+.node-form :deep(.fi .el-form-item__content > *) {
+  width: 100%;
+}
+
+.node-form :deep(.fi--wide .el-form-item__content > *) {
+  max-width: var(--fi-wide);
+}
+
+.node-form :deep(.fi--medium .el-form-item__content > *) {
+  max-width: var(--fi-medium);
+}
+
+.node-form :deep(.fi--narrow .el-form-item__content > *) {
+  max-width: var(--fi-narrow);
+}
+
+.switch-item :deep(.el-form-item__content) {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.switch-item__hint {
+  color: var(--el-text-color-placeholder);
+  font-size: 12px;
+}
+
+.path-status-item {
+  margin-top: -4px;
+}
+
+.path-status-item :deep(.el-form-item__content) {
+  justify-content: flex-start;
+}
+
 .context-items {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 8px;
+  background: var(--el-fill-color-extra-light);
+}
+
+.context-item-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.context-item-row__id,
+.context-item-row__title {
+  width: 100%;
+}
+
+.icon-picker-compact {
+  width: 100%;
+}
+
+.fi-inline-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.fi-inline-row__icon {
+  flex: 0 0 var(--fi-narrow);
+}
+
+.fi-inline-row__type {
+  flex: 1;
+  min-width: 0;
+}
+
+.type-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.type-radio-group :deep(.el-radio-button) {
+  width: auto;
+}
+
+.type-radio-group :deep(.el-radio-button__inner) {
+  border-left: 1px solid var(--el-border-color) !important;
+  border-radius: 6px !important;
+  white-space: nowrap;
+}
+
+.dev-node-props :deep(.el-tag) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dev-node-props :deep(.el-form-item) {
+  margin-bottom: 14px;
+}
+
+.dev-node-props :deep(.el-form-item__label) {
+  color: var(--el-text-color-secondary);
+  font-weight: 600;
+}
+
+.dev-node-props :deep(.el-divider--horizontal) {
+  margin: 22px 0 14px;
+}
+
+.dev-node-props :deep(.el-divider__text) {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  letter-spacing: 0.2px;
+}
+
+.dev-node-props :deep(.el-input),
+.dev-node-props :deep(.el-select),
+.dev-node-props :deep(.el-input-number) {
+  width: 100%;
+}
+
+.dev-node-props :deep(.el-radio-group) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
   gap: 6px;
   width: 100%;
 }
-.context-item-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+
+.dev-node-props :deep(.el-radio-button) {
+  margin: 0;
+  width: 100%;
+}
+
+.dev-node-props :deep(.el-radio-button__inner) {
+  border-left: 1px solid var(--el-border-color) !important;
+  border-radius: 6px !important;
+  width: 100%;
+  text-align: center;
+}
+
+.dev-node-props :deep(.el-input-number) {
+  max-width: 220px;
+}
+
+@media (max-width: 1200px) {
+  .dev-node-props {
+    padding: 10px 12px 16px;
+  }
+
+  .fi-inline-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .fi-inline-row__icon,
+  .fi-inline-row__type {
+    flex: 1 1 auto;
+  }
+
+  .node-form {
+    --fi-medium: 100%;
+    --fi-narrow: 100%;
+  }
+
+  .switch-item__hint {
+    display: none;
+  }
 }
 </style>

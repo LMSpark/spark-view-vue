@@ -6,7 +6,7 @@
             "type": "item",
             "title": "工作台",
             "description": "个人工作台仪表板",
-            "icon": "📊",
+            "icon": "DataBoard",
             "path": "/dashboard",
             "pageType": "vue-component"
         },
@@ -14,7 +14,7 @@
             "id": "back-to-homepage",
             "type": "item",
             "title": "返回管理平台",
-            "icon": "🏠",
+            "icon": "HomeFilled",
             "path": "/app-list",
             "pageType": "vue-component"
         },
@@ -23,7 +23,7 @@
             "type": "group",
             "title": "系统设置",
             "description": "页面、导航、站点等系统配置管理",
-            "icon": "⚙️",
+            "icon": "Setting",
             "childPlacement": "sidebar",
             "redirect": "/dev",
             "children": [
@@ -31,7 +31,7 @@
                     "id": "dev-workbench",
                     "type": "item",
                     "title": "开发工作台",
-                    "icon": "⚡",
+                    "icon": "Lightning",
                     "path": "/dev",
                     "pageType": "vue-component"
                 },
@@ -39,7 +39,7 @@
                     "id": "cache-manager",
                     "type": "item",
                     "title": "缓存管理",
-                    "icon": "🗄️",
+                    "icon": "Coin",
                     "path": "/cache-manager",
                     "pageType": "vue-component"
                 }

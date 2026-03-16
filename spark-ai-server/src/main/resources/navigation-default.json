@@ -5,7 +5,7 @@
             "id": "__toolbar__",
             "type": "group",
             "title": "工具栏",
-            "icon": "🔧",
+            "icon": "SetUp",
             "childPlacement": "toolbar",
             "children": [
                 {
@@ -13,7 +13,7 @@
                     "type": "item",
                     "title": "AI 协同设计",
                     "description": "启动 AI 辅助设计会话，支持页面配置自动生成与迭代优化",
-                    "icon": "🎨",
+                    "icon": "Brush",
                     "action": "ai-design"
                 },
                 {
@@ -21,7 +21,7 @@
                     "type": "item",
                     "title": "AI 对话",
                     "description": "AI 智能对话助手",
-                    "icon": "💬",
+                    "icon": "ChatDotRound",
                     "action": "ai-chat"
                 },
                 {
@@ -29,14 +29,14 @@
                     "type": "item",
                     "title": "搜索",
                     "description": "全局搜索页面、数据和配置",
-                    "icon": "🔍",
+                    "icon": "Search",
                     "action": "search"
                 },
                 {
                     "id": "tb-fullscreen",
                     "type": "item",
                     "title": "全屏",
-                    "icon": "⛶",
+                    "icon": "FullScreen",
                     "action": "fullscreen"
                 },
                 {
@@ -44,14 +44,14 @@
                     "type": "item",
                     "title": "通知",
                     "description": "系统通知与消息",
-                    "icon": "🔔",
+                    "icon": "Bell",
                     "action": "notifications"
                 },
                 {
                     "id": "tb-theme",
                     "type": "item",
                     "title": "主题切换",
-                    "icon": "🌙",
+                    "icon": "Moon",
                     "action": "theme-toggle"
                 }
             ]
@@ -60,28 +60,28 @@
             "id": "__user-menu__",
             "type": "group",
             "title": "用户菜单",
-            "icon": "👤",
+            "icon": "User",
             "childPlacement": "user-menu",
             "children": [
                 {
                     "id": "um-profile",
                     "type": "item",
                     "title": "个人中心",
-                    "icon": "👤",
+                    "icon": "User",
                     "action": "profile"
                 },
                 {
                     "id": "um-settings",
                     "type": "item",
                     "title": "系统设置",
-                    "icon": "⚙️",
+                    "icon": "Setting",
                     "action": "settings"
                 },
                 {
                     "id": "um-home",
                     "type": "item",
                     "title": "平台主页",
-                    "icon": "🏠",
+                    "icon": "HomeFilled",
                     "action": "home"
                 }
             ]
@@ -91,7 +91,7 @@
             "type": "item",
             "title": "工作台",
             "description": "个人工作台仪表板，汇总待办与统计",
-            "icon": "📊",
+            "icon": "DataBoard",
             "path": "/dashboard",
             "pageType": "vue-component"
         },
@@ -100,7 +100,7 @@
             "type": "group",
             "title": "应用管理",
             "description": "多项目/多应用管理与切换",
-            "icon": "📱",
+            "icon": "Grid",
             "childPlacement": "sidebar",
             "redirect": "/app-list",
             "children": [
@@ -108,7 +108,7 @@
                     "id": "app-list",
                     "type": "item",
                     "title": "应用列表",
-                    "icon": "📋",
+                    "icon": "List",
                     "path": "/app-list",
                     "pageType": "vue-component"
                 }
@@ -119,7 +119,7 @@
             "type": "group",
             "title": "系统管理",
             "description": "平台级管理功能：用户、权限、导航、缓存、页面配置",
-            "icon": "⚙️",
+            "icon": "Setting",
             "childPlacement": "sidebar",
             "redirect": "/users",
             "children": [
@@ -128,7 +128,7 @@
                     "type": "item",
                     "title": "用户管理",
                     "description": "用户账号 CRUD 与角色分配",
-                    "icon": "👥",
+                    "icon": "UserFilled",
                     "path": "/users"
                 },
                 {
@@ -136,14 +136,14 @@
                     "type": "item",
                     "title": "权限渲染",
                     "description": "权限驱动的 UI 渲染演示",
-                    "icon": "🎨",
+                    "icon": "Brush",
                     "path": "/permission-render"
                 },
                 {
                     "id": "dev-workbench",
                     "type": "item",
                     "title": "开发工作台",
-                    "icon": "⚡",
+                    "icon": "Lightning",
                     "path": "/dev",
                     "pageType": "vue-component"
                 },
@@ -151,7 +151,7 @@
                     "id": "cache-manager",
                     "type": "item",
                     "title": "缓存管理",
-                    "icon": "🗄️",
+                    "icon": "Coin",
                     "path": "/cache-manager",
                     "pageType": "vue-component"
                 },
@@ -159,7 +159,7 @@
                     "id": "dashboard",
                     "type": "item",
                     "title": "管理仪表板",
-                    "icon": "🏠",
+                    "icon": "HomeFilled",
                     "path": "/dashboard",
                     "pageType": "vue-component"
                 },
@@ -167,7 +167,7 @@
                     "id": "about",
                     "type": "item",
                     "title": "关于系统",
-                    "icon": "ℹ️",
+                    "icon": "InfoFilled",
                     "path": "/about",
                     "pageType": "vue-component"
                 },
@@ -175,7 +175,7 @@
                     "id": "settings",
                     "type": "item",
                     "title": "平台设置",
-                    "icon": "⚙️",
+                    "icon": "Setting",
                     "path": "/settings",
                     "pageType": "vue-component"
                 }
@@ -186,7 +186,7 @@
             "type": "group",
             "title": "数据管理",
             "description": "数据绑定、级联、异步加载等数据层演示",
-            "icon": "🔗",
+            "icon": "Connection",
             "childPlacement": "sidebar",
             "redirect": "/dataset-demo",
             "children": [
@@ -194,42 +194,42 @@
                     "id": "dataset-demo",
                     "type": "item",
                     "title": "DataSet 主从表",
-                    "icon": "🔗",
+                    "icon": "Connection",
                     "path": "/dataset-demo"
                 },
                 {
                     "id": "cascade-demo",
                     "type": "item",
                     "title": "级联操作",
-                    "icon": "⚡",
+                    "icon": "Lightning",
                     "path": "/cascade-demo"
                 },
                 {
                     "id": "async-demo",
                     "type": "item",
                     "title": "异步数据",
-                    "icon": "🔄",
+                    "icon": "Refresh",
                     "path": "/async-demo"
                 },
                 {
                     "id": "smart-load",
                     "type": "item",
                     "title": "智能依赖加载",
-                    "icon": "🧠",
+                    "icon": "Cpu",
                     "path": "/smart-load"
                 },
                 {
                     "id": "master-detail",
                     "type": "item",
                     "title": "Master-Detail",
-                    "icon": "🔗",
+                    "icon": "Connection",
                     "path": "/master-detail"
                 },
                 {
                     "id": "test-order",
                     "type": "item",
                     "title": "订单测试",
-                    "icon": "📦",
+                    "icon": "Box",
                     "path": "/test-order"
                 }
             ]
@@ -239,7 +239,7 @@
             "type": "group",
             "title": "组件演示",
             "description": "渲染器容器、表格、表单、栅格等 UI 组件演示",
-            "icon": "🧩",
+            "icon": "Grid",
             "childPlacement": "sidebar",
             "redirect": "/renderer-demo",
             "children": [
@@ -247,49 +247,49 @@
                     "id": "renderer-demo",
                     "type": "item",
                     "title": "Renderer 架构",
-                    "icon": "🎨",
+                    "icon": "Brush",
                     "path": "/renderer-demo"
                 },
                 {
                     "id": "section-grid",
                     "type": "item",
                     "title": "Section 栅格",
-                    "icon": "🧩",
+                    "icon": "Grid",
                     "path": "/section-grid-demo"
                 },
                 {
                     "id": "el-table-demo",
                     "type": "item",
                     "title": "el-table 操作列",
-                    "icon": "📋",
+                    "icon": "List",
                     "path": "/el-table-demo"
                 },
                 {
                     "id": "vxe-demo",
                     "type": "item",
                     "title": "VXE 表格",
-                    "icon": "📈",
+                    "icon": "TrendCharts",
                     "path": "/vxe-demo"
                 },
                 {
                     "id": "formcreate-api",
                     "type": "item",
                     "title": "Form-Create API",
-                    "icon": "🔧",
+                    "icon": "SetUp",
                     "path": "/formcreate-api"
                 },
                 {
                     "id": "filter-demo",
                     "type": "item",
                     "title": "过滤面板",
-                    "icon": "🔍",
+                    "icon": "Search",
                     "path": "/filter-demo"
                 },
                 {
                     "id": "capability-demo",
                     "type": "item",
                     "title": "能力管理演示",
-                    "icon": "🎯",
+                    "icon": "Aim",
                     "path": "/capability-demo",
                     "pageType": "vue-component"
                 },
@@ -297,7 +297,7 @@
                     "id": "tenant-config",
                     "type": "item",
                     "title": "多租户配置",
-                    "icon": "🏢",
+                    "icon": "OfficeBuilding",
                     "path": "/tenant-config",
                     "pageType": "vue-component"
                 }
@@ -308,7 +308,7 @@
             "type": "group",
             "title": "树形结构",
             "description": "树组件、TreeTable、Node Scope 等树形结构演示",
-            "icon": "🌳",
+            "icon": "Share",
             "childPlacement": "sidebar",
             "redirect": "/tree-demo",
             "children": [
@@ -316,21 +316,21 @@
                     "id": "tree-demo",
                     "type": "item",
                     "title": "树形结构演示",
-                    "icon": "🌳",
+                    "icon": "Share",
                     "path": "/tree-demo"
                 },
                 {
                     "id": "treetable-demo",
                     "type": "item",
                     "title": "TreeTable 演示",
-                    "icon": "🌲",
+                    "icon": "Share",
                     "path": "/treetable-demo"
                 },
                 {
                     "id": "tree-node-scope",
                     "type": "item",
                     "title": "Node Scope",
-                    "icon": "🌿",
+                    "icon": "Share",
                     "path": "/tree-node-scope-demo"
                 }
             ]

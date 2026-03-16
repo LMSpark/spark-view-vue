@@ -44,8 +44,8 @@
           />
         </template>
         <template v-if="enableAI && hasToolbarAction('ai-design', 'ai-chat')" #actions>
-          <button v-if="hasToolbarAction('ai-design')" class="header-btn" title="AI 协同设计" @click="showDesignStudio = true">
-            🎨
+          <button v-if="hasToolbarAction('ai-design')" class="app-ai-action" title="AI 协同设计" @click="showDesignStudio = true">
+            <NavIcon name="Brush" :size="16" />
           </button>
           <el-popover
             v-if="hasToolbarAction('ai-chat')"
@@ -56,8 +56,8 @@
             popper-class="ai-chat-popover"
           >
             <template #reference>
-              <button class="header-btn" title="AI 对话" @click="showAiChat = !showAiChat">
-                💬
+              <button class="app-ai-action" title="AI 对话" @click="showAiChat = !showAiChat">
+                <NavIcon name="ChatDotRound" :size="16" />
               </button>
             </template>
             <AiChatWidget
@@ -139,6 +139,7 @@ import AppSidebar from '@/layout/AppSidebar.vue'
 import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
+import NavIcon from '@/components/NavIcon.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
@@ -308,6 +309,28 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.app-ai-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.app-ai-action:hover {
+  background: color-mix(in srgb, var(--spark-header-text) 12%, transparent);
+}
+
+.app-ai-action:active {
+  background: color-mix(in srgb, var(--spark-header-text) 18%, transparent);
 }
 
 </style>
