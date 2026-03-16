@@ -331,7 +331,8 @@
                     "type": "item",
                     "title": "Node Scope",
                     "icon": "Share",
-                    "path": "/tree-node-scope-demo"
+                    "path": "/tree-node-scope-demo",
+                    "pageId": "tree-node-scope-demo"
                 }
             ]
         }
