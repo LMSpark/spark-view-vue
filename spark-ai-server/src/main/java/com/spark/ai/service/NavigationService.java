@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +33,8 @@ public class NavigationService {
     private static final Logger log = LoggerFactory.getLogger(NavigationService.class);
     private static final List<String> SYSTEM_ROOT_DIRECTORY_IDS = List.of("__toolbar__", "__user-menu__");
     private static final Pattern FRAME_ANCESTORS_PATTERN = Pattern.compile("frame-ancestors\\s+([^;]+)", Pattern.CASE_INSENSITIVE);
+    private static final Set<String> VALID_NODE_KINDS = Set.of("system-directory", "module", "system-page", "page", "link", "sub-page");
+    private static final Set<String> VALID_CHILD_PLACEMENTS = Set.of("header", "sidebar", "toolbar", "user-menu", "parent", "flat");
 
     private final NavigationConfigRepository navRepo;
     private final ObjectMapper objectMapper;
@@ -69,8 +72,8 @@ public class NavigationService {
     @Transactional
     public void saveNavConfig(String tenantId, String projectId,
                                Map<String, Object> navRoot) throws IOException {
+        persistTree(tenantId, projectId, navRoot);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(navRoot);
-        persistJson(tenantId, projectId, json);
         log.info("[Navigation] 整树保存 tenant={} project={} ({} bytes)", tenantId, projectId, json.length());
     }
 
@@ -386,8 +389,203 @@ public class NavigationService {
 
     private void persistTree(String tenantId, String projectId,
                               Map<String, Object> root) throws IOException {
+        sanitizeNavRoot(root);
         persistJson(tenantId, projectId,
                 objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void sanitizeNavRoot(Map<String, Object> root) {
+        String placement = asTrimmedString(root.get("childPlacement"));
+        String homePath = normalizePath(asTrimmedString(root.get("homePath")));
+        if (!"header".equals(placement) && !"sidebar".equals(placement)) {
+            placement = "header";
+        }
+
+        List<Map<String, Object>> children = root.get("children") instanceof List
+                ? (List<Map<String, Object>>) root.get("children")
+                : new ArrayList<>();
+
+        List<Map<String, Object>> sanitizedChildren = sanitizeChildren(children);
+
+        root.clear();
+        root.put("childPlacement", placement);
+        root.put("children", sanitizedChildren);
+
+        if (!homePath.isBlank()) {
+            root.put("homePath", homePath);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> sanitizeChildren(List<Map<String, Object>> children) {
+        List<Map<String, Object>> sanitized = new ArrayList<>();
+        for (Map<String, Object> child : children) {
+            if (child == null) continue;
+            Map<String, Object> node = sanitizeNode(child);
+            if (!node.isEmpty()) {
+                sanitized.add(node);
+            }
+        }
+        return sanitized;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> sanitizeNode(Map<String, Object> raw) {
+        String id = asTrimmedString(raw.get("id"));
+        if (id.isBlank()) {
+            return Map.of();
+        }
+
+        String kind = normalizeNodeKind(raw, id);
+        String title = asTrimmedString(raw.get("title"));
+        if (title.isBlank()) {
+            title = id;
+        }
+
+        Map<String, Object> node = new LinkedHashMap<>();
+        node.put("id", id);
+        node.put("type", isGroupKind(kind) ? "group" : "item");
+        node.put("nodeKind", kind);
+        node.put("title", title);
+
+        putIfNotBlank(node, "icon", asTrimmedString(raw.get("icon")));
+        putIfNotBlank(node, "description", asTrimmedString(raw.get("description")));
+
+        if (raw.get("order") instanceof Number order) {
+            int orderValue = order.intValue();
+            if (orderValue != 0) {
+                node.put("order", orderValue);
+            }
+        }
+        if (Boolean.TRUE.equals(raw.get("dividerAfter"))) {
+            node.put("dividerAfter", true);
+        }
+        if (Boolean.TRUE.equals(raw.get("disabled"))) {
+            node.put("disabled", true);
+        }
+        if (raw.containsKey("context") && raw.get("context") != null) {
+            node.put("context", raw.get("context"));
+        }
+
+        String pageId = asTrimmedString(raw.get("pageId"));
+        if (!pageId.isBlank() && !pageId.equals(id)) {
+            node.put("pageId", pageId);
+        }
+        String pageType = asTrimmedString(raw.get("pageType"));
+        if ("vue-component".equals(pageType)) {
+            node.put("pageType", pageType);
+        }
+
+        String childPlacement = asTrimmedString(raw.get("childPlacement"));
+
+        List<Map<String, Object>> children = raw.get("children") instanceof List
+                ? sanitizeChildren((List<Map<String, Object>>) raw.get("children"))
+                : List.of();
+
+        switch (kind) {
+            case "system-directory", "module" -> {
+                if (!childPlacement.isBlank() && VALID_CHILD_PLACEMENTS.contains(childPlacement)) {
+                    node.put("childPlacement", childPlacement);
+                }
+                if ("__toolbar__".equals(id)) {
+                    node.put("childPlacement", "toolbar");
+                } else if ("__user-menu__".equals(id)) {
+                    node.put("childPlacement", "user-menu");
+                }
+                putIfNotBlank(node, "redirect", normalizePath(asTrimmedString(raw.get("redirect"))));
+                if (!children.isEmpty()) {
+                    node.put("children", children);
+                }
+            }
+            case "sub-page" -> {
+                node.put("hidden", true);
+                putIfNotBlank(node, "parentPageId", asTrimmedString(raw.get("parentPageId")));
+            }
+            case "link" -> {
+                putIfNotBlank(node, "externalUrl", asTrimmedString(raw.get("externalUrl")));
+                String mode = asTrimmedString(raw.get("linkRenderMode"));
+                if ("new-tab".equals(mode)) {
+                    node.put("linkRenderMode", "new-tab");
+                }
+                if (Boolean.TRUE.equals(raw.get("hidden"))) {
+                    node.put("hidden", true);
+                }
+            }
+            default -> {
+                if (!childPlacement.isBlank() && VALID_CHILD_PLACEMENTS.contains(childPlacement)) {
+                    node.put("childPlacement", childPlacement);
+                }
+                putIfNotBlank(node, "path", normalizePath(asTrimmedString(raw.get("path"))));
+                putIfNotBlank(node, "redirect", normalizePath(asTrimmedString(raw.get("redirect"))));
+                if ("system-page".equals(kind)) {
+                    putIfNotBlank(node, "action", asTrimmedString(raw.get("action")));
+                }
+                if (Boolean.TRUE.equals(raw.get("hidden"))) {
+                    node.put("hidden", true);
+                }
+                if (!children.isEmpty()) {
+                    node.put("children", children);
+                }
+            }
+        }
+
+        return node;
+    }
+
+    private String normalizeNodeKind(Map<String, Object> raw, String id) {
+        String kind = asTrimmedString(raw.get("nodeKind"));
+        if (!VALID_NODE_KINDS.contains(kind)) {
+            kind = inferNodeKind(raw, id);
+        }
+
+        String externalUrl = asTrimmedString(raw.get("externalUrl"));
+        if ("page".equals(kind) && !externalUrl.isBlank()) {
+            kind = "link";
+        }
+
+        return kind;
+    }
+
+    private String inferNodeKind(Map<String, Object> raw, String id) {
+        if (isSystemRootDirectoryId(id)) return "system-directory";
+        String placement = asTrimmedString(raw.get("childPlacement"));
+        if ("toolbar".equals(placement) || "user-menu".equals(placement)) return "system-directory";
+        if (!asTrimmedString(raw.get("externalUrl")).isBlank()) return "link";
+        if (!asTrimmedString(raw.get("action")).isBlank()) return "system-page";
+        String type = asTrimmedString(raw.get("type"));
+        if ("group".equals(type)) return "module";
+        return "page";
+    }
+
+    private boolean isGroupKind(String kind) {
+        return "system-directory".equals(kind) || "module".equals(kind);
+    }
+
+    private String asTrimmedString(Object value) {
+        if (!(value instanceof String str)) return "";
+        return str.trim();
+    }
+
+    private String normalizePath(String path) {
+        if (path == null || path.isBlank()) return "";
+        String trimmed = path.trim();
+        if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+            return trimmed;
+        }
+        if (!trimmed.startsWith("/")) {
+            trimmed = "/" + trimmed;
+        }
+        if ("/".equals(trimmed)) {
+            return "/";
+        }
+        return trimmed.replaceAll("/+$", "");
+    }
+
+    private void putIfNotBlank(Map<String, Object> target, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            target.put(key, value);
+        }
     }
 
     private HttpResponse<Void> requestHead(HttpClient client, URI uri) throws IOException {

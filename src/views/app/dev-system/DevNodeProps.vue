@@ -158,11 +158,13 @@
       <el-divider content-position="left">状态控制</el-divider>
       <el-form-item label="隐藏" class="switch-item">
         <el-switch v-model="state.editForm.hidden" :disabled="isSubPageNode" @change="state.markNavDirty" />
-        <span class="switch-item__hint">{{ isSubPageNode ? '子页面固定为隐藏' : '在导航中不展示该节点' }}</span>
+        <span class="switch-item__hint">
+          {{ isSubPageNode ? '子页面固定为隐藏（true 持久化）' : '在导航中不展示该节点（仅 true 持久化，false 为默认值不落库）' }}
+        </span>
       </el-form-item>
       <el-form-item label="禁用" class="switch-item">
         <el-switch v-model="state.editForm.disabled" @change="state.markNavDirty" />
-        <span class="switch-item__hint">保留显示但不可点击</span>
+        <span class="switch-item__hint">保留显示但不可点击（仅 true 持久化，false 为默认值不落库）</span>
       </el-form-item>
 
       <!-- 模块上下文 -->
