@@ -84,6 +84,27 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     return normalizePath(stripTenantPrefix(path))
   }
 
+  function resolveLinkRenderMode(node: NavNode): 'iframe' | 'new-tab' {
+    return node.linkRenderMode === 'new-tab' ? 'new-tab' : 'iframe'
+  }
+
+  function resolveNodeRoutePath(node: NavNode): string | null {
+    if (typeof node.path === 'string' && node.path.trim() !== '') {
+      return normalizePath(node.path)
+    }
+
+    if (
+      node.nodeKind === 'link' &&
+      resolveLinkRenderMode(node) === 'iframe' &&
+      typeof node.externalUrl === 'string' &&
+      node.externalUrl.trim() !== ''
+    ) {
+      return normalizePath(`/__link/${encodeURIComponent(node.id)}`)
+    }
+
+    return null
+  }
+
   /** 为裸路径添加当前租户+项目前缀（/xxx → /t/{tenantId}/{projectId}/xxx） */
   function addTenantPrefix(path: string): string {
     const normalized = normalizePath(path)
@@ -146,8 +167,9 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
 
     for (const node of sortNodes(nodes)) {
       if (isSubPageNode(node)) continue
-      if (node.path !== undefined && node.path !== '') {
-        const normalizedNodePath = normalizeComparablePath(node.path)
+      const nodePath = resolveNodeRoutePath(node)
+      if (nodePath !== null) {
+        const normalizedNodePath = normalizeComparablePath(nodePath)
         if (normalizedNodePath === normalizedTargetPath) return [node]
       }
       if (node.children?.length) {
@@ -399,6 +421,18 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     if (node.disabled) return
     if (isSubPageNode(node)) return
 
+    if (node.nodeKind === 'link' && typeof node.externalUrl === 'string' && node.externalUrl.trim() !== '') {
+      if (resolveLinkRenderMode(node) === 'new-tab') {
+        window.open(node.externalUrl, '_blank', 'noopener,noreferrer')
+        return
+      }
+      const linkPath = resolveNodeRoutePath(node)
+      if (linkPath !== null) {
+        navigateByPath(linkPath)
+        return
+      }
+    }
+
     // 外部链接
     if (node.externalUrl) {
       window.open(node.externalUrl, '_blank', 'noopener,noreferrer')
@@ -412,16 +446,20 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     }
 
     // 叶子节点
-    if (node.path) {
-      navigateByPath(node.path)
+    const nodePath = resolveNodeRoutePath(node)
+    if (nodePath !== null) {
+      navigateByPath(nodePath)
       return
     }
 
     // 组节点：跳转到第一个可见叶子
     if (node.children?.length) {
       const leaf = findFirstLeaf(node.children)
-      if (leaf?.path) {
-        navigateByPath(leaf.path)
+      if (leaf !== undefined) {
+        const leafPath = resolveNodeRoutePath(leaf)
+        if (leafPath !== null) {
+          navigateByPath(leafPath)
+        }
       }
     }
   }
@@ -430,7 +468,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     for (const node of filterVisible(nodes)) {
       if (isSubPageNode(node)) continue
       if (node.disabled) continue
-      if (node.path) return node
+      if (resolveNodeRoutePath(node) !== null) return node
       if (node.children?.length) {
         const leaf = findFirstLeaf(node.children)
         if (leaf) return leaf

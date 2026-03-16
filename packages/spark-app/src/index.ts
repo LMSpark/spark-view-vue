@@ -167,6 +167,7 @@ export type {
   ChildPlacement,
   NavNodeType,
   NavNodeKind,
+  LinkRenderMode,
   NavPageType,
 } from './navigation/nav-types'
 export type { TabPage, PageMode } from './navigation/useTabPages'

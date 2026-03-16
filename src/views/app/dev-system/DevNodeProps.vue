@@ -33,6 +33,7 @@
             <el-radio-button value="module" :disabled="moduleKindDisabled">模块</el-radio-button>
             <el-radio-button value="system-page">系统页面</el-radio-button>
             <el-radio-button value="page">普通页面</el-radio-button>
+            <el-radio-button value="link">超链接</el-radio-button>
             <el-radio-button value="sub-page">子页面</el-radio-button>
           </el-radio-group>
         </el-form-item>
@@ -49,36 +50,40 @@
 
       <!-- 路由 & 关联页面 -->
       <el-divider content-position="left">路由 & 关联页面</el-divider>
-      <el-form-item v-if="isSystemPageNode" label="路由选择" class="fi fi--wide">
+      <el-form-item v-if="showTargetSelector" label="目标" class="fi fi--wide">
         <el-select
-          v-model="state.editForm.path"
+          v-model="targetValue"
           filterable
           allow-create
-          placeholder="选择或输入 Vue 组件路由"
-          @change="state.handlePathChange"
+          clearable
+          :placeholder="targetPlaceholder"
         >
-          <el-option
-            v-for="opt in vuePageOptions"
-            :key="opt.path"
-            :value="opt.path"
-            :label="`${opt.displayTitle}（${opt.path}）${opt.extra ? ` · ${opt.extra}` : ''}`"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item v-if="isPageNode" label="页面选择" class="fi fi--wide">
-        <el-select
-          v-model="state.editForm.path"
-          filterable
-          allow-create
-          placeholder="选择或输入后端配置页"
-          @change="state.handlePathChange"
-        >
-          <el-option
-            v-for="opt in configPageOptions"
-            :key="opt.path"
-            :value="opt.path"
-            :label="`${opt.title}（${opt.path}）`"
-          />
+          <template v-if="isSystemPageNode">
+            <el-option-group label="路由">
+              <el-option
+                v-for="opt in systemRouteTargetOptions"
+                :key="opt.value"
+                :value="opt.value"
+                :label="opt.label"
+              />
+            </el-option-group>
+            <el-option-group label="动作">
+              <el-option
+                v-for="opt in actionTargetOptions"
+                :key="opt.value"
+                :value="opt.value"
+                :label="opt.label"
+              />
+            </el-option-group>
+          </template>
+          <template v-else>
+            <el-option
+              v-for="opt in pageTargetOptions"
+              :key="opt.value"
+              :value="opt.value"
+              :label="opt.label"
+            />
+          </template>
         </el-select>
       </el-form-item>
       <!-- 路径有效性提示 -->
@@ -92,21 +97,35 @@
           <NavIcon name="InfoFilled" :size="12" /> 当前节点类型无需路由选择或页面选择
         </el-tag>
       </el-form-item>
+      <el-form-item v-if="isLinkNode" label="超链接" class="fi fi--wide">
+        <div class="link-url-row">
+          <el-input
+            v-model="state.editForm.externalUrl"
+            placeholder="https://..."
+            @change="state.onExternalUrlChanged"
+          />
+          <el-button
+            :loading="state.linkProbeLoading.value"
+            @click="state.probeLinkRenderMode"
+          >
+            检测嵌入
+          </el-button>
+        </div>
+      </el-form-item>
+      <el-form-item v-if="isLinkNode" label="渲染方式" class="fi fi--wide">
+        <el-radio-group v-model="state.editForm.linkRenderMode" @change="state.markNavDirty">
+          <el-radio-button value="iframe">内嵌 iframe</el-radio-button>
+          <el-radio-button value="new-tab">新标签打开</el-radio-button>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item v-if="isLinkNode && state.linkProbeInfo.value" label="检测结果" class="fi fi--wide">
+        <el-tag :type="state.linkProbeInfo.value.embeddable ? 'success' : 'warning'" size="small" disable-transitions>
+          {{ state.linkProbeInfo.value.embeddable ? '可嵌入' : '禁止嵌入' }}
+        </el-tag>
+        <span class="switch-item__hint" style="margin-left: 8px">{{ state.linkProbeInfo.value.reason }}</span>
+      </el-form-item>
       <el-form-item v-if="isDirectoryNode" label="重定向" class="fi fi--wide">
         <el-input v-model="state.editForm.redirect" placeholder="组节点默认跳转路径" @change="state.markNavDirty" />
-      </el-form-item>
-      <el-form-item v-if="!isDirectoryNode && !isSubPageNode" label="外部链接" class="fi fi--wide">
-        <el-input v-model="state.editForm.externalUrl" placeholder="https://..." @change="state.markNavDirty" />
-      </el-form-item>
-      <el-form-item v-if="isSystemPageNode" label="动作" class="fi fi--medium">
-        <el-select v-model="state.editForm.action" placeholder="工具栏动作（toolbar 节点用）" clearable @change="state.markNavDirty">
-          <el-option value="ai-design" label="AI 协同设计" />
-          <el-option value="ai-chat" label="AI 对话" />
-          <el-option value="search" label="搜索" />
-          <el-option value="fullscreen" label="全屏" />
-          <el-option value="notifications" label="通知" />
-          <el-option value="theme-toggle" label="主题切换" />
-        </el-select>
       </el-form-item>
       <el-form-item v-if="isSubPageNode" label="父页面" class="fi fi--medium">
         <el-select v-model="state.editForm.parentPageId" clearable placeholder="选择所属父页面" @change="state.markNavDirty">
@@ -208,8 +227,24 @@ const isDirectoryNode = computed(() => {
 
 const isSystemPageNode = computed(() => props.state.editForm.nodeKind === 'system-page')
 const isPageNode = computed(() => props.state.editForm.nodeKind === 'page')
+const isLinkNode = computed(() => props.state.editForm.nodeKind === 'link')
 const isSubPageNode = computed(() => props.state.editForm.nodeKind === 'sub-page')
 const showPathStatus = computed(() => isSystemPageNode.value || isPageNode.value)
+const showTargetSelector = computed(() => isSystemPageNode.value || isPageNode.value)
+
+interface TargetOption {
+  value: string
+  label: string
+}
+
+const actionTargetOptions: TargetOption[] = [
+  { value: 'action:ai-design', label: '动作 · AI 协同设计' },
+  { value: 'action:ai-chat', label: '动作 · AI 对话' },
+  { value: 'action:search', label: '动作 · 搜索' },
+  { value: 'action:fullscreen', label: '动作 · 全屏' },
+  { value: 'action:notifications', label: '动作 · 通知' },
+  { value: 'action:theme-toggle', label: '动作 · 主题切换' },
+]
 
 interface VuePathOption {
   path: string
@@ -251,6 +286,13 @@ const vuePageOptions = computed<VuePathOption[]>(() => {
   })
 })
 
+const systemRouteTargetOptions = computed<TargetOption[]>(() =>
+  vuePageOptions.value.map((opt) => ({
+    value: `route:${opt.path}`,
+    label: `路由 · ${opt.displayTitle}（${opt.path}）${opt.extra ? ` · ${opt.extra}` : ''}`,
+  })),
+)
+
 const configPageOptions = computed(() => {
   return props.state.pageList.value
     .filter((p) => String(p['pageType'] ?? 'config') !== 'vue-component')
@@ -260,6 +302,71 @@ const configPageOptions = computed(() => {
       const title = String(p['title'] ?? pageId)
       return { path, title }
     })
+})
+
+const pageTargetOptions = computed<TargetOption[]>(() =>
+  configPageOptions.value.map((opt) => ({
+    value: `page:${opt.path}`,
+    label: `页面 · ${opt.title}（${opt.path}）`,
+  })),
+)
+
+const targetPlaceholder = computed(() => {
+  if (isSystemPageNode.value) return '选择系统页面路由或动作'
+  return '选择普通页面（配置页）'
+})
+
+function applyTargetSelection(value: string) {
+  if (isSystemPageNode.value) {
+    if (!value) {
+      props.state.editForm.path = ''
+      props.state.editForm.action = ''
+      props.state.markNavDirty()
+      props.state.clearFiles()
+      return
+    }
+    if (value.startsWith('action:')) {
+      props.state.editForm.action = value.replace(/^action:/, '')
+      props.state.editForm.path = ''
+      props.state.markNavDirty()
+      props.state.clearFiles()
+      return
+    }
+    const routePath = value.replace(/^route:/, '')
+    props.state.editForm.action = ''
+    props.state.editForm.path = routePath
+    props.state.handlePathChange(routePath)
+    return
+  }
+
+  if (isPageNode.value) {
+    if (!value) {
+      props.state.editForm.path = ''
+      props.state.markNavDirty()
+      props.state.clearFiles()
+      return
+    }
+    const pagePath = value.replace(/^page:/, '')
+    props.state.editForm.path = pagePath
+    props.state.handlePathChange(pagePath)
+  }
+}
+
+const targetValue = computed<string>({
+  get() {
+    if (isSystemPageNode.value) {
+      if (props.state.editForm.action) return `action:${props.state.editForm.action}`
+      if (props.state.editForm.path) return `route:${props.state.editForm.path}`
+      return ''
+    }
+    if (isPageNode.value) {
+      return props.state.editForm.path ? `page:${props.state.editForm.path}` : ''
+    }
+    return ''
+  },
+  set(value) {
+    applyTargetSelection(value)
+  },
 })
 
 interface ParentPageOption {
@@ -290,7 +397,16 @@ const parentPageOptions = computed(() => {
 const pathStatus = computed(() => {
   if (!showPathStatus.value) return null
   const path = props.state.editForm.path
-  if (!path) return null
+  if (!path) {
+    if (isSystemPageNode.value && props.state.editForm.action) {
+      return {
+        type: 'info' as const,
+        icon: 'InfoFilled',
+        text: `当前目标为动作：${props.state.editForm.action}`,
+      }
+    }
+    return null
+  }
 
   if (isSystemPageNode.value) {
     if (path in VUE_PAGE_MAP) {
@@ -425,6 +541,12 @@ const pathStatus = computed(() => {
 
 .type-radio-group :deep(.el-radio-button) {
   width: auto;
+}
+
+.link-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .type-radio-group :deep(.el-radio-button__inner) {
