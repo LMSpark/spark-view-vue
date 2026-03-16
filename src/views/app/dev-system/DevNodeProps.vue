@@ -29,7 +29,7 @@
         </el-form-item>
         <el-form-item label="节点类别" class="fi fi--medium fi-inline-row__type">
           <el-radio-group v-model="state.editForm.nodeKind" class="type-radio-group" @change="state.handleNodeKindChange">
-            <el-radio-button value="system-directory">系统模块（固定）</el-radio-button>
+            <el-radio-button value="system-directory">系统模块</el-radio-button>
             <el-radio-button value="module" :disabled="moduleKindDisabled">模块</el-radio-button>
             <el-radio-button value="system-page">系统页面</el-radio-button>
             <el-radio-button value="page">普通页面</el-radio-button>
@@ -535,26 +535,10 @@ const pathStatus = computed(() => {
   min-width: 0;
 }
 
-.type-radio-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.type-radio-group :deep(.el-radio-button) {
-  width: auto;
-}
-
 .link-url-row {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.type-radio-group :deep(.el-radio-button__inner) {
-  border-left: 1px solid var(--el-border-color) !important;
-  border-radius: 6px !important;
-  white-space: nowrap;
 }
 
 .dev-node-props :deep(.el-tag) {
@@ -612,9 +596,31 @@ const pathStatus = computed(() => {
   max-width: 220px;
 }
 
+.dev-node-props :deep(.type-radio-group) {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dev-node-props :deep(.type-radio-group .el-radio-button__inner) {
+  min-height: 34px;
+  padding: 8px 6px;
+  font-size: 12px;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 1200px) {
   .dev-node-props {
     padding: 10px 12px 16px;
+  }
+
+  .dev-node-props :deep(.type-radio-group) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .fi-inline-row {
