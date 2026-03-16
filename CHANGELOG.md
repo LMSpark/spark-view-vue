@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### docs
+
+- 新增 `docs/guides/API_FIRST_PROMPT.md`，沉淀可复用的 API-first 提示词模板（前端优先调用 API，禁止默认改后端）。
+- 更新 `.github/copilot-instructions.md` 的 AI Server 章节：补全后端完整 API 清单，并明确多租户优先与扁平兼容路径约束。
+- 明确历史迁移策略：迁移由前端显式调用 API 触发，禁止后端启动期隐式迁移。
+
 ---
 
 ## [0.4.0] — 2026-02-26
