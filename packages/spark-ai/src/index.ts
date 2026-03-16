@@ -27,6 +27,17 @@ export type {
   PageDiagnosticsReport,
 } from './ai-loop'
 
+// ── Config Validator ────────────────────────────────────────────────────────
+export { validateGeneratedConfig } from './config-validator'
+export type {
+  GeneratedPageFiles,
+  ConfigValidationCategory,
+  ConfigValidationSeverity,
+  ConfigValidationIssue,
+  ConfigValidationSummary,
+  ConfigValidationReport,
+} from './config-validator'
+
 // ── SSE Events (re-export from spark-utils) ─────────────────────────────────
 export {
   ServerEventType,
