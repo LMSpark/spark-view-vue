@@ -75,7 +75,10 @@
             <div v-if="apiErrorDigests.length > 0" class="ai-api-error-group">
               <div class="ai-api-error-title">🌐 API 错误分组（{{ apiErrorDigests.length }}）</div>
               <div v-for="(item, i) in apiErrorDigests.slice(-8)" :key="`api-${i}`" class="ai-api-error-item">
-                <div class="ai-api-error-line">{{ item.method }} {{ item.url }} · {{ item.codeLabel }}</div>
+                <div class="ai-api-error-line">
+                  {{ item.method }} {{ item.url }} · {{ item.codeLabel }}
+                  <span v-if="item.count > 1" class="ai-api-error-repeat"> · x{{ item.count }}</span>
+                </div>
                 <div class="ai-api-error-message">{{ item.message }}</div>
                 <pre v-if="item.responsePreview" class="ai-api-error-preview">{{ item.responsePreview }}</pre>
               </div>
@@ -273,7 +276,8 @@ interface ApiErrorDigest {
   url: string
   codeLabel: string
   message: string
-  responsePreview?: string
+  responsePreview: string | undefined
+  count: number
 }
 
 function isApiErrorLog(log: LogSnapshot): boolean {
@@ -296,24 +300,51 @@ function asPlainText(value: unknown): string {
   return ''
 }
 
-const apiErrorDigests = computed<ApiErrorDigest[]>(() =>
-  apiErrorLogs.value.map(log => {
-    const method = asPlainText(log.meta?.['method']) || 'GET'
+const apiErrorDigests = computed<ApiErrorDigest[]>(() => {
+  interface ApiErrorDigestWithTimestamp extends ApiErrorDigest {
+    latestTimestamp: number
+  }
+
+  const grouped = new Map<string, ApiErrorDigestWithTimestamp>()
+
+  for (const log of apiErrorLogs.value) {
+    const method = (asPlainText(log.meta?.['method']) || 'GET').toUpperCase()
     const url = asPlainText(log.meta?.['url']) || '(unknown-url)'
     const status = asPlainText(log.meta?.['status'])
     const code = asPlainText(log.meta?.['code'])
     const codeLabel = status !== '' ? `HTTP ${status}` : (code || 'HTTP_ERR')
     const message = asPlainText(log.meta?.['message']) || log.message
     const responsePreviewRaw = asPlainText(log.meta?.['responsePreview'])
-    return {
-      method,
-      url,
-      codeLabel,
-      message,
-      ...(responsePreviewRaw !== '' ? { responsePreview: responsePreviewRaw } : {}),
+    const responsePreview = responsePreviewRaw !== '' ? responsePreviewRaw : undefined
+
+    const signature = `${method}|${url}|${codeLabel}`
+    const prev = grouped.get(signature)
+
+    if (!prev) {
+      grouped.set(signature, {
+        method,
+        url,
+        codeLabel,
+        message,
+        responsePreview,
+        count: 1,
+        latestTimestamp: log.timestamp,
+      })
+      continue
     }
-  })
-)
+
+    prev.count += 1
+    if (log.timestamp >= prev.latestTimestamp) {
+      prev.latestTimestamp = log.timestamp
+      prev.message = message
+      prev.responsePreview = responsePreview
+    }
+  }
+
+  return Array.from(grouped.values())
+    .sort((a, b) => a.latestTimestamp - b.latestTimestamp)
+    .map(({ latestTimestamp: _ignored, ...rest }) => rest)
+})
 
 function levelEmoji(level: string): string {
   const map: Record<string, string> = { error: '❌', warn: '⚠️', info: 'ℹ️', debug: '🐛' }
@@ -1467,6 +1498,11 @@ watch(() => route.query['aiDebug'], async (val) => {
   font-size: 11px;
   color: #7a5a26;
   font-family: 'Menlo', 'Consolas', monospace;
+}
+
+.ai-api-error-repeat {
+  color: #d2691e;
+  font-weight: 600;
 }
 
 .ai-api-error-message {
