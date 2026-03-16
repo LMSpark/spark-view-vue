@@ -66,12 +66,21 @@
           <div class="ai-log-header" @click="showLogs = !showLogs">
             <span>📋 {{ recentLogs.length }} 条日志
               <span v-if="errorLogCount > 0" class="ai-error-count">({{ errorLogCount }} 错误)</span>
+              <span v-if="apiErrorLogs.length > 0" class="ai-api-error-count"> · API错误 {{ apiErrorLogs.length }}</span>
               <span class="ai-quality-inline">· {{ qualityText(liveLogSummary) }}</span>
             </span>
             <span class="ai-log-toggle">{{ showLogs ? '▼' : '▶' }}</span>
           </div>
           <div v-if="showLogs" class="ai-log-list">
-            <div v-for="(log, i) in recentLogs.slice(-30)" :key="i" class="ai-log-entry" :class="log.level">
+            <div v-if="apiErrorDigests.length > 0" class="ai-api-error-group">
+              <div class="ai-api-error-title">🌐 API 错误分组（{{ apiErrorDigests.length }}）</div>
+              <div v-for="(item, i) in apiErrorDigests.slice(-8)" :key="`api-${i}`" class="ai-api-error-item">
+                <div class="ai-api-error-line">{{ item.method }} {{ item.url }} · {{ item.codeLabel }}</div>
+                <div class="ai-api-error-message">{{ item.message }}</div>
+                <pre v-if="item.responsePreview" class="ai-api-error-preview">{{ item.responsePreview }}</pre>
+              </div>
+            </div>
+            <div v-for="(log, i) in nonApiRecentLogs.slice(-30)" :key="i" class="ai-log-entry" :class="log.level">
               <span class="ai-log-level">{{ levelEmoji(log.level) }}</span>
               <div class="ai-log-body">
                 <pre
@@ -257,6 +266,53 @@ const liveLogSummary = computed(() =>
 
 const errorLogCount = computed(() =>
   recentLogs.value.filter(l => l.level === 'error' || l.level === 'warn').length
+)
+
+interface ApiErrorDigest {
+  method: string
+  url: string
+  codeLabel: string
+  message: string
+  responsePreview?: string
+}
+
+function isApiErrorLog(log: LogSnapshot): boolean {
+  if (log.message.includes('HTTP 请求失败')) return true
+  const code = log.meta?.['code']
+  return typeof code === 'string' && code.startsWith('ERR_HTTP_')
+}
+
+const apiErrorLogs = computed(() =>
+  recentLogs.value.filter(isApiErrorLog)
+)
+
+const nonApiRecentLogs = computed(() =>
+  recentLogs.value.filter(log => !isApiErrorLog(log))
+)
+
+function asPlainText(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  return ''
+}
+
+const apiErrorDigests = computed<ApiErrorDigest[]>(() =>
+  apiErrorLogs.value.map(log => {
+    const method = asPlainText(log.meta?.['method']) || 'GET'
+    const url = asPlainText(log.meta?.['url']) || '(unknown-url)'
+    const status = asPlainText(log.meta?.['status'])
+    const code = asPlainText(log.meta?.['code'])
+    const codeLabel = status !== '' ? `HTTP ${status}` : (code || 'HTTP_ERR')
+    const message = asPlainText(log.meta?.['message']) || log.message
+    const responsePreviewRaw = asPlainText(log.meta?.['responsePreview'])
+    return {
+      method,
+      url,
+      codeLabel,
+      message,
+      ...(responsePreviewRaw !== '' ? { responsePreview: responsePreviewRaw } : {}),
+    }
+  })
 )
 
 function levelEmoji(level: string): string {
@@ -1379,8 +1435,58 @@ watch(() => route.query['aiDebug'], async (val) => {
 }
 .ai-log-header:hover { background: #f0f0f0; }
 .ai-error-count { color: #f56c6c; font-weight: 600; }
+.ai-api-error-count { color: #e6a23c; font-weight: 600; }
 .ai-log-toggle { font-size: 10px; color: #999; }
 .ai-log-list { padding: 0 12px 8px; }
+
+.ai-api-error-group {
+  margin: 4px 0 8px;
+  padding: 6px 8px;
+  background: #fff7ed;
+  border: 1px solid #fde3c2;
+  border-radius: 6px;
+}
+
+.ai-api-error-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b88230;
+  margin-bottom: 6px;
+}
+
+.ai-api-error-item {
+  padding: 4px 0;
+  border-top: 1px dashed #f3d19e;
+}
+
+.ai-api-error-item:first-of-type {
+  border-top: none;
+}
+
+.ai-api-error-line {
+  font-size: 11px;
+  color: #7a5a26;
+  font-family: 'Menlo', 'Consolas', monospace;
+}
+
+.ai-api-error-message {
+  font-size: 11px;
+  color: #8c6331;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.ai-api-error-preview {
+  margin: 4px 0 0;
+  padding: 4px 6px;
+  background: #fff;
+  color: #606266;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
 .ai-log-entry {
   font-size: 11px;
   font-family: 'Menlo', 'Consolas', monospace;
