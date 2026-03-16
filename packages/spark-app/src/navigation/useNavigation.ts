@@ -129,8 +129,12 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     return [...nodes].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
   }
 
+  function isSubPageNode(node: NavNode): boolean {
+    return node.nodeKind === 'sub-page'
+  }
+
   function filterVisible(nodes: NavNode[]): NavNode[] {
-    return sortNodes(nodes).filter((n) => !n.hidden)
+    return sortNodes(nodes).filter((n) => !n.hidden && !isSubPageNode(n))
   }
 
   /* ────────────────────────────────────────────
@@ -141,6 +145,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     const normalizedTargetPath = normalizeComparablePath(targetPath)
 
     for (const node of sortNodes(nodes)) {
+      if (isSubPageNode(node)) continue
       if (node.path !== undefined && node.path !== '') {
         const normalizedNodePath = normalizeComparablePath(node.path)
         if (normalizedNodePath === normalizedTargetPath) return [node]
@@ -392,6 +397,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
 
   function navigateTo(node: NavNode) {
     if (node.disabled) return
+    if (isSubPageNode(node)) return
 
     // 外部链接
     if (node.externalUrl) {
@@ -422,6 +428,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
 
   function findFirstLeaf(nodes: NavNode[]): NavNode | undefined {
     for (const node of filterVisible(nodes)) {
+      if (isSubPageNode(node)) continue
       if (node.disabled) continue
       if (node.path) return node
       if (node.children?.length) {

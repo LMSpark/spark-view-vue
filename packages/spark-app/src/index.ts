@@ -166,6 +166,7 @@ export type {
   RegionVisibility,
   ChildPlacement,
   NavNodeType,
+  NavNodeKind,
   NavPageType,
 } from './navigation/nav-types'
 export type { TabPage, PageMode } from './navigation/useTabPages'

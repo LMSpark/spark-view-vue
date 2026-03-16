@@ -16,7 +16,7 @@
     >
       <template v-for="item in items" :key="item.id">
         <!-- 分组标题 -->
-        <el-menu-item-group v-if="item.type === 'group'" :title="collapsed ? '' : item.title">
+        <el-menu-item-group v-if="isDirectoryNode(item)" :title="collapsed ? '' : item.title">
           <template v-for="child in visibleChildren(item)" :key="child.id">
             <el-menu-item
               :index="child.path ?? child.id"
@@ -132,13 +132,18 @@ const activeIndex = computed(() => route.path)
 /** 判断节点是否需要渲染为 el-sub-menu */
 function hasNestedChildren(item: NavNode): boolean {
   if (!item.children?.length) return false
+  if (item.nodeKind !== 'module' && item.nodeKind !== 'system-directory') return false
   const cp = item.childPlacement
   return cp === 'parent' || cp === 'flat'
 }
 
+function isDirectoryNode(item: NavNode): boolean {
+  return item.nodeKind === 'module' || item.nodeKind === 'system-directory'
+}
+
 /** 过滤可见子项 */
 function visibleChildren(item: NavNode): NavNode[] {
-  return (item.children ?? []).filter((c) => !c.hidden)
+  return (item.children ?? []).filter((c) => !c.hidden && c.nodeKind !== 'sub-page')
 }
 
 function showDividerAfter(item: NavNode): boolean {

@@ -7,7 +7,7 @@
  * - 统一 dirty 状态管理
  */
 import { ref, reactive, computed } from 'vue'
-import type { NavNode, NavRoot, NavContextItem } from '@spark-view/spark-app'
+import type { NavNode, NavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { demoNavRoot } from '@/layout/demo-nav'
 
 // ═══════════════════════════════════════════════════════════
@@ -24,6 +24,7 @@ export interface DevEditForm {
   id: string
   title: string
   icon: string
+  nodeKind: NavNodeKind
   type: string
   dividerAfter: boolean
   description: string
@@ -32,6 +33,7 @@ export interface DevEditForm {
   redirect: string
   externalUrl: string
   action: string
+  parentPageId: string
   childPlacement: string
   order: number
   hidden: boolean
@@ -55,12 +57,7 @@ import { http } from '@/services/http'
 // ═══════════════════════════════════════════════════════════
 
 export function useDevState() {
-  const RESERVED_ROOT_GROUP_IDS = new Set(['__toolbar__', '__user-menu__'])
-
-  type LegacyNavNode = Omit<NavNode, 'type' | 'children'> & {
-    type?: string
-    children?: LegacyNavNode[]
-  }
+  const SYSTEM_ROOT_DIRECTORY_IDS = new Set(['__toolbar__', '__user-menu__'])
 
   // ── 导航树 ──
   const treeData = ref<NavNode[]>([])
@@ -71,11 +68,11 @@ export function useDevState() {
 
   // ── 节点编辑表单 ──
   const editForm = reactive<DevEditForm>({
-    id: '', title: '', icon: '', type: '',
+    id: '', title: '', icon: '', nodeKind: 'page', type: '',
     dividerAfter: false,
     description: '',
     path: '', pageType: '', redirect: '', externalUrl: '',
-    action: '',
+    action: '', parentPageId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
   })
@@ -134,36 +131,112 @@ export function useDevState() {
     return String(pageMeta['pageType'] ?? 'config') !== 'vue-component'
   }
 
-  function normalizeLegacyDividerNodes(nodes: LegacyNavNode[]): { nodes: NavNode[]; migratedCount: number } {
-    const normalizedNodes: NavNode[] = []
-    let migratedCount = 0
+  function isSystemRootDirectory(node: NavNode | null | undefined): boolean {
+    if (!node) return false
+    if (!SYSTEM_ROOT_DIRECTORY_IDS.has(node.id)) return false
+    return treeData.value.some((rootNode) => rootNode.id === node.id)
+  }
 
-    for (const currentNode of nodes) {
-      if (currentNode.type === 'divider') {
-        const previousNode = normalizedNodes.at(-1)
-        if (previousNode) {
-          previousNode.dividerAfter = true
-        }
-        migratedCount += 1
-        continue
+  function isPageLikeKind(kind: NavNodeKind): boolean {
+    return kind === 'page' || kind === 'system-page' || kind === 'sub-page'
+  }
+
+  function findParentNodeById(nodes: NavNode[], targetId: string, parent: NavNode | null = null): NavNode | null {
+    for (const node of nodes) {
+      if (node.id === targetId) return parent
+      if (Array.isArray(node.children)) {
+        const found = findParentNodeById(node.children, targetId, node)
+        if (found) return found
       }
+    }
+    return null
+  }
 
-      const normalizedType: NavNode['type'] = currentNode.type === 'group' ? 'group' : 'item'
-      const normalizedNode: NavNode = {
-        ...(deepClone(currentNode) as Omit<NavNode, 'type' | 'children'>),
-        type: normalizedType,
-      }
+  function getParentNode(node: NavNode | null | undefined): NavNode | null {
+    if (!node) return null
+    return findParentNodeById(treeData.value, node.id)
+  }
 
-      if (Array.isArray(currentNode.children)) {
-        const childResult = normalizeLegacyDividerNodes(currentNode.children)
-        normalizedNode.children = childResult.nodes
-        migratedCount += childResult.migratedCount
-      }
+  function canUseModuleNodeKind(node: NavNode | null | undefined): boolean {
+    const parent = getParentNode(node)
+    if (!parent) return true
+    const parentKind = inferNodeKind(parent)
+    return !isPageLikeKind(parentKind)
+  }
 
-      normalizedNodes.push(normalizedNode)
+  function inferNodeKind(node: NavNode): NavNodeKind {
+    if (node.nodeKind !== undefined) return node.nodeKind
+    return SYSTEM_ROOT_DIRECTORY_IDS.has(node.id) ? 'system-directory' : 'page'
+  }
+
+  function applyNodeKindToNode(node: NavNode): NavNode {
+    const cloned = deepClone(node)
+    cloned.nodeKind = inferNodeKind(cloned)
+    cloned.type = cloned.nodeKind === 'module' || cloned.nodeKind === 'system-directory' ? 'group' : 'item'
+    if (cloned.nodeKind === 'sub-page') {
+      cloned.hidden = true
+      delete cloned.path
+      delete cloned.redirect
+      delete cloned.externalUrl
+      delete cloned.action
+      cloned.pageType = 'config'
+    }
+    if (Array.isArray(cloned.children)) {
+      cloned.children = cloned.children.map(applyNodeKindToNode)
+    }
+    return cloned
+  }
+
+  function applyNodeKindPreset(kind: NavNodeKind) {
+    editForm.nodeKind = kind
+
+    if (kind === 'system-directory') {
+      editForm.type = 'group'
+      editForm.hidden = false
+      editForm.path = ''
+      editForm.pageType = ''
+      editForm.action = ''
+      editForm.redirect = ''
+      editForm.externalUrl = ''
+      editForm.parentPageId = ''
+      return
     }
 
-    return { nodes: normalizedNodes, migratedCount }
+    if (kind === 'module') {
+      editForm.type = 'group'
+      editForm.hidden = false
+      editForm.path = ''
+      editForm.pageType = ''
+      editForm.action = ''
+      editForm.externalUrl = ''
+      editForm.parentPageId = ''
+      return
+    }
+
+    if (kind === 'system-page') {
+      editForm.type = 'item'
+      editForm.hidden = false
+      if (!editForm.pageType) editForm.pageType = 'vue-component'
+      editForm.parentPageId = ''
+      return
+    }
+
+    if (kind === 'page') {
+      editForm.type = 'item'
+      editForm.hidden = false
+      editForm.pageType = 'config'
+      editForm.action = ''
+      editForm.parentPageId = ''
+      return
+    }
+
+    editForm.type = 'item'
+    editForm.hidden = true
+    editForm.pageType = 'config'
+    editForm.path = ''
+    editForm.redirect = ''
+    editForm.externalUrl = ''
+    editForm.action = ''
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -186,21 +259,8 @@ export function useDevState() {
   async function loadNavConfig() {
     navLoading.value = true
     try {
-      const config = await http.get<{ childPlacement?: string; children?: LegacyNavNode[]; toolbar?: LegacyNavNode[] }>(getNavApi())
-      let children = config.children ?? []
-      // 向后兼容：旧格式 toolbar[] 迁移为 childPlacement='toolbar' 分组
-      if (Array.isArray(config.toolbar) && config.toolbar.length > 0) {
-        const hasToolbarGroup = children.some(c => c.childPlacement === 'toolbar')
-        if (!hasToolbarGroup) {
-          children = [
-            { id: '__toolbar__', type: 'group', title: '工具栏', icon: 'SetUp', childPlacement: 'toolbar', children: config.toolbar } as LegacyNavNode,
-            ...children,
-          ]
-        }
-      }
-
-      const normalizeResult = normalizeLegacyDividerNodes(children)
-      const normalizedChildren = normalizeResult.nodes
+      const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(getNavApi())
+      const normalizedChildren = (config.children ?? []).map(applyNodeKindToNode)
 
       if (normalizedChildren.length > 0) {
         treeData.value = normalizedChildren
@@ -210,23 +270,9 @@ export function useDevState() {
         navEmpty.value = true
       }
 
-      if (normalizeResult.migratedCount > 0) {
-        const normalizedRoot: NavRoot = {
-          childPlacement: config.childPlacement === 'sidebar' ? 'sidebar' : 'header',
-          children: normalizedChildren,
-        }
-
-        try {
-          await http.put(getNavApi(), normalizedRoot)
-          addStatus(`检测到历史 divider 节点，已通过 API 自动迁移 ${normalizeResult.migratedCount} 处`, 'warning')
-        } catch (saveError) {
-          addStatus(`历史导航迁移回写失败: ${String(saveError)}`, 'error')
-        }
-      }
-
       addStatus('导航配置已加载', 'success')
     } catch {
-      treeData.value = deepClone(demoNavRoot.children)
+      treeData.value = deepClone(demoNavRoot.children).map(applyNodeKindToNode)
       navEmpty.value = false
       addStatus('导航加载失败，使用演示数据', 'warning')
     } finally {
@@ -296,6 +342,7 @@ export function useDevState() {
     editForm.id = node.id
     editForm.title = node.title
     editForm.icon = node.icon ?? ''
+    editForm.nodeKind = inferNodeKind(node)
     editForm.type = node.type
     editForm.dividerAfter = node.dividerAfter ?? false
     editForm.description = node.description ?? ''
@@ -304,6 +351,7 @@ export function useDevState() {
     editForm.redirect = node.redirect ?? ''
     editForm.externalUrl = node.externalUrl ?? ''
     editForm.action = node.action ?? ''
+    editForm.parentPageId = node.parentPageId ?? ''
     editForm.childPlacement = node.childPlacement ?? ''
     editForm.order = node.order ?? 0
     editForm.hidden = node.hidden ?? false
@@ -343,7 +391,29 @@ export function useDevState() {
   function applyNavChanges() {
     if (!selectedNode.value) return
     const node = selectedNode.value
-    const patch: Record<string, unknown> = { id: editForm.id, title: editForm.title }
+    if (isSystemRootDirectory(node)) {
+      loadNodeToForm(node)
+      navDirty.value = false
+      addStatus(`系统目录 ${node.title} 不可修改目录属性，仅可编辑子项`, 'warning')
+      return
+    }
+
+    if (editForm.nodeKind === 'module' && !canUseModuleNodeKind(node)) {
+      applyNodeKindPreset('page')
+      addStatus('页面下不能创建模块，已自动改为普通页面', 'warning')
+    }
+
+    const patch: Record<string, unknown> = { id: editForm.id, title: editForm.title, nodeKind: editForm.nodeKind }
+
+    if (editForm.nodeKind === 'sub-page') {
+      editForm.type = 'item'
+      editForm.hidden = true
+      editForm.path = ''
+      editForm.redirect = ''
+      editForm.externalUrl = ''
+      editForm.action = ''
+      editForm.pageType = 'config'
+    }
 
     if (editForm.icon) patch['icon'] = editForm.icon
     patch['type'] = editForm.type
@@ -354,6 +424,7 @@ export function useDevState() {
     if (editForm.redirect) patch['redirect'] = editForm.redirect
     if (editForm.externalUrl) patch['externalUrl'] = editForm.externalUrl
     if (editForm.action) patch['action'] = editForm.action
+    if (editForm.parentPageId) patch['parentPageId'] = editForm.parentPageId
     if (editForm.childPlacement) patch['childPlacement'] = editForm.childPlacement
     if (editForm.order !== 0) patch['order'] = editForm.order
     if (editForm.hidden !== false) patch['hidden'] = editForm.hidden
@@ -375,7 +446,8 @@ export function useDevState() {
     // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
       'icon', 'description', 'path', 'pageType', 'redirect', 'externalUrl', 'action',
-      'childPlacement', 'order', 'hidden', 'disabled', 'context', 'dividerAfter',
+      'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
+      'dividerAfter', 'nodeKind',
     ]
     for (const k of optKeys) {
       if (!(k in patch)) {
@@ -415,6 +487,11 @@ export function useDevState() {
     applyNavChanges()
     if (!selectedNode.value) return
     const node = selectedNode.value
+    if (isSystemRootDirectory(node)) {
+      navDirty.value = false
+      addStatus(`系统目录 ${node.title} 仅允许编辑子项，跳过节点保存`, 'warning')
+      return
+    }
     const { children: _children, ...patch } = node
     navSaving.value = true
     try {
@@ -512,13 +589,39 @@ export function useDevState() {
     }
   }
 
+  function handleNodeKindChange(kind: NavNodeKind) {
+    if (kind === 'module' && !canUseModuleNodeKind(selectedNode.value)) {
+      addStatus('页面下不能创建模块', 'warning')
+      const fallbackKind = selectedNode.value ? inferNodeKind(selectedNode.value) : 'page'
+      applyNodeKindPreset(fallbackKind)
+      return
+    }
+
+    applyNodeKindPreset(kind)
+    markNavDirty()
+    const pageId = normalizePageIdFromPath(editForm.path)
+    if (pageId && isConfigPageType(editForm.pageType)) {
+      void loadPageFiles(pageId)
+    } else {
+      clearFiles()
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════
   // 树增删
   // ═══════════════════════════════════════════════════════════
 
   function addRootNode() {
     const id = `module-${Date.now()}`
-    const node: NavNode = { id, type: 'group', title: '新模块', icon: 'FolderOpened', childPlacement: 'sidebar', children: [] }
+    const node: NavNode = {
+      id,
+      type: 'group',
+      nodeKind: 'module',
+      title: '新模块',
+      icon: 'FolderOpened',
+      childPlacement: 'sidebar',
+      children: [],
+    }
     treeData.value.push(node)
     void http.post(`${getNavApi()}/nodes`, { node }).then(
       () => addStatus('已添加根模块', 'info'),
@@ -539,6 +642,7 @@ export function useDevState() {
       return {
         id: '__toolbar__',
         type: 'group',
+        nodeKind: 'system-directory',
         title: '工具栏',
         icon: 'SetUp',
         childPlacement: 'toolbar',
@@ -548,6 +652,7 @@ export function useDevState() {
     return {
       id: '__user-menu__',
       type: 'group',
+      nodeKind: 'system-directory',
       title: '用户菜单',
       icon: 'User',
       childPlacement: 'user-menu',
@@ -575,7 +680,7 @@ export function useDevState() {
 
   function addChildNode(parent: NavNode) {
     const id = `page-${Date.now()}`
-    const node: NavNode = { id, type: 'item', title: '新页面', icon: 'Document', path: `/${id}` }
+    const node: NavNode = { id, type: 'item', nodeKind: 'page', title: '新页面', icon: 'Document', path: `/${id}` }
     ;(parent.children ??= []).push(node)
     void http.post(`${getNavApi()}/nodes`, { parentId: parent.id, node }).then(
       () => addStatus(`已在 ${parent.title} 下添加子节点`, 'info'),
@@ -584,7 +689,11 @@ export function useDevState() {
   }
 
   function removeNodeFromTree(node: { parent: { data: NavNode } }, data: NavNode) {
-    const isRootReserved = RESERVED_ROOT_GROUP_IDS.has(data.id)
+    if (isSystemRootDirectory(data)) {
+      addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
+      return
+    }
+    const isRootReserved = SYSTEM_ROOT_DIRECTORY_IDS.has(data.id)
     const parent = node.parent
     if (parent.data.children) {
       const idx = parent.data.children.indexOf(data)
@@ -710,9 +819,12 @@ export function useDevState() {
     selectNode,
     handlePathChange,
     handlePageTypeChange,
+    handleNodeKindChange,
     addRootNode,
     hasReservedRootGroup,
+    isSystemRootDirectory,
     restoreReservedRootGroup,
+    canUseModuleNodeKind,
     addChildNode,
     removeNodeFromTree,
     resetToDemo,

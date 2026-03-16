@@ -22,6 +22,7 @@ import java.util.Map;
 public class NavigationService {
 
     private static final Logger log = LoggerFactory.getLogger(NavigationService.class);
+    private static final List<String> SYSTEM_ROOT_DIRECTORY_IDS = List.of("__toolbar__", "__user-menu__");
 
     private final NavigationConfigRepository navRepo;
     private final ObjectMapper objectMapper;
@@ -121,6 +122,9 @@ public class NavigationService {
     public Map<String, Object> updateNode(String tenantId, String projectId,
                                            String id,
                                            Map<String, Object> patch) throws IOException {
+        if (isSystemRootDirectoryId(id)) {
+            throw new IllegalArgumentException("系统目录不可修改目录属性，仅可编辑子项: " + id);
+        }
         Map<String, Object> root = loadOrInit(tenantId, projectId);
         Map<String, Object> node = findById(getChildren(root), id);
         if (node == null) throw new IllegalArgumentException("节点不存在: " + id);
@@ -140,6 +144,9 @@ public class NavigationService {
     @Transactional
     public Map<String, Object> deleteNode(String tenantId, String projectId,
                                            String id) throws IOException {
+        if (isSystemRootDirectoryId(id)) {
+            throw new IllegalArgumentException("系统目录不可删除: " + id);
+        }
         Map<String, Object> root = loadOrInit(tenantId, projectId);
         List<Map<String, Object>> rootChildren = getChildren(root);
         Map<String, Object>[] result = new Map[]{null};
@@ -156,6 +163,9 @@ public class NavigationService {
     public Map<String, Object> moveNode(String tenantId, String projectId,
                                          String id, String newParentId,
                                          int index) throws IOException {
+        if (isSystemRootDirectoryId(id)) {
+            throw new IllegalArgumentException("系统目录不可修改层级: " + id);
+        }
         Map<String, Object> root = loadOrInit(tenantId, projectId);
         List<Map<String, Object>> rootChildren = getChildren(root);
 
@@ -326,6 +336,10 @@ public class NavigationService {
                 });
         entity.setConfigJson(json);
         navRepo.save(entity);
+    }
+
+    private boolean isSystemRootDirectoryId(String id) {
+        return SYSTEM_ROOT_DIRECTORY_IDS.contains(id);
     }
 
 }
