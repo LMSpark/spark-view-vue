@@ -180,7 +180,7 @@ public class PageConfigService {
             item.put("pageId", page.getPageId());
             item.put("path", page.getPath());
             item.put("title", page.getTitle() != null ? page.getTitle() : page.getPageId());
-            item.put("icon", page.getIcon() != null ? page.getIcon() : "📄");
+            item.put("icon", page.getIcon() != null ? page.getIcon() : "Document");
 
             // 从文件系统扫描已有文件
             Path dir = pageDir(tenantId, projectId, page.getPageId());
@@ -219,7 +219,7 @@ public class PageConfigService {
         page.setProjectId(projectId);
         page.setPageId(pageId);
         page.setTitle(title != null && !title.isBlank() ? title : pageId);
-        page.setIcon(icon != null && !icon.isBlank() ? icon : "📄");
+        page.setIcon(icon != null && !icon.isBlank() ? icon : "Document");
         page.setPath("/" + pageId);
         page.setRouteName(pageId);
         pageRepo.save(page);
@@ -293,7 +293,7 @@ public class PageConfigService {
             page.setProjectId(projectId);
             page.setPageId(pageId);
             page.setTitle(pageId);
-            page.setIcon("🤖");
+            page.setIcon("Document");
             page.setPath("/" + pageId);
             page.setRouteName(pageId);
             pageRepo.save(page);
@@ -313,7 +313,7 @@ public class PageConfigService {
             String pageType = p.getPageType() != null ? p.getPageType() : "config";
             Map<String, Object> meta = new LinkedHashMap<>();
             meta.put("title", p.getTitle() != null ? p.getTitle() : p.getPageId());
-            meta.put("icon", p.getIcon() != null ? p.getIcon() : "📄");
+            meta.put("icon", p.getIcon() != null ? p.getIcon() : "Document");
             meta.put("pageType", pageType);
             route.put("meta", meta);
             routes.add(route);

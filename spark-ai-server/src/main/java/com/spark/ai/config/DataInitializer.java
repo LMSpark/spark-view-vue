@@ -228,7 +228,7 @@ public class DataInitializer implements CommandLineRunner {
         page.setProjectId(HOMEPAGE_PROJECT);
         page.setPageId(pageId);
         page.setTitle(pageId);
-        page.setIcon("📄");
+        page.setIcon("Document");
         page.setPath("/" + pageId);
         page.setRouteName(pageId);
         pageRepo.save(page);

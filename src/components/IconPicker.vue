@@ -1,9 +1,10 @@
 <template>
   <el-popover trigger="click" :width="360" placement="bottom-start">
     <template #reference>
-      <el-button class="icon-trigger" :style="{ width: width + 'px' }">
-        <el-icon v-if="modelValue" :size="18"><component :is="iconMap[modelValue]" /></el-icon>
-        <span v-else class="icon-placeholder">{{ placeholder }}</span>
+      <el-button class="icon-trigger" :style="{ width: triggerWidth }">
+        <el-icon v-if="hasResolvedIcon" :size="18"><component :is="iconMap[resolvedIconName]" /></el-icon>
+        <span v-else-if="props.modelValue" class="icon-fallback">{{ props.modelValue }}</span>
+        <span v-else class="icon-placeholder">{{ props.placeholder }}</span>
       </el-button>
     </template>
     <div class="icon-search">
@@ -14,14 +15,14 @@
         v-for="name in filtered"
         :key="name"
         class="icon-cell"
-        :class="{ active: name === modelValue }"
+        :class="{ active: name === resolvedIconName }"
         :title="name"
         @click="select(name)"
       ><el-icon :size="18"><component :is="iconMap[name]" /></el-icon></button>
     </div>
     <div v-if="!filtered.length" class="icon-empty">无匹配图标</div>
-    <div v-if="modelValue" class="icon-footer">
-      <span class="icon-name">{{ modelValue }}</span>
+    <div v-if="props.modelValue" class="icon-footer">
+      <span class="icon-name">{{ props.modelValue }}</span>
       <el-button size="small" link type="danger" @click="select('')">清除</el-button>
     </div>
   </el-popover>
@@ -35,13 +36,17 @@ import * as Icons from '@element-plus/icons-vue'
 interface Props {
   modelValue?: string
   placeholder?: string
-  width?: number
+  width?: number | string
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
   placeholder: '选择图标',
   width: 60,
+})
+
+const triggerWidth = computed(() => {
+  return typeof props.width === 'number' ? `${props.width}px` : props.width
 })
 
 const emit = defineEmits<{
@@ -51,7 +56,53 @@ const emit = defineEmits<{
 const iconMap = Icons as unknown as Record<string, ReturnType<typeof import('vue')['defineComponent']>>
 const allNames = Object.keys(Icons).filter(k => k !== 'default').sort()
 
+const LEGACY_ICON_ALIAS: Record<string, string> = {
+  '🔧': 'SetUp',
+  '🎨': 'Brush',
+  '💬': 'ChatDotRound',
+  '🔍': 'Search',
+  '⛶': 'FullScreen',
+  '🔔': 'Bell',
+  '🌙': 'Moon',
+  '👤': 'User',
+  '⚙️': 'Setting',
+  '⚙': 'Setting',
+  '🏠': 'HomeFilled',
+  '📊': 'DataBoard',
+  '📱': 'Grid',
+  '📋': 'List',
+  '👥': 'UserFilled',
+  '⚡': 'Lightning',
+  '🗄️': 'Coin',
+  'ℹ️': 'InfoFilled',
+  'ℹ': 'InfoFilled',
+  '🔗': 'Connection',
+  '🔄': 'Refresh',
+  '🧠': 'Cpu',
+  '📦': 'Box',
+  '🧩': 'Grid',
+  '📈': 'TrendCharts',
+  '🎯': 'Aim',
+  '🏢': 'OfficeBuilding',
+  '🌳': 'Share',
+  '🌲': 'Share',
+  '🌿': 'Share',
+  '📄': 'Document',
+  '🤖': 'Cpu',
+}
+
 const keyword = ref('')
+
+const resolvedIconName = computed(() => {
+  const raw = props.modelValue?.trim() ?? ''
+  if (!raw) return ''
+  return LEGACY_ICON_ALIAS[raw] ?? raw
+})
+
+const hasResolvedIcon = computed(() => {
+  if (!resolvedIconName.value) return false
+  return iconMap[resolvedIconName.value] !== undefined
+})
 
 const filtered = computed(() => {
   const kw = keyword.value.toLowerCase()
@@ -74,6 +125,11 @@ function select(name: string) {
 .icon-placeholder {
   color: var(--el-text-color-placeholder);
   font-size: 12px;
+}
+.icon-fallback {
+  color: var(--el-text-color-regular);
+  font-size: 14px;
+  line-height: 1;
 }
 .icon-search {
   margin-bottom: 8px;

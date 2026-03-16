@@ -3,23 +3,27 @@
     <!-- ═══ 顶栏 ═══ -->
     <div class="dev-header">
       <div class="dev-header__left">
-        <span class="dev-header__logo">⚡</span>
+        <span class="dev-header__logo"><NavIcon name="Lightning" :size="20" /></span>
         <span class="dev-header__title">SPARK 开发系统</span>
         <el-tag v-if="state.hasAnyDirty.value" type="warning" size="small" effect="dark">未保存</el-tag>
       </div>
       <div class="dev-header__right">
-        <el-button size="small" @click="showCreateDialog">➕ 新建页面</el-button>
-        <el-button size="small" @click="previewCurrentPage" :disabled="!state.editForm.path">
-          🔍 预览页面
+        <el-button size="small" @click="showCreateDialog">
+          <NavIcon name="Plus" :size="14" /> 新建页面
         </el-button>
-        <el-button size="small" @click="showPreview = true">👁️ JSON</el-button>
+        <el-button size="small" @click="previewCurrentPage" :disabled="!state.editForm.path">
+          <NavIcon name="Search" :size="14" /> 预览页面
+        </el-button>
+        <el-button size="small" @click="showPreview = true">
+          <NavIcon name="View" :size="14" /> JSON
+        </el-button>
         <el-button
           type="primary"
           size="small"
           :loading="state.navSaving.value || state.fileSaving.value"
           @click="state.saveAll()"
         >
-          💾 保存全部
+          <NavIcon name="DocumentChecked" :size="14" /> 保存全部
         </el-button>
         <el-divider direction="vertical" />
         <el-button
@@ -27,7 +31,7 @@
           :type="state.aiPanelVisible.value ? 'primary' : 'default'"
           @click="state.aiPanelVisible.value = !state.aiPanelVisible.value"
         >
-          🤖 AI
+          <NavIcon name="Cpu" :size="14" /> AI
         </el-button>
       </div>
     </div>
@@ -43,23 +47,23 @@
       <div class="dev-body__workspace">
         <el-tabs v-model="workTab" type="border-card" class="workspace-tabs">
           <!-- 🔧 节点属性（选中节点时可用） -->
-          <el-tab-pane label="🔧 节点属性" name="props" :disabled="!state.selectedNode.value">
+          <el-tab-pane label="节点属性" name="props" :disabled="!state.selectedNode.value">
             <template v-if="state.selectedNode.value">
               <DevNodeProps :state="state" @create-page="showCreateDialogLinked" />
             </template>
-            <el-empty v-else description="👈 在左侧树中选择节点开始编辑" />
+            <el-empty v-else description="在左侧树中选择节点开始编辑" />
           </el-tab-pane>
           <!-- 4 个配置文件 tab（配置页面时） -->
             <template v-if="state.activePageId.value">
               <el-tab-pane v-for="fname in PAGE_FILE_NAMES" :key="fname" :name="fname">
                 <template #label>
                   <span :class="{ 'tab-dirty': state.fileDirty[fname] }">
-                    {{ fileIcon(fname) }} {{ fname }}
+                    <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
                   </span>
                 </template>
                 <div class="inline-file-editor" v-loading="!state.fileLoaded.value">
                   <div class="inline-file-toolbar">
-                    <span class="inline-file-id">📑 {{ state.activePageId.value }}</span>
+                    <span class="inline-file-id"><NavIcon name="Tickets" :size="14" /> {{ state.activePageId.value }}</span>
                     <div class="inline-file-actions">
                       <el-button
                         v-if="state.hasAnyFileDirty.value"
@@ -67,8 +71,8 @@
                         type="primary"
                         :loading="state.fileSaving.value"
                         @click="state.savePageFiles()"
-                      >💾 保存文件</el-button>
-                      <el-button size="small" @click="refreshFiles">🔄</el-button>
+                      ><NavIcon name="DocumentChecked" :size="14" /> 保存文件</el-button>
+                      <el-button size="small" @click="refreshFiles"><NavIcon name="Refresh" :size="14" /></el-button>
                     </div>
                   </div>
                   <el-input
@@ -88,13 +92,13 @@
           <div class="workspace-footer__left">
             <template v-if="state.selectedNode.value">
               <span class="footer-info">
-                🌳 {{ state.editForm.id }}
+                <NavIcon name="Share" :size="13" /> {{ state.editForm.id }}
                 <template v-if="state.editForm.title"> · {{ state.editForm.title }}</template>
               </span>
               <el-tag v-if="state.navDirty.value" type="warning" size="small">属性已修改</el-tag>
             </template>
             <template v-if="state.activePageId.value">
-              <span class="footer-info">📑 {{ state.activePageId.value }}</span>
+              <span class="footer-info"><NavIcon name="Tickets" :size="13" /> {{ state.activePageId.value }}</span>
               <el-tag v-if="state.hasAnyFileDirty.value" type="warning" size="small">文件已修改</el-tag>
             </template>
           </div>
@@ -106,7 +110,7 @@
               link
               @click="previewPage(state.activePageId.value)"
             >
-              🔗 /{{ state.activePageId.value }}
+              <NavIcon name="Connection" :size="13" /> /{{ state.activePageId.value }}
             </el-button>
           </div>
         </div>
@@ -116,12 +120,12 @@
       <transition name="slide-right">
         <div v-if="state.aiPanelVisible.value" class="dev-body__ai">
           <div class="ai-panel-header">
-            <span>🤖 AI 助手</span>
+            <span class="ai-panel-header__title"><NavIcon name="Cpu" :size="14" /> AI 助手</span>
             <el-button
               size="small"
               link
               @click="state.aiPanelVisible.value = false"
-            >✕</el-button>
+            ><NavIcon name="CloseBold" :size="12" /></el-button>
           </div>
           <DevAiPanel :state="state" />
         </div>
@@ -139,7 +143,7 @@
         </template>
       </div>
       <div class="status-right">
-        <span class="status-count">📑 {{ state.pageList.value.length }} 页面</span>
+        <span class="status-count"><NavIcon name="Tickets" :size="13" /> {{ state.pageList.value.length }} 页面</span>
       </div>
     </div>
 
@@ -153,7 +157,7 @@
           <el-input v-model="createForm.title" placeholder="页面显示名称" />
         </el-form-item>
         <el-form-item label="图标">
-          <el-input v-model="createForm.icon" placeholder="📄" style="width: 80px" />
+          <el-input v-model="createForm.icon" placeholder="Document" style="width: 120px" />
         </el-form-item>
         <el-form-item v-if="state.selectedNode.value" label="关联到节点">
           <el-switch v-model="createForm.linkToNav" />
@@ -178,7 +182,7 @@
         style="font-family: monospace; font-size: 13px"
       />
       <template #footer>
-        <el-button @click="copyJson">📋 复制</el-button>
+        <el-button @click="copyJson"><NavIcon name="List" :size="14" /> 复制</el-button>
         <el-button @click="showPreview = false">关闭</el-button>
       </template>
     </el-dialog>
@@ -194,6 +198,7 @@ import { useDevState, PAGE_FILE_NAMES } from './useDevState'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevAiPanel from './DevAiPanel.vue'
+import NavIcon from '@/components/NavIcon.vue'
 
 const router = useRouter()
 const state = useDevState()
@@ -216,11 +221,11 @@ watch(() => state.activePageId.value, (newId) => {
 })
 
 function fileIcon(name: string) {
-  if (name === 'rule.json') return '📐'
-  if (name === 'pagedata.json') return '🗄️'
-  if (name === 'script.js') return '⚡'
-  if (name === 'style.css') return '🎨'
-  return '📄'
+  if (name === 'rule.json') return 'Crop'
+  if (name === 'pagedata.json') return 'Coin'
+  if (name === 'script.js') return 'Lightning'
+  if (name === 'style.css') return 'Brush'
+  return 'Document'
 }
 
 // JSON 预览
@@ -308,7 +313,7 @@ onMounted(() => { void state.initialize() })
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
+  padding: 10px 16px;
   background: var(--el-bg-color);
   border-bottom: 1px solid var(--el-border-color);
   flex-shrink: 0;
@@ -339,13 +344,17 @@ onMounted(() => { void state.initialize() })
   display: flex;
   min-height: 0;
   overflow: hidden;
+  gap: 12px;
+  padding: 12px;
+  background: var(--el-fill-color-lighter);
 }
 
 /* 左栏：站点树 */
 .dev-body__tree {
   width: 320px;
   flex-shrink: 0;
-  border-right: 1px solid var(--el-border-color-lighter);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 12px;
   background: var(--el-bg-color);
   overflow: hidden;
 }
@@ -357,6 +366,9 @@ onMounted(() => { void state.initialize() })
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 12px;
+  background: var(--el-bg-color);
 }
 
 .workspace-tabs {
@@ -365,6 +377,11 @@ onMounted(() => { void state.initialize() })
   flex-direction: column;
   overflow: hidden;
 }
+
+.workspace-tabs :deep(.el-tabs__header) {
+  margin: 0;
+}
+
 .workspace-tabs :deep(.el-tabs__content) {
   flex: 1;
   overflow: auto;
@@ -392,6 +409,9 @@ onMounted(() => { void state.initialize() })
   gap: 8px;
 }
 .footer-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--el-text-color-secondary);
 }
 
@@ -399,7 +419,8 @@ onMounted(() => { void state.initialize() })
 .dev-body__ai {
   width: 380px;
   flex-shrink: 0;
-  border-left: 1px solid var(--el-border-color-lighter);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 12px;
   background: var(--el-bg-color);
   display: flex;
   flex-direction: column;
@@ -416,6 +437,12 @@ onMounted(() => { void state.initialize() })
   font-weight: 600;
   color: var(--el-text-color-primary);
   flex-shrink: 0;
+}
+
+.ai-panel-header__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ═══ 底部状态栏 ═══ */
@@ -454,6 +481,9 @@ onMounted(() => { void state.initialize() })
   flex-shrink: 0;
 }
 .status-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--el-text-color-secondary);
 }
 
@@ -472,6 +502,9 @@ onMounted(() => { void state.initialize() })
   margin-bottom: 4px;
 }
 .inline-file-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--el-color-primary);

@@ -54,7 +54,7 @@ public class PageConfigController {
         try {
             String pageId = body.get("pageId");
             String title = body.getOrDefault("title", pageId);
-            String icon = body.getOrDefault("icon", "📄");
+            String icon = body.getOrDefault("icon", "Document");
             Map<String, Object> result = pageConfigService.createPage(
                     tenantId, projectId, pageId, title, icon);
             return ResponseEntity.ok(result);

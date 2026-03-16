@@ -25,6 +25,7 @@ export interface DevEditForm {
   title: string
   icon: string
   type: string
+  dividerAfter: boolean
   description: string
   path: string
   pageType: string
@@ -54,6 +55,13 @@ import { http } from '@/services/http'
 // ═══════════════════════════════════════════════════════════
 
 export function useDevState() {
+  const RESERVED_ROOT_GROUP_IDS = new Set(['__toolbar__', '__user-menu__'])
+
+  type LegacyNavNode = Omit<NavNode, 'type' | 'children'> & {
+    type?: string
+    children?: LegacyNavNode[]
+  }
+
   // ── 导航树 ──
   const treeData = ref<NavNode[]>([])
   const navLoading = ref(false)
@@ -64,6 +72,7 @@ export function useDevState() {
   // ── 节点编辑表单 ──
   const editForm = reactive<DevEditForm>({
     id: '', title: '', icon: '', type: '',
+    dividerAfter: false,
     description: '',
     path: '', pageType: '', redirect: '', externalUrl: '',
     action: '',
@@ -107,6 +116,56 @@ export function useDevState() {
     return JSON.stringify(root, null, 2)
   })
 
+  function normalizePageIdFromPath(path: string | undefined | null): string {
+    return path ? path.replace(/^\/+/, '').trim() : ''
+  }
+
+  function isConfigPageType(pageType: string | undefined | null): boolean {
+    return pageType !== 'vue-component'
+  }
+
+  function findPageMeta(pageId: string): Record<string, unknown> | undefined {
+    return pageList.value.find((p) => String(p['pageId'] ?? '') === pageId)
+  }
+
+  function isBackendConfigPage(pageId: string): boolean {
+    const pageMeta = findPageMeta(pageId)
+    if (!pageMeta) return true
+    return String(pageMeta['pageType'] ?? 'config') !== 'vue-component'
+  }
+
+  function normalizeLegacyDividerNodes(nodes: LegacyNavNode[]): { nodes: NavNode[]; migratedCount: number } {
+    const normalizedNodes: NavNode[] = []
+    let migratedCount = 0
+
+    for (const currentNode of nodes) {
+      if (currentNode.type === 'divider') {
+        const previousNode = normalizedNodes.at(-1)
+        if (previousNode) {
+          previousNode.dividerAfter = true
+        }
+        migratedCount += 1
+        continue
+      }
+
+      const normalizedType: NavNode['type'] = currentNode.type === 'group' ? 'group' : 'item'
+      const normalizedNode: NavNode = {
+        ...(deepClone(currentNode) as Omit<NavNode, 'type' | 'children'>),
+        type: normalizedType,
+      }
+
+      if (Array.isArray(currentNode.children)) {
+        const childResult = normalizeLegacyDividerNodes(currentNode.children)
+        normalizedNode.children = childResult.nodes
+        migratedCount += childResult.migratedCount
+      }
+
+      normalizedNodes.push(normalizedNode)
+    }
+
+    return { nodes: normalizedNodes, migratedCount }
+  }
+
   // ═══════════════════════════════════════════════════════════
   // 状态消息
   // ═══════════════════════════════════════════════════════════
@@ -127,25 +186,44 @@ export function useDevState() {
   async function loadNavConfig() {
     navLoading.value = true
     try {
-      const config = await http.get<{ childPlacement?: string; children?: NavNode[]; toolbar?: NavNode[] }>(getNavApi())
+      const config = await http.get<{ childPlacement?: string; children?: LegacyNavNode[]; toolbar?: LegacyNavNode[] }>(getNavApi())
       let children = config.children ?? []
       // 向后兼容：旧格式 toolbar[] 迁移为 childPlacement='toolbar' 分组
       if (Array.isArray(config.toolbar) && config.toolbar.length > 0) {
         const hasToolbarGroup = children.some(c => c.childPlacement === 'toolbar')
         if (!hasToolbarGroup) {
           children = [
-            { id: '__toolbar__', type: 'group', title: '工具栏', icon: 'SetUp', childPlacement: 'toolbar', children: config.toolbar } as NavNode,
+            { id: '__toolbar__', type: 'group', title: '工具栏', icon: 'SetUp', childPlacement: 'toolbar', children: config.toolbar } as LegacyNavNode,
             ...children,
           ]
         }
       }
-      if (children.length > 0) {
-        treeData.value = children
+
+      const normalizeResult = normalizeLegacyDividerNodes(children)
+      const normalizedChildren = normalizeResult.nodes
+
+      if (normalizedChildren.length > 0) {
+        treeData.value = normalizedChildren
         navEmpty.value = false
       } else {
         treeData.value = []
         navEmpty.value = true
       }
+
+      if (normalizeResult.migratedCount > 0) {
+        const normalizedRoot: NavRoot = {
+          childPlacement: config.childPlacement === 'sidebar' ? 'sidebar' : 'header',
+          children: normalizedChildren,
+        }
+
+        try {
+          await http.put(getNavApi(), normalizedRoot)
+          addStatus(`检测到历史 divider 节点，已通过 API 自动迁移 ${normalizeResult.migratedCount} 处`, 'warning')
+        } catch (saveError) {
+          addStatus(`历史导航迁移回写失败: ${String(saveError)}`, 'error')
+        }
+      }
+
       addStatus('导航配置已加载', 'success')
     } catch {
       treeData.value = deepClone(demoNavRoot.children)
@@ -173,6 +251,16 @@ export function useDevState() {
   }
 
   async function loadPageFiles(pageId: string) {
+    if (!pageId) {
+      clearFiles()
+      return
+    }
+    if (!isBackendConfigPage(pageId)) {
+      clearFiles()
+      addStatus(`页面 ${pageId} 为 vue-component，配置文件由前端组件维护`, 'info')
+      return
+    }
+
     activePageId.value = pageId
     fileLoaded.value = false
     for (const k of PAGE_FILE_NAMES) {
@@ -209,6 +297,7 @@ export function useDevState() {
     editForm.title = node.title
     editForm.icon = node.icon ?? ''
     editForm.type = node.type
+    editForm.dividerAfter = node.dividerAfter ?? false
     editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
     editForm.pageType = node.pageType ?? ''
@@ -258,6 +347,7 @@ export function useDevState() {
 
     if (editForm.icon) patch['icon'] = editForm.icon
     patch['type'] = editForm.type
+    if (editForm.dividerAfter) patch['dividerAfter'] = true
     if (editForm.description) patch['description'] = editForm.description
     if (editForm.path) patch['path'] = editForm.path
     if (editForm.pageType) patch['pageType'] = editForm.pageType
@@ -285,7 +375,7 @@ export function useDevState() {
     // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
       'icon', 'description', 'path', 'pageType', 'redirect', 'externalUrl', 'action',
-      'childPlacement', 'order', 'hidden', 'disabled', 'context',
+      'childPlacement', 'order', 'hidden', 'disabled', 'context', 'dividerAfter',
     ]
     for (const k of optKeys) {
       if (!(k in patch)) {
@@ -326,17 +416,25 @@ export function useDevState() {
     if (!selectedNode.value) return
     const node = selectedNode.value
     const { children: _children, ...patch } = node
+    navSaving.value = true
     try {
       await http.put(`${getNavApi()}/nodes/${encodeURIComponent(node.id)}`, patch)
       navDirty.value = false
       addStatus(`节点 ${node.title} 已保存`, 'success')
     } catch (e) {
       addStatus(`节点保存失败: ${String(e)}`, 'error')
+    } finally {
+      navSaving.value = false
     }
   }
 
   /** 从页面总览直接选中某页面进行编辑（不依赖树节点） */
   function selectPage(pageId: string) {
+    if (!isBackendConfigPage(pageId)) {
+      clearFiles()
+      addStatus(`页面 ${pageId} 为 vue-component，不提供后端配置文件编辑`, 'warning')
+      return
+    }
     void loadPageFiles(pageId)
   }
 
@@ -357,10 +455,20 @@ export function useDevState() {
   }
 
   async function saveAll() {
-    if (navDirty.value) await saveNavConfig()
+    if (navDirty.value) {
+      if (selectedNode.value) {
+        await saveNodeChanges()
+      } else {
+        await saveNavConfig()
+      }
+    }
     if (hasAnyFileDirty.value) await savePageFiles()
     if (!navDirty.value && !hasAnyFileDirty.value) {
-      await saveNavConfig()
+      if (selectedNode.value) {
+        await saveNodeChanges()
+      } else {
+        await saveNavConfig()
+      }
     }
   }
 
@@ -372,8 +480,8 @@ export function useDevState() {
     if (navDirty.value && selectedNode.value) applyNavChanges()
     selectedNode.value = node
     loadNodeToForm(node)
-    const pageId = node.path ? node.path.replace(/^\/+/, '') : ''
-    if (pageId) {
+    const pageId = normalizePageIdFromPath(node.path)
+    if (pageId && isConfigPageType(node.pageType ?? editForm.pageType)) {
       void loadPageFiles(pageId)
     } else {
       clearFiles()
@@ -382,8 +490,22 @@ export function useDevState() {
 
   function handlePathChange(val: string) {
     markNavDirty()
-    const pageId = val ? val.replace(/^\/+/, '') : ''
-    if (pageId) {
+    const pageId = normalizePageIdFromPath(val)
+    if (pageId && isConfigPageType(editForm.pageType)) {
+      void loadPageFiles(pageId)
+    } else {
+      clearFiles()
+    }
+  }
+
+  function handlePageTypeChange(pageType: string) {
+    markNavDirty()
+    const pageId = normalizePageIdFromPath(editForm.path)
+    if (!pageId) {
+      clearFiles()
+      return
+    }
+    if (isConfigPageType(pageType)) {
       void loadPageFiles(pageId)
     } else {
       clearFiles()
@@ -404,6 +526,53 @@ export function useDevState() {
     )
   }
 
+  function hasReservedRootGroup(id: '__toolbar__' | '__user-menu__'): boolean {
+    return treeData.value.some((node) => node.id === id)
+  }
+
+  function getReservedRootGroupTemplate(id: '__toolbar__' | '__user-menu__'): NavNode {
+    const template = demoNavRoot.children.find((node) => node.id === id)
+    if (template) {
+      return deepClone(template)
+    }
+    if (id === '__toolbar__') {
+      return {
+        id: '__toolbar__',
+        type: 'group',
+        title: '工具栏',
+        icon: 'SetUp',
+        childPlacement: 'toolbar',
+        children: [],
+      }
+    }
+    return {
+      id: '__user-menu__',
+      type: 'group',
+      title: '用户菜单',
+      icon: 'User',
+      childPlacement: 'user-menu',
+      children: [],
+    }
+  }
+
+  async function restoreReservedRootGroup(id: '__toolbar__' | '__user-menu__') {
+    if (hasReservedRootGroup(id)) {
+      addStatus(`${id} 已存在，无需恢复`, 'info')
+      return
+    }
+
+    const node = getReservedRootGroupTemplate(id)
+    treeData.value.unshift(node)
+
+    try {
+      await http.post(`${getNavApi()}/nodes`, { node, index: 0 })
+      addStatus(`已恢复 ${node.title}`, 'success')
+    } catch (e) {
+      treeData.value = treeData.value.filter((n) => n.id !== id)
+      addStatus(`恢复失败: ${String(e)}`, 'error')
+    }
+  }
+
   function addChildNode(parent: NavNode) {
     const id = `page-${Date.now()}`
     const node: NavNode = { id, type: 'item', title: '新页面', icon: 'Document', path: `/${id}` }
@@ -415,6 +584,7 @@ export function useDevState() {
   }
 
   function removeNodeFromTree(node: { parent: { data: NavNode } }, data: NavNode) {
+    const isRootReserved = RESERVED_ROOT_GROUP_IDS.has(data.id)
     const parent = node.parent
     if (parent.data.children) {
       const idx = parent.data.children.indexOf(data)
@@ -429,7 +599,12 @@ export function useDevState() {
     }
     // 即时持久化
     void http.delete(`${getNavApi()}/nodes/${encodeURIComponent(data.id)}`).then(
-      () => addStatus(`已删除 ${data.title}`, 'info'),
+      () => addStatus(
+        isRootReserved
+          ? `已删除 ${data.title}（可在更多菜单中恢复）`
+          : `已删除 ${data.title}`,
+        'info',
+      ),
       (e: unknown) => addStatus(`删除节点失败: ${String(e)}`, 'error'),
     )
   }
@@ -464,8 +639,7 @@ export function useDevState() {
     if (linkToNav && selectedNode.value) {
       editForm.path = `/${pageId}`
       markNavDirty()
-      applyNavChanges()
-      await saveNavConfig()
+      await saveNodeChanges()
       void loadPageFiles(pageId)
     }
 
@@ -535,7 +709,10 @@ export function useDevState() {
     saveAll,
     selectNode,
     handlePathChange,
+    handlePageTypeChange,
     addRootNode,
+    hasReservedRootGroup,
+    restoreReservedRootGroup,
     addChildNode,
     removeNodeFromTree,
     resetToDemo,

@@ -8,7 +8,7 @@ import type { ComputedRef, InjectionKey } from 'vue'
 export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'
 
 /** 导航节点类型 */
-export type NavNodeType = 'item' | 'group' | 'divider'
+export type NavNodeType = 'item' | 'group'
 
 /** 页面类型：配置驱动 or Vue 组件 */
 export type NavPageType = 'config' | 'vue-component'
@@ -81,6 +81,8 @@ export interface NavNode {
   disabled?: boolean
   /** 工具栏动作标识符（toolbar 节点，匹配内置按钮） */
   action?: string
+  /** 在该节点后显示分割线 */
+  dividerAfter?: boolean
 }
 
 /** 导航根配置（根节点只允许 header / sidebar 两种放置位置） */

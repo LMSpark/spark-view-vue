@@ -327,4 +327,5 @@ public class NavigationService {
         entity.setConfigJson(json);
         navRepo.save(entity);
     }
+
 }
