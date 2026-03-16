@@ -5,6 +5,7 @@ export {
   onPageRefresh,
   AIPageLoop,
   PageLogCollector,
+  summarizeLogBatch,
   writePageFiles,
   readPageFile,
   readPageFiles,
@@ -15,7 +16,16 @@ export {
   initAILoop,
   getAILoop,
 } from './ai-loop'
-export type { PageFiles, AIResponse, LogSnapshot, AIPageLoopOptions, StreamCallbacks } from './ai-loop'
+export type {
+  PageFiles,
+  AIResponse,
+  LogSnapshot,
+  AIPageLoopOptions,
+  StreamCallbacks,
+  LogIssueSummary,
+  LogBatchSummary,
+  PageDiagnosticsReport,
+} from './ai-loop'
 
 // ── SSE Events (re-export from spark-utils) ─────────────────────────────────
 export {

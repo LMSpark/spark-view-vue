@@ -21,6 +21,16 @@ interface UseTableFiltersOptions {
   logger: LoggerLike
 }
 
+interface FilterCapableView {
+  setFilter?: (expr: FilterExpression | undefined) => Promise<void> | void
+  refresh?: () => Promise<void> | void
+  dataTable?: {
+    api?: {
+      list?: unknown
+    }
+  }
+}
+
 // ── 规范化辅助函数 ───────────────────────────────────────────────────────────
 
 function normalizeFilterColumns(value: unknown): string[] {
@@ -228,6 +238,25 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     return { type: 'and', children: conditions }
   })
 
+  async function applyFilterToView(
+    view: DataView,
+    expr: FilterExpression | undefined,
+    refreshRemote: boolean,
+  ): Promise<void> {
+    const candidate = view as unknown as FilterCapableView
+    if (typeof candidate.setFilter !== 'function') return
+
+    await candidate.setFilter(expr)
+
+    if (
+      refreshRemote
+      && candidate.dataTable?.api?.list !== undefined
+      && typeof candidate.refresh === 'function'
+    ) {
+      await candidate.refresh()
+    }
+  }
+
   // 首次同步时只设置过滤表达式，避免额外触发 refresh()。
   let initialized = false
 
@@ -235,7 +264,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   watch(() => options.dataView.value, async (view) => {
     if (!view) return
     try {
-      await view.setFilter(filterExpression.value)
+      await applyFilterToView(view, filterExpression.value, false)
       initialized = true
     } catch (error) {
       options.logger.error('RendererTable: 同步过滤表达式失败', error)
@@ -247,10 +276,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     const view = options.dataView.value
     if (!view) return
     try {
-      await view.setFilter(expr)
-      if (initialized && view.dataTable?.api?.list) {
-        await view.refresh()
-      }
+      await applyFilterToView(view, expr, initialized)
     } catch (error) {
       options.logger.error('RendererTable: 应用过滤失败', error)
     } finally {
@@ -285,10 +311,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     const view = options.dataView.value
     if (!view) return
     try {
-      await view.setFilter(undefined)
-      if (view.dataTable?.api?.list) {
-        await view.refresh()
-      }
+      await applyFilterToView(view, undefined, true)
     } catch (error) {
       options.logger.error('RendererTable: 重置过滤失败', error)
     }

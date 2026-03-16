@@ -50,6 +50,7 @@
           <div v-if="loading" class="ai-message assistant">
             <div class="ai-message-content ai-streaming">
               <div v-if="phaseMessage" class="ai-phase-badge">{{ phaseMessage }}</div>
+              <div v-if="diagnosticHint" class="ai-quality-badge">Q{{ diagnosticQuality }} · {{ diagnosticHint }}</div>
               <div v-if="streamingText" class="ai-stream-text ai-markdown">
                 <VueMarkdown :source="streamingText" />
               </div>
@@ -65,6 +66,7 @@
           <div class="ai-log-header" @click="showLogs = !showLogs">
             <span>📋 {{ recentLogs.length }} 条日志
               <span v-if="errorLogCount > 0" class="ai-error-count">({{ errorLogCount }} 错误)</span>
+              <span class="ai-quality-inline">· {{ qualityText(liveLogSummary) }}</span>
             </span>
             <span class="ai-log-toggle">{{ showLogs ? '▼' : '▶' }}</span>
           </div>
@@ -127,22 +129,27 @@ import { useRouter, useRoute } from 'vue-router'
 import VueMarkdown from 'vue-markdown-render'
 import { getNavHomePath } from '@spark-view/spark-app'
 import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
-import type { AIResponse, LogSnapshot, StreamCallbacks } from '@spark-view/spark-ai'
+import { summarizeLogBatch } from '@spark-view/spark-ai'
+import type { AIResponse, LogBatchSummary, LogSnapshot, StreamCallbacks } from '@spark-view/spark-ai'
 import { createRequest } from '@spark-view/spark-utils'
 import { getPageApi } from '@/services/api-paths'
-
-// Skill Catalog（构建时生成的虚拟模块，可能不可用）
-let _skillCatalog: string | undefined
-import('virtual:spark-skill-catalog')
-  .then((mod) => { _skillCatalog = mod.buildSkillPrompt?.('## SPARK Skill 目录', 'compact') as string | undefined })
-  .catch(() => { /* virtual module not available */ })
 
 const http = createRequest({ timeout: 120_000 })
 
 /** 最大自动迭代次数（防止无限循环） */
 const MAX_AUTO_ITERATIONS = 3
-/** 渲染后等待日志收集的时间 ms */
-const LOG_COLLECT_DELAY = 5000
+/** 日志稳定窗口：连续无新增日志超过该时长视为收敛（ms） */
+const LOG_STABILITY_WINDOW = 1800
+/** 单轮诊断最大等待时间（ms） */
+const LOG_WAIT_TIMEOUT = 12000
+/** 诊断轮询间隔（ms） */
+const LOG_POLL_INTERVAL = 250
+/** 单轮发送给 AI 的问题数上限 */
+const MAX_ISSUES_PER_ROUND = 8
+/** 单轮发送给 AI 的日志样本上限 */
+const MAX_LOG_SAMPLES_PER_ROUND = 30
+/** 同一问题签名连续出现阈值（达到则提前终止） */
+const MAX_STAGNATION_ROUNDS = 2
 /** pageId 合法字符：字母、数字、短横线 */
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
 
@@ -219,6 +226,10 @@ const showLogs = ref(false)
 const streamingText = ref('')
 /** 当前阶段进度描述 */
 const phaseMessage = ref('')
+/** 诊断质量分（0-100） */
+const diagnosticQuality = ref(0)
+/** 诊断质量提示 */
+const diagnosticHint = ref('')
 
 /** 日志更新信号（本地响应式，由 onLogUpdate 驱动） */
 const _logTick = ref(0)
@@ -234,6 +245,13 @@ const recentLogs = computed(() => {
   if (!loop) return [] as LogSnapshot[]
   return collectRelevantLogs(loop, pid)
 })
+
+const liveLogSummary = computed(() =>
+  summarizeLogBatch(recentLogs.value, {
+    maxIssues: MAX_ISSUES_PER_ROUND,
+    maxSamples: MAX_LOG_SAMPLES_PER_ROUND,
+  })
+)
 
 const errorLogCount = computed(() =>
   recentLogs.value.filter(l => l.level === 'error' || l.level === 'warn').length
@@ -321,6 +339,93 @@ function updateStatus(s: 'idle' | 'generating' | 'success' | 'error') {
   statusText.value = { idle: '就绪', generating: '生成中...', success: '完成', error: '失败' }[s]
 }
 
+function qualityText(summary: LogBatchSummary): string {
+  if (summary.qualityLevel === 'high') return `高质量 ${summary.qualityScore}`
+  if (summary.qualityLevel === 'medium') return `中质量 ${summary.qualityScore}`
+  return `低质量 ${summary.qualityScore}`
+}
+
+function issueDigest(summary: LogBatchSummary): string {
+  if (summary.issues.length === 0) return '未采集到可归类问题'
+  return summary.issues
+    .map(issue => `[${issue.level} x${issue.count}] ${issue.message}`)
+    .join('\n')
+}
+
+function hasBlockingIssues(summary: LogBatchSummary): boolean {
+  if (summary.errorCount > 0) return true
+  return summary.issues.some(issue => {
+    if (issue.level !== 'warn') return false
+    const text = issue.message.toLowerCase()
+    return (
+      text.includes('未注册') ||
+      text.includes('not found') ||
+      text.includes('无法解析') ||
+      text.includes('datakey') ||
+      text.includes('dataview') ||
+      text.includes('缺少必需') ||
+      text.includes('字段缺失') ||
+      text.includes('non-props attributes')
+    )
+  })
+}
+
+function updateDiagnosticHint(summary: LogBatchSummary, timedOut: boolean): void {
+  diagnosticQuality.value = summary.qualityScore
+  const timeoutMark = timedOut ? '（诊断窗口超时）' : ''
+  diagnosticHint.value = `${qualityText(summary)} · 错误${summary.errorCount} 警告${summary.warnCount} 问题簇${summary.issues.length}${timeoutMark}`
+}
+
+async function waitForDiagnosticWindow(pid: string): Promise<{ logs: LogSnapshot[]; summary: LogBatchSummary; timedOut: boolean }> {
+  const loop = getAILoop()
+  if (!loop) {
+    throw new Error('AI Loop 未初始化，无法执行诊断')
+  }
+
+  const startAt = Date.now()
+  let lastChangeAt = startAt
+  let lastCount = -1
+
+  for (;;) {
+    if (_abortRequested) {
+      const logs = collectRelevantLogs(loop, pid)
+      const summary = summarizeLogBatch(logs, {
+        maxIssues: MAX_ISSUES_PER_ROUND,
+        maxSamples: MAX_LOG_SAMPLES_PER_ROUND,
+      })
+      updateDiagnosticHint(summary, false)
+      return { logs, summary, timedOut: false }
+    }
+
+    const logs = collectRelevantLogs(loop, pid)
+    if (logs.length !== lastCount) {
+      lastCount = logs.length
+      lastChangeAt = Date.now()
+    }
+
+    const stableEnough = Date.now() - lastChangeAt >= LOG_STABILITY_WINDOW
+    if (stableEnough) {
+      const summary = summarizeLogBatch(logs, {
+        maxIssues: MAX_ISSUES_PER_ROUND,
+        maxSamples: MAX_LOG_SAMPLES_PER_ROUND,
+      })
+      updateDiagnosticHint(summary, false)
+      return { logs, summary, timedOut: false }
+    }
+
+    if (Date.now() - startAt >= LOG_WAIT_TIMEOUT) {
+      const summary = summarizeLogBatch(logs, {
+        maxIssues: MAX_ISSUES_PER_ROUND,
+        maxSamples: MAX_LOG_SAMPLES_PER_ROUND,
+      })
+      updateDiagnosticHint(summary, true)
+      return { logs, summary, timedOut: true }
+    }
+
+    await delay(LOG_POLL_INTERVAL)
+  }
+}
+
 /** 创建 SSE 流式回调，累积 delta 文本并更新阶段进度 */
 function createStreamCallbacks(): StreamCallbacks {
   return {
@@ -345,6 +450,8 @@ function createStreamCallbacks(): StreamCallbacks {
 function resetStreamState(): void {
   streamingText.value = ''
   phaseMessage.value = ''
+  diagnosticQuality.value = 0
+  diagnosticHint.value = ''
 }
 
 function togglePanel() {
@@ -440,34 +547,6 @@ function navigateTo(pid: string) {
   void router.push(tenantPath(`/${pid}`))
 }
 
-/** 判断日志中是否包含需要修复的渲染错误
- * 只对 error 级和结构性 warn （未注册组件、数据绑定失败等）触发迭代；
- * 功能性 warn（性能提示、ResizeObserver 等）不触发
- */
-function hasRenderErrors(logs: LogSnapshot[]): boolean {
-  return logs.some(l => {
-    if (l.level === 'error') return true
-    if (l.level !== 'warn') return false
-    const msg = typeof l.message === 'string' ? l.message : ''
-    const metaMessage =
-      l.meta !== undefined && typeof l.meta['message'] === 'string'
-        ? l.meta['message']
-        : ''
-    const text = `${msg} ${metaMessage}`
-    return (
-      text.includes('未注册') ||
-      text.includes('not found') ||
-      text.includes('无法解析') ||
-      text.includes('dataKey') ||
-      text.includes('DataView') ||
-      text.includes('缺少必需') ||
-      text.includes('字段缺失') ||
-      text.includes('Extraneous non-props attributes') ||
-      text.includes('non-props attributes')
-    )
-  })
-}
-
 function collectRelevantLogs(loop: ReturnType<typeof getAILoop>, pid: string): LogSnapshot[] {
   if (!loop) return []
   const pageLogs = loop.collector.peek(pid)
@@ -511,6 +590,13 @@ async function handleSend() {
     return
   }
 
+  const loop = getAILoop()
+  if (!loop) {
+    messages.value.push({ role: 'assistant', text: '❌ AI Loop 未初始化，无法执行生成。请先开启 enableAI。' })
+    scrollToBottom()
+    return
+  }
+
   messages.value.push({ role: 'user', text: `[${pid}] ${text}` })
   prompt.value = ''
   loading.value = true
@@ -523,52 +609,17 @@ async function handleSend() {
   scrollToBottom()
 
   try {
-    const loop = getAILoop()
-    let response: AIResponse
-
     // 检查页面是否已存在：已有文件时走 iterate（附带当前 4 文件 + 修改需求），否则走 generate
     const existingFiles = await readPageFiles(pid)
     const hasExistingPage = Object.keys(existingFiles).length > 0
 
     const callbacks = createStreamCallbacks()
-
-    if (hasExistingPage) {
-      // 页面已存在 → 迭代模式，把用户输入作为修改反馈
-      if (loop) {
-        response = await loop.iterateStream(pid, text, callbacks)
-      } else {
-        response = await http.post<AIResponse>('/api/ai/chat', {
-          action: 'iterate',
-          pageId: pid,
-          sessionId: `chat-${Date.now()}`,
-          feedback: text,
-          currentFiles: existingFiles,
-          skillCatalog: _skillCatalog,
-        })
-      }
-    } else {
-      // 新页面 → 生成模式
-      if (loop) {
-        response = await loop.generateStream(pid, text, callbacks)
-      } else {
-        response = await http.post<AIResponse>('/api/ai/chat', {
-          action: 'generate',
-          pageId: pid,
-          prompt: text,
-          sessionId: `chat-${Date.now()}`,
-          skillCatalog: _skillCatalog,
-        })
-      }
-    }
+    const response = hasExistingPage
+      ? await loop.iterateStream(pid, text, callbacks)
+      : await loop.generateStream(pid, text, callbacks)
 
     const fileNames = Object.keys(response.files)
     const explanation = response.explanation ?? '页面生成完成'
-
-    // fallback 模式：loop 不可用时手动写入文件
-    if (!loop && fileNames.length > 0) {
-      const { writePageFiles } = await import('@spark-view/spark-ai')
-      await writePageFiles(pid, response.files)
-    }
 
     messages.value.push({
       role: 'assistant',
@@ -598,71 +649,66 @@ async function handleSend() {
     triggerPageRefresh()
     await nextTick()
     let iterationFailed = false
+    let previousSignature = ''
+    let stagnationRounds = 0
     try {
       for (let i = 1; i <= MAX_AUTO_ITERATIONS; i++) {
         if (_abortRequested) break
-        // 等待页面渲染，让 Logger 收集运行时日志
+
         updateStatus('generating')
         messages.value.push({
           role: 'assistant',
-          text: `🔍 第 ${i} 轮检查：等待页面渲染并收集日志...`,
+          text: `🔍 第 ${i} 轮检查：等待页面日志进入稳定窗口...`,
           iteration: i,
         })
         scrollToBottom()
-        await delay(LOG_COLLECT_DELAY)
+
+        const stable = await waitForDiagnosticWindow(pid)
         if (_abortRequested) break
 
-        // 检查日志（peek 不清空，iterate 内部 drain 会清空）
-        const logs = collectRelevantLogs(loop, pid)
-        if (!hasRenderErrors(logs)) {
+        if (!hasBlockingIssues(stable.summary)) {
           messages.value.push({
             role: 'assistant',
-            text: `✅ 第 ${i} 轮检查通过，页面无渲染错误`,
+            text: `✅ 第 ${i} 轮检查通过：${diagnosticHint.value}`,
             iteration: i,
           })
           scrollToBottom()
           break
         }
 
-        // 有错误 → 回传日志给 AI 自动修复
-        const errorLogs = logs.filter(l => l.level === 'error' || l.level === 'warn')
-        const errorSummary = errorLogs
-          .map(l => {
-            const metaStr = l.meta ? ` ${JSON.stringify(l.meta)}` : ''
-            return `[${l.level}] ${l.message}${metaStr}`
+        if (stable.summary.signature === previousSignature && stable.summary.signature !== '') {
+          stagnationRounds += 1
+        } else {
+          stagnationRounds = 0
+        }
+        previousSignature = stable.summary.signature
+
+        if (stagnationRounds >= MAX_STAGNATION_ROUNDS) {
+          messages.value.push({
+            role: 'assistant',
+            text: `⛔ 第 ${i} 轮触发收敛停滞：连续问题簇未变化，已停止自动迭代。请补充更具体业务约束后重试。`,
+            iteration: i,
           })
-          .slice(0, 20)
-          .join('\n')
+          scrollToBottom()
+          updateStatus('error')
+          iterationFailed = true
+          break
+        }
+
+        const errorSummary = issueDigest(stable.summary)
 
         messages.value.push({
           role: 'assistant',
-          text: `⚠️ 第 ${i} 轮检测到 ${errorLogs.length} 条错误/警告，正在回传 AI 自动修复...\n\`\`\`\n${errorSummary}\n\`\`\``,
+          text: `⚠️ 第 ${i} 轮检测到 ${stable.summary.issues.length} 个问题簇（错误 ${stable.summary.errorCount} / 警告 ${stable.summary.warnCount}），正在回传 AI 自动修复...\n\`\`\`\n${errorSummary}\n\`\`\``,
           iteration: i,
         })
         scrollToBottom()
 
-        // 调用 iterate 回传日志并写入修复后的文件
-        let iterResponse: AIResponse
-        if (loop) {
-          resetStreamState()
-          iterResponse = await loop.iterateStream(pid,
-            `页面渲染后出现以下错误，请修复：\n${errorSummary}`,
-            createStreamCallbacks(),
-          )
-        } else {
-          // fallback：直接 POST 迭代请求
-          iterResponse = await http.post<AIResponse>('/api/ai/chat', {
-            action: 'iterate',
-            pageId: pid,
-            sessionId: `chat-${Date.now()}`,
-            feedback: `页面渲染后出现以下错误，请修复：\n${errorSummary}`,
-            skillCatalog: _skillCatalog,
-          })
-          if (Object.keys(iterResponse.files).length > 0) {
-            const { writePageFiles } = await import('@spark-view/spark-ai')
-            await writePageFiles(pid, iterResponse.files)
-          }
-        }
+        resetStreamState()
+        const iterResponse: AIResponse = await loop.iterateStream(pid,
+          `页面渲染后出现以下问题簇，请按优先级修复：\n${errorSummary}\n诊断结论：${diagnosticHint.value}`,
+          createStreamCallbacks(),
+        )
 
         const iterFailure = detectAiFailure(iterResponse)
         if (iterFailure !== null) {
@@ -722,9 +768,14 @@ async function handleDebug() {
   if (!pid || loading.value) return
 
   const loop = getAILoop()
-  // 检查是否有可收集的错误
-  const logs = loop ? loop.collector.peek(pid) : []
-  const allLogs = loop ? loop.collector.peek() : []
+  if (!loop) {
+    messages.value.push({ role: 'assistant', text: '❌ AI Loop 未初始化，无法执行调试。' })
+    scrollToBottom()
+    return
+  }
+
+  const logs = loop.collector.peek(pid)
+  const allLogs = loop.collector.peek()
 
   // 合并当前 pageId 的日志 + 无 pageId 的全局错误
   const relevantLogs = [
@@ -741,15 +792,12 @@ async function handleDebug() {
     return
   }
 
-  // 构建错误摘要
-  const errorLogs = relevantLogs.filter(l => l.level === 'error' || l.level === 'warn')
-  const errorSummary = errorLogs
-    .map(l => {
-      const metaStr = l.meta ? ` ${JSON.stringify(l.meta)}` : ''
-      return `[${l.level}] ${l.message}${metaStr}`
-    })
-    .slice(0, 20)
-    .join('\n')
+  const initialSummary = summarizeLogBatch(relevantLogs, {
+    maxIssues: MAX_ISSUES_PER_ROUND,
+    maxSamples: MAX_LOG_SAMPLES_PER_ROUND,
+  })
+  updateDiagnosticHint(initialSummary, false)
+  const errorSummary = issueDigest(initialSummary)
 
   messages.value.push({
     role: 'user',
@@ -757,7 +805,7 @@ async function handleDebug() {
   })
   messages.value.push({
     role: 'assistant',
-    text: `🐛 检测到 ${errorLogs.length} 条错误/警告，读取当前文件并发送到 AI...\n\`\`\`\n${errorSummary}\n\`\`\``,
+    text: `🐛 检测到 ${initialSummary.issues.length} 个问题簇，读取当前文件并发送到 AI...\n\`\`\`\n${errorSummary}\n\`\`\``,
   })
   scrollToBottom()
 
@@ -769,29 +817,13 @@ async function handleDebug() {
   resetStreamState()
 
   try {
-    // ── 第一轮：发送当前错误 + 文件给 AI ──
-    let iterResponse: AIResponse
-    if (loop) {
-      iterResponse = await loop.iterateStream(pid,
-        `页面 /${pid} 运行时出现以下错误，请根据当前文件内容修复：\n${errorSummary}`,
-        createStreamCallbacks(),
-      )
-    } else {
-      const currentFiles = await readPageFiles(pid)
-      iterResponse = await http.post<AIResponse>('/api/ai/chat', {
-        action: 'iterate',
-        pageId: pid,
-        sessionId: `debug-${Date.now()}`,
-        feedback: `页面 /${pid} 运行时出现以下错误，请根据当前文件内容修复：\n${errorSummary}`,
-        currentFiles,
-        logs: errorLogs,
-        skillCatalog: _skillCatalog,
-      })
-      if (Object.keys(iterResponse.files).length > 0) {
-        const { writePageFiles } = await import('@spark-view/spark-ai')
-        await writePageFiles(pid, iterResponse.files)
-      }
-    }
+    let previousSignature = initialSummary.signature
+    let stagnationRounds = 0
+
+    const iterResponse: AIResponse = await loop.iterateStream(pid,
+      `页面 /${pid} 运行时出现以下问题簇，请根据当前文件内容修复：\n${errorSummary}\n诊断结论：${diagnosticHint.value}`,
+      createStreamCallbacks(),
+    )
 
     const iterFiles = Object.keys(iterResponse.files)
     messages.value.push({
@@ -814,63 +846,56 @@ async function handleDebug() {
       updateStatus('generating')
       messages.value.push({
         role: 'assistant',
-        text: `🔍 第 ${i} 轮检查：等待页面渲染并收集日志...`,
+        text: `🔍 第 ${i} 轮检查：等待页面日志进入稳定窗口...`,
         iteration: i,
       })
       scrollToBottom()
-      await delay(LOG_COLLECT_DELAY)
+
+      const stable = await waitForDiagnosticWindow(pid)
       if (_abortRequested) break
 
-      const checkLogs = collectRelevantLogs(loop, pid)
-      if (!hasRenderErrors(checkLogs)) {
+      if (!hasBlockingIssues(stable.summary)) {
         messages.value.push({
           role: 'assistant',
-          text: `✅ 第 ${i} 轮检查通过，页面无渲染错误`,
+          text: `✅ 第 ${i} 轮检查通过：${diagnosticHint.value}`,
           iteration: i,
         })
         scrollToBottom()
         break
       }
 
-      const newErrorLogs = checkLogs.filter(l => l.level === 'error' || l.level === 'warn')
-      const newErrorSummary = newErrorLogs
-        .map(l => {
-          const metaStr = l.meta ? ` ${JSON.stringify(l.meta)}` : ''
-          return `[${l.level}] ${l.message}${metaStr}`
+      if (stable.summary.signature === previousSignature && stable.summary.signature !== '') {
+        stagnationRounds += 1
+      } else {
+        stagnationRounds = 0
+      }
+      previousSignature = stable.summary.signature
+
+      if (stagnationRounds >= MAX_STAGNATION_ROUNDS) {
+        messages.value.push({
+          role: 'assistant',
+          text: `⛔ 第 ${i} 轮触发收敛停滞：连续问题簇未变化，已停止自动迭代。`,
+          iteration: i,
         })
-        .slice(0, 20)
-        .join('\n')
+        scrollToBottom()
+        updateStatus('error')
+        return
+      }
+
+      const newErrorSummary = issueDigest(stable.summary)
 
       messages.value.push({
         role: 'assistant',
-        text: `⚠️ 第 ${i} 轮检测到 ${newErrorLogs.length} 条错误/警告，继续修复...\n\`\`\`\n${newErrorSummary}\n\`\`\``,
+        text: `⚠️ 第 ${i} 轮检测到 ${stable.summary.issues.length} 个问题簇，继续修复...\n\`\`\`\n${newErrorSummary}\n\`\`\``,
         iteration: i,
       })
       scrollToBottom()
 
-      let nextResponse: AIResponse
-      if (loop) {
-        resetStreamState()
-        nextResponse = await loop.iterateStream(pid,
-          `页面渲染后仍有以下错误，请继续修复：\n${newErrorSummary}`,
-          createStreamCallbacks(),
-        )
-      } else {
-        const currentFiles = await readPageFiles(pid)
-        nextResponse = await http.post<AIResponse>('/api/ai/chat', {
-          action: 'iterate',
-          pageId: pid,
-          sessionId: `debug-${Date.now()}`,
-          feedback: `页面渲染后仍有以下错误，请继续修复：\n${newErrorSummary}`,
-          currentFiles,
-          logs: newErrorLogs,
-          skillCatalog: _skillCatalog,
-        })
-        if (Object.keys(nextResponse.files).length > 0) {
-          const { writePageFiles } = await import('@spark-view/spark-ai')
-          await writePageFiles(pid, nextResponse.files)
-        }
-      }
+      resetStreamState()
+      const nextResponse: AIResponse = await loop.iterateStream(pid,
+        `页面渲染后仍有以下问题簇，请继续修复：\n${newErrorSummary}\n诊断结论：${diagnosticHint.value}`,
+        createStreamCallbacks(),
+      )
 
       messages.value.push({
         role: 'assistant',
@@ -909,8 +934,14 @@ onMounted(() => {
 watch(() => route.query['aiDebug'], async (val) => {
   if (val === '1') {
     isOpen.value = true
-    // 等待页面渲染产生日志
-    await delay(LOG_COLLECT_DELAY)
+    const pid = pageId.value.trim()
+    if (pid) {
+      try {
+        await waitForDiagnosticWindow(pid)
+      } catch {
+        // ignore pre-debug warmup failure, handleDebug 会给出明确报错
+      }
+    }
     // 清除 query 参数（避免刷新后重复触发）
     void router.replace({ path: route.path, query: {} })
     // 自动触发调试
@@ -985,6 +1016,20 @@ watch(() => route.query['aiDebug'], async (val) => {
 .ai-status.generating { background: #e6a23c; color: #fff; }
 .ai-status.success { background: #67c23a; color: #fff; }
 .ai-status.error { background: #f56c6c; color: #fff; }
+
+.ai-quality-badge {
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(64, 158, 255, 0.12);
+  color: #409eff;
+  font-size: 12px;
+}
+
+.ai-quality-inline {
+  font-size: 12px;
+  color: #606266;
+}
 
 .ai-lock-badge {
   font-size: 11px;
