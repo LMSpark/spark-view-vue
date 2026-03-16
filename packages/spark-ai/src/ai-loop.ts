@@ -33,6 +33,8 @@ import { createRequest, onPageConfigChange } from '@spark-view/spark-utils'
 import { clearPageCache } from './page-cache'
 import { validateGeneratedConfig } from './config-validator'
 import type { ConfigValidationReport } from './config-validator'
+import { configureNavRegister, registerPageNavigation } from './nav-register'
+import type { NavRegistrationResult } from './nav-register'
 
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
 const http = createRequest({ timeout: 240_000 })
@@ -50,6 +52,7 @@ let _getStreamHeaders: (() => Record<string, string>) | null = null
 export function configureAILoopHttp(options: {
   getHeaders?: () => Record<string, string>
   getPageApiUrl?: () => string
+  getNavApiUrl?: () => string
 }): void {
   if (options.getHeaders) {
     const getHeaders = options.getHeaders
@@ -63,6 +66,12 @@ export function configureAILoopHttp(options: {
   }
   if (options.getPageApiUrl) {
     _getPageApiUrl = options.getPageApiUrl
+  }
+  if (options.getNavApiUrl) {
+    configureNavRegister({
+      getNavApiUrl: options.getNavApiUrl,
+      ...(options.getHeaders ? { getHeaders: options.getHeaders } : {}),
+    })
   }
 }
 
@@ -117,6 +126,8 @@ export interface AIResponse {
   needsIteration?: boolean
   /** 配置一致性验证报告 */
   validationReport?: ConfigValidationReport
+  /** 导航自动注册结果（仅 generate 时填充） */
+  navigationResult?: NavRegistrationResult
 }
 
 /** SSE 流式事件回调 */
@@ -333,6 +344,10 @@ export interface AIPageLoopOptions {
   skillCatalog?: string | undefined
   /** 是否将全局 error/warn 合并进页面诊断样本（默认 true） */
   includeGlobalDiagnostics?: boolean
+  /** 生成页面后自动注册导航节点（默认 true，需先配置 getNavApiUrl） */
+  autoRegisterNav?: boolean
+  /** 导航注册完成回调 */
+  onNavigationRegistered?: (pageId: string, result: NavRegistrationResult) => void
 }
 
 // ─── 自动迭代守卫 ────────────────────────────────────────────────────────────
@@ -646,6 +661,8 @@ interface ResolvedLoopOptions {
   logCollectDelay: number
   skillCatalog: string | undefined
   includeGlobalDiagnostics: boolean
+  autoRegisterNav: boolean
+  onNavigationRegistered: ((pageId: string, result: NavRegistrationResult) => void) | undefined
 }
 
 /**
@@ -666,6 +683,8 @@ export class AIPageLoop {
       logCollectDelay: options.logCollectDelay ?? 3000,
       skillCatalog: options.skillCatalog ?? undefined,
       includeGlobalDiagnostics: options.includeGlobalDiagnostics ?? true,
+      autoRegisterNav: options.autoRegisterNav ?? true,
+      onNavigationRegistered: options.onNavigationRegistered,
     }
     this._sessionId = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   }
@@ -761,6 +780,16 @@ export class AIPageLoop {
         this.options.onFilesUpdated(pageId, written)
       }
 
+      // 导航自动注册（仅 generate 触发）
+      if (payload['action'] === 'generate' && this.options.autoRegisterNav) {
+        const prompt = typeof payload['prompt'] === 'string' ? payload['prompt'] : undefined
+        const navResult = await registerPageNavigation(pageId, {
+          ...(prompt ? { prompt } : {}),
+        })
+        validatedResp.navigationResult = navResult
+        this.options.onNavigationRegistered?.(pageId, navResult)
+      }
+
       return validatedResp
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
@@ -818,6 +847,16 @@ export class AIPageLoop {
       if (Object.keys(validatedResp.files).length > 0) {
         const written = await writePageFiles(pageId, validatedResp.files)
         this.options.onFilesUpdated(pageId, written)
+      }
+
+      // 导航自动注册（仅 generate 触发）
+      if (payload['action'] === 'generate' && this.options.autoRegisterNav) {
+        const prompt = typeof payload['prompt'] === 'string' ? payload['prompt'] : undefined
+        const navResult = await registerPageNavigation(pageId, {
+          ...(prompt ? { prompt } : {}),
+        })
+        validatedResp.navigationResult = navResult
+        this.options.onNavigationRegistered?.(pageId, navResult)
       }
 
       return validatedResp

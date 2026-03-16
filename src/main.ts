@@ -473,6 +473,7 @@ async function startApp() {
             configureAILoopHttp({
               getHeaders: createAuthHeaders,
               getPageApiUrl: getPageApi,
+              getNavApiUrl: getNavApi,
             })
 
             const loop = initAILoop({

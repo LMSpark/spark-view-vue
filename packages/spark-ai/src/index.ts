@@ -38,6 +38,10 @@ export type {
   ConfigValidationReport,
 } from './config-validator'
 
+// ── Navigation Auto-Register ─────────────────────────────────────────────────
+export { registerPageNavigation, configureNavRegister } from './nav-register'
+export type { NavRegistrationOptions, NavRegistrationResult } from './nav-register'
+
 // ── SSE Events (re-export from spark-utils) ─────────────────────────────────
 export {
   ServerEventType,

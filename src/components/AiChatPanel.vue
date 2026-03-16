@@ -139,7 +139,7 @@
 import { ref, nextTick, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import VueMarkdown from 'vue-markdown-render'
-import { getNavHomePath } from '@spark-view/spark-app'
+import { getNavHomePath, refreshRoutes } from '@spark-view/spark-app'
 import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
 import { summarizeLogBatch } from '@spark-view/spark-ai'
 import type { AIResponse, LogBatchSummary, LogSnapshot, StreamCallbacks } from '@spark-view/spark-ai'
@@ -681,6 +681,15 @@ function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/** 格式化导航注册结果为简短提示 */
+function formatNavNote(response: AIResponse): string {
+  const nav = response.navigationResult
+  if (nav === undefined) return ''
+  if (nav.alreadyExists) return '📌 导航节点已存在，跳过注册'
+  if (nav.success) return '✅ 已自动注册到导航菜单'
+  return `⚠️ 导航注册失败: ${nav.error ?? '未知错误'}`
+}
+
 async function handleSend() {
   const text = prompt.value.trim()
   const pid = pageId.value.trim()
@@ -722,9 +731,11 @@ async function handleSend() {
     const fileNames = Object.keys(response.files)
     const explanation = response.explanation ?? '页面生成完成'
 
+    // 导航注册状态提示
+    const navNote = formatNavNote(response)
     messages.value.push({
       role: 'assistant',
-      text: explanation,
+      text: navNote.length > 0 ? `${explanation}\n\n${navNote}` : explanation,
       files: fileNames,
       pageId: pid,
     })
@@ -742,6 +753,10 @@ async function handleSend() {
     }
 
     // 注册路由 → 清除旧缓存 → 导航到页面
+    // 若 AI 自动注册了导航节点，先刷新导航树使新节点可见
+    if (response.navigationResult?.success === true && !response.navigationResult.alreadyExists) {
+      void refreshRoutes()
+    }
     ensureRouteExists(pid)
     clearPageCache(pid)
     await router.push(tenantPath(`/${pid}`))
