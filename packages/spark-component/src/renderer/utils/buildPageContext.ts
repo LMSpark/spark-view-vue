@@ -15,6 +15,7 @@ import type { IPageRoute, IFormAPI } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext, FCPageContext, FormCreateAPI } from '../types'
+import { pageLogger } from './bind-helpers'
 
 // ─── 共享 $refreshData 实现 ──────────────────────────────────────────────────
 
@@ -40,6 +41,16 @@ function createRefreshData(getDataSet: () => DataSet | null): (tableName?: strin
   }
 }
 
+function createScriptConsole(): Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'> {
+  return {
+    log: (...args: unknown[]) => { pageLogger.info('[script]', ...args) },
+    info: (...args: unknown[]) => { pageLogger.info('[script]', ...args) },
+    warn: (...args: unknown[]) => { pageLogger.warn('[script]', ...args) },
+    error: (...args: unknown[]) => { pageLogger.error('[script]', ...args) },
+    debug: (...args: unknown[]) => { pageLogger.debug('[script]', ...args) },
+  }
+}
+
 // ─── 共享基础上下文（两条渲染线共用）────────────────────────────────────
 
 /** buildPageContext 所需的依赖引用 */
@@ -58,6 +69,7 @@ export interface PageContextDeps {
  */
 export function buildPageContext(deps: PageContextDeps): PageContext {
   const { getDataSet, pageRoute, pageContainer, pageService } = deps
+  const scriptConsole = createScriptConsole()
 
   return {
     get $dataSet() { return getDataSet() },
@@ -73,6 +85,7 @@ export function buildPageContext(deps: PageContextDeps): PageContext {
     $refreshData: createRefreshData(getDataSet),
 
     $page: pageService,
+    console: scriptConsole,
     SparkData,
     h,
 

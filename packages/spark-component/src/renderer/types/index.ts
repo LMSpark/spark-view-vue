@@ -113,6 +113,7 @@ export interface PageContext {
   $queryAll: (selector: string) => NodeListOf<Element>
   $refreshData: (key?: string) => Promise<void>
   $page: IPageServiceCapability
+  console: Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>
   SparkData: typeof SparkData
   h: typeof VueH
 

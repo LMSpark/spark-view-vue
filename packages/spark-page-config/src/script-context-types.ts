@@ -175,6 +175,14 @@ export interface IScriptContext {
   $page: IPageServiceInScript
 
   /**
+   * 脚本日志接口（已桥接到框架 Logger 传输链）。
+   *
+   * 在 script.js 中调用 `console.log/info/warn/error/debug`，
+   * 会同时进入浏览器控制台与统一日志采集（AI 面板可见）。
+   */
+  console: Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>
+
+  /**
    * 模块级上下文（导航系统注入，当前模块无上下文时为 `null`）。
    *
    * 提供当前模块选择器的选中值和可选项，脚本可据此实现按项目/租户/环境加载数据等逻辑。
