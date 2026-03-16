@@ -60,12 +60,13 @@ function badge(node: NavNode): string | number | undefined {
 }
 
 function hasDropdown(item: NavNode): boolean {
+  if (item.nodeKind !== 'module' && item.nodeKind !== 'system-directory') return false
   const cp = item.childPlacement
   return Boolean(item.children?.length && (cp === 'parent' || cp === 'flat'))
 }
 
 function visibleChildren(item: NavNode): NavNode[] {
-  return (item.children ?? []).filter((c) => !c.hidden && !c.disabled)
+  return (item.children ?? []).filter((c) => !c.hidden && !c.disabled && c.nodeKind !== 'sub-page')
 }
 </script>
 

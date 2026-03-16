@@ -13,6 +13,14 @@ export type NavNodeType = 'item' | 'group'
 /** 页面类型：配置驱动 or Vue 组件 */
 export type NavPageType = 'config' | 'vue-component'
 
+/** 节点扁平分类（软件工程管理语义） */
+export type NavNodeKind =
+  | 'system-directory'
+  | 'module'
+  | 'system-page'
+  | 'page'
+  | 'sub-page'
+
 /* ── 上下文选择器 ── */
 
 /** 上下文选项（固定 id + title） */
@@ -65,6 +73,8 @@ export interface NavNode {
   pageId?: string
   /** 页面类型：'config'（配置驱动）| 'vue-component'（Vue 组件），默认 'config' */
   pageType?: NavPageType
+  /** 节点扁平分类（用于编辑器语义分层） */
+  nodeKind?: NavNodeKind
   /** 子节点（group 节点） */
   children?: NavNode[]
   /** 子项存放位置（group 节点） */
@@ -81,6 +91,8 @@ export interface NavNode {
   disabled?: boolean
   /** 工具栏动作标识符（toolbar 节点，匹配内置按钮） */
   action?: string
+  /** 子页面归属的父页面 ID（sub-page 专用） */
+  parentPageId?: string
   /** 在该节点后显示分割线 */
   dividerAfter?: boolean
 }

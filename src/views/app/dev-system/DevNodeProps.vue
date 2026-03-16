@@ -1,6 +1,14 @@
 <template>
   <div class="dev-node-props">
-    <el-form :model="state.editForm" label-width="100px" size="default" class="node-form">
+    <el-alert
+      v-if="isSystemRootDirectory"
+      type="warning"
+      :closable="false"
+      show-icon
+      class="system-dir-alert"
+      title="系统模块（固定分组）不可删除、不可改类型、不可改层级；仅可编辑子项"
+    />
+    <el-form :model="state.editForm" :disabled="isSystemRootDirectory" label-width="100px" size="default" class="node-form">
       <!-- 基础信息 -->
       <el-divider content-position="left">基础信息</el-divider>
       <el-form-item label="ID" class="fi fi--wide">
@@ -19,10 +27,13 @@
             @update:model-value="state.markNavDirty"
           />
         </el-form-item>
-        <el-form-item label="类型" class="fi fi--medium fi-inline-row__type">
-          <el-radio-group v-model="state.editForm.type" class="type-radio-group" @change="state.markNavDirty">
-            <el-radio-button value="item">item（普通节点）</el-radio-button>
-            <el-radio-button value="group">group（分组标题）</el-radio-button>
+        <el-form-item label="节点类别" class="fi fi--medium fi-inline-row__type">
+          <el-radio-group v-model="state.editForm.nodeKind" class="type-radio-group" @change="state.handleNodeKindChange">
+            <el-radio-button value="system-directory">系统模块（固定）</el-radio-button>
+            <el-radio-button value="module" :disabled="moduleKindDisabled">模块</el-radio-button>
+            <el-radio-button value="system-page">系统页面</el-radio-button>
+            <el-radio-button value="page">普通页面</el-radio-button>
+            <el-radio-button value="sub-page">子页面</el-radio-button>
           </el-radio-group>
         </el-form-item>
       </div>
@@ -38,7 +49,7 @@
 
       <!-- 路由 & 关联页面 -->
       <el-divider content-position="left">路由 & 关联页面</el-divider>
-      <el-form-item label="路由路径" class="fi fi--wide">
+      <el-form-item v-if="showRoutePath" label="路由路径" class="fi fi--wide">
         <el-select
           v-if="state.editForm.pageType === 'vue-component'"
           v-model="state.editForm.path"
@@ -71,24 +82,24 @@
         </el-select>
       </el-form-item>
       <!-- 路径有效性提示 -->
-      <el-form-item v-if="pathStatus" label="" label-width="0" class="path-status-item">
+      <el-form-item v-if="showRoutePath && pathStatus" label="" label-width="0" class="path-status-item">
         <el-tag :type="pathStatus.type" size="small" disable-transitions>
           <NavIcon :name="pathStatus.icon" :size="12" /> {{ pathStatus.text }}
         </el-tag>
       </el-form-item>
-      <el-form-item label="页面类型" class="fi fi--medium">
+      <el-form-item v-if="isSystemPageNode" label="页面类型" class="fi fi--medium">
         <el-select v-model="state.editForm.pageType" placeholder="默认 config" clearable @change="state.handlePageTypeChange">
           <el-option value="config" label="config（配置驱动）" />
           <el-option value="vue-component" label="vue-component（Vue 组件）" />
         </el-select>
       </el-form-item>
-      <el-form-item label="重定向" class="fi fi--wide">
+      <el-form-item v-if="isDirectoryNode" label="重定向" class="fi fi--wide">
         <el-input v-model="state.editForm.redirect" placeholder="组节点默认跳转路径" @change="state.markNavDirty" />
       </el-form-item>
-      <el-form-item label="外部链接" class="fi fi--wide">
+      <el-form-item v-if="!isDirectoryNode && !isSubPageNode" label="外部链接" class="fi fi--wide">
         <el-input v-model="state.editForm.externalUrl" placeholder="https://..." @change="state.markNavDirty" />
       </el-form-item>
-      <el-form-item label="动作" class="fi fi--medium">
+      <el-form-item v-if="isSystemPageNode" label="动作" class="fi fi--medium">
         <el-select v-model="state.editForm.action" placeholder="工具栏动作（toolbar 节点用）" clearable @change="state.markNavDirty">
           <el-option value="ai-design" label="AI 协同设计" />
           <el-option value="ai-chat" label="AI 对话" />
@@ -96,6 +107,11 @@
           <el-option value="fullscreen" label="全屏" />
           <el-option value="notifications" label="通知" />
           <el-option value="theme-toggle" label="主题切换" />
+        </el-select>
+      </el-form-item>
+      <el-form-item v-if="isSubPageNode" label="父页面" class="fi fi--medium">
+        <el-select v-model="state.editForm.parentPageId" clearable placeholder="选择所属父页面" @change="state.markNavDirty">
+          <el-option v-for="opt in parentPageOptions" :key="opt.id" :label="opt.label" :value="opt.id" />
         </el-select>
       </el-form-item>
 
@@ -123,8 +139,8 @@
       <!-- 状态控制 -->
       <el-divider content-position="left">状态控制</el-divider>
       <el-form-item label="隐藏" class="switch-item">
-        <el-switch v-model="state.editForm.hidden" @change="state.markNavDirty" />
-        <span class="switch-item__hint">在导航中不展示该节点</span>
+        <el-switch v-model="state.editForm.hidden" :disabled="isSubPageNode" @change="state.markNavDirty" />
+        <span class="switch-item__hint">{{ isSubPageNode ? '子页面固定为隐藏' : '在导航中不展示该节点' }}</span>
       </el-form-item>
       <el-form-item label="禁用" class="switch-item">
         <el-switch v-model="state.editForm.disabled" @change="state.markNavDirty" />
@@ -168,7 +184,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { NavNode } from '@spark-view/spark-app'
+import type { NavNode, NavNodeKind } from '@spark-view/spark-app'
 import type { DevState } from './useDevState'
 import IconPicker from '@/components/IconPicker.vue'
 import NavIcon from '@/components/NavIcon.vue'
@@ -176,6 +192,24 @@ import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
 
 const props = defineProps<{ state: DevState }>()
 defineEmits<{ createPage: [] }>()
+
+const isSystemRootDirectory = computed(() => props.state.isSystemRootDirectory(props.state.selectedNode.value))
+const moduleKindDisabled = computed(() => !props.state.canUseModuleNodeKind(props.state.selectedNode.value))
+const SYSTEM_ROOT_DIRECTORY_IDS = new Set(['__toolbar__', '__user-menu__'])
+
+function inferNodeKind(node: NavNode): NavNodeKind {
+  if (node.nodeKind !== undefined) return node.nodeKind
+  return SYSTEM_ROOT_DIRECTORY_IDS.has(node.id) ? 'system-directory' : 'page'
+}
+
+const isDirectoryNode = computed(() => {
+  const kind = props.state.editForm.nodeKind
+  return kind === 'system-directory' || kind === 'module'
+})
+
+const isSystemPageNode = computed(() => props.state.editForm.nodeKind === 'system-page')
+const isSubPageNode = computed(() => props.state.editForm.nodeKind === 'sub-page')
+const showRoutePath = computed(() => !isDirectoryNode.value && !isSubPageNode.value)
 
 interface VuePathOption {
   path: string
@@ -228,8 +262,33 @@ const configPageOptions = computed(() => {
     })
 })
 
+interface ParentPageOption {
+  id: string
+  label: string
+}
+
+function collectParentPageOptions(nodes: NavNode[], selectedId: string, options: ParentPageOption[]) {
+  for (const node of nodes) {
+    const nodeKind = inferNodeKind(node)
+    if (node.id !== selectedId && (nodeKind === 'page' || nodeKind === 'system-page')) {
+      const suffix = node.path ? `（${node.path}）` : ''
+      options.push({ id: node.id, label: `${node.title}${suffix}` })
+    }
+    if (Array.isArray(node.children)) {
+      collectParentPageOptions(node.children, selectedId, options)
+    }
+  }
+}
+
+const parentPageOptions = computed(() => {
+  const options: ParentPageOption[] = []
+  collectParentPageOptions(props.state.treeData.value, props.state.editForm.id, options)
+  return options
+})
+
 /** 路径有效性状态：检查当前路径是否匹配 vue-component 映射或配置页面 */
 const pathStatus = computed(() => {
+  if (!showRoutePath.value) return null
   const path = props.state.editForm.path
   if (!path) return null
 
@@ -270,6 +329,10 @@ const pathStatus = computed(() => {
   overflow: auto;
   height: 100%;
   background: var(--el-bg-color);
+}
+
+.system-dir-alert {
+  margin-bottom: 12px;
 }
 
 .node-form {

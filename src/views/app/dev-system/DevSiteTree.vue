@@ -49,6 +49,8 @@
       :filter-node-method="filterNode"
       highlight-current
       draggable
+      :allow-drag="allowNodeDrag"
+      :allow-drop="allowNodeDrop"
       :expand-on-click-node="false"
       @node-click="handleNodeClick"
       @node-drop="handleNodeDrop"
@@ -57,6 +59,9 @@
         <span class="tree-node">
           <span class="node-icon"><NavIcon :name="data.icon ?? 'Document'" /></span>
           <span class="node-label">{{ data.title }}</span>
+          <el-tag size="small" type="success" class="node-tag node-kind-tag">
+            {{ formatNodeKind(data) }}
+          </el-tag>
           <span v-if="data.path" class="node-path">{{ data.path }}</span>
           <el-tag v-if="data.childPlacement" size="small" type="info" class="node-tag">
             {{ data.childPlacement }}
@@ -68,7 +73,13 @@
             <el-button size="small" link type="primary" @click.stop="state.addChildNode(data)">
               <NavIcon name="Plus" :size="12" />
             </el-button>
-            <el-button size="small" link type="danger" @click.stop="handleRemove(node, data)">
+            <el-button
+              size="small"
+              link
+              type="danger"
+              :disabled="state.isSystemRootDirectory(data)"
+              @click.stop="handleRemove(node, data)"
+            >
               <NavIcon name="Delete" :size="12" />
             </el-button>
           </span>
@@ -91,6 +102,25 @@ const state = props.state
 const treeRef = ref()
 const treeFilter = ref('')
 
+const NODE_KIND_LABEL: Record<string, string> = {
+  'system-directory': '系统模块',
+  'module': '模块',
+  'system-page': '系统页面',
+  'page': '普通页面',
+  'sub-page': '子页面',
+}
+
+function inferNodeKind(node: NavNode): string {
+  if (node.nodeKind) return node.nodeKind
+  if (node.id === '__toolbar__' || node.id === '__user-menu__') return 'system-directory'
+  return 'page'
+}
+
+function formatNodeKind(node: NavNode): string {
+  const kind = inferNodeKind(node)
+  return NODE_KIND_LABEL[kind] ?? kind
+}
+
 watch(treeFilter, (val) => { treeRef.value?.filter(val) })
 
 function filterNode(value: string, data: NavNode) {
@@ -103,6 +133,14 @@ function filterNode(value: string, data: NavNode) {
 
 function handleNodeClick(data: NavNode) {
   state.selectNode(data)
+}
+
+function allowNodeDrag(data: NavNode): boolean {
+  return !state.isSystemRootDirectory(data)
+}
+
+function allowNodeDrop(draggingNode: { data: NavNode }): boolean {
+  return !state.isSystemRootDirectory(draggingNode.data)
 }
 
 function handleNodeDrop() {
