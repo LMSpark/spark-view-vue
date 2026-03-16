@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.entity.ProjectEntity;
 import com.spark.ai.repository.ProjectRepository;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -32,11 +33,27 @@ public class ProjectService {
     private final ProjectRepository projectRepo;
     private final NavigationService navigationService;
     private final ObjectMapper objectMapper;
+    private Map<String, Object> appNavigationTemplate = Map.of();
 
     public ProjectService(ProjectRepository projectRepo, NavigationService navigationService, ObjectMapper objectMapper) {
         this.projectRepo = projectRepo;
         this.navigationService = navigationService;
         this.objectMapper = objectMapper;
+    }
+
+    @PostConstruct
+    void loadAppNavigationTemplate() {
+        try {
+            ClassPathResource resource = new ClassPathResource("navigation-app-default.json");
+            try (InputStream stream = resource.getInputStream()) {
+                this.appNavigationTemplate = objectMapper.readValue(stream,
+                        new TypeReference<Map<String, Object>>() {});
+                log.info("[Project] 应用导航模板已加载（启动一次）");
+            }
+        } catch (IOException e) {
+            this.appNavigationTemplate = Map.of();
+            log.warn("[Project] 应用导航模板加载失败，后续项目将跳过初始化", e);
+        }
     }
 
     /**
@@ -148,16 +165,17 @@ public class ProjectService {
      * 从 classpath 模板初始化应用默认导航（工作台 + 系统设置）。
      */
     private void initAppNavigation(String tenantId, String projectId) {
+        if (appNavigationTemplate.isEmpty()) {
+            log.warn("[Project] 应用导航模板为空，跳过导航初始化: tenant={}, project={}", tenantId, projectId);
+            return;
+        }
+
         try {
-            ClassPathResource resource = new ClassPathResource("navigation-app-default.json");
-            try (InputStream stream = resource.getInputStream()) {
-                String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-                Map<String, Object> navRoot = objectMapper.readValue(json,
-                        new TypeReference<Map<String, Object>>() {});
-                navigationService.saveNavConfig(tenantId, projectId, navRoot);
-                log.info("[Project] 已初始化应用导航: tenant={}, project={}", tenantId, projectId);
-            }
-        } catch (IOException e) {
+            Map<String, Object> navRoot = objectMapper.convertValue(appNavigationTemplate,
+                    new TypeReference<Map<String, Object>>() {});
+            navigationService.saveNavConfig(tenantId, projectId, navRoot);
+            log.info("[Project] 已初始化应用导航: tenant={}, project={}", tenantId, projectId);
+        } catch (Exception e) {
             log.warn("[Project] 应用导航模板初始化失败（不影响项目创建）: tenant={}, project={}", tenantId, projectId, e);
         }
     }
