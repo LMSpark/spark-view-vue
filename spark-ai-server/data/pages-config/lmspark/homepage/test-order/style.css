@@ -1,1 +1,12 @@
-/* AI 生成 (mock) */
+[data-page="test-order"] .page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+[data-page="test-order"] h2 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+}

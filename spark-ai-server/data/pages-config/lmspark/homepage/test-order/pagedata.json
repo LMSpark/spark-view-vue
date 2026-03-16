@@ -1,39 +1,65 @@
 {
-  "dataSetName": "test-order",
-  "tables": {
-    "test-order": {
-      "tableName": "test-order",
-      "columns": [
-        {
-          "name": "id",
-          "type": "number"
-        },
-        {
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "name": "status",
-          "type": "string"
+  "dataset": {
+    "dataSetName": "PageDataSet",
+    "tables": {
+      "test-order": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "number",
+            "label": "ID",
+            "isPrimaryKey": true
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "label": "名称"
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "label": "状态"
+          },
+          {
+            "name": "price",
+            "type": "number",
+            "label": "价格",
+            "precision": 2
+          }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              {
+                "id": 1,
+                "name": "示例数据 A",
+                "status": "pending",
+                "price": 99.99
+              },
+              {
+                "id": 2,
+                "name": "示例数据 B",
+                "status": "processing",
+                "price": 149.5
+              },
+              {
+                "id": 3,
+                "name": "示例数据 C",
+                "status": "completed",
+                "price": 199.0
+              },
+              {
+                "id": 4,
+                "name": "示例数据 D",
+                "status": "cancelled",
+                "price": 0
+              }
+            ],
+            "autoCurrentFirst": true
+          }
         }
-      ],
-      "rows": [
-        {
-          "id": 1,
-          "name": "示例数据 A",
-          "status": "正常"
-        },
-        {
-          "id": 2,
-          "name": "示例数据 B",
-          "status": "待处理"
-        },
-        {
-          "id": 3,
-          "name": "示例数据 C",
-          "status": "已完成"
-        }
-      ]
-    }
+      }
+    },
+    "relations": []
   }
 }
