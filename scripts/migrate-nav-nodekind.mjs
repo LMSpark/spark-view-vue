@@ -154,7 +154,7 @@ function migrateNode(raw, parentKind, stats) {
 
   if (typeof node.icon === 'string' && node.icon.trim()) migrated.icon = node.icon.trim()
   if (typeof node.description === 'string' && node.description.trim()) migrated.description = node.description.trim()
-  if (typeof node.order === 'number' && Number.isFinite(node.order)) migrated.order = node.order
+  if (typeof node.order === 'number' && Number.isFinite(node.order) && node.order !== 0) migrated.order = node.order
   if (node.dividerAfter === true) migrated.dividerAfter = true
   if (node.disabled === true) migrated.disabled = true
   if (node.context !== undefined) migrated.context = node.context
@@ -184,7 +184,9 @@ function migrateNode(raw, parentKind, stats) {
       migrated.externalUrl = node.externalUrl.trim()
     }
     const linkRenderMode = typeof node.linkRenderMode === 'string' ? node.linkRenderMode.trim() : ''
-    migrated.linkRenderMode = linkRenderMode === 'new-tab' ? 'new-tab' : 'iframe'
+    if (linkRenderMode === 'new-tab') {
+      migrated.linkRenderMode = 'new-tab'
+    }
     if (node.hidden === true) migrated.hidden = true
   } else {
     if (typeof node.path === 'string' && node.path.trim()) migrated.path = normalizePath(node.path)
