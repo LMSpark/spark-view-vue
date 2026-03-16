@@ -534,6 +534,15 @@ public class NavigationService {
     }
 
     private String normalizeNodeKind(Map<String, Object> raw, String id) {
+        if (isSystemRootDirectoryId(id)) {
+            return "system-directory";
+        }
+
+        String placement = asTrimmedString(raw.get("childPlacement"));
+        if ("toolbar".equals(placement) || "user-menu".equals(placement)) {
+            return "system-directory";
+        }
+
         String kind = asTrimmedString(raw.get("nodeKind"));
         if (!VALID_NODE_KINDS.contains(kind)) {
             kind = inferNodeKind(raw, id);

@@ -84,10 +84,12 @@ function classifyNodeKind(node, parentKind) {
   const isKnownVuePath = normalizedPath !== '' && VUE_COMPONENT_PATHS.has(normalizedPath)
   const hasExternalUrl = typeof node.externalUrl === 'string' && node.externalUrl.trim() !== ''
 
+  if (SYSTEM_ROOT_IDS.has(id) || node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') {
+    kind = 'system-directory'
+  }
+
   if (!kind) {
-    if (SYSTEM_ROOT_IDS.has(id) || node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') {
-      kind = 'system-directory'
-    } else if (hasExternalUrl) {
+    if (hasExternalUrl) {
       kind = 'link'
     } else if (isLegacyVuePage || isKnownVuePath) {
       kind = 'system-page'

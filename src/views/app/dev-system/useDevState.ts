@@ -66,6 +66,7 @@ export function useDevState() {
     'link': 'Link',
     'sub-page': 'Document',
   }
+  const ROOT_CHILD_PLACEMENTS = new Set(['header', 'sidebar'])
 
   // ── 导航树 ──
   const treeData = ref<NavNode[]>([])
@@ -175,9 +176,11 @@ export function useDevState() {
   }
 
   function inferNodeKind(node: NavNode): NavNodeKind {
+    if (SYSTEM_ROOT_DIRECTORY_IDS.has(node.id)) return 'system-directory'
+    if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
     if (node.nodeKind !== undefined) return node.nodeKind
     if (typeof node.externalUrl === 'string' && node.externalUrl.trim() !== '') return 'link'
-    return SYSTEM_ROOT_DIRECTORY_IDS.has(node.id) ? 'system-directory' : 'page'
+    return 'page'
   }
 
   function normalizeLinkRenderMode(value: unknown): LinkRenderMode {
@@ -305,11 +308,53 @@ export function useDevState() {
   // 数据加载
   // ═══════════════════════════════════════════════════════════
 
+  function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {
+    return ROOT_CHILD_PLACEMENTS.has(String(value ?? '').trim())
+      ? (value as 'header' | 'sidebar')
+      : 'header'
+  }
+
+  function buildMigratedNavRoot(config: { childPlacement?: string; children?: NavNode[]; homePath?: string }): NavRoot {
+    const root: NavRoot = {
+      childPlacement: normalizeRootChildPlacement(config.childPlacement),
+      children: (config.children ?? []).map(applyNodeKindToNode),
+    }
+    const homePath = typeof config.homePath === 'string' ? config.homePath.trim() : ''
+    if (homePath) {
+      root.homePath = homePath
+    }
+    return root
+  }
+
+  function isNavConfigChanged(raw: { childPlacement?: string; children?: NavNode[]; homePath?: string }, migrated: NavRoot): boolean {
+    const rawComparable: Record<string, unknown> = {
+      childPlacement: normalizeRootChildPlacement(raw.childPlacement),
+      children: raw.children ?? [],
+    }
+    const rawHomePath = typeof raw.homePath === 'string' ? raw.homePath.trim() : ''
+    if (rawHomePath) {
+      rawComparable['homePath'] = rawHomePath
+    }
+    return JSON.stringify(rawComparable) !== JSON.stringify(migrated)
+  }
+
   async function loadNavConfig() {
     navLoading.value = true
     try {
-      const config = await http.get<{ childPlacement?: string; children?: NavNode[] }>(getNavApi())
-      const normalizedChildren = (config.children ?? []).map(applyNodeKindToNode)
+      const config = await http.get<{ childPlacement?: string; children?: NavNode[]; homePath?: string }>(getNavApi())
+      const migratedRoot = buildMigratedNavRoot(config)
+      const hasLegacyDiff = isNavConfigChanged(config, migratedRoot)
+
+      if (hasLegacyDiff) {
+        try {
+          await http.put(getNavApi(), migratedRoot)
+          addStatus('检测到历史导航结构，已自动迁移并回写', 'info')
+        } catch (e) {
+          addStatus(`历史导航迁移回写失败: ${String(e)}`, 'warning')
+        }
+      }
+
+      const normalizedChildren = migratedRoot.children
 
       if (normalizedChildren.length > 0) {
         treeData.value = normalizedChildren
