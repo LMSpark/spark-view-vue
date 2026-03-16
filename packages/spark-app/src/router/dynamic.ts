@@ -43,7 +43,7 @@ export interface DynamicRouterOptions {
 
   /**
    * vue-component 路径 → Vue 组件映射。
-   * 导航节点 pageType='vue-component' 时，使用此映射解析组件。
+    * 导航节点 nodeKind='system-page' 时，使用此映射解析组件。
    */
   componentMap?: Record<string, Component>
 
@@ -190,14 +190,14 @@ export class DynamicRouter {
 
   /**
    * 从导航节点树递归注册路由
-   * - pageType='vue-component' → componentMap 查找组件
-   * - pageType='config'（默认）→ pageComponent (PageRenderer)
+   * - nodeKind='system-page' → componentMap 查找组件
+   * - 其他页面类节点 → pageComponent (PageRenderer)
    * @param skipTenantPrefix 平台级路由（preAuthNavTree）跳过租户前缀
    */
   private registerRoutesFromNav(nodes: NavNode[], skipTenantPrefix = false): void {
     for (const node of nodes) {
       if (node.path) {
-        const pageType = node.pageType ?? 'config'
+        const isSystemPage = node.nodeKind === 'system-page'
         const pageId = node.pageId ?? node.id
         // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
         const routePath = skipTenantPrefix
@@ -208,7 +208,7 @@ export class DynamicRouter {
           if (shouldLogDynamicRouteDetails()) {
             routerLogger.debug(`路由已注册，跳过: ${routePath}`)
           }
-        } else if (pageType === 'vue-component') {
+        } else if (isSystemPage) {
           const relativePath = this.normalizePath(node.path)
           const component = this.staticComponentMap.get(relativePath)
           if (component) {

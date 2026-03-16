@@ -49,13 +49,12 @@
 
       <!-- 路由 & 关联页面 -->
       <el-divider content-position="left">路由 & 关联页面</el-divider>
-      <el-form-item v-if="showRoutePath" label="路由路径" class="fi fi--wide">
+      <el-form-item v-if="isSystemPageNode" label="路由选择" class="fi fi--wide">
         <el-select
-          v-if="state.editForm.pageType === 'vue-component'"
           v-model="state.editForm.path"
           filterable
           allow-create
-          placeholder="选择或输入路径"
+          placeholder="选择或输入 Vue 组件路由"
           @change="state.handlePathChange"
         >
           <el-option
@@ -65,12 +64,13 @@
             :label="`${opt.displayTitle}（${opt.path}）${opt.extra ? ` · ${opt.extra}` : ''}`"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item v-if="isPageNode" label="页面选择" class="fi fi--wide">
         <el-select
-          v-else
           v-model="state.editForm.path"
           filterable
           allow-create
-          placeholder="选择或输入后端配置页路径"
+          placeholder="选择或输入后端配置页"
           @change="state.handlePathChange"
         >
           <el-option
@@ -82,16 +82,15 @@
         </el-select>
       </el-form-item>
       <!-- 路径有效性提示 -->
-      <el-form-item v-if="showRoutePath && pathStatus" label="" label-width="0" class="path-status-item">
+      <el-form-item v-if="showPathStatus && pathStatus" label="" label-width="0" class="path-status-item">
         <el-tag :type="pathStatus.type" size="small" disable-transitions>
           <NavIcon :name="pathStatus.icon" :size="12" /> {{ pathStatus.text }}
         </el-tag>
       </el-form-item>
-      <el-form-item v-if="isSystemPageNode" label="页面类型" class="fi fi--medium">
-        <el-select v-model="state.editForm.pageType" placeholder="默认 config" clearable @change="state.handlePageTypeChange">
-          <el-option value="config" label="config（配置驱动）" />
-          <el-option value="vue-component" label="vue-component（Vue 组件）" />
-        </el-select>
+      <el-form-item v-if="isDirectoryNode" label="" label-width="0" class="path-status-item">
+        <el-tag type="info" size="small" disable-transitions>
+          <NavIcon name="InfoFilled" :size="12" /> 当前节点类型无需路由选择或页面选择
+        </el-tag>
       </el-form-item>
       <el-form-item v-if="isDirectoryNode" label="重定向" class="fi fi--wide">
         <el-input v-model="state.editForm.redirect" placeholder="组节点默认跳转路径" @change="state.markNavDirty" />
@@ -208,8 +207,9 @@ const isDirectoryNode = computed(() => {
 })
 
 const isSystemPageNode = computed(() => props.state.editForm.nodeKind === 'system-page')
+const isPageNode = computed(() => props.state.editForm.nodeKind === 'page')
 const isSubPageNode = computed(() => props.state.editForm.nodeKind === 'sub-page')
-const showRoutePath = computed(() => !isDirectoryNode.value && !isSubPageNode.value)
+const showPathStatus = computed(() => isSystemPageNode.value || isPageNode.value)
 
 interface VuePathOption {
   path: string
@@ -288,13 +288,11 @@ const parentPageOptions = computed(() => {
 
 /** 路径有效性状态：检查当前路径是否匹配 vue-component 映射或配置页面 */
 const pathStatus = computed(() => {
-  if (!showRoutePath.value) return null
+  if (!showPathStatus.value) return null
   const path = props.state.editForm.path
   if (!path) return null
 
-  const pageType = props.state.editForm.pageType || 'config'
-
-  if (pageType === 'vue-component') {
+  if (isSystemPageNode.value) {
     if (path in VUE_PAGE_MAP) {
       const entry = VUE_PAGE_MAP[path]!
       const nodeTitle = props.state.editForm.title.trim()

@@ -145,14 +145,10 @@ function migrateNode(raw, parentKind, stats) {
     if (children.length > 0) migrated.children = children
   } else if (kind === 'sub-page') {
     migrated.hidden = true
-    migrated.pageType = 'config'
     if (typeof node.parentPageId === 'string' && node.parentPageId.trim()) {
       migrated.parentPageId = node.parentPageId.trim()
     }
   } else {
-    const pageType = node.pageType === 'vue-component' ? 'vue-component' : 'config'
-    migrated.pageType = kind === 'system-page' ? (node.pageType === 'config' ? 'config' : 'vue-component') : pageType
-
     if (typeof node.path === 'string' && node.path.trim()) migrated.path = normalizePath(node.path)
     if (typeof node.redirect === 'string' && node.redirect.trim()) migrated.redirect = normalizePath(node.redirect)
     if (typeof node.externalUrl === 'string' && node.externalUrl.trim()) migrated.externalUrl = node.externalUrl.trim()
