@@ -141,6 +141,19 @@ export abstract class HttpClientBase implements HttpClient {
         const status = transformed.status ?? 0
         const retryable = !userCancelled && (status === 0 || status >= 500)
         if (attempt < maxRetries && retryable) continue
+
+        if (!userCancelled) {
+          this.logger.error('HTTP 请求失败', {
+            method,
+            url: merged.url,
+            status,
+            code: transformed.code,
+            message: transformed.message,
+            attempt: attempt + 1,
+            maxRetries,
+            responsePreview: transformed.response !== undefined ? this.safePreview(transformed.response) : undefined,
+          })
+        }
         throw transformed
       }
     }
@@ -257,6 +270,15 @@ export abstract class HttpClientBase implements HttpClient {
     if (opts.code !== undefined) result.code = opts.code
     if (opts.response !== undefined) result.response = opts.response
     return result
+  }
+
+  private safePreview(value: unknown): string {
+    try {
+      const text = typeof value === 'string' ? value : JSON.stringify(value)
+      return text.length > 1200 ? `${text.slice(0, 1200)}...(truncated)` : text
+    } catch {
+      return '[unserializable response]'
+    }
   }
 
   // ==================== 缓存内部实现 ====================
