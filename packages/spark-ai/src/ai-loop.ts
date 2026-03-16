@@ -31,6 +31,8 @@
 
 import { createRequest, onPageConfigChange } from '@spark-view/spark-utils'
 import { clearPageCache } from './page-cache'
+import { validateGeneratedConfig } from './config-validator'
+import type { ConfigValidationReport } from './config-validator'
 
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
 const http = createRequest({ timeout: 240_000 })
@@ -113,6 +115,8 @@ export interface AIResponse {
   explanation?: string
   /** 是否需要继续迭代 */
   needsIteration?: boolean
+  /** 配置一致性验证报告 */
+  validationReport?: ConfigValidationReport
 }
 
 /** SSE 流式事件回调 */
@@ -170,6 +174,29 @@ export interface PageDiagnosticsReport extends LogBatchSummary {
 interface SummarizeLogOptions {
   maxIssues?: number
   maxSamples?: number
+}
+
+function withValidationReport(response: AIResponse): AIResponse {
+  const report = validateGeneratedConfig(response.files)
+  if (report.summary.total === 0) {
+    return { ...response, validationReport: report }
+  }
+
+  const details = report.issues
+    .slice(0, 6)
+    .map(issue => `- [${issue.category}] ${issue.message}`)
+    .join('\n')
+
+  const header = `⚠️ 配置一致性校验：错误 ${report.summary.errors}，警告 ${report.summary.warnings}`
+  const suffix = details === '' ? header : `${header}\n${details}`
+  const explanation = response.explanation?.trim()
+
+  return {
+    ...response,
+    explanation: explanation && explanation !== '' ? `${explanation}\n\n${suffix}` : suffix,
+    needsIteration: response.needsIteration ?? !report.valid,
+    validationReport: report,
+  }
 }
 
 function normalizeLogMessage(rawMessage: string): string {
@@ -726,14 +753,15 @@ export class AIPageLoop {
         payload['skillCatalog'] = this.options.skillCatalog
       }
       const aiResp = await http.post<AIResponse>(this.options.aiEndpoint, payload)
+      const validatedResp = withValidationReport(aiResp)
 
       // 写入文件
-      if (Object.keys(aiResp.files).length > 0) {
-        const written = await writePageFiles(pageId, aiResp.files)
+      if (Object.keys(validatedResp.files).length > 0) {
+        const written = await writePageFiles(pageId, validatedResp.files)
         this.options.onFilesUpdated(pageId, written)
       }
 
-      return aiResp
+      return validatedResp
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       this.options.onError(error)
@@ -784,14 +812,15 @@ export class AIPageLoop {
       }
 
       const aiResp = await consumeSSEStream(response, callbacks)
+      const validatedResp = withValidationReport(aiResp)
 
       // 写入文件
-      if (Object.keys(aiResp.files).length > 0) {
-        const written = await writePageFiles(pageId, aiResp.files)
+      if (Object.keys(validatedResp.files).length > 0) {
+        const written = await writePageFiles(pageId, validatedResp.files)
         this.options.onFilesUpdated(pageId, written)
       }
 
-      return aiResp
+      return validatedResp
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       this.options.onError(error)
