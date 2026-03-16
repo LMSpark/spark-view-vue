@@ -10,6 +10,7 @@ import type { Component } from 'vue'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
 import { Logger } from '@spark-view/spark-utils'
 import type { NavNode, NavRoot } from '../navigation/nav-types'
+import { ExternalLinkFramePage } from './external-link-frame-page'
 
 const routerLogger = Logger('SparkApp:DynamicRouter')
 
@@ -43,7 +44,7 @@ export interface DynamicRouterOptions {
 
   /**
    * vue-component 路径 → Vue 组件映射。
-    * 导航节点 nodeKind='system-page' 时，使用此映射解析组件。
+   * 导航节点 nodeKind='system-page' 时，使用此映射解析组件。
    */
   componentMap?: Record<string, Component>
 
@@ -190,28 +191,53 @@ export class DynamicRouter {
 
   /**
    * 从导航节点树递归注册路由
-   * - nodeKind='system-page' → componentMap 查找组件
+   * - nodeKind='link' + externalUrl → 内嵌 iframe 路由
+   * - nodeKind='system-page' 或路径命中 componentMap → 静态组件路由
    * - 其他页面类节点 → pageComponent (PageRenderer)
    * @param skipTenantPrefix 平台级路由（preAuthNavTree）跳过租户前缀
    */
   private registerRoutesFromNav(nodes: NavNode[], skipTenantPrefix = false): void {
     for (const node of nodes) {
-      if (node.path) {
-        const isSystemPage = node.nodeKind === 'system-page'
+      const linkExternalUrl = typeof node.externalUrl === 'string' ? node.externalUrl.trim() : ''
+      const linkRenderMode = node.linkRenderMode === 'new-tab' ? 'new-tab' : 'iframe'
+      const isLinkNode = node.nodeKind === 'link' && linkExternalUrl !== '' && linkRenderMode === 'iframe'
+      const rawNodePath = typeof node.path === 'string' && node.path.trim() !== ''
+        ? node.path
+        : (isLinkNode ? `/__link/${encodeURIComponent(node.id)}` : '')
+
+      if (rawNodePath !== '') {
+        const relativePath = this.normalizePath(rawNodePath)
+        const component = this.staticComponentMap.get(relativePath)
+        const useStaticComponent = node.nodeKind === 'system-page' || component !== undefined
         const pageId = node.pageId ?? node.id
         // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
         const routePath = skipTenantPrefix
-          ? this.normalizePath(node.path)
-          : this.addTenantPrefix(node.path)
+          ? this.normalizePath(rawNodePath)
+          : this.addTenantPrefix(rawNodePath)
 
         if (this.registeredRoutes.has(routePath)) {
           if (shouldLogDynamicRouteDetails()) {
             routerLogger.debug(`路由已注册，跳过: ${routePath}`)
           }
-        } else if (isSystemPage) {
-          const relativePath = this.normalizePath(node.path)
-          const component = this.staticComponentMap.get(relativePath)
-          if (component) {
+        } else if (isLinkNode) {
+          const route: RouteRecordRaw = {
+            path: routePath,
+            name: `nav-${node.id}`,
+            component: ExternalLinkFramePage,
+            meta: {
+              type: 'external-link',
+              pageId,
+              title: node.title,
+              externalUrl: linkExternalUrl,
+              ...(node.icon !== undefined && { icon: node.icon }),
+            },
+          }
+          this.router.addRoute(route)
+          this.registeredRoutes.add(routePath)
+          if (shouldLogDynamicRouteDetails()) {
+            routerLogger.debug(`链接 iframe 路由已注册(nav): ${routePath}`)
+          }
+        } else if (useStaticComponent && component !== undefined) {
             const route: RouteRecordRaw = {
               path: routePath,
               name: `nav-${node.id}`,
@@ -223,10 +249,10 @@ export class DynamicRouter {
             if (shouldLogDynamicRouteDetails()) {
               routerLogger.debug(`Vue 组件路由已注册(nav): ${routePath}`)
             }
-          } else {
-            routerLogger.warn('vue-component 导航节点缺少组件映射，跳过', { path: node.path, nodeId: node.id })
-          }
         } else {
+          if (node.nodeKind === 'system-page') {
+            routerLogger.warn('system-page 节点缺少组件映射，回退为配置页', { path: node.path, nodeId: node.id })
+          }
           // config 页面 → PageRenderer
           const route: RouteRecordRaw = {
             path: routePath,

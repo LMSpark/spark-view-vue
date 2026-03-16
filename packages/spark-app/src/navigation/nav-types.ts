@@ -13,12 +13,16 @@ export type NavNodeType = 'item' | 'group'
 /** 页面类型：配置驱动 or Vue 组件 */
 export type NavPageType = 'config' | 'vue-component'
 
+/** 超链接渲染模式 */
+export type LinkRenderMode = 'iframe' | 'new-tab'
+
 /** 节点扁平分类（软件工程管理语义） */
 export type NavNodeKind =
   | 'system-directory'
   | 'module'
   | 'system-page'
   | 'page'
+  | 'link'
   | 'sub-page'
 
 /* ── 上下文选择器 ── */
@@ -69,6 +73,8 @@ export interface NavNode {
   path?: string
   /** 外部链接（新窗口打开） */
   externalUrl?: string
+  /** 超链接渲染模式（配置时探测/选择，运行时直接使用） */
+  linkRenderMode?: LinkRenderMode
   /** 页面配置 ID（config 类型页面加载 rule.json 时使用）。默认等于 id */
   pageId?: string
   /** 页面类型：'config'（配置驱动）| 'vue-component'（Vue 组件），默认 'config' */

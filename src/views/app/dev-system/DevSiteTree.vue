@@ -107,6 +107,7 @@ const NODE_KIND_LABEL: Record<string, string> = {
   'module': '模块',
   'system-page': '系统页面',
   'page': '普通页面',
+  'link': '超链接',
   'sub-page': '子页面',
 }
 

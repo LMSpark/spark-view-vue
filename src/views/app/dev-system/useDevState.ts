@@ -7,7 +7,7 @@
  * - 统一 dirty 状态管理
  */
 import { ref, reactive, computed } from 'vue'
-import type { NavNode, NavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
+import type { LinkRenderMode, NavNode, NavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { demoNavRoot } from '@/layout/demo-nav'
 
 // ═══════════════════════════════════════════════════════════
@@ -31,6 +31,7 @@ export interface DevEditForm {
   path: string
   redirect: string
   externalUrl: string
+  linkRenderMode: LinkRenderMode
   action: string
   parentPageId: string
   childPlacement: string
@@ -57,6 +58,14 @@ import { http } from '@/services/http'
 
 export function useDevState() {
   const SYSTEM_ROOT_DIRECTORY_IDS = new Set(['__toolbar__', '__user-menu__'])
+  const DEFAULT_ICON_BY_KIND: Record<NavNodeKind, string> = {
+    'system-directory': 'FolderOpened',
+    'module': 'FolderOpened',
+    'system-page': 'Monitor',
+    'page': 'Document',
+    'link': 'Link',
+    'sub-page': 'Document',
+  }
 
   // ── 导航树 ──
   const treeData = ref<NavNode[]>([])
@@ -70,7 +79,7 @@ export function useDevState() {
     id: '', title: '', icon: '', nodeKind: 'page', type: '',
     dividerAfter: false,
     description: '',
-    path: '', redirect: '', externalUrl: '',
+    path: '', redirect: '', externalUrl: '', linkRenderMode: 'iframe',
     action: '', parentPageId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
@@ -100,6 +109,8 @@ export function useDevState() {
 
   // ── 状态消息 ──
   const statusMessages = ref<StatusMessage[]>([])
+  const linkProbeLoading = ref(false)
+  const linkProbeInfo = ref<{ embeddable: boolean; reason: string } | null>(null)
 
   // ── AI 面板 ──
   const aiPanelVisible = ref(true)
@@ -137,7 +148,7 @@ export function useDevState() {
   }
 
   function isPageLikeKind(kind: NavNodeKind): boolean {
-    return kind === 'page' || kind === 'system-page' || kind === 'sub-page'
+    return kind === 'page' || kind === 'system-page' || kind === 'link' || kind === 'sub-page'
   }
 
   function findParentNodeById(nodes: NavNode[], targetId: string, parent: NavNode | null = null): NavNode | null {
@@ -165,7 +176,24 @@ export function useDevState() {
 
   function inferNodeKind(node: NavNode): NavNodeKind {
     if (node.nodeKind !== undefined) return node.nodeKind
+    if (typeof node.externalUrl === 'string' && node.externalUrl.trim() !== '') return 'link'
     return SYSTEM_ROOT_DIRECTORY_IDS.has(node.id) ? 'system-directory' : 'page'
+  }
+
+  function normalizeLinkRenderMode(value: unknown): LinkRenderMode {
+    return value === 'new-tab' ? 'new-tab' : 'iframe'
+  }
+
+  function defaultIconByKind(kind: NavNodeKind): string {
+    return DEFAULT_ICON_BY_KIND[kind]
+  }
+
+  function syncIconByNodeKind(nextKind: NavNodeKind, previousKind: NavNodeKind) {
+    const previousDefault = defaultIconByKind(previousKind)
+    const nextDefault = defaultIconByKind(nextKind)
+    if (!editForm.icon || editForm.icon === previousDefault) {
+      editForm.icon = nextDefault
+    }
   }
 
   function applyNodeKindToNode(node: NavNode): NavNode {
@@ -177,7 +205,16 @@ export function useDevState() {
       delete cloned.path
       delete cloned.redirect
       delete cloned.externalUrl
+      delete cloned.linkRenderMode
       delete cloned.action
+    } else if (cloned.nodeKind === 'link') {
+      delete cloned.path
+      delete cloned.redirect
+      delete cloned.action
+      delete cloned.parentPageId
+      cloned.linkRenderMode = normalizeLinkRenderMode(cloned.linkRenderMode)
+    } else {
+      delete cloned.linkRenderMode
     }
     if (Array.isArray(cloned.children)) {
       cloned.children = cloned.children.map(applyNodeKindToNode)
@@ -186,7 +223,9 @@ export function useDevState() {
   }
 
   function applyNodeKindPreset(kind: NavNodeKind) {
+    const previousKind = editForm.nodeKind
     editForm.nodeKind = kind
+    syncIconByNodeKind(kind, previousKind)
 
     if (kind === 'system-directory') {
       editForm.type = 'group'
@@ -195,6 +234,7 @@ export function useDevState() {
       editForm.action = ''
       editForm.redirect = ''
       editForm.externalUrl = ''
+      editForm.linkRenderMode = 'iframe'
       editForm.parentPageId = ''
       return
     }
@@ -205,6 +245,7 @@ export function useDevState() {
       editForm.path = ''
       editForm.action = ''
       editForm.externalUrl = ''
+      editForm.linkRenderMode = 'iframe'
       editForm.parentPageId = ''
       return
     }
@@ -212,6 +253,7 @@ export function useDevState() {
     if (kind === 'system-page') {
       editForm.type = 'item'
       editForm.hidden = false
+      editForm.linkRenderMode = 'iframe'
       editForm.parentPageId = ''
       return
     }
@@ -220,6 +262,19 @@ export function useDevState() {
       editForm.type = 'item'
       editForm.hidden = false
       editForm.action = ''
+      editForm.externalUrl = ''
+      editForm.linkRenderMode = 'iframe'
+      editForm.parentPageId = ''
+      return
+    }
+
+    if (kind === 'link') {
+      editForm.type = 'item'
+      editForm.hidden = false
+      editForm.path = ''
+      editForm.action = ''
+      editForm.redirect = ''
+      editForm.linkRenderMode = normalizeLinkRenderMode(editForm.linkRenderMode)
       editForm.parentPageId = ''
       return
     }
@@ -229,6 +284,7 @@ export function useDevState() {
     editForm.path = ''
     editForm.redirect = ''
     editForm.externalUrl = ''
+    editForm.linkRenderMode = 'iframe'
     editForm.action = ''
   }
 
@@ -327,6 +383,42 @@ export function useDevState() {
     }
   }
 
+  function onExternalUrlChanged() {
+    markNavDirty()
+    linkProbeInfo.value = null
+  }
+
+  async function probeLinkRenderMode() {
+    const url = editForm.externalUrl.trim()
+    if (!url) {
+      addStatus('请先输入超链接地址', 'warning')
+      return
+    }
+
+    linkProbeLoading.value = true
+    try {
+      const result = await http.post<Record<string, unknown>>(`${getNavApi()}/link-probe`, { url })
+      const mode = normalizeLinkRenderMode(result['recommendedMode'])
+      const embeddable = Boolean(result['embeddable'])
+      const reason = String(result['reason'] ?? '')
+
+      editForm.linkRenderMode = mode
+      linkProbeInfo.value = { embeddable, reason }
+      markNavDirty()
+
+      addStatus(
+        embeddable
+          ? '链接检测通过：已标记为 iframe 渲染'
+          : '链接检测提示禁止嵌入：已标记为新标签打开',
+        embeddable ? 'success' : 'warning',
+      )
+    } catch (e) {
+      addStatus(`链接检测失败: ${String(e)}`, 'warning')
+    } finally {
+      linkProbeLoading.value = false
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════
   // 节点 ↔ 表单 同步
   // ═══════════════════════════════════════════════════════════
@@ -342,12 +434,17 @@ export function useDevState() {
     editForm.path = node.path ?? ''
     editForm.redirect = node.redirect ?? ''
     editForm.externalUrl = node.externalUrl ?? ''
+    editForm.linkRenderMode = normalizeLinkRenderMode(node.linkRenderMode)
     editForm.action = node.action ?? ''
     editForm.parentPageId = node.parentPageId ?? ''
     editForm.childPlacement = node.childPlacement ?? ''
     editForm.order = node.order ?? 0
     editForm.hidden = node.hidden ?? false
     editForm.disabled = node.disabled ?? false
+
+    if (!editForm.icon) {
+      editForm.icon = defaultIconByKind(editForm.nodeKind)
+    }
 
     if (node.context !== undefined) {
       hasContext.value = true
@@ -378,6 +475,7 @@ export function useDevState() {
       contextConfig.paramName = ''
     }
     navDirty.value = false
+    linkProbeInfo.value = null
   }
 
   function applyNavChanges() {
@@ -403,7 +501,24 @@ export function useDevState() {
       editForm.path = ''
       editForm.redirect = ''
       editForm.externalUrl = ''
+      editForm.linkRenderMode = 'iframe'
       editForm.action = ''
+    } else if (editForm.nodeKind === 'link') {
+      editForm.type = 'item'
+      editForm.path = ''
+      editForm.redirect = ''
+      editForm.action = ''
+      editForm.linkRenderMode = normalizeLinkRenderMode(editForm.linkRenderMode)
+      editForm.parentPageId = ''
+    } else if (editForm.nodeKind === 'system-page') {
+      editForm.externalUrl = ''
+      editForm.linkRenderMode = 'iframe'
+      editForm.parentPageId = ''
+    } else if (editForm.nodeKind === 'page') {
+      editForm.action = ''
+      editForm.externalUrl = ''
+      editForm.linkRenderMode = 'iframe'
+      editForm.parentPageId = ''
     }
 
     if (editForm.icon) patch['icon'] = editForm.icon
@@ -413,6 +528,7 @@ export function useDevState() {
     if (editForm.path) patch['path'] = editForm.path
     if (editForm.redirect) patch['redirect'] = editForm.redirect
     if (editForm.externalUrl) patch['externalUrl'] = editForm.externalUrl
+    if (editForm.nodeKind === 'link') patch['linkRenderMode'] = editForm.linkRenderMode
     if (editForm.action) patch['action'] = editForm.action
     if (editForm.parentPageId) patch['parentPageId'] = editForm.parentPageId
     if (editForm.childPlacement) patch['childPlacement'] = editForm.childPlacement
@@ -435,7 +551,7 @@ export function useDevState() {
 
     // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
-      'icon', 'description', 'path', 'redirect', 'externalUrl', 'action',
+      'icon', 'description', 'path', 'redirect', 'externalUrl', 'linkRenderMode', 'action',
       'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
       'dividerAfter', 'nodeKind',
     ]
@@ -656,7 +772,14 @@ export function useDevState() {
 
   function addChildNode(parent: NavNode) {
     const id = `page-${Date.now()}`
-    const node: NavNode = { id, type: 'item', nodeKind: 'page', title: '新页面', icon: 'Document', path: `/${id}` }
+    const node: NavNode = {
+      id,
+      type: 'item',
+      nodeKind: 'page',
+      title: '新页面',
+      icon: defaultIconByKind('page'),
+      path: `/${id}`,
+    }
     ;(parent.children ??= []).push(node)
     void http.post(`${getNavApi()}/nodes`, { parentId: parent.id, node }).then(
       () => addStatus(`已在 ${parent.title} 下添加子节点`, 'info'),
@@ -771,6 +894,8 @@ export function useDevState() {
 
     // 状态
     statusMessages,
+    linkProbeLoading,
+    linkProbeInfo,
     aiPanelVisible,
 
     // 计算属性
@@ -784,6 +909,8 @@ export function useDevState() {
     loadPages,
     loadPageFiles,
     clearFiles,
+    onExternalUrlChanged,
+    probeLinkRenderMode,
     selectPage,
     loadNodeToForm,
     applyNavChanges,

@@ -18,6 +18,8 @@
  *   PROJECT_FILTER=homepage,app1
  */
 
+import { readFileSync } from 'node:fs'
+
 const API_BASE_URL = process.env['API_BASE_URL'] ?? 'http://localhost:8080'
 const MIGRATION_USERNAME = process.env['MIGRATION_USERNAME'] ?? 'admin'
 const MIGRATION_PASSWORD = process.env['MIGRATION_PASSWORD'] ?? 'admin123'
@@ -38,8 +40,20 @@ const DRY_RUN = process.argv.includes('--dry-run')
 
 const SYSTEM_ROOT_IDS = new Set(['__toolbar__', '__user-menu__'])
 const PAGE_LIKE_KINDS = new Set(['page', 'system-page', 'sub-page'])
-const VALID_NODE_KINDS = new Set(['system-directory', 'module', 'system-page', 'page', 'sub-page'])
+const VALID_NODE_KINDS = new Set(['system-directory', 'module', 'system-page', 'page', 'link', 'sub-page'])
 const VALID_CHILD_PLACEMENTS = new Set(['header', 'sidebar', 'toolbar', 'user-menu', 'parent', 'flat'])
+const VUE_COMPONENT_PATHS = loadVueComponentPaths()
+
+function loadVueComponentPaths() {
+  try {
+    const fileUrl = new URL('../src/config/vue-page-map.ts', import.meta.url)
+    const content = readFileSync(fileUrl, 'utf-8')
+    const matches = content.match(/'\/[^']+'(?=\s*:\s*\{)/g) ?? []
+    return new Set(matches.map((raw) => raw.slice(1, -1)))
+  } catch {
+    return new Set()
+  }
+}
 
 function assertOk(response, bodyText) {
   if (response.ok) return
@@ -65,10 +79,18 @@ function classifyNodeKind(node, parentKind) {
   const rawKind = typeof node.nodeKind === 'string' ? node.nodeKind : ''
   let kind = VALID_NODE_KINDS.has(rawKind) ? rawKind : ''
   const id = String(node.id ?? '')
+  const normalizedPath = normalizePath(node.path)
+  const isLegacyVuePage = node.pageType === 'vue-component'
+  const isKnownVuePath = normalizedPath !== '' && VUE_COMPONENT_PATHS.has(normalizedPath)
+  const hasExternalUrl = typeof node.externalUrl === 'string' && node.externalUrl.trim() !== ''
 
   if (!kind) {
     if (SYSTEM_ROOT_IDS.has(id) || node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') {
       kind = 'system-directory'
+    } else if (hasExternalUrl) {
+      kind = 'link'
+    } else if (isLegacyVuePage || isKnownVuePath) {
+      kind = 'system-page'
     } else if (typeof node.action === 'string' && node.action.trim()) {
       kind = 'system-page'
     } else if (node.type === 'group') {
@@ -76,6 +98,15 @@ function classifyNodeKind(node, parentKind) {
     } else {
       kind = 'page'
     }
+  }
+
+  // 已存在但误分的节点强制纠正：命中 Vue 组件页应归类为 system-page
+  if (kind === 'page' && (isLegacyVuePage || isKnownVuePath)) {
+    kind = 'system-page'
+  }
+
+  if (kind === 'page' && hasExternalUrl) {
+    kind = 'link'
   }
 
   if (parentKind && PAGE_LIKE_KINDS.has(parentKind) && kind === 'module') {
@@ -148,6 +179,13 @@ function migrateNode(raw, parentKind, stats) {
     if (typeof node.parentPageId === 'string' && node.parentPageId.trim()) {
       migrated.parentPageId = node.parentPageId.trim()
     }
+  } else if (kind === 'link') {
+    if (typeof node.externalUrl === 'string' && node.externalUrl.trim()) {
+      migrated.externalUrl = node.externalUrl.trim()
+    }
+    const linkRenderMode = typeof node.linkRenderMode === 'string' ? node.linkRenderMode.trim() : ''
+    migrated.linkRenderMode = linkRenderMode === 'new-tab' ? 'new-tab' : 'iframe'
+    if (node.hidden === true) migrated.hidden = true
   } else {
     if (typeof node.path === 'string' && node.path.trim()) migrated.path = normalizePath(node.path)
     if (typeof node.redirect === 'string' && node.redirect.trim()) migrated.redirect = normalizePath(node.redirect)

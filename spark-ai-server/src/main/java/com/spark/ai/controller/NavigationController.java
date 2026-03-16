@@ -152,5 +152,24 @@ public class NavigationController {
                     .body(Map.of("error", "移动节点失败: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/link-probe")
+    public ResponseEntity<?> probeLink(@PathVariable String tenantId,
+                                        @PathVariable String projectId,
+                                        @RequestBody Map<String, Object> body) {
+        try {
+            String url = body != null ? String.valueOf(body.getOrDefault("url", "")).trim() : "";
+            if (url.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "缺少 url 字段"));
+            }
+            Map<String, Object> result = navigationService.probeLinkEmbeddable(url);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "检测链接失败: " + e.getMessage()));
+        }
+    }
 }
 

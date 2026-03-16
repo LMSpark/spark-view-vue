@@ -10,10 +10,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 导航配置持久化服务 — 按 (tenantId, projectId) 隔离。
@@ -23,6 +31,7 @@ public class NavigationService {
 
     private static final Logger log = LoggerFactory.getLogger(NavigationService.class);
     private static final List<String> SYSTEM_ROOT_DIRECTORY_IDS = List.of("__toolbar__", "__user-menu__");
+    private static final Pattern FRAME_ANCESTORS_PATTERN = Pattern.compile("frame-ancestors\\s+([^;]+)", Pattern.CASE_INSENSITIVE);
 
     private final NavigationConfigRepository navRepo;
     private final ObjectMapper objectMapper;
@@ -224,6 +233,61 @@ public class NavigationService {
         return children == null ? List.of() : flattenNodes(children, null);
     }
 
+    public Map<String, Object> probeLinkEmbeddable(String rawUrl) throws IOException {
+        URI uri;
+        try {
+            uri = URI.create(rawUrl);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("URL 格式非法");
+        }
+
+        String scheme = Optional.ofNullable(uri.getScheme()).orElse("").toLowerCase();
+        if (!"http".equals(scheme) && !"https".equals(scheme)) {
+            throw new IllegalArgumentException("仅支持 http/https 链接");
+        }
+
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(8))
+                .build();
+
+        HttpResponse<Void> response = requestHead(client, uri);
+        if (response == null || response.statusCode() >= 400 || response.statusCode() == 405) {
+            response = requestGet(client, uri);
+        }
+        if (response == null) {
+            throw new IOException("无法获取目标站点响应头");
+        }
+
+        String xFrameOptions = response.headers().firstValue("x-frame-options").orElse("");
+        String csp = response.headers().firstValue("content-security-policy").orElse("");
+        String frameAncestors = extractFrameAncestors(csp);
+
+        boolean denyByXfo = isDeniedByXfo(xFrameOptions);
+        boolean denyByCsp = isDeniedByFrameAncestors(frameAncestors);
+        boolean embeddable = !(denyByXfo || denyByCsp);
+        String recommendedMode = embeddable ? "iframe" : "new-tab";
+
+        String reason;
+        if (denyByXfo) {
+            reason = "目标站点通过 X-Frame-Options 禁止跨站 iframe";
+        } else if (denyByCsp) {
+            reason = "目标站点通过 CSP frame-ancestors 禁止跨站 iframe";
+        } else {
+            reason = "未检测到明确防嵌入响应头";
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("url", rawUrl);
+        result.put("statusCode", response.statusCode());
+        result.put("xFrameOptions", xFrameOptions);
+        result.put("frameAncestors", frameAncestors);
+        result.put("embeddable", embeddable);
+        result.put("recommendedMode", recommendedMode);
+        result.put("reason", reason);
+        return result;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // 私有工具方法
     // ─────────────────────────────────────────────────────────────────────────
@@ -324,6 +388,57 @@ public class NavigationService {
                               Map<String, Object> root) throws IOException {
         persistJson(tenantId, projectId,
                 objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root));
+    }
+
+    private HttpResponse<Void> requestHead(HttpClient client, URI uri) throws IOException {
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .timeout(Duration.ofSeconds(12))
+                .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                .header("User-Agent", "Mozilla/5.0")
+                .build();
+        try {
+            return client.send(request, HttpResponse.BodyHandlers.discarding());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("检测请求被中断", e);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private HttpResponse<Void> requestGet(HttpClient client, URI uri) throws IOException {
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .timeout(Duration.ofSeconds(12))
+                .GET()
+                .header("User-Agent", "Mozilla/5.0")
+                .build();
+        try {
+            return client.send(request, HttpResponse.BodyHandlers.discarding());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("检测请求被中断", e);
+        } catch (Exception e) {
+            throw new IOException("检测请求失败: " + e.getMessage(), e);
+        }
+    }
+
+    private boolean isDeniedByXfo(String xFrameOptions) {
+        String normalized = xFrameOptions == null ? "" : xFrameOptions.toLowerCase();
+        return normalized.contains("deny") || normalized.contains("sameorigin");
+    }
+
+    private boolean isDeniedByFrameAncestors(String frameAncestors) {
+        if (frameAncestors == null || frameAncestors.isBlank()) return false;
+        String normalized = frameAncestors.toLowerCase();
+        if (normalized.contains("'none'")) return true;
+        return !normalized.contains("*");
+    }
+
+    private String extractFrameAncestors(String csp) {
+        if (csp == null || csp.isBlank()) return "";
+        Matcher matcher = FRAME_ANCESTORS_PATTERN.matcher(csp);
+        if (!matcher.find()) return "";
+        return matcher.group(1).trim();
     }
 
     private void persistJson(String tenantId, String projectId, String json) {
