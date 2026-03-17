@@ -9,7 +9,7 @@ import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
 import { Logger } from '@spark-view/spark-utils'
-import type { NavNode, NavRoot } from '@spark-view/spark-utils'
+import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 
 const routerLogger = Logger('SparkApp:DynamicRouter')
@@ -59,9 +59,9 @@ export interface DynamicRouterOptions {
    * 导航数据加载函数 — 导航树作为路由的唯一来源。
    *
    * 已认证时 `registerRoutes()` 使用此函数加载远程导航树并派生路由。
-   * 返回的 NavRoot 对象同时用于 UI 渲染（侧栏/顶栏菜单）。
+   * 返回的 AppNavRoot 对象同时用于 UI 渲染（侧栏/顶栏菜单）。
    */
-  loadNavigation?: (() => Promise<NavRoot>) | undefined
+  loadNavigation?: (() => Promise<AppNavRoot>) | undefined
 
   /**
    * 登录前本地导航树 — 未认证时使用的静态导航数据。
@@ -70,7 +70,7 @@ export interface DynamicRouterOptions {
    * 使用此本地导航树注册路由（如 / 和 /login）。
    * 登录后 `refreshRoutes()` 会用远程导航树替换。
    */
-  preAuthNavTree?: NavRoot | undefined
+  preAuthNavTree?: AppNavRoot | undefined
 
   /**
    * 认证状态检查回调。
@@ -97,13 +97,13 @@ export class DynamicRouter {
   /** tenantPathPrefix 的实体路径匹配（如 '^/t/[^/]+'） */
   private tenantPathRegex: RegExp | null
   /** 导航数据加载函数（提供后从导航树派生路由） */
-  private _loadNavigation: (() => Promise<NavRoot>) | undefined
+  private _loadNavigation: (() => Promise<AppNavRoot>) | undefined
   /** 登录前本地导航树 */
-  private _preAuthNavTree: NavRoot | null = null
+  private _preAuthNavTree: AppNavRoot | null = null
   /** 认证状态检查回调 */
   private _isAuthenticated: () => boolean
   /** 已加载的导航树（UI 侧栏/顶栏共享此数据） */
-  private _navTree: NavRoot | null = null
+  private _navTree: AppNavRoot | null = null
   /** NavNode → 注册路由路径追踪（弱引用，导航树刷新后自动 GC） */
   private _navRouteMap = new WeakMap<NavNode, string>()
 
@@ -313,7 +313,7 @@ export class DynamicRouter {
   }
 
   /** 刷新路由（重新加载导航树，保留静态组件映射），返回加载后的导航树 */
-  async refreshRoutes(): Promise<NavRoot | null> {
+  async refreshRoutes(): Promise<AppNavRoot | null> {
     routerLogger.info('刷新动态路由')
 
     // 移除旧路由
@@ -342,7 +342,7 @@ export class DynamicRouter {
   }
 
   /** 获取已加载的导航树（导航模式下可用） */
-  getNavTree(): NavRoot | null {
+  getNavTree(): AppNavRoot | null {
     return this._navTree
   }
 

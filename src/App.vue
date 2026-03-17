@@ -128,7 +128,7 @@
 import { computed, defineAsyncComponent, onMounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
-import type { NavNode, NavRoot } from '@spark-view/spark-app'
+import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
 import { getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
@@ -191,11 +191,11 @@ const projectSwitchService: ProjectSwitchService = {
 provide(PROJECT_SWITCH_KEY, projectSwitchService)
 
 /* ── 导航模型（预认证时使用 preAuthNavTree，登录后使用远程导航树） ── */
-const _navRoot = reactive({ title: '', childPlacement: 'header' as NavRoot['childPlacement'], children: [] as NavNode[] })
+const _navRoot = reactive({ title: '', childPlacement: 'header' as AppNavRoot['childPlacement'], children: [] as NavNode[] })
 const nav = useNavigation(_navRoot)
 
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
-function applyNavTree(navData: NavRoot | null): void {
+function applyNavTree(navData: AppNavRoot | null): void {
   if (navData && navData.children.length > 0) {
     _navRoot.childPlacement = navData.childPlacement
     _navRoot.children = navData.children

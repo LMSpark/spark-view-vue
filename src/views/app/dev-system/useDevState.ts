@@ -7,7 +7,7 @@
  * - 统一 dirty 状态管理
  */
 import { ref, reactive, computed } from 'vue'
-import type { LinkTarget, NavNode, NavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
+import type { LinkTarget, NavNode, AppNavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { demoNavRoot } from '@/layout/demo-nav'
 
 // ═══════════════════════════════════════════════════════════
@@ -118,7 +118,7 @@ export function useDevState() {
   const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
   const previewJson = computed(() => {
-    const root: NavRoot = { title: '', childPlacement: 'header', children: treeData.value }
+    const root: AppNavRoot = { title: '', childPlacement: 'header', children: treeData.value }
     return JSON.stringify(root, null, 2)
   })
 
@@ -303,8 +303,8 @@ export function useDevState() {
       : 'header'
   }
 
-  function buildMigratedNavRoot(config: { title?: string; childPlacement?: string; children?: NavNode[]; homePath?: string }): NavRoot {
-    const root: NavRoot = {
+  function buildMigratedNavRoot(config: { title?: string; childPlacement?: string; children?: NavNode[]; homePath?: string }): AppNavRoot {
+    const root: AppNavRoot = {
       title: config.title ?? '',
       childPlacement: normalizeRootChildPlacement(config.childPlacement),
       children: (config.children ?? []).map(applyNodeKindToNode),
@@ -316,7 +316,7 @@ export function useDevState() {
     return root
   }
 
-  function isNavConfigChanged(raw: { childPlacement?: string; children?: NavNode[]; homePath?: string }, migrated: NavRoot): boolean {
+  function isNavConfigChanged(raw: { childPlacement?: string; children?: NavNode[]; homePath?: string }, migrated: AppNavRoot): boolean {
     const rawComparable: Record<string, unknown> = {
       childPlacement: normalizeRootChildPlacement(raw.childPlacement),
       children: raw.children ?? [],
@@ -598,7 +598,7 @@ export function useDevState() {
   async function saveNavConfig() {
     if (navDirty.value) applyNavChanges()
     navSaving.value = true
-    const root: NavRoot = { title: '', childPlacement: 'header', children: treeData.value }
+    const root: AppNavRoot = { title: '', childPlacement: 'header', children: treeData.value }
     try {
       await http.put(getNavApi(), root)
       navDirty.value = false

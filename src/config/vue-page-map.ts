@@ -7,7 +7,7 @@
  * 新增 Vue 组件页面只需在此处添加一条记录，无需同步维护多处。
  */
 import type { Component } from 'vue'
-import type { NavRoot } from '@spark-view/spark-app'
+import type { AppNavRoot } from '@spark-view/spark-app'
 
 /**
  * 页面作用域级别
@@ -95,7 +95,7 @@ export function getPlatformPaths(): Set<string> {
  * 替代 main.ts 中硬编码的 preAuthNavTree，确保 platform 页面变更只需修改 VUE_PAGE_MAP。
  * 登录后 DynamicRouter.refreshRoutes() 会用远程导航树完全替换。
  */
-export function buildPreAuthNavTree(): NavRoot {
+export function buildPreAuthNavTree(): AppNavRoot {
   const children = Object.entries(VUE_PAGE_MAP)
     .filter(([, entry]) => entry.scope === 'platform')
     .map(([path, entry]) => ({
