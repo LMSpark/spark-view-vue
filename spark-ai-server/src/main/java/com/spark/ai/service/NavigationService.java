@@ -33,7 +33,7 @@ public class NavigationService {
     private static final Logger log = LoggerFactory.getLogger(NavigationService.class);
     private static final List<String> SYSTEM_ROOT_DIRECTORY_IDS = List.of("__toolbar__", "__user-menu__");
     private static final Pattern FRAME_ANCESTORS_PATTERN = Pattern.compile("frame-ancestors\\s+([^;]+)", Pattern.CASE_INSENSITIVE);
-    private static final Set<String> VALID_NODE_KINDS = Set.of("system-directory", "module", "system-page", "page", "link", "sub-page");
+    private static final Set<String> VALID_NODE_KINDS = Set.of("system-directory", "module", "system-page", "system-action", "page", "link", "sub-page");
     private static final Set<String> VALID_CHILD_PLACEMENTS = Set.of("header", "sidebar", "toolbar", "user-menu", "parent", "flat");
 
     private final NavigationConfigRepository navRepo;
@@ -556,6 +556,9 @@ public class NavigationService {
                     if (!node.containsKey("path")) {
                         putIfNotBlank(node, "path", asTrimmedString(raw.get("action")));
                     }
+                } else if ("system-action".equals(kind)) {
+                    // system-action: path 是动作标识符，无 '/' 前缀，不调 normalizePath
+                    putIfNotBlank(node, "path", asTrimmedString(raw.get("path")));
                 } else {
                     putIfNotBlank(node, "path", normalizePath(asTrimmedString(raw.get("path"))));
                 }
