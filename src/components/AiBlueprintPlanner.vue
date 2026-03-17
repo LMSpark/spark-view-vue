@@ -247,6 +247,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
 import { useBlueprintPlanner } from '../composables/useBlueprintPlanner'
@@ -289,6 +290,7 @@ const EDITABLE_PHASES: Record<string, string> = {
 // ── 状态 ─────────────────────────────────────────────────────────────────────
 
 const visible = defineModel<boolean>({ default: false })
+const router = useRouter()
 
 const planner = useBlueprintPlanner()
 const { messages, isStreaming, error: _chatError, send, clear } = useAiChat({
@@ -480,6 +482,11 @@ async function handleApplyBlueprint() {
       // 无注入时降级：仅切换 localStorage 中的 projectId
       switchProject(projectId)
     }
+
+    // 4. 导航到新项目首页
+    const homePath = (navTree as Record<string, unknown>)['homePath'] as string | undefined ?? 'dashboard'
+    const normalizedHome = homePath.startsWith('/') ? homePath : `/${homePath}`
+    await router.push(`/t/${tenantId}/${projectId}${normalizedHome}`)
 
     planner.phase.value = 'applied'
     applyResult.value = {

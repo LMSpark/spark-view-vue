@@ -52,18 +52,20 @@ export default defineConfig({
         target: process.env['AI_BACKEND_URL'] ?? 'http://127.0.0.1:8080',
         changeOrigin: true,
         secure: false,
-        // SSE 端点（/chat/stream、__events）需禁用响应缓冲，否则代理会
+        // SSE 端点（/chat/stream、/events）需禁用响应缓冲，否则代理会
         // 把整个流缓冲到连接关闭后才一次性转发，导致前端无法逐 token 接收。
         configure: (proxy) => {
+          const isSSE = (url?: string) =>
+            url?.includes('/chat/stream') || url === '/api/events'
           // 移除 Accept-Encoding 防止后端压缩 SSE（压缩会触发代理缓冲）
           proxy.on('proxyReq', (proxyReq, req) => {
-            if (req.url?.includes('/chat/stream') || req.url?.includes('__events')) {
+            if (isSSE(req.url)) {
               proxyReq.removeHeader('Accept-Encoding')
             }
           })
           // 标记 SSE 响应不缓冲（Nginx 等反向代理也会读此头）
           proxy.on('proxyRes', (proxyRes, req) => {
-            if (req.url?.includes('/chat/stream') || req.url?.includes('__events')) {
+            if (isSSE(req.url)) {
               proxyRes.headers['X-Accel-Buffering'] = 'no'
               proxyRes.headers['Cache-Control'] = 'no-cache, no-transform'
             }

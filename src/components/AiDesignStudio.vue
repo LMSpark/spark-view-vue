@@ -391,7 +391,9 @@ function tenantPath(relativePath: string): string {
   const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
   if (normalized.startsWith('/t/')) return normalized
   const scopedMatch = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(route.path)
-  if (!scopedMatch) return normalized
+  if (!scopedMatch) {
+    throw new Error(`tenantPath 仅支持租户作用域路由：期望 /t/{tenantId}/{projectId}，当前为 ${route.path}`)
+  }
   const tenantId = scopedMatch[1]
   const projectId = scopedMatch[2]
   return `/t/${tenantId}/${projectId}${normalized}`
