@@ -9,7 +9,7 @@ import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
 import { Logger } from '@spark-view/spark-utils'
-import type { NavNode, AppNavRoot, NavNodeKind } from '@spark-view/spark-utils'
+import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 
 const routerLogger = Logger('SparkApp:DynamicRouter')
@@ -198,8 +198,6 @@ export class DynamicRouter {
       throw new Error('[DynamicRouter] _loadNavigation not set')
     }
     const navRoot = await this._loadNavigation()
-    // 历史数据平滑迁移：将旧格式的 system-page 动作节点转为 system-action
-    this.normalizeNavNodes(navRoot.children)
     this._navTree = navRoot
     this._navRouteMap = new WeakMap()
     this.registerRoutesFromNav(navRoot.children)
@@ -212,21 +210,6 @@ export class DynamicRouter {
    * 将旧格式中 nodeKind='system-page' 且 path 不以 `/` 开头的节点诺认为 system-action。
    * 旧格式编了 system-page 用于同时表示“Vue 组件路由”和“toolbar 动作按钮”两种语义。
    */
-  private normalizeNavNodes(nodes: NavNode[]): void {
-    for (const node of nodes) {
-      if (node.nodeKind === 'system-page') {
-        const path = typeof node.path === 'string' ? node.path.trim() : ''
-        if (path !== '' && !path.startsWith('/')) {
-          // 旧动作标识符：迁移为 system-action
-          ;(node as { nodeKind: NavNodeKind }).nodeKind = 'system-action'
-        }
-      }
-      if (node.children?.length) {
-        this.normalizeNavNodes(node.children)
-      }
-    }
-  }
-
   /**
    * 从导航节点树递归注册路由
    * - nodeKind='link' + linkTarget='iframe' → 内嵌 iframe 路由（path 为外部 URL）
