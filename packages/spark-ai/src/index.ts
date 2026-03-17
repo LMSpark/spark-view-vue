@@ -100,3 +100,15 @@ export type {
 
 // ── Component Props Catalog ──────────────────────────────────────────────────
 export { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
+
+// ── Blueprint Types ──────────────────────────────────────────────────────────
+export {
+  getAllPageNodes,
+  getAllModuleNodes,
+  getBlueprintStats,
+  resolveTableRelations,
+  validateBlueprintTree,
+} from './blueprint-types'
+export type {
+  BlueprintDataModel,
+} from './blueprint-types'

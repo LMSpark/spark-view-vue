@@ -1,8 +1,7 @@
 <template>
   <nav class="nav-header-bar">
+    <template v-for="item in items" :key="item.id">
     <div
-      v-for="item in items"
-      :key="item.id"
       class="nav-header-bar__item"
       :class="{
         'nav-header-bar__item--active': isActive(item),
@@ -17,21 +16,24 @@
 
       <!-- 下拉子菜单（childPlacement: 'parent', 'flat'） -->
       <div v-if="hasDropdown(item)" class="nav-header-bar__dropdown">
-        <div
-          v-for="child in visibleChildren(item)"
-          :key="child.id"
-          class="nav-header-bar__dropdown-item"
-          :class="{
-            'nav-header-bar__dropdown-item--active': isActive(child),
-            'nav-header-bar__dropdown-item--disabled': child.disabled,
-          }"
-          @click.stop="handleClick(child)"
-        >
-          <span v-if="child.icon" class="nav-header-bar__dropdown-icon"><NavIcon :name="child.icon" /></span>
-          <span>{{ child.title }}</span>
-        </div>
+        <template v-for="child in visibleChildren(item)" :key="child.id">
+          <div
+            class="nav-header-bar__dropdown-item"
+            :class="{
+              'nav-header-bar__dropdown-item--active': isActive(child),
+              'nav-header-bar__dropdown-item--disabled': child.disabled,
+            }"
+            @click.stop="handleClick(child)"
+          >
+            <span v-if="child.icon" class="nav-header-bar__dropdown-icon"><NavIcon :name="child.icon" /></span>
+            <span>{{ child.title }}</span>
+          </div>
+          <div v-if="child.dividerAfter" class="nav-header-bar__dropdown-divider" />
+        </template>
       </div>
     </div>
+    <div v-if="item.dividerAfter" class="nav-header-bar__divider" />
+    </template>
   </nav>
 </template>
 
@@ -171,5 +173,21 @@ function visibleChildren(item: NavNode): NavNode[] {
 
 .nav-header-bar__dropdown-icon {
   font-size: 14px;
+}
+
+/* ── 分割线 ── */
+.nav-header-bar__divider {
+  width: 1px;
+  height: 16px;
+  background: currentColor;
+  opacity: 0.2;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.nav-header-bar__dropdown-divider {
+  height: 1px;
+  background: var(--spark-border-light, #e4e7ed);
+  margin: 4px 12px;
 }
 </style>

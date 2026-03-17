@@ -37,3 +37,24 @@ export {
   configureSseUrl,
 } from './sse-events'
 export type { ServerEventTypeName, FileChangeEvent } from './sse-events'
+
+// ==================== 导航模型类型 ====================
+
+export type {
+  ChildPlacement,
+  NavNodeType,
+  NavPageType,
+  LinkRenderMode,
+  NavNodeKind,
+  NavContextItem,
+  NavContextConfig,
+  NavContextInput,
+  NavModuleBase,
+  NavRoute,
+  AppNavigation,
+  NavNode,
+  NavRoot,
+  RegionItems,
+  RegionVisibility,
+  NavContextState,
+} from './navigation/nav-types'

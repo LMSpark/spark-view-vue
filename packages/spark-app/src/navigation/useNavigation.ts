@@ -9,10 +9,10 @@ import type {
   NavContextState,
   NavNode,
   NavRoot,
-  NavigationContext,
   RegionItems,
   RegionVisibility,
-} from './nav-types'
+} from '@spark-view/spark-utils'
+import type { NavigationContext } from './nav-types'
 import { NAV_KEY } from './nav-types'
 
 /* ══════════════════════════════════════════════════════════

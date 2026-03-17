@@ -102,9 +102,12 @@
         <template #dropdown>
           <el-dropdown-menu>
             <template v-if="userMenuItems.length">
-              <el-dropdown-item v-for="item in userMenuItems" :key="item.id" :command="item.action ?? item.path ?? item.redirect ?? item.id">
-                <span v-if="item.icon" style="margin-right: 4px"><NavIcon :name="item.icon" /></span>{{ item.title }}
-              </el-dropdown-item>
+              <template v-for="item in userMenuItems" :key="item.id">
+                <el-dropdown-item :command="item.action ?? item.path ?? item.redirect ?? item.id">
+                  <span v-if="item.icon" style="margin-right: 4px"><NavIcon :name="item.icon" /></span>{{ item.title }}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="item.dividerAfter" disabled class="app-header__user-divider" />
+              </template>
             </template>
             <template v-else>
               <el-dropdown-item command="profile">
@@ -278,6 +281,16 @@ function handleUserCommand(command: string | number | object) {
   --el-border-color: rgba(255, 255, 255, 0.2);
   margin: 0 6px;
   height: 20px;
+}
+
+.app-header__user-divider {
+  height: 1px;
+  padding: 0 !important;
+  margin: 4px 0;
+  border-top: 1px solid var(--el-border-color-lighter);
+  cursor: default;
+  min-height: 0;
+  line-height: 0;
 }
 
 /* 用户区域 */

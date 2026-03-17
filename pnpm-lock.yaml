@@ -168,12 +168,12 @@ importers:
 
   packages/spark-ai:
     dependencies:
+      '@spark-view/spark-data':
+        specifier: workspace:*
+        version: link:../spark-data
       '@spark-view/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
-      vue:
-        specifier: 3.5.29
-        version: 3.5.29(typescript@5.9.3)
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2

@@ -28,7 +28,8 @@
     }
   },
   "dependencies": {
-    "@spark-view/spark-utils": "workspace:*"
+    "@spark-view/spark-utils": "workspace:*",
+    "@spark-view/spark-data": "workspace:*"
   },
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",

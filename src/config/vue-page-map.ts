@@ -108,7 +108,7 @@ export function buildPreAuthNavTree(): NavRoot {
       ...(entry.hidden === true && { hidden: true }),
     }))
 
-  return { childPlacement: 'header', homePath: '/', children }
+  return { title: '', childPlacement: 'header' as const, homePath: '/', children }
 }
 
 /**
