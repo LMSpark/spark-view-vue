@@ -158,10 +158,6 @@ export type { NavigationContext } from './navigation/nav-types'
 export type {
   AppModuleBase,
   AppNavigation,
-  NavNodeBase,
-  NavPathNode,
-  NavActionNode,
-  NavContainerNode,
   NavNode,
   AppNavRoot,
   NavContextState,
