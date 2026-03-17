@@ -172,7 +172,7 @@ export function useDevState() {
     return !isPageLikeKind(parentKind)
   }
 
-  function inferNodeKind(node: NavNode): NavNodeKind {
+  function inferNodeKind(node: NavNode, parentPlacement?: string): NavNodeKind {
     if (node.nodeKind !== undefined) {
       // 历史数据迁移：system-page + 非"/"路径 → system-action
       if (node.nodeKind === 'system-page') {
@@ -181,6 +181,8 @@ export function useDevState() {
       }
       return node.nodeKind
     }
+    // 父容器是工具栏/用户菜单 → 本节点是系统动作
+    if (parentPlacement === 'toolbar' || parentPlacement === 'user-menu') return 'system-action'
     if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
     if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
     return 'page'
@@ -203,9 +205,9 @@ export function useDevState() {
     }
   }
 
-  function applyNodeKindToNode(node: NavNode): NavNode {
+  function applyNodeKindToNode(node: NavNode, parentPlacement?: string): NavNode {
     const cloned = deepClone(node)
-    cloned.nodeKind = inferNodeKind(cloned)
+    cloned.nodeKind = inferNodeKind(cloned, parentPlacement)
     if (cloned.nodeKind === 'sub-page') {
       cloned.hidden = true
       delete cloned.path
@@ -221,7 +223,7 @@ export function useDevState() {
       delete cloned.linkTarget
     }
     if (Array.isArray(cloned.children)) {
-      cloned.children = cloned.children.map(applyNodeKindToNode)
+      cloned.children = cloned.children.map(child => applyNodeKindToNode(child, cloned.childPlacement))
     }
     return cloned
   }
@@ -304,7 +306,7 @@ export function useDevState() {
     const root: AppNavRoot = {
       title: config.title ?? '',
       childPlacement: normalizeRootChildPlacement(config.childPlacement),
-      children: (config.children ?? []).map(applyNodeKindToNode),
+      children: (config.children ?? []).map(node => applyNodeKindToNode(node)),
     }
     const homePath = typeof config.homePath === 'string' ? config.homePath.trim() : ''
     if (homePath) {
@@ -353,7 +355,7 @@ export function useDevState() {
 
       addStatus('导航配置已加载', 'success')
     } catch {
-      treeData.value = deepClone(demoNavRoot.children).map(applyNodeKindToNode)
+      treeData.value = deepClone(demoNavRoot.children).map(node => applyNodeKindToNode(node))
       navEmpty.value = false
       addStatus('导航加载失败，使用演示数据', 'warning')
     } finally {
@@ -458,7 +460,8 @@ export function useDevState() {
     editForm.id = node.id
     editForm.title = node.title
     editForm.icon = node.icon ?? ''
-    editForm.nodeKind = inferNodeKind(node)
+    const parentNode = findParentNodeById(treeData.value, node.id)
+    editForm.nodeKind = inferNodeKind(node, parentNode?.childPlacement)
     editForm.dividerAfter = node.dividerAfter ?? false
     editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
@@ -680,7 +683,8 @@ export function useDevState() {
     selectedNode.value = node
     loadNodeToForm(node)
     const pageId = normalizePageIdFromPath(node.path)
-    if (pageId && isConfigNodeKind(inferNodeKind(node))) {
+    const parentNode = findParentNodeById(treeData.value, node.id)
+    if (pageId && isConfigNodeKind(inferNodeKind(node, parentNode?.childPlacement))) {
       void loadPageFiles(pageId)
     } else {
       clearFiles()

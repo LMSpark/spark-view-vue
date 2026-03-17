@@ -40,7 +40,7 @@ const DRY_RUN = process.argv.includes('--dry-run')
 
 const SYSTEM_ROOT_IDS = new Set(['__toolbar__', '__user-menu__'])
 const PAGE_LIKE_KINDS = new Set(['page', 'system-page', 'sub-page'])
-const VALID_NODE_KINDS = new Set(['system-directory', 'module', 'system-page', 'page', 'link', 'sub-page'])
+const VALID_NODE_KINDS = new Set(['system-directory', 'module', 'system-page', 'system-action', 'page', 'link', 'sub-page'])
 const VALID_CHILD_PLACEMENTS = new Set(['header', 'sidebar', 'toolbar', 'user-menu', 'parent', 'flat'])
 const VUE_COMPONENT_PATHS = loadVueComponentPaths()
 
@@ -75,7 +75,7 @@ function normalizePath(path) {
   return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
 }
 
-function classifyNodeKind(node, parentKind) {
+function classifyNodeKind(node, parentKind, parentChildPlacement = '') {
   const rawKind = typeof node.nodeKind === 'string' ? node.nodeKind : ''
   let kind = VALID_NODE_KINDS.has(rawKind) ? rawKind : ''
   const id = String(node.id ?? '')
@@ -86,6 +86,11 @@ function classifyNodeKind(node, parentKind) {
 
   if (SYSTEM_ROOT_IDS.has(id) || node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') {
     kind = 'system-directory'
+  }
+
+  // 父容器是工具栏/用户菜单 → 本节点是系统动作
+  if (kind !== 'system-directory' && (parentChildPlacement === 'toolbar' || parentChildPlacement === 'user-menu')) {
+    kind = 'system-action'
   }
 
   if (!kind) {
@@ -118,7 +123,7 @@ function classifyNodeKind(node, parentKind) {
   return kind
 }
 
-function migrateNodeList(nodes, parentKind, stats) {
+function migrateNodeList(nodes, parentKind, parentChildPlacement, stats) {
   const result = []
   let previous = null
 
@@ -133,7 +138,7 @@ function migrateNodeList(nodes, parentKind, stats) {
       continue
     }
 
-    const migrated = migrateNode(raw, parentKind, stats)
+    const migrated = migrateNode(raw, parentKind, parentChildPlacement, stats)
     result.push(migrated)
     previous = migrated
   }
@@ -141,9 +146,9 @@ function migrateNodeList(nodes, parentKind, stats) {
   return result
 }
 
-function migrateNode(raw, parentKind, stats) {
+function migrateNode(raw, parentKind, parentChildPlacement, stats) {
   const node = raw
-  const kind = classifyNodeKind(node, parentKind)
+  const kind = classifyNodeKind(node, parentKind, parentChildPlacement)
   const id = String(node.id ?? '').trim()
   const title = String(node.title ?? '').trim() || id
 
@@ -174,7 +179,7 @@ function migrateNode(raw, parentKind, stats) {
     }
     if (typeof node.redirect === 'string' && node.redirect.trim()) migrated.redirect = normalizePath(node.redirect)
 
-    const children = migrateNodeList(Array.isArray(node.children) ? node.children : [], kind, stats)
+    const children = migrateNodeList(Array.isArray(node.children) ? node.children : [], kind, migrated.childPlacement ?? '', stats)
     if (children.length > 0) migrated.children = children
   } else if (kind === 'sub-page') {
     migrated.hidden = true
@@ -204,7 +209,7 @@ function migrateNode(raw, parentKind, stats) {
       migrated.childPlacement = childPlacement
     }
 
-    const children = migrateNodeList(Array.isArray(node.children) ? node.children : [], kind, stats)
+    const children = migrateNodeList(Array.isArray(node.children) ? node.children : [], kind, childPlacement, stats)
     if (children.length > 0) migrated.children = children
   }
 
@@ -222,7 +227,7 @@ function migrateNavRoot(navRoot) {
 
   const migrated = {
     childPlacement: navRoot?.childPlacement === 'sidebar' ? 'sidebar' : 'header',
-    children: migrateNodeList(Array.isArray(navRoot?.children) ? navRoot.children : [], null, stats),
+    children: migrateNodeList(Array.isArray(navRoot?.children) ? navRoot.children : [], null, '', stats),
   }
 
   if (typeof navRoot?.homePath === 'string' && navRoot.homePath.trim()) {
