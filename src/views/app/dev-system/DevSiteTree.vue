@@ -106,6 +106,7 @@ const NODE_KIND_LABEL: Record<string, string> = {
   'system-directory': '系统模块',
   'module': '模块',
   'system-page': '系统页面',
+  'system-action': '系统动作',
   'page': '普通页面',
   'link': '超链接',
   'sub-page': '子页面',
