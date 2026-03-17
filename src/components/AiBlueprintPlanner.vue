@@ -261,7 +261,7 @@ import type { ProposalType, DesignProposal } from '@spark-view/spark-ai'
 import type { TokenUsage } from '../composables/useAiChat'
 import NavIcon from './NavIcon.vue'
 import AiProposalCard from './AiProposalCard.vue'
-import { createRequest } from '@spark-view/spark-utils'
+import { http } from '@/services/http'
 import { getProjectApi } from '@/services/api-paths'
 import { getUser, switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
@@ -277,8 +277,6 @@ const PHASE_LABELS: Record<BlueprintPhase, string> = {
   'applied': '已应用',
   'failed': '失败',
 }
-
-const http = createRequest({ timeout: 120_000 })
 
 const EDITABLE_PHASES: Record<string, string> = {
   'needs-analysis': '需求',
