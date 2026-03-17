@@ -374,7 +374,7 @@ public class NavigationService {
             item.put("title", node.getOrDefault("title", ""));
             item.put("icon", node.getOrDefault("icon", ""));
             item.put("path", node.getOrDefault("path", ""));
-            item.put("type", node.getOrDefault("type", ""));
+            item.put("nodeKind", node.getOrDefault("nodeKind", ""));
             item.put("parentId", parentId != null ? parentId : "");
             item.put("hasChildren", node.containsKey("children"));
             result.add(item);
@@ -462,7 +462,6 @@ public class NavigationService {
 
         Map<String, Object> node = new LinkedHashMap<>();
         node.put("id", id);
-        node.put("type", isGroupKind(kind) ? "group" : "item");
         node.put("nodeKind", kind);
         node.put("title", title);
 

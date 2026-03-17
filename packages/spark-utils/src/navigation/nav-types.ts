@@ -9,9 +9,6 @@
 /** 子项存放位置 */
 export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'
 
-/** 导航节点类型 */
-export type NavNodeType = 'item' | 'group'
-
 /**
  * 页面类型（一级判别器，决定 path 的解释方式）
  *
@@ -139,8 +136,6 @@ export interface AppNavigation {
 export interface NavNode extends NavModuleBase<NavNode>, NavRoute, AppNavigation {
   /** 唯一标识 */
   id: string
-  /** 节点类型 */
-  type: NavNodeType
 }
 
 /**

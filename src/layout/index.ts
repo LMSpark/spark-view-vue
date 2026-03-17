@@ -16,7 +16,6 @@ export { NAV_KEY } from '@spark-view/spark-app'
 export type {
   NavNode,
   NavRoot,
-  NavNodeType,
   ChildPlacement,
   NavContextConfig,
   NavContextInput,
