@@ -25,6 +25,27 @@ import { NAV_KEY } from './nav-types'
 const CONTEXT_STORAGE_PREFIX = 'spark-nav-ctx:'
 const _contextCache = new Map<string, NavContextItem[]>()
 
+function contextSourceKey(nodeId: string, source: string): string {
+  return `${nodeId}::${source}`
+}
+
+function contextConfigSignature(config: NavContextConfig): string {
+  const sourcePart = Array.isArray(config.source)
+    ? `static:${JSON.stringify(config.source)}`
+    : `remote:${config.source}`
+
+  return JSON.stringify({
+    source: sourcePart,
+    placeholder: config.placeholder ?? '',
+    defaultValue: config.defaultValue ?? null,
+    paramName: config.paramName ?? '',
+  })
+}
+
+function isSameContextConfig(a: NavContextConfig, b: NavContextConfig): boolean {
+  return contextConfigSignature(a) === contextConfigSignature(b)
+}
+
 /** 约定优先：将简写形式归一化为完整 NavContextConfig */
 function normalizeContextConfig(input: NavContextInput): NavContextConfig {
   // 字符串 → URL 简写
@@ -261,6 +282,13 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     // 同模块复用已有状态
     const cached = _contextByModule.get(moduleNode.id)
     if (cached) {
+      if (!isSameContextConfig(cached.config, config)) {
+        cached.config = config
+        cached.selected = restoreContextValue(moduleNode.id, config)
+        cached.items = []
+        cached.error = null
+        void loadContextItems(cached, true)
+      }
       _moduleContext.value = cached
       return
     }
@@ -278,7 +306,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     _moduleContext.value = state
   }
 
-  async function loadContextItems(state: NavContextState) {
+  async function loadContextItems(state: NavContextState, forceReload = false) {
     const { source } = state.config
 
     // 静态数据
@@ -289,10 +317,11 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
     // 约定优先：字符串 source 解析为 { url }
     const remote = resolveRemoteSource(source)
+    const cacheKey = contextSourceKey(state.nodeId, remote.url)
 
     // 缓存命中
-    if (_contextCache.has(state.nodeId)) {
-      state.items = _contextCache.get(state.nodeId) ?? []
+    if (!forceReload && _contextCache.has(cacheKey)) {
+      state.items = _contextCache.get(cacheKey) ?? []
       return
     }
 
@@ -308,7 +337,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
       const items = (Array.isArray(data) ? data : []) as NavContextItem[]
       state.items = items
-      _contextCache.set(state.nodeId, items)
+      _contextCache.set(cacheKey, items)
     } catch (e) {
       state.error = e instanceof Error ? e.message : String(e)
     } finally {
