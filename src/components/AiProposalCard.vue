@@ -75,6 +75,7 @@ function startEditTitle() {
 }
 
 function commitTitleEdit() {
+  if (!editingTitle.value) return
   const val = editTitleText.value.trim()
   if (val && val !== props.proposal.title) {
     emit('editTitle', props.proposal.id, val)
@@ -98,6 +99,7 @@ function startEditContent() {
 }
 
 function commitContentEdit() {
+  if (!editingContent.value) return
   const val = editContentText.value.trim()
   if (val && val !== props.proposal.content) {
     emit('editContent', props.proposal.id, val)
