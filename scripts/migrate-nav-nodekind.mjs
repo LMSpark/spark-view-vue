@@ -154,7 +154,6 @@ function migrateNode(raw, parentKind, parentChildPlacement, stats) {
 
   const migrated = {
     id,
-    type: kind === 'module' || kind === 'system-directory' ? 'group' : 'item',
     nodeKind: kind,
     title,
   }
@@ -194,6 +193,10 @@ function migrateNode(raw, parentKind, parentChildPlacement, stats) {
     if (linkRenderMode === 'new-tab') {
       migrated.linkRenderMode = 'new-tab'
     }
+    if (node.hidden === true) migrated.hidden = true
+  } else if (kind === 'system-action') {
+    // system-action: path 是动作标识符，无 '/' 前缀，不调 normalizePath
+    if (typeof node.path === 'string' && node.path.trim()) migrated.path = node.path.trim()
     if (node.hidden === true) migrated.hidden = true
   } else {
     if (typeof node.path === 'string' && node.path.trim()) migrated.path = normalizePath(node.path)

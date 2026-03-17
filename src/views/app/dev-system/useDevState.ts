@@ -141,7 +141,7 @@ export function useDevState() {
 
   function isSystemRootDirectory(node: NavNode | null | undefined): boolean {
     if (!node) return false
-    if (inferNodeKind(node) !== 'system-directory') return false
+    if (node.nodeKind !== 'system-directory') return false
     return treeData.value.some((rootNode) => rootNode.id === node.id)
   }
 
@@ -168,22 +168,7 @@ export function useDevState() {
   function canUseModuleNodeKind(node: NavNode | null | undefined): boolean {
     const parent = getParentNode(node)
     if (!parent) return true
-    const parentKind = inferNodeKind(parent)
-    return !isPageLikeKind(parentKind)
-  }
-
-  function inferNodeKind(node: NavNode): NavNodeKind {
-    if (node.nodeKind !== undefined) {
-      // 历史数据迁移：system-page + 非"/"路径 → system-action
-      if (node.nodeKind === 'system-page') {
-        const path = typeof node.path === 'string' ? node.path.trim() : ''
-        if (path !== '' && !path.startsWith('/')) return 'system-action'
-      }
-      return node.nodeKind
-    }
-    if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
-    if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
-    return 'page'
+    return !isPageLikeKind(parent.nodeKind ?? 'module')
   }
 
   function normalizeLinkTarget(value: unknown): LinkTarget {
@@ -205,11 +190,11 @@ export function useDevState() {
 
   function applyNodeKindToNode(node: NavNode, parentPlacement?: string): NavNode {
     const cloned = deepClone(node)
-    // 父容器是工具栏/用户菜单且节点未显式设置 nodeKind → system-action
+    // 父容器是工具栏/用户菜单且节点无 nodeKind → system-action
     if (cloned.nodeKind === undefined && (parentPlacement === 'toolbar' || parentPlacement === 'user-menu')) {
       cloned.nodeKind = 'system-action'
     }
-    cloned.nodeKind = inferNodeKind(cloned)
+    // nodeKind 若仍缺失，保持 undefined → 后端写回时会报错，便于发现数据问题
     if (cloned.nodeKind === 'sub-page') {
       cloned.hidden = true
       delete cloned.path
@@ -462,7 +447,7 @@ export function useDevState() {
     editForm.id = node.id
     editForm.title = node.title
     editForm.icon = node.icon ?? ''
-    editForm.nodeKind = inferNodeKind(node)
+    editForm.nodeKind = node.nodeKind ?? 'page'
     editForm.dividerAfter = node.dividerAfter ?? false
     editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
@@ -684,7 +669,7 @@ export function useDevState() {
     selectedNode.value = node
     loadNodeToForm(node)
     const pageId = normalizePageIdFromPath(node.path)
-    if (pageId && isConfigNodeKind(inferNodeKind(node))) {
+    if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
       void loadPageFiles(pageId)
     } else {
       clearFiles()
@@ -704,7 +689,7 @@ export function useDevState() {
   function handleNodeKindChange(kind: NavNodeKind) {
     if (kind === 'module' && !canUseModuleNodeKind(selectedNode.value)) {
       addStatus('页面下不能创建模块', 'warning')
-      const fallbackKind = selectedNode.value ? inferNodeKind(selectedNode.value) : 'page'
+      const fallbackKind = selectedNode.value?.nodeKind ?? 'page'
       applyNodeKindPreset(fallbackKind)
       return
     }
