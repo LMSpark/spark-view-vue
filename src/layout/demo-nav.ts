@@ -22,12 +22,12 @@ export const demoNavRoot: AppNavRoot = {
       icon: 'SetUp',
       childPlacement: 'toolbar',
       children: [
-        { id: 'tb-ai-design', nodeKind: 'system-page', title: 'AI 协同设计', icon: 'Brush', action: 'ai-design' },
-        { id: 'tb-ai-chat', nodeKind: 'system-page', title: 'AI 对话', icon: 'ChatDotRound', action: 'ai-chat' },
-        { id: 'tb-search', nodeKind: 'system-page', title: '搜索', icon: 'Search', action: 'search' },
-        { id: 'tb-fullscreen', nodeKind: 'system-page', title: '全屏', icon: 'FullScreen', action: 'fullscreen' },
-        { id: 'tb-notifications', nodeKind: 'system-page', title: '通知', icon: 'Bell', action: 'notifications' },
-        { id: 'tb-theme', nodeKind: 'system-page', title: '主题切换', icon: 'Moon', action: 'theme-toggle' },
+        { id: 'tb-ai-design', nodeKind: 'system-page', title: 'AI 协同设计', icon: 'Brush', path: 'ai-design' },
+        { id: 'tb-ai-chat', nodeKind: 'system-page', title: 'AI 对话', icon: 'ChatDotRound', path: 'ai-chat' },
+        { id: 'tb-search', nodeKind: 'system-page', title: '搜索', icon: 'Search', path: 'search' },
+        { id: 'tb-fullscreen', nodeKind: 'system-page', title: '全屏', icon: 'FullScreen', path: 'fullscreen' },
+        { id: 'tb-notifications', nodeKind: 'system-page', title: '通知', icon: 'Bell', path: 'notifications' },
+        { id: 'tb-theme', nodeKind: 'system-page', title: '主题切换', icon: 'Moon', path: 'theme-toggle' },
       ],
     },
 
@@ -39,9 +39,9 @@ export const demoNavRoot: AppNavRoot = {
       icon: 'User',
       childPlacement: 'user-menu',
       children: [
-        { id: 'um-profile', nodeKind: 'system-page', title: '个人中心', icon: 'User', action: 'profile' },
-        { id: 'um-settings', nodeKind: 'system-page', title: '系统设置', icon: 'Setting', action: 'settings' },
-        { id: 'um-home', nodeKind: 'system-page', title: '平台主页', icon: 'HomeFilled', action: 'home' },
+        { id: 'um-profile', nodeKind: 'system-page', title: '个人中心', icon: 'User', path: 'profile' },
+        { id: 'um-settings', nodeKind: 'system-page', title: '系统设置', icon: 'Setting', path: 'settings' },
+        { id: 'um-home', nodeKind: 'system-page', title: '平台主页', icon: 'HomeFilled', path: 'home' },
       ],
     },
 

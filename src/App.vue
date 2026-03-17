@@ -172,7 +172,7 @@ function hasToolbarAction(...actions: string[]): boolean {
   const items = nav.regionItems.value.toolbar
   if (!items.length) return true
   return actions.some(action =>
-    items.some(item => item.action === action)
+    items.some(item => item.path === action)
   )
 }
 

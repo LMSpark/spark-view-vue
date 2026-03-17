@@ -30,7 +30,6 @@ export interface DevEditForm {
   path: string
   redirect: string
   linkTarget: LinkTarget
-  action: string
   parentPageId: string
   childPlacement: string
   order: number
@@ -78,7 +77,7 @@ export function useDevState() {
     dividerAfter: false,
     description: '',
     path: '', redirect: '', linkTarget: 'iframe' as LinkTarget,
-    action: '', parentPageId: '',
+    parentPageId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
   })
@@ -175,10 +174,7 @@ export function useDevState() {
   function inferNodeKind(node: NavNode): NavNodeKind {
     if (node.nodeKind !== undefined) return node.nodeKind
     if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
-    // 兼容旧数据：从 linkTarget 推断 link 类型
     if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
-    // 有 action 字段视为系统页面（与后端 inferNodeKind 一致）
-    if (node.action) return 'system-page'
     return 'page'
   }
 
@@ -207,10 +203,8 @@ export function useDevState() {
       delete cloned.path
       delete cloned.redirect
       delete cloned.linkTarget
-      delete cloned.action
     } else if (cloned.nodeKind === 'link') {
       delete cloned.redirect
-      delete cloned.action
       delete cloned.parentPageId
       if (cloned.linkTarget !== 'iframe' && cloned.linkTarget !== 'new-tab') {
         cloned.linkTarget = 'iframe'
@@ -232,7 +226,6 @@ export function useDevState() {
     if (kind === 'system-directory') {
       editForm.hidden = false
       editForm.path = ''
-      editForm.action = ''
       editForm.redirect = ''
       editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
@@ -242,7 +235,6 @@ export function useDevState() {
     if (kind === 'module') {
       editForm.hidden = false
       editForm.path = ''
-      editForm.action = ''
       editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
       return
@@ -257,7 +249,6 @@ export function useDevState() {
 
     if (kind === 'page') {
       editForm.hidden = false
-      editForm.action = ''
       editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
       return
@@ -266,7 +257,6 @@ export function useDevState() {
     if (kind === 'link') {
       editForm.hidden = false
       editForm.path = ''
-      editForm.action = ''
       editForm.redirect = ''
       // linkTarget 已是 LinkTarget 类型，保留当前值
       editForm.parentPageId = ''
@@ -277,7 +267,6 @@ export function useDevState() {
     editForm.path = ''
     editForm.redirect = ''
     editForm.linkTarget = 'iframe'
-    editForm.action = ''
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -467,7 +456,6 @@ export function useDevState() {
     editForm.path = node.path ?? ''
     editForm.redirect = node.redirect ?? ''
     editForm.linkTarget = normalizeLinkTarget(node.linkTarget)
-    editForm.action = node.action ?? ''
     editForm.parentPageId = node.parentPageId ?? ''
     editForm.childPlacement = node.childPlacement ?? ''
     editForm.order = node.order ?? 0
@@ -532,17 +520,14 @@ export function useDevState() {
       editForm.path = ''
       editForm.redirect = ''
       editForm.linkTarget = 'iframe'
-      editForm.action = ''
     } else if (editForm.nodeKind === 'link') {
       editForm.redirect = ''
-      editForm.action = ''
       // linkTarget 已是 LinkTarget 类型，保留当前值
       editForm.parentPageId = ''
     } else if (editForm.nodeKind === 'system-page') {
       editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
     } else if (editForm.nodeKind === 'page') {
-      editForm.action = ''
       editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
     }
@@ -553,7 +538,6 @@ export function useDevState() {
     if (editForm.path) patch['path'] = editForm.path
     if (editForm.redirect) patch['redirect'] = editForm.redirect
     if (editForm.nodeKind === 'link') patch['linkTarget'] = editForm.linkTarget
-    if (editForm.action) patch['action'] = editForm.action
     if (editForm.parentPageId) patch['parentPageId'] = editForm.parentPageId
     if (editForm.childPlacement) patch['childPlacement'] = editForm.childPlacement
     if (editForm.order !== 0) patch['order'] = editForm.order
@@ -575,7 +559,7 @@ export function useDevState() {
 
     // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
-      'icon', 'description', 'path', 'redirect', 'linkTarget', 'action',
+      'icon', 'description', 'path', 'redirect', 'linkTarget',
       'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
       'dividerAfter', 'nodeKind',
     ]

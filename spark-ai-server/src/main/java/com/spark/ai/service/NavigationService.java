@@ -547,11 +547,19 @@ public class NavigationService {
                 if (!childPlacement.isBlank() && VALID_CHILD_PLACEMENTS.contains(childPlacement)) {
                     node.put("childPlacement", childPlacement);
                 }
-                putIfNotBlank(node, "path", normalizePath(asTrimmedString(raw.get("path"))));
-                putIfNotBlank(node, "redirect", normalizePath(asTrimmedString(raw.get("redirect"))));
                 if ("system-page".equals(kind)) {
-                    putIfNotBlank(node, "action", asTrimmedString(raw.get("action")));
+                    // system-page: path 可能是 action 标识符（如 ai-design）或路由路径
+                    // action 标识符不加 '/' 前缀，保持原样
+                    String spPath = asTrimmedString(raw.get("path"));
+                    putIfNotBlank(node, "path", spPath);
+                    // 兼容旧数据：legacy action 合并到 path（action 字段已移除）
+                    if (!node.containsKey("path")) {
+                        putIfNotBlank(node, "path", asTrimmedString(raw.get("action")));
+                    }
+                } else {
+                    putIfNotBlank(node, "path", normalizePath(asTrimmedString(raw.get("path"))));
                 }
+                putIfNotBlank(node, "redirect", normalizePath(asTrimmedString(raw.get("redirect"))));
                 if (Boolean.TRUE.equals(raw.get("hidden"))) {
                     node.put("hidden", true);
                 }
