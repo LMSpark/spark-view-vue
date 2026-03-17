@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, provide, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
@@ -331,8 +331,8 @@ onMounted(() => {
         clearInterval(timer)
       }
     }, 200)
-    // 5 秒后放弃
-    setTimeout(() => clearInterval(timer), 5000)
+    const stopTimer = setTimeout(() => clearInterval(timer), 5000)
+    onUnmounted(() => { clearInterval(timer); clearTimeout(stopTimer) })
   }
 })
 </script>
