@@ -170,7 +170,6 @@ export type {
   ChildPlacement,
   NavNodeType,
   NavNodeKind,
-  LinkRenderMode,
   NavPageType,
 } from '@spark-view/spark-utils'
 export type { TabPage, PageMode } from './navigation/useTabPages'

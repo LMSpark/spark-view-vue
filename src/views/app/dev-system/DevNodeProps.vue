@@ -100,20 +100,20 @@
       <el-form-item v-if="isLinkNode" label="超链接" class="fi fi--wide">
         <div class="link-url-row">
           <el-input
-            v-model="state.editForm.externalUrl"
+            v-model="state.editForm.path"
             placeholder="https://..."
-            @change="state.onExternalUrlChanged"
+            @change="state.onLinkUrlChanged"
           />
           <el-button
             :loading="state.linkProbeLoading.value"
-            @click="state.probeLinkRenderMode"
+            @click="state.probeLinkPageType"
           >
             检测嵌入
           </el-button>
         </div>
       </el-form-item>
       <el-form-item v-if="isLinkNode" label="渲染方式" class="fi fi--wide">
-        <el-radio-group v-model="state.editForm.linkRenderMode" @change="state.markNavDirty">
+        <el-radio-group v-model="state.editForm.pageType" @change="state.markNavDirty">
           <el-radio-button value="iframe">内嵌 iframe</el-radio-button>
           <el-radio-button value="new-tab">新标签打开</el-radio-button>
         </el-radio-group>

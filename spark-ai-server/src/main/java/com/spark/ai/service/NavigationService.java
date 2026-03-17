@@ -485,12 +485,8 @@ public class NavigationService {
             node.put("context", raw.get("context"));
         }
 
-        String pageId = asTrimmedString(raw.get("pageId"));
-        if (!pageId.isBlank() && !pageId.equals(id)) {
-            node.put("pageId", pageId);
-        }
         String pageType = asTrimmedString(raw.get("pageType"));
-        if ("vue-component".equals(pageType)) {
+        if ("vue-component".equals(pageType) || "iframe".equals(pageType) || "new-tab".equals(pageType)) {
             node.put("pageType", pageType);
         }
 
@@ -520,11 +516,20 @@ public class NavigationService {
                 putIfNotBlank(node, "parentPageId", asTrimmedString(raw.get("parentPageId")));
             }
             case "link" -> {
-                putIfNotBlank(node, "externalUrl", asTrimmedString(raw.get("externalUrl")));
-                String mode = asTrimmedString(raw.get("linkRenderMode"));
-                if ("new-tab".equals(mode)) {
-                    node.put("linkRenderMode", "new-tab");
+                // 新模型: path 存外部 URL，pageType 区分 iframe/new-tab
+                // 兼容旧模型: externalUrl → 迁移到 path
+                String linkPath = asTrimmedString(raw.get("path"));
+                String legacyUrl = asTrimmedString(raw.get("externalUrl"));
+                String effectivePath = !linkPath.isBlank() ? linkPath : legacyUrl;
+                putIfNotBlank(node, "path", effectivePath);
+
+                // pageType 已在上方统一序列化（iframe / new-tab）
+                // 兼容旧 linkRenderMode: 若无 pageType 但有旧字段，推断 pageType
+                if (!node.containsKey("pageType") && !effectivePath.isBlank()) {
+                    String legacyMode = asTrimmedString(raw.get("linkRenderMode"));
+                    node.put("pageType", "new-tab".equals(legacyMode) ? "new-tab" : "iframe");
                 }
+
                 if (Boolean.TRUE.equals(raw.get("hidden"))) {
                     node.put("hidden", true);
                 }
@@ -566,7 +571,9 @@ public class NavigationService {
         }
 
         String externalUrl = asTrimmedString(raw.get("externalUrl"));
-        if ("page".equals(kind) && !externalUrl.isBlank()) {
+        String rawPageType = asTrimmedString(raw.get("pageType"));
+        boolean isLinkByPageType = "iframe".equals(rawPageType) || "new-tab".equals(rawPageType);
+        if ("page".equals(kind) && (!externalUrl.isBlank() || isLinkByPageType)) {
             kind = "link";
         }
 
@@ -577,6 +584,8 @@ public class NavigationService {
         if (isSystemRootDirectoryId(id)) return "system-directory";
         String placement = asTrimmedString(raw.get("childPlacement"));
         if ("toolbar".equals(placement) || "user-menu".equals(placement)) return "system-directory";
+        String pageType = asTrimmedString(raw.get("pageType"));
+        if ("iframe".equals(pageType) || "new-tab".equals(pageType)) return "link";
         if (!asTrimmedString(raw.get("externalUrl")).isBlank()) return "link";
         if (!asTrimmedString(raw.get("action")).isBlank()) return "system-page";
         String type = asTrimmedString(raw.get("type"));

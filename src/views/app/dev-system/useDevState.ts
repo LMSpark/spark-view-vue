@@ -7,7 +7,7 @@
  * - 统一 dirty 状态管理
  */
 import { ref, reactive, computed } from 'vue'
-import type { LinkRenderMode, NavNode, NavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
+import type { NavPageType, NavNode, NavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { demoNavRoot } from '@/layout/demo-nav'
 
 // ═══════════════════════════════════════════════════════════
@@ -30,8 +30,7 @@ export interface DevEditForm {
   description: string
   path: string
   redirect: string
-  externalUrl: string
-  linkRenderMode: LinkRenderMode
+  pageType: NavPageType
   action: string
   parentPageId: string
   childPlacement: string
@@ -80,7 +79,7 @@ export function useDevState() {
     id: '', title: '', icon: '', nodeKind: 'page', type: '',
     dividerAfter: false,
     description: '',
-    path: '', redirect: '', externalUrl: '', linkRenderMode: 'iframe',
+    path: '', redirect: '', pageType: 'config' as NavPageType,
     action: '', parentPageId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
@@ -179,12 +178,15 @@ export function useDevState() {
     if (SYSTEM_ROOT_DIRECTORY_IDS.has(node.id)) return 'system-directory'
     if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
     if (node.nodeKind !== undefined) return node.nodeKind
-    if (typeof node.externalUrl === 'string' && node.externalUrl.trim() !== '') return 'link'
+    if (node.pageType === 'iframe' || node.pageType === 'new-tab') return 'link'
     return 'page'
   }
 
-  function normalizeLinkRenderMode(value: unknown): LinkRenderMode {
-    return value === 'new-tab' ? 'new-tab' : 'iframe'
+  function normalizePageType(value: unknown): NavPageType {
+    if (value === 'vue-component') return 'vue-component'
+    if (value === 'iframe') return 'iframe'
+    if (value === 'new-tab') return 'new-tab'
+    return 'config'
   }
 
   function defaultIconByKind(kind: NavNodeKind): string {
@@ -207,17 +209,19 @@ export function useDevState() {
       cloned.hidden = true
       delete cloned.path
       delete cloned.redirect
-      delete cloned.externalUrl
-      delete cloned.linkRenderMode
+      delete cloned.pageType
       delete cloned.action
     } else if (cloned.nodeKind === 'link') {
-      delete cloned.path
       delete cloned.redirect
       delete cloned.action
       delete cloned.parentPageId
-      cloned.linkRenderMode = normalizeLinkRenderMode(cloned.linkRenderMode)
+      if (cloned.pageType !== 'iframe' && cloned.pageType !== 'new-tab') {
+        cloned.pageType = 'iframe'
+      }
     } else {
-      delete cloned.linkRenderMode
+      if (cloned.pageType === 'iframe' || cloned.pageType === 'new-tab') {
+        delete cloned.pageType
+      }
     }
     if (Array.isArray(cloned.children)) {
       cloned.children = cloned.children.map(applyNodeKindToNode)
@@ -236,8 +240,7 @@ export function useDevState() {
       editForm.path = ''
       editForm.action = ''
       editForm.redirect = ''
-      editForm.externalUrl = ''
-      editForm.linkRenderMode = 'iframe'
+      editForm.pageType = 'config'
       editForm.parentPageId = ''
       return
     }
@@ -247,8 +250,7 @@ export function useDevState() {
       editForm.hidden = false
       editForm.path = ''
       editForm.action = ''
-      editForm.externalUrl = ''
-      editForm.linkRenderMode = 'iframe'
+      editForm.pageType = 'config'
       editForm.parentPageId = ''
       return
     }
@@ -256,7 +258,7 @@ export function useDevState() {
     if (kind === 'system-page') {
       editForm.type = 'item'
       editForm.hidden = false
-      editForm.linkRenderMode = 'iframe'
+      editForm.pageType = 'config'
       editForm.parentPageId = ''
       return
     }
@@ -265,8 +267,7 @@ export function useDevState() {
       editForm.type = 'item'
       editForm.hidden = false
       editForm.action = ''
-      editForm.externalUrl = ''
-      editForm.linkRenderMode = 'iframe'
+      editForm.pageType = 'config'
       editForm.parentPageId = ''
       return
     }
@@ -277,7 +278,7 @@ export function useDevState() {
       editForm.path = ''
       editForm.action = ''
       editForm.redirect = ''
-      editForm.linkRenderMode = normalizeLinkRenderMode(editForm.linkRenderMode)
+      editForm.pageType = (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') ? editForm.pageType : 'iframe'
       editForm.parentPageId = ''
       return
     }
@@ -286,8 +287,7 @@ export function useDevState() {
     editForm.hidden = true
     editForm.path = ''
     editForm.redirect = ''
-    editForm.externalUrl = ''
-    editForm.linkRenderMode = 'iframe'
+    editForm.pageType = 'config'
     editForm.action = ''
   }
 
@@ -429,13 +429,13 @@ export function useDevState() {
     }
   }
 
-  function onExternalUrlChanged() {
+  function onLinkUrlChanged() {
     markNavDirty()
     linkProbeInfo.value = null
   }
 
-  async function probeLinkRenderMode() {
-    const url = editForm.externalUrl.trim()
+  async function probeLinkPageType() {
+    const url = editForm.path.trim()
     if (!url) {
       addStatus('请先输入超链接地址', 'warning')
       return
@@ -444,11 +444,10 @@ export function useDevState() {
     linkProbeLoading.value = true
     try {
       const result = await http.post<Record<string, unknown>>(`${getNavApi()}/link-probe`, { url })
-      const mode = normalizeLinkRenderMode(result['recommendedMode'])
       const embeddable = Boolean(result['embeddable'])
       const reason = String(result['reason'] ?? '')
 
-      editForm.linkRenderMode = mode
+      editForm.pageType = embeddable ? 'iframe' : 'new-tab'
       linkProbeInfo.value = { embeddable, reason }
       markNavDirty()
 
@@ -479,8 +478,7 @@ export function useDevState() {
     editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
     editForm.redirect = node.redirect ?? ''
-    editForm.externalUrl = node.externalUrl ?? ''
-    editForm.linkRenderMode = normalizeLinkRenderMode(node.linkRenderMode)
+    editForm.pageType = normalizePageType(node.pageType)
     editForm.action = node.action ?? ''
     editForm.parentPageId = node.parentPageId ?? ''
     editForm.childPlacement = node.childPlacement ?? ''
@@ -546,24 +544,24 @@ export function useDevState() {
       editForm.hidden = true
       editForm.path = ''
       editForm.redirect = ''
-      editForm.externalUrl = ''
-      editForm.linkRenderMode = 'iframe'
+      editForm.pageType = 'config'
       editForm.action = ''
     } else if (editForm.nodeKind === 'link') {
       editForm.type = 'item'
-      editForm.path = ''
       editForm.redirect = ''
       editForm.action = ''
-      editForm.linkRenderMode = normalizeLinkRenderMode(editForm.linkRenderMode)
+      editForm.pageType = (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') ? editForm.pageType : 'iframe'
       editForm.parentPageId = ''
     } else if (editForm.nodeKind === 'system-page') {
-      editForm.externalUrl = ''
-      editForm.linkRenderMode = 'iframe'
+      if (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') {
+        editForm.pageType = 'config'
+      }
       editForm.parentPageId = ''
     } else if (editForm.nodeKind === 'page') {
       editForm.action = ''
-      editForm.externalUrl = ''
-      editForm.linkRenderMode = 'iframe'
+      if (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') {
+        editForm.pageType = 'config'
+      }
       editForm.parentPageId = ''
     }
 
@@ -573,8 +571,7 @@ export function useDevState() {
     if (editForm.description) patch['description'] = editForm.description
     if (editForm.path) patch['path'] = editForm.path
     if (editForm.redirect) patch['redirect'] = editForm.redirect
-    if (editForm.externalUrl) patch['externalUrl'] = editForm.externalUrl
-    if (editForm.nodeKind === 'link') patch['linkRenderMode'] = editForm.linkRenderMode
+    if (editForm.pageType !== 'config') patch['pageType'] = editForm.pageType
     if (editForm.action) patch['action'] = editForm.action
     if (editForm.parentPageId) patch['parentPageId'] = editForm.parentPageId
     if (editForm.childPlacement) patch['childPlacement'] = editForm.childPlacement
@@ -597,7 +594,7 @@ export function useDevState() {
 
     // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
-      'icon', 'description', 'path', 'redirect', 'externalUrl', 'linkRenderMode', 'action',
+      'icon', 'description', 'path', 'redirect', 'pageType', 'action',
       'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
       'dividerAfter', 'nodeKind',
     ]
@@ -955,8 +952,8 @@ export function useDevState() {
     loadPages,
     loadPageFiles,
     clearFiles,
-    onExternalUrlChanged,
-    probeLinkRenderMode,
+    onLinkUrlChanged,
+    probeLinkPageType,
     selectPage,
     loadNodeToForm,
     applyNavChanges,

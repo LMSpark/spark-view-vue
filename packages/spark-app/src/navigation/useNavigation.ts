@@ -84,22 +84,17 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     return normalizePath(stripTenantPrefix(path))
   }
 
-  function resolveLinkRenderMode(node: NavNode): 'iframe' | 'new-tab' {
-    return node.linkRenderMode === 'new-tab' ? 'new-tab' : 'iframe'
-  }
-
   function resolveNodeRoutePath(node: NavNode): string | null {
     if (typeof node.path === 'string' && node.path.trim() !== '') {
+      // iframe 节点：path 是外部 URL，注册为虚拟路由
+      if (node.pageType === 'iframe') {
+        return normalizePath(`/__link/${encodeURIComponent(node.id)}`)
+      }
+      // new-tab 节点：不注册路由，由 navigateTo 处理
+      if (node.pageType === 'new-tab') {
+        return null
+      }
       return normalizePath(node.path)
-    }
-
-    if (
-      node.nodeKind === 'link' &&
-      resolveLinkRenderMode(node) === 'iframe' &&
-      typeof node.externalUrl === 'string' &&
-      node.externalUrl.trim() !== ''
-    ) {
-      return normalizePath(`/__link/${encodeURIComponent(node.id)}`)
     }
 
     return null
@@ -421,22 +416,19 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     if (node.disabled) return
     if (isSubPageNode(node)) return
 
-    if (node.nodeKind === 'link' && typeof node.externalUrl === 'string' && node.externalUrl.trim() !== '') {
-      if (resolveLinkRenderMode(node) === 'new-tab') {
-        window.open(node.externalUrl, '_blank', 'noopener,noreferrer')
-        return
-      }
+    // new-tab 外部链接：直接新标签页打开
+    if (node.pageType === 'new-tab' && typeof node.path === 'string' && node.path.trim() !== '') {
+      window.open(node.path, '_blank', 'noopener,noreferrer')
+      return
+    }
+
+    // iframe 外部链接：跳转到虚拟路由
+    if (node.pageType === 'iframe') {
       const linkPath = resolveNodeRoutePath(node)
       if (linkPath !== null) {
         navigateByPath(linkPath)
         return
       }
-    }
-
-    // 外部链接
-    if (node.externalUrl) {
-      window.open(node.externalUrl, '_blank', 'noopener,noreferrer')
-      return
     }
 
     // 重定向
