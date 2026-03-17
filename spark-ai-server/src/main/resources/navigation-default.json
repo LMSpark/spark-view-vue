@@ -9,43 +9,49 @@
             "children": [
                 {
                     "id": "tb-ai-design",
-                                        "title": "AI 协同设计",
+                    "nodeKind": "system-action",
+                    "title": "AI 协同设计",
                     "description": "启动 AI 辅助设计会话，支持页面配置自动生成与迭代优化",
                     "icon": "Brush",
-                    "action": "ai-design"
+                    "path": "ai-design"
                 },
                 {
                     "id": "tb-ai-chat",
-                                        "title": "AI 对话",
+                    "nodeKind": "system-action",
+                    "title": "AI 对话",
                     "description": "AI 智能对话助手",
                     "icon": "ChatDotRound",
-                    "action": "ai-chat"
+                    "path": "ai-chat"
                 },
                 {
                     "id": "tb-search",
-                                        "title": "搜索",
+                    "nodeKind": "system-action",
+                    "title": "搜索",
                     "description": "全局搜索页面、数据和配置",
                     "icon": "Search",
-                    "action": "search"
+                    "path": "search"
                 },
                 {
                     "id": "tb-fullscreen",
-                                        "title": "全屏",
+                    "nodeKind": "system-action",
+                    "title": "全屏",
                     "icon": "FullScreen",
-                    "action": "fullscreen"
+                    "path": "fullscreen"
                 },
                 {
                     "id": "tb-notifications",
-                                        "title": "通知",
+                    "nodeKind": "system-action",
+                    "title": "通知",
                     "description": "系统通知与消息",
                     "icon": "Bell",
-                    "action": "notifications"
+                    "path": "notifications"
                 },
                 {
                     "id": "tb-theme",
-                                        "title": "主题切换",
+                    "nodeKind": "system-action",
+                    "title": "主题切换",
                     "icon": "Moon",
-                    "action": "theme-toggle"
+                    "path": "theme-toggle"
                 }
             ]
         },
@@ -57,21 +63,24 @@
             "children": [
                 {
                     "id": "um-profile",
-                                        "title": "个人中心",
+                    "nodeKind": "system-action",
+                    "title": "个人中心",
                     "icon": "User",
-                    "action": "profile"
+                    "path": "profile"
                 },
                 {
                     "id": "um-settings",
-                                        "title": "系统设置",
+                    "nodeKind": "system-action",
+                    "title": "系统设置",
                     "icon": "Setting",
-                    "action": "settings"
+                    "path": "settings"
                 },
                 {
                     "id": "um-home",
-                                        "title": "平台主页",
+                    "nodeKind": "system-action",
+                    "title": "平台主页",
                     "icon": "HomeFilled",
-                    "action": "home"
+                    "path": "home"
                 }
             ]
         },

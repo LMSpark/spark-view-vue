@@ -55,8 +55,3 @@ export type {
   RegionVisibility,
   NavContextState,
 } from './navigation/nav-types'
-
-export {
-  SYSTEM_PAGE_ACTION_PREFIX,
-  resolveSystemPageAction,
-} from './navigation/nav-types'
