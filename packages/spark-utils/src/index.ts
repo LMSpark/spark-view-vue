@@ -48,7 +48,7 @@ export type {
   NavContextConfig,
   NavContextInput,
   AppModuleBase,
-  NavRoute,
+  AppRoute,
   AppNavigation,
   NavNode,
   AppNavRoot,
