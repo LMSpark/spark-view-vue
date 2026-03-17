@@ -50,7 +50,7 @@
       </el-form-item>
 
       <!-- 路由 & 关联页面 -->
-      <el-divider content-position="left">路由 & 关联页面</el-divider>
+      <el-divider content-position="left">{{ routeSectionLabel }}</el-divider>
       <el-form-item v-if="showTargetSelector" label="目标" class="fi fi--wide">
         <el-select
           v-model="targetValue"
@@ -168,7 +168,8 @@
         <span class="switch-item__hint">保留显示但不可点击（仅 true 持久化，false 为默认值不落库）</span>
       </el-form-item>
 
-      <!-- 模块上下文 -->
+      <!-- 模块上下文（仅目录/模块类型可配置） -->
+      <template v-if="isDirectoryNode">
       <el-divider content-position="left">模块上下文（Context）</el-divider>
       <el-form-item label="启用上下文" class="switch-item">
         <el-switch v-model="state.hasContext.value" @change="state.toggleContext" />
@@ -198,6 +199,7 @@
         <el-form-item label="URL 参数名" class="fi fi--medium">
           <el-input v-model="state.contextConfig.paramName" placeholder="同步到 route.query 的键名" @change="state.markNavDirty" />
         </el-form-item>
+      </template>
       </template>
     </el-form>
   </div>
@@ -236,6 +238,14 @@ const isLinkNode = computed(() => props.state.editForm.nodeKind === 'link')
 const isSubPageNode = computed(() => props.state.editForm.nodeKind === 'sub-page')
 const showPathStatus = computed(() => isSystemPageNode.value || isPageNode.value || isSystemActionNode.value)
 const showTargetSelector = computed(() => isSystemPageNode.value || isPageNode.value || isSystemActionNode.value)
+
+const routeSectionLabel = computed(() => {
+  if (isSystemActionNode.value) return '动作配置'
+  if (isLinkNode.value) return '链接配置'
+  if (isDirectoryNode.value) return '重定向'
+  if (isSubPageNode.value) return '关联页面'
+  return '路由 & 关联页面'
+})
 
 interface TargetOption {
   value: string
@@ -610,7 +620,7 @@ const pathStatus = computed(() => {
 }
 
 .dev-node-props :deep(.type-radio-group) {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -633,7 +643,7 @@ const pathStatus = computed(() => {
   }
 
   .dev-node-props :deep(.type-radio-group) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .fi-inline-row {
