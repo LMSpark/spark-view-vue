@@ -103,7 +103,7 @@
           <el-dropdown-menu>
             <template v-if="userMenuItems.length">
               <template v-for="item in userMenuItems" :key="item.id">
-                <el-dropdown-item :command="item.path ?? item.redirect ?? item.id">
+                <el-dropdown-item :command="resolveUserCommand(item)">
                   <span v-if="item.icon" style="margin-right: 4px"><NavIcon :name="item.icon" /></span>{{ item.title }}
                 </el-dropdown-item>
                 <el-dropdown-item v-if="item.dividerAfter" disabled class="app-header__user-divider" />
@@ -138,6 +138,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useNotifications } from '@/composables/useNotifications'
 import type { NavNode } from '@spark-view/spark-app'
+import { resolveSystemPageAction } from '@spark-view/spark-utils'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
@@ -173,7 +174,20 @@ const emit = defineEmits<{
 function hasAction(action: string): boolean {
   // 无工具栏配置时默认全部显示（向后兼容）
   if (!props.toolbarItems.length) return true
-  return props.toolbarItems.some(item => item.path === action)
+  return props.toolbarItems.some(item => resolveSystemPageAction(item.path) === action)
+}
+
+function resolveUserCommand(item: NavNode): string {
+  const action = resolveSystemPageAction(item.path)
+  if (action !== null) return action
+
+  if (typeof item.path === 'string' && item.path.trim() !== '') {
+    return item.path
+  }
+  if (typeof item.redirect === 'string' && item.redirect.trim() !== '') {
+    return item.redirect
+  }
+  return item.id
 }
 /* 通知（SSE 实时驱动） */
 const { notifications, unreadCount, markRead, markAllRead, clearAll, removeItem } = useNotifications()

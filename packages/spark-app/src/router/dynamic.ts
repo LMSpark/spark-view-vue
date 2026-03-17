@@ -8,7 +8,7 @@
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, resolveSystemPageAction } from '@spark-view/spark-utils'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 
@@ -43,8 +43,10 @@ export interface DynamicRouterOptions {
   pageComponent: Component
 
   /**
-   * system-page 路径 → Vue 组件映射。
-   * 导航节点 nodeKind='system-page' 时，使用此映射解析组件。
+    * system-page 路径 → Vue 组件映射。
+    *
+    * 仅“组件型 system-page”（如 `/settings`）使用此映射。
+    * “动作型 system-page”（如 `action:profile` / `profile`）不会注册路由。
    */
   componentMap?: Record<string, Component>
 
@@ -207,7 +209,8 @@ export class DynamicRouter {
    * 从导航节点树递归注册路由
    * - nodeKind='link' + linkTarget='iframe' → 内嵌 iframe 路由（path 为外部 URL）
    * - nodeKind='link' + linkTarget='new-tab' → 不注册路由（点击时 window.open）
-   * - nodeKind='system-page' 或路径命中 componentMap → 静态组件路由
+  * - nodeKind='system-page' + 命中 componentMap → 静态组件路由
+  * - nodeKind='system-page' + 动作命令（action:xxx 或 legacy 裸标识）→ 不注册路由
    * - 其他页面类节点 → pageComponent (PageRenderer)
    * @param skipTenantPrefix 平台级路由（preAuthNavTree）跳过租户前缀
    */
@@ -232,6 +235,24 @@ export class DynamicRouter {
 
       const relativePath = this.normalizePath(rawNodePath)
       const component = this.staticComponentMap.get(relativePath)
+      const systemAction = node.nodeKind === 'system-page' && component === undefined
+        ? resolveSystemPageAction(node.path)
+        : null
+
+      // 动作型 system-page：只用于 UI 命令，不注册路由
+      if (systemAction !== null) {
+        if (shouldLogDynamicRouteDetails()) {
+          routerLogger.debug('system-page 动作节点：跳过路由注册', {
+            nodeId: node.id,
+            action: systemAction,
+          })
+        }
+        if (node.children?.length) {
+          this.registerRoutesFromNav(node.children, skipTenantPrefix)
+        }
+        continue
+      }
+
       const useStaticComponent = node.nodeKind === 'system-page' || component !== undefined
       const pageId = this.resolvePageId(node, rawNodePath)
       // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
@@ -275,7 +296,10 @@ export class DynamicRouter {
           }
       } else {
         if (node.nodeKind === 'system-page') {
-          routerLogger.warn('system-page 节点缺少组件映射，回退为配置页', { path: node.path, nodeId: node.id })
+          routerLogger.warn('system-page 节点缺少组件映射（且非动作命令），回退为配置页', {
+            path: node.path,
+            nodeId: node.id,
+          })
         }
         // config 页面 → PageRenderer
         const route: RouteRecordRaw = {
