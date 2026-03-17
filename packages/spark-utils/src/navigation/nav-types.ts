@@ -86,13 +86,13 @@ export interface AppModuleBase<TChild = unknown> {
 }
 
 /**
- * 路由接口（URL / 页面解析相关）
+ * 激活目标接口（点击后"去哪 / 做什么"）
  *
  * `path` 的含义由 `nodeKind` 决定：
  * - page / sub-page / system-page → SPA 内部路由路径（如 `/order-list`）
  * - link → 外部 HTTP URL（如 `https://grafana.example.com`）
  */
-export interface NavRoute {
+export interface AppRoute {
   /**
    * 路由路径 / 外部链接（由 nodeKind 决定解释方式）
    *
@@ -104,6 +104,10 @@ export interface NavRoute {
   linkTarget?: LinkTarget
   /** 默认重定向路径（group 节点） */
   redirect?: string
+  /** 工具栏动作标识符（toolbar / system-page 节点，匹配内置按钮） */
+  action?: string
+  /** 子页面归属的父页面 ID（sub-page 专用） */
+  parentPageId?: string
 }
 
 /**
@@ -124,17 +128,13 @@ export interface AppNavigation {
   hidden?: boolean
   /** 禁用（灰色不可交互） */
   disabled?: boolean
-  /** 工具栏动作标识符（toolbar 节点，匹配内置按钮） */
-  action?: string
-  /** 子页面归属的父页面 ID（sub-page 专用） */
-  parentPageId?: string
   /** 在该节点后显示分割线 */
   dividerAfter?: boolean
 }
 
 /* ── 导航节点 ── */
 
-export interface NavNode extends AppModuleBase<NavNode>, NavRoute, AppNavigation {
+export interface NavNode extends AppModuleBase<NavNode>, AppRoute, AppNavigation {
   /** 唯一标识 */
   id: string
 }
