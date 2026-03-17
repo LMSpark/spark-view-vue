@@ -14,8 +14,8 @@ export function useTenantRouter() {
   /** 当前租户上下文（从路由参数提取） */
   function getTenantScope(): { tenantId: string; projectId: string } {
     const scopedMatch = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(route.path)
-    const tenantId = scopedMatch?.[1]
-    const projectId = scopedMatch?.[2]
+    const tenantId: string | undefined = scopedMatch?.[1]
+    const projectId: string | undefined = scopedMatch?.[2]
     if (!tenantId || !projectId) {
       throw new Error(`仅支持租户作用域路由：期望 /t/{tenantId}/{projectId}，当前为 ${route.path}`)
     }

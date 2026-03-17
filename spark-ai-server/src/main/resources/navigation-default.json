@@ -3,7 +3,7 @@
     "children": [
         {
             "id": "__toolbar__",
-                        "title": "工具栏",
+            "title": "工具栏",
             "icon": "SetUp",
             "childPlacement": "toolbar",
             "children": [
@@ -57,7 +57,7 @@
         },
         {
             "id": "__user-menu__",
-                        "title": "用户菜单",
+            "title": "用户菜单",
             "icon": "User",
             "childPlacement": "user-menu",
             "children": [
@@ -86,14 +86,14 @@
         },
         {
             "id": "home",
-                        "title": "工作台",
+            "title": "工作台",
             "description": "个人工作台仪表板，汇总待办与统计",
             "icon": "DataBoard",
             "path": "/dashboard",
         },
         {
             "id": "app-management",
-                        "title": "应用管理",
+            "title": "应用管理",
             "description": "多项目/多应用管理与切换",
             "icon": "Grid",
             "childPlacement": "sidebar",
@@ -101,7 +101,7 @@
             "children": [
                 {
                     "id": "app-list",
-                                        "title": "应用列表",
+                    "title": "应用列表",
                     "icon": "List",
                     "path": "/app-list",
                 }
@@ -109,7 +109,7 @@
         },
         {
             "id": "system",
-                        "title": "系统管理",
+            "title": "系统管理",
             "description": "平台级管理功能：用户、权限、导航、缓存、页面配置",
             "icon": "Setting",
             "childPlacement": "sidebar",
@@ -117,45 +117,45 @@
             "children": [
                 {
                     "id": "users",
-                                        "title": "用户管理",
+                    "title": "用户管理",
                     "description": "用户账号 CRUD 与角色分配",
                     "icon": "UserFilled",
                     "path": "/users"
                 },
                 {
                     "id": "permission-render",
-                                        "title": "权限渲染",
+                    "title": "权限渲染",
                     "description": "权限驱动的 UI 渲染演示",
                     "icon": "Brush",
                     "path": "/permission-render"
                 },
                 {
                     "id": "dev-workbench",
-                                        "title": "开发工作台",
+                    "title": "开发工作台",
                     "icon": "Lightning",
                     "path": "/dev",
                 },
                 {
                     "id": "cache-manager",
-                                        "title": "缓存管理",
+                    "title": "缓存管理",
                     "icon": "Coin",
                     "path": "/cache-manager",
                 },
                 {
                     "id": "dashboard",
-                                        "title": "管理仪表板",
+                    "title": "管理仪表板",
                     "icon": "HomeFilled",
                     "path": "/dashboard",
                 },
                 {
                     "id": "about",
-                                        "title": "关于系统",
+                    "title": "关于系统",
                     "icon": "InfoFilled",
                     "path": "/about",
                 },
                 {
                     "id": "settings",
-                                        "title": "平台设置",
+                    "title": "平台设置",
                     "icon": "Setting",
                     "path": "/settings",
                 }
@@ -163,7 +163,7 @@
         },
         {
             "id": "data-demos",
-                        "title": "数据管理",
+            "title": "数据管理",
             "description": "数据绑定、级联、异步加载等数据层演示",
             "icon": "Connection",
             "childPlacement": "sidebar",
@@ -171,37 +171,37 @@
             "children": [
                 {
                     "id": "dataset-demo",
-                                        "title": "DataSet 主从表",
+                    "title": "DataSet 主从表",
                     "icon": "Connection",
                     "path": "/dataset-demo"
                 },
                 {
                     "id": "cascade-demo",
-                                        "title": "级联操作",
+                    "title": "级联操作",
                     "icon": "Lightning",
                     "path": "/cascade-demo"
                 },
                 {
                     "id": "async-demo",
-                                        "title": "异步数据",
+                    "title": "异步数据",
                     "icon": "Refresh",
                     "path": "/async-demo"
                 },
                 {
                     "id": "smart-load",
-                                        "title": "智能依赖加载",
+                    "title": "智能依赖加载",
                     "icon": "Cpu",
                     "path": "/smart-load"
                 },
                 {
                     "id": "master-detail",
-                                        "title": "Master-Detail",
+                    "title": "Master-Detail",
                     "icon": "Connection",
                     "path": "/master-detail"
                 },
                 {
                     "id": "test-order",
-                                        "title": "订单测试",
+                    "title": "订单测试",
                     "icon": "Box",
                     "path": "/test-order"
                 }
@@ -209,7 +209,7 @@
         },
         {
             "id": "component-demos",
-                        "title": "组件演示",
+            "title": "组件演示",
             "description": "渲染器容器、表格、表单、栅格等 UI 组件演示",
             "icon": "Grid",
             "childPlacement": "sidebar",
@@ -217,49 +217,49 @@
             "children": [
                 {
                     "id": "renderer-demo",
-                                        "title": "Renderer 架构",
+                    "title": "Renderer 架构",
                     "icon": "Brush",
                     "path": "/renderer-demo"
                 },
                 {
                     "id": "section-grid",
-                                        "title": "Section 栅格",
+                    "title": "Section 栅格",
                     "icon": "Grid",
                     "path": "/section-grid-demo"
                 },
                 {
                     "id": "el-table-demo",
-                                        "title": "el-table 操作列",
+                    "title": "el-table 操作列",
                     "icon": "List",
                     "path": "/el-table-demo"
                 },
                 {
                     "id": "vxe-demo",
-                                        "title": "VXE 表格",
+                    "title": "VXE 表格",
                     "icon": "TrendCharts",
                     "path": "/vxe-demo"
                 },
                 {
                     "id": "formcreate-api",
-                                        "title": "Form-Create API",
+                    "title": "Form-Create API",
                     "icon": "SetUp",
                     "path": "/formcreate-api"
                 },
                 {
                     "id": "filter-demo",
-                                        "title": "过滤面板",
+                    "title": "过滤面板",
                     "icon": "Search",
                     "path": "/filter-demo"
                 },
                 {
                     "id": "capability-demo",
-                                        "title": "能力管理演示",
+                    "title": "能力管理演示",
                     "icon": "Aim",
                     "path": "/capability-demo",
                 },
                 {
                     "id": "tenant-config",
-                                        "title": "多租户配置",
+                    "title": "多租户配置",
                     "icon": "OfficeBuilding",
                     "path": "/tenant-config",
                 }
@@ -267,7 +267,7 @@
         },
         {
             "id": "tree-demos",
-                        "title": "树形结构",
+            "title": "树形结构",
             "description": "树组件、TreeTable、Node Scope 等树形结构演示",
             "icon": "Share",
             "childPlacement": "sidebar",
@@ -275,19 +275,19 @@
             "children": [
                 {
                     "id": "tree-demo",
-                                        "title": "树形结构演示",
+                    "title": "树形结构演示",
                     "icon": "Share",
                     "path": "/tree-demo"
                 },
                 {
                     "id": "treetable-demo",
-                                        "title": "TreeTable 演示",
+                    "title": "TreeTable 演示",
                     "icon": "Share",
                     "path": "/treetable-demo"
                 },
                 {
                     "id": "tree-node-scope",
-                                        "title": "Node Scope",
+                    "title": "Node Scope",
                     "icon": "Share",
                     "path": "/tree-node-scope-demo"
                 }
