@@ -66,7 +66,8 @@ function resolveRemoteSource(source: string): { url: string } {
 }
 
 interface UseNavigationOptions {
-  // reserved for future options
+  /** 跨应用导航回调：检测到 @app:projectId/path 格式时调用，由调用方实现项目切换逻辑 */
+  onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>
 }
 
 export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptions): NavigationContext {
@@ -406,6 +407,15 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
    * 不再依赖导航节点的 linkTarget 字段 —— 路由表是唯一权威。
    */
   function navigateByPath(path: string): void {
+    // 跨应用导航：@app:projectId/path → 委托给外部回调
+    if (path.startsWith('@app:') && _options?.onCrossAppNavigate) {
+      const match = /^@app:([^/]+)(\/.*)?$/.exec(path)
+      if (match?.[1]) {
+        void _options.onCrossAppNavigate(match[1], match[2] ?? '/')
+        return
+      }
+    }
+
     const targetPath = addTenantPrefix(path)
     const targetComparablePath = normalizeComparablePath(targetPath)
 

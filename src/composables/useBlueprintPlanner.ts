@@ -118,6 +118,32 @@ export function useBlueprintPlanner() {
     if (p) p.status = 'pending'
   }
 
+  /** 一键采纳所有待决定提案 */
+  function acceptAll() {
+    for (const p of proposals.value) {
+      if (p.status === 'pending') p.status = 'accepted'
+    }
+  }
+
+  /** 一键跳过所有待决定提案 */
+  function rejectAll() {
+    for (const p of proposals.value) {
+      if (p.status === 'pending') p.status = 'rejected'
+    }
+  }
+
+  /** 编辑提案内容（人工修正 AI 输出） */
+  function editProposalContent(id: string, newContent: string) {
+    const p = proposals.value.find((x) => x.id === id)
+    if (p) p.content = newContent
+  }
+
+  /** 编辑提案标题 */
+  function editProposalTitle(id: string, newTitle: string) {
+    const p = proposals.value.find((x) => x.id === id)
+    if (p) p.title = newTitle
+  }
+
   function reset() {
     appName.value = ''
     phase.value = 'needs-analysis'
@@ -184,6 +210,10 @@ export function useBlueprintPlanner() {
     acceptProposal,
     rejectProposal,
     revokeProposal,
+    acceptAll,
+    rejectAll,
+    editProposalContent,
+    editProposalTitle,
     reset,
     buildBlueprintSummary,
   }

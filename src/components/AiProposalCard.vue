@@ -2,13 +2,32 @@
   <div class="proposal-card" :class="[`type-${proposal.type}`, `status-${proposal.status}`]">
     <div class="proposal-header">
       <span class="proposal-icon"><NavIcon :name="icon" /></span>
-      <span class="proposal-title">{{ proposal.title }}</span>
+      <span v-if="!editingTitle" class="proposal-title" @dblclick="startEditTitle">{{ proposal.title }}</span>
+      <input
+        v-else
+        ref="titleInputRef"
+        v-model="editTitleText"
+        class="proposal-title-input"
+        @blur="commitTitleEdit"
+        @keydown.enter.prevent="commitTitleEdit"
+        @keydown.escape.prevent="cancelTitleEdit"
+      />
       <span v-if="proposal.status === 'accepted'" class="status-badge accepted">✅ 已采纳</span>
       <span v-else-if="proposal.status === 'rejected'" class="status-badge rejected">⏭️ 已跳过</span>
     </div>
     <details class="proposal-details">
       <summary>查看内容</summary>
-      <pre class="proposal-content"><code>{{ proposal.content }}</code></pre>
+      <pre v-if="!editingContent" class="proposal-content" @dblclick="startEditContent"><code>{{ proposal.content }}</code></pre>
+      <textarea
+        v-else
+        ref="contentInputRef"
+        v-model="editContentText"
+        class="proposal-content-edit"
+        rows="8"
+        @blur="commitContentEdit"
+        @keydown.escape.prevent="cancelContentEdit"
+      />
+      <div v-if="!editingContent" class="edit-hint">💡 双击内容可编辑</div>
     </details>
     <div v-if="proposal.status === 'pending'" class="proposal-actions">
       <button class="btn-accept" @click="$emit('accept', proposal.id)" title="采纳此设计决策">
@@ -25,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { typeIcon } from '@spark-view/spark-ai'
 import type { DesignProposal } from '@spark-view/spark-ai'
 import NavIcon from './NavIcon.vue'
@@ -34,13 +53,61 @@ const props = defineProps<{
   proposal: DesignProposal
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   accept: [id: string]
   reject: [id: string]
   discuss: [proposal: DesignProposal]
+  editContent: [id: string, content: string]
+  editTitle: [id: string, title: string]
 }>()
 
 const icon = computed(() => typeIcon(props.proposal.type))
+
+// ── 编辑标题 ──
+const editingTitle = ref(false)
+const editTitleText = ref('')
+const titleInputRef = ref<HTMLInputElement | null>(null)
+
+function startEditTitle() {
+  editTitleText.value = props.proposal.title
+  editingTitle.value = true
+  void nextTick(() => titleInputRef.value?.focus())
+}
+
+function commitTitleEdit() {
+  const val = editTitleText.value.trim()
+  if (val && val !== props.proposal.title) {
+    emit('editTitle', props.proposal.id, val)
+  }
+  editingTitle.value = false
+}
+
+function cancelTitleEdit() {
+  editingTitle.value = false
+}
+
+// ── 编辑内容 ──
+const editingContent = ref(false)
+const editContentText = ref('')
+const contentInputRef = ref<HTMLTextAreaElement | null>(null)
+
+function startEditContent() {
+  editContentText.value = props.proposal.content
+  editingContent.value = true
+  void nextTick(() => contentInputRef.value?.focus())
+}
+
+function commitContentEdit() {
+  const val = editContentText.value.trim()
+  if (val && val !== props.proposal.content) {
+    emit('editContent', props.proposal.id, val)
+  }
+  editingContent.value = false
+}
+
+function cancelContentEdit() {
+  editingContent.value = false
+}
 </script>
 
 <style scoped>
@@ -151,5 +218,40 @@ const icon = computed(() => typeIcon(props.proposal.type))
   border-color: #409eff;
   color: #409eff;
   background: #ecf5ff;
+}
+
+.proposal-title-input {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  border: 1px solid #409eff;
+  border-radius: 4px;
+  padding: 2px 6px;
+  outline: none;
+  background: #fff;
+}
+
+.proposal-content-edit {
+  width: 100%;
+  margin: 4px 0 8px;
+  padding: 8px 10px;
+  background: #282c34;
+  color: #abb2bf;
+  border: 1px solid #409eff;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: monospace;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.edit-hint {
+  font-size: 11px;
+  color: #c0c4cc;
+  text-align: right;
+  padding: 0 4px 4px;
 }
 </style>
