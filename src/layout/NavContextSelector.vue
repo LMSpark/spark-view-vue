@@ -24,14 +24,20 @@
 import type { NavContextState } from '@spark-view/spark-app'
 import { useNav } from '@spark-view/spark-app'
 
-defineProps<{
+const props = defineProps<{
   state: NavContextState
 }>()
 
 const nav = useNav()
 
 function onSelect(val: string) {
-  nav?.setContextValue(val === '' ? null : val)
+  if (val === '') {
+    nav?.setContextValue(null)
+    return
+  }
+  // 回查原始 opt.id 类型，避免 number → string 隐式转换
+  const item = props.state.items.find(o => String(o.id) === val)
+  nav?.setContextValue(item?.id ?? val)
 }
 </script>
 
