@@ -179,6 +179,8 @@ export function useDevState() {
     if (node.nodeKind !== undefined) return node.nodeKind
     // 兼容旧数据：从 linkTarget 推断 link 类型
     if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
+    // 有 action 字段视为系统页面（与后端 inferNodeKind 一致）
+    if (node.action) return 'system-page'
     return 'page'
   }
 
