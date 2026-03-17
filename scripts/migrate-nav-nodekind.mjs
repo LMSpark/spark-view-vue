@@ -195,8 +195,10 @@ function migrateNode(raw, parentKind, parentChildPlacement, stats) {
     }
     if (node.hidden === true) migrated.hidden = true
   } else if (kind === 'system-action') {
-    // system-action: path 是动作标识符，无 '/' 前缀，不调 normalizePath
-    if (typeof node.path === 'string' && node.path.trim()) migrated.path = node.path.trim()
+    // system-action: path 是动作标识符（如 'ai-design'），规范化为无 '/' 前缀
+    if (typeof node.path === 'string' && node.path.trim()) {
+      migrated.path = node.path.trim().replace(/^\/+/, '')
+    }
     if (node.hidden === true) migrated.hidden = true
   } else {
     if (typeof node.path === 'string' && node.path.trim()) migrated.path = normalizePath(node.path)
