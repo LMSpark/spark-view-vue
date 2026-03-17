@@ -43,7 +43,10 @@
             :items="nav.regionItems.value.header"
           />
         </template>
-        <template v-if="enableAI && hasToolbarAction('ai-design', 'ai-chat')" #actions>
+        <template v-if="enableAI && hasToolbarAction('ai-design', 'ai-chat', 'ai-blueprint')" #actions>
+          <button v-if="hasToolbarAction('ai-blueprint')" class="app-ai-action" title="AI 蓝图策划" @click="showBlueprintPlanner = true">
+            <NavIcon name="OfficeBuilding" :size="16" />
+          </button>
           <button v-if="hasToolbarAction('ai-design')" class="app-ai-action" title="AI 协同设计" @click="showDesignStudio = true">
             <NavIcon name="Brush" :size="16" />
           </button>
@@ -105,6 +108,9 @@
   </AppLayout>
 
   <!-- AI 聊天浮窗已下沉到 AppPageRendererBridge（仅配置页面渲染） -->
+
+  <!-- AI 蓝图策划抽屉 -->
+  <AiBlueprintPlanner v-if="enableAI" v-model="showBlueprintPlanner" />
 
   <!-- AI 协同设计抽屉 -->
   <AiDesignStudio v-if="enableAI" v-model="showDesignStudio" />
@@ -273,9 +279,11 @@ function handleUserCommand(command: string) {
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatWidget = defineAsyncComponent(() => import('@/components/AiChatWidget.vue'))
+const AiBlueprintPlanner = defineAsyncComponent(() => import('@/components/AiBlueprintPlanner.vue'))
 const AiDesignStudio = defineAsyncComponent(() => import('@/components/AiDesignStudio.vue'))
 const showAiChat = ref(false)
 const showDesignStudio = ref(false)
+const showBlueprintPlanner = ref(false)
 
 /** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */
 const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))
