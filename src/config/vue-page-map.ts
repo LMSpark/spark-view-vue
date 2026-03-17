@@ -100,7 +100,6 @@ export function buildPreAuthNavTree(): NavRoot {
     .filter(([, entry]) => entry.scope === 'platform')
     .map(([path, entry]) => ({
       id: `platform-${path === '/' ? 'home' : path.slice(1)}`,
-      type: 'item' as const,
       title: entry.title,
       ...(entry.icon !== undefined && { icon: entry.icon }),
       path,

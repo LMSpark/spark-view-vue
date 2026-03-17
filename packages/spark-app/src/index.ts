@@ -168,7 +168,6 @@ export type {
   RegionItems,
   RegionVisibility,
   ChildPlacement,
-  NavNodeType,
   NavNodeKind,
   NavPageType,
 } from '@spark-view/spark-utils'

@@ -25,7 +25,6 @@ export interface DevEditForm {
   title: string
   icon: string
   nodeKind: NavNodeKind
-  type: string
   dividerAfter: boolean
   description: string
   path: string
@@ -76,7 +75,7 @@ export function useDevState() {
 
   // ── 节点编辑表单 ──
   const editForm = reactive<DevEditForm>({
-    id: '', title: '', icon: '', nodeKind: 'page', type: '',
+    id: '', title: '', icon: '', nodeKind: 'page',
     dividerAfter: false,
     description: '',
     path: '', redirect: '', pageType: 'config' as NavPageType,
@@ -204,7 +203,6 @@ export function useDevState() {
   function applyNodeKindToNode(node: NavNode): NavNode {
     const cloned = deepClone(node)
     cloned.nodeKind = inferNodeKind(cloned)
-    cloned.type = cloned.nodeKind === 'module' || cloned.nodeKind === 'system-directory' ? 'group' : 'item'
     if (cloned.nodeKind === 'sub-page') {
       cloned.hidden = true
       delete cloned.path
@@ -235,7 +233,6 @@ export function useDevState() {
     syncIconByNodeKind(kind, previousKind)
 
     if (kind === 'system-directory') {
-      editForm.type = 'group'
       editForm.hidden = false
       editForm.path = ''
       editForm.action = ''
@@ -246,7 +243,6 @@ export function useDevState() {
     }
 
     if (kind === 'module') {
-      editForm.type = 'group'
       editForm.hidden = false
       editForm.path = ''
       editForm.action = ''
@@ -256,7 +252,6 @@ export function useDevState() {
     }
 
     if (kind === 'system-page') {
-      editForm.type = 'item'
       editForm.hidden = false
       editForm.pageType = 'config'
       editForm.parentPageId = ''
@@ -264,7 +259,6 @@ export function useDevState() {
     }
 
     if (kind === 'page') {
-      editForm.type = 'item'
       editForm.hidden = false
       editForm.action = ''
       editForm.pageType = 'config'
@@ -273,7 +267,6 @@ export function useDevState() {
     }
 
     if (kind === 'link') {
-      editForm.type = 'item'
       editForm.hidden = false
       editForm.path = ''
       editForm.action = ''
@@ -283,7 +276,6 @@ export function useDevState() {
       return
     }
 
-    editForm.type = 'item'
     editForm.hidden = true
     editForm.path = ''
     editForm.redirect = ''
@@ -473,7 +465,6 @@ export function useDevState() {
     editForm.title = node.title
     editForm.icon = node.icon ?? ''
     editForm.nodeKind = inferNodeKind(node)
-    editForm.type = node.type
     editForm.dividerAfter = node.dividerAfter ?? false
     editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
@@ -540,14 +531,12 @@ export function useDevState() {
     const patch: Record<string, unknown> = { id: editForm.id, title: editForm.title, nodeKind: editForm.nodeKind }
 
     if (editForm.nodeKind === 'sub-page') {
-      editForm.type = 'item'
       editForm.hidden = true
       editForm.path = ''
       editForm.redirect = ''
       editForm.pageType = 'config'
       editForm.action = ''
     } else if (editForm.nodeKind === 'link') {
-      editForm.type = 'item'
       editForm.redirect = ''
       editForm.action = ''
       editForm.pageType = (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') ? editForm.pageType : 'iframe'
@@ -566,7 +555,6 @@ export function useDevState() {
     }
 
     if (editForm.icon) patch['icon'] = editForm.icon
-    patch['type'] = editForm.type
     if (editForm.dividerAfter) patch['dividerAfter'] = true
     if (editForm.description) patch['description'] = editForm.description
     if (editForm.path) patch['path'] = editForm.path
@@ -750,7 +738,6 @@ export function useDevState() {
     const id = `module-${Date.now()}`
     const node: NavNode = {
       id,
-      type: 'group',
       nodeKind: 'module',
       title: '新模块',
       icon: 'FolderOpened',
@@ -776,7 +763,6 @@ export function useDevState() {
     if (id === '__toolbar__') {
       return {
         id: '__toolbar__',
-        type: 'group',
         nodeKind: 'system-directory',
         title: '工具栏',
         icon: 'SetUp',
@@ -786,7 +772,6 @@ export function useDevState() {
     }
     return {
       id: '__user-menu__',
-      type: 'group',
       nodeKind: 'system-directory',
       title: '用户菜单',
       icon: 'User',
@@ -817,7 +802,6 @@ export function useDevState() {
     const id = `page-${Date.now()}`
     const node: NavNode = {
       id,
-      type: 'item',
       nodeKind: 'page',
       title: '新页面',
       icon: defaultIconByKind('page'),

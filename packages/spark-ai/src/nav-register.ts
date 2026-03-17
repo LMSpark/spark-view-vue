@@ -92,7 +92,6 @@ export async function registerPageNavigation(
 
   const node: NavNode = {
     id: pageId,
-    type: 'item',
     nodeKind: 'page',
     title,
     icon: options?.icon ?? 'Document',

@@ -3,7 +3,7 @@
     "children": [
         {
             "id": "home",
-            "type": "item",
+            "nodeKind": "system-page",
             "title": "工作台",
             "description": "个人工作台仪表板",
             "icon": "DataBoard",
@@ -12,7 +12,7 @@
         },
         {
             "id": "back-to-homepage",
-            "type": "item",
+            "nodeKind": "system-page",
             "title": "返回管理平台",
             "icon": "HomeFilled",
             "path": "/app-list",
@@ -20,7 +20,7 @@
         },
         {
             "id": "system-settings",
-            "type": "group",
+            "nodeKind": "module",
             "title": "系统设置",
             "description": "页面、导航、站点等系统配置管理",
             "icon": "Setting",
@@ -29,7 +29,7 @@
             "children": [
                 {
                     "id": "dev-workbench",
-                    "type": "item",
+                    "nodeKind": "system-page",
                     "title": "开发工作台",
                     "icon": "Lightning",
                     "path": "/dev",
@@ -37,7 +37,7 @@
                 },
                 {
                     "id": "cache-manager",
-                    "type": "item",
+                    "nodeKind": "system-page",
                     "title": "缓存管理",
                     "icon": "Coin",
                     "path": "/cache-manager",

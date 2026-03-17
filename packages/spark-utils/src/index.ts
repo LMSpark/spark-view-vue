@@ -42,7 +42,6 @@ export type { ServerEventTypeName, FileChangeEvent } from './sse-events'
 
 export type {
   ChildPlacement,
-  NavNodeType,
   NavPageType,
   NavNodeKind,
   NavContextItem,

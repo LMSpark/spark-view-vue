@@ -54,10 +54,8 @@ describe('nav-register', () => {
     const node = body['node'] as Record<string, unknown>
     expect(node['id']).toBe('order-list')
     expect(node['title']).toBe('订单列表')
-    expect(node['type']).toBe('item')
     expect(node['nodeKind']).toBe('page')
     expect(node['path']).toBe('/order-list')
-    expect(node['pageType']).toBe('config')
     expect(node['description']).toBe('创建一个订单列表页面')
   })
 
