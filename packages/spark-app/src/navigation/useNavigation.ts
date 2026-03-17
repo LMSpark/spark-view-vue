@@ -68,6 +68,8 @@ function resolveRemoteSource(source: string): { url: string } {
 interface UseNavigationOptions {
   /** 跨应用导航回调：检测到 @app:projectId/path 格式时调用，由调用方实现项目切换逻辑 */
   onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>
+  /** 返回额外请求头（如 Authorization），用于远程上下文数据加载 */
+  getHeaders?: () => Record<string, string>
 }
 
 export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptions): NavigationContext {
@@ -331,9 +333,11 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     state.error = null
     try {
       const client = createRequest()
+      const headers = _options?.getHeaders?.() ?? {}
       const data = await client.request<unknown>({
         url: remote.url,
         method: 'GET',
+        headers,
       })
 
       const items = (Array.isArray(data) ? data : []) as NavContextItem[]

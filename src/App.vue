@@ -149,7 +149,7 @@ import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { getNavApi } from '@/services/api-paths'
-import { http } from '@/services/http'
+import { http, createAuthHeaders } from '@/services/http'
 import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
@@ -200,6 +200,7 @@ provide(PROJECT_SWITCH_KEY, projectSwitchService)
 const _navRoot = reactive({ title: '', childPlacement: 'header' as AppNavRoot['childPlacement'], children: [] as NavNode[] })
 const nav = useNavigation(_navRoot, {
   onCrossAppNavigate: handleCrossAppNavigate,
+  getHeaders: createAuthHeaders,
 })
 
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
