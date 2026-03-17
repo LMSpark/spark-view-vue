@@ -109,7 +109,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useTenantRouter } from '@/composables/useTenantRouter'
 import {
   getAILoop,
   readPageFiles,
@@ -120,7 +120,7 @@ import { onPageConfigChange, type FileChangeEvent } from '@spark-view/spark-util
 import type { DevState } from './useDevState'
 
 const props = defineProps<{ state: DevState }>()
-const router = useRouter()
+const { router, tenantPath } = useTenantRouter()
 
 const pageId = ref('my-page')
 const prompt = ref('')
@@ -238,7 +238,7 @@ function refreshLogs() {
 
 function navigateToPage() {
   if (!pageId.value.trim()) return
-  void router.push(`/${pageId.value.trim()}`)
+  void router.push(tenantPath(`/${pageId.value.trim()}`))
 }
 
 function formatLogLevel(level: string) {

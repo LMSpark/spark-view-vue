@@ -183,7 +183,8 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+// vue-router provided by useTenantRouter
+import { useTenantRouter } from '@/composables/useTenantRouter'
 import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
 import { useDesignSession } from '../composables/useDesignSession'
@@ -211,15 +212,13 @@ import { http } from '@/services/http'
 import {
   writePageFiles,
   clearPageCache,
-  setConfigLoader,
 } from '@spark-view/spark-ai'
 import type { AIResponse } from '@spark-view/spark-ai'
 
 const PROPOSAL_TYPES: ProposalType[] = ['data-model', 'ui-structure', 'interaction', 'api-config', 'style', 'db-schema', 'dict-entry']
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
 
-const router = useRouter()
-const route = useRoute()
+const { ensureRouteExists, navigateToPage: _navigateToPage } = useTenantRouter()
 
 // ── Skill Catalog（可选） ────────────────────────────────────────────────────
 
@@ -364,7 +363,7 @@ async function handleGenerate() {
 
     if (Object.keys(response.files).length > 0) {
       await writePageFiles(pid, response.files)
-      ensureRouteExists(pid)
+      ensureRouteExists(pid, 'design')
       clearPageCache(pid)
 
       session.phase.value = 'applied'
@@ -384,47 +383,10 @@ async function handleGenerate() {
   }
 }
 
-// ── 路由注册（复用 AiChatPanel 逻辑） ───────────────────────────────────────
-
-/** 构建当前用户的租户前缀路径 */
-function tenantPath(relativePath: string): string {
-  const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
-  if (normalized.startsWith('/t/')) return normalized
-  const scopedMatch = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(route.path)
-  if (!scopedMatch) {
-    throw new Error(`tenantPath 仅支持租户作用域路由：期望 /t/{tenantId}/{projectId}，当前为 ${route.path}`)
-  }
-  const tenantId = scopedMatch[1]
-  const projectId = scopedMatch[2]
-  return `/t/${tenantId}/${projectId}${normalized}`
-}
-
-function ensureRouteExists(pid: string) {
-  const tenantPrefixed = `/t/:tenantId/:projectId/${pid}`
-  const exists = router.getRoutes().some((r) => r.path === tenantPrefixed)
-  if (exists) return
-  const configRoute = router.getRoutes().find(
-    (r) => r.meta?.['pageId'] != null && r.meta?.['type'] !== 'system-page',
-  )
-  if (configRoute) {
-    const comp = configRoute.components?.['default']
-    if (!comp) return
-    const routeProps = configRoute.props?.['default'] as Record<string, unknown> | undefined
-    const configLoader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
-    if (configLoader) setConfigLoader(configLoader)
-    router.addRoute({
-      path: tenantPrefixed,
-      name: `design-${pid}`,
-      component: comp,
-      ...(configLoader ? { props: { configLoader } } : {}),
-      meta: { pageId: pid, title: pid, icon: 'Brush' },
-    })
-  }
-}
+// tenantPath / ensureRouteExists / navigateToPage 由 useTenantRouter() 提供
 
 function navigateToPage(pid: string) {
-  ensureRouteExists(pid)
-  void router.push(tenantPath(`/${pid}`))
+  _navigateToPage(pid, 'design')
   visible.value = false
 }
 

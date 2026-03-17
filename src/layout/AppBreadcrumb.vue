@@ -39,11 +39,7 @@ const router = useRouter()
 const nav = useNav()
 
 function goHome() {
-  if (nav) {
-    nav.navigateToPath(getNavHomePath())
-  } else {
-    void router.push('/')
-  }
+  nav?.navigateToPath(getNavHomePath())
 }
 
 const crumbs = computed<BreadcrumbItem[]>(() => {
@@ -77,6 +73,7 @@ function onCrumbClick(item: BreadcrumbItem) {
       return
     }
   }
+  // item.path 来自 nav 或 route.matched，已包含完整路径
   if (item.path) {
     void router.push(item.path)
   }

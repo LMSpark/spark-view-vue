@@ -40,7 +40,7 @@
                 <button
                   v-if="msg.pageId"
                   class="ai-nav-btn"
-                  @click="navigateTo(msg.pageId)"
+                  @click="tenantNavigateToPage(msg.pageId, 'ai')"
                 >
                   🔗 打开页面 /{{ msg.pageId }}
                 </button>
@@ -137,14 +137,15 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted, onUnmounted, watch, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+// vue-router provided by useTenantRouter
 import VueMarkdown from 'vue-markdown-render'
 import { getNavHomePath, refreshRoutes } from '@spark-view/spark-app'
-import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
+import { getAILoop, clearPageCache, setAutoIterating, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
 import { summarizeLogBatch } from '@spark-view/spark-ai'
 import type { AIResponse, LogBatchSummary, LogSnapshot, StreamCallbacks } from '@spark-view/spark-ai'
 import { http } from '@/services/http'
 import { getPageApi } from '@/services/api-paths'
+import { useTenantRouter } from '@/composables/useTenantRouter'
 
 /** 最大自动迭代次数（防止无限循环） */
 const MAX_AUTO_ITERATIONS = 3
@@ -171,8 +172,7 @@ interface ChatMessage {
   iteration?: number
 }
 
-const router = useRouter()
-const route = useRoute()
+const { router, route, tenantPath, ensureRouteExists: tenantEnsureRouteExists, navigateToPage: tenantNavigateToPage } = useTenantRouter()
 
 const isOpen = ref(false)
 const loading = ref(false)
@@ -190,12 +190,8 @@ const displayPageId = computed(() =>
 /** 当前路由对应的 pageId（剥离租户前缀 /t/:tenantId/:projectId/ 后取尾段） */
 const routePageId = computed(() => {
   const path = route.path
-  // 剥离租户前缀：/t/{tenantId}/{projectId}/xxx → /xxx
   const match = /^\/t\/[^/]+\/[^/]+\/(.+)$/.exec(path)
-  if (match) return match[1]
-  // 无租户前缀时回退到去前导 /
-  const trimmed = path.replace(/^\/+/, '')
-  return trimmed.length > 0 ? trimmed : ''
+  return match?.[1] ?? ''
 })
 
 // 路由变化时自动同步 pageId（生成中不同步，防止迭代期间路由跳转覆盖）
@@ -592,52 +588,7 @@ function scrollToBottom() {
   })
 }
 
-/** 构建当前用户的租户前缀路径 */
-function tenantPath(relativePath: string): string {
-  const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
-  if (normalized.startsWith('/t/')) return normalized
-
-  const scopedMatch = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(route.path)
-  if (!scopedMatch) {
-    throw new Error(`tenantPath 仅支持租户作用域路由：期望 /t/{tenantId}/{projectId}，当前为 ${route.path}`)
-  }
-
-  const tenantId = scopedMatch[1]
-  const projectId = scopedMatch[2]
-  return `/t/${tenantId}/${projectId}${normalized}`
-}
-
-function ensureRouteExists(pid: string) {
-  // 检查是否已有租户前缀路由（DynamicRouter 注册的 /t/:tenantId/:projectId/xxx 模式）
-  const tenantPrefixed = `/t/:tenantId/:projectId/${pid}`
-  const exists = router.getRoutes().some(r => r.path === tenantPrefixed)
-  if (exists) return
-  // 从已注册的配置页面路由中克隆组件和 configLoader
-  const configRoute = router.getRoutes().find(
-    r => r.meta?.['pageId'] != null && r.meta?.['type'] !== 'system-page'
-  )
-  if (configRoute) {
-    const comp = configRoute.components?.['default']
-    if (!comp) return
-    // 提取 configLoader：DynamicRouter 通过 props: { configLoader } 注入
-    const routeProps = configRoute.props?.['default'] as Record<string, unknown> | undefined
-    const configLoader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
-    // 注册 configLoader 到 ai-loop，使 clearPageCache 能同时清除 memCache
-    if (configLoader) setConfigLoader(configLoader)
-    router.addRoute({
-      path: tenantPrefixed,
-      name: `ai-${pid}`,
-      component: comp,
-      ...(configLoader ? { props: { configLoader } } : {}),
-      meta: { pageId: pid, title: pid, icon: 'MagicStick' },
-    })
-  }
-}
-
-function navigateTo(pid: string) {
-  ensureRouteExists(pid)
-  void router.push(tenantPath(`/${pid}`))
-}
+// tenantPath / ensureRouteExists / navigateToPage 由 useTenantRouter() 提供
 
 function collectRelevantLogs(
   loop: ReturnType<typeof getAILoop>,
@@ -755,7 +706,7 @@ async function handleSend() {
     if (response.navigationResult?.success === true && !response.navigationResult.alreadyExists) {
       await refreshRoutes()
     }
-    ensureRouteExists(pid)
+    tenantEnsureRouteExists(pid, 'ai')
     clearPageCache(pid)
     await router.push(tenantPath(`/${pid}`))
     // 关键：autoIterating=true 会抑制 setupHotReload；若是同路由 push，页面不会自动重建

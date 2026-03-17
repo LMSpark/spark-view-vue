@@ -191,7 +191,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useTenantRouter } from '@/composables/useTenantRouter'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useDevState, PAGE_FILE_NAMES } from './useDevState'
@@ -200,7 +200,7 @@ import DevNodeProps from './DevNodeProps.vue'
 import DevAiPanel from './DevAiPanel.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
-const router = useRouter()
+const { router, tenantPath } = useTenantRouter()
 const state = useDevState()
 
 // 工作区 Tab
@@ -232,12 +232,12 @@ function fileIcon(name: string) {
 const showPreview = ref(false)
 
 function previewPage(pageId: string) {
-  void router.push(`/${pageId}`)
+  void router.push(tenantPath(`/${pageId}`))
 }
 
 function previewCurrentPage() {
-  if (state.editForm.path) void router.push(state.editForm.path)
-  else if (state.activePageId.value) void router.push(`/${state.activePageId.value}`)
+  if (state.editForm.path) void router.push(tenantPath(state.editForm.path))
+  else if (state.activePageId.value) void router.push(tenantPath(`/${state.activePageId.value}`))
 }
 const createVisible = ref(false)
 const creating = ref(false)
