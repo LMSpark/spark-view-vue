@@ -61,7 +61,7 @@ export interface PageConfigOptions {
   /** 页面组件（默认使用 PageRenderer） */
   pageComponent?: Component
   /**
-   * vue-component 路径 → Vue 组件映射。
+   * system-page 路径 → Vue 组件映射。
    * 路由元数据完全由后端 DB 管理，前端只提供组件解析映射。
    */
   componentMap?: Record<string, Component>

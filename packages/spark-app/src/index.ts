@@ -168,8 +168,8 @@ export type {
   RegionItems,
   RegionVisibility,
   ChildPlacement,
+  LinkTarget,
   NavNodeKind,
-  NavPageType,
 } from '@spark-view/spark-utils'
 export type { TabPage, PageMode } from './navigation/useTabPages'
 export type { PrimaryPreset, NavPreset, NavColorSet } from './navigation/useColorScheme'

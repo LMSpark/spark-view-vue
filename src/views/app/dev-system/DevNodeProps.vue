@@ -106,14 +106,14 @@
           />
           <el-button
             :loading="state.linkProbeLoading.value"
-            @click="state.probeLinkPageType"
+            @click="state.probeLinkTarget"
           >
             检测嵌入
           </el-button>
         </div>
       </el-form-item>
       <el-form-item v-if="isLinkNode" label="渲染方式" class="fi fi--wide">
-        <el-radio-group v-model="state.editForm.pageType" @change="state.markNavDirty">
+        <el-radio-group v-model="state.editForm.linkTarget" @change="state.markNavDirty">
           <el-radio-button value="iframe">内嵌 iframe</el-radio-button>
           <el-radio-button value="new-tab">新标签打开</el-radio-button>
         </el-radio-group>
@@ -297,7 +297,7 @@ const systemRouteTargetOptions = computed<TargetOption[]>(() =>
 
 const configPageOptions = computed(() => {
   return props.state.pageList.value
-    .filter((p) => String(p['pageType'] ?? 'config') !== 'vue-component')
+    .filter((p) => String(p['pageType'] ?? 'config') !== 'system-page')
     .map((p) => {
       const pageId = String(p['pageId'] ?? '')
       const path = String(p['path'] ?? `/${pageId}`)

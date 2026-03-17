@@ -616,7 +616,7 @@ function ensureRouteExists(pid: string) {
   if (exists) return
   // 从已注册的配置页面路由中克隆组件和 configLoader
   const configRoute = router.getRoutes().find(
-    r => r.meta?.['pageId'] != null && r.meta?.['type'] !== 'vue-component'
+    r => r.meta?.['pageId'] != null && r.meta?.['type'] !== 'system-page'
   )
   if (configRoute) {
     const comp = configRoute.components?.['default']

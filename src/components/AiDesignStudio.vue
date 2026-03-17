@@ -390,7 +390,7 @@ function ensureRouteExists(pid: string) {
   const exists = router.getRoutes().some((r) => r.path === `/${pid}`)
   if (exists) return
   const configRoute = router.getRoutes().find(
-    (r) => r.meta?.['pageId'] != null && r.meta?.['type'] !== 'vue-component',
+    (r) => r.meta?.['pageId'] != null && r.meta?.['type'] !== 'system-page',
   )
   if (configRoute) {
     const comp = configRoute.components?.['default']

@@ -43,7 +43,7 @@ public class PageConfigEntity {
     @Column(length = 128)
     private String routeName;
 
-    /** 页面类型：config（配置驱动）或 vue-component（静态 Vue 组件） */
+    /** 页面类型：config（配置驱动）或 system-page（静态 Vue 组件） */
     @Column(name = "page_type", length = 32)
     private String pageType = "config";
 

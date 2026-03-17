@@ -484,9 +484,14 @@ public class NavigationService {
             node.put("context", raw.get("context"));
         }
 
-        String pageType = asTrimmedString(raw.get("pageType"));
-        if ("vue-component".equals(pageType) || "iframe".equals(pageType) || "new-tab".equals(pageType)) {
-            node.put("pageType", pageType);
+        // linkTarget: 读取新字段，兼容旧 pageType 字段
+        String linkTarget = asTrimmedString(raw.get("linkTarget"));
+        if (linkTarget.isBlank()) {
+            // 兼容: 旧数据可能仍用 pageType 存储 iframe/new-tab
+            String legacyPageType = asTrimmedString(raw.get("pageType"));
+            if ("iframe".equals(legacyPageType) || "new-tab".equals(legacyPageType)) {
+                linkTarget = legacyPageType;
+            }
         }
 
         String childPlacement = asTrimmedString(raw.get("childPlacement"));
@@ -515,18 +520,23 @@ public class NavigationService {
                 putIfNotBlank(node, "parentPageId", asTrimmedString(raw.get("parentPageId")));
             }
             case "link" -> {
-                // 新模型: path 存外部 URL，pageType 区分 iframe/new-tab
+                // 新模型: path 存外部 URL，linkTarget 区分 iframe/new-tab
                 // 兼容旧模型: externalUrl → 迁移到 path
                 String linkPath = asTrimmedString(raw.get("path"));
                 String legacyUrl = asTrimmedString(raw.get("externalUrl"));
                 String effectivePath = !linkPath.isBlank() ? linkPath : legacyUrl;
                 putIfNotBlank(node, "path", effectivePath);
 
-                // pageType 已在上方统一序列化（iframe / new-tab）
-                // 兼容旧 linkRenderMode: 若无 pageType 但有旧字段，推断 pageType
-                if (!node.containsKey("pageType") && !effectivePath.isBlank()) {
+                // linkTarget 已在上方从 raw 读取（含旧 pageType 兼容）
+                // 兼容旧 linkRenderMode: 若无 linkTarget 但有旧字段，推断
+                if (linkTarget.isBlank() && !effectivePath.isBlank()) {
                     String legacyMode = asTrimmedString(raw.get("linkRenderMode"));
-                    node.put("pageType", "new-tab".equals(legacyMode) ? "new-tab" : "iframe");
+                    linkTarget = "new-tab".equals(legacyMode) ? "new-tab" : "iframe";
+                }
+                if (!linkTarget.isBlank()) {
+                    node.put("linkTarget", linkTarget);
+                } else if (!effectivePath.isBlank()) {
+                    node.put("linkTarget", "iframe");
                 }
 
                 if (Boolean.TRUE.equals(raw.get("hidden"))) {
@@ -570,9 +580,11 @@ public class NavigationService {
         }
 
         String externalUrl = asTrimmedString(raw.get("externalUrl"));
+        String rawLinkTarget = asTrimmedString(raw.get("linkTarget"));
         String rawPageType = asTrimmedString(raw.get("pageType"));
-        boolean isLinkByPageType = "iframe".equals(rawPageType) || "new-tab".equals(rawPageType);
-        if ("page".equals(kind) && (!externalUrl.isBlank() || isLinkByPageType)) {
+        boolean isLinkByField = !rawLinkTarget.isBlank()
+                || "iframe".equals(rawPageType) || "new-tab".equals(rawPageType);
+        if ("page".equals(kind) && (!externalUrl.isBlank() || isLinkByField)) {
             kind = "link";
         }
 
@@ -583,6 +595,8 @@ public class NavigationService {
         if (isSystemRootDirectoryId(id)) return "system-directory";
         String placement = asTrimmedString(raw.get("childPlacement"));
         if ("toolbar".equals(placement) || "user-menu".equals(placement)) return "system-directory";
+        String linkTarget = asTrimmedString(raw.get("linkTarget"));
+        if (!linkTarget.isBlank()) return "link";
         String pageType = asTrimmedString(raw.get("pageType"));
         if ("iframe".equals(pageType) || "new-tab".equals(pageType)) return "link";
         if (!asTrimmedString(raw.get("externalUrl")).isBlank()) return "link";

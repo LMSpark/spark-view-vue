@@ -103,7 +103,7 @@ export function buildPreAuthNavTree(): NavRoot {
       title: entry.title,
       ...(entry.icon !== undefined && { icon: entry.icon }),
       path,
-      pageType: 'vue-component' as const,
+      nodeKind: 'system-page' as const,
       ...(entry.hidden === true && { hidden: true }),
     }))
 
