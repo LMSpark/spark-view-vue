@@ -269,12 +269,32 @@ function handleUserCommand(command: string) {
       window.location.replace(router.resolve('/login').href)
       break
     default:
+      // 跨应用导航：@app:projectId/path — 切换项目后跳转
+      if (command.startsWith('@app:')) {
+        void handleCrossAppNavigate(command)
+      }
       // 路径类命令（用户菜单项配置了 path/redirect）→ 路由导航
-      if (command.startsWith('/')) {
+      else if (command.startsWith('/')) {
         nav.navigateToPath(command)
       }
       break
   }
+}
+
+/**
+ * 跨应用导航：解析 @app:projectId/path 格式，切换项目后导航到目标路径。
+ * 导航节点可配置 path: '@app:engineering-pm/dashboard' 实现跨应用页面跳转。
+ */
+async function handleCrossAppNavigate(crossAppPath: string) {
+  const match = /^@app:([^/]+)(\/.*)?$/.exec(crossAppPath)
+  if (!match) return
+  const targetProjectId = match[1]!
+  const targetPath = match[2] ?? '/'
+  const user = getUser()
+  if (!user) return
+
+  await projectSwitchService.switchAndReload(targetProjectId)
+  void router.push(`/t/${user.tenantId}/${targetProjectId}${targetPath}`)
 }
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
