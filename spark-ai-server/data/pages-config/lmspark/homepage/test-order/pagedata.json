@@ -23,8 +23,7 @@
           {
             "name": "price",
             "type": "number",
-            "label": "价格",
-            "precision": 2
+            "label": "价格"
           }
         ],
         "views": {

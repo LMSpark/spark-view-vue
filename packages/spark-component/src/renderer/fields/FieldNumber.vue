@@ -6,6 +6,7 @@
           :model-value="rangeStart"
           :min="min"
           :max="max"
+          :precision="precision"
           :disabled="!isCurrentFieldEditable"
           @update:model-value="handleRangeStartChange"
         />
@@ -14,6 +15,7 @@
           :model-value="rangeEnd"
           :min="min"
           :max="max"
+          :precision="precision"
           :disabled="!isCurrentFieldEditable"
           @update:model-value="handleRangeEndChange"
         />
@@ -23,6 +25,7 @@
         :model-value="fieldValue as number"
         :min="min"
         :max="max"
+        :precision="precision"
         :disabled="!isCurrentFieldEditable"
         @update:model-value="handleChange"
       />
@@ -45,6 +48,7 @@ interface Props {
   modelValue?: number | [number | undefined, number | undefined]
   min?: number
   max?: number
+  precision?: number
   filterMode?: string
 }
 
