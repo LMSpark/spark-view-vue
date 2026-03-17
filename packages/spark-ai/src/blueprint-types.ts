@@ -45,11 +45,11 @@ function flattenNavNodes(nodes: NavNode[]): NavNode[] {
 /**
  * 获取 NavRoot 中所有页面节点（递归展平）
  *
- * 判定为页面节点：nodeKind='page' | nodeKind='system-page'，或有 pageId
+ * 判定为页面节点：nodeKind='page' | nodeKind='system-page'，或有 path
  */
 export function getAllPageNodes(root: NavRoot): NavNode[] {
   return flattenNavNodes(root.children).filter(
-    (n) => n.nodeKind === 'page' || n.nodeKind === 'system-page' || n.pageId !== undefined,
+    (n) => n.nodeKind === 'page' || n.nodeKind === 'system-page' || n.path !== undefined,
   )
 }
 
@@ -110,10 +110,11 @@ export function validateBlueprintTree(
     errors.push('蓝图至少需要一个页面节点')
   }
 
-  // 页面 ID 唯一性
+  // 页面 ID 唯一性（path slug 或 node.id）
   const pageIds = new Set<string>()
   for (const page of allPages) {
-    const pid = page.pageId ?? page.id
+    const slug = typeof page.path === 'string' ? page.path.replace(/^\/+/, '').replace(/\/+$/, '') : ''
+    const pid = (slug !== '' && !slug.includes('/')) ? slug : page.id
     if (pageIds.has(pid)) {
       errors.push(`页面 ID 重复: ${pid}`)
     }

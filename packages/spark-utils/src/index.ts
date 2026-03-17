@@ -44,7 +44,6 @@ export type {
   ChildPlacement,
   NavNodeType,
   NavPageType,
-  LinkRenderMode,
   NavNodeKind,
   NavContextItem,
   NavContextConfig,

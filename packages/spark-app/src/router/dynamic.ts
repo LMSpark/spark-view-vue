@@ -161,22 +161,18 @@ export class DynamicRouter {
   }
 
   private resolvePageId(node: NavNode, rawNodePath: string): string {
-    const explicitPageId = typeof node.pageId === 'string' ? node.pageId.trim() : ''
-    const hasCustomPageId = explicitPageId !== '' && explicitPageId !== node.id
-    if (hasCustomPageId) return explicitPageId
-
     const normalizedPath = this.normalizePath(rawNodePath)
     const slug = normalizedPath.replace(/^\/+/, '').replace(/\/+$/, '')
     const isConfigLikeNode =
       node.pageType !== 'vue-component' &&
+      node.pageType !== 'iframe' &&
+      node.pageType !== 'new-tab' &&
       node.nodeKind !== 'system-page' &&
       node.nodeKind !== 'link'
 
     if (isConfigLikeNode && slug !== '' && !slug.includes('/')) {
       return slug
     }
-
-    if (explicitPageId !== '') return explicitPageId
 
     return node.id
   }
@@ -212,86 +208,94 @@ export class DynamicRouter {
 
   /**
    * 从导航节点树递归注册路由
-   * - nodeKind='link' + externalUrl → 内嵌 iframe 路由
+   * - pageType='iframe' → 内嵌 iframe 路由（path 为外部 URL）
+   * - pageType='new-tab' → 不注册路由（点击时 window.open）
    * - nodeKind='system-page' 或路径命中 componentMap → 静态组件路由
    * - 其他页面类节点 → pageComponent (PageRenderer)
    * @param skipTenantPrefix 平台级路由（preAuthNavTree）跳过租户前缀
    */
   private registerRoutesFromNav(nodes: NavNode[], skipTenantPrefix = false): void {
     for (const node of nodes) {
-      const linkExternalUrl = typeof node.externalUrl === 'string' ? node.externalUrl.trim() : ''
-      const linkRenderMode = node.linkRenderMode === 'new-tab' ? 'new-tab' : 'iframe'
-      const isLinkNode = node.nodeKind === 'link' && linkExternalUrl !== '' && linkRenderMode === 'iframe'
-      const rawNodePath = typeof node.path === 'string' && node.path.trim() !== ''
-        ? node.path
-        : (isLinkNode ? `/__link/${encodeURIComponent(node.id)}` : '')
+      const isIframeNode = node.pageType === 'iframe'
+      const isNewTabNode = node.pageType === 'new-tab'
+      const nodePath = typeof node.path === 'string' ? node.path.trim() : ''
+      const rawNodePath = nodePath !== ''
+        ? node.path as string
+        : (isIframeNode ? `/__link/${encodeURIComponent(node.id)}` : '')
 
-      if (rawNodePath !== '') {
-        const relativePath = this.normalizePath(rawNodePath)
-        const component = this.staticComponentMap.get(relativePath)
-        const useStaticComponent = node.nodeKind === 'system-page' || component !== undefined
-        const pageId = this.resolvePageId(node, rawNodePath)
-        // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
-        const routePath = skipTenantPrefix
-          ? this.normalizePath(rawNodePath)
-          : this.addTenantPrefix(rawNodePath)
-
-        if (this.registeredRoutes.has(routePath)) {
-          if (shouldLogDynamicRouteDetails()) {
-            routerLogger.debug(`路由已注册，跳过: ${routePath}`)
-          }
-        } else if (isLinkNode) {
-          const route: RouteRecordRaw = {
-            path: routePath,
-            name: `nav-${node.id}`,
-            component: ExternalLinkFramePage,
-            meta: {
-              type: 'external-link',
-              pageId,
-              title: node.title,
-              externalUrl: linkExternalUrl,
-              ...(node.icon !== undefined && { icon: node.icon }),
-            },
-          }
-          this.router.addRoute(route)
-          this.registeredRoutes.add(routePath)
-          if (shouldLogDynamicRouteDetails()) {
-            routerLogger.debug(`链接 iframe 路由已注册(nav): ${routePath}`)
-          }
-        } else if (useStaticComponent && component !== undefined) {
-            const route: RouteRecordRaw = {
-              path: routePath,
-              name: `nav-${node.id}`,
-              component,
-              meta: { type: 'vue-component', pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
-            }
-            this.router.addRoute(route)
-            this.registeredRoutes.add(routePath)
-            if (shouldLogDynamicRouteDetails()) {
-              routerLogger.debug(`Vue 组件路由已注册(nav): ${routePath}`)
-            }
-        } else {
-          if (node.nodeKind === 'system-page') {
-            routerLogger.warn('system-page 节点缺少组件映射，回退为配置页', { path: node.path, nodeId: node.id })
-          }
-          // config 页面 → PageRenderer
-          const route: RouteRecordRaw = {
-            path: routePath,
-            name: `nav-${node.id}`,
-            component: this.pageComponent,
-            props: { configLoader: this.configLoader },
-            meta: { pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
-          }
-          this.router.addRoute(route)
-          this.registeredRoutes.add(routePath)
-          if (shouldLogDynamicRouteDetails()) {
-            routerLogger.debug(`配置页面路由已注册(nav): ${routePath}`, { pageId })
-          }
+      // new-tab 节点不注册路由（点击时由 navigateTo 处理 window.open）
+      if (isNewTabNode || rawNodePath === '') {
+        // 仍然递归子节点
+        if (node.children?.length) {
+          this.registerRoutesFromNav(node.children, skipTenantPrefix)
         }
-
-        // WeakMap 追踪：导航节点 → 路由路径
-        this._navRouteMap.set(node, routePath)
+        continue
       }
+
+      const relativePath = this.normalizePath(rawNodePath)
+      const component = this.staticComponentMap.get(relativePath)
+      const useStaticComponent = node.nodeKind === 'system-page' || component !== undefined
+      const pageId = this.resolvePageId(node, rawNodePath)
+      // 平台级路由（preAuth）不加前缀，远程导航树路由统一加租户前缀
+      const routePath = skipTenantPrefix
+        ? this.normalizePath(rawNodePath)
+        : this.addTenantPrefix(rawNodePath)
+
+      if (this.registeredRoutes.has(routePath)) {
+        if (shouldLogDynamicRouteDetails()) {
+          routerLogger.debug(`路由已注册，跳过: ${routePath}`)
+        }
+      } else if (isIframeNode) {
+        const route: RouteRecordRaw = {
+          path: routePath,
+          name: `nav-${node.id}`,
+          component: ExternalLinkFramePage,
+          meta: {
+            type: 'external-link',
+            pageId,
+            title: node.title,
+            externalUrl: nodePath,
+            ...(node.icon !== undefined && { icon: node.icon }),
+          },
+        }
+        this.router.addRoute(route)
+        this.registeredRoutes.add(routePath)
+        if (shouldLogDynamicRouteDetails()) {
+          routerLogger.debug(`链接 iframe 路由已注册(nav): ${routePath}`)
+        }
+      } else if (useStaticComponent && component !== undefined) {
+          const route: RouteRecordRaw = {
+            path: routePath,
+            name: `nav-${node.id}`,
+            component,
+            meta: { type: 'vue-component', pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
+          }
+          this.router.addRoute(route)
+          this.registeredRoutes.add(routePath)
+          if (shouldLogDynamicRouteDetails()) {
+            routerLogger.debug(`Vue 组件路由已注册(nav): ${routePath}`)
+          }
+      } else {
+        if (node.nodeKind === 'system-page') {
+          routerLogger.warn('system-page 节点缺少组件映射，回退为配置页', { path: node.path, nodeId: node.id })
+        }
+        // config 页面 → PageRenderer
+        const route: RouteRecordRaw = {
+          path: routePath,
+          name: `nav-${node.id}`,
+          component: this.pageComponent,
+          props: { configLoader: this.configLoader },
+          meta: { pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
+        }
+        this.router.addRoute(route)
+        this.registeredRoutes.add(routePath)
+        if (shouldLogDynamicRouteDetails()) {
+          routerLogger.debug(`配置页面路由已注册(nav): ${routePath}`, { pageId })
+        }
+      }
+
+      // WeakMap 追踪：导航节点 → 路由路径
+      this._navRouteMap.set(node, routePath)
 
       // 递归子节点
       if (node.children?.length) {

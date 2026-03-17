@@ -12,11 +12,15 @@ export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'p
 /** 导航节点类型 */
 export type NavNodeType = 'item' | 'group'
 
-/** 页面类型：配置驱动 or Vue 组件 */
-export type NavPageType = 'config' | 'vue-component'
-
-/** 超链接渲染模式 */
-export type LinkRenderMode = 'iframe' | 'new-tab'
+/**
+ * 页面类型（一级判别器，决定 path 的解释方式）
+ *
+ * - `'config'`（默认）— path 是 SPA 路由，加载 `/{slug}/rule.json` 配置页
+ * - `'vue-component'` — path 是 SPA 路由，渲染静态 Vue 组件
+ * - `'iframe'` — path 是外部 URL，注册虚拟路由 `/__link/{id}`，内嵌 iframe 展示
+ * - `'new-tab'` — path 是外部 URL，点击时 `window.open(path)` 新标签页打开
+ */
+export type NavPageType = 'config' | 'vue-component' | 'iframe' | 'new-tab'
 
 /** 节点扁平分类（软件工程管理语义） */
 export type NavNodeKind =
@@ -85,17 +89,20 @@ export interface NavModuleBase<TChild = unknown> {
 
 /**
  * 路由接口（URL / 页面解析相关）
+ *
+ * `path` 的含义由 `pageType` 决定：
+ * - config / vue-component → SPA 内部路由路径（如 `/order-list`）
+ * - iframe / new-tab → 外部 HTTP URL（如 `https://grafana.example.com`）
  */
 export interface NavRoute {
-  /** 路由路径（item 节点） */
+  /**
+   * 路由路径 / 外部链接（由 pageType 决定解释方式）
+   *
+   * - 内部页面：SPA 路由路径，如 `/order-list`
+   * - iframe / new-tab：外部 URL，如 `https://grafana.example.com`
+   */
   path?: string
-  /** 外部链接（新窗口打开） */
-  externalUrl?: string
-  /** 超链接渲染模式（配置时探测/选择，运行时直接使用） */
-  linkRenderMode?: LinkRenderMode
-  /** 页面配置 ID（config 类型页面加载 rule.json 时使用）。默认等于 id */
-  pageId?: string
-  /** 页面类型：'config'（配置驱动）| 'vue-component'（Vue 组件），默认 'config' */
+  /** 页面类型（一级判别器），默认 'config' */
   pageType?: NavPageType
   /** 默认重定向路径（group 节点） */
   redirect?: string

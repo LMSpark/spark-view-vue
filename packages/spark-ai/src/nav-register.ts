@@ -96,7 +96,6 @@ export async function registerPageNavigation(
     title,
     icon: options?.icon ?? 'Document',
     path: `/${pageId}`,
-    pageId,
     pageType: 'config',
   }
   if (description !== undefined) {
