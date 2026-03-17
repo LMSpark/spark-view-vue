@@ -7,7 +7,7 @@
  * - 统一 dirty 状态管理
  */
 import { ref, reactive, computed } from 'vue'
-import type { NavPageType, NavNode, NavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
+import type { LinkTarget, NavNode, NavRoot, NavContextItem, NavNodeKind } from '@spark-view/spark-app'
 import { demoNavRoot } from '@/layout/demo-nav'
 
 // ═══════════════════════════════════════════════════════════
@@ -29,7 +29,7 @@ export interface DevEditForm {
   description: string
   path: string
   redirect: string
-  pageType: NavPageType
+  linkTarget: LinkTarget
   action: string
   parentPageId: string
   childPlacement: string
@@ -78,7 +78,7 @@ export function useDevState() {
     id: '', title: '', icon: '', nodeKind: 'page',
     dividerAfter: false,
     description: '',
-    path: '', redirect: '', pageType: 'config' as NavPageType,
+    path: '', redirect: '', linkTarget: 'iframe' as LinkTarget,
     action: '', parentPageId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
@@ -137,7 +137,7 @@ export function useDevState() {
   function isBackendConfigPage(pageId: string): boolean {
     const pageMeta = findPageMeta(pageId)
     if (!pageMeta) return true
-    return String(pageMeta['pageType'] ?? 'config') !== 'vue-component'
+    return String(pageMeta['pageType'] ?? 'config') !== 'system-page'
   }
 
   function isSystemRootDirectory(node: NavNode | null | undefined): boolean {
@@ -177,15 +177,14 @@ export function useDevState() {
     if (SYSTEM_ROOT_DIRECTORY_IDS.has(node.id)) return 'system-directory'
     if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
     if (node.nodeKind !== undefined) return node.nodeKind
-    if (node.pageType === 'iframe' || node.pageType === 'new-tab') return 'link'
+    // 兼容旧数据：从 linkTarget 推断 link 类型
+    if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
     return 'page'
   }
 
-  function normalizePageType(value: unknown): NavPageType {
-    if (value === 'vue-component') return 'vue-component'
-    if (value === 'iframe') return 'iframe'
+  function normalizeLinkTarget(value: unknown): LinkTarget {
     if (value === 'new-tab') return 'new-tab'
-    return 'config'
+    return 'iframe'
   }
 
   function defaultIconByKind(kind: NavNodeKind): string {
@@ -207,19 +206,17 @@ export function useDevState() {
       cloned.hidden = true
       delete cloned.path
       delete cloned.redirect
-      delete cloned.pageType
+      delete cloned.linkTarget
       delete cloned.action
     } else if (cloned.nodeKind === 'link') {
       delete cloned.redirect
       delete cloned.action
       delete cloned.parentPageId
-      if (cloned.pageType !== 'iframe' && cloned.pageType !== 'new-tab') {
-        cloned.pageType = 'iframe'
+      if (cloned.linkTarget !== 'iframe' && cloned.linkTarget !== 'new-tab') {
+        cloned.linkTarget = 'iframe'
       }
     } else {
-      if (cloned.pageType === 'iframe' || cloned.pageType === 'new-tab') {
-        delete cloned.pageType
-      }
+      delete cloned.linkTarget
     }
     if (Array.isArray(cloned.children)) {
       cloned.children = cloned.children.map(applyNodeKindToNode)
@@ -237,7 +234,7 @@ export function useDevState() {
       editForm.path = ''
       editForm.action = ''
       editForm.redirect = ''
-      editForm.pageType = 'config'
+      editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
       return
     }
@@ -246,14 +243,14 @@ export function useDevState() {
       editForm.hidden = false
       editForm.path = ''
       editForm.action = ''
-      editForm.pageType = 'config'
+      editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
       return
     }
 
     if (kind === 'system-page') {
       editForm.hidden = false
-      editForm.pageType = 'config'
+      editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
       return
     }
@@ -261,7 +258,7 @@ export function useDevState() {
     if (kind === 'page') {
       editForm.hidden = false
       editForm.action = ''
-      editForm.pageType = 'config'
+      editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
       return
     }
@@ -271,7 +268,7 @@ export function useDevState() {
       editForm.path = ''
       editForm.action = ''
       editForm.redirect = ''
-      editForm.pageType = (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') ? editForm.pageType : 'iframe'
+      // linkTarget 已是 LinkTarget 类型，保留当前值
       editForm.parentPageId = ''
       return
     }
@@ -279,7 +276,7 @@ export function useDevState() {
     editForm.hidden = true
     editForm.path = ''
     editForm.redirect = ''
-    editForm.pageType = 'config'
+    editForm.linkTarget = 'iframe'
     editForm.action = ''
   }
 
@@ -390,7 +387,7 @@ export function useDevState() {
     }
     if (!isBackendConfigPage(pageId)) {
       clearFiles()
-      addStatus(`页面 ${pageId} 为 vue-component，配置文件由前端组件维护`, 'info')
+      addStatus(`页面 ${pageId} 为 system-page，配置文件由前端组件维护`, 'info')
       return
     }
 
@@ -426,7 +423,7 @@ export function useDevState() {
     linkProbeInfo.value = null
   }
 
-  async function probeLinkPageType() {
+  async function probeLinkTarget() {
     const url = editForm.path.trim()
     if (!url) {
       addStatus('请先输入超链接地址', 'warning')
@@ -439,7 +436,7 @@ export function useDevState() {
       const embeddable = Boolean(result['embeddable'])
       const reason = String(result['reason'] ?? '')
 
-      editForm.pageType = embeddable ? 'iframe' : 'new-tab'
+      editForm.linkTarget = embeddable ? 'iframe' : 'new-tab'
       linkProbeInfo.value = { embeddable, reason }
       markNavDirty()
 
@@ -469,7 +466,7 @@ export function useDevState() {
     editForm.description = node.description ?? ''
     editForm.path = node.path ?? ''
     editForm.redirect = node.redirect ?? ''
-    editForm.pageType = normalizePageType(node.pageType)
+    editForm.linkTarget = normalizeLinkTarget(node.linkTarget)
     editForm.action = node.action ?? ''
     editForm.parentPageId = node.parentPageId ?? ''
     editForm.childPlacement = node.childPlacement ?? ''
@@ -534,23 +531,19 @@ export function useDevState() {
       editForm.hidden = true
       editForm.path = ''
       editForm.redirect = ''
-      editForm.pageType = 'config'
+      editForm.linkTarget = 'iframe'
       editForm.action = ''
     } else if (editForm.nodeKind === 'link') {
       editForm.redirect = ''
       editForm.action = ''
-      editForm.pageType = (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') ? editForm.pageType : 'iframe'
+      // linkTarget 已是 LinkTarget 类型，保留当前值
       editForm.parentPageId = ''
     } else if (editForm.nodeKind === 'system-page') {
-      if (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') {
-        editForm.pageType = 'config'
-      }
+      editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
     } else if (editForm.nodeKind === 'page') {
       editForm.action = ''
-      if (editForm.pageType === 'iframe' || editForm.pageType === 'new-tab') {
-        editForm.pageType = 'config'
-      }
+      editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
     }
 
@@ -559,7 +552,7 @@ export function useDevState() {
     if (editForm.description) patch['description'] = editForm.description
     if (editForm.path) patch['path'] = editForm.path
     if (editForm.redirect) patch['redirect'] = editForm.redirect
-    if (editForm.pageType !== 'config') patch['pageType'] = editForm.pageType
+    if (editForm.nodeKind === 'link') patch['linkTarget'] = editForm.linkTarget
     if (editForm.action) patch['action'] = editForm.action
     if (editForm.parentPageId) patch['parentPageId'] = editForm.parentPageId
     if (editForm.childPlacement) patch['childPlacement'] = editForm.childPlacement
@@ -582,7 +575,7 @@ export function useDevState() {
 
     // type / id / title 是必选字段，不参与清理循环
     const optKeys: Array<keyof NavNode> = [
-      'icon', 'description', 'path', 'redirect', 'pageType', 'action',
+      'icon', 'description', 'path', 'redirect', 'linkTarget', 'action',
       'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
       'dividerAfter', 'nodeKind',
     ]
@@ -937,7 +930,7 @@ export function useDevState() {
     loadPageFiles,
     clearFiles,
     onLinkUrlChanged,
-    probeLinkPageType,
+    probeLinkTarget,
     selectPage,
     loadNodeToForm,
     applyNavChanges,

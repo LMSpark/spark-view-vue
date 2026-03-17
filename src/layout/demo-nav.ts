@@ -53,7 +53,6 @@ export const demoNavRoot: NavRoot = {
       description: '个人工作台仪表板，汇总待办与统计',
       icon: 'DataBoard',
       path: '/',
-      pageType: 'vue-component',
     },
 
     /* ── 数据演示模块 → sidebar + 模块级上下文选项 ── */
@@ -96,8 +95,8 @@ export const demoNavRoot: NavRoot = {
         { id: 'vxe-demo', nodeKind: 'page', title: 'VXE 表格', icon: 'TrendCharts', path: '/vxe-demo' },
         { id: 'formcreate-api', nodeKind: 'page', title: 'Form-Create API', icon: 'SetUp', path: '/formcreate-api' },
         { id: 'filter-demo', nodeKind: 'page', title: '过滤面板', icon: 'Search', path: '/filter-demo' },
-        { id: 'capability-demo', nodeKind: 'system-page', title: '能力管理演示', icon: 'Aim', path: '/capability-demo', pageType: 'vue-component' },
-        { id: 'tenant-config', nodeKind: 'system-page', title: '多租户配置', icon: 'OfficeBuilding', path: '/tenant-config', pageType: 'vue-component' },
+        { id: 'capability-demo', nodeKind: 'system-page', title: '能力管理演示', icon: 'Aim', path: '/capability-demo' },
+        { id: 'tenant-config', nodeKind: 'system-page', title: '多租户配置', icon: 'OfficeBuilding', path: '/tenant-config' },
       ],
     },
 
@@ -129,10 +128,10 @@ export const demoNavRoot: NavRoot = {
       children: [
         { id: 'users', nodeKind: 'page', title: '用户管理', icon: 'UserFilled', path: '/users' },
         { id: 'permission-render', nodeKind: 'page', title: '权限渲染', icon: 'Lock', path: '/permission-render' },
-        { id: 'dev-system', nodeKind: 'system-page', title: '开发系统', icon: 'Lightning', path: '/dev', pageType: 'vue-component' },
-        { id: 'cache-manager', nodeKind: 'system-page', title: '缓存管理', icon: 'Coin', path: '/cache-manager', pageType: 'vue-component' },
-        { id: 'dashboard', nodeKind: 'system-page', title: '管理仪表板', icon: 'HomeFilled', path: '/dashboard', pageType: 'vue-component' },
-        { id: 'about', nodeKind: 'system-page', title: '关于系统', icon: 'InfoFilled', path: '/about', pageType: 'vue-component' },
+        { id: 'dev-system', nodeKind: 'system-page', title: '开发系统', icon: 'Lightning', path: '/dev' },
+        { id: 'cache-manager', nodeKind: 'system-page', title: '缓存管理', icon: 'Coin', path: '/cache-manager' },
+        { id: 'dashboard', nodeKind: 'system-page', title: '管理仪表板', icon: 'HomeFilled', path: '/dashboard' },
+        { id: 'about', nodeKind: 'system-page', title: '关于系统', icon: 'InfoFilled', path: '/about' },
         {
           id: 'system-settings',
           nodeKind: 'module',
@@ -141,7 +140,7 @@ export const demoNavRoot: NavRoot = {
           icon: 'Setting',
           childPlacement: 'parent',
           children: [
-            { id: 'settings', nodeKind: 'system-page', title: '基本设置', icon: 'Setting', path: '/settings', pageType: 'vue-component' },
+            { id: 'settings', nodeKind: 'system-page', title: '基本设置', icon: 'Setting', path: '/settings' },
           ],
         },
       ],
@@ -155,7 +154,6 @@ export const demoNavRoot: NavRoot = {
       description: 'AI 驱动的可视化页面设计工作室',
       icon: 'MagicStick',
       path: '/ai-studio',
-      pageType: 'vue-component',
     },
 
     /* ── AI 迭代测试 ── */
@@ -169,3 +167,4 @@ export const demoNavRoot: NavRoot = {
     },
   ],
 }
+

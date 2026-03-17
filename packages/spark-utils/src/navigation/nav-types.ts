@@ -10,16 +10,14 @@
 export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'
 
 /**
- * 页面类型（一级判别器，决定 path 的解释方式）
+ * 节点扁平分类（软件工程管理语义）
  *
- * - `'config'`（默认）— path 是 SPA 路由，加载 `/{slug}/rule.json` 配置页
- * - `'vue-component'` — path 是 SPA 路由，渲染静态 Vue 组件
- * - `'iframe'` — path 是外部 URL，注册虚拟路由 `/__link/{id}`，内嵌 iframe 展示
- * - `'new-tab'` — path 是外部 URL，点击时 `window.open(path)` 新标签页打开
+ * nodeKind 同时编码了页面渲染方式：
+ * - `'page'` / `'sub-page'` — 配置驱动页（PageRenderer，加载 rule.json）
+ * - `'system-page'` — 静态 Vue 组件页（componentMap 查找）
+ * - `'link'` — 外部链接（iframe / 新标签页，由 `linkTarget` 区分）
+ * - `'module'` / `'system-directory'` — 纯分组容器，无页面渲染
  */
-export type NavPageType = 'config' | 'vue-component' | 'iframe' | 'new-tab'
-
-/** 节点扁平分类（软件工程管理语义） */
 export type NavNodeKind =
   | 'system-directory'
   | 'module'
@@ -27,6 +25,9 @@ export type NavNodeKind =
   | 'page'
   | 'link'
   | 'sub-page'
+
+/** 链接渲染目标（仅 nodeKind='link' 时有意义） */
+export type LinkTarget = 'iframe' | 'new-tab'
 
 /* ── 上下文选择器 ── */
 
@@ -87,20 +88,20 @@ export interface NavModuleBase<TChild = unknown> {
 /**
  * 路由接口（URL / 页面解析相关）
  *
- * `path` 的含义由 `pageType` 决定：
- * - config / vue-component → SPA 内部路由路径（如 `/order-list`）
- * - iframe / new-tab → 外部 HTTP URL（如 `https://grafana.example.com`）
+ * `path` 的含义由 `nodeKind` 决定：
+ * - page / sub-page / system-page → SPA 内部路由路径（如 `/order-list`）
+ * - link → 外部 HTTP URL（如 `https://grafana.example.com`）
  */
 export interface NavRoute {
   /**
-   * 路由路径 / 外部链接（由 pageType 决定解释方式）
+   * 路由路径 / 外部链接（由 nodeKind 决定解释方式）
    *
    * - 内部页面：SPA 路由路径，如 `/order-list`
-   * - iframe / new-tab：外部 URL，如 `https://grafana.example.com`
+   * - link：外部 URL，如 `https://grafana.example.com`
    */
   path?: string
-  /** 页面类型（一级判别器），默认 'config' */
-  pageType?: NavPageType
+  /** 链接渲染目标（仅 nodeKind='link' 时有效），默认 'iframe' */
+  linkTarget?: LinkTarget
   /** 默认重定向路径（group 节点） */
   redirect?: string
 }

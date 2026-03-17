@@ -86,12 +86,12 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
 
   function resolveNodeRoutePath(node: NavNode): string | null {
     if (typeof node.path === 'string' && node.path.trim() !== '') {
-      // iframe 节点：path 是外部 URL，注册为虚拟路由
-      if (node.pageType === 'iframe') {
+      // link + iframe 节点：path 是外部 URL，注册为虚拟路由
+      if (node.nodeKind === 'link' && node.linkTarget !== 'new-tab') {
         return normalizePath(`/__link/${encodeURIComponent(node.id)}`)
       }
-      // new-tab 节点：不注册路由，由 navigateTo 处理
-      if (node.pageType === 'new-tab') {
+      // link + new-tab 节点：不注册路由，由 navigateTo 处理
+      if (node.nodeKind === 'link' && node.linkTarget === 'new-tab') {
         return null
       }
       return normalizePath(node.path)
@@ -372,9 +372,9 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
   /**
    * 导航到指定路径 — 统一从路由表 meta.type 自动判定
    *
-   * 如果该路径存在 vue-component 路由，优先按 name 跳转（精确匹配）；
+   * 如果该路径存在 system-page 路由，优先按 name 跳转（精确匹配）；
    * 否则降级为 router.push(path)。
-   * 不再依赖导航节点的 pageType 字段 —— 路由表是唯一权威。
+   * 不再依赖导航节点的 linkTarget 字段 —— 路由表是唯一权威。
    */
   function navigateByPath(path: string): void {
     const targetPath = addTenantPrefix(path)
@@ -384,7 +384,7 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     const vueRoute = router
       .getRoutes()
       .find((routeRecord) =>
-        routeRecord.meta['type'] === 'vue-component' &&
+        routeRecord.meta['type'] === 'system-page' &&
         normalizeComparablePath(routeRecord.path) === targetComparablePath
       )
 
@@ -417,13 +417,13 @@ export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions)
     if (isSubPageNode(node)) return
 
     // new-tab 外部链接：直接新标签页打开
-    if (node.pageType === 'new-tab' && typeof node.path === 'string' && node.path.trim() !== '') {
+    if (node.nodeKind === 'link' && node.linkTarget === 'new-tab' && typeof node.path === 'string' && node.path.trim() !== '') {
       window.open(node.path, '_blank', 'noopener,noreferrer')
       return
     }
 
     // iframe 外部链接：跳转到虚拟路由
-    if (node.pageType === 'iframe') {
+    if (node.nodeKind === 'link') {
       const linkPath = resolveNodeRoutePath(node)
       if (linkPath !== null) {
         navigateByPath(linkPath)

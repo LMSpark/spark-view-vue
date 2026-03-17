@@ -8,7 +8,6 @@
             "description": "个人工作台仪表板",
             "icon": "DataBoard",
             "path": "/dashboard",
-            "pageType": "vue-component"
         },
         {
             "id": "back-to-homepage",
@@ -16,7 +15,6 @@
             "title": "返回管理平台",
             "icon": "HomeFilled",
             "path": "/app-list",
-            "pageType": "vue-component"
         },
         {
             "id": "system-settings",
@@ -33,7 +31,6 @@
                     "title": "开发工作台",
                     "icon": "Lightning",
                     "path": "/dev",
-                    "pageType": "vue-component"
                 },
                 {
                     "id": "cache-manager",
@@ -41,7 +38,6 @@
                     "title": "缓存管理",
                     "icon": "Coin",
                     "path": "/cache-manager",
-                    "pageType": "vue-component"
                 }
             ]
         }

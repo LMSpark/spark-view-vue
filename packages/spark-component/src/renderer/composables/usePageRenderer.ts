@@ -248,10 +248,10 @@ export function usePageRenderer(
 
   /** 完整加载流程：beforeLoad → resolvePageId → fetchConfig → applyConfig → afterLoad。 */
   const loadPageConfig = async (): Promise<void> => {
-    // vue-component 路由由 DynamicRouter 直接渲染目标组件，不走 PageRenderer 配置加载。
+    // system-page 路由由 DynamicRouter 直接渲染目标组件，不走 PageRenderer 配置加载。
     // 场景：transition out-in 期间旧 PageRenderer 尚未卸载，路由 meta 已切换到新路由，
     //       此时 watcher 误触发 loadPageConfig 导致无效 404 请求。
-    if (route.meta['type'] === 'vue-component') return
+    if (route.meta['type'] === 'system-page') return
 
     await runLoad(async (isStale) => {
       const pageId = resolvePageId(route, props.pageId, props.pageConfig?.pageId)

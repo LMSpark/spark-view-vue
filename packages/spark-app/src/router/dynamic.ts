@@ -43,7 +43,7 @@ export interface DynamicRouterOptions {
   pageComponent: Component
 
   /**
-   * vue-component 路径 → Vue 组件映射。
+   * system-page 路径 → Vue 组件映射。
    * 导航节点 nodeKind='system-page' 时，使用此映射解析组件。
    */
   componentMap?: Record<string, Component>
@@ -51,7 +51,7 @@ export interface DynamicRouterOptions {
   /**
    * 租户路径前缀（如 '/t/:tenantId'）。
    * 设置后，config 页面路由自动加此前缀，使所有业务路由统一在租户 URL 下。
-   * vue-component 路由不受影响（DB 中已含完整路径）。
+   * system-page 路由不受影响（DB 中已含完整路径）。
    */
   tenantPathPrefix?: string
 
@@ -90,7 +90,7 @@ export class DynamicRouter {
   private configLoader: ConfigLoader
   private pageComponent: Component
   private registeredRoutes: Set<string> = new Set()
-  /** path → Component 映射（vue-component 路由使用） */
+  /** path → Component 映射（system-page 路由使用） */
   private staticComponentMap: Map<string, Component> = new Map()
   /** 租户路径前缀（如 '/t/:tenantId'），config 路由自动加此前缀 */
   private tenantPathPrefix: string
@@ -164,9 +164,6 @@ export class DynamicRouter {
     const normalizedPath = this.normalizePath(rawNodePath)
     const slug = normalizedPath.replace(/^\/+/, '').replace(/\/+$/, '')
     const isConfigLikeNode =
-      node.pageType !== 'vue-component' &&
-      node.pageType !== 'iframe' &&
-      node.pageType !== 'new-tab' &&
       node.nodeKind !== 'system-page' &&
       node.nodeKind !== 'link'
 
@@ -208,16 +205,17 @@ export class DynamicRouter {
 
   /**
    * 从导航节点树递归注册路由
-   * - pageType='iframe' → 内嵌 iframe 路由（path 为外部 URL）
-   * - pageType='new-tab' → 不注册路由（点击时 window.open）
+   * - nodeKind='link' + linkTarget='iframe' → 内嵌 iframe 路由（path 为外部 URL）
+   * - nodeKind='link' + linkTarget='new-tab' → 不注册路由（点击时 window.open）
    * - nodeKind='system-page' 或路径命中 componentMap → 静态组件路由
    * - 其他页面类节点 → pageComponent (PageRenderer)
    * @param skipTenantPrefix 平台级路由（preAuthNavTree）跳过租户前缀
    */
   private registerRoutesFromNav(nodes: NavNode[], skipTenantPrefix = false): void {
     for (const node of nodes) {
-      const isIframeNode = node.pageType === 'iframe'
-      const isNewTabNode = node.pageType === 'new-tab'
+      const isLinkNode = node.nodeKind === 'link'
+      const isIframeNode = isLinkNode && node.linkTarget !== 'new-tab'
+      const isNewTabNode = isLinkNode && node.linkTarget === 'new-tab'
       const nodePath = typeof node.path === 'string' ? node.path.trim() : ''
       const rawNodePath = nodePath !== ''
         ? node.path as string
@@ -268,7 +266,7 @@ export class DynamicRouter {
             path: routePath,
             name: `nav-${node.id}`,
             component,
-            meta: { type: 'vue-component', pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
+            meta: { type: 'system-page', pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
           }
           this.router.addRoute(route)
           this.registeredRoutes.add(routePath)

@@ -181,8 +181,8 @@ function applyConfig(pageId: string, config: PageConfig): void {
 
 /** 完整加载流程：resolvePageId → beforeLoad → fetchConfig → applyConfig → afterLoad。 */
 async function loadConfig(): Promise<void> {
-  // vue-component 路由不走 PageRenderer，防止 transition out-in 期间误触发
-  if (route.meta['type'] === 'vue-component') return
+  // system-page 路由不走 PageRenderer，防止 transition out-in 期间误触发
+  if (route.meta['type'] === 'system-page') return
 
   await runLoad(async (isStale) => {
     const pageId = resolvePageId(route, props.pageId, props.pageConfig?.pageId)

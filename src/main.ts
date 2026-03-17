@@ -489,7 +489,7 @@ async function startApp() {
 
             // 注册 configLoader 到 ai-loop（使 clearPageCache 能同时清除 memCache）
             const configRoute = router.getRoutes().find(
-              r => r.meta['pageId'] !== null && r.meta['pageId'] !== undefined && r.meta['type'] !== 'vue-component'
+              r => r.meta['pageId'] !== null && r.meta['pageId'] !== undefined && r.meta['type'] !== 'system-page'
             )
             if (configRoute) {
               const routeProps = configRoute.props['default'] as Record<string, unknown> | undefined
@@ -535,8 +535,8 @@ async function startApp() {
         
         // 统计路由信息
         const allRoutes = context.router.getRoutes()
-        const vueRoutes = allRoutes.filter(r => r.meta['type'] === 'vue-component')
-        const configRoutes = allRoutes.filter(r => r.meta['type'] !== 'vue-component')
+        const vueRoutes = allRoutes.filter(r => r.meta['type'] === 'system-page')
+        const configRoutes = allRoutes.filter(r => r.meta['type'] !== 'system-page')
         
         startupLogger.info('📊 路由统计', {
           总路由数: allRoutes.length,

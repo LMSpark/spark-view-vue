@@ -341,7 +341,7 @@ public class PageConfigService {
 
     /**
      * 批量同步静态 Vue 组件路由到数据库（幂等）。
-     * 前端启动时调用，将 vue-component 类型的路由元数据写入 page_config 表，
+     * 前端启动时调用，将 system-page 类型的路由元数据写入 page_config 表，
      * 使后端成为路由信息的单一来源。
      *
      * @param routes 路由列表，每项需包含 path, name, pageId, title, icon
@@ -372,7 +372,7 @@ public class PageConfigService {
                 p.setIcon(icon);
                 p.setPath(path);
                 p.setRouteName(name);
-                p.setPageType("vue-component");
+                p.setPageType("system-page");
                 pageRepo.save(p);
                 updated++;
             } else {
@@ -384,7 +384,7 @@ public class PageConfigService {
                 p.setIcon(icon);
                 p.setPath(path);
                 p.setRouteName(name);
-                p.setPageType("vue-component");
+                p.setPageType("system-page");
                 pageRepo.save(p);
                 created++;
             }
