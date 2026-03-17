@@ -32,6 +32,7 @@
             <el-radio-button value="system-directory">系统模块</el-radio-button>
             <el-radio-button value="module" :disabled="moduleKindDisabled">模块</el-radio-button>
             <el-radio-button value="system-page">系统页面</el-radio-button>
+            <el-radio-button value="system-action">系统动作</el-radio-button>
             <el-radio-button value="page">普通页面</el-radio-button>
             <el-radio-button value="link">超链接</el-radio-button>
             <el-radio-button value="sub-page">子页面</el-radio-button>
@@ -67,14 +68,14 @@
                 :label="opt.label"
               />
             </el-option-group>
-            <el-option-group label="动作">
-              <el-option
-                v-for="opt in actionTargetOptions"
-                :key="opt.value"
-                :value="opt.value"
-                :label="opt.label"
-              />
-            </el-option-group>
+          </template>
+          <template v-else-if="isSystemActionNode">
+            <el-option
+              v-for="opt in actionTargetOptions"
+              :key="opt.value"
+              :value="opt.value"
+              :label="opt.label"
+            />
           </template>
           <template v-else>
             <el-option
@@ -229,11 +230,12 @@ const isDirectoryNode = computed(() => {
 })
 
 const isSystemPageNode = computed(() => props.state.editForm.nodeKind === 'system-page')
+const isSystemActionNode = computed(() => props.state.editForm.nodeKind === 'system-action')
 const isPageNode = computed(() => props.state.editForm.nodeKind === 'page')
 const isLinkNode = computed(() => props.state.editForm.nodeKind === 'link')
 const isSubPageNode = computed(() => props.state.editForm.nodeKind === 'sub-page')
-const showPathStatus = computed(() => isSystemPageNode.value || isPageNode.value)
-const showTargetSelector = computed(() => isSystemPageNode.value || isPageNode.value)
+const showPathStatus = computed(() => isSystemPageNode.value || isPageNode.value || isSystemActionNode.value)
+const showTargetSelector = computed(() => isSystemPageNode.value || isPageNode.value || isSystemActionNode.value)
 
 interface TargetOption {
   value: string
@@ -249,8 +251,6 @@ const actionTargetOptions: TargetOption[] = [
   { value: 'action:theme-toggle', label: '动作 · 主题切换' },
 ]
 
-/** 已知动作标识符集合（用于反向查找 path 是否为 action） */
-const ACTION_VALUES = new Set(actionTargetOptions.map(o => o.value.replace(/^action:/, '')))
 
 interface VuePathOption {
   path: string
@@ -318,7 +318,8 @@ const pageTargetOptions = computed<TargetOption[]>(() =>
 )
 
 const targetPlaceholder = computed(() => {
-  if (isSystemPageNode.value) return '选择系统页面路由或动作'
+  if (isSystemPageNode.value) return '选择系统页面路由'
+  if (isSystemActionNode.value) return '选择系统动作'
   return '选择普通页面（配置页）'
 })
 
@@ -330,15 +331,20 @@ function applyTargetSelection(value: string) {
       props.state.clearFiles()
       return
     }
-    if (value.startsWith('action:')) {
-      props.state.editForm.path = value.replace(/^action:/, '')
-      props.state.markNavDirty()
-      props.state.clearFiles()
-      return
-    }
     const routePath = value.replace(/^route:/, '')
     props.state.editForm.path = routePath
     props.state.handlePathChange(routePath)
+    return
+  }
+
+  if (isSystemActionNode.value) {
+    if (!value) {
+      props.state.editForm.path = ''
+      props.state.markNavDirty()
+      return
+    }
+    props.state.editForm.path = value.replace(/^action:/, '')
+    props.state.markNavDirty()
     return
   }
 
@@ -360,8 +366,12 @@ const targetValue = computed<string>({
     if (isSystemPageNode.value) {
       const path = props.state.editForm.path
       if (!path) return ''
-      if (ACTION_VALUES.has(path)) return `action:${path}`
       return `route:${path}`
+    }
+    if (isSystemActionNode.value) {
+      const path = props.state.editForm.path
+      if (!path) return ''
+      return `action:${path}`
     }
     if (isPageNode.value) {
       return props.state.editForm.path ? `page:${props.state.editForm.path}` : ''
@@ -381,7 +391,7 @@ interface ParentPageOption {
 function collectParentPageOptions(nodes: NavNode[], selectedId: string, options: ParentPageOption[]) {
   for (const node of nodes) {
     const nodeKind = inferNodeKind(node)
-    if (node.id !== selectedId && (nodeKind === 'page' || nodeKind === 'system-page')) {
+      if (node.id !== selectedId && (nodeKind === 'page' || nodeKind === 'system-page' || nodeKind === 'system-action')) {
       const suffix = node.path ? `（${node.path}）` : ''
       options.push({ id: node.id, label: `${node.title}${suffix}` })
     }
@@ -405,14 +415,15 @@ const pathStatus = computed(() => {
     return null
   }
 
-  if (isSystemPageNode.value) {
-    if (ACTION_VALUES.has(path)) {
-      return {
-        type: 'info' as const,
-        icon: 'InfoFilled',
-        text: `当前目标为动作：${path}`,
-      }
+  if (isSystemActionNode.value) {
+    const knownAction = actionTargetOptions.find(o => o.value === `action:${path}`)
+    if (knownAction) {
+      return { type: 'success' as const, icon: 'SuccessFilled', text: `已知动作：${path}` }
     }
+    return { type: 'info' as const, icon: 'InfoFilled', text: `自定义动作标识符：${path}` }
+  }
+
+  if (isSystemPageNode.value) {
     if (path in VUE_PAGE_MAP) {
       const entry = VUE_PAGE_MAP[path]!
       const nodeTitle = props.state.editForm.title.trim()

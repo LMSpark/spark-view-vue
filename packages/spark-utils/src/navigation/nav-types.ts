@@ -14,7 +14,8 @@ export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'p
  *
  * nodeKind 同时编码了页面渲染方式：
  * - `'page'` / `'sub-page'` — 配置驱动页（PageRenderer，加载 rule.json）
- * - `'system-page'` — 系统内置页/动作（静态 Vue 组件 或 toolbar action）
+ * - `'system-page'` — 系统内置页（静态 Vue 组件，有对应 SPA 路由，path 以 `/` 开头）
+ * - `'system-action'` — 系统内置动作（toolbar 按钮，如全屏、AI 对话），不注册路由，path 为动作标识符
  * - `'link'` — 外部链接（iframe / 新标签页，由 `linkTarget` 区分）
  * - `'module'` / `'system-directory'` — 纯分组容器，无页面渲染
  */
@@ -22,45 +23,10 @@ export type NavNodeKind =
   | 'system-directory'
   | 'module'
   | 'system-page'
+  | 'system-action'
   | 'page'
   | 'link'
   | 'sub-page'
-
-/**
- * system-page 动作命令路径前缀。
- *
- * 推荐：
- * - 组件页：`/settings`（可命中 componentMap）
- * - 动作：`action:profile` / `action:ai-design`
- */
-export const SYSTEM_PAGE_ACTION_PREFIX = 'action:'
-
-/**
- * 解析 system-page 动作命令。
- *
- * 兼容两种格式：
- * 1) 推荐写法：`action:xxx`
- * 2) 旧写法：`xxx`（不以 `/` 开头）
- *
- * 返回 `null` 表示应按“路由路径”处理。
- */
-export function resolveSystemPageAction(path: string | undefined): string | null {
-  if (typeof path !== 'string') return null
-  const trimmed = path.trim()
-  if (trimmed === '') return null
-
-  if (trimmed.startsWith(SYSTEM_PAGE_ACTION_PREFIX)) {
-    const action = trimmed.slice(SYSTEM_PAGE_ACTION_PREFIX.length).trim()
-    return action === '' ? null : action
-  }
-
-  // 组件页/外部 URL 不当作动作命令
-  if (trimmed.startsWith('/')) return null
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return null
-
-  // 兼容旧写法：system-page 的裸标识符
-  return trimmed
-}
 
 /** 链接渲染目标（仅 nodeKind='link' 时有意义） */
 export type LinkTarget = 'iframe' | 'new-tab'
@@ -150,7 +116,8 @@ export interface AppNavigation {
  *
  * `path` 的语义由 `nodeKind` 决定：
  * - **page / sub-page** — SPA 路由路径（如 `/dashboard`）
- * - **system-page** — 组件路由路径（`/settings`）或动作标识符（`action:profile`）
+ * - **system-page** — SPA 路由路径，与 VUE_PAGE_MAP 匹配（如 `/dashboard`、`/dev`）
+ * - **system-action** — 动作标识符（如 `'ai-design'`、`'fullscreen'`、`'profile'`）
  * - **link** — 外部 URL（配合 `linkTarget` 使用）
  * - **module / system-directory** — 通常不设置 `path`（可设 `redirect`）
  */
@@ -161,7 +128,8 @@ export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
    * 路径 / 动作标识符（语义由 nodeKind 决定）
    *
    * - page / sub-page → SPA 路由路径
-  * - system-page → 组件路由路径（`/settings`）或动作标识符（推荐 `action:ai-design`）
+   * - system-page → SPA 路由路径（与 VUE_PAGE_MAP 匹配，如 `/dashboard`）
+   * - system-action → 动作标识符（如 `'ai-design'`、`'fullscreen'`）
    * - link → 外部 URL
    */
   path?: string

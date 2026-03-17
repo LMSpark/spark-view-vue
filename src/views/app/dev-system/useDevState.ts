@@ -58,6 +58,7 @@ export function useDevState() {
     'system-directory': 'FolderOpened',
     'module': 'FolderOpened',
     'system-page': 'Monitor',
+    'system-action': 'Lightning',
     'page': 'Document',
     'link': 'Link',
     'sub-page': 'Document',
@@ -145,7 +146,7 @@ export function useDevState() {
   }
 
   function isPageLikeKind(kind: NavNodeKind): boolean {
-    return kind === 'page' || kind === 'system-page' || kind === 'link' || kind === 'sub-page'
+    return kind === 'page' || kind === 'system-page' || kind === 'system-action' || kind === 'link' || kind === 'sub-page'
   }
 
   function findParentNodeById(nodes: NavNode[], targetId: string, parent: NavNode | null = null): NavNode | null {

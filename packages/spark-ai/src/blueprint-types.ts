@@ -45,11 +45,12 @@ function flattenNavNodes(nodes: NavNode[]): NavNode[] {
 /**
  * 获取 AppNavRoot 中所有页面节点（递归展平）
  *
- * 判定为页面节点：nodeKind='page' | nodeKind='system-page'，或有 path
+ * 判定为页面节点：nodeKind='page' | nodeKind='system-page'，或有 path。
+ * 不包含 system-action（动作按钮无路由，不属于页面节点）。
  */
 export function getAllPageNodes(root: AppNavRoot): NavNode[] {
   return flattenNavNodes(root.children).filter(
-    (n) => n.nodeKind === 'page' || n.nodeKind === 'system-page' || n.path !== undefined,
+    (n) => n.nodeKind === 'page' || n.nodeKind === 'system-page' || (n.nodeKind !== 'system-action' && n.path !== undefined),
   )
 }
 
