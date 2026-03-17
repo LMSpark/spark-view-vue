@@ -12,6 +12,7 @@
  */
 
 import { createRequest } from '@spark-view/spark-utils'
+import type { NavNode } from '@spark-view/spark-utils'
 
 // ─── 内部 HTTP 客户端（与 ai-loop 独立，避免循环依赖） ────────────────────
 
@@ -89,16 +90,14 @@ export async function registerPageNavigation(
     ? options.prompt.slice(0, 60)
     : undefined
 
-  const node: Record<string, unknown> = {
+  const node: NavNode = {
     id: pageId,
     type: 'item',
     nodeKind: 'page',
     title,
     icon: options?.icon ?? 'Document',
     path: `/${pageId}`,
-  }
-  if (description !== undefined) {
-    node['description'] = description
+    ...(description !== undefined && { description }),
   }
 
   try {
