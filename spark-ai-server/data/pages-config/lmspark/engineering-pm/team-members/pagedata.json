@@ -1,0 +1,28 @@
+{
+  "dataSetName": "TeamDS",
+  "tables": {
+    "TeamMembers": {
+      "tableName": "TeamMembers",
+      "columns": [
+        { "name": "id", "type": "string" },
+        { "name": "name", "type": "string" },
+        { "name": "role", "type": "string" },
+        { "name": "department", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "phone", "type": "string" },
+        { "name": "skills", "type": "string" },
+        { "name": "joinDate", "type": "string" }
+      ],
+      "rows": [
+        { "id": "m1", "name": "张工", "role": "项目经理", "department": "项目管理部", "email": "zhang@example.com", "phone": "138-0001-0001", "skills": "项目管理, PMP, 敏捷", "joinDate": "2023-03-15" },
+        { "id": "m2", "name": "李工", "role": "项目经理", "department": "项目管理部", "email": "li@example.com", "phone": "138-0002-0002", "skills": "项目管理, PRINCE2", "joinDate": "2022-08-01" },
+        { "id": "m3", "name": "陈一", "role": "开发工程师", "department": "技术部", "email": "chen@example.com", "phone": "139-0001-0001", "skills": "Java, Spring Boot, Vue", "joinDate": "2024-01-10" },
+        { "id": "m4", "name": "刘二", "role": "开发工程师", "department": "技术部", "email": "liu@example.com", "phone": "139-0002-0002", "skills": "Python, 数据库, 架构设计", "joinDate": "2023-06-20" },
+        { "id": "m5", "name": "周三", "role": "开发工程师", "department": "技术部", "email": "zhou@example.com", "phone": "139-0003-0003", "skills": "Vue, React, TypeScript", "joinDate": "2024-05-15" },
+        { "id": "m6", "name": "吴四", "role": "开发工程师", "department": "技术部", "email": "wu@example.com", "phone": "139-0004-0004", "skills": "Java, 微服务, DevOps", "joinDate": "2023-09-01" },
+        { "id": "m7", "name": "郑五", "role": "设计师", "department": "设计部", "email": "zheng@example.com", "phone": "137-0001-0001", "skills": "UI设计, Figma, 交互设计", "joinDate": "2024-02-28" },
+        { "id": "m8", "name": "赵工", "role": "项目经理", "department": "基础设施部", "email": "zhao@example.com", "phone": "138-0003-0003", "skills": "网络工程, 云计算, 项目管理", "joinDate": "2021-11-01" }
+      ]
+    }
+  }
+}

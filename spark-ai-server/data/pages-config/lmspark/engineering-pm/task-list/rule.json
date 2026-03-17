@@ -1,0 +1,29 @@
+[
+  { "type": "div", "style": { "display": "flex", "justifyContent": "space-between", "marginBottom": "16px" }, "children": [
+    { "type": "div", "style": { "display": "flex", "gap": "8px" }, "children": [
+      { "type": "el-select", "name": "projectFilter", "props": { "placeholder": "选择项目", "clearable": true, "style": "width:180px" }, "children": [
+        { "type": "el-option", "props": { "label": "智慧园区项目", "value": "p1" } },
+        { "type": "el-option", "props": { "label": "ERP升级项目", "value": "p2" } },
+        { "type": "el-option", "props": { "label": "移动办公平台", "value": "p3" } }
+      ]},
+      { "type": "el-select", "name": "statusFilter", "props": { "placeholder": "任务状态", "clearable": true, "style": "width:140px" }, "children": [
+        { "type": "el-option", "props": { "label": "未开始", "value": "未开始" } },
+        { "type": "el-option", "props": { "label": "进行中", "value": "进行中" } },
+        { "type": "el-option", "props": { "label": "待审核", "value": "待审核" } },
+        { "type": "el-option", "props": { "label": "已完成", "value": "已完成" } }
+      ]}
+    ]},
+    { "type": "el-button", "props": { "type": "primary", "icon": "Plus" }, "children": ["创建任务"] }
+  ]},
+  { "type": "r-table", "dataKey": "Tasks@rows", "props": { "border": true, "stripe": true, "highlightCurrentRow": true }, "children": [
+    { "type": "el-table-column", "props": { "prop": "title", "label": "任务名称", "minWidth": 220 } },
+    { "type": "el-table-column", "props": { "prop": "projectName", "label": "所属项目", "width": 160 } },
+    { "type": "el-table-column", "props": { "prop": "assigneeName", "label": "负责人", "width": 100 } },
+    { "type": "el-table-column", "props": { "prop": "priority", "label": "优先级", "width": 80 } },
+    { "type": "el-table-column", "props": { "prop": "status", "label": "状态", "width": 100 } },
+    { "type": "el-table-column", "props": { "prop": "dueDate", "label": "截止日期", "width": 120 } },
+    { "type": "el-table-column", "props": { "prop": "estimatedHours", "label": "预估工时", "width": 100 } },
+    { "type": "el-table-column", "props": { "prop": "actualHours", "label": "实际工时", "width": 100 } },
+    { "type": "el-table-column", "props": { "label": "操作", "width": 120, "fixed": "right" } }
+  ]}
+]
