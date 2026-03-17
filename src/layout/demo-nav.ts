@@ -64,11 +64,16 @@ export const demoNavRoot: AppNavRoot = {
       icon: 'Connection',
       childPlacement: 'sidebar',
       redirect: '/dataset-demo',
-      context: [
-        { id: 'proj-a', title: '项目 A — 电商平台' },
-        { id: 'proj-b', title: '项目 B — 内部 OA' },
-        { id: 'proj-c', title: '项目 C — 数据中台' },
-      ],
+      context: {
+        source: [
+          { id: 'proj-a', title: '项目 A — 电商平台' },
+          { id: 'proj-b', title: '项目 B — 内部 OA' },
+          { id: 'proj-c', title: '项目 C — 数据中台' },
+        ],
+        placeholder: '选择演示项目',
+        defaultValue: 'proj-a',
+        paramName: 'projectId',
+      },
       children: [
         { id: 'dataset-demo', nodeKind: 'page', title: 'DataSet 主从表', icon: 'Connection', path: '/dataset-demo' },
         { id: 'cascade-demo', nodeKind: 'page', title: '级联操作', icon: 'Lightning', path: '/cascade-demo' },
@@ -88,6 +93,15 @@ export const demoNavRoot: AppNavRoot = {
       icon: 'Grid',
       childPlacement: 'sidebar',
       redirect: '/renderer-demo',
+      context: {
+        source: [
+          { id: 'ui-alpha', title: 'UI 方案 A — 紧凑主题' },
+          { id: 'ui-beta', title: 'UI 方案 B — 标准主题' },
+        ],
+        placeholder: '选择 UI 方案',
+        defaultValue: 'ui-alpha',
+        paramName: 'uiPlan',
+      },
       children: [
         { id: 'renderer-demo', nodeKind: 'page', title: 'Renderer 架构', icon: 'Brush', path: '/renderer-demo' },
         { id: 'section-grid', nodeKind: 'page', title: 'Section 栅格', icon: 'Grid', path: '/section-grid-demo' },
