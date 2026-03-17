@@ -8,7 +8,7 @@ import type {
   NavContextItem,
   NavContextState,
   NavNode,
-  NavRoot,
+  AppNavRoot,
   RegionItems,
   RegionVisibility,
 } from '@spark-view/spark-utils'
@@ -48,7 +48,7 @@ interface UseNavigationOptions {
   // reserved for future options
 }
 
-export function useNavigation(navRoot: NavRoot, _options?: UseNavigationOptions): NavigationContext {
+export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptions): NavigationContext {
   const route = useRoute()
   const router = useRouter()
 

@@ -14,7 +14,7 @@ export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'p
  *
  * nodeKind 同时编码了页面渲染方式：
  * - `'page'` / `'sub-page'` — 配置驱动页（PageRenderer，加载 rule.json）
- * - `'system-page'` — 静态 Vue 组件页（componentMap 查找）
+ * - `'system-page'` — 系统内置页/动作（静态 Vue 组件 或 toolbar action）
  * - `'link'` — 外部链接（iframe / 新标签页，由 `linkTarget` 区分）
  * - `'module'` / `'system-directory'` — 纯分组容器，无页面渲染
  */
@@ -63,11 +63,11 @@ export type NavContextInput = string | NavContextItem[] | NavContextConfig
 /**
  * 模块基接口（蓝图/导航共享元数据）
  *
- * NavNode / NavRoot 统一继承该接口：
+ * NavNode / AppNavRoot 统一继承该接口：
  * - NavNode：节点级（id 必填，children 可选）
- * - NavRoot：应用级（children 必填）
+ * - AppNavRoot：应用级（children 必填）
  */
-export interface NavModuleBase<TChild = unknown> {
+export interface AppModuleBase<TChild = unknown> {
   /** 唯一标识（蓝图/应用/节点 ID） */
   id?: string
   /** 标题 */
@@ -78,7 +78,7 @@ export interface NavModuleBase<TChild = unknown> {
    * 版本（渐进式兼容字段）
    *
    * 当前保留在基接口以支持渐进式开发，后续如需语义收敛，
-   * 可下沉为 NavRoot 独有字段。
+   * 可下沉为 AppNavRoot 独有字段。
    */
   version?: string
   /** 子项 */
@@ -134,7 +134,7 @@ export interface AppNavigation {
 
 /* ── 导航节点 ── */
 
-export interface NavNode extends NavModuleBase<NavNode>, NavRoute, AppNavigation {
+export interface NavNode extends AppModuleBase<NavNode>, NavRoute, AppNavigation {
   /** 唯一标识 */
   id: string
 }
@@ -147,7 +147,7 @@ export interface NavNode extends NavModuleBase<NavNode>, NavRoute, AppNavigation
  * - children — 模块分组（nodeKind='module'），模块下的子节点为页面（nodeKind='page'）
  * - 既是导航树，也是应用骨架，一套数据两用
  */
-export interface NavRoot extends NavModuleBase<NavNode> {
+export interface AppNavRoot extends AppModuleBase<NavNode> {
   /** 顶层子项存放位置 */
   childPlacement: 'header' | 'sidebar'
   /** 顶层子节点（模块 nodeKind='module'，页面 nodeKind='page'） */

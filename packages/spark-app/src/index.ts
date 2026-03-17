@@ -156,11 +156,11 @@ export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from './navigation/useCo
 export { NAV_KEY } from './navigation/nav-types'
 export type { NavigationContext } from './navigation/nav-types'
 export type {
-  NavModuleBase,
+  AppModuleBase,
   NavRoute,
   AppNavigation,
   NavNode,
-  NavRoot,
+  AppNavRoot,
   NavContextState,
   NavContextItem,
   NavContextConfig,

@@ -1,14 +1,14 @@
 // ── App Blueprint 类型定义（极简版）──────────────────────────────────────
-// 核心思想：蓝图 = NavRoot（导航树本身就是应用骨架）
+// 核心思想：蓝图 = AppNavRoot（导航树本身就是应用骨架）
 //
-// NavRoot — 应用顶层（title / description / version + children）
+// AppNavRoot — 应用顶层（title / description / version + children）
 //   └─ children: NavNode[] — 模块（nodeKind='module'）
 //       └─ children: NavNode[] — 页面（nodeKind='page'）
 //
 // 数据模型（表/关系）→ BlueprintDataModel（独立存储，不嵌入导航树）
 
 import type { DataRelation, ITableOwnMetadata } from '@spark-view/spark-data'
-import type { NavNode, NavRoot } from '@spark-view/spark-utils'
+import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
 
 // ── 蓝图共享数据模型（项目级，独立于导航树）──────────────────────────────
 
@@ -19,7 +19,7 @@ import type { NavNode, NavRoot } from '@spark-view/spark-utils'
  * - 表结构 = ITableOwnMetadata（tableName + columns: DataColumn[] + api?）
  * - 关系 = DataRelation（parentTable / childTable / parentField / childField）
  *
- * 独立于导航树存储（后端按项目维度管理），不嵌入 NavRoot。
+ * 独立于导航树存储（后端按项目维度管理），不嵌入 AppNavRoot。
  */
 export interface BlueprintDataModel {
   /** 实体表结构（key = tableName）— 直接复用 ITableOwnMetadata */
@@ -43,28 +43,28 @@ function flattenNavNodes(nodes: NavNode[]): NavNode[] {
 }
 
 /**
- * 获取 NavRoot 中所有页面节点（递归展平）
+ * 获取 AppNavRoot 中所有页面节点（递归展平）
  *
  * 判定为页面节点：nodeKind='page' | nodeKind='system-page'，或有 path
  */
-export function getAllPageNodes(root: NavRoot): NavNode[] {
+export function getAllPageNodes(root: AppNavRoot): NavNode[] {
   return flattenNavNodes(root.children).filter(
     (n) => n.nodeKind === 'page' || n.nodeKind === 'system-page' || n.path !== undefined,
   )
 }
 
 /**
- * 获取 NavRoot 中所有模块节点（nodeKind='module'）
+ * 获取 AppNavRoot 中所有模块节点（nodeKind='module'）
  */
-export function getAllModuleNodes(root: NavRoot): NavNode[] {
+export function getAllModuleNodes(root: AppNavRoot): NavNode[] {
   return flattenNavNodes(root.children).filter((n) => n.nodeKind === 'module')
 }
 
 /**
- * 统计蓝图规模（NavRoot + 数据模型）
+ * 统计蓝图规模（AppNavRoot + 数据模型）
  */
 export function getBlueprintStats(
-  root: NavRoot,
+  root: AppNavRoot,
   dataModel: BlueprintDataModel,
 ): {
   moduleCount: number
@@ -93,16 +93,16 @@ export function resolveTableRelations(
 }
 
 /**
- * 验证 NavRoot（蓝图）+ 数据模型的一致性
+ * 验证 AppNavRoot（蓝图）+ 数据模型的一致性
  */
 export function validateBlueprintTree(
-  root: NavRoot,
+  root: AppNavRoot,
   dataModel: BlueprintDataModel,
 ): string[] {
   const errors: string[] = []
 
   if (!root.title) {
-    errors.push('蓝图缺少应用标题（NavRoot.title）')
+    errors.push('蓝图缺少应用标题（AppNavRoot.title）')
   }
 
   const allPages = getAllPageNodes(root)
