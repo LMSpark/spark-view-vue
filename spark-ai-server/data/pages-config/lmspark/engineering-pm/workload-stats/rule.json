@@ -1,0 +1,39 @@
+[
+  { "type": "div", "style": { "marginBottom": "16px" }, "children": [
+    { "type": "el-page-header", "props": { "title": "工作量统计", "content": "团队成员工作量分析与趋势" } }
+  ]},
+  { "type": "el-row", "props": { "gutter": 16 }, "style": { "marginBottom": "16px" }, "children": [
+    { "type": "el-col", "props": { "span": 6 }, "children": [
+      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
+        { "type": "el-statistic", "props": { "title": "本月总工时(人天)", "value": 168 } }
+      ]}
+    ]},
+    { "type": "el-col", "props": { "span": 6 }, "children": [
+      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
+        { "type": "el-statistic", "props": { "title": "人均工时", "value": 21 } }
+      ]}
+    ]},
+    { "type": "el-col", "props": { "span": 6 }, "children": [
+      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
+        { "type": "el-statistic", "props": { "title": "加班工时", "value": 12 } }
+      ]}
+    ]},
+    { "type": "el-col", "props": { "span": 6 }, "children": [
+      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
+        { "type": "el-statistic", "props": { "title": "利用率", "value": "85%", "suffix": "" } }
+      ]}
+    ]}
+  ]},
+  { "type": "el-card", "props": { "header": "成员工作量明细" }, "children": [
+    { "type": "r-table", "dataKey": "WorkloadDetail@rows", "props": { "border": true, "stripe": true, "highlightCurrentRow": true }, "children": [
+      { "type": "el-table-column", "props": { "prop": "name", "label": "成员", "width": 100 } },
+      { "type": "el-table-column", "props": { "prop": "role", "label": "角色", "width": 120 } },
+      { "type": "el-table-column", "props": { "prop": "projectCount", "label": "参与项目", "width": 100 } },
+      { "type": "el-table-column", "props": { "prop": "taskCount", "label": "负责任务", "width": 100 } },
+      { "type": "el-table-column", "props": { "prop": "completedTasks", "label": "已完成", "width": 90 } },
+      { "type": "el-table-column", "props": { "prop": "workDays", "label": "工时(天)", "width": 100 } },
+      { "type": "el-table-column", "props": { "prop": "overtime", "label": "加班(天)", "width": 100 } },
+      { "type": "el-table-column", "props": { "prop": "utilization", "label": "利用率", "width": 100 } }
+    ]}
+  ]}
+]

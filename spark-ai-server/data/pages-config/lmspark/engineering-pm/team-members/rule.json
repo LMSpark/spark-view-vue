@@ -1,0 +1,24 @@
+[
+  { "type": "div", "style": { "display": "flex", "justifyContent": "space-between", "marginBottom": "16px" }, "children": [
+    { "type": "div", "style": { "display": "flex", "gap": "8px" }, "children": [
+      { "type": "el-input", "name": "searchKey", "props": { "placeholder": "搜索姓名/技能...", "prefixIcon": "Search", "clearable": true, "style": "width: 240px" } },
+      { "type": "el-select", "name": "roleFilter", "props": { "placeholder": "按角色筛选", "clearable": true, "style": "width:160px" }, "children": [
+        { "type": "el-option", "props": { "label": "项目经理", "value": "项目经理" } },
+        { "type": "el-option", "props": { "label": "开发工程师", "value": "开发工程师" } },
+        { "type": "el-option", "props": { "label": "设计师", "value": "设计师" } },
+        { "type": "el-option", "props": { "label": "测试工程师", "value": "测试工程师" } }
+      ]}
+    ]},
+    { "type": "el-button", "props": { "type": "primary", "icon": "Plus" }, "children": ["新增成员"] }
+  ]},
+  { "type": "r-table", "dataKey": "TeamMembers@rows", "props": { "border": true, "stripe": true, "highlightCurrentRow": true }, "children": [
+    { "type": "el-table-column", "props": { "prop": "name", "label": "姓名", "width": 120 } },
+    { "type": "el-table-column", "props": { "prop": "role", "label": "角色", "width": 120 } },
+    { "type": "el-table-column", "props": { "prop": "department", "label": "部门", "width": 120 } },
+    { "type": "el-table-column", "props": { "prop": "email", "label": "邮箱", "width": 200 } },
+    { "type": "el-table-column", "props": { "prop": "phone", "label": "电话", "width": 140 } },
+    { "type": "el-table-column", "props": { "prop": "skills", "label": "技能", "minWidth": 200 } },
+    { "type": "el-table-column", "props": { "prop": "joinDate", "label": "入职日期", "width": 120 } },
+    { "type": "el-table-column", "props": { "label": "操作", "width": 120, "fixed": "right" } }
+  ]}
+]

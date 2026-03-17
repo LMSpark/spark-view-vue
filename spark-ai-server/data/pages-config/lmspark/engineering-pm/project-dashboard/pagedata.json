@@ -1,0 +1,13 @@
+{
+  "dataSetName": "KpiDS",
+  "tables": {
+    "ProjectKPI": { "tableName": "ProjectKPI", "columns": [{"name":"id","type":"string"},{"name":"project","type":"string"},{"name":"manager","type":"string"},{"name":"progress","type":"string"},{"name":"taskDone","type":"number"},{"name":"taskTotal","type":"number"},{"name":"budget","type":"number"},{"name":"spent","type":"number"},{"name":"health","type":"string"}],
+    "rows": [
+      {"id":"k1","project":"智慧园区综合管理平台","manager":"张工","progress":"65%","taskDone":12,"taskTotal":20,"budget":250,"spent":145,"health":"正常"},
+      {"id":"k2","project":"ERP系统升级","manager":"张工","progress":"40%","taskDone":6,"taskTotal":15,"budget":180,"spent":60,"health":"正常"},
+      {"id":"k3","project":"移动办公平台","manager":"李工","progress":"30%","taskDone":4,"taskTotal":12,"budget":150,"spent":35,"health":"注意"},
+      {"id":"k4","project":"数据中心迁移","manager":"赵工","progress":"20%","taskDone":3,"taskTotal":18,"budget":320,"spent":50,"health":"风险"},
+      {"id":"k5","project":"供应链管理系统","manager":"李工","progress":"55%","taskDone":8,"taskTotal":14,"budget":200,"spent":95,"health":"正常"}
+    ]}
+  }
+}

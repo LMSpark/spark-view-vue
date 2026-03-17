@@ -1,0 +1,26 @@
+[
+  { "type": "div", "style": { "marginBottom": "16px" }, "children": [
+    { "type": "el-page-header", "props": { "title": "资源分配", "content": "查看团队成员在各项目中的分配情况" } }
+  ]},
+  { "type": "el-row", "props": { "gutter": 16 }, "style": { "marginBottom": "16px" }, "children": [
+    { "type": "el-col", "props": { "span": 8 }, "children": [
+      { "type": "el-statistic", "props": { "title": "参与项目数", "value": 5 } }
+    ]},
+    { "type": "el-col", "props": { "span": 8 }, "children": [
+      { "type": "el-statistic", "props": { "title": "已分配人力", "value": 8 } }
+    ]},
+    { "type": "el-col", "props": { "span": 8 }, "children": [
+      { "type": "el-statistic", "props": { "title": "平均利用率", "value": "78%", "suffix": "" } }
+    ]}
+  ]},
+  { "type": "r-table", "dataKey": "ResourceAlloc@rows", "props": { "border": true, "stripe": true, "highlightCurrentRow": true }, "children": [
+    { "type": "el-table-column", "props": { "prop": "name", "label": "成员", "width": 100, "fixed": true } },
+    { "type": "el-table-column", "props": { "prop": "role", "label": "角色", "width": 120 } },
+    { "type": "el-table-column", "props": { "prop": "project1", "label": "智慧园区", "width": 100 } },
+    { "type": "el-table-column", "props": { "prop": "project2", "label": "ERP升级", "width": 100 } },
+    { "type": "el-table-column", "props": { "prop": "project3", "label": "移动办公", "width": 100 } },
+    { "type": "el-table-column", "props": { "prop": "project4", "label": "数据中心", "width": 100 } },
+    { "type": "el-table-column", "props": { "prop": "project5", "label": "供应链", "width": 100 } },
+    { "type": "el-table-column", "props": { "prop": "totalPct", "label": "合计利用率", "width": 110, "fixed": "right" } }
+  ]}
+]

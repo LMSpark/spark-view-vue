@@ -1,0 +1,15 @@
+{
+  "dataSetName": "ReportDS",
+  "tables": {
+    "WeeklyProgress": { "tableName": "WeeklyProgress", "columns": [{"name":"id","type":"string"},{"name":"week","type":"string"},{"name":"project","type":"string"},{"name":"planned","type":"string"},{"name":"actual","type":"string"},{"name":"deviation","type":"string"},{"name":"risks","type":"string"}],
+    "rows": [
+      {"id":"w1","week":"第11周","project":"智慧园区综合管理平台","planned":"完成用户管理模块","actual":"已完成","deviation":"0","risks":"-"},
+      {"id":"w2","week":"第11周","project":"ERP系统升级","planned":"接口设计评审","actual":"延迟1天","deviation":"+1天","risks":"评审专家档期冲突"},
+      {"id":"w3","week":"第11周","project":"移动办公平台","planned":"原型设计完成","actual":"已完成","deviation":"0","risks":"-"},
+      {"id":"w4","week":"第12周","project":"智慧园区综合管理平台","planned":"权限模块开发","actual":"进行中","deviation":"预计准时","risks":"-"},
+      {"id":"w5","week":"第12周","project":"ERP系统升级","planned":"数据迁移脚本","actual":"进行中","deviation":"预计准时","risks":"源数据质量待确认"},
+      {"id":"w6","week":"第12周","project":"数据中心迁移","planned":"网络架构设计","actual":"延迟","deviation":"+3天","risks":"供应商设备交付延迟"},
+      {"id":"w7","week":"第12周","project":"供应链管理系统","planned":"核心流程开发","actual":"已完成","deviation":"-1天","risks":"提前完成"}
+    ]}
+  }
+}

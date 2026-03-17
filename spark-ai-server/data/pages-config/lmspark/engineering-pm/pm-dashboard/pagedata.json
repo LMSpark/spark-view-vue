@@ -1,0 +1,23 @@
+{
+  "dataSetName": "DashboardDS",
+  "tables": {
+    "MyTasks": {
+      "tableName": "MyTasks",
+      "columns": [
+        { "name": "id", "type": "string" },
+        { "name": "title", "type": "string" },
+        { "name": "projectName", "type": "string" },
+        { "name": "priority", "type": "string" },
+        { "name": "dueDate", "type": "string" },
+        { "name": "status", "type": "string" }
+      ],
+      "rows": [
+        { "id": "t1", "title": "编写需求规格说明书", "projectName": "智慧园区项目", "priority": "高", "dueDate": "2026-03-20", "status": "进行中" },
+        { "id": "t2", "title": "数据库表结构设计", "projectName": "智慧园区项目", "priority": "高", "dueDate": "2026-03-22", "status": "待开始" },
+        { "id": "t3", "title": "UI 原型评审", "projectName": "ERP升级项目", "priority": "中", "dueDate": "2026-03-18", "status": "进行中" },
+        { "id": "t4", "title": "接口联调测试", "projectName": "移动办公平台", "priority": "紧急", "dueDate": "2026-03-17", "status": "逾期" },
+        { "id": "t5", "title": "部署上线方案编写", "projectName": "移动办公平台", "priority": "中", "dueDate": "2026-03-25", "status": "待开始" }
+      ]
+    }
+  }
+}
