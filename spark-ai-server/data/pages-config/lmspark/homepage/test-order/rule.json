@@ -71,7 +71,6 @@
             "props": {
               "label": "价格",
               "width": 120,
-              "precision": 2,
               "min": 0
             }
           }
