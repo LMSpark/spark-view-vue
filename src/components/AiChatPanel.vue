@@ -143,10 +143,8 @@ import { getNavHomePath, refreshRoutes } from '@spark-view/spark-app'
 import { getAILoop, clearPageCache, setAutoIterating, setConfigLoader, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
 import { summarizeLogBatch } from '@spark-view/spark-ai'
 import type { AIResponse, LogBatchSummary, LogSnapshot, StreamCallbacks } from '@spark-view/spark-ai'
-import { createRequest } from '@spark-view/spark-utils'
+import { http } from '@/services/http'
 import { getPageApi } from '@/services/api-paths'
-
-const http = createRequest({ timeout: 120_000 })
 
 /** 最大自动迭代次数（防止无限循环） */
 const MAX_AUTO_ITERATIONS = 3

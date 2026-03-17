@@ -207,7 +207,7 @@ import {
 } from '@spark-view/spark-ai'
 import type { TokenUsage } from '../composables/useAiChat'
 import AiProposalCard from './AiProposalCard.vue'
-import { createRequest } from '@spark-view/spark-utils'
+import { http } from '@/services/http'
 import {
   writePageFiles,
   clearPageCache,
@@ -218,7 +218,6 @@ import type { AIResponse } from '@spark-view/spark-ai'
 const PROPOSAL_TYPES: ProposalType[] = ['data-model', 'ui-structure', 'interaction', 'api-config', 'style', 'db-schema', 'dict-entry']
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
 
-const http = createRequest({ timeout: 240_000 })
 const router = useRouter()
 
 // ── Skill Catalog（可选） ────────────────────────────────────────────────────
@@ -360,7 +359,7 @@ async function handleGenerate() {
       prompt,
       sessionId: `design-${Date.now()}`,
       skillCatalog: _skillCatalog,
-    })
+    }, { timeout: 240_000 })
 
     if (Object.keys(response.files).length > 0) {
       await writePageFiles(pid, response.files)
