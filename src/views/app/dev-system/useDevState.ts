@@ -55,7 +55,6 @@ import { http } from '@/services/http'
 // ═══════════════════════════════════════════════════════════
 
 export function useDevState() {
-  const SYSTEM_ROOT_DIRECTORY_IDS = new Set(['__toolbar__', '__user-menu__'])
   const DEFAULT_ICON_BY_KIND: Record<NavNodeKind, string> = {
     'system-directory': 'FolderOpened',
     'module': 'FolderOpened',
@@ -142,7 +141,7 @@ export function useDevState() {
 
   function isSystemRootDirectory(node: NavNode | null | undefined): boolean {
     if (!node) return false
-    if (!SYSTEM_ROOT_DIRECTORY_IDS.has(node.id)) return false
+    if (inferNodeKind(node) !== 'system-directory') return false
     return treeData.value.some((rootNode) => rootNode.id === node.id)
   }
 
@@ -174,9 +173,8 @@ export function useDevState() {
   }
 
   function inferNodeKind(node: NavNode): NavNodeKind {
-    if (SYSTEM_ROOT_DIRECTORY_IDS.has(node.id)) return 'system-directory'
-    if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
     if (node.nodeKind !== undefined) return node.nodeKind
+    if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
     // 兼容旧数据：从 linkTarget 推断 link 类型
     if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
     // 有 action 字段视为系统页面（与后端 inferNodeKind 一致）
@@ -814,7 +812,7 @@ export function useDevState() {
       addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
       return
     }
-    const isRootReserved = SYSTEM_ROOT_DIRECTORY_IDS.has(data.id)
+    const isRootReserved = isSystemRootDirectory(data)
     const parent = node.parent
     if (parent.data.children) {
       const idx = parent.data.children.indexOf(data)
