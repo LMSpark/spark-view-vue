@@ -157,8 +157,11 @@ export { NAV_KEY } from './navigation/nav-types'
 export type { NavigationContext } from './navigation/nav-types'
 export type {
   AppModuleBase,
-  AppRoute,
   AppNavigation,
+  NavNodeBase,
+  NavPathNode,
+  NavActionNode,
+  NavContainerNode,
   NavNode,
   AppNavRoot,
   NavContextState,

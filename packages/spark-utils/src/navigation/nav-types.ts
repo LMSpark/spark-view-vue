@@ -86,31 +86,6 @@ export interface AppModuleBase<TChild = unknown> {
 }
 
 /**
- * 激活目标接口（点击后"去哪 / 做什么"）
- *
- * `path` 的含义由 `nodeKind` 决定：
- * - page / sub-page / system-page → SPA 内部路由路径（如 `/order-list`）
- * - link → 外部 HTTP URL（如 `https://grafana.example.com`）
- */
-export interface AppRoute {
-  /**
-   * 路由路径 / 外部链接（由 nodeKind 决定解释方式）
-   *
-   * - 内部页面：SPA 路由路径，如 `/order-list`
-   * - link：外部 URL，如 `https://grafana.example.com`
-   */
-  path?: string
-  /** 链接渲染目标（仅 nodeKind='link' 时有效），默认 'iframe' */
-  linkTarget?: LinkTarget
-  /** 默认重定向路径（group 节点） */
-  redirect?: string
-  /** 工具栏动作标识符（toolbar / system-page 节点，匹配内置按钮） */
-  action?: string
-  /** 子页面归属的父页面 ID（sub-page 专用） */
-  parentPageId?: string
-}
-
-/**
  * 导航接口（菜单展示 / 交互行为相关）
  */
 export interface AppNavigation {
@@ -132,12 +107,72 @@ export interface AppNavigation {
   dividerAfter?: boolean
 }
 
-/* ── 导航节点 ── */
+/* ── 导航节点基（元数据 + 菜单展示，不含激活目标字段） ── */
 
-export interface NavNode extends AppModuleBase<NavNode>, AppRoute, AppNavigation {
+/** NavNode 共享基接口 */
+export interface NavNodeBase extends AppModuleBase<NavNode>, AppNavigation {
   /** 唯一标识 */
   id: string
 }
+
+/* ── 激活目标变体（path / action 互斥） ── */
+
+/**
+ * 路径节点 — 导航到 SPA 路由或外部链接
+ *
+ * 适用 nodeKind: page / sub-page / link / system-page（组件型）
+ */
+export interface NavPathNode extends NavNodeBase {
+  /** SPA 路由路径 或 外部 URL（由 nodeKind 决定解释方式） */
+  path: string
+  /** 链接渲染目标（仅 nodeKind='link' 时有效），默认 'iframe' */
+  linkTarget?: LinkTarget
+  /** 默认重定向路径 */
+  redirect?: string
+  /** 子页面归属的父页面 ID（sub-page 专用） */
+  parentPageId?: string
+  /** @internal path 节点不可同时拥有 action */
+  action?: never
+}
+
+/**
+ * 动作节点 — 触发内置操作
+ *
+ * 适用 nodeKind: system-page（动作型）、toolbar 按钮
+ */
+export interface NavActionNode extends NavNodeBase {
+  /** 动作标识符（匹配内置按钮） */
+  action: string
+  /** @internal action 节点不可同时拥有 path */
+  path?: never
+  linkTarget?: never
+  redirect?: never
+  parentPageId?: never
+}
+
+/**
+ * 容器节点 — 纯分组，无页面渲染
+ *
+ * 适用 nodeKind: module / system-directory
+ */
+export interface NavContainerNode extends NavNodeBase {
+  /** 默认重定向路径（子项首页） */
+  redirect?: string
+  path?: never
+  action?: never
+  linkTarget?: never
+  parentPageId?: never
+}
+
+/**
+ * 导航节点 — path 和 action 互斥的判别联合
+ *
+ * 三种变体：
+ * - `NavPathNode` — 有 path（导航到路由/链接）
+ * - `NavActionNode` — 有 action（触发内置操作）
+ * - `NavContainerNode` — 纯容器（module / system-directory）
+ */
+export type NavNode = NavPathNode | NavActionNode | NavContainerNode
 
 /**
  * 导航根配置（根节点只允许 header / sidebar 两种放置位置）
