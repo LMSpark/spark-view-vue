@@ -2,13 +2,13 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": "src",
     "outDir": "dist",
     "composite": false,
     "target": "ES2020",
     "noEmit": true,
     "paths": {
-      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
+      "@spark-view/spark-utils": ["../spark-utils/src/index.ts"],
+      "@spark-view/spark-data": ["../spark-data/src/index.ts"],
       "@spark-view/spark-ai": ["../spark-ai/src/index.ts"],
       "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"],
       "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"]

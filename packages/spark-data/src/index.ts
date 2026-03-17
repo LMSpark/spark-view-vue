@@ -42,6 +42,9 @@ export type {
   IDataSet,
 
   // DataSet 配置（createDataSet / fromConfig 参数类型）
+  IDataSetMetadata,
+  ITableOwnMetadata,
+  ITableMetadata,
   DataColumn,
   DataRelation,
   CrudApi,

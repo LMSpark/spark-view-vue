@@ -12,7 +12,8 @@
     "noEmitOnError": true,
     "composite": false,
     "paths": {
-      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]
+      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
+      "@spark-view/spark-data": ["../spark-data/dist/index.d.ts"]
     }
   },
   "include": ["src/**/*.ts"],

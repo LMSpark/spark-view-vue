@@ -10,6 +10,7 @@ import type { NavRoot } from '@spark-view/spark-app'
  *   - 系统管理 → sidebar + parent（子菜单嵌套在侧栏内）
  */
 export const demoNavRoot: NavRoot = {
+  title: 'SPARK Demo',
   childPlacement: 'header',
   homePath: '/dashboard',
   children: [

@@ -9,7 +9,7 @@ import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
 import { Logger } from '@spark-view/spark-utils'
-import type { NavNode, NavRoot } from '../navigation/nav-types'
+import type { NavNode, NavRoot } from '@spark-view/spark-utils'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 
 const routerLogger = Logger('SparkApp:DynamicRouter')

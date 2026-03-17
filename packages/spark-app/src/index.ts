@@ -154,11 +154,14 @@ export {
 export { useTabPages } from './navigation/useTabPages'
 export { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from './navigation/useColorScheme'
 export { NAV_KEY } from './navigation/nav-types'
+export type { NavigationContext } from './navigation/nav-types'
 export type {
+  NavModuleBase,
+  NavRoute,
+  AppNavigation,
   NavNode,
   NavRoot,
   NavContextState,
-  NavigationContext,
   NavContextItem,
   NavContextConfig,
   NavContextInput,
@@ -169,7 +172,7 @@ export type {
   NavNodeKind,
   LinkRenderMode,
   NavPageType,
-} from './navigation/nav-types'
+} from '@spark-view/spark-utils'
 export type { TabPage, PageMode } from './navigation/useTabPages'
 export type { PrimaryPreset, NavPreset, NavColorSet } from './navigation/useColorScheme'
 

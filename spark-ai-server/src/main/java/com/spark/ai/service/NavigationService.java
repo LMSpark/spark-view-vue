@@ -408,10 +408,27 @@ public class NavigationService {
 
         List<Map<String, Object>> sanitizedChildren = sanitizeChildren(children);
 
+        String id = asTrimmedString(root.get("id"));
+        String title = asTrimmedString(root.get("title"));
+        String description = asTrimmedString(root.get("description"));
+        String version = asTrimmedString(root.get("version"));
+
         root.clear();
         root.put("childPlacement", placement);
         root.put("children", sanitizedChildren);
 
+        if (!id.isBlank()) {
+            root.put("id", id);
+        }
+        if (!title.isBlank()) {
+            root.put("title", title);
+        }
+        if (!description.isBlank()) {
+            root.put("description", description);
+        }
+        if (!version.isBlank()) {
+            root.put("version", version);
+        }
         if (!homePath.isBlank()) {
             root.put("homePath", homePath);
         }
