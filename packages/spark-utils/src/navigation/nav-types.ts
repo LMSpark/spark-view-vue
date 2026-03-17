@@ -112,20 +112,23 @@ export interface AppNavigation {
 /**
  * 导航节点
  *
- * 三种典型形态（由 `nodeKind` 暗示，`path` / `action` 互斥）：
- * - **路径节点**（page / sub-page / link）— 设置 `path`
- * - **动作节点**（system-page 动作型）— 设置 `action`
- * - **容器节点**（module / system-directory）— 两者均不设置
- *
- * > `path` 与 `action` 互斥：同一节点只应设置其中之一或都不设置。
+ * `path` 的语义由 `nodeKind` 决定：
+ * - **page / sub-page** — SPA 路由路径（如 `/dashboard`）
+ * - **system-page** — 动作标识符（如 `ai-design`、`profile`）
+ * - **link** — 外部 URL（配合 `linkTarget` 使用）
+ * - **module / system-directory** — 通常不设置 `path`（可设 `redirect`）
  */
 export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
   /** 唯一标识 */
   id: string
-  /** SPA 路由路径 或 外部 URL（由 nodeKind 决定解释方式） */
+  /**
+   * 路径 / 动作标识符（语义由 nodeKind 决定）
+   *
+   * - page / sub-page → SPA 路由路径
+   * - system-page → 动作标识符（匹配内置按钮，如 `'ai-design'`）
+   * - link → 外部 URL
+   */
   path?: string
-  /** 动作标识符（匹配内置按钮，与 path 互斥） */
-  action?: string
   /** 链接渲染目标（仅 nodeKind='link' 时有效），默认 'iframe' */
   linkTarget?: LinkTarget
   /** 默认重定向路径 */

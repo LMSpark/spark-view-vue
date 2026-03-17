@@ -103,7 +103,7 @@
           <el-dropdown-menu>
             <template v-if="userMenuItems.length">
               <template v-for="item in userMenuItems" :key="item.id">
-                <el-dropdown-item :command="item.action ?? item.path ?? item.redirect ?? item.id">
+                <el-dropdown-item :command="item.path ?? item.redirect ?? item.id">
                   <span v-if="item.icon" style="margin-right: 4px"><NavIcon :name="item.icon" /></span>{{ item.title }}
                 </el-dropdown-item>
                 <el-dropdown-item v-if="item.dividerAfter" disabled class="app-header__user-divider" />
@@ -147,9 +147,9 @@ const props = withDefaults(defineProps<{
   collapsible?: boolean
   username?: string
   avatar?: string
-  /** 工具栏导航项（由导航配置驱动，action 匹配内置按钮） */
+  /** 工具栏导航项（由导航配置驱动，path 匹配内置按钮） */
   toolbarItems?: NavNode[]
-  /** 用户菜单导航项（由导航配置驱动，action 匹配内置命令） */
+  /** 用户菜单导航项（由导航配置驱动，path 匹配内置命令） */
   userMenuItems?: NavNode[]
 }>(), {
   title: 'SPARK 管理后台',
@@ -173,7 +173,7 @@ const emit = defineEmits<{
 function hasAction(action: string): boolean {
   // 无工具栏配置时默认全部显示（向后兼容）
   if (!props.toolbarItems.length) return true
-  return props.toolbarItems.some(item => item.action === action)
+  return props.toolbarItems.some(item => item.path === action)
 }
 /* 通知（SSE 实时驱动） */
 const { notifications, unreadCount, markRead, markAllRead, clearAll, removeItem } = useNotifications()

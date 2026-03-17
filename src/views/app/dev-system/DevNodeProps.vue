@@ -215,11 +215,12 @@ defineEmits<{ createPage: [] }>()
 
 const isSystemRootDirectory = computed(() => props.state.isSystemRootDirectory(props.state.selectedNode.value))
 const moduleKindDisabled = computed(() => !props.state.canUseModuleNodeKind(props.state.selectedNode.value))
-const SYSTEM_ROOT_DIRECTORY_IDS = new Set(['__toolbar__', '__user-menu__'])
 
 function inferNodeKind(node: NavNode): NavNodeKind {
   if (node.nodeKind !== undefined) return node.nodeKind
-  return SYSTEM_ROOT_DIRECTORY_IDS.has(node.id) ? 'system-directory' : 'page'
+  if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
+  if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
+  return 'page'
 }
 
 const isDirectoryNode = computed(() => {
@@ -247,6 +248,9 @@ const actionTargetOptions: TargetOption[] = [
   { value: 'action:notifications', label: '动作 · 通知' },
   { value: 'action:theme-toggle', label: '动作 · 主题切换' },
 ]
+
+/** 已知动作标识符集合（用于反向查找 path 是否为 action） */
+const ACTION_VALUES = new Set(actionTargetOptions.map(o => o.value.replace(/^action:/, '')))
 
 interface VuePathOption {
   path: string
@@ -322,20 +326,17 @@ function applyTargetSelection(value: string) {
   if (isSystemPageNode.value) {
     if (!value) {
       props.state.editForm.path = ''
-      props.state.editForm.action = ''
       props.state.markNavDirty()
       props.state.clearFiles()
       return
     }
     if (value.startsWith('action:')) {
-      props.state.editForm.action = value.replace(/^action:/, '')
-      props.state.editForm.path = ''
+      props.state.editForm.path = value.replace(/^action:/, '')
       props.state.markNavDirty()
       props.state.clearFiles()
       return
     }
     const routePath = value.replace(/^route:/, '')
-    props.state.editForm.action = ''
     props.state.editForm.path = routePath
     props.state.handlePathChange(routePath)
     return
@@ -357,9 +358,10 @@ function applyTargetSelection(value: string) {
 const targetValue = computed<string>({
   get() {
     if (isSystemPageNode.value) {
-      if (props.state.editForm.action) return `action:${props.state.editForm.action}`
-      if (props.state.editForm.path) return `route:${props.state.editForm.path}`
-      return ''
+      const path = props.state.editForm.path
+      if (!path) return ''
+      if (ACTION_VALUES.has(path)) return `action:${path}`
+      return `route:${path}`
     }
     if (isPageNode.value) {
       return props.state.editForm.path ? `page:${props.state.editForm.path}` : ''
@@ -400,17 +402,17 @@ const pathStatus = computed(() => {
   if (!showPathStatus.value) return null
   const path = props.state.editForm.path
   if (!path) {
-    if (isSystemPageNode.value && props.state.editForm.action) {
-      return {
-        type: 'info' as const,
-        icon: 'InfoFilled',
-        text: `当前目标为动作：${props.state.editForm.action}`,
-      }
-    }
     return null
   }
 
   if (isSystemPageNode.value) {
+    if (ACTION_VALUES.has(path)) {
+      return {
+        type: 'info' as const,
+        icon: 'InfoFilled',
+        text: `当前目标为动作：${path}`,
+      }
+    }
     if (path in VUE_PAGE_MAP) {
       const entry = VUE_PAGE_MAP[path]!
       const nodeTitle = props.state.editForm.title.trim()

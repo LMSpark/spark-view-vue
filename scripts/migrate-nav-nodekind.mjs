@@ -94,7 +94,7 @@ function classifyNodeKind(node, parentKind) {
     } else if (isLegacyVuePage || isKnownVuePath) {
       kind = 'system-page'
     } else if (typeof node.action === 'string' && node.action.trim()) {
-      kind = 'system-page'
+      kind = 'system-page'  // legacy action field → still infers system-page
     } else if (node.type === 'group') {
       kind = 'module'
     } else {
@@ -194,7 +194,10 @@ function migrateNode(raw, parentKind, stats) {
     if (typeof node.path === 'string' && node.path.trim()) migrated.path = normalizePath(node.path)
     if (typeof node.redirect === 'string' && node.redirect.trim()) migrated.redirect = normalizePath(node.redirect)
     if (typeof node.externalUrl === 'string' && node.externalUrl.trim()) migrated.externalUrl = node.externalUrl.trim()
-    if (typeof node.action === 'string' && node.action.trim()) migrated.action = node.action.trim()
+    // legacy action 合并到 path（action 字段已移除）
+    if (typeof node.action === 'string' && node.action.trim() && !migrated.path) {
+      migrated.path = node.action.trim()
+    }
     if (typeof node.parentPageId === 'string' && node.parentPageId.trim()) migrated.parentPageId = node.parentPageId.trim()
     if (node.hidden === true) migrated.hidden = true
     if (childPlacement && (childPlacement === 'parent' || childPlacement === 'flat')) {
