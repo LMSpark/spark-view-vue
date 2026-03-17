@@ -112,3 +112,5 @@ export {
 export type {
   BlueprintDataModel,
 } from './blueprint-types'
+// ── Blueprint Planner Prompt ─────────────────────────────────────────────────
+export { BLUEPRINT_SYSTEM_PROMPT } from './blueprint-prompt'

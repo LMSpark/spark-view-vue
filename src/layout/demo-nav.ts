@@ -22,6 +22,7 @@ export const demoNavRoot: AppNavRoot = {
       icon: 'SetUp',
       childPlacement: 'toolbar',
       children: [
+        { id: 'tb-ai-blueprint', nodeKind: 'system-page', title: 'AI 蓝图策划', icon: 'OfficeBuilding', path: 'ai-blueprint' },
         { id: 'tb-ai-design', nodeKind: 'system-page', title: 'AI 协同设计', icon: 'Brush', path: 'ai-design' },
         { id: 'tb-ai-chat', nodeKind: 'system-page', title: 'AI 对话', icon: 'ChatDotRound', path: 'ai-chat' },
         { id: 'tb-search', nodeKind: 'system-page', title: '搜索', icon: 'Search', path: 'search' },
