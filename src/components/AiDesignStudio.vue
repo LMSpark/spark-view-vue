@@ -183,7 +183,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
 import { useDesignSession } from '../composables/useDesignSession'
@@ -219,6 +219,7 @@ const PROPOSAL_TYPES: ProposalType[] = ['data-model', 'ui-structure', 'interacti
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
 
 const router = useRouter()
+const route = useRoute()
 
 // ── Skill Catalog（可选） ────────────────────────────────────────────────────
 
@@ -385,8 +386,20 @@ async function handleGenerate() {
 
 // ── 路由注册（复用 AiChatPanel 逻辑） ───────────────────────────────────────
 
+/** 构建当前用户的租户前缀路径 */
+function tenantPath(relativePath: string): string {
+  const normalized = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+  if (normalized.startsWith('/t/')) return normalized
+  const scopedMatch = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(route.path)
+  if (!scopedMatch) return normalized
+  const tenantId = scopedMatch[1]
+  const projectId = scopedMatch[2]
+  return `/t/${tenantId}/${projectId}${normalized}`
+}
+
 function ensureRouteExists(pid: string) {
-  const exists = router.getRoutes().some((r) => r.path === `/${pid}`)
+  const tenantPrefixed = `/t/:tenantId/:projectId/${pid}`
+  const exists = router.getRoutes().some((r) => r.path === tenantPrefixed)
   if (exists) return
   const configRoute = router.getRoutes().find(
     (r) => r.meta?.['pageId'] != null && r.meta?.['type'] !== 'system-page',
@@ -398,7 +411,7 @@ function ensureRouteExists(pid: string) {
     const configLoader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
     if (configLoader) setConfigLoader(configLoader)
     router.addRoute({
-      path: `/${pid}`,
+      path: tenantPrefixed,
       name: `design-${pid}`,
       component: comp,
       ...(configLoader ? { props: { configLoader } } : {}),
@@ -409,7 +422,7 @@ function ensureRouteExists(pid: string) {
 
 function navigateToPage(pid: string) {
   ensureRouteExists(pid)
-  void router.push(`/${pid}`)
+  void router.push(tenantPath(`/${pid}`))
   visible.value = false
 }
 

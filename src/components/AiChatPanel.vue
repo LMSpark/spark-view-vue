@@ -608,8 +608,8 @@ function tenantPath(relativePath: string): string {
 }
 
 function ensureRouteExists(pid: string) {
-  // 检查是否已有租户前缀路由（DynamicRouter 注册的 /t/:tenantId/xxx 模式）
-  const tenantPrefixed = `/t/:tenantId/${pid}`
+  // 检查是否已有租户前缀路由（DynamicRouter 注册的 /t/:tenantId/:projectId/xxx 模式）
+  const tenantPrefixed = `/t/:tenantId/:projectId/${pid}`
   const exists = router.getRoutes().some(r => r.path === tenantPrefixed)
   if (exists) return
   // 从已注册的配置页面路由中克隆组件和 configLoader
@@ -753,7 +753,7 @@ async function handleSend() {
     // 注册路由 → 清除旧缓存 → 导航到页面
     // 若 AI 自动注册了导航节点，先刷新导航树使新节点可见
     if (response.navigationResult?.success === true && !response.navigationResult.alreadyExists) {
-      void refreshRoutes()
+      await refreshRoutes()
     }
     ensureRouteExists(pid)
     clearPageCache(pid)
