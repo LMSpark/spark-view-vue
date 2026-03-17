@@ -557,8 +557,9 @@ public class NavigationService {
                         putIfNotBlank(node, "path", asTrimmedString(raw.get("action")));
                     }
                 } else if ("system-action".equals(kind)) {
-                    // system-action: path 是动作标识符，无 '/' 前缀，不调 normalizePath
-                    putIfNotBlank(node, "path", asTrimmedString(raw.get("path")));
+                    // system-action: path 是动作标识符（如 'ai-design'），规范化为无 '/' 前缀
+                    String actionPath = asTrimmedString(raw.get("path")).replaceAll("^/+", "");
+                    putIfNotBlank(node, "path", actionPath);
                 } else {
                     putIfNotBlank(node, "path", normalizePath(asTrimmedString(raw.get("path"))));
                 }
