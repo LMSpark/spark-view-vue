@@ -284,14 +284,27 @@ function handleUserCommand(command: string) {
 }
 
 /**
- * 跨应用导航：解析 @app:projectId/path 格式，切换项目后导航到目标路径。
- * 导航节点可配置 path: '@app:engineering-pm/dashboard' 实现跨应用页面跳转。
+ * 跨应用导航核心：切换项目后导航到目标路径。
+ * 接受两种调用方式：
+ * 1. navigateByPath 回调：(projectId, path) 两参数
+ * 2. handleUserCommand：(fullPath) 即 "@app:projectId/path" 格式
  */
-async function handleCrossAppNavigate(crossAppPath: string) {
-  const match = /^@app:([^/]+)(\/.*)?$/.exec(crossAppPath)
-  if (!match) return
-  const targetProjectId = match[1]!
-  const targetPath = match[2] ?? '/'
+async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: string) {
+  let targetProjectId: string
+  let targetPath: string
+
+  if (pathArg !== undefined) {
+    // 两参数模式（来自 useNavigation 回调）
+    targetProjectId = projectIdOrFullPath
+    targetPath = pathArg
+  } else {
+    // 单参数模式（来自 handleUserCommand，完整 @app: 字符串）
+    const match = /^@app:([^/]+)(\/.*)?$/.exec(projectIdOrFullPath)
+    if (!match?.[1]) return
+    targetProjectId = match[1]
+    targetPath = match[2] ?? '/'
+  }
+
   const user = getUser()
   if (!user) return
 
