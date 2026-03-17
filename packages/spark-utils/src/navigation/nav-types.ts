@@ -26,6 +26,42 @@ export type NavNodeKind =
   | 'link'
   | 'sub-page'
 
+/**
+ * system-page 动作命令路径前缀。
+ *
+ * 推荐：
+ * - 组件页：`/settings`（可命中 componentMap）
+ * - 动作：`action:profile` / `action:ai-design`
+ */
+export const SYSTEM_PAGE_ACTION_PREFIX = 'action:'
+
+/**
+ * 解析 system-page 动作命令。
+ *
+ * 兼容两种格式：
+ * 1) 推荐写法：`action:xxx`
+ * 2) 旧写法：`xxx`（不以 `/` 开头）
+ *
+ * 返回 `null` 表示应按“路由路径”处理。
+ */
+export function resolveSystemPageAction(path: string | undefined): string | null {
+  if (typeof path !== 'string') return null
+  const trimmed = path.trim()
+  if (trimmed === '') return null
+
+  if (trimmed.startsWith(SYSTEM_PAGE_ACTION_PREFIX)) {
+    const action = trimmed.slice(SYSTEM_PAGE_ACTION_PREFIX.length).trim()
+    return action === '' ? null : action
+  }
+
+  // 组件页/外部 URL 不当作动作命令
+  if (trimmed.startsWith('/')) return null
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return null
+
+  // 兼容旧写法：system-page 的裸标识符
+  return trimmed
+}
+
 /** 链接渲染目标（仅 nodeKind='link' 时有意义） */
 export type LinkTarget = 'iframe' | 'new-tab'
 
@@ -114,7 +150,7 @@ export interface AppNavigation {
  *
  * `path` 的语义由 `nodeKind` 决定：
  * - **page / sub-page** — SPA 路由路径（如 `/dashboard`）
- * - **system-page** — 动作标识符（如 `ai-design`、`profile`）
+ * - **system-page** — 组件路由路径（`/settings`）或动作标识符（`action:profile`）
  * - **link** — 外部 URL（配合 `linkTarget` 使用）
  * - **module / system-directory** — 通常不设置 `path`（可设 `redirect`）
  */
@@ -125,7 +161,7 @@ export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
    * 路径 / 动作标识符（语义由 nodeKind 决定）
    *
    * - page / sub-page → SPA 路由路径
-   * - system-page → 动作标识符（匹配内置按钮，如 `'ai-design'`）
+  * - system-page → 组件路由路径（`/settings`）或动作标识符（推荐 `action:ai-design`）
    * - link → 外部 URL
    */
   path?: string

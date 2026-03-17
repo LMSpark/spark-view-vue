@@ -135,6 +135,7 @@ import { computed, defineAsyncComponent, onMounted, onUnmounted, provide, reacti
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme, AppPageUiHost, useTabPages, useColorScheme, useNavigation } from '@spark-view/spark-app'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-app'
+import { resolveSystemPageAction } from '@spark-view/spark-utils'
 import { getUser, isAuthenticated, logout } from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
@@ -178,7 +179,7 @@ function hasToolbarAction(...actions: string[]): boolean {
   const items = nav.regionItems.value.toolbar
   if (!items.length) return true
   return actions.some(action =>
-    items.some(item => item.path === action)
+    items.some(item => resolveSystemPageAction(item.path) === action)
   )
 }
 
@@ -200,6 +201,7 @@ provide(PROJECT_SWITCH_KEY, projectSwitchService)
 const _navRoot = reactive({ title: '', childPlacement: 'header' as AppNavRoot['childPlacement'], children: [] as NavNode[] })
 const nav = useNavigation(_navRoot, {
   onCrossAppNavigate: handleCrossAppNavigate,
+  onSystemAction: (action) => handleUserCommand(action),
   getHeaders: createAuthHeaders,
 })
 
