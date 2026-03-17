@@ -17,6 +17,7 @@ import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import http from 'node:http'
+import net from 'node:net'
 import { loadLocalJavaEnv } from './load-java-env.mjs'
 
 const BACKEND_PORT = process.env['BACKEND_PORT'] || '8080'
@@ -71,6 +72,27 @@ function waitForBackend(timeoutMs = 120_000) {
   })
 }
 
+function isPortAvailable(port) {
+  return new Promise((resolveP) => {
+    const server = net.createServer()
+    server.once('error', () => resolveP(false))
+    server.once('listening', () => {
+      server.close(() => resolveP(true))
+    })
+    server.listen(port, '0.0.0.0')
+  })
+}
+
+async function findAvailablePort(startPort, maxAttempts = 20) {
+  for (let i = 0; i < maxAttempts; i++) {
+    const candidate = startPort + i
+    if (await isPortAvailable(candidate)) {
+      return candidate
+    }
+  }
+  throw new Error(`未找到可用前端端口，起始端口=${startPort}`)
+}
+
 // ── 启动 Java 后端 ──────────────────────────────────────────────────────────
 console.log(`\n🚀 启动 Java 后端 (port ${BACKEND_PORT})...`)
 console.log(`   JAVA_HOME: ${javaHome}`)
@@ -118,7 +140,13 @@ try {
 console.log(`\n✅ Java 后端就绪: ${BACKEND_URL}`)
 console.log(`🚀 启动 Vite 前端...\n`)
 
-const vite = spawn('npx', ['vite'], {
+const DEFAULT_FE_PORT = 5173
+const vitePort = await findAvailablePort(DEFAULT_FE_PORT)
+if (vitePort !== DEFAULT_FE_PORT) {
+  console.warn(`⚠️ 端口 ${DEFAULT_FE_PORT} 已占用，Vite 将使用端口 ${vitePort}`)
+}
+
+const vite = spawn('npx', ['vite', '--port', String(vitePort)], {
   cwd: ROOT_DIR,
   env: { ...mergedEnv, AI_BACKEND_URL: BACKEND_URL },
   stdio: 'inherit',
@@ -132,4 +160,13 @@ function cleanup() {
 }
 process.on('SIGINT', cleanup)
 process.on('SIGTERM', cleanup)
-vite.on('exit', () => { backend.kill(); process.exit(0) })
+vite.on('exit', (code, signal) => {
+  if (code === 0 || signal) {
+    backend.kill()
+    process.exit(code ?? 0)
+    return
+  }
+
+  console.error(`❌ Vite 异常退出（code=${code ?? 'unknown'}），保留 Java 后端运行: ${BACKEND_URL}`)
+  console.error('   可手动执行 `pnpm run dev:fe -- --port <port>` 重新启动前端')
+})

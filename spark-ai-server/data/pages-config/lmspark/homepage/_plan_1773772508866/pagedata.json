@@ -1,0 +1,28 @@
+{
+  "dataset": {
+    "dataSetName": "DataManagementPlan",
+    "tables": {
+      "Pages": {
+        "columns": [
+          { "name": "id", "type": "string", "label": "页面ID", "isPrimaryKey": true },
+          { "name": "title", "type": "string", "label": "标题" },
+          { "name": "description", "type": "string", "label": "简要描述" }
+        ],
+        "views": {
+          "default": {
+            "rows": [
+              { "id": "data-binding-demo", "title": "数据绑定演示", "description": "展示 r-form、r-detail 与 DataView.currentRow 的双向绑定，包含基础字段如 r-text、r-number、r-date 等。" },
+              { "id": "cascade-demo", "title": "级联联动演示", "description": "使用 relations 实现主从表联动（如国家-省份-城市三级下拉），演示 dependencyType: currentRow 和 selectedRows。" },
+              { "id": "async-load-demo", "title": "异步加载演示", "description": "模拟 API 延迟加载数据，结合 r-table 分页、r-tree 懒加载，展示加载状态和错误处理。" },
+              { "id": "component-showcase", "title": "组件展示集", "description": "集中展示所有 r-* 字段组件（如 r-select、r-switch、r-upload、r-color 等）及其配置选项。" },
+              { "id": "render-custom-demo", "title": "Render 自定义渲染", "description": "使用 Render* 函数渲染原生 HTML 组件，实现复杂 UI 交互（如自定义表格操作按钮、图表占位）。" },
+              { "id": "data-aggregation-demo", "title": "数据聚合演示", "description": "展示计算列（computeExpression）和视图聚合（aggregates），如总和、平均值在 r-table 和 r-detail 中的应用。" }
+            ],
+            "autoCurrentFirst": true
+          }
+        }
+      }
+    },
+    "relations": []
+  }
+}

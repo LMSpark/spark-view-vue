@@ -1,0 +1,58 @@
+[
+  {
+    "type": "div",
+    "class": "data-management-plan",
+    "style": {
+      "padding": "20px"
+    },
+    "children": [
+      {
+        "type": "h1",
+        "children": ["数据管理 - 子页面规划"]
+      },
+      {
+        "type": "p",
+        "style": {
+          "marginBottom": "20px",
+          "color": "#666"
+        },
+        "children": ["模块描述：数据绑定、级联、异步加载等数据层演示。当前有 6 个子节点，建议的子页面如下："]
+      },
+      {
+        "type": "r-table",
+        "props": {
+          "border": true,
+          "highlightCurrentRow": true,
+          "stripe": true
+        },
+        "dataKey": "Pages@rows",
+        "children": [
+          {
+            "type": "r-text",
+            "name": "id",
+            "props": {
+              "label": "页面ID",
+              "width": 200
+            }
+          },
+          {
+            "type": "r-text",
+            "name": "title",
+            "props": {
+              "label": "标题",
+              "width": 200
+            }
+          },
+          {
+            "type": "r-text",
+            "name": "description",
+            "props": {
+              "label": "简要描述",
+              "width": 400
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
