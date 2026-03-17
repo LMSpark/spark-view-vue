@@ -107,72 +107,32 @@ export interface AppNavigation {
   dividerAfter?: boolean
 }
 
-/* ── 导航节点基（元数据 + 菜单展示，不含激活目标字段） ── */
-
-/** NavNode 共享基接口 */
-export interface NavNodeBase extends AppModuleBase<NavNode>, AppNavigation {
-  /** 唯一标识 */
-  id: string
-}
-
-/* ── 激活目标变体（path / action 互斥） ── */
+/* ── 导航节点 ── */
 
 /**
- * 路径节点 — 导航到 SPA 路由或外部链接
+ * 导航节点
  *
- * 适用 nodeKind: page / sub-page / link / system-page（组件型）
+ * 三种典型形态（由 `nodeKind` 暗示，`path` / `action` 互斥）：
+ * - **路径节点**（page / sub-page / link）— 设置 `path`
+ * - **动作节点**（system-page 动作型）— 设置 `action`
+ * - **容器节点**（module / system-directory）— 两者均不设置
+ *
+ * > `path` 与 `action` 互斥：同一节点只应设置其中之一或都不设置。
  */
-export interface NavPathNode extends NavNodeBase {
+export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
+  /** 唯一标识 */
+  id: string
   /** SPA 路由路径 或 外部 URL（由 nodeKind 决定解释方式） */
-  path: string
+  path?: string
+  /** 动作标识符（匹配内置按钮，与 path 互斥） */
+  action?: string
   /** 链接渲染目标（仅 nodeKind='link' 时有效），默认 'iframe' */
   linkTarget?: LinkTarget
   /** 默认重定向路径 */
   redirect?: string
   /** 子页面归属的父页面 ID（sub-page 专用） */
   parentPageId?: string
-  /** @internal path 节点不可同时拥有 action */
-  action?: never
 }
-
-/**
- * 动作节点 — 触发内置操作
- *
- * 适用 nodeKind: system-page（动作型）、toolbar 按钮
- */
-export interface NavActionNode extends NavNodeBase {
-  /** 动作标识符（匹配内置按钮） */
-  action: string
-  /** @internal action 节点不可同时拥有 path */
-  path?: never
-  linkTarget?: never
-  redirect?: never
-  parentPageId?: never
-}
-
-/**
- * 容器节点 — 纯分组，无页面渲染
- *
- * 适用 nodeKind: module / system-directory
- */
-export interface NavContainerNode extends NavNodeBase {
-  /** 默认重定向路径（子项首页） */
-  redirect?: string
-  path?: never
-  action?: never
-  linkTarget?: never
-  parentPageId?: never
-}
-
-/**
- * 导航节点 — path 和 action 互斥的判别联合
- *
- * 三种变体：
- * - `NavPathNode` — 有 path（导航到路由/链接）
- * - `NavActionNode` — 有 action（触发内置操作）
- * - `NavContainerNode` — 纯容器（module / system-directory）
- */
-export type NavNode = NavPathNode | NavActionNode | NavContainerNode
 
 /**
  * 导航根配置（根节点只允许 header / sidebar 两种放置位置）
