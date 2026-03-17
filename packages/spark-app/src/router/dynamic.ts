@@ -325,13 +325,9 @@ export class DynamicRouter {
   async refreshRoutes(): Promise<AppNavRoot | null> {
     routerLogger.info('刷新动态路由')
 
-    // 移除旧路由
-    for (const path of this.registeredRoutes) {
-      const route = this.router.getRoutes().find(r => r.path === path)
-      if (route?.name !== undefined) {
-        this.router.removeRoute(route.name)
-      }
-    }
+    // 保存旧路由集合；先注册新路由再删除旧路由，避免 Vue Router 内部
+    // removeRoute() 触发重导航时因新路由尚未就绪而产生 "No match found" 警告。
+    const prevRoutes = new Set(this.registeredRoutes)
     this.registeredRoutes.clear()
 
     try {
@@ -346,6 +342,17 @@ export class DynamicRouter {
       }
       throw error
     }
+
+    // 移除新路由集合中不再存在的旧路由（此时新路由已全部就绪）
+    for (const path of prevRoutes) {
+      if (!this.registeredRoutes.has(path)) {
+        const route = this.router.getRoutes().find(r => r.path === path)
+        if (route?.name !== undefined) {
+          this.router.removeRoute(route.name)
+        }
+      }
+    }
+
     routerLogger.info('路由刷新完成')
     return this._navTree
   }
