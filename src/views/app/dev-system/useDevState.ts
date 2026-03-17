@@ -173,7 +173,14 @@ export function useDevState() {
   }
 
   function inferNodeKind(node: NavNode): NavNodeKind {
-    if (node.nodeKind !== undefined) return node.nodeKind
+    if (node.nodeKind !== undefined) {
+      // 历史数据迁移：system-page + 非"/"路径 → system-action
+      if (node.nodeKind === 'system-page') {
+        const path = typeof node.path === 'string' ? node.path.trim() : ''
+        if (path !== '' && !path.startsWith('/')) return 'system-action'
+      }
+      return node.nodeKind
+    }
     if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
     if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
     return 'page'
