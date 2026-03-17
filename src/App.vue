@@ -198,7 +198,9 @@ provide(PROJECT_SWITCH_KEY, projectSwitchService)
 
 /* ── 导航模型（预认证时使用 preAuthNavTree，登录后使用远程导航树） ── */
 const _navRoot = reactive({ title: '', childPlacement: 'header' as AppNavRoot['childPlacement'], children: [] as NavNode[] })
-const nav = useNavigation(_navRoot)
+const nav = useNavigation(_navRoot, {
+  onCrossAppNavigate: handleCrossAppNavigate,
+})
 
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
 function applyNavTree(navData: AppNavRoot | null): void {

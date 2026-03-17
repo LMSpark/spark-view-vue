@@ -82,6 +82,8 @@
                   @accept="planner.acceptProposal"
                   @reject="planner.rejectProposal"
                   @discuss="handleDiscuss"
+                  @edit-content="planner.editProposalContent"
+                  @edit-title="planner.editProposalTitle"
                 />
                 <!-- token 用量 -->
                 <div v-if="msg.usage && !msg.streaming" class="msg-usage">
@@ -158,9 +160,36 @@
             </template>
           </div>
 
-          <!-- 待决定提案计数 -->
-          <div v-if="planner.pendingProposals.value.length > 0" class="pending-hint">
-            ⏳ {{ planner.pendingProposals.value.length }} 个提案待决定
+          <!-- 待决定提案计数 + 批量操作 -->
+          <div v-if="planner.pendingProposals.value.length > 0" class="pending-section">
+            <div class="pending-hint">
+              ⏳ {{ planner.pendingProposals.value.length }} 个提案待决定
+            </div>
+            <div class="batch-actions">
+              <button class="batch-btn batch-accept" @click="handleAcceptAll" title="全部采纳">
+                ✅ 全部采纳
+              </button>
+              <button class="batch-btn batch-reject" @click="planner.rejectAll()" title="全部跳过">
+                ⏭️ 全部跳过
+              </button>
+            </div>
+          </div>
+
+          <!-- 阶段手动推进 -->
+          <div v-if="planner.phase.value !== 'generating' && planner.phase.value !== 'applied'" class="phase-control">
+            <div class="phase-label">📍 当前阶段</div>
+            <div class="phase-steps">
+              <button
+                v-for="(label, key) in EDITABLE_PHASES"
+                :key="key"
+                class="phase-step"
+                :class="{ active: planner.phase.value === key }"
+                @click="planner.phase.value = key as BlueprintPhase"
+                :title="label"
+              >
+                {{ label }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -250,6 +279,14 @@ const PHASE_LABELS: Record<BlueprintPhase, string> = {
 }
 
 const http = createRequest({ timeout: 120_000 })
+
+const EDITABLE_PHASES: Record<string, string> = {
+  'needs-analysis': '需求',
+  'module-planning': '模块',
+  'data-modeling': '数据',
+  'page-design': '页面',
+  'reviewing': '审阅',
+}
 
 // ── 状态 ─────────────────────────────────────────────────────────────────────
 
@@ -392,6 +429,12 @@ async function handleCustomQuickStart() {
 function handleDiscuss(proposal: DesignProposal) {
   inputText.value = `关于「${proposal.title}」，`
   textareaRef.value?.focus()
+}
+
+/** 全部采纳 + 自动推进阶段 */
+function handleAcceptAll() {
+  planner.acceptAll()
+  autoAdvancePhase()
 }
 
 // ── 写入导航 ─────────────────────────────────────────────────────────────────
@@ -1098,6 +1141,79 @@ function formatUsage(usage: TokenUsage): string {
   color: #e6a23c;
   padding: 8px 0;
   text-align: center;
+}
+
+.pending-section {
+  padding: 4px 0;
+}
+
+.batch-actions {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0 0;
+}
+
+.batch-btn {
+  flex: 1;
+  padding: 5px 0;
+  font-size: 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.batch-accept:hover {
+  border-color: #67c23a;
+  color: #67c23a;
+  background: #f0f9eb;
+}
+
+.batch-reject:hover {
+  border-color: #909399;
+  color: #606266;
+  background: #f5f7fa;
+}
+
+.phase-control {
+  padding: 8px 0;
+  border-top: 1px solid #ebeef5;
+  margin-top: 4px;
+}
+
+.phase-label {
+  font-size: 12px;
+  color: #606266;
+  margin-bottom: 6px;
+}
+
+.phase-steps {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.phase-step {
+  padding: 3px 8px;
+  font-size: 11px;
+  border: 1px solid #dcdfe6;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #606266;
+}
+
+.phase-step:hover {
+  border-color: #409eff;
+  color: #409eff;
+}
+
+.phase-step.active {
+  background: #409eff;
+  border-color: #409eff;
+  color: #fff;
 }
 
 /* ── 底部操作 ──────────────────────────────────────────────────────────────── */
