@@ -114,3 +114,6 @@ export type {
 } from './blueprint-types'
 // ── Blueprint Planner Prompt ─────────────────────────────────────────────────
 export { BLUEPRINT_SYSTEM_PROMPT } from './blueprint-prompt'
+
+// ── Nav Planner Prompt ───────────────────────────────────────────────────────
+export { NAV_PLANNER_SYSTEM_PROMPT } from './nav-planner-prompt'

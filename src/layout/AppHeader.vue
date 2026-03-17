@@ -102,11 +102,13 @@
         <template #dropdown>
           <el-dropdown-menu>
             <template v-if="userMenuItems.length">
-              <template v-for="item in userMenuItems" :key="item.id">
-                <el-dropdown-item :command="item.path ?? item.redirect ?? item.id">
+              <template v-for="(item, idx) in userMenuItems" :key="item.id">
+                <el-dropdown-item
+                  :command="item.path ?? item.redirect ?? item.id"
+                  :divided="idx > 0 && userMenuItems[idx - 1]?.dividerAfter === true"
+                >
                   <span v-if="item.icon" style="margin-right: 4px"><NavIcon :name="item.icon" /></span>{{ item.title }}
                 </el-dropdown-item>
-                <el-dropdown-item v-if="item.dividerAfter" disabled class="app-header__user-divider" />
               </template>
             </template>
             <template v-else>

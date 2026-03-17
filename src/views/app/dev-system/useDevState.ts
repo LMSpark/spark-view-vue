@@ -113,6 +113,11 @@ export function useDevState() {
   // ── AI 面板 ──
   const aiPanelVisible = ref(true)
 
+  // ── 自动保存 ──
+  const autoSaveStatus = ref<'idle' | 'pending' | 'saving' | 'saved' | 'error'>('idle')
+  let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+  const AUTO_SAVE_DELAY = 800
+
   // ── 计算属性 ──
   const hasAnyFileDirty = computed(() => Object.values(fileDirty).some(Boolean))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
@@ -570,7 +575,39 @@ export function useDevState() {
     navDirty.value = false
   }
 
-  function markNavDirty() { navDirty.value = true }
+  function markNavDirty() {
+    navDirty.value = true
+    scheduleAutoSave()
+  }
+
+  function scheduleAutoSave() {
+    if (autoSaveTimer) clearTimeout(autoSaveTimer)
+    autoSaveStatus.value = 'pending'
+    autoSaveTimer = setTimeout(() => { void doAutoSave() }, AUTO_SAVE_DELAY)
+  }
+
+  function cancelAutoSave() {
+    if (autoSaveTimer) { clearTimeout(autoSaveTimer); autoSaveTimer = null }
+    if (autoSaveStatus.value === 'pending') autoSaveStatus.value = 'idle'
+  }
+
+  async function doAutoSave() {
+    autoSaveTimer = null
+    if (!navDirty.value) { autoSaveStatus.value = 'idle'; return }
+    if (!selectedNode.value) { autoSaveStatus.value = 'idle'; return }
+    if (isSystemRootDirectory(selectedNode.value)) { autoSaveStatus.value = 'idle'; return }
+
+    autoSaveStatus.value = 'saving'
+    try {
+      await saveNodeChanges()
+      autoSaveStatus.value = 'saved'
+      setTimeout(() => {
+        if (autoSaveStatus.value === 'saved') autoSaveStatus.value = 'idle'
+      }, 2000)
+    } catch {
+      autoSaveStatus.value = 'error'
+    }
+  }
 
   // ═══════════════════════════════════════════════════════════
   // 保存
@@ -665,6 +702,7 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function selectNode(node: NavNode) {
+    cancelAutoSave()
     if (navDirty.value && selectedNode.value) applyNavChanges()
     selectedNode.value = node
     loadNodeToForm(node)
@@ -898,6 +936,7 @@ export function useDevState() {
     linkProbeLoading,
     linkProbeInfo,
     aiPanelVisible,
+    autoSaveStatus,
 
     // 计算属性
     hasAnyFileDirty,
@@ -916,6 +955,7 @@ export function useDevState() {
     loadNodeToForm,
     applyNavChanges,
     markNavDirty,
+    cancelAutoSave,
     saveNavConfig,
     saveNodeChanges,
     savePageFiles,

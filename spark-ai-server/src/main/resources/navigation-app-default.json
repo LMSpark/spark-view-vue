@@ -7,14 +7,14 @@
             "title": "工作台",
             "description": "个人工作台仪表板",
             "icon": "DataBoard",
-            "path": "/dashboard",
+            "path": "/dashboard"
         },
         {
             "id": "back-to-homepage",
             "nodeKind": "system-page",
             "title": "返回管理平台",
             "icon": "HomeFilled",
-            "path": "/app-list",
+            "path": "/app-list"
         },
         {
             "id": "system-settings",
@@ -30,14 +30,14 @@
                     "nodeKind": "system-page",
                     "title": "开发工作台",
                     "icon": "Lightning",
-                    "path": "/dev",
+                    "path": "/dev"
                 },
                 {
                     "id": "cache-manager",
                     "nodeKind": "system-page",
                     "title": "缓存管理",
                     "icon": "Coin",
-                    "path": "/cache-manager",
+                    "path": "/cache-manager"
                 }
             ]
         }
