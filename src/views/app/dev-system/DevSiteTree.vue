@@ -113,7 +113,7 @@ const NODE_KIND_LABEL: Record<string, string> = {
 
 function inferNodeKind(node: NavNode): string {
   if (node.nodeKind) return node.nodeKind
-  if (node.id === '__toolbar__' || node.id === '__user-menu__') return 'system-directory'
+  if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
   if (node.action) return 'system-page'
   return 'page'
 }
