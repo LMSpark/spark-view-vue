@@ -57,14 +57,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useTenantRouter } from '@/composables/useTenantRouter'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{ state: DevState }>()
 const emit = defineEmits<{ createPage: []; locateNode: [pageId: string]; editPage: [pageId: string] }>()
-const router = useRouter()
+const { router, tenantPath } = useTenantRouter()
 
 const searchText = ref('')
 import { getPageApi } from '@/services/api-paths'
@@ -99,10 +99,10 @@ function locateInTree(row: Record<string, unknown>) {
 
 function previewPage(row: Record<string, unknown>) {
   const path = String(row['path'] ?? '')
-  if (path) void router.push(path)
+  if (path) void router.push(tenantPath(path))
   else {
     const pageId = String(row['pageId'] ?? '')
-    if (pageId) void router.push(`/${pageId}`)
+    if (pageId) void router.push(tenantPath(`/${pageId}`))
   }
 }
 
