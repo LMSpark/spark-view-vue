@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 import { createFetchClient } from '@spark-view/spark-utils'
 import { http, createAuthHeaders } from '@/services/http'
 
@@ -48,6 +48,15 @@ export function useAiChat(options?: {
   const messages = ref<ChatMessage[]>([])
   const isStreaming = ref(false)
   const error = ref<string | null>(null)
+
+  /** 当前活跃 SSE 流的 AbortController（用于取消在途请求） */
+  let _abortController: AbortController | null = null
+
+  /** 组件卸载时中止活跃流 */
+  onBeforeUnmount(() => {
+    _abortController?.abort()
+    _abortController = null
+  })
 
   // ── 发送文本消息（可携带附件） ────────────────────────────────────────────
 
@@ -104,12 +113,14 @@ export function useAiChat(options?: {
         }
       }
 
+      _abortController = new AbortController()
       const sseClient = createFetchClient()
       const events = await sseClient.streamSSE({
         url: '/api/ai/chat/stream',
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...createAuthHeaders() },
         data: { messages: historyMsgs, mode, systemPrompt },
+        signal: _abortController.signal,
       })
 
       for await (const event of events) {
@@ -152,6 +163,7 @@ export function useAiChat(options?: {
       error.value = msg
       reactiveMsg.content = `⚠️ ${msg}`
     } finally {
+      _abortController = null
       reactiveMsg.streaming = false
       isStreaming.value = false
     }
@@ -168,6 +180,9 @@ export function useAiChat(options?: {
   // ── 清空会话 ─────────────────────────────────────────────────────────────
 
   function clear() {
+    // 中止活跃 SSE 流，防止 orphaned 写入（流仍持有旧 reactiveMsg 引用）
+    _abortController?.abort()
+    _abortController = null
     messages.value = []
     error.value = null
     isStreaming.value = false

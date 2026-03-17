@@ -88,11 +88,16 @@ export interface LoginParams {
 
 export async function login(params: LoginParams): Promise<AuthUser> {
   const data = await authFetch('/api/auth/login', { ...params })
-  const token = data['token'] as string
-  const user = data['user'] as AuthUser
-  user.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
-  saveAuth(token, user)
-  return user
+  const token = data['token']
+  const user = data['user']
+  if (typeof token !== 'string' || token === '') throw new Error('登录响应缺少有效 token')
+  if (typeof user !== 'object' || user === null || typeof (user as Record<string, unknown>)['userId'] !== 'string') {
+    throw new Error('登录响应缺少有效 user 对象')
+  }
+  const authUser = user as AuthUser
+  authUser.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
+  saveAuth(token, authUser)
+  return authUser
 }
 
 export interface RegisterParams {
@@ -113,11 +118,16 @@ export async function register(params: RegisterParams): Promise<AuthUser> {
   if (params.email) body['email'] = params.email
 
   const data = await authFetch('/api/auth/register', body)
-  const token = data['token'] as string
-  const user = data['user'] as AuthUser
-  user.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
-  saveAuth(token, user)
-  return user
+  const token = data['token']
+  const user = data['user']
+  if (typeof token !== 'string' || token === '') throw new Error('注册响应缺少有效 token')
+  if (typeof user !== 'object' || user === null || typeof (user as Record<string, unknown>)['userId'] !== 'string') {
+    throw new Error('注册响应缺少有效 user 对象')
+  }
+  const authUser = user as AuthUser
+  authUser.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
+  saveAuth(token, authUser)
+  return authUser
 }
 
 export interface RegisterTenantParams {
@@ -129,11 +139,16 @@ export interface RegisterTenantParams {
 
 export async function registerTenant(params: RegisterTenantParams): Promise<AuthUser> {
   const data = await authFetch('/api/auth/register-tenant', { ...params })
-  const token = data['token'] as string
-  const user = data['user'] as AuthUser
-  user.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
-  saveAuth(token, user)
-  return user
+  const token = data['token']
+  const user = data['user']
+  if (typeof token !== 'string' || token === '') throw new Error('租户注册响应缺少有效 token')
+  if (typeof user !== 'object' || user === null || typeof (user as Record<string, unknown>)['userId'] !== 'string') {
+    throw new Error('租户注册响应缺少有效 user 对象')
+  }
+  const authUser = user as AuthUser
+  authUser.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
+  saveAuth(token, authUser)
+  return authUser
 }
 
 export function logout(): void {
