@@ -275,10 +275,20 @@ function handleUserCommand(command: string) {
       // 跨应用导航：@app:projectId/path — 切换项目后跳转
       if (command.startsWith('@app:')) {
         void handleCrossAppNavigate(command)
-      }
-      // 路径类命令（用户菜单项配置了 path/redirect）→ 路由导航
-      else if (command.startsWith('/')) {
-        nav.navigateToPath(command)
+      } else {
+        // 用户菜单导航项：通过 command(=item.path??redirect??id) 找到节点 → nav.navigateTo
+        // 兼容 path 带 '/' 和不带 '/' 两种格式（迁移后 system-action path 无 '/'）
+        const userMenuItem = nav.regionItems.value.userMenu.find(
+          item => (item.path ?? item.redirect ?? item.id) === command
+        )
+        if (userMenuItem) {
+          nav.navigateTo(userMenuItem)
+        } else if (command.startsWith('/')) {
+          // 兜底：path 带 '/' 但不在 userMenuItems 中（理论外路径）
+          nav.navigateToPath(command)
+        } else {
+          console.error(`[handleUserCommand] 未处理的用户菜单命令: "${command}"`)
+        }
       }
       break
   }
