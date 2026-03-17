@@ -39,9 +39,22 @@
             </ol>
             <div class="quick-start">
               <p class="quick-label">💡 快速开始：</p>
-              <button class="quick-btn" @click="handleQuickStart">
-                我要做一个「工程项目管理」系统
-              </button>
+              <div class="quick-start-name">
+                <input
+                  v-model="planner.appName.value"
+                  class="quick-name-input"
+                  placeholder="输入应用名称（如 工程项目管理）"
+                  @keydown.enter.prevent="handleCustomQuickStart"
+                />
+                <button class="quick-go-btn" :disabled="planner.appName.value.trim() === ''" @click="handleCustomQuickStart">
+                  开始策划 →
+                </button>
+              </div>
+              <div class="quick-templates">
+                <button class="quick-btn" @click="handleQuickStart('pm')">🏗️ 工程项目管理</button>
+                <button class="quick-btn" @click="handleQuickStart('crm')">👥 客户管理 CRM</button>
+                <button class="quick-btn" @click="handleQuickStart('oa')">📋 企业 OA 办公</button>
+              </div>
             </div>
           </div>
 
@@ -159,6 +172,9 @@
             placeholder="应用名称（如 工程项目管理）"
             :disabled="planner.phase.value === 'generating'"
           />
+          <div v-if="targetProjectId" class="project-id-hint">
+            项目 ID: <code>{{ targetProjectId }}</code>
+          </div>
 
           <!-- 写入导航 -->
           <button
@@ -201,7 +217,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, computed } from 'vue'
+import { ref, watch, nextTick, computed, inject } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
 import { useBlueprintPlanner } from '../composables/useBlueprintPlanner'
@@ -217,6 +233,9 @@ import type { TokenUsage } from '../composables/useAiChat'
 import NavIcon from './NavIcon.vue'
 import AiProposalCard from './AiProposalCard.vue'
 import { createRequest } from '@spark-view/spark-utils'
+import { getProjectApi } from '@/services/api-paths'
+import { getUser, switchProject } from '@/services/auth'
+import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { BlueprintPhase } from '../composables/useBlueprintPlanner'
 
 const PHASE_LABELS: Record<BlueprintPhase, string> = {
@@ -246,6 +265,21 @@ const inputText = ref('')
 const messagesRef = ref<HTMLDivElement | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const applyResult = ref<{ success: boolean; message: string } | null>(null)
+const projectSwitch = inject(PROJECT_SWITCH_KEY, null)
+
+/** 生成的项目 ID（kebab-case，从 appName 派生） */
+const targetProjectId = computed(() => {
+  const name = planner.appName.value.trim()
+  if (!name) return ''
+  // 简单 kebab-case：中文直接保留，英文小写化，空格/特殊字符转 '-'
+  return name
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9\u4e00-\u9fff-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    || 'new-app'
+})
 
 const canApply = computed(() => {
   // 至少有一个 navigation 类型提案被采纳
@@ -322,11 +356,36 @@ async function handleSend() {
   await send(text)
 }
 
-/** 快速开始：工程项目管理 */
-async function handleQuickStart() {
-  const prompt = '我想做一个「工程项目管理」系统，用于管理建筑/IT 工程项目的全生命周期，包括项目立项、任务分解、进度跟踪、资源调配、成本管控、文档管理等核心模块。请帮我规划这个应用的蓝图。'
+/** 快速开始模板 */
+const QUICK_TEMPLATES: Record<string, { name: string; prompt: string }> = {
+  pm: {
+    name: '工程项目管理',
+    prompt: '我想做一个「工程项目管理」系统，用于管理建筑/IT 工程项目的全生命周期，包括项目立项、任务分解、进度跟踪、资源调配、成本管控、文档管理等核心模块。请帮我规划这个应用的蓝图。',
+  },
+  crm: {
+    name: '客户管理 CRM',
+    prompt: '我想做一个「客户管理 CRM」系统，用于管理客户信息、销售线索、商机跟踪、合同管理、客户服务和数据报表，支持销售团队协作。请帮我规划这个应用的蓝图。',
+  },
+  oa: {
+    name: '企业 OA 办公',
+    prompt: '我想做一个「企业 OA 办公」系统，用于考勤管理、请假审批、公告通知、日程管理、会议室预定、资产管理等日常办公协作功能。请帮我规划这个应用的蓝图。',
+  },
+}
+
+async function handleQuickStart(templateId: string) {
+  const tpl = QUICK_TEMPLATES[templateId]
+  if (!tpl) return
   inputText.value = ''
-  planner.appName.value = '工程项目管理'
+  planner.appName.value = tpl.name
+  await send(tpl.prompt)
+}
+
+/** 自定义快速开始：从应用名称生成需求描述 */
+async function handleCustomQuickStart() {
+  const name = planner.appName.value.trim()
+  if (!name) return
+  const prompt = `我想做一个「${name}」系统，请帮我规划这个应用的蓝图。先帮我分析这个应用的核心需求和业务场景。`
+  inputText.value = ''
   await send(prompt)
 }
 
@@ -352,13 +411,39 @@ async function handleApplyBlueprint() {
       return
     }
 
-    // 写入后端导航 API
-    await http.put('/api/tenants/lmspark/projects/homepage/navigation', navTree)
+    const user = getUser()
+    const tenantId = user?.tenantId ?? 'default'
+    const projectId = targetProjectId.value
+
+    // 1. 创建项目（若不存在则创建，已存在会返回现有项目）
+    try {
+      await http.post(`${getProjectApi()}`, {
+        projectId,
+        name: planner.appName.value,
+        description: `由 AI 蓝图策划生成 — ${planner.userGoal.value || planner.appName.value}`,
+      })
+    } catch (e) {
+      // 409 表示项目已存在，可以继续写入导航
+      const status = (e as Record<string, unknown>)?.['status']
+      if (status !== 409) throw e
+    }
+
+    // 2. 写入导航树到目标项目
+    const navApiPath = `/api/tenants/${tenantId}/projects/${projectId}/navigation`
+    await http.put(navApiPath, navTree)
+
+    // 3. 切换到新项目并刷新导航
+    if (projectSwitch) {
+      await projectSwitch.switchAndReload(projectId)
+    } else {
+      // 无注入时降级：仅切换 localStorage 中的 projectId
+      switchProject(projectId)
+    }
 
     planner.phase.value = 'applied'
     applyResult.value = {
       success: true,
-      message: `✅ 蓝图已写入！${planner.stats.value.moduleCount} 个模块、${planner.stats.value.pageCount} 个页面已注册到导航`,
+      message: `✅ 蓝图已写入项目「${projectId}」！${planner.stats.value.moduleCount} 个模块、${planner.stats.value.pageCount} 个页面已注册`,
     }
   } catch (e) {
     planner.phase.value = 'reviewing'
@@ -367,20 +452,58 @@ async function handleApplyBlueprint() {
   }
 }
 
-/** 从已采纳提案组装 AppNavRoot */
+/** 从已采纳提案组装 AppNavRoot（自动注入开发工具栏和用户菜单） */
 function buildNavTreeFromProposals(): Record<string, unknown> | null {
   const navProposals = planner.acceptedProposals.value.filter((p) => p.type === 'navigation')
   if (navProposals.length === 0) return null
+
+  // 系统自举：为每个生成的应用注入开发工具栏和用户菜单
+  const devToolbar = {
+    id: '__toolbar__',
+    nodeKind: 'system-directory',
+    title: '工具栏',
+    icon: 'SetUp',
+    childPlacement: 'toolbar',
+    children: [
+      { id: 'tb-ai-blueprint', nodeKind: 'system-page', title: 'AI 蓝图策划', icon: 'OfficeBuilding', path: 'ai-blueprint' },
+      { id: 'tb-ai-design', nodeKind: 'system-page', title: 'AI 协同设计', icon: 'Brush', path: 'ai-design' },
+      { id: 'tb-ai-chat', nodeKind: 'system-page', title: 'AI 对话', icon: 'ChatDotRound', path: 'ai-chat' },
+      { id: 'tb-search', nodeKind: 'system-page', title: '搜索', icon: 'Search', path: 'search' },
+      { id: 'tb-fullscreen', nodeKind: 'system-page', title: '全屏', icon: 'FullScreen', path: 'fullscreen' },
+      { id: 'tb-notifications', nodeKind: 'system-page', title: '通知', icon: 'Bell', path: 'notifications' },
+      { id: 'tb-theme', nodeKind: 'system-page', title: '主题切换', icon: 'Moon', path: 'theme-toggle' },
+    ],
+  }
+  const userMenu = {
+    id: '__user-menu__',
+    nodeKind: 'system-directory',
+    title: '用户菜单',
+    icon: 'User',
+    childPlacement: 'user-menu',
+    children: [
+      { id: 'um-profile', nodeKind: 'system-page', title: '个人中心', icon: 'User', path: 'profile' },
+      { id: 'um-settings', nodeKind: 'system-page', title: '系统设置', icon: 'Setting', path: 'settings' },
+      { id: 'um-home', nodeKind: 'system-page', title: '返回主应用', icon: 'HomeFilled', path: 'home' },
+    ],
+  }
 
   // 检查是否有完整 AppNavRoot 提案（阶段 5 审阅产出）
   for (const p of navProposals) {
     try {
       const parsed = JSON.parse(p.content) as Record<string, unknown>
       if (parsed['childPlacement'] && Array.isArray(parsed['children'])) {
-        // 完整 AppNavRoot
+        const children = parsed['children'] as Record<string, unknown>[]
+        // 注入工具栏和用户菜单（如果不存在）
+        const hasToolbar = children.some((c) => c['id'] === '__toolbar__')
+        const hasUserMenu = children.some((c) => c['id'] === '__user-menu__')
         return {
           ...parsed,
           title: planner.appName.value || parsed['title'] || '新应用',
+          children: [
+            ...(hasToolbar ? [] : [devToolbar]),
+            ...(hasUserMenu ? [] : [userMenu]),
+            ...children,
+          ],
         }
       }
     } catch {
@@ -411,7 +534,7 @@ function buildNavTreeFromProposals(): Record<string, unknown> | null {
     title: planner.appName.value || '新应用',
     childPlacement: 'header',
     homePath,
-    children: modules,
+    children: [devToolbar, userMenu, ...modules],
   }
 }
 
@@ -592,20 +715,68 @@ function formatUsage(usage: TokenUsage): string {
   margin-bottom: 8px !important;
 }
 
-.quick-btn {
-  display: inline-block;
-  padding: 8px 20px;
+.quick-start-name {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.quick-name-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.quick-name-input:focus {
+  border-color: #409eff;
+}
+
+.quick-go-btn {
+  padding: 8px 16px;
   background: #409eff;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  white-space: nowrap;
   transition: background 0.2s;
 }
 
-.quick-btn:hover {
+.quick-go-btn:hover:not(:disabled) {
   background: #337ecc;
+}
+
+.quick-go-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quick-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: white;
+  color: #409eff;
+  border: 1px solid #b3d8ff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.quick-btn:hover {
+  background: #ecf5ff;
+  border-color: #409eff;
 }
 
 .chat-message {
@@ -951,6 +1122,20 @@ function formatUsage(usage: TokenUsage): string {
 
 .app-name-input:focus {
   border-color: #409eff;
+}
+
+.project-id-hint {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+.project-id-hint code {
+  background: #f5f7fa;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  color: #606266;
 }
 
 .apply-btn {

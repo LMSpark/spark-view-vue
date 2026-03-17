@@ -42,7 +42,7 @@ export const demoNavRoot: AppNavRoot = {
       children: [
         { id: 'um-profile', nodeKind: 'system-page', title: '个人中心', icon: 'User', path: 'profile' },
         { id: 'um-settings', nodeKind: 'system-page', title: '系统设置', icon: 'Setting', path: 'settings' },
-        { id: 'um-home', nodeKind: 'system-page', title: '平台主页', icon: 'HomeFilled', path: 'home' },
+        { id: 'um-home', nodeKind: 'system-page', title: '返回主应用', icon: 'HomeFilled', path: 'home' },
       ],
     },
 
