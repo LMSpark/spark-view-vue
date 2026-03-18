@@ -48,6 +48,33 @@ const ElTableColumnStub = defineComponent({
   }
 })
 
+const ElButtonStub = defineComponent({
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    type: String,
+    size: String,
+    plain: Boolean,
+    text: Boolean,
+    link: Boolean,
+  },
+  emits: ['click'],
+  setup(props, { slots, emit }) {
+    return () => h('button', {
+      class: 'el-button-stub',
+      'data-type': props.type ?? '',
+      'data-size': props.size ?? '',
+      'data-plain': String(Boolean(props.plain)),
+      'data-text': String(Boolean(props.text)),
+      'data-link': String(Boolean(props.link)),
+      disabled: props.disabled,
+      onClick: (event: Event) => emit('click', event),
+    }, slots['default']?.())
+  },
+})
+
 function createTableFieldStub(fallbackLabel: string) {
   return defineComponent({
     props: {
@@ -325,6 +352,398 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     await rowAction.trigger('click')
     expect(rowActionSpy).toHaveBeenCalledWith({ id: 7, name: 'Alice' }, 2, 'evt')
+  })
+
+  it('should execute builtin toolbar actions without script handlers', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Toolbar',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
+
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        toolbar: [
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'append-row',
+              label: '新增',
+              appendPayload: { id: 2, name: 'Bob' },
+              successMessage: '',
+            },
+          },
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'refresh',
+              label: '刷新',
+              successMessage: '',
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const buttons = wrapper.findAll('.el-button-stub')
+    expect(buttons).toHaveLength(2)
+    expect(buttons[0]?.text()).toBe('新增')
+    expect(buttons[1]?.text()).toBe('刷新')
+
+    await buttons[0]!.trigger('click')
+    await flushPromises()
+    expect(dv.rows).toHaveLength(2)
+    expect(dv.rows[1]?.['name']).toBe('Bob')
+
+    await buttons[1]!.trigger('click')
+    await flushPromises()
+    expect(refreshSpy).toHaveBeenCalled()
+
+    refreshSpy.mockRestore()
+  })
+
+  it('should treat empty successMessage as silent (no PAGE_SERVICE warn fallback)', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Silent',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        toolbar: [
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'append-row',
+              label: '新增',
+              appendPayload: { id: 2, name: 'Bob' },
+              successMessage: '',
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    await wrapper.find('.el-button-stub').trigger('click')
+    await flushPromises()
+
+    expect(dv.rows).toHaveLength(2)
+    const warnMessages = warnSpy.mock.calls
+      .flatMap(call => call.map(item => String(item)))
+      .join(' ')
+    expect(warnMessages.includes('PAGE_SERVICE 不可用')).toBe(false)
+
+    warnSpy.mockRestore()
+  })
+
+  it('should execute builtin row delete action directly on data view rows', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Row',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 7, name: 'Alice' }, { id: 8, name: 'Bob' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        rowActions: [
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'delete-row',
+              label: '删除',
+              successMessage: '',
+              confirmMessage: '',
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    const rowDeleteBtn = wrapper.find('.el-button-stub')
+    expect(rowDeleteBtn.exists()).toBe(true)
+
+    await rowDeleteBtn.trigger('click')
+    await flushPromises()
+
+    expect(dv.rows).toHaveLength(1)
+    expect(dv.rows[0]?.['id']).toBe(8)
+  })
+
+  it('should execute builtin delete-selected action by selectedRows', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Delete-Selected',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Carol' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    dv.selection.setSelectedRows([dv.rows[0]!, dv.rows[2]!])
+
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        toolbar: [
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'delete-selected',
+              label: '删除勾选',
+              successMessage: '',
+              confirmMessage: '',
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    await wrapper.find('.el-button-stub').trigger('click')
+    await flushPromises()
+
+    expect(dv.rows).toHaveLength(1)
+    expect(dv.rows[0]?.['id']).toBe(2)
+  })
+
+  it('should suppress notification fallback when silent is true', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Silent-Flag',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        toolbar: [
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'append-row',
+              label: '新增静默',
+              appendPayload: { id: 2, name: 'Bob' },
+              silent: true,
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    await wrapper.find('.el-button-stub').trigger('click')
+    await flushPromises()
+
+    expect(dv.rows).toHaveLength(2)
+    const warnMessages = warnSpy.mock.calls
+      .flatMap(call => call.map(item => String(item)))
+      .join(' ')
+    expect(warnMessages.includes('PAGE_SERVICE 不可用')).toBe(false)
+
+    warnSpy.mockRestore()
+  })
+
+  it('should catch builtin refresh errors and report configured error message', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Refresh-Error',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const refreshSpy = vi.spyOn(dv, 'refresh').mockRejectedValue(new Error('network down'))
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        toolbar: [
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'refresh',
+              label: '刷新',
+              errorMessage: '刷新失败',
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    await wrapper.find('.el-button-stub').trigger('click')
+    await flushPromises()
+
+    expect(refreshSpy).toHaveBeenCalled()
+    const warnMessages = warnSpy.mock.calls
+      .flatMap(call => call.map(item => String(item)))
+      .join(' ')
+    expect(warnMessages.includes('刷新失败: network down')).toBe(true)
+
+    refreshSpy.mockRestore()
+    warnSpy.mockRestore()
+  })
+
+  it('should show failureMessage when delete-selected removes zero rows', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Delete-Selected-Failure',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    dv.selection.setSelectedRows([dv.rows[0]!])
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        toolbar: [
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'delete-selected',
+              label: '删除勾选',
+              idField: 'uid',
+              confirmMessage: '',
+              failureMessage: '没有可删除记录',
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    await wrapper.find('.el-button-stub').trigger('click')
+    await flushPromises()
+
+    expect(dv.rows).toHaveLength(1)
+    const warnMessages = warnSpy.mock.calls
+      .flatMap(call => call.map(item => String(item)))
+      .join(' ')
+    expect(warnMessages.includes('没有可删除记录')).toBe(true)
+
+    warnSpy.mockRestore()
   })
 
   it('should render tree toolbar and scoped node actions with position props', async () => {

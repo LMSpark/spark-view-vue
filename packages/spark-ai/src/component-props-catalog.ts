@@ -9,7 +9,7 @@ export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
 
   'r-table': `**r-table** — 数据表格容器
 dataKey: string — 数据绑定键，如 "Users@rows"
-toolbar: Rule[] — 工具栏区域（推荐用 Render* 函数）
+toolbar: Rule[] — 工具栏区域（优先 builtin-action，其次 Render*）
 toolbarPosition: 'top' | 'bottom' — 默认 'top'
 filterColumns: Rule[] — 过滤区字段配置
 filterCollapsible: boolean — 过滤区可折叠，默认 false
@@ -18,13 +18,13 @@ filterAutoFitMinWidth: string — 过滤项最小宽度，默认 '220px'
 filterItemSpan: number — 过滤项占栅格列数，默认 1
 filterGridColumns: number — 过滤区栅格总列数，默认 24
 filterGridGap: number — 过滤区间距，默认 12
-rowActions: Rule[] — 行操作区（推荐用 Render* 函数）
+rowActions: Rule[] — 行操作区（优先 builtin-action，其次 Render*）
 rowActionsPosition: 'left' | 'right' — 默认 'right'
 rowActionsLabel: string — 操作列标题，默认 '操作'
 rowActionsWidth: number — 操作列宽度，默认 160
 rowActionsAlign: 'left' | 'center' | 'right' — 默认 'left'
 rowActionsFixed: string | boolean — 操作列固定方向
-children 内用 r-* 字段组件做列（推荐）或 el-table-column（兼容）
+children 内仅用 r-* 字段组件做列（禁止 el-table-column）
 透传到 el-table: border, stripe, highlightCurrentRow, height, maxHeight 等`,
 
   'r-form': `**r-form** — 数据表单容器（读写 currentRow）

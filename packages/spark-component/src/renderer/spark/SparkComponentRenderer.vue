@@ -8,6 +8,26 @@
     v-bind="forwardedProps"
   />
 
+  <!-- 未注册但可识别为原生标签：按原生元素渲染，并继续递归子节点 -->
+  <component
+    v-else-if="shouldRenderAsNativeElement"
+    :is="config.type"
+    v-bind="forwardedProps"
+  >
+    <template
+      v-for="(child, index) in renderableChildren"
+      :key="isComponentConfig(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
+    >
+      <SparkComponentRenderer
+        v-if="isComponentConfig(child)"
+        :config="child"
+      />
+      <template v-else>
+        {{ child }}
+      </template>
+    </template>
+  </component>
+
   <!-- 未注册：降级渲染，继续递归子组件树，不中断渲染 -->
   <div
     v-else
@@ -17,11 +37,18 @@
       <strong>⚠️ 未注册的组件类型:</strong> {{ config.type }}
     </div>
     <!-- 未注册时仍递归渲染子组件，父上下文由 Vue DI 自动传递 -->
-    <SparkComponentRenderer
-      v-for="(child, index) in config.children"
-      :key="child.id ?? `child-${index}`"
-      :config="child"
-    />
+    <template
+      v-for="(child, index) in renderableChildren"
+      :key="isComponentConfig(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
+    >
+      <SparkComponentRenderer
+        v-if="isComponentConfig(child)"
+        :config="child"
+      />
+      <template v-else>
+        {{ child }}
+      </template>
+    </template>
   </div>
 </template>
 
@@ -58,8 +85,24 @@ import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../../core/types.j
 import type { ComponentConfig, ComponentContext, ComponentRegistry } from '../../core/types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
+const NATIVE_RENDERABLE_TAGS = new Set([
+  'div', 'span', 'p', 'a', 'img',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'ul', 'ol', 'li',
+  'button', 'input', 'textarea', 'select', 'option', 'label', 'form',
+  'section', 'article', 'header', 'footer', 'main', 'aside', 'nav',
+  'table', 'thead', 'tbody', 'tr', 'td', 'th', 'colgroup', 'col', 'caption',
+  'br', 'hr', 'pre', 'code',
+  'strong', 'em', 'i', 'b', 'small', 'sub', 'sup', 'blockquote',
+  'dl', 'dt', 'dd',
+  'figure', 'figcaption',
+  'video', 'audio', 'source',
+  'canvas',
+  'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
+])
 type ComponentEventMap = Record<string, unknown>
 type RenderableComponentConfig = ComponentConfig & { on?: ComponentEventMap }
+type RenderableChild = ComponentConfig | string | number
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -86,6 +129,28 @@ if (props.parentContext !== undefined) {
 const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
 const appComponents = getCurrentInstance()?.appContext.components
 
+function isNativeRenderableType(type: string): boolean {
+  return NATIVE_RENDERABLE_TAGS.has(type)
+}
+
+function isComponentConfig(value: unknown): value is ComponentConfig {
+  return value !== null
+    && typeof value === 'object'
+    && 'type' in value
+    && typeof (value as { type?: unknown }).type === 'string'
+}
+
+const shouldRenderAsNativeElement = computed(() => isNativeRenderableType(props.config.type))
+
+const renderableChildren = computed<RenderableChild[]>(() => {
+  const children = (props.config as { children?: unknown }).children
+  if (!Array.isArray(children)) return []
+
+  return children.filter((child): child is RenderableChild => (
+    isComponentConfig(child) || typeof child === 'string' || typeof child === 'number'
+  ))
+})
+
 // ── 组件解析 ──────────────────────────────────────────────────────────────────
 
 const resolvedComponent = computed(() => {
@@ -99,7 +164,8 @@ const resolvedComponent = computed(() => {
     return markRaw(appComponent as object)
   }
 
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && !isNativeRenderableType(props.config.type)) {
+    
     console.warn(`[SparkComponentRenderer] 未注册的组件类型: ${props.config.type}`)
   }
   return null
