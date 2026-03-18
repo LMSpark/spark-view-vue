@@ -1,14 +1,14 @@
 <template>
-  <div v-if="isOwner" class="ai-chat-wrapper">
+  <div v-if="canRenderWrapper" :class="props.embedded ? 'ai-chat-embedded' : 'ai-chat-wrapper'">
     <!-- 浮动触发按钮 -->
-    <button class="ai-fab" :class="{ active: isOpen }" @click="togglePanel" title="AI 页面生成">
+    <button v-if="!props.embedded" class="ai-fab" :class="{ active: isOpen }" @click="togglePanel" title="AI 页面生成">
       <span v-if="!isOpen">🤖</span>
       <span v-else>✕</span>
     </button>
 
     <!-- 聊天面板 -->
     <Transition name="slide">
-      <div v-if="isOpen" class="ai-panel">
+      <div v-if="panelVisible" class="ai-panel" :class="{ embedded: props.embedded }">
         <div class="ai-panel-header">
           <span>🤖 AI · {{ displayPageId ? `/${displayPageId}` : '首页' }}
             <span v-if="loading && lockedPageId" class="ai-lock-badge" title="生成中，页面ID已锁定">🔒</span>
@@ -62,7 +62,7 @@
         </div>
 
         <!-- 实时日志流 -->
-        <div v-if="isOpen && pageId.trim() && recentLogs.length > 0" class="ai-log-feed">
+        <div v-if="panelVisible && pageId.trim() && recentLogs.length > 0" class="ai-log-feed">
           <div class="ai-log-header" @click="showLogs = !showLogs">
             <span>📋 {{ recentLogs.length }} 条日志
               <span v-if="errorLogCount > 0" class="ai-error-count">({{ errorLogCount }} 错误)</span>
@@ -174,9 +174,15 @@ interface ChatMessage {
 }
 
 const { router, route, tenantPath, ensureRouteExists: tenantEnsureRouteExists, navigateToPage: tenantNavigateToPage } = useTenantRouter()
+const props = withDefaults(defineProps<{ embedded?: boolean; forceOpen?: boolean }>(), {
+  embedded: false,
+  forceOpen: false,
+})
 const { isOwner } = useFloatingPanelOwner('__SPARK_AI_PANEL_OWNER__')
 
 const isOpen = ref(false)
+const panelVisible = computed(() => (props.embedded ? props.forceOpen : isOpen.value))
+const canRenderWrapper = computed(() => (props.embedded ? true : isOwner.value))
 const loading = ref(false)
 const prompt = ref('')
 const pageId = ref('')
@@ -1025,7 +1031,7 @@ watch(() => route.query['aiDebug'], async (val) => {
     // 自动触发调试
     void handleDebug()
   }
-})
+}, { immediate: true })
 </script>
 
 <style scoped>
@@ -1034,6 +1040,12 @@ watch(() => route.query['aiDebug'], async (val) => {
   bottom: 24px;
   right: 24px;
   z-index: 9999;
+}
+
+.ai-chat-embedded {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .ai-fab {
@@ -1072,6 +1084,17 @@ watch(() => route.query['aiDebug'], async (val) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.ai-panel.embedded {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .ai-panel-header {

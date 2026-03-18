@@ -1,9 +1,7 @@
 <template>
   <SparkPageRenderer :key="rendererRefreshKey" v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
-  <!-- AI 聊天浮窗（仅配置页面渲染时加载，从 App.vue 下沉至此） -->
-  <AiChatPanel v-if="enableAI" />
-  <!-- SAP 工具助手浮窗（独立于 AI 页面生成面板） -->
-  <SapChatPanel v-if="enableAI" />
+  <!-- 单入口助手浮窗：内部可切换 AI 页面生成 / SAP 工具模式 -->
+  <AiAssistantHub v-if="enableAI" />
 </template>
 
 <script setup lang="ts">
@@ -15,8 +13,7 @@ import { appPageUiService } from '@spark-view/spark-app'
 import { NAV_KEY } from '@spark-view/spark-app'
 import { onPageRefresh } from '@spark-view/spark-ai'
 
-const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
-const SapChatPanel = defineAsyncComponent(() => import('@/components/SapChatPanel.vue'))
+const AiAssistantHub = defineAsyncComponent(() => import('@/components/AiAssistantHub.vue'))
 
 const props = withDefaults(defineProps<PageRendererProps>(), {
   enableCssScope: true,

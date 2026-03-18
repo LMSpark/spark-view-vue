@@ -1,14 +1,14 @@
 <template>
-  <div v-if="isOwner" class="sap-chat-wrapper">
+  <div v-if="canRenderWrapper" :class="props.embedded ? 'sap-chat-embedded' : 'sap-chat-wrapper'">
     <!-- 浮动触发按钮 -->
-    <button class="sap-fab" :class="{ active: isOpen }" @click="togglePanel" title="SAP 工具助手">
+    <button v-if="!props.embedded" class="sap-fab" :class="{ active: isOpen }" @click="togglePanel" title="SAP 工具助手">
       <span v-if="!isOpen">🔧</span>
       <span v-else>✕</span>
     </button>
 
     <!-- 聊天面板 -->
     <Transition name="sap-slide">
-      <div v-if="isOpen" class="sap-panel">
+      <div v-if="panelVisible" class="sap-panel" :class="{ embedded: props.embedded }">
         <div class="sap-panel-header">
           <span>🔧 SAP 工具助手</span>
           <span class="sap-status" :class="statusClass">{{ statusText }}</span>
@@ -88,11 +88,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onUnmounted } from 'vue'
+import { ref, nextTick, onUnmounted, computed } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { createAuthHeaders } from '@/services/http'
 import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
 
+const props = withDefaults(defineProps<{ embedded?: boolean; forceOpen?: boolean }>(), {
+  embedded: false,
+  forceOpen: false,
+})
 const { isOwner } = useFloatingPanelOwner('__SPARK_SAP_PANEL_OWNER__')
 
 // ── 常量 ──────────────────────────────────────────────────────────────────
@@ -153,6 +157,8 @@ const streamingText = ref('')
 const phaseMessage = ref('')
 const statusClass = ref('')
 const statusText = ref('就绪')
+const panelVisible = computed(() => (props.embedded ? props.forceOpen : isOpen.value))
+const canRenderWrapper = computed(() => (props.embedded ? true : isOwner.value))
 
 /** 取消控制 */
 let _abortController: AbortController | null = null
@@ -479,6 +485,13 @@ function truncateResult(text: string, max = 500): string {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+.sap-chat-embedded {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 .sap-fab {
   width: 48px;
   height: 48px;
@@ -513,6 +526,17 @@ function truncateResult(text: string, max = 500): string {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.sap-panel.embedded {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  width: 100%;
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .sap-panel-header {
