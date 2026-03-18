@@ -1,6 +1,6 @@
 import { ref, onBeforeUnmount } from 'vue'
-import { createFetchClient } from '@spark-view/spark-utils'
-import { http, createAuthHeaders } from '@/services/http'
+import { http } from '@/services/http'
+import { streamAiChatText } from '@/services/ai-protocol'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -93,7 +93,7 @@ export function useAiChat(options?: {
     try {
       // 多轮模式：把所有历史（除最后一条助手占位）发给后端
       // 单轮模式：只发当前用户消息
-      const historyMsgs: Array<{ role: string; content: string }> =
+      const historyMsgs: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> =
         mode === 'multi'
           ? messages.value
               .slice(0, -1) // 去掉刚插入的助手占位
@@ -114,50 +114,27 @@ export function useAiChat(options?: {
       }
 
       _abortController = new AbortController()
-      const sseClient = createFetchClient()
-      const events = await sseClient.streamSSE({
-        url: '/api/ai/chat/stream',
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...createAuthHeaders() },
-        data: { messages: historyMsgs, mode, systemPrompt },
+      await streamAiChatText({
+        messages: historyMsgs,
+        mode,
         signal: _abortController.signal,
+        ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+        onReasoning: (reasoning) => {
+          reactiveMsg.reasoning = (reactiveMsg.reasoning ?? '') + reasoning
+        },
+        onDelta: (delta) => {
+          reactiveMsg.content += delta
+        },
+        onUsage: (usageRaw) => {
+          const usage: TokenUsage = {}
+          if (typeof usageRaw['prompt_tokens'] === 'number') usage.promptTokens = usageRaw['prompt_tokens']
+          if (typeof usageRaw['completion_tokens'] === 'number') usage.completionTokens = usageRaw['completion_tokens']
+          if (typeof usageRaw['total_tokens'] === 'number') usage.totalTokens = usageRaw['total_tokens']
+          if (typeof usageRaw['prompt_cache_hit_tokens'] === 'number') usage.promptCacheHitTokens = usageRaw['prompt_cache_hit_tokens']
+          if (typeof usageRaw['prompt_cache_miss_tokens'] === 'number') usage.promptCacheMissTokens = usageRaw['prompt_cache_miss_tokens']
+          reactiveMsg.usage = usage
+        },
       })
-
-      for await (const event of events) {
-        if (event.data === '[DONE]') break
-
-        try {
-          const parsed = JSON.parse(event.data) as Record<string, unknown>
-          if (parsed['done'] === true) break
-
-          // DeepSeek-reasoner: 推理过程增量
-          const reasoning = parsed['reasoning']
-          if (typeof reasoning === 'string' && reasoning) {
-            reactiveMsg.reasoning = (reactiveMsg.reasoning ?? '') + reasoning
-          }
-
-          // 正文内容增量
-          const delta = parsed['delta']
-          if (typeof delta === 'string' && delta) {
-            reactiveMsg.content += delta
-          }
-
-          // token 用量统计（DeepSeek stream_options.include_usage）
-          const usageRaw = parsed['usage']
-          if (usageRaw !== null && typeof usageRaw === 'object') {
-            const u = usageRaw as Record<string, unknown>
-            const usage: TokenUsage = {}
-            if (typeof u['prompt_tokens'] === 'number') usage.promptTokens = u['prompt_tokens']
-            if (typeof u['completion_tokens'] === 'number') usage.completionTokens = u['completion_tokens']
-            if (typeof u['total_tokens'] === 'number') usage.totalTokens = u['total_tokens']
-            if (typeof u['prompt_cache_hit_tokens'] === 'number') usage.promptCacheHitTokens = u['prompt_cache_hit_tokens']
-            if (typeof u['prompt_cache_miss_tokens'] === 'number') usage.promptCacheMissTokens = u['prompt_cache_miss_tokens']
-            reactiveMsg.usage = usage
-          }
-        } catch {
-          // 跳过非 JSON 行
-        }
-      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : '请求失败'
       error.value = msg

@@ -11,6 +11,7 @@
  */
 import { ref, computed } from 'vue'
 import type { NavNode } from '@spark-view/spark-utils'
+import { extractProposalProtocolBlocks, stripProposalProtocolBlocks, extractFirstJsonObject } from '@/services/ai-protocol'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,28 +58,12 @@ export interface PlannerTarget {
 
 // ── @@proposal 协议解析（nav-add / nav-delete 专用）──────────────────────────
 
-const NAV_BLOCK_RE = /^@@proposal:(nav-add|nav-delete)\s*$([\s\S]*?)^@@end\s*$/gm
-
-/**
- * 从可能含有解释文字的字符串中提取首个 JSON 对象 `{...}`
- * AI 有时在 # 标题和 JSON 之间插入说明段落，此函数容错处理。
- */
-function extractJsonObject(text: string): string | null {
-  const start = text.indexOf('{')
-  if (start === -1) return null
-  // 从末尾向前找最后一个 `}`
-  const end = text.lastIndexOf('}')
-  if (end <= start) return null
-  return text.slice(start, end + 1)
-}
-
 function extractNavSuggestions(content: string, messageId: string): NavSuggestion[] {
   const results: NavSuggestion[] = []
-  NAV_BLOCK_RE.lastIndex = 0
-  let m: RegExpExecArray | null = NAV_BLOCK_RE.exec(content)
-  while (m !== null) {
-    const kind = m[1] as 'nav-add' | 'nav-delete'
-    const payload = (m[2] ?? '').trim()
+  const blocks = extractProposalProtocolBlocks(content, { names: ['nav-add', 'nav-delete'] })
+  for (const block of blocks) {
+    const kind = block.name as 'nav-add' | 'nav-delete'
+    const payload = block.body
 
     // 提取标题（# 开头的第一行）+ 容错提取 JSON 对象
     const lines = payload.split('\n')
@@ -90,9 +75,8 @@ function extractNavSuggestions(content: string, messageId: string): NavSuggestio
     }
 
     // 从剩余文本中定位首个 {...} 块（容忍 AI 在标题和 JSON 之间插入文字）
-    const jsonStr = extractJsonObject(restStr)
+    const jsonStr = extractFirstJsonObject(restStr)
     if (!jsonStr) {
-      m = NAV_BLOCK_RE.exec(content)
       continue
     }
 
@@ -129,18 +113,13 @@ function extractNavSuggestions(content: string, messageId: string): NavSuggestio
     } catch {
       // JSON 解析失败，跳过该提案
     }
-
-    m = NAV_BLOCK_RE.exec(content)
   }
   return results
 }
 
 /** 从显示内容中去除 nav-add / nav-delete 协议块 */
 export function stripNavProposalTags(content: string): string {
-  return content
-    .replace(NAV_BLOCK_RE, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  return stripProposalProtocolBlocks(content, { names: ['nav-add', 'nav-delete'] })
 }
 
 // ── Composable ───────────────────────────────────────────────────────────────
