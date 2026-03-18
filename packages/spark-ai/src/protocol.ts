@@ -244,6 +244,18 @@ export function parseTokenUsage(raw: Record<string, unknown>): TokenUsage {
   return usage
 }
 
+/**
+ * 将 TokenUsage 格式化为可读字符串（用于 UI 展示）
+ */
+export function formatTokenUsage(usage: TokenUsage): string {
+  const parts: string[] = []
+  if (usage.totalTokens !== undefined) parts.push(`${usage.totalTokens} tokens`)
+  if (usage.promptCacheHitTokens !== undefined && usage.promptCacheHitTokens > 0) {
+    parts.push(`缓存命中 ${usage.promptCacheHitTokens}`)
+  }
+  return parts.join(' · ')
+}
+
 // ── 流式清理 ──────────────────────────────────────────────────────────────────
 
 /** 匹配流式中途未闭合的 @@ 块（缺少 @@end） */

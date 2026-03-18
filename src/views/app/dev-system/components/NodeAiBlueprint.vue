@@ -281,7 +281,7 @@ import { useNavPlanner, stripNavProposalTags } from '../composables/useNavPlanne
 import type { NavSuggestion } from '../composables/useNavPlanner'
 import NavIcon from '@/components/NavIcon.vue'
 import { useAiChat } from '@/composables/useAiChat'
-import type { TokenUsage } from '@/composables/useAiChat'
+import { formatTokenUsage as formatUsage } from '@spark-view/spark-ai'
 import { getAILoop } from '@spark-view/spark-ai'
 import { NAV_PLANNER_SYSTEM_PROMPT } from '@spark-view/spark-ai'
 import type { NavNode } from '@spark-view/spark-utils'
@@ -427,13 +427,7 @@ function handleDiscuss(s: NavSuggestion) {
   textareaRef.value?.focus()
 }
 
-function formatUsage(usage: TokenUsage): string {
-  const parts: string[] = []
-  if (usage.promptTokens !== undefined) parts.push(`P:${usage.promptTokens}`)
-  if (usage.completionTokens !== undefined) parts.push(`C:${usage.completionTokens}`)
-  if (usage.totalTokens !== undefined) parts.push(`≈${usage.totalTokens}`)
-  return parts.length > 0 ? `🔢 ${parts.join(' ')}` : ''
-}
+// formatUsage imported from @spark-view/spark-ai as formatTokenUsage
 
 // 流式结束后提取 nav 建议
 watch(isStreaming, (streaming, wasStreaming) => {

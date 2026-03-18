@@ -259,7 +259,7 @@ import {
 } from '@spark-view/spark-ai'
 import { BLUEPRINT_SYSTEM_PROMPT } from '@spark-view/spark-ai'
 import type { ProposalType, DesignProposal } from '@spark-view/spark-ai'
-import type { TokenUsage } from '../composables/useAiChat'
+import { formatTokenUsage as formatUsage } from '@spark-view/spark-ai'
 import NavIcon from './NavIcon.vue'
 import AiProposalCard from './AiProposalCard.vue'
 import { http } from '@/services/http'
@@ -640,14 +640,7 @@ function resetTextareaHeight() {
   el.style.height = 'auto'
 }
 
-function formatUsage(usage: TokenUsage): string {
-  const parts: string[] = []
-  if (usage.totalTokens !== undefined) parts.push(`${usage.totalTokens} tokens`)
-  if (usage.promptCacheHitTokens !== undefined && usage.promptCacheHitTokens > 0) {
-    parts.push(`缓存命中 ${usage.promptCacheHitTokens}`)
-  }
-  return parts.join(' · ')
-}
+// formatUsage imported from @spark-view/spark-ai as formatTokenUsage
 </script>
 
 <style scoped>
