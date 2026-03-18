@@ -1,4 +1,6 @@
 import { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
+import { extractBlocks as _extractBlocks, stripBlocks as _stripBlocks } from './protocol'
+import type { ProtocolBlock as UnifiedBlock } from './protocol'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,7 +43,7 @@ export interface DesignProposal {
   timestamp: Date
 }
 
-/** @@ 协议提取的原始块 */
+/** @@ 协议提取的原始块（向后兼容别名，正式类型见 protocol.ts） */
 export interface ProtocolBlock {
   type: string   // 'proposal' | 'query' | 'review' | 'error'
   name: string   // kebab-case: 'data-model' | 'component-props' | ...
@@ -104,23 +106,22 @@ export function typeIcon(type: ProposalType): string {
   return TYPE_ICONS[type]
 }
 
-// ── @@ 定界符协议解析 ────────────────────────────────────────────────────────
+// ── @@ 定界符协议解析（委托 protocol.ts） ────────────────────────────────────
 
-/** 匹配 @@type:name ... @@end 定界块（多行模式） */
-const BLOCK_RE = /^@@(\w+):([\w-]+)\s*$([\s\S]*?)^@@end\s*$/gm
+/** 流式清理用正则（匹配未闭合的 @@ 块） */
+const UNCLOSED_BLOCK_RE = /^@@\w+:[\w-]+\s*$[\s\S]*$/m
 
 /**
  * 从文本中提取所有 @@ 协议块
+ * @deprecated 优先使用 protocol.ts 的 extractBlocks + filter
  */
 export function extractBlocks(text: string): ProtocolBlock[] {
-  const blocks: ProtocolBlock[] = []
-  BLOCK_RE.lastIndex = 0
-  let m: RegExpExecArray | null = BLOCK_RE.exec(text)
-  while (m !== null) {
-    blocks.push({ type: m[1] ?? '', name: m[2] ?? '', payload: (m[3] ?? '').trim() })
-    m = BLOCK_RE.exec(text)
-  }
-  return blocks
+  return _extractBlocks(text).map(toCompat)
+}
+
+/** protocol.ts UnifiedBlock → 本地 ProtocolBlock 兼容映射 */
+function toCompat(b: UnifiedBlock): ProtocolBlock {
+  return { type: b.type, name: b.name, payload: b.payload }
 }
 
 // ── 提案提取 ─────────────────────────────────────────────────────────────────
@@ -184,13 +185,12 @@ export function stripProposalTags(content: string): string {
   return stripProtocolBlocks(content)
 }
 
-/** 内部：清理 @@ 协议标记 */
+/** 内部：清理 @@ 协议标记（含流式未闭合块） */
 function stripProtocolBlocks(content: string): string {
-  return content
-    // @@ 协议块（完整）
-    .replace(BLOCK_RE, '')
-    // @@ 协议块（流式中途，未闭合）
-    .replace(/^@@\w+:[\w-]+\s*$[\s\S]*$/m, '')
+  const stripped = _stripBlocks(content)
+  // 额外清理流式中途未闭合的块
+  return stripped
+    .replace(UNCLOSED_BLOCK_RE, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
