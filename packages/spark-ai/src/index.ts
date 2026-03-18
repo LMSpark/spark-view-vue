@@ -1,3 +1,26 @@
+// ── Protocol (unified @@ parsing primitives) ─────────────────────────────────
+export {
+  extractBlocks as extractProtocolBlocks,
+  stripBlocks as stripProtocolBlocks,
+  extractProposalBlocks,
+  stripProposalBlocks,
+  extractToolBlocks,
+  stripToolBlocks,
+  parseToolPayload,
+  extractFirstJsonObject,
+  parseTokenUsage,
+} from './protocol'
+export type {
+  ProtocolRole,
+  ProtocolMessage,
+  ProtocolBlock as UnifiedProtocolBlock,
+  ToolProtocolBlock,
+  ProposalProtocolBlock,
+  TokenUsage,
+  ProtocolBlockFilter,
+  ToolBlockFilter,
+} from './protocol'
+
 // ── AI Loop (core engine) ────────────────────────────────────────────────────
 export {
   configureAILoopHttp,

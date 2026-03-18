@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
-import type { DesignProposal, ProposalType } from '@spark-view/spark-ai'
+import type { ProposalType } from '@spark-view/spark-ai'
+import { useProposalState } from './useProposalState'
 
 /**
  * 蓝图策划阶段（比页面设计更宏观）
@@ -22,54 +23,22 @@ const BLUEPRINT_TYPES: ProposalType[] = [
 /**
  * Vue composable: 蓝图策划会话状态管理
  *
- * 复用 spark-ai 的 DesignProposal 类型体系，
- * 但聚焦于应用级（模块/页面/数据模型），而非单页面级。
+ * 复用 useProposalState 的提案 CRUD，
+ * 追加蓝图特有的 phase / stats / summary 逻辑。
  */
 export function useBlueprintPlanner() {
   const appName = ref('')
   const phase = ref<BlueprintPhase>('needs-analysis')
-  const proposals = ref<DesignProposal[]>([])
   const userGoal = ref('')
 
-  // ── 计算属性 ───────────────────────────────────────────────────────────
+  const proposalState = useProposalState()
 
-  const acceptedProposals = computed(() =>
-    proposals.value.filter((p) => p.status === 'accepted'),
-  )
+  // ── 蓝图统计 ───────────────────────────────────────────────────────────
 
-  const pendingProposals = computed(() =>
-    proposals.value.filter((p) => p.status === 'pending'),
-  )
-
-  const hasAccepted = computed(() => acceptedProposals.value.length > 0)
-
-  /** 按消息 ID 分组（用于聊天区域内联展示提案卡）*/
-  const proposalsByMessage = computed(() => {
-    const map = new Map<string, DesignProposal[]>()
-    for (const p of proposals.value) {
-      const list = map.get(p.messageId) ?? []
-      list.push(p)
-      map.set(p.messageId, list)
-    }
-    return map
-  })
-
-  /** 按类型分组的已采纳提案（侧栏展示） */
-  const acceptedByType = computed(() => {
-    const map = new Map<ProposalType, DesignProposal[]>()
-    for (const p of acceptedProposals.value) {
-      const list = map.get(p.type) ?? []
-      list.push(p)
-      map.set(p.type, list)
-    }
-    return map
-  })
-
-  /** 蓝图统计 */
   const stats = computed(() => {
-    const navProposals = acceptedProposals.value.filter((p) => p.type === 'navigation')
-    const dataProposals = acceptedProposals.value.filter((p) => p.type === 'data-model')
-    const funcProposals = acceptedProposals.value.filter((p) => p.type === 'function-plan')
+    const navProposals = proposalState.acceptedProposals.value.filter((p) => p.type === 'navigation')
+    const dataProposals = proposalState.acceptedProposals.value.filter((p) => p.type === 'data-model')
+    const funcProposals = proposalState.acceptedProposals.value.filter((p) => p.type === 'function-plan')
 
     // 从 navigation 提案中提取模块/页面计数
     let moduleCount = 0
@@ -97,65 +66,20 @@ export function useBlueprintPlanner() {
     }
   })
 
-  // ── 操作方法 ───────────────────────────────────────────────────────────
-
-  function addProposals(newProposals: DesignProposal[]) {
-    proposals.value.push(...newProposals)
-  }
-
-  function acceptProposal(id: string) {
-    const p = proposals.value.find((x) => x.id === id)
-    if (p) p.status = 'accepted'
-  }
-
-  function rejectProposal(id: string) {
-    const p = proposals.value.find((x) => x.id === id)
-    if (p) p.status = 'rejected'
-  }
-
-  function revokeProposal(id: string) {
-    const p = proposals.value.find((x) => x.id === id)
-    if (p) p.status = 'pending'
-  }
-
-  /** 一键采纳所有待决定提案 */
-  function acceptAll() {
-    for (const p of proposals.value) {
-      if (p.status === 'pending') p.status = 'accepted'
-    }
-  }
-
-  /** 一键跳过所有待决定提案 */
-  function rejectAll() {
-    for (const p of proposals.value) {
-      if (p.status === 'pending') p.status = 'rejected'
-    }
-  }
-
-  /** 编辑提案内容（人工修正 AI 输出） */
-  function editProposalContent(id: string, newContent: string) {
-    const p = proposals.value.find((x) => x.id === id)
-    if (p) p.content = newContent
-  }
-
-  /** 编辑提案标题 */
-  function editProposalTitle(id: string, newTitle: string) {
-    const p = proposals.value.find((x) => x.id === id)
-    if (p) p.title = newTitle
-  }
+  // ── 蓝图特有方法 ──────────────────────────────────────────────────────
 
   function reset() {
     appName.value = ''
     phase.value = 'needs-analysis'
-    proposals.value = []
+    proposalState.proposals.value = []
     userGoal.value = ''
   }
 
   /**
-   * 从已采纳的提案构建最终蓝图提示词（用于 "一键生成" 或 "汇总蓝图"）
+   * 从已采纳的提案构建最终蓝图提示词
    */
   function buildBlueprintSummary(): string {
-    const accepted = acceptedProposals.value
+    const accepted = proposalState.acceptedProposals.value
     if (accepted.length === 0) return ''
 
     const sections: string[] = [
@@ -163,7 +87,7 @@ export function useBlueprintPlanner() {
       '',
     ]
 
-    const grouped = new Map<ProposalType, DesignProposal[]>()
+    const grouped = new Map<ProposalType, typeof accepted>()
     for (const p of accepted) {
       const list = grouped.get(p.type) ?? []
       list.push(p)
@@ -197,23 +121,10 @@ export function useBlueprintPlanner() {
   return {
     appName,
     phase,
-    proposals,
     userGoal,
-    acceptedProposals,
-    pendingProposals,
-    hasAccepted,
-    proposalsByMessage,
-    acceptedByType,
+    ...proposalState,
     stats,
     blueprintTypes: BLUEPRINT_TYPES,
-    addProposals,
-    acceptProposal,
-    rejectProposal,
-    revokeProposal,
-    acceptAll,
-    rejectAll,
-    editProposalContent,
-    editProposalTitle,
     reset,
     buildBlueprintSummary,
   }

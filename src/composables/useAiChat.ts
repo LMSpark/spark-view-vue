@@ -1,6 +1,7 @@
 import { ref, onBeforeUnmount } from 'vue'
 import { http } from '@/services/http'
-import { streamAiChatText } from '@/services/ai-protocol'
+import { streamAiChatText, parseTokenUsage } from '@/services/ai-protocol'
+import type { TokenUsage } from '@/services/ai-protocol'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,14 +26,7 @@ export interface ChatMessage {
   usage?: TokenUsage
 }
 
-export interface TokenUsage {
-  promptTokens?: number
-  completionTokens?: number
-  totalTokens?: number
-  /** DeepSeek 上下文缓存命中 token 数 */
-  promptCacheHitTokens?: number
-  promptCacheMissTokens?: number
-}
+export type { TokenUsage }
 
 export type ChatMode = 'multi' | 'single'
 
@@ -126,13 +120,7 @@ export function useAiChat(options?: {
           reactiveMsg.content += delta
         },
         onUsage: (usageRaw) => {
-          const usage: TokenUsage = {}
-          if (typeof usageRaw['prompt_tokens'] === 'number') usage.promptTokens = usageRaw['prompt_tokens']
-          if (typeof usageRaw['completion_tokens'] === 'number') usage.completionTokens = usageRaw['completion_tokens']
-          if (typeof usageRaw['total_tokens'] === 'number') usage.totalTokens = usageRaw['total_tokens']
-          if (typeof usageRaw['prompt_cache_hit_tokens'] === 'number') usage.promptCacheHitTokens = usageRaw['prompt_cache_hit_tokens']
-          if (typeof usageRaw['prompt_cache_miss_tokens'] === 'number') usage.promptCacheMissTokens = usageRaw['prompt_cache_miss_tokens']
-          reactiveMsg.usage = usage
+          reactiveMsg.usage = parseTokenUsage(usageRaw)
         },
       })
     } catch (e) {
