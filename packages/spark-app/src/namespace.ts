@@ -16,9 +16,9 @@ import { bootstrap } from './bootstrap'
 import { start } from './start'
 import { setupRouterGuards } from './router/guards'
 import { createDynamicRouter } from './router/dynamic'
-import { setupErrorHandler } from './error/handler'
+import { setupErrorHandler } from './error-handler'
 import { loadConfig } from './config'
-import { createAppContext } from './context/AppContext'
+import { createAppContext } from './app-context'
 import { createThemeService } from './theme'
 
 /**

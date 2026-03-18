@@ -4,7 +4,7 @@
  */
 
 import { reactive } from 'vue'
-import type { AppContext, UserInfo, TenantInfo, EnvironmentInfo } from '../types'
+import type { AppContext, UserInfo, TenantInfo, EnvironmentInfo } from './types'
 
 /**
  * 创建应用上下文

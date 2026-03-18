@@ -96,7 +96,7 @@ export type {
 // AppContext (内部使用)
 export {
   createAppContext  // SparkApp 命名空间需要
-} from './context/AppContext'
+} from './app-context'
 
 // Router Guards
 export { setupRouterGuards, setupLoadingGuard } from './router/guards'
@@ -106,7 +106,7 @@ export { DynamicRouter, createDynamicRouter } from './router/dynamic'
 export type { DynamicRouterOptions } from './router/dynamic'
 
 // Error Handler
-export { setupErrorHandler, createErrorBoundary } from './error/handler'
+export { setupErrorHandler, createErrorBoundary } from './error-handler'
 
 // Config
 export { loadConfig, isFeatureEnabled, ConfigLoader, TenantResolver, loadAppConfig } from './config'
@@ -135,7 +135,7 @@ export type { AutoRegisterOptions } from './auto-register'
 // - Logger：使用 Logger('module') 工厂函数
 export {
   useSparkRegistry
-} from './composables/useServices'
+} from './useServices'
 
 // ── Navigation Model ──
 export {

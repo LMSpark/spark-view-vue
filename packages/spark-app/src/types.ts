@@ -9,7 +9,7 @@
 import type { LogLevel, IThemeCapability } from '@spark-view/spark-utils'
 import type { App } from 'vue'
 import type { Router } from 'vue-router'
-import type { AuthConfig } from '../auth'
+import type { AuthConfig } from './auth'
 export type { LogLevel }
 
 /**
