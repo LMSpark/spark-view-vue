@@ -4,7 +4,7 @@ import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT
 import { initializeSparkEJ2Components } from '../src/features/spark-ej2'
 import { defineComponent, h } from 'vue'
 import type { DefineComponent } from 'vue'
-import SparkComponentRendererSource from '../packages/spark-component/src/renderer/spark/SparkComponentRenderer.vue'
+import SparkComponentRendererSource from '../packages/spark-component/src/renderer/SparkComponentRenderer.vue'
 
 const { registry, rootContext } = Spark.createSystem()
 

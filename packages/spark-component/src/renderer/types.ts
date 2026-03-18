@@ -11,8 +11,8 @@ import type { h as VueH } from 'vue'
 import type { IDataSet, SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig, IPageRoute } from '@spark-view/spark-page-config'
 import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
-import type { ComponentRegistry } from '../../core/types.js'
-import type { PageComponentInstanceEntry } from '../../capability-keys.js'
+import type { ComponentRegistry } from '../types.js'
+import type { PageComponentInstanceEntry } from '../capability-keys.js'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
 export type { PageConfig }

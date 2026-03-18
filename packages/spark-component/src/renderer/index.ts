@@ -13,12 +13,12 @@
 // 组件（Vue SFC，由此文件统一导出，避免 index.ts 直接引用 .vue 文件）
 // SparkPageRenderer: 页面级入口（远程加载 JSON + 状态管理）
 // SparkComponentRenderer: 递归组件引擎（被 SparkPageRenderer 及业务组件调用）
-export { default as SparkPageRenderer } from './spark/SparkPageRenderer.vue'
-export { default as SparkComponentRenderer } from './spark/SparkComponentRenderer.vue'
+export { default as SparkPageRenderer } from './SparkPageRenderer.vue'
+export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 
 // DataSet 初始化 Composable（迁移自 spark-data）
-export { usePageDataSet } from './composables/usePageDataSet'
-export type { UsePageDataSetOptions, UsePageDataSetReturn } from './composables/usePageDataSet'
+export { usePageDataSet } from './usePageDataSet'
+export type { UsePageDataSetOptions, UsePageDataSetReturn } from './usePageDataSet'
 
 // 类型
 export type {
@@ -27,10 +27,10 @@ export type {
   PageConfig,
   PageRendererProps,
   RuleBindingOptions,
-} from './types/index'
+} from './types'
 
 // 渲染工具（供测试及高级用例）
-export { bindDataToRules } from './utils/bindRules'
+export { bindDataToRules } from './binding/bindRules'
 
 // ── 容器组件 ──────────────────────────────────────────────────────────────────
 export { default as RendererTable } from './containers/RendererTable.vue'

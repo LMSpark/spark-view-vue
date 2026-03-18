@@ -69,7 +69,7 @@ declare module 'virtual:spark-components' {
 
 ```typescript
 // virtual:spark-components (自动生成)
-import pageRenderer from './packages/spark-component/src/renderer/spark/SparkComponentRenderer.vue'
+import pageRenderer from './packages/spark-component/src/renderer/SparkComponentRenderer.vue'
 const sparkEj2Grid = () => import('./features/spark-ej2/components/SparkEJ2Grid.vue')
 
 export function registerComponents() {

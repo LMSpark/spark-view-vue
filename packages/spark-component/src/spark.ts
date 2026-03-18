@@ -13,9 +13,9 @@
 
 import { defineAsyncComponent, markRaw } from 'vue'
 import type { CapabilityName } from '@spark-view/spark-utils'
-import { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
-import { createSparkPlugin } from './plugins/SparkPlugin.js'
-import type { ComponentContext, ComponentRegistry } from './core/types.js'
+import { createComponentRegistry, getGlobalRegistry } from './registry.js'
+import { createSparkPlugin } from './plugin.js'
+import type { ComponentContext, ComponentRegistry } from './types.js'
 
 /* -------------------------------------------------------------------------- */
 

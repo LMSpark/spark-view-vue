@@ -36,7 +36,7 @@ app.use(Spark.createPlugin())    // 唯一 Vue 插件，极简，只做 DI
 app.mount('#app')
 ```
 
-`SparkPlugin.install()` 只做两件事（见 `packages/spark-component/src/plugins/SparkPlugin.ts`）：
+`SparkPlugin.install()` 只做两件事（见 `packages/spark-component/src/plugin.ts`）：
 
 | 操作 | 注入键 | 内容 |
 |------|--------|------|
@@ -71,7 +71,7 @@ reg.registerAll({
 ## 3. 页面渲染层（PageRenderer）
 
 `PageRenderer` 通过 `useRendererSetup` composable 完成页面级协调
-（见 `packages/spark-component/src/renderer/composables/useRendererSetup.ts`）：
+（见 `packages/spark-component/src/renderer/useRendererSetup.ts`）：
 
 ```typescript
 // SparkPageRenderer 内部（简化）
