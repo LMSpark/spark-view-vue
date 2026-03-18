@@ -137,7 +137,8 @@
 import { ref, nextTick, watch } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { useAiChat } from '../composables/useAiChat'
-import type { ChatMode, FileAttachment, TokenUsage } from '../composables/useAiChat'
+import { formatTokenUsage as formatUsage } from '@spark-view/spark-ai'
+import type { ChatMode, FileAttachment } from '../composables/useAiChat'
 
 const props = defineProps<{
   mode?: ChatMode
@@ -286,19 +287,6 @@ watch(
     })
   },
 )
-
-// ── token 用量格式化 ─────────────────────────────────────────────────────
-
-function formatUsage(usage: TokenUsage): string {
-  const parts: string[] = []
-  if (usage.totalTokens !== undefined) {
-    parts.push(`${usage.totalTokens} tokens`)
-  }
-  if (usage.promptCacheHitTokens !== undefined && usage.promptCacheHitTokens > 0) {
-    parts.push(`缓存命中 ${usage.promptCacheHitTokens}`)
-  }
-  return parts.length > 0 ? parts.join(' · ') : ''
-}
 
 // ── textarea 自适应高度 ──────────────────────────────────────────────────
 

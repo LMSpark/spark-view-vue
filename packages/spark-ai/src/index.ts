@@ -10,6 +10,7 @@ export {
   parseToolPayload,
   extractFirstJsonObject,
   parseTokenUsage,
+  formatTokenUsage,
 } from './protocol'
 export type {
   ProtocolRole,

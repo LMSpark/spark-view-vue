@@ -20,6 +20,7 @@ export {
   stripProtocolBlocksWithUnclosed,
   extractFirstJsonObject,
   parseTokenUsage,
+  formatTokenUsage,
 } from '@spark-view/spark-ai'
 export type {
   ProtocolRole,
