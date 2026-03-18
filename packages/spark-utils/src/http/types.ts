@@ -222,6 +222,31 @@ export interface FileLoadResult<T = unknown> {
   fromCache: boolean
   error?: string
   notModified?: boolean
+  /** 失败状态码（如 404） */
+  status?: number
+  /** 失败原因（用于上游订阅消费，不再依赖字符串匹配） */
+  reason?: 'not-found' | 'network' | 'invalid-response' | 'parse' | 'unknown'
+}
+
+/** FileLoader 事件映射（用于全链路订阅消费） */
+export interface FileLoaderEventMap {
+  'file-loaded': {
+    fileName: string
+    fromCache: boolean
+    timestamp?: string
+    notModified?: boolean
+  }
+  'file-missing': {
+    fileName: string
+    status?: number
+    reason: 'not-found'
+  }
+  'file-error': {
+    fileName: string
+    status?: number
+    error: string
+    reason: 'network' | 'invalid-response' | 'parse' | 'unknown'
+  }
 }
 
 // ==================== 流式响应（fetch-only） ====================

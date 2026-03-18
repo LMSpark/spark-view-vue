@@ -21,6 +21,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * 事件类型约定：
  * <ul>
  *   <li>{@code page-config} — 页面配置文件变更（pageId, file, timestamp）</li>
+ *   <li>{@code debug-screenshot-request} — 请求前端截图并上传（requestId, reason, selector, pageId）</li>
+ *   <li>{@code debug-screenshot-result} — 前端截图上传回执（requestId, status, fileId, message）</li>
+ *   <li>{@code debug-route-request} — 请求前端执行路由跳转（requestId, path/pageId, tenantId, projectId）</li>
+ *   <li>{@code debug-route-result} — 前端路由跳转回执（requestId, status, targetPath, currentPath）</li>
  *   <li>后续可扩展：{@code notification}, {@code data-change} 等</li>
  * </ul>
  */
@@ -31,6 +35,10 @@ public class SseService {
 
     /** 事件类型常量 */
     public static final String EVENT_PAGE_CONFIG = "page-config";
+    public static final String EVENT_DEBUG_SCREENSHOT_REQUEST = "debug-screenshot-request";
+    public static final String EVENT_DEBUG_SCREENSHOT_RESULT = "debug-screenshot-result";
+    public static final String EVENT_DEBUG_ROUTE_REQUEST = "debug-route-request";
+    public static final String EVENT_DEBUG_ROUTE_RESULT = "debug-route-result";
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 

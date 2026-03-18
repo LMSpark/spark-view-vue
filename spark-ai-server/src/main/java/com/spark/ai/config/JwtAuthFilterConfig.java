@@ -43,6 +43,7 @@ public class JwtAuthFilterConfig {
         "/api/config/default",
         "/api/events",
         "/api/logs",
+        "/api/ai/debug/",
         "/api/pages-config/",
         "/api/sap/"
     );

@@ -6,6 +6,7 @@ import com.spark.ai.model.GeneralChatRequest;
 import com.spark.ai.service.AiPageService;
 import com.spark.ai.service.AiStreamService;
 import com.spark.ai.service.ComponentMetadataService;
+import com.spark.ai.service.SseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,16 +49,19 @@ public class AiChatController {
     private final AiPageService aiPageService;
     private final AiStreamService aiStreamService;
     private final ComponentMetadataService metadataService;
+    private final SseService sseService;
 
     @Value("${spark.pages.config-dir:./data/pages-config}")
     private String pagesConfigDir;
 
     public AiChatController(AiPageService aiPageService,
                             AiStreamService aiStreamService,
-                            ComponentMetadataService metadataService) {
+                            ComponentMetadataService metadataService,
+                            SseService sseService) {
         this.aiPageService = aiPageService;
         this.aiStreamService = aiStreamService;
         this.metadataService = metadataService;
+        this.sseService = sseService;
     }
 
     /**
@@ -182,5 +187,105 @@ public class AiChatController {
                 "size", file.getSize(),
                 "mimeType", file.getContentType() != null ? file.getContentType() : "application/octet-stream"
         ));
+    }
+
+    @PostMapping("/debug/screenshot-request")
+    public ResponseEntity<Map<String, Object>> requestScreenshot(
+            @RequestBody(required = false) Map<String, Object> body) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        String requestId = UUID.randomUUID().toString();
+
+        if (body != null) {
+            Object rawRequestId = body.get("requestId");
+            if (rawRequestId instanceof String req && !req.isBlank()) {
+                requestId = req;
+            }
+            putIfText(payload, "reason", body.get("reason"));
+            putIfText(payload, "selector", body.get("selector"));
+            putIfText(payload, "pageId", body.get("pageId"));
+        }
+
+        payload.put("requestId", requestId);
+        payload.put("timestamp", System.currentTimeMillis());
+        sseService.emit(SseService.EVENT_DEBUG_SCREENSHOT_REQUEST, payload);
+
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "requestId", requestId,
+                "eventType", SseService.EVENT_DEBUG_SCREENSHOT_REQUEST
+        ));
+    }
+
+    @PostMapping("/debug/screenshot-result")
+    public ResponseEntity<Map<String, Object>> reportScreenshotResult(
+            @RequestBody(required = false) Map<String, Object> body) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        if (body != null) {
+            payload.putAll(body);
+        }
+        payload.put("serverTimestamp", System.currentTimeMillis());
+
+        sseService.emit(SseService.EVENT_DEBUG_SCREENSHOT_RESULT, payload);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("ok", true);
+        response.put("eventType", SseService.EVENT_DEBUG_SCREENSHOT_RESULT);
+        Object requestId = payload.get("requestId");
+        if (requestId instanceof String req && !req.isBlank()) {
+            response.put("requestId", req);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/debug/route-request")
+    public ResponseEntity<Map<String, Object>> requestDebugRoute(
+            @RequestBody(required = false) Map<String, Object> body) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        String requestId = UUID.randomUUID().toString();
+
+        if (body != null) {
+            payload.putAll(body);
+            Object rawRequestId = body.get("requestId");
+            if (rawRequestId instanceof String req && !req.isBlank()) {
+                requestId = req;
+            }
+        }
+
+        payload.put("requestId", requestId);
+        payload.put("timestamp", System.currentTimeMillis());
+        sseService.emit(SseService.EVENT_DEBUG_ROUTE_REQUEST, payload);
+
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "requestId", requestId,
+                "eventType", SseService.EVENT_DEBUG_ROUTE_REQUEST
+        ));
+    }
+
+    @PostMapping("/debug/route-result")
+    public ResponseEntity<Map<String, Object>> reportDebugRouteResult(
+            @RequestBody(required = false) Map<String, Object> body) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        if (body != null) {
+            payload.putAll(body);
+        }
+        payload.put("serverTimestamp", System.currentTimeMillis());
+
+        sseService.emit(SseService.EVENT_DEBUG_ROUTE_RESULT, payload);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("ok", true);
+        response.put("eventType", SseService.EVENT_DEBUG_ROUTE_RESULT);
+        Object requestId = payload.get("requestId");
+        if (requestId instanceof String req && !req.isBlank()) {
+            response.put("requestId", req);
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    private static void putIfText(Map<String, Object> payload, String key, Object value) {
+        if (value instanceof String text && !text.isBlank()) {
+            payload.put(key, text);
+        }
     }
 }

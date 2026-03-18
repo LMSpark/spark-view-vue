@@ -261,6 +261,7 @@ export class DynamicRouter {
             type: 'external-link',
             pageId,
             title: node.title,
+            ...(node.description !== undefined && { description: node.description }),
             externalUrl: nodePath,
             ...(node.icon !== undefined && { icon: node.icon }),
           },
@@ -275,7 +276,13 @@ export class DynamicRouter {
             path: routePath,
             name: `nav-${node.id}`,
             component,
-            meta: { type: 'system-page', pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
+            meta: {
+              type: 'system-page',
+              pageId,
+              title: node.title,
+              ...(node.description !== undefined && { description: node.description }),
+              ...(node.icon !== undefined && { icon: node.icon }),
+            },
           }
           this.router.addRoute(route)
           this.registeredRoutes.add(routePath)
@@ -292,7 +299,12 @@ export class DynamicRouter {
           name: `nav-${node.id}`,
           component: this.pageComponent,
           props: { configLoader: this.configLoader },
-          meta: { pageId, title: node.title, ...(node.icon !== undefined && { icon: node.icon }) },
+          meta: {
+            pageId,
+            title: node.title,
+            ...(node.description !== undefined && { description: node.description }),
+            ...(node.icon !== undefined && { icon: node.icon }),
+          },
         }
         this.router.addRoute(route)
         this.registeredRoutes.add(routePath)

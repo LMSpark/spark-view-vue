@@ -150,6 +150,8 @@ import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
 import { getNavApi } from '@/services/api-paths'
 import { http, createAuthHeaders } from '@/services/http'
+import { startSseDebugScreenshotBridge } from '@/services/sse-debug-screenshot'
+import { startSseDebugRouteBridge } from '@/services/sse-debug-route'
 import { switchProject } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
@@ -172,6 +174,8 @@ const showConfigurator = ref(false)
 
 const { mode, setMode } = useTabPages()
 useColorScheme()
+let _stopSseDebugScreenshot: (() => void) | null = null
+let _stopSseDebugRoute: (() => void) | null = null
 
 /** 检查工具栏配置中是否包含指定 action（无配置时默认全部显示） */
 function hasToolbarAction(...actions: string[]): boolean {
@@ -227,6 +231,16 @@ async function syncSeedNavigation(): Promise<void> {
 }
 
 onMounted(() => {
+  if (_stopSseDebugScreenshot === null) {
+    _stopSseDebugScreenshot = startSseDebugScreenshotBridge()
+  }
+  if (_stopSseDebugRoute === null) {
+    _stopSseDebugRoute = startSseDebugRouteBridge({
+      router,
+      switchProject: projectSwitchService.switchAndReload,
+    })
+  }
+
   // start.ts 已在 mount 前调用 registerRoutes() 注册路由 + 加载导航树
   // 此处同步读取已加载的导航树并写入 _navRoot，不发起重复 HTTP 请求
   applyNavTree(getNavTree())
@@ -234,6 +248,13 @@ onMounted(() => {
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   const w = window as unknown as Record<string, unknown>
   w['__sparkDev'] = { reloadNavigation, syncSeedNavigation, clearAllCache, getCacheStats, refreshRoutes }
+})
+
+onUnmounted(() => {
+  _stopSseDebugScreenshot?.()
+  _stopSseDebugScreenshot = null
+  _stopSseDebugRoute?.()
+  _stopSseDebugRoute = null
 })
 
 // ── 登录后自动同步导航 UI ──

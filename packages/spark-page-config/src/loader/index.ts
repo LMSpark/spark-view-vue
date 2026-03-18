@@ -35,7 +35,7 @@ import {
   createFileLoader,
   createRequest
 } from '@spark-view/spark-utils'
-import type { FileLoader, DerivedLoader, HttpClient } from '@spark-view/spark-utils'
+import type { FileLoader, DerivedLoader, HttpClient, FileLoaderEventMap } from '@spark-view/spark-utils'
 
 // 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
@@ -67,6 +67,7 @@ export class PageConfigLoader implements ConfigLoader {
   /** 共享 axios 请求实例（远程 API 调用统一通道，自动注入 auth/tenant headers） */
   private request: HttpClient
   private readonly pagesConfigBase: string
+  private readonly recentMissingFiles = new Set<string>()
 
   /**
    * 派生加载器：各自对应一种文件类型的编译产物缓存。
@@ -108,6 +109,15 @@ export class PageConfigLoader implements ConfigLoader {
       // 分级过期策略配置（可选，使用默认值）
       defaultExpirationLevel: 3,  // 默认15天
       maxCacheSize: 50             // 最多缓存 50 个页面配置
+    })
+
+    // 订阅 FileLoader 事件：将文件缺失转为可消费状态，避免上层只能依赖字符串兜底。
+    this.fileLoader.on('file-missing', (evt: FileLoaderEventMap['file-missing']) => {
+      this.recentMissingFiles.add(evt.fileName)
+      pageLogger.debug('捕获文件缺失事件', { fileName: evt.fileName, status: evt.status })
+    })
+    this.fileLoader.on('file-loaded', (evt: FileLoaderEventMap['file-loaded']) => {
+      this.recentMissingFiles.delete(evt.fileName)
     })
     // 绑定编译函数——函数名自动成为派生缓存的 key 后缀
     this.ruleLoader = this.fileLoader.withTransform(compileRule)
@@ -166,15 +176,18 @@ export class PageConfigLoader implements ConfigLoader {
   async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
     pageLogger.info('加载完整页面配置', { pageId })
 
-    const [ruleResult, dataResult, scriptResult, cssResult] = await Promise.all([
-      this.loadRule(pageId),
-      this.loadPageData(pageId),
+    // 必需文件先加载：rule / pagedata 任一缺失即短路，避免 script/css 产生额外 404 噪音
+    const ruleResult = await this.loadRule(pageId)
+    if (!ruleResult.success) return this.failFrom(ruleResult.error)
+
+    const dataResult = await this.loadPageData(pageId)
+    if (!dataResult.success) return this.failFrom(dataResult.error)
+
+    // 可选文件并行加载（script / css 缺失时会返回 success + 空字符串）
+    const [scriptResult, cssResult] = await Promise.all([
       this.loadScript(pageId),
       this.loadCss(pageId)
     ])
-
-    if (!ruleResult.success) return this.failFrom(ruleResult.error)
-    if (!dataResult.success) return this.failFrom(dataResult.error)
 
     const rules = ruleResult.data ?? []
 
@@ -246,7 +259,14 @@ export class PageConfigLoader implements ConfigLoader {
     path: string
   ): ConfigLoadResult<T> {
     if (!r.success) {
-      pageLogger.error('本地配置加载失败', { path, error: r.error })
+      const rawError = r.error ?? ''
+      const fromEvent = this.recentMissingFiles.has(path)
+      const isNotFound = fromEvent || /404|not\s*found/i.test(rawError)
+      if (isNotFound) {
+        pageLogger.warn('本地配置文件不存在', { path })
+      } else {
+        pageLogger.error('本地配置加载失败', { path, error: r.error })
+      }
       return {
         success: false,
         error: `${this.pagesConfigBase}${path}: ${r.error ?? ''}`,

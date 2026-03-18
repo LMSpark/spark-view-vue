@@ -2,6 +2,14 @@
   <div v-if="loading" class="spark-page-loading">
     <slot name="loading">加载中...</slot>
   </div>
+  <div v-else-if="missingConfigNotice" class="spark-page-missing">
+    <slot name="missing-config" :notice="missingConfigNotice">
+      <h3>📝 页面尚未创建</h3>
+      <p class="missing-title">页面：{{ missingConfigNotice.title }}（{{ missingConfigNotice.pageId }}）</p>
+      <p class="missing-desc">{{ missingConfigNotice.description }}</p>
+      <p class="missing-tip">请在“页面设计”中点击“创建空白页”或使用 AI 生成页面配置。</p>
+    </slot>
+  </div>
   <div v-else-if="error" class="spark-page-error">
     <slot name="error" :error="error">
       <h3>❌ 页面加载失败</h3>
@@ -52,6 +60,7 @@ const {
   error,
   currentPageId,
   scopedCss,
+  missingConfigNotice,
   boundRules,
   formApi,
   formCreateOptions,
@@ -83,6 +92,38 @@ defineExpose({
 .spark-page-error {
   padding: 20px;
   color: #f56c6c;
+}
+
+.spark-page-missing {
+  padding: 20px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #606266;
+}
+
+.spark-page-missing h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #303133;
+}
+
+.spark-page-missing .missing-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #606266;
+}
+
+.spark-page-missing .missing-desc {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #606266;
+}
+
+.spark-page-missing .missing-tip {
+  margin: 0;
+  font-size: 13px;
+  color: #909399;
 }
 
 .spark-page-error h3 {

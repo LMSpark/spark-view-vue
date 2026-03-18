@@ -142,7 +142,15 @@ export abstract class HttpClientBase implements HttpClient {
         const retryable = !userCancelled && (status === 0 || status >= 500)
         if (attempt < maxRetries && retryable) continue
 
-        if (!userCancelled) {
+        const meta = merged.meta
+        const silentHttpError = meta?.['silentHttpError'] === true
+        const silentStatusCodesRaw = meta?.['silentHttpErrorStatusCodes']
+        const silentStatusCodes = Array.isArray(silentStatusCodesRaw)
+          ? silentStatusCodesRaw.filter((code): code is number => typeof code === 'number')
+          : []
+        const silentByStatus = silentStatusCodes.includes(status)
+
+        if (!userCancelled && !silentHttpError && !silentByStatus) {
           this.logger.error('HTTP 请求失败', {
             method,
             url: merged.url,
