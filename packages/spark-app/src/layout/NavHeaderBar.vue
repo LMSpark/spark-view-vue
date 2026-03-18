@@ -38,9 +38,9 @@
 </template>
 
 <script setup lang="ts">
-import type { NavNode } from '@spark-view/spark-app'
-import { useNav } from '@spark-view/spark-app'
-import NavIcon from '@/components/NavIcon.vue'
+import type { NavNode } from '@spark-view/spark-utils'
+import { useNav } from '../navigation/useNavigation'
+import NavIcon from '../components/NavIcon.vue'
 
 defineProps<{
   items: NavNode[]

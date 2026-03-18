@@ -94,7 +94,7 @@ import { ref, watch } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import type { NavNode } from '@spark-view/spark-app'
 import type { DevState } from './useDevState'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 
 const props = defineProps<{ state: DevState }>()
 const state = props.state

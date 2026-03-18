@@ -130,7 +130,7 @@
  * @since 1.0.0
  */
 import { ref } from 'vue'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 
 // 核心特性
 const features = ref([

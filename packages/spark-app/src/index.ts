@@ -174,3 +174,23 @@ export {
 
 // ── Page UI Host Component ──
 export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'
+
+// ── Layout Components ──
+export { default as AppLayout } from './layout/AppLayout.vue'
+export { default as AppHeader } from './layout/AppHeader.vue'
+export { default as AppSidebar } from './layout/AppSidebar.vue'
+export { default as AppFooter } from './layout/AppFooter.vue'
+export { default as AppBreadcrumb } from './layout/AppBreadcrumb.vue'
+export { default as AppTabBar } from './layout/AppTabBar.vue'
+export { default as NavHeaderBar } from './layout/NavHeaderBar.vue'
+export { default as NavContextSelector } from './layout/NavContextSelector.vue'
+export { default as ThemeConfigurator } from './layout/ThemeConfigurator.vue'
+
+// ── Shared Components ──
+export { default as NavIcon } from './components/NavIcon.vue'
+export { default as IconPicker } from './components/IconPicker.vue'
+
+// ── Composables ──
+export { useNotifications } from './composables/useNotifications'
+export type { NotificationItem } from './composables/useNotifications'
+export { useFloatingPanelOwner } from './composables/useFloatingPanelOwner'

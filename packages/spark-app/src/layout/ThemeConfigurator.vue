@@ -149,11 +149,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useTheme } from '@spark-view/spark-app'
-import type { ThemeMode } from '@spark-view/spark-app'
-import type { PageMode } from '@spark-view/spark-app'
-import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from '@spark-view/spark-app'
-import NavIcon from '@/components/NavIcon.vue'
+import { useTheme } from '../theme'
+import type { ThemeMode } from '../theme'
+import type { PageMode } from '../navigation/useTabPages'
+import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS } from '../navigation/useColorScheme'
+import NavIcon from '../components/NavIcon.vue'
 
 defineProps<{
   modelValue: boolean

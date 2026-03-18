@@ -138,9 +138,9 @@ import {
   Fold, Expand, Search, FullScreen, Bell, Sunny, Moon,
   User, Setting, SwitchButton, ArrowDown, HomeFilled,
 } from '@element-plus/icons-vue'
-import { useNotifications } from '@/composables/useNotifications'
-import type { NavNode } from '@spark-view/spark-app'
-import NavIcon from '@/components/NavIcon.vue'
+import { useNotifications } from '../composables/useNotifications'
+import type { NavNode } from '@spark-view/spark-utils'
+import NavIcon from '../components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
   title?: string
@@ -300,47 +300,33 @@ function handleUserCommand(command: string | number | object) {
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
-  cursor: pointer;
-  color: inherit;
   transition: background 0.2s;
 }
 
 .header-user:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .header-user__name {
   font-size: 13px;
   white-space: nowrap;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* el-badge 样式微调 */
-:deep(.el-badge__content) {
-  border: none;
-}
-
-/* ── 通知面板 ── */
-.notification-panel {
-  margin: -12px;
-}
-
+/* 通知面板 */
 .notification-panel__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 4px 0 12px;
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
 .notification-panel__title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--el-text-color-primary);
 }
 
 .notification-panel__actions {
@@ -355,11 +341,10 @@ function handleUserCommand(command: string | number | object) {
   font-size: 12px;
   cursor: pointer;
   padding: 2px 4px;
-  border-radius: 4px;
 }
 
 .notification-panel__action:hover {
-  background: var(--el-fill-color-light);
+  text-decoration: underline;
 }
 
 .notification-panel__body {
@@ -381,10 +366,10 @@ function handleUserCommand(command: string | number | object) {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 10px 4px;
   cursor: pointer;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
   transition: background 0.15s;
-  position: relative;
 }
 
 .notification-item:hover {
@@ -398,8 +383,8 @@ function handleUserCommand(command: string | number | object) {
 .notification-item__dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
   background: var(--el-color-primary);
+  border-radius: 50%;
   flex-shrink: 0;
   margin-top: 6px;
 }
@@ -413,15 +398,15 @@ function handleUserCommand(command: string | number | object) {
   font-size: 13px;
   font-weight: 500;
   color: var(--el-text-color-primary);
-  margin-bottom: 2px;
 }
 
 .notification-item__message {
   font-size: 12px;
   color: var(--el-text-color-secondary);
-  white-space: nowrap;
+  margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notification-item__time {
@@ -436,20 +421,12 @@ function handleUserCommand(command: string | number | object) {
   color: var(--el-text-color-placeholder);
   font-size: 16px;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 2px;
   line-height: 1;
   flex-shrink: 0;
-  visibility: hidden;
 }
 
-.notification-item:hover .notification-item__close {
-  visibility: visible;
-}
-
-/* 小屏隐藏用户名 */
-@media (max-width: 768px) {
-  .header-user__name {
-    display: none;
-  }
+.notification-item__close:hover {
+  color: var(--el-color-danger);
 }
 </style>

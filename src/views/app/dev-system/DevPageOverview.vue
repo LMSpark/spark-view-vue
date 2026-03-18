@@ -60,7 +60,7 @@ import { ref, computed } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { DevState } from './useDevState'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 
 const props = defineProps<{ state: DevState }>()
 const emit = defineEmits<{ createPage: []; locateNode: [pageId: string]; editPage: [pageId: string] }>()

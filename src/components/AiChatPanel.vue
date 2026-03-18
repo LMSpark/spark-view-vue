@@ -146,7 +146,7 @@ import type { AIResponse, LogBatchSummary, LogSnapshot, StreamCallbacks } from '
 import { http } from '@/services/http'
 import { getPageApi } from '@/services/api-paths'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
+import { useFloatingPanelOwner } from '@spark-view/spark-app'
 import {
   streamAiChatText,
   extractToolProtocolBlocks,

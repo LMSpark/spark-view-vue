@@ -91,7 +91,7 @@
 import { ref, nextTick, onUnmounted, computed } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { createAuthHeaders } from '@/services/http'
-import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
+import { useFloatingPanelOwner } from '@spark-view/spark-app'
 import { streamAiChatText, extractToolProtocolBlocks, stripToolProtocolBlocks } from '@/services/ai-protocol'
 
 const props = withDefaults(defineProps<{ embedded?: boolean; forceOpen?: boolean }>(), {

@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import type { DevState } from '../useDevState'
-import IconPicker from '@/components/IconPicker.vue'
+import { IconPicker } from '@spark-view/spark-app'
 
 defineProps<{
   state: DevState

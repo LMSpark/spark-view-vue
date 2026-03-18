@@ -108,7 +108,7 @@ import { ElMessage } from 'element-plus'
 import type { PageType } from '../composables/types'
 import { useProject } from '../composables/useProjectInject'
 import PageConfigEditor from './PageConfigEditor.vue'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 
 const props = defineProps<{
   nodeId: string

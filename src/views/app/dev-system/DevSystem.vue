@@ -198,7 +198,7 @@ import { useDevState, PAGE_FILE_NAMES } from './useDevState'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
 import DevAiPanel from './DevAiPanel.vue'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 
 const { router, tenantPath } = useTenantRouter()
 const state = useDevState()

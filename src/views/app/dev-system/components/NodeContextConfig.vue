@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { DevState } from '../useDevState'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 
 const props = defineProps<{ state: DevState }>()
 

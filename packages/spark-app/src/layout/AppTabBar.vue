@@ -41,9 +41,9 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { useTabPages } from '@spark-view/spark-app'
-import type { TabPage } from '@spark-view/spark-app'
-import NavIcon from '@/components/NavIcon.vue'
+import { useTabPages } from '../navigation/useTabPages'
+import type { TabPage } from '../navigation/useTabPages'
+import NavIcon from '../components/NavIcon.vue'
 
 const { tabs, activeTab, closeTab, closeOthers, closeAll, switchTo } = useTabPages()
 

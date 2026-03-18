@@ -987,7 +987,10 @@ packages/
 │   └── src/
 │       ├── auth/        # AuthService, TokenManager
 │       ├── bootstrap.ts # bootstrap()
+│       ├── components/  # NavIcon, IconPicker（共享 UI 组件）
+│       ├── composables/ # useNotifications, useFloatingPanelOwner
 │       ├── config/      # ConfigLoader, loadConfig
+│       ├── layout/      # AppLayout, AppHeader, AppSidebar, AppFooter, AppBreadcrumb, AppTabBar, NavHeaderBar, NavContextSelector, ThemeConfigurator
 │       ├── logger/      # createLogger, createAppLogger
 │       ├── navigation/  # useNavigation, useTabPages, useColorScheme
 │       ├── page-ui/     # AppPageUiHost, pageUiService

@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { DevState } from './useDevState'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 import NodeBasicInfo from './components/NodeBasicInfo.vue'
 import NodeTargetConfig from './components/NodeTargetConfig.vue'
 import NodeLayoutConfig from './components/NodeLayoutConfig.vue'

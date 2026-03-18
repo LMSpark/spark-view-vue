@@ -100,7 +100,7 @@ import { computed } from 'vue'
 import type { NavNode, NavNodeKind } from '@spark-view/spark-app'
 import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
 
 const props = defineProps<{ state: DevState }>()

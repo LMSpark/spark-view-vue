@@ -83,7 +83,7 @@ import { http } from '@/services/http'
 import { getProjectApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 import { getNavHomePath } from '@spark-view/spark-app'
 
 interface ProjectItem {

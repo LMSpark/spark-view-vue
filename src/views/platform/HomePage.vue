@@ -459,7 +459,7 @@
 </template>
 
 <script setup lang="ts">
-import NavIcon from '@/components/NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 
 const year = new Date().getFullYear()
 

@@ -108,9 +108,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { NavNode } from '@spark-view/spark-app'
-import { useNav } from '@spark-view/spark-app'
-import NavIcon from '@/components/NavIcon.vue'
+import type { NavNode } from '@spark-view/spark-utils'
+import { useNav } from '../navigation/useNavigation'
+import NavIcon from '../components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
   title?: string
