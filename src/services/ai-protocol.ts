@@ -28,19 +28,18 @@ export type {
   ProposalProtocolBlock,
   ToolBlockFilter,
   TokenUsage,
+  StreamCallbacks,
 } from '@spark-view/spark-ai'
 
 // ── SSE 流式传输（本模块独有） ────────────────────────────────────────────────
 
-interface StreamAiChatOptions {
+import type { StreamCallbacks } from '@spark-view/spark-ai'
+
+interface StreamAiChatOptions extends StreamCallbacks {
   messages: Array<{ role: string; content: string }>
   mode?: 'single' | 'multi'
   systemPrompt?: string
   signal?: AbortSignal
-  onDelta?: (delta: string) => void
-  onReasoning?: (reasoning: string) => void
-  onUsage?: (usage: Record<string, unknown>) => void
-  onPhase?: (phase: number, status: string, message: string) => void
 }
 
 export type { StreamAiChatOptions }

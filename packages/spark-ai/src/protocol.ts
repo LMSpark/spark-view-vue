@@ -67,6 +67,20 @@ export interface TokenUsage {
   promptCacheMissTokens?: number
 }
 
+/** SSE 流式事件回调（通用，可用于任何 SSE 端点） */
+export interface StreamCallbacks {
+  /** LLM 正文内容增量 */
+  onDelta?: (text: string) => void
+  /** DeepSeek 推理过程增量 */
+  onReasoning?: (text: string) => void
+  /** 阶段进度事件 */
+  onPhase?: (phase: number, status: string, message: string) => void
+  /** token 用量统计 */
+  onUsage?: (usage: Record<string, unknown>) => void
+  /** 错误事件 */
+  onError?: (error: string) => void
+}
+
 // ── 过滤器 ────────────────────────────────────────────────────────────────────
 
 export interface ProtocolBlockFilter {

@@ -18,6 +18,7 @@ export type {
   ToolProtocolBlock,
   ProposalProtocolBlock,
   TokenUsage,
+  StreamCallbacks,
   ProtocolBlockFilter,
   ToolBlockFilter,
 } from './protocol'
@@ -45,7 +46,6 @@ export type {
   AIResponse,
   LogSnapshot,
   AIPageLoopOptions,
-  StreamCallbacks,
   LogIssueSummary,
   LogBatchSummary,
   PageDiagnosticsReport,
