@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-chat-wrapper">
+  <div v-if="isOwner" class="ai-chat-wrapper">
     <!-- 浮动触发按钮 -->
     <button class="ai-fab" :class="{ active: isOpen }" @click="togglePanel" title="AI 页面生成">
       <span v-if="!isOpen">🤖</span>
@@ -146,6 +146,7 @@ import type { AIResponse, LogBatchSummary, LogSnapshot, StreamCallbacks } from '
 import { http } from '@/services/http'
 import { getPageApi } from '@/services/api-paths'
 import { useTenantRouter } from '@/composables/useTenantRouter'
+import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
 
 /** 最大自动迭代次数（防止无限循环） */
 const MAX_AUTO_ITERATIONS = 3
@@ -173,6 +174,7 @@ interface ChatMessage {
 }
 
 const { router, route, tenantPath, ensureRouteExists: tenantEnsureRouteExists, navigateToPage: tenantNavigateToPage } = useTenantRouter()
+const { isOwner } = useFloatingPanelOwner('__SPARK_AI_PANEL_OWNER__')
 
 const isOpen = ref(false)
 const loading = ref(false)
