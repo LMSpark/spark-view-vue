@@ -129,7 +129,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。每个节�
 | 容器 | children 允许 |
 |------|-------------|
 | el-table | el-table-column / Render* |
-| r-table | r-* 字段组件（推荐） / el-table-column（兼容） |
+| r-table | 仅 r-* 字段组件（强制）；禁止在 r-table 内使用 el-table-column |
 | r-form / r-detail / r-list | r-* 字段组件 |
 | r-tabs | r-tab-pane → 内容区可放 r-* 容器/字段/Render* |
 | r-collapse | r-collapse-item → 同上 |
@@ -161,12 +161,12 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。每个节�
 | 规则 | 说明 |
 |------|------|
 | r-table 列（推荐） | 用 r-text / r-number / r-date 等 r-* 字段，name=字段名，props.label=表头；支持权限渲染、上下文感知 |
-| r-table 列（兼容） | el-table-column 也可在 r-table 内使用，但不具备字段级权限、上下文感知等增强特性 |
-| r-table 行操作 | 写在 props.rowActions，引用 Render* 函数 |
+| r-table 列（强制） | r-table 内只能使用 r-* 字段列；禁止 el-table-column |
+| r-table 行操作 | 写在 props.rowActions；优先 builtin-action（零代码），复杂场景再用 Render* |
 | el-table 列 | 仅限 el-table-column 或 Render*；el-table-column.width 用字符串 \`"100"\`，r-* 字段 width 用数字 \`120\` |
 | Render* 内 h() | 仅限原生 HTML 标签（div/span/button/table/tr/td/input 等） |
 | 块状容器 | r-form / r-detail / r-section / r-block 默认 CSS Grid 24 列 |
-| 容器操作区 | props.headerActions / footerActions / toolbar 优先用 Render*，不直接放 el-button |
+| 容器操作区 | props.headerActions / footerActions / toolbar 优先 builtin-action，其次 Render*，不直接放 el-button |
 
 ## 数据规则
 
@@ -186,9 +186,104 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。每个节�
 | 规则 | 说明 |
 |------|------|
 | 沙箱变量 | \`$api / $dataSet / $page / $route / $refreshData / SparkData / h\` |
-| 必须有 \`__init__()\` | 数据订阅在 __init__ 中注册 |
+| \`__init__()\` | 默认空实现；仅在存在复杂业务分支/订阅时补充逻辑 |
 | UI 消息 | 用 \`$page.showMessage / showConfirm\`，禁止 ElMessage |
 | 树场景 | 禁止 \`$rebindRules()\`，改用 \`view.replaceRows()\` + DOM 直写 |
 | 事件签名 | \`currentRowChanged\` handler 第一参数直接是 currentRow，不是事件对象 |
 | 父子联动 | 优先用 relations 配置，不手写 watch + 过滤 |
-| 跨函数状态 | \`let _pageState = {}\` 模块顶层声明 |`
+| 跨函数状态 | \`let _pageState = {}\` 模块顶层声明 |
+
+## r-table 组件系列专用协议（高优先级）
+
+当用户明确提出“r-table 组件系列 / 持续迭代 / 打造完美”等诉求时，进入该协议：
+
+### 目标定义
+
+必须覆盖以下 6 类能力（缺一不可）：
+1. 主表展示：\`r-table\` + 规范列定义（含 \`highlightCurrentRow\`）
+2. 过滤面板：\`filterColumns\` + 可折叠配置
+3. 动作系统：\`toolbar\` + \`rowActions\` + builtin-action 声明式动作
+4. 汇总能力：\`summaryRow\`（\`selectionSummaryRow\` 为可选增强）
+5. 编辑能力：\`r-form\` / \`r-detail\`（基于 \`currentRow\`）
+6. 主从联动：\`relations\` + 子表 \`r-table\`
+
+### 提案顺序（必须按序输出）
+
+1. \`@@proposal:data-model\`：至少两张表（主表 + 子表），包含：
+  - 主表主键、\`autoCurrentFirst: true\`
+  - 子表外键 + \`relations\`
+  - 至少 1 个 \`computeExpression\` 列
+  - 至少 1 组 \`aggregates\`（建议含 count + sum）
+2. \`@@proposal:ui-structure\`：一个页面内至少包含：
+  - 主 \`r-table\`
+  - 汇总展示区（\`r-detail\` 绑定 \`summaryRow\`；可选 \`selectionSummaryRow\`）
+  - \`currentRow\` 表单或详情
+  - 子表 \`r-table\`
+3. \`@@proposal:interaction\`：必须包含：
+  - toolbar/rowActions 的 builtin-action 配置（append/patch/delete/refresh/message 至少覆盖 3 类）
+  - 若无需复杂业务逻辑，\`script.js\` 仅保留空 \`__init__\`
+  - 仅在配置无法表达时，才补充 Render* 或脚本函数
+
+### r-table 配置基线（生成时默认带上）
+
+\`r-table.props\` 建议默认：
+
+\`\`\`json
+{
+  "border": true,
+  "stripe": true,
+  "highlightCurrentRow": true,
+  "filterCollapsible": true,
+  "rowActionsPosition": "right"
+}
+\`\`\`
+
+补充约束：
+- r-table 示例与方案中禁止出现 \`el-table-column\`
+- 若声明 \`rowActions\`，必须保证每个动作可独立执行（不可仅占位）
+- 若声明 \`permAction\`，必须在样例数据行中提供 \`_perm\` 进行演示
+
+### 声明式动作规范（零代码优先）
+
+- 工具栏/行动作：优先 \`type: "builtin-action"\` + \`props.builtinAction\`
+- 常用动作：\`append-row / refresh / patch-row / patch-current / patch-selected / delete-row / delete-selected / message-row\`
+- 删除动作：优先通过配置 \`confirmTitle / confirmMessage\` 声明确认交互
+- 静默动作：可配置 \`silent: true\` 关闭默认消息提示（无 PAGE_SERVICE 依赖）
+- 数据改写优先：\`updateRowById / appendRow / deleteRowById / replaceRows\`
+- Render* 仅用于配置无法表达的复杂交互
+
+### 质量门槛（r-table 专项）
+
+生成前逐项自检：
+1. 主表 \`dataKey\` 是否绑定 \`@rows\`
+2. 汇总区是否至少包含 \`@summaryRow\`（\`@selectionSummaryRow\` 仅在存在选中能力时使用）
+3. 是否存在子表 relation 且字段映射可闭环
+4. 是否包含至少 3 个 builtin-action（覆盖 toolbar + rowActions）
+5. script.js 是否保持最小（无复杂逻辑时仅空 \`__init__\`）
+6. 所有 \`name\` 字段是否在 data-model 列定义中存在
+
+### 推荐输出骨架（可直接复用）
+
+\`\`\`text
+@@proposal:data-model
+# r-table 组件系列数据模型
+{ ...主表/子表/relations/aggregates... }
+@@end
+
+@@proposal:ui-structure
+# r-table 组件系列页面结构
+[
+  { ...主表 r-table... },
+  { ...汇总区... },
+  { ...currentRow form/detail... },
+  { ...子表 r-table... }
+]
+@@end
+
+@@proposal:interaction
+# r-table 组件系列交互脚本
+// 优先在 rule.json 使用 builtin-action 完成交互
+function __init__() {}
+@@end
+\`\`\`
+`

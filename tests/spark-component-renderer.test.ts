@@ -17,6 +17,10 @@ test('SparkComponentRenderer mounts spark-ej2-grid without missing render', asyn
       parentContext: rootContext
     },
     global: {
+      stubs: {
+        SparkComponentRenderer: false,
+        'spark-component-renderer': false,
+      },
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
         [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
@@ -110,4 +114,44 @@ test('SparkComponentRenderer passes config props into Vue global Render* compone
   })
 
   expect(wrapper.find('.render-row-action').text()).toBe('王晓明')
+})
+
+test('SparkComponentRenderer renders unregistered native tags with recursive children', () => {
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: {
+        type: 'div',
+        props: { class: 'native-wrapper' },
+        children: ['hello']
+      } as unknown as Record<string, unknown>,
+      parentContext: rootContext
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
+      }
+    }
+  })
+
+  expect(wrapper.find('.native-wrapper').exists()).toBe(true)
+  expect(wrapper.text()).toContain('hello')
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
+})
+
+test('SparkComponentRenderer keeps warning fallback for unknown non-native component types', () => {
+  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+    props: {
+      config: { type: 'unknown-widget', children: [] },
+      parentContext: rootContext
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
+      }
+    }
+  })
+
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(true)
 })
