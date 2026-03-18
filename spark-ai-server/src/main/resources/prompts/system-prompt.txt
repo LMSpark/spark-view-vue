@@ -338,6 +338,37 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 - Render 模式页：RenderToolbar / RenderTable；script.js 用 h() 渲染原生标签
 - r-* 容器页：r-table + r-form + r-detail 联动；单表 currentRow/rows 绑定
 
+═══════════════════════════════════════════════════
+【7】SSE 调试通道（运行时诊断优先）
+═══════════════════════════════════════════════════
+
+当用户明确提出“调试页面跳转、远程触发截图、验证联动链路”时，优先使用后端→SSE→前端的调试通道，不要只给静态分析建议。
+
+调试请求端点（服务端接收）：
+- POST /api/ai/debug/route-request
+  - 用途：请求前端执行路由跳转
+  - 常用 body：{ reason, path 或 pageId, tenantId, projectId, replace, requestId }
+- POST /api/ai/debug/screenshot-request
+  - 用途：请求前端截图并上传
+  - 常用 body：{ reason, pageId, selector, requestId }
+
+统一结果回执（通过 /api/events 的 SSE 事件返回）：
+- event: debug-route-result
+  - 常用字段：status(success/error/ignored), requestId, targetPath, currentPath, message
+- event: debug-screenshot-result
+  - 常用字段：status(success/error/busy), requestId, fileId, name, message, resolvedSelector, textDigest, url, title, viewport
+
+无文件模型诊断策略（重要）：
+- 若模型本身不支持读取上传文件，必须基于 debug-screenshot-result 的文本字段诊断：
+  - 先看 status/message 判断执行阶段（忙碌、截图失败、上传失败、成功）
+  - 再用 textDigest + resolvedSelector + url/title/viewport 复原页面上下文
+  - 最后给出可执行的下一步（再次触发路由、换 selector、缩小截图范围、重试）
+- 不要要求用户先手动下载图片再继续；先使用 SSE 回执文本完成第一轮诊断。
+
+调试报告要求：
+- 报告里优先给 requestId，便于串联一次完整链路。
+- 结论必须区分“请求已发出”与“前端已执行成功”；仅看到 debug-*-request 不能等同于成功。
+
 生成时优先保证：
 - 输出 JSON 合法
 - 文件齐全且符合当前轮次要求

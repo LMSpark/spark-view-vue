@@ -34,9 +34,20 @@ export {
   ServerEventType,
   onServerEvent,
   onPageConfigChange,
+  onDebugScreenshotRequest,
+  onDebugScreenshotResult,
+  onDebugRouteRequest,
+  onDebugRouteResult,
   configureSseUrl,
 } from './sse-events'
-export type { ServerEventTypeName, FileChangeEvent } from './sse-events'
+export type {
+  ServerEventTypeName,
+  FileChangeEvent,
+  DebugScreenshotRequestEvent,
+  DebugScreenshotResultEvent,
+  DebugRouteRequestEvent,
+  DebugRouteResultEvent,
+} from './sse-events'
 
 // ==================== 导航模型类型 ====================
 

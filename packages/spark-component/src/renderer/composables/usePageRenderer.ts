@@ -80,6 +80,7 @@ export interface UsePageRendererReturn {
   error: Ref<string>
   currentPageId: Ref<string>
   scopedCss: Ref<string>
+  missingConfigNotice: Ref<{ pageId: string; title: string; description: string } | null>
   boundRules: Ref<unknown[]>
   /** form-create API（使用官方 Api 类型） */
   formApi: Ref<FormCreateAPI | null>
@@ -119,6 +120,7 @@ export function usePageRenderer(
   // ── 响应式状态 ───────────────────────────────────────────────────────────────
 
   const currentPageId = ref<string>('')
+  const missingConfigNotice = ref<{ pageId: string; title: string; description: string } | null>(null)
   const formApi       = ref<FormCreateAPI | null>(null)
   const originalRules = ref<unknown[]>([])
   /** 脚本沙箱编译后的函数表；`__init__` 由 form-create mounted 钩子调用 */
@@ -191,12 +193,39 @@ export function usePageRenderer(
     if (props.configLoader) {
       const result = await props.configLoader.loadPageConfig(pageId)
       if (!result.success || !result.data) {
+        const detail = result.error ?? '未知错误'
+        const missing = detail.includes('404') && detail.includes('/pages-config/')
+        if (missing) {
+          throw new Error(`MISSING_PAGE_CONFIG:${detail}`)
+        }
         pageLogger.error('配置加载失败', { pageId, error: result.error })
-        throw new Error(`配置加载失败: ${result.error ?? '未知错误'}`)
+        throw new Error(`配置加载失败: ${detail}`)
       }
       return result.data
     }
     throw new Error('配置无效: 未提供 configLoader 或 pageConfig')
+  }
+
+  function isMissingPageConfigError(err: unknown): boolean {
+    const message = err instanceof Error ? err.message : String(err)
+    return message.startsWith('MISSING_PAGE_CONFIG:') || (message.includes('404') && message.includes('/pages-config/'))
+  }
+
+  function applyMissingConfigPlaceholder(pageId: string): void {
+    originalRules.value = []
+    setScopedCss(pageId, '')
+    pageFunctions.value = {}
+    if (pds.dataSet) pds.clearDataSet()
+
+    const title = typeof route.meta['title'] === 'string' && route.meta['title'].trim() !== ''
+      ? route.meta['title']
+      : pageId
+    const description = typeof route.meta['description'] === 'string' && route.meta['description'].trim() !== ''
+      ? route.meta['description']
+      : '该页面尚未创建配置文件。可在页面设计中点击“创建空白页”或使用 AI 生成页面。'
+
+    missingConfigNotice.value = { pageId, title, description }
+    pageLogger.warn('页面配置缺失，使用友好占位反馈', { pageId, title })
   }
 
   /** 在沙箱中编译脚本，结果存入 pageFunctions（不执行 __init__）。 */
@@ -254,11 +283,21 @@ export function usePageRenderer(
     if (route.meta['type'] === 'system-page') return
 
     await runLoad(async (isStale) => {
+      missingConfigNotice.value = null
       const pageId = resolvePageId(route, props.pageId, props.pageConfig?.pageId)
       currentPageId.value = pageId
       if (props.beforeLoad) await props.beforeLoad(pageId)
       if (isStale()) return
-      const config = await fetchConfig(pageId)
+      let config: PageConfig
+      try {
+        config = await fetchConfig(pageId)
+      } catch (err) {
+        if (isMissingPageConfigError(err)) {
+          applyMissingConfigPlaceholder(pageId)
+          return
+        }
+        throw err
+      }
       if (isStale()) return
       await applyConfig(pageId, config)
       if (isStale()) return
@@ -283,6 +322,7 @@ export function usePageRenderer(
     error,
     currentPageId,
     scopedCss,
+    missingConfigNotice,
     boundRules,
     formApi,
     formCreateOptions,

@@ -29,7 +29,14 @@
 import { Logger } from '../logger'
 import { toErrorMessage } from '../error-utils'
 import { createRequest } from './Request'
-import type { FileLoadOptions, CacheEntry, FileLoadResult, CacheExpirationTier, HttpClient } from './types'
+import type {
+  FileLoadOptions,
+  CacheEntry,
+  FileLoadResult,
+  CacheExpirationTier,
+  HttpClient,
+  FileLoaderEventMap,
+} from './types'
 
 const logger = Logger('FileLoader')
 
@@ -74,6 +81,13 @@ export class FileLoader {
   private memCache = new Map<string, CacheEntry<unknown>>()
   private request: HttpClient
   private storage: Storage | null
+  private listeners: {
+    [K in keyof FileLoaderEventMap]: Array<(payload: FileLoaderEventMap[K]) => void>
+  } = {
+    'file-loaded': [],
+    'file-missing': [],
+    'file-error': [],
+  }
 
   constructor(options: FileLoadOptions) {
     this.opts = {
@@ -121,6 +135,31 @@ export class FileLoader {
 
   // ==================== HTTP 文件加载 ====================
 
+  /** 订阅 FileLoader 事件（file-loaded / file-missing / file-error） */
+  on<K extends keyof FileLoaderEventMap>(
+    event: K,
+    listener: (payload: FileLoaderEventMap[K]) => void,
+  ): () => void {
+    const bucket = this.listeners[event] as Array<(payload: FileLoaderEventMap[K]) => void>
+    bucket.push(listener)
+    return () => {
+      const idx = bucket.indexOf(listener)
+      if (idx >= 0) bucket.splice(idx, 1)
+    }
+  }
+
+  private emit<K extends keyof FileLoaderEventMap>(event: K, payload: FileLoaderEventMap[K]): void {
+    const bucket = this.listeners[event] as Array<(payload: FileLoaderEventMap[K]) => void>
+    if (bucket.length === 0) return
+    for (const listener of bucket) {
+      try {
+        listener(payload)
+      } catch (err) {
+        logger.warn('FileLoader 事件监听器执行失败', { event, error: toErrorMessage(err) })
+      }
+    }
+  }
+
   /**
    * 加载单个文件。
    * - 不传 transform：返回解析后的原始 JSON（或字符串）。
@@ -154,13 +193,17 @@ export class FileLoader {
         const response = await this.request.requestFull<FileResponse>({
           url: fileName,
           method: 'GET',
-          params
+          params,
+          meta: {
+            silentHttpErrorStatusCodes: [404],
+          },
         })
         const result = response.data
 
         if (result.notModified === true) {
           // 路径 1：内存命中 → 直接返回 DataSet 实例（最快）
           if (xformEntry) {
+            this.emit('file-loaded', { fileName, fromCache: true, timestamp: xformEntry.sourceTimestamp, notModified: true })
             return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, notModified: true }
           }
           // 路径 2：内存冷（页面刷新）+ localStorage raw 命中 → 重执行 transform，恢复原型
@@ -168,20 +211,24 @@ export class FileLoader {
           if (rawEntry && typeof rawEntry.data === 'string') {
             const transformed = await transform(rawEntry.data)
             this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
+            this.emit('file-loaded', { fileName, fromCache: true, timestamp: rawEntry.sourceTimestamp, notModified: true })
             return { success: true, data: transformed, timestamp: rawEntry.sourceTimestamp, fromCache: true, notModified: true }
           }
-          return { success: false, error: 'notModified 但无本地缓存', fromCache: false }
+          this.emit('file-error', { fileName, error: 'notModified 但无本地缓存', reason: 'invalid-response' })
+          return { success: false, error: 'notModified 但无本地缓存', fromCache: false, reason: 'invalid-response' }
         }
 
         // 文件不存在或响应体为空（如可选的 style.css）——静默返回
         if (!result.content || !result.timestamp) {
-          return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false }
+          this.emit('file-error', { fileName, error: '响应格式错误：缺少 content 或 timestamp', reason: 'invalid-response' })
+          return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false, reason: 'invalid-response' }
         }
 
         // 新内容：raw 存 localStorage，transform 结果仅存内存
         const transformed = await transform(result.content)
         this.store(rawKey, result.content, result.timestamp, expirationLevel)
         this.writeEntryMem(xformKey, transformed, result.timestamp, expirationLevel)
+        this.emit('file-loaded', { fileName, fromCache: false, timestamp: result.timestamp })
         return { success: true, data: transformed, timestamp: result.timestamp, fromCache: false }
 
       } catch (error) {
@@ -190,6 +237,7 @@ export class FileLoader {
           if (xformEntry) {
             const msg = toErrorMessage(error)
             logger.warn('网络失败，使用 transform 缓存', { fileName, error: msg })
+            this.emit('file-loaded', { fileName, fromCache: true, timestamp: xformEntry.sourceTimestamp })
             return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
           }
           if (rawEntry && typeof rawEntry.data === 'string') {
@@ -198,6 +246,7 @@ export class FileLoader {
               this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
               const msg = toErrorMessage(error)
               logger.warn('网络失败，从 raw 缓存重执行 transform', { fileName, error: msg })
+              this.emit('file-loaded', { fileName, fromCache: true, timestamp: rawEntry.sourceTimestamp })
               return { success: true, data: transformed, timestamp: rawEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
             } catch { /* transform 失败，继续抛原始网络错误 */ }
           }
@@ -207,11 +256,24 @@ export class FileLoader {
         const status = (error as { status?: number }).status
         if (status === 404) {
           logger.debug('文件不存在（可选）', { fileName, status })
+          this.emit('file-missing', { fileName, status, reason: 'not-found' })
         } else {
           // 同时传入原始 error 对象，使浏览器控制台能展展完整 stack trace
           logger.error('文件加载或 transform 失败', { fileName, error: msg }, error)
+          this.emit('file-error', {
+            fileName,
+            ...(status !== undefined && { status }),
+            error: msg,
+            reason: status === 0 ? 'network' : 'unknown',
+          })
         }
-        return { success: false, error: msg, fromCache: false }
+        return {
+          success: false,
+          error: msg,
+          fromCache: false,
+          ...(status !== undefined && { status }),
+          reason: status === 404 ? 'not-found' : status === 0 ? 'network' : 'unknown',
+        }
       }
     }
 
@@ -226,7 +288,9 @@ export class FileLoader {
       const data = parseJSON ? (JSON.parse(rawContent) as T) : (rawContent as T)
       return { success: true, data, timestamp, fromCache: rawResult.fromCache, ...(rawResult.notModified !== undefined && { notModified: rawResult.notModified }), ...(rawResult.error !== undefined && { error: rawResult.error }) }
     } catch (e) {
-      return { success: false, error: `JSON 解析失败: ${e instanceof Error ? e.message : String(e)}`, fromCache: false }
+      const parseError = `JSON 解析失败: ${e instanceof Error ? e.message : String(e)}`
+      this.emit('file-error', { fileName, error: parseError, reason: 'parse' })
+      return { success: false, error: parseError, fromCache: false, reason: 'parse' }
     }
   }
 
@@ -346,23 +410,30 @@ export class FileLoader {
       const response = await this.request.requestFull<FileResponse>({
         url: fileName,
         method: 'GET',
-        params
+        params,
+        meta: {
+          silentHttpErrorStatusCodes: [404],
+        },
       })
       const result = response.data
 
       if (result.notModified === true) {
         if (cached) {
+          this.emit('file-loaded', { fileName, fromCache: true, timestamp: cached.sourceTimestamp, notModified: true })
           return { success: true, data: cached.data, timestamp: cached.sourceTimestamp, fromCache: true, notModified: true }
         }
-        return { success: false, error: 'notModified 但无本地缓存', fromCache: false }
+        this.emit('file-error', { fileName, error: 'notModified 但无本地缓存', reason: 'invalid-response' })
+        return { success: false, error: 'notModified 但无本地缓存', fromCache: false, reason: 'invalid-response' }
       }
 
       if (!result.content || !result.timestamp) {
         // 文件不存在或响应体为空（如可选的 style.css）——静默返回，不抛异常避免 logger.error
-        return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false }
+        this.emit('file-error', { fileName, error: '响应格式错误：缺少 content 或 timestamp', reason: 'invalid-response' })
+        return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false, reason: 'invalid-response' }
       }
 
       this.writeEntry<string>(fileName, result.content, result.timestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
+      this.emit('file-loaded', { fileName, fromCache: false, timestamp: result.timestamp })
       return { success: true, data: result.content, timestamp: result.timestamp, fromCache: false }
 
     } catch (error) {
@@ -371,10 +442,29 @@ export class FileLoader {
         if (cached) {
           const msg = toErrorMessage(error)
           logger.warn('网络失败，使用缓存', { fileName, error: msg })
+          this.emit('file-loaded', { fileName, fromCache: true, timestamp: cached.sourceTimestamp })
           return { success: true, data: cached.data, timestamp: cached.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
         }
       }
-      return { success: false, error: toErrorMessage(error), fromCache: false }
+      const msg = toErrorMessage(error)
+      const status = (error as { status?: number }).status
+      if (status === 404) {
+        this.emit('file-missing', { fileName, status, reason: 'not-found' })
+      } else {
+        this.emit('file-error', {
+          fileName,
+          ...(status !== undefined && { status }),
+          error: msg,
+          reason: status === 0 ? 'network' : 'unknown',
+        })
+      }
+      return {
+        success: false,
+        error: msg,
+        fromCache: false,
+        ...(status !== undefined && { status }),
+        reason: status === 404 ? 'not-found' : status === 0 ? 'network' : 'unknown',
+      }
     }
   }
 

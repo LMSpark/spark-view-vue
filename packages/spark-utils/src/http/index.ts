@@ -21,6 +21,7 @@ export type {
 	ApiResponse,
 	FileLoadOptions,
 	FileLoadResult,
+	FileLoaderEventMap,
 	CacheEntry,
 	CacheExpirationTier,
 	RequestError,

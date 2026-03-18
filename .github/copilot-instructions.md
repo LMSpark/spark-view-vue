@@ -1590,6 +1590,10 @@ Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页�
 | `POST` | `/api/ai/upload` | 上传聊天附件（multipart/form-data） |
 | `POST` | `/api/ai/component-metadata` | 上传组件元数据 |
 | `GET` | `/api/ai/component-metadata` | 查询组件元数据状态 |
+| `POST` | `/api/ai/debug/route-request` | 触发前端 SSE 路由跳转请求（调试） |
+| `POST` | `/api/ai/debug/route-result` | 前端上报路由跳转回执并广播 SSE（调试） |
+| `POST` | `/api/ai/debug/screenshot-request` | 触发前端 SSE 截图请求（调试） |
+| `POST` | `/api/ai/debug/screenshot-result` | 前端上报截图回执并广播 SSE（调试） |
 
 #### 2) 页面配置（PageConfigController）
 
@@ -1706,6 +1710,20 @@ Spring Boot 3.2.5 后端，端口 8080。负责 AI 驱动的页面生成、页�
 |---|---|---|
 | `POST` | `/api/sap/chat` | SAP AI 对话 |
 | `POST` | `/api/sap/execute` | 执行 SAP 协议（`text/plain`） |
+
+### SSE 调试通道（强制优先）
+
+当用户要求“远程调试页面跳转 / 截图 / 联动链路”时，必须优先走 **后端触发 → SSE 下发 → 前端执行 → 结果回执**，不要只给静态建议。
+
+标准流程：
+1. 调用调试触发接口（`/api/ai/debug/route-request` 或 `/api/ai/debug/screenshot-request`）。
+2. 监听 `/api/events`，确认至少收到对应 `debug-*-request`。
+3. 以 `debug-route-result` / `debug-screenshot-result` 判断执行是否成功（仅收到 request 事件不算成功）。
+4. 回报时必须带 `requestId`，用于一次链路串联定位。
+
+无文件模型诊断策略：
+- 若模型不支持读取上传文件，优先使用 `debug-screenshot-result` 的文本字段诊断：`status`、`message`、`textDigest`、`resolvedSelector`、`url`、`title`、`viewport`。
+- 不要要求用户先下载图片再开始第一轮诊断；先依据回执文本定位问题，再决定是否需要二次截图。
 
 ### 数据存储
 

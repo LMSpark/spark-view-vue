@@ -47,9 +47,20 @@ export {
   ServerEventType,
   onServerEvent,
   onPageConfigChange,
+  onDebugScreenshotRequest,
+  onDebugScreenshotResult,
+  onDebugRouteRequest,
+  onDebugRouteResult,
   configureSseUrl,
 } from '@spark-view/spark-utils'
-export type { ServerEventTypeName, FileChangeEvent } from '@spark-view/spark-utils'
+export type {
+  ServerEventTypeName,
+  FileChangeEvent,
+  DebugScreenshotRequestEvent,
+  DebugScreenshotResultEvent,
+  DebugRouteRequestEvent,
+  DebugRouteResultEvent,
+} from '@spark-view/spark-utils'
 
 // ── Page Cache ───────────────────────────────────────────────────────────────
 export {

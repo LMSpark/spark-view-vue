@@ -116,8 +116,37 @@ import {
   type PageFiles,
   type LogSnapshot,
 } from '@spark-view/spark-ai'
-import { onPageConfigChange, type FileChangeEvent } from '@spark-view/spark-utils'
+import { onPageConfigChange, onServerEvent, type FileChangeEvent } from '@spark-view/spark-utils'
 import type { DevState } from './useDevState'
+
+interface DebugScreenshotResultEvent {
+  requestId?: string
+  pageId?: string
+  reason?: string
+  status?: 'success' | 'error' | 'busy'
+  message?: string
+  fileId?: string
+  name?: string
+  textDigest?: string
+  resolvedSelector?: string
+  url?: string
+}
+
+interface DebugRouteResultEvent {
+  requestId?: string
+  reason?: string
+  status?: 'success' | 'error' | 'ignored'
+  message?: string
+  path?: string
+  pageId?: string
+  targetPath?: string
+  currentPath?: string
+  tenantId?: string
+  projectId?: string
+}
+
+const DEBUG_SCREENSHOT_RESULT_EVENT = 'debug-screenshot-result'
+const DEBUG_ROUTE_RESULT_EVENT = 'debug-route-result'
 
 const props = defineProps<{ state: DevState }>()
 const { router, tenantPath } = useTenantRouter()
@@ -143,6 +172,65 @@ watch(() => props.state.editForm.path, (val) => {
 
 // SSE 监听文件变更
 let unsubSSE: (() => void) | null = null
+let unsubScreenshotResultSSE: (() => void) | null = null
+let unsubRouteResultSSE: (() => void) | null = null
+
+function matchCurrentPage(eventPageId?: string): boolean {
+  if (typeof eventPageId !== 'string' || eventPageId.trim() === '') return true
+  return eventPageId.trim() === pageId.value.trim()
+}
+
+function toScreenshotLog(event: DebugScreenshotResultEvent): LogSnapshot {
+  const status = event.status ?? 'success'
+  const statusText = status === 'success' ? '截图完成' : status === 'busy' ? '截图繁忙' : '截图失败'
+  const detail = [
+    event.message,
+    event.fileId ? `fileId=${event.fileId}` : '',
+    event.resolvedSelector ? `selector=${event.resolvedSelector}` : '',
+    event.textDigest ? `摘要=${event.textDigest}` : '',
+  ].filter(Boolean).join(' | ')
+
+  return {
+    level: status === 'error' ? 'error' : status === 'busy' ? 'warn' : 'info',
+    message: `[SSE][${statusText}] ${detail || '收到截图回执'}`,
+    timestamp: Date.now(),
+    ...(typeof event.pageId === 'string' && event.pageId.length > 0 && { pageId: event.pageId }),
+    meta: {
+      requestId: event.requestId,
+      status,
+      fileId: event.fileId,
+      name: event.name,
+      reason: event.reason,
+      url: event.url,
+    },
+  }
+}
+
+function toRouteLog(event: DebugRouteResultEvent): LogSnapshot {
+  const status = event.status ?? 'success'
+  const statusText = status === 'success' ? '跳转成功' : status === 'ignored' ? '跳转忽略' : '跳转失败'
+  const detail = [
+    event.message,
+    event.targetPath ? `target=${event.targetPath}` : '',
+    event.currentPath ? `current=${event.currentPath}` : '',
+    event.reason ? `reason=${event.reason}` : '',
+  ].filter(Boolean).join(' | ')
+
+  return {
+    level: status === 'error' ? 'error' : status === 'ignored' ? 'warn' : 'info',
+    message: `[SSE][${statusText}] ${detail || '收到路由回执'}`,
+    timestamp: Date.now(),
+    ...(typeof event.pageId === 'string' && event.pageId.length > 0 && { pageId: event.pageId }),
+    meta: {
+      requestId: event.requestId,
+      status,
+      targetPath: event.targetPath,
+      currentPath: event.currentPath,
+      tenantId: event.tenantId,
+      projectId: event.projectId,
+    },
+  }
+}
 
 onMounted(() => {
   unsubSSE = onPageConfigChange((event: FileChangeEvent) => {
@@ -156,9 +244,37 @@ onMounted(() => {
       }
     }
   })
+
+  unsubScreenshotResultSSE = onServerEvent<DebugScreenshotResultEvent>(
+    DEBUG_SCREENSHOT_RESULT_EVENT,
+    (event) => {
+      if (!matchCurrentPage(event.pageId)) return
+
+      const entry = toScreenshotLog(event)
+      logs.value = [entry, ...logs.value].slice(0, 300)
+      const statusLabel = event.status ?? 'success'
+      props.state.addStatus(`📸 截图回执(${statusLabel}): ${event.message ?? '已收到'}`, statusLabel === 'error' ? 'error' : 'info')
+    },
+  )
+
+  unsubRouteResultSSE = onServerEvent<DebugRouteResultEvent>(
+    DEBUG_ROUTE_RESULT_EVENT,
+    (event) => {
+      if (!matchCurrentPage(event.pageId)) return
+
+      const entry = toRouteLog(event)
+      logs.value = [entry, ...logs.value].slice(0, 300)
+      const statusLabel = event.status ?? 'success'
+      props.state.addStatus(`🧭 路由回执(${statusLabel}): ${event.message ?? '已收到'}`, statusLabel === 'error' ? 'error' : 'info')
+    },
+  )
 })
 
-onUnmounted(() => { unsubSSE?.() })
+onUnmounted(() => {
+  unsubSSE?.()
+  unsubScreenshotResultSSE?.()
+  unsubRouteResultSSE?.()
+})
 
 async function handleGenerate() {
   if (!loop.value) {
