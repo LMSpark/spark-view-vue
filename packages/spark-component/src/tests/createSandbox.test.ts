@@ -23,6 +23,14 @@ function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
     $query: () => null,
     $queryAll: () => document.querySelectorAll('.noop'),
     $dataSet: null,
+    $components: {
+      get: vi.fn(() => null),
+      getApi: vi.fn(() => null),
+      list: vi.fn(() => []),
+      getApis: vi.fn(() => []),
+      getInstance: vi.fn(() => null),
+      listInstances: vi.fn(() => []),
+    },
     $refreshData: async () => {},
     $page: {
       showMessage: vi.fn(),
@@ -126,6 +134,34 @@ describe('createSandbox — compileFunctions', () => {
     expect(fns['getDataSet']!()).toBeNull()
     expect(fns['callPage']!()).toBe(true)
     expect(ctx.$page.showMessage).toHaveBeenCalledWith('hi', 'info')
+  })
+
+  it('应支持通过 $components 使用 ID 寻址访问组件实例与 API', () => {
+    const ctx = createMockContext({
+      $components: {
+        get: vi.fn((id: string) => id === 'orders-table' ? { id, type: 'r-table' } : null),
+        getApi: vi.fn((id: string) => id === 'orders-table' ? { refresh: () => 'ok' } : null),
+        list: vi.fn(() => []),
+        getApis: vi.fn(() => []),
+        getInstance: vi.fn(() => null),
+        listInstances: vi.fn(() => []),
+      },
+    })
+
+    const script = `
+      function getTableType() {
+        var comp = $components.get('orders-table')
+        return comp ? comp.type : 'none'
+      }
+      function callRefresh() {
+        var api = $components.getApi('orders-table')
+        return api && api.refresh ? api.refresh() : 'none'
+      }
+    `
+
+    const fns = compileFunctions(script, ctx)
+    expect(fns['getTableType']!()).toBe('r-table')
+    expect(fns['callRefresh']!()).toBe('ok')
   })
 
   // ── 原型链安全（Proxy 拦截）─────────────────────────────────────────────────

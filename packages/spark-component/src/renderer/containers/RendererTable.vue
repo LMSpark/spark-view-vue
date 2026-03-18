@@ -3,6 +3,7 @@
  * @skill r-table
  * @description 数据表格容器，通过 DataKey 绑定 DataView，自动渲染行数据，支持当前行高亮、多选、分页
  * @provides DATA_SOURCE
+ * @provides TABLE_API
  * @consumes PAGE_DATASET
  * @input { dataKey: string, props: { border?: boolean, stripe?: boolean, highlightCurrentRow?: boolean } }
  * @example { "type": "r-table", "dataKey": "Orders@rows", "props": { "border": true, "highlightCurrentRow": true } }
@@ -89,6 +90,7 @@
 
     <div class="renderer-table-main">
       <el-table
+        ref="nativeTableRef"
         :data="tableData"
         v-bind="$attrs"
         @current-change="handleCurrentChange"
@@ -191,13 +193,13 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, defineComponent, ref, useSlots, watch } from 'vue'
+import { computed, defineComponent, onUnmounted, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { ComponentConfig, RendererTableApi, PageComponentRegistry } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import type { PageMessageType } from '@spark-view/spark-utils'
-import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, TABLE_API, PAGE_COMPONENT_REGISTRY } from '../_pkg'
 import { FIELD_CONTEXT } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -305,12 +307,13 @@ const sparkChildren = computed(() =>
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
-const { consume, provide: sparkProvide, logger } = useSparkComponent(
+const { context, consume, provide: sparkProvide, logger } = useSparkComponent(
   props.config ?? { type: 'r-table' }
 )
 
 const pageDataSet = consume(PAGE_DATASET)
 const pageService = consume(PAGE_SERVICE)
+const pageComponentRegistry = consume(PAGE_COMPONENT_REGISTRY) as PageComponentRegistry | null
 
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
@@ -393,6 +396,94 @@ watch(filterDefaultCollapsedValue, (value) => {
 }, { immediate: true })
 
 const tableData = computed(() => filteredRows.value ?? tableRows.value)
+
+// ── r-table 包装 API（脚本可用） ───────────────────────────────────────────
+
+interface NativeTableLike {
+  clearSelection?: () => void
+  toggleRowSelection?: (row: IDataRow, selected?: boolean) => void
+  setCurrentRow?: (row: IDataRow | null) => void
+  doLayout?: () => void
+}
+
+const nativeTableRef = ref<NativeTableLike | null>(null)
+
+function hasRemoteListApi(view: DataView | null | undefined): boolean {
+  return Boolean(view?.dataTable?.api?.list)
+}
+
+const tableApi: RendererTableApi = {
+  getDataSource() {
+    return resolvedView.value ?? null
+  },
+  getRows() {
+    return resolvedView.value?.rows ?? []
+  },
+  getCurrentRow() {
+    return resolvedView.value?.currentRow ?? null
+  },
+  getSelectedRows() {
+    return resolvedView.value ? getSelectedRows(resolvedView.value) : []
+  },
+  async refresh() {
+    const view = resolvedView.value
+    if (!view || !hasRemoteListApi(view)) return
+    await view.refresh()
+  },
+  appendRow(row) {
+    resolvedView.value?.appendRow(row)
+  },
+  updateRowById(id, patch) {
+    return resolvedView.value?.updateRowById(id, patch) ?? false
+  },
+  deleteRowById(id) {
+    return resolvedView.value?.deleteRowById(id) ?? false
+  },
+  setCurrentRow(row) {
+    const targetRow = row ?? null
+    resolvedView.value?.selection.setCurrentRow(targetRow)
+    nativeTableRef.value?.setCurrentRow?.(targetRow)
+  },
+  setCurrentRowById(id) {
+    const view = resolvedView.value
+    if (!view) return false
+    const updated = view.selection.setCurrentRowById(id ?? null)
+    nativeTableRef.value?.setCurrentRow?.(view.currentRow ?? null)
+    return updated
+  },
+  setSelectedRows(rows) {
+    resolvedView.value?.selection.setSelectedRows(rows)
+  },
+  setSelectedRowsById(ids) {
+    return resolvedView.value?.selection.setSelectedRowsById(ids) ?? 0
+  },
+  clearSelectedRows() {
+    resolvedView.value?.selection.clearSelectedRows()
+  },
+  clearUiSelection() {
+    nativeTableRef.value?.clearSelection?.()
+  },
+  toggleUiRowSelection(row, selected = true) {
+    nativeTableRef.value?.toggleRowSelection?.(row, selected)
+  },
+  doLayout() {
+    nativeTableRef.value?.doLayout?.()
+  },
+  getNativeTable() {
+    return nativeTableRef.value
+  },
+}
+
+sparkProvide(TABLE_API, tableApi)
+pageComponentRegistry?.registerApi({
+  id: context.id,
+  type: context.type,
+  api: tableApi,
+})
+
+onUnmounted(() => {
+  pageComponentRegistry?.unregisterApi(context.id)
+})
 
 // ── 行操作区 ──────────────────────────────────────────────────────────────
 
@@ -771,6 +862,10 @@ async function executeBuiltinAction(action: ComponentConfig, scope?: BuiltinActi
         return
       }
       case 'refresh': {
+        if (!hasRemoteListApi(view)) {
+          notifyAction(propsMap, 'warning', resolveConfiguredText(propsMap, 'emptyMessage', '当前数据为内联数据，无需刷新'))
+          return
+        }
         await view.refresh()
         notifyAction(propsMap, 'success', resolveConfiguredText(propsMap, 'successMessage', '刷新完成'))
         return

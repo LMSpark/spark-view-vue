@@ -14,6 +14,7 @@ import type { IDataSet, SparkData } from '@spark-view/spark-data'
 import type { ConfigLoader, PageConfig, IPageRoute, IFormAPI } from '@spark-view/spark-page-config'
 import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
 import type { ComponentRegistry } from '../../core/types.js'
+import type { PageComponentInstanceEntry } from '../../capability-keys.js'
 
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
 export type { PageConfig }
@@ -98,6 +99,23 @@ export interface FormCreateAPI {
   on(event: string, callback: (...args: unknown[]) => void): void
 }
 
+/** 页面脚本组件访问 API（由渲染器根节点注入） */
+export interface PageComponentAccessApi {
+  /** 按组件 id 获取实例快照（推荐） */
+  get(id: string): PageComponentInstanceEntry | null
+  /** 按组件 id 获取组件 API（推荐） */
+  getApi<T = unknown>(id: string): T | null
+  /** 列出页面组件实例（可按 type 过滤） */
+  list(type?: string): PageComponentInstanceEntry[]
+  /** 列出组件 API（可按 type 过滤） */
+  getApis<T = unknown>(type?: string): T[]
+
+  /** @deprecated 使用 get(id) */
+  getInstance(id: string): PageComponentInstanceEntry | null
+  /** @deprecated 使用 list(type?) */
+  listInstances(type?: string): PageComponentInstanceEntry[]
+}
+
 /**
  * 页面脚本运行时上下文（两条渲染线共享基础）。
  *
@@ -106,6 +124,7 @@ export interface FormCreateAPI {
  */
 export interface PageContext {
   $dataSet: IDataSet | null
+  $components: PageComponentAccessApi
   $route: IPageRoute
   $moduleContext: IModuleContext | null
   $el: () => HTMLElement | null

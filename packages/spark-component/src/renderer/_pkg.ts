@@ -25,5 +25,13 @@ export {
   DATA_SOURCE,
   FIELD_CONTEXT,
   CONTEXT_DATA,
+  TABLE_API,
+  PAGE_COMPONENT_REGISTRY,
 } from '../capability-keys.js'
-export type { FieldContext } from '../capability-keys.js'
+export type {
+  FieldContext,
+  RendererTableApi,
+  PageComponentRegistry,
+  PageComponentInstanceEntry,
+  PageComponentApiEntry,
+} from '../capability-keys.js'

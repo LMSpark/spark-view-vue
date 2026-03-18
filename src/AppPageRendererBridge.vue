@@ -1,5 +1,5 @@
 <template>
-  <FCPageRenderer :key="rendererRefreshKey" v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
+  <SparkPageRenderer :key="rendererRefreshKey" v-bind="forwardedProps" :page-service="mergedPageService" :module-context="moduleContext" />
   <!-- AI 聊天浮窗（仅配置页面渲染时加载，从 App.vue 下沉至此） -->
   <AiChatPanel v-if="enableAI" />
   <!-- SAP 工具助手浮窗（独立于 AI 页面生成面板） -->
@@ -8,8 +8,8 @@
 
 <script setup lang="ts">
 import { computed, ref, inject, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
-import { FCPageRenderer } from '@spark-view/spark-component'
-import type { PageRendererOptions } from '@spark-view/spark-component'
+import { SparkPageRenderer } from '@spark-view/spark-component'
+import type { PageRendererProps } from '@spark-view/spark-component'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import { appPageUiService } from '@spark-view/spark-app'
 import { NAV_KEY } from '@spark-view/spark-app'
@@ -18,7 +18,7 @@ import { onPageRefresh } from '@spark-view/spark-ai'
 const AiChatPanel = defineAsyncComponent(() => import('@/components/AiChatPanel.vue'))
 const SapChatPanel = defineAsyncComponent(() => import('@/components/SapChatPanel.vue'))
 
-const props = withDefaults(defineProps<PageRendererOptions>(), {
+const props = withDefaults(defineProps<PageRendererProps>(), {
   enableCssScope: true,
   enableDataSet: true,
 })
@@ -68,7 +68,6 @@ const forwardedProps = computed(() => ({
   ...(props.beforeLoad !== undefined ? { beforeLoad: props.beforeLoad } : {}),
   ...(props.afterLoad !== undefined ? { afterLoad: props.afterLoad } : {}),
   ...(props.onError !== undefined ? { onError: props.onError } : {}),
-  ...(props.formCreateOptions !== undefined ? { formCreateOptions: props.formCreateOptions } : {}),
   enableCssScope: props.enableCssScope,
   enableDataSet: props.enableDataSet,
 }))
