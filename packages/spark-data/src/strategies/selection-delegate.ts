@@ -69,7 +69,7 @@ export class SelectionDelegate {
    *
    * updateFromServer() 替换了全部行引用，旧的 currentRow/selectedRows 指针已失效。
    * 先强制清零（无事件），再通过正式 setter 写入新值；setter 发射 stateChanged 事件，
-   * DataSet.onAnyViewChange 订阅者（如 useRuleBinding）因此能正确收到事件。
+   * DataSet.onAnyViewChange 订阅者（如 SparkPageRenderer）因此能正确收到事件。
    *
    * autoCurrentFirst / autoSelectFirst 彼此独立，各自触发自己的事件。
    * 单选模式下 setCurrentRow 内部会自动同步 selectedRows，这里用

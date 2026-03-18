@@ -13,7 +13,7 @@
     "composite": false,
     "paths": {
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
-      "@spark-view/spark-data": ["../spark-data/dist/index.d.ts"]
+      "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"]
     }
   },
   "include": ["src/**/*.ts"],

@@ -17,5 +17,5 @@
     "removeComments": false
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],
-  "exclude": ["**/*.test.ts", "**/*.spec.ts", "dist", "node_modules"]
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "src/tests/**", "dist", "node_modules"]
 }

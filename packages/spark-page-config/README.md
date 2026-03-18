@@ -105,7 +105,7 @@ if (ruleErrors.length > 0) {
 
 本包依赖 [spark-app](../spark-app/README.md) 提供的基础设施：
 
-- **Logger** - 使用 `pageLogger` 和 `routerLogger`
+- **Logger** - 使用 `createLogger(scope)` 创建作用域日志
 - **符号常量** - 使用 `DefaultConfig`、`ErrorCodes`
 - **错误处理** - 统一错误码和消息
 - **权限过滤** - 通过 `beforeRegister` 钩子集成

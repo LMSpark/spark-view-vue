@@ -5,7 +5,7 @@
  */
 
 import type { Plugin } from 'vue'
-import { PluginRegistry } from './registry'
+import { getGlobalPluginRegistry } from './registry'
 
 /**
  * 注册内置插件
@@ -15,7 +15,7 @@ import { PluginRegistry } from './registry'
  * - vxe-table: 强大的表格组件
  */
 export function registerBuiltinPlugins(): void {
-  PluginRegistry.registerAll({
+  getGlobalPluginRegistry().registerAll({
     'element-plus': {
       name: 'Element Plus',
       module: 'element-plus',

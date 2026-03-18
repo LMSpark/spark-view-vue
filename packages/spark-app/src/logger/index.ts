@@ -451,10 +451,3 @@ export const createLogger = createScopedLogger
  * 默认 Logger 实例
  */
 export const appLogger = createAppLogger()
-
-/**
- * 常用作用域 Logger
- */
-export const pageLogger = createScopedLogger('Page')
-export const apiLogger = createScopedLogger('API')
-export const routerLogger = createScopedLogger('Router')

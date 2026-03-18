@@ -76,10 +76,13 @@ await SparkApp.bootstrap({
 ### 认证服务
 
 ```typescript
-import { authService } from '@spark-view/spark-app'
+import { createAuthService } from '@spark-view/spark-app'
+
+const auth = createAuthService()
+auth.initialize({ baseURL: '/api/auth' })
 
 // 登录
-const result = await authService.login({
+const result = await auth.login({
   username: 'admin',
   password: '123456'
 })
@@ -89,10 +92,10 @@ if (result) {
 }
 
 // 登出
-await authService.logout()
+await auth.logout()
 
 // 检查认证状态
-const authResult = await authService.checkAuth()
+const authResult = await auth.checkAuth()
 ```
 
 ### 日志系统
@@ -216,11 +219,13 @@ const ErrorBoundary = createErrorBoundary((error) => {
 
 | 方法 | 描述 |
 |------|------|
-| `authService.login(credentials)` | 用户登录 |
-| `authService.logout()` | 用户登出 |
-| `authService.checkAuth()` | 检查认证状态 |
-| `authService.getToken()` | 获取访问令牌 |
-| `authService.refreshToken()` | 刷新令牌 |
+| `createAuthService()` | 创建认证服务实例 |
+| `auth.initialize(config)` | 初始化配置 |
+| `auth.login(credentials)` | 用户登录 |
+| `auth.logout()` | 用户登出 |
+| `auth.checkAuth()` | 检查认证状态 |
+| `auth.getToken()` | 获取访问令牌 |
+| `auth.refreshToken()` | 刷新令牌 |
 
 ### 日志系统
 

@@ -259,6 +259,5 @@ grep -r "authService\|PluginRegistry\.\|registerComponents\|FileCacheEntry" \
 
 ## 📚 相关文档
 
-- [架构分析与重构方案](../architecture/REFACTORING_ANALYSIS.md)
 - [能力系统设计](../../.github/copilot-instructions.md#能力体系)
 - [CHANGELOG](../../CHANGELOG.md)

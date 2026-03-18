@@ -42,26 +42,6 @@ export type {
 export { registerPageNavigation, configureNavRegister } from './nav-register'
 export type { NavRegistrationOptions, NavRegistrationResult } from './nav-register'
 
-// ── SSE Events (re-export from spark-utils) ─────────────────────────────────
-export {
-  ServerEventType,
-  onServerEvent,
-  onPageConfigChange,
-  onDebugScreenshotRequest,
-  onDebugScreenshotResult,
-  onDebugRouteRequest,
-  onDebugRouteResult,
-  configureSseUrl,
-} from '@spark-view/spark-utils'
-export type {
-  ServerEventTypeName,
-  FileChangeEvent,
-  DebugScreenshotRequestEvent,
-  DebugScreenshotResultEvent,
-  DebugRouteRequestEvent,
-  DebugRouteResultEvent,
-} from '@spark-view/spark-utils'
-
 // ── Page Cache ───────────────────────────────────────────────────────────────
 export {
   setConfigLoader,

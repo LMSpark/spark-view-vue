@@ -277,10 +277,10 @@ describe('createSandbox — compileFunctions', () => {
   it('沙箱中访问未注入变量返回 undefined（安全代理）', () => {
     const ctx = createMockContext()
     const script = `
-      function tryApi() { return typeof $api }
+      function tryUnknown() { return typeof $unknownVar }
     `
     const fns = compileFunctions(script, ctx)
     // 未注入的变量通过 with 安全代理返回 undefined
-    expect(fns['tryApi']!()).toBe('undefined')
+    expect(fns['tryUnknown']!()).toBe('undefined')
   })
 })

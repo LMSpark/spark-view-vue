@@ -14,13 +14,12 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, './src'),
       '@/features/spark-ej2': resolve(__dirname, './src/features/spark-ej2'),
-      // spark-component → 源码解析（含 Vue SFC，dist 不适合测试直接引用组件源码）
+      // 所有包 → 源码解析（测试不应依赖构建产物）
       '@spark-view/spark-component': resolve(__dirname, './packages/spark-component/src/index.ts'),
-      // 纯 TS 包 → dist 解析
-      '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/dist/index.js'),
-      '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/dist/index.js'),
-      '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/dist/index.js'),
-      '@spark-view/spark-app': resolve(__dirname, './packages/spark-app/dist/index.js'),
+      '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/src/index.ts'),
+      '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/src/index.ts'),
+      '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/src/index.ts'),
+      '@spark-view/spark-app': resolve(__dirname, './packages/spark-app/src/index.ts'),
       '@spark-view/spark-ai': resolve(__dirname, './packages/spark-ai/src/index.ts')
     }
   },
