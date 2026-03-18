@@ -26,7 +26,7 @@
  */
 
 import { inject } from 'vue'
-import { SPARK_REGISTRY_KEY } from '../constants'
+import { SPARK_REGISTRY_KEY } from './constants'
 import type { ComponentRegistry as SparkRegistry } from '@spark-view/spark-component'
 
 // ============================================================================

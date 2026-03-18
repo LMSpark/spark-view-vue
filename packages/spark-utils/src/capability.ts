@@ -15,7 +15,7 @@
  * ```
  */
 
-import type { LoggerApi } from '../logger.js'
+import type { LoggerApi } from './logger.js'
 
 // ==================== 核心类型 ====================
 

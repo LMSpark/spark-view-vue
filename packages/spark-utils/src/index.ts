@@ -16,7 +16,7 @@ export * from './http/index.js'
 
 // ==================== 能力系统 ====================
 
-export * from './capability/index.js'
+export * from './capability.js'
 
 // ==================== 共享错误码 ====================
 
@@ -65,4 +65,4 @@ export type {
   RegionItems,
   RegionVisibility,
   NavContextState,
-} from './navigation/nav-types'
+} from './nav-types'

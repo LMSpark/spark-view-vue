@@ -44,14 +44,14 @@
 
 import type { App as _App } from 'vue'
 import type { Router as _Router } from 'vue-router'
-import type { BootstrapOptions, AppContext, AppConfig } from '../types'
-import { THEME_INJECTION_KEY } from '../theme'
-import { setupRouterGuards } from '../router/guards'
-import { setupErrorHandler } from '../error/handler'
-import { createLogger } from '../logger'
-import { loadConfig } from '../config'
-import { AuthService } from '../auth'
-import type { AuthConfig } from '../auth/types'
+import type { BootstrapOptions, AppContext, AppConfig } from './types'
+import { THEME_INJECTION_KEY } from './theme'
+import { setupRouterGuards } from './router/guards'
+import { setupErrorHandler } from './error-handler'
+import { createLogger } from './logger'
+import { loadConfig } from './config'
+import { AuthService } from './auth'
+import type { AuthConfig } from './auth/types'
 import { toErrorMessage, toError, createRequest } from '@spark-view/spark-utils'
 
 /**

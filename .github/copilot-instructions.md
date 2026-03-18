@@ -35,7 +35,7 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **Key composable**: `packages/spark-component/src/useSparkComponent.ts`
 - **DataSet 生命周期**: `packages/spark-component/src/renderer/usePageDataSet.ts`（仅存储 DataSet，不转换）
 - **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
-- **Capability keys**: `packages/spark-utils/src/capability/index.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
+- **Capability keys**: `packages/spark-utils/src/capability.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
 - **Tests**: `tests/` (重要: `capability-late-binding.test.ts`, `capability-system.test.ts`, `data-key.test.ts`)
 - **Computed column tests**: `packages/spark-data/src/tests/computed-columns.test.ts`（13 sections, 87 cases）
 - **Expression compiler**: `packages/spark-data/src/strategies/computed-column-delegate.ts`
@@ -986,11 +986,19 @@ packages/
 ├── spark-app/           # 应用层基础设施
 │   └── src/
 │       ├── auth/        # AuthService, TokenManager
-│       ├── bootstrap/   # bootstrap()
+│       ├── bootstrap.ts # bootstrap()
+│       ├── config/      # ConfigLoader, loadConfig
 │       ├── logger/      # createLogger, createAppLogger
+│       ├── navigation/  # useNavigation, useTabPages, useColorScheme
+│       ├── page-ui/     # AppPageUiHost, pageUiService
 │       ├── plugins/     # PluginRegistry, PluginManager
+│       ├── router/      # DynamicRouter, guards
+│       ├── theme/       # createThemeService, useTheme
 │       ├── namespace.ts # SparkApp 命名空间
-│       └── start.ts     # start() 高级 API
+│       ├── start.ts     # start() 高级 API
+│       ├── types.ts     # AppContext, AppConfig, UserInfo 等类型
+│       ├── constants.ts # ErrorCodes, Environments, DefaultConfig
+│       └── error-handler.ts # setupErrorHandler, createErrorBoundary
 ├── spark-component/     # 组件系统（Spark 命名空间、能力系统）
 │   └── src/
 │       ├── spark.ts          # Spark 命名空间（唯一入口）
@@ -1029,10 +1037,11 @@ packages/
 │       └── tests/
 └── spark-utils/         # 共享基础设施
     └── src/
-        ├── capability/index.ts    # 所有能力键定义 + provide/lookup/defineCapability
-        ├── sandbox.ts             # 统一沙箱代理（SANDBOX_BLOCKED_KEYS / createSafeProxy）
-        ├── logger.ts              # Logger 工厂
-        ├── http/                  # Request, FileLoader
+        ├── capability.ts      # 所有能力键定义 + provide/lookup/defineCapability
+        ├── nav-types.ts       # 导航模型类型（NavNode, AppNavRoot 等）
+        ├── sandbox.ts         # 统一沙箱代理（SANDBOX_BLOCKED_KEYS / createSafeProxy）
+        ├── logger.ts          # Logger 工厂
+        ├── http/              # Request, FetchClient, FileLoader
         └── tests/
 ```
 

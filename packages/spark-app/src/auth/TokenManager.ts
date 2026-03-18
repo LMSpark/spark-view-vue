@@ -34,7 +34,7 @@
  */
 
 import type { TokenStorage } from './types'
-import { simpleEnvAdapter as envAdapter } from '../utils/simpleEnv'
+import { simpleEnvAdapter as envAdapter } from '../env'
 
 /**
  * =============================================================================
