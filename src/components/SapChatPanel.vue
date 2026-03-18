@@ -1,5 +1,5 @@
 <template>
-  <div class="sap-chat-wrapper">
+  <div v-if="isOwner" class="sap-chat-wrapper">
     <!-- 浮动触发按钮 -->
     <button class="sap-fab" :class="{ active: isOpen }" @click="togglePanel" title="SAP 工具助手">
       <span v-if="!isOpen">🔧</span>
@@ -88,9 +88,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onUnmounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, onActivated, onDeactivated } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { createAuthHeaders } from '@/services/http'
+
+const SAP_PANEL_OWNER_KEY = '__SPARK_SAP_PANEL_OWNER__'
+const panelInstanceId = `sap-panel-${Date.now()}-${Math.random().toString(36).slice(2)}`
+const isOwner = ref(false)
+
+function claimPanelOwnership(): void {
+  const globalWindow = window as unknown as Record<string, unknown>
+  globalWindow[SAP_PANEL_OWNER_KEY] = panelInstanceId
+  isOwner.value = true
+}
+
+function releasePanelOwnership(): void {
+  const globalWindow = window as unknown as Record<string, unknown>
+  if (globalWindow[SAP_PANEL_OWNER_KEY] === panelInstanceId) {
+    globalWindow[SAP_PANEL_OWNER_KEY] = null
+  }
+  isOwner.value = false
+}
 
 // ── 常量 ──────────────────────────────────────────────────────────────────
 
@@ -155,7 +173,20 @@ const statusText = ref('就绪')
 let _abortController: AbortController | null = null
 let _abortRequested = false
 
+onMounted(() => {
+  claimPanelOwnership()
+})
+
+onActivated(() => {
+  claimPanelOwnership()
+})
+
+onDeactivated(() => {
+  releasePanelOwnership()
+})
+
 onUnmounted(() => {
+  releasePanelOwnership()
   _abortController?.abort()
 })
 
