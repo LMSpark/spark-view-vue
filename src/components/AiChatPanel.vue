@@ -143,10 +143,17 @@ import { getNavHomePath, refreshRoutes } from '@spark-view/spark-app'
 import { getAILoop, clearPageCache, setAutoIterating, readPageFiles, triggerPageRefresh, onLogUpdate } from '@spark-view/spark-ai'
 import { summarizeLogBatch } from '@spark-view/spark-ai'
 import type { AIResponse, LogBatchSummary, LogSnapshot, StreamCallbacks } from '@spark-view/spark-ai'
-import { http, createAuthHeaders } from '@/services/http'
+import { http } from '@/services/http'
 import { getPageApi } from '@/services/api-paths'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
+import {
+  streamAiChatText,
+  extractToolProtocolBlocks,
+  parseToolProtocolPayload,
+  stripToolProtocolBlocks,
+  type ProtocolMessage,
+} from '@/services/ai-protocol'
 
 /** 最大自动迭代次数（防止无限循环） */
 const MAX_AUTO_ITERATIONS = 3
@@ -164,7 +171,6 @@ const MAX_LOG_SAMPLES_PER_ROUND = 30
 const MAX_STAGNATION_ROUNDS = 2
 /** pageId 合法字符：字母、数字、短横线 */
 const PAGE_ID_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,63}$/
-const AI_TOOL_BLOCK_RE = /@@tool:([\w.]+)#([\w-]+)\n([\s\S]*?)\n@@end/g
 const AI_TOOL_SYSTEM_PROMPT = `你是 SPARK 页面助手的工具调度器。你必须优先输出工具协议块，不要直接输出自然语言。
 
 可用工具：
@@ -200,18 +206,6 @@ interface ChatMessage {
   files?: string[]
   pageId?: string
   iteration?: number
-}
-
-interface ProtocolMessage {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-}
-
-interface AiToolBlock {
-  action: string
-  id: string
-  body: string
-  raw: string
 }
 
 interface AiToolPayload {
@@ -599,112 +593,6 @@ function resetStreamState(): void {
   diagnosticHint.value = ''
 }
 
-function extractAiToolBlocks(text: string): AiToolBlock[] {
-  const blocks: AiToolBlock[] = []
-  AI_TOOL_BLOCK_RE.lastIndex = 0
-  let match: RegExpExecArray | null
-  while ((match = AI_TOOL_BLOCK_RE.exec(text)) !== null) {
-    blocks.push({
-      action: match[1] ?? '',
-      id: match[2] ?? '',
-      body: match[3] ?? '',
-      raw: match[0],
-    })
-  }
-  return blocks
-}
-
-function parseAiToolPayload(block: AiToolBlock): AiToolPayload | null {
-  try {
-    return JSON.parse(block.body) as AiToolPayload
-  } catch {
-    return null
-  }
-}
-
-async function streamAiToolPlan(messagesInput: ProtocolMessage[], signal: AbortSignal): Promise<string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...createAuthHeaders(),
-  }
-
-  const response = await fetch('/api/ai/chat/stream', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      messages: messagesInput.map(item => ({ role: item.role, content: item.content })),
-      mode: 'single',
-      systemPrompt: AI_TOOL_SYSTEM_PROMPT,
-    }),
-    signal,
-  })
-
-  if (!response.ok) {
-    throw new Error(`协议规划请求失败: ${response.status} ${response.statusText}`)
-  }
-
-  const reader = response.body?.getReader()
-  if (!reader) {
-    throw new Error('协议规划响应体不可读')
-  }
-
-  const decoder = new TextDecoder()
-  let buffer = ''
-  let fullText = ''
-  let currentEvent = 'message'
-  let currentData = ''
-
-  try {
-    for (;;) {
-      const { done, value } = await reader.read()
-      if (done) break
-
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
-
-      for (const line of lines) {
-        if (line === '' || line === '\r') {
-          if (currentData !== '') {
-            try {
-              const parsed = JSON.parse(currentData) as Record<string, unknown>
-              if (currentEvent === 'delta' && typeof parsed['delta'] === 'string') {
-                const delta = parsed['delta']
-                fullText += delta
-                streamingText.value += delta
-                scrollToBottom()
-              } else if (currentEvent === 'reasoning' && typeof parsed['reasoning'] === 'string') {
-                streamingText.value += parsed['reasoning']
-                scrollToBottom()
-              } else if (currentEvent === 'error' && typeof parsed['error'] === 'string') {
-                throw new Error(parsed['error'])
-              }
-            } catch (error) {
-              if (error instanceof SyntaxError) {
-                // ignore non-json payload
-              } else {
-                throw error
-              }
-            }
-          }
-          currentEvent = 'message'
-          currentData = ''
-        } else if (line.startsWith('event:')) {
-          currentEvent = line.slice(6).trim()
-        } else if (line.startsWith('data:')) {
-          const payload = line.slice(5).trim()
-          if (payload === '[DONE]') continue
-          currentData = currentData === '' ? payload : `${currentData}\n${payload}`
-        }
-      }
-    }
-  } finally {
-    reader.releaseLock()
-  }
-
-  return fullText
-}
-
 function isValidPageId(value: unknown): value is string {
   return typeof value === 'string' && PAGE_ID_RE.test(value)
 }
@@ -737,8 +625,24 @@ async function tryHandleWithProtocol(): Promise<boolean> {
 
   try {
     const planningMessages = buildToolPlanningMessages(originalPageId, originalPrompt)
-    const responseText = await streamAiToolPlan(planningMessages, controller.signal)
-    const blocks = extractAiToolBlocks(responseText)
+    const responseText = await streamAiChatText({
+      messages: planningMessages,
+      mode: 'single',
+      systemPrompt: AI_TOOL_SYSTEM_PROMPT,
+      signal: controller.signal,
+      onDelta: (delta) => {
+        streamingText.value += delta
+        scrollToBottom()
+      },
+      onReasoning: (reasoning) => {
+        streamingText.value += reasoning
+        scrollToBottom()
+      },
+      onPhase: (_phase, _status, message) => {
+        phaseMessage.value = message
+      },
+    })
+    const blocks = extractToolProtocolBlocks(responseText, { type: 'tool' })
 
     if (blocks.length === 0) {
       return false
@@ -748,7 +652,7 @@ async function tryHandleWithProtocol(): Promise<boolean> {
     if (block === undefined) {
       return false
     }
-    const payload = parseAiToolPayload(block)
+    const payload = parseToolProtocolPayload<AiToolPayload>(block)
     if (payload === null) {
       messages.value.push({ role: 'assistant', text: '⚠️ 协议解析失败（JSON 无法解析），已回退默认生成流程。' })
       scrollToBottom()
@@ -791,7 +695,7 @@ async function tryHandleWithProtocol(): Promise<boolean> {
       case 'chat.reply': {
         const message = typeof payload.message === 'string' && payload.message.trim() !== ''
           ? payload.message.trim()
-          : responseText.replace(AI_TOOL_BLOCK_RE, '').trim()
+          : stripToolProtocolBlocks(responseText, { type: 'tool' })
         if (message !== '') {
           messages.value.push({ role: 'assistant', text: message })
           scrollToBottom()

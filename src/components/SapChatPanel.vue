@@ -92,6 +92,7 @@ import { ref, nextTick, onUnmounted, computed } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { createAuthHeaders } from '@/services/http'
 import { useFloatingPanelOwner } from '@/composables/useFloatingPanelOwner'
+import { streamAiChatText, extractToolProtocolBlocks, stripToolProtocolBlocks } from '@/services/ai-protocol'
 
 const props = withDefaults(defineProps<{ embedded?: boolean; forceOpen?: boolean }>(), {
   embedded: false,
@@ -141,11 +142,6 @@ interface ChatMessage {
   toolCalls?: ToolCallInfo[]
 }
 
-interface ConversationMessage {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-}
-
 // ── 响应式状态 ─────────────────────────────────────────────────────────────
 
 const isOpen = ref(false)
@@ -187,138 +183,7 @@ function scrollToBottom() {
   })
 }
 
-// ── SAP 协议检测与提取 ─────────────────────────────────────────────────────
-
-const SAP_BLOCK_RE = /@@(\w+):([\w.]+)#([\w-]+)\n([\s\S]*?)\n@@end/g
-
-/** 检测文本中是否包含 SAP 协议块 */
-function containsSapBlock(text: string): boolean {
-  SAP_BLOCK_RE.lastIndex = 0
-  return SAP_BLOCK_RE.test(text)
-}
-
-interface SapBlock {
-  raw: string
-  type: string
-  action: string
-  id: string
-  body: string
-}
-
-/** 提取所有 SAP 协议块 */
-function extractSapBlocks(text: string): SapBlock[] {
-  const blocks: SapBlock[] = []
-  SAP_BLOCK_RE.lastIndex = 0
-  let match: RegExpExecArray | null
-  while ((match = SAP_BLOCK_RE.exec(text)) !== null) {
-    blocks.push({
-      raw: match[0],
-      type: match[1] ?? '',
-      action: match[2] ?? '',
-      id: match[3] ?? '',
-      body: match[4] ?? '',
-    })
-  }
-  return blocks
-}
-
-// ── SSE 流式调用 LLM ───────────────────────────────────────────────────────
-
-/**
- * 调用后端通用 SSE 流式端点（/api/ai/chat/stream）。
- * 返回 AI 完整回复文本。
- */
-async function streamLlmCall(
-  conversationMessages: ConversationMessage[],
-  signal: AbortSignal,
-): Promise<string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...createAuthHeaders(),
-  }
-
-  const response = await fetch('/api/ai/chat/stream', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      messages: conversationMessages.map(m => ({ role: m.role, content: m.content })),
-      mode: 'multi',
-      systemPrompt: SAP_SYSTEM_PROMPT,
-    }),
-    signal,
-  })
-
-  if (!response.ok) {
-    throw new Error(`SSE 请求失败: ${response.status} ${response.statusText}`)
-  }
-
-  // 消费 SSE 流，累积完整文本
-  const reader = response.body?.getReader()
-  if (!reader) throw new Error('响应体不可读')
-
-  const decoder = new TextDecoder()
-  let buffer = ''
-  let fullText = ''
-  let currentEvent = 'message'
-  let currentData = ''
-
-  try {
-    for (;;) {
-      const { done, value } = await reader.read()
-      if (done) break
-
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
-
-      for (const line of lines) {
-        if (line === '' || line === '\r') {
-          // 空行 → 分发事件
-          if (currentData) {
-            try {
-              const parsed = JSON.parse(currentData) as Record<string, unknown>
-              if (currentEvent === 'delta' && typeof parsed['delta'] === 'string') {
-                const delta = parsed['delta']
-                fullText += delta
-                streamingText.value += delta
-                scrollToBottom()
-              } else if (currentEvent === 'reasoning' && typeof parsed['reasoning'] === 'string') {
-                streamingText.value += parsed['reasoning']
-                scrollToBottom()
-              } else if (currentEvent === 'error' && typeof parsed['error'] === 'string') {
-                throw new Error(parsed['error'])
-              }
-            } catch (e) {
-              if (e instanceof SyntaxError) { /* 跳过非 JSON */ }
-              else throw e
-            }
-          }
-          currentEvent = 'message'
-          currentData = ''
-        } else if (line.startsWith('event:')) {
-          currentEvent = line.slice(6).trim()
-        } else if (line.startsWith('data:')) {
-          const payload = line.slice(5).trim()
-          if (payload === '[DONE]') continue
-          currentData = currentData ? `${currentData}\n${payload}` : payload
-        }
-      }
-    }
-    // 残余
-    if (currentData) {
-      try {
-        const parsed = JSON.parse(currentData) as Record<string, unknown>
-        if (currentEvent === 'delta' && typeof parsed['delta'] === 'string') {
-          fullText += parsed['delta']
-        }
-      } catch { /* skip */ }
-    }
-  } finally {
-    reader.releaseLock()
-  }
-
-  return fullText
-}
+// ── SAP 协议检测与提取（由统一协议服务提供）───────────────────────────────
 
 // ── 执行 SAP 协议块 ────────────────────────────────────────────────────────
 
@@ -361,10 +226,10 @@ async function handleSend() {
   scrollToBottom()
 
   // 构建对话历史（包含所有消息）
-  const conversation: ConversationMessage[] = messages.value.map(m => ({
+  const conversation = messages.value.map(m => ({
     role: m.role,
     content: m.text,
-  }))
+  })) as Array<{ role: 'user' | 'assistant'; content: string }>
 
   try {
     let round = 0
@@ -378,13 +243,27 @@ async function handleSend() {
       phaseMessage.value = round > 1 ? `第 ${round} 轮工具调用` : ''
       scrollToBottom()
 
-      const aiReply = await streamLlmCall(conversation, _abortController.signal)
+      const aiReply = await streamAiChatText({
+        messages: conversation,
+        mode: 'multi',
+        systemPrompt: SAP_SYSTEM_PROMPT,
+        signal: _abortController.signal,
+        onDelta: (delta) => {
+          streamingText.value += delta
+          scrollToBottom()
+        },
+        onReasoning: (reasoning) => {
+          streamingText.value += reasoning
+          scrollToBottom()
+        },
+      })
       streamingText.value = ''
 
       if (_abortRequested) break
 
       // ── Step 2: 检测是否包含 SAP 协议块 ──
-      if (!containsSapBlock(aiReply)) {
+      const blocks = extractToolProtocolBlocks(aiReply, { type: 'tool' })
+      if (blocks.length === 0) {
         // 无工具调用 → 最终回复，退出循环
         messages.value.push({ role: 'assistant', text: aiReply })
         conversation.push({ role: 'assistant', content: aiReply })
@@ -393,7 +272,6 @@ async function handleSend() {
       }
 
       // ── Step 3: 提取并执行工具调用 ──
-      const blocks = extractSapBlocks(aiReply)
       const toolCalls: ToolCallInfo[] = []
       const resultParts: string[] = []
 
@@ -424,7 +302,7 @@ async function handleSend() {
 
       // 将 AI 回复（含工具调用追踪）加入消息列表
       // 将非协议文本部分提取为展示文本
-      const displayText = aiReply.replace(SAP_BLOCK_RE, '').trim() || `调用了 ${blocks.length} 个工具`
+      const displayText = stripToolProtocolBlocks(aiReply, { type: 'tool' }) || `调用了 ${blocks.length} 个工具`
       messages.value.push({
         role: 'assistant',
         text: displayText,
