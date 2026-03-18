@@ -5,7 +5,7 @@
  * DataSet 自身通过事件总线驱动 UI 更新，不需要 Vue 响应式包装。
  *
  * 职责单一：仅关注 DataSet 引用的持有/释放，不持有 UI/Rule 相关依赖。
- * DataSet ↔ el-table 的同步桥由 useRuleBinding 单独负责。
+ * DataSet ↔ el-table 的同步由 SparkPageRenderer 渲染器内部负责。
  *
  * 数据转换统一由上游 parsePageData（spark-page-config）完成，
  * 本 composable 只接受已编译好的 DataSet 实例，不做任何归一化。

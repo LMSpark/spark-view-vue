@@ -1,7 +1,7 @@
 /**
  * 构造 APP_SERVICES 能力 payload 的工厂函数。
  *
- * 同时被 usePageRenderer 和 SparkPageRenderer 的 useRendererSetup 使用，避免重复构造相同对象。
+ * 被 SparkPageRenderer 的 useRendererSetup 使用，避免重复构造相同对象。
  */
 
 import type { Router } from 'vue-router'

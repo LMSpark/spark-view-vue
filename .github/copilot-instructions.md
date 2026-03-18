@@ -1000,7 +1000,7 @@ packages/
 │       ├── composables/      # useSparkComponent
 │       ├── plugins/          # SparkPlugin (Vue plugin)
 │       └── renderer/
-│           ├── composables/  # usePageRenderer, useRuleBinding, useCssScope
+│           ├── composables/  # useRendererSetup, useCssScope, usePageDataSet
 │           └── utils/        # bindRules, createSandbox, provideAppServices, scopeCSS
 ├── spark-data/          # 数据空间
 │   └── src/

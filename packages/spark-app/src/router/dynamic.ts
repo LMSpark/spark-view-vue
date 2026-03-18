@@ -8,11 +8,11 @@
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
 import type { ConfigLoader } from '@spark-view/spark-page-config'
-import { Logger } from '@spark-view/spark-utils'
 import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
+import { createLogger } from '../logger'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 
-const routerLogger = Logger('SparkApp:DynamicRouter')
+const routerLogger = createLogger('DynamicRouter')
 
 function shouldLogDynamicRouteDetails(): boolean {
   if (typeof globalThis === 'undefined') return false

@@ -1,7 +1,7 @@
 /**
  * useRendererSetup — 渲染器共享基础设施 Composable
  *
- * 提取自 usePageRenderer / SparkPageRenderer 等渲染器的公共模式：
+ * 提取自 SparkPageRenderer 渲染器的公共模式：
  *   - SPARK 能力上下文（useSparkComponent + APP_SERVICES）
  *   - 加载状态机（loading / error + 竞态保护）
  *

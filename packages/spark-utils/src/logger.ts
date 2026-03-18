@@ -4,9 +4,7 @@
 /**
  * SPARK Logger - 轻量级结构化日志
  *
- * 支持两种消费方式：
- * 1. **全局传输器**（推荐）：`addLogTransport(transport)` — 结构化接收 `(level, message, meta?)`
- * 2. **全局钩子**（旧版桥接）：`setLoggerHook(hook)` — 原始接收 `(level, prefix, args[])`
+ * 全局传输器：`addLogTransport(transport)` — 结构化接收 `(level, message, meta?)`
  *
  * 传输器由应用层（main.ts）注入，所有 `Logger()` 实例的输出自动流入传输器链，
  * 实现 spark-utils → spark-app → AI 闭环的 **全链路贯穿**。
@@ -92,37 +90,6 @@ export function parseLogArgs(prefix: string | undefined, args: unknown[]): { mes
   return { message: strings.join(' '), meta }
 }
 
-// ─── 全局钩子（旧版桥接，向后兼容） ───────────────────────────────────────────
-
-/**
- * 全局日志钩子签名
- *
- * 应用层（main.ts）通过 `setLoggerHook()` 注入，
- * 所有 spark-utils `Logger()` 创建的实例在输出控制台后都会调用此钩子。
- *
- * @param level  日志级别
- * @param prefix 创建 Logger 时传入的标签前缀（如 `'[PageRenderer]'`）
- * @param args   原始参数
- *
- * @deprecated 优先使用 `addLogTransport()` 获取结构化输出
- */
-export type LoggerHook = (level: LogLevel, prefix: string | undefined, args: unknown[]) => void
-
-/** 全局钩子（默认无） */
-let _globalHook: LoggerHook | null = null
-
-/**
- * 注入全局日志钩子。所有通过 `Logger(prefix)` 创建的实例都会在输出控制台后
- * 调用此钩子，应用层可据此将日志转发到远程传输器。
- *
- * 调用多次时后者覆盖前者。传 `null` 移除钩子。
- *
- * @deprecated 优先使用 `addLogTransport()` 获取结构化输出
- */
-export function setLoggerHook(hook: LoggerHook | null): void {
-  _globalHook = hook
-}
-
 // ─── Logger 工厂 ───────────────────────────────────────────────────────────
 
 /** 上下文形状（兼容 ICapabilityContext） */
@@ -151,11 +118,6 @@ function consoleLogger(prefix?: string): LoggerApi {
       for (const t of _transports) {
         try { void t.send(level, message, meta) } catch { /* transport 异常不影响日志输出 */ }
       }
-    }
-
-    // 旧版钩子（向后兼容）
-    if (_globalHook !== null) {
-      try { _globalHook(level, prefix, args) } catch { /* 钩子异常不影响日志输出 */ }
     }
   }
 

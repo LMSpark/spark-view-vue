@@ -38,14 +38,8 @@ export type {
 } from './plugins'
 
 // 认证模块
-/**
- * @deprecated `authService` 单例将在未来版本移除。
- * 推荐通过 `bootstrap({ authenticate })` 注入认证逻辑，
- * 或在 `APP_SERVICES` 能力中提供自定义 auth 接口。
- */
 export {
   AuthService,
-  authService,
   TokenManager
 } from './auth'
 
@@ -67,9 +61,6 @@ export {
   createScopedLogger,
   createScopedLogger as createLogger, // Alias for convenience
   appLogger,
-  pageLogger,
-  apiLogger,
-  routerLogger,
   createHttpTransport,
   createBatchHttpTransport,
   configureRemoteLogger,

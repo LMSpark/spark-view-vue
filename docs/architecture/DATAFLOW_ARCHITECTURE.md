@@ -9,7 +9,7 @@ App / main.ts
   ↓  app.use(Spark.createPlugin())
 SparkPlugin
   ↓  Vue DI: SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY
-PageRenderer (usePageRenderer)
+PageRenderer (SparkPageRenderer + useRendererSetup)
   ↓  provide(APP_SERVICES, ...)    SPARK 能力系统
   ↓  provide(PAGE_DATASET, ...)
 Table容器 (e.g. spark-ej2-grid)
@@ -70,15 +70,12 @@ reg.registerAll({
 
 ## 3. 页面渲染层（PageRenderer）
 
-`PageRenderer` 通过 `usePageRenderer` composable 完成页面级协调
-（见 `packages/spark-component/src/renderer/composables/usePageRenderer.ts`）：
+`PageRenderer` 通过 `useRendererSetup` composable 完成页面级协调
+（见 `packages/spark-component/src/renderer/composables/useRendererSetup.ts`）：
 
 ```typescript
-// usePageRenderer 内部（简化）
-const { provide: provideCapability } = useSparkComponent({
-  type: 'page-renderer',
-  id: 'page-renderer-root'
-})
+// SparkPageRenderer 内部（简化）
+const { provideCapability } = useRendererSetup('page-renderer', pageLogger)
 
 // 1. 注入应用服务（路由、logger、租户等）
 provideCapability(APP_SERVICES, buildAppServices(router, pageLogger))

@@ -723,16 +723,3 @@ export function createAuthService(): IAuthService {
   return new AuthService()
 }
 
-/**
- * 全局认证服务实例
- *
- * @deprecated 推荐使用 createAuthService() 配合依赖注入
- *
- * @example
- * ```typescript
- * // 不推荐：全局单例
- * import { authService } from '@spark-view/spark-app'
- * authService.initialize(config)
- * ```
- */
-export const authService = new AuthService()

@@ -5,6 +5,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "private": false,
+  "license": "MIT",
   "description": "SPARK AI Layer - AI 闭环协调、SSE 事件总线、设计会话、响应管线",
   "keywords": [
     "spark",
@@ -28,11 +29,12 @@
     }
   },
   "dependencies": {
-    "@spark-view/spark-utils": "workspace:*",
-    "@spark-view/spark-data": "workspace:*"
+    "@spark-view/spark-data": "workspace:*",
+    "@spark-view/spark-utils": "workspace:*"
   },
   "scripts": {
-    "build": "vite build && tsc -p tsconfig.build.json",
+    "clean": "rimraf dist",
+    "build": "pnpm run clean && vite build && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest",
     "test:run": "vitest run",
@@ -45,6 +47,7 @@
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
     "eslint": "^10.0.2",
+    "rimraf": "^6.1.2",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
     "vitest": "^4.0.18"

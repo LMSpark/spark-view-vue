@@ -9,9 +9,9 @@
  */
 
 import type { App } from 'vue'
-import { Logger } from '@spark-view/spark-utils'
+import { createLogger } from './logger'
 
-const logger = Logger('AutoRegister')
+const logger = createLogger('AutoRegister')
 
 export interface AutoRegisterOptions {
   /**

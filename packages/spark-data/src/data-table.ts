@@ -295,7 +295,7 @@ export class DataTable {
 
     // 注意：不在此处调用 initAutoSelection()。
     // autoCurrentFirst / autoSelectFirst 的初始选中事件必须在消费者（如页面脚本）
-    // 完成订阅后再发射，由渲染层在 FC mounted 后调用 DataSet.initAutoSelection() 统一触发。
+    // 完成订阅后再发射，由渲染层在渲染器 mounted 后调用 DataSet.initAutoSelection() 统一触发。
 
     // 处理命名视图（非 default）
     if (data.views) {
