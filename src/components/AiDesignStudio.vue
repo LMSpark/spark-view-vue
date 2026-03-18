@@ -197,7 +197,7 @@ import {
   AUTO_QUERY_PREFIX,
 } from '@spark-view/spark-ai'
 import type { ProposalType, DesignProposal } from '@spark-view/spark-ai'
-import NavIcon from './NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 import {
   ResponsePipeline,
   BlockExtractorProcessor,

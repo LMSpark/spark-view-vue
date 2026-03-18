@@ -47,7 +47,7 @@
 import { ref, computed, nextTick } from 'vue'
 import { typeIcon } from '@spark-view/spark-ai'
 import type { DesignProposal } from '@spark-view/spark-ai'
-import NavIcon from './NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 
 const props = defineProps<{
   proposal: DesignProposal

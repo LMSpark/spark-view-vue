@@ -260,7 +260,7 @@ import {
 import { BLUEPRINT_SYSTEM_PROMPT } from '@spark-view/spark-ai'
 import type { ProposalType, DesignProposal } from '@spark-view/spark-ai'
 import { formatTokenUsage as formatUsage } from '@spark-view/spark-ai'
-import NavIcon from './NavIcon.vue'
+import { NavIcon } from '@spark-view/spark-app'
 import AiProposalCard from './AiProposalCard.vue'
 import { http } from '@/services/http'
 import { getProjectApi } from '@/services/api-paths'
