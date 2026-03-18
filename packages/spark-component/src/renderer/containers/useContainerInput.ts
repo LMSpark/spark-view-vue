@@ -11,7 +11,7 @@ interface UseContainerInputOptions {
 }
 
 interface UseContainerInputReturn {
-  /** config.props.dataKey ?? props.dataKey */
+  /** config.dataKey ?? config.props.dataKey ?? props.dataKey */
   effectiveDataKey: ComputedRef<string | undefined>
   /**
    * sparkChildren 多源解析（优先 props → config.props.sparkChildren → []）。
@@ -34,7 +34,9 @@ export function useContainerInput(options: UseContainerInputOptions): UseContain
   const { config, dataKey, sparkChildren } = options
 
   const effectiveDataKey = computed(() =>
-    (config.value?.props?.['dataKey'] as string | undefined) ?? dataKey.value
+    config.value?.dataKey
+    ?? (config.value?.props?.['dataKey'] as string | undefined)
+    ?? dataKey.value
   )
 
   const resolvedSparkChildren = computed<ComponentConfig[]>(() => {
@@ -48,7 +50,10 @@ export function useContainerInput(options: UseContainerInputOptions): UseContain
   })
 
   const configChildren = computed<ComponentConfig[]>(() =>
-    config.value?.children ?? sparkChildren.value ?? []
+    config.value?.children
+    ?? sparkChildren.value
+    ?? (config.value?.props?.['sparkChildren'] as ComponentConfig[] | undefined)
+    ?? []
   )
 
   const mergedChildren = computed<ComponentConfig[]>(() => {

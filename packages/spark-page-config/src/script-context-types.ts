@@ -136,6 +136,13 @@ export interface IScriptContext {
   $api: IFormAPI | null
 
   /**
+   * 页面级组件访问 API。
+   *
+   * 可用于按组件 id / type 获取实例快照与容器组件暴露的包装 API。
+   */
+  $components: IPageComponentAccessInScript
+
+  /**
    * 当前路由快照（底层 Vue Router 实现，只读，framework-agnostic）。
    * 通过代理实时反映当前路由，但接口类型不依赖 Vue Router。
    */
@@ -238,6 +245,30 @@ export interface IPageServiceInScript {
   showLoading(show: boolean, text?: string): void
   /** 路由导航 */
   navigate(path: string, params?: Record<string, unknown>): void
+}
+
+/** 页面内组件实例快照（脚本可读） */
+export interface IPageComponentInstanceInScript {
+  id: string
+  type: string
+  props?: Record<string, unknown>
+}
+
+/** 页面级组件访问 API（脚本可用） */
+export interface IPageComponentAccessInScript {
+  /** 按组件 id 获取实例快照（推荐） */
+  get(id: string): IPageComponentInstanceInScript | null
+  /** 按组件 id 获取组件 API（推荐） */
+  getApi<T = unknown>(id: string): T | null
+  /** 列出页面组件实例（可按 type 过滤） */
+  list(type?: string): IPageComponentInstanceInScript[]
+  /** 列出组件 API（可按 type 过滤） */
+  getApis<T = unknown>(type?: string): T[]
+
+  /** @deprecated 使用 get(id) */
+  getInstance(id: string): IPageComponentInstanceInScript | null
+  /** @deprecated 使用 list(type?) */
+  listInstances(type?: string): IPageComponentInstanceInScript[]
 }
 
 export type PageDialogResultInScript = 'confirm' | 'cancel' | 'close'

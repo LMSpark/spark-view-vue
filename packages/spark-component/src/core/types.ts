@@ -84,6 +84,8 @@ export interface ComponentConfig {
   type: string
   /** 实例 ID（可选，运行时自动生成） */
   id?: string
+  /** 数据绑定键（如 Users@rows），供容器组件在运行时解析 DataView */
+  dataKey?: string
   /** 字段名（与父组件 dataKey 叠加，子组件通过 name 定位数据字段） */
   name?: string
   /** 组件属性 */

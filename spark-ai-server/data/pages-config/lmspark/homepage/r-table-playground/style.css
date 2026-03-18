@@ -1,0 +1,22 @@
+[data-page="r-table-playground"] .r-table-playground-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+[data-page="r-table-playground"] .r-table-playground-page__desc {
+  margin: 0;
+  color: #606266;
+}
+
+[data-page="r-table-playground"] .master-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 1200px) {
+  [data-page="r-table-playground"] .master-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

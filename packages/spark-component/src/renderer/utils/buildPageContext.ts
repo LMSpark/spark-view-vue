@@ -15,6 +15,7 @@ import type { IPageRoute, IFormAPI } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext, FCPageContext, FormCreateAPI } from '../types'
+import type { PageComponentRegistry } from '../../capability-keys'
 import { pageLogger } from './bind-helpers'
 
 // ─── 共享 $refreshData 实现 ──────────────────────────────────────────────────
@@ -60,8 +61,61 @@ export interface PageContextDeps {
   pageRoute: IPageRoute
   pageContainer: Ref<HTMLElement | null>
   pageService: IPageServiceCapability
+  /** 页面级组件注册中心 getter（可选） */
+  getComponentRegistry?: () => PageComponentRegistry | null
   /** 模块上下文 getter（可选，每次调用返回最新快照） */
   getModuleContext?: () => IModuleContext | null
+}
+
+function createEmptyComponentAccess(): PageContext['$components'] {
+  return {
+    get: () => null,
+    getApi: () => null,
+    list: () => [],
+    getApis: () => [],
+    getInstance: () => null,
+    listInstances: () => [],
+  }
+}
+
+function createComponentAccess(getRegistry?: () => PageComponentRegistry | null): PageContext['$components'] {
+  const fallback = createEmptyComponentAccess()
+
+  const getSafeRegistry = (): PageComponentRegistry | null => {
+    const registry = getRegistry?.() ?? null
+    return registry
+  }
+
+  return {
+    get(id: string) {
+      const registry = getSafeRegistry()
+      return registry?.getInstance(id) ?? fallback.get(id)
+    },
+    getApi<T = unknown>(id: string) {
+      const registry = getSafeRegistry()
+      return registry?.getApi<T>(id) ?? fallback.getApi<T>(id)
+    },
+    list(type?: string) {
+      const registry = getSafeRegistry()
+      return registry?.listInstances(type) ?? fallback.list(type)
+    },
+    getApis<T = unknown>(type?: string) {
+      const registry = getSafeRegistry()
+      if (!registry) return fallback.getApis<T>(type)
+      if (type === undefined || type.trim().length === 0) {
+        return registry.listApis().map(item => item.api as T)
+      }
+      return registry.getApisByType<T>(type)
+    },
+    getInstance(id: string) {
+      const registry = getSafeRegistry()
+      return registry?.getInstance(id) ?? fallback.getInstance(id)
+    },
+    listInstances(type?: string) {
+      const registry = getSafeRegistry()
+      return registry?.listInstances(type) ?? fallback.listInstances(type)
+    },
+  }
 }
 
 /**
@@ -70,10 +124,12 @@ export interface PageContextDeps {
 export function buildPageContext(deps: PageContextDeps): PageContext {
   const { getDataSet, pageRoute, pageContainer, pageService } = deps
   const scriptConsole = createScriptConsole()
+  const componentAccess = createComponentAccess(deps.getComponentRegistry)
 
   return {
     get $dataSet() { return getDataSet() },
     get $moduleContext() { return deps.getModuleContext?.() ?? null },
+    $components: componentAccess,
 
     $route:       pageRoute,
     $el:          () => pageContainer.value,

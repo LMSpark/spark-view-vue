@@ -11,6 +11,8 @@ import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { ComponentContext, ComponentConfig, ComponentRegistry } from '../core/types.js'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
+import { PAGE_COMPONENT_REGISTRY } from '../capability-keys.js'
+import type { PageComponentRegistry } from '../capability-keys.js'
 
 /* -------------------------------------------------------------------------- */
 
@@ -125,6 +127,15 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
 
   // 向子组件提供当前 context
   vueProvide(SPARK_PARENT_CONTEXT_KEY, context)
+
+  // ── 页面级实例登记（可选） ──
+  const pageComponentRegistry = lookup<PageComponentRegistry>(context, PAGE_COMPONENT_REGISTRY)
+  if (pageComponentRegistry) {
+    const instanceEntry = context.props === undefined
+      ? { id: context.id, type: context.type }
+      : { id: context.id, type: context.type, props: context.props }
+    pageComponentRegistry.registerInstance(instanceEntry)
+  }
 
   // ── Logger（从能力链查找，带一次性缓存） ──
   //
@@ -266,6 +277,7 @@ export function useSparkComponent<TConfig extends ComponentConfig = ComponentCon
       const idx = parentContext.children.indexOf(context)
       if (idx !== -1) parentContext.children.splice(idx, 1)
     }
+    pageComponentRegistry?.unregisterInstance(context.id)
     context.capabilities.clear()
   }
 

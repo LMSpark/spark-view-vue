@@ -369,6 +369,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
+    ds.getTable('Users')!.setApi({ list: { url: '/api/users', method: 'GET' } })
     const dv = ds.getView('Users', 'default')!
     const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
 
@@ -418,6 +419,56 @@ describe('RendererTable - DataView as single data intermediary', () => {
     await buttons[1]!.trigger('click')
     await flushPromises()
     expect(refreshSpy).toHaveBeenCalled()
+
+    refreshSpy.mockRestore()
+  })
+
+  it('should skip builtin refresh for inline tables without API', async () => {
+    const ds = SparkData.createDataSet({
+      dataSetName: 'RTDS-Builtin-Refresh-Inline',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [
+            { name: 'id', type: 'number' as const },
+            { name: 'name', type: 'string' as const },
+          ],
+          rows: [{ id: 1, name: 'Alice' }] as IDataRow[]
+        }
+      }
+    })
+
+    const dv = ds.getView('Users', 'default')!
+    const refreshSpy = vi.spyOn(dv, 'refresh').mockResolvedValue(undefined)
+
+    const wrapper = mount(RendererTable as any, {
+      props: {
+        dataView: dv,
+        toolbar: [
+          {
+            type: 'builtin-action',
+            props: {
+              builtinAction: 'refresh',
+              label: '刷新',
+              silent: true,
+            },
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          'el-table': ElTableStub,
+          'el-table-column': ElTableColumnStub,
+          'el-button': ElButtonStub,
+          SparkComponentRenderer: SparkColumnRendererStub,
+        },
+      },
+    })
+
+    await wrapper.find('.el-button-stub').trigger('click')
+    await flushPromises()
+
+    expect(refreshSpy).not.toHaveBeenCalled()
 
     refreshSpy.mockRestore()
   })
@@ -648,6 +699,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       }
     })
 
+    ds.getTable('Users')!.setApi({ list: { url: '/api/users', method: 'GET' } })
     const dv = ds.getView('Users', 'default')!
     const refreshSpy = vi.spyOn(dv, 'refresh').mockRejectedValue(new Error('network down'))
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)

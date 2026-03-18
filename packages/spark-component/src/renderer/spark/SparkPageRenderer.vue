@@ -81,7 +81,7 @@ const props = withDefaults(defineProps<PageRendererProps>(), {
 
 // ==================== 基础设施 ====================
 
-const { router, provideCapability, loading, error, runLoad } = useRendererSetup('spark-page-renderer', logger)
+const { router, provideCapability, loading, error, componentRegistry, runLoad } = useRendererSetup('spark-page-renderer', logger)
 const route = useRoute()
 const vueApp = getCurrentInstance()?.appContext.app
 
@@ -112,6 +112,7 @@ const pds = usePageDataSet({ enableDataSet: props.enableDataSet })
 const pageRoute = buildPageRoute(route)
 const pageContext: PageContext = buildPageContext({
   getDataSet: () => pds.dataSet,
+  getComponentRegistry: () => componentRegistry,
   pageRoute,
   pageContainer,
   pageService,
@@ -134,6 +135,72 @@ function executeScript(pageId: string, scriptText: string): void {
     logger.error('脚本编译失败', { pageId, error: e })
     pageFunctions.value = {}
   }
+}
+
+function bindSparkRuleEvents(
+  rules: unknown[],
+  pageFunctionsMap: Record<string, (...args: unknown[]) => unknown>
+): unknown[] {
+  const callFunc = (functionName: string, ...args: unknown[]) => {
+    const fn = pageFunctionsMap[functionName]
+    if (typeof fn === 'function') return fn(...args)
+    if (import.meta.env.DEV) {
+      logger.warn(`[SparkPageRenderer] 事件函数未定义: ${functionName}`)
+    }
+    return undefined
+  }
+
+  const bindNode = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(bindNode)
+    if (node === null || typeof node !== 'object') return node
+
+    const current = node as Record<string, unknown>
+    const cloned: Record<string, unknown> = { ...current }
+
+    if (current['on'] !== null && typeof current['on'] === 'object' && !Array.isArray(current['on'])) {
+      const newOn: Record<string, unknown> = {}
+      for (const [eventName, handler] of Object.entries(current['on'] as Record<string, unknown>)) {
+        if (typeof handler === 'string') {
+          newOn[eventName] = (...args: unknown[]) => callFunc(handler, ...args)
+        } else if (Array.isArray(handler)) {
+          newOn[eventName] = handler.map(item => (
+            typeof item === 'string'
+              ? (...args: unknown[]) => callFunc(item, ...args)
+              : item
+          ))
+        } else {
+          newOn[eventName] = handler
+        }
+      }
+      cloned['on'] = newOn
+    }
+
+    if (current['props'] !== null && typeof current['props'] === 'object' && !Array.isArray(current['props'])) {
+      const propsObj = { ...(current['props'] as Record<string, unknown>) }
+      for (const [propName, propValue] of Object.entries(propsObj)) {
+        if (propName.startsWith('on') && typeof propValue === 'string') {
+          propsObj[propName] = (...args: unknown[]) => callFunc(propValue, ...args)
+          continue
+        }
+        if (Array.isArray(propValue)) {
+          propsObj[propName] = propValue.map(bindNode)
+          continue
+        }
+        if (propValue !== null && typeof propValue === 'object') {
+          propsObj[propName] = bindNode(propValue)
+        }
+      }
+      cloned['props'] = propsObj
+    }
+
+    if (Array.isArray(current['children'])) {
+      cloned['children'] = (current['children'] as unknown[]).map(bindNode)
+    }
+
+    return cloned
+  }
+
+  return rules.map(bindNode)
 }
 
 // ==================== 配置加载流水线 ====================
@@ -164,7 +231,6 @@ async function fetchConfig(pageId: string): Promise<PageConfig> {
  * 注意：无 rebindRules（SPARK 原生渲染不依赖 form-create）。
  */
 function applyConfig(pageId: string, config: PageConfig): void {
-  resolvedRules.value = config.rule as unknown[]
   if (config.css) setScopedCss(pageId, config.css)
 
   executeScript(pageId, config.script ?? '')
@@ -175,6 +241,8 @@ function applyConfig(pageId: string, config: PageConfig): void {
   pds.initDataSet(config.data)
   const ds = pds.dataSet
   if (ds) provideCapability(PAGE_DATASET, ds)
+
+  resolvedRules.value = bindSparkRuleEvents(config.rule as unknown[], pageFunctions.value)
 }
 
 // ==================== 加载入口（与 FC 线 loadPageConfig 同构） ====================

@@ -101,7 +101,7 @@ export function usePageRenderer(
   const { pageContainer, vueApp } = refs
 
   // ── 共享基础设施（SPARK 上下文 + 加载状态机 + 竞态保护） ──
-  const { router, provideCapability, loading, error, runLoad } = useRendererSetup('page-renderer', pageLogger)
+  const { router, provideCapability, loading, error, componentRegistry, runLoad } = useRendererSetup('page-renderer', pageLogger)
 
   const route = useRoute()
   const pageRoute = buildPageRoute(route)
@@ -178,6 +178,7 @@ export function usePageRenderer(
   const pageContext: FCPageContext = buildFCPageContext({
     formApi,
     getDataSet: () => pds.dataSet,
+    getComponentRegistry: () => componentRegistry,
     pageRoute,
     pageContainer,
     rebindRules,
