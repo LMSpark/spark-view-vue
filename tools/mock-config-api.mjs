@@ -140,10 +140,6 @@ app.get('/api/config/default', async (req, res) => {
         'vxe-table': {
           enabled: true,
           priority: 2
-        },
-        'form-create': {
-          enabled: true,
-          priority: 3
         }
       },
       spark: {

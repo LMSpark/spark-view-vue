@@ -21,7 +21,6 @@ function __init__() {
 function handleCurrentRowChanged(currentRow) {
   if (currentRow) {
     _pageState.drawerVisible = true
-    $rebindRules()
   }
 }
 
@@ -107,7 +106,6 @@ function RenderCancelButton() {
     class: 'el-button el-button--default',
     onClick: () => {
       _pageState.drawerVisible = false
-      $rebindRules()
     }
   }, '取消')
 }
@@ -196,7 +194,6 @@ function handleSavePermission() {
   view.updateRowById(currentRow.id, currentRow)
   
   _pageState.drawerVisible = false
-  $rebindRules()
   $page.showMessage('权限保存成功', 'success')
 }
 

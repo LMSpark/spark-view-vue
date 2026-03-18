@@ -5,7 +5,7 @@
  *   - SPARK 能力上下文（useSparkComponent + APP_SERVICES）
  *   - 加载状态机（loading / error + 竞态保护）
  *
- * 差异化逻辑（DataSet / form-create / CSS scope / 脚本沙箱 / fetch）
+ * 差异化逻辑（DataSet / CSS scope / 脚本沙箱 / fetch）
  * 保留在各自消费方中，通过 `runLoad` 的回调注入。
  *
  * @example

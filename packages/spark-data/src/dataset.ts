@@ -182,7 +182,7 @@ export class DataSet implements IDataSet {
    * 对所有表的 default 视图触发 autoCurrentFirst / autoSelectFirst 初始选中逻辑。
    *
    * 必须在页面脚本（__init__）完成事件订阅**之后**调用，确保订阅者能收到
-   * `currentRowChanged` 事件。渲染层在 form-create mounted 钩子中、
+   * `currentRowChanged` 事件。渲染层在组件 mounted 钩子中、
    * `__init__` 执行完毕后调用此方法。
    */
   initAutoSelection(): void {

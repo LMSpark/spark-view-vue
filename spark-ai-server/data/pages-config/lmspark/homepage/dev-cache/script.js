@@ -26,7 +26,6 @@ function _refreshStats() {
   if (dev.getCacheStats) {
     _cacheStats = dev.getCacheStats()
   }
-  $rebindRules()
 }
 
 function __init__() {

@@ -1,7 +1,7 @@
 /**
  * PAGE_SERVICE 能力构建工厂
  *
- * 从 usePageRenderer 提取——构建 IPageServiceCapability 实现，
+ * 构建 IPageServiceCapability 实现，
  * 优先使用 props 注入的 UI 服务（测试/Storybook），回退到 Element Plus。
  */
 

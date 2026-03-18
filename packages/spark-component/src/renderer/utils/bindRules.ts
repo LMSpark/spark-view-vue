@@ -85,7 +85,7 @@ function bindRulesRecursive(
   return rules.map(rule => {
     const newRule = { ...rule }
 
-    // ── Render* 组件：已由 usePageRenderer 注册为响应式 Vue 组件，保持原样 ──
+    // ── Render* 组件：已由 registerRenderFunctions 注册为响应式 Vue 组件，保持原样 ──
     if (typeof newRule.type === 'string' && newRule.type.startsWith('Render')) {
       const renderType = newRule.type
       const camelType = renderType.charAt(0).toLowerCase() + renderType.slice(1)
@@ -135,7 +135,7 @@ function bindRulesRecursive(
         setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
       }
     }
-    // name 透传：form-create 不会把 rule.name 自动作为 Vue prop 传入，
+    // name 透传：rule.name 需显式复制到 props 以传给自定义组件
     // 所有 r-* 字段/容器组件都需要通过 props.name 接收字段名
     if (ruleType.startsWith('r-') && newRule.name !== undefined) {
       setRuleProp(newRule, 'name', newRule.name)
@@ -144,7 +144,7 @@ function bindRulesRecursive(
     // ── el-table / el-pagination / 表单组件 / 通用组件：dataKey 互斥委托 ──
     if (newRule['dataKey'] !== undefined) {
       if (ruleType === 'el-table') {
-        bindTableRule(newRule, dataSet, options.bindingId)
+        bindTableRule(newRule, dataSet)
       } else if (PAGINATION_TYPES.has(ruleType)) {
         bindPaginationRule(newRule, dataSet)
       } else if (FORM_ELEMENT_TYPES.has(ruleType)) {
@@ -206,8 +206,6 @@ function bindRulesRecursive(
     }
 
     // ── r-* 组件：children → sparkChildren prop ──
-    // form-create 的 slot 机制会用内部包装组件包裹子元素，
-    // 破坏 el-table 对 el-table-column 的直接子级检测。
     // 将已递归处理的 children 移入 sparkChildren prop，
     // 由组件自行通过 SparkComponentRenderer 渲染。
     //

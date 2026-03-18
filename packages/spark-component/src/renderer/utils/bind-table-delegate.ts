@@ -5,8 +5,6 @@
  *  - dataKey → DataView 数据属性注入（data / dataSource / dataView）
  *  - UI → DataSet 事件注入（currentChange / selectionChange / sortChange）
  *  - 加载状态指令（v-loading ← DataView.requestState）
- *
- * DataSet → UI 方向由 sync-table-delegate 负责（useRuleBinding 调用）。
  */
 
 import type { BindRule } from '../types'
@@ -20,12 +18,10 @@ import { wrapEvent } from './wrapEvent'
  *
  * @param rule    当前 el-table 规则节点
  * @param dataSet 页面级 DataSet
- * @param bindingId useRuleBinding 实例标识（originatorId 回路防护）
  */
 export function bindTableRule(
   rule: BindRule,
   dataSet: IDataSet | null,
-  bindingId?: string
 ): void {
   const rawKey = rule['dataKey'] as string | undefined
   if (!rawKey) return
@@ -43,7 +39,7 @@ export function bindTableRule(
 
   // 事件注入
   if (dataSet) {
-    injectTableEvents(rule, dataSet, bindingId)
+    injectTableEvents(rule, dataSet)
   }
 }
 
@@ -54,13 +50,10 @@ export function bindTableRule(
  *
  * 为表格的 currentChange / selectionChange / sortChange 事件注入处理器，
  * 将 el-table UI 事件同步写入对应的 DataView。
- * 事件携带 originatorId，下游 useRuleBinding 仅跳过同一 bindingId 的回写，
- * 其他同级 binding 实例仍正常进行 DataSet→UI 同步。
  */
 function injectTableEvents(
   rule: BindRule,
   dataSet: IDataSet,
-  bindingId?: string
 ): void {
   const dk = parseDataKey(rule['dataKey'] as string)
   if (!dk) return
@@ -84,14 +77,14 @@ function injectTableEvents(
     }
 
     if (currentRow === null) {
-      view.selection.setCurrentRowById(null, bindingId)
+      view.selection.setCurrentRowById(null)
       return
     }
 
-    // form-create 会污染原始对象（添加 $f/api/rule 属性），直接提取 PK 传给 ID-based API
+    // 行对象可能被上层框架污染（添加额外属性），直接提取 PK 传给 ID-based API
     const pk = view.getPkKey(currentRow)
     if (pk !== undefined) {
-      view.selection.setCurrentRowById(pk, bindingId)
+      view.selection.setCurrentRowById(pk)
     }
     // pk 缺失 → 静默跳过（行无主键，无法存储）
   }
@@ -100,13 +93,13 @@ function injectTableEvents(
   wrapEvent(rule, 'selectionChange', (selection: unknown) => {
     const rows = Array.isArray(selection) ? selection as IDataRow[] : []
     pageLogger.debug(`[TableEvent] selectionChange`, { tableName, viewId, count: rows.length })
-    // 提取 PK 数组，避免传入被 form-create 污染的行对象
+    // 提取 PK 数组，避免传入被污染的行对象
     const ids: Array<string | number> = []
     for (const r of rows) {
       const pk = view.getPkKey(r)
       if (pk !== undefined) ids.push(pk)
     }
-    view.selection.setSelectedRowsById(ids, bindingId)
+    view.selection.setSelectedRowsById(ids)
   })
 
   // ── sortChange（列排序变化 → DataView.setSort）──

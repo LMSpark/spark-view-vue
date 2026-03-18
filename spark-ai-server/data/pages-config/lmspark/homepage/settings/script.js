@@ -1,6 +1,6 @@
 ﻿// 系统设置页面脚本
 // 沙箱注入的全局变量: 
-// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
+// - $route, $el, $query, $queryAll, $dataSet, $refreshData, $page
 
 // 页面初始化
 console.log('⚙️ 系统设置页面已加载');

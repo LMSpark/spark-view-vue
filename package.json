@@ -56,7 +56,6 @@
     },
     "dependencies": {
         "@element-plus/icons-vue": "^2.3.2",
-        "@form-create/element-ui": "^3.2.37",
         "@spark-view/spark-app": "workspace:*",
         "@spark-view/spark-component": "workspace:*",
         "@spark-view/spark-data": "workspace:*",

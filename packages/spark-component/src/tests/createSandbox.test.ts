@@ -260,9 +260,9 @@ describe('createSandbox — compileFunctions', () => {
     expect(fns).toHaveProperty('asyncFn')
   })
 
-  // ── SparkPageContext（无 form-create API）─────────────────────────────────
+  // ── SparkPageContext ─────────────────────────────────────
 
-  it('PageContext 不含 $api / $rebindRules，脚本仍可正常编译执行', () => {
+  it('PageContext 脚本可正常编译执行', () => {
     const ctx = createMockContext()
     const script = `
       function getRoute() { return $route.path }
@@ -274,13 +274,13 @@ describe('createSandbox — compileFunctions', () => {
     expect(ctx.$page.showMessage).toHaveBeenCalledWith('ok', 'success')
   })
 
-  it('PageContext 中访问 $api 返回 undefined（沙箱安全代理）', () => {
+  it('沙箱中访问未注入变量返回 undefined（安全代理）', () => {
     const ctx = createMockContext()
     const script = `
       function tryApi() { return typeof $api }
     `
     const fns = compileFunctions(script, ctx)
-    // $api 不在 PageContext 上，with 代理返回 undefined
+    // 未注入的变量通过 with 安全代理返回 undefined
     expect(fns['tryApi']!()).toBe('undefined')
   })
 })

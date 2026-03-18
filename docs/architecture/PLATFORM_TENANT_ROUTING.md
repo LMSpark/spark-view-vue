@@ -292,7 +292,7 @@ X-Project-Id:   {user.defaultProjectId}  ← 默认 "homepage"
 |---------|---------|------|--------|----------|
 | 公共路由 | `/`、`/about`、`/login` 等 | Vue 组件 | VUE_PAGE_MAP scope='platform'（preAuthNavTree 自动派生） | 无（平台级） |
 | 管理页面路由 | `/t/:tenantId/dashboard` 等 | Vue 组件 | staticRoutes → 同步到 page_config → routes.json | homepage |
-| 配置页面路由 | `/t/:tenantId/{pageId}` | FCPageRenderer | DynamicRouter 从 routes.json 加载 | homepage 或 app |
+| 配置页面路由 | `/t/:tenantId/{pageId}` | SparkPageRenderer | DynamicRouter 从 routes.json 加载 | homepage 或 app |
 
 > **关键**：管理页面路由（dashboard / page-manager / nav-manager 等）虽然使用 Vue 组件渲染，
 > 但它们通过 `syncStaticRoutesToBackend()` 同步到 homepage 项目的 `page_config` 表，
@@ -341,7 +341,7 @@ getDataApi()  → /api/tenants/{tenantId}/projects/{projectId}/data
 
 homepage 导航点击 → /t/lmspark/{管理页面}
   ├── pageType="vue-component" → 使用 Vue 组件（page-manager / nav-manager 等）
-  └── pageType="config" → FCPageRenderer
+  └── pageType="config" → SparkPageRenderer
       → ConfigLoader.load({pageId})
       → GET /api/pages-config/{pageId}/rule.json      (扁平路由 + Header)
       → GET /api/pages-config/{pageId}/pagedata.json

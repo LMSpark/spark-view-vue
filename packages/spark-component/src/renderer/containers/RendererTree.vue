@@ -134,7 +134,7 @@ interface Props {
   config?: ComponentConfig
   /** DataKey 格式：scope@tableName@viewId@field （优先） */
   dataKey?: string
-  /** bindRules 从 rule.children 提取的子组件配置（form-create 路径） */
+  /** bindRules 从 rule.children 提取的子组件配置 */
   sparkChildren?: ComponentConfig[]
   data?: TreeNode[]
   dataSource?: IDataSource | DataView | undefined

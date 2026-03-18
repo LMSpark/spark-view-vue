@@ -149,7 +149,7 @@ private String buildSystemPrompt(AiChatRequest request) {
 ## rule.json 规范
 
 ### 根结构
-rule.json 是一个 JSON 数组，每个元素是 form-create 规则对象：
+rule.json 是一个 JSON 数组，每个元素是规则对象：
 ```json
 [
   {
@@ -283,7 +283,6 @@ Phase-1 已生成的 rule.json 会作为上下文提供。
 ### 沙箱环境
 
 script.js 运行在 `with(__ctx)` 沙箱中，可直接使用以下注入变量：
-- `$api` — 表单操作（getValue/setValue/hidden/disabled）
 - `$dataSet` — 页面级 DataSet（数据唯一入口）
 - `$page` — UI 服务（showMessage/showConfirm/showDialog/showAlert）
 - `$route` — 路由快照（path/params/query）
@@ -297,7 +296,7 @@ script.js 运行在 `with(__ctx)` 沙箱中，可直接使用以下注入变量�
 
 ```javascript
 function __init__() {
-  // 页面加载入口，$api 和 $dataSet 均已就绪
+  // 页面加载入口，$dataSet 已就绪
   // 在此注册数据订阅、初始化 UI 状态
 }
 ```
@@ -312,7 +311,6 @@ function __init__() {
 ### 树页面特殊约束
 
 包含 r-tree 的页面：
-- ❌ 禁止在交互中调用 `$rebindRules()`（会折叠所有树节点）
 - ✅ 用 `DataView.replaceRows()` 驱动数据变更
 - ✅ 用 `$query` + DOM 直写更新面板信息
 ```

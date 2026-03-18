@@ -389,21 +389,14 @@ export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY }
 
 // 页面渲染引擎
 export {
-  FCPageRenderer,
   SparkPageRenderer,
   SparkComponentRenderer,
-  usePageRenderer,
   usePageDataSet,
   bindDataToRules,
 }
 export type {
-  Rule,
-  FormCreateAPI,
   PageContext,
   PageConfig,
-  PageRendererOptions,
   RuleBindingOptions,
-  UsePageRendererReturn,
-  UsePageRendererRefs,
 }
 ```

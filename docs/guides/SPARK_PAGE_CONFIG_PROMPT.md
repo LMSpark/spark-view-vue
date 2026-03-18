@@ -31,11 +31,11 @@ SPARK 页面配置的**全部 4 个文件**。rule.json 是主文件，其他 3 
 如果 script.js 或 style.css 不需要（纯静态展示页），输出空内容并注释说明。
 
 ═══════════════════════════════════════════════════
-【1】rule.json — 主文件（form-create 规则数组）
+【1】rule.json — 主文件（规则数组）
 ═══════════════════════════════════════════════════
 
-rule.json 是一个 JSON 数组，每个元素是一条 form-create Rule 对象，描述 UI 组件树。
-框架（form-create + SPARK bindRules）解析此数组并渲染页面。
+rule.json 是一个 JSON 数组，每个元素是一条 Rule 对象，描述 UI 组件树。
+框架（SPARK bindRules）解析此数组并渲染页面。
 
 ───────────────────────────────────────────────────
 1.1  Rule 对象可用字段
@@ -51,13 +51,13 @@ rule.json 是一个 JSON 数组，每个元素是一条 form-create Rule 对象�
 | `style` | object\|string | 内联样式（推荐 object 写法） |
 | `class` | string | CSS 类名（配合 style.css 使用） |
 | `on` | object | 事件处理器（见 1.4） |
-| `field` | string | form-create 表单字段标识（仅 el-input 等表单控件用） |
+| `field` | string | 表单字段标识（仅 el-input 等表单控件用） |
 | `value` | any | 表单字段默认值（仅配合 field 使用） |
-| `key` | string | 组件唯一标识（用于 $api.el(key) 获取组件实例） |
+| `key` | string | 组件唯一标识（用于查找组件实例） |
 | `dataKey` | string | **SPARK 扩展**。数据绑定键（见 1.5） |
 | `name` | string | **SPARK 扩展**。字段绑定名（r-* 字段组件用，映射到 DataView 行字段） |
 
-**form-create 高级字段**（SPARK 页面中极少使用，了解即可）：
+**高级字段**（SPARK 页面中极少使用，了解即可）：
 
 | 字段 | 说明 |
 |------|------|
@@ -458,7 +458,7 @@ vxe-table, vxe-column 等（需已注册）
 
 事件处理器有两种声明位置，对应不同的处理方式：
 
-**位置 A：`on` 对象**（标准 form-create 事件）
+**位置 A：`on` 对象**（标准事件）
 值为 script.js 中的**函数名字符串**：
 ```json
 {
@@ -721,13 +721,11 @@ script.js 运行在 `with(__ctx)` 沙箱中。所有依赖通过沙箱注入，*
 
 | 变量 | 类型 | 用途 |
 |------|------|------|
-| `$api` | FormAPI | 表单操作（getValue / setValue / hidden / disabled） |
 | `$route` | IPageRoute | 路由快照（path, params, query） |
 | `$el` | () => HTMLElement | 页面容器元素 |
 | `$query` | (sel) => Element | DOM 查询（单个） |
 | `$queryAll` | (sel) => NodeList | DOM 查询（多个） |
 | `$dataSet` | DataSet | **核心**。页面级 DataSet 实例 |
-| `$rebindRules` | () => void | 触发 form-create 规则重建（⚠️ 重量级操作） |
 | `$refreshData` | (key?) => Promise | 刷新数据 |
 | `$page` | IPageService | **推荐**。UI 消息、确认框、导航 |
 | `SparkData` | namespace | createTreeManager 等工具 |
@@ -741,7 +739,7 @@ script.js 运行在 `with(__ctx)` 沙箱中。所有依赖通过沙箱注入，*
 // ── 模块级状态（闭包变量，非 Vue 响应式）──
 let _pageState = { selectedNode: null }
 
-// ── __init__：页面入口函数（form-create mounted 后自动调用一次）──
+// ── __init__：页面入口函数（渲染器挂载后自动调用一次）──
 function __init__() {
   // 订阅数据事件
   const view = $dataSet?.getView('TableName', 'default')
@@ -802,7 +800,7 @@ view.rows                        // 当前行数据数组
 view.currentRow                  // 当前行
 view.selectedRows                // 选中行
 
-// 写入（自动触发 UI 更新，无需 $rebindRules）
+// 写入（自动触发 UI 更新）
 view.replaceRows(newRows)        // 替换全部行
 view.appendRow({ id: 1, ... })   // 追加行
 view.updateRowById(id, { ... })  // 更新行
@@ -881,9 +879,8 @@ function RenderTable() {
 - **只用原生 HTML 标签**（`h('div', ...)`, `h('table', ...)`），不用 Element Plus 组件名
 - 内联样式使用字符串拼接（Render* 函数中 style 可以是字符串）
 - 事件绑定用 `onClick` / `onChange`（camelCase）
-- 从 `_pageState` 读取数据，用 `$rebindRules()` 触发重新渲染
+- 从 `_pageState` 读取数据，通过 DataView 事件或 DOM 直写触发重新渲染
 - 角色/状态切换组件用原生 `<input type="radio/checkbox">`，不用 el-radio-group
-  （form-create 重建会重置 el-radio-group 的 value）
 
 ───────────────────────────────────────────────────
 3.7  禁止事项
@@ -896,21 +893,19 @@ function RenderTable() {
 | `ElMessage` / `ElMessageBox` | `$page.showMessage / showConfirm / showAlert / showPrompt` |
 | `document.createElement` | `$el()?.ownerDocument?.createElement` |
 | `view.setCurrentRow(row)` 在 currentChange 回调中 | 只写业务逻辑，框架自动同步 |
-| `$rebindRules()` 在树节点事件中 | `_flushXxxDOM()` 或 `view.replaceRows()` |
 
 ───────────────────────────────────────────────────
-3.8  避免 $rebindRules() 的场景
+3.8  UI 更新模式
 ───────────────────────────────────────────────────
 
-`$rebindRules()` 会完全重建 form-create 规则，代价高昂（折叠树、重置输入框、丢失滚动）。
-优先使用以下替代方案：
+优先使用以下方案更新 UI：
 
 | 场景 | 正确做法 |
 |------|---------|
 | 更新表格数据 | `view.replaceRows(newRows)` — DataView 事件自动刷新 UI |
 | 更新 Render* 组件中的纯 UI 文本 | `_flushXxxDOM()` — 直接操作 DOM |
 | 树节点点击后更新信息面板 | `_flushNodeInfoDOM()` — DOM 直写 |
-| 切换角色/模式后完全重建页面 | `$rebindRules()` — 此时可以接受 |
+| 切换角色/模式后完全重建页面 | DataView.replaceRows() + DOM 直写 |
 
 **DOM 直写模式**：
 ```javascript
@@ -1044,9 +1039,9 @@ SPARK 页面样式通过 `[data-page="page-id"]` 选择器实现作用域隔离�
    `[data-page="xxx"] .page-header { ... }`
    （rule.json 中不加 `[data-page]`，框架自动处理）
 
-6. **field ↔ script $api 操作**
+6. **field ↔ 表单字段**
    rule.json 中 `"field": "searchKeyword"` → script.js 中
-   `$api?.getValue('searchKeyword')` / `$api?.setValue('searchKeyword', ...)`
+   `$query('[name="searchKeyword"]')?.value`
 
 7. **name ↔ 行字段**
    r-* 字段组件的 `"name": "age"` 必须对应 pagedata.json 列定义中的字段名
@@ -1083,7 +1078,7 @@ SPARK 页面样式通过 `[data-page="page-id"]` 选择器实现作用域隔离�
 18. 模块状态用 `let _pageState = { ... }` 声明
 19. 使用 `$page.showMessage/showConfirm` 代替 ElMessage/ElMessageBox
 20. Render* 函数只用原生 HTML 标签
-21. 有树的页面不要在节点事件中调用 `$rebindRules()`
+21. 有树的页面不要在节点事件中触发全局重建
 
 **style.css 规则**
 22. 所有规则以 `[data-page="page-id"]` 开头
@@ -1115,7 +1110,7 @@ SPARK 页面样式通过 `[data-page="page-id"]` 选择器实现作用域隔离�
 - rule.json: r-tree + 信息面板 div（class="node-info"）+ 可选子表
 - pagedata.json: treeData（扁平节点）+ hierarchicalTreeData（空 rows）+ 可选 childNodes
 - script.js: __init__ 创建 TreeManager + buildNestedTree + replaceRows；
-  handleNodeClick 中 _flushNodeInfoDOM()（不调 $rebindRules）
+  handleNodeClick 中 _flushNodeInfoDOM()（DOM 直写）
 - style.css: 树容器 + 节点样式
 
 **D. 表格+操作列页面**（Render* 模式）

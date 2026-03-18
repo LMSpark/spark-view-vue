@@ -1,6 +1,6 @@
 ﻿// 页面脚本
 // 沙箱注入的全局变量: 
-// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page
+// - $route, $el, $query, $queryAll, $dataSet, $refreshData, $page
 
 // 页面初始化（直接使用沙箱变量）
 console.log('🚀 工作台页面已加载');
@@ -68,21 +68,12 @@ function showAlert() {
 }
 
 function getFormData() {
-    if ($api) {
-        const data = $api.formData();
-        console.log('📋 表单数据:', data);
-        $page.showAlert('表单数据: ' + JSON.stringify(data, null, 2), '表单数据');
-        return data;
-    }
-    console.warn('⚠️ 表单 API 未就绪');
-    return null;
+    console.warn('⚠️ getFormData 已废弃，请使用 $dataSet 读取数据')
+    return null
 }
 
 function handleInputChange(value) {
     console.log('📝 输入值变化:', value);
-    if ($api) {
-        console.log('当前表单数据:', $api.formData());
-    }
 }
 
 function handleRowClick(row, column, event) {

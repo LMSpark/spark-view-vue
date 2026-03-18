@@ -1,5 +1,5 @@
 ﻿// 沙箱注入的全局变量: 
-// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page, SparkData, h
+// - $route, $el, $query, $queryAll, $dataSet, $refreshData, $page, SparkData, h
 
 let _pageState = { currentUser: null, selectedOrdersCount: 0 }
 
@@ -47,7 +47,7 @@ function handleUserSelect(row) {
 
   // ⚠️ 不要在此调用 view.setCurrentRow(row)！
   // injectTableEvents（bindRules.ts）已在此回调之后通过 PK 查找干净行并调用 setCurrentRow。
-  // 此处拿到的 row 可能被 form-create 污染（加了 $f/api/rule 属性），直接传入会触发 WARN。
+  // 此处拿到的 row 可能被框架注入额外属性，直接传入可能触发 WARN。
   // 应用层只需处理业务逻辑（加载子表、更新 UI 状态），DataView 同步由框架负责。
 
   // 检查子表视图是否已配置 API（演示环境内联数据，无需加载）
@@ -74,8 +74,8 @@ function handleUserSelect(row) {
   // 清空级联状态
   _pageState.selectedOrdersCount = 0
   
-  // ❌ 移除 $rebindRules() - 内核会自动通知订阅者更新 UI
-  // 调用 $rebindRules() 会导致 el-table 重新渲染，复选框状态丢失
+  // 内核会自动通知订阅者更新 UI
+  // 重新渲染会导致 el-table 复选框状态丢失
   
   console.log(`📋 用户 ${row.name} 的订单数:`, ordersTable?.rows?.length)
 }
@@ -87,11 +87,11 @@ function handleOrderSelect(selection) {
   console.log('📦 选中订单:', selection)
   
   // ✅ 不需要手动设置 selectedRows - 自动注入的事件处理器已经完成了同步
-  // ✅ 不需要调用 $rebindRules - 关联更新会自动通知子表（OrderItems）刷新
+  // ✅ 不需要手动触发重绑 - 关联更新会自动通知子表（OrderItems）刷新
   // 这里只更新 UI 统计信息（不触发重绑）
   _pageState.selectedOrdersCount = selection.length
   
-  // ❌ 移除 $rebindRules() - 会导致 el-table 重新渲染，复选框状态丢失
+  // ❤ 重新渲染会导致 el-table 复选框状态丢失
 }
 
 /**

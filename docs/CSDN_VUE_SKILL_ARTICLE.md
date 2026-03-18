@@ -593,7 +593,7 @@ AI 生成 `rule.json` 时不需要知道权限规则——Skill 自己处理，�
 Skill 化的组件元数据可以驱动自动化的 Storybook：
 
 ```typescript
-// FCPageRenderer.stories.ts（项目中实际存在）
+// SparkPageRenderer.stories.ts（项目中实际存在）
 // 通过 ComponentConfig 直接驱动 Story，无需手写 args
 export default {
   title: 'SPARK/Skills/r-table',

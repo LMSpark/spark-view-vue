@@ -3,13 +3,11 @@
 // ========================================
 // 
 // 沙箱注入的全局变量:
-//   - $api: FormCreate API
 //   - $route: 当前路由快照 (IPageRoute)
 //   - $el: 页面容器元素 (() => HTMLElement)
 //   - $query: DOM 查询单个元素
 //   - $queryAll: DOM 查询所有元素
 //   - $dataSet: 页面级 DataSet 实例
-//   - $rebindRules: 重新绑定规则（触发 form-create 重建）
 //   - $refreshData: 刷新数据 (key?) => Promise<void>
 //   - $page: UI 消息、确认框、导航（IPageServiceCapability）
 //   - SparkData: SPARK 数据空间命名空间
@@ -28,7 +26,7 @@ let _pageState = {}
  * 初始化树管理器
  */
 function __init__() {
-  if (_initialized) return   // 防止 $rebindRules() 触发重复初始化
+  if (_initialized) return   // 防止重复初始化
   _initialized = true
   const pageData = _pageState
   const dataSet = $dataSet
@@ -89,7 +87,7 @@ function __init__() {
 /**
  * RenderNodeInfo — 响应式节点信息面板
  * 直接读取 _pageState.selectedNode / _pageState.selectedPathText，
- * 依赖 Vue 响应式自动刷新，无需 $rebindRules()
+ * 依赖 Vue 响应式自动刷新
  */
 function RenderNodeInfo() {
   const node = _pageState.selectedNode
@@ -135,7 +133,7 @@ function RenderNodeInfo() {
 }
 
 /**
- * 直接将节点信息刷入 DOM（避免 $rebindRules() 导致树折叠）
+ * 直接将节点信息刷入 DOM（避免重建导致树折叠）
  */
 function _flushNodeInfoDOM() {
   const container = $query('.node-info')
@@ -198,14 +196,8 @@ function testNodeClick() {
 
 /**
  * 展开节点
- * 注意：FormCreate 会在第一个参数注入上下文，需要跳过
  */
-function handleNodeExpand(...args) {
-  // 跳过 FormCreate 上下文
-  let data = args[0]
-  if (data && (data.$f || data.api)) {
-    data = args[1]
-  }
+function handleNodeExpand(data) {
   const pageData = _pageState
   console.log('🔽 展开节点:', data)
   
@@ -228,14 +220,8 @@ function handleNodeExpand(...args) {
 
 /**
  * 收起节点
- * 注意：FormCreate 会在第一个参数注入上下文，需要跳过
  */
-function handleNodeCollapse(...args) {
-  // 跳过 FormCreate 上下文
-  let data = args[0]
-  if (data && (data.$f || data.api)) {
-    data = args[1]
-  }
+function handleNodeCollapse(data) {
   const pageData = _pageState
   console.log('🔼 收起节点:', data)
   
@@ -256,19 +242,10 @@ function handleNodeCollapse(...args) {
 
 /**
  * 点击节点
- * 注意：FormCreate 会在第一个参数注入上下文（包含 $f, api 等），需要跳过
  */
-function handleNodeClick(...args) {
+function handleNodeClick(nodeData) {
   const pageData = _pageState
   
-  // 跳过 FormCreate 注入的上下文参数（包含 $f 或 api 字段）
-  let nodeData = args[0]
-  if (nodeData && (nodeData.$f || nodeData.api)) {
-    // 第一个参数是 FormCreate 上下文，使用第二个参数
-    nodeData = args[1]
-  }
-  
-  console.log('📍 点击节点 - 原始参数:', args)
   console.log('📍 点击节点 - 节点数据:', nodeData)
   console.log('📍 更新前 selectedNode:', pageData.selectedNode)
   
@@ -308,16 +285,15 @@ function handleNodeClick(...args) {
     $page.showMessage(`已选中: ${nodeData.name || nodeData.label}`, 'info')
   }
   
-  // 通过 form-create API 获取 RendererTree 组件实例，再取内部 el-tree 调用 setCurrentKey
-  // 避免 $rebindRules() 重建整棵树导致展开状态丢失
+  // 通过 DOM 查询获取 el-tree 组件实例，调用 setCurrentKey 设置高亮
   try {
-    const treeComp = $api?.el('organization-tree')
+    const treeEl = $query('[name="organization-tree"]')
     // RendererTree 根元素是 el-tree，其 $el.__vueParentComponent 可向上找到 el-tree vm
     // 更简单：直接查 DOM 上挂的 __vueParentComponent
-    if (treeComp) {
-      const elTreeVm = treeComp.__vue_app__
+    if (treeEl) {
+      const elTreeVm = treeEl.__vue_app__
         ? null  // element ref，不是 vm
-        : treeComp?.$refs?.tree   // r-tree 暴露的 ref（若存在）
+        : treeEl?.$refs?.tree   // r-tree 暴露的 ref（若存在）
       if (elTreeVm && typeof elTreeVm.setCurrentKey === 'function') {
         elTreeVm.setCurrentKey(nodeData.id)
       }
@@ -326,7 +302,7 @@ function handleNodeClick(...args) {
     // 忽略，el-tree 内部已通过 click 维护了 highlight 状态
   }
 
-  // ── 级联更新子节点表格（通过 DataView.replaceRows，无需 $rebindRules）──
+  // ── 级联更新子节点表格（通过 DataView.replaceRows）──
   try {
     const childView = $dataSet?.getView?.('childNodes')
     if (childView) {
@@ -357,7 +333,7 @@ function handleSearchInput(value) {
   const pageData = _pageState
   pageData.searchKeyword = value
   console.log('📝 搜索输入变化:', value)
-  // ⚠️ 不调用 $rebindRules()，避免输入框被重置
+  // 不调用重建，避免输入框被重置
 }
 
 /**
@@ -368,7 +344,7 @@ function handleSearch() {
   const pageData = _pageState
   
   // 🔑 从沙箱上下文获取 formApi
-  const keyword = $api?.getValue('searchKeyword') || ''
+  const keyword = $query('[name="searchKeyword"]')?.value || ''
   
   console.log('📝 当前 searchKeyword:', keyword)
   
@@ -395,7 +371,7 @@ function handleSearch() {
     })
   })
   
-  // 通过 DataView.replaceRows 更新表格，无需 $rebindRules()
+  // 通过 DataView.replaceRows 更新表格
   if (childView) {
     childView.replaceRows(resultsWithPath)
   }
@@ -538,7 +514,7 @@ async function handleAddNode() {
   // 添加到缓存
   treeManager.addNodesToCache([newNode])
   
-  // 🔑 关键：重新构建树形结构并写入 DataSet（DataView 事件自动驱动 r-tree，无需 $rebindRules）
+  // 🔑 关键：重新构建树形结构并写入 DataSet（DataView 事件自动驱动 r-tree）
   if (treeManager.buildNestedTree) {
     const nestedTree = treeManager.buildNestedTree()
     const hView = $dataSet?.getView?.('hierarchicalTreeData', 'default')
@@ -583,7 +559,7 @@ async function handleDeleteNode() {
   const cache = treeManager.getCache()
   delete cache[node.id]
   
-  // 🔑 关键：重新构建树形结构并写入 DataSet（DataView 事件自动驱动 r-tree，无需 $rebindRules）
+  // 🔑 关键：重新构建树形结构并写入 DataSet（DataView 事件自动驱动 r-tree）
   if (treeManager.buildNestedTree) {
     const nestedTree = treeManager.buildNestedTree()
     const hView = $dataSet?.getView?.('hierarchicalTreeData', 'default')

@@ -7,8 +7,8 @@
  * 3. 工具栏包含 新增 / 刷新 按钮
  * 4. 薪资千分位、日期、布尔标签等列格式化
  *
- * 沙箱注入: $api $route $el $query $queryAll
- *            $dataSet $rebindRules $refreshData $page
+ * 沙箱注入: $route $el $query $queryAll
+ *            $dataSet $refreshData $page
  *            SparkData h
  */
 
@@ -39,7 +39,6 @@ function handleAdd() {
 
 function handleRefresh() {
   _pageState.rows = INIT_ROWS.slice()
-  $rebindRules()
   $page.showMessage('已刷新（恢复初始数据）', 'success')
 }
 
@@ -51,7 +50,6 @@ function handleDelete(row) {
   $page.showConfirm('确认删除「' + row.name + '」？').then(function(ok) {
     if (!ok) return
     _pageState.rows = _pageState.rows.filter(function(r) { return r.id !== row.id })
-    $rebindRules()
     $page.showMessage('「' + row.name + '」已删除', 'success')
   })
 }

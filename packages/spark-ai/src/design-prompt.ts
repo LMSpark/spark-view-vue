@@ -185,10 +185,10 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。每个节�
 
 | 规则 | 说明 |
 |------|------|
-| 沙箱变量 | \`$api / $dataSet / $page / $route / $refreshData / SparkData / h\` |
+| 沙箱变量 | \`$dataSet / $page / $route / $refreshData / SparkData / h\` |
 | \`__init__()\` | 默认空实现；仅在存在复杂业务分支/订阅时补充逻辑 |
 | UI 消息 | 用 \`$page.showMessage / showConfirm\`，禁止 ElMessage |
-| 树场景 | 禁止 \`$rebindRules()\`，改用 \`view.replaceRows()\` + DOM 直写 |
+| 树场景 | 用 \`view.replaceRows()\` + DOM 直写驱动更新 |
 | 事件签名 | \`currentRowChanged\` handler 第一参数直接是 currentRow，不是事件对象 |
 | 父子联动 | 优先用 relations 配置，不手写 watch + 过滤 |
 | 跨函数状态 | \`let _pageState = {}\` 模块顶层声明 |

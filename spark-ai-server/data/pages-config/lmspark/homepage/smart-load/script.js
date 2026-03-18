@@ -1,5 +1,5 @@
 ﻿// 沙箱注入的全局变量: 
-// - $api, $route, $el, $query, $queryAll, $dataSet, $rebindRules, $refreshData, $page, SparkData, h
+// - $route, $el, $query, $queryAll, $dataSet, $refreshData, $page, SparkData, h
 
 // 数据加载通过视图的 CRUD API 完成（loadFromServer）
 

@@ -37,7 +37,7 @@
         "type": "r-section",
         "props": {
             "title": "当前节点",
-            "description": "点击树节点后，这个区域会直接用 DOM 写入当前节点信息，不触发 $rebindRules。"
+            "description": "点击树节点后，这个区域会直接用 DOM 写入当前节点信息。"
         },
         "children": [
             {

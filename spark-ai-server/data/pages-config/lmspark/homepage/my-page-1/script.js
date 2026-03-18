@@ -68,7 +68,7 @@ function handleDeleteSelected() {
 }
 
 function handleSearch() {
-  const keyword = $api.getValue('searchKeyword') || ''
+  const keyword = $query('[name="searchKeyword"]')?.value || ''
   _pageState.searchKeyword = keyword
   const view = $dataSet?.getView('Scores', 'default')
   if (view) {
@@ -156,9 +156,9 @@ function updatePaginationTotal() {
 }
 
 function updateDeleteButtonState() {
-  const deleteButton = $api.el('deleteButton')
+  const deleteButton = $query('[name="deleteButton"]')
   if (deleteButton) {
     const disabled = !Array.isArray(_pageState.selectedRows) || _pageState.selectedRows.length === 0
-    $api.disabled('deleteButton', disabled)
+    deleteButton.disabled = disabled
   }
 }

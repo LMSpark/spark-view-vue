@@ -36,7 +36,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['@form-create/element-ui', 'vxe-table']
+    include: ['vxe-table']
   },
   server: {
     port: 5173,
@@ -269,11 +269,6 @@ export default registerComponents
           
           if (id.includes('@syncfusion/')) {
             return 'syncfusion'
-          }
-          
-          // FormCreate
-          if (id.includes('@form-create')) {
-            return 'form-create'
           }
 
           // ── 智能路由级代码分割 ──

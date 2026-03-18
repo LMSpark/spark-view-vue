@@ -255,11 +255,11 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 
 `script.js` 沙箱的核心设计目标是**让业务逻辑与具体前端框架解耦**：
 
-- 业务脚本只能看到 `IScriptContext` 定义的**框架无关抽象接口**（`$page / $api / $route / $dataSet`）
-- 底层实现（Vue Router / form-create / Element Plus）由**渲染层**注入，业务脚本不感知
+- 业务脚本只能看到 `IScriptContext` 定义的**框架无关抽象接口**（`$page / $route / $dataSet`）
+- 底层实现（Vue Router / Element Plus）由**渲染层**注入，业务脚本不感知
 - 同一份 `script.js` 理论上可在任何实现了 `IScriptContext` 的渲染层上运行
 
-这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router、`$api` 替代 form-create 直接引用的根本原因——**接口是契约，实现可替换**。
+这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router 的根本原因——**接口是契约，实现可替换**。
 
 ---
 
@@ -267,13 +267,11 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 
 | 变量 | 类型 | 说明 |
 |------|------|------|
-| `$api` | `IFormAPI \| null` | 表单操作（`getValue / setValue / hidden / disabled` 等），框架无关接口 |
 | `$route` | `IPageRoute` | 当前路由快照（`path, params, query, name`），框架无关接口 |
 | `$el` | `() => HTMLElement \| null` | 页面容器元素 |
 | `$query` | `(sel) => HTMLElement \| null` | DOM 单元素查询 |
 | `$queryAll` | `(sel) => NodeListOf<Element>` | DOM 多元素查询 |
 | `$dataSet` | `IDataSet \| null` | **页面级 DataSet**（数据唯一入口） |
-| `$rebindRules` | `() => void` | 触发 form-create **完整重建**规则（⚠️ **高危**：会折叠所有树节点、重置输入框、丢失滚动位置，尽量避免） |
 | `$refreshData` | `(key?) => Promise<void>` | 刷新数据（可选指定表名） |
 | `$page` | `IPageServiceCapability` | ✅ **推荐** UI 消息、确认、输入、导航、加载遮罩、弹层、文件浏览、文件上传（框架无关） |
 | `SparkData` | SparkData 命名空间 | `createTreeManager` 等工具 |
@@ -288,14 +286,13 @@ el-table 的常用 props 必须在 rule.json 中**显式声明**，框架不提�
 | `window.Vue` | `h` 已直接注入 | 直接用 `h(...)` |
 | `ElMessage.xxx(...)` | **已从沙箱移除** | `$page.showMessage / showConfirm / showPrompt / showAlert / showDialog / selectEntities` |
 | `ElMessageBox.xxx(...)` | **已从沙箱移除** | `$page.showConfirm / showPrompt / showAlert / showDialog / selectEntities` |
-| Vue Router / FormCreate 直接 import | 沙箱不支持 ESM | `$route`（IPageRoute）/ `$api`（IFormAPI）已注入 |
+| Vue Router 直接 import | 沙箱不支持 ESM | `$route`（IPageRoute）已注入 |
 | `import` 语句 | 沙箱不支持 ESM | 所有依赖通过沙箱注入 |
-| `view.setCurrentRow(row)` 在 `currentChange` 回调中 | `injectTableEvents`（bindRules.ts）已在回调后通过 PK 查干净行并调用；回调里的 row 被 form-create 污染（含 `$f/api/rule` 属性），直接传入会触发 `[WARN] 行缺少主键` | 只写业务逻辑，DataView 同步由框架负责 |
-| 在树节点事件（`onNodeClick` 等）内调用 `$rebindRules()` | 重建规则会折叠所有已展开节点，UX 破坏 | 用 `DataView.replaceRows()` + DOM 直写（见下方「避免 `$rebindRules()` 破坏树展开」）|
+| `view.setCurrentRow(row)` 在 `currentChange` 回调中 | `injectTableEvents`（bindRules.ts）已在回调后通过 PK 查干净行并调用 | 只写业务逻辑，DataView 同步由框架负责 |
 
 ### `__init__` 页面加载事件 🚀
 
-`__init__` 是页面脚本的**入口函数**，相当于页面的 `onLoad` 事件。框架在 form-create 挂载完成后自动调用。
+`__init__` 是页面脚本的**入口函数**，相当于页面的 `onLoad` 事件。框架在渲染器挂载完成后自动调用。
 
 **执行时序**：
 ```
@@ -307,17 +304,16 @@ applyConfig（async）
   ├─ await nextTick()
   └─ rebindRules()          ← dataKey 解析到真实数据
        ↓
-loading = false → form-create 开始挂载
+loading = false → 渲染器开始挂载
        ↓
-form-create mounted 钩子
-  ├─ __init__()             ← 页面脚本入口（$api / $dataSet 均已就绪）
+渲染器 mounted 钩子
+  ├─ __init__()             ← 页面脚本入口（$dataSet 已就绪）
   └─ initAutoSelection()    ← 触发初始选中事件
 ```
 
-> **设计要点**：DataSet 在 `rebindRules()` 之前初始化，使 dataKey 一次绑定即解析到真实数据，无需先空绑再二次绑定。`mounted` 每次都会触发（`loading` toggle 导致 form-create 销毁/重建），但其时机晚于 `rebindRules`，不适合放 DataSet 初始化。
+> **设计要点**：DataSet 在 `rebindRules()` 之前初始化，使 dataKey 一次绑定即解析到真实数据，无需先空绑再二次绑定。
 
 **`__init__` 内可用资源**：
-- `$api`：form-create API 已就绪，可调用 `getValue / setValue / hidden` 等
 - `$dataSet`：DataSet 已初始化，可订阅事件、操作数据
 - `$route`：路由参数可用
 - `$page`：UI 服务可用
@@ -338,13 +334,13 @@ function __init__() {
   }
 
   // 3. 初始化 UI 状态
-  $api?.hidden('advancedPanel', true)
+  const panel = $query('[name="advancedPanel"]')
+  if (panel) panel.style.display = 'none'
 }
 ```
 
 **注意事项**：
 - `__init__` 只执行一次（页面首次加载时），页面内导航不会重复执行
-- 不要在 `__init__` 中调用 `$rebindRules()`——此时规则刚绑定完成
 - 数据订阅应在 `__init__` 中注册，确保能收到 `initAutoSelection()` 触发的初始事件
 
 ### UI 状态存储模式
@@ -357,10 +353,10 @@ let _pageState = { currentUser: '', tableData: [], selectedNode: null }
 
 function handleSelect(node) {
   _pageState.selectedNode = node     // 写入闭包变量
-  $rebindRules()                     // 如果渲染函数读取该状态，需手动触发重绑
+  // 如果渲染函数读取该状态，通过 DOM 直写更新 UI
 }
 
-// 渲染函数通过 _pageState 读值（每次 $rebindRules() 时重新执行）
+// 渲染函数通过 _pageState 读值（初次挂载时执行，之后靠 DOM 直写）
 function RenderNodeInfo() {
   const node = _pageState.selectedNode
   return h('div', node?.name ?? '未选择')
@@ -368,13 +364,12 @@ function RenderNodeInfo() {
 ```
 
 > **注意**：`_pageState` 是普通 JS 对象，**不具备 Vue 响应式**。变更后若需 UI 刷新，
-> 必须调用 `$rebindRules()`（form-create 重建规则），或通过 `$dataSet` 的 DataView
-> 方法（如 `view.replaceRows()`）驱动——DataView 事件会自动更新订阅了该视图的组件，
-> 无需 `$rebindRules()`。
+> 可通过 DOM 直写（`$query` + `innerHTML`），或通过 `$dataSet` 的 DataView
+> 方法（如 `view.replaceRows()`）驱动——DataView 事件会自动更新订阅了该视图的组件。
 
-### 避免 `$rebindRules()` 破坏树展开状态 🌲
+### UI 更新模式（树页面必读）🌲
 
-**核心原则**：凡是页面包含 `r-tree` / el-tree，任何交互都**不得**调用 `$rebindRules()`，否则树节点全部折叠。用以下两种模式替代：
+**核心原则**：凡是页面包含 `r-tree` / el-tree，任何交互都应通过 **DataView + DOM 直写** 更新 UI，保持树节点展开状态。
 
 **模式 A — 纯 UI 状态（非 DataSet）→ DOM 直写**
 
@@ -384,7 +379,7 @@ function RenderNodeInfo() {
 // rule.json 中给容器加 id/class：
 // { "type": "div", "class": "node-info", ... }
 
-// script.js 中直接写 innerHTML，不触发 form-create 规则重建
+// script.js 中直接写 innerHTML，不触发规则重建
 function _flushNodeInfoDOM() {
   const container = $query('.node-info')   // 或 $query('#my-panel')
   if (!container) return
@@ -419,7 +414,6 @@ function __init__() {
   treeManager = SparkData.createTreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, nodes)
   const nestedTree = treeManager.buildNestedTree()
   $dataSet?.getView('hierarchicalTreeData', 'default')?.replaceRows(nestedTree)  // 驱动 r-tree
-  // ❌ 绝不调用 $rebindRules()
 }
 
 // 添加/删除节点后同样用 replaceRows
@@ -434,10 +428,10 @@ function handleAddNode() {
 
 | 场景 | 错误做法 | 正确做法 |
 |------|---------|----------|
-| 节点点击 → 更新右侧面板 | `$rebindRules()` | `_flushXxxDOM()` |
-| 添加/删除节点 → 更新树 | `_pageState.xxx = tree; $rebindRules()` | `view.replaceRows(nestedTree)` |
-| 子表数据联动 | `$rebindRules()` | `childView.replaceRows(rows)` |
-| 渲染函数 `Render*` 初次渲染 | — | 正常，仅首次 form-create 构建时执行，之后靠 DOM 直写 |
+| 节点点击 → 更新右侧面板 | 直接操作 DOM 外层 | `_flushXxxDOM()` |
+| 添加/删除节点 → 更新树 | 手动重建规则 | `view.replaceRows(nestedTree)` |
+| 子表数据联动 | 手动触发全量重绑 | `childView.replaceRows(rows)` |
+| 渲染函数 `Render*` 初次渲染 | — | 正常，仅初次挂载时执行，之后靠 DOM 直写 |
 
 ### 数据访问模式
 
@@ -453,7 +447,7 @@ function __init__() {
   })
 }
 
-// ✅ 操作数据（无需 $rebindRules）
+// ✅ 操作数据（DataView 事件自动刷新 UI）
 $dataSet?.getView('Items', 'default')?.replaceRows(newRows)
 ```
 
@@ -562,14 +556,14 @@ let _pageState = {
   modelPerm:   null,          // 对应 _modelPerm（模型级权限快照）
 }
 
-// handleSwitchUser：切换角色 = 模拟后端返回不同 _perm 数据，触发 $rebindRules()
+// handleSwitchUser：切换角色 = 模拟后端返回不同 _perm 数据，通过 DataView 驱动 UI 更新
 function handleSwitchUser(userId) {
   var resp = MOCK_RESPONSES[userId]
   if (!resp) return
   _pageState.currentUser = userId
   _pageState.tableData   = resp.rows        // rows 内每行携带 _perm
   _pageState.modelPerm   = resp._modelPerm
-  $rebindRules()
+  // 通过 DOM 直写或 DataView.replaceRows() 更新 UI
 }
 
 // RenderAddButton：从 _modelPerm.canAdd 读取模型级权限
@@ -631,9 +625,8 @@ function RenderPermSnapshot() {
 }
 ```
 
-**⚠️ 角色切换组件不要用 `el-radio-group`**
+**⚠️ 角色切换组件推荐用 Render* 函数**
 
-`el-radio-group` 的 `value` 在 `$rebindRules()` 后被 form-create 重置为 rule.json 默认值，导致选中状态脱同。
 标准做法是用 Render* 函数内嵌原生 `<input type="radio">`，从 `_pageState.currentUser` 读取 `checked` 状态：
 
 ```javascript
@@ -751,7 +744,7 @@ RendererTable.vue
 
 ### ❗ sparkChildren 注入机制（关键，必读）
 
-**问题**：form-create 的 slot 机制会用内部包装组件包裹子元素，破坏 `el-table` 对 `el-table-column` 的**直接子级检测**。如果让 form-create 自然渲染 `r-table` 的 children，表格列不会出现。
+**问题**：如果父组件通过 slot 包装层渲染子元素，会破坏 `el-table` 对 `el-table-column` 的**直接子级检测**。如果子组件被包装在中间层中，表格列不会出现。
 
 **解决方案**：`bindRules` 将 `r-*` 容器的 `children` 提取到 `props.sparkChildren`，容器组件自行用 `SparkComponentRenderer` 递归渲染：
 
@@ -786,7 +779,7 @@ const mergedChildren = computed(() =>
 ```
 
 **为什么 sparkChildren 而不是 slot？**
-- form-create 的 slot 包装层破坏 el-table → el-table-column 的父子关系
+- slot 包装层破坏 el-table → el-table-column 的父子关系
 - `SparkComponentRenderer` 直接在 `<el-table>` 内部渲染，el-table-column 成为直接子级
 - 渲染器是**透明路由层**（不创建自己的 ComponentContext），能力链不受影响
 
@@ -798,9 +791,9 @@ const mergedChildren = computed(() =>
 - 自解析组件：bindRules 透传 `dataKey` 到 props，由组件自行 `consume(PAGE_DATASET)` 解析
 - 非自解析组件：bindRules 在规则绑定阶段直接解析 dataKey 并注入数据
 
-### ❗ name 透传（form-create 不自动传）
+### ❗ name 透传
 
-form-create 的 `rule.name` 是表单字段标识符，**不会**自动作为 Vue prop 传给自定义组件。`bindRules` 显式将 `rule.name` 复制到 `props.name`：
+`rule.name` 是字段标识符，**不会**自动作为 Vue prop 传给自定义组件。`bindRules` 显式将 `rule.name` 复制到 `props.name`：
 
 ```typescript
 // bindRules.ts
@@ -870,9 +863,9 @@ function tryAutoLoad(view: DataView | null) {
 
 | 症状 | 原因 | 解决 |
 |------|------|------|
-| el-table 列不显示 | form-create slot 包装破坏父子关系 | 确保 bindRules 走 sparkChildren 注入，容器用 SparkComponentRenderer 渲染 |
+| el-table 列不显示 | slot 包装破坏父子关系 | 确保 bindRules 走 sparkChildren 注入，容器用 SparkComponentRenderer 渲染 |
 | `Table xxx has no API configuration` | tryAutoLoad 未判断 api 存在 | `if (!view.dataTable?.api) return` |
-| 字段组件读不到 name | form-create 不传 rule.name 给自定义组件 | bindRules 已显式 `setRuleProp(newRule, 'name', newRule.name)` |
+| 字段组件读不到 name | rule.name 不自动传给自定义组件 | bindRules 已显式 `setRuleProp(newRule, 'name', newRule.name)` |
 | 子组件 consume(DATA_SOURCE) 返回 null | 父容器未 provide | 确认 r-table/form/detail 的 `watch(resolvedView)` 正确 `sparkProvide(DATA_SOURCE, view)` |
 | 表格渲染但无数据 | dataKey 写错 / pageDataSet 为 null | 检查 pagedata.json 表名、rule.json dataKey 格式、PageRenderer 是否 provide(PAGE_DATASET) |
 | `console.error` 调试日志泄漏到生产 | 忘记删除或忘加 `import.meta.env.DEV` 守卫 | 所有诊断日志必须包裹 `if (import.meta.env.DEV)` |
@@ -1024,7 +1017,7 @@ packages/
 ├── spark-page-config/   # 页面配置加载器（ConfigLoader, SparkPageConfig）
 │   └── src/
 │       ├── namespace.ts          # SparkPageConfig 命名空间
-│       ├── script-context-types.ts # 沙箱上下文类型声明（IPageRoute/IFormAPI/IScriptContext 等）
+│       ├── script-context-types.ts # 沙箱上下文类型声明（IPageRoute/IScriptContext 等）
 │       │                           # ⚠️ 禁止改名为 script-api.ts → 见「script-api 规划任务」节
 │       └── tests/
 └── spark-utils/         # 共享基础设施
@@ -1081,7 +1074,7 @@ import { APP_SERVICES } from '../../../spark-utils/src/capability'
 **`spark-utils`、`spark-data`、`spark-page-config`** 三个包**零前端框架依赖**（Vue / React / Element Plus 等均不引入），属于纯 TypeScript/JavaScript 库：
 
 - **禁止**在这三个包中 `import` 任何 Vue composable、Vue 响应式 API（`ref / reactive / computed`）、Vue 组件或任何 UI 框架模块
-- **禁止**将 `vue`、`vue-router`、`element-plus`、`@form-create/*` 加入这三个包的 `dependencies` 或 `peerDependencies`
+- **禁止**将 `vue`、`vue-router`、`element-plus` 加入这三个包的 `dependencies` 或 `peerDependencies`
 - 如需在 `spark-data` 中注入框架响应式（如 `reactive()`），必须通过**静态钩子**（`DataView.wrapInstance`）由外部框架层注入，不能在包内直接 import Vue
 - 违反此约束将污染依赖图，导致下游 SSR / 非 Vue 环境无法使用这三个包
 
@@ -1092,7 +1085,7 @@ import { APP_SERVICES } from '../../../spark-utils/src/capability'
 ```typescript
 import { PluginRegistry, PluginManager, registerBuiltinPlugins } from '@spark-view/spark-app'
 
-registerBuiltinPlugins()  // 注册内置: element-plus, vxe-table, form-create
+registerBuiltinPlugins()  // 注册内置: element-plus, vxe-table
 const plugins = await PluginManager.loadPlugins(appConfig.plugins)
 ```
 
@@ -1248,8 +1241,6 @@ const MY_CAP = defineCapability<{ foo(): void }>('app:my-capability')
 | 回调参数 | `(...args: any[]) => void` | `(...args: unknown[]) => void` |
 | 容器/集合 | `Map<string, any>` | `Map<string, unknown>` 或泛型 `<T>` |
 | 第三方库返回值 | `const x: any = lib.foo()` | `const x: unknown = lib.foo()` |
-| form-create `Rule` | `any[]` | `Rule[]`（`renderer/types`） |
-| form-create `Api` | `any` | `FormCreateAPI`（精简接口） |
 
 ### ESLint 产品级规则清单
 
@@ -1315,39 +1306,6 @@ for (const [k, v] of Object.entries(data)) {
 }
 ```
 
-### ⚠️ FormCreateAPI 精简接口（vue-tsc 类型爆炸规避）
-
-form-create 官方 `Api<OptionAttrs, CreatorAttrs, RuleAttrs, ApiAttrs>` 和 `Rule` 类型包含**深度递归泛型**（Rule → Creator → Rule），直接用于 `Ref<Api>` 会触发 vue-tsc 指数级类型展开（~116KB 错误输出）。
-
-**解决方案**：`renderer/types/index.ts` 中定义精简接口，仅声明项目实际用到的 11 个方法：
-
-```typescript
-// ✅ Rule — 使用 interface extends 创建名义类型边界
-export interface Rule extends FormCreateRule {}
-
-// ✅ FormCreateAPI — 手写精简接口，不继承原始 Api 泛型
-export interface FormCreateAPI {
-  el(id: string): unknown
-  getValue(field: string): unknown
-  setValue(field: string | Record<string, unknown>, value?: unknown): void
-  formData(): Record<string, unknown>
-  validate(callback: (valid: boolean) => void): void
-  resetFields(fields?: string | string[]): void
-  clearValidateState(fields?: string | string[]): void
-  disabled(disabled: boolean, field?: string | string[]): void
-  hidden(hidden: boolean, field?: string | string[]): void
-  updateRule(field: string, rule: Record<string, unknown>): void
-  on(event: string, callback: (...args: unknown[]) => void): void
-}
-```
-
-**禁止**：
-- `type FormCreateAPI = Api` — 透明别名，vue-tsc 会展开底层泛型
-- `interface FormCreateAPI extends Api {}` — 仍触发结构检查
-- 在 `Ref<>` 泛型参数中直接使用 `Api` 原始类型
-
-**新增 form-create API 方法时**：在 `FormCreateAPI` 接口中补充签名即可，无需改回原始 `Api` 泛型。
-
 ### 测试文件放宽规则
 
 `*.test.ts` / `tests/` 目录中以下规则关闭：
@@ -1360,7 +1318,7 @@ export interface FormCreateAPI {
 ### 业务脚本（script.js）ESLint 豁免
 
 `public/pages-config/**/script.js` 在 ESLint `ignores` 中**整体排除**，不参与任何规则检查。原因：
-- 运行在 `with(__ctx)` 沙箱中，所有变量（`$api`, `$dataSet`, `$page` 等）由沙箱注入，ESLint 无法识别
+- 运行在 `with(__ctx)` 沙箱中，所有变量（`$dataSet`, `$page` 等）由沙箱注入，ESLint 无法识别
 - 不支持 ES Module（`import`/`export`），无法通过 `sourceType: 'module'` 解析
 - 非构建源码——Vite 不编译、不打包这些文件
 

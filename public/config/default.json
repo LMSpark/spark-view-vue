@@ -31,10 +31,6 @@
         "vxe-table": {
             "enabled": true,
             "priority": 2
-        },
-        "form-create": {
-            "enabled": true,
-            "priority": 3
         }
     },
     "spark": {
