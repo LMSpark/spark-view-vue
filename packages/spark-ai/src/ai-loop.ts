@@ -35,6 +35,7 @@ import { validateGeneratedConfig } from './config-validator'
 import type { ConfigValidationReport } from './config-validator'
 import { configureNavRegister, registerPageNavigation } from './nav-register'
 import type { NavRegistrationResult } from './nav-register'
+import type { StreamCallbacks } from './protocol'
 
 /** 模块级共享 HTTP 客户端（统一 axios 封装，复用拦截器 / 超时 / 重试配置） */
 const http = createRequest({ timeout: 240_000 })
@@ -128,20 +129,6 @@ export interface AIResponse {
   validationReport?: ConfigValidationReport
   /** 导航自动注册结果（仅 generate 时填充） */
   navigationResult?: NavRegistrationResult
-}
-
-/** SSE 流式事件回调 */
-export interface StreamCallbacks {
-  /** LLM 正文内容增量 */
-  onDelta?: (text: string) => void
-  /** DeepSeek 推理过程增量 */
-  onReasoning?: (text: string) => void
-  /** 阶段进度事件 */
-  onPhase?: (phase: number, status: string, message: string) => void
-  /** token 用量统计 */
-  onUsage?: (usage: Record<string, unknown>) => void
-  /** 错误事件 */
-  onError?: (error: string) => void
 }
 
 /** 日志条目（与 Logger 的 LogEntry 对齐） */
