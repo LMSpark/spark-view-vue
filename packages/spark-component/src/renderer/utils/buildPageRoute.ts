@@ -2,7 +2,7 @@
  * 页面路由工具
  *
  * 提供框架无关的路由快照构建和页面 ID 推断。
- * 被 FCPageRenderer (usePageRenderer) 和 SparkPageRenderer 共用。
+ * 被 SparkPageRenderer 调用。
  */
 
 import type { RouteLocationNormalizedLoaded } from 'vue-router'

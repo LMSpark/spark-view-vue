@@ -81,7 +81,7 @@ function handleSelectionChange(selection) {
 }
 
 function updateDeleteButtonState() {
-  const deleteBtn = $api.el('deleteBtn')
+  const deleteBtn = $query('[name="deleteBtn"]')
   if (deleteBtn) {
     const hasSelection = _pageState.selectedRows && _pageState.selectedRows.length > 0
     deleteBtn.disabled = !hasSelection

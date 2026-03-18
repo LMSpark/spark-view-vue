@@ -9,8 +9,8 @@
  * 下方所有 Render* 渲染函数是「固定的框架代码」——
  *   权限数据变了，UI 自动变；前端代码，一行不动。
  *
- * 沙箱注入: $api $route $el $query $queryAll
- *            $dataSet $rebindRules $refreshData $page
+ * 沙箱注入: $route $el $query $queryAll
+ *            $dataSet $refreshData $page
  *            SparkData h
  */
 
@@ -67,7 +67,6 @@ function handleSwitchUser(userId) {
   _pageState.currentUser = userId
   _pageState.tableData   = resp.rows
   _pageState.modelPerm   = resp._modelPerm
-  $rebindRules()
 }
 
 function handleAdd() {

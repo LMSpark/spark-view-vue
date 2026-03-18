@@ -273,8 +273,7 @@ export class ConfigLoader {
       mountTarget: '#app',
       plugins: {
         elementPlus: true,
-        vxeTable: true,
-        formCreate: true
+        vxeTable: true
       },
       spark: { enabled: true },
       pageConfig: {

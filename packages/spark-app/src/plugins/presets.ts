@@ -13,7 +13,6 @@ import { PluginRegistry } from './registry'
  * 包括：
  * - element-plus: Vue 3 UI 组件库
  * - vxe-table: 强大的表格组件
- * - form-create: 动态表单生成器
  */
 export function registerBuiltinPlugins(): void {
   PluginRegistry.registerAll({
@@ -35,23 +34,6 @@ export function registerBuiltinPlugins(): void {
       loader: () => import('vxe-table') as unknown as Promise<{ default: Plugin }>,
       description: '强大的 Vue 表格组件',
       version: '^4.17.0',
-      defaultOptions: {}
-    },
-    
-    'form-create': {
-      name: 'Form Create',
-      module: '@form-create/element-ui',
-      loader: async () => {
-        const formCreate = await import('@form-create/element-ui')
-        // form-create 导出的是一个对象，需要包装为 Plugin
-        // form-create 可能导出 default 或直接导出插件
-        const plugin = 'default' in formCreate ? formCreate.default : formCreate
-        return { 
-          default: plugin as unknown as Plugin
-        }
-      },
-      description: '动态表单生成器',
-      version: '^3.2.0',
       defaultOptions: {}
     }
   })

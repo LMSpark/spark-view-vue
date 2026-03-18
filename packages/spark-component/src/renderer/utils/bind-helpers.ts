@@ -24,7 +24,7 @@ export function setRuleProp(rule: BindRule, key: string, value: unknown): void {
  * 定义响应式 getter 属性（消除 Object.defineProperty 样板代码）
  *
  * 被 bind-form-delegate / bind-pagination-delegate 等委托共用，
- * 让 form-create 每次渲染时通过 getter 读取 DataView 最新值。
+ * 让渲染器每次渲染时通过 getter 读取 DataView 最新值。
  */
 export function definePropertyGetter(
   obj: Record<string, unknown>,

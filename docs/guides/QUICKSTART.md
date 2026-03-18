@@ -553,7 +553,7 @@ usersView?.events.on('stateChanged', () => {
 </template>
 
 <script setup lang="ts">
-import { FCPageRenderer } from '@spark-view/spark-component'
+import { SparkPageRenderer } from '@spark-view/spark-component'
 
 const pageConfig = {
   pageId: 'home',

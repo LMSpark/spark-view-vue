@@ -237,7 +237,7 @@ interface Props {
   config?: ComponentConfig
   /** DataKey 格式：tableName@field（与 config 同层冗余时以 config.props.dataKey 为准） */
   dataKey?: string
-  /** bindRules 从 rule.children 提取的子组件配置（form-create 路径） */
+  /** bindRules 从 rule.children 提取的子组件配置 */
   sparkChildren?: ComponentConfig[]
   /** 直接传入的 DataView（备用） */
   dataView?: DataView | undefined

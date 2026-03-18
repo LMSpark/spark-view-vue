@@ -38,12 +38,9 @@ import { wrapEvent } from './wrapEvent'
 /**
  * 全部值型表单组件（持有 modelValue 的组件）
  *
- * 同时包含 form-create 类型别名（'select', 'radio'）以保持向后兼容。
  * 新增表单组件时在此添加。
  */
 export const FORM_ELEMENT_TYPES = new Set([
-  // form-create 类型别名（向后兼容）
-  'select', 'radio',
   // Element Plus 官方类型
   'el-input', 'el-textarea', 'el-input-number', 'el-autocomplete',
   'el-select', 'el-cascader', 'el-tree-select',
@@ -55,7 +52,6 @@ export const FORM_ELEMENT_TYPES = new Set([
 
 /** 选项类组件（需要从 DataView.rows 映射 options） */
 const OPTIONS_TYPES = new Set([
-  'select', 'radio',
   'el-select', 'el-radio-group', 'el-checkbox-group',
   'el-cascader', 'el-tree-select',
 ])
@@ -72,7 +68,7 @@ const BOOLEAN_TYPES = new Set(['el-switch'])
  * 为值型表单组件绑定 dataKey → modelValue / options / events
  *
  * 仅处理具有 dataKey 且在 FORM_ELEMENT_TYPES 中的组件。
- * 不具有 dataKey 的表单组件由 form-create 原生值系统管理。
+ * 不具有 dataKey 的表单组件由原生值系统管理。
  */
 export function bindFormElementRule(
   rule: BindRule,
@@ -92,7 +88,7 @@ export function bindFormElementRule(
     if (view) {
       const options = mapOptionsFromView(view, rule)
       if (options) {
-        // form-create 读取 rule.options，不是 rule.props.options
+        // 渲染器读取 rule.options，不是 rule.props.options
         rule['options'] = options
         mapped = true
       }
@@ -165,7 +161,7 @@ function mapOptionsFromView(
 function injectValueBinding(rule: BindRule, view: DataView, type: string): void {
   rule.props ??= {}
 
-  // ── getter：DataView.value → modelValue（响应式 getter，form-create 每次渲染时读取） ──
+  // ── getter：DataView.value → modelValue（响应式 getter，渲染器每次渲染时读取） ──
   if (BOOLEAN_TYPES.has(type)) {
     definePropertyGetter(rule.props, 'modelValue', () => view.value === 'true' || view.value === '1')
   } else if (MULTI_VALUE_TYPES.has(type)) {

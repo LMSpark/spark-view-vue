@@ -50,9 +50,6 @@ SPARK 采用**插件名称 → 插件模块**的映射机制，实现了：
     "vxe-table": {
       "enabled": true,
       "priority": 2
-    },
-    "form-create": {
-      "enabled": false
     }
   }
 }
@@ -106,19 +103,6 @@ SPARK 预注册了以下插件：
 - `i18n`: 国际化配置
 - `table`: 表格默认配置
 - `grid`: 表格容器默认配置
-
-### Form Create
-
-```json
-{
-  "form-create": {
-    "enabled": true,
-    "priority": 3
-  }
-}
-```
-
-**支持的选项**：详见 [@form-create/element-ui 文档](https://www.form-create.com/v3/element-ui/)
 
 ## 注册自定义插件
 
@@ -231,10 +215,6 @@ async function startApp() {
     "vxe-table": {
       "enabled": true,
       "priority": 2        // 第三加载（基于 Element Plus）
-    },
-    "form-create": {
-      "enabled": true,
-      "priority": 3        // 最后加载（基于 Element Plus）
     }
   }
 }
@@ -307,9 +287,6 @@ PluginRegistry.register('element-plus', {
         "size": "default"
       }
     },
-    "form-create": {
-      "enabled": true
-    }
   }
 }
 ```
@@ -330,19 +307,6 @@ PluginRegistry.register('element-plus', {
 }
 ```
 
-### Enterprise 租户配置（tenant-enterprise.json）
-
-```json
-{
-  "tenant": { ... },
-  "plugins": {
-    "form-create": {
-      "enabled": false      // 禁用 form-create 插件
-    }
-  }
-}
-```
-
 **配置合并**：租户配置会深度合并到默认配置上。
 
 ## 最佳实践
@@ -355,8 +319,7 @@ PluginRegistry.register('element-plus', {
 {
   "plugins": {
     "element-plus": true,   // 基础 UI 框架
-    "vxe-table": false,     // 如果不需要表格，禁用
-    "form-create": false    // 如果不需要表单，禁用
+    "vxe-table": false      // 如果不需要表格，禁用
   }
 }
 ```
@@ -407,8 +370,7 @@ PluginRegistry.register('my-plugin', {
 {
   "dependencies": {
     "element-plus": "^2.5.0",
-    "vxe-table": "^4.17.0",
-    "@form-create/element-ui": "^3.2.37"
+    "vxe-table": "^4.17.0"
   }
 }
 ```

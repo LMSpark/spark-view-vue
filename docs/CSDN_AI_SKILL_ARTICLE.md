@@ -114,7 +114,7 @@ SPARK 页面由且仅由 **4 个文件**驱动：
 ```
 pages-config/
 └── {pageId}/
-    ├── rule.json        ← UI 结构（form-create 规则树）
+    ├── rule.json        ← UI 结构（规则树）
     ├── pagedata.json    ← 数据空间（DataSet 定义 + 初始数据）
     ├── script.js        ← 业务逻辑（沙箱执行，最小化）
     └── style.css        ← 页面样式
@@ -527,7 +527,7 @@ services?.router?.push('/detail')       // 框架无关的导航抽象
 
 script.js 在 `with(__ctx)` 沙箱中执行，AI 生成此文件时：
 
-- **注入变量有明确契约**（`$api`、`$dataSet`、`$page`、`$route` 等）
+- **注入变量有明确契约**（`$dataSet`、`$page`、`$route` 等）
 - **禁止事项有明确规则**（禁止 `ElMessage`、禁止 `import`、禁止 Vue Router 直接引用）
 
 这使得 AI 生成 script.js 时不会"发挥"——它只能在框架规定的语言框架内写业务逻辑，从源头降低了 AI 引入框架无关代码的风险。
@@ -585,7 +585,7 @@ SPARK 项目已内置高质量提示词模板（`docs/guides/SPARK_PAGE_CONFIG_P
 2. computeExpression 表达式：多语句体必须确保所有分支都有 return
 3. script.js 沙箱：只写业务分支逻辑
    ✗ 禁止：ElMessage / import / window.xxx / ElMessageBox
-   ✓ 允许：$api / $dataSet / $page / $route / SparkData / h
+   ✓ 允许：$dataSet / $page / $route / SparkData / h
 4. 视图级聚合通过 aggregates 配置，不写脚本
 5. 父子联动通过 relations 配置，不写脚本
 ```

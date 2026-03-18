@@ -18,7 +18,7 @@ function __init__() {
   })
   
   // 初始化搜索关键词
-  _pageState.searchKeyword = $api.getValue('searchInput') || ''
+  _pageState.searchKeyword = $query('[name="searchInput"]')?.value || ''
   
   // 保存原始数据引用
   if (view) {
@@ -101,7 +101,7 @@ function handleDeleteProject() {
 
 // 搜索按钮处理
 function handleSearch() {
-  const keyword = $api.getValue('searchInput') || ''
+  const keyword = $query('[name="searchInput"]')?.value || ''
   _pageState.searchKeyword = keyword.trim()
   
   const view = $dataSet?.getView('Projects', 'default')
@@ -152,5 +152,6 @@ function handleSelectionChange(selection) {
 // 更新删除按钮状态
 function updateDeleteButtonState() {
   const hasSelection = _pageState.selectedRows.length > 0
-  $api.disabled('deleteBtn', !hasSelection)
+  const deleteBtn = $query('[name="deleteBtn"]')
+  if (deleteBtn) deleteBtn.disabled = !hasSelection
 }

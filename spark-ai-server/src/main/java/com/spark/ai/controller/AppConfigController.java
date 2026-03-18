@@ -39,8 +39,7 @@ public class AppConfigController {
             Map.entry("mountTarget", "#app"),
             Map.entry("plugins", Map.of(
                 "element-plus", Map.of("enabled", true,  "options", Map.of("size", "default", "zIndex", 2000), "priority", 1),
-                "vxe-table",    Map.of("enabled", true,  "priority", 2),
-                "form-create",  Map.of("enabled", true,  "priority", 3)
+                "vxe-table",    Map.of("enabled", true,  "priority", 2)
             )),
             Map.entry("spark", Map.of("enabled", true)),
             Map.entry("pageConfig", Map.of("source", "local", "apiBaseUrl", "/api", "homePath", "/home")),

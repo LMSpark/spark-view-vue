@@ -66,7 +66,7 @@
 │  ┌───────────────────────────────────────────────────────────────┐  │
 │  │  PageConfigLoader → parsePageData → DataSet → DataView → UI  │  │
 │  │  bindRules → sparkChildren → SparkComponentRenderer           │  │
-│  │  Sandbox(script.js) → $dataSet / $page / $api                │  │
+│  │  Sandbox(script.js) → $dataSet / $page / $route                │  │
 │  └───────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
 ```

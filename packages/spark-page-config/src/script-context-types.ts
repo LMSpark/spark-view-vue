@@ -5,15 +5,14 @@
  * ## 设计意图：跨前端框架的业务脚本层
  *
  * `script.js` 沙箱的核心目标是**让业务逻辑与具体前端框架解耦**：
- * - 业务脚本只能看到此文件定义的**框架无关抽象接口**（`$page / $api / $route / $dataSet`）
- * - 底层实现（Vue Router / form-create / Element Plus）由**渲染层**注入，脚本不感知
+ * - 业务脚本只能看到此文件定义的**框架无关抽象接口**（`$page / $route / $dataSet`）
+ * - 底层实现（Vue Router / Element Plus）由**渲染层**注入，脚本不感知
  * - 同一份 `script.js` 理论上可在任何实现了 `IScriptContext` 的渲染层上运行
  *
- * 这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router、
- * `$api` 替代 form-create 直接引用的根本原因——**接口是契约，实现可替换**。
+ * 这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router 的根本原因——**接口是契约，实现可替换**。
  *
  * ## 约束
- * - ✅ 与前端框架完全无关：无 Vue / Element Plus / FormCreate / Vue Router 依赖
+ * - ✅ 与前端框架完全无关：无 Vue / Element Plus / Vue Router 依赖
  * - ✅ 可独立测试：不依赖任何渲染层或 DOM 框架
  * - ✅ 稳定边界：变更此文件需同步更新脚本文档
  *
@@ -50,46 +49,6 @@ export interface IPageRoute {
   hash: string
 }
 
-// ==================== 表单操作 API ====================
-
-/**
- * 框架无关的表单操作接口。
- *
- * 替代直接使用 FormCreate API，业务脚本通过 `$api` 访问，
- * 无 FormCreate 库依赖。
- *
- * @example
- * ```js
- * // script.js
- * $api?.setValue('name', '张三')
- * $api?.hidden(true, ['password', 'confirm'])
- * ```
- */
-export interface IFormAPI {
-  /** 读取单个字段值 */
-  getValue(field: string): unknown
-  /** 设置字段值（单字段或批量） */
-  setValue(field: string | Record<string, unknown>, value?: unknown): void
-  /** 获取全部表单数据 */
-  formData(): Record<string, unknown>
-  /** 校验表单，结果通过回调返回 */
-  validate(callback: (valid: boolean) => void): void
-  /** 重置字段值到初始状态 */
-  resetFields(fields?: string | string[]): void
-  /** 清除验证状态 */
-  clearValidateState(fields?: string | string[]): void
-  /** 启用/禁用字段 */
-  disabled(disabled: boolean, field?: string | string[]): void
-  /** 显示/隐藏字段 */
-  hidden(hidden: boolean, field?: string | string[]): void
-  /** 更新字段规则/属性（如 `{ props: { placeholder: '...' } }`） */
-  updateRule(field: string, rule: Record<string, unknown>): void
-  /** 获取字段 DOM 元素（仅限渲染函数场景） */
-  el(id: string): unknown
-  /** 监听表单事件 */
-  on(event: string, callback: (...args: unknown[]) => void): void
-}
-
 // ==================== 脚本沙箱上下文（核心契约）====================
 
 /**
@@ -99,11 +58,9 @@ export interface IFormAPI {
  * 脚本在 `with (__ctx)` 沙箱内执行，所有变量均通过此接口注入。
  *
  * **稳定 API（核心框架契约）**：
- * - `$api` — 表单操作（可为 null，非表单页面时）
  * - `$route` — 路由快照（只读，不依赖 Vue Router）
  * - `$el` — 当前页面容器元素
  * - `$query` / `$queryAll` — DOM 查询（谨慎使用）
- * - `$rebindRules` — 触发 form-create 重建规则
  * - `$refreshData` — 刷新数据（可选指定表名）
  * - `$page` — UI 交互服务（消息 / 确认 / 导航）
  *
@@ -116,9 +73,6 @@ export interface IFormAPI {
  * ```js
  * // script.js（沙箱内所有变量直接可用，无需 this.xxx）
  *
- * // 操作表单
- * $api?.setValue('name', '张三')
- *
  * // 读取路由参数
  * const id = $route.params.id
  *
@@ -129,12 +83,6 @@ export interface IFormAPI {
  * ```
  */
 export interface IScriptContext {
-  /**
-   * 表单操作 API（底层 FormCreate 实现，script.js 仅见此接口）。
-   * 非表单页面或 form-create 尚未初始化时为 `null`。
-   */
-  $api: IFormAPI | null
-
   /**
    * 页面级组件访问 API。
    *
@@ -156,13 +104,6 @@ export interface IScriptContext {
 
   /** 通过 CSS 选择器查询页面内所有匹配元素 */
   $queryAll: (selector: string) => NodeListOf<Element>
-
-  /**
-   * 触发 form-create 重建规则（谨慎调用，会重置展开状态等 UI 临时状态）。
-   * 仅当 `_pageState` 中的值改变且渲染函数需要读取新值时才调用。
-   * DataView 驱动的数据变更（`view.replaceRows` 等）无需调用此方法。
-   */
-  $rebindRules: () => void
 
   /**
    * 刷新数据——重新触发 DataTable 的加载接口。

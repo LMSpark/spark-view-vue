@@ -187,14 +187,8 @@ export async function start(options: StartOptions): Promise<void> {
       logStartDebug('主题服务已初始化', { mode: themeService.mode })
     }
 
-    // 过滤 form-create + Element Plus 的已知兼容性警告
+    // 其他警告正常输出到控制台
     app.config.warnHandler = (msg) => {
-      // 忽略 form-create + Element Plus 插槽在渲染函数外调用的已知兼容性警告
-      if (msg.includes('invoked outside of the render function')) {
-        return
-      }
-
-      // 其他警告正常输出到控制台
       console.warn(`[Vue warn]: ${msg}`)
     }
     // 2. 安装 UI 插件
@@ -277,21 +271,21 @@ export async function start(options: StartOptions): Promise<void> {
       
       const configLoader = SparkPageConfig.createConfigLoader(configLoaderOptions)
       
-      // 默认使用 FCPageRenderer 组件（FC 技术路线页面渲染器）
+      // 默认使用 SparkPageRenderer 组件（SPARK 原生页面渲染器）
       let pageComponent = pageConfig.pageComponent
       
-      // 如果未提供 pageComponent，自动导入 FCPageRenderer
+      // 如果未提供 pageComponent，自动导入 SparkPageRenderer
       if (!pageComponent) {
-        logStartDebug('未提供 pageComponent，自动导入 FCPageRenderer...')
-        const { FCPageRenderer } = await import('@spark-view/spark-component')
-        pageComponent = FCPageRenderer
-        logStartDebug('✅ FCPageRenderer 已导入')
+        logStartDebug('未提供 pageComponent，自动导入 SparkPageRenderer...')
+        const { SparkPageRenderer } = await import('@spark-view/spark-component')
+        pageComponent = SparkPageRenderer
+        logStartDebug('✅ SparkPageRenderer 已导入')
       }
       
       const dynamicRouterOptions: DynamicRouterOptions = {
         router,
         configLoader,
-        pageComponent, // FCPageRenderer 或用户提供的组件，if 块已确保非空
+        pageComponent, // SparkPageRenderer 或用户提供的组件，if 块已确保非空
         ...(pageConfig.componentMap !== undefined && { componentMap: pageConfig.componentMap }),
         ...(pageConfig.tenantPathPrefix !== undefined && { tenantPathPrefix: pageConfig.tenantPathPrefix }),
         loadNavigation: pageConfig.loadNavigation as DynamicRouterOptions['loadNavigation'],

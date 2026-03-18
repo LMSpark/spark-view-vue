@@ -29,9 +29,8 @@
 /**
  * SparkPageRenderer - SPARK 原生页面渲染器
  *
- * 与 FCPageRenderer **同构**：共享 PageRendererProps，加载流水线完全一致
- * （configLoader / pageConfig / pageId），渲染走 SparkComponentRenderer
- * 递归引擎，不依赖 form-create。
+ * 支持 PageRendererProps 配置，渲染走 SparkComponentRenderer
+ * 递归引擎。
  *
  * 功能清单：
  * - 配置加载（pageConfig / configLoader + pageId）
@@ -46,7 +45,7 @@
  * <!-- 全量 PageConfig（rule + css + script + data） -->
  * <SparkPageRenderer :pageConfig="fullConfig" />
  *
- * <!-- configLoader + pageId（与 FCPageRenderer 同构） -->
+ * <!-- configLoader + pageId -->
  * <SparkPageRenderer :configLoader="loader" pageId="user-list" />
  * ```
  */
@@ -108,7 +107,7 @@ const { scopedCss, setScopedCss } = useCssScope({
 // ── DataSet ──
 const pds = usePageDataSet({ enableDataSet: props.enableDataSet })
 
-// ── 脚本沙箱上下文（不含 form-create API） ──
+// ── 脚本沙箱上下文 ──
 const pageRoute = buildPageRoute(route)
 const pageContext: PageContext = buildPageContext({
   getDataSet: () => pds.dataSet,
@@ -222,13 +221,11 @@ async function fetchConfig(pageId: string): Promise<PageConfig> {
 /**
  * 将配置应用到渲染状态。
  *
- * 时序（与 FC 线 applyConfig 对齐）：
+ * 时序：
  * 1. rules / CSS 写入 → 脚本编译 → Render* 注册
  * 2. DataSet 初始化 → provide(PAGE_DATASET)
  * 3. loading=false → SparkComponentRenderer 挂载
  * 4. nextTick 后执行 __init__ + initAutoSelection
- *
- * 注意：无 rebindRules（SPARK 原生渲染不依赖 form-create）。
  */
 function applyConfig(pageId: string, config: PageConfig): void {
   if (config.css) setScopedCss(pageId, config.css)
@@ -245,7 +242,7 @@ function applyConfig(pageId: string, config: PageConfig): void {
   resolvedRules.value = bindSparkRuleEvents(config.rule as unknown[], pageFunctions.value)
 }
 
-// ==================== 加载入口（与 FC 线 loadPageConfig 同构） ====================
+// ==================== 加载入口 ====================
 
 /** 完整加载流程：resolvePageId → beforeLoad → fetchConfig → applyConfig → afterLoad。 */
 async function loadConfig(): Promise<void> {
@@ -265,8 +262,7 @@ async function loadConfig(): Promise<void> {
   }, props.onError)
 
   // loading=false 后等待 DOM 渲染完成，再执行 __init__ + initAutoSelection
-  // 与 FCPageRenderer 的 form-create mounted 回调时序对齐：
-  //   此时组件已挂载、DataSet 已就绪、$api 为 null（SPARK 原生渲染无 form-create）
+  // 此时组件已挂载、DataSet 已就绪
   if (!error.value) {
     await nextTick()
     const init = pageFunctions.value['__init__']

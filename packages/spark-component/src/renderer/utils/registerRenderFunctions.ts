@@ -2,13 +2,11 @@
  * Render* 函数注册工具
  *
  * 将脚本中的 Render* 函数包装为 Vue 组件并注册到 app.component()。
- * 被 FCPageRenderer (usePageRenderer) 和 SparkPageRenderer 共用。
+ * 被 SparkPageRenderer 调用。
  *
  * 策略：每个 Vue App 实例维护一张 name → ShallowRef<renderFn> 映射。
  * 首次遇到某名称时创建组件并调用 app.component()（只注册一次，消除重复注册 warn）。
  * 页面重新加载时只更新 ref.value，shallowRef 的响应性自动触发组件重渲染。
- *
- * PascalCase + camelCase 均注册，兼容 form-create 内部的 toCase 转换。
  */
 
 import { shallowRef, defineComponent, markRaw, type App, type ShallowRef } from 'vue'

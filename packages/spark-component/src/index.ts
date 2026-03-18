@@ -56,8 +56,6 @@ export type {
 
 // ── 7. 页面渲染引擎 ──
 export {
-  FCPageRenderer,
-  usePageRenderer,
   usePageDataSet,
   SparkPageRenderer,
   SparkComponentRenderer,
@@ -65,22 +63,15 @@ export {
 } from './renderer/index.js'
 
 export type {
-  UsePageRendererReturn,
-  UsePageRendererRefs,
   UsePageDataSetOptions,
   UsePageDataSetReturn,
 } from './renderer/index.js'
 
 export type {
   BindRule,
-  Rule,
-  FormCreateAPI,
   PageContext,
-  FCPageContext,
   PageConfig,
   PageRendererProps,
-  FCPageRendererProps,
-  PageRendererOptions,
   RuleBindingOptions,
 } from './renderer/index.js'
 

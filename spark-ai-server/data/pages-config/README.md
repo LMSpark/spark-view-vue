@@ -16,7 +16,7 @@
 ```
 spark-ai-server/data/pages-config/
 └── {tenantId}/{projectId}/{pageId}/
-    ├── rule.json               # form-create 规则（必需）
+    ├── rule.json               # 规则配置（必需）
     ├── pagedata.json           # 页面数据配置（必需）
     ├── style.css               # 页面样式（可选）
     └── script.js               # 页面脚本（可选）
@@ -28,8 +28,8 @@ spark-ai-server/data/pages-config/
 页面路由由**导航配置**（`navigation_config` 数据库表）统一管理，不再使用独立的 `routes.json`。
 导航节点的 `path` 字段即为页面路由路径，框架自动注册动态路由。
 
-### rule.json - 表单规则
-基于 [form-create](http://www.form-create.com/) 的表单配置：
+### rule.json - 规则配置
+基于 SPARK 组件系统的页面配置：
 
 ```json
 [
@@ -71,7 +71,7 @@ spark-ai-server/data/pages-config/
 
 ```javascript
 function __init__() {
-  // 页面初始化入口（form-create 挂载后自动调用）
+  // 页面初始化入口（渲染器挂载后自动调用）
   console.log('Page initialized')
 }
 

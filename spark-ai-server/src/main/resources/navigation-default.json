@@ -248,12 +248,6 @@
                     "path": "/vxe-demo"
                 },
                 {
-                    "id": "formcreate-api",
-                    "title": "Form-Create API",
-                    "icon": "SetUp",
-                    "path": "/formcreate-api"
-                },
-                {
                     "id": "filter-demo",
                     "title": "过滤面板",
                     "icon": "Search",

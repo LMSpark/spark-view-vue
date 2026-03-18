@@ -108,7 +108,6 @@ export const demoNavRoot: AppNavRoot = {
         { id: 'section-grid', nodeKind: 'page', title: 'Section 栅格', icon: 'Grid', path: '/section-grid-demo' },
         { id: 'el-table-demo', nodeKind: 'page', title: 'el-table 操作列', icon: 'List', path: '/el-table-demo' },
         { id: 'vxe-demo', nodeKind: 'page', title: 'VXE 表格', icon: 'TrendCharts', path: '/vxe-demo' },
-        { id: 'formcreate-api', nodeKind: 'page', title: 'Form-Create API', icon: 'SetUp', path: '/formcreate-api' },
         { id: 'filter-demo', nodeKind: 'page', title: '过滤面板', icon: 'Search', path: '/filter-demo' },
         { id: 'capability-demo', nodeKind: 'system-page', title: '能力管理演示', icon: 'Aim', path: '/capability-demo' },
         { id: 'tenant-config', nodeKind: 'system-page', title: '多租户配置', icon: 'OfficeBuilding', path: '/tenant-config' },

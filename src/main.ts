@@ -8,7 +8,7 @@
  * 
  * 🔧 技术栈：
  * - Vue 3.5 + TypeScript
- * - Element Plus + VXE Table + form-create
+ * - Element Plus + VXE Table
  * - SPARK 组件系统 + 动态路由系统
  * 
  * 📦 架构层次（由 SparkApp.start 自动完成）：

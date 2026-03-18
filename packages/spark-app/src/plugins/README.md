@@ -214,17 +214,6 @@ async function startApp() {
 }
 ```
 
-### Form Create
-
-```typescript
-{
-  id: 'form-create',
-  name: 'Form Create',
-  module: '@form-create/element-ui',
-  defaultOptions: {}
-}
-```
-
 ## 🔄 工作流程
 
 ```

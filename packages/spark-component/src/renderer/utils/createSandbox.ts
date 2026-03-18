@@ -58,7 +58,7 @@ export function compileFunctions(
       : '\nreturn {}'
 
     // ✅ 使用 with 语句创建动态作用域，让变量每次访问都从 __ctx 获取最新值
-    // 这样 $api 和 $dataSet 的 getter 才能正常工作
+    // 这样 $dataSet 的 getter 才能正常工作
     // 注意：with 在非严格模式下工作，所以不能在函数内添加 'use strict'
     //
     // ⚠️ returnStatement 必须放在 with 块内部：

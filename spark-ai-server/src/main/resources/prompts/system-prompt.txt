@@ -39,7 +39,7 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 - style: 内联样式对象或字符串；优先对象
 - class: CSS 类名
 - on: 事件处理器对象，值为 script.js 中的函数名字符串
-- field: form-create 表单字段标识
+- field: 表单字段标识
 - value: 表单默认值
 - key: 组件唯一标识
 - dataKey: SPARK 数据绑定键
@@ -233,12 +233,10 @@ relation 规则：
 script.js 运行在 with(__ctx) 沙箱中，不支持 import。所有依赖都由沙箱注入。
 
 可用变量：
-- $api: 表单操作
 - $route: 路由快照
 - $el: 页面容器元素
 - $query / $queryAll: DOM 查询
 - $dataSet: 页面级 DataSet（统一数据入口）
-- $rebindRules: 触发 form-create 重建
 - $refreshData: 刷新数据
 - $page: UI 消息、确认框、输入、导航、弹层、文件浏览、文件上传
 - SparkData: 数据工具命名空间
@@ -248,7 +246,7 @@ script.js 运行在 with(__ctx) 沙箱中，不支持 import。所有依赖都�
 - 主数据、子表、树数据、字典/下拉选项优先放入 DataSet，通过 dataKey / DataView / relations 访问；不要在 script.js 中再维护一份旁路数据
 
 脚本结构要求：
-- __init__() 是页面加载入口（form-create mounted 后自动调用），$api 和 $dataSet 在此时均已就绪；有任何初始化操作必须写在 __init__ 中
+- __init__() 是页面加载入口（渲染器挂载后自动调用），$dataSet 在此时已就绪；有任何初始化操作必须写在 __init__ 中
 - 数据事件订阅在 __init__ 中注册（不要在 __init__ 外部顶层注册，否则重新渲染时会重复绑定）
 - 事件处理函数名以 handle 开头
 - Render* 函数名首字母大写并使用 camelCase
@@ -306,7 +304,7 @@ el-table / r-table 事件签名速查：
 - 对标准 el-table / r-table，禁止在 currentChange / selectionChange 回调中重复手动同步当前行或选中行
 - 对自定义 Render* / 原生 DOM 交互，若需驱动级联，调用 view.selection.setCurrentRowById(id, originatorId) 或 view.selection.setSelectedRowsById(ids, originatorId)；originatorId 用稳定字符串标记事件来源，标准 el-table / r-table 无需手动处理
 - 对于标准父子联动，不要在 script.js 中手写 watch / onCurrentChange / 手工过滤 / 手工请求子表；优先把联动写进 pagedata.json 的 relations，让框架自动完成级联
-- 禁止在树节点事件中调用 $rebindRules()；树场景应优先用 DOM 直写或 view.replaceRows()
+- 树场景应优先用 DOM 直写或 view.replaceRows()
 
 ═══════════════════════════════════════════════════
 【4】style.css 规则
@@ -395,4 +393,4 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 | _pageState 顶层直接赋值 | `_pageState.xxx = 1`（在函数外顶层） | 顶层只声明 `let _pageState = {}`，赋值在 __init__ 内 |
 | script.js 缺少 __init__ | 没有定义 __init__ 函数 | 必须定义 `function __init__() {...}` |
 | dataKey 大小写不一致 | `"dataKey": "users@rows"`，表名定义为 `"Users"` | 大小写必须与 pagedata.json tables 键完全相同 |
-| 树场景调用 $rebindRules | 树节点事件内调用 `$rebindRules()` | 改用 `view.replaceRows()` + DOM 直写，禁止 $rebindRules |
+| 树场景 UI 更新 | 树节点事件内触发重建 | 改用 `view.replaceRows()` + DOM 直写 |
