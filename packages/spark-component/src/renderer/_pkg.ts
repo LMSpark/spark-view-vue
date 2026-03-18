@@ -6,18 +6,18 @@
  */
 
 // ── Composable ──
-export { useSparkComponent } from '../composables/useSparkComponent.js'
-export type { UseSparkComponentReturn } from '../composables/useSparkComponent.js'
+export { useSparkComponent } from '../useSparkComponent.js'
+export type { UseSparkComponentReturn } from '../useSparkComponent.js'
 
 // ── 递归渲染器 ──
-export { default as SparkComponentRenderer } from './spark/SparkComponentRenderer.vue'
+export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 
 // ── 核心类型 ──
 export type {
   ComponentConfig,
   ComponentContext,
   LoggerApi,
-} from '../core/types.js'
+} from '../types.js'
 
 // ── 能力键 ──
 export {

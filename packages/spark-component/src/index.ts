@@ -14,15 +14,15 @@ export type {
 } from './spark.js'
 
 // ── 2. 组件开发 Composable ──
-export { useSparkComponent } from './composables/useSparkComponent.js'
-export type { UseSparkComponentReturn } from './composables/useSparkComponent.js'
+export { useSparkComponent } from './useSparkComponent.js'
+export type { UseSparkComponentReturn } from './useSparkComponent.js'
 
 // ── 3. Vue 插件 ──
-export { createSparkPlugin } from './plugins/SparkPlugin.js'
-export type { SparkPluginOptions } from './plugins/SparkPlugin.js'
+export { createSparkPlugin } from './plugin.js'
+export type { SparkPluginOptions } from './plugin.js'
 
 // ── 4. 注册表 ──
-export { createComponentRegistry, getGlobalRegistry } from './registry/ComponentRegistry.js'
+export { createComponentRegistry, getGlobalRegistry } from './registry.js'
 
 // ── 5. 核心类型 ──
 export type {
@@ -32,10 +32,10 @@ export type {
   ComponentDefinition,
   ComponentRegistry,
   LoggerApi
-} from './core/types.js'
+} from './types.js'
 
 // ── 6. DI Keys ──
-export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './core/types.js'
+export { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
 
 // ── 6b. 数据 + Renderer 能力键 ──
 export {

@@ -9,10 +9,10 @@
 
 import type { App, Plugin } from 'vue'
 import { markRaw, reactive } from 'vue'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
-import type { ComponentContext, ComponentRegistry } from '../core/types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
+import type { ComponentContext, ComponentRegistry } from './types.js'
 import type { CapabilityName } from '@spark-view/spark-utils'
-import { getGlobalRegistry } from '../registry/ComponentRegistry.js'
+import { getGlobalRegistry } from './registry.js'
 import { DataView } from '@spark-view/spark-data'
 
 export interface SparkPluginOptions {

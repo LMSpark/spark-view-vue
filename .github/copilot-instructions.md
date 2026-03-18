@@ -30,10 +30,10 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
 - **Example components**: `features/spark-ej2/components/SparkEJ2Grid.vue`, `features/spark-ej2/components/SparkEJ2Column.vue`
 - **Renderer containers**: `src/components/renderer-containers/` — RendererTable / RendererForm / RendererDetail（DataView-first 容器）
 - **Renderer capability keys**: `src/components/capability-keys.ts`（FIELD_CONTEXT, CONTEXT_DATA）
-- **bindRules（规则绑定引擎）**: `packages/spark-component/src/renderer/utils/bindRules.ts`
-- **SparkComponentRenderer**: `packages/spark-component/src/renderer/spark/SparkComponentRenderer.vue`
-- **Key composable**: `packages/spark-component/src/composables/useSparkComponent.ts`
-- **DataSet 生命周期**: `packages/spark-component/src/renderer/composables/usePageDataSet.ts`（仅存储 DataSet，不转换）
+- **bindRules（规则绑定引擎）**: `packages/spark-component/src/renderer/binding/bindRules.ts`
+- **SparkComponentRenderer**: `packages/spark-component/src/renderer/SparkComponentRenderer.vue`
+- **Key composable**: `packages/spark-component/src/useSparkComponent.ts`
+- **DataSet 生命周期**: `packages/spark-component/src/renderer/usePageDataSet.ts`（仅存储 DataSet，不转换）
 - **DataKey parser**: `packages/spark-data/src/core/data-key.ts`
 - **Capability keys**: `packages/spark-utils/src/capability/index.ts` (APP_SERVICES, LOGGER 等), `packages/spark-component/src/capability-keys.ts` (PAGE_DATASET, DATA_SOURCE)
 - **Tests**: `tests/` (重要: `capability-late-binding.test.ts`, `capability-system.test.ts`, `data-key.test.ts`)
@@ -995,13 +995,20 @@ packages/
 │   └── src/
 │       ├── spark.ts          # Spark 命名空间（唯一入口）
 │       ├── capability-keys.ts # PAGE_DATASET, DATA_SOURCE（数据能力键）
-│       ├── core/types.ts     # ComponentConfig, ComponentContext, ComponentRegistry
-│       ├── registry/         # ComponentRegistry 实现
-│       ├── composables/      # useSparkComponent
-│       ├── plugins/          # SparkPlugin (Vue plugin)
+│       ├── types.ts          # ComponentConfig, ComponentContext, ComponentRegistry
+│       ├── registry.ts       # ComponentRegistry 实现
+│       ├── useSparkComponent.ts # 核心 Composable
+│       ├── plugin.ts         # SparkPlugin (Vue plugin)
 │       └── renderer/
-│           ├── composables/  # useRendererSetup, useCssScope, usePageDataSet
-│           └── utils/        # bindRules, createSandbox, provideAppServices, scopeCSS
+│           ├── SparkPageRenderer.vue   # 页面渲染器
+│           ├── SparkComponentRenderer.vue # 递归组件渲染器
+│           ├── usePageDataSet.ts  # DataSet 引用管理
+│           ├── useRendererSetup.ts # 共享基础设施
+│           ├── useCssScope.ts     # CSS 作用域隔离
+│           ├── binding/      # 规则绑定管线（bindRules, bind-*-delegate）
+│           ├── page/         # 页面基础设施（buildPageContext, createSandbox, scopeCSS）
+│           ├── containers/   # 容器组件（RendererTable, RendererForm 等）
+│           └── fields/       # 字段组件（FieldText, FieldSelect 等）
 ├── spark-data/          # 数据空间
 │   └── src/
 │       ├── core/data-key.ts  # DataKey 解析（resolveDataKeyBinding 等）

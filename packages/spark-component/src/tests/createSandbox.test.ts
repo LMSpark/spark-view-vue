@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { compileFunctions } from '../renderer/utils/createSandbox'
+import { compileFunctions } from '../renderer/page/createSandbox'
 import type { PageContext } from '../renderer/types'
 
 /** 创建最小化的 PageContext mock */

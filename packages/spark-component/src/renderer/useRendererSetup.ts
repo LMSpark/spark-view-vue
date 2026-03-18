@@ -26,11 +26,11 @@
 import { ref, type Ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
 import { APP_SERVICES, type LoggerApi } from '@spark-view/spark-utils'
-import { useSparkComponent, type UseSparkComponentReturn } from '../../composables/useSparkComponent'
-import { PAGE_COMPONENT_REGISTRY } from '../../capability-keys'
-import type { PageComponentRegistry } from '../../capability-keys'
-import { buildAppServices } from '../utils/provideAppServices'
-import { createPageComponentRegistry } from '../utils/page-component-registry'
+import { useSparkComponent, type UseSparkComponentReturn } from '../useSparkComponent'
+import { PAGE_COMPONENT_REGISTRY } from '../capability-keys'
+import type { PageComponentRegistry } from '../capability-keys'
+import { buildAppServices } from './page/provideAppServices'
+import { createPageComponentRegistry } from './page/page-component-registry'
 
 // ─── 公共接口 ────────────────────────────────────────────────────────────────
 

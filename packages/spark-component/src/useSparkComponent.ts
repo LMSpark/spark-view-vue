@@ -9,10 +9,10 @@
 import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
 import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
-import type { ComponentContext, ComponentConfig, ComponentRegistry } from '../core/types.js'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../core/types.js'
-import { PAGE_COMPONENT_REGISTRY } from '../capability-keys.js'
-import type { PageComponentRegistry } from '../capability-keys.js'
+import type { ComponentContext, ComponentConfig, ComponentRegistry } from './types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
+import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
+import type { PageComponentRegistry } from './capability-keys.js'
 
 /* -------------------------------------------------------------------------- */
 

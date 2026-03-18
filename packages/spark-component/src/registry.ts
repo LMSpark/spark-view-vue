@@ -8,7 +8,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { ComponentRegistry, ComponentDefinition } from '../core/types.js'
+import type { ComponentRegistry, ComponentDefinition } from './types.js'
 
 const logger = Logger('Spark:Registry')
 

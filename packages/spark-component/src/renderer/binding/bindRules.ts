@@ -19,7 +19,7 @@ import { toErrorMessage } from '@spark-view/spark-utils'
 import type { BindRule, RuleBindingOptions } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { isDataKey, resolveDataKeyBinding, getViewFromRawKey } from '@spark-view/spark-data'
-import type { ComponentRegistry } from '../../core/types.js'
+import type { ComponentRegistry } from '../../types.js'
 
 // ── 委托模块 ──────────────────────────────────────────────────────────────
 

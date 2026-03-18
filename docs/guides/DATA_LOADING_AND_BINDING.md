@@ -174,8 +174,8 @@ await view.loadFromServer({ page: 1 })
 ## 参考代码位置（快速跳转）
 - Data 层： `packages/spark-data/src/data-view.ts`、`data-table.ts`、`dataset.ts`
 - 级联 / 加载： `packages/spark-data/src/data-view.ts`（`setupCascade` / `respondToParentChange`）
-- 绑定 / 渲染： `packages/spark-component/src/renderer/utils/bindRules.ts`、`src/components/renderer-containers/RendererTable.vue`
-- 初始化： `packages/spark-component/src/renderer/composables/usePageDataSet.ts`
+- 绑定 / 渲染： `packages/spark-component/src/renderer/binding/bindRules.ts`、`src/components/renderer-containers/RendererTable.vue`
+- 初始化： `packages/spark-component/src/renderer/usePageDataSet.ts`
 - 测试： `tests/renderer-table.datasource.test.ts`、`tests/bindRules.test.ts`
 
 ---
