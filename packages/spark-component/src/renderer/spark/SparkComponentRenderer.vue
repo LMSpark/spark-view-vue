@@ -80,7 +80,7 @@
  * <SparkComponentRenderer :config="config" :parent-context="rootContext" />
  * ```
  */
-import { computed, inject, markRaw, provide as vueProvide, getCurrentInstance } from 'vue'
+import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../../core/types.js'
 import type { ComponentConfig, ComponentContext, ComponentRegistry } from '../../core/types.js'
 
@@ -127,10 +127,14 @@ if (props.parentContext !== undefined) {
 
 // ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────
 const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
-const appComponents = getCurrentInstance()?.appContext.components
 
 function isNativeRenderableType(type: string): boolean {
   return NATIVE_RENDERABLE_TAGS.has(type)
+}
+
+function resolveFromVueContext(type: string): unknown {
+  const resolved = resolveDynamicComponent(type)
+  return typeof resolved === 'string' ? null : resolved
 }
 
 function isComponentConfig(value: unknown): value is ComponentConfig {
@@ -159,7 +163,7 @@ const resolvedComponent = computed(() => {
     return def.component ? markRaw(def.component as object) : null
   }
 
-  const appComponent = appComponents?.[props.config.type]
+  const appComponent = resolveFromVueContext(props.config.type)
   if (appComponent) {
     return markRaw(appComponent as object)
   }

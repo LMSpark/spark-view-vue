@@ -4,6 +4,7 @@ import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT
 import { initializeSparkEJ2Components } from '../src/features/spark-ej2'
 import { defineComponent, h } from 'vue'
 import type { DefineComponent } from 'vue'
+import SparkComponentRendererSource from '../packages/spark-component/src/renderer/spark/SparkComponentRenderer.vue'
 
 const { registry, rootContext } = Spark.createSystem()
 
@@ -84,6 +85,34 @@ test('SparkComponentRenderer falls back to Vue global Render* components', () =>
   })
 
   expect(wrapper.find('.render-search-bar').exists()).toBe(true)
+  expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
+})
+
+test('SparkComponentRenderer resolves kebab-case el-* type from globally registered PascalCase components', () => {
+  const ElButton = defineComponent({
+    name: 'ElButton',
+    setup() {
+      return () => h('button', { class: 'el-button-stub' }, 'ok')
+    }
+  })
+
+  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+    props: {
+      config: { type: 'el-button' },
+      parentContext: rootContext
+    },
+    global: {
+      components: {
+        ElButton
+      },
+      provide: {
+        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext
+      }
+    }
+  })
+
+  expect(wrapper.find('.el-button-global-stub, .el-button-stub').exists()).toBe(true)
   expect(wrapper.find('.spark-component-unregistered').exists()).toBe(false)
 })
 
