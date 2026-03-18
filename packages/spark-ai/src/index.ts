@@ -2,6 +2,7 @@
 export {
   extractBlocks as extractProtocolBlocks,
   stripBlocks as stripProtocolBlocks,
+  stripBlocksWithUnclosed as stripProtocolBlocksWithUnclosed,
   extractProposalBlocks,
   stripProposalBlocks,
   extractToolBlocks,

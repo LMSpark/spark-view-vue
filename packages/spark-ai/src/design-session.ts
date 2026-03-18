@@ -1,6 +1,6 @@
 import { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
-import { extractBlocks as _extractBlocks, stripBlocks as _stripBlocks } from './protocol'
-import type { ProtocolBlock as UnifiedBlock } from './protocol'
+import { extractBlocks as _extractBlocks, stripBlocksWithUnclosed } from './protocol'
+import type { ProtocolBlock } from './protocol'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -43,12 +43,11 @@ export interface DesignProposal {
   timestamp: Date
 }
 
-/** @@ 协议提取的原始块（向后兼容别名，正式类型见 protocol.ts） */
-export interface ProtocolBlock {
-  type: string   // 'proposal' | 'query' | 'review' | 'error'
-  name: string   // kebab-case: 'data-model' | 'component-props' | ...
-  payload: string
-}
+/**
+ * @@ 协议提取的原始块
+ * @deprecated 直接使用 protocol.ts 的 ProtocolBlock（完全兼容，额外含 raw 字段）
+ */
+export type { ProtocolBlock } from './protocol'
 
 /** 验证反馈（结构化） */
 export interface ValidationFeedback {
@@ -108,20 +107,12 @@ export function typeIcon(type: ProposalType): string {
 
 // ── @@ 定界符协议解析（委托 protocol.ts） ────────────────────────────────────
 
-/** 流式清理用正则（匹配未闭合的 @@ 块） */
-const UNCLOSED_BLOCK_RE = /^@@\w+:[\w-]+\s*$[\s\S]*$/m
-
 /**
  * 从文本中提取所有 @@ 协议块
  * @deprecated 优先使用 protocol.ts 的 extractBlocks + filter
  */
 export function extractBlocks(text: string): ProtocolBlock[] {
-  return _extractBlocks(text).map(toCompat)
-}
-
-/** protocol.ts UnifiedBlock → 本地 ProtocolBlock 兼容映射 */
-function toCompat(b: UnifiedBlock): ProtocolBlock {
-  return { type: b.type, name: b.name, payload: b.payload }
+  return _extractBlocks(text)
 }
 
 // ── 提案提取 ─────────────────────────────────────────────────────────────────
@@ -187,12 +178,7 @@ export function stripProposalTags(content: string): string {
 
 /** 内部：清理 @@ 协议标记（含流式未闭合块） */
 function stripProtocolBlocks(content: string): string {
-  const stripped = _stripBlocks(content)
-  // 额外清理流式中途未闭合的块
-  return stripped
-    .replace(UNCLOSED_BLOCK_RE, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  return stripBlocksWithUnclosed(content)
 }
 
 // ── 查询提取 ─────────────────────────────────────────────────────────────────

@@ -230,6 +230,22 @@ export function parseTokenUsage(raw: Record<string, unknown>): TokenUsage {
   return usage
 }
 
+// ── 流式清理 ──────────────────────────────────────────────────────────────────
+
+/** 匹配流式中途未闭合的 @@ 块（缺少 @@end） */
+const UNCLOSED_BLOCK_RE = /^@@\w+:[\w-]+\s*$[\s\S]*$/m
+
+/**
+ * 去除协议块 + 流式未闭合块（用于 SSE 实时渲染中清理残留标记）
+ */
+export function stripBlocksWithUnclosed(text: string, filter?: ProtocolBlockFilter): string {
+  const stripped = stripBlocks(text, filter)
+  return stripped
+    .replace(UNCLOSED_BLOCK_RE, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 // ── 内部辅助 ──────────────────────────────────────────────────────────────────
 
 function collapseBlankLines(text: string): string {

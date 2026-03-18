@@ -17,6 +17,7 @@ export {
   parseToolPayload as parseToolProtocolPayload,
   extractProposalBlocks as extractProposalProtocolBlocks,
   stripProposalBlocks as stripProposalProtocolBlocks,
+  stripProtocolBlocksWithUnclosed,
   extractFirstJsonObject,
   parseTokenUsage,
 } from '@spark-view/spark-ai'

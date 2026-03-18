@@ -29,7 +29,7 @@ Some trailing text.`
 
     const blocks = extractBlocks(text)
     expect(blocks).toHaveLength(1)
-    expect(blocks[0]).toEqual({
+    expect(blocks[0]).toMatchObject({
       type: 'proposal',
       name: 'data-model',
       payload: '# 订单主表\n{"tableName": "Orders"}',
@@ -65,7 +65,7 @@ r-table, r-form
 `
     const blocks = extractBlocks(text)
     expect(blocks).toHaveLength(1)
-    expect(blocks[0]).toEqual({
+    expect(blocks[0]).toMatchObject({
       type: 'query',
       name: 'component-props',
       payload: 'r-table, r-form',
