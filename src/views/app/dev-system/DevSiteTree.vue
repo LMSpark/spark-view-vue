@@ -20,14 +20,14 @@
             <el-dropdown-item @click="expandAll">展开全部</el-dropdown-item>
             <el-dropdown-item @click="collapseAll">折叠全部</el-dropdown-item>
             <el-dropdown-item
-              :disabled="state.hasReservedRootGroup('__toolbar__')"
-              @click="state.restoreReservedRootGroup('__toolbar__')"
+              :disabled="state.hasReservedRootGroup('toolbar')"
+              @click="state.restoreReservedRootGroup('toolbar')"
             >
               恢复工具栏组
             </el-dropdown-item>
             <el-dropdown-item
-              :disabled="state.hasReservedRootGroup('__user-menu__')"
-              @click="state.restoreReservedRootGroup('__user-menu__')"
+              :disabled="state.hasReservedRootGroup('user-menu')"
+              @click="state.restoreReservedRootGroup('user-menu')"
             >
               恢复用户菜单组
             </el-dropdown-item>

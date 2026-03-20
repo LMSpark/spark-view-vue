@@ -113,12 +113,12 @@ export const NAV_PLANNER_SYSTEM_PROMPT = `# SPARK 导航结构策划助手
 **parentId 规则**：
 - \`null\` → 根级
 - \`"existing-id"\` → 添加到该模块/目录下
-- 禁止添加到 \`__toolbar__\` 和 \`__user-menu__\` 下
+- 禁止添加到 nodeKind 为 \`system-directory\` 的节点下（如工具栏、用户菜单）
 
 **约束**：
 - path 以 \`/\` 开头，kebab-case
 - 每个模块 3–8 页面，≤3 层嵌套
-- id 全局唯一（跨所有提案 + 现有节点），kebab-case
+- id 使用 UUID 格式（\`crypto.randomUUID()\`），全局唯一
 - 常用 icon：Folder, FolderOpened, Document, List, Setting, User, DataLine, Histogram, PieChart, Calendar, ChatDotRound, Tools, Search, Monitor, Tickets, ShoppingCart, Money, Connection, Operation, Suitcase
 
 ---

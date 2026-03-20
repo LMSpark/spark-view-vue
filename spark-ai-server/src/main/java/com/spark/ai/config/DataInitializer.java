@@ -1,6 +1,5 @@
 package com.spark.ai.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.entity.TenantConfigEntity;
 import com.spark.ai.repository.TenantConfigRepository;
 import com.spark.ai.service.AuthService;
@@ -10,10 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * 应用启动时数据初始化：
@@ -30,18 +25,15 @@ public class DataInitializer implements CommandLineRunner {
     private final TenantConfigRepository tenantRepo;
     private final ProjectService projectService;
     private final AuthService authService;
-    private final ObjectMapper objectMapper;
 
     private static final String DEFAULT_TENANT = "lmspark";
 
     public DataInitializer(TenantConfigRepository tenantRepo,
                             ProjectService projectService,
-                            AuthService authService,
-                            ObjectMapper objectMapper) {
+                            AuthService authService) {
         this.tenantRepo = tenantRepo;
         this.projectService = projectService;
         this.authService = authService;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -52,49 +44,30 @@ public class DataInitializer implements CommandLineRunner {
 
     // ── 种子租户数据 ──────────────────────────────────────────────────────────
 
-    private void seedTenants() throws IOException {
+    private void seedTenants() {
         if (tenantRepo.count() > 0) {
             log.info("[DataInit] 租户数据已存在，跳过种子");
             return;
         }
 
-        saveTenant(DEFAULT_TENANT, Map.of(
-                "tenant", mapOf(
-                        "tenantId", DEFAULT_TENANT,
-                        "tenantName", "领码SPARK",
-                        "tenantCode", "LMSPARK",
-                        "logo", "",
-                        "theme", mapOf("primaryColor", "#409eff", "borderRadius", "4px")
-                ),
-                "config", mapOf(
-                        "apiBaseUrl", "/api",
-                        "logLevel", "debug",
-                        "features", mapOf("enableAI", true, "enableExport", true, "enableOffline", false)
-                ),
-                "pageConfig", Map.of("homePath", "/")
-        ));
+        TenantConfigEntity entity = new TenantConfigEntity();
+        entity.setTenantId(DEFAULT_TENANT);
+        entity.setTenantName("领码SPARK");
+        entity.setTenantCode("LMSPARK");
+        entity.setLogo("");
+        entity.setPrimaryColor("#409eff");
+        entity.setBorderRadius("4px");
+        entity.setHomePath("/");
+        entity.setApiBaseUrl("/api");
+        entity.setLogLevel("debug");
+        entity.setEnableAi(true);
+        entity.setEnableExport(true);
+        entity.setEnableOffline(false);
+        tenantRepo.save(entity);
+
         projectService.ensureHomepage(DEFAULT_TENANT);
         authService.ensureAdminUser(DEFAULT_TENANT, "admin", "admin123");
 
         log.info("[DataInit] 种子租户数据已写入: 领码SPARK ({})", DEFAULT_TENANT);
-    }
-
-    private void saveTenant(String tenantId, Map<String, Object> config) throws IOException {
-        TenantConfigEntity entity = new TenantConfigEntity();
-        entity.setTenantId(tenantId);
-        entity.setConfigJson(objectMapper.writeValueAsString(config));
-        tenantRepo.save(entity);
-    }
-
-    /** 创建可变 Map（Map.of 不允许 null 值，且某些嵌套需要 mutable） */
-    @SafeVarargs
-    private static <V> Map<String, V> mapOf(Object... kv) {
-        Map<String, V> map = new LinkedHashMap<>();
-        for (int i = 0; i < kv.length; i += 2) {
-            @SuppressWarnings("unchecked")
-            V value = (V) kv[i + 1];
-            map.put((String) kv[i], value);
-        }
-        return map;
     }
 }

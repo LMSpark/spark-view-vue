@@ -14,6 +14,7 @@ export function useNodeKindFlags(state: DevState) {
   const isPageNode = computed(() => state.editForm.nodeKind === 'page')
   const isLinkNode = computed(() => state.editForm.nodeKind === 'link')
   const isSubPageNode = computed(() => state.editForm.nodeKind === 'sub-page')
+  const isRefNode = computed(() => state.editForm.nodeKind === 'ref')
 
   const showTargetSelector = computed(() =>
     isSystemPageNode.value || isPageNode.value || isSystemActionNode.value,
@@ -27,6 +28,7 @@ export function useNodeKindFlags(state: DevState) {
     if (isLinkNode.value) return '链接配置'
     if (isDirectoryNode.value) return '重定向'
     if (isSubPageNode.value) return '关联页面'
+    if (isRefNode.value) return '引用配置'
     return '路由 & 关联页面'
   })
 
@@ -42,6 +44,7 @@ export function useNodeKindFlags(state: DevState) {
     isPageNode,
     isLinkNode,
     isSubPageNode,
+    isRefNode,
     showTargetSelector,
     showPathStatus,
     routeSectionLabel,

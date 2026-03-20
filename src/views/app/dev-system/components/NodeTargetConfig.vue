@@ -92,16 +92,58 @@
         <el-option v-for="opt in parentPageOptions" :key="opt.id" :label="opt.label" :value="opt.id" />
       </el-select>
     </el-form-item>
+
+    <!-- 跨工程引用（ref 节点） -->
+    <el-form-item v-if="flags.isRefNode.value" label="目标工程" class="fi fi--medium">
+      <el-select
+        v-model="refProjectSelection"
+        filterable
+        clearable
+        placeholder="选择工程"
+        :loading="refProjectsLoading"
+      >
+        <el-option
+          v-for="p in refProjectOptions"
+          :key="p.value"
+          :value="p.value"
+          :label="p.label"
+        />
+      </el-select>
+    </el-form-item>
+    <el-form-item v-if="flags.isRefNode.value && refProjectSelection" label="目标页面" class="fi fi--medium">
+      <el-select
+        v-model="refPageSelection"
+        filterable
+        clearable
+        placeholder="选择页面"
+        :loading="refPagesLoading"
+      >
+        <el-option
+          v-for="p in refPageOptions"
+          :key="p.value"
+          :value="p.value"
+          :label="p.label"
+        />
+      </el-select>
+    </el-form-item>
+    <el-form-item v-if="flags.isRefNode.value && refStatus" label="" label-width="0" class="path-status-item">
+      <el-tag :type="refStatus.type" size="small" disable-transitions>
+        <NavIcon :name="refStatus.icon" :size="12" /> {{ refStatus.text }}
+      </el-tag>
+    </el-form-item>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { NavNode, NavNodeKind } from '@spark-view/spark-app'
 import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
 import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
+import { getProjectApi } from '@/services/api-paths'
+import { getUser } from '@/services/auth'
+import { http } from '@/services/http'
 
 const props = defineProps<{ state: DevState }>()
 const flags = useNodeKindFlags(props.state)
@@ -322,6 +364,135 @@ const pathStatus = computed(() => {
     return { type: 'success' as const, icon: 'SuccessFilled', text: `配置页面已存在：${pageId}` }
   }
   return { type: 'danger' as const, icon: 'CircleCloseFilled', text: `配置页面不存在：${pageId}（需先创建）` }
+})
+
+// ── 跨工程引用：工程选择 → 页面选择 ──
+
+interface SelectOption {
+  value: string
+  label: string
+}
+
+const refProjectsLoading = ref(false)
+const refPagesLoading = ref(false)
+const refProjectOptions = ref<SelectOption[]>([])
+const refPageOptions = ref<SelectOption[]>([])
+const refProjectSelection = ref('')
+const refPageSelection = ref('')
+
+/** 加载工程列表（排除当前工程） */
+async function loadRefProjects() {
+  refProjectsLoading.value = true
+  try {
+    const currentProjectId = getUser()?.defaultProjectId ?? ''
+    const projects = await http.get<Array<Record<string, unknown>>>(getProjectApi())
+    refProjectOptions.value = projects
+      .map((p) => ({
+        value: String(p['projectId'] ?? p['id'] ?? ''),
+        label: String(p['name'] ?? p['projectId'] ?? ''),
+      }))
+      .filter((o) => o.value !== currentProjectId)
+  } catch {
+    refProjectOptions.value = []
+  } finally {
+    refProjectsLoading.value = false
+  }
+}
+
+/** 加载指定工程的 page 节点列表 */
+async function loadRefPages(projectId: string) {
+  refPagesLoading.value = true
+  refPageOptions.value = []
+  try {
+    const user = getUser()
+    const tenantId = user?.tenantId ?? 'default'
+    const navUrl = `/api/tenants/${tenantId}/projects/${projectId}/navigation`
+    const config = await http.get<{ children?: NavNode[] }>(navUrl)
+    const pages: SelectOption[] = []
+    function collect(nodes: NavNode[]) {
+      for (const n of nodes) {
+        if (n.nodeKind === 'page' && n.id) {
+          const suffix = n.path ? `（${n.path}）` : ''
+          pages.push({ value: n.id, label: `${n.title ?? n.id}${suffix}` })
+        }
+        if (Array.isArray(n.children)) collect(n.children)
+      }
+    }
+    collect(config.children ?? [])
+    refPageOptions.value = pages
+  } catch {
+    refPageOptions.value = []
+  } finally {
+    refPagesLoading.value = false
+  }
+}
+
+// 当 isRefNode 变为 true 时加载工程列表
+watch(() => flags.isRefNode.value, (isRef) => {
+  if (isRef) {
+    void loadRefProjects()
+    // 回填已有选择
+    const selectedNode = props.state.selectedNode.value
+    if (selectedNode?.nodeKind === 'ref' && selectedNode.refId) {
+      if (selectedNode.refProjectId) {
+        refProjectSelection.value = selectedNode.refProjectId
+      } else {
+        const user = getUser()
+        refProjectSelection.value = user?.defaultProjectId ?? ''
+      }
+      refPageSelection.value = selectedNode.refId
+    } else {
+      refProjectSelection.value = ''
+      refPageSelection.value = ''
+    }
+  }
+}, { immediate: true })
+
+// 工程切换→加载该工程页面列表
+watch(refProjectSelection, (projectId) => {
+  refPageSelection.value = ''
+  if (projectId) {
+    void loadRefPages(projectId)
+  } else {
+    refPageOptions.value = []
+    props.state.editForm.refId = ''
+    props.state.markNavDirty()
+  }
+})
+
+// 页面选择→写入 refId
+watch(refPageSelection, (nodeId) => {
+  if (nodeId && nodeId !== props.state.editForm.id) {
+    props.state.editForm.refId = nodeId
+    props.state.markNavDirty()
+  } else if (!nodeId) {
+    props.state.editForm.refId = ''
+    props.state.markNavDirty()
+  }
+})
+
+// ── 引用状态提示 ──
+
+const refStatus = computed(() => {
+  if (!flags.isRefNode.value) return null
+  const refId = props.state.editForm.refId
+  if (!refId) return null
+
+  if (refId === props.state.editForm.id) {
+    return { type: 'danger' as const, icon: 'CircleCloseFilled', text: '不能引用自身' }
+  }
+
+  const selectedNode = props.state.selectedNode.value
+  if (!selectedNode || selectedNode.nodeKind !== 'ref') return null
+
+  if (selectedNode.refBroken) {
+    return { type: 'danger' as const, icon: 'CircleCloseFilled', text: '引用断链：目标节点不存在或不是 page 类型' }
+  }
+  if (selectedNode.refPath) {
+    const cross = selectedNode.refProjectId ? `（跨工程: ${selectedNode.refProjectId}）` : '（同工程）'
+    return { type: 'success' as const, icon: 'SuccessFilled', text: `引用有效 → ${selectedNode.refPath} ${cross}` }
+  }
+  return { type: 'info' as const, icon: 'InfoFilled', text: '保存后可验证引用状态' }
 })
 </script>
 

@@ -141,7 +141,7 @@ async function handleSwitch(project: ProjectItem) {
   ElMessage.success(`已切换到「${project.name}」`)
   const user = getUser()
   if (user) {
-    void router.push(`/t/${user.tenantId}${getNavHomePath()}`)
+    void router.push(`/t/${user.tenantId}/${user.defaultProjectId}${getNavHomePath()}`)
   }
 }
 

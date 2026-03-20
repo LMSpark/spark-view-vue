@@ -35,6 +35,7 @@ export interface DevEditForm {
   order: number
   hidden: boolean
   disabled: boolean
+  refId: string
 }
 
 export interface DevContextConfig {
@@ -62,6 +63,7 @@ export function useDevState() {
     'page': 'Document',
     'link': 'Link',
     'sub-page': 'Document',
+    'ref': 'Connection',
   }
   const ROOT_CHILD_PLACEMENTS = new Set(['header', 'sidebar'])
 
@@ -78,7 +80,7 @@ export function useDevState() {
     dividerAfter: false,
     description: '',
     path: '', redirect: '', linkTarget: 'iframe' as LinkTarget,
-    parentPageId: '',
+    parentPageId: '', refId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
   })
@@ -262,6 +264,16 @@ export function useDevState() {
       editForm.redirect = ''
       // linkTarget 已是 LinkTarget 类型，保留当前值
       editForm.parentPageId = ''
+      editForm.refId = ''
+      return
+    }
+
+    if (kind === 'ref') {
+      editForm.hidden = false
+      editForm.path = ''
+      editForm.redirect = ''
+      editForm.linkTarget = 'iframe'
+      editForm.parentPageId = ''
       return
     }
 
@@ -433,6 +445,7 @@ export function useDevState() {
     editForm.redirect = node.redirect ?? ''
     editForm.linkTarget = normalizeLinkTarget(node.linkTarget)
     editForm.parentPageId = node.parentPageId ?? ''
+    editForm.refId = node.refId ?? ''
     editForm.childPlacement = node.childPlacement ?? ''
     editForm.order = node.order ?? 0
     editForm.hidden = node.hidden ?? false
@@ -500,6 +513,11 @@ export function useDevState() {
       editForm.redirect = ''
       // linkTarget 已是 LinkTarget 类型，保留当前值
       editForm.parentPageId = ''
+    } else if (editForm.nodeKind === 'ref') {
+      editForm.path = ''
+      editForm.redirect = ''
+      editForm.linkTarget = 'iframe'
+      editForm.parentPageId = ''
     } else if (editForm.nodeKind === 'system-page') {
       editForm.linkTarget = 'iframe'
       editForm.parentPageId = ''
@@ -514,6 +532,13 @@ export function useDevState() {
     if (editForm.path) patch['path'] = editForm.path
     if (editForm.redirect) patch['redirect'] = editForm.redirect
     if (editForm.nodeKind === 'link') patch['linkTarget'] = editForm.linkTarget
+    if (editForm.nodeKind === 'ref' && editForm.refId) {
+      if (editForm.refId === editForm.id) {
+        addStatus('不能引用自身，已忽略 refId', 'warning')
+      } else {
+        patch['refId'] = editForm.refId
+      }
+    }
     if (editForm.parentPageId) patch['parentPageId'] = editForm.parentPageId
     if (editForm.childPlacement) patch['childPlacement'] = editForm.childPlacement
     if (editForm.order !== 0) patch['order'] = editForm.order
@@ -537,7 +562,7 @@ export function useDevState() {
     const optKeys: Array<keyof NavNode> = [
       'icon', 'description', 'path', 'redirect', 'linkTarget',
       'parentPageId', 'childPlacement', 'order', 'hidden', 'disabled', 'context',
-      'dividerAfter', 'nodeKind',
+      'dividerAfter', 'nodeKind', 'refId',
     ]
     for (const k of optKeys) {
       if (!(k in patch)) {
@@ -721,7 +746,7 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function addRootNode() {
-    const id = `module-${Date.now()}`
+    const id = crypto.randomUUID()
     const node: NavNode = {
       id,
       nodeKind: 'module',
@@ -737,18 +762,20 @@ export function useDevState() {
     )
   }
 
-  function hasReservedRootGroup(id: '__toolbar__' | '__user-menu__'): boolean {
-    return treeData.value.some((node) => node.id === id)
+  function hasReservedRootGroup(placement: 'toolbar' | 'user-menu'): boolean {
+    return treeData.value.some((node) => node.childPlacement === placement)
   }
 
-  function getReservedRootGroupTemplate(id: '__toolbar__' | '__user-menu__'): NavNode {
-    const template = demoNavRoot.children.find((node) => node.id === id)
+  function getReservedRootGroupTemplate(placement: 'toolbar' | 'user-menu'): NavNode {
+    const template = demoNavRoot.children.find((node) => node.childPlacement === placement)
     if (template) {
-      return deepClone(template)
+      const cloned = deepClone(template)
+      cloned.id = crypto.randomUUID()
+      return cloned
     }
-    if (id === '__toolbar__') {
+    if (placement === 'toolbar') {
       return {
-        id: '__toolbar__',
+        id: crypto.randomUUID(),
         nodeKind: 'system-directory',
         title: '工具栏',
         icon: 'SetUp',
@@ -757,7 +784,7 @@ export function useDevState() {
       }
     }
     return {
-      id: '__user-menu__',
+      id: crypto.randomUUID(),
       nodeKind: 'system-directory',
       title: '用户菜单',
       icon: 'User',
@@ -766,26 +793,26 @@ export function useDevState() {
     }
   }
 
-  async function restoreReservedRootGroup(id: '__toolbar__' | '__user-menu__') {
-    if (hasReservedRootGroup(id)) {
-      addStatus(`${id} 已存在，无需恢复`, 'info')
+  async function restoreReservedRootGroup(placement: 'toolbar' | 'user-menu') {
+    if (hasReservedRootGroup(placement)) {
+      addStatus(`${placement} 已存在，无需恢复`, 'info')
       return
     }
 
-    const node = getReservedRootGroupTemplate(id)
+    const node = getReservedRootGroupTemplate(placement)
     treeData.value.unshift(node)
 
     try {
       await http.post(`${getNavApi()}/nodes`, { node, index: 0 })
       addStatus(`已恢复 ${node.title}`, 'success')
     } catch (e) {
-      treeData.value = treeData.value.filter((n) => n.id !== id)
+      treeData.value = treeData.value.filter((n) => n.id !== node.id)
       addStatus(`恢复失败: ${String(e)}`, 'error')
     }
   }
 
   function addChildNode(parent: NavNode) {
-    const id = `page-${Date.now()}`
+    const id = crypto.randomUUID()
     const node: NavNode = {
       id,
       nodeKind: 'page',

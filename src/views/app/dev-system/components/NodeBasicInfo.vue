@@ -26,6 +26,7 @@
           <el-radio-button value="page">普通页面</el-radio-button>
           <el-radio-button value="link">超链接</el-radio-button>
           <el-radio-button value="sub-page">子页面</el-radio-button>
+          <el-radio-button value="ref">跨工程引用</el-radio-button>
         </el-radio-group>
       </el-form-item>
     </div>

@@ -475,6 +475,12 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
       }
     }
 
+    // 跨工程引用：后端已解析 refPath
+    if (node.nodeKind === 'ref' && node.refPath) {
+      navigateByPath(node.refPath)
+      return
+    }
+
     // 重定向
     if (node.redirect) {
       navigateByPath(node.redirect)

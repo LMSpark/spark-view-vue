@@ -1,20 +1,16 @@
 package com.spark.ai.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spark.ai.entity.ProjectEntity;
-import com.spark.ai.repository.ProjectRepository;
+
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.net.URI;
@@ -28,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,56 +34,121 @@ import java.util.regex.Pattern;
 @Service
 public class NavigationService {
 
-    private record FlatNode(Long id, Long pid, Integer sortOrder, Map<String, Object> node) {}
+    private record FlatNode(String nodeId, String parentId, Integer sortOrder, Map<String, Object> node) {}
 
     private static final Logger log = LoggerFactory.getLogger(NavigationService.class);
     private static final String DEFAULT_HOME_PATH = "/dashboard";
-    private static final List<String> SYSTEM_ROOT_DIRECTORY_IDS = List.of("__toolbar__", "__user-menu__");
     private static final Pattern FRAME_ANCESTORS_PATTERN = Pattern.compile("frame-ancestors\\s+([^;]+)", Pattern.CASE_INSENSITIVE);
-    private static final Set<String> VALID_NODE_KINDS = Set.of("system-directory", "module", "system-page", "system-action", "page", "link", "sub-page");
+    private static final Set<String> VALID_NODE_KINDS = Set.of("system-directory", "module", "system-page", "system-action", "page", "link", "sub-page", "ref");
     private static final Set<String> VALID_CHILD_PLACEMENTS = Set.of("header", "sidebar", "toolbar", "user-menu", "parent", "flat");
+
+    // ── SQL（PARENT_ID 为 VARCHAR，存 NODE_ID 字符串）─────────────────────
+
     private static final String SELECT_FLAT_SQL = """
-        SELECT ID, PID, TITLE, DESCRIPTION, NODEKIND, PATH, ICON,
-           DIVIDERAFTER, CHILDPLACEMENT, LINKTARGET,
-           HIDDEN, DISABLED, SORTORDER, LEGACYNODEIDREMARK, REFID
+        SELECT NODE_ID, PARENT_ID, TITLE, DESCRIPTION, NODE_KIND, PATH, ICON,
+           DIVIDER_AFTER, CHILD_PLACEMENT, LINK_TARGET,
+           HIDDEN, DISABLED, SORT_ORDER, REF_ID, CONTEXT
         FROM NAVIGATION_NODE_FLAT
-        WHERE TENANTID = ? AND PROJECTID = ?
-        ORDER BY COALESCE(PID, 0), SORTORDER, ID
+        WHERE TENANT_ID = ? AND PROJECT_ID = ?
+        ORDER BY SORT_ORDER, NODE_ID
         """;
-    private static final String DELETE_FLAT_SQL = """
+    private static final String DELETE_ALL_SQL = """
         DELETE FROM NAVIGATION_NODE_FLAT
-        WHERE TENANTID = ? AND PROJECTID = ?
-        """;
-    private static final String CLEAR_PARENT_SQL = """
-        UPDATE NAVIGATION_NODE_FLAT
-        SET PID = NULL
-        WHERE TENANTID = ? AND PROJECTID = ?
+        WHERE TENANT_ID = ? AND PROJECT_ID = ?
         """;
     private static final String INSERT_FLAT_SQL = """
         INSERT INTO NAVIGATION_NODE_FLAT (
-        PID, TENANTID, PROJECTID,
-        TITLE, DESCRIPTION, NODEKIND, PATH, ICON,
-        DIVIDERAFTER, CHILDPLACEMENT, LINKTARGET,
-        HIDDEN, DISABLED, SORTORDER,
-        LEGACYNODEIDREMARK, UPDATEDAT, REFID, NAV_PROJECT_ID
+            PARENT_ID, TENANT_ID, PROJECT_ID,
+            TITLE, DESCRIPTION, NODE_KIND, PATH, ICON,
+            DIVIDER_AFTER, CHILD_PLACEMENT, LINK_TARGET,
+            HIDDEN, DISABLED, SORT_ORDER,
+            NODE_ID, UPDATED_AT, REF_ID, CONTEXT
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
-    private static final String SELECT_LEGACY_ID_BY_DB_ID_SQL = """
-        SELECT LEGACYNODEIDREMARK
+    private static final String EXISTS_NODE_SQL = """
+        SELECT 1 FROM NAVIGATION_NODE_FLAT
+        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
+        """;
+    private static final String MAX_SORT_ORDER_SQL = """
+        SELECT COALESCE(MAX(SORT_ORDER), -1) + 1
         FROM NAVIGATION_NODE_FLAT
-        WHERE TENANTID = ? AND PROJECTID = ? AND ID = ?
+        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND PARENT_ID %s
+        """;
+    private static final String SHIFT_SORT_ORDER_SQL = """
+        UPDATE NAVIGATION_NODE_FLAT SET SORT_ORDER = SORT_ORDER + 1
+        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND PARENT_ID %s AND SORT_ORDER >= ?
+        """;
+    private static final String UPDATE_NODE_SQL = """
+        UPDATE NAVIGATION_NODE_FLAT SET
+            TITLE = ?, DESCRIPTION = ?, NODE_KIND = ?, PATH = ?, ICON = ?,
+            DIVIDER_AFTER = ?, CHILD_PLACEMENT = ?, LINK_TARGET = ?,
+            HIDDEN = ?, DISABLED = ?, REF_ID = ?, CONTEXT = ?, UPDATED_AT = ?
+        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
+        """;
+    private static final String DELETE_BY_NODE_ID_SQL = """
+        DELETE FROM NAVIGATION_NODE_FLAT
+        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
+        """;
+    private static final String DELETE_CHILDREN_SQL = """
+        DELETE FROM NAVIGATION_NODE_FLAT
+        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND PARENT_ID = ?
+        """;
+    private static final String SELECT_CHILDREN_SQL = """
+        SELECT NODE_ID FROM NAVIGATION_NODE_FLAT
+        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND PARENT_ID = ?
+        """;
+    private static final String MOVE_NODE_SQL = """
+        UPDATE NAVIGATION_NODE_FLAT SET
+            PARENT_ID = ?, SORT_ORDER = ?, UPDATED_AT = ?
+        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
+        """;
+    private static final String CHECK_SYSTEM_ROOT_SQL = """
+        SELECT NODE_KIND, PARENT_ID FROM NAVIGATION_NODE_FLAT WHERE NODE_ID = ?
+        """;
+    /** 跨项目解析 ref 节点：通过全局唯一 NODE_ID 查目标节点基本信息 */
+    private static final String RESOLVE_REF_SQL = """
+        SELECT NODE_ID, TENANT_ID, PROJECT_ID, TITLE, ICON, PATH, NODE_KIND
+        FROM NAVIGATION_NODE_FLAT WHERE NODE_ID = ?
         """;
 
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
-    private final ProjectRepository projectRepository;
 
     public NavigationService(ObjectMapper objectMapper,
-                             JdbcTemplate jdbcTemplate,
-                             ProjectRepository projectRepository) {
+                             JdbcTemplate jdbcTemplate) {
         this.objectMapper = objectMapper;
         this.jdbcTemplate = jdbcTemplate;
-        this.projectRepository = projectRepository;
+    }
+
+    @PostConstruct
+    void ensureSchema() {
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS NAVIGATION_NODE_FLAT (
+                NODE_ID         VARCHAR(255)  NOT NULL PRIMARY KEY,
+                PARENT_ID       VARCHAR(255),
+                TENANT_ID       VARCHAR(255)  NOT NULL,
+                PROJECT_ID      VARCHAR(255)  NOT NULL,
+                TITLE           VARCHAR(500),
+                DESCRIPTION     VARCHAR(2000),
+                NODE_KIND       VARCHAR(50),
+                PATH            VARCHAR(500),
+                ICON            VARCHAR(255),
+                DIVIDER_AFTER   BOOLEAN       DEFAULT FALSE,
+                CHILD_PLACEMENT VARCHAR(50),
+                LINK_TARGET     VARCHAR(50),
+                HIDDEN          BOOLEAN       DEFAULT FALSE,
+                DISABLED        BOOLEAN       DEFAULT FALSE,
+                SORT_ORDER      INT           DEFAULT 0,
+                UPDATED_AT      TIMESTAMP,
+                REF_ID          VARCHAR(255),
+                CONTEXT         CLOB
+            )
+            """);
+        jdbcTemplate.execute("""
+            CREATE INDEX IF NOT EXISTS IDX_NAV_TENANT_PROJECT
+            ON NAVIGATION_NODE_FLAT (TENANT_ID, PROJECT_ID)
+            """);
+        log.info("[Navigation] 表 NAVIGATION_NODE_FLAT 已就绪");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -98,7 +160,11 @@ public class NavigationService {
      */
     public Map<String, Object> getNavConfig(String tenantId, String projectId) throws IOException {
         List<Map<String, Object>> rows = fetchFlatRows(tenantId, projectId);
-        return buildRootFromFlatRows(rows);
+        Map<String, Object> root = buildRootFromFlatRows(rows);
+        if (root != null) {
+            resolveRefNodes(root, tenantId, projectId);
+        }
+        return root;
     }
 
     /**
@@ -117,159 +183,133 @@ public class NavigationService {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * 新增节点。
+     * 新增节点（增量 INSERT）。
      *
-     * @param parentId 父节点 id；为 null 则追加到根 children
+     * @param parentId 父节点 NODE_ID；为 null 则追加到根
      * @param node     要插入的节点对象（必须含 id、title）
      * @param index    插入位置（-1 表示追加到末尾）
-     * @throws IllegalArgumentException 若 id 已存在或父节点不存在
      */
     @Transactional
     public Map<String, Object> addNode(String tenantId, String projectId,
                                         String parentId,
                                         Map<String, Object> node,
                                         int index) throws IOException {
-        Map<String, Object> root = loadOrInit(tenantId, projectId);
-        List<Map<String, Object>> rootChildren = getChildren(root);
+        Map<String, Object> sanitized = sanitizeNode(node);
+        String newId = asTrimmedString(sanitized.get("id"));
+        if (newId.isBlank()) {
+            newId = UUID.randomUUID().toString();
+            sanitized.put("id", newId);
+        }
 
-        // 校验：id 不能重复
-        String newId = String.valueOf(node.getOrDefault("id", ""));
-        if (newId.isBlank()) throw new IllegalArgumentException("节点 id 不能为空");
-        if (findById(rootChildren, newId) != null) {
+        if (nodeExists(tenantId, projectId, newId)) {
             throw new IllegalArgumentException("节点 id 已存在: " + newId);
         }
 
-        List<Map<String, Object>> targetList;
-        String resolvedParentId = parentId;
-        if (resolvedParentId != null && !resolvedParentId.isBlank()) {
-            resolvedParentId = resolveNodeLookupId(tenantId, projectId, resolvedParentId);
+        String parentNodeId = trimOrNull(parentId);
+        if (parentNodeId != null && !nodeExists(tenantId, projectId, parentNodeId)) {
+            throw new IllegalArgumentException("父节点不存在: " + parentNodeId);
         }
 
-        if (resolvedParentId == null || resolvedParentId.isBlank()) {
-            targetList = rootChildren;
+        int sortOrder;
+        if (index < 0) {
+            sortOrder = nextSortOrder(tenantId, projectId, parentNodeId);
         } else {
-            Map<String, Object> parent = findById(rootChildren, resolvedParentId);
-            if (parent == null) throw new IllegalArgumentException("父节点不存在: " + resolvedParentId);
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> pc = (List<Map<String, Object>>) parent.get("children");
-            if (pc == null) {
-                pc = new ArrayList<>();
-                parent.put("children", pc);
-            }
-            targetList = pc;
+            shiftSortOrders(tenantId, projectId, parentNodeId, index);
+            sortOrder = index;
         }
 
-        if (index < 0 || index >= targetList.size()) {
-            targetList.add(node);
-        } else {
-            targetList.add(index, node);
-        }
-
-        persistTree(tenantId, projectId, root);
+        insertFlatRow(tenantId, projectId, parentNodeId, sanitized, sortOrder);
         log.info("[Navigation] 新增节点 id={} tenant={} project={}", newId, tenantId, projectId);
-        return node;
+        return sanitized;
     }
 
     @Transactional
     public Map<String, Object> updateNode(String tenantId, String projectId,
                                            String id,
                                            Map<String, Object> patch) throws IOException {
-        String lookupId = resolveNodeLookupId(tenantId, projectId, id);
-        if (isSystemRootDirectoryId(lookupId)) {
-            throw new IllegalArgumentException("系统目录不可修改目录属性，仅可编辑子项: " + lookupId);
+        if (isSystemRootDirectory(id)) {
+            throw new IllegalArgumentException("系统目录不可修改目录属性，仅可编辑子项: " + id);
         }
-        Map<String, Object> root = loadOrInit(tenantId, projectId);
-        Map<String, Object> node = findById(getChildren(root), lookupId);
-        if (node == null) throw new IllegalArgumentException("节点不存在: " + id);
-
-        // 合并 patch（保留 children，不允许通过此接口覆盖子树）
-        for (Map.Entry<String, Object> entry : patch.entrySet()) {
-            if (!"children".equals(entry.getKey())) {
-                node.put(entry.getKey(), entry.getValue());
-            }
+        if (!nodeExists(tenantId, projectId, id)) {
+            throw new IllegalArgumentException("节点不存在: " + id);
         }
 
-        persistTree(tenantId, projectId, root);
-        log.info("[Navigation] 更新节点 id={} lookupId={} tenant={} project={}", id, lookupId, tenantId, projectId);
-        return node;
+        Map<String, Object> merged = new LinkedHashMap<>(patch);
+        merged.put("id", id);
+        String title = asTrimmedString(merged.get("title"));
+        if (title.isBlank()) title = id;
+
+        jdbcTemplate.update(UPDATE_NODE_SQL,
+                title,
+                blankToNull(asTrimmedString(merged.get("description"))),
+                blankToNull(asTrimmedString(merged.get("nodeKind"))),
+                blankToNull(asTrimmedString(merged.get("path"))),
+                blankToNull(asTrimmedString(merged.get("icon"))),
+                toBoolean(merged.get("dividerAfter")),
+                blankToNull(asTrimmedString(merged.get("childPlacement"))),
+                blankToNull(asTrimmedString(merged.get("linkTarget"))),
+                toBoolean(merged.get("hidden")),
+                toBoolean(merged.get("disabled")),
+                blankToNull(asTrimmedString(merged.get("refId"))),
+                serializeContext(merged.get("context")),
+                Timestamp.from(Instant.now()),
+                tenantId, projectId, id);
+
+        log.info("[Navigation] 更新节点 id={} tenant={} project={}", id, tenantId, projectId);
+        return merged;
     }
 
     @Transactional
     public Map<String, Object> deleteNode(String tenantId, String projectId,
                                            String id) throws IOException {
-        String lookupId = resolveNodeLookupId(tenantId, projectId, id);
-        if (isSystemRootDirectoryId(lookupId)) {
-            throw new IllegalArgumentException("系统目录不可删除: " + lookupId);
+        if (isSystemRootDirectory(id)) {
+            throw new IllegalArgumentException("系统目录不可删除: " + id);
         }
-        Map<String, Object> root = loadOrInit(tenantId, projectId);
-        List<Map<String, Object>> rootChildren = getChildren(root);
-        Map<String, Object>[] result = new Map[]{null};
+        if (!nodeExists(tenantId, projectId, id)) {
+            throw new IllegalArgumentException("节点不存在: " + id);
+        }
 
-        boolean removed = removeById(rootChildren, lookupId, result);
-        if (!removed) throw new IllegalArgumentException("节点不存在: " + id);
-
-        persistTree(tenantId, projectId, root);
-        log.info("[Navigation] 删除节点 id={} lookupId={} tenant={} project={}", id, lookupId, tenantId, projectId);
-        return result[0];
+        deleteNodeRecursive(tenantId, projectId, id);
+        log.info("[Navigation] 删除节点 id={} tenant={} project={}", id, tenantId, projectId);
+        return Map.of("id", id);
     }
 
     @Transactional
     public Map<String, Object> moveNode(String tenantId, String projectId,
                                          String id, String newParentId,
                                          int index) throws IOException {
-        String lookupId = resolveNodeLookupId(tenantId, projectId, id);
-        if (isSystemRootDirectoryId(lookupId)) {
-            throw new IllegalArgumentException("系统目录不可修改层级: " + lookupId);
+        if (isSystemRootDirectory(id)) {
+            throw new IllegalArgumentException("系统目录不可修改层级: " + id);
         }
-        Map<String, Object> root = loadOrInit(tenantId, projectId);
-        List<Map<String, Object>> rootChildren = getChildren(root);
-        String resolvedNewParentId = newParentId;
-        if (resolvedNewParentId != null && !resolvedNewParentId.isBlank()) {
-            resolvedNewParentId = resolveNodeLookupId(tenantId, projectId, resolvedNewParentId);
+        if (!nodeExists(tenantId, projectId, id)) {
+            throw new IllegalArgumentException("节点不存在: " + id);
         }
 
-        // 防止移动到自身的子孙节点下
-        if (resolvedNewParentId != null && !resolvedNewParentId.isBlank()) {
-            Map<String, Object> moving = findById(rootChildren, lookupId);
-            if (moving == null) throw new IllegalArgumentException("节点不存在: " + id);
-            if (isDescendant(moving, resolvedNewParentId)) {
+        String parentNodeId = trimOrNull(newParentId);
+        if (parentNodeId != null) {
+            if (!nodeExists(tenantId, projectId, parentNodeId)) {
+                throw new IllegalArgumentException("目标父节点不存在: " + parentNodeId);
+            }
+            if (isDescendantOf(tenantId, projectId, id, parentNodeId)) {
                 throw new IllegalArgumentException("不能将节点移动到其自身的子孙节点下");
             }
         }
 
-        // 先摘除
-        Map<String, Object>[] result = new Map[]{null};
-        if (!removeById(rootChildren, lookupId, result)) {
-            throw new IllegalArgumentException("节点不存在: " + id);
-        }
-        Map<String, Object> node = result[0];
-
-        // 再插入
-        List<Map<String, Object>> targetList;
-        if (resolvedNewParentId == null || resolvedNewParentId.isBlank()) {
-            targetList = getChildren(root);
+        int sortOrder;
+        if (index < 0) {
+            sortOrder = nextSortOrder(tenantId, projectId, parentNodeId);
         } else {
-            Map<String, Object> parent = findById(getChildren(root), resolvedNewParentId);
-            if (parent == null) throw new IllegalArgumentException("目标父节点不存在: " + resolvedNewParentId);
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> pc = (List<Map<String, Object>>) parent.get("children");
-            if (pc == null) {
-                pc = new ArrayList<>();
-                parent.put("children", pc);
-            }
-            targetList = pc;
+            shiftSortOrders(tenantId, projectId, parentNodeId, index);
+            sortOrder = index;
         }
 
-        if (index < 0 || index >= targetList.size()) {
-            targetList.add(node);
-        } else {
-            targetList.add(index, node);
-        }
+        jdbcTemplate.update(MOVE_NODE_SQL,
+                parentNodeId, sortOrder, Timestamp.from(Instant.now()),
+                tenantId, projectId, id);
 
-        persistTree(tenantId, projectId, root);
-        log.info("[Navigation] 移动节点 id={} lookupId={} newParentId={} resolvedNewParentId={} tenant={} project={}",
-            id, lookupId, newParentId, resolvedNewParentId, tenantId, projectId);
-        return node;
+        log.info("[Navigation] 移动节点 id={} newParentId={} tenant={} project={}",
+            id, parentNodeId, tenantId, projectId);
+        return Map.of("id", id);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -552,11 +592,7 @@ public class NavigationService {
                 if (!childPlacement.isBlank() && VALID_CHILD_PLACEMENTS.contains(childPlacement)) {
                     node.put("childPlacement", childPlacement);
                 }
-                if ("__toolbar__".equals(id)) {
-                    node.put("childPlacement", "toolbar");
-                } else if ("__user-menu__".equals(id)) {
-                    node.put("childPlacement", "user-menu");
-                }
+
                 putIfNotBlank(node, "redirect", normalizePath(asTrimmedString(raw.get("redirect"))));
                 if (!children.isEmpty()) {
                     node.put("children", children);
@@ -565,6 +601,13 @@ public class NavigationService {
             case "sub-page" -> {
                 node.put("hidden", true);
                 putIfNotBlank(node, "parentPageId", asTrimmedString(raw.get("parentPageId")));
+            }
+            case "ref" -> {
+                // 跨工程引用：仅存储 refId，运行时由 resolveRefNodes 填充目标信息
+                putIfNotBlank(node, "refId", asTrimmedString(raw.get("refId")));
+                if (Boolean.TRUE.equals(raw.get("hidden"))) {
+                    node.put("hidden", true);
+                }
             }
             case "link" -> {
                 // 新模型: path 存外部 URL，linkTarget 区分 iframe/new-tab
@@ -624,10 +667,6 @@ public class NavigationService {
     }
 
     private String normalizeNodeKind(Map<String, Object> raw, String id) {
-        if (isSystemRootDirectoryId(id)) {
-            return "system-directory";
-        }
-
         String placement = asTrimmedString(raw.get("childPlacement"));
         if ("toolbar".equals(placement) || "user-menu".equals(placement)) {
             return "system-directory";
@@ -651,7 +690,6 @@ public class NavigationService {
     }
 
     private String inferNodeKind(Map<String, Object> raw, String id) {
-        if (isSystemRootDirectoryId(id)) return "system-directory";
         String placement = asTrimmedString(raw.get("childPlacement"));
         if ("toolbar".equals(placement) || "user-menu".equals(placement)) return "system-directory";
         String linkTarget = asTrimmedString(raw.get("linkTarget"));
@@ -692,6 +730,18 @@ public class NavigationService {
     private void putIfNotBlank(Map<String, Object> target, String key, String value) {
         if (value != null && !value.isBlank()) {
             target.put(key, value);
+        }
+    }
+
+    /** 将 context 值（String / List / Map 等）序列化为 JSON 字符串，null 或序列化失败时返回 null。 */
+    private String serializeContext(Object context) {
+        if (context == null) return null;
+        if (context instanceof String s) return s.isBlank() ? null : s;
+        try {
+            return objectMapper.writeValueAsString(context);
+        } catch (Exception e) {
+            log.warn("[Navigation] 序列化 context 失败: {}", e.getMessage());
+            return null;
         }
     }
 
@@ -758,26 +808,35 @@ public class NavigationService {
 
         List<FlatNode> flatNodes = new ArrayList<>();
         for (Map<String, Object> row : rows) {
-            Long id = toLong(row.get("ID"));
-            if (id == null) continue;
-            Long pid = toLong(row.get("PID"));
-            Integer sortOrder = toInt(row.get("SORTORDER"));
+            String nodeId = asTrimmedString(row.get("NODE_ID"));
+            if (nodeId.isBlank()) continue;
+            String parentId = asTrimmedString(row.get("PARENT_ID"));
+            Integer sortOrder = toInt(row.get("SORT_ORDER"));
 
             Map<String, Object> node = new LinkedHashMap<>();
-            node.put("id", String.valueOf(id));
+            node.put("id", nodeId);
 
             String title = asTrimmedString(row.get("TITLE"));
             if (!title.isBlank()) node.put("title", title);
 
             putIfNotBlank(node, "description", asTrimmedString(row.get("DESCRIPTION")));
-            putIfNotBlank(node, "nodeKind", asTrimmedString(row.get("NODEKIND")));
+            putIfNotBlank(node, "nodeKind", asTrimmedString(row.get("NODE_KIND")));
             putIfNotBlank(node, "path", asTrimmedString(row.get("PATH")));
             putIfNotBlank(node, "icon", asTrimmedString(row.get("ICON")));
-            putIfNotBlank(node, "childPlacement", asTrimmedString(row.get("CHILDPLACEMENT")));
-            putIfNotBlank(node, "linkTarget", asTrimmedString(row.get("LINKTARGET")));
-            putIfNotBlank(node, "refId", asTrimmedString(row.get("REFID")));
+            putIfNotBlank(node, "childPlacement", asTrimmedString(row.get("CHILD_PLACEMENT")));
+            putIfNotBlank(node, "linkTarget", asTrimmedString(row.get("LINK_TARGET")));
+            putIfNotBlank(node, "refId", asTrimmedString(row.get("REF_ID")));
 
-            if (Boolean.TRUE.equals(row.get("DIVIDERAFTER"))) {
+            String contextJson = asTrimmedString(row.get("CONTEXT"));
+            if (!contextJson.isBlank()) {
+                try {
+                    node.put("context", objectMapper.readValue(contextJson, Object.class));
+                } catch (Exception e) {
+                    log.warn("[Navigation] 解析 context JSON 失败, nodeId={}: {}", nodeId, e.getMessage());
+                }
+            }
+
+            if (Boolean.TRUE.equals(row.get("DIVIDER_AFTER"))) {
                 node.put("dividerAfter", true);
             }
             if (Boolean.TRUE.equals(row.get("HIDDEN"))) {
@@ -787,26 +846,28 @@ public class NavigationService {
                 node.put("disabled", true);
             }
 
-            flatNodes.add(new FlatNode(id, pid, sortOrder, node));
+            flatNodes.add(new FlatNode(nodeId, parentId.isBlank() ? null : parentId, sortOrder, node));
         }
 
-        Map<Long, List<FlatNode>> childrenByPid = new LinkedHashMap<>();
-        for (FlatNode node : flatNodes) {
-            childrenByPid.computeIfAbsent(node.pid(), key -> new ArrayList<>()).add(node);
+        // 按 parentId（NODE_ID 字符串）分组
+        Map<String, List<FlatNode>> childrenByParent = new LinkedHashMap<>();
+        for (FlatNode fn : flatNodes) {
+            String key = fn.parentId() == null ? "" : fn.parentId();
+            childrenByParent.computeIfAbsent(key, k -> new ArrayList<>()).add(fn);
         }
-        for (List<FlatNode> siblings : childrenByPid.values()) {
+        for (List<FlatNode> siblings : childrenByParent.values()) {
             siblings.sort((a, b) -> {
                 int aSort = a.sortOrder() == null ? Integer.MAX_VALUE : a.sortOrder();
                 int bSort = b.sortOrder() == null ? Integer.MAX_VALUE : b.sortOrder();
                 int bySort = Integer.compare(aSort, bSort);
                 if (bySort != 0) return bySort;
-                return Long.compare(a.id(), b.id());
+                return a.nodeId().compareTo(b.nodeId());
             });
         }
 
         List<Map<String, Object>> rootChildren = new ArrayList<>();
-        for (FlatNode rootNode : childrenByPid.getOrDefault(null, List.of())) {
-            rootChildren.add(buildNodeTree(rootNode, childrenByPid));
+        for (FlatNode rootNode : childrenByParent.getOrDefault("", List.of())) {
+            rootChildren.add(buildNodeTree(rootNode, childrenByParent));
         }
 
         Map<String, Object> root = new LinkedHashMap<>();
@@ -821,30 +882,170 @@ public class NavigationService {
     }
 
     private Map<String, Object> buildNodeTree(FlatNode current,
-                                               Map<Long, List<FlatNode>> childrenByPid) {
+                                               Map<String, List<FlatNode>> childrenByParent) {
         Map<String, Object> node = new LinkedHashMap<>(current.node());
-        List<FlatNode> children = childrenByPid.getOrDefault(current.id(), List.of());
+        List<FlatNode> children = childrenByParent.getOrDefault(current.nodeId(), List.of());
         if (!children.isEmpty()) {
             List<Map<String, Object>> childNodes = new ArrayList<>();
             for (FlatNode child : children) {
-                childNodes.add(buildNodeTree(child, childrenByPid));
+                childNodes.add(buildNodeTree(child, childrenByParent));
             }
             node.put("children", childNodes);
         }
         return node;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // ref 节点解析：将 refId 替换为目标节点的 title/icon/path
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * 递归遍历导航树，解析所有 nodeKind="ref" 的节点。
+     * <p>
+     * 解析策略：
+     * - 同项目引用：直接使用目标 path
+     * - 跨项目引用：生成 @app:projectId/path 格式，前端 navigateByPath 自动切换项目
+     * - 目标不存在/无 path：标记 refBroken=true，前端可展示断链提示
+     */
     @SuppressWarnings("unchecked")
+    private void resolveRefNodes(Map<String, Object> root, String currentTenantId, String currentProjectId) {
+        Object children = root.get("children");
+        if (children instanceof List<?> list) {
+            for (Object item : list) {
+                if (item instanceof Map<?, ?> child) {
+                    resolveRefNode((Map<String, Object>) child, currentTenantId, currentProjectId);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void resolveRefNode(Map<String, Object> node, String currentTenantId, String currentProjectId) {
+        // 先递归子节点
+        Object children = node.get("children");
+        if (children instanceof List<?> list) {
+            for (Object item : list) {
+                if (item instanceof Map<?, ?> child) {
+                    resolveRefNode((Map<String, Object>) child, currentTenantId, currentProjectId);
+                }
+            }
+        }
+
+        // 仅处理 ref 节点
+        if (!"ref".equals(node.get("nodeKind"))) return;
+
+        String refId = asTrimmedString(node.get("refId"));
+        if (refId.isBlank()) {
+            node.put("refBroken", true);
+            return;
+        }
+
+        // 自引用拦截
+        String selfId = asTrimmedString(node.get("id"));
+        if (refId.equals(selfId)) {
+            node.put("refBroken", true);
+            return;
+        }
+
+        // 查询目标节点
+        List<Map<String, Object>> targets = jdbcTemplate.queryForList(RESOLVE_REF_SQL, refId);
+        if (targets.isEmpty()) {
+            node.put("refBroken", true);
+            return;
+        }
+
+        Map<String, Object> target = targets.get(0);
+        String targetTenantId = asTrimmedString(target.get("TENANT_ID"));
+        String targetKind = asTrimmedString(target.get("NODE_KIND"));
+
+        // 跨租户拦截：只允许同租户内跨工程引用
+        if (!currentTenantId.equals(targetTenantId)) {
+            node.put("refBroken", true);
+            return;
+        }
+
+        // ref 只能指向 page 节点
+        if (!"page".equals(targetKind)) {
+            node.put("refBroken", true);
+            return;
+        }
+
+        String targetProjectId = asTrimmedString(target.get("PROJECT_ID"));
+        String targetPath = asTrimmedString(target.get("PATH"));
+        String targetTitle = asTrimmedString(target.get("TITLE"));
+        String targetIcon = asTrimmedString(target.get("ICON"));
+
+        // 用目标信息填充（仅覆盖 ref 节点未显式设置的字段）
+        if (asTrimmedString(node.get("title")).isBlank() || node.get("title").equals(node.get("id"))) {
+            if (!targetTitle.isBlank()) node.put("title", targetTitle);
+        }
+        if (!node.containsKey("icon") && !targetIcon.isBlank()) {
+            node.put("icon", targetIcon);
+        }
+
+        // 生成导航路径
+        if (!targetPath.isBlank()) {
+            boolean sameProject = currentProjectId.equals(targetProjectId);
+            if (sameProject) {
+                node.put("refPath", targetPath);
+            } else {
+                node.put("refPath", "@app:" + targetProjectId + targetPath);
+                node.put("refProjectId", targetProjectId);
+            }
+        } else {
+            node.put("refBroken", true);
+        }
+
+        node.put("refNodeKind", targetKind);
+    }
+
+    /**
+     * 查找首页路径。优先 DFS 找 id="home" 的节点（向后兼容），
+     * 找不到则回退到第一个有路径的 page/system-page 节点。
+     */
     private String findHomePath(List<Map<String, Object>> nodes) {
+        String byId = findPathByNodeId(nodes, "home");
+        if (!byId.isBlank()) return byId;
+        return findFirstRoutablePath(nodes);
+    }
+
+    /** 全树 DFS 查找指定 id 的节点路径 */
+    @SuppressWarnings("unchecked")
+    private String findPathByNodeId(List<Map<String, Object>> nodes, String targetId) {
         for (Map<String, Object> node : nodes) {
             String nodeId = asTrimmedString(node.get("id"));
             String path = normalizePath(asTrimmedString(node.get("path")));
-            if ("home".equals(nodeId) && !path.isBlank()) {
+            if (targetId.equals(nodeId) && !path.isBlank()) {
                 return path;
             }
             Object childValue = node.get("children");
             if (childValue instanceof List<?> childList) {
-                String childPath = findHomePath((List<Map<String, Object>>) childList);
+                String childPath = findPathByNodeId((List<Map<String, Object>>) childList, targetId);
+                if (!childPath.isBlank()) {
+                    return childPath;
+                }
+            }
+        }
+        return "";
+    }
+
+    /**
+     * 递归查找第一个可路由的页面节点路径（page 或 system-page，有非空 path）。
+     * 用于 homePath 回退，当没有 id="home" 节点时自动取首个页面。
+     */
+    @SuppressWarnings("unchecked")
+    private String findFirstRoutablePath(List<Map<String, Object>> nodes) {
+        for (Map<String, Object> node : nodes) {
+            String kind = asTrimmedString(node.get("nodeKind"));
+            // 跳过系统容器（toolbar / user-menu），首页不应从这些区域取
+            if ("system-directory".equals(kind)) continue;
+            String path = normalizePath(asTrimmedString(node.get("path")));
+            if (("page".equals(kind) || "system-page".equals(kind)) && !path.isBlank()) {
+                return path;
+            }
+            Object childValue = node.get("children");
+            if (childValue instanceof List<?> childList) {
+                String childPath = findFirstRoutablePath((List<Map<String, Object>>) childList);
                 if (!childPath.isBlank()) {
                     return childPath;
                 }
@@ -855,10 +1056,7 @@ public class NavigationService {
 
     @SuppressWarnings("unchecked")
     private void replaceFlatRows(String tenantId, String projectId, Map<String, Object> root) {
-        Long projectDbId = resolveProjectDbId(tenantId, projectId);
-
-        jdbcTemplate.update(CLEAR_PARENT_SQL, tenantId, projectId);
-        jdbcTemplate.update(DELETE_FLAT_SQL, tenantId, projectId);
+        jdbcTemplate.update(DELETE_ALL_SQL, tenantId, projectId);
 
         Object childrenValue = root.get("children");
         if (!(childrenValue instanceof List<?> rawChildren) || rawChildren.isEmpty()) {
@@ -866,42 +1064,39 @@ public class NavigationService {
         }
 
         List<Map<String, Object>> children = (List<Map<String, Object>>) rawChildren;
-        insertChildrenRecursively(tenantId, projectId, projectDbId, children, null);
+        insertChildrenRecursively(tenantId, projectId, children, null);
     }
 
     @SuppressWarnings("unchecked")
     private void insertChildrenRecursively(String tenantId,
                                            String projectId,
-                                           Long projectDbId,
                                            List<Map<String, Object>> children,
-                                           Long parentId) {
+                                           String parentNodeId) {
         int order = 0;
         for (Map<String, Object> node : children) {
-            Long rowId = insertFlatRow(tenantId, projectId, projectDbId, parentId, node, order++);
+            String nodeId = insertFlatRow(tenantId, projectId, parentNodeId, node, order++);
             Object nested = node.get("children");
             if (nested instanceof List<?> nestedList && !nestedList.isEmpty()) {
                 insertChildrenRecursively(
                         tenantId,
                         projectId,
-                        projectDbId,
                         (List<Map<String, Object>>) nestedList,
-                        rowId
+                        nodeId
                 );
             }
         }
     }
 
-    private Long insertFlatRow(String tenantId,
+    private String insertFlatRow(String tenantId,
                                String projectId,
-                               Long projectDbId,
-                               Long parentId,
+                               String parentNodeId,
                                Map<String, Object> node,
                                int sortOrder) {
-        String legacyNodeId = asTrimmedString(node.get("id"));
-        if (legacyNodeId.isBlank()) {
-            legacyNodeId = "node-" + sortOrder;
+        String nodeId = asTrimmedString(node.get("id"));
+        if (nodeId.isBlank()) {
+            nodeId = "node-" + sortOrder;
         }
-        final String normalizedLegacyNodeId = legacyNodeId;
+        final String effectiveNodeId = nodeId;
 
         String title = asTrimmedString(node.get("title"));
         String nodeKind = asTrimmedString(node.get("nodeKind"));
@@ -914,12 +1109,12 @@ public class NavigationService {
         Boolean dividerAfter = toBoolean(node.get("dividerAfter"));
         Boolean hidden = toBoolean(node.get("hidden"));
         Boolean disabled = toBoolean(node.get("disabled"));
-        final String effectiveTitle = title.isBlank() ? normalizedLegacyNodeId : title;
+        final String contextJson = serializeContext(node.get("context"));
+        final String effectiveTitle = title.isBlank() ? effectiveNodeId : title;
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(INSERT_FLAT_SQL, Statement.RETURN_GENERATED_KEYS);
-            statement.setObject(1, parentId);
+            PreparedStatement statement = connection.prepareStatement(INSERT_FLAT_SQL);
+            statement.setString(1, parentNodeId);
             statement.setString(2, tenantId);
             statement.setString(3, projectId);
             statement.setString(4, effectiveTitle);
@@ -933,34 +1128,14 @@ public class NavigationService {
             statement.setObject(12, hidden);
             statement.setObject(13, disabled);
             statement.setInt(14, sortOrder);
-            statement.setString(15, normalizedLegacyNodeId);
+            statement.setString(15, effectiveNodeId);
             statement.setTimestamp(16, Timestamp.from(Instant.now()));
             statement.setString(17, refId.isBlank() ? null : refId);
-            statement.setLong(18, projectDbId);
+            statement.setString(18, contextJson);
             return statement;
-        }, keyHolder);
+        });
 
-        Number key = keyHolder.getKey();
-        if (key == null) {
-            throw new IllegalStateException("写入 NAVIGATION_NODE_FLAT 失败：未返回主键");
-        }
-        return key.longValue();
-    }
-
-    private Long resolveProjectDbId(String tenantId, String projectId) {
-        return projectRepository.findByTenantIdAndProjectId(tenantId, projectId)
-                .map(ProjectEntity::getId)
-                .orElseThrow(() -> new IllegalArgumentException("项目不存在: " + tenantId + "/" + projectId));
-    }
-
-    private Long toLong(Object value) {
-        if (value instanceof Number number) {
-            return number.longValue();
-        }
-        if (value instanceof String text && !text.isBlank()) {
-            return Long.parseLong(text);
-        }
-        return null;
+        return effectiveNodeId;
     }
 
     private Integer toInt(Object value) {
@@ -983,43 +1158,81 @@ public class NavigationService {
         return null;
     }
 
-    private boolean isSystemRootDirectoryId(String id) {
-        return SYSTEM_ROOT_DIRECTORY_IDS.contains(id);
+    private boolean isSystemRootDirectory(String nodeId) {
+        var rows = jdbcTemplate.queryForList(CHECK_SYSTEM_ROOT_SQL, nodeId);
+        if (rows.isEmpty()) return false;
+        var row = rows.get(0);
+        return "system-directory".equals(asTrimmedString(row.get("NODE_KIND")))
+            && asTrimmedString(row.get("PARENT_ID")).isBlank();
     }
 
-    private String resolveNodeLookupId(String tenantId, String projectId, String idOrDbId) {
-        String candidate = idOrDbId == null ? "" : idOrDbId.trim();
-        if (candidate.isBlank()) {
-            return candidate;
-        }
-
-        Long dbId = parseLongOrNull(candidate);
-        if (dbId == null) {
-            return candidate;
-        }
-
-        List<String> ids = jdbcTemplate.query(
-                SELECT_LEGACY_ID_BY_DB_ID_SQL,
-                (rs, rowNum) -> rs.getString("LEGACYNODEIDREMARK"),
-                tenantId,
-                projectId,
-                dbId
-        );
-
-        if (ids.isEmpty()) {
-            return candidate;
-        }
-
-        String legacyId = ids.get(0) == null ? "" : ids.get(0).trim();
-        return legacyId.isBlank() ? candidate : legacyId;
+    private String trimOrNull(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isBlank() ? null : trimmed;
     }
 
-    private Long parseLongOrNull(String text) {
-        try {
-            return Long.parseLong(text);
-        } catch (NumberFormatException e) {
-            return null;
+    private String blankToNull(String value) {
+        return (value == null || value.isBlank()) ? null : value;
+    }
+
+    // ── 增量 CRUD 辅助方法（全部基于 NODE_ID 字符串）──────────────────────
+
+    /** 检查 NODE_ID 是否存在。 */
+    private boolean nodeExists(String tenantId, String projectId, String nodeId) {
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                EXISTS_NODE_SQL, tenantId, projectId, nodeId);
+        return !rows.isEmpty();
+    }
+
+    /** 获取同级下一个可用排序值。parentNodeId 为 null 表示根级。 */
+    private int nextSortOrder(String tenantId, String projectId, String parentNodeId) {
+        String sql = String.format(MAX_SORT_ORDER_SQL,
+                parentNodeId == null ? "IS NULL" : "= ?");
+        Integer next;
+        if (parentNodeId == null) {
+            next = jdbcTemplate.queryForObject(sql, Integer.class, tenantId, projectId);
+        } else {
+            next = jdbcTemplate.queryForObject(sql, Integer.class, tenantId, projectId, parentNodeId);
         }
+        return next != null ? next : 0;
+    }
+
+    /** 在指定父节点下，将 SORT_ORDER >= index 的节点全部 +1，腾出位置。 */
+    private void shiftSortOrders(String tenantId, String projectId, String parentNodeId, int index) {
+        String sql = String.format(SHIFT_SORT_ORDER_SQL,
+                parentNodeId == null ? "IS NULL" : "= ?");
+        if (parentNodeId == null) {
+            jdbcTemplate.update(sql, tenantId, projectId, index);
+        } else {
+            jdbcTemplate.update(sql, tenantId, projectId, parentNodeId, index);
+        }
+    }
+
+    /** 递归删除节点及其所有子孙。 */
+    private void deleteNodeRecursive(String tenantId, String projectId, String nodeId) {
+        List<String> childNodeIds = jdbcTemplate.query(
+                SELECT_CHILDREN_SQL,
+                (rs, rowNum) -> rs.getString("NODE_ID"),
+                tenantId, projectId, nodeId);
+        for (String childId : childNodeIds) {
+            deleteNodeRecursive(tenantId, projectId, childId);
+        }
+        jdbcTemplate.update(DELETE_BY_NODE_ID_SQL, tenantId, projectId, nodeId);
+    }
+
+    /** 判断 targetNodeId 是否是 ancestorNodeId 的子孙（防循环移动）。 */
+    private boolean isDescendantOf(String tenantId, String projectId,
+                                    String ancestorNodeId, String targetNodeId) {
+        List<String> childNodeIds = jdbcTemplate.query(
+                SELECT_CHILDREN_SQL,
+                (rs, rowNum) -> rs.getString("NODE_ID"),
+                tenantId, projectId, ancestorNodeId);
+        for (String childId : childNodeIds) {
+            if (childId.equals(targetNodeId)) return true;
+            if (isDescendantOf(tenantId, projectId, childId, targetNodeId)) return true;
+        }
+        return false;
     }
 
 }

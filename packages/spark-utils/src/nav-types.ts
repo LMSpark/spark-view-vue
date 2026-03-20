@@ -27,6 +27,7 @@ export type NavNodeKind =
   | 'page'
   | 'link'
   | 'sub-page'
+  | 'ref'
 
 /** 链接渲染目标（仅 nodeKind='link' 时有意义） */
 export type LinkTarget = 'iframe' | 'new-tab'
@@ -139,6 +140,19 @@ export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
   redirect?: string
   /** 子页面归属的父页面 ID（sub-page 专用） */
   parentPageId?: string
+
+  /* ── 跨工程引用（nodeKind='ref'） ── */
+
+  /** 引用的目标节点 ID（全局唯一 UUID） */
+  refId?: string
+  /** 后端解析后的导航路径（同项目=/path，跨项目=@app:projectId/path） */
+  refPath?: string
+  /** 目标节点所属项目 ID（跨项目时有值） */
+  refProjectId?: string
+  /** 目标节点的 nodeKind */
+  refNodeKind?: NavNodeKind
+  /** 引用断链标志（目标节点不存在或无 path） */
+  refBroken?: boolean
 }
 
 /**
