@@ -240,10 +240,25 @@ async function startApp() {
     startupLogger.info(`✅ componentMap: ${Object.keys(componentMap).length} 个组件, preAuthNav: ${preAuthNavTree.children.length} 个节点, platformPaths: ${platformPaths.size} 个`)
     
     // 5. 导入 auth 工具
-    const { getUser, isAuthenticated } = await import('./services/auth')
+    const { getUser, isAuthenticated, switchProject } = await import('./services/auth')
     const { createAuthHeaders } = await import('./services/http')
     const { getPageApi, getNavApi } = await import('./services/api-paths')
     const { getNavHomePath } = await import('@spark-view/spark-app')
+
+    // 5.1 URL → localStorage 项目上下文预同步
+    // 浏览器地址栏输入跨项目 URL 时，在 registerRoutes() 加载导航树之前
+    // 将 URL 中的 projectId 写入 localStorage，确保后续 API 调用使用正确的项目上下文
+    {
+      const urlMatch = /^\/t\/([^/]+)\/([^/]+)/.exec(window.location.pathname)
+      const urlProjectId = urlMatch?.[2]
+      if (urlProjectId && isAuthenticated()) {
+        const user = getUser()
+        if (user && urlMatch[1] === user.tenantId && urlProjectId !== user.defaultProjectId) {
+          startupLogger.info(`📌 URL 项目上下文预同步: ${user.defaultProjectId} → ${urlProjectId}`)
+          switchProject(urlProjectId)
+        }
+      }
+    }
 
     // 6. 启动 SPARK 应用
     startupLogger.info('🚀 启动 SPARK 应用...')
@@ -333,10 +348,16 @@ async function startApp() {
           // 租户路径：验证 URL 中的 tenantId/projectId 与当前用户一致
           const urlScopeMatch = /^\/t\/([^/]+)\/([^/]+)/.exec(to.path)
           if (urlScopeMatch) {
-            if (urlScopeMatch[1] !== tenantId || urlScopeMatch[2] !== projectId) {
-              // scope 不匹配（可能是旧格式 URL），直接跳转到首页
-              const rest = to.path.slice(`/t/${urlScopeMatch[1]}/${urlScopeMatch[2]}`.length)
+            const urlTenantId = urlScopeMatch[1]
+            const urlProjectId = urlScopeMatch[2]
+            if (urlTenantId !== tenantId) {
+              // 租户不匹配 → 重定向到当前租户首页
+              const rest = to.path.slice(`/t/${urlTenantId}/${urlProjectId}`.length)
               return `${scopePrefix}${rest || getNavHomePath()}`
+            }
+            if (urlProjectId && urlProjectId !== projectId) {
+              // 同租户不同项目 → 切换项目上下文，放行导航
+              switchProject(urlProjectId)
             }
           }
           return undefined

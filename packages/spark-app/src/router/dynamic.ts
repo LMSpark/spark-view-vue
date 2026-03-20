@@ -222,7 +222,8 @@ export class DynamicRouter {
   private registerRoutesFromNav(nodes: NavNode[], skipTenantPrefix = false): void {
     for (const node of nodes) {
       const isLinkNode = node.nodeKind === 'link'
-      const isIframeNode = isLinkNode && node.linkTarget !== 'new-tab'
+      const isSelfNode = isLinkNode && node.linkTarget === 'self'
+      const isIframeNode = isLinkNode && node.linkTarget !== 'new-tab' && !isSelfNode
       const isNewTabNode = isLinkNode && node.linkTarget === 'new-tab'
       const isActionNode = node.nodeKind === 'system-action'
       const nodePath = typeof node.path === 'string' ? node.path.trim() : ''
@@ -230,8 +231,8 @@ export class DynamicRouter {
         ? node.path as string
         : (isIframeNode ? `/__link/${encodeURIComponent(node.id)}` : '')
 
-      // new-tab / system-action 节点不注册路由
-      if (isNewTabNode || isActionNode || rawNodePath === '') {
+      // new-tab / self / system-action 节点不注册路由
+      if (isNewTabNode || isSelfNode || isActionNode || rawNodePath === '') {
         // 仍然递归子节点
         if (node.children?.length) {
           this.registerRoutesFromNav(node.children, skipTenantPrefix)

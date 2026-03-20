@@ -110,13 +110,13 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
   function resolveNodeRoutePath(node: NavNode): string | null {
     if (typeof node.path === 'string' && node.path.trim() !== '') {
-      // link + iframe 节点：path 是外部 URL，注册为虚拟路由
-      if (node.nodeKind === 'link' && node.linkTarget !== 'new-tab') {
-        return normalizePath(`/__link/${encodeURIComponent(node.id)}`)
-      }
-      // link + new-tab 节点：不注册路由，由 navigateTo 处理
-      if (node.nodeKind === 'link' && node.linkTarget === 'new-tab') {
+      // link + new-tab / self 节点：不注册路由，由 navigateTo 处理
+      if (node.nodeKind === 'link' && (node.linkTarget === 'new-tab' || node.linkTarget === 'self')) {
         return null
+      }
+      // link + iframe 节点：path 是外部 URL，注册为虚拟路由
+      if (node.nodeKind === 'link') {
+        return normalizePath(`/__link/${encodeURIComponent(node.id)}`)
       }
       return normalizePath(node.path)
     }
@@ -459,6 +459,32 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   function navigateTo(node: NavNode) {
     if (node.disabled) return
     if (isSubPageNode(node)) return
+
+    // self 链接：当前窗口导航（同源+跨项目走 switchAndReload，同项目走 router.push，跨域走 location.href）
+    if (node.nodeKind === 'link' && node.linkTarget === 'self' && typeof node.path === 'string' && node.path.trim() !== '') {
+      const url = node.path.trim()
+      try {
+        const parsed = new URL(url, window.location.origin)
+        if (parsed.origin === window.location.origin) {
+          // 解析目标路径中的 projectId：/t/{tenantId}/{projectId}/...
+          const segments = parsed.pathname.replace(/^\/+/, '').split('/')
+          const targetProjectId = segments[0] === 't' && segments.length >= 3 ? segments[2] : undefined
+          const currentProjectId = typeof route.params['projectId'] === 'string' ? route.params['projectId'] : undefined
+          if (targetProjectId && currentProjectId && targetProjectId !== currentProjectId && _options?.onCrossAppNavigate) {
+            // 跨项目：提取 projectId 之后的路径段
+            const innerPath = `/${segments.slice(3).join('/')}`
+            void _options.onCrossAppNavigate(targetProjectId, innerPath)
+          } else {
+            void router.push(parsed.pathname + parsed.search + parsed.hash)
+          }
+        } else {
+          window.location.href = url
+        }
+      } catch {
+        window.location.href = url
+      }
+      return
+    }
 
     // new-tab 外部链接：直接新标签页打开
     if (node.nodeKind === 'link' && node.linkTarget === 'new-tab' && typeof node.path === 'string' && node.path.trim() !== '') {

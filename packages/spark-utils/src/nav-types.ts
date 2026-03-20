@@ -30,7 +30,7 @@ export type NavNodeKind =
   | 'ref'
 
 /** 链接渲染目标（仅 nodeKind='link' 时有意义） */
-export type LinkTarget = 'iframe' | 'new-tab'
+export type LinkTarget = 'iframe' | 'new-tab' | 'self'
 
 /* ── 上下文选择器 ── */
 

@@ -71,6 +71,7 @@
     <el-form-item v-if="flags.isLinkNode.value" label="渲染方式" class="fi fi--wide">
       <el-radio-group v-model="state.editForm.linkTarget" @change="state.markNavDirty">
         <el-radio-button value="iframe">内嵌 iframe</el-radio-button>
+        <el-radio-button value="self">当前窗口</el-radio-button>
         <el-radio-button value="new-tab">新标签打开</el-radio-button>
       </el-radio-group>
     </el-form-item>
@@ -300,7 +301,7 @@ interface ParentPageOption {
 function inferNodeKind(node: NavNode): NavNodeKind {
   if (node.nodeKind !== undefined) return node.nodeKind
   if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
-  if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
+  if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab' || node.linkTarget === 'self') return 'link'
   return 'page'
 }
 
