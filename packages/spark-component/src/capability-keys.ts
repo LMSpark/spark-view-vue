@@ -27,6 +27,7 @@
 
 import { defineCapability } from '@spark-view/spark-utils'
 import type { IDataSet, IDataSource, IDataRow } from '@spark-view/spark-data'
+import type { IModuleContext } from '@spark-view/spark-utils'
 
 /** 字段渲染上下文类型 */
 export type FieldContext = 'table' | 'form' | 'detail' | 'tree' | 'list'
@@ -86,6 +87,14 @@ export interface PageComponentRegistry {
   getApisByType<T = unknown>(type: string): T[]
 }
 
+/** 模块上下文能力（页面级） */
+export interface ModuleContextCapability {
+  /** 获取当前模块上下文快照 */
+  getCurrent(): IModuleContext | null
+  /** 订阅模块上下文变化，返回取消订阅函数 */
+  subscribe(handler: (next: IModuleContext | null, prev: IModuleContext | null) => void): () => void
+}
+
 // 将能力键合并到 CapabilityTypeMap，消费方按字符串名称即可得到精确类型，
 // 无需 import 能力符号对象。
 declare module '@spark-view/spark-utils' {
@@ -102,6 +111,8 @@ declare module '@spark-view/spark-utils' {
     'app:r-table-api': RendererTableApi
     /** 页面级组件注册中心（整页实例与组件 API） */
     'app:page-component-registry': PageComponentRegistry
+    /** 模块上下文能力（页面级） */
+    'app:module-context': ModuleContextCapability
   }
 }
 
@@ -148,3 +159,10 @@ export const TABLE_API = defineCapability<RendererTableApi>('app:r-table-api')
  * 供脚本层按 id/type 查询与批量访问。
  */
 export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('app:page-component-registry')
+
+/**
+ * 模块上下文能力键
+ *
+ * 由页面渲染器根节点 provide，下游组件可 consume 后读取当前上下文并订阅变化。
+ */
+export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('app:module-context')

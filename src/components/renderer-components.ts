@@ -56,3 +56,5 @@ export {
   FieldTransfer,
   FieldColumnGroup,
 } from '@spark-view/spark-component'
+
+export { default as ModuleContextBadge } from './ModuleContextBadge.vue'

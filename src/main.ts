@@ -403,7 +403,8 @@ async function startApp() {
           FieldProductPicker,
           FieldCascader,
           FieldTreeSelect,
-          FieldTransfer
+          FieldTransfer,
+          ModuleContextBadge,
         } = await import('./components/renderer-components')
         
         app.component('r-table', RendererTable)
@@ -444,6 +445,7 @@ async function startApp() {
         app.component('r-cascader', FieldCascader)
         app.component('r-tree-select', FieldTreeSelect)
         app.component('r-transfer', FieldTransfer)
+        app.component('r-module-context-badge', ModuleContextBadge)
         
         // 示例：使用包提供的运行时自动注册工具
         // 这段代码演示了在项目根的 `src/main.ts` 中直接调用

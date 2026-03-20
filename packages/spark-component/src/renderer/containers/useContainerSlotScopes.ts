@@ -34,11 +34,13 @@ export function createRowActionSlotScope<TSource>(params: {
   modelPermission: IModelPermission | undefined
   row: IDataRow
   index: number
+  extra?: Record<string, unknown>
 }) {
   return withBaseScope(params, {
     row: params.row,
     rowIndex: params.index,
     $index: params.index,
+    ...(params.extra ?? {}),
   })
 }
 

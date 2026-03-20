@@ -4,6 +4,10 @@
     <el-form-item label="启用上下文" class="switch-item">
       <el-switch v-model="state.hasContext.value" @change="state.toggleContext" />
       <span class="switch-item__hint">启用后可配置下拉上下文选项</span>
+      <el-button size="small" type="primary" plain class="context-demo-btn" @click="state.fillDemoContext">
+        <NavIcon name="MagicStick" :size="14" /> 一键填充演示数据
+      </el-button>
+      <span class="context-demo-tip">用于快速预览上下文下拉效果</span>
     </el-form-item>
     <template v-if="state.hasContext.value">
       <el-form-item label="选项列表" class="fi fi--wide">
@@ -54,6 +58,13 @@ const isDirectoryNode = computed(() => {
 }
 .switch-item__hint {
   color: var(--el-text-color-placeholder);
+  font-size: 12px;
+}
+.context-demo-btn {
+  font-weight: 600;
+}
+.context-demo-tip {
+  color: var(--el-text-color-secondary);
   font-size: 12px;
 }
 .context-items {

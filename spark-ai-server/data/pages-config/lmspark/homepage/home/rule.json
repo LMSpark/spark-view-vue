@@ -38,6 +38,21 @@
       {
         "type": "div",
         "style": {
+          "marginBottom": "12px"
+        },
+        "children": [
+          {
+            "type": "r-module-context-badge",
+            "props": {
+              "label": "模块上下文",
+              "emptyText": "当前页面无模块上下文"
+            }
+          }
+        ]
+      },
+      {
+        "type": "div",
+        "style": {
           "marginBottom": "20px"
         },
         "children": [

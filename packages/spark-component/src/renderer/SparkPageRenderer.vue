@@ -50,14 +50,16 @@
  * ```
  */
 import {
-  ref, onMounted, watch, nextTick, getCurrentInstance,
+  ref, onMounted, onUnmounted, watch, nextTick, getCurrentInstance,
 } from 'vue'
 import { useRoute } from 'vue-router'
 import { Logger, PAGE_SERVICE } from '@spark-view/spark-utils'
+import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import type { ComponentConfig } from '../types'
-import { PAGE_DATASET } from '../capability-keys'
+import { PAGE_DATASET, MODULE_CONTEXT } from '../capability-keys'
+import type { ModuleContextCapability } from '../capability-keys'
 import { useRendererSetup } from './useRendererSetup'
 import { useCssScope } from './useCssScope'
 import { usePageDataSet } from './usePageDataSet'
@@ -98,6 +100,54 @@ const currentPageId = ref('')
 const resolvedRules = ref<unknown[]>([])
 const pageFunctions = ref<Record<string, (...args: unknown[]) => unknown>>({})
 const pageContainer = ref<HTMLElement | null>(null)
+type ModuleContextChangeHandler = (next: IModuleContext | null, prev: IModuleContext | null) => void
+const moduleContextListeners = new Set<ModuleContextChangeHandler>()
+
+function cloneModuleContext(value: IModuleContext | null | undefined): IModuleContext | null {
+  if (!value) return null
+  return {
+    nodeId: value.nodeId,
+    selected: value.selected,
+    items: value.items.map(item => ({ id: item.id, title: item.title })),
+  }
+}
+
+function moduleContextSignature(value: IModuleContext | null | undefined): string {
+  if (!value) return ''
+  return JSON.stringify({
+    nodeId: value.nodeId,
+    selected: value.selected,
+    items: value.items.map(item => ({ id: item.id, title: item.title })),
+  })
+}
+
+function emitModuleContextChange(
+  next: IModuleContext | null | undefined,
+  prev: IModuleContext | null | undefined,
+): void {
+  const nextSnapshot = cloneModuleContext(next)
+  const prevSnapshot = cloneModuleContext(prev)
+  for (const handler of moduleContextListeners) {
+    try {
+      handler(nextSnapshot, prevSnapshot)
+    } catch (error: unknown) {
+      logger.warn('模块上下文变化订阅回调执行失败', { error })
+    }
+  }
+}
+
+const moduleContextCapability: ModuleContextCapability = {
+  getCurrent() {
+    return cloneModuleContext(props.moduleContext ?? null)
+  },
+  subscribe(handler) {
+    moduleContextListeners.add(handler)
+    return () => {
+      moduleContextListeners.delete(handler)
+    }
+  },
+}
+provideCapability(MODULE_CONTEXT, moduleContextCapability)
 
 // ── CSS 作用域 ──
 const { scopedCss, setScopedCss } = useCssScope({
@@ -111,6 +161,7 @@ const pds = usePageDataSet({ enableDataSet: props.enableDataSet })
 const pageRoute = buildPageRoute(route)
 const pageContext: PageContext = buildPageContext({
   getDataSet: () => pds.dataSet,
+  getModuleContext: () => cloneModuleContext(props.moduleContext ?? null),
   getComponentRegistry: () => componentRegistry,
   pageRoute,
   pageContainer,
@@ -233,7 +284,6 @@ async function fetchConfig(pageId: string): Promise<PageConfig> {
  */
 function applyConfig(pageId: string, config: PageConfig): void {
   if (config.css) setScopedCss(pageId, config.css)
-
   executeScript(pageId, config.script ?? '')
   registerRenderComponents()
 
@@ -291,6 +341,19 @@ async function reload(): Promise<void> {
 onMounted(() => {
   loadConfig().catch(e => logger.error('loadConfig 失败', e))
 })
+
+onUnmounted(() => {
+  moduleContextListeners.clear()
+})
+
+watch(
+  () => props.moduleContext,
+  (next, prev) => {
+    if (moduleContextSignature(next) === moduleContextSignature(prev)) return
+    emitModuleContextChange(next, prev)
+  },
+  { deep: true },
+)
 
 watch(
   () => props.pageId ?? route.meta['pageId'] ?? route.params['id'] ?? route.name,

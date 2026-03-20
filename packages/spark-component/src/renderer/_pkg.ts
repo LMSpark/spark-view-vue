@@ -27,6 +27,7 @@ export {
   CONTEXT_DATA,
   TABLE_API,
   PAGE_COMPONENT_REGISTRY,
+  MODULE_CONTEXT,
 } from '../capability-keys.js'
 export type {
   FieldContext,
@@ -34,4 +35,5 @@ export type {
   PageComponentRegistry,
   PageComponentInstanceEntry,
   PageComponentApiEntry,
+  ModuleContextCapability,
 } from '../capability-keys.js'

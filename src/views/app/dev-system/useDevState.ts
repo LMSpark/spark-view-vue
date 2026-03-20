@@ -55,6 +55,17 @@ import { http } from '@/services/http'
 // ═══════════════════════════════════════════════════════════
 
 export function useDevState() {
+  const DEMO_CONTEXT_ITEMS: Array<{ id: string; title: string }> = [
+    { id: 'sales', title: '销售中心' },
+    { id: 'ops', title: '运营中心' },
+    { id: 'finance', title: '财务中心' },
+  ]
+  const DEMO_CONTEXT_CONFIG: DevContextConfig = {
+    placeholder: '请选择模块上下文',
+    defaultValue: 'sales',
+    paramName: 'ctx',
+  }
+
   const DEFAULT_ICON_BY_KIND: Record<NavNodeKind, string> = {
     'system-directory': 'FolderOpened',
     'module': 'FolderOpened',
@@ -876,6 +887,15 @@ export function useDevState() {
   }
   function addContextItem() { contextItems.value.push({ id: '', title: '' }); markNavDirty() }
   function removeContextItem(idx: number) { contextItems.value.splice(idx, 1); markNavDirty() }
+  function fillDemoContext() {
+    hasContext.value = true
+    contextItems.value = DEMO_CONTEXT_ITEMS.map(item => ({ ...item }))
+    contextConfig.placeholder = DEMO_CONTEXT_CONFIG.placeholder
+    contextConfig.defaultValue = DEMO_CONTEXT_CONFIG.defaultValue
+    contextConfig.paramName = DEMO_CONTEXT_CONFIG.paramName
+    markNavDirty()
+    addStatus('已填充模块上下文演示数据', 'info')
+  }
 
   // ═══════════════════════════════════════════════════════════
   // 新建页面
@@ -975,6 +995,7 @@ export function useDevState() {
     toggleContext,
     addContextItem,
     removeContextItem,
+    fillDemoContext,
     createPage,
     initialize,
   }
