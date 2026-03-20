@@ -63,7 +63,8 @@ export class DataTable {
     if (this._crudService === undefined && this.api !== undefined) {
       // M5: 若 DataSet 提供共享 httpClient，所有表的 CrudService 复用同一 Request 实例
       const sharedClient = this.dataSet?._sharedHttpClient
-      this._crudService = createCrudService(this.api, sharedClient)
+      const endpointContextProvider = () => this.dataSet?.getRequestTemplateParams() ?? {}
+      this._crudService = createCrudService(this.api, sharedClient, endpointContextProvider)
     }
     return this._crudService
   }

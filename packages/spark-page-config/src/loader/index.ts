@@ -213,6 +213,10 @@ export class PageConfigLoader implements ConfigLoader {
     return this.fileLoader.getCacheStats()
   }
 
+  getHttpClient(): HttpClient {
+    return this.request
+  }
+
   /** 从失败的 ConfigLoadResult 构建错误响应（DRY）*/
   private failFrom(error: string | undefined, reason?: string): ConfigLoadResult<never> {
     return { success: false, ...(error !== undefined && { error }), ...(reason !== undefined && { reason }), timestamp: Date.now() }

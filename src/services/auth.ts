@@ -41,7 +41,13 @@ export function getUser(): AuthUser | null {
 }
 
 export function isAuthenticated(): boolean {
-  return getToken() !== null
+  const token = getToken()
+  if (!token || token.trim().length === 0) return false
+  const user = getUser()
+  if (!user) return false
+  if (typeof user.tenantId !== 'string' || user.tenantId.trim().length === 0) return false
+  if (typeof user.defaultProjectId !== 'string' || user.defaultProjectId.trim().length === 0) return false
+  return true
 }
 
 function saveAuth(token: string, user: AuthUser): void {

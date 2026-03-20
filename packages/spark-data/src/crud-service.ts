@@ -25,6 +25,8 @@ import {
 } from './types'
 import { resolveUrlTemplate } from './core/url-template'
 
+const UNRESOLVED_URL_TEMPLATE_RE = /:\w+|\{\w+\}/
+
 /** 批量操作默认并发度 */
 const DEFAULT_BATCH_CONCURRENCY = 5
 
@@ -41,6 +43,7 @@ const DEFAULT_BATCH_CONCURRENCY = 5
 export class CrudService {
   private http: HttpClient
   private logger = Logger('CrudService')
+  private endpointContextProvider?: (() => Record<string, unknown>) | undefined
 
   // ===== 构造函数 =====
 
@@ -51,8 +54,10 @@ export class CrudService {
    */
   constructor(
     private api: CrudApi,
-    httpConfigOrClient?: Partial<RequestConfig> | HttpClient
+    httpConfigOrClient?: Partial<RequestConfig> | HttpClient,
+    endpointContextProvider?: () => Record<string, unknown>
   ) {
+    this.endpointContextProvider = endpointContextProvider
     if (httpConfigOrClient && typeof (httpConfigOrClient as HttpClient).get === 'function') {
       // M5: 传入现有 HttpClient 实例，跳过 createRequest（共享 auth/拦截器）
       this.http = httpConfigOrClient as HttpClient
@@ -199,12 +204,14 @@ export class CrudService {
 
     try {
       const endpoint = this.api.list
+      const resolvedEndpoint = this.resolveEndpoint(endpoint)
       const queryParams = this.buildQueryParams(params, endpoint)
       const requestConfig = this.buildRequestConfig(config)
+      const mergedQueryParams = { ...(resolvedEndpoint.params ?? {}), ...queryParams }
 
-      const result = await this.http.get<T>(endpoint.url, queryParams, {
+      const result = await this.http.get<T>(resolvedEndpoint.url, mergedQueryParams, {
         ...requestConfig,
-        headers: { ...endpoint.headers, ...requestConfig?.headers }
+        headers: { ...resolvedEndpoint.headers, ...requestConfig?.headers }
       })
 
       this.logger.info('列表查询成功', { params, count: this.getResultCount(result) })
@@ -349,16 +356,18 @@ export class CrudService {
 
     try {
       const endpoint = this.api.export
+      const resolvedEndpoint = this.resolveEndpoint(endpoint)
       const queryParams = this.buildQueryParams(params, endpoint)
       const requestConfig = this.buildRequestConfig(config)
+      const mergedQueryParams = { ...(resolvedEndpoint.params ?? {}), ...queryParams }
 
       const result = await this.http.requestFull({
-        url: endpoint.url,
+        url: resolvedEndpoint.url,
         method: endpoint.method ?? 'GET',
-        params: queryParams,
+        params: mergedQueryParams,
         responseType: 'blob',
         ...requestConfig,
-        headers: { ...endpoint.headers, ...requestConfig?.headers }
+        headers: { ...resolvedEndpoint.headers, ...requestConfig?.headers }
       })
 
       this.logger.info('数据导出成功')
@@ -526,16 +535,16 @@ export class CrudService {
     const params: Record<string, unknown> = { ...endpoint.params }
     const headers = { ...endpoint.headers }
 
-    // 使用统一的 URL 模板解析（支持 :param 和 {param} 两种风格）
-    let url = endpoint.url
-    if (endpoint.pathParams !== undefined && data !== null && data !== undefined && typeof data === 'object') {
-      const pathData: Record<string, unknown> = {}
-      for (const param of endpoint.pathParams) {
-        const value = (data as Record<string, unknown>)[param]
-        if (value !== undefined) pathData[param] = value
-      }
-      const resolved = resolveUrlTemplate(url, pathData)
-      url = resolved.url
+    const contextParams = this.endpointContextProvider?.() ?? {}
+    const dataParams = (data !== null && data !== undefined && typeof data === 'object')
+      ? data as Record<string, unknown>
+      : {}
+    const templateParams = { ...contextParams, ...dataParams }
+    const resolved = resolveUrlTemplate(endpoint.url, templateParams)
+    const url = resolved.url
+
+    if (UNRESOLVED_URL_TEMPLATE_RE.test(url)) {
+      throw new Error(`Unresolved URL template params: ${url}`)
     }
 
     return { url, params, headers }
@@ -623,7 +632,8 @@ export class CrudService {
  */
 export function createCrudService(
   api: CrudApi,
-  httpConfigOrClient?: Partial<RequestConfig> | HttpClient
+  httpConfigOrClient?: Partial<RequestConfig> | HttpClient,
+  endpointContextProvider?: () => Record<string, unknown>
 ): CrudService {
-  return new CrudService(api, httpConfigOrClient)
+  return new CrudService(api, httpConfigOrClient, endpointContextProvider)
 }

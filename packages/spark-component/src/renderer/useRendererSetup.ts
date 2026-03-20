@@ -26,6 +26,7 @@
 import { ref, type Ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
 import { APP_SERVICES, type LoggerApi } from '@spark-view/spark-utils'
+import type { IAppServicesCapability } from '@spark-view/spark-utils'
 import { useSparkComponent, type UseSparkComponentReturn } from '../useSparkComponent'
 import { PAGE_COMPONENT_REGISTRY } from '../capability-keys'
 import type { PageComponentRegistry } from '../capability-keys'
@@ -45,6 +46,8 @@ export interface RendererSetupReturn {
   error: Ref<string>
   /** 页面级组件注册中心（实例 + API） */
   componentRegistry: PageComponentRegistry
+  /** APP_SERVICES 能力载荷（用于下游注入到 DataSet 等运行时） */
+  appServices: IAppServicesCapability
   /**
    * 带竞态保护的异步加载封装
    *
@@ -81,7 +84,8 @@ export function useRendererSetup(
     id: `${componentType}-root`,
   })
   const componentRegistry = createPageComponentRegistry()
-  provideCapability(APP_SERVICES, buildAppServices(router, logger))
+  const appServices = buildAppServices(router, logger)
+  provideCapability(APP_SERVICES, appServices)
   provideCapability(PAGE_COMPONENT_REGISTRY, componentRegistry)
 
   // ── 加载状态机 ──
@@ -117,5 +121,5 @@ export function useRendererSetup(
     }
   }
 
-  return { router, provideCapability, loading, error, componentRegistry, runLoad }
+  return { router, provideCapability, loading, error, componentRegistry, appServices, runLoad }
 }

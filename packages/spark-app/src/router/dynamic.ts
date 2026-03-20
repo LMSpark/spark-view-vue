@@ -12,6 +12,14 @@ import type { NavNode, AppNavRoot } from '@spark-view/spark-utils'
 import { createLogger } from '../logger'
 import { ExternalLinkFramePage } from './external-link-frame-page'
 
+function isUnauthorizedError(error: unknown): boolean {
+  if (error === null || error === undefined || typeof error !== 'object') return false
+  const candidate = error as { status?: unknown; response?: { status?: unknown } }
+  if (candidate.status === 401) return true
+  if (candidate.response?.status === 401) return true
+  return false
+}
+
 const routerLogger = createLogger('DynamicRouter')
 
 function shouldLogDynamicRouteDetails(): boolean {
@@ -180,7 +188,21 @@ export class DynamicRouter {
     routerLogger.info('开始注册动态路由')
 
     if (this._loadNavigation && this._isAuthenticated()) {
-      await this.loadAndRegisterFromNav()
+      try {
+        await this.loadAndRegisterFromNav()
+      } catch (error: unknown) {
+        if (isUnauthorizedError(error) && this._preAuthNavTree) {
+          routerLogger.warn('远程导航加载返回 401，回退到 preAuthNavTree', {
+            reason: 'unauthorized',
+            fallbackNodeCount: this._preAuthNavTree.children.length,
+          })
+          this._navTree = this._preAuthNavTree
+          this._navRouteMap = new WeakMap()
+          this.registerRoutesFromNav(this._preAuthNavTree.children, true)
+        } else {
+          throw error
+        }
+      }
     } else if (this._preAuthNavTree) {
       // 未登录状态：使用本地预认证导航树（平台级路由，不加租户前缀）
       this._navTree = this._preAuthNavTree

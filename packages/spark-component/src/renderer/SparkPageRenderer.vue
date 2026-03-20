@@ -54,6 +54,7 @@ import {
 } from 'vue'
 import { useRoute } from 'vue-router'
 import { Logger, PAGE_SERVICE } from '@spark-view/spark-utils'
+import type { HttpClient } from '@spark-view/spark-utils'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
@@ -82,7 +83,7 @@ const props = withDefaults(defineProps<PageRendererProps>(), {
 
 // ==================== 基础设施 ====================
 
-const { router, provideCapability, loading, error, componentRegistry, runLoad } = useRendererSetup('spark-page-renderer', logger)
+const { router, provideCapability, loading, error, componentRegistry, appServices, runLoad } = useRendererSetup('spark-page-renderer', logger)
 const route = useRoute()
 const vueApp = getCurrentInstance()?.appContext.app
 
@@ -148,6 +149,12 @@ const moduleContextCapability: ModuleContextCapability = {
   },
 }
 provideCapability(MODULE_CONTEXT, moduleContextCapability)
+
+function isHttpClient(client: unknown): client is HttpClient {
+  if (client === null || client === undefined || typeof client !== 'object') return false
+  const candidate = client as Partial<HttpClient>
+  return typeof candidate.get === 'function' && typeof candidate.requestFull === 'function'
+}
 
 // ── CSS 作用域 ──
 const { scopedCss, setScopedCss } = useCssScope({
@@ -291,7 +298,13 @@ function applyConfig(pageId: string, config: PageConfig): void {
   if (pds.dataSet) pds.clearDataSet()
   pds.initDataSet(config.data)
   const ds = pds.dataSet
-  if (ds) provideCapability(PAGE_DATASET, ds)
+  if (ds) {
+    const loaderClient = props.configLoader?.getHttpClient?.()
+    if (isHttpClient(loaderClient)) ds.setSharedHttpClient(loaderClient)
+    ds.setAppServices(appServices)
+    ds.setPageRoute(pageRoute)
+    provideCapability(PAGE_DATASET, ds)
+  }
 
   resolvedRules.value = bindSparkRuleEvents(config.rule as unknown[], pageFunctions.value)
 }
@@ -328,6 +341,7 @@ async function loadConfig(): Promise<void> {
         logger.error('__init__ 执行失败', { error: e })
       }
     }
+    pds.dataSet?.triggerAutoLoad()
     pds.dataSet?.initAutoSelection()
   }
 }

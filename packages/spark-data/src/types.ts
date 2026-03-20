@@ -6,6 +6,7 @@
 
 import type { DataTable } from './data-table'
 import type { DataView as SparkDataView } from './data-view'
+import type { IAppServicesCapability } from '@spark-view/spark-utils'
 
 // ===== 视图变更事件（独立事件模型） =====
 
@@ -781,6 +782,12 @@ export interface IDataSet {
   getTable(name: string): DataTable | undefined
   /** 获取数据视图（委托到 DataTable） */
   getView(tableName: string, viewId?: string): SparkDataView | undefined
+  /** 注入 APP_SERVICES（用于 URL 模板 tenant/project 作用域解析） */
+  setAppServices(appServices: IAppServicesCapability): void
+  /** 注入页面路由快照（APP_SERVICES 缺失时用于 URL 模板 tenant/project 作用域解析） */
+  setPageRoute(route: unknown): void
+  /** 生成端点 URL 模板上下文参数 */
+  getRequestTemplateParams(): Record<string, unknown>
   /** 序列化为元数据对象 */
   toData(): IDataSetMetadata
   /** 序列化（供 JSON.stringify 自动调用） */

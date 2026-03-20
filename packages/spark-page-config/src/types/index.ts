@@ -4,6 +4,7 @@
  */
 
 import type { DataSet } from '@spark-view/spark-data'
+import type { HttpClient } from '@spark-view/spark-utils'
 
 /**
  * 页面规则配置（rule.json）
@@ -156,6 +157,13 @@ export interface ConfigLoader {
    * 获取缓存统计
    */
   getCacheStats(): { size: number; keys: string[] }
+
+  /**
+   * 获取内部 HTTP 客户端（可选）。
+   *
+   * 渲染层可用该客户端注入到 DataSet，以复用认证/租户请求头与拦截器。
+   */
+  getHttpClient?(): HttpClient
 }
 
 /**

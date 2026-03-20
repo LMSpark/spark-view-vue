@@ -10,6 +10,7 @@ import type { IDataSet, IDataSetMetadata, ITableMetadata, IViewMetadata, DataRel
 import { RequestState } from './types'
 import type { DataView as SparkDataView } from './data-view'
 import type { HttpClient } from '@spark-view/spark-utils'
+import type { IAppServicesCapability } from '@spark-view/spark-utils'
 import { DataTable } from './data-table'
 import { assertNoSeparator } from './core/utils'
 
@@ -25,6 +26,53 @@ function inferColumnType(v: unknown): ColumnType {
 /** @internal 从对象的键推断列配置（fromPageData 内部复用，避免两处重复 Object.keys.map） */
 function inferColumnsFromRecord(obj: Record<string, unknown>): DataColumn[] {
   return Object.keys(obj).map(n => ({ name: n, type: inferColumnType(obj[n]), label: n }))
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && value !== undefined && typeof value === 'object'
+    ? value as Record<string, unknown>
+    : null
+}
+
+function pickFirstString(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    return trimmed.length > 0 ? trimmed : undefined
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (typeof item === 'string') {
+        const trimmed = item.trim()
+        if (trimmed.length > 0) return trimmed
+      }
+    }
+  }
+  return undefined
+}
+
+function resolveRouteTemplateParams(routeLike: unknown): {
+  tenantId?: string
+  projectId?: string
+} {
+  const routeRecord = asRecord(routeLike)
+  const paramsRecord = asRecord(routeRecord?.['params'])
+  const queryRecord = asRecord(routeRecord?.['query'])
+
+  const tenantId =
+    pickFirstString(paramsRecord?.['tenantId'])
+    ?? pickFirstString(paramsRecord?.['tenant'])
+    ?? pickFirstString(queryRecord?.['tenantId'])
+    ?? pickFirstString(queryRecord?.['tenant'])
+  const projectId =
+    pickFirstString(paramsRecord?.['projectId'])
+    ?? pickFirstString(paramsRecord?.['project'])
+    ?? pickFirstString(queryRecord?.['projectId'])
+    ?? pickFirstString(queryRecord?.['project'])
+
+  const result: { tenantId?: string; projectId?: string } = {}
+  if (tenantId !== undefined) result.tenantId = tenantId
+  if (projectId !== undefined) result.projectId = projectId
+  return result
 }
 
 /**
@@ -94,6 +142,12 @@ export class DataSet implements IDataSet {
    * @internal
    */
     _sharedHttpClient?: HttpClient | undefined
+
+  /** @internal 应用能力上下文（用于 URL 模板 tenant/project 占位参数解析） */
+  _appServices?: IAppServicesCapability | undefined
+
+  /** @internal 页面路由快照（APP_SERVICES 缺失时的作用域兜底） */
+  _pageRoute?: unknown
 
   /** @internal 关系索引：parentTable:parentViewId → children relations */
   private _childRelIdx = new Map<string, DataRelation[]>()
@@ -205,6 +259,31 @@ export class DataSet implements IDataSet {
    */
   setSharedHttpClient(client: HttpClient): void {
     this._sharedHttpClient = client
+  }
+
+  setAppServices(appServices: IAppServicesCapability): void {
+    this._appServices = appServices
+  }
+
+  setPageRoute(route: unknown): void {
+    this._pageRoute = route
+  }
+
+  getRequestTemplateParams(): Record<string, unknown> {
+    const result: Record<string, unknown> = {}
+    const appServices = this._appServices
+    const tenantFromService = pickFirstString(appServices?.tenant?.tenantId)
+    if (tenantFromService !== undefined) result['tenantId'] = tenantFromService
+
+    const routeFromServices = resolveRouteTemplateParams(appServices?.router?.currentRoute)
+    const routeFromPage = resolveRouteTemplateParams(this._pageRoute)
+
+    const tenantFromRoute = routeFromServices.tenantId ?? routeFromPage.tenantId
+    const projectFromRoute = routeFromServices.projectId ?? routeFromPage.projectId
+
+    if (tenantFromRoute !== undefined) result['tenantId'] = tenantFromRoute
+    if (projectFromRoute !== undefined) result['projectId'] = projectFromRoute
+    return result
   }
 
   // ===== 数据集级别事件订阅（页面脚本便捷 API） =====
@@ -449,6 +528,8 @@ export class DataSet implements IDataSet {
 
     // 3. 释放共享 HTTP 客户端引用
     this._sharedHttpClient = undefined
+    this._appServices = undefined
+    this._pageRoute = undefined
   }
 
   /** @internal 是否已销毁 */

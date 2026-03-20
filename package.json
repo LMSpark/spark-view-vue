@@ -13,6 +13,7 @@
         "dev:fe": "vite",
         "dev:api": "node tools/mock-config-api.mjs",
         "dev:full": "concurrently \"pnpm run dev\" \"pnpm run dev:api\"",
+        "debug:dataset:remote": "node scripts/verify-dataset-remote-load.mjs --pageId dynamic-columns --expectText DataView",
         "start": "vite preview --port 5173",
         "build": "node scripts/build-all.mjs",
         "build:fe": "cross-env BUILD_MODE=smart vite build",

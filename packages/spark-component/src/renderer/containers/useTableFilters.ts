@@ -24,11 +24,21 @@ interface UseTableFiltersOptions {
 interface FilterCapableView {
   setFilter?: (expr: FilterExpression | undefined) => Promise<void> | void
   refresh?: () => Promise<void> | void
+  filterExpression?: FilterExpression
   dataTable?: {
     api?: {
       list?: unknown
     }
   }
+}
+
+function isSameFilterExpression(
+  left: FilterExpression | undefined,
+  right: FilterExpression | undefined,
+): boolean {
+  if (left === right) return true
+  if (!left || !right) return false
+  return JSON.stringify(left) === JSON.stringify(right)
 }
 
 // ── 规范化辅助函数 ───────────────────────────────────────────────────────────
@@ -245,6 +255,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   ): Promise<void> {
     const candidate = view as unknown as FilterCapableView
     if (typeof candidate.setFilter !== 'function') return
+    if (isSameFilterExpression(candidate.filterExpression, expr)) return
 
     await candidate.setFilter(expr)
 

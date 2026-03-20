@@ -1136,8 +1136,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     await nextTick()
-    setFilterSpy.mockClear()
-    refreshSpy.mockClear()
+    expect(setFilterSpy).not.toHaveBeenCalled()
+    expect(refreshSpy).not.toHaveBeenCalled()
 
     await wrapper.find('.renderer-filter-input[data-name="name"]').setValue('Ali')
     await flushPromises()

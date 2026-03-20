@@ -45,6 +45,8 @@
 import { SparkApp, registerBuiltinPlugins, PluginManager, configureRemoteLogger, addGlobalTransport } from '@spark-view/spark-app'
 import type { LogTransport } from '@spark-view/spark-app'
 import { addLogTransport } from '@spark-view/spark-utils'
+import { onDebugRouteRequest } from '@spark-view/spark-utils'
+import type { DebugRouteRequestEvent } from '@spark-view/spark-utils'
 import type { LogTransport as UtilsLogTransport } from '@spark-view/spark-utils'
 
 // 创建启动日志（临时用于启动流程）
@@ -62,6 +64,7 @@ import { loadAppConfig } from '@spark-view/spark-app'
 
 // 主应用组件
 import { createApp } from 'vue'
+import type { Router } from 'vue-router'
 import App from './App.vue'
 import ErrorFallback from './components/ErrorFallback.vue'
 import './style.css'
@@ -241,9 +244,134 @@ async function startApp() {
     
     // 5. 导入 auth 工具
     const { getUser, isAuthenticated, switchProject } = await import('./services/auth')
-    const { createAuthHeaders } = await import('./services/http')
+    const { createAuthHeaders, http: appHttpClient } = await import('./services/http')
     const { getPageApi, getNavApi } = await import('./services/api-paths')
     const { getNavHomePath } = await import('@spark-view/spark-app')
+
+    type DebugBridgeState = {
+      installed: boolean
+      offRoute?: (() => void) | undefined
+    }
+
+    const DEBUG_BRIDGE_KEY = '__SPARK_DEBUG_BRIDGE_STATE__'
+
+    function normalizeScopedPath(path: string): string {
+      if (path === '/') return '/'
+      return path.replace(/\/{2,}/g, '/').replace(/\/+$/, '')
+    }
+
+    function resolveDebugTargetPath(event: DebugRouteRequestEvent): string | null {
+      const rawPath = typeof event.path === 'string' && event.path.trim().length > 0
+        ? event.path.trim()
+        : null
+      const rawPageId = typeof event.pageId === 'string' && event.pageId.trim().length > 0
+        ? event.pageId.trim()
+        : null
+
+      let target = rawPath ?? (rawPageId ? (rawPageId.startsWith('/') ? rawPageId : `/${rawPageId}`) : null)
+      if (target === null) return null
+      if (!target.startsWith('/')) target = `/${target}`
+
+      if (target.startsWith('/t/')) return normalizeScopedPath(target)
+
+      if (!isAuthenticated()) {
+        return normalizeScopedPath(target)
+      }
+
+      const user = getUser()
+      const tenantId = typeof event.tenantId === 'string' && event.tenantId.trim().length > 0
+        ? event.tenantId.trim()
+        : (user?.tenantId ?? 'default')
+      const projectId = typeof event.projectId === 'string' && event.projectId.trim().length > 0
+        ? event.projectId.trim()
+        : (user?.defaultProjectId ?? 'homepage')
+      const scopePrefix = `/t/${encodeURIComponent(tenantId)}/${encodeURIComponent(projectId)}`
+
+      if (target === '/') return normalizeScopedPath(`${scopePrefix}${getNavHomePath()}`)
+      return normalizeScopedPath(`${scopePrefix}${target}`)
+    }
+
+    async function reportDebugRouteResult(payload: Record<string, unknown>): Promise<void> {
+      try {
+        await appHttpClient.post('/api/ai/debug/route-result', payload)
+      } catch (error) {
+        startupLogger.warn('上报 debug-route-result 失败', { error: String(error) })
+      }
+    }
+
+    function installDebugCommandBridge(router: Router): void {
+      const w = window as unknown as Record<string, unknown>
+      const existing = w[DEBUG_BRIDGE_KEY] as DebugBridgeState | undefined
+      if (existing?.installed) return
+
+      const offRoute = onDebugRouteRequest(async (event) => {
+        const requestId = typeof event.requestId === 'string' && event.requestId.trim().length > 0
+          ? event.requestId
+          : `route-${Date.now()}`
+        const currentPath = router.currentRoute.value.path
+        const targetPath = resolveDebugTargetPath(event)
+
+        if (targetPath === null) {
+          await reportDebugRouteResult({
+            requestId,
+            status: 'ignored',
+            message: 'missing path/pageId',
+            reason: event.reason,
+            currentPath,
+            pageId: extractPageId(currentPath),
+            timestamp: Date.now(),
+          })
+          return
+        }
+
+        try {
+          if (event.replace === true) {
+            await router.replace(targetPath)
+          } else {
+            await router.push(targetPath)
+          }
+          const finalPath = router.currentRoute.value.path
+          await reportDebugRouteResult({
+            requestId,
+            status: 'success',
+            reason: event.reason,
+            targetPath,
+            currentPath: finalPath,
+            pageId: extractPageId(finalPath),
+            timestamp: Date.now(),
+          })
+        } catch (error) {
+          const message = String(error)
+          const finalPath = router.currentRoute.value.path
+          if (message.includes('Avoided redundant navigation')) {
+            await reportDebugRouteResult({
+              requestId,
+              status: 'success',
+              reason: event.reason,
+              targetPath,
+              currentPath: finalPath,
+              pageId: extractPageId(finalPath),
+              message: 'redundant navigation treated as success',
+              timestamp: Date.now(),
+            })
+            return
+          }
+          await reportDebugRouteResult({
+            requestId,
+            status: 'error',
+            reason: event.reason,
+            targetPath,
+            currentPath: finalPath,
+            pageId: extractPageId(finalPath),
+            message,
+            timestamp: Date.now(),
+          })
+        }
+      })
+
+      w[DEBUG_BRIDGE_KEY] = { installed: true, offRoute } as DebugBridgeState
+      startupLogger.info('🛰️ 调试指令桥接已启用（route）')
+    }
 
     // 5.1 URL → localStorage 项目上下文预同步
     // 浏览器地址栏输入跨项目 URL 时，在 registerRoutes() 加载导航树之前
@@ -477,6 +605,9 @@ async function startApp() {
         
         // _currentPageId + router.afterEach 已在 beforeMount 中设置
         const { router } = context
+
+        // 调试 SSE 指令桥接（后端发 debug-route-request 即可驱动前端切页并回执）
+        installDebugCommandBridge(router)
         
         // ── AI 闭环：初始化 AI Loop 服务（可选） ──
         if (appConfig.config.features.enableAI === true) {

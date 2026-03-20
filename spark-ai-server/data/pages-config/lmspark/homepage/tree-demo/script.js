@@ -22,6 +22,82 @@ let treeManager = null
 let _initialized = false
 let _pageState = {}
 
+function _normalizeNodeId(raw, index) {
+  return raw.id ?? raw.nodeId ?? raw.NODE_ID ?? ('node-' + index)
+}
+
+function _normalizeParentId(value) {
+  if (value === undefined || value === null) return null
+  if (typeof value === 'string' && value.trim() === '') return null
+  return value
+}
+
+function _toTreeNodes(rows) {
+  return rows.map(function (raw, index) {
+    var id = _normalizeNodeId(raw, index)
+    var name = raw.name || raw.title || raw.label || String(id)
+    return Object.assign({}, raw, {
+      id: id,
+      parentId: _normalizeParentId(raw.parentId ?? raw.PARENT_ID),
+      name: name,
+      label: raw.label || name,
+      type: raw.type || raw.nodeKind || raw.kind || 'node',
+    })
+  })
+}
+
+function _syncNestedTreeToView(dataSet) {
+  if (!treeManager) return
+  const nestedTree = treeManager.buildNestedTree()
+  const hView = dataSet.getView('hierarchicalTreeData', 'default')
+  if (hView) {
+    hView.replaceRows(nestedTree)
+    console.log('🌲 hierarchicalTreeData 写入 DataSet，根节点数:', nestedTree.length)
+  } else {
+    console.error('❌ hierarchicalTreeData 视图未找到，请检查 pagedata.json')
+  }
+}
+
+async function _loadRemoteTreeNodes(dataSet, treeConfig) {
+  const table = dataSet.getTable('treeData')
+  const view = dataSet.getView('treeData', 'default')
+  if (!table || !view || typeof table.setApi !== 'function') {
+    console.warn('[tree-demo] treeData 远程加载条件不满足，继续使用本地数据')
+    return
+  }
+
+  table.setApi({
+    list: {
+      url: '/tenants/{tenantId}/projects/{projectId}/navigation/nodes',
+      method: 'GET',
+    },
+  })
+
+  try {
+    await view.requestData()
+    const remoteRows = Array.isArray(view.rows) ? view.rows : []
+    if (remoteRows.length === 0) {
+      console.warn('[tree-demo] 远程节点为空，继续使用本地数据')
+      return
+    }
+
+    const remoteNodes = _toTreeNodes(remoteRows)
+    treeManager = SparkData.createTreeManager(treeConfig, remoteNodes)
+    if (!treeManager) {
+      console.error('❌ 远程节点 TreeManager 创建失败')
+      return
+    }
+    if (treeManager.enrichNodes) treeManager.enrichNodes()
+
+    _pageState.treeData = { config: treeConfig, nodes: remoteNodes }
+    _syncNestedTreeToView(dataSet)
+    console.log('[tree-demo] ✅ 远程节点加载成功，节点数:', remoteNodes.length)
+  } catch (error) {
+    console.error('[tree-demo] 远程节点加载失败，回退本地数据:', error)
+    $page.showMessage('远程树数据加载失败，已回退本地示例数据', 'warning')
+  }
+}
+
 /**
  * 初始化树管理器
  */
@@ -59,6 +135,7 @@ function __init__() {
     }
   }
   console.log('📦 treeConfig:', treeConfig, '节点数:', nodes.length)
+  pageData.treeData = { config: treeConfig, nodes: nodes }
 
   // ── 创建 TreeManager ──
   treeManager = SparkData.createTreeManager(treeConfig, nodes)
@@ -72,14 +149,10 @@ function __init__() {
   }
 
   // ── 构建嵌套树并写入 DataSet → DataView 变更自动驱动 r-tree 更新 ──
-  const nestedTree = treeManager.buildNestedTree()
-  const hView = dataSet.getView('hierarchicalTreeData', 'default')
-  if (hView) {
-    hView.replaceRows(nestedTree)
-    console.log('🌲 hierarchicalTreeData 写入 DataSet，根节点数:', nestedTree.length)
-  } else {
-    console.error('❌ hierarchicalTreeData 视图未找到，请检查 pagedata.json')
-  }
+  _syncNestedTreeToView(dataSet)
+
+  // ── 尝试远程加载租户项目作用域树节点，失败回退本地数据 ──
+  void _loadRemoteTreeNodes(dataSet, treeConfig)
 
   console.log('✅ TreeManager 初始化完成，扁平节点数:', nodes.length)
 }
