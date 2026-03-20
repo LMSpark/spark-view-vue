@@ -307,33 +307,11 @@ export function useDevState() {
     return root
   }
 
-  function isNavConfigChanged(raw: { childPlacement?: string; children?: NavNode[]; homePath?: string }, migrated: AppNavRoot): boolean {
-    const rawComparable: Record<string, unknown> = {
-      childPlacement: normalizeRootChildPlacement(raw.childPlacement),
-      children: raw.children ?? [],
-    }
-    const rawHomePath = typeof raw.homePath === 'string' ? raw.homePath.trim() : ''
-    if (rawHomePath) {
-      rawComparable['homePath'] = rawHomePath
-    }
-    return JSON.stringify(rawComparable) !== JSON.stringify(migrated)
-  }
-
   async function loadNavConfig() {
     navLoading.value = true
     try {
       const config = await http.get<{ childPlacement?: string; children?: NavNode[]; homePath?: string }>(getNavApi())
       const migratedRoot = buildMigratedNavRoot(config)
-      const hasLegacyDiff = isNavConfigChanged(config, migratedRoot)
-
-      if (hasLegacyDiff) {
-        try {
-          await http.put(getNavApi(), migratedRoot)
-          addStatus('检测到历史导航结构，已自动迁移并回写', 'info')
-        } catch (e) {
-          addStatus(`历史导航迁移回写失败: ${String(e)}`, 'warning')
-        }
-      }
 
       const normalizedChildren = migratedRoot.children
 
@@ -353,15 +331,11 @@ export function useDevState() {
     } finally {
       navLoading.value = false
     }
-  }
 
-  async function initSeedNavigation() {
-    try {
-      await http.put(getNavApi(), demoNavRoot)
-      await loadNavConfig()
-      addStatus('种子导航数据已初始化', 'success')
-    } catch (e) {
-      addStatus(`初始化失败: ${String(e)}`, 'error')
+    // 默认选中第一行
+    const firstNode = treeData.value[0]
+    if (firstNode && !selectedNode.value) {
+      selectNode(firstNode)
     }
   }
 
@@ -971,7 +945,6 @@ export function useDevState() {
     addChildNode,
     removeNodeFromTree,
     resetToDemo,
-    initSeedNavigation,
     toggleContext,
     addContextItem,
     removeContextItem,

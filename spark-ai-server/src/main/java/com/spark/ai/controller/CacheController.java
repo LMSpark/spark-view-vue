@@ -1,12 +1,16 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.repository.PageConfigRepository;
+import com.spark.ai.config.PagesConfigProperties;
 import com.spark.ai.service.ComponentMetadataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * 缓存管理 REST 端点。
@@ -22,13 +26,13 @@ import java.util.Map;
 public class CacheController {
 
     private final ComponentMetadataService metadataService;
-    private final PageConfigRepository pageConfigRepo;
+    private final Path configRoot;
 
     public CacheController(
             ComponentMetadataService metadataService,
-            PageConfigRepository pageConfigRepo) {
+            PagesConfigProperties pagesProps) {
         this.metadataService = metadataService;
-        this.pageConfigRepo = pageConfigRepo;
+        this.configRoot = Path.of(pagesProps.getConfigDir());
     }
 
     /**
@@ -50,10 +54,24 @@ public class CacheController {
 
         // 数据库统计
         Map<String, Object> db = new LinkedHashMap<>();
-        db.put("pageCount", pageConfigRepo.count());
+        db.put("pageCount", countPageDirectories());
         result.put("database", db);
 
         return ResponseEntity.ok(result);
+    }
+
+    private long countPageDirectories() {
+        if (!Files.isDirectory(configRoot)) {
+            return 0;
+        }
+        try (Stream<Path> walk = Files.walk(configRoot, 3)) {
+            return walk
+                    .filter(Files::isDirectory)
+                    .filter(path -> configRoot.relativize(path).getNameCount() == 3)
+                    .count();
+        } catch (IOException e) {
+            return 0;
+        }
     }
 
     /**

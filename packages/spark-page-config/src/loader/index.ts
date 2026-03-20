@@ -178,10 +178,10 @@ export class PageConfigLoader implements ConfigLoader {
 
     // 必需文件先加载：rule / pagedata 任一缺失即短路，避免 script/css 产生额外 404 噪音
     const ruleResult = await this.loadRule(pageId)
-    if (!ruleResult.success) return this.failFrom(ruleResult.error)
+    if (!ruleResult.success) return this.failFrom(ruleResult.error, ruleResult.reason)
 
     const dataResult = await this.loadPageData(pageId)
-    if (!dataResult.success) return this.failFrom(dataResult.error)
+    if (!dataResult.success) return this.failFrom(dataResult.error, dataResult.reason)
 
     // 可选文件并行加载（script / css 缺失时会返回 success + 空字符串）
     const [scriptResult, cssResult] = await Promise.all([
@@ -214,8 +214,8 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   /** 从失败的 ConfigLoadResult 构建错误响应（DRY）*/
-  private failFrom(error: string | undefined): ConfigLoadResult<never> {
-    return { success: false, ...(error !== undefined && { error }), timestamp: Date.now() }
+  private failFrom(error: string | undefined, reason?: string): ConfigLoadResult<never> {
+    return { success: false, ...(error !== undefined && { error }), ...(reason !== undefined && { reason }), timestamp: Date.now() }
   }
 
   // ── 私有辅助 ──────────────────────────────────────────────────────
@@ -255,13 +255,13 @@ export class PageConfigLoader implements ConfigLoader {
    * 由 derivedResult / localResult 共同使用，避免两写相同的评斷/日志/返回逻辑。
    */
   private localResultFromData<T>(
-    r: { success: boolean; error?: string; fromCache?: boolean; data?: T },
+    r: { success: boolean; error?: string; fromCache?: boolean; data?: T; reason?: string },
     path: string
   ): ConfigLoadResult<T> {
     if (!r.success) {
       const rawError = r.error ?? ''
       const fromEvent = this.recentMissingFiles.has(path)
-      const isNotFound = fromEvent || /404|not\s*found/i.test(rawError)
+      const isNotFound = r.reason === 'not-found' || fromEvent || /404|not\s*found/i.test(rawError)
       if (isNotFound) {
         pageLogger.warn('本地配置文件不存在', { path })
       } else {
@@ -270,6 +270,7 @@ export class PageConfigLoader implements ConfigLoader {
       return {
         success: false,
         error: `${this.pagesConfigBase}${path}: ${r.error ?? ''}`,
+        ...(isNotFound && { reason: 'not-found' as const }),
         timestamp: Date.now()
       }
     }

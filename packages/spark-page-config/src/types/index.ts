@@ -111,6 +111,8 @@ export interface ConfigLoadResult<T = unknown> {
   success: boolean
   data?: T
   error?: string
+  /** 失败原因：'not-found' 表示页面/文件不存在（404），与其他加载错误区分 */
+  reason?: string
   source?: 'local' | 'remote'
   timestamp?: number
   validationErrors?: ValidationError[]

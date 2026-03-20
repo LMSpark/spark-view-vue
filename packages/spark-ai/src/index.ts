@@ -117,19 +117,5 @@ export type {
 // ── Component Props Catalog ──────────────────────────────────────────────────
 export { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
 
-// ── Blueprint Types ──────────────────────────────────────────────────────────
-export {
-  getAllPageNodes,
-  getAllModuleNodes,
-  getBlueprintStats,
-  resolveTableRelations,
-  validateBlueprintTree,
-} from './blueprint-types'
-export type {
-  BlueprintDataModel,
-} from './blueprint-types'
-// ── Blueprint Planner Prompt ─────────────────────────────────────────────────
-export { BLUEPRINT_SYSTEM_PROMPT } from './blueprint-prompt'
-
 // ── Nav Planner Prompt ───────────────────────────────────────────────────────
 export { NAV_PLANNER_SYSTEM_PROMPT } from './nav-planner-prompt'

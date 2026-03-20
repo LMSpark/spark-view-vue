@@ -34,7 +34,7 @@ public class SseService {
     private static final Logger log = LoggerFactory.getLogger(SseService.class);
 
     /** 事件类型常量 */
-    public static final String EVENT_PAGE_CONFIG = "page-config";
+    public static final String EVENT_PAGE_FILE_CHANGE = "page-config";
     public static final String EVENT_DEBUG_SCREENSHOT_REQUEST = "debug-screenshot-request";
     public static final String EVENT_DEBUG_SCREENSHOT_RESULT = "debug-screenshot-result";
     public static final String EVENT_DEBUG_ROUTE_REQUEST = "debug-route-request";
@@ -66,7 +66,7 @@ public class SseService {
                 "file", file,
                 "timestamp", String.valueOf(Instant.now().toEpochMilli())
         );
-        emit(EVENT_PAGE_CONFIG, payload);
+        emit(EVENT_PAGE_FILE_CHANGE, payload);
     }
 
     /**

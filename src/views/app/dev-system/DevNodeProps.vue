@@ -32,7 +32,6 @@
       <NodeLayoutConfig :state="state" />
       <NodeStateConfig :state="state" />
       <NodeContextConfig :state="state" />
-      <NodeAiBlueprint :state="state" @create-page="$emit('createPage')" />
     </el-form>
   </div>
 </template>
@@ -46,7 +45,6 @@ import NodeTargetConfig from './components/NodeTargetConfig.vue'
 import NodeLayoutConfig from './components/NodeLayoutConfig.vue'
 import NodeStateConfig from './components/NodeStateConfig.vue'
 import NodeContextConfig from './components/NodeContextConfig.vue'
-import NodeAiBlueprint from './components/NodeAiBlueprint.vue'
 
 const props = defineProps<{ state: DevState }>()
 defineEmits<{ createPage: [] }>()

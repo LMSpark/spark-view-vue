@@ -27,8 +27,12 @@ public class NavigationController {
 
     @GetMapping
     public ResponseEntity<?> getNavConfig(@PathVariable String tenantId,
-                                           @PathVariable String projectId) {
+                                           @PathVariable String projectId,
+                                           @RequestParam(name = "raw", defaultValue = "false") boolean raw) {
         try {
+            if (raw) {
+                return ResponseEntity.ok(navigationService.listRawFlatRows(tenantId, projectId));
+            }
             Map<String, Object> config = navigationService.getNavConfig(tenantId, projectId);
             if (config == null) {
                 return ResponseEntity.ok(Map.of(
@@ -74,6 +78,13 @@ public class NavigationController {
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "获取节点列表失败: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/raw")
+    public ResponseEntity<?> listRawRows(@PathVariable String tenantId,
+                                         @PathVariable String projectId) {
+        List<Map<String, Object>> rows = navigationService.listRawFlatRows(tenantId, projectId);
+        return ResponseEntity.ok(rows);
     }
 
     @PostMapping("/nodes")

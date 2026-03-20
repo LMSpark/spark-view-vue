@@ -63,14 +63,14 @@ export interface NavContextConfig {
 export type NavContextInput = string | NavContextItem[] | NavContextConfig
 
 /**
- * 模块基接口（蓝图/导航共享元数据）
+ * 模块基接口（导航共享元数据）
  *
  * NavNode / AppNavRoot 统一继承该接口：
  * - NavNode：节点级（id 必填，children 可选）
  * - AppNavRoot：应用级（children 必填）
  */
 export interface AppModuleBase<TChild = unknown> {
-  /** 唯一标识（蓝图/应用/节点 ID） */
+  /** 唯一标识（应用/节点 ID） */
   id?: string
   /** 标题 */
   title: string
@@ -144,10 +144,9 @@ export interface NavNode extends AppModuleBase<NavNode>, AppNavigation {
 /**
  * 导航根配置（根节点只允许 header / sidebar 两种放置位置）
  *
- * 同时作为**应用蓝图**的顶层结构：
+ * 顶层应用导航结构：
  * - title / description / version — 应用元信息
  * - children — 模块分组（nodeKind='module'），模块下的子节点为页面（nodeKind='page'）
- * - 既是导航树，也是应用骨架，一套数据两用
  */
 export interface AppNavRoot extends AppModuleBase<NavNode> {
   /** 顶层子项存放位置 */

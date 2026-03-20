@@ -210,6 +210,10 @@ async function fetchConfig(pageId: string): Promise<PageConfig> {
   if (props.configLoader) {
     const result = await props.configLoader.loadPageConfig(pageId)
     if (!result.success || !result.data) {
+      if (result.reason === 'not-found') {
+        logger.warn('页面配置不存在', { pageId })
+        throw new Error(`页面不存在: ${pageId}`)
+      }
       logger.error('配置加载失败', { pageId, error: result.error })
       throw new Error(`配置加载失败: ${result.error ?? '未知错误'}`)
     }

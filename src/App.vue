@@ -43,10 +43,7 @@
             :items="nav.regionItems.value.header"
           />
         </template>
-        <template v-if="enableAI && hasToolbarAction('ai-design', 'ai-chat', 'ai-blueprint')" #actions>
-          <button v-if="hasToolbarAction('ai-blueprint')" class="app-ai-action" title="AI 蓝图策划" @click="showBlueprintPlanner = true">
-            <NavIcon name="OfficeBuilding" :size="16" />
-          </button>
+        <template v-if="enableAI && hasToolbarAction('ai-design', 'ai-chat')" #actions>
           <button v-if="hasToolbarAction('ai-design')" class="app-ai-action" title="AI 协同设计" @click="showDesignStudio = true">
             <NavIcon name="Brush" :size="16" />
           </button>
@@ -109,9 +106,6 @@
 
   <!-- AI 聊天浮窗已下沉到 AppPageRendererBridge（仅配置页面渲染） -->
 
-  <!-- AI 蓝图策划抽屉 -->
-  <AiBlueprintPlanner v-if="enableAI" v-model="showBlueprintPlanner" />
-
   <!-- AI 协同设计抽屉 -->
   <AiDesignStudio v-if="enableAI" v-model="showDesignStudio" />
 
@@ -148,8 +142,7 @@ import NavIcon from '@/components/NavIcon.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { clearAllCache, getCacheStats } from '@spark-view/spark-ai'
 import { refreshRoutes, getNavTree, getNavHomePath } from '@spark-view/spark-app'
-import { getNavApi } from '@/services/api-paths'
-import { http, createAuthHeaders } from '@/services/http'
+import { createAuthHeaders } from '@/services/http'
 import { startSseDebugScreenshotBridge } from '@/services/sse-debug-screenshot'
 import { startSseDebugRouteBridge } from '@/services/sse-debug-route'
 import { switchProject } from '@/services/auth'
@@ -223,13 +216,6 @@ async function reloadNavigation(): Promise<void> {
   applyNavTree(navTree)
 }
 
-/** 将种子导航数据写入后端（可随时调用） */
-async function syncSeedNavigation(): Promise<void> {
-  const { demoNavRoot } = await import('@/layout/demo-nav')
-  await http.put(getNavApi(), demoNavRoot)
-  await reloadNavigation()
-}
-
 onMounted(() => {
   if (_stopSseDebugScreenshot === null) {
     _stopSseDebugScreenshot = startSseDebugScreenshotBridge()
@@ -247,7 +233,7 @@ onMounted(() => {
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   const w = window as unknown as Record<string, unknown>
-  w['__sparkDev'] = { reloadNavigation, syncSeedNavigation, clearAllCache, getCacheStats, refreshRoutes }
+  w['__sparkDev'] = { reloadNavigation, clearAllCache, getCacheStats, refreshRoutes }
 })
 
 onUnmounted(() => {
@@ -346,11 +332,9 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
 
 /** 懒加载 AI 面板（enableAI=false 时零开销） */
 const AiChatWidget = defineAsyncComponent(() => import('@/components/AiChatWidget.vue'))
-const AiBlueprintPlanner = defineAsyncComponent(() => import('@/components/AiBlueprintPlanner.vue'))
 const AiDesignStudio = defineAsyncComponent(() => import('@/components/AiDesignStudio.vue'))
 const showAiChat = ref(false)
 const showDesignStudio = ref(false)
-const showBlueprintPlanner = ref(false)
 
 /** 读取应用配置中的 AI 开关（afterMount 异步设置，需响应式轮询） */
 const enableAI = ref(Boolean((window as unknown as Record<string, unknown>)['__SPARK_ENABLE_AI']))

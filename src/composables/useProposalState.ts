@@ -4,7 +4,7 @@ import type { DesignProposal, ProposalType } from '@spark-view/spark-ai'
 /**
  * 提案状态管理基础 composable
  *
- * 提取 useDesignSession 和 useBlueprintPlanner 的公共逻辑：
+ * 提取设计会话相关模块的公共逻辑：
  * - 提案 CRUD（add / accept / reject / revoke）
  * - 按消息分组 / 按类型分组 / 过滤计算
  *

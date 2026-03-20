@@ -36,9 +36,7 @@
         </template>
       </el-dropdown>
     </div>
-    <el-empty v-if="state.navEmpty.value" description="后端导航数据为空">
-      <el-button type="primary" @click="state.initSeedNavigation()">初始化种子导航数据</el-button>
-    </el-empty>
+    <el-empty v-if="state.navEmpty.value" description="后端导航数据为空" />
     <el-tree
       v-else
       ref="treeRef"
@@ -90,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import type { NavNode } from '@spark-view/spark-app'
 import type { DevState } from './useDevState'
@@ -125,6 +123,14 @@ function formatNodeKind(node: NavNode): string {
 }
 
 watch(treeFilter, (val) => { treeRef.value?.filter(val) })
+
+// 同步 el-tree 高亮到 selectedNode
+watch(() => state.selectedNode.value, async (node) => {
+  if (node) {
+    await nextTick()
+    treeRef.value?.setCurrentKey(node.id)
+  }
+}, { immediate: true })
 
 function filterNode(value: string, data: NavNode) {
   if (!value) return true
