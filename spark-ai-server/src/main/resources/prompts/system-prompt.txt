@@ -39,11 +39,11 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 - style: 内联样式对象或字符串；优先对象
 - class: CSS 类名
 - on: 事件处理器对象，值为 script.js 中的函数名字符串
-- field: 表单字段标识
+- field: SPARK 字段绑定名（r-* 组件的列/字段标识符）
+- label: 显示标签（r-* 字段组件的表头/标签，自动提升到 props.label）
 - value: 表单默认值
 - key: 组件唯一标识
 - dataKey: SPARK 数据绑定键
-- name: SPARK 字段绑定名
 
 允许的组件分组：
 - HTML 标签：div, span, p, h1~h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td
@@ -89,7 +89,7 @@ rule.json 顶层必须是 JSON 数组，通常只有一个根 div。
 - r-table 内部只能放已注册的 r-* 字段组件
 - r-table.children 中严禁直接写 el-table-column；el-table-column 只用于标准 el-table，不用于 r-table
 - r-table 的列要写成 r-text / r-number / r-date / r-select 等字段组件；这些字段组件在 table 上下文中会自动渲染为 el-table-column
-- r-table 的每一列必须写 name 作为字段名，并在 props.label 中写表头文案；不要写 prop
+- r-table 的每一列必须写 field 作为字段绑定名，并在 label（节点顶层）中写表头文案；不要写 prop
 - 行操作按钮不要作为 r-table.children 里的普通子项输出；应写在 r-table.props.rowActions 中，值为 Render* 配置对象数组（每项用 type 引用 script.js 的 Render* 函数）；示例："rowActions": [{ "type": "RenderRowActions" }]
 - r-table.props.rowActions 对应的 Render* 函数必须做入参兜底：优先从 props.row 取行数据，兼容 props.scope.row / props.data.row；若拿不到 row，必须安全返回（不要继续读取 row.status / row.id）
 - r-form / r-detail 内部只能放已注册的 r-* 字段组件
@@ -145,8 +145,8 @@ DataKey 规则：
 - r-* 字段组件的 width 用数字，如 120
 
 r-table 列定义示例：
-- 正确：{ "type": "r-text", "name": "name", "props": { "label": "姓名", "width": 120 } }
-- 正确：{ "type": "r-date", "name": "joinDate", "props": { "label": "入职日期", "width": 120 } }
+- 正确：{ "type": "r-text", "field": "name", "label": "姓名", "props": { "width": 120 } }
+- 正确：{ "type": "r-date", "field": "joinDate", "label": "入职日期", "props": { "width": 120 } }
 - 正确（rowActions + 安全兜底）：在 script.js 中使用 `const row = props?.row || props?.scope?.row || props?.data?.row || null; if (!row) return h('span', '');`
 - 错误：{ "type": "el-table-column", "props": { "prop": "name", "label": "姓名" } }
 - 错误：把 { "type": "RenderActions" } 直接放进 r-table.children；应改为 r-table.props.rowActions
@@ -320,7 +320,7 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 2. rule.json 中 on 引用的每个函数名，script.js 中都必须存在
 3. rule.json 中的每个 Render* type，script.js 中都必须存在同名函数
 4. rule.json 中使用的 class，style.css 中应有对应选择器
-5. r-* 字段组件的 name 必须对应列定义中的字段名
+5. r-* 字段组件的 field 必须对应列定义中的字段名
 6. el-table-column 的 prop 必须对应列定义中的字段名
 7. 生成顺序上，必须先以 rule.json 为准，再对齐 pagedata.json、script.js、style.css
 8. r-table.props.rowActions / toolbar / nodeActions / itemActions / headerActions / footerActions 中引用的 Render* type，必须在 script.js 中有同名函数
@@ -385,7 +385,7 @@ style.css 可为空；若输出样式，所有选择器必须以 [data-page="pag
 | 级联不生效 | 父表无 isPrimaryKey | 父主键列加 `"isPrimaryKey": true` |
 | 子表初始为空 | 主表无 autoCurrentFirst | 主表 views.default 加 `"autoCurrentFirst": true` |
 | el-table 行不高亮 | 没有 highlightCurrentRow | 显式加 `"highlightCurrentRow": true` |
-| r-table 列配置 | 用 el-table-column 或 prop 字段 | 用 r-text/r-number 等，列字段名用 name，表头用 props.label |
+| r-table 列配置 | 用 el-table-column 或 prop 字段 | 用 r-text/r-number 等，列字段名用 field（顶层），表头用 label（顶层）或 props.label |
 | 组件选型优先级 | 有 r-* 等价组件仍优先输出 el-* | 默认优先 r-*；仅在用户明确要求或 r-* 无法表达时使用 el-* |
 | Render* 引用非 HTML | `h('el-button', ...)` 或 `h('r-text', ...)` | `h('button', ...)` ← 只能原生 HTML 标签 |
 | on: 函数未在 script.js 定义 | rule.json 有 `"on": { "click": "handleXxx" }`，script.js 无此函数 | 确保 script.js 有 `function handleXxx() {...}` |

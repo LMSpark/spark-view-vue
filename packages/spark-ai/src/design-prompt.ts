@@ -139,7 +139,7 @@ SPARK AI 使用 \`@@...@@end\` 定界块作为**结构化通信信道**。每种
 |------|------|------|
 | \`data-model\`   | pagedata.json tables 片段（JSON） | 表结构、字段定义、DataRelation |
 | \`view-plan\`    | 视图映射表（Markdown 表格）       | DataView 规划（Pass B1 专用） |
-| \`ui-structure\` | rule.json 片段（JSON 数组）       | SparkNode v2 组件树 |
+| \`ui-structure\` | rule.json 片段（JSON 数组）       | SparkNode v3 组件树 |
 | \`interaction\`  | script.js 代码                   | 事件处理、数据操作逻辑 |
 | \`api-config\`   | api 端点配置（JSON）               | 远程数据接口配置 |
 | \`style\`        | CSS 代码                          | 视觉样式 |
@@ -241,7 +241,7 @@ master-detail, search-filter
 
 # 层-4 SPARK 平台规则（提案内容必须遵守）
 
-## SparkNode v2 节点语法（核心语法）
+## SparkNode v3 节点语法（核心语法）
 
 rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分为两种形态：
 
@@ -270,7 +270,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
   "meta": {                        // SPARK 语义域（7 域，按需填写，无需全部出现）
     "data": {
       "dataKey": "Orders@rows",    // 数据绑定键（容器组件用）
-      "name": "fieldName"          // 字段绑定名（r-* 字段组件用，映射到行字段）
+      "field": "fieldName"         // 字段绑定名（r-* 字段组件用，映射到行字段）
     },
     "filter": {
       "items": ["name", "status"], // 字符串简写 或 FilterItem 对象
@@ -301,7 +301,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
   "props": { "label": "状态", "width": 120 },
   "meta": {
     "data": {
-      "name": "status",
+      "field": "status",
       "options": [{ "label": "启用", "value": 1 }, { "label": "禁用", "value": 0 }]
     },
     "layout": { "colSpan": 8 }
@@ -336,7 +336,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 **速记**：
 - \`type\` — 是什么组件
 - \`props\` — 原生属性（border / size / style / class）
-- \`meta.data.dataKey\` — 绑什么数据（容器）；\`meta.data.name\` — 对应哪个字段（字段组件）
+- \`meta.data.dataKey\` — 绑什么数据（容器）；\`meta.data.field\` — 对应哪个字段（字段组件）
 - \`meta.filter\` — 筛选配置（items / logic / collapsible / on）
 - \`meta.toolbar / meta.actions\` — 操作按钮
 - \`meta.behavior.on\` — 事件绑定（→ script.js 函数名）
@@ -355,7 +355,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 8. style / class 是否在 \`props\` 内（禁止写在节点顶层）？
 9. r-* 组件的数据绑定是否写在 \`meta.data\` 内？事件是否写在 \`meta.behavior.on\` 内？
 10. view-plan 表格中引用的表名是否全部存在于名册A？
-11. ui-structure 中 \`meta.data.name\` 的字段名是否存在于对应表的列定义中？
+11. ui-structure 中 \`meta.data.field\` 的字段名是否存在于对应表的列定义中？
 
 ## DataKey 格式
 
@@ -368,7 +368,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 
 | 规则 | 说明 |
 |------|------|
-| r-table 列（推荐） | 用 r-text / r-number / r-date 等 r-* 字段，name=字段名，props.label=表头；支持权限渲染、上下文感知 |
+| r-table 列（推荐） | 用 r-text / r-number / r-date 等 r-* 字段，field=字段名，label=表头；支持权限渲染、上下文感知 |
 | r-table 列（强制） | r-table 内只能使用 r-* 字段列；禁止 el-table-column |
 | r-table 行操作 | 写在 \`meta.actions.children\`；优先 builtin-action（零代码），复杂场景再用 Render* |
 | el-table 列 | 仅限 el-table-column 或 Render*；el-table-column.width 用字符串 \`"100"\`，r-* 字段 width 用数字 \`120\` |
@@ -482,7 +482,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 3. 是否存在子表 relation 且字段映射可闭环
 4. 是否包含至少 3 个 builtin-action（覆盖 toolbar + rowActions）
 5. script.js 是否保持最小（无复杂逻辑时仅空 \`__init__\`）
-6. 所有 \`meta.data.name\` 字段是否在 data-model 列定义中存在
+6. 所有 \`meta.data.field\` 字段是否在 data-model 列定义中存在
 7. 筛选配置是否使用 \`meta.filter.items\`（禁止使用旧的 \`filterColumns\` 平铺属性）
 
 ### 推荐输出骨架（可直接复用）

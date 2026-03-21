@@ -7,7 +7,7 @@
 export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
   // ── 容器组件 ─────────────────────────────────────────────────────────────
 
-  'r-table': `**r-table** — 数据表格容器（SparkNode v2 格式）
+  'r-table': `**r-table** — 数据表格容器（SparkNode v3 格式）
 
 【props — 原生组件属性，透传到 el-table】
 border: boolean — 边框
@@ -158,22 +158,22 @@ gridGap: number — 默认 0
 gridAutoRows: string — 行高`,
 
   // ── 字段组件 ─────────────────────────────────────────────────────────────
-  // 所有 r-* 字段共享基础 Props: name(字段绑定名), label(显示标签), width(r-table列宽)
+  // 所有 r-* 字段共享基础 Props: field(字段绑定名), label(显示标签), width(r-table列宽)
 
   'r-text': `**r-text** — 单行文本输入
-name: string — 字段绑定名（必填）
+field: string — 字段绑定名（必填）
 label: string — 显示标签
 width: number — r-table 内列宽
 （无额外特有 Props）`,
 
   'r-number': `**r-number** — 数字输入
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 min: number — 最小值
 max: number — 最大值
 filterMode: 'range' — 启用范围过滤模式`,
 
   'r-select': `**r-select** — 下拉选择
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 options: Array<{label, value}> — 选项列表
 optionLabelField: string — 选项标签字段，默认 'label'
 optionValueField: string — 选项值字段，默认 'value'
@@ -182,7 +182,7 @@ clearable: boolean — 默认 true
 filterable: boolean — 可搜索，默认 false`,
 
   'r-multi-select': `**r-multi-select** — 多选下拉
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 options: Array<{label, value}> — 选项列表
 optionLabelField / optionValueField — 同 r-select
 placeholder: string — 默认 '请选择'
@@ -193,12 +193,12 @@ collapseTagsTooltip: boolean — 折叠标签提示，默认 false
 maxCollapseTags: number — 最大显示标签数，默认 1`,
 
   'r-date': `**r-date** — 日期选择
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 modelValue: string | Date | Array — 日期或日期范围
 透传到 el-date-picker: type('date'/'datetime'/'daterange'), format, valueFormat 等`,
 
   'r-textarea': `**r-textarea** — 多行文本
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 rows: number — 行数，默认 4
 autosize: boolean | {minRows, maxRows} — 自适应高度，默认 false
 maxlength: number — 最大长度
@@ -206,34 +206,34 @@ showWordLimit: boolean — 显示字数统计，默认 false
 placeholder: string — 默认 '请输入内容'`,
 
   'r-radio': `**r-radio** — 单选按钮组
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 options: Array<{label, value}> — 选项列表
 optionLabelField / optionValueField — 同 r-select
 buttonStyle: boolean — 按钮风格，默认 false`,
 
   'r-switch': `**r-switch** — 开关
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 activeText: string — 激活文案，默认 '是'
 inactiveText: string — 未激活文案，默认 '否'`,
 
   'r-slider': `**r-slider** — 滑块
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 min: number — 默认 0
 max: number — 默认 100
 step: number — 步长，默认 1
 showInput: boolean — 显示输入框，默认 false`,
 
   'r-rate': `**r-rate** — 评分
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 max: number — 最大值，默认 5
 allowHalf: boolean — 允许半星，默认 false`,
 
   'r-html-editor': `**r-html-editor** — 富文本编辑器
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 rows: number — 编辑器高度行数，默认 10`,
 
   'r-upload': `**r-upload** — 文件上传
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 action: string — 上传 URL，默认 '#'
 accept: string — 接受文件类型，默认 ''
 buttonText: string — 按钮文案，默认 '点击上传'
@@ -245,7 +245,7 @@ separator: string — 多文件分隔符，默认 ', '
 placeholder: string — 默认 '请选择文件'`,
 
   'r-image': `**r-image** — 图片上传
-name / label / width — 同 r-text
+field / label / width — 同 r-text
 action: string — 上传 URL，默认 '#'
 accept: string — 默认 'image/*'
 multiple: boolean — 多选，默认 false
@@ -254,3 +254,4 @@ placeholder: string — 默认 '请选择图片'
 buttonText: string — 默认 '上传图片'
 clearable: boolean — 默认 true`,
 }
+
