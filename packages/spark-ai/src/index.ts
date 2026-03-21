@@ -38,6 +38,7 @@ export {
   setupHotReload,
   setAutoIterating,
   isAutoIterating,
+  configureAutoIterateTimeout,
   triggerPageRefresh,
   initAILoop,
   getAILoop,
@@ -115,6 +116,7 @@ export {
   SkillQueryProcessor,
   RegistryValidatorProcessor,
   AutoResponderProcessor,
+  createStandardPipeline,
 } from './response-pipeline'
 export type {
   ComponentQuery,

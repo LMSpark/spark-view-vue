@@ -169,7 +169,7 @@ function __init__() {
     requires: [],
     produces: ['ui-structure', 'interaction'],
     checks: ['filter.items 字段名存在于表列定义', 'on.search/on.reset 函数已声明'],
-    detail: `## search-filter 标准配置（SparkNode v2）
+    detail: `## search-filter 标准配置（SparkNode v3）
 
 ### 使用 meta.filter（零代码，推荐）
 \`\`\`json
@@ -362,9 +362,9 @@ function handlePrev() {
   "type": "r-detail",
   "dataKey": "Orders@currentRow",
   "children": [
-    { "type": "r-text",   "name": "orderNo",     "props": { "label": "订单号" } },
-    { "type": "r-text",   "name": "status",      "props": { "label": "状态" } },
-    { "type": "r-number", "name": "totalAmount", "props": { "label": "总金额" } }
+    { "type": "r-text",   "field": "orderNo",     "props": { "label": "订单号" } },
+    { "type": "r-text",   "field": "status",      "props": { "label": "状态" } },
+    { "type": "r-number", "field": "totalAmount", "props": { "label": "总金额" } }
   ]
 }
 \`\`\`

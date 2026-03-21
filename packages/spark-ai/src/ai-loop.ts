@@ -335,6 +335,16 @@ export interface AIPageLoopOptions {
   autoRegisterNav?: boolean
   /** 导航注册完成回调 */
   onNavigationRegistered?: (pageId: string, result: NavRegistrationResult) => void
+  /** 自动迭代安全超时 ms（超时后强制恢复标志，默认 180000 即 3 分钟） */
+  autoIterateTimeout?: number
+  /**
+   * AI 响应后处理钩子（校验后、文件写入前调用）
+   *
+   * 适用于接入 ResponsePipeline 进行提案提取、名册校验、自动回复组装等。
+   * 返回修改后的 AIResponse（可补充 explanation / needsIteration）。
+   * 若抛出异常则跳过该步骤，不影响文件写入。
+   */
+  onResponseProcessed?: (response: AIResponse, pageId: string) => AIResponse | Promise<AIResponse>
 }
 
 // ─── 自动迭代守卫 ────────────────────────────────────────────────────────────
@@ -346,7 +356,13 @@ export interface AIPageLoopOptions {
 let _autoIterating = false
 /** 安全超时定时器：防止 _autoIterating 永远为 true（AI 请求 hang 住的场景） */
 let _autoIteratingTimer: ReturnType<typeof setTimeout> | null = null
-const AUTO_ITERATE_TIMEOUT = 180_000 // 3 分钟硬上限
+const DEFAULT_AUTO_ITERATE_TIMEOUT = 180_000 // 3 分钟默认上限
+let _autoIterateTimeout = DEFAULT_AUTO_ITERATE_TIMEOUT
+
+/** 设置自动迭代安全超时（由 AIPageLoop 构造函数调用） */
+export function configureAutoIterateTimeout(ms: number): void {
+  _autoIterateTimeout = ms > 0 ? ms : DEFAULT_AUTO_ITERATE_TIMEOUT
+}
 
 /** 设置自动迭代标志（AiChatPanel 在循环前/后调用） */
 export function setAutoIterating(value: boolean): void {
@@ -360,7 +376,7 @@ export function setAutoIterating(value: boolean): void {
     _autoIteratingTimer = setTimeout(() => {
       _autoIterating = false
       _autoIteratingTimer = null
-    }, AUTO_ITERATE_TIMEOUT)
+    }, _autoIterateTimeout)
   }
 }
 
@@ -650,6 +666,8 @@ interface ResolvedLoopOptions {
   includeGlobalDiagnostics: boolean
   autoRegisterNav: boolean
   onNavigationRegistered: ((pageId: string, result: NavRegistrationResult) => void) | undefined
+  autoIterateTimeout: number
+  onResponseProcessed: ((response: AIResponse, pageId: string) => AIResponse | Promise<AIResponse>) | undefined
 }
 
 /**
@@ -672,7 +690,10 @@ export class AIPageLoop {
       includeGlobalDiagnostics: options.includeGlobalDiagnostics ?? true,
       autoRegisterNav: options.autoRegisterNav ?? true,
       onNavigationRegistered: options.onNavigationRegistered,
+      autoIterateTimeout: options.autoIterateTimeout ?? DEFAULT_AUTO_ITERATE_TIMEOUT,
+      onResponseProcessed: options.onResponseProcessed,
     }
+    configureAutoIterateTimeout(this.options.autoIterateTimeout)
     this._sessionId = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   }
 
@@ -750,6 +771,39 @@ export class AIPageLoop {
   }
 
   /**
+   * 共享后处理：校验 → 响应处理钩子 → 写文件 → 导航注册
+   */
+  private async _postProcess(pageId: string, aiResp: AIResponse, action: string, prompt?: string): Promise<AIResponse> {
+    let validatedResp = withValidationReport(aiResp)
+
+    // 响应处理钩子（用于 ResponsePipeline 集成）
+    if (this.options.onResponseProcessed) {
+      try {
+        validatedResp = await this.options.onResponseProcessed(validatedResp, pageId)
+      } catch {
+        // 钩子失败不阻断文件写入
+      }
+    }
+
+    // 写入文件
+    if (Object.keys(validatedResp.files).length > 0) {
+      const written = await writePageFiles(pageId, validatedResp.files)
+      this.options.onFilesUpdated(pageId, written)
+    }
+
+    // 导航自动注册（仅 generate 触发）
+    if (action === 'generate' && this.options.autoRegisterNav) {
+      const navResult = await registerPageNavigation(pageId, {
+        ...(prompt ? { prompt } : {}),
+      })
+      validatedResp.navigationResult = navResult
+      this.options.onNavigationRegistered?.(pageId, navResult)
+    }
+
+    return validatedResp
+  }
+
+  /**
    * 调用 AI 后端并写入文件
    */
   private async _callAI(pageId: string, payload: Record<string, unknown>): Promise<AIResponse> {
@@ -759,25 +813,11 @@ export class AIPageLoop {
         payload['skillCatalog'] = this.options.skillCatalog
       }
       const aiResp = await http.post<AIResponse>(this.options.aiEndpoint, payload)
-      const validatedResp = withValidationReport(aiResp)
-
-      // 写入文件
-      if (Object.keys(validatedResp.files).length > 0) {
-        const written = await writePageFiles(pageId, validatedResp.files)
-        this.options.onFilesUpdated(pageId, written)
-      }
-
-      // 导航自动注册（仅 generate 触发）
-      if (payload['action'] === 'generate' && this.options.autoRegisterNav) {
-        const prompt = typeof payload['prompt'] === 'string' ? payload['prompt'] : undefined
-        const navResult = await registerPageNavigation(pageId, {
-          ...(prompt ? { prompt } : {}),
-        })
-        validatedResp.navigationResult = navResult
-        this.options.onNavigationRegistered?.(pageId, navResult)
-      }
-
-      return validatedResp
+      return this._postProcess(
+        pageId, aiResp,
+        payload['action'] as string,
+        typeof payload['prompt'] === 'string' ? payload['prompt'] : undefined,
+      )
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       this.options.onError(error)
@@ -828,25 +868,11 @@ export class AIPageLoop {
       }
 
       const aiResp = await consumeSSEStream(response, callbacks)
-      const validatedResp = withValidationReport(aiResp)
-
-      // 写入文件
-      if (Object.keys(validatedResp.files).length > 0) {
-        const written = await writePageFiles(pageId, validatedResp.files)
-        this.options.onFilesUpdated(pageId, written)
-      }
-
-      // 导航自动注册（仅 generate 触发）
-      if (payload['action'] === 'generate' && this.options.autoRegisterNav) {
-        const prompt = typeof payload['prompt'] === 'string' ? payload['prompt'] : undefined
-        const navResult = await registerPageNavigation(pageId, {
-          ...(prompt ? { prompt } : {}),
-        })
-        validatedResp.navigationResult = navResult
-        this.options.onNavigationRegistered?.(pageId, navResult)
-      }
-
-      return validatedResp
+      return this._postProcess(
+        pageId, aiResp,
+        payload['action'] as string,
+        typeof payload['prompt'] === 'string' ? payload['prompt'] : undefined,
+      )
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
       this.options.onError(error)

@@ -640,3 +640,27 @@ export class AutoResponderProcessor implements ResponseProcessor {
     return true
   }
 }
+
+// ── Factory ──────────────────────────────────────────────────────────────────
+
+/**
+ * 创建预配置的标准 ResponsePipeline（全部 7 个处理器）
+ *
+ * 使用方式：
+ * ```ts
+ * const pipeline = createStandardPipeline()
+ * const ctx = await pipeline.execute(rawContent, messageId, session)
+ * // ctx.autoMessages — 需要发送的自动回复
+ * // ctx.proposals    — 提取的结构化提案
+ * ```
+ */
+export function createStandardPipeline(): ResponsePipeline {
+  return new ResponsePipeline()
+    .use(new BlockExtractorProcessor())
+    .use(new ProposalValidatorProcessor())
+    .use(new SchemaCheckerProcessor())
+    .use(new QueryResolverProcessor())
+    .use(new SkillQueryProcessor())
+    .use(new RegistryValidatorProcessor())
+    .use(new AutoResponderProcessor())
+}

@@ -229,6 +229,11 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
     collectRuleNodes(ruleJson, 'rules', nodes)
   }
 
+  // 收集所有 dataKey 用于 highlightCurrentRow 交叉检查
+  const tableDataKeys = new Map<string, string>() // tableName → path（最后一个 r-table 的路径）
+  const tablesWithHighlight = new Set<string>()    // 有 highlightCurrentRow 的表名
+  const tablesUsingCurrentRow = new Set<string>()  // 使用 @currentRow 的表名
+
   for (const { node, path } of nodes) {
     const typeName = node['type']
     if (typeof typeName === 'string') {
@@ -252,6 +257,33 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
           `${path}.type`,
           `请在 script.js 中添加 function ${typeName}() { ... }。`,
         )
+      }
+
+      // SparkNode v3: 检测废弃的 name 属性（应使用 field）
+      if (typeName.startsWith('r-') && typeof node['name'] === 'string' && node['field'] === undefined) {
+        pushIssue(
+          issues,
+          'component',
+          'warning',
+          `「${typeName}」使用了废弃的 name 属性「${node['name']}」`,
+          `${path}.name`,
+          'SparkNode v3 已将 name 改为 field，请改用 field 声明字段绑定。',
+        )
+      }
+
+      // 收集 r-table 的 highlightCurrentRow 信息
+      if (typeName === 'r-table' || typeName === 'el-table') {
+        const dk = node['dataKey']
+        if (typeof dk === 'string') {
+          const tbl = parseDataKeyTable(dk)
+          if (tbl.tableName !== null) {
+            tableDataKeys.set(tbl.tableName, path)
+            const props = asRecord(node['props'])
+            if (props?.['highlightCurrentRow'] === true) {
+              tablesWithHighlight.add(tbl.tableName)
+            }
+          }
+        }
       }
     }
 
@@ -278,6 +310,10 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
             '请校对 dataKey 表名与 pagedata.json tables 定义。',
           )
         }
+        // 记录使用 @currentRow 的表名
+        if (parsed.tableName !== null && dataKey.includes('@currentRow')) {
+          tablesUsingCurrentRow.add(parsed.tableName)
+        }
       }
     }
 
@@ -298,6 +334,20 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
           )
         }
       }
+    }
+  }
+
+  // 交叉检查：使用 @currentRow 的表是否有对应的 highlightCurrentRow
+  for (const tableName of tablesUsingCurrentRow) {
+    if (tableDataKeys.has(tableName) && !tablesWithHighlight.has(tableName)) {
+      pushIssue(
+        issues,
+        'component',
+        'warning',
+        `表「${tableName}」被 @currentRow 引用，但对应 r-table 未声明 highlightCurrentRow`,
+        tableDataKeys.get(tableName) ?? 'rules',
+        '请在该 r-table 的 props 中添加 "highlightCurrentRow": true，否则当前行无高亮效果。',
+      )
     }
   }
 
