@@ -141,6 +141,10 @@ function bindRulesRecursive(
         setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
       }
     }
+    // 向后兼容：v2 配置使用 name 作为字段绑定名，v3 统一为 field
+    if (ruleType.startsWith('r-') && newRule.field === undefined && typeof newRule['name'] === 'string') {
+      newRule.field = newRule['name']
+    }
     // field 透传：rule.field 需显式复制到 props 以传给自定义组件
     // 所有 r-* 字段/容器组件都需要通过 props.field 接收字段名
     if (ruleType.startsWith('r-') && newRule.field !== undefined) {

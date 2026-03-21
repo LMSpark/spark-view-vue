@@ -54,4 +54,31 @@ describe('bindRules - DataKey rows -> IDataSource binding', () => {
     expect(rp['dataView']).toBe(dv)
     expect(typeof (rp['dataView']?.loadFromServer)).toBe('function')
   })
+
+  it('r-* 字段的旧 name 属性应向后兼容映射到 field', () => {
+    const dataSet = SparkData.createDataSet({
+      dataSetName: 'TestDS',
+      tables: {
+        Users: {
+          tableName: 'Users',
+          columns: [{ name: 'id', type: 'number' }, { name: 'name', type: 'string' }],
+          rows: [{ id: 1, name: 'Alice' }]
+        }
+      }
+    })
+
+    // 旧 v2 格式：使用 name 而非 field
+    const rules = [
+      { type: 'r-text', name: 'name', props: { label: '姓名', width: 120 } },
+      { type: 'r-number', name: 'id', props: { label: 'ID', width: 80 } },
+    ] as any[]
+
+    const bound = bindDataToRules({ rules, pageFunctions: {}, dataSet })
+    // name 应被映射到 field（根级）
+    expect(bound[0]!.field).toBe('name')
+    expect(bound[1]!.field).toBe('id')
+    // field 也应透传到 props.field
+    expect((bound[0]!.props as any).field).toBe('name')
+    expect((bound[1]!.props as any).field).toBe('id')
+  })
 })
