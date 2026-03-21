@@ -10,7 +10,7 @@
  * 容器组件（r-table 等）通过 createBuiltinActionHandler 构建实例后使用。
  */
 
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataRow, DataView } from '@spark-view/spark-data'
 import type { PageMessageType, IPageServiceCapability, LoggerApi } from '@spark-view/spark-utils'
 
@@ -109,7 +109,7 @@ function readMessageType(value: unknown): PageMessageType {
   }
 }
 
-function getActionProps(action: ComponentConfig): Record<string, unknown> {
+function getActionProps(action: SparkNode): Record<string, unknown> {
   return asRecord(action.props) ?? {}
 }
 
@@ -130,19 +130,19 @@ function isBuiltinActionName(value: string): value is BuiltinActionName {
   return value in BUILTIN_ACTION_META
 }
 
-export function getBuiltinActionName(action: ComponentConfig): BuiltinActionName | null {
+export function getBuiltinActionName(action: SparkNode): BuiltinActionName | null {
   const actionName = readString(getActionProps(action)['builtinAction'])
   if (!actionName) return null
   return isBuiltinActionName(actionName) ? actionName : null
 }
 
-export function isBuiltinAction(action: ComponentConfig): boolean {
+export function isBuiltinAction(action: SparkNode): boolean {
   return getBuiltinActionName(action) !== null
 }
 
 // ── 标签映射 ──────────────────────────────────────────────────────────────
 
-export function getBuiltinActionLabel(action: ComponentConfig): string {
+export function getBuiltinActionLabel(action: SparkNode): string {
   const propsMap = getActionProps(action)
   const explicit = readString(propsMap['label'])
   if (explicit) return explicit
@@ -154,7 +154,7 @@ export function getBuiltinActionLabel(action: ComponentConfig): string {
 
 // ── 按钮样式查询 ──────────────────────────────────────────────────────────
 
-export function getBuiltinButtonType(action: ComponentConfig): BuiltinButtonType | undefined {
+export function getBuiltinButtonType(action: SparkNode): BuiltinButtonType | undefined {
   const propsMap = getActionProps(action)
   const explicit = readButtonType(propsMap['buttonType'])
   if (explicit !== undefined) return explicit
@@ -163,7 +163,7 @@ export function getBuiltinButtonType(action: ComponentConfig): BuiltinButtonType
   return actionName ? BUILTIN_ACTION_META_RECORD[actionName].buttonType : undefined
 }
 
-export function getBuiltinButtonSize(action: ComponentConfig): BuiltinButtonSize | undefined {
+export function getBuiltinButtonSize(action: SparkNode): BuiltinButtonSize | undefined {
   const propsMap = getActionProps(action)
   const explicit = readButtonSize(propsMap['buttonSize'])
   if (explicit !== undefined) return explicit
@@ -172,7 +172,7 @@ export function getBuiltinButtonSize(action: ComponentConfig): BuiltinButtonSize
   return actionName ? BUILTIN_ACTION_META_RECORD[actionName].buttonSize : undefined
 }
 
-export function getBuiltinButtonPlain(action: ComponentConfig): boolean {
+export function getBuiltinButtonPlain(action: SparkNode): boolean {
   const propsMap = getActionProps(action)
   const explicit = readBoolean(propsMap['buttonPlain'])
   if (explicit !== undefined) return explicit
@@ -181,7 +181,7 @@ export function getBuiltinButtonPlain(action: ComponentConfig): boolean {
   return actionName ? (BUILTIN_ACTION_META_RECORD[actionName].buttonPlain ?? false) : false
 }
 
-export function getBuiltinButtonText(action: ComponentConfig): boolean {
+export function getBuiltinButtonText(action: SparkNode): boolean {
   const propsMap = getActionProps(action)
   const explicit = readBoolean(propsMap['buttonText'])
   if (explicit !== undefined) return explicit
@@ -190,7 +190,7 @@ export function getBuiltinButtonText(action: ComponentConfig): boolean {
   return actionName ? (BUILTIN_ACTION_META_RECORD[actionName].buttonText ?? false) : false
 }
 
-export function getBuiltinButtonLink(action: ComponentConfig): boolean {
+export function getBuiltinButtonLink(action: SparkNode): boolean {
   const propsMap = getActionProps(action)
   const explicit = readBoolean(propsMap['buttonLink'])
   if (explicit !== undefined) return explicit
@@ -199,7 +199,7 @@ export function getBuiltinButtonLink(action: ComponentConfig): boolean {
   return actionName ? (BUILTIN_ACTION_META_RECORD[actionName].buttonLink ?? false) : false
 }
 
-export function getBuiltinButtonClass(action: ComponentConfig): string {
+export function getBuiltinButtonClass(action: SparkNode): string {
   const propsMap = getActionProps(action)
   const explicit = readString(propsMap['buttonClass'])
   if (explicit !== undefined) return explicit
@@ -298,7 +298,7 @@ function extractErrorMessage(error: unknown): string {
 // ── 禁用逻辑 ──────────────────────────────────────────────────────────────
 
 export function isBuiltinActionDisabled(
-  action: ComponentConfig,
+  action: SparkNode,
   view: DataView | null | undefined,
   scope?: BuiltinActionScope,
 ): boolean {
@@ -380,7 +380,7 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
     return await pageService.showConfirm(message, title, { type })
   }
 
-  async function execute(action: ComponentConfig, scope?: BuiltinActionScope): Promise<void> {
+  async function execute(action: SparkNode, scope?: BuiltinActionScope): Promise<void> {
     const actionName = getBuiltinActionName(action)
     if (!actionName) return
 
@@ -575,10 +575,10 @@ export function createBuiltinActionHandler(ctx: BuiltinActionContext) {
   }
 
   return {
-    handleToolbar(action: ComponentConfig): void {
+    handleToolbar(action: SparkNode): void {
       void execute(action)
     },
-    handleRow(action: ComponentConfig, row: IDataRow, index: number): void {
+    handleRow(action: SparkNode, row: IDataRow, index: number): void {
       void execute(action, { row, index })
     },
   }

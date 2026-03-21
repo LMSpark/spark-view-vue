@@ -1,16 +1,16 @@
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { createPermissionChecker } from '@spark-view/spark-data'
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 
-type RuntimeActionConfig = ComponentConfig & { display?: boolean }
+type RuntimeActionConfig = SparkNode & { display?: boolean }
 
 const permissionChecker = createPermissionChecker()
 
-export function isActionDisplayed(action: ComponentConfig): boolean {
+export function isActionDisplayed(action: SparkNode): boolean {
   return (action as RuntimeActionConfig).display !== false
 }
 
-export function isModelActionAllowed(action: ComponentConfig, modelPerm: IModelPermission | undefined): boolean {
+export function isModelActionAllowed(action: SparkNode, modelPerm: IModelPermission | undefined): boolean {
   const permAction = action.props?.['permAction'] as string | undefined
   if (permAction === undefined) return true
 
@@ -26,7 +26,7 @@ export function isModelActionAllowed(action: ComponentConfig, modelPerm: IModelP
   }
 }
 
-export function isRowActionAllowed(action: ComponentConfig, row: IDataRow | undefined): boolean {
+export function isRowActionAllowed(action: SparkNode, row: IDataRow | undefined): boolean {
   const permAction = action.props?.['permAction'] as string | undefined
   if (!row) return true
   if (permAction === undefined) return true

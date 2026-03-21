@@ -3,14 +3,14 @@ import { createPermissionChecker, FieldVisibility } from '@spark-view/spark-data
 import type { IDataRow } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
 import { useSparkComponent, DATA_SOURCE } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import { columnToFormRules } from './columnFormRules'
 import type { FormItemRule } from './columnFormRules'
 
 export interface FieldPermissionProps<TValue> {
-  config?: ComponentConfig | undefined
-  name?: string | undefined
+  config?: SparkNode | undefined
+  field?: string | undefined
   label?: string | undefined
   modelValue?: TValue | undefined
 }
@@ -27,7 +27,7 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const permissionChecker = createPermissionChecker()
   const { consume } = useSparkComponent(props.config ?? { type })
 
-  const fieldName = computed(() => props.config?.name ?? props.name ?? '')
+  const fieldName = computed(() => props.config?.field ?? props.field ?? '')
   const displayLabel = computed(() => props.label ?? fieldName.value)
   const context = consume(FIELD_CONTEXT) ?? 'detail'
   const contextData = consume(CONTEXT_DATA)

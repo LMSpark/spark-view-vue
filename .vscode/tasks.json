@@ -26,6 +26,41 @@
 			"label": "vitest-full",
 			"type": "shell",
 			"command": "npx vitest run --reporter verbose"
+		},
+		{
+			"label": "vitest-check",
+			"type": "shell",
+			"command": "npx vitest run 2>&1 | findstr /C:\"Test Files\" /C:\"Tests \""
+		},
+		{
+			"label": "vitest-summary",
+			"type": "shell",
+			"command": "npx vitest run --reporter=json 2>NUL | ConvertFrom-Json | ForEach-Object { Write-Host \"Tests: $($_.numPassedTests) passed, $($_.numFailedTests) failed / Total: $($_.numTotalTests) ($($_.numTotalTestSuites) suites)\" }"
+		},
+		{
+			"label": "vitest-registry-test",
+			"type": "shell",
+			"command": "npx vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | Select-Object -Last 80"
+		},
+		{
+			"label": "vitest-registry-grep",
+			"type": "shell",
+			"command": "npx vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | findstr /C:\"✓\" /C:\"×\" /C:\"FAIL\" /C:\"Test Files\" /C:\"Tests \""
+		},
+		{
+			"label": "vitest-reg-summary",
+			"type": "shell",
+			"command": "npx vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | Select-String -Pattern 'FAIL|Test Files|Tests ' -SimpleMatch"
+		},
+		{
+			"label": "vitest-reg-full",
+			"type": "shell",
+			"command": "npx vitest run tests/design-session-registry.test.ts 2>&1 | Out-String"
+		},
+		{
+			"label": "vitest-reg-v2",
+			"type": "shell",
+			"command": "npx vitest run tests/design-session-registry.test.ts 2>&1 | Out-String"
 		}
 	]
 }

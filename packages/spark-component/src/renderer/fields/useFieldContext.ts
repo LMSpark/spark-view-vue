@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from './columnFormRules'
 
@@ -9,7 +9,7 @@ export interface FieldContextProps {
   displayLabel: string
   fieldName: string
   width: number | undefined
-  mergedChildren: ComponentConfig[]
+  mergedChildren: SparkNode[]
   isCurrentFieldHidden: boolean
   currentDisplayValue: string
   isTableCellHidden: (row: IDataRow) => boolean
@@ -34,7 +34,7 @@ interface FieldPermissionForContext {
  * 将 useFieldPermission 返回值 + 组件 props 聚合为一个响应式对象。
  */
 export function useFieldContext(
-  fieldProps: { width: number | undefined; config: ComponentConfig | undefined; sparkChildren: ComponentConfig[] | undefined },
+  fieldProps: { width: number | undefined; config: SparkNode | undefined; sparkChildren: SparkNode[] | undefined },
   permission: FieldPermissionForContext,
 ): ComputedRef<FieldContextProps> {
   const mergedChildren = computed(() => fieldProps.config?.children ?? fieldProps.sparkChildren ?? [])

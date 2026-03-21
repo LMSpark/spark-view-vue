@@ -195,7 +195,7 @@
  */
 import { computed, defineComponent, onUnmounted, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig, RendererTableApi, PageComponentRegistry } from '../_pkg'
+import type { SparkNode, RendererTableApi, PageComponentRegistry } from '../_pkg'
 import type { ModuleContextCapability } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
@@ -228,14 +228,14 @@ type RowActionsPosition = LateralActionPosition
 
 interface Props {
   /** SPARK 配置驱动（主入口）— dataKey / children 均从此取 */
-  config?: ComponentConfig
+  config?: SparkNode
   /** DataKey 格式：tableName@field（与 config 同层冗余时以 config.props.dataKey 为准） */
   dataKey?: string
   /** bindRules 从 rule.children 提取的子组件配置 */
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   /** 直接传入的 DataView（备用） */
   dataView?: DataView | undefined
-  toolbar?: ComponentConfig[]
+  toolbar?: SparkNode[]
   toolbarPosition?: ToolbarPosition
   toolbarClass?: string
   filterColumns?: string[]
@@ -247,7 +247,7 @@ interface Props {
   filterGridColumns?: number
   filterGridGap?: number | string
   filterGridAutoRows?: string
-  rowActions?: ComponentConfig[]
+  rowActions?: SparkNode[]
   rowActionsPosition?: RowActionsPosition
   rowActionsLabel?: string
   rowActionsWidth?: string | number
@@ -340,9 +340,9 @@ const {
   showToolbar,
 } = useContainerToolbar({
   config: computed(() => props.config),
-  toolbar: computed(() => props.toolbar),
-  toolbarPosition: computed(() => props.toolbarPosition),
-  toolbarClass: computed(() => props.toolbarClass),
+  toolbar: computed(() => props.config?.toolbar?.items ?? props.toolbar),
+  toolbarPosition: computed(() => props.config?.toolbar?.position ?? props.toolbarPosition),
+  toolbarClass: computed(() => props.config?.toolbar?.class ?? props.toolbarClass),
   modelPermission,
   slots,
 })
@@ -364,28 +364,40 @@ const {
   config: computed(() => props.config),
   children: sparkChildren,
   dataView: resolvedView,
-  filterColumns: computed(() => props.filterColumns),
-  filterClass: computed(() => props.filterClass),
-  filterGridColumns: computed(() => props.filterGridColumns),
-  filterGridGap: computed(() => props.filterGridGap),
-  filterGridAutoRows: computed(() => props.filterGridAutoRows),
+  filterColumns: computed(() => {
+    const meta = props.config?.filter
+    if (meta?.columns) return meta.columns as string[]
+    return props.filterColumns
+  }),
+  filterClass: computed(() => props.config?.filter?.class ?? props.filterClass),
+  filterGridColumns: computed(() => props.config?.filter?.gridColumns ?? props.filterGridColumns),
+  filterGridGap: computed(() => props.config?.filter?.gridGap ?? props.filterGridGap),
+  filterGridAutoRows: computed(() => props.config?.filter?.gridAutoRows ?? props.filterGridAutoRows),
   logger,
 })
 
 const filterCollapsibleValue = computed(() =>
-  (props.config?.props?.['filterCollapsible'] as boolean | undefined) ?? props.filterCollapsible
+  props.config?.filter?.collapsible
+  ?? (props.config?.props?.['filterCollapsible'] as boolean | undefined)
+  ?? props.filterCollapsible
 )
 
 const filterDefaultCollapsedValue = computed(() =>
-  (props.config?.props?.['filterDefaultCollapsed'] as boolean | undefined) ?? props.filterDefaultCollapsed
+  props.config?.filter?.defaultCollapsed
+  ?? (props.config?.props?.['filterDefaultCollapsed'] as boolean | undefined)
+  ?? props.filterDefaultCollapsed
 )
 
 const filterAutoFitMinWidthValue = computed(() =>
-  (props.config?.props?.['filterAutoFitMinWidth'] as string | undefined) ?? props.filterAutoFitMinWidth
+  props.config?.filter?.autoFitMinWidth
+  ?? (props.config?.props?.['filterAutoFitMinWidth'] as string | undefined)
+  ?? props.filterAutoFitMinWidth
 )
 
 const filterItemSpanValue = computed(() =>
-  (props.config?.props?.['filterItemSpan'] as number | undefined) ?? props.filterItemSpan
+  props.config?.filter?.itemSpan
+  ?? (props.config?.props?.['filterItemSpan'] as number | undefined)
+  ?? props.filterItemSpan
 )
 
 const filtersCollapsed = ref(filterDefaultCollapsedValue.value)
@@ -496,11 +508,15 @@ const {
 } = useContainerActions<{ row: IDataRow, index: number }>({
   config: computed(() => props.config),
   actionConfigs: computed(() => {
-    const explicit = (props.config?.props?.['rowActions'] as ComponentConfig[] | undefined) ?? props.rowActions ?? []
+    // v3 meta 域优先
+    if (props.config?.actions?.items) {
+      return [...legacyRowActionConfigs.value, ...props.config.actions.items]
+    }
+    const explicit = (props.config?.props?.['rowActions'] as SparkNode[] | undefined) ?? props.rowActions ?? []
     return [...legacyRowActionConfigs.value, ...explicit]
   }),
-  actionPosition: computed(() => props.rowActionsPosition),
-  actionClass: computed(() => props.rowActionsClass),
+  actionPosition: computed(() => props.config?.actions?.position ?? props.rowActionsPosition),
+  actionClass: computed(() => props.config?.actions?.class ?? props.rowActionsClass),
   actionPropKey: 'rowActions',
   actionPositionPropKey: 'rowActionsPosition',
   actionClassPropKey: 'rowActionsClass',
@@ -524,18 +540,26 @@ const {
 })
 
 const rowActionsLabelValue = computed(() =>
-  (props.config?.props?.['rowActionsLabel'] as string | undefined) ?? props.rowActionsLabel
+  props.config?.actions?.label
+  ?? (props.config?.props?.['rowActionsLabel'] as string | undefined)
+  ?? props.rowActionsLabel
 )
 
 const rowActionsWidthValue = computed(() =>
-  (props.config?.props?.['rowActionsWidth'] as string | number | undefined) ?? props.rowActionsWidth
+  props.config?.actions?.width
+  ?? (props.config?.props?.['rowActionsWidth'] as string | number | undefined)
+  ?? props.rowActionsWidth
 )
 
 const rowActionsAlignValue = computed(() =>
-  (props.config?.props?.['rowActionsAlign'] as 'left' | 'center' | 'right' | undefined) ?? props.rowActionsAlign
+  props.config?.actions?.align
+  ?? (props.config?.props?.['rowActionsAlign'] as 'left' | 'center' | 'right' | undefined)
+  ?? props.rowActionsAlign
 )
 
 const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
+  const metaFixed = props.config?.actions?.fixed
+  if (metaFixed !== undefined) return metaFixed
   const explicit = (props.config?.props?.['rowActionsFixed'] as boolean | 'left' | 'right' | undefined) ?? props.rowActionsFixed
   if (explicit !== undefined) return explicit
   return rowActionsPositionValue.value
@@ -571,7 +595,7 @@ function getSelectedRows(view: DataView): IDataRow[] {
   return Array.isArray(view.selectedRows) ? view.selectedRows : []
 }
 
-function isBuiltinActionDisabled(action: ComponentConfig, scope?: { row?: IDataRow; index?: number }): boolean {
+function isBuiltinActionDisabled(action: SparkNode, scope?: { row?: IDataRow; index?: number }): boolean {
   return _isBuiltinActionDisabled(action, resolvedView.value, scope)
 }
 
@@ -582,20 +606,20 @@ const builtinHandler = createBuiltinActionHandler({
   hasRemoteListApi: (view) => hasRemoteListApi(view),
 })
 
-function handleBuiltinToolbarAction(action: ComponentConfig): void {
+function handleBuiltinToolbarAction(action: SparkNode): void {
   builtinHandler.handleToolbar(action)
 }
 
-function handleBuiltinRowAction(action: ComponentConfig, row: IDataRow, index: number): void {
+function handleBuiltinRowAction(action: SparkNode, row: IDataRow, index: number): void {
   builtinHandler.handleRow(action, row, index)
 }
 
 // ── 子节点分类 ────────────────────────────────────────────────────────────
 
-function isCollectedTableColumn(config: ComponentConfig): boolean {
+function isCollectedTableColumn(config: SparkNode): boolean {
   if (/^Render[A-Z]/.test(config.type)) return false
   if (config.type === 'el-table-column') return true
-  return config.type.startsWith('r-') && typeof config.name === 'string' && config.name.length > 0
+  return config.type.startsWith('r-') && typeof config.field === 'string' && config.field.length > 0
 }
 
 // ── 过滤操作 ──────────────────────────────────────────────────────────────

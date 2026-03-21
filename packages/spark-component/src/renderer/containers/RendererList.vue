@@ -4,7 +4,7 @@
  * @description 列表容器，通过 DataKey 绑定 DataView.rows，按卡片/列表重复渲染子字段组件
  * @provides DATA_SOURCE
  * @consumes PAGE_DATASET
- * @input { dataKey: string, props: { columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string, toolbar?: ComponentConfig[], itemActions?: ComponentConfig[] } }
+ * @input { dataKey: string, props: { columns?: number, gap?: number|string, rowKey?: string, gridColumns?: number, gridGap?: number|string, gridAutoRows?: string, toolbar?: SparkNode[], itemActions?: SparkNode[] } }
  * @example { "type": "r-list", "dataKey": "Users@rows", "children": [{ "type": "r-text", "name": "name" }] }
  */
 -->
@@ -87,7 +87,7 @@
 import { computed, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
@@ -101,14 +101,14 @@ import type { ToolbarPosition } from './useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
 
 interface Props {
-  config?: ComponentConfig
+  config?: SparkNode
   dataKey?: string
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   dataView?: DataView | undefined
-  toolbar?: ComponentConfig[]
+  toolbar?: SparkNode[]
   toolbarPosition?: ToolbarPosition
   toolbarClass?: string
-  itemActions?: ComponentConfig[]
+  itemActions?: SparkNode[]
   itemActionsPosition?: LateralActionPosition
   itemActionsClass?: string
   columns?: number

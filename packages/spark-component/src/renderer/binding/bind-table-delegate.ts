@@ -59,7 +59,7 @@ function injectTableEvents(
   if (!dk) return
 
   const { tableName, viewId } = dk
-  rule.name ??= `table_${tableName}_${viewId}`
+  rule.field ??= `table_${tableName}_${viewId}`
   rule.on ??= {}
 
   // 提前查找并缓存 view，避免事件处理器各自重复调用 getTable + getOrCreateView

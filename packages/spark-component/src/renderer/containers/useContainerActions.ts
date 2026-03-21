@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataRow, IModelPermission } from '@spark-view/spark-data'
 import { isActionDisplayed, isModelActionAllowed, isRowActionAllowed } from './action-permission'
 
@@ -9,11 +9,11 @@ import { isActionDisplayed, isModelActionAllowed, isRowActionAllowed } from './a
 export type LateralActionPosition = 'left' | 'right'
 type ListenerMap = Record<string, unknown>
 type ListenerHandler = (...args: unknown[]) => unknown
-export type ScopedComponentConfig = ComponentConfig & { on?: ListenerMap }
+export type ScopedSparkNode = SparkNode & { on?: ListenerMap }
 
 interface UseContainerActionsOptions<TScope> {
-  config: ComputedRef<ComponentConfig | undefined>
-  actionConfigs: ComputedRef<ComponentConfig[] | undefined>
+  config: ComputedRef<SparkNode | undefined>
+  actionConfigs: ComputedRef<SparkNode[] | undefined>
   actionPosition: ComputedRef<LateralActionPosition | undefined>
   actionClass: ComputedRef<string | undefined>
   actionPropKey: string
@@ -50,7 +50,7 @@ function wrapScopedHandler(handler: unknown, scopedArgs: unknown[]): unknown {
 export function useContainerActions<TScope>(options: UseContainerActionsOptions<TScope>) {
   // 解析原始动作配置，以及左右位置、样式类等共享展示参数。
   const rawActionConfigs = computed(() =>
-    options.actionConfigs.value ?? (options.config.value?.props?.[options.actionPropKey] as ComponentConfig[] | undefined) ?? []
+    options.actionConfigs.value ?? (options.config.value?.props?.[options.actionPropKey] as SparkNode[] | undefined) ?? []
   )
   const actionPositionValue = computed<LateralActionPosition>(() =>
     (options.config.value?.props?.[options.actionPositionPropKey] as LateralActionPosition | undefined) ?? options.actionPosition.value ?? 'right'
@@ -64,7 +64,7 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
   const showActionsRight = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'right')
 
   // 结合权限过滤动作，并注入作用域 props 与带上下文参数的事件处理器。
-  function getScopedActionConfigs(scope: TScope): ScopedComponentConfig[] {
+  function getScopedActionConfigs(scope: TScope): ScopedSparkNode[] {
     const resolved = options.resolveScope(scope)
     return rawActionConfigs.value
       .filter(action =>
@@ -73,7 +73,7 @@ export function useContainerActions<TScope>(options: UseContainerActionsOptions<
         && isRowActionAllowed(action, resolved.row)
       )
       .map(action => {
-        const withListeners = action as ScopedComponentConfig
+        const withListeners = action as ScopedSparkNode
         const wrappedOn = withListeners.on
           ? Object.fromEntries(
             Object.entries(withListeners.on).map(([eventName, handler]) => [eventName, wrapScopedHandler(handler, resolved.listenerArgs)])

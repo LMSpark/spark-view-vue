@@ -808,8 +808,8 @@ function walkUiNodes(
       const atIdx = dk.indexOf('@')
       const tableName = atIdx >= 0 ? dk.slice(0, atIdx) : dk
       if (!tableName.startsWith('#')) {
-        // name 字段 → 列级依赖
-        const fieldName = typeof n['name'] === 'string' ? n['name'] : null
+        // field 字段 → 列级依赖
+        const fieldName = typeof n['field'] === 'string' ? n['field'] : null
         if (fieldName) {
           addDependency(session, `${tableName}.${fieldName}`, proposalId)
           result.dependenciesAdded++

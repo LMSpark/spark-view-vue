@@ -157,9 +157,9 @@ const users = usersView?.rows ?? []
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 
-interface HelloWorldConfig extends ComponentConfig {
+interface HelloWorldConfig extends SparkNode {
   title?: string
   initialCount?: number
 }
@@ -367,7 +367,7 @@ import { useSparkComponent } from '@spark-view/spark-component'
 import { userDataSet } from '../data/models'
 
 const props = defineProps<{
-  config: ComponentConfig
+  config: SparkNode
 }>()
 
 const { logger } = useSparkComponent(props.config)

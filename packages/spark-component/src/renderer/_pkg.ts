@@ -14,7 +14,7 @@ export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 
 // ── 核心类型 ──
 export type {
-  ComponentConfig,
+  SparkNode,
   ComponentContext,
   LoggerApi,
 } from '../types.js'

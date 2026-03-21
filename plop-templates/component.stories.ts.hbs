@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3'
 import {{pascalName}} from '../src/components/{{name}}.vue'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 
 const meta: Meta<typeof {{pascalName}}> = {
   title: 'SPARK Components/{{pascalName}}',
@@ -22,7 +22,7 @@ const meta: Meta<typeof {{pascalName}}> = {
   args: {
     config: {
       type: '{{name}}',
-    } as ComponentConfig
+    } as SparkNode
   }
 }
 
@@ -33,7 +33,7 @@ export const Default: Story = {
   args: {
     config: {
       type: '{{name}}',
-    } as ComponentConfig
+    } as SparkNode
   }
 }
 
@@ -42,7 +42,7 @@ export const WithChildren: Story = {
     config: {
       type: '{{name}}',
       children: []
-    } as ComponentConfig
+    } as SparkNode
   }
 }
 
@@ -51,6 +51,6 @@ export const Hidden: Story = {
     config: {
       type: '{{name}}',
       visible: false,
-    } as ComponentConfig
+    } as SparkNode
   }
 }

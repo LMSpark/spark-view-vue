@@ -1,6 +1,6 @@
 import { computed, reactive, watch } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { DataView, FilterExpression, FilterOperator, IDataRow } from '@spark-view/spark-data'
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
@@ -10,8 +10,8 @@ interface LoggerLike {
 }
 
 interface UseTableFiltersOptions {
-  config: ComputedRef<ComponentConfig | undefined>
-  children: ComputedRef<ComponentConfig[]>
+  config: ComputedRef<SparkNode | undefined>
+  children: ComputedRef<SparkNode[]>
   dataView: ComputedRef<DataView | null>
   filterColumns: ComputedRef<string[] | undefined>
   filterClass: ComputedRef<string | undefined>
@@ -55,14 +55,14 @@ function isEmptyFilterValue(value: unknown): boolean {
   return false
 }
 
-function isRangeFilterConfig(config: ComponentConfig): boolean {
+function isRangeFilterConfig(config: SparkNode): boolean {
   const filterMode = config.props?.['filterMode'] ?? config.props?.['filterVariant']
   return filterMode === 'range' || config.props?.['filterRange'] === true
 }
 
 // ── 过滤表达式构建 ───────────────────────────────────────────────────────────
 
-function inferFilterOperator(config: ComponentConfig, value: unknown): FilterOperator {
+function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
   const explicit = config.props?.['filterOp'] ?? config.props?.['filterOperator']
   if (typeof explicit === 'string') return explicit as FilterOperator
   if (Array.isArray(value)) {
@@ -80,8 +80,8 @@ function inferFilterOperator(config: ComponentConfig, value: unknown): FilterOpe
   }
 }
 
-function buildCondition(config: ComponentConfig, value: unknown): FilterExpression | undefined {
-  const field = typeof config.name === 'string' ? config.name : undefined
+function buildCondition(config: SparkNode, value: unknown): FilterExpression | undefined {
+  const field = typeof config.field === 'string' ? config.field : undefined
   if (!field || isEmptyFilterValue(value)) return undefined
 
   return {
@@ -211,20 +211,20 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   // 将过滤字段名解析回对应的字段组件配置。
   const filterConfigs = computed(() => {
     if (filterColumnsValue.value.length === 0) return []
-    const configMap = new Map<string, ComponentConfig>()
+    const configMap = new Map<string, SparkNode>()
     for (const child of options.children.value) {
-      if (typeof child.name === 'string' && child.name.trim().length > 0) {
-        configMap.set(child.name, child)
+      if (typeof child.field === 'string' && child.field.trim().length > 0) {
+        configMap.set(child.field, child)
       }
     }
     return filterColumnsValue.value
       .map(name => configMap.get(name))
-      .filter((config): config is ComponentConfig => config !== undefined)
+      .filter((config): config is SparkNode => config !== undefined)
   })
 
   // 保持 filterModel 的键集合与当前启用的过滤字段一致。
   watch(filterConfigs, (configs) => {
-    const nextKeys = new Set(configs.map(config => config.name).filter((name): name is string => typeof name === 'string'))
+    const nextKeys = new Set(configs.map(config => config.field).filter((name): name is string => typeof name === 'string'))
     for (const key of Object.keys(filterModel)) {
       if (!nextKeys.has(key)) {
         filterModel[key] = undefined
@@ -240,7 +240,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   // 将当前所有过滤输入聚合成一个 DataView 可识别的表达式。
   const filterExpression = computed<FilterExpression | undefined>(() => {
     const conditions = filterConfigs.value
-      .map(config => buildCondition(config, typeof config.name === 'string' ? filterModel[config.name] : undefined))
+      .map(config => buildCondition(config, typeof config.field === 'string' ? filterModel[config.field] : undefined))
       .filter((expr): expr is FilterExpression => expr !== undefined)
 
     if (conditions.length === 0) return undefined
@@ -307,7 +307,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   const activeFilterCount = computed(() => {
     let count = 0
     for (const config of filterConfigs.value) {
-      if (typeof config.name === 'string' && !isEmptyFilterValue(filterModel[config.name])) {
+      if (typeof config.field === 'string' && !isEmptyFilterValue(filterModel[config.field])) {
         count++
       }
     }

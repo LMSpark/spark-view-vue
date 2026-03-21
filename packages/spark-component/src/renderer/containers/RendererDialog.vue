@@ -2,7 +2,7 @@
 /**
  * @skill r-dialog
  * @description 对话框容器，支持头部动作、底部动作和 24 列 Grid 内容区
- * @input { props: { modelValue?: boolean, title?: string, headerActions?: ComponentConfig[], footerActions?: ComponentConfig[] } }
+ * @input { props: { modelValue?: boolean, title?: string, headerActions?: SparkNode[], footerActions?: SparkNode[] } }
  * @example { "type": "r-dialog", "props": { "title": "编辑", "modelValue": true }, "children": [] }
  */
 -->
@@ -60,16 +60,16 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
-  config?: ComponentConfig
-  sparkChildren?: ComponentConfig[]
+  config?: SparkNode
+  sparkChildren?: SparkNode[]
   title?: string
   modelValue?: boolean
-  headerActions?: ComponentConfig[]
-  footerActions?: ComponentConfig[]
+  headerActions?: SparkNode[]
+  footerActions?: SparkNode[]
   headerClass?: string
   headerActionsClass?: string
   bodyClass?: string
@@ -109,10 +109,10 @@ const resolvedTitle = computed(() =>
   props.title || (props.config?.props?.['title'] as string | undefined) || ''
 )
 const headerActionConfigs = computed(() =>
-  props.headerActions ?? (props.config?.props?.['headerActions'] as ComponentConfig[] | undefined) ?? []
+  props.headerActions ?? (props.config?.props?.['headerActions'] as SparkNode[] | undefined) ?? []
 )
 const footerActionConfigs = computed(() =>
-  props.footerActions ?? (props.config?.props?.['footerActions'] as ComponentConfig[] | undefined) ?? []
+  props.footerActions ?? (props.config?.props?.['footerActions'] as SparkNode[] | undefined) ?? []
 )
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: computed(() => props.config?.children ?? props.sparkChildren ?? []),

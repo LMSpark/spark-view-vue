@@ -29,7 +29,7 @@
  *   reg.registerAll({ '{{name}}': './{{pascalName}}.vue' })
  */
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 {{#if isConsumer}}
 // 从对应包导入需要消费的能力键，例如：
 // import { APP_SERVICES, SELECTION } from '@spark-view/spark-utils'
@@ -48,7 +48,7 @@ import { SparkData } from '@spark-view/spark-data'
 
 // ── Props ────────────────────────────────────────────────────────────────────
 interface Props {
-  config: ComponentConfig
+  config: SparkNode
 }
 
 const props = defineProps<Props>()

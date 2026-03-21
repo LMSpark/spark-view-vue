@@ -12,7 +12,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 import { APP_SERVICES, PAGE_SERVICE, CURRENT_ROW, SELECTION, GRID_EVENTS, ROW_DATA, ROW_EVENTS, defineCapability, provide as capProvide, lookup } from '@spark-view/spark-utils'
 import type { IEventEmitter } from '@spark-view/spark-utils'
 
@@ -31,7 +31,7 @@ describe('Capability system integration', () => {
 
       const TestComp = defineComponent({
         setup() {
-          const result = useSparkComponent({ type: 'test-comp' } as ComponentConfig)
+          const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
           // 验证返回值包含 consume 但不包含 use
           expect(typeof result.consume).toBe('function')
           expect('use' in result).toBe(false)
@@ -49,7 +49,7 @@ describe('Capability system integration', () => {
 
       const TestComp = defineComponent({
         setup() {
-          const result = useSparkComponent({ type: 'test-comp' } as ComponentConfig)
+          const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
 
           // 核心状态
           expect(result.context).toBeDefined()

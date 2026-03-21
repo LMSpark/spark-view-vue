@@ -14,16 +14,16 @@ SPARK 的 `rule.json` 本质上等价于 Vue 的 `h()` 函数 —— 每个节�
 h(type, props, children)  ←→  { type, props, children }
 ```
 
-### 1.1 ComponentConfig 基础接口
+### 1.1 SparkNode 基础接口
 
 ```typescript
-interface ComponentConfig {
+interface SparkNode {
   type: string                    // 组件类型（kebab-case）
   id?: string                     // 唯一 ID（省略时自动生成）
   dataKey?: string                // 数据绑定键（DataKey 格式）
   name?: string                   // 字段绑定名
   props?: Record<string, unknown> // 组件属性 + HTML 属性
-  children?: ComponentConfig[]    // 子组件配置（递归）
+  children?: SparkNode[]    // 子组件配置（递归）
   visible?: boolean               // 可见性
   disabled?: boolean              // 禁用状态
   on?: Record<string, string>     // 事件绑定（值为 script.js 函数名）
@@ -121,7 +121,7 @@ BindRule[] (运行时规则)
 所有 props 按职责分为 **7 个语义域（Semantic Domains）**：
 
 ```
-ComponentConfig
+SparkNode
 ├─ 🆔 Identity    : type, id, name
 ├─ 🔗 DataBinding : dataKey
 ├─ 👁️ State       : visible, disabled
@@ -175,7 +175,7 @@ ComponentConfig
   "dataKey": "Users@rows",
   "props": {
     // ── Toolbar 工具栏 ──
-    "toolbar": [                 // ComponentConfig[] — 工具栏项
+    "toolbar": [                 // SparkNode[] — 工具栏项
       { "type": "el-button", "children": ["新增"], "on": { "click": "handleAdd" } }
     ],
     "toolbarPosition": "top",    // 'top' | 'bottom' | 'left' | 'right'（默认 'top'）
@@ -238,7 +238,7 @@ ComponentConfig
     "maxHeight": "600px",
 
     // ── Toolbar ──
-    "toolbar": [],                       // ComponentConfig[]
+    "toolbar": [],                       // SparkNode[]
     "toolbarPosition": "top",
 
     // ── Filter 筛选 ──
@@ -250,7 +250,7 @@ ComponentConfig
     "filterGridColumns": 4,
 
     // ── Row Actions 行操作 ──
-    "rowActions": [],                    // ComponentConfig[]
+    "rowActions": [],                    // SparkNode[]
     "rowActionsPosition": "right",
     "rowActionsLabel": "操作",
     "rowActionsWidth": 180,
@@ -1011,7 +1011,7 @@ function RenderStatusTag() {
 
 ### 10.1 设计动机
 
-当前 `ComponentConfig` 的核心问题：
+当前 `SparkNode` 的核心问题：
 
 | 问题 | 现状 | 影响 |
 |------|------|------|
@@ -1415,7 +1415,7 @@ interface BehaviorConfig {
 
 #### 示例 A：数据表格（r-table）
 
-**旧写法（当前 ComponentConfig）**：
+**旧写法（当前 SparkNode）**：
 
 ```jsonc
 {
@@ -1872,7 +1872,7 @@ Phase 1 — AI 生成入口切换
   ├─ AI system-prompt 指定生成 SparkNode v2 格式
   ├─ 附带类型适用矩阵 + 事件命名规范
   ├─ AiPageService 输出 SparkNode v2 JSON
-  └─ 旧页面保持 ComponentConfig，互不干扰
+  └─ 旧页面保持 SparkNode，互不干扰
 
 Phase 2 — JSON Schema + IDE 支持
   ├─ 生成 spark-node.schema.json（含 7 域 + 类型约束）

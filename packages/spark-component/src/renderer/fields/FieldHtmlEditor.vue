@@ -49,18 +49,18 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  config?: ComponentConfig
-  name?: string
+  config?: SparkNode
+  field?: string
   label?: string
   width?: number
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   modelValue?: string
   rows?: number
 }

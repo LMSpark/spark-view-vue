@@ -17,8 +17,8 @@
       <slot name="content" :rules="resolvedRules">
         <SparkComponentRenderer
           v-for="(rule, i) in resolvedRules"
-          :key="(rule as ComponentConfig).id ?? `spark-rule-${i}`"
-          :config="(rule as ComponentConfig)"
+          :key="(rule as SparkNode).id ?? `spark-rule-${i}`"
+          :config="(rule as SparkNode)"
         />
       </slot>
     </div>
@@ -58,7 +58,7 @@ import type { HttpClient } from '@spark-view/spark-utils'
 import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
-import type { ComponentConfig } from '../types'
+import type { SparkNode } from '../types'
 import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE } from '../capability-keys'
 import type { ModuleContextCapability, PageCssScopeCapability } from '../capability-keys'
 import { useRendererSetup } from './useRendererSetup'

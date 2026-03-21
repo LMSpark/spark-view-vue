@@ -27,7 +27,11 @@ export { createComponentRegistry, getGlobalRegistry } from './registry.js'
 // ── 5. 核心类型 ──
 export type {
   CapabilityName,
-  ComponentConfig,
+  SparkNode,
+  SparkNodeFilterItem,
+  SparkNodeToolbar,
+  SparkNodeActions,
+  SparkNodeFilter,
   ComponentContext,
   ComponentDefinition,
   ComponentRegistry,
@@ -62,8 +66,6 @@ export {
   SparkPageRenderer,
   SparkComponentRenderer,
   bindDataToRules,
-  normalizeSparkNode,
-  isSparkNode,
 } from './renderer/index.js'
 
 export type {
@@ -77,17 +79,6 @@ export type {
   PageConfig,
   PageRendererProps,
   RuleBindingOptions,
-  SparkNode,
-  SparkNodeMeta,
-  SparkNodeDataConfig,
-  SparkNodeLayoutConfig,
-  SparkNodeFilterConfig,
-  SparkNodeToolbarConfig,
-  SparkNodeActionsConfig,
-  SparkNodeSimpleActionsConfig,
-  SparkNodeDualActionsConfig,
-  SparkNodeStateConfig,
-  SparkNodeBehaviorConfig,
 } from './renderer/index.js'
 
 // ── 8. 内置 Renderer 容器 + 字段组件 ──

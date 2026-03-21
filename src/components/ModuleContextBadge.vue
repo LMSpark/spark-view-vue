@@ -11,12 +11,12 @@ import {
   MODULE_CONTEXT,
 } from '@spark-view/spark-component'
 import type {
-  ComponentConfig,
+  SparkNode,
   ModuleContextCapability,
 } from '@spark-view/spark-component'
 
 interface Props {
-  config?: ComponentConfig
+  config?: SparkNode
   label?: string
   emptyText?: string
 }

@@ -4,7 +4,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { Spark, SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 import {{pascalName}} from '../src/components/{{name}}.vue'
 {{#if isProvider}}
 // import { provide as setCapability, lookup } from '@spark-view/spark-utils'
@@ -17,11 +17,11 @@ import {{pascalName}} from '../src/components/{{name}}.vue'
 
 // ── 测试辅助 ────────────────────────────────────────────────────────────────────
 
-function makeConfig(overrides: Partial<ComponentConfig> = {}): ComponentConfig {
+function makeConfig(overrides: Partial<SparkNode> = {}): SparkNode {
   return { type: '{{name}}', ...overrides }
 }
 
-function mountComponent(config: ComponentConfig) {
+function mountComponent(config: SparkNode) {
   const { registry, rootContext } = Spark.createSystem()
   registry.register('{{name}}', {{pascalName}})
   return mount({{pascalName}}, {

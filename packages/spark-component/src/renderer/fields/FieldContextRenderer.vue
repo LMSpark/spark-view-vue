@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from './columnFormRules'
 
@@ -64,7 +64,7 @@ interface Props {
   displayLabel: string
   fieldName: string
   width: number | undefined
-  mergedChildren: ComponentConfig[]
+  mergedChildren: SparkNode[]
   isCurrentFieldHidden: boolean
   currentDisplayValue: string
   isTableCellHidden: (row: IDataRow) => boolean

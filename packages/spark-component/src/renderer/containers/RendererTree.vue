@@ -96,7 +96,7 @@
  */
 import { computed, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
@@ -131,17 +131,17 @@ interface ElTreeComponent {
 }
 
 interface Props {
-  config?: ComponentConfig
+  config?: SparkNode
   /** DataKey 格式：scope@tableName@viewId@field （优先） */
   dataKey?: string
   /** bindRules 从 rule.children 提取的子组件配置 */
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   data?: TreeNode[]
   dataSource?: IDataSource | DataView | undefined
-  toolbar?: ComponentConfig[]
+  toolbar?: SparkNode[]
   toolbarPosition?: ToolbarPosition
   toolbarClass?: string
-  nodeActions?: ComponentConfig[]
+  nodeActions?: SparkNode[]
   nodeActionsPosition?: NodeActionsPosition
   nodeActionsClass?: string
   onNodeClick?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
@@ -159,7 +159,7 @@ const { effectiveDataKey, mergedChildren } = useContainerInput({
   sparkChildren: computed(() => props.sparkChildren),
 })
 
-const nodeContentChildren = computed<ComponentConfig[]>(() => mergedChildren.value)
+const nodeContentChildren = computed<SparkNode[]>(() => mergedChildren.value)
 
 /** 提取树节点显示文本，避免模板中使用 as any */
 function getNodeLabel(data: unknown): string {

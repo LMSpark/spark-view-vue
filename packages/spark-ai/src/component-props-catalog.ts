@@ -35,11 +35,11 @@ meta.filter.on.reset: string — 重置触发
 meta.filter.on.change: string — 字段值变化触发
 
 【meta.toolbar — 工具栏域】
-meta.toolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）
+meta.toolbar.children: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）
 meta.toolbar.position: 'top' | 'bottom' — 默认 'top'
 
 【meta.actions — 行操作域】
-meta.actions.items: SparkNode[] — 行操作按钮（优先 builtin-action）
+meta.actions.children: SparkNode[] — 行操作按钮（优先 builtin-action）
 meta.actions.position: 'left' | 'right' — 默认 'right'
 meta.actions.label: string — 操作列标题，默认 '操作'
 meta.actions.width: number — 操作列宽度，默认 160

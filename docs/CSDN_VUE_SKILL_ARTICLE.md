@@ -76,7 +76,7 @@ emit('row-click', row)  ← 事件输出           ❌ 无结构化描述
              │                                              │
   .vue 组件  │  ① 命名化  →  kebab-case + Registry 注册     │
              │                                              │
-             │  ② 接口化  →  ComponentConfig 类型 +          │
+             │  ② 接口化  →  SparkNode 类型 +          │
              │               能力键声明（provide/consume）   │
              │                                              │
              │  ③ 可发现  →  meta 元数据 + AI 可读描述       │
@@ -231,20 +231,20 @@ Tree Shaking 优化          按需 import()
 
 ---
 
-## 五、ComponentConfig：Skill 的调用契约
+## 五、SparkNode：Skill 的调用契约
 
 ### 5.1 从 Props 到 Config：统一调用接口
 
-所有 SPARK 组件都通过 `ComponentConfig` 接收配置，这是 Skill 调用的**统一入口**：
+所有 SPARK 组件都通过 `SparkNode` 接收配置，这是 Skill 调用的**统一入口**：
 
 ```typescript
 // packages/spark-component/src/core/types.ts
-export interface ComponentConfig {
+export interface SparkNode {
   type: string                           // Skill 名称（注册表 key）
   id?: string                            // 实例 ID
   visible?: boolean                      // 能力：可见性控制
   disabled?: boolean                     // 能力：禁用状态控制
-  children?: ComponentConfig[]           // 能力：嵌套子 Skill
+  children?: SparkNode[]           // 能力：嵌套子 Skill
   dataKey?: string                       // 能力：数据绑定
   props?: Record<string, unknown>        // Skill 的具体参数
   on?: Record<string, unknown>           // Skill 的事件钩子
@@ -255,7 +255,7 @@ export interface ComponentConfig {
 **与 AI 工具协议的映射**：
 
 ```
-ComponentConfig                   OpenAI Tool Call
+SparkNode                   OpenAI Tool Call
 ────────────────────────────────────────────────────
 type: "spark-ej2-grid"         ←→  function: "spark_ej2_grid"
 props: { border: true }        ←→  arguments: { border: true }
@@ -263,11 +263,11 @@ dataKey: "Orders@rows"         ←→  arguments: { dataKey: "Orders@rows" }
 children: [{ type: "col" }]    ←→  (嵌套 tool call，MCP 支持)
 ```
 
-### 5.2 扩展 ComponentConfig：声明 Skill 的专属参数
+### 5.2 扩展 SparkNode：声明 Skill 的专属参数
 
 ```typescript
 // 定义一个表格 Skill 的调用契约
-interface SparkEJ2GridConfig extends ComponentConfig {
+interface SparkEJ2GridConfig extends SparkNode {
   type: 'spark-ej2-grid'
   // Skill 专属参数
   dataKey: string               // 必须：数据绑定键
@@ -279,7 +279,7 @@ interface SparkEJ2GridConfig extends ComponentConfig {
   children?: SparkEJ2ColumnConfig[]
 }
 
-interface SparkEJ2ColumnConfig extends ComponentConfig {
+interface SparkEJ2ColumnConfig extends SparkNode {
   type: 'spark-ej2-column'
   name: string                  // 绑定的数据字段
   props: {
@@ -347,7 +347,7 @@ UI 渲染完成（Skill 执行完毕）
 ```typescript
 // 这是 SPARK 最核心的运行时流程（简化）
 
-// Step 1：AI 生成的 rule.json 被解析为 ComponentConfig 树
+// Step 1：AI 生成的 rule.json 被解析为 SparkNode 树
 const config = {
   type: 'r-table',
   dataKey: 'Orders@rows',
@@ -537,7 +537,7 @@ class SparkSkillAdapter {
   }
 
   // 暴露给 AI 的"执行技能"接口
-  async invokeSkill(type: string, config: ComponentConfig): Promise<void> {
+  async invokeSkill(type: string, config: SparkNode): Promise<void> {
     if (!this.registry.has(type)) {
       throw new Error(`Skill not found: ${type}`)
     }
@@ -594,7 +594,7 @@ Skill 化的组件元数据可以驱动自动化的 Storybook：
 
 ```typescript
 // SparkPageRenderer.stories.ts（项目中实际存在）
-// 通过 ComponentConfig 直接驱动 Story，无需手写 args
+// 通过 SparkNode 直接驱动 Story，无需手写 args
 export default {
   title: 'SPARK/Skills/r-table',
   component: SparkComponentRenderer,
@@ -646,7 +646,7 @@ DeptTreeView.vue     dept-tree
 
 ```typescript
 // ✅ 正确：为 Skill 定义明确的配置接口
-interface DeptTreeConfig extends ComponentConfig {
+interface DeptTreeConfig extends SparkNode {
   type: 'dept-tree'
   dataKey: string              // 必须：树数据绑定
   props?: {
@@ -657,7 +657,7 @@ interface DeptTreeConfig extends ComponentConfig {
 }
 
 // ❌ 错误：不声明接口，props 用 any/unknown
-interface BadConfig extends ComponentConfig {
+interface BadConfig extends SparkNode {
   props?: Record<string, unknown>  // AI 和 TS 都不知道能传什么
 }
 ```
@@ -853,7 +853,7 @@ const approval = consume('my-org:skill:approval-flow')
 | 调试靠 console.log | 调试靠 Logger 全量上报 + AI 自动分析 |
 | 页面由人手写 | 页面由 AI 选 Skill + 声明调用参数 |
 
-**SPARK 框架的四件套**——能力键系统、组件注册表、ComponentConfig 契约、Logger 闭环——共同构成了"前端能力可调用化"的完整基础设施。
+**SPARK 框架的四件套**——能力键系统、组件注册表、SparkNode 契约、Logger 闭环——共同构成了"前端能力可调用化"的完整基础设施。
 
 这不是遥远的未来，这是正在发生的工程实践。
 

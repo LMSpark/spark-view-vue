@@ -48,17 +48,17 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useOptionField } from './useFieldOptions'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  config?: ComponentConfig
-  name?: string
+  config?: SparkNode
+  field?: string
   label?: string
   width?: number
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   modelValue?: string
   options?: unknown[]
   optionLabelField?: string

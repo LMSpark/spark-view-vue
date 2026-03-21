@@ -29,8 +29,8 @@ export interface SparkEJ2GridConfig {
     [key: string]: unknown
   }
   
-  // ── 工具栏配置 ──
-  toolbar?: string[] | unknown[]
+  // ── 工具栏配置（EJ2 原生，通过索引签名传递） ──
+  // toolbar: string[] | unknown[] — 由 [key: string]: unknown 覆盖，避免与 SparkNode.toolbar 冲突
   
   // ── 导出功能配置 ──
   allowExcelExport?: boolean

@@ -54,7 +54,7 @@ function mountFieldMultiSelect(
       provide(FIELD_CONTEXT, 'form')
       provide(CONTEXT_DATA, model)
       return () => h(FieldMultiSelect as never, {
-        config: { type: 'r-multi-select', name: fieldName },
+        config: { type: 'r-multi-select', field: fieldName },
         ...componentProps,
       })
     },

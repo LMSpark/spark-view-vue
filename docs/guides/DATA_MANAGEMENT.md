@@ -331,9 +331,9 @@ import { computed, onMounted } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 
-interface UserGridConfig extends ComponentConfig {
+interface UserGridConfig extends SparkNode {
   dataKey: string
 }
 

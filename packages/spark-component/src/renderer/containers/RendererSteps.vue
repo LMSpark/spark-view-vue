@@ -2,7 +2,7 @@
 /**
  * @skill r-steps
  * @description 步骤容器，内部使用 r-step 定义步骤；当前步骤内容区采用 24 列 CSS Grid
- * @input { props: { modelValue?: string|number, toolbar?: ComponentConfig[] } }
+ * @input { props: { modelValue?: string|number, toolbar?: SparkNode[] } }
  * @example { "type": "r-steps", "children": [{ "type": "r-step", "props": { "title": "步骤一", "name": "s1" }, "children": [] }] }
  */
 -->
@@ -50,19 +50,19 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 
 interface Props {
-  config?: ComponentConfig
-  sparkChildren?: ComponentConfig[]
-  toolbar?: ComponentConfig[]
+  config?: SparkNode
+  sparkChildren?: SparkNode[]
+  toolbar?: SparkNode[]
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
   toolbarClass?: string
   modelValue?: string | number
-  onStepChange?: (value: string | number, step: ComponentConfig, index: number) => void
+  onStepChange?: (value: string | number, step: SparkNode, index: number) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -116,37 +116,37 @@ const activeStepIndex = computed(() => {
 
 const activeStep = computed(() => stepConfigs.value[activeStepIndex.value])
 
-function getStepChildren(step: ComponentConfig): ComponentConfig[] {
+function getStepChildren(step: SparkNode): SparkNode[] {
   return step.children ?? []
 }
 
-function getStepName(step: ComponentConfig, index: number): string | number {
+function getStepName(step: SparkNode, index: number): string | number {
   const value = step.props?.['name'] ?? step.props?.['value'] ?? step.id
   return typeof value === 'string' || typeof value === 'number' ? value : `step-${index}`
 }
 
-function getStepKey(step: ComponentConfig, index: number): string | number {
+function getStepKey(step: SparkNode, index: number): string | number {
   return step.id ?? getStepName(step, index)
 }
 
-function getStepTitle(step: ComponentConfig, index: number): string {
+function getStepTitle(step: SparkNode, index: number): string {
   const value = step.props?.['title'] ?? step.props?.['label']
   return typeof value === 'string' && value.trim().length > 0 ? value : `步骤${index + 1}`
 }
 
-function getStepDescription(step: ComponentConfig): string {
+function getStepDescription(step: SparkNode): string {
   return typeof step.props?.['description'] === 'string' ? step.props['description'] as string : ''
 }
 
-function getStepStatus(step: ComponentConfig): string | undefined {
+function getStepStatus(step: SparkNode): string | undefined {
   return typeof step.props?.['status'] === 'string' ? step.props['status'] as string : undefined
 }
 
-function getStepBodyClass(step: ComponentConfig): string {
+function getStepBodyClass(step: SparkNode): string {
   return typeof step.props?.['bodyClass'] === 'string' ? step.props['bodyClass'] as string : ''
 }
 
-function getStepGridStyle(step: ComponentConfig): CSSProperties {
+function getStepGridStyle(step: SparkNode): CSSProperties {
   const columns = normalizeSpan(step.props?.['gridColumns'], 24)
   const autoRows = typeof step.props?.['gridAutoRows'] === 'string' && step.props['gridAutoRows'].trim().length > 0
     ? step.props['gridAutoRows'] as string
@@ -160,7 +160,7 @@ function getStepGridStyle(step: ComponentConfig): CSSProperties {
   }
 }
 
-function getStepChildGridStyle(child: ComponentConfig): CSSProperties {
+function getStepChildGridStyle(child: SparkNode): CSSProperties {
   const colSpan = normalizeSpan(child.props?.['colSpan'] ?? child.props?.['gridColSpan'] ?? child.props?.['span'], 24)
   const rowSpan = normalizeSpan(child.props?.['rowSpan'] ?? child.props?.['gridRowSpan'], 1)
   return {
@@ -190,7 +190,7 @@ function getToolbarSlotScope() {
   })
 }
 
-function getStepSlotScope(step: ComponentConfig, index: number) {
+function getStepSlotScope(step: SparkNode, index: number) {
   return {
     step,
     stepIndex: index,

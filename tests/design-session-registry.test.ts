@@ -1587,8 +1587,8 @@ describe('applyProposalToSession', () => {
         props: { class: 'order-wrapper custom-border' },
         children: [
           { type: 'el-table', id: 'order-table', dataKey: 'Orders@rows', children: [
-            { type: 'el-table-column', name: 'amount' },
-            { type: 'el-table-column', name: 'customer' },
+            { type: 'el-table-column', field: 'amount' },
+            { type: 'el-table-column', field: 'customer' },
           ] },
         ],
       })
@@ -1625,7 +1625,7 @@ describe('applyProposalToSession', () => {
       const content = JSON.stringify({
         type: 'r-table',
         id: 'main-table',
-        name: 'qty',
+        field: 'qty',
         meta: { data: { dataKey: 'Items@grid@rows' } },
       })
 
@@ -1634,7 +1634,7 @@ describe('applyProposalToSession', () => {
         content, step: 'B2', acceptedAt: 't1',
       })
 
-      // Items.qty dependency from name field
+      // Items.qty dependency from field property
       expect(result.dependenciesAdded).toBe(1)
     })
 

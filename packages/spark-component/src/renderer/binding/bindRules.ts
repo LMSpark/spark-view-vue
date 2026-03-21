@@ -22,7 +22,7 @@
  */
 
 import { toErrorMessage } from '@spark-view/spark-utils'
-import type { BindRule, RuleBindingOptions, SparkNode } from '../types'
+import type { BindRule, RuleBindingOptions } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { isDataKey, resolveDataKeyBinding, getViewFromRawKey } from '@spark-view/spark-data'
 import type { ComponentRegistry } from '../../types.js'
@@ -35,7 +35,6 @@ import { bindPaginationRule } from './bind-pagination-delegate'
 import { bindFormElementRule, FORM_ELEMENT_TYPES } from './bind-form-delegate'
 import { applyPermissions } from './bind-permission-delegate'
 import { type BindingContext, EMPTY_CONTEXT, buildChildContext, DATA_CONTAINER_TYPES } from './bind-context'
-import { isSparkNode, normalizeSparkNode } from './normalize-spark-node'
 
 // ── 分区 B：组件分类常量 ───────────────────────────────────────────────────
 
@@ -76,12 +75,8 @@ function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolea
  * 递归替换 rule 中的数据占位符和事件处理器（公共 API）
  */
 export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
-  // SparkNode v2 自动检测：含 meta 字段 → 先归一化为 BindRule
-  const normalizedRules = options.rules.map(rule =>
-    isSparkNode(rule) ? normalizeSparkNode(rule as unknown as SparkNode) : rule
-  )
   const callFunc = createFunctionCaller(options.pageFunctions)
-  return bindRulesRecursive({ ...options, rules: normalizedRules }, EMPTY_CONTEXT, callFunc)
+  return bindRulesRecursive(options, EMPTY_CONTEXT, callFunc)
 }
 
 // ── 分区 E：递归编排（主流程） ─────────────────────────────────────────────
@@ -137,19 +132,27 @@ function bindRulesRecursive(
       }
     }
 
-    // ── r-* 自定义组件：透传 dataKey / name → props ──
+    // ── r-* 自定义组件：透传 dataKey / field → props ──
     // 容器组件（self-resolving）：透传 dataKey（组件自行 consume PAGE_DATASET 解析）
-    // 所有 r-* 组件：透传 name（字段名，与父组件 dataKey 叠加定位数据）
+    // 所有 r-* 组件：透传 field（字段名，与父组件 dataKey 叠加定位数据）
     const ruleType = newRule.type
     if (isSelfResolvingType(ruleType, registry)) {
       if (newRule['dataKey'] !== undefined) {
         setRuleProp(newRule, 'dataKey', newRule['dataKey'] as string)
       }
     }
-    // name 透传：rule.name 需显式复制到 props 以传给自定义组件
-    // 所有 r-* 字段/容器组件都需要通过 props.name 接收字段名
-    if (ruleType.startsWith('r-') && newRule.name !== undefined) {
-      setRuleProp(newRule, 'name', newRule.name)
+    // field 透传：rule.field 需显式复制到 props 以传给自定义组件
+    // 所有 r-* 字段/容器组件都需要通过 props.field 接收字段名
+    if (ruleType.startsWith('r-') && newRule.field !== undefined) {
+      setRuleProp(newRule, 'field', newRule.field)
+    }
+    // label 透传：rule.label → props.label（v3 根级 label）
+    if (ruleType.startsWith('r-') && newRule.label !== undefined) {
+      setRuleProp(newRule, 'label', newRule.label)
+    }
+    // optionKey 透传：rule.optionKey → props.optionKey（v3 选项数据源 DataKey）
+    if (ruleType.startsWith('r-') && newRule.optionKey !== undefined) {
+      setRuleProp(newRule, 'optionKey', newRule.optionKey)
     }
 
     // ── el-table / el-pagination / 表单组件 / 通用组件：dataKey 互斥委托 ──

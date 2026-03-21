@@ -88,7 +88,7 @@ function createTableFieldStub(fallbackLabel: string) {
       return () => h(ElTableColumnStub, {
         label: props.label
           ?? String((((props.config as Record<string, unknown>)['props'] as Record<string, unknown> | undefined)?.['label'])
-            ?? ((props.config as Record<string, unknown>)['name'] as string | undefined)
+            ?? ((props.config as Record<string, unknown>)['field'] as string | undefined)
             ?? fallbackLabel),
       })
     },
@@ -183,7 +183,7 @@ const RendererFieldScopeStub = defineComponent({
       'data-default-col-span': String(props.defaultColSpan),
     },
       ((props.configs as unknown[]) as Array<Record<string, unknown>>).map((config) => {
-        const fieldName = String(config['name'] ?? '')
+        const fieldName = String(config['field'] ?? '')
         const model = props.model as Record<string, unknown>
         return h('input', {
           key: fieldName,
@@ -874,9 +874,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
         config: {
           type: 'r-table',
           children: [
-            { type: 'r-text', name: 'name', props: { label: '姓名' } },
-            { type: 'r-number', name: 'score', props: { label: '分数' } },
-            { type: 'r-date', name: 'joinedAt', props: { label: '入职日期' } },
+            { type: 'r-text', field: 'name', props: { label: '姓名' } },
+            { type: 'r-number', field: 'score', props: { label: '分数' } },
+            { type: 'r-date', field: 'joinedAt', props: { label: '入职日期' } },
           ],
         },
       },
@@ -912,8 +912,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
           children: [],
           props: {
             sparkChildren: [
-              { type: 'r-text', name: 'name', props: { label: '姓名' } },
-              { type: 'r-number', name: 'score', props: { label: '分数' } },
+              { type: 'r-text', field: 'name', props: { label: '姓名' } },
+              { type: 'r-number', field: 'score', props: { label: '分数' } },
             ],
           },
         },
@@ -1067,8 +1067,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
         config: {
           type: 'r-table',
           children: [
-            { type: 'r-text', name: 'name', props: { label: '姓名' } },
-            { type: 'r-number', name: 'age', props: { label: '年龄' } },
+            { type: 'r-text', field: 'name', props: { label: '姓名' } },
+            { type: 'r-number', field: 'age', props: { label: '年龄' } },
           ],
         },
       },
@@ -1122,7 +1122,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         config: {
           type: 'r-table',
           children: [
-            { type: 'r-text', name: 'name', props: { label: '姓名' } },
+            { type: 'r-text', field: 'name', props: { label: '姓名' } },
           ],
         },
       },
@@ -1177,8 +1177,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
         config: {
           type: 'r-table',
           children: [
-            { type: 'r-number', name: 'score', props: { label: '分数', filterMode: 'range' } },
-            { type: 'r-multi-select', name: 'status', props: { label: '状态' } },
+            { type: 'r-number', field: 'score', props: { label: '分数', filterMode: 'range' } },
+            { type: 'r-multi-select', field: 'status', props: { label: '状态' } },
           ],
         },
       },
@@ -1225,7 +1225,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
         config: {
           type: 'r-table',
           children: [
-            { type: 'r-text', name: 'name', props: { label: '姓名' } },
+            { type: 'r-text', field: 'name', props: { label: '姓名' } },
           ],
         },
       },

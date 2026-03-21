@@ -36,7 +36,7 @@
 import { computed, toRef, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataRow, IDataSource } from '@spark-view/spark-data'
 import { DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
@@ -44,7 +44,7 @@ import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
   row: IDataRow
-  children: ComponentConfig[]
+  children: SparkNode[]
   dataSource?: IDataSource | null
   itemClass?: string
   itemStyle?: CSSProperties

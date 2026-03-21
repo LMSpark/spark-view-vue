@@ -8,10 +8,10 @@ import { describe, it, expect } from 'vitest'
 
 // ---------- Types ----------
 
-interface ComponentConfig {
+interface SparkNode {
   type: string
   props?: Record<string, unknown>
-  children?: ComponentConfig[]
+  children?: SparkNode[]
 }
 
 // ---------- Diff helpers (inline, replacing the deleted renderer class) ----------
@@ -20,7 +20,7 @@ interface ComponentConfig {
  * Determine whether a component needs re-rendering based on config changes.
  * Returns true when the two configs differ in type, props, or children.
  */
-function shouldUpdateComponent(oldConfig: ComponentConfig, newConfig: ComponentConfig): boolean {
+function shouldUpdateComponent(oldConfig: SparkNode, newConfig: SparkNode): boolean {
   // Same reference → no update
   if (oldConfig === newConfig) return false
 
@@ -37,7 +37,7 @@ function shouldUpdateComponent(oldConfig: ComponentConfig, newConfig: ComponentC
 /**
  * Compare two children arrays.
  */
-function haveChildrenChanged(oldChildren: ComponentConfig[], newChildren: ComponentConfig[]): boolean {
+function haveChildrenChanged(oldChildren: SparkNode[], newChildren: SparkNode[]): boolean {
   if (oldChildren.length !== newChildren.length) return true
 
   for (let i = 0; i < oldChildren.length; i++) {
@@ -68,13 +68,13 @@ function shallowEqual(
 
 describe('Incremental Update', () => {
   it('should detect when components need updating', () => {
-    const oldConfig: ComponentConfig = {
+    const oldConfig: SparkNode = {
       type: 'test-component',
       props: { value: 1 },
       children: [{ type: 'child', props: { name: 'child1' } }]
     }
 
-    const newConfig: ComponentConfig = {
+    const newConfig: SparkNode = {
       type: 'test-component',
       props: { value: 2 }, // changed
       children: [{ type: 'child', props: { name: 'child1' } }]
@@ -85,7 +85,7 @@ describe('Incremental Update', () => {
   })
 
   it('should not update when configs are identical', () => {
-    const config: ComponentConfig = {
+    const config: SparkNode = {
       type: 'test-component',
       props: { value: 1 },
       children: [{ type: 'child', props: { name: 'child1' } }]
@@ -96,12 +96,12 @@ describe('Incremental Update', () => {
   })
 
   it('should detect children changes', () => {
-    const oldConfig: ComponentConfig = {
+    const oldConfig: SparkNode = {
       type: 'test-component',
       children: [{ type: 'child', props: { name: 'child1' } }]
     }
 
-    const newConfig: ComponentConfig = {
+    const newConfig: SparkNode = {
       type: 'test-component',
       children: [
         { type: 'child', props: { name: 'child1' } },
@@ -113,25 +113,25 @@ describe('Incremental Update', () => {
   })
 
   it('should handle empty children arrays', () => {
-    const oldChildren: ComponentConfig[] = []
-    const newChildren: ComponentConfig[] = []
+    const oldChildren: SparkNode[] = []
+    const newChildren: SparkNode[] = []
 
     expect(haveChildrenChanged(oldChildren, newChildren)).toBe(false)
   })
 
   it('should detect type changes', () => {
-    const oldConfig: ComponentConfig = { type: 'button', props: { label: 'Save' } }
-    const newConfig: ComponentConfig = { type: 'link', props: { label: 'Save' } }
+    const oldConfig: SparkNode = { type: 'button', props: { label: 'Save' } }
+    const newConfig: SparkNode = { type: 'link', props: { label: 'Save' } }
 
     expect(shouldUpdateComponent(oldConfig, newConfig)).toBe(true)
   })
 
   it('should detect when a child is removed', () => {
-    const oldChildren: ComponentConfig[] = [
+    const oldChildren: SparkNode[] = [
       { type: 'child', props: { name: 'a' } },
       { type: 'child', props: { name: 'b' } }
     ]
-    const newChildren: ComponentConfig[] = [
+    const newChildren: SparkNode[] = [
       { type: 'child', props: { name: 'a' } }
     ]
 
@@ -139,12 +139,12 @@ describe('Incremental Update', () => {
   })
 
   it('should return false for structurally identical configs', () => {
-    const a: ComponentConfig = {
+    const a: SparkNode = {
       type: 'test',
       props: { x: 1, y: 'hello' },
       children: [{ type: 'inner', props: { z: true } }]
     }
-    const b: ComponentConfig = {
+    const b: SparkNode = {
       type: 'test',
       props: { x: 1, y: 'hello' },
       children: [{ type: 'inner', props: { z: true } }]

@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useOptionField } from './useFieldOptions'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
@@ -27,11 +27,11 @@ type CascaderPath = FieldPrimitive[]
 type CascaderValue = CascaderPath | CascaderPath[]
 
 interface Props {
-  config?: ComponentConfig
-  name?: string
+  config?: SparkNode
+  field?: string
   label?: string
   width?: number
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   modelValue?: CascaderValue
   options?: unknown[]
   optionLabelField?: string

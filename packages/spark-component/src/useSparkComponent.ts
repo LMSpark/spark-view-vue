@@ -9,7 +9,7 @@
 import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, provide as vueProvide } from 'vue'
 import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
-import type { ComponentContext, ComponentConfig, ComponentRegistry } from './types.js'
+import type { ComponentContext, SparkNode, ComponentRegistry } from './types.js'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
@@ -88,7 +88,7 @@ export interface UseSparkComponentReturn {
 /** 全局单调递增 ID 计数器，替代 Date.now()+random（更快、确定、SSR 友好） */
 let _idCounter = 0
 
-export function useSparkComponent<TConfig extends ComponentConfig = ComponentConfig>(
+export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
   config: TConfig,
   options?: {
     registry?: ComponentRegistry

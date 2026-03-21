@@ -2,7 +2,7 @@
  * SPARK 页面渲染引擎 - 渲染器模块入口
  *
  * 提供纯渲染层能力：
- * - SparkPageRenderer  SPARK 原生页面渲染组件（ComponentConfig 结构）
+ * - SparkPageRenderer  SPARK 原生页面渲染组件（SparkNode 结构）
  * - SparkComponentRenderer  递归组件引擎
  * - 类型定义（BindRule、PageContext、PageConfig 等）
  *
@@ -20,29 +20,17 @@ export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 export { usePageDataSet } from './usePageDataSet'
 export type { UsePageDataSetOptions, UsePageDataSetReturn } from './usePageDataSet'
 
-// 类型
+// 类型（仅渲染层自有类型，SparkNode 系列类型由包顶层 types.ts 导出）
 export type {
   BindRule,
   PageContext,
   PageConfig,
   PageRendererProps,
   RuleBindingOptions,
-  SparkNode,
-  SparkNodeMeta,
-  SparkNodeDataConfig,
-  SparkNodeLayoutConfig,
-  SparkNodeFilterConfig,
-  SparkNodeToolbarConfig,
-  SparkNodeActionsConfig,
-  SparkNodeSimpleActionsConfig,
-  SparkNodeDualActionsConfig,
-  SparkNodeStateConfig,
-  SparkNodeBehaviorConfig,
 } from './types'
 
 // 渲染工具（供测试及高级用例）
 export { bindDataToRules } from './binding/bindRules'
-export { normalizeSparkNode, isSparkNode } from './binding/normalize-spark-node'
 
 // ── 容器组件 ──────────────────────────────────────────────────────────────────
 export { default as RendererTable } from './containers/RendererTable.vue'

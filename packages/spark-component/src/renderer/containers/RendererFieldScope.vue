@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { toRef, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { DATA_SOURCE, CONTEXT_DATA, FIELD_CONTEXT } from '../_pkg'
 import type { FieldContext } from '../_pkg'
@@ -37,7 +37,7 @@ import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
   model: Record<string, unknown>
-  configs: ComponentConfig[]
+  configs: SparkNode[]
   context?: FieldContext
   dataSource?: IDataSource | DataView | null
   gridColumns?: number

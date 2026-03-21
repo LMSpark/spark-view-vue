@@ -13,17 +13,17 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  config?: ComponentConfig
-  name?: string
+  config?: SparkNode
+  field?: string
   label?: string
   width?: number
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   modelValue?: number
   max?: number
   allowHalf?: boolean

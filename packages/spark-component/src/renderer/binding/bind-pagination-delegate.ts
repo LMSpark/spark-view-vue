@@ -47,7 +47,7 @@ export function bindPaginationRule(
   const view = table.getOrCreateView(viewId)
 
   // 给 pagination 一个 name 供 formApi 查找
-  rule.name ??= `pagination_${tableName}_${viewId}`
+  rule.field ??= `pagination_${tableName}_${viewId}`
 
   // 响应式 getter — DataView 是 reactive proxy，每次读取返回最新值（与 bind-form-delegate 对齐）
   rule.props ??= {}

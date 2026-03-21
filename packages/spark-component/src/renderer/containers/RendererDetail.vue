@@ -44,17 +44,17 @@
  * RendererDetail - 详情展示容器组件
  */
 import { SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
 import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
 
 interface Props {
-  config?: ComponentConfig
+  config?: SparkNode
   dataKey?: string
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   dataView?: DataView | undefined
-  toolbar?: ComponentConfig[]
+  toolbar?: SparkNode[]
   toolbarPosition?: ToolbarPosition
   toolbarClass?: string
   gridColumns?: number

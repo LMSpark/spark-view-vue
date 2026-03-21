@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import type { CSSProperties, Ref } from 'vue'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 
 // ── 默认值 ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +29,7 @@ export function normalizeSpan(value: unknown, fallback: number): number {
 
 // ── 跨列跨行辅助函数 ─────────────────────────────────────────────────────────
 
-function getSpanValue(child: ComponentConfig, keys: string[], fallback: number): number {
+function getSpanValue(child: SparkNode, keys: string[], fallback: number): number {
   const props = child.props ?? {}
   for (const key of keys) {
     const value = props[key]
@@ -39,7 +39,7 @@ function getSpanValue(child: ComponentConfig, keys: string[], fallback: number):
 }
 
 export interface UseContainerGridOptions {
-  children: Ref<ComponentConfig[]>
+  children: Ref<SparkNode[]>
   columns?: Ref<number>
   gap?: Ref<number | string>
   autoRows?: Ref<string>
@@ -69,7 +69,7 @@ export function useContainerGrid(options: UseContainerGridOptions) {
   }))
 
   // 子项可通过布局 props 覆盖默认的跨列 / 跨行占位。
-  function getChildGridStyle(child: ComponentConfig): CSSProperties {
+  function getChildGridStyle(child: SparkNode): CSSProperties {
     const colSpan = getSpanValue(child, ['colSpan', 'gridColSpan', 'span'], defaultColSpan.value)
     const rowSpan = getSpanValue(child, ['rowSpan', 'gridRowSpan'], 1)
 

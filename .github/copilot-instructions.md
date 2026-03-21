@@ -791,28 +791,28 @@ const mergedChildren = computed(() =>
 - 自解析组件：bindRules 透传 `dataKey` 到 props，由组件自行 `consume(PAGE_DATASET)` 解析
 - 非自解析组件：bindRules 在规则绑定阶段直接解析 dataKey 并注入数据
 
-### ❗ name 透传
+### ❗ field 透传
 
-`rule.name` 是字段标识符，**不会**自动作为 Vue prop 传给自定义组件。`bindRules` 显式将 `rule.name` 复制到 `props.name`：
+`rule.field` 是字段标识符，**不会**自动作为 Vue prop 传给自定义组件。`bindRules` 显式将 `rule.field` 复制到 `props.field`：
 
 ```typescript
 // bindRules.ts
-if (ruleType.startsWith('r-') && newRule.name !== undefined) {
-  setRuleProp(newRule, 'name', newRule.name)
+if (ruleType.startsWith('r-') && newRule.field !== undefined) {
+  setRuleProp(newRule, 'field', newRule.field)
 }
 ```
 
-**name vs label 分离**：
-- `config.name`（= `rule.name`）= **字段绑定名**，映射到 DataView 行的字段（如 `"age"`）
+**field vs label 分离**：
+- `config.field`（= `rule.field`）= **字段绑定名**，映射到 DataView 行的字段（如 `"age"`）
 - `props.label` = **显示标签**，UI 上展示的文字（如 `"年龄"`）
 - 两者**必须分开声明**，不要混用
 
 ```jsonc
 // rule.json 正确写法
-{ "type": "r-text", "name": "userName", "props": { "label": "用户名" } }
+{ "type": "r-text", "field": "userName", "props": { "label": "用户名" } }
 
-// ❌ 错误：name 当 label 用（字段绑定会失败）
-{ "type": "r-text", "name": "用户名" }
+// ❌ 错误：field 当 label 用（字段绑定会失败）
+{ "type": "r-text", "field": "用户名" }
 ```
 
 ### ❗ SparkComponentRenderer 的 v-bind 展开
@@ -865,7 +865,7 @@ function tryAutoLoad(view: DataView | null) {
 |------|------|------|
 | el-table 列不显示 | slot 包装破坏父子关系 | 确保 bindRules 走 sparkChildren 注入，容器用 SparkComponentRenderer 渲染 |
 | `Table xxx has no API configuration` | tryAutoLoad 未判断 api 存在 | `if (!view.dataTable?.api) return` |
-| 字段组件读不到 name | rule.name 不自动传给自定义组件 | bindRules 已显式 `setRuleProp(newRule, 'name', newRule.name)` |
+| 字段组件读不到 field | rule.field 不自动传给自定义组件 | bindRules 已显式 `setRuleProp(newRule, 'field', newRule.field)` |
 | 子组件 consume(DATA_SOURCE) 返回 null | 父容器未 provide | 确认 r-table/form/detail 的 `watch(resolvedView)` 正确 `sparkProvide(DATA_SOURCE, view)` |
 | 表格渲染但无数据 | dataKey 写错 / pageDataSet 为 null | 检查 pagedata.json 表名、rule.json dataKey 格式、PageRenderer 是否 provide(PAGE_DATASET) |
 | `console.error` 调试日志泄漏到生产 | 忘记删除或忘加 `import.meta.env.DEV` 守卫 | 所有诊断日志必须包裹 `if (import.meta.env.DEV)` |
@@ -1003,7 +1003,7 @@ packages/
 │   └── src/
 │       ├── spark.ts          # Spark 命名空间（唯一入口）
 │       ├── capability-keys.ts # PAGE_DATASET, DATA_SOURCE（数据能力键）
-│       ├── types.ts          # ComponentConfig, ComponentContext, ComponentRegistry
+│       ├── types.ts          # SparkNode, ComponentContext, ComponentRegistry
 │       ├── registry.ts       # ComponentRegistry 实现
 │       ├── useSparkComponent.ts # 核心 Composable
 │       ├── plugin.ts         # SparkPlugin (Vue plugin)

@@ -9,7 +9,7 @@
  */
 import { computed, defineComponent, h } from 'vue'
 import type { PropType } from 'vue'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import FieldEntityPicker from './FieldEntityPicker.vue'
 
@@ -27,11 +27,11 @@ export interface PickerPresetDefaults {
  * 与 FieldEntityPicker 的 Props 接口一一对应，确保 v-bind 透传正确。
  */
 const SHARED_PROPS = {
-  config: { type: Object as PropType<ComponentConfig>, default: undefined },
+  config: { type: Object as PropType<SparkNode>, default: undefined },
   name: { type: String, default: undefined },
   label: { type: String, default: undefined },
   width: { type: Number, default: undefined },
-  sparkChildren: { type: Array as PropType<ComponentConfig[]>, default: undefined },
+  sparkChildren: { type: Array as PropType<SparkNode[]>, default: undefined },
   modelValue: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
   options: { type: Array as PropType<unknown[]>, default: undefined },
   optionLabelField: { type: String, default: undefined },

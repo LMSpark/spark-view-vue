@@ -47,7 +47,7 @@ describe('useContainerInput - dataKey fallback order', () => {
   })
 
   it('configChildren 支持回退到 config.props.sparkChildren', () => {
-    const field = { type: 'r-text', name: 'name' }
+    const field = { type: 'r-text', field: 'name' }
     const config = {
       type: 'r-form',
       props: {

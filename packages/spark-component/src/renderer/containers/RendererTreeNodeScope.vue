@@ -6,13 +6,13 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { IDataSource } from '@spark-view/spark-data'
 import { DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 
 interface Props {
-  config?: ComponentConfig
+  config?: SparkNode
   data: Record<string, unknown>
   node?: unknown
   dataSource?: IDataSource | null
@@ -34,7 +34,7 @@ watch(() => props.dataSource, (dataSource) => {
   }
 }, { immediate: true })
 
-const scopedConfig = computed<ComponentConfig>(() => ({
+const scopedConfig = computed<SparkNode>(() => ({
   ...(props.config ?? { type: 'div' }),
   props: {
     ...(props.config?.props ?? {}),

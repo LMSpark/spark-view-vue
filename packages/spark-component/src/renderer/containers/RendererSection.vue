@@ -91,13 +91,13 @@
 <script setup lang="ts">
 import { computed, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
-  config?: ComponentConfig
-  sparkChildren?: ComponentConfig[]
-  headerActions?: ComponentConfig[]
+  config?: SparkNode
+  sparkChildren?: SparkNode[]
+  headerActions?: SparkNode[]
   title?: string
   description?: string
   collapsible?: boolean
@@ -143,7 +143,7 @@ const slots = useSlots()
 useSparkComponent(props.config ?? { type: 'r-section' })
 
 const configChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
-const headerActionConfigs = computed(() => props.headerActions ?? (props.config?.props?.['headerActions'] as ComponentConfig[] | undefined) ?? [])
+const headerActionConfigs = computed(() => props.headerActions ?? (props.config?.props?.['headerActions'] as SparkNode[] | undefined) ?? [])
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: configChildren,
   columns: computed(() => props.gridColumns),

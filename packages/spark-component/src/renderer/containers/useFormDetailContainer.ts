@@ -1,6 +1,6 @@
 import { computed, useSlots } from 'vue'
 import { useSparkComponent } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
@@ -15,11 +15,11 @@ import { createCurrentRowSlotScope } from './useContainerSlotScopes'
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
 
 interface FormDetailContainerProps {
-  config: ComponentConfig | undefined
+  config: SparkNode | undefined
   dataKey: string | undefined
-  sparkChildren: ComponentConfig[] | undefined
+  sparkChildren: SparkNode[] | undefined
   dataView: DataView | undefined
-  toolbar: ComponentConfig[] | undefined
+  toolbar: SparkNode[] | undefined
   toolbarPosition: ToolbarPosition | undefined
   toolbarClass: string | undefined
   gridColumns: number | undefined

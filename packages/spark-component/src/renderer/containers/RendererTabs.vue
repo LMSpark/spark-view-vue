@@ -2,7 +2,7 @@
 /**
  * @skill r-tabs
  * @description 标签页容器，内部使用 r-tab-pane 定义面板；每个面板内容默认采用 24 列 CSS Grid
- * @input { props: { modelValue?: string|number, toolbar?: ComponentConfig[], toolbarPosition?: 'top'|'bottom'|'left'|'right' } }
+ * @input { props: { modelValue?: string|number, toolbar?: SparkNode[], toolbarPosition?: 'top'|'bottom'|'left'|'right' } }
  * @example { "type": "r-tabs", "children": [{ "type": "r-tab-pane", "props": { "label": "基本信息", "name": "base" }, "children": [] }] }
  */
 -->
@@ -63,7 +63,7 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
@@ -74,9 +74,9 @@ interface TabsClickEvent {
 }
 
 interface Props {
-  config?: ComponentConfig
-  sparkChildren?: ComponentConfig[]
-  toolbar?: ComponentConfig[]
+  config?: SparkNode
+  sparkChildren?: SparkNode[]
+  toolbar?: SparkNode[]
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
   toolbarClass?: string
   modelValue?: string | number
@@ -128,41 +128,41 @@ const {
   slots,
 })
 
-function getPaneChildren(pane: ComponentConfig): ComponentConfig[] {
+function getPaneChildren(pane: SparkNode): SparkNode[] {
   return pane.children ?? []
 }
 
-function getPaneName(pane: ComponentConfig, index: number): string | number {
+function getPaneName(pane: SparkNode, index: number): string | number {
   const value = pane.props?.['name'] ?? pane.props?.['value'] ?? pane.id
   return typeof value === 'string' || typeof value === 'number' ? value : `tab-${index}`
 }
 
-function getPaneKey(pane: ComponentConfig, index: number): string | number {
+function getPaneKey(pane: SparkNode, index: number): string | number {
   return pane.id ?? getPaneName(pane, index)
 }
 
-function getPaneLabel(pane: ComponentConfig, index: number): string {
+function getPaneLabel(pane: SparkNode, index: number): string {
   const value = pane.props?.['label'] ?? pane.props?.['title']
   return typeof value === 'string' && value.trim().length > 0 ? value : `标签页${index + 1}`
 }
 
-function getPaneDisabled(pane: ComponentConfig): boolean {
+function getPaneDisabled(pane: SparkNode): boolean {
   return pane.props?.['disabled'] === true
 }
 
-function getPaneLazy(pane: ComponentConfig): boolean {
+function getPaneLazy(pane: SparkNode): boolean {
   return pane.props?.['lazy'] === true
 }
 
-function getPaneClosable(pane: ComponentConfig): boolean {
+function getPaneClosable(pane: SparkNode): boolean {
   return pane.props?.['closable'] === true
 }
 
-function getPaneBodyClass(pane: ComponentConfig): string {
+function getPaneBodyClass(pane: SparkNode): string {
   return typeof pane.props?.['bodyClass'] === 'string' ? pane.props['bodyClass'] as string : ''
 }
 
-function getPaneGridStyle(pane: ComponentConfig): CSSProperties {
+function getPaneGridStyle(pane: SparkNode): CSSProperties {
   const columns = normalizeSpan(pane.props?.['gridColumns'], 24)
   const autoRows = typeof pane.props?.['gridAutoRows'] === 'string' && pane.props['gridAutoRows'].trim().length > 0
     ? pane.props['gridAutoRows'] as string
@@ -177,7 +177,7 @@ function getPaneGridStyle(pane: ComponentConfig): CSSProperties {
   }
 }
 
-function getPaneChildGridStyle(child: ComponentConfig): CSSProperties {
+function getPaneChildGridStyle(child: SparkNode): CSSProperties {
   const colSpan = normalizeSpan(child.props?.['colSpan'] ?? child.props?.['gridColSpan'] ?? child.props?.['span'], 24)
   const rowSpan = normalizeSpan(child.props?.['rowSpan'] ?? child.props?.['gridRowSpan'], 1)
   return {
@@ -211,7 +211,7 @@ function getToolbarSlotScope() {
   })
 }
 
-function getPaneSlotScope(pane: ComponentConfig, index: number) {
+function getPaneSlotScope(pane: SparkNode, index: number) {
   return {
     pane,
     paneIndex: index,

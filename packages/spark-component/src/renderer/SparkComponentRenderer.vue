@@ -16,10 +16,10 @@
   >
     <template
       v-for="(child, index) in renderableChildren"
-      :key="isComponentConfig(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
+      :key="isSparkNode(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
     >
       <SparkComponentRenderer
-        v-if="isComponentConfig(child)"
+        v-if="isSparkNode(child)"
         :config="child"
       />
       <template v-else>
@@ -39,10 +39,10 @@
     <!-- 未注册时仍递归渲染子组件，父上下文由 Vue DI 自动传递 -->
     <template
       v-for="(child, index) in renderableChildren"
-      :key="isComponentConfig(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
+      :key="isSparkNode(child) ? (child.id ?? `child-${index}`) : `text-${index}`"
     >
       <SparkComponentRenderer
-        v-if="isComponentConfig(child)"
+        v-if="isSparkNode(child)"
         :config="child"
       />
       <template v-else>
@@ -82,7 +82,7 @@
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
 import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../types.js'
-import type { ComponentConfig, ComponentContext, ComponentRegistry } from '../types.js'
+import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
 const NATIVE_RENDERABLE_TAGS = new Set([
@@ -101,14 +101,14 @@ const NATIVE_RENDERABLE_TAGS = new Set([
   'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
 ])
 type ComponentEventMap = Record<string, unknown>
-type RenderableComponentConfig = ComponentConfig & { on?: ComponentEventMap }
-type RenderableChild = ComponentConfig | string | number
+type RenderableSparkNode = SparkNode & { on?: ComponentEventMap }
+type RenderableChild = SparkNode | string | number
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
   /** 组件配置（type + props + children） */
-  config: ComponentConfig
+  config: SparkNode
   /**
    * 显式父上下文（可选）
    * 仅用于根节点 / 测试场景：将其注入 DI 链，子业务组件 inject 时自动获取。
@@ -137,7 +137,7 @@ function resolveFromVueContext(type: string): unknown {
   return typeof resolved === 'string' ? null : resolved
 }
 
-function isComponentConfig(value: unknown): value is ComponentConfig {
+function isSparkNode(value: unknown): value is SparkNode {
   return value !== null
     && typeof value === 'object'
     && 'type' in value
@@ -151,7 +151,7 @@ const renderableChildren = computed<RenderableChild[]>(() => {
   if (!Array.isArray(children)) return []
 
   return children.filter((child): child is RenderableChild => (
-    isComponentConfig(child) || typeof child === 'string' || typeof child === 'number'
+    isSparkNode(child) || typeof child === 'string' || typeof child === 'number'
   ))
 })
 
@@ -181,7 +181,7 @@ function toListenerPropName(eventName: string): string {
 }
 
 const forwardedProps = computed(() => {
-  const config = props.config as RenderableComponentConfig
+  const config = props.config as RenderableSparkNode
   const rawProps = config.props ?? {}
   const eventProps = Object.fromEntries(
     Object.entries(config.on ?? {}).map(([eventName, handler]) => [toListenerPropName(eventName), handler])

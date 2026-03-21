@@ -57,7 +57,7 @@ function mountFieldSelect(
       provide(FIELD_CONTEXT, 'form')
       provide(CONTEXT_DATA, model)
       return () => h(FieldSelect as never, {
-        config: { type: 'r-select', name: fieldName },
+        config: { type: 'r-select', field: fieldName },
         ...componentProps,
       })
     },
@@ -272,7 +272,7 @@ describe('FieldSelect 下拉组件', () => {
           return () => h(FieldSelect as never, {
             config: {
               type: 'r-select',
-              name: 'department',
+              field: 'department',
               props: { options: departmentOptions },
             },
           })

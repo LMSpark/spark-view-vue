@@ -2,7 +2,7 @@
 /**
  * @skill r-collapse
  * @description 折叠面板容器，内部使用 r-collapse-item 定义分组；每个折叠项内容默认采用 24 列 CSS Grid
- * @input { props: { modelValue?: string|number|Array<string|number>, toolbar?: ComponentConfig[] } }
+ * @input { props: { modelValue?: string|number|Array<string|number>, toolbar?: SparkNode[] } }
  * @example { "type": "r-collapse", "children": [{ "type": "r-collapse-item", "props": { "title": "基本信息", "name": "base" }, "children": [] }] }
  */
 -->
@@ -60,7 +60,7 @@
 import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
@@ -68,9 +68,9 @@ import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 type CollapseValue = string | number | Array<string | number>
 
 interface Props {
-  config?: ComponentConfig
-  sparkChildren?: ComponentConfig[]
-  toolbar?: ComponentConfig[]
+  config?: SparkNode
+  sparkChildren?: SparkNode[]
+  toolbar?: SparkNode[]
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
   toolbarClass?: string
   modelValue?: CollapseValue
@@ -114,33 +114,33 @@ const {
   slots,
 })
 
-function getItemChildren(item: ComponentConfig): ComponentConfig[] {
+function getItemChildren(item: SparkNode): SparkNode[] {
   return item.children ?? []
 }
 
-function getItemName(item: ComponentConfig, index: number): string | number {
+function getItemName(item: SparkNode, index: number): string | number {
   const value = item.props?.['name'] ?? item.id
   return typeof value === 'string' || typeof value === 'number' ? value : `collapse-${index}`
 }
 
-function getItemKey(item: ComponentConfig, index: number): string | number {
+function getItemKey(item: SparkNode, index: number): string | number {
   return item.id ?? getItemName(item, index)
 }
 
-function getItemTitle(item: ComponentConfig, index: number): string {
+function getItemTitle(item: SparkNode, index: number): string {
   const value = item.props?.['title'] ?? item.props?.['label']
   return typeof value === 'string' && value.trim().length > 0 ? value : `分组${index + 1}`
 }
 
-function getItemDisabled(item: ComponentConfig): boolean {
+function getItemDisabled(item: SparkNode): boolean {
   return item.props?.['disabled'] === true
 }
 
-function getItemBodyClass(item: ComponentConfig): string {
+function getItemBodyClass(item: SparkNode): string {
   return typeof item.props?.['bodyClass'] === 'string' ? item.props['bodyClass'] as string : ''
 }
 
-function getItemGridStyle(item: ComponentConfig): CSSProperties {
+function getItemGridStyle(item: SparkNode): CSSProperties {
   const columns = normalizeSpan(item.props?.['gridColumns'], 24)
   const autoRows = typeof item.props?.['gridAutoRows'] === 'string' && item.props['gridAutoRows'].trim().length > 0
     ? item.props['gridAutoRows'] as string
@@ -155,7 +155,7 @@ function getItemGridStyle(item: ComponentConfig): CSSProperties {
   }
 }
 
-function getItemChildGridStyle(child: ComponentConfig): CSSProperties {
+function getItemChildGridStyle(child: SparkNode): CSSProperties {
   const colSpan = normalizeSpan(child.props?.['colSpan'] ?? child.props?.['gridColSpan'] ?? child.props?.['span'], 24)
   const rowSpan = normalizeSpan(child.props?.['rowSpan'] ?? child.props?.['gridRowSpan'], 1)
   return {
@@ -185,7 +185,7 @@ function getToolbarSlotScope() {
   })
 }
 
-function getItemSlotScope(item: ComponentConfig, index: number) {
+function getItemSlotScope(item: SparkNode, index: number) {
   return {
     item,
     itemIndex: index,

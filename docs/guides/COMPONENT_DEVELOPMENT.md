@@ -36,10 +36,10 @@
 
 <script setup lang="ts">
 import { useSparkComponent } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 
-// 1. 扩展 ComponentConfig，声明组件专属配置
-interface MyWidgetConfig extends ComponentConfig {
+// 1. 扩展 SparkNode，声明组件专属配置
+interface MyWidgetConfig extends SparkNode {
   title?: string
   theme?: 'light' | 'dark'
 }
@@ -615,8 +615,8 @@ Spark.register('userDetailForm', ...)
 ### 11.2 Config 接口设计
 
 ```typescript
-// ✅ 继承 ComponentConfig，只声明本组件需要的字段
-interface MyGridConfig extends ComponentConfig {
+// ✅ 继承 SparkNode，只声明本组件需要的字段
+interface MyGridConfig extends SparkNode {
   dataKey?: string          // DataKey 字符串
   pageSize?: number
   showPagination?: boolean
@@ -690,7 +690,7 @@ pnpm run plop
 ```
 
 生成的文件已包含：
-- 正确的 `ComponentConfig` 继承
+- 正确的 `SparkNode` 继承
 - `useSparkComponent` 调用骨架
 - Vitest 测试文件（含 `Spark.createPlugin()` 挂载模板）
 - 基础 JSDoc 注释
@@ -744,9 +744,9 @@ import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 
-interface MasterGridConfig extends ComponentConfig {
+interface MasterGridConfig extends SparkNode {
   dataKey: string
 }
 
@@ -780,9 +780,9 @@ import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 
-interface DetailGridConfig extends ComponentConfig {
+interface DetailGridConfig extends SparkNode {
   dataKey: string
 }
 

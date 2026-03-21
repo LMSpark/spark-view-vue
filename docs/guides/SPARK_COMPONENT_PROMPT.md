@@ -132,14 +132,14 @@ const childConfigs = rows.map(row => ({
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 // 仅从包名导入，禁止跨包相对路径
 import { PAGE_DATASET, DATA_SOURCE } from '@spark-view/spark-data'
 import { SELECTION, GRID_EVENTS } from '@spark-view/spark-utils'
 
 interface Props {
   /** SPARK 配置（主入口）—— type + props + children */
-  config: ComponentConfig
+  config: SparkNode
 }
 const props = defineProps<Props>()
 
@@ -174,11 +174,11 @@ const gridEvents = provideEvents(GRID_EVENTS)
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
-import type { ComponentConfig } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 import { DATA_SOURCE } from '@spark-view/spark-data'
 import { SELECTION, ROW_DATA } from '@spark-view/spark-utils'
 
-interface Props { config: ComponentConfig }
+interface Props { config: SparkNode }
 const props = defineProps<Props>()
 
 const { isVisible, consume, logger } = useSparkComponent(props.config)

@@ -125,7 +125,7 @@ export function detectRequiredServices(config: SparkEJ2GridConfig): SyncfusionSe
   }
 
   // 工具栏（编辑时通常需要）
-  if (config.toolbar || config.editSettings) {
+  if (config['toolbar'] !== undefined || config.editSettings) {
     services.push('Toolbar')
   }
 

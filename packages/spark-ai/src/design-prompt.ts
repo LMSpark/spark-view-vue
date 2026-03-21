@@ -370,7 +370,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 |------|------|
 | r-table 列（推荐） | 用 r-text / r-number / r-date 等 r-* 字段，name=字段名，props.label=表头；支持权限渲染、上下文感知 |
 | r-table 列（强制） | r-table 内只能使用 r-* 字段列；禁止 el-table-column |
-| r-table 行操作 | 写在 \`meta.actions.items\`；优先 builtin-action（零代码），复杂场景再用 Render* |
+| r-table 行操作 | 写在 \`meta.actions.children\`；优先 builtin-action（零代码），复杂场景再用 Render* |
 | el-table 列 | 仅限 el-table-column 或 Render*；el-table-column.width 用字符串 \`"100"\`，r-* 字段 width 用数字 \`120\` |
 | Render* 内 h() | 仅限原生 HTML 标签（div/span/button/table/tr/td/input 等） |
 | 块状容器 | r-form / r-detail / r-section / r-block 默认 CSS Grid 24 列 |

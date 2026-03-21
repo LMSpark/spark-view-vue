@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import { useOptionField } from './useFieldOptions'
 import { useSelectorFieldActions } from './useSelectorFieldActions'
@@ -48,11 +48,11 @@ import { useSelectorFieldActions } from './useSelectorFieldActions'
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
 interface Props {
-  config?: ComponentConfig
-  name?: string
+  config?: SparkNode
+  field?: string
   label?: string
   width?: number
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
   modelValue?: EntityPickerValue
   options?: unknown[]
   optionLabelField?: string

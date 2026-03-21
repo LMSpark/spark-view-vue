@@ -36,10 +36,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 
 interface Props {
-  config?: ComponentConfig
+  config?: SparkNode
   label?: string
   width?: string | number
   minWidth?: string | number
@@ -48,13 +48,13 @@ interface Props {
   headerAlign?: 'left' | 'center' | 'right'
   className?: string
   labelClassName?: string
-  sparkChildren?: ComponentConfig[]
+  sparkChildren?: SparkNode[]
 }
 
 const props = defineProps<Props>()
 
 const label = computed(() => props.label ?? props.config?.props?.['label'] as string ?? '')
-const mergedChildren = computed<ComponentConfig[]>(() =>
+const mergedChildren = computed<SparkNode[]>(() =>
   props.config?.children ?? props.sparkChildren ?? []
 )
 </script>

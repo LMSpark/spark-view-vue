@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { ComponentConfig } from '../_pkg'
+import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import type { FieldPermissionProps } from './useFieldPermission'
 
@@ -20,7 +20,7 @@ export interface FieldTransferOption {
 }
 
 export interface FieldOptionProps {
-  config?: ComponentConfig | undefined
+  config?: SparkNode | undefined
   options?: unknown[] | undefined
   optionLabelField?: string | undefined
   optionValueField?: string | undefined

@@ -72,30 +72,126 @@ export interface ComponentContext extends ICapabilityContext {
 // ============================================================================
 
 /**
- * ComponentConfig - 组件配置的最小输入类型
+ * SparkNode - 组件配置的最小输入类型
  *
  * 用于 useSparkComponent 的泛型约束。
  * 与 ComponentContext 的区别：
- * - Config 是纯数据（JSON 可序列化），不含运行时字段（id, state, providers, consumers）
+ * - SparkNode 是纯数据（JSON 可序列化），不含运行时字段（id, state, providers, consumers）
  * - children 允许任意嵌套配置数组，不要求是完整的 ComponentContext
  */
-export interface ComponentConfig {
+export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
   /** 实例 ID（可选，运行时自动生成） */
   id?: string
   /** 数据绑定键（如 Users@rows），供容器组件在运行时解析 DataView */
   dataKey?: string
-  /** 字段名（与父组件 dataKey 叠加，子组件通过 name 定位数据字段） */
-  name?: string
+  /** 字段绑定名（与父组件 dataKey 叠加，子组件通过 field 定位数据字段） */
+  field?: string
+  /** 显示标签（UI 展示文字，如 "用户名"） */
+  label?: string
+  /** 选项数据源 DataKey（如 'Categories@rows'），供 select/radio/checkbox 解析选项列表 */
+  optionKey?: string
   /** 组件属性 */
   props?: Record<string, unknown>
   /** 子组件配置（递归） */
-  children?: ComponentConfig[]
+  children?: SparkNode[]
   /** 可见性控制 */
   visible?: boolean
   /** 禁用状态控制 */
   disabled?: boolean
+
+  // ── Meta 域（容器级配置，兼容 useContainerToolbar / useContainerActions / useTableFilters） ──
+  /** 工具栏配置 */
+  toolbar?: SparkNodeToolbar
+  /** 行操作列配置 */
+  actions?: SparkNodeActions
+  /** 筛选器配置 */
+  filter?: SparkNodeFilter
+}
+
+// ============================================================================
+// SparkNode Meta 域类型
+// ============================================================================
+
+/** 工具栏配置（兼容 useContainerToolbar） */
+export interface SparkNodeToolbar {
+  /** 工具栏项列表 */
+  items: SparkNode[]
+  /** 位置 @default 'top' */
+  position?: 'top' | 'bottom' | 'left' | 'right'
+  /** 自定义 CSS 类名 */
+  class?: string
+}
+
+/** 行操作列配置（兼容 useContainerActions） */
+export interface SparkNodeActions {
+  /** 操作按钮列表 */
+  items: SparkNode[]
+  /** 位置 @default 'right' */
+  position?: 'left' | 'right'
+  /** 列标题 @default '操作' */
+  label?: string
+  /** 列宽 @default 160 */
+  width?: string | number
+  /** 对齐方式 @default 'left' */
+  align?: 'left' | 'center' | 'right'
+  /** 自定义 CSS 类名 */
+  class?: string
+  /** 固定列 */
+  fixed?: boolean | 'left' | 'right'
+}
+
+/**
+ * 单个筛选项完整配置
+ *
+ * 简写形式：直接写字段名字符串，等价于 `{ field: 'xxx', component: 'text' }`。
+ */
+export interface SparkNodeFilterItem {
+  /** 字段名（映射到数据源字段） */
+  field: string
+  /** 显示标签（省略则用字段名） */
+  label?: string
+  /**
+   * 输入组件类型（默认 `text`）
+   *
+   * 内置：`text` | `select` | `date` | `date-range` | `number` | `number-range` | `checkbox` | `radio`
+   * 扩展：传任意组件 type 字符串
+   */
+  component?: 'text' | 'select' | 'date' | 'date-range' | 'number' | 'number-range' | 'checkbox' | 'radio' | (string & {})
+  /** 可选项列表（`component = select / radio / checkbox` 时使用） */
+  options?: Array<{ label: string; value: unknown }>
+  /** 选项字段映射（options 来自 DataKey 时使用） */
+  optionLabelField?: string
+  optionValueField?: string
+  /** 与其他条件的逻辑关系（覆盖全局 filter.logic，默认继承） */
+  logic?: 'and' | 'or'
+  /** 跨列数（覆盖全局 filter.itemSpan） */
+  span?: number
+  /** 透传到筛选组件的原生 props（如 placeholder、clearable 等） */
+  props?: Record<string, unknown>
+}
+
+/** 筛选器配置（兼容 useTableFilters） */
+export interface SparkNodeFilter {
+  /** 筛选列（字段名字符串或完整配置对象） */
+  columns: Array<string | SparkNodeFilterItem>
+  /** 自定义 CSS 类名 */
+  class?: string
+  /** 是否可折叠 @default false */
+  collapsible?: boolean
+  /** 默认折叠 @default false */
+  defaultCollapsed?: boolean
+  /** 自适应最小宽度 @default '220px' */
+  autoFitMinWidth?: string
+  /** 单项跨列数 @default 1 */
+  itemSpan?: number
+  /** 网格列数 @default 24 */
+  gridColumns?: number
+  /** 网格间距 @default 12 */
+  gridGap?: number | string
+  /** 网格行高 @default 'minmax(32px, auto)' */
+  gridAutoRows?: string
 }
 
 // ============================================================================
