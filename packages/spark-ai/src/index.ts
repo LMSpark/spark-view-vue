@@ -86,7 +86,11 @@ export {
   resolveComponentQuery,
   buildGenerationPrompt,
   AUTO_QUERY_PREFIX,
+  AUTO_SKILL_PREFIX,
   DESIGN_SYSTEM_PROMPT,
+  extractClarifyBlocks,
+  extractCompareBlocks,
+  extractSkillQueryRequests,
 } from './design-session'
 export type {
   ProposalType,
@@ -96,6 +100,9 @@ export type {
   ProtocolBlock,
   ValidationFeedback,
   ReviewChecklistItem,
+  ClarifyBlock,
+  CompareBlock,
+  SkillQueryRequest,
 } from './design-session'
 
 // ── Response Pipeline ────────────────────────────────────────────────────────
@@ -105,6 +112,8 @@ export {
   ProposalValidatorProcessor,
   SchemaCheckerProcessor,
   QueryResolverProcessor,
+  SkillQueryProcessor,
+  RegistryValidatorProcessor,
   AutoResponderProcessor,
 } from './response-pipeline'
 export type {
@@ -117,5 +126,65 @@ export type {
 // ── Component Props Catalog ──────────────────────────────────────────────────
 export { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
 
+// ── Skill Catalog (设计模式库) ──────────────────────────────────────────────
+export { SKILL_CATALOG, SKILL_CATEGORY_INDEX, resolveSkillQuery } from './skill-catalog'
+export type { SkillCatalogEntry, SkillCategory } from './skill-catalog'
+
 // ── Nav Planner Prompt ───────────────────────────────────────────────────────
 export { NAV_PLANNER_SYSTEM_PROMPT } from './nav-planner-prompt'
+
+// ── Session State（设计会话持久化状态 + 名册类型）───────────────────────────────
+export {
+  STEP_REGISTRY,
+  createEmptySession,
+  // ── 读取辅助 ──
+  isDataRegistryLocked,
+  getRegisteredTableNames,
+  getRegisteredColumnNames,
+  getRegisteredViewKeys,
+  getDependentProposals,
+  // ── 步骤推进 ──
+  advanceStep,
+  canAdvanceTo,
+  // ── 名册A 写入 ──
+  registerTable,
+  lockDataRegistry,
+  // ── 名册B 写入 ──
+  registerView,
+  appendUIRegistry,
+  // ── 提案记录 ──
+  recordAcceptedProposal,
+  // ── 依赖图操作 ──
+  addDependency,
+  removeDependency,
+  // ── 级联校验 ──
+  checkCascadeImpact,
+  formatCascadeNotification,
+  // ── 提案自动写入 ──
+  applyProposalToSession,
+  // ── 上下文提示词 ──
+  buildSessionContextPrompt,
+  // ── 序列化 ──
+  serializeSession,
+  deserializeSession,
+  // ── 全量校验 ──
+  runFullValidation,
+} from './session-state'
+export type {
+  PassAStep,
+  PassBStep,
+  DesignStep,
+  StepMeta,
+  RegistryColumn,
+  RegistryRelation,
+  RegistryTable,
+  DataRegistry,
+  RegistryView,
+  ViewRegistry,
+  UIRegistry,
+  AcceptedProposalSnapshot,
+  PersistedDesignSession,
+  CascadeImpact,
+  ApplyResult,
+  FullValidationIssue,
+} from './session-state'

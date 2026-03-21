@@ -7,25 +7,50 @@
 export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
   // ── 容器组件 ─────────────────────────────────────────────────────────────
 
-  'r-table': `**r-table** — 数据表格容器
-dataKey: string — 数据绑定键，如 "Users@rows"
-toolbar: Rule[] — 工具栏区域（优先 builtin-action，其次 Render*）
-toolbarPosition: 'top' | 'bottom' — 默认 'top'
-filterColumns: Rule[] — 过滤区字段配置
-filterCollapsible: boolean — 过滤区可折叠，默认 false
-filterDefaultCollapsed: boolean — 默认折叠，默认 false
-filterAutoFitMinWidth: string — 过滤项最小宽度，默认 '220px'
-filterItemSpan: number — 过滤项占栅格列数，默认 1
-filterGridColumns: number — 过滤区栅格总列数，默认 24
-filterGridGap: number — 过滤区间距，默认 12
-rowActions: Rule[] — 行操作区（优先 builtin-action，其次 Render*）
-rowActionsPosition: 'left' | 'right' — 默认 'right'
-rowActionsLabel: string — 操作列标题，默认 '操作'
-rowActionsWidth: number — 操作列宽度，默认 160
-rowActionsAlign: 'left' | 'center' | 'right' — 默认 'left'
-rowActionsFixed: string | boolean — 操作列固定方向
-children 内仅用 r-* 字段组件做列（禁止 el-table-column）
-透传到 el-table: border, stripe, highlightCurrentRow, height, maxHeight 等`,
+  'r-table': `**r-table** — 数据表格容器（SparkNode v2 格式）
+
+【props — 原生组件属性，透传到 el-table】
+border: boolean — 边框
+stripe: boolean — 斑马纹
+highlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）
+height / maxHeight: string | number — 表格高度
+
+【meta.data — 数据绑定域】
+meta.data.dataKey: string — 数据绑定键，如 "Users@rows"
+
+【meta.filter — 筛选配置域】
+meta.filter.items: Array<string | FilterItem> — 筛选项列表
+  字符串简写："fieldName" 等价于 { field: "fieldName", component: "text" }
+  完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }
+  component 内置值：text | select | date | date-range | number | number-range | checkbox | radio
+meta.filter.logic: 'and' | 'or' — 多条件默认逻辑，默认 'and'
+meta.filter.collapsible: boolean — 可折叠，默认 false
+meta.filter.defaultCollapsed: boolean — 默认折叠，默认 false
+meta.filter.autoFitMinWidth: string — 最小宽度，默认 '220px'
+meta.filter.itemSpan: number — 占栅格列数，默认 1
+meta.filter.gridColumns: number — 栅格总列数，默认 24
+meta.filter.gridGap: number | string — 间距，默认 12
+meta.filter.on.search: string — 搜索触发（script.js 函数名）
+meta.filter.on.reset: string — 重置触发
+meta.filter.on.change: string — 字段值变化触发
+
+【meta.toolbar — 工具栏域】
+meta.toolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）
+meta.toolbar.position: 'top' | 'bottom' — 默认 'top'
+
+【meta.actions — 行操作域】
+meta.actions.items: SparkNode[] — 行操作按钮（优先 builtin-action）
+meta.actions.position: 'left' | 'right' — 默认 'right'
+meta.actions.label: string — 操作列标题，默认 '操作'
+meta.actions.width: number — 操作列宽度，默认 160
+meta.actions.align: 'left' | 'center' | 'right' — 默认 'left'
+meta.actions.fixed: boolean | 'left' | 'right' — 固定方向
+
+【meta.behavior — 事件域】
+meta.behavior.on.rowDblclick: string — 行双击（→ script.js 函数名）
+（其他组件事件同理，key 为 camelCase 事件名）
+
+children 内仅用 r-* 字段组件做列，禁止 el-table-column`,
 
   'r-form': `**r-form** — 数据表单容器（读写 currentRow）
 dataKey: string — 数据绑定键，如 "Users@currentRow"

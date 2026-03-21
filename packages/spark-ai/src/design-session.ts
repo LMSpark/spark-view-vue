@@ -6,6 +6,7 @@ import type { ProtocolBlock } from './protocol'
 
 export type ProposalType =
   | 'data-model'
+  | 'view-plan'
   | 'ui-structure'
   | 'interaction'
   | 'style'
@@ -75,6 +76,7 @@ export interface ReviewChecklistItem {
 
 const TYPE_LABELS: Record<ProposalType, string> = {
   'data-model': '数据模型',
+  'view-plan': '视图规划',
   'ui-structure': 'UI 结构',
   'interaction': '交互逻辑',
   'style': '样式',
@@ -87,6 +89,7 @@ const TYPE_LABELS: Record<ProposalType, string> = {
 
 const TYPE_ICONS: Record<ProposalType, string> = {
   'data-model': 'DataBoard',
+  'view-plan': 'View',
   'ui-structure': 'Brush',
   'interaction': 'Lightning',
   'style': 'MagicStick',
@@ -118,7 +121,7 @@ export function extractBlocks(text: string): ProtocolBlock[] {
 // ── 提案提取 ─────────────────────────────────────────────────────────────────
 
 const VALID_TYPES = new Set<ProposalType>([
-  'data-model', 'ui-structure', 'interaction', 'style', 'api-config',
+  'data-model', 'view-plan', 'ui-structure', 'interaction', 'style', 'api-config',
   'db-schema', 'dict-entry', 'function-plan', 'navigation',
 ])
 
@@ -181,10 +184,43 @@ function stripProtocolBlocks(content: string): string {
   return stripBlocksWithUnclosed(content)
 }
 
+// ── 澄清块 / 方案对比块 / 技能查询（新增类型）────────────────────────────────
+
+/** AI 追问块（@@clarify:name）*/
+export interface ClarifyBlock {
+  /** @@clarify:<name> */
+  name: string
+  /** # 问题主题（第一行） */
+  title: string
+  /** 完整 payload（不含 @@ 定界行） */
+  raw: string
+}
+
+/** AI 方案对比块（@@compare:name）*/
+export interface CompareBlock {
+  /** @@compare:<name> */
+  name: string
+  /** # 对比标题 */
+  title: string
+  /** 📌 推荐方案 X，原因：... */
+  recommendation: string
+  /** 完整 payload */
+  raw: string
+}
+
+/** 技能查询请求（@@query:skill-list 或 @@query:pattern）*/
+export interface SkillQueryRequest {
+  queryType: 'skill-list' | 'pattern'
+  targets: string[]
+}
+
 // ── 查询提取 ─────────────────────────────────────────────────────────────────
 
-/** 自动查询消息的固定前缀（用于 UI 识别和防重入） */
+/** 自动查询消息的固定前缀（组件 Props 查询结果） */
 export const AUTO_QUERY_PREFIX = '🔧 [组件 Props 查询结果]'
+
+/** 自动技能查询消息的固定前缀（用于 UI 识别和防重入） */
+export const AUTO_SKILL_PREFIX = '🗂 [技能查询结果]'
 
 /**
  * 从 AI 回复中提取组件 Props 查询请求（@@ 协议）
@@ -218,6 +254,59 @@ export function resolveComponentQuery(components: string[]): string | null {
     }
   }
   return sections.join('\n\n')
+}
+
+// ── 澄清 / 对比 / 技能查询提取 ──────────────────────────────────────────────
+
+/**
+ * 从 AI 回复中提取 @@clarify:name 块（用于 UI 展示待确认的追问）
+ */
+export function extractClarifyBlocks(content: string): ClarifyBlock[] {
+  const blocks = extractBlocks(content)
+  return blocks
+    .filter((b) => b.type === 'clarify')
+    .map((b) => {
+      const lines = b.payload.split('\n')
+      const title = lines[0]?.startsWith('# ') ? lines[0].slice(2).trim() : b.name
+      return { name: b.name, title, raw: b.payload }
+    })
+}
+
+/**
+ * 从 AI 回复中提取 @@compare:name 块（用于 UI 展示方案对比卡片）
+ */
+export function extractCompareBlocks(content: string): CompareBlock[] {
+  const blocks = extractBlocks(content)
+  return blocks
+    .filter((b) => b.type === 'compare')
+    .map((b) => {
+      const lines = b.payload.split('\n')
+      const title = lines[0]?.startsWith('# ') ? lines[0].slice(2).trim() : b.name
+      const recLine = lines.slice().reverse().find((l) => l.includes('📌'))
+      const recommendation = recLine?.trim() ?? ''
+      return { name: b.name, title, recommendation, raw: b.payload }
+    })
+}
+
+/**
+ * 从 AI 回复中提取技能查询请求（@@query:skill-list 和 @@query:pattern）
+ */
+export function extractSkillQueryRequests(content: string): SkillQueryRequest[] {
+  const blocks = extractBlocks(content)
+  const results: SkillQueryRequest[] = []
+  for (const b of blocks) {
+    if (b.type !== 'query') continue
+    if (b.name === 'skill-list' || b.name === 'pattern') {
+      const targets = b.payload
+        .split(/[,，\n\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+      if (targets.length > 0) {
+        results.push({ queryType: b.name, targets })
+      }
+    }
+  }
+  return results
 }
 
 // ── 生成提示词 ───────────────────────────────────────────────────────────────

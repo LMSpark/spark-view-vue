@@ -139,7 +139,7 @@ export function buildPageContext(deps: PageContextDeps): PageContext {
     $page: pageService,
     console: scriptConsole,
     SparkData,
-    h,
+    h: h as (type: unknown, ...args: unknown[]) => unknown,
 
     // Timer APIs — safe wrappers delegating to global timers
     setTimeout:    (handler: (...args: unknown[]) => void, timeout?: number) => window.setTimeout(handler, timeout),

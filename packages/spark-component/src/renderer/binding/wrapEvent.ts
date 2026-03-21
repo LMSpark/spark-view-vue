@@ -1,8 +1,12 @@
 /**
  * 事件装饰器工具
  *
- * 为 BindRule 的事件处理器提供统一的「保留原始 + 追加新逻辑」封装。
- * 被 bind-table-delegate / bind-pagination-delegate / bind-form-delegate 公用。
+ * 功能分区：
+ * 1) 事件装饰入口（wrapEvent）
+ * 2) 执行顺序约定（先原始 handler，再追加 handler）
+ *
+ * 为 BindRule 的事件处理器提供统一的“保留原始 + 追加逻辑”封装，
+ * 被 bind-table-delegate / bind-pagination-delegate / bind-form-delegate 复用。
  */
 
 import type { BindRule } from '../types'
@@ -20,6 +24,11 @@ import type { BindRule } from '../types'
  *   void view.setPage(page)
  * })
  * ```
+ *
+ * 执行顺序：
+ * - 若原始 handler 是函数：先执行原始函数
+ * - 若原始 handler 是函数数组：按数组顺序逐个执行
+ * - 最后执行追加 handler
  */
 export function wrapEvent(
   rule: BindRule,

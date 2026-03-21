@@ -59,8 +59,8 @@ import type { IModuleContext } from '@spark-view/spark-utils'
 import type { PageConfig } from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
 import type { ComponentConfig } from '../types'
-import { PAGE_DATASET, MODULE_CONTEXT } from '../capability-keys'
-import type { ModuleContextCapability } from '../capability-keys'
+import { PAGE_DATASET, MODULE_CONTEXT, CSS_SCOPE } from '../capability-keys'
+import type { ModuleContextCapability, PageCssScopeCapability } from '../capability-keys'
 import { useRendererSetup } from './useRendererSetup'
 import { useCssScope } from './useCssScope'
 import { usePageDataSet } from './usePageDataSet'
@@ -160,6 +160,10 @@ function isHttpClient(client: unknown): client is HttpClient {
 const { scopedCss, setScopedCss } = useCssScope({
   enableScope: props.enableCssScope,
 })
+const cssScopeCapability: PageCssScopeCapability = {
+  inject(css: string) { setScopedCss(currentPageId.value, css) },
+}
+provideCapability(CSS_SCOPE, cssScopeCapability)
 
 // ── DataSet ──
 const pds = usePageDataSet({ enableDataSet: props.enableDataSet })

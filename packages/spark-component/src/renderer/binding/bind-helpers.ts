@@ -1,8 +1,13 @@
 /**
  * 规则绑定共享工具函数
  *
+ * 功能分区：
+ * 1) 日志与基础写入（pageLogger / setRuleProp）
+ * 2) 运行时 getter 注入（definePropertyGetter）
+ * 3) dataKey 解析薄封装（resolveRuleDataKey）
+ *
  * 被各组件委托（bind-table-delegate / bind-pagination-delegate / bind-form-delegate）
- * 和主编排（bindRules.ts）共同引用。
+ * 与主编排（bindRules.ts）共同复用。
  */
 
 import { Logger } from '@spark-view/spark-utils'
@@ -12,6 +17,8 @@ import { resolveRawKey, isDataKey } from '@spark-view/spark-data'
 
 export const pageLogger = Logger('PageRenderer')
 
+// ── 分区 A：基础写入 ───────────────────────────────────────────────────────
+
 /**
  * 安全设置 rule.props（初始化后赋值，避免重复 ??=）
  */
@@ -19,6 +26,8 @@ export function setRuleProp(rule: BindRule, key: string, value: unknown): void {
   rule.props ??= {}
   rule.props[key] = value
 }
+
+// ── 分区 B：响应式读取桥接 ─────────────────────────────────────────────────
 
 /**
  * 定义响应式 getter 属性（消除 Object.defineProperty 样板代码）
@@ -37,6 +46,8 @@ export function definePropertyGetter(
     configurable: true,
   })
 }
+
+// ── 分区 C：dataKey 解析薄封装 ─────────────────────────────────────────────
 
 /**
  * 解析 DataKey 字符串 → 绑定值（渲染层薄包装，负责 warn 日志）

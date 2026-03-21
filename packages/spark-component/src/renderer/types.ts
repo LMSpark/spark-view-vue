@@ -1,23 +1,27 @@
 /**
  * 渲染器类型定义
  *
- * - BindRule: 框架无关的运行时规则类型（绑定管线使用）
- * - PageContext: 脚本沙箱上下文
- * - PageRendererProps: 页面渲染器配置
- * - RuleBindingOptions: 规则绑定配置
+ * 功能分区：
+ * 1) SparkNode v2 结构化配置（AI/配置输入层）
+ * 2) BindRule 运行时规则（绑定管线输出层）
+ * 3) 脚本沙箱上下文与组件访问 API（执行层）
+ * 4) 页面渲染器与规则绑定参数（编排层）
  */
 
-import type { h as VueH } from 'vue'
 import type { IDataSet, SparkData } from '@spark-view/spark-data'
-import type { ConfigLoader, PageConfig, IPageRoute } from '@spark-view/spark-page-config'
+import type { ConfigLoader, PageConfig, IPageRoute, IScriptContext } from '@spark-view/spark-page-config'
 import type { IPageServiceCapability, IModuleContext } from '@spark-view/spark-utils'
 import type { ComponentRegistry } from '../types.js'
 import type { PageComponentInstanceEntry } from '../capability-keys.js'
 
-// PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
-export type { PageConfig }
+// ── 基础重导出 ────────────────────────────────────────────────────────────
 
-// ── SparkNode v2 结构化配置类型 ───────────────────────────────────────────
+// PageConfig 来自 spark-page-config（数据配置层权威定义），本文件仅透出类型
+export type { PageConfig }
+// IPageRoute 重导出供渲染层实现层使用
+export type { IPageRoute }
+
+// ── 分区 A：SparkNode v2（结构化输入模型） ─────────────────────────────────
 
 /**
  * SparkNode v2 — 7 语义域结构化配置
@@ -33,7 +37,16 @@ export interface SparkNode {
   type: string
   /** 唯一标识（省略则运行时自动生成 spark-${++counter}） */
   id?: string
-  /** 组件原生属性（直接透传到目标组件的 props） */
+  /**
+   * 组件原生属性（直接透传到目标组件的 props）
+   *
+   * ⚠️ style / class 是 HTML/Vue 原生属性，应写在此处：
+   * ```json
+   * { "props": { "style": { "padding": "20px" }, "class": "my-div" } }
+   * ```
+   * 不要写在节点顶层——SparkNode 根级只保留 SPARK 语义字段。
+   * 旧 rule.json（style/class 写在顶层）由 bindRules 向下兼容转换。
+   */
   props?: Record<string, unknown>
   /** SPARK 语义域配置（7 域） */
   meta?: SparkNodeMeta
@@ -58,7 +71,7 @@ export interface SparkNodeMeta {
   behavior?: SparkNodeBehaviorConfig
 }
 
-/** DataConfig — 数据绑定 */
+// 子域 A1：数据绑定
 export interface SparkNodeDataConfig {
   /** DataKey 绑定键（如 Users@rows / Users@currentRow） */
   dataKey?: string
@@ -72,7 +85,9 @@ export interface SparkNodeDataConfig {
   optionChildrenField?: string
 }
 
-/** LayoutConfig — 布局控制 */
+// 子域 A2：布局控制（SPARK 特有 grid 语义，不含 style/class）
+//
+// ⚠️ style 和 class 是原生 HTML/Vue 属性，应写在 props 内，不在此域。
 export interface SparkNodeLayoutConfig {
   /** 在父 Grid 中的跨列数（24 列制） */
   colSpan?: number
@@ -84,15 +99,55 @@ export interface SparkNodeLayoutConfig {
     gap?: number | string
     autoRows?: string
   }
-  /** 样式快捷方式 */
-  style?: Record<string, string | number>
-  /** CSS 类名 */
-  class?: string | string[]
 }
 
-/** FilterConfig — 筛选器 */
+// 子域 A3：筛选器配置
+
+/**
+ * 单个筛选项完整配置
+ *
+ * 简写形式：直接写字段名字符串，等价于 `{ field: 'xxx', component: 'text' }`。
+ */
+export interface SparkNodeFilterItem {
+  /** 字段名（映射到数据源字段） */
+  field: string
+  /** 显示标签（省略则用字段名） */
+  label?: string
+  /**
+   * 输入组件类型（默认 `text`）
+   *
+   * 内置：`text` | `select` | `date` | `date-range` | `number` | `number-range` | `checkbox` | `radio`
+   * 扩展：传任意组件 type 字符串
+   */
+  component?: 'text' | 'select' | 'date' | 'date-range' | 'number' | 'number-range' | 'checkbox' | 'radio' | (string & {})
+  /** 可选项列表（`component = select / radio / checkbox` 时使用） */
+  options?: Array<{ label: string; value: unknown }>
+  /** 选项字段映射（options 来自 DataKey 时使用） */
+  optionLabelField?: string
+  optionValueField?: string
+  /** 与其他条件的逻辑关系（覆盖全局 filter.logic，默认继承） */
+  logic?: 'and' | 'or'
+  /** 跨列数（覆盖全局 filter.itemSpan） */
+  span?: number
+  /** 透传到筛选组件的原生 props（如 placeholder、clearable 等） */
+  props?: Record<string, unknown>
+}
+
 export interface SparkNodeFilterConfig {
-  columns?: string[]
+  /**
+   * 筛选项列表
+   *
+   * - `string`：字段名简写，等价于 `{ field: 'xxx', component: 'text' }`
+   * - `SparkNodeFilterItem`：完整配置，支持组件类型/选项/逻辑关系
+   */
+  items?: Array<string | SparkNodeFilterItem>
+  /**
+   * 多条件默认逻辑关系（默认 `and`）
+   *
+   * 可在 `SparkNodeFilterItem.logic` 中按字段覆盖。
+   */
+  logic?: 'and' | 'or'
+  /** 是否可折叠 */
   collapsible?: boolean
   defaultCollapsed?: boolean
   autoFitMinWidth?: string
@@ -101,16 +156,28 @@ export interface SparkNodeFilterConfig {
   gridGap?: number | string
   gridAutoRows?: string
   class?: string
+  /**
+   * 筛选事件（value = script.js 函数名）
+   *
+   * - `search`：用户触发搜索（点击搜索按钮 / 回车）
+   * - `reset`：重置筛选条件
+   * - `change`：任意筛选字段值变化
+   */
+  on?: {
+    search?: string
+    reset?: string
+    change?: string
+  }
 }
 
-/** ToolbarConfig — 工具栏 */
+// 子域 A4：工具栏配置
 export interface SparkNodeToolbarConfig {
   items: SparkNode[]
   position?: 'top' | 'bottom' | 'left' | 'right'
   class?: string
 }
 
-/** ActionsConfig — 操作区（简单模式 | 双区模式） */
+// 子域 A5：操作区配置（简单模式 | 双区模式）
 export type SparkNodeActionsConfig = SparkNodeSimpleActionsConfig | SparkNodeDualActionsConfig
 
 export interface SparkNodeSimpleActionsConfig {
@@ -128,7 +195,7 @@ export interface SparkNodeDualActionsConfig {
   footer?: SparkNodeSimpleActionsConfig
 }
 
-/** StateConfig — 状态控制 */
+// 子域 A6：状态控制
 export interface SparkNodeStateConfig {
   visible?: boolean
   disabled?: boolean
@@ -136,13 +203,13 @@ export interface SparkNodeStateConfig {
   collapsed?: boolean
 }
 
-/** BehaviorConfig — 事件绑定 */
+// 子域 A7：行为/事件绑定
 export interface SparkNodeBehaviorConfig {
   /** 事件绑定（key = 事件名，value = script.js 函数名） */
   on?: Record<string, string>
 }
 
-// ── 框架无关的运行时规则类型 ───────────────────────────────────────────────────
+// ── 分区 B：BindRule（绑定管线运行时模型） ───────────────────────────────────
 
 /**
  * 框架无关的运行时规则类型（绑定管线使用）
@@ -164,6 +231,8 @@ export interface BindRule {
   [key: string]: unknown
 }
 
+// ── 分区 C：脚本沙箱能力（页面运行时访问面） ─────────────────────────────────
+
 /** 页面脚本组件访问 API（由渲染器根节点注入） */
 export interface PageComponentAccessApi {
   /** 按组件 id 获取实例快照（推荐） */
@@ -184,28 +253,32 @@ export interface PageComponentAccessApi {
 /**
  * 页面脚本运行时上下文。
  *
- * SPARK 渲染器的脚本沙箱使用此类型。
+ * 继承 `IScriptContext`（spark-page-config，框架无关契约），
+ * 在此基础上添加 spark-component 层具体注入字段：
+ * - `$dataSet` — DataSet 实例（具体类型）
+ * - `$components` — 覆盖为更完整的 `PageComponentAccessApi`
+ * - `SparkData` — 数据工具命名空间
+ * - `h` — 渲染函数（Render* 专用）
+ * - Timer API — 沙箱白名单
  */
-export interface PageContext {
+export interface PageContext extends IScriptContext {
+  /** 页面 DataSet（比 IScriptContext 额外注入的具体类型） */
   $dataSet: IDataSet | null
+  /** 组件访问 API（覆盖 IScriptContext 基类，提供更丰富方法） */
   $components: PageComponentAccessApi
-  $route: IPageRoute
-  $moduleContext: IModuleContext | null
-  $el: () => HTMLElement | null
-  $query: (selector: string) => HTMLElement | null
-  $queryAll: (selector: string) => NodeListOf<Element>
-  $refreshData: (key?: string) => Promise<void>
-  $page: IPageServiceCapability
-  console: Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>
+  /** SPARK 数据空间工具命名空间（createTreeManager 等，Render* 函数用） */
   SparkData: typeof SparkData
-  h: typeof VueH
+  /** 渲染函数（框架无关签名，运行时由渲染层注入，Render* 函数专用） */
+  h: (type: unknown, ...args: unknown[]) => unknown
 
-  // Timer APIs
+  // Timer API（沙箱白名单）
   setTimeout: (handler: (...args: unknown[]) => void, timeout?: number) => number
   clearTimeout: (id?: number) => void
   setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
   clearInterval: (id?: number) => void
 }
+
+// ── 分区 D：渲染器编排入参 ──────────────────────────────────────────────────
 
 /**
  * 页面渲染器 Props
@@ -251,7 +324,9 @@ export interface PageRendererProps {
  */
 export interface RuleBindingOptions {
   rules: BindRule[]
+  /** script.js 可调用函数表（key 为函数名） */
   pageFunctions: Record<string, (...args: unknown[]) => unknown>
+  /** 页面级 DataSet（单一数据入口） */
   dataSet: IDataSet | null
   /** 组件注册表（可选）——用于查询 dataKey 行为元数据，替代硬编码的组件白名单 */
   registry?: ComponentRegistry

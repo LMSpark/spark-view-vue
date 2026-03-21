@@ -1,6 +1,11 @@
 /**
  * 规则绑定上下文 — 在递归 bindDataToRules 中逐层传递
  *
+ * 功能分区：
+ * 1) 上下文模型（BindingContext / EMPTY_CONTEXT）
+ * 2) 组件分类（字段提供者 / 数据容器）
+ * 3) 子级上下文构建（buildChildContext）
+ *
  * 负责将父组件的数据 / 权限 / 字段上下文向子组件传递，使子组件能够：
  * - 继承父级 DataView（如 el-table-column 内的 el-input 继承表格的 DataView）
  * - 知道自己所在的字段名（如 el-table-column[prop="name"] 内的 el-tag）
@@ -20,7 +25,7 @@
 
 import type { IDataSource, IModelPermission } from '@spark-view/spark-data'
 
-// ── 类型定义 ──────────────────────────────────────────────────────────────
+// ── 分区 A：上下文模型 ─────────────────────────────────────────────────────
 
 /**
  * 规则绑定上下文
@@ -42,7 +47,7 @@ export interface BindingContext {
 /** 空上下文（顶层调用或无上下文时使用） */
 export const EMPTY_CONTEXT: Readonly<BindingContext> = Object.freeze({})
 
-// ── 组件分类 ──────────────────────────────────────────────────────────────
+// ── 分区 B：组件分类 ───────────────────────────────────────────────────────
 
 /** 携带字段名的容器组件类型（prop 属性表示子组件对应的数据字段） */
 const FIELD_PROVIDER_TYPES = new Set([
@@ -58,7 +63,7 @@ export const DATA_CONTAINER_TYPES = new Set([
   'el-descriptions',
 ])
 
-// ── 上下文构建 ────────────────────────────────────────────────────────────
+// ── 分区 C：上下文构建 ─────────────────────────────────────────────────────
 
 /**
  * 根据当前规则构建子级绑定上下文
@@ -101,7 +106,7 @@ export function buildChildContext(
     }
   }
 
-  // 无变化则复用父级上下文对象
+  // 无变化：复用父级上下文对象，减少临时对象与 GC 压力
   if (!changed) return parentContext
 
   // exactOptionalPropertyTypes 要求：optional 属性不能赋值 undefined

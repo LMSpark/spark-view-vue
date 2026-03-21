@@ -74,12 +74,11 @@ describe('normalizeSparkNode — data', () => {
 // ── FilterConfig ───────────────────────────────────────────────────────────
 
 describe('normalizeSparkNode — filter', () => {
-  test('filter 全量映射', () => {
+  test('filter 布局属性全量映射', () => {
     const node: SparkNode = {
       type: 'r-table',
       meta: {
         filter: {
-          columns: ['name', 'status'],
           collapsible: true,
           defaultCollapsed: false,
           autoFitMinWidth: '220px',
@@ -92,7 +91,6 @@ describe('normalizeSparkNode — filter', () => {
       },
     }
     const rule = normalizeSparkNode(node)
-    expect(rule.props?.['filterColumns']).toEqual(['name', 'status'])
     expect(rule.props?.['filterCollapsible']).toBe(true)
     expect(rule.props?.['filterDefaultCollapsed']).toBe(false)
     expect(rule.props?.['filterAutoFitMinWidth']).toBe('220px')
@@ -101,6 +99,74 @@ describe('normalizeSparkNode — filter', () => {
     expect(rule.props?.['filterGridGap']).toBe('16px')
     expect(rule.props?.['filterGridAutoRows']).toBe('minmax(32px, auto)')
     expect(rule.props?.['filterClass']).toBe('my-filter')
+  })
+
+  test('filter items 字符串简写 → filterItems', () => {
+    const node: SparkNode = {
+      type: 'r-table',
+      meta: { filter: { items: ['name', 'status'] } },
+    }
+    const rule = normalizeSparkNode(node)
+    expect(rule.props?.['filterItems']).toEqual(['name', 'status'])
+  })
+
+  test('filter items 完整配置（组件/选项/逻辑）→ filterItems', () => {
+    const node: SparkNode = {
+      type: 'r-table',
+      meta: {
+        filter: {
+          logic: 'and',
+          items: [
+            { field: 'name', label: '姓名', component: 'text' },
+            {
+              field: 'status',
+              label: '状态',
+              component: 'select',
+              options: [{ label: '启用', value: 1 }, { label: '禁用', value: 0 }],
+            },
+            { field: 'score', component: 'number-range', logic: 'or', span: 12 },
+          ],
+        },
+      },
+    }
+    const rule = normalizeSparkNode(node)
+    expect(rule.props?.['filterLogic']).toBe('and')
+    const items = rule.props?.['filterItems'] as unknown[]
+    expect(items).toHaveLength(3)
+    expect((items[0] as Record<string, unknown>)['field']).toBe('name')
+    expect((items[1] as Record<string, unknown>)['component']).toBe('select')
+    expect((items[2] as Record<string, unknown>)['logic']).toBe('or')
+  })
+
+  test('filter.on 事件 → rule.on', () => {
+    const node: SparkNode = {
+      type: 'r-table',
+      meta: {
+        filter: {
+          items: ['name'],
+          on: { search: 'handleSearch', reset: 'handleReset', change: 'handleChange' },
+        },
+      },
+    }
+    const rule = normalizeSparkNode(node)
+    const on = rule['on'] as Record<string, string>
+    expect(on?.['search']).toBe('handleSearch')
+    expect(on?.['reset']).toBe('handleReset')
+    expect(on?.['change']).toBe('handleChange')
+  })
+
+  test('filter.on 与 behavior.on 合并：behavior.on 优先', () => {
+    const node: SparkNode = {
+      type: 'r-table',
+      meta: {
+        filter: { on: { search: 'filterSearch' } },
+        behavior: { on: { search: 'behaviorSearch', click: 'handleClick' } },
+      },
+    }
+    const rule = normalizeSparkNode(node)
+    const on = rule['on'] as Record<string, string>
+    expect(on?.['search']).toBe('behaviorSearch') // behavior.on 优先
+    expect(on?.['click']).toBe('handleClick')
   })
 })
 
@@ -128,14 +194,24 @@ describe('normalizeSparkNode — layout', () => {
     expect(rule.props?.['gridAutoRows']).toBe('auto')
   })
 
-  test('style / class → props', () => {
+  test('style / class 写在 props 内 → 保留透传', () => {
+    // SparkNode v2：style / class 是 HTML 原生属性，写在 props，不在节点顶层
     const node: SparkNode = {
       type: 'div',
-      meta: { layout: { style: { display: 'flex' }, class: 'my-div' } },
+      props: { style: { display: 'flex' }, class: 'my-div' },
     }
     const rule = normalizeSparkNode(node)
     expect(rule.props?.['style']).toEqual({ display: 'flex' })
     expect(rule.props?.['class']).toBe('my-div')
+  })
+
+  test('props.class 支持数组格式', () => {
+    const node: SparkNode = {
+      type: 'div',
+      props: { class: ['container', 'flex'] },
+    }
+    const rule = normalizeSparkNode(node)
+    expect(rule.props?.['class']).toEqual(['container', 'flex'])
   })
 })
 
@@ -356,7 +432,7 @@ describe('normalizeSparkNode — 完整 r-table 示例', () => {
       meta: {
         data: { dataKey: 'Users@rows' },
         layout: { grid: { columns: 24 } },
-        filter: { columns: ['name', 'status'], collapsible: true },
+        filter: { items: ['name', 'status'], collapsible: true },
         toolbar: {
           items: [{ type: 'el-button', props: { type: 'primary' } }],
           position: 'top',
@@ -381,7 +457,7 @@ describe('normalizeSparkNode — 完整 r-table 示例', () => {
     // layout
     expect(rule.props?.['gridColumns']).toBe(24)
     // filter
-    expect(rule.props?.['filterColumns']).toEqual(['name', 'status'])
+    expect(rule.props?.['filterItems']).toEqual(['name', 'status'])
     expect(rule.props?.['filterCollapsible']).toBe(true)
     // toolbar
     expect(Array.isArray(rule.props?.['toolbar'])).toBe(true)

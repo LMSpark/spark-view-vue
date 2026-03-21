@@ -1,8 +1,13 @@
 /**
  * SparkNode v2 → BindRule 归一化
  *
- * 纯映射函数，将 meta.* 展开到现有 BindRule 扁平结构，
- * 使所有下游管线（delegate / 容器组件 / 字段组件）零改动。
+ * 功能分区：
+ * 1) 常量映射（actions 键位 / 生命周期事件）
+ * 2) 格式检测（isSparkNode）
+ * 3) 主归一化（normalizeSparkNode）
+ *
+ * 设计目标：仅做结构映射，不引入业务副作用；
+ * 将 meta.* 展开到既有 BindRule 扁平字段，使下游 delegate / 容器 / 字段组件无需改动。
  */
 
 import type { BindRule } from '../types'
@@ -11,6 +16,8 @@ import type {
   SparkNodeSimpleActionsConfig,
 } from '../types'
 import { setRuleProp } from './bind-helpers'
+
+// ── 分区 A：常量映射 ───────────────────────────────────────────────────────
 
 /** 容器类型 → actions props 键名映射 */
 const ACTION_KEY_MAP: Record<string, string> = {
@@ -36,16 +43,16 @@ const LIFECYCLE_EVENTS = new Set([
   'change', 'blur', 'focus',                   // fields
 ])
 
-/**
- * 检测一个规则对象是否为 SparkNode v2 格式
- */
+// ── 分区 B：格式检测 ───────────────────────────────────────────────────────
+
+/** 检测规则对象是否为 SparkNode v2 格式（具备非空 meta） */
 export function isSparkNode(rule: BindRule): boolean {
   return 'meta' in rule && typeof rule['meta'] === 'object' && rule['meta'] !== null
 }
 
-/**
- * SparkNode v2 → BindRule 归一化
- */
+// ── 分区 C：主归一化流程 ───────────────────────────────────────────────────
+
+/** SparkNode v2 → BindRule（纯映射，不做运行时绑定） */
 export function normalizeSparkNode(node: SparkNode): BindRule {
   const rule: BindRule = { type: node.type, props: { ...node.props } }
   if (node.id) rule['id'] = node.id
@@ -56,7 +63,7 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
   const m = node.meta
   if (!m) return rule
 
-  // ── data → 顶层 + props ─────────────────────────────────────
+  // C1 数据域：data → 顶层字段 + props
   if (m.data) {
     if (m.data.dataKey) rule['dataKey'] = m.data.dataKey
     if (m.data.name) rule.name = m.data.name
@@ -66,10 +73,11 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
     if (m.data.optionChildrenField) setRuleProp(rule, 'optionChildrenField', m.data.optionChildrenField)
   }
 
-  // ── filter → props（独立域） ─────────────────────────────────
+  // C2 筛选域：filter → props（独立于 data）
   if (m.filter) {
     const f = m.filter
-    if (f.columns) setRuleProp(rule, 'filterColumns', f.columns)
+    if (f.items) setRuleProp(rule, 'filterItems', f.items)
+    if (f.logic) setRuleProp(rule, 'filterLogic', f.logic)
     if (f.collapsible !== undefined) setRuleProp(rule, 'filterCollapsible', f.collapsible)
     if (f.defaultCollapsed !== undefined) setRuleProp(rule, 'filterDefaultCollapsed', f.defaultCollapsed)
     if (f.autoFitMinWidth) setRuleProp(rule, 'filterAutoFitMinWidth', f.autoFitMinWidth)
@@ -78,9 +86,18 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
     if (f.gridGap !== undefined) setRuleProp(rule, 'filterGridGap', f.gridGap)
     if (f.gridAutoRows) setRuleProp(rule, 'filterGridAutoRows', f.gridAutoRows)
     if (f.class) setRuleProp(rule, 'filterClass', f.class)
+    // filter 事件 → rule.on（与 behavior.on 合并，同名时 behavior.on 优先）
+    if (f.on) {
+      const currentOn = (rule['on'] as Record<string, string> | undefined) ?? {}
+      if (f.on.search && !currentOn['search']) currentOn['search'] = f.on.search
+      if (f.on.reset && !currentOn['reset']) currentOn['reset'] = f.on.reset
+      if (f.on.change && !currentOn['change']) currentOn['change'] = f.on.change
+      rule['on'] = currentOn
+    }
   }
 
-  // ── layout → props ───────────────────────────────────────────
+  // C3 布局域：layout → props（仅 SPARK 特有的 grid 语义）
+  // style/class 已在顶层处理，此处仅处理 grid 相关字段
   if (m.layout) {
     if (m.layout.colSpan !== undefined) setRuleProp(rule, 'colSpan', m.layout.colSpan)
     if (m.layout.rowSpan !== undefined) setRuleProp(rule, 'rowSpan', m.layout.rowSpan)
@@ -89,18 +106,16 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
       if (m.layout.grid.gap !== undefined) setRuleProp(rule, 'gridGap', m.layout.grid.gap)
       if (m.layout.grid.autoRows) setRuleProp(rule, 'gridAutoRows', m.layout.grid.autoRows)
     }
-    if (m.layout.style) setRuleProp(rule, 'style', m.layout.style)
-    if (m.layout.class !== undefined) setRuleProp(rule, 'class', m.layout.class)
   }
 
-  // ── toolbar → props ──────────────────────────────────────────
+  // C4 工具栏域：toolbar → props
   if (m.toolbar) {
     setRuleProp(rule, 'toolbar', m.toolbar.items.map(normalizeSparkNode))
     if (m.toolbar.position) setRuleProp(rule, 'toolbarPosition', m.toolbar.position)
     if (m.toolbar.class) setRuleProp(rule, 'toolbarClass', m.toolbar.class)
   }
 
-  // ── actions → props（按容器类型分派） ────────────────────────
+  // C5 操作域：actions → props（按容器类型分派）
   if (m.actions) {
     if (DUAL_ACTION_TYPES.has(rule.type)) {
       // 双区模式（r-dialog / r-drawer）
@@ -127,7 +142,7 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
     }
   }
 
-  // ── state → 顶层 + props ────────────────────────────────────
+  // C6 状态域：state → 顶层字段 + props
   if (m.state) {
     if (m.state.visible !== undefined) rule['visible'] = m.state.visible
     if (m.state.disabled !== undefined) rule['disabled'] = m.state.disabled
@@ -135,7 +150,7 @@ export function normalizeSparkNode(node: SparkNode): BindRule {
     if (m.state.collapsed !== undefined) setRuleProp(rule, 'collapsed', m.state.collapsed)
   }
 
-  // ── behavior.on → rule.on + props.on* ───────────────────────
+  // C7 行为域：behavior.on → rule.on + props.on*
   if (m.behavior?.on) {
     const eventMap: Record<string, string> = {}
     for (const [eventName, fnName] of Object.entries(m.behavior.on)) {

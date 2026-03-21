@@ -1,7 +1,13 @@
 /**
  * 规则绑定主编排器
  *
- * 职责：递归遍历 rule 树，根据组件类型委托给对应的绑定委托：
+ * 功能分区：
+ * 1) 入口预处理（SparkNode 归一化、函数调用器准备）
+ * 2) 递归编排（事件包装、dataKey 委托、权限注入、上下文传递）
+ * 3) 通用回退（未命中特定委托时的 dataKey 解析）
+ * 4) 统一执行面（脚本函数调用与错误日志）
+ *
+ * 核心职责：递归遍历 rule 树，根据组件类型委托给对应绑定模块：
  *  - el-table        → bind-table-delegate（数据 + 事件 + 加载状态）
  *  - el-pagination   → bind-pagination-delegate（分页双向绑定）
  *  - 值型表单组件    → bind-form-delegate（选项映射 + 值绑定）
@@ -21,7 +27,7 @@ import type { IDataSet } from '@spark-view/spark-data'
 import { isDataKey, resolveDataKeyBinding, getViewFromRawKey } from '@spark-view/spark-data'
 import type { ComponentRegistry } from '../../types.js'
 
-// ── 委托模块 ──────────────────────────────────────────────────────────────
+// ── 分区 A：委托依赖 ───────────────────────────────────────────────────────
 
 import { resolveRuleDataKey, setRuleProp, pageLogger } from './bind-helpers'
 import { bindTableRule } from './bind-table-delegate'
@@ -31,7 +37,7 @@ import { applyPermissions } from './bind-permission-delegate'
 import { type BindingContext, EMPTY_CONTEXT, buildChildContext, DATA_CONTAINER_TYPES } from './bind-context'
 import { isSparkNode, normalizeSparkNode } from './normalize-spark-node'
 
-// ── 组件分类常量 ──────────────────────────────────────────────────────────
+// ── 分区 B：组件分类常量 ───────────────────────────────────────────────────
 
 /**
  * dataKey 自解析组件类型回退默认列表
@@ -51,7 +57,7 @@ const _COMPONENT_ARRAY_PROP_KEYS = new Set(['headerActions', 'footerActions', 't
 /** 分页组件类型集合 */
 const PAGINATION_TYPES = new Set(['el-pagination'])
 
-// ── 类型判断 ──────────────────────────────────────────────────────────────
+// ── 分区 C：类型判断 ───────────────────────────────────────────────────────
 
 /**
  * 检查组件是否为自解析类型（优先查询注册表 meta，回退到核心列表）
@@ -64,7 +70,7 @@ function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolea
   return _SELF_RESOLVING_FALLBACK.has(type)
 }
 
-// ── 公共入口 ──────────────────────────────────────────────────────────────
+// ── 分区 D：公共入口（预处理 + 编排启动） ─────────────────────────────────
 
 /**
  * 递归替换 rule 中的数据占位符和事件处理器（公共 API）
@@ -78,7 +84,7 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
   return bindRulesRecursive({ ...options, rules: normalizedRules }, EMPTY_CONTEXT, callFunc)
 }
 
-// ── 递归编排 ──────────────────────────────────────────────────────────────
+// ── 分区 E：递归编排（主流程） ─────────────────────────────────────────────
 
 function bindRulesRecursive(
   options: RuleBindingOptions,
@@ -210,7 +216,7 @@ function bindRulesRecursive(
       }
     }
 
-    // ── r-* 组件：children → sparkChildren prop ──
+    // ── r-* 组件：children → sparkChildren prop（统一子树递归入口） ──
     // 将已递归处理的 children 移入 sparkChildren prop，
     // 由组件自行通过 SparkComponentRenderer 渲染。
     //
@@ -227,11 +233,22 @@ function bindRulesRecursive(
       }
     }
 
+    // ── 向下兼容：旧 rule.json 顶层 style / class → props ──────────────────
+    // 旧格式 rule.json 中 style / class 可写在规则顶层（与 type 同级）。
+    // SparkNode v2 应将 style / class 放在 props 内，此处仅做旧格式兼容提升。
+    // SparkComponentRenderer 的 v-bind="forwardedProps" 统一转发到元素/组件。
+    if (newRule['style'] !== undefined && newRule.props?.['style'] === undefined) {
+      setRuleProp(newRule, 'style', newRule['style'])
+    }
+    if (newRule['class'] !== undefined && newRule.props?.['class'] === undefined) {
+      setRuleProp(newRule, 'class', newRule['class'])
+    }
+
     return newRule
   })
 }
 
-// ── 通用 dataKey 绑定（回退逻辑） ──────────────────────────────────────────
+// ── 分区 F：通用 dataKey 绑定（回退逻辑） ──────────────────────────────────
 
 /**
  * 未被类型特定委托处理的组件的 dataKey 回退绑定
@@ -257,7 +274,7 @@ function bindGenericDataKey(rule: BindRule, dataSet: IDataSet | null): void {
   rule.children = [String(resolved)]
 }
 
-// ── 函数调用器 ─────────────────────────────────────────────────────────────
+// ── 分区 G：函数调用器（统一执行面） ───────────────────────────────────────
 
 /**
  * 创建统一的函数调用器

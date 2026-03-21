@@ -113,6 +113,8 @@ declare module '@spark-view/spark-utils' {
     'app:page-component-registry': PageComponentRegistry
     /** 模块上下文能力（页面级） */
     'app:module-context': ModuleContextCapability
+    /** 页面 CSS 作用域注入能力（由 SparkPageRenderer provide，四文件 style.css 收口） */
+    'spark:capability:css-scope': PageCssScopeCapability
   }
 }
 
@@ -166,3 +168,25 @@ export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('
  * 由页面渲染器根节点 provide，下游组件可 consume 后读取当前上下文并订阅变化。
  */
 export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('app:module-context')
+
+/**
+ * 页面 CSS 作用域注入能力
+ *
+ * 由 SparkPageRenderer 在初始化 useCssScope 后 provide；
+ * 插件、子渲染器或需要动态注入 CSS 的组件可 consume 后按需追加样式。
+ * 注入的 CSS 会被 pageId scoping 自动处理（与静态 style.css 一致）。
+ */
+export interface PageCssScopeCapability {
+  /** 注入/追加 CSS 到当前页面作用域 */
+  inject(css: string): void
+}
+
+/**
+ * 页面 CSS 作用域能力键
+ *
+ * 四文件中 style.css 的能力链收口：
+ *   style.css → parseCss → PageConfig.css → setScopedCss + provide(CSS_SCOPE)
+ *
+ * 消费方：插件、嵌套渲染器、动态主题注入等。
+ */
+export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
