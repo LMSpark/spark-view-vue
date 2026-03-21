@@ -71,7 +71,7 @@
           :auto-fit-min-width="filterAutoFitMinWidthValue"
           :default-col-span="filterItemSpanValue"
           label-position="left"
-          label-width="auto"
+          label-width="80px"
           compact
         />
       </div>

@@ -22,7 +22,7 @@
     </div>
 
     <div class="renderer-form-main">
-      <el-form :model="formModel" v-bind="$attrs">
+      <el-form :model="formModel" :label-width="labelWidth" v-bind="$attrs">
         <div v-if="gridChildren.length" class="renderer-form-grid" :style="gridStyle">
           <div
             v-for="(child, i) in gridChildren"
