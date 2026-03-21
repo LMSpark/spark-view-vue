@@ -17,6 +17,131 @@ import type { PageComponentInstanceEntry } from '../capability-keys.js'
 // PageConfig 来自 spark-page-config（数据配置层的权威定义），此处仅做重导出
 export type { PageConfig }
 
+// ── SparkNode v2 结构化配置类型 ───────────────────────────────────────────
+
+/**
+ * SparkNode v2 — 7 语义域结构化配置
+ *
+ * 设计原则：
+ * - props 只放组件原生属性（border, size, type, label 等）
+ * - meta 放 SPARK 框架语义（数据/布局/筛选/工具栏/操作/状态/行为）
+ * - meta 中无内容的域省略不写
+ * - children 为递归 SparkNode 数组
+ */
+export interface SparkNode {
+  /** 组件类型（kebab-case，如 r-table / el-button / div） */
+  type: string
+  /** 唯一标识（省略则运行时自动生成 spark-${++counter}） */
+  id?: string
+  /** 组件原生属性（直接透传到目标组件的 props） */
+  props?: Record<string, unknown>
+  /** SPARK 语义域配置（7 域） */
+  meta?: SparkNodeMeta
+  /** 子组件（递归） */
+  children?: SparkNode[]
+}
+
+export interface SparkNodeMeta {
+  /** 数据绑定（dataKey / name / options） */
+  data?: SparkNodeDataConfig
+  /** 布局定位（colSpan / grid 容器） */
+  layout?: SparkNodeLayoutConfig
+  /** 筛选器（仅数据容器，独立于 data） */
+  filter?: SparkNodeFilterConfig
+  /** 工具栏（全局操作区） */
+  toolbar?: SparkNodeToolbarConfig
+  /** 上下文操作（行/节点/项，或弹窗头尾操作区） */
+  actions?: SparkNodeActionsConfig
+  /** 状态控制（visible / disabled / modelValue） */
+  state?: SparkNodeStateConfig
+  /** 事件绑定（统一 on 映射） */
+  behavior?: SparkNodeBehaviorConfig
+}
+
+/** DataConfig — 数据绑定 */
+export interface SparkNodeDataConfig {
+  /** DataKey 绑定键（如 Users@rows / Users@currentRow） */
+  dataKey?: string
+  /** 字段绑定名（映射到 DataView 行字段） */
+  name?: string
+  /** 选项数据源（r-select / r-radio 等字段组件） */
+  options?: Array<{ label: string; value: unknown; children?: unknown[] }>
+  /** 选项字段映射 */
+  optionLabelField?: string
+  optionValueField?: string
+  optionChildrenField?: string
+}
+
+/** LayoutConfig — 布局控制 */
+export interface SparkNodeLayoutConfig {
+  /** 在父 Grid 中的跨列数（24 列制） */
+  colSpan?: number
+  /** 在父 Grid 中的跨行数 */
+  rowSpan?: number
+  /** Grid 容器属性（当前节点作为父容器时生效） */
+  grid?: {
+    columns?: number
+    gap?: number | string
+    autoRows?: string
+  }
+  /** 样式快捷方式 */
+  style?: Record<string, string | number>
+  /** CSS 类名 */
+  class?: string | string[]
+}
+
+/** FilterConfig — 筛选器 */
+export interface SparkNodeFilterConfig {
+  columns?: string[]
+  collapsible?: boolean
+  defaultCollapsed?: boolean
+  autoFitMinWidth?: string
+  itemSpan?: number
+  gridColumns?: number
+  gridGap?: number | string
+  gridAutoRows?: string
+  class?: string
+}
+
+/** ToolbarConfig — 工具栏 */
+export interface SparkNodeToolbarConfig {
+  items: SparkNode[]
+  position?: 'top' | 'bottom' | 'left' | 'right'
+  class?: string
+}
+
+/** ActionsConfig — 操作区（简单模式 | 双区模式） */
+export type SparkNodeActionsConfig = SparkNodeSimpleActionsConfig | SparkNodeDualActionsConfig
+
+export interface SparkNodeSimpleActionsConfig {
+  items: SparkNode[]
+  position?: 'left' | 'right'
+  label?: string
+  width?: number | string
+  align?: 'left' | 'center' | 'right'
+  fixed?: boolean | 'left' | 'right'
+  class?: string
+}
+
+export interface SparkNodeDualActionsConfig {
+  header?: SparkNodeSimpleActionsConfig
+  footer?: SparkNodeSimpleActionsConfig
+}
+
+/** StateConfig — 状态控制 */
+export interface SparkNodeStateConfig {
+  visible?: boolean
+  disabled?: boolean
+  modelValue?: unknown
+  collapsed?: boolean
+}
+
+/** BehaviorConfig — 事件绑定 */
+export interface SparkNodeBehaviorConfig {
+  /** 事件绑定（key = 事件名，value = script.js 函数名） */
+  on?: Record<string, string>
+}
+
 // ── 框架无关的运行时规则类型 ───────────────────────────────────────────────────
 
 /**

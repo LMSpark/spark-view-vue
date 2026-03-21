@@ -61,7 +61,9 @@ export {
   usePageDataSet,
   SparkPageRenderer,
   SparkComponentRenderer,
-  bindDataToRules
+  bindDataToRules,
+  normalizeSparkNode,
+  isSparkNode,
 } from './renderer/index.js'
 
 export type {
@@ -75,6 +77,17 @@ export type {
   PageConfig,
   PageRendererProps,
   RuleBindingOptions,
+  SparkNode,
+  SparkNodeMeta,
+  SparkNodeDataConfig,
+  SparkNodeLayoutConfig,
+  SparkNodeFilterConfig,
+  SparkNodeToolbarConfig,
+  SparkNodeActionsConfig,
+  SparkNodeSimpleActionsConfig,
+  SparkNodeDualActionsConfig,
+  SparkNodeStateConfig,
+  SparkNodeBehaviorConfig,
 } from './renderer/index.js'
 
 // ── 8. 内置 Renderer 容器 + 字段组件 ──

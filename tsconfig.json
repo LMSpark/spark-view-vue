@@ -33,13 +33,12 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@spark-view/spark-utils": ["./packages/spark-utils/dist/index.d.ts"],
-      "@spark-view/spark-component": ["./packages/spark-component/dist/index.d.ts"],
-      "@spark-view/spark-data": ["./packages/spark-data/dist/types/index.d.ts"],
-      // during development resolve to source so new exports are immediately visible
+      "@spark-view/spark-utils": ["./packages/spark-utils/src/index.ts"],
+      "@spark-view/spark-component": ["./packages/spark-component/src/index.ts"],
+      "@spark-view/spark-data": ["./packages/spark-data/src/index.ts"],
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
       "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],
-      "@spark-view/spark-page-config": ["./packages/spark-page-config/dist/index.d.ts"],
+      "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"],
       "@/features/spark-ej2": ["./src/features/spark-ej2"]
     },
     "types": ["vite/client", "vitest/globals"]

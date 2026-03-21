@@ -16,7 +16,7 @@
  */
 
 import { toErrorMessage } from '@spark-view/spark-utils'
-import type { BindRule, RuleBindingOptions } from '../types'
+import type { BindRule, RuleBindingOptions, SparkNode } from '../types'
 import type { IDataSet } from '@spark-view/spark-data'
 import { isDataKey, resolveDataKeyBinding, getViewFromRawKey } from '@spark-view/spark-data'
 import type { ComponentRegistry } from '../../types.js'
@@ -29,6 +29,7 @@ import { bindPaginationRule } from './bind-pagination-delegate'
 import { bindFormElementRule, FORM_ELEMENT_TYPES } from './bind-form-delegate'
 import { applyPermissions } from './bind-permission-delegate'
 import { type BindingContext, EMPTY_CONTEXT, buildChildContext, DATA_CONTAINER_TYPES } from './bind-context'
+import { isSparkNode, normalizeSparkNode } from './normalize-spark-node'
 
 // ── 组件分类常量 ──────────────────────────────────────────────────────────
 
@@ -69,8 +70,12 @@ function isSelfResolvingType(type: string, registry?: ComponentRegistry): boolea
  * 递归替换 rule 中的数据占位符和事件处理器（公共 API）
  */
 export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
+  // SparkNode v2 自动检测：含 meta 字段 → 先归一化为 BindRule
+  const normalizedRules = options.rules.map(rule =>
+    isSparkNode(rule) ? normalizeSparkNode(rule as unknown as SparkNode) : rule
+  )
   const callFunc = createFunctionCaller(options.pageFunctions)
-  return bindRulesRecursive(options, EMPTY_CONTEXT, callFunc)
+  return bindRulesRecursive({ ...options, rules: normalizedRules }, EMPTY_CONTEXT, callFunc)
 }
 
 // ── 递归编排 ──────────────────────────────────────────────────────────────

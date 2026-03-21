@@ -16,7 +16,7 @@
           {
             "type": "p",
             "children": [
-              "使用 r-tree 容器组件和智能字段组件自定义树节点内容"
+              "使用导航节点数据演示 TreeManager/DataView 的 4 个远程接口 + 7 个本地接口"
             ]
           }
         ]
@@ -95,13 +95,37 @@
           {
             "type": "el-button",
             "props": {
+              "type": "success"
+            },
+            "on": {
+              "click": "handleRunRemote4"
+            },
+            "children": [
+              "远程4接口"
+            ]
+          },
+          {
+            "type": "el-button",
+            "props": {
+              "type": "warning"
+            },
+            "on": {
+              "click": "handleRunLocal7"
+            },
+            "children": [
+              "本地7接口"
+            ]
+          },
+          {
+            "type": "el-button",
+            "props": {
               "type": "info"
             },
             "on": {
-              "click": "testNodeClick"
+              "click": "handleRunAll4Plus7"
             },
             "children": [
-              "测试点击"
+              "4+7全跑"
             ]
           }
         ]
@@ -181,7 +205,8 @@
                 },
                 "children": [
                   {
-                    "type": "el-table",
+                    "type": "r-table",
+                    "dataKey": "childNodes@rows",
                     "props": {
                       "border": true,
                       "stripe": true,
@@ -189,7 +214,6 @@
                       "highlightCurrentRow": true,
                       "rowKey": "id"
                     },
-                    "dataKey": "childNodes@rows",
                     "on": {
                       "rowClick": "handleLocateNode"
                     },

@@ -27,10 +27,22 @@ export type {
   PageConfig,
   PageRendererProps,
   RuleBindingOptions,
+  SparkNode,
+  SparkNodeMeta,
+  SparkNodeDataConfig,
+  SparkNodeLayoutConfig,
+  SparkNodeFilterConfig,
+  SparkNodeToolbarConfig,
+  SparkNodeActionsConfig,
+  SparkNodeSimpleActionsConfig,
+  SparkNodeDualActionsConfig,
+  SparkNodeStateConfig,
+  SparkNodeBehaviorConfig,
 } from './types'
 
 // 渲染工具（供测试及高级用例）
 export { bindDataToRules } from './binding/bindRules'
+export { normalizeSparkNode, isSparkNode } from './binding/normalize-spark-node'
 
 // ── 容器组件 ──────────────────────────────────────────────────────────────────
 export { default as RendererTable } from './containers/RendererTable.vue'
