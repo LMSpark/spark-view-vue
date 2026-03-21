@@ -1,1 +1,225 @@
-[{"type":"div","class":"page-container","style":{"padding":"20px"},"children":[{"type":"h2","children":["学生成绩管理"]},{"type":"el-alert","props":{"title":"管理学生成绩信息，支持查看、新增、编辑和删除操作。","type":"info","closable":false,"showIcon":true},"style":{"marginBottom":"16px"}},{"type":"div","style":{"marginBottom":"16px","display":"flex","gap":"8px"},"children":[{"type":"el-button","props":{"type":"primary","size":"small"},"on":{"click":"handleAdd"},"children":["新增成绩"]},{"type":"el-button","props":{"type":"success","size":"small"},"on":{"click":"handleEdit"},"children":["编辑成绩"]},{"type":"el-button","props":{"type":"danger","size":"small"},"on":{"click":"handleDelete"},"children":["删除成绩"]}]},{"type":"el-table","dataKey":"Students@rows","props":{"border":true,"stripe":true,"highlightCurrentRow":true},"on":{"currentChange":"handleCurrentChange"},"children":[{"type":"el-table-column","props":{"prop":"id","label":"ID","width":"80"}},{"type":"el-table-column","props":{"prop":"name","label":"学生姓名","width":"120"}},{"type":"el-table-column","props":{"prop":"gender","label":"性别","width":"80"}},{"type":"el-table-column","props":{"prop":"subject","label":"科目","width":"100"}},{"type":"el-table-column","props":{"prop":"score","label":"成绩","width":"100"}},{"type":"el-table-column","props":{"prop":"grade","label":"等级","width":"100"}},{"type":"el-table-column","props":{"prop":"examDate","label":"考试日期","width":"120"}},{"type":"el-table-column","props":{"prop":"teacher","label":"授课教师","width":"120"}}]},{"type":"el-divider","props":{"contentPosition":"left"},"children":["成绩详情"]},{"type":"r-detail","dataKey":"Students@currentRow","props":{"labelWidth":"100px"},"children":[{"type":"r-text","name":"name","props":{"label":"学生姓名"}},{"type":"r-text","name":"gender","props":{"label":"性别"}},{"type":"r-text","name":"subject","props":{"label":"科目"}},{"type":"r-number","name":"score","props":{"label":"成绩","min":0,"max":100}},{"type":"r-text","name":"grade","props":{"label":"等级"}},{"type":"r-text","name":"examDate","props":{"label":"考试日期"}},{"type":"r-text","name":"teacher","props":{"label":"授课教师"}}]}]}]
+[
+  {
+    "type": "div",
+    "class": "page-container",
+    "style": {
+      "padding": "20px"
+    },
+    "children": [
+      {
+        "type": "h2",
+        "children": [
+          "学生成绩管理"
+        ]
+      },
+      {
+        "type": "el-alert",
+        "props": {
+          "title": "管理学生成绩信息，支持查看、新增、编辑和删除操作。",
+          "type": "info",
+          "closable": false,
+          "showIcon": true
+        },
+        "style": {
+          "marginBottom": "16px"
+        }
+      },
+      {
+        "type": "div",
+        "style": {
+          "marginBottom": "16px",
+          "display": "flex",
+          "gap": "8px"
+        },
+        "children": [
+          {
+            "type": "el-button",
+            "props": {
+              "type": "primary",
+              "size": "small"
+            },
+            "on": {
+              "click": "handleAdd"
+            },
+            "children": [
+              "新增成绩"
+            ]
+          },
+          {
+            "type": "el-button",
+            "props": {
+              "type": "success",
+              "size": "small"
+            },
+            "on": {
+              "click": "handleEdit"
+            },
+            "children": [
+              "编辑成绩"
+            ]
+          },
+          {
+            "type": "el-button",
+            "props": {
+              "type": "danger",
+              "size": "small"
+            },
+            "on": {
+              "click": "handleDelete"
+            },
+            "children": [
+              "删除成绩"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-table",
+        "dataKey": "Students@rows",
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true
+        },
+        "on": {
+          "currentChange": "handleCurrentChange"
+        },
+        "children": [
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "id",
+              "label": "ID",
+              "width": "80"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "name",
+              "label": "学生姓名",
+              "width": "120"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "gender",
+              "label": "性别",
+              "width": "80"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "subject",
+              "label": "科目",
+              "width": "100"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "score",
+              "label": "成绩",
+              "width": "100"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "grade",
+              "label": "等级",
+              "width": "100"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "examDate",
+              "label": "考试日期",
+              "width": "120"
+            }
+          },
+          {
+            "type": "el-table-column",
+            "props": {
+              "prop": "teacher",
+              "label": "授课教师",
+              "width": "120"
+            }
+          }
+        ]
+      },
+      {
+        "type": "el-divider",
+        "props": {
+          "contentPosition": "left"
+        },
+        "children": [
+          "成绩详情"
+        ]
+      },
+      {
+        "type": "r-detail",
+        "dataKey": "Students@currentRow",
+        "props": {
+          "labelWidth": "100px"
+        },
+        "children": [
+          {
+            "type": "r-text",
+            "field": "name",
+            "props": {
+              "label": "学生姓名"
+            }
+          },
+          {
+            "type": "r-text",
+            "field": "gender",
+            "props": {
+              "label": "性别"
+            }
+          },
+          {
+            "type": "r-text",
+            "field": "subject",
+            "props": {
+              "label": "科目"
+            }
+          },
+          {
+            "type": "r-number",
+            "field": "score",
+            "props": {
+              "label": "成绩",
+              "min": 0,
+              "max": 100
+            }
+          },
+          {
+            "type": "r-text",
+            "field": "grade",
+            "props": {
+              "label": "等级"
+            }
+          },
+          {
+            "type": "r-text",
+            "field": "examDate",
+            "props": {
+              "label": "考试日期"
+            }
+          },
+          {
+            "type": "r-text",
+            "field": "teacher",
+            "props": {
+              "label": "授课教师"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

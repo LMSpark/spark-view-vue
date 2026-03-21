@@ -295,9 +295,9 @@ const legacyRowActionConfigs = computed(() =>
   mergedChildren.value.filter(child => /^Render[A-Z]/.test(child.type))
 )
 
-const sparkChildren = computed(() =>
-  mergedChildren.value.filter(child => isCollectedTableColumn(child))
-)
+const sparkChildren = computed(() => {
+  return mergedChildren.value.filter(child => isCollectedTableColumn(child))
+})
 
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
@@ -619,7 +619,15 @@ function handleBuiltinRowAction(action: SparkNode, row: IDataRow, index: number)
 function isCollectedTableColumn(config: SparkNode): boolean {
   if (/^Render[A-Z]/.test(config.type)) return false
   if (config.type === 'el-table-column') return true
-  return config.type.startsWith('r-') && typeof config.field === 'string' && config.field.length > 0
+  if (!config.type.startsWith('r-')) return false
+  // 数据列：有 field 绑定（v3 field 或 v2 name 经 bindRules 兼容映射）
+  if (typeof config.field === 'string' && config.field.length > 0) {
+    return true
+  }
+  // 分组列：无 field 但有子列（如 r-column-group）
+  const sparkKids = config.props?.['sparkChildren'] as SparkNode[] | undefined
+  if (Array.isArray(sparkKids) && sparkKids.length > 0) return true
+  return false
 }
 
 // ── 过滤操作 ──────────────────────────────────────────────────────────────

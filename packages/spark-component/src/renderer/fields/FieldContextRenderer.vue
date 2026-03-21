@@ -72,7 +72,7 @@ interface Props {
   validationRules: FormItemRule[]
 }
 
-defineProps<Props>()
+const _props = defineProps<Props>()
 
 defineSlots<{
   'table-cell'(props: { row: IDataRow; value: string }): unknown

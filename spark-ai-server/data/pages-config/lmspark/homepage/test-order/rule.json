@@ -26,7 +26,7 @@
         "children": [
           {
             "type": "r-text",
-            "name": "id",
+            "field": "id",
             "props": {
               "label": "ID",
               "width": 80
@@ -34,14 +34,14 @@
           },
           {
             "type": "r-text",
-            "name": "name",
+            "field": "name",
             "props": {
               "label": "名称"
             }
           },
           {
             "type": "r-select",
-            "name": "status",
+            "field": "status",
             "props": {
               "label": "状态",
               "width": 120,
@@ -67,7 +67,7 @@
           },
           {
             "type": "r-number",
-            "name": "price",
+            "field": "price",
             "props": {
               "label": "价格",
               "width": 120,

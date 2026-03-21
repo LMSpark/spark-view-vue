@@ -8,7 +8,9 @@
     "children": [
       {
         "type": "h2",
-        "children": ["学生成绩管理"]
+        "children": [
+          "学生成绩管理"
+        ]
       },
       {
         "type": "el-alert",
@@ -41,7 +43,9 @@
             "on": {
               "click": "handleAdd"
             },
-            "children": ["新增成绩"]
+            "children": [
+              "新增成绩"
+            ]
           },
           {
             "type": "el-button",
@@ -53,7 +57,9 @@
             "on": {
               "click": "handleDeleteSelected"
             },
-            "children": ["删除选中"]
+            "children": [
+              "删除选中"
+            ]
           },
           {
             "type": "el-input",
@@ -76,7 +82,9 @@
             "on": {
               "click": "handleSearch"
             },
-            "children": ["查询"]
+            "children": [
+              "查询"
+            ]
           }
         ]
       },

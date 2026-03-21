@@ -1,1 +1,349 @@
-[{"type": "div", "class": "vxe-demo-page", "style": {"padding": "20px"}, "children": [{"type": "h1", "children": ["r-Table 演示页面"]}, {"type": "p", "children": ["这是一个展示 r-Table 表格组件基本功能的演示页面，包括数据展示、分页、排序、筛选等常用特性。"]}, {"type": "el-row", "style": {"marginBottom": "20px"}, "children": [{"type": "el-col", "props": {"span": 24}, "children": [{"type": "RenderToolbar"}]}]}, {"type": "el-row", "children": [{"type": "el-col", "props": {"span": 24}, "children": [{"type": "r-table", "dataKey": "DemoData@rows", "props": {"border": true, "stripe": true, "highlightCurrentRow": true, "rowActions": [{"type": "RenderRowActions"}], "toolbar": [{"type": "RenderTableToolbar"}], "showPagination": true, "pageSize": 10, "sortable": true, "filterable": true}, "children": [{"type": "r-text", "name": "id", "props": {"label": "ID", "width": 80, "sortable": true}}, {"type": "r-text", "name": "name", "props": {"label": "姓名", "width": 120, "sortable": true, "filterable": true}}, {"type": "r-select", "name": "gender", "props": {"label": "性别", "width": 100, "sortable": true, "filterable": true}}, {"type": "r-number", "name": "age", "props": {"label": "年龄", "width": 100, "sortable": true, "filterable": true}}, {"type": "r-date", "name": "birthday", "props": {"label": "生日", "width": 150, "sortable": true}}, {"type": "r-select", "name": "status", "props": {"label": "状态", "width": 120, "sortable": true, "filterable": true}}, {"type": "r-text", "name": "address", "props": {"label": "地址", "width": 200, "filterable": true}}, {"type": "r-number", "name": "score", "props": {"label": "分数", "width": 100, "sortable": true}}, {"type": "r-switch", "name": "active", "props": {"label": "激活", "width": 100, "sortable": true}}]}]}]}, {"type": "el-row", "style": {"marginTop": "20px"}, "children": [{"type": "el-col", "props": {"span": 12}, "children": [{"type": "r-form", "dataKey": "DemoData@currentRow", "props": {"labelWidth": "80px"}, "children": [{"type": "r-text", "name": "id", "props": {"label": "ID", "disabled": true, "colSpan": 12}}, {"type": "r-text", "name": "name", "props": {"label": "姓名", "colSpan": 12}}, {"type": "r-select", "name": "gender", "props": {"label": "性别", "colSpan": 12}}, {"type": "r-number", "name": "age", "props": {"label": "年龄", "colSpan": 12}}, {"type": "r-date", "name": "birthday", "props": {"label": "生日", "colSpan": 12}}, {"type": "r-select", "name": "status", "props": {"label": "状态", "colSpan": 12}}, {"type": "r-textarea", "name": "address", "props": {"label": "地址", "colSpan": 24}}, {"type": "r-number", "name": "score", "props": {"label": "分数", "colSpan": 12}}, {"type": "r-switch", "name": "active", "props": {"label": "激活", "colSpan": 12}}]}]}, {"type": "el-col", "props": {"span": 12}, "children": [{"type": "r-detail", "dataKey": "DemoData@currentRow", "children": [{"type": "r-text", "name": "id", "props": {"label": "ID", "colSpan": 12}}, {"type": "r-text", "name": "name", "props": {"label": "姓名", "colSpan": 12}}, {"type": "r-text", "name": "gender", "props": {"label": "性别", "colSpan": 12}}, {"type": "r-text", "name": "age", "props": {"label": "年龄", "colSpan": 12}}, {"type": "r-text", "name": "birthday", "props": {"label": "生日", "colSpan": 12}}, {"type": "r-text", "name": "status", "props": {"label": "状态", "colSpan": 12}}, {"type": "r-text", "name": "address", "props": {"label": "地址", "colSpan": 24}}, {"type": "r-text", "name": "score", "props": {"label": "分数", "colSpan": 12}}, {"type": "r-text", "name": "active", "props": {"label": "激活", "colSpan": 12}}]}]}]}]}]
+[
+  {
+    "type": "div",
+    "class": "vxe-demo-page",
+    "style": {
+      "padding": "20px"
+    },
+    "children": [
+      {
+        "type": "h1",
+        "children": [
+          "r-Table 演示页面"
+        ]
+      },
+      {
+        "type": "p",
+        "children": [
+          "这是一个展示 r-Table 表格组件基本功能的演示页面，包括数据展示、分页、排序、筛选等常用特性。"
+        ]
+      },
+      {
+        "type": "el-row",
+        "style": {
+          "marginBottom": "20px"
+        },
+        "children": [
+          {
+            "type": "el-col",
+            "props": {
+              "span": 24
+            },
+            "children": [
+              {
+                "type": "RenderToolbar"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-row",
+        "children": [
+          {
+            "type": "el-col",
+            "props": {
+              "span": 24
+            },
+            "children": [
+              {
+                "type": "r-table",
+                "dataKey": "DemoData@rows",
+                "props": {
+                  "border": true,
+                  "stripe": true,
+                  "highlightCurrentRow": true,
+                  "rowActions": [
+                    {
+                      "type": "RenderRowActions"
+                    }
+                  ],
+                  "toolbar": [
+                    {
+                      "type": "RenderTableToolbar"
+                    }
+                  ],
+                  "showPagination": true,
+                  "pageSize": 10,
+                  "sortable": true,
+                  "filterable": true
+                },
+                "children": [
+                  {
+                    "type": "r-text",
+                    "field": "id",
+                    "props": {
+                      "label": "ID",
+                      "width": 80,
+                      "sortable": true
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "name",
+                    "props": {
+                      "label": "姓名",
+                      "width": 120,
+                      "sortable": true,
+                      "filterable": true
+                    }
+                  },
+                  {
+                    "type": "r-select",
+                    "field": "gender",
+                    "props": {
+                      "label": "性别",
+                      "width": 100,
+                      "sortable": true,
+                      "filterable": true
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "field": "age",
+                    "props": {
+                      "label": "年龄",
+                      "width": 100,
+                      "sortable": true,
+                      "filterable": true
+                    }
+                  },
+                  {
+                    "type": "r-date",
+                    "field": "birthday",
+                    "props": {
+                      "label": "生日",
+                      "width": 150,
+                      "sortable": true
+                    }
+                  },
+                  {
+                    "type": "r-select",
+                    "field": "status",
+                    "props": {
+                      "label": "状态",
+                      "width": 120,
+                      "sortable": true,
+                      "filterable": true
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "address",
+                    "props": {
+                      "label": "地址",
+                      "width": 200,
+                      "filterable": true
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "field": "score",
+                    "props": {
+                      "label": "分数",
+                      "width": 100,
+                      "sortable": true
+                    }
+                  },
+                  {
+                    "type": "r-switch",
+                    "field": "active",
+                    "props": {
+                      "label": "激活",
+                      "width": 100,
+                      "sortable": true
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-row",
+        "style": {
+          "marginTop": "20px"
+        },
+        "children": [
+          {
+            "type": "el-col",
+            "props": {
+              "span": 12
+            },
+            "children": [
+              {
+                "type": "r-form",
+                "dataKey": "DemoData@currentRow",
+                "props": {
+                  "labelWidth": "80px"
+                },
+                "children": [
+                  {
+                    "type": "r-text",
+                    "field": "id",
+                    "props": {
+                      "label": "ID",
+                      "disabled": true,
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "name",
+                    "props": {
+                      "label": "姓名",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-select",
+                    "field": "gender",
+                    "props": {
+                      "label": "性别",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "field": "age",
+                    "props": {
+                      "label": "年龄",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-date",
+                    "field": "birthday",
+                    "props": {
+                      "label": "生日",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-select",
+                    "field": "status",
+                    "props": {
+                      "label": "状态",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-textarea",
+                    "field": "address",
+                    "props": {
+                      "label": "地址",
+                      "colSpan": 24
+                    }
+                  },
+                  {
+                    "type": "r-number",
+                    "field": "score",
+                    "props": {
+                      "label": "分数",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-switch",
+                    "field": "active",
+                    "props": {
+                      "label": "激活",
+                      "colSpan": 12
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "el-col",
+            "props": {
+              "span": 12
+            },
+            "children": [
+              {
+                "type": "r-detail",
+                "dataKey": "DemoData@currentRow",
+                "children": [
+                  {
+                    "type": "r-text",
+                    "field": "id",
+                    "props": {
+                      "label": "ID",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "name",
+                    "props": {
+                      "label": "姓名",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "gender",
+                    "props": {
+                      "label": "性别",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "age",
+                    "props": {
+                      "label": "年龄",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "birthday",
+                    "props": {
+                      "label": "生日",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "status",
+                    "props": {
+                      "label": "状态",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "address",
+                    "props": {
+                      "label": "地址",
+                      "colSpan": 24
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "score",
+                    "props": {
+                      "label": "分数",
+                      "colSpan": 12
+                    }
+                  },
+                  {
+                    "type": "r-text",
+                    "field": "active",
+                    "props": {
+                      "label": "激活",
+                      "colSpan": 12
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

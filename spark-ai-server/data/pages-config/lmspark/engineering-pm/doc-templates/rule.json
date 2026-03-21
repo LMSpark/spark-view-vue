@@ -1,69 +1,431 @@
 [
-  { "type": "div", "style": { "marginBottom": "16px" }, "children": [
-    { "type": "el-page-header", "props": { "title": "文档模板", "content": "标准化文档模板，一键创建" } }
-  ]},
-  { "type": "el-row", "props": { "gutter": 16 }, "children": [
-    { "type": "el-col", "props": { "span": 8 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign":"center","padding":"20px 0" }, "children": [
-          { "type": "el-icon", "props": { "size": 48 }, "style": { "color":"#409eff","marginBottom":"12px" }, "children": [{ "type": "Document" }] },
-          { "type": "h3", "children": ["需求规格说明书"] },
-          { "type": "p", "style": { "color": "#909399", "fontSize": "13px" }, "children": ["标准SRS模板，含功能/非功能需求"] },
-          { "type": "el-button", "props": { "type": "primary", "size": "small" }, "children": ["使用模板"] }
-        ]}
-      ]}
-    ]},
-    { "type": "el-col", "props": { "span": 8 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign":"center","padding":"20px 0" }, "children": [
-          { "type": "el-icon", "props": { "size": 48 }, "style": { "color":"#67c23a","marginBottom":"12px" }, "children": [{ "type": "Notebook" }] },
-          { "type": "h3", "children": ["系统设计文档"] },
-          { "type": "p", "style": { "color": "#909399", "fontSize": "13px" }, "children": ["架构设计、接口设计、数据库设计"] },
-          { "type": "el-button", "props": { "type": "success", "size": "small" }, "children": ["使用模板"] }
-        ]}
-      ]}
-    ]},
-    { "type": "el-col", "props": { "span": 8 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign":"center","padding":"20px 0" }, "children": [
-          { "type": "el-icon", "props": { "size": 48 }, "style": { "color":"#e6a23c","marginBottom":"12px" }, "children": [{ "type": "Tickets" }] },
-          { "type": "h3", "children": ["测试计划与报告"] },
-          { "type": "p", "style": { "color": "#909399", "fontSize": "13px" }, "children": ["测试用例、执行报告、缺陷统计"] },
-          { "type": "el-button", "props": { "type": "warning", "size": "small" }, "children": ["使用模板"] }
-        ]}
-      ]}
-    ]}
-  ]},
-  { "type": "el-row", "props": { "gutter": 16 }, "style": { "marginTop": "16px" }, "children": [
-    { "type": "el-col", "props": { "span": 8 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign":"center","padding":"20px 0" }, "children": [
-          { "type": "el-icon", "props": { "size": 48 }, "style": { "color":"#f56c6c","marginBottom":"12px" }, "children": [{ "type": "Calendar" }] },
-          { "type": "h3", "children": ["会议纪要模板"] },
-          { "type": "p", "style": { "color": "#909399", "fontSize": "13px" }, "children": ["议题、决议、待办跟踪"] },
-          { "type": "el-button", "props": { "type": "danger", "size": "small" }, "children": ["使用模板"] }
-        ]}
-      ]}
-    ]},
-    { "type": "el-col", "props": { "span": 8 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign":"center","padding":"20px 0" }, "children": [
-          { "type": "el-icon", "props": { "size": 48 }, "style": { "color":"#909399","marginBottom":"12px" }, "children": [{ "type": "DataLine" }] },
-          { "type": "h3", "children": ["项目周报模板"] },
-          { "type": "p", "style": { "color": "#909399", "fontSize": "13px" }, "children": ["本周进展、风险、下周计划"] },
-          { "type": "el-button", "props": { "size": "small" }, "children": ["使用模板"] }
-        ]}
-      ]}
-    ]},
-    { "type": "el-col", "props": { "span": 8 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign":"center","padding":"20px 0" }, "children": [
-          { "type": "el-icon", "props": { "size": 48 }, "style": { "color":"#409eff","marginBottom":"12px" }, "children": [{ "type": "Stamp" }] },
-          { "type": "h3", "children": ["验收报告模板"] },
-          { "type": "p", "style": { "color": "#909399", "fontSize": "13px" }, "children": ["功能验收、性能验收、签字确认"] },
-          { "type": "el-button", "props": { "type": "primary", "size": "small" }, "children": ["使用模板"] }
-        ]}
-      ]}
-    ]}
-  ]}
+  {
+    "type": "div",
+    "style": {
+      "marginBottom": "16px"
+    },
+    "children": [
+      {
+        "type": "el-page-header",
+        "props": {
+          "title": "文档模板",
+          "content": "标准化文档模板，一键创建"
+        }
+      }
+    ]
+  },
+  {
+    "type": "el-row",
+    "props": {
+      "gutter": 16
+    },
+    "children": [
+      {
+        "type": "el-col",
+        "props": {
+          "span": 8
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px 0"
+                },
+                "children": [
+                  {
+                    "type": "el-icon",
+                    "props": {
+                      "size": 48
+                    },
+                    "style": {
+                      "color": "#409eff",
+                      "marginBottom": "12px"
+                    },
+                    "children": [
+                      {
+                        "type": "Document"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "h3",
+                    "children": [
+                      "需求规格说明书"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "style": {
+                      "color": "#909399",
+                      "fontSize": "13px"
+                    },
+                    "children": [
+                      "标准SRS模板，含功能/非功能需求"
+                    ]
+                  },
+                  {
+                    "type": "el-button",
+                    "props": {
+                      "type": "primary",
+                      "size": "small"
+                    },
+                    "children": [
+                      "使用模板"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-col",
+        "props": {
+          "span": 8
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px 0"
+                },
+                "children": [
+                  {
+                    "type": "el-icon",
+                    "props": {
+                      "size": 48
+                    },
+                    "style": {
+                      "color": "#67c23a",
+                      "marginBottom": "12px"
+                    },
+                    "children": [
+                      {
+                        "type": "Notebook"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "h3",
+                    "children": [
+                      "系统设计文档"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "style": {
+                      "color": "#909399",
+                      "fontSize": "13px"
+                    },
+                    "children": [
+                      "架构设计、接口设计、数据库设计"
+                    ]
+                  },
+                  {
+                    "type": "el-button",
+                    "props": {
+                      "type": "success",
+                      "size": "small"
+                    },
+                    "children": [
+                      "使用模板"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-col",
+        "props": {
+          "span": 8
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px 0"
+                },
+                "children": [
+                  {
+                    "type": "el-icon",
+                    "props": {
+                      "size": 48
+                    },
+                    "style": {
+                      "color": "#e6a23c",
+                      "marginBottom": "12px"
+                    },
+                    "children": [
+                      {
+                        "type": "Tickets"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "h3",
+                    "children": [
+                      "测试计划与报告"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "style": {
+                      "color": "#909399",
+                      "fontSize": "13px"
+                    },
+                    "children": [
+                      "测试用例、执行报告、缺陷统计"
+                    ]
+                  },
+                  {
+                    "type": "el-button",
+                    "props": {
+                      "type": "warning",
+                      "size": "small"
+                    },
+                    "children": [
+                      "使用模板"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "el-row",
+    "props": {
+      "gutter": 16
+    },
+    "style": {
+      "marginTop": "16px"
+    },
+    "children": [
+      {
+        "type": "el-col",
+        "props": {
+          "span": 8
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px 0"
+                },
+                "children": [
+                  {
+                    "type": "el-icon",
+                    "props": {
+                      "size": 48
+                    },
+                    "style": {
+                      "color": "#f56c6c",
+                      "marginBottom": "12px"
+                    },
+                    "children": [
+                      {
+                        "type": "Calendar"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "h3",
+                    "children": [
+                      "会议纪要模板"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "style": {
+                      "color": "#909399",
+                      "fontSize": "13px"
+                    },
+                    "children": [
+                      "议题、决议、待办跟踪"
+                    ]
+                  },
+                  {
+                    "type": "el-button",
+                    "props": {
+                      "type": "danger",
+                      "size": "small"
+                    },
+                    "children": [
+                      "使用模板"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-col",
+        "props": {
+          "span": 8
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px 0"
+                },
+                "children": [
+                  {
+                    "type": "el-icon",
+                    "props": {
+                      "size": 48
+                    },
+                    "style": {
+                      "color": "#909399",
+                      "marginBottom": "12px"
+                    },
+                    "children": [
+                      {
+                        "type": "DataLine"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "h3",
+                    "children": [
+                      "项目周报模板"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "style": {
+                      "color": "#909399",
+                      "fontSize": "13px"
+                    },
+                    "children": [
+                      "本周进展、风险、下周计划"
+                    ]
+                  },
+                  {
+                    "type": "el-button",
+                    "props": {
+                      "size": "small"
+                    },
+                    "children": [
+                      "使用模板"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-col",
+        "props": {
+          "span": 8
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px 0"
+                },
+                "children": [
+                  {
+                    "type": "el-icon",
+                    "props": {
+                      "size": 48
+                    },
+                    "style": {
+                      "color": "#409eff",
+                      "marginBottom": "12px"
+                    },
+                    "children": [
+                      {
+                        "type": "Stamp"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "h3",
+                    "children": [
+                      "验收报告模板"
+                    ]
+                  },
+                  {
+                    "type": "p",
+                    "style": {
+                      "color": "#909399",
+                      "fontSize": "13px"
+                    },
+                    "children": [
+                      "功能验收、性能验收、签字确认"
+                    ]
+                  },
+                  {
+                    "type": "el-button",
+                    "props": {
+                      "type": "primary",
+                      "size": "small"
+                    },
+                    "children": [
+                      "使用模板"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 ]

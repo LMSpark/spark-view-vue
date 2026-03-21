@@ -18,11 +18,11 @@
         }
     },
     "config": {
-        "apiBaseUrl": "/api/demo",
+        "apiBaseUrl": "/api",
         "version": "1.0.0-demo"
     },
     "pageConfig": {
-        "apiBaseUrl": "/api/demo",
+        "apiBaseUrl": "/api",
         "homePath": "/dashboard"
     },
     "logger": {

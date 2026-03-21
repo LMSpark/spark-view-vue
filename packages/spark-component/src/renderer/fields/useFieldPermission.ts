@@ -29,7 +29,8 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
 
   const fieldName = computed(() => props.config?.field ?? props.field ?? '')
   const displayLabel = computed(() => props.label ?? fieldName.value)
-  const context = consume(FIELD_CONTEXT) ?? 'detail'
+  const rawContext = consume(FIELD_CONTEXT)
+  const context = rawContext ?? 'detail'
   const contextData = consume(CONTEXT_DATA)
   const pageService = consume(PAGE_SERVICE)
   const dataSource = consume(DATA_SOURCE)

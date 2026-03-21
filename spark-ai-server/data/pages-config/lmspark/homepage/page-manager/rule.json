@@ -8,7 +8,9 @@
     "children": [
       {
         "type": "h2",
-        "children": ["页面管理"]
+        "children": [
+          "页面管理"
+        ]
       },
       {
         "type": "el-alert",
@@ -39,7 +41,9 @@
             "on": {
               "click": "handleAdd"
             },
-            "children": ["新增页面"]
+            "children": [
+              "新增页面"
+            ]
           },
           {
             "type": "el-button",
@@ -50,7 +54,9 @@
             "on": {
               "click": "handleEdit"
             },
-            "children": ["编辑"]
+            "children": [
+              "编辑"
+            ]
           },
           {
             "type": "el-button",
@@ -61,7 +67,9 @@
             "on": {
               "click": "handleDelete"
             },
-            "children": ["删除"]
+            "children": [
+              "删除"
+            ]
           }
         ]
       },

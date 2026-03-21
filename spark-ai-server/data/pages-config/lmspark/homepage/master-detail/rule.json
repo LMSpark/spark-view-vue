@@ -46,7 +46,7 @@
             "children": [
               {
                 "type": "r-text",
-                "name": "id",
+                "field": "id",
                 "props": {
                   "label": "用户ID",
                   "width": 100
@@ -54,7 +54,7 @@
               },
               {
                 "type": "r-text",
-                "name": "name",
+                "field": "name",
                 "props": {
                   "label": "姓名",
                   "width": 150
@@ -62,7 +62,7 @@
               },
               {
                 "type": "r-text",
-                "name": "email",
+                "field": "email",
                 "props": {
                   "label": "邮箱"
                 }
@@ -90,7 +90,7 @@
             "children": [
               {
                 "type": "r-text",
-                "name": "id",
+                "field": "id",
                 "props": {
                   "label": "用户ID",
                   "colSpan": 8
@@ -98,7 +98,7 @@
               },
               {
                 "type": "r-text",
-                "name": "name",
+                "field": "name",
                 "props": {
                   "label": "姓名",
                   "colSpan": 8
@@ -106,7 +106,7 @@
               },
               {
                 "type": "r-text",
-                "name": "email",
+                "field": "email",
                 "props": {
                   "label": "邮箱",
                   "colSpan": 8
@@ -147,7 +147,7 @@
             "children": [
               {
                 "type": "r-text",
-                "name": "id",
+                "field": "id",
                 "props": {
                   "label": "订单ID",
                   "width": 100
@@ -155,7 +155,7 @@
               },
               {
                 "type": "r-text",
-                "name": "product",
+                "field": "product",
                 "props": {
                   "label": "产品",
                   "width": 200
@@ -163,7 +163,7 @@
               },
               {
                 "type": "r-number",
-                "name": "amount",
+                "field": "amount",
                 "props": {
                   "label": "金额",
                   "width": 120

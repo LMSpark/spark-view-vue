@@ -1,85 +1,85 @@
 [
-    {
+  {
+    "type": "div",
+    "class": "treetable-demo-page",
+    "children": [
+      {
         "type": "div",
-        "class": "treetable-demo-page",
+        "class": "demo-header",
         "children": [
-            {
-                "type": "div",
-                "class": "demo-header",
-                "children": [
-                    {
-                        "type": "h1",
-                        "children": [
-                            "TreeTable 最小示例"
-                        ]
-                    },
-                    {
-                        "type": "p",
-                        "children": [
-                            "用 r-table 直接承接 Element Plus el-table 的树形数据模式，而不是用 r-tree 模拟多列。"
-                        ]
-                    }
-                ]
-            },
-            {
-                "type": "r-section",
-                "props": {
-                    "title": "组织结构树表格",
-                    "description": "首列负责树层级展开，后续列保持标准表格对齐。"
-                },
-                "children": [
-                    {
-                        "type": "r-table",
-                        "dataKey": "OrgRows@rows",
-                        "props": {
-                            "border": true,
-                            "stripe": true,
-                            "highlightCurrentRow": true,
-                            "row-key": "id",
-                            "default-expand-all": true,
-                            "tree-props": {
-                                "children": "children",
-                                "hasChildren": "hasChildren"
-                            },
-                            "indent": 18,
-                            "onCurrentChange": "handleCurrentChange"
-                        },
-                        "children": [
-                            {
-                                "type": "r-text",
-                                "name": "name",
-                                "props": {
-                                    "label": "名称"
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "name": "type",
-                                "props": {
-                                    "label": "类型",
-                                    "width": 140
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "name": "owner",
-                                "props": {
-                                    "label": "负责人",
-                                    "width": 140
-                                }
-                            },
-                            {
-                                "type": "r-text",
-                                "name": "status",
-                                "props": {
-                                    "label": "状态",
-                                    "width": 120
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
+          {
+            "type": "h1",
+            "children": [
+              "TreeTable 最小示例"
+            ]
+          },
+          {
+            "type": "p",
+            "children": [
+              "用 r-table 直接承接 Element Plus el-table 的树形数据模式，而不是用 r-tree 模拟多列。"
+            ]
+          }
         ]
-    }
+      },
+      {
+        "type": "r-section",
+        "props": {
+          "title": "组织结构树表格",
+          "description": "首列负责树层级展开，后续列保持标准表格对齐。"
+        },
+        "children": [
+          {
+            "type": "r-table",
+            "dataKey": "OrgRows@rows",
+            "props": {
+              "border": true,
+              "stripe": true,
+              "highlightCurrentRow": true,
+              "row-key": "id",
+              "default-expand-all": true,
+              "tree-props": {
+                "children": "children",
+                "hasChildren": "hasChildren"
+              },
+              "indent": 18,
+              "onCurrentChange": "handleCurrentChange"
+            },
+            "children": [
+              {
+                "type": "r-text",
+                "field": "name",
+                "props": {
+                  "label": "名称"
+                }
+              },
+              {
+                "type": "r-text",
+                "field": "type",
+                "props": {
+                  "label": "类型",
+                  "width": 140
+                }
+              },
+              {
+                "type": "r-text",
+                "field": "owner",
+                "props": {
+                  "label": "负责人",
+                  "width": 140
+                }
+              },
+              {
+                "type": "r-text",
+                "field": "status",
+                "props": {
+                  "label": "状态",
+                  "width": 120
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 ]

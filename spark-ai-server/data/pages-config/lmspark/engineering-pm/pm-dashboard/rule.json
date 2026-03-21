@@ -1,56 +1,315 @@
 [
-  { "type": "el-row", "props": { "gutter": 16 }, "children": [
-    { "type": "el-col", "props": { "span": 6 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign": "center", "padding": "20px" }, "children": [
-          { "type": "div", "style": { "fontSize": "32px", "fontWeight": "bold", "color": "#409eff" }, "children": [{ "type": "RenderProjectCount" }] },
-          { "type": "div", "style": { "color": "#909399", "marginTop": "8px" }, "children": ["进行中项目"] }
-        ]}
-      ]}
-    ]},
-    { "type": "el-col", "props": { "span": 6 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign": "center", "padding": "20px" }, "children": [
-          { "type": "div", "style": { "fontSize": "32px", "fontWeight": "bold", "color": "#e6a23c" }, "children": [{ "type": "RenderTaskCount" }] },
-          { "type": "div", "style": { "color": "#909399", "marginTop": "8px" }, "children": ["待办任务"] }
-        ]}
-      ]}
-    ]},
-    { "type": "el-col", "props": { "span": 6 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign": "center", "padding": "20px" }, "children": [
-          { "type": "div", "style": { "fontSize": "32px", "fontWeight": "bold", "color": "#67c23a" }, "children": [{ "type": "RenderMemberCount" }] },
-          { "type": "div", "style": { "color": "#909399", "marginTop": "8px" }, "children": ["团队成员"] }
-        ]}
-      ]}
-    ]},
-    { "type": "el-col", "props": { "span": 6 }, "children": [
-      { "type": "el-card", "props": { "shadow": "hover" }, "children": [
-        { "type": "div", "style": { "textAlign": "center", "padding": "20px" }, "children": [
-          { "type": "div", "style": { "fontSize": "32px", "fontWeight": "bold", "color": "#f56c6c" }, "children": [{ "type": "RenderOverdueCount" }] },
-          { "type": "div", "style": { "color": "#909399", "marginTop": "8px" }, "children": ["逾期任务"] }
-        ]}
-      ]}
-    ]}
-  ]},
-  { "type": "el-row", "props": { "gutter": 16 }, "style": { "marginTop": "16px" }, "children": [
-    { "type": "el-col", "props": { "span": 16 }, "children": [
-      { "type": "el-card", "children": [
-        { "type": "div", "style": { "fontSize": "16px", "fontWeight": "bold", "marginBottom": "12px" }, "children": ["我的待办任务"] },
-        { "type": "r-table", "dataKey": "MyTasks@rows", "props": { "border": true, "stripe": true, "highlightCurrentRow": true }, "children": [
-          { "type": "el-table-column", "props": { "prop": "title", "label": "任务名称", "minWidth": 200 } },
-          { "type": "el-table-column", "props": { "prop": "projectName", "label": "所属项目", "width": 150 } },
-          { "type": "el-table-column", "props": { "prop": "priority", "label": "优先级", "width": 100 } },
-          { "type": "el-table-column", "props": { "prop": "dueDate", "label": "截止日期", "width": 120 } },
-          { "type": "el-table-column", "props": { "prop": "status", "label": "状态", "width": 100 } }
-        ]}
-      ]}
-    ]},
-    { "type": "el-col", "props": { "span": 8 }, "children": [
-      { "type": "el-card", "children": [
-        { "type": "div", "style": { "fontSize": "16px", "fontWeight": "bold", "marginBottom": "12px" }, "children": ["项目动态"] },
-        { "type": "RenderRecentActivities" }
-      ]}
-    ]}
-  ]}
+  {
+    "type": "el-row",
+    "props": {
+      "gutter": 16
+    },
+    "children": [
+      {
+        "type": "el-col",
+        "props": {
+          "span": 6
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px"
+                },
+                "children": [
+                  {
+                    "type": "div",
+                    "style": {
+                      "fontSize": "32px",
+                      "fontWeight": "bold",
+                      "color": "#409eff"
+                    },
+                    "children": [
+                      {
+                        "type": "RenderProjectCount"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "style": {
+                      "color": "#909399",
+                      "marginTop": "8px"
+                    },
+                    "children": [
+                      "进行中项目"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-col",
+        "props": {
+          "span": 6
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px"
+                },
+                "children": [
+                  {
+                    "type": "div",
+                    "style": {
+                      "fontSize": "32px",
+                      "fontWeight": "bold",
+                      "color": "#e6a23c"
+                    },
+                    "children": [
+                      {
+                        "type": "RenderTaskCount"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "style": {
+                      "color": "#909399",
+                      "marginTop": "8px"
+                    },
+                    "children": [
+                      "待办任务"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-col",
+        "props": {
+          "span": 6
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px"
+                },
+                "children": [
+                  {
+                    "type": "div",
+                    "style": {
+                      "fontSize": "32px",
+                      "fontWeight": "bold",
+                      "color": "#67c23a"
+                    },
+                    "children": [
+                      {
+                        "type": "RenderMemberCount"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "style": {
+                      "color": "#909399",
+                      "marginTop": "8px"
+                    },
+                    "children": [
+                      "团队成员"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-col",
+        "props": {
+          "span": 6
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "props": {
+              "shadow": "hover"
+            },
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "textAlign": "center",
+                  "padding": "20px"
+                },
+                "children": [
+                  {
+                    "type": "div",
+                    "style": {
+                      "fontSize": "32px",
+                      "fontWeight": "bold",
+                      "color": "#f56c6c"
+                    },
+                    "children": [
+                      {
+                        "type": "RenderOverdueCount"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "div",
+                    "style": {
+                      "color": "#909399",
+                      "marginTop": "8px"
+                    },
+                    "children": [
+                      "逾期任务"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "el-row",
+    "props": {
+      "gutter": 16
+    },
+    "style": {
+      "marginTop": "16px"
+    },
+    "children": [
+      {
+        "type": "el-col",
+        "props": {
+          "span": 16
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "fontSize": "16px",
+                  "fontWeight": "bold",
+                  "marginBottom": "12px"
+                },
+                "children": [
+                  "我的待办任务"
+                ]
+              },
+              {
+                "type": "r-table",
+                "dataKey": "MyTasks@rows",
+                "props": {
+                  "border": true,
+                  "stripe": true,
+                  "highlightCurrentRow": true
+                },
+                "children": [
+                  {
+                    "type": "el-table-column",
+                    "props": {
+                      "prop": "title",
+                      "label": "任务名称",
+                      "minWidth": 200
+                    }
+                  },
+                  {
+                    "type": "el-table-column",
+                    "props": {
+                      "prop": "projectName",
+                      "label": "所属项目",
+                      "width": 150
+                    }
+                  },
+                  {
+                    "type": "el-table-column",
+                    "props": {
+                      "prop": "priority",
+                      "label": "优先级",
+                      "width": 100
+                    }
+                  },
+                  {
+                    "type": "el-table-column",
+                    "props": {
+                      "prop": "dueDate",
+                      "label": "截止日期",
+                      "width": 120
+                    }
+                  },
+                  {
+                    "type": "el-table-column",
+                    "props": {
+                      "prop": "status",
+                      "label": "状态",
+                      "width": 100
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-col",
+        "props": {
+          "span": 8
+        },
+        "children": [
+          {
+            "type": "el-card",
+            "children": [
+              {
+                "type": "div",
+                "style": {
+                  "fontSize": "16px",
+                  "fontWeight": "bold",
+                  "marginBottom": "12px"
+                },
+                "children": [
+                  "项目动态"
+                ]
+              },
+              {
+                "type": "RenderRecentActivities"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 ]

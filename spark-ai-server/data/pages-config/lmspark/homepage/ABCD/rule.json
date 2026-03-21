@@ -8,7 +8,9 @@
     "children": [
       {
         "type": "h2",
-        "children": ["项目管理"]
+        "children": [
+          "项目管理"
+        ]
       },
       {
         "type": "el-alert",
@@ -39,7 +41,9 @@
             "on": {
               "click": "handleAdd"
             },
-            "children": ["新增项目"]
+            "children": [
+              "新增项目"
+            ]
           },
           {
             "type": "el-button",
@@ -51,7 +55,9 @@
             "on": {
               "click": "handleDelete"
             },
-            "children": ["删除项目"]
+            "children": [
+              "删除项目"
+            ]
           }
         ]
       },
@@ -137,7 +143,9 @@
         "props": {
           "contentPosition": "left"
         },
-        "children": ["项目详情"]
+        "children": [
+          "项目详情"
+        ]
       },
       {
         "type": "r-detail",
@@ -148,42 +156,42 @@
         "children": [
           {
             "type": "r-text",
-            "name": "name",
+            "field": "name",
             "props": {
               "label": "项目名称"
             }
           },
           {
             "type": "r-text",
-            "name": "status",
+            "field": "status",
             "props": {
               "label": "状态"
             }
           },
           {
             "type": "r-text",
-            "name": "manager",
+            "field": "manager",
             "props": {
               "label": "负责人"
             }
           },
           {
             "type": "r-date",
-            "name": "startDate",
+            "field": "startDate",
             "props": {
               "label": "开始日期"
             }
           },
           {
             "type": "r-date",
-            "name": "endDate",
+            "field": "endDate",
             "props": {
               "label": "结束日期"
             }
           },
           {
             "type": "r-text",
-            "name": "description",
+            "field": "description",
             "props": {
               "label": "描述"
             }

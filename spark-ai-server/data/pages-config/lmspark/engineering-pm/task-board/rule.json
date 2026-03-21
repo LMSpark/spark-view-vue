@@ -1,34 +1,183 @@
 [
-  { "type": "div", "style": { "marginBottom": "16px" }, "children": [
-    { "type": "el-page-header", "props": { "title": "任务看板", "content": "以看板视图管理任务状态" } }
-  ]},
-  { "type": "div", "style": { "display": "flex", "gap": "16px", "height": "calc(100vh - 200px)" }, "children": [
-    { "type": "el-card", "style": { "flex": 1, "overflow": "auto" }, "children": [
-      { "type": "div", "props": { "slot": "header" }, "children": [
-        { "type": "el-tag", "props": { "type": "info" }, "children": ["待处理 (3)"] }
-      ]},
-      { "type": "r-table", "dataKey": "TodoTasks@rows", "props": { "border": false, "stripe": false }, "children": [
-        { "type": "el-table-column", "props": { "prop": "title", "label": "任务", "showOverflowTooltip": true } },
-        { "type": "el-table-column", "props": { "prop": "priority", "label": "优先级", "width": 80 } }
-      ]}
-    ]},
-    { "type": "el-card", "style": { "flex": 1, "overflow": "auto" }, "children": [
-      { "type": "div", "props": { "slot": "header" }, "children": [
-        { "type": "el-tag", "props": { "type": "warning" }, "children": ["进行中 (3)"] }
-      ]},
-      { "type": "r-table", "dataKey": "InProgressTasks@rows", "props": { "border": false, "stripe": false }, "children": [
-        { "type": "el-table-column", "props": { "prop": "title", "label": "任务", "showOverflowTooltip": true } },
-        { "type": "el-table-column", "props": { "prop": "assignee", "label": "负责人", "width": 80 } }
-      ]}
-    ]},
-    { "type": "el-card", "style": { "flex": 1, "overflow": "auto" }, "children": [
-      { "type": "div", "props": { "slot": "header" }, "children": [
-        { "type": "el-tag", "props": { "type": "success" }, "children": ["已完成 (2)"] }
-      ]},
-      { "type": "r-table", "dataKey": "DoneTasks@rows", "props": { "border": false, "stripe": false }, "children": [
-        { "type": "el-table-column", "props": { "prop": "title", "label": "任务", "showOverflowTooltip": true } },
-        { "type": "el-table-column", "props": { "prop": "completedDate", "label": "完成日期", "width": 110 } }
-      ]}
-    ]}
-  ]}
+  {
+    "type": "div",
+    "style": {
+      "marginBottom": "16px"
+    },
+    "children": [
+      {
+        "type": "el-page-header",
+        "props": {
+          "title": "任务看板",
+          "content": "以看板视图管理任务状态"
+        }
+      }
+    ]
+  },
+  {
+    "type": "div",
+    "style": {
+      "display": "flex",
+      "gap": "16px",
+      "height": "calc(100vh - 200px)"
+    },
+    "children": [
+      {
+        "type": "el-card",
+        "style": {
+          "flex": 1,
+          "overflow": "auto"
+        },
+        "children": [
+          {
+            "type": "div",
+            "props": {
+              "slot": "header"
+            },
+            "children": [
+              {
+                "type": "el-tag",
+                "props": {
+                  "type": "info"
+                },
+                "children": [
+                  "待处理 (3)"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "r-table",
+            "dataKey": "TodoTasks@rows",
+            "props": {
+              "border": false,
+              "stripe": false
+            },
+            "children": [
+              {
+                "type": "el-table-column",
+                "props": {
+                  "prop": "title",
+                  "label": "任务",
+                  "showOverflowTooltip": true
+                }
+              },
+              {
+                "type": "el-table-column",
+                "props": {
+                  "prop": "priority",
+                  "label": "优先级",
+                  "width": 80
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-card",
+        "style": {
+          "flex": 1,
+          "overflow": "auto"
+        },
+        "children": [
+          {
+            "type": "div",
+            "props": {
+              "slot": "header"
+            },
+            "children": [
+              {
+                "type": "el-tag",
+                "props": {
+                  "type": "warning"
+                },
+                "children": [
+                  "进行中 (3)"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "r-table",
+            "dataKey": "InProgressTasks@rows",
+            "props": {
+              "border": false,
+              "stripe": false
+            },
+            "children": [
+              {
+                "type": "el-table-column",
+                "props": {
+                  "prop": "title",
+                  "label": "任务",
+                  "showOverflowTooltip": true
+                }
+              },
+              {
+                "type": "el-table-column",
+                "props": {
+                  "prop": "assignee",
+                  "label": "负责人",
+                  "width": 80
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-card",
+        "style": {
+          "flex": 1,
+          "overflow": "auto"
+        },
+        "children": [
+          {
+            "type": "div",
+            "props": {
+              "slot": "header"
+            },
+            "children": [
+              {
+                "type": "el-tag",
+                "props": {
+                  "type": "success"
+                },
+                "children": [
+                  "已完成 (2)"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "r-table",
+            "dataKey": "DoneTasks@rows",
+            "props": {
+              "border": false,
+              "stripe": false
+            },
+            "children": [
+              {
+                "type": "el-table-column",
+                "props": {
+                  "prop": "title",
+                  "label": "任务",
+                  "showOverflowTooltip": true
+                }
+              },
+              {
+                "type": "el-table-column",
+                "props": {
+                  "prop": "completedDate",
+                  "label": "完成日期",
+                  "width": 110
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 ]

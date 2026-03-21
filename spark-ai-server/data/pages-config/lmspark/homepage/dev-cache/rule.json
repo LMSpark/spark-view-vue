@@ -1,78 +1,78 @@
 [
-    {
-        "type": "div",
+  {
+    "type": "div",
+    "style": {
+      "padding": "20px",
+      "maxWidth": "900px"
+    },
+    "children": [
+      {
+        "type": "h2",
         "style": {
-            "padding": "20px",
-            "maxWidth": "900px"
+          "marginBottom": "8px"
         },
         "children": [
-            {
-                "type": "h2",
-                "style": {
-                    "marginBottom": "8px"
-                },
-                "children": [
-                    "🧹 开发缓存管理"
-                ]
-            },
-            {
-                "type": "el-alert",
-                "props": {
-                    "title": "清除前端页面配置缓存、路由缓存，重新加载导航菜单。适用于调试时数据不刷新的场景。",
-                    "type": "info",
-                    "closable": false,
-                    "showIcon": true
-                },
-                "style": {
-                    "marginBottom": "20px"
-                }
-            },
-            {
-                "type": "div",
-                "style": {
-                    "display": "flex",
-                    "gap": "12px",
-                    "marginBottom": "20px"
-                },
-                "children": [
-                    {
-                        "type": "RenderClearAllButton"
-                    },
-                    {
-                        "type": "RenderClearPageButton"
-                    },
-                    {
-                        "type": "RenderRefreshRoutesButton"
-                    },
-                    {
-                        "type": "RenderRefreshNavButton"
-                    }
-                ]
-            },
-            {
-                "type": "el-divider",
-                "props": {
-                    "contentPosition": "left"
-                },
-                "children": [
-                    "缓存状态"
-                ]
-            },
-            {
-                "type": "RenderCacheStats"
-            },
-            {
-                "type": "el-divider",
-                "props": {
-                    "contentPosition": "left"
-                },
-                "children": [
-                    "操作日志"
-                ]
-            },
-            {
-                "type": "RenderLog"
-            }
+          "🧹 开发缓存管理"
         ]
-    }
+      },
+      {
+        "type": "el-alert",
+        "props": {
+          "title": "清除前端页面配置缓存、路由缓存，重新加载导航菜单。适用于调试时数据不刷新的场景。",
+          "type": "info",
+          "closable": false,
+          "showIcon": true
+        },
+        "style": {
+          "marginBottom": "20px"
+        }
+      },
+      {
+        "type": "div",
+        "style": {
+          "display": "flex",
+          "gap": "12px",
+          "marginBottom": "20px"
+        },
+        "children": [
+          {
+            "type": "RenderClearAllButton"
+          },
+          {
+            "type": "RenderClearPageButton"
+          },
+          {
+            "type": "RenderRefreshRoutesButton"
+          },
+          {
+            "type": "RenderRefreshNavButton"
+          }
+        ]
+      },
+      {
+        "type": "el-divider",
+        "props": {
+          "contentPosition": "left"
+        },
+        "children": [
+          "缓存状态"
+        ]
+      },
+      {
+        "type": "RenderCacheStats"
+      },
+      {
+        "type": "el-divider",
+        "props": {
+          "contentPosition": "left"
+        },
+        "children": [
+          "操作日志"
+        ]
+      },
+      {
+        "type": "RenderLog"
+      }
+    ]
+  }
 ]

@@ -1,15 +1,97 @@
 [
-  { "type": "div", "style": { "marginBottom": "16px" }, "children": [
-    { "type": "el-page-header", "props": { "title": "项目甘特图", "content": "可视化项目进度与时间线" } }
-  ]},
-  { "type": "el-alert", "props": { "title": "甘特图视图", "description": "以时间线形式展示项目各阶段进度（完整甘特图组件开发中）", "type": "info", "showIcon": true, "closable": false }, "style": { "marginBottom": "16px" } },
-  { "type": "r-table", "dataKey": "GanttData@rows", "props": { "border": true, "stripe": true, "highlightCurrentRow": true }, "children": [
-    { "type": "el-table-column", "props": { "prop": "phase", "label": "阶段", "width": 160 } },
-    { "type": "el-table-column", "props": { "prop": "task", "label": "任务名称", "minWidth": 200 } },
-    { "type": "el-table-column", "props": { "prop": "startDate", "label": "开始日期", "width": 120 } },
-    { "type": "el-table-column", "props": { "prop": "endDate", "label": "结束日期", "width": 120 } },
-    { "type": "el-table-column", "props": { "prop": "duration", "label": "工期(天)", "width": 100 } },
-    { "type": "el-table-column", "props": { "prop": "progress", "label": "进度", "width": 100 } },
-    { "type": "el-table-column", "props": { "prop": "dependencies", "label": "前置任务", "width": 140 } }
-  ]}
+  {
+    "type": "div",
+    "style": {
+      "marginBottom": "16px"
+    },
+    "children": [
+      {
+        "type": "el-page-header",
+        "props": {
+          "title": "项目甘特图",
+          "content": "可视化项目进度与时间线"
+        }
+      }
+    ]
+  },
+  {
+    "type": "el-alert",
+    "props": {
+      "title": "甘特图视图",
+      "description": "以时间线形式展示项目各阶段进度（完整甘特图组件开发中）",
+      "type": "info",
+      "showIcon": true,
+      "closable": false
+    },
+    "style": {
+      "marginBottom": "16px"
+    }
+  },
+  {
+    "type": "r-table",
+    "dataKey": "GanttData@rows",
+    "props": {
+      "border": true,
+      "stripe": true,
+      "highlightCurrentRow": true
+    },
+    "children": [
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "phase",
+          "label": "阶段",
+          "width": 160
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "task",
+          "label": "任务名称",
+          "minWidth": 200
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "startDate",
+          "label": "开始日期",
+          "width": 120
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "endDate",
+          "label": "结束日期",
+          "width": 120
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "duration",
+          "label": "工期(天)",
+          "width": 100
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "progress",
+          "label": "进度",
+          "width": 100
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "dependencies",
+          "label": "前置任务",
+          "width": 140
+        }
+      }
+    ]
+  }
 ]

@@ -1,97 +1,97 @@
 [
-    {
+  {
+    "type": "div",
+    "class": "page-container",
+    "style": {
+      "padding": "20px"
+    },
+    "children": [
+      {
+        "type": "h2",
+        "children": [
+          "用户管理"
+        ]
+      },
+      {
         "type": "div",
-        "class": "page-container",
         "style": {
-            "padding": "20px"
+          "marginBottom": "16px",
+          "display": "flex",
+          "gap": "8px"
         },
         "children": [
-            {
-                "type": "h2",
-                "children": [
-                    "用户管理"
-                ]
-            },
-            {
-                "type": "div",
-                "style": {
-                    "marginBottom": "16px",
-                    "display": "flex",
-                    "gap": "8px"
-                },
-                "children": [
-                    {
-                        "type": "RenderToolbar"
-                    }
-                ]
-            },
-            {
-                "type": "r-table",
-                "dataKey": "Users@rows",
-                "props": {
-                    "border": true,
-                    "stripe": true,
-                    "highlightCurrentRow": true,
-                    "rowActions": [
-                        {
-                            "type": "RenderRowActions"
-                        }
-                    ],
-                    "filterable": true
-                },
-                "children": [
-                    {
-                        "type": "r-text",
-                        "name": "id",
-                        "props": {
-                            "label": "ID",
-                            "width": 80
-                        }
-                    },
-                    {
-                        "type": "r-text",
-                        "name": "name",
-                        "props": {
-                            "label": "姓名",
-                            "width": 120
-                        }
-                    },
-                    {
-                        "type": "r-number",
-                        "name": "age",
-                        "props": {
-                            "label": "年龄",
-                            "width": 100
-                        }
-                    },
-                    {
-                        "type": "r-text",
-                        "name": "email",
-                        "props": {
-                            "label": "邮箱",
-                            "width": 200
-                        }
-                    },
-                    {
-                        "type": "r-select",
-                        "name": "status",
-                        "props": {
-                            "label": "状态",
-                            "width": 100,
-                            "options": [
-                                {
-                                    "label": "启用",
-                                    "value": "active"
-                                },
-                                {
-                                    "label": "禁用",
-                                    "value": "inactive"
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
+          {
+            "type": "RenderToolbar"
+          }
         ]
-    }
+      },
+      {
+        "type": "r-table",
+        "dataKey": "Users@rows",
+        "props": {
+          "border": true,
+          "stripe": true,
+          "highlightCurrentRow": true,
+          "rowActions": [
+            {
+              "type": "RenderRowActions"
+            }
+          ],
+          "filterable": true
+        },
+        "children": [
+          {
+            "type": "r-text",
+            "field": "id",
+            "props": {
+              "label": "ID",
+              "width": 80
+            }
+          },
+          {
+            "type": "r-text",
+            "field": "name",
+            "props": {
+              "label": "姓名",
+              "width": 120
+            }
+          },
+          {
+            "type": "r-number",
+            "field": "age",
+            "props": {
+              "label": "年龄",
+              "width": 100
+            }
+          },
+          {
+            "type": "r-text",
+            "field": "email",
+            "props": {
+              "label": "邮箱",
+              "width": 200
+            }
+          },
+          {
+            "type": "r-select",
+            "field": "status",
+            "props": {
+              "label": "状态",
+              "width": 100,
+              "options": [
+                {
+                  "label": "启用",
+                  "value": "active"
+                },
+                {
+                  "label": "禁用",
+                  "value": "inactive"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
 ]

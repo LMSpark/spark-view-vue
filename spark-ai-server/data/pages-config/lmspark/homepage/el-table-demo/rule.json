@@ -1,59 +1,59 @@
 [
-    {
-        "type": "div",
+  {
+    "type": "div",
+    "style": {
+      "padding": "20px",
+      "maxWidth": "1000px"
+    },
+    "children": [
+      {
+        "type": "el-alert",
+        "props": {
+          "title": "表格演示 —— DataSet 数据 + Render* 操作列",
+          "type": "info",
+          "closable": false,
+          "description": "数据来自 pagedata.json（DataSet），表格通过 script.js 的 Render* 函数渲染。操作列包含详情/编辑/删除按钮。"
+        },
         "style": {
-            "padding": "20px",
-            "maxWidth": "1000px"
+          "marginBottom": "16px"
+        }
+      },
+      {
+        "type": "el-card",
+        "props": {
+          "bodyStyle": "padding:16px;"
         },
         "children": [
-            {
-                "type": "el-alert",
-                "props": {
-                    "title": "表格演示 —— DataSet 数据 + Render* 操作列",
-                    "type": "info",
-                    "closable": false,
-                    "description": "数据来自 pagedata.json（DataSet），表格通过 script.js 的 Render* 函数渲染。操作列包含详情/编辑/删除按钮。"
-                },
-                "style": {
-                    "marginBottom": "16px"
-                }
+          {
+            "type": "div",
+            "style": {
+              "display": "flex",
+              "justifyContent": "space-between",
+              "alignItems": "center",
+              "marginBottom": "12px"
             },
-            {
-                "type": "el-card",
-                "props": {
-                    "bodyStyle": "padding:16px;"
+            "children": [
+              {
+                "type": "span",
+                "style": {
+                  "fontSize": "16px",
+                  "fontWeight": "600",
+                  "color": "#303133"
                 },
                 "children": [
-                    {
-                        "type": "div",
-                        "style": {
-                            "display": "flex",
-                            "justifyContent": "space-between",
-                            "alignItems": "center",
-                            "marginBottom": "12px"
-                        },
-                        "children": [
-                            {
-                                "type": "span",
-                                "style": {
-                                    "fontSize": "16px",
-                                    "fontWeight": "600",
-                                    "color": "#303133"
-                                },
-                                "children": [
-                                    "用户列表"
-                                ]
-                            },
-                            {
-                                "type": "RenderToolbar"
-                            }
-                        ]
-                    },
-                    {
-                        "type": "RenderTable"
-                    }
+                  "用户列表"
                 ]
-            }
+              },
+              {
+                "type": "RenderToolbar"
+              }
+            ]
+          },
+          {
+            "type": "RenderTable"
+          }
         ]
-    }
+      }
+    ]
+  }
 ]

@@ -70,7 +70,7 @@
             "children": [
               {
                 "type": "r-text",
-                "name": "orderNo",
+                "field": "orderNo",
                 "props": {
                   "label": "订单号",
                   "width": 180
@@ -78,28 +78,28 @@
               },
               {
                 "type": "r-text",
-                "name": "customer",
+                "field": "customer",
                 "props": {
                   "label": "客户"
                 }
               },
               {
                 "type": "r-number",
-                "name": "amount",
+                "field": "amount",
                 "props": {
                   "label": "金额"
                 }
               },
               {
                 "type": "r-text",
-                "name": "status",
+                "field": "status",
                 "props": {
                   "label": "状态"
                 }
               },
               {
                 "type": "r-date",
-                "name": "date",
+                "field": "date",
                 "props": {
                   "label": "日期",
                   "width": 120

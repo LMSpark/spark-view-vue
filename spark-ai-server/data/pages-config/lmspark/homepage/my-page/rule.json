@@ -49,7 +49,7 @@
             "children": [
               {
                 "type": "r-text",
-                "name": "id",
+                "field": "id",
                 "props": {
                   "label": "ID",
                   "width": 80
@@ -57,14 +57,14 @@
               },
               {
                 "type": "r-text",
-                "name": "name",
+                "field": "name",
                 "props": {
                   "label": "权限名称"
                 }
               },
               {
                 "type": "r-select",
-                "name": "type",
+                "field": "type",
                 "props": {
                   "label": "权限类型",
                   "width": 120,
@@ -86,7 +86,7 @@
               },
               {
                 "type": "r-text",
-                "name": "target",
+                "field": "target",
                 "props": {
                   "label": "目标对象",
                   "width": 150
@@ -94,7 +94,7 @@
               },
               {
                 "type": "r-select",
-                "name": "status",
+                "field": "status",
                 "props": {
                   "label": "状态",
                   "width": 100,
@@ -112,7 +112,7 @@
               },
               {
                 "type": "r-date",
-                "name": "createdAt",
+                "field": "createdAt",
                 "props": {
                   "label": "创建时间",
                   "width": 150
@@ -146,7 +146,7 @@
             "children": [
               {
                 "type": "r-text",
-                "name": "name",
+                "field": "name",
                 "props": {
                   "label": "权限名称",
                   "colSpan": 24,
@@ -155,7 +155,7 @@
               },
               {
                 "type": "r-select",
-                "name": "type",
+                "field": "type",
                 "props": {
                   "label": "权限类型",
                   "colSpan": 12,
@@ -178,7 +178,7 @@
               },
               {
                 "type": "r-text",
-                "name": "target",
+                "field": "target",
                 "props": {
                   "label": "目标对象",
                   "colSpan": 12
@@ -186,7 +186,7 @@
               },
               {
                 "type": "r-select",
-                "name": "status",
+                "field": "status",
                 "props": {
                   "label": "状态",
                   "colSpan": 12,
@@ -204,7 +204,7 @@
               },
               {
                 "type": "r-textarea",
-                "name": "description",
+                "field": "description",
                 "props": {
                   "label": "描述",
                   "colSpan": 24,

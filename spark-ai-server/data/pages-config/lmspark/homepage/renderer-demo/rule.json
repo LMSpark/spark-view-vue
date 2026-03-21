@@ -20,7 +20,7 @@
         "children": [
           {
             "type": "r-text",
-            "name": "name",
+            "field": "name",
             "props": {
               "label": "姓名",
               "width": 120
@@ -28,7 +28,7 @@
           },
           {
             "type": "r-number",
-            "name": "age",
+            "field": "age",
             "props": {
               "label": "年龄",
               "width": 100
@@ -36,7 +36,7 @@
           },
           {
             "type": "r-date",
-            "name": "createTime",
+            "field": "createTime",
             "props": {
               "label": "创建时间",
               "width": 150
@@ -60,14 +60,14 @@
         "children": [
           {
             "type": "r-text",
-            "name": "name",
+            "field": "name",
             "props": {
               "label": "姓名"
             }
           },
           {
             "type": "r-number",
-            "name": "age",
+            "field": "age",
             "props": {
               "label": "年龄",
               "min": 0,
@@ -76,7 +76,7 @@
           },
           {
             "type": "r-date",
-            "name": "createTime",
+            "field": "createTime",
             "props": {
               "label": "创建时间"
             }
@@ -96,21 +96,21 @@
         "children": [
           {
             "type": "r-text",
-            "name": "name",
+            "field": "name",
             "props": {
               "label": "姓名"
             }
           },
           {
             "type": "r-number",
-            "name": "age",
+            "field": "age",
             "props": {
               "label": "年龄"
             }
           },
           {
             "type": "r-date",
-            "name": "createTime",
+            "field": "createTime",
             "props": {
               "label": "创建时间"
             }

@@ -16,7 +16,9 @@
           "padding": "20px 20px 16px 20px",
           "borderBottom": "1px solid #e4e7ed"
         },
-        "children": ["用户管理"]
+        "children": [
+          "用户管理"
+        ]
       },
       {
         "type": "div",
@@ -48,35 +50,67 @@
             "children": [
               {
                 "type": "el-table-column",
-                "props": { "prop": "id", "label": "ID", "width": "80" }
+                "props": {
+                  "prop": "id",
+                  "label": "ID",
+                  "width": "80"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "name", "label": "用户名", "minWidth": "120" }
+                "props": {
+                  "prop": "name",
+                  "label": "用户名",
+                  "minWidth": "120"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "fullName", "label": "姓名", "minWidth": "120" }
+                "props": {
+                  "prop": "fullName",
+                  "label": "姓名",
+                  "minWidth": "120"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "email", "label": "邮箱", "minWidth": "180" }
+                "props": {
+                  "prop": "email",
+                  "label": "邮箱",
+                  "minWidth": "180"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "department", "label": "部门", "minWidth": "120" }
+                "props": {
+                  "prop": "department",
+                  "label": "部门",
+                  "minWidth": "120"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "age", "label": "年龄", "width": "100" }
+                "props": {
+                  "prop": "age",
+                  "label": "年龄",
+                  "width": "100"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "role", "label": "角色", "minWidth": "120" }
+                "props": {
+                  "prop": "role",
+                  "label": "角色",
+                  "minWidth": "120"
+                }
               },
               {
                 "type": "el-table-column",
-                "props": { "prop": "status", "label": "状态", "minWidth": "100" }
+                "props": {
+                  "prop": "status",
+                  "label": "状态",
+                  "minWidth": "100"
+                }
               }
             ]
           }

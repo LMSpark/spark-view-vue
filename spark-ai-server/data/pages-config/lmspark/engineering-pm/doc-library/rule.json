@@ -1,24 +1,155 @@
 [
-  { "type": "div", "style": { "display": "flex", "justifyContent": "space-between", "marginBottom": "16px" }, "children": [
-    { "type": "div", "style": { "display": "flex", "gap": "8px" }, "children": [
-      { "type": "el-input", "name": "docSearch", "props": { "placeholder": "搜索文档名称...", "prefixIcon": "Search", "clearable": true, "style": "width:260px" } },
-      { "type": "el-select", "name": "docType", "props": { "placeholder": "文档类型", "clearable": true, "style": "width:150px" }, "children": [
-        { "type": "el-option", "props": { "label": "需求文档", "value": "需求文档" } },
-        { "type": "el-option", "props": { "label": "设计文档", "value": "设计文档" } },
-        { "type": "el-option", "props": { "label": "测试报告", "value": "测试报告" } },
-        { "type": "el-option", "props": { "label": "会议纪要", "value": "会议纪要" } }
-      ]}
-    ]},
-    { "type": "el-button", "props": { "type": "primary", "icon": "Upload" }, "children": ["上传文档"] }
-  ]},
-  { "type": "r-table", "dataKey": "Documents@rows", "props": { "border": true, "stripe": true, "highlightCurrentRow": true }, "children": [
-    { "type": "el-table-column", "props": { "prop": "name", "label": "文档名称", "minWidth": 220 } },
-    { "type": "el-table-column", "props": { "prop": "type", "label": "类型", "width": 120 } },
-    { "type": "el-table-column", "props": { "prop": "project", "label": "所属项目", "width": 160 } },
-    { "type": "el-table-column", "props": { "prop": "author", "label": "作者", "width": 100 } },
-    { "type": "el-table-column", "props": { "prop": "size", "label": "大小", "width": 100 } },
-    { "type": "el-table-column", "props": { "prop": "updateDate", "label": "更新日期", "width": 120 } },
-    { "type": "el-table-column", "props": { "prop": "version", "label": "版本", "width": 80 } },
-    { "type": "el-table-column", "props": { "label": "操作", "width": 140, "fixed": "right" } }
-  ]}
+  {
+    "type": "div",
+    "style": {
+      "display": "flex",
+      "justifyContent": "space-between",
+      "marginBottom": "16px"
+    },
+    "children": [
+      {
+        "type": "div",
+        "style": {
+          "display": "flex",
+          "gap": "8px"
+        },
+        "children": [
+          {
+            "type": "el-input",
+            "name": "docSearch",
+            "props": {
+              "placeholder": "搜索文档名称...",
+              "prefixIcon": "Search",
+              "clearable": true,
+              "style": "width:260px"
+            }
+          },
+          {
+            "type": "el-select",
+            "name": "docType",
+            "props": {
+              "placeholder": "文档类型",
+              "clearable": true,
+              "style": "width:150px"
+            },
+            "children": [
+              {
+                "type": "el-option",
+                "props": {
+                  "label": "需求文档",
+                  "value": "需求文档"
+                }
+              },
+              {
+                "type": "el-option",
+                "props": {
+                  "label": "设计文档",
+                  "value": "设计文档"
+                }
+              },
+              {
+                "type": "el-option",
+                "props": {
+                  "label": "测试报告",
+                  "value": "测试报告"
+                }
+              },
+              {
+                "type": "el-option",
+                "props": {
+                  "label": "会议纪要",
+                  "value": "会议纪要"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "el-button",
+        "props": {
+          "type": "primary",
+          "icon": "Upload"
+        },
+        "children": [
+          "上传文档"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "r-table",
+    "dataKey": "Documents@rows",
+    "props": {
+      "border": true,
+      "stripe": true,
+      "highlightCurrentRow": true
+    },
+    "children": [
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "name",
+          "label": "文档名称",
+          "minWidth": 220
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "type",
+          "label": "类型",
+          "width": 120
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "project",
+          "label": "所属项目",
+          "width": 160
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "author",
+          "label": "作者",
+          "width": 100
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "size",
+          "label": "大小",
+          "width": 100
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "updateDate",
+          "label": "更新日期",
+          "width": 120
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "prop": "version",
+          "label": "版本",
+          "width": 80
+        }
+      },
+      {
+        "type": "el-table-column",
+        "props": {
+          "label": "操作",
+          "width": 140,
+          "fixed": "right"
+        }
+      }
+    ]
+  }
 ]

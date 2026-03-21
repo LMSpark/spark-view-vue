@@ -4,12 +4,16 @@
     "children": [
       {
         "type": "h2",
-        "children": ["系统设置"]
+        "children": [
+          "系统设置"
+        ]
       },
       {
         "type": "div",
         "class": "content-section",
-        "style": { "marginTop": "20px" },
+        "style": {
+          "marginTop": "20px"
+        },
         "children": [
           {
             "type": "input",
