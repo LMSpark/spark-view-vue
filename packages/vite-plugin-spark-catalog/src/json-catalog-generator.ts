@@ -7,7 +7,7 @@
  * @module json-catalog-generator
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { resolve, basename } from 'node:path'
 import { globSync } from 'glob'
 import { extractComponentApi } from './extract-component-api'
@@ -46,6 +46,8 @@ export interface JsonCatalogOptions {
   exclude?: string[] | undefined
   /** 输出 JSON 文件路径（相对于 root） */
   outputPath?: string | undefined
+  /** 按组件输出独立 JSON 文件的目录（相对于 root），便于检查 */
+  perComponentDir?: string | undefined
   /** 启用详细日志 */
   verbose?: boolean | undefined
 }
@@ -128,31 +130,111 @@ function resolveCategory(skillType: string): ComponentEntry['category'] {
 }
 
 /* --------------------------------------------------------------------------
- * 从 override 文本解析根级字段（简化提取）
+ * 从 override 文本解析根级字段
  * ----------------------------------------------------------------------- */
 
+/**
+ * 匹配 override 文本中的字段行：`name: type — description`
+ *
+ * 支持两种格式：
+ * 1. 【根级字段 — XXX】段落内的行（r-table 等）
+ * 2. 扁平行格式（r-form, r-dialog 等没有段落标记的容器）
+ *
+ * 排除 `【xxx】` 标题行、空行、纯说明行（不含 `: ` 分隔符的行）
+ */
 function parseRootFieldsFromOverride(overrideText: string): ComponentEntry['rootFields'] {
-  // 提取形如 【根级字段 — XXX】 段落中的行
-  const rootFieldSections = overrideText.matchAll(/【根级字段[^】]*】\n([\s\S]*?)(?=\n【|$)/g)
   const fields: NonNullable<ComponentEntry['rootFields']> = []
 
-  for (const section of rootFieldSections) {
-    const sectionContent = section[1] ?? ''
-    const lines = sectionContent.split('\n').filter(l => l.trim() !== '')
-    for (const line of lines) {
-      // 匹配 "name: type — description" 或 "name: type" 模式
-      const match = /^(\S+?):\s*(\S+)(?:\s*—\s*(.+))?$/.exec(line.trim())
-      if (match !== null) {
-        fields.push({
-          name: match[1] ?? '',
-          type: match[2] ?? 'unknown',
-          description: match[3] ?? '',
-        })
-      }
+  // 策略 1：有 【根级字段】 段落标记 → 只从这些段落提取
+  const rootFieldSections = [...overrideText.matchAll(/【根级字段[^】]*】\n([\s\S]*?)(?=\n【|$)/g)]
+  if (rootFieldSections.length > 0) {
+    for (const section of rootFieldSections) {
+      parseFieldLines(section[1] ?? '', fields)
     }
+    return fields.length > 0 ? fields : undefined
+  }
+
+  // 策略 2：无段落标记 → 从全文的 **title** 标题行之后逐行解析
+  // 跳过首行（**type** — 描述）、【xxx】标题行、纯说明行
+  const lines = overrideText.split('\n')
+  let pastTitle = false
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!pastTitle) {
+      // 跳过 **xxx** 标题行
+      if (trimmed.startsWith('**')) { pastTitle = true; continue }
+      continue
+    }
+    // 跳过段落标题、空行
+    if (trimmed === '' || trimmed.startsWith('【')) continue
+    // 跳过纯文字说明行（不含 `: ` 的行）
+    if (!trimmed.includes(': ')) continue
+    // 跳过 children/consumes/provides 说明行
+    if (/^(?:children|consumes|provides)\b/i.test(trimmed)) continue
+
+    parseFieldLine(trimmed, fields)
   }
 
   return fields.length > 0 ? fields : undefined
+}
+
+/** 解析多行字段文本 */
+function parseFieldLines(text: string, fields: NonNullable<ComponentEntry['rootFields']>): void {
+  const lines = text.split('\n').filter(l => l.trim() !== '')
+  for (const line of lines) {
+    parseFieldLine(line.trim(), fields)
+  }
+}
+
+/**
+ * 解析单行字段定义：`name: type — description` 或 `name: type`
+ * 类型允许含 `|` 和空格（如 `number | string`、`'left' | 'right'`）
+ */
+function parseFieldLine(trimmed: string, fields: NonNullable<ComponentEntry['rootFields']>): void {
+  // 增强正则：name 后跟 `: ` 再跟类型（可含空格和管道符），可选 ` — ` 描述
+  const match = /^([\w$.[\]]+):\s+(.+?)(?:\s+—\s+(.+))?$/.exec(trimmed)
+  if (match === null) return
+
+  const name = match[1] ?? ''
+  let type = match[2] ?? 'unknown'
+  const description = match[3] ?? ''
+
+  // 类型中可能残留描述（无 — 分隔时），取第一个有意义的类型 token
+  // 例如 "string 筛选区 CSS 类名" → 实际有 — 分隔的不会走到这里
+  if (description === '' && /\s/.test(type)) {
+    // 无描述时，type 不应含空格（除非是联合类型 `number | string`）
+    if (!/[|'"]/.test(type)) {
+      // 不是联合类型，截取第一个 token
+      const spaceIdx = type.indexOf(' ')
+      if (spaceIdx > 0) type = type.substring(0, spaceIdx)
+    }
+  }
+
+  if (name !== '') {
+    fields.push({ name, type, description })
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * 从 override 文本解析能力链
+ * ----------------------------------------------------------------------- */
+
+function parseCapabilitiesFromOverride(
+  overrideText: string,
+): { consumes: string[]; provides: string[] } | null {
+  const consumeMatch = /consumes:\s*(.+)/i.exec(overrideText)
+  const provideMatch = /provides:\s*(.+)/i.exec(overrideText)
+  if (consumeMatch === null && provideMatch === null) return null
+
+  const parseLine = (line: string): string[] =>
+    line.split(/[,，]/)
+      .map(s => s.trim())
+      .filter(s => s !== '' && /^[A-Z_]+$/.test(s))
+
+  return {
+    consumes: consumeMatch !== null ? parseLine(consumeMatch[1] ?? '') : [],
+    provides: provideMatch !== null ? parseLine(provideMatch[1] ?? '') : [],
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -226,7 +308,7 @@ function buildComponentEntry(
   const overrideText = CATALOG_OVERRIDES[skillType]
   const addendumText = CATALOG_ADDENDUMS[skillType]
 
-  // Props
+  // Props: 始终优先 AST（即使有 override）
   const props: PropEntry[] = api !== null
     ? api.props
       .filter(p => p.name !== 'config' && p.name !== 'sparkChildren')
@@ -239,20 +321,29 @@ function buildComponentEntry(
       }))
     : []
 
-  // Emits
+  // Emits: 始终优先 AST
   const emits: EmitEntry[] = api?.emits ?? []
 
-  // Capabilities
-  const capabilities = api?.capabilities ?? { consumes: [], provides: [] }
+  // Capabilities: AST 提取 + override 文本补充
+  let capabilities = api?.capabilities ?? { consumes: [], provides: [] }
+  if (hasOverride && overrideText !== undefined) {
+    const overrideCaps = parseCapabilitiesFromOverride(overrideText)
+    if (overrideCaps !== null) {
+      // 合并：AST 有的保留，override 补充缺失的
+      const mergedConsumes = [...new Set([...capabilities.consumes, ...overrideCaps.consumes])]
+      const mergedProvides = [...new Set([...capabilities.provides, ...overrideCaps.provides])]
+      capabilities = { consumes: mergedConsumes, provides: mergedProvides }
+    }
+  }
 
   // Root fields from override text
   const rootFields = hasOverride && overrideText !== undefined
     ? parseRootFieldsFromOverride(overrideText)
     : undefined
 
-  // Notes: addendum text or override text (for meta/container without AST)
+  // Notes: override 原文始终保留（辅助 AI 阅读），addendum 追加
   let notes: string | undefined
-  if (hasOverride && overrideText !== undefined && api === null) {
+  if (hasOverride && overrideText !== undefined) {
     notes = overrideText
   }
   if (addendumText !== undefined) {
@@ -261,7 +352,8 @@ function buildComponentEntry(
 
   // Source
   let source: ComponentEntry['source'] = 'ast'
-  if (hasOverride) source = 'override'
+  if (hasOverride && api !== null) source = 'ast+override'
+  else if (hasOverride) source = 'override'
   else if (hasAddendum && api !== null) source = 'ast+addendum'
   else if (hasAddendum) source = 'addendum'
 
@@ -300,10 +392,9 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     logger.info(`🔬 Renderer: ${renderers.length}, Feature: ${features.length}`)
   }
 
-  // 2. AST 提取
+  // 2. AST 提取（包括 override 组件——AST 取 props/emits，override 取 rootFields/notes）
   const apiMap = new Map<string, ComponentApiDescriptor>()
   for (const comp of [...renderers, ...features]) {
-    if (comp.skillType in CATALOG_OVERRIDES) continue
     try {
       const source = readFileSync(comp.absolutePath, 'utf-8')
       const api = extractComponentApi(source, comp.relativePath, comp.skillType)
@@ -378,6 +469,17 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   const outputAbsolute = resolve(root, outputPath)
   writeFileSync(outputAbsolute, JSON.stringify(catalog, null, 2), 'utf-8')
   logger.info(`📦 组件目录 JSON 已生成: ${outputPath} (${catalog.componentCount} 条目)`)
+
+  // 7. 按组件输出独立 JSON（便于逐一检查）
+  if (options.perComponentDir !== undefined) {
+    const dirAbsolute = resolve(root, options.perComponentDir)
+    if (!existsSync(dirAbsolute)) mkdirSync(dirAbsolute, { recursive: true })
+    for (const [key, entry] of Object.entries(components)) {
+      const filePath = resolve(dirAbsolute, `${key}.json`)
+      writeFileSync(filePath, JSON.stringify(entry, null, 2), 'utf-8')
+    }
+    logger.info(`📂 按组件独立 JSON 已输出: ${options.perComponentDir}/ (${Object.keys(components).length} 文件)`)
+  }
 
   return catalog
 }

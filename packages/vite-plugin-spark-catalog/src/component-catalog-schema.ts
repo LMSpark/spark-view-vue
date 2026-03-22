@@ -74,7 +74,7 @@ export interface ComponentEntry {
   notes?: string
 
   /** 来源标记 */
-  source: 'ast' | 'override' | 'addendum' | 'ast+addendum'
+  source: 'ast' | 'override' | 'addendum' | 'ast+addendum' | 'ast+override'
 }
 
 export interface PropEntry {

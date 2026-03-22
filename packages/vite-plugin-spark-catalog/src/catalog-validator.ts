@@ -130,19 +130,25 @@ export function validateWithCatalog(
       // 4) Props validation (against catalog)
       validateProps(typeName, node, path, issues, catalog)
 
-      // 5) Collect r-table info for highlight cross-check
+      // 5) Required props check
+      validateRequiredProps(typeName, node, path, issues, catalog)
+
+      // 6) Emit event-name validation
+      validateEmitNames(typeName, node, path, issues, catalog)
+
+      // 7) Collect r-table info for highlight cross-check
       if (typeName === 'r-table' || typeName === 'el-table') {
         collectTableInfo(node, path, tableDataKeys, tablesWithHighlight, dataKeyRe)
       }
     }
 
-    // 6) DataKey validation
+    // 8) DataKey validation
     validateDataKey(node, path, issues, dataKeyRe, tableNames, tablesUsingCurrentRow)
 
-    // 7) Event handler references
+    // 9) Event handler references
     validateEventHandlers(node, path, issues, scriptFunctions)
 
-    // 8) Style/class top-level check
+    // 10) Style/class top-level check
     validateStyleClassPlacement(node, path, issues)
   }
 
@@ -353,6 +359,65 @@ function validateProps(
         `组件「${typeName}」不存在 prop「${propName}」`,
         `${path}.props.${propName}`,
         `已知 props: ${entry.props.map(p => p.name).join(', ')}`)
+    }
+  }
+}
+
+// ─── Required props 校验 ───
+
+/** 框架透传或通用 prop，不应视为缺失 */
+const FRAMEWORK_PROPS = new Set(['sparkChildren', 'config', 'style', 'class', 'id'])
+
+function validateRequiredProps(
+  typeName: string,
+  node: Record<string, unknown>,
+  path: string,
+  issues: ConfigValidationIssue[],
+  catalog: ComponentCatalog,
+): void {
+  const entry: ComponentEntry | undefined = catalog.components[typeName]
+  if (entry === undefined) return
+
+  const requiredProps = entry.props.filter(p => p.required && !FRAMEWORK_PROPS.has(p.name))
+  if (requiredProps.length === 0) return
+
+  const providedProps = asRecord(node['props'])
+  const providedKeys = providedProps !== null ? new Set(Object.keys(providedProps)) : new Set<string>()
+
+  for (const prop of requiredProps) {
+    if (!providedKeys.has(prop.name)) {
+      pushIssue(issues, 'component', 'warning',
+        `组件「${typeName}」缺少必填 prop「${prop.name}」（类型: ${prop.type}）`,
+        `${path}.props`,
+        `请添加 props.${prop.name}。`)
+    }
+  }
+}
+
+// ─── Emit 事件名校验 ───
+
+function validateEmitNames(
+  typeName: string,
+  node: Record<string, unknown>,
+  path: string,
+  issues: ConfigValidationIssue[],
+  catalog: ComponentCatalog,
+): void {
+  const entry: ComponentEntry | undefined = catalog.components[typeName]
+  if (entry === undefined) return
+  if (entry.emits.length === 0) return
+
+  const events = asRecord(node['on'])
+  if (events === null) return
+
+  const knownEmits = new Set(entry.emits.map(e => e.name))
+
+  for (const eventName of Object.keys(events)) {
+    if (!knownEmits.has(eventName)) {
+      pushIssue(issues, 'component', 'warning',
+        `组件「${typeName}」未声明事件「${eventName}」`,
+        `${path}.on.${eventName}`,
+        `已知 emits: ${entry.emits.map(e => e.name).join(', ')}。如该事件来自原生 DOM，可忽略此警告。`)
     }
   }
 }

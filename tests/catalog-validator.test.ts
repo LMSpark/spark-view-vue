@@ -304,6 +304,181 @@ describe('validateWithCatalog', () => {
     })
   })
 
+  // ── Required props validation ──
+
+  describe('required props validation', () => {
+    it('warns when a required prop is missing', () => {
+      const catalog = makeCatalog({
+        components: {
+          'r-text': makeComponentEntry({
+            props: [
+              { name: 'label', type: 'string', required: true },
+              { name: 'placeholder', type: 'string', required: false },
+            ],
+          }),
+        },
+      })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([
+          { type: 'r-text', props: { placeholder: '请输入' } },
+        ]),
+      })
+      const reqIssues = issuesContaining(report.issues, '缺少必填 prop')
+      expect(reqIssues).toHaveLength(1)
+      expect(reqIssues[0]!.message).toContain('label')
+    })
+
+    it('no warning when all required props are provided', () => {
+      const catalog = makeCatalog({
+        components: {
+          'r-text': makeComponentEntry({
+            props: [
+              { name: 'label', type: 'string', required: true },
+              { name: 'placeholder', type: 'string', required: false },
+            ],
+          }),
+        },
+      })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([
+          { type: 'r-text', props: { label: '姓名' } },
+        ]),
+      })
+      const reqIssues = issuesContaining(report.issues, '缺少必填 prop')
+      expect(reqIssues).toHaveLength(0)
+    })
+
+    it('warns when component has required props but no props block at all', () => {
+      const catalog = makeCatalog({
+        components: {
+          'r-text': makeComponentEntry({
+            props: [
+              { name: 'label', type: 'string', required: true },
+            ],
+          }),
+        },
+      })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([
+          { type: 'r-text' },
+        ]),
+      })
+      const reqIssues = issuesContaining(report.issues, '缺少必填 prop')
+      expect(reqIssues).toHaveLength(1)
+      expect(reqIssues[0]!.message).toContain('label')
+    })
+
+    it('does not warn for framework pass-through props (config, sparkChildren)', () => {
+      const catalog = makeCatalog({
+        components: {
+          'r-table': makeComponentEntry({
+            type: 'r-table',
+            category: 'container',
+            props: [
+              { name: 'config', type: 'object', required: true },
+              { name: 'sparkChildren', type: 'array', required: true },
+            ],
+          }),
+        },
+      })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([{ type: 'r-table', dataKey: 'Users@rows' }]),
+        'pagedata.json': JSON.stringify({ tables: { Users: { rows: [] } } }),
+      })
+      const reqIssues = issuesContaining(report.issues, '缺少必填 prop')
+      expect(reqIssues).toHaveLength(0)
+    })
+
+    it('skips required check for components not in catalog', () => {
+      const catalog = makeCatalog({ components: {} })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([{ type: 'el-input' }]),
+      })
+      const reqIssues = issuesContaining(report.issues, '缺少必填 prop')
+      expect(reqIssues).toHaveLength(0)
+    })
+  })
+
+  // ── Emit event-name validation ──
+
+  describe('emit event-name validation', () => {
+    it('warns when on.xxx references an undeclared emit', () => {
+      const catalog = makeCatalog({
+        components: {
+          'r-text': makeComponentEntry({
+            emits: [
+              { name: 'change', payload: [{ name: 'value', type: 'string' }] },
+              { name: 'blur', payload: [] },
+            ],
+          }),
+        },
+      })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([{
+          type: 'r-text',
+          on: { change: 'handleChange', focus: 'handleFocus' },
+        }]),
+        'script.js': 'function handleChange() {}\nfunction handleFocus() {}',
+      })
+      const emitIssues = issuesContaining(report.issues, '未声明事件')
+      expect(emitIssues).toHaveLength(1)
+      expect(emitIssues[0]!.message).toContain('focus')
+      expect(emitIssues[0]!.severity).toBe('warning')
+    })
+
+    it('no warning when all on.xxx match declared emits', () => {
+      const catalog = makeCatalog({
+        components: {
+          'r-text': makeComponentEntry({
+            emits: [
+              { name: 'change', payload: [] },
+              { name: 'blur', payload: [] },
+            ],
+          }),
+        },
+      })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([{
+          type: 'r-text',
+          on: { change: 'handleChange', blur: 'handleBlur' },
+        }]),
+        'script.js': 'function handleChange() {}\nfunction handleBlur() {}',
+      })
+      const emitIssues = issuesContaining(report.issues, '未声明事件')
+      expect(emitIssues).toHaveLength(0)
+    })
+
+    it('skips emit check for components with empty emits list', () => {
+      const catalog = makeCatalog({
+        components: {
+          'r-text': makeComponentEntry({ emits: [] }),
+        },
+      })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([{
+          type: 'r-text',
+          on: { click: 'handleClick' },
+        }]),
+        'script.js': 'function handleClick() {}',
+      })
+      const emitIssues = issuesContaining(report.issues, '未声明事件')
+      expect(emitIssues).toHaveLength(0)
+    })
+
+    it('skips emit check for components not in catalog', () => {
+      const catalog = makeCatalog({ components: {} })
+      const report = validateWithCatalog(catalog, {
+        'rule.json': JSON.stringify([{
+          type: 'el-button',
+          on: { click: 'handleClick' },
+        }]),
+        'script.js': 'function handleClick() {}',
+      })
+      const emitIssues = issuesContaining(report.issues, '未声明事件')
+      expect(emitIssues).toHaveLength(0)
+    })
+  })
+
   // ── DataKey validation ──
 
   describe('dataKey validation', () => {
