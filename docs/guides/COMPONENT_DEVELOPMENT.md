@@ -604,8 +604,7 @@ it('resolves DataKey to rows', () => {
 
 ```typescript
 // ✅ 必须 kebab-case
-Spark.register('user-detail-form', ...)
-Spark.register('spark-ej2-grid', ...)
+Spark.register('user-detail-form', ...)\nSpark.register('r-table', ...)", "oldString": "Spark.register('user-detail-form', ...)\nSpark.register('spark-ej2-grid', ...)
 
 // ❌ 禁止
 Spark.register('UserDetailForm', ...)

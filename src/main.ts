@@ -16,9 +16,6 @@
  * - L2: @spark-view/spark-page-config - 页面配置编排层
  * - L4-L6: @spark-view/spark-component - 组件核心层
  * 
- * ⚡ 性能优化：
- * - Syncfusion 样式按需加载（路由级懒加载，首屏减少 ~800 KB）
- * - 使用 useSyncfusionLoader 在使用时动态加载，不影响主入口
  * 
  * 💾 缓存分级过期策略：
  * - 默认级别定义：0=永不过期, 1=3天, 2=7天, 3=15天(默认), 4=30天

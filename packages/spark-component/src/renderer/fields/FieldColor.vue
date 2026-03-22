@@ -32,22 +32,17 @@
 </template>
 
 <script setup lang="ts">
-import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
   label?: string
   /** r-table 内列宽 */
   width?: number
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 双向绑定值（颜色字符串，透传 el-color-picker） */
   modelValue?: string
 }
@@ -74,7 +69,7 @@ const {
   syncValue,
 } = permission
 
-const fieldCtx = useFieldContext(props, permission)
+const fieldCtx = useFieldContext({ width: props.width }, permission)
 
 function handleChange(value: string | null): void {
   const next = value ?? ''

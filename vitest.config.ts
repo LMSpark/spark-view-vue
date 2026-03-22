@@ -13,7 +13,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@/features/spark-ej2': resolve(__dirname, './src/features/spark-ej2'),
       // 所有包 → 源码解析（测试不应依赖构建产物）
       '@spark-view/spark-component': resolve(__dirname, './packages/spark-component/src/index.ts'),
       '@spark-view/spark-utils': resolve(__dirname, './packages/spark-utils/src/index.ts'),

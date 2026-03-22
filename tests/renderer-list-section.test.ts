@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
-import { RendererList, RendererSection } from '@spark-view/spark-component'
+import { RendererList, RendererSection, SPARK_NODE_CONFIG_KEY } from '@spark-view/spark-component'
 
 const SparkActionStub = defineComponent({
   props: {
@@ -131,15 +131,17 @@ describe('RendererList and RendererSection container integration', () => {
       props: {
         title: '布局区块',
         gridGap: 16,
-        config: {
-          type: 'r-section',
-          children: [
-            { type: 'child-a', props: { colSpan: 12, rowSpan: 2 } },
-            { type: 'child-b', props: { colSpan: 12 } },
-          ],
-        },
       },
       global: {
+        provide: {
+          [SPARK_NODE_CONFIG_KEY as symbol]: {
+            type: 'r-section',
+            children: [
+              { type: 'child-a', props: { colSpan: 12, rowSpan: 2 } },
+              { type: 'child-b', props: { colSpan: 12 } },
+            ],
+          },
+        },
         stubs: {
           SparkComponentRenderer: SparkActionStub,
           'el-card': ElCardStub,

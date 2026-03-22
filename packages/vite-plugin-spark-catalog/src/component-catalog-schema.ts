@@ -26,6 +26,14 @@ export interface ComponentCatalog {
   /** 分类注册表：按角色归组的组件 type 列表 */
   registry: ComponentRegistry
 
+  /**
+   * 共享类型定义（SparkNode 等框架级类型，一次定义多处引用）
+   *
+   * 组件 props 中出现的 `SparkNode[]` 等类型不再逐个组件展开 schema，
+   * 统一引用此处的单例定义。AI 生成时查阅此表即可理解完整结构。
+   */
+  sharedTypes: Record<string, SharedTypeDefinition>
+
   /** 组件条目：key = 组件 type（kebab-case） */
   components: Record<string, ComponentEntry>
 
@@ -149,6 +157,30 @@ export interface RootFieldEntry {
   description: string
   /** 子字段（如 filter.columns, toolbar.items） */
   children?: RootFieldEntry[]
+}
+
+/* --------------------------------------------------------------------------
+ * 共享类型定义（SparkNode 等框架级类型）
+ * ----------------------------------------------------------------------- */
+
+/** 共享类型定义条目 */
+export interface SharedTypeDefinition {
+  /** 类型名称 */
+  name: string
+  /** 类型描述 */
+  description: string
+  /** 属性列表 */
+  properties: SharedTypeProperty[]
+  /** 附加说明（Markdown） */
+  notes?: string
+}
+
+/** 共享类型的属性条目 */
+export interface SharedTypeProperty {
+  name: string
+  type: string
+  required?: boolean
+  description: string
 }
 
 /* --------------------------------------------------------------------------

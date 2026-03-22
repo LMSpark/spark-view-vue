@@ -70,8 +70,8 @@ Spark.register('my-detail', () => import('./MyDetail.vue'))
 // 3. 路径注册（批量管理）
 const register = Spark.createRegister(import.meta.glob('./*.vue'))
 register.registerAll({
-  'spark-ej2-grid':   './SparkEJ2Grid.vue',
-  'spark-ej2-column': './SparkEJ2Column.vue'
+  'r-table':   './RendererTable.vue',
+  'r-form':    './RendererForm.vue'
 })
 ```
 
@@ -262,7 +262,6 @@ Spark.register({
 - Vite 6.0 + pnpm
 - Vitest + @vue/test-utils
 - ESLint + vue-tsc
-- Syncfusion EJ2
 
 ##  许可证
 

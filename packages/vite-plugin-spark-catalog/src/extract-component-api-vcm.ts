@@ -200,20 +200,68 @@ export function extractAllComponentApisVcm(
  * ========================================================================== */
 
 /**
+ * 对 AI catalog 无价值的巨型类型 / 重复框架类型——跳过 schema 展开，只保留 type 字符串。
+ *
+ * - CSS 类型（CSSProperties 等）：1500+ 属性，展开后单 prop 可达 ~940 KB
+ * - SparkNode 及子类型：框架配置节点，每个 SparkNode[] prop 都会重复展开 14 属性 + 嵌套 toolbar/actions/filter，
+ *   但这些结构在 rootFields + notes 中已有人工编写的精准描述，VCM 展开纯属噪音
+ */
+const SCHEMA_TYPE_BLOCKLIST = new Set([
+  // CSS 巨型类型
+  'CSSProperties',
+  'StyleValue',
+  'HTMLAttributes',
+  'SVGAttributes',
+  'Events',
+  // SPARK 框架节点类型（结构已在 rootFields/notes 中描述，无需 VCM 展开）
+  'SparkNode',
+  'SparkNode[]',
+  'SparkNodeToolbar',
+  'SparkNodeActions',
+  'SparkNodeFilter',
+  'SparkNodeFilterItem',
+])
+
+/** 检测是否为需要跳过 schema 展开的巨型 / 框架类型 */
+function isBlocklistedType(typeStr: string): boolean {
+  if (SCHEMA_TYPE_BLOCKLIST.has(typeStr)) return true
+  // 子串匹配：CSSProperties / StyleValue 可能出现在联合类型中
+  if (typeStr.includes('CSSProperties') || typeStr.includes('StyleValue')) return true
+  // SparkNode[] 可能出现为 SparkNode[] 或其他联合形式
+  if (typeStr.includes('SparkNode')) return true
+  return false
+}
+
+/** schema 递归最大深度 */
+const MAX_SCHEMA_DEPTH = 3
+/** object schema 最大属性数 */
+const MAX_OBJECT_PROPERTIES = 50
+
+/**
  * 将 VCM 的 PropertyMetaSchema 转换为我们的 PropSchema
  *
- * 只保留有信息量的嵌套层级（纯字符串类型不产生 schema 对象）
+ * 只保留有信息量的嵌套层级（纯字符串类型不产生 schema 对象）。
+ * 对 CSSProperties 等巨型类型做黑名单跳过，防止输出膨胀。
  */
-function convertSchema(vcmSchema: PropertyMetaSchema): PropSchema | undefined {
+function convertSchema(vcmSchema: PropertyMetaSchema, depth = 0): PropSchema | undefined {
   if (typeof vcmSchema === 'string') {
-    // 简单类型不需要 schema
     return undefined
   }
 
+  // 深度限制
+  if (depth >= MAX_SCHEMA_DEPTH) return undefined
+
+  // 类型黑名单
+  if (isBlocklistedType(vcmSchema.type)) return undefined
+
   if (vcmSchema.kind === 'object' && vcmSchema.schema !== undefined) {
+    const entries = Object.entries(vcmSchema.schema)
+    // 属性数量过多 → 跳过（CSSProperties 等有 1500+ 属性）
+    if (entries.length > MAX_OBJECT_PROPERTIES) return undefined
+
     const properties: Record<string, PropSchemaProperty> = {}
     let hasProperties = false
-    for (const [key, propMeta] of Object.entries(vcmSchema.schema)) {
+    for (const [key, propMeta] of entries) {
       hasProperties = true
       const childSchema: PropSchemaProperty = {
         name: propMeta.name,
@@ -221,8 +269,7 @@ function convertSchema(vcmSchema: PropertyMetaSchema): PropSchema | undefined {
         required: propMeta.required,
       }
       if (propMeta.description !== '') childSchema.description = propMeta.description
-      // 递归嵌套
-      const nested = convertSchema(propMeta.schema)
+      const nested = convertSchema(propMeta.schema, depth + 1)
       if (nested !== undefined) childSchema.schema = nested
       properties[key] = childSchema
     }
@@ -241,7 +288,7 @@ function convertSchema(vcmSchema: PropertyMetaSchema): PropSchema | undefined {
 
   if (vcmSchema.kind === 'array' && vcmSchema.schema !== undefined) {
     const items = vcmSchema.schema
-      .map(convertSchema)
+      .map(s => convertSchema(s, depth + 1))
       .filter(isNotUndefined)
     if (items.length > 0) {
       return { kind: 'array', type: vcmSchema.type, items }
@@ -250,7 +297,7 @@ function convertSchema(vcmSchema: PropertyMetaSchema): PropSchema | undefined {
 
   if (vcmSchema.kind === 'event' && vcmSchema.schema !== undefined) {
     const params = vcmSchema.schema
-      .map(convertSchema)
+      .map(s => convertSchema(s, depth + 1))
       .filter(isNotUndefined)
     if (params.length > 0) {
       return { kind: 'event', type: vcmSchema.type, params }

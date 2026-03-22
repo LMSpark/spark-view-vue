@@ -18,7 +18,7 @@
  * 组件扫描模式（glob 格式）
  *
  * 改动说明：
- * - features/ 扫描所有 Vue 组件（EJ2、自定义 feature 等）
+ * - features/ 扫描所有 Vue 组件（自定义 feature 等）
  * - packages/ 扫描各包内的 components 目录
  * - src/components/ 扫描应用层自有组件
  * - src/views/ 扫描页面级组件
@@ -64,12 +64,11 @@ export const SYNC_COMPONENTS = [
  * 异步加载的组件（支持通配符）
  *
  * 异步组件在运行时按需加载，用于：
- * - 大型第三方组件（EJ2、Charts 等）
+ * - 大型第三方组件（Charts 等）
  * - 低频访问的演示/设置页面
  * - 体积大（> sizeThreshold）的组件
  */
 export const ASYNC_COMPONENTS = [
-  '*EJ2*', // Syncfusion 组件（大体积）
   '*Demo', // 演示组件
   'Capability*', // 能力展示
   'Tree*', // 树形组件

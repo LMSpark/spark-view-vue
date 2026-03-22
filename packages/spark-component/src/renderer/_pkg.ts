@@ -19,6 +19,9 @@ export type {
   LoggerApi,
 } from '../types.js'
 
+// ── DI 键 ──
+export { SPARK_NODE_CONFIG_KEY } from '../types.js'
+
 // ── 能力键 ──
 export {
   PAGE_DATASET,

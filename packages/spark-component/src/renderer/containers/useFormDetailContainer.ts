@@ -1,6 +1,7 @@
-import { computed, useSlots } from 'vue'
+import { computed, inject, useSlots } from 'vue'
 import { useSparkComponent } from '../_pkg'
 import type { SparkNode } from '../_pkg'
+import { SPARK_NODE_CONFIG_KEY } from '../../types.js'
 import type { DataView, IDataSource } from '@spark-view/spark-data'
 import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
@@ -15,9 +16,7 @@ import { createCurrentRowSlotScope } from './useContainerSlotScopes'
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
 
 interface FormDetailContainerProps {
-  config: SparkNode | undefined
   dataKey: string | undefined
-  sparkChildren: SparkNode[] | undefined
   dataView: DataView | undefined
   toolbar: SparkNode[] | undefined
   toolbarPosition: ToolbarPosition | undefined
@@ -40,13 +39,13 @@ export function useFormDetailContainer(
   fieldContext: 'form' | 'detail',
 ) {
   const slots = useSlots()
+  const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-  // ── 输入解析 ──────────────────────────────────────────────────────────────
+  // ── 输入解析 ──────────────────────────────────────────────────────────
 
   const { effectiveDataKey, configChildren } = useContainerInput({
-    config: computed(() => props.config),
+    config: computed(() => nodeConfig),
     dataKey: computed(() => props.dataKey),
-    sparkChildren: computed(() => props.sparkChildren),
   })
 
   const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
@@ -62,7 +61,7 @@ export function useFormDetailContainer(
   const logPrefix = fieldContext === 'form' ? 'RendererForm' : 'RendererDetail'
 
   const { consume, provide: sparkProvide, logger } = useSparkComponent(
-    props.config ?? { type: containerType }
+    nodeConfig ?? { type: containerType }
   )
   const pageDataSet = consume(PAGE_DATASET)
 
@@ -87,7 +86,7 @@ export function useFormDetailContainer(
     visibleToolbarConfigs,
     showToolbar,
   } = useContainerToolbar({
-    config: computed(() => props.config),
+    config: computed(() => nodeConfig),
     toolbar: computed(() => props.toolbar),
     toolbarPosition: computed(() => props.toolbarPosition),
     toolbarClass: computed(() => props.toolbarClass),

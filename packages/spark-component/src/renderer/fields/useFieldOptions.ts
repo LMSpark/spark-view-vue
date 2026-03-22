@@ -1,6 +1,6 @@
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type { ComputedRef } from 'vue'
-import type { SparkNode } from '../_pkg'
+import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import type { FieldPermissionProps } from './useFieldPermission'
 
@@ -20,7 +20,6 @@ export interface FieldTransferOption {
 }
 
 export interface FieldOptionProps {
-  config?: SparkNode | undefined
   options?: unknown[] | undefined
   optionLabelField?: string | undefined
   optionValueField?: string | undefined
@@ -102,12 +101,13 @@ function flattenOptions(source: FieldOption[]): FieldOption[] {
 }
 
 export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn {
+  const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
   const optionLabelField = computed(() => props.optionLabelField ?? 'label')
   const optionValueField = computed(() => props.optionValueField ?? 'value')
   const optionChildrenField = computed(() => props.optionChildrenField ?? 'children')
 
   const options = computed<FieldOption[]>(() => {
-    const source = props.options ?? (props.config?.props?.['options'] as unknown[] | undefined) ?? []
+    const source = props.options ?? (nodeConfig?.props?.['options'] as unknown[] | undefined) ?? []
     if (!Array.isArray(source)) return []
     return source
       .map(item => normalizeOption(item, optionLabelField.value, optionValueField.value, optionChildrenField.value))

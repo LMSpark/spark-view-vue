@@ -89,16 +89,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useSlots, watch } from 'vue'
-import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
+import { computed, inject, ref, useSlots, watch } from 'vue'
+import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 头部操作按钮配置 */
   headerActions?: SparkNode[]
   /** 分区标题 */
@@ -160,11 +156,12 @@ const props = withDefaults(defineProps<Props>(), {
   gridAutoRows: 'minmax(32px, auto)',
 })
 const slots = useSlots()
+const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-useSparkComponent(props.config ?? { type: 'r-section' })
+useSparkComponent(nodeConfig ?? { type: 'r-section' })
 
-const configChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
-const headerActionConfigs = computed(() => props.headerActions ?? (props.config?.props?.['headerActions'] as SparkNode[] | undefined) ?? [])
+const configChildren = computed(() => nodeConfig?.children ?? [])
+const headerActionConfigs = computed(() => props.headerActions ?? (nodeConfig?.props?.['headerActions'] as SparkNode[] | undefined) ?? [])
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
   children: configChildren,
   columns: computed(() => props.gridColumns),

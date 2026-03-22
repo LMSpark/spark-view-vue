@@ -12,12 +12,12 @@ SparkPlugin
 PageRenderer (SparkPageRenderer + useRendererSetup)
   ↓  provide(APP_SERVICES, ...)    SPARK 能力系统
   ↓  provide(PAGE_DATASET, ...)
-Table容器 (e.g. spark-ej2-grid)
+Table容器 (e.g. r-table)
   ↓  consume(PAGE_DATASET) → DataSet
   ↓  resolveDataKeyBinding(config.dataKey, dataSet) → DataView
   ↓  provide(DATA_SOURCE, dataView)
   ↓  provide(SELECTION, ...)
-Row组件 (e.g. spark-ej2-row)
+Row组件 (e.g. r-row)
   ↓  consume(DATA_SOURCE) → DataView
   ↓  consume(SELECTION) → 选择状态
 ```
@@ -61,8 +61,8 @@ Spark.register('my-grid', () => import('./MyGrid.vue'))
 // 批量注册（推荐大型项目）
 const reg = Spark.createRegister(import.meta.glob('./components/*.vue'))
 reg.registerAll({
-  'spark-ej2-grid': './SparkEJ2Grid.vue',
-  'spark-ej2-column': './SparkEJ2Column.vue',
+  'r-table': './RendererTable.vue',
+  'r-form': './RendererForm.vue',
 })
 ```
 
@@ -169,10 +169,10 @@ parentView.events.on('stateChanged', (event) => {
 
 ## 5. 表容器（Table Container）
 
-表容器组件（如 `SparkEJ2Grid`）建立数据层与 UI 层的桥接：
+表容器组件（如 `RendererTable`）建立数据层与 UI 层的桥接：
 
 ```typescript
-// SparkEJ2Grid.vue setup（简化）
+// RendererTable.vue setup（简化）
 const { consume, provide } = useSparkComponent(props.config)
 
 // 消费页面级 DataSet
@@ -206,7 +206,7 @@ PageRenderer context
     PAGE_DATASET → DataSet
   }
     ↓
-r-table 或 spark-ej2-grid context
+r-table context
   capabilities = Map {
     DATA_SOURCE  → DataView
     SELECTION    → { getSelected, setSelected }

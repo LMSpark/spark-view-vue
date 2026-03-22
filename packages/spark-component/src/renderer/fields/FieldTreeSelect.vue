@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 import { useOptionField } from './useFieldOptions'
-import type { SparkNode } from '../_pkg'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
@@ -28,16 +27,12 @@ type FieldPrimitive = string | number | boolean
 type TreeSelectValue = FieldPrimitive | FieldPrimitive[]
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
   label?: string
   /** r-table 内列宽 */
   width?: number
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 双向绑定值 */
   modelValue?: TreeSelectValue
   /** 树形选项（嵌套结构） */
@@ -85,7 +80,7 @@ const optionResult = useOptionField<TreeSelectValue>({
 })
 
 const { options, fieldValue, isCurrentFieldEditable, syncValue } = optionResult
-const fieldCtx = useFieldContext(props, optionResult)
+const fieldCtx = useFieldContext({ width: props.width }, optionResult)
 
 function handleChange(value: TreeSelectValue): void {
   emit('update:modelValue', value)

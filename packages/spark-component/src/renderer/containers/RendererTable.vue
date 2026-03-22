@@ -193,13 +193,13 @@
  *   配置驱动：传入 config，子组件由 SparkComponentRenderer 通用递归渲染
  *   模板驱动：不传 config，通过 <slot> 接收模板子内容
  */
-import { computed, defineComponent, onUnmounted, ref, useSlots, watch } from 'vue'
+import { computed, defineComponent, inject, onUnmounted, ref, useSlots, watch } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode, RendererTableApi, PageComponentRegistry } from '../_pkg'
 import type { ModuleContextCapability } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
 import { PAGE_SERVICE } from '@spark-view/spark-utils'
-import { PAGE_DATASET, DATA_SOURCE, TABLE_API, PAGE_COMPONENT_REGISTRY } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, TABLE_API, PAGE_COMPONENT_REGISTRY, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { FIELD_CONTEXT, MODULE_CONTEXT } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -227,12 +227,8 @@ import {
 type RowActionsPosition = LateralActionPosition
 
 interface Props {
-  /** SPARK 配置驱动（主入口）— dataKey / children 均从此取 */
-  config?: SparkNode
   /** DataKey 格式：tableName@field（与 config 同层冗余时以 config.props.dataKey 为准） */
   dataKey?: string
-  /** bindRules 从 rule.children 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 直接传入的 DataView（备用） */
   dataView?: DataView | undefined
   /** 工具栏按钮配置 */
@@ -294,6 +290,7 @@ const props = withDefaults(defineProps<Props>(), {
   rowActionsClass: '',
 })
 const slots = useSlots()
+const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
 const ElTableColumns = defineComponent({
   name: 'ElTableColumns',
@@ -305,9 +302,8 @@ const ElTableColumns = defineComponent({
 // ── 输入解析 ──────────────────────────────────────────────────────────────
 
 const { effectiveDataKey, mergedChildren } = useContainerInput({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   dataKey: computed(() => props.dataKey),
-  sparkChildren: computed(() => props.sparkChildren),
 })
 
 const legacyRowActionConfigs = computed(() =>
@@ -321,7 +317,7 @@ const sparkChildren = computed(() => {
 // ── SPARK 上下文与数据源 ───────────────────────────────────────────────────
 
 const { context, consume, provide: sparkProvide, logger } = useSparkComponent(
-  props.config ?? { type: 'r-table' }
+  nodeConfig ?? { type: 'r-table' }
 )
 
 const pageDataSet = consume(PAGE_DATASET)
@@ -358,10 +354,10 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => props.config),
-  toolbar: computed(() => props.config?.toolbar?.items ?? props.toolbar),
-  toolbarPosition: computed(() => props.config?.toolbar?.position ?? props.toolbarPosition),
-  toolbarClass: computed(() => props.config?.toolbar?.class ?? props.toolbarClass),
+  config: computed(() => nodeConfig),
+  toolbar: computed(() => nodeConfig?.toolbar?.items ?? props.toolbar),
+  toolbarPosition: computed(() => nodeConfig?.toolbar?.position ?? props.toolbarPosition),
+  toolbarClass: computed(() => nodeConfig?.toolbar?.class ?? props.toolbarClass),
   modelPermission,
   slots,
 })
@@ -380,42 +376,42 @@ const {
   activeFilterCount,
   resetFilters,
 } = useTableFilters({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   children: sparkChildren,
   dataView: resolvedView,
   filterColumns: computed(() => {
-    const meta = props.config?.filter
+    const meta = nodeConfig?.filter
     if (meta?.columns) return meta.columns as string[]
     return props.filterColumns
   }),
-  filterClass: computed(() => props.config?.filter?.class ?? props.filterClass),
-  filterGridColumns: computed(() => props.config?.filter?.gridColumns ?? props.filterGridColumns),
-  filterGridGap: computed(() => props.config?.filter?.gridGap ?? props.filterGridGap),
-  filterGridAutoRows: computed(() => props.config?.filter?.gridAutoRows ?? props.filterGridAutoRows),
+  filterClass: computed(() => nodeConfig?.filter?.class ?? props.filterClass),
+  filterGridColumns: computed(() => nodeConfig?.filter?.gridColumns ?? props.filterGridColumns),
+  filterGridGap: computed(() => nodeConfig?.filter?.gridGap ?? props.filterGridGap),
+  filterGridAutoRows: computed(() => nodeConfig?.filter?.gridAutoRows ?? props.filterGridAutoRows),
   logger,
 })
 
 const filterCollapsibleValue = computed(() =>
-  props.config?.filter?.collapsible
-  ?? (props.config?.props?.['filterCollapsible'] as boolean | undefined)
+  nodeConfig?.filter?.collapsible
+  ?? (nodeConfig?.props?.['filterCollapsible'] as boolean | undefined)
   ?? props.filterCollapsible
 )
 
 const filterDefaultCollapsedValue = computed(() =>
-  props.config?.filter?.defaultCollapsed
-  ?? (props.config?.props?.['filterDefaultCollapsed'] as boolean | undefined)
+  nodeConfig?.filter?.defaultCollapsed
+  ?? (nodeConfig?.props?.['filterDefaultCollapsed'] as boolean | undefined)
   ?? props.filterDefaultCollapsed
 )
 
 const filterAutoFitMinWidthValue = computed(() =>
-  props.config?.filter?.autoFitMinWidth
-  ?? (props.config?.props?.['filterAutoFitMinWidth'] as string | undefined)
+  nodeConfig?.filter?.autoFitMinWidth
+  ?? (nodeConfig?.props?.['filterAutoFitMinWidth'] as string | undefined)
   ?? props.filterAutoFitMinWidth
 )
 
 const filterItemSpanValue = computed(() =>
-  props.config?.filter?.itemSpan
-  ?? (props.config?.props?.['filterItemSpan'] as number | undefined)
+  nodeConfig?.filter?.itemSpan
+  ?? (nodeConfig?.props?.['filterItemSpan'] as number | undefined)
   ?? props.filterItemSpan
 )
 
@@ -525,17 +521,17 @@ const {
   showActionsRight: showRowActionsRight,
   getScopedActionConfigs: getScopedRowActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   actionConfigs: computed(() => {
     // v3 meta 域优先
-    if (props.config?.actions?.items) {
-      return [...legacyRowActionConfigs.value, ...props.config.actions.items]
+    if (nodeConfig?.actions?.items) {
+      return [...legacyRowActionConfigs.value, ...nodeConfig.actions.items]
     }
-    const explicit = (props.config?.props?.['rowActions'] as SparkNode[] | undefined) ?? props.rowActions ?? []
+    const explicit = (nodeConfig?.props?.['rowActions'] as SparkNode[] | undefined) ?? props.rowActions ?? []
     return [...legacyRowActionConfigs.value, ...explicit]
   }),
-  actionPosition: computed(() => props.config?.actions?.position ?? props.rowActionsPosition),
-  actionClass: computed(() => props.config?.actions?.class ?? props.rowActionsClass),
+  actionPosition: computed(() => nodeConfig?.actions?.position ?? props.rowActionsPosition),
+  actionClass: computed(() => nodeConfig?.actions?.class ?? props.rowActionsClass),
   actionPropKey: 'rowActions',
   actionPositionPropKey: 'rowActionsPosition',
   actionClassPropKey: 'rowActionsClass',
@@ -559,27 +555,27 @@ const {
 })
 
 const rowActionsLabelValue = computed(() =>
-  props.config?.actions?.label
-  ?? (props.config?.props?.['rowActionsLabel'] as string | undefined)
+  nodeConfig?.actions?.label
+  ?? (nodeConfig?.props?.['rowActionsLabel'] as string | undefined)
   ?? props.rowActionsLabel
 )
 
 const rowActionsWidthValue = computed(() =>
-  props.config?.actions?.width
-  ?? (props.config?.props?.['rowActionsWidth'] as string | number | undefined)
+  nodeConfig?.actions?.width
+  ?? (nodeConfig?.props?.['rowActionsWidth'] as string | number | undefined)
   ?? props.rowActionsWidth
 )
 
 const rowActionsAlignValue = computed(() =>
-  props.config?.actions?.align
-  ?? (props.config?.props?.['rowActionsAlign'] as 'left' | 'center' | 'right' | undefined)
+  nodeConfig?.actions?.align
+  ?? (nodeConfig?.props?.['rowActionsAlign'] as 'left' | 'center' | 'right' | undefined)
   ?? props.rowActionsAlign
 )
 
 const rowActionsFixedValue = computed<boolean | 'left' | 'right'>(() => {
-  const metaFixed = props.config?.actions?.fixed
+  const metaFixed = nodeConfig?.actions?.fixed
   if (metaFixed !== undefined) return metaFixed
-  const explicit = (props.config?.props?.['rowActionsFixed'] as boolean | 'left' | 'right' | undefined) ?? props.rowActionsFixed
+  const explicit = (nodeConfig?.props?.['rowActionsFixed'] as boolean | 'left' | 'right' | undefined) ?? props.rowActionsFixed
   if (explicit !== undefined) return explicit
   return rowActionsPositionValue.value
 })

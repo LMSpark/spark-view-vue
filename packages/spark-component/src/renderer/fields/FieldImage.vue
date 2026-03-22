@@ -38,23 +38,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SparkNode } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFileFieldActions } from './useFileFieldActions'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
   label?: string
   /** r-table 内列宽 */
   width?: number
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 双向绑定值（图片路径） */
   modelValue?: string
   /** 上传 URL */
@@ -108,7 +103,7 @@ const {
   syncValue,
 } = permission
 
-const fieldCtx = useFieldContext(props, permission)
+const fieldCtx = useFieldContext({ width: props.width }, permission)
 
 const { hasBrowseCapability, hasUploadCapability, primaryAction, browseFiles, uploadFiles } = useFileFieldActions({
   pageService,

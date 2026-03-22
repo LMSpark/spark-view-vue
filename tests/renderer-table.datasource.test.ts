@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import { RendererTable } from '@spark-view/spark-component'
+import { RendererTable, SPARK_NODE_CONFIG_KEY } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { IDataRow } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
@@ -871,16 +871,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
         dataView: {
           rows: [{ id: 1, name: 'Alice', score: 95, joinedAt: '2026-03-10' }],
         },
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-text', field: 'name', props: { label: '姓名' } },
-            { type: 'r-number', field: 'score', props: { label: '分数' } },
-            { type: 'r-date', field: 'joinedAt', props: { label: '入职日期' } },
-          ],
-        },
       },
       global: {
+        provide: {
+          [SPARK_NODE_CONFIG_KEY as symbol]: {
+            type: 'r-table',
+            children: [
+              { type: 'r-text', field: 'name', props: { label: '姓名' } },
+              { type: 'r-number', field: 'score', props: { label: '分数' } },
+              { type: 'r-date', field: 'joinedAt', props: { label: '入职日期' } },
+            ],
+          },
+        },
         components: {
           'r-text': TableTextFieldStub,
           'r-number': TableNumberFieldStub,
@@ -907,18 +909,20 @@ describe('RendererTable - DataView as single data intermediary', () => {
         dataView: {
           rows: [{ id: 1, name: 'Alice', score: 95 }],
         },
-        config: {
-          type: 'r-table',
-          children: [],
-          props: {
-            sparkChildren: [
-              { type: 'r-text', field: 'name', props: { label: '姓名' } },
-              { type: 'r-number', field: 'score', props: { label: '分数' } },
-            ],
-          },
-        },
       },
       global: {
+        provide: {
+          [SPARK_NODE_CONFIG_KEY as symbol]: {
+            type: 'r-table',
+            children: [],
+            props: {
+              sparkChildren: [
+                { type: 'r-text', field: 'name', props: { label: '姓名' } },
+                { type: 'r-number', field: 'score', props: { label: '分数' } },
+              ],
+            },
+          },
+        },
         components: {
           'r-text': TableTextFieldStub,
           'r-number': TableNumberFieldStub,
@@ -1064,15 +1068,17 @@ describe('RendererTable - DataView as single data intermediary', () => {
       props: {
         dataView: dv,
         filterColumns: ['name'],
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-text', field: 'name', props: { label: '姓名' } },
-            { type: 'r-number', field: 'age', props: { label: '年龄' } },
-          ],
-        },
       },
       global: {
+        provide: {
+          [SPARK_NODE_CONFIG_KEY as symbol]: {
+            type: 'r-table',
+            children: [
+              { type: 'r-text', field: 'name', props: { label: '姓名' } },
+              { type: 'r-number', field: 'age', props: { label: '年龄' } },
+            ],
+          },
+        },
         stubs: {
           'el-table': ElTableStub,
           SparkComponentRenderer: SparkActionStub,
@@ -1119,14 +1125,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
       props: {
         dataView: dv,
         filterColumns: ['name'],
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-text', field: 'name', props: { label: '姓名' } },
-          ],
-        },
       },
       global: {
+        provide: {
+          [SPARK_NODE_CONFIG_KEY as symbol]: {
+            type: 'r-table',
+            children: [
+              { type: 'r-text', field: 'name', props: { label: '姓名' } },
+            ],
+          },
+        },
         stubs: {
           'el-table': ElTableStub,
           SparkComponentRenderer: SparkActionStub,
@@ -1174,15 +1182,17 @@ describe('RendererTable - DataView as single data intermediary', () => {
       props: {
         dataView: dv,
         filterColumns: ['score', 'status'],
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-number', field: 'score', props: { label: '分数', filterMode: 'range' } },
-            { type: 'r-multi-select', field: 'status', props: { label: '状态' } },
-          ],
-        },
       },
       global: {
+        provide: {
+          [SPARK_NODE_CONFIG_KEY as symbol]: {
+            type: 'r-table',
+            children: [
+              { type: 'r-number', field: 'score', props: { label: '分数', filterMode: 'range' } },
+              { type: 'r-multi-select', field: 'status', props: { label: '状态' } },
+            ],
+          },
+        },
         stubs: {
           'el-table': ElTableStub,
           SparkComponentRenderer: SparkActionStub,
@@ -1222,14 +1232,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
         filterColumns: ['name'],
         filterCollapsible: true,
         filterDefaultCollapsed: true,
-        config: {
-          type: 'r-table',
-          children: [
-            { type: 'r-text', field: 'name', props: { label: '姓名' } },
-          ],
-        },
       },
       global: {
+        provide: {
+          [SPARK_NODE_CONFIG_KEY as symbol]: {
+            type: 'r-table',
+            children: [
+              { type: 'r-text', field: 'name', props: { label: '姓名' } },
+            ],
+          },
+        },
         stubs: {
           'el-table': ElTableStub,
           'el-tag': defineComponent({

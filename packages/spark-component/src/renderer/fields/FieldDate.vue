@@ -16,22 +16,19 @@
 </template>
 
 <script setup lang="ts">
-import type { SparkNode } from '../_pkg'
+import { inject } from 'vue'
+import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
   label?: string
   /** r-table 内列宽 */
   width?: number
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 双向绑定值，日期范围时为数组 */
   modelValue?: string | Date | Array<string | Date>
 }
@@ -42,6 +39,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | Date | Array<string | Date>]
 }>()
 
+const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
+
 function formatDateValue(value: unknown): string {
   if (!value) return ''
   if (Array.isArray(value)) return value.map(item => formatDateValue(item)).join(' ~ ')
@@ -51,9 +50,9 @@ function formatDateValue(value: unknown): string {
 }
 
 const isRangeFilter =
-  props.config?.props?.['filterMode'] === 'range'
-  || props.config?.props?.['filterVariant'] === 'range'
-  || props.config?.props?.['filterRange'] === true
+  nodeConfig?.props?.['filterMode'] === 'range'
+  || nodeConfig?.props?.['filterVariant'] === 'range'
+  || nodeConfig?.props?.['filterRange'] === true
 
 const permission = useFieldPermission<string | Date | Array<string | Date>>({
   props,
@@ -63,7 +62,7 @@ const permission = useFieldPermission<string | Date | Array<string | Date>>({
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext(props, permission)
+const fieldCtx = useFieldContext({ width: props.width }, permission)
 
 const handleChange = (val: string | Date | Array<string | Date>) => {
   emit('update:modelValue', val)

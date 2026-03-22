@@ -48,22 +48,17 @@
 </template>
 
 <script setup lang="ts">
-import type { SparkNode } from '../_pkg'
 import { useOptionField } from './useFieldOptions'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
   label?: string
   /** r-table 内列宽 */
   width?: number
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 双向绑定值（图标名） */
   modelValue?: string
   /** 图标选项列表 */
@@ -109,7 +104,7 @@ const {
   syncValue,
 } = optionResult
 
-const fieldCtx = useFieldContext(props, optionResult)
+const fieldCtx = useFieldContext({ width: props.width }, optionResult)
 
 function iconClass(value: string): string {
   return props.classPrefix ? `${props.classPrefix}${value}` : value

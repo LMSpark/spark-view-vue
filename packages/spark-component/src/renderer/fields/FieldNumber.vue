@@ -34,22 +34,19 @@
 </template>
 
 <script setup lang="ts">
-import type { SparkNode } from '../_pkg'
+import { inject } from 'vue'
+import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
   label?: string
   /** r-table 内列宽 */
   width?: number
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 双向绑定值，范围模式时为元组 */
   modelValue?: number | [number | undefined, number | undefined]
   /** 最小值 */
@@ -68,6 +65,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: number | [number | undefined, number | undefined]]
 }>()
 
+const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
+
 function formatNumberValue(value: unknown): string {
   if (Array.isArray(value)) return value.map(item => formatNumberValue(item)).join(' ~ ')
   if (typeof value === 'number') return String(value)
@@ -77,9 +76,9 @@ function formatNumberValue(value: unknown): string {
 
 const isRangeFilter =
   props.filterMode === 'range'
-  || props.config?.props?.['filterMode'] === 'range'
-  || props.config?.props?.['filterVariant'] === 'range'
-  || props.config?.props?.['filterRange'] === true
+  || nodeConfig?.props?.['filterMode'] === 'range'
+  || nodeConfig?.props?.['filterVariant'] === 'range'
+  || nodeConfig?.props?.['filterRange'] === true
 
 const permission = useFieldPermission<number | [number | undefined, number | undefined]>({
   props,
@@ -89,7 +88,7 @@ const permission = useFieldPermission<number | [number | undefined, number | und
 })
 
 const { fieldValue, isCurrentFieldEditable, syncValue } = permission
-const fieldCtx = useFieldContext(props, permission)
+const fieldCtx = useFieldContext({ width: props.width }, permission)
 
 const rangeStart = Array.isArray(fieldValue.value) ? fieldValue.value[0] : undefined
 const rangeEnd = Array.isArray(fieldValue.value) ? fieldValue.value[1] : undefined

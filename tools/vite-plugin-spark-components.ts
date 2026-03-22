@@ -19,7 +19,7 @@
  *     sparkComponentsPlugin({
  *       patterns: ['./features/**\/*.vue', './src/components/**\/*.vue'],
  *       syncComponents: ['PageRenderer', 'SparkComponentRenderer'],
- *       asyncComponents: ['*Demo', '*EJ2*'],
+   *       asyncComponents: ['*Demo'],
  *       sizeThreshold: 50 // KB
  *     })
  *   ]
@@ -31,12 +31,10 @@
  * // virtual:spark-components
  * import { Spark } from '@spark-view/spark-component'
  * import PageRenderer from './components/PageRenderer.vue'
- * const SparkEJ2Grid = () => import('./features/spark-ej2/SparkEJ2Grid.vue')
  * 
  * export function registerComponents() {
  *   const registry = Spark.getRegistry()
  *   registry.register('page-renderer', PageRenderer)
- *   registry.register('spark-ej2-grid', SparkEJ2Grid)
  * }
  * ```
  * 
@@ -50,14 +48,10 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'no
 import { resolve, relative, dirname, basename } from 'node:path'
 import { globSync } from 'glob'
 import {
-  getOrCreateChecker,
-  extractComponentApiVcm,
   toKebabCase,
-  normalizePath,
   inferSkillType,
   buildImplicitSkillDescription,
 } from '../packages/vite-plugin-spark-catalog/src/index'
-import type { VcmApiDescriptor } from '../packages/vite-plugin-spark-catalog/src/index'
 
 /* -----------------------------------------------------------------------------
  * 简单日志工具
@@ -156,7 +150,7 @@ export interface SparkComponentsPluginOptions {
   
   /**
    * 异步加载的组件列表（支持通配符）
-   * @default ['*Demo', '*EJ2*', 'Capability*']
+   * @default ['*Demo', 'Capability*']
    */
   asyncComponents?: string[]
   
@@ -207,7 +201,6 @@ const DEFAULT_OPTIONS: Required<SparkComponentsPluginOptions> = {
   ],
   asyncComponents: [
     '*Demo',
-    '*EJ2*',
     'Capability*',
     'Tree*'
   ],
@@ -573,50 +566,40 @@ export default registerComponents
   /**
    * 生成组件元数据 JSON（用于构建时输出到 dist/ 并上传到服务端）
    *
-   * 包含：组件注册表 + Skill 目录 + 预构建 prompt + 自动提取的组件 API
+   * 数据来源：
+   * - 组件 API：直接嵌入 sparkCatalogPlugin 已生成的 component-catalog.json（SSoT）
+   * - Skill 目录 + prompt：从 .vue JSDoc 提取的 SkillMeta
+   * - 注册信息：scan() 的组件列表（path/size/strategy）
+   *
+   * 不再重复做 VCM 提取——component-catalog.json 已包含完整的 props/emits/capabilities。
    */
   generateMetadataJson(): string {
     this.scan()
+
+    const root = this.viteConfig!.root
+
+    // 读取 sparkCatalogPlugin 已生成的 component-catalog.json（SSoT）
+    const catalogPath = resolve(root, 'packages/spark-ai/src/component-catalog.json')
+    let catalog: Record<string, unknown> | null = null
+    try {
+      const raw = readFileSync(catalogPath, 'utf-8')
+      catalog = JSON.parse(raw) as Record<string, unknown>
+      logger.info(`📦 已加载 component-catalog.json (${(catalog['componentCount'] as number | undefined) ?? '?'} 条目)`)
+    } catch (e) {
+      logger.warn('⚠️ 无法读取 component-catalog.json，元数据将缺少结构化目录:', e)
+    }
 
     const skills = this.components
       .filter(c => c.skillMeta !== null)
       .map(c => c.skillMeta!)
 
-    // 构建组件 API 映射（type → api descriptor）— 使用 VCM 提取
-    const checker = getOrCreateChecker('tsconfig.catalog.json')
-    const apiMap = new Map<string, VcmApiDescriptor>()
-    for (const c of this.components) {
-      try {
-        const api = extractComponentApiVcm(checker, c.absolutePath, c.path, c.name)
-        if (api) apiMap.set(c.name, api)
-      } catch {
-        // 跳过无法提取的文件
-      }
-    }
-
-    const apiCount = apiMap.size
-    logger.info(`🔬 组件 API 提取: ${apiCount}/${this.components.length} 个组件`)
-
-    const components = this.components.map(c => {
-      const api = apiMap.get(c.name)
-      return {
-        type: c.name,
-        path: c.path,
-        size: c.size,
-        strategy: c.strategy,
-        hasSkill: c.skillMeta !== null,
-        ...(api ? {
-          api: {
-            props: api.props,
-            emits: api.emits,
-            exposed: api.exposed.length > 0 ? api.exposed : undefined,
-            slots: api.slots.length > 0 ? api.slots : undefined,
-            capabilities: api.capabilities,
-            hasIndexSignature: api.hasIndexSignature,
-          },
-        } : {}),
-      }
-    })
+    const components = this.components.map(c => ({
+      type: c.name,
+      path: c.path,
+      size: c.size,
+      strategy: c.strategy,
+      hasSkill: c.skillMeta !== null,
+    }))
 
     // 构建三种精度的 prompt
     const indexPrompt = this.buildPromptMarkdown(skills, 'index')
@@ -624,11 +607,10 @@ export default registerComponents
     const fullPrompt = this.buildPromptMarkdown(skills, 'full')
 
     const metadata = {
-      version: '1.1.0',
+      version: '2.0.0',
       buildTime: new Date().toISOString(),
       componentCount: this.components.length,
       skillCount: skills.length,
-      apiCount,
       components,
       skills,
       skillPrompts: {
@@ -636,6 +618,8 @@ export default registerComponents
         compact: compactPrompt,
         full: fullPrompt,
       },
+      // 嵌入完整结构化目录（含 props/emits/capabilities/rootFields/constraints）
+      ...(catalog ? { catalog } : {}),
     }
 
     return JSON.stringify(metadata, null, 2)

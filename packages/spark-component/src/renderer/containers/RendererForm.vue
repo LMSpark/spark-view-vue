@@ -50,12 +50,8 @@ import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 直接传入的 DataView */
   dataView?: DataView | undefined
   /** 工具栏按钮配置 */

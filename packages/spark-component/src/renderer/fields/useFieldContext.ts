@@ -1,6 +1,7 @@
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { SparkNode } from '../_pkg'
+import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from './columnFormRules'
 
@@ -34,10 +35,17 @@ interface FieldPermissionForContext {
  * 将 useFieldPermission 返回值 + 组件 props 聚合为一个响应式对象。
  */
 export function useFieldContext(
-  fieldProps: { width: number | undefined; config: SparkNode | undefined; sparkChildren: SparkNode[] | undefined },
+  fieldProps: { width: number | undefined },
   permission: FieldPermissionForContext,
 ): ComputedRef<FieldContextProps> {
-  const mergedChildren = computed(() => fieldProps.config?.children ?? fieldProps.sparkChildren ?? [])
+  const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
+  const mergedChildren = computed(() => {
+    const children = nodeConfig?.children
+    if (Array.isArray(children) && children.length > 0) return children
+    const sparkKids = nodeConfig?.props?.['sparkChildren'] as SparkNode[] | undefined
+    if (Array.isArray(sparkKids) && sparkKids.length > 0) return sparkKids
+    return []
+  })
 
   return computed(() => ({
     context: permission.context,

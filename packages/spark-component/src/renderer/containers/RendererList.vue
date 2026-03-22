@@ -84,12 +84,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
+import { computed, inject, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -101,12 +101,8 @@ import type { ToolbarPosition } from './useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 数据绑定键 */
   dataKey?: string
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 直接传入的 DataView */
   dataView?: DataView | undefined
   /** 工具栏按钮配置 */
@@ -171,16 +167,16 @@ const props = withDefaults(defineProps<Props>(), {
   itemRowSpan: 1,
 })
 const slots = useSlots()
+const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
 const { effectiveDataKey, configChildren: mergedChildren } = useContainerInput({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   dataKey: computed(() => props.dataKey),
-  sparkChildren: computed(() => props.sparkChildren),
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { consume, provide: sparkProvide, logger } = useSparkComponent(
-  props.config ?? { type: 'r-list' }
+  nodeConfig ?? { type: 'r-list' }
 )
 const pageDataSet = consume(PAGE_DATASET)
 
@@ -206,7 +202,7 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),
@@ -221,7 +217,7 @@ const {
   showActionsRight: showItemActionsRight,
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   actionConfigs: computed(() => props.itemActions),
   actionPosition: computed(() => props.itemActionsPosition),
   actionClass: computed(() => props.itemActionsClass),

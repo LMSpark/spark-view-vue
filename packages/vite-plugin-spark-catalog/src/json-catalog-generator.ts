@@ -16,6 +16,7 @@ import {
   CATALOG_OVERRIDES,
   CATALOG_ADDENDUMS,
   COMPONENT_CATEGORIES,
+  SHARED_TYPE_DEFINITIONS,
 } from './supplement'
 import {
   toKebabCase,
@@ -298,6 +299,55 @@ function buildPlatformConstraints(): PlatformConstraints {
 }
 
 /* --------------------------------------------------------------------------
+ * bindRules 内部 Props 过滤（容器组件专用）
+ *
+ * 容器组件的 SparkNode 根级字段（toolbar / actions / filter / on）
+ * 由 bindRules 拆解后注入为 Vue 内部 Props（如 toolbar → toolbar + toolbarPosition + toolbarClass）。
+ * 这些内部 Props 名与 rule.json 字段名不同，rootFields 已用 rule.json 格式描述，
+ * VCM 提取的内部名会误导 AI → 对有 override 的容器组件过滤。
+ * ----------------------------------------------------------------------- */
+
+/**
+ * bindRules 拆解 SparkNode 根级字段后产生的容器内部 prop 名前缀。
+ * 仅对有 override（= rootFields 已描述）的容器组件执行过滤。
+ * 字段组件的同名 props（如 r-select.filterable）不受影响。
+ */
+const CONTAINER_INTERNAL_PROP_PREFIXES = [
+  'toolbar',
+  'rowActions',
+  'itemActions',
+  'headerActions',
+  'footerActions',
+  'filter',
+] as const
+
+/** 字段组件上允许保留的同前缀 Props（不误杀） */
+const FIELD_PROP_WHITELIST = new Set([
+  'filterable',
+  'filterPlaceholder',
+  'filterMethod',
+  'filterMode',
+])
+
+function isContainerInternalProp(propName: string): boolean {
+  if (FIELD_PROP_WHITELIST.has(propName)) return false
+  return CONTAINER_INTERNAL_PROP_PREFIXES.some(prefix => {
+    if (propName === prefix) return true
+    // camelCase 复合名：prefix + UpperCase（如 toolbarPosition, filterColumns）
+    if (propName.startsWith(prefix) && propName.length > prefix.length) {
+      const nextChar = propName[prefix.length]
+      return nextChar === nextChar?.toUpperCase() && nextChar !== nextChar?.toLowerCase()
+    }
+    return false
+  })
+}
+
+/** 类型包含 SparkNode → 已有 sharedTypes 单例定义，props 中无需重复 */
+function isSparkNodeTypeProp(propType: string): boolean {
+  return propType.includes('SparkNode')
+}
+
+/* --------------------------------------------------------------------------
  * 核心：构建 ComponentEntry
  * ----------------------------------------------------------------------- */
 
@@ -313,9 +363,18 @@ function buildComponentEntry(
   const addendumText = CATALOG_ADDENDUMS[skillType]
 
   // Props: 始终优先 VCM 提取（过滤内部 props）
+  // 对有 override 的容器组件，额外过滤 bindRules 内部 props（rootFields 已描述）
+  const filterContainerProps = hasOverride
   const props: PropEntry[] = api !== null
     ? api.props
-      .filter(p => p.name !== 'config' && p.name !== 'sparkChildren')
+      .filter(p => {
+        if (p.name === 'config' || p.name === 'sparkChildren') return false
+        // SparkNode 类型 props → sharedTypes 已定义，逐组件展示无意义
+        if (isSparkNodeTypeProp(p.type)) return false
+        // 容器内部 props → rootFields 已用 rule.json 格式描述
+        if (filterContainerProps && isContainerInternalProp(p.name)) return false
+        return true
+      })
       .map(p => ({
         name: p.name,
         type: p.type,
@@ -482,6 +541,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     buildTime: new Date().toISOString(),
     componentCount: Object.keys(components).length,
     registry,
+    sharedTypes: SHARED_TYPE_DEFINITIONS,
     components,
     constraints: buildPlatformConstraints(),
   }

@@ -94,11 +94,11 @@
  * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
-import { computed, useSlots } from 'vue'
+import { computed, inject, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import { useContainerActions } from './useContainerActions'
 import type { LateralActionPosition } from './useContainerActions'
@@ -131,12 +131,8 @@ interface ElTreeComponent {
 }
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 静态树节点数据（优先用 dataKey） */
   data?: TreeNode[]
   /** 动态数据源 */
@@ -165,11 +161,11 @@ interface Props {
 
 const props = defineProps<Props>()
 const slots = useSlots()
+const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
 const { effectiveDataKey, mergedChildren } = useContainerInput({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   dataKey: computed(() => props.dataKey),
-  sparkChildren: computed(() => props.sparkChildren),
 })
 
 const nodeContentChildren = computed<SparkNode[]>(() => mergedChildren.value)
@@ -187,7 +183,7 @@ function getNodeDataRecord(data: unknown): Record<string, unknown> {
 
 // 接入 SPARK 能力链
 const { consume, provide: sparkProvide, logger } = useSparkComponent(
-  props.config ?? { type: 'r-tree' }
+  nodeConfig ?? { type: 'r-tree' }
 )
 const pageDataSet = consume(PAGE_DATASET)
 
@@ -221,7 +217,7 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),
@@ -236,7 +232,7 @@ const {
   showActionsRight: showNodeActionsRight,
   getScopedActionConfigs: getScopedNodeActions,
 } = useContainerActions<{ data: unknown, node: unknown }>({
-  config: computed(() => props.config),
+  config: computed(() => nodeConfig),
   actionConfigs: computed(() => props.nodeActions),
   actionPosition: computed(() => props.nodeActionsPosition),
   actionClass: computed(() => props.nodeActionsClass),

@@ -171,11 +171,6 @@ export default defineConfig({
 
     vue({
       include: /\.(vue)$/,
-      template: {
-        compilerOptions: {
-          isCustomElement: (tag) => tag.startsWith('e-')
-        }
-      }
     }),
     
     // ✨ 智能模式：编译时组件注册 - 零运行时开销
@@ -257,26 +252,7 @@ export default registerComponents
           if (id.includes('element-plus')) {
             return 'element-plus'
           }
-          
-          // ── Syncfusion 统一打包策略（解决循环依赖） ──
-          // 
-          // Syncfusion 是紧密耦合的组件生态系统，各包之间有复杂的交叉依赖：
-          //   - ej2-grids 依赖 15+ 个子包（base, data, buttons, inputs, lists等）
-          //   - 这些子包之间也互相依赖（如 lists → data, dropdowns → lists → data）
-          //   - 尝试分层会导致循环 chunk 警告
-          //
-          // 解决方案：统一打包所有 @syncfusion/* 到单一 chunk
-          //   - 优势 1: 彻底消除循环依赖
-          //   - 优势 2: 减少 HTTP 请求（15+ 个包 → 1 个包）
-          //   - 优势 3: 更好的 gzip 压缩率（重复代码只压缩一次）
-          //   - 权衡: 单个文件较大（~2.1 MB 未压缩，~460 KB gzipped）
-          //
-          // 注：企业级组件库（如 Syncfusion、DevExtreme）通常本身就很大
-          //     这是为了提供完整的企业级功能（Grid, Chart, Scheduler等）
-          
-          if (id.includes('@syncfusion/')) {
-            return 'syncfusion'
-          }
+
 
           // ── 智能路由级代码分割 ──
           // 基于文件路径进行更细粒度的分割，提高缓存命中率
@@ -331,14 +307,6 @@ export default registerComponents
         }
       }
     },
-    // 提高 chunk 大小警告阈值
-    // 
-    // 合理性分析：
-    //   - Syncfusion 统一打包: ~2.1 MB (gzipped ~460 KB)
-    //   - Element Plus 全量引入: ~762 KB (gzipped ~243 KB)
-    //   - 企业级组件库体积较大是正常现象（功能完整性换来的代价）
-    //   - 现代浏览器并行下载能力强，单文件 < 2.5 MB 可接受
-    //   - HTTP/2 多路复用 + gzip 压缩后实际传输时间可控
-    chunkSizeWarningLimit: 2500
+    chunkSizeWarningLimit: 1000
   }
 })

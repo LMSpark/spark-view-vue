@@ -22,6 +22,7 @@ function makeCatalog(overrides?: Partial<ComponentCatalog>): ComponentCatalog {
     registry: { containers: [], fields: [], groups: [], meta: [] },
     components: {},
     constraints: makeConstraints(),
+    sharedTypes: {},
     ...overrides,
   }
 }

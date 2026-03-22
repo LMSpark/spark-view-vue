@@ -21,7 +21,7 @@ export type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils
  * 组件定义 - Registry 中的条目
  */
 export interface ComponentDefinition {
-  /** 组件类型（kebab-case，如 'spark-ej2-grid'） */
+  /** 组件类型（kebab-case，如 'r-table'） */
   type: string
   /** Vue 组件实现 */
   component: unknown
@@ -220,6 +220,9 @@ export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('spark
 
 /** 父级上下文注入键（替代字符串 'sparkParentContext'） */
 export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('sparkParentContext') as InjectionKey<ComponentContext>
+
+/** SparkNode 配置注入键 — SparkComponentRenderer 向子组件注入当前节点配置 */
+export const SPARK_NODE_CONFIG_KEY: InjectionKey<SparkNode> = Symbol('sparkNodeConfig') as InjectionKey<SparkNode>
 
 // 日志类型 — 直接从 @spark-view/spark-utils 导入
 export type { LoggerApi } from '@spark-view/spark-utils'

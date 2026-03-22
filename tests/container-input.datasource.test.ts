@@ -15,7 +15,6 @@ describe('useContainerInput - dataKey fallback order', () => {
     const { effectiveDataKey } = useContainerInput({
       config: computed(() => config),
       dataKey: computed(() => 'Fallback@rows'),
-      sparkChildren: computed(() => undefined),
     })
 
     expect(effectiveDataKey.value).toBe('Users@rows')
@@ -32,7 +31,6 @@ describe('useContainerInput - dataKey fallback order', () => {
     const fromConfigProps = useContainerInput({
       config: computed(() => configWithoutTopLevel),
       dataKey: computed(() => 'Fallback@rows'),
-      sparkChildren: computed(() => undefined),
     })
 
     expect(fromConfigProps.effectiveDataKey.value).toBe('Orders@rows')
@@ -40,7 +38,6 @@ describe('useContainerInput - dataKey fallback order', () => {
     const fromProps = useContainerInput({
       config: computed(() => ({ type: 'r-list' })),
       dataKey: computed(() => 'Fallback@rows'),
-      sparkChildren: computed(() => undefined),
     })
 
     expect(fromProps.effectiveDataKey.value).toBe('Fallback@rows')
@@ -58,7 +55,6 @@ describe('useContainerInput - dataKey fallback order', () => {
     const { configChildren } = useContainerInput({
       config: computed(() => config),
       dataKey: computed(() => undefined),
-      sparkChildren: computed(() => undefined),
     })
 
     expect(configChildren.value).toHaveLength(1)

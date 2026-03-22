@@ -11,7 +11,7 @@ import type { HttpClient } from '@spark-view/spark-utils'
  * 组件树结构，描述页面如何渲染
  */
 export interface RuleConfig {
-  type: string // 组件类型，如 'div', 'el-button', 'spark-ej2-grid'
+  type: string // 组件类型，如 'div', 'el-button', 'r-table'
   props?: Record<string, unknown>
   children?: Array<RuleConfig | string>
   style?: Record<string, string | number>

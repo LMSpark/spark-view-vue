@@ -32,7 +32,6 @@ describe('End-to-end: real component extraction (VCM)', () => {
 
     // 已知 props
     const propNames = api!.props.map(p => p.name)
-    expect(propNames).toContain('config')
     expect(propNames).toContain('field')
     expect(propNames).toContain('label')
     expect(propNames).toContain('modelValue')
@@ -91,7 +90,7 @@ describe('End-to-end: real component extraction (VCM)', () => {
     expect(results).toHaveLength(3)
     for (const api of results) {
       expect(api.props.length).toBeGreaterThan(0)
-      // 所有字段组件应该有 field / label / config
+      // 所有字段组件应该有 field / label
       const names = api.props.map(p => p.name)
       expect(names).toContain('field')
       expect(names).toContain('label')

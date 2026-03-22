@@ -39,8 +39,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import type { SparkNode } from '../_pkg'
+import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
 import { useOptionField } from './useFieldOptions'
 import { useSelectorFieldActions } from './useSelectorFieldActions'
@@ -48,16 +49,12 @@ import { useSelectorFieldActions } from './useSelectorFieldActions'
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
 interface Props {
-  /** SPARK 配置驱动 */
-  config?: SparkNode
   /** 字段绑定名 */
   field?: string
   /** 显示标签 */
   label?: string
   /** r-table 内列宽 */
   width?: number
-  /** bindRules 提取的子组件配置 */
-  sparkChildren?: SparkNode[]
   /** 双向绑定值 */
   modelValue?: EntityPickerValue
   /** 选项列表 */
@@ -98,8 +95,14 @@ const props = withDefaults(defineProps<Props>(), {
   entityName: '项目',
 })
 
-
-const mergedChildren = computed(() => props.config?.children ?? props.sparkChildren ?? [])
+const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
+const mergedChildren = computed(() => {
+  const children = nodeConfig?.children
+  if (Array.isArray(children) && children.length > 0) return children
+  const sparkKids = nodeConfig?.props?.['sparkChildren'] as SparkNode[] | undefined
+  if (Array.isArray(sparkKids) && sparkKids.length > 0) return sparkKids
+  return []
+})
 
 const emit = defineEmits<{
   'update:modelValue': [value: EntityPickerValue]

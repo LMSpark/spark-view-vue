@@ -27,7 +27,6 @@ Purpose: Quick, actionable guidance to make an AI coding agent productive in thi
   - `data/pages-config/` — 页面配置文件存储（git-tracked）
   - `data/component-metadata.json` — 组件元数据持久化（构建时自动生成）
 - **Build scripts**: `scripts/build-all.mjs`（完整构建管道）, `scripts/start-dev.mjs`（一键开发启动）
-- **Example components**: `features/spark-ej2/components/SparkEJ2Grid.vue`, `features/spark-ej2/components/SparkEJ2Column.vue`
 - **Renderer containers**: `src/components/renderer-containers/` — RendererTable / RendererForm / RendererDetail（DataView-first 容器）
 - **Renderer capability keys**: `src/components/capability-keys.ts`（FIELD_CONTEXT, CONTEXT_DATA）
 - **bindRules（规则绑定引擎）**: `packages/spark-component/src/renderer/binding/bindRules.ts`
@@ -62,7 +61,7 @@ SPARK 的核心设计目标是**让业务需求尽量通过配置表达，最大
 - **减少配置噪音**：合理设定默认值，让最常见场景"零配置即可工作"
 - 任何让 `script.js` 变得更短、或把样板代码移入框架的 PR，都符合本项目长期方向
 
-- Component `type` 使用 **kebab-case**（如 `spark-ej2-grid`），通过 `Spark.register()` 注册（注册 API 详见 [Spark 命名空间 API](#spark-命名空间-api)）
+- Component `type` 使用 **kebab-case**（如 `r-table`），通过 `Spark.register()` 注册（注册 API 详见 [Spark 命名空间 API](#spark-命名空间-api)）
 - App 安装插件: `app.use(Spark.createPlugin())`，组件内使用 `useSparkComponent(config)` 获取 SPARK 上下文
 
 ### ❗ 单一 DataSet 框架（核心约束）
@@ -1339,14 +1338,13 @@ for (const [k, v] of Object.entries(data)) {
 - 非构建源码——Vite 不编译、不打包这些文件
 
 ## Testing & common pitfalls 🧪
-- 测试使用 Vitest + jsdom；外部 EJ2（`e-*` 标签）需在单元测试中 stub/mock
+- 测试使用 Vitest + jsdom
 - 测试挂载时通过 `Spark.createPlugin()` 注入 `sparkManager`
 - 常见运行时错误：`Component not found` → 确认组件注册发生在使用之前
 - 能力 `consume` 返回 null 是正常情况（late-binding），不是错误
-- Network-dependent CSS（Syncfusion CDN）在离线测试中会破坏样式，建议 mock 或本地化
 
 ## Integration & build notes 🔧
-- Vite 识别 `e-*` 为自定义元素；SSR 通过 `ssr.noExternal` 处理 element-plus
+- SSR 通过 `ssr.noExternal` 处理 element-plus
 - TypeScript path aliases（`tsconfig.typecheck.json`，类型检查时解析到源码）:
   - `@spark-view/spark-utils` → `./packages/spark-utils/src`
   - `@spark-view/spark-data` → `./packages/spark-data/src`

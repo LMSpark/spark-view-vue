@@ -1,7 +1,8 @@
 /**
  * 组件 Props 补充数据（构建时与 AST 提取合并）
  *
- * 分两类：
+ * 分三类：
+ * - SHARED_TYPE_DEFINITIONS: 框架级共享类型（SparkNode 等），catalog 顶层 sharedTypes 单例定义
  * - CATALOG_OVERRIDES: 完整条目，替换 AST 生成内容（容器组件 rule.json 格式、元概念、规划组件）
  * - CATALOG_ADDENDUMS: 追加条目，附加在 AST 生成内容之后（透传 Props、使用说明）
  *
@@ -12,6 +13,120 @@
  *
  * @module component-props-supplement
  */
+
+import type { SharedTypeDefinition } from './component-catalog-schema'
+
+/* ==========================================================================
+ * 共享类型定义（SparkNode 家族）
+ *
+ * 这些类型会写入 catalog 顶层 sharedTypes，单例定义、全局引用。
+ * 组件 props 中出现 SparkNode[] 等类型时不再展开 schema，
+ * AI 查阅 sharedTypes 即可理解完整结构。
+ * ========================================================================== */
+
+export const SHARED_TYPE_DEFINITIONS: Record<string, SharedTypeDefinition> = {
+  SparkNode: {
+    name: 'SparkNode',
+    description: '组件配置节点 —— rule.json 的基本单元。每个节点通过 type 字段映射到 ComponentRegistry 中已注册的组件，由 SparkComponentRenderer 在运行时动态解析并渲染。',
+    properties: [
+      { name: 'type', type: 'string', required: true, description: '组件类型（kebab-case），映射到 ComponentRegistry 中的注册名，如 "r-table"、"r-text"、"el-button"' },
+      { name: 'id', type: 'string', description: '实例 ID（可选，运行时自动生成 spark-{n}）' },
+      { name: 'dataKey', type: 'string', description: '数据绑定键（如 "Users@rows"），容器组件（r-table 等 self-resolve 类型）在运行时自行解析为 DataView' },
+      { name: 'field', type: 'string', description: '字段绑定名，定位到 DataView 行中的数据字段（如 "userName"）' },
+      { name: 'label', type: 'string', description: '显示标签（UI 展示文字，如 "用户名"），与 field 分离' },
+      { name: 'optionKey', type: 'string', description: '选项数据源 DataKey（如 "Categories@rows"），供 r-select/r-radio/r-checkbox-group 解析选项列表' },
+      { name: 'props', type: 'Record<string, unknown>', description: '组件属性，透传到 Vue 组件 props（v-bind 展开）' },
+      { name: 'children', type: 'SparkNode[]', description: '子组件配置（递归结构），容器组件渲染其 children 形成组件树' },
+      { name: 'visible', type: 'boolean', description: '可见性控制，false 时组件不渲染' },
+      { name: 'disabled', type: 'boolean', description: '禁用状态控制' },
+      { name: 'on', type: 'Record<string, string>', description: '事件绑定（key=camelCase 事件名，value=script.js 函数名），如 { "rowDblclick": "handleRowDblclick" }' },
+      { name: 'toolbar', type: 'SparkNodeToolbar', description: '工具栏配置（容器级），详见 SparkNodeToolbar' },
+      { name: 'actions', type: 'SparkNodeActions', description: '行操作列配置（容器级），详见 SparkNodeActions' },
+      { name: 'filter', type: 'SparkNodeFilter', description: '筛选器配置（容器级），详见 SparkNodeFilter' },
+    ],
+    notes: `【组件与 SparkNode 的关系】
+rule.json 是一棵 SparkNode 树。渲染引擎（SparkComponentRenderer）递归遍历这棵树，对每个节点：
+1. 通过 type 从 ComponentRegistry 动态查找已注册的 Vue 组件
+2. 将 props + config 传入组件，children 由组件自行渲染（容器组件用 SparkComponentRenderer 递归）
+3. 容器组件通过能力系统 provide(DATA_SOURCE, FIELD_CONTEXT) 向子树暴露数据上下文
+4. 字段组件通过 consume() 自动感知父容器语境，同一个 r-text 在不同父容器中呈现不同形态
+
+【子组件智能感知父容器（Context-Aware Rendering）】
+- 在 r-table 中 → 字段组件渲染为表格列（el-table-column 包装）
+- 在 r-form 中 → 字段组件渲染为表单输入控件（el-form-item 包装）
+- 在 r-detail 中 → 字段组件渲染为只读展示
+
+语境由 FIELD_CONTEXT 能力键传递，值为 'table' | 'form' | 'detail' | 'list' | 'tree'。
+字段组件无需知道自己处于哪种容器，框架自动适配渲染模式。
+
+【动态渲染流程】
+rule.json → SparkNode 树
+  → SparkComponentRenderer 递归遍历
+  → 每个节点：registry.get(node.type) → 渲染对应 Vue 组件
+  → 容器组件 provide(DATA_SOURCE, FIELD_CONTEXT)
+  → 子组件 consume() 获取数据与语境 → 自适应渲染
+
+【toolbar / actions / filter 的宿主】
+这三个根级字段仅在容器组件（r-table、r-form、r-detail、r-list、r-tree 等）上有效。
+toolbar.items 和 actions.items 中的每一项也是 SparkNode（常见 type: "builtin-action"）。`,
+  },
+
+  SparkNodeToolbar: {
+    name: 'SparkNodeToolbar',
+    description: '工具栏配置，放置在容器组件的 toolbar 根级字段。items 中的每一项也是 SparkNode（通常是 builtin-action 或 Render* 组件）。',
+    properties: [
+      { name: 'items', type: 'SparkNode[]', required: true, description: '工具栏按钮列表（通常放 builtin-action 或 Render* 自定义渲染函数）' },
+      { name: 'position', type: "'top' | 'bottom' | 'left' | 'right'", description: "工具栏位置，默认 'top'" },
+      { name: 'class', type: 'string', description: '自定义 CSS 类名' },
+    ],
+  },
+
+  SparkNodeActions: {
+    name: 'SparkNodeActions',
+    description: '行操作列配置（r-table / r-list），放置在容器组件的 actions 根级字段。items 中的每一项也是 SparkNode。',
+    properties: [
+      { name: 'items', type: 'SparkNode[]', required: true, description: '操作按钮列表（通常放 builtin-action 或 Render* 自定义渲染函数）' },
+      { name: 'position', type: "'left' | 'right'", description: "操作列位置，默认 'right'" },
+      { name: 'label', type: 'string', description: "列标题，默认 '操作'" },
+      { name: 'width', type: 'string | number', description: '列宽度，默认 160' },
+      { name: 'align', type: "'left' | 'center' | 'right'", description: "对齐方式，默认 'left'" },
+      { name: 'class', type: 'string', description: '自定义 CSS 类名' },
+      { name: 'fixed', type: "boolean | 'left' | 'right'", description: '固定列方向' },
+    ],
+  },
+
+  SparkNodeFilter: {
+    name: 'SparkNodeFilter',
+    description: '筛选器配置（r-table），放置在容器组件的 filter 根级字段。columns 中可以是字段名字符串（简写）或完整的 SparkNodeFilterItem 对象。',
+    properties: [
+      { name: 'columns', type: 'Array<string | SparkNodeFilterItem>', required: true, description: '筛选项列表。字符串简写 "fieldName" 等价于 { field: "fieldName", component: "text" }' },
+      { name: 'class', type: 'string', description: '筛选区 CSS 类名' },
+      { name: 'collapsible', type: 'boolean', description: '是否可折叠，默认 false' },
+      { name: 'defaultCollapsed', type: 'boolean', description: '默认是否折叠，默认 false' },
+      { name: 'autoFitMinWidth', type: 'string', description: "自适应最小宽度，默认 '220px'" },
+      { name: 'itemSpan', type: 'number', description: '每项跨列数，默认 1' },
+      { name: 'gridColumns', type: 'number', description: '栅格总列数，默认 24' },
+      { name: 'gridGap', type: 'number | string', description: '间距，默认 12' },
+      { name: 'gridAutoRows', type: 'string', description: "行高，默认 'minmax(32px, auto)'" },
+    ],
+  },
+
+  SparkNodeFilterItem: {
+    name: 'SparkNodeFilterItem',
+    description: '单个筛选项完整配置。在 filter.columns 中使用，控制单个字段的筛选 UI。',
+    properties: [
+      { name: 'field', type: 'string', required: true, description: '字段名（映射到数据源字段）' },
+      { name: 'label', type: 'string', description: '显示标签（省略则用字段名）' },
+      { name: 'component', type: "'text' | 'select' | 'date' | 'date-range' | 'number' | 'number-range' | 'checkbox' | 'radio' | string", description: "输入组件类型，默认 'text'" },
+      { name: 'options', type: 'Array<{ label: string; value: unknown }>', description: '可选项列表（component 为 select/radio/checkbox 时使用）' },
+      { name: 'optionLabelField', type: 'string', description: '选项标签字段映射（options 来自 DataKey 时使用）' },
+      { name: 'optionValueField', type: 'string', description: '选项值字段映射' },
+      { name: 'logic', type: "'and' | 'or'", description: '与其他条件的逻辑关系（覆盖全局 filter.logic，默认继承）' },
+      { name: 'span', type: 'number', description: '跨列数（覆盖全局 filter.itemSpan）' },
+      { name: 'props', type: 'Record<string, unknown>', description: '透传到筛选组件的原生 props（如 placeholder、clearable 等）' },
+    ],
+  },
+}
 
 /* ==========================================================================
  * 完整条目：直接作为最终目录内容（不与 AST 合并）
@@ -338,6 +453,34 @@ export const COMPONENT_CATEGORIES: Record<string, ComponentCategory> = {
   'r-steps': 'container',
   'r-section': 'container',
   'r-block': 'container',
+  // 字段
+  'r-cascader': 'field',
+  'r-checkbox': 'field',
+  'r-checkbox-group': 'field',
+  'r-color': 'field',
+  'r-context-renderer': 'field',
+  'r-date': 'field',
+  'r-dept-picker': 'field',
+  'r-entity-picker': 'field',
+  'r-file-browser': 'field',
+  'r-file-path': 'field',
+  'r-html-editor': 'field',
+  'r-icon': 'field',
+  'r-image': 'field',
+  'r-multi-select': 'field',
+  'r-number': 'field',
+  'r-product-picker': 'field',
+  'r-radio': 'field',
+  'r-rate': 'field',
+  'r-select': 'field',
+  'r-slider': 'field',
+  'r-switch': 'field',
+  'r-text': 'field',
+  'r-textarea': 'field',
+  'r-transfer': 'field',
+  'r-tree-select': 'field',
+  'r-upload': 'field',
+  'r-user-picker': 'field',
   // 分组
   'r-column-group': 'group',
   // 元概念（不进入注册表）

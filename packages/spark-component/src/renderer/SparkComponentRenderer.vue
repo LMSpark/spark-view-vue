@@ -4,7 +4,6 @@
   <component
     v-if="resolvedComponent"
     :is="resolvedComponent"
-    :config="config"
     v-bind="forwardedProps"
   />
 
@@ -81,10 +80,11 @@
  * ```
  */
 import { computed, inject, markRaw, provide as vueProvide, resolveDynamicComponent } from 'vue'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from '../types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } from '../types.js'
 import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
+const FRAMEWORK_INTERNAL_PROP_KEYS = new Set(['sparkChildren'])
 const NATIVE_RENDERABLE_TAGS = new Set([
   'div', 'span', 'p', 'a', 'img',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -122,6 +122,9 @@ const props = defineProps<Props>()
 if (props.parentContext !== undefined) {
   vueProvide(SPARK_PARENT_CONTEXT_KEY, props.parentContext)
 }
+
+// 向子组件注入当前节点的 SparkNode 配置（替代 :config prop）
+vueProvide(SPARK_NODE_CONFIG_KEY, props.config)
 
 // ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────
 const registry = inject<ComponentRegistry | undefined>(SPARK_REGISTRY_KEY, undefined)
@@ -187,7 +190,7 @@ const forwardedProps = computed(() => {
 
   return {
     ...Object.fromEntries(
-      Object.entries(rawProps).filter(([key]) => !LAYOUT_ONLY_PROP_KEYS.has(key))
+      Object.entries(rawProps).filter(([key]) => !LAYOUT_ONLY_PROP_KEYS.has(key) && !FRAMEWORK_INTERNAL_PROP_KEYS.has(key))
     ),
     ...eventProps,
   }

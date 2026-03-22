@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { Spark, SPARK_PARENT_CONTEXT_KEY, SPARK_REGISTRY_KEY, useSparkComponent, CONTEXT_DATA, FIELD_CONTEXT, FieldSelect } from '@spark-view/spark-component'
+import { Spark, SPARK_PARENT_CONTEXT_KEY, SPARK_REGISTRY_KEY, SPARK_NODE_CONFIG_KEY, useSparkComponent, CONTEXT_DATA, FIELD_CONTEXT, FieldSelect } from '@spark-view/spark-component'
 
 const { registry, rootContext } = Spark.createSystem()
 
@@ -51,13 +51,13 @@ function mountFieldSelect(
   fieldName: string,
   componentProps?: Record<string, unknown>,
 ) {
+  const selectConfig = { type: 'r-select', field: fieldName }
   const Provider = defineComponent({
     setup() {
       const { provide } = useSparkComponent({ type: 'test-provider' })
       provide(FIELD_CONTEXT, 'form')
       provide(CONTEXT_DATA, model)
       return () => h(FieldSelect as never, {
-        config: { type: 'r-select', field: fieldName },
         ...componentProps,
       })
     },
@@ -68,6 +68,7 @@ function mountFieldSelect(
       provide: {
         [SPARK_REGISTRY_KEY as symbol]: registry,
         [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext,
+        [SPARK_NODE_CONFIG_KEY as symbol]: selectConfig,
       },
       stubs: {
         'el-form-item': ElFormItemStub,
@@ -264,18 +265,17 @@ describe('FieldSelect 下拉组件', () => {
     it('从 config.props.options 获取选项', () => {
       const model = reactive({ department: undefined })
       // 通过 config.props 传递 options
+      const selectConfigWithOptions = {
+        type: 'r-select',
+        field: 'department',
+        props: { options: departmentOptions },
+      }
       const Provider = defineComponent({
         setup() {
           const { provide } = useSparkComponent({ type: 'test-provider' })
           provide(FIELD_CONTEXT, 'form')
           provide(CONTEXT_DATA, model)
-          return () => h(FieldSelect as never, {
-            config: {
-              type: 'r-select',
-              field: 'department',
-              props: { options: departmentOptions },
-            },
-          })
+          return () => h(FieldSelect as never, {})
         },
       })
 
@@ -284,6 +284,7 @@ describe('FieldSelect 下拉组件', () => {
           provide: {
             [SPARK_REGISTRY_KEY as symbol]: registry,
             [SPARK_PARENT_CONTEXT_KEY as symbol]: rootContext,
+            [SPARK_NODE_CONFIG_KEY as symbol]: selectConfigWithOptions,
           },
           stubs: {
             'el-form-item': ElFormItemStub,

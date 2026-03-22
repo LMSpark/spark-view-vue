@@ -7,7 +7,6 @@ type MaybeRef<T> = Ref<T> | ComputedRef<T>
 interface UseContainerInputOptions {
   config: MaybeRef<SparkNode | undefined>
   dataKey: MaybeRef<string | undefined>
-  sparkChildren: MaybeRef<SparkNode[] | undefined>
 }
 
 interface UseContainerInputReturn {
@@ -31,7 +30,7 @@ interface UseContainerInputReturn {
 }
 
 export function useContainerInput(options: UseContainerInputOptions): UseContainerInputReturn {
-  const { config, dataKey, sparkChildren } = options
+  const { config, dataKey } = options
 
   const effectiveDataKey = computed(() =>
     config.value?.dataKey
@@ -40,21 +39,18 @@ export function useContainerInput(options: UseContainerInputOptions): UseContain
   )
 
   const resolvedSparkChildren = computed<SparkNode[]>(() => {
-    const directChildren = sparkChildren.value
-    if (Array.isArray(directChildren) && directChildren.length > 0) return directChildren
-
     const configSparkChildren = config.value?.props?.['sparkChildren'] as SparkNode[] | undefined
     if (Array.isArray(configSparkChildren) && configSparkChildren.length > 0) return configSparkChildren
-
     return []
   })
 
-  const configChildren = computed<SparkNode[]>(() =>
-    config.value?.children
-    ?? sparkChildren.value
-    ?? (config.value?.props?.['sparkChildren'] as SparkNode[] | undefined)
-    ?? []
-  )
+  const configChildren = computed<SparkNode[]>(() => {
+    const children = config.value?.children
+    if (Array.isArray(children) && children.length > 0) return children
+    const sparkKids = config.value?.props?.['sparkChildren'] as SparkNode[] | undefined
+    if (Array.isArray(sparkKids) && sparkKids.length > 0) return sparkKids
+    return []
+  })
 
   const mergedChildren = computed<SparkNode[]>(() => {
     const children = config.value?.children
