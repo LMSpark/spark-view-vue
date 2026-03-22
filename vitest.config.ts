@@ -20,7 +20,8 @@ export default defineConfig({
       '@spark-view/spark-data': resolve(__dirname, './packages/spark-data/src/index.ts'),
       '@spark-view/spark-page-config': resolve(__dirname, './packages/spark-page-config/src/index.ts'),
       '@spark-view/spark-app': resolve(__dirname, './packages/spark-app/src/index.ts'),
-      '@spark-view/spark-ai': resolve(__dirname, './packages/spark-ai/src/index.ts')
+      '@spark-view/spark-ai': resolve(__dirname, './packages/spark-ai/src/index.ts'),
+      '@spark-view/vite-plugin-spark-catalog': resolve(__dirname, './packages/vite-plugin-spark-catalog/src/index.ts')
     }
   },
   esbuild: {

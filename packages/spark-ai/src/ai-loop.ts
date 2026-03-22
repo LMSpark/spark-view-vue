@@ -174,8 +174,13 @@ interface SummarizeLogOptions {
   maxSamples?: number
 }
 
-function withValidationReport(response: AIResponse): AIResponse {
-  const report = validateGeneratedConfig(response.files)
+function withValidationReport(
+  response: AIResponse,
+  catalogValidator?: (files: PageFiles) => ConfigValidationReport,
+): AIResponse {
+  const report = catalogValidator
+    ? catalogValidator(response.files)
+    : validateGeneratedConfig(response.files)
   if (report.summary.total === 0) {
     return { ...response, validationReport: report }
   }
@@ -337,6 +342,23 @@ export interface AIPageLoopOptions {
   onNavigationRegistered?: (pageId: string, result: NavRegistrationResult) => void
   /** 自动迭代安全超时 ms（超时后强制恢复标志，默认 180000 即 3 分钟） */
   autoIterateTimeout?: number
+  /**
+   * 可选增强校验器（基于 ComponentCatalog 的结构化校验）
+   *
+   * 传入时替代内置 validateGeneratedConfig，校验 props / 嵌套 / 组件注册等。
+   * 未传入时自动回退到内置规则校验。
+   *
+   * @example
+   * ```ts
+   * import { COMPONENT_CATALOG } from '@spark-view/spark-ai'
+   * import { validateWithCatalog } from '@spark-view/vite-plugin-spark-catalog'
+   *
+   * const loop = new AIPageLoop({
+   *   catalogValidator: (files) => validateWithCatalog(COMPONENT_CATALOG, files),
+   * })
+   * ```
+   */
+  catalogValidator?: (files: PageFiles) => ConfigValidationReport
   /**
    * AI 响应后处理钩子（校验后、文件写入前调用）
    *
@@ -667,6 +689,7 @@ interface ResolvedLoopOptions {
   autoRegisterNav: boolean
   onNavigationRegistered: ((pageId: string, result: NavRegistrationResult) => void) | undefined
   autoIterateTimeout: number
+  catalogValidator: ((files: PageFiles) => ConfigValidationReport) | undefined
   onResponseProcessed: ((response: AIResponse, pageId: string) => AIResponse | Promise<AIResponse>) | undefined
 }
 
@@ -691,6 +714,7 @@ export class AIPageLoop {
       autoRegisterNav: options.autoRegisterNav ?? true,
       onNavigationRegistered: options.onNavigationRegistered,
       autoIterateTimeout: options.autoIterateTimeout ?? DEFAULT_AUTO_ITERATE_TIMEOUT,
+      catalogValidator: options.catalogValidator,
       onResponseProcessed: options.onResponseProcessed,
     }
     configureAutoIterateTimeout(this.options.autoIterateTimeout)
@@ -774,7 +798,7 @@ export class AIPageLoop {
    * 共享后处理：校验 → 响应处理钩子 → 写文件 → 导航注册
    */
   private async _postProcess(pageId: string, aiResp: AIResponse, action: string, prompt?: string): Promise<AIResponse> {
-    let validatedResp = withValidationReport(aiResp)
+    let validatedResp = withValidationReport(aiResp, this.options.catalogValidator)
 
     // 响应处理钩子（用于 ResponsePipeline 集成）
     if (this.options.onResponseProcessed) {
