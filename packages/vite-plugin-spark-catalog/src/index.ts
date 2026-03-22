@@ -82,3 +82,20 @@ export {
   parseSkillMeta,
 } from './utils'
 export type { SkillMeta } from './utils'
+
+// ── 扫描配置（统一 glob / 加载策略常量） ──
+export {
+  COMPONENT_SCAN_PATTERNS,
+  COMPONENT_EXCLUDE_PATTERNS,
+  SYNC_COMPONENTS,
+  ASYNC_COMPONENTS,
+  SIZE_THRESHOLD,
+} from './scan-config'
+
+// ── API 差距分析报告 ──
+export { generateDiffReport, formatDiffReport } from './api-diff-report'
+export type {
+  ExtractedComponentApi,
+  ComponentGapReport,
+  DiffReportSummary,
+} from './api-diff-report'

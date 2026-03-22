@@ -12,7 +12,22 @@
  * @since 1.3.0
  */
 
-import type { ComponentApiDescriptor } from '../packages/vite-plugin-spark-catalog/src/index'
+/* ==========================================================================
+ * 输入接口（兼容旧 AST、VCM、ComponentEntry）
+ * ========================================================================== */
+
+/**
+ * 自动提取的组件 API 最小契约。
+ *
+ * `ComponentApiDescriptor`（旧 AST）、`VcmApiDescriptor`、`ComponentEntry`
+ * 均满足此接口，无需适配即可直接传入。
+ */
+export interface ExtractedComponentApi {
+  type: string
+  props: ReadonlyArray<{ name: string }>
+  emits: ReadonlyArray<{ name: string }>
+  capabilities: { consumes: readonly string[]; provides: readonly string[] }
+}
 
 /* ==========================================================================
  * 输出类型
@@ -63,11 +78,11 @@ export interface DiffReportSummary {
 /**
  * 生成差距分析报告
  *
- * @param extractedApis - 自动提取的组件 API 列表
+ * @param extractedApis - 自动提取的组件 API 列表（支持旧 AST / VCM / ComponentEntry）
  * @param catalog       - 手写文档目录 Record<componentType, catalogText>
  */
 export function generateDiffReport(
-  extractedApis: ComponentApiDescriptor[],
+  extractedApis: readonly ExtractedComponentApi[],
   catalog: Record<string, string>,
 ): DiffReportSummary {
   // 合并两方的组件类型列表
@@ -177,7 +192,7 @@ export function formatDiffReport(summary: DiffReportSummary): string {
 
 function analyzeComponent(
   type: string,
-  api: ComponentApiDescriptor | null,
+  api: ExtractedComponentApi | null,
   catalogText: string | null,
 ): ComponentGapReport {
   if (!api) {
@@ -221,14 +236,14 @@ function analyzeComponent(
 
   // Emits 覆盖检查
   const undocumentedEmits = api.emits
-    .filter(e => !catalogText || !catalogText.includes(e.name))
+    .filter(e => !catalogText?.includes(e.name))
     .map(e => e.name)
 
   // Capabilities 覆盖检查
   const undocumentedConsumes = api.capabilities.consumes
-    .filter(k => !catalogText || !catalogText.includes(k))
+    .filter(k => !catalogText?.includes(k))
   const undocumentedProvides = api.capabilities.provides
-    .filter(k => !catalogText || !catalogText.includes(k))
+    .filter(k => !catalogText?.includes(k))
 
   const totalProps = api.props.length
   const propsCoverage = totalProps > 0 ? documented.length / totalProps : 1

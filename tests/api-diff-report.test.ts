@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { generateDiffReport, formatDiffReport } from '../tools/api-diff-report'
-import type { ComponentApiDescriptor } from '../packages/vite-plugin-spark-catalog/src/index'
+import { generateDiffReport, formatDiffReport } from '../packages/vite-plugin-spark-catalog/src/index'
+import type { ExtractedComponentApi } from '../packages/vite-plugin-spark-catalog/src/index'
 
 function makeApi(
   type: string,
@@ -12,14 +12,12 @@ function makeApi(
   emits: string[] = [],
   consumes: string[] = [],
   provides: string[] = [],
-): ComponentApiDescriptor {
+): ExtractedComponentApi {
   return {
     type,
-    filePath: `test/${type}.vue`,
-    props: props.map(name => ({ name, type: 'string', required: false })),
-    emits: emits.map(name => ({ name, payload: [] })),
+    props: props.map(name => ({ name })),
+    emits: emits.map(name => ({ name })),
     capabilities: { consumes, provides },
-    hasIndexSignature: false,
   }
 }
 
@@ -61,7 +59,7 @@ describe('generateDiffReport', () => {
   })
 
   it('reports catalog-only entry (no extraction)', () => {
-    const apis: ComponentApiDescriptor[] = []
+    const apis: ExtractedComponentApi[] = []
     const catalog = { 'legacy-comp': 'some: string — old docs' }
 
     const report = generateDiffReport(apis, catalog)

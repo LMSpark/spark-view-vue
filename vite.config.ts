@@ -10,7 +10,7 @@ import {
   SYNC_COMPONENTS,
   ASYNC_COMPONENTS,
   SIZE_THRESHOLD
-} from './tools/spark-components-config'
+} from './packages/vite-plugin-spark-catalog/src/index'
 
 /**
  * 构建模式

@@ -50,13 +50,14 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'no
 import { resolve, relative, dirname, basename } from 'node:path'
 import { globSync } from 'glob'
 import {
-  extractComponentApi,
+  getOrCreateChecker,
+  extractComponentApiVcm,
   toKebabCase,
   normalizePath,
   inferSkillType,
   buildImplicitSkillDescription,
 } from '../packages/vite-plugin-spark-catalog/src/index'
-import type { ComponentApiDescriptor } from '../packages/vite-plugin-spark-catalog/src/index'
+import type { VcmApiDescriptor } from '../packages/vite-plugin-spark-catalog/src/index'
 
 /* -----------------------------------------------------------------------------
  * 简单日志工具
@@ -581,15 +582,15 @@ export default registerComponents
       .filter(c => c.skillMeta !== null)
       .map(c => c.skillMeta!)
 
-    // 构建组件 API 映射（type → api descriptor）
-    const apiMap = new Map<string, ComponentApiDescriptor>()
+    // 构建组件 API 映射（type → api descriptor）— 使用 VCM 提取
+    const checker = getOrCreateChecker('tsconfig.catalog.json')
+    const apiMap = new Map<string, VcmApiDescriptor>()
     for (const c of this.components) {
       try {
-        const source = readFileSync(c.absolutePath, 'utf-8')
-        const api = extractComponentApi(source, c.path, c.name)
+        const api = extractComponentApiVcm(checker, c.absolutePath, c.path, c.name)
         if (api) apiMap.set(c.name, api)
       } catch {
-        // 跳过无法读取的文件
+        // 跳过无法提取的文件
       }
     }
 
@@ -608,6 +609,8 @@ export default registerComponents
           api: {
             props: api.props,
             emits: api.emits,
+            exposed: api.exposed.length > 0 ? api.exposed : undefined,
+            slots: api.slots.length > 0 ? api.slots : undefined,
             capabilities: api.capabilities,
             hasIndexSignature: api.hasIndexSignature,
           },
