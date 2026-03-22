@@ -43,7 +43,7 @@
       "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],
       "@/features/spark-ej2": ["./src/features/spark-ej2"]
     },
-    "types": ["vite/client", "vitest/globals"]
+    "types": ["vite/client", "vitest/globals", "node"]
   },
   "include": [
     "src/**/*.ts",

@@ -173,6 +173,19 @@ export class ProposalValidatorProcessor implements ResponseProcessor {
 export class SchemaCheckerProcessor implements ResponseProcessor {
   name = 'SchemaChecker'
 
+  private static readonly CONTAINER_CONTEXT_MAP: Record<string, 'table' | 'form' | 'detail' | 'list' | 'tree'> = {
+    'r-table': 'table',
+    'r-form': 'form',
+    'r-detail': 'detail',
+    'r-list': 'list',
+    'r-tree': 'tree',
+  }
+
+  private static readonly NON_FIELD_R_TYPES = new Set([
+    'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree',
+    'r-tabs', 'r-collapse', 'r-dialog', 'r-drawer', 'r-steps', 'r-section', 'r-block',
+  ])
+
   process(ctx: PipelineContext): boolean {
     for (const proposal of ctx.proposals) {
       if (proposal.type === 'ui-structure') {
@@ -186,24 +199,49 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
     try {
       const parsed: unknown = JSON.parse(proposal.content)
       const nodes = Array.isArray(parsed) ? parsed : [parsed]
-      this.walkNodes(nodes, proposal, ctx)
+      this.walkNodes(nodes, proposal, ctx, null)
     } catch {
       // JSON 解析失败由 ProposalValidator 处理
     }
+  }
+
+  private resolveNodeContext(typeName: string, inheritedContext: 'table' | 'form' | 'detail' | 'list' | 'tree' | null): 'table' | 'form' | 'detail' | 'list' | 'tree' | null {
+    return SchemaCheckerProcessor.CONTAINER_CONTEXT_MAP[typeName] ?? inheritedContext
+  }
+
+  private extractFieldName(node: Record<string, unknown>): string | null {
+    if (typeof node['field'] === 'string' && node['field'].trim() !== '') {
+      return node['field']
+    }
+    const meta = node['meta'] as Record<string, unknown> | undefined
+    const data = meta?.['data'] as Record<string, unknown> | undefined
+    if (typeof data?.['field'] === 'string' && data['field'].trim() !== '') {
+      return data['field']
+    }
+    return null
+  }
+
+  private isSparkFieldComponent(typeName: string): boolean {
+    return typeName.startsWith('r-') && !SchemaCheckerProcessor.NON_FIELD_R_TYPES.has(typeName)
   }
 
   private walkNodes(
     nodes: unknown[],
     proposal: DesignProposal,
     ctx: PipelineContext,
+    inheritedContext: 'table' | 'form' | 'detail' | 'list' | 'tree' | null,
   ): void {
     for (const node of nodes) {
       if (typeof node !== 'object' || node === null) continue
       const n = node as Record<string, unknown>
+      const typeName = typeof n['type'] === 'string' ? n['type'] : ''
+      const currentContext = typeName === ''
+        ? inheritedContext
+        : this.resolveNodeContext(typeName, inheritedContext)
 
       // 校验组件 type
-      if (typeof n['type'] === 'string') {
-        const t = n['type']
+      if (typeName !== '') {
+        const t = typeName
         const isValid = HTML_TYPES.has(t)
           || VALID_TYPE_PREFIXES.some((prefix) => t.startsWith(prefix))
         if (!isValid) {
@@ -213,6 +251,27 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
             checkType: 'component-type',
             message: `组件类型「${t}」不在注册表内`,
             suggestion: '请使用 r-* / el-* / HTML 原生标签 / Render* 函数。',
+          })
+        }
+
+        if (inheritedContext === 'table' && t === 'el-table-column') {
+          ctx.validationErrors.push({
+            severity: 'warning',
+            proposalName: proposal.title,
+            checkType: 'component-type',
+            message: 'r-table 子节点不建议使用 el-table-column（当前架构使用 r-* 字段组件按父语境自适应渲染）',
+            suggestion: '请改为 r-text / r-number / r-select 等 r-* 字段组件，并通过 field 绑定列。',
+          })
+        }
+
+        const fieldName = this.extractFieldName(n)
+        if (fieldName !== null && this.isSparkFieldComponent(t) && inheritedContext === null) {
+          ctx.validationErrors.push({
+            severity: 'warning',
+            proposalName: proposal.title,
+            checkType: 'schema',
+            message: `字段组件「${t}(${fieldName})」缺少父容器语境（table/form/detail/list/tree）`,
+            suggestion: '请将字段组件放入 r-table / r-form / r-detail / r-list / r-tree 容器，使其按父语境自动渲染。',
           })
         }
       }
@@ -233,7 +292,7 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
 
       // 递归 children
       if (Array.isArray(n['children'])) {
-        this.walkNodes(n['children'] as unknown[], proposal, ctx)
+        this.walkNodes(n['children'] as unknown[], proposal, ctx, currentContext)
       }
     }
   }

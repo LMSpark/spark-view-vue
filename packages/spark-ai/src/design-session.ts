@@ -222,6 +222,54 @@ export const AUTO_QUERY_PREFIX = '🔧 [组件 Props 查询结果]'
 /** 自动技能查询消息的固定前缀（用于 UI 识别和防重入） */
 export const AUTO_SKILL_PREFIX = '🗂 [技能查询结果]'
 
+const COMPONENT_QUERY_ALIASES: Record<string, string[]> = {
+  'r-table-series': ['context-aware-fields-api', 'r-table', 'r-form', 'r-detail', 'builtin-action', 'r-text', 'r-number', 'r-select'],
+  'context-aware-fields': ['context-aware-fields-api', 'r-table', 'r-form', 'r-detail', 'r-list', 'r-tree', 'r-text', 'r-number', 'r-select'],
+  'r-crud': ['r-table', 'r-form', 'r-detail', 'builtin-action', 'r-text', 'r-number', 'r-select', 'r-date'],
+  'r-form-series': ['r-form', 'r-detail', 'r-text', 'r-number', 'r-select', 'r-date', 'r-checkbox', 'r-switch', 'r-cascader', 'r-tree-select'],
+  'r-column-group-series': ['r-table', 'r-column-group', 'r-text', 'r-number', 'r-select'],
+  'computed-aggregate': ['r-table', 'r-text', 'r-number'],
+  'dialog-form-crud': ['r-dialog', 'r-drawer', 'r-form', 'r-table', 'builtin-action', 'r-text', 'r-number', 'r-select', 'r-date'],
+  'upload-series': ['r-upload', 'r-file-path', 'r-file-browser', 'r-image'],
+}
+
+const COMPONENT_QUERY_BLOCK_NAMES = new Set(['component-props', 'component-api'])
+
+function resolveComponentToken(token: string): string {
+  if (token === '@list') {
+    const names = Object.keys(COMPONENT_PROPS_CATALOG).sort()
+    return `**组件 API 目录索引**\n\n${names.map((name) => `- ${name}`).join('\n')}`
+  }
+
+  const hashIndex = token.indexOf('#')
+  const componentName = hashIndex >= 0 ? token.slice(0, hashIndex).trim() : token
+  const apiSegment = hashIndex >= 0 ? token.slice(hashIndex + 1).trim() : null
+
+  if (componentName === '') {
+    return `**${token}** — 查询格式无效（请使用 组件名 或 组件名#API片段）`
+  }
+
+  const info = COMPONENT_PROPS_CATALOG[componentName]
+  if (info === undefined) {
+    return `**${componentName}** — 未收录（可使用 Element Plus 文档中的标准 Props）`
+  }
+
+  if (apiSegment === null || apiSegment === '') {
+    return info
+  }
+
+  const lines = info.split('\n')
+  const title = lines[0] ?? `**${componentName}**`
+  const keyword = apiSegment.toLowerCase()
+  const matched = lines.filter((line, index) => index > 0 && line.toLowerCase().includes(keyword))
+
+  if (matched.length === 0) {
+    return `${title}\n\n未匹配到 API 片段「${apiSegment}」，请改用 @@query:component-api\n${componentName}`
+  }
+
+  return `${title}\n\n【精确片段: ${apiSegment}】\n${matched.join('\n')}`
+}
+
 /**
  * 从 AI 回复中提取组件 Props 查询请求（@@ 协议）
  */
@@ -230,7 +278,7 @@ export function extractComponentQueries(content: string): string[] {
 
   const blocks = extractBlocks(content)
   for (const b of blocks) {
-    if (b.type === 'query' && b.name === 'component-props') {
+    if (b.type === 'query' && COMPONENT_QUERY_BLOCK_NAMES.has(b.name)) {
       const items = b.payload.split(/[,，\s]+/).map((s) => s.trim()).filter(Boolean)
       components.push(...items)
     }
@@ -244,14 +292,24 @@ export function extractComponentQueries(content: string): string[] {
  */
 export function resolveComponentQuery(components: string[]): string | null {
   if (components.length === 0) return null
-  const sections: string[] = []
-  for (const comp of components) {
-    const info = COMPONENT_PROPS_CATALOG[comp]
-    if (info) {
-      sections.push(info)
-    } else {
-      sections.push(`**${comp}** — 未收录（可使用 Element Plus 文档中的标准 Props）`)
+  const expanded: string[] = []
+  for (const component of components) {
+    if (component.includes('#') || component === '@list') {
+      expanded.push(component)
+      continue
     }
+    const aliasItems = COMPONENT_QUERY_ALIASES[component]
+    if (aliasItems !== undefined) {
+      expanded.push(...aliasItems)
+      continue
+    }
+    expanded.push(component)
+  }
+  const normalized = [...new Set(expanded)]
+
+  const sections: string[] = []
+  for (const comp of normalized) {
+    sections.push(resolveComponentToken(comp))
   }
   return sections.join('\n\n')
 }

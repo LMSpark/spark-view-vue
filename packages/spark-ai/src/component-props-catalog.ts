@@ -7,6 +7,21 @@
 export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
   // ── 容器组件 ─────────────────────────────────────────────────────────────
 
+  'context-aware-fields-api': `**context-aware-fields-api** — 语境感知字段渲染能力总览
+
+【核心能力】
+- 子组件渲染由父容器语境决定：r-table(table) / r-form(form) / r-detail(detail) / r-list(list) / r-tree(tree)
+- 同一 r-* 字段组件可跨语境复用，不复制多套组件
+- 字段组件必须处于容器 children 中，禁止顶层裸放（会丢失语境）
+
+【关键约束】
+- r-table children 仅放 r-* 字段组件，禁止 el-table-column
+- 事件逻辑优先用 meta.behavior.on + script.js 函数，不在组件层硬编码父级判断
+- 字段绑定优先 field（SparkNode v3），不要使用废弃 name
+
+【建议组合查询】
+- r-table, r-form, r-detail, r-text, r-number, r-select, builtin-action`,
+
   'r-table': `**r-table** — 数据表格容器（SparkNode v3 格式）
 
 【props — 原生组件属性，透传到 el-table】
@@ -85,17 +100,23 @@ onNodeCollapse: string — 节点折叠回调
   'r-list': `**r-list** — 列表容器
 dataKey: string — 数据绑定键
 toolbar: Rule[] — 工具栏
+toolbarPosition: 'top' | 'bottom' — 默认 'top'
+toolbarClass: string — 工具栏 CSS 类名
 itemActions: Rule[] — 列表项操作区
 itemActionsPosition: 'left' | 'right' — 默认 'right'
+itemActionsClass: string — 操作区 CSS 类名
 columns: number — 列数，默认 1
-gap: number — 间距，默认 0
+gap: number | string — 间距，默认 0
 minItemWidth: string — 最小项宽度
 rowKey: string — 行唯一键，默认 'id'
 emptyText: string — 空数据文案，默认 '暂无数据'
+itemClass: string — 列表项 CSS 类名
+itemStyle: CSSProperties — 列表项行内样式
 useCard: boolean — 使用卡片包裹，默认 false
 cardShadow: 'always' | 'hover' | 'never' — 默认 'hover'
 gridColumns: number — 默认 24
-gridGap: number — 默认 0
+gridGap: number | string — 默认 0
+gridAutoRows: string — 行高定义
 itemColSpan: number — 项跨列数
 itemRowSpan: number — 项跨行数，默认 1`,
 
@@ -157,6 +178,56 @@ gridColumns: number — 默认 24
 gridGap: number — 默认 0
 gridAutoRows: string — 行高`,
 
+  'r-block': `**r-block** — 块容器（轻量分区）
+title: string — 标题
+description: string — 描述
+headerActions: Rule[] — 头部操作区
+bordered: boolean — 边框，默认 true
+useCard: boolean — 卡片样式，默认 false
+gridColumns: number — 默认 24
+gridGap: number — 默认 0
+gridAutoRows: string — 行高定义
+适合做页面中的局部块，不强制数据绑定`,
+
+  'r-column-group': `**r-column-group** — 多级表头分组（仅用于 r-table 内）
+label: string — 分组标题（必填）
+width: string | number — 列宽
+minWidth: string | number — 最小宽度
+fixed: boolean | 'left' | 'right' — 固定方向
+align: 'left' | 'center' | 'right' — 对齐方式
+headerAlign: 'left' | 'center' | 'right' — 表头对齐
+className: string — 列自定义样式类
+labelClassName: string — 表头自定义样式类
+children 内放 r-* 字段组件作为实际数据列
+
+【使用场景】复杂表格需要多级表头分组，例如「基本信息」下包含「姓名」「年龄」「邮箱」
+
+【示例】
+{ "type": "r-column-group", "props": { "label": "基本信息" }, "children": [
+  { "type": "r-text", "field": "name", "props": { "label": "姓名" } },
+  { "type": "r-number", "field": "age", "props": { "label": "年龄" } }
+]}`,
+
+  'builtin-action': `**builtin-action** — 声明式动作节点（零代码优先）
+
+【节点形态】
+type: "builtin-action"
+props.builtinAction: string — 动作类型
+props.label?: string — 按钮文案
+props.type?: 'primary'|'success'|'warning'|'danger'|'info'
+props.confirmTitle?: string — 删除类动作确认标题
+props.confirmMessage?: string — 删除类动作确认文案
+props.silent?: boolean — true 时关闭默认消息提示
+
+【常用动作】
+append-row | refresh | patch-row | patch-current | patch-selected | delete-row | delete-selected | message-row
+
+【放置位置】
+- meta.toolbar.children（工具栏动作）
+- meta.actions.children（行内动作）
+
+适用于 r-table / r-list / r-form / r-detail 的常见 CRUD 场景`,
+
   // ── 字段组件 ─────────────────────────────────────────────────────────────
   // 所有 r-* 字段共享基础 Props: field(字段绑定名), label(显示标签), width(r-table列宽)
 
@@ -211,6 +282,20 @@ options: Array<{label, value}> — 选项列表
 optionLabelField / optionValueField — 同 r-select
 buttonStyle: boolean — 按钮风格，默认 false`,
 
+  'r-checkbox': `**r-checkbox** — 单复选框
+field / label / width — 同 r-text
+checkedText: string — 选中时显示文案，默认 '是'
+uncheckedText: string — 未选时显示文案，默认 '否'
+checkboxText: string — 复选框右侧文案，默认 ''
+⚠️ 不再使用 trueLabel / falseLabel（已废弃）`,
+
+  'r-checkbox-group': `**r-checkbox-group** — 复选框组
+field / label / width — 同 r-text
+options: Array<{label, value}> — 选项列表
+optionLabelField / optionValueField — 同 r-select
+min: number — 最少勾选数
+max: number — 最多勾选数`,
+
   'r-switch': `**r-switch** — 开关
 field / label / width — 同 r-text
 activeText: string — 激活文案，默认 '是'
@@ -222,6 +307,55 @@ min: number — 默认 0
 max: number — 默认 100
 step: number — 步长，默认 1
 showInput: boolean — 显示输入框，默认 false`,
+
+  'r-cascader': `**r-cascader** — 级联选择
+field / label / width — 同 r-text
+options: Array — 树形选项（嵌套结构）
+optionLabelField: string — 选项标签字段，默认 'label'
+optionValueField: string — 选项值字段，默认 'value'
+optionChildrenField: string — 子节点字段，默认 'children'
+placeholder: string — 默认 '请选择'
+clearable: boolean — 默认 true
+filterable: boolean — 默认 false
+multiple: boolean — 多选模式，默认 false
+checkStrictly: boolean — 父子不关联勾选，默认 false
+emitPath: boolean — 值是否为完整路径数组，默认 true`,
+
+  'r-tree-select': `**r-tree-select** — 树选择
+field / label / width — 同 r-text
+options: Array — 树形选项（嵌套结构）
+optionLabelField: string — 选项标签字段，默认 'label'
+optionValueField: string — 选项值字段，默认 'value'
+optionChildrenField: string — 子节点字段，默认 'children'
+placeholder: string — 默认 '请选择'
+clearable: boolean — 默认 true
+filterable: boolean — 默认 false
+multiple: boolean — 多选模式，默认 false
+checkStrictly: boolean — 父子不关联勾选，默认 false
+defaultExpandAll: boolean — 默认展开所有节点，默认 false
+renderAfterExpand: boolean — 是否展开后才渲染子节点，默认 true`,
+
+  'r-transfer': `**r-transfer** — 穿梭框
+field / label / width — 同 r-text
+options: Array — 数据源（左侧候选列表）
+optionLabelField: string — 选项标签字段，默认 'label'
+optionValueField: string — 选项值字段，默认 'value'
+titles: [string, string] — 左右面板标题，默认 ['待选', '已选']
+filterable: boolean — 可搜索，默认 false
+filterPlaceholder: string — 搜索框占位符，默认 '请输入关键词'
+targetOrder: 'original' | 'push' | 'unshift' — 右侧排序方式，默认 'original'`,
+
+  'r-color': `**r-color** — 颜色选择器
+field / label / width — 同 r-text
+showAlpha: boolean — 显示透明度
+colorFormat: 'hex'|'rgb'|'hsl'|'hsv'
+predefine: string[] — 预设颜色`,
+
+  'r-icon': `**r-icon** — 图标字段
+field / label / width — 同 r-text
+iconSet: string — 图标集名
+searchable: boolean — 可搜索图标
+clearable: boolean — 可清空`,
 
   'r-rate': `**r-rate** — 评分
 field / label / width — 同 r-text
@@ -237,6 +371,7 @@ field / label / width — 同 r-text
 action: string — 上传 URL，默认 '#'
 accept: string — 接受文件类型，默认 ''
 buttonText: string — 按钮文案，默认 '点击上传'
+readonlyButtonText: string — 只读模式按钮文案，默认 '浏览'
 autoUpload: boolean — 默认 true
 showFileList: boolean — 默认 true
 limit: number — 最大文件数，默认 1
@@ -244,14 +379,64 @@ listType: 'text' | 'picture' | 'picture-card' — 默认 'text'
 separator: string — 多文件分隔符，默认 ', '
 placeholder: string — 默认 '请选择文件'`,
 
+  'r-file-path': `**r-file-path** — 文件路径输入/选择
+field / label / width — 同 r-text
+action: string — 上传 URL
+accept: string — 接受文件类型
+multiple: boolean — 多选，默认 false
+separator: string — 多文件分隔符
+placeholder: string — 默认 '请选择文件路径'
+buttonText: string — 上传按钮文案，默认 '上传'
+readonlyButtonText: string — 只读模式按钮文案
+clearable: boolean — 默认 true`,
+
+  'r-file-browser': `**r-file-browser** — 文件浏览器入口
+field / label / width — 同 r-text
+action: string — 上传 URL
+accept: string — 接受文件类型
+multiple: boolean — 多选，默认 false
+separator: string — 多文件分隔符
+placeholder: string — 占位符
+buttonText: string — 上传按钮文案
+readonlyButtonText: string — 只读模式按钮文案
+clearable: boolean — 默认 true
+⚠️ 与 r-file-path 基本一致，差异在于内置的浏览器 UI 体验`,
+
   'r-image': `**r-image** — 图片上传
 field / label / width — 同 r-text
-action: string — 上传 URL，默认 '#'
+action: string — 上传 URL
 accept: string — 默认 'image/*'
 multiple: boolean — 多选，默认 false
-separator: string — 多图分隔符，默认 ', '
+separator: string — 多图分隔符
 placeholder: string — 默认 '请选择图片'
 buttonText: string — 默认 '上传图片'
+readonlyButtonText: string — 只读模式按钮文案
 clearable: boolean — 默认 true`,
+
+  'r-entity-picker': `**r-entity-picker** — 通用实体选择器
+field / label / width — 同 r-text
+entityType: string — 实体类型（如 customer/product）
+multiple: boolean — 是否多选
+displayField: string — 展示字段
+valueField: string — 值字段
+onSelect: string — 选择回调（可选）`,
+
+  'r-user-picker': `**r-user-picker** — 用户选择器
+field / label / width — 同 r-text
+multiple: boolean — 多选
+deptScope: string — 部门范围
+includeDisabled: boolean — 包含禁用用户`,
+
+  'r-dept-picker': `**r-dept-picker** — 部门选择器
+field / label / width — 同 r-text
+multiple: boolean — 多选
+checkStrictly: boolean — 父子不关联勾选
+showPath: boolean — 展示完整路径`,
+
+  'r-product-picker': `**r-product-picker** — 产品选择器
+field / label / width — 同 r-text
+multiple: boolean — 多选
+categoryFilter: string[] — 类目过滤
+showStock: boolean — 显示库存`,
 }
 

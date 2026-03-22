@@ -49,6 +49,8 @@ import type { Plugin, ResolvedConfig } from 'vite'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'node:fs'
 import { resolve, relative, dirname, basename } from 'node:path'
 import { globSync } from 'glob'
+import { extractComponentApi } from './extract-component-api'
+import type { ComponentApiDescriptor } from './extract-component-api'
 
 /* -----------------------------------------------------------------------------
  * 简单日志工具
@@ -616,7 +618,7 @@ export default registerComponents
   /**
    * 生成组件元数据 JSON（用于构建时输出到 dist/ 并上传到服务端）
    *
-   * 包含：组件注册表 + Skill 目录 + 预构建 prompt
+   * 包含：组件注册表 + Skill 目录 + 预构建 prompt + 自动提取的组件 API
    */
   generateMetadataJson(): string {
     this.scan()
@@ -625,13 +627,39 @@ export default registerComponents
       .filter(c => c.skillMeta !== null)
       .map(c => c.skillMeta!)
 
-    const components = this.components.map(c => ({
-      type: c.name,
-      path: c.path,
-      size: c.size,
-      strategy: c.strategy,
-      hasSkill: c.skillMeta !== null,
-    }))
+    // 构建组件 API 映射（type → api descriptor）
+    const apiMap = new Map<string, ComponentApiDescriptor>()
+    for (const c of this.components) {
+      try {
+        const source = readFileSync(c.absolutePath, 'utf-8')
+        const api = extractComponentApi(source, c.path, c.name)
+        if (api) apiMap.set(c.name, api)
+      } catch {
+        // 跳过无法读取的文件
+      }
+    }
+
+    const apiCount = apiMap.size
+    logger.info(`🔬 组件 API 提取: ${apiCount}/${this.components.length} 个组件`)
+
+    const components = this.components.map(c => {
+      const api = apiMap.get(c.name)
+      return {
+        type: c.name,
+        path: c.path,
+        size: c.size,
+        strategy: c.strategy,
+        hasSkill: c.skillMeta !== null,
+        ...(api ? {
+          api: {
+            props: api.props,
+            emits: api.emits,
+            capabilities: api.capabilities,
+            hasIndexSignature: api.hasIndexSignature,
+          },
+        } : {}),
+      }
+    })
 
     // 构建三种精度的 prompt
     const indexPrompt = this.buildPromptMarkdown(skills, 'index')
@@ -639,10 +667,11 @@ export default registerComponents
     const fullPrompt = this.buildPromptMarkdown(skills, 'full')
 
     const metadata = {
-      version: '1.0.0',
+      version: '1.1.0',
       buildTime: new Date().toISOString(),
       componentCount: this.components.length,
       skillCount: skills.length,
+      apiCount,
       components,
       skills,
       skillPrompts: {

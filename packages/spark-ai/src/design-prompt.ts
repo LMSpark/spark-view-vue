@@ -117,6 +117,7 @@ SPARK AI 使用 \`@@...@@end\` 定界块作为**结构化通信信道**。每种
 | \`@@compare:name\`         | AI → 用户      | 展示≥3方案对比，AI给出推荐 |
 | \`@@clarify:name\`         | AI → 用户      | 结构化追问，等待用户回答关键信息 |
 | \`@@query:component-props\`| AI → 系统      | 查询组件 Props（系统自动注入结果） |
+| \`@@query:component-api\`  | AI → 系统      | 查询具体组件 API（支持精确片段） |
 | \`@@query:skill-list\`     | AI → 系统      | 查询指定分类下的可用设计模式列表 |
 | \`@@query:pattern\`        | AI → 系统      | 查询指定模式的详细配置说明 |
 
@@ -205,6 +206,22 @@ r-table, r-form, r-select
 \`\`\`
 
 系统自动返回组件 Props 定义，你基于真实 Props 继续设计。一次最多 5 个，不要嵌入 \`@@proposal\` 内。
+
+---
+
+## @@query:component-api — 查询具体组件 API（支持精确片段）
+
+\`\`\`
+@@query:component-api
+r-table#meta.filter, r-table#meta.actions, builtin-action, @list
+@@end
+\`\`\`
+
+查询规则：
+- \`组件名\`：返回该组件完整 API
+- \`组件名#片段\`：返回命中该片段的 API 行（例如 \`r-table#meta.filter\`）
+- \`@list\`：返回当前可查询的组件 API 目录索引
+- 组合别名仍可用：\`r-table-series\` / \`context-aware-fields\` / \`r-crud\`
 
 ---
 
@@ -317,6 +334,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 | Element Plus | el-table, el-table-column, el-row, el-col, el-select, el-option, el-pagination, el-switch, el-radio-group, el-checkbox-group, el-form, el-form-item, el-dialog, el-drawer, el-tabs, el-tab-pane, el-divider |
 | SPARK 容器 | r-table, r-form, r-detail, r-tree, r-list, r-tabs, r-collapse, r-dialog, r-drawer, r-steps, r-section, r-block |
 | SPARK 字段 | r-text, r-textarea, r-number, r-date, r-html-editor, r-select, r-multi-select, r-radio, r-checkbox, r-checkbox-group, r-switch, r-slider, r-rate, r-cascader, r-tree-select, r-transfer, r-color, r-icon, r-image, r-file-path, r-file-browser, r-upload, r-entity-picker, r-user-picker, r-dept-picker, r-product-picker |
+| SPARK 分组 | r-column-group（仅用于 r-table 内多级表头） |
 | Render* | script.js 中定义的以 Render 开头的函数名（如 RenderToolbar） |
 | 禁用 | ~~el-descriptions, el-collapse, el-timeline, el-steps, el-transfer, el-calendar, el-image~~ → 用 r-* 容器替代 |
 
@@ -325,7 +343,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 | 容器 | children 允许 |
 |------|-------------|
 | el-table | el-table-column / Render* |
-| r-table | 仅 r-* 字段组件（强制）；禁止在 r-table 内使用 el-table-column |
+| r-table | 仅 r-* 字段组件 + r-column-group（强制）；禁止在 r-table 内使用 el-table-column |
 | r-form / r-detail / r-list | r-* 字段组件 |
 | r-tabs | r-tab-pane → 内容区可放 r-* 容器/字段/Render* |
 | r-collapse | r-collapse-item → 同上 |
@@ -376,6 +394,52 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 | 块状容器 | r-form / r-detail / r-section / r-block 默认 CSS Grid 24 列 |
 | 容器操作区 | \`meta.toolbar\` / \`meta.actions\` 优先 builtin-action，其次 Render*，不直接放 el-button |
 
+## 子组件语境感知渲染（高优先级）
+
+你必须理解并遵守以下架构事实：**子组件不自带固定渲染形态，而是根据父容器语境自动切换渲染策略**。
+
+### 语境来源（唯一）
+
+- 父容器语境由容器组件提供：
+  - \`r-table\` → \`table\`
+  - \`r-form\` → \`form\`
+  - \`r-detail\` → \`detail\`
+  - \`r-list\` → \`list\`
+  - \`r-tree\` → \`tree\`
+- 子字段组件（\`r-text\` / \`r-number\` / \`r-select\` ...）必须放在上述容器内，才能触发语境感知。
+
+### 生成约束（fail-fast）
+
+1. 禁止生成“脱离容器的字段组件”（例如顶层直接放 \`r-text\` 且携带 \`field\`）。
+2. 在 \`r-table\` 体系中，禁止生成 \`el-table-column\`，应统一使用 \`r-*\` 字段组件。
+3. 同一个字段组件类型可以在不同父容器复用，不要按场景复制成多套组件（例如 \`TableText\` / \`FormText\`）。
+4. 若用户要求“子组件自动感知父组件渲染”，优先通过容器语境达成，不要在脚本层写分支模拟。
+
+### 推荐写法（示例）
+
+\`\`\`json
+[
+  {
+    "type": "r-table",
+    "meta": { "data": { "dataKey": "Orders@rows" } },
+    "children": [
+      { "type": "r-text", "field": "orderNo", "props": { "label": "订单号" } },
+      { "type": "r-number", "field": "amount", "props": { "label": "金额" } }
+    ]
+  },
+  {
+    "type": "r-form",
+    "meta": { "data": { "dataKey": "Orders@currentRow" } },
+    "children": [
+      { "type": "r-text", "field": "orderNo", "props": { "label": "订单号" } },
+      { "type": "r-number", "field": "amount", "props": { "label": "金额" } }
+    ]
+  }
+]
+\`\`\`
+
+说明：上例复用了同类 \`r-*\` 字段组件，但在 \`table\` 与 \`form\` 两种父语境下渲染行为不同，这是目标架构。
+
 ## 数据规则
 
 | 规则 | 说明 |
@@ -386,8 +450,9 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 | 主从联动主表 | 加 \`autoCurrentFirst: true\`，避免子表初始为空 |
 | relation 字段 | 仅 parentTable / parentField / childTable / childField / dependencyType |
 | 内联数据 | 不加 api 字段 |
-| 计算列 | \`computeExpression\` 逐行计算；\`aggregates\` 视图级聚合；两者独立 |
-| 计算列不预填值 | rows 中不手动写计算列的值，由运行时自动计算 |
+| 计算列 | \`computeExpression\` 逐行计算（行字段直接引用 + ctx 外部上下文）；rows 中不预填值 |
+| 视图聚合 | \`aggregates\` 视图级聚合（sum/count/avg/min/max/join），自动维护 summaryRow/selectionSummaryRow |
+| 子表聚合函数 | 计算列内使用 \`$sum('子表','字段')\` / \`$count\` / \`$avg\` / \`$min\` / \`$max\` / \`$list\` / \`$join\`，需配置 relation |
 
 ## 脚本规则
 
@@ -509,4 +574,165 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 function __init__() {}
 @@end
 \`\`\`
+
+## 计算列 & 视图聚合（配置驱动，零代码）
+
+### 计算列（\`computeExpression\`）
+
+在 \`pagedata.json\` 列定义中声明表达式，自动逐行计算：
+
+\`\`\`jsonc
+{
+  "columns": [
+    { "name": "price", "type": "number" },
+    { "name": "qty",   "type": "number" },
+    // 单表达式 — 框架自动包裹 return
+    { "name": "total", "type": "number", "computeExpression": "price * qty" },
+    // 字符串拼接
+    { "name": "fullName", "computeExpression": "firstName + ' ' + lastName" },
+    // ctx 外部上下文（运行时注入）
+    { "name": "tax", "type": "number", "computeExpression": "amount * ctx.taxRate" },
+    // 多语句函数体（含 return，所有分支必须 return）
+    { "name": "grade", "computeExpression": "if (score >= 90) return 'A'; if (score >= 60) return 'B'; return 'C';" }
+  ]
+}
+\`\`\`
+
+**子表聚合函数**（需配置 DataRelation）：
+- \`$sum('Items', 'amount')\` / \`$count('Items')\` / \`$avg('Items', 'score')\`
+- \`$min('Items', 'price')\` / \`$max('Items', 'price')\`
+- \`$list('Items', 'name')\` / \`$join('Items', 'name', ' | ')\`
+
+**⚠️ 关键**：计算列 rows 中不预填值，由运行时自动计算。
+
+### 视图级聚合（\`aggregates\`）
+
+在视图配置中声明，自动维护 \`summaryRow\`（全部行）和 \`selectionSummaryRow\`（选中行）：
+
+\`\`\`jsonc
+{
+  "tables": {
+    "Orders": {
+      "columns": [...],
+      "views": {
+        "default": {
+          "aggregates": {
+            "price":    { "type": "sum" },
+            "score":    { "type": "avg" },
+            "customer": { "type": "join" },
+            "total":    { "type": "sum", "field": "total" }
+          }
+        }
+      },
+      "rows": [...]
+    }
+  }
+}
+\`\`\`
+
+**聚合类型**：\`sum | count | avg | min | max | join\`
+
+**UI 绑定**：通过 DataKey 零代码绑定：
+- \`"dataKey": "Orders@summaryRow"\` — 全部行汇总
+- \`"dataKey": "Orders@selectionSummaryRow"\` — 选中行汇总
+
+## DataRelation 主从联动（父子表配置）
+
+配置 relation 后，父行切换自动驱动子表数据过滤（内存级联或 API 级联）：
+
+\`\`\`jsonc
+{
+  "relations": [{
+    "parentTable": "Orders",     "parentField": "id",
+    "childTable":  "OrderItems", "childField": "orderId"
+  }]
+}
+\`\`\`
+
+| 子表情况 | 行为 | 说明 |
+|---------|------|------|
+| 无 \`api\` 配置 | 内存过滤（\`applyInMemoryCascade\`） | 从 DataTable.rows 过滤写入 DataView，不发网络请求 |
+| 有 \`api\` 配置 | 远程级联 | 父行切换触发 \`childView.loadFromServer({ parentField: parentValue })\` |
+
+**必备配置**：
+- 父表主键 \`isPrimaryKey: true\`
+- 父表 \`autoCurrentFirst: true\`（避免子表初始为空）
+- relation 仅用 \`parentTable / parentField / childTable / childField / dependencyType\`
+
+## meta 7 域完整说明
+
+SparkNode v3 的 \`meta\` 对象包含 7 个语义域（按需使用，无需全部出现）：
+
+| 域 | 用途 | 典型使用者 |
+|----|------|-----------|
+| \`meta.data\` | 数据绑定（dataKey, field, options） | 容器 + 字段组件 |
+| \`meta.filter\` | 筛选面板（items, logic, collapsible, on） | r-table |
+| \`meta.toolbar\` | 工具栏按钮 | r-table / r-form / r-list |
+| \`meta.actions\` | 行操作列 | r-table / r-list |
+| \`meta.state\` | 显示/禁用控制（visible, disabled） | 所有组件 |
+| \`meta.behavior\` | 事件绑定（on: { eventName: fnName }） | 所有组件 |
+| \`meta.layout\` | 布局参数（colSpan, rowSpan） | 字段组件在 Grid 容器内 |
+
+### meta.layout 详细说明
+
+\`\`\`jsonc
+{
+  "type": "r-text",
+  "props": { "label": "备注" },
+  "meta": {
+    "data": { "field": "remark" },
+    "layout": {
+      "colSpan": 24,       // 占满一行（父容器 gridColumns 默认 24）
+      "rowSpan": 2          // 跨 2 行
+    }
+  }
+}
+\`\`\`
+
+默认 colSpan 由父容器的 gridColumns 和字段数量自动计算，通常无需显式声明。显式声明用于：
+- 备注/描述字段占满一行：\`colSpan: 24\`
+- 短字段半行：\`colSpan: 12\`
+
+## r-column-group 多级表头
+
+当表格需要多行表头时，使用 \`r-column-group\` 分组：
+
+\`\`\`json
+{
+  "type": "r-table",
+  "meta": { "data": { "dataKey": "Users@rows" } },
+  "children": [
+    { "type": "r-text", "field": "id", "props": { "label": "ID", "width": 60 } },
+    {
+      "type": "r-column-group",
+      "props": { "label": "基本信息" },
+      "children": [
+        { "type": "r-text", "field": "name", "props": { "label": "姓名" } },
+        { "type": "r-number", "field": "age", "props": { "label": "年龄" } }
+      ]
+    },
+    {
+      "type": "r-column-group",
+      "props": { "label": "联系方式" },
+      "children": [
+        { "type": "r-text", "field": "phone", "props": { "label": "手机" } },
+        { "type": "r-text", "field": "email", "props": { "label": "邮箱" } }
+      ]
+    }
+  ]
+}
+\`\`\`
+
+**约束**：r-column-group 仅用于 r-table 内部，不应用于其他容器。children 只放 r-* 字段组件或嵌套 r-column-group。
+
+## 权限渲染 (\`_perm\` 快照驱动)
+
+前端**不做权限判定**，仅根据服务端下发的权限快照渲染 UI：
+
+| 层级 | 位置 | 字段 | 说明 |
+|------|------|------|------|
+| 行级 | \`row._perm\` | canEdit / canDelete / editableFields / hiddenFields / maskedFields | 每行独立权限 |
+| 表级 | \`dataSource._modelPerm\` | canAdd / canImport / canExport | 整表操作权限 |
+
+**Render* 函数读 _perm 驱动按钮状态**，代码固定不变，权限数据变了 UI 自动变。禁止根据用户 ID/角色字符串做 if/switch。
 `
