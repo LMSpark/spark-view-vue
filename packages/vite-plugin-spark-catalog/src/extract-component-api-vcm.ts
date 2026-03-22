@@ -127,18 +127,23 @@ export function extractComponentApiVcm(
     })
 
     // -- Exposed --
-    const exposed: ExposedEntry[] = meta.exposed
-      .filter(e => !isVueInternalExposed(e.name))
-      .map(e => {
-        const entry: ExposedEntry = {
-          name: e.name,
-          type: e.type,
-        }
-        if (e.description !== '') entry.description = e.description
-        const schema = convertSchema(e.schema)
-        if (schema !== undefined) entry.schema = schema
-        return entry
-      })
+    // VCM 对没有 defineExpose 的 <script setup> 组件会把所有顶层绑定列为 exposed，
+    // 这不是真正的公开 API。只有源码中显式调用 defineExpose 才提取。
+    const hasDefineExpose = detectDefineExpose(absPath)
+    const exposed: ExposedEntry[] = hasDefineExpose
+      ? meta.exposed
+        .filter(e => !isVueInternalExposed(e.name))
+        .map(e => {
+          const entry: ExposedEntry = {
+            name: e.name,
+            type: e.type,
+          }
+          if (e.description !== '') entry.description = e.description
+          const schema = convertSchema(e.schema)
+          if (schema !== undefined) entry.schema = schema
+          return entry
+        })
+      : []
 
     // -- Slots --
     const slots: SlotEntry[] = meta.slots.map(s => {
@@ -346,6 +351,18 @@ function detectIndexSignature(absPath: string): boolean {
       }
     }
     return false
+  } catch {
+    return false
+  }
+}
+
+/** 检测 <script setup> 中是否调用了 defineExpose */
+function detectDefineExpose(absPath: string): boolean {
+  try {
+    const sfcSource = readFileSync(absPath, 'utf-8')
+    const scriptContent = extractScriptSetupContent(sfcSource)
+    if (scriptContent === null) return false
+    return scriptContent.includes('defineExpose')
   } catch {
     return false
   }
