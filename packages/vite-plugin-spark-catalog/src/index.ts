@@ -11,9 +11,18 @@
 export { sparkCatalogPlugin } from './plugin'
 export type { SparkCatalogPluginOptions } from './plugin'
 
-// ── AST 提取引擎（供其他构建工具复用） ──
+// ── AST 提取引擎（旧版，保留向后兼容） ──
 export { extractComponentApi, extractAllComponentApis } from './extract-component-api'
 export type { ComponentApiDescriptor, PropDescriptor, EmitDescriptor } from './extract-component-api'
+
+// ── VCM 提取引擎（vue-component-meta，完整类型解析） ──
+export {
+  getOrCreateChecker,
+  resetChecker,
+  extractComponentApiVcm,
+  extractAllComponentApisVcm,
+} from './extract-component-api-vcm'
+export type { VcmApiDescriptor } from './extract-component-api-vcm'
 
 // ── 补充数据 ──
 export {
@@ -35,6 +44,9 @@ export type {
   PropEntry,
   EmitEntry,
   CapabilityInfo,
+  ExposedEntry,
+  SlotEntry,
+  PropSchema,
   RootFieldEntry,
   PlatformConstraints,
   NestingRule,

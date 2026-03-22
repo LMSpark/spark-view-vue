@@ -79,8 +79,16 @@ export function generateComponentPrompt(entry: ComponentEntry, verbosity: Prompt
     lines.push('')
     lines.push('【事件】')
     for (const emit of entry.emits) {
-      const args = emit.payload.map(p => `${p.name}: ${p.type}`).join(', ')
-      lines.push(`${emit.name}(${args})`)
+      if (emit.type !== undefined) {
+        // VCM 格式: type 签名
+        lines.push(`${emit.name}: ${emit.type}`)
+      } else if (emit.payload !== undefined) {
+        // 旧格式兼容
+        const args = emit.payload.map(p => `${p.name}: ${p.type}`).join(', ')
+        lines.push(`${emit.name}(${args})`)
+      } else {
+        lines.push(emit.name)
+      }
     }
   }
 

@@ -1,17 +1,17 @@
 /**
  * 组件目录 JSON 生成器
  *
- * 从 AST 提取 + 补充数据合并，输出 component-catalog.json。
- * 纯 Node.js 模块，不依赖 Vite / Vue。
+ * 从 vue-component-meta 类型解析 + 补充数据合并，输出 component-catalog.json。
+ * 纯 Node.js 模块，不依赖 Vite / Vue 运行时。
  *
  * @module json-catalog-generator
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
+import { writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { resolve, basename } from 'node:path'
 import { globSync } from 'glob'
-import { extractComponentApi } from './extract-component-api'
-import type { ComponentApiDescriptor } from './extract-component-api'
+import { getOrCreateChecker, extractComponentApiVcm } from './extract-component-api-vcm'
+import type { VcmApiDescriptor } from './extract-component-api-vcm'
 import {
   CATALOG_OVERRIDES,
   CATALOG_ADDENDUMS,
@@ -31,6 +31,8 @@ import type {
   PlatformConstraints,
   PropEntry,
   EmitEntry,
+  ExposedEntry,
+  SlotEntry,
 } from './component-catalog-schema'
 
 const logger = createLogger('spark-catalog-json')
@@ -48,6 +50,8 @@ export interface JsonCatalogOptions {
   outputPath?: string | undefined
   /** 按组件输出独立 JSON 文件的目录（相对于 root），便于检查 */
   perComponentDir?: string | undefined
+  /** vue-component-meta 使用的 tsconfig 路径（相对于 root），默认 tsconfig.catalog.json */
+  tsconfigPath?: string | undefined
   /** 启用详细日志 */
   verbose?: boolean | undefined
 }
@@ -300,7 +304,7 @@ function buildPlatformConstraints(): PlatformConstraints {
 function buildComponentEntry(
   skillType: string,
   description: string,
-  api: ComponentApiDescriptor | null,
+  api: VcmApiDescriptor | null,
   hasOverride: boolean,
   hasAddendum: boolean,
 ): ComponentEntry {
@@ -308,7 +312,7 @@ function buildComponentEntry(
   const overrideText = CATALOG_OVERRIDES[skillType]
   const addendumText = CATALOG_ADDENDUMS[skillType]
 
-  // Props: 始终优先 AST（即使有 override）
+  // Props: 始终优先 VCM 提取（过滤内部 props）
   const props: PropEntry[] = api !== null
     ? api.props
       .filter(p => p.name !== 'config' && p.name !== 'sparkChildren')
@@ -318,13 +322,22 @@ function buildComponentEntry(
         required: p.required,
         ...(p.default !== undefined ? { default: p.default } : {}),
         ...(p.description !== undefined ? { description: p.description } : {}),
+        ...(p.schema !== undefined ? { schema: p.schema } : {}),
       }))
     : []
 
-  // Emits: 始终优先 AST
+  // Emits: VCM 格式（type + schema，无 payload）
   const emits: EmitEntry[] = api?.emits ?? []
 
-  // Capabilities: AST 提取 + override 文本补充
+  // Exposed: VCM 提取
+  const exposed: ExposedEntry[] | undefined =
+    api !== null && api.exposed.length > 0 ? api.exposed : undefined
+
+  // Slots: VCM 提取
+  const slots: SlotEntry[] | undefined =
+    api !== null && api.slots.length > 0 ? api.slots : undefined
+
+  // Capabilities: VCM AST 提取 + override 文本补充
   let capabilities = api?.capabilities ?? { consumes: [], provides: [] }
   if (hasOverride && overrideText !== undefined) {
     const overrideCaps = parseCapabilitiesFromOverride(overrideText)
@@ -351,11 +364,14 @@ function buildComponentEntry(
   }
 
   // Source
-  let source: ComponentEntry['source'] = 'ast'
-  if (hasOverride && api !== null) source = 'ast+override'
+  const prefix = api !== null ? 'vcm' : ''
+  let source: ComponentEntry['source']
+  if (prefix !== '' && hasOverride) source = 'vcm+override'
+  else if (prefix !== '' && hasAddendum) source = 'vcm+addendum'
+  else if (prefix !== '') source = 'vcm'
   else if (hasOverride) source = 'override'
-  else if (hasAddendum && api !== null) source = 'ast+addendum'
   else if (hasAddendum) source = 'addendum'
+  else source = 'ast' // fallback for pure-text entries
 
   return {
     type: skillType,
@@ -364,6 +380,8 @@ function buildComponentEntry(
     props,
     emits,
     capabilities,
+    ...(exposed !== undefined ? { exposed } : {}),
+    ...(slots !== undefined ? { slots } : {}),
     ...(rootFields !== undefined ? { rootFields } : {}),
     ...(notes !== undefined ? { notes } : {}),
     source,
@@ -382,6 +400,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     featurePatterns = [],
     exclude = [],
     outputPath = 'packages/spark-ai/src/component-catalog.json',
+    tsconfigPath = 'tsconfig.catalog.json',
     verbose = false,
   } = options
 
@@ -392,16 +411,18 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     logger.info(`🔬 Renderer: ${renderers.length}, Feature: ${features.length}`)
   }
 
-  // 2. AST 提取（包括 override 组件——AST 取 props/emits，override 取 rootFields/notes）
-  const apiMap = new Map<string, ComponentApiDescriptor>()
+  // 2. VCM 提取（vue-component-meta 完整类型解析）
+  const tsconfigAbsolute = resolve(root, tsconfigPath).replace(/\\/g, '/')
+  const checker = getOrCreateChecker(tsconfigAbsolute)
+  const apiMap = new Map<string, VcmApiDescriptor>()
   for (const comp of [...renderers, ...features]) {
-    try {
-      const source = readFileSync(comp.absolutePath, 'utf-8')
-      const api = extractComponentApi(source, comp.relativePath, comp.skillType)
-      if (api !== null) apiMap.set(comp.skillType, api)
-    } catch {
-      // skip
-    }
+    const api = extractComponentApiVcm(
+      checker,
+      comp.absolutePath,
+      comp.relativePath,
+      comp.skillType,
+    )
+    if (api !== null) apiMap.set(comp.skillType, api)
   }
 
   // 3. 构建组件条目

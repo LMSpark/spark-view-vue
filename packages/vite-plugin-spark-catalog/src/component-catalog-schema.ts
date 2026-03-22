@@ -60,12 +60,17 @@ export interface ComponentEntry {
   /** 一句话描述 */
   description: string
 
-  /** Props — 结构化 API（来自 AST 提取或手工补充） */
+  /** Props — 结构化 API（来自 VCM 类型解析或手工补充） */
   props: PropEntry[]
   /** Emits — 事件定义 */
   emits: EmitEntry[]
   /** 能力链 */
   capabilities: CapabilityInfo
+
+  /** Exposed — defineExpose 公开的方法/属性 */
+  exposed?: ExposedEntry[]
+  /** Slots — 命名插槽及其 scope 类型 */
+  slots?: SlotEntry[]
 
   /** 根级语义字段（rule.json 中的顶级配置） */
   rootFields?: RootFieldEntry[]
@@ -74,7 +79,7 @@ export interface ComponentEntry {
   notes?: string
 
   /** 来源标记 */
-  source: 'ast' | 'override' | 'addendum' | 'ast+addendum' | 'ast+override'
+  source: 'ast' | 'override' | 'addendum' | 'ast+addendum' | 'ast+override' | 'vcm' | 'vcm+override' | 'vcm+addendum'
 }
 
 export interface PropEntry {
@@ -83,17 +88,59 @@ export interface PropEntry {
   required: boolean
   default?: string
   description?: string
+  /** 嵌套类型 schema（对象类型展开、枚举变体等） */
+  schema?: PropSchema
 }
 
 export interface EmitEntry {
   name: string
-  payload: Array<{ name: string; type: string }>
+  /** 事件类型签名 */
+  type?: string
+  /** 事件描述 */
+  description?: string
+  /** 事件参数 schema */
+  schema?: PropSchema[]
+  /** @deprecated 旧格式兼容 — 优先使用 type + schema */
+  payload?: Array<{ name: string; type: string }>
 }
 
 export interface CapabilityInfo {
   consumes: string[]
   provides: string[]
 }
+
+/** defineExpose 公开的方法/属性 */
+export interface ExposedEntry {
+  name: string
+  type: string
+  description?: string
+  schema?: PropSchema
+}
+
+/** 命名插槽 */
+export interface SlotEntry {
+  name: string
+  type: string
+  description?: string
+  schema?: PropSchema
+}
+
+/** 对象 schema 中的属性条目 */
+export interface PropSchemaProperty {
+  name: string
+  type: string
+  required?: boolean
+  description?: string
+  /** 递归嵌套 schema */
+  schema?: PropSchema
+}
+
+/** 嵌套类型 Schema（递归结构，对应 vue-component-meta 的 PropertyMetaSchema） */
+export type PropSchema =
+  | { kind: 'object'; type: string; properties: Record<string, PropSchemaProperty> }
+  | { kind: 'enum'; type: string; variants: string[] }
+  | { kind: 'array'; type: string; items: PropSchema[] }
+  | { kind: 'event'; type: string; params: PropSchema[] }
 
 /** 根级语义字段（从 CATALOG_OVERRIDES 文本中提取的结构化信息） */
 export interface RootFieldEntry {

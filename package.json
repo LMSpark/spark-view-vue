@@ -92,6 +92,7 @@
         "@typescript-eslint/eslint-plugin": "^8.56.1",
         "@typescript-eslint/parser": "^8.56.1",
         "@vitejs/plugin-vue": "^6.0.4",
+        "@vue/language-core": "2.2.12",
         "@vue/test-utils": "^2.4.6",
         "concurrently": "^9.2.1",
         "cors": "^2.8.6",
@@ -110,6 +111,7 @@
         "typescript": "~5.9.3",
         "vite": "^7.3.1",
         "vitest": "^4.0.18",
+        "vue-component-meta": "2.2.12",
         "vue-eslint-parser": "^10.4.0",
         "vue-tsc": "^3.2.5"
     },
