@@ -39,3 +39,4 @@ spark-ai-server/.env.java
 data/sparkdb.mv.db
 data/
 temp-*.json
+.eslintcache

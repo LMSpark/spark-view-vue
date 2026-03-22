@@ -3,14 +3,30 @@
  *
  * ⚠️ 自动生成 — 请勿手动编辑
  *
- * 由 vite-plugin-spark-components 在 build / dev 时生成。
- * 数据来源：Vue SFC Props JSDoc（AST 提取）+ component-props-supplement.ts（手工补充）
+ * 由 vite-plugin-spark-catalog 在 build / dev 时生成。
+ * 数据来源：Vue SFC Props JSDoc（AST 提取）+ supplement.ts（手工补充）
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-22T07:59:17.510Z
- * 条目数量：41（AST 字段: 24, 手工容器/概念: 17）
+ * 生成时间：2026-03-22T08:32:16.335Z
+ * 条目数量：77（AST 字段: 60, 手工容器/概念: 17）
  */
 export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
+  "about": `**about** — SPARK 视图组件，可在注册表中通过 type="about" 引用。`,
+  "ai-assistant-hub": `**ai-assistant-hub** — SPARK 组件，可在注册表中通过 type="ai-assistant-hub" 使用。`,
+  "ai-chat-panel": `**ai-chat-panel** — SPARK 组件，可在注册表中通过 type="ai-chat-panel" 使用。
+embedded?: boolean (默认 false)
+forceOpen?: boolean (默认 false)`,
+  "ai-chat-widget": `**ai-chat-widget** — SPARK 组件，可在注册表中通过 type="ai-chat-widget" 使用。
+mode?: ChatMode
+systemPrompt?: string
+title?: string
+placeholder?: string
+compact?: boolean`,
+  "ai-design-studio": `**ai-design-studio** — SPARK 组件，可在注册表中通过 type="ai-design-studio" 使用。`,
+  "ai-proposal-card": `**ai-proposal-card** — SPARK 组件，可在注册表中通过 type="ai-proposal-card" 使用。
+proposal: DesignProposal`,
+  "ai-studio-panel": `**ai-studio-panel** — SPARK 视图组件，可在注册表中通过 type="ai-studio-panel" 引用。`,
+  "app-list": `**app-list** — SPARK 视图组件，可在注册表中通过 type="app-list" 引用。`,
   "builtin-action": `**builtin-action** — 声明式动作节点（零代码优先）
 
 【节点形态】
@@ -30,6 +46,8 @@ append-row | refresh | patch-row | patch-current | patch-selected | delete-row |
 - actions.items（行内动作）
 
 适用于 r-table / r-list / r-form / r-detail 的常见 CRUD 场景`,
+  "cache-manager": `**cache-manager** — SPARK 视图组件，可在注册表中通过 type="cache-manager" 引用。`,
+  "capability-demo": `**capability-demo** — SPARK 视图组件，可在注册表中通过 type="capability-demo" 引用。`,
   "context-aware-fields-api": `**context-aware-fields-api** — 语境感知字段渲染能力总览
 
 【核心能力】
@@ -44,6 +62,51 @@ append-row | refresh | patch-row | patch-current | patch-selected | delete-row |
 
 【建议组合查询】
 - r-table, r-form, r-detail, r-text, r-number, r-select, builtin-action`,
+  "dashboard": `**dashboard** — SPARK 视图组件，可在注册表中通过 type="dashboard" 引用。`,
+  "dev-ai-panel": `**dev-ai-panel** — SPARK 视图组件，可在注册表中通过 type="dev-ai-panel" 引用。
+state: DevState`,
+  "dev-file-editor": `**dev-file-editor** — SPARK 视图组件，可在注册表中通过 type="dev-file-editor" 引用。
+state: DevState`,
+  "dev-node-props": `**dev-node-props** — SPARK 视图组件，可在注册表中通过 type="dev-node-props" 引用。
+state: DevState`,
+  "dev-page-overview": `**dev-page-overview** — SPARK 视图组件，可在注册表中通过 type="dev-page-overview" 引用。
+state: DevState`,
+  "dev-site-tree": `**dev-site-tree** — SPARK 视图组件，可在注册表中通过 type="dev-site-tree" 引用。
+state: DevState`,
+  "dev-system": `**dev-system** — SPARK 视图组件，可在注册表中通过 type="dev-system" 引用。`,
+  "dev-workbench": `**dev-workbench** — SPARK 视图组件，可在注册表中通过 type="dev-workbench" 引用。`,
+  "error-fallback": `**error-fallback** — SPARK 组件，可在注册表中通过 type="error-fallback" 使用。
+error?: Error — 错误对象包含错误消息（message）和堆栈信息（stack）@default undefined@examplenew Error('Network timeout')`,
+  "home-page": `**home-page** — SPARK 视图组件，可在注册表中通过 type="home-page" 引用。`,
+  "icon-picker": `**icon-picker** — SPARK 组件，可在注册表中通过 type="icon-picker" 使用。
+modelValue?: string (默认 '')
+placeholder?: string (默认 '选择图标')
+width?: number | string (默认 60)`,
+  "login-view": `**login-view** — SPARK 视图组件，可在注册表中通过 type="login-view" 引用。`,
+  "module-context-badge": `**module-context-badge** — SPARK 组件，可在注册表中通过 type="module-context-badge" 使用。
+label?: string (默认 '上下文')
+emptyText?: string (默认 '未选择')
+
+【能力链】
+consumes: MODULE_CONTEXT`,
+  "nav-icon": `**nav-icon** — SPARK 组件，可在注册表中通过 type="nav-icon" 使用。
+name?: string | undefined
+size?: number | undefined`,
+  "node-basic-info": `**node-basic-info** — SPARK 视图组件，可在注册表中通过 type="node-basic-info" 引用。
+state: DevState
+moduleKindDisabled: boolean`,
+  "node-context-config": `**node-context-config** — SPARK 视图组件，可在注册表中通过 type="node-context-config" 引用。
+state: DevState`,
+  "node-layout-config": `**node-layout-config** — SPARK 视图组件，可在注册表中通过 type="node-layout-config" 引用。
+state: DevState`,
+  "node-state-config": `**node-state-config** — SPARK 视图组件，可在注册表中通过 type="node-state-config" 引用。
+state: DevState`,
+  "node-target-config": `**node-target-config** — SPARK 视图组件，可在注册表中通过 type="node-target-config" 引用。
+state: DevState`,
+  "page-config-editor": `**page-config-editor** — SPARK 视图组件，可在注册表中通过 type="page-config-editor" 引用。
+pageId: string`,
+  "project-tree": `**project-tree** — SPARK 视图组件，可在注册表中通过 type="project-tree" 引用。
+state: ProjectState`,
   "r-block": `**r-block** — 块容器（轻量分区）
 title: string — 标题
 description: string — 描述
@@ -54,7 +117,7 @@ gridColumns: number — 默认 24
 gridGap: number — 默认 0
 gridAutoRows: string — 行高定义
 适合做页面中的局部块，不强制数据绑定`,
-  "r-cascader": `**r-cascader** — SPARK 字段组件
+  "r-cascader": `**r-cascader** — SPARK 字段组件，可在 rule.json 中通过 type="r-cascader" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -69,7 +132,7 @@ filterable?: boolean — 可搜索 (默认 false)
 multiple?: boolean — 多选模式 (默认 false)
 checkStrictly?: boolean — 父子不关联勾选 (默认 false)
 emitPath?: boolean — 值是否为完整路径数组 (默认 true)`,
-  "r-checkbox": `**r-checkbox** — SPARK 字段组件
+  "r-checkbox": `**r-checkbox** — SPARK 字段组件，可在 rule.json 中通过 type="r-checkbox" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -79,7 +142,7 @@ uncheckedText?: string — 未选时显示文案 (默认 '否')
 checkboxText?: string — 复选框右侧文案 (默认 '')
 
 ⚠️ 用 checkedText / uncheckedText 代替 trueLabel / falseLabel`,
-  "r-checkbox-group": `**r-checkbox-group** — SPARK 字段组件
+  "r-checkbox-group": `**r-checkbox-group** — SPARK 字段组件，可在 rule.json 中通过 type="r-checkbox-group" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -95,14 +158,14 @@ toolbarClass: string — 工具栏 CSS 类名
 modelValue: string | number | Array — 展开的面板
 onChange: string — 切换回调
 children 内放 r-collapse-item`,
-  "r-color": `**r-color** — SPARK 字段组件
+  "r-color": `**r-color** — SPARK 字段组件，可在 rule.json 中通过 type="r-color" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: string — 双向绑定值（颜色字符串，透传 el-color-picker）
 
 透传到 el-color-picker: showAlpha, colorFormat('hex'|'rgb'|'hsl'|'hsv'), predefine(string[])`,
-  "r-column-group": `**r-column-group** — SPARK 字段组件
+  "r-column-group": `**r-column-group** — SPARK 字段组件，可在 rule.json 中通过 type="r-column-group" 使用。
 label?: string — 分组标题（必填）
 width?: string | number — 列宽
 minWidth?: string | number — 最小宽度
@@ -120,7 +183,7 @@ labelClassName?: string — 表头自定义样式类
   { "type": "r-number", "field": "age", "props": { "label": "年龄" } }
 ]}
 children 内放 r-* 字段组件作为实际数据列`,
-  "r-date": `**r-date** — SPARK 字段组件
+  "r-date": `**r-date** — SPARK 字段组件，可在 rule.json 中通过 type="r-date" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -175,7 +238,7 @@ gridColumns: number — 默认 24
 gridGap: number | string — 默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 onOpen / onClose / onOpened / onClosed: string — 生命周期回调`,
-  "r-entity-picker": `**r-entity-picker** — SPARK 字段组件
+  "r-entity-picker": `**r-entity-picker** — SPARK 字段组件，可在 rule.json 中通过 type="r-entity-picker" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -192,7 +255,7 @@ searchable?: boolean — 可搜索 (默认 true)
 separator?: string — 多值分隔符 (默认 ', ')
 valueMode?: 'auto' | 'array' | 'comma-string' — 值模式 (默认 'auto')
 entityName?: string — 实体名称 (默认 '项目')`,
-  "r-file-browser": `**r-file-browser** — SPARK 字段组件
+  "r-file-browser": `**r-file-browser** — SPARK 字段组件，可在 rule.json 中通过 type="r-file-browser" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -205,7 +268,7 @@ placeholder?: string — 占位提示 (默认 '请选择文件')
 buttonText?: string — 上传按钮文案 (默认 '浏览')
 
 ⚠️ 与 r-file-path 基本一致，差异在于内置的浏览器 UI 体验`,
-  "r-file-path": `**r-file-path** — SPARK 字段组件
+  "r-file-path": `**r-file-path** — SPARK 字段组件，可在 rule.json 中通过 type="r-file-path" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -233,13 +296,13 @@ consumes: PAGE_DATASET
 provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
 
 children 内放 r-* 字段组件`,
-  "r-html-editor": `**r-html-editor** — SPARK 字段组件
+  "r-html-editor": `**r-html-editor** — SPARK 字段组件，可在 rule.json 中通过 type="r-html-editor" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: string — 双向绑定值（HTML 字符串）
 rows?: number — 编辑器高度行数 (默认 10)`,
-  "r-icon": `**r-icon** — SPARK 字段组件
+  "r-icon": `**r-icon** — SPARK 字段组件，可在 rule.json 中通过 type="r-icon" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -251,7 +314,7 @@ placeholder?: string — 占位提示 (默认 '请选择图标')
 clearable?: boolean — 可清除 (默认 true)
 filterable?: boolean — 可搜索 (默认 true)
 classPrefix?: string — 图标 CSS 类名前缀 (默认 '')`,
-  "r-image": `**r-image** — SPARK 字段组件
+  "r-image": `**r-image** — SPARK 字段组件，可在 rule.json 中通过 type="r-image" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -290,7 +353,7 @@ itemRowSpan: number — 项跨行数，默认 1
 【能力链】
 consumes: PAGE_DATASET
 provides: DATA_SOURCE`,
-  "r-multi-select": `**r-multi-select** — SPARK 字段组件
+  "r-multi-select": `**r-multi-select** — SPARK 字段组件，可在 rule.json 中通过 type="r-multi-select" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -304,7 +367,7 @@ filterable?: boolean — 可搜索 (默认 false)
 collapseTags?: boolean — 折叠已选标签 (默认 false)
 collapseTagsTooltip?: boolean — 折叠标签提示 (默认 false)
 maxCollapseTags?: number — 最大显示标签数 (默认 1)`,
-  "r-number": `**r-number** — SPARK 字段组件
+  "r-number": `**r-number** — SPARK 字段组件，可在 rule.json 中通过 type="r-number" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -320,7 +383,7 @@ field / label / width — 同 r-text
 multiple: boolean — 多选
 categoryFilter: string[] — 类目过滤
 showStock: boolean — 显示库存`,
-  "r-radio": `**r-radio** — SPARK 字段组件
+  "r-radio": `**r-radio** — SPARK 字段组件，可在 rule.json 中通过 type="r-radio" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -329,7 +392,7 @@ options?: unknown[] — 选项列表
 optionLabelField?: string — 选项标签字段
 optionValueField?: string — 选项值字段
 buttonStyle?: boolean — 按钮风格 (默认 false)`,
-  "r-rate": `**r-rate** — SPARK 字段组件
+  "r-rate": `**r-rate** — SPARK 字段组件，可在 rule.json 中通过 type="r-rate" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -351,7 +414,7 @@ showToggleIcon: boolean — 显示切换图标，默认 true
 gridColumns: number — 默认 24
 gridGap: number — 默认 0
 gridAutoRows: string — 行高`,
-  "r-select": `**r-select** — SPARK 字段组件
+  "r-select": `**r-select** — SPARK 字段组件，可在 rule.json 中通过 type="r-select" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -362,7 +425,7 @@ optionValueField?: string — 选项值字段
 placeholder?: string — 占位提示 (默认 '请选择')
 clearable?: boolean — 可清除 (默认 true)
 filterable?: boolean — 可搜索 (默认 false)`,
-  "r-slider": `**r-slider** — SPARK 字段组件
+  "r-slider": `**r-slider** — SPARK 字段组件，可在 rule.json 中通过 type="r-slider" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -378,7 +441,7 @@ toolbarClass: string — 工具栏 CSS 类名
 modelValue: string | number — 当前步骤
 onStepChange: string — 步骤切换回调
 children 内放 r-step`,
-  "r-switch": `**r-switch** — SPARK 字段组件
+  "r-switch": `**r-switch** — SPARK 字段组件，可在 rule.json 中通过 type="r-switch" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -442,12 +505,12 @@ modelValue: string | number — 当前激活 tab
 onTabChange: string — 切换回调
 onTabClick: string — 点击回调
 children 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）`,
-  "r-text": `**r-text** — SPARK 字段组件
+  "r-text": `**r-text** — SPARK 字段组件，可在 rule.json 中通过 type="r-text" 使用。
 field?: string — 字段绑定名，映射到 DataView 行字段
 label?: string — 显示标签
 width?: number — r-table 内列宽
 modelValue?: string — 双向绑定值`,
-  "r-textarea": `**r-textarea** — SPARK 字段组件
+  "r-textarea": `**r-textarea** — SPARK 字段组件，可在 rule.json 中通过 type="r-textarea" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -457,7 +520,7 @@ autosize?: boolean | { minRows?: number; maxRows?: number } — 自适应高度 
 maxlength?: number — 最大长度
 showWordLimit?: boolean — 显示字数统计 (默认 false)
 placeholder?: string — 占位提示 (默认 '请输入内容')`,
-  "r-transfer": `**r-transfer** — SPARK 字段组件
+  "r-transfer": `**r-transfer** — SPARK 字段组件，可在 rule.json 中通过 type="r-transfer" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -486,7 +549,7 @@ onNodeCollapse: string — 节点折叠回调
 【能力链】
 consumes: PAGE_DATASET
 provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA`,
-  "r-tree-select": `**r-tree-select** — SPARK 字段组件
+  "r-tree-select": `**r-tree-select** — SPARK 字段组件，可在 rule.json 中通过 type="r-tree-select" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -502,7 +565,7 @@ multiple?: boolean — 多选模式 (默认 false)
 checkStrictly?: boolean — 父子不关联勾选 (默认 false)
 defaultExpandAll?: boolean — 默认展开所有节点 (默认 false)
 renderAfterExpand?: boolean — 展开后才渲染子节点 (默认 true)`,
-  "r-upload": `**r-upload** — SPARK 字段组件
+  "r-upload": `**r-upload** — SPARK 字段组件，可在 rule.json 中通过 type="r-upload" 使用。
 field?: string — 字段绑定名
 label?: string — 显示标签
 width?: number — r-table 内列宽
@@ -524,6 +587,15 @@ field / label / width — 同 r-text
 multiple: boolean — 多选
 deptScope: string — 部门范围
 includeDisabled: boolean — 包含禁用用户`,
+  "sap-chat-panel": `**sap-chat-panel** — SPARK 组件，可在注册表中通过 type="sap-chat-panel" 使用。
+embedded?: boolean (默认 false)
+forceOpen?: boolean (默认 false)`,
+  "settings": `**settings** — SPARK 视图组件，可在注册表中通过 type="settings" 引用。`,
+  "tenant-config": `**tenant-config** — SPARK 视图组件，可在注册表中通过 type="tenant-config" 引用。`,
+  "wbs-node-editor": `**wbs-node-editor** — SPARK 视图组件，可在注册表中通过 type="wbs-node-editor" 引用。
+nodeId: string`,
+  "workspace-panel": `**workspace-panel** — SPARK 视图组件，可在注册表中通过 type="workspace-panel" 引用。
+nodeId: string | null`,
 }
 
 /**

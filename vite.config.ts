@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
+import { sparkCatalogPlugin } from './packages/vite-plugin-spark-catalog/src/index'
 import {
   COMPONENT_SCAN_PATTERNS,
   COMPONENT_EXCLUDE_PATTERNS,
@@ -209,6 +210,12 @@ export default registerComponents
         }
       }
     ]),
+
+    // 📋 组件 Props 目录生成（独立插件，两种模式均启用）
+    sparkCatalogPlugin({
+      featurePatterns: [...COMPONENT_SCAN_PATTERNS],
+      exclude: [...COMPONENT_EXCLUDE_PATTERNS],
+    }),
     
     ...(process.env['ANALYZE'] ? [visualizer({
       open: true,

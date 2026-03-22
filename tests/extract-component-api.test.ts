@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { extractComponentApi } from '../tools/extract-component-api'
-import type { ComponentApiDescriptor } from '../tools/extract-component-api'
+import { extractComponentApi } from '../packages/vite-plugin-spark-catalog/src/index'
+import type { ComponentApiDescriptor } from '../packages/vite-plugin-spark-catalog/src/index'
 
 /* ==========================================================================
  * 辅助

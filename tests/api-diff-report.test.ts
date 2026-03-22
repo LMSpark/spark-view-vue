@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { generateDiffReport, formatDiffReport } from '../tools/api-diff-report'
-import type { ComponentApiDescriptor } from '../tools/extract-component-api'
+import type { ComponentApiDescriptor } from '../packages/vite-plugin-spark-catalog/src/index'
 
 function makeApi(
   type: string,

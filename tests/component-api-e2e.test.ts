@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import { extractComponentApi, extractAllComponentApis } from '../tools/extract-component-api'
+import { extractComponentApi, extractAllComponentApis } from '../packages/vite-plugin-spark-catalog/src/index'
 import { generateDiffReport, formatDiffReport } from '../tools/api-diff-report'
 import { COMPONENT_PROPS_CATALOG } from '../packages/spark-ai/src/component-props-catalog'
 

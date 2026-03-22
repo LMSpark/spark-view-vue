@@ -12,7 +12,7 @@
  * @since 1.3.0
  */
 
-import type { ComponentApiDescriptor } from './extract-component-api'
+import type { ComponentApiDescriptor } from '../packages/vite-plugin-spark-catalog/src/index'
 
 /* ==========================================================================
  * 输出类型

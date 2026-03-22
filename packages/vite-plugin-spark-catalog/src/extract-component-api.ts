@@ -156,7 +156,7 @@ function extractPropsMembers(
   const props: PropDescriptor[] = []
   for (const member of iface.members) {
     if (!ts.isPropertySignature(member)) continue
-    if (!member.name || !ts.isIdentifier(member.name)) continue
+    if (!ts.isIdentifier(member.name)) continue
 
     const desc: PropDescriptor = {
       name: member.name.text,
@@ -176,7 +176,7 @@ function extractPropsMembers(
  * 从 defineProps<{ ... }>() 内联类型字面量中提取 props
  */
 function extractInlineDefinePropsType(sourceFile: ts.SourceFile): PropDescriptor[] {
-  let props: PropDescriptor[] = []
+  const props: PropDescriptor[] = []
 
   function visit(node: ts.Node): void {
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
@@ -184,18 +184,18 @@ function extractInlineDefinePropsType(sourceFile: ts.SourceFile): PropDescriptor
       // 匹配 defineProps<{ ... }>() 或 withDefaults(defineProps<{ ... }>(), ...)
       const targetCall = fnName === 'defineProps'
         ? node
-        : fnName === 'withDefaults' && node.arguments[0] &&
+        : fnName === 'withDefaults' && node.arguments[0] !== undefined &&
           ts.isCallExpression(node.arguments[0]) &&
           ts.isIdentifier(node.arguments[0].expression) &&
           node.arguments[0].expression.text === 'defineProps'
-          ? node.arguments[0] as ts.CallExpression
+          ? node.arguments[0]
           : null
 
-      if (targetCall?.typeArguments?.[0] && ts.isTypeLiteralNode(targetCall.typeArguments[0])) {
+      if (targetCall?.typeArguments?.[0] !== undefined && ts.isTypeLiteralNode(targetCall.typeArguments[0])) {
         const typeLiteral = targetCall.typeArguments[0]
         for (const member of typeLiteral.members) {
           if (!ts.isPropertySignature(member)) continue
-          if (!member.name || !ts.isIdentifier(member.name)) continue
+          if (!ts.isIdentifier(member.name)) continue
           const desc: PropDescriptor = {
             name: member.name.text,
             type: member.type ? cleanTypeText(member.type.getText(sourceFile)) : 'unknown',
@@ -394,19 +394,19 @@ function extractTuplePayload(
   typeNode: ts.TypeNode,
   sourceFile: ts.SourceFile,
 ): Array<{ name: string; type: string }> {
-  if (ts.isTupleTypeNode(typeNode)) {
-    return typeNode.elements.map(el => {
-      if (ts.isNamedTupleMember(el)) {
-        return {
-          name: el.name.text,
-          type: el.type ? cleanTypeText(el.type.getText(sourceFile)) : 'unknown',
-        }
-      }
-      return { name: '_', type: cleanTypeText(el.getText(sourceFile)) }
-    })
+  if (!ts.isTupleTypeNode(typeNode)) {
+    // 非 tuple 类型，作为整体返回
+    return [{ name: '_', type: cleanTypeText(typeNode.getText(sourceFile)) }]
   }
-  // 非 tuple 类型，作为整体返回
-  return [{ name: '_', type: cleanTypeText(typeNode.getText(sourceFile)) }]
+  return typeNode.elements.map(el => {
+    if (ts.isNamedTupleMember(el)) {
+      return {
+        name: el.name.text,
+        type: cleanTypeText(el.type.getText(sourceFile)),
+      }
+    }
+    return { name: '_', type: cleanTypeText(el.getText(sourceFile)) }
+  })
 }
 
 /** 从调用签名风格提取事件名：(e: 'name', ...) → 'name' */

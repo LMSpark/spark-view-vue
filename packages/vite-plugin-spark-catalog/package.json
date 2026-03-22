@@ -1,0 +1,25 @@
+{
+    "name": "@spark-view/vite-plugin-spark-catalog",
+    "version": "0.3.7",
+    "type": "module",
+    "private": true,
+    "description": "SPARK 组件 Props 目录生成 Vite 插件 — 构建时 AST 提取 + 补充数据合并",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": {
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
+        }
+    },
+    "scripts": {
+        "typecheck": "tsc --noEmit -p tsconfig.json"
+    },
+    "dependencies": {
+        "glob": "^11.0.2"
+    },
+    "peerDependencies": {
+        "typescript": ">=5.0.0",
+        "vite": ">=5.0.0"
+    }
+}
