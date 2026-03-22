@@ -23,7 +23,7 @@ export interface SparkCatalogPluginOptions {
   featurePatterns?: string[]
   /** 排除模式 */
   exclude?: string[]
-  /** 输出文件路径（相对于 root，TS 目录文件） */
+  /** 输出 TS 目录文件路径（相对于 root） */
   outputPath?: string
   /** 输出 JSON 目录文件路径（相对于 root） */
   jsonOutputPath?: string

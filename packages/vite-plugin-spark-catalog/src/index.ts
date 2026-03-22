@@ -1,8 +1,8 @@
 /**
- * SPARK 组件 Props 目录生成 Vite 插件
+ * SPARK 组件目录生成 Vite 插件
  *
- * 构建时从 Vue SFC 源码提取 Props JSDoc，与手工补充数据合并，
- * 生成 component-props-catalog.ts 和 component-catalog.json 供 AI 管线消费。
+ * 构建时通过 vue-component-meta 从 Vue SFC 提取完整的 Props/Emits/Exposed/Slots 类型，
+ * 与手工补充数据合并，生成 component-props-catalog.ts 和 component-catalog.json 供 AI 管线消费。
  *
  * @module @spark-view/vite-plugin-spark-catalog
  */
@@ -10,10 +10,6 @@
 // ── 插件入口 ──
 export { sparkCatalogPlugin } from './plugin'
 export type { SparkCatalogPluginOptions } from './plugin'
-
-// ── AST 提取引擎（旧版，保留向后兼容） ──
-export { extractComponentApi, extractAllComponentApis } from './extract-component-api'
-export type { ComponentApiDescriptor, PropDescriptor, EmitDescriptor } from './extract-component-api'
 
 // ── VCM 提取引擎（vue-component-meta，完整类型解析） ──
 export {
