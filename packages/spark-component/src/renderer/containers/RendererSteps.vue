@@ -56,12 +56,19 @@ import { createToolbarSlotScope } from './useContainerSlotScopes'
 import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 当前步骤 */
   modelValue?: string | number
+  /** 步骤切换回调 */
   onStepChange?: (value: string | number, step: SparkNode, index: number) => void
 }
 

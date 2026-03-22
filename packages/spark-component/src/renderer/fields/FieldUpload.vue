@@ -35,21 +35,37 @@ import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 双向绑定值（文件路径） */
   modelValue?: string
+  /** 上传 URL */
   action?: string
+  /** 接受文件类型 */
   accept?: string
+  /** 上传按钮文案 */
   buttonText?: string
+  /** 自动上传 */
   autoUpload?: boolean
+  /** 显示文件列表 */
   showFileList?: boolean
+  /** 最大文件数 */
   limit?: number
+  /** 列表展示类型 */
   listType?: 'text' | 'picture' | 'picture-card'
+  /** 多文件分隔符 */
   separator?: string
+  /** 占位提示 */
   placeholder?: string
+  /** 只读模式按钮文案 */
   readonlyButtonText?: string
 }
 

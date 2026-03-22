@@ -50,15 +50,25 @@ import type { ToolbarPosition } from './useContainerToolbar'
 import { useFormDetailContainer } from './useFormDetailContainer'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 数据绑定键 */
   dataKey?: string
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 直接传入的 DataView */
   dataView?: DataView | undefined
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
 }
 

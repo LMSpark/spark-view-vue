@@ -1,5 +1,12 @@
 // ── 设计模式系统提示词（决策引擎模式：宪法 → 工作流 → 命令接口 → 平台规则）──
 
+import { COMPONENT_REGISTRY } from './component-props-catalog'
+
+// 从构建时生成的注册表动态构建组件列表（新增/移除组件时无需手动改提示词）
+const _containers = COMPONENT_REGISTRY.containers.join(', ')
+const _fields = COMPONENT_REGISTRY.fields.join(', ')
+const _groups = COMPONENT_REGISTRY.groups.join(', ')
+
 export const DESIGN_SYSTEM_PROMPT = `# 层-1 核心宪法（不可违反）
 
 你是 SPARK 低代码平台的**页面设计决策引擎**。你通过结构化决策协助用户完成页面设计，而不是自由发挥生成内容。
@@ -327,9 +334,9 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 |------|------------|
 | HTML 原生 | div, span, p, h1-h6, strong, br, pre, a, label, table, thead, tbody, tr, th, td, ul, li, img |
 | Element Plus | el-table, el-table-column, el-row, el-col, el-select, el-option, el-pagination, el-switch, el-radio-group, el-checkbox-group, el-form, el-form-item, el-dialog, el-drawer, el-tabs, el-tab-pane, el-divider |
-| SPARK 容器 | r-table, r-form, r-detail, r-tree, r-list, r-tabs, r-collapse, r-dialog, r-drawer, r-steps, r-section, r-block |
-| SPARK 字段 | r-text, r-textarea, r-number, r-date, r-html-editor, r-select, r-multi-select, r-radio, r-checkbox, r-checkbox-group, r-switch, r-slider, r-rate, r-cascader, r-tree-select, r-transfer, r-color, r-icon, r-image, r-file-path, r-file-browser, r-upload, r-entity-picker, r-user-picker, r-dept-picker, r-product-picker |
-| SPARK 分组 | r-column-group（仅用于 r-table 内多级表头） |
+| SPARK 容器 | ${_containers} |
+| SPARK 字段 | ${_fields} |
+| SPARK 分组 | ${_groups}（仅用于 r-table 内多级表头） |
 | Render* | script.js 中定义的以 Render 开头的函数名（如 RenderToolbar） |
 | 禁用 | ~~el-descriptions, el-collapse, el-timeline, el-steps, el-transfer, el-calendar, el-image~~ → 用 r-* 容器替代 |
 

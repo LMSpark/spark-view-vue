@@ -48,23 +48,41 @@ import { useSelectorFieldActions } from './useSelectorFieldActions'
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 双向绑定值 */
   modelValue?: EntityPickerValue
+  /** 选项列表 */
   options?: unknown[]
+  /** 选项标签字段 */
   optionLabelField?: string
+  /** 选项值字段 */
   optionValueField?: string
+  /** 占位提示 */
   placeholder?: string
+  /** 选择按钮文案 */
   buttonText?: string
+  /** 只读模式按钮文案 */
   readonlyButtonText?: string
+  /** 可清除 */
   clearable?: boolean
+  /** 多选 */
   multiple?: boolean
+  /** 可搜索 */
   searchable?: boolean
+  /** 多值分隔符 */
   separator?: string
+  /** 值模式 */
   valueMode?: 'auto' | 'array' | 'comma-string'
+  /** 实体名称 */
   entityName?: string
 }
 

@@ -74,13 +74,21 @@ interface TabsClickEvent {
 }
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 当前激活标签页 */
   modelValue?: string | number
+  /** 标签页切换回调 */
   onTabChange?: (name: string | number) => void
+  /** 标签页点击回调 */
   onTabClick?: (pane: TabsClickEvent, event: Event) => void
 }
 

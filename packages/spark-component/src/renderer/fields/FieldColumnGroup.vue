@@ -39,15 +39,25 @@ import { SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 分组标题（必填） */
   label?: string
+  /** 列宽 */
   width?: string | number
+  /** 最小宽度 */
   minWidth?: string | number
+  /** 固定方向 */
   fixed?: boolean | 'left' | 'right'
+  /** 对齐方式 */
   align?: 'left' | 'center' | 'right'
+  /** 表头对齐 */
   headerAlign?: 'left' | 'center' | 'right'
+  /** 列自定义样式类 */
   className?: string
+  /** 表头自定义样式类 */
   labelClassName?: string
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
 }
 

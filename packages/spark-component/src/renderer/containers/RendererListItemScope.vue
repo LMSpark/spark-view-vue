@@ -43,15 +43,25 @@ import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
+  /** 当前行数据 */
   row: IDataRow
+  /** 子组件配置 */
   children: SparkNode[]
+  /** 父级数据源 */
   dataSource?: IDataSource | null
+  /** 列表项 CSS 类名 */
   itemClass?: string
+  /** 列表项行内样式 */
   itemStyle?: CSSProperties
+  /** 使用卡片包裹 */
   useCard?: boolean
+  /** 卡片阴影模式 */
   cardShadow?: 'always' | 'hover' | 'never'
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
 }
 

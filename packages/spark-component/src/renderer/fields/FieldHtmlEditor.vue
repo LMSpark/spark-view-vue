@@ -56,12 +56,19 @@ import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 双向绑定值（HTML 字符串） */
   modelValue?: string
+  /** 编辑器高度行数 */
   rows?: number
 }
 

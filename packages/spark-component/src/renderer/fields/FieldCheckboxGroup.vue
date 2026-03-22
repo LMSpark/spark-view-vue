@@ -25,15 +25,25 @@ import FieldContextRenderer from './FieldContextRenderer.vue'
 type MultiValue = Array<string | number | boolean>
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 双向绑定值（数组） */
   modelValue?: MultiValue
+  /** 选项列表 */
   options?: unknown[]
+  /** 选项标签字段 */
   optionLabelField?: string
+  /** 选项值字段 */
   optionValueField?: string
+  /** 按钮风格 */
   buttonStyle?: boolean
 }
 

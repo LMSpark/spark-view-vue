@@ -60,15 +60,25 @@ import type { IDataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from './columnFormRules'
 
 interface Props {
+  /** 渲染上下文（table / form / detail / tree） */
   context: string
+  /** 显示标签 */
   displayLabel: string
+  /** 字段绑定名 */
   fieldName: string
+  /** 列宽 */
   width: number | undefined
+  /** 合并后的子组件配置 */
   mergedChildren: SparkNode[]
+  /** 当前字段是否隐藏 */
   isCurrentFieldHidden: boolean
+  /** 当前显示值 */
   currentDisplayValue: string
+  /** 表格行级隐藏判断 */
   isTableCellHidden: (row: IDataRow) => boolean
+  /** 表格行级显示值获取 */
   getTableCellDisplayValue: (row: IDataRow) => string
+  /** 表单验证规则 */
   validationRules: FormItemRule[]
 }
 

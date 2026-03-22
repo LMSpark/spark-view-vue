@@ -68,12 +68,19 @@ import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 type CollapseValue = string | number | Array<string | number>
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: 'top' | 'bottom' | 'left' | 'right'
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 当前展开的面板 */
   modelValue?: CollapseValue
+  /** 展开/折叠切换回调 */
   onChange?: (value: CollapseValue) => void
 }
 

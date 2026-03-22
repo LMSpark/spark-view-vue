@@ -36,18 +36,31 @@ import type { FieldContext } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
+  /** 表单数据模型 */
   model: Record<string, unknown>
+  /** 字段组件配置列表 */
   configs: SparkNode[]
+  /** 字段语境（table/form/detail） */
   context?: FieldContext
+  /** 父级数据源 */
   dataSource?: IDataSource | DataView | null
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
+  /** 自适应最小宽度 */
   autoFitMinWidth?: string
+  /** 默认跨列数 */
   defaultColSpan?: number
+  /** 标签位置 */
   labelPosition?: 'top' | 'left' | 'right'
+  /** 标签宽度 */
   labelWidth?: string
+  /** 内联模式 */
   inline?: boolean
+  /** 紧凑模式 */
   compact?: boolean
 }
 

@@ -64,22 +64,39 @@ import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 抽屉标题 */
   title?: string
+  /** 控制显隐（v-model） */
   modelValue?: boolean
+  /** 头部操作按钮配置 */
   headerActions?: SparkNode[]
+  /** 底部操作按钮配置 */
   footerActions?: SparkNode[]
+  /** 头部 CSS 类名 */
   headerClass?: string
+  /** 头部操作区 CSS 类名 */
   headerActionsClass?: string
+  /** 内容区 CSS 类名 */
   bodyClass?: string
+  /** 底部 CSS 类名 */
   footerClass?: string
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
+  /** 打开回调 */
   onOpen?: () => void
+  /** 关闭回调 */
   onClose?: () => void
+  /** 打开动画结束回调 */
   onOpened?: () => void
+  /** 关闭动画结束回调 */
   onClosed?: () => void
 }
 

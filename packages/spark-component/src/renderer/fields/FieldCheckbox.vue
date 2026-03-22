@@ -19,14 +19,23 @@ import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 双向绑定值 */
   modelValue?: boolean
+  /** 选中时显示文案 */
   checkedText?: string
+  /** 未选时显示文案 */
   uncheckedText?: string
+  /** 复选框右侧文案 */
   checkboxText?: string
 }
 

@@ -101,29 +101,53 @@ import type { ToolbarPosition } from './useContainerToolbar'
 import { createRowActionSlotScope, createToolbarSlotScope } from './useContainerSlotScopes'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 数据绑定键 */
   dataKey?: string
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 直接传入的 DataView */
   dataView?: DataView | undefined
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 列表项操作按钮配置 */
   itemActions?: SparkNode[]
+  /** 列表项操作位置 */
   itemActionsPosition?: LateralActionPosition
+  /** 操作区 CSS 类名 */
   itemActionsClass?: string
+  /** 列数 */
   columns?: number
+  /** 列表项间距 */
   gap?: number | string
+  /** 最小项宽度 */
   minItemWidth?: string
+  /** 行唯一键字段 */
   rowKey?: string
+  /** 空数据提示文案 */
   emptyText?: string
+  /** 列表项 CSS 类名 */
   itemClass?: string
+  /** 列表项行内样式 */
   itemStyle?: CSSProperties
+  /** 使用卡片包裹 */
   useCard?: boolean
+  /** 卡片阴影模式 */
   cardShadow?: 'always' | 'hover' | 'never'
+  /** CSS Grid 列数 */
   gridColumns?: number
+  /** 栅格间距 */
   gridGap?: number | string
+  /** 栅格行高 */
   gridAutoRows?: string
+  /** 项跨列数 */
   itemColSpan?: number
+  /** 项跨行数 */
   itemRowSpan?: number
 }
 

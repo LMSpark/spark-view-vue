@@ -40,15 +40,25 @@ import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 双向绑定值，范围模式时为元组 */
   modelValue?: number | [number | undefined, number | undefined]
+  /** 最小值 */
   min?: number
+  /** 最大值 */
   max?: number
+  /** 小数精度 */
   precision?: number
+  /** 筛选模式（'range' 启用范围输入） */
   filterMode?: string
 }
 

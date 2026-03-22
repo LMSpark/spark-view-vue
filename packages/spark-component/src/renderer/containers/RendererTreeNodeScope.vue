@@ -12,9 +12,13 @@ import { DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 树节点数据 */
   data: Record<string, unknown>
+  /** el-tree 节点对象 */
   node?: unknown
+  /** 父级数据源 */
   dataSource?: IDataSource | null
 }
 

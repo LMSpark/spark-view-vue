@@ -131,22 +131,35 @@ interface ElTreeComponent {
 }
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
-  /** DataKey 格式：scope@tableName@viewId@field （优先） */
+  /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
-  /** bindRules 从 rule.children 提取的子组件配置 */
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 静态树节点数据（优先用 dataKey） */
   data?: TreeNode[]
+  /** 动态数据源 */
   dataSource?: IDataSource | DataView | undefined
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 节点操作按钮配置 */
   nodeActions?: SparkNode[]
+  /** 节点操作位置 */
   nodeActionsPosition?: NodeActionsPosition
+  /** 节点操作区 CSS 类名 */
   nodeActionsClass?: string
+  /** 节点点击回调 */
   onNodeClick?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
+  /** 节点展开回调 */
   onNodeExpand?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
+  /** 节点折叠回调 */
   onNodeCollapse?: (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => void
+  /** 透传到 el-tree 的额外属性 */
   [key: string]: unknown
 }
 

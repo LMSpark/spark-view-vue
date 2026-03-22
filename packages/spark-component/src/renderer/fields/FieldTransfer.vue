@@ -24,18 +24,31 @@ import FieldContextRenderer from './FieldContextRenderer.vue'
 type TransferValue = Array<string | number>
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 双向绑定值（已选值数组） */
   modelValue?: TransferValue
+  /** 数据源（左侧候选列表） */
   options?: unknown[]
+  /** 选项标签字段 */
   optionLabelField?: string
+  /** 选项值字段 */
   optionValueField?: string
+  /** 左右面板标题 */
   titles?: [string, string]
+  /** 可搜索 */
   filterable?: boolean
+  /** 搜索框占位符 */
   filterPlaceholder?: string
+  /** 右侧排序方式 */
   targetOrder?: 'original' | 'push' | 'unshift'
 }
 

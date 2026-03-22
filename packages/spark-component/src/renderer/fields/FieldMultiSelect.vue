@@ -34,20 +34,35 @@ import FieldContextRenderer from './FieldContextRenderer.vue'
 type MultiValue = Array<string | number | boolean>
 
 interface Props {
+  /** SPARK 配置驱动 */
   config?: SparkNode
+  /** 字段绑定名 */
   field?: string
+  /** 显示标签 */
   label?: string
+  /** r-table 内列宽 */
   width?: number
+  /** bindRules 提取的子组件配置 */
   sparkChildren?: SparkNode[]
+  /** 双向绑定值（数组） */
   modelValue?: MultiValue
+  /** 选项列表 */
   options?: unknown[]
+  /** 选项标签字段 */
   optionLabelField?: string
+  /** 选项值字段 */
   optionValueField?: string
+  /** 占位提示 */
   placeholder?: string
+  /** 可清除 */
   clearable?: boolean
+  /** 可搜索 */
   filterable?: boolean
+  /** 折叠已选标签 */
   collapseTags?: boolean
+  /** 折叠标签提示 */
   collapseTagsTooltip?: boolean
+  /** 最大显示标签数 */
   maxCollapseTags?: number
 }
 

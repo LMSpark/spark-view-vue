@@ -235,24 +235,43 @@ interface Props {
   sparkChildren?: SparkNode[]
   /** 直接传入的 DataView（备用） */
   dataView?: DataView | undefined
+  /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
+  /** 工具栏位置 */
   toolbarPosition?: ToolbarPosition
+  /** 工具栏 CSS 类名 */
   toolbarClass?: string
+  /** 筛选项字段列表 */
   filterColumns?: string[]
+  /** 筛选区 CSS 类名 */
   filterClass?: string
+  /** 筛选区可折叠 */
   filterCollapsible?: boolean
+  /** 筛选区默认折叠 */
   filterDefaultCollapsed?: boolean
+  /** 筛选区最小宽度 */
   filterAutoFitMinWidth?: string
+  /** 每项跨列数 */
   filterItemSpan?: number
+  /** 筛选栅格总列数 */
   filterGridColumns?: number
+  /** 筛选栅格间距 */
   filterGridGap?: number | string
+  /** 筛选栅格行高 */
   filterGridAutoRows?: string
+  /** 行操作按钮配置 */
   rowActions?: SparkNode[]
+  /** 行操作列位置 */
   rowActionsPosition?: RowActionsPosition
+  /** 行操作列标题 */
   rowActionsLabel?: string
+  /** 行操作列宽度 */
   rowActionsWidth?: string | number
+  /** 行操作列对齐方式 */
   rowActionsAlign?: 'left' | 'center' | 'right'
+  /** 行操作列固定方向 */
   rowActionsFixed?: boolean | 'left' | 'right'
+  /** 行操作列 CSS 类名 */
   rowActionsClass?: string
 }
 
