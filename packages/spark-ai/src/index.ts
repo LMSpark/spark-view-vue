@@ -126,7 +126,18 @@ export type {
 } from './response-pipeline'
 
 // ── Component Props Catalog ──────────────────────────────────────────────────
-export { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
+export { COMPONENT_PROPS_CATALOG, COMPONENT_CATALOG } from './component-props-catalog'
+export type {
+  ComponentCatalog,
+  ComponentEntry,
+  ComponentRegistry,
+  PropEntry,
+  EmitEntry,
+  CapabilityInfo,
+  PlatformConstraints,
+  NestingRule,
+  RootFieldEntry,
+} from './catalog-types'
 
 // ── Shared Constants ─────────────────────────────────────────────────────────
 export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'

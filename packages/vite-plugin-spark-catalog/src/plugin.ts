@@ -9,6 +9,7 @@
 
 import type { Plugin } from 'vite'
 import { generatePropsCatalog } from './catalog-generator'
+import { generateJsonCatalog } from './json-catalog-generator'
 import { createLogger, normalizePath } from './utils'
 
 const logger = createLogger('spark-catalog')
@@ -22,8 +23,10 @@ export interface SparkCatalogPluginOptions {
   featurePatterns?: string[]
   /** 排除模式 */
   exclude?: string[]
-  /** 输出文件路径（相对于 root） */
+  /** 输出文件路径（相对于 root，TS 目录文件） */
   outputPath?: string
+  /** 输出 JSON 目录文件路径（相对于 root） */
+  jsonOutputPath?: string
   /** 启用详细日志 */
   verbose?: boolean
 }
@@ -40,7 +43,14 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
 
     configResolved(resolvedConfig) {
       root = resolvedConfig.root
-      generatePropsCatalog(root, options)
+      const jsonOptions = {
+        featurePatterns: options.featurePatterns,
+        exclude: options.exclude,
+        outputPath: options.jsonOutputPath,
+        verbose: options.verbose,
+      }
+      const catalog = generateJsonCatalog(root, jsonOptions)
+      generatePropsCatalog(root, options, catalog)
     },
 
     handleHotUpdate({ file }) {
@@ -57,7 +67,14 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
 
       if (isRelevant) {
         logger.debug('🔄 检测到组件变更，重新生成 Props 目录...')
-        generatePropsCatalog(root, options)
+        const jsonOptions = {
+          featurePatterns: options.featurePatterns,
+          exclude: options.exclude,
+          outputPath: options.jsonOutputPath,
+          verbose: options.verbose,
+        }
+        const catalog = generateJsonCatalog(root, jsonOptions)
+        generatePropsCatalog(root, options, catalog)
       }
     },
   }

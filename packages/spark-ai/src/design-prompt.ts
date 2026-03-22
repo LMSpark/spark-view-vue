@@ -1,11 +1,12 @@
 // ── 设计模式系统提示词（决策引擎模式：宪法 → 工作流 → 命令接口 → 平台规则）──
 
-import { COMPONENT_REGISTRY } from './component-props-catalog'
+import { COMPONENT_CATALOG } from './component-props-catalog'
 
-// 从构建时生成的注册表动态构建组件列表（新增/移除组件时无需手动改提示词）
-const _containers = COMPONENT_REGISTRY.containers.join(', ')
-const _fields = COMPONENT_REGISTRY.fields.join(', ')
-const _groups = COMPONENT_REGISTRY.groups.join(', ')
+// 从结构化目录动态构建组件列表（新增/移除组件时无需手动改提示词）
+const _reg = COMPONENT_CATALOG.registry
+const _containers = _reg.containers.join(', ')
+const _fields = _reg.fields.join(', ')
+const _groups = _reg.groups.join(', ')
 
 export const DESIGN_SYSTEM_PROMPT = `# 层-1 核心宪法（不可违反）
 

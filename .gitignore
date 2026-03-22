@@ -40,3 +40,6 @@ data/sparkdb.mv.db
 data/
 temp-*.json
 .eslintcache
+
+# 自动生成的组件目录（由 vite-plugin-spark-catalog 在 build/dev 时生成）
+packages/spark-ai/src/component-catalog.json

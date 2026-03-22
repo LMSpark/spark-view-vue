@@ -24,6 +24,7 @@ import {
   parseSkillMeta,
   createLogger,
 } from './utils'
+import type { ComponentCatalog } from './component-catalog-schema'
 
 const logger = createLogger('spark-catalog')
 
@@ -161,8 +162,15 @@ function formatAstPropsEntry(
 
 /**
  * 生成 component-props-catalog.ts 并写入指定路径
+ *
+ * @param jsonCatalog 可选的结构化目录数据（由 generateJsonCatalog 返回），
+ *   传入时会额外输出 COMPONENT_CATALOG typed constant。
  */
-export function generatePropsCatalog(root: string, options: CatalogGeneratorOptions = {}): void {
+export function generatePropsCatalog(
+  root: string,
+  options: CatalogGeneratorOptions = {},
+  jsonCatalog?: ComponentCatalog,
+): void {
   const {
     featurePatterns = [],
     exclude = [],
@@ -262,6 +270,20 @@ export function generatePropsCatalog(root: string, options: CatalogGeneratorOpti
   }
 
   // 7. 输出文件
+  const catalogSection = jsonCatalog !== undefined
+    ? `import type { ComponentCatalog } from './catalog-types'
+
+/**
+ * 结构化组件目录（SSoT）
+ *
+ * 由 json-catalog-generator 构建，包含完整的 Props 类型、Emits、能力链、平台约束等。
+ * design-session / design-prompt 优先从此对象查询，扁平 COMPONENT_PROPS_CATALOG 保留向后兼容。
+ */
+export const COMPONENT_CATALOG: ComponentCatalog = ${JSON.stringify(jsonCatalog, null, 2)}
+
+`
+    : ''
+
   const output = `/**
  * SPARK 组件 Props 目录
  *
@@ -274,7 +296,7 @@ export function generatePropsCatalog(root: string, options: CatalogGeneratorOpti
  * 生成时间：${new Date().toISOString()}
  * 条目数量：${sortedKeys.length}（AST 字段: ${Object.keys(astEntries).length}, 手工容器/概念: ${Object.keys(CATALOG_OVERRIDES).length}）
  */
-export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
+${catalogSection}export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
 ${catalogLines.join(',\n')},
 }
 
