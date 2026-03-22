@@ -684,7 +684,7 @@ export class AIPageLoop {
     this.options = {
       aiEndpoint: options.aiEndpoint,
       onFilesUpdated: options.onFilesUpdated ?? (() => {}),
-      onError: options.onError ?? ((e) => { if (import.meta.env.DEV) console.error('[AIPageLoop]', e) }),
+      onError: options.onError ?? ((e) => { console.error('[AIPageLoop]', e) }),
       logCollectDelay: options.logCollectDelay ?? 3000,
       skillCatalog: options.skillCatalog ?? undefined,
       includeGlobalDiagnostics: options.includeGlobalDiagnostics ?? true,
@@ -785,19 +785,30 @@ export class AIPageLoop {
       }
     }
 
-    // 写入文件
+    // 写入文件（关键路径，失败传播给 onError）
     if (Object.keys(validatedResp.files).length > 0) {
-      const written = await writePageFiles(pageId, validatedResp.files)
-      this.options.onFilesUpdated(pageId, written)
+      try {
+        const written = await writePageFiles(pageId, validatedResp.files)
+        this.options.onFilesUpdated(pageId, written)
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err))
+        this.options.onError(error)
+        // 文件写入失败仍返回响应（包含 AI 生成的内容）
+      }
     }
 
-    // 导航自动注册（仅 generate 触发）
+    // 导航自动注册（仅 generate 触发，失败不阻断返回）
     if (action === 'generate' && this.options.autoRegisterNav) {
-      const navResult = await registerPageNavigation(pageId, {
-        ...(prompt ? { prompt } : {}),
-      })
-      validatedResp.navigationResult = navResult
-      this.options.onNavigationRegistered?.(pageId, navResult)
+      try {
+        const navResult = await registerPageNavigation(pageId, {
+          ...(prompt ? { prompt } : {}),
+        })
+        validatedResp.navigationResult = navResult
+        this.options.onNavigationRegistered?.(pageId, navResult)
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err))
+        this.options.onError(error)
+      }
     }
 
     return validatedResp

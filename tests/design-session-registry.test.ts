@@ -1713,7 +1713,7 @@ var notAFunction = 'test'
       })
 
       expect(session.uiRegistry.cssClassesDefined.sort()).toEqual([
-        '.custom-border', '.custom-shadow', '.flex-layout', '.order-highlight',
+        'custom-border', 'custom-shadow', 'flex-layout', 'order-highlight',
       ])
     })
 
@@ -1729,7 +1729,7 @@ var notAFunction = 'test'
         content, step: 'B5', acceptedAt: 't',
       })
 
-      expect(session.uiRegistry.cssClassesDefined).toEqual(['.my-class'])
+      expect(session.uiRegistry.cssClassesDefined).toEqual(['my-class'])
     })
 
     it('handles empty CSS', () => {

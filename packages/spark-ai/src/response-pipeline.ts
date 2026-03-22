@@ -16,6 +16,7 @@ import type {
   SkillQueryRequest,
 } from './design-session'
 import { resolveSkillQuery } from './skill-catalog'
+import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'
 import type { PersistedDesignSession } from './session-state'
 import {
   getRegisteredTableNames,
@@ -50,6 +51,8 @@ export interface PipelineContext {
   compareBlocks: CompareBlock[]
   /** 技能/模式查询请求（@@query:skill-list / @@query:pattern）*/
   skillQueryRequests: SkillQueryRequest[]
+  /** interaction 提案中发现的函数声明名 */
+  discoveredFunctions: string[]
   validationErrors: ValidationFeedback[]
   autoMessages: AutoMessage[]
   metadata: Record<string, unknown>
@@ -84,6 +87,7 @@ export class ResponsePipeline {
       clarifyBlocks: [],
       compareBlocks: [],
       skillQueryRequests: [],
+      discoveredFunctions: [],
       validationErrors: [],
       autoMessages: [],
       metadata: {},
@@ -162,17 +166,6 @@ export class ProposalValidatorProcessor implements ResponseProcessor {
     return true
   }
 }
-
-/** DataKey 格式校验正则 — 2段或3段 @-分隔 */
-const DATAKEY_RE = /^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\.[\w.]+)?$/
-
-/** 组件类型白名单前缀 */
-const VALID_TYPE_PREFIXES = ['r-', 'el-', 'Render']
-const HTML_TYPES = new Set([
-  'div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'strong', 'br', 'pre', 'a', 'label', 'table', 'thead', 'tbody',
-  'tr', 'th', 'td', 'ul', 'li', 'img',
-])
 
 /**
  * 处理器 3: DataKey 格式 / 组件类型 语义校验
@@ -428,16 +421,18 @@ export class RegistryValidatorProcessor implements ResponseProcessor {
         if (tbl) currentTable = tbl
       }
 
-      // 检查 name 字段是否在表的列定义中（使用当前表名或继承表名）
-      const name = typeof n['name'] === 'string' ? n['name'] : null
-      if (name && currentTable && tableNames.has(currentTable)) {
+      // 检查 field（SparkNode v3）或 name（兼容 v2）字段是否在表的列定义中
+      const fieldName = typeof n['field'] === 'string' ? n['field']
+        : typeof n['name'] === 'string' ? n['name']
+        : null
+      if (fieldName && currentTable && tableNames.has(currentTable)) {
         const cols = getRegisteredColumnNames(session, currentTable)
-        if (cols.length > 0 && !cols.includes(name)) {
+        if (cols.length > 0 && !cols.includes(fieldName)) {
           ctx.validationErrors.push({
             severity: 'warning',
             proposalName: proposal.title,
             checkType: 'table-reference',
-            message: `字段「${name}」不在表「${currentTable}」的列定义中`,
+            message: `字段「${fieldName}」不在表「${currentTable}」的列定义中`,
             suggestion: `表「${currentTable}」已有列：${cols.join(', ')}`,
           })
         }
@@ -549,11 +544,7 @@ export class RegistryValidatorProcessor implements ResponseProcessor {
 
     // 将发现的函数名暂存到 context 以供后续处理器使用
     if (declaredFunctions.length > 0) {
-      const existing = (ctx as unknown as Record<string, unknown>)['_discoveredFunctions'] as string[] | undefined
-      ;(ctx as unknown as Record<string, unknown>)['_discoveredFunctions'] = [
-        ...(existing ?? []),
-        ...declaredFunctions,
-      ]
+      ctx.discoveredFunctions.push(...declaredFunctions)
     }
   }
 

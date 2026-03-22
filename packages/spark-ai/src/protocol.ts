@@ -219,15 +219,50 @@ export function parseToolPayload<T>(block: ToolProtocolBlock): T | null {
 // ── 通用工具 ──────────────────────────────────────────────────────────────────
 
 /**
- * 从文本中提取第一个 JSON 对象（容错，允许 JSON 前后有非 JSON 文本）
+ * 从文本中提取第一个 JSON 对象（正向括号深度匹配，容错允许 JSON 前后有非 JSON 文本）
+ *
+ * 使用括号计数而非 lastIndexOf，避免多个 JSON 对象共存时跨对象误匹配。
  */
 export function extractFirstJsonObject(text: string): string | null {
   const start = text.indexOf('{')
   if (start === -1) return null
 
+  let depth = 0
+  let inString = false
+  let escape = false
+
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i]
+
+    if (escape) {
+      escape = false
+      continue
+    }
+
+    if (ch === '\\' && inString) {
+      escape = true
+      continue
+    }
+
+    if (ch === '"') {
+      inString = !inString
+      continue
+    }
+
+    if (inString) continue
+
+    if (ch === '{') depth++
+    else if (ch === '}') {
+      depth--
+      if (depth === 0) {
+        return text.slice(start, i + 1)
+      }
+    }
+  }
+
+  // 未找到匹配的闭合括号 → 回退到 lastIndexOf（不完整 JSON 容错）
   const end = text.lastIndexOf('}')
   if (end <= start) return null
-
   return text.slice(start, end + 1)
 }
 

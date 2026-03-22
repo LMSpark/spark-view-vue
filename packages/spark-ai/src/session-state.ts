@@ -693,6 +693,9 @@ function parseTableDef(raw: unknown): RegistryTable | null {
     }
   }
 
+  // 零列表定义无意义，拒绝注册
+  if (columns.length === 0) return null
+
   return {
     columns,
     relations,
@@ -864,7 +867,7 @@ function applyStyle(
     if (!cls) continue
     // 排除常见伪类/伪元素
     if (!cls.startsWith('el-') && !cls.startsWith('is-')) {
-      cssClassesDefined.push(`.${cls}`)
+      cssClassesDefined.push(cls)
     }
   }
   if (cssClassesDefined.length > 0) {
@@ -1024,10 +1027,10 @@ export function runFullValidation(session: PersistedDesignSession): FullValidati
   const tableNames = new Set(getRegisteredTableNames(session))
   const ui = session.uiRegistry
 
-  // 1. CSS 引用但未定义
-  const definedClasses = new Set(ui.cssClassesDefined)
+  // 1. CSS 引用但未定义（两端均为裸类名，无 '.' 前缀）
+  const definedClasses = new Set(ui.cssClassesDefined.map((c) => c.startsWith('.') ? c.slice(1) : c))
   for (const ref of ui.cssClassesReferenced) {
-    const normalized = ref.startsWith('.') ? ref : `.${ref}`
+    const normalized = ref.startsWith('.') ? ref.slice(1) : ref
     if (!definedClasses.has(normalized) && !isExternalCssClass(normalized)) {
       issues.push({
         severity: 'warning',
@@ -1039,10 +1042,11 @@ export function runFullValidation(session: PersistedDesignSession): FullValidati
 
   // 2. CSS 定义但未引用
   const referencedClasses = new Set(
-    ui.cssClassesReferenced.map((c) => c.startsWith('.') ? c : `.${c}`),
+    ui.cssClassesReferenced.map((c) => c.startsWith('.') ? c.slice(1) : c),
   )
   for (const def of ui.cssClassesDefined) {
-    if (!referencedClasses.has(def)) {
+    const normalizedDef = def.startsWith('.') ? def.slice(1) : def
+    if (!referencedClasses.has(normalizedDef)) {
       issues.push({
         severity: 'warning',
         category: 'css-mismatch',
@@ -1085,6 +1089,6 @@ export function runFullValidation(session: PersistedDesignSession): FullValidati
 
 /** 判断是否为外部 CSS 类（框架组件类，不需要定义） */
 function isExternalCssClass(cls: string): boolean {
-  // Element Plus / VXE 等已知前缀
-  return cls.startsWith('.el-') || cls.startsWith('.vxe-') || cls.startsWith('.is-')
+  // Element Plus / VXE 等已知前缀（cls 为裸类名，无 '.' 前缀）
+  return cls.startsWith('el-') || cls.startsWith('vxe-') || cls.startsWith('is-')
 }

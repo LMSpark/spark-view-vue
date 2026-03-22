@@ -34,18 +34,7 @@ interface RuleNodeSnapshot {
   path: string
 }
 
-const DATAKEY_RE = /^(#[\w-]+@)?[\w-]+@([\w-]+@)?(rows|currentRow|selectedRows|summaryRow|selectionSummaryRow)(\.[\w.]+)?$/
-
-const HTML_TYPES = new Set([
-  'a', 'article', 'aside', 'b', 'blockquote', 'br', 'button', 'code', 'del',
-  'details', 'div', 'em', 'figcaption', 'figure', 'footer', 'h1', 'h2', 'h3',
-  'h4', 'h5', 'h6', 'header', 'hr', 'i', 'img', 'input', 'label', 'li', 'main',
-  'nav', 'ol', 'option', 'p', 'pre', 'section', 'select', 'small', 'span',
-  'strong', 'summary', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th',
-  'thead', 'tr', 'u', 'ul',
-])
-
-const TYPE_PREFIXES = ['r-', 'el-', 'Render', 'spark-']
+import { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'
 
 const EMPTY_SUMMARY: ConfigValidationSummary = {
   total: 0,
@@ -113,7 +102,7 @@ function collectRuleNodes(value: unknown, path: string, out: RuleNodeSnapshot[])
 
 function isLikelyComponentType(typeName: string): boolean {
   if (HTML_TYPES.has(typeName)) return true
-  if (TYPE_PREFIXES.some(prefix => typeName.startsWith(prefix))) return true
+  if (VALID_TYPE_PREFIXES.some(prefix => typeName.startsWith(prefix))) return true
   return /^[a-z][a-z0-9-]*$/u.test(typeName) && typeName.includes('-')
 }
 

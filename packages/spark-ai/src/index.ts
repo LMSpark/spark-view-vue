@@ -128,6 +128,9 @@ export type {
 // ── Component Props Catalog ──────────────────────────────────────────────────
 export { COMPONENT_PROPS_CATALOG } from './component-props-catalog'
 
+// ── Shared Constants ─────────────────────────────────────────────────────────
+export { DATAKEY_RE, HTML_TYPES, VALID_TYPE_PREFIXES } from './shared-constants'
+
 // ── Skill Catalog (设计模式库) ──────────────────────────────────────────────
 export { SKILL_CATALOG, SKILL_CATEGORY_INDEX, resolveSkillQuery } from './skill-catalog'
 export type { SkillCatalogEntry, SkillCategory } from './skill-catalog'
