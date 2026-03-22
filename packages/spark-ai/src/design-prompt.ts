@@ -140,7 +140,7 @@ SPARK AI 使用 \`@@...@@end\` 定界块作为**结构化通信信道**。每种
 |------|------|------|
 | \`data-model\`   | pagedata.json tables 片段（JSON） | 表结构、字段定义、DataRelation |
 | \`view-plan\`    | 视图映射表（Markdown 表格）       | DataView 规划（Pass B1 专用） |
-| \`ui-structure\` | rule.json 片段（JSON 数组）       | SparkNode v3 组件树 |
+| \`ui-structure\` | rule.json 片段（JSON 数组）       | SparkNode 组件树 |
 | \`interaction\`  | script.js 代码                   | 事件处理、数据操作逻辑 |
 | \`api-config\`   | api 端点配置（JSON）               | 远程数据接口配置 |
 | \`style\`        | CSS 代码                          | 视觉样式 |
@@ -213,13 +213,13 @@ r-table, r-form, r-select
 
 \`\`\`
 @@query:component-api
-r-table#meta.filter, r-table#meta.actions, builtin-action, @list
+r-table#filter, r-table#actions, builtin-action, @list
 @@end
 \`\`\`
 
 查询规则：
 - \`组件名\`：返回该组件完整 API
-- \`组件名#片段\`：返回命中该片段的 API 行（例如 \`r-table#meta.filter\`）
+- \`组件名#片段\`：返回命中该片段的 API 行（例如 \`r-table#filter\`）
 - \`@list\`：返回当前可查询的组件 API 目录索引
 - 组合别名仍可用：\`r-table-series\` / \`context-aware-fields\` / \`r-crud\`
 
@@ -258,7 +258,7 @@ master-detail, search-filter
 
 # 层-4 SPARK 平台规则（提案内容必须遵守）
 
-## SparkNode v3 节点语法（核心语法）
+## SparkNode 节点语法（核心语法）
 
 rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分为两种形态：
 
@@ -275,37 +275,33 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 }
 \`\`\`
 
-**形态 B — SPARK 语义节点**（r-* 容器/字段组件，含 meta 7 域）：
+**形态 B — SPARK 语义节点**（r-* 容器/字段组件，含根级语义字段）：
 
 \`\`\`jsonc
 {
   "type": "r-table",               // r-* 开头表示 SPARK 组件
+  "dataKey": "Orders@rows",        // 数据绑定键（根级）
   "props": {                       // 组件原生属性（border/stripe/height 等）
     "border": true,
-    "style": { "margin": "16px" }  // ⚠️ style/class 必须写在 props 内，禁止放节点顶层
+    "style": { "margin": "16px" }  // ⚠️ style/class 推荐写在 props 内
   },
-  "meta": {                        // SPARK 语义域（7 域，按需填写，无需全部出现）
-    "data": {
-      "dataKey": "Orders@rows",    // 数据绑定键（容器组件用）
-      "field": "fieldName"         // 字段绑定名（r-* 字段组件用，映射到行字段）
-    },
-    "filter": {
-      "items": ["name", "status"], // 字符串简写 或 FilterItem 对象
-      "logic": "and",              // 多条件默认逻辑：and | or
-      "collapsible": true,
-      "on": { "search": "handleSearch", "reset": "handleReset" }
-    },
-    "toolbar": {
-      "items": [ /* SparkNode[] */ ],
-      "position": "top"
-    },
-    "actions": {
-      "items": [ /* SparkNode[] */ ],
-      "label": "操作", "width": 160, "position": "right"
-    },
-    "state":    { "visible": true, "disabled": false },
-    "behavior": { "on": { "rowDblclick": "handleDblclick" } }
+  "on": {                          // 事件绑定（根级，key 为 camelCase 事件名）
+    "rowDblclick": "handleDblclick"
   },
+  "filter": {                      // 筛选配置（根级）
+    "columns": ["name", "status"],
+    "collapsible": true
+  },
+  "toolbar": {                     // 工具栏配置（根级）
+    "items": [ /* SparkNode[] */ ],
+    "position": "top"
+  },
+  "actions": {                     // 行操作列配置（根级）
+    "items": [ /* SparkNode[] */ ],
+    "label": "操作", "width": 160, "position": "right"
+  },
+  "visible": true,                 // 显示/禁用控制（根级）
+  "disabled": false,
   "children": [ /* r-* 字段组件，递归 SparkNode */ ]
 }
 \`\`\`
@@ -315,13 +311,12 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 \`\`\`jsonc
 {
   "type": "r-select",
-  "props": { "label": "状态", "width": 120 },
-  "meta": {
-    "data": {
-      "field": "status",
-      "options": [{ "label": "启用", "value": 1 }, { "label": "禁用", "value": 0 }]
-    },
-    "layout": { "colSpan": 8 }
+  "field": "status",
+  "props": {
+    "label": "状态",
+    "width": 120,
+    "colSpan": 8,
+    "options": [{ "label": "启用", "value": 1 }, { "label": "禁用", "value": 0 }]
   }
 }
 \`\`\`
@@ -353,12 +348,13 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 
 **速记**：
 - \`type\` — 是什么组件
-- \`props\` — 原生属性（border / size / style / class）
-- \`meta.data.dataKey\` — 绑什么数据（容器）；\`meta.data.field\` — 对应哪个字段（字段组件）
-- \`meta.filter\` — 筛选配置（items / logic / collapsible / on）
-- \`meta.toolbar / meta.actions\` — 操作按钮
-- \`meta.behavior.on\` — 事件绑定（→ script.js 函数名）
-- \`meta.state\` — 显示/禁用控制
+- \`props\` — 组件属性（border / size / style / class / colSpan）
+- \`dataKey\` — 绑什么数据（容器级，根级字段）
+- \`field\` — 对应哪个字段（字段组件，根级字段）
+- \`filter\` — 筛选配置（columns / collapsible）
+- \`toolbar / actions\` — 操作按钮（根级字段）
+- \`on\` — 事件绑定（根级字段，→ script.js 函数名）
+- \`visible / disabled\` — 显示/禁用控制（根级字段）
 - \`children\` — 子组件（递归 SparkNode）
 
 ## 防幻觉自检清单（每个 proposal 生成前必须通过）
@@ -366,14 +362,14 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 1. dataKey 表名是否与 data-model 提案的表名**大小写一致**？
 2. 组件 type 是否在已注册列表内（r-* / el-* / HTML 标签 / Render*）？
 3. Render* 内 h() 是否**仅使用原生 HTML 标签**？
-4. script.js 函数名是否与 \`meta.behavior.on\` / type 引用**一一对应**？
+4. script.js 函数名是否与 \`on\`（根级事件绑定）中的引用**一一对应**？
 5. 是否引用了禁用组件（el-descriptions / el-collapse / el-timeline / el-steps / el-transfer）？
 6. relation 是否仅使用标准字段（parentTable/parentField/childTable/childField/dependencyType）？
 7. el-table 是否声明了 \`border: true\`？需高亮时是否加 \`highlightCurrentRow: true\`？
-8. style / class 是否在 \`props\` 内（禁止写在节点顶层）？
-9. r-* 组件的数据绑定是否写在 \`meta.data\` 内？事件是否写在 \`meta.behavior.on\` 内？
+8. style / class 是否在 \`props\` 内？
+9. r-* 容器的数据绑定是否写在根级 \`dataKey\`？事件是否写在根级 \`on\`？
 10. view-plan 表格中引用的表名是否全部存在于名册A？
-11. ui-structure 中 \`meta.data.field\` 的字段名是否存在于对应表的列定义中？
+11. ui-structure 中 \`field\` 的字段名是否存在于对应表的列定义中？
 
 ## DataKey 格式
 
@@ -388,11 +384,11 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 |------|------|
 | r-table 列（推荐） | 用 r-text / r-number / r-date 等 r-* 字段，field=字段名，label=表头；支持权限渲染、上下文感知 |
 | r-table 列（强制） | r-table 内只能使用 r-* 字段列；禁止 el-table-column |
-| r-table 行操作 | 写在 \`meta.actions.children\`；优先 builtin-action（零代码），复杂场景再用 Render* |
+| r-table 行操作 | 写在 \`actions.items\`；优先 builtin-action（零代码），复杂场景再用 Render* |
 | el-table 列 | 仅限 el-table-column 或 Render*；el-table-column.width 用字符串 \`"100"\`，r-* 字段 width 用数字 \`120\` |
 | Render* 内 h() | 仅限原生 HTML 标签（div/span/button/table/tr/td/input 等） |
 | 块状容器 | r-form / r-detail / r-section / r-block 默认 CSS Grid 24 列 |
-| 容器操作区 | \`meta.toolbar\` / \`meta.actions\` 优先 builtin-action，其次 Render*，不直接放 el-button |
+| 容器操作区 | \`toolbar\` / \`actions\` 优先 builtin-action，其次 Render*，不直接放 el-button |
 
 ## 子组件语境感知渲染（高优先级）
 
@@ -421,7 +417,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 [
   {
     "type": "r-table",
-    "meta": { "data": { "dataKey": "Orders@rows" } },
+    "dataKey": "Orders@rows",
     "children": [
       { "type": "r-text", "field": "orderNo", "props": { "label": "订单号" } },
       { "type": "r-number", "field": "amount", "props": { "label": "金额" } }
@@ -429,7 +425,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
   },
   {
     "type": "r-form",
-    "meta": { "data": { "dataKey": "Orders@currentRow" } },
+    "dataKey": "Orders@currentRow",
     "children": [
       { "type": "r-text", "field": "orderNo", "props": { "label": "订单号" } },
       { "type": "r-number", "field": "amount", "props": { "label": "金额" } }
@@ -474,7 +470,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 
 必须覆盖以下 6 类能力（缺一不可）：
 1. 主表展示：\`r-table\` + 规范列定义（含 \`highlightCurrentRow\`）
-2. 过滤面板：\`meta.filter.items\`（字符串简写或完整 FilterItem 对象）+ \`logic\` + 可折叠 + \`on\` 事件
+2. 过滤面板：\`filter.columns\`（字符串简写或完整 FilterItem 对象）+ 可折叠
 3. 动作系统：\`toolbar\` + \`rowActions\` + builtin-action 声明式动作
 4. 汇总能力：\`summaryRow\`（\`selectionSummaryRow\` 为可选增强）
 5. 编辑能力：\`r-form\` / \`r-detail\`（基于 \`currentRow\`）
@@ -509,13 +505,13 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 }
 \`\`\`
 
-\`r-table.meta\`（SPARK 语义配置）：
+\`r-table.meta\`（SPARK 语义配置，根级字段）：
 
 \`\`\`jsonc
 {
-  "data": { "dataKey": "TableName@rows" },
+  "dataKey": "TableName@rows",
   "filter": {
-    "items": ["field1", "field2"],
+    "columns": ["field1", "field2"],
     "collapsible": true
   },
   "actions": {
@@ -527,7 +523,7 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 
 补充约束：
 - r-table 示例与方案中禁止出现 \`el-table-column\`
-- 若声明 \`meta.actions\`，必须保证每个动作可独立执行（不可仅占位）
+- 若声明 \`actions\`，必须保证每个动作可独立执行（不可仅占位）
 - 若声明 \`permAction\`，必须在样例数据行中提供 \`_perm\` 进行演示
 
 ### 声明式动作规范（零代码优先）
@@ -542,13 +538,13 @@ rule.json **顶层是 JSON 数组**（通常只有一个根 div）。节点分�
 ### 质量门槛（r-table 专项）
 
 生成前逐项自检：
-1. 主表 \`meta.data.dataKey\` 是否绑定 \`@rows\`
+1. 主表 \`dataKey\` 是否绑定 \`@rows\`
 2. 汇总区是否至少包含 \`@summaryRow\`（\`@selectionSummaryRow\` 仅在存在选中能力时使用）
 3. 是否存在子表 relation 且字段映射可闭环
 4. 是否包含至少 3 个 builtin-action（覆盖 toolbar + rowActions）
 5. script.js 是否保持最小（无复杂逻辑时仅空 \`__init__\`）
-6. 所有 \`meta.data.field\` 字段是否在 data-model 列定义中存在
-7. 筛选配置是否使用 \`meta.filter.items\`（禁止使用旧的 \`filterColumns\` 平铺属性）
+6. 所有 \`field\` 字段是否在 data-model 列定义中存在
+7. 筛选配置是否使用 \`filter.columns\`（禁止使用旧的 \`filterColumns\` 平铺属性）
 
 ### 推荐输出骨架（可直接复用）
 
@@ -659,32 +655,39 @@ function __init__() {}
 - 父表 \`autoCurrentFirst: true\`（避免子表初始为空）
 - relation 仅用 \`parentTable / parentField / childTable / childField / dependencyType\`
 
-## meta 7 域完整说明
+## SparkNode 根级字段白名单
 
-SparkNode v3 的 \`meta\` 对象包含 7 个语义域（按需使用，无需全部出现）：
+SparkNode 的语义字段**全部在根级**（无 meta 包装层）：
 
-| 域 | 用途 | 典型使用者 |
+| 字段 | 用途 | 典型使用者 |
 |----|------|-----------|
-| \`meta.data\` | 数据绑定（dataKey, field, options） | 容器 + 字段组件 |
-| \`meta.filter\` | 筛选面板（items, logic, collapsible, on） | r-table |
-| \`meta.toolbar\` | 工具栏按钮 | r-table / r-form / r-list |
-| \`meta.actions\` | 行操作列 | r-table / r-list |
-| \`meta.state\` | 显示/禁用控制（visible, disabled） | 所有组件 |
-| \`meta.behavior\` | 事件绑定（on: { eventName: fnName }） | 所有组件 |
-| \`meta.layout\` | 布局参数（colSpan, rowSpan） | 字段组件在 Grid 容器内 |
+| \`type\` | 组件类型（必填） | 所有组件 |
+| \`id\` | 实例 ID（可选） | 所有组件 |
+| \`dataKey\` | 数据绑定键 | 容器组件（r-table / r-form / r-detail / r-tree） |
+| \`field\` | 字段绑定名 | 字段组件（r-text / r-number / r-select 等） |
+| \`label\` | 显示标签 | 字段组件 |
+| \`optionKey\` | 选项数据源 DataKey | r-select / r-radio / r-checkbox |
+| \`props\` | 组件属性（border / size / style / class / colSpan 等） | 所有组件 |
+| \`children\` | 子组件（递归 SparkNode） | 容器组件 |
+| \`on\` | 事件绑定（eventName → script.js 函数名） | 所有组件 |
+| \`visible\` | 显示控制 | 所有组件 |
+| \`disabled\` | 禁用控制 | 所有组件 |
+| \`filter\` | 筛选面板配置（columns / collapsible / gridColumns） | r-table |
+| \`toolbar\` | 工具栏按钮（items / position） | r-table / r-form / r-list |
+| \`actions\` | 行操作列（items / position / label / width） | r-table / r-list |
 
-### meta.layout 详细说明
+### 布局参数说明
+
+布局参数写在 \`props\` 内：
 
 \`\`\`jsonc
 {
   "type": "r-text",
-  "props": { "label": "备注" },
-  "meta": {
-    "data": { "field": "remark" },
-    "layout": {
-      "colSpan": 24,       // 占满一行（父容器 gridColumns 默认 24）
-      "rowSpan": 2          // 跨 2 行
-    }
+  "field": "remark",
+  "props": {
+    "label": "备注",
+    "colSpan": 24,       // 占满一行（父容器 gridColumns 默认 24）
+    "rowSpan": 2          // 跨 2 行
   }
 }
 \`\`\`
@@ -700,7 +703,7 @@ SparkNode v3 的 \`meta\` 对象包含 7 个语义域（按需使用，无需全
 \`\`\`json
 {
   "type": "r-table",
-  "meta": { "data": { "dataKey": "Users@rows" } },
+  "dataKey": "Users@rows",
   "children": [
     { "type": "r-text", "field": "id", "props": { "label": "ID", "width": 60 } },
     {

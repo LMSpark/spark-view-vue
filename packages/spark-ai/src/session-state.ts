@@ -105,7 +105,7 @@ export interface ViewRegistry {
 export interface UIRegistry {
   /** rule.json 中声明的组件 id */
   componentIds: string[]
-  /** script.js 中定义 / meta.behavior.on 中引用的函数名 */
+  /** script.js 中定义 / on 中引用的函数名 */
   functionNames: string[]
   /** style.css 中定义的 class 名 */
   cssClassesDefined: string[]

@@ -384,15 +384,15 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
         )
       }
 
-      // SparkNode v3: 检测废弃的 name 属性（应使用 field）
+      // 检测 name 属性（应使用 field）
       if (typeName.startsWith('r-') && typeof node['name'] === 'string' && node['field'] === undefined) {
         pushIssue(
           issues,
           'component',
           'warning',
-          `「${typeName}」使用了废弃的 name 属性「${node['name']}」`,
+          `「${typeName}」使用了 name 属性「${node['name']}」，请改用 field`,
           `${path}.name`,
-          'SparkNode v3 已将 name 改为 field，请改用 field 声明字段绑定。',
+          '字段绑定请使用 field 声明。',
         )
       }
 
@@ -487,7 +487,7 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
           'warning',
           `节点「${node['type']}」的 style 写在顶层，应移入 props 内`,
           `${path}.style`,
-          '请将 style 移入 props: { style: {...} }。SparkNode v3 要求 style/class 写在 props 内。',
+          '请将 style 移入 props: { style: {...} }。',
         )
       }
     }
@@ -500,7 +500,7 @@ export function validateGeneratedConfig(files: GeneratedPageFiles): ConfigValida
           'warning',
           `节点「${node['type']}」的 class 写在顶层，应移入 props 内`,
           `${path}.class`,
-          '请将 class 移入 props: { class: "..." }。SparkNode v3 要求 style/class 写在 props 内。',
+          '请将 class 移入 props: { class: "..." }。',
         )
       }
     }

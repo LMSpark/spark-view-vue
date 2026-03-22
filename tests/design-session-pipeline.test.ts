@@ -178,10 +178,10 @@ r-table r-table r-form
   it('extracts from @@query:component-api block', () => {
     const text = `
 @@query:component-api
-r-table#meta.filter, builtin-action
+r-table#filter, builtin-action
 @@end`
     const queries = extractComponentQueries(text)
-    expect(queries).toEqual(['r-table#meta.filter', 'builtin-action'])
+    expect(queries).toEqual(['r-table#filter', 'builtin-action'])
   })
 
   it('supports @list for component API index query', () => {
@@ -383,10 +383,10 @@ nonexistent-component
   })
 
   it('supports specific component API fragment query', () => {
-    const resolved = resolveComponentQuery(['r-table#meta.filter'])
+    const resolved = resolveComponentQuery(['r-table#filter'])
     expect(resolved).not.toBeNull()
-    expect(resolved ?? '').toContain('精确片段: meta.filter')
-    expect(resolved ?? '').toContain('meta.filter.items')
+    expect(resolved ?? '').toContain('精确片段: filter')
+    expect(resolved ?? '').toContain('filter.columns')
   })
 
   it('supports component API catalog index query', () => {
@@ -468,8 +468,8 @@ describe('COMPONENT_PROPS_CATALOG', () => {
     expect(entry).toBeDefined()
     expect(entry).toContain('checkedText')
     expect(entry).toContain('uncheckedText')
-    // contains deprecation note mentioning the old names
-    expect(entry).toContain('已废弃')
+    // contains migration note mentioning the old names
+    expect(entry).toContain('trueLabel / falseLabel')
   })
 
   it('r-cascader includes optionChildrenField', () => {

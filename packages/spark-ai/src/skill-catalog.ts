@@ -93,13 +93,10 @@ export const SKILL_CATALOG: Record<string, SkillCatalogEntry> = {
 {
   "type": "r-tree",
   "dataKey": "Departments@rows",
-  "meta": {
-    "data": {
-      "dataKey": "Departments@rows",
-      "idField": "id",
-      "parentIdField": "parentId",
-      "textField": "name"
-    }
+  "props": {
+    "idField": "id",
+    "parentIdField": "parentId",
+    "textField": "name"
   }
 }
 \`\`\`
@@ -143,16 +140,13 @@ function __init__() {
 [{
   "type": "r-table", "dataKey": "Items@rows",
   "props": { "border": true, "stripe": true, "highlightCurrentRow": true },
-  "meta": {
-    "data": { "dataKey": "Items@rows" },
-    "filter": { "items": ["name", "status"] },
-    "actions": {
-      "items": [{ "label": "新增", "event": "handleAdd", "type": "primary" }],
-      "rowActions": [
-        { "label": "编辑",  "event": "handleEdit" },
-        { "label": "删除",  "event": "handleDelete", "type": "danger" }
-      ]
-    }
+  "filter": { "columns": ["name", "status"] },
+  "actions": {
+    "items": [{ "label": "新增", "event": "handleAdd", "type": "primary" }],
+    "rowActions": [
+      { "label": "编辑",  "event": "handleEdit" },
+      { "label": "删除",  "event": "handleDelete", "type": "danger" }
+    ]
   }
 }]
 \`\`\``,
@@ -169,23 +163,21 @@ function __init__() {
     requires: [],
     produces: ['ui-structure', 'interaction'],
     checks: ['filter.items 字段名存在于表列定义', 'on.search/on.reset 函数已声明'],
-    detail: `## search-filter 标准配置（SparkNode v3）
+    detail: `## search-filter 标准配置
 
-### 使用 meta.filter（零代码，推荐）
+### 使用根级 filter（零代码，推荐）
 \`\`\`json
 {
   "type": "r-table", "dataKey": "Orders@rows",
-  "meta": {
-    "filter": {
-      "items": [
-        "orderNo",
-        { "field": "status",    "component": "select",     "options": "OrderStatus" },
-        { "field": "createdAt", "component": "date-range", "label": "创建日期" }
-      ],
-      "collapsible": true,
-      "on": { "search": "handleSearch", "reset": "handleReset" }
-    }
-  }
+  "filter": {
+    "columns": [
+      "orderNo",
+      { "field": "status",    "component": "select",     "options": "OrderStatus" },
+      { "field": "createdAt", "component": "date-range", "label": "创建日期" }
+    ],
+    "collapsible": true
+  },
+  "on": { "search": "handleSearch", "reset": "handleReset" }
 }
 \`\`\`
 
@@ -250,12 +242,10 @@ function handleSave(row) {
 {
   "type": "r-table",
   "props": { "selectionType": "checkbox" },
-  "meta": {
-    "toolbar": {
-      "items": [
-        { "label": "批量删除", "event": "handleBatchDelete", "type": "danger" }
-      ]
-    }
+  "toolbar": {
+    "items": [
+      { "label": "批量删除", "event": "handleBatchDelete", "type": "danger" }
+    ]
   }
 }
 \`\`\`
@@ -394,7 +384,7 @@ r-detail 展示当前选中行，须确保上游 r-table 设置了 highlightCurr
 [
   {
     "type": "r-table",
-    "meta": { "data": { "dataKey": "Orders@rows" } },
+    "dataKey": "Orders@rows",
     "children": [
       { "type": "r-text", "field": "orderNo", "props": { "label": "订单号" } },
       { "type": "r-number", "field": "amount", "props": { "label": "金额" } }
@@ -402,7 +392,7 @@ r-detail 展示当前选中行，须确保上游 r-table 设置了 highlightCurr
   },
   {
     "type": "r-form",
-    "meta": { "data": { "dataKey": "Orders@currentRow" } },
+    "dataKey": "Orders@currentRow",
     "children": [
       { "type": "r-text", "field": "orderNo", "props": { "label": "订单号" } },
       { "type": "r-number", "field": "amount", "props": { "label": "金额" } }
@@ -531,19 +521,17 @@ function RenderRowActions(row) {
 [
   {
     "type": "r-table",
-    "meta": {
-      "data": { "dataKey": "Orders@rows" },
-      "toolbar": {
-        "children": [
-          { "type": "builtin-action", "props": { "builtinAction": "append-row", "label": "新增", "type": "primary" } }
-        ]
-      },
-      "actions": {
-        "children": [
-          { "type": "builtin-action", "props": { "builtinAction": "patch-row", "label": "编辑" } },
-          { "type": "builtin-action", "props": { "builtinAction": "delete-row", "label": "删除", "type": "danger" } }
-        ]
-      }
+    "dataKey": "Orders@rows",
+    "toolbar": {
+      "items": [
+        { "type": "builtin-action", "props": { "builtinAction": "append-row", "label": "新增", "type": "primary" } }
+      ]
+    },
+    "actions": {
+      "items": [
+        { "type": "builtin-action", "props": { "builtinAction": "patch-row", "label": "编辑" } },
+        { "type": "builtin-action", "props": { "builtinAction": "delete-row", "label": "删除", "type": "danger" } }
+      ]
     },
     "props": { "border": true, "stripe": true, "highlightCurrentRow": true },
     "children": [...]
@@ -554,10 +542,10 @@ function RenderRowActions(row) {
     "children": [
       {
         "type": "r-form",
-        "meta": { "data": { "dataKey": "Orders@currentRow" } },
+        "dataKey": "Orders@currentRow",
         "children": [
-          { "type": "r-text", "meta": { "data": { "field": "orderNo" } }, "props": { "label": "订单号" } },
-          { "type": "r-date", "meta": { "data": { "field": "date" } }, "props": { "label": "日期" } }
+          { "type": "r-text", "field": "orderNo", "props": { "label": "订单号" } },
+          { "type": "r-date", "field": "date", "props": { "label": "日期" } }
         ]
       }
     ]
@@ -591,7 +579,7 @@ function RenderRowActions(row) {
       "props": { "label": "列表视图", "name": "table" },
       "children": [{
         "type": "r-table",
-        "meta": { "data": { "dataKey": "Orders@rows" } },
+        "dataKey": "Orders@rows",
         "children": [...]
       }]
     },
@@ -609,7 +597,7 @@ function RenderRowActions(row) {
       "props": { "label": "汇总统计", "name": "stats" },
       "children": [{
         "type": "r-detail",
-        "meta": { "data": { "dataKey": "Orders@summaryRow" } },
+        "dataKey": "Orders@summaryRow",
         "children": [...]
       }]
     }
@@ -637,14 +625,12 @@ function RenderRowActions(row) {
 \`\`\`json
 {
   "type": "r-table",
-  "meta": {
-    "toolbar": {
-      "children": [
-        { "type": "builtin-action", "props": { "builtinAction": "refresh", "label": "刷新" } },
-        { "type": "RenderImportButton" },
-        { "type": "RenderExportButton" }
-      ]
-    }
+  "toolbar": {
+    "items": [
+      { "type": "builtin-action", "props": { "builtinAction": "refresh", "label": "刷新" } },
+      { "type": "RenderImportButton" },
+      { "type": "RenderExportButton" }
+    ]
   }
 }
 \`\`\`

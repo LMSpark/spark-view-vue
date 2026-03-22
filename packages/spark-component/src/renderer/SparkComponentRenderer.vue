@@ -100,8 +100,6 @@ const NATIVE_RENDERABLE_TAGS = new Set([
   'canvas',
   'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text',
 ])
-type ComponentEventMap = Record<string, unknown>
-type RenderableSparkNode = SparkNode & { on?: ComponentEventMap }
 type RenderableChild = SparkNode | string | number
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -181,7 +179,7 @@ function toListenerPropName(eventName: string): string {
 }
 
 const forwardedProps = computed(() => {
-  const config = props.config as RenderableSparkNode
+  const config = props.config
   const rawProps = config.props ?? {}
   const eventProps = Object.fromEntries(
     Object.entries(config.on ?? {}).map(([eventName, handler]) => [toListenerPropName(eventName), handler])

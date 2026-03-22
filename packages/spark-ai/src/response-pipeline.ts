@@ -213,11 +213,6 @@ export class SchemaCheckerProcessor implements ResponseProcessor {
     if (typeof node['field'] === 'string' && node['field'].trim() !== '') {
       return node['field']
     }
-    const meta = node['meta'] as Record<string, unknown> | undefined
-    const data = meta?.['data'] as Record<string, unknown> | undefined
-    if (typeof data?.['field'] === 'string' && data['field'].trim() !== '') {
-      return data['field']
-    }
     return null
   }
 
@@ -480,7 +475,7 @@ export class RegistryValidatorProcessor implements ResponseProcessor {
         if (tbl) currentTable = tbl
       }
 
-      // 检查 field（SparkNode v3）或 name（兼容 v2）字段是否在表的列定义中
+      // 检查 field 或 name 字段是否在表的列定义中
       const fieldName = typeof n['field'] === 'string' ? n['field']
         : typeof n['name'] === 'string' ? n['name']
         : null
@@ -506,12 +501,9 @@ export class RegistryValidatorProcessor implements ResponseProcessor {
     }
   }
 
-  /** 从节点中提取 dataKey（兼容 meta.data.dataKey 和顶层 dataKey） */
+  /** 从节点中提取 dataKey */
   private extractDataKey(n: Record<string, unknown>): string | null {
     if (typeof n['dataKey'] === 'string') return n['dataKey']
-    const meta = n['meta'] as Record<string, unknown> | undefined
-    const data = meta?.['data'] as Record<string, unknown> | undefined
-    if (typeof data?.['dataKey'] === 'string') return data['dataKey']
     return null
   }
 

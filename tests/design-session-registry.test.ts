@@ -327,15 +327,15 @@ describe('RegistryValidatorProcessor', () => {
     expect(colWarnings).toHaveLength(0)
   })
 
-  // ── ui-structure：meta.data.dataKey 路径 ──────────────────────────────────
+  // ── ui-structure：根级 dataKey 表名校验 ──────────────────────────────────
 
-  it('validates dataKey from meta.data.dataKey (SparkNode v2)', async () => {
+  it('validates dataKey with unknown table reference', async () => {
     const pipeline = createFullPipeline()
     const session = buildTestSession()
     const text = `
 @@proposal:ui-structure
-# SparkNode v2 格式
-[{"type": "r-table", "meta": {"data": {"dataKey": "Unknown@rows"}}}]
+# 根级 dataKey 校验
+[{"type": "r-table", "dataKey": "Unknown@rows"}]
 @@end`
     const ctx = await pipeline.execute(text, 'msg-meta', session)
     const tableRefErrors = ctx.validationErrors.filter(
@@ -656,17 +656,17 @@ describe('RegistryValidatorProcessor', () => {
     expect(colWarnings[0]?.suggestion).toContain('OrderItems')
   })
 
-  // ── ui-structure：SparkNode v2 meta.data 路径 + name 继承 ─────────────────
+  // ── ui-structure：根级 dataKey + children field 继承 ─────────────────
 
-  it('inherits table from meta.data.dataKey to children name check', async () => {
+  it('inherits table from root dataKey to children field check', async () => {
     const pipeline = createFullPipeline()
     const session = buildTestSession()
     const text = `
 @@proposal:ui-structure
-# SparkNode v2 带继承
-[{"type": "r-table", "meta": {"data": {"dataKey": "OrderItems@rows"}}, "children": [
-  {"type": "r-text", "name": "product"},
-  {"type": "r-text", "name": "nonExistent"}
+# 根级 dataKey 带继承
+[{"type": "r-table", "dataKey": "OrderItems@rows", "children": [
+  {"type": "r-text", "field": "product"},
+  {"type": "r-text", "field": "nonExistent"}
 ]}]
 @@end`
     const ctx = await pipeline.execute(text, 'msg-meta-inherit', session)

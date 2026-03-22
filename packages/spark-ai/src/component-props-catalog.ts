@@ -3,6 +3,9 @@
  *
  * 用于 AI 设计会话的交互式查询——AI 通过 @@ 协议请求组件 Props，
  * 系统从此目录查找并注入到对话上下文中。
+ *
+ * 数据来源：Vue SFC AST 提取（tools/extract-component-api.ts）+ 手工补充。
+ * 容器组件标注【能力链】来自 AST 自动检测的 consume/provide 调用。
  */
 export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
   // ── 容器组件 ─────────────────────────────────────────────────────────────
@@ -16,54 +19,59 @@ export const COMPONENT_PROPS_CATALOG: Record<string, string> = {
 
 【关键约束】
 - r-table children 仅放 r-* 字段组件，禁止 el-table-column
-- 事件逻辑优先用 meta.behavior.on + script.js 函数，不在组件层硬编码父级判断
-- 字段绑定优先 field（SparkNode v3），不要使用废弃 name
+- 事件逻辑优先用根级 on + script.js 函数，不在组件层硬编码父级判断
+- 字段绑定用根级 field
 
 【建议组合查询】
 - r-table, r-form, r-detail, r-text, r-number, r-select, builtin-action`,
 
-  'r-table': `**r-table** — 数据表格容器（SparkNode v3 格式）
+  'r-table': `**r-table** — 数据表格容器
 
-【props — 原生组件属性，透传到 el-table】
+【props — 组件属性，透传到 el-table】
 border: boolean — 边框
 stripe: boolean — 斑马纹
 highlightCurrentRow: boolean — 当前行高亮（⚠️ 必须显式声明才生效）
 height / maxHeight: string | number — 表格高度
+style: object — 行内样式
+class: string — CSS 类名
 
-【meta.data — 数据绑定域】
-meta.data.dataKey: string — 数据绑定键，如 "Users@rows"
+【根级字段 — 数据绑定】
+dataKey: string — 数据绑定键，如 "Users@rows"（根级）
 
-【meta.filter — 筛选配置域】
-meta.filter.items: Array<string | FilterItem> — 筛选项列表
+【根级字段 — 事件绑定】
+on.rowDblclick: string — 行双击（→ script.js 函数名）
+（其他组件事件同理，key 为 camelCase 事件名）
+
+【根级字段 — filter 筛选配置】
+filter.columns: Array<string | FilterItem> — 筛选项列表
   字符串简写："fieldName" 等价于 { field: "fieldName", component: "text" }
   完整 FilterItem：{ field, label?, component?, options?, logic?, span?, props? }
   component 内置值：text | select | date | date-range | number | number-range | checkbox | radio
-meta.filter.logic: 'and' | 'or' — 多条件默认逻辑，默认 'and'
-meta.filter.collapsible: boolean — 可折叠，默认 false
-meta.filter.defaultCollapsed: boolean — 默认折叠，默认 false
-meta.filter.autoFitMinWidth: string — 最小宽度，默认 '220px'
-meta.filter.itemSpan: number — 占栅格列数，默认 1
-meta.filter.gridColumns: number — 栅格总列数，默认 24
-meta.filter.gridGap: number | string — 间距，默认 12
-meta.filter.on.search: string — 搜索触发（script.js 函数名）
-meta.filter.on.reset: string — 重置触发
-meta.filter.on.change: string — 字段值变化触发
+filter.collapsible: boolean — 可折叠，默认 false
+filter.defaultCollapsed: boolean — 默认折叠，默认 false
+filter.autoFitMinWidth: string — 最小宽度，默认 '220px'
+filter.class: string — 筛选区 CSS 类名
+filter.itemSpan: number — 每项跨列数，默认 1
+filter.gridColumns: number — 栅格总列数，默认 24
+filter.gridGap: number | string — 间距，默认 12
+filter.gridAutoRows: string — 行高，默认 'minmax(32px, auto)'
 
-【meta.toolbar — 工具栏域】
-meta.toolbar.children: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）
-meta.toolbar.position: 'top' | 'bottom' — 默认 'top'
+【根级字段 — toolbar 工具栏】
+toolbar.items: SparkNode[] — 工具栏按钮（优先 builtin-action，其次 Render*）
+toolbar.position: 'top' | 'bottom' — 默认 'top'
 
-【meta.actions — 行操作域】
-meta.actions.children: SparkNode[] — 行操作按钮（优先 builtin-action）
-meta.actions.position: 'left' | 'right' — 默认 'right'
-meta.actions.label: string — 操作列标题，默认 '操作'
-meta.actions.width: number — 操作列宽度，默认 160
-meta.actions.align: 'left' | 'center' | 'right' — 默认 'left'
-meta.actions.fixed: boolean | 'left' | 'right' — 固定方向
+【根级字段 — actions 行操作列】
+actions.items: SparkNode[] — 行操作按钮（优先 builtin-action）
+actions.position: 'left' | 'right' — 默认 'right'
+actions.label: string — 操作列标题，默认 '操作'
+actions.width: number — 操作列宽度，默认 160
+actions.align: 'left' | 'center' | 'right' — 默认 'left'
+actions.fixed: boolean | 'left' | 'right' — 固定方向
+actions.class: string — 操作列 CSS 类名
 
-【meta.behavior — 事件域】
-meta.behavior.on.rowDblclick: string — 行双击（→ script.js 函数名）
-（其他组件事件同理，key 为 camelCase 事件名）
+【能力链（AST 提取）】
+consumes: PAGE_DATASET, PAGE_SERVICE, PAGE_COMPONENT_REGISTRY, MODULE_CONTEXT
+provides: DATA_SOURCE, TABLE_API, FIELD_CONTEXT
 
 children 内仅用 r-* 字段组件做列，禁止 el-table-column`,
 
@@ -71,31 +79,50 @@ children 内仅用 r-* 字段组件做列，禁止 el-table-column`,
 dataKey: string — 数据绑定键，如 "Users@currentRow"
 toolbar: Rule[] — 工具栏
 toolbarPosition: 'top' | 'bottom' — 默认 'top'
+toolbarClass: string — 工具栏 CSS 类名
 labelWidth: string — 标签宽度，默认 '100px'
 gridColumns: number — CSS Grid 列数，默认 24
-gridGap: number — 栅格间距，默认 0
-gridAutoRows: string — 行高定义
+gridGap: number | string — 栅格间距，默认 0
+gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
+
+【能力链】
+consumes: PAGE_DATASET
+provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
+
 children 内放 r-* 字段组件`,
 
   'r-detail': `**r-detail** — 只读详情容器（展示 currentRow）
 dataKey: string — 数据绑定键
 toolbar: Rule[] — 工具栏
+toolbarPosition: 'top' | 'bottom' — 默认 'top'
+toolbarClass: string — 工具栏 CSS 类名
 gridColumns: number — CSS Grid 列数，默认 24
-gridGap: number — 栅格间距，默认 0
-gridAutoRows: string — 行高定义
+gridGap: number | string — 栅格间距，默认 0
+gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
+
+【能力链】
+consumes: PAGE_DATASET
+provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
+
 children 内放 r-* 字段组件（只读模式）`,
 
   'r-tree': `**r-tree** — 树形组件容器
 dataKey: string — 数据绑定键，如 "TreeData@rows"
-data: unknown[] — 静态数据（优先用 dataKey）
-dataSource: unknown[] — 动态数据源
+data: TreeNode[] — 静态数据（优先用 dataKey）
+dataSource: IDataSource | DataView — 动态数据源
 toolbar: Rule[] — 工具栏
+toolbarPosition: 'top' | 'bottom' — 工具栏位置
 nodeActions: Rule[] — 节点操作区
 nodeActionsPosition: string — 节点操作位置
+nodeActionsClass: string — 节点操作区 CSS 类名
 onNodeClick: string — script.js 函数名
 onNodeExpand: string — 节点展开回调
 onNodeCollapse: string — 节点折叠回调
-其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）`,
+其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）
+
+【能力链（AST 提取）】
+consumes: PAGE_DATASET
+provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA`,
 
   'r-list': `**r-list** — 列表容器
 dataKey: string — 数据绑定键
@@ -116,12 +143,18 @@ useCard: boolean — 使用卡片包裹，默认 false
 cardShadow: 'always' | 'hover' | 'never' — 默认 'hover'
 gridColumns: number — 默认 24
 gridGap: number | string — 默认 0
-gridAutoRows: string — 行高定义
+gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 itemColSpan: number — 项跨列数
-itemRowSpan: number — 项跨行数，默认 1`,
+itemRowSpan: number — 项跨行数，默认 1
+
+【能力链（AST 提取）】
+consumes: PAGE_DATASET
+provides: DATA_SOURCE`,
 
   'r-tabs': `**r-tabs** — 标签页容器
 toolbar: Rule[] — 工具栏
+toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+toolbarClass: string — 工具栏 CSS 类名
 modelValue: string | number — 当前激活 tab
 onTabChange: string — 切换回调
 onTabClick: string — 点击回调
@@ -129,13 +162,17 @@ children 内放 r-tab-pane（每个 tab-pane 内可嵌套任意组件）`,
 
   'r-collapse': `**r-collapse** — 折叠面板容器
 toolbar: Rule[] — 工具栏
+toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+toolbarClass: string — 工具栏 CSS 类名
 modelValue: string | number | Array — 展开的面板
 onChange: string — 切换回调
 children 内放 r-collapse-item`,
 
   'r-steps': `**r-steps** — 步骤条容器
 toolbar: Rule[] — 工具栏
-modelValue: number — 当前步骤
+toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
+toolbarClass: string — 工具栏 CSS 类名
+modelValue: string | number — 当前步骤
 onStepChange: string — 步骤切换回调
 children 内放 r-step`,
 
@@ -144,9 +181,13 @@ title: string — 标题
 modelValue: boolean — 控制显隐
 headerActions: Rule[] — 头部操作区
 footerActions: Rule[] — 底部操作区
+headerClass: string — 头部 CSS 类名
+headerActionsClass: string — 头部操作区 CSS 类名
+bodyClass: string — 内容区 CSS 类名
+footerClass: string — 底部 CSS 类名
 gridColumns: number — 默认 24
-gridGap: number — 默认 0
-gridAutoRows: string — 行高定义
+gridGap: number | string — 默认 0
+gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 onOpen: string — 打开回调
 onClose: string — 关闭回调
 onOpened: string — 打开动画结束回调
@@ -157,9 +198,13 @@ title: string — 标题
 modelValue: boolean — 控制显隐
 headerActions: Rule[] — 头部操作区
 footerActions: Rule[] — 底部操作区
+headerClass: string — 头部 CSS 类名
+headerActionsClass: string — 头部操作区 CSS 类名
+bodyClass: string — 内容区 CSS 类名
+footerClass: string — 底部 CSS 类名
 gridColumns: number — 默认 24
-gridGap: number — 默认 0
-gridAutoRows: string — 行高定义
+gridGap: number | string — 默认 0
+gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 onOpen / onClose / onOpened / onClosed: string — 生命周期回调`,
 
   'r-section': `**r-section** — 分区容器
@@ -223,8 +268,8 @@ props.silent?: boolean — true 时关闭默认消息提示
 append-row | refresh | patch-row | patch-current | patch-selected | delete-row | delete-selected | message-row
 
 【放置位置】
-- meta.toolbar.children（工具栏动作）
-- meta.actions.children（行内动作）
+- toolbar.items（工具栏动作）
+- actions.items（行内动作）
 
 适用于 r-table / r-list / r-form / r-detail 的常见 CRUD 场景`,
 
@@ -241,6 +286,7 @@ width: number — r-table 内列宽
 field / label / width — 同 r-text
 min: number — 最小值
 max: number — 最大值
+precision: number — 小数精度
 filterMode: 'range' — 启用范围过滤模式`,
 
   'r-select': `**r-select** — 下拉选择
@@ -287,12 +333,13 @@ field / label / width — 同 r-text
 checkedText: string — 选中时显示文案，默认 '是'
 uncheckedText: string — 未选时显示文案，默认 '否'
 checkboxText: string — 复选框右侧文案，默认 ''
-⚠️ 不再使用 trueLabel / falseLabel（已废弃）`,
+⚠️ 用 checkedText / uncheckedText 代替 trueLabel / falseLabel`,
 
   'r-checkbox-group': `**r-checkbox-group** — 复选框组
 field / label / width — 同 r-text
 options: Array<{label, value}> — 选项列表
 optionLabelField / optionValueField — 同 r-select
+buttonStyle: boolean — 按钮风格，默认 false
 min: number — 最少勾选数
 max: number — 最多勾选数`,
 
@@ -347,15 +394,16 @@ targetOrder: 'original' | 'push' | 'unshift' — 右侧排序方式，默认 'or
 
   'r-color': `**r-color** — 颜色选择器
 field / label / width — 同 r-text
-showAlpha: boolean — 显示透明度
-colorFormat: 'hex'|'rgb'|'hsl'|'hsv'
-predefine: string[] — 预设颜色`,
+透传到 el-color-picker: showAlpha, colorFormat('hex'|'rgb'|'hsl'|'hsv'), predefine(string[])`,
 
-  'r-icon': `**r-icon** — 图标字段
+  'r-icon': `**r-icon** — 图标选择器
 field / label / width — 同 r-text
-iconSet: string — 图标集名
-searchable: boolean — 可搜索图标
-clearable: boolean — 可清空`,
+options: Array<{label, value}> — 图标选项列表
+optionLabelField / optionValueField — 同 r-select
+placeholder: string — 默认 '请选择图标'
+clearable: boolean — 默认 true
+filterable: boolean — 可搜索，默认 true
+classPrefix: string — 图标 CSS 类名前缀`,
 
   'r-rate': `**r-rate** — 评分
 field / label / width — 同 r-text

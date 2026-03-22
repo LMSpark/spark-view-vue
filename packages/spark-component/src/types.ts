@@ -101,7 +101,11 @@ export interface SparkNode {
   /** 禁用状态控制 */
   disabled?: boolean
 
-  // ── Meta 域（容器级配置，兼容 useContainerToolbar / useContainerActions / useTableFilters） ──
+  // ── 事件（根级字段，bindRules 包装后由 Renderer 转发） ──
+  /** 事件绑定（key 为 camelCase 事件名，value 为 script.js 函数名或运行时函数） */
+  on?: Record<string, unknown>
+
+  // ── 容器级配置（根级字段，兼容 useContainerToolbar / useContainerActions / useTableFilters） ──
   /** 工具栏配置 */
   toolbar?: SparkNodeToolbar
   /** 行操作列配置 */
@@ -111,7 +115,7 @@ export interface SparkNode {
 }
 
 // ============================================================================
-// SparkNode Meta 域类型
+// SparkNode 容器级配置类型
 // ============================================================================
 
 /** 工具栏配置（兼容 useContainerToolbar） */
