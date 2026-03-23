@@ -158,6 +158,43 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
       setRuleProp(newRule, 'optionKey', newRule.optionKey)
     }
 
+    // ── 容器结构化字段：root → props 扁平化 ──
+    // rule.json 中 toolbar/actions/filter 为根级结构化对象，
+    // 扁平化到 props 使组件通过 Vue Props 直接接收，无需 inject。
+    if (ruleType.startsWith('r-')) {
+      const rawToolbar = newRule['toolbar']
+      if (rawToolbar !== null && rawToolbar !== undefined && typeof rawToolbar === 'object' && !Array.isArray(rawToolbar)) {
+        const t = rawToolbar as { items?: unknown[]; position?: string; class?: string }
+        if (Array.isArray(t.items)) setRuleProp(newRule, 'toolbar', t.items)
+        if (t.position !== undefined) setRuleProp(newRule, 'toolbarPosition', t.position)
+        if (t.class !== undefined) setRuleProp(newRule, 'toolbarClass', t.class)
+      }
+      const rawFilter = newRule['filter']
+      if (rawFilter !== null && rawFilter !== undefined && typeof rawFilter === 'object') {
+        const f = rawFilter as Record<string, unknown>
+        if (Array.isArray(f['columns'])) setRuleProp(newRule, 'filterColumns', f['columns'])
+        if (f['class'] !== undefined) setRuleProp(newRule, 'filterClass', f['class'])
+        if (f['collapsible'] !== undefined) setRuleProp(newRule, 'filterCollapsible', f['collapsible'])
+        if (f['defaultCollapsed'] !== undefined) setRuleProp(newRule, 'filterDefaultCollapsed', f['defaultCollapsed'])
+        if (f['autoFitMinWidth'] !== undefined) setRuleProp(newRule, 'filterAutoFitMinWidth', f['autoFitMinWidth'])
+        if (f['itemSpan'] !== undefined) setRuleProp(newRule, 'filterItemSpan', f['itemSpan'])
+        if (f['gridColumns'] !== undefined) setRuleProp(newRule, 'filterGridColumns', f['gridColumns'])
+        if (f['gridGap'] !== undefined) setRuleProp(newRule, 'filterGridGap', f['gridGap'])
+        if (f['gridAutoRows'] !== undefined) setRuleProp(newRule, 'filterGridAutoRows', f['gridAutoRows'])
+      }
+      const rawActions = newRule['actions']
+      if (rawActions !== null && rawActions !== undefined && typeof rawActions === 'object' && !Array.isArray(rawActions)) {
+        const a = rawActions as Record<string, unknown>
+        if (Array.isArray(a['items'])) setRuleProp(newRule, 'rowActions', a['items'])
+        if (a['position'] !== undefined) setRuleProp(newRule, 'rowActionsPosition', a['position'])
+        if (a['class'] !== undefined) setRuleProp(newRule, 'rowActionsClass', a['class'])
+        if (a['label'] !== undefined) setRuleProp(newRule, 'rowActionsLabel', a['label'])
+        if (a['width'] !== undefined) setRuleProp(newRule, 'rowActionsWidth', a['width'])
+        if (a['align'] !== undefined) setRuleProp(newRule, 'rowActionsAlign', a['align'])
+        if (a['fixed'] !== undefined) setRuleProp(newRule, 'rowActionsFixed', a['fixed'])
+      }
+    }
+
     // ── el-table / el-pagination / 表单组件 / 通用组件：dataKey 互斥委托 ──
     if (newRule['dataKey'] !== undefined) {
       if (ruleType === 'el-table') {
@@ -217,23 +254,6 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
           childRules,
           childContext,
         )
-      }
-    }
-
-    // ── r-* 组件：children → sparkChildren prop（统一子树递归入口） ──
-    // 将已递归处理的 children 移入 sparkChildren prop，
-    // 由组件自行通过 SparkComponentRenderer 渲染。
-    //
-    // 容器组件（r-table / r-form 等）：自行递归渲染 sparkChildren
-    // 字段组件（r-text / r-number 等）：在 table 上下文中，
-    //   有 sparkChildren 时渲染为分组列（多行表头），否则渲染为数据列
-    if (ruleType.startsWith('r-')) {
-      // bindRulesRecursive 返回 BindRule[]（全为对象），无需二次类型过滤
-      const sparkKids = Array.isArray(newRule.children) ? newRule.children as BindRule[] : []
-      if (sparkKids.length > 0) {
-        if (import.meta.env.DEV) pageLogger.info('sparkChildren 注入', { type: ruleType, count: sparkKids.length })
-        setRuleProp(newRule, 'sparkChildren', sparkKids)
-        newRule.children = []
       }
     }
 

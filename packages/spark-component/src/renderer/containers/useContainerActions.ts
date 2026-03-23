@@ -12,13 +12,9 @@ type ListenerHandler = (...args: unknown[]) => unknown
 export type ScopedSparkNode = SparkNode & { on?: ListenerMap }
 
 interface UseContainerActionsOptions<TScope> {
-  config: ComputedRef<SparkNode | undefined>
   actionConfigs: ComputedRef<SparkNode[] | undefined>
   actionPosition: ComputedRef<LateralActionPosition | undefined>
   actionClass: ComputedRef<string | undefined>
-  actionPropKey: string
-  actionPositionPropKey: string
-  actionClassPropKey: string
   modelPermission: ComputedRef<IModelPermission | undefined>
   resolveScope: (scope: TScope) => {
     row: IDataRow | undefined
@@ -48,16 +44,9 @@ function wrapScopedHandler(handler: unknown, scopedArgs: unknown[]): unknown {
 // ── 组合式函数 ───────────────────────────────────────────────────────────────
 
 export function useContainerActions<TScope>(options: UseContainerActionsOptions<TScope>) {
-  // 解析原始动作配置，以及左右位置、样式类等共享展示参数。
-  const rawActionConfigs = computed(() =>
-    options.actionConfigs.value ?? (options.config.value?.props?.[options.actionPropKey] as SparkNode[] | undefined) ?? []
-  )
-  const actionPositionValue = computed<LateralActionPosition>(() =>
-    (options.config.value?.props?.[options.actionPositionPropKey] as LateralActionPosition | undefined) ?? options.actionPosition.value ?? 'right'
-  )
-  const actionClassValue = computed(() =>
-    (options.config.value?.props?.[options.actionClassPropKey] as string | undefined) ?? options.actionClass.value ?? ''
-  )
+  const rawActionConfigs = computed(() => options.actionConfigs.value ?? [])
+  const actionPositionValue = computed<LateralActionPosition>(() => options.actionPosition.value ?? 'right')
+  const actionClassValue = computed(() => options.actionClass.value ?? '')
 
   // 预先判断动作区应该显示在左侧还是右侧。
   const showActionsLeft = computed(() => rawActionConfigs.value.length > 0 && actionPositionValue.value === 'left')

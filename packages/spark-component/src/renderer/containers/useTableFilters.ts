@@ -10,7 +10,6 @@ interface LoggerLike {
 }
 
 interface UseTableFiltersOptions {
-  config: ComputedRef<SparkNode | undefined>
   children: ComputedRef<SparkNode[]>
   dataView: ComputedRef<DataView | null>
   filterColumns: ComputedRef<string[] | undefined>
@@ -62,6 +61,12 @@ function isRangeFilterConfig(config: SparkNode): boolean {
 
 // ── 过滤表达式构建 ───────────────────────────────────────────────────────────
 
+/** 从 SparkNode 中提取 field 名称（bindSparkRuleEvents 已规范化到 props） */
+function getNodeField(config: SparkNode): string | undefined {
+  const f = config.props?.['field']
+  return typeof f === 'string' ? f : undefined
+}
+
 function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
   const explicit = config.props?.['filterOp'] ?? config.props?.['filterOperator']
   if (typeof explicit === 'string') return explicit as FilterOperator
@@ -81,7 +86,7 @@ function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator 
 }
 
 function buildCondition(config: SparkNode, value: unknown): FilterExpression | undefined {
-  const field = typeof config.field === 'string' ? config.field : undefined
+  const field = getNodeField(config)
   if (!field || isEmptyFilterValue(value)) return undefined
 
   return {
@@ -193,19 +198,19 @@ export function useTableFilters(options: UseTableFiltersOptions) {
 
   // 过滤区布局参数：显式传入优先，其次回退到容器配置。
   const filterColumnsValue = computed(() =>
-    normalizeFilterColumns(options.filterColumns.value ?? options.config.value?.props?.['filterColumns'])
+    normalizeFilterColumns(options.filterColumns.value)
   )
   const filterClassValue = computed(() =>
-    (options.config.value?.props?.['filterClass'] as string | undefined) ?? options.filterClass.value ?? ''
+    options.filterClass.value ?? ''
   )
   const filterGridColumnsValue = computed(() =>
-    (options.config.value?.props?.['filterGridColumns'] as number | undefined) ?? options.filterGridColumns.value ?? 24
+    options.filterGridColumns.value ?? 24
   )
   const filterGridGapValue = computed(() =>
-    (options.config.value?.props?.['filterGridGap'] as number | string | undefined) ?? options.filterGridGap.value ?? 12
+    options.filterGridGap.value ?? 12
   )
   const filterGridAutoRowsValue = computed(() =>
-    (options.config.value?.props?.['filterGridAutoRows'] as string | undefined) ?? options.filterGridAutoRows.value ?? 'minmax(32px, auto)'
+    options.filterGridAutoRows.value ?? 'minmax(32px, auto)'
   )
 
   // 将过滤字段名解析回对应的字段组件配置。
@@ -213,8 +218,9 @@ export function useTableFilters(options: UseTableFiltersOptions) {
     if (filterColumnsValue.value.length === 0) return []
     const configMap = new Map<string, SparkNode>()
     for (const child of options.children.value) {
-      if (typeof child.field === 'string' && child.field.trim().length > 0) {
-        configMap.set(child.field, child)
+      const fieldName = getNodeField(child)
+      if (typeof fieldName === 'string' && fieldName.trim().length > 0) {
+        configMap.set(fieldName, child)
       }
     }
     return filterColumnsValue.value
@@ -224,7 +230,7 @@ export function useTableFilters(options: UseTableFiltersOptions) {
 
   // 保持 filterModel 的键集合与当前启用的过滤字段一致。
   watch(filterConfigs, (configs) => {
-    const nextKeys = new Set(configs.map(config => config.field).filter((name): name is string => typeof name === 'string'))
+    const nextKeys = new Set(configs.map(config => getNodeField(config)).filter((name): name is string => typeof name === 'string'))
     for (const key of Object.keys(filterModel)) {
       if (!nextKeys.has(key)) {
         filterModel[key] = undefined
@@ -240,7 +246,10 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   // 将当前所有过滤输入聚合成一个 DataView 可识别的表达式。
   const filterExpression = computed<FilterExpression | undefined>(() => {
     const conditions = filterConfigs.value
-      .map(config => buildCondition(config, typeof config.field === 'string' ? filterModel[config.field] : undefined))
+      .map(config => {
+        const field = getNodeField(config)
+        return buildCondition(config, typeof field === 'string' ? filterModel[field] : undefined)
+      })
       .filter((expr): expr is FilterExpression => expr !== undefined)
 
     if (conditions.length === 0) return undefined
@@ -307,7 +316,8 @@ export function useTableFilters(options: UseTableFiltersOptions) {
   const activeFilterCount = computed(() => {
     let count = 0
     for (const config of filterConfigs.value) {
-      if (typeof config.field === 'string' && !isEmptyFilterValue(filterModel[config.field])) {
+      const field = getNodeField(config)
+      if (typeof field === 'string' && !isEmptyFilterValue(filterModel[field])) {
         count++
       }
     }

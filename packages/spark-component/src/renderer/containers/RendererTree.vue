@@ -61,11 +61,11 @@
  * 内部通过 useSparkComponent + consume(PAGE_DATASET) 自行解析 dataKey，
  * 不再依赖 bindRules.ts 外部注入。
  */
-import { computed, inject, ref, useSlots } from 'vue'
+import { computed, ref, useAttrs, useSlots } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { IDataSource, IDataRow, DataView, IModelPermission } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import { FIELD_CONTEXT, CONTEXT_DATA } from '../_pkg'
 import type { RendererTreeApi } from '../_pkg'
 import { useContainerDataSource } from './useContainerDataSource'
@@ -96,10 +96,8 @@ interface ElTreeComponent {
 interface Props {
   /** 数据绑定键，如 "TreeData@rows" */
   dataKey?: string
-  /** 直接传入的 DataView（与 Table/List/Form/Detail 一致） */
-  dataView?: DataView | undefined
-  /** 父级传入的节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入） */
-  sparkChildren?: SparkNode[]
+  /** 子节点（树节点内容配置） */
+  children?: SparkNode[]
   /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
   /** 工具栏位置 */
@@ -119,45 +117,38 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const attrs = useAttrs()
 const slots = useSlots()
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
-/** dataKey 优先级: config.dataKey → config.props.dataKey → props.dataKey */
-const effectiveDataKey = computed(() =>
-  nodeConfig?.dataKey
-  ?? (nodeConfig?.props?.['dataKey'] as string | undefined)
-  ?? props.dataKey
-)
+/** dataKey 直接来自 Props */
+const effectiveDataKey = computed(() => props.dataKey)
 
 /** allowAppend / allowDelete — 优先 props，兜底 config.props */
 const effectiveAllowAppend = computed(() =>
-  props.allowAppend ?? (nodeConfig?.props?.['allowAppend'] as boolean | undefined) ?? false
+  props.allowAppend ?? false
 )
 const effectiveAllowDelete = computed(() =>
-  props.allowDelete ?? (nodeConfig?.props?.['allowDelete'] as boolean | undefined) ?? false
+  props.allowDelete ?? false
 )
 const hasNodeActions = computed(() => effectiveAllowAppend.value || effectiveAllowDelete.value)
 
 /** 节点内容 children — 完全由父级（rule.json / 父组件）提供 */
 const nodeContentChildren = computed<SparkNode[]>(() => {
-  // 优先 sparkChildren prop（bindRules 注入 / 父组件直传）
-  if (Array.isArray(props.sparkChildren) && props.sparkChildren.length > 0) return props.sparkChildren
-  // 兜底: config.children（未经 bindRules sparkChildren 提取的场景）
-  const cfgChildren = nodeConfig?.children
-  if (Array.isArray(cfgChildren) && cfgChildren.length > 0) return cfgChildren as SparkNode[]
+  const kids = props.children
+  if (Array.isArray(kids) && kids.length > 0) return kids
   return []
 })
 
 // 接入 SPARK 能力链
 const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
-  nodeConfig ?? { type: 'r-tree' }
+  { type: 'r-tree' }
 )
 const pageDataSet = consume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  fallbackSource: computed(() => props.dataView ?? null),
+  fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
   mapView: view => view,
   provideDataSource: view => sparkProvide(DATA_SOURCE, view),
   logger,
@@ -198,7 +189,6 @@ const modelPermission = computed<IModelPermission | undefined>(() =>
 const {
   toolbarPositionValue, toolbarClassValue, visibleToolbarConfigs, showToolbar,
 } = useContainerToolbar({
-  config: computed(() => nodeConfig),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),

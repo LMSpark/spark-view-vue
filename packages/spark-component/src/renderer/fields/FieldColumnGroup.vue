@@ -34,13 +34,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import { SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { computed } from 'vue'
+import { SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 
 interface Props {
   /** 分组标题（必填） */
   label?: string
+  /** 子节点列表 */
+  children?: SparkNode[]
   /** 列宽 */
   width?: string | number
   /** 最小宽度 */
@@ -59,14 +61,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
-
-const label = computed(() => props.label ?? nodeConfig?.props?.['label'] as string ?? '')
+const label = computed(() => props.label ?? '')
 const mergedChildren = computed<SparkNode[]>(() => {
-  const children = nodeConfig?.children
+  const children = props.children
   if (Array.isArray(children) && children.length > 0) return children
-  const sparkKids = nodeConfig?.props?.['sparkChildren'] as SparkNode[] | undefined
-  if (Array.isArray(sparkKids) && sparkKids.length > 0) return sparkKids
   return []
 })
 </script>

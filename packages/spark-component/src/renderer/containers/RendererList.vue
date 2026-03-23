@@ -83,12 +83,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, useSlots } from 'vue'
+import { computed, useAttrs, useSlots } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { IDataRow, IDataSource, DataView, IModelPermission } from '@spark-view/spark-data'
-import { PAGE_DATASET, DATA_SOURCE, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { PAGE_DATASET, DATA_SOURCE } from '../_pkg'
 import type { RendererListApi } from '../_pkg'
 import RendererListItemScope from './RendererListItemScope.vue'
 import { useContainerActions } from './useContainerActions'
@@ -103,8 +103,8 @@ import { createRowActionSlotScope, createToolbarSlotScope } from './useContainer
 interface Props {
   /** 数据绑定键 */
   dataKey?: string
-  /** 直接传入的 DataView */
-  dataView?: DataView | undefined
+  /** 子节点（列表项内容配置） */
+  children?: SparkNode[]
   /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
   /** 工具栏位置 */
@@ -166,24 +166,24 @@ const props = withDefaults(defineProps<Props>(), {
   gridAutoRows: 'minmax(32px, auto)',
   itemRowSpan: 1,
 })
+const attrs = useAttrs()
 const slots = useSlots()
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
 const { effectiveDataKey, configChildren: mergedChildren } = useContainerInput({
-  config: computed(() => nodeConfig),
   dataKey: computed(() => props.dataKey),
+  children: computed(() => props.children),
 })
 const hasDefaultSlot = computed(() => slots['default'] !== undefined)
 
 const { consume, provide: sparkProvide, registerApi, logger } = useSparkComponent(
-  nodeConfig ?? { type: 'r-list' }
+  { type: 'r-list' }
 )
 const pageDataSet = consume(PAGE_DATASET)
 
 const { resolvedDataSource: resolvedView } = useContainerDataSource<DataView>({
   dataKey: effectiveDataKey,
   pageDataSet,
-  fallbackSource: computed(() => props.dataView ?? null),
+  fallbackSource: computed(() => (attrs['dataView'] as DataView | undefined) ?? null),
   mapView: view => view,
   provideDataSource: view => sparkProvide(DATA_SOURCE, view),
   logger,
@@ -202,7 +202,6 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => nodeConfig),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),
@@ -217,13 +216,9 @@ const {
   showActionsRight: showItemActionsRight,
   getScopedActionConfigs: getScopedItemActions,
 } = useContainerActions<{ row: IDataRow, index: number }>({
-  config: computed(() => nodeConfig),
   actionConfigs: computed(() => props.itemActions),
   actionPosition: computed(() => props.itemActionsPosition),
   actionClass: computed(() => props.itemActionsClass),
-  actionPropKey: 'itemActions',
-  actionPositionPropKey: 'itemActionsPosition',
-  actionClassPropKey: 'itemActionsClass',
   modelPermission,
   resolveScope: ({ row, index }) => ({
     row,

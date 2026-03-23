@@ -39,10 +39,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import type { SparkNode } from '../_pkg'
-import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { computed } from 'vue'
 import type { PageSelectableValue } from '@spark-view/spark-utils'
+import type { SparkNode } from '../_pkg'
 import { useOptionField } from './useFieldOptions'
 import { useSelectorFieldActions } from './useSelectorFieldActions'
 
@@ -83,6 +82,8 @@ interface Props {
   valueMode?: 'auto' | 'array' | 'comma-string'
   /** 实体名称 */
   entityName?: string
+  /** 子节点列表 */
+  children?: SparkNode[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -97,12 +98,9 @@ const props = withDefaults(defineProps<Props>(), {
   entityName: '项目',
 })
 
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 const mergedChildren = computed(() => {
-  const children = nodeConfig?.children
+  const children = props.children
   if (Array.isArray(children) && children.length > 0) return children
-  const sparkKids = nodeConfig?.props?.['sparkChildren'] as SparkNode[] | undefined
-  if (Array.isArray(sparkKids) && sparkKids.length > 0) return sparkKids
   return []
 })
 

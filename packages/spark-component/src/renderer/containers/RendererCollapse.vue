@@ -57,9 +57,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, useSlots, watch } from 'vue'
+import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
@@ -69,6 +69,8 @@ import type { RendererCollapseApi } from '../_pkg'
 type CollapseValue = string | number | Array<string | number>
 
 interface Props {
+  /** 子节点（折叠项配置） */
+  children?: SparkNode[]
   /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
   /** 工具栏位置 */
@@ -91,12 +93,10 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
-
-const { registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-collapse' })
+const { registerApi } = useSparkComponent({ type: 'r-collapse' })
 
 const itemConfigs = computed(() =>
-  (nodeConfig?.children ?? []).filter(child => child.type === 'r-collapse-item')
+  (props.children ?? []).filter(child => child.type === 'r-collapse-item')
 )
 
 const currentModelValue = ref<CollapseValue | undefined>(props.modelValue)
@@ -111,7 +111,6 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => nodeConfig),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),

@@ -47,9 +47,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, useSlots, watch } from 'vue'
+import { computed, ref, useSlots, watch } from 'vue'
 import type { CSSProperties } from 'vue'
-import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerToolbar } from './useContainerToolbar'
 import { createToolbarSlotScope } from './useContainerSlotScopes'
@@ -57,6 +57,8 @@ import { normalizeGridGap, normalizeSpan } from './useContainerGrid'
 import type { RendererStepsApi } from '../_pkg'
 
 interface Props {
+  /** 子节点（步骤配置） */
+  children?: SparkNode[]
   /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
   /** 工具栏位置 */
@@ -79,12 +81,10 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
-
-const { registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-steps' })
+const { registerApi } = useSparkComponent({ type: 'r-steps' })
 
 const stepConfigs = computed(() =>
-  (nodeConfig?.children ?? []).filter(child => child.type === 'r-step')
+  (props.children ?? []).filter(child => child.type === 'r-step')
 )
 
 const activeStepName = ref<string | number | undefined>(props.modelValue)
@@ -106,7 +106,6 @@ const {
   visibleToolbarConfigs,
   showToolbar,
 } = useContainerToolbar({
-  config: computed(() => nodeConfig),
   toolbar: computed(() => props.toolbar),
   toolbarPosition: computed(() => props.toolbarPosition),
   toolbarClass: computed(() => props.toolbarClass),

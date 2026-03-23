@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-23T10:02:14.693Z
+ * 生成时间：2026-03-23T15:49:21.494Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,7 +20,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-23T10:02:14.685Z",
+  "buildTime": "2026-03-23T15:49:21.491Z",
   "componentCount": 77,
   "registry": {
     "containers": [
@@ -1766,11 +1766,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           }
         },
         {
-          "name": "sparkChildren",
-          "type": "SparkNode[]",
-          "description": "父级传入的节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）"
-        },
-        {
           "name": "toolbar",
           "type": "SparkNode[]",
           "description": "工具栏按钮配置"
@@ -1997,11 +1992,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "直接传入的 DataView（与 Table/List/Form/Detail 一致）"
         },
         {
-          "name": "sparkChildren",
-          "type": "SparkNode[]",
-          "description": "节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）"
-        },
-        {
           "name": "toolbar",
           "type": "SparkNode[]",
           "description": "工具栏按钮配置"
@@ -2042,7 +2032,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "节点折叠回调"
         }
       ],
-      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\nsparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）\ntoolbar: SparkNode[] — 工具栏按钮配置\ntoolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）\ntoolbarClass: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
+      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\ntoolbar: SparkNode[] — 工具栏按钮配置\ntoolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）\ntoolbarClass: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
       "source": "vcm+override"
     },
     "r-list": {
@@ -8484,8 +8474,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                       "required": true,
                       "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                     },
-                    "__@toPrimitive@52475": {
-                      "name": "__@toPrimitive@52475",
+                    "__@toPrimitive@78286": {
+                      "name": "__@toPrimitive@78286",
                       "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                       "required": true,
                       "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -8845,8 +8835,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@52475": {
-                        "name": "__@toPrimitive@52475",
+                      "__@toPrimitive@78286": {
+                        "name": "__@toPrimitive@78286",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -10626,7 +10616,6 @@ allowDelete?: boolean — 允许删除节点（自动生成删除按钮）
 【根级字段】
 dataKey: string — 数据绑定键，如 "TreeData@rows"
 dataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
-sparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）
 toolbar: SparkNode[] — 工具栏按钮配置
 toolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）
 toolbarClass: string — 工具栏 CSS 类名
@@ -10639,7 +10628,6 @@ onNodeCollapse: string — 节点折叠回调
 **r-tree** — 树形组件容器
 dataKey: string — 数据绑定键，如 "TreeData@rows"
 dataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
-sparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）
 toolbar: SparkNode[] — 工具栏按钮配置
 toolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）
 toolbarClass: string — 工具栏 CSS 类名

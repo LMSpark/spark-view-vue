@@ -346,7 +346,7 @@ function buildComponentEntry(
   const props: PropEntry[] = api !== null
     ? api.props
       .filter(p => {
-        if (p.name === 'config' || p.name === 'sparkChildren') return false
+        if (p.name === 'config') return false
         // SparkNode 类型 props → sharedTypes 已定义，逐组件展示无意义
         if (isSparkNodeTypeProp(p.type)) return false
         // 容器内部 props → rootFields 已用 rule.json 格式描述

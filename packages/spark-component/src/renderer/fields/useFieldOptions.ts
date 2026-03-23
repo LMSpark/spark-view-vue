@@ -1,7 +1,6 @@
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { getViewFromRawKey } from '@spark-view/spark-data'
-import { SPARK_NODE_CONFIG_KEY } from '../../types.js'
 import { PAGE_DATASET } from '../../capability-keys.js'
 import { useSparkConsume } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
@@ -106,17 +105,12 @@ function flattenOptions(source: FieldOption[]): FieldOption[] {
 }
 
 export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn {
-  const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
   const optionLabelField = computed(() => props.optionLabelField ?? 'label')
   const optionValueField = computed(() => props.optionValueField ?? 'value')
   const optionChildrenField = computed(() => props.optionChildrenField ?? 'children')
 
   // ── optionKey → DataView 动态选项解析 ──
-  const resolvedOptionKey = computed(() =>
-    props.optionKey
-    ?? nodeConfig?.optionKey
-    ?? (nodeConfig?.props?.['optionKey'] as string | undefined),
-  )
+  const resolvedOptionKey = computed(() => props.optionKey)
   const parentCtx = useSparkConsume()
   const pageDataSet = parentCtx.consume(PAGE_DATASET)
 
@@ -134,8 +128,8 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
         .map(row => normalizeOption(row, optionLabelField.value, optionValueField.value, optionChildrenField.value))
         .filter((item): item is FieldOption => item !== null)
     }
-    // 优先级 2: 静态 options（props 或 rule.json 配置）
-    const source = props.options ?? (nodeConfig?.props?.['options'] as unknown[] | undefined) ?? []
+    // 优先级 2: 静态 options（props）
+    const source = props.options ?? []
     if (!Array.isArray(source)) return []
     return source
       .map(item => normalizeOption(item, optionLabelField.value, optionValueField.value, optionChildrenField.value))

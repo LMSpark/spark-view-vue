@@ -9,7 +9,6 @@ import { isActionDisplayed, isModelActionAllowed } from './action-permission'
 export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 // 注意：工具栏的展示权限通常只受模型权限控制，不涉及行权限，因为它们一般不直接作用于某一行数据。
 interface UseContainerToolbarOptions {
-  config: ComputedRef<SparkNode | undefined>
   toolbar: ComputedRef<SparkNode[] | undefined>
   toolbarPosition: ComputedRef<ToolbarPosition | undefined>
   toolbarClass: ComputedRef<string | undefined>
@@ -20,15 +19,14 @@ interface UseContainerToolbarOptions {
 // ── 组合式函数 ───────────────────────────────────────────────────────────────
 
 export function useContainerToolbar(options: UseContainerToolbarOptions) {
-  // 先读取显式传入的工具栏配置与展示参数，未传时再回退到容器配置。
   const toolbarConfigs = computed(() =>
-    options.toolbar.value ?? (options.config.value?.props?.['toolbar'] as SparkNode[] | undefined) ?? []
+    options.toolbar.value ?? []
   )
   const toolbarPositionValue = computed<ToolbarPosition>(() =>
-    (options.config.value?.props?.['toolbarPosition'] as ToolbarPosition | undefined) ?? options.toolbarPosition.value ?? 'top'
+    options.toolbarPosition.value ?? 'top'
   )
   const toolbarClassValue = computed(() =>
-    (options.config.value?.props?.['toolbarClass'] as string | undefined) ?? options.toolbarClass.value ?? ''
+    options.toolbarClass.value ?? ''
   )
 
   // 仅保留“显示上可见”且“模型权限允许”的工具栏动作。

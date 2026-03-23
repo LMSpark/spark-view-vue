@@ -58,13 +58,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, useSlots } from 'vue'
-import { useSparkComponent, SparkComponentRenderer, SPARK_NODE_CONFIG_KEY } from '../_pkg'
+import { computed, useSlots } from 'vue'
+import { useSparkComponent, SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import { useContainerGrid } from './useContainerGrid'
 import type { RendererDrawerApi } from '../_pkg'
 
 interface Props {
+  /** 子节点 */
+  children?: SparkNode[]
   /** 抽屉标题 */
   title?: string
   /** 控制显隐（v-model） */
@@ -116,29 +118,19 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
+const { registerApi } = useSparkComponent({ type: 'r-drawer' })
 
-const { registerApi } = useSparkComponent(nodeConfig ?? { type: 'r-drawer' })
-
-const resolvedTitle = computed(() =>
-  props.title || (nodeConfig?.props?.['title'] as string | undefined) || ''
-)
-const headerActionConfigs = computed(() =>
-  props.headerActions ?? (nodeConfig?.props?.['headerActions'] as SparkNode[] | undefined) ?? []
-)
-const footerActionConfigs = computed(() =>
-  props.footerActions ?? (nodeConfig?.props?.['footerActions'] as SparkNode[] | undefined) ?? []
-)
+const resolvedTitle = computed(() => props.title || '')
+const headerActionConfigs = computed(() => props.headerActions ?? [])
+const footerActionConfigs = computed(() => props.footerActions ?? [])
 const { gridChildren, gridStyle, getChildGridStyle } = useContainerGrid({
-  children: computed(() => nodeConfig?.children ?? []),
+  children: computed(() => props.children ?? []),
   columns: computed(() => props.gridColumns),
   gap: computed(() => props.gridGap),
   autoRows: computed(() => props.gridAutoRows),
 })
 
-const visibleValue = computed(() =>
-  props.modelValue ?? ((nodeConfig?.props?.['modelValue'] as boolean | undefined) ?? false)
-)
+const visibleValue = computed(() => props.modelValue ?? false)
 const hasHeaderActions = computed(() => headerActionConfigs.value.length > 0 || slots['header-actions'] !== undefined)
 const hasHeader = computed(() => resolvedTitle.value.length > 0 || hasHeaderActions.value)
 const showFooter = computed(() => footerActionConfigs.value.length > 0 || slots['footer'] !== undefined)

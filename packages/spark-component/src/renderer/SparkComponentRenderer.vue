@@ -1,10 +1,9 @@
 <template>
-  <!-- 已注册：动态渲染组件，子组件通过 Vue DI 自动获取父上下文 -->
-  <!-- config 整体传递 + config.props 展开为独立 props（字段组件可直接接收） -->
+  <!-- 已注册：SparkNode 根级字段 + config.props + 事件处理器 → 统一作为 Vue Props 传递 -->
   <component
     v-if="resolvedComponent"
     :is="resolvedComponent"
-    v-bind="forwardedProps"
+    v-bind="componentProps"
   />
 
   <!-- 未注册但可识别为原生标签：按原生元素渲染，并继续递归子节点 -->
@@ -84,7 +83,6 @@ import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } f
 import type { SparkNode, ComponentContext, ComponentRegistry } from '../types.js'
 
 const LAYOUT_ONLY_PROP_KEYS = new Set(['colSpan', 'rowSpan', 'gridColSpan', 'gridRowSpan', 'span'])
-const FRAMEWORK_INTERNAL_PROP_KEYS = new Set(['sparkChildren'])
 const NATIVE_RENDERABLE_TAGS = new Set([
   'div', 'span', 'p', 'a', 'img',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -176,7 +174,7 @@ const resolvedComponent = computed(() => {
   return null
 })
 
-const _FILTERABLE_KEYS = new Set([...LAYOUT_ONLY_PROP_KEYS, ...FRAMEWORK_INTERNAL_PROP_KEYS])
+const _FILTERABLE_KEYS = LAYOUT_ONLY_PROP_KEYS
 
 function _hasFilterableKeys(obj: Record<string, unknown>): boolean {
   for (const key of Object.keys(obj)) {
@@ -216,5 +214,19 @@ const forwardedProps = computed(() => {
   )
 
   return eventProps ? { ...filteredProps, ...eventProps } : filteredProps
+})
+
+/**
+ * 已注册组件的完整 Props = forwardedProps + children。
+ *
+ * 对齐 h(type, props, children) 模型：
+ *   - props  → forwardedProps（含绑定阶段规范化后的 dataKey/field/label 等）
+ *   - children → SparkNode.children（类型化，直接转发）
+ * 仅用于已注册组件分支；原生标签 / 未注册组件仍使用 forwardedProps（避免 DOM 属性污染）。
+ */
+const componentProps = computed(() => {
+  const base = forwardedProps.value
+  const children = props.config.children
+  return children !== undefined ? { ...base, children } : base
 })
 </script>

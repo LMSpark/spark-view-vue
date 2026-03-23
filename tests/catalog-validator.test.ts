@@ -277,7 +277,7 @@ describe('validateWithCatalog', () => {
       expect(propIssues).toHaveLength(0)
     })
 
-    it('allows framework pass-through props (sparkChildren, config, style, class, id)', () => {
+    it('allows framework pass-through props (config, style, class, id)', () => {
       const catalog = makeCatalog({
         components: {
           'r-text': makeComponentEntry({ props: [] }),
@@ -285,7 +285,7 @@ describe('validateWithCatalog', () => {
       })
       const report = validateWithCatalog(catalog, {
         'rule.json': JSON.stringify([
-          { type: 'r-text', props: { sparkChildren: [], config: {}, style: {}, class: 'foo', id: 'bar' } },
+          { type: 'r-text', props: { config: {}, style: {}, class: 'foo', id: 'bar' } },
         ]),
       })
       const propIssues = issuesContaining(report.issues, '不存在 prop')
@@ -368,7 +368,7 @@ describe('validateWithCatalog', () => {
       expect(reqIssues[0]!.message).toContain('label')
     })
 
-    it('does not warn for framework pass-through props (config, sparkChildren)', () => {
+    it('does not warn for framework pass-through props (config)', () => {
       const catalog = makeCatalog({
         components: {
           'r-table': makeComponentEntry({
@@ -376,7 +376,6 @@ describe('validateWithCatalog', () => {
             category: 'container',
             props: [
               { name: 'config', type: 'object', required: true },
-              { name: 'sparkChildren', type: 'array', required: true },
             ],
           }),
         },

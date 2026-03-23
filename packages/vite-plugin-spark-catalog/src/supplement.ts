@@ -256,7 +256,6 @@ children 内放 r-* 字段组件（只读模式）`,
   'r-tree': `**r-tree** — 树形组件容器
 dataKey: string — 数据绑定键，如 "TreeData@rows"
 dataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
-sparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）
 toolbar: SparkNode[] — 工具栏按钮配置
 toolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）
 toolbarClass: string — 工具栏 CSS 类名

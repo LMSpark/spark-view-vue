@@ -74,25 +74,24 @@ export interface ComponentContext extends ICapabilityContext {
 /**
  * SparkNode - 组件配置的最小输入类型
  *
- * 用于 useSparkComponent 的泛型约束。
- * 与 ComponentContext 的区别：
- * - SparkNode 是纯数据（JSON 可序列化），不含运行时字段（id, state, providers, consumers）
- * - children 允许任意嵌套配置数组，不要求是完整的 ComponentContext
+ * 设计参照 Vue `h(type, props, children)` 三段式：
+ *   type     → 渲染什么组件
+ *   props    → 组件接收的全部属性（dataKey / field / label … 均在此）
+ *   children → 嵌套子节点
+ *
+ * 额外的 id / on / visible / disabled 是框架控制字段，
+ * 与 h() 的 props 类似但语义属于 SPARK 渲染器自身消费，不传给业务组件。
+ *
+ * rule.json 允许将 dataKey / field 等写在根级（便于阅读），
+ * 绑定阶段（bindSparkRuleEvents / bindDataToRules）会统一收入 props，
+ * 渲染层一律通过 Vue Props 消费——组件代码只需关心 props，零认知负担。
  */
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
   /** 实例 ID（可选，运行时自动生成） */
   id?: string
-  /** 数据绑定键（如 Users@rows），供容器组件在运行时解析 DataView */
-  dataKey?: string
-  /** 字段绑定名（与父组件 dataKey 叠加，子组件通过 field 定位数据字段） */
-  field?: string
-  /** 显示标签（UI 展示文字，如 "用户名"） */
-  label?: string
-  /** 选项数据源 DataKey（如 'Categories@rows'），供 select/radio/checkbox 解析选项列表 */
-  optionKey?: string
-  /** 组件属性 */
+  /** 组件属性（所有组件可见的数据均通过 props 传递） */
   props?: Record<string, unknown>
   /** 子组件配置（递归） */
   children?: SparkNode[]
@@ -104,14 +103,6 @@ export interface SparkNode {
   // ── 事件（根级字段，bindRules 包装后由 Renderer 转发） ──
   /** 事件绑定（key 为 camelCase 事件名，value 为 script.js 函数名或运行时函数） */
   on?: Record<string, unknown>
-
-  // ── 容器级配置（根级字段，兼容 useContainerToolbar / useContainerActions / useTableFilters） ──
-  /** 工具栏配置 */
-  toolbar?: SparkNodeToolbar
-  /** 行操作列配置 */
-  actions?: SparkNodeActions
-  /** 筛选器配置 */
-  filter?: SparkNodeFilter
 }
 
 // ============================================================================

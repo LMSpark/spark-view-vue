@@ -345,8 +345,7 @@ function validateProps(
   if (props === null) return
 
   const knownPropNames = new Set(entry.props.map(p => p.name))
-  // sparkChildren, config 是框架透传，不报
-  knownPropNames.add('sparkChildren')
+  // config 是框架透传，不报
   knownPropNames.add('config')
   // 通用 HTML 属性
   knownPropNames.add('style')
@@ -366,7 +365,7 @@ function validateProps(
 // ─── Required props 校验 ───
 
 /** 框架透传或通用 prop，不应视为缺失 */
-const FRAMEWORK_PROPS = new Set(['sparkChildren', 'config', 'style', 'class', 'id'])
+const FRAMEWORK_PROPS = new Set(['config', 'style', 'class', 'id'])
 
 function validateRequiredProps(
   typeName: string,

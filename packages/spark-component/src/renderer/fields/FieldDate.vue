@@ -16,8 +16,6 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue'
-import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
@@ -31,6 +29,12 @@ interface Props {
   width?: number
   /** 双向绑定值，日期范围时为数组 */
   modelValue?: string | Date | Array<string | Date>
+  /** 筛选模式 */
+  filterMode?: string
+  /** 筛选变体 */
+  filterVariant?: string
+  /** 范围筛选标记 */
+  filterRange?: boolean
 }
 
 const props = defineProps<Props>()
@@ -38,8 +42,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: string | Date | Array<string | Date>]
 }>()
-
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
 function formatDateValue(value: unknown): string {
   if (!value) return ''
@@ -50,9 +52,9 @@ function formatDateValue(value: unknown): string {
 }
 
 const isRangeFilter =
-  nodeConfig?.props?.['filterMode'] === 'range'
-  || nodeConfig?.props?.['filterVariant'] === 'range'
-  || nodeConfig?.props?.['filterRange'] === true
+  props.filterMode === 'range'
+  || props.filterVariant === 'range'
+  || props.filterRange === true
 
 const permission = useFieldPermission<string | Date | Array<string | Date>>({
   props,

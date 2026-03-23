@@ -34,8 +34,6 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue'
-import { SPARK_NODE_CONFIG_KEY } from '../_pkg'
 import { useFieldPermission } from './useFieldPermission'
 import { useFieldContext } from './useFieldContext'
 import FieldContextRenderer from './FieldContextRenderer.vue'
@@ -57,6 +55,10 @@ interface Props {
   precision?: number
   /** 筛选模式（'range' 启用范围输入） */
   filterMode?: string
+  /** 筛选变体 */
+  filterVariant?: string
+  /** 范围筛选标记 */
+  filterRange?: boolean
 }
 
 const props = defineProps<Props>()
@@ -64,8 +66,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: number | [number | undefined, number | undefined]]
 }>()
-
-const nodeConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
 
 function formatNumberValue(value: unknown): string {
   if (Array.isArray(value)) return value.map(item => formatNumberValue(item)).join(' ~ ')
@@ -76,9 +76,8 @@ function formatNumberValue(value: unknown): string {
 
 const isRangeFilter =
   props.filterMode === 'range'
-  || nodeConfig?.props?.['filterMode'] === 'range'
-  || nodeConfig?.props?.['filterVariant'] === 'range'
-  || nodeConfig?.props?.['filterRange'] === true
+  || props.filterVariant === 'range'
+  || props.filterRange === true
 
 const permission = useFieldPermission<number | [number | undefined, number | undefined]>({
   props,

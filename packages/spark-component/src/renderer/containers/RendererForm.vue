@@ -43,7 +43,7 @@
 /**
  * RendererForm - 表单容器组件
  */
-import { ref } from 'vue'
+import { computed, ref, useAttrs } from 'vue'
 import { SparkComponentRenderer } from '../_pkg'
 import type { SparkNode } from '../_pkg'
 import type { DataView } from '@spark-view/spark-data'
@@ -54,8 +54,8 @@ import type { RendererFormApi } from '../_pkg'
 interface Props {
   /** 数据绑定键，如 "Users@currentRow" */
   dataKey?: string
-  /** 直接传入的 DataView */
-  dataView?: DataView | undefined
+  /** 子节点列表 */
+  children?: SparkNode[]
   /** 工具栏按钮配置 */
   toolbar?: SparkNode[]
   /** 工具栏位置 */
@@ -80,6 +80,7 @@ const props = withDefaults(defineProps<Props>(), {
   gridGap: 0,
   gridAutoRows: 'minmax(32px, auto)',
 })
+const attrs = useAttrs()
 
 const {
   registerApi,
@@ -94,7 +95,10 @@ const {
   showToolbar,
   getToolbarSlotScope,
   getDefaultSlotScope,
-} = useFormDetailContainer(props, 'form')
+} = useFormDetailContainer({
+  ...props,
+  fallbackDataView: computed(() => attrs['dataView'] as DataView | undefined),
+}, 'form')
 
 // ── r-form 包装 API ──────────────────────────────────────────────────────
 

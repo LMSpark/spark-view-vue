@@ -211,6 +211,11 @@ function bindSparkRuleEvents(
     return undefined
   }
 
+  // ── h(type, props, children) 对齐 ──
+  // SparkNode 结构键 ≈ h() 的 type + children + 框架控制字段
+  // 保留在根级，由渲染器自身消费；其余所有字段一律收入 props
+  const _STRUCTURAL_KEYS = new Set(['type', 'id', 'props', 'children', 'on', 'visible', 'disabled'])
+
   const bindNode = (node: unknown): unknown => {
     if (Array.isArray(node)) return node.map(bindNode)
     if (node === null || typeof node !== 'object') return node
@@ -218,6 +223,7 @@ function bindSparkRuleEvents(
     const current = node as Record<string, unknown>
     const cloned: Record<string, unknown> = { ...current }
 
+    // ── 事件绑定：on.* 字符串 → callFunc 闭包 ──
     if (current['on'] !== null && typeof current['on'] === 'object' && !Array.isArray(current['on'])) {
       const newOn: Record<string, unknown> = {}
       for (const [eventName, handler] of Object.entries(current['on'] as Record<string, unknown>)) {
@@ -236,6 +242,7 @@ function bindSparkRuleEvents(
       cloned['on'] = newOn
     }
 
+    // ── props 内事件绑定 + 子结构递归 ──
     if (current['props'] !== null && typeof current['props'] === 'object' && !Array.isArray(current['props'])) {
       const propsObj = { ...(current['props'] as Record<string, unknown>) }
       for (const [propName, propValue] of Object.entries(propsObj)) {
@@ -254,8 +261,26 @@ function bindSparkRuleEvents(
       cloned['props'] = propsObj
     }
 
+    // ── children 递归 ──
     if (Array.isArray(current['children'])) {
       cloned['children'] = (current['children'] as unknown[]).map(bindNode)
+    }
+
+    // ── 根级字段 → props 规范化 ──
+    // 收集非结构键，一次性合并到 props（根级覆盖 props 同名字段）
+    let extras: Record<string, unknown> | undefined
+    for (const key of Object.keys(current)) {
+      if (_STRUCTURAL_KEYS.has(key)) continue
+      if (current[key] === undefined) continue
+      extras ??= {}
+      extras[key] = current[key]
+    }
+    if (extras !== undefined) {
+      const cp = cloned['props']
+      const existing = (typeof cp === 'object' && cp !== null && !Array.isArray(cp))
+        ? cp as Record<string, unknown>
+        : {}
+      cloned['props'] = { ...existing, ...extras }
     }
 
     return cloned

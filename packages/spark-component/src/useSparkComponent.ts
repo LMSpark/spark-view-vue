@@ -10,7 +10,7 @@ import { shallowReactive, computed, onMounted, onUnmounted, markRaw, inject, pro
 import { provide as setCapability, lookup, normalizeKey, createEventEmitter, APP_SERVICES, LOGGER } from '@spark-view/spark-utils'
 import type { IEventEmitter, CapabilityKey, CapabilityName, CapabilityTypeMap, LoggerApi, IAppServicesCapability } from '@spark-view/spark-utils'
 import type { ComponentContext, SparkNode, ComponentRegistry } from './types.js'
-import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY } from './types.js'
+import { SPARK_REGISTRY_KEY, SPARK_PARENT_CONTEXT_KEY, SPARK_NODE_CONFIG_KEY } from './types.js'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 
@@ -90,8 +90,8 @@ export interface UseSparkComponentReturn {
 /** 全局单调递增 ID 计数器，替代 Date.now()+random（更快、确定、SSR 友好） */
 let _idCounter = 0
 
-export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
-  config: TConfig,
+export function useSparkComponent(
+  fallbackConfig?: SparkNode,
   options?: {
     registry?: ComponentRegistry
     parentContext?: ComponentContext
@@ -102,6 +102,11 @@ export function useSparkComponent<TConfig extends SparkNode = SparkNode>(
 
   const parentContext = options?.parentContext ?? inject(SPARK_PARENT_CONTEXT_KEY, undefined)
   const registry = options?.registry ?? inject(SPARK_REGISTRY_KEY, undefined)
+
+  // 优先使用 SparkComponentRenderer 注入的完整 SparkNode 配置；
+  // fallbackConfig 仅用于测试场景或脱离 Renderer 直接使用的情况。
+  const injectedConfig = inject(SPARK_NODE_CONFIG_KEY, undefined)
+  const config: SparkNode = injectedConfig ?? fallbackConfig ?? { type: 'unknown' }
 
   // ── 上下文创建 ──
   //
