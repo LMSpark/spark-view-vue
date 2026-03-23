@@ -121,7 +121,7 @@ if (props.parentContext !== undefined) {
   vueProvide(SPARK_PARENT_CONTEXT_KEY, props.parentContext)
 }
 
-// 向子组件注入当前节点的 SparkNode 配置（替代 :config prop）
+// @deprecated 仅 useSparkComponent fallback 消费，组件应通过 Vue Props 接收属性
 vueProvide(SPARK_NODE_CONFIG_KEY, props.config)
 
 // ── 注册表（直接 inject，不经过 useSparkComponent）───────────────────────────
@@ -146,8 +146,7 @@ function isSparkNode(value: unknown): value is SparkNode {
 const shouldRenderAsNativeElement = computed(() => isNativeRenderableType(props.config.type))
 
 const renderableChildren = computed<RenderableChild[]>(() => {
-  const children = (props.config as { children?: unknown }).children
-  if (!Array.isArray(children)) return []
+  const children: unknown[] = props.config.children ?? []
 
   return children.filter((child): child is RenderableChild => (
     isSparkNode(child) || typeof child === 'string' || typeof child === 'number'

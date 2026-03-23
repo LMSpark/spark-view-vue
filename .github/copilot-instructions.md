@@ -714,20 +714,44 @@ r-row / r-cell
   consume(SELECTION)
 ```
 
-## Renderer 容器组件架构（DataView-first + sparkChildren）🏗️
+## Renderer 容器组件架构（DataView-first + h(type,props,children) 模型）🏗️
 
-### 核心模式：DataView-first
+### 核心模型：SparkNode ≈ h(type, props, children)
+
+SparkNode 设计参照 Vue `h(type, props, children)` 三段式：
+- **type** → 渲染什么组件
+- **props** → 组件接收的全部属性（dataKey / field / label … 均在此）
+- **children** → 嵌套子节点
+
+额外的 `id` / `on` / `visible` / `disabled` 是框架控制字段，由渲染器自身消费，不传给业务组件。
+
+rule.json 允许将 dataKey / field 等写在根级（便于阅读），绑定阶段（`bindSparkRuleEvents`）会统一收入 `props`，组件代码只需关心 `props`。
+
+```typescript
+// SparkNode 结构键（保留在根级）
+interface SparkNode {
+  type: string                    // ← h() 第一参数
+  props?: Record<string, unknown> // ← h() 第二参数
+  children?: SparkNode[]          // ← h() 第三参数
+  id?: string                     // 框架控制
+  on?: Record<string, unknown>    // 框架控制
+  visible?: boolean               // 框架控制
+  disabled?: boolean              // 框架控制
+}
+```
+
+### 数据流：DataView-first
 
 所有 `r-*` 容器组件（`r-table` / `r-form` / `r-detail`）遵循统一的 **DataView-first** 模式——DataView 是容器与子组件之间**唯一的数据中介**：
 
 ```
 rule.json
   { type: "r-table", dataKey: "Users@rows", children: [...] }
-    ↓ bindRules()
-  sparkChildren 注入 + dataKey 透传
+    ↓ bindSparkRuleEvents()        ← 根级 dataKey/field 收入 props
+    ↓ SparkComponentRenderer       ← v-bind="config.props" + children
     ↓
 RendererTable.vue
-  consume(PAGE_DATASET) → parseDataKey → DataView
+  props.dataKey → consume(PAGE_DATASET) → DataView
   provide(DATA_SOURCE, dataView)   ← 子组件通过 consume 获取
   provide(FIELD_CONTEXT, 'table')  ← 子组件感知父容器类型
     ↓
@@ -736,29 +760,17 @@ RendererTable.vue
   consume(FIELD_CONTEXT) → 'table' | 'form' | 'detail'
 ```
 
-### ❗ sparkChildren 注入机制（关键，必读）
+### ❗ children 直传机制（关键，必读）
 
-**问题**：如果父组件通过 slot 包装层渲染子元素，会破坏 `el-table` 对 `el-table-column` 的**直接子级检测**。如果子组件被包装在中间层中，表格列不会出现。
+**问题**：如果父组件通过 slot 包装层渲染子元素，会破坏 `el-table` 对 `el-table-column` 的**直接子级检测**。
 
-**解决方案**：`bindRules` 将 `r-*` 容器的 `children` 提取到 `props.sparkChildren`，容器组件自行用 `SparkComponentRenderer` 递归渲染：
+**解决方案**：容器组件通过 `props.children`（SparkNode.children 由 SparkComponentRenderer 直接转发）接收子节点，自行用 `SparkComponentRenderer` 递归渲染：
 
-```typescript
-// bindRules.ts 核心逻辑（简化）
-if (isSelfResolvingType(ruleType, registry)) {
-  const sparkKids = newRule.children.filter(isObject)
-  if (sparkKids.length > 0) {
-    setRuleProp(newRule, 'sparkChildren', sparkKids)  // 移入 props
-    newRule.children = []                              // 清空原 children
-  }
-}
-```
-
-容器组件模板中：
 ```vue
 <template>
   <el-table :data="tableData" v-bind="$attrs">
     <SparkComponentRenderer
-      v-for="(child, i) in mergedChildren"
+      v-for="(child, i) in configChildren"
       :key="child.id ?? `r-table-child-${i}`"
       :config="child"
     />
@@ -766,13 +778,14 @@ if (isSelfResolvingType(ruleType, registry)) {
 </template>
 
 <script setup>
-const mergedChildren = computed(() =>
-  props.config?.children ?? props.sparkChildren ?? []
-)
+const { configChildren } = useContainerInput({
+  dataKey: computed(() => props.dataKey),
+  children: computed(() => props.children),
+})
 </script>
 ```
 
-**为什么 sparkChildren 而不是 slot？**
+**为什么不用 slot？**
 - slot 包装层破坏 el-table → el-table-column 的父子关系
 - `SparkComponentRenderer` 直接在 `<el-table>` 内部渲染，el-table-column 成为直接子级
 - 渲染器是**透明路由层**（不创建自己的 ComponentContext），能力链不受影响
@@ -785,42 +798,39 @@ const mergedChildren = computed(() =>
 - 自解析组件：bindRules 透传 `dataKey` 到 props，由组件自行 `consume(PAGE_DATASET)` 解析
 - 非自解析组件：bindRules 在规则绑定阶段直接解析 dataKey 并注入数据
 
-### ❗ field 透传
+### ❗ 属性规范化（根级 → props）
 
-`rule.field` 是字段标识符，**不会**自动作为 Vue prop 传给自定义组件。`bindRules` 显式将 `rule.field` 复制到 `props.field`：
+`bindSparkRuleEvents` 以结构键黑名单（`type/id/props/children/on/visible/disabled`）实现规范化：所有非结构根级字段一律收入 `props`。因此：
 
-```typescript
-// bindRules.ts
-if (ruleType.startsWith('r-') && newRule.field !== undefined) {
-  setRuleProp(newRule, 'field', newRule.field)
-}
-```
-
-**field vs label 分离**：
-- `config.field`（= `rule.field`）= **字段绑定名**，映射到 DataView 行的字段（如 `"age"`）
-- `props.label` = **显示标签**，UI 上展示的文字（如 `"年龄"`）
-- 两者**必须分开声明**，不要混用
+- rule.json 中 `dataKey` / `field` / `label` / `optionKey` 写在根级或 props 内均可，最终都在 props 内
+- **组件代码一律通过 `defineProps` 接收属性，不读 SparkNode 根级**
+- `SPARK_NODE_CONFIG_KEY` inject 已废弃，仅 `useSparkComponent` 作为内部 fallback
 
 ```jsonc
-// rule.json 正确写法
-{ "type": "r-text", "field": "userName", "props": { "label": "用户名" } }
-
-// ❌ 错误：field 当 label 用（字段绑定会失败）
-{ "type": "r-text", "field": "用户名" }
+// rule.json —— 两种写法等价，绑定后统一在 props 内
+{ "type": "r-text", "field": "name", "props": { "label": "姓名" } }
+{ "type": "r-text", "props": { "field": "name", "label": "姓名" } }
 ```
 
-### ❗ SparkComponentRenderer 的 v-bind 展开
+### ❗ SparkComponentRenderer 的悕传机制
 
-`SparkComponentRenderer` 同时传递 `:config="config"` 和 `v-bind="config.props"`，让子组件可以两种方式接收参数：
+`SparkComponentRenderer` 对已注册组件传递 `v-bind="config.props"` + `children`：
 
 ```vue
 <!-- SparkComponentRenderer.vue -->
-<component :is="resolvedComponent" :config="config" v-bind="config.props" />
+<component :is="resolvedComponent" :config="config" v-bind="componentProps" />
 ```
 
-- 容器组件通过 `props.config` 读取完整配置（children / dataKey / type 等）
-- 字段组件可直接声明 `props: { name, label, sparkChildren }` 按名接收
-- 两种方式共存，逐步从 config 包读取迁移到独立 props
+`componentProps` = `config.props`（含事件合并）+ `config.children`。
+绑定阶段已将 dataKey/field/label 等收入 props，组件通过 `defineProps` 直接接收：
+
+```typescript
+// 容器组件
+const props = defineProps<{ dataKey?: string; children?: SparkNode[]; ... }>()
+
+// 字段组件
+const props = defineProps<{ field?: string; label?: string; ... }>()
+```
 
 ### ❗ tryAutoLoad 仅对有 API 配置的表触发
 
@@ -857,9 +867,9 @@ function tryAutoLoad(view: DataView | null) {
 
 | 症状 | 原因 | 解决 |
 |------|------|------|
-| el-table 列不显示 | slot 包装破坏父子关系 | 确保 bindRules 走 sparkChildren 注入，容器用 SparkComponentRenderer 渲染 |
+| el-table 列不显示 | slot 包装破坏父子关系 | 容器组件通过 `props.children` 接收，用 SparkComponentRenderer 渲染 |
 | `Table xxx has no API configuration` | tryAutoLoad 未判断 api 存在 | `if (!view.dataTable?.api) return` |
-| 字段组件读不到 field | rule.field 不自动传给自定义组件 | bindRules 已显式 `setRuleProp(newRule, 'field', newRule.field)` |
+| 字段组件读不到 field | 根级 field 未规范化到 props | 绑定阶段已统一收入 props，组件通过 `defineProps` 接收 |
 | 子组件 consume(DATA_SOURCE) 返回 null | 父容器未 provide | 确认 r-table/form/detail 的 `watch(resolvedView)` 正确 `sparkProvide(DATA_SOURCE, view)` |
 | 表格渲染但无数据 | dataKey 写错 / pageDataSet 为 null | 检查 pagedata.json 表名、rule.json dataKey 格式、PageRenderer 是否 provide(PAGE_DATASET) |
 | `console.error` 调试日志泄漏到生产 | 忘记删除或忘加 `import.meta.env.DEV` 守卫 | 所有诊断日志必须包裹 `if (import.meta.env.DEV)` |

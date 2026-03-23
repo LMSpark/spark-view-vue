@@ -212,7 +212,12 @@ export const SPARK_REGISTRY_KEY: InjectionKey<ComponentRegistry> = Symbol('spark
 /** 父级上下文注入键（替代字符串 'sparkParentContext'） */
 export const SPARK_PARENT_CONTEXT_KEY: InjectionKey<ComponentContext> = Symbol('sparkParentContext') as InjectionKey<ComponentContext>
 
-/** SparkNode 配置注入键 — SparkComponentRenderer 向子组件注入当前节点配置 */
+/**
+ * SparkNode 配置注入键 — SparkComponentRenderer 向子组件注入当前节点配置。
+ *
+ * @deprecated 组件应通过 Vue Props（defineProps）接收属性，不再 inject 此键。
+ * 仅 useSparkComponent 内部作为 fallback 消费（向后兼容）。
+ */
 export const SPARK_NODE_CONFIG_KEY: InjectionKey<SparkNode> = Symbol('sparkNodeConfig') as InjectionKey<SparkNode>
 
 // 日志类型 — 直接从 @spark-view/spark-utils 导入

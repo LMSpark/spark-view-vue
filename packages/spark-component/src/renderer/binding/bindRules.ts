@@ -144,19 +144,8 @@ export function bindDataToRules(options: RuleBindingOptions): BindRule[] {
     if (ruleType.startsWith('r-') && newRule.field === undefined && typeof newRule['name'] === 'string') {
       newRule.field = newRule['name']
     }
-    // field 透传：rule.field 需显式复制到 props 以传给自定义组件
-    // 所有 r-* 字段/容器组件都需要通过 props.field 接收字段名
-    if (ruleType.startsWith('r-') && newRule.field !== undefined) {
-      setRuleProp(newRule, 'field', newRule.field)
-    }
-    // label 透传：rule.label → props.label（v3 根级 label）
-    if (ruleType.startsWith('r-') && newRule.label !== undefined) {
-      setRuleProp(newRule, 'label', newRule.label)
-    }
-    // optionKey 透传：rule.optionKey → props.optionKey（v3 选项数据源 DataKey）
-    if (ruleType.startsWith('r-') && newRule.optionKey !== undefined) {
-      setRuleProp(newRule, 'optionKey', newRule.optionKey)
-    }
+    // field / label / optionKey 透传已由 bindSparkRuleEvents 统一规范化到 props，
+    // bindDataToRules 无需重复处理（仅保留 dataKey 的 self-resolving 透传）。
 
     // ── 容器结构化字段：root → props 扁平化 ──
     // rule.json 中 toolbar/actions/filter 为根级结构化对象，
