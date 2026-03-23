@@ -2,7 +2,7 @@
  * Component API Diff Report（组件 API 差距分析）
  *
  * 对比自动提取的组件 API 与手写文档目录，报告：
- * - 未文档化的 props / emits / capabilities
+ * - 未文档化的 props / emits
  * - 无自动提取数据的目录条目（可能过时）
  * - 组件整体覆盖率
  *
@@ -26,7 +26,6 @@ export interface ExtractedComponentApi {
   type: string
   props: ReadonlyArray<{ name: string }>
   emits: ReadonlyArray<{ name: string }>
-  capabilities: { consumes: readonly string[]; provides: readonly string[] }
 }
 
 /* ==========================================================================
@@ -48,10 +47,6 @@ export interface ComponentGapReport {
   extraCatalogProps: string[]
   /** 未文档化的 emit 事件名 */
   undocumentedEmits: string[]
-  /** 未文档化的能力键（consume） */
-  undocumentedConsumes: string[]
-  /** 未文档化的能力键（provide） */
-  undocumentedProvides: string[]
   /** 覆盖率 0..1 */
   propsCoverage: number
 }
@@ -204,8 +199,6 @@ function analyzeComponent(
       undocumentedProps: [],
       extraCatalogProps: [],
       undocumentedEmits: [],
-      undocumentedConsumes: [],
-      undocumentedProvides: [],
       propsCoverage: 0,
     }
   }
@@ -239,12 +232,6 @@ function analyzeComponent(
     .filter(e => !catalogText?.includes(e.name))
     .map(e => e.name)
 
-  // Capabilities 覆盖检查
-  const undocumentedConsumes = api.capabilities.consumes
-    .filter(k => !catalogText?.includes(k))
-  const undocumentedProvides = api.capabilities.provides
-    .filter(k => !catalogText?.includes(k))
-
   const totalProps = api.props.length
   const propsCoverage = totalProps > 0 ? documented.length / totalProps : 1
 
@@ -256,8 +243,6 @@ function analyzeComponent(
     undocumentedProps: undocumented,
     extraCatalogProps: extraCatalog,
     undocumentedEmits,
-    undocumentedConsumes,
-    undocumentedProvides,
     propsCoverage,
   }
 }

@@ -92,15 +92,6 @@ export function generateComponentPrompt(entry: ComponentEntry, verbosity: Prompt
     }
   }
 
-  // Capabilities
-  const { consumes, provides } = entry.capabilities
-  if (consumes.length > 0 || provides.length > 0) {
-    lines.push('')
-    lines.push('【能力链】')
-    if (consumes.length > 0) lines.push(`consumes: ${consumes.join(', ')}`)
-    if (provides.length > 0) lines.push(`provides: ${provides.join(', ')}`)
-  }
-
   // Notes (override/addendum text)
   if (verbosity === 'full' && entry.notes !== undefined) {
     lines.push('')

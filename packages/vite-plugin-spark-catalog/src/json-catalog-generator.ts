@@ -221,28 +221,6 @@ function parseFieldLine(trimmed: string, fields: NonNullable<ComponentEntry['roo
 }
 
 /* --------------------------------------------------------------------------
- * 从 override 文本解析能力链
- * ----------------------------------------------------------------------- */
-
-function parseCapabilitiesFromOverride(
-  overrideText: string,
-): { consumes: string[]; provides: string[] } | null {
-  const consumeMatch = /consumes:\s*(.+)/i.exec(overrideText)
-  const provideMatch = /provides:\s*(.+)/i.exec(overrideText)
-  if (consumeMatch === null && provideMatch === null) return null
-
-  const parseLine = (line: string): string[] =>
-    line.split(/[,，]/)
-      .map(s => s.trim())
-      .filter(s => s !== '' && /^[A-Z_]+$/.test(s))
-
-  return {
-    consumes: consumeMatch !== null ? parseLine(consumeMatch[1] ?? '') : [],
-    provides: provideMatch !== null ? parseLine(provideMatch[1] ?? '') : [],
-  }
-}
-
-/* --------------------------------------------------------------------------
  * 平台约束
  * ----------------------------------------------------------------------- */
 
@@ -396,18 +374,6 @@ function buildComponentEntry(
   const slots: SlotEntry[] | undefined =
     api !== null && api.slots.length > 0 ? api.slots : undefined
 
-  // Capabilities: VCM AST 提取 + override 文本补充
-  let capabilities = api?.capabilities ?? { consumes: [], provides: [] }
-  if (hasOverride && overrideText !== undefined) {
-    const overrideCaps = parseCapabilitiesFromOverride(overrideText)
-    if (overrideCaps !== null) {
-      // 合并：AST 有的保留，override 补充缺失的
-      const mergedConsumes = [...new Set([...capabilities.consumes, ...overrideCaps.consumes])]
-      const mergedProvides = [...new Set([...capabilities.provides, ...overrideCaps.provides])]
-      capabilities = { consumes: mergedConsumes, provides: mergedProvides }
-    }
-  }
-
   // Root fields from override text
   const rootFields = hasOverride && overrideText !== undefined
     ? parseRootFieldsFromOverride(overrideText)
@@ -438,7 +404,6 @@ function buildComponentEntry(
     description,
     props,
     emits,
-    capabilities,
     ...(exposed !== undefined ? { exposed } : {}),
     ...(slots !== undefined ? { slots } : {}),
     ...(rootFields !== undefined ? { rootFields } : {}),

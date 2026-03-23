@@ -255,14 +255,6 @@ function formatComponentEntry(entry: ComponentEntry): string {
     for (const p of entry.props) lines.push(formatPropLine(p))
   }
 
-  const { consumes, provides } = entry.capabilities
-  if (consumes.length > 0 || provides.length > 0) {
-    lines.push('')
-    lines.push('【能力链】')
-    if (consumes.length > 0) lines.push(`consumes: ${consumes.join(', ')}`)
-    if (provides.length > 0) lines.push(`provides: ${provides.join(', ')}`)
-  }
-
   if (entry.notes !== undefined) {
     lines.push('')
     lines.push(entry.notes)

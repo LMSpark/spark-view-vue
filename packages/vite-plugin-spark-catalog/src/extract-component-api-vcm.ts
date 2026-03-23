@@ -6,7 +6,6 @@
  * - Events（含参数签名和 schema）
  * - Exposed（defineExpose 公开方法/属性）
  * - Slots（命名插槽及其 scope 类型）
- * - Capabilities（SPARK 能力链，AST 提取复用）
  *
  * 替代手写 AST 提取器，提供完整类型推导能力。
  *
@@ -22,7 +21,6 @@ import ts from 'typescript'
 import type {
   PropEntry,
   EmitEntry,
-  CapabilityInfo,
   ExposedEntry,
   SlotEntry,
   PropSchema,
@@ -68,7 +66,6 @@ export interface VcmApiDescriptor {
   emits: EmitEntry[]
   exposed: ExposedEntry[]
   slots: SlotEntry[]
-  capabilities: CapabilityInfo
   /** Props 是否包含索引签名 */
   hasIndexSignature: boolean
 }
@@ -157,9 +154,6 @@ export function extractComponentApiVcm(
       return entry
     })
 
-    // -- Capabilities（从源码 AST 提取 SPARK 能力链） --
-    const capabilities = extractCapabilitiesFromSource(absPath)
-
     return {
       type: componentType,
       filePath: relativePath,
@@ -167,7 +161,6 @@ export function extractComponentApiVcm(
       emits,
       exposed,
       slots,
-      capabilities,
       hasIndexSignature,
     }
   } catch {
@@ -308,68 +301,8 @@ function convertSchema(vcmSchema: PropertyMetaSchema, depth = 0): PropSchema | u
 }
 
 /* ==========================================================================
- * Capability 提取（AST 复用）
+ * 源码 AST 辅助函数
  * ========================================================================== */
-
-/**
- * 从 Vue SFC 源码中通过轻量 AST 提取 SPARK 能力链
- *
- * vue-component-meta 不感知 SPARK 能力系统，需要独立提取。
- */
-function extractCapabilitiesFromSource(absPath: string): CapabilityInfo {
-  try {
-    const sfcSource = readFileSync(absPath, 'utf-8')
-    const scriptContent = extractScriptSetupContent(sfcSource)
-    if (scriptContent === null) return { consumes: [], provides: [] }
-
-    const sourceFile = ts.createSourceFile(
-      `${absPath}.ts`,
-      scriptContent,
-      ts.ScriptTarget.Latest,
-      true,
-      ts.ScriptKind.TS,
-    )
-
-    const consumes: string[] = []
-    const provides: string[] = []
-
-    function visit(node: ts.Node): void {
-      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-        const fn = node.expression.text
-        const firstArg = node.arguments[0]
-
-        if (fn === 'consume' && firstArg !== undefined && ts.isIdentifier(firstArg)) {
-          consumes.push(firstArg.text)
-        }
-        if (fn === 'sparkProvide' && firstArg !== undefined && ts.isIdentifier(firstArg)) {
-          provides.push(firstArg.text)
-        }
-        if (
-          fn === 'provide' &&
-          firstArg !== undefined &&
-          ts.isIdentifier(firstArg) &&
-          isCapabilityKeyName(firstArg.text)
-        ) {
-          provides.push(firstArg.text)
-        }
-      }
-      ts.forEachChild(node, visit)
-    }
-
-    visit(sourceFile)
-    return {
-      consumes: [...new Set(consumes)],
-      provides: [...new Set(provides)],
-    }
-  } catch {
-    return { consumes: [], provides: [] }
-  }
-}
-
-/** 判断标识符是否为 SCREAMING_SNAKE_CASE（能力键命名约定） */
-function isCapabilityKeyName(name: string): boolean {
-  return /^[A-Z][A-Z0-9_]*$/.test(name)
-}
 
 /** 从 Vue SFC 源码中提取 <script setup> 内容 */
 function extractScriptSetupContent(sfcSource: string): string | null {

@@ -72,8 +72,6 @@ export interface ComponentEntry {
   props: PropEntry[]
   /** Emits — 事件定义 */
   emits: EmitEntry[]
-  /** 能力链 */
-  capabilities: CapabilityInfo
 
   /** Exposed — defineExpose 公开的方法/属性 */
   exposed?: ExposedEntry[]
@@ -110,11 +108,6 @@ export interface EmitEntry {
   schema?: PropSchema[]
   /** @deprecated 旧格式兼容 — 优先使用 type + schema */
   payload?: Array<{ name: string; type: string }>
-}
-
-export interface CapabilityInfo {
-  consumes: string[]
-  provides: string[]
 }
 
 /** defineExpose 公开的方法/属性 */

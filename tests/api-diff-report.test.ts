@@ -10,14 +10,11 @@ function makeApi(
   type: string,
   props: string[],
   emits: string[] = [],
-  consumes: string[] = [],
-  provides: string[] = [],
 ): ExtractedComponentApi {
   return {
     type,
     props: props.map(name => ({ name })),
     emits: emits.map(name => ({ name })),
-    capabilities: { consumes, provides },
   }
 }
 
@@ -77,17 +74,6 @@ describe('generateDiffReport', () => {
     const comp = report.components.find(c => c.type === 'r-text')!
 
     expect(comp.undocumentedEmits).toContain('update:modelValue')
-  })
-
-  it('reports undocumented capabilities', () => {
-    const apis = [makeApi('r-table', ['config'], [], ['PAGE_DATASET'], ['DATA_SOURCE'])]
-    const catalog = { 'r-table': 'config: SparkNode' }
-
-    const report = generateDiffReport(apis, catalog)
-    const comp = report.components.find(c => c.type === 'r-table')!
-
-    expect(comp.undocumentedConsumes).toContain('PAGE_DATASET')
-    expect(comp.undocumentedProvides).toContain('DATA_SOURCE')
   })
 
   it('calculates summary statistics', () => {

@@ -39,7 +39,6 @@ export type {
   ComponentEntry,
   PropEntry,
   EmitEntry,
-  CapabilityInfo,
   ExposedEntry,
   SlotEntry,
   PropSchema,

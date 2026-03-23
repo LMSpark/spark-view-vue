@@ -45,7 +45,6 @@ export interface ComponentEntry {
   description: string
   props: PropEntry[]
   emits: EmitEntry[]
-  capabilities: CapabilityInfo
   exposed?: ExposedEntry[]
   slots?: SlotEntry[]
   rootFields?: RootFieldEntry[]
@@ -96,12 +95,6 @@ export interface SlotEntry {
   type: string
   description?: string
   schema?: PropSchema
-}
-
-
-export interface CapabilityInfo {
-  consumes: string[]
-  provides: string[]
 }
 
 export interface RootFieldEntry {

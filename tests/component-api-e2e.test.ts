@@ -50,12 +50,6 @@ describe('End-to-end: real component extraction (VCM)', () => {
     // RendererTable 有很多 props（>20）
     expect(api!.props.length).toBeGreaterThanOrEqual(20)
 
-    // 已知 capabilities（从源码 AST 提取）
-    expect(api!.capabilities.consumes).toContain('PAGE_DATASET')
-    expect(api!.capabilities.consumes).toContain('PAGE_SERVICE')
-    expect(api!.capabilities.provides).toContain('DATA_SOURCE')
-    expect(api!.capabilities.provides).toContain('FIELD_CONTEXT')
-
     // 有 withDefaults — VCM 也能提取默认值
     const toolbarPosition = api!.props.find(p => p.name === 'toolbarPosition')
     expect(toolbarPosition).toBeDefined()
@@ -68,14 +62,8 @@ describe('End-to-end: real component extraction (VCM)', () => {
 
     expect(api).not.toBeNull()
 
-    // 有索引签名
-    expect(api!.hasIndexSignature).toBe(true)
-
-    // 已知 capabilities
-    expect(api!.capabilities.consumes).toContain('PAGE_DATASET')
-    expect(api!.capabilities.provides).toContain('DATA_SOURCE')
-    expect(api!.capabilities.provides).toContain('FIELD_CONTEXT')
-    expect(api!.capabilities.provides).toContain('CONTEXT_DATA')
+    // 索引签名已移除（VCM 修复）
+    expect(api!.hasIndexSignature).toBe(false)
   })
 
   it('batch extracts multiple field components', () => {

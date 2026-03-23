@@ -133,7 +133,6 @@ export type {
   ComponentRegistry,
   PropEntry,
   EmitEntry,
-  CapabilityInfo,
   PlatformConstraints,
   NestingRule,
   RootFieldEntry,

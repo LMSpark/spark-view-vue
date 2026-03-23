@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-23T06:29:20.333Z
+ * 生成时间：2026-03-23T06:37:39.954Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,7 +20,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-23T06:29:20.328Z",
+  "buildTime": "2026-03-23T06:37:39.937Z",
   "componentCount": 77,
   "registry": {
     "containers": [
@@ -328,10 +328,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "语境感知字段渲染能力总览",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "notes": "**context-aware-fields-api** — 语境感知字段渲染能力总览\n\n【核心能力】\n- 子组件渲染由父容器语境决定：r-table(table) / r-form(form) / r-detail(detail) / r-list(list) / r-tree(tree)\n- 同一 r-* 字段组件可跨语境复用，不复制多套组件\n- 字段组件必须处于容器 children 中，禁止顶层裸放（会丢失语境）\n\n【关键约束】\n- r-table children 仅放 r-* 字段组件，禁止 el-table-column\n- 事件逻辑优先用根级 on + script.js 函数，不在组件层硬编码父级判断\n- 字段绑定用根级 field\n\n【建议组合查询】\n- r-table, r-form, r-detail, r-text, r-number, r-select, builtin-action",
       "source": "override"
     },
@@ -341,10 +337,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "声明式动作节点（零代码优先）",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "rootFields": [
         {
           "name": "type",
@@ -387,19 +379,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [
-          "PAGE_DATASET",
-          "PAGE_SERVICE",
-          "MODULE_CONTEXT",
-          "PAGE_COMPONENT_REGISTRY"
-        ],
-        "provides": [
-          "DATA_SOURCE",
-          "TABLE_API",
-          "FIELD_CONTEXT"
-        ]
-      },
       "exposed": [
         {
           "name": "toolbarPosition",
@@ -1118,17 +1097,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [
-          "PAGE_DATASET"
-        ],
-        "provides": [
-          "FORM_API",
-          "DATA_SOURCE",
-          "FIELD_CONTEXT",
-          "CONTEXT_DATA"
-        ]
-      },
       "exposed": [
         {
           "name": "toolbarPosition",
@@ -1473,17 +1441,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [
-          "PAGE_DATASET"
-        ],
-        "provides": [
-          "DETAIL_API",
-          "DATA_SOURCE",
-          "FIELD_CONTEXT",
-          "CONTEXT_DATA"
-        ]
-      },
       "exposed": [
         {
           "name": "toolbarPosition",
@@ -1789,17 +1746,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [
-          "PAGE_DATASET"
-        ],
-        "provides": [
-          "DATA_SOURCE",
-          "FIELD_CONTEXT",
-          "CONTEXT_DATA",
-          "TREE_API"
-        ]
-      },
       "exposed": [
         {
           "name": "dataKey",
@@ -2256,15 +2202,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [
-          "PAGE_DATASET"
-        ],
-        "provides": [
-          "DATA_SOURCE",
-          "LIST_API"
-        ]
-      },
       "exposed": [
         {
           "name": "toolbarPosition",
@@ -2915,12 +2852,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": [
-          "TABS_API"
-        ]
-      },
       "exposed": [
         {
           "name": "toolbarPosition",
@@ -3133,12 +3064,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": [
-          "COLLAPSE_API"
-        ]
-      },
       "exposed": [
         {
           "name": "toolbarPosition",
@@ -3351,12 +3276,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": [
-          "STEPS_API"
-        ]
-      },
       "exposed": [
         {
           "name": "toolbarPosition",
@@ -3640,12 +3559,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": [
-          "DIALOG_API"
-        ]
-      },
       "exposed": [
         {
           "name": "modelValue",
@@ -4110,12 +4023,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": [
-          "DRAWER_API"
-        ]
-      },
       "exposed": [
         {
           "name": "modelValue",
@@ -4649,12 +4556,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": [
-          "SECTION_API"
-        ]
-      },
       "exposed": [
         {
           "name": "description",
@@ -5078,10 +4979,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "块容器（轻量分区）",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "rootFields": [
         {
           "name": "title",
@@ -5264,10 +5161,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "rootFields": [
         {
           "name": "multiple",
@@ -5425,10 +5318,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "rootFields": [
         {
           "name": "multiple",
@@ -5586,10 +5475,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "rootFields": [
         {
           "name": "multiple",
@@ -5742,10 +5627,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "notes": "透传到 el-upload: autoUpload(默认 true), showFileList(默认 true), limit(默认 1), listType('text'|'picture'|'picture-card')",
       "source": "vcm+addendum"
     },
@@ -5936,10 +5817,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-transfer": {
@@ -6077,10 +5954,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-textarea": {
@@ -6171,10 +6044,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-text": {
@@ -6214,10 +6083,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-switch": {
@@ -6288,10 +6153,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-slider": {
@@ -6367,10 +6228,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-select": {
@@ -6488,10 +6345,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-rate": {
@@ -6553,10 +6406,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-radio": {
@@ -6652,10 +6501,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-number": {
@@ -6736,10 +6581,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "notes": "filterMode: 'range' — 启用范围过滤模式",
       "source": "vcm+addendum"
     },
@@ -6911,10 +6752,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-image": {
@@ -7026,10 +6863,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-icon": {
@@ -7137,10 +6970,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-html-editor": {
@@ -7187,10 +7016,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-file-path": {
@@ -7302,10 +7127,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-file-browser": {
@@ -7403,10 +7224,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "notes": "⚠️ 与 r-file-path 基本一致，差异在于内置的浏览器 UI 体验",
       "source": "vcm+addendum"
     },
@@ -7590,10 +7407,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-date": {
@@ -7652,10 +7465,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "notes": "透传到 el-date-picker: type('date'/'datetime'/'daterange'), format, valueFormat 等",
       "source": "vcm+addendum"
     },
@@ -7758,10 +7567,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "notes": "【使用场景】复杂表格需要多级表头分组，例如「基本信息」下包含「姓名」「年龄」「邮箱」\n\n【示例】\n{ \"type\": \"r-column-group\", \"props\": { \"label\": \"基本信息\" }, \"children\": [\n  { \"type\": \"r-text\", \"field\": \"name\", \"props\": { \"label\": \"姓名\" } },\n  { \"type\": \"r-number\", \"field\": \"age\", \"props\": { \"label\": \"年龄\" } }\n]}\nchildren 内放 r-* 字段组件作为实际数据列",
       "source": "vcm+addendum"
     },
@@ -7802,10 +7607,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "notes": "透传到 el-color-picker: showAlpha, colorFormat('hex'|'rgb'|'hsl'|'hsv'), predefine(string[])",
       "source": "vcm+addendum"
     },
@@ -7918,10 +7719,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "r-checkbox": {
@@ -7999,10 +7796,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "notes": "⚠️ 用 checkedText / uncheckedText 代替 trueLabel / falseLabel",
       "source": "vcm+addendum"
     },
@@ -8172,10 +7965,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "sap-chat-panel": {
@@ -8213,10 +8002,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "nav-icon": {
@@ -8252,10 +8037,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "module-context-badge": {
@@ -8277,12 +8058,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [
-          "MODULE_CONTEXT"
-        ],
-        "provides": []
-      },
       "source": "vcm"
     },
     "icon-picker": {
@@ -8324,10 +8099,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "error-fallback": {
@@ -8369,10 +8140,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "ai-proposal-card": {
@@ -8717,8 +8484,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                       "required": true,
                       "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                     },
-                    "__@toPrimitive@860": {
-                      "name": "__@toPrimitive@860",
+                    "__@toPrimitive@91196": {
+                      "name": "__@toPrimitive@91196",
                       "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                       "required": true,
                       "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -9078,8 +8845,8 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
                         "required": true,
                         "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
                       },
-                      "__@toPrimitive@860": {
-                        "name": "__@toPrimitive@860",
+                      "__@toPrimitive@91196": {
+                        "name": "__@toPrimitive@91196",
                         "type": "{ (hint: \"default\"): string; (hint: \"string\"): string; (hint: \"number\"): number; (hint: string): string | number; }",
                         "required": true,
                         "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
@@ -9102,10 +8869,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "ai-design-studio": {
@@ -9144,10 +8907,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           ]
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "ai-chat-widget": {
@@ -9198,10 +8957,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "ai-chat-panel": {
@@ -9239,10 +8994,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "ai-assistant-hub": {
@@ -9251,10 +9002,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 组件，可在注册表中通过 type=\"ai-assistant-hub\" 使用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "tenant-config": {
@@ -9263,10 +9010,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"tenant-config\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "settings": {
@@ -9275,10 +9018,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"settings\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "cache-manager": {
@@ -9287,10 +9026,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"cache-manager\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "app-list": {
@@ -9299,10 +9034,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"app-list\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "login-view": {
@@ -9311,10 +9042,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"login-view\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "home-page": {
@@ -9323,10 +9050,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"home-page\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "about": {
@@ -9335,10 +9058,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"about\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "dashboard": {
@@ -9347,10 +9066,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"dashboard\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "capability-demo": {
@@ -9359,10 +9074,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"capability-demo\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "dev-workbench": {
@@ -9371,10 +9082,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-workbench\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "dev-system": {
@@ -9383,10 +9090,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"dev-system\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "dev-site-tree": {
@@ -9401,10 +9104,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "exposed": [
         {
           "name": "state",
@@ -9444,10 +9143,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "schema": []
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "dev-node-props": {
@@ -9467,10 +9162,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "[]"
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "dev-file-editor": {
@@ -9485,10 +9176,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "dev-ai-panel": {
@@ -9503,10 +9190,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "workspace-panel": {
@@ -9529,10 +9212,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "wbs-node-editor": {
@@ -9547,10 +9226,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "project-tree": {
@@ -9686,10 +9361,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "type": "[]"
         }
       ],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "page-config-editor": {
@@ -9704,10 +9375,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "node-target-config": {
@@ -9722,10 +9389,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "node-state-config": {
@@ -9740,10 +9403,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "node-layout-config": {
@@ -9758,10 +9417,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "node-context-config": {
@@ -9776,10 +9431,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "node-basic-info": {
@@ -9807,10 +9458,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
         }
       ],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     },
     "ai-studio-panel": {
@@ -9819,10 +9466,6 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
       "description": "SPARK 视图组件，可在注册表中通过 type=\"ai-studio-panel\" 引用。",
       "props": [],
       "emits": [],
-      "capabilities": {
-        "consumes": [],
-        "provides": []
-      },
       "source": "vcm"
     }
   },
@@ -10081,10 +9724,7 @@ update:modelValue: [value: string]`,
 
 【Props】
 label?: string (默认 "\\u4E0A\\u4E0B\\u6587")
-emptyText?: string (默认 "\\u672A\\u9009\\u62E9")
-
-【能力链】
-consumes: MODULE_CONTEXT`,
+emptyText?: string (默认 "\\u672A\\u9009\\u62E9")`,
   "nav-icon": `**nav-icon** — SPARK 组件，可在注册表中通过 type="nav-icon" 使用。
 
 【Props】
@@ -10200,9 +9840,6 @@ onChange: string — 切换回调
 【事件】
 update:modelValue: [value: CollapseValue]
 
-【能力链】
-provides: COLLAPSE_API
-
 **r-collapse** — 折叠面板容器
 toolbar: Rule[] — 工具栏
 toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
@@ -10305,10 +9942,6 @@ gridColumns: number — CSS Grid 列数，默认 24
 gridGap: number | string — 栅格间距，默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 
-【能力链】
-consumes: PAGE_DATASET
-provides: DETAIL_API, DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
-
 **r-detail** — 只读详情容器（展示 currentRow）
 dataKey: string — 数据绑定键
 toolbar: Rule[] — 工具栏
@@ -10355,9 +9988,6 @@ onClosed: string — 关闭动画结束回调
 【事件】
 update:modelValue: [value: boolean]
 
-【能力链】
-provides: DIALOG_API
-
 **r-dialog** — 对话框容器
 title: string — 标题
 modelValue: boolean — 控制显隐
@@ -10401,9 +10031,6 @@ gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 
 【事件】
 update:modelValue: [value: boolean]
-
-【能力链】
-provides: DRAWER_API
 
 **r-drawer** — 抽屉容器
 title: string — 标题
@@ -10496,10 +10123,6 @@ labelWidth: string — 标签宽度，默认 '100px'
 gridColumns: number — CSS Grid 列数，默认 24
 gridGap: number | string — 栅格间距，默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
-
-【能力链】
-consumes: PAGE_DATASET
-provides: FORM_API, DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA
 
 **r-form** — 数据表单容器（读写 currentRow）
 dataKey: string — 数据绑定键，如 "Users@currentRow"
@@ -10605,10 +10228,6 @@ gridGap: number | string — 默认 0
 gridAutoRows: string — 行高定义，默认 'minmax(32px, auto)'
 itemColSpan: number — 项跨列数
 itemRowSpan: number — 项跨行数，默认 1
-
-【能力链】
-consumes: PAGE_DATASET
-provides: DATA_SOURCE, LIST_API
 
 **r-list** — 列表容器
 dataKey: string — 数据绑定键
@@ -10769,9 +10388,6 @@ gridColumns: number — 默认 24
 gridGap: number — 默认 0
 gridAutoRows: string — 行高
 
-【能力链】
-provides: SECTION_API
-
 **r-section** — 分区容器
 title: string — 标题
 description: string — 描述
@@ -10833,9 +10449,6 @@ onStepChange: string — 步骤切换回调
 【事件】
 update:modelValue: [value: string | number]
 
-【能力链】
-provides: STEPS_API
-
 **r-steps** — 步骤条容器
 toolbar: Rule[] — 工具栏
 toolbarPosition: 'top' | 'bottom' | 'left' | 'right' — 默认 'top'
@@ -10882,10 +10495,6 @@ actions.width: number — 操作列宽度，默认 160
 actions.align: 'left' | 'center' | 'right' — 默认 'left'
 actions.fixed: boolean | 'left' | 'right' — 固定方向
 actions.class: string — 操作列 CSS 类名
-
-【能力链】
-consumes: PAGE_DATASET, PAGE_SERVICE, MODULE_CONTEXT, PAGE_COMPONENT_REGISTRY
-provides: DATA_SOURCE, TABLE_API, FIELD_CONTEXT
 
 **r-table** — 数据表格容器
 
@@ -10951,9 +10560,6 @@ onTabClick: string — 点击回调
 
 【事件】
 update:modelValue: [value: string | number]
-
-【能力链】
-provides: TABS_API
 
 **r-tabs** — 标签页容器
 toolbar: Rule[] — 工具栏
@@ -11029,10 +10635,6 @@ allowDelete: boolean — 允许删除节点（自动生成删除按钮）
 onNodeClick: string — script.js 节点点击回调函数名
 onNodeExpand: string — 节点展开回调
 onNodeCollapse: string — 节点折叠回调
-
-【能力链】
-consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API
 
 **r-tree** — 树形组件容器
 dataKey: string — 数据绑定键，如 "TreeData@rows"
