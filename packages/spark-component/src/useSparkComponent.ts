@@ -107,10 +107,12 @@ export function useSparkComponent(
   // SparkComponentRenderer 通过 v-bind="componentProps" 将 SparkNode.props 作为 Vue Props 传递。
   const config: SparkNode = fallbackConfig ?? { type: 'unknown' }
 
-  // id 解析优先级：fallbackConfig.props.id → Vue 实例 props.id → 自增计数器
-  const vuePropsId = getCurrentInstance()?.props['id']
+  // id 解析优先级：fallbackConfig.props.id → Vue 实例 attrs.id → 自增计数器
+  // 注意：大多数组件未在 defineProps 声明 id，Vue 将其放入 $attrs 而非 $props
+  const instance = getCurrentInstance()
+  const vueId = instance?.props['id'] ?? instance?.attrs['id']
   const resolvedId = (typeof config.props?.['id'] === 'string' ? config.props['id'] : undefined)
-    ?? (typeof vuePropsId === 'string' ? vuePropsId : undefined)
+    ?? (typeof vueId === 'string' ? vueId : undefined)
     ?? `spark-${++_idCounter}`
 
   // ── 上下文创建 ──
