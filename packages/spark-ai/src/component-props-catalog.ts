@@ -7,7 +7,7 @@
  * 数据来源：vue-component-meta 类型提取 + supplement.ts 手工补充
  *
  * 重新生成：pnpm run dev 或 pnpm run build
- * 生成时间：2026-03-23T06:23:57.902Z
+ * 生成时间：2026-03-23T06:29:20.333Z
  * 条目数量：77
  */
 import type { ComponentCatalog } from './catalog-types'
@@ -20,7 +20,7 @@ import type { ComponentCatalog } from './catalog-types'
  */
 export const COMPONENT_CATALOG: ComponentCatalog = {
   "version": "2.0.0",
-  "buildTime": "2026-03-23T06:23:57.897Z",
+  "buildTime": "2026-03-23T06:29:20.328Z",
   "componentCount": 77,
   "registry": {
     "containers": [
@@ -2046,44 +2046,44 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "数据绑定键，如 \"TreeData@rows\""
         },
         {
-          "name": "data",
-          "type": "TreeNode[]",
-          "description": "静态数据（优先用 dataKey）"
+          "name": "dataView",
+          "type": "DataView",
+          "description": "直接传入的 DataView（与 Table/List/Form/Detail 一致）"
         },
         {
-          "name": "dataSource",
-          "type": "IDataSource | DataView",
-          "description": "动态数据源"
+          "name": "sparkChildren",
+          "type": "SparkNode[]",
+          "description": "节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）"
         },
         {
           "name": "toolbar",
-          "type": "Rule[]",
-          "description": "工具栏"
+          "type": "SparkNode[]",
+          "description": "工具栏按钮配置"
         },
         {
           "name": "toolbarPosition",
-          "type": "'top' | 'bottom'",
-          "description": "工具栏位置"
+          "type": "ToolbarPosition",
+          "description": "工具栏位置（'top' | 'bottom' | 'left' | 'right'）"
         },
         {
-          "name": "nodeActions",
-          "type": "Rule[]",
-          "description": "节点操作区"
-        },
-        {
-          "name": "nodeActionsPosition",
+          "name": "toolbarClass",
           "type": "string",
-          "description": "节点操作位置"
+          "description": "工具栏 CSS 类名"
         },
         {
-          "name": "nodeActionsClass",
-          "type": "string",
-          "description": "节点操作区 CSS 类名"
+          "name": "allowAppend",
+          "type": "boolean",
+          "description": "允许追加子节点（自动生成追加按钮）"
+        },
+        {
+          "name": "allowDelete",
+          "type": "boolean",
+          "description": "允许删除节点（自动生成删除按钮）"
         },
         {
           "name": "onNodeClick",
           "type": "string",
-          "description": "script.js 函数名"
+          "description": "script.js 节点点击回调函数名"
         },
         {
           "name": "onNodeExpand",
@@ -2096,7 +2096,7 @@ export const COMPONENT_CATALOG: ComponentCatalog = {
           "description": "节点折叠回调"
         }
       ],
-      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndata: TreeNode[] — 静态数据（优先用 dataKey）\ndataSource: IDataSource | DataView — 动态数据源\ntoolbar: Rule[] — 工具栏\ntoolbarPosition: 'top' | 'bottom' — 工具栏位置\nnodeActions: Rule[] — 节点操作区\nnodeActionsPosition: string — 节点操作位置\nnodeActionsClass: string — 节点操作区 CSS 类名\nonNodeClick: string — script.js 函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA",
+      "notes": "**r-tree** — 树形组件容器\ndataKey: string — 数据绑定键，如 \"TreeData@rows\"\ndataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）\nsparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）\ntoolbar: SparkNode[] — 工具栏按钮配置\ntoolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）\ntoolbarClass: string — 工具栏 CSS 类名\nallowAppend: boolean — 允许追加子节点（自动生成追加按钮）\nallowDelete: boolean — 允许删除节点（自动生成删除按钮）\nonNodeClick: string — script.js 节点点击回调函数名\nonNodeExpand: string — 节点展开回调\nonNodeCollapse: string — 节点折叠回调\n其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）\n\n【能力链】\nconsumes: PAGE_DATASET\nprovides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API",
       "source": "vcm+override"
     },
     "r-list": {
@@ -11019,14 +11019,14 @@ allowDelete?: boolean — 允许删除节点（自动生成删除按钮）
 
 【根级字段】
 dataKey: string — 数据绑定键，如 "TreeData@rows"
-data: TreeNode[] — 静态数据（优先用 dataKey）
-dataSource: IDataSource | DataView — 动态数据源
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' — 工具栏位置
-nodeActions: Rule[] — 节点操作区
-nodeActionsPosition: string — 节点操作位置
-nodeActionsClass: string — 节点操作区 CSS 类名
-onNodeClick: string — script.js 函数名
+dataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
+sparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）
+toolbar: SparkNode[] — 工具栏按钮配置
+toolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）
+toolbarClass: string — 工具栏 CSS 类名
+allowAppend: boolean — 允许追加子节点（自动生成追加按钮）
+allowDelete: boolean — 允许删除节点（自动生成删除按钮）
+onNodeClick: string — script.js 节点点击回调函数名
 onNodeExpand: string — 节点展开回调
 onNodeCollapse: string — 节点折叠回调
 
@@ -11036,21 +11036,21 @@ provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API
 
 **r-tree** — 树形组件容器
 dataKey: string — 数据绑定键，如 "TreeData@rows"
-data: TreeNode[] — 静态数据（优先用 dataKey）
-dataSource: IDataSource | DataView — 动态数据源
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' — 工具栏位置
-nodeActions: Rule[] — 节点操作区
-nodeActionsPosition: string — 节点操作位置
-nodeActionsClass: string — 节点操作区 CSS 类名
-onNodeClick: string — script.js 函数名
+dataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
+sparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）
+toolbar: SparkNode[] — 工具栏按钮配置
+toolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）
+toolbarClass: string — 工具栏 CSS 类名
+allowAppend: boolean — 允许追加子节点（自动生成追加按钮）
+allowDelete: boolean — 允许删除节点（自动生成删除按钮）
+onNodeClick: string — script.js 节点点击回调函数名
 onNodeExpand: string — 节点展开回调
 onNodeCollapse: string — 节点折叠回调
 其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA`,
+provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API`,
   "r-tree-select": `**r-tree-select** — SPARK 字段组件，可在 rule.json 中通过 type="r-tree-select" 使用。
 
 【Props】

@@ -255,21 +255,21 @@ children 内放 r-* 字段组件（只读模式）`,
 
   'r-tree': `**r-tree** — 树形组件容器
 dataKey: string — 数据绑定键，如 "TreeData@rows"
-data: TreeNode[] — 静态数据（优先用 dataKey）
-dataSource: IDataSource | DataView — 动态数据源
-toolbar: Rule[] — 工具栏
-toolbarPosition: 'top' | 'bottom' — 工具栏位置
-nodeActions: Rule[] — 节点操作区
-nodeActionsPosition: string — 节点操作位置
-nodeActionsClass: string — 节点操作区 CSS 类名
-onNodeClick: string — script.js 函数名
+dataView: DataView — 直接传入的 DataView（与 Table/List/Form/Detail 一致）
+sparkChildren: SparkNode[] — 节点内容 children（由 bindRules sparkChildren 注入或父组件直接传入）
+toolbar: SparkNode[] — 工具栏按钮配置
+toolbarPosition: ToolbarPosition — 工具栏位置（'top' | 'bottom' | 'left' | 'right'）
+toolbarClass: string — 工具栏 CSS 类名
+allowAppend: boolean — 允许追加子节点（自动生成追加按钮）
+allowDelete: boolean — 允许删除节点（自动生成删除按钮）
+onNodeClick: string — script.js 节点点击回调函数名
 onNodeExpand: string — 节点展开回调
 onNodeCollapse: string — 节点折叠回调
 其他 props 透传到 el-tree（node-key, default-expand-all, show-checkbox 等）
 
 【能力链】
 consumes: PAGE_DATASET
-provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA`,
+provides: DATA_SOURCE, FIELD_CONTEXT, CONTEXT_DATA, TREE_API`,
 
   'r-list': `**r-list** — 列表容器
 dataKey: string — 数据绑定键
